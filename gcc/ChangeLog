@@ -1,3 +1,10 @@
+2014-11-12  Marek Polacek  <polacek@redhat.com>
+
+	* fold-const.c (fold_binary_loc): Don't fold if the result
+	is undefined.
+	* match.pd (A + (-B) -> A - B, A - (-B) -> A + B,
+	-(-A) -> A): Likewise.
+
 2014-11-12  Richard Biener  <rguenther@suse.de>
 
 	Merge from match-and-simplify branch

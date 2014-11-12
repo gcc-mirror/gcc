@@ -285,19 +285,25 @@ along with GCC; see the file COPYING3.  If not see
   /* Apply STRIP_NOPS on @0 and the negate.  */
   (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
        && tree_nop_conversion_p (type, TREE_TYPE (@1))
-       && (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0)
+       && (!INTEGRAL_TYPE_P (type)
+	   || TYPE_OVERFLOW_WRAPS (type)
+	   || (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0))
    (minus (convert @0) (convert @1))))
  /* A - (-B) -> A + B */
  (simplify
   (minus (convert1? @0) (convert2? (negate @1)))
   (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
-       && tree_nop_conversion_p (type, TREE_TYPE (@1)))
+       && tree_nop_conversion_p (type, TREE_TYPE (@1))
+       && (!INTEGRAL_TYPE_P (type)
+	   || TYPE_OVERFLOW_WRAPS (type)
+	   || (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0))
    (plus (convert @0) (convert @1))))
  /* -(-A) -> A */
  (simplify
   (negate (convert? (negate @1)))
   (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
-       && (TYPE_OVERFLOW_WRAPS (type)
+       && (!INTEGRAL_TYPE_P (type)
+	   || TYPE_OVERFLOW_WRAPS (type)
 	   || (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0))
    (convert @1)))
 
