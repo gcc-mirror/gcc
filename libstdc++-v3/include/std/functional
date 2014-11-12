@@ -2102,7 +2102,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
        *  The target of @c *this is deallocated, leaving it empty.
        */
       function&
-      operator=(nullptr_t)
+      operator=(nullptr_t) noexcept
       {
 	if (_M_manager)
 	  {

@@ -7,6 +7,16 @@
 	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error.
 	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Adjust dg-error.
 
+	* include/bits/shared_ptr.h (shared_ptr, weak_ptr): Define
+	_Convertible alias template to simplify constraints.
+	(shared_ptr(unique_ptr<TD>&&)): Constrain (LWG 2399).
+	* include/bits/shared_ptr_base.h: Likewise.
+	(_Sp_counted_deleter::_M_get_deleter()): Use addressof (LWG 2400).
+	* include/std/functional (function::operator=(nullptr_t)): Add
+	noexcept (LWG 2401).
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Adjust dg-error.
+
 2014-11-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/33911
