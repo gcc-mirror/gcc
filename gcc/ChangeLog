@@ -1,3 +1,28 @@
+2014-11-12  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (::gen_transform): Add capture_info and
+	expand_compares arguments.
+	(struct expr): Add is_generic flag.
+	(lower_cond): New functions lowering [VEC_]COND_EXPR
+	conditions to a GENERIC and a GIMPLE variant.
+	(lower): Call lower_cond.
+	(cmp_operand): Also compare the is_generic flag.
+	(capture_info::cinfo): Add cond_expr_cond_p flag.
+	(capture_info::capture_info): Pass down whether the
+	expression argument is a COND_EXPR condition.
+	(capture_info::walk_match): Likewise, mark captures
+	capturing COND_EXPR conditions with cond_expr_cond_p.
+	(expr::gen_transform): Pass down whether we need to
+	expand compares from COND_EXPR conditions.
+	(capture::gen_transform): Expand compares substituted
+	from COND_EXPR conditions into non-COND_EXPR conditions.
+	(dt_operand::gen_gimple_expr): Handle explicitely marked
+	GENERIC expressions as generic.
+	(dt_simplify::gen): Pass whether we need to expand
+	conditions to gen_transform.  Handle capture results
+	which are from COND_EXPR conditions.
+	(main): Pass gimple flag down to lower.
+
 2014-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/59708
