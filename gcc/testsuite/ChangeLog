@@ -1,3 +1,56 @@
+2014-11-12  Alan Lawrence  <alan.lawrence@arm.com>
+
+         * gcc.target/aarch64/simd/vqdmlal_high_lane_s16_indices_1.c: New test.
+         * gcc.target/aarch64/simd/vqdmlal_high_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlal_high_laneq_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlal_high_laneq_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlal_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlal_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlal_laneq_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlal_laneq_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlalh_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlals_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlsl_high_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlsl_high_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlsl_high_laneq_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlsl_high_laneq_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlsl_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlsl_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlsl_laneq_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlsl_laneq_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlslh_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmlsls_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmulh_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmulh_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmulh_laneq_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmulh_laneq_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmulhh_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmulhq_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmulhq_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmulhq_laneq_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmulhq_laneq_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmulhs_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmull_high_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmull_high_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmull_high_laneq_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmull_high_laneq_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmull_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmull_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmull_laneq_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmull_laneq_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmullh_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqdmulls_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqrdmulh_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqrdmulh_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqrdmulh_laneq_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqrdmulh_laneq_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqrdmulhh_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqrdmulhq_lane_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqrdmulhq_lane_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqrdmulhq_laneq_s16_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqrdmulhq_laneq_s32_indices_1.c: Likewise.
+         * gcc.target/aarch64/simd/vqrdmulhs_lane_s32_indices_1.c: Likewise.
+
 2014-11-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/387-1.c (dg-skip-if): Use *-*-* target selector.

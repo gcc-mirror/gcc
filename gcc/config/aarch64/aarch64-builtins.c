@@ -114,7 +114,9 @@ enum aarch64_type_qualifiers
   /* qualifier_const | qualifier_pointer | qualifier_map_mode  */
   qualifier_const_pointer_map_mode = 0x86,
   /* Polynomial types.  */
-  qualifier_poly = 0x100
+  qualifier_poly = 0x100,
+  /* Lane indices - must be in range, and flipped for bigendian.  */
+  qualifier_lane_index = 0x200
 };
 
 typedef struct
@@ -167,22 +169,26 @@ aarch64_types_ternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_none };
 #define TYPES_TERNOP (aarch64_types_ternop_qualifiers)
 static enum aarch64_type_qualifiers
+aarch64_types_ternop_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_lane_index };
+#define TYPES_TERNOP_LANE (aarch64_types_ternop_lane_qualifiers)
+static enum aarch64_type_qualifiers
 aarch64_types_ternopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned,
       qualifier_unsigned, qualifier_unsigned };
 #define TYPES_TERNOPU (aarch64_types_ternopu_qualifiers)
 
 static enum aarch64_type_qualifiers
-aarch64_types_ternop_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+aarch64_types_quadop_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none,
-      qualifier_none, qualifier_immediate };
-#define TYPES_TERNOP_LANE (aarch64_types_ternop_lane_qualifiers)
+      qualifier_none, qualifier_lane_index };
+#define TYPES_QUADOP_LANE (aarch64_types_quadop_lane_qualifiers)
 
 static enum aarch64_type_qualifiers
-aarch64_types_getlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+aarch64_types_binop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_immediate };
-#define TYPES_GETLANE (aarch64_types_getlane_qualifiers)
-#define TYPES_SHIFTIMM (aarch64_types_getlane_qualifiers)
+#define TYPES_GETREG (aarch64_types_binop_imm_qualifiers)
+#define TYPES_SHIFTIMM (aarch64_types_binop_imm_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_shift_to_unsigned_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_none, qualifier_immediate };
@@ -193,11 +199,11 @@ aarch64_types_unsigned_shift_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_USHIFTIMM (aarch64_types_unsigned_shift_qualifiers)
 
 static enum aarch64_type_qualifiers
-aarch64_types_setlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+aarch64_types_ternop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate };
-#define TYPES_SETLANE (aarch64_types_setlane_qualifiers)
-#define TYPES_SHIFTINSERT (aarch64_types_setlane_qualifiers)
-#define TYPES_SHIFTACC (aarch64_types_setlane_qualifiers)
+#define TYPES_SETREG (aarch64_types_ternop_imm_qualifiers)
+#define TYPES_SHIFTINSERT (aarch64_types_ternop_imm_qualifiers)
+#define TYPES_SHIFTACC (aarch64_types_ternop_imm_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_unsigned_shiftacc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -853,6 +859,7 @@ typedef enum
 {
   SIMD_ARG_COPY_TO_REG,
   SIMD_ARG_CONSTANT,
+  SIMD_ARG_LANE_INDEX,
   SIMD_ARG_STOP
 } builtin_simd_arg;
 
@@ -896,6 +903,19 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 		op[argc] = copy_to_mode_reg (mode[argc], op[argc]);
 	      break;
 
+	    case SIMD_ARG_LANE_INDEX:
+	      /* Must be a previous operand into which this is an index.  */
+	      gcc_assert (argc > 0);
+	      if (CONST_INT_P (op[argc]))
+		{
+		  enum machine_mode vmode = mode[argc - 1];
+		  aarch64_simd_lane_bounds (op[argc],
+					    0, GET_MODE_NUNITS (vmode));
+		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
+		  op[argc] = GEN_INT (ENDIAN_LANE_N (vmode, INTVAL (op[argc])));
+		}
+	      /* Fall through - if the lane index isn't a constant then
+		 the next case will error.  */
 	    case SIMD_ARG_CONSTANT:
 	      if (!(*insn_data[icode].operand[argc + have_retval].predicate)
 		  (op[argc], mode[argc]))
@@ -1004,7 +1024,9 @@ aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
       int operands_k = k - is_void;
       int expr_args_k = k - 1;
 
-      if (d->qualifiers[qualifiers_k] & qualifier_immediate)
+      if (d->qualifiers[qualifiers_k] & qualifier_lane_index)
+	args[k] = SIMD_ARG_LANE_INDEX;
+      else if (d->qualifiers[qualifiers_k] & qualifier_immediate)
 	args[k] = SIMD_ARG_CONSTANT;
       else if (d->qualifiers[qualifiers_k] & qualifier_maybe_immediate)
 	{
