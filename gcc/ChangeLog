@@ -1,5 +1,55 @@
 2014-11-12  Richard Biener  <rguenther@suse.de>
 
+	Merge from match-and-simplify branch
+	2014-11-04  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* genmatch.c (user_id): Add new member is_oper_list.
+	(user_id::user_id): Add new default argument.
+	(parser::parse_operator_list): New function.
+	(parser::parse_for): Allow operator-list.
+	(parser::parse_pattern): Call parser::parse_operator_list.
+	(parser::parse_operation): Reject operator-list.
+	* match-builtin.pd: Define operator lists POWs, CBRTs and SQRTs.
+
+	2014-10-31  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* genmatch.c (parser::parse_c_expr): Mark user-defined ops as used.
+
+	2014-10-30  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* genmatch.c (parser::parse_op): Check if predicate is used in
+	result operand.
+
+	2014-10-29  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* genmatch.c (parser::parse_for): Make sure to have a valid
+	token to report errors at.
+
+	2014-10-28  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* genmatch.c (parser): Add new member parsing_match_operand.
+	(parser::parse_operation): Check for conditional convert in result
+	operand.
+	(parser::parse_expr): Check for commutative operator in result operand.
+	Check for :type in match operand.
+	(parser::parse_simplify): Set/unset parsing_match_operand.
+	(parser::parser): Initialize parsing_match_operand.
+
+	2014-10-28  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (parser::parse_for): Properly check for already
+	defined operators.
+
+	2014-10-28  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* genmatch.c (error_cb): Adjust for printing warnings.
+	(warning_at): New function.
+	(user_id): Add new member used.
+	(get_operator): Mark user_id as used.
+	(parse_for): Warn for unused operators.
+
+2014-11-12  Richard Biener  <rguenther@suse.de>
+
 	* match.pd: Implement simple complex operations cancelling.
 	* fold-const.c (fold_unary_loc): Remove them here.
 
