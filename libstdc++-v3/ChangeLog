@@ -1,5 +1,18 @@
 2014-11-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/57250
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/shared_ptr_atomic.h: Define atomic access functions.
+	* include/std/memory: Include new header.
+	* src/c++11/shared_ptr.cc (_Sp_locker): Define and use mutex pool.
+	* testsuite/20_util/shared_ptr/atomic/1.cc: New.
+	* testsuite/20_util/shared_ptr/atomic/2.cc: New.
+	* testsuite/20_util/shared_ptr/atomic/3.cc: New.
+
+2014-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/bits/shared_ptr.h (weak_ptr): Add move constructor and
 	assignment.
 	* include/bits/shared_ptr_base.h (__weak_count, __weak_ptr): Likewise.
