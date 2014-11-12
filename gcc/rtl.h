@@ -2885,10 +2885,6 @@ extern bool tablejump_p (const rtx_insn *, rtx *, rtx_jump_table_data **);
 extern int computed_jump_p (const_rtx);
 extern bool tls_referenced_p (const_rtx);
 
-typedef int (*rtx_function) (rtx *, void *);
-extern int for_each_rtx (rtx *, rtx_function, void *);
-extern int for_each_rtx_in_insn (rtx_insn **, rtx_function, void *);
-
 /* Callback for for_each_inc_dec, to process the autoinc operation OP
    within MEM that sets DEST to SRC + SRCOFF, or SRC if SRCOFF is
    NULL.  The callback is passed the same opaque ARG passed to

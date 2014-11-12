@@ -1,3 +1,11 @@
+2014-11-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.h (rtx_function, for_each_rtx, for_each_rtx_in_insn): Delete.
+	* rtlanal.c (non_rtx_starting_operands, for_each_rtx_1, for_each_rtx):
+	(for_each_rtx_in_insn): Delete.
+	(init_rtlanal): Remove initialization of non_rtx_starting_operands.
+	* df-core.c: Remove reference to for_each_rtx in comment.
+
 2014-11-12  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* Makefile.in (TEXI_GCC_FILES): Remove arm-acle-intrinsics.texi,
