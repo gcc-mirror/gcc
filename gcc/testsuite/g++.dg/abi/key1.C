@@ -1,5 +1,5 @@
 // On ARM EABI platforms, key methods may never be inline.
-// { dg-do compile { target arm*-*-eabi* arm*-*-symbianelf* } }
+// { dg-do compile { target arm_eabi } }
 // { dg-final { scan-assembler-not _ZTV1S } }
 // { dg-final { scan-assembler-not _ZTV1T } }
 // { dg-final { scan-assembler _ZTV1U } }

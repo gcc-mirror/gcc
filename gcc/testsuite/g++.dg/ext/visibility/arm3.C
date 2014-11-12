@@ -1,4 +1,4 @@
-// { dg-do compile { target arm*-*-*eabi* } }
+// { dg-do compile { target arm_eabi } }
 // { dg-require-dll "" }
 // { dg-options "-fvisibility=hidden" }
 

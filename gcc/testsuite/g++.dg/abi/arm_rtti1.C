@@ -1,4 +1,4 @@
-// { dg-do compile { target arm*-*-eabi* arm*-*-symbianelf* } }
+// { dg-do compile { target arm_eabi } }
 // { dg-options "-O2" } 
 // Check that, even when optimizing, we emit an out-of-line call to
 // the type-info comparison function.

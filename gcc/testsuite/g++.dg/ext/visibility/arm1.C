@@ -1,4 +1,4 @@
-// { dg-do compile { target arm*-*-eabi* arm*-*-symbianelf* } }
+// { dg-do compile { target arm_eabi } }
 // { dg-require-dll "" }
 // { dg-options "-fvisibility=hidden" }
 // Most class data should be exported.

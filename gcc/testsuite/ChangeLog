@@ -1,3 +1,13 @@
+2014-11-12  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* gcc.target/arm/eabi1.c: Replace arm*-*-*eabi* and arm*-*-symbianelf*
+	with arm_eabi.
+	* g++.dg/abi/arm_rtti1.C: Likewise.
+	* g++.dg/abi/key1.C: Likewise.
+	* g++.dg/ext/visibility/arm1.C: Likewise.
+	* g++.dg/ext/visibility/arm2.C: Likewise.
+	* g++.dg/ext/visibility/arm3.C: Likewise.
+
 2014-11-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* g++.dg/ipa/devirt-42.C: Fix dump scanning for "return 2".
