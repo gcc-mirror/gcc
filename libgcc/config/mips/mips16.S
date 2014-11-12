@@ -21,6 +21,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "auto-host.h"
+
 #if defined(__mips_micromips) || defined(__mips_soft_float)
   /* Do nothing because this code is only needed when linking
      against mips16 hard-float objects.  Neither micromips code
@@ -28,6 +30,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
      objects so we do not need these routines when building libgcc
      for those cases.  */
 #else
+
+#if defined(HAVE_AS_MODULE)
+#if __mips_fpr == 32
+	.module fp=32
+#elif __mips_fpr == 0
+	.module fp=xx
+#elif __mips_fpr == 64
+	.module fp=64
+#endif
+#endif
 
 /* This file contains mips16 floating point support functions.  These
    functions are called by mips16 code to handle floating point when
@@ -152,8 +164,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* The high 32 bits of $2 correspond to the second word in memory;
    i.e. the imaginary part.  */
 #define MOVE_SC_RET(D, T) MERGE_GPR##D ($2, $f1, $f0); jr T
-#elif __mips_fpr == 64
-#define MOVE_SC_RET(D, T) m##D##c1 $2,$f0; DELAY##D (T, m##D##c1 $3,$f1)
 #else
 #define MOVE_SC_RET(D, T) m##D##c1 $2,$f0; DELAY##D (T, m##D##c1 $3,$f2)
 #endif
@@ -174,16 +184,29 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MOVE_DF_BYTE8(D) dm##D##c1 $5,$f13
 #define MOVE_DF_RET(D, T) DELAY##D (T, dm##D##c1 $2,$f0)
 #define MOVE_DC_RET(D, T) dm##D##c1 $3,$f1; MOVE_DF_RET (D, T)
-#elif __mips_fpr == 64 && defined(__MIPSEB__)
+#elif __mips_fpr != 32 && __mips_isa_rev >= 2 && defined(__MIPSEB__)
 #define MOVE_DF_BYTE0(D) m##D##c1 $5,$f12; m##D##hc1 $4,$f12
 #define MOVE_DF_BYTE8(D) m##D##c1 $7,$f14; m##D##hc1 $6,$f14
 #define MOVE_DF_RET(D, T) m##D##c1 $3,$f0; DELAY##D (T, m##D##hc1 $2,$f0)
-#define MOVE_DC_RET(D, T) m##D##c1 $5,$f1; m##D##hc1 $4,$f1; MOVE_DF_RET (D, T)
-#elif __mips_fpr == 64
+#define MOVE_DC_RET(D, T) m##D##c1 $5,$f2; m##D##hc1 $4,$f2; MOVE_DF_RET (D, T)
+#elif __mips_fpr != 32 && __mips_isa_rev >= 2
 #define MOVE_DF_BYTE0(D) m##D##c1 $4,$f12; m##D##hc1 $5,$f12
 #define MOVE_DF_BYTE8(D) m##D##c1 $6,$f14; m##D##hc1 $7,$f14
 #define MOVE_DF_RET(D, T) m##D##c1 $2,$f0; DELAY##D (T, m##D##hc1 $3,$f0)
-#define MOVE_DC_RET(D, T) m##D##c1 $4,$f1; m##D##hc1 $5,$f1; MOVE_DF_RET (D, T)
+#define MOVE_DC_RET(D, T) m##D##c1 $4,$f2; m##D##hc1 $5,$f2; MOVE_DF_RET (D, T)
+#elif __mips_fpr == 0
+#define MOVE_DF_BYTE0t sw $4, 0($29); sw $5, 4($29); ldc1 $f12, 0($29)
+#define MOVE_DF_BYTE0f sdc1 $f12, 0($29); lw $4, 0($29); lw $5, 4($29)
+#define MOVE_DF_BYTE0(D) MOVE_DF_BYTE0##D
+#define MOVE_DF_BYTE8t sw $6, 8($29); sw $7, 12($29); ldc1 $f14, 8($29)
+#define MOVE_DF_BYTE8f sdc1 $f14, 8($29); lw $6, 8($29); lw $7, 12($29)
+#define MOVE_DF_BYTE8(D) MOVE_DF_BYTE8##D
+#define MOVE_DF_RETt(T) sw $2, 0($29); sw $3, 4($29); DELAYt (T, ldc1 $f0, 0($29))
+#define MOVE_DF_RETf(T) sdc1 $f0, 0($29); lw $2, 0($29); DELAYf (T, lw $3, 4($29))
+#define MOVE_DF_RET(D, T) MOVE_DF_RET##D(T)
+#define MOVE_DC_RETt(T) sw $4, 8($29); sw $5, 12($29); ldc1 $f2, 8($29); MOVE_DF_RETt(T)
+#define MOVE_DC_RETf(T) sdc1 $f2, 8($29); lw $4, 8($29); lw $5, 12($29); MOVE_DF_RETf(T)
+#define MOVE_DC_RET(D, T) MOVE_DF_RET##D(T)
 #elif defined(__MIPSEB__)
 /* FPRs are little-endian.  */
 #define MOVE_DF_BYTE0(D) m##D##c1 $4,$f13; m##D##c1 $5,$f12

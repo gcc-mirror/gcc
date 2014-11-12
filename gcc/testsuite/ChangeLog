@@ -1,3 +1,27 @@
+2014-11-12  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/args-1.c: Handle __mips_fpr == 0.
+	* gcc.target/mips/call-clobbered-1.c: New.
+	* gcc.target/mips/call-clobbered-2.c: New.
+	* gcc.target/mips/call-clobbered-3.c: New.
+	* gcc.target/mips/call-clobbered-4.c: New.
+	* gcc.target/mips/call-clobbered-5.c: New.
+	* gcc.target/mips/call-saved-4.c: New.
+	* gcc.target/mips/call-saved-5.c: New.
+	* gcc.target/mips/call-saved-6.c: New.
+	* gcc.target/mips/mips.exp: Support -mfpxx, -ffixed-f*,
+	and -m[no-]odd-spreg.  Use _MIPS_SPFPSET to determine default
+	odd-spreg option.  Account for -modd-spreg in minimum arch code.
+	* gcc.target/mips/movdf-1.c: New.
+	* gcc.target/mips/movdf-2.c: New.
+	* gcc.target/mips/movdf-3.c: New.
+	* gcc.target/mips/oddspreg-1.c: New.
+	* gcc.target/mips/oddspreg-2.c: New.
+	* gcc.target/mips/oddspreg-3.c: New.
+	* gcc.target/mips/oddspreg-4.c: New.
+	* gcc.target/mips/oddspreg-5.c: New.
+	* gcc.target/mips/oddspreg-6.c: New.
+
 2014-11-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/63815

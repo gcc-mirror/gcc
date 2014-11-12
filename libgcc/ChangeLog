@@ -1,3 +1,9 @@
+2014-11-12  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips16.S: Set .module when supported.  Update O32
+	FP64 calling convention and use for FPXX when possible.  Add FPXX
+	calling convention fallback case.
+
 2014-11-06  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config.host: Handle nvptx-*-*.

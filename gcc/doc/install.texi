@@ -1261,6 +1261,32 @@ ISA for floating-point arithmetics.  You can select either @samp{sse} which
 enables @option{-msse2} or @samp{avx} which enables @option{-mavx} by default.
 This option is only supported on i386 and x86-64 targets.
 
+@item --with-fp-32=@var{mode}
+On MIPS targets, set the default value for the @option{-mfp} option when using
+the o32 ABI.  The possibilities for @var{mode} are:
+@table @code
+@item 32
+Use the o32 FP32 ABI extension, as with the @option{-mfp32} command-line
+option.
+@item xx
+Use the o32 FPXX ABI extension, as with the @option{-mfpxx} command-line
+option.
+@item 64
+Use the o32 FP64 ABI extension, as with the @option{-mfp64} command-line
+option.
+@end table
+In the absence of this configuration option the default is to use the o32
+FP32 ABI extension.
+
+@item --with-odd-spreg-32
+On MIPS targets, set the @option{-modd-spreg} option by default when using
+the o32 ABI.
+
+@item --without-odd-spreg-32
+On MIPS targets, set the @option{-mno-odd-spreg} option by default when using
+the o32 ABI.  This is normally used in conjunction with
+@option{--with-fp-32=64} in order to target the o32 FP64A ABI extension.
+
 @item --with-nan=@var{encoding}
 On MIPS targets, set the default encoding convention to use for the
 special not-a-number (NaN) IEEE 754 floating-point data.  The
