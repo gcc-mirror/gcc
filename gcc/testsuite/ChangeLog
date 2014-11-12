@@ -1,5 +1,51 @@
 2014-11-12  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/387-1.c (dg-skip-if): Use *-*-* target selector.
+	* gcc.target/i386/387-2.c (dg-skip-if): Ditto.
+	* gcc.target/i386/387-5.c (dg-skip-if): Ditto.
+	* gcc.target/i386/387-6.c (dg-skip-if): Ditto.
+	* gcc.target/i386/cmov7.c (dg-skip-if): Ditto.
+	* gcc.target/i386/funcspec-2.c (dg-skip-if): Ditto.
+	* gcc.target/i386/funcspec-3.c (dg-skip-if): Ditto.
+	* gcc.target/i386/funcspec-8.c (dg-skip-if): Ditto.
+	* gcc.target/i386/funcspec-9.c (dg-skip-if): Ditto.
+	* gcc.target/i386/gcc-have-sync-compare-and-swap-1.c (dg-skip-if):
+	Ditto.
+	* gcc.target/i386/gcc-have-sync-compare-and-swap-2.c (dg-skip-if):
+	Ditto.
+	* gcc.target/i386/isa-1.c (dg-skip-if): Ditto.
+	* gcc.target/i386/isa-6.c (dg-skip-if): Ditto.
+	* gcc.target/i386/isa-9.c (dg-skip-if): Ditto.
+	* gcc.target/i386/lea.c (dg-skip-if): Ditto.
+	* gcc.target/i386/memcpy-strategy-1.c (dg-skip-if): Ditto.
+	* gcc.target/i386/memcpy-strategy-2.c (dg-skip-if): Ditto.
+	* gcc.target/i386/memcpy-vector_loop-1.c (dg-skip-if): Ditto.
+	* gcc.target/i386/memcpy-vector_loop-2.c (dg-skip-if): Ditto.
+	* gcc.target/i386/memset-vector_loop-1.c (dg-skip-if): Ditto.
+	* gcc.target/i386/memset-vector_loop-2.c (dg-skip-if): Ditto.
+	* gcc.target/i386/pad-10.c (dg-skip-if): Ditto.
+	* gcc.target/i386/pad-2.c (dg-skip-if): Ditto.
+	* gcc.target/i386/pad-3.c (dg-skip-if): Ditto.
+	* gcc.target/i386/pad-4.c (dg-skip-if): Ditto.
+	* gcc.target/i386/pad-5a.c (dg-skip-if): Ditto.
+	* gcc.target/i386/pad-5b.c (dg-skip-if): Ditto.
+	* gcc.target/i386/pad-6a.c (dg-skip-if): Ditto.
+	* gcc.target/i386/pad-6b.c (dg-skip-if): Ditto.
+	* gcc.target/i386/pad-7.c (dg-skip-if): Ditto.
+	* gcc.target/i386/pad-8.c (dg-skip-if): Ditto.
+	* gcc.target/i386/pad-9.c (dg-skip-if): Ditto.
+	* gcc.target/i386/pentium4-not-mull.c (dg-skip-if): Ditto.
+	* gcc.target/i386/pr42589.c (dg-skip-if): Ditto.
+	* gcc.target/i386/sse-19.c (dg-skip-if): Ditto.
+	* gcc.target/i386/sse2-init-v2di-2.c (dg-skip-if): Ditto.
+	* gcc.target/i386/ssefn-1.c (dg-skip-if): Ditto.
+	* gcc.target/i386/ssetype-1.c (dg-skip-if): Ditto.
+	* gcc.target/i386/ssetype-2.c (dg-skip-if): Ditto.
+	* gcc.target/i386/ssetype-5.c (dg-skip-if): Ditto.
+	* gcc.target/i386/vect-double-1.c (dg-skip-if): Ditto.
+
+2014-11-12  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/pr45852.c: Simplify target selector.
 	* gcc.target/i386/pr63495.c: Ditto.
 	* gcc.target/i386/pr39496.c: Ditto.
