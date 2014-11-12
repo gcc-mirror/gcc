@@ -1,6 +1,6 @@
 2014-11-11  Tobias Burnus  <burnus@net-b.de>
 
-	* Makefile.def: Remove CLooG.
+	* Makefile.def: Make all-gcc depend on all-isl.
 	* Makefile.in: Regenerate.
 
 2014-11-11  David Malcolm  <dmalcolm@redhat.com>
