@@ -16,7 +16,7 @@ int main () {
   char *p = &a[0];
   asm ("" : "+r"(p));
   __asan_poison_memory_region ((char *)&a[1], 1);
-  return __builtin_strlen (a);
+  return __builtin_strlen (a) + 1;
 }
 
 /* { dg-output "READ of size 2 at 0x\[0-9a-f\]+ thread T0.*(\n|\r\n|\r)" } */
