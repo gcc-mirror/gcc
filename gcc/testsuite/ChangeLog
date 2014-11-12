@@ -1,3 +1,9 @@
+2014-11-12  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/overflow-sub-4.c: New test.
+	* c-c++-common/ubsan/overflow-sub-2.c: Adjust dg-output.
+	* c-c++-common/ubsan/overflow-int128.c: Likewise.
+
 2014-11-12  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* gcc.target/i386/pr52252-atom-1.c: Extend assembler scan on AVX2 case.

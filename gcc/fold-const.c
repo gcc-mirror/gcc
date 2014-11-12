@@ -10538,6 +10538,9 @@ fold_binary_loc (location_t loc,
 
       /* A - B -> A + (-B) if B is easily negatable.  */
       if (negate_expr_p (arg1)
+	  && (!INTEGRAL_TYPE_P (type)
+	      || TYPE_OVERFLOW_WRAPS (type)
+	      || (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0)
 	  && ((FLOAT_TYPE_P (type)
                /* Avoid this transformation if B is a positive REAL_CST.  */
 	       && (TREE_CODE (arg1) != REAL_CST
