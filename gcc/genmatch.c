@@ -37,8 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Stubs for GGC referenced through instantiations triggered by hash-map.  */
 void *ggc_internal_cleared_alloc (size_t, void (*)(void *),
-				  size_t, size_t
-				  CXX_MEM_STAT_INFO)
+				  size_t, size_t MEM_STAT_DECL)
 {
   return NULL;
 }
