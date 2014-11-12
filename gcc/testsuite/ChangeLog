@@ -1,3 +1,8 @@
+2014-11-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/63761
+	* gcc.c-torture/compile/pr63761.c: New test.
+
 2014-11-12  Jiong Wang  <jiong.wang@arm.com>
 
 	* lib/gcc-dg.exp (${tool}_load): Truncate gcc output.

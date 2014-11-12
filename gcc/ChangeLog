@@ -1,3 +1,15 @@
+2014-11-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/63761
+	* tree-ssa-math-opts.c (bswap_replace): Construct gsi from cur_stmt
+	rather than taking it as a parameter. Add some comments to explain the
+	gsi_move_before in case of load and why canonicalization of bswap into
+	a rotation is only done for 16bit values.
+	(pass_optimize_bswap::execute): Adapt for loop via gsi to make gsi
+	refer to the statement just before cur_stmt. Ignore 16bit bswap that
+	are already in canonical form. Adapt bswap_replace to removal of its
+	gsi parameter.
+
 2014-11-12  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* rtl.h (rtx_function, for_each_rtx, for_each_rtx_in_insn): Delete.
