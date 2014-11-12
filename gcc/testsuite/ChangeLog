@@ -1,3 +1,8 @@
+2014-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/no-math-errno-1.c, gcc.dg/no-math-errno-2.c,
+	gcc.dg/no-math-errno-3.c, gcc.dg/no-math-errno-4.c: New tests.
+
 2014-11-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/63830

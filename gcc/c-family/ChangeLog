@@ -1,3 +1,8 @@
+2014-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): Define and
+	undefine __NO_MATH_ERRNO__ based on changes to -fmath-errno state.
+
 2014-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/59708

@@ -549,6 +549,11 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
   else if (prev->x_flag_signaling_nans && !cur->x_flag_signaling_nans)
     cpp_undef (pfile, "__SUPPORT_SNAN__");
 
+  if (!prev->x_flag_errno_math && cur->x_flag_errno_math)
+    cpp_undef (pfile, "__NO_MATH_ERRNO__");
+  else if (prev->x_flag_errno_math && !cur->x_flag_errno_math)
+    cpp_define (pfile, "__NO_MATH_ERRNO__");
+
   if (!prev->x_flag_finite_math_only && cur->x_flag_finite_math_only)
     {
       cpp_undef (pfile, "__FINITE_MATH_ONLY__");
