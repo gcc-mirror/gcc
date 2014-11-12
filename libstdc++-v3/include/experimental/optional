@@ -127,13 +127,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __throw_bad_optional_access(const char* __s)
   { _GLIBCXX_THROW_OR_ABORT(bad_optional_access(__s)); }
 
-  template<typename _Tp, typename _Sfinae = void>
-    struct _Has_addressof_impl : std::false_type { };
+  template<typename _Tp, typename = void>
+    struct _Has_addressof_mem : std::false_type { };
 
   template<typename _Tp>
-    struct _Has_addressof_impl<_Tp,
-      decltype( std::declval<const _Tp&>().operator&(), void() )>
-      : std::true_type { };
+    struct _Has_addressof_mem<_Tp,
+         __void_t<decltype( std::declval<const _Tp&>().operator&() )>
+      >
+    : std::true_type { };
+
+  template<typename _Tp, typename = void>
+    struct _Has_addressof_free : std::false_type { };
+
+  template<typename _Tp>
+    struct _Has_addressof_free<_Tp,
+         __void_t<decltype( operator&(std::declval<const _Tp&>()) )>
+      >
+    : std::true_type { };
 
   /**
     * @brief Trait that detects the presence of an overloaded unary operator&.
@@ -143,7 +153,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     * declval<_Tp * const&>().operator&()).
     */
   template<typename _Tp>
-    struct _Has_addressof : _Has_addressof_impl<_Tp>::type { };
+    struct _Has_addressof
+    : std::__or_<_Has_addressof_mem<_Tp>, _Has_addressof_free<_Tp>>::type
+    { };
 
   /**
     * @brief An overload that attempts to take the address of an lvalue as a

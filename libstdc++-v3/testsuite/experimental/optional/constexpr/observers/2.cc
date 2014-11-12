@@ -26,6 +26,8 @@
 struct value_type
 {
   int i;
+
+  void* operator&() { return nullptr; } // N.B. non-const
 };
 
 int main()
