@@ -299,7 +299,7 @@ along with GCC; see the file COPYING3.  If not see
   (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
        && (TYPE_OVERFLOW_WRAPS (type)
 	   || (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0))
-   @1))
+   (convert @1)))
 
  /* We can't reassociate floating-point or fixed-point plus or minus
     because of saturation to +-Inf.  */
