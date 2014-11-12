@@ -465,18 +465,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class weak_ptr : public __weak_ptr<_Tp>
     {
     public:
-      constexpr weak_ptr() noexcept
-      : __weak_ptr<_Tp>() { }
+      constexpr weak_ptr() noexcept = default;
+
+      template<typename _Tp1, typename = typename
+	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
+	weak_ptr(const shared_ptr<_Tp1>& __r) noexcept
+	: __weak_ptr<_Tp>(__r) { }
+
+      weak_ptr(const weak_ptr&) noexcept = default;
 
       template<typename _Tp1, typename = typename
 	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
 	weak_ptr(const weak_ptr<_Tp1>& __r) noexcept
 	: __weak_ptr<_Tp>(__r) { }
 
+      weak_ptr(weak_ptr&&) noexcept = default;
+
       template<typename _Tp1, typename = typename
 	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
-	weak_ptr(const shared_ptr<_Tp1>& __r) noexcept
-	: __weak_ptr<_Tp>(__r) { }
+	weak_ptr(weak_ptr<_Tp1>&& __r) noexcept
+	: __weak_ptr<_Tp>(std::move(__r)) { }
+
+      weak_ptr&
+      operator=(const weak_ptr& __r) noexcept = default;
 
       template<typename _Tp1>
 	weak_ptr&
@@ -491,6 +502,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator=(const shared_ptr<_Tp1>& __r) noexcept
 	{
 	  this->__weak_ptr<_Tp>::operator=(__r);
+	  return *this;
+	}
+
+      weak_ptr&
+      operator=(weak_ptr&& __r) noexcept = default;
+
+      template<typename _Tp1>
+	weak_ptr&
+	operator=(weak_ptr<_Tp1>&& __r) noexcept
+	{
+	  this->__weak_ptr<_Tp>::operator=(std::move(__r));
 	  return *this;
 	}
 
