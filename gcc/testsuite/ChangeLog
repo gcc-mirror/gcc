@@ -1,3 +1,31 @@
+2014-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59708
+	* c-c++-common/builtin-arith-overflow-1.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-10.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-11.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-12.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-12.h: New file.
+	* c-c++-common/torture/builtin-arith-overflow-13.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-14.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-15.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-16.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-17.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-18.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-1.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-1.h: New file.
+	* c-c++-common/torture/builtin-arith-overflow-2.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-3.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-4.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-5.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-6.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-7.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-8.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-9.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow.h: New file.
+	* gcc.dg/builtin-arith-overflow-1.c: New test.
+	* gcc.dg/builtin-arith-overflow-2.c: New test.
+
 2014-11-12  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63821

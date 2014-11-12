@@ -255,6 +255,7 @@ extern rtx_insn *emit_move_insn_1 (rtx, rtx);
 
 extern rtx_insn *emit_move_complex_push (machine_mode, rtx, rtx);
 extern rtx_insn *emit_move_complex_parts (rtx, rtx);
+extern void write_complex_part (rtx, rtx, bool);
 extern rtx emit_move_resolve_push (machine_mode, rtx);
 
 /* Push a block of length SIZE (perhaps variable)

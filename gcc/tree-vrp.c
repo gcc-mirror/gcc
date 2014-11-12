@@ -3754,6 +3754,113 @@ extract_range_from_comparison (value_range_t *vr, enum tree_code code,
     set_value_range_to_truthvalue (vr, type);
 }
 
+/* Helper function for simplify_internal_call_using_ranges and
+   extract_range_basic.  Return true if OP0 SUBCODE OP1 for
+   SUBCODE {PLUS,MINUS,MULT}_EXPR is known to never overflow or
+   always overflow.  Set *OVF to true if it is known to always
+   overflow.  */
+
+static bool
+check_for_binary_op_overflow (enum tree_code subcode, tree type,
+			      tree op0, tree op1, bool *ovf)
+{
+  value_range_t vr0 = VR_INITIALIZER;
+  value_range_t vr1 = VR_INITIALIZER;
+  if (TREE_CODE (op0) == SSA_NAME)
+    vr0 = *get_value_range (op0);
+  else if (TREE_CODE (op0) == INTEGER_CST)
+    set_value_range_to_value (&vr0, op0, NULL);
+  else
+    set_value_range_to_varying (&vr0);
+
+  if (TREE_CODE (op1) == SSA_NAME)
+    vr1 = *get_value_range (op1);
+  else if (TREE_CODE (op1) == INTEGER_CST)
+    set_value_range_to_value (&vr1, op1, NULL);
+  else
+    set_value_range_to_varying (&vr1);
+
+  if (!range_int_cst_p (&vr0)
+      || TREE_OVERFLOW (vr0.min)
+      || TREE_OVERFLOW (vr0.max))
+    {
+      vr0.min = vrp_val_min (TREE_TYPE (op0));
+      vr0.max = vrp_val_max (TREE_TYPE (op0));
+    }
+  if (!range_int_cst_p (&vr1)
+      || TREE_OVERFLOW (vr1.min)
+      || TREE_OVERFLOW (vr1.max))
+    {
+      vr1.min = vrp_val_min (TREE_TYPE (op1));
+      vr1.max = vrp_val_max (TREE_TYPE (op1));
+    }
+  *ovf = arith_overflowed_p (subcode, type, vr0.min,
+			     subcode == MINUS_EXPR ? vr1.max : vr1.min);
+  if (arith_overflowed_p (subcode, type, vr0.max,
+			  subcode == MINUS_EXPR ? vr1.min : vr1.max) != *ovf)
+    return false;
+  if (subcode == MULT_EXPR)
+    {
+      if (arith_overflowed_p (subcode, type, vr0.min, vr1.max) != *ovf
+	  || arith_overflowed_p (subcode, type, vr0.max, vr1.min) != *ovf)
+	return false;
+    }
+  if (*ovf)
+    {
+      /* So far we found that there is an overflow on the boundaries.
+	 That doesn't prove that there is an overflow even for all values
+	 in between the boundaries.  For that compute widest_int range
+	 of the result and see if it doesn't overlap the range of
+	 type.  */
+      widest_int wmin, wmax;
+      widest_int w[4];
+      int i;
+      w[0] = wi::to_widest (vr0.min);
+      w[1] = wi::to_widest (vr0.max);
+      w[2] = wi::to_widest (vr1.min);
+      w[3] = wi::to_widest (vr1.max);
+      for (i = 0; i < 4; i++)
+	{
+	  widest_int wt;
+	  switch (subcode)
+	    {
+	    case PLUS_EXPR:
+	      wt = wi::add (w[i & 1], w[2 + (i & 2) / 2]);
+	      break;
+	    case MINUS_EXPR:
+	      wt = wi::sub (w[i & 1], w[2 + (i & 2) / 2]);
+	      break;
+	    case MULT_EXPR:
+	      wt = wi::mul (w[i & 1], w[2 + (i & 2) / 2]);
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  if (i == 0)
+	    {
+	      wmin = wt;
+	      wmax = wt;
+	    }
+	  else
+	    {
+	      wmin = wi::smin (wmin, wt);
+	      wmax = wi::smax (wmax, wt);
+	    }
+	}
+      /* The result of op0 CODE op1 is known to be in range
+	 [wmin, wmax].  */
+      widest_int wtmin = wi::to_widest (vrp_val_min (type));
+      widest_int wtmax = wi::to_widest (vrp_val_max (type));
+      /* If all values in [wmin, wmax] are smaller than
+	 [wtmin, wtmax] or all are larger than [wtmin, wtmax],
+	 the arithmetic operation will always overflow.  */
+      if (wi::lts_p (wmax, wtmin) || wi::gts_p (wmin, wtmax))
+	return true;
+      return false;
+    }
+  return true;
+}
+
 /* Try to derive a nonnegative or nonzero range out of STMT relying
    primarily on generic routines in fold in conjunction with range data.
    Store the result in *VR */
@@ -3943,8 +4050,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 	  break;
 	}
     }
-  else if (is_gimple_call (stmt)
-	   && gimple_call_internal_p (stmt))
+  else if (is_gimple_call (stmt) && gimple_call_internal_p (stmt))
     {
       enum tree_code subcode = ERROR_MARK;
       switch (gimple_call_internal_fn (stmt))
@@ -3982,6 +4088,84 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		  || operand_equal_p (vr->min, vr->max, 0)))
 	    set_value_range_to_varying (vr);
 	  return;
+	}
+    }
+  /* Handle extraction of the two results (result of arithmetics and
+     a flag whether arithmetics overflowed) from {ADD,SUB,MUL}_OVERFLOW
+     internal function.  */
+  else if (is_gimple_assign (stmt)
+	   && (gimple_assign_rhs_code (stmt) == REALPART_EXPR
+	       || gimple_assign_rhs_code (stmt) == IMAGPART_EXPR)
+	   && INTEGRAL_TYPE_P (type))
+    {
+      enum tree_code code = gimple_assign_rhs_code (stmt);
+      tree op = gimple_assign_rhs1 (stmt);
+      if (TREE_CODE (op) == code && TREE_CODE (TREE_OPERAND (op, 0)) == SSA_NAME)
+	{
+	  gimple g = SSA_NAME_DEF_STMT (TREE_OPERAND (op, 0));
+	  if (is_gimple_call (g) && gimple_call_internal_p (g))
+	    {
+	      enum tree_code subcode = ERROR_MARK;
+	      switch (gimple_call_internal_fn (g))
+		{
+		case IFN_ADD_OVERFLOW:
+		  subcode = PLUS_EXPR;
+		  break;
+		case IFN_SUB_OVERFLOW:
+		  subcode = MINUS_EXPR;
+		  break;
+		case IFN_MUL_OVERFLOW:
+		  subcode = MULT_EXPR;
+		  break;
+		default:
+		  break;
+		}
+	      if (subcode != ERROR_MARK)
+		{
+		  tree op0 = gimple_call_arg (g, 0);
+		  tree op1 = gimple_call_arg (g, 1);
+		  if (code == IMAGPART_EXPR)
+		    {
+		      bool ovf = false;
+		      if (check_for_binary_op_overflow (subcode, type,
+							op0, op1, &ovf))
+			set_value_range_to_value (vr,
+						  build_int_cst (type, ovf),
+						  NULL);
+		      else
+			set_value_range (vr, VR_RANGE, build_int_cst (type, 0),
+					 build_int_cst (type, 1), NULL);
+		    }
+		  else if (types_compatible_p (type, TREE_TYPE (op0))
+			   && types_compatible_p (type, TREE_TYPE (op1)))
+		    {
+		      bool saved_flag_wrapv = flag_wrapv;
+		      /* Pretend the arithmetics is wrapping.  If there is
+			 any overflow, IMAGPART_EXPR will be set.  */
+		      flag_wrapv = 1;
+		      extract_range_from_binary_expr (vr, subcode, type,
+						      op0, op1);
+		      flag_wrapv = saved_flag_wrapv;
+		    }
+		  else
+		    {
+		      value_range_t vr0 = VR_INITIALIZER;
+		      value_range_t vr1 = VR_INITIALIZER;
+		      bool saved_flag_wrapv = flag_wrapv;
+		      /* Pretend the arithmetics is wrapping.  If there is
+			 any overflow, IMAGPART_EXPR will be set.  */
+		      flag_wrapv = 1;
+		      extract_range_from_unary_expr (&vr0, NOP_EXPR,
+						     type, op0);
+		      extract_range_from_unary_expr (&vr1, NOP_EXPR,
+						     type, op1);
+		      extract_range_from_binary_expr_1 (vr, subcode, type,
+							&vr0, &vr1);
+		      flag_wrapv = saved_flag_wrapv;
+		    }
+		  return;
+		}
+	    }
 	}
     }
   if (INTEGRAL_TYPE_P (type)
@@ -9419,87 +9603,100 @@ static bool
 simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
 {
   enum tree_code subcode;
+  bool is_ubsan = false;
+  bool ovf = false;
   switch (gimple_call_internal_fn (stmt))
     {
     case IFN_UBSAN_CHECK_ADD:
       subcode = PLUS_EXPR;
+      is_ubsan = true;
       break;
     case IFN_UBSAN_CHECK_SUB:
       subcode = MINUS_EXPR;
+      is_ubsan = true;
       break;
     case IFN_UBSAN_CHECK_MUL:
+      subcode = MULT_EXPR;
+      is_ubsan = true;
+      break;
+    case IFN_ADD_OVERFLOW:
+      subcode = PLUS_EXPR;
+      break;
+    case IFN_SUB_OVERFLOW:
+      subcode = MINUS_EXPR;
+      break;
+    case IFN_MUL_OVERFLOW:
       subcode = MULT_EXPR;
       break;
     default:
       return false;
     }
 
-  value_range_t vr0 = VR_INITIALIZER;
-  value_range_t vr1 = VR_INITIALIZER;
   tree op0 = gimple_call_arg (stmt, 0);
   tree op1 = gimple_call_arg (stmt, 1);
-
-  if (TREE_CODE (op0) == SSA_NAME)
-    vr0 = *get_value_range (op0);
-  else if (TREE_CODE (op0) == INTEGER_CST)
-    set_value_range_to_value (&vr0, op0, NULL);
+  tree type;
+  if (is_ubsan)
+    type = TREE_TYPE (op0);
+  else if (gimple_call_lhs (stmt) == NULL_TREE)
+    return false;
   else
-    set_value_range_to_varying (&vr0);
+    type = TREE_TYPE (TREE_TYPE (gimple_call_lhs (stmt)));
+  if (!check_for_binary_op_overflow (subcode, type, op0, op1, &ovf)
+      || (is_ubsan && ovf))
+    return false;
 
-  if (TREE_CODE (op1) == SSA_NAME)
-    vr1 = *get_value_range (op1);
-  else if (TREE_CODE (op1) == INTEGER_CST)
-    set_value_range_to_value (&vr1, op1, NULL);
-  else
-    set_value_range_to_varying (&vr1);
-
-  if (!range_int_cst_p (&vr0))
-    {
-      /* If one range is VR_ANTI_RANGE, VR_VARYING etc.,
-	 optimize at least x = y + 0; x = y - 0; x = y * 0;
-	 and x = y * 1; which never overflow.  */
-      if (!range_int_cst_p (&vr1))
-	return false;
-      if (tree_int_cst_sgn (vr1.min) == -1)
-	return false;
-      if (compare_tree_int (vr1.max, subcode == MULT_EXPR) == 1)
-	return false;
-    }
-  else if (!range_int_cst_p (&vr1))
-    {
-      /* If one range is VR_ANTI_RANGE, VR_VARYING etc.,
-	 optimize at least x = 0 + y; x = 0 * y; and x = 1 * y;
-	 which never overflow.  */
-      if (subcode == MINUS_EXPR)
-	return false;
-      if (!range_int_cst_p (&vr0))
-	return false;
-      if (tree_int_cst_sgn (vr0.min) == -1)
-	return false;
-      if (compare_tree_int (vr0.max, subcode == MULT_EXPR) == 1)
-	return false;
-    }
+  gimple g;
+  location_t loc = gimple_location (stmt);
+  if (is_ubsan)
+    g = gimple_build_assign_with_ops (subcode, gimple_call_lhs (stmt),
+				      op0, op1);
   else
     {
-      tree r1 = int_const_binop (subcode, vr0.min,
-				 subcode == MINUS_EXPR ? vr1.max : vr1.min);
-      tree r2 = int_const_binop (subcode, vr0.max,
-				 subcode == MINUS_EXPR ? vr1.min : vr1.max);
-      if (r1 == NULL_TREE || TREE_OVERFLOW (r1)
-	  || r2 == NULL_TREE || TREE_OVERFLOW (r2))
-	return false;
-      if (subcode == MULT_EXPR)
+      int prec = TYPE_PRECISION (type);
+      tree utype = type;
+      if (ovf
+	  || !useless_type_conversion_p (type, TREE_TYPE (op0))
+	  || !useless_type_conversion_p (type, TREE_TYPE (op1)))
+	utype = build_nonstandard_integer_type (prec, 1);
+      if (TREE_CODE (op0) == INTEGER_CST)
+	op0 = fold_convert (utype, op0);
+      else if (!useless_type_conversion_p (utype, TREE_TYPE (op0)))
 	{
-	  tree r3 = int_const_binop (subcode, vr0.min, vr1.max);
-	  tree r4 = int_const_binop (subcode, vr0.max, vr1.min);
-	  if (r3 == NULL_TREE || TREE_OVERFLOW (r3)
-	      || r4 == NULL_TREE || TREE_OVERFLOW (r4))
-	    return false;
+	  g = gimple_build_assign_with_ops (NOP_EXPR,
+					    make_ssa_name (utype, NULL),
+					    op0, NULL_TREE);
+	  gimple_set_location (g, loc);
+	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	  op0 = gimple_assign_lhs (g);
 	}
+      if (TREE_CODE (op1) == INTEGER_CST)
+	op1 = fold_convert (utype, op1);
+      else if (!useless_type_conversion_p (utype, TREE_TYPE (op1)))
+	{
+	  g = gimple_build_assign_with_ops (NOP_EXPR,
+					    make_ssa_name (utype, NULL),
+					    op1, NULL_TREE);
+	  gimple_set_location (g, loc);
+	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	  op1 = gimple_assign_lhs (g);
+	}
+      g = gimple_build_assign_with_ops (subcode, make_ssa_name (utype, NULL),
+					op0, op1);
+      gimple_set_location (g, loc);
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      if (utype != type)
+	{
+	  g = gimple_build_assign_with_ops (NOP_EXPR,
+					    make_ssa_name (type, NULL),
+					    gimple_assign_lhs (g), NULL_TREE);
+	  gimple_set_location (g, loc);
+	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	}
+      g = gimple_build_assign_with_ops (COMPLEX_EXPR, gimple_call_lhs (stmt),
+					gimple_assign_lhs (g),
+					build_int_cst (type, ovf));
     }
-
-  gimple g = gimple_build_assign_with_ops (subcode, gimple_call_lhs (stmt),
-					   op0, op1);
+  gimple_set_location (g, loc);
   gsi_replace (gsi, g, false);
   return true;
 }

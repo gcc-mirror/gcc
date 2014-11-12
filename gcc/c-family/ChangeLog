@@ -1,3 +1,9 @@
+2014-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59708
+	* c-common.c (check_builtin_function_arguments): Handle
+	BUILT_IN_{ADD,SUB,MUL}_OVERFLOW.
+
 2014-11-10  Andi Kleen  <ak@linux.intel.com>
 
 	PR c/60804

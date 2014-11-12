@@ -1,3 +1,73 @@
+2014-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59708
+	* builtin-attrs.def (ATTR_NOTHROW_TYPEGENERIC_LEAF): New attribute.
+	* builtins.c (fold_builtin_arith_overflow): New function.
+	(fold_builtin_3): Use it.
+	* builtins.def (BUILT_IN_ADD_OVERFLOW, BUILT_IN_SUB_OVERFLOW,
+	BUILT_IN_MUL_OVERFLOW, BUILT_IN_SADD_OVERFLOW, BUILT_IN_SADDL_OVERFLOW,
+	BUILT_IN_SADDLL_OVERFLOW, BUILT_IN_SSUB_OVERFLOW,
+	BUILT_IN_SSUBL_OVERFLOW, BUILT_IN_SSUBLL_OVERFLOW,
+	BUILT_IN_SMUL_OVERFLOW, BUILT_IN_SMULL_OVERFLOW,
+	BUILT_IN_SMULLL_OVERFLOW, BUILT_IN_UADDL_OVERFLOW,
+	BUILT_IN_UADDLL_OVERFLOW, BUILT_IN_USUB_OVERFLOW,
+	BUILT_IN_USUBL_OVERFLOW, BUILT_IN_USUBLL_OVERFLOW,
+	BUILT_IN_UMUL_OVERFLOW, BUILT_IN_UMULL_OVERFLOW,
+	BUILT_IN_UMULLL_OVERFLOW): New built-in functions.
+	* builtin-types.def (BT_PTR_UINT, BT_PTR_ULONG, BT_PTR_LONGLONG,
+	BT_FN_BOOL_INT_INT_INTPTR, BT_FN_BOOL_LONG_LONG_LONGPTR,
+	BT_FN_BOOL_LONGLONG_LONGLONG_LONGLONGPTR, BT_FN_BOOL_UINT_UINT_UINTPTR,
+	BT_FN_BOOL_ULONG_ULONG_ULONGPTR,
+	BT_FN_BOOL_ULONGLONG_ULONGLONG_ULONGLONGPTR, BT_FN_BOOL_VAR): New.
+	* expr.c (write_complex_part): Remove prototype, no longer static.
+	* expr.h (write_complex_part): New prototype.
+	* function.c (aggregate_value_p): For internal functions return 0.
+	* gimple-fold.c (arith_overflowed_p): New functions.
+	(gimple_fold_call): Fold {ADD,SUB,MUL}_OVERFLOW internal calls.
+	* gimple-fold.h (arith_overflowed_p): New prototype.
+	* tree-ssa-dce.c: Include tree-ssa-propagate.h and gimple-fold.h.
+	(find_non_realpart_uses, maybe_optimize_arith_overflow): New
+	functions.
+	(eliminate_unnecessary_stmts): Transform {ADD,SUB,MUL}_OVERFLOW
+	into COMPLEX_CST/COMPLEX_EXPR if IMAGPART_EXPR of the result is
+	never used.
+	* gimplify.c (gimplify_call_expr): Handle gimplification of
+	internal calls with lhs.
+	* internal-fn.c (get_range_pos_neg, get_min_precision,
+	expand_arith_overflow_result_store): New functions.
+	(ubsan_expand_si_overflow_addsub_check): Renamed to ...
+	(expand_addsub_overflow): ... this.  Add LOC, LHS, ARG0, ARG1,
+	UNSR_P, UNS0_P, UNS1_P, IS_UBSAN arguments, remove STMT argument.
+	Handle ADD_OVERFLOW and SUB_OVERFLOW expansion.
+	(ubsan_expand_si_overflow_neg_check): Renamed to ...
+	(expand_neg_overflow): ... this.  Add LOC, LHS, ARG1, IS_UBSAN
+	arguments, remove STMT argument.  Handle SUB_OVERFLOW with
+	0 as first argument expansion.
+	(ubsan_expand_si_overflow_mul_check): Renamed to ...
+	(expand_mul_overflow): ... this.  Add LOC, LHS, ARG0, ARG1,
+	UNSR_P, UNS0_P, UNS1_P, IS_UBSAN arguments, remove STMT argument.
+	Handle MUL_OVERFLOW expansion.
+	(expand_UBSAN_CHECK_ADD): Use expand_addsub_overflow, prepare
+	arguments for it.
+	(expand_UBSAN_CHECK_SUB): Use expand_addsub_overflow or
+	expand_neg_overflow, prepare arguments for it.
+	(expand_UBSAN_CHECK_MUL): Use expand_mul_overflow, prepare arguments
+	for it.
+	(expand_arith_overflow, expand_ADD_OVERFLOW, expand_SUB_OVERFLOW,
+	expand_MUL_OVERFLOW): New functions.
+	* internal-fn.def (ADD_OVERFLOW, SUB_OVERFLOW, MUL_OVERFLOW): New
+	internal functions.
+	* tree-vrp.c (check_for_binary_op_overflow): New function.
+	(extract_range_basic): Handle {REAL,IMAG}PART_EXPR if the operand
+	is SSA_NAME set by {ADD,SUB,MUL}_OVERFLOW internal functions.
+	(simplify_internal_call_using_ranges): Handle {ADD,SUB,MUL}_OVERFLOW
+	internal functions.
+	* optabs.def (umulv4_optab): New optab.
+	* config/i386/i386.md (umulv<mode>4, <u>mulvqi4): New define_expands.
+	(*umulv<mode>4, *<u>mulvqi4): New define_insns.
+	* doc/extend.texi (Integer Overflow Builtins): Document
+	__builtin_*_overflow.
+
 2014-11-12  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (capture_info::capture_info): Add missing
