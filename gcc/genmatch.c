@@ -54,13 +54,14 @@ static bool
 #if GCC_VERSION >= 4001
 __attribute__((format (printf, 6, 0)))
 #endif
-error_cb (cpp_reader *, int, int, source_location location,
+error_cb (cpp_reader *, int errtype, int, source_location location,
 	  unsigned int, const char *msg, va_list *ap)
 {
   const line_map *map;
   linemap_resolve_location (line_table, location, LRK_SPELLING_LOCATION, &map);
   expanded_location loc = linemap_expand_location (line_table, map, location);
-  fprintf (stderr, "%s:%d:%d error: ", loc.file, loc.line, loc.column);
+  fprintf (stderr, "%s:%d:%d %s: ", loc.file, loc.line, loc.column,
+	   (errtype == CPP_DL_WARNING) ? "warning" : "error");
   vfprintf (stderr, msg, *ap);
   fprintf (stderr, "\n");
   FILE *f = fopen (loc.file, "r");
@@ -86,7 +87,10 @@ error_cb (cpp_reader *, int, int, source_location location,
 notfound:
       fclose (f);
     }
-  exit (1);
+
+  if (errtype == CPP_DL_FATAL)
+    exit (1);
+  return false;
 }
 
 static void
@@ -98,6 +102,18 @@ fatal_at (const cpp_token *tk, const char *msg, ...)
   va_list ap;
   va_start (ap, msg);
   error_cb (NULL, CPP_DL_FATAL, 0, tk->src_loc, 0, msg, &ap);
+  va_end (ap);
+}
+
+static void
+#if GCC_VERSION >= 4001
+__attribute__((format (printf, 2, 3)))
+#endif
+warning_at (const cpp_token *tk, const char *msg, ...)
+{
+  va_list ap;
+  va_start (ap, msg);
+  error_cb (NULL, CPP_DL_WARNING, 0, tk->src_loc, 0, msg, &ap);
   va_end (ap);
 }
 
@@ -228,9 +244,12 @@ struct predicate_id : public id_base
 
 struct user_id : public id_base
 {
-  user_id (const char *id_)
-    : id_base (id_base::USER, id_), substitutes (vNULL) {}
+  user_id (const char *id_, bool is_oper_list_ = false)
+    : id_base (id_base::USER, id_), substitutes (vNULL),
+      used (false), is_oper_list (is_oper_list_) {}
   vec<id_base *> substitutes;
+  bool used;
+  bool is_oper_list;
 };
 
 template<>
@@ -331,7 +350,12 @@ get_operator (const char *id)
 
   id_base *op = operators->find_with_hash (&tem, tem.hashval);
   if (op)
-    return op;
+    {
+      /* If this is a user-defined identifier track whether it was used.  */
+      if (user_id *uid = dyn_cast<user_id *> (op))
+	uid->used = true;
+      return op;
+    }
 
   /* Try all-uppercase.  */
   char *id2 = xstrdup (id);
@@ -2650,6 +2674,7 @@ private:
   void parse_for (source_location);
   void parse_if (source_location);
   void parse_predicates (source_location);
+  void parse_operator_list (source_location);
 
   cpp_reader *r;
   vec<if_or_with> active_ifs;
@@ -2660,6 +2685,7 @@ private:
 public:
   vec<simplify *> simplifiers;
   vec<predicate_id *> user_predicates;
+  bool parsing_match_operand;
 };
 
 /* Lexing helpers.  */
@@ -2805,6 +2831,10 @@ parser::parse_operation ()
 	;
       else
 	fatal_at (id_tok, "non-convert operator conditionalized");
+
+      if (!parsing_match_operand)
+	fatal_at (id_tok, "conditional convert can only be used in "
+		  "match expression");
       eat_token (CPP_QUERY);
     }
   else if (strcmp  (id, "convert1") == 0
@@ -2813,6 +2843,11 @@ parser::parse_operation ()
   id_base *op = get_operator (id);
   if (!op)
     fatal_at (id_tok, "unknown operator %s", id);
+
+  user_id *p = dyn_cast<user_id *> (op);
+  if (p && p->is_oper_list)
+    fatal_at (id_tok, "operator-list not allowed in expression");
+
   return op;
 }
 
@@ -2824,7 +2859,7 @@ parser::parse_capture (operand *op)
 {
   eat_token (CPP_ATSIGN);
   const cpp_token *token = peek ();
-  const char *id;
+  const char *id = NULL;
   if (token->type == CPP_NUMBER)
     id = get_number ();
   else if (token->type == CPP_NAME)
@@ -2861,11 +2896,21 @@ parser::parse_expr ()
 	{
 	  const char *s = get_ident ();
 	  if (s[0] == 'c' && !s[1])
-	    is_commutative = true;
+	    {
+	      if (!parsing_match_operand)
+		fatal_at (token,
+			  "flag 'c' can only be used in match expression");
+	      is_commutative = true;
+	    }
 	  else if (s[1] != '\0')
-	    expr_type = s;
+	    {
+	      if (parsing_match_operand)
+		fatal_at (token, "type can only be used in result expression");
+	      expr_type = s;
+	    }
 	  else
 	    fatal_at (token, "flag %s not recognized", s);
+
 	  token = peek ();
 	}
       else
@@ -2937,6 +2982,11 @@ parser::parse_c_expr (cpp_ttype start)
       if (token->type == CPP_SEMICOLON)
 	nr_stmts++;
 
+      /* If this is possibly a user-defined identifier mark it used.  */
+      if (token->type == CPP_NAME)
+	get_operator ((const char *)CPP_HASHNODE
+		        (token->val.node.node)->ident.str);
+
       /* Record the token.  */
       code.safe_push (*token);
     }
@@ -2984,6 +3034,8 @@ parser::parse_op ()
 	    op = new predicate (p);
 	  else
 	    fatal_at (token, "using an unsupported operator as predicate");
+	  if (!parsing_match_operand)
+	    fatal_at (token, "predicates are only allowed in match expression");
 	  token = peek ();
 	  if (token->flags & PREV_WHITE)
 	    return op;
@@ -3020,7 +3072,9 @@ parser::parse_simplify (source_location match_location,
   capture_ids = new cid_map_t;
 
   const cpp_token *loc = peek ();
+  parsing_match_operand = true;
   struct operand *match = parse_op ();
+  parsing_match_operand = false;
   if (match->type == operand::OP_CAPTURE && !matcher)
     fatal_at (loc, "outermost expression cannot be captured");
   if (match->type == operand::OP_EXPR
@@ -3138,24 +3192,26 @@ parser::parse_simplify (source_location match_location,
 void
 parser::parse_for (source_location)
 {
+  auto_vec<const cpp_token *> user_id_tokens;
   vec<user_id *> user_ids = vNULL;
   const cpp_token *token;
   unsigned min_n_opers = 0, max_n_opers = 0;
 
   while (1)
     {
-      token = peek_ident ();
-      if (token == 0)
+      token = peek ();
+      if (token->type != CPP_NAME)
 	break;
 
       /* Insert the user defined operators into the operator hash.  */
       const char *id = get_ident ();
+      if (get_operator (id) != NULL)
+	fatal_at (token, "operator already defined");
       user_id *op = new user_id (id);
       id_base **slot = operators->find_slot_with_hash (op, op->hashval, INSERT);
-      if (*slot)
-	fatal_at (token, "operator already defined");
       *slot = op;
       user_ids.safe_push (op);
+      user_id_tokens.safe_push (token);
 
       eat_token (CPP_OPEN_PAREN);
 
@@ -3177,7 +3233,11 @@ parser::parse_for (source_location)
 	    fatal_at (token, "operator '%s' with arity %d does not match "
 		      "others with arity %d", oper, idb->nargs, arity);
 
-	  op->substitutes.safe_push (idb);
+	  user_id *p = dyn_cast<user_id *> (idb);
+	  if (p && p->is_oper_list)
+	    op->substitutes.safe_splice (p->substitutes);
+	  else 
+	    op->substitutes.safe_push (idb);
 	}
       op->nargs = arity;
       token = expect (CPP_CLOSE_PAREN);
@@ -3225,7 +3285,59 @@ parser::parse_for (source_location)
 
   /* Remove user-defined operators from the hash again.  */
   for (unsigned i = 0; i < user_ids.length (); ++i)
-    operators->remove_elt (user_ids[i]);
+    {
+      if (!user_ids[i]->used)
+	warning_at (user_id_tokens[i],
+		    "operator %s defined but not used", user_ids[i]->id);
+      operators->remove_elt (user_ids[i]);
+    }
+}
+
+/* Parse an identifier associated with a list of operators.
+     oprs = '(' 'define_operator_list' <ident> <ident>... ')'  */
+
+void
+parser::parse_operator_list (source_location)
+{
+  const cpp_token *token = peek (); 
+  const char *id = get_ident ();
+
+  if (get_operator (id) != 0)
+    fatal_at (token, "operator %s already defined", id);
+
+  user_id *op = new user_id (id, true);
+  int arity = -1;
+  
+  while ((token = peek_ident ()) != 0)
+    {
+      token = peek (); 
+      const char *oper = get_ident ();
+      id_base *idb = get_operator (oper);
+      
+      if (idb == 0)
+	fatal_at (token, "no such operator '%s'", oper);
+
+      if (arity == -1)
+	arity = idb->nargs;
+      else if (idb->nargs == -1)
+	;
+      else if (arity != idb->nargs)
+	fatal_at (token, "operator '%s' with arity %d does not match "
+			 "others with arity %d", oper, idb->nargs, arity);
+
+      /* We allow composition of multiple operator lists.  */
+      if (user_id *p = dyn_cast<user_id *> (idb))
+	op->substitutes.safe_splice (p->substitutes);
+      else
+	op->substitutes.safe_push (idb);
+    }
+
+  if (op->substitutes.length () == 0)
+    fatal_at (token, "operator-list cannot be empty");
+
+  op->nargs = arity;
+  id_base **slot = operators->find_slot_with_hash (op, op->hashval, INSERT);
+  *slot = op;
 }
 
 /* Parse an outer if expression.
@@ -3328,6 +3440,13 @@ parser::parse_pattern ()
 	fatal_at (token, "define_predicates inside if or for is not supported");
       parse_predicates (token->src_loc);
     }
+  else if (strcmp (id, "define_operator_list") == 0)
+    {
+      if (active_ifs.length () > 0
+	  || active_fors.length () > 0)
+	fatal_at (token, "operator-list inside if or for is not supported");
+      parse_operator_list (token->src_loc);
+    }
   else
     fatal_at (token, "expected %s'simplify', 'match', 'for' or 'if'",
 	      active_ifs.length () == 0 && active_fors.length () == 0
@@ -3345,6 +3464,7 @@ parser::parser (cpp_reader *r_)
   active_fors = vNULL;
   simplifiers = vNULL;
   user_predicates = vNULL;
+  parsing_match_operand = false;
 
   const cpp_token *token = next ();
   while (token->type != CPP_EOF)
