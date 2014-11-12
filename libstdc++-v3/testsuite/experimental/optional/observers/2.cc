@@ -26,6 +26,8 @@ struct value_type
   int i;
 };
 
+void* operator&(const value_type&) = delete;
+
 int main()
 {
   std::experimental::optional<value_type> o { value_type { 51 } };
