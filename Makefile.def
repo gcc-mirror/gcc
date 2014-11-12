@@ -314,6 +314,7 @@ dependencies = { module=all-gcc; on=all-libiberty; hard=true; };
 dependencies = { module=all-gcc; on=all-intl; };
 dependencies = { module=all-gcc; on=all-mpfr; };
 dependencies = { module=all-gcc; on=all-mpc; };
+dependencies = { module=all-gcc; on=all-isl; };
 dependencies = { module=all-gcc; on=all-build-texinfo; };
 dependencies = { module=all-gcc; on=all-build-bison; };
 dependencies = { module=all-gcc; on=all-build-flex; };

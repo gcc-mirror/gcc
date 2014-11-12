@@ -1,3 +1,8 @@
+2014-11-11  Tobias Burnus  <burnus@net-b.de>
+
+	* Makefile.def: Remove CLooG.
+	* Makefile.in: Regenerate.
+
 2014-11-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* ChangeLog.jit: New.
