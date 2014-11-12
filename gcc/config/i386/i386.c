@@ -42697,7 +42697,7 @@ x86_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
 	  // uninitialized.  Since FUNCTION is local and calling it
 	  // doesn't go through PLT, we use scratch register %r11 as
 	  // PIC register and initialize it here.
-	  SET_REGNO (pic_offset_table_rtx, R11_REG);
+	  pic_offset_table_rtx = gen_rtx_REG (Pmode, R11_REG);
 	  ix86_init_large_pic_reg (tmp_regno);
 	  fnaddr = legitimize_pic_address (fnaddr,
 					   gen_rtx_REG (Pmode, tmp_regno));
