@@ -1,3 +1,9 @@
+2014-11-12  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/lr_free_1.c: New testcase for -fomit-frame-pointer.
+	* gcc.target/aarch64/lr_free_2.c: New testcase for leaf
+	-fno-omit-frame-pointer.
+
 2014-11-12  Marek Polacek  <polacek@redhat.com>
 
 	* lib/gcc-dg.exp (${tool}_load): Call prune_file_path instead

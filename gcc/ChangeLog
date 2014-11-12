@@ -1,3 +1,12 @@
+2014-11-12  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.h (CALL_USED_REGISTERS): Mark LR as
+	caller-save.
+	(EPILOGUE_USES): Guard the check by epilogue_completed.
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Explictly check for
+	LR.
+	(aarch64_can_eliminate): Check LR_REGNUM liveness.
+
 2014-11-12  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.c (*<arith_shift_insn>_shiftsi): Fix typo.
