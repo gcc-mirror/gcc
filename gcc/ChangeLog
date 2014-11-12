@@ -1,5 +1,10 @@
 2014-11-12  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/63821
+	* match.pd: Add missing conversion to the -(T)-X pattern.
+
+2014-11-12  Richard Biener  <rguenther@suse.de>
+
 	PR bootstrap/63819
 	* hash-table.h: Include ggc.h also for generator programs.
 	* genmatch.c (ggc_internal_cleared_alloc): Properly define
