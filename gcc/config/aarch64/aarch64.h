@@ -272,7 +272,7 @@ extern unsigned long aarch64_tune_flags;
     1, 1, 1, 1,   1, 1, 1, 1,	/* R0 - R7 */		\
     1, 1, 1, 1,   1, 1, 1, 1,	/* R8 - R15 */		\
     1, 1, 1, 0,   0, 0, 0, 0,	/* R16 - R23 */		\
-    0, 0, 0, 0,   0, 1, 0, 1,	/* R24 - R30, SP */	\
+    0, 0, 0, 0,   0, 1, 1, 1,	/* R24 - R30, SP */	\
     1, 1, 1, 1,   1, 1, 1, 1,	/* V0 - V7 */		\
     0, 0, 0, 0,   0, 0, 0, 0,	/* V8 - V15 */		\
     1, 1, 1, 1,   1, 1, 1, 1,   /* V16 - V23 */         \
@@ -331,7 +331,7 @@ extern unsigned long aarch64_tune_flags;
    considered live at the start of the called function.  */
 
 #define EPILOGUE_USES(REGNO) \
-  ((REGNO) == LR_REGNUM)
+  (epilogue_completed && (REGNO) == LR_REGNUM)
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
