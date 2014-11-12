@@ -604,8 +604,6 @@ PICFLAG
 enable_host_shared
 enable_plugin
 pluginlibs
-CLOOGINC
-CLOOGLIBS
 ISLINC
 ISLLIBS
 GMPINC
@@ -952,9 +950,7 @@ CXXCPP
 GMPLIBS
 GMPINC
 ISLLIBS
-ISLINC
-CLOOGLIBS
-CLOOGINC'
+ISLINC'
 
 
 # Initialize some variables set by options.
@@ -1726,8 +1722,6 @@ Some influential environment variables:
   GMPINC      How to find GMP include files
   ISLLIBS     How to link ISL
   ISLINC      How to find ISL include files
-  CLOOGLIBS   How to link CLOOG
-  CLOOGINC    How to find CLOOG include files
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -18100,7 +18094,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18103 "configure"
+#line 18097 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18206,7 +18200,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18209 "configure"
+#line 18203 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -27971,14 +27965,6 @@ fi
 if test "x${ISLLIBS}" != "x" ; then
 
 $as_echo "#define HAVE_isl 1" >>confdefs.h
-
-fi
-
-
-
-if test "x${CLOOGLIBS}" != "x" ; then
-
-$as_echo "#define HAVE_cloog 1" >>confdefs.h
 
 fi
 
