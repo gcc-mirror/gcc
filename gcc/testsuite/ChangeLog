@@ -1,3 +1,8 @@
+2014-11-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/63815
+	* g++.dg/other/pr63815.C: New test.
+
 2014-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	DR 1510
