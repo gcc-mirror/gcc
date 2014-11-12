@@ -9986,14 +9986,12 @@ instructions, but allow the compiler to schedule those calls.
 
 @menu
 * AArch64 Built-in Functions::
-* AArch64 intrinsics::
 * Alpha Built-in Functions::
 * Altera Nios II Built-in Functions::
 * ARC Built-in Functions::
 * ARC SIMD Built-in Functions::
 * ARM iWMMXt Built-in Functions::
-* ARM NEON Intrinsics::
-* ARM ACLE Intrinsics::
+* ARM C Language Extensions (ACLE)::
 * ARM Floating Point Status and Control Intrinsics::
 * AVR Built-in Functions::
 * Blackfin Built-in Functions::
@@ -10031,11 +10029,6 @@ void __builtin_aarch64_set_fpcr (unsigned int)
 unsigned int __builtin_aarch64_get_fpsr ()
 void __builtin_aarch64_set_fpsr (unsigned int)
 @end smallexample
-
-@node AArch64 intrinsics
-@subsection ACLE Intrinsics for AArch64
-
-@include aarch64-acle-intrinsics.texi
 
 @node Alpha Built-in Functions
 @subsection Alpha Built-in Functions
@@ -10800,18 +10793,29 @@ long long __builtin_arm_wxor (long long, long long)
 long long __builtin_arm_wzero ()
 @end smallexample
 
-@node ARM NEON Intrinsics
-@subsection ARM NEON Intrinsics
 
-These built-in intrinsics for the ARM Advanced SIMD extension are available
-when the @option{-mfpu=neon} switch is used:
+@node ARM C Language Extensions (ACLE)
+@subsection ARM C Language Extensions (ACLE)
 
-@include arm-neon-intrinsics.texi
+GCC implements extensions for C as described in the ARM C Language
+Extensions (ACLE) specification, which can be found at
+@uref{http://infocenter.arm.com/help/topic/com.arm.doc.ihi0053c/IHI0053C_acle_2_0.pdf}.
 
-@node ARM ACLE Intrinsics
-@subsection ARM ACLE Intrinsics
+As a part of ACLE, GCC implements extensions for Advanced SIMD as described in
+the ARM C Language Extensions Specification.  The complete list of Advanced SIMD
+intrinsics can be found at
+@uref{http://infocenter.arm.com/help/topic/com.arm.doc.ihi0073a/IHI0073A_arm_neon_intrinsics_ref.pdf}.
+The built-in intrinsics for the Advanced SIMD extension are available when
+NEON is enabled.
 
-@include arm-acle-intrinsics.texi
+Currently, ARM and AArch64 back-ends do not support ACLE 2.0 fully.  Both
+back-ends support CRC32 intrinsics from @file{arm_acle.h}.  The ARM backend's
+16-bit floating-point Advanded SIMD Intrinsics currently comply to ACLE v1.1.
+AArch64's backend does not have support for 16-bit floating point Advanced SIMD
+Intrinsics yet.
+
+See @ref{ARM Options} and @ref{AArch64 Options} for more information on the
+availability of extensions.
 
 @node ARM Floating Point Status and Control Intrinsics
 @subsection ARM Floating Point Status and Control Intrinsics
