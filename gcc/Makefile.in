@@ -349,10 +349,6 @@ GMPINC = @GMPINC@
 ISLLIBS = @ISLLIBS@
 ISLINC = @ISLINC@
 
-# How to find CLOOG
-CLOOGLIBS = @CLOOGLIBS@
-CLOOGINC = @CLOOGINC@
-
 # Set to 'yes' if the LTO front end is enabled.
 enable_lto = @enable_lto@
 

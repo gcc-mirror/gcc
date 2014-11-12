@@ -1,3 +1,11 @@
+2014-11-12  Tobias Burnus  <burnus@net-b.de>
+
+	* Makefile.in (CLOOGLIBS, CLOOGINC): Remove.
+	* configure.ac: Ditto.
+	* graphite-interchange.c: Remove HAVE_CLOOG block.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
 2014-11-12  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.h (CALL_USED_REGISTERS): Mark LR as
