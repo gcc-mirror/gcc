@@ -1,3 +1,13 @@
+2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* lto-plugin.c (OFFLOAD_SECTION, OFFLOAD_SECTION_LEN): Define.
+	(struct plugin_objfile): Add new field "offload".
+	(process_offload_section): New static function.
+	(claim_file_handler): Claim file if it contains offload sections.
+
 2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>

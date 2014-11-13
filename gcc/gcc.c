@@ -157,6 +157,7 @@ static const char *const spec_version = DEFAULT_TARGET_VERSION;
 /* The target machine.  */
 
 static const char *spec_machine = DEFAULT_TARGET_MACHINE;
+static const char *spec_host_machine = DEFAULT_REAL_TARGET_MACHINE;
 
 /* Nonzero if cross-compiling.
    When -b is used, the value comes from the `specs' file.  */
@@ -1295,6 +1296,9 @@ static const char *const standard_startfile_prefix_2
 /* A relative path to be used in finding the location of tools
    relative to the driver.  */
 static const char *const tooldir_base_prefix = TOOLDIR_BASE_PREFIX;
+
+/* A prefix to be used when this is an accelerator compiler.  */
+static const char *const accel_dir_suffix = ACCEL_DIR_SUFFIX;
 
 /* Subdirectory to use for locating libraries.  Set by
    set_multilib_dir based on the compilation options.  */
@@ -4129,15 +4133,15 @@ process_command (unsigned int decoded_options_count,
     }
 
   gcc_assert (!IS_ABSOLUTE_PATH (tooldir_base_prefix));
-  tooldir_prefix2 = concat (tooldir_base_prefix, spec_machine,
+  tooldir_prefix2 = concat (tooldir_base_prefix, spec_host_machine,
 			    dir_separator_str, NULL);
 
   /* Look for tools relative to the location from which the driver is
      running, or, if that is not available, the configured prefix.  */
   tooldir_prefix
     = concat (gcc_exec_prefix ? gcc_exec_prefix : standard_exec_prefix,
-	      spec_machine, dir_separator_str,
-	      spec_version, dir_separator_str, tooldir_prefix2, NULL);
+	      spec_host_machine, dir_separator_str, spec_version,
+	      accel_dir_suffix, dir_separator_str, tooldir_prefix2, NULL);
   free (tooldir_prefix2);
 
   add_prefix (&exec_prefixes,
@@ -6749,6 +6753,7 @@ class driver
   void set_up_specs () const;
   void putenv_COLLECT_GCC (const char *argv0) const;
   void maybe_putenv_COLLECT_LTO_WRAPPER () const;
+  void maybe_putenv_OFFLOAD_TARGETS () const;
   void handle_unrecognized_options () const;
   int maybe_print_and_exit () const;
   bool prepare_infiles ();
@@ -6791,6 +6796,7 @@ driver::main (int argc, char **argv)
   set_up_specs ();
   putenv_COLLECT_GCC (argv[0]);
   maybe_putenv_COLLECT_LTO_WRAPPER ();
+  maybe_putenv_OFFLOAD_TARGETS ();
   handle_unrecognized_options ();
 
   if (!maybe_print_and_exit ())
@@ -6960,6 +6966,7 @@ driver::build_multilib_strings () const
 void
 driver::set_up_specs () const
 {
+  const char *spec_machine_suffix;
   char *specs_file;
   size_t i;
 
@@ -6983,8 +6990,8 @@ driver::set_up_specs () const
 
   /* Read specs from a file if there is one.  */
 
-  machine_suffix = concat (spec_machine, dir_separator_str,
-			   spec_version, dir_separator_str, NULL);
+  machine_suffix = concat (spec_host_machine, dir_separator_str, spec_version,
+			   accel_dir_suffix, dir_separator_str, NULL);
   just_machine_suffix = concat (spec_machine, dir_separator_str, NULL);
 
   specs_file = find_a_file (&startfile_prefixes, "specs", R_OK, true);
@@ -6994,13 +7001,18 @@ driver::set_up_specs () const
   else
     init_spec ();
 
-  /* We need to check standard_exec_prefix/just_machine_suffix/specs
+#ifdef ACCEL_COMPILER
+  spec_machine_suffix = machine_suffix;
+#else
+  spec_machine_suffix = just_machine_suffix;
+#endif
+
+  /* We need to check standard_exec_prefix/spec_machine_suffix/specs
      for any override of as, ld and libraries.  */
   specs_file = (char *) alloca (strlen (standard_exec_prefix)
-		       + strlen (just_machine_suffix) + sizeof ("specs"));
-
+		       + strlen (spec_machine_suffix) + sizeof ("specs"));
   strcpy (specs_file, standard_exec_prefix);
-  strcat (specs_file, just_machine_suffix);
+  strcat (specs_file, spec_machine_suffix);
   strcat (specs_file, "specs");
   if (access (specs_file, R_OK) == 0)
     read_specs (specs_file, true, false);
@@ -7182,8 +7194,9 @@ driver::set_up_specs () const
 
   /* If we have a GCC_EXEC_PREFIX envvar, modify it for cpp's sake.  */
   if (gcc_exec_prefix)
-    gcc_exec_prefix = concat (gcc_exec_prefix, spec_machine, dir_separator_str,
-			      spec_version, dir_separator_str, NULL);
+    gcc_exec_prefix = concat (gcc_exec_prefix, spec_host_machine,
+			      dir_separator_str, spec_version,
+			      accel_dir_suffix, dir_separator_str, NULL);
 
   /* Now we have the specs.
      Set the `valid' bits for switches that match anything in any spec.  */
@@ -7232,6 +7245,21 @@ driver::maybe_putenv_COLLECT_LTO_WRAPPER () const
       xputenv (XOBFINISH (&collect_obstack, char *));
     }
 
+}
+
+/* Set up to remember the names of offload targets.  */
+
+void
+driver::maybe_putenv_OFFLOAD_TARGETS () const
+{
+  if (strlen (OFFLOAD_TARGETS) > 0)
+    {
+      obstack_grow (&collect_obstack, "OFFLOAD_TARGET_NAMES=",
+		    sizeof ("OFFLOAD_TARGET_NAMES=") - 1);
+      obstack_grow (&collect_obstack, OFFLOAD_TARGETS,
+		    strlen (OFFLOAD_TARGETS) + 1);
+      xputenv (XOBFINISH (&collect_obstack, char *));
+    }
 }
 
 /* Reject switches that no pass was interested in.  */

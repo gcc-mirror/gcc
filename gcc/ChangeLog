@@ -1,3 +1,25 @@
+2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* gcc.c (spec_host_machine, accel_dir_suffix): New variables.
+	(process_command): Tweak path construction for the possibility
+	of being configured as an offload compiler.
+	(driver::maybe_putenv_OFFLOAD_TARGETS): New function.
+	(driver::main): Call maybe_putenv_OFFLOAD_TARGETS.
+	(driver::set_up_specs): Tweak path construction for the possibility of
+	being configured as an offload compiler.
+	* lto-wrapper.c (OFFLOAD_TARGET_NAMES_ENV): Define.
+	(offload_names, offloadbegin, offloadend): New static variables.
+	(free_array_of_ptrs, parse_env_var, access_check, compile_offload_image)
+	(compile_images_for_offload_targets, copy_file, find_offloadbeginend):
+	New static functions.
+	(run_gcc): Determine whether offload sections are present.  If so, run
+	compile_images_for_offload_targets and return the names of new generated
+	objects to linker.  If there are offload sections, but no LTO sections,
+	then return the copies of input objects without link-time recompilation.
+
 2014-11-13  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (dt_node::gen_kids): Fix placement of break statement.

@@ -49,6 +49,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-section-names.h"
 #include "collect-utils.h"
 
+/* Environment variable, used for passing the names of offload targets from GCC
+   driver to lto-wrapper.  */
+#define OFFLOAD_TARGET_NAMES_ENV	"OFFLOAD_TARGET_NAMES"
+
 enum lto_mode_d {
   LTO_MODE_NONE,			/* Not doing LTO.  */
   LTO_MODE_LTO,				/* Normal LTO.  */
@@ -63,6 +67,8 @@ static char *flto_out;
 static unsigned int nr;
 static char **input_names;
 static char **output_names;
+static char **offload_names;
+static const char *offloadbegin, *offloadend;
 static char *makefile;
 
 const char tool_name[] = "lto-wrapper";
@@ -364,6 +370,223 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
     }
 }
 
+/* Auxiliary function that frees elements of PTR and PTR itself.
+   N is number of elements to be freed.  If PTR is NULL, nothing is freed.
+   If an element is NULL, subsequent elements are not freed.  */
+
+static void **
+free_array_of_ptrs (void **ptr, unsigned n)
+{
+  if (!ptr)
+    return NULL;
+  for (unsigned i = 0; i < n; i++)
+    {
+      if (!ptr[i])
+	break;
+      free (ptr[i]);
+    }
+  free (ptr);
+  return NULL;
+}
+
+/* Parse STR, saving found tokens into PVALUES and return their number.
+   Tokens are assumed to be delimited by ':'.  If APPEND is non-null,
+   append it to every token we find.  */
+
+static unsigned
+parse_env_var (const char *str, char ***pvalues, const char *append)
+{
+  const char *curval, *nextval;
+  char **values;
+  unsigned num = 1, i;
+
+  curval = strchr (str, ':');
+  while (curval)
+    {
+      num++;
+      curval = strchr (curval + 1, ':');
+    }
+
+  values = (char**) xmalloc (num * sizeof (char*));
+  curval = str;
+  nextval = strchrnul (curval, ':');
+
+  int append_len = append ? strlen (append) : 0;
+  for (i = 0; i < num; i++)
+    {
+      int l = nextval - curval;
+      values[i] = (char*) xmalloc (l + 1 + append_len);
+      memcpy (values[i], curval, l);
+      values[i][l] = 0;
+      if (append)
+	strcat (values[i], append);
+      curval = nextval + 1;
+      nextval = strchrnul (curval, ':');
+    }
+  *pvalues = values;
+  return num;
+}
+
+/* Check whether NAME can be accessed in MODE.  This is like access,
+   except that it never considers directories to be executable.  */
+
+static int
+access_check (const char *name, int mode)
+{
+  if (mode == X_OK)
+    {
+      struct stat st;
+
+      if (stat (name, &st) < 0
+	  || S_ISDIR (st.st_mode))
+	return -1;
+    }
+
+  return access (name, mode);
+}
+
+/* Prepare a target image for offload TARGET, using mkoffload tool from
+   COMPILER_PATH.  Return the name of the resultant object file.  */
+
+static char *
+compile_offload_image (const char *target, const char *compiler_path,
+		       unsigned in_argc, char *in_argv[])
+{
+  char *filename = NULL;
+  char **argv;
+  char *suffix
+    = XALLOCAVEC (char, sizeof ("/accel//mkoffload") + strlen (target));
+  strcpy (suffix, "/accel/");
+  strcat (suffix, target);
+  strcat (suffix, "/mkoffload");
+
+  char **paths = NULL;
+  unsigned n_paths = parse_env_var (compiler_path, &paths, suffix);
+
+  const char *compiler = NULL;
+  for (unsigned i = 0; i < n_paths; i++)
+    if (access_check (paths[i], X_OK) == 0)
+      {
+	compiler = paths[i];
+	break;
+      }
+
+  if (compiler)
+    {
+      /* Generate temporary output file name.  */
+      filename = make_temp_file (".target.o");
+
+      struct obstack argv_obstack;
+      obstack_init (&argv_obstack);
+      obstack_ptr_grow (&argv_obstack, compiler);
+      obstack_ptr_grow (&argv_obstack, "-o");
+      obstack_ptr_grow (&argv_obstack, filename);
+
+      for (unsigned i = 1; i < in_argc; i++)
+	obstack_ptr_grow (&argv_obstack, in_argv[i]);
+      obstack_ptr_grow (&argv_obstack, NULL);
+
+      argv = XOBFINISH (&argv_obstack, char **);
+      fork_execute (argv[0], argv, true);
+      obstack_free (&argv_obstack, NULL);
+    }
+
+  free_array_of_ptrs ((void **) paths, n_paths);
+  return filename;
+}
+
+
+/* The main routine dealing with offloading.
+   The routine builds a target image for each offload target.  IN_ARGC and
+   IN_ARGV specify options and input object files.  As all of them could contain
+   target sections, we pass them all to target compilers.  */
+
+static void
+compile_images_for_offload_targets (unsigned in_argc, char *in_argv[])
+{
+  char **names = NULL;
+  const char *target_names = getenv (OFFLOAD_TARGET_NAMES_ENV);
+  if (!target_names)
+    return;
+  unsigned num_targets = parse_env_var (target_names, &names, NULL);
+
+  const char *compiler_path = getenv ("COMPILER_PATH");
+  if (!compiler_path)
+    goto out;
+
+  /* Prepare an image for each target and save the name of the resultant object
+     file to the OFFLOAD_NAMES array.  It is terminated by a NULL entry.  */
+  offload_names = XCNEWVEC (char *, num_targets + 1);
+  for (unsigned i = 0; i < num_targets; i++)
+    {
+      offload_names[i] = compile_offload_image (names[i], compiler_path,
+						in_argc, in_argv);
+      if (!offload_names[i])
+	fatal_error ("problem with building target image for %s\n", names[i]);
+    }
+
+ out:
+  free_array_of_ptrs ((void **) names, num_targets);
+}
+
+/* Copy a file from SRC to DEST.  */
+
+static void
+copy_file (const char *dest, const char *src)
+{
+  FILE *d = fopen (dest, "wb");
+  FILE *s = fopen (src, "rb");
+  char buffer[512];
+  while (!feof (s))
+    {
+      size_t len = fread (buffer, 1, 512, s);
+      if (ferror (s) != 0)
+	fatal_error ("reading input file");
+      if (len > 0)
+	{
+	  fwrite (buffer, 1, len, d);
+	  if (ferror (d) != 0)
+	    fatal_error ("writing output file");
+	}
+    }
+}
+
+/* Find the crtoffloadbegin.o and crtoffloadend.o files in LIBRARY_PATH, make
+   copies and store the names of the copies in offloadbegin and offloadend.  */
+
+static void
+find_offloadbeginend (void)
+{
+  char **paths = NULL;
+  const char *library_path = getenv ("LIBRARY_PATH");
+  if (!library_path)
+    return;
+  unsigned n_paths = parse_env_var (library_path, &paths, "/crtoffloadbegin.o");
+
+  unsigned i;
+  for (i = 0; i < n_paths; i++)
+    if (access_check (paths[i], R_OK) == 0)
+      {
+	size_t len = strlen (paths[i]);
+	char *tmp = xstrdup (paths[i]);
+	strcpy (paths[i] + len - strlen ("begin.o"), "end.o");
+	if (access_check (paths[i], R_OK) != 0)
+	  fatal_error ("installation error, can't find crtoffloadend.o");
+	/* The linker will delete the filenames we give it, so make
+	   copies.  */
+	offloadbegin = make_temp_file (".o");
+	offloadend = make_temp_file (".o");
+	copy_file (offloadbegin, tmp);
+	copy_file (offloadend, paths[i]);
+	free (tmp);
+	break;
+      }
+  if (i == n_paths)
+    fatal_error ("installation error, can't find crtoffloadbegin.o");
+
+  free_array_of_ptrs ((void **) paths, n_paths);
+}
+
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
 
 static void
@@ -384,6 +607,8 @@ run_gcc (unsigned argc, char *argv[])
   unsigned int decoded_options_count;
   struct obstack argv_obstack;
   int new_head_argc;
+  bool have_lto = false;
+  bool have_offload = false;
 
   /* Get the driver and options.  */
   collect_gcc = getenv ("COLLECT_GCC");
@@ -432,6 +657,9 @@ run_gcc (unsigned argc, char *argv[])
 	  close (fd);
 	  continue;
 	}
+      if (simple_object_find_section (sobj, OFFLOAD_SECTION_NAME_PREFIX ".opts",
+				      &offset, &length, &errmsg, &err))
+	have_offload = true;
       if (!simple_object_find_section (sobj, LTO_SECTION_NAME_PREFIX "." "opts",
 				       &offset, &length, &errmsg, &err))
 	{
@@ -439,6 +667,7 @@ run_gcc (unsigned argc, char *argv[])
 	  close (fd);
 	  continue;
 	}
+      have_lto = true;
       lseek (fd, file_offset + offset, SEEK_SET);
       data = (char *)xmalloc (length);
       read (fd, data, length);
@@ -632,6 +861,43 @@ run_gcc (unsigned argc, char *argv[])
 
   /* Remember at which point we can scrub args to re-use the commons.  */
   new_head_argc = obstack_object_size (&argv_obstack) / sizeof (void *);
+
+  if (have_offload)
+    {
+      compile_images_for_offload_targets (argc, argv);
+      if (offload_names)
+	{
+	  find_offloadbeginend ();
+	  for (i = 0; offload_names[i]; i++)
+	    printf ("%s\n", offload_names[i]);
+	  free_array_of_ptrs ((void **) offload_names, i);
+	}
+    }
+
+  if (offloadbegin)
+    printf ("%s\n", offloadbegin);
+
+  /* If object files contain offload sections, but do not contain LTO sections,
+     then there is no need to perform a link-time recompilation, i.e.
+     lto-wrapper is used only for a compilation of offload images.  */
+  if (have_offload && !have_lto)
+    {
+      for (i = 1; i < argc; ++i)
+	if (strncmp (argv[i], "-fresolution=", sizeof ("-fresolution=") - 1))
+	  {
+	    char *out_file;
+	    /* Can be ".o" or ".so".  */
+	    char *ext = strrchr (argv[i], '.');
+	    if (ext == NULL)
+	      out_file = make_temp_file ("");
+	    else
+	      out_file = make_temp_file (ext);
+	    /* The linker will delete the files we give it, so make copies.  */
+	    copy_file (out_file, argv[i]);
+	    printf ("%s\n", out_file);
+	  }
+      goto finish;
+    }
 
   if (lto_mode == LTO_MODE_LTO)
     {
@@ -858,6 +1124,10 @@ cont:
       free (list_option_full);
       obstack_free (&env_obstack, NULL);
     }
+
+ finish:
+  if (offloadend)
+    printf ("%s\n", offloadend);
 
   obstack_free (&argv_obstack, NULL);
 }
