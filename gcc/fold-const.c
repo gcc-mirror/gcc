@@ -7938,18 +7938,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	  if (i == count)
 	    return build_vector (type, elements);
 	}
-      else if (COMPARISON_CLASS_P (arg0)
-	       && (VECTOR_TYPE_P (type)
-		   || (INTEGRAL_TYPE_P (type) && TYPE_PRECISION (type) == 1)))
-	{
-	  tree op_type = TREE_TYPE (TREE_OPERAND (arg0, 0));
-	  enum tree_code subcode = invert_tree_comparison (TREE_CODE (arg0),
-				     HONOR_NANS (TYPE_MODE (op_type)));
-	  if (subcode != ERROR_MARK)
-	    return build2_loc (loc, subcode, type, TREE_OPERAND (arg0, 0),
-			       TREE_OPERAND (arg0, 1));
-	}
-
 
       return NULL_TREE;
 

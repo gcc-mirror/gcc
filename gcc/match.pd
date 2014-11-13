@@ -31,6 +31,14 @@ along with GCC; see the file COPYING3.  If not see
    CONSTANT_CLASS_P
    tree_expr_nonnegative_p)
 
+/* Operator lists.  */
+(define_operator_list tcc_comparison
+  lt   le   eq ne ge   gt   unordered ordered   unlt unle ungt unge uneq ltgt)
+(define_operator_list inverted_tcc_comparison
+  ge   gt   ne eq lt   le   ordered   unordered ge   gt   le   lt   ltgt uneq)
+(define_operator_list inverted_tcc_comparison_with_nans
+  unge ungt ne eq unlt unle ordered   unordered ge   gt   le   lt   ltgt uneq)
+
 
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
@@ -172,7 +180,7 @@ along with GCC; see the file COPYING3.  If not see
 (match truth_valued_p
  @0
  (if (INTEGRAL_TYPE_P (type) && TYPE_PRECISION (type) == 1)))
-(for op (lt le eq ne ge gt truth_and truth_andif truth_or truth_orif truth_xor)
+(for op (tcc_comparison truth_and truth_andif truth_or truth_orif truth_xor)
  (match truth_valued_p
   (op @0 @1)))
 (match truth_valued_p
@@ -187,7 +195,8 @@ along with GCC; see the file COPYING3.  If not see
  (ne truth_valued_p@0 integer_onep)
  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))))
 (match (logical_inverted_value @0)
- (bit_xor truth_valued_p@0 integer_onep))
+ (bit_xor truth_valued_p@0 integer_onep)
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))))
 
 /* X & !X -> 0.  */
 (simplify
@@ -197,7 +206,7 @@ along with GCC; see the file COPYING3.  If not see
 (for op (bit_ior bit_xor)
  (simplify
   (op:c truth_valued_p@0 (logical_inverted_value @0))
-  { build_one_cst (type); }))
+  { constant_boolean_node (true, type); }))
 
 (for bitop (bit_and bit_ior)
      rbitop (bit_ior bit_and)
@@ -632,3 +641,42 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
  (cond (logical_inverted_value truth_valued_p@0) @1 @2)
  (cond @0 @2 @1))
+
+
+/* Simplifications of comparisons.  */
+
+/* We can simplify a logical negation of a comparison to the
+   inverted comparison.  As we cannot compute an expression
+   operator using invert_tree_comparison we have to simulate
+   that with expression code iteration.  */
+(for cmp (tcc_comparison)
+     icmp (inverted_tcc_comparison)
+     ncmp (inverted_tcc_comparison_with_nans)
+ /* Ideally we'd like to combine the following two patterns
+    and handle some more cases by using
+      (logical_inverted_value (cmp @0 @1))
+    here but for that genmatch would need to "inline" that.
+    For now implement what forward_propagate_comparison did.  */
+ (simplify
+  (bit_not (cmp @0 @1))
+  (if (VECTOR_TYPE_P (type)
+       || (INTEGRAL_TYPE_P (type) && TYPE_PRECISION (type) == 1))
+   /* Comparison inversion may be impossible for trapping math,
+      invert_tree_comparison will tell us.  But we can't use
+      a computed operator in the replacement tree thus we have
+      to play the trick below.  */
+   (with { enum tree_code ic = invert_tree_comparison
+             (cmp, HONOR_NANS (TYPE_MODE (TREE_TYPE (@0)))); }
+    (if (ic == icmp)
+     (icmp @0 @1))
+    (if (ic == ncmp)
+     (ncmp @0 @1)))))
+ (simplify
+  (bit_xor (cmp @0 @1) integer_onep)
+  (if (INTEGRAL_TYPE_P (type))
+   (with { enum tree_code ic = invert_tree_comparison
+             (cmp, HONOR_NANS (TYPE_MODE (TREE_TYPE (@0)))); }
+    (if (ic == icmp)
+     (icmp @0 @1))
+    (if (ic == ncmp)
+     (ncmp @0 @1))))))

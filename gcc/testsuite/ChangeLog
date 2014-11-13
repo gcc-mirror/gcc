@@ -1,3 +1,7 @@
+2014-11-13  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/forwprop-28.c: Adjust.
+
 2014-11-12  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* lib/target-supports.exp (error_h): New check.
