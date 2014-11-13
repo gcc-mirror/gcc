@@ -24,12 +24,6 @@
 
 #include "vregs.h"
  
-; the G10 only has one register bank, so cannot use these optimized
-; versions.  Use the C version instead.
-
-#ifndef __RL78_G10__
-
-
 ;----------------------------------------------------------------------
 
 ; Register use:
@@ -39,19 +33,22 @@
 ; DE	count	(resL-tmp)
 ; HL	[sp+4]
 
-	.text
-	nop
-	.global	___mulsi3		; (USI a, USI b)
-___mulsi3:
+START_FUNC ___mulsi3
 	;; A is at [sp+4]
 	;; B is at [sp+8]
 	;; result is in R8..R11
 
+#ifdef __RL78_G10__
+	movw	ax, r16
+	push	ax
+	movw	ax, r18
+	push	ax
+#else
 	sel	rb2
 	push	ax
 	push	bc
 	sel	rb0
-
+#endif
 	clrw	ax
 	movw	r8, ax
 	movw	r16, ax
@@ -62,9 +59,19 @@ ___mulsi3:
 	cmpw	ax, #0xffff
 	bnz	$2f
 	movw	ax, [sp+8]
+#ifdef __RL78_G10__
+	push    bc
+	movw    bc, r8
+	xchw	ax, bc
+	subw    ax, bc
+	movw	r8, ax
+	movw    ax, bc
+	pop     bc
+#else
 	sel	rb1
 	subw	ax, r_0
 	sel	rb0
+#endif
 	br	$1f
 2:	
 	movw	bc, ax
@@ -80,9 +87,19 @@ ___mulsi3:
 	cmpw	ax, #0xffff
 	bnz	$2f
 	movw	ax, [sp+12]
+#ifdef __RL78_G10__
+	push    bc
+	movw    bc, r8
+	xchw	ax, bc
+	subw    ax, bc
+	movw	r8, ax
+	movw    ax, bc
+	pop     bc
+#else
 	sel	rb1
 	subw	ax, r_0
 	sel	rb0
+#endif
 	br	$1f
 2:	
 	movw	bc, ax
@@ -113,12 +130,28 @@ ___mulsi3:
 	movw	r10, ax
 	movw	ax, bc
 
-
 .Lmul_hisi_top:
 	movw	bc, #0
 
 .Lmul_hisi_loop:
 	shrw	ax, 1
+#ifdef __RL78_G10__
+	push	ax
+	bnc	$.Lmul_hisi_no_add_g10
+	movw	ax, r8
+	addw	ax, r10
+	movw	r8, ax
+	sknc
+	incw	r16
+	movw	ax, r16
+	addw	ax, r_2
+	movw	r16, ax
+.Lmul_hisi_no_add_g10:
+	movw	ax, r10
+	shlw	ax, 1
+	movw	r10, ax
+	pop	ax
+#else
 	bnc	$.Lmul_hisi_no_add
 	sel	rb1
 	addw	ax, bc
@@ -130,11 +163,29 @@ ___mulsi3:
 	sel	rb1
 	shlw	bc, 1
 	sel	rb0
+#endif
 	rolwc	bc, 1
 	cmpw	ax, #0
 	bz	$.Lmul_hisi_done
 
 	shrw	ax, 1
+#ifdef __RL78_G10__
+	push	ax
+	bnc	$.Lmul_hisi_no_add2_g10
+	movw	ax, r8
+	addw	ax, r10
+	movw	r8, ax
+	movw	ax, r16
+	sknc
+	incw	ax
+	addw	ax, r_2
+	movw	r16, ax
+.Lmul_hisi_no_add2_g10:
+	movw	ax, r10
+	shlw	ax, 1
+	movw	r10, ax
+	pop	ax
+#else
 	bnc	$.Lmul_hisi_no_add2
 	sel	rb1
 	addw	ax, bc
@@ -146,6 +197,7 @@ ___mulsi3:
 	sel	rb1
 	shlw	bc, 1
 	sel	rb0
+#endif
 	rolwc	bc, 1
 	cmpw	ax, #0
 	bnz	$.Lmul_hisi_loop
@@ -154,18 +206,25 @@ ___mulsi3:
 
 	movw	ax, r16
 	movw	r10, ax
-	
+
+#ifdef __RL78_G10__
+	pop	ax
+	movw	r18, ax
+	pop	ax
+	movw	r16, ax
+#else
 	sel	rb2
 	pop	bc
 	pop	ax
 	sel	rb0
+#endif
 
 	ret
+END_FUNC ___mulsi3
 
 ;----------------------------------------------------------------------
 
-	.global	___mulhi3
-___mulhi3:
+START_FUNC ___mulhi3
 	movw	r8, #0
 	movw	ax, [sp+6]
 	movw	bc, ax
@@ -179,9 +238,18 @@ ___mulhi3:
 	br	$.Lmul_hi_loop
 	
 .Lmul_hi_top:
+#ifdef __RL78_G10__
+	push	ax
+	movw	ax, r8
+	addw	ax, r_2
+	movw	r8, ax
+	pop	ax
+#else
 	sel	rb1
 	addw	ax, r_2
 	sel	rb0
+#endif
+
 .Lmul_hi_no_add:	
 	shlw	bc, 1
 .Lmul_hi_loop:
@@ -198,5 +266,4 @@ ___mulhi3:
 
 .Lmul_hi_done:
 	ret
-
-#endif
+END_FUNC ___mulhi3

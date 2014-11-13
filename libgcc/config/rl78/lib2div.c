@@ -34,41 +34,6 @@ typedef int           word_type     __attribute__ ((mode (__word__)));
 #define C3B(a,b,c) a##b##c
 #define C3(a,b,c) C3B(a,b,c)
 
-#ifdef __RL78_G10__
-
-#define UINT_TYPE	uint32_type
-#define SINT_TYPE	sint32_type
-#define BITS_MINUS_1	31
-#define NAME_MODE	si
-
-#include "rl78-divmod.h"
-
-#undef UINT_TYPE
-#undef SINT_TYPE
-#undef BITS_MINUS_1
-#undef NAME_MODE
-
-#define UINT_TYPE	uint16_type
-#define SINT_TYPE	sint16_type
-#define BITS_MINUS_1	15
-#define NAME_MODE	hi
-
-#include "rl78-divmod.h"
-
-#undef UINT_TYPE
-#undef SINT_TYPE
-#undef BITS_MINUS_1
-#undef NAME_MODE
-
-#define UINT_TYPE	uint08_type
-#define SINT_TYPE	sint08_type
-#define BITS_MINUS_1	7
-#define NAME_MODE	qi
-
-#include "rl78-divmod.h"
-
-#endif
-
 /* See the comment by the definition of LIBGCC2_UNITS_PER_WORD in
    m32c.h for why we are creating extra versions of some of the
    functions defined in libgcc2.c.  */
