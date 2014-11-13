@@ -224,6 +224,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "dbgcnt.h"
 #include "tree-chkp.h"
+#include "lto-section-names.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -2079,7 +2080,18 @@ ipa_passes (void)
     targetm.asm_out.lto_start ();
 
   if (!in_lto_p)
-    ipa_write_summaries ();
+    {
+      if (g->have_offload)
+	{
+	  section_name_prefix = OFFLOAD_SECTION_NAME_PREFIX;
+	  ipa_write_summaries (true);
+	}
+      if (flag_lto)
+	{
+	  section_name_prefix = LTO_SECTION_NAME_PREFIX;
+	  ipa_write_summaries (false);
+	}
+    }
 
   if (flag_generate_lto)
     targetm.asm_out.lto_end ();
@@ -2163,8 +2175,12 @@ symbol_table::compile (void)
     fprintf (stderr, "Performing interprocedural optimizations\n");
   state = IPA;
 
+  /* Offloading requires LTO infrastructure.  */
+  if (!in_lto_p && g->have_offload)
+    flag_generate_lto = 1;
+
   /* If LTO is enabled, initialize the streamer hooks needed by GIMPLE.  */
-  if (flag_lto)
+  if (flag_generate_lto)
     lto_streamer_hooks_init ();
 
   /* Don't run the IPA passes if there was any error or sorry messages.  */

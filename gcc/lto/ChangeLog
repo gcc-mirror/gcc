@@ -1,3 +1,17 @@
+2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* lto-object.c (lto_obj_add_section): Use section_name_prefix instead of
+	LTO_SECTION_NAME_PREFIX.
+	* lto-partition.c (lto_promote_cross_file_statics): Call
+	select_what_to_stream.
+	* lto.c (lto_section_with_id): Use section_name_prefix instead of
+	LTO_SECTION_NAME_PREFIX.
+	(read_cgraph_and_symbols): Read OFFLOAD_SECTION_NAME_PREFIX sections, if
+	being built as an offload compiler.
+
 2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* lto-lang.c: Remove redundant enum from machine_mode.

@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-nested.h"
 #include "tree-eh.h"
 #include "cilk.h"
+#include "context.h"
 
 
 /* Lowering of OpenMP parallel and workshare constructs proceeds in two
@@ -270,6 +271,16 @@ static inline bool
 is_parallel_ctx (omp_context *ctx)
 {
   return gimple_code (ctx->stmt) == GIMPLE_OMP_PARALLEL;
+}
+
+
+/* Return true if CTX is for an omp target region.  */
+
+static inline bool
+is_targetreg_ctx (omp_context *ctx)
+{
+  return gimple_code (ctx->stmt) == GIMPLE_OMP_TARGET
+	 && gimple_omp_target_kind (ctx->stmt) == GF_OMP_TARGET_KIND_REGION;
 }
 
 
@@ -1642,8 +1653,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 	      && DECL_P (decl)
 	      && is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx))
-	      && lookup_attribute ("omp declare target",
-				   DECL_ATTRIBUTES (decl)))
+	      && varpool_node::get_create (decl)->offloadable)
 	    break;
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 	      && OMP_CLAUSE_MAP_KIND (c) == OMP_CLAUSE_MAP_POINTER)
@@ -1783,8 +1793,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  decl = OMP_CLAUSE_DECL (c);
 	  if (DECL_P (decl)
 	      && is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx))
-	      && lookup_attribute ("omp declare target",
-				   DECL_ATTRIBUTES (decl)))
+	      && varpool_node::get_create (decl)->offloadable)
 	    break;
 	  if (DECL_P (decl))
 	    {
@@ -1938,26 +1947,19 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
   DECL_EXTERNAL (decl) = 0;
   DECL_CONTEXT (decl) = NULL_TREE;
   DECL_INITIAL (decl) = make_node (BLOCK);
-  bool target_p = false;
-  if (lookup_attribute ("omp declare target",
-			DECL_ATTRIBUTES (current_function_decl)))
-    target_p = true;
+  if (cgraph_node::get (current_function_decl)->offloadable)
+    cgraph_node::get_create (decl)->offloadable = 1;
   else
     {
       omp_context *octx;
       for (octx = ctx; octx; octx = octx->outer)
-	if (gimple_code (octx->stmt) == GIMPLE_OMP_TARGET
-	    && gimple_omp_target_kind (octx->stmt)
-	       == GF_OMP_TARGET_KIND_REGION)
+	if (is_targetreg_ctx (octx))
 	  {
-	    target_p = true;
+	    cgraph_node::get_create (decl)->offloadable = 1;
+	    g->have_offload = true;
 	    break;
 	  }
     }
-  if (target_p)
-    DECL_ATTRIBUTES (decl)
-      = tree_cons (get_identifier ("omp declare target"),
-		   NULL_TREE, DECL_ATTRIBUTES (decl));
 
   t = build_decl (DECL_SOURCE_LOCATION (decl),
 		  RESULT_DECL, NULL_TREE, void_type_node);
@@ -2663,8 +2665,7 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
       break;
     case GIMPLE_OMP_TARGET:
       for (; ctx != NULL; ctx = ctx->outer)
-	if (gimple_code (ctx->stmt) == GIMPLE_OMP_TARGET
-	    && gimple_omp_target_kind (ctx->stmt) == GF_OMP_TARGET_KIND_REGION)
+	if (is_targetreg_ctx (ctx))
 	  {
 	    const char *name;
 	    switch (gimple_omp_target_kind (stmt))
@@ -8281,6 +8282,7 @@ expand_omp_target (struct omp_region *region)
   if (kind == GF_OMP_TARGET_KIND_REGION)
     {
       unsigned srcidx, dstidx, num;
+      struct cgraph_node *node;
 
       /* If the target region needs data sent from the parent
 	 function, then the very first statement (except possible
@@ -8411,6 +8413,11 @@ expand_omp_target (struct omp_region *region)
 	 fixed in a following pass.  */
       push_cfun (child_cfun);
       cgraph_edge::rebuild_edges ();
+
+      /* Prevent IPA from removing child_fn as unreachable, since there are no
+	 refs from the parent function to child_fn in offload LTO mode.  */
+      node = cgraph_node::get (child_fn);
+      node->mark_force_output ();
 
       /* Some EH regions might become dead, see PR34608.  If
 	 pass_cleanup_cfg isn't the first pass to happen with the
@@ -9326,6 +9333,17 @@ lower_omp_critical (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  DECL_COMMON (decl) = 1;
 	  DECL_ARTIFICIAL (decl) = 1;
 	  DECL_IGNORED_P (decl) = 1;
+
+	  /* If '#pragma omp critical' is inside target region, the symbol must
+	     be marked for offloading.  */
+	  omp_context *octx;
+	  for (octx = ctx->outer; octx; octx = octx->outer)
+	    if (is_targetreg_ctx (octx))
+	      {
+		varpool_node::get_create (decl)->offloadable = 1;
+		break;
+	      }
+
 	  varpool_node::finalize_decl (decl);
 
 	  splay_tree_insert (critical_name_mutexes, (splay_tree_key) name,
