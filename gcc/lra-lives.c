@@ -252,8 +252,7 @@ make_hard_regno_born (int regno)
   unsigned int i;
 
   lra_assert (regno < FIRST_PSEUDO_REGISTER);
-  if (TEST_HARD_REG_BIT (lra_no_alloc_regs, regno)
-      || TEST_HARD_REG_BIT (hard_regs_live, regno))
+  if (TEST_HARD_REG_BIT (hard_regs_live, regno))
     return;
   SET_HARD_REG_BIT (hard_regs_live, regno);
   sparseset_set_bit (start_living, regno);
@@ -267,8 +266,7 @@ static void
 make_hard_regno_dead (int regno)
 {
   lra_assert (regno < FIRST_PSEUDO_REGISTER);
-  if (TEST_HARD_REG_BIT (lra_no_alloc_regs, regno)
-      || ! TEST_HARD_REG_BIT (hard_regs_live, regno))
+  if (! TEST_HARD_REG_BIT (hard_regs_live, regno))
     return;
   sparseset_set_bit (start_dying, regno);
   CLEAR_HARD_REG_BIT (hard_regs_live, regno);
@@ -662,7 +660,6 @@ process_bb_lives (basic_block bb, int &curr_point)
   sparseset_clear (pseudos_live_through_setjumps);
   REG_SET_TO_HARD_REG_SET (hard_regs_live, reg_live_out);
   AND_COMPL_HARD_REG_SET (hard_regs_live, eliminable_regset);
-  AND_COMPL_HARD_REG_SET (hard_regs_live, lra_no_alloc_regs);
   EXECUTE_IF_SET_IN_BITMAP (reg_live_out, FIRST_PSEUDO_REGISTER, j, bi)
     mark_pseudo_live (j, curr_point);
 
