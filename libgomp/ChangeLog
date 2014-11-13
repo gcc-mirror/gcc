@@ -1,5 +1,20 @@
 2014-11-13  Andrey Turetskiy  <andrey.turetskiy@intel.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Set up offload_additional_options,
+	offload_additional_lib_paths and offload_targets.
+	* testsuite/Makefile.am: Export environment variables: OFFLOAD_TARGETS,
+	OFFLOAD_ADDITIONAL_OPTIONS, OFFLOAD_ADDITIONAL_LIB_PATHS.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/lib/libgomp.exp (libgomp_init): Append
+	offload_additional_lib_paths to LD_LIBRARY_PATH.  Append
+	offload_additional_options to ALWAYS_CFLAGS.  Append liboffloadmic
+	build directory to LD_LIBRARY_PATH for intelmic offload targets.
+
+2014-11-13  Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Ilya Tocar  <ilya.tocar@intel.com>
 

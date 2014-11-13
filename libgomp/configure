@@ -616,6 +616,9 @@ OMP_LOCK_SIZE
 USE_FORTRAN_FALSE
 USE_FORTRAN_TRUE
 link_gomp
+offload_additional_lib_paths
+offload_additional_options
+offload_targets
 XLDFLAGS
 XCFLAGS
 config_path
@@ -11094,7 +11097,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11097 "configure"
+#line 11100 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11200,7 +11203,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11203 "configure"
+#line 11206 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16207,9 +16210,13 @@ else
   multilib_arg=
 fi
 
+# Get accel target and path to install tree of accel compiler
+offload_additional_options=
+offload_additional_lib_paths=
 offload_targets=
 if test x"$enable_offload_targets" != x; then
   for tgt in `echo $enable_offload_targets | sed -e 's#,# #g'`; do
+    tgt_dir=`echo $tgt | grep '=' | sed 's/.*=//'`
     tgt=`echo $tgt | sed 's/=.*//'`
     case $tgt in
       *-intelmic-* | *-intelmicemul-*)
@@ -16222,12 +16229,22 @@ if test x"$enable_offload_targets" != x; then
     else
       offload_targets=$offload_targets,$tgt_name
     fi
+    if test x"$tgt_dir" != x; then
+      offload_additional_options="$offload_additional_options -B$tgt_dir/libexec/gcc/\$(target_alias)/\$(gcc_version) -B$tgt_dir/bin"
+      offload_additional_lib_paths="$offload_additional_lib_paths:$tgt_dir/lib64:$tgt_dir/lib"
+    else
+      offload_additional_options="$offload_additional_options -B\$(libexecdir)/gcc/\$(target_alias)/\$(gcc_version) -B\$(bindir)"
+      offload_additional_lib_paths="$offload_additional_lib_paths:$toolexeclibdir"
+    fi
   done
 fi
 
 cat >>confdefs.h <<_ACEOF
 #define OFFLOAD_TARGETS "$offload_targets"
 _ACEOF
+
+
+
 
 
 # Set up the set of libraries that we need to link against for libgomp.
