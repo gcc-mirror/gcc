@@ -1418,44 +1418,17 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       int count = TYPE_VECTOR_SUBPARTS (type), i;
       tree *elts = XALLOCAVEC (tree, count);
 
-      if (code == VEC_RSHIFT_EXPR)
+      for (i = 0; i < count; i++)
 	{
-	  if (!tree_fits_uhwi_p (arg2))
-	    return NULL_TREE;
+	  tree elem1 = VECTOR_CST_ELT (arg1, i);
 
-	  unsigned HOST_WIDE_INT shiftc = tree_to_uhwi (arg2);
-	  unsigned HOST_WIDE_INT outerc = tree_to_uhwi (TYPE_SIZE (type));
-	  unsigned HOST_WIDE_INT innerc
-	    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)));
-	  if (shiftc >= outerc || (shiftc % innerc) != 0)
+	  elts[i] = const_binop (code, elem1, arg2);
+
+	  /* It is possible that const_binop cannot handle the given
+	     code and return NULL_TREE.  */
+	  if (elts[i] == NULL_TREE)
 	    return NULL_TREE;
-	  int offset = shiftc / innerc;
-	  /* The direction of VEC_RSHIFT_EXPR is endian dependent.
-	     For reductions, if !BYTES_BIG_ENDIAN then compiler picks first
-	     vector element, but last element if BYTES_BIG_ENDIAN.  */
-	  if (BYTES_BIG_ENDIAN)
-	    offset = -offset;
-	  tree zero = build_zero_cst (TREE_TYPE (type));
-	  for (i = 0; i < count; i++)
-	    {
-	      if (i + offset < 0 || i + offset >= count)
-		elts[i] = zero;
-	      else
-		elts[i] = VECTOR_CST_ELT (arg1, i + offset);
-	    }
 	}
-      else
-	for (i = 0; i < count; i++)
-	  {
-	    tree elem1 = VECTOR_CST_ELT (arg1, i);
-
-	    elts[i] = const_binop (code, elem1, arg2);
-
-	    /* It is possible that const_binop cannot handle the given
-	       code and return NULL_TREE */
-	    if (elts[i] == NULL_TREE)
-	      return NULL_TREE;
-	  }
 
       return build_vector (type, elts);
     }

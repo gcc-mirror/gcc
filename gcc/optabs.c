@@ -520,9 +520,6 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case REDUC_PLUS_EXPR:
       return reduc_plus_scal_optab;
 
-    case VEC_RSHIFT_EXPR:
-      return vec_shr_optab;
-
     case VEC_WIDEN_MULT_HI_EXPR:
       return TYPE_UNSIGNED (type) ?
 	vec_widen_umult_hi_optab : vec_widen_smult_hi_optab;
@@ -769,34 +766,6 @@ force_expand_binop (machine_mode mode, optab binoptab,
   if (x != target)
     emit_move_insn (target, x);
   return true;
-}
-
-/* Generate insns for VEC_RSHIFT_EXPR.  */
-
-rtx
-expand_vec_shift_expr (sepops ops, rtx target)
-{
-  struct expand_operand eops[3];
-  enum insn_code icode;
-  rtx rtx_op1, rtx_op2;
-  machine_mode mode = TYPE_MODE (ops->type);
-  tree vec_oprnd = ops->op0;
-  tree shift_oprnd = ops->op1;
-
-  gcc_assert (ops->code == VEC_RSHIFT_EXPR);
-
-  icode = optab_handler (vec_shr_optab, mode);
-  gcc_assert (icode != CODE_FOR_nothing);
-
-  rtx_op1 = expand_normal (vec_oprnd);
-  rtx_op2 = expand_normal (shift_oprnd);
-
-  create_output_operand (&eops[0], target, mode);
-  create_input_operand (&eops[1], rtx_op1, GET_MODE (rtx_op1));
-  create_convert_operand_from_type (&eops[2], rtx_op2, TREE_TYPE (shift_oprnd));
-  expand_insn (icode, 3, eops);
-
-  return eops[0].value;
 }
 
 /* Create a new vector value in VMODE with all elements set to OP.  The

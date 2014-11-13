@@ -9142,12 +9142,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
         return temp;
       }
 
-    case VEC_RSHIFT_EXPR:
-      {
-	target = expand_vec_shift_expr (ops, target);
-	return target;
-      }
-
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_LO_EXPR:
       {
