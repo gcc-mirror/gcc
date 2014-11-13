@@ -1,3 +1,14 @@
+2014-11-13  Marek Polacek  <polacek@redhat.com>
+
+	* intrinsics/access.c: Include <stdlib.h>.
+	* intrinsics/chdir.c: Likewise.
+	* intrinsics/chmod.c: Likewise.
+	* intrinsics/link.c: Likewise.
+	* intrinsics/perror.c: Likewise.
+	* intrinsics/rename.c: Likewise.
+	* intrinsics/symlnk.c: Likewise.
+	* intrinsics/unlink.c: Likewise.
+
 2014-11-13  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/60324

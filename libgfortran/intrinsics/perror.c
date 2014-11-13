@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 
 /* SUBROUTINE PERROR(STRING)
    CHARACTER(len=*), INTENT(IN) :: STRING   */
