@@ -1,3 +1,10 @@
+2014-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/tm.texi.in (SELECT_CC_MODE): Update example.
+	(REVERSIBLE_CC_MODE): Fix example.
+	(REVERSE_CONDITION): Fix typo.
+	* doc/tm.texi: Regenerate.
+
 2014-11-13  Tom de Vries  <tom@codesourcery.com>
 
 	* omp-low.c (pass_data_expand_omp): Set properties_provided to
@@ -26,7 +33,7 @@
 
 2014-11-14  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	* gcc/lra-lives.c (struct bb_data): Rename to ...
+	* lra-lives.c (struct bb_data): Rename to ...
 	(struct bb_data_pseudos): ... this.
 	(initiate_live_solver): Update struct name.
 
