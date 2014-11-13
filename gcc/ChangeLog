@@ -1,3 +1,8 @@
+2014-11-13  Teresa Johnson  <tejohnson@google.com>
+
+	PR tree-optimization/63841
+	* tree.c (initializer_zerop): A clobber does not zero initialize.
+
 2014-11-13  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* optabs.c (prepare_operand): Gracefully fail if the mode of X
