@@ -392,7 +392,7 @@ Objective-C and Objective-C++ Dialects}.
 -fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts -flive-range-shrinkage @gol
 -floop-block -floop-interchange -floop-strip-mine -floop-nest-optimize @gol
--floop-parallelize-all -flto -flto-compression-level @gol
+-floop-parallelize-all -flra-remat -flto -flto-compression-level @gol
 -flto-partition=@var{alg} -flto-report -flto-report-wpa -fmerge-all-constants @gol
 -fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
 -fmove-loop-invariants -fno-branch-count-reg @gol
@@ -7183,6 +7183,7 @@ also turns on the following optimization flags:
 -fipa-sra @gol
 -fipa-icf @gol
 -fisolate-erroneous-paths-dereference @gol
+-flra-remat @gol
 -foptimize-sibling-calls @gol
 -foptimize-strlen @gol
 -fpartial-inlining @gol
@@ -7810,6 +7811,14 @@ stack slot, and as a result function stack frames are larger.
 Control the verbosity of the dump file for the integrated register allocator.
 The default value is 5.  If the value @var{n} is greater or equal to 10,
 the dump output is sent to stderr using the same format as @var{n} minus 10.
+
+@item -flra-remat
+@opindex fcaller-saves
+Enable CFG-sensitive rematerialization in LRA.  Instead of loading
+values of spilled pseudos, LRA tries to rematerialize (recalculate)
+values if it is profitable.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fdelayed-branch
 @opindex fdelayed-branch

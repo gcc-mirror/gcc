@@ -1304,6 +1304,7 @@ OBJS = \
 	lra-constraints.o \
 	lra-eliminations.o \
 	lra-lives.o \
+	lra-remat.o \
 	lra-spills.o \
 	lto-cgraph.o \
 	lto-streamer.o \

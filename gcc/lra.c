@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.	If not see
        generated;
      o Some pseudos might be spilled to assign hard registers to
        new reload pseudos;
+     o Recalculating spilled pseudo values (rematerialization);
      o Changing spilled pseudos to stack memory or their equivalences;
      o Allocation stack memory changes the address displacement and
        new iteration is needed.
@@ -57,19 +58,26 @@ along with GCC; see the file COPYING3.	If not see
  -----------      |              ----------------                   |
                   |                      |                          |
                   |                      V         New              |
-         ----------------    No    ------------  pseudos   -------------------
-        | Spilled pseudo | change |Constraints:| or insns | Inheritance/split |
-        |    to memory   |<-------|    RTL     |--------->|  transformations  |
-        |  substitution  |        | transfor-  |          |    in EBB scope   |
-         ----------------         |  mations   |           -------------------
-                |                   ------------
-                V
-    -------------------------
-   | Hard regs substitution, |
-   |  devirtalization, and   |------> Finish
-   | restoring scratches got |
-   |         memory          |
-    -------------------------
+                  |                 ------------  pseudos   -------------------
+                  |                |Constraints:| or insns | Inheritance/split |
+                  |                |    RTL     |--------->|  transformations  |
+                  |                | transfor-  |          |    in EBB scope   |
+                  | substi-        |  mations   |           -------------------
+                  | tutions         ------------
+                  |                     | No change
+          ----------------              V
+         | Spilled pseudo |      -------------------
+         |    to memory   |<----| Rematerialization |
+         |  substitution  |      -------------------
+          ----------------        
+                  | No susbtitions
+                  V                
+      -------------------------
+     | Hard regs substitution, |
+     |  devirtalization, and   |------> Finish
+     | restoring scratches got |
+     |         memory          |
+      -------------------------
 
    To speed up the process:
      o We process only insns affected by changes on previous
@@ -849,38 +857,38 @@ collect_non_operand_hard_regs (rtx *x, lra_insn_recog_data_t data,
     {
       if ((regno = REGNO (op)) >= FIRST_PSEUDO_REGISTER)
 	return list;
+      /* Process all regs even unallocatable ones as we need info
+	 about all regs for rematerialization pass.  */
       for (last = regno + hard_regno_nregs[regno][mode];
 	   regno < last;
 	   regno++)
-	if (! TEST_HARD_REG_BIT (lra_no_alloc_regs, regno)
-	    || TEST_HARD_REG_BIT (eliminable_regset, regno))
-	  {
-	    for (curr = list; curr != NULL; curr = curr->next)
-	      if (curr->regno == regno && curr->subreg_p == subreg_p
-		  && curr->biggest_mode == mode)
-		{
-		  if (curr->type != type)
-		    curr->type = OP_INOUT;
-		  if (curr->early_clobber != early_clobber)
-		    curr->early_clobber = true;
-		  break;
-		}
-	    if (curr == NULL)
+	{
+	  for (curr = list; curr != NULL; curr = curr->next)
+	    if (curr->regno == regno && curr->subreg_p == subreg_p
+		&& curr->biggest_mode == mode)
 	      {
-		/* This is a new hard regno or the info can not be
-		   integrated into the found structure.	 */
-#ifdef STACK_REGS
-		early_clobber
-		  = (early_clobber
-		     /* This clobber is to inform popping floating
-			point stack only.  */
-		     && ! (FIRST_STACK_REG <= regno
-			   && regno <= LAST_STACK_REG));
-#endif
-		list = new_insn_reg (data->insn, regno, type, mode, subreg_p,
-				     early_clobber, list);
+		if (curr->type != type)
+		  curr->type = OP_INOUT;
+		if (curr->early_clobber != early_clobber)
+		  curr->early_clobber = true;
+		break;
 	      }
-	  }
+	  if (curr == NULL)
+	    {
+	      /* This is a new hard regno or the info can not be
+		 integrated into the found structure.	 */
+#ifdef STACK_REGS
+	      early_clobber
+		= (early_clobber
+		   /* This clobber is to inform popping floating
+		      point stack only.  */
+		   && ! (FIRST_STACK_REG <= regno
+			 && regno <= LAST_STACK_REG));
+#endif
+	      list = new_insn_reg (data->insn, regno, type, mode, subreg_p,
+				   early_clobber, list);
+	    }
+	}
       return list;
     }
   switch (code)
@@ -1456,10 +1464,8 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x, int uid,
   if (REG_P (x))
     {
       regno = REGNO (x);
-      if (regno < FIRST_PSEUDO_REGISTER
-	  && TEST_HARD_REG_BIT (lra_no_alloc_regs, regno)
-	  && ! TEST_HARD_REG_BIT (eliminable_regset, regno))
-	return;
+      /* Process all regs even unallocatable ones as we need info about
+	 all regs for rematerialization pass.  */
       expand_reg_info ();
       if (bitmap_set_bit (&lra_reg_info[regno].insn_bitmap, uid))
 	{
@@ -2152,9 +2158,6 @@ bitmap_head lra_optional_reload_pseudos;
    pass.  */
 bitmap_head lra_subreg_reload_pseudos;
 
-/* First UID of insns generated before a new spill pass.  */
-int lra_constraint_new_insn_uid_start;
-
 /* File used for output of LRA debug information.  */
 FILE *lra_dump_file;
 
@@ -2252,7 +2255,6 @@ lra (FILE *f)
   lra_curr_reload_num = 0;
   push_insns (get_last_insn (), NULL);
   /* It is needed for the 1st coalescing.  */
-  lra_constraint_new_insn_uid_start = get_max_uid ();
   bitmap_initialize (&lra_inheritance_pseudos, &reg_obstack);
   bitmap_initialize (&lra_split_regs, &reg_obstack);
   bitmap_initialize (&lra_optional_reload_pseudos, &reg_obstack);
@@ -2345,12 +2347,21 @@ lra (FILE *f)
 	  lra_create_live_ranges (lra_reg_spill_p);
 	  live_p = true;
 	}
+      /* Now we know what pseudos should be spilled.  Try to
+	 rematerialize them first.  */
+      if (lra_remat ())
+	{
+	  /* We need full live info -- see the comment above.  */
+	  lra_create_live_ranges (lra_reg_spill_p);
+	  live_p = true;
+	  if (! lra_need_for_spills_p ())
+	    break;
+	}
       lra_spill ();
       /* Assignment of stack slots changes elimination offsets for
 	 some eliminations.  So update the offsets here.  */
       lra_eliminate (false, false);
       lra_constraint_new_regno_start = max_reg_num ();
-      lra_constraint_new_insn_uid_start = get_max_uid ();
       lra_assignment_iter_after_spill = 0;
     }
   restore_scratches ();

@@ -328,7 +328,6 @@ extern bitmap_head lra_inheritance_pseudos;
 extern bitmap_head lra_split_regs;
 extern bitmap_head lra_subreg_reload_pseudos;
 extern bitmap_head lra_optional_reload_pseudos;
-extern int lra_constraint_new_insn_uid_start;
 
 /* lra-constraints.c: */
 
@@ -339,6 +338,7 @@ extern int lra_constraint_iter;
 extern bool lra_risky_transformations_p;
 extern int lra_inheritance_iter;
 extern int lra_undo_inheritance_iter;
+extern bool lra_constrain_insn (rtx_insn *);
 extern bool lra_constraints (bool);
 extern void lra_constraints_init (void);
 extern void lra_constraints_finish (void);
@@ -389,13 +389,17 @@ extern bool lra_need_for_spills_p (void);
 extern void lra_spill (void);
 extern void lra_final_code_change (void);
 
+/* lra-remat.c:  */
+
+extern bool lra_remat (void);
 
 /* lra-elimination.c: */
 
 extern void lra_debug_elim_table (void);
 extern int lra_get_elimination_hard_regno (int);
-extern rtx lra_eliminate_regs_1 (rtx_insn *, rtx, machine_mode, bool,
-				 bool, bool);
+extern rtx lra_eliminate_regs_1 (rtx_insn *, rtx, machine_mode,
+				 bool, bool, HOST_WIDE_INT, bool);
+extern void eliminate_regs_in_insn (rtx_insn *insn, bool, bool, HOST_WIDE_INT);
 extern void lra_eliminate (bool, bool);
 
 extern void lra_eliminate_reg_if_possible (rtx *);
