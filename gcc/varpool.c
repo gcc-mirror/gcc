@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-alias.h"
 #include "gimple.h"
 #include "lto-streamer.h"
+#include "context.h"
 
 const char * const tls_model_names[]={"none", "tls-emulated", "tls-real",
 				      "tls-global-dynamic", "tls-local-dynamic",
@@ -164,6 +165,14 @@ varpool_node::get_create (tree decl)
 
   node = varpool_node::create_empty ();
   node->decl = decl;
+
+  if (flag_openmp
+      && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
+    {
+      node->offloadable = 1;
+      g->have_offload = true;
+    }
+
   node->register_symbol ();
   return node;
 }

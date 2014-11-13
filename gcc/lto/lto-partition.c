@@ -952,6 +952,8 @@ lto_promote_cross_file_statics (void)
 
   gcc_assert (flag_wpa);
 
+  select_what_to_stream (false);
+
   /* First compute boundaries.  */
   n_sets = ltrans_partitions.length ();
   for (i = 0; i < n_sets; i++)

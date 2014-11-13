@@ -450,6 +450,13 @@ public:
   /* Set when init priority is set.  */
   unsigned in_init_priority_hash : 1;
 
+  /* Set when symbol needs to be streamed into LTO bytecode for LTO, or in case
+     of offloading, for separate compilation for a different target.  */
+  unsigned need_lto_streaming : 1;
+
+  /* Set when symbol can be streamed into bytecode for offloading.  */
+  unsigned offloadable : 1;
+
 
   /* Ordering of all symtab entries.  */
   int order;

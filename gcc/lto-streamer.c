@@ -60,6 +60,7 @@ struct lto_stats_d lto_stats;
 static bitmap_obstack lto_obstack;
 static bool lto_obstack_initialized;
 
+const char *section_name_prefix = LTO_SECTION_NAME_PREFIX;
 
 /* Return a string representing LTO tag TAG.  */
 
@@ -189,7 +190,7 @@ lto_get_section_name (int section_type, const char *name, struct lto_file_decl_d
     sprintf (post, "." HOST_WIDE_INT_PRINT_HEX_PURE, f->id);
   else
     sprintf (post, "." HOST_WIDE_INT_PRINT_HEX_PURE, get_random_seed (false)); 
-  return concat (LTO_SECTION_NAME_PREFIX, sep, add, post, NULL);
+  return concat (section_name_prefix, sep, add, post, NULL);
 }
 
 

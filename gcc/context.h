@@ -33,6 +33,9 @@ class context
 public:
   context ();
 
+  /* The flag shows if there are symbols to be streamed for offloading.  */
+  bool have_offload;
+
   /* Pass-management.  */
 
   pass_manager *get_passes () { gcc_assert (m_passes); return m_passes; }

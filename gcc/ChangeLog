@@ -1,3 +1,51 @@
+2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* cgraph.c: Include context.h.
+	(cgraph_node::create): Set node->offloadable and g->have_offload if
+	decl have "omp declare target" attribute.
+	* cgraph.h (symtab_node): Add need_lto_streaming and offloadable flags.
+	* cgraphunit.c: Include lto-section-names.h.
+	(ipa_passes): Call ipa_write_summaries if there is something to write to
+	OFFLOAD_SECTION_NAME_PREFIX sections.
+	(symbol_table::compile): Set flag_generate_lto if there is something to
+	offload.
+	Replace flag_lto with flag_generate_lto before lto_streamer_hooks_init.
+	* context.c (gcc::context::context): Initialize have_offload with false.
+	* context.h (class context): Add have_offload flag.
+	* ipa-inline-analysis.c (inline_generate_summary): Do not exit under
+	flag_generate_lto.
+	(inline_free_summary): Always remove hooks.
+	* lto-cgraph.c (referenced_from_other_partition_p): Ignore references
+	from non-offloadable nodes while streaming a node into offload section.
+	(reachable_from_other_partition_p): Likewise.
+	(select_what_to_stream): New function.
+	(compute_ltrans_boundary): Do not call
+	lto_set_symtab_encoder_in_partition if the node should not be streamed.
+	* lto-section-names.h (OFFLOAD_SECTION_NAME_PREFIX): Define.
+	(section_name_prefix): Declare.
+	* lto-streamer.c (section_name_prefix): New variable.
+	(lto_get_section_name): Use section_name_prefix instead of
+	LTO_SECTION_NAME_PREFIX.
+	* lto-streamer.h (select_what_to_stream): Declare.
+	* omp-low.c: Include context.h.
+	(is_targetreg_ctx): New function.
+	(scan_sharing_clauses): Use offloadable flag, instead of an attribute.
+	(create_omp_child_function, check_omp_nesting_restrictions): Use new
+	is_targetreg_ctx function.  Replace usage of "omp declare target"
+	attribute with a cgraph_node flag offloadable.
+	(expand_omp_target): Set mark_force_output for offloadable functions.
+	(lower_omp_critical): Set offloadable flag for omp critical symbol.
+	* passes.c (ipa_write_summaries): New argument offload_lto_mode.  Call
+	select_what_to_stream.  Do not call lto_set_symtab_encoder_in_partition
+	if the node should not be streamed out.
+	* tree-pass.h (ipa_write_summaries): New bool argument.
+	* varpool.c: Include context.h.
+	(varpool_node::get_create): Set node->offloadable and g->have_offload if
+	decl have "omp declare target" attribute.
+
 2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
