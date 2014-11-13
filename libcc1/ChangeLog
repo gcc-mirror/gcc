@@ -1,3 +1,10 @@
+2014-11-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (libcc1_cv_lib_sockets): Check for -lsocket -lnsl.
+	* configure: Regenerate.
+	* connection.cc: Include <string.h>.
+        * libcc1.cc (libcc1_compile): Use AF_UNIX instead of AF_LOCAL.
+
 2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR target/63610

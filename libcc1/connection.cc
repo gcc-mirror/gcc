@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <string>
 #include <unistd.h>
 #include <sys/types.h>
+#include <string.h>
 #include <errno.h>
 #include "marshall.hh"
 #include "connection.hh"
