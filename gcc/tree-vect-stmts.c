@@ -5495,7 +5495,8 @@ vect_gen_perm_mask_any (tree vectype, const unsigned char *sel)
   return mask_vec;
 }
 
-/* Checked version of vect_gen_perm_mask_any.  Asserts can_vec_perm_p.  */
+/* Checked version of vect_gen_perm_mask_any.  Asserts can_vec_perm_p,
+   i.e. that the target supports the pattern _for arbitrary input vectors_.  */
 
 tree
 vect_gen_perm_mask_checked (tree vectype, const unsigned char *sel)

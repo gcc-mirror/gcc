@@ -3083,6 +3083,41 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   *ret_min_profitable_estimate = min_profitable_estimate;
 }
 
+/* Writes into SEL a mask for a vec_perm, equivalent to a vec_shr by OFFSET
+   vector elements (not bits) for a vector of mode MODE.  */
+static void
+calc_vec_perm_mask_for_shift (enum machine_mode mode, unsigned int offset,
+			      unsigned char *sel)
+{
+  unsigned int i, nelt = GET_MODE_NUNITS (mode);
+
+  for (i = 0; i < nelt; i++)
+    sel[i] = (BYTES_BIG_ENDIAN ? i - offset : i + offset) & (2*nelt - 1);
+}
+
+/* Checks whether the target supports whole-vector shifts for vectors of mode
+   MODE.  This is the case if _either_ the platform handles vec_shr_optab, _or_
+   it supports vec_perm_const with masks for all necessary shift amounts.  */
+static bool
+have_whole_vector_shift (enum machine_mode mode)
+{
+  if (optab_handler (vec_shr_optab, mode) != CODE_FOR_nothing)
+    return true;
+
+  if (direct_optab_handler (vec_perm_const_optab, mode) == CODE_FOR_nothing)
+    return false;
+
+  unsigned int i, nelt = GET_MODE_NUNITS (mode);
+  unsigned char *sel = XALLOCAVEC (unsigned char, nelt);
+
+  for (i = nelt/2; i >= 1; i/=2)
+    {
+      calc_vec_perm_mask_for_shift (mode, i, sel);
+      if (!can_vec_perm_p (mode, false, sel))
+	return false;
+    }
+  return true;
+}
 
 /* TODO: Close dependency between vect_model_*_cost and vectorizable_*
    functions. Design better to avoid maintenance issues.  */
@@ -3185,7 +3220,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
 	  /* We have a whole vector shift available.  */
 	  if (VECTOR_MODE_P (mode)
 	      && optab_handler (optab, mode) != CODE_FOR_nothing
-	      && optab_handler (vec_shr_optab, mode) != CODE_FOR_nothing)
+	      && have_whole_vector_shift (mode))
 	    {
 	      /* Final reduction via vector shifts and the reduction operator.
 		 Also requires scalar extract.  */
@@ -3788,7 +3823,6 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
   return init_def;
 }
 
-
 /* Function vect_create_epilog_for_reduction
 
    Create code at the loop-epilog to finalize the result of a reduction
@@ -4212,17 +4246,10 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
     }
   else
     {
-      enum tree_code shift_code = ERROR_MARK;
-      bool have_whole_vector_shift = true;
-      int bit_offset;
+      bool reduce_with_shift = have_whole_vector_shift (mode);
       int element_bitsize = tree_to_uhwi (bitsize);
       int vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype));
       tree vec_temp;
-
-      if (optab_handler (vec_shr_optab, mode) != CODE_FOR_nothing)
-        shift_code = VEC_RSHIFT_EXPR;
-      else
-        have_whole_vector_shift = false;
 
       /* Regardless of whether we have a whole vector shift, if we're
          emulating the operation via tree-vect-generic, we don't want
@@ -4231,18 +4258,24 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
       /* ??? It might be better to emit a reduction tree code here, so that
          tree-vect-generic can expand the first round via bit tricks.  */
       if (!VECTOR_MODE_P (mode))
-        have_whole_vector_shift = false;
+        reduce_with_shift = false;
       else
         {
           optab optab = optab_for_tree_code (code, vectype, optab_default);
           if (optab_handler (optab, mode) == CODE_FOR_nothing)
-            have_whole_vector_shift = false;
+            reduce_with_shift = false;
         }
 
-      if (have_whole_vector_shift && !slp_reduc)
+      if (reduce_with_shift && !slp_reduc)
         {
+          int nelements = vec_size_in_bits / element_bitsize;
+          unsigned char *sel = XALLOCAVEC (unsigned char, nelements);
+
+          int elt_offset;
+
+          tree zero_vec = build_zero_cst (vectype);
           /*** Case 2: Create:
-             for (offset = VS/2; offset >= element_size; offset/=2)
+             for (offset = nelements/2; offset >= 1; offset/=2)
                 {
                   Create:  va' = vec_shift <va, offset>
                   Create:  va = vop <va, va'>
@@ -4254,14 +4287,15 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
 
           vec_dest = vect_create_destination_var (scalar_dest, vectype);
           new_temp = new_phi_result;
-          for (bit_offset = vec_size_in_bits/2;
-               bit_offset >= element_bitsize;
-               bit_offset /= 2)
+          for (elt_offset = nelements / 2;
+               elt_offset >= 1;
+               elt_offset /= 2)
             {
-              tree bitpos = size_int (bit_offset);
-
-              epilog_stmt = gimple_build_assign_with_ops (shift_code,
-                                               vec_dest, new_temp, bitpos);
+              calc_vec_perm_mask_for_shift (mode, elt_offset, sel);
+              tree mask = vect_gen_perm_mask_any (vectype, sel);
+	      epilog_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR,
+							  vec_dest, new_temp,
+							  zero_vec, mask);
               new_name = make_ssa_name (vec_dest, epilog_stmt);
               gimple_assign_set_lhs (epilog_stmt, new_name);
               gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
@@ -4277,8 +4311,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
         }
       else
         {
-          tree rhs;
-
           /*** Case 3: Create:
              s = extract_field <v_out2, 0>
              for (offset = element_size;
@@ -4296,11 +4328,12 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
           vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype));
           FOR_EACH_VEC_ELT (new_phis, i, new_phi)
             {
+              int bit_offset;
               if (gimple_code (new_phi) == GIMPLE_PHI)
                 vec_temp = PHI_RESULT (new_phi);
               else
                 vec_temp = gimple_assign_lhs (new_phi);
-              rhs = build3 (BIT_FIELD_REF, scalar_type, vec_temp, bitsize,
+              tree rhs = build3 (BIT_FIELD_REF, scalar_type, vec_temp, bitsize,
                             bitsize_zero_node);
               epilog_stmt = gimple_build_assign (new_scalar_dest, rhs);
               new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
