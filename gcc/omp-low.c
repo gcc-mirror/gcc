@@ -8801,7 +8801,7 @@ const pass_data pass_data_expand_omp =
   OPTGROUP_NONE, /* optinfo_flags */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
-  0, /* properties_provided */
+  PROP_gimple_eomp, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
   0, /* todo_flags_finish */
@@ -8815,13 +8815,18 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  virtual unsigned int execute (function *)
     {
-      return ((flag_openmp != 0 || flag_openmp_simd != 0
-	       || flag_cilkplus != 0) && !seen_error ());
-    }
+      bool gate = ((flag_openmp != 0 || flag_openmp_simd != 0
+		    || flag_cilkplus != 0) && !seen_error ());
 
-  virtual unsigned int execute (function *) { return execute_expand_omp (); }
+      /* This pass always runs, to provide PROP_gimple_eomp.
+	 But there is nothing to do unless -fopenmp is given.  */
+      if (!gate)
+	return 0;
+
+      return execute_expand_omp ();
+    }
 
 }; // class pass_expand_omp
 
@@ -8831,6 +8836,45 @@ gimple_opt_pass *
 make_pass_expand_omp (gcc::context *ctxt)
 {
   return new pass_expand_omp (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_expand_omp_ssa =
+{
+  GIMPLE_PASS, /* type */
+  "ompexpssa", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  PROP_cfg | PROP_ssa, /* properties_required */
+  PROP_gimple_eomp, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_cleanup_cfg | TODO_rebuild_alias, /* todo_flags_finish */
+};
+
+class pass_expand_omp_ssa : public gimple_opt_pass
+{
+public:
+  pass_expand_omp_ssa (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_expand_omp_ssa, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *fun)
+    {
+      return !(fun->curr_properties & PROP_gimple_eomp);
+    }
+  virtual unsigned int execute (function *) { return execute_expand_omp (); }
+
+}; // class pass_expand_omp_ssa
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_expand_omp_ssa (gcc::context *ctxt)
+{
+  return new pass_expand_omp_ssa (ctxt);
 }
 
 /* Routines to lower OpenMP directives into OMP-GIMPLE.  */

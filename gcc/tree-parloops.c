@@ -1753,7 +1753,6 @@ gen_parallel_loop (struct loop *loop,
   tree many_iterations_cond, type, nit;
   tree arg_struct, new_arg_struct;
   gimple_seq stmts;
-  basic_block parallel_head;
   edge entry, exit;
   struct clsn_data clsn_data;
   unsigned prob;
@@ -1891,8 +1890,8 @@ gen_parallel_loop (struct loop *loop,
   cond_stmt = last_stmt (loop->header);
   if (cond_stmt)
     loc = gimple_location (cond_stmt);
-  parallel_head = create_parallel_loop (loop, create_loop_fn (loc), arg_struct,
-					new_arg_struct, n_threads, loc);
+  create_parallel_loop (loop, create_loop_fn (loc), arg_struct,
+			new_arg_struct, n_threads, loc);
   if (reduction_list->elements () > 0)
     create_call_for_reduction (loop, reduction_list, &clsn_data);
 
@@ -1906,13 +1905,6 @@ gen_parallel_loop (struct loop *loop,
      removed statements.  */
   FOR_EACH_LOOP (loop, 0)
     free_numbers_of_iterations_estimates_loop (loop);
-
-  /* Expand the parallel constructs.  We do it directly here instead of running
-     a separate expand_omp pass, since it is more efficient, and less likely to
-     cause troubles with further analyses not being able to deal with the
-     OMP trees.  */
-
-  omp_expand_local (parallel_head);
 }
 
 /* Returns true when LOOP contains vector phi nodes.  */
@@ -2284,7 +2276,11 @@ pass_parallelize_loops::execute (function *fun)
     return 0;
 
   if (parallelize_loops ())
-    return TODO_cleanup_cfg | TODO_rebuild_alias;
+    {
+      fun->curr_properties &= ~(PROP_gimple_eomp);
+      return TODO_update_ssa;
+    }
+
   return 0;
 }
 

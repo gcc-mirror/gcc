@@ -1,3 +1,23 @@
+2014-11-13  Tom de Vries  <tom@codesourcery.com>
+
+	* omp-low.c (pass_data_expand_omp): Set properties_provided to
+	PROP_gimple_eomp.
+	(pass_expand_omp::gate): Remove function.  Move gate expression to ...
+	(pass_expand_omp::execute): ... here, as new variable gate.  Add early
+	exit if gate is false.
+	(pass_data pass_data_expand_omp_ssa): New pass_data.
+	(class pass_expand_omp_ssa): New pass.
+	(make_pass_expand_omp_ssa): New function.
+	* passes.def (pass_parallelize_loops): Use PUSH_INSERT_PASSES_WITHIN
+	instead of NEXT_PASS.
+	(pass_expand_omp_ssa): Add after pass_parallelize_loops.
+	* tree-parloops.c (gen_parallel_loop): Remove call to omp_expand_local.
+	(pass_parallelize_loops::execute): Don't do cleanups TODO_cleanup_cfg
+	and TODO_rebuild_alias yet.  Add TODO_update_ssa.  Set
+	cfun->omp_expand_needed.
+	* tree-pass.h: Add define PROP_gimple_eomp.
+	(make_pass_expand_omp_ssa): Declare.
+
 2014-11-13  Marek Polacek  <polacek@redhat.com>
 
 	* tree.h (TYPE_OVERFLOW_SANITIZED): Define.
