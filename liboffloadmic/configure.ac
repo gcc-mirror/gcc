@@ -42,6 +42,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_CONFIG_FILES([Makefile liboffloadmic_host.spec liboffloadmic_target.spec])
 AM_ENABLE_MULTILIB(, ..)
+AC_CONFIG_SUBDIRS(plugin)
 AC_FUNC_ALLOCA
 AC_CHECK_HEADERS([mm_malloc.h], [], [AC_MSG_ERROR(["Couldn't find mm_malloc.h"])])
 AC_CHECK_FUNCS([__secure_getenv secure_getenv])
