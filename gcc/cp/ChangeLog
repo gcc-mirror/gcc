@@ -1,3 +1,12 @@
+2014-11-13  Kai Tietz  <ktietz@redhat.com>
+
+	* cp-tree.h (cp_build_function_call): Remove prototype.
+	(cp_build_addr_expr_strict): Likewise.
+	(build_typed_address): Likewise.
+	* typeck.c (build_typed_address): Removed.
+	(cp_build_addr_expr_strict): Make static.
+	(cp_build_function_call): Likewise.
+
 2014-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	DR 1510
