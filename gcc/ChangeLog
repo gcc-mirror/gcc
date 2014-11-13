@@ -1,3 +1,9 @@
+2014-11-13  Marek Polacek  <polacek@redhat.com>
+
+	* tree.h (TYPE_OVERFLOW_SANITIZED): Define.
+	* fold-const.c (fold_binary_loc): Use it.
+	* match.pd: Likewise.
+
 2014-11-14  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc/lra-lives.c (struct bb_data): Rename to ...
