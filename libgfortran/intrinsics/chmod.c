@@ -28,6 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined(HAVE_SYS_STAT_H)
 
 #include <string.h>	/* For memcpy. */
+#include <stdlib.h>	/* For free.  */
 #include <sys/stat.h>	/* For stat, chmod and umask.  */
 
 
