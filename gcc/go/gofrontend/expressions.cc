@@ -12791,6 +12791,16 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 	{
 	case EXPRESSION_UNKNOWN_REFERENCE:
 	  name = name_expr->unknown_expression()->name();
+	  if (type->named_type() != NULL)
+	    {
+	      // If the named object found for this field name comes from a
+	      // different package than the struct it is a part of, do not count
+	      // this incorrect lookup as a usage of the object's package.
+	      no = name_expr->unknown_expression()->named_object();
+	      if (no->package() != NULL
+		  && no->package() != type->named_type()->named_object()->package())
+		no->package()->forget_usage(name_expr);
+	    }
 	  break;
 
 	case EXPRESSION_CONST_REFERENCE:

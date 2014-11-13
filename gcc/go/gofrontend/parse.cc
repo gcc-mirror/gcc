@@ -199,7 +199,7 @@ Parse::qualified_ident(std::string* pname, Named_object** ppackage)
       return false;
     }
 
-  package->package_value()->set_used();
+  package->package_value()->note_usage();
 
   token = this->advance_token();
   if (!token->is_identifier())
@@ -2401,7 +2401,7 @@ Parse::operand(bool may_be_sink, bool* is_parenthesized)
 		return Expression::make_error(location);
 	      }
 	    package = named_object->package_value();
-	    package->set_used();
+	    package->note_usage();
 	    id = this->peek_token()->identifier();
 	    is_exported = this->peek_token()->is_identifier_exported();
 	    packed = this->gogo_->pack_hidden_name(id, is_exported);
@@ -3242,9 +3242,12 @@ Parse::id_to_expression(const std::string& name, Location location,
     case Named_object::NAMED_OBJECT_TYPE_DECLARATION:
       {
 	// These cases can arise for a field name in a composite
-	// literal.
+	// literal.  Keep track of these as they might be fake uses of
+	// the related package.
 	Unknown_expression* ue =
 	  Expression::make_unknown_reference(named_object, location);
+	if (named_object->package() != NULL)
+	  named_object->package()->note_fake_usage(ue);
 	if (this->is_erroneous_function_)
 	  ue->set_no_error_message();
 	return ue;

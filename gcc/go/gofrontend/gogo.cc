@@ -1412,7 +1412,7 @@ Gogo::lookup(const std::string& name, Named_object** pfunction) const
       if (ret != NULL)
 	{
 	  if (ret->package() != NULL)
-	    ret->package()->set_used();
+	    ret->package()->note_usage();
 	  return ret;
 	}
     }
@@ -7424,6 +7424,36 @@ Package::set_priority(int priority)
 {
   if (priority > this->priority_)
     this->priority_ = priority;
+}
+
+// Forget a given usage.  If forgetting this usage means this package becomes
+// unused, report that error.
+
+void
+Package::forget_usage(Expression* usage) const
+{
+  if (this->fake_uses_.empty())
+    return;
+
+  std::set<Expression*>::iterator p = this->fake_uses_.find(usage);
+  go_assert(p != this->fake_uses_.end());
+  this->fake_uses_.erase(p);
+
+  if (this->fake_uses_.empty())
+    error_at(this->location(), "imported and not used: %s",
+	     Gogo::message_name(this->package_name()).c_str());
+}
+
+// Clear the used field for the next file.  If the only usages of this package
+// are possibly fake, keep the fake usages for lowering.
+
+void
+Package::clear_used()
+{
+  if (this->used_ > this->fake_uses_.size())
+    this->fake_uses_.clear();
+
+  this->used_ = 0;
 }
 
 // Determine types of constants.  Everything else in a package
