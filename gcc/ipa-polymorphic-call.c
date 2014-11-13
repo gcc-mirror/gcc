@@ -106,7 +106,7 @@ possible_placement_new (tree type, tree expected_type,
 {
   return ((TREE_CODE (type) != RECORD_TYPE
 	   || !TYPE_BINFO (type)
-	   || cur_offset >= BITS_PER_WORD
+	   || cur_offset >= POINTER_SIZE
 	   || !polymorphic_type_binfo_p (TYPE_BINFO (type)))
 	  && (!TYPE_SIZE (type)
 	      || !tree_fits_shwi_p (TYPE_SIZE (type))
