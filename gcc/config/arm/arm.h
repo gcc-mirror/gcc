@@ -2138,9 +2138,10 @@ extern int making_const_table;
    ? reverse_condition_maybe_unordered (code) \
    : reverse_condition (code))
 
-/* The arm5 clz instruction returns 32.  */
-#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
-#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE))
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE))
 
 #define CC_STATUS_INIT \
   do { cfun->machine->thumb1_cc_insn = NULL_RTX; } while (0)
