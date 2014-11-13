@@ -1,3 +1,9 @@
+2014-11-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/63828
+	* ipa-polymorphic-call.c (possible_placement_new): Check
+	POINTER_SIZE, instead of BITS_PER_WORD, for pointer size.
+
 2014-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/tm.texi.in (SELECT_CC_MODE): Update example.
