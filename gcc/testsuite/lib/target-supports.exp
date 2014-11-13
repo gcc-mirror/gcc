@@ -5124,6 +5124,30 @@ proc check_effective_target_non_bionic {} {
     }]
 }
 
+# Return true if this target has error.h header.
+
+proc check_effective_target_error_h {} {
+    return [check_no_compiler_messages error_h object {
+ #include <error.h>
+    }]
+}
+
+# Return true if this target has tgmath.h header.
+
+proc check_effective_target_tgmath_h {} {
+    return [check_no_compiler_messages tgmath_h object {
+ #include <tgmath.h>
+    }]
+}
+
+# Return true if target's libc supports complex functions.
+
+proc check_effective_target_libc_has_complex_functions {} {
+    return [check_no_compiler_messages libc_has_complex_functions object {
+ #include <complex.h>
+    }]
+}
+
 # Return 1 if
 #   (a) an error of a few ULP is expected in string to floating-point
 #       conversion functions; and

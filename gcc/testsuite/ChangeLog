@@ -1,3 +1,19 @@
+2014-11-12  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* lib/target-supports.exp (error_h): New check.
+	(libc_has_complex_functions): Ditto.
+	(tgmath_h): Ditto.
+	* gcc.dg/builtins-59.c: Add libc_has_complex_functions check.
+	* gcc.dg/builtins-61.c: Likewise.
+	* gcc.dg/builtins-67.c: Disable test for Bionic.
+	* gcc.dg/strlenopt-14g.c: Likewise.
+	* gcc.dg/strlenopt-14gf.c: Likewise.
+	* gcc.dg/c99-tgmath-1.c: Add tgmath_h check.
+	* gcc.dg/c99-tgmath-2.c: Likewise.
+	* gcc.dg/c99-tgmath-3.c: Likewise.
+	* gcc.dg/c99-tgmath-4.c: Likewise.
+	* gcc.dg/dfp/convert-dfp-round-thread.c: Add error_h check.
+
 2014-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/63838

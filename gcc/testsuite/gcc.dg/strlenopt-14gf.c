@@ -2,6 +2,8 @@
    functions.  */
 /* { dg-do run { target *-*-linux* *-*-gnu* } } */
 /* { dg-options "-O2 -fdump-tree-strlen" } */
+/* Bionic targets don't have mempcpy */
+/* { dg-require-effective-target non_bionic } */
 
 #define FORTIFY_SOURCE 2
 #include "strlenopt-14g.c"
