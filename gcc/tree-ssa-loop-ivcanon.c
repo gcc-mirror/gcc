@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
    to pay up.
 
    We also perform
-     - complette unrolling (or peeling) when the loops is rolling few enough
+     - complete unrolling (or peeling) when the loops is rolling few enough
        times
      - simple peeling (i.e. copying few initial iterations prior the loop)
        when number of iteration estimate is known (typically by the profile
@@ -422,7 +422,7 @@ estimated_unrolled_size (struct loop_size *size,
    the same time it does not make any code potentially executed 
    during the last iteration dead.  
 
-   After complette unrolling we still may get rid of the conditional
+   After complete unrolling we still may get rid of the conditional
    on the exit in the last copy even if we have no idea what it does.
    This is quite common case for loops of form
 
@@ -775,7 +775,7 @@ try_unroll_loop_completely (struct loop *loop,
 		     loop->num);
 	  return false;
 	}
-      /* Outer loops tend to be less interesting candidates for complette
+      /* Outer loops tend to be less interesting candidates for complete
 	 unrolling unless we can do a lot of propagation into the inner loop
 	 body.  For now we disable outer loop unrolling when the code would
 	 grow.  */
@@ -986,7 +986,7 @@ try_peel_loop (struct loop *loop,
     {
       if (dump_file)
         fprintf (dump_file, "Not peeling: upper bound is known so can "
-		 "unroll complettely\n");
+		 "unroll completely\n");
       return false;
     }
 

@@ -85,7 +85,7 @@ cgraph_node *try_speculative_devirtualization (tree, HOST_WIDE_INT,
 					       ipa_polymorphic_call_context);
 
 /* Return vector containing possible targets of polymorphic call E.
-   If COMPLETEP is non-NULL, store true if the list is complette. 
+   If COMPLETEP is non-NULL, store true if the list is complete. 
    CACHE_TOKEN (if non-NULL) will get stored to an unique ID of entry
    in the target cache.  If user needs to visit every target list
    just once, it can memoize them.

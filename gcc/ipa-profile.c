@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
    - Count histogram construction.  This is a histogram analyzing how much
      time is spent executing statements with a given execution count read
-     from profile feedback. This histogram is complette only with LTO,
+     from profile feedback. This histogram is complete only with LTO,
      otherwise it contains information only about the current unit.
 
      Similar histogram is also estimated by coverage runtime.  This histogram

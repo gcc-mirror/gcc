@@ -1,3 +1,9 @@
+2014-11-13  Felix Yang  <felix.yang@huawei.com>
+
+	* ipa-utils.h: Fix typo in comments.
+	* ipa-profile.c: Likewise.
+	* tree-ssa-loop-ivcanon.c: Fix typo in comments and debugging dumps.
+
 2014-11-13  Teresa Johnson  <tejohnson@google.com>
 
 	PR tree-optimization/63841
