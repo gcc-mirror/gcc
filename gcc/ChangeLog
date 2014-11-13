@@ -1,3 +1,10 @@
+2014-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/tm.texi.in (SELECT_CC_MODE): Update example.
+	(REVERSIBLE_CC_MODE): Fix example.
+	(REVERSE_CONDITION): Fix typo.
+	* doc/tm.texi: Regenerate.
+
 2014-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/63838
