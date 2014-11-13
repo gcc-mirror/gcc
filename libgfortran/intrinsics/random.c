@@ -666,7 +666,11 @@ void
 random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 {
   int i;
-  unsigned char seed[4*kiss_size];
+
+#define KISS_MAX_SIZE 12
+  unsigned char seed[4 * KISS_MAX_SIZE];
+  _Static_assert (kiss_size <= KISS_MAX_SIZE,
+		  "kiss_size must <= KISS_MAX_SIZE");
 
   __gthread_mutex_lock (&random_lock);
 

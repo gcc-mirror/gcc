@@ -2982,7 +2982,7 @@ static void
 skip_record (st_parameter_dt *dtp, ssize_t bytes)
 {
   ssize_t rlength, readb;
-  static const ssize_t MAX_READ = 4096;
+#define MAX_READ 4096
   char p[MAX_READ];
 
   dtp->u.p.current_unit->bytes_left_subrecord += bytes;
@@ -3282,7 +3282,7 @@ next_record_w_unf (st_parameter_dt *dtp, int next_subrecord)
 static ssize_t
 sset (stream * s, int c, ssize_t nbyte)
 {
-  static const int WRITE_CHUNK = 256;
+#define WRITE_CHUNK 256
   char p[WRITE_CHUNK];
   ssize_t bytes_left, trans;
 

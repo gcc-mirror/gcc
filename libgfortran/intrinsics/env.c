@@ -52,27 +52,19 @@ PREFIX(getenv) (char * name, char * value, gfc_charlen_type name_len,
   else
     memset (value, ' ', value_len); /* Blank the string.  */
 
-  /* Trim trailing spaces from name.  */
-  while (name_len > 0 && name[name_len - 1] == ' ')
-    name_len--;
-
   /* Make a null terminated copy of the string.  */
-  name_nt = gfc_alloca (name_len + 1);
-  memcpy (name_nt, name, name_len);
-  name_nt[name_len] = '\0'; 
+  name_nt = fc_strdup (name, name_len);
 
   res = getenv(name_nt);
+
+  free (name_nt);
 
   /* If res is NULL, it means that the environment variable didn't 
      exist, so just return.  */
   if (res == NULL)
     return;
 
-  res_len = strlen(res);
-  if (value_len < res_len)
-    memcpy (value, res, value_len);
-  else
-    memcpy (value, res, res_len);
+  cf_strcpy (value, value_len, res);
 }
 
 
@@ -127,17 +119,13 @@ get_environment_variable_i4 (char *name, char *value, GFC_INTEGER_4 *length,
     }
 
   if ((!trim_name) || *trim_name)
-    {
-      /* Trim trailing spaces from name.  */
-      while (name_len > 0 && name[name_len - 1] == ' ')
-	name_len--;
-    }
-  /* Make a null terminated copy of the name.  */
-  name_nt = gfc_alloca (name_len + 1);
-  memcpy (name_nt, name, name_len);
-  name_nt[name_len] = '\0'; 
+    name_nt = fc_strdup (name, name_len);
+  else
+    name_nt = fc_strdup_notrim (name, name_len);
   
   res = getenv(name_nt);
+
+  free (name_nt);
 
   if (res == NULL)
     stat = GFC_NAME_DOES_NOT_EXIST;
