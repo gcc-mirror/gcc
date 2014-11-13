@@ -2124,8 +2124,8 @@ dt_node::gen_kids (FILE *f, bool gimple)
 		   "}\n");
 	}
 
-      fprintf (f, "break;\n"
-	       "}\n");
+      fprintf (f, "}\n"
+	       "break;\n");
     }
 
   for (unsigned i = 0; i < generic_exprs.length (); ++i)

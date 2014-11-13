@@ -1,3 +1,7 @@
+2014-11-13  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (dt_node::gen_kids): Fix placement of break statement.
+
 2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
 	    Bernd Schmidt  <bernds@codesourcery.com>
 	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
