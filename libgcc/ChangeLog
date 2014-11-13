@@ -1,3 +1,16 @@
+2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+
+	* Makefile.in (crtoffloadbegin$(objext)): New rule.
+	(crtoffloadend$(objext)): Likewise.
+	* configure: Regenerate.
+	* configure.ac (accel_dir_suffix): Compute new variable.
+	(extra_parts): Add crtoffloadbegin.o and crtoffloadend.o
+	if enable_offload_targets is not empty.
+	* offloadstuff.c: New file.
+
 2014-11-13  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/divmodhi.S: Add support for the G10 architecture.

@@ -622,6 +622,8 @@ EGREP
 GREP
 SED
 LIBTOOL
+real_target_noncanonical
+accel_dir_suffix
 gcc_build_dir
 ac_lto_plugin_ldflags
 ac_lto_plugin_warn_cflags
@@ -4133,6 +4135,16 @@ if test x"$host_subdir" = x.; then
 else
    gcc_build_dir=../../$host_subdir/gcc
 fi
+
+
+# Used for constructing correct paths for offload compilers.
+accel_dir_suffix=
+real_target_noncanonical=${target_noncanonical}
+if test x"$enable_as_accelerator_for" != x; then
+  accel_dir_suffix=/accel/${target_noncanonical}
+  real_target_noncanonical=${enable_as_accelerator_for}
+fi
+
 
 
 case `pwd` in
@@ -10607,7 +10619,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10610 "configure"
+#line 10622 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10713,7 +10725,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10716 "configure"
+#line 10728 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

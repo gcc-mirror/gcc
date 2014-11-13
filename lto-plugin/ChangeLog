@@ -1,3 +1,17 @@
+2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+
+	* Makefile.am (libexecsubdir): Tweak for the possibility of being
+	configured for offload compiler.
+	(accel_dir_suffix, real_target_noncanonical): New variables substituted
+	by configure.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (accel_dir_suffix, real_target_noncanonical): Compute new
+	variables.
+
 2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR target/63610

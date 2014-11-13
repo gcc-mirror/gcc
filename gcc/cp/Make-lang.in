@@ -164,21 +164,23 @@ check_g++_parallelize = 10000
 # Install the driver program as $(target)-g++ and $(target)-c++, and
 # also as g++ and c++ if native.
 c++.install-common: installdirs
-	-rm -f $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext)
-	-$(INSTALL_PROGRAM) xg++$(exeext) $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext)
-	-chmod a+x $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext)
-	-rm -f $(DESTDIR)$(bindir)/$(CXX_INSTALL_NAME)$(exeext)
-	-( cd $(DESTDIR)$(bindir) && \
-	      $(LN) $(GXX_INSTALL_NAME)$(exeext) $(CXX_INSTALL_NAME)$(exeext) )
-	-if [ -f cc1plus$(exeext) ] ; then \
-	  if [ ! -f g++-cross$(exeext) ] ; then \
-	    rm -f $(DESTDIR)$(bindir)/$(GXX_TARGET_INSTALL_NAME)$(exeext); \
-	    ( cd $(DESTDIR)$(bindir) && \
-	      $(LN) $(GXX_INSTALL_NAME)$(exeext) $(GXX_TARGET_INSTALL_NAME)$(exeext) ); \
-	    rm -f $(DESTDIR)$(bindir)/$(CXX_TARGET_INSTALL_NAME)$(exeext); \
-	    ( cd $(DESTDIR)$(bindir) && \
-	      $(LN) $(CXX_INSTALL_NAME)$(exeext) $(CXX_TARGET_INSTALL_NAME)$(exeext) ); \
-	  fi ; \
+	-if test "$(enable_as_accelerator)" != "yes" ; then \
+	  rm -f $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) xg++$(exeext) $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
+	  chmod a+x $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
+	  rm -f $(DESTDIR)$(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
+	  ( cd $(DESTDIR)$(bindir) && \
+	    $(LN) $(GXX_INSTALL_NAME)$(exeext) $(CXX_INSTALL_NAME)$(exeext) ); \
+	  if [ -f cc1plus$(exeext) ] ; then \
+	    if [ ! -f g++-cross$(exeext) ] ; then \
+	      rm -f $(DESTDIR)$(bindir)/$(GXX_TARGET_INSTALL_NAME)$(exeext); \
+	      ( cd $(DESTDIR)$(bindir) && \
+		$(LN) $(GXX_INSTALL_NAME)$(exeext) $(GXX_TARGET_INSTALL_NAME)$(exeext) ); \
+	      rm -f $(DESTDIR)$(bindir)/$(CXX_TARGET_INSTALL_NAME)$(exeext); \
+	      ( cd $(DESTDIR)$(bindir) && \
+		$(LN) $(CXX_INSTALL_NAME)$(exeext) $(CXX_TARGET_INSTALL_NAME)$(exeext) ); \
+	    fi ; \
+	  fi; \
 	fi
 
 # We can't use links because not everyone supports them.  So just copy the

@@ -1,3 +1,15 @@
+2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for libdl, required for plugin support.
+	(PLUGIN_SUPPORT): Define if plugins are supported.
+	(enable_offload_targets): Support Intel MIC targets.
+	(OFFLOAD_TARGETS): List of target names suitable for offloading.
+
 2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR target/63610

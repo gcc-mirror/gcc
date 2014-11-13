@@ -193,6 +193,13 @@ AC_LINK_IFELSE(
    [],
    [AC_MSG_ERROR([Pthreads are required to build libgomp])])])
 
+plugin_support=yes
+AC_CHECK_LIB(dl, dlsym, , [plugin_support=no])
+if test x"$plugin_support" = xyes; then
+  AC_DEFINE(PLUGIN_SUPPORT, 1,
+    [Define if all infrastructure, needed for plugins, is supported.])
+fi
+
 # Check for functions needed.
 AC_CHECK_FUNCS(getloadavg clock_gettime strtoull)
 
@@ -272,6 +279,26 @@ if test ${multilib} = yes; then
 else
   multilib_arg=
 fi
+
+offload_targets=
+if test x"$enable_offload_targets" != x; then
+  for tgt in `echo $enable_offload_targets | sed -e 's#,# #g'`; do
+    tgt=`echo $tgt | sed 's/=.*//'`
+    case $tgt in
+      *-intelmic-* | *-intelmicemul-*)
+	tgt_name="intelmic" ;;
+      *)
+	AC_MSG_ERROR([unknown offload target specified]) ;;
+    esac
+    if test x"$offload_targets" = x; then
+      offload_targets=$tgt_name
+    else
+      offload_targets=$offload_targets,$tgt_name
+    fi
+  done
+fi
+AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
+  [Define to hold the list of target names suitable for offloading.])
 
 # Set up the set of libraries that we need to link against for libgomp.
 # Note that the GOMP_SELF_SPEC in gcc.c may force -pthread,

@@ -760,6 +760,9 @@ LN
 LN_S
 AWK
 SET_MAKE
+accel_dir_suffix
+real_target_noncanonical
+enable_as_accelerator
 REPORT_BUGS_TEXI
 REPORT_BUGS_TO
 PKGVERSION
@@ -3197,6 +3200,10 @@ esac
 
 
 
+
+# Used for constructing correct paths for offload compilers.
+real_target_noncanonical=${target_noncanonical}
+accel_dir_suffix=
 
 # Determine the target- and build-specific subdirectories
 
@@ -7394,6 +7401,45 @@ else
   enable_languages=c
 fi
 
+
+if test x"$enable_as_accelerator_for" != x; then
+
+$as_echo "#define ACCEL_COMPILER 1" >>confdefs.h
+
+  enable_as_accelerator=yes
+  case "${target}" in
+    *-intelmicemul-*)
+      # In this case we expect offload compiler to be built as native, so we
+      # need to rename the driver to avoid clashes with host's drivers.
+      program_transform_name="s&^&${target}-&" ;;
+  esac
+  sedscript="s#${target_noncanonical}#${enable_as_accelerator_for}-accel-${target_noncanonical}#"
+  program_transform_name=`echo $program_transform_name | sed $sedscript`
+  accel_dir_suffix=/accel/${target_noncanonical}
+  real_target_noncanonical=${enable_as_accelerator_for}
+fi
+
+
+
+
+for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
+  tgt=`echo $tgt | sed 's/=.*//'`
+  if test x"$offload_targets" = x; then
+    offload_targets=$tgt
+  else
+    offload_targets="$offload_targets:$tgt"
+  fi
+done
+
+cat >>confdefs.h <<_ACEOF
+#define OFFLOAD_TARGETS "$offload_targets"
+_ACEOF
+
+if test x"$offload_targets" != x; then
+
+$as_echo "#define ENABLE_OFFLOADING 1" >>confdefs.h
+
+fi
 
 
 # Check whether --with-multilib-list was given.
@@ -18094,7 +18140,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18097 "configure"
+#line 18143 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18200,7 +18246,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18203 "configure"
+#line 18249 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

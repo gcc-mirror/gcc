@@ -38,6 +38,10 @@ AC_CANONICAL_TARGET
 # Determine the noncanonical target name, for directory use.
 ACX_NONCANONICAL_TARGET
 
+# Used for constructing correct paths for offload compilers.
+real_target_noncanonical=${target_noncanonical}
+accel_dir_suffix=
+
 # Determine the target- and build-specific subdirectories
 GCC_TOPLEV_SUBDIRS
 
@@ -882,6 +886,40 @@ AC_ARG_ENABLE(languages,
 		;;
 esac],
 [enable_languages=c])
+
+if test x"$enable_as_accelerator_for" != x; then
+  AC_DEFINE(ACCEL_COMPILER, 1,
+    [Define if this compiler should be built as the offload target compiler.])
+  enable_as_accelerator=yes
+  case "${target}" in
+    *-intelmicemul-*)
+      # In this case we expect offload compiler to be built as native, so we
+      # need to rename the driver to avoid clashes with host's drivers.
+      program_transform_name="s&^&${target}-&" ;;
+  esac
+  sedscript="s#${target_noncanonical}#${enable_as_accelerator_for}-accel-${target_noncanonical}#"
+  program_transform_name=`echo $program_transform_name | sed $sedscript`
+  accel_dir_suffix=/accel/${target_noncanonical}
+  real_target_noncanonical=${enable_as_accelerator_for}
+fi
+AC_SUBST(enable_as_accelerator)
+AC_SUBST(real_target_noncanonical)
+AC_SUBST(accel_dir_suffix)
+
+for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
+  tgt=`echo $tgt | sed 's/=.*//'`
+  if test x"$offload_targets" = x; then
+    offload_targets=$tgt
+  else
+    offload_targets="$offload_targets:$tgt"
+  fi
+done
+AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
+  [Define to hold the list of target names suitable for offloading.])
+if test x"$offload_targets" != x; then
+  AC_DEFINE(ENABLE_OFFLOADING, 1,
+    [Define this to enable support for offloading.])
+fi
 
 AC_ARG_WITH(multilib-list,
 [AS_HELP_STRING([--with-multilib-list], [select multilibs (AArch64, SH and x86-64 only)])],

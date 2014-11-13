@@ -745,6 +745,8 @@ ospace_frag'
 ac_user_opts='
 enable_option_checking
 with_build_libsubdir
+enable_as_accelerator_for
+enable_offload_targets
 enable_gold
 enable_ld
 enable_libquadmath
@@ -1460,6 +1462,13 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-as-accelerator-for=ARG
+                          build as offload target compiler. Specify offload
+                          host triple by ARG
+  --enable-offload-targets=LIST
+                          enable offloading to devices from comma-separated
+                          LIST of TARGET[=DIR]. Use optional path to find
+                          offload target compiler during the build
   --enable-gold[=ARG]     build gold [ARG={default,yes,no}]
   --enable-ld[=ARG]       build ld [ARG={default,yes,no}]
   --disable-libquadmath   do not build libquadmath directory
@@ -2876,6 +2885,26 @@ case ${with_newlib} in
   no) skipdirs="${skipdirs} target-newlib" ;;
   yes) skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'` ;;
 esac
+
+# Check whether --enable-as-accelerator-for was given.
+if test "${enable_as_accelerator_for+set}" = set; then :
+  enableval=$enable_as_accelerator_for; ENABLE_AS_ACCELERATOR_FOR=$enableval
+else
+  ENABLE_AS_ACCELERATOR_FOR=no
+fi
+
+
+# Check whether --enable-offload-targets was given.
+if test "${enable_offload_targets+set}" = set; then :
+  enableval=$enable_offload_targets;
+  if test x"$enable_offload_targets" = x; then
+    as_fn_error "no offload targets specified" "$LINENO" 5
+  fi
+
+else
+  enable_offload_targets=
+fi
+
 
 # Handle --enable-gold, --enable-ld.
 # --disable-gold [--enable-ld]

@@ -30,6 +30,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the `dl' library (-ldl). */
+#undef HAVE_LIBDL
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -86,6 +89,9 @@
    */
 #undef LT_OBJDIR
 
+/* Define to hold the list of target names suitable for offloading. */
+#undef OFFLOAD_TARGETS
+
 /* Name of package */
 #undef PACKAGE
 
@@ -106,6 +112,9 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* Define if all infrastructure, needed for plugins, is supported. */
+#undef PLUGIN_SUPPORT
 
 /* The size of `char', as computed by sizeof. */
 #undef SIZEOF_CHAR

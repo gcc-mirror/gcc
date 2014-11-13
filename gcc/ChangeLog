@@ -1,3 +1,26 @@
+2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+
+	* Makefile.in (real_target_noncanonical, accel_dir_suffix)
+	(enable_as_accelerator): New variables substituted by configure.
+	(libsubdir, libexecsubdir, unlibsubdir): Tweak for the possibility of
+	being configured as an offload compiler.
+	(DRIVER_DEFINES): Pass new defines DEFAULT_REAL_TARGET_MACHINE and
+	ACCEL_DIR_SUFFIX.
+	(install-cpp, install-common, install_driver, install-gcc-ar): Do not
+	install for the offload compiler.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (real_target_noncanonical, accel_dir_suffix)
+	(enable_as_accelerator): Compute new variables.
+	(ACCEL_COMPILER): Define if the compiler is built as the accel compiler.
+	(OFFLOAD_TARGETS): List of target names suitable for offloading.
+	(ENABLE_OFFLOADING): Define if list of offload targets is not empty.
+	* doc/install.texi (Options specification): Document
+	--enable-as-accelerator-for and --enable-offload-targets.
+
 2014-11-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR tree-optimization/63828
