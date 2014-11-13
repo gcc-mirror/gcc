@@ -576,3 +576,17 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
  (imagpart (complex @0 @1))
  @1)
+
+
+/* BSWAP simplifications, transforms checked by gcc.dg/builtin-bswap-8.c.  */
+(for bswap (BUILT_IN_BSWAP16 BUILT_IN_BSWAP32 BUILT_IN_BSWAP64)
+ (simplify
+  (bswap (bswap @0))
+  @0)
+ (simplify
+  (bswap (bit_not (bswap @0)))
+  (bit_not @0))
+ (for bitop (bit_xor bit_ior bit_and)
+  (simplify
+   (bswap (bitop:c (bswap @0) @1))
+   (bitop @0 (bswap @1)))))

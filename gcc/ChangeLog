@@ -1,3 +1,9 @@
+2014-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61559
+	* match.pd: Implement bswap patterns for transforms checked by
+	gcc.dg/builtin-bswap-8.c.
+
 2014-11-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra.c (lra): Switch off rematerialization pass.
