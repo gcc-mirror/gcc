@@ -121,7 +121,6 @@ static enum tree_code compcode_to_comparison (enum comparison_code);
 static int operand_equal_for_comparison_p (tree, tree, tree);
 static int twoval_comparison_p (tree, tree *, tree *, int *);
 static tree eval_subst (location_t, tree, tree, tree, tree, tree);
-static tree pedantic_omit_one_operand_loc (location_t, tree, tree, tree);
 static tree distribute_bit_expr (location_t, enum tree_code, tree, tree, tree);
 static tree make_bit_field_ref (location_t, tree, tree,
 				HOST_WIDE_INT, HOST_WIDE_INT, int);
@@ -3072,27 +3071,6 @@ omit_one_operand_loc (location_t loc, tree type, tree result, tree omitted)
 		       fold_ignored_result (omitted), t);
 
   return non_lvalue_loc (loc, t);
-}
-
-/* Similar, but call pedantic_non_lvalue instead of non_lvalue.  */
-
-static tree
-pedantic_omit_one_operand_loc (location_t loc, tree type, tree result,
-			       tree omitted)
-{
-  tree t = fold_convert_loc (loc, type, result);
-
-  /* If the resulting operand is an empty statement, just return the omitted
-     statement casted to void. */
-  if (IS_EMPTY_STMT (t) && TREE_SIDE_EFFECTS (omitted))
-    return build1_loc (loc, NOP_EXPR, void_type_node,
-		       fold_ignored_result (omitted));
-
-  if (TREE_SIDE_EFFECTS (omitted))
-    return build2_loc (loc, COMPOUND_EXPR, type,
-		       fold_ignored_result (omitted), t);
-
-  return pedantic_non_lvalue_loc (loc, t);
 }
 
 /* Return a tree for the case when the result of an expression is RESULT
@@ -13553,11 +13531,6 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	}
       else if (TREE_CODE (arg0) == VECTOR_CST)
 	{
-	  if (integer_all_onesp (arg0))
-	    return pedantic_omit_one_operand_loc (loc, type, arg1, arg2);
-	  if (integer_zerop (arg0))
-	    return pedantic_omit_one_operand_loc (loc, type, arg2, arg1);
-
 	  if ((TREE_CODE (arg1) == VECTOR_CST
 	       || TREE_CODE (arg1) == CONSTRUCTOR)
 	      && (TREE_CODE (arg2) == VECTOR_CST
@@ -13581,9 +13554,6 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		return t;
 	    }
 	}
-
-      if (operand_equal_p (arg1, op2, 0))
-	return pedantic_omit_one_operand_loc (loc, type, arg1, arg0);
 
       /* If we have A op B ? A : C, we may be able to convert this to a
 	 simpler expression, depending on the operation and the values

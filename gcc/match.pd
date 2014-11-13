@@ -590,3 +590,51 @@ along with GCC; see the file COPYING3.  If not see
   (simplify
    (bswap (bitop:c (bswap @0) @1))
    (bitop @0 (bswap @1)))))
+
+
+/* Combine COND_EXPRs and VEC_COND_EXPRs.  */
+
+/* Simplify constant conditions.
+   Only optimize constant conditions when the selected branch
+   has the same type as the COND_EXPR.  This avoids optimizing
+   away "c ? x : throw", where the throw has a void type.
+   Note that we cannot throw away the fold-const.c variant nor
+   this one as we depend on doing this transform before possibly
+   A ? B : B -> B triggers and the fold-const.c one can optimize
+   0 ? A : B to B even if A has side-effects.  Something
+   genmatch cannot handle.  */
+(simplify
+ (cond INTEGER_CST@0 @1 @2)
+ (if (integer_zerop (@0)
+      && (!VOID_TYPE_P (TREE_TYPE (@2))
+	  || VOID_TYPE_P (type)))
+  @2)
+ (if (!integer_zerop (@0)
+      && (!VOID_TYPE_P (TREE_TYPE (@1))
+	  || VOID_TYPE_P (type)))
+  @1))
+(simplify
+ (vec_cond VECTOR_CST@0 @1 @2)
+ (if (integer_all_onesp (@0))
+  @1)
+ (if (integer_zerop (@0))
+  @2))
+
+(for cnd (cond vec_cond)
+ /* A ? B : (A ? X : C) -> A ? B : C.  */
+ (simplify
+  (cnd @0 (cnd @0 @1 @2) @3)
+  (cnd @0 @1 @3))
+ (simplify
+  (cnd @0 @1 (cnd @0 @2 @3))
+  (cnd @0 @1 @3))
+
+ /* A ? B : B -> B.  */
+ (simplify
+  (cnd @0 @1 @1)
+  @1))
+
+/* !A ? B : C -> A ? C : B.  */
+(simplify
+ (cond (logical_inverted_value truth_valued_p@0) @1 @2)
+ (cond @0 @2 @1))

@@ -1,3 +1,13 @@
+2014-11-13  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Implement conditional expression patterns.
+	* tree-ssa-forwprop.c (forward_propagate_into_cond): Remove
+	them here.
+	(combine_cond_exprs): Remove.
+	(pass_forwprop::execute): Do not call combine_cond_exprs.
+	* fold-const.c (fold_ternary_loc): Remove patterns here.
+	(pedantic_omit_one_operand_loc): Remove.
+
 2014-12-13  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/61559
