@@ -1,3 +1,7 @@
+2014-11-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra.c (lra): Switch off rematerialization pass.
+
 2014-11-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* common.opt (flra-remat): New.
