@@ -77,6 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "cfgloop.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "omp-low.h"
 #include "gimple-low.h"
 #include "tree-cfgcleanup.h"
@@ -87,6 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "cilk.h"
 #include "context.h"
+#include "lto-section-names.h"
 
 
 /* Lowering of OpenMP parallel and workshare constructs proceeds in two
@@ -234,6 +236,9 @@ static tree scan_omp_1_op (tree *, int *, void *);
       /* The sub-statements for these should be walked.  */ \
       *handled_ops_p = false; \
       break;
+
+/* Holds offload tables with decls.  */
+vec<tree, va_gc> *offload_funcs, *offload_vars;
 
 /* Convenience function for calling scan_omp_1_op on tree operands.  */
 
@@ -8409,6 +8414,9 @@ expand_omp_target (struct omp_region *region)
       DECL_STRUCT_FUNCTION (child_fn)->curr_properties = cfun->curr_properties;
       cgraph_node::add_new_function (child_fn, true);
 
+      /* Add the new function to the offload table.  */
+      vec_safe_push (offload_funcs, child_fn);
+
       /* Fix the callgraph edges for child_cfun.  Those for cfun will be
 	 fixed in a following pass.  */
       push_cfun (child_cfun);
@@ -12421,6 +12429,93 @@ simple_ipa_opt_pass *
 make_pass_omp_simd_clone (gcc::context *ctxt)
 {
   return new pass_omp_simd_clone (ctxt);
+}
+
+/* Helper function for omp_finish_file routine.  Takes decls from V_DECLS and
+   adds their addresses and sizes to constructor-vector V_CTOR.  */
+static void
+add_decls_addresses_to_decl_constructor (vec<tree, va_gc> *v_decls,
+					 vec<constructor_elt, va_gc> *v_ctor)
+{
+  unsigned len = vec_safe_length (v_decls);
+  for (unsigned i = 0; i < len; i++)
+    {
+      tree it = (*v_decls)[i];
+      bool is_function = TREE_CODE (it) != VAR_DECL;
+
+      CONSTRUCTOR_APPEND_ELT (v_ctor, NULL_TREE, build_fold_addr_expr (it));
+      if (!is_function)
+	CONSTRUCTOR_APPEND_ELT (v_ctor, NULL_TREE,
+				fold_convert (const_ptr_type_node,
+					      DECL_SIZE_UNIT (it)));
+    }
+}
+
+/* Create new symbols containing (address, size) pairs for global variables,
+   marked with "omp declare target" attribute, as well as addresses for the
+   functions, which are outlined target regions.  */
+void
+omp_finish_file (void)
+{
+  unsigned num_funcs = vec_safe_length (offload_funcs);
+  unsigned num_vars = vec_safe_length (offload_vars);
+
+  if (num_funcs == 0 && num_vars == 0)
+    return;
+
+  if (targetm_common.have_named_sections)
+    {
+      vec<constructor_elt, va_gc> *v_f, *v_v;
+      vec_alloc (v_f, num_funcs);
+      vec_alloc (v_v, num_vars * 2);
+
+      add_decls_addresses_to_decl_constructor (offload_funcs, v_f);
+      add_decls_addresses_to_decl_constructor (offload_vars, v_v);
+
+      tree vars_decl_type = build_array_type_nelts (pointer_sized_int_node,
+						    num_vars * 2);
+      tree funcs_decl_type = build_array_type_nelts (pointer_sized_int_node,
+						     num_funcs);
+      TYPE_ALIGN (vars_decl_type) = TYPE_ALIGN (pointer_sized_int_node);
+      TYPE_ALIGN (funcs_decl_type) = TYPE_ALIGN (pointer_sized_int_node);
+      tree ctor_v = build_constructor (vars_decl_type, v_v);
+      tree ctor_f = build_constructor (funcs_decl_type, v_f);
+      TREE_CONSTANT (ctor_v) = TREE_CONSTANT (ctor_f) = 1;
+      TREE_STATIC (ctor_v) = TREE_STATIC (ctor_f) = 1;
+      tree funcs_decl = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+				    get_identifier (".offload_func_table"),
+				    funcs_decl_type);
+      tree vars_decl = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+				   get_identifier (".offload_var_table"),
+				   vars_decl_type);
+      TREE_STATIC (funcs_decl) = TREE_STATIC (vars_decl) = 1;
+      /* Do not align tables more than TYPE_ALIGN (pointer_sized_int_node),
+	 otherwise a joint table in a binary will contain padding between
+	 tables from multiple object files.  */
+      DECL_USER_ALIGN (funcs_decl) = DECL_USER_ALIGN (vars_decl) = 1;
+      DECL_ALIGN (funcs_decl) = TYPE_ALIGN (funcs_decl_type);
+      DECL_ALIGN (vars_decl) = TYPE_ALIGN (vars_decl_type);
+      DECL_INITIAL (funcs_decl) = ctor_f;
+      DECL_INITIAL (vars_decl) = ctor_v;
+      set_decl_section_name (funcs_decl, OFFLOAD_FUNC_TABLE_SECTION_NAME);
+      set_decl_section_name (vars_decl, OFFLOAD_VAR_TABLE_SECTION_NAME);
+
+      varpool_node::finalize_decl (vars_decl);
+      varpool_node::finalize_decl (funcs_decl);
+   }
+  else
+    {
+      for (unsigned i = 0; i < num_funcs; i++)
+	{
+	  tree it = (*offload_funcs)[i];
+	  targetm.record_offload_symbol (it);
+	}
+      for (unsigned i = 0; i < num_vars; i++)
+	{
+	  tree it = (*offload_vars)[i];
+	  targetm.record_offload_symbol (it);
+	}
+    }
 }
 
 #include "gt-omp-low.h"

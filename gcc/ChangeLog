@@ -7,6 +7,36 @@
 	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* Makefile.in (GTFILES): Add omp-low.h to list of GC files.
+	* cgraphunit.c: Include omp-low.h.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_RECORD_OFFLOAD_SYMBOL): Document.
+	* gengtype.c (open_base_files): Add omp-low.h to ifiles.
+	* lto-cgraph.c (output_offload_tables): New function.
+	(input_offload_tables): Likewise.
+	* lto-section-in.c (lto_section_name): Add "offload_table".
+	* lto-section-names.h (OFFLOAD_VAR_TABLE_SECTION_NAME): Define.
+	(OFFLOAD_FUNC_TABLE_SECTION_NAME): Likewise.
+	* lto-streamer-out.c (lto_output): Call output_offload_tables.
+	* lto-streamer.h (lto_section_type): Add LTO_section_offload_table.
+	(output_offload_tables, input_offload_tables): Declare.
+	* omp-low.c: Include common/common-target.h and lto-section-names.h.
+	(offload_funcs, offload_vars): New global <tree, va_gc> vectors.
+	(expand_omp_target): Add child_fn into offload_funcs vector.
+	(add_decls_addresses_to_decl_constructor): New function.
+	(omp_finish_file): Likewise.
+	* omp-low.h (omp_finish_file, offload_funcs, offload_vars): Declare.
+	* target.def (record_offload_symbol): New DEFHOOK.
+	* toplev.c: Include omp-low.h.
+	(compile_file): Call omp_finish_file.
+	* varpool.c: Include omp-low.h.
+	(varpool_node::get_create): Add decl into offload_vars vector.
+
+2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+
 	* cgraph.c: Include context.h.
 	(cgraph_node::create): Set node->offloadable and g->have_offload if
 	decl have "omp declare target" attribute.

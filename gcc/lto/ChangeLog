@@ -3,6 +3,13 @@
 	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* lto/lto.c (read_cgraph_and_symbols): Call input_offload_tables.
+
+2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+
 	* lto-object.c (lto_obj_add_section): Use section_name_prefix instead of
 	LTO_SECTION_NAME_PREFIX.
 	* lto-partition.c (lto_promote_cross_file_statics): Call
