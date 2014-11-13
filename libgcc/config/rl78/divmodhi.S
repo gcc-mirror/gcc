@@ -23,11 +23,9 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef __RL78_G10__
-
 #include "vregs.h"
 
-	.macro make_generic  which,need_result
+.macro MAKE_GENERIC  which,need_result
 
 	.if \need_result
 	quot = r8
@@ -53,11 +51,11 @@
 	bitB0 = bit
 	bitB1 = bit+1
 
-#if 1
 #define bit	bc
 #define bitB0	c
 #define bitB1	b
-#endif
+
+	START_FUNC __generic_hidivmod\which
 
 num_lt_den\which:
 	.if \need_result
@@ -72,12 +70,13 @@ num_lt_den\which:
 	;; to store sign information that must remain intact
 
 	.if \need_result
-
-generic_div:
+	.global __generic_hidiv
+__generic_hidiv:
 
 	.else
 
-generic_mod:
+	.global __generic_himod
+__generic_himod:
 
 	.endif
 
@@ -193,42 +192,40 @@ enter_main_loop\which:
 
 main_loop_done\which:	
 	ret
-	.endm
+	END_FUNC __generic_hidivmod\which
+.endm
+;----------------------------------------------------------------------
 
-	make_generic _d 1
-	make_generic _m 0
+	MAKE_GENERIC _d 1
+	MAKE_GENERIC _m 0
 
 ;----------------------------------------------------------------------
 
-	.global	___udivhi3
-	.type	___udivhi3,@function
-___udivhi3:
+START_FUNC ___udivhi3
 	;; r8 = 4[sp] / 6[sp]
-	call	$!generic_div
+	call	$!__generic_hidiv
 	ret
-	.size	___udivhi3, . - ___udivhi3
+END_FUNC ___udivhi3
 	
 
-	.global	___umodhi3
-	.type	___umodhi3,@function
-___umodhi3:
+START_FUNC ___umodhi3
 	;; r8 = 4[sp] % 6[sp]
-	call	$!generic_mod
+	call	$!__generic_himod
 	ret
-	.size	___umodhi3, . - ___umodhi3
+END_FUNC ___umodhi3
 
 ;----------------------------------------------------------------------
 
-	.macro neg_ax
+.macro NEG_AX
 	movw	hl, ax
 	movw	ax, #0
 	subw	ax, [hl]
 	movw	[hl], ax
-	.endm
+.endm
 
-	.global	___divhi3
-	.type	___divhi3,@function
-___divhi3:
+;----------------------------------------------------------------------
+
+START_FUNC ___divhi3
 	;; r8 = 4[sp] / 6[sp]
 	movw	de, #0
 	mov	a, [sp+5]
@@ -237,14 +234,14 @@ ___divhi3:
 	mov	a, [sp+7]
 	mov1	cy, a.7
 	bc	$div_signed_den
-	call	$!generic_div
+	call	$!__generic_hidiv
 	ret
 	
 div_signed_num:
 	;; neg [sp+4]
 	movw	ax, sp
 	addw	ax, #4
-	neg_ax
+	NEG_AX
 	mov	d, #1
 	mov	a, [sp+7]
 	mov1	cy, a.7
@@ -253,10 +250,10 @@ div_signed_den:
 	;; neg [sp+6]
 	movw	ax, sp
 	addw	ax, #6
-	neg_ax
+	NEG_AX
 	mov	e, #1
 div_unsigned_den:	
-	call	$!generic_div
+	call	$!__generic_hidiv
 
 	mov	a, d
 	cmp0	a
@@ -264,28 +261,26 @@ div_unsigned_den:
 	;;  We have to restore the numerator [sp+4]
 	movw	ax, sp
 	addw	ax, #4
-	neg_ax
+	NEG_AX
 	mov	a, d
 div_skip_restore_num:	
 	xor	a, e
 	bz	$div_no_neg
 	movw	ax, #r8
-	neg_ax
+	NEG_AX
 div_no_neg:
 	mov	a, e
 	cmp0	a
 	bz	$div_skip_restore_den
 	movw	ax, sp
 	addw	ax, #6
-	neg_ax
+	NEG_AX
 div_skip_restore_den:	
 	ret
-	.size	___divhi3, . - ___divhi3
+END_FUNC ___divhi3
 	
 
-	.global	___modhi3
-	.type	___modhi3,@function
-___modhi3:
+START_FUNC ___modhi3
 	;; r8 = 4[sp] % 6[sp]
 	movw	de, #0
 	mov	a, [sp+5]
@@ -294,14 +289,14 @@ ___modhi3:
 	mov	a, [sp+7]
 	mov1	cy, a.7
 	bc	$mod_signed_den
-	call	$!generic_mod
+	call	$!__generic_himod
 	ret
 	
 mod_signed_num:
 	;; neg [sp+4]
 	movw	ax, sp
 	addw	ax, #4
-	neg_ax
+	NEG_AX
 	mov	d, #1
 	mov	a, [sp+7]
 	mov1	cy, a.7
@@ -310,28 +305,26 @@ mod_signed_den:
 	;; neg [sp+6]
 	movw	ax, sp
 	addw	ax, #6
-	neg_ax
+	NEG_AX
 mod_unsigned_den:	
-	call	$!generic_mod
+	call	$!__generic_himod
 
 	mov	a, d
 	cmp0	a
 	bz	$mod_no_neg
 	movw	ax, #r8
-	neg_ax
+	NEG_AX
 	;;  Also restore numerator
 	movw 	ax, sp
 	addw	ax, #4
-	neg_ax
+	NEG_AX
 mod_no_neg:
 	mov	a, e
 	cmp0	a
 	bz	$mod_skip_restore_den
 	movw	ax, sp
 	addw	ax, #6
-	neg_ax
+	NEG_AX
 mod_skip_restore_den:	
 	ret
-	.size	___modhi3, . - ___modhi3
-
-#endif
+END_FUNC ___modhi3
