@@ -1,3 +1,8 @@
+2014-11-13  Teresa Johnson  <tejohnson@google.com>
+
+	PR tree-optimization/63841
+	* tree-ssa-strlen.c (strlen_optimize_stmt): Ignore clobbers.
+
 2014-11-13  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backport from mainline
