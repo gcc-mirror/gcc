@@ -296,6 +296,17 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 			 " files", foption->orig_option_with_args_text);
 	  break;
 
+	case OPT_foffload_abi_:
+	  for (j = 0; j < *decoded_options_count; ++j)
+	    if ((*decoded_options)[j].opt_index == foption->opt_index)
+	      break;
+	    if (j == *decoded_options_count)
+	      append_option (decoded_options, decoded_options_count, foption);
+	    else if (foption->value != (*decoded_options)[j].value)
+	      fatal_error ("Option %s not used consistently in all LTO input"
+			   " files", foption->orig_option_with_args_text);
+	    break;
+
 	case OPT_O:
 	case OPT_Ofast:
 	case OPT_Og:
@@ -366,6 +377,10 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	      (*decoded_options)[j].value = 1;
 	    }
 	  break;
+
+	case OPT_foffload_:
+	  append_option (decoded_options, decoded_options_count, foption);
+	  break;
 	}
     }
 }
@@ -427,6 +442,167 @@ parse_env_var (const char *str, char ***pvalues, const char *append)
   return num;
 }
 
+/* Append options OPTS from lto or offload_lto sections to ARGV_OBSTACK.  */
+
+static void
+append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
+			 unsigned int count)
+{
+  /* Append compiler driver arguments as far as they were merged.  */
+  for (unsigned int j = 1; j < count; ++j)
+    {
+      struct cl_decoded_option *option = &opts[j];
+
+      /* File options have been properly filtered by lto-opts.c.  */
+      switch (option->opt_index)
+	{
+	/* Drop arguments that we want to take from the link line.  */
+	case OPT_flto_:
+	case OPT_flto:
+	case OPT_flto_partition_:
+	  continue;
+
+	default:
+	  break;
+	}
+
+      /* For now do what the original LTO option code was doing - pass
+	 on any CL_TARGET flag and a few selected others.  */
+      switch (option->opt_index)
+	{
+	case OPT_fPIC:
+	case OPT_fpic:
+	case OPT_fPIE:
+	case OPT_fpie:
+	case OPT_fcommon:
+	case OPT_fexceptions:
+	case OPT_fnon_call_exceptions:
+	case OPT_fgnu_tm:
+	case OPT_freg_struct_return:
+	case OPT_fpcc_struct_return:
+	case OPT_fshort_double:
+	case OPT_ffp_contract_:
+	case OPT_fmath_errno:
+	case OPT_fsigned_zeros:
+	case OPT_ftrapping_math:
+	case OPT_fwrapv:
+	case OPT_ftrapv:
+	case OPT_fstrict_overflow:
+	case OPT_foffload_abi_:
+	case OPT_O:
+	case OPT_Ofast:
+	case OPT_Og:
+	case OPT_Os:
+	  break;
+
+	default:
+	  if (!(cl_options[option->opt_index].flags & CL_TARGET))
+	    continue;
+	}
+
+      /* Pass the option on.  */
+      for (unsigned int i = 0; i < option->canonical_option_num_elements; ++i)
+	obstack_ptr_grow (argv_obstack, option->canonical_option[i]);
+    }
+}
+
+/* Append linker options OPTS to ARGV_OBSTACK.  */
+
+static void
+append_linker_options (obstack *argv_obstack, struct cl_decoded_option *opts,
+		       unsigned int count)
+{
+  /* Append linker driver arguments.  Compiler options from the linker
+     driver arguments will override / merge with those from the compiler.  */
+  for (unsigned int j = 1; j < count; ++j)
+    {
+      struct cl_decoded_option *option = &opts[j];
+
+      /* Do not pass on frontend specific flags not suitable for lto.  */
+      if (!(cl_options[option->opt_index].flags
+	    & (CL_COMMON|CL_TARGET|CL_DRIVER|CL_LTO)))
+	continue;
+
+      switch (option->opt_index)
+	{
+	case OPT_o:
+	case OPT_flto_:
+	case OPT_flto:
+	  /* We've handled these LTO options, do not pass them on.  */
+	  continue;
+
+	case OPT_freg_struct_return:
+	case OPT_fpcc_struct_return:
+	case OPT_fshort_double:
+	  /* Ignore these, they are determined by the input files.
+	     ???  We fail to diagnose a possible mismatch here.  */
+	  continue;
+
+	default:
+	  break;
+	}
+
+      /* Pass the option on.  */
+      for (unsigned int i = 0; i < option->canonical_option_num_elements; ++i)
+	obstack_ptr_grow (argv_obstack, option->canonical_option[i]);
+    }
+}
+
+/* Extract options for TARGET offload compiler from OPTIONS and append
+   them to ARGV_OBSTACK.  */
+
+static void
+append_offload_options (obstack *argv_obstack, const char *target,
+			struct cl_decoded_option *options,
+			unsigned int options_count)
+{
+  for (unsigned i = 0; i < options_count; i++)
+    {
+      const char *cur, *next, *opts;
+      char **argv;
+      unsigned argc;
+      struct cl_decoded_option *option = &options[i];
+
+      if (option->opt_index != OPT_foffload_)
+	continue;
+
+      /* If option argument starts with '-' then no target is specified.  That
+	 means offload options are specified for all targets, so we need to
+	 append them.  */
+      if (option->arg[0] == '-')
+	opts = option->arg;
+      else
+	{
+	  opts = strchr (option->arg, '=');
+	  if (!opts)
+	    continue;
+
+	  cur = option->arg;
+
+	  while (cur < opts)
+	    {
+	      next = strchrnul (cur, ',');
+	      next = (next > opts) ? opts : next;
+
+	      if (strlen (target) == (size_t) (next - cur)
+		  && strncmp (target, cur, next - cur) == 0)
+		break;
+
+	      cur = next + 1;
+	    }
+
+	  if (cur >= opts)
+	    continue;
+
+	  opts++;
+	}
+
+      argv = buildargv (opts);
+      for (argc = 0; argv[argc]; argc++)
+	obstack_ptr_grow (argv_obstack, argv[argc]);
+    }
+}
+
 /* Check whether NAME can be accessed in MODE.  This is like access,
    except that it never considers directories to be executable.  */
 
@@ -450,7 +626,11 @@ access_check (const char *name, int mode)
 
 static char *
 compile_offload_image (const char *target, const char *compiler_path,
-		       unsigned in_argc, char *in_argv[])
+		       unsigned in_argc, char *in_argv[],
+		       struct cl_decoded_option *compiler_opts,
+		       unsigned int compiler_opt_count,
+		       struct cl_decoded_option *linker_opts,
+		       unsigned int linker_opt_count)
 {
   char *filename = NULL;
   char **argv;
@@ -482,10 +662,22 @@ compile_offload_image (const char *target, const char *compiler_path,
       obstack_ptr_grow (&argv_obstack, "-o");
       obstack_ptr_grow (&argv_obstack, filename);
 
+      /* Append names of input object files.  */
       for (unsigned i = 1; i < in_argc; i++)
 	obstack_ptr_grow (&argv_obstack, in_argv[i]);
-      obstack_ptr_grow (&argv_obstack, NULL);
 
+      /* Append options from offload_lto sections.  */
+      append_compiler_options (&argv_obstack, compiler_opts,
+			       compiler_opt_count);
+
+      /* Append options specified by -foffload last.  In case of conflicting
+	 options we expect offload compiler to choose the latest.  */
+      append_offload_options (&argv_obstack, target, compiler_opts,
+			      compiler_opt_count);
+      append_offload_options (&argv_obstack, target, linker_opts,
+			      linker_opt_count);
+
+      obstack_ptr_grow (&argv_obstack, NULL);
       argv = XOBFINISH (&argv_obstack, char **);
       fork_execute (argv[0], argv, true);
       obstack_free (&argv_obstack, NULL);
@@ -502,7 +694,11 @@ compile_offload_image (const char *target, const char *compiler_path,
    target sections, we pass them all to target compilers.  */
 
 static void
-compile_images_for_offload_targets (unsigned in_argc, char *in_argv[])
+compile_images_for_offload_targets (unsigned in_argc, char *in_argv[],
+				    struct cl_decoded_option *compiler_opts,
+				    unsigned int compiler_opt_count,
+				    struct cl_decoded_option *linker_opts,
+				    unsigned int linker_opt_count)
 {
   char **names = NULL;
   const char *target_names = getenv (OFFLOAD_TARGET_NAMES_ENV);
@@ -519,8 +715,10 @@ compile_images_for_offload_targets (unsigned in_argc, char *in_argv[])
   offload_names = XCNEWVEC (char *, num_targets + 1);
   for (unsigned i = 0; i < num_targets; i++)
     {
-      offload_names[i] = compile_offload_image (names[i], compiler_path,
-						in_argc, in_argv);
+      offload_names[i]
+	= compile_offload_image (names[i], compiler_path, in_argc, in_argv,
+				 compiler_opts, compiler_opt_count,
+				 linker_opts, linker_opt_count);
       if (!offload_names[i])
 	fatal_error ("problem with building target image for %s\n", names[i]);
     }
@@ -587,6 +785,74 @@ find_offloadbeginend (void)
   free_array_of_ptrs ((void **) paths, n_paths);
 }
 
+/* A subroutine of run_gcc.  Examine the open file FD for lto sections with
+   name prefix PREFIX, at FILE_OFFSET, and store any options we find in OPTS
+   and OPT_COUNT.  Return true if we found a matchingn section, false
+   otherwise.  COLLECT_GCC holds the value of the environment variable with
+   the same name.  */
+
+static bool
+find_and_merge_options (int fd, off_t file_offset, const char *prefix,
+			struct cl_decoded_option **opts,
+			unsigned int *opt_count, const char *collect_gcc)
+{
+  off_t offset, length;
+  char *data;
+  char *fopts;
+  const char *errmsg;
+  int err;
+  struct cl_decoded_option *fdecoded_options = *opts;
+  unsigned int fdecoded_options_count = *opt_count;
+
+  simple_object_read *sobj;
+  sobj = simple_object_start_read (fd, file_offset, "__GNU_LTO",
+				   &errmsg, &err);
+  if (!sobj)
+    return false;
+
+  char *secname = XALLOCAVEC (char, strlen (prefix) + sizeof (".opts"));
+  strcpy (secname, prefix);
+  strcat (secname, ".opts");
+  if (!simple_object_find_section (sobj, secname, &offset, &length,
+				   &errmsg, &err))
+    {
+      simple_object_release_read (sobj);
+      return false;
+    }
+
+  lseek (fd, file_offset + offset, SEEK_SET);
+  data = (char *)xmalloc (length);
+  read (fd, data, length);
+  fopts = data;
+  do
+    {
+      struct cl_decoded_option *f2decoded_options;
+      unsigned int f2decoded_options_count;
+      get_options_from_collect_gcc_options (collect_gcc,
+					    fopts, CL_LANG_ALL,
+					    &f2decoded_options,
+					    &f2decoded_options_count);
+      if (!fdecoded_options)
+       {
+	 fdecoded_options = f2decoded_options;
+	 fdecoded_options_count = f2decoded_options_count;
+       }
+      else
+	merge_and_complain (&fdecoded_options,
+			    &fdecoded_options_count,
+			    f2decoded_options, f2decoded_options_count);
+
+      fopts += strlen (fopts) + 1;
+    }
+  while (fopts - data < length);
+
+  free (data);
+  simple_object_release_read (sobj);
+  *opts = fdecoded_options;
+  *opt_count = fdecoded_options_count;
+  return true;
+}
+
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
 
 static void
@@ -602,7 +868,9 @@ run_gcc (unsigned argc, char *argv[])
   int jobserver = 0;
   bool no_partition = false;
   struct cl_decoded_option *fdecoded_options = NULL;
+  struct cl_decoded_option *offload_fdecoded_options = NULL;
   unsigned int fdecoded_options_count = 0;
+  unsigned int offload_fdecoded_options_count = 0;
   struct cl_decoded_option *decoded_options;
   unsigned int decoded_options_count;
   struct obstack argv_obstack;
@@ -625,18 +893,13 @@ run_gcc (unsigned argc, char *argv[])
   /* Look at saved options in the IL files.  */
   for (i = 1; i < argc; ++i)
     {
-      char *data, *p;
-      char *fopts;
+      char *p;
       int fd;
-      const char *errmsg;
-      int err;
-      off_t file_offset = 0, offset, length;
+      off_t file_offset = 0;
       long loffset;
-      simple_object_read *sobj;
       int consumed;
-      struct cl_decoded_option *f2decoded_options;
-      unsigned int f2decoded_options_count;
       char *filename = argv[i];
+
       if ((p = strrchr (argv[i], '@'))
 	  && p != argv[i] 
 	  && sscanf (p, "@%li%n", &loffset, &consumed) >= 1
@@ -650,50 +913,15 @@ run_gcc (unsigned argc, char *argv[])
       fd = open (argv[i], O_RDONLY);
       if (fd == -1)
 	continue;
-      sobj = simple_object_start_read (fd, file_offset, "__GNU_LTO", 
-	  			       &errmsg, &err);
-      if (!sobj)
-	{
-	  close (fd);
-	  continue;
-	}
-      if (simple_object_find_section (sobj, OFFLOAD_SECTION_NAME_PREFIX ".opts",
-				      &offset, &length, &errmsg, &err))
-	have_offload = true;
-      if (!simple_object_find_section (sobj, LTO_SECTION_NAME_PREFIX "." "opts",
-				       &offset, &length, &errmsg, &err))
-	{
-	  simple_object_release_read (sobj);
-	  close (fd);
-	  continue;
-	}
-      have_lto = true;
-      lseek (fd, file_offset + offset, SEEK_SET);
-      data = (char *)xmalloc (length);
-      read (fd, data, length);
-      fopts = data;
-      do
-	{
-	  get_options_from_collect_gcc_options (collect_gcc,
-						fopts, CL_LANG_ALL,
-						&f2decoded_options,
-						&f2decoded_options_count);
-	  if (!fdecoded_options)
-	    {
-	      fdecoded_options = f2decoded_options;
-	      fdecoded_options_count = f2decoded_options_count;
-	    }
-	  else
-	    merge_and_complain (&fdecoded_options,
-				&fdecoded_options_count,
-				f2decoded_options, f2decoded_options_count);
 
-	  fopts += strlen (fopts) + 1;
-	}
-      while (fopts - data < length);
-
-      free (data);
-      simple_object_release_read (sobj);
+      have_lto
+	= find_and_merge_options (fd, file_offset, LTO_SECTION_NAME_PREFIX,
+				  &fdecoded_options, &fdecoded_options_count,
+				  collect_gcc);
+      have_offload
+	= find_and_merge_options (fd, file_offset, OFFLOAD_SECTION_NAME_PREFIX,
+				  &offload_fdecoded_options,
+				  &offload_fdecoded_options_count, collect_gcc);
       close (fd);
     }
 
@@ -703,79 +931,19 @@ run_gcc (unsigned argc, char *argv[])
   obstack_ptr_grow (&argv_obstack, "-xlto");
   obstack_ptr_grow (&argv_obstack, "-c");
 
-  /* Append compiler driver arguments as far as they were merged.  */
-  for (j = 1; j < fdecoded_options_count; ++j)
-    {
-      struct cl_decoded_option *option = &fdecoded_options[j];
+  append_compiler_options (&argv_obstack, fdecoded_options,
+			   fdecoded_options_count);
+  append_linker_options (&argv_obstack, decoded_options, decoded_options_count);
 
-      /* File options have been properly filtered by lto-opts.c.  */
-      switch (option->opt_index)
-	{
-	  /* Drop arguments that we want to take from the link line.  */
-	  case OPT_flto_:
-	  case OPT_flto:
-	  case OPT_flto_partition_:
-	      continue;
-
-	  default:
-	      break;
-	}
-
-      /* For now do what the original LTO option code was doing - pass
-	 on any CL_TARGET flag and a few selected others.  */
-      switch (option->opt_index)
-	{
-	case OPT_fPIC:
-	case OPT_fpic:
-	case OPT_fPIE:
-	case OPT_fpie:
-	case OPT_fcommon:
-	case OPT_fexceptions:
-	case OPT_fnon_call_exceptions:
-	case OPT_fgnu_tm:
-	case OPT_freg_struct_return:
-	case OPT_fpcc_struct_return:
-	case OPT_fshort_double:
-	case OPT_ffp_contract_:
-	case OPT_fmath_errno:
-	case OPT_fsigned_zeros:
-	case OPT_ftrapping_math:
-	case OPT_fwrapv:
-	case OPT_ftrapv:
-	case OPT_fstrict_overflow:
-	case OPT_O:
-	case OPT_Ofast:
-	case OPT_Og:
-	case OPT_Os:
-	  break;
-
-	default:
-	  if (!(cl_options[option->opt_index].flags & CL_TARGET))
-	    continue;
-	}
-
-      /* Pass the option on.  */
-      for (i = 0; i < option->canonical_option_num_elements; ++i)
-	obstack_ptr_grow (&argv_obstack, option->canonical_option[i]);
-    }
-
-  /* Append linker driver arguments.  Compiler options from the linker
-     driver arguments will override / merge with those from the compiler.  */
+  /* Scan linker driver arguments for things that are of relevance to us.  */
   for (j = 1; j < decoded_options_count; ++j)
     {
       struct cl_decoded_option *option = &decoded_options[j];
-
-      /* Do not pass on frontend specific flags not suitable for lto.  */
-      if (!(cl_options[option->opt_index].flags
-	    & (CL_COMMON|CL_TARGET|CL_DRIVER|CL_LTO)))
-	continue;
-
       switch (option->opt_index)
 	{
 	case OPT_o:
 	  linker_output = option->arg;
-	  /* We generate new intermediate output, drop this arg.  */
-	  continue;
+	  break;
 
 	case OPT_save_temps:
 	  save_temps = 1;
@@ -806,23 +974,11 @@ run_gcc (unsigned argc, char *argv[])
 
 	case OPT_flto:
 	  lto_mode = LTO_MODE_WHOPR;
-	  /* We've handled these LTO options, do not pass them on.  */
-	  continue;
-
-	case OPT_freg_struct_return:
-	case OPT_fpcc_struct_return:
-	case OPT_fshort_double:
-	  /* Ignore these, they are determined by the input files.
-	     ???  We fail to diagnose a possible mismatch here.  */
-	  continue;
+	  break;
 
 	default:
 	  break;
 	}
-
-      /* Pass the option on.  */
-      for (i = 0; i < option->canonical_option_num_elements; ++i)
-	obstack_ptr_grow (&argv_obstack, option->canonical_option[i]);
     }
 
   if (no_partition)
@@ -864,7 +1020,10 @@ run_gcc (unsigned argc, char *argv[])
 
   if (have_offload)
     {
-      compile_images_for_offload_targets (argc, argv);
+      compile_images_for_offload_targets (argc, argv, offload_fdecoded_options,
+					  offload_fdecoded_options_count,
+					  decoded_options,
+					  decoded_options_count);
       if (offload_names)
 	{
 	  find_offloadbeginend ();

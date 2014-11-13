@@ -106,6 +106,7 @@ extern rtx hook_rtx_rtx_identity (rtx);
 extern rtx hook_rtx_rtx_null (rtx);
 extern rtx hook_rtx_tree_int_null (tree, int);
 
+extern char *hook_charptr_void_null (void);
 extern const char *hook_constcharptr_void_null (void);
 extern const char *hook_constcharptr_const_tree_null (const_tree);
 extern const char *hook_constcharptr_const_rtx_insn_null (const rtx_insn *);

@@ -11402,6 +11402,15 @@ sections are available.  It is called once for each symbol that must be
 recorded in the offload function and variable table.
 @end deftypefn
 
+@deftypefn {Target Hook} {char *} TARGET_OFFLOAD_OPTIONS (void)
+Used when writing out the list of options into an LTO file.  It should
+translate any relevant target-specific options (such as the ABI in use)
+into one of the @option{-foffload} options that exist as a common interface
+to express such options.  It should return a string containing these options,
+separated by spaces, which the caller will free.
+
+@end deftypefn
+
 @defmac TARGET_SUPPORTS_WIDE_INT
 
 On older ports, large integers are stored in @code{CONST_DOUBLE} rtl

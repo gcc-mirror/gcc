@@ -1,3 +1,38 @@
+2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* common.opt (foffload, foffload-abi): New options.
+	* config/i386/i386.c (ix86_offload_options): New static function.
+	(TARGET_OFFLOAD_OPTIONS): Define.
+	* coretypes.h (enum offload_abi): New enum.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_OFFLOAD_OPTIONS): Document.
+	* gcc.c (offload_targets): New static variable.
+	(handle_foffload_option): New static function.
+	(driver_handle_option): Handle OPT_foffload_.
+	(driver::maybe_putenv_OFFLOAD_TARGETS): Set OFFLOAD_TARGET_NAMES
+	according to offload_targets.
+	* hooks.c (hook_charptr_void_null): New hook.
+	* hooks.h (hook_charptr_void_null): Declare.
+	* lto-opts.c: Include lto-section-names.h.
+	(lto_write_options): Append options from target offload_options hook and
+	store them to offload_lto section.  Do not store target-specific,
+	driver and diagnostic options in offload_lto section.
+	* lto-wrapper.c (merge_and_complain): Handle OPT_foffload_ and
+	OPT_foffload_abi_.
+	(append_compiler_options, append_linker_options)
+	(append_offload_options): New static functions.
+	(compile_offload_image): Add new arguments with options.
+	Call append_compiler_options and append_offload_options.
+	(compile_images_for_offload_targets): Add new arguments with options.
+	(find_and_merge_options): New static function.
+	(run_gcc): Outline options handling into the new functions:
+	find_and_merge_options, append_compiler_options, append_linker_options.
+	* opts.c (common_handle_option): Don't handle OPT_foffload_.
+	Forbid OPT_foffload_abi_ for non-offload compiler.
+	* target.def (offload_options): New target hook.
+
 2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
 	    Bernd Schmidt  <bernds@codesourcery.com>
 	    Andrey Turetskiy  <andrey.turetskiy@intel.com>

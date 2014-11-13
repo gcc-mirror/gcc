@@ -159,6 +159,10 @@ static const char *const spec_version = DEFAULT_TARGET_VERSION;
 static const char *spec_machine = DEFAULT_TARGET_MACHINE;
 static const char *spec_host_machine = DEFAULT_REAL_TARGET_MACHINE;
 
+/* List of offload targets.  */
+
+static char *offload_targets = NULL;
+
 /* Nonzero if cross-compiling.
    When -b is used, the value comes from the `specs' file.  */
 
@@ -3358,6 +3362,92 @@ driver_wrong_lang_callback (const struct cl_decoded_option *decoded,
 static const char *spec_lang = 0;
 static int last_language_n_infiles;
 
+/* Parse -foffload option argument.  */
+
+static void
+handle_foffload_option (const char *arg)
+{
+  const char *c, *cur, *n, *next, *end;
+  char *target;
+
+  /* If option argument starts with '-' then no target is specified and we
+     do not need to parse it.  */
+  if (arg[0] == '-')
+    return;
+
+  end = strchrnul (arg, '=');
+  cur = arg;
+
+  while (cur < end)
+    {
+      next = strchrnul (cur, ',');
+      next = (next > end) ? end : next;
+
+      target = XNEWVEC (char, next - cur + 1);
+      strncpy (target, cur, next - cur);
+      target[next - cur] = '\0';
+
+      /* If 'disable' is passed to the option, stop parsing the option and clean
+         the list of offload targets.  */
+      if (strcmp (target, "disable") == 0)
+	{
+	  free (offload_targets);
+	  offload_targets = xstrdup ("");
+	  break;
+	}
+
+      /* Check that GCC is configured to support the offload target.  */
+      c = OFFLOAD_TARGETS;
+      while (c)
+	{
+	  n = strchrnul (c, ',');
+
+	  if (strlen (target) == (size_t) (n - c)
+	      && strncmp (target, c, n - c) == 0)
+	    break;
+
+	  c = *n ? n + 1 : NULL;
+	}
+
+      if (!c)
+	fatal_error ("GCC is not configured to support %s as offload target",
+		     target);
+
+      if (!offload_targets)
+	offload_targets = xstrdup (target);
+      else
+	{
+	  /* Check that the target hasn't already presented in the list.  */
+	  c = offload_targets;
+	  do
+	    {
+	      n = strchrnul (c, ':');
+
+	      if (strlen (target) == (size_t) (n - c)
+		  && strncmp (c, target, n - c) == 0)
+		break;
+
+	      c = n + 1;
+	    }
+	  while (*n);
+
+	  /* If duplicate is not found, append the target to the list.  */
+	  if (c > n)
+	    {
+	      offload_targets
+		= XRESIZEVEC (char, offload_targets,
+			      strlen (offload_targets) + strlen (target) + 2);
+	      if (strlen (offload_targets) != 0)
+		strcat (offload_targets, ":");
+	      strcat (offload_targets, target);
+	    }
+	}
+
+      cur = next + 1;
+      XDELETEVEC (target);
+    }
+}
+
 /* Handle a driver option; arguments and return value as for
    handle_option.  */
 
@@ -3733,6 +3823,10 @@ driver_handle_option (struct gcc_options *opts,
 
     case OPT_fwpa:
       flag_wpa = "";
+      break;
+
+    case OPT_foffload_:
+      handle_foffload_option (arg);
       break;
 
     default:
@@ -7252,14 +7346,22 @@ driver::maybe_putenv_COLLECT_LTO_WRAPPER () const
 void
 driver::maybe_putenv_OFFLOAD_TARGETS () const
 {
-  if (strlen (OFFLOAD_TARGETS) > 0)
+  const char *targets = offload_targets;
+
+  /* If no targets specified by -foffload, use all available targets.  */
+  if (!targets)
+    targets = OFFLOAD_TARGETS;
+
+  if (strlen (targets) > 0)
     {
       obstack_grow (&collect_obstack, "OFFLOAD_TARGET_NAMES=",
 		    sizeof ("OFFLOAD_TARGET_NAMES=") - 1);
-      obstack_grow (&collect_obstack, OFFLOAD_TARGETS,
-		    strlen (OFFLOAD_TARGETS) + 1);
+      obstack_grow (&collect_obstack, targets,
+		    strlen (targets) + 1);
       xputenv (XOBFINISH (&collect_obstack, char *));
     }
+
+  free (offload_targets);
 }
 
 /* Reject switches that no pass was interested in.  */
