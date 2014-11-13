@@ -1,3 +1,13 @@
+2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+
+	* config.gcc (*-intelmic-* | *-intelmicemul-*): Add i386/t-intelmic to
+	tmake_file.
+	(i[34567]86-*-* | x86_64-*-*): Build mkoffload$(exeext) with the
+	accelerator compiler.
+	* config/i386/intelmic-mkoffload.c: New file.
+	* config/i386/t-intelmic: Ditto.
+
 2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
 	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>

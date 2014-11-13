@@ -2884,6 +2884,13 @@ powerpc*-*-* | rs6000-*-*)
 	tm_file="${tm_file} rs6000/option-defaults.h"
 esac
 
+# Build mkoffload tool
+case ${target} in
+*-intelmic-* | *-intelmicemul-*)
+	tmake_file="${tmake_file} i386/t-intelmic"
+	;;
+esac
+
 if [ "$target_has_targetcm" = "no" ]; then
   c_target_objs="$c_target_objs default-c.o"
   cxx_target_objs="$cxx_target_objs default-c.o"
@@ -4279,3 +4286,11 @@ then
 		target_cpu_default=$target_cpu_default2
 	fi
 fi
+
+case ${target} in
+i[34567]86-*-* | x86_64-*-*)
+	if test x$enable_as_accelerator = xyes; then
+		extra_programs="mkoffload\$(exeext)"
+	fi
+	;;
+esac
