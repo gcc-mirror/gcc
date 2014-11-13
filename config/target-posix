@@ -1,0 +1,12 @@
+case "${target}" in
+  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
+      ;;
+  *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly*)
+      ;;
+  *-*-solaris2* | *-*-hpux11*)
+      ;;
+  *-*-darwin* | *-*-aix*)
+      ;;
+  *)
+      UNSUPPORTED=1 ;;
+  esac

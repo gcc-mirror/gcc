@@ -574,7 +574,7 @@ all:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the target machine work.
-TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_libcilkrts)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
+TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_libcilkrts)$(TARGET_LIB_PATH_liboffloadmic)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
 
 @if target-libstdc++-v3
 TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:
@@ -591,6 +591,10 @@ TARGET_LIB_PATH_libvtv = $$r/$(TARGET_SUBDIR)/libvtv/.libs:
 @if target-libcilkrts
 TARGET_LIB_PATH_libcilkrts = $$r/$(TARGET_SUBDIR)/libcilkrts/.libs:
 @endif target-libcilkrts
+
+@if target-liboffloadmic
+TARGET_LIB_PATH_liboffloadmic = $$r/$(TARGET_SUBDIR)/liboffloadmic/.libs:
+@endif target-liboffloadmic
 
 @if target-libssp
 TARGET_LIB_PATH_libssp = $$r/$(TARGET_SUBDIR)/libssp/.libs:
@@ -926,6 +930,7 @@ configure-target:  \
     maybe-configure-target-libsanitizer \
     maybe-configure-target-libvtv \
     maybe-configure-target-libcilkrts \
+    maybe-configure-target-liboffloadmic \
     maybe-configure-target-libssp \
     maybe-configure-target-newlib \
     maybe-configure-target-libgcc \
@@ -1084,6 +1089,7 @@ all-target: maybe-all-target-libsanitizer
 all-target: maybe-all-target-libvtv
 @endif target-libvtv-no-bootstrap
 all-target: maybe-all-target-libcilkrts
+all-target: maybe-all-target-liboffloadmic
 all-target: maybe-all-target-libssp
 all-target: maybe-all-target-newlib
 @if target-libgcc-no-bootstrap
@@ -1177,6 +1183,7 @@ info-target: maybe-info-target-libstdc++-v3
 info-target: maybe-info-target-libsanitizer
 info-target: maybe-info-target-libvtv
 info-target: maybe-info-target-libcilkrts
+info-target: maybe-info-target-liboffloadmic
 info-target: maybe-info-target-libssp
 info-target: maybe-info-target-newlib
 info-target: maybe-info-target-libgcc
@@ -1261,6 +1268,7 @@ dvi-target: maybe-dvi-target-libstdc++-v3
 dvi-target: maybe-dvi-target-libsanitizer
 dvi-target: maybe-dvi-target-libvtv
 dvi-target: maybe-dvi-target-libcilkrts
+dvi-target: maybe-dvi-target-liboffloadmic
 dvi-target: maybe-dvi-target-libssp
 dvi-target: maybe-dvi-target-newlib
 dvi-target: maybe-dvi-target-libgcc
@@ -1345,6 +1353,7 @@ pdf-target: maybe-pdf-target-libstdc++-v3
 pdf-target: maybe-pdf-target-libsanitizer
 pdf-target: maybe-pdf-target-libvtv
 pdf-target: maybe-pdf-target-libcilkrts
+pdf-target: maybe-pdf-target-liboffloadmic
 pdf-target: maybe-pdf-target-libssp
 pdf-target: maybe-pdf-target-newlib
 pdf-target: maybe-pdf-target-libgcc
@@ -1429,6 +1438,7 @@ html-target: maybe-html-target-libstdc++-v3
 html-target: maybe-html-target-libsanitizer
 html-target: maybe-html-target-libvtv
 html-target: maybe-html-target-libcilkrts
+html-target: maybe-html-target-liboffloadmic
 html-target: maybe-html-target-libssp
 html-target: maybe-html-target-newlib
 html-target: maybe-html-target-libgcc
@@ -1513,6 +1523,7 @@ TAGS-target: maybe-TAGS-target-libstdc++-v3
 TAGS-target: maybe-TAGS-target-libsanitizer
 TAGS-target: maybe-TAGS-target-libvtv
 TAGS-target: maybe-TAGS-target-libcilkrts
+TAGS-target: maybe-TAGS-target-liboffloadmic
 TAGS-target: maybe-TAGS-target-libssp
 TAGS-target: maybe-TAGS-target-newlib
 TAGS-target: maybe-TAGS-target-libgcc
@@ -1597,6 +1608,7 @@ install-info-target: maybe-install-info-target-libstdc++-v3
 install-info-target: maybe-install-info-target-libsanitizer
 install-info-target: maybe-install-info-target-libvtv
 install-info-target: maybe-install-info-target-libcilkrts
+install-info-target: maybe-install-info-target-liboffloadmic
 install-info-target: maybe-install-info-target-libssp
 install-info-target: maybe-install-info-target-newlib
 install-info-target: maybe-install-info-target-libgcc
@@ -1681,6 +1693,7 @@ install-pdf-target: maybe-install-pdf-target-libstdc++-v3
 install-pdf-target: maybe-install-pdf-target-libsanitizer
 install-pdf-target: maybe-install-pdf-target-libvtv
 install-pdf-target: maybe-install-pdf-target-libcilkrts
+install-pdf-target: maybe-install-pdf-target-liboffloadmic
 install-pdf-target: maybe-install-pdf-target-libssp
 install-pdf-target: maybe-install-pdf-target-newlib
 install-pdf-target: maybe-install-pdf-target-libgcc
@@ -1765,6 +1778,7 @@ install-html-target: maybe-install-html-target-libstdc++-v3
 install-html-target: maybe-install-html-target-libsanitizer
 install-html-target: maybe-install-html-target-libvtv
 install-html-target: maybe-install-html-target-libcilkrts
+install-html-target: maybe-install-html-target-liboffloadmic
 install-html-target: maybe-install-html-target-libssp
 install-html-target: maybe-install-html-target-newlib
 install-html-target: maybe-install-html-target-libgcc
@@ -1849,6 +1863,7 @@ installcheck-target: maybe-installcheck-target-libstdc++-v3
 installcheck-target: maybe-installcheck-target-libsanitizer
 installcheck-target: maybe-installcheck-target-libvtv
 installcheck-target: maybe-installcheck-target-libcilkrts
+installcheck-target: maybe-installcheck-target-liboffloadmic
 installcheck-target: maybe-installcheck-target-libssp
 installcheck-target: maybe-installcheck-target-newlib
 installcheck-target: maybe-installcheck-target-libgcc
@@ -1933,6 +1948,7 @@ mostlyclean-target: maybe-mostlyclean-target-libstdc++-v3
 mostlyclean-target: maybe-mostlyclean-target-libsanitizer
 mostlyclean-target: maybe-mostlyclean-target-libvtv
 mostlyclean-target: maybe-mostlyclean-target-libcilkrts
+mostlyclean-target: maybe-mostlyclean-target-liboffloadmic
 mostlyclean-target: maybe-mostlyclean-target-libssp
 mostlyclean-target: maybe-mostlyclean-target-newlib
 mostlyclean-target: maybe-mostlyclean-target-libgcc
@@ -2017,6 +2033,7 @@ clean-target: maybe-clean-target-libstdc++-v3
 clean-target: maybe-clean-target-libsanitizer
 clean-target: maybe-clean-target-libvtv
 clean-target: maybe-clean-target-libcilkrts
+clean-target: maybe-clean-target-liboffloadmic
 clean-target: maybe-clean-target-libssp
 clean-target: maybe-clean-target-newlib
 clean-target: maybe-clean-target-libgcc
@@ -2101,6 +2118,7 @@ distclean-target: maybe-distclean-target-libstdc++-v3
 distclean-target: maybe-distclean-target-libsanitizer
 distclean-target: maybe-distclean-target-libvtv
 distclean-target: maybe-distclean-target-libcilkrts
+distclean-target: maybe-distclean-target-liboffloadmic
 distclean-target: maybe-distclean-target-libssp
 distclean-target: maybe-distclean-target-newlib
 distclean-target: maybe-distclean-target-libgcc
@@ -2185,6 +2203,7 @@ maintainer-clean-target: maybe-maintainer-clean-target-libstdc++-v3
 maintainer-clean-target: maybe-maintainer-clean-target-libsanitizer
 maintainer-clean-target: maybe-maintainer-clean-target-libvtv
 maintainer-clean-target: maybe-maintainer-clean-target-libcilkrts
+maintainer-clean-target: maybe-maintainer-clean-target-liboffloadmic
 maintainer-clean-target: maybe-maintainer-clean-target-libssp
 maintainer-clean-target: maybe-maintainer-clean-target-newlib
 maintainer-clean-target: maybe-maintainer-clean-target-libgcc
@@ -2324,6 +2343,7 @@ check-target:  \
     maybe-check-target-libsanitizer \
     maybe-check-target-libvtv \
     maybe-check-target-libcilkrts \
+    maybe-check-target-liboffloadmic \
     maybe-check-target-libssp \
     maybe-check-target-newlib \
     maybe-check-target-libgcc \
@@ -2482,6 +2502,7 @@ install-target:  \
     maybe-install-target-libsanitizer \
     maybe-install-target-libvtv \
     maybe-install-target-libcilkrts \
+    maybe-install-target-liboffloadmic \
     maybe-install-target-libssp \
     maybe-install-target-newlib \
     maybe-install-target-libgcc \
@@ -2586,6 +2607,7 @@ install-strip-target:  \
     maybe-install-strip-target-libsanitizer \
     maybe-install-strip-target-libvtv \
     maybe-install-strip-target-libcilkrts \
+    maybe-install-strip-target-liboffloadmic \
     maybe-install-strip-target-libssp \
     maybe-install-strip-target-newlib \
     maybe-install-strip-target-libgcc \
@@ -35188,6 +35210,469 @@ maintainer-clean-target-libcilkrts:
 
 
 
+.PHONY: configure-target-liboffloadmic maybe-configure-target-liboffloadmic
+maybe-configure-target-liboffloadmic:
+@if gcc-bootstrap
+configure-target-liboffloadmic: stage_current
+@endif gcc-bootstrap
+@if target-liboffloadmic
+maybe-configure-target-liboffloadmic: configure-target-liboffloadmic
+configure-target-liboffloadmic: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for liboffloadmic..."; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/liboffloadmic ; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/liboffloadmic/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/liboffloadmic/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/liboffloadmic/multilib.tmp $(TARGET_SUBDIR)/liboffloadmic/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/liboffloadmic/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/liboffloadmic/Makefile; \
+	    mv $(TARGET_SUBDIR)/liboffloadmic/multilib.tmp $(TARGET_SUBDIR)/liboffloadmic/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/liboffloadmic/multilib.tmp $(TARGET_SUBDIR)/liboffloadmic/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/liboffloadmic/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/liboffloadmic ; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	echo Configuring in $(TARGET_SUBDIR)/liboffloadmic; \
+	 \
+	this_target="${target_alias}"; \
+	 \
+	cd "$(TARGET_SUBDIR)/liboffloadmic" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/liboffloadmic/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=liboffloadmic; \
+	srcdiroption="--srcdir=$${topdir}/liboffloadmic"; \
+	libsrcdir="$$s/liboffloadmic"; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=$${this_target} $${srcdiroption} @extra_liboffloadmic_configure_flags@ \
+	  || exit 1
+@endif target-liboffloadmic
+
+
+
+
+
+.PHONY: all-target-liboffloadmic maybe-all-target-liboffloadmic
+maybe-all-target-liboffloadmic:
+@if gcc-bootstrap
+all-target-liboffloadmic: stage_current
+@endif gcc-bootstrap
+@if target-liboffloadmic
+TARGET-target-liboffloadmic=all
+maybe-all-target-liboffloadmic: all-target-liboffloadmic
+all-target-liboffloadmic: configure-target-liboffloadmic
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
+		$(TARGET-target-liboffloadmic))
+@endif target-liboffloadmic
+
+
+
+
+
+.PHONY: check-target-liboffloadmic maybe-check-target-liboffloadmic
+maybe-check-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-check-target-liboffloadmic: check-target-liboffloadmic
+
+check-target-liboffloadmic:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
+
+@endif target-liboffloadmic
+
+.PHONY: install-target-liboffloadmic maybe-install-target-liboffloadmic
+maybe-install-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-install-target-liboffloadmic: install-target-liboffloadmic
+
+install-target-liboffloadmic: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-liboffloadmic
+
+.PHONY: install-strip-target-liboffloadmic maybe-install-strip-target-liboffloadmic
+maybe-install-strip-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-install-strip-target-liboffloadmic: install-strip-target-liboffloadmic
+
+install-strip-target-liboffloadmic: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-liboffloadmic
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-target-liboffloadmic info-target-liboffloadmic
+maybe-info-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-info-target-liboffloadmic: info-target-liboffloadmic
+
+info-target-liboffloadmic: \
+    configure-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing info in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           info) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-dvi-target-liboffloadmic dvi-target-liboffloadmic
+maybe-dvi-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-dvi-target-liboffloadmic: dvi-target-liboffloadmic
+
+dvi-target-liboffloadmic: \
+    configure-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           dvi) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-pdf-target-liboffloadmic pdf-target-liboffloadmic
+maybe-pdf-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-pdf-target-liboffloadmic: pdf-target-liboffloadmic
+
+pdf-target-liboffloadmic: \
+    configure-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing pdf in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           pdf) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-html-target-liboffloadmic html-target-liboffloadmic
+maybe-html-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-html-target-liboffloadmic: html-target-liboffloadmic
+
+html-target-liboffloadmic: \
+    configure-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing html in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           html) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-TAGS-target-liboffloadmic TAGS-target-liboffloadmic
+maybe-TAGS-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-TAGS-target-liboffloadmic: TAGS-target-liboffloadmic
+
+TAGS-target-liboffloadmic: \
+    configure-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           TAGS) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-install-info-target-liboffloadmic install-info-target-liboffloadmic
+maybe-install-info-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-install-info-target-liboffloadmic: install-info-target-liboffloadmic
+
+install-info-target-liboffloadmic: \
+    configure-target-liboffloadmic \
+    info-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-info) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-install-pdf-target-liboffloadmic install-pdf-target-liboffloadmic
+maybe-install-pdf-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-install-pdf-target-liboffloadmic: install-pdf-target-liboffloadmic
+
+install-pdf-target-liboffloadmic: \
+    configure-target-liboffloadmic \
+    pdf-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-install-html-target-liboffloadmic install-html-target-liboffloadmic
+maybe-install-html-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-install-html-target-liboffloadmic: install-html-target-liboffloadmic
+
+install-html-target-liboffloadmic: \
+    configure-target-liboffloadmic \
+    html-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-html in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-html) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-installcheck-target-liboffloadmic installcheck-target-liboffloadmic
+maybe-installcheck-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-installcheck-target-liboffloadmic: installcheck-target-liboffloadmic
+
+installcheck-target-liboffloadmic: \
+    configure-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           installcheck) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-mostlyclean-target-liboffloadmic mostlyclean-target-liboffloadmic
+maybe-mostlyclean-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-mostlyclean-target-liboffloadmic: mostlyclean-target-liboffloadmic
+
+mostlyclean-target-liboffloadmic: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           mostlyclean) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-clean-target-liboffloadmic clean-target-liboffloadmic
+maybe-clean-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-clean-target-liboffloadmic: clean-target-liboffloadmic
+
+clean-target-liboffloadmic: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing clean in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           clean) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-distclean-target-liboffloadmic distclean-target-liboffloadmic
+maybe-distclean-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-distclean-target-liboffloadmic: distclean-target-liboffloadmic
+
+distclean-target-liboffloadmic: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           distclean) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-maintainer-clean-target-liboffloadmic maintainer-clean-target-liboffloadmic
+maybe-maintainer-clean-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-maintainer-clean-target-liboffloadmic: maintainer-clean-target-liboffloadmic
+
+maintainer-clean-target-liboffloadmic: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           maintainer-clean) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+
+
+
+
 .PHONY: configure-target-libssp maybe-configure-target-libssp
 maybe-configure-target-libssp:
 @if gcc-bootstrap
@@ -47511,6 +47996,7 @@ configure-stage4-target-libvtv: maybe-all-stage4-gcc
 configure-stageprofile-target-libvtv: maybe-all-stageprofile-gcc
 configure-stagefeedback-target-libvtv: maybe-all-stagefeedback-gcc
 configure-target-libcilkrts: stage_last
+configure-target-liboffloadmic: stage_last
 configure-target-libssp: stage_last
 configure-target-newlib: stage_last
 configure-stage1-target-libgcc: maybe-all-stage1-gcc
@@ -47548,6 +48034,7 @@ configure-target-libstdc++-v3: maybe-all-gcc
 configure-target-libsanitizer: maybe-all-gcc
 configure-target-libvtv: maybe-all-gcc
 configure-target-libcilkrts: maybe-all-gcc
+configure-target-liboffloadmic: maybe-all-gcc
 configure-target-libssp: maybe-all-gcc
 configure-target-newlib: maybe-all-gcc
 configure-target-libgcc: maybe-all-gcc
@@ -48341,6 +48828,7 @@ configure-stage3-target-libstdc++-v3: maybe-configure-stage3-target-libgomp
 configure-stage4-target-libstdc++-v3: maybe-configure-stage4-target-libgomp
 configure-stageprofile-target-libstdc++-v3: maybe-configure-stageprofile-target-libgomp
 configure-stagefeedback-target-libstdc++-v3: maybe-configure-stagefeedback-target-libgomp
+configure-target-liboffloadmic: maybe-configure-target-libgomp
 configure-target-libsanitizer: maybe-all-target-libstdc++-v3
 
 configure-stage1-target-libsanitizer: maybe-all-stage1-target-libstdc++-v3
@@ -48365,6 +48853,7 @@ all-stage3-target-libstdc++-v3: maybe-configure-stage3-target-libgomp
 all-stage4-target-libstdc++-v3: maybe-configure-stage4-target-libgomp
 all-stageprofile-target-libstdc++-v3: maybe-configure-stageprofile-target-libgomp
 all-stagefeedback-target-libstdc++-v3: maybe-configure-stagefeedback-target-libgomp
+all-target-liboffloadmic: maybe-configure-target-libgomp
 install-target-libgo: maybe-install-target-libatomic
 install-target-libgfortran: maybe-install-target-libquadmath
 install-target-libgfortran: maybe-install-target-libgcc
@@ -48374,6 +48863,8 @@ install-target-libvtv: maybe-install-target-libstdc++-v3
 install-target-libvtv: maybe-install-target-libgcc
 install-target-libcilkrts: maybe-install-target-libstdc++-v3
 install-target-libcilkrts: maybe-install-target-libgcc
+install-target-liboffloadmic: maybe-install-target-libstdc++-v3
+install-target-liboffloadmic: maybe-install-target-libgcc
 install-target-libjava: maybe-install-target-libgcc
 install-target-libitm: maybe-install-target-libgcc
 install-target-libobjc: maybe-install-target-libgcc
@@ -48422,6 +48913,7 @@ configure-target-libstdc++-v3: maybe-all-target-libgcc
 configure-target-libsanitizer: maybe-all-target-libgcc
 configure-target-libvtv: maybe-all-target-libgcc
 configure-target-libcilkrts: maybe-all-target-libgcc
+configure-target-liboffloadmic: maybe-all-target-libgcc
 configure-target-libssp: maybe-all-target-libgcc
 configure-target-newlib: maybe-all-target-libgcc
 configure-target-libbacktrace: maybe-all-target-libgcc
@@ -48452,6 +48944,9 @@ configure-target-libvtv: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libcilkrts: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libcilkrts: maybe-all-target-libstdc++-v3
+
+configure-target-liboffloadmic: maybe-all-target-newlib maybe-all-target-libgloss
+configure-target-liboffloadmic: maybe-all-target-libstdc++-v3
 
 configure-target-libssp: maybe-all-target-newlib maybe-all-target-libgloss
 
