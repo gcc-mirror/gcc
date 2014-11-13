@@ -118,7 +118,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<bool __icase, bool __collate>
 	void
-	_M_expression_term(_BracketMatcher<_TraitsT, __icase, __collate>&
+	_M_expression_term(pair<bool, _CharT>& __last_char,
+			   _BracketMatcher<_TraitsT, __icase, __collate>&
 			   __matcher);
 
       int
@@ -390,6 +391,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_make_range(_CharT __l, _CharT __r)
       {
+	if (__l > __r)
+	  __throw_regex_error(regex_constants::error_range);
 	_M_range_set.push_back(make_pair(_M_translator._M_transform(__l),
 					 _M_translator._M_transform(__r)));
 #ifdef _GLIBCXX_DEBUG

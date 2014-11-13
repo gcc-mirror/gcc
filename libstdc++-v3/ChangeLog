@@ -1,3 +1,15 @@
+2014-11-13  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/63775
+	* include/bits/regex_compiler.h (_Compiler<>::_M_expression_term,
+	_BracketMatcher<>::_M_make_range): Throw regex_erorr on invalid range
+	like [z-a]. Change _M_expression_term interface.
+	* include/bits/regex_compiler.tcc (
+	_Compiler<>::_M_insert_bracket_matcher,
+	_Compiler<>::_M_expression_term): Rewrite bracket expression parsing.
+	* testsuite/28_regex/algorithms/regex_match/cstring_bracket_01.cc:
+	Add testcases and move file out of extended.
+
 2014-11-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/57250
