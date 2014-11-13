@@ -6567,8 +6567,11 @@ vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
   return gen_rtx_fmt_ee (rcode, VOIDmode, ops[0].value, ops[1].value);
 }
 
-/* Return true if VEC_PERM_EXPR can be expanded using SIMD extensions
-   of the CPU.  SEL may be NULL, which stands for an unknown constant.  */
+/* Return true if VEC_PERM_EXPR of arbitrary input vectors can be expanded using
+   SIMD extensions of the CPU.  SEL may be NULL, which stands for an unknown
+   constant.  Note that additional permutations representing whole-vector shifts
+   may also be handled via the vec_shr optab, but only where the second input
+   vector is entirely constant zeroes; this case is not dealt with here.  */
 
 bool
 can_vec_perm_p (machine_mode mode, bool variable,
@@ -6621,6 +6624,36 @@ can_vec_perm_p (machine_mode mode, bool variable,
   return true;
 }
 
+/* Checks if vec_perm mask SEL is a constant equivalent to a shift of the first
+   vec_perm operand, assuming the second operand is a constant vector of zeroes.
+   Return the shift distance in bits if so, or NULL_RTX if the vec_perm is not a
+   shift.  */
+static rtx
+shift_amt_for_vec_perm_mask (rtx sel)
+{
+  unsigned int i, first, nelt = GET_MODE_NUNITS (GET_MODE (sel));
+  unsigned int bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (sel)));
+
+  if (GET_CODE (sel) != CONST_VECTOR)
+    return NULL_RTX;
+
+  first = INTVAL (CONST_VECTOR_ELT (sel, 0));
+  if (first >= 2*nelt)
+    return NULL_RTX;
+  for (i = 1; i < nelt; i++)
+    {
+      int idx = INTVAL (CONST_VECTOR_ELT (sel, i));
+      unsigned int expected = (i + first) & (2 * nelt - 1);
+      /* Indices into the second vector are all equivalent.  */
+      if (idx < 0 || (MIN (nelt, (unsigned) idx) != MIN (nelt, expected)))
+	return NULL_RTX;
+    }
+
+  if (BYTES_BIG_ENDIAN)
+    first = (2 * nelt) - first;
+  return GEN_INT (first * bitsize);
+}
+
 /* A subroutine of expand_vec_perm for expanding one vec_perm insn.  */
 
 static rtx
@@ -6649,6 +6682,17 @@ expand_vec_perm_1 (enum insn_code icode, rtx target,
   else
     {
       create_input_operand (&ops[1], v0, tmode);
+      /* See if this can be handled with a vec_shr.  We only do this if the
+         second vector is all zeroes.  */
+      enum insn_code shift_code = optab_handler (vec_shr_optab, GET_MODE (v0));
+      if (v1 == CONST0_RTX (GET_MODE (v1)) && shift_code)
+	if (rtx shift_amt = shift_amt_for_vec_perm_mask (sel))
+	  {
+	    create_convert_operand_from_type (&ops[2], shift_amt,
+					      sizetype_tab[(int) stk_sizetype]);
+	    if (maybe_expand_insn (shift_code, 3, ops))
+	      return ops[0].value;
+	  }
       create_input_operand (&ops[2], v1, tmode);
     }
 

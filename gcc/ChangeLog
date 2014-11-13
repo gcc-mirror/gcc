@@ -1,5 +1,22 @@
 2014-11-13  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* optabs.c (can_vec_perm_p): Update comment, does not consider vec_shr.
+	(shift_amt_for_vec_perm_mask): New.
+	(expand_vec_perm_1): Use vec_shr_optab if second vector is const0_rtx
+	and mask appropriate.
+
+	* tree-vect-loop.c (calc_vec_perm_mask_for_shift): New.
+	(have_whole_vector_shift): New.
+	(vect_model_reduction_cost): Call have_whole_vector_shift instead of
+	looking for vec_shr_optab.
+	(vect_create_epilog_for_reduction): Likewise; also rename local variable
+	have_whole_vector_shift to reduce_with_shift; output VEC_PERM_EXPRs
+	instead of VEC_RSHIFT_EXPRs.
+
+	* tree-vect-stmts.c (vect_gen_perm_mask_checked): Extend comment.
+
+2014-11-13  Alan Lawrence  <alan.lawrence@arm.com>
+
         * tree-vectorizer.h (vect_gen_perm_mask): Remove.
         (vect_gen_perm_mask_checked, vect_gen_perm_mask_any): New.
 
