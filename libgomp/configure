@@ -15052,6 +15052,60 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 
+plugin_support=yes
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlsym in -ldl" >&5
+$as_echo_n "checking for dlsym in -ldl... " >&6; }
+if test "${ac_cv_lib_dl_dlsym+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ldl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char dlsym ();
+int
+main ()
+{
+return dlsym ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_dl_dlsym=yes
+else
+  ac_cv_lib_dl_dlsym=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dl_dlsym" >&5
+$as_echo "$ac_cv_lib_dl_dlsym" >&6; }
+if test "x$ac_cv_lib_dl_dlsym" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBDL 1
+_ACEOF
+
+  LIBS="-ldl $LIBS"
+
+else
+  plugin_support=no
+fi
+
+if test x"$plugin_support" = xyes; then
+
+$as_echo "#define PLUGIN_SUPPORT 1" >>confdefs.h
+
+fi
+
 # Check for functions needed.
 for ac_func in getloadavg clock_gettime strtoull
 do :
@@ -16152,6 +16206,29 @@ if test ${multilib} = yes; then
 else
   multilib_arg=
 fi
+
+offload_targets=
+if test x"$enable_offload_targets" != x; then
+  for tgt in `echo $enable_offload_targets | sed -e 's#,# #g'`; do
+    tgt=`echo $tgt | sed 's/=.*//'`
+    case $tgt in
+      *-intelmic-* | *-intelmicemul-*)
+	tgt_name="intelmic" ;;
+      *)
+	as_fn_error "unknown offload target specified" "$LINENO" 5 ;;
+    esac
+    if test x"$offload_targets" = x; then
+      offload_targets=$tgt_name
+    else
+      offload_targets=$offload_targets,$tgt_name
+    fi
+  done
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define OFFLOAD_TARGETS "$offload_targets"
+_ACEOF
+
 
 # Set up the set of libraries that we need to link against for libgomp.
 # Note that the GOMP_SELF_SPEC in gcc.c may force -pthread,

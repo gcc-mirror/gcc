@@ -1845,6 +1845,20 @@ If GCC is configured with some multilibs that use glibc and some that
 do not, this option applies only to the multilibs that use glibc.
 However, such configurations may not work well as not all the relevant
 configuration in GCC is on a per-multilib basis.
+
+@item --enable-as-accelerator-for=@var{target}
+Build as offload target compiler. Specify offload host triple by @var{target}.
+
+@item --enable-offload-targets=@var{target1}[=@var{path1}],@dots{},@var{targetN}[=@var{pathN}]
+Enable offloading to targets @var{target1}, @dots{}, @var{targetN}.
+Offload compilers are expected to be already installed.  Default search
+path for them is @file{@var{exec-prefix}}, but it can be changed by
+specifying paths @var{path1}, @dots{}, @var{pathN}.
+
+@smallexample
+% @var{srcdir}/configure \
+    --enable-offload-target=i686-unknown-linux-gnu=/path/to/i686/compiler,x86_64-pc-linux-gnu
+@end smallexample
 @end table
 
 @subheading Cross-Compiler-Specific Options

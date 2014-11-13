@@ -34,6 +34,16 @@ else
 fi
 AC_SUBST(gcc_build_dir)
 
+# Used for constructing correct paths for offload compilers.
+accel_dir_suffix=
+real_target_noncanonical=${target_noncanonical}
+if test x"$enable_as_accelerator_for" != x; then
+  accel_dir_suffix=/accel/${target_noncanonical}
+  real_target_noncanonical=${enable_as_accelerator_for}
+fi
+AC_SUBST(accel_dir_suffix)
+AC_SUBST(real_target_noncanonical)
+
 AM_PROG_LIBTOOL
 ACX_LT_HOST_FLAGS
 AC_SUBST(target_noncanonical)

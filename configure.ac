@@ -285,6 +285,24 @@ case ${with_newlib} in
   yes) skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'` ;;
 esac
 
+AC_ARG_ENABLE(as-accelerator-for,
+[AS_HELP_STRING([--enable-as-accelerator-for=ARG],
+		[build as offload target compiler.
+		Specify offload host triple by ARG])],
+ENABLE_AS_ACCELERATOR_FOR=$enableval,
+ENABLE_AS_ACCELERATOR_FOR=no)
+
+AC_ARG_ENABLE(offload-targets,
+[AS_HELP_STRING([--enable-offload-targets=LIST],
+		[enable offloading to devices from comma-separated LIST of
+		TARGET[=DIR]. Use optional path to find offload target compiler
+		during the build])],
+[
+  if test x"$enable_offload_targets" = x; then
+    AC_MSG_ERROR([no offload targets specified])
+  fi
+], [enable_offload_targets=])
+
 # Handle --enable-gold, --enable-ld.
 # --disable-gold [--enable-ld]
 #     Build only ld.  Default option.

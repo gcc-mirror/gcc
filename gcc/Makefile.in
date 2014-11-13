@@ -59,6 +59,11 @@ host=@host@
 target=@target@
 target_noncanonical:=@target_noncanonical@
 
+# Normally identical to target_noncanonical, except for compilers built
+# as accelerator targets.
+real_target_noncanonical:=@real_target_noncanonical@
+accel_dir_suffix = @accel_dir_suffix@
+
 # Sed command to transform gcc to installed name.
 program_transform_name := @program_transform_name@
 
@@ -363,6 +368,8 @@ enable_plugin = @enable_plugin@
 
 enable_host_shared = @enable_host_shared@
 
+enable_as_accelerator = @enable_as_accelerator@
+
 CPPLIB = ../libcpp/libcpp.a
 CPPINC = -I$(srcdir)/../libcpp/include
 
@@ -574,9 +581,9 @@ libexecdir = @libexecdir@
 # --------
 
 # Directory in which the compiler finds libraries etc.
-libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(version)
+libsubdir = $(libdir)/gcc/$(real_target_noncanonical)/$(version)$(accel_dir_suffix)
 # Directory in which the compiler finds executables
-libexecsubdir = $(libexecdir)/gcc/$(target_noncanonical)/$(version)
+libexecsubdir = $(libexecdir)/gcc/$(real_target_noncanonical)/$(version)$(accel_dir_suffix)
 # Directory in which all plugin resources are installed
 plugin_resourcesdir = $(libsubdir)/plugin
  # Directory in which plugin headers are installed
@@ -584,7 +591,11 @@ plugin_includedir = $(plugin_resourcesdir)/include
 # Directory in which plugin specific executables are installed
 plugin_bindir = $(libexecsubdir)/plugin
 # Used to produce a relative $(gcc_tooldir) in gcc.o
+ifeq ($(enable_as_accelerator),yes)
+unlibsubdir = ../../../../..
+else
 unlibsubdir = ../../..
+endif
 # $(prefix), expressed as a path relative to $(libsubdir).
 #
 # An explanation of the sed strings:
@@ -1957,9 +1968,11 @@ DRIVER_DEFINES = \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc/\" \
   -DSTANDARD_LIBEXEC_PREFIX=\"$(libexecdir)/gcc/\" \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
+  -DDEFAULT_REAL_TARGET_MACHINE=\"$(real_target_noncanonical)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\" \
   -DSTANDARD_BINDIR_PREFIX=\"$(bindir)/\" \
   -DTOOLDIR_BASE_PREFIX=\"$(libsubdir_to_prefix)$(prefix_to_exec_prefix)\" \
+  -DACCEL_DIR_SUFFIX=\"$(accel_dir_suffix)\" \
   @TARGET_SYSTEM_ROOT_DEFINE@ \
   $(VALGRIND_DRIVER_DEFINES) \
   $(if $(SHLIB),$(if $(filter yes,@enable_shared@),-DENABLE_SHARED_LIBGCC)) \
@@ -3164,12 +3177,14 @@ install-strip: install
 
 # Handle cpp installation.
 install-cpp: installdirs cpp$(exeext)
-	-rm -f $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext)
-	-$(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext)
-	-if [ x$(cpp_install_dir) != x ]; then \
-	  rm -f $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
-	else true; fi
+	-if test "$(enable_as_accelerator)" != "yes" ; then \
+	  rm -f $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext); \
+	  if [ x$(cpp_install_dir) != x ]; then \
+	    rm -f $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
+	  else true; fi; \
+	fi
 
 # Create the installation directories.
 # $(libdir)/gcc/include isn't currently searched by cpp.
@@ -3277,17 +3292,21 @@ install-common: native lang.install-common installdirs
 # otherwise override the specs built into the driver.
 	rm -f $(DESTDIR)$(libsubdir)/specs
 # Install gcov if it was compiled.
-	-if [ -f gcov$(exeext) ]; \
-	then \
+	-if test "$(enable_as_accelerator)" != "yes" ; then \
+	  if [ -f gcov$(exeext) ]; \
+	  then \
 	    rm -f $(DESTDIR)$(bindir)/$(GCOV_INSTALL_NAME)$(exeext); \
 	    $(INSTALL_PROGRAM) gcov$(exeext) $(DESTDIR)$(bindir)/$(GCOV_INSTALL_NAME)$(exeext); \
+	  fi; \
 	fi
 # Install gcov-tool if it was compiled.
-	-if [ -f gcov-tool$(exeext) ]; \
-	then \
+	-if test "$(enable_as_accelerator)" != "yes" ; then \
+	  if [ -f gcov-tool$(exeext) ]; \
+	  then \
 	    rm -f $(DESTDIR)$(bindir)/$(GCOV_TOOL_INSTALL_NAME)$(exeext); \
 	    $(INSTALL_PROGRAM) \
 	    gcov-tool$(exeext) $(DESTDIR)$(bindir)/$(GCOV_TOOL_INSTALL_NAME)$(exeext); \
+	  fi; \
 	fi
 
 # Install the driver program as $(target_noncanonical)-gcc,
@@ -3295,17 +3314,19 @@ install-common: native lang.install-common installdirs
 install-driver: installdirs xgcc$(exeext)
 	-rm -f $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext)
 	-$(INSTALL_PROGRAM) xgcc$(exeext) $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext)
-	-if [ "$(GCC_INSTALL_NAME)" != "$(target_noncanonical)-gcc-$(version)" ]; then \
-	  rm -f $(DESTDIR)$(bindir)/$(FULL_DRIVER_NAME); \
-	  ( cd $(DESTDIR)$(bindir) && \
-	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(FULL_DRIVER_NAME) ); \
-	fi
-	-if [ ! -f gcc-cross$(exeext) ] \
-	    && [ "$(GCC_INSTALL_NAME)" != "$(GCC_TARGET_INSTALL_NAME)" ]; then \
-	  rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-tmp$(exeext); \
-	  ( cd $(DESTDIR)$(bindir) && \
-	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-tmp$(exeext) && \
-	    mv -f $(target_noncanonical)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
+	-if test "$(enable_as_accelerator)" != "yes" ; then \
+	  if [ "$(GCC_INSTALL_NAME)" != "$(target_noncanonical)-gcc-$(version)" ]; then \
+	    rm -f $(DESTDIR)$(bindir)/$(FULL_DRIVER_NAME); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(GCC_INSTALL_NAME)$(exeext) $(FULL_DRIVER_NAME) ); \
+	  fi; \
+	  if [ ! -f gcc-cross$(exeext) ] \
+	      && [ "$(GCC_INSTALL_NAME)" != "$(GCC_TARGET_INSTALL_NAME)" ]; then \
+	    rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-tmp$(exeext); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-tmp$(exeext) && \
+	      mv -f $(target_noncanonical)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
+	  fi; \
 	fi
 
 # Install the info files.
@@ -3502,19 +3523,21 @@ install-lto-wrapper: lto-wrapper$(exeext)
 	$(INSTALL_PROGRAM) lto-wrapper$(exeext) $(DESTDIR)$(libexecsubdir)/lto-wrapper$(exeext)
 
 install-gcc-ar: installdirs gcc-ar$(exeext) gcc-nm$(exeext) gcc-ranlib$(exeext)
-	for i in gcc-ar gcc-nm gcc-ranlib; do \
-	  install_name=`echo $$i|sed '$(program_transform_name)'` ;\
-	  target_install_name=$(target_noncanonical)-`echo $$i|sed '$(program_transform_name)'` ; \
-	  rm -f $(DESTDIR)$(bindir)/$$install_name$(exeext) ; \
-	  $(INSTALL_PROGRAM) $$i$(exeext) $(DESTDIR)$(bindir)/$$install_name$(exeext) ;\
-	  if test -f gcc-cross$(exeext); then \
-	    :; \
-	  else \
-	    rm -f $(DESTDIR)$(bindir)/$$target_install_name$(exeext); \
-	    ( cd $(DESTDIR)$(bindir) && \
-	      $(LN) $$install_name$(exeext) $$target_install_name$(exeext) ) ; \
-	  fi ; \
-	done
+	if test "$(enable_as_accelerator)" != "yes" ; then \
+	  for i in gcc-ar gcc-nm gcc-ranlib; do \
+	    install_name=`echo $$i|sed '$(program_transform_name)'` ;\
+	    target_install_name=$(target_noncanonical)-`echo $$i|sed '$(program_transform_name)'` ; \
+	    rm -f $(DESTDIR)$(bindir)/$$install_name$(exeext) ; \
+	    $(INSTALL_PROGRAM) $$i$(exeext) $(DESTDIR)$(bindir)/$$install_name$(exeext) ;\
+	    if test -f gcc-cross$(exeext); then \
+	      :; \
+	    else \
+	      rm -f $(DESTDIR)$(bindir)/$$target_install_name$(exeext); \
+	      ( cd $(DESTDIR)$(bindir) && \
+		$(LN) $$install_name$(exeext) $$target_install_name$(exeext) ) ; \
+	    fi ; \
+	  done; \
+	fi
 
 # Cancel installation by deleting the installed files.
 uninstall: lang.uninstall

@@ -1,5 +1,11 @@
 /* config.in.  Generated from configure.ac by autoheader.  */
 
+/* Define if this compiler should be built as the offload target compiler. */
+#ifndef USED_FOR_TARGET
+#undef ACCEL_COMPILER
+#endif
+
+
 /* Define if building universal (internal helper macro) */
 #ifndef USED_FOR_TARGET
 #undef AC_APPLE_UNIVERSAL_BUILD
@@ -141,6 +147,12 @@
    language is requested. */
 #ifndef USED_FOR_TARGET
 #undef ENABLE_NLS
+#endif
+
+
+/* Define this to enable support for offloading. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_OFFLOADING
 #endif
 
 
@@ -1783,6 +1795,12 @@
 /* Define if host mkdir takes a single argument. */
 #ifndef USED_FOR_TARGET
 #undef MKDIR_TAKES_ONE_ARG
+#endif
+
+
+/* Define to hold the list of target names suitable for offloading. */
+#ifndef USED_FOR_TARGET
+#undef OFFLOAD_TARGETS
 #endif
 
 
