@@ -424,7 +424,9 @@ parse_env_var (const char *str, char ***pvalues, const char *append)
 
   values = (char**) xmalloc (num * sizeof (char*));
   curval = str;
-  nextval = strchrnul (curval, ':');
+  nextval = strchr (curval, ':');
+  if (nextval == NULL)
+    nextval = strchr (curval, '\0');
 
   int append_len = append ? strlen (append) : 0;
   for (i = 0; i < num; i++)
@@ -436,7 +438,9 @@ parse_env_var (const char *str, char ***pvalues, const char *append)
       if (append)
 	strcat (values[i], append);
       curval = nextval + 1;
-      nextval = strchrnul (curval, ':');
+      nextval = strchr (curval, ':');
+      if (nextval == NULL)
+	nextval = strchr (curval, '\0');
     }
   *pvalues = values;
   return num;
@@ -581,7 +585,9 @@ append_offload_options (obstack *argv_obstack, const char *target,
 
 	  while (cur < opts)
 	    {
-	      next = strchrnul (cur, ',');
+	      next = strchr (cur, ',');
+	      if (next == NULL)
+		next = strchr (cur, '\0');
 	      next = (next > opts) ? opts : next;
 
 	      if (strlen (target) == (size_t) (next - cur)

@@ -1,3 +1,9 @@
+2014-11-13  Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	PR bootstrap/63853
+	* gcc.c (handle_foffload_option): Replace strchrnul with strchr.
+	* lto-wrapper.c (parse_env_var, append_offload_options): Likewise.
+
 2014-11-13  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* fold-const.c (const_binop): Remove code handling VEC_RSHIFT_EXPR.

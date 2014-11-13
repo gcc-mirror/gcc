@@ -3375,12 +3375,16 @@ handle_foffload_option (const char *arg)
   if (arg[0] == '-')
     return;
 
-  end = strchrnul (arg, '=');
+  end = strchr (arg, '=');
+  if (end == NULL)
+    end = strchr (arg, '\0');
   cur = arg;
 
   while (cur < end)
     {
-      next = strchrnul (cur, ',');
+      next = strchr (cur, ',');
+      if (next == NULL)
+	next = strchr (cur, '\0');
       next = (next > end) ? end : next;
 
       target = XNEWVEC (char, next - cur + 1);
@@ -3400,7 +3404,9 @@ handle_foffload_option (const char *arg)
       c = OFFLOAD_TARGETS;
       while (c)
 	{
-	  n = strchrnul (c, ',');
+	  n = strchr (c, ',');
+	  if (n == NULL)
+	    n = strchr (c, '\0');
 
 	  if (strlen (target) == (size_t) (n - c)
 	      && strncmp (target, c, n - c) == 0)
@@ -3421,7 +3427,9 @@ handle_foffload_option (const char *arg)
 	  c = offload_targets;
 	  do
 	    {
-	      n = strchrnul (c, ':');
+	      n = strchr (c, ':');
+	      if (n == NULL)
+		n = strchr (c, '\0');
 
 	      if (strlen (target) == (size_t) (n - c)
 		  && strncmp (c, target, n - c) == 0)
