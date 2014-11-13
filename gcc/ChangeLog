@@ -1,3 +1,22 @@
+2014-11-13  Alan Lawrence  <alan.lawrence@arm.com>
+
+        * tree-vectorizer.h (vect_gen_perm_mask): Remove.
+        (vect_gen_perm_mask_checked, vect_gen_perm_mask_any): New.
+
+        tree_vec_data_refs.c (vect_permute_load_chain, vec_permute_store_chain,
+        vec_shift_permute_load_chain): Replace vect_gen_perm_mask & assert
+        with vect_gen_perm_mask_checked.
+
+        * tree-vect-stmts.c (vectorizable_mask_load_store, vectorizable_load):
+        Likewise.
+
+        (vect_gen_perm_mask_checked): New.
+        (vect_gen_perm_mask): Remove can_vec_perm_p check, rename to...
+        (vect_gen_perm_mask_any): ...this.
+
+        (perm_mask_for_reverse): Call can_vec_perm_p and
+        vect_gen_perm_mask_checked.
+
 2014-11-13  Felix Yang  <felix.yang@huawei.com>
 
 	* ipa-utils.h: Fix typo in comments.

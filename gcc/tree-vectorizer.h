@@ -1040,7 +1040,8 @@ extern void vect_get_store_cost (struct data_reference *, int,
 extern bool vect_supportable_shift (enum tree_code, tree);
 extern void vect_get_vec_defs (tree, tree, gimple, vec<tree> *,
 			       vec<tree> *, slp_tree, int);
-extern tree vect_gen_perm_mask (tree, unsigned char *);
+extern tree vect_gen_perm_mask_any (tree, const unsigned char *);
+extern tree vect_gen_perm_mask_checked (tree, const unsigned char *);
 
 /* In tree-vect-data-refs.c.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);
