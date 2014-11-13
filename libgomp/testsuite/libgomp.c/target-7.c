@@ -18,7 +18,7 @@ foo (int f)
   if (omp_get_level () != 0 || !omp_is_initial_device ())
     abort ();
   #pragma omp target if (v <= 1)
-  if (omp_get_level () != 0 || (f && !omp_is_initial_device ()))
+  if (omp_get_level () != 0)
     abort ();
   #pragma omp target device (d) if (v <= 1)
   if (omp_get_level () != 0 || (f && !omp_is_initial_device ()))
@@ -30,7 +30,7 @@ foo (int f)
   if (omp_get_level () != 0 || !omp_is_initial_device ())
     abort ();
   #pragma omp target if (1)
-  if (omp_get_level () != 0 || (f && !omp_is_initial_device ()))
+  if (omp_get_level () != 0)
     abort ();
   #pragma omp target device (d) if (1)
   if (omp_get_level () != 0 || (f && !omp_is_initial_device ()))
@@ -59,7 +59,7 @@ foo (int f)
   #pragma omp target data if (v <= 1) map (to: h)
   {
     #pragma omp target if (v <= 1)
-    if (omp_get_level () != 0 || (f && !omp_is_initial_device ()) || h++ != 8)
+    if (omp_get_level () != 0 || h++ != 8)
       abort ();
     #pragma omp target update if (v <= 1) from (h)
   }
@@ -87,7 +87,7 @@ foo (int f)
   #pragma omp target data if (1) map (to: h)
   {
     #pragma omp target if (1)
-    if (omp_get_level () != 0 || (f && !omp_is_initial_device ()) || h++ != 12)
+    if (omp_get_level () != 0 || h++ != 12)
       abort ();
     #pragma omp target update if (1) from (h)
   }
