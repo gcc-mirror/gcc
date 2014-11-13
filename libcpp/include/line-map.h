@@ -586,7 +586,8 @@ bool linemap_location_from_macro_expansion_p (const struct line_maps *,
   ({linemap_assert (!linemap_macro_expansion_map_p (LINE_MAP)); \
     (LINE_MAP);})
 #else
-#define linemap_assert(EXPR)
+/* Include EXPR, so that unused variable warnings do not occur.  */
+#define linemap_assert(EXPR) ((void)(0 && (EXPR)))
 #define linemap_check_ordinary(LINE_MAP) (LINE_MAP)
 #endif
 
