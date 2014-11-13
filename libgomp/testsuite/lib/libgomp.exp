@@ -239,3 +239,17 @@ proc libgomp_option_proc { option } {
 	return 0
     }
 }
+
+# Return 1 if offload device is available.
+proc check_effective_target_offload_device { } {
+    return [check_runtime_nocache offload_device_available_ {
+      #include <omp.h>
+      int main ()
+	{
+	  int a;
+	  #pragma omp target map(from: a)
+	    a = omp_is_initial_device ();
+	  return a;
+	}
+    } ]
+}

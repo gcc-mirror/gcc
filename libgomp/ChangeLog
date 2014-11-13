@@ -1,3 +1,75 @@
+2014-11-13  Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_device): New.
+	* testsuite/libgomp.c++/c++.exp: Include tests from subdirectories.
+	* testsuite/libgomp.c++/examples-4/e.51.5.C: New test.
+	* testsuite/libgomp.c++/examples-4/e.53.2.C: Ditto.
+	* testsuite/libgomp.c/examples-4/e.50.1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.50.2.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.50.3.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.50.4.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.50.5.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.51.1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.51.2.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.51.3.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.51.4.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.51.6.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.51.7.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.52.1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.52.2.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.53.1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.53.3.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.53.4.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.53.5.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.54.2.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.54.3.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.54.4.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.54.5.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.54.6.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.55.1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.55.2.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.56.3.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.56.4.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.57.1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.57.2.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.57.3.c: Ditto.
+	* testsuite/libgomp.c/target-7.c: Fix test.
+	* testsuite/libgomp.fortran/examples-4/e.50.1.f90: New test.
+	* testsuite/libgomp.fortran/examples-4/e.50.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.50.3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.50.4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.50.5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.6.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.7.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.52.1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.52.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.53.1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.53.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.53.3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.53.4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.53.5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.54.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.54.3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.54.4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.54.5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.54.6.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.55.1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.55.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.56.3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.56.4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.57.1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.57.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.57.3.f90: Ditto.
+
 2014-11-13  Jakub Jelinek  <jakub@redhat.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
