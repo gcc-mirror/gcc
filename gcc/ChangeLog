@@ -1,3 +1,12 @@
+2014-11-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backport from mainline
+	2014-11-02  Michael Collison  <michael.collison@linaro.org>
+
+	* config/arm/arm.h (CLZ_DEFINED_VALUE_AT_ZERO) : Update
+	to support vector modes.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Ditto.
+
 2014-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/tm.texi.in (SELECT_CC_MODE): Update example.
