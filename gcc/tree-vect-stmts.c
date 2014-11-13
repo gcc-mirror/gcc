@@ -1917,8 +1917,7 @@ vectorizable_mask_load_store (gimple stmt, gimple_stmt_iterator *gsi,
 	  for (i = 0; i < gather_off_nunits; ++i)
 	    sel[i] = i | nunits;
 
-	  perm_mask = vect_gen_perm_mask (gather_off_vectype, sel);
-	  gcc_assert (perm_mask != NULL_TREE);
+	  perm_mask = vect_gen_perm_mask_checked (gather_off_vectype, sel);
 	}
       else if (nunits == gather_off_nunits * 2)
 	{
@@ -1929,13 +1928,11 @@ vectorizable_mask_load_store (gimple stmt, gimple_stmt_iterator *gsi,
 	    sel[i] = i < gather_off_nunits
 		     ? i : i + nunits - gather_off_nunits;
 
-	  perm_mask = vect_gen_perm_mask (vectype, sel);
-	  gcc_assert (perm_mask != NULL_TREE);
+	  perm_mask = vect_gen_perm_mask_checked (vectype, sel);
 	  ncopies *= 2;
 	  for (i = 0; i < nunits; ++i)
 	    sel[i] = i | gather_off_nunits;
-	  mask_perm_mask = vect_gen_perm_mask (masktype, sel);
-	  gcc_assert (mask_perm_mask != NULL_TREE);
+	  mask_perm_mask = vect_gen_perm_mask_checked (masktype, sel);
 	}
       else
 	gcc_unreachable ();
@@ -4940,7 +4937,9 @@ perm_mask_for_reverse (tree vectype)
   for (i = 0; i < nunits; ++i)
     sel[i] = nunits - 1 - i;
 
-  return vect_gen_perm_mask (vectype, sel);
+  if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
+    return NULL_TREE;
+  return vect_gen_perm_mask_checked (vectype, sel);
 }
 
 /* Function vectorizable_store.
@@ -5471,20 +5470,18 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   return true;
 }
 
-/* Given a vector type VECTYPE and permutation SEL returns
-   the VECTOR_CST mask that implements the permutation of the
-   vector elements.  If that is impossible to do, returns NULL.  */
+/* Given a vector type VECTYPE, turns permutation SEL into the equivalent
+   VECTOR_CST mask.  No checks are made that the target platform supports the
+   mask, so callers may wish to test can_vec_perm_p separately, or use
+   vect_gen_perm_mask_checked.  */
 
 tree
-vect_gen_perm_mask (tree vectype, unsigned char *sel)
+vect_gen_perm_mask_any (tree vectype, const unsigned char *sel)
 {
   tree mask_elt_type, mask_type, mask_vec, *mask_elts;
   int i, nunits;
 
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
-
-  if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
-    return NULL;
 
   mask_elt_type = lang_hooks.types.type_for_mode
 		    (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))), 1);
@@ -5496,6 +5493,15 @@ vect_gen_perm_mask (tree vectype, unsigned char *sel)
   mask_vec = build_vector (mask_type, mask_elts);
 
   return mask_vec;
+}
+
+/* Checked version of vect_gen_perm_mask_any.  Asserts can_vec_perm_p.  */
+
+tree
+vect_gen_perm_mask_checked (tree vectype, const unsigned char *sel)
+{
+  gcc_assert (can_vec_perm_p (TYPE_MODE (vectype), false, sel));
+  return vect_gen_perm_mask_any (vectype, sel);
 }
 
 /* Given a vector variable X and Y, that was generated for the scalar
@@ -5853,8 +5859,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  for (i = 0; i < gather_off_nunits; ++i)
 	    sel[i] = i | nunits;
 
-	  perm_mask = vect_gen_perm_mask (gather_off_vectype, sel);
-	  gcc_assert (perm_mask != NULL_TREE);
+	  perm_mask = vect_gen_perm_mask_checked (gather_off_vectype, sel);
 	}
       else if (nunits == gather_off_nunits * 2)
 	{
@@ -5865,8 +5870,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    sel[i] = i < gather_off_nunits
 		     ? i : i + nunits - gather_off_nunits;
 
-	  perm_mask = vect_gen_perm_mask (vectype, sel);
-	  gcc_assert (perm_mask != NULL_TREE);
+	  perm_mask = vect_gen_perm_mask_checked (vectype, sel);
 	  ncopies *= 2;
 	}
       else
