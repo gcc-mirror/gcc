@@ -1,5 +1,21 @@
 2014-11-13  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* fold-const.c (const_binop): Remove code handling VEC_RSHIFT_EXPR.
+	* tree-cfg.c (verify_gimple_assign_binary): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-pretty-print.c (dump_generic_node, op_code_prio, op_symbol_code):
+	Likewise.
+
+	* tree-vect-generic.c (expand_vector_operations_1): Remove assertion
+	against VEC_RSHIFT_EXPR.
+
+	* optabs.h (expand_vec_shift_expr): Remove.
+	* optabs.c (optab_for_tree_code): Remove case VEC_RSHIFT_EXPR.
+	(expand_vec_shift_expr): Remove.
+	* tree.def (VEC_RSHIFT_EXPR): Remove
+
+2014-11-13  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* optabs.c (can_vec_perm_p): Update comment, does not consider vec_shr.
 	(shift_amt_for_vec_perm_mask): New.
 	(expand_vec_perm_1): Use vec_shr_optab if second vector is const0_rtx

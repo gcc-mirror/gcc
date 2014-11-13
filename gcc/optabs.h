@@ -287,8 +287,6 @@ extern rtx simplify_expand_binop (machine_mode mode, optab binoptab,
 				  enum optab_methods methods);
 extern bool force_expand_binop (machine_mode, optab, rtx, rtx, rtx, int,
 				enum optab_methods);
-/* Generate code for VEC_RSHIFT_EXPR.  */
-extern rtx expand_vec_shift_expr (struct separate_ops *, rtx);
 
 /* Generate code for a simple binary or unary operation.  "Simple" in
    this case means "can be unambiguously described by a (mode, code)
