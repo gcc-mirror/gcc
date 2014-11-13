@@ -1665,6 +1665,23 @@ fnon-call-exceptions
 Common Report Var(flag_non_call_exceptions) Optimization
 Support synchronous non-call exceptions
 
+foffload=
+Common Driver Joined MissingArgError(options or targets missing after %qs)
+-foffload=<targets>=<options>  Specify offloading targets and options for them
+
+foffload-abi=
+Common Joined RejectNegative Enum(offload_abi) Var(flag_offload_abi) Init(OFFLOAD_ABI_UNSET)
+-foffload-abi=[lp64|ilp32]     Set the ABI to use in an offload compiler
+
+Enum
+Name(offload_abi) Type(enum offload_abi) UnknownError(unknown offload ABI %qs)
+
+EnumValue
+Enum(offload_abi) String(ilp32) Value(OFFLOAD_ABI_ILP32)
+
+EnumValue
+Enum(offload_abi) String(lp64) Value(OFFLOAD_ABI_LP64)
+
 fomit-frame-pointer
 Common Report Var(flag_omit_frame_pointer) Optimization
 When possible do not generate stack frames

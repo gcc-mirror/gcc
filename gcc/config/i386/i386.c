@@ -4335,6 +4335,15 @@ ix86_option_override (void)
   register_pass (&insert_vzeroupper_info);
 }
 
+/* Implement the TARGET_OFFLOAD_OPTIONS hook.  */
+static char *
+ix86_offload_options (void)
+{
+  if (TARGET_LP64)
+    return xstrdup ("-foffload-abi=lp64");
+  return xstrdup ("-foffload-abi=ilp32");
+}
+
 /* Update register usage after having seen the compiler flags.  */
 
 static void
@@ -51672,6 +51681,10 @@ ix86_initialize_bounds (tree var, tree lb, tree ub, tree *stmts)
 
 #undef TARGET_SETUP_INCOMING_VARARG_BOUNDS
 #define TARGET_SETUP_INCOMING_VARARG_BOUNDS ix86_setup_incoming_vararg_bounds
+
+#undef TARGET_OFFLOAD_OPTIONS
+#define TARGET_OFFLOAD_OPTIONS \
+  ix86_offload_options
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

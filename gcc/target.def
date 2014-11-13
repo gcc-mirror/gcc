@@ -1802,6 +1802,15 @@ actions then, you should have @code{TARGET_OPTION_OVERRIDE} call\n\
  void, (void),
  hook_void_void)
 
+DEFHOOK
+(offload_options,
+ "Used when writing out the list of options into an LTO file.  It should\n\
+translate any relevant target-specific options (such as the ABI in use)\n\
+into one of the @option{-foffload} options that exist as a common interface\n\
+to express such options.  It should return a string containing these options,\n\
+separated by spaces, which the caller will free.\n",
+char *, (void), hook_charptr_void_null)
+
 DEFHOOK_UNDOC
 (eh_return_filter_mode,
  "Return machine mode for filter value.",
