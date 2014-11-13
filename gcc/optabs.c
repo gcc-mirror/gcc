@@ -4308,9 +4308,12 @@ prepare_operand (enum insn_code icode, rtx x, int opnum, machine_mode mode,
 
   if (!insn_operand_matches (icode, opnum, x))
     {
+      machine_mode op_mode = insn_data[(int) icode].operand[opnum].mode;
       if (reload_completed)
 	return NULL_RTX;
-      x = copy_to_mode_reg (insn_data[(int) icode].operand[opnum].mode, x);
+      if (GET_MODE (x) != op_mode && GET_MODE (x) != VOIDmode)
+	return NULL_RTX;
+      x = copy_to_mode_reg (op_mode, x);
     }
 
   return x;
