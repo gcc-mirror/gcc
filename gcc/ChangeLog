@@ -1,3 +1,9 @@
+2014-11-14  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc/lra-lives.c (struct bb_data): Rename to ...
+	(struct bb_data_pseudos): ... this.
+	(initiate_live_solver): Update struct name.
+
 2014-11-13  Richard Biener  <rguenther@suse.de>
 
 	* match.pd: Implement conditional expression patterns.
