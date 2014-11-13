@@ -1,3 +1,65 @@
+2014-11-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/60324
+	* configure: Regenerated.
+	* configure.ac (AM_CFLAGS): Add Werror=vla.
+	* libgfortran.h (gfc_alloca): Remove macro.
+	(fc_strdup_notrim): New prototype.
+	* intrinsics/access.c (access_func): Use fc_strdup rather than
+	stack allocation.
+	* intrinsics/chdir.c (chdir_i4_sub): Likewise.
+	(chdir_i8_sub): Likewise.
+	* intrinsics/chmod.c (chmod_internal): New function, move logic
+	here.
+	(chmod_func): Call chmod_internal.
+	* intrinsics/env.c (getenv): Use fc_strdup rather than stack
+	allocation.
+	(get_environment_variable_i4): Likewise.
+	* intrinsics/execute_command_line.c (execute_command_line):
+	Likewise.
+	* intrinsics/hostnm.c (hostnm_0): New function, use static buffer
+	rather than VLA.
+	(hostnm_i4_sub): Call hostnm_0.
+	(hostnm_i8_sub): Likewise.
+	(hostnm): Likewise.
+	* intrinsics/link.c (link_internal): New function, use fc_strdup
+	rather than stack allocation.
+	(link_i4_sub): Call link_internal.
+	(link_i8_sub): Likewise.
+	(link_i4): Likewise.
+	(link_i8): Likewise.
+	* intrinsics/perror.c (perror_sub): Use fc_strdup rather than
+	stack allocation.
+	* intrinsics/random.c (random_seed_i4): Use static buffer rather
+	than VLA, use _Static_assert to make sure it's big enough.
+	* intrinsics/rename.c (rename_internal): New function, use
+	fc_strdup rather than stack allocation.
+	(rename_i4_sub): Call rename_internal.
+	(rename_i8_sub): Likewise.
+	(rename_i4): Likewise.
+	(rename_i8): Likewise.
+	* intrinsics/stat.c (stat_i4_sub_0): Use fc_strdup rather than
+	stack allocation.
+	(stat_i8_sub_0): Likewise.
+	* intrinsics/symlink.c (symlnk_internal): New function, use
+	fc_strdup rather than stack allocation.
+	(symlnk_i4_sub): Call symlnk_internal.
+	(symlnk_i8_sub): Likewise.
+	(symlnk_i4): Likewise.
+	(symlnk_i8): Likewise.
+	* intrinsics/system.c (system_sub): Use fc_strdup rather than
+	stack allocation.
+	* intrinsics/unlink.c (unlink_i4_sub): Likewise.
+	* io/file_pos.c (READ_CHUNK): Make it a macro rather than variable.
+	* io/list_read.c (nml_get_obj_data): Use fixed stack buffer, fall
+	back to xmalloc/free for large sizes.
+	* io/read.c (read_f): Likewise.
+	* io/transfer.c (MAX_READ): Make it a macro rather than variable.
+	(WRITE_CHUNK): Likewise.
+	* io/write_float.def (write_float): Use fixed stack buffer, fall
+	back to xmalloc/free for large sizes.
+	* runtime/string.c (fc_strdup_notrim): New function.
+
 2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR target/63610

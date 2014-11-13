@@ -61,14 +61,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    A return value of 0 indicates success, -1 an error of chmod() while 1
    indicates a mode parsing error.  */
 
-extern int chmod_func (char *, char *, gfc_charlen_type, gfc_charlen_type);
-export_proto(chmod_func);
 
-int
-chmod_func (char *name, char *mode, gfc_charlen_type name_len,
-	    gfc_charlen_type mode_len)
+static int
+chmod_internal (char *file, char *mode, gfc_charlen_type mode_len)
 {
-  char * file;
   int i;
   bool ugo[3];
   bool rwxXstugo[9];
@@ -79,15 +75,6 @@ chmod_func (char *name, char *mode, gfc_charlen_type name_len,
 #endif
   mode_t mode_mask, file_mode, new_mode;
   struct stat stat_buf;
-
-  /* Trim trailing spaces of the file name.  */
-  while (name_len > 0 && name[name_len - 1] == ' ')
-    name_len--;
-
-  /* Make a null terminated copy of the file name.  */
-  file = gfc_alloca (name_len + 1);
-  memcpy (file, name, name_len);
-  file[name_len] = '\0';
 
   if (mode_len == 0)
     return 1;
@@ -493,6 +480,20 @@ clause_done:
   }
 
   return chmod (file, file_mode);
+}
+
+
+extern int chmod_func (char *, char *, gfc_charlen_type, gfc_charlen_type);
+export_proto(chmod_func);
+
+int
+chmod_func (char *name, char *mode, gfc_charlen_type name_len,
+	    gfc_charlen_type mode_len)
+{
+  char *cname = fc_strdup (name, name_len);
+  int ret = chmod_internal (cname, mode, mode_len);
+  free (cname);
+  return ret;
 }
 
 

@@ -37,17 +37,8 @@ iexport_proto(perror_sub);
 void
 perror_sub (char *string, gfc_charlen_type string_len)
 {
-  char * str;
-
-  /* Trim trailing spaces from paths.  */
-  while (string_len > 0 && string[string_len - 1] == ' ')
-    string_len--;
-
-  /* Make a null terminated copy of the strings.  */
-  str = gfc_alloca (string_len + 1);
-  memcpy (str, string, string_len);
-  str[string_len] = '\0';
-
+  char *str = fc_strdup (string, string_len);
   perror (str);
+  free (str);
 }
 iexport(perror_sub);

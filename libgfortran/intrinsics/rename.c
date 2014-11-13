@@ -2,7 +2,7 @@
    Copyright (C) 2005-2014 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -28,6 +28,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <errno.h>
 #include <string.h>
 
+
+static int
+rename_internal (char *path1, char *path2, gfc_charlen_type path1_len,
+		 gfc_charlen_type path2_len)
+{
+  char *str1 = fc_strdup (path1, path1_len);
+  char *str2 = fc_strdup (path2, path2_len);
+  int val = rename (str1, str2);
+  free (str1);
+  free (str2);
+  return ((val == 0) ? 0 : errno);
+}
+
+
 /* SUBROUTINE RENAME(PATH1, PATH2, STATUS)
    CHARACTER(len=*), INTENT(IN) :: PATH1, PATH2
    INTEGER, INTENT(OUT), OPTIONAL :: STATUS  */
@@ -40,28 +54,9 @@ void
 rename_i4_sub (char *path1, char *path2, GFC_INTEGER_4 *status,
 	       gfc_charlen_type path1_len, gfc_charlen_type path2_len)
 {
-  int val;
-  char *str1, *str2;
-
-  /* Trim trailing spaces from paths.  */
-  while (path1_len > 0 && path1[path1_len - 1] == ' ')
-    path1_len--;
-  while (path2_len > 0 && path2[path2_len - 1] == ' ')
-    path2_len--;
-
-  /* Make a null terminated copy of the strings.  */
-  str1 = gfc_alloca (path1_len + 1);
-  memcpy (str1, path1, path1_len);
-  str1[path1_len] = '\0'; 
-
-  str2 = gfc_alloca (path2_len + 1);
-  memcpy (str2, path2, path2_len);
-  str2[path2_len] = '\0'; 
-
-  val = rename (str1, str2);
-
+  int val = rename_internal (path1, path2, path1_len, path2_len);
   if (status != NULL) 
-    *status = (val == 0) ? 0 : errno;
+    *status = val;
 }
 iexport(rename_i4_sub);
 
@@ -73,28 +68,9 @@ void
 rename_i8_sub (char *path1, char *path2, GFC_INTEGER_8 *status,
 	       gfc_charlen_type path1_len, gfc_charlen_type path2_len)
 {
-  int val;
-  char *str1, *str2;
-
-  /* Trim trailing spaces from paths.  */
-  while (path1_len > 0 && path1[path1_len - 1] == ' ')
-    path1_len--;
-  while (path2_len > 0 && path2[path2_len - 1] == ' ')
-    path2_len--;
-
-  /* Make a null terminated copy of the strings.  */
-  str1 = gfc_alloca (path1_len + 1);
-  memcpy (str1, path1, path1_len);
-  str1[path1_len] = '\0'; 
-
-  str2 = gfc_alloca (path2_len + 1);
-  memcpy (str2, path2, path2_len);
-  str2[path2_len] = '\0'; 
-
-  val = rename (str1, str2);
-
+  int val = rename_internal (path1, path2, path1_len, path2_len);
   if (status != NULL) 
-    *status = (val == 0) ? 0 : errno;
+    *status = val;
 }
 iexport(rename_i8_sub);
 
@@ -106,9 +82,7 @@ GFC_INTEGER_4
 rename_i4 (char *path1, char *path2, gfc_charlen_type path1_len,
 	   gfc_charlen_type path2_len)
 {
-  GFC_INTEGER_4 val;
-  rename_i4_sub (path1, path2, &val, path1_len, path2_len);
-  return val;
+  return rename_internal (path1, path2, path1_len, path2_len);
 }
 
 extern GFC_INTEGER_8 rename_i8 (char *, char *, gfc_charlen_type,
@@ -119,7 +93,5 @@ GFC_INTEGER_8
 rename_i8 (char *path1, char *path2, gfc_charlen_type path1_len,
 	   gfc_charlen_type path2_len)
 {
-  GFC_INTEGER_8 val;
-  rename_i8_sub (path1, path2, &val, path1_len, path2_len);
-  return val;
+  return rename_internal (path1, path2, path1_len, path2_len);
 }
