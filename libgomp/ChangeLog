@@ -1,3 +1,36 @@
+2014-11-13  Jakub Jelinek  <jakub@redhat.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+
+	* libgomp.map (GOMP_4.0.1): New symbol version.
+	Add GOMP_offload_register.
+	* libgomp_target.h: New file.
+	* splay-tree.h: New file.
+	* target.c: Include config.h, libgomp_target.h, dlfcn.h, splay-tree.h.
+	(gomp_target_init): New forward declaration.
+	(gomp_is_initialized): New static variable.
+	(splay_tree_node, splay_tree, splay_tree_key): New typedefs.
+	(struct target_mem_desc, struct splay_tree_key_s, offload_image_descr):
+	New structures.
+	(offload_images, num_offload_images, devices, num_devices): New static
+	variables.
+	(splay_compare): New static function.
+	(struct gomp_device_descr): New structure.
+	(gomp_get_num_devices): Call gomp_target_init.
+	(resolve_device, gomp_map_vars_existing, gomp_map_vars, gomp_unmap_tgt)
+	(gomp_unmap_vars, gomp_update, gomp_init_device): New static functions.
+	(GOMP_offload_register): New function.
+	(GOMP_target): Arrange for host callback to be performed in a separate
+	initial thread and contention group, inheriting ICVs from
+	gomp_global_icv etc.  Call gomp_map_vars and gomp_unmap_vars.
+	Add device initialization and lookup for target function in splay tree.
+	(GOMP_target_data): Add device initialization and call gomp_map_vars.
+	(GOMP_target_end_data): Call gomp_unmap_vars.
+	(GOMP_target_update): Add device initialization and call gomp_update.
+	(gomp_load_plugin_for_device, gomp_register_images_for_device)
+	(gomp_target_init): New static functions.
+
 2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
