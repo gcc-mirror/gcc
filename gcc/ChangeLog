@@ -1,3 +1,8 @@
+2014-11-13  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* optabs.c (prepare_operand): Gracefully fail if the mode of X
+	does not match the operand mode expected by the insn pattern.
+
 2014-11-13  Richard Biener  <rguenther@suse.de>
 
 	* match.pd: Add tcc_comparison, inverted_tcc_comparison
