@@ -132,7 +132,7 @@ complain_wrong_lang (const struct cl_decoded_option *decoded,
    we only complain about unknown -Wno-* options if they may have
    prevented a diagnostic. Otherwise, we just ignore them.  Note that
    if we do complain, it is only as a warning, not an error; passing
-   the compiler an unrecognised -Wno-* option should never change
+   the compiler an unrecognized -Wno-* option should never change
    whether the compilation succeeds or fails.  */
 
 static void
@@ -152,7 +152,7 @@ print_ignored_options (void)
 
       opt = ignored_options.pop ();
       warning_at (UNKNOWN_LOCATION, 0,
-		  "unrecognized command line option \"%s\"", opt);
+		  "unrecognized command line option %qs", opt);
     }
 }
 
