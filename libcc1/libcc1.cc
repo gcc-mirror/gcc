@@ -440,7 +440,7 @@ libcc1_compile (struct gcc_base_context *s,
   libcc1 *self = (libcc1 *) s;
 
   int fds[2];
-  if (socketpair (AF_LOCAL, SOCK_STREAM, 0, fds) != 0)
+  if (socketpair (AF_UNIX, SOCK_STREAM, 0, fds) != 0)
     {
       self->print ("could not create socketpair\n");
       return 0;

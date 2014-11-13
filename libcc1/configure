@@ -14371,6 +14371,122 @@ if test "$GXX" = yes; then
 fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for socket libraries" >&5
+$as_echo_n "checking for socket libraries... " >&6; }
+if test "${libcc1_cv_lib_sockets+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  libcc1_cv_lib_sockets=
+   libcc1_check_both=no
+   ac_fn_c_check_func "$LINENO" "connect" "ac_cv_func_connect"
+if test "x$ac_cv_func_connect" = x""yes; then :
+  libcc1_check_socket=no
+else
+  libcc1_check_socket=yes
+fi
+
+   if test "$libcc1_check_socket" = "yes"; then
+     unset ac_cv_func_connect
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lsocket" >&5
+$as_echo_n "checking for main in -lsocket... " >&6; }
+if test "${ac_cv_lib_socket_main+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lsocket  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_socket_main=yes
+else
+  ac_cv_lib_socket_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_socket_main" >&5
+$as_echo "$ac_cv_lib_socket_main" >&6; }
+if test "x$ac_cv_lib_socket_main" = x""yes; then :
+  libcc1_cv_lib_sockets="-lsocket"
+else
+  libcc1_check_both=yes
+fi
+
+   fi
+   if test "$libcc1_check_both" = "yes"; then
+     libcc1_old_libs=$LIBS
+     LIBS="$LIBS -lsocket -lnsl"
+     unset ac_cv_func_accept
+     ac_fn_c_check_func "$LINENO" "accept" "ac_cv_func_accept"
+if test "x$ac_cv_func_accept" = x""yes; then :
+  libcc1_check_nsl=no
+		    libcc1_cv_lib_sockets="-lsocket -lnsl"
+fi
+
+     unset ac_cv_func_accept
+     LIBS=$libcc1_old_libs
+   fi
+   unset ac_cv_func_gethostbyname
+   libcc1_old_libs="$LIBS"
+   ac_fn_c_check_func "$LINENO" "gethostbyname" "ac_cv_func_gethostbyname"
+if test "x$ac_cv_func_gethostbyname" = x""yes; then :
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lnsl" >&5
+$as_echo_n "checking for main in -lnsl... " >&6; }
+if test "${ac_cv_lib_nsl_main+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lnsl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_nsl_main=yes
+else
+  ac_cv_lib_nsl_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_nsl_main" >&5
+$as_echo "$ac_cv_lib_nsl_main" >&6; }
+if test "x$ac_cv_lib_nsl_main" = x""yes; then :
+  libcc1_cv_lib_sockets="$libcc1_cv_lib_sockets -lnsl"
+fi
+
+fi
+
+   unset ac_cv_func_gethostbyname
+   LIBS=$libcc1_old_libs
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libcc1_cv_lib_sockets" >&5
+$as_echo "$libcc1_cv_lib_sockets" >&6; }
+LIBS="$LIBS $libcc1_cv_lib_sockets"
+
 # If any of these functions are missing, simply don't bother building
 # this plugin.
 # Check for plugin support
