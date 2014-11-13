@@ -170,10 +170,8 @@ bool IsAccessibleMemoryRange(uptr beg, uptr size);
 // Error report formatting.
 const char *StripPathPrefix(const char *filepath,
                             const char *strip_file_prefix);
-void PrintSourceLocation(InternalScopedString *buffer, const char *file,
-                         int line, int column);
-void PrintModuleAndOffset(InternalScopedString *buffer,
-                          const char *module, uptr offset);
+// Strip the directories from the module name.
+const char *StripModuleName(const char *module);
 
 // OS
 void DisableCoreDumperIfNecessary();
@@ -207,9 +205,6 @@ void SleepForMillis(int millis);
 u64 NanoTime();
 int Atexit(void (*function)(void));
 void SortArray(uptr *array, uptr size);
-// Strip the directories from the module name, return a new string allocated
-// with internal_strdup.
-char *StripModuleName(const char *module);
 
 // Exit
 void NORETURN Abort();

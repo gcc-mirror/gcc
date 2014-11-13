@@ -82,9 +82,12 @@ uptr GetMaxVirtualAddress() {
   // one of 0x00000fffffffffffUL and 0x00003fffffffffffUL.
   // Note that with 'ulimit -s unlimited' the stack is moved away from the top
   // of the address space, so simply checking the stack address is not enough.
-  return (1ULL << 44) - 1;  // 0x00000fffffffffffUL
+  // This should (does) work for both PowerPC64 Endian modes.
+  return (1ULL << (MostSignificantSetBitIndex(GET_CURRENT_FRAME()) + 1)) - 1;
 # elif defined(__aarch64__)
   return (1ULL << 39) - 1;
+# elif defined(__mips64)
+  return (1ULL << 40) - 1;
 # else
   return (1ULL << 47) - 1;  // 0x00007fffffffffffUL;
 # endif

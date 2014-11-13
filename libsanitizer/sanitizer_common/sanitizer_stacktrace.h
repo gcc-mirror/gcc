@@ -27,44 +27,49 @@ static const uptr kStackTraceMax = 256;
 # define SANITIZER_CAN_FAST_UNWIND 1
 #endif
 
+// Fast unwind is the only option on Mac for now; we will need to
+// revisit this macro when slow unwind works on Mac, see
+// https://code.google.com/p/address-sanitizer/issues/detail?id=137
+#if SANITIZER_MAC
+# define SANITIZER_CAN_SLOW_UNWIND 0
+#else
+# define SANITIZER_CAN_SLOW_UNWIND 1
+#endif
+
 struct StackTrace {
-  typedef bool (*SymbolizeCallback)(const void *pc, char *out_buffer,
-                                     int out_size);
-  uptr top_frame_bp;
+  const uptr *trace;
   uptr size;
-  uptr trace[kStackTraceMax];
+
+  StackTrace() : trace(nullptr), size(0) {}
+  StackTrace(const uptr *trace, uptr size) : trace(trace), size(size) {}
 
   // Prints a symbolized stacktrace, followed by an empty line.
-  static void PrintStack(const uptr *addr, uptr size);
-  void Print() const {
-    PrintStack(trace, size);
-  }
-
-  void CopyFrom(const uptr *src, uptr src_size) {
-    top_frame_bp = 0;
-    size = src_size;
-    if (size > kStackTraceMax) size = kStackTraceMax;
-    for (uptr i = 0; i < size; i++)
-      trace[i] = src[i];
-  }
+  void Print() const;
 
   static bool WillUseFastUnwind(bool request_fast_unwind) {
-    // Check if fast unwind is available. Fast unwind is the only option on Mac.
-    // It is also the only option on FreeBSD as the slow unwinding that
-    // leverages _Unwind_Backtrace() yields the call stack of the signal's
-    // handler and not of the code that raised the signal (as it does on Linux).
     if (!SANITIZER_CAN_FAST_UNWIND)
       return false;
-    else if (SANITIZER_MAC != 0 || SANITIZER_FREEBSD != 0)
+    else if (!SANITIZER_CAN_SLOW_UNWIND)
       return true;
     return request_fast_unwind;
   }
 
-  void Unwind(uptr max_depth, uptr pc, uptr bp, void *context, uptr stack_top,
-              uptr stack_bottom, bool request_fast_unwind);
-
   static uptr GetCurrentPc();
   static uptr GetPreviousInstructionPc(uptr pc);
+  typedef bool (*SymbolizeCallback)(const void *pc, char *out_buffer,
+                                    int out_size);
+};
+
+// StackTrace that owns the buffer used to store the addresses.
+struct BufferedStackTrace : public StackTrace {
+  uptr trace_buffer[kStackTraceMax];
+  uptr top_frame_bp;  // Optional bp of a top frame.
+
+  BufferedStackTrace() : StackTrace(trace_buffer, 0), top_frame_bp(0) {}
+
+  void Init(const uptr *pcs, uptr cnt, uptr extra_top_pc = 0);
+  void Unwind(uptr max_depth, uptr pc, uptr bp, void *context, uptr stack_top,
+              uptr stack_bottom, bool request_fast_unwind);
 
  private:
   void FastUnwindStack(uptr pc, uptr bp, uptr stack_top, uptr stack_bottom,
@@ -74,6 +79,9 @@ struct StackTrace {
                                   uptr max_depth);
   void PopStackFrames(uptr count);
   uptr LocatePcInTrace(uptr pc);
+
+  BufferedStackTrace(const BufferedStackTrace &);
+  void operator=(const BufferedStackTrace &);
 };
 
 }  // namespace __sanitizer

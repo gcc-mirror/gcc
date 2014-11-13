@@ -6,6 +6,7 @@ gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS 
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fno-rtti -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
+AM_CXXFLAGS += -std=c++11
 if LIBBACKTRACE_SUPPORTED
 AM_CXXFLAGS += -DSANITIZER_LIBBACKTRACE -DSANITIZER_CP_DEMANGLE \
 	       -I $(top_srcdir)/../libbacktrace \
@@ -44,6 +45,7 @@ sanitizer_common_files = \
 	sanitizer_stackdepot.cc \
 	sanitizer_stacktrace.cc \
 	sanitizer_stacktrace_libcdep.cc \
+	sanitizer_stacktrace_printer.cc \
 	sanitizer_stoptheworld_linux_libcdep.cc \
 	sanitizer_suppressions.cc \
 	sanitizer_symbolizer.cc \

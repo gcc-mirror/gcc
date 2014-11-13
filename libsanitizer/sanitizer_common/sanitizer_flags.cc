@@ -37,6 +37,7 @@ void SetCommonFlagsDefaults(CommonFlags *f) {
   f->external_symbolizer_path = 0;
   f->allow_addr2line = false;
   f->strip_path_prefix = "";
+  f->fast_unwind_on_check = false;
   f->fast_unwind_on_fatal = false;
   f->fast_unwind_on_malloc = true;
   f->handle_ioctl = false;
@@ -64,6 +65,8 @@ void SetCommonFlagsDefaults(CommonFlags *f) {
   f->suppressions = "";
   f->print_suppressions = true;
   f->disable_coredump = (SANITIZER_WORDSIZE == 64);
+  f->symbolize_inline_frames = true;
+  f->stack_trace_format = "DEFAULT";
 }
 
 void ParseCommonFlagsFromString(CommonFlags *f, const char *str) {
@@ -79,6 +82,9 @@ void ParseCommonFlagsFromString(CommonFlags *f, const char *str) {
       "unavailable.");
   ParseFlag(str, &f->strip_path_prefix, "strip_path_prefix",
       "Strips this prefix from file paths in error reports.");
+  ParseFlag(str, &f->fast_unwind_on_check, "fast_unwind_on_check",
+      "If available, use the fast frame-pointer-based unwinder on "
+      "internal CHECK failures.");
   ParseFlag(str, &f->fast_unwind_on_fatal, "fast_unwind_on_fatal",
       "If available, use the fast frame-pointer-based unwinder on fatal "
       "errors.");
@@ -152,6 +158,12 @@ void ParseCommonFlagsFromString(CommonFlags *f, const char *str) {
       "Disable core dumping. By default, disable_core=1 on 64-bit to avoid "
       "dumping a 16T+ core file. Ignored on OSes that don't dump core by"
       "default and for sanitizers that don't reserve lots of virtual memory.");
+  ParseFlag(str, &f->symbolize_inline_frames, "symbolize_inline_frames",
+            "Print inlined frames in stacktraces. Defaults to true.");
+  ParseFlag(str, &f->stack_trace_format, "stack_trace_format",
+            "Format string used to render stack frames. "
+            "See sanitizer_stacktrace_printer.h for the format description. "
+            "Use DEFAULT to get default format.");
 
   // Do a sanity check for certain flags.
   if (f->malloc_context_size < 1)

@@ -58,6 +58,8 @@ SuppressionType conv(ReportType typ) {
     return SuppressionRace;
   else if (typ == ReportTypeUseAfterFree)
     return SuppressionRace;
+  else if (typ == ReportTypeVptrUseAfterFree)
+    return SuppressionRace;
   else if (typ == ReportTypeThreadLeak)
     return SuppressionThread;
   else if (typ == ReportTypeMutexDestroyLocked)
@@ -89,13 +91,14 @@ uptr IsSuppressed(ReportType typ, const ReportStack *stack, Suppression **sp) {
     return 0;
   Suppression *s;
   for (const ReportStack *frame = stack; frame; frame = frame->next) {
-    if (SuppressionContext::Get()->Match(frame->func, stype, &s) ||
-        SuppressionContext::Get()->Match(frame->file, stype, &s) ||
-        SuppressionContext::Get()->Match(frame->module, stype, &s)) {
+    const AddressInfo &info = frame->info;
+    if (SuppressionContext::Get()->Match(info.function, stype, &s) ||
+        SuppressionContext::Get()->Match(info.file, stype, &s) ||
+        SuppressionContext::Get()->Match(info.module, stype, &s)) {
       DPrintf("ThreadSanitizer: matched suppression '%s'\n", s->templ);
       s->hit_count++;
       *sp = s;
-      return frame->pc;
+      return info.address;
     }
   }
   return 0;
@@ -109,13 +112,13 @@ uptr IsSuppressed(ReportType typ, const ReportLocation *loc, Suppression **sp) {
   if (stype == SuppressionNone)
     return 0;
   Suppression *s;
-  if (SuppressionContext::Get()->Match(loc->name, stype, &s) ||
-      SuppressionContext::Get()->Match(loc->file, stype, &s) ||
-      SuppressionContext::Get()->Match(loc->module, stype, &s)) {
+  const DataInfo &global = loc->global;
+  if (SuppressionContext::Get()->Match(global.name, stype, &s) ||
+      SuppressionContext::Get()->Match(global.module, stype, &s)) {
       DPrintf("ThreadSanitizer: matched suppression '%s'\n", s->templ);
       s->hit_count++;
       *sp = s;
-      return loc->addr;
+      return global.start;
   }
   return 0;
 }

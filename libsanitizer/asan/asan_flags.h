@@ -63,6 +63,7 @@ struct Flags {
   int detect_invalid_pointer_pairs;
   bool detect_container_overflow;
   int detect_odr_violation;
+  bool dump_instruction_bytes;
 };
 
 extern Flags asan_flags_dont_use_directly;
