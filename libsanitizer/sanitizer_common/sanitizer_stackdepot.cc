@@ -16,31 +16,6 @@
 
 namespace __sanitizer {
 
-struct StackDepotDesc {
-  const uptr *stack;
-  uptr size;
-  u32 hash() const {
-    // murmur2
-    const u32 m = 0x5bd1e995;
-    const u32 seed = 0x9747b28c;
-    const u32 r = 24;
-    u32 h = seed ^ (size * sizeof(uptr));
-    for (uptr i = 0; i < size; i++) {
-      u32 k = stack[i];
-      k *= m;
-      k ^= k >> r;
-      k *= m;
-      h *= m;
-      h ^= k;
-    }
-    h ^= h >> 13;
-    h *= m;
-    h ^= h >> 15;
-    return h;
-  }
-  bool is_valid() { return size > 0 && stack; }
-};
-
 struct StackDepotNode {
   StackDepotNode *link;
   u32 id;
@@ -56,28 +31,49 @@ struct StackDepotNode {
   static const u32 kUseCountMask = (1 << kUseCountBits) - 1;
   static const u32 kHashMask = ~kUseCountMask;
 
-  typedef StackDepotDesc args_type;
+  typedef StackTrace args_type;
   bool eq(u32 hash, const args_type &args) const {
     u32 hash_bits =
         atomic_load(&hash_and_use_count, memory_order_relaxed) & kHashMask;
     if ((hash & kHashMask) != hash_bits || args.size != size) return false;
     uptr i = 0;
     for (; i < size; i++) {
-      if (stack[i] != args.stack[i]) return false;
+      if (stack[i] != args.trace[i]) return false;
     }
     return true;
   }
   static uptr storage_size(const args_type &args) {
     return sizeof(StackDepotNode) + (args.size - 1) * sizeof(uptr);
   }
+  static u32 hash(const args_type &args) {
+    // murmur2
+    const u32 m = 0x5bd1e995;
+    const u32 seed = 0x9747b28c;
+    const u32 r = 24;
+    u32 h = seed ^ (args.size * sizeof(uptr));
+    for (uptr i = 0; i < args.size; i++) {
+      u32 k = args.trace[i];
+      k *= m;
+      k ^= k >> r;
+      k *= m;
+      h *= m;
+      h ^= k;
+    }
+    h ^= h >> 13;
+    h *= m;
+    h ^= h >> 15;
+    return h;
+  }
+  static bool is_valid(const args_type &args) {
+    return args.size > 0 && args.trace;
+  }
   void store(const args_type &args, u32 hash) {
     atomic_store(&hash_and_use_count, hash & kHashMask, memory_order_relaxed);
     size = args.size;
-    internal_memcpy(stack, args.stack, size * sizeof(uptr));
+    internal_memcpy(stack, args.trace, size * sizeof(uptr));
   }
   args_type load() const {
-    args_type ret = {&stack[0], size};
-    return ret;
+    return args_type(&stack[0], size);
   }
   StackDepotHandle get_handle() { return StackDepotHandle(this); }
 
@@ -97,8 +93,6 @@ void StackDepotHandle::inc_use_count_unsafe() {
       StackDepotNode::kUseCountMask;
   CHECK_LT(prev + 1, StackDepotNode::kMaxUseCount);
 }
-uptr StackDepotHandle::size() { return node_->size; }
-uptr *StackDepotHandle::stack() { return &node_->stack[0]; }
 
 // FIXME(dvyukov): this single reserved bit is used in TSan.
 typedef StackDepotBase<StackDepotNode, 1, StackDepotNode::kTabSizeLog>
@@ -109,21 +103,17 @@ StackDepotStats *StackDepotGetStats() {
   return theDepot.GetStats();
 }
 
-u32 StackDepotPut(const uptr *stack, uptr size) {
-  StackDepotDesc desc = {stack, size};
-  StackDepotHandle h = theDepot.Put(desc);
+u32 StackDepotPut(StackTrace stack) {
+  StackDepotHandle h = theDepot.Put(stack);
   return h.valid() ? h.id() : 0;
 }
 
-StackDepotHandle StackDepotPut_WithHandle(const uptr *stack, uptr size) {
-  StackDepotDesc desc = {stack, size};
-  return theDepot.Put(desc);
+StackDepotHandle StackDepotPut_WithHandle(StackTrace stack) {
+  return theDepot.Put(stack);
 }
 
-const uptr *StackDepotGet(u32 id, uptr *size) {
-  StackDepotDesc desc = theDepot.Get(id);
-  *size = desc.size;
-  return desc.stack;
+StackTrace StackDepotGet(u32 id) {
+  return theDepot.Get(id);
 }
 
 void StackDepotLockAll() {
@@ -154,18 +144,15 @@ StackDepotReverseMap::StackDepotReverseMap()
   InternalSort(&map_, map_.size(), IdDescPair::IdComparator);
 }
 
-const uptr *StackDepotReverseMap::Get(u32 id, uptr *size) {
-  if (!map_.size()) return 0;
+StackTrace StackDepotReverseMap::Get(u32 id) {
+  if (!map_.size())
+    return StackTrace();
   IdDescPair pair = {id, 0};
   uptr idx = InternalBinarySearch(map_, 0, map_.size(), pair,
                                   IdDescPair::IdComparator);
-  if (idx > map_.size()) {
-    *size = 0;
-    return 0;
-  }
-  StackDepotNode *desc = map_[idx].desc;
-  *size = desc->size;
-  return desc->stack;
+  if (idx > map_.size())
+    return StackTrace();
+  return map_[idx].desc->load();
 }
 
 }  // namespace __sanitizer

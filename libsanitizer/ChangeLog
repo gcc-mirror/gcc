@@ -1,3 +1,26 @@
+2014-11-13  Kostya Serebryany  <kcc@google.com>
+
+	* All source files: Merge from upstream r221802.
+	* sanitizer_common/sanitizer_symbolizer_libbacktrace.cc
+	(LibbacktraceSymbolizer::SymbolizeData): Replace 'address'
+	with 'start' to follow the new interface.
+	* asan/Makefile.am (AM_CXXFLAGS): Added -std=c++11.
+	* interception/Makefile.am (AM_CXXFLAGS): Added -std=c++11.
+	* libbacktrace/Makefile.am (AM_CXXFLAGS): Added -std=c++11.
+	* lsan/Makefile.am (AM_CXXFLAGS): Added -std=c++11.
+	* sanitizer_common/Makefile.am (sanitizer_common_files): Added new
+	files.
+	(AM_CXXFLAGS): Added -std=c++11.
+	* tsan/Makefile.am (AM_CXXFLAGS): Added -std=c++11.
+	* ubsan/Makefile.am (AM_CXXFLAGS): Added -std=c++11.
+	* asan/Makefile.in: Regenerate.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+
 2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR target/63610

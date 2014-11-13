@@ -9,6 +9,7 @@ DEFS += -DMAC_INTERPOSE_FUNCTIONS -DMISSING_BLOCKS_SUPPORT
 endif
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fno-rtti -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros -fno-ipa-icf
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
+AM_CXXFLAGS += -std=c++11
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 
 toolexeclib_LTLIBRARIES = libasan.la

@@ -459,6 +459,11 @@ class SizeClassAllocator64 {
     }
   }
 
+  static uptr AdditionalSize() {
+    return RoundUpTo(sizeof(RegionInfo) * kNumClassesRounded,
+                     GetPageSizeCached());
+  }
+
   typedef SizeClassMap SizeClassMapT;
   static const uptr kNumClasses = SizeClassMap::kNumClasses;
   static const uptr kNumClassesRounded = SizeClassMap::kNumClassesRounded;
@@ -487,11 +492,6 @@ class SizeClassAllocator64 {
     uptr n_allocated, n_freed;  // Just stats.
   };
   COMPILER_CHECK(sizeof(RegionInfo) >= kCacheLineSize);
-
-  static uptr AdditionalSize() {
-    return RoundUpTo(sizeof(RegionInfo) * kNumClassesRounded,
-                     GetPageSizeCached());
-  }
 
   RegionInfo *GetRegionInfo(uptr class_id) {
     CHECK_LT(class_id, kNumClasses);
@@ -1013,12 +1013,15 @@ class LargeMmapAllocator {
     if (map_size < size) return AllocatorReturnNull();  // Overflow.
     uptr map_beg = reinterpret_cast<uptr>(
         MmapOrDie(map_size, "LargeMmapAllocator"));
+    CHECK(IsAligned(map_beg, page_size_));
     MapUnmapCallback().OnMap(map_beg, map_size);
     uptr map_end = map_beg + map_size;
     uptr res = map_beg + page_size_;
     if (res & (alignment - 1))  // Align.
       res += alignment - (res & (alignment - 1));
-    CHECK_EQ(0, res & (alignment - 1));
+    CHECK(IsAligned(res, alignment));
+    CHECK(IsAligned(res, page_size_));
+    CHECK_GE(res + size, map_beg);
     CHECK_LE(res + size, map_end);
     Header *h = GetHeader(res);
     h->size = size;

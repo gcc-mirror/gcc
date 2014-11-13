@@ -78,6 +78,7 @@ am__objects_1 = sanitizer_allocator.lo sanitizer_common.lo \
 	sanitizer_procmaps_linux.lo sanitizer_procmaps_mac.lo \
 	sanitizer_stackdepot.lo sanitizer_stacktrace.lo \
 	sanitizer_stacktrace_libcdep.lo \
+	sanitizer_stacktrace_printer.lo \
 	sanitizer_stoptheworld_linux_libcdep.lo \
 	sanitizer_suppressions.lo sanitizer_symbolizer.lo \
 	sanitizer_symbolizer_libbacktrace.lo \
@@ -252,7 +253,7 @@ gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 	-Wno-long-long -fPIC -fno-builtin -fno-exceptions -fno-rtti \
 	-fomit-frame-pointer -funwind-tables -fvisibility=hidden \
-	-Wno-variadic-macros $(LIBSTDCXX_RAW_CXX_CXXFLAGS) \
+	-Wno-variadic-macros $(LIBSTDCXX_RAW_CXX_CXXFLAGS) -std=c++11 \
 	$(am__append_1)
 ACLOCAL_AMFLAGS = -I m4
 noinst_LTLIBRARIES = libsanitizer_common.la
@@ -283,6 +284,7 @@ sanitizer_common_files = \
 	sanitizer_stackdepot.cc \
 	sanitizer_stacktrace.cc \
 	sanitizer_stacktrace_libcdep.cc \
+	sanitizer_stacktrace_printer.cc \
 	sanitizer_stoptheworld_linux_libcdep.cc \
 	sanitizer_suppressions.cc \
 	sanitizer_symbolizer.cc \
@@ -414,6 +416,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stackdepot.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace_libcdep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace_printer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stoptheworld_linux_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_suppressions.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer.Plo@am__quote@

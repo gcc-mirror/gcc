@@ -166,7 +166,7 @@ uptr LibbacktraceSymbolizer::SymbolizeCode(uptr addr, AddressInfo *frames,
 }
 
 bool LibbacktraceSymbolizer::SymbolizeData(DataInfo *info) {
-  backtrace_syminfo((backtrace_state *)state_, info->address,
+  backtrace_syminfo((backtrace_state *)state_, info->start,
                     SymbolizeDataCallback, ErrorCallback, info);
   return true;
 }

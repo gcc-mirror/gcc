@@ -339,12 +339,19 @@ class LLVMSymbolizerProcess : public SymbolizerProcess {
     const char* const kSymbolizerArch = "--default-arch=x86_64";
 #elif defined(__i386__)
     const char* const kSymbolizerArch = "--default-arch=i386";
-#elif defined(__powerpc64__)
+#elif defined(__powerpc64__) && defined(__BIG_ENDIAN__)
     const char* const kSymbolizerArch = "--default-arch=powerpc64";
+#elif defined(__powerpc64__) && defined(__LITTLE_ENDIAN__)
+    const char* const kSymbolizerArch = "--default-arch=powerpc64le";
 #else
     const char* const kSymbolizerArch = "--default-arch=unknown";
 #endif
-    execl(path_to_binary, path_to_binary, kSymbolizerArch, (char *)0);
+
+    const char *const inline_flag = common_flags()->symbolize_inline_frames
+                                        ? "--inlining=true"
+                                        : "--inlining=false";
+    execl(path_to_binary, path_to_binary, inline_flag, kSymbolizerArch,
+          (char *)0);
   }
 };
 
@@ -580,8 +587,7 @@ class POSIXSymbolizer : public Symbolizer {
       return false;
     const char *module_name = module->full_name();
     uptr module_offset = addr - module->base_address();
-    internal_memset(info, 0, sizeof(*info));
-    info->address = addr;
+    info->Clear();
     info->module = internal_strdup(module_name);
     info->module_offset = module_offset;
     // First, try to use libbacktrace symbolizer (if it's available).
