@@ -1,3 +1,16 @@
+2014-11-13  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Add tcc_comparison, inverted_tcc_comparison
+	and inverted_tcc_comparison_with_nans operator lists.
+	Use tcc_comparison in the truth_valued_p predicate definition.
+	Restrict logical_inverted_value with bit_xor to integral types.
+	Build a boolean true for simplifying x |^ !x because of
+	vector types.  Implement patterns from forward_propagate_comparison
+	* tree-ssa-forwprop.c (forward_propagate_comparison): Remove.
+	(get_prop_dest_stmt): Likewise.
+	(pass_forwprop::execute): Do not call it.
+	* fold-const.c (fold_unary_loc): Remove the pattern here.
+
 2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
 	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
 

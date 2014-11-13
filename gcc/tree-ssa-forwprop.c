@@ -233,38 +233,6 @@ fwprop_invalidate_lattice (tree name)
 }
 
 
-/* Get the next statement we can propagate NAME's value into skipping
-   trivial copies.  Returns the statement that is suitable as a
-   propagation destination or NULL_TREE if there is no such one.
-   This only returns destinations in a single-use chain.  FINAL_NAME_P
-   if non-NULL is written to the ssa name that represents the use.  */
-
-static gimple
-get_prop_dest_stmt (tree name, tree *final_name_p)
-{
-  use_operand_p use;
-  gimple use_stmt;
-
-  do {
-    /* If name has multiple uses, bail out.  */
-    if (!single_imm_use (name, &use, &use_stmt))
-      return NULL;
-
-    /* If this is not a trivial copy, we found it.  */
-    if (!gimple_assign_ssa_name_copy_p (use_stmt)
-	|| gimple_assign_rhs1 (use_stmt) != name)
-      break;
-
-    /* Continue searching uses of the copy destination.  */
-    name = gimple_assign_lhs (use_stmt);
-  } while (1);
-
-  if (final_name_p)
-    *final_name_p = name;
-
-  return use_stmt;
-}
-
 /* Get the statement we can propagate from into NAME skipping
    trivial copies.  Returns the statement which defines the
    propagation source or NULL_TREE if there is no such one.
@@ -1057,90 +1025,6 @@ forward_propagate_addr_expr (tree name, tree rhs, bool parent_single_use_p)
     }
 
   return all && has_zero_uses (name);
-}
-
-
-/* Forward propagate the comparison defined in *DEFGSI like
-   cond_1 = x CMP y to uses of the form
-     a_1 = (T')cond_1
-     a_1 = !cond_1
-     a_1 = cond_1 != 0
-   Returns true if stmt is now unused.  Advance DEFGSI to the next
-   statement.  */
-
-static bool
-forward_propagate_comparison (gimple_stmt_iterator *defgsi)
-{
-  gimple stmt = gsi_stmt (*defgsi);
-  tree name = gimple_assign_lhs (stmt);
-  gimple use_stmt;
-  tree tmp = NULL_TREE;
-  gimple_stmt_iterator gsi;
-  enum tree_code code;
-  tree lhs;
-
-  /* Don't propagate ssa names that occur in abnormal phis.  */
-  if ((TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
-       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_assign_rhs1 (stmt)))
-      || (TREE_CODE (gimple_assign_rhs2 (stmt)) == SSA_NAME
-        && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_assign_rhs2 (stmt))))
-    goto bailout;
-
-  /* Do not un-cse comparisons.  But propagate through copies.  */
-  use_stmt = get_prop_dest_stmt (name, &name);
-  if (!use_stmt
-      || !is_gimple_assign (use_stmt))
-    goto bailout;
-
-  code = gimple_assign_rhs_code (use_stmt);
-  lhs = gimple_assign_lhs (use_stmt);
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
-    goto bailout;
-
-  /* We can propagate the condition into a statement that
-     computes the logical negation of the comparison result.  */
-  if ((code == BIT_NOT_EXPR
-       && TYPE_PRECISION (TREE_TYPE (lhs)) == 1)
-      || (code == BIT_XOR_EXPR
-	  && integer_onep (gimple_assign_rhs2 (use_stmt))))
-    {
-      tree type = TREE_TYPE (gimple_assign_rhs1 (stmt));
-      bool nans = HONOR_NANS (TYPE_MODE (type));
-      enum tree_code inv_code;
-      inv_code = invert_tree_comparison (gimple_assign_rhs_code (stmt), nans);
-      if (inv_code == ERROR_MARK)
-	goto bailout;
-
-      tmp = build2 (inv_code, TREE_TYPE (lhs), gimple_assign_rhs1 (stmt),
-		    gimple_assign_rhs2 (stmt));
-    }
-  else
-    goto bailout;
-
-  gsi = gsi_for_stmt (use_stmt);
-  gimple_assign_set_rhs_from_tree (&gsi, unshare_expr (tmp));
-  use_stmt = gsi_stmt (gsi);
-  update_stmt (use_stmt);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "  Replaced '");
-      print_gimple_expr (dump_file, stmt, 0, dump_flags);
-      fprintf (dump_file, "' with '");
-      print_gimple_expr (dump_file, use_stmt, 0, dump_flags);
-      fprintf (dump_file, "'\n");
-    }
-
-  /* When we remove stmt now the iterator defgsi goes off it's current
-     sequence, hence advance it now.  */
-  gsi_next (defgsi);
-
-  /* Remove defining statements.  */
-  return remove_prop_source_from_use (name);
-
-bailout:
-  gsi_next (defgsi);
-  return false;
 }
 
 
@@ -2315,11 +2199,6 @@ pass_forwprop::execute (function *fun)
 		}
 	      else
 		gsi_next (&gsi);
-	    }
-	  else if (TREE_CODE_CLASS (code) == tcc_comparison)
-	    {
-	      if (forward_propagate_comparison (&gsi))
-		cfg_changed = true;
 	    }
 	  else
 	    gsi_next (&gsi);
