@@ -1470,7 +1470,7 @@ process_options (void)
     debug_hooks = &vmsdbg_debug_hooks;
 #endif
   else
-    error ("target system does not support the \"%s\" debug format",
+    error ("target system does not support the %qs debug format",
 	   debug_type_names[write_symbols]);
 
   /* We know which debug output will be used so we can set flag_var_tracking

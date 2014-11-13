@@ -1,3 +1,11 @@
+2014-11-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* opts-global.c (postpone_unknown_option_warning): Fix spelling.
+	(print_ignored_options): Fix quoting.
+	* opts.c (common_handle_option): Likewise.
+	(set_debug_level): Likewise.
+	* toplev.c (process_options): Likewise.
+
 2014-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/63838
