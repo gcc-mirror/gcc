@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "lto-streamer.h"
 #include "context.h"
+#include "omp-low.h"
 
 const char * const tls_model_names[]={"none", "tls-emulated", "tls-real",
 				      "tls-global-dynamic", "tls-local-dynamic",
@@ -171,6 +172,8 @@ varpool_node::get_create (tree decl)
     {
       node->offloadable = 1;
       g->have_offload = true;
+      if (!in_lto_p)
+	vec_safe_push (offload_vars, decl);
     }
 
   node->register_symbol ();

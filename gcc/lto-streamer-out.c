@@ -2308,6 +2308,8 @@ lto_output (void)
      statements using the statement UIDs.  */
   output_symtab ();
 
+  output_offload_tables ();
+
 #ifdef ENABLE_CHECKING
   lto_bitmap_free (output);
 #endif

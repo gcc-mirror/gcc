@@ -8169,6 +8169,8 @@ and the associated definitions of those functions.
 
 @hook TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 
+@hook TARGET_RECORD_OFFLOAD_SYMBOL
+
 @defmac TARGET_SUPPORTS_WIDE_INT
 
 On older ports, large integers are stored in @code{CONST_DOUBLE} rtl

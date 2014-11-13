@@ -247,6 +247,7 @@ enum lto_section_type
   LTO_section_inline_summary,
   LTO_section_ipcp_transform,
   LTO_section_ipa_icf,
+  LTO_section_offload_table,
   LTO_N_SECTION_TYPES		/* Must be last.  */
 };
 
@@ -822,6 +823,8 @@ bool lto_symtab_encoder_encode_initializer_p (lto_symtab_encoder_t,
 					      varpool_node *);
 void output_symtab (void);
 void input_symtab (void);
+void output_offload_tables (void);
+void input_offload_tables (void);
 bool referenced_from_other_partition_p (struct ipa_ref_list *,
 				        lto_symtab_encoder_t);
 bool reachable_from_other_partition_p (struct cgraph_node *,

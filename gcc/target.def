@@ -1779,6 +1779,14 @@ HOOK_VECTOR_END (vectorize)
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_"
 
+DEFHOOK
+(record_offload_symbol,
+ "Used when offloaded functions are seen in the compilation unit and no named\n\
+sections are available.  It is called once for each symbol that must be\n\
+recorded in the offload function and variable table.",
+ void, (tree),
+ hook_void_tree)
+
 /* Allow target specific overriding of option settings after options have
   been changed by an attribute or pragma or when it is reset at the
   end of the code affected by an attribute or pragma.  */

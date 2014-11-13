@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "ipa-utils.h"
+#include "omp-low.h"
 
 /* True when asm nodes has been output.  */
 bool asm_nodes_output = false;
@@ -1068,6 +1069,50 @@ read_string (struct lto_input_block *ib)
   return str;
 }
 
+/* Output function/variable tables that will allow libgomp to look up offload
+   target code.
+   OFFLOAD_FUNCS is filled in expand_omp_target, OFFLOAD_VARS is filled in
+   varpool_node::get_create.  In WHOPR (partitioned) mode during the WPA stage
+   both OFFLOAD_FUNCS and OFFLOAD_VARS are filled by input_offload_tables.  */
+
+void
+output_offload_tables (void)
+{
+  if (vec_safe_is_empty (offload_funcs) && vec_safe_is_empty (offload_vars))
+    return;
+
+  struct lto_simple_output_block *ob
+    = lto_create_simple_output_block (LTO_section_offload_table);
+
+  for (unsigned i = 0; i < vec_safe_length (offload_funcs); i++)
+    {
+      streamer_write_enum (ob->main_stream, LTO_symtab_tags,
+			   LTO_symtab_last_tag, LTO_symtab_unavail_node);
+      lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
+				(*offload_funcs)[i]);
+    }
+
+  for (unsigned i = 0; i < vec_safe_length (offload_vars); i++)
+    {
+      streamer_write_enum (ob->main_stream, LTO_symtab_tags,
+			   LTO_symtab_last_tag, LTO_symtab_variable);
+      lto_output_var_decl_index (ob->decl_state, ob->main_stream,
+				 (*offload_vars)[i]);
+    }
+
+  streamer_write_uhwi_stream (ob->main_stream, 0);
+  lto_destroy_simple_output_block (ob);
+
+  /* In WHOPR mode during the WPA stage the joint offload tables need to be
+     streamed to one partition only.  That's why we free offload_funcs and
+     offload_vars after the first call of output_offload_tables.  */
+  if (flag_wpa)
+    {
+      vec_free (offload_funcs);
+      vec_free (offload_vars);
+    }
+}
+
 /* Overwrite the information in NODE based on FILE_DATA, TAG, FLAGS,
    STACK_SIZE, SELF_TIME and SELF_SIZE.  This is called either to initialize
    NODE or to replace the values in it, for instance because the first
@@ -1791,6 +1836,55 @@ input_symtab (void)
 	 context of the nested function.  */
       if (node->lto_file_data)
 	node->aux = NULL;
+    }
+}
+
+/* Input function/variable tables that will allow libgomp to look up offload
+   target code, and store them into OFFLOAD_FUNCS and OFFLOAD_VARS.  */
+
+void
+input_offload_tables (void)
+{
+  struct lto_file_decl_data **file_data_vec = lto_get_file_decl_data ();
+  struct lto_file_decl_data *file_data;
+  unsigned int j = 0;
+
+  while ((file_data = file_data_vec[j++]))
+    {
+      const char *data;
+      size_t len;
+      struct lto_input_block *ib
+	= lto_create_simple_input_block (file_data, LTO_section_offload_table,
+					 &data, &len);
+      if (!ib)
+	continue;
+
+      enum LTO_symtab_tags tag
+	= streamer_read_enum (ib, LTO_symtab_tags, LTO_symtab_last_tag);
+      while (tag)
+	{
+	  if (tag == LTO_symtab_unavail_node)
+	    {
+	      int decl_index = streamer_read_uhwi (ib);
+	      tree fn_decl
+		= lto_file_decl_data_get_fn_decl (file_data, decl_index);
+	      vec_safe_push (offload_funcs, fn_decl);
+	    }
+	  else if (tag == LTO_symtab_variable)
+	    {
+	      int decl_index = streamer_read_uhwi (ib);
+	      tree var_decl
+		= lto_file_decl_data_get_var_decl (file_data, decl_index);
+	      vec_safe_push (offload_vars, var_decl);
+	    }
+	  else
+	    fatal_error ("invalid offload table in %s", file_data->file_name);
+
+	  tag = streamer_read_enum (ib, LTO_symtab_tags, LTO_symtab_last_tag);
+	}
+
+      lto_destroy_simple_input_block (file_data, LTO_section_offload_table,
+				      ib, data, len);
     }
 }
 
