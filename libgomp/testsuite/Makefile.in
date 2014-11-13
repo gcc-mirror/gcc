@@ -184,6 +184,9 @@ lt_host_flags = @lt_host_flags@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
+offload_additional_lib_paths = @offload_additional_lib_paths@
+offload_additional_options = @offload_additional_options@
+offload_targets = @offload_targets@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
 prefix = @prefix@
@@ -407,6 +410,11 @@ uninstall-am:
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	uninstall uninstall-am
 
+
+# Used for support non-fallback offloading.
+export OFFLOAD_TARGETS = $(offload_targets)
+export OFFLOAD_ADDITIONAL_OPTIONS = $(offload_additional_options)
+export OFFLOAD_ADDITIONAL_LIB_PATHS = $(offload_additional_lib_paths)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

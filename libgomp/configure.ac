@@ -280,9 +280,13 @@ else
   multilib_arg=
 fi
 
+# Get accel target and path to install tree of accel compiler
+offload_additional_options=
+offload_additional_lib_paths=
 offload_targets=
 if test x"$enable_offload_targets" != x; then
   for tgt in `echo $enable_offload_targets | sed -e 's#,# #g'`; do
+    tgt_dir=`echo $tgt | grep '=' | sed 's/.*=//'`
     tgt=`echo $tgt | sed 's/=.*//'`
     case $tgt in
       *-intelmic-* | *-intelmicemul-*)
@@ -295,10 +299,20 @@ if test x"$enable_offload_targets" != x; then
     else
       offload_targets=$offload_targets,$tgt_name
     fi
+    if test x"$tgt_dir" != x; then
+      offload_additional_options="$offload_additional_options -B$tgt_dir/libexec/gcc/\$(target_alias)/\$(gcc_version) -B$tgt_dir/bin"
+      offload_additional_lib_paths="$offload_additional_lib_paths:$tgt_dir/lib64:$tgt_dir/lib"
+    else
+      offload_additional_options="$offload_additional_options -B\$(libexecdir)/gcc/\$(target_alias)/\$(gcc_version) -B\$(bindir)"
+      offload_additional_lib_paths="$offload_additional_lib_paths:$toolexeclibdir"
+    fi
   done
 fi
 AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
   [Define to hold the list of target names suitable for offloading.])
+AC_SUBST(offload_targets)
+AC_SUBST(offload_additional_options)
+AC_SUBST(offload_additional_lib_paths)
 
 # Set up the set of libraries that we need to link against for libgomp.
 # Note that the GOMP_SELF_SPEC in gcc.c may force -pthread,
