@@ -1,3 +1,13 @@
+2014-11-13  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* Makefile.def: Add liboffloadmic to target_modules.  Make
+	liboffloadmic depend on libgomp's configure, libstdc++ and libgcc.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add liboffloadmic to target binaries.
+	Restrict liboffloadmic for POSIX and i*86, and x86_64 architectures.
+	Add liboffloadmic to noconfig list when C++ is not supported.
+
 2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>

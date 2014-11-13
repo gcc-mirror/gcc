@@ -1,3 +1,7 @@
+2014-11-13  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* target-posix: New file.
+
 2014-10-27  Tom Tromey  <tromey@redhat.com>
 
 	* gcc-plugin.m4: New file.

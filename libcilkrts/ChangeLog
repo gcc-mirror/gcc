@@ -1,3 +1,7 @@
+2014-11-13  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* configure.tgt: Use config/target-posix.
+
 2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR target/63610
