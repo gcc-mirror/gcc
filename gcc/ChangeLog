@@ -1,3 +1,12 @@
+2014-11-14  Felix Yang  <felix.yang@huawei.com>
+
+	Backport from mainline
+	2014-11-14  Felix Yang  <felix.yang@huawei.com>
+		    Jiji Jiang  <jiangjiji@huawei.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_ld1r<mode>): Use
+	VALL mode iterator instead of VALLDI.
+
 2014-11-13  Teresa Johnson  <tejohnson@google.com>
 
 	PR tree-optimization/63841
