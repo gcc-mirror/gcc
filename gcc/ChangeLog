@@ -1,3 +1,9 @@
+2014-11-13  Rong Xu  <xur@google.com>
+
+	PR debug/63581
+	* cfgrtl.c (emit_barrier_after_bb): Append the barrier to the
+	footer, instead of unconditionally overwritten.
+
 2014-11-14  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraph.h (clear_outer_type): Make public.  Fix comment.
@@ -6399,6 +6405,7 @@
 	(lds_fpscr, sts_fpscr): New insns.
 	(toggle_sz, toggle_pr): Use SImode for FPSCR_REG instead of PSImode.
 
+>>>>>>> .r217525
 2014-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-inline-transform.c (master_clone_with_noninline_clones_p): New.
