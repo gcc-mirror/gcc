@@ -1,3 +1,9 @@
+2014-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc (default_gnu_indirect_function): Set to yes
+	for i[34567]86-*-linux* and x86_64-*-linux* if not targeting
+	Android nor uclibc.
+
 2014-11-14  Felix Yang  <felix.yang@huawei.com>
 	    Jiji Jiang  <jiangjiji@huawei.com>
 
