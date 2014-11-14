@@ -2568,6 +2568,9 @@ optimize_unreachable (gimple_stmt_iterator i)
   edge e;
   bool ret;
 
+  if (flag_sanitize & SANITIZE_UNREACHABLE)
+    return false;
+
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       stmt = gsi_stmt (gsi);

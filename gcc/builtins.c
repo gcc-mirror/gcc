@@ -64,7 +64,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "builtins.h"
 #include "asan.h"
-#include "ubsan.h"
 #include "cilk.h"
 #include "ipa-ref.h"
 #include "lto-streamer.h"
@@ -9802,14 +9801,6 @@ fold_builtin_0 (location_t loc, tree fndecl, bool ignore ATTRIBUTE_UNUSED)
 
     case BUILT_IN_CLASSIFY_TYPE:
       return fold_builtin_classify_type (NULL_TREE);
-
-    case BUILT_IN_UNREACHABLE:
-      if (flag_sanitize & SANITIZE_UNREACHABLE
-	  && (current_function_decl == NULL
-	      || !lookup_attribute ("no_sanitize_undefined",
-				    DECL_ATTRIBUTES (current_function_decl))))
-	return ubsan_instrument_unreachable (loc);
-      break;
 
     default:
       break;
