@@ -53,19 +53,59 @@ along with GCC; see the file COPYING3.  If not see
  (pointer_plus integer_zerop @1)
  (non_lvalue (convert @1)))
 
+/* See if ARG1 is zero and X + ARG1 reduces to X.
+   Likewise if the operands are reversed.  */
+(simplify
+ (plus:c @0 real_zerop@1)
+ (if (fold_real_zero_addition_p (type, @1, 0))
+  (non_lvalue @0)))
+
+/* See if ARG1 is zero and X - ARG1 reduces to X.  */
+(simplify
+ (minus @0 real_zerop@1)
+ (if (fold_real_zero_addition_p (type, @1, 1))
+  (non_lvalue @0)))
+
 /* Simplify x - x.
    This is unsafe for certain floats even in non-IEEE formats.
    In IEEE, it is unsafe because it does wrong for NaNs.
    Also note that operand_equal_p is always false if an operand
    is volatile.  */
 (simplify
-  (minus @0 @0)
-  (if (!FLOAT_TYPE_P (type) || !HONOR_NANS (TYPE_MODE (type)))
-   { build_zero_cst (type); }))
+ (minus @0 @0)
+ (if (!FLOAT_TYPE_P (type) || !HONOR_NANS (TYPE_MODE (type)))
+  { build_zero_cst (type); }))
 
 (simplify
-  (mult @0 integer_zerop@1)
-  @1)
+ (mult @0 integer_zerop@1)
+ @1)
+
+/* Maybe fold x * 0 to 0.  The expressions aren't the same
+   when x is NaN, since x * 0 is also NaN.  Nor are they the
+   same in modes with signed zeros, since multiplying a
+   negative value by 0 gives -0, not +0.  */
+(simplify
+ (mult @0 real_zerop@1)
+ (if (!HONOR_NANS (TYPE_MODE (type))
+      && !HONOR_SIGNED_ZEROS (TYPE_MODE (type)))
+  @1))
+
+/* In IEEE floating point, x*1 is not equivalent to x for snans.
+   Likewise for complex arithmetic with signed zeros.  */
+(simplify
+ (mult @0 real_onep)
+ (if (!HONOR_SNANS (TYPE_MODE (type))
+      && (!HONOR_SIGNED_ZEROS (TYPE_MODE (type))
+          || !COMPLEX_FLOAT_TYPE_P (type)))
+  (non_lvalue @0)))
+
+/* Transform x * -1.0 into -x.  */
+(simplify
+ (mult @0 real_minus_onep)
+  (if (!HONOR_SNANS (TYPE_MODE (type))
+       && (!HONOR_SIGNED_ZEROS (TYPE_MODE (type))
+           || !COMPLEX_FLOAT_TYPE_P (type)))
+   (negate @0)))
 
 /* Make sure to preserve divisions by zero.  This is the reason why
    we don't simplify x / x to 1 or 0 / x to 0.  */
@@ -74,19 +114,98 @@ along with GCC; see the file COPYING3.  If not see
     (op @0 integer_onep)
     (non_lvalue @0)))
 
+/* X / -1 is -X.  */
+(for div (trunc_div ceil_div floor_div round_div exact_div)
+ (simplify
+   (div @0 INTEGER_CST@1)
+   (if (!TYPE_UNSIGNED (type)
+        && wi::eq_p (@1, -1))
+    (negate @0))))
+
+/* For unsigned integral types, FLOOR_DIV_EXPR is the same as
+   TRUNC_DIV_EXPR.  Rewrite into the latter in this case.  */
+(simplify
+ (floor_div @0 @1)
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
+  (trunc_div @0 @1)))
+
+/* Optimize A / A to 1.0 if we don't care about
+   NaNs or Infinities.  Skip the transformation
+   for non-real operands.  */
+(simplify
+ (rdiv @0 @0)
+ (if (SCALAR_FLOAT_TYPE_P (type)
+      && ! HONOR_NANS (TYPE_MODE (type))
+      && ! HONOR_INFINITIES (TYPE_MODE (type)))
+  { build_real (type, dconst1); })
+ /* The complex version of the above A / A optimization.  */
+ (if (COMPLEX_FLOAT_TYPE_P (type)
+      && ! HONOR_NANS (TYPE_MODE (TREE_TYPE (type)))
+      && ! HONOR_INFINITIES (TYPE_MODE (TREE_TYPE (type))))
+  { build_complex (type, build_real (TREE_TYPE (type), dconst1),
+		   build_real (TREE_TYPE (type), dconst0)); }))
+
+/* In IEEE floating point, x/1 is not equivalent to x for snans.  */
+(simplify
+ (rdiv @0 real_onep)
+ (if (!HONOR_SNANS (TYPE_MODE (type)))
+  (non_lvalue @0)))
+
+/* In IEEE floating point, x/-1 is not equivalent to -x for snans.  */
+(simplify
+ (rdiv @0 real_minus_onep)
+ (if (!HONOR_SNANS (TYPE_MODE (type)))
+  (negate @0)))
+
+/* If ARG1 is a constant, we can convert this to a multiply by the
+   reciprocal.  This does not have the same rounding properties,
+   so only do this if -freciprocal-math.  We can actually
+   always safely do it if ARG1 is a power of two, but it's hard to
+   tell if it is or not in a portable manner.  */
+(for cst (REAL_CST COMPLEX_CST VECTOR_CST)
+ (simplify
+  (rdiv @0 cst@1)
+  (if (optimize)
+   (if (flag_reciprocal_math)
+    (with
+     { tree tem = fold_binary (RDIV_EXPR, type, build_one_cst (type), @1); }
+     (if (tem)
+      (mult @0 { tem; } ))))
+   (if (cst != COMPLEX_CST)
+    (with { tree inverse = exact_inverse (type, @1); }
+     (if (inverse)
+      (mult @0 { inverse; } )))))))
+
 /* Same applies to modulo operations, but fold is inconsistent here
    and simplifies 0 % x to 0, only preserving literal 0 % 0.  */
-(for op (ceil_mod floor_mod round_mod trunc_mod)
+(for mod (ceil_mod floor_mod round_mod trunc_mod)
  /* 0 % X is always zero.  */
  (simplify
-  (op integer_zerop@0 @1)
+  (mod integer_zerop@0 @1)
   /* But not for 0 % 0 so that we can get the proper warnings and errors.  */
   (if (!integer_zerop (@1))
    @0))
  /* X % 1 is always zero.  */
  (simplify
-  (op @0 integer_onep)
-  { build_zero_cst (type); }))
+  (mod @0 integer_onep)
+  { build_zero_cst (type); })
+ /* X % -1 is zero.  */
+ (simplify
+  (mod @0 INTEGER_CST@1)
+  (if (!TYPE_UNSIGNED (type)
+       && wi::eq_p (@1, -1))
+   { build_zero_cst (type); })))
+
+/* X % -C is the same as X % C.  */
+(simplify
+ (trunc_mod @0 INTEGER_CST@1)
+  (if (TYPE_SIGN (type) == SIGNED
+       && !TREE_OVERFLOW (@1)
+       && wi::neg_p (@1)
+       && !TYPE_OVERFLOW_TRAPS (type)
+       /* Avoid this transformation if C is INT_MIN, i.e. C == -C.  */
+       && !sign_bit_p (@1, @1))
+   (trunc_mod @0 (negate @1))))
 
 /* x | ~0 -> ~0  */
 (simplify
@@ -393,6 +512,64 @@ along with GCC; see the file COPYING3.  If not see
      (convert @1))))))
 
 
+/* Simplifications of MIN_EXPR and MAX_EXPR.  */
+
+(for minmax (min max)
+ (simplify
+  (minmax @0 @0)
+  @0))
+(simplify
+ (min @0 @1)
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_MIN_VALUE (type)
+      && operand_equal_p (@1, TYPE_MIN_VALUE (type), OEP_ONLY_CONST))
+  @1))
+(simplify
+ (max @0 @1)
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_MAX_VALUE (type)
+      && operand_equal_p (@1, TYPE_MAX_VALUE (type), OEP_ONLY_CONST))
+  @1))
+
+
+/* Simplifications of shift and rotates.  */
+
+(for rotate (lrotate rrotate)
+ (simplify
+  (rotate integer_all_onesp@0 @1)
+  @0))
+
+/* Optimize -1 >> x for arithmetic right shifts.  */
+(simplify
+ (rshift integer_all_onesp@0 @1)
+ (if (!TYPE_UNSIGNED (type)
+      && tree_expr_nonnegative_p (@1))
+  @0))
+
+(for shiftrotate (lrotate rrotate lshift rshift)
+ (simplify
+  (shiftrotate @0 integer_zerop)
+  (non_lvalue @0))
+ (simplify
+  (shiftrotate integer_zerop@0 @1)
+  @0)
+ /* Prefer vector1 << scalar to vector1 << vector2
+    if vector2 is uniform.  */
+ (for vec (VECTOR_CST CONSTRUCTOR)
+  (simplify
+   (shiftrotate @0 vec@1)
+   (with { tree tem = uniform_vector_p (@1); }
+    (if (tem)
+     (shiftrotate @0 { tem; }))))))
+
+/* Rewrite an LROTATE_EXPR by a constant into an
+   RROTATE_EXPR by a new constant.  */
+(simplify
+ (lrotate @0 INTEGER_CST@1)
+ (rrotate @0 { fold_binary (MINUS_EXPR, TREE_TYPE (@1),
+			    build_int_cst (TREE_TYPE (@1),
+					   element_precision (type)), @1); }))
+
 
 /* Simplifications of conversions.  */
 
@@ -568,6 +745,38 @@ along with GCC; see the file COPYING3.  If not see
   (if (TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (type))
    (convert @0)))
 
+/* Canonicalization of binary operations.  */
+
+/* Convert X + -C into X - C.  */
+(simplify
+ (plus @0 REAL_CST@1)
+ (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
+  (with { tree tem = fold_unary (NEGATE_EXPR, type, @1); }
+   (if (!TREE_OVERFLOW (tem) || !flag_trapping_math)
+    (minus @0 { tem; })))))
+
+/* Convert x+x into x*2.0.  */
+(simplify
+ (plus @0 @0)
+ (if (SCALAR_FLOAT_TYPE_P (type))
+  (mult @0 { build_real (type, dconst2); })))
+
+(simplify
+ (minus integer_zerop @1)
+ (negate @1))
+
+/* (ARG0 - ARG1) is the same as (-ARG1 + ARG0).  So check whether
+   ARG0 is zero and X + ARG0 reduces to X, since that would mean
+   (-ARG1 + ARG0) reduces to -ARG1.  */
+(simplify
+ (minus real_zerop@0 @1)
+ (if (fold_real_zero_addition_p (type, @0, 0))
+  (negate @1)))
+
+/* Transform x * -1 into -x.  */
+(simplify
+ (mult @0 integer_minus_onep)
+ (negate @0))
 
 /* COMPLEX_EXPR and REALPART/IMAGPART_EXPR cancellations.  */
 (simplify

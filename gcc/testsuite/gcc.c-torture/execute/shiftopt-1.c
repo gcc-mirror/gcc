@@ -22,11 +22,16 @@ utest (unsigned int x)
   if (0 >> x != 0)
     link_error ();
 
+  /* XFAIL: the C frontend converts the shift amount to 'int'
+     thus we get -1 >> (int)x which means the shift amount may
+     be negative.  See PR63862.  */
+#if 0
   if (-1 >> x != -1)
     link_error ();
 
   if (~0 >> x != ~0)
     link_error ();
+#endif
 }
 
 void

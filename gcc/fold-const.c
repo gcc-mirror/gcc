@@ -130,7 +130,6 @@ static tree decode_field_reference (location_t, tree, HOST_WIDE_INT *,
 				    HOST_WIDE_INT *,
 				    machine_mode *, int *, int *,
 				    tree *, tree *);
-static tree sign_bit_p (tree, const_tree);
 static int simple_operand_p (const_tree);
 static bool simple_operand_p_2 (tree);
 static tree range_binop (enum tree_code, tree, tree, int, tree, int);
@@ -3651,7 +3650,7 @@ all_ones_mask_p (const_tree mask, unsigned int size)
    The return value is the (sub)expression whose sign bit is VAL,
    or NULL_TREE otherwise.  */
 
-static tree
+tree
 sign_bit_p (tree exp, const_tree val)
 {
   int width;
@@ -9474,7 +9473,7 @@ fold_addr_of_array_ref_difference (location_t loc, tree type,
 /* If the real or vector real constant CST of type TYPE has an exact
    inverse, return it, else return NULL.  */
 
-static tree
+tree
 exact_inverse (tree type, tree cst)
 {
   REAL_VALUE_TYPE r;
@@ -9963,25 +9962,6 @@ fold_binary_loc (location_t loc,
 	}
       else
 	{
-	  /* See if ARG1 is zero and X + ARG1 reduces to X.  */
-	  if (fold_real_zero_addition_p (TREE_TYPE (arg0), arg1, 0))
-	    return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
-
-	  /* Likewise if the operands are reversed.  */
-	  if (fold_real_zero_addition_p (TREE_TYPE (arg1), arg0, 0))
-	    return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg1));
-
-	  /* Convert X + -C into X - C.  */
-	  if (TREE_CODE (arg1) == REAL_CST
-	      && REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg1)))
-	    {
-	      tem = fold_negate_const (arg1, type);
-	      if (!TREE_OVERFLOW (arg1) || !flag_trapping_math)
-		return fold_build2_loc (loc, MINUS_EXPR, type,
-				    fold_convert_loc (loc, type, arg0),
-				    fold_convert_loc (loc, type, tem));
-	    }
-
 	  /* Fold __complex__ ( x, 0 ) + __complex__ ( 0, y )
 	     to __complex__ ( x, y ).  This is not the same for SNaNs or
 	     if signed zeros are involved.  */
@@ -10022,12 +10002,6 @@ fold_binary_loc (location_t loc,
 	      && (TREE_CODE (arg1) == RDIV_EXPR || TREE_CODE (arg1) == MULT_EXPR)
 	      && (tem = distribute_real_division (loc, code, type, arg0, arg1)))
 	    return tem;
-
-	  /* Convert x+x into x*2.0.  */
-	  if (operand_equal_p (arg0, arg1, 0)
-	      && SCALAR_FLOAT_TYPE_P (type))
-	    return fold_build2_loc (loc, MULT_EXPR, type, arg0,
-				build_real (type, dconst2));
 
           /* Convert a + (b*c + d*e) into (a + b*c) + d*e.
              We associate floats only if the user has specified
@@ -10381,9 +10355,6 @@ fold_binary_loc (location_t loc,
 
       if (! FLOAT_TYPE_P (type))
 	{
-	  if (integer_zerop (arg0))
-	    return negate_expr (fold_convert_loc (loc, type, arg1));
-
 	  /* Fold A - (A & B) into ~B & A.  */
 	  if (!TREE_SIDE_EFFECTS (arg0)
 	      && TREE_CODE (arg1) == BIT_AND_EXPR)
@@ -10427,16 +10398,6 @@ fold_binary_loc (location_t loc,
 		}
 	    }
 	}
-
-      /* See if ARG1 is zero and X - ARG1 reduces to X.  */
-      else if (fold_real_zero_addition_p (TREE_TYPE (arg0), arg1, 1))
-	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
-
-      /* (ARG0 - ARG1) is the same as (-ARG1 + ARG0).  So check whether
-	 ARG0 is zero and X + ARG0 reduces to X, since that would mean
-	 (-ARG1 + ARG0) reduces to -ARG1.  */
-      else if (fold_real_zero_addition_p (TREE_TYPE (arg1), arg0, 0))
-	return negate_expr (fold_convert_loc (loc, type, arg1));
 
       /* Fold __complex__ ( x, 0 ) - __complex__ ( 0, y ) to
 	 __complex__ ( x, -y ).  This is not the same for SNaNs or if
@@ -10553,11 +10514,6 @@ fold_binary_loc (location_t loc,
 
       if (! FLOAT_TYPE_P (type))
 	{
-	  /* Transform x * -1 into -x.  Make sure to do the negation
-	     on the original operand with conversions not stripped
-	     because we can only strip non-sign-changing conversions.  */
-	  if (integer_minus_onep (arg1))
-	    return fold_convert_loc (loc, type, negate_expr (op0));
 	  /* Transform x * -C into -x * C if x is easily negatable.  */
 	  if (TREE_CODE (arg1) == INTEGER_CST
 	      && tree_int_cst_sgn (arg1) == -1
@@ -10621,29 +10577,6 @@ fold_binary_loc (location_t loc,
 	}
       else
 	{
-	  /* Maybe fold x * 0 to 0.  The expressions aren't the same
-	     when x is NaN, since x * 0 is also NaN.  Nor are they the
-	     same in modes with signed zeros, since multiplying a
-	     negative value by 0 gives -0, not +0.  */
-	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0)))
-	      && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg0)))
-	      && real_zerop (arg1))
-	    return omit_one_operand_loc (loc, type, arg1, arg0);
-	  /* In IEEE floating point, x*1 is not equivalent to x for snans.
-	     Likewise for complex arithmetic with signed zeros.  */
-	  if (!HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
-	      && (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg0)))
-		  || !COMPLEX_FLOAT_TYPE_P (TREE_TYPE (arg0)))
-	      && real_onep (arg1))
-	    return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
-
-	  /* Transform x * -1.0 into -x.  */
-	  if (!HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
-	      && (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg0)))
-		  || !COMPLEX_FLOAT_TYPE_P (TREE_TYPE (arg0)))
-	      && real_minus_onep (arg1))
-	    return fold_convert_loc (loc, type, negate_expr (arg0));
-
 	  /* Convert (C1/X)*C2 into (C1*C2)/X.  This transformation may change
              the result for floating point types due to rounding so it is applied
              only if -fassociative-math was specify.  */
@@ -11522,33 +11455,6 @@ fold_binary_loc (location_t loc,
 	  && real_zerop (arg1))
 	return NULL_TREE;
 
-      /* Optimize A / A to 1.0 if we don't care about
-	 NaNs or Infinities.  Skip the transformation
-	 for non-real operands.  */
-      if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (arg0))
-	  && ! HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0)))
-	  && ! HONOR_INFINITIES (TYPE_MODE (TREE_TYPE (arg0)))
-	  && operand_equal_p (arg0, arg1, 0))
-	{
-	  tree r = build_real (TREE_TYPE (arg0), dconst1);
-
-	  return omit_two_operands_loc (loc, type, r, arg0, arg1);
-	}
-
-      /* The complex version of the above A / A optimization.  */
-      if (COMPLEX_FLOAT_TYPE_P (TREE_TYPE (arg0))
-	  && operand_equal_p (arg0, arg1, 0))
-	{
-	  tree elem_type = TREE_TYPE (TREE_TYPE (arg0));
-	  if (! HONOR_NANS (TYPE_MODE (elem_type))
-	      && ! HONOR_INFINITIES (TYPE_MODE (elem_type)))
-	    {
-	      tree r = build_real (elem_type, dconst1);
-	      /* omit_two_operands will call fold_convert for us.  */
-	      return omit_two_operands_loc (loc, type, r, arg0, arg1);
-	    }
-	}
-
       /* (-A) / (-B) -> A / B  */
       if (TREE_CODE (arg0) == NEGATE_EXPR && negate_expr_p (arg1))
 	return fold_build2_loc (loc, RDIV_EXPR, type,
@@ -11559,42 +11465,6 @@ fold_binary_loc (location_t loc,
 			    negate_expr (arg0),
 			    TREE_OPERAND (arg1, 0));
 
-      /* In IEEE floating point, x/1 is not equivalent to x for snans.  */
-      if (!HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
-	  && real_onep (arg1))
-	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
-
-      /* In IEEE floating point, x/-1 is not equivalent to -x for snans.  */
-      if (!HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
-	  && real_minus_onep (arg1))
-	return non_lvalue_loc (loc, fold_convert_loc (loc, type,
-						  negate_expr (arg0)));
-
-      /* If ARG1 is a constant, we can convert this to a multiply by the
-	 reciprocal.  This does not have the same rounding properties,
-	 so only do this if -freciprocal-math.  We can actually
-	 always safely do it if ARG1 is a power of two, but it's hard to
-	 tell if it is or not in a portable manner.  */
-      if (optimize
-	  && (TREE_CODE (arg1) == REAL_CST
-	      || (TREE_CODE (arg1) == COMPLEX_CST
-		  && COMPLEX_FLOAT_TYPE_P (TREE_TYPE (arg1)))
-	      || (TREE_CODE (arg1) == VECTOR_CST
-		  && VECTOR_FLOAT_TYPE_P (TREE_TYPE (arg1)))))
-	{
-	  if (flag_reciprocal_math
-	      && 0 != (tem = const_binop (code, build_one_cst (type), arg1)))
-	    return fold_build2_loc (loc, MULT_EXPR, type, arg0, tem);
-	  /* Find the reciprocal if optimizing and the result is exact.
-	     TODO: Complex reciprocal not implemented.  */
-	  if (TREE_CODE (arg1) != COMPLEX_CST)
-	    {
-	      tree inverse = exact_inverse (TREE_TYPE (arg0), arg1);
-
-	      if (inverse)
-		return fold_build2_loc (loc, MULT_EXPR, type, arg0, inverse);
-	    }
-	}
       /* Convert A/B/C to A/(B*C).  */
       if (flag_reciprocal_math
 	  && TREE_CODE (arg0) == RDIV_EXPR)
@@ -11817,13 +11687,6 @@ fold_binary_loc (location_t loc,
 	    }
 	}
 
-      /* For unsigned integral types, FLOOR_DIV_EXPR is the same as
-	 TRUNC_DIV_EXPR.  Rewrite into the latter in this case.  */
-      if (INTEGRAL_TYPE_P (type)
-	  && TYPE_UNSIGNED (type)
-	  && code == FLOOR_DIV_EXPR)
-	return fold_build2_loc (loc, TRUNC_DIV_EXPR, type, op0, op1);
-
       /* Fall through */
 
     case ROUND_DIV_EXPR:
@@ -11831,11 +11694,6 @@ fold_binary_loc (location_t loc,
     case EXACT_DIV_EXPR:
       if (integer_zerop (arg1))
 	return NULL_TREE;
-      /* X / -1 is -X.  */
-      if (!TYPE_UNSIGNED (type)
-	  && TREE_CODE (arg1) == INTEGER_CST
-	  && wi::eq_p (arg1, -1))
-	return fold_convert_loc (loc, type, negate_expr (arg0));
 
       /* Convert -A / -B to A / B when the type is signed and overflow is
 	 undefined.  */
@@ -11898,26 +11756,6 @@ fold_binary_loc (location_t loc,
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
     case TRUNC_MOD_EXPR:
-      /* X % -1 is zero.  */
-      if (!TYPE_UNSIGNED (type)
-	  && TREE_CODE (arg1) == INTEGER_CST
-	  && wi::eq_p (arg1, -1))
-	return omit_one_operand_loc (loc, type, integer_zero_node, arg0);
-
-      /* X % -C is the same as X % C.  */
-      if (code == TRUNC_MOD_EXPR
-	  && TYPE_SIGN (type) == SIGNED
-	  && TREE_CODE (arg1) == INTEGER_CST
-	  && !TREE_OVERFLOW (arg1)
-	  && wi::neg_p (arg1)
-	  && !TYPE_OVERFLOW_TRAPS (type)
-	  /* Avoid this transformation if C is INT_MIN, i.e. C == -C.  */
-	  && !sign_bit_p (arg1, arg1))
-	return fold_build2_loc (loc, code, type,
-			    fold_convert_loc (loc, type, arg0),
-			    fold_convert_loc (loc, type,
-					      negate_expr (arg1)));
-
       /* X % -Y is the same as X % Y.  */
       if (code == TRUNC_MOD_EXPR
 	  && !TYPE_UNSIGNED (type)
@@ -11971,30 +11809,8 @@ fold_binary_loc (location_t loc,
 
     case LROTATE_EXPR:
     case RROTATE_EXPR:
-      if (integer_all_onesp (arg0))
-	return omit_one_operand_loc (loc, type, arg0, arg1);
-      goto shift;
-
     case RSHIFT_EXPR:
-      /* Optimize -1 >> x for arithmetic right shifts.  */
-      if (integer_all_onesp (arg0) && !TYPE_UNSIGNED (type)
-	  && tree_expr_nonnegative_p (arg1))
-	return omit_one_operand_loc (loc, type, arg0, arg1);
-      /* ... fall through ...  */
-
     case LSHIFT_EXPR:
-    shift:
-      if (integer_zerop (arg1))
-	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
-      if (integer_zerop (arg0))
-	return omit_one_operand_loc (loc, type, arg0, arg1);
-
-      /* Prefer vector1 << scalar to vector1 << vector2
-	 if vector2 is uniform.  */
-      if (VECTOR_TYPE_P (TREE_TYPE (arg1))
-	  && (tem = uniform_vector_p (arg1)) != NULL_TREE)
-	return fold_build2_loc (loc, code, type, op0, tem);
-
       /* Since negative shift count is not well-defined,
 	 don't try to compute it in the compiler.  */
       if (TREE_CODE (arg1) == INTEGER_CST && tree_int_cst_sgn (arg1) < 0)
@@ -12054,15 +11870,6 @@ fold_binary_loc (location_t loc,
 	    }
 	}
 
-      /* Rewrite an LROTATE_EXPR by a constant into an
-	 RROTATE_EXPR by a new constant.  */
-      if (code == LROTATE_EXPR && TREE_CODE (arg1) == INTEGER_CST)
-	{
-	  tree tem = build_int_cst (TREE_TYPE (arg1), prec);
-	  tem = const_binop (MINUS_EXPR, tem, arg1);
-	  return fold_build2_loc (loc, RROTATE_EXPR, type, op0, tem);
-	}
-
       /* If we have a rotate of a bit operation with the rotate count and
 	 the second operand of the bit operation both constant,
 	 permute the two operations.  */
@@ -12110,23 +11917,12 @@ fold_binary_loc (location_t loc,
       return NULL_TREE;
 
     case MIN_EXPR:
-      if (operand_equal_p (arg0, arg1, 0))
-	return omit_one_operand_loc (loc, type, arg0, arg1);
-      if (INTEGRAL_TYPE_P (type)
-	  && operand_equal_p (arg1, TYPE_MIN_VALUE (type), OEP_ONLY_CONST))
-	return omit_one_operand_loc (loc, type, arg1, arg0);
       tem = fold_minmax (loc, MIN_EXPR, type, arg0, arg1);
       if (tem)
 	return tem;
       goto associate;
 
     case MAX_EXPR:
-      if (operand_equal_p (arg0, arg1, 0))
-	return omit_one_operand_loc (loc, type, arg0, arg1);
-      if (INTEGRAL_TYPE_P (type)
-	  && TYPE_MAX_VALUE (type)
-	  && operand_equal_p (arg1, TYPE_MAX_VALUE (type), OEP_ONLY_CONST))
-	return omit_one_operand_loc (loc, type, arg1, arg0);
       tem = fold_minmax (loc, MAX_EXPR, type, arg0, arg1);
       if (tem)
 	return tem;
@@ -14799,7 +14595,7 @@ tree_unary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
       return tree_expr_nonnegative_warnv_p (op0,
 					    strict_overflow_p);
 
-    case NOP_EXPR:
+    CASE_CONVERT:
       {
 	tree inner_type = TREE_TYPE (op0);
 	tree outer_type = type;
