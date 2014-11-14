@@ -348,8 +348,6 @@ struct ipa_param_descriptor
   unsigned used : 1;
 };
 
-struct ipcp_lattice;
-
 /* ipa_node_params stores information related to formal parameters of functions
    and some other information for interprocedural passes that operate on
    parameters (such as ipa-cp).  */

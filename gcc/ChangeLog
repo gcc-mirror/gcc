@@ -1,3 +1,42 @@
+2014-11-14  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (ipcp_value_source): Converted to a template class.  All
+	users converted to the same specialization as the using class/function
+	or specialization on tree.
+	(ipcp_value): Likewise.
+	(ipcp_lattice): Likewise.
+	(ipcp_agg_lattice): Now derived from tree specialization of
+	ipcp_lattice.
+	(values_topo): Moved to new class value_topo_info.
+	(ipa_lat_is_single_const): Turned into ipcp_lattice::is_single_const.
+	Updated all callers.
+	(print_lattice): Turned into ipcp_lattice::print.  Updated all
+	callers.
+	(value_topo_info): New class template.
+	(ipa_topo_info): New field constants.  New constructor.
+	(build_toporder_info): Do not clear stack_top, only checkign assert
+	it.
+	(set_lattice_to_bottom): Turned into ipcp_lattice::set_to_bottom.
+	Updated all callers.
+	(set_lattice_contains_variable): Turned into
+	ipcp_lattice::set_contains_variable.  Updated all callers.
+	(add_value_source): Turned into ipcp_value::add_source.  Updated all
+	callers.
+	(allocate_and_init_ipcp_value): New function.
+	(add_value_to_lattice): Turned into ipcp_lattice::add_value.  Last
+	parameter got default a value.  Updated all callers.
+	(add_scalar_value_to_lattice): Removed, users converted to using
+	ipcp_lattice::add_value with default value of the last parameter.
+	(add_val_to_toposort): Turned to value_topo_info::add_val.  Updated
+	all callers.
+	(propagate_effects): Made method of value_topo_info.
+	(cgraph_edge_brings_value_p): Now a template function.
+	(get_info_about_necessary_edges): Likewise.
+	(gather_edges_for_value): Likewise.
+	(perhaps_add_new_callers): Likewise.
+	(decide_about_value): Likewise.
+	* ipa-prop.h (ipcp_lattice): Remove fowrward declaration.
+
 2014-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/install.texi (--with-diagnostics-color=): Document.
