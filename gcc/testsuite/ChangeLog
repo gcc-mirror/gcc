@@ -1,3 +1,8 @@
+2014-11-13  Rong Xu  <xur@google.com>
+
+	PR debug/63581
+	* g++.dg/tree-prof/pr63581.C: New test.
+
 2014-11-13  Teresa Johnson  <tejohnson@google.com>
 
 	PR tree-optimization/63841
@@ -3153,6 +3158,7 @@
 	* gcc.dg/attr-isr.c: Move SH specific test to ...
 	* gcc.target/sh/attr-isr.c: ... here.
 
+>>>>>>> .r217525
 2014-10-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63567
