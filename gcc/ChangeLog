@@ -1,3 +1,8 @@
+2014-11-14  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Move code for
+	'if (extract_scalar_result)' to the only place that it is true.
+
 2014-11-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc (default_gnu_indirect_function): Set to yes
