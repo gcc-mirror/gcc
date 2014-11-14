@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "ubsan.h"
 #include "params.h"
+#include "tree-ssa-operands.h"
 
 
 /* This is used to carry information about basic blocks.  It is
@@ -56,7 +57,30 @@ along with GCC; see the file COPYING3.  If not see
 
 struct sanopt_info
 {
-  /* True if this BB has been visited.  */
+  /* True if this BB might call (directly or indirectly) free/munmap
+     or similar operation.  */
+  bool has_freeing_call_p;
+
+  /* True if HAS_FREEING_CALL_P flag has been computed.  */
+  bool has_freeing_call_computed_p;
+
+  /* True if there is a block with HAS_FREEING_CALL_P flag set
+     on any path between an immediate dominator of BB, denoted
+     imm(BB), and BB.  */
+  bool imm_dom_path_with_freeing_call_p;
+
+  /* True if IMM_DOM_PATH_WITH_FREEING_CALL_P has been computed.  */
+  bool imm_dom_path_with_freeing_call_computed_p;
+
+  /* Number of possibly freeing calls encountered in this bb
+     (so far).  */
+  uint64_t freeing_call_events;
+
+  /* True if BB is currently being visited during computation
+     of IMM_DOM_PATH_WITH_FREEING_CALL_P flag.  */
+  bool being_visited_p;
+
+  /* True if this BB has been visited in the dominator walk.  */
   bool visited_p;
 };
 
@@ -69,122 +93,379 @@ struct sanopt_ctx
      a vector of UBSAN_NULL call statements that check this pointer.  */
   hash_map<tree, auto_vec<gimple> > null_check_map;
 
+  /* This map maps a pointer (the second argument of ASAN_CHECK) to
+     a vector of ASAN_CHECK call statements that check the access.  */
+  hash_map<tree, auto_vec<gimple> > asan_check_map;
+
   /* Number of IFN_ASAN_CHECK statements.  */
   int asan_num_accesses;
 };
 
 
-/* Try to optimize away redundant UBSAN_NULL checks.
-   
+/* Return true if there might be any call to free/munmap operation
+   on any path in between DOM (which should be imm(BB)) and BB.  */
+
+static bool
+imm_dom_path_with_freeing_call (basic_block bb, basic_block dom)
+{
+  sanopt_info *info = (sanopt_info *) bb->aux;
+  edge e;
+  edge_iterator ei;
+
+  if (info->imm_dom_path_with_freeing_call_computed_p)
+    return info->imm_dom_path_with_freeing_call_p;
+
+  info->being_visited_p = true;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      sanopt_info *pred_info = (sanopt_info *) e->src->aux;
+
+      if (e->src == dom)
+	continue;
+
+      if ((pred_info->imm_dom_path_with_freeing_call_computed_p
+	  && pred_info->imm_dom_path_with_freeing_call_p)
+	  || (pred_info->has_freeing_call_computed_p
+	      && pred_info->has_freeing_call_p))
+	{
+	  info->imm_dom_path_with_freeing_call_computed_p = true;
+	  info->imm_dom_path_with_freeing_call_p = true;
+	  info->being_visited_p = false;
+	  return true;
+	}
+    }
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      sanopt_info *pred_info = (sanopt_info *) e->src->aux;
+
+      if (e->src == dom)
+	continue;
+
+      if (pred_info->has_freeing_call_computed_p)
+	continue;
+
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (e->src); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+
+	  if (is_gimple_call (stmt) && !nonfreeing_call_p (stmt))
+	    {
+	      pred_info->has_freeing_call_p = true;
+	      break;
+	    }
+	}
+
+      pred_info->has_freeing_call_computed_p = true;
+      if (pred_info->has_freeing_call_p)
+	{
+	  info->imm_dom_path_with_freeing_call_computed_p = true;
+	  info->imm_dom_path_with_freeing_call_p = true;
+	  info->being_visited_p = false;
+	  return true;
+	}
+    }
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      if (e->src == dom)
+	continue;
+
+      basic_block src;
+      for (src = e->src; src != dom; )
+	{
+	  sanopt_info *pred_info = (sanopt_info *) src->aux;
+	  if (pred_info->being_visited_p)
+	    break;
+	  basic_block imm = get_immediate_dominator (CDI_DOMINATORS, src);
+	  if (imm_dom_path_with_freeing_call (src, imm))
+	    {
+	      info->imm_dom_path_with_freeing_call_computed_p = true;
+	      info->imm_dom_path_with_freeing_call_p = true;
+	      info->being_visited_p = false;
+	      return true;
+	    }
+	  src = imm;
+	}
+    }
+
+  info->imm_dom_path_with_freeing_call_computed_p = true;
+  info->imm_dom_path_with_freeing_call_p = false;
+  info->being_visited_p = false;
+  return false;
+}
+
+/* Optimize away redundant UBSAN_NULL calls.  */
+
+static bool
+maybe_optimize_ubsan_null_ifn (struct sanopt_ctx *ctx, gimple stmt)
+{
+  gcc_assert (gimple_call_num_args (stmt) == 3);
+  tree ptr = gimple_call_arg (stmt, 0);
+  tree cur_align = gimple_call_arg (stmt, 2);
+  gcc_assert (TREE_CODE (cur_align) == INTEGER_CST);
+  bool remove = false;
+
+  auto_vec<gimple> &v = ctx->null_check_map.get_or_insert (ptr);
+  if (v.is_empty ())
+    {
+      /* For this PTR we don't have any UBSAN_NULL stmts recorded, so there's
+	 nothing to optimize yet.  */
+      v.safe_push (stmt);
+      return false;
+    }
+
+  /* We already have recorded a UBSAN_NULL check for this pointer. Perhaps we
+     can drop this one.  But only if this check doesn't specify stricter
+     alignment.  */
+  while (!v.is_empty ())
+    {
+      gimple g = v.last ();
+      /* Remove statements for BBs that have been already processed.  */
+      sanopt_info *si = (sanopt_info *) gimple_bb (g)->aux;
+      if (si->visited_p)
+	{
+	  v.pop ();
+	  continue;
+	}
+
+      /* At this point we shouldn't have any statements that aren't dominating
+	 the current BB.  */
+      tree align = gimple_call_arg (g, 2);
+      int kind = tree_to_shwi (gimple_call_arg (g, 1));
+      /* If this is a NULL pointer check where we had segv anyway, we can
+	 remove it.  */
+      if (integer_zerop (align)
+	  && (kind == UBSAN_LOAD_OF
+	      || kind == UBSAN_STORE_OF
+	      || kind == UBSAN_MEMBER_ACCESS))
+	remove = true;
+      /* Otherwise remove the check in non-recovering mode, or if the
+	 stmts have same location.  */
+      else if (integer_zerop (align))
+	remove = (flag_sanitize_recover & SANITIZE_NULL) == 0
+		 || flag_sanitize_undefined_trap_on_error
+		 || gimple_location (g) == gimple_location (stmt);
+      else if (tree_int_cst_le (cur_align, align))
+	remove = (flag_sanitize_recover & SANITIZE_ALIGNMENT) == 0
+		 || flag_sanitize_undefined_trap_on_error
+		 || gimple_location (g) == gimple_location (stmt);
+      if (!remove && gimple_bb (g) == gimple_bb (stmt)
+	  && tree_int_cst_compare (cur_align, align) == 0)
+	v.pop ();
+      break;
+    }
+
+  if (!remove)
+    v.safe_push (stmt);
+  return remove;
+}
+
+/* Optimize away redundant ASAN_CHECK calls.  */
+
+static bool
+maybe_optimize_asan_check_ifn (struct sanopt_ctx *ctx, gimple stmt)
+{
+  gcc_assert (gimple_call_num_args (stmt) == 4);
+  tree ptr = gimple_call_arg (stmt, 1);
+  tree len = gimple_call_arg (stmt, 2);
+  basic_block bb = gimple_bb (stmt);
+  sanopt_info *info = (sanopt_info *) bb->aux;
+
+  if (TREE_CODE (len) != INTEGER_CST)
+    return false;
+  if (integer_zerop (len))
+    return false;
+
+  gimple_set_uid (stmt, info->freeing_call_events);
+
+  auto_vec<gimple> &v = ctx->asan_check_map.get_or_insert (ptr);
+  if (v.is_empty ())
+    {
+      /* For this PTR we don't have any ASAN_CHECK stmts recorded, so there's
+	 nothing to optimize yet.  */
+      v.safe_push (stmt);
+      return false;
+    }
+
+  /* We already have recorded a ASAN_CHECK check for this pointer.  Perhaps
+     we can drop this one.  But only if this check doesn't specify larger
+     size.  */
+  while (!v.is_empty ())
+    {
+      gimple g = v.last ();
+      /* Remove statements for BBs that have been already processed.  */
+      sanopt_info *si = (sanopt_info *) gimple_bb (g)->aux;
+      if (si->visited_p)
+	v.pop ();
+      else
+	break;
+    }
+
+  unsigned int i;
+  gimple g;
+  gimple to_pop = NULL;
+  bool remove = false;
+  basic_block last_bb = bb;
+  bool cleanup = false;
+
+  FOR_EACH_VEC_ELT_REVERSE (v, i, g)
+    {
+      basic_block gbb = gimple_bb (g);
+      sanopt_info *si = (sanopt_info *) gbb->aux;
+      if (gimple_uid (g) < si->freeing_call_events)
+	{
+	  /* If there is a potentially freeing call after g in gbb, we should
+	     remove it from the vector, can't use in optimization.  */
+	  cleanup = true;
+	  continue;
+	}
+
+      if (TREE_CODE (len) != INTEGER_CST)
+	{
+	  /* If there is some stmts not followed by freeing call event
+	     for ptr already in the current bb, no need to insert anything.
+	     Non-constant len is treated just as length 1.  */
+	  if (gbb == bb)
+	    return false;
+	  break;
+	}
+
+      tree glen = gimple_call_arg (g, 2);
+      /* If we've checked only smaller length than we want to check now,
+	 we can't remove the current stmt.  If g is in the same basic block,
+	 we want to remove it though, as the current stmt is better.  */
+      if (tree_int_cst_lt (glen, len))
+	{
+	  if (gbb == bb)
+	    {
+	      to_pop = g;
+	      cleanup = true;
+	    }
+	  continue;
+	}
+
+      while (last_bb != gbb)
+	{
+	  /* Paths from last_bb to bb have been checked before.
+	     gbb is necessarily a dominator of last_bb, but not necessarily
+	     immediate dominator.  */
+	  if (((sanopt_info *) last_bb->aux)->freeing_call_events)
+	    break;
+
+	  basic_block imm = get_immediate_dominator (CDI_DOMINATORS, last_bb);
+	  gcc_assert (imm);
+	  if (imm_dom_path_with_freeing_call (last_bb, imm))
+	    break;
+
+	  last_bb = imm;
+	}
+      if (last_bb == gbb)
+	remove = true;
+      break;
+    }
+
+  if (cleanup)
+    {
+      unsigned int j = 0, l = v.length ();
+      for (i = 0; i < l; i++)
+	if (v[i] != to_pop
+	    && (gimple_uid (v[i])
+		== ((sanopt_info *)
+		    gimple_bb (v[i])->aux)->freeing_call_events))
+	  {
+	    if (i != j)
+	      v[j] = v[i];
+	    j++;
+	  }
+      v.truncate (j);
+    }
+
+  if (!remove)
+    v.safe_push (stmt);
+  return remove;
+}
+
+/* Try to optimize away redundant UBSAN_NULL and ASAN_CHECK calls.
+
    We walk blocks in the CFG via a depth first search of the dominator
-   tree; we push unique UBSAN_NULL statements into a vector in the
-   NULL_CHECK_MAP as we enter the blocks.  When leaving a block, we
-   mark the block as visited; then when checking the statements in the
-   vector, we ignore statements that are coming from already visited
-   blocks, because these cannot dominate anything anymore.
-   CTX is a sanopt context.  */
+   tree; we push unique UBSAN_NULL or ASAN_CHECK statements into a vector
+   in the NULL_CHECK_MAP or ASAN_CHECK_MAP hash maps as we enter the
+   blocks.  When leaving a block, we mark the block as visited; then
+   when checking the statements in the vector, we ignore statements that
+   are coming from already visited blocks, because these cannot dominate
+   anything anymore.  CTX is a sanopt context.  */
 
 static void
 sanopt_optimize_walker (basic_block bb, struct sanopt_ctx *ctx)
 {
   basic_block son;
   gimple_stmt_iterator gsi;
+  sanopt_info *info = (sanopt_info *) bb->aux;
+  bool asan_check_optimize
+    = (flag_sanitize & SANITIZE_ADDRESS)
+      && ((flag_sanitize & flag_sanitize_recover
+	   & SANITIZE_KERNEL_ADDRESS) == 0);
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
     {
       gimple stmt = gsi_stmt (gsi);
       bool remove = false;
 
-      if (is_gimple_call (stmt)
-	  && gimple_call_internal_p (stmt))
+      if (!is_gimple_call (stmt))
+	{
+	  /* Handle asm volatile or asm with "memory" clobber
+	     the same as potentionally freeing call.  */
+	  if (gimple_code (stmt) == GIMPLE_ASM
+	      && asan_check_optimize
+	      && (gimple_asm_clobbers_memory_p (stmt)
+		  || gimple_asm_volatile_p (stmt)))
+	    info->freeing_call_events++;
+	  gsi_next (&gsi);
+	  continue;
+	}
+
+      if (asan_check_optimize && !nonfreeing_call_p (stmt))
+	info->freeing_call_events++;
+
+      if (gimple_call_internal_p (stmt))
 	switch (gimple_call_internal_fn (stmt))
 	  {
 	  case IFN_UBSAN_NULL:
-	    {
-	      gcc_assert (gimple_call_num_args (stmt) == 3);
-	      tree ptr = gimple_call_arg (stmt, 0);
-	      tree cur_align = gimple_call_arg (stmt, 2);
-	      gcc_assert (TREE_CODE (cur_align) == INTEGER_CST);
-
-	      auto_vec<gimple> &v = ctx->null_check_map.get_or_insert (ptr);
-	      if (v.is_empty ())
-		/* For this PTR we don't have any UBSAN_NULL stmts
-		   recorded, so there's nothing to optimize yet.  */
-		v.safe_push (stmt);
-	      else
-		{
-		  /* We already have recorded a UBSAN_NULL check
-		     for this pointer.  Perhaps we can drop this one.
-		     But only if this check doesn't specify stricter
-		     alignment.  */
-		  while (!v.is_empty ())
-		    {
-		      gimple g = v.last ();
-		      /* Remove statements for BBs that have been
-			 already processed.  */
-		      sanopt_info *si = (sanopt_info *) gimple_bb (g)->aux;
-		      if (si->visited_p)
-			v.pop ();
-		      else
-			{
-			  /* At this point we shouldn't have any statements
-			     that aren't dominating the current BB.  */
-			  tree align = gimple_call_arg (g, 2);
-			  int kind = tree_to_shwi (gimple_call_arg (g, 1));
-			  /* If this is a NULL pointer check where we had segv
-			     anyway, we can remove it.  */
-			  if (integer_zerop (align)
-			      && (kind == UBSAN_LOAD_OF
-				  || kind == UBSAN_STORE_OF
-				  || kind == UBSAN_MEMBER_ACCESS))
-			    remove = true;
-			  /* Otherwise remove the check in non-recovering
-			     mode, or if the stmts have same location.  */
-			  else if (integer_zerop (align))
-			    remove = !(flag_sanitize_recover & SANITIZE_NULL)
-				     || flag_sanitize_undefined_trap_on_error
-				     || gimple_location (g)
-					== gimple_location (stmt);
-			  else if (tree_int_cst_le (cur_align, align))
-			    remove = !(flag_sanitize_recover
-				       & SANITIZE_ALIGNMENT)
-				     || flag_sanitize_undefined_trap_on_error
-				     || gimple_location (g)
-					== gimple_location (stmt);
-			  if (!remove && gimple_bb (g) == gimple_bb (stmt)
-			      && tree_int_cst_compare (cur_align, align) == 0)
-			    v.pop ();
-			  break;
-			}
-		    }
-
-		  if (remove)
-		    {
-		      /* Drop this check.  */
-		      if (dump_file && (dump_flags & TDF_DETAILS))
-			{
-			  fprintf (dump_file, "Optimizing out\n  ");
-			  print_gimple_stmt (dump_file, stmt, 0,
-					     dump_flags);
-			  fprintf (dump_file, "\n");
-			}
-		      gsi_remove (&gsi, true);
-		    }
-		  else
-		    v.safe_push (stmt);
-		  }
-	    }
+	    remove = maybe_optimize_ubsan_null_ifn (ctx, stmt);
+	    break;
 	  case IFN_ASAN_CHECK:
-	    ctx->asan_num_accesses++;
+	    if (asan_check_optimize)
+	      remove = maybe_optimize_asan_check_ifn (ctx, stmt);
+	    if (!remove)
+	      ctx->asan_num_accesses++;
 	    break;
 	  default:
 	    break;
 	  }
 
-      /* If we were able to remove the current statement, gsi_remove
-	 already pointed us to the next statement.  */
-      if (!remove)
+      if (remove)
+	{
+	  /* Drop this check.  */
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Optimizing out\n  ");
+	      print_gimple_stmt (dump_file, stmt, 0, dump_flags);
+	      fprintf (dump_file, "\n");
+	    }
+	  unlink_stmt_vdef (stmt);
+	  gsi_remove (&gsi, true);
+	}
+      else
 	gsi_next (&gsi);
+    }
+
+  if (asan_check_optimize)
+    {
+      info->has_freeing_call_p = info->freeing_call_events != 0;
+      info->has_freeing_call_computed_p = true;
     }
 
   for (son = first_dom_son (CDI_DOMINATORS, bb);
@@ -193,7 +474,6 @@ sanopt_optimize_walker (basic_block bb, struct sanopt_ctx *ctx)
     sanopt_optimize_walker (son, ctx);
 
   /* We're leaving this BB, so mark it to that effect.  */
-  sanopt_info *info = (sanopt_info *) bb->aux;
   info->visited_p = true;
 }
 
@@ -259,7 +539,8 @@ pass_sanopt::execute (function *fun)
 
   /* Try to remove redundant checks.  */
   if (optimize
-      && (flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT)))
+      && (flag_sanitize
+	  & (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_ADDRESS)))
     asan_num_accesses = sanopt_optimize (fun);
   else if (flag_sanitize & SANITIZE_ADDRESS)
     {

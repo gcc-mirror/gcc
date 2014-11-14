@@ -2538,6 +2538,9 @@ nonfreeing_call_p (gimple call)
 	default:
 	  return true;
       }
+  else if (gimple_call_internal_p (call)
+	   && gimple_call_flags (call) & ECF_LEAF)
+    return true;
 
   return false;
 }
