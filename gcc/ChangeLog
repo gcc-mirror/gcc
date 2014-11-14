@@ -1,3 +1,21 @@
+2014-11-14  Jakub Jelinek  <jakub@redhat.com>
+	    Marek Polacek  <polacek@redhat.com>
+
+	* sanopt.c: Include tree-ssa-operands.h.
+	(struct sanopt_info): Add has_freeing_call_p,
+	has_freeing_call_computed_p, imm_dom_path_with_freeing_call_p,
+	imm_dom_path_with_freeing_call_computed_p, freeing_call_events,
+	being_visited_p fields.
+	(struct sanopt_ctx): Add asan_check_map field.
+	(imm_dom_path_with_freeing_call, maybe_optimize_ubsan_null_ifn,
+	maybe_optimize_asan_check_ifn): New functions.
+	(sanopt_optimize_walker): Use them, optimize even ASAN_CHECK
+	internal calls.
+	(pass_sanopt::execute): Call sanopt_optimize even for
+	-fsanitize=address.
+	* gimple.c (nonfreeing_call_p): Return true for non-ECF_LEAF
+	internal calls.
+
 2014-11-14  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Move code for
