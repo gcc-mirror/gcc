@@ -70,7 +70,7 @@ SIZE(libat_compare_exchange) (UTYPE *mptr, UTYPE *eptr, UTYPE newval,
       mask = -1;
     }
 
-  weval = *eptr << shift;
+  weval = (UWORD)*eptr << shift;
   wnewval = (UWORD)newval << shift;
   woldval = __atomic_load_n (wptr, __ATOMIC_RELAXED);
   do
