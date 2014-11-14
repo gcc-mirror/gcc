@@ -1,3 +1,8 @@
+2014-11-14  Tom de Vries  <tom@codesourcery.com>
+
+	* mklog: Move reading of .diff file up and add comment.  Copy diff_lines
+	to orig_diff_lines.  Use orig_diff_lines when appending patch.
+
 2014-11-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* ChangeLog.jit: New.
