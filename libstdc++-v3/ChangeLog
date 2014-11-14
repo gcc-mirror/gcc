@@ -1,3 +1,8 @@
+2014-11-14  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* src/c++98/mt_allocator.cc: Fix assumption that sizeof(void *) is
+	equal to sizeof(size_t). The m32c breaks this assumption.
+
 2014-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver: Add new exports.
