@@ -1,5 +1,90 @@
 2014-11-14  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-prop.h (ipa_get_jf_pass_through_type_preserved): use
+	agg_preserved flag instead.
+	(ipa_get_jf_ancestor_type_preserved): Likewise.
+	(ipa_node_params): Rename known_vals to known_csts, update all users.
+	New field known_contexts.
+	(ipa_get_indirect_edge_target): Update prototype.
+	(ipcp_poly_ctx_values_pool): Declare.
+	(ipa_context_from_jfunc): Likewise.
+	* ipa-inline.h (estimate_ipcp_clone_size_and_time): Updated prototype.
+	* cgraph.h (ipa_polymorphic_call_context): New method equal_to.  New
+	parameter newline of method dump.
+	* ipa-cp.c (ctxlat): New field.
+	(ipcp_values_pool): Renamed to ipcp_cst_values_pool, updated all users.
+	(ipcp_poly_ctx_values_pool):New variable.
+	(ipa_get_poly_ctx_lat): New function.
+	(print_ipcp_constant_value): New overloaded function for contexts.
+	(print_all_lattices): Also print contexts.
+	(ipa_topo_info): New field contexts;
+	(set_all_contains_variable): Also set the flag in the context lattice.
+	(initialize_node_lattices): Likewise for flag bottom.
+	(ipa_get_jf_ancestor_result): Removed BINFO handling.
+	(ipa_value_from_jfunc): Likewise.
+	(ipa_context_from_jfunc): New function.
+	(values_equal_for_ipcp_p): New overloaded function for contexts.
+	(allocate_and_init_ipcp_value): Construct the value.
+	(allocate_and_init_ipcp_value): New overloaded function for contexts.
+	(propagate_scalar_accross_jump_function): Removed handling of
+	KNOWN_TYPE jump functions.
+	(propagate_context_accross_jump_function): New function.
+	(propagate_constants_accross_call): Also propagate contexts.
+	(ipa_get_indirect_edge_target_1): Work on contexts rather than BINFOs.
+	(ipa_get_indirect_edge_target): Likewise.
+	(devirtualization_time_bonus): Likewise.
+	(gather_context_independent_values): Create and populate known_contexts
+	vector rather than known_binfos.
+	(perform_estimation_of_a_value): Work on contexts rather than BINFOs.
+	(estimate_local_effects): Likewise.
+	(add_all_node_vals_to_toposort): Also add contexts to teir topological
+	sort.
+	(ipcp_propagate_stage): Also propagate effects of contexts.
+	(ipcp_discover_new_direct_edges): Receive and pass known_contexts to
+	ipa_get_indirect_edge_target_1.
+	(cgraph_edge_brings_value_p): New overloaded function for contexts.
+	(create_specialized_node): Work on contexts rather than BINFOs.
+	(find_more_contexts_for_caller_subset): New function.
+	(known_contexts_useful_p): New function.
+	(copy_useful_known_contexts): Likewise.
+	(modify_known_vectors_with_val): Likewise.
+	(ipcp_val_in_agg_replacements_p): Renamed to
+	ipcp_val_agg_replacement_ok_p, return true for all offset indicating
+	non-aggregate.
+	(ipcp_val_agg_replacement_ok_p): New overloaded function for contexts.
+	(decide_about_value): Work on contexts rather than BINFOs.
+	(decide_whether_version_node): Likewise.
+	(ipcp_driver): Initialize the new alloc pool.
+	* ipa-prop.c (ipa_print_node_jump_functions_for_edge): Prettify
+	printing of edge contexts.
+	(ipa_set_ancestor_jf): Replace assert with conditional setting of
+	type_preserved to false.
+	(update_jump_functions_after_inlining): Use access function instead of
+	reading agg_preserved directly.  Store combined context in the ancestor
+	case.
+	(try_make_edge_direct_virtual_call): Work on contexts rather than
+	BINFOs.
+	(update_indirect_edges_after_inlining): Get context from
+	ipa_context_from_jfunc.
+	(ipa_free_node_params_substructures): Free also known_contexts.
+	(ipa_free_all_structures_after_ipa_cp): Free the new alloc pool.
+	(ipa_free_all_structures_after_iinln): Likewise.
+	* ipa-inline-analysis.c (evaluate_properties_for_edge): Work on
+	contexts rather than BINFOs.
+	(estimate_edge_devirt_benefit): Likewise.
+	(estimate_edge_size_and_time): Likewise.
+	(estimate_calls_size_and_time): Likewise.
+	(estimate_node_size_and_time): Likewise.
+	(estimate_ipcp_clone_size_and_time): Likewise.
+	(do_estimate_edge_time): Likewise.
+	(do_estimate_edge_size): Likewise.
+	(do_estimate_edge_hints): Likewise.
+	* ipa-polymorphic-call.c (ipa_polymorphic_call_context::dump): New
+	parameter newline, ouput newline only when it is set.
+	(ipa_polymorphic_call_context::equal_to): New method.
+
+2014-11-14  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-cp.c (ipcp_value_source): Converted to a template class.  All
 	users converted to the same specialization as the using class/function
 	or specialization on tree.

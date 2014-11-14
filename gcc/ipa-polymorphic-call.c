@@ -599,10 +599,11 @@ decl_maybe_in_construction_p (tree base, tree outer_type,
   return false;
 }
 
-/* Dump human readable context to F.  */
+/* Dump human readable context to F.  If NEWLINE is true, it will be terminated
+   by a newline.  */
 
 void
-ipa_polymorphic_call_context::dump (FILE *f) const
+ipa_polymorphic_call_context::dump (FILE *f, bool newline) const
 {
   fprintf (f, "    ");
   if (invalid)
@@ -634,7 +635,8 @@ ipa_polymorphic_call_context::dump (FILE *f) const
 		   speculative_offset);
 	}
     }
-  fprintf(f, "\n");
+  if (newline)
+    fprintf(f, "\n");
 }
 
 /* Print context to stderr.  */
@@ -2129,4 +2131,48 @@ ipa_polymorphic_call_context::possible_dynamic_type_change (bool in_poly_cdtor,
     make_speculative (otr_type);
   else if (in_poly_cdtor)
     maybe_in_construction = true;
+}
+
+/* Return TRUE if this context conveys the same information as OTHER.  */
+
+bool
+ipa_polymorphic_call_context::equal_to
+    (const ipa_polymorphic_call_context &x) const
+{
+  if (useless_p ())
+    return x.useless_p ();
+  if (invalid)
+    return x.invalid;
+  if (x.useless_p () || x.invalid)
+    return false;
+
+  if (outer_type)
+    {
+      if (!x.outer_type
+	  || !types_odr_comparable (outer_type, x.outer_type)
+	  || !types_same_for_odr (outer_type, x.outer_type)
+	  || offset != x.offset
+	  || maybe_in_construction != x.maybe_in_construction
+	  || maybe_derived_type != x.maybe_derived_type
+	  || dynamic != x.dynamic)
+	return false;
+    }
+  else if (x.outer_type)
+    return false;
+
+  if (speculative_outer_type)
+    {
+      if (!x.speculative_outer_type
+	  || !types_odr_comparable (speculative_outer_type,
+				    x.speculative_outer_type)
+	  || !types_same_for_odr  (speculative_outer_type,
+				    x.speculative_outer_type)
+	  || speculative_offset != x.speculative_offset
+	  || speculative_maybe_derived_type != x.speculative_maybe_derived_type)
+	return false;
+    }
+  else if (x.speculative_outer_type)
+    return false;
+
+  return true;
 }

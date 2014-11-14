@@ -27,8 +27,6 @@ struct wxBufferedPaintDC  : public wxBufferedDC {
 void  OnPaint(wxPaintEvent & event) {
   wxBufferedPaintDC dc;
 }
-/* IPA-CP should really discover both cases, but for time being the second is handled by inliner.  */
-/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 1 "inline"  } } */
-/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 1 "cp"  } } */
+/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 2 "cp"  } } */
 /* { dg-final { cleanup-ipa-dump "inline" } } */
 /* { dg-final { cleanup-ipa-dump "cp" } } */
