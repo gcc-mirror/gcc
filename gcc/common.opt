@@ -1848,6 +1848,10 @@ frename-registers
 Common Report Var(flag_rename_registers) Init(2) Optimization
 Perform a register renaming optimization pass
 
+fschedule-fusion
+Common Report Var(flag_schedule_fusion) Init(2) Optimization
+Perform a target dependent instruction fusion optimization pass
+
 freorder-blocks
 Common Report Var(flag_reorder_blocks) Optimization
 Reorder basic blocks to improve code placement

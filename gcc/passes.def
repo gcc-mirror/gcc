@@ -419,6 +419,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_stack_adjustments);
 	  NEXT_PASS (pass_jump2);
 	  NEXT_PASS (pass_duplicate_computed_gotos);
+	  NEXT_PASS (pass_sched_fusion);
 	  NEXT_PASS (pass_peephole2);
 	  NEXT_PASS (pass_if_after_reload);
 	  NEXT_PASS (pass_regrename);

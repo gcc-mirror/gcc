@@ -1,3 +1,32 @@
+2014-11-14  Bin Cheng  <bin.cheng@arm.com>
+
+	* timevar.def (TV_SCHED_FUSION): New time var.
+	* passes.def (pass_sched_fusion): New pass.
+	* config/arm/arm.c (TARGET_SCHED_FUSION_PRIORITY): New.
+	(extract_base_offset_in_addr, fusion_load_store): New.
+	(arm_sched_fusion_priority): New.
+	(arm_option_override): Disable scheduling fusion by default
+	on non-armv7 processors or ldrd/strd isn't preferred.
+	* sched-int.h (struct _haifa_insn_data): New field.
+	(INSN_FUSION_PRIORITY, FUSION_MAX_PRIORITY, sched_fusion): New.
+	* sched-rgn.c (rest_of_handle_sched_fusion): New.
+	(pass_data_sched_fusion, pass_sched_fusion): New.
+	(make_pass_sched_fusion): New.
+	* haifa-sched.c (sched_fusion): New.
+	(insn_cost): Handle sched_fusion.
+	(priority): Handle sched_fusion by calling target hook.
+	(enum rfs_decision): New enum value.
+	(rfs_str): New element for RFS_FUSION.
+	(rank_for_schedule): Support sched_fusion.
+	(schedule_insn, max_issue, prune_ready_list): Handle sched_fusion.
+	(schedule_block, fix_tick_ready): Handle sched_fusion.
+	* common.opt (flag_schedule_fusion): New.
+	* tree-pass.h (make_pass_sched_fusion): New.
+	* target.def (fusion_priority): New.
+	* doc/tm.texi.in (TARGET_SCHED_FUSION_PRIORITY): New.
+	* doc/tm.texi: Regenerated.
+	* doc/invoke.texi (-fschedule-fusion): New.
+
 2014-11-13  Rong Xu  <xur@google.com>
 
 	PR debug/63581

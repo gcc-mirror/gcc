@@ -311,6 +311,8 @@ static unsigned arm_add_stmt_cost (void *data, int count,
 static void arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 					 bool op0_preserve_value);
 static unsigned HOST_WIDE_INT arm_asan_shadow_offset (void);
+
+static void arm_sched_fusion_priority (rtx_insn *, int, int *, int*);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -707,6 +709,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
 #define TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS true
+
+#undef TARGET_SCHED_FUSION_PRIORITY
+#define TARGET_SCHED_FUSION_PRIORITY arm_sched_fusion_priority
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3167,6 +3172,12 @@ arm_option_override (void)
      This will apply to ARM and Thumb1 eventually.  */
   if (TARGET_THUMB2)
     inline_asm_unified = 1;
+
+  /* Disable scheduling fusion by default if it's not armv7 processor
+     or doesn't prefer ldrd/strd.  */
+  if (flag_schedule_fusion == 2
+      && (!arm_arch7 || !current_tune->prefer_ldrd_strd))
+    flag_schedule_fusion = 0;
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
@@ -32350,4 +32361,124 @@ arm_is_constant_pool_ref (rtx x)
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)));
 }
 
+/* If MEM is in the form of [base+offset], extract the two parts
+   of address and set to BASE and OFFSET, otherwise return false
+   after clearing BASE and OFFSET.  */
+
+static bool
+extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
+{
+  rtx addr;
+
+  gcc_assert (MEM_P (mem));
+
+  addr = XEXP (mem, 0);
+
+  /* Strip off const from addresses like (const (addr)).  */
+  if (GET_CODE (addr) == CONST)
+    addr = XEXP (addr, 0);
+
+  if (GET_CODE (addr) == REG)
+    {
+      *base = addr;
+      *offset = const0_rtx;
+      return true;
+    }
+
+  if (GET_CODE (addr) == PLUS
+      && GET_CODE (XEXP (addr, 0)) == REG
+      && CONST_INT_P (XEXP (addr, 1)))
+    {
+      *base = XEXP (addr, 0);
+      *offset = XEXP (addr, 1);
+      return true;
+    }
+
+  *base = NULL_RTX;
+  *offset = NULL_RTX;
+
+  return false;
+}
+
+/* If INSN is a load or store of address in the form of [base+offset],
+   extract the two parts and set to BASE and OFFSET.  IS_LOAD is set
+   to TRUE if it's a load.  Return TRUE if INSN is such an instruction,
+   otherwise return FALSE.  */
+
+static bool
+fusion_load_store (rtx_insn *insn, rtx *base, rtx *offset, bool *is_load)
+{
+  rtx x, dest, src;
+
+  gcc_assert (INSN_P (insn));
+  x = PATTERN (insn);
+  if (GET_CODE (x) != SET)
+    return false;
+
+  src = SET_SRC (x);
+  dest = SET_DEST (x);
+  if (GET_CODE (src) == REG && GET_CODE (dest) == MEM)
+    {
+      *is_load = false;
+      extract_base_offset_in_addr (dest, base, offset);
+    }
+  else if (GET_CODE (src) == MEM && GET_CODE (dest) == REG)
+    {
+      *is_load = true;
+      extract_base_offset_in_addr (src, base, offset);
+    }
+  else
+    return false;
+
+  return (*base != NULL_RTX && *offset != NULL_RTX);
+}
+
+/* Implement the TARGET_SCHED_FUSION_PRIORITY hook.
+
+   Currently we only support to fuse ldr or str instructions, so FUSION_PRI
+   and PRI are only calculated for these instructions.  For other instruction,
+   FUSION_PRI and PRI are simply set to MAX_PRI.  In the future, other kind
+   instruction fusion can be supported by returning different priorities.
+
+   It's important that irrelevant instructions get the largest FUSION_PRI.  */
+
+static void
+arm_sched_fusion_priority (rtx_insn *insn, int max_pri,
+			   int *fusion_pri, int *pri)
+{
+  int tmp, off_val;
+  bool is_load;
+  rtx base, offset;
+
+  gcc_assert (INSN_P (insn));
+
+  tmp = max_pri - 1;
+  if (!fusion_load_store (insn, &base, &offset, &is_load))
+    {
+      *pri = tmp;
+      *fusion_pri = tmp;
+      return;
+    }
+
+  /* Load goes first.  */
+  if (is_load)
+    *fusion_pri = tmp - 1;
+  else
+    *fusion_pri = tmp - 2;
+
+  tmp /= 2;
+
+  /* INSN with smaller base register goes first.  */
+  tmp -= ((REGNO (base) & 0xff) << 20);
+
+  /* INSN with smaller offset goes first.  */
+  off_val = (int)(INTVAL (offset));
+  if (off_val >= 0)
+    tmp -= (off_val & 0xfffff);
+  else
+    tmp += ((- off_val) & 0xfffff);
+
+  *pri = tmp;
+  return;
+}
 #include "gt-arm.h"

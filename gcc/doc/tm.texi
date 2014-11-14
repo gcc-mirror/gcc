@@ -6771,6 +6771,76 @@ This hook is called by tree reassociator to determine a level of
 parallelism required in output calculations chain.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_SCHED_FUSION_PRIORITY (rtx_insn *@var{insn}, int @var{max_pri}, int *@var{fusion_pri}, int *@var{pri})
+This hook is called by scheduling fusion pass.  It calculates fusion
+priorities for each instruction passed in by parameter.  The priorities
+are returned via pointer parameters.
+
+@var{insn} is the instruction whose priorities need to be calculated.
+@var{max_pri} is the maximum priority can be returned in any cases.
+@var{fusion_pri} is the pointer parameter through which @var{insn}'s
+fusion priority should be calculated and returned.
+@var{pri} is the pointer parameter through which @var{insn}'s priority
+should be calculated and returned.
+
+Same @var{fusion_pri} should be returned for instructions which should
+be scheduled together.  Different @var{pri} should be returned for
+instructions with same @var{fusion_pri}.  @var{fusion_pri} is the major
+sort key, @var{pri} is the minor sort key.  All instructions will be
+scheduled according to the two priorities.  All priorities calculated
+should be between 0 (exclusive) and @var{max_pri} (inclusive).  To avoid
+false dependencies, @var{fusion_pri} of instructions which need to be
+scheduled together should be smaller than @var{fusion_pri} of irrelevant
+instructions.
+
+Given below example:
+
+    ldr r10, [r1, 4]
+    add r4, r4, r10
+    ldr r15, [r2, 8]
+    sub r5, r5, r15
+    ldr r11, [r1, 0]
+    add r4, r4, r11
+    ldr r16, [r2, 12]
+    sub r5, r5, r16
+
+On targets like ARM/AArch64, the two pairs of consecutive loads should be
+merged.  Since peephole2 pass can't help in this case unless consecutive
+loads are actually next to each other in instruction flow.  That's where
+this scheduling fusion pass works.  This hook calculates priority for each
+instruction based on its fustion type, like:
+
+    ldr r10, [r1, 4]  ; fusion_pri=99,  pri=96   
+    add r4, r4, r10   ; fusion_pri=100, pri=100  
+    ldr r15, [r2, 8]  ; fusion_pri=98,  pri=92   
+    sub r5, r5, r15   ; fusion_pri=100, pri=100  
+    ldr r11, [r1, 0]  ; fusion_pri=99,  pri=100  
+    add r4, r4, r11   ; fusion_pri=100, pri=100  
+    ldr r16, [r2, 12] ; fusion_pri=98,  pri=88   
+    sub r5, r5, r16   ; fusion_pri=100, pri=100  
+
+Scheduling fusion pass then sorts all ready to issue instructions according
+to the priorities.  As a result, instructions of same fusion type will be
+pushed together in instruction flow, like:
+
+    ldr r11, [r1, 0]
+    ldr r10, [r1, 4]
+    ldr r15, [r2, 8]
+    ldr r16, [r2, 12]
+    add r4, r4, r10
+    sub r5, r5, r15
+    add r4, r4, r11
+    sub r5, r5, r16
+
+Now peephole2 pass can simply merge the two pairs of loads.
+
+Since scheduling fusion pass relies on peephole2 to do real fusion
+work, it is only enabled by default when peephole2 is in effect.
+
+This is firstly introduced on ARM/AArch64 targets, please refer to
+the hook implementation for how different fusion types are supported.
+@end deftypefn
+
 @node Sections
 @section Dividing the Output into Sections (Texts, Data, @dots{})
 @c the above section title is WAY too long.  maybe cut the part between

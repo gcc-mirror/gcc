@@ -1,3 +1,8 @@
+2014-11-14  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.target/arm/ldrd-strd-pair-1.c: New test.
+	* gcc.target/arm/vfp-1.c: Improve scanning string.
+
 2014-11-13  Rong Xu  <xur@google.com>
 
 	PR debug/63581

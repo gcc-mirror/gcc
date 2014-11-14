@@ -4811,6 +4811,8 @@ them: try the first ones in this list first.
 
 @hook TARGET_SCHED_REASSOCIATION_WIDTH
 
+@hook TARGET_SCHED_FUSION_PRIORITY
+
 @node Sections
 @section Dividing the Output into Sections (Texts, Data, @dots{})
 @c the above section title is WAY too long.  maybe cut the part between
