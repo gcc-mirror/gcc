@@ -278,13 +278,14 @@ ipa_get_jf_pass_through_agg_preserved (struct ipa_jump_func *jfunc)
   return jfunc->value.pass_through.agg_preserved;
 }
 
-/* Return the type_preserved flag of a pass through jump function JFUNC.  */
+/* Return true if pass through jump function JFUNC preserves type
+   information.  */
 
 static inline bool
 ipa_get_jf_pass_through_type_preserved (struct ipa_jump_func *jfunc)
 {
   gcc_checking_assert (jfunc->type == IPA_JF_PASS_THROUGH);
-  return jfunc->value.pass_through.type_preserved;
+  return jfunc->value.pass_through.agg_preserved;
 }
 
 /* Return the offset of an ancestor jump function JFUNC.  */
@@ -324,13 +325,13 @@ ipa_get_jf_ancestor_agg_preserved (struct ipa_jump_func *jfunc)
   return jfunc->value.ancestor.agg_preserved;
 }
 
-/* Return the type_preserved flag of an ancestor jump function JFUNC.  */
+/* Return true if ancestor jump function JFUNC presrves type information.  */
 
 static inline bool
 ipa_get_jf_ancestor_type_preserved (struct ipa_jump_func *jfunc)
 {
   gcc_checking_assert (jfunc->type == IPA_JF_ANCESTOR);
-  return jfunc->value.ancestor.type_preserved;
+  return jfunc->value.ancestor.agg_preserved;
 }
 
 /* Summary describing a single formal parameter.  */
@@ -363,9 +364,12 @@ struct ipa_node_params
   /* Only for versioned nodes this field would not be NULL,
      it points to the node that IPA cp cloned from.  */
   struct cgraph_node *ipcp_orig_node;
-  /* If this node is an ipa-cp clone, these are the known values that describe
-     what it has been specialized for.  */
-  vec<tree> known_vals;
+  /* If this node is an ipa-cp clone, these are the known constants that
+     describe what it has been specialized for.  */
+  vec<tree> known_csts;
+  /* If this node is an ipa-cp clone, these are the known polymorphic contexts
+     that describe what it has been specialized for.  */
+  vec<ipa_polymorphic_call_context> known_contexts;
   /* Whether the param uses analysis and jump function computation has already
      been performed.  */
   unsigned analysis_done : 1;
@@ -592,7 +596,7 @@ bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 /* Indirect edge and binfo processing.  */
 tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 				   vec<tree> ,
-				   vec<tree> ,
+				   vec<ipa_polymorphic_call_context>,
 				   vec<ipa_agg_jump_function_p> );
 struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree,
 						    bool speculative = false);
@@ -615,7 +619,8 @@ void ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node);
 void ipa_print_all_jump_functions (FILE * f);
 void ipcp_verify_propagated_values (void);
 
-extern alloc_pool ipcp_values_pool;
+extern alloc_pool ipcp_cst_values_pool;
+extern alloc_pool ipcp_poly_ctx_values_pool;
 extern alloc_pool ipcp_sources_pool;
 extern alloc_pool ipcp_agg_lattice_pool;
 
@@ -716,6 +721,10 @@ int ipa_get_param_decl_index (struct ipa_node_params *, tree);
 tree ipa_value_from_jfunc (struct ipa_node_params *info,
 			   struct ipa_jump_func *jfunc);
 unsigned int ipcp_transform_function (struct cgraph_node *node);
+ipa_polymorphic_call_context ipa_context_from_jfunc (ipa_node_params *,
+						     cgraph_edge *,
+						     int,
+						     ipa_jump_func *);
 void ipa_dump_param (FILE *, struct ipa_node_params *info, int i);
 bool ipa_modify_expr (tree *, bool, ipa_parm_adjustment_vec);
 ipa_parm_adjustment *ipa_get_adjustment_candidate (tree **, bool *,

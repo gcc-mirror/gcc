@@ -895,7 +895,8 @@ static void
 evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 			      clause_t *clause_ptr,
 			      vec<tree> *known_vals_ptr,
-			      vec<tree> *known_binfos_ptr,
+			      vec<ipa_polymorphic_call_context>
+			      *known_contexts_ptr,
 			      vec<ipa_agg_jump_function_p> *known_aggs_ptr)
 {
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
@@ -907,12 +908,12 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
     *clause_ptr = inline_p ? 0 : 1 << predicate_not_inlined_condition;
   if (known_vals_ptr)
     known_vals_ptr->create (0);
-  if (known_binfos_ptr)
-    known_binfos_ptr->create (0);
+  if (known_contexts_ptr)
+    known_contexts_ptr->create (0);
 
   if (ipa_node_params_vector.exists ()
       && !e->call_stmt_cannot_inline_p
-      && ((clause_ptr && info->conds) || known_vals_ptr || known_binfos_ptr))
+      && ((clause_ptr && info->conds) || known_vals_ptr || known_contexts_ptr))
     {
       struct ipa_node_params *parms_info;
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
@@ -928,8 +929,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	known_vals.safe_grow_cleared (count);
       if (count && (info->conds || known_aggs_ptr))
 	known_aggs.safe_grow_cleared (count);
-      if (count && known_binfos_ptr)
-	known_binfos_ptr->safe_grow_cleared (count);
+      if (count && known_contexts_ptr)
+	known_contexts_ptr->safe_grow_cleared (count);
 
       for (i = 0; i < count; i++)
 	{
@@ -937,14 +938,16 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	  tree cst = ipa_value_from_jfunc (parms_info, jf);
 	  if (cst)
 	    {
-	      if (known_vals.exists () && TREE_CODE (cst) != TREE_BINFO)
+	      gcc_checking_assert (TREE_CODE (cst) != TREE_BINFO);
+	      if (known_vals.exists ())
 		known_vals[i] = cst;
-	      else if (known_binfos_ptr != NULL
-		       && TREE_CODE (cst) == TREE_BINFO)
-		(*known_binfos_ptr)[i] = cst;
 	    }
 	  else if (inline_p && !es->param[i].change_prob)
 	    known_vals[i] = error_mark_node;
+
+	  if (known_contexts_ptr)
+	    (*known_contexts_ptr)[i] = ipa_context_from_jfunc (parms_info, e,
+							       i, jf);
 	  /* TODO: When IPA-CP starts propagating and merging aggregate jump
 	     functions, use its knowledge of the caller too, just like the
 	     scalar case above.  */
@@ -2969,14 +2972,14 @@ make_pass_inline_parameters (gcc::context *ctxt)
 }
 
 
-/* Estimate benefit devirtualizing indirect edge IE, provided KNOWN_VALS and
-   KNOWN_BINFOS.  */
+/* Estimate benefit devirtualizing indirect edge IE, provided KNOWN_VALS,
+   KNOWN_CONTEXTS and KNOWN_AGGS.  */
 
 static bool
 estimate_edge_devirt_benefit (struct cgraph_edge *ie,
 			      int *size, int *time,
 			      vec<tree> known_vals,
-			      vec<tree> known_binfos,
+			      vec<ipa_polymorphic_call_context> known_contexts,
 			      vec<ipa_agg_jump_function_p> known_aggs)
 {
   tree target;
@@ -2984,12 +2987,12 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
   struct inline_summary *isummary;
   enum availability avail;
 
-  if (!known_vals.exists () && !known_binfos.exists ())
+  if (!known_vals.exists () && !known_contexts.exists ())
     return false;
   if (!flag_indirect_inlining)
     return false;
 
-  target = ipa_get_indirect_edge_target (ie, known_vals, known_binfos,
+  target = ipa_get_indirect_edge_target (ie, known_vals, known_contexts,
 					 known_aggs);
   if (!target)
     return false;
@@ -3013,7 +3016,7 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
 /* Increase SIZE, MIN_SIZE (if non-NULL) and TIME for size and time needed to
    handle edge E with probability PROB.
    Set HINTS if edge may be devirtualized.
-   KNOWN_VALS, KNOWN_AGGS and KNOWN_BINFOS describe context of the call
+   KNOWN_VALS, KNOWN_AGGS and KNOWN_CONTEXTS describe context of the call
    site.  */
 
 static inline void
@@ -3021,7 +3024,7 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
 			     int *time,
 			     int prob,
 			     vec<tree> known_vals,
-			     vec<tree> known_binfos,
+			     vec<ipa_polymorphic_call_context> known_contexts,
 			     vec<ipa_agg_jump_function_p> known_aggs,
 			     inline_hints *hints)
 {
@@ -3031,7 +3034,7 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
   int cur_size;
   if (!e->callee
       && estimate_edge_devirt_benefit (e, &call_size, &call_time,
-				       known_vals, known_binfos, known_aggs)
+				       known_vals, known_contexts, known_aggs)
       && hints && e->maybe_hot_p ())
     *hints |= INLINE_HINT_indirect_call;
   cur_size = call_size * INLINE_SIZE_SCALE;
@@ -3047,9 +3050,8 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
 
 
 /* Increase SIZE, MIN_SIZE and TIME for size and time needed to handle all
-   calls in NODE.
-   POSSIBLE_TRUTHS, KNOWN_VALS, KNOWN_AGGS and KNOWN_BINFOS describe context of
-   the call site.  */
+   calls in NODE.  POSSIBLE_TRUTHS, KNOWN_VALS, KNOWN_AGGS and KNOWN_CONTEXTS
+   describe context of the call site.  */
 
 static void
 estimate_calls_size_and_time (struct cgraph_node *node, int *size,
@@ -3057,7 +3059,7 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
 			      inline_hints *hints,
 			      clause_t possible_truths,
 			      vec<tree> known_vals,
-			      vec<tree> known_binfos,
+			      vec<ipa_polymorphic_call_context> known_contexts,
 			      vec<ipa_agg_jump_function_p> known_aggs)
 {
   struct cgraph_edge *e;
@@ -3074,14 +3076,14 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
 	      estimate_edge_size_and_time (e, size,
 					   es->predicate ? NULL : min_size,
 					   time, REG_BR_PROB_BASE,
-					   known_vals, known_binfos,
+					   known_vals, known_contexts,
 					   known_aggs, hints);
 	    }
 	  else
 	    estimate_calls_size_and_time (e->callee, size, min_size, time,
 					  hints,
 					  possible_truths,
-					  known_vals, known_binfos,
+					  known_vals, known_contexts,
 					  known_aggs);
 	}
     }
@@ -3093,14 +3095,14 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
 	estimate_edge_size_and_time (e, size,
 				     es->predicate ? NULL : min_size,
 				     time, REG_BR_PROB_BASE,
-				     known_vals, known_binfos, known_aggs,
+				     known_vals, known_contexts, known_aggs,
 				     hints);
     }
 }
 
 
 /* Estimate size and time needed to execute NODE assuming
-   POSSIBLE_TRUTHS clause, and KNOWN_VALS, KNOWN_AGGS and KNOWN_BINFOS
+   POSSIBLE_TRUTHS clause, and KNOWN_VALS, KNOWN_AGGS and KNOWN_CONTEXTS
    information about NODE's arguments.  If non-NULL use also probability
    information present in INLINE_PARAM_SUMMARY vector.
    Additionally detemine hints determined by the context.  Finally compute
@@ -3112,7 +3114,7 @@ static void
 estimate_node_size_and_time (struct cgraph_node *node,
 			     clause_t possible_truths,
 			     vec<tree> known_vals,
-			     vec<tree> known_binfos,
+			     vec<ipa_polymorphic_call_context> known_contexts,
 			     vec<ipa_agg_jump_function_p> known_aggs,
 			     int *ret_size, int *ret_min_size, int *ret_time,
 			     inline_hints *ret_hints,
@@ -3189,7 +3191,7 @@ estimate_node_size_and_time (struct cgraph_node *node,
     hints |= INLINE_HINT_declared_inline;
 
   estimate_calls_size_and_time (node, &size, &min_size, &time, &hints, possible_truths,
-				known_vals, known_binfos, known_aggs);
+				known_vals, known_contexts, known_aggs);
   gcc_checking_assert (size >= 0);
   gcc_checking_assert (time >= 0);
   time = RDIV (time, INLINE_TIME_SCALE);
@@ -3212,13 +3214,14 @@ estimate_node_size_and_time (struct cgraph_node *node,
 
 /* Estimate size and time needed to execute callee of EDGE assuming that
    parameters known to be constant at caller of EDGE are propagated.
-   KNOWN_VALS and KNOWN_BINFOS are vectors of assumed known constant values
+   KNOWN_VALS and KNOWN_CONTEXTS are vectors of assumed known constant values
    and types for parameters.  */
 
 void
 estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
 				   vec<tree> known_vals,
-				   vec<tree> known_binfos,
+				   vec<ipa_polymorphic_call_context>
+				   known_contexts,
 				   vec<ipa_agg_jump_function_p> known_aggs,
 				   int *ret_size, int *ret_time,
 				   inline_hints *hints)
@@ -3227,7 +3230,7 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
 
   clause = evaluate_conditions_for_known_args (node, false, known_vals,
 					       known_aggs);
-  estimate_node_size_and_time (node, clause, known_vals, known_binfos,
+  estimate_node_size_and_time (node, clause, known_vals, known_contexts,
 			       known_aggs, ret_size, NULL, ret_time, hints, vNULL);
 }
 
@@ -3672,7 +3675,7 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   struct cgraph_node *callee;
   clause_t clause;
   vec<tree> known_vals;
-  vec<tree> known_binfos;
+  vec<ipa_polymorphic_call_context> known_contexts;
   vec<ipa_agg_jump_function_p> known_aggs;
   struct inline_edge_summary *es = inline_edge_summary (edge);
   int min_size;
@@ -3681,9 +3684,9 @@ do_estimate_edge_time (struct cgraph_edge *edge)
 
   gcc_checking_assert (edge->inline_failed);
   evaluate_properties_for_edge (edge, true,
-				&clause, &known_vals, &known_binfos,
+				&clause, &known_vals, &known_contexts,
 				&known_aggs);
-  estimate_node_size_and_time (callee, clause, known_vals, known_binfos,
+  estimate_node_size_and_time (callee, clause, known_vals, known_contexts,
 			       known_aggs, &size, &min_size, &time, &hints, es->param);
 
   /* When we have profile feedback, we can quite safely identify hot
@@ -3697,7 +3700,7 @@ do_estimate_edge_time (struct cgraph_edge *edge)
     hints |= INLINE_HINT_known_hot;
 
   known_vals.release ();
-  known_binfos.release ();
+  known_contexts.release ();
   known_aggs.release ();
   gcc_checking_assert (size >= 0);
   gcc_checking_assert (time >= 0);
@@ -3728,7 +3731,7 @@ do_estimate_edge_size (struct cgraph_edge *edge)
   struct cgraph_node *callee;
   clause_t clause;
   vec<tree> known_vals;
-  vec<tree> known_binfos;
+  vec<ipa_polymorphic_call_context> known_contexts;
   vec<ipa_agg_jump_function_p> known_aggs;
 
   /* When we do caching, use do_estimate_edge_time to populate the entry.  */
@@ -3746,12 +3749,12 @@ do_estimate_edge_size (struct cgraph_edge *edge)
   /* Early inliner runs without caching, go ahead and do the dirty work.  */
   gcc_checking_assert (edge->inline_failed);
   evaluate_properties_for_edge (edge, true,
-				&clause, &known_vals, &known_binfos,
+				&clause, &known_vals, &known_contexts,
 				&known_aggs);
-  estimate_node_size_and_time (callee, clause, known_vals, known_binfos,
+  estimate_node_size_and_time (callee, clause, known_vals, known_contexts,
 			       known_aggs, &size, NULL, NULL, NULL, vNULL);
   known_vals.release ();
-  known_binfos.release ();
+  known_contexts.release ();
   known_aggs.release ();
   return size;
 }
@@ -3767,7 +3770,7 @@ do_estimate_edge_hints (struct cgraph_edge *edge)
   struct cgraph_node *callee;
   clause_t clause;
   vec<tree> known_vals;
-  vec<tree> known_binfos;
+  vec<ipa_polymorphic_call_context> known_contexts;
   vec<ipa_agg_jump_function_p> known_aggs;
 
   /* When we do caching, use do_estimate_edge_time to populate the entry.  */
@@ -3785,12 +3788,12 @@ do_estimate_edge_hints (struct cgraph_edge *edge)
   /* Early inliner runs without caching, go ahead and do the dirty work.  */
   gcc_checking_assert (edge->inline_failed);
   evaluate_properties_for_edge (edge, true,
-				&clause, &known_vals, &known_binfos,
+				&clause, &known_vals, &known_contexts,
 				&known_aggs);
-  estimate_node_size_and_time (callee, clause, known_vals, known_binfos,
+  estimate_node_size_and_time (callee, clause, known_vals, known_contexts,
 			       known_aggs, NULL, NULL, NULL, &hints, vNULL);
   known_vals.release ();
-  known_binfos.release ();
+  known_contexts.release ();
   known_aggs.release ();
   hints |= simple_edge_hints (edge);
   return hints;

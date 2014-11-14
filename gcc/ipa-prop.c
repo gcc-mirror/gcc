@@ -380,8 +380,14 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	      fprintf (f, "\n");
 	    }
 	}
-      if (IPA_EDGE_REF (cs)->polymorphic_call_contexts)
-	ipa_get_ith_polymorhic_call_context (IPA_EDGE_REF (cs), i)->dump (f);
+
+      struct ipa_polymorphic_call_context *ctx
+	= ipa_get_ith_polymorhic_call_context (IPA_EDGE_REF (cs), i);
+      if (ctx && !ctx->useless_p ())
+	{
+	  fprintf (f, "         Context: ");
+	  ctx->dump (dump_file);
+	}
     }
 }
 
@@ -559,7 +565,8 @@ ipa_set_ancestor_jf (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
     type = NULL_TREE;
   if (type)
     type = TYPE_MAIN_VARIANT (type);
-  gcc_assert (!type_preserved || contains_polymorphic_type_p (type));
+  if (!type || !contains_polymorphic_type_p (type))
+    type_preserved = false;
   jfunc->type = IPA_JF_ANCESTOR;
   jfunc->value.ancestor.formal_id = formal_id;
   jfunc->value.ancestor.offset = offset;
@@ -2622,9 +2629,12 @@ combine_known_type_and_ancestor_jfs (struct ipa_jump_func *src,
     + ipa_get_jf_ancestor_offset (dst);
   combined_type = ipa_get_jf_ancestor_type (dst);
 
-  ipa_set_jf_known_type (dst, combined_offset,
-			 ipa_get_jf_known_type_base_type (src),
-			 combined_type);
+  if (combined_type)
+    ipa_set_jf_known_type (dst, combined_offset,
+			   ipa_get_jf_known_type_base_type (src),
+			   combined_type);
+  else
+    dst->type = IPA_JF_UNKNOWN;
 }
 
 /* Update the jump functions associated with call graph edge E when the call
@@ -2669,7 +2679,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      struct ipa_polymorphic_call_context ctx = *src_ctx;
 
 	      /* TODO: Make type preserved safe WRT contexts.  */
-	      if (!dst->value.ancestor.agg_preserved)
+	      if (!ipa_get_jf_ancestor_type_preserved (dst))
 		ctx.possible_dynamic_type_change (e->in_polymorphic_cdtor);
 	      ctx.offset_by (dst->value.ancestor.offset);
 	      if (!ctx.useless_p ())
@@ -2678,6 +2688,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 					 count);
 		  dst_ctx = ipa_get_ith_polymorhic_call_context (args, i);
 		}
+	      dst_ctx->combine_with (ctx);
 	    }
 
 	  if (src->agg.items
@@ -2739,7 +2750,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		  struct ipa_polymorphic_call_context ctx = *src_ctx;
 
 		  /* TODO: Make type preserved safe WRT contexts.  */
-		  if (!dst->value.ancestor.agg_preserved)
+		  if (!ipa_get_jf_pass_through_type_preserved (dst))
 		    ctx.possible_dynamic_type_change (e->in_polymorphic_cdtor);
 		  if (!ctx.useless_p ())
 		    {
@@ -3152,41 +3163,24 @@ ipa_impossible_devirt_target (struct cgraph_edge *ie, tree target)
 /* Try to find a destination for indirect edge IE that corresponds to a virtual
    call based on a formal parameter which is described by jump function JFUNC
    and if it can be determined, make it direct and return the direct edge.
-   Otherwise, return NULL.  NEW_ROOT_INFO is the node info that JFUNC lattices
-   are relative to.  */
+   Otherwise, return NULL.  CTX describes the polymorphic context that the
+   parameter the call is based on brings along with it.  */
 
 static struct cgraph_edge *
 try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 				   struct ipa_jump_func *jfunc,
-				   struct ipa_node_params *new_root_info,
-				   struct ipa_polymorphic_call_context *ctx_ptr)
+				   struct ipa_polymorphic_call_context ctx)
 {
-  tree binfo, target = NULL;
+  tree target = NULL;
   bool speculative = false;
-  bool updated = false;
 
   if (!flag_devirtualize)
     return NULL;
 
-  /* If this is call of a function parameter, restrict its type
-     based on knowlede of the context.  */
-  if (ctx_ptr && !ie->indirect_info->by_ref)
-    {
-      struct ipa_polymorphic_call_context ctx = *ctx_ptr;
-
-      ctx.offset_by (ie->indirect_info->offset);
-
-      if (ie->indirect_info->vptr_changed)
-	ctx.possible_dynamic_type_change (ie->in_polymorphic_cdtor,
-					  ie->indirect_info->otr_type);
-
-      updated = ie->indirect_info->context.combine_with
-		  (ctx, ie->indirect_info->otr_type);
-    }
+  gcc_assert (!ie->indirect_info->by_ref);
 
   /* Try to do lookup via known virtual table pointer value.  */
-  if (!ie->indirect_info->by_ref
-      && (!ie->indirect_info->vptr_changed || flag_devirtualize_speculatively))
+  if (!ie->indirect_info->vptr_changed || flag_devirtualize_speculatively)
     {
       tree vtable;
       unsigned HOST_WIDE_INT offset;
@@ -3217,67 +3211,44 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 	}
     }
 
-  binfo = ipa_value_from_jfunc (new_root_info, jfunc);
+  ipa_polymorphic_call_context ie_context (ie);
+  vec <cgraph_node *>targets;
+  bool final;
 
-  if (binfo && TREE_CODE (binfo) != TREE_BINFO)
+  ctx.offset_by (ie->indirect_info->offset);
+  if (ie->indirect_info->vptr_changed)
+    ctx.possible_dynamic_type_change (ie->in_polymorphic_cdtor,
+				      ie->indirect_info->otr_type);
+  ctx.combine_with (ie_context, ie->indirect_info->otr_type);
+  targets = possible_polymorphic_call_targets
+    (ie->indirect_info->otr_type,
+     ie->indirect_info->otr_token,
+     ctx, &final);
+  if (final && targets.length () <= 1)
     {
-      struct ipa_polymorphic_call_context ctx (binfo,
-					       ie->indirect_info->otr_type,
-					       ie->indirect_info->offset);
-      updated |= ie->indirect_info->context.combine_with
-		  (ctx, ie->indirect_info->otr_type);
+      if (targets.length () == 1)
+	target = targets[0]->decl;
+      else
+	target = ipa_impossible_devirt_target (ie, NULL_TREE);
     }
-
-  if (updated)
+  else if (!target && flag_devirtualize_speculatively
+	   && !ie->speculative && ie->maybe_hot_p ())
     {
-      ipa_polymorphic_call_context context (ie);
-      vec <cgraph_node *>targets;
-      bool final;
-
-      targets = possible_polymorphic_call_targets
-		 (ie->indirect_info->otr_type,
-		  ie->indirect_info->otr_token,
-		  context, &final);
-      if (final && targets.length () <= 1)
+      cgraph_node *n;
+      n = try_speculative_devirtualization (ie->indirect_info->otr_type,
+					    ie->indirect_info->otr_token,
+					    ie->indirect_info->context);
+      if (n)
 	{
-	  if (targets.length () == 1)
-	    target = targets[0]->decl;
-	  else
-	    target = ipa_impossible_devirt_target (ie, NULL_TREE);
-	}
-      else if (!target && flag_devirtualize_speculatively
-	       && !ie->speculative && ie->maybe_hot_p ())
-	{
-	  cgraph_node *n = try_speculative_devirtualization (ie->indirect_info->otr_type,
-							     ie->indirect_info->otr_token,
-							     ie->indirect_info->context);
-	  if (n)
-	    {
-	      target = n->decl;
-	      speculative = true;
-	    }
-	}
-     }
-
-  if (binfo && TREE_CODE (binfo) == TREE_BINFO)
-    {
-      binfo = get_binfo_at_offset (binfo, ie->indirect_info->offset,
-				   ie->indirect_info->otr_type);
-      if (binfo)
-	{
-	  tree t = gimple_get_virt_method_for_binfo (ie->indirect_info->otr_token,
-						     binfo);
-	  if (t)
-	    {
-	      target = t;
-	      speculative = false;
-	    }
+	  target = n->decl;
+	  speculative = true;
 	}
     }
 
   if (target)
     {
-      if (!possible_polymorphic_call_target_p (ie, cgraph_node::get_create (target)))
+      if (!possible_polymorphic_call_target_p
+	  (ie, cgraph_node::get_create (target)))
 	{
 	  if (speculative)
 	    return NULL;
@@ -3336,11 +3307,9 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	new_direct_edge = NULL;
       else if (ici->polymorphic)
 	{
-          ipa_polymorphic_call_context *ctx;
-          ctx = ipa_get_ith_polymorhic_call_context (top, param_index);
-	  new_direct_edge = try_make_edge_direct_virtual_call (ie, jfunc,
-							       new_root_info,
-							       ctx);
+          ipa_polymorphic_call_context ctx;
+	  ctx = ipa_context_from_jfunc (new_root_info, cs, param_index, jfunc);
+	  new_direct_edge = try_make_edge_direct_virtual_call (ie, jfunc, ctx);
 	}
       else
 	new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc,
@@ -3474,7 +3443,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	    {
 	      struct cgraph_node *n;
 	      struct ipa_ref *ref;
-	      tree t = new_root_info->known_vals[src_idx];
+	      tree t = new_root_info->known_csts[src_idx];
 
 	      if (t && TREE_CODE (t) == ADDR_EXPR
 		  && TREE_CODE (TREE_OPERAND (t, 0)) == FUNCTION_DECL
@@ -3617,7 +3586,8 @@ ipa_free_node_params_substructures (struct ipa_node_params *info)
   free (info->lattices);
   /* Lattice values and their sources are deallocated with their alocation
      pool.  */
-  info->known_vals.release ();
+  info->known_csts.release ();
+  info->known_contexts.release ();
   memset (info, 0, sizeof (*info));
 }
 
@@ -3892,7 +3862,8 @@ ipa_free_all_structures_after_ipa_cp (void)
       ipa_free_all_edge_args ();
       ipa_free_all_node_params ();
       free_alloc_pool (ipcp_sources_pool);
-      free_alloc_pool (ipcp_values_pool);
+      free_alloc_pool (ipcp_cst_values_pool);
+      free_alloc_pool (ipcp_poly_ctx_values_pool);
       free_alloc_pool (ipcp_agg_lattice_pool);
       ipa_unregister_cgraph_hooks ();
       if (ipa_refdesc_pool)
@@ -3911,8 +3882,10 @@ ipa_free_all_structures_after_iinln (void)
   ipa_unregister_cgraph_hooks ();
   if (ipcp_sources_pool)
     free_alloc_pool (ipcp_sources_pool);
-  if (ipcp_values_pool)
-    free_alloc_pool (ipcp_values_pool);
+  if (ipcp_cst_values_pool)
+    free_alloc_pool (ipcp_cst_values_pool);
+  if (ipcp_poly_ctx_values_pool)
+    free_alloc_pool (ipcp_poly_ctx_values_pool);
   if (ipcp_agg_lattice_pool)
     free_alloc_pool (ipcp_agg_lattice_pool);
   if (ipa_refdesc_pool)

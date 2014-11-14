@@ -1387,9 +1387,12 @@ public:
 
   /* Return TRUE if context is fully useless.  */
   bool useless_p () const;
+  /* Return TRUE if this context conveys the same information as X.  */
+  bool equal_to (const ipa_polymorphic_call_context &x) const;
 
-  /* Dump human readable context to F.  */
-  void dump (FILE *f) const;
+  /* Dump human readable context to F.  If NEWLINE is true, it will be
+     terminated by a newline.  */
+  void dump (FILE *f, bool newline = true) const;
   void DEBUG_FUNCTION debug () const;
 
   /* LTO streaming.  */

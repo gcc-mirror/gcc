@@ -36,7 +36,7 @@ C *b = new (C);
     sort(f, *b);
   }
 }
-/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 1 "inline"  } } */
+/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 1 "inline" { xfail *-*-* } } } */
 /* { dg-final { cleanup-ipa-dump "inline" } } */
 /* { dg-final { scan-ipa-dump-times "Aggregate passed by reference" 1 "cp"  } } */
 /* { dg-final { cleanup-ipa-dump "cp" } } */

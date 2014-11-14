@@ -26,7 +26,7 @@ main()
 /* Here one invocation of foo is while type is in construction, while other is not.
    Check that we handle that.  */
 
-/* { dg-final { scan-ipa-dump-times "First type is base of second" 1 "inline"  } } */
+/* { dg-final { scan-ipa-dump "Second type is base of first" "inline"  } } */
 /* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target\[^\\n\]*A::foo" 1 "inline"  } } */
 /* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target\[^\\n\]*B::foo" 1 "inline"  } } */
 /* { dg-final { cleanup-ipa-dump "inline" } } */

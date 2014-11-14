@@ -1,3 +1,14 @@
+2014-11-14  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/ipa/devirt-11.C: Dont't run ipa-cp, remove times constraint
+	from the dump scan.
+	* g++.dg/ipa/devirt-21.C: Xfail.
+	* g++.dg/ipa/devirt-24.C: Likewise.
+	* g++.dg/ipa/devirt-10.C: Removed times constraint from the dump scan.
+	* g++.dg/ipa/devirt-41.C: Updated the dump scan.
+	* g++.dg/ipa/devirt-44.C: Likewise.
+	* g++.dg/ipa/devirt-43.C: Xfail.
+
 2014-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* g++.dg/abi/abi-tag11.C: New.
