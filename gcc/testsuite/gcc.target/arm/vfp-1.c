@@ -126,7 +126,7 @@ void test_convert () {
 }
 
 void test_ldst (float f[], double d[]) {
-  /* { dg-final { scan-assembler "vldr.32.+ \\\[r0, #1020\\\]" } } */
+  /* { dg-final { scan-assembler "vldr.32.+ \\\[r0, #-?\[0-9\]+\\\]" } } */
   /* { dg-final { scan-assembler "vldr.32.+ \\\[r\[0-9\], #-1020\\\]" { target { arm32 && { ! arm_thumb2_ok } } } } } */
   /* { dg-final { scan-assembler "add.+ r0, #1024" } } */
   /* { dg-final { scan-assembler "vstr.32.+ \\\[r\[0-9\]\\\]\n" } } */
