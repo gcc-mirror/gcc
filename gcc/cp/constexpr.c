@@ -2908,10 +2908,81 @@ maybe_constant_value (tree t, tree decl)
   /* cp_tree_equal looks through NOPs, so allow them.  */
   gcc_assert (r == t
 	      || CONVERT_EXPR_P (t)
+	      || TREE_CODE (t) == VIEW_CONVERT_EXPR
 	      || (TREE_CONSTANT (t) && !TREE_CONSTANT (r))
 	      || !cp_tree_equal (r, t));
 #endif
   return r;
+}
+
+/* Like maybe_constant_value but first fully instantiate the argument.
+
+   Note: this is equivalent to instantiate_non_dependent_expr_sfinae
+   (t, tf_none) followed by maybe_constant_value but is more efficient,
+   because calls instantiation_dependent_expression_p and
+   potential_constant_expression at most once.  */
+
+tree
+fold_non_dependent_expr (tree t)
+{
+  if (t == NULL_TREE)
+    return NULL_TREE;
+
+  /* If we're in a template, but T isn't value dependent, simplify
+     it.  We're supposed to treat:
+
+       template <typename T> void f(T[1 + 1]);
+       template <typename T> void f(T[2]);
+
+     as two declarations of the same function, for example.  */
+  if (processing_template_decl)
+    {
+      if (!instantiation_dependent_expression_p (t)
+	  && potential_constant_expression (t))
+	{
+	  HOST_WIDE_INT saved_processing_template_decl;
+
+	  saved_processing_template_decl = processing_template_decl;
+	  processing_template_decl = 0;
+	  t = tsubst_copy_and_build (t,
+				     /*args=*/NULL_TREE,
+				     tf_none,
+				     /*in_decl=*/NULL_TREE,
+				     /*function_p=*/false,
+				     /*integral_constant_expression_p=*/true);
+	  processing_template_decl = saved_processing_template_decl;
+
+	  if (type_unknown_p (t)
+	      || BRACE_ENCLOSED_INITIALIZER_P (t))
+	    {
+	      if (TREE_OVERFLOW_P (t))
+		{
+		  t = build_nop (TREE_TYPE (t), t);
+		  TREE_CONSTANT (t) = false;
+		}
+	      return t;
+	    }
+
+	  tree r = cxx_eval_outermost_constant_expr (t, true, NULL_TREE);
+#ifdef ENABLE_CHECKING
+	  /* cp_tree_equal looks through NOPs, so allow them.  */
+	  gcc_assert (r == t
+		      || CONVERT_EXPR_P (t)
+		      || TREE_CODE (t) == VIEW_CONVERT_EXPR
+		      || (TREE_CONSTANT (t) && !TREE_CONSTANT (r))
+		      || !cp_tree_equal (r, t));
+#endif
+	  return r;
+	}
+      else if (TREE_OVERFLOW_P (t))
+	{
+	  t = build_nop (TREE_TYPE (t), t);
+	  TREE_CONSTANT (t) = false;
+	}
+      return t;
+    }
+
+  return maybe_constant_value (t);
 }
 
 /* Like maybe_constant_value, but returns a CONSTRUCTOR directly, rather
@@ -3386,7 +3457,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 	if (!potential_constant_expression_1 (denom, rval, flags))
 	  return false;
 	/* We can't call cxx_eval_outermost_constant_expr on an expression
-	   that hasn't been through fold_non_dependent_expr yet.  */
+	   that hasn't been through instantiate_non_dependent_expr yet.  */
 	if (!processing_template_decl)
 	  denom = cxx_eval_outermost_constant_expr (denom, true);
 	if (integer_zerop (denom))

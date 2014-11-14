@@ -511,8 +511,7 @@ begin_maybe_infinite_loop (tree cond)
   bool maybe_infinite = true;
   if (cond)
     {
-      cond = fold_non_dependent_expr_sfinae (cond, tf_none);
-      cond = maybe_constant_value (cond);
+      cond = fold_non_dependent_expr (cond);
       maybe_infinite = integer_nonzerop (cond);
     }
   vec_safe_push (cp_function_chain->infinite_loops,
@@ -543,7 +542,6 @@ end_maybe_infinite_loop (tree cond)
   if (current != NULL_TREE)
     {
       cond = fold_non_dependent_expr (cond);
-      cond = maybe_constant_value (cond);
       if (integer_nonzerop (cond))
 	current_function_infinite_loop = 1;
     }
@@ -7043,7 +7041,7 @@ finish_static_assert (tree condition, tree message, location_t location,
     }
 
   /* Fold the expression and convert it to a boolean value. */
-  condition = fold_non_dependent_expr (condition);
+  condition = instantiate_non_dependent_expr (condition);
   condition = cp_convert (boolean_type_node, condition, tf_warning_or_error);
   condition = maybe_constant_value (condition);
 

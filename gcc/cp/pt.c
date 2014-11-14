@@ -5216,7 +5216,7 @@ redeclare_class_template (tree type, tree parms)
    (possibly simplified) expression.  */
 
 tree
-fold_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
+instantiate_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
 {
   if (expr == NULL_TREE)
     return NULL_TREE;
@@ -5248,9 +5248,9 @@ fold_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
 }
 
 tree
-fold_non_dependent_expr (tree expr)
+instantiate_non_dependent_expr (tree expr)
 {
-  return fold_non_dependent_expr_sfinae (expr, tf_error);
+  return instantiate_non_dependent_expr_sfinae (expr, tf_error);
 }
 
 /* Return TRUE iff T is a type alias, a TEMPLATE_DECL for an alias
@@ -5740,7 +5740,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
       && has_value_dependent_address (expr))
     /* If we want the address and it's value-dependent, don't fold.  */;
   else if (!type_unknown_p (expr))
-    expr = fold_non_dependent_expr_sfinae (expr, complain);
+    expr = instantiate_non_dependent_expr_sfinae (expr, complain);
   if (error_operand_p (expr))
     return error_mark_node;
   expr_type = TREE_TYPE (expr);
@@ -8314,7 +8314,7 @@ uses_template_parms (tree t)
 
 /* Returns true iff current_function_decl is an incompletely instantiated
    template.  Useful instead of processing_template_decl because the latter
-   is set to 0 during fold_non_dependent_expr.  */
+   is set to 0 during instantiate_non_dependent_expr.  */
 
 bool
 in_template_function (void)
@@ -15138,8 +15138,7 @@ tsubst_copy_and_build (tree t,
     case COND_EXPR:
       {
 	tree cond = RECUR (TREE_OPERAND (t, 0));
-	tree folded_cond = (maybe_constant_value
-			    (fold_non_dependent_expr_sfinae (cond, tf_none)));
+	tree folded_cond = fold_non_dependent_expr (cond);
 	tree exp1, exp2;
 
 	if (TREE_CODE (folded_cond) == INTEGER_CST)
@@ -21110,7 +21109,7 @@ value_dependent_expression_p (tree expression)
 
     case STMT_EXPR:
       /* Treat a GNU statement expression as dependent to avoid crashing
-	 under fold_non_dependent_expr; it can't be constant.  */
+	 under instantiate_non_dependent_expr; it can't be constant.  */
       return true;
 
     default:
@@ -21864,7 +21863,7 @@ build_non_dependent_expr (tree expr)
   /* Try to get a constant value for all non-dependent expressions in
       order to expose bugs in *_dependent_expression_p and constexpr.  */
   if (cxx_dialect >= cxx11)
-    maybe_constant_value (fold_non_dependent_expr_sfinae (expr, tf_none));
+    fold_non_dependent_expr (expr);
 #endif
 
   /* Preserve OVERLOADs; the functions must be available to resolve
