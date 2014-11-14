@@ -36,7 +36,8 @@ extern bool arith_overflowed_p (enum tree_code, const_tree, const_tree,
 				const_tree);
 extern tree no_follow_ssa_edges (tree);
 extern tree follow_single_use_edges (tree);
-extern tree gimple_fold_stmt_to_constant_1 (gimple, tree (*) (tree));
+extern tree gimple_fold_stmt_to_constant_1 (gimple, tree (*) (tree),
+					    tree (*) (tree) = no_follow_ssa_edges);
 extern tree gimple_fold_stmt_to_constant (gimple, tree (*) (tree));
 extern tree fold_const_aggregate_ref_1 (tree, tree (*) (tree));
 extern tree fold_const_aggregate_ref (tree);

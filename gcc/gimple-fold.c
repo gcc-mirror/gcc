@@ -4467,7 +4467,8 @@ maybe_fold_or_comparisons (enum tree_code code1, tree op1a, tree op1b,
    to avoid the indirect function call overhead.  */
 
 tree
-gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
+gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree),
+				tree (*gvalueize) (tree))
 {
   code_helper rcode;
   tree ops[3] = {};
@@ -4475,7 +4476,7 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
      edges if there are intermediate VARYING defs.  For this reason
      do not follow SSA edges here even though SCCVN can technically
      just deal fine with that.  */
-  if (gimple_simplify (stmt, &rcode, ops, NULL, no_follow_ssa_edges)
+  if (gimple_simplify (stmt, &rcode, ops, NULL, gvalueize)
       && rcode.is_tree_code ()
       && (TREE_CODE_LENGTH ((tree_code) rcode) == 0
 	  || ((tree_code) rcode) == ADDR_EXPR)

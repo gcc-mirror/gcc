@@ -1,3 +1,16 @@
+2014-11-14  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.h (gimple_fold_stmt_to_constant_1): Add 2nd
+	valueization hook defaulted to no_follow_ssa_edges.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Pass
+	2nd valueization hook to gimple_simplify.
+	* tree-ssa-ccp.c (valueize_op_1): New function to be
+	used for gimple_simplify called via gimple_fold_stmt_to_constant_1.
+	(ccp_fold): Adjust.
+	* tree-vrp.c (vrp_valueize_1): New function to be
+	used for gimple_simplify called via gimple_fold_stmt_to_constant_1.
+	(vrp_visit_assignment_or_call): Adjust.
+
 2014-11-14  Marek Polacek  <polacek@redhat.com>
 
 	* fold-const.c (fold_negate_expr): Don't fold INTEGER_CST if
