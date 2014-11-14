@@ -1,3 +1,8 @@
+2014-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.h (ipa_known_type_data): Remove.
+	(ipa_binfo_from_known_type_jfunc): Remove.
+
 2014-11-14  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64-cores.def (thunderx): Change the scheduler
