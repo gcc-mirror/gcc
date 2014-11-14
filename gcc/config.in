@@ -57,6 +57,12 @@
 #endif
 
 
+/* The default for -fdiagnostics-color option */
+#ifndef USED_FOR_TARGET
+#undef DIAGNOSTICS_COLOR_DEFAULT
+#endif
+
+
 /* Define if you want assertions enabled. This is a cheap check. */
 #ifndef USED_FOR_TARGET
 #undef ENABLE_ASSERT_CHECKING
@@ -272,6 +278,12 @@
 #endif
 
 
+/* Define if your assembler supports .module. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_DOT_MODULE
+#endif
+
+
 /* Define if your assembler supports DSPR1 mult. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_DSPR1_MULT
@@ -481,12 +493,6 @@
 /* Define if the assembler understands -mnan=. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_NAN
-#endif
-
-
-/* Define if the assembler understands .module. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_DOT_MODULE
 #endif
 
 

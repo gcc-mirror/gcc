@@ -936,6 +936,7 @@ enable_plugin
 enable_host_shared
 enable_libquadmath_support
 with_linker_hash_style
+with_diagnostics_color
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1708,6 +1709,11 @@ Optional Packages:
   --with-system-zlib      use installed libz
   --with-linker-hash-style={sysv,gnu,both}
                           specify the linker hash style
+  --with-diagnostics-color={never,auto,auto-if-env,always}
+                          specify the default of -fdiagnostics-color option
+                          auto-if-env stands for -fdiagnostics-color=auto if
+                          GCC_COLOR environment variable is present and
+                          -fdiagnostics-color=never otherwise
 
 Some influential environment variables:
   CC          C compiler command
@@ -18140,7 +18146,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18143 "configure"
+#line 18149 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18246,7 +18252,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18249 "configure"
+#line 18255 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -28293,6 +28299,37 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 fi
+
+# Specify what should be the default of -fdiagnostics-color option.
+
+# Check whether --with-diagnostics-color was given.
+if test "${with_diagnostics_color+set}" = set; then :
+  withval=$with_diagnostics_color; case x"$withval" in
+   xnever)
+     DIAGNOSTICS_COLOR_DEFAULT=DIAGNOSTICS_COLOR_NO
+     ;;
+   xauto)
+     DIAGNOSTICS_COLOR_DEFAULT=DIAGNOSTICS_COLOR_AUTO
+     ;;
+   xauto-if-env)
+     DIAGNOSTICS_COLOR_DEFAULT=-1
+     ;;
+   xalways)
+     DIAGNOSTICS_COLOR_DEFAULT=DIAGNOSTICS_COLOR_YES
+     ;;
+   *)
+     as_fn_error "$withval is an invalid option to --with-diagnostics-color" "$LINENO" 5
+     ;;
+ esac
+else
+  DIAGNOSTICS_COLOR_DEFAULT=DIAGNOSTICS_COLOR_AUTO
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define DIAGNOSTICS_COLOR_DEFAULT $DIAGNOSTICS_COLOR_DEFAULT
+_ACEOF
+
 
 # Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
 # of jit/jit-playback.c.
