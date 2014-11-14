@@ -1,3 +1,24 @@
+2014-11-14  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-int.h (lra_create_live_ranges): Add parameter.
+	* lra-lives.c (temp_bitmap): Move higher.
+	(initiate_live_solver): Move temp_bitmap initialization into
+	lra_live_ranges_init.
+	(finish_live_solver): Move temp_bitmap clearing into
+	live_ranges_finish.
+	(process_bb_lives): Add parameter.  Use it to control live info
+	update and dead insn elimination.  Pass it to mark_regno_live and
+	mark_regno_dead.
+	(lra_create_live_ranges): Add parameter.  Pass it to
+	process_bb_lives.
+	(lra_live_ranges_init, lra_live_ranges_finish): See changes in
+	initiate_live_solver and finish_live_solver.
+	* lra-remat.c (do_remat): Process insn non-operand hard regs too.
+	Use temp_bitmap to update avail_cands.
+	* lra.c (lra): Pass new parameter to lra_create_live_ranges.  Move
+	check with lra_need_for_spill_p after live range pass.  Switch on
+	rematerialization pass.
+
 2014-11-14  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (ipa_get_jf_pass_through_type_preserved): use

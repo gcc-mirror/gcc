@@ -2296,14 +2296,17 @@ lra (FILE *f)
 		  /* As a side-effect of lra_create_live_ranges, we calculate
 		     actual_call_used_reg_set,  which is needed during
 		     lra_inheritance.  */
-		  lra_create_live_ranges (true);
+		  lra_create_live_ranges (true, true);
 		}
 	      lra_inheritance ();
 	    }
 	  if (live_p)
 	    lra_clear_live_ranges ();
-	  /* We need live ranges for lra_assign -- so build them.  */
-	  lra_create_live_ranges (true);
+	  /* We need live ranges for lra_assign -- so build them.  But
+	     don't remove dead insns or change global live info as we
+	     can undo inheritance transformations after inheritance
+	     pseudo assigning.  */
+	  lra_create_live_ranges (true, false);
 	  live_p = true;
 	  /* If we don't spill non-reload and non-inheritance pseudos,
 	     there is no sense to run memory-memory move coalescing.
@@ -2322,7 +2325,7 @@ lra (FILE *f)
 		{
 		  if (! live_p)
 		    {
-		      lra_create_live_ranges (true);
+		      lra_create_live_ranges (true, true);
 		      live_p = true;
 		    }
 		  if (lra_coalesce ())
@@ -2338,21 +2341,23 @@ lra (FILE *f)
       bitmap_clear (&lra_subreg_reload_pseudos);
       bitmap_clear (&lra_inheritance_pseudos);
       bitmap_clear (&lra_split_regs);
-      if (! lra_need_for_spills_p ())
-	break;
       if (! live_p)
 	{
 	  /* We need full live info for spilling pseudos into
 	     registers instead of memory.  */
-	  lra_create_live_ranges (lra_reg_spill_p);
+	  lra_create_live_ranges (lra_reg_spill_p, true);
 	  live_p = true;
 	}
+      /* We should check necessity for spilling here as the above live
+	 range pass can remove spilled pseudos.  */
+      if (! lra_need_for_spills_p ())
+	break;
       /* Now we know what pseudos should be spilled.  Try to
 	 rematerialize them first.  */
-      if (0 && lra_remat ())
+      if (lra_remat ())
 	{
 	  /* We need full live info -- see the comment above.  */
-	  lra_create_live_ranges (lra_reg_spill_p);
+	  lra_create_live_ranges (lra_reg_spill_p, true);
 	  live_p = true;
 	  if (! lra_need_for_spills_p ())
 	    break;
