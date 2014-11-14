@@ -310,7 +310,9 @@ add_operator (enum tree_code code, const char *id,
       /* For {REAL,IMAG}PART_EXPR and VIEW_CONVERT_EXPR.  */
       && strcmp (tcc, "tcc_reference") != 0
       /* To have INTEGER_CST and friends as "predicate operators".  */
-      && strcmp (tcc, "tcc_constant") != 0)
+      && strcmp (tcc, "tcc_constant") != 0
+      /* And allow CONSTRUCTOR for vector initializers.  */
+      && !(code == CONSTRUCTOR))
     return;
   operator_id *op = new operator_id (code, id, nargs, tcc);
   id_base **slot = operators->find_slot_with_hash (op, op->hashval, INSERT);
@@ -2013,7 +2015,8 @@ dt_node::gen_kids (FILE *f, bool gimple)
 	  dt_operand *op = as_a<dt_operand *> (kids[i]);
 	  if (expr *e = dyn_cast <expr *> (op->op))
 	    {
-	      if (e->ops.length () == 0)
+	      if (e->ops.length () == 0
+		  && (!gimple || !(*e->operation == CONSTRUCTOR)))
 		generic_exprs.safe_push (op);
 	      else if (e->operation->kind == id_base::FN)
 		{
@@ -3023,6 +3026,14 @@ parser::parse_op ()
 	  if (!opr)
 	    fatal_at (token, "expected predicate name");
 	  if (operator_id *code = dyn_cast <operator_id *> (opr))
+	    {
+	      if (code->nargs != 0)
+		fatal_at (token, "using an operator with operands as predicate");
+	      /* Parse the zero-operand operator "predicates" as
+		 expression.  */
+	      op = new expr (opr);
+	    }
+	  else if (user_id *code = dyn_cast <user_id *> (opr))
 	    {
 	      if (code->nargs != 0)
 		fatal_at (token, "using an operator with operands as predicate");
