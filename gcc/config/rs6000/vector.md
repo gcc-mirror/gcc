@@ -53,10 +53,6 @@
 ;; Vector modes for 64-bit base types
 (define_mode_iterator VEC_64 [V2DI V2DF])
 
-;; Vector reload iterator
-(define_mode_iterator VEC_R [V16QI V8HI V4SI V2DI V4SF V2DF V1TI
-			     SF SD SI DF DD DI TI])
-
 ;; Base type from vector mode
 (define_mode_attr VEC_base [(V16QI "QI")
 			    (V8HI  "HI")
@@ -184,49 +180,6 @@
 }")
 
 
-
-;; Reload patterns for vector operations.  We may need an additional base
-;; register to convert the reg+offset addressing to reg+reg for vector
-;; registers and reg+reg or (reg+reg)&(-16) addressing to just an index
-;; register for gpr registers.
-(define_expand "reload_<VEC_R:mode>_<P:mptrsize>_store"
-  [(parallel [(match_operand:VEC_R 0 "memory_operand" "m")
-              (match_operand:VEC_R 1 "gpc_reg_operand" "r")
-              (match_operand:P 2 "register_operand" "=&b")])]
-  "<P:tptrsize>"
-{
-  rs6000_secondary_reload_inner (operands[1], operands[0], operands[2], true);
-  DONE;
-})
-
-(define_expand "reload_<VEC_R:mode>_<P:mptrsize>_load"
-  [(parallel [(match_operand:VEC_R 0 "gpc_reg_operand" "=&r")
-              (match_operand:VEC_R 1 "memory_operand" "m")
-              (match_operand:P 2 "register_operand" "=&b")])]
-  "<P:tptrsize>"
-{
-  rs6000_secondary_reload_inner (operands[0], operands[1], operands[2], false);
-  DONE;
-})
-
-;; Reload sometimes tries to move the address to a GPR, and can generate
-;; invalid RTL for addresses involving AND -16.  Allow addresses involving
-;; reg+reg, reg+small constant, or just reg, all wrapped in an AND -16.
-
-(define_insn_and_split "*vec_reload_and_plus_<mptrsize>"
-  [(set (match_operand:P 0 "gpc_reg_operand" "=b")
-	(and:P (plus:P (match_operand:P 1 "gpc_reg_operand" "r")
-		       (match_operand:P 2 "reg_or_cint_operand" "rI"))
-	       (const_int -16)))]
-  "(TARGET_ALTIVEC || TARGET_VSX) && (reload_in_progress || reload_completed)"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 0)
-	(plus:P (match_dup 1)
-		(match_dup 2)))
-   (set (match_dup 0)
-	(and:P (match_dup 0)
-	       (const_int -16)))])
 
 ;; Generic floating point vector arithmetic support
 (define_expand "add<mode>3"

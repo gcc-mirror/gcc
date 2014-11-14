@@ -479,10 +479,6 @@
 	      && num_insns_constant_wide ((HOST_WIDE_INT) k[3]) == 1);
 
     case DFmode:
-      /* The constant 0.f is easy under VSX.  */
-      if (op == CONST0_RTX (DFmode) && VECTOR_UNIT_VSX_P (DFmode))
-	return 1;
-
       /* Force constants to memory before reload to utilize
 	 compress_float_constant.
 	 Avoid this when flag_unsafe_math_optimizations is enabled
@@ -500,10 +496,6 @@
 	      && num_insns_constant_wide ((HOST_WIDE_INT) k[1]) == 1);
 
     case SFmode:
-      /* The constant 0.f is easy.  */
-      if (op == CONST0_RTX (SFmode))
-	return 1;
-
       /* Force constants to memory before reload to utilize
 	 compress_float_constant.
 	 Avoid this when flag_unsafe_math_optimizations is enabled

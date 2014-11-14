@@ -4,10 +4,11 @@
 /* { dg-require-effective-target powerpc_fprs } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power5" } } */
 /* { dg-options "-O3 -mcpu=power5 -ffast-math" } */
-/* { dg-final { scan-assembler-times "fctiwz" 2 } } */
-/* { dg-final { scan-assembler-not "fctiwuz" } } */
-/* { dg-final { scan-assembler-times "fctidz" 8 } } */
-/* { dg-final { scan-assembler-not "fctiduz" } } */
+/* { dg-final { scan-assembler-times "fctiwz " 2 } } */
+/* { dg-final { scan-assembler-not "fctiwuz " } } */
+/* { dg-final { scan-assembler-times "fctidz " 8 } } */
+/* { dg-final { scan-assembler-not "fctiduz " } } */
+/* { dg-final { scan-assembler-not "fctidu " } } */
 /* { dg-final { scan-assembler-not "xscvdpsxds" } } */
 /* { dg-final { scan-assembler-not "xscvdpuxds" } } */
 
