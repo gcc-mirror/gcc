@@ -1,3 +1,10 @@
+2014-11-13  Daniel Kruegler  <daniel.kruegler@gmail.com>
+
+	* include/bits/regex.h: Support embedded zeros in sub_match
+	comparisons (DR 2217)
+	* testsuite/28_regex/sub_match/embedded_zeros_cmp.cc:
+	Add test cases for embedded zeros
+
 2014-11-13  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/63775
