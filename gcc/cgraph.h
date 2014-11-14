@@ -1267,6 +1267,10 @@ public:
   /* True when function is clone created for Pointer Bounds Checker
      instrumentation.  */
   unsigned instrumentation_clone : 1;
+  /* True if call to node can't result in a call to free, munmap or
+     other operation that could make previously non-trapping memory
+     accesses trapping.  */
+  unsigned nonfreeing_fn : 1;
 };
 
 /* A cgraph node set is a collection of cgraph nodes.  A cgraph node

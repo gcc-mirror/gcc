@@ -1995,6 +1995,8 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " tm_clone");
   if (icf_merged)
     fprintf (f, " icf_merged");
+  if (nonfreeing_fn)
+    fprintf (f, " nonfreeing_fn");
   if (DECL_STATIC_CONSTRUCTOR (decl))
     fprintf (f," static_constructor (priority:%i)", get_init_priority ());
   if (DECL_STATIC_DESTRUCTOR (decl))

@@ -1,4 +1,27 @@
 2014-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-pure-const.c (struct funct_state_d): Add can_free field.
+	(varying_state): Add true for can_free.
+	(check_call): For builtin or internal !nonfreeing_call_p set
+	local->can_free.
+	(check_stmt): For asm volatile and asm with "memory" set
+	local->can_free.
+	(analyze_function): Clear local->can_free initially, continue
+	calling check_stmt until all flags are computed, dump can_free
+	flag.
+	(pure_const_write_summary): Write can_free flag.
+	(pure_const_read_summary): Read it back.
+	(propagate_pure_const): Propagate also can_free flag, set
+	w->nonfreeing_fn if it is false after propagation.
+	* cgraph.h (cgraph_node): Add nonfreeing_fn member.
+	* gimple.c: Include ipa-ref.h, lto-streamer.h and cgraph.h.
+	(nonfreeing_call_p): Return cgraph nonfreeing_fn flag if set.
+	Also return true for IFN_ABNORMAL_DISPATCHER.
+	* cgraph.c (cgraph_node::dump): Dump nonfreeing_fn flag.
+	* lto-cgraph.c (lto_output_node): Write nonfreeing_fn flag.
+	(input_overwrite_node): Read it back.
+
+2014-11-14  Jakub Jelinek  <jakub@redhat.com>
 	    Marek Polacek  <polacek@redhat.com>
 
 	* sanopt.c: Include tree-ssa-operands.h.

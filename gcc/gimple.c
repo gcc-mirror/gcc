@@ -58,6 +58,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
+#include "ipa-ref.h"
+#include "lto-streamer.h"
+#include "cgraph.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -2538,11 +2541,28 @@ nonfreeing_call_p (gimple call)
 	default:
 	  return true;
       }
-  else if (gimple_call_internal_p (call)
-	   && gimple_call_flags (call) & ECF_LEAF)
-    return true;
+  else if (gimple_call_internal_p (call))
+    switch (gimple_call_internal_fn (call))
+      {
+      case IFN_ABNORMAL_DISPATCHER:
+        return true;
+      default:
+	if (gimple_call_flags (call) & ECF_LEAF)
+	  return true;
+	return false;
+      }
 
-  return false;
+  tree fndecl = gimple_call_fndecl (call);
+  if (!fndecl)
+    return false;
+  struct cgraph_node *n = cgraph_node::get (fndecl);
+  if (!n)
+    return false;
+  enum availability availability;
+  n = n->function_symbol (&availability);
+  if (!n || availability <= AVAIL_INTERPOSABLE)
+    return false;
+  return n->nonfreeing_fn;
 }
 
 /* Callback for walk_stmt_load_store_ops.
