@@ -132,15 +132,23 @@ sub is_top_level {
 	return $function && $function !~ /^[\s{]/;
 }
 
+# Read contents of .diff file
+open (DFILE, $diff) or die "Could not open file $diff for reading";
+chomp (my @diff_lines = <DFILE>);
+close (DFILE);
+
+# Array diff_lines is modified by the log generation, so save a copy in
+# orig_diff_lines if needed.
+if ($inline) {
+    @orig_diff_lines = @diff_lines;
+}
+
 # For every file in the .diff print all the function names in ChangeLog
 # format.
 %cl_entries = ();
 $change_msg = undef;
 $look_for_funs = 0;
 $clname = get_clname('');
-open (DFILE, $diff) or die "Could not open file $diff for reading";
-chomp (my @diff_lines = <DFILE>);
-close (DFILE);
 $line_idx = 0;
 foreach (@diff_lines) {
     # Stop processing functions if we found a new file.
@@ -313,7 +321,7 @@ foreach my $clname (keys %cl_entries) {
 
 if ($inline) {
 	# Append the patch to the log
-	foreach (@diff_lines) {
+	foreach (@orig_diff_lines) {
 		print OUTPUTFILE "$_\n";
 	}
 }
