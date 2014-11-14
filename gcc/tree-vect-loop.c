@@ -3092,7 +3092,7 @@ calc_vec_perm_mask_for_shift (enum machine_mode mode, unsigned int offset,
   unsigned int i, nelt = GET_MODE_NUNITS (mode);
 
   for (i = 0; i < nelt; i++)
-    sel[i] = (BYTES_BIG_ENDIAN ? i - offset : i + offset) & (2*nelt - 1);
+    sel[i] = (i + offset) & (2*nelt - 1);
 }
 
 /* Checks whether the target supports whole-vector shifts for vectors of mode
@@ -3907,7 +3907,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
   gimple epilog_stmt = NULL;
   enum tree_code code = gimple_assign_rhs_code (stmt);
   gimple exit_phi;
-  tree bitsize, bitpos;
+  tree bitsize;
   tree adjustment_def = NULL;
   tree vec_initial_def = NULL;
   tree reduction_op, expr, def;
@@ -4417,14 +4417,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
         dump_printf_loc (MSG_NOTE, vect_location,
 			 "extract scalar result\n");
 
-      if (BYTES_BIG_ENDIAN)
-        bitpos = size_binop (MULT_EXPR,
-                             bitsize_int (TYPE_VECTOR_SUBPARTS (vectype) - 1),
-                             TYPE_SIZE (scalar_type));
-      else
-        bitpos = bitsize_zero_node;
-
-      rhs = build3 (BIT_FIELD_REF, scalar_type, new_temp, bitsize, bitpos);
+      rhs = build3 (BIT_FIELD_REF, scalar_type,
+		    new_temp, bitsize, bitsize_zero_node);
       epilog_stmt = gimple_build_assign (new_scalar_dest, rhs);
       new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
       gimple_assign_set_lhs (epilog_stmt, new_temp);
