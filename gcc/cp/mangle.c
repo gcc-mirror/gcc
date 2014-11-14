@@ -609,7 +609,7 @@ find_substitution (tree node)
     }
 
   tree tags = NULL_TREE;
-  if (OVERLOAD_TYPE_P (node))
+  if (OVERLOAD_TYPE_P (node) || DECL_CLASS_TEMPLATE_P (node))
     tags = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (type));
   /* Now check the list of available substitutions for this mangling
      operation.  */

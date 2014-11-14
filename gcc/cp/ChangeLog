@@ -1,3 +1,7 @@
+2014-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* mangle.c (find_substitution): Look for abi_tag on class templates.
+
 2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>

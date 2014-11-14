@@ -1,3 +1,7 @@
+2014-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/abi/abi-tag11.C: New.
+
 2014-11-14  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/ubsan/overflow-negate-3.c: New test.
