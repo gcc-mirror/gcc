@@ -1,4 +1,4 @@
-2014-11-13  Alan Lawrence  <alan.lawrence@arm.com>
+2014-11-14  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* optabs.c (shift_amt_for_vec_perm_mask): Remove code conditional on
 	BYTES_BIG_ENDIAN.
