@@ -2,13 +2,13 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-O3 -mcpu=power7 -ffast-math" } */
-/* { dg-final { scan-assembler-times "fctiwz" 2 } } */
-/* { dg-final { scan-assembler-times "fctiwuz" 2 } } */
-/* { dg-final { scan-assembler-times "fctidz" 1 } } */
-/* { dg-final { scan-assembler-times "fctiduz" 1 } } */
-/* { dg-final { scan-assembler-times "xscvdpsxds" 1 } } */
-/* { dg-final { scan-assembler-times "xscvdpuxds" 1 } } */
+/* { dg-options "-O3 -mcpu=power7 -ffast-math -mno-upper-regs-df" } */
+/* { dg-final { scan-assembler-times "fctiwz " 2 } } */
+/* { dg-final { scan-assembler-times "fctiwuz " 2 } } */
+/* { dg-final { scan-assembler-times "fctidz " 2 } } */
+/* { dg-final { scan-assembler-times "fctiduz " 2 } } */
+/* { dg-final { scan-assembler-not "xscvdpsxds" } } */
+/* { dg-final { scan-assembler-not "xscvdpuxds" } } */
 
 void float_to_int  (int *dest, float  src) { *dest = (int) src; }
 void double_to_int (int *dest, double src) { *dest = (int) src; }

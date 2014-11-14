@@ -1,3 +1,62 @@
+2014-11-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/predicates.md (easy_fp_constant): Delete redunant
+	tests for 0.0.
+
+	* config/rs6000/vector.md (VEC_R): Move secondary reload support
+	insns to rs6000.md from vector.md.
+	(reload_<VEC_R:mode>_<P:mptrsize>_store): Likewise.
+	(reload_<VEC_R:mode>_<P:mptrsize>_load): Likewise.
+	(vec_reload_and_plus_<mptrsize>): Likewise.
+
+	* config/rs6000/rs6000.md (Fa): New mode attribute to give
+	constraint for the Altivec registers for a type.
+	(RELOAD): New mode iterator for all of the types that have
+	secondary reload address support to load up a base register.
+	(extendsfdf2_fpr): Use correct constraint.
+	(copysign<mode>3_fcpsgn): For SFmode, use correct xscpsgndp
+	instruction.
+	(floatsi<mode>2_lfiwax): Add support for -mupper-regs-{sf,df}.
+	Generate the non-VSX instruction if all registers were FPRs.  Do
+	not use the patterns in vsx.md for scalar operations.
+	(floatsi<mode>2_lfiwax_mem): Likewise.
+	(floatunssi<mode>2_lfiwzx): Likewise.
+	(floatunssi<mode>2_lfiwzx_mem): Likewise.
+	(fix_trunc<mode>di2_fctidz): Likewise.
+	(fixuns_trunc<mode>di2_fctiduz): Likewise.
+	(fctiwz_<mode>): Likewise.
+	(fctiwuz_<mode>): Likewise.
+	(friz): Likewise.
+	(floatdidf2_fpr): Likewise.
+	(floatdidf2_mem): Likewise.
+	(floatunsdidf2): Likewise.
+	(floatunsdidf2_fcfidu): Likewise.
+	(floatunsdidf2_mem): Likewise.
+	(floatdisf2_fcfids): Likewise.
+	(floatdisf2_mem): Likewise.
+	(floatdisf2_internal1): Add explicit test for not FCFIDS to make
+	it more obvious that the code is for pre-ISA 2.06 machines.
+	(floatdisf2_internal2): Likewise.
+	(floatunsdisf2_fcfidus): Add support for -mupper-regs-{sf,df}.
+	Generate the non-VSX instruction if all registers were FPRs.  Do
+	not use the patterns in vsx.md for scalar operations.
+	(floatunsdisf2_mem): Likewise.
+	(reload_<RELOAD:mode>_<P:mptrsize>_store): Move the reload
+	handlers here from vector.md, and expand the types we generate
+	reload handlers for.
+	(reload_<RELOAD:mode>_<P:mptrsize>_load): Likewise.
+	(vec_reload_and_plus_<mptrsize>): Likewise.
+
+	* config/rs6000/vsx.md (vsx_float<VSi><mode>2): Only provide the
+	vector forms of the instructions.  Move VSX scalar forms to
+	rs6000.md, and add support for -mupper-regs-sf.
+	(vsx_floatuns<VSi><mode>2): Likewise.
+	(vsx_fix_trunc<mode><VSi>2): Likewise.
+	(vsx_fixuns_trunc<mode><VSi>2): Likewise.
+	(vsx_float_fix_<mode>2): Delete DF version, rename to
+	vsx_float_fix_v2df2.
+	(vsx_float_fix_v2df2): Likewise.
+
 2014-11-14  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (jump_func_type): Removed value IPA_JF_KNOWN_TYPE.

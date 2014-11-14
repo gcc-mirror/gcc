@@ -1,3 +1,18 @@
+2014-11-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/ppc-fpconv-1.c: Adjust for -mupper-regs-df
+	changes.
+	* gcc.target/powerpc/ppc-fpconv-2.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-3.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-4.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-5.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-6.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-7.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-8.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-9.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-10.c: Likewise.
+	* gcc.target/powerpc/ppc-round.c: Likewise.
+
 2014-11-14  Martin Jambor  <mjambor@suse.cz>
 
 	* g++.dg/ipa/devirt-11.C: Dont't run ipa-cp, remove times constraint

@@ -7,10 +7,11 @@
 /* { dg-final { scan-assembler-not "lfiwax" } } */
 /* { dg-final { scan-assembler-not "lfiwzx" } } */
 /* { dg-final { scan-assembler-times "fcfid " 10 } } */
-/* { dg-final { scan-assembler-not "fcfids" } } */
-/* { dg-final { scan-assembler-not "fcfidus" } } */
-/* { dg-final { scan-assembler-not "xscvsxddp" } } */
-/* { dg-final { scan-assembler-not "xscvuxddp" } } */
+/* { dg-final { scan-assembler-not "fcfids " } } */
+/* { dg-final { scan-assembler-not "fcfidus " } } */
+/* { dg-final { scan-assembler-not "fcfidu " } } */
+/* { dg-final { scan-assembler-not "xscvsxddp " } } */
+/* { dg-final { scan-assembler-not "xscvuxddp " } } */
 
 void int_to_float (float *dest, int *src)
 {
