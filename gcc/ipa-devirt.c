@@ -2281,10 +2281,7 @@ possible_polymorphic_call_targets (tree otr_type,
   /* Without outer type, we have no use for offset.  Just do the
      basic search from innter type  */
   if (!context.outer_type)
-    {
-      context.outer_type = otr_type;
-      context.offset = 0;
-    }
+    context.clear_outer_type (otr_type);
   /* We need to update our hiearchy if the type does not exist.  */
   outer_type = get_odr_type (context.outer_type, true);
   /* If the type is complete, there are no derivations.  */

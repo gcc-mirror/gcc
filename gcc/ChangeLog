@@ -1,3 +1,9 @@
+2014-11-14  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.h (clear_outer_type): Make public.  Fix comment.
+	* ipa-devirt.c (possible_polymorphic_call_targets): Use
+	clear_outer_type when resetting the context.
+
 2014-11-13  Dominique Dhumieres  <dominiq@lps.ens.fr>
 
 	PR bootstrap/63853
