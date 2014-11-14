@@ -1,6 +1,4 @@
-// 2007-05-29 Benjamin Kosnik  <bkoz@redhat.com>
-
-// Copyright (C) 2007-2014 Free Software Foundation, Inc.
+// Copyright (C) 2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,28 +15,38 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <cstring>
-#include <string>
+// { dg-options "-std=gnu++11" }
+
 #include <ios>
 #include <testsuite_hooks.h>
 
-// Can construct and return 10k character error string.
-void test01()
-{
-  typedef std::ios_base::failure test_type;
+using test_type = std::ios_base::failure;
 
-  bool test __attribute__((unused)) = true;
-  const std::string xxx(10000, 'x');
-  test_type t(xxx);
-#if _GLIBCXX_USE_CXX11_ABI
-  VERIFY( std::strstr(t.what(), xxx.c_str()) != NULL );
-#else
-  VERIFY( std::strcmp(t.what(), xxx.c_str()) == 0 );
-#endif
+static_assert( std::is_base_of<std::system_error, test_type>::value, "base" );
+
+void
+test01()
+{
+  test_type e("io error");
+  VERIFY(std::string(e.what()).find("io error") != std::string::npos);
+  e = test_type("", make_error_code(std::io_errc::stream));
 }
 
-int main(void)
+struct E : test_type
+{
+  E(const char* s) : test_type(s, make_error_code(std::io_errc::stream)) { }
+};
+
+void
+test02()
+{
+  E e("io error");
+  VERIFY(std::string(e.what()).find("io error") != std::string::npos);
+}
+
+int
+main()
 {
   test01();
-  return 0;
+  test02();
 }

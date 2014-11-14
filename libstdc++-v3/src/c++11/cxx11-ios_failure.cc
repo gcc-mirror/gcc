@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997-2014 Free Software Foundation, Inc.
+// Copyright (C) 2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,25 +23,67 @@
 // <http://www.gnu.org/licenses/>.
 
 //
-// ISO C++ 14882:1998: 27.4.2.1.1  Class ios_base::failure
+// ISO C++ 14882:2011: 27.5.3.1.1  Class ios_base::failure
 //
 
-#define _GLIBCXX_USE_CXX11_ABI 0
 #include <ios>
+
+namespace
+{
+  struct io_error_category : std::error_category
+  {
+    virtual const char*
+    name() const noexcept
+    { return "iostream"; }
+
+    virtual std::string message(int __ec) const
+    {
+      std::string __msg;
+      switch (std::io_errc(__ec))
+      {
+      case std::io_errc::stream:
+          __msg = "iostream error";
+          break;
+      default:
+          __msg = "Unknown error";
+          break;
+      }
+      return __msg;
+    }
+  };
+
+  const io_error_category&
+  __io_category_instance() noexcept
+  {
+    static const io_error_category __ec{};
+    return __ec;
+  }
+
+} // namespace
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  ios_base::failure::failure(const string& __str) throw()
-  : _M_msg(__str) { }
+  const error_category&
+  iostream_category() noexcept
+  { return __io_category_instance(); }
 
-  ios_base::failure::~failure() throw()
+  ios_base::failure::failure(const string& __str)
+  : system_error(io_errc::stream, __str) { }
+
+  ios_base::failure::failure(const string& __str, const error_code& __ec)
+  : system_error(__ec, __str) { }
+
+  ios_base::failure::failure(const char* __str, const error_code& __ec)
+  : system_error(__ec, __str) { }
+
+  ios_base::failure::~failure()
   { }
-  
+
   const char*
   ios_base::failure::what() const throw()
-  { return _M_msg.c_str(); }
+  { return runtime_error::what(); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

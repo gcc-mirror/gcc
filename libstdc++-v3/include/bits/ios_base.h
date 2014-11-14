@@ -40,6 +40,12 @@
 #include <bits/localefwd.h>
 #include <bits/locale_classes.h>
 
+#if __cplusplus < 201103L
+# include <stdexcept>
+#else
+# include <system_error>
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -186,6 +192,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_ios_seekdir_end = 1L << 16 
     };
 
+#if __cplusplus >= 201103L
+  /// I/O error code
+  enum class io_errc { stream = 1 };
+
+  template <> struct is_error_code_enum<io_errc> : public true_type { };
+
+  const error_category& iostream_category() noexcept;
+
+  inline error_code
+  make_error_code(io_errc e) noexcept
+  { return error_code(static_cast<int>(e), iostream_category()); }
+
+  inline error_condition
+  make_error_condition(io_errc e) noexcept
+  { return error_condition(static_cast<int>(e), iostream_category()); }
+#endif
+
   // 27.4.2  Class ios_base
   /**
    *  @brief  The base of the I/O class hierarchy.
@@ -198,6 +221,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   class ios_base
   {
+#if _GLIBCXX_USE_CXX11_ABI
+#if __cplusplus < 201103L
+    // Type that is layout-compatible with std::system_error
+    struct system_error : std::runtime_error
+    {
+      // Type that is layout-compatible with std::error_code
+      struct error_code
+      {
+	error_code() { }
+      private:
+	int		_M_value;
+	const void*	_M_cat;
+      } _M_code;
+    };
+#endif
+#endif
   public:
 
     /** 
@@ -206,6 +245,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *
      *  27.4.2.1.1  Class ios_base::failure
      */
+#if _GLIBCXX_USE_CXX11_ABI
+    class _GLIBCXX_ABI_TAG_CXX11 failure : public system_error
+    {
+    public:
+      explicit
+      failure(const string& __str);
+
+#if __cplusplus >= 201103L
+      explicit
+      failure(const string&, const error_code&);
+
+      explicit
+      failure(const char*, const error_code& = io_errc::stream);
+#endif
+
+      virtual
+      ~failure() throw();
+
+      virtual const char*
+      what() const throw();
+    };
+#else
     class failure : public exception
     {
     public:
@@ -225,6 +286,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       string _M_msg;
     };
+#endif
 
     // 27.4.2.1.2  Type ios_base::fmtflags
     /**

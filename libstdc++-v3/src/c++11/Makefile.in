@@ -67,19 +67,20 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__11convenience_la_LIBADD =
-am__objects_1 = ctype_configure_char.lo ctype_members.lo
-am__objects_2 = chrono.lo condition_variable.lo ctype.lo debug.lo \
+@ENABLE_CXX11_ABI_TRUE@am__objects_1 = cxx11-ios_failure.lo
+am__objects_2 = ctype_configure_char.lo ctype_members.lo
+am__objects_3 = chrono.lo condition_variable.lo ctype.lo debug.lo \
 	functexcept.lo functional.lo future.lo hash_c++0x.lo \
 	hashtable_c++0x.lo ios.lo limits.lo mutex.lo placeholders.lo \
 	random.lo regex.lo shared_ptr.lo snprintf_lite.lo \
-	system_error.lo thread.lo $(am__objects_1)
-@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_3 = ext11-inst.lo \
+	system_error.lo thread.lo $(am__objects_1) $(am__objects_2)
+@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_4 = ext11-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	fstream-inst.lo ios-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	iostream-inst.lo istream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ostream-inst.lo sstream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.lo string-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.lo
-am_libc__11convenience_la_OBJECTS = $(am__objects_2) $(am__objects_3)
+am_libc__11convenience_la_OBJECTS = $(am__objects_3) $(am__objects_4)
 libc__11convenience_la_OBJECTS = $(am_libc__11convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp =
@@ -322,6 +323,10 @@ host_sources = \
 	ctype_configure_char.cc \
 	ctype_members.cc
 
+@ENABLE_CXX11_ABI_FALSE@cxx11_abi_sources = 
+@ENABLE_CXX11_ABI_TRUE@cxx11_abi_sources = \
+@ENABLE_CXX11_ABI_TRUE@	cxx11-ios_failure.cc
+
 sources = \
 	chrono.cc \
 	condition_variable.cc \
@@ -342,6 +347,7 @@ sources = \
 	snprintf_lite.cc \
 	system_error.cc \
 	thread.cc \
+	${cxx11_abi_sources} \
 	${host_sources}
 
 # XTEMPLATE_FLAGS =

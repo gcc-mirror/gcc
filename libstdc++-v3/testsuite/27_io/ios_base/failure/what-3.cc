@@ -52,7 +52,11 @@ void test04()
     obj1 = obj2;
   }
   allocate_on_stack();
+#if _GLIBCXX_USE_CXX11_ABI
+  VERIFY( std::strstr(obj1.what(), strlit1) != NULL );
+#else
   VERIFY( std::strcmp(strlit1, obj1.what()) == 0 ); 
+#endif
 
   // block 02
   {
@@ -61,7 +65,11 @@ void test04()
     obj1 = obj3;
   }
   allocate_on_stack();     
+#if _GLIBCXX_USE_CXX11_ABI
+  VERIFY( std::strstr(obj1.what(), strlit2) != NULL );
+#else
   VERIFY( std::strcmp(strlit2, obj1.what()) == 0 ); 
+#endif
 }
 
 int main(void)

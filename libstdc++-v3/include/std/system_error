@@ -321,16 +321,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     system_error(error_code __ec, const string& __what)
     : runtime_error(__what + ": " + __ec.message()), _M_code(__ec) { }
 
-    /*
-     * TODO: Add const char* ctors to all exceptions.
-     *
-     * system_error(error_code __ec, const char* __what)
-     * : runtime_error(__what + (": " + __ec.message())), _M_code(__ec) { }
-     *
-     * system_error(int __v, const error_category& __ecat, const char* __what)
-     * : runtime_error(__what + (": " + __ec.message())),
-     *   _M_code(error_code(__v, __ecat)) { }
-     */
+    system_error(error_code __ec, const char* __what)
+    : runtime_error(__what + (": " + __ec.message())), _M_code(__ec) { }
+
+    system_error(int __v, const error_category& __ecat, const char* __what)
+    : system_error(error_code(__v, __ecat), __what) { }
 
     system_error(int __v, const error_category& __ecat)
     : runtime_error(error_code(__v, __ecat).message()),

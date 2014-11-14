@@ -37,7 +37,13 @@ void test03()
   try
     { throw fuzzy_logic(); }
   catch(const fuzzy_logic& obj)
-    { VERIFY( std::strcmp("whoa", obj.what()) == 0 ); }
+    {
+#if _GLIBCXX_USE_CXX11_ABI
+      VERIFY( std::strstr(obj.what(), "whoa") != NULL );
+#else
+      VERIFY( std::strcmp("whoa", obj.what()) == 0 );
+#endif
+    }
   catch(...)
     { VERIFY( false ); }
 }
