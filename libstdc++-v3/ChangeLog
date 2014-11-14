@@ -1,3 +1,22 @@
+2014-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Add new exports.
+	* include/bits/ios_base.h (ios_base::failure): New definition using
+	abi_tag.
+	(io_errc, make_error_code, make_error_category, iostream_category):
+	Define.
+	* include/std/system_error (system_error): Add char* constructors.
+	* src/c++11/Makefile.am: Add new file.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/cxx11-ios_failure.cc: New file.
+	* src/c++98/ios_failure.cc: Compile old definition without abi_tag.
+	* testsuite/27_io/ios_base/failure/cxx11.cc: New.
+	* testsuite/27_io/ios_base/failure/what-1.cc: Allow string returned by
+	ios_base::failure::what() to contain additional data.
+	* testsuite/27_io/ios_base/failure/what-2.cc: Likewise..
+	* testsuite/27_io/ios_base/failure/what-3.cc: Likewise..
+	* testsuite/27_io/ios_base/failure/what-big.cc: Likewise..
+
 2014-11-13  Daniel Kruegler  <daniel.kruegler@gmail.com>
 
 	* include/bits/regex.h: Support embedded zeros in sub_match

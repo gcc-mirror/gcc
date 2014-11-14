@@ -39,6 +39,13 @@ ctype_configure_char.cc: ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char
 ctype_members.cc: ${glibcxx_srcdir}/$(CCTYPE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CCTYPE_CC) . || true
 
+if ENABLE_CXX11_ABI
+cxx11_abi_sources = \
+	cxx11-ios_failure.cc
+else
+cxx11_abi_sources =
+endif
+
 sources = \
 	chrono.cc \
 	condition_variable.cc \
@@ -59,6 +66,7 @@ sources = \
 	snprintf_lite.cc \
 	system_error.cc \
 	thread.cc \
+	${cxx11_abi_sources} \
 	${host_sources}
 
 if ENABLE_EXTERN_TEMPLATE

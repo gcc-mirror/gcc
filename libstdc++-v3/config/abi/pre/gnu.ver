@@ -1473,6 +1473,18 @@ GLIBCXX_3.4.21 {
     # std::basic_ios::operator bool() const
     _ZNKSt9basic_iosI[cw]St11char_traitsI[cw]EEcvbEv;
 
+    # C++11 version of std::ios_base::failure
+    _ZNKSt8ios_base7failureB5cxx114whatEv;
+    _ZNSt8ios_base7failureB5cxx11C[12]ERKSs;
+    _ZNSt8ios_base7failureB5cxx11C[12]EPKcRKSt10error_code;
+    _ZNSt8ios_base7failureB5cxx11C[12]ERKSsB5cxx11;
+    _ZNSt8ios_base7failureB5cxx11C[12]ERKSsB5cxx11RKSt10error_code;
+    _ZNSt8ios_base7failureB5cxx11D[012]Ev;
+    _ZTINSt8ios_base7failureB5cxx11E;
+    _ZTSNSt8ios_base7failureB5cxx11E;
+    _ZTVNSt8ios_base7failureB5cxx11E;
+    _ZSt17iostream_categoryv;
+
     # std::ctype_base::blank
     _ZNSt10ctype_base5blankE;
 
