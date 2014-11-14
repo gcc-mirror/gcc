@@ -392,6 +392,14 @@ if test "$libgo_cv_c_linker_supports_split_stack" = yes; then
 	    [Define if the linker support split stack adjustments])
 fi
 
+AC_CACHE_CHECK([whether compiler is llgo],
+[libgo_cv_c_goc_is_llgo],
+[libgo_cv_c_goc_is_llgo=no
+if $GOC -dumpversion 2>/dev/null | grep llgo >/dev/null 2>&1; then
+  libgo_cv_c_goc_is_llgo=yes
+fi])
+AM_CONDITIONAL(GOC_IS_LLGO, test "$libgo_cv_c_goc_is_llgo" = yes)
+
 dnl Test for the -lm library.
 MATH_LIBS=
 AC_CHECK_LIB([m], [sqrt], MATH_LIBS=-lm)

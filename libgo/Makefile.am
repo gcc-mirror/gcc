@@ -99,8 +99,13 @@ AM_MAKEFLAGS = \
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 
+if GOC_IS_LLGO
+toolexeclib_LTLIBRARIES = libgo-llgo.la
+toolexeclib_LIBRARIES = libgobegin-llgo.a
+else
 toolexeclib_LTLIBRARIES = libgo.la
 toolexeclib_LIBRARIES = libgobegin.a
+endif
 
 toolexeclibgo_DATA = \
 	bufio.gox \
@@ -1993,16 +1998,25 @@ libgo_go_objs = \
 	unicode/utf16.lo \
 	unicode/utf8.lo
 
-libgo_la_SOURCES = $(runtime_files)
-
-libgo_la_LDFLAGS = \
+libgo_ldflags = \
 	-version-info $(libtool_VERSION) $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
 
-libgo_la_LIBADD = \
+libgo_libadd = \
 	$(libgo_go_objs) ../libbacktrace/libbacktrace.la \
 	$(LIBATOMIC) $(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
 
+libgo_la_SOURCES = $(runtime_files)
+libgo_la_LDFLAGS = $(libgo_ldflags)
+libgo_la_LIBADD = $(libgo_libadd)
+
+libgo_llgo_la_SOURCES = $(runtime_files)
+libgo_llgo_la_LDFLAGS = $(libgo_ldflags)
+libgo_llgo_la_LIBADD = $(libgo_libadd)
+
 libgobegin_a_SOURCES = \
+	runtime/go-main.c
+
+libgobegin_llgo_a_SOURCES = \
 	runtime/go-main.c
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
@@ -2066,7 +2080,7 @@ CHECK = \
 	fi
 
 # Build all packages before checking any.
-CHECK_DEPS = libgo.la libgobegin.a \
+CHECK_DEPS = \
 	$(toolexeclibgo_DATA) \
 	$(toolexeclibgoarchive_DATA) \
 	$(toolexeclibgocompress_DATA) \
@@ -2094,6 +2108,12 @@ CHECK_DEPS = libgo.la libgobegin.a \
 	$(toolexeclibgotext_DATA) \
 	$(toolexeclibgotexttemplate_DATA) \
 	$(toolexeclibgounicode_DATA)
+
+if GOC_IS_LLGO
+CHECK_DEPS += libgo-llgo.la libgobegin-llgo.a
+else
+CHECK_DEPS += libgo.la libgobegin.a
+endif
 
 @go_include@ bufio.lo.dep
 bufio.lo.dep: $(go_bufio_files)

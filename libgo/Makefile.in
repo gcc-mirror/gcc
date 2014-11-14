@@ -45,6 +45,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@GOC_IS_LLGO_TRUE@am__append_1 = libgo-llgo.la libgobegin-llgo.a
+@GOC_IS_LLGO_FALSE@am__append_2 = libgo.la libgobegin.a
 subdir = .
 DIST_COMMON = README $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -126,6 +128,10 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibgounicodedir)"
 LIBRARIES = $(toolexeclib_LIBRARIES)
 ARFLAGS = cru
+libgobegin_llgo_a_AR = $(AR) $(ARFLAGS)
+libgobegin_llgo_a_LIBADD =
+am_libgobegin_llgo_a_OBJECTS = go-main.$(OBJEXT)
+libgobegin_llgo_a_OBJECTS = $(am_libgobegin_llgo_a_OBJECTS)
 libgobegin_a_AR = $(AR) $(ARFLAGS)
 libgobegin_a_LIBADD =
 am_libgobegin_a_OBJECTS = go-main.$(OBJEXT)
@@ -171,10 +177,11 @@ am__DEPENDENCIES_2 = bufio.lo bytes.lo bytes/index.lo crypto.lo \
 	text/tabwriter.lo text/template.lo text/template/parse.lo \
 	testing/iotest.lo testing/quick.lo unicode/utf16.lo \
 	unicode/utf8.lo
-libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_2) \
+am__DEPENDENCIES_3 = $(am__DEPENDENCIES_2) \
 	../libbacktrace/libbacktrace.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_3)
 @LIBGO_IS_LINUX_FALSE@am__objects_1 = lock_sema.lo thread-sema.lo
 @LIBGO_IS_LINUX_TRUE@am__objects_1 = lock_futex.lo thread-linux.lo
 @HAVE_SYS_MMAN_H_FALSE@am__objects_2 = mem_posix_memalign.lo
@@ -220,11 +227,19 @@ am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	malloc.lo map.lo mprof.lo netpoll.lo rdebug.lo reflect.lo \
 	runtime1.lo sema.lo sigqueue.lo string.lo time.lo \
 	$(am__objects_5)
+am_libgo_llgo_la_OBJECTS = $(am__objects_6)
+libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
+libgo_llgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgo_llgo_la_LDFLAGS) $(LDFLAGS) -o $@
+@GOC_IS_LLGO_TRUE@am_libgo_llgo_la_rpath = -rpath $(toolexeclibdir)
+libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_3)
 am_libgo_la_OBJECTS = $(am__objects_6)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 libgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(libgo_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
+@GOC_IS_LLGO_FALSE@am_libgo_la_rpath = -rpath $(toolexeclibdir)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -238,7 +253,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libgobegin_a_SOURCES) $(libgo_la_SOURCES)
+SOURCES = $(libgobegin_llgo_a_SOURCES) $(libgobegin_a_SOURCES) \
+	$(libgo_llgo_la_SOURCES) $(libgo_la_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -501,8 +517,10 @@ AM_MAKEFLAGS = \
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
-toolexeclib_LTLIBRARIES = libgo.la
-toolexeclib_LIBRARIES = libgobegin.a
+@GOC_IS_LLGO_FALSE@toolexeclib_LTLIBRARIES = libgo.la
+@GOC_IS_LLGO_TRUE@toolexeclib_LTLIBRARIES = libgo-llgo.la
+@GOC_IS_LLGO_FALSE@toolexeclib_LIBRARIES = libgobegin.a
+@GOC_IS_LLGO_TRUE@toolexeclib_LIBRARIES = libgobegin-llgo.a
 toolexeclibgo_DATA = \
 	bufio.gox \
 	bytes.gox \
@@ -2054,15 +2072,23 @@ libgo_go_objs = \
 	unicode/utf16.lo \
 	unicode/utf8.lo
 
-libgo_la_SOURCES = $(runtime_files)
-libgo_la_LDFLAGS = \
+libgo_ldflags = \
 	-version-info $(libtool_VERSION) $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
 
-libgo_la_LIBADD = \
+libgo_libadd = \
 	$(libgo_go_objs) ../libbacktrace/libbacktrace.la \
 	$(LIBATOMIC) $(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
 
+libgo_la_SOURCES = $(runtime_files)
+libgo_la_LDFLAGS = $(libgo_ldflags)
+libgo_la_LIBADD = $(libgo_libadd)
+libgo_llgo_la_SOURCES = $(runtime_files)
+libgo_llgo_la_LDFLAGS = $(libgo_ldflags)
+libgo_llgo_la_LIBADD = $(libgo_libadd)
 libgobegin_a_SOURCES = \
+	runtime/go-main.c
+
+libgobegin_llgo_a_SOURCES = \
 	runtime/go-main.c
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
@@ -2126,35 +2152,20 @@ CHECK = \
 
 
 # Build all packages before checking any.
-CHECK_DEPS = libgo.la libgobegin.a \
-	$(toolexeclibgo_DATA) \
-	$(toolexeclibgoarchive_DATA) \
-	$(toolexeclibgocompress_DATA) \
-	$(toolexeclibgocontainer_DATA) \
-	$(toolexeclibgocrypto_DATA) \
-	$(toolexeclibgodebug_DATA) \
-	$(toolexeclibgoencoding_DATA) \
-	$(toolexeclibgoexp_DATA) \
-	$(toolexeclibgogo_DATA) \
-	$(toolexeclibgohash_DATA) \
-	$(toolexeclibgoimage_DATA) \
-	$(toolexeclibgoindex_DATA) \
-	$(toolexeclibgoio_DATA) \
-	$(toolexeclibgolog_DATA) \
-	$(toolexeclibgomath_DATA) \
-	$(toolexeclibgomime_DATA) \
-	$(toolexeclibgonet_DATA) \
-	$(toolexeclibgonethttp_DATA) \
-	$(toolexeclibgoos_DATA) \
-	$(toolexeclibgopath_DATA) \
-	$(toolexeclibgorpc_DATA) \
-	$(toolexeclibgoruntime_DATA) \
-	$(toolexeclibgosync_DATA) \
-	$(toolexeclibgotesting_DATA) \
-	$(toolexeclibgotext_DATA) \
-	$(toolexeclibgotexttemplate_DATA) \
-	$(toolexeclibgounicode_DATA)
-
+CHECK_DEPS = $(toolexeclibgo_DATA) $(toolexeclibgoarchive_DATA) \
+	$(toolexeclibgocompress_DATA) $(toolexeclibgocontainer_DATA) \
+	$(toolexeclibgocrypto_DATA) $(toolexeclibgodebug_DATA) \
+	$(toolexeclibgoencoding_DATA) $(toolexeclibgoexp_DATA) \
+	$(toolexeclibgogo_DATA) $(toolexeclibgohash_DATA) \
+	$(toolexeclibgoimage_DATA) $(toolexeclibgoindex_DATA) \
+	$(toolexeclibgoio_DATA) $(toolexeclibgolog_DATA) \
+	$(toolexeclibgomath_DATA) $(toolexeclibgomime_DATA) \
+	$(toolexeclibgonet_DATA) $(toolexeclibgonethttp_DATA) \
+	$(toolexeclibgoos_DATA) $(toolexeclibgopath_DATA) \
+	$(toolexeclibgorpc_DATA) $(toolexeclibgoruntime_DATA) \
+	$(toolexeclibgosync_DATA) $(toolexeclibgotesting_DATA) \
+	$(toolexeclibgotext_DATA) $(toolexeclibgotexttemplate_DATA) \
+	$(toolexeclibgounicode_DATA) $(am__append_1) $(am__append_2)
 # At least for now, we need -static-libgo for this test, because
 # otherwise we can't get the line numbers.
 runtime_pprof_check_GOCFLAGS = -static-libgo
@@ -2380,6 +2391,10 @@ uninstall-toolexeclibLIBRARIES:
 
 clean-toolexeclibLIBRARIES:
 	-test -z "$(toolexeclib_LIBRARIES)" || rm -f $(toolexeclib_LIBRARIES)
+libgobegin-llgo.a: $(libgobegin_llgo_a_OBJECTS) $(libgobegin_llgo_a_DEPENDENCIES) 
+	-rm -f libgobegin-llgo.a
+	$(libgobegin_llgo_a_AR) libgobegin-llgo.a $(libgobegin_llgo_a_OBJECTS) $(libgobegin_llgo_a_LIBADD)
+	$(RANLIB) libgobegin-llgo.a
 libgobegin.a: $(libgobegin_a_OBJECTS) $(libgobegin_a_DEPENDENCIES) 
 	-rm -f libgobegin.a
 	$(libgobegin_a_AR) libgobegin.a $(libgobegin_a_OBJECTS) $(libgobegin_a_LIBADD)
@@ -2415,8 +2430,10 @@ clean-toolexeclibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+libgo-llgo.la: $(libgo_llgo_la_OBJECTS) $(libgo_llgo_la_DEPENDENCIES) 
+	$(libgo_llgo_la_LINK) $(am_libgo_llgo_la_rpath) $(libgo_llgo_la_OBJECTS) $(libgo_llgo_la_LIBADD) $(LIBS)
 libgo.la: $(libgo_la_OBJECTS) $(libgo_la_DEPENDENCIES) 
-	$(libgo_la_LINK) -rpath $(toolexeclibdir) $(libgo_la_OBJECTS) $(libgo_la_LIBADD) $(LIBS)
+	$(libgo_la_LINK) $(am_libgo_la_rpath) $(libgo_la_OBJECTS) $(libgo_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
