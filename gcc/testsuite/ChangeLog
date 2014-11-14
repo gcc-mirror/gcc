@@ -1,3 +1,9 @@
+2014-11-14  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/63839
+	* c-c++-common/ubsan/pr63839.c: New test.
+	* c-c++-common/ubsan/unreachable-2.c: New test.
+
 2014-11-14  Richard Biener  <rguenther@suse.de>
 
 	* gcc.c-torture/execute/shiftopt-1.c: XFAIL invalid parts.

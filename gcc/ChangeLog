@@ -1,3 +1,20 @@
+2014-11-14  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/63839
+	* asan.c (ATTR_CONST_NORETURN_NOTHROW_LEAF_LIST,
+	ATTR_COLD_CONST_NORETURN_NOTHROW_LEAF_LIST): Define.
+	* builtin-attrs.def (ATTR_COLD_CONST_NORETURN_NOTHROW_LEAF_LIST):
+	Define.
+	* builtins.c (fold_builtin_0): Don't include ubsan.h.  Don't
+	instrument BUILT_IN_UNREACHABLE here.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE): Make
+	const.
+	* sanopt.c (pass_sanopt::execute): Instrument BUILT_IN_UNREACHABLE.
+	* tree-ssa-ccp.c (optimize_unreachable): Bail out if
+	SANITIZE_UNREACHABLE.
+	* ubsan.c (ubsan_instrument_unreachable): Rewrite for GIMPLE.
+	* ubsan.h (ubsan_instrument_unreachable): Adjust declaration.
+
 2014-11-14  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/rs6000/vector.md (vec_shl_<mode>): Remove.

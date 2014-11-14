@@ -588,17 +588,26 @@ ubsan_create_data (const char *name, int loccnt, const location_t *ploc, ...)
 /* Instrument the __builtin_unreachable call.  We just call the libubsan
    routine instead.  */
 
-tree
-ubsan_instrument_unreachable (location_t loc)
+bool
+ubsan_instrument_unreachable (gimple_stmt_iterator *gsi)
 {
-  if (flag_sanitize_undefined_trap_on_error)
-    return build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  gimple g;
+  location_t loc = gimple_location (gsi_stmt (*gsi));
 
-  initialize_sanitizer_builtins ();
-  tree data = ubsan_create_data ("__ubsan_unreachable_data", 1, &loc, NULL_TREE,
-				 NULL_TREE);
-  tree t = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE);
-  return build_call_expr_loc (loc, t, 1, build_fold_addr_expr_loc (loc, data));
+  if (flag_sanitize_undefined_trap_on_error)
+    g = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  else
+    {
+      tree data = ubsan_create_data ("__ubsan_unreachable_data", 1, &loc,
+				     NULL_TREE, NULL_TREE);
+      data = build_fold_addr_expr_loc (loc, data);
+      tree fn
+	= builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE);
+      g = gimple_build_call (fn, 1, data);
+    }
+  gimple_set_location (g, loc);
+  gsi_replace (gsi, g, false);
+  return false;
 }
 
 /* Return true if T is a call to a libubsan routine.  */

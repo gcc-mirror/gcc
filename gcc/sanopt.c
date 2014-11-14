@@ -312,6 +312,21 @@ pass_sanopt::execute (function *fun)
 		  break;
 		}
 	    }
+	  else if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+	    {
+	      tree callee = gimple_call_fndecl (stmt);
+	      switch (DECL_FUNCTION_CODE (callee))
+		{
+		case BUILT_IN_UNREACHABLE:
+		  if (flag_sanitize & SANITIZE_UNREACHABLE
+		      && !lookup_attribute ("no_sanitize_undefined",
+					    DECL_ATTRIBUTES (fun->decl)))
+		    no_next = ubsan_instrument_unreachable (&gsi);
+		  break;
+		default:
+		  break;
+		}
+	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
