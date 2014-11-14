@@ -1,5 +1,8 @@
 2014-11-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-ssa.dce.c (eliminate_unnecessary_stmts): Eliminate
+	IFN_GOMP_SIMD_LANE without lhs as useless.
+
 	* ipa-pure-const.c (struct funct_state_d): Add can_free field.
 	(varying_state): Add true for can_free.
 	(check_call): For builtin or internal !nonfreeing_call_p set
