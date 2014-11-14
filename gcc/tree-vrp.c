@@ -7025,6 +7025,27 @@ vrp_valueize (tree name)
   return name;
 }
 
+/* Return the singleton value-range for NAME if that is a constant
+   but signal to not follow SSA edges.  */
+
+static inline tree
+vrp_valueize_1 (tree name)
+{
+  if (TREE_CODE (name) == SSA_NAME)
+    {
+      value_range_t *vr = get_value_range (name);
+      if (range_int_cst_singleton_p (vr))
+	return vr->min;
+      /* If the definition may be simulated again we cannot follow
+         this SSA edge as the SSA propagator does not necessarily
+	 re-visit the use.  */
+      gimple def_stmt = SSA_NAME_DEF_STMT (name);
+      if (prop_simulate_again_p (def_stmt))
+	return NULL_TREE;
+    }
+  return name;
+}
+
 /* Visit assignment STMT.  If it produces an interesting range, record
    the SSA name in *OUTPUT_P.  */
 
@@ -7048,8 +7069,9 @@ vrp_visit_assignment_or_call (gimple stmt, tree *output_p)
       value_range_t new_vr = VR_INITIALIZER;
 
       /* Try folding the statement to a constant first.  */
-      tree tem = gimple_fold_stmt_to_constant (stmt, vrp_valueize);
-      if (tem)
+      tree tem = gimple_fold_stmt_to_constant_1 (stmt, vrp_valueize,
+						 vrp_valueize_1);
+      if (tem && is_gimple_min_invariant (tem))
 	set_value_range_to_value (&new_vr, tem, NULL);
       /* Then dispatch to value-range extracting functions.  */
       else if (code == GIMPLE_CALL)
