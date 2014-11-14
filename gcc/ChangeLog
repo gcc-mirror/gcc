@@ -1,3 +1,11 @@
+2014-11-13  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* optabs.c (shift_amt_for_vec_perm_mask): Remove code conditional on
+	BYTES_BIG_ENDIAN.
+	* tree-vect-loop.c (calc_vec_perm_mask_for_shift,
+	vect_create_epilog_for_reduction): Likewise.
+	* doc/md.texi (vec_shr_m): Clarify direction of shifting.
+
 2014-11-14  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/63724

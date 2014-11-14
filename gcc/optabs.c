@@ -6618,8 +6618,6 @@ shift_amt_for_vec_perm_mask (rtx sel)
 	return NULL_RTX;
     }
 
-  if (BYTES_BIG_ENDIAN)
-    first = (2 * nelt) - first;
   return GEN_INT (first * bitsize);
 }
 
