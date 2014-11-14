@@ -1,7 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 
-#include <cstdio>
 #include <string>
 
 std::string __attribute__ ((noinline)) comp_test_write() {
@@ -29,10 +28,8 @@ std::string __attribute__ ((noinline)) comp_test_write_good() {
 
 int main() {
   std::string good = comp_test_write_good();
-  printf("expected: %hx\n", *(short*)good.c_str());
-
   std::string bad = comp_test_write();
-  printf("got: %hx\n", *(short*)bad.c_str());
 
-  return good != bad;
+  if (good != bad)
+    __builtin_abort ();
 }
