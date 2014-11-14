@@ -1,3 +1,8 @@
+2014-11-13  Teresa Johnson  <tejohnson@google.com>
+
+	PR tree-optimization/63841
+	* g++.dg/tree-ssa/pr63841.C: Remove prints, use abort.
+
 2014-11-14  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.target/arm/ldrd-strd-pair-1.c: New test.
@@ -7,6 +12,11 @@
 
 	PR debug/63581
 	* g++.dg/tree-prof/pr63581.C: New test.
+
+2014-11-13  Teresa Johnson  <tejohnson@google.com>
+
+	PR tree-optimization/63841
+	* g++.dg/tree-ssa/pr63841.C: Remove prints, use abort.
 
 2014-11-13  Teresa Johnson  <tejohnson@google.com>
 

@@ -1,3 +1,8 @@
+2014-11-13  Teresa Johnson  <tejohnson@google.com>
+
+	PR tree-optimization/63841
+	* tree-ssa-strlen.c (strlen_optimize_stmt): Ignore clobbers.
+
 2014-11-14  Bin Cheng  <bin.cheng@arm.com>
 
 	* timevar.def (TV_SCHED_FUSION): New time var.
@@ -102,6 +107,11 @@
 	* ipa-utils.h: Fix typo in comments.
 	* ipa-profile.c: Likewise.
 	* tree-ssa-loop-ivcanon.c: Fix typo in comments and debugging dumps.
+
+2014-11-13  Teresa Johnson  <tejohnson@google.com>
+
+	PR tree-optimization/63841
+	* tree-ssa-strlen.c (strlen_optimize_stmt): Ignore clobbers.
 
 2014-11-13  Teresa Johnson  <tejohnson@google.com>
 
