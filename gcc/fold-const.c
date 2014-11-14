@@ -554,7 +554,8 @@ fold_negate_expr (location_t loc, tree t)
     case INTEGER_CST:
       tem = fold_negate_const (t, type);
       if (TREE_OVERFLOW (tem) == TREE_OVERFLOW (t)
-	  || !TYPE_OVERFLOW_TRAPS (type))
+	  || (!TYPE_OVERFLOW_TRAPS (type)
+	      && (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0))
 	return tem;
       break;
 
@@ -611,7 +612,9 @@ fold_negate_expr (location_t loc, tree t)
       break;
 
     case NEGATE_EXPR:
-      return TREE_OPERAND (t, 0);
+      if (!TYPE_OVERFLOW_SANITIZED (type))
+	return TREE_OPERAND (t, 0);
+      break;
 
     case PLUS_EXPR:
       if (!HONOR_SIGN_DEPENDENT_ROUNDING (TYPE_MODE (type))
