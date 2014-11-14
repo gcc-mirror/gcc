@@ -1,5 +1,10 @@
 2014-11-14  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/rs6000/vector.md (vec_shl_<mode>): Remove.
+	(vec_shr_<mode>): Reverse shift if BYTES_BIG_ENDIAN.
+
+2014-11-14  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* optabs.c (shift_amt_for_vec_perm_mask): Remove code conditional on
 	BYTES_BIG_ENDIAN.
 	* tree-vect-loop.c (calc_vec_perm_mask_for_shift,
