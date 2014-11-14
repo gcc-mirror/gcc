@@ -61,7 +61,7 @@ int main ()
   init (v1, v2, N);
 
   p1 = dotprod_ref (v1, v2, N);
-  p2 = dotprod (v1, v2, N, 32, 2, 8);
+  p2 = dotprod (v1, v2, N, N / 8, 2, 8);
 
   check (p1, p2);
 

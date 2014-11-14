@@ -1,3 +1,10 @@
+2014-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.c/examples-4/e.54.2.c (main): Use N / 8 instead
+	of 32 as block_size.
+	* libgomp.fortran/examples-4/e.54.2.f90 (e_54_1): Use n / 8
+	instead of 32 as block_size.
+
 2014-11-13  Andrey Turetskiy  <andrey.turetskiy@intel.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
 

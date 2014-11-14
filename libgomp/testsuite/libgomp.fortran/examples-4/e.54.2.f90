@@ -59,7 +59,7 @@ program e_54_1
   allocate (B(n), C(n))
   call init (B, C, n)
   ref = dotprod_ref (B, C, n)
-  d = dotprod (B, C, n, 32, 2, 8)
+  d = dotprod (B, C, n, n / 8, 2, 8)
   call check (ref, d)
   deallocate (B, C)
 end program
