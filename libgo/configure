@@ -616,6 +616,8 @@ PTHREAD_LIBS
 PTHREAD_CFLAGS
 NET_LIBS
 MATH_LIBS
+GOC_IS_LLGO_FALSE
+GOC_IS_LLGO_TRUE
 USING_SPLIT_STACK_FALSE
 USING_SPLIT_STACK_TRUE
 SPLIT_STACK
@@ -11117,7 +11119,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11120 "configure"
+#line 11122 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11223,7 +11225,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11226 "configure"
+#line 11228 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14014,6 +14016,27 @@ $as_echo "#define LINKER_SUPPORTS_SPLIT_STACK 1" >>confdefs.h
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiler is llgo" >&5
+$as_echo_n "checking whether compiler is llgo... " >&6; }
+if test "${libgo_cv_c_goc_is_llgo+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  libgo_cv_c_goc_is_llgo=no
+if $GOC -dumpversion 2>/dev/null | grep llgo >/dev/null 2>&1; then
+  libgo_cv_c_goc_is_llgo=yes
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_c_goc_is_llgo" >&5
+$as_echo "$libgo_cv_c_goc_is_llgo" >&6; }
+ if test "$libgo_cv_c_goc_is_llgo" = yes; then
+  GOC_IS_LLGO_TRUE=
+  GOC_IS_LLGO_FALSE='#'
+else
+  GOC_IS_LLGO_TRUE='#'
+  GOC_IS_LLGO_FALSE=
+fi
+
+
 MATH_LIBS=
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sqrt in -lm" >&5
 $as_echo_n "checking for sqrt in -lm... " >&6; }
@@ -15690,6 +15713,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USING_SPLIT_STACK_TRUE}" && test -z "${USING_SPLIT_STACK_FALSE}"; then
   as_fn_error "conditional \"USING_SPLIT_STACK\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${GOC_IS_LLGO_TRUE}" && test -z "${GOC_IS_LLGO_FALSE}"; then
+  as_fn_error "conditional \"GOC_IS_LLGO\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
