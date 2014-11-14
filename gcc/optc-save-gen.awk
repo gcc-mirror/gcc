@@ -39,6 +39,18 @@ print "#include " quote "intl.h" quote
 print ""
 print "#include " quote "flags.h" quote
 print "#include " quote "target.h" quote
+print "#include " quote "inchash.h" quote
+print "#include " quote "tree.h" quote
+print "#include " quote "tree-ssa-alias.h" quote
+print "#include " quote "is-a.h" quote
+print "#include " quote "predict.h" quote
+print "#include " quote "function.h" quote
+print "#include " quote "basic-block.h" quote
+print "#include " quote "gimple-expr.h" quote
+print "#include " quote "gimple.h" quote
+print "#include " quote "data-streamer.h" quote
+print "#include " quote "ipa-ref.h" quote
+print "#include " quote "cgraph.h" quote
 print ""
 
 if (n_extra_c_includes > 0) {
@@ -414,6 +426,128 @@ for (i = 0; i < n_target_char; i++) {
 print "";
 print "  if (targetm.target_option.print)";
 print "    targetm.target_option.print (file, indent, ptr);";
+
+print "}";
+
+print "";
+print "/* Compare two target options  */";
+print "bool";
+print "cl_target_option_eq (struct cl_target_option const *ptr1 ATTRIBUTE_UNUSED,";
+print "                     struct cl_target_option const *ptr2 ATTRIBUTE_UNUSED)";
+print "{";
+n_target_val = 0;
+n_target_str = 0;
+
+for (i = 0; i < n_target_save; i++) {
+	var = target_save_decl[i];
+	sub (" *=.*", "", var);
+	name = var;
+	type = var;
+	sub("^.*[ *]", "", name)
+	sub(" *" name "$", "", type)
+	if (target_save_decl[i] ~ "^const char \\*+[_" alnum "]+$")
+		var_target_str[n_target_str++] = name;
+	else {
+		var_target_val_type[n_target_val] = type;
+		var_target_val[n_target_val++] = name;
+	}
+}
+if (have_save) {
+	for (i = 0; i < n_opts; i++) {
+		if (flag_set_p("Save", flags[i])) {
+			name = var_name(flags[i])
+			if(name == "")
+				name = "target_flags";
+
+			if(name in var_list_seen)
+				continue;
+
+			var_list_seen[name]++;
+			otype = var_type_struct(flags[i])
+			if (otype ~ "^const char \\**$")
+				var_target_str[n_target_str++] = "x_" name;
+			else {
+				var_target_val_type[n_target_val] = otype;
+				var_target_val[n_target_val++] = "x_" name;
+			}
+		}
+	}
+} else {
+	var_target_val_type[n_target_val] = "int";
+	var_target_val[n_target_val++] = "x_target_flags";
+}
+
+for (i = 0; i < n_target_str; i++) {
+	name = var_target_str[i]
+	print "  if (ptr1->" name" != ptr2->" name;
+	print "      && (!ptr1->" name" || !ptr2->" name
+	print "          || strcmp (ptr1->" name", ptr2->" name ")))";
+	print "    return false;";
+}
+for (i = 0; i < n_target_val; i++) {
+	name = var_target_val[i]
+	print "  if (ptr1->" name" != ptr2->" name ")";
+	print "    return false;";
+}
+
+print "  return true;";
+
+print "}";
+
+print "";
+print "/* Hash target options  */";
+print "hashval_t";
+print "cl_target_option_hash (struct cl_target_option const *ptr ATTRIBUTE_UNUSED)";
+print "{";
+print "  inchash::hash hstate;";
+for (i = 0; i < n_target_str; i++) {
+	name = var_target_str[i]
+	print "  if (ptr->" name")";
+	print "    hstate.add (ptr->" name", strlen (ptr->" name"));";
+	print "  else";
+	print "    hstate.add_int (0);";
+}
+for (i = 0; i < n_target_val; i++) {
+	name = var_target_val[i]
+	print "  hstate.add_wide_int (ptr->" name");";
+}
+print "  return hstate.end ();";
+print "}";
+
+print "";
+print "/* Stream out target options  */";
+print "void";
+print "cl_target_option_stream_out (struct output_block *ob ATTRIBUTE_UNUSED,";
+print "                             struct bitpack_d *bp ATTRIBUTE_UNUSED,";
+print "                             struct cl_target_option *ptr ATTRIBUTE_UNUSED)";
+print "{";
+for (i = 0; i < n_target_str; i++) {
+	name = var_target_str[i]
+	print "  bp_pack_string (ob, bp, ptr->" name", true);";
+}
+for (i = 0; i < n_target_val; i++) {
+	name = var_target_val[i]
+	print "  bp_pack_value (bp, ptr->" name", 64);";
+}
+print "}";
+
+print "";
+print "/* Stream in target options  */";
+print "void";
+print "cl_target_option_stream_in (struct data_in *data_in ATTRIBUTE_UNUSED,";
+print "                            struct bitpack_d *bp ATTRIBUTE_UNUSED,";
+print "                            struct cl_target_option *ptr ATTRIBUTE_UNUSED)";
+print "{";
+for (i = 0; i < n_target_str; i++) {
+	name = var_target_str[i]
+	print "  ptr->" name" = bp_unpack_string (data_in, bp);";
+	print "  if (ptr->" name")";
+	print "    ptr->" name" = xstrdup (ptr->" name");";
+}
+for (i = 0; i < n_target_val; i++) {
+	name = var_target_val[i]
+	print "  ptr->" name" = (" var_target_val_type[i] ") bp_unpack_value (bp, 64);";
+}
 
 print "}";
 

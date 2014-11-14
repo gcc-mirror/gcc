@@ -11486,10 +11486,7 @@ cl_option_hash_hash (const void *x)
     }
 
   else if (TREE_CODE (t) == TARGET_OPTION_NODE)
-    {
-      p = (const char *)TREE_TARGET_OPTION (t);
-      len = sizeof (struct cl_target_option);
-    }
+    return cl_target_option_hash (TREE_TARGET_OPTION (t));
 
   else
     gcc_unreachable ();
@@ -11528,9 +11525,8 @@ cl_option_hash_eq (const void *x, const void *y)
 
   else if (TREE_CODE (xt) == TARGET_OPTION_NODE)
     {
-      xp = (const char *)TREE_TARGET_OPTION (xt);
-      yp = (const char *)TREE_TARGET_OPTION (yt);
-      len = sizeof (struct cl_target_option);
+      return cl_target_option_eq (TREE_TARGET_OPTION (xt),
+				  TREE_TARGET_OPTION (yt));
     }
 
   else

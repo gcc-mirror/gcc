@@ -1377,7 +1377,8 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       return false;
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    gcc_unreachable ();
+    if (!cl_target_option_eq (TREE_TARGET_OPTION (t1), TREE_TARGET_OPTION (t2)))
+      return false;
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     if (memcmp (TREE_OPTIMIZATION (t1), TREE_OPTIMIZATION (t2),

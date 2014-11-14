@@ -1,3 +1,24 @@
+2014-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* optc-save-gen.awk: Output cl_target_option_eq,
+	cl_target_option_hash, cl_target_option_stream_out,
+	cl_target_option_stream_in functions.
+	* opth-gen.awk: Output prototypes for
+	cl_target_option_eq and cl_target_option_hash.
+	* lto-streamer.h (cl_target_option_stream_out,
+	cl_target_option_stream_in): Declare.
+	* tree.c (cl_option_hash_hash): Use cl_target_option_hash.
+	(cl_option_hash_eq): Use cl_target_option_eq.
+	* tree-streamer-in.c (unpack_value_fields): Stream in
+	TREE_TARGET_OPTION.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Follow
+	DECL_FUNCTION_SPECIFIC_TARGET.
+	(hash_tree): Hash TREE_TARGET_OPTION; visit
+	DECL_FUNCTION_SPECIFIC_TARGET.
+	* tree-streamer-out.c (streamer_pack_tree_bitfields): Skip
+	TS_TARGET_OPTION.
+	(streamer_write_tree_body): Output TS_TARGET_OPTION.
+
 2014-11-14  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.h (gimple_fold_stmt_to_constant_1): Add 2nd

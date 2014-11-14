@@ -506,9 +506,6 @@ unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     unpack_ts_translation_unit_decl_value_fields (data_in, bp, expr);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    gcc_unreachable ();
-
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     unpack_ts_optimization (bp, expr);
 
@@ -525,6 +522,9 @@ unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
       if (length > 0)
 	vec_safe_grow (CONSTRUCTOR_ELTS (expr), length);
     }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
+    cl_target_option_stream_in (data_in, bp, TREE_TARGET_OPTION (expr));
 
   if (code == OMP_CLAUSE)
     unpack_ts_omp_clause_value_fields (data_in, bp, expr);

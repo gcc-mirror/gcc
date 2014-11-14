@@ -293,6 +293,12 @@ print "";
 print "/* Print target option variables from a structure.  */";
 print "extern void cl_target_option_print (FILE *, int, struct cl_target_option *);";
 print "";
+print "/* Compare two target option variables from a structure.  */";
+print "extern bool cl_target_option_eq (const struct cl_target_option *, const struct cl_target_option *);";
+print "";
+print "/* Hash option variables from a structure.  */";
+print "extern hashval_t cl_target_option_hash (const struct cl_target_option *);";
+print "";
 print "/* Anything that includes tm.h, does not necessarily need this.  */"
 print "#if !defined(GCC_TM_H)"
 print "#include \"input.h\" /* for location_t */"

@@ -472,9 +472,6 @@ streamer_pack_tree_bitfields (struct output_block *ob,
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     pack_ts_translation_unit_decl_value_fields (ob, bp, expr);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    gcc_unreachable ();
-
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     pack_ts_optimization (bp, expr);
 
@@ -483,6 +480,9 @@ streamer_pack_tree_bitfields (struct output_block *ob,
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     bp_pack_var_len_unsigned (bp, CONSTRUCTOR_NELTS (expr));
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
+    cl_target_option_stream_out (ob, bp, TREE_TARGET_OPTION (expr));
 
   if (code == OMP_CLAUSE)
     pack_ts_omp_clause_value_fields (ob, bp, expr);

@@ -1,3 +1,7 @@
+2014-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (compare_tree_sccs_1): Compare cl_target_option_eq.
+
 2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
 	    Bernd Schmidt  <bernds@codesourcery.com>
 	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
