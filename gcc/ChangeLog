@@ -1,3 +1,14 @@
+2014-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (--with-diagnostics-color): New configure
+	option, default to --with-diagnostics-color=auto.
+	* toplev.c (process_options): Use DIAGNOSTICS_COLOR_DEFAULT
+	to determine -fdiagnostics-color= option default.
+	* doc/invoke.texi (-fdiagnostics-color=): Document new
+	default.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+
 2014-11-13  Teresa Johnson  <tejohnson@google.com>
 
 	PR tree-optimization/63841
