@@ -960,53 +960,11 @@
  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_ALLOW_MOVMISALIGN"
  "")
 
-
-;; Vector shift left in bits.  Currently supported ony for shift
-;; amounts that can be expressed as byte shifts (divisible by 8).
-;; General shift amounts can be supported using vslo + vsl. We're
-;; not expecting to see these yet (the vectorizer currently
-;; generates only shifts divisible by byte_size).
-(define_expand "vec_shl_<mode>"
-  [(match_operand:VEC_L 0 "vlogical_operand" "")
-   (match_operand:VEC_L 1 "vlogical_operand" "")
-   (match_operand:QI 2 "reg_or_short_operand" "")]
-  "TARGET_ALTIVEC"
-  "
-{
-  rtx bitshift = operands[2];
-  rtx shift;
-  rtx insn;
-  HOST_WIDE_INT bitshift_val;
-  HOST_WIDE_INT byteshift_val;
-
-  if (! CONSTANT_P (bitshift))
-    FAIL;
-  bitshift_val = INTVAL (bitshift);
-  if (bitshift_val & 0x7)
-    FAIL;
-  byteshift_val = bitshift_val >> 3;
-  if (TARGET_VSX && (byteshift_val & 0x3) == 0)
-    {
-      shift = gen_rtx_CONST_INT (QImode, byteshift_val >> 2);
-      insn = gen_vsx_xxsldwi_<mode> (operands[0], operands[1], operands[1],
-				     shift);
-    }
-  else
-    {
-      shift = gen_rtx_CONST_INT (QImode, byteshift_val);
-      insn = gen_altivec_vsldoi_<mode> (operands[0], operands[1], operands[1],
-					shift);
-    }
-
-  emit_insn (insn);
-  DONE;
-}")
-
 ;; Vector shift right in bits. Currently supported ony for shift
 ;; amounts that can be expressed as byte shifts (divisible by 8).
 ;; General shift amounts can be supported using vsro + vsr. We're
 ;; not expecting to see these yet (the vectorizer currently
-;; generates only shifts divisible by byte_size).
+;; generates only shifts by a whole number of vector elements).
 (define_expand "vec_shr_<mode>"
   [(match_operand:VEC_L 0 "vlogical_operand" "")
    (match_operand:VEC_L 1 "vlogical_operand" "")
@@ -1025,7 +983,9 @@
   bitshift_val = INTVAL (bitshift);
   if (bitshift_val & 0x7)
     FAIL;
-  byteshift_val = 16 - (bitshift_val >> 3);
+  byteshift_val = (bitshift_val >> 3);
+  if (!BYTES_BIG_ENDIAN)
+    byteshift_val = 16 - byteshift_val;
   if (TARGET_VSX && (byteshift_val & 0x3) == 0)
     {
       shift = gen_rtx_CONST_INT (QImode, byteshift_val >> 2);
