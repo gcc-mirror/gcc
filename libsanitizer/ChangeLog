@@ -1,3 +1,20 @@
+2014-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* sanitizer_common/Makefile.am (AM_CXXFLAGS): Use -std=gnu++11.
+	* asan/Makefile.am (AM_CXXFLAGS): Ditto.
+	* lsan/Makefile.am (AM_CXXFLAGS): Ditto.
+	* interception/Makefile.am (AM_CXXFLAGS): Ditto.
+	* tsan/Makefile.am (AM_CXXFLAGS): Ditto.
+	* libbacktrace/Makefile.am (AM_CXXFLAGS): Ditto.
+	* ubsan/Makefile.am (AM_CXXFLAGS): Ditto.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* asan/Makefile.in: Ditto.
+	* lsan/Makefile.in: Ditto.
+	* interception/Makefile.in: Ditto.
+	* tsan/Makefile.in: Ditto.
+	* libbacktrace/Makefile.in: Ditto.
+	* ubsan/Makefile.in: Ditto.
+
 2014-11-13  Kostya Serebryany  <kcc@google.com>
 
 	* All source files: Merge from upstream r221802.
