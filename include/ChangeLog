@@ -1,3 +1,13 @@
+2014-11-14  Shinichiro Hamaji  <shinichiro.hamaji@gmail.com>
+
+	* dwarf2.def (DW_AT_APPLE_optimized, DW_AT_APPLE_flags)
+	(DW_AT_APPLE_isa, DW_AT_APPLE_block)
+	(DW_AT_APPLE_major_runtime_vers, DW_AT_APPLE_runtime_class)
+	(DW_AT_APPLE_omit_frame_ptr, DW_AT_APPLE_property_name)
+	(DW_AT_APPLE_property_getter, DW_AT_APPLE_property_setter)
+	(DW_AT_APPLE_property_attribute, DW_AT_APPLE_objc_complete_type)
+	(DW_AT_APPLE_property): New macros.
+
 2014-11-11  Anthony Brandon  <anthony.brandon@gmail.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
