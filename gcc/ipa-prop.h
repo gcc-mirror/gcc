@@ -51,11 +51,6 @@ along with GCC; see the file COPYING3.  If not see
    parameter or can apply one simple binary operation to it (such jump
    functions are called polynomial).
 
-   IPA_JF_KNOWN_TYPE is a special type of an "unknown" function that applies
-   only to pointer parameters.  It means that even though we cannot prove that
-   the passed value is an interprocedural constant, we still know the exact
-   type of the containing object which may be valuable for devirtualization.
-
    Jump functions are computed in ipa-prop.c by function
    update_call_notes_after_inlining.  Some information can be lost and jump
    functions degraded accordingly when inlining, see
@@ -64,7 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 enum jump_func_type
 {
   IPA_JF_UNKNOWN = 0,  /* newly allocated and zeroed jump functions default */
-  IPA_JF_KNOWN_TYPE,        /* represented by field known_type */
   IPA_JF_CONST,             /* represented by field costant */
   IPA_JF_PASS_THROUGH,	    /* represented by field pass_through */
   IPA_JF_ANCESTOR	    /* represented by field ancestor */
@@ -113,11 +107,6 @@ struct GTY(()) ipa_pass_through_data
      ipa_agg_jump_function).  The flag is used only when the operation is
      NOP_EXPR.  */
   unsigned agg_preserved : 1;
-
-  /* When set to true, we guarantee that, if there is a C++ object pointed to
-     by this object, it does not undergo dynamic type change in the course of
-     functions decribed by this jump function.  */
-  unsigned type_preserved : 1;
 };
 
 /* Structure holding data required to describe an ancestor pass-through
@@ -127,18 +116,10 @@ struct GTY(()) ipa_ancestor_jf_data
 {
   /* Offset of the field representing the ancestor.  */
   HOST_WIDE_INT offset;
-  /* Type of the result.
-     When TYPE_PRESERVED is false, TYPE is NULL, since it is only
-     relevant for the devirtualization machinery.  */
-  tree type;
   /* Number of the caller's formal parameter being passed.  */
   int formal_id;
   /* Flag with the same meaning like agg_preserve in ipa_pass_through_data.  */
   unsigned agg_preserved : 1;
-  /* When set to true, we guarantee that, if there is a C++ object pointed to
-     by this object, it does not undergo dynamic type change in the course of
-     functions decribed by this jump function.  */
-  unsigned type_preserved : 1;
 };
 
 /* An element in an aggegate part of a jump function describing a known value
@@ -189,41 +170,12 @@ struct GTY (()) ipa_jump_func
      functions and member_cst holds constant c++ member functions.  */
   union jump_func_value
   {
-    struct ipa_known_type_data GTY ((tag ("IPA_JF_KNOWN_TYPE"))) known_type;
     struct ipa_constant_data GTY ((tag ("IPA_JF_CONST"))) constant;
     struct ipa_pass_through_data GTY ((tag ("IPA_JF_PASS_THROUGH"))) pass_through;
     struct ipa_ancestor_jf_data GTY ((tag ("IPA_JF_ANCESTOR"))) ancestor;
   } GTY ((desc ("%1.type"))) value;
 };
 
-
-/* Return the offset of the component that is described by a known type jump
-   function JFUNC.  */
-
-static inline HOST_WIDE_INT
-ipa_get_jf_known_type_offset (struct ipa_jump_func *jfunc)
-{
-  gcc_checking_assert (jfunc->type == IPA_JF_KNOWN_TYPE);
-  return jfunc->value.known_type.offset;
-}
-
-/* Return the base type of a known type jump function JFUNC.  */
-
-static inline tree
-ipa_get_jf_known_type_base_type (struct ipa_jump_func *jfunc)
-{
-  gcc_checking_assert (jfunc->type == IPA_JF_KNOWN_TYPE);
-  return jfunc->value.known_type.base_type;
-}
-
-/* Return the component type of a known type jump function JFUNC.  */
-
-static inline tree
-ipa_get_jf_known_type_component_type (struct ipa_jump_func *jfunc)
-{
-  gcc_checking_assert (jfunc->type == IPA_JF_KNOWN_TYPE);
-  return jfunc->value.known_type.component_type;
-}
 
 /* Return the constant stored in a constant jump functin JFUNC.  */
 
@@ -295,15 +247,6 @@ ipa_get_jf_ancestor_offset (struct ipa_jump_func *jfunc)
 {
   gcc_checking_assert (jfunc->type == IPA_JF_ANCESTOR);
   return jfunc->value.ancestor.offset;
-}
-
-/* Return the result type of an ancestor jump function JFUNC.  */
-
-static inline tree
-ipa_get_jf_ancestor_type (struct ipa_jump_func *jfunc)
-{
-  gcc_checking_assert (jfunc->type == IPA_JF_ANCESTOR);
-  return jfunc->value.ancestor.type;
 }
 
 /* Return the number of the caller's formal parameter that an ancestor jump

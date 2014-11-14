@@ -1,3 +1,44 @@
+2014-11-14  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (jump_func_type): Removed value IPA_JF_KNOWN_TYPE.
+	(ipa_pass_through_data): Removed field type_preserved.
+	(ipa_ancestor_jf_data): removed fields type and type_preserved.
+	(ipa_jump_func): Removed field known_type.
+	(ipa_get_jf_known_type_offset): Removed.
+	(ipa_get_jf_known_type_base_type): Likewise.
+	(ipa_get_jf_known_type_component_type): Likewise.
+	(ipa_get_jf_ancestor_type): Likewise.
+	* ipa-cp.c (print_ipcp_constant_value): Removed BINFO handling.
+	(ipa_get_jf_pass_through_result): Likewise.
+	(ipa_get_jf_ancestor_result): Always build ptr_node_type accesses.
+	(values_equal_for_ipcp_p): Removed BINFO handling.
+	(ipa_get_indirect_edge_target_1): Updated comment.
+	* ipa-prop.c (ipa_print_node_jump_functions_for_edge): Removed handling
+	of IPA_JF_KNOWN_TYPE jump functions.  Do not print removed fields.
+	(ipa_set_jf_known_type): Removed.
+	(ipa_set_jf_simple_pass_through): Do not set removed fields.  Update
+	all callers.
+	(ipa_set_jf_arith_pass_through): Likewise.
+	(ipa_set_ancestor_jf): Likewise.
+	(ipa_binfo_from_known_type_jfunc): Removed.
+	(prop_type_change_info): Removed fields known_current_type and
+	multiple_types_encountered.
+	(extr_type_from_vtbl_ptr_store): Removed.
+	(check_stmt_for_type_change): Do not attempt to identify changed type.
+	(detect_type_change_from_memory_writes): Do not set the removed fields,
+	always set jfunc to unknown.
+	(compute_complex_assign_jump_func): Do not detect dynamic type change.
+	(compute_complex_ancestor_jump_func): Likewise.
+	(compute_known_type_jump_func): Removed.
+	(ipa_compute_jump_functions_for_edge): Do not detect dynamic type
+	change.  Do not comute known type jump functions.
+	(combine_known_type_and_ancestor_jfs): Removed.
+	(update_jump_functions_after_inlining): Removed handling of
+	IPA_JF_KNOWN_TYPE jump functions.  Do not set removed fields.
+	(ipa_write_jump_function): Do not stream removed fields or known type
+	jump functions.
+	(ipa_read_jump_function): Likewise.
+
 2014-11-14  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-int.h (lra_create_live_ranges): Add parameter.

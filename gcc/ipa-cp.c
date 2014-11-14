@@ -340,12 +340,7 @@ ipcp_lattice<valtype>::is_single_const ()
 static void
 print_ipcp_constant_value (FILE * f, tree v)
 {
-  if (TREE_CODE (v) == TREE_BINFO)
-    {
-      fprintf (f, "BINFO ");
-      print_generic_expr (f, BINFO_TYPE (v), 0);
-    }
-  else if (TREE_CODE (v) == ADDR_EXPR
+  if (TREE_CODE (v) == ADDR_EXPR
 	   && TREE_CODE (TREE_OPERAND (v, 0)) == CONST_DECL)
     {
       fprintf (f, "& ");
@@ -842,21 +837,10 @@ ipa_get_jf_pass_through_result (struct ipa_jump_func *jfunc, tree input)
 {
   tree restype, res;
 
-  if (TREE_CODE (input) == TREE_BINFO)
-    {
-      if (ipa_get_jf_pass_through_type_preserved (jfunc))
-	{
-	  gcc_checking_assert (ipa_get_jf_pass_through_operation (jfunc)
-			       == NOP_EXPR);
-	  return input;
-	}
-      return NULL_TREE;
-    }
-
+  gcc_checking_assert (is_gimple_ip_invariant (input));
   if (ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
     return input;
 
-  gcc_checking_assert (is_gimple_ip_invariant (input));
   if (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
       == tcc_comparison)
     restype = boolean_type_node;
@@ -883,9 +867,7 @@ ipa_get_jf_ancestor_result (struct ipa_jump_func *jfunc, tree input)
       tree t = TREE_OPERAND (input, 0);
       t = build_ref_for_offset (EXPR_LOCATION (t), t,
 				ipa_get_jf_ancestor_offset (jfunc),
-				ipa_get_jf_ancestor_type (jfunc)
-				? ipa_get_jf_ancestor_type (jfunc)
-				: ptr_type_node, NULL, false);
+				ptr_type_node, NULL, false);
       return build_fold_addr_expr (t);
     }
   else
@@ -1050,9 +1032,6 @@ values_equal_for_ipcp_p (tree x, tree y)
 
   if (x == y)
     return true;
-
-  if (TREE_CODE (x) == TREE_BINFO || TREE_CODE (y) == TREE_BINFO)
-    return false;
 
   if (TREE_CODE (x) ==  ADDR_EXPR
       && TREE_CODE (y) ==  ADDR_EXPR
@@ -1740,9 +1719,8 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
 }
 
 /* If an indirect edge IE can be turned into a direct one based on KNOWN_VALS
-   (which can contain both constants and binfos), KNOWN_CONTEXTS, KNOWN_AGGS or
-   AGG_REPS return the destination.  The latter three can be NULL.  If AGG_REPS
-   is not NULL, KNOWN_AGGS is ignored.  */
+   KNOWN_CONTEXTS, KNOWN_AGGS or AGG_REPS return the destination.  The latter
+   three can be NULL.  If AGG_REPS is not NULL, KNOWN_AGGS is ignored.  */
 
 static tree
 ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
