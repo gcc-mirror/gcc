@@ -1,3 +1,41 @@
+2014-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* semantics.c (end_maybe_infinite_loop): Use fold_non_dependent_expr.
+	* parser.c (cp_parser_omp_clause_collapse): Likewise.
+	(cp_parser_enumerator_definition): Don't call
+	instantiate_non_dependent_expr...
+	* decl.c (build_enumerator): ... call fold_non_dependent_expr here.
+	* typeck2.c (massage_init_elt): Use fold_non_dependent_expr.
+	* constexpr.c (maybe_constant_value): Allow VIEW_CONVERT_EXPR in
+	the final gcc_assert.
+
+	* constexpr.c (fold_non_dependent_expr): Add.
+	* cp-tree.h (fold_non_dependent_expr): Declare it.
+	* call.c (null_ptr_cst_p): Use it.
+	* pt.c (tsubst_copy_and_build, build_non_dependent_expr): Likewise.
+	* semantics.c (begin_maybe_infinite_loop): Likewise.
+	* typeck.c (cp_build_binary_op): Likewise.
+	* typeck2.c (check_narrowing): Likewise.
+
+	* pt.c (fold_non_dependent_expr): Rename to
+	instantiate_non_dependent_expr.
+	(fold_non_dependent_expr_sfinae): Rename to
+	instantiate_non_dependent_expr_sfinae.
+	(convert_nontype_argument, build_non_dependent_expr): Adjust.
+	* decl.c (compute_array_index_type): Likewise.
+	* parser.c (cp_parser_parenthesized_expression_list,
+	cp_parser_enumerator_definition, cp_parser_omp_clause_collapse):
+	Likewise.
+	* semantics.c (end_maybe_infinite_loop, finish_static_assert):
+	Likewise.
+	* typeck.c (cxx_alignas_expr): Likewise.
+	* typeck2.c (store_init_value, massage_init_elt): Likewise.
+	* call.c: Adjust comments.
+	* class.c: Likewise.
+	* constexpr.c: Likewise.
+	* decl2.c: Likewise.
+	* tree.c: Likewise.
+
 2014-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* mangle.c (find_substitution): Look for abi_tag on class templates.

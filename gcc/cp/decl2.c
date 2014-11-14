@@ -4951,7 +4951,7 @@ mark_used (tree decl, tsubst_flags_t complain)
   if (processing_template_decl)
     return true;
 
-  /* Check this too in case we're within fold_non_dependent_expr.  */
+  /* Check this too in case we're within instantiate_non_dependent_expr.  */
   if (DECL_TEMPLATE_INFO (decl)
       && uses_template_parms (DECL_TI_ARGS (decl)))
     return true;

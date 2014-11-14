@@ -359,9 +359,9 @@ build_base_path (enum tree_code code,
 
   /* Don't bother with the calculations inside sizeof; they'll ICE if the
      source type is incomplete and the pointer value doesn't matter.  In a
-     template (even in fold_non_dependent_expr), we don't have vtables set
-     up properly yet, and the value doesn't matter there either; we're just
-     interested in the result of overload resolution.  */
+     template (even in instantiate_non_dependent_expr), we don't have vtables
+     set up properly yet, and the value doesn't matter there either; we're
+     just interested in the result of overload resolution.  */
   if (cp_unevaluated_operand != 0
       || in_template_function ())
     {
@@ -6933,7 +6933,8 @@ resolves_to_fixed_type_p (tree instance, int* nonnull)
   tree fixed;
 
   /* processing_template_decl can be false in a template if we're in
-     fold_non_dependent_expr, but we still want to suppress this check.  */
+     instantiate_non_dependent_expr, but we still want to suppress
+     this check.  */
   if (in_template_function ())
     {
       /* In a template we only care about the type of the result.  */

@@ -797,7 +797,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
   if (decl_maybe_constant_var_p (decl) || TREE_STATIC (decl))
     {
       bool const_init;
-      value = fold_non_dependent_expr (value);
+      value = instantiate_non_dependent_expr (value);
       if (DECL_DECLARED_CONSTEXPR_P (decl)
 	  || DECL_IN_AGGR_P (decl))
 	{
@@ -872,7 +872,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
       return ok;
     }
 
-  init = maybe_constant_value (fold_non_dependent_expr_sfinae (init, tf_none));
+  init = fold_non_dependent_expr (init);
 
   if (TREE_CODE (type) == INTEGER_TYPE
       && TREE_CODE (ftype) == REAL_TYPE)
@@ -1176,7 +1176,7 @@ massage_init_elt (tree type, tree init, tsubst_flags_t complain)
     init = TARGET_EXPR_INITIAL (init);
   /* When we defer constant folding within a statement, we may want to
      defer this folding as well.  */
-  tree t = fold_non_dependent_expr_sfinae (init, complain);
+  tree t = fold_non_dependent_expr (init);
   t = maybe_constant_init (t);
   if (TREE_CONSTANT (t))
     init = t;
