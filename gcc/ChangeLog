@@ -1,3 +1,14 @@
+2014-11-14  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Implement more binary patterns exercised by
+	fold_stmt.
+	* fold-const.c (sing_bit_p): Export.
+	(exact_inverse): Likewise.
+	(fold_binary_loc): Remove patterns here.
+	(tree_unary_nonnegative_warnv_p): Use CASE_CONVERT.
+	* fold-const.h (sing_bit_p): Declare.
+	(exact_inverse): Likewise.
+
 2014-11-14  Marek Polacek  <polacek@redhat.com>
 
 	* tree.c (build_common_builtin_nodes): Remove doubled ECF_LEAF.
