@@ -1,3 +1,7 @@
+2014-11-14  Marek Polacek  <polacek@redhat.com>
+
+	* tree.c (build_common_builtin_nodes): Remove doubled ECF_LEAF.
+
 2014-11-14  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (add_operator): Allow CONSTRUCTOR.
