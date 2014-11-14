@@ -1,5 +1,7 @@
 2014-11-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* doc/install.texi (--with-diagnostics-color=): Document.
+
 	* tree-ssa.dce.c (eliminate_unnecessary_stmts): Eliminate
 	IFN_GOMP_SIMD_LANE without lhs as useless.
 

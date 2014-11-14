@@ -1795,6 +1795,15 @@ static data members and inline function local statics.  Enabled by
 default for a toolchain with an assembler that accepts it and
 GLIBC 2.11 or above, otherwise disabled.
 
+@item --with-diagnostics-color=@var{choice}
+Tells GCC to use @var{choice} as the default for @option{-fdiagnostics-color=}
+option (if not used explicitly on the command line).  @var{choice}
+can be one of @samp{never}, @samp{auto}, @samp{always}, and @samp{auto-if-env}
+where @samp{auto} is the default.  @samp{auto-if-env} means that
+@option{-fdiagnostics-color=auto} will be the default if @code{GCC_COLORS}
+is present and non-empty in the environment, and
+@option{-fdiagnostics-color=never} otherwise.
+
 @item --enable-lto
 @itemx --disable-lto
 Enable support for link-time optimization (LTO).  This is enabled by
