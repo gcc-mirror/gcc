@@ -1026,6 +1026,7 @@ do_remat (void)
 	    continue;
 
 	  lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
+	  struct lra_static_insn_data *static_id = id->insn_static_data;
 	  struct lra_insn_reg *reg;
 	  cand_t cand;
 	  unsigned int cid;
@@ -1059,7 +1060,10 @@ do_remat (void)
 	  HOST_WIDE_INT cand_sp_offset = 0;
 	  if (cand != NULL)
 	    {
-	      lra_insn_recog_data_t cand_id = lra_get_insn_recog_data (cand->insn);
+	      lra_insn_recog_data_t cand_id
+		= lra_get_insn_recog_data (cand->insn);
+	      struct lra_static_insn_data *static_cand_id
+		= cand_id->insn_static_data;
 	      rtx saved_op = *cand_id->operand_loc[cand->nop];
 
 	      /* Check clobbers do not kill something living.  */
@@ -1077,6 +1081,16 @@ do_remat (void)
 		    if (i < nregs)
 		      break;
 		  }
+
+	      if (reg == NULL)
+		{
+		  for (reg = static_cand_id->hard_regs;
+		       reg != NULL;
+		       reg = reg->next)
+		    if (reg->type != OP_IN
+			&& TEST_HARD_REG_BIT (live_hard_regs, reg->regno))
+		      break;
+		}
 
 	      if (reg == NULL)
 		{
@@ -1100,6 +1114,7 @@ do_remat (void)
 		}
 	    }
 
+	  bitmap_clear (&temp_bitmap);
 	  /* Update avail_cands (see analogous code for
 	     calculate_gen_cands).  */
 	  for (reg = id->regs; reg != NULL; reg = reg->next)
@@ -1115,7 +1130,7 @@ do_remat (void)
 		    continue;
 		  if (cand->regno == reg->regno
 		      || input_regno_present_p (cand->insn, reg->regno))
-		    bitmap_clear_bit (&avail_cands, cand->index);
+		    bitmap_set_bit (&temp_bitmap, cand->index);
 		}
 
 	  if (CALL_P (insn))
@@ -1124,9 +1139,10 @@ do_remat (void)
 		cand = all_cands[cid];
 		
 		if (call_used_input_regno_present_p (cand->insn))
-		  bitmap_clear_bit (&avail_cands, cand->index);
+		  bitmap_set_bit (&temp_bitmap, cand->index);
 	      }
 
+	  bitmap_and_compl_into (&avail_cands, &temp_bitmap);
 	  if ((cand = insn_to_cand[INSN_UID (insn)]) != NULL)
 	    bitmap_set_bit (&avail_cands, cand->index);
 	    
@@ -1160,6 +1176,15 @@ do_remat (void)
 		for (i = 0; i < nregs; i++)
 		  SET_HARD_REG_BIT (live_hard_regs, hard_regno + i);
 	      }
+	  /* Process also hard regs (e.g. CC register) which are part
+	     of insn definition.  */
+	  for (reg = static_id->hard_regs; reg != NULL; reg = reg->next)
+	    if (reg->type == OP_IN
+		&& find_regno_note (insn, REG_DEAD, reg->regno) != NULL)
+	      CLEAR_HARD_REG_BIT (live_hard_regs, reg->regno);
+	    else if (reg->type != OP_IN
+		     && find_regno_note (insn, REG_UNUSED, reg->regno) == NULL)
+	      SET_HARD_REG_BIT (live_hard_regs, reg->regno);
 	}
     }
   bitmap_clear (&avail_cands);
