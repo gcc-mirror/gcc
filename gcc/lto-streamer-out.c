@@ -594,7 +594,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
     {
       DFS_follow_tree_edge (DECL_VINDEX (expr));
       DFS_follow_tree_edge (DECL_FUNCTION_PERSONALITY (expr));
-      /* Do not DECL_FUNCTION_SPECIFIC_TARGET.  They will be regenerated.  */
+      DFS_follow_tree_edge (DECL_FUNCTION_SPECIFIC_TARGET (expr));
       DFS_follow_tree_edge (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr));
     }
 
@@ -945,7 +945,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 			strlen (TRANSLATION_UNIT_LANGUAGE (t)));
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    gcc_unreachable ();
+    hstate.add_wide_int (cl_target_option_hash (TREE_TARGET_OPTION (t)));
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     hstate.add (t, sizeof (struct cl_optimization));
@@ -1028,7 +1028,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
     {
       visit (DECL_VINDEX (t));
       visit (DECL_FUNCTION_PERSONALITY (t));
-      /* Do not follow DECL_FUNCTION_SPECIFIC_TARGET.  */
+      visit (DECL_FUNCTION_SPECIFIC_TARGET (t));
       visit (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (t));
     }
 

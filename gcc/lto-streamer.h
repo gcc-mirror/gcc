@@ -836,6 +836,14 @@ bool reachable_from_this_partition_p (struct cgraph_node *,
 lto_symtab_encoder_t compute_ltrans_boundary (lto_symtab_encoder_t encoder);
 void select_what_to_stream (bool);
 
+/* In options-save.c.  */
+void cl_target_option_stream_out (struct output_block *, struct bitpack_d *,
+				  struct cl_target_option *);
+
+void cl_target_option_stream_in (struct data_in *,
+				 struct bitpack_d *,
+				 struct cl_target_option *);
+
 
 /* In lto-symtab.c.  */
 extern void lto_symtab_merge_decls (void);
