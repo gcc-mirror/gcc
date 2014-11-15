@@ -1,3 +1,29 @@
+2014-11-15  Tobias Burnus  <burnus@net-b.de>
+
+	* error.c (gfc_fatal_error_1): Renamed from gfc_fatal_error.
+	(gfc_fatal_error): Add; uses common diagnostics.
+	* array.c (gfc_match_array_ref, gfc_match_array_spec): Use
+	%< %>.
+	* check.c (check_co_collective, gfc_check_lcobound,
+	gfc_check_image_index, gfc_check_num_images,
+	gfc_check_this_image, gfc_check_ucobound): Ditto.
+	* cpp.c (gfc_cpp_post_options): Ditto.
+	(gfc_cpp_init_0, gfc_cpp_done): Change %s to %qs.
+	* gfc-diagnostic.def (DK_FATAL): Capitalize first letter.
+	* gfortran.h (gfc_fatal_error_1): Add.
+	* match.c (gfc_match_name, gfc_match_critical,
+	lock_unlock_statement, sync_statement): Add %< %>.
+	* module.c (bad_module, gfc_dump_module, gfc_use_module): Change
+	%s to %qs.
+	* options.c (gfc_handle_module_path_options, gfc_handle_fpe_option,
+	gfc_handle_coarray_option, gfc_handle_runtime_check_option,
+	gfc_handle_option): Add %< %>.
+	* simplify.c (gfc_simplify_num_images): Ditto.
+	* trans-stmt.c (gfc_trans_sync): Use gfc_fatal_error_1.
+	* trans-array.c (gfc_conv_array_initializer): Ditto.
+	* trans-types.c (gfc_init_kinds): Use gfc_fatal_error instead
+	of fatal_error; add %< %> quotations.
+
 2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>

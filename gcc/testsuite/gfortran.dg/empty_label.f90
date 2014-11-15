@@ -3,3 +3,4 @@
 100   ! { dg-warning "empty statement" }
 end
 ! { dg-error "count reached limit" "" { target *-*-* } 0 }
+! { dg-excess-errors "compilation terminated" }

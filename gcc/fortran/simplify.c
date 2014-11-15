@@ -4634,7 +4634,7 @@ gfc_simplify_num_images (gfc_expr *distance ATTRIBUTE_UNUSED, gfc_expr *failed)
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return &gfc_bad_expr;
     }
 

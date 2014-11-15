@@ -1482,8 +1482,8 @@ check_co_collective (gfc_expr *a, gfc_expr *image_idx, gfc_expr *stat,
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %L, use -fcoarray= to enable",
-		       &a->where);
+      gfc_fatal_error_1 ("Coarrays disabled at %L, use -fcoarray= to enable",
+			 &a->where);
       return false;
     }
 
@@ -2569,7 +2569,7 @@ gfc_check_lcobound (gfc_expr *coarray, gfc_expr *dim, gfc_expr *kind)
 {
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 
@@ -4847,7 +4847,7 @@ gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 
@@ -4885,7 +4885,7 @@ gfc_check_num_images (gfc_expr *distance, gfc_expr *failed)
 {
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 
@@ -4927,7 +4927,7 @@ gfc_check_this_image (gfc_expr *coarray, gfc_expr *dim, gfc_expr *distance)
 {
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 
@@ -5126,7 +5126,7 @@ gfc_check_ucobound (gfc_expr *coarray, gfc_expr *dim, gfc_expr *kind)
 {
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 

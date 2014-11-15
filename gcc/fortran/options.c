@@ -489,7 +489,7 @@ gfc_handle_module_path_options (const char *arg)
 {
 
   if (gfc_option.module_dir != NULL)
-    gfc_fatal_error ("gfortran: Only one -J option allowed");
+    gfc_fatal_error ("gfortran: Only one %<-J%> option allowed");
 
   gfc_option.module_dir = XCNEWVEC (char, strlen (arg) + 2);
   strcpy (gfc_option.module_dir, arg);
@@ -561,9 +561,9 @@ gfc_handle_fpe_option (const char *arg, bool trap)
 	    }
 	  }
       if (!result && !trap)
-	gfc_fatal_error ("Argument to -ffpe-trap is not valid: %s", arg);
+	gfc_fatal_error ("Argument to %<-ffpe-trap%> is not valid: %s", arg);
       else if (!result)
-	gfc_fatal_error ("Argument to -ffpe-summary is not valid: %s", arg);
+	gfc_fatal_error ("Argument to %<-ffpe-summary%> is not valid: %s", arg);
 
     }
 }
@@ -579,7 +579,7 @@ gfc_handle_coarray_option (const char *arg)
   else if (strcmp (arg, "lib") == 0)
     gfc_option.coarray = GFC_FCOARRAY_LIB;
   else
-    gfc_fatal_error ("Argument to -fcoarray is not valid: %s", arg);
+    gfc_fatal_error ("Argument to %<-fcoarray%> is not valid: %s", arg);
 }
 
 
@@ -617,7 +617,7 @@ gfc_handle_runtime_check_option (const char *arg)
 	    }
 	}
       if (!result)
-	gfc_fatal_error ("Argument to -fcheck is not valid: %s", arg);
+	gfc_fatal_error ("Argument to %<-fcheck%> is not valid: %s", arg);
     }
 }
 
@@ -823,7 +823,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_ffixed_line_length_:
       if (value != 0 && value < 7)
-	gfc_fatal_error ("Fixed line length must be at least seven.");
+	gfc_fatal_error ("Fixed line length must be at least seven");
       gfc_option.fixed_line_length = value;
       break;
 
@@ -845,7 +845,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_ffree_line_length_:
       if (value != 0 && value < 4)
-	gfc_fatal_error ("Free line length must be at least three.");
+	gfc_fatal_error ("Free line length must be at least three");
       gfc_option.free_line_length = value;
       break;
 
@@ -859,7 +859,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_static_libgfortran:
 #ifndef HAVE_LD_STATIC_DYNAMIC
-      gfc_fatal_error ("-static-libgfortran is not supported in this "
+      gfc_fatal_error ("%<-static-libgfortran%> is not supported in this "
 		       "configuration");
 #endif
       break;
@@ -974,7 +974,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       else if (!strcasecmp (arg, "true"))
 	gfc_option.flag_init_logical = GFC_INIT_LOGICAL_TRUE;
       else
-	gfc_fatal_error ("Unrecognized option to -finit-logical: %s",
+	gfc_fatal_error ("Unrecognized option to %<-finit-logical%>: %s",
 			 arg);
       break;
 
@@ -990,7 +990,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       else if (!strcasecmp (arg, "-inf"))
 	gfc_option.flag_init_real = GFC_INIT_REAL_NEG_INF;
       else
-	gfc_fatal_error ("Unrecognized option to -finit-real: %s",
+	gfc_fatal_error ("Unrecognized option to %<-finit-real%>: %s",
 			 arg);
       break;
 
@@ -1006,7 +1006,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 	  gfc_option.flag_init_character_value = (char)value;
 	}
       else
-	gfc_fatal_error ("The value of n in -finit-character=n must be "
+	gfc_fatal_error ("The value of n in %<-finit-character=n%> must be "
 			 "between 0 and 127");
       break;
 
