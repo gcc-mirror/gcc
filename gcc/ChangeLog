@@ -1,5 +1,12 @@
 2014-11-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* tree-cfg.c (replace_loop_annotate_in_block): New function extracted
+	from...
+	(replace_loop_annotate): ...here.  Call it on the header and on the
+	latch block, if any.  Restore proper behavior of final cleanup.
+
+2014-11-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Add log message
 	for max-completely-peeled-insns limit.
 
