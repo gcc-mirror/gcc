@@ -1,4 +1,9 @@
-2014-10-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+2014-11-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/pubtypes-3.c: Include <string.h>.
+	* gcc.dg/pubtypes-4.c: Likewise.
+
+2014-11-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gcc.dg/darwin-cfstring-format-1.c: Adjust dg-error.
 
