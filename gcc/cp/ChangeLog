@@ -1,5 +1,8 @@
 2014-11-15  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (cxx_eval_builtin_function_call): Use
+	fold_builtin_call_array.
+
 	* constexpr.c (cx_check_missing_mem_inits): Clarify error message.
 
 2014-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
