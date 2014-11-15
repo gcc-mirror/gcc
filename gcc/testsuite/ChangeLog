@@ -1,3 +1,15 @@
+2014-11-15  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
+
+	* gcc.dg/atomic/c11-atomic-exec-5.c
+	(test_main_long_double_add_overflow): Only actually define if
+	LDBL_MANT_DIG != 106.
+	(test_main_complex_long_double_add_overflow): Likewise.
+	(test_main_long_double_sub_overflow): Likewise.
+	(test_main_complex_long_double_sub_overflow): Likewise.
+
+	(NOT_LDBL_EPSILON_2): Likewise.
+	(NOT_MINUS_LDBL_EPSILON_2): Likewise.
+
 2014-11-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/sibcall-1.c: Don't run on x32 targets,
