@@ -1,3 +1,8 @@
+2014-11-15  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* g++.dg/guality/guality.exp (check_guality): Fix `test_counts'
+	restoration.
+
 2014-11-15  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
 
 	* gcc.dg/atomic/c11-atomic-exec-5.c
