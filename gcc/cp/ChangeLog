@@ -1,3 +1,7 @@
+2014-11-15  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cx_check_missing_mem_inits): Clarify error message.
+
 2014-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* semantics.c (end_maybe_infinite_loop): Use fold_non_dependent_expr.
