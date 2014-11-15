@@ -265,13 +265,56 @@ build_gimple_cfg (gimple_seq seq)
   discriminator_per_locus = NULL;
 }
 
+/* Look for ANNOTATE calls with loop annotation kind in BB; if found, remove
+   them and propagate the information to LOOP.  We assume that the annotations
+   come immediately before the condition in BB, if any.  */
+
+static void
+replace_loop_annotate_in_block (basic_block bb, struct loop *loop)
+{
+  gimple_stmt_iterator gsi = gsi_last_bb (bb);
+  gimple stmt = gsi_stmt (gsi);
+
+  if (!(stmt && gimple_code (stmt) == GIMPLE_COND))
+    return;
+
+  for (gsi_prev_nondebug (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
+    {
+      stmt = gsi_stmt (gsi);
+      if (gimple_code (stmt) != GIMPLE_CALL)
+	break;
+      if (!gimple_call_internal_p (stmt)
+	  || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
+	break;
+
+      switch ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1)))
+	{
+	case annot_expr_ivdep_kind:
+	  loop->safelen = INT_MAX;
+	  break;
+	case annot_expr_no_vector_kind:
+	  loop->dont_vectorize = true;
+	  break;
+	case annot_expr_vector_kind:
+	  loop->force_vectorize = true;
+	  cfun->has_force_vectorize_loops = true;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      stmt = gimple_build_assign (gimple_call_lhs (stmt),
+				  gimple_call_arg (stmt, 0));
+      gsi_replace (&gsi, stmt, true);
+    }
+}
 
 /* Look for ANNOTATE calls with loop annotation kind; if found, remove
    them and propagate the information to the loop.  We assume that the
    annotations come immediately before the condition of the loop.  */
 
 static void
-replace_loop_annotate ()
+replace_loop_annotate (void)
 {
   struct loop *loop;
   basic_block bb;
@@ -280,37 +323,12 @@ replace_loop_annotate ()
 
   FOR_EACH_LOOP (loop, 0)
     {
-      gsi = gsi_last_bb (loop->header);
-      stmt = gsi_stmt (gsi);
-      if (!(stmt && gimple_code (stmt) == GIMPLE_COND))
-	continue;
-      for (gsi_prev_nondebug (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
-	{
-	  stmt = gsi_stmt (gsi);
-	  if (gimple_code (stmt) != GIMPLE_CALL)
-	    break;
-	  if (!gimple_call_internal_p (stmt)
-	      || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
-	    break;
-	  switch ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1)))
-	    {
-	    case annot_expr_ivdep_kind:
-	      loop->safelen = INT_MAX;
-	      break;
-	    case annot_expr_no_vector_kind:
-	      loop->dont_vectorize = true;
-	      break;
-	    case annot_expr_vector_kind:
-	      loop->force_vectorize = true;
-	      cfun->has_force_vectorize_loops = true;
-	      break;
-	    default:
-	      gcc_unreachable ();
-	    }
-	  stmt = gimple_build_assign (gimple_call_lhs (stmt),
-				      gimple_call_arg (stmt, 0));
-	  gsi_replace (&gsi, stmt, true);
-	}
+      /* First look into the header.  */
+      replace_loop_annotate_in_block (loop->header, loop);
+
+      /* Then look into the latch, if any.  */
+      if (loop->latch)
+	replace_loop_annotate_in_block (loop->latch, loop);
     }
 
   /* Remove IFN_ANNOTATE.  Safeguard for the case loop->latch == NULL.  */
@@ -320,10 +338,11 @@ replace_loop_annotate ()
 	{
 	  stmt = gsi_stmt (gsi);
 	  if (gimple_code (stmt) != GIMPLE_CALL)
-	    break;
+	    continue;
 	  if (!gimple_call_internal_p (stmt)
 	      || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
-	    break;
+	    continue;
+
 	  switch ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1)))
 	    {
 	    case annot_expr_ivdep_kind:
@@ -333,6 +352,7 @@ replace_loop_annotate ()
 	    default:
 	      gcc_unreachable ();
 	    }
+
 	  warning_at (gimple_location (stmt), 0, "ignoring loop annotation");
 	  stmt = gimple_build_assign (gimple_call_lhs (stmt),
 				      gimple_call_arg (stmt, 0));

@@ -1,3 +1,7 @@
+2014-11-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt44.ad[sb]: New test.
+
 2014-11-15  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/binding_label_tests_4.f03: Add dg-excess-errors.
