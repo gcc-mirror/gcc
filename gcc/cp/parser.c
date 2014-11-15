@@ -31188,7 +31188,7 @@ cp_parser_omp_declare_reduction_exprs (tree fndecl, cp_parser *parser)
 
       block = finish_omp_structured_block (block);
       cp_walk_tree (&block, cp_remove_omp_priv_cleanup_stmt, omp_priv, NULL);
-      finish_expr_stmt (block);
+      add_stmt (block);
 
       if (ctor)
 	add_decl_expr (omp_orig);
