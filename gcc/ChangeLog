@@ -1,3 +1,28 @@
+2014-11-15  Mircea Namolaru  <mircea.namolaru@inria.fr>
+
+	* common.opt (flag_loop_unroll_and_jam): New flag.
+	* params.def (PARAM_LOOP_UNROLL_JAM_SIZE): Parameter for unroll and
+	jam flag.
+	(PARAM_LOOP_UNROLL_JAM_DEPTH): Likewise.
+	* graphite-poly.h (struct poly_bb:map_sepclass): New field
+	* graphite-poly.c (new_poly_bb): Initialization for new field.
+	(apply_poly_transforms): Support for unroll and jam flag.
+	* graphite-isl-ast-to-gimple.c (generate_luj_sepclass): Compute the
+	separation class.
+	(generate_luj_sepclass_opt): Build the separation class option.
+	(generate_luj_options): Set unroll and jam options.
+        (set_options): Support for unroll and jam options.
+	(scop_to_isl_ast): Likewise
+	* graphite-optimize-isl.c (getPrevectorMap_full): New function for
+        computing the separating class map.
+	(optimize_isl): Support for the separating class map.
+	(apply_schedule_map_to_scop): Likewise.
+	(getScheduleMap): Likewise.
+	(getScheduleForBand): Likewise.
+	(getScheduleForBandList): Likewise.
+        * graphite.c (gate_graphite_transforms): Add unroll and jam flag.
+	* toplev.c (process_options) Likewise.
+
 2014-11-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-cfg.c (replace_loop_annotate_in_block): New function extracted
