@@ -1,3 +1,7 @@
+2014-11-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra.c (lra): Switch off rematerialization pass.
+
 2014-11-15  Marc Glisse  <marc.glisse@inria.fr>
 
 	* config/i386/xmmintrin.h (_mm_add_ps, _mm_sub_ps, _mm_mul_ps,
