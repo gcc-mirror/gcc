@@ -15,4 +15,4 @@ struct B
 
 constexpr B b;			// { dg-error "B::B" }
 
-// { dg-prune-output "uninitialized member" }
+// { dg-prune-output "B::a1" }

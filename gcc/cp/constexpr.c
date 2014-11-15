@@ -716,8 +716,9 @@ cx_check_missing_mem_inits (tree fun, tree body, bool complain)
 	    }
 	  if (!complain)
 	    return true;
-	  error ("uninitialized member %qD in %<constexpr%> constructor",
-		 field);
+	  error ("member %qD must be initialized by mem-initializer "
+		 "in %<constexpr%> constructor", field);
+	  inform (DECL_SOURCE_LOCATION (field), "declared here");
 	  bad = true;
 	}
       if (field == NULL_TREE)
