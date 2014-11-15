@@ -557,8 +557,8 @@ gfc_match_name (char *buffer)
 
   if (c == '$' && !gfc_option.flag_dollar_ok)
     {
-      gfc_fatal_error ("Invalid character '$' at %L. Use -fdollar-ok to allow "
-		       "it as an extension", &old_loc);
+      gfc_fatal_error_1 ("Invalid character '$' at %L. Use -fdollar-ok to allow"
+			 " it as an extension", &old_loc);
       return MATCH_ERROR;
     }
 
@@ -1665,7 +1665,8 @@ gfc_match_critical (void)
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-       gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+       gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to "
+			"enable");
        return MATCH_ERROR;
     }
 
@@ -2726,7 +2727,7 @@ lock_unlock_statement (gfc_statement st)
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-       gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+       gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
        return MATCH_ERROR;
     }
 
@@ -2922,7 +2923,8 @@ sync_statement (gfc_statement st)
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-       gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+       gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to "
+			"enable");
        return MATCH_ERROR;
     }
 

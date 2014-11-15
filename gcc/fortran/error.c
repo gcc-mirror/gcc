@@ -933,6 +933,7 @@ gfc_notify_std (int std, const char *gmsgid, ...)
 
 
 /* Immediate warning (i.e. do not buffer the warning).  */
+/* Use gfc_warning_now_2 instead, unless gmsgid contains a %L.  */
 
 void
 gfc_warning_now (const char *gmsgid, ...)
@@ -1086,6 +1087,7 @@ gfc_diagnostic_finalizer (diagnostic_context *context,
 }
 
 /* Immediate warning (i.e. do not buffer the warning).  */
+/* This function uses the common diagnostics, but does not support %L, yet.  */
 
 bool
 gfc_warning_now_2 (int opt, const char *gmsgid, ...)
@@ -1104,6 +1106,7 @@ gfc_warning_now_2 (int opt, const char *gmsgid, ...)
 }
 
 /* Immediate warning (i.e. do not buffer the warning).  */
+/* This function uses the common diagnostics, but does not support %L, yet.  */
 
 bool
 gfc_warning_now_2 (const char *gmsgid, ...)
@@ -1122,6 +1125,7 @@ gfc_warning_now_2 (const char *gmsgid, ...)
 
 
 /* Immediate error (i.e. do not buffer).  */
+/* This function uses the common diagnostics, but does not support %L, yet.  */
 
 void
 gfc_error_now_2 (const char *gmsgid, ...)
@@ -1133,6 +1137,24 @@ gfc_error_now_2 (const char *gmsgid, ...)
   diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION, DK_ERROR);
   report_diagnostic (&diagnostic);
   va_end (argp);
+}
+
+
+/* Fatal error, never returns.  */
+/* This function uses the common diagnostics, but does not support %L, yet.  */
+
+void
+gfc_fatal_error (const char *gmsgid, ...)
+{
+  va_list argp;
+  diagnostic_info diagnostic;
+
+  va_start (argp, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION, DK_FATAL);
+  report_diagnostic (&diagnostic);
+  va_end (argp);
+
+  gcc_unreachable ();
 }
 
 /* Clear the warning flag.  */
@@ -1213,6 +1235,7 @@ warning:
 
 
 /* Immediate error.  */
+/* Use gfc_error_now_2 instead, unless gmsgid contains a %L.  */
 
 void
 gfc_error_now (const char *gmsgid, ...)
@@ -1243,9 +1266,10 @@ gfc_error_now (const char *gmsgid, ...)
 
 
 /* Fatal error, never returns.  */
+/* Use gfc_fatal_error instead, unless gmsgid contains a %L.  */
 
 void
-gfc_fatal_error (const char *gmsgid, ...)
+gfc_fatal_error_1 (const char *gmsgid, ...)
 {
   va_list argp;
 

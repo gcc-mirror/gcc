@@ -1,3 +1,10 @@
+2014-11-15  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/binding_label_tests_4.f03: Add dg-excess-errors.
+	* gfortran.dg/coarray_9.f90: Ditto.
+	* gfortran.dg/empty_label.f: Ditto.
+	* gfortran.dg/empty_label.f90: Ditto.
+
 2014-11-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/ppc-fpconv-1.c: Adjust for -mupper-regs-df
