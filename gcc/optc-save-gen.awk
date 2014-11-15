@@ -551,4 +551,61 @@ for (i = 0; i < n_target_val; i++) {
 
 print "}";
 
+n_opt_val = 2;
+var_opt_val[0] = "x_optimize"
+var_opt_val_type[0] = "char "
+var_opt_val[1] = "x_optimize_size"
+var_opt_val_type[1] = "char "
+for (i = 0; i < n_opts; i++) {
+	if (flag_set_p("Optimization", flags[i])) {
+		name = var_name(flags[i])
+		if(name == "")
+			continue;
+
+		if(name in var_opt_list_seen)
+			continue;
+
+		var_opt_list_seen[name]++;
+
+		otype = var_type_struct(flags[i])
+		var_opt_val_type[n_opt_val] = otype;
+		var_opt_val[n_opt_val++] = "x_" name;
+	}
+}
+print "";
+print "/* Hash optimization options  */";
+print "hashval_t";
+print "cl_optimization_hash (struct cl_optimization const *ptr ATTRIBUTE_UNUSED)";
+print "{";
+print "  inchash::hash hstate;";
+for (i = 0; i < n_opt_val; i++) {
+	name = var_opt_val[i]
+	print "  hstate.add_wide_int (ptr->" name");";
+}
+print "  return hstate.end ();";
+print "}";
+
+print "";
+print "/* Stream out optimization options  */";
+print "void";
+print "cl_optimization_stream_out (struct bitpack_d *bp,";
+print "                            struct cl_optimization *ptr)";
+print "{";
+for (i = 0; i < n_opt_val; i++) {
+	name = var_opt_val[i]
+	print "  bp_pack_value (bp, ptr->" name", 64);";
+}
+print "}";
+
+print "";
+print "/* Stream in optimization options  */";
+print "void";
+print "cl_optimization_stream_in (struct bitpack_d *bp,";
+print "                           struct cl_optimization *ptr)";
+print "{";
+for (i = 0; i < n_opt_val; i++) {
+	name = var_opt_val[i]
+	print "  ptr->" name" = (" var_opt_val_type[i] ") bp_unpack_value (bp, 64);";
+}
+print "}";
 }
