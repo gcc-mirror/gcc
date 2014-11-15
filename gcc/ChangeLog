@@ -1,3 +1,8 @@
+2014-11-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Add log message
+	for max-completely-peeled-insns limit.
+
 2014-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-prop.h (ipa_known_type_data): Remove.

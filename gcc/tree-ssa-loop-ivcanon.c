@@ -674,7 +674,7 @@ try_unroll_loop_completely (struct loop *loop,
 			    HOST_WIDE_INT maxiter,
 			    location_t locus)
 {
-  unsigned HOST_WIDE_INT n_unroll = 0, ninsns, max_unroll, unr_insns;
+  unsigned HOST_WIDE_INT n_unroll = 0, ninsns, unr_insns;
   gimple cond;
   struct loop_size size;
   bool n_unroll_found = false;
@@ -720,9 +720,14 @@ try_unroll_loop_completely (struct loop *loop,
   if (!n_unroll_found)
     return false;
 
-  max_unroll = PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES);
-  if (n_unroll > max_unroll)
-    return false;
+  if (n_unroll > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Not unrolling loop %d "
+		 "(--param max-completely-peeled-times limit reached).\n",
+		 loop->num);
+      return false;
+    }
 
   if (!edge_to_cancel)
     edge_to_cancel = loop_edge_to_cancel (loop);
