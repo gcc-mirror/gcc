@@ -1,3 +1,49 @@
+2014-11-15  Marc Glisse  <marc.glisse@inria.fr>
+
+	* config/i386/xmmintrin.h (_mm_add_ps, _mm_sub_ps, _mm_mul_ps,
+	_mm_div_ps, _mm_store_ss, _mm_cvtss_f32): Use vector extensions
+	instead of builtins.
+	* config/i386/emmintrin.h (__v2du, __v4su, __v8hu, __v16qu): New
+	typedefs.
+	(_mm_sqrt_sd): Fix comment.
+	(_mm_add_epi8, _mm_add_epi16, _mm_add_epi32, _mm_add_epi64,
+	_mm_sub_epi8, _mm_sub_epi16, _mm_sub_epi32, _mm_sub_epi64,
+	_mm_mullo_epi16, _mm_cmpeq_epi8, _mm_cmpeq_epi16, _mm_cmpeq_epi32,
+	_mm_cmplt_epi8, _mm_cmplt_epi16, _mm_cmplt_epi32, _mm_cmpgt_epi8,
+	_mm_cmpgt_epi16, _mm_cmpgt_epi32, _mm_and_si128, _mm_or_si128,
+	_mm_xor_si128, _mm_store_sd, _mm_cvtsd_f64, _mm_storeh_pd,
+	_mm_cvtsi128_si64, _mm_cvtsi128_si64x, _mm_add_pd, _mm_sub_pd,
+	_mm_mul_pd, _mm_div_pd, _mm_storel_epi64, _mm_movepi64_pi64):
+	Use vector extensions instead of builtins.
+	* config/i386/smmintrin.h (_mm_cmpeq_epi64, _mm_cmpgt_epi64,
+	_mm_mullo_epi32): Likewise.
+	* config/i386/avxintrin.h (__v4du, __v8su, __v16hu, __v32qu):
+	New typedefs.
+	(_mm256_add_pd, _mm256_add_ps, _mm256_div_pd, _mm256_div_ps,
+	_mm256_mul_pd, _mm256_mul_ps, _mm256_sub_pd, _mm256_sub_ps):
+	Use vector extensions instead of builtins.
+	* config/i386/avx2intrin.h (_mm256_cmpeq_epi8, _mm256_cmpeq_epi16,
+	_mm256_cmpeq_epi32, _mm256_cmpeq_epi64, _mm256_cmpgt_epi8,
+	_mm256_cmpgt_epi16, _mm256_cmpgt_epi32, _mm256_cmpgt_epi64,
+	_mm256_and_si256, _mm256_or_si256, _mm256_xor_si256, _mm256_add_epi8,
+	_mm256_add_epi16, _mm256_add_epi32, _mm256_add_epi64,
+	_mm256_mullo_epi16, _mm256_mullo_epi32, _mm256_sub_epi8,
+	_mm256_sub_epi16, _mm256_sub_epi32, _mm256_sub_epi64): Likewise.
+	* config/i386/avx512fintrin.h (__v8du, __v16su, __v32hu, __v64qu):
+	New typedefs.
+	(_mm512_or_si512, _mm512_or_epi32, _mm512_or_epi64, _mm512_xor_si512,
+	_mm512_xor_epi32, _mm512_xor_epi64, _mm512_and_si512,
+	_mm512_and_epi32, _mm512_and_epi64, _mm512_mullo_epi32,
+	_mm512_add_epi64, _mm512_sub_epi64, _mm512_add_epi32,
+	_mm512_sub_epi32, _mm512_add_pd, _mm512_add_ps, _mm512_sub_pd,
+	_mm512_sub_ps, _mm512_mul_pd, _mm512_mul_ps, _mm512_div_pd,
+	_mm512_div_ps): Use vector extensions instead of builtins.
+	* config/i386/avx512bwintrin.h (_mm512_mullo_epi16, _mm512_add_epi8,
+	_mm512_sub_epi8, _mm512_sub_epi16, _mm512_add_epi16): Likewise.
+	* config/i386/avx512dqintrin.h (_mm512_mullo_epi64): Likewise.
+	* config/i386/avx512vldqintrin.h (_mm256_mullo_epi64, _mm_mullo_epi64):
+	Likewise.
+
 2014-11-15  Jan Hubicka <hubicka@ucw.cz>
 
 	* lto-streamer-out.c (hash_tree): Use cl_optimization_hash.
