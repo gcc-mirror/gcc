@@ -1,5 +1,9 @@
 2014-11-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* gcc.dg/tree-ssa/pr61144.c: Add dg-require-alias.
+
+2014-11-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* gcc.dg/pubtypes-3.c: Include <string.h>.
 	* gcc.dg/pubtypes-4.c: Likewise.
 
