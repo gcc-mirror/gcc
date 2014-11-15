@@ -1,5 +1,8 @@
 2014-11-15  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_omp_declare_reduction_exprs): A block is not
+	an expression.
+
 	* constexpr.c (cxx_eval_builtin_function_call): Use
 	fold_builtin_call_array.
 
