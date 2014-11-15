@@ -18,7 +18,7 @@ int s2 (int a, CFStringRef fmt, ... ) __attribute__((format(__CFString__, 2, 3))
 int s2a (int a, CFStringRef fmt, ... ) __attribute__((format(CFString, 2, 2))) ; /* { dg-error "format string argument follows the args to be formatted" } */
 
 int s3 (const char *fmt, ... ) __attribute__((format(__CFString__, 1, 2))) ; /* { dg-error "format argument should be a .CFString. reference but a string was found" } */
-int s4 (CFStringRef fmt, ... ) __attribute__((format(printf, 1, 2))) ; /* { dg-error "found a .CFStringRef. but the format argument should be a string" } */
+int s4 (CFStringRef fmt, ... ) __attribute__((format(printf, 1, 2))) ; /* { dg-error "found a .CFStringRef.* but the format argument should be a string" } */
 
 char *s5 (char dum, char *fmt1, ... ) __attribute__((format_arg(2))) ; /* OK */
 CFStringRef s6 (CFStringRef dum, CFStringRef fmt1, ... ) __attribute__((format_arg(2))) ; /* OK */
