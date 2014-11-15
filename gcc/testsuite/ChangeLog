@@ -1,3 +1,8 @@
+2014-11-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/60104
+	* gcc.target/i386/sibcall-1.c: Don't run on pic targets.
+
 2014-11-15  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.target/i386/intrinsics_opt-1.c: New testcase.
