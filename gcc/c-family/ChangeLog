@@ -1,3 +1,10 @@
+2014-11-15  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/63884
+	* array-notation-common.c (is_sec_implicit_index_fn): Return false
+	for NULL fndecl.
+	(extract_array_notation_exprs): Return for NULL node.
+
 2014-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): Define and

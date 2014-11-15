@@ -1,3 +1,8 @@
+2014-11-15  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/63884
+	* c-c++-common/cilk-plus/AN/pr63884.c: New test.
+
 2014-11-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR target/60104
