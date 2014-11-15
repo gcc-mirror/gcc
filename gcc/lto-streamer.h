@@ -844,6 +844,10 @@ void cl_target_option_stream_in (struct data_in *,
 				 struct bitpack_d *,
 				 struct cl_target_option *);
 
+void cl_optimization_stream_out (struct bitpack_d *, struct cl_optimization *);
+
+void cl_optimization_stream_in (struct bitpack_d *, struct cl_optimization *);
+
 
 /* In lto-symtab.c.  */
 extern void lto_symtab_merge_decls (void);

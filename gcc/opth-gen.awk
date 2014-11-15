@@ -299,6 +299,9 @@ print "";
 print "/* Hash option variables from a structure.  */";
 print "extern hashval_t cl_target_option_hash (const struct cl_target_option *);";
 print "";
+print "/* Hash optimization from a structure.  */";
+print "extern hashval_t cl_optimization_hash (const struct cl_optimization *);";
+print "";
 print "/* Anything that includes tm.h, does not necessarily need this.  */"
 print "#if !defined(GCC_TM_H)"
 print "#include \"input.h\" /* for location_t */"

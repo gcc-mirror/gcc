@@ -1,3 +1,14 @@
+2014-11-15  Jan Hubicka <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (hash_tree): Use cl_optimization_hash.
+	* lto-streamer.h (cl_optimization_stream_out, cl_optimization_stream_in): Declare.
+	* optc-save-gen.awk: Generate cl_optimization LTO streaming and hashing routines.
+	* opth-gen.awk: Add prototype of cl_optimization_hash.
+	* tree-streamer-in.c (unpack_ts_optimization): Remove.
+	(streamer_unpack_tree_bitfields): Use cl_optimization_stream_in.
+	* tree-streamer-out.c (pack_ts_optimization): Remove.
+	(streamer_pack_tree_bitfields): Use cl_optimization_stream_out.
+
 2014-11-15  Mircea Namolaru  <mircea.namolaru@inria.fr>
 
 	* common.opt (flag_loop_unroll_and_jam): New flag.

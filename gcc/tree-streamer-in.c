@@ -399,21 +399,6 @@ unpack_ts_translation_unit_decl_value_fields (struct data_in *data_in,
   vec_safe_push (all_translation_units, expr);
 }
 
-/* Unpack a TS_OPTIMIZATION tree from BP into EXPR.  */
-
-static void
-unpack_ts_optimization (struct bitpack_d *bp, tree expr)
-{
-  unsigned i, len;
-  struct cl_optimization *t = TREE_OPTIMIZATION (expr);
-
-  len = sizeof (struct cl_optimization);
-  for (i = 0; i < len; i++)
-    ((unsigned char *)t)[i] = bp_unpack_value (bp, 8);
-  if (bp_unpack_value (bp, 32) != 0x12345678)
-    fatal_error ("cl_optimization size mismatch in LTO reader and writer");
-}
-
 
 /* Unpack all the non-pointer fields of the TS_OMP_CLAUSE
    structure of expression EXPR from bitpack BP.  */
@@ -507,7 +492,7 @@ unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
     unpack_ts_translation_unit_decl_value_fields (data_in, bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
-    unpack_ts_optimization (bp, expr);
+    cl_optimization_stream_in (bp, TREE_OPTIMIZATION (expr));
 
   if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
     {
