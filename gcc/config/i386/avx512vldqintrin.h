@@ -544,11 +544,7 @@ extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mullo_epi64 (__m256i __A, __m256i __B)
 {
-  return (__m256i) __builtin_ia32_pmullq256_mask ((__v4di) __A,
-						  (__v4di) __B,
-						  (__v4di)
-						  _mm256_setzero_si256 (),
-						  (__mmask8) -1);
+  return (__m256i) ((__v4du) __A * (__v4du) __B);
 }
 
 extern __inline __m256i
@@ -577,11 +573,7 @@ extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mullo_epi64 (__m128i __A, __m128i __B)
 {
-  return (__m128i) __builtin_ia32_pmullq128_mask ((__v2di) __A,
-						  (__v2di) __B,
-						  (__v2di)
-						  _mm_setzero_di (),
-						  (__mmask8) -1);
+  return (__m128i) ((__v2du) __A * (__v2du) __B);
 }
 
 extern __inline __m128i

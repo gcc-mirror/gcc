@@ -1,3 +1,10 @@
+2014-11-15  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.target/i386/intrinsics_opt-1.c: New testcase.
+	* gcc.target/i386/intrinsics_opt-2.c: Likewise.
+	* gcc.target/i386/intrinsics_opt-3.c: Likewise.
+	* gcc.target/i386/intrinsics_opt-4.c: Likewise.
+
 2014-11-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gcc.dg/tree-ssa/pr61144.c: Add dg-require-alias.
