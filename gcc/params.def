@@ -847,6 +847,21 @@ DEFPARAM (PARAM_LOOP_BLOCK_TILE_SIZE,
 	  "size of tiles for loop blocking",
 	  51, 0, 0)
 
+/* Size of unrolling factor for unroll-and-jam.  */
+ 
+DEFPARAM (PARAM_LOOP_UNROLL_JAM_SIZE,
+ 	  "loop-unroll-jam-size",
+ 	  "size of unrolling factor for unroll-and-jam",
+ 	  4, 0, 0)
+
+/* Size of the band formed by the strip mined dimension and the most inner one for unroll-and-jam.  */
+ 
+DEFPARAM (PARAM_LOOP_UNROLL_JAM_DEPTH,
+ 	  "loop-unroll-jam-depth",
+ 	  "depth of unrolled loop for unroll-and-jam",
+ 	  2, 0, 0)
+
+
 /* Maximal number of parameters that we allow in a SCoP.  */
 
 DEFPARAM (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS,
