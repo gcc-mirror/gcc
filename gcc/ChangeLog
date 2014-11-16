@@ -1,5 +1,25 @@
 2014-11-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::speculation_consistent_p): Constify.
+	(ipa_polymorphic_call_context::meet_speculation_with): New function.
+	(ipa_polymorphic_call_context::combine_with): Handle types in construction
+	better.
+	(ipa_polymorphic_call_context::equal_to): Do not bother about useless
+	speculation.
+	(ipa_polymorphic_call_context::meet_with): New function.
+	* cgraph.h (class ipa_polymorphic_call_context): Add
+	meet_width, meet_speculation_with; constify speculation_consistent_p.
+	* ipa-cp.c (ipa_context_from_jfunc): Handle speculation; combine with incomming
+	context.
+	(propagate_context_accross_jump_function): Likewise; be more cureful.
+	about set_contains_variable.
+	(ipa_get_indirect_edge_target_1): Fix handling of dynamic type changes.
+	(find_more_scalar_values_for_callers_subset): Fix.
+	(find_more_contexts_for_caller_subset): Perform meet operation.
+
+2014-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* passes.c (execute_one_pass): Do not apply all transforms prior
 	every simple IPA pass.
 	* cgraphunit.c: Do not include fibheap.h

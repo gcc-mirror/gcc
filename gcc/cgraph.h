@@ -1389,6 +1389,7 @@ public:
      If actual type the context is being used in is known, OTR_TYPE should be
      set accordingly. This improves quality of combined result.  */
   bool combine_with (ipa_polymorphic_call_context, tree otr_type = NULL);
+  bool meet_with (ipa_polymorphic_call_context, tree otr_type = NULL);
 
   /* Return TRUE if context is fully useless.  */
   bool useless_p () const;
@@ -1406,9 +1407,10 @@ public:
 
 private:
   bool combine_speculation_with (tree, HOST_WIDE_INT, bool, tree);
+  bool meet_speculation_with (tree, HOST_WIDE_INT, bool, tree);
   void set_by_decl (tree, HOST_WIDE_INT);
   bool set_by_invariant (tree, tree, HOST_WIDE_INT);
-  bool speculation_consistent_p (tree, HOST_WIDE_INT, bool, tree);
+  bool speculation_consistent_p (tree, HOST_WIDE_INT, bool, tree) const;
   void make_speculative (tree otr_type = NULL);
 };
 
