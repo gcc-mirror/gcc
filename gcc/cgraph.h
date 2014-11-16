@@ -933,6 +933,11 @@ public:
 
   /* When doing LTO, read cgraph_node's body from disk if it is not already
      present.  */
+  bool get_untransformed_body (void);
+
+  /* Prepare function body.  When doing LTO, read cgraph_node's body from disk 
+     if it is not already present.  When some IPA transformations are scheduled,
+     apply them.  */
   bool get_body (void);
 
   /* Release memory used to represent body of function.

@@ -7086,7 +7086,7 @@ ipa_pta_execute (void)
       /* Nodes without a body are not interesting.  Especially do not
          visit clones at this point for now - we get duplicate decls
 	 there for inline clones at least.  */
-      if (!node->has_gimple_body_p () || node->clone_of)
+      if (!node->has_gimple_body_p () || node->global.inlined_to)
 	continue;
       node->get_body ();
 

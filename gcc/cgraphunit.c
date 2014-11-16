@@ -197,7 +197,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "diagnostic.h"
 #include "params.h"
-#include "fibheap.h"
 #include "intl.h"
 #include "hash-map.h"
 #include "plugin-api.h"
@@ -1469,7 +1468,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	}
 
       if (in_lto_p)
-	get_body ();
+	get_untransformed_body ();
       a = DECL_ARGUMENTS (thunk_fndecl);
       
       current_function_decl = thunk_fndecl;
@@ -1522,7 +1521,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       gimple ret;
 
       if (in_lto_p)
-	get_body ();
+	get_untransformed_body ();
       a = DECL_ARGUMENTS (thunk_fndecl);
 
       current_function_decl = thunk_fndecl;
@@ -1744,7 +1743,7 @@ cgraph_node::expand (void)
   announce_function (decl);
   process = 0;
   gcc_assert (lowered);
-  get_body ();
+  get_untransformed_body ();
 
   /* Generate RTL for the body of DECL.  */
 

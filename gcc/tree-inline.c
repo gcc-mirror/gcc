@@ -4338,7 +4338,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
       goto egress;
     }
   fn = cg_edge->callee->decl;
-  cg_edge->callee->get_body ();
+  cg_edge->callee->get_untransformed_body ();
 
 #ifdef ENABLE_CHECKING
   if (cg_edge->callee->decl != id->dst_node->decl)

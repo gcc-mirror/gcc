@@ -307,7 +307,7 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
     node = duplicate_thunk_for_node (thunk_of, node);
 
   if (!DECL_ARGUMENTS (thunk->decl))
-    thunk->get_body ();
+    thunk->get_untransformed_body ();
 
   cgraph_edge *cs;
   for (cs = node->callers; cs; cs = cs->next_caller)
@@ -1067,7 +1067,7 @@ symbol_table::materialize_all_clones (void)
 	      && !gimple_has_body_p (node->decl))
 	    {
 	      if (!node->clone_of->clone_of)
-		node->clone_of->get_body ();
+		node->clone_of->get_untransformed_body ();
 	      if (gimple_has_body_p (node->clone_of->decl))
 	        {
 		  if (symtab->dump_file)
