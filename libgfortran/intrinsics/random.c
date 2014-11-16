@@ -224,7 +224,7 @@ KISS algorithm.  */
    z=0,c=0 and z=2^32-1,c=698769068
    should be avoided.  */
 
-/* Any modifications to the seeds that change kiss_size below need to be
+/* Any modifications to the seeds that change KISS_SIZE below need to be
    reflected in check.c (gfc_check_random_seed) to enable correct
    compile-time checking of PUT size for the RANDOM_SEED intrinsic.  */
 
@@ -250,7 +250,7 @@ static GFC_UINTEGER_4 kiss_default_seed[] = {
 #endif
 };
 
-static const GFC_INTEGER_4 kiss_size = sizeof(kiss_seed)/sizeof(kiss_seed[0]);
+#define KISS_SIZE (sizeof(kiss_seed)/sizeof(kiss_seed[0]))
 
 static GFC_UINTEGER_4 * const kiss_seed_1 = kiss_seed;
 static GFC_UINTEGER_4 * const kiss_seed_2 = kiss_seed + 4;
@@ -665,12 +665,7 @@ unscramble_seed (unsigned char *dest, unsigned char *src, int size)
 void
 random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 {
-  int i;
-
-#define KISS_MAX_SIZE 12
-  unsigned char seed[4 * KISS_MAX_SIZE];
-  _Static_assert (kiss_size <= KISS_MAX_SIZE,
-		  "kiss_size must <= KISS_MAX_SIZE");
+  unsigned char seed[4 * KISS_SIZE];
 
   __gthread_mutex_lock (&random_lock);
 
@@ -681,11 +676,11 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
   /* From the standard: "If no argument is present, the processor assigns
      a processor-dependent value to the seed."  */
   if (size == NULL && put == NULL && get == NULL)
-      for (i = 0; i < kiss_size; i++)
+      for (size_t i = 0; i < KISS_SIZE; i++)
 	kiss_seed[i] = kiss_default_seed[i];
 
   if (size != NULL)
-    *size = kiss_size;
+    *size = KISS_SIZE;
 
   if (put != NULL)
     {
@@ -694,18 +689,18 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
         runtime_error ("Array rank of PUT is not 1.");
 
       /* If the array is too small, abort.  */
-      if (GFC_DESCRIPTOR_EXTENT(put,0) < kiss_size)
+      if (GFC_DESCRIPTOR_EXTENT(put,0) < (index_type) KISS_SIZE)
         runtime_error ("Array size of PUT is too small.");
 
       /*  We copy the seed given by the user.  */
-      for (i = 0; i < kiss_size; i++)
+      for (size_t i = 0; i < KISS_SIZE; i++)
 	memcpy (seed + i * sizeof(GFC_UINTEGER_4),
-		&(put->base_addr[(kiss_size - 1 - i) * GFC_DESCRIPTOR_STRIDE(put,0)]),
+		&(put->base_addr[(KISS_SIZE - 1 - i) * GFC_DESCRIPTOR_STRIDE(put,0)]),
 		sizeof(GFC_UINTEGER_4));
 
       /* We put it after scrambling the bytes, to paper around users who
 	 provide seeds with quality only in the lower or upper part.  */
-      scramble_seed ((unsigned char *) kiss_seed, seed, 4*kiss_size);
+      scramble_seed ((unsigned char *) kiss_seed, seed, 4 * KISS_SIZE);
     }
 
   /* Return the seed to GET data.  */
@@ -716,15 +711,15 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 	runtime_error ("Array rank of GET is not 1.");
 
       /* If the array is too small, abort.  */
-      if (GFC_DESCRIPTOR_EXTENT(get,0) < kiss_size)
+      if (GFC_DESCRIPTOR_EXTENT(get,0) < (index_type) KISS_SIZE)
 	runtime_error ("Array size of GET is too small.");
 
       /* Unscramble the seed.  */
-      unscramble_seed (seed, (unsigned char *) kiss_seed, 4*kiss_size);
+      unscramble_seed (seed, (unsigned char *) kiss_seed, 4 * KISS_SIZE);
 
       /*  Then copy it back to the user variable.  */
-      for (i = 0; i < kiss_size; i++)
-	memcpy (&(get->base_addr[(kiss_size - 1 - i) * GFC_DESCRIPTOR_STRIDE(get,0)]),
+      for (size_t i = 0; i < KISS_SIZE; i++)
+	memcpy (&(get->base_addr[(KISS_SIZE - 1 - i) * GFC_DESCRIPTOR_STRIDE(get,0)]),
                seed + i * sizeof(GFC_UINTEGER_4),
                sizeof(GFC_UINTEGER_4));
     }
@@ -737,8 +732,6 @@ iexport(random_seed_i4);
 void
 random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
 {
-  int i;
-
   __gthread_mutex_lock (&random_lock);
 
   /* Check that we only have one argument present.  */
@@ -748,11 +741,11 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
   /* From the standard: "If no argument is present, the processor assigns
      a processor-dependent value to the seed."  */
   if (size == NULL && put == NULL && get == NULL)
-      for (i = 0; i < kiss_size; i++)
+      for (size_t i = 0; i < KISS_SIZE; i++)
 	kiss_seed[i] = kiss_default_seed[i];
 
   if (size != NULL)
-    *size = kiss_size / 2;
+    *size = KISS_SIZE / 2;
 
   if (put != NULL)
     {
@@ -761,11 +754,11 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
         runtime_error ("Array rank of PUT is not 1.");
 
       /* If the array is too small, abort.  */
-      if (GFC_DESCRIPTOR_EXTENT(put,0) < kiss_size / 2)
+      if (GFC_DESCRIPTOR_EXTENT(put,0) < (index_type) KISS_SIZE / 2)
         runtime_error ("Array size of PUT is too small.");
 
       /*  This code now should do correct strides.  */
-      for (i = 0; i < kiss_size / 2; i++)
+      for (size_t i = 0; i < KISS_SIZE / 2; i++)
 	memcpy (&kiss_seed[2*i], &(put->base_addr[i * GFC_DESCRIPTOR_STRIDE(put,0)]),
 		sizeof (GFC_UINTEGER_8));
     }
@@ -778,11 +771,11 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
 	runtime_error ("Array rank of GET is not 1.");
 
       /* If the array is too small, abort.  */
-      if (GFC_DESCRIPTOR_EXTENT(get,0) < kiss_size / 2)
+      if (GFC_DESCRIPTOR_EXTENT(get,0) < (index_type) KISS_SIZE / 2)
 	runtime_error ("Array size of GET is too small.");
 
       /*  This code now should do correct strides.  */
-      for (i = 0; i < kiss_size / 2; i++)
+      for (size_t i = 0; i < KISS_SIZE / 2; i++)
 	memcpy (&(get->base_addr[i * GFC_DESCRIPTOR_STRIDE(get,0)]), &kiss_seed[2*i],
 		sizeof (GFC_UINTEGER_8));
     }
