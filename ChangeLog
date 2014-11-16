@@ -1,5 +1,14 @@
 2014-11-16  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
+	* compile: Sync with upstream Automake.
+	* depcomp: Ditto.
+	* install-sh: Ditto.
+	* missing: Ditto.
+	* mkinstalldirs: Ditto.
+	* ylwrap: Ditto.
+
+2014-11-16  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
 	* config.sub: Update from upstream config repo.
 	* config.guess: Ditto.
 
