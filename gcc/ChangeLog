@@ -1,3 +1,15 @@
+2014-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/tm.texi.in (TARGET_FLAGS_REGNUM): Move around.
+	* doc/tm.texi: Regenerate.
+
+	Backport from mainline
+	2013-09-16  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* doc/tm.texi.in (Cond Exec Macros): Remove node.
+	(Condition Code): Don't reference it.
+	* doc/tm.texi: Regenerate.
+
 2014-11-13  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backport from mainline

@@ -4424,10 +4424,6 @@ to return a nonzero value when it is required, the compiler will run out
 of spill registers and print a fatal error message.
 @end deftypefn
 
-@deftypevr {Target Hook} {unsigned int} TARGET_FLAGS_REGNUM
-If the target has a dedicated flags register, and it needs to use the post-reload comparison elimination pass, then this value should be set appropriately.
-@end deftypevr
-
 @node Scalar Return
 @subsection How Scalar Function Values Are Returned
 @cindex return values in registers
@@ -5901,7 +5897,6 @@ interested in most macros in this section.
 @menu
 * CC0 Condition Codes::      Old style representation of condition codes.
 * MODE_CC Condition Codes::  Modern representation of condition codes.
-* Cond Exec Macros::         Macros to control conditional execution.
 @end menu
 
 @node CC0 Condition Codes
@@ -6113,14 +6108,9 @@ same.  If they are, it returns that mode.  If they are different, it
 returns @code{VOIDmode}.
 @end deftypefn
 
-@node Cond Exec Macros
-@subsection Macros to control conditional execution
-@findex conditional execution
-@findex predication
-
-There is one macro that may need to be defined for targets
-supporting conditional execution, independent of how they
-represent conditional branches.
+@deftypevr {Target Hook} {unsigned int} TARGET_FLAGS_REGNUM
+If the target has a dedicated flags register, and it needs to use the post-reload comparison elimination pass, then this value should be set appropriately.
+@end deftypevr
 
 @node Costs
 @section Describing Relative Costs of Operations
