@@ -1618,14 +1618,9 @@
   extract_insn (insn2);
   if (! constrain_operands (1, get_preferred_alternatives (insn2, bb)))
     {
-      rtx tmp;
     failure:
-      tmp = replacements[0];
-      replacements[0] = replacements[1];
-      replacements[1] = tmp;
-      tmp = replacements[2];
-      replacements[2] = replacements[3];
-      replacements[3] = tmp;
+      std::swap (replacements[0], replacements[1]);
+      std::swap (replacements[2], replacements[3]);
       replace_n_hard_rtx (SET_DEST (set1), replacements, 2, 1);
       replace_n_hard_rtx (SET_DEST (set2), replacements, 2, 1);
       replace_n_hard_rtx (SET_SRC (set2), replacements, 2, 1);
@@ -11348,9 +11343,7 @@ label:
 
   if (swap)
     {
-      rtx tem = operands[2];
-      operands[2] = operands[3];
-      operands[3] = tem;
+      std::swap (operands[2], operands[3]);
       code = swap_condition (code);
     }
 
@@ -12538,11 +12531,7 @@ label:
   /* Change 'b * a + a' into 'a * b + a'.
      This is better for register allocation.  */
   if (REGNO (operands[2]) == REGNO (operands[3]))
-    {
-      rtx tmp = operands[1];
-      operands[1] = operands[2];
-      operands[2] = tmp;
-    }
+    std::swap (operands[1], operands[2]);
 }
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])

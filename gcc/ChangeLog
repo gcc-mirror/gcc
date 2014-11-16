@@ -1,3 +1,14 @@
+2014-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/sh/sh.c: Do not include algorithm.
+	(sh_emit_scc_to_t): Replace open-coded swap with std::swap
+	to swap values.
+	(sh_emit_compare_and_branch): Ditto.
+	(sh_emit_compare_and_set): Ditto.
+	* config/sh/sh.md (replacement peephole2): Ditto.
+	(cstore4_media): Ditto.
+	(*fmasf4): Ditto.
+
 2014-11-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-remat.c (cand_transf_func): Process regno for

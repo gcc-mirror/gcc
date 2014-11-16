@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include <sstream>
 #include <vector>
-#include <algorithm>
 
 #include "config.h"
 #include "system.h"
@@ -2351,11 +2350,7 @@ sh_emit_scc_to_t (enum rtx_code code, rtx op0, rtx op1)
       break;
     }
   if (code != oldcode)
-    {
-      rtx tmp = op0;
-      op0 = op1;
-      op1 = tmp;
-    }
+    std::swap (op0, op1);
 
   mode = GET_MODE (op0);
   if (mode == VOIDmode)
@@ -2436,7 +2431,7 @@ sh_emit_compare_and_branch (rtx *operands, machine_mode mode)
   enum rtx_code branch_code;
   rtx op0 = operands[1];
   rtx op1 = operands[2];
-  rtx insn, tem;
+  rtx insn;
   bool need_ccmpeq = false;
 
   if (TARGET_SH2E && GET_MODE_CLASS (mode) == MODE_FLOAT)
@@ -2461,7 +2456,7 @@ sh_emit_compare_and_branch (rtx *operands, machine_mode mode)
 	  || (code == LE && TARGET_IEEE && TARGET_SH2E)
 	  || (code == GE && !(TARGET_IEEE && TARGET_SH2E)))
 	{
-	  tem = op0, op0 = op1, op1 = tem;
+	  std::swap (op0, op1);
 	  code = swap_condition (code);
 	}
 
@@ -2520,7 +2515,6 @@ sh_emit_compare_and_set (rtx *operands, machine_mode mode)
   rtx op1 = operands[3];
   rtx_code_label *lab = NULL;
   bool invert = false;
-  rtx tem;
 
   op0 = force_reg (mode, op0);
   if ((code != EQ && code != NE
@@ -2534,8 +2528,8 @@ sh_emit_compare_and_set (rtx *operands, machine_mode mode)
     {
       if (code == LT || code == LE)
 	{
+	  std::swap (op0, op1);
 	  code = swap_condition (code);
-	  tem = op0, op0 = op1, op1 = tem;
 	}
       if (code == GE)
 	{
