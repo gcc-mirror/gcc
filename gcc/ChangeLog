@@ -1,3 +1,8 @@
+2014-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/tm.texi.in (TARGET_FLAGS_REGNUM): Move around.
+	* doc/tm.texi: Regenerate.
+
 2014-11-14  Felix Yang  <felix.yang@huawei.com>
 
 	Backport from mainline

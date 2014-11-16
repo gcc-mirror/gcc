@@ -3714,8 +3714,6 @@ stack.
 
 @hook TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 
-@hook TARGET_FLAGS_REGNUM
-
 @node Scalar Return
 @subsection How Scalar Function Values Are Returned
 @cindex return values in registers
@@ -4685,6 +4683,8 @@ like:
 @hook TARGET_FIXED_CONDITION_CODE_REGS
 
 @hook TARGET_CC_MODES_COMPATIBLE
+
+@hook TARGET_FLAGS_REGNUM
 
 @node Costs
 @section Describing Relative Costs of Operations
