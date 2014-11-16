@@ -860,6 +860,10 @@ cand_trans_fun (int bb_index, bitmap bb_in, bitmap bb_out)
 	    bitmap_set_bit (&temp_bitmap, cid);
 	    break;
 	  }
+      /* Check regno for rematerialization.  */
+      if (bitmap_bit_p (bb_changed_regs, cand->regno)
+	  || bitmap_bit_p (bb_dead_regs, cand->regno))
+	bitmap_set_bit (&temp_bitmap, cid);
     }
   return bitmap_ior_and_compl (bb_out,
 			       &bb_info->gen_cands, bb_in, &temp_bitmap);
