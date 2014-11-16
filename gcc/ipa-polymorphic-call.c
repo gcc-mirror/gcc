@@ -1727,7 +1727,7 @@ bool
 ipa_polymorphic_call_context::speculation_consistent_p (tree spec_outer_type,
 							HOST_WIDE_INT spec_offset,
 							bool spec_maybe_derived_type,
-							tree otr_type)
+							tree otr_type) const
 {
   if (!flag_devirtualize_speculatively)
     return false;
@@ -1871,6 +1871,102 @@ ipa_polymorphic_call_context::combine_speculation_with
 					     new_outer_type));
     }
   return false;
+}
+
+/* Make speculation less specific so
+   NEW_OUTER_TYPE, NEW_OFFSET, NEW_MAYBE_DERIVED_TYPE is also included.
+   If OTR_TYPE is set, assume the context is used with OTR_TYPE.  */
+
+bool
+ipa_polymorphic_call_context::meet_speculation_with
+   (tree new_outer_type, HOST_WIDE_INT new_offset, bool new_maybe_derived_type,
+    tree otr_type)
+{
+  if (!new_outer_type && speculative_outer_type)
+    {
+      clear_speculation ();
+      return true;
+    }
+
+  /* restrict_to_inner_class may eliminate wrong speculation making our job
+     easeier.  */
+  if (otr_type)
+    restrict_to_inner_class (otr_type);
+
+  if (!speculative_outer_type
+      || !speculation_consistent_p (speculative_outer_type,
+				    speculative_offset,
+				    speculative_maybe_derived_type,
+				    otr_type))
+    return false;
+
+  if (!speculation_consistent_p (new_outer_type, new_offset,
+				 new_maybe_derived_type, otr_type))
+    {
+      clear_speculation ();
+      return true;
+    }
+
+  else if (types_must_be_same_for_odr (speculative_outer_type,
+				       new_outer_type))
+    {
+      if (speculative_offset != new_offset)
+	{
+	  clear_speculation ();
+	  return true;
+	}
+      else
+	{
+	  if (!speculative_maybe_derived_type && new_maybe_derived_type)
+	    {
+	      speculative_maybe_derived_type = true;
+	      return true;
+	    }
+	  else
+	    return false;
+	}
+    }
+  /* See if one type contains the other as a field (not base).  */
+  else if (contains_type_p (new_outer_type, new_offset - speculative_offset,
+			    speculative_outer_type, false, false))
+    return false;
+  else if (contains_type_p (speculative_outer_type,
+			    speculative_offset - new_offset,
+			    new_outer_type, false, false))
+    {
+      speculative_outer_type = new_outer_type;
+      speculative_offset = new_offset;
+      speculative_maybe_derived_type = new_maybe_derived_type;
+      return true;
+    }
+  /* See if OUTER_TYPE is base of CTX.OUTER_TYPE.  */
+  else if (contains_type_p (new_outer_type,
+			    new_offset - speculative_offset,
+			    speculative_outer_type, false, true))
+    {
+      if (!speculative_maybe_derived_type)
+	{
+	  speculative_maybe_derived_type = true;
+	  return true;
+	}
+      return false;
+    }
+  /* See if CTX.OUTER_TYPE is base of OUTER_TYPE.  */
+  else if (contains_type_p (speculative_outer_type,
+			    speculative_offset - new_offset, new_outer_type, false, true))
+    {
+      speculative_outer_type = new_outer_type;
+      speculative_offset = new_offset;
+      speculative_maybe_derived_type = true;
+      return true;
+    }
+  else
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+        fprintf (dump_file, "Giving up on speculative meet\n");
+      clear_speculation ();
+      return true;
+    }
 }
 
 /* Assume that both THIS and a given context is valid and strenghten THIS
@@ -2065,6 +2161,16 @@ ipa_polymorphic_call_context::combine_with (ipa_polymorphic_call_context ctx,
 		fprintf (dump_file, "First context does not permit base -> invalid\n");
 	      goto invalidate;
 	    }
+	  /* Pick the base type.  */
+	  else if (maybe_in_construction)
+	    {
+	      outer_type = ctx.outer_type;
+	      maybe_in_construction = ctx.maybe_in_construction;
+	      maybe_derived_type = ctx.maybe_derived_type;
+	      offset = ctx.offset;
+	      dynamic = ctx.dynamic;
+	      updated = true;
+	    }
 	}
     }
   /* TODO handle merging using hiearchy. */
@@ -2160,19 +2266,220 @@ ipa_polymorphic_call_context::equal_to
   else if (x.outer_type)
     return false;
 
-  if (speculative_outer_type)
+
+  if (speculative_outer_type
+      && speculation_consistent_p (speculative_outer_type, speculative_offset,
+				   speculative_maybe_derived_type, NULL_TREE))
     {
-      if (!x.speculative_outer_type
-	  || !types_odr_comparable (speculative_outer_type,
-				    x.speculative_outer_type)
+      if (!x.speculative_outer_type)
+	return false;
+
+      if (!types_odr_comparable (speculative_outer_type,
+				 x.speculative_outer_type)
 	  || !types_same_for_odr  (speculative_outer_type,
-				    x.speculative_outer_type)
+				   x.speculative_outer_type)
 	  || speculative_offset != x.speculative_offset
 	  || speculative_maybe_derived_type != x.speculative_maybe_derived_type)
 	return false;
     }
-  else if (x.speculative_outer_type)
+  else if (x.speculative_outer_type
+	   && x.speculation_consistent_p (x.speculative_outer_type,
+					  x.speculative_offset,
+				  	  x.speculative_maybe_derived_type,
+					  NULL))
     return false;
 
   return true;
+}
+
+/* Modify context to be strictly less restrictive than CTX.  */
+
+bool
+ipa_polymorphic_call_context::meet_with (ipa_polymorphic_call_context ctx,
+					 tree otr_type)
+{
+  bool updated = false;
+
+  if (useless_p () || ctx.invalid)
+    return false;
+
+  /* Restricting context to inner type makes merging easier, however do not
+     do that unless we know how the context is used (OTR_TYPE is non-NULL)  */
+  if (otr_type && !useless_p () && !ctx.useless_p ())
+    {
+      restrict_to_inner_class (otr_type);
+      ctx.restrict_to_inner_class (otr_type);
+      if(invalid)
+        return false;
+    }
+
+  if (equal_to (ctx))
+    return false;
+
+  if (ctx.useless_p () || invalid)
+    {
+      *this = ctx;
+      return true;
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Polymorphic call context meet:");
+      dump (dump_file);
+      fprintf (dump_file, "With context:                    ");
+      ctx.dump (dump_file);
+      if (otr_type)
+	{
+          fprintf (dump_file, "To be used with type:            ");
+	  print_generic_expr (dump_file, otr_type, TDF_SLIM);
+          fprintf (dump_file, "\n");
+	}
+    }
+
+  if (!dynamic && ctx.dynamic)
+    {
+      dynamic = true;
+      updated = true;
+    }
+
+  /* If call is known to be invalid, we are done.  */
+  if (!outer_type)
+    ;
+  else if (!ctx.outer_type)
+    {
+      clear_outer_type ();
+      updated = true;
+    }
+  /* If types are known to be same, merging is quite easy.  */
+  else if (types_must_be_same_for_odr (outer_type, ctx.outer_type))
+    {
+      if (offset != ctx.offset
+	  && TYPE_SIZE (outer_type)
+	  && TREE_CODE (TYPE_SIZE (outer_type)) == INTEGER_CST)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Outer types match, offset mismatch -> clearing\n");
+	  clear_outer_type ();
+	  return true;
+	}
+      if (dump_file && (dump_flags & TDF_DETAILS))
+        fprintf (dump_file, "Outer types match, merging flags\n");
+      if (!maybe_in_construction && ctx.maybe_in_construction)
+	{
+	  updated = true;
+	  maybe_in_construction = true;
+	}
+      if (!maybe_derived_type && ctx.maybe_derived_type)
+	{
+	  updated = true;
+	  maybe_derived_type = true;
+	}
+      if (!dynamic && ctx.dynamic)
+	{
+	  updated = true;
+	  dynamic = true;
+	}
+    }
+  /* See if one type contains the other as a field (not base).  */
+  else if (contains_type_p (ctx.outer_type, ctx.offset - offset,
+			    outer_type, false, false))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Second type contain the first as a field\n");
+
+      /* The second type is more specified, so we keep the first.
+         We need to set DYNAMIC flag to avoid declaring context INVALID
+	 of OFFSET ends up being out of range.  */
+      if (!dynamic
+	  && (ctx.dynamic
+	      || (!otr_type
+		  && (!TYPE_SIZE (ctx.outer_type)
+		      || !TYPE_SIZE (outer_type)
+		      || !operand_equal_p (TYPE_SIZE (ctx.outer_type),
+					   TYPE_SIZE (outer_type), 0)))))
+	{
+	  dynamic = true;
+	  updated = true;
+	}
+    }
+  else if (contains_type_p (outer_type, offset - ctx.offset,
+			    ctx.outer_type, false, false))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "First type contain the second as a field\n");
+
+      if (!dynamic
+	  && (ctx.dynamic
+	      || (!otr_type
+		  && (!TYPE_SIZE (ctx.outer_type)
+		      || !TYPE_SIZE (outer_type)
+		      || !operand_equal_p (TYPE_SIZE (ctx.outer_type),
+					   TYPE_SIZE (outer_type), 0)))))
+	dynamic = true;
+      outer_type = ctx.outer_type;
+      offset = ctx.offset;
+      dynamic = ctx.dynamic;
+      maybe_in_construction = ctx.maybe_in_construction;
+      maybe_derived_type = ctx.maybe_derived_type;
+      updated = true;
+    }
+  /* See if OUTER_TYPE is base of CTX.OUTER_TYPE.  */
+  else if (contains_type_p (ctx.outer_type,
+			    ctx.offset - offset, outer_type, false, true))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "First type is base of second\n");
+      if (!maybe_derived_type)
+	{
+	  maybe_derived_type = true;
+	  updated = true;
+	}
+      if (!maybe_in_construction && ctx.maybe_in_construction)
+	{
+	  maybe_in_construction = true;
+	  updated = true;
+	}
+      if (!dynamic && ctx.dynamic)
+	{
+	  dynamic = true;
+	  updated = true;
+	}
+    }
+  /* See if CTX.OUTER_TYPE is base of OUTER_TYPE.  */
+  else if (contains_type_p (outer_type,
+			    offset - ctx.offset, ctx.outer_type, false, true))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Second type is base of first\n");
+      outer_type = ctx.outer_type;
+      offset = ctx.offset;
+      updated = true;
+      if (!maybe_derived_type)
+	maybe_derived_type = true;
+      if (!maybe_in_construction && ctx.maybe_in_construction)
+	maybe_in_construction = true;
+      if (!dynamic && ctx.dynamic)
+	dynamic = true;
+    }
+  /* TODO handle merging using hiearchy. */
+  else
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+        fprintf (dump_file, "Giving up on meet\n");
+      clear_outer_type ();
+      updated = true;
+    }
+
+  updated |= meet_speculation_with (ctx.speculative_outer_type,
+				    ctx.speculative_offset,
+				    ctx.speculative_maybe_derived_type,
+				    otr_type);
+
+  if (updated && dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Updated as:                      ");
+      dump (dump_file);
+      fprintf (dump_file, "\n");
+    }
+  return updated;
 }
