@@ -1,3 +1,19 @@
+2014-11-16  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/execute/memset-4.c: New test.
+	* gcc.c-torture/execute/20110418-1.c: New test.
+	* gcc.c-torture/execute/20141022-1.c: New test.
+	* gcc.c-torture/execute/strcpy-2.c: New test.
+	* gcc.c-torture/execute/20140212-2.c: New test.
+	* gcc.c-torture/compile/20120913-1.c: New test.
+	* gcc.c-torture/compile/20121010-1.c: New test.
+	* gcc.c-torture/compile/20120917-1.c: New test.
+	* gcc.c-torture/compile/20140110-1.c: New test.
+	* gcc.c-torture/compile/20121220-1.c: New test.
+	* gcc.c-torture/compile/20120822-1.c: New test.
+	* gcc.c-torture/compile/20121027-1.c: New test.
+	* gcc.c-torture/compile/20120830-2.c: New test.
+
 2014-11-15  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* g++.dg/guality/guality.exp (check_guality): Fix `test_counts'
