@@ -1,3 +1,23 @@
+2014-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* passes.c (execute_one_pass): Do not apply all transforms prior
+	every simple IPA pass.
+	* cgraphunit.c: Do not include fibheap.h
+	(expand_thunk): Use get_untransformed_body.
+	(cgraph_node::expand): Likewise.
+	* tree-ssa-structalias.c (ipa_pta_execute): Skip inline clones.
+	* cgraph.c (release_function_body): Do not push cfun when CFG is not there.
+	(cgraph_node::get_untransformed_body): Break out from ...
+	(cgraph_node::get_body): ... here; add code to apply all transforms.
+	* cgraph.h (cgraph_node): Add get_untransformed_body.
+	* ipa-icf.c (sem_function::init): Use get_untransformed_body.
+	* cgraphclones.c (duplicate_thunk_for_node): Likewise.
+	* tree-inline.c (expand_call_inline): LIkewise.
+	* i386.c (ix86_reset_to_default_globals): Break out from ...
+	(ix86_set_current_function): ... here;
+	(ix86_reset_previous_fndecl): Use it.
+	(ix86_simd_clone_adjust): Use ix86_reset_previous_fndecl.
+
 2014-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/tm.texi.in (TARGET_FLAGS_REGNUM): Move around.

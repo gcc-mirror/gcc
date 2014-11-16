@@ -1664,29 +1664,33 @@ release_function_body (tree decl)
 {
   if (DECL_STRUCT_FUNCTION (decl))
     {
-      push_cfun (DECL_STRUCT_FUNCTION (decl));
-      if (cfun->cfg
-	  && current_loops)
+      if (DECL_STRUCT_FUNCTION (decl)->cfg
+	  || DECL_STRUCT_FUNCTION (decl)->gimple_df)
 	{
-	  cfun->curr_properties &= ~PROP_loops;
-	  loop_optimizer_finalize ();
+	  push_cfun (DECL_STRUCT_FUNCTION (decl));
+	  if (cfun->cfg
+	      && current_loops)
+	    {
+	      cfun->curr_properties &= ~PROP_loops;
+	      loop_optimizer_finalize ();
+	    }
+	  if (cfun->gimple_df)
+	    {
+	      delete_tree_ssa ();
+	      delete_tree_cfg_annotations ();
+	      cfun->eh = NULL;
+	    }
+	  if (cfun->cfg)
+	    {
+	      gcc_assert (!dom_info_available_p (CDI_DOMINATORS));
+	      gcc_assert (!dom_info_available_p (CDI_POST_DOMINATORS));
+	      clear_edges ();
+	      cfun->cfg = NULL;
+	    }
+	  if (cfun->value_histograms)
+	    free_histograms ();
+	  pop_cfun ();
 	}
-      if (cfun->gimple_df)
-	{
-	  delete_tree_ssa ();
-	  delete_tree_cfg_annotations ();
-	  cfun->eh = NULL;
-	}
-      if (cfun->cfg)
-	{
-	  gcc_assert (!dom_info_available_p (CDI_DOMINATORS));
-	  gcc_assert (!dom_info_available_p (CDI_POST_DOMINATORS));
-	  clear_edges ();
-	  cfun->cfg = NULL;
-	}
-      if (cfun->value_histograms)
-	free_histograms ();
-      pop_cfun ();
       gimple_set_body (decl, NULL);
       /* Struct function hangs a lot of data that would leak if we didn't
          removed all pointers to it.   */
@@ -3138,7 +3142,7 @@ cgraph_node::function_symbol (enum availability *availability)
    present.  */
 
 bool
-cgraph_node::get_body (void)
+cgraph_node::get_untransformed_body (void)
 {
   lto_file_decl_data *file_data;
   const char *data, *name;
@@ -3176,6 +3180,44 @@ cgraph_node::get_body (void)
   timevar_pop (TV_IPA_LTO_GIMPLE_IN);
 
   return true;
+}
+
+/* Prepare function body.  When doing LTO, read cgraph_node's body from disk 
+   if it is not already present.  When some IPA transformations are scheduled,
+   apply them.  */
+
+bool
+cgraph_node::get_body (void)
+{
+  bool updated;
+
+  updated = get_untransformed_body ();
+
+  /* Getting transformed body makes no sense for inline clones;
+     we should never use this on real clones becuase they are materialized
+     early.
+     TODO: Materializing clones here will likely lead to smaller LTRANS
+     footprint. */
+  gcc_assert (!global.inlined_to && !clone_of);
+  if (ipa_transforms_to_apply.exists ())
+    {
+      opt_pass *saved_current_pass = current_pass;
+      FILE *saved_dump_file = dump_file;
+      int saved_dump_flags = dump_flags;
+
+      push_cfun (DECL_STRUCT_FUNCTION (decl));
+      execute_all_ipa_transforms ();
+      cgraph_edge::rebuild_edges ();
+      free_dominance_info (CDI_DOMINATORS);
+      free_dominance_info (CDI_POST_DOMINATORS);
+      pop_cfun ();
+      updated = true;
+
+      current_pass = saved_current_pass;
+      dump_file = saved_dump_file;
+      dump_flags = saved_dump_flags;
+    }
+  return updated;
 }
 
 /* Return the DECL_STRUCT_FUNCTION of the function.  */

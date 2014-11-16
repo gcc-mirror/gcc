@@ -706,7 +706,7 @@ void
 sem_function::init (void)
 {
   if (in_lto_p)
-    get_node ()->get_body ();
+    get_node ()->get_untransformed_body ();
 
   tree fndecl = node->decl;
   function *func = DECL_STRUCT_FUNCTION (fndecl);

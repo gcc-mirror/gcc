@@ -2214,36 +2214,6 @@ execute_one_pass (opt_pass *pass)
      executed.  */
   invoke_plugin_callbacks (PLUGIN_PASS_EXECUTION, pass);
 
-  /* SIPLE IPA passes do not handle callgraphs with IPA transforms in it.
-     Apply all trnasforms first.  */
-  if (pass->type == SIMPLE_IPA_PASS)
-    {
-      struct cgraph_node *node;
-      bool applied = false;
-      FOR_EACH_DEFINED_FUNCTION (node)
-	if (node->analyzed
-	    && node->has_gimple_body_p ()
-	    && (!node->clone_of || node->decl != node->clone_of->decl))
-	  {
-	    if (!node->global.inlined_to
-		&& node->ipa_transforms_to_apply.exists ())
-	      {
-		node->get_body ();
-		push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-		execute_all_ipa_transforms ();
-		cgraph_edge::rebuild_edges ();
-		free_dominance_info (CDI_DOMINATORS);
-		free_dominance_info (CDI_POST_DOMINATORS);
-		pop_cfun ();
-		applied = true;
-	      }
-	  }
-      if (applied)
-	symtab->remove_unreachable_nodes (false, dump_file);
-      /* Restore current_pass.  */
-      current_pass = pass;
-    }
-
   if (!quiet_flag && !cfun)
     fprintf (stderr, " <%s>", pass->name ? pass->name : "");
 

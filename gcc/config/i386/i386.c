@@ -5029,10 +5029,35 @@ ix86_can_inline_p (tree caller, tree callee)
 /* Remember the last target of ix86_set_current_function.  */
 static GTY(()) tree ix86_previous_fndecl;
 
+/* Set target globals to default.  */
+
+static void
+ix86_reset_to_default_globals (void)
+{
+  tree old_tree = (ix86_previous_fndecl
+		   ? DECL_FUNCTION_SPECIFIC_TARGET (ix86_previous_fndecl)
+		   : NULL_TREE);
+
+  if (old_tree)
+    {
+      tree new_tree = target_option_current_node;
+      cl_target_option_restore (&global_options,
+				TREE_TARGET_OPTION (new_tree));
+      if (TREE_TARGET_GLOBALS (new_tree))
+	restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
+      else if (new_tree == target_option_default_node)
+	restore_target_globals (&default_target_globals);
+      else
+	TREE_TARGET_GLOBALS (new_tree)
+	  = save_target_globals_default_opts ();
+    }
+}
+
 /* Invalidate ix86_previous_fndecl cache.  */
 void
 ix86_reset_previous_fndecl (void)
 {
+  ix86_reset_to_default_globals ();
   ix86_previous_fndecl = NULL_TREE;
 }
 
@@ -5055,7 +5080,6 @@ ix86_set_current_function (tree fndecl)
 		       ? DECL_FUNCTION_SPECIFIC_TARGET (fndecl)
 		       : NULL_TREE);
 
-      ix86_previous_fndecl = fndecl;
       if (old_tree == new_tree)
 	;
 
@@ -5071,18 +5095,8 @@ ix86_set_current_function (tree fndecl)
 	}
 
       else if (old_tree)
-	{
-	  new_tree = target_option_current_node;
-	  cl_target_option_restore (&global_options,
-				    TREE_TARGET_OPTION (new_tree));
-	  if (TREE_TARGET_GLOBALS (new_tree))
-	    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
-	  else if (new_tree == target_option_default_node)
-	    restore_target_globals (&default_target_globals);
-	  else
-	    TREE_TARGET_GLOBALS (new_tree)
-	      = save_target_globals_default_opts ();
-	}
+	ix86_reset_to_default_globals ();
+      ix86_previous_fndecl = fndecl;
     }
 }
 
@@ -50972,7 +50986,7 @@ ix86_simd_clone_adjust (struct cgraph_node *node)
   bool ok = ix86_valid_target_attribute_p (node->decl, NULL, args, 0);
   gcc_assert (ok);
   pop_cfun ();
-  ix86_previous_fndecl = NULL_TREE;
+  ix86_reset_previous_fndecl ();
   ix86_set_current_function (node->decl);
 }
 
