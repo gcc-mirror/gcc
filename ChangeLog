@@ -1,5 +1,9 @@
 2014-11-16  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
+	* move-if-change: Sync from upstream gnulib.
+
+2014-11-16  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
 	* compile: Sync with upstream Automake.
 	* depcomp: Ditto.
 	* install-sh: Ditto.
