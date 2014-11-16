@@ -1,5 +1,11 @@
 2014-11-15  Vladimir Makarov  <vmakarov@redhat.com>
 
+	* lra-remat.c (cand_transf_func): Process regno for
+	rematerialization too.
+	* lra.c (lra): Switch on rematerialization pass.
+
+2014-11-15  Vladimir Makarov  <vmakarov@redhat.com>
+
 	* lra.c (lra): Switch off rematerialization pass.
 
 2014-11-15  Marc Glisse  <marc.glisse@inria.fr>

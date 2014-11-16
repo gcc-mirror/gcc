@@ -2354,7 +2354,7 @@ lra (FILE *f)
 	break;
       /* Now we know what pseudos should be spilled.  Try to
 	 rematerialize them first.  */
-      if (0&&lra_remat ())
+      if (lra_remat ())
 	{
 	  /* We need full live info -- see the comment above.  */
 	  lra_create_live_ranges (lra_reg_spill_p, true);
