@@ -1,3 +1,12 @@
+2014-11-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/60324
+	* intrinsics/random.c (kiss_size): Rename to KISS_SIZE, make it a
+	macro instead of a variable.
+	(random_seed_i4): Make seed correct size, remove assert, KISS_SIZE
+	related changes.
+	(random_seed_i8): KISS_SIZE related changes.
+
 2014-11-13  Marek Polacek  <polacek@redhat.com>
 
 	* intrinsics/access.c: Include <stdlib.h>.
