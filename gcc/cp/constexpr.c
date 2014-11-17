@@ -1021,8 +1021,8 @@ adjust_temp_type (tree type, tree temp)
 }
 
 /* True if we want to use the new handling of constexpr calls based on
-   DECL_SAVED_TREE.  Currently only active for C++14 mode.  */
-#define use_new_call (cxx_dialect >= cxx14)
+   DECL_SAVED_TREE.  */
+#define use_new_call true
 
 /* Subroutine of cxx_eval_call_expression.
    We are processing a call expression (either CALL_EXPR or
