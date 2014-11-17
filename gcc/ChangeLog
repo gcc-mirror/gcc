@@ -1,3 +1,31 @@
+2014-11-17  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* tree-core.h (built_in_class): Add builtin codes to be used
+	by Pointer Bounds Checker for instrumented builtin functions.
+	* tree-streamer-in.c: Include ipa-chkp.h.
+	(streamer_get_builtin_tree): Created instrumented decl if
+	required.
+	* ipa-chkp.h (chkp_maybe_clone_builtin_fndecl): New.
+	* ipa-chkp.c (chkp_build_instrumented_fndecl): Support builtin
+	function decls.
+	(chkp_maybe_clone_builtin_fndecl): New.
+	(chkp_maybe_create_clone): Support builtin function decls.
+	(chkp_versioning): Clone builtin functions.
+	* tree-chkp.c (chkp_instrument_normal_builtin): New.
+	(chkp_add_bounds_to_call_stmt): Support builtin functions.
+	(chkp_replace_function_pointer): Likewise.
+	* builtins.c (expand_builtin_memcpy_args): New.
+	(expand_builtin_memcpy): Call expand_builtin_memcpy_args.
+	(expand_builtin_memcpy_with_bounds): New.
+	(expand_builtin_mempcpy_with_bounds): New.
+	(expand_builtin_mempcpy_args): Add orig_exp arg. Support
+	BUILT_IN_CHKP_MEMCPY_NOBND_NOCHK
+	(expand_builtin_memset_with_bounds): New.
+	(expand_builtin_memset_args): Support BUILT_IN_CHKP_MEMSET_NOBND_NOCHK.
+	(expand_builtin_with_bounds): New.
+	* builtins.h (expand_builtin_with_bounds): New.
+	* expr.c (expand_expr_real_1): Support instrumented builtin calls.
+
 2014-11-17  Dodji Seketeli  <dodji@redhat.com>
 
 	* gimple.h (gimple_set_visited, gimple_visited_p)

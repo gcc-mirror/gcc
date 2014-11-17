@@ -168,6 +168,14 @@ enum built_in_class {
 enum built_in_function {
 #include "builtins.def"
 
+  BEGIN_CHKP_BUILTINS,
+
+#undef DEF_BUILTIN
+#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) ENUM##_CHKP,
+#include "builtins.def"
+
+  END_CHKP_BUILTINS,
+
   /* Complex division routines in libgcc.  These are done via builtins
      because emit_library_call_value can't handle complex values.  */
   BUILT_IN_COMPLEX_MUL_MIN,

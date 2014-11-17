@@ -129,6 +129,16 @@ chkp_build_instrumented_fndecl (tree fndecl)
      make own copy.  */
   DECL_ATTRIBUTES (new_decl) = copy_list (DECL_ATTRIBUTES (fndecl));
 
+  /* Change builtin function code.  */
+  if (DECL_BUILT_IN (new_decl))
+    {
+      gcc_assert (DECL_BUILT_IN_CLASS (new_decl) == BUILT_IN_NORMAL);
+      gcc_assert (DECL_FUNCTION_CODE (new_decl) < BEGIN_CHKP_BUILTINS);
+      DECL_FUNCTION_CODE (new_decl)
+	= (enum built_in_function)(DECL_FUNCTION_CODE (new_decl)
+				   + BEGIN_CHKP_BUILTINS + 1);
+    }
+
   return new_decl;
 }
 
@@ -354,6 +364,33 @@ chkp_add_bounds_params_to_function (tree fndecl)
     chkp_copy_function_type_adding_bounds (TREE_TYPE (fndecl));
 }
 
+/* Return an instrumentation clone for builtin function
+   FNDECL.  Create one if needed.  */
+
+tree
+chkp_maybe_clone_builtin_fndecl (tree fndecl)
+{
+  tree clone;
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
+
+  gcc_assert (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+	      && fcode < BEGIN_CHKP_BUILTINS);
+
+  fcode = (enum built_in_function) (fcode + BEGIN_CHKP_BUILTINS + 1);
+  clone = builtin_decl_explicit (fcode);
+  if (clone)
+    return clone;
+
+  clone = chkp_build_instrumented_fndecl (fndecl);
+  chkp_add_bounds_params_to_function (clone);
+
+  gcc_assert (DECL_FUNCTION_CODE (clone) == fcode);
+
+  set_builtin_decl (fcode, clone, false);
+
+  return clone;
+}
+
 /* Return clone created for instrumentation of NODE or NULL.  */
 
 cgraph_node *
@@ -363,6 +400,54 @@ chkp_maybe_create_clone (tree fndecl)
   cgraph_node *clone = node->instrumented_version;
 
   gcc_assert (!node->instrumentation_clone);
+
+  if (DECL_BUILT_IN (fndecl)
+      && (DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL
+	  || DECL_FUNCTION_CODE (fndecl) >= BEGIN_CHKP_BUILTINS))
+    return NULL;
+
+  clone = node->instrumented_version;
+
+  /* Some instrumented builtin function calls may be optimized and
+     cgraph nodes may be removed as unreachable.  Later optimizations
+     may generate new calls to removed functions and in this case
+     we have to recreate cgraph node.  FUNCTION_DECL for instrumented
+     builtin still exists and should be reused in such case.  */
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      && fndecl == builtin_decl_explicit (DECL_FUNCTION_CODE (fndecl))
+      && !clone)
+    {
+      enum built_in_function fncode = DECL_FUNCTION_CODE (fndecl);
+      tree new_decl;
+
+      fncode = (enum built_in_function) (fncode + BEGIN_CHKP_BUILTINS + 1);
+      new_decl = builtin_decl_explicit (fncode);
+
+      /* We've actually already created an instrumented clone once.
+	 Restore it.  */
+      if (new_decl)
+	{
+	  clone = cgraph_node::get (new_decl);
+
+	  if (!clone)
+	    {
+	      gcc_assert (!gimple_has_body_p (fndecl));
+	      clone = cgraph_node::get_create (new_decl);
+	      clone->externally_visible = node->externally_visible;
+	      clone->local = node->local;
+	      clone->address_taken = node->address_taken;
+	      clone->thunk = node->thunk;
+	      clone->alias = node->alias;
+	      clone->weakref = node->weakref;
+	      clone->cpp_implicit_alias = node->cpp_implicit_alias;
+	      clone->orig_decl = fndecl;
+	      clone->instrumentation_clone = true;
+	    }
+
+	  clone->instrumented_version = node;
+	  node->instrumented_version = clone;
+	}
+    }
 
   if (!clone)
     {
@@ -407,6 +492,15 @@ chkp_maybe_create_clone (tree fndecl)
       /* New params are inserted after versioning because it
 	 actually copies args list from the original decl.  */
       chkp_add_bounds_params_to_function (new_decl);
+
+      /* Remember builtin fndecl.  */
+      if (DECL_BUILT_IN_CLASS (clone->decl) == BUILT_IN_NORMAL
+	  && fndecl == builtin_decl_explicit (DECL_FUNCTION_CODE (fndecl)))
+	{
+	  gcc_assert (!builtin_decl_explicit (DECL_FUNCTION_CODE (clone->decl)));
+	  set_builtin_decl (DECL_FUNCTION_CODE (clone->decl),
+			    clone->decl, false);
+	}
 
       /* Clones have the same comdat group as originals.  */
       if (node->same_comdat_group
@@ -487,8 +581,9 @@ chkp_versioning (void)
 	  && (!flag_chkp_instrument_marked_only
 	      || lookup_attribute ("bnd_instrument",
 				   DECL_ATTRIBUTES (node->decl)))
-	  /* No builtins instrumentation for now.  */
-	  && DECL_BUILT_IN_CLASS (node->decl) == NOT_BUILT_IN)
+	  && (!DECL_BUILT_IN (node->decl)
+	      || (DECL_BUILT_IN_CLASS (node->decl) == BUILT_IN_NORMAL
+		  && DECL_FUNCTION_CODE (node->decl) < BEGIN_CHKP_BUILTINS)))
 	chkp_maybe_create_clone (node->decl);
     }
 
