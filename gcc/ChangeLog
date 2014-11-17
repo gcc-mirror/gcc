@@ -1,3 +1,12 @@
+2014-11-17  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (TYPES_CREATE): Remove.
+	* config/aarch64/aarch64-simd-builtins.def (create): Remove.
+	* config/aarch64/aarch64-simd.md (aarch64_create<mode>): Remove.
+	* config/aarch64/arm_neon.h (vcreate_f64, vreinterpret_f64_s64,
+	vreinterpret_f64_u64): Replace __builtin_aarch64_createv1df with C casts.
+	* config/aarch64/iterators.md (VD1): Remove.
+
 2014-11-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-cores.def (cortex-a53): Remove

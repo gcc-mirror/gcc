@@ -39,7 +39,6 @@
    1-9 - CODE_FOR_<name><mode><1-9>
    10 - CODE_FOR_<name><mode>.  */
 
-  BUILTIN_VD1 (CREATE, create, 0)
   BUILTIN_VDC (COMBINE, combine, 0)
   BUILTIN_VB (BINOP, pmul, 0)
   BUILTIN_VDQF (UNOP, sqrt, 2)

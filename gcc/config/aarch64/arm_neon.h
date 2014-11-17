@@ -2638,7 +2638,7 @@ vcreate_u64 (uint64_t __a)
 __extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
 vcreate_f64 (uint64_t __a)
 {
-  return __builtin_aarch64_createv1df (__a);
+  return (float64x1_t) __a;
 }
 
 __extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
@@ -3238,7 +3238,7 @@ vreinterpret_f64_s32 (int32x2_t __a)
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
 vreinterpret_f64_s64 (int64x1_t __a)
 {
-  return __builtin_aarch64_createv1df ((uint64_t) vget_lane_s64 (__a, 0));
+  return (float64x1_t) __a;
 }
 
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
@@ -3262,7 +3262,7 @@ vreinterpret_f64_u32 (uint32x2_t __a)
 __extension__ static __inline float64x1_t __attribute__((__always_inline__))
 vreinterpret_f64_u64 (uint64x1_t __a)
 {
-  return __builtin_aarch64_createv1df (vget_lane_u64 (__a, 0));
+  return (float64x1_t) __a;
 }
 
 __extension__ static __inline float64x2_t __attribute__((__always_inline__))

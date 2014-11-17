@@ -2327,16 +2327,6 @@
 
 ;; Patterns for AArch64 SIMD Intrinsics.
 
-(define_expand "aarch64_create<mode>"
-  [(match_operand:VD1 0 "register_operand" "")
-   (match_operand:DI 1 "general_operand" "")]
-  "TARGET_SIMD"
-{
-  rtx src = gen_lowpart (<MODE>mode, operands[1]);
-  emit_move_insn (operands[0], src);
-  DONE;
-})
-
 ;; Lane extraction with sign extension to general purpose register.
 (define_insn "*aarch64_get_lane_extend<GPI:mode><VDQQH:mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r")
