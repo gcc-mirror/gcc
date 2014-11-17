@@ -391,7 +391,8 @@ Objective-C and Objective-C++ Dialects}.
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts -flive-range-shrinkage @gol
--floop-block -floop-interchange -floop-strip-mine -floop-nest-optimize @gol
+-floop-block -floop-interchange -floop-strip-mine @gol  
+-floop-unroll-and-jam -floop-nest-optimize @gol
 -floop-parallelize-all -flra-remat -flto -flto-compression-level @gol
 -flto-partition=@var{alg} -flto-report -flto-report-wpa -fmerge-all-constants @gol
 -fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
@@ -8352,6 +8353,13 @@ optimizer based on the Pluto optimization algorithms.  It calculates a loop
 structure optimized for data-locality and parallelism.  This option
 is experimental.
 
+@item -floop-unroll-and-jam
+@opindex floop-unroll-and-jam
+Enable unroll and jam for the ISL based loop nest optimizer.  The unroll 
+factor can be changed using the @option{loop-unroll-jam-size} parameter.
+The unrolled dimension (counting from the most inner one) can be changed 
+using the @option{loop-unroll-jam-depth} parameter.                 .
+
 @item -floop-parallelize-all
 @opindex floop-parallelize-all
 Use the Graphite data dependence analysis to identify loops that can
@@ -10468,6 +10476,14 @@ Loop blocking or strip mining transforms, enabled with
 loop in the loop nest by a given number of iterations.  The strip
 length can be changed using the @option{loop-block-tile-size}
 parameter.  The default value is 51 iterations.
+
+@item loop-unroll-jam-size
+Specify the unroll factor for the @option{-floop-unroll-and-jam}.  The 
+default value is 4.
+
+@item loop-unroll-jam-depth
+Specify the dimension to be unrolled (counting from the most inner loop)
+for the  @option{-floop-unroll-and-jam}.  The default value is 2.
 
 @item ipa-cp-value-list-size
 IPA-CP attempts to track all possible values and types passed to a function's

@@ -320,7 +320,7 @@ getPrevectorMap (isl_ctx *ctx, int DimToVectorize,
                         ip >= 0
 
    The image of this map is the separation class. The range of this map includes
-   all the i that are multiple of 4 in the domain beside the greater one. 
+   all the i multiple of 4 in the domain such as i + 3 is in the domain too.
     
  */ 
 static isl_map *
@@ -486,20 +486,25 @@ getScheduleForBandList (isl_band_list *BandList, isl_union_map **map_sepcl)
 		}	
 	    }
 	}
-      Schedule = isl_union_map_union (Schedule, PartialSchedule);
+      Schedule = isl_union_map_union (Schedule, 
+                                      isl_union_map_copy(PartialSchedule));
 
       isl_band_free (Band);
       isl_space_free (Space);
 
       if (!flag_loop_unroll_jam)
-	continue;
+	{
+          isl_union_map_free (PartialSchedule);
+          continue;
+	}
 
       if (PartialSchedule_f)
-	*map_sepcl = isl_union_map_union (*map_sepcl, 
-					  PartialSchedule_f);
+	{
+	  *map_sepcl = isl_union_map_union (*map_sepcl, PartialSchedule_f);
+          isl_union_map_free (PartialSchedule);
+	}
       else
-        *map_sepcl = isl_union_map_union (*map_sepcl, 
-         				  isl_union_map_copy (PartialSchedule));
+        *map_sepcl = isl_union_map_union (*map_sepcl, PartialSchedule);
     }
 
   return Schedule;

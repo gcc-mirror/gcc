@@ -1,3 +1,11 @@
+2014-11-17  Mircea Namolaru  <mircea.namolaru@inria.fr>
+
+	* doc/invoke.texi (floop-unroll-and-jam): Document
+	(loop-unroll-jam-size): Likewise.
+	(loop-unroll-jam-depth): Likewise.
+	* graphite-optimize-isl.c (getPrevectorMap_full): Modify comment.
+	(getScheduleForBandList): Replaced unsafe union_map reuse.
+
 2014-11-17  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/thunderx.md: Remove copyright which should not
