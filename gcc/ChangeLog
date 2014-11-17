@@ -1,3 +1,8 @@
+2014-11-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-log.c (avr_log_set_avr_log) [TARGET_ALL_DEBUG]:
+	Set avr_log_details to "all".
+
 2014-11-17  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63898

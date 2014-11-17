@@ -316,6 +316,9 @@ avr_log_set_avr_log (void)
 {
   bool all = TARGET_ALL_DEBUG != 0;
 
+  if (all)
+    avr_log_details = "all";
+	
   if (all || avr_log_details)
     {
       /* Adding , at beginning and end of string makes searching easier.  */
