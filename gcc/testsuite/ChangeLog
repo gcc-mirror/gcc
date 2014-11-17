@@ -1,3 +1,9 @@
+2014-11-17  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/pr43864-2.c: Fix scan-tree-dump-times scan pattern.
+	* gcc.dg/pr43864-3.c: Same.
+	* gcc.dg/pr43864-4.c: Same.
+
 2014-11-17  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/vld1_lane.c: New test.
