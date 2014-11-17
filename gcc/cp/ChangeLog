@@ -1,5 +1,8 @@
 2014-11-17  Jason Merrill  <jason@redhat.com>
 
+	* cp-gimplify.c (genericize_cp_loop): Use LOOP_EXPR.
+	(genericize_for_stmt): Handle null statement-list.
+
 	* constexpr.c (use_new_call): Always use new call handling.
 
 	C++14 constexpr support (minus loops and multiple returns)
