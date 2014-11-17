@@ -38,6 +38,23 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_ccmp_immediate")))
 
+(define_special_predicate "ccmp_cc_register"
+  (and (match_code "reg")
+       (and (match_test "REGNO (op) == CC_REGNUM")
+	    (ior (match_test "mode == GET_MODE (op)")
+		 (match_test "mode == VOIDmode
+			      && (GET_MODE (op) == CC_DNEmode
+				  || GET_MODE (op) == CC_DEQmode
+				  || GET_MODE (op) == CC_DLEmode
+				  || GET_MODE (op) == CC_DLTmode
+				  || GET_MODE (op) == CC_DGEmode
+				  || GET_MODE (op) == CC_DGTmode
+				  || GET_MODE (op) == CC_DLEUmode
+				  || GET_MODE (op) == CC_DLTUmode
+				  || GET_MODE (op) == CC_DGEUmode
+				  || GET_MODE (op) == CC_DGTUmode)"))))
+)
+
 (define_predicate "aarch64_simd_register"
   (and (match_code "reg")
        (ior (match_test "REGNO_REG_CLASS (REGNO (op)) == FP_LO_REGS")

@@ -3625,6 +3625,9 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
   return CCmode;
 }
 
+static int
+aarch64_get_condition_code_1 (enum machine_mode, enum rtx_code);
+
 int
 aarch64_get_condition_code (rtx x)
 {
@@ -3633,7 +3636,13 @@ aarch64_get_condition_code (rtx x)
 
   if (GET_MODE_CLASS (mode) != MODE_CC)
     mode = SELECT_CC_MODE (comp_code, XEXP (x, 0), XEXP (x, 1));
+  return aarch64_get_condition_code_1 (mode, comp_code);
+}
 
+static int
+aarch64_get_condition_code_1 (enum machine_mode mode, enum rtx_code comp_code)
+{
+  int ne = -1, eq = -1;
   switch (mode)
     {
     case CCFPmode:
@@ -3654,6 +3663,56 @@ aarch64_get_condition_code (rtx x)
 	case UNGE: return AARCH64_PL;
 	default: return -1;
 	}
+      break;
+
+    case CC_DNEmode:
+      ne = AARCH64_NE;
+      eq = AARCH64_EQ;
+      break;
+
+    case CC_DEQmode:
+      ne = AARCH64_EQ;
+      eq = AARCH64_NE;
+      break;
+
+    case CC_DGEmode:
+      ne = AARCH64_GE;
+      eq = AARCH64_LT;
+      break;
+
+    case CC_DLTmode:
+      ne = AARCH64_LT;
+      eq = AARCH64_GE;
+      break;
+
+    case CC_DGTmode:
+      ne = AARCH64_GT;
+      eq = AARCH64_LE;
+      break;
+
+    case CC_DLEmode:
+      ne = AARCH64_LE;
+      eq = AARCH64_GT;
+      break;
+
+    case CC_DGEUmode:
+      ne = AARCH64_CS;
+      eq = AARCH64_CC;
+      break;
+
+    case CC_DLTUmode:
+      ne = AARCH64_CC;
+      eq = AARCH64_CS;
+      break;
+
+    case CC_DGTUmode:
+      ne = AARCH64_HI;
+      eq = AARCH64_LS;
+      break;
+
+    case CC_DLEUmode:
+      ne = AARCH64_LS;
+      eq = AARCH64_HI;
       break;
 
     case CCmode:
@@ -3716,6 +3775,14 @@ aarch64_get_condition_code (rtx x)
       return -1;
       break;
     }
+
+  if (comp_code == NE)
+    return ne;
+
+  if (comp_code == EQ)
+    return eq;
+
+  return -1;
 }
 
 bool
