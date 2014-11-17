@@ -1,3 +1,9 @@
+2014-11-17  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* ifcvt.c (HAVE_cbranchcc4): Define.
+	(noce_emit_cmove, noce_get_alt_condition, noce_get_condition):
+	Use HAVE_cbranchcc4.
+
 2014-11-17  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* config/aarch64/aarch64.c (aarch64_code_to_ccmode,
