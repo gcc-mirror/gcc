@@ -5817,3 +5817,55 @@ build_duplicate_type (tree type)
 
   return type;
 }
+
+/* Unshare the entire DECL_SAVED_TREE of FN and return the remapped
+   parameters and RESULT_DECL in PARMS and RESULT.  Used by C++ constexpr
+   evaluation.  */
+
+tree
+copy_fn (tree fn, tree& parms, tree& result)
+{
+  copy_body_data id;
+  tree param;
+  hash_map<tree, tree> decl_map;
+
+  tree *p = &parms;
+  *p = NULL_TREE;
+
+  memset (&id, 0, sizeof (id));
+  id.src_fn = fn;
+  id.dst_fn = current_function_decl;
+  id.src_cfun = DECL_STRUCT_FUNCTION (fn);
+  id.decl_map = &decl_map;
+
+  id.copy_decl = copy_decl_no_change;
+  id.transform_call_graph_edges = CB_CGE_DUPLICATE;
+  id.transform_new_cfg = false;
+  id.transform_return_to_modify = false;
+  id.transform_parameter = true;
+  id.transform_lang_insert_block = NULL;
+
+  /* Make sure not to unshare trees behind the front-end's back
+     since front-end specific mechanisms may rely on sharing.  */
+  id.regimplify = false;
+  id.do_not_unshare = true;
+
+  /* We're not inside any EH region.  */
+  id.eh_lp_nr = 0;
+
+  /* Remap the parameters and result and return them to the caller.  */
+  for (param = DECL_ARGUMENTS (fn);
+       param;
+       param = DECL_CHAIN (param))
+    {
+      *p = remap_decl (param, &id);
+      p = &DECL_CHAIN (*p);
+    }
+
+  if (DECL_RESULT (fn))
+    result = remap_decl (DECL_RESULT (fn), &id);
+  else
+    result = NULL_TREE;
+
+  return copy_tree_body (&id);
+}

@@ -209,6 +209,7 @@ extern tree remap_decl (tree decl, copy_body_data *id);
 extern tree remap_type (tree type, copy_body_data *id);
 extern gimple_seq copy_gimple_seq_and_replace_locals (gimple_seq seq);
 extern bool debug_find_tree (tree, tree);
+extern tree copy_fn (tree, tree&, tree&);
 
 /* This is in tree-inline.c since the routine uses
    data structures from the inliner.  */

@@ -1,3 +1,8 @@
+2014-11-17  Jason Merrill  <jason@redhat.com>
+
+	* tree-inline.c (copy_fn): New.
+	* tree-inline.h: Declare it.
+
 2014-11-17  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (TYPES_CREATE): Remove.
