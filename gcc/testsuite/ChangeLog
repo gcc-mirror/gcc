@@ -1,5 +1,23 @@
 2014-11-17  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.dg/pr43864-2.c: Add -ftree-tail-merge to dg-options.
+	* gcc.dg/pr43864-3.c: Same.
+	* gcc.dg/pr43864-4.c: Same.
+	* gcc.dg/pr43864.c: Same.
+	* gcc.dg/pr50763.c: Same.
+	* gcc.dg/pr51879-12.c: Same.
+	* gcc.dg/pr51879-16.c: Same.
+	* gcc.dg/pr51879-17.c: Same.
+	* gcc.dg/pr51879-18.c: Same.
+	* gcc.dg/pr51879-2.c: Same.
+	* gcc.dg/pr51879-3.c: Same.
+	* gcc.dg/pr51879-4.c: Same.
+	* gcc.dg/pr51879-6.c: Same.
+	* gcc.dg/pr51879-7.c: Same.
+	* gcc.dg/pr51879.c: Same.
+
+2014-11-17  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.dg/pr43864-2.c: Fix scan-tree-dump-times scan pattern.
 	* gcc.dg/pr43864-3.c: Same.
 	* gcc.dg/pr43864-4.c: Same.
