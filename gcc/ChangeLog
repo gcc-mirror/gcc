@@ -1,3 +1,16 @@
+2014-11-17  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_set<mode>): Add
+	variant reading from memory and assembling to ld1.
+
+	* config/aarch64/arm_neon.h (vld1_lane_f32, vld1_lane_f64, vld1_lane_p8,
+	vld1_lane_p16, vld1_lane_s8, vld1_lane_s16, vld1_lane_s32,
+	vld1_lane_s64, vld1_lane_u8, vld1_lane_u16, vld1_lane_u32,
+	vld1_lane_u64, vld1q_lane_f32, vld1q_lane_f64, vld1q_lane_p8,
+	vld1q_lane_p16, vld1q_lane_s8, vld1q_lane_s16, vld1q_lane_s32,
+	vld1q_lane_s64, vld1q_lane_u8, vld1q_lane_u16, vld1q_lane_u32,
+	vld1q_lane_u64): Replace asm with vset_lane and pointer dereference.
+
 2014-11-17  Jason Merrill  <jason@redhat.com>
 
 	* tree-inline.c (copy_fn): New.

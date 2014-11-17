@@ -455,12 +455,12 @@
 )
 
 (define_insn "aarch64_simd_vec_set<mode>"
-  [(set (match_operand:VQ_S 0 "register_operand" "=w,w")
+  [(set (match_operand:VQ_S 0 "register_operand" "=w,w,w")
         (vec_merge:VQ_S
 	    (vec_duplicate:VQ_S
-		(match_operand:<VEL> 1 "register_operand" "r,w"))
-	    (match_operand:VQ_S 3 "register_operand" "0,0")
-	    (match_operand:SI 2 "immediate_operand" "i,i")))]
+		(match_operand:<VEL> 1 "aarch64_simd_general_operand" "r,w,Utv"))
+	    (match_operand:VQ_S 3 "register_operand" "0,0,0")
+	    (match_operand:SI 2 "immediate_operand" "i,i,i")))]
   "TARGET_SIMD"
   {
    int elt = ENDIAN_LANE_N (<MODE>mode, exact_log2 (INTVAL (operands[2])));
@@ -471,11 +471,13 @@
 	return "ins\\t%0.<Vetype>[%p2], %w1";
      case 1:
 	return "ins\\t%0.<Vetype>[%p2], %1.<Vetype>[0]";
+     case 2:
+        return "ld1\\t{%0.<Vetype>}[%p2], %1";
      default:
 	gcc_unreachable ();
      }
   }
-  [(set_attr "type" "neon_from_gp<q>, neon_ins<q>")]
+  [(set_attr "type" "neon_from_gp<q>, neon_ins<q>, neon_load1_1reg<q>")]
 )
 
 (define_insn "aarch64_simd_lshr<mode>"
