@@ -1,3 +1,7 @@
+2014-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_read_decls): Do not rebuild DECL_FUNCTION_SPECIFIC_TARGET.
+
 2014-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (compare_tree_sccs_1): Compare cl_target_option_eq.
