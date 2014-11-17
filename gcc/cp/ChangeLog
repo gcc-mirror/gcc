@@ -1,5 +1,7 @@
 2014-11-17  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (use_new_call): Always use new call handling.
+
 	C++14 constexpr support (minus loops and multiple returns)
 	* constexpr.c (use_new_call): New macro.
 	(build_data_member_initialization): Ignore non-mem-inits.
