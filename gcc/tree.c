@@ -5115,6 +5115,9 @@ free_lang_data_in_decl (tree decl)
 	     the PARM_DECL will be used in the function's body).  */
 	  for (t = DECL_ARGUMENTS (decl); t; t = TREE_CHAIN (t))
 	    DECL_CONTEXT (t) = decl;
+	  if (!DECL_FUNCTION_SPECIFIC_TARGET (decl))
+	    DECL_FUNCTION_SPECIFIC_TARGET (decl)
+	      = target_option_default_node;
 	}
 
       /* DECL_SAVED_TREE holds the GENERIC representation for DECL.

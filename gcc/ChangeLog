@@ -1,3 +1,9 @@
+2014-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (free_lang_data_in_decl): Annotate all functio nbodies with
+	DECL_FUNCTION_SPECIFIC_TARGET.
+	* i386.c (ix86_set_current_function): Handle explicit default options.
+
 2014-11-17  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* builtins.c (expand_builtin_memcpy_with_bounds): Use target hook

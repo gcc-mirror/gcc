@@ -1935,15 +1935,6 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 	      if (TREE_CODE (t) == INTEGER_CST
 		  && !TREE_OVERFLOW (t))
 		cache_integer_cst (t);
-	      /* Re-build DECL_FUNCTION_SPECIFIC_TARGET, we need that
-	         for both WPA and LTRANS stage.  */
-	      if (TREE_CODE (t) == FUNCTION_DECL)
-		{
-		  tree attr = lookup_attribute ("target", DECL_ATTRIBUTES (t));
-		  if (attr)
-		    targetm.target_option.valid_attribute_p
-			(t, NULL_TREE, TREE_VALUE (attr), 0);
-		}
 	      /* Register TYPE_DECLs with the debuginfo machinery.  */
 	      if (!flag_wpa
 		  && TREE_CODE (t) == TYPE_DECL)
