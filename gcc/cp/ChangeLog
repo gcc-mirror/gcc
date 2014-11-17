@@ -1,5 +1,13 @@
 2014-11-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50473
+	* decl.c (cp_finish_decl): Don't try to process a non-dependent
+	constant initializer for a reference.
+	* pt.c (value_dependent_expression_p): A reference is always
+	dependent.
+	* call.c (extend_ref_init_temps_1): Also clear TREE_SIDE_EFFECTS
+	on any NOP_EXPRs.
+
 	Handle C++14 constexpr flow control.
 	* constexpr.c (cxx_eval_loop_expr, cxx_eval_switch_expr): New.
 	(cxx_eval_statement_list): New.

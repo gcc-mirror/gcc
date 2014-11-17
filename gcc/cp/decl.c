@@ -6419,6 +6419,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       else if (init
 	       && init_const_expr_p
 	       && !type_dependent_p
+	       && TREE_CODE (type) != REFERENCE_TYPE
 	       && decl_maybe_constant_var_p (decl)
 	       && !type_dependent_init_p (init)
 	       && !value_dependent_init_p (init))
