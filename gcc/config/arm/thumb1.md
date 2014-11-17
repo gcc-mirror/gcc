@@ -1420,13 +1420,13 @@
 	 if (INTVAL (operands[2]) < 0)
 	   output_asm_insn (\"subs\t%0, %1, %2\", operands);
 	 else
-	   output_asm_insn (\"add\t%0, %1, %2\", operands);
+	   output_asm_insn (\"adds\t%0, %1, %2\", operands);
 	 break;
        case 3:
 	 if (INTVAL (operands[2]) < 0)
 	   output_asm_insn (\"subs\t%0, %0, %2\", operands);
 	 else
-	   output_asm_insn (\"add\t%0, %0, %2\", operands);
+	   output_asm_insn (\"adds\t%0, %0, %2\", operands);
 	 break;
        }
 
