@@ -1,5 +1,13 @@
 2014-11-17  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* gcc.target/i386/chkp-strlen-1.c: New.
+	* gcc.target/i386/chkp-strlen-2.c: New.
+	* gcc.target/i386/chkp-strlen-3.c: New.
+	* gcc.target/i386/chkp-strlen-4.c: New.
+	* gcc.target/i386/chkp-strlen-5.c: New.
+
+2014-11-17  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* gcc.target/i386/chkp-stropt-1.c: New.
 	* gcc.target/i386/chkp-stropt-2.c: New.
 	* gcc.target/i386/chkp-stropt-3.c: New.
