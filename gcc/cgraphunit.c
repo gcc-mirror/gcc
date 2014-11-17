@@ -1001,7 +1001,7 @@ analyze_functions (void)
 	      for (edge = cnode->callees; edge; edge = edge->next_callee)
 		if (edge->callee->definition)
 		   enqueue_node (edge->callee);
-	      if (optimize && flag_devirtualize)
+	      if (optimize && opt_for_fn (cnode->decl, flag_devirtualize))
 		{
 		  cgraph_edge *next;
 
