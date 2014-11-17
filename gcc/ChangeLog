@@ -1,5 +1,12 @@
 2014-11-17  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* builtins.c (expand_builtin_memcpy_with_bounds): Use target hook
+	instead of BNDmode.
+	(expand_builtin_mempcpy_with_bounds): Likewise.
+	(expand_builtin_memset_with_bounds): Likewise.
+
+2014-11-17  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* tree-ssa-strlen.c: include ipa-chkp.h, cgraph.h,
 	ipa-ref.h, plugin-api.h.
 	(get_string_length): Handle calls with bounds.
