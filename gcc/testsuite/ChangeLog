@@ -1,3 +1,8 @@
+2014-11-17  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/63894
+	* g++.dg/ipa/pr63894.C: New test.
+
 2014-11-17  Terry Guo  <terry.guo@arm.com>
 
 	* gcc.target/arm/thumb1-ual-1.c: New test.
