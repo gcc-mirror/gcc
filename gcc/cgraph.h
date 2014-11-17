@@ -2720,7 +2720,7 @@ cgraph_node::mark_force_output (void)
 inline bool
 cgraph_node::optimize_for_size_p (void)
 {
-  if (optimize_size)
+  if (opt_for_fn (decl, optimize_size))
     return true;
   if (frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
     return true;

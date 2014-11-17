@@ -1,5 +1,10 @@
 2014-11-17  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraphunit.c (analyze_functions): Use opt_for_fn.
+	* cgraph.h (cgraph_node::optimize_for_size_p): Likewise.
+
+2014-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraph.c (symbol_table::create_edge): Use opt_for_fn.
 	(cgraph_node::cannot_return_p): Likewise.
 	(cgraph_edge::cannot_lead_to_return_p): Likewise.
