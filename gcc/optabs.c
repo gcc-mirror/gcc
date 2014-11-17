@@ -6454,7 +6454,7 @@ gen_cond_trap (enum rtx_code code, rtx op1, rtx op2, rtx tcode)
 /* Return rtx code for TCODE. Use UNSIGNEDP to select signed
    or unsigned operation code.  */
 
-static enum rtx_code
+enum rtx_code
 get_rtx_code (enum tree_code tcode, bool unsignedp)
 {
   enum rtx_code code;
@@ -6502,6 +6502,14 @@ get_rtx_code (enum tree_code tcode, bool unsignedp)
       break;
     case LTGT_EXPR:
       code = LTGT;
+      break;
+
+    case BIT_AND_EXPR:
+      code = AND;
+      break;
+
+    case BIT_IOR_EXPR:
+      code = IOR;
       break;
 
     default:
