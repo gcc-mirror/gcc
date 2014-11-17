@@ -566,4 +566,6 @@ extern bool get_best_mem_extraction_insn (extraction_insn *,
 
 extern bool lshift_cheap_p (bool);
 
+extern enum rtx_code get_rtx_code (enum tree_code tcode, bool unsignedp);
+
 #endif /* GCC_OPTABS_H */

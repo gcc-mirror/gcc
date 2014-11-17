@@ -619,4 +619,6 @@ extern bool categorize_ctor_elements (const_tree, HOST_WIDE_INT *,
    by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
 extern tree component_ref_field_offset (tree);
 
+extern void expand_operands (tree, tree, rtx, rtx*, rtx*,
+			     enum expand_modifier);
 #endif /* GCC_EXPR_H */

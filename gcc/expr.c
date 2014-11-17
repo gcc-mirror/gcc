@@ -159,8 +159,6 @@ static rtx store_field (rtx, HOST_WIDE_INT, HOST_WIDE_INT,
 static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (const_tree, const_tree);
 
 static int is_aligning_offset (const_tree, const_tree);
-static void expand_operands (tree, tree, rtx, rtx*, rtx*,
-			     enum expand_modifier);
 static rtx reduce_to_bit_field_precision (rtx, rtx, tree);
 static rtx do_store_flag (sepops, rtx, machine_mode);
 #ifdef PUSH_ROUNDING
@@ -7573,7 +7571,7 @@ convert_tree_comp_to_rtx (enum tree_code tcode, int unsignedp)
    The value may be stored in TARGET if TARGET is nonzero.  The
    MODIFIER argument is as documented by expand_expr.  */
 
-static void
+void
 expand_operands (tree exp0, tree exp1, rtx target, rtx *op0, rtx *op1,
 		 enum expand_modifier modifier)
 {

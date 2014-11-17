@@ -2129,9 +2129,10 @@ expand_gimple_cond (basic_block bb, gimple stmt)
 	      op0 = gimple_assign_rhs1 (second);
 	      op1 = gimple_assign_rhs2 (second);
 	    }
-	  /* If jumps are cheap turn some more codes into
-	     jumpy sequences.  */
-	  else if (BRANCH_COST (optimize_insn_for_speed_p (), false) < 4)
+	  /* If jumps are cheap and the target does not support conditional
+	     compare, turn some more codes into jumpy sequences.  */
+	  else if (BRANCH_COST (optimize_insn_for_speed_p (), false) < 4
+		   && targetm.gen_ccmp_first == NULL)
 	    {
 	      if ((code2 == BIT_AND_EXPR
 		   && TYPE_PRECISION (TREE_TYPE (op0)) == 1

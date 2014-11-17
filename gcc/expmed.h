@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef EXPMED_H
 #define EXPMED_H 1
 
+#include "insn-codes.h"
+
 enum alg_code {
   alg_unknown,
   alg_zero,
@@ -665,4 +667,8 @@ convert_cost (machine_mode to_mode, machine_mode from_mode,
 }
 
 extern int mult_by_coeff_cost (HOST_WIDE_INT, machine_mode, bool);
+extern rtx emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
+			enum machine_mode mode, enum machine_mode compare_mode,
+			int unsignedp, rtx x, rtx y, int normalizep,
+			enum machine_mode target_mode);
 #endif

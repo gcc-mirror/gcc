@@ -1,4 +1,15 @@
-2014-11-17  Zhenqiang Chen  <zhenqiang.chen@linaor.org>
+2014-11-17  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* cfgexpand.c (expand_gimple_cond): Check ccmp.
+	* expmed.c (emit_cstore): Make it global.
+	* expmed.h: #include "insn-codes.h"
+	(emit_cstore): New prototype.
+	* expr.c (expand_operands): Make it global.
+	* expr.h (expand_operands): New prototype.
+	* optabs.c (get_rtx_code): Make it global.
+	* optabs.h (get_rtx_code): New prototype.
+
+2014-11-17  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* target.def (gen_ccmp_first, gen_ccmp_first): Add two new hooks.
 	* doc/tm.texi.in (TARGET_GEN_CCMP_FIRST, TARGET_GEN_CCMP_NEXT): New.
