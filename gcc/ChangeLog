@@ -1,3 +1,9 @@
+2014-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (maybe_hot_frequency_p): Use opt_for_fn.
+	(optimize_function_for_size_p): Likewise.
+	(probably_never_executed): Likewise; replace cfun by fun.
+
 2014-11-17  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_set<mode>): Add

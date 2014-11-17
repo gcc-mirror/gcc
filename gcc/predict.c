@@ -125,7 +125,8 @@ static inline bool
 maybe_hot_frequency_p (struct function *fun, int freq)
 {
   struct cgraph_node *node = cgraph_node::get (fun->decl);
-  if (!profile_info || !flag_branch_probabilities)
+  if (!profile_info
+      || !opt_for_fn (fun->decl, flag_branch_probabilities))
     {
       if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
         return false;
@@ -214,34 +215,34 @@ probably_never_executed (struct function *fun,
                          gcov_type count, int frequency)
 {
   gcc_checking_assert (fun);
-  if (profile_status_for_fn (cfun) == PROFILE_READ)
+  if (profile_status_for_fn (fun) == PROFILE_READ)
     {
       int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
       if (count * unlikely_count_fraction >= profile_info->runs)
 	return false;
       if (!frequency)
 	return true;
-      if (!ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency)
+      if (!ENTRY_BLOCK_PTR_FOR_FN (fun)->frequency)
 	return false;
-      if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count)
+      if (ENTRY_BLOCK_PTR_FOR_FN (fun)->count)
 	{
           gcov_type computed_count;
           /* Check for possibility of overflow, in which case entry bb count
              is large enough to do the division first without losing much
              precision.  */
-	  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count < REG_BR_PROB_BASE *
+	  if (ENTRY_BLOCK_PTR_FOR_FN (fun)->count < REG_BR_PROB_BASE *
 	      REG_BR_PROB_BASE)
             {
               gcov_type scaled_count
-		  = frequency * ENTRY_BLOCK_PTR_FOR_FN (cfun)->count *
+		  = frequency * ENTRY_BLOCK_PTR_FOR_FN (fun)->count *
 	     unlikely_count_fraction;
 	      computed_count = RDIV (scaled_count,
-				     ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency);
+				     ENTRY_BLOCK_PTR_FOR_FN (fun)->frequency);
             }
           else
             {
-	      computed_count = RDIV (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count,
-				     ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency);
+	      computed_count = RDIV (ENTRY_BLOCK_PTR_FOR_FN (fun)->count,
+				     ENTRY_BLOCK_PTR_FOR_FN (fun)->frequency);
               computed_count *= frequency * unlikely_count_fraction;
             }
           if (computed_count >= profile_info->runs)
@@ -249,7 +250,7 @@ probably_never_executed (struct function *fun,
 	}
       return true;
     }
-  if ((!profile_info || !flag_branch_probabilities)
+  if ((!profile_info || !(opt_for_fn (fun->decl, flag_branch_probabilities)))
       && (cgraph_node::get (fun->decl)->frequency
 	  == NODE_FREQUENCY_UNLIKELY_EXECUTED))
     return true;
@@ -279,11 +280,8 @@ probably_never_executed_edge_p (struct function *fun, edge e)
 bool
 optimize_function_for_size_p (struct function *fun)
 {
-  if (optimize_size)
-    return true;
   if (!fun || !fun->decl)
-    return false;
-
+    return optimize_size;
   cgraph_node *n = cgraph_node::get (fun->decl);
   return n && n->optimize_for_size_p ();
 }
