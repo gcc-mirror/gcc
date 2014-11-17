@@ -1,3 +1,88 @@
+2014-11-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (RELOAD_REG_AND_M16): Add support for
+	Altivec style vector loads that ignore the bottom 3 bits of the
+	address.
+	(rs6000_debug_addr_mask): New function to print the addr_mask
+	values if debugging.
+	(rs6000_debug_print_mode): Call rs6000_debug_addr_mask to print
+	out addr_mask.
+	(rs6000_setup_reg_addr_masks): Add support for Altivec style
+	vector loads that ignore the bottom 3 bits of the address.  Allow
+	pre-increment and pre-decrement on floating point, even if the
+	-mupper-regs-{sf,df} options were used.
+	(rs6000_init_hard_regno_mode_ok): Rework DFmode support if
+	-mupper-regs-df.  Add support for -mupper-regs-sf.  Rearrange code
+	placement for direct move support.
+	(rs6000_option_override_internal): Add checks for -mupper-regs-df
+	requiring -mvsx, and -mupper-regs-sf requiring -mpower8-vector.
+	If -mupper-regs, set both -mupper-regs-sf and -mupper-regs-df,
+	depending on the underlying cpu.
+	(rs6000_secondary_reload_fail): Add ATTRIBUTE_NORETURN.
+	(rs6000_secondary_reload_toc_costs): Helper function to identify
+	costs of a TOC load for secondary reload support.
+	(rs6000_secondary_reload_memory): Helper function for secondary
+	reload, to determine if a particular memory operation is directly
+	handled by the hardware, or if it needs support from secondary
+	reload to create a valid address.
+	(rs6000_secondary_reload): Rework code, to be clearer.  If the
+	appropriate -mupper-regs-{sf,df} is used, use FPR registers to
+	reload scalar values, since the FPR registers have D-form
+	addressing. Move most of the code handling memory to the function
+	rs6000_secondary_reload_memory, and use the reg_addr structure to
+	determine what type of address modes are supported.  Print more
+	debug information if -mdebug=addr.
+	(rs6000_secondary_reload_inner): Rework entire function to be more
+	general.  Use the reg_addr bits to determine what type of
+	addressing is supported.
+	(rs6000_preferred_reload_class): Rework.  Move constant handling
+	into a single place.  Prefer using FLOAT_REGS for scalar floating
+	point.
+	(rs6000_secondary_reload_class): Use a FPR register to move a
+	value from an Altivec register to a GPR, and vice versa.  Move VSX
+	handling above traditional floating point.
+
+	* config/rs6000/rs6000.md (mov<mode>_hardfloat, FMOVE32 case):
+	Delete some spaces in the constraints.
+	(DF->DF move peephole2): Disable if -mupper-regs-{sf,df} to
+	allow using FPR registers to load/store an Altivec register for
+	scalar floating point types.
+	(SF->SF move peephole2): Likewise.
+	(DFmode splitter): Add a define_split to move floating point
+	constants to the constant pool before register allocation.
+	Normally constants are put into the pool immediately, but
+	-ffast-math delays putting them into the constant pool for the
+	reciprocal approximation support.
+	(SFmode splitter): Likewise.
+
+	* config/rs6000/rs6000.opt (-mupper-regs-df): Make option public.
+	(-mupper-regs-sf): Likewise.
+
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	__UPPER_REGS_DF__ if -mupper-regs-df.  Define __UPPER_REGS_SF__ if
+	-mupper-regs-sf.
+	(-mupper-regs): New combination option that sets -mupper-regs-sf
+	and -mupper-regs-df by default if the cpu supports the instructions.
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
+	-mupper-regs, -mupper-regs-sf, and -mupper-regs-df.
+
+	* config/rs6000/predicates.md (memory_fp_constant): New predicate
+	to return true if the operand is a floating point constant that
+	must be put into the constant pool, before register allocation
+	occurs.
+
+	* config/rs6000/rs6000-cpus.def (ISA_2_6_MASKS_SERVER): Enable
+	-mupper-regs-df by default.
+	(ISA_2_7_MASKS_SERVER): Enable -mupper-regs-sf by default.
+	(POWERPC_MASKS): Add -mupper-regs-{sf,df} as options set by the
+	various -mcpu=... options.
+	(power7 cpu): Enable -mupper-regs-df by default.
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
+	-mupper-regs.
+
 2014-11-17  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
 
 	* ira-conflicts.c (build_conflict_bit_table): Add the current

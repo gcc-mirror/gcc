@@ -940,7 +940,9 @@ See RS/6000 and PowerPC Options.
 -mcrypto -mno-crypto -mdirect-move -mno-direct-move @gol
 -mquad-memory -mno-quad-memory @gol
 -mquad-memory-atomic -mno-quad-memory-atomic @gol
--mcompat-align-parm -mno-compat-align-parm}
+-mcompat-align-parm -mno-compat-align-parm @gol
+-mupper-regs-df -mno-upper-regs-df -mupper-regs-sf -mno-upper-regs-sf @gol
+-mupper-regs -mno-upper-regs}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -19728,6 +19730,39 @@ instructions.  The @option{-mquad-memory} option requires use of
 Generate code that uses (does not use) the atomic quad word memory
 instructions.  The @option{-mquad-memory-atomic} option requires use of
 64-bit mode.
+
+@item -mupper-regs-df
+@itemx -mno-upper-regs-df
+@opindex mupper-regs-df
+@opindex mno-upper-regs-df
+Generate code that uses (does not use) the scalar double precision
+instructions that target all 64 registers in the vector/scalar
+floating point register set that were added in version 2.06 of the
+PowerPC ISA.  The @option{-mupper-regs-df} turned on by default if you
+use either of the @option{-mcpu=power7}, @option{-mcpu=power8}, or
+@option{-mvsx} options.
+
+@item -mupper-regs-sf
+@itemx -mno-upper-regs-sf
+@opindex mupper-regs-sf
+@opindex mno-upper-regs-sf
+Generate code that uses (does not use) the scalar single precision
+instructions that target all 64 registers in the vector/scalar
+floating point register set that were added in version 2.07 of the
+PowerPC ISA.  The @option{-mupper-regs-sf} turned on by default if you
+use either of the @option{-mcpu=power8}, or @option{-mpower8-vector}
+options.
+
+@item -mupper-regs
+@itemx -mno-upper-regs
+@opindex mupper-regs
+@opindex mno-upper-regs
+Generate code that uses (does not use) the scalar
+instructions that target all 64 registers in the vector/scalar
+floating point register set, depending on the model of the machine.
+
+If the @option{-mno-upper-regs} option was used, it will turn off both
+@option{-mupper-regs-sf} and @option{-mupper-regs-df} options.
 
 @item -mfloat-gprs=@var{yes/single/double/no}
 @itemx -mfloat-gprs

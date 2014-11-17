@@ -380,6 +380,10 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
     rs6000_define_or_undefine_macro (define_p, "__QUAD_MEMORY_ATOMIC__");
   if ((flags & OPTION_MASK_CRYPTO) != 0)
     rs6000_define_or_undefine_macro (define_p, "__CRYPTO__");
+  if ((flags & OPTION_MASK_UPPER_REGS_DF) != 0)
+    rs6000_define_or_undefine_macro (define_p, "__UPPER_REGS_DF__");
+  if ((flags & OPTION_MASK_UPPER_REGS_SF) != 0)
+    rs6000_define_or_undefine_macro (define_p, "__UPPER_REGS_SF__");
 
   /* options from the builtin masks.  */
   if ((bu_mask & RS6000_BTM_SPE) != 0)
