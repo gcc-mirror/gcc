@@ -30,6 +30,11 @@
   (ior (match_code "symbol_ref")
        (match_operand 0 "register_operand")))
 
+;; Return true if OP a (const_int 0) operand.
+(define_predicate "const0_operand"
+  (and (match_code "const_int, const_double")
+       (match_test "op == CONST0_RTX (mode)")))
+
 (define_predicate "aarch64_ccmp_immediate"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), -31, 31)")))

@@ -3829,6 +3829,75 @@ bit_count (unsigned HOST_WIDE_INT value)
   return count;
 }
 
+/* N Z C V.  */
+#define AARCH64_CC_V 1
+#define AARCH64_CC_C (1 << 1)
+#define AARCH64_CC_Z (1 << 2)
+#define AARCH64_CC_N (1 << 3)
+
+/* N Z C V flags for ccmp.  The first code is for AND op and the other
+   is for IOR op.  Indexed by AARCH64_COND_CODE.  */
+static const int aarch64_nzcv_codes[][2] =
+{
+  {AARCH64_CC_Z, 0}, /* EQ, Z == 1.  */
+  {0, AARCH64_CC_Z}, /* NE, Z == 0.  */
+  {AARCH64_CC_C, 0}, /* CS, C == 1.  */
+  {0, AARCH64_CC_C}, /* CC, C == 0.  */
+  {AARCH64_CC_N, 0}, /* MI, N == 1.  */
+  {0, AARCH64_CC_N}, /* PL, N == 0.  */
+  {AARCH64_CC_V, 0}, /* VS, V == 1.  */
+  {0, AARCH64_CC_V}, /* VC, V == 0.  */
+  {AARCH64_CC_C, 0}, /* HI, C ==1 && Z == 0.  */
+  {0, AARCH64_CC_C}, /* LS, !(C == 1 && Z == 0).  */
+  {0, AARCH64_CC_V}, /* GE, N == V.  */
+  {AARCH64_CC_V, 0}, /* LT, N != V.  */
+  {0, AARCH64_CC_Z}, /* GT, Z == 0 && N == V.  */
+  {AARCH64_CC_Z, 0}, /* LE, !(Z == 0 && N == V).  */
+  {0, 0}, /* AL, Any.  */
+  {0, 0}, /* NV, Any.  */
+};
+
+int
+aarch64_ccmp_mode_to_code (enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case CC_DNEmode:
+      return NE;
+
+    case CC_DEQmode:
+      return EQ;
+
+    case CC_DLEmode:
+      return LE;
+
+    case CC_DGTmode:
+      return GT;
+
+    case CC_DLTmode:
+      return LT;
+
+    case CC_DGEmode:
+      return GE;
+
+    case CC_DLEUmode:
+      return LEU;
+
+    case CC_DGTUmode:
+      return GTU;
+
+    case CC_DLTUmode:
+      return LTU;
+
+    case CC_DGEUmode:
+      return GEU;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+
 void
 aarch64_print_operand (FILE *f, rtx x, char code)
 {
@@ -4191,6 +4260,40 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  break;
 	}
       output_addr_const (asm_out_file, x);
+      break;
+
+    case 'K':
+      {
+	int cond_code;
+	/* Print nzcv.  */
+
+	if (!COMPARISON_P (x))
+	  {
+	    output_operand_lossage ("invalid operand for '%%%c'", code);
+	    return;
+	  }
+
+	cond_code = aarch64_get_condition_code_1 (CCmode, GET_CODE (x));
+	gcc_assert (cond_code >= 0);
+	asm_fprintf (f, "%d", aarch64_nzcv_codes[cond_code][0]);
+      }
+      break;
+
+    case 'k':
+      {
+	int cond_code;
+	/* Print nzcv.  */
+
+	if (!COMPARISON_P (x))
+	  {
+	    output_operand_lossage ("invalid operand for '%%%c'", code);
+	    return;
+	  }
+
+	cond_code = aarch64_get_condition_code_1 (CCmode, GET_CODE (x));
+	gcc_assert (cond_code >= 0);
+	asm_fprintf (f, "%d", aarch64_nzcv_codes[cond_code][1]);
+      }
       break;
 
     default:
