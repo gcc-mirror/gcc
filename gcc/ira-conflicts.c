@@ -177,7 +177,6 @@ build_conflict_bit_table (void)
 	  gcc_assert (id < ira_objects_num);
 
 	  aclass = ALLOCNO_CLASS (allocno);
-	  sparseset_set_bit (objects_live, id);
 	  EXECUTE_IF_SET_IN_SPARSESET (objects_live, j)
 	    {
 	      ira_object_t live_obj = ira_object_id_map[j];
@@ -191,6 +190,7 @@ build_conflict_bit_table (void)
 		  record_object_conflict (obj, live_obj);
 		}
 	    }
+	  sparseset_set_bit (objects_live, id);
 	}
 
       for (r = ira_finish_point_ranges[i]; r != NULL; r = r->finish_next)

@@ -1,3 +1,8 @@
+2014-11-17  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+
+	* ira-conflicts.c (build_conflict_bit_table): Add the current
+	object to OBJECTS_LIVE after traversing OBJECTS_LIVE.
+
 2014-11-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (ipa_get_indirect_edge_target_1): Handle speculation.
