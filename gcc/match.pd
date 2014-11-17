@@ -166,7 +166,8 @@ along with GCC; see the file COPYING3.  If not see
  (simplify
   (rdiv @0 cst@1)
   (if (optimize)
-   (if (flag_reciprocal_math)
+   (if (flag_reciprocal_math
+	&& !real_zerop (@1))
     (with
      { tree tem = fold_binary (RDIV_EXPR, type, build_one_cst (type), @1); }
      (if (tem)
