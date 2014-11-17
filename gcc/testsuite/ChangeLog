@@ -1,3 +1,8 @@
+2014-11-17  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/simd/vfma_f64.c: Add asm volatile memory.
+	* gcc.target/aarch64/simd/vfms_f64.c: Likewise.
+
 2014-11-17  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* gcc.target/i386/chkp-strlen-1.c: New.
