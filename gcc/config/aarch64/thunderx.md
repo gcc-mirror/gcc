@@ -18,7 +18,6 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
-;;   Copyright (C) 2004, 2005, 2006 Cavium Networks.
 
 
 ;; Thunder is a dual-issue processor that can issue all instructions on
