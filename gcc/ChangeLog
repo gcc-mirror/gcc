@@ -1,5 +1,10 @@
 2014-11-17  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree.c (free_lang_data_in_decl): Set DECL_FUNCTION_SPECIFIC_OPTIMIZATION
+	to optimization_default_node.
+
+2014-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraphunit.c (analyze_functions): Use opt_for_fn.
 	* cgraph.h (cgraph_node::optimize_for_size_p): Likewise.
 
