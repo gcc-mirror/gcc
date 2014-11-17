@@ -1586,6 +1586,50 @@ chkp_find_bound_slots (const_tree type, bitmap res)
   chkp_find_bound_slots_1 (type, res, 0);
 }
 
+/* Return 1 if call to FNDECL should be instrumented
+   and 0 otherwise.  */
+
+static bool
+chkp_instrument_normal_builtin (tree fndecl)
+{
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case BUILT_IN_STRLEN:
+    case BUILT_IN_STRCPY:
+    case BUILT_IN_STRNCPY:
+    case BUILT_IN_STPCPY:
+    case BUILT_IN_STPNCPY:
+    case BUILT_IN_STRCAT:
+    case BUILT_IN_STRNCAT:
+    case BUILT_IN_MEMCPY:
+    case BUILT_IN_MEMPCPY:
+    case BUILT_IN_MEMSET:
+    case BUILT_IN_MEMMOVE:
+    case BUILT_IN_BZERO:
+    case BUILT_IN_STRCMP:
+    case BUILT_IN_STRNCMP:
+    case BUILT_IN_BCMP:
+    case BUILT_IN_MEMCMP:
+    case BUILT_IN_MEMCPY_CHK:
+    case BUILT_IN_MEMPCPY_CHK:
+    case BUILT_IN_MEMMOVE_CHK:
+    case BUILT_IN_MEMSET_CHK:
+    case BUILT_IN_STRCPY_CHK:
+    case BUILT_IN_STRNCPY_CHK:
+    case BUILT_IN_STPCPY_CHK:
+    case BUILT_IN_STPNCPY_CHK:
+    case BUILT_IN_STRCAT_CHK:
+    case BUILT_IN_STRNCAT_CHK:
+    case BUILT_IN_MALLOC:
+    case BUILT_IN_CALLOC:
+    case BUILT_IN_REALLOC:
+      return 1;
+
+    default:
+      return 0;
+    }
+}
+
 /* Add bound arguments to call statement pointed by GSI.
    Also performs a replacement of user checker builtins calls
    with internal ones.  */
@@ -1619,7 +1663,7 @@ chkp_add_bounds_to_call_stmt (gimple_stmt_iterator *gsi)
       && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_OBJECT_SIZE)
     return;
 
-  /* Donothing for calls to legacy functions.  */
+  /* Do nothing for calls to legacy functions.  */
   if (fndecl
       && lookup_attribute ("bnd_legacy", DECL_ATTRIBUTES (fndecl)))
     return;
@@ -1686,11 +1730,20 @@ chkp_add_bounds_to_call_stmt (gimple_stmt_iterator *gsi)
   if (!flag_chkp_instrument_calls)
     return;
 
-  /* Avoid instrumented builtin functions for now.  Due to IPA
-     it also means we have to avoid instrumentation of indirect
-     calls.  */
-  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) != NOT_BUILT_IN)
-    return;
+  /* We instrument only some subset of builtins.  We also instrument
+     builtin calls to be inlined.  */
+  if (fndecl
+      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      && !chkp_instrument_normal_builtin (fndecl))
+    {
+      if (!lookup_attribute ("always_inline", DECL_ATTRIBUTES (fndecl)))
+	return;
+
+      struct cgraph_node *clone = chkp_maybe_create_clone (fndecl);
+      if (!clone
+	  || !gimple_has_body_p (clone->decl))
+	return;
+    }
 
   /* If function decl is available then use it for
      formal arguments list.  Otherwise use function type.  */
@@ -1763,14 +1816,6 @@ chkp_add_bounds_to_call_stmt (gimple_stmt_iterator *gsi)
       gimple_call_copy_flags (new_call, call);
     }
   new_args.release ();
-
-  /* If we call built-in function and pass no bounds then
-     we do not need to change anything.  */
-  if (new_call == call
-      && fndecl
-      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-      && fndecl == builtin_decl_explicit (DECL_FUNCTION_CODE (fndecl)))
-      return;
 
   /* For direct calls fndecl is replaced with instrumented version.  */
   if (fndecl)
@@ -3905,15 +3950,21 @@ chkp_replace_function_pointer (tree *op, int *walk_subtrees,
 {
   if (TREE_CODE (*op) == FUNCTION_DECL
       && !lookup_attribute ("bnd_legacy", DECL_ATTRIBUTES (*op))
-      /* Do not replace builtins for now.  */
-      && DECL_BUILT_IN_CLASS (*op) == NOT_BUILT_IN)
+      && (DECL_BUILT_IN_CLASS (*op) == NOT_BUILT_IN
+	  /* For builtins we replace pointers only for selected
+	     function and functions having definitions.  */
+	  || (DECL_BUILT_IN_CLASS (*op) == BUILT_IN_NORMAL
+	      && (chkp_instrument_normal_builtin (*op)
+		  || gimple_has_body_p (*op)))))
     {
       struct cgraph_node *node = cgraph_node::get_create (*op);
+      struct cgraph_node *clone = NULL;
 
       if (!node->instrumentation_clone)
-	chkp_maybe_create_clone (*op);
+	clone = chkp_maybe_create_clone (*op);
 
-      *op = node->instrumented_version->decl;
+      if (clone)
+	*op = clone->decl;
       *walk_subtrees = 0;
     }
 

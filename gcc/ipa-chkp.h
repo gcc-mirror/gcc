@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_IPA_CHKP_H
 
 extern tree chkp_copy_function_type_adding_bounds (tree orig_type);
+extern tree chkp_maybe_clone_builtin_fndecl (tree fndecl);
 extern cgraph_node *chkp_maybe_create_clone (tree fndecl);
 
 #endif /* GCC_IPA_CHKP_H */

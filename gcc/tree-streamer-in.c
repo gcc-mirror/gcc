@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "streamer-hooks.h"
 #include "lto-streamer.h"
 #include "builtins.h"
+#include "ipa-chkp.h"
 
 /* Read a STRING_CST from the string table in DATA_IN using input
    block IB.  */
@@ -1113,6 +1114,14 @@ streamer_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
       if (fcode >= END_BUILTINS)
 	fatal_error ("machine independent builtin code out of range");
       result = builtin_decl_explicit (fcode);
+      if (!result
+	  && fcode > BEGIN_CHKP_BUILTINS
+	  && fcode < END_CHKP_BUILTINS)
+	{
+	  fcode = (enum built_in_function) (fcode - BEGIN_CHKP_BUILTINS - 1);
+	  result = builtin_decl_explicit (fcode);
+	  result = chkp_maybe_clone_builtin_fndecl (result);
+	}
       gcc_assert (result);
     }
   else if (fclass == BUILT_IN_MD)

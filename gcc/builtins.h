@@ -69,6 +69,7 @@ extern tree std_canonical_va_list_type (tree);
 extern void std_expand_builtin_va_start (tree, rtx);
 extern void expand_builtin_trap (void);
 extern rtx expand_builtin (tree, rtx, rtx, machine_mode, int);
+extern rtx expand_builtin_with_bounds (tree, rtx, rtx, machine_mode, int);
 extern enum built_in_function builtin_mathfn_code (const_tree);
 extern tree fold_builtin_expect (location_t, tree, tree, tree);
 extern tree fold_fma (location_t, tree, tree, tree, tree);
