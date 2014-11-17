@@ -1,3 +1,8 @@
+2014-11-17  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/thunderx.md: Remove copyright which should not
+	have been there.
+
 2014-11-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
