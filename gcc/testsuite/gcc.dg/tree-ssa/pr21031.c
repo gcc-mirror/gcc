@@ -16,5 +16,5 @@ foo (int a)
     return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Replaced" 2 "forwprop1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Replaced" 2 "forwprop1" } } */
 /* { dg-final { cleanup-tree-dump "forwprop1" } } */
