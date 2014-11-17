@@ -1,5 +1,14 @@
 2014-11-17  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* tree-chkp-opt.c (chkp_get_nobnd_fndecl): New.
+	(chkp_get_nochk_fndecl): New.
+	(chkp_optimize_string_function_calls): New.
+	(chkp_opt_execute): Call chkp_optimize_string_function_calls.
+	* tree-cfg.h (insert_cond_bb): New.
+	* tree-cfg.c (insert_cond_bb): New.
+
+2014-11-17  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* tree-core.h (built_in_class): Add builtin codes to be used
 	by Pointer Bounds Checker for instrumented builtin functions.
 	* tree-streamer-in.c: Include ipa-chkp.h.

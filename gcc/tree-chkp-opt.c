@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify-me.h"
 #include "expr.h"
 #include "tree-chkp.h"
+#include "ipa-chkp.h"
 #include "diagnostic.h"
 
 enum check_type
@@ -845,6 +846,265 @@ chkp_remove_constant_checks (void)
     }
 }
 
+/* Return fast version of string function FNCODE.  */
+static tree
+chkp_get_nobnd_fndecl (enum built_in_function fncode)
+{
+  /* Check if we are allowed to use fast string functions.  */
+  if (!flag_chkp_use_fast_string_functions)
+    return NULL_TREE;
+
+  tree fndecl = NULL_TREE;
+
+  switch (fncode)
+    {
+    case BUILT_IN_MEMCPY_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMCPY_NOBND);
+      break;
+
+    case BUILT_IN_MEMPCPY_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMPCPY_NOBND);
+      break;
+
+    case BUILT_IN_MEMMOVE_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMMOVE_NOBND);
+      break;
+
+    case BUILT_IN_MEMSET_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMSET_NOBND);
+      break;
+
+    case BUILT_IN_CHKP_MEMCPY_NOCHK_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMCPY_NOBND_NOCHK);
+      break;
+
+    case BUILT_IN_CHKP_MEMPCPY_NOCHK_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMPCPY_NOBND_NOCHK);
+      break;
+
+    case BUILT_IN_CHKP_MEMMOVE_NOCHK_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMMOVE_NOBND_NOCHK);
+      break;
+
+    case BUILT_IN_CHKP_MEMSET_NOCHK_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMSET_NOBND_NOCHK);
+      break;
+
+    default:
+      break;
+    }
+
+  if (fndecl)
+    fndecl = chkp_maybe_clone_builtin_fndecl (fndecl);
+
+  return fndecl;
+}
+
+
+/* Return no-check version of string function FNCODE.  */
+static tree
+chkp_get_nochk_fndecl (enum built_in_function fncode)
+{
+  /* Check if we are allowed to use fast string functions.  */
+  if (!flag_chkp_use_nochk_string_functions)
+    return NULL_TREE;
+
+  tree fndecl = NULL_TREE;
+
+  switch (fncode)
+    {
+    case BUILT_IN_MEMCPY_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMCPY_NOCHK);
+      break;
+
+    case BUILT_IN_MEMPCPY_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMPCPY_NOCHK);
+      break;
+
+    case BUILT_IN_MEMMOVE_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMMOVE_NOCHK);
+      break;
+
+    case BUILT_IN_MEMSET_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMSET_NOCHK);
+      break;
+
+    case BUILT_IN_CHKP_MEMCPY_NOBND_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMCPY_NOBND_NOCHK);
+      break;
+
+    case BUILT_IN_CHKP_MEMPCPY_NOBND_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMPCPY_NOBND_NOCHK);
+      break;
+
+    case BUILT_IN_CHKP_MEMMOVE_NOBND_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMMOVE_NOBND_NOCHK);
+      break;
+
+    case BUILT_IN_CHKP_MEMSET_NOBND_CHKP:
+      fndecl = builtin_decl_implicit (BUILT_IN_CHKP_MEMSET_NOBND_NOCHK);
+      break;
+
+    default:
+      break;
+    }
+
+  if (fndecl)
+    fndecl = chkp_maybe_clone_builtin_fndecl (fndecl);
+
+  return fndecl;
+}
+
+/* Find memcpy, mempcpy, memmove and memset calls, perform
+   checks before call and then call no_chk version of
+   functions.  We do it on O2 to enable inlining of these
+   functions during expand.
+
+   Also try to find memcpy, mempcpy, memmove and memset calls
+   which are known to not write pointers to memory and use
+   faster function versions for them.  */
+static void
+chkp_optimize_string_function_calls (void)
+{
+  basic_block bb;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Searching for replaceable string function calls...\n");
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      gimple_stmt_iterator i;
+
+      for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
+        {
+	  gimple stmt = gsi_stmt (i);
+	  tree fndecl;
+
+	  if (gimple_code (stmt) != GIMPLE_CALL
+	      || !gimple_call_with_bounds_p (stmt))
+	    continue;
+
+	  fndecl = gimple_call_fndecl (stmt);
+
+	  if (!fndecl || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+	    continue;
+
+	  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMCPY_CHKP
+	      || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMPCPY_CHKP
+	      || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMMOVE_CHKP
+	      || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMSET_CHKP)
+	    {
+	      tree dst = gimple_call_arg (stmt, 0);
+	      tree dst_bnd = gimple_call_arg (stmt, 1);
+	      bool is_memset = DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMSET_CHKP;
+	      tree size = gimple_call_arg (stmt, is_memset ? 3 : 4);
+	      tree fndecl_nochk;
+	      gimple_stmt_iterator j;
+	      basic_block check_bb;
+	      address_t size_val;
+	      int sign;
+	      bool known;
+
+	      /* We may replace call with corresponding __chkp_*_nobnd
+		 call in case destination pointer base type is not
+		 void or pointer.  */
+	      if (POINTER_TYPE_P (TREE_TYPE (dst))
+		  && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (dst)))
+		  && !chkp_type_has_pointer (TREE_TYPE (TREE_TYPE (dst))))
+		{
+		  tree fndecl_nobnd
+		    = chkp_get_nobnd_fndecl (DECL_FUNCTION_CODE (fndecl));
+
+		  if (fndecl_nobnd)
+		    fndecl = fndecl_nobnd;
+		}
+
+	      fndecl_nochk = chkp_get_nochk_fndecl (DECL_FUNCTION_CODE (fndecl));
+
+	      if (fndecl_nochk)
+		fndecl = fndecl_nochk;
+
+	      if (fndecl != gimple_call_fndecl (stmt))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "Replacing call: ");
+		      print_gimple_stmt (dump_file, stmt, 0,
+					 TDF_VOPS|TDF_MEMSYMS);
+		    }
+
+		  gimple_call_set_fndecl (stmt, fndecl);
+
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "With a new call: ");
+		      print_gimple_stmt (dump_file, stmt, 0,
+					 TDF_VOPS|TDF_MEMSYMS);
+		    }
+		}
+
+	      /* If there is no nochk version of function then
+		 do nothing.  Otherwise insert checks before
+		 the call.  */
+	      if (!fndecl_nochk)
+		continue;
+
+	      /* If size passed to call is known and > 0
+		 then we may insert checks unconditionally.  */
+	      size_val.pol.create (0);
+	      chkp_collect_value (size, size_val);
+	      known = chkp_is_constant_addr (size_val, &sign);
+	      size_val.pol.release ();
+
+	      /* If we are not sure size is not zero then we have
+		 to perform runtime check for size and perform
+		 checks only when size is not zero.  */
+	      if (!known)
+		{
+		  gimple check = gimple_build_cond (NE_EXPR,
+						    size,
+						    size_zero_node,
+						    NULL_TREE,
+						    NULL_TREE);
+
+		  /* Split block before string function call.  */
+		  gsi_prev (&i);
+		  check_bb = insert_cond_bb (bb, gsi_stmt (i), check);
+
+		  /* Set position for checks.  */
+		  j = gsi_last_bb (check_bb);
+
+		  /* The block was splitted and therefore we
+		     need to set iterator to its end.  */
+		  i = gsi_last_bb (bb);
+		}
+	      /* If size is known to be zero then no checks
+		 should be performed.  */
+	      else if (!sign)
+		continue;
+	      else
+		j = i;
+
+	      size = size_binop (MINUS_EXPR, size, size_one_node);
+	      if (!is_memset)
+		{
+		  tree src = gimple_call_arg (stmt, 2);
+		  tree src_bnd = gimple_call_arg (stmt, 3);
+
+		  chkp_check_mem_access (src, fold_build_pointer_plus (src, size),
+					 src_bnd, j, gimple_location (stmt),
+					 integer_zero_node);
+		}
+
+	      chkp_check_mem_access (dst, fold_build_pointer_plus (dst, size),
+				     dst_bnd, j, gimple_location (stmt),
+				     integer_one_node);
+
+	    }
+	}
+    }
+}
+
 /* Intrumentation pass inserts most of bounds creation code
    in the header of the function.  We want to move bounds
    creation closer to bounds usage to reduce bounds lifetime.
@@ -1025,6 +1285,10 @@ static unsigned int
 chkp_opt_execute (void)
 {
   chkp_opt_init();
+
+  /* This optimization may introduce new checks
+     and thus we put it before checks search.  */
+  chkp_optimize_string_function_calls ();
 
   chkp_gather_checks_info ();
 
