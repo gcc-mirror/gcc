@@ -1,5 +1,16 @@
 2014-11-17  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* tree-ssa-strlen.c: include ipa-chkp.h, cgraph.h,
+	ipa-ref.h, plugin-api.h.
+	(get_string_length): Handle calls with bounds.
+	(adjust_last_stmt): Likewise.
+	(handle_builtin_strchr): Likewise.
+	(handle_builtin_strcpy): Likewise.
+	(handle_builtin_memcpy): Likewise.
+	(handle_builtin_strcat): Likewise.
+
+2014-11-17  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* tree-chkp-opt.c (chkp_get_nobnd_fndecl): New.
 	(chkp_get_nochk_fndecl): New.
 	(chkp_optimize_string_function_calls): New.
