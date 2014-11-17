@@ -1,3 +1,9 @@
+2014-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63898
+	PR middle-end/63883
+	* gfortran.dg/pr63883.f90: New testcase.
+
 2014-11-17  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR ipa/63894
