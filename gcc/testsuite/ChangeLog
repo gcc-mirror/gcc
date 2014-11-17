@@ -1,3 +1,15 @@
+2014-11-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p8vector-ldst.c: Rewrite to use 40 live
+	floating point variables instead of using asm to test allocating
+	values to the Altivec registers.
+
+	* gcc.target/powerpc/upper-regs-sf.c: New -mupper-regs-sf and
+	-mupper-regs-df tests.
+	* gcc.target/powerpc/upper-regs-df.c: Likewise.
+
+	* config/rs6000/predicates.md (memory_fp_constant): New predicate
+
 2014-11-17  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/pr43864-2.c: Add -ftree-tail-merge to dg-options.
