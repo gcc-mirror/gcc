@@ -859,7 +859,8 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
   edge->indirect_inlining_edge = 0;
   edge->speculative = false;
   edge->indirect_unknown_callee = indir_unknown_callee;
-  if (flag_devirtualize && call_stmt && DECL_STRUCT_FUNCTION (caller->decl))
+  if (opt_for_fn (edge->caller->decl, flag_devirtualize)
+      && call_stmt && DECL_STRUCT_FUNCTION (caller->decl))
     edge->in_polymorphic_cdtor
       = decl_maybe_in_construction_p (NULL, NULL, call_stmt,
 				      caller->decl);
@@ -2374,7 +2375,7 @@ bool
 cgraph_node::cannot_return_p (void)
 {
   int flags = flags_from_decl_or_type (decl);
-  if (!flag_exceptions)
+  if (!opt_for_fn (decl, flag_exceptions))
     return (flags & ECF_NORETURN) != 0;
   else
     return ((flags & (ECF_NORETURN | ECF_NOTHROW))
@@ -2394,7 +2395,7 @@ cgraph_edge::cannot_lead_to_return_p (void)
   if (indirect_unknown_callee)
     {
       int flags = indirect_info->ecf_flags;
-      if (!flag_exceptions)
+      if (!opt_for_fn (caller->decl, flag_exceptions))
 	return (flags & ECF_NORETURN) != 0;
       else
 	return ((flags & (ECF_NORETURN | ECF_NOTHROW))
@@ -2409,7 +2410,9 @@ cgraph_edge::cannot_lead_to_return_p (void)
 bool
 cgraph_edge::maybe_hot_p (void)
 {
-  if (profile_info && flag_branch_probabilities
+  /* TODO: Export profile_status from cfun->cfg to cgraph_node.  */
+  if (profile_info
+      && opt_for_fn (caller->decl, flag_branch_probabilities)
       && !maybe_hot_count_p (NULL, count))
     return false;
   if (caller->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
@@ -2420,17 +2423,18 @@ cgraph_edge::maybe_hot_p (void)
       && (callee
 	  && callee->frequency <= NODE_FREQUENCY_EXECUTED_ONCE))
     return false;
-  if (optimize_size) return false;
+  if (opt_for_fn (caller->decl, optimize_size))
+    return false;
   if (caller->frequency == NODE_FREQUENCY_HOT)
     return true;
   if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE
       && frequency < CGRAPH_FREQ_BASE * 3 / 2)
     return false;
-  if (flag_guess_branch_prob)
+  if (opt_for_fn (caller->decl, flag_guess_branch_prob))
     {
       if (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) == 0
 	  || frequency <= (CGRAPH_FREQ_BASE
-				 / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION)))
+			   / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION)))
         return false;
     }
   return true;
