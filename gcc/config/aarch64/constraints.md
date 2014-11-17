@@ -89,6 +89,11 @@
   (and (match_code "const_int")
        (match_test "(unsigned HOST_WIDE_INT) ival < 32")))
 
+(define_constraint "Usn"
+ "A constant that can be used with a CCMN operation (once negated)."
+ (and (match_code "const_int")
+      (match_test "IN_RANGE (ival, -31, 0)")))
+
 (define_constraint "Usd"
   "@internal
   A constraint that matches an immediate shift constant in DImode."
