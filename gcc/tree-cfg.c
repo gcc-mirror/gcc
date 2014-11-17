@@ -8178,6 +8178,46 @@ make_pass_split_crit_edges (gcc::context *ctxt)
 }
 
 
+/* Insert COND expression which is GIMPLE_COND after STMT
+   in basic block BB with appropriate basic block split
+   and creation of a new conditionally executed basic block.
+   Return created basic block.  */
+basic_block
+insert_cond_bb (basic_block bb, gimple stmt, gimple cond)
+{
+  edge fall = split_block (bb, stmt);
+  gimple_stmt_iterator iter = gsi_last_bb (bb);
+  basic_block new_bb;
+
+  /* Insert cond statement.  */
+  gcc_assert (gimple_code (cond) == GIMPLE_COND);
+  if (gsi_end_p (iter))
+    gsi_insert_before (&iter, cond, GSI_CONTINUE_LINKING);
+  else
+    gsi_insert_after (&iter, cond, GSI_CONTINUE_LINKING);
+
+  /* Create conditionally executed block.  */
+  new_bb = create_empty_bb (bb);
+  make_edge (bb, new_bb, EDGE_TRUE_VALUE);
+  make_single_succ_edge (new_bb, fall->dest, EDGE_FALLTHRU);
+
+  /* Fix edge for split bb.  */
+  fall->flags = EDGE_FALSE_VALUE;
+
+  /* Update dominance info.  */
+  if (dom_info_available_p (CDI_DOMINATORS))
+    {
+      set_immediate_dominator (CDI_DOMINATORS, new_bb, bb);
+      set_immediate_dominator (CDI_DOMINATORS, fall->dest, bb);
+    }
+
+  /* Update loop info.  */
+  if (current_loops)
+    add_bb_to_loop (new_bb, bb->loop_father);
+
+  return new_bb;
+}
+
 /* Build a ternary operation and gimplify it.  Emit code before GSI.
    Return the gimple_val holding the result.  */
 

@@ -100,5 +100,6 @@ extern tree gimplify_build1 (gimple_stmt_iterator *, enum tree_code,
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
 extern unsigned int execute_fixup_cfg (void);
 extern unsigned int split_critical_edges (void);
+extern basic_block insert_cond_bb (basic_block, gimple, gimple);
 
 #endif /* _TREE_CFG_H  */

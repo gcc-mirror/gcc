@@ -1,3 +1,22 @@
+2014-11-17  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.target/i386/chkp-stropt-1.c: New.
+	* gcc.target/i386/chkp-stropt-2.c: New.
+	* gcc.target/i386/chkp-stropt-3.c: New.
+	* gcc.target/i386/chkp-stropt-4.c: New.
+	* gcc.target/i386/chkp-stropt-5.c: New.
+	* gcc.target/i386/chkp-stropt-6.c: New.
+	* gcc.target/i386/chkp-stropt-7.c: New.
+	* gcc.target/i386/chkp-stropt-8.c: New.
+	* gcc.target/i386/chkp-stropt-9.c: New.
+	* gcc.target/i386/chkp-stropt-10.c: New.
+	* gcc.target/i386/chkp-stropt-11.c: New.
+	* gcc.target/i386/chkp-stropt-12.c: New.
+	* gcc.target/i386/chkp-stropt-13.c: New.
+	* gcc.target/i386/chkp-stropt-14.c: New.
+	* gcc.target/i386/chkp-stropt-15.c: New.
+	* gcc.target/i386/chkp-stropt-16.c: New.
+
 2014-11-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* g++.dg/ipa/pr63894.C (new): Replace unsigned long with
