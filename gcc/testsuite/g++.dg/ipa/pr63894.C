@@ -3,7 +3,7 @@
 
 struct A
 {
-  void *operator new(unsigned long, int);
+  void *operator new(__SIZE_TYPE__, int);
 };
 class C
 {
