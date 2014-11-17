@@ -20959,6 +20959,8 @@ value_dependent_expression_p (tree expression)
       if (DECL_INITIAL (expression)
 	  && decl_constant_var_p (expression)
 	  && (TREE_CODE (DECL_INITIAL (expression)) == TREE_LIST
+	      /* cp_finish_decl doesn't fold reference initializers.  */
+	      || TREE_CODE (TREE_TYPE (expression)) == REFERENCE_TYPE
 	      || value_dependent_expression_p (DECL_INITIAL (expression))))
 	return true;
       return false;

@@ -3,7 +3,7 @@
 
 struct A
 {
-  static constexpr int&& i = 0;  // { dg-error "initialization" }
+  static constexpr int&& i = 0;
 };
 
 int j = A::i;
