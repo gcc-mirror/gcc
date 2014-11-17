@@ -11004,7 +11004,10 @@ cp_parser_jump_statement (cp_parser* parser)
     case RID_GOTO:
       if (parser->in_function_body
 	  && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
-	error ("%<goto%> in %<constexpr%> function");
+	{
+	  error ("%<goto%> in %<constexpr%> function");
+	  cp_function_chain->invalid_constexpr = true;
+	}
 
       /* Create the goto-statement.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_MULT))
@@ -16588,7 +16591,10 @@ cp_parser_asm_definition (cp_parser* parser)
 
   if (parser->in_function_body
       && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
-    error ("%<asm%> in %<constexpr%> function");
+    {
+      error ("%<asm%> in %<constexpr%> function");
+      cp_function_chain->invalid_constexpr = true;
+    }
 
   /* See if the next token is `volatile'.  */
   if (cp_parser_allow_gnu_extensions_p (parser)

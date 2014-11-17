@@ -1,5 +1,50 @@
 2014-11-17  Jason Merrill  <jason@redhat.com>
 
+	C++14 constexpr support (minus loops and multiple returns)
+	* constexpr.c (use_new_call): New macro.
+	(build_data_member_initialization): Ignore non-mem-inits.
+	(check_constexpr_bind_expr_vars): Remove C++14 checks.
+	(constexpr_fn_retval): Likewise.
+	(check_constexpr_ctor_body): Do nothing in C++14.
+	(massage_constexpr_body): In C++14 only collect mem-inits.
+	(get_function_named_in_call): Handle null CALL_EXPR_FN.
+	(cxx_bind_parameters_in_call): Build bindings in same order as
+	parameters.  Don't treat iniviref parms specially in new call mode.
+	(cxx_eval_call_expression): If use_new_call, do constexpr expansion
+	based on DECL_SAVED_TREE rather than the massaged constexpr body.
+	Set up ctx->object from AGGR_INIT_EXPR_SLOT if we don't have one.
+	(is_sub_constant_expr): Don't mess with ctx.ctor here.
+	(cxx_eval_component_reference): A null element means we're mid-
+	initialization.
+	(cxx_eval_store_expression, cxx_eval_increment_expression): New.
+	(cxx_eval_constant_expression): Handle RESULT_DECL, DECL_EXPR,
+	MODIFY_EXPR, STATEMENT_LIST, BIND_EXPR, USING_STMT,
+	PREINCREMENT_EXPR, POSTINCREMENT_EXPR, PREDECREMENT_EXPR,
+	POSTDECREMENT_EXPR.  Don't look into DECL_INITIAL of variables in
+	constexpr functions.  In new-call mode find parms in the values table.
+	(potential_constant_expression_1): Handle null CALL_EXPR_FN.
+	Handle STATEMENT_LIST, MODIFY_EXPR, MODOP_EXPR, IF_STMT,
+	PREINCREMENT_EXPR, POSTINCREMENT_EXPR, PREDECREMENT_EXPR,
+	POSTDECREMENT_EXPR, BIND_EXPR, WITH_CLEANUP_EXPR,
+	CLEANUP_POINT_EXPR, MUST_NOT_THROW_EXPR, TRY_CATCH_EXPR,
+	EH_SPEC_BLOCK, EXPR_STMT, DECL_EXPR, CASE_LABEL_EXPR, BREAK_STMT,
+	CONTINUE_STMT, USING_STMT, IF_STMT, DO_STMT, FOR_STMT, WHILE_STMT,
+	SWITCH_STMT, ASM_EXPR.
+	(cxx_eval_vec_init_1): Call build_aggr_init_expr.
+	(cxx_eval_indirect_ref): Don't return a CONSTRUCTOR when the
+	caller wants an lvalue.
+	(cxx_eval_outermost_constant_expr): Pull object out of AGGR_INIT_EXPR.
+	(maybe_constant_init): Look through INIT_EXPR.
+	(ensure_literal_type_for_constexpr_object): Set
+	cp_function_chain->invalid_constexpr.
+	* cp-tree.h (struct language_function): Add invalid_constexpr bitfield.
+	* decl.c (start_decl): Set cp_function_chain->invalid_constexpr.
+	(check_for_uninitialized_const_var): Likewise.
+	(maybe_save_function_definition): Check it.
+	* parser.c (cp_parser_jump_statement): Set
+	cp_function_chain->invalid_constexpr.
+	(cp_parser_asm_definition): Likewise.
+
 	PR c++/52282
 	* decl.c (build_ptrmemfunc_type): Don't build a different
 	RECORD_TYPE for a qualified PMF.
