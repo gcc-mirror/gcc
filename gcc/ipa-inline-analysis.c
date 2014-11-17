@@ -2986,6 +2986,7 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
   struct cgraph_node *callee;
   struct inline_summary *isummary;
   enum availability avail;
+  bool speculative;
 
   if (!known_vals.exists () && !known_contexts.exists ())
     return false;
@@ -2993,8 +2994,8 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
     return false;
 
   target = ipa_get_indirect_edge_target (ie, known_vals, known_contexts,
-					 known_aggs);
-  if (!target)
+					 known_aggs, &speculative);
+  if (!target || speculative)
     return false;
 
   /* Account for difference in cost between indirect and direct calls.  */
