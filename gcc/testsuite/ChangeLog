@@ -1,3 +1,8 @@
+2014-11-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.dg/ipa/pr63894.C (new): Replace unsigned long with
+	__SIZE_TYPE__.
+
 2014-11-17  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63898
