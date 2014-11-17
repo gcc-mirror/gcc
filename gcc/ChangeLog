@@ -1,5 +1,14 @@
 2014-11-17  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
+	* Makefile.in: Add ccmp.o.
+	* ccmp.c: New file.
+	* ccmp.h: New file.
+	* expr.c: include "ccmp.h"
+	(expand_cond_expr_using_cmove): Handle VOIDmode.
+	(expand_expr_real_1): Try to expand ccmp.
+
+2014-11-17  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
 	* cfgexpand.c (expand_gimple_cond): Check ccmp.
 	* expmed.c (emit_cstore): Make it global.
 	* expmed.h: #include "insn-codes.h"
