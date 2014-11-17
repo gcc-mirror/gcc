@@ -1730,12 +1730,15 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 				vec<tree> known_csts,
 				vec<ipa_polymorphic_call_context> known_contexts,
 				vec<ipa_agg_jump_function_p> known_aggs,
-				struct ipa_agg_replacement_value *agg_reps)
+				struct ipa_agg_replacement_value *agg_reps,
+				bool *speculative)
 {
   int param_index = ie->indirect_info->param_index;
   HOST_WIDE_INT anc_offset;
   tree t;
   tree target = NULL;
+
+  *speculative = false;
 
   if (param_index == -1
       || known_csts.length () <= (unsigned int) param_index)
@@ -1792,8 +1795,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
   t = NULL;
 
   /* Try to work out value of virtual table pointer value in replacemnets.  */
-  if (!t && agg_reps && !ie->indirect_info->by_ref
-      && !ie->indirect_info->vptr_changed)
+  if (!t && agg_reps && !ie->indirect_info->by_ref)
     {
       while (agg_reps)
 	{
@@ -1811,8 +1813,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
   /* Try to work out value of virtual table pointer value in known
      aggregate values.  */
   if (!t && known_aggs.length () > (unsigned int) param_index
-      && !ie->indirect_info->by_ref
-      && !ie->indirect_info->vptr_changed)
+      && !ie->indirect_info->by_ref)
     {
        struct ipa_agg_jump_function *agg;
        agg = known_aggs[param_index];
@@ -1836,7 +1837,9 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 		  || !possible_polymorphic_call_target_p
 		       (ie, cgraph_node::get (target)))
 		target = ipa_impossible_devirt_target (ie, target);
-	      return target;
+              *speculative = ie->indirect_info->vptr_changed;
+	      if (!*speculative)
+	        return target;
 	    }
 	}
     }
@@ -1877,11 +1880,32 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
      ie->indirect_info->otr_token,
      context, &final);
   if (!final || targets.length () > 1)
-    return NULL_TREE;
-  if (targets.length () == 1)
-    target = targets[0]->decl;
+    {
+      struct cgraph_node *node;
+      if (*speculative)
+	return target;
+      if (!flag_devirtualize_speculatively || ie->speculative
+	  || !ie->maybe_hot_p ())
+	return NULL;
+      node = try_speculative_devirtualization (ie->indirect_info->otr_type,
+					       ie->indirect_info->otr_token,
+					       context);
+      if (node)
+	{
+	  *speculative = true;
+	  target = node->decl;
+	}
+      else
+	return NULL;
+    }
   else
-    target = ipa_impossible_devirt_target (ie, NULL_TREE);
+    {
+      *speculative = false;
+      if (targets.length () == 1)
+	target = targets[0]->decl;
+      else
+	target = ipa_impossible_devirt_target (ie, NULL_TREE);
+    }
 
   if (target && !possible_polymorphic_call_target_p (ie,
 						     cgraph_node::get (target)))
@@ -1899,10 +1923,11 @@ tree
 ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 			      vec<tree> known_csts,
 			      vec<ipa_polymorphic_call_context> known_contexts,
-			      vec<ipa_agg_jump_function_p> known_aggs)
+			      vec<ipa_agg_jump_function_p> known_aggs,
+			      bool *speculative)
 {
   return ipa_get_indirect_edge_target_1 (ie, known_csts, known_contexts,
-					 known_aggs, NULL);
+					 known_aggs, NULL, speculative);
 }
 
 /* Calculate devirtualization time bonus for NODE, assuming we know KNOWN_CSTS
@@ -1923,9 +1948,10 @@ devirtualization_time_bonus (struct cgraph_node *node,
       struct inline_summary *isummary;
       enum availability avail;
       tree target;
+      bool speculative;
 
       target = ipa_get_indirect_edge_target (ie, known_csts, known_contexts,
-					     known_aggs);
+					     known_aggs, &speculative);
       if (!target)
 	continue;
 
@@ -1944,12 +1970,12 @@ devirtualization_time_bonus (struct cgraph_node *node,
       /* FIXME: The values below need re-considering and perhaps also
 	 integrating into the cost metrics, at lest in some very basic way.  */
       if (isummary->size <= MAX_INLINE_INSNS_AUTO / 4)
-	res += 31;
+	res += 31 / ((int)speculative + 1);
       else if (isummary->size <= MAX_INLINE_INSNS_AUTO / 2)
-	res += 15;
+	res += 15 / ((int)speculative + 1);
       else if (isummary->size <= MAX_INLINE_INSNS_AUTO
 	       || DECL_DECLARED_INLINE_P (callee->decl))
-	res += 7;
+	res += 7 / ((int)speculative + 1);
     }
 
   return res;
@@ -2645,16 +2671,18 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
   for (ie = node->indirect_calls; ie; ie = next_ie)
     {
       tree target;
+      bool speculative;
 
       next_ie = ie->next_callee;
       target = ipa_get_indirect_edge_target_1 (ie, known_csts, known_contexts,
-					       vNULL, aggvals);
+					       vNULL, aggvals, &speculative);
       if (target)
 	{
 	  bool agg_contents = ie->indirect_info->agg_contents;
 	  bool polymorphic = ie->indirect_info->polymorphic;
 	  int param_index = ie->indirect_info->param_index;
-	  struct cgraph_edge *cs = ipa_make_edge_direct_to_target (ie, target);
+	  struct cgraph_edge *cs = ipa_make_edge_direct_to_target (ie, target,
+								   speculative);
 	  found = true;
 
 	  if (cs && !agg_contents && !polymorphic)

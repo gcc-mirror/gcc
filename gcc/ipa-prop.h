@@ -529,7 +529,8 @@ bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 				   vec<tree> ,
 				   vec<ipa_polymorphic_call_context>,
-				   vec<ipa_agg_jump_function_p> );
+				   vec<ipa_agg_jump_function_p>,
+				   bool *);
 struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree,
 						    bool speculative = false);
 tree ipa_impossible_devirt_target (struct cgraph_edge *, tree);
