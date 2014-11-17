@@ -1,3 +1,9 @@
+2014-11-16  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR middle-end/63790
+	* gcc.dg/tree-ssa/pr21031.c: Drop XFAIL.
+	* gcc.dg/tree-ssa/forwprop-29.c: New test.
+
 2014-11-16  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.c-torture/execute/memset-4.c: New test.

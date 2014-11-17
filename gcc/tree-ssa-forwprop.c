@@ -442,9 +442,21 @@ forward_propagate_into_comparison_1 (gimple stmt,
       gimple def_stmt = get_prop_source_stmt (op0, false, &single_use0_p);
       if (def_stmt && can_propagate_from (def_stmt))
 	{
+	  enum tree_code def_code = gimple_assign_rhs_code (def_stmt);
+	  bool invariant_only_p = !single_use0_p;
+
 	  rhs0 = rhs_to_tree (TREE_TYPE (op1), def_stmt);
+
+	  /* Always combine comparisons or conversions from booleans.  */
+	  if (TREE_CODE (op1) == INTEGER_CST
+	      && ((CONVERT_EXPR_CODE_P (def_code)
+		   && TREE_CODE (TREE_TYPE (TREE_OPERAND (rhs0, 0)))
+		      == BOOLEAN_TYPE)
+		  || TREE_CODE_CLASS (def_code) == tcc_comparison))
+	    invariant_only_p = false;
+
 	  tmp = combine_cond_expr_cond (stmt, code, type,
-					rhs0, op1, !single_use0_p);
+					rhs0, op1, invariant_only_p);
 	  if (tmp)
 	    return tmp;
 	}
