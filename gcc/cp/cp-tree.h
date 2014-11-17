@@ -148,12 +148,14 @@ c-common.h, not after.
       DECL_LOCAL_FUNCTION_P (in FUNCTION_DECL)
       DECL_MUTABLE_P (in FIELD_DECL)
       DECL_DEPENDENT_P (in USING_DECL)
+      LABEL_DECL_BREAK (in LABEL_DECL)
    1: C_TYPEDEF_EXPLICITLY_SIGNED (in TYPE_DECL).
       DECL_TEMPLATE_INSTANTIATED (in a VAR_DECL or a FUNCTION_DECL)
       DECL_MEMBER_TEMPLATE_P (in TEMPLATE_DECL)
       USING_DECL_TYPENAME_P (in USING_DECL)
       DECL_VLA_CAPTURE_P (in FIELD_DECL)
       DECL_ARRAY_PARAMETER_P (in PARM_DECL)
+      LABEL_DECL_CONTINUE (in LABEL_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
    3: DECL_IN_AGGR_P.
@@ -3242,6 +3244,14 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    scope) declared in a local scope.  */
 #define DECL_LOCAL_FUNCTION_P(NODE) \
   DECL_LANG_FLAG_0 (FUNCTION_DECL_CHECK (NODE))
+
+/* Nonzero if NODE is the target for genericization of 'break' stmts.  */
+#define LABEL_DECL_BREAK(NODE) \
+  DECL_LANG_FLAG_0 (LABEL_DECL_CHECK (NODE))
+
+/* Nonzero if NODE is the target for genericization of 'continue' stmts.  */
+#define LABEL_DECL_CONTINUE(NODE) \
+  DECL_LANG_FLAG_1 (LABEL_DECL_CHECK (NODE))
 
 /* True if NODE was declared with auto in its return type, but it has
    started compilation and so the return type might have been changed by

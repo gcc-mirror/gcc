@@ -74,6 +74,10 @@ begin_bc_block (enum bc_t bc, location_t location)
   tree label = create_artificial_label (location);
   DECL_CHAIN (label) = bc_label[bc];
   bc_label[bc] = label;
+  if (bc == bc_break)
+    LABEL_DECL_BREAK (label) = true;
+  else
+    LABEL_DECL_CONTINUE (label) = true;
   return label;
 }
 

@@ -1,5 +1,16 @@
 2014-11-17  Jason Merrill  <jason@redhat.com>
 
+	Handle C++14 constexpr flow control.
+	* constexpr.c (cxx_eval_loop_expr, cxx_eval_switch_expr): New.
+	(cxx_eval_statement_list): New.
+	(cxx_eval_constant_expression): Handle LABEL_EXPR,
+	CASE_LABEL_EXPR, GOTO_EXPR, LOOP_EXPR, SWITCH_EXPR.  Handle jump
+	semantics of RETURN_EXPR.
+	(many functions): Add jump_target parameter.
+	(returns, breaks, continues, switches, label_matches): New.
+	* cp-tree.h (LABEL_DECL_BREAK, LABEL_DECL_CONTINUE): New.
+	* cp-gimplify.c (begin_bc_block): Set them.
+
 	* cp-gimplify.c (genericize_cp_loop): Use LOOP_EXPR.
 	(genericize_for_stmt): Handle null statement-list.
 
