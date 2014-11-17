@@ -1,3 +1,10 @@
+2014-11-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (cortex-a53): Remove
+	AARCH64_FL_CRYPTO from feature flags.
+	(cortex-a57): Likewise.
+	(cortex-a57.cortex-a53): Likewise.
+
 2014-11-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (free_lang_data_in_decl): Annotate all functio nbodies with
