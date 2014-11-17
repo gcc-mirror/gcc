@@ -1,3 +1,9 @@
+2014-11-17  Zhenqiang Chen  <zhenqiang.chen@linaor.org>
+
+	* target.def (gen_ccmp_first, gen_ccmp_first): Add two new hooks.
+	* doc/tm.texi.in (TARGET_GEN_CCMP_FIRST, TARGET_GEN_CCMP_NEXT): New.
+	* doc/tm.texi (TARGET_GEN_CCMP_FIRST, TARGET_GEN_CCMP_NEXT): New.
+
 2014-11-16  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR middle-end/63790

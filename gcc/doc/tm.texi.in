@@ -8044,6 +8044,10 @@ build_type_attribute_variant (@var{mdecl},
 
 @hook TARGET_HAVE_CONDITIONAL_EXECUTION
 
+@hook TARGET_GEN_CCMP_FIRST
+
+@hook TARGET_GEN_CCMP_NEXT
+
 @hook TARGET_LOOP_UNROLL_ADJUST
 
 @defmac POWI_MAX_MULTS

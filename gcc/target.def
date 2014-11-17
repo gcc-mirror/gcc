@@ -2532,6 +2532,28 @@ modes and they have different conditional execution capability, such as ARM.",
  bool, (void),
  default_have_conditional_execution)
 
+DEFHOOK
+(gen_ccmp_first,
+ "This function emits a comparison insn for the first of a sequence of\n\
+ conditional comparisions.  It returns a comparison expression appropriate\n\
+ for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.  @var{code} is\n\
+ the @code{rtx_code} of the compare for @var{op0} and @var{op1}.",
+ rtx, (int code, rtx op0, rtx op1),
+ NULL)
+
+DEFHOOK
+(gen_ccmp_next,
+ "This function emits a conditional comparison within a sequence of\n\
+ conditional comparisons.  The @var{prev} expression is the result of a\n\
+ prior call to @code{gen_ccmp_first} or @code{gen_ccmp_next}.  It may return\n\
+ @code{NULL} if the combination of @var{prev} and this comparison is\n\
+ not supported, otherwise the result must be appropriate for passing to\n\
+ @code{gen_ccmp_next} or @code{cbranch_optab}.  @var{code} is the\n\
+ @code{rtx_code} of the compare for @var{op0} and @var{op1}.  @var{bit_code}\n\
+ is @code{AND} or @code{IOR}, which is the op on the two compares.",
+ rtx, (rtx prev, int cmp_code, rtx op0, rtx op1, int bit_code),
+ NULL)
+
 /* Return a new value for loop unroll size.  */
 DEFHOOK
 (loop_unroll_adjust,
