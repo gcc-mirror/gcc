@@ -8131,7 +8131,6 @@ build_ptrmemfunc_type (tree type)
 {
   tree field, fields;
   tree t;
-  tree unqualified_variant = NULL_TREE;
 
   if (type == error_mark_node)
     return type;
@@ -8145,9 +8144,11 @@ build_ptrmemfunc_type (tree type)
 
   /* Make sure that we always have the unqualified pointer-to-member
      type first.  */
-  if (cp_type_quals (type) != TYPE_UNQUALIFIED)
-    unqualified_variant
-      = build_ptrmemfunc_type (TYPE_MAIN_VARIANT (type));
+  if (cp_cv_quals quals = cp_type_quals (type))
+    {
+      tree unqual = build_ptrmemfunc_type (TYPE_MAIN_VARIANT (type));
+      return cp_build_qualified_type (unqual, quals);
+    }
 
   t = make_node (RECORD_TYPE);
 
@@ -8167,22 +8168,6 @@ build_ptrmemfunc_type (tree type)
   /* Zap out the name so that the back end will give us the debugging
      information for this anonymous RECORD_TYPE.  */
   TYPE_NAME (t) = NULL_TREE;
-
-  /* If this is not the unqualified form of this pointer-to-member
-     type, set the TYPE_MAIN_VARIANT for this type to be the
-     unqualified type.  Since they are actually RECORD_TYPEs that are
-     not variants of each other, we must do this manually.
-     As we just built a new type there is no need to do yet another copy.  */
-  if (cp_type_quals (type) != TYPE_UNQUALIFIED)
-    {
-      int type_quals = cp_type_quals (type);
-      TYPE_READONLY (t) = (type_quals & TYPE_QUAL_CONST) != 0;
-      TYPE_VOLATILE (t) = (type_quals & TYPE_QUAL_VOLATILE) != 0;
-      TYPE_RESTRICT (t) = (type_quals & TYPE_QUAL_RESTRICT) != 0;
-      TYPE_MAIN_VARIANT (t) = unqualified_variant;
-      TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (unqualified_variant);
-      TYPE_NEXT_VARIANT (unqualified_variant) = t;
-    }
 
   /* Cache this pointer-to-member type so that we can find it again
      later.  */

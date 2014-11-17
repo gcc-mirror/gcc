@@ -1,3 +1,14 @@
+2014-11-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52282
+	* decl.c (build_ptrmemfunc_type): Don't build a different
+	RECORD_TYPE for a qualified PMF.
+	* cp-tree.h (TYPE_PTRMEMFUNC_FN_TYPE): Merge cv-quals.
+	(TYPE_PTRMEMFUNC_FN_TYPE_RAW): New.
+	* decl2.c (cplus_decl_attributes): Use TYPE_PTRMEMFUNC_FN_TYPE_RAW.
+	* tree.c (cp_walk_subtrees): Likewise.
+	(cp_build_qualified_type_real): Remove special PMF handling.
+
 2014-11-15  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_omp_declare_reduction_exprs): A block is not
