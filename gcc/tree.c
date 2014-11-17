@@ -5118,6 +5118,9 @@ free_lang_data_in_decl (tree decl)
 	  if (!DECL_FUNCTION_SPECIFIC_TARGET (decl))
 	    DECL_FUNCTION_SPECIFIC_TARGET (decl)
 	      = target_option_default_node;
+	  if (!DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl))
+	    DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl)
+	      = optimization_default_node;
 	}
 
       /* DECL_SAVED_TREE holds the GENERIC representation for DECL.
