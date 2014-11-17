@@ -1,3 +1,8 @@
+014-11-17  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* config/aarch64/constraints.md (Usn, aarch64_ccmp_immediate,
+	aarch64_ccmp_operand): New constraints.
+
 2014-11-17  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* Makefile.in: Add ccmp.o.
