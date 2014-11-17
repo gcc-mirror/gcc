@@ -1,3 +1,8 @@
+2014-11-17  Jason Merrill  <jason@redhat.com>
+
+	* include/backward/binders.h: Suppress -Wdeprecated-declarations.
+	* include/ext/array_allocator.h: Likewise.
+
 2014-11-14  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* src/c++98/mt_allocator.cc: Fix assumption that sizeof(void *) is

@@ -1204,9 +1204,9 @@ is_late_template_attribute (tree attr, tree decl)
       /* Also defer most attributes on dependent types.  This is not
 	 necessary in all cases, but is the better default.  */
       else if (dependent_type_p (type)
-	       /* But attributes abi_tag and visibility specifically apply
-		  to templates.  */
+	       /* But some attributes specifically apply to templates.  */
 	       && !is_attribute_p ("abi_tag", name)
+	       && !is_attribute_p ("deprecated", name)
 	       && !is_attribute_p ("visibility", name))
 	return true;
       else
@@ -1482,6 +1482,17 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 
   if (TREE_CODE (*decl) == TYPE_DECL)
     SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (*decl), TREE_TYPE (*decl));
+
+  /* Propagate deprecation out to the template.  */
+  if (TREE_DEPRECATED (*decl))
+    if (tree ti = get_template_info (*decl))
+      {
+	tree tmpl = TI_TEMPLATE (ti);
+	tree pattern = (TYPE_P (*decl) ? TREE_TYPE (tmpl)
+			: DECL_TEMPLATE_RESULT (tmpl));
+	if (*decl == pattern)
+	  TREE_DEPRECATED (tmpl) = true;
+      }
 }
 
 /* Walks through the namespace- or function-scope anonymous union
@@ -4890,6 +4901,10 @@ mark_used (tree decl, tsubst_flags_t complain)
 	}
       return false;
     }
+
+  if (TREE_DEPRECATED (decl) && (complain & tf_warning)
+      && deprecated_state != DEPRECATED_SUPPRESS)
+    warn_deprecated_use (decl, NULL_TREE);
 
   /* We can only check DECL_ODR_USED on variables or functions with
      DECL_LANG_SPECIFIC set, and these are also the only decls that we
