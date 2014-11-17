@@ -1474,7 +1474,7 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
     {
       attributes
 	= decl_attributes (decl, attributes, flags | ATTR_FLAG_FUNCTION_NEXT);
-      decl_attributes (&TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (*decl)),
+      decl_attributes (&TYPE_PTRMEMFUNC_FN_TYPE_RAW (TREE_TYPE (*decl)),
 		       attributes, flags);
     }
   else
