@@ -1,5 +1,14 @@
 2014-11-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/33911
+	* call.c (build_call_a): Don't warn_deprecated_use here.
+	(build_over_call): Or here.
+	* decl2.c (mark_used): Do it here.
+	(is_late_template_attribute): Attribute deprecated is not deferred.
+	(cplus_decl_attributes): Propagate TREE_DEPRECATED out to the template.
+	* parser.c (cp_parser_template_name): Warn about deprecated template.
+	(cp_parser_template_argument): Likewise.
+
 	PR c++/50473
 	* decl.c (cp_finish_decl): Don't try to process a non-dependent
 	constant initializer for a reference.

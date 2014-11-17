@@ -56,6 +56,10 @@
 #ifndef _BACKWARD_BINDERS_H
 #define _BACKWARD_BINDERS_H 1
 
+// Suppress deprecated warning for this file.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -172,5 +176,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
+
+#pragma GCC diagnostic pop
 
 #endif /* _BACKWARD_BINDERS_H */

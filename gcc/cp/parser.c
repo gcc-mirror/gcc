@@ -13959,7 +13959,11 @@ cp_parser_template_name (cp_parser* parser,
 
   /* If DECL is a template, then the name was a template-name.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
-    ;
+    {
+      if (TREE_DEPRECATED (decl)
+	  && deprecated_state != DEPRECATED_SUPPRESS)
+	warn_deprecated_use (decl, NULL_TREE);
+    }
   else
     {
       tree fn = NULL_TREE;
@@ -14193,7 +14197,11 @@ cp_parser_template_argument (cp_parser* parser)
 	cp_parser_error (parser, "expected template-name");
     }
   if (cp_parser_parse_definitely (parser))
-    return argument;
+    {
+      if (TREE_DEPRECATED (argument))
+	warn_deprecated_use (argument, NULL_TREE);
+      return argument;
+    }
   /* It must be a non-type argument.  There permitted cases are given
      in [temp.arg.nontype]:
 
