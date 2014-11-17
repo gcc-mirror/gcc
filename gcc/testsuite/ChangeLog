@@ -1,5 +1,9 @@
 2014-11-17  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/vld1_lane.c: New test.
+
+2014-11-17  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/simd/vfma_f64.c: Add asm volatile memory.
 	* gcc.target/aarch64/simd/vfms_f64.c: Likewise.
 

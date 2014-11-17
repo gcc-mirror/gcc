@@ -604,7 +604,7 @@ typedef struct poly16x8x4_t
 #define __aarch64_vdupq_laneq_u64(__a, __b) \
    __aarch64_vdup_lane_any (u64, q, q, __a, __b)
 
-/* vset_lane internal macro.  */
+/* vset_lane and vld1_lane internal macro.  */
 
 #ifdef __AARCH64EB__
 /* For big-endian, GCC's vector indices are the opposite way around
@@ -6251,162 +6251,6 @@ vld1_dup_u64 (const uint64_t * a)
   return result;
 }
 
-#define vld1_lane_f32(a, b, c)                                          \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x2_t b_ = (b);                                            \
-       const float32_t * a_ = (a);                                      \
-       float32x2_t result;                                              \
-       __asm__ ("ld1 {%0.s}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i" (c), "Utv"(*a_), "0"(b_)                          \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1_lane_f64(a, b, c)                                          \
-  __extension__                                                         \
-    ({                                                                  \
-       float64x1_t b_ = (b);                                            \
-       const float64_t * a_ = (a);                                      \
-       float64x1_t result;                                              \
-       __asm__ ("ld1 {%0.d}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i" (c), "Utv"(*a_), "0"(b_)                          \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1_lane_p8(a, b, c)                                           \
-  __extension__                                                         \
-    ({                                                                  \
-       poly8x8_t b_ = (b);                                              \
-       const poly8_t * a_ = (a);                                        \
-       poly8x8_t result;                                                \
-       __asm__ ("ld1 {%0.b}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i" (c), "Utv"(*a_), "0"(b_)                          \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1_lane_p16(a, b, c)                                          \
-  __extension__                                                         \
-    ({                                                                  \
-       poly16x4_t b_ = (b);                                             \
-       const poly16_t * a_ = (a);                                       \
-       poly16x4_t result;                                               \
-       __asm__ ("ld1 {%0.h}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i" (c), "Utv"(*a_), "0"(b_)                          \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1_lane_s8(a, b, c)                                           \
-  __extension__                                                         \
-    ({                                                                  \
-       int8x8_t b_ = (b);                                               \
-       const int8_t * a_ = (a);                                         \
-       int8x8_t result;                                                 \
-       __asm__ ("ld1 {%0.b}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i" (c), "Utv"(*a_), "0"(b_)                          \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1_lane_s16(a, b, c)                                          \
-  __extension__                                                         \
-    ({                                                                  \
-       int16x4_t b_ = (b);                                              \
-       const int16_t * a_ = (a);                                        \
-       int16x4_t result;                                                \
-       __asm__ ("ld1 {%0.h}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i" (c), "Utv"(*a_), "0"(b_)                          \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1_lane_s32(a, b, c)                                          \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x2_t b_ = (b);                                              \
-       const int32_t * a_ = (a);                                        \
-       int32x2_t result;                                                \
-       __asm__ ("ld1 {%0.s}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i" (c), "Utv"(*a_), "0"(b_)                          \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1_lane_s64(a, b, c)                                          \
-  __extension__                                                         \
-    ({                                                                  \
-       int64x1_t b_ = (b);                                              \
-       const int64_t * a_ = (a);                                        \
-       int64x1_t result;                                                \
-       __asm__ ("ld1 {%0.d}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i" (c), "Utv"(*a_), "0"(b_)                          \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1_lane_u8(a, b, c)                                           \
-  __extension__                                                         \
-    ({                                                                  \
-       uint8x8_t b_ = (b);                                              \
-       const uint8_t * a_ = (a);                                        \
-       uint8x8_t result;                                                \
-       __asm__ ("ld1 {%0.b}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i" (c), "Utv"(*a_), "0"(b_)                          \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1_lane_u16(a, b, c)                                          \
-  __extension__                                                         \
-    ({                                                                  \
-       uint16x4_t b_ = (b);                                             \
-       const uint16_t * a_ = (a);                                       \
-       uint16x4_t result;                                               \
-       __asm__ ("ld1 {%0.h}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i" (c), "Utv"(*a_), "0"(b_)                          \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1_lane_u32(a, b, c)                                          \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x2_t b_ = (b);                                             \
-       const uint32_t * a_ = (a);                                       \
-       uint32x2_t result;                                               \
-       __asm__ ("ld1 {%0.s}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i" (c), "Utv"(*a_), "0"(b_)                          \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1_lane_u64(a, b, c)                                          \
-  __extension__                                                         \
-    ({                                                                  \
-       uint64x1_t b_ = (b);                                             \
-       const uint64_t * a_ = (a);                                       \
-       uint64x1_t result;                                               \
-       __asm__ ("ld1 {%0.d}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i" (c), "Utv"(*a_), "0"(b_)                          \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vld1q_dup_f32 (const float32_t * a)
 {
@@ -6538,162 +6382,6 @@ vld1q_dup_u64 (const uint64_t * a)
 	   : /* No clobbers */);
   return result;
 }
-
-#define vld1q_lane_f32(a, b, c)                                         \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x4_t b_ = (b);                                            \
-       const float32_t * a_ = (a);                                      \
-       float32x4_t result;                                              \
-       __asm__ ("ld1 {%0.s}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i"(c), "Utv"(*a_), "0"(b_)                           \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1q_lane_f64(a, b, c)                                         \
-  __extension__                                                         \
-    ({                                                                  \
-       float64x2_t b_ = (b);                                            \
-       const float64_t * a_ = (a);                                      \
-       float64x2_t result;                                              \
-       __asm__ ("ld1 {%0.d}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i"(c), "Utv"(*a_), "0"(b_)                           \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1q_lane_p8(a, b, c)                                          \
-  __extension__                                                         \
-    ({                                                                  \
-       poly8x16_t b_ = (b);                                             \
-       const poly8_t * a_ = (a);                                        \
-       poly8x16_t result;                                               \
-       __asm__ ("ld1 {%0.b}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i"(c), "Utv"(*a_), "0"(b_)                           \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1q_lane_p16(a, b, c)                                         \
-  __extension__                                                         \
-    ({                                                                  \
-       poly16x8_t b_ = (b);                                             \
-       const poly16_t * a_ = (a);                                       \
-       poly16x8_t result;                                               \
-       __asm__ ("ld1 {%0.h}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i"(c), "Utv"(*a_), "0"(b_)                           \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1q_lane_s8(a, b, c)                                          \
-  __extension__                                                         \
-    ({                                                                  \
-       int8x16_t b_ = (b);                                              \
-       const int8_t * a_ = (a);                                         \
-       int8x16_t result;                                                \
-       __asm__ ("ld1 {%0.b}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i"(c), "Utv"(*a_), "0"(b_)                           \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1q_lane_s16(a, b, c)                                         \
-  __extension__                                                         \
-    ({                                                                  \
-       int16x8_t b_ = (b);                                              \
-       const int16_t * a_ = (a);                                        \
-       int16x8_t result;                                                \
-       __asm__ ("ld1 {%0.h}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i"(c), "Utv"(*a_), "0"(b_)                           \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1q_lane_s32(a, b, c)                                         \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x4_t b_ = (b);                                              \
-       const int32_t * a_ = (a);                                        \
-       int32x4_t result;                                                \
-       __asm__ ("ld1 {%0.s}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i"(c), "Utv"(*a_), "0"(b_)                           \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1q_lane_s64(a, b, c)                                         \
-  __extension__                                                         \
-    ({                                                                  \
-       int64x2_t b_ = (b);                                              \
-       const int64_t * a_ = (a);                                        \
-       int64x2_t result;                                                \
-       __asm__ ("ld1 {%0.d}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i"(c), "Utv"(*a_), "0"(b_)                           \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1q_lane_u8(a, b, c)                                          \
-  __extension__                                                         \
-    ({                                                                  \
-       uint8x16_t b_ = (b);                                             \
-       const uint8_t * a_ = (a);                                        \
-       uint8x16_t result;                                               \
-       __asm__ ("ld1 {%0.b}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i"(c), "Utv"(*a_), "0"(b_)                           \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1q_lane_u16(a, b, c)                                         \
-  __extension__                                                         \
-    ({                                                                  \
-       uint16x8_t b_ = (b);                                             \
-       const uint16_t * a_ = (a);                                       \
-       uint16x8_t result;                                               \
-       __asm__ ("ld1 {%0.h}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i"(c), "Utv"(*a_), "0"(b_)                           \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1q_lane_u32(a, b, c)                                         \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x4_t b_ = (b);                                             \
-       const uint32_t * a_ = (a);                                       \
-       uint32x4_t result;                                               \
-       __asm__ ("ld1 {%0.s}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i"(c), "Utv"(*a_), "0"(b_)                           \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vld1q_lane_u64(a, b, c)                                         \
-  __extension__                                                         \
-    ({                                                                  \
-       uint64x2_t b_ = (b);                                             \
-       const uint64_t * a_ = (a);                                       \
-       uint64x2_t result;                                               \
-       __asm__ ("ld1 {%0.d}[%1], %2"                                    \
-                : "=w"(result)                                          \
-                : "i"(c), "Utv"(*a_), "0"(b_)                           \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vmla_n_f32 (float32x2_t a, float32x2_t b, float32_t c)
@@ -16428,6 +16116,154 @@ vld1q_u64 (const uint64_t *a)
 {
   return (uint64x2_t)
     __builtin_aarch64_ld1v2di ((const __builtin_aarch64_simd_di *) a);
+}
+
+/* vld1_lane  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vld1_lane_f32 (const float32_t *__src, float32x2_t __vec, const int __lane)
+{
+  return vset_lane_f32 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vld1_lane_f64 (const float64_t *__src, float64x1_t __vec, const int __lane)
+{
+  return vset_lane_f64 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vld1_lane_p8 (const poly8_t *__src, poly8x8_t __vec, const int __lane)
+{
+  return vset_lane_p8 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vld1_lane_p16 (const poly16_t *__src, poly16x4_t __vec, const int __lane)
+{
+  return vset_lane_p16 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vld1_lane_s8 (const int8_t *__src, int8x8_t __vec, const int __lane)
+{
+  return vset_lane_s8 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vld1_lane_s16 (const int16_t *__src, int16x4_t __vec, const int __lane)
+{
+  return vset_lane_s16 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vld1_lane_s32 (const int32_t *__src, int32x2_t __vec, const int __lane)
+{
+  return vset_lane_s32 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vld1_lane_s64 (const int64_t *__src, int64x1_t __vec, const int __lane)
+{
+  return vset_lane_s64 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vld1_lane_u8 (const uint8_t *__src, uint8x8_t __vec, const int __lane)
+{
+  return vset_lane_u8 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vld1_lane_u16 (const uint16_t *__src, uint16x4_t __vec, const int __lane)
+{
+  return vset_lane_u16 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vld1_lane_u32 (const uint32_t *__src, uint32x2_t __vec, const int __lane)
+{
+  return vset_lane_u32 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vld1_lane_u64 (const uint64_t *__src, uint64x1_t __vec, const int __lane)
+{
+  return vset_lane_u64 (*__src, __vec, __lane);
+}
+
+/* vld1q_lane  */
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vld1q_lane_f32 (const float32_t *__src, float32x4_t __vec, const int __lane)
+{
+  return vsetq_lane_f32 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vld1q_lane_f64 (const float64_t *__src, float64x2_t __vec, const int __lane)
+{
+  return vsetq_lane_f64 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vld1q_lane_p8 (const poly8_t *__src, poly8x16_t __vec, const int __lane)
+{
+  return vsetq_lane_p8 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
+vld1q_lane_p16 (const poly16_t *__src, poly16x8_t __vec, const int __lane)
+{
+  return vsetq_lane_p16 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vld1q_lane_s8 (const int8_t *__src, int8x16_t __vec, const int __lane)
+{
+  return vsetq_lane_s8 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vld1q_lane_s16 (const int16_t *__src, int16x8_t __vec, const int __lane)
+{
+  return vsetq_lane_s16 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vld1q_lane_s32 (const int32_t *__src, int32x4_t __vec, const int __lane)
+{
+  return vsetq_lane_s32 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vld1q_lane_s64 (const int64_t *__src, int64x2_t __vec, const int __lane)
+{
+  return vsetq_lane_s64 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vld1q_lane_u8 (const uint8_t *__src, uint8x16_t __vec, const int __lane)
+{
+  return vsetq_lane_u8 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vld1q_lane_u16 (const uint16_t *__src, uint16x8_t __vec, const int __lane)
+{
+  return vsetq_lane_u16 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vld1q_lane_u32 (const uint32_t *__src, uint32x4_t __vec, const int __lane)
+{
+  return vsetq_lane_u32 (*__src, __vec, __lane);
+}
+
+__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
+vld1q_lane_u64 (const uint64_t *__src, uint64x2_t __vec, const int __lane)
+{
+  return vsetq_lane_u64 (*__src, __vec, __lane);
 }
 
 /* vldn */
