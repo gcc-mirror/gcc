@@ -1,5 +1,16 @@
 2014-11-17  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
+	* config/aarch64/aarch64-protos.h (aarch64_ccmp_mode_to_code): New.
+	* aarch64.c (aarch64_nzcv_codes): New data.
+	(aarch64_ccmp_mode_to_code): New.
+	(aarch64_print_operand): Output nzcv.
+	config/aarch64/aarch64.md (cbranchcc4, *ccmp_and, *ccmp_ior, cstorecc4):
+	New patterns.
+	(cstore<mode>4): Handle ccmp_cc_register.
+	* config/aarch64/predicates.md (const0_operand): New.
+
+2014-11-17  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
 	* config/aarch64/aarch64-modes.def: Define ccmp CC mode.
 	* config/aarch64/aarch64.c (aarch64_get_condition_code_1): New function
 	extacted from aarch64_get_condition_code.
