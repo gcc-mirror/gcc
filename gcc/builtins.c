@@ -3297,7 +3297,7 @@ expand_builtin_memcpy_with_bounds (tree exp, rtx target)
       /* Return src bounds with the result.  */
       if (res)
 	{
-	  rtx bnd = force_reg (BNDmode,
+	  rtx bnd = force_reg (targetm.chkp_bound_mode (),
 			       expand_normal (CALL_EXPR_ARG (exp, 1)));
 	  res = chkp_join_splitted_slot (res, bnd);
 	}
@@ -3354,7 +3354,7 @@ expand_builtin_mempcpy_with_bounds (tree exp, rtx target, machine_mode mode)
       /* Return src bounds with the result.  */
       if (res)
 	{
-	  rtx bnd = force_reg (BNDmode,
+	  rtx bnd = force_reg (targetm.chkp_bound_mode (),
 			       expand_normal (CALL_EXPR_ARG (exp, 1)));
 	  res = chkp_join_splitted_slot (res, bnd);
 	}
@@ -3760,7 +3760,7 @@ expand_builtin_memset_with_bounds (tree exp, rtx target, machine_mode mode)
       /* Return src bounds with the result.  */
       if (res)
 	{
-	  rtx bnd = force_reg (BNDmode,
+	  rtx bnd = force_reg (targetm.chkp_bound_mode (),
 			       expand_normal (CALL_EXPR_ARG (exp, 1)));
 	  res = chkp_join_splitted_slot (res, bnd);
 	}
