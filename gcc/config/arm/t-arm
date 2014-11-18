@@ -92,6 +92,7 @@ arm.o: $(srcdir)/config/arm/arm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H) $(srcdir)/config/arm/arm-cores.def \
   $(srcdir)/config/arm/arm-arches.def $(srcdir)/config/arm/arm-fpus.def \
+  $(srcdir)/config/arm/arm-protos.h \
   $(srcdir)/config/arm/arm_neon_builtins.def
 
 arm-c.o: $(srcdir)/config/arm/arm-c.c $(CONFIG_H) $(SYSTEM_H) \

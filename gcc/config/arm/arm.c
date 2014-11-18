@@ -744,79 +744,13 @@ const struct arm_fpu_desc *arm_fpu_desc;
 rtx thumb_call_via_label[14];
 static int thumb_call_reg_needed;
 
-/* Bit values used to identify processor capabilities.  */
-#define FL_CO_PROC    (1 << 0)        /* Has external co-processor bus */
-#define FL_ARCH3M     (1 << 1)        /* Extended multiply */
-#define FL_MODE26     (1 << 2)        /* 26-bit mode support */
-#define FL_MODE32     (1 << 3)        /* 32-bit mode support */
-#define FL_ARCH4      (1 << 4)        /* Architecture rel 4 */
-#define FL_ARCH5      (1 << 5)        /* Architecture rel 5 */
-#define FL_THUMB      (1 << 6)        /* Thumb aware */
-#define FL_LDSCHED    (1 << 7)	      /* Load scheduling necessary */
-#define FL_STRONG     (1 << 8)	      /* StrongARM */
-#define FL_ARCH5E     (1 << 9)        /* DSP extensions to v5 */
-#define FL_XSCALE     (1 << 10)	      /* XScale */
-/* spare	      (1 << 11)	*/
-#define FL_ARCH6      (1 << 12)       /* Architecture rel 6.  Adds
-					 media instructions.  */
-#define FL_VFPV2      (1 << 13)       /* Vector Floating Point V2.  */
-#define FL_WBUF	      (1 << 14)	      /* Schedule for write buffer ops.
-					 Note: ARM6 & 7 derivatives only.  */
-#define FL_ARCH6K     (1 << 15)       /* Architecture rel 6 K extensions.  */
-#define FL_THUMB2     (1 << 16)	      /* Thumb-2.  */
-#define FL_NOTM	      (1 << 17)	      /* Instructions not present in the 'M'
-					 profile.  */
-#define FL_THUMB_DIV  (1 << 18)	      /* Hardware divide (Thumb mode).  */
-#define FL_VFPV3      (1 << 19)       /* Vector Floating Point V3.  */
-#define FL_NEON       (1 << 20)       /* Neon instructions.  */
-#define FL_ARCH7EM    (1 << 21)	      /* Instructions present in the ARMv7E-M
-					 architecture.  */
-#define FL_ARCH7      (1 << 22)       /* Architecture 7.  */
-#define FL_ARM_DIV    (1 << 23)	      /* Hardware divide (ARM mode).  */
-#define FL_ARCH8      (1 << 24)       /* Architecture 8.  */
-#define FL_CRC32      (1 << 25)	      /* ARMv8 CRC32 instructions.  */
-
-#define FL_SMALLMUL   (1 << 26)       /* Small multiply supported.  */
-
-#define FL_IWMMXT     (1 << 29)	      /* XScale v2 or "Intel Wireless MMX technology".  */
-#define FL_IWMMXT2    (1 << 30)       /* "Intel Wireless MMX2 technology".  */
-
-/* Flags that only effect tuning, not available instructions.  */
-#define FL_TUNE		(FL_WBUF | FL_VFPV2 | FL_STRONG | FL_LDSCHED \
-			 | FL_CO_PROC)
-
-#define FL_FOR_ARCH2	FL_NOTM
-#define FL_FOR_ARCH3	(FL_FOR_ARCH2 | FL_MODE32)
-#define FL_FOR_ARCH3M	(FL_FOR_ARCH3 | FL_ARCH3M)
-#define FL_FOR_ARCH4	(FL_FOR_ARCH3M | FL_ARCH4)
-#define FL_FOR_ARCH4T	(FL_FOR_ARCH4 | FL_THUMB)
-#define FL_FOR_ARCH5	(FL_FOR_ARCH4 | FL_ARCH5)
-#define FL_FOR_ARCH5T	(FL_FOR_ARCH5 | FL_THUMB)
-#define FL_FOR_ARCH5E	(FL_FOR_ARCH5 | FL_ARCH5E)
-#define FL_FOR_ARCH5TE	(FL_FOR_ARCH5E | FL_THUMB)
-#define FL_FOR_ARCH5TEJ	FL_FOR_ARCH5TE
-#define FL_FOR_ARCH6	(FL_FOR_ARCH5TE | FL_ARCH6)
-#define FL_FOR_ARCH6J	FL_FOR_ARCH6
-#define FL_FOR_ARCH6K	(FL_FOR_ARCH6 | FL_ARCH6K)
-#define FL_FOR_ARCH6Z	FL_FOR_ARCH6
-#define FL_FOR_ARCH6ZK	FL_FOR_ARCH6K
-#define FL_FOR_ARCH6T2	(FL_FOR_ARCH6 | FL_THUMB2)
-#define FL_FOR_ARCH6M	(FL_FOR_ARCH6 & ~FL_NOTM)
-#define FL_FOR_ARCH7	((FL_FOR_ARCH6T2 & ~FL_NOTM) | FL_ARCH7)
-#define FL_FOR_ARCH7A	(FL_FOR_ARCH7 | FL_NOTM | FL_ARCH6K)
-#define FL_FOR_ARCH7VE	(FL_FOR_ARCH7A | FL_THUMB_DIV | FL_ARM_DIV)
-#define FL_FOR_ARCH7R	(FL_FOR_ARCH7A | FL_THUMB_DIV)
-#define FL_FOR_ARCH7M	(FL_FOR_ARCH7 | FL_THUMB_DIV)
-#define FL_FOR_ARCH7EM  (FL_FOR_ARCH7M | FL_ARCH7EM)
-#define FL_FOR_ARCH8A	(FL_FOR_ARCH7VE | FL_ARCH8)
-
 /* The bits in this mask specify which
    instructions we are allowed to generate.  */
-static unsigned long insn_flags = 0;
+unsigned long insn_flags = 0;
 
 /* The bits in this mask specify which instruction scheduling options should
    be used.  */
-static unsigned long tune_flags = 0;
+unsigned long tune_flags = 0;
 
 /* The highest ARM architecture version supported by the
    target.  */
