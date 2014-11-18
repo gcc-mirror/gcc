@@ -809,6 +809,10 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 	    value = cxx_constant_value (value, decl);
 	}
       value = maybe_constant_init (value, decl);
+      if (TREE_CODE (value) == CONSTRUCTOR && cp_has_mutable_p (type))
+	/* Poison this CONSTRUCTOR so it can't be copied to another
+	   constexpr variable.  */
+	CONSTRUCTOR_MUTABLE_POISON (value) = true;
       const_init = (reduced_constant_expression_p (value)
 		    || error_operand_p (value));
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = const_init;
