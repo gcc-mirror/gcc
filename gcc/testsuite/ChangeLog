@@ -1,3 +1,8 @@
+2014-11-18  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/63802
+	* c-c++-common/ubsan/pr63802.c: New test.
+
 2014-11-18  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* g++.dg/pr63766.C: New.
