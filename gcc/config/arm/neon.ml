@@ -294,6 +294,8 @@ type features =
     (* Mark that the intrinsic requires a particular bit in __ARM_FP to
     be set.   *)
   | Requires_FP_bit of int
+    (* Compiler optimization level for the test.  *)
+  | Compiler_optim of string
 
 exception MixedMode of elts * elts
 
@@ -1941,18 +1943,18 @@ let ops =
     Veor, [], All (3, Qreg), "veorQ", notype_2, su_8_64;
 
     (* Bic (And-not).  *)
-    Vbic, [], All (3, Dreg), "vbic", notype_2, su_8_32;
-    Vbic, [No_op], All (3, Dreg), "vbic", notype_2, [S64; U64];
-    Vbic, [], All (3, Qreg), "vbicQ", notype_2, su_8_64;
+    Vbic, [Compiler_optim "-O2"], All (3, Dreg), "vbic", notype_2, su_8_32;
+    Vbic, [No_op; Compiler_optim "-O2"], All (3, Dreg), "vbic", notype_2, [S64; U64];
+    Vbic, [Compiler_optim "-O2"], All (3, Qreg), "vbicQ", notype_2, su_8_64;
 
     (* Or-not.  *)
-    Vorn, [], All (3, Dreg), "vorn", notype_2, su_8_32;
-    Vorn, [No_op], All (3, Dreg), "vorn", notype_2, [S64; U64];
-    Vorn, [], All (3, Qreg), "vornQ", notype_2, su_8_64;
+    Vorn, [Compiler_optim "-O2"], All (3, Dreg), "vorn", notype_2, su_8_32;
+    Vorn, [No_op; Compiler_optim "-O2"], All (3, Dreg), "vorn", notype_2, [S64; U64];
+    Vorn, [Compiler_optim "-O2"], All (3, Qreg), "vornQ", notype_2, su_8_64;
   ]
 
 let type_in_crypto_only t
-  = (t == P64) or (t == P128)
+  = (t == P64) || (t == P128)
 
 let cross_product s1 s2
   = List.filter (fun (e, e') -> e <> e')
@@ -1963,7 +1965,7 @@ let reinterp =
   let casts = cross_product elems elems in
   List.map
     (fun (convto, convfrom) ->
-       Vreinterp, (if (type_in_crypto_only convto) or (type_in_crypto_only convfrom)
+       Vreinterp, (if (type_in_crypto_only convto) || (type_in_crypto_only convfrom)
                    then [Requires_feature "CRYPTO"] else []) @ [No_op], Use_operands [| Dreg; Dreg |],
                    "vreinterpret", conv_1, [Cast (convto, convfrom)])
     casts
@@ -1973,7 +1975,7 @@ let reinterpq =
   let casts = cross_product elems elems in
   List.map
     (fun (convto, convfrom) ->
-       Vreinterp, (if (type_in_crypto_only convto) or (type_in_crypto_only convfrom)
+       Vreinterp, (if (type_in_crypto_only convto) || (type_in_crypto_only convfrom)
                    then [Requires_feature "CRYPTO"] else []) @ [No_op], Use_operands [| Qreg; Qreg |],
                    "vreinterpretQ", conv_1, [Cast (convto, convfrom)])
     casts
