@@ -1199,7 +1199,9 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
 		     ep->from, ep->to);
 	  /* If after processing RTL we decides that SP can be used as
 	     a result of elimination, it can not be changed.  */
-	  gcc_assert (ep->to_rtx != stack_pointer_rtx);
+	  gcc_assert ((ep->to_rtx != stack_pointer_rtx)
+		      || (ep->from < FIRST_PSEUDO_REGISTER
+			  && fixed_regs [ep->from]));
 	  /* Mark that is not eliminable anymore.  */
 	  elimination_map[ep->from] = NULL;
 	  for (ep1 = ep + 1; ep1 < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep1++)
