@@ -1,5 +1,64 @@
 2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* gcc/config/arm/arm-builtins.c	(arm_type_qualifiers): New.
+	(neon_itype): Add new types corresponding to the types used in
+	qualifiers names.
+	(arm_unop_qualifiers): New.
+	(arm_bswap_qualifiers): Likewise.
+	(arm_binop_qualifiers): Likewise.
+	(arm_ternop_qualifiers): Likewise.
+	(arm_getlane_qualifiers): Likewise.
+	(arm_lanemac_qualifiers): Likewise.
+	(arm_setlane_qualifiers): Likewise.
+	(arm_combine_qualifiers): Likewise.
+	(arm_load1_qualifiers): Likewise.
+	(arm_load1_lane_qualifiers): Likewise.
+	(arm_store1_qualifiers): Likewise.
+	(arm_storestruct_lane_qualifiers): Likewise.
+	(UNOP_QUALIFIERS): Likewise.
+	(DUP_QUALIFIERS): Likewise.
+	(SPLIT_QUALIFIERS): Likewise.
+	(CONVERT_QUALIFIERS): Likewise.
+	(FLOAT_WIDEN_QUALIFIERS): Likewise.
+	(FLOAT_NARROW_QUALIFIERS): Likewise.
+	(RINT_QUALIFIERS): Likewise.
+	(COPYSIGNF_QUALIFIERS): Likewise.
+	(CREATE_QUALIFIERS): Likewise.
+	(REINTERP_QUALIFIERS): Likewise.
+	(BSWAP_QUALIFIERS): Likewise.
+	(BINOP_QUALIFIERS): Likewise.
+	(FIXCONV_QUALIFIERS): Likewise.
+	(SCALARMUL_QUALIFIERS): Likewise.
+	(SCALARMULL_QUALIFIERS): Likewise.
+	(SCALARMULH_QUALIFIERS): Likewise.
+	(TERNOP_QUALIFIERS): Likewise.
+	(SELECT_QUALIFIERS): Likewise.
+	(VTBX_QUALIFIERS): Likewise.
+	(GETLANE_QUALIFIERS): Likewise.
+	(SHIFTIMM_QUALIFIERS): Likewise.
+	(LANEMAC_QUALIFIERS): Likewise.
+	(SCALARMAC_QUALIFIERS): Likewise.
+	(SETLANE_QUALIFIERS): Likewise.
+	(SHIFTINSERT_QUALIFIERS): Likewise.
+	(SHIFTACC_QUALIFIERS): Likewise.
+	(LANEMUL_QUALIFIERS): Likewise.
+	(LANEMULL_QUALIFIERS): Likewise.
+	(LANEMULH_QUALIFIERS): Likewise.
+	(COMBINE_QUALIFIERS): Likewise.
+	(VTBL_QUALIFIERS): Likewise.
+	(LOAD1_QUALIFIERS): Likewise.
+	(LOADSTRUCT_QUALIFIERS): Likewise.
+	(LOAD1LANE_QUALIFIERS): Likewise.
+	(LOADSTRUCTLANE_QUALIFIERS): Likewise.
+	(STORE1_QUALIFIERS): Likewise.
+	(STORESTRUCT_QUALIFIERS): Likewise.
+	(STORE1LANE_QUALIFIERS): Likewise.
+	(STORESTRUCTLANE_QUALIFIERS): Likewise.
+	(neon_builtin_datum): Keep track of qualifiers.
+	(VAR1): Likewise.
+
+2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/arm-builtins.c (VAR1): Add a comma.
 	(VAR2): Rewrite in terms of VAR1.
 	(VAR3-10): Likewise.
