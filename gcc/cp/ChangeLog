@@ -1,5 +1,7 @@
 2014-11-18  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (instantiate_template_1): Use tsubst_aggr_type for context.
+
 	PR c++/58102
 	* typeck2.c (store_init_value): Set it.
 	* cp-tree.h (CONSTRUCTOR_MUTABLE_POISON): New.
