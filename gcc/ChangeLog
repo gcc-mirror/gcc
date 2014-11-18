@@ -1,3 +1,26 @@
+2014-11-18  Martin Liska  <mliska@suse.cz>
+
+	* fibonacci_heap.h: New file.
+	(fibonacci_heap::insert): Created from fibheap_insert.
+	(fibonacci_heap::empty): Created from fibheap_empty.
+	(fibonacci_heap::nodes): Created from fibheap_nodes.
+	(fibonacci_heap::min_key): Created from fibheap_min_key.
+	(fibonacci_heap::decrease_key): Created from fibheap_replace_key.
+	(fibonacci_heap::replace_key_data): Created from fibheap_replace_key_data.
+	(fibonacci_heap::extract_min): Created from fibheap_extract_min.
+	(fibonacci_heap::min): Created from fibheap_min.
+	(fibonacci_heap::replace_data): Created from fibheap_replace_data.
+	(fibonacci_heap::delete_node): Created from fibheap_delete_node.
+	(fibonacci_heap::union_with): Created from fibheap_union.
+	* ipa-inline.c (update_edge_key): New heap API is used.
+	(update_caller_keys): Likewise.
+	(update_callee_keys): Likewise.
+	(lookup_recursive_calls): Likewise.
+	(recursive_inlining): Likewise.
+	(add_new_edges_to_heap): Likewise.
+	(heap_edge_removal_hook): Likewise.
+	(inline_small_functions): Likewise.
+
 2014-11-18  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/63866
