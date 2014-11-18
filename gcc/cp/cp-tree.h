@@ -109,6 +109,7 @@ c-common.h, not after.
       DECLTYPE_FOR_LAMBDA_PROXY (in DECLTYPE_TYPE)
       REF_PARENTHESIZED_P (in COMPONENT_REF, INDIRECT_REF)
       AGGR_INIT_ZERO_FIRST (in AGGR_INIT_EXPR)
+      CONSTRUCTOR_MUTABLE_POISON (in CONSTRUCTOR)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -3496,6 +3497,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    implicitly value-initialized.  Only used in constexpr evaluation.  */
 #define CONSTRUCTOR_NO_IMPLICIT_ZERO(NODE) \
   (TREE_LANG_FLAG_1 (CONSTRUCTOR_CHECK (NODE)))
+
+/* True if this CONSTRUCTOR should not be used as a variable initializer
+   because it was loaded from a constexpr variable with mutable fields.  */
+#define CONSTRUCTOR_MUTABLE_POISON(NODE) \
+  (TREE_LANG_FLAG_2 (CONSTRUCTOR_CHECK (NODE)))
 
 #define DIRECT_LIST_INIT_P(NODE) \
    (BRACE_ENCLOSED_INITIALIZER_P (NODE) && CONSTRUCTOR_IS_DIRECT_INIT (NODE))

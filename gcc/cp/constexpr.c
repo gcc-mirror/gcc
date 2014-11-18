@@ -3315,15 +3315,15 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   verify_constant (r, allow_non_constant, &non_constant_p, &overflow_p);
 
-  if (TREE_CODE (t) != CONSTRUCTOR
-      && cp_has_mutable_p (TREE_TYPE (t)))
+  /* Mutable logic is a bit tricky: we want to allow initialization of
+     constexpr variables with mutable members, but we can't copy those
+     members to another constexpr variable.  */
+  if (TREE_CODE (r) == CONSTRUCTOR
+      && CONSTRUCTOR_MUTABLE_POISON (r))
     {
-      /* We allow a mutable type if the original expression was a
-	 CONSTRUCTOR so that we can do aggregate initialization of
-	 constexpr variables.  */
       if (!allow_non_constant)
-	error ("%qT cannot be the type of a complete constant expression "
-	       "because it has mutable sub-objects", type);
+	error ("%qE is not a constant expression because it refers to "
+	       "mutable subobjects of %qT", t, type);
       non_constant_p = true;
     }
 

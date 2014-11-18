@@ -1,3 +1,10 @@
+2014-11-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58102
+	* typeck2.c (store_init_value): Set it.
+	* cp-tree.h (CONSTRUCTOR_MUTABLE_POISON): New.
+	* constexpr.c (cxx_eval_outermost_constant_expr): Check it.
+
 2014-11-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/33911
