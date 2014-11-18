@@ -1,3 +1,10 @@
+2014-11-17  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.c (arm_issue_rate): Return 2 for cortex-m7.
+	* config/arm/arm.md (generic_sched): Exclude cortex-m7.
+	(generic_vfp): Likewise.
+	* config/arm/cortex-m7.md: Pipeline description for cortex-m7.
+
 2014-11-17  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/63906
