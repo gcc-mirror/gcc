@@ -10605,6 +10605,9 @@ aarch64_gen_ccmp_next (rtx prev, int cmp_code, rtx op0, rtx op1, int bit_code)
 #define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
   aarch64_use_by_pieces_infrastructure_p
 
+#undef TARGET_CAN_USE_DOLOOP_P
+#define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-aarch64.h"
