@@ -4230,12 +4230,8 @@
        swap the order in which the loads are emitted.  */
     if (reg_overlap_mentioned_p (operands[0], operands[1]))
       {
-        rtx tmp = operands[1];
-        operands[1] = operands[3];
-        operands[3] = tmp;
-        tmp = operands[0];
-        operands[0] = operands[2];
-        operands[2] = tmp;
+        std::swap (operands[1], operands[3]);
+        std::swap (operands[0], operands[2]);
       }
   }
   [(set_attr "arch" "t2,any")
@@ -9339,12 +9335,8 @@
     gcc_assert (!(mode == CCFPmode || mode == CCFPEmode));
     if (REGNO (operands[2]) != REGNO (operands[0]))
       rc = reverse_condition (rc);
-    else 
-      {
-	rtx tmp = operands[1];
-	operands[1] = operands[2];
-	operands[2] = tmp;
-      }
+    else
+      std::swap (operands[1], operands[2]);
 
     operands[6] = gen_rtx_fmt_ee (rc, VOIDmode, operands[6], const0_rtx);
   }

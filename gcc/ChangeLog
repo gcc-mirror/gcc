@@ -1,3 +1,17 @@
+2014-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (unaligned_loaddi): Use std::swap instead of
+	manual swapping implementation.
+	(movcond_addsi): Likewise.
+	* config/arm/arm.c (arm_canonicalize_comparison): Likewise.
+	(arm_select_dominance_cc_mode): Likewise.
+	(arm_reload_out_hi): Likewise.
+	(gen_operands_ldrd_strd): Likewise.
+	(output_move_double): Likewise.
+	(arm_print_operand_address): Likewise.
+	(thumb_output_move_mem_multiple): Likewise.
+	(SWAP_RTX): Delete.
+
 2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/arm-builtins.c (CONVERT_QUALIFIERS): Delete.

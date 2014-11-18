@@ -4606,7 +4606,6 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
      for GTU/LEU in Thumb mode.  */
   if (mode == DImode)
     {
-      rtx tem;
 
       if (*code == GT || *code == LE
 	  || (!TARGET_ARM && (*code == GTU || *code == LEU)))
@@ -4646,9 +4645,7 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 	  /* If that did not work, reverse the condition.  */
 	  if (!op0_preserve_value)
 	    {
-	      tem = *op0;
-	      *op0 = *op1;
-	      *op1 = tem;
+	      std::swap (*op0, *op1);
 	      *code = (int)swap_condition ((enum rtx_code)*code);
 	    }
 	}
@@ -14927,11 +14924,7 @@ arm_select_dominance_cc_mode (rtx x, rtx y, HOST_WIDE_INT cond_or)
     return CCmode;
 
   if (swapped)
-    {
-      enum rtx_code temp = cond1;
-      cond1 = cond2;
-      cond2 = temp;
-    }
+    std::swap (cond1, cond2);
 
   switch (cond1)
     {
@@ -15440,11 +15433,7 @@ arm_reload_out_hi (rtx *operands)
 	  /* Updating base_plus might destroy outval, see if we can
 	     swap the scratch and base_plus.  */
 	  if (!reg_overlap_mentioned_p (scratch, outval))
-	    {
-	      rtx tmp = scratch;
-	      scratch = base_plus;
-	      base_plus = tmp;
-	    }
+	    std::swap (scratch, base_plus);
 	  else
 	    {
 	      rtx scratch_hi = gen_rtx_REG (HImode, REGNO (operands[2]));
@@ -15499,11 +15488,7 @@ arm_reload_out_hi (rtx *operands)
 	      /* Updating base_plus might destroy outval, see if we
 		 can swap the scratch and base_plus.  */
 	      if (!reg_overlap_mentioned_p (scratch, outval))
-		{
-		  rtx tmp = scratch;
-		  scratch = base_plus;
-		  base_plus = tmp;
-		}
+	        std::swap (scratch, base_plus);
 	      else
 		{
 		  rtx scratch_hi = gen_rtx_REG (HImode, REGNO (operands[2]));
@@ -15736,8 +15721,6 @@ mem_ok_for_ldrd_strd (rtx mem, rtx *base, rtx *offset)
   return false;
 }
 
-#define SWAP_RTX(x,y) do { rtx tmp = x; x = y; y = tmp; } while (0)
-
 /* Called from a peephole2 to replace two word-size accesses with a
    single LDRD/STRD instruction.  Returns true iff we can generate a
    new instruction sequence.  That is, both accesses use the same base
@@ -15877,10 +15860,10 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
       offset = offsets[1];
 
       /* Swap the instructions such that lower memory is accessed first.  */
-      SWAP_RTX (operands[0], operands[1]);
-      SWAP_RTX (operands[2], operands[3]);
+      std::swap (operands[0], operands[1]);
+      std::swap (operands[2], operands[3]);
       if (const_store)
-        SWAP_RTX (operands[4], operands[5]);
+        std::swap (operands[4], operands[5]);
     }
   else
     {
@@ -15905,7 +15888,7 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
   if (load && commute)
     {
       /* Try reordering registers.  */
-      SWAP_RTX (operands[0], operands[1]);
+      std::swap (operands[0], operands[1]);
       if (operands_ok_ldrd_strd (operands[0], operands[1], base, offset,
                                  false, load))
         return true;
@@ -15934,7 +15917,7 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
       if (operands_ok_ldrd_strd (operands[1], operands[0], base, offset,
                                   false, false))
         {
-          SWAP_RTX (operands[0], operands[1]);
+          std::swap (operands[0], operands[1]);
           return true;
         }
 
@@ -15965,7 +15948,6 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
 
   return false;
 }
-#undef SWAP_RTX
 
 
 
@@ -18111,12 +18093,9 @@ output_move_double (rtx *operands, bool emit, int *count)
 		      if (reg_overlap_mentioned_p (operands[0],
 						   otherops[2]))
 			{
-			  rtx tmp;
 			  /* Swap base and index registers over to
 			     avoid a conflict.  */
-			  tmp = otherops[1];
-			  otherops[1] = otherops[2];
-			  otherops[2] = tmp;
+			  std::swap (otherops[1], otherops[2]);
 			}
 		      /* If both registers conflict, it will usually
 			 have been fixed by a splitter.  */
@@ -22176,9 +22155,7 @@ arm_print_operand_address (FILE *stream, rtx x)
 	      /* Ensure that BASE is a register.  */
 	      /* (one of them must be).  */
 	      /* Also ensure the SP is not used as in index register.  */
-	      rtx temp = base;
-	      base = index;
-	      index = temp;
+	      std::swap (base, index);
 	    }
 	  switch (GET_CODE (index))
 	    {
@@ -25351,23 +25328,11 @@ thumb_output_move_mem_multiple (int n, rtx *operands)
 
     case 3:
       if (REGNO (operands[4]) > REGNO (operands[5]))
-	{
-	  tmp = operands[4];
-	  operands[4] = operands[5];
-	  operands[5] = tmp;
-	}
+        std::swap (operands[4], operands[5]);
       if (REGNO (operands[5]) > REGNO (operands[6]))
-	{
-	  tmp = operands[5];
-	  operands[5] = operands[6];
-	  operands[6] = tmp;
-	}
+        std::swap (operands[5], operands[6]);
       if (REGNO (operands[4]) > REGNO (operands[5]))
-	{
-	  tmp = operands[4];
-	  operands[4] = operands[5];
-	  operands[5] = tmp;
-	}
+        std::swap (operands[4], operands[5]);
 
       output_asm_insn ("ldmia\t%1!, {%4, %5, %6}", operands);
       output_asm_insn ("stmia\t%0!, {%4, %5, %6}", operands);
