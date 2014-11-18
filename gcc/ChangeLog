@@ -1,3 +1,9 @@
+2014-11-17  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/63906
+	* lra-remat.c (operand_to_remat): Check SP and
+	frame_pointer_required.
+
 2014-11-17  Mircea Namolaru  <mircea.namolaru@inria.fr>
 
 	* doc/invoke.texi (floop-unroll-and-jam): Document
