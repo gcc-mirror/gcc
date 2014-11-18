@@ -338,7 +338,7 @@ static void sh_conditional_register_usage (void);
 static bool sh_legitimate_constant_p (machine_mode, rtx);
 static int mov_insn_size (machine_mode, bool);
 static int mov_insn_alignment_mask (machine_mode, bool);
-static bool sh_use_by_pieces_infrastructure_p (unsigned int,
+static bool sh_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 					       unsigned int,
 					       enum by_pieces_operation,
 					       bool);
@@ -13680,7 +13680,7 @@ sh_mode_priority (int entity ATTRIBUTE_UNUSED, int n)
 /* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
 
 static bool
-sh_use_by_pieces_infrastructure_p (unsigned int size,
+sh_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 				   unsigned int align,
 				   enum by_pieces_operation op,
 				   bool speed_p)

@@ -7235,7 +7235,7 @@ mips_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 /* Implement TARGET_USE_MOVE_BY_PIECES_INFRASTRUCTURE_P.  */
 
 bool
-mips_use_by_pieces_infrastructure_p (unsigned int size,
+mips_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 				     unsigned int align,
 				     enum by_pieces_operation op,
 				     bool speed_p)
