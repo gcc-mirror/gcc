@@ -2566,8 +2566,17 @@ cxx_eval_increment_expression (const constexpr_ctx *ctx, tree t,
 
   /* The modified value.  */
   bool inc = (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR);
-  tree mod = fold_build2 (inc ? PLUS_EXPR : MINUS_EXPR,
-			  type, val, offset);
+  tree mod;
+  if (POINTER_TYPE_P (type))
+    {
+      /* The middle end requires pointers to use POINTER_PLUS_EXPR.  */
+      offset = convert_to_ptrofftype (offset);
+      if (!inc)
+	offset = fold_build1 (NEGATE_EXPR, TREE_TYPE (offset), offset);
+      mod = fold_build2 (POINTER_PLUS_EXPR, type, val, offset);
+    }
+  else
+    mod = fold_build2 (inc ? PLUS_EXPR : MINUS_EXPR, type, val, offset);
   VERIFY_CONSTANT (mod);
 
   /* Storing the modified value.  */
