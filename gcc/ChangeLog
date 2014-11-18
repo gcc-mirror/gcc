@@ -1,3 +1,8 @@
+2014-11-18  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc/config/mips/mips.md (*jump_absolute): Use a branch when in
+	range, a jump otherwise.
+
 2014-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/cortex-a15-neon.md (cortex_a15_vfp_to_from_gp):

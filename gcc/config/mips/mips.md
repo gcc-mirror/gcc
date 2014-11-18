@@ -5955,14 +5955,12 @@
 	(label_ref (match_operand 0)))]
   "!TARGET_MIPS16 && TARGET_ABSOLUTE_JUMPS"
 {
-  /* Use a branch for microMIPS.  The assembler will choose
-     a 16-bit branch, a 32-bit branch, or a 32-bit jump.  */
-  if (TARGET_MICROMIPS && !TARGET_ABICALLS_PIC2)
+  if (get_attr_length (insn) <= 8)
     return "%*b\t%l0%/";
   else
     return MIPS_ABSOLUTE_JUMP ("%*j\t%l0%/");
 }
-  [(set_attr "type" "jump")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*jump_pic"
   [(set (pc)
