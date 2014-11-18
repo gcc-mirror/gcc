@@ -2430,9 +2430,9 @@ unsigned int
 min_align_of_type (tree type)
 {
   unsigned int align = TYPE_ALIGN (type);
-  align = MIN (align, BIGGEST_ALIGNMENT);
   if (!TYPE_USER_ALIGN (type))
     {
+      align = MIN (align, BIGGEST_ALIGNMENT);
 #ifdef BIGGEST_FIELD_ALIGNMENT
       align = MIN (align, BIGGEST_FIELD_ALIGNMENT);
 #endif

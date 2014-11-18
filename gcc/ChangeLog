@@ -1,3 +1,9 @@
+2014-11-18  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/63802
+	* stor-layout.c (min_align_of_type): Respect user alignment
+	more.
+
 2014-11-18  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* passes.c (remove_cgraph_node_from_order): New.
