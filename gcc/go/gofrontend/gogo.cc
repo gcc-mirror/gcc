@@ -1018,11 +1018,11 @@ class Var_init
 {
  public:
   Var_init()
-    : var_(NULL), init_(NULL)
+    : var_(NULL), init_(NULL), dep_count_(0)
   { }
 
   Var_init(Named_object* var, Bstatement* init)
-    : var_(var), init_(init)
+    : var_(var), init_(init), dep_count_(0)
   { }
 
   // Return the variable.
@@ -1035,12 +1035,37 @@ class Var_init
   init() const
   { return this->init_; }
 
+  // Return the number of remaining dependencies.
+  size_t
+  dep_count() const
+  { return this->dep_count_; }
+
+  // Increment the number of dependencies.
+  void
+  add_dependency()
+  { ++this->dep_count_; }
+
+  // Decrement the number of dependencies.
+  void
+  remove_dependency()
+  { --this->dep_count_; }
+
  private:
   // The variable being initialized.
   Named_object* var_;
   // The initialization statement.
   Bstatement* init_;
+  // The number of initializations this is dependent on.  A variable
+  // initialization should not be emitted if any of its dependencies
+  // have not yet been resolved.
+  size_t dep_count_;
 };
+
+// For comparing Var_init keys in a map.
+
+inline bool
+operator<(const Var_init& v1, const Var_init& v2)
+{ return v1.var()->name() < v2.var()->name(); }
 
 typedef std::list<Var_init> Var_inits;
 
@@ -1052,14 +1077,21 @@ typedef std::list<Var_init> Var_inits;
 static void
 sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 {
+  if (var_inits->empty())
+    return;
+
   typedef std::pair<Named_object*, Named_object*> No_no;
   typedef std::map<No_no, bool> Cache;
   Cache cache;
 
-  Var_inits ready;
-  while (!var_inits->empty())
+  // A mapping from a variable initialization to a set of
+  // variable initializations that depend on it.
+  typedef std::map<Var_init, std::set<Var_init*> > Init_deps;
+  Init_deps init_deps;
+  for (Var_inits::iterator p1 = var_inits->begin();
+       p1 != var_inits->end();
+       ++p1)
     {
-      Var_inits::iterator p1 = var_inits->begin();
       Named_object* var = p1->var();
       Expression* init = var->var_value()->init();
       Block* preinit = var->var_value()->preinit();
@@ -1067,11 +1099,13 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 
       // Start walking through the list to see which variables VAR
       // needs to wait for.
-      Var_inits::iterator p2 = p1;
-      ++p2;
-
-      for (; p2 != var_inits->end(); ++p2)
+      for (Var_inits::iterator p2 = var_inits->begin();
+	   p2 != var_inits->end();
+	   ++p2)
 	{
+	  if (var == p2->var())
+	    continue;
+
 	  Named_object* p2var = p2->var();
 	  No_no key(var, p2var);
 	  std::pair<Cache::iterator, bool> ins =
@@ -1080,6 +1114,10 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 	    ins.first->second = expression_requires(init, preinit, dep, p2var);
 	  if (ins.first->second)
 	    {
+	      // VAR depends on P2VAR.
+	      init_deps[*p2].insert(&(*p1));
+	      p1->add_dependency();
+
 	      // Check for cycles.
 	      key = std::make_pair(p2var, var);
 	      ins = cache.insert(std::make_pair(key, false));
@@ -1100,36 +1138,66 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 			 p2var->message_name().c_str());
 		  p2 = var_inits->end();
 		}
-	      else
-		{
-		  // We can't emit P1 until P2 is emitted.  Move P1.
-		  Var_inits::iterator p3 = p2;
-		  ++p3;
-		  var_inits->splice(p3, *var_inits, p1);
-		}
-	      break;
 	    }
-	}
-
-      if (p2 == var_inits->end())
-	{
-	  // VAR does not depends upon any other initialization expressions.
-
-	  // Check for a loop of VAR on itself.  We only do this if
-	  // INIT is not NULL and there is no dependency; when INIT is
-	  // NULL, it means that PREINIT sets VAR, which we will
-	  // interpret as a loop.
-	  if (init != NULL && dep == NULL
-	      && expression_requires(init, preinit, NULL, var))
-	    error_at(var->location(),
-		     "initialization expression for %qs depends upon itself",
-		     var->message_name().c_str());
-	  ready.splice(ready.end(), *var_inits, p1);
 	}
     }
 
-  // Now READY is the list in the desired initialization order.
-  var_inits->swap(ready);
+  // If there are no dependencies then the declaration order is sorted.
+  if (!init_deps.empty())
+    {
+      // Otherwise, sort variable initializations by emitting all variables with
+      // no dependencies in declaration order. VAR_INITS is already in
+      // declaration order.
+      Var_inits ready;
+      while (!var_inits->empty())
+	{
+	  Var_inits::iterator v1;;
+	  for (v1 = var_inits->begin(); v1 != var_inits->end(); ++v1)
+	    {
+	      if (v1->dep_count() == 0)
+		break;
+	    }
+	  go_assert(v1 != var_inits->end());
+
+	  // V1 either has no dependencies or its dependencies have already
+	  // been emitted, add it to READY next.  When V1 is emitted, remove
+	  // a dependency from each V that depends on V1.
+	  ready.splice(ready.end(), *var_inits, v1);
+
+	  Init_deps::iterator p1 = init_deps.find(*v1);
+	  if (p1 != init_deps.end())
+	    {
+	      std::set<Var_init*> resolved = p1->second;
+	      for (std::set<Var_init*>::iterator pv = resolved.begin();
+		   pv != resolved.end();
+		   ++pv)
+		(*pv)->remove_dependency();
+	      init_deps.erase(p1);
+	    }
+	}
+      var_inits->swap(ready);
+      go_assert(init_deps.empty());
+    }
+
+  // VAR_INITS is in the correct order.  For each VAR in VAR_INITS,
+  // check for a loop of VAR on itself.  We only do this if
+  // INIT is not NULL and there is no dependency; when INIT is
+  // NULL, it means that PREINIT sets VAR, which we will
+  // interpret as a loop.
+  for (Var_inits::const_iterator p = var_inits->begin();
+       p != var_inits->end();
+       ++p)
+    {
+      Named_object* var = p->var();
+      Expression* init = var->var_value()->init();
+      Block* preinit = var->var_value()->preinit();
+      Named_object* dep = gogo->var_depends_on(var->var_value());
+      if (init != NULL && dep == NULL
+	  && expression_requires(init, preinit, NULL, var))
+	error_at(var->location(),
+		 "initialization expression for %qs depends upon itself",
+		 var->message_name().c_str());
+    }
 }
 
 // Write out the global definitions.
