@@ -1,3 +1,17 @@
+2014-11-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/neon-testgen.ml (emit_prologue): Handle new
+	compile_test_optim argument.
+	(emit_automatics): Rename to emit_variables. Support variable
+	indentation of its output.
+	(compile_test_optim): New function.
+	(test_intrinsic): Call compile_test_optim.
+	* config/arm/neon.ml (features): Add Compiler_optim.
+	(ops): Add Compiler_optim feature to Vbic and Vorn.
+	(type_in_crypto_only): Replace 'or' by '||'.
+	(reinterp): Likewise.
+	(reinterpq): Likewise.
+
 2014-11-18  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/arm_neon.h (vld1_dup_f32, vld1_dup_f64, vld1_dup_p8,
