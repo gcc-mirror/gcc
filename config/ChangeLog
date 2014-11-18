@@ -1,3 +1,9 @@
+2014-11-17  Bob Dunlop  <bob.dunlop@xyzzy.org.uk>
+
+	* mt-ospace (CFLAGS_FOR_TARGET): Append -g -Os rather than
+	overwriting.
+	(CXXFLAGS_FOR_TARGET): Similarly.
+
 2014-11-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/63888
