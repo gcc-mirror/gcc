@@ -179,6 +179,9 @@ ubsan_encode_value (tree t, bool in_expand_p)
     }
 }
 
+/* Cached ubsan_get_type_descriptor_type () return value.  */
+static GTY(()) tree ubsan_type_descriptor_type;
+
 /* Build
    struct __ubsan_type_descriptor
    {
@@ -189,11 +192,15 @@ ubsan_encode_value (tree t, bool in_expand_p)
    type.  */
 
 static tree
-ubsan_type_descriptor_type (void)
+ubsan_get_type_descriptor_type (void)
 {
   static const char *field_names[3]
     = { "__typekind", "__typeinfo", "__typename" };
   tree fields[3], ret;
+
+  if (ubsan_type_descriptor_type)
+    return ubsan_type_descriptor_type;
+
   tree itype = build_range_type (sizetype, size_zero_node, NULL_TREE);
   tree flex_arr_type = build_array_type (char_type_node, itype);
 
@@ -208,9 +215,16 @@ ubsan_type_descriptor_type (void)
       if (i)
 	DECL_CHAIN (fields[i - 1]) = fields[i];
     }
+  tree type_decl = build_decl (input_location, TYPE_DECL,
+			       get_identifier ("__ubsan_type_descriptor"),
+			       ret);
+  DECL_IGNORED_P (type_decl) = 1;
+  DECL_ARTIFICIAL (type_decl) = 1;
   TYPE_FIELDS (ret) = fields[0];
-  TYPE_NAME (ret) = get_identifier ("__ubsan_type_descriptor");
+  TYPE_NAME (ret) = type_decl;
+  TYPE_STUB_DECL (ret) = type_decl;
   layout_type (ret);
+  ubsan_type_descriptor_type = ret;
   return ret;
 }
 
@@ -249,8 +263,14 @@ ubsan_get_source_location_type (void)
       if (i)
 	DECL_CHAIN (fields[i - 1]) = fields[i];
     }
+  tree type_decl = build_decl (input_location, TYPE_DECL,
+			       get_identifier ("__ubsan_source_location"),
+			       ret);
+  DECL_IGNORED_P (type_decl) = 1;
+  DECL_ARTIFICIAL (type_decl) = 1;
   TYPE_FIELDS (ret) = fields[0];
-  TYPE_NAME (ret) = get_identifier ("__ubsan_source_location");
+  TYPE_NAME (ret) = type_decl;
+  TYPE_STUB_DECL (ret) = type_decl;
   layout_type (ret);
   ubsan_source_location_type = ret;
   return ret;
@@ -333,7 +353,7 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
   if (decl != NULL_TREE && varpool_node::get (decl))
     return build_fold_addr_expr (decl);
 
-  tree dtype = ubsan_type_descriptor_type ();
+  tree dtype = ubsan_get_type_descriptor_type ();
   tree type2 = type;
   const char *tname = NULL;
   char *pretty_name;
@@ -498,8 +518,7 @@ ubsan_create_data (const char *name, int loccnt, const location_t *ploc, ...)
   int j;
 
   /* Firstly, create a pointer to type descriptor type.  */
-  tree td_type = ubsan_type_descriptor_type ();
-  TYPE_READONLY (td_type) = 1;
+  tree td_type = ubsan_get_type_descriptor_type ();
   td_type = build_pointer_type (td_type);
 
   /* Create the structure type.  */
@@ -543,8 +562,13 @@ ubsan_create_data (const char *name, int loccnt, const location_t *ploc, ...)
     }
   va_end (args);
 
+  tree type_decl = build_decl (input_location, TYPE_DECL,
+			       get_identifier (name), ret);
+  DECL_IGNORED_P (type_decl) = 1;
+  DECL_ARTIFICIAL (type_decl) = 1;
   TYPE_FIELDS (ret) = fields[0];
-  TYPE_NAME (ret) = get_identifier (name);
+  TYPE_NAME (ret) = type_decl;
+  TYPE_STUB_DECL (ret) = type_decl;
   layout_type (ret);
 
   /* Now, fill in the type.  */
