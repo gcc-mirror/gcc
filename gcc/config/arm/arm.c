@@ -29936,6 +29936,7 @@ arm_issue_rate (void)
     case cortexa57:
       return 3;
 
+    case cortexm7:
     case cortexr4:
     case cortexr4f:
     case cortexr5:
