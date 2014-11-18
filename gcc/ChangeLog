@@ -1,5 +1,9 @@
 2014-11-18  Martin Liska  <mliska@suse.cz>
 
+	* var-tracking.c (vt_find_locations): New fibonacci_node is used.
+
+2014-11-18  Martin Liska  <mliska@suse.cz>
+
 	* bt-load.c (add_btr_def): New fibonacci_heap is used.
 	(migrate_btr_defs): Likewise.
 
