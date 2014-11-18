@@ -1,3 +1,9 @@
+2014-11-18  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* passes.c (remove_cgraph_node_from_order): New.
+	(do_per_function_toporder): Register cgraph removal
+	hook.
+
 2014-11-17  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/arm.c (arm_issue_rate): Return 2 for cortex-m7.

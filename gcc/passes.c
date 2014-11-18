@@ -1609,6 +1609,24 @@ do_per_function (void (*callback) (function *, void *data), void *data)
 static int nnodes;
 static GTY ((length ("nnodes"))) cgraph_node **order;
 
+/* Hook called when NODE is removed and therefore should be
+   excluded from order vector.  DATA is an array of integers.
+   DATA[0] holds max index it may be accessed by.  For cgraph
+   node DATA[node->uid + 1] holds index of this node in order
+   vector.  */
+static void
+remove_cgraph_node_from_order (cgraph_node *node, void *data)
+{
+  int *order_idx = (int *)data;
+
+  if (node->uid >= order_idx[0])
+    return;
+
+  int idx = order_idx[node->uid + 1];
+  if (idx >= 0 && idx < nnodes && order[idx] == node)
+    order[idx] = NULL;
+}
+
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
    function CALLBACK for every function in the call graph.  Otherwise,
    call CALLBACK on the current function.
@@ -1622,13 +1640,29 @@ do_per_function_toporder (void (*callback) (function *, void *data), void *data)
     callback (cfun, data);
   else
     {
+      cgraph_node_hook_list *hook;
+      int *order_idx;
       gcc_assert (!order);
       order = ggc_vec_alloc<cgraph_node *> (symtab->cgraph_count);
+
+      order_idx = XALLOCAVEC (int, symtab->cgraph_max_uid + 1);
+      memset (order_idx + 1, -1, sizeof (int) * symtab->cgraph_max_uid);
+      order_idx[0] = symtab->cgraph_max_uid;
+
       nnodes = ipa_reverse_postorder (order);
       for (i = nnodes - 1; i >= 0; i--)
-        order[i]->process = 1;
+	{
+	  order[i]->process = 1;
+	  order_idx[order[i]->uid + 1] = i;
+	}
+      hook = symtab->add_cgraph_removal_hook (remove_cgraph_node_from_order,
+					      order_idx);
       for (i = nnodes - 1; i >= 0; i--)
 	{
+	  /* Function could be inlined and removed as unreachable.  */
+	  if (!order[i])
+	    continue;
+
 	  struct cgraph_node *node = order[i];
 
 	  /* Allow possibly removed nodes to be garbage collected.  */
@@ -1637,6 +1671,7 @@ do_per_function_toporder (void (*callback) (function *, void *data), void *data)
 	  if (node->has_gimple_body_p ())
 	    callback (DECL_STRUCT_FUNCTION (node->decl), data);
 	}
+      symtab->remove_cgraph_removal_hook (hook);
     }
   ggc_free (order);
   order = NULL;

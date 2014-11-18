@@ -1,3 +1,7 @@
+2014-11-18  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* g++.dg/pr63766.C: New.
+
 2014-11-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p8vector-ldst.c: Rewrite to use 40 live
