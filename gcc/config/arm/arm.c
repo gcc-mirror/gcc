@@ -25535,29 +25535,26 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
     case NEON_CONVERT:
     case NEON_DUPLANE:
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT, NEON_ARG_STOP);
+        NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_BINOP:
-    case NEON_SETLANE:
+    case NEON_LOGICBINOP:
     case NEON_SCALARMUL:
     case NEON_SCALARMULL:
     case NEON_SCALARMULH:
-    case NEON_SHIFTINSERT:
-    case NEON_LOGICBINOP:
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
-        NEON_ARG_STOP);
+        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_TERNOP:
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
-        NEON_ARG_CONSTANT, NEON_ARG_STOP);
+        NEON_ARG_STOP);
 
     case NEON_GETLANE:
     case NEON_FIXCONV:
     case NEON_SHIFTIMM:
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT, NEON_ARG_CONSTANT,
+        NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
         NEON_ARG_STOP);
 
     case NEON_CREATE:
@@ -25583,24 +25580,26 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
     case NEON_LANEMUL:
     case NEON_LANEMULL:
     case NEON_LANEMULH:
+    case NEON_SETLANE:
+    case NEON_SHIFTINSERT:
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
-        NEON_ARG_CONSTANT, NEON_ARG_STOP);
+        NEON_ARG_STOP);
 
     case NEON_LANEMAC:
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
-        NEON_ARG_CONSTANT, NEON_ARG_CONSTANT, NEON_ARG_STOP);
+        NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_SHIFTACC:
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
-        NEON_ARG_CONSTANT, NEON_ARG_STOP);
+        NEON_ARG_STOP);
 
     case NEON_SCALARMAC:
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
 	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
-        NEON_ARG_CONSTANT, NEON_ARG_STOP);
+        NEON_ARG_STOP);
 
     case NEON_SELECT:
     case NEON_VTBX:
@@ -31003,7 +31002,7 @@ static bool
 arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
 {
   unsigned int i, j, diff, nelt = d->nelt;
-  rtx (*gen)(rtx, rtx, rtx);
+  rtx (*gen)(rtx, rtx);
 
   if (!d->one_vector_p)
     return false;
@@ -31067,9 +31066,7 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  /* ??? The third operand is an artifact of the builtin infrastructure
-     and is ignored by the actual instruction.  */
-  emit_insn (gen (d->target, d->op0, const0_rtx));
+  emit_insn (gen (d->target, d->op0));
   return true;
 }
 

@@ -1,3 +1,1185 @@
+2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/arm.c (arm_expand_neon_builtin): Remove "Magic Word"
+	parameter, rearrange switch statement accordingly.
+	(arm_evpc_neon_vrev): Remove "Magic Word".
+	* config/arm/unspecs.md (unspec): Split many UNSPECs to
+	rounding, or signed/unsigned variants.
+	* config/arm/neon.md (vcond<mode><mode>): Remove "Magic Word" code.
+	(vcondu<mode><mode>): Likewise.
+	(neon_vadd): Remove "Magic Word" operand.
+	(neon_vaddl): Remove "Magic Word" operand, convert to use
+	signed/unsigned iterator.
+	(neon_vaddw): Likewise.
+	(neon_vhadd): Likewise, also iterate over "rounding" forms.
+	(neon_vqadd): Remove "Magic Word" operand, convert to use
+	signed/unsigned iterator.
+	(neon_v<r>addhn): Remove "Magic Word" operand, convert to iterate
+	over "rounding" forms.
+	(neon_vmul): Remove "Magic Word" operand, iterate over
+	polynomial/float instruction forms.
+	(neon_vmla): Remove "Magic Word" operand.
+	(neon_vfma): Likewise.
+	(neon_vfms): Likewise.
+	(neon_vmls): Likewise.
+	(neon_vmlal): Remove "Magic Word" operand, iterate over
+	signed/unsigned forms.
+	(neon_vmlsl): Likewise.
+	(neon_vqdmulh): Remove "Magic Word" operand, iterate over "rounding"
+	forms.
+	(neon_vqdmlal): Remove "Magic Word" operand, iterate over
+	signed/unsigned forms.
+	(neon_vqdmlsl): Likewise.
+	(neon_vmull): Likewise.
+	(neon_vqdmull): Remove "Magic Word" operand.
+	(neon_vsub): Remove "Magic Word" operand.
+	(neon_vsubl): Remove "Magic Word" operand, convert to use
+	signed/unsigned iterator.
+	(neon_vsubw): Likewise.
+	(neon_vhsub): Likewise.
+	(neon_vqsub): Likewise.
+	(neon_v<r>subhn): Remove "Magic Word" operand, convert to iterate
+	over "rounding" forms.
+	(neon_vceq): Remove "Magic Word" operand.
+	(neon_vcge): Likewise.
+	(neon_vcgeu): Likewise.
+	(neon_vcgt): Likewise.
+	(neon_vcgtu): Likewise.
+	(neon_vcle): Likewise.
+	(neon_vclt): Likewise.
+	(neon_vcage): Likewise.
+	(neon_vcagt): Likewise.
+	(neon_vabd): Remove "Magic Word" operand, iterate over
+	signed/unsigned forms, and split out...
+	(neon_vabdf): ...this as new.
+	(neon_vabdl): Remove "Magic Word" operand, iterate over
+	signed/unsigned forms.
+	(neon_vaba): Likewise.
+	(neon_vmax): Remove "Magic Word" operand, iterate over
+	signed/unsigned and max/min forms, and split out...
+	(neon_v<maxmin>f): ...this as new.
+	(neon_vmin): Delete.
+	(neon_vpadd): Remove "Magic Word" operand.
+	(neon_vpaddl): Remove "Magic Word" operand, iterate over
+	signed/unsigned variants.
+	(neon_vpadal): Likewise.
+	(neon_vpmax): Remove "Magic Word" operand, iterate over
+	signed/unsigned and max/min forms, and split out...
+	(neon_vp<maxmin>f): ...this as new.
+	(neon_vpmin): Delete.
+	(neon_vrecps): Remove "Magic Word" operand.
+	(neon_vrsqrts): Likewise.
+	(neon_vabs): Likewise.
+	(neon_vqabs): Likewise.
+	(neon_vneg): Likewise.
+	(neon_vqneg): Likewise.
+	(neon_vcls): Likewise.
+	(neon_vcnt): Likewise.
+	(neon_vrecpe): Likewise.
+	(neon_vrsqrte): Likewise.
+	(neon_vmvn): Likewise.
+	(neon_vget_lane): Likewise.
+	(neon_vget_laneu): New.
+	(neon_vget_lanedi): Remove "Magic Word" operand.
+	(neon_vget_lanev2di): Likewise.
+	(neon_vcvt): Remove "Magic Word" operand, iterate over
+	signed/unsigned variants.
+	(neon_vcvt_n): Likewise.
+	(neon_vmovn): Remove "Magic Word" operand.
+	(neon_vqmovn): Remove "Magic Word" operand, iterate over
+	signed/unsigned variants.
+	(neon_vmovun): Remove "Magic Word" operand.
+	(neon_vmovl): Remove "Magic Word" operand, iterate over
+	signed/unsigned variants.
+	(neon_vmul_lane): Remove "Magic Word" operand.
+	(neon_vmull_lane): Remove "Magic Word" operand, iterate over
+	signed/unsigned variants.
+	(neon_vqdmull_lane): Remove "Magic Word" operand.
+	(neon_vqdmulh_lane): Remove "Magic Word" operand, iterate over
+	rounding variants.
+	(neon_vmla_lane): Remove "Magic Word" operand.
+	(neon_vmlal_lane): Remove "Magic Word" operand, iterate over
+	signed/unsigned variants.
+	(neon_vqdmlal_lane): Remove "Magic Word" operand.
+	(neon_vmls_lane): Likewise.
+	(neon_vmlsl_lane): Remove "Magic Word" operand, iterate over
+	signed/unsigned variants.
+	(neon_vqdmlsl_lane): Remove "Magic Word" operand.
+	(neon_vmul_n): Remove "Magic Word" operand.
+	(neon_vmull_n): Rename to...
+	(neon_vmulls_n): ...this, remove "Magic Word" operand.
+	(neon_vmullu_n): New.
+	(neon_vqdmull_n): Remove "Magic Word" operand.
+	(neon_vqdmulh_n): Likewise.
+	(neon_vqrdmulh_n): New.
+	(neon_vmla_n): Remove "Magic Word" operand.
+	(neon_vmls_n): Likewise.
+	(neon_vmlal_n): Rename to...
+	(neon_vmlals_n): ...this, remove "Magic Word" operand.
+	(neon_vmlalu_n): New.
+	(neon_vqdmlal_n): Remove "Magic Word" operand.
+	(neon_vmlsl_n): Rename to...
+	(neon_vmlsls_n): ...this, remove "Magic Word" operand.
+	(neon_vmlslu_n): New.
+	(neon_vqdmlsl_n): Remove "Magic Word" operand.
+	(neon_vrev64): Remove "Magic Word" operand.
+	(neon_vrev32): Likewise.
+	(neon_vrev16): Likewise.
+	(neon_vshl): Remove "Magic Word" operand, iterate over
+	signed/unsigned and "rounding" forms.
+	(neon_vqshl): Likewise.
+	(neon_vshr_n): Likewise.
+	(neon_vshrn_n): Remove "Magic Word" operand, iterate over
+	"rounding" forms.
+	(neon_vqshrn_n): Remove "Magic Word" operand, iterate over
+	signed/unsigned and "rounding" forms.
+	(neon_vqshrun_n): Remove "Magic Word" operand, iterate over
+	"rounding" forms.
+	(neon_vshl_n): Remove "Magic Word" operand.
+	(neon_vqshl_n): Remove "Magic Word" operand, iterate over
+	signed/unsigned variants.
+	(neon_vqshlu_n): Remove "Magic Word" operand.
+	(neon_vshll_n): Remove "Magic Word" operand, iterate over
+	signed/unsigned variants.
+	(neon_vsra_n): Remove "Magic Word" operand, iterate over
+	signed/unsigned and "rounding" forms.
+	* config/arm/iterators.md (VPF): New.
+	(VADDL): Likewise.
+	(VADDW): Likewise.
+	(VHADD): Likewise.
+	(VQADD): Likewise.
+	(VADDHN): Likewise.
+	(VMLAL): Likewise.
+	(VMLAL_LANE): Likewise.
+	(VLMSL): Likewise.
+	(VMLSL_LANE): Likewise.
+	(VQDMULH): Likewise,
+	(VQDMULH_LANE): Likewise.
+	(VMULL): Likewise.
+	(VMULL_LANE): Likewise.
+	(VSUBL): Likewise.
+	(VSUBW): Likewise.
+	(VHSUB): Likewise.
+	(VQSUB): Likewise.
+	(VSUBHN): Likewise.
+	(VABD): Likewise.
+	(VABDL): Likewise.
+	(VMAXMIN): Likewise.
+	(VMAXMINF): Likewise.
+	(VPADDL): Likewise.
+	(VPADAL): Likewise.
+	(VPMAXMIN): Likewise.
+	(VPMAXMINF): Likewise.
+	(VCVT_US): Likewise.
+	(VCVT_US_N): Likewise.
+	(VQMOVN): Likewise.
+	(VMOVL): Likewise.
+	(VSHL): Likewise.
+	(VQSHL): Likewise.
+	(VSHR_N): Likewise.
+	(VSHRN_N): Likewise.
+	(VQSHRN_N): Likewise.
+	(VQSHRUN_N): Likewise.
+	(VQSHL_N): Likewise.
+	(VSHLL_N): Likewise.
+	(VSRA_N): Likewise.
+	(pf): Likewise.
+	(sup): Likewise.
+	(r): Liekwise.
+	(maxmin): Likewise.
+	(shift_op): Likewise.
+	* config/arm/arm_neon_builtins.def (vaddl): Split to...
+	(vaddls): ...this and...
+	(vaddlu): ...this.
+	(vaddw): Split to...
+	(vaddws): ...this and...
+	(vaddwu): ...this.
+	(vhadd): Split to...
+	(vhadds): ...this and...
+	(vhaddu): ...this and...
+	(vrhadds): ...this and...
+	(vrhaddu): ...this.
+	(vqadd): Split to...
+	(vqadds): ...this and...
+	(vqaddu): ...this.
+	(vaddhn): Split to itself and...
+	(vraddhn): ...this.
+	(vmul): Split to...
+	(vmulf): ...this and...
+	(vmulp): ...this.
+	(vmlal): Split to...
+	(vmlals): ...this and...
+	(vmlalu): ...this.
+	(vmlsl): Split to...
+	(vmlsls): ...this and...
+	(vmlslu): ...this.
+	(vqdmulh): Split to itself and...
+	(vqrdmulh): ...this.
+	(vmull): Split to...
+	(vmullp): ...this and...
+	(vmulls): ...this and...
+	(vmullu): ...this.
+	(vmull_n): Split to...
+	(vmulls_n): ...this and...
+	(vmullu_n): ...this.
+	(vmull_lane): Split to...
+	(vmulls_lane): ...this and...
+	(vmullu_lane): ...this.
+	(vqdmulh_n): Split to itself and...
+	(vqrdmulh_n): ...this.
+	(vqdmulh_lane): Split to itself and...
+	(vqrdmulh_lane): ...this.
+	(vshl): Split to...
+	(vshls): ...this and...
+	(vshlu): ...this and...
+	(vrshls): ...this and...
+	(vrshlu): ...this.
+	(vqshl): Split to...
+	(vqshls): ...this and...
+	(vqrshlu): ...this and...
+	(vqrshls): ...this and...
+	(vqrshlu): ...this.
+	(vshr_n): Split to...
+	(vshrs_n): ...this and...
+	(vshru_n): ...this and...
+	(vrshrs_n): ...this and...
+	(vrshru_n): ...this.
+	(vshrn_n): Split to itself and...
+	(vrshrn_n): ...this.
+	(vqshrn_n): Split to...
+	(vqshrns_n): ...this and...
+	(vqshrnu_n): ...this and...
+	(vqrshrns_n): ...this and...
+	(vqrshrnu_n): ...this.
+	(vqshrun_n): Split to itself and...
+	(vqrshrun_n): ...this.
+	(vqshl_n): Split to...
+	(vqshl_s_n): ...this and...
+	(vqshl_u_n): ...this.
+	(vshll_n): Split to...
+	(vshlls_n): ...this and...
+	(vshllu_n): ...this.
+	(vsra_n): Split to...
+	(vsras_n): ...this and...
+	(vsrau_n): ...this and.
+	(vrsras_n): ...this and...
+	(vrsrau_n): ...this and.
+	(vsubl): Split to...
+	(vsubls): ...this and...
+	(vsublu): ...this.
+	(vsubw): Split to...
+	(vsubws): ...this and...
+	(vsubwu): ...this.
+	(vqsub): Split to...
+	(vqsubs): ...this and...
+	(vqsubu): ...this.
+	(vhsub): Split to...
+	(vhsubs): ...this and...
+	(vhsubu): ...this.
+	(vsubhn): Split to itself and...
+	(vrsubhn): ...this.
+	(vabd): Split to...
+	(vabds): ...this and...
+	(vabdu): ...this and...
+	(vabdf): ...this.
+	(vabdl): Split to...
+	(vabdls): ...this and...
+	(vabdlu): ...this.
+	(vaba): Split to...
+	(vabas): ...this and...
+	(vabau): ...this and...
+	(vabal): Split to...
+	(vabals): ...this and...
+	(vabalu): ...this.
+	(vmax): Split to...
+	(vmaxs): ...this and...
+	(vmaxu): ...this and...
+	(vmaxf): ...this.
+	(vmin): Split to...
+	(vmins): ...this and...
+	(vminu): ...this and...
+	(vminf): ...this.
+	(vpmax): Split to...
+	(vpmaxs): ...this and...
+	(vpmaxu): ...this and...
+	(vpmaxf): ...this.
+	(vpmin): Split to...
+	(vpmins): ...this and...
+	(vpminu): ...this and...
+	(vpminf): ...this.
+	(vpaddl): Split to...
+	(vpaddls): ...this and...
+	(vpaddlu): ...this.
+	(vpadal): Split to...
+	(vpadals): ...this and...
+	(vpadalu): ...this.
+	(vget_laneu): New.
+	(vqmovn): Split to...
+	(vqmovns): ...this and...
+	(vqmovnu): ...this.
+	(vmovl): Split to...
+	(vmovls): ...this and...
+	(vmovlu): ...this.
+	(vmlal_lane): Split to...
+	(vmlals_lane): ...this and...
+	(vmlalu_lane): ...this.
+	(vmlsl_lane): Split to...
+	(vmlsls_lane): ...this and...
+	(vmlslu_lane): ...this.
+	(vmlal_n): Split to...
+	(vmlals_n): ...this and...
+	(vmlalu_n): ...this.
+	(vmlsl_n): Split to...
+	(vmlsls_n): ...this and...
+	(vmlslu_n): ...this.
+	(vext): Make type "SHIFTINSERT".
+	(vcvt): Split to...
+	(vcvts): ...this and...
+	(vcvtu): ...this.
+	(vcvt_n): Split to...
+	(vcvts_n): ...this and...
+	(vcvtu_n): ...this.
+	* config/arm/arm_neon.h (vaddl_s8): Remove "Magic Word".
+	(vaddl_s16): Likewise.
+	(vaddl_s32): Likewise.
+	(vaddl_u8): Likewise.
+	(vaddl_u16): Likewise.
+	(vaddl_u32): Likewise.
+	(vaddw_s8): Likewise.
+	(vaddw_s16): Likewise.
+	(vaddw_s32): Likewise.
+	(vaddw_u8): Likewise.
+	(vaddw_u16): Likewise.
+	(vaddw_u32): Likewise.
+	(vhadd_s8): Likewise.
+	(vhadd_s16): Likewise.
+	(vhadd_s32): Likewise.
+	(vhadd_u8): Likewise.
+	(vhadd_u16): Likewise.
+	(vhadd_u32): Likewise.
+	(vhaddq_s8): Likewise.
+	(vhaddq_s16): Likewise.
+	(vhaddq_s32): Likewise.
+	(vhaddq_u8): Likewise.
+	(vhaddq_u16): Likewise.
+	(vrhadd_s8): Likewise.
+	(vrhadd_s16): Likewise.
+	(vrhadd_s32): Likewise.
+	(vrhadd_u8): Likewise.
+	(vrhadd_u16): Likewise.
+	(vrhadd_u32): Likewise.
+	(vrhaddq_s8): Likewise.
+	(vrhaddq_s16): Likewise.
+	(vrhaddq_s32): Likewise.
+	(vrhaddq_u8): Likewise.
+	(vrhaddq_u16): Likewise.
+	(vrhaddq_u32): Likewise.
+	(vqadd_s8): Likewise.
+	(vqadd_s16): Likewise.
+	(vqadd_s32): Likewise.
+	(vqadd_s64): Likewise.
+	(vqadd_u8): Likewise.
+	(vqadd_u16): Likewise.
+	(vqadd_u32): Likewise.
+	(vqadd_u64): Likewise.
+	(vqaddq_s8): Likewise.
+	(vqaddq_s16): Likewise.
+	(vqaddq_s32): Likewise.
+	(vqaddq_s64): Likewise.
+	(vqaddq_u8): Likewise.
+	(vqaddq_u16): Likewise.
+	(vqaddq_u32): Likewise.
+	(vqaddq_u64): Likewise.
+	(vaddhn_s16): Likewise.
+	(vaddhn_s32): Likewise.
+	(vaddhn_s64): Likewise.
+	(vaddhn_u16): Likewise.
+	(vaddhn_u32): Likewise.
+	(vaddhn_u64): Likewise.
+	(vraddhn_s16): Likewise.
+	(vraddhn_s32): Likewise.
+	(vraddhn_s64): Likewise.
+	(vraddhn_u16): Likewise.
+	(vraddhn_u32): Likewise.
+	(vraddhn_u64): Likewise.
+	(vmul_p8): Likewise.
+	(vmulq_p8): Likewise.
+	(vqdmulh_s16): Likewise.
+	(vqdmulh_s32): Likewise.
+	(vqdmulhq_s16): Likewise.
+	(vqdmulhq_s32): Likewise.
+	(vqrdmulh_s16): Likewise.
+	(vqrdmulh_s32): Likewise.
+	(vqrdmulhq_s16): Likewise.
+	(vqrdmulhq_s32): Likewise.
+	(vmull_s8): Likewise.
+	(vmull_s16): Likewise.
+	(vmull_s32): Likewise.
+	(vmull_u8): Likewise.
+	(vmull_u16): Likewise.
+	(vmull_u32): Likewise.
+	(vmull_p8): Likewise.
+	(vqdmull_s16): Likewise.
+	(vqdmull_s32): Likewise.
+	(vmla_s8): Likewise.
+	(vmla_s16): Likewise.
+	(vmla_s32): Likewise.
+	(vmla_f32): Likewise.
+	(vmla_u8): Likewise.
+	(vmla_u16): Likewise.
+	(vmla_u32): Likewise.
+	(vmlaq_s8): Likewise.
+	(vmlaq_s16): Likewise.
+	(vmlaq_s32): Likewise.
+	(vmlaq_f32): Likewise.
+	(vmlaq_u8): Likewise.
+	(vmlaq_u16): Likewise.
+	(vmlaq_u32): Likewise.
+	(vmlal_s8): Likewise.
+	(vmlal_s16): Likewise.
+	(vmlal_s32): Likewise.
+	(vmlal_u8): Likewise.
+	(vmlal_u16): Likewise.
+	(vmlal_u32): Likewise.
+	(vqdmlal_s16): Likewise.
+	(vqdmlal_s32): Likewise.
+	(vmls_s8): Likewise.
+	(vmls_s16): Likewise.
+	(vmls_s32): Likewise.
+	(vmls_f32): Likewise.
+	(vmls_u8): Likewise.
+	(vmls_u16): Likewise.
+	(vmls_u32): Likewise.
+	(vmlsq_s8): Likewise.
+	(vmlsq_s16): Likewise.
+	(vmlsq_s32): Likewise.
+	(vmlsq_f32): Likewise.
+	(vmlsq_u8): Likewise.
+	(vmlsq_u16): Likewise.
+	(vmlsq_u32): Likewise.
+	(vmlsl_s8): Likewise.
+	(vmlsl_s16): Likewise.
+	(vmlsl_s32): Likewise.
+	(vmlsl_u8): Likewise.
+	(vmlsl_u16): Likewise.
+	(vmlsl_u32): Likewise.
+	(vqdmlsl_s16): Likewise.
+	(vqdmlsl_s32): Likewise.
+	(vfma_f32): Likewise.
+	(vfmaq_f32): Likewise.
+	(vfms_f32): Likewise.
+	(vfmsq_f32): Likewise.
+	(vsubl_s8): Likewise.
+	(vsubl_s16): Likewise.
+	(vsubl_s32): Likewise.
+	(vsubl_u8): Likewise.
+	(vsubl_u16): Likewise.
+	(vsubl_u32): Likewise.
+	(vsubw_s8): Likewise.
+	(vsubw_s16): Likewise.
+	(vsubw_s32): Likewise.
+	(vsubw_u8): Likewise.
+	(vsubw_u16): Likewise.
+	(vsubw_u32): Likewise.
+	(vhsub_s8): Likewise.
+	(vhsub_s16): Likewise.
+	(vhsub_s32): Likewise.
+	(vhsub_u8): Likewise.
+	(vhsub_u16): Likewise.
+	(vhsub_u32): Likewise.
+	(vhsubq_s8): Likewise.
+	(vhsubq_s16): Likewise.
+	(vhsubq_s32): Likewise.
+	(vhsubq_u8): Likewise.
+	(vhsubq_u16): Likewise.
+	(vhsubq_u32): Likewise.
+	(vqsub_s8): Likewise.
+	(vqsub_s16): Likewise.
+	(vqsub_s32): Likewise.
+	(vqsub_s64): Likewise.
+	(vqsub_u8): Likewise.
+	(vqsub_u16): Likewise.
+	(vqsub_u32): Likewise.
+	(vqsub_u64): Likewise.
+	(vqsubq_s8): Likewise.
+	(vqsubq_s16): Likewise.
+	(vqsubq_s32): Likewise.
+	(vqsubq_s64): Likewise.
+	(vqsubq_u8): Likewise.
+	(vqsubq_u16): Likewise.
+	(vqsubq_u32): Likewise.
+	(vqsubq_u64): Likewise.
+	(vsubhn_s16): Likewise.
+	(vsubhn_s32): Likewise.
+	(vsubhn_s64): Likewise.
+	(vsubhn_u16): Likewise.
+	(vsubhn_u32): Likewise.
+	(vsubhn_u64): Likewise.
+	(vrsubhn_s16): Likewise.
+	(vrsubhn_s32): Likewise.
+	(vrsubhn_s64): Likewise.
+	(vrsubhn_u16): Likewise.
+	(vrsubhn_u32): Likewise.
+	(vrsubhn_u64): Likewise.
+	(vceq_s8): Likewise.
+	(vceq_s16): Likewise.
+	(vceq_s32): Likewise.
+	(vceq_f32): Likewise.
+	(vceq_u8): Likewise.
+	(vceq_u16): Likewise.
+	(vceq_u32): Likewise.
+	(vceq_p8): Likewise.
+	(vceqq_s8): Likewise.
+	(vceqq_s16): Likewise.
+	(vceqq_s32): Likewise.
+	(vceqq_f32): Likewise.
+	(vceqq_u8): Likewise.
+	(vceqq_u16): Likewise.
+	(vceqq_u32): Likewise.
+	(vceqq_p8): Likewise.
+	(vcge_s8): Likewise.
+	(vcge_s16): Likewise.
+	(vcge_s32): Likewise.
+	(vcge_f32): Likewise.
+	(vcge_u8): Likewise.
+	(vcge_u16): Likewise.
+	(vcge_u32): Likewise.
+	(vcgeq_s8): Likewise.
+	(vcgeq_s16): Likewise.
+	(vcgeq_s32): Likewise.
+	(vcgeq_f32): Likewise.
+	(vcgeq_u8): Likewise.
+	(vcgeq_u16): Likewise.
+	(vcgeq_u32): Likewise.
+	(vcle_s8): Likewise.
+	(vcle_s16): Likewise.
+	(vcle_s32): Likewise.
+	(vcle_f32): Likewise.
+	(vcle_u8): Likewise.
+	(vcle_u16): Likewise.
+	(vcle_u32): Likewise.
+	(vcleq_s8): Likewise.
+	(vcleq_s16): Likewise.
+	(vcleq_s32): Likewise.
+	(vcleq_f32): Likewise.
+	(vcleq_u8): Likewise.
+	(vcleq_u16): Likewise.
+	(vcleq_u32): Likewise.
+	(vcgt_s8): Likewise.
+	(vcgt_s16): Likewise.
+	(vcgt_s32): Likewise.
+	(vcgt_f32): Likewise.
+	(vcgt_u8): Likewise.
+	(vcgt_u16): Likewise.
+	(vcgt_u32): Likewise.
+	(vcgtq_s8): Likewise.
+	(vcgtq_s16): Likewise.
+	(vcgtq_s32): Likewise.
+	(vcgtq_f32): Likewise.
+	(vcgtq_u8): Likewise.
+	(vcgtq_u16): Likewise.
+	(vcgtq_u32): Likewise.
+	(vclt_s8): Likewise.
+	(vclt_s16): Likewise.
+	(vclt_s32): Likewise.
+	(vclt_f32): Likewise.
+	(vclt_u8): Likewise.
+	(vclt_u16): Likewise.
+	(vclt_u32): Likewise.
+	(vcltq_s8): Likewise.
+	(vcltq_s16): Likewise.
+	(vcltq_s32): Likewise.
+	(vcltq_f32): Likewise.
+	(vcltq_u8): Likewise.
+	(vcltq_u16): Likewise.
+	(vcltq_u32): Likewise.
+	(vcage_f32): Likewise.
+	(vcageq_f32): Likewise.
+	(vcale_f32): Likewise.
+	(vcaleq_f32): Likewise.
+	(vcagt_f32): Likewise.
+	(vcagtq_f32): Likewise.
+	(vcalt_f32): Likewise.
+	(vcaltq_f32): Likewise.
+	(vtst_s8): Likewise.
+	(vtst_s16): Likewise.
+	(vtst_s32): Likewise.
+	(vtst_u8): Likewise.
+	(vtst_u16): Likewise.
+	(vtst_u32): Likewise.
+	(vtst_p8): Likewise.
+	(vtstq_s8): Likewise.
+	(vtstq_s16): Likewise.
+	(vtstq_s32): Likewise.
+	(vtstq_u8): Likewise.
+	(vtstq_u16): Likewise.
+	(vtstq_u32): Likewise.
+	(vtstq_p8): Likewise.
+	(vabd_s8): Likewise.
+	(vabd_s16): Likewise.
+	(vabd_s32): Likewise.
+	(vabd_f32): Likewise.
+	(vabd_u8): Likewise.
+	(vabd_u16): Likewise.
+	(vabd_u32): Likewise.
+	(vabdq_s8): Likewise.
+	(vabdq_s16): Likewise.
+	(vabdq_s32): Likewise.
+	(vabdq_f32): Likewise.
+	(vabdq_u8): Likewise.
+	(vabdq_u16): Likewise.
+	(vabdq_u32): Likewise.
+	(vabdl_s8): Likewise.
+	(vabdl_s16): Likewise.
+	(vabdl_s32): Likewise.
+	(vabdl_u8): Likewise.
+	(vabdl_u16): Likewise.
+	(vabdl_u32): Likewise.
+	(vaba_s8): Likewise.
+	(vaba_s16): Likewise.
+	(vaba_s32): Likewise.
+	(vaba_u8): Likewise.
+	(vaba_u16): Likewise.
+	(vaba_u32): Likewise.
+	(vabaq_s8): Likewise.
+	(vabaq_s16): Likewise.
+	(vabaq_s32): Likewise.
+	(vabaq_u8): Likewise.
+	(vabaq_u16): Likewise.
+	(vabaq_u32): Likewise.
+	(vabal_s8): Likewise.
+	(vabal_s16): Likewise.
+	(vabal_s32): Likewise.
+	(vabal_u8): Likewise.
+	(vabal_u16): Likewise.
+	(vabal_u32): Likewise.
+	(vmax_s8): Likewise.
+	(vmax_s16): Likewise.
+	(vmax_s32): Likewise.
+	(vmax_f32): Likewise.
+	(vmax_u8): Likewise.
+	(vmax_u16): Likewise.
+	(vmax_u32): Likewise.
+	(vmaxq_s8): Likewise.
+	(vmaxq_s16): Likewise.
+	(vmaxq_s32): Likewise.
+	(vmaxq_f32): Likewise.
+	(vmaxq_u8): Likewise.
+	(vmaxq_u16): Likewise.
+	(vmaxq_u32): Likewise.
+	(vmin_s8): Likewise.
+	(vmin_s16): Likewise.
+	(vmin_s32): Likewise.
+	(vmin_f32): Likewise.
+	(vmin_u8): Likewise.
+	(vmin_u16): Likewise.
+	(vmin_u32): Likewise.
+	(vminq_s8): Likewise.
+	(vminq_s16): Likewise.
+	(vminq_s32): Likewise.
+	(vminq_f32): Likewise.
+	(vminq_u8): Likewise.
+	(vminq_u16): Likewise.
+	(vminq_u32): Likewise.
+	(vpadd_s8): Likewise.
+	(vpadd_s16): Likewise.
+	(vpadd_s32): Likewise.
+	(vpadd_f32): Likewise.
+	(vpadd_u8): Likewise.
+	(vpadd_u16): Likewise.
+	(vpadd_u32): Likewise.
+	(vpaddl_s8): Likewise.
+	(vpaddl_s16): Likewise.
+	(vpaddl_s32): Likewise.
+	(vpaddl_u8): Likewise.
+	(vpaddl_u16): Likewise.
+	(vpaddl_u32): Likewise.
+	(vpaddlq_s8): Likewise.
+	(vpaddlq_s16): Likewise.
+	(vpaddlq_s32): Likewise.
+	(vpaddlq_u8): Likewise.
+	(vpaddlq_u16): Likewise.
+	(vpaddlq_u32): Likewise.
+	(vpadal_s8): Likewise.
+	(vpadal_s16): Likewise.
+	(vpadal_s32): Likewise.
+	(vpadal_u8): Likewise.
+	(vpadal_u16): Likewise.
+	(vpadal_u32): Likewise.
+	(vpadalq_s8): Likewise.
+	(vpadalq_s16): Likewise.
+	(vpadalq_s32): Likewise.
+	(vpadalq_u8): Likewise.
+	(vpadalq_u16): Likewise.
+	(vpadalq_u32): Likewise.
+	(vpmax_s8): Likewise.
+	(vpmax_s16): Likewise.
+	(vpmax_s32): Likewise.
+	(vpmax_f32): Likewise.
+	(vpmax_u8): Likewise.
+	(vpmax_u16): Likewise.
+	(vpmax_u32): Likewise.
+	(vpmin_s8): Likewise.
+	(vpmin_s16): Likewise.
+	(vpmin_s32): Likewise.
+	(vpmin_f32): Likewise.
+	(vpmin_u8): Likewise.
+	(vpmin_u16): Likewise.
+	(vpmin_u32): Likewise.
+	(vrecps_f32): Likewise.
+	(vrecpsq_f32): Likewise.
+	(vrsqrts_f32): Likewise.
+	(vrsqrtsq_f32): Likewise.
+	(vshl_s8): Likewise.
+	(vshl_s16): Likewise.
+	(vshl_s32): Likewise.
+	(vshl_s64): Likewise.
+	(vshl_u8): Likewise.
+	(vshl_u16): Likewise.
+	(vshl_u32): Likewise.
+	(vshl_u64): Likewise.
+	(vshlq_s8): Likewise.
+	(vshlq_s16): Likewise.
+	(vshlq_s32): Likewise.
+	(vshlq_s64): Likewise.
+	(vshlq_u8): Likewise.
+	(vshlq_u16): Likewise.
+	(vshlq_u32): Likewise.
+	(vshlq_u64): Likewise.
+	(vrshl_s8): Likewise.
+	(vrshl_s16): Likewise.
+	(vrshl_s32): Likewise.
+	(vrshl_s64): Likewise.
+	(vrshl_u8): Likewise.
+	(vrshl_u16): Likewise.
+	(vrshl_u32): Likewise.
+	(vrshl_u64): Likewise.
+	(vrshlq_s8): Likewise.
+	(vrshlq_s16): Likewise.
+	(vrshlq_s32): Likewise.
+	(vrshlq_s64): Likewise.
+	(vrshlq_u8): Likewise.
+	(vrshlq_u16): Likewise.
+	(vrshlq_u32): Likewise.
+	(vrshlq_u64): Likewise.
+	(vqshl_s8): Likewise.
+	(vqshl_s16): Likewise.
+	(vqshl_s32): Likewise.
+	(vqshl_s64): Likewise.
+	(vqshl_u8): Likewise.
+	(vqshl_u16): Likewise.
+	(vqshl_u32): Likewise.
+	(vqshl_u64): Likewise.
+	(vqshlq_s8): Likewise.
+	(vqshlq_s16): Likewise.
+	(vqshlq_s32): Likewise.
+	(vqshlq_s64): Likewise.
+	(vqshlq_u8): Likewise.
+	(vqshlq_u16): Likewise.
+	(vqshlq_u32): Likewise.
+	(vqshlq_u64): Likewise.
+	(vqrshl_s8): Likewise.
+	(vqrshl_s16): Likewise.
+	(vqrshl_s32): Likewise.
+	(vqrshl_s64): Likewise.
+	(vqrshl_u8): Likewise.
+	(vqrshl_u16): Likewise.
+	(vqrshl_u32): Likewise.
+	(vqrshl_u64): Likewise.
+	(vqrshlq_s8): Likewise.
+	(vqrshlq_s16): Likewise.
+	(vqrshlq_s32): Likewise.
+	(vqrshlq_s64): Likewise.
+	(vqrshlq_u8): Likewise.
+	(vqrshlq_u16): Likewise.
+	(vqrshlq_u32): Likewise.
+	(vqrshlq_u64): Likewise.
+	(vshr_n_s8): Likewise.
+	(vshr_n_s16): Likewise.
+	(vshr_n_s32): Likewise.
+	(vshr_n_s64): Likewise.
+	(vshr_n_u8): Likewise.
+	(vshr_n_u16): Likewise.
+	(vshr_n_u32): Likewise.
+	(vshr_n_u64): Likewise.
+	(vshrq_n_s8): Likewise.
+	(vshrq_n_s16): Likewise.
+	(vshrq_n_s32): Likewise.
+	(vshrq_n_s64): Likewise.
+	(vshrq_n_u8): Likewise.
+	(vshrq_n_u16): Likewise.
+	(vshrq_n_u32): Likewise.
+	(vshrq_n_u64): Likewise.
+	(vrshr_n_s8): Likewise.
+	(vrshr_n_s16): Likewise.
+	(vrshr_n_s32): Likewise.
+	(vrshr_n_s64): Likewise.
+	(vrshr_n_u8): Likewise.
+	(vrshr_n_u16): Likewise.
+	(vrshr_n_u32): Likewise.
+	(vrshr_n_u64): Likewise.
+	(vrshrq_n_s8): Likewise.
+	(vrshrq_n_s16): Likewise.
+	(vrshrq_n_s32): Likewise.
+	(vrshrq_n_s64): Likewise.
+	(vrshrq_n_u8): Likewise.
+	(vrshrq_n_u16): Likewise.
+	(vrshrq_n_u32): Likewise.
+	(vrshrq_n_u64): Likewise.
+	(vshrn_n_s16): Likewise.
+	(vshrn_n_s32): Likewise.
+	(vshrn_n_s64): Likewise.
+	(vshrn_n_u16): Likewise.
+	(vshrn_n_u32): Likewise.
+	(vshrn_n_u64): Likewise.
+	(vrshrn_n_s16): Likewise.
+	(vrshrn_n_s32): Likewise.
+	(vrshrn_n_s64): Likewise.
+	(vrshrn_n_u16): Likewise.
+	(vrshrn_n_u32): Likewise.
+	(vrshrn_n_u64): Likewise.
+	(vqshrn_n_s16): Likewise.
+	(vqshrn_n_s32): Likewise.
+	(vqshrn_n_s64): Likewise.
+	(vqshrn_n_u16): Likewise.
+	(vqshrn_n_u32): Likewise.
+	(vqshrn_n_u64): Likewise.
+	(vqrshrn_n_s16): Likewise.
+	(vqrshrn_n_s32): Likewise.
+	(vqrshrn_n_s64): Likewise.
+	(vqrshrn_n_u16): Likewise.
+	(vqrshrn_n_u32): Likewise.
+	(vqrshrn_n_u64): Likewise.
+	(vqshrun_n_s16): Likewise.
+	(vqshrun_n_s32): Likewise.
+	(vqshrun_n_s64): Likewise.
+	(vqrshrun_n_s16): Likewise.
+	(vqrshrun_n_s32): Likewise.
+	(vqrshrun_n_s64): Likewise.
+	(vshl_n_s8): Likewise.
+	(vshl_n_s16): Likewise.
+	(vshl_n_s32): Likewise.
+	(vshl_n_s64): Likewise.
+	(vshl_n_u8): Likewise.
+	(vshl_n_u16): Likewise.
+	(vshl_n_u32): Likewise.
+	(vshl_n_u64): Likewise.
+	(vshlq_n_s8): Likewise.
+	(vshlq_n_s16): Likewise.
+	(vshlq_n_s32): Likewise.
+	(vshlq_n_s64): Likewise.
+	(vshlq_n_u8): Likewise.
+	(vshlq_n_u16): Likewise.
+	(vshlq_n_u32): Likewise.
+	(vshlq_n_u64): Likewise.
+	(vqshl_n_s8): Likewise.
+	(vqshl_n_s16): Likewise.
+	(vqshl_n_s32): Likewise.
+	(vqshl_n_s64): Likewise.
+	(vqshl_n_u8): Likewise.
+	(vqshl_n_u16): Likewise.
+	(vqshl_n_u32): Likewise.
+	(vqshl_n_u64): Likewise.
+	(vqshlq_n_s8): Likewise.
+	(vqshlq_n_s16): Likewise.
+	(vqshlq_n_s32): Likewise.
+	(vqshlq_n_s64): Likewise.
+	(vqshlq_n_u8): Likewise.
+	(vqshlq_n_u16): Likewise.
+	(vqshlq_n_u32): Likewise.
+	(vqshlq_n_u64): Likewise.
+	(vqshlu_n_s8): Likewise.
+	(vqshlu_n_s16): Likewise.
+	(vqshlu_n_s32): Likewise.
+	(vqshlu_n_s64): Likewise.
+	(vqshluq_n_s8): Likewise.
+	(vqshluq_n_s16): Likewise.
+	(vqshluq_n_s32): Likewise.
+	(vqshluq_n_s64): Likewise.
+	(vshll_n_s8): Likewise.
+	(vshll_n_s16): Likewise.
+	(vshll_n_s32): Likewise.
+	(vshll_n_u8): Likewise.
+	(vshll_n_u16): Likewise.
+	(vshll_n_u32): Likewise.
+	(vsra_n_s8): Likewise.
+	(vsra_n_s16): Likewise.
+	(vsra_n_s32): Likewise.
+	(vsra_n_s64): Likewise.
+	(vsra_n_u8): Likewise.
+	(vsra_n_u16): Likewise.
+	(vsra_n_u32): Likewise.
+	(vsra_n_u64): Likewise.
+	(vsraq_n_s8): Likewise.
+	(vsraq_n_s16): Likewise.
+	(vsraq_n_s32): Likewise.
+	(vsraq_n_s64): Likewise.
+	(vsraq_n_u8): Likewise.
+	(vsraq_n_u16): Likewise.
+	(vsraq_n_u32): Likewise.
+	(vsraq_n_u64): Likewise.
+	(vrsra_n_s8): Likewise.
+	(vrsra_n_s16): Likewise.
+	(vrsra_n_s32): Likewise.
+	(vrsra_n_s64): Likewise.
+	(vrsra_n_u8): Likewise.
+	(vrsra_n_u16): Likewise.
+	(vrsra_n_u32): Likewise.
+	(vrsra_n_u64): Likewise.
+	(vrsraq_n_s8): Likewise.
+	(vrsraq_n_s16): Likewise.
+	(vrsraq_n_s32): Likewise.
+	(vrsraq_n_s64): Likewise.
+	(vrsraq_n_u8): Likewise.
+	(vrsraq_n_u16): Likewise.
+	(vrsraq_n_u32): Likewise.
+	(vrsraq_n_u64): Likewise.
+	(vabs_s8): Likewise.
+	(vabs_s16): Likewise.
+	(vabs_s32): Likewise.
+	(vabs_f32): Likewise.
+	(vabsq_s8): Likewise.
+	(vabsq_s16): Likewise.
+	(vabsq_s32): Likewise.
+	(vabsq_f32): Likewise.
+	(vqabs_s8): Likewise.
+	(vqabs_s16): Likewise.
+	(vqabs_s32): Likewise.
+	(vqabsq_s8): Likewise.
+	(vqabsq_s16): Likewise.
+	(vqabsq_s32): Likewise.
+	(vneg_s8): Likewise.
+	(vneg_s16): Likewise.
+	(vneg_s32): Likewise.
+	(vneg_f32): Likewise.
+	(vnegq_s8): Likewise.
+	(vnegq_s16): Likewise.
+	(vnegq_s32): Likewise.
+	(vnegq_f32): Likewise.
+	(vqneg_s8): Likewise.
+	(vqneg_s16): Likewise.
+	(vqneg_s32): Likewise.
+	(vqnegq_s8): Likewise.
+	(vqnegq_s16): Likewise.
+	(vqnegq_s32): Likewise.
+	(vmvn_s8): Likewise.
+	(vmvn_s16): Likewise.
+	(vmvn_s32): Likewise.
+	(vmvn_u8): Likewise.
+	(vmvn_u16): Likewise.
+	(vmvn_u32): Likewise.
+	(vmvn_p8): Likewise.
+	(vmvnq_s8): Likewise.
+	(vmvnq_s16): Likewise.
+	(vmvnq_s32): Likewise.
+	(vmvnq_u8): Likewise.
+	(vmvnq_u16): Likewise.
+	(vmvnq_u32): Likewise.
+	(vmvnq_p8): Likewise.
+	(vcls_s8): Likewise.
+	(vcls_s16): Likewise.
+	(vcls_s32): Likewise.
+	(vclsq_s8): Likewise.
+	(vclsq_s16): Likewise.
+	(vclsq_s32): Likewise.
+	(vclz_s8): Likewise.
+	(vclz_s16): Likewise.
+	(vclz_s32): Likewise.
+	(vclz_u8): Likewise.
+	(vclz_u16): Likewise.
+	(vclz_u32): Likewise.
+	(vclzq_s8): Likewise.
+	(vclzq_s16): Likewise.
+	(vclzq_s32): Likewise.
+	(vclzq_u8): Likewise.
+	(vclzq_u16): Likewise.
+	(vclzq_u32): Likewise.
+	(vcnt_s8): Likewise.
+	(vcnt_u8): Likewise.
+	(vcnt_p8): Likewise.
+	(vcntq_s8): Likewise.
+	(vcntq_u8): Likewise.
+	(vcntq_p8): Likewise.
+	(vrecpe_f32): Likewise.
+	(vrecpe_u32): Likewise.
+	(vrecpeq_f32): Likewise.
+	(vrecpeq_u32): Likewise.
+	(vrsqrte_f32): Likewise.
+	(vrsqrte_u32): Likewise.
+	(vrsqrteq_f32): Likewise.
+	(vrsqrteq_u32): Likewise.
+	(vget_lane_s8): Likewise.
+	(vget_lane_s16): Likewise.
+	(vget_lane_s32): Likewise.
+	(vget_lane_f32): Likewise.
+	(vget_lane_u8): Likewise.
+	(vget_lane_u16): Likewise.
+	(vget_lane_u32): Likewise.
+	(vget_lane_p8): Likewise.
+	(vget_lane_p16): Likewise.
+	(vget_lane_s64): Likewise.
+	(vget_lane_u64): Likewise.
+	(vgetq_lane_s8): Likewise.
+	(vgetq_lane_s16): Likewise.
+	(vgetq_lane_s32): Likewise.
+	(vgetq_lane_f32): Likewise.
+	(vgetq_lane_u8): Likewise.
+	(vgetq_lane_u16): Likewise.
+	(vgetq_lane_u32): Likewise.
+	(vgetq_lane_p8): Likewise.
+	(vgetq_lane_p16): Likewise.
+	(vgetq_lane_s64): Likewise.
+	(vgetq_lane_u64): Likewise.
+	(vcvt_s32_f32): Likewise.
+	(vcvt_f32_s32): Likewise.
+	(vcvt_f32_u32): Likewise.
+	(vcvt_u32_f32): Likewise.
+	(vcvtq_s32_f32): Likewise.
+	(vcvtq_f32_s32): Likewise.
+	(vcvtq_f32_u32): Likewise.
+	(vcvtq_u32_f32): Likewise.
+	(vcvt_n_s32_f32): Likewise.
+	(vcvt_n_f32_s32): Likewise.
+	(vcvt_n_f32_u32): Likewise.
+	(vcvt_n_u32_f32): Likewise.
+	(vcvtq_n_s32_f32): Likewise.
+	(vcvtq_n_f32_s32): Likewise.
+	(vcvtq_n_f32_u32): Likewise.
+	(vcvtq_n_u32_f32): Likewise.
+	(vmovn_s16): Likewise.
+	(vmovn_s32): Likewise.
+	(vmovn_s64): Likewise.
+	(vmovn_u16): Likewise.
+	(vmovn_u32): Likewise.
+	(vmovn_u64): Likewise.
+	(vqmovn_s16): Likewise.
+	(vqmovn_s32): Likewise.
+	(vqmovn_s64): Likewise.
+	(vqmovn_u16): Likewise.
+	(vqmovn_u32): Likewise.
+	(vqmovn_u64): Likewise.
+	(vqmovun_s16): Likewise.
+	(vqmovun_s32): Likewise.
+	(vqmovun_s64): Likewise.
+	(vmovl_s8): Likewise.
+	(vmovl_s16): Likewise.
+	(vmovl_s32): Likewise.
+	(vmovl_u8): Likewise.
+	(vmovl_u16): Likewise.
+	(vmovl_u32): Likewise.
+	(vmul_lane_s16): Likewise.
+	(vmul_lane_s32): Likewise.
+	(vmul_lane_f32): Likewise.
+	(vmul_lane_u16): Likewise.
+	(vmul_lane_u32): Likewise.
+	(vmulq_lane_s16): Likewise.
+	(vmulq_lane_s32): Likewise.
+	(vmulq_lane_f32): Likewise.
+	(vmulq_lane_u16): Likewise.
+	(vmulq_lane_u32): Likewise.
+	(vmla_lane_s16): Likewise.
+	(vmla_lane_s32): Likewise.
+	(vmla_lane_f32): Likewise.
+	(vmla_lane_u16): Likewise.
+	(vmla_lane_u32): Likewise.
+	(vmlaq_lane_s16): Likewise.
+	(vmlaq_lane_s32): Likewise.
+	(vmlaq_lane_f32): Likewise.
+	(vmlaq_lane_u16): Likewise.
+	(vmlaq_lane_u32): Likewise.
+	(vmlal_lane_s16): Likewise.
+	(vmlal_lane_s32): Likewise.
+	(vmlal_lane_u16): Likewise.
+	(vmlal_lane_u32): Likewise.
+	(vqdmlal_lane_s16): Likewise.
+	(vqdmlal_lane_s32): Likewise.
+	(vmls_lane_s16): Likewise.
+	(vmls_lane_s32): Likewise.
+	(vmls_lane_f32): Likewise.
+	(vmls_lane_u16): Likewise.
+	(vmls_lane_u32): Likewise.
+	(vmlsq_lane_s16): Likewise.
+	(vmlsq_lane_s32): Likewise.
+	(vmlsq_lane_f32): Likewise.
+	(vmlsq_lane_u16): Likewise.
+	(vmlsq_lane_u32): Likewise.
+	(vmlsl_lane_s16): Likewise.
+	(vmlsl_lane_s32): Likewise.
+	(vmlsl_lane_u16): Likewise.
+	(vmlsl_lane_u32): Likewise.
+	(vqdmlsl_lane_s16): Likewise.
+	(vqdmlsl_lane_s32): Likewise.
+	(vmull_lane_s16): Likewise.
+	(vmull_lane_s32): Likewise.
+	(vmull_lane_u16): Likewise.
+	(vmull_lane_u32): Likewise.
+	(vqdmull_lane_s16): Likewise.
+	(vqdmull_lane_s32): Likewise.
+	(vqdmulhq_lane_s16): Likewise.
+	(vqdmulhq_lane_s32): Likewise.
+	(vqdmulh_lane_s16): Likewise.
+	(vqdmulh_lane_s32): Likewise.
+	(vqrdmulhq_lane_s16): Likewise.
+	(vqrdmulhq_lane_s32): Likewise.
+	(vqrdmulh_lane_s16): Likewise.
+	(vqrdmulh_lane_s32): Likewise.
+	(vmul_n_s16): Likewise.
+	(vmul_n_s32): Likewise.
+	(vmul_n_f32): Likewise.
+	(vmul_n_u16): Likewise.
+	(vmul_n_u32): Likewise.
+	(vmulq_n_s16): Likewise.
+	(vmulq_n_s32): Likewise.
+	(vmulq_n_f32): Likewise.
+	(vmulq_n_u16): Likewise.
+	(vmulq_n_u32): Likewise.
+	(vmull_n_s16): Likewise.
+	(vmull_n_s32): Likewise.
+	(vmull_n_u16): Likewise.
+	(vmull_n_u32): Likewise.
+	(vqdmull_n_s16): Likewise.
+	(vqdmull_n_s32): Likewise.
+	(vqdmulhq_n_s16): Likewise.
+	(vqdmulhq_n_s32): Likewise.
+	(vqdmulh_n_s16): Likewise.
+	(vqdmulh_n_s32): Likewise.
+	(vqrdmulhq_n_s16): Likewise.
+	(vqrdmulhq_n_s32): Likewise.
+	(vqrdmulh_n_s16): Likewise.
+	(vqrdmulh_n_s32): Likewise.
+	(vmla_n_s16): Likewise.
+	(vmla_n_s32): Likewise.
+	(vmla_n_f32): Likewise.
+	(vmla_n_u16): Likewise.
+	(vmla_n_u32): Likewise.
+	(vmlaq_n_s16): Likewise.
+	(vmlaq_n_s32): Likewise.
+	(vmlaq_n_f32): Likewise.
+	(vmlaq_n_u16): Likewise.
+	(vmlaq_n_u32): Likewise.
+	(vmlal_n_s16): Likewise.
+	(vmlal_n_s32): Likewise.
+	(vmlal_n_u16): Likewise.
+	(vmlal_n_u32): Likewise.
+	(vqdmlal_n_s16): Likewise.
+	(vqdmlal_n_s32): Likewise.
+	(vmls_n_s16): Likewise.
+	(vmls_n_s32): Likewise.
+	(vmls_n_f32): Likewise.
+	(vmls_n_u16): Likewise.
+	(vmls_n_u32): Likewise.
+	(vmlsq_n_s16): Likewise.
+	(vmlsq_n_s32): Likewise.
+	(vmlsq_n_f32): Likewise.
+	(vmlsq_n_u16): Likewise.
+	(vmlsq_n_u32): Likewise.
+	(vmlsl_n_s16): Likewise.
+	(vmlsl_n_s32): Likewise.
+	(vmlsl_n_u16): Likewise.
+	(vmlsl_n_u32): Likewise.
+	(vqdmlsl_n_s16): Likewise.
+	(vqdmlsl_n_s32): Likewise.
+
 2014-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_new_rtx_costs, case PLUS, MINUS):
