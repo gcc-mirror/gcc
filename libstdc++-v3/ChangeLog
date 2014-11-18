@@ -1,3 +1,12 @@
+2014-11-18  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/43622
+	* config/abi/pre/float128.ver: New file.
+	* configure.ac: Use float128.ver when relevant.
+	* configure: Regenerate.
+	* testsuite/util/testsuite_abi.cc (check_version): Accept new
+	CXXABI_FLOAT128 version.
+
 2014-11-17  Jason Merrill  <jason@redhat.com>
 
 	* include/backward/binders.h: Suppress -Wdeprecated-declarations.

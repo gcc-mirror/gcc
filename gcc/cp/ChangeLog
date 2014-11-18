@@ -1,3 +1,8 @@
+2014-11-18  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/43622
+	* rtti.c (emit_support_tinfos): Handle __float128.
+
 2014-11-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63925
