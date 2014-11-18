@@ -1,3 +1,16 @@
+2014-11-18  Hale Wang  <hale.wang@arm.com>
+
+	* gcc.target/arm/small-multiply-m0-1.c: Only apply when
+	"-mcpu=cortex-m0/m1/m0plus.small-multiply".
+	* gcc.target/arm/small-multiply-m0-2.c: Likewise.
+	* gcc.target/arm/small-multiply-m0-3.c: Likewise.
+	* gcc.target/arm/small-multiply-m0plus-1.c: Likewise.
+	* gcc.target/arm/small-multiply-m0plus-2.c: Likewise.
+	* gcc.target/arm/small-multiply-m0plus-3.c: Likewise.
+	* gcc.target/arm/small-multiply-m1-1.c: Likewise.
+	* gcc.target/arm/small-multiply-m1-2.c: Likewise.
+	* gcc.target/arm/small-multiply-m1-3.c: Likewise.
+
 2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* g++.dg/abi/mangle-arm-crypto.C: New.
