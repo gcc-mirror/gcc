@@ -1564,6 +1564,8 @@ extern void protected_set_expr_location (tree, location_t);
 #define SET_TYPE_MODE(NODE, MODE) \
   (TYPE_CHECK (NODE)->type_common.mode = (MODE))
 
+extern machine_mode element_mode (const_tree t);
+
 /* The "canonical" type for this type node, which is used by frontends to
    compare the type for equality with another type.  If two types are
    equal (based on the semantics of the language), then they will have
@@ -3998,6 +4000,11 @@ extern int integer_pow2p (const_tree);
    with a nonzero value.  */
 
 extern int integer_nonzerop (const_tree);
+
+/* integer_truep (tree x) is nonzero if X is an integer constant of value 1 or
+   a vector where each element is an integer constant of value -1.  */
+
+extern int integer_truep (const_tree);
 
 extern bool cst_and_fits_in_hwi (const_tree);
 extern tree num_ending_zeros (const_tree);

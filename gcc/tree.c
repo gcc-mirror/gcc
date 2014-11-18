@@ -2275,6 +2275,20 @@ integer_nonzerop (const_tree expr)
 		  || integer_nonzerop (TREE_IMAGPART (expr)))));
 }
 
+/* Return 1 if EXPR is the integer constant one.  For vector,
+   return 1 if every piece is the integer constant minus one
+   (representing the value TRUE).  */
+
+int
+integer_truep (const_tree expr)
+{
+  STRIP_NOPS (expr);
+
+  if (TREE_CODE (expr) == VECTOR_CST)
+    return integer_all_onesp (expr);
+  return integer_onep (expr);
+}
+
 /* Return 1 if EXPR is the fixed-point constant zero.  */
 
 int
@@ -12308,6 +12322,20 @@ get_base_address (tree t)
     return NULL_TREE;
 
   return t;
+}
+
+/* Return the machine mode of T.  For vectors, returns the mode of the
+   inner type.  The main use case is to feed the result to HONOR_NANS,
+   avoiding the BLKmode that a direct TYPE_MODE (T) might return.  */
+
+machine_mode
+element_mode (const_tree t)
+{
+  if (!TYPE_P (t))
+    t = TREE_TYPE (t);
+  if (VECTOR_TYPE_P (t) || TREE_CODE (t) == COMPLEX_TYPE)
+    t = TREE_TYPE (t);
+  return TYPE_MODE (t);
 }
 
 #include "gt-tree.h"

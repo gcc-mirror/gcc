@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Generic tree predicates we inherit.  */
 (define_predicates
    integer_onep integer_zerop integer_all_onesp integer_minus_onep
-   integer_each_onep
+   integer_each_onep integer_truep
    real_zerop real_onep real_minus_onep
    CONSTANT_CLASS_P
    tree_expr_nonnegative_p)
@@ -73,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
    is volatile.  */
 (simplify
  (minus @0 @0)
- (if (!FLOAT_TYPE_P (type) || !HONOR_NANS (TYPE_MODE (type)))
+ (if (!FLOAT_TYPE_P (type) || !HONOR_NANS (element_mode (type)))
   { build_zero_cst (type); }))
 
 (simplify
@@ -86,24 +86,24 @@ along with GCC; see the file COPYING3.  If not see
    negative value by 0 gives -0, not +0.  */
 (simplify
  (mult @0 real_zerop@1)
- (if (!HONOR_NANS (TYPE_MODE (type))
-      && !HONOR_SIGNED_ZEROS (TYPE_MODE (type)))
+ (if (!HONOR_NANS (element_mode (type))
+      && !HONOR_SIGNED_ZEROS (element_mode (type)))
   @1))
 
 /* In IEEE floating point, x*1 is not equivalent to x for snans.
    Likewise for complex arithmetic with signed zeros.  */
 (simplify
  (mult @0 real_onep)
- (if (!HONOR_SNANS (TYPE_MODE (type))
-      && (!HONOR_SIGNED_ZEROS (TYPE_MODE (type))
+ (if (!HONOR_SNANS (element_mode (type))
+      && (!HONOR_SIGNED_ZEROS (element_mode (type))
           || !COMPLEX_FLOAT_TYPE_P (type)))
   (non_lvalue @0)))
 
 /* Transform x * -1.0 into -x.  */
 (simplify
  (mult @0 real_minus_onep)
-  (if (!HONOR_SNANS (TYPE_MODE (type))
-       && (!HONOR_SIGNED_ZEROS (TYPE_MODE (type))
+  (if (!HONOR_SNANS (element_mode (type))
+       && (!HONOR_SIGNED_ZEROS (element_mode (type))
            || !COMPLEX_FLOAT_TYPE_P (type)))
    (negate @0)))
 
@@ -117,44 +117,46 @@ along with GCC; see the file COPYING3.  If not see
 /* X / -1 is -X.  */
 (for div (trunc_div ceil_div floor_div round_div exact_div)
  (simplify
-   (div @0 INTEGER_CST@1)
-   (if (!TYPE_UNSIGNED (type)
-        && wi::eq_p (@1, -1))
+   (div @0 integer_minus_onep@1)
+   (if (!TYPE_UNSIGNED (type))
     (negate @0))))
 
 /* For unsigned integral types, FLOOR_DIV_EXPR is the same as
    TRUNC_DIV_EXPR.  Rewrite into the latter in this case.  */
 (simplify
  (floor_div @0 @1)
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
+ (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
+      && TYPE_UNSIGNED (type))
   (trunc_div @0 @1)))
 
 /* Optimize A / A to 1.0 if we don't care about
-   NaNs or Infinities.  Skip the transformation
-   for non-real operands.  */
+   NaNs or Infinities.  */
 (simplify
  (rdiv @0 @0)
- (if (SCALAR_FLOAT_TYPE_P (type)
-      && ! HONOR_NANS (TYPE_MODE (type))
-      && ! HONOR_INFINITIES (TYPE_MODE (type)))
-  { build_real (type, dconst1); })
- /* The complex version of the above A / A optimization.  */
- (if (COMPLEX_FLOAT_TYPE_P (type)
-      && ! HONOR_NANS (TYPE_MODE (TREE_TYPE (type)))
-      && ! HONOR_INFINITIES (TYPE_MODE (TREE_TYPE (type))))
-  { build_complex (type, build_real (TREE_TYPE (type), dconst1),
-		   build_real (TREE_TYPE (type), dconst0)); }))
+ (if (FLOAT_TYPE_P (type)
+      && ! HONOR_NANS (element_mode (type))
+      && ! HONOR_INFINITIES (element_mode (type)))
+  { build_one_cst (type); }))
+
+/* Optimize -A / A to -1.0 if we don't care about
+   NaNs or Infinities.  */
+(simplify
+ (rdiv:c @0 (negate @0))
+ (if (FLOAT_TYPE_P (type)
+      && ! HONOR_NANS (element_mode (type))
+      && ! HONOR_INFINITIES (element_mode (type)))
+  { build_minus_one_cst (type); }))
 
 /* In IEEE floating point, x/1 is not equivalent to x for snans.  */
 (simplify
  (rdiv @0 real_onep)
- (if (!HONOR_SNANS (TYPE_MODE (type)))
+ (if (!HONOR_SNANS (element_mode (type)))
   (non_lvalue @0)))
 
 /* In IEEE floating point, x/-1 is not equivalent to -x for snans.  */
 (simplify
  (rdiv @0 real_minus_onep)
- (if (!HONOR_SNANS (TYPE_MODE (type)))
+ (if (!HONOR_SNANS (element_mode (type)))
   (negate @0)))
 
 /* If ARG1 is a constant, we can convert this to a multiply by the
@@ -192,9 +194,8 @@ along with GCC; see the file COPYING3.  If not see
   { build_zero_cst (type); })
  /* X % -1 is zero.  */
  (simplify
-  (mod @0 INTEGER_CST@1)
-  (if (!TYPE_UNSIGNED (type)
-       && wi::eq_p (@1, -1))
+  (mod @0 integer_minus_onep@1)
+  (if (!TYPE_UNSIGNED (type))
    { build_zero_cst (type); })))
 
 /* X % -C is the same as X % C.  */
@@ -309,14 +310,11 @@ along with GCC; see the file COPYING3.  If not see
 (match (logical_inverted_value @0)
  (bit_not truth_valued_p@0))
 (match (logical_inverted_value @0)
- (eq @0 integer_zerop)
- (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))))
+ (eq @0 integer_zerop))
 (match (logical_inverted_value @0)
- (ne truth_valued_p@0 integer_onep)
- (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))))
+ (ne truth_valued_p@0 integer_truep))
 (match (logical_inverted_value @0)
- (bit_xor truth_valued_p@0 integer_onep)
- (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))))
+ (bit_xor truth_valued_p@0 integer_truep))
 
 /* X & !X -> 0.  */
 (simplify
@@ -493,7 +491,7 @@ along with GCC; see the file COPYING3.  If not see
    (simplify
     (minus (convert (add @0 @1))
      (convert @0))
-    (if (TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@1))
+    (if (element_precision (type) <= element_precision (TREE_TYPE (@1))
 	 /* For integer types, if A has a smaller type
 	    than T the result depends on the possible
 	    overflow in P + A.
@@ -626,19 +624,19 @@ along with GCC; see the file COPYING3.  If not see
       int inside_int = INTEGRAL_TYPE_P (inside_type);
       int inside_ptr = POINTER_TYPE_P (inside_type);
       int inside_float = FLOAT_TYPE_P (inside_type);
-      int inside_vec = TREE_CODE (inside_type) == VECTOR_TYPE;
+      int inside_vec = VECTOR_TYPE_P (inside_type);
       unsigned int inside_prec = TYPE_PRECISION (inside_type);
       int inside_unsignedp = TYPE_UNSIGNED (inside_type);
       int inter_int = INTEGRAL_TYPE_P (inter_type);
       int inter_ptr = POINTER_TYPE_P (inter_type);
       int inter_float = FLOAT_TYPE_P (inter_type);
-      int inter_vec = TREE_CODE (inter_type) == VECTOR_TYPE;
+      int inter_vec = VECTOR_TYPE_P (inter_type);
       unsigned int inter_prec = TYPE_PRECISION (inter_type);
       int inter_unsignedp = TYPE_UNSIGNED (inter_type);
       int final_int = INTEGRAL_TYPE_P (type);
       int final_ptr = POINTER_TYPE_P (type);
       int final_float = FLOAT_TYPE_P (type);
-      int final_vec = TREE_CODE (type) == VECTOR_TYPE;
+      int final_vec = VECTOR_TYPE_P (type);
       unsigned int final_prec = TYPE_PRECISION (type);
       int final_unsignedp = TYPE_UNSIGNED (type);
     }
@@ -666,8 +664,8 @@ along with GCC; see the file COPYING3.  If not see
 	&& inter_prec >= inside_prec
 	&& (inter_float || inter_vec
 	    || inter_unsignedp == inside_unsignedp)
-	&& ! (final_prec != GET_MODE_PRECISION (TYPE_MODE (type))
-	      && TYPE_MODE (type) == TYPE_MODE (inter_type))
+	&& ! (final_prec != GET_MODE_PRECISION (element_mode (type))
+	      && element_mode (type) == element_mode (inter_type))
 	&& ! final_ptr
 	&& (! final_vec || inter_prec == inside_prec))
     (ocvt @0))
@@ -845,12 +843,12 @@ along with GCC; see the file COPYING3.  If not see
  /* A ? B : B -> B.  */
  (simplify
   (cnd @0 @1 @1)
-  @1))
+  @1)
 
-/* !A ? B : C -> A ? C : B.  */
-(simplify
- (cond (logical_inverted_value truth_valued_p@0) @1 @2)
- (cond @0 @2 @1))
+ /* !A ? B : C -> A ? C : B.  */
+ (simplify
+  (cnd (logical_inverted_value truth_valued_p@0) @1 @2)
+  (cnd @0 @2 @1)))
 
 
 /* Simplifications of comparisons.  */
@@ -876,17 +874,16 @@ along with GCC; see the file COPYING3.  If not see
       a computed operator in the replacement tree thus we have
       to play the trick below.  */
    (with { enum tree_code ic = invert_tree_comparison
-             (cmp, HONOR_NANS (TYPE_MODE (TREE_TYPE (@0)))); }
+             (cmp, HONOR_NANS (element_mode (@0))); }
     (if (ic == icmp)
      (icmp @0 @1))
     (if (ic == ncmp)
      (ncmp @0 @1)))))
  (simplify
-  (bit_xor (cmp @0 @1) integer_onep)
-  (if (INTEGRAL_TYPE_P (type))
-   (with { enum tree_code ic = invert_tree_comparison
-             (cmp, HONOR_NANS (TYPE_MODE (TREE_TYPE (@0)))); }
-    (if (ic == icmp)
-     (icmp @0 @1))
-    (if (ic == ncmp)
-     (ncmp @0 @1))))))
+  (bit_xor (cmp @0 @1) integer_truep)
+  (with { enum tree_code ic = invert_tree_comparison
+            (cmp, HONOR_NANS (element_mode (@0))); }
+   (if (ic == icmp)
+    (icmp @0 @1))
+   (if (ic == ncmp)
+    (ncmp @0 @1)))))
