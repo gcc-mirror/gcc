@@ -35,6 +35,148 @@
 #include "ggc.h"
 #include "arm-protos.h"
 
+#define SIMD_MAX_BUILTIN_ARGS 5
+
+enum arm_type_qualifiers
+{
+  /* T foo.  */
+  qualifier_none = 0x0,
+  /* unsigned T foo.  */
+  qualifier_unsigned = 0x1, /* 1 << 0  */
+  /* const T foo.  */
+  qualifier_const = 0x2, /* 1 << 1  */
+  /* T *foo.  */
+  qualifier_pointer = 0x4, /* 1 << 2  */
+  /* Used when expanding arguments if an operand could
+     be an immediate.  */
+  qualifier_immediate = 0x8, /* 1 << 3  */
+  qualifier_maybe_immediate = 0x10, /* 1 << 4  */
+  /* void foo (...).  */
+  qualifier_void = 0x20, /* 1 << 5  */
+  /* Some patterns may have internal operands, this qualifier is an
+     instruction to the initialisation code to skip this operand.  */
+  qualifier_internal = 0x40, /* 1 << 6  */
+  /* Some builtins should use the T_*mode* encoded in a simd_builtin_datum
+     rather than using the type of the operand.  */
+  qualifier_map_mode = 0x80, /* 1 << 7  */
+  /* qualifier_pointer | qualifier_map_mode  */
+  qualifier_pointer_map_mode = 0x84,
+  /* qualifier_const_pointer | qualifier_map_mode  */
+  qualifier_const_pointer_map_mode = 0x86,
+  /* Polynomial types.  */
+  qualifier_poly = 0x100
+};
+
+/*  The qualifier_internal allows generation of a unary builtin from
+    a pattern with a third pseudo-operand such as a match_scratch.
+    T (T).  */
+static enum arm_type_qualifiers
+arm_unop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_internal };
+#define CONVERT_QUALIFIERS (arm_unop_qualifiers)
+#define COPYSIGNF_QUALIFIERS (arm_unop_qualifiers)
+#define CREATE_QUALIFIERS (arm_unop_qualifiers)
+#define DUP_QUALIFIERS (arm_unop_qualifiers)
+#define FLOAT_WIDEN_QUALIFIERS (arm_unop_qualifiers)
+#define FLOAT_NARROW_QUALIFIERS (arm_unop_qualifiers)
+#define REINTERP_QUALIFIERS (arm_unop_qualifiers)
+#define RINT_QUALIFIERS (arm_unop_qualifiers)
+#define SPLIT_QUALIFIERS (arm_unop_qualifiers)
+#define UNOP_QUALIFIERS (arm_unop_qualifiers)
+
+/* unsigned T (unsigned T).  */
+static enum arm_type_qualifiers
+arm_bswap_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned };
+#define BSWAP_QUALIFIERS (arm_bswap_qualifiers)
+
+/* T (T, T [maybe_immediate]).  */
+static enum arm_type_qualifiers
+arm_binop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_maybe_immediate };
+#define BINOP_QUALIFIERS (arm_binop_qualifiers)
+#define FIXCONV_QUALIFIERS (arm_binop_qualifiers)
+#define SCALARMUL_QUALIFIERS (arm_binop_qualifiers)
+#define SCALARMULL_QUALIFIERS (arm_binop_qualifiers)
+#define SCALARMULH_QUALIFIERS (arm_binop_qualifiers)
+
+/* T (T, T, T).  */
+static enum arm_type_qualifiers
+arm_ternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_none };
+#define TERNOP_QUALIFIERS (arm_ternop_qualifiers)
+#define SELECT_QUALIFIERS (arm_ternop_qualifiers)
+#define VTBX_QUALIFIERS (arm_ternop_qualifiers)
+
+/* T (T, immediate).  */
+static enum arm_type_qualifiers
+arm_getlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_immediate };
+#define GETLANE_QUALIFIERS (arm_getlane_qualifiers)
+#define SHIFTIMM_QUALIFIERS (arm_getlane_qualifiers)
+
+/* T (T, T, T, immediate).  */
+static enum arm_type_qualifiers
+arm_lanemac_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none,
+      qualifier_none, qualifier_immediate };
+#define LANEMAC_QUALIFIERS (arm_lanemac_qualifiers)
+#define SCALARMAC_QUALIFIERS (arm_lanemac_qualifiers)
+
+/* T (T, T, immediate).  */
+static enum arm_type_qualifiers
+arm_setlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate };
+#define LANEMUL_QUALIFIERS (arm_setlane_qualifiers)
+#define LANEMULH_QUALIFIERS (arm_setlane_qualifiers)
+#define LANEMULL_QUALIFIERS (arm_setlane_qualifiers)
+#define SETLANE_QUALIFIERS (arm_setlane_qualifiers)
+#define SHIFTACC_QUALIFIERS (arm_setlane_qualifiers)
+#define SHIFTINSERT_QUALIFIERS (arm_setlane_qualifiers)
+
+/* T (T, T).  */
+static enum arm_type_qualifiers
+arm_combine_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none };
+#define COMBINE_QUALIFIERS (arm_combine_qualifiers)
+#define VTBL_QUALIFIERS (arm_combine_qualifiers)
+
+/* T ([T element type] *).  */
+static enum arm_type_qualifiers
+arm_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_const_pointer_map_mode };
+#define LOAD1_QUALIFIERS (arm_load1_qualifiers)
+#define LOADSTRUCT_QUALIFIERS (arm_load1_qualifiers)
+
+/* T ([T element type] *, T, immediate).  */
+static enum arm_type_qualifiers
+arm_load1_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_const_pointer_map_mode,
+      qualifier_none, qualifier_immediate };
+#define LOAD1LANE_QUALIFIERS (arm_load1_lane_qualifiers)
+#define LOADSTRUCTLANE_QUALIFIERS (arm_load1_lane_qualifiers)
+
+/* The first argument (return type) of a store should be void type,
+   which we represent with qualifier_void.  Their first operand will be
+   a DImode pointer to the location to store to, so we must use
+   qualifier_map_mode | qualifier_pointer to build a pointer to the
+   element type of the vector.
+
+   void ([T element type] *, T).  */
+static enum arm_type_qualifiers
+arm_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_pointer_map_mode, qualifier_none };
+#define STORE1_QUALIFIERS (arm_store1_qualifiers)
+#define STORESTRUCT_QUALIFIERS (arm_store1_qualifiers)
+
+   /* void ([T element type] *, T, immediate).  */
+static enum arm_type_qualifiers
+arm_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_pointer_map_mode,
+      qualifier_none, qualifier_immediate };
+#define STORE1LANE_QUALIFIERS (arm_storestruct_lane_qualifiers)
+#define STORESTRUCTLANE_QUALIFIERS (arm_storestruct_lane_qualifiers)
+
 typedef enum {
   T_V8QI,
   T_V4HI,
@@ -129,12 +271,13 @@ typedef struct {
   const neon_builtin_type_mode mode;
   const enum insn_code code;
   unsigned int fcode;
+  enum arm_type_qualifiers *qualifiers;
 } neon_builtin_datum;
 
 #define CF(N,X) CODE_FOR_neon_##N##X
 
 #define VAR1(T, N, A) \
-  {#N, NEON_##T, UP (A), CF (N, A), 0},
+  {#N, NEON_##T, UP (A), CF (N, A), 0, T##_QUALIFIERS},
 #define VAR2(T, N, A, B) \
   VAR1 (T, N, A) \
   VAR1 (T, N, B)
