@@ -1,5 +1,8 @@
 2014-11-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/63925
+	* constexpr.c (cxx_eval_increment_expression): Use POINTER_PLUS_EXPR.
+
 	PR c++/63934
 	* constexpr.c (cxx_eval_call_expression): Check DECL_CONSTRUCTOR_P
 	rather than VOID_TYPE_P.
