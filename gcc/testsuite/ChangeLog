@@ -1,5 +1,11 @@
 2014-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/55443
+	* g++.dg/cpp0x/noexcept26.C: New.
+	* g++.dg/cpp0x/noexcept27.C: Likewise.
+
+2014-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/60245
 	* g++.dg/cpp0x/constexpr-60245.C: New.
 
