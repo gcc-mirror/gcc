@@ -1,6 +1,7 @@
 /* { dg-do assemble } */
 /* { dg-require-effective-target 3dnow } */
 /* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow" } */
+/* { dg-add-options bind_pic_locally } */
 
 /* Test that the intrinsics compile with optimization.  All of them are
    defined as inline functions in mmintrin.h that reference the proper

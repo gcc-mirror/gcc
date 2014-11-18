@@ -1,6 +1,7 @@
 // PR c++/50243
 // { dg-do compile }
 // { dg-options "-O" }
+// { dg-add-options bind_pic_locally }
 // { dg-final { scan-assembler-not "_ZTV.A" } }
 
 void foo ();

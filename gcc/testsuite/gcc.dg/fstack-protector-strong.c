@@ -3,6 +3,11 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* rs6000-*-* s390x-*-* } } */
 /* { dg-options "-O2 -fstack-protector-strong" } */
 
+/* This test checks the presence of __stack_chk_fail function in assembler.
+ * Compiler generates _stack_chk_fail_local (wrapper) calls instead for PIC.
+ */
+/* { dg-require-effective-target nonpic } */
+
 #include<string.h>
 
 extern int g0;

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -finline-functions -finline-small-functions -Wuninitialized" }  */
-
+/* { dg-add-options bind_pic_locally } */
 
 struct SQObjectPtr
 {

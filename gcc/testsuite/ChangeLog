@@ -1,3 +1,40 @@
+2014-11-18  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* c-c++-common/tm/safe-3.c: Add bind_pic_locally.
+	* g++.dg/ipa/devirt-15.C: Ditto.
+	* g++.dg/ipa/devirt-7.C: Ditto.
+	* g++.dg/ipa/pr60600.C: Ditto.
+	* g++.dg/opt/vt2.C: Ditto.
+	* g++.dg/opt/vt4.C: Ditto.
+	* g++.dg/pr48484.C: Ditto.
+	* g++.dg/tm/pr47746.C: Ditto.
+	* g++.dg/tree-ssa/pr57380.C: Ditto.
+	* gcc.dg/ipa/inline-4.c: Ditto.
+	* gcc.dg/ipa/inlinehint-1.c: Ditto.
+	* gcc.dg/ipa/inlinehint-2.c: Ditto.
+	* gcc.dg/ipa/inlinehint-3.c: Ditto.
+	* gcc.dg/pr47276.c: Ditto.
+	* gcc.dg/pure-2.c: Ditto.
+	* gcc.dg/tm/nested-2.c: Ditto.
+	* gcc.dg/tree-ssa/alias-29.c: Ditto.
+	* gcc.target/i386/3dnow-1.c: Ditto.
+	* gcc.target/i386/3dnow-2.c: Ditto.
+	* gcc.target/i386/3dnowA-1.c: Ditto.
+	* gcc.target/i386/3dnowA-2.c: Ditto.
+	* gcc.target/i386/avx-1.c: Ditto.
+	* gcc.target/i386/avx-2.c: Ditto.
+	* gcc.target/i386/memcpy-1.c: Ditto.
+	* gcc.target/i386/mmx-1.c: Ditto.
+	* gcc.target/i386/mmx-2.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-22a.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-24.c: Ditto.
+	* gcc.target/i386/vect-double-1.c: Ditto.
+	* g++.dg/fstack-protector-strong.C: Add target nonpic.
+	* gcc.dg/fstack-protector-strong.c: Ditto.
+
 2014-11-18  Hale Wang  <hale.wang@arm.com>
 
 	* gcc.target/arm/small-multiply-m0-1.c: Only apply when
