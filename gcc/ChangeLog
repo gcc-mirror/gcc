@@ -1,3 +1,16 @@
+2014-11-18  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree.c (element_mode, integer_truep): New functions.
+	* tree.h (element_mode, integer_truep): Declare them.
+	* fold-const.c (negate_expr_p, fold_negate_expr, combine_comparisons,
+	fold_cond_expr_with_comparison, fold_real_zero_addition_p,
+	fold_comparison, fold_ternary_loc, tree_call_nonnegative_warnv_p,
+	fold_strip_sign_ops): Use element_mode.
+	(fold_binary_loc): Use element_mode and element_precision.
+	* match.pd: Use integer_truep, element_mode, element_precision,
+	VECTOR_TYPE_P and build_one_cst. Extend some transformations to
+	vectors. Simplify A/-A.
+
 2014-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (unaligned_loaddi): Use std::swap instead of
