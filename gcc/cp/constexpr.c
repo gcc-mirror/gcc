@@ -1328,7 +1328,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 					    addr, non_constant_p, overflow_p,
 					    &jump_target);
 
-	      if (VOID_TYPE_P (TREE_TYPE (res)))
+	      if (DECL_CONSTRUCTOR_P (fun))
 		/* This can be null for a subobject constructor call, in
 		   which case what we care about is the initialization
 		   side-effects rather than the value.  We could get at the
@@ -1367,7 +1367,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	{
 	  /* If this was a call to initialize an object, set the type of
 	     the CONSTRUCTOR to the type of that object.  */
-	  if (DECL_CONSTRUCTOR_P (fun))
+	  if (DECL_CONSTRUCTOR_P (fun) && !use_new_call)
 	    {
 	      tree ob_arg = get_nth_callarg (t, 0);
 	      STRIP_NOPS (ob_arg);

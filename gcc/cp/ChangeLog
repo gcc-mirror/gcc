@@ -1,5 +1,9 @@
 2014-11-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/63934
+	* constexpr.c (cxx_eval_call_expression): Check DECL_CONSTRUCTOR_P
+	rather than VOID_TYPE_P.
+
 	* pt.c (instantiate_template_1): Use tsubst_aggr_type for context.
 
 	PR c++/58102
