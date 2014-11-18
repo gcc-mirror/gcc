@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fgnu-tm" } */
+/* { dg-add-options bind_pic_locally } */
 
 void foobar(void)
 {

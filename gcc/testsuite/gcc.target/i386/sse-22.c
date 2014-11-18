@@ -1,6 +1,7 @@
 /* Same as sse-14, except converted to use #pragma GCC option.  */
 /* { dg-do compile } */
 /* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8" } */
+/* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
 

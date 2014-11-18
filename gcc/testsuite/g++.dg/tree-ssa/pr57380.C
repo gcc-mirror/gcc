@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-phiopt1" } */
+/* { dg-add-options bind_pic_locally } */
 
 struct my_array {
     int data[4];

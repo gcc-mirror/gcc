@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8" } */
+/* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
 
