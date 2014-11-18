@@ -1,3 +1,14 @@
+2014-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63813
+	* c-ubsan.c (ubsan_maybe_instrument_reference_or_call): Change type
+	argument to ptype, set type to TREE_TYPE (ptype).  Don't call
+	get_pointer_alignment for non-pointers.  Use ptype, or if it is
+	reference type, corresponding pointer type, as type of kind
+	argument.
+	(ubsan_maybe_instrument_reference,
+	ubsan_maybe_instrument_member_call): Adjust callers.
+
 2014-11-15  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/63884

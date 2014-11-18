@@ -1,5 +1,8 @@
 2014-11-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/63813
+	* g++.dg/ubsan/pr63813.C: New test.
+
 	PR tree-optimization/61042
 	* gcc.c-torture/compile/pr61042.c: New test.
 
