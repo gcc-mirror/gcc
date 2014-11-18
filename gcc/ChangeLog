@@ -1,3 +1,8 @@
+2014-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_new_rtx_costs, case PLUS, MINUS):
+	Add cost of alu.arith in simple SImode case.
+
 2014-11-18  Jiong Wang  <jiong.wang@arm.com>
 
 	* lra-eliminations.c (update_reg_eliminate): Relax gcc_assert for fixed
