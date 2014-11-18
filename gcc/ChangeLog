@@ -1,5 +1,11 @@
 2014-11-18  Martin Liska  <mliska@suse.cz>
 
+	* bb-reorder.c (mark_bb_visited): New fibonacci_heap is used.
+	(find_traces): Likewise.
+	(find_traces_1_round): Likewise.
+
+2014-11-18  Martin Liska  <mliska@suse.cz>
+
 	* fibonacci_heap.h: New file.
 	(fibonacci_heap::insert): Created from fibheap_insert.
 	(fibonacci_heap::empty): Created from fibheap_empty.

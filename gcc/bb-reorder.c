@@ -87,7 +87,6 @@
 #include "regs.h"
 #include "flags.h"
 #include "output.h"
-#include "fibheap.h"
 #include "target.h"
 #include "hashtab.h"
 #include "hash-set.h"
@@ -120,6 +119,7 @@
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "except.h"
+#include "fibonacci_heap.h"
 
 /* The number of rounds.  In most cases there will only be 4 rounds, but
    when partitioning hot and cold basic blocks into separate sections of
@@ -153,6 +153,9 @@ static const int exec_threshold[N_ROUNDS] = {500, 200, 50, 0, 0};
    block the edge destination is not duplicated while connecting traces.  */
 #define DUPLICATION_THRESHOLD 100
 
+typedef fibonacci_heap <long, basic_block_def> bb_heap_t;
+typedef fibonacci_node <long, basic_block_def> bb_heap_node_t;
+
 /* Structure to hold needed information for each basic block.  */
 typedef struct bbro_basic_block_data_def
 {
@@ -169,10 +172,10 @@ typedef struct bbro_basic_block_data_def
   int visited;
 
   /* Which heap is BB in (if any)?  */
-  fibheap_t heap;
+  bb_heap_t *heap;
 
   /* Which heap node is BB in (if any)?  */
-  fibnode_t node;
+  bb_heap_node_t *node;
 } bbro_basic_block_data;
 
 /* The current size of the following dynamic array.  */
@@ -210,9 +213,9 @@ static void find_traces (int *, struct trace *);
 static basic_block rotate_loop (edge, struct trace *, int);
 static void mark_bb_visited (basic_block, int);
 static void find_traces_1_round (int, int, gcov_type, struct trace *, int *,
-				 int, fibheap_t *, int);
+				 int, bb_heap_t **, int);
 static basic_block copy_bb (basic_block, edge, basic_block, int);
-static fibheapkey_t bb_to_key (basic_block);
+static long bb_to_key (basic_block);
 static bool better_edge_p (const_basic_block, const_edge, int, int, int, int,
 			   const_edge);
 static bool connect_better_edge_p (const_edge, bool, int, const_edge,
@@ -238,7 +241,7 @@ mark_bb_visited (basic_block bb, int trace)
   bbd[bb->index].visited = trace;
   if (bbd[bb->index].heap)
     {
-      fibheap_delete_node (bbd[bb->index].heap, bbd[bb->index].node);
+      bbd[bb->index].heap->delete_node (bbd[bb->index].node);
       bbd[bb->index].heap = NULL;
       bbd[bb->index].node = NULL;
     }
@@ -283,7 +286,7 @@ find_traces (int *n_traces, struct trace *traces)
   int number_of_rounds;
   edge e;
   edge_iterator ei;
-  fibheap_t heap;
+  bb_heap_t *heap = new bb_heap_t (LONG_MIN);
 
   /* Add one extra round of trace collection when partitioning hot/cold
      basic blocks into separate sections.  The last round is for all the
@@ -292,14 +295,12 @@ find_traces (int *n_traces, struct trace *traces)
   number_of_rounds = N_ROUNDS - 1;
 
   /* Insert entry points of function into heap.  */
-  heap = fibheap_new ();
   max_entry_frequency = 0;
   max_entry_count = 0;
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     {
       bbd[e->dest->index].heap = heap;
-      bbd[e->dest->index].node = fibheap_insert (heap, bb_to_key (e->dest),
-						    e->dest);
+      bbd[e->dest->index].node = heap->insert (bb_to_key (e->dest), e->dest);
       if (e->dest->frequency > max_entry_frequency)
 	max_entry_frequency = e->dest->frequency;
       if (e->dest->count > max_entry_count)
@@ -324,7 +325,7 @@ find_traces (int *n_traces, struct trace *traces)
 			   count_threshold, traces, n_traces, i, &heap,
 			   number_of_rounds);
     }
-  fibheap_delete (heap);
+  delete heap;
 
   if (dump_file)
     {
@@ -470,22 +471,22 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 static void
 find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		     struct trace *traces, int *n_traces, int round,
-		     fibheap_t *heap, int number_of_rounds)
+		     bb_heap_t **heap, int number_of_rounds)
 {
   /* Heap for discarded basic blocks which are possible starting points for
      the next round.  */
-  fibheap_t new_heap = fibheap_new ();
+  bb_heap_t *new_heap = new bb_heap_t (LONG_MIN);
   bool for_size = optimize_function_for_size_p (cfun);
 
-  while (!fibheap_empty (*heap))
+  while (!(*heap)->empty ())
     {
       basic_block bb;
       struct trace *trace;
       edge best_edge, e;
-      fibheapkey_t key;
+      long key;
       edge_iterator ei;
 
-      bb = (basic_block) fibheap_extract_min (*heap);
+      bb = (*heap)->extract_min ();
       bbd[bb->index].heap = NULL;
       bbd[bb->index].node = NULL;
 
@@ -503,7 +504,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	{
 	  int key = bb_to_key (bb);
 	  bbd[bb->index].heap = new_heap;
-	  bbd[bb->index].node = fibheap_insert (new_heap, key, bb);
+	  bbd[bb->index].node = new_heap->insert (key, bb);
 
 	  if (dump_file)
 	    fprintf (dump_file,
@@ -633,23 +634,23 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	      if (bbd[e->dest->index].heap)
 		{
 		  /* E->DEST is already in some heap.  */
-		  if (key != bbd[e->dest->index].node->key)
+		  if (key != bbd[e->dest->index].node->get_key ())
 		    {
 		      if (dump_file)
 			{
 			  fprintf (dump_file,
 				   "Changing key for bb %d from %ld to %ld.\n",
 				   e->dest->index,
-				   (long) bbd[e->dest->index].node->key,
+				   (long) bbd[e->dest->index].node->get_key (),
 				   key);
 			}
-		      fibheap_replace_key (bbd[e->dest->index].heap,
-					   bbd[e->dest->index].node, key);
+		      bbd[e->dest->index].heap->decrease_key
+		        (bbd[e->dest->index].node, key);
 		    }
 		}
 	      else
 		{
-		  fibheap_t which_heap = *heap;
+		  bb_heap_t *which_heap = *heap;
 
 		  prob = e->probability;
 		  freq = EDGE_FREQUENCY (e);
@@ -671,8 +672,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		    }
 
 		  bbd[e->dest->index].heap = which_heap;
-		  bbd[e->dest->index].node = fibheap_insert (which_heap,
-								key, e->dest);
+		  bbd[e->dest->index].node = which_heap->insert (key, e->dest);
 
 		  if (dump_file)
 		    {
@@ -803,24 +803,23 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	  if (bbd[e->dest->index].heap)
 	    {
 	      key = bb_to_key (e->dest);
-	      if (key != bbd[e->dest->index].node->key)
+	      if (key != bbd[e->dest->index].node->get_key ())
 		{
 		  if (dump_file)
 		    {
 		      fprintf (dump_file,
 			       "Changing key for bb %d from %ld to %ld.\n",
 			       e->dest->index,
-			       (long) bbd[e->dest->index].node->key, key);
+			       (long) bbd[e->dest->index].node->get_key (), key);
 		    }
-		  fibheap_replace_key (bbd[e->dest->index].heap,
-				       bbd[e->dest->index].node,
-				       key);
+		  bbd[e->dest->index].heap->decrease_key
+		    (bbd[e->dest->index].node, key);
 		}
 	    }
 	}
     }
 
-  fibheap_delete (*heap);
+  delete (*heap);
 
   /* "Return" the new heap.  */
   *heap = new_heap;
@@ -885,7 +884,7 @@ copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
 
 /* Compute and return the key (for the heap) of the basic block BB.  */
 
-static fibheapkey_t
+static long
 bb_to_key (basic_block bb)
 {
   edge e;
