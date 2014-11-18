@@ -625,598 +625,552 @@ static GTY(()) tree arm_builtin_decls[ARM_BUILTIN_MAX];
 #define NUM_DREG_TYPES 5
 #define NUM_QREG_TYPES 6
 
+/* Internal scalar builtin types.  These types are used to support
+   neon intrinsic builtins.  They are _not_ user-visible types.  Therefore
+   the mangling for these types are implementation defined.  */
+const char *arm_scalar_builtin_types[] = {
+  "__builtin_neon_qi",
+  "__builtin_neon_hi",
+  "__builtin_neon_si",
+  "__builtin_neon_sf",
+  "__builtin_neon_di",
+  "__builtin_neon_df",
+  "__builtin_neon_ti",
+  "__builtin_neon_uqi",
+  "__builtin_neon_uhi",
+  "__builtin_neon_usi",
+  "__builtin_neon_udi",
+  "__builtin_neon_ei",
+  "__builtin_neon_oi",
+  "__builtin_neon_ci",
+  "__builtin_neon_xi",
+  NULL
+};
+
+#define ENTRY(E, M, Q, S, T, G) E,
+enum arm_simd_type
+{
+#include "arm-simd-builtin-types.def"
+  __TYPE_FINAL
+};
+#undef ENTRY
+
+struct arm_simd_type_info
+{
+  enum arm_simd_type type;
+
+  /* Internal type name.  */
+  const char *name;
+
+  /* Internal type name(mangled).  The mangled names conform to the
+     AAPCS (see "Procedure Call Standard for the ARM Architecture",
+     Appendix A).  To qualify for emission with the mangled names defined in
+     that document, a vector type must not only be of the correct mode but also
+     be of the correct internal Neon vector type (e.g. __simd64_int8_t);
+     these types are registered by arm_init_simd_builtin_types ().  In other
+     words, vector types defined in other ways e.g. via vector_size attribute
+     will get default mangled names.  */
+  const char *mangle;
+
+  /* Internal type.  */
+  tree itype;
+
+  /* Element type.  */
+  tree eltype;
+
+  /* Machine mode the internal type maps to.  */
+  machine_mode mode;
+
+  /* Qualifiers.  */
+  enum arm_type_qualifiers q;
+};
+
+#define ENTRY(E, M, Q, S, T, G)		\
+  {E,					\
+   "__simd" #S "_" #T "_t",		\
+   #G "__simd" #S "_" #T "_t",		\
+   NULL_TREE, NULL_TREE, M##mode, qualifier_##Q},
+static struct arm_simd_type_info arm_simd_types [] = {
+#include "arm-simd-builtin-types.def"
+};
+#undef ENTRY
+
+static tree arm_simd_floatHF_type_node = NULL_TREE;
+static tree arm_simd_intOI_type_node = NULL_TREE;
+static tree arm_simd_intEI_type_node = NULL_TREE;
+static tree arm_simd_intCI_type_node = NULL_TREE;
+static tree arm_simd_intXI_type_node = NULL_TREE;
+static tree arm_simd_polyQI_type_node = NULL_TREE;
+static tree arm_simd_polyHI_type_node = NULL_TREE;
+static tree arm_simd_polyDI_type_node = NULL_TREE;
+static tree arm_simd_polyTI_type_node = NULL_TREE;
+
+static const char *
+arm_mangle_builtin_scalar_type (const_tree type)
+{
+  int i = 0;
+
+  while (arm_scalar_builtin_types[i] != NULL)
+    {
+      const char *name = arm_scalar_builtin_types[i];
+
+      if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	  && DECL_NAME (TYPE_NAME (type))
+	  && !strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))), name))
+	return arm_scalar_builtin_types[i];
+      i++;
+    }
+  return NULL;
+}
+
+static const char *
+arm_mangle_builtin_vector_type (const_tree type)
+{
+  int i;
+  int nelts = sizeof (arm_simd_types) / sizeof (arm_simd_types[0]);
+
+  for (i = 0; i < nelts; i++)
+    if (arm_simd_types[i].mode ==  TYPE_MODE (type)
+	&& TYPE_NAME (type)
+	&& TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	&& DECL_NAME (TYPE_NAME (type))
+	&& !strcmp
+	     (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))),
+	      arm_simd_types[i].name))
+      return arm_simd_types[i].mangle;
+
+  return NULL;
+}
+
+const char *
+arm_mangle_builtin_type (const_tree type)
+{
+  const char *mangle;
+  /* Walk through all the AArch64 builtins types tables to filter out the
+     incoming type.  */
+  if ((mangle = arm_mangle_builtin_vector_type (type))
+      || (mangle = arm_mangle_builtin_scalar_type (type)))
+    return mangle;
+
+  return NULL;
+}
+
+static tree
+arm_simd_builtin_std_type (enum machine_mode mode,
+			   enum arm_type_qualifiers q)
+{
+#define QUAL_TYPE(M)  \
+  ((q == qualifier_none) ? int##M##_type_node : unsigned_int##M##_type_node);
+  switch (mode)
+    {
+    case QImode:
+      return QUAL_TYPE (QI);
+    case HImode:
+      return QUAL_TYPE (HI);
+    case SImode:
+      return QUAL_TYPE (SI);
+    case DImode:
+      return QUAL_TYPE (DI);
+    case TImode:
+      return QUAL_TYPE (TI);
+    case OImode:
+      return arm_simd_intOI_type_node;
+    case EImode:
+      return arm_simd_intEI_type_node;
+    case CImode:
+      return arm_simd_intCI_type_node;
+    case XImode:
+      return arm_simd_intXI_type_node;
+    case HFmode:
+      return arm_simd_floatHF_type_node;
+    case SFmode:
+      return float_type_node;
+    case DFmode:
+      return double_type_node;
+    default:
+      gcc_unreachable ();
+    }
+#undef QUAL_TYPE
+}
+
+static tree
+arm_lookup_simd_builtin_type (enum machine_mode mode,
+			      enum arm_type_qualifiers q)
+{
+  int i;
+  int nelts = sizeof (arm_simd_types) / sizeof (arm_simd_types[0]);
+
+  /* Non-poly scalar modes map to standard types not in the table.  */
+  if (q != qualifier_poly && !VECTOR_MODE_P (mode))
+    return arm_simd_builtin_std_type (mode, q);
+
+  for (i = 0; i < nelts; i++)
+    if (arm_simd_types[i].mode == mode
+	&& arm_simd_types[i].q == q)
+      return arm_simd_types[i].itype;
+
+  /* Note that we won't have caught the underlying type for poly64x2_t
+     in the above table.  This gets default mangling.  */
+
+  return NULL_TREE;
+}
+
+static tree
+arm_simd_builtin_type (enum machine_mode mode,
+			   bool unsigned_p, bool poly_p)
+{
+  if (poly_p)
+    return arm_lookup_simd_builtin_type (mode, qualifier_poly);
+  else if (unsigned_p)
+    return arm_lookup_simd_builtin_type (mode, qualifier_unsigned);
+  else
+    return arm_lookup_simd_builtin_type (mode, qualifier_none);
+}
+
+static void
+arm_init_simd_builtin_types (void)
+{
+  int i;
+  int nelts = sizeof (arm_simd_types) / sizeof (arm_simd_types[0]);
+  tree tdecl;
+
+  /* Initialize the HFmode scalar type.  */
+  arm_simd_floatHF_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (arm_simd_floatHF_type_node) = GET_MODE_PRECISION (HFmode);
+  layout_type (arm_simd_floatHF_type_node);
+  (*lang_hooks.types.register_builtin_type) (arm_simd_floatHF_type_node,
+					     "__builtin_neon_hf");
+
+  /* Poly types are a world of their own.  In order to maintain legacy
+     ABI, they get initialized using the old interface, and don't get
+     an entry in our mangling table, consequently, they get default
+     mangling.  As a further gotcha, poly8_t and poly16_t are signed
+     types, poly64_t and poly128_t are unsigned types.  */
+  arm_simd_polyQI_type_node
+    = build_distinct_type_copy (intQI_type_node);
+  (*lang_hooks.types.register_builtin_type) (arm_simd_polyQI_type_node,
+					     "__builtin_neon_poly8");
+  arm_simd_polyHI_type_node
+    = build_distinct_type_copy (intHI_type_node);
+  (*lang_hooks.types.register_builtin_type) (arm_simd_polyHI_type_node,
+					     "__builtin_neon_poly16");
+  arm_simd_polyDI_type_node
+    = build_distinct_type_copy (unsigned_intDI_type_node);
+  (*lang_hooks.types.register_builtin_type) (arm_simd_polyDI_type_node,
+					     "__builtin_neon_poly64");
+  arm_simd_polyTI_type_node
+    = build_distinct_type_copy (unsigned_intTI_type_node);
+  (*lang_hooks.types.register_builtin_type) (arm_simd_polyTI_type_node,
+					     "__builtin_neon_poly128");
+
+  /* Init all the element types built by the front-end.  */
+  arm_simd_types[Int8x8_t].eltype = intQI_type_node;
+  arm_simd_types[Int8x16_t].eltype = intQI_type_node;
+  arm_simd_types[Int16x4_t].eltype = intHI_type_node;
+  arm_simd_types[Int16x8_t].eltype = intHI_type_node;
+  arm_simd_types[Int32x2_t].eltype = intSI_type_node;
+  arm_simd_types[Int32x4_t].eltype = intSI_type_node;
+  arm_simd_types[Int64x2_t].eltype = intDI_type_node;
+  arm_simd_types[Uint8x8_t].eltype = unsigned_intQI_type_node;
+  arm_simd_types[Uint8x16_t].eltype = unsigned_intQI_type_node;
+  arm_simd_types[Uint16x4_t].eltype = unsigned_intHI_type_node;
+  arm_simd_types[Uint16x8_t].eltype = unsigned_intHI_type_node;
+  arm_simd_types[Uint32x2_t].eltype = unsigned_intSI_type_node;
+  arm_simd_types[Uint32x4_t].eltype = unsigned_intSI_type_node;
+  arm_simd_types[Uint64x2_t].eltype = unsigned_intDI_type_node;
+
+  /* Init poly vector element types with scalar poly types.  */
+  arm_simd_types[Poly8x8_t].eltype = arm_simd_polyQI_type_node;
+  arm_simd_types[Poly8x16_t].eltype = arm_simd_polyQI_type_node;
+  arm_simd_types[Poly16x4_t].eltype = arm_simd_polyHI_type_node;
+  arm_simd_types[Poly16x8_t].eltype = arm_simd_polyHI_type_node;
+  /* Note: poly64x2_t is defined in arm_neon.h, to ensure it gets default
+     mangling.  */
+
+  /* Continue with standard types.  */
+  arm_simd_types[Float16x4_t].eltype = arm_simd_floatHF_type_node;
+  arm_simd_types[Float32x2_t].eltype = float_type_node;
+  arm_simd_types[Float32x4_t].eltype = float_type_node;
+
+  for (i = 0; i < nelts; i++)
+    {
+      tree eltype = arm_simd_types[i].eltype;
+      enum machine_mode mode = arm_simd_types[i].mode;
+
+      if (arm_simd_types[i].itype == NULL)
+	arm_simd_types[i].itype =
+	  build_distinct_type_copy
+	    (build_vector_type (eltype, GET_MODE_NUNITS (mode)));
+
+      tdecl = add_builtin_type (arm_simd_types[i].name,
+				arm_simd_types[i].itype);
+      TYPE_NAME (arm_simd_types[i].itype) = tdecl;
+      SET_TYPE_STRUCTURAL_EQUALITY (arm_simd_types[i].itype);
+    }
+
+#define AARCH_BUILD_SIGNED_TYPE(mode)  \
+  make_signed_type (GET_MODE_PRECISION (mode));
+  arm_simd_intOI_type_node = AARCH_BUILD_SIGNED_TYPE (OImode);
+  arm_simd_intEI_type_node = AARCH_BUILD_SIGNED_TYPE (EImode);
+  arm_simd_intCI_type_node = AARCH_BUILD_SIGNED_TYPE (CImode);
+  arm_simd_intXI_type_node = AARCH_BUILD_SIGNED_TYPE (XImode);
+#undef AARCH_BUILD_SIGNED_TYPE
+
+  tdecl = add_builtin_type
+	    ("__builtin_neon_ei" , arm_simd_intEI_type_node);
+  TYPE_NAME (arm_simd_intEI_type_node) = tdecl;
+  tdecl = add_builtin_type
+	    ("__builtin_neon_oi" , arm_simd_intOI_type_node);
+  TYPE_NAME (arm_simd_intOI_type_node) = tdecl;
+  tdecl = add_builtin_type
+	    ("__builtin_neon_ci" , arm_simd_intCI_type_node);
+  TYPE_NAME (arm_simd_intCI_type_node) = tdecl;
+  tdecl = add_builtin_type
+	    ("__builtin_neon_xi" , arm_simd_intXI_type_node);
+  TYPE_NAME (arm_simd_intXI_type_node) = tdecl;
+}
+
+static void
+arm_init_simd_builtin_scalar_types (void)
+{
+  /* Define typedefs for all the standard scalar types.  */
+  (*lang_hooks.types.register_builtin_type) (intQI_type_node,
+					     "__builtin_neon_qi");
+  (*lang_hooks.types.register_builtin_type) (intHI_type_node,
+					     "__builtin_neon_hi");
+  (*lang_hooks.types.register_builtin_type) (intSI_type_node,
+					     "__builtin_neon_si");
+  (*lang_hooks.types.register_builtin_type) (float_type_node,
+					     "__builtin_neon_sf");
+  (*lang_hooks.types.register_builtin_type) (intDI_type_node,
+					     "__builtin_neon_di");
+  (*lang_hooks.types.register_builtin_type) (double_type_node,
+					     "__builtin_neon_df");
+  (*lang_hooks.types.register_builtin_type) (intTI_type_node,
+					     "__builtin_neon_ti");
+
+  /* Unsigned integer types for various mode sizes.  */
+  (*lang_hooks.types.register_builtin_type) (unsigned_intQI_type_node,
+					     "__builtin_neon_uqi");
+  (*lang_hooks.types.register_builtin_type) (unsigned_intHI_type_node,
+					     "__builtin_neon_uhi");
+  (*lang_hooks.types.register_builtin_type) (unsigned_intSI_type_node,
+					     "__builtin_neon_usi");
+  (*lang_hooks.types.register_builtin_type) (unsigned_intDI_type_node,
+					     "__builtin_neon_udi");
+  (*lang_hooks.types.register_builtin_type) (unsigned_intTI_type_node,
+					     "__builtin_neon_uti");
+}
+
 static void
 arm_init_neon_builtins (void)
 {
-  unsigned int i, fcode;
-  tree decl;
+  unsigned int i, fcode = ARM_BUILTIN_NEON_BASE;
 
-  tree neon_intQI_type_node;
-  tree neon_intHI_type_node;
-  tree neon_floatHF_type_node;
-  tree neon_polyQI_type_node;
-  tree neon_polyHI_type_node;
-  tree neon_intSI_type_node;
-  tree neon_intDI_type_node;
-  tree neon_intUTI_type_node;
-  tree neon_float_type_node;
+  arm_init_simd_builtin_types ();
 
-  tree intQI_pointer_node;
-  tree intHI_pointer_node;
-  tree intSI_pointer_node;
-  tree intDI_pointer_node;
-  tree float_pointer_node;
+  /* Strong-typing hasn't been implemented for all AdvSIMD builtin intrinsics.
+     Therefore we need to preserve the old __builtin scalar types.  It can be
+     removed once all the intrinsics become strongly typed using the qualifier
+     system.  */
+  arm_init_simd_builtin_scalar_types ();
 
-  tree const_intQI_node;
-  tree const_intHI_node;
-  tree const_intSI_node;
-  tree const_intDI_node;
-  tree const_float_node;
-
-  tree const_intQI_pointer_node;
-  tree const_intHI_pointer_node;
-  tree const_intSI_pointer_node;
-  tree const_intDI_pointer_node;
-  tree const_float_pointer_node;
-
-  tree V8QI_type_node;
-  tree V4HI_type_node;
-  tree V4UHI_type_node;
-  tree V4HF_type_node;
-  tree V2SI_type_node;
-  tree V2USI_type_node;
-  tree V2SF_type_node;
-  tree V16QI_type_node;
-  tree V8HI_type_node;
-  tree V8UHI_type_node;
-  tree V4SI_type_node;
-  tree V4USI_type_node;
-  tree V4SF_type_node;
-  tree V2DI_type_node;
-  tree V2UDI_type_node;
-
-  tree intUQI_type_node;
-  tree intUHI_type_node;
-  tree intUSI_type_node;
-  tree intUDI_type_node;
-
-  tree intEI_type_node;
-  tree intOI_type_node;
-  tree intCI_type_node;
-  tree intXI_type_node;
-
-  tree reinterp_ftype_dreg[NUM_DREG_TYPES][NUM_DREG_TYPES];
-  tree reinterp_ftype_qreg[NUM_QREG_TYPES][NUM_QREG_TYPES];
-  tree dreg_types[NUM_DREG_TYPES], qreg_types[NUM_QREG_TYPES];
-
-  /* Create distinguished type nodes for NEON vector element types,
-     and pointers to values of such types, so we can detect them later.  */
-  neon_intQI_type_node = make_signed_type (GET_MODE_PRECISION (QImode));
-  neon_intHI_type_node = make_signed_type (GET_MODE_PRECISION (HImode));
-  neon_polyQI_type_node = make_signed_type (GET_MODE_PRECISION (QImode));
-  neon_polyHI_type_node = make_signed_type (GET_MODE_PRECISION (HImode));
-  neon_intSI_type_node = make_signed_type (GET_MODE_PRECISION (SImode));
-  neon_intDI_type_node = make_signed_type (GET_MODE_PRECISION (DImode));
-  neon_float_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (neon_float_type_node) = FLOAT_TYPE_SIZE;
-  layout_type (neon_float_type_node);
-  neon_floatHF_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (neon_floatHF_type_node) = GET_MODE_PRECISION (HFmode);
-  layout_type (neon_floatHF_type_node);
-
-  /* Define typedefs which exactly correspond to the modes we are basing vector
-     types on.  If you change these names you'll need to change
-     the table used by arm_mangle_type too.  */
-  (*lang_hooks.types.register_builtin_type) (neon_intQI_type_node,
-					     "__builtin_neon_qi");
-  (*lang_hooks.types.register_builtin_type) (neon_intHI_type_node,
-					     "__builtin_neon_hi");
-  (*lang_hooks.types.register_builtin_type) (neon_floatHF_type_node,
-					     "__builtin_neon_hf");
-  (*lang_hooks.types.register_builtin_type) (neon_intSI_type_node,
-					     "__builtin_neon_si");
-  (*lang_hooks.types.register_builtin_type) (neon_float_type_node,
-					     "__builtin_neon_sf");
-  (*lang_hooks.types.register_builtin_type) (neon_intDI_type_node,
-					     "__builtin_neon_di");
-  (*lang_hooks.types.register_builtin_type) (neon_polyQI_type_node,
-					     "__builtin_neon_poly8");
-  (*lang_hooks.types.register_builtin_type) (neon_polyHI_type_node,
-					     "__builtin_neon_poly16");
-
-  intQI_pointer_node = build_pointer_type (neon_intQI_type_node);
-  intHI_pointer_node = build_pointer_type (neon_intHI_type_node);
-  intSI_pointer_node = build_pointer_type (neon_intSI_type_node);
-  intDI_pointer_node = build_pointer_type (neon_intDI_type_node);
-  float_pointer_node = build_pointer_type (neon_float_type_node);
-
-  /* Next create constant-qualified versions of the above types.  */
-  const_intQI_node = build_qualified_type (neon_intQI_type_node,
-					   TYPE_QUAL_CONST);
-  const_intHI_node = build_qualified_type (neon_intHI_type_node,
-					   TYPE_QUAL_CONST);
-  const_intSI_node = build_qualified_type (neon_intSI_type_node,
-					   TYPE_QUAL_CONST);
-  const_intDI_node = build_qualified_type (neon_intDI_type_node,
-					   TYPE_QUAL_CONST);
-  const_float_node = build_qualified_type (neon_float_type_node,
-					   TYPE_QUAL_CONST);
-
-  const_intQI_pointer_node = build_pointer_type (const_intQI_node);
-  const_intHI_pointer_node = build_pointer_type (const_intHI_node);
-  const_intSI_pointer_node = build_pointer_type (const_intSI_node);
-  const_intDI_pointer_node = build_pointer_type (const_intDI_node);
-  const_float_pointer_node = build_pointer_type (const_float_node);
-
-  /* Unsigned integer types for various mode sizes.  */
-  intUQI_type_node = make_unsigned_type (GET_MODE_PRECISION (QImode));
-  intUHI_type_node = make_unsigned_type (GET_MODE_PRECISION (HImode));
-  intUSI_type_node = make_unsigned_type (GET_MODE_PRECISION (SImode));
-  intUDI_type_node = make_unsigned_type (GET_MODE_PRECISION (DImode));
-  neon_intUTI_type_node = make_unsigned_type (GET_MODE_PRECISION (TImode));
-  /* Now create vector types based on our NEON element types.  */
-  /* 64-bit vectors.  */
-  V8QI_type_node =
-    build_vector_type_for_mode (neon_intQI_type_node, V8QImode);
-  V4HI_type_node =
-    build_vector_type_for_mode (neon_intHI_type_node, V4HImode);
-  V4UHI_type_node =
-    build_vector_type_for_mode (intUHI_type_node, V4HImode);
-  V4HF_type_node =
-    build_vector_type_for_mode (neon_floatHF_type_node, V4HFmode);
-  V2SI_type_node =
-    build_vector_type_for_mode (neon_intSI_type_node, V2SImode);
-  V2USI_type_node =
-    build_vector_type_for_mode (intUSI_type_node, V2SImode);
-  V2SF_type_node =
-    build_vector_type_for_mode (neon_float_type_node, V2SFmode);
-  /* 128-bit vectors.  */
-  V16QI_type_node =
-    build_vector_type_for_mode (neon_intQI_type_node, V16QImode);
-  V8HI_type_node =
-    build_vector_type_for_mode (neon_intHI_type_node, V8HImode);
-  V8UHI_type_node =
-    build_vector_type_for_mode (intUHI_type_node, V8HImode);
-  V4SI_type_node =
-    build_vector_type_for_mode (neon_intSI_type_node, V4SImode);
-  V4USI_type_node =
-    build_vector_type_for_mode (intUSI_type_node, V4SImode);
-  V4SF_type_node =
-    build_vector_type_for_mode (neon_float_type_node, V4SFmode);
-  V2DI_type_node =
-    build_vector_type_for_mode (neon_intDI_type_node, V2DImode);
-  V2UDI_type_node =
-    build_vector_type_for_mode (intUDI_type_node, V2DImode);
-
-
-  (*lang_hooks.types.register_builtin_type) (intUQI_type_node,
-					     "__builtin_neon_uqi");
-  (*lang_hooks.types.register_builtin_type) (intUHI_type_node,
-					     "__builtin_neon_uhi");
-  (*lang_hooks.types.register_builtin_type) (intUSI_type_node,
-					     "__builtin_neon_usi");
-  (*lang_hooks.types.register_builtin_type) (intUDI_type_node,
-					     "__builtin_neon_udi");
-  (*lang_hooks.types.register_builtin_type) (intUDI_type_node,
-					     "__builtin_neon_poly64");
-  (*lang_hooks.types.register_builtin_type) (neon_intUTI_type_node,
-					     "__builtin_neon_poly128");
-
-  /* Opaque integer types for structures of vectors.  */
-  intEI_type_node = make_signed_type (GET_MODE_PRECISION (EImode));
-  intOI_type_node = make_signed_type (GET_MODE_PRECISION (OImode));
-  intCI_type_node = make_signed_type (GET_MODE_PRECISION (CImode));
-  intXI_type_node = make_signed_type (GET_MODE_PRECISION (XImode));
-
-  (*lang_hooks.types.register_builtin_type) (intTI_type_node,
-					     "__builtin_neon_ti");
-  (*lang_hooks.types.register_builtin_type) (intEI_type_node,
-					     "__builtin_neon_ei");
-  (*lang_hooks.types.register_builtin_type) (intOI_type_node,
-					     "__builtin_neon_oi");
-  (*lang_hooks.types.register_builtin_type) (intCI_type_node,
-					     "__builtin_neon_ci");
-  (*lang_hooks.types.register_builtin_type) (intXI_type_node,
-					     "__builtin_neon_xi");
-
-  if (TARGET_CRYPTO && TARGET_HARD_FLOAT)
-  {
-
-    tree V16UQI_type_node =
-      build_vector_type_for_mode (intUQI_type_node, V16QImode);
-
-    tree v16uqi_ftype_v16uqi
-      = build_function_type_list (V16UQI_type_node, V16UQI_type_node, NULL_TREE);
-
-    tree v16uqi_ftype_v16uqi_v16uqi
-      = build_function_type_list (V16UQI_type_node, V16UQI_type_node,
-                                  V16UQI_type_node, NULL_TREE);
-
-    tree v4usi_ftype_v4usi
-      = build_function_type_list (V4USI_type_node, V4USI_type_node, NULL_TREE);
-
-    tree v4usi_ftype_v4usi_v4usi
-      = build_function_type_list (V4USI_type_node, V4USI_type_node,
-                                  V4USI_type_node, NULL_TREE);
-
-    tree v4usi_ftype_v4usi_v4usi_v4usi
-      = build_function_type_list (V4USI_type_node, V4USI_type_node,
-                                  V4USI_type_node, V4USI_type_node, NULL_TREE);
-
-    tree uti_ftype_udi_udi
-      = build_function_type_list (neon_intUTI_type_node, intUDI_type_node,
-                                  intUDI_type_node, NULL_TREE);
-
-    #undef CRYPTO1
-    #undef CRYPTO2
-    #undef CRYPTO3
-    #undef C
-    #undef N
-    #undef CF
-    #undef FT1
-    #undef FT2
-    #undef FT3
-
-    #define C(U) \
-      ARM_BUILTIN_CRYPTO_##U
-    #define N(L) \
-      "__builtin_arm_crypto_"#L
-    #define FT1(R, A) \
-      R##_ftype_##A
-    #define FT2(R, A1, A2) \
-      R##_ftype_##A1##_##A2
-    #define FT3(R, A1, A2, A3) \
-      R##_ftype_##A1##_##A2##_##A3
-    #define CRYPTO1(L, U, R, A) \
-      arm_builtin_decls[C (U)] = add_builtin_function (N (L), FT1 (R, A), \
-                                                       C (U), BUILT_IN_MD, \
-                                                       NULL, NULL_TREE);
-    #define CRYPTO2(L, U, R, A1, A2) \
-      arm_builtin_decls[C (U)] = add_builtin_function (N (L), FT2 (R, A1, A2), \
-                                                       C (U), BUILT_IN_MD, \
-                                                       NULL, NULL_TREE);
-
-    #define CRYPTO3(L, U, R, A1, A2, A3) \
-      arm_builtin_decls[C (U)] = add_builtin_function (N (L), FT3 (R, A1, A2, A3), \
-                                                       C (U), BUILT_IN_MD, \
-                                                       NULL, NULL_TREE);
-    #include "crypto.def"
-
-    #undef CRYPTO1
-    #undef CRYPTO2
-    #undef CRYPTO3
-    #undef C
-    #undef N
-    #undef FT1
-    #undef FT2
-    #undef FT3
-  }
-  dreg_types[0] = V8QI_type_node;
-  dreg_types[1] = V4HI_type_node;
-  dreg_types[2] = V2SI_type_node;
-  dreg_types[3] = V2SF_type_node;
-  dreg_types[4] = neon_intDI_type_node;
-
-  qreg_types[0] = V16QI_type_node;
-  qreg_types[1] = V8HI_type_node;
-  qreg_types[2] = V4SI_type_node;
-  qreg_types[3] = V4SF_type_node;
-  qreg_types[4] = V2DI_type_node;
-  qreg_types[5] = neon_intUTI_type_node;
-
-  for (i = 0; i < NUM_QREG_TYPES; i++)
+  for (i = 0; i < ARRAY_SIZE (neon_builtin_data); i++, fcode++)
     {
-      int j;
-      for (j = 0; j < NUM_QREG_TYPES; j++)
-        {
-          if (i < NUM_DREG_TYPES && j < NUM_DREG_TYPES)
-            reinterp_ftype_dreg[i][j]
-              = build_function_type_list (dreg_types[i], dreg_types[j], NULL);
-
-          reinterp_ftype_qreg[i][j]
-            = build_function_type_list (qreg_types[i], qreg_types[j], NULL);
-        }
-    }
-
-  for (i = 0, fcode = ARM_BUILTIN_NEON_BASE;
-       i < ARRAY_SIZE (neon_builtin_data);
-       i++, fcode++)
-    {
+      bool print_type_signature_p = false;
+      char type_signature[SIMD_MAX_BUILTIN_ARGS] = { 0 };
       neon_builtin_datum *d = &neon_builtin_data[i];
+      const char *const modenames[] =
+	{
+	  "v8qi", "v4hi", "v4hf", "v2si", "v2sf", "di",
+	  "v16qi", "v8hi", "v4si", "v4sf", "v2di",
+	  "ti", "ei", "oi"
+	};
+      const enum machine_mode modes[] =
+	{
+	  V8QImode, V4HImode, V4HFmode, V2SImode, V2SFmode, DImode,
+	  V16QImode, V8HImode, V4SImode, V4SFmode, V2DImode,
+	  TImode, EImode, OImode
+	};
 
-      const char* const modenames[] = {
-	"v8qi", "v4hi", "v4hf", "v2si", "v2sf", "di",
-	"v16qi", "v8hi", "v4si", "v4sf", "v2di",
-	"ti", "ei", "oi"
-      };
       char namebuf[60];
       tree ftype = NULL;
-      int is_load = 0, is_store = 0;
+      tree fndecl = NULL;
 
       gcc_assert (ARRAY_SIZE (modenames) == T_MAX);
 
       d->fcode = fcode;
 
-      switch (d->itype)
+      /* We must track two variables here.  op_num is
+	 the operand number as in the RTL pattern.  This is
+	 required to access the mode (e.g. V4SF mode) of the
+	 argument, from which the base type can be derived.
+	 arg_num is an index in to the qualifiers data, which
+	 gives qualifiers to the type (e.g. const unsigned).
+	 The reason these two variables may differ by one is the
+	 void return type.  While all return types take the 0th entry
+	 in the qualifiers array, there is no operand for them in the
+	 RTL pattern.  */
+      int op_num = insn_data[d->code].n_operands - 1;
+      int arg_num = d->qualifiers[0] & qualifier_void
+		      ? op_num + 1
+		      : op_num;
+      tree return_type = void_type_node, args = void_list_node;
+      tree eltype;
+
+      /* Build a function type directly from the insn_data for this
+	 builtin.  The build_function_type () function takes care of
+	 removing duplicates for us.  */
+      for (; op_num >= 0; arg_num--, op_num--)
 	{
-	case NEON_LOAD1:
-	case NEON_LOAD1LANE:
-	case NEON_LOADSTRUCT:
-	case NEON_LOADSTRUCTLANE:
-	  is_load = 1;
-	  /* Fall through.  */
-	case NEON_STORE1:
-	case NEON_STORE1LANE:
-	case NEON_STORESTRUCT:
-	case NEON_STORESTRUCTLANE:
-	  if (!is_load)
-	    is_store = 1;
-	  /* Fall through.  */
-	case NEON_UNOP:
-	case NEON_RINT:
-	case NEON_BINOP:
-	case NEON_LOGICBINOP:
-	case NEON_SHIFTINSERT:
-	case NEON_TERNOP:
-	case NEON_GETLANE:
-	case NEON_SETLANE:
-	case NEON_CREATE:
-	case NEON_DUP:
-	case NEON_DUPLANE:
-	case NEON_SHIFTIMM:
-	case NEON_SHIFTACC:
-	case NEON_COMBINE:
-	case NEON_SPLIT:
-	case NEON_CONVERT:
-	case NEON_FIXCONV:
-	case NEON_LANEMUL:
-	case NEON_LANEMULL:
-	case NEON_LANEMULH:
-	case NEON_LANEMAC:
-	case NEON_SCALARMUL:
-	case NEON_SCALARMULL:
-	case NEON_SCALARMULH:
-	case NEON_SCALARMAC:
-	case NEON_SELECT:
-	case NEON_VTBL:
-	case NEON_VTBX:
-	  {
-	    int k;
-	    tree return_type = void_type_node, args = void_list_node;
+	  machine_mode op_mode = insn_data[d->code].operand[op_num].mode;
+	  enum arm_type_qualifiers qualifiers = d->qualifiers[arg_num];
 
-	    /* Build a function type directly from the insn_data for
-	       this builtin.  The build_function_type() function takes
-	       care of removing duplicates for us.  */
-	    for (k = insn_data[d->code].n_generator_args - 1; k >= 0; k--)
-	      {
-		tree eltype;
-
-		if (is_load && k == 1)
-		  {
-		    /* Neon load patterns always have the memory
-		       operand in the operand 1 position.  */
-		    gcc_assert (insn_data[d->code].operand[k].predicate
-				== neon_struct_operand);
-
-		    switch (d->mode)
-		      {
-		      case T_V8QI:
-		      case T_V16QI:
-			eltype = const_intQI_pointer_node;
-			break;
-
-		      case T_V4HI:
-		      case T_V8HI:
-			eltype = const_intHI_pointer_node;
-			break;
-
-		      case T_V2SI:
-		      case T_V4SI:
-			eltype = const_intSI_pointer_node;
-			break;
-
-		      case T_V2SF:
-		      case T_V4SF:
-			eltype = const_float_pointer_node;
-			break;
-
-		      case T_DI:
-		      case T_V2DI:
-			eltype = const_intDI_pointer_node;
-			break;
-
-		      default: gcc_unreachable ();
-		      }
-		  }
-		else if (is_store && k == 0)
-		  {
-		    /* Similarly, Neon store patterns use operand 0 as
-		       the memory location to store to.  */
-		    gcc_assert (insn_data[d->code].operand[k].predicate
-				== neon_struct_operand);
-
-		    switch (d->mode)
-		      {
-		      case T_V8QI:
-		      case T_V16QI:
-			eltype = intQI_pointer_node;
-			break;
-
-		      case T_V4HI:
-		      case T_V8HI:
-			eltype = intHI_pointer_node;
-			break;
-
-		      case T_V2SI:
-		      case T_V4SI:
-			eltype = intSI_pointer_node;
-			break;
-
-		      case T_V2SF:
-		      case T_V4SF:
-			eltype = float_pointer_node;
-			break;
-
-		      case T_DI:
-		      case T_V2DI:
-			eltype = intDI_pointer_node;
-			break;
-
-		      default: gcc_unreachable ();
-		      }
-		  }
-		else
-		  {
-		    switch (insn_data[d->code].operand[k].mode)
-		      {
-		      case VOIDmode: eltype = void_type_node; break;
-			/* Scalars.  */
-		      case QImode: eltype = neon_intQI_type_node; break;
-		      case HImode: eltype = neon_intHI_type_node; break;
-		      case SImode: eltype = neon_intSI_type_node; break;
-		      case SFmode: eltype = neon_float_type_node; break;
-		      case DImode: eltype = neon_intDI_type_node; break;
-		      case TImode: eltype = intTI_type_node; break;
-		      case EImode: eltype = intEI_type_node; break;
-		      case OImode: eltype = intOI_type_node; break;
-		      case CImode: eltype = intCI_type_node; break;
-		      case XImode: eltype = intXI_type_node; break;
-			/* 64-bit vectors.  */
-		      case V8QImode: eltype = V8QI_type_node; break;
-		      case V4HImode: eltype = V4HI_type_node; break;
-		      case V2SImode: eltype = V2SI_type_node; break;
-		      case V2SFmode: eltype = V2SF_type_node; break;
-			/* 128-bit vectors.  */
-		      case V16QImode: eltype = V16QI_type_node; break;
-		      case V8HImode: eltype = V8HI_type_node; break;
-		      case V4SImode: eltype = V4SI_type_node; break;
-		      case V4SFmode: eltype = V4SF_type_node; break;
-		      case V2DImode: eltype = V2DI_type_node; break;
-		      default: gcc_unreachable ();
-		      }
-		  }
-
-		if (k == 0 && !is_store)
-		  return_type = eltype;
-		else
-		  args = tree_cons (NULL_TREE, eltype, args);
-	      }
-
-	    ftype = build_function_type (return_type, args);
-	  }
-	  break;
-
-	case NEON_REINTERP:
-	  {
-	    /* We iterate over NUM_DREG_TYPES doubleword types,
-	       then NUM_QREG_TYPES quadword  types.
-	       V4HF is not a type used in reinterpret, so we translate
-	       d->mode to the correct index in reinterp_ftype_dreg.  */
-	    bool qreg_p
-	      = GET_MODE_SIZE (insn_data[d->code].operand[0].mode) > 8;
-	    int rhs = (d->mode - ((!qreg_p && (d->mode > T_V4HF)) ? 1 : 0))
-	              % NUM_QREG_TYPES;
-	    switch (insn_data[d->code].operand[0].mode)
-	      {
-	      case V8QImode: ftype = reinterp_ftype_dreg[0][rhs]; break;
-	      case V4HImode: ftype = reinterp_ftype_dreg[1][rhs]; break;
-	      case V2SImode: ftype = reinterp_ftype_dreg[2][rhs]; break;
-	      case V2SFmode: ftype = reinterp_ftype_dreg[3][rhs]; break;
-	      case DImode: ftype = reinterp_ftype_dreg[4][rhs]; break;
-	      case V16QImode: ftype = reinterp_ftype_qreg[0][rhs]; break;
-	      case V8HImode: ftype = reinterp_ftype_qreg[1][rhs]; break;
-	      case V4SImode: ftype = reinterp_ftype_qreg[2][rhs]; break;
-	      case V4SFmode: ftype = reinterp_ftype_qreg[3][rhs]; break;
-	      case V2DImode: ftype = reinterp_ftype_qreg[4][rhs]; break;
-	      case TImode: ftype = reinterp_ftype_qreg[5][rhs]; break;
-	      default: gcc_unreachable ();
-	      }
-	  }
-	  break;
-	case NEON_FLOAT_WIDEN:
-	  {
-	    tree eltype = NULL_TREE;
-	    tree return_type = NULL_TREE;
-
-	    switch (insn_data[d->code].operand[1].mode)
+	  if (qualifiers & qualifier_unsigned)
 	    {
-	      case V4HFmode:
-	        eltype = V4HF_type_node;
-	        return_type = V4SF_type_node;
-	        break;
-	      default: gcc_unreachable ();
+	      type_signature[arg_num] = 'u';
+	      print_type_signature_p = true;
 	    }
-	    ftype = build_function_type_list (return_type, eltype, NULL);
-	    break;
-	  }
-	case NEON_FLOAT_NARROW:
-	  {
-	    tree eltype = NULL_TREE;
-	    tree return_type = NULL_TREE;
+	  else if (qualifiers & qualifier_poly)
+	    {
+	      type_signature[arg_num] = 'p';
+	      print_type_signature_p = true;
+	    }
+	  else
+	    type_signature[arg_num] = 's';
 
-	    switch (insn_data[d->code].operand[1].mode)
-	    {
-	      case V4SFmode:
-	        eltype = V4SF_type_node;
-	        return_type = V4HF_type_node;
-	        break;
-	      default: gcc_unreachable ();
-	    }
-	    ftype = build_function_type_list (return_type, eltype, NULL);
-	    break;
-	  }
-	case NEON_BSWAP:
-	{
-	    tree eltype = NULL_TREE;
-	    switch (insn_data[d->code].operand[1].mode)
-	    {
-	      case V4HImode:
-	        eltype = V4UHI_type_node;
-	        break;
-	      case V8HImode:
-	        eltype = V8UHI_type_node;
-	        break;
-	      case V2SImode:
-	        eltype = V2USI_type_node;
-	        break;
-	      case V4SImode:
-	        eltype = V4USI_type_node;
-	        break;
-	      case V2DImode:
-	        eltype = V2UDI_type_node;
-	        break;
-	      default: gcc_unreachable ();
-	    }
-	    ftype = build_function_type_list (eltype, eltype, NULL);
-	    break;
+	  /* Skip an internal operand for vget_{low, high}.  */
+	  if (qualifiers & qualifier_internal)
+	    continue;
+
+	  /* Some builtins have different user-facing types
+	     for certain arguments, encoded in d->mode.  */
+	  if (qualifiers & qualifier_map_mode)
+	      op_mode = modes[d->mode];
+
+	  /* For pointers, we want a pointer to the basic type
+	     of the vector.  */
+	  if (qualifiers & qualifier_pointer && VECTOR_MODE_P (op_mode))
+	    op_mode = GET_MODE_INNER (op_mode);
+
+	  eltype = arm_simd_builtin_type
+		     (op_mode,
+		      (qualifiers & qualifier_unsigned) != 0,
+		      (qualifiers & qualifier_poly) != 0);
+	  gcc_assert (eltype != NULL);
+
+	  /* Add qualifiers.  */
+	  if (qualifiers & qualifier_const)
+	    eltype = build_qualified_type (eltype, TYPE_QUAL_CONST);
+
+	  if (qualifiers & qualifier_pointer)
+	      eltype = build_pointer_type (eltype);
+
+	  /* If we have reached arg_num == 0, we are at a non-void
+	     return type.  Otherwise, we are still processing
+	     arguments.  */
+	  if (arg_num == 0)
+	    return_type = eltype;
+	  else
+	    args = tree_cons (NULL_TREE, eltype, args);
 	}
-	case NEON_COPYSIGNF:
-	  {
-	    tree eltype = NULL_TREE;
-	    switch (insn_data[d->code].operand[1].mode)
-	      {
-	      case V2SFmode:
-		eltype = V2SF_type_node;
-		break;
-	      case V4SFmode:
-		eltype = V4SF_type_node;
-		break;
-	      default: gcc_unreachable ();
-	      }
-	    ftype = build_function_type_list (eltype, eltype, NULL);
-	    break;
-	  }
-	default:
-	  gcc_unreachable ();
-	}
+
+      ftype = build_function_type (return_type, args);
 
       gcc_assert (ftype != NULL);
 
-      sprintf (namebuf, "__builtin_neon_%s%s", d->name, modenames[d->mode]);
+      if (print_type_signature_p)
+	snprintf (namebuf, sizeof (namebuf), "__builtin_neon_%s%s_%s",
+		  d->name, modenames[d->mode], type_signature);
+      else
+	snprintf (namebuf, sizeof (namebuf), "__builtin_neon_%s%s",
+		  d->name, modenames[d->mode]);
 
-      decl = add_builtin_function (namebuf, ftype, fcode, BUILT_IN_MD, NULL,
-				   NULL_TREE);
-      arm_builtin_decls[fcode] = decl;
+      fndecl = add_builtin_function (namebuf, ftype, fcode, BUILT_IN_MD,
+				     NULL, NULL_TREE);
+      arm_builtin_decls[fcode] = fndecl;
+    }
+
+  if (TARGET_CRYPTO && TARGET_HARD_FLOAT)
+    {
+      tree V16UQI_type_node = arm_simd_builtin_type (V16QImode,
+						       true,
+						       false);
+
+      tree V4USI_type_node = arm_simd_builtin_type (V4SImode,
+						      true,
+						      false);
+
+      tree v16uqi_ftype_v16uqi
+	= build_function_type_list (V16UQI_type_node, V16UQI_type_node,
+				    NULL_TREE);
+
+      tree v16uqi_ftype_v16uqi_v16uqi
+	= build_function_type_list (V16UQI_type_node, V16UQI_type_node,
+				    V16UQI_type_node, NULL_TREE);
+
+      tree v4usi_ftype_v4usi
+	= build_function_type_list (V4USI_type_node, V4USI_type_node,
+				    NULL_TREE);
+
+      tree v4usi_ftype_v4usi_v4usi
+	= build_function_type_list (V4USI_type_node, V4USI_type_node,
+				    V4USI_type_node, NULL_TREE);
+
+      tree v4usi_ftype_v4usi_v4usi_v4usi
+	= build_function_type_list (V4USI_type_node, V4USI_type_node,
+				    V4USI_type_node, V4USI_type_node,
+				    NULL_TREE);
+
+      tree uti_ftype_udi_udi
+	= build_function_type_list (unsigned_intTI_type_node,
+				    unsigned_intDI_type_node,
+				    unsigned_intDI_type_node,
+				    NULL_TREE);
+
+      #undef CRYPTO1
+      #undef CRYPTO2
+      #undef CRYPTO3
+      #undef C
+      #undef N
+      #undef CF
+      #undef FT1
+      #undef FT2
+      #undef FT3
+
+      #define C(U) \
+	ARM_BUILTIN_CRYPTO_##U
+      #define N(L) \
+	"__builtin_arm_crypto_"#L
+      #define FT1(R, A) \
+	R##_ftype_##A
+      #define FT2(R, A1, A2) \
+	R##_ftype_##A1##_##A2
+      #define FT3(R, A1, A2, A3) \
+        R##_ftype_##A1##_##A2##_##A3
+      #define CRYPTO1(L, U, R, A) \
+	arm_builtin_decls[C (U)] \
+	  = add_builtin_function (N (L), FT1 (R, A), \
+				  C (U), BUILT_IN_MD, NULL, NULL_TREE);
+      #define CRYPTO2(L, U, R, A1, A2)  \
+	arm_builtin_decls[C (U)]	\
+	  = add_builtin_function (N (L), FT2 (R, A1, A2), \
+				  C (U), BUILT_IN_MD, NULL, NULL_TREE);
+
+      #define CRYPTO3(L, U, R, A1, A2, A3) \
+	arm_builtin_decls[C (U)]	   \
+	  = add_builtin_function (N (L), FT3 (R, A1, A2, A3), \
+				  C (U), BUILT_IN_MD, NULL, NULL_TREE);
+      #include "crypto.def"
+
+      #undef CRYPTO1
+      #undef CRYPTO2
+      #undef CRYPTO3
+      #undef C
+      #undef N
+      #undef FT1
+      #undef FT2
+      #undef FT3
     }
 }
 

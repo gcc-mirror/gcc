@@ -100,7 +100,8 @@ arm-builtins.o: $(srcdir)/config/arm/arm-builtins.c $(CONFIG_H) \
   $(RTL_H) $(TREE_H) expr.h $(TM_P_H) $(RECOG_H) langhooks.h \
   $(DIAGNOSTIC_CORE_H) $(OPTABS_H) \
   $(srcdir)/config/arm/arm-protos.h \
-  $(srcdir)/config/arm/arm_neon_builtins.def
+  $(srcdir)/config/arm/arm_neon_builtins.def \
+  $(srcdir)/config/arm/arm-simd-builtin-types.def
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arm/arm-builtins.c
 

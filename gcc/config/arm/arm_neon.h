@@ -37,37 +37,42 @@ extern "C" {
 
 #include <stdint.h>
 
-typedef __builtin_neon_qi int8x8_t	__attribute__ ((__vector_size__ (8)));
-typedef __builtin_neon_hi int16x4_t	__attribute__ ((__vector_size__ (8)));
-typedef __builtin_neon_si int32x2_t	__attribute__ ((__vector_size__ (8)));
+typedef __simd64_int8_t int8x8_t;
+typedef __simd64_int16_t int16x4_t;
+typedef __simd64_int32_t int32x2_t;
 typedef __builtin_neon_di int64x1_t;
-typedef __builtin_neon_hf float16x4_t	__attribute__ ((__vector_size__ (8)));
-typedef __builtin_neon_sf float32x2_t	__attribute__ ((__vector_size__ (8)));
-typedef __builtin_neon_poly8 poly8x8_t	__attribute__ ((__vector_size__ (8)));
-typedef __builtin_neon_poly16 poly16x4_t	__attribute__ ((__vector_size__ (8)));
+typedef __simd64_float16_t float16x4_t;
+typedef __simd64_float32_t float32x2_t;
+typedef __simd64_poly8_t poly8x8_t;
+typedef __simd64_poly16_t poly16x4_t;
 #ifdef __ARM_FEATURE_CRYPTO
 typedef __builtin_neon_poly64 poly64x1_t;
 #endif
-typedef __builtin_neon_uqi uint8x8_t	__attribute__ ((__vector_size__ (8)));
-typedef __builtin_neon_uhi uint16x4_t	__attribute__ ((__vector_size__ (8)));
-typedef __builtin_neon_usi uint32x2_t	__attribute__ ((__vector_size__ (8)));
+typedef __simd64_uint8_t uint8x8_t;
+typedef __simd64_uint16_t uint16x4_t;
+typedef __simd64_uint32_t uint32x2_t;
 typedef __builtin_neon_udi uint64x1_t;
-typedef __builtin_neon_qi int8x16_t	__attribute__ ((__vector_size__ (16)));
-typedef __builtin_neon_hi int16x8_t	__attribute__ ((__vector_size__ (16)));
-typedef __builtin_neon_si int32x4_t	__attribute__ ((__vector_size__ (16)));
-typedef __builtin_neon_di int64x2_t	__attribute__ ((__vector_size__ (16)));
-typedef __builtin_neon_sf float32x4_t	__attribute__ ((__vector_size__ (16)));
-typedef __builtin_neon_poly8 poly8x16_t	__attribute__ ((__vector_size__ (16)));
-typedef __builtin_neon_poly16 poly16x8_t	__attribute__ ((__vector_size__ (16)));
+
+typedef __simd128_int8_t int8x16_t;
+typedef __simd128_int16_t int16x8_t;
+typedef __simd128_int32_t int32x4_t;
+typedef __simd128_int64_t int64x2_t;
+typedef __simd128_float32_t float32x4_t;
+typedef __simd128_poly8_t poly8x16_t;
+typedef __simd128_poly16_t poly16x8_t;
 #ifdef __ARM_FEATURE_CRYPTO
-typedef __builtin_neon_poly64 poly64x2_t	__attribute__ ((__vector_size__ (16)));
+typedef __builtin_neon_poly64 poly64x2_t __attribute__ ((__vector_size__ (16)));
 #endif
-typedef __builtin_neon_uqi uint8x16_t	__attribute__ ((__vector_size__ (16)));
-typedef __builtin_neon_uhi uint16x8_t	__attribute__ ((__vector_size__ (16)));
-typedef __builtin_neon_usi uint32x4_t	__attribute__ ((__vector_size__ (16)));
-typedef __builtin_neon_udi uint64x2_t	__attribute__ ((__vector_size__ (16)));
+
+typedef __simd128_uint8_t uint8x16_t;
+typedef __simd128_uint16_t uint16x8_t;
+typedef __simd128_uint32_t uint32x4_t;
+typedef __simd128_uint64_t uint64x2_t;
 
 typedef float float32_t;
+
+/* The Poly types are user visible and live in their own world,
+   keep them that way.  */
 typedef __builtin_neon_poly8 poly8_t;
 typedef __builtin_neon_poly16 poly16_t;
 #ifdef __ARM_FEATURE_CRYPTO
