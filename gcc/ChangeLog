@@ -1,3 +1,42 @@
+2014-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.c (ipcp_cloning_candidate_p): Use opt_for_fn.
+	(ipa_value_from_jfunc, ipa_context_from_jfunc): Skip sanity check.
+	(ipa_get_indirect_edge_target_1): Use opt_for_fn.
+	(good_cloning_opportunity_p): Likewise.
+	(ipa-cp gate): Enable ipa-cp with LTO.
+	* ipa-profile.c (ipa_propagate_frequency): Use opt_for_fn.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Always build type
+	inheritance.
+	* ipa-inline-transform.c (inline_transform): Check if there are inlines
+	to apply even at -O0.
+	* cgraphunit.c (cgraph_node::finalize_function): Use opt_for_fn.
+	(analyze_functions): Build type inheritance graph.
+	* ipa-inline.c (can_inline_edge_p): Use opt_for_fn.
+	(want_early_inline_function_p, want_inline_small_function_p):
+	Likewise.
+	(check_callers): Likewise.
+	(edge_badness): Likewise.
+	(inline_small_functions): Always be ready for indirect inlining
+	to happend.
+	(ipa_inline): Always use want_inline_function_to_all_callers_p.
+	(early_inline_small_functions): Use opt_for_fn.
+	* ipa-inline-analysis.c (estimate_function_body_sizes): use opt_for_fn.
+	(estimate_function_body_sizes): Likewise.
+	(compute_inline_parameters): Likewise.
+	(estimate_edge_devirt_benefit): Likewise.
+	(inline_analyze_function): Likewise.
+	* ipa-devirt.c (ipa_devirt): Likewise.
+	(gate): Use in_lto_p.
+	* ipa-prop.c (ipa_func_spec_opts_forbid_analysis_p): Use opt_for_fn.
+	(try_make_edge_direct_virtual_call): Likewise.
+	(update_indirect_edges_after_inlining): Likewise.
+	(ipa_free_all_structures_after_ipa_cp): Add in_lto_p check.
+	* common.opt (findirect-inlining): Turn into optimization.
+	* ipa-pure-const.c (add_new_function): Use opt_for_fn.
+	(pure_const_generate_summary): Likewise.
+	(gate_pure_const): Always enable with in_lto_p.
+
 2014-11-18  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/mips/mips.md (compression): Add `micromips32' setting.

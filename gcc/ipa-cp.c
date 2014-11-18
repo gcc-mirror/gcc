@@ -566,7 +566,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
 
   gcc_checking_assert (node->has_gimple_body_p ());
 
-  if (!flag_ipa_cp_clone)
+  if (!opt_for_fn (node->decl, flag_ipa_cp_clone))
     {
       if (dump_file)
         fprintf (dump_file, "Not considering %s for cloning; "
@@ -902,10 +902,7 @@ ipa_value_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc)
 	  ipcp_lattice<tree> *lat;
 
 	  if (!info->lattices)
-	    {
-	      gcc_checking_assert (!flag_ipa_cp);
-	      return NULL_TREE;
-	    }
+	    return NULL_TREE;
 	  lat = ipa_get_scalar_lat (info, idx);
 	  if (!lat->is_single_const ())
 	    return NULL_TREE;
@@ -967,10 +964,7 @@ ipa_context_from_jfunc (ipa_node_params *info, cgraph_edge *cs, int csidx,
       else
 	{
 	  if (!info->lattices)
-	    {
-	      gcc_checking_assert (!flag_ipa_cp);
-	      return ctx;
-	    }
+	    return ctx;
 	  ipcp_lattice<ipa_polymorphic_call_context> *lat;
 	  lat = ipa_get_poly_ctx_lat (info, srcidx);
 	  if (!lat->is_single_const ())
@@ -1786,7 +1780,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 	return NULL_TREE;
     }
 
-  if (!flag_devirtualize)
+  if (!opt_for_fn (ie->caller->decl, flag_devirtualize))
     return NULL_TREE;
 
   gcc_assert (!ie->indirect_info->agg_contents);
@@ -1884,8 +1878,8 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
       struct cgraph_node *node;
       if (*speculative)
 	return target;
-      if (!flag_devirtualize_speculatively || ie->speculative
-	  || !ie->maybe_hot_p ())
+      if (!opt_for_fn (ie->caller->decl, flag_devirtualize_speculatively)
+	  || ie->speculative || !ie->maybe_hot_p ())
 	return NULL;
       node = try_speculative_devirtualization (ie->indirect_info->otr_type,
 					       ie->indirect_info->otr_token,
@@ -2003,7 +1997,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 			    int freq_sum, gcov_type count_sum, int size_cost)
 {
   if (time_benefit == 0
-      || !flag_ipa_cp_clone
+      || !opt_for_fn (node->decl, flag_ipa_cp_clone)
       || !optimize_function_for_speed_p (DECL_STRUCT_FUNCTION (node->decl)))
     return false;
 
@@ -4315,7 +4309,7 @@ public:
     {
       /* FIXME: We should remove the optimize check after we ensure we never run
 	 IPA passes when not optimizing.  */
-      return flag_ipa_cp && optimize;
+      return (flag_ipa_cp && optimize) || in_lto_p;
     }
 
   virtual unsigned int execute (function *) { return ipcp_driver (); }

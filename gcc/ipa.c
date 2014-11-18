@@ -304,8 +304,7 @@ symbol_table::remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   hash_set<void *> reachable_call_targets;
 
   timevar_push (TV_IPA_UNREACHABLE);
-  if (optimize && flag_devirtualize)
-    build_type_inheritance_graph ();
+  build_type_inheritance_graph ();
   if (file)
     fprintf (file, "\nReclaiming functions:");
 #ifdef ENABLE_CHECKING
@@ -391,7 +390,8 @@ symbol_table::remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    {
 	      struct cgraph_edge *e;
 	      /* Keep alive possible targets for devirtualization.  */
-	      if (optimize && flag_devirtualize)
+	      if (opt_for_fn (cnode->decl, optimize)
+		  && opt_for_fn (cnode->decl, flag_devirtualize))
 		{
 		  struct cgraph_edge *next;
 		  for (e = cnode->indirect_calls; e; e = next)

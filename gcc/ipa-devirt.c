@@ -2818,6 +2818,8 @@ ipa_devirt (void)
   FOR_EACH_DEFINED_FUNCTION (n)
     {	
       bool update = false;
+      if (!opt_for_fn (n->decl, flag_devirtualize))
+	continue;
       if (dump_file && n->indirect_calls)
 	fprintf (dump_file, "\n\nProcesing function %s/%i\n",
 		 n->name (), n->order);
@@ -2846,7 +2848,7 @@ ipa_devirt (void)
 
 	    npolymorphic++;
 
-	    if (!flag_devirtualize_speculatively)
+	    if (!opt_for_fn (n->decl, flag_devirtualize_speculatively))
 	      continue;
 
 	    if (!e->maybe_hot_p ())
@@ -3116,6 +3118,10 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
+      /* In LTO, always run the IPA passes and decide on function basis if the
+	 pass is enabled.  */
+      if (in_lto_p)
+	return true;
       return (flag_devirtualize
 	      && (flag_devirtualize_speculatively
 		  || (warn_suggest_final_methods

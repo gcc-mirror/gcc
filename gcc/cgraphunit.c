@@ -450,7 +450,7 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
      declared inline and nested functions.  These were optimized out
      in the original implementation and it is unclear whether we want
      to change the behavior here.  */
-  if ((!optimize
+  if ((!opt_for_fn (decl, optimize)
        && !node->cpp_implicit_alias
        && !DECL_DISREGARD_INLINE_LIMITS (decl)
        && !DECL_DECLARED_INLINE_P (decl)
@@ -929,8 +929,7 @@ analyze_functions (void)
     FOR_EACH_SYMBOL (node)
       if (node->cpp_implicit_alias)
 	  node->fixup_same_cpp_alias_visibility (node->get_alias_target ());
-  if (optimize && flag_devirtualize)
-    build_type_inheritance_graph ();
+  build_type_inheritance_graph ();
 
   /* Analysis adds static variables that in turn adds references to new functions.
      So we need to iterate the process until it stabilize.  */
@@ -1001,7 +1000,8 @@ analyze_functions (void)
 	      for (edge = cnode->callees; edge; edge = edge->next_callee)
 		if (edge->callee->definition)
 		   enqueue_node (edge->callee);
-	      if (optimize && opt_for_fn (cnode->decl, flag_devirtualize))
+	      if (opt_for_fn (cnode->decl, optimize)
+		  && opt_for_fn (cnode->decl, flag_devirtualize))
 		{
 		  cgraph_edge *next;
 
@@ -1046,8 +1046,7 @@ analyze_functions (void)
 	  symtab->process_new_functions ();
 	}
     }
-  if (optimize && flag_devirtualize)
-    update_type_inheritance_graph ();
+  update_type_inheritance_graph ();
 
   /* Collect entry points to the unit.  */
   if (symtab->dump_file)

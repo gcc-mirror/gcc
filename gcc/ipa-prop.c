@@ -168,12 +168,10 @@ static bool
 ipa_func_spec_opts_forbid_analysis_p (struct cgraph_node *node)
 {
   tree fs_opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (node->decl);
-  struct cl_optimization *os;
 
   if (!fs_opts)
     return false;
-  os = TREE_OPTIMIZATION (fs_opts);
-  return !os->x_optimize || !os->x_flag_ipa_cp;
+  return !opt_for_fn (node->decl, optimize) || !opt_for_fn (node->decl, flag_ipa_cp);
 }
 
 /* Return index of the formal whose tree is PTREE in function which corresponds
@@ -2896,13 +2894,14 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
   tree target = NULL;
   bool speculative = false;
 
-  if (!flag_devirtualize)
+  if (!opt_for_fn (ie->caller->decl, flag_devirtualize))
     return NULL;
 
   gcc_assert (!ie->indirect_info->by_ref);
 
   /* Try to do lookup via known virtual table pointer value.  */
-  if (!ie->indirect_info->vptr_changed || flag_devirtualize_speculatively)
+  if (!ie->indirect_info->vptr_changed
+      || opt_for_fn (ie->caller->decl, flag_devirtualize_speculatively))
     {
       tree vtable;
       unsigned HOST_WIDE_INT offset;
@@ -2953,7 +2952,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
       else
 	target = ipa_impossible_devirt_target (ie, NULL_TREE);
     }
-  else if (!target && flag_devirtualize_speculatively
+  else if (!target && opt_for_fn (ie->caller->decl, flag_devirtualize_speculatively)
 	   && !ie->speculative && ie->maybe_hot_p ())
     {
       cgraph_node *n;
@@ -3025,7 +3024,7 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       param_index = ici->param_index;
       jfunc = ipa_get_ith_jump_func (top, param_index);
 
-      if (!flag_indirect_inlining)
+      if (!opt_for_fn (node->decl, flag_indirect_inlining))
 	new_direct_edge = NULL;
       else if (ici->polymorphic)
 	{
@@ -3579,7 +3578,7 @@ ipa_unregister_cgraph_hooks (void)
 void
 ipa_free_all_structures_after_ipa_cp (void)
 {
-  if (!optimize)
+  if (!optimize && !in_lto_p)
     {
       ipa_free_all_edge_args ();
       ipa_free_all_node_params ();

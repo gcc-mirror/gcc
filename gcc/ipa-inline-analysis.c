@@ -2474,7 +2474,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   info->conds = NULL;
   info->entry = NULL;
 
-  if (optimize && !early)
+  if (opt_for_fn (node->decl, optimize) && !early)
     {
       calculate_dominance_info (CDI_DOMINATORS);
       loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
@@ -2815,7 +2815,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   inline_summary (node)->self_time = time;
   inline_summary (node)->self_size = size;
   nonconstant_names.release ();
-  if (optimize && !early)
+  if (opt_for_fn (node->decl, optimize) && !early)
     {
       loop_optimizer_finalize ();
       free_dominance_info (CDI_DOMINATORS);
@@ -2872,8 +2872,9 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   info->stack_frame_offset = 0;
 
   /* Can this function be inlined at all?  */
-  if (!optimize && !lookup_attribute ("always_inline",
-				      DECL_ATTRIBUTES (node->decl)))
+  if (!opt_for_fn (node->decl, optimize)
+      && !lookup_attribute ("always_inline",
+			    DECL_ATTRIBUTES (node->decl)))
     info->inlinable = false;
   else
     info->inlinable = tree_inlinable_function_p (node->decl);
@@ -2990,7 +2991,7 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
 
   if (!known_vals.exists () && !known_contexts.exists ())
     return false;
-  if (!flag_indirect_inlining)
+  if (!opt_for_fn (ie->caller->decl, flag_indirect_inlining))
     return false;
 
   target = ipa_get_indirect_edge_target (ie, known_vals, known_contexts,
@@ -3986,7 +3987,7 @@ inline_analyze_function (struct cgraph_node *node)
   if (dump_file)
     fprintf (dump_file, "\nAnalyzing function: %s/%u\n",
 	     node->name (), node->order);
-  if (optimize && !node->thunk.thunk_p)
+  if (opt_for_fn (node->decl, optimize) && !node->thunk.thunk_p)
     inline_indirect_intraprocedural_analysis (node);
   compute_inline_parameters (node, false);
   if (!optimize)
