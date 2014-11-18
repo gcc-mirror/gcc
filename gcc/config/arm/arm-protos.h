@@ -225,6 +225,7 @@ extern void arm_pr_long_calls_off (struct cpp_reader *);
 extern void arm_lang_object_attributes_init(void);
 
 extern const char *arm_mangle_type (const_tree);
+extern const char *arm_mangle_builtin_type (const_tree);
 
 extern void arm_order_regs_for_local_alloc (void);
 

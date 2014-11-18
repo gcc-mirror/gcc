@@ -1,5 +1,45 @@
 2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/arm-builtins.c (arm_scalar_builtin_types): New.
+	(enum arm_simd_type): Likewise.
+	(struct arm_simd_type_info): Likewise
+	(arm_mangle_builtin_scalar_type): Likewise.
+	(arm_mangle_builtin_vector_type): Likewise.
+	(arm_mangle_builtin_type): Likewise.
+	(arm_simd_builtin_std_type): Likewise.
+	(arm_lookup_simd_builtin_type): Likewise.
+	(arm_simd_builtin_type): Likewise.
+	(arm_init_simd_builtin_types): Likewise.
+	(arm_init_simd_builtin_scalar_types): Likewise.
+	(arm_init_neon_builtins): Rewrite using qualifiers.
+	* config/arm/arm-protos.h (arm_mangle_builtin_type): New.
+	* config/arm/arm-simd-builtin-types.def: New file.
+	* config/arm/t-arm (arm-builtins.o): Depend on it.
+	* config/arm/arm.c (arm_mangle_type): Call arm_mangle_builtin_type.
+	* config/arm/arm_neon.h (int8x8_t): Use new internal type.
+	(int16x4_t): Likewise.
+	(int32x2_t): Likewise.
+	(float16x4_t): Likewise.
+	(float32x2_t): Likewise.
+	(poly8x8_t): Likewise.
+	(poly16x4_t): Likewise.
+	(uint8x8_t): Likewise.
+	(uint16x4_t): Likewise.
+	(uint32x2_t): Likewise.
+	(int8x16_t): Likewise.
+	(int16x8_t): Likewise.
+	(int32x4_t): Likewise.
+	(int64x2_t): Likewise.
+	(float32x4_t): Likewise.
+	(poly8x16_t): Likewise.
+	(poly16x8_t): Likewise.
+	(uint8x16_t): Likewise.
+	(uint16x8_t): Likewise.
+	(uint32x4_t): Likewise.
+	(uint64x2_t): Likewise.
+
+2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* gcc/config/arm/arm-builtins.c	(arm_type_qualifiers): New.
 	(neon_itype): Add new types corresponding to the types used in
 	qualifiers names.
