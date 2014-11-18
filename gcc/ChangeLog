@@ -1,5 +1,60 @@
 2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/arm-builtins.c (CONVERT_QUALIFIERS): Delete.
+	(COPYSIGNF_QUALIFIERS): Likewise.
+	(CREATE_QUALIFIERS): Likewise.
+	(DUP_QUALIFIERS): Likewise.
+	(FLOAT_WIDEN_QUALIFIERS): Likewise.
+	(FLOAT_NARROW_QUALIFIERS): Likewise.
+	(REINTERP_QUALIFIERS): Likewise.
+	(RINT_QUALIFIERS): Likewise.
+	(SPLIT_QUALIFIERS): Likewise.
+	(FIXCONV_QUALIFIERS): Likewise.
+	(SCALARMUL_QUALIFIERS): Likewise.
+	(SCALARMULL_QUALIFIERS): Likewise.
+	(SCALARMULH_QUALIFIERS): Likewise.
+	(SELECT_QUALIFIERS): Likewise.
+	(VTBX_QUALIFIERS): Likewise.
+	(SHIFTIMM_QUALIFIERS): Likewise.
+	(SCALARMAC_QUALIFIERS): Likewise.
+	(LANEMUL_QUALIFIERS): Likewise.
+	(LANEMULH_QUALIFIERS): Likewise.
+	(LANEMULL_QUALIFIERS): Likewise.
+	(SHIFTACC_QUALIFIERS): Likewise.
+	(SHIFTINSERT_QUALIFIERS): Likewise.
+	(VTBL_QUALIFIERS): Likewise.
+	(LOADSTRUCT_QUALIFIERS): Likewise.
+	(LOADSTRUCTLANE_QUALIFIERS): Likewise.
+	(STORESTRUCT_QUALIFIERS): Likewise.
+	(STORESTRUCTLANE_QUALIFIERS): Likewise.
+	(neon_builtin_type_mode): Delete.
+	(v8qi_UP): Map to V8QImode.
+	(v8qi_UP): Map to V8QImode.
+	(v4hi_UP): Map to V4HImode.
+	(v4hf_UP): Map to V4HFmode.
+	(v2si_UP): Map to V2SImode.
+	(v2sf_UP): Map to V2SFmode.
+	(di_UP): Map to DImode.
+	(v16qi_UP): Map to V16QImode.
+	(v8hi_UP): Map to V8HImode.
+	(v4si_UP): Map to V4SImode.
+	(v4sf_UP): Map to V4SFmode.
+	(v2di_UP): Map to V2DImode.
+	(ti_UP): Map to TImode.
+	(ei_UP): Map to EImode.
+	(oi_UP): Map to OImode.
+	(neon_itype): Delete.
+	(neon_builtin_datum): Remove itype, make mode a machine_mode.
+	(VAR1): Update accordingly.
+	(arm_init_neon_builtins): Use machine_mode directly.
+	(neon_dereference_pointer): Likewise.
+	(arm_expand_neon_args): Use qualifiers to decide operand types.
+	(arm_expand_neon_builtin): Likewise.
+	* config/arm/arm_neon_builtins.def: Remap operation type for
+	many builtins.
+
+2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/arm-builtins.c (arm_scalar_builtin_types): New.
 	(enum arm_simd_type): Likewise.
 	(struct arm_simd_type_info): Likewise
