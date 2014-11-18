@@ -1,5 +1,63 @@
 2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/t-arm (arm.o): Include arm-protos.h in the recipe.
+	* config/arm/arm.c (FL_CO_PROC): Move to arm-protos.h.
+	(FL_ARCH3M): Likewise.
+	(FL_MODE26): Likewise.
+	(FL_MODE32): Likewise.
+	(FL_ARCH4): Likewise.
+	(FL_ARCH5): Likewise.
+	(FL_THUMB): Likewise.
+	(FL_LDSCHED): Likewise.
+	(FL_STRONG): Likewise.
+	(FL_ARCH5E): Likewise.
+	(FL_XSCALE): Likewise.
+	(FL_ARCH6): Likewise.
+	(FL_VFPV2): Likewise.
+	(FL_WBUF): Likewise.
+	(FL_ARCH6K): Likewise.
+	(FL_THUMB2): Likewise.
+	(FL_NOTM): Likewise.
+	(FL_THUMB_DIV): Likewise.
+	(FL_VFPV3): Likewise.
+	(FL_NEON): Likewise.
+	(FL_ARCH7EM): Likewise.
+	(FL_ARCH7): Likewise.
+	(FL_ARM_DIV): Likewise.
+	(FL_ARCH8): Likewise.
+	(FL_CRC32): Likewise.
+	(FL_SMALLMUL): Likewise.
+	(FL_IWMMXT): Likewise.
+	(FL_IWMMXT2): Likewise.
+	(FL_TUNE): Likewise.
+	(FL_FOR_ARCH2): Likewise.
+	(FL_FOR_ARCH3): Likewise.
+	(FL_FOR_ARCH3M): Likewise.
+	(FL_FOR_ARCH4): Likewise.
+	(FL_FOR_ARCH4T): Likewise.
+	(FL_FOR_ARCH5): Likewise.
+	(FL_FOR_ARCH5T): Likewise.
+	(FL_FOR_ARCH5E): Likewise.
+	(FL_FOR_ARCH5TE): Likewise.
+	(FL_FOR_ARCH5TEJ): Likewise.
+	(FL_FOR_ARCH6): Likewise.
+	(FL_FOR_ARCH6J): Likewise.
+	(FL_FOR_ARCH6K): Likewise.
+	(FL_FOR_ARCH6Z): Likewise.
+	(FL_FOR_ARCH6ZK): Likewise.
+	(FL_FOR_ARCH6T2): Likewise.
+	(FL_FOR_ARCH6M): Likewise.
+	(FL_FOR_ARCH7): Likewise.
+	(FL_FOR_ARCH7A): Likewise.
+	(FL_FOR_ARCH7VE): Likewise.
+	(FL_FOR_ARCH7R): Likewise.
+	(FL_FOR_ARCH7M): Likewise.
+	(FL_FOR_ARCH7EM): Likewise.
+	(FL_FOR_ARCH8A): Likewise.
+	* config/arm/arm-protos.h: Take definitions moved from arm.c.
+
+2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/arm.c (arm_expand_neon_builtin): Remove "Magic Word"
 	parameter, rearrange switch statement accordingly.
 	(arm_evpc_neon_vrev): Remove "Magic Word".
