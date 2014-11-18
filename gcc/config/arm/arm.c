@@ -9822,6 +9822,8 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	      *cost += rtx_cost (XEXP (x, 1), code, 1, speed_p);
 	      return true;
 	    }
+	  else if (speed_p)
+	    *cost += extra_cost->alu.arith;
 
 	  return false;
 	}
@@ -10057,6 +10059,9 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	      *cost += rtx_cost (XEXP (x, 0), PLUS, 0, speed_p);
 	      return true;
 	    }
+	  else if (speed_p)
+	    *cost += extra_cost->alu.arith;
+
 	  return false;
 	}
 
