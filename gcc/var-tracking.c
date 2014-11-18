@@ -114,7 +114,6 @@
 #include "reload.h"
 #include "sbitmap.h"
 #include "alloc-pool.h"
-#include "fibheap.h"
 #include "regs.h"
 #include "expr.h"
 #include "tree-pass.h"
@@ -130,6 +129,10 @@
 #include "tm_p.h"
 #include "alias.h"
 #include "rtl-iter.h"
+#include "fibonacci_heap.h"
+
+typedef fibonacci_heap <long, basic_block_def> bb_heap_t;
+typedef fibonacci_node <long, basic_block_def> bb_heap_node_t;
 
 /* var-tracking.c assumes that tree code with the same value as VALUE rtx code
    has no chance to appear in REG_EXPR/MEM_EXPRs and isn't a decl.
@@ -6961,7 +6964,9 @@ compute_bb_dataflow (basic_block bb)
 static bool
 vt_find_locations (void)
 {
-  fibheap_t worklist, pending, fibheap_swap;
+  bb_heap_t *worklist = new bb_heap_t (LONG_MIN);
+  bb_heap_t *pending = new bb_heap_t (LONG_MIN);
+  bb_heap_t *fibheap_swap = NULL;
   sbitmap visited, in_worklist, in_pending, sbitmap_swap;
   basic_block bb;
   edge e;
@@ -6982,18 +6987,16 @@ vt_find_locations (void)
     bb_order[rc_order[i]] = i;
   free (rc_order);
 
-  worklist = fibheap_new ();
-  pending = fibheap_new ();
   visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
   in_worklist = sbitmap_alloc (last_basic_block_for_fn (cfun));
   in_pending = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (in_worklist);
 
   FOR_EACH_BB_FN (bb, cfun)
-    fibheap_insert (pending, bb_order[bb->index], bb);
+    pending->insert (bb_order[bb->index], bb);
   bitmap_ones (in_pending);
 
-  while (success && !fibheap_empty (pending))
+  while (success && !pending->empty ())
     {
       fibheap_swap = pending;
       pending = worklist;
@@ -7004,9 +7007,9 @@ vt_find_locations (void)
 
       bitmap_clear (visited);
 
-      while (!fibheap_empty (worklist))
+      while (!worklist->empty ())
 	{
-	  bb = (basic_block) fibheap_extract_min (worklist);
+	  bb = worklist->extract_min ();
 	  bitmap_clear_bit (in_worklist, bb->index);
 	  gcc_assert (!bitmap_bit_p (visited, bb->index));
 	  if (!bitmap_bit_p (visited, bb->index))
@@ -7113,17 +7116,16 @@ vt_find_locations (void)
 			    {
 			      /* Send E->DEST to next round.  */
 			      bitmap_set_bit (in_pending, e->dest->index);
-			      fibheap_insert (pending,
-					      bb_order[e->dest->index],
-					      e->dest);
+			      pending->insert (bb_order[e->dest->index],
+					       e->dest);
 			    }
 			}
 		      else if (!bitmap_bit_p (in_worklist, e->dest->index))
 			{
 			  /* Add E->DEST to current round.  */
 			  bitmap_set_bit (in_worklist, e->dest->index);
-			  fibheap_insert (worklist, bb_order[e->dest->index],
-					  e->dest);
+			  worklist->insert (bb_order[e->dest->index],
+					    e->dest);
 			}
 		    }
 		}
@@ -7136,7 +7138,8 @@ vt_find_locations (void)
 			 oldinsz,
 			 (int)shared_hash_htab (VTI (bb)->out.vars)->size (),
 			 oldoutsz,
-			 (int)worklist->nodes, (int)pending->nodes, htabsz);
+			 (int)worklist->nodes (), (int)pending->nodes (),
+			 htabsz);
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
@@ -7154,8 +7157,8 @@ vt_find_locations (void)
       gcc_assert (VTI (bb)->flooded);
 
   free (bb_order);
-  fibheap_delete (worklist);
-  fibheap_delete (pending);
+  delete worklist;
+  delete pending;
   sbitmap_free (visited);
   sbitmap_free (in_worklist);
   sbitmap_free (in_pending);
