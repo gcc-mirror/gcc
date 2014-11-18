@@ -904,6 +904,19 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   if (opts->x_flag_sanitize_recover & SANITIZE_LEAK)
     error_at (loc, "-fsanitize-recover=leak is not supported");
+
+  /* When instrumenting the pointers, we don't want to remove
+     the null pointer checks.  */
+  if (opts->x_flag_sanitize & (SANITIZE_NULL | SANITIZE_NONNULL_ATTRIBUTE
+				| SANITIZE_RETURNS_NONNULL_ATTRIBUTE))
+    opts->x_flag_delete_null_pointer_checks = 0;
+
+  /* Aggressive compiler optimizations may cause false negatives.  */
+  if (opts->x_flag_sanitize)
+    {
+      opts->x_flag_aggressive_loop_optimizations = 0;
+      opts->x_flag_strict_overflow = 0;
+    }
 }
 
 #define LEFT_COLUMN	27
@@ -1621,12 +1634,6 @@ common_handle_option (struct gcc_options *opts,
 
 	if (code != OPT_fsanitize_)
 	  break;
-
-	/* When instrumenting the pointers, we don't want to remove
-	   the null pointer checks.  */
-	if (opts->x_flag_sanitize & (SANITIZE_NULL | SANITIZE_NONNULL_ATTRIBUTE
-				     | SANITIZE_RETURNS_NONNULL_ATTRIBUTE))
-	  opts->x_flag_delete_null_pointer_checks = 0;
 
 	/* Kernel ASan implies normal ASan but does not yet support
 	   all features.  */
