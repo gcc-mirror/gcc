@@ -1,3 +1,13 @@
+2014-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63914
+	* tree-ssa-ccp.c (canonicalize_value): Remove float value
+	canonicalization.
+	(valid_lattice_transition): Allow (partial) transition
+	from NaN to non-NaN if !HONOR_NANS.
+	(set_lattice_value): Check for valid lattice transitions
+	only when checking is enabled.
+
 2014-11-18  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/nvptx/nvptx.c: Include <sstream> directly after "config.h".

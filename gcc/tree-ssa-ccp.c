@@ -402,58 +402,16 @@ set_value_varying (tree var)
   val->mask = -1;
 }
 
-/* For float types, modify the value of VAL to make ccp work correctly
-   for non-standard values (-0, NaN):
-
-   If HONOR_SIGNED_ZEROS is false, and VAL = -0, we canonicalize it to 0.
-   If HONOR_NANS is false, and VAL is NaN, we canonicalize it to UNDEFINED.
-     This is to fix the following problem (see PR 29921): Suppose we have
-
-     x = 0.0 * y
-
-     and we set value of y to NaN.  This causes value of x to be set to NaN.
-     When we later determine that y is in fact VARYING, fold uses the fact
-     that HONOR_NANS is false, and we try to change the value of x to 0,
-     causing an ICE.  With HONOR_NANS being false, the real appearance of
-     NaN would cause undefined behavior, though, so claiming that y (and x)
-     are UNDEFINED initially is correct.
-
-  For other constants, make sure to drop TREE_OVERFLOW.  */
+/* For integer constants, make sure to drop TREE_OVERFLOW.  */
 
 static void
 canonicalize_value (ccp_prop_value_t *val)
 {
-  machine_mode mode;
-  tree type;
-  REAL_VALUE_TYPE d;
-
   if (val->lattice_val != CONSTANT)
     return;
 
   if (TREE_OVERFLOW_P (val->value))
     val->value = drop_tree_overflow (val->value);
-
-  if (TREE_CODE (val->value) != REAL_CST)
-    return;
-
-  d = TREE_REAL_CST (val->value);
-  type = TREE_TYPE (val->value);
-  mode = TYPE_MODE (type);
-
-  if (!HONOR_SIGNED_ZEROS (mode)
-      && REAL_VALUE_MINUS_ZERO (d))
-    {
-      val->value = build_real (type, dconst0);
-      return;
-    }
-
-  if (!HONOR_NANS (mode)
-      && REAL_VALUE_ISNAN (d))
-    {
-      val->lattice_val = UNDEFINED;
-      val->value = NULL;
-      return;
-    }
 }
 
 /* Return whether the lattice transition is valid.  */
@@ -487,7 +445,49 @@ valid_lattice_transition (ccp_prop_value_t old_val, ccp_prop_value_t new_val)
 	    == wi::bit_and_not (wi::to_widest (new_val.value), new_val.mask));
 
   /* Otherwise constant values have to agree.  */
-  return operand_equal_p (old_val.value, new_val.value, 0);
+  if (operand_equal_p (old_val.value, new_val.value, 0))
+    return true;
+
+  /* At least the kinds and types should agree now.  */
+  if (TREE_CODE (old_val.value) != TREE_CODE (new_val.value)
+      || !types_compatible_p (TREE_TYPE (old_val.value),
+			      TREE_TYPE (new_val.value)))
+    return false;
+
+  /* For floats and !HONOR_NANS allow transitions from (partial) NaN
+     to non-NaN.  */
+  tree type = TREE_TYPE (new_val.value);
+  if (SCALAR_FLOAT_TYPE_P (type)
+      && !HONOR_NANS (TYPE_MODE (type)))
+    {
+      if (REAL_VALUE_ISNAN (TREE_REAL_CST (old_val.value)))
+	return true;
+    }
+  else if (VECTOR_FLOAT_TYPE_P (type)
+	   && !HONOR_NANS (TYPE_MODE (TREE_TYPE (type))))
+    {
+      for (unsigned i = 0; i < VECTOR_CST_NELTS (old_val.value); ++i)
+	if (!REAL_VALUE_ISNAN
+	       (TREE_REAL_CST (VECTOR_CST_ELT (old_val.value, i)))
+	    && !operand_equal_p (VECTOR_CST_ELT (old_val.value, i),
+				 VECTOR_CST_ELT (new_val.value, i), 0))
+	  return false;
+      return true;
+    }
+  else if (COMPLEX_FLOAT_TYPE_P (type)
+	   && !HONOR_NANS (TYPE_MODE (TREE_TYPE (type))))
+    {
+      if (!REAL_VALUE_ISNAN (TREE_REAL_CST (TREE_REALPART (old_val.value)))
+	  && !operand_equal_p (TREE_REALPART (old_val.value),
+			       TREE_REALPART (new_val.value), 0))
+	return false;
+      if (!REAL_VALUE_ISNAN (TREE_REAL_CST (TREE_IMAGPART (old_val.value)))
+	  && !operand_equal_p (TREE_IMAGPART (old_val.value),
+			       TREE_IMAGPART (new_val.value), 0))
+	return false;
+      return true;
+    }
+  return false;
 }
 
 /* Set the value for variable VAR to NEW_VAL.  Return true if the new
@@ -514,7 +514,7 @@ set_lattice_value (tree var, ccp_prop_value_t new_val)
       new_val.mask = new_val.mask | old_val->mask | diff;
     }
 
-  gcc_assert (valid_lattice_transition (*old_val, new_val));
+  gcc_checking_assert (valid_lattice_transition (*old_val, new_val));
 
   /* If *OLD_VAL and NEW_VAL are the same, return false to inform the
      caller that this was a non-transition.  */
