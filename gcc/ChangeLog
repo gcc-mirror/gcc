@@ -1,3 +1,13 @@
+2014-11-18  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/arm_neon.h (vld1_dup_f32, vld1_dup_f64, vld1_dup_p8,
+	vld1_dup_p16, vld1_dup_s8, vld1_dup_s16, vld1_dup_s32, vld1_dup_s64,
+	vld1_dup_u8, vld1_dup_u16, vld1_dup_u32, vld1_dup_u64, vld1q_dup_f32,
+	vld1q_dup_f64, vld1q_dup_p8, vld1q_dup_p16, vld1q_dup_s8, vld1q_dup_s16,
+	vld1q_dup_s32, vld1q_dup_s64, vld1q_dup_u8, vld1q_dup_u16,
+	vld1q_dup_u32, vld1q_dup_u64): Replace inline asm with vdup_n_ and
+	pointer dereference.
+
 2014-11-18  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree.c (element_mode, integer_truep): New functions.
