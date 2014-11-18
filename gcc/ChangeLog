@@ -1,5 +1,45 @@
 2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config.gcc (extra_objs): Add arm-builtins.o for arm*-*-*.
+	(target_gtfiles): Add config/arm/arm-builtins.c for arm*-*-*.
+	* config/arm/arm-builtins.c: New.
+	* config/arm/t-arm (arm_builtins.o): New.
+	* config/arm/arm-protos.h (arm_expand_builtin): New.
+	(arm_builtin_decl): Likewise.
+	(arm_init_builtins): Likewise.
+	(arm_atomic_assign_expand_fenv): Likewise.
+	* config/arm/arm.c (arm_atomic_assign_expand_fenv): Remove prototype.
+	(arm_init_builtins): Likewise.
+	(arm_init_iwmmxt_builtins): Likewise
+	(safe_vector_operand): Likewise
+	(arm_expand_binop_builtin): Likewise
+	(arm_expand_unop_builtin): Likewise
+	(arm_expand_builtin): Likewise
+	(arm_builtin_decl): Likewise
+	(insn_flags): Remove static.
+	(tune_flags): Likewise.
+	(enum arm_builtins): Move to config/arm/arm-builtins.c.
+	(arm_init_neon_builtins): Likewise.
+	(struct builtin_description): Likewise.
+	(arm_init_iwmmxt_builtins): Likewise.
+	(arm_init_fp16_builtins): Likewise.
+	(arm_init_crc32_builtins): Likewise.
+	(arm_init_builtins): Likewise.
+	(arm_builtin_decl): Likewise.
+	(safe_vector_operand): Likewise.
+	(arm_expand_ternop_builtin): Likewise.
+	(arm_expand_binop_builtin): Likewise.
+	(arm_expand_unop_builtin): Likewise.
+	(neon_dereference_pointer): Likewise.
+	(arm_expand_neon_args): Likewise.
+	(arm_expand_neon_builtin): Likewise.
+	(neon_split_vcombine): Likewise.
+	(arm_expand_builtin): Likewise.
+	(arm_builtin_vectorized_function): Likewise.
+	(arm_atomic_assign_expand_fenv): Likewise.
+
+2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/t-arm (arm.o): Include arm-protos.h in the recipe.
 	* config/arm/arm.c (FL_CO_PROC): Move to arm-protos.h.
 	(FL_ARCH3M): Likewise.
