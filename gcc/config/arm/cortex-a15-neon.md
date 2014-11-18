@@ -655,10 +655,20 @@
        (eq_attr "type" "fmov"))
   "ca15_issue1,ca15_cx_perm")
 
-(define_insn_reservation "cortex_a15_vfp_to_from_gp" 5
+(define_insn_reservation "cortex_a15_gp_to_vfp" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "f_mcr, f_mcrr, f_mrc, f_mrrc"))
-  "ca15_issue1,ca15_ls1+ca15_ls2")
+       (eq_attr "type" "f_mcr, f_mcrr"))
+  "ca15_issue1,ca15_ls")
+
+(define_insn_reservation "cortex_a15_mov_vfp_to_gp" 5
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "type" "f_mrc, f_mrrc"))
+  "ca15_issue1,ca15_ls")
+
+;; Moves from floating point registers to general purpose registers
+;; induce additional latency.
+(define_bypass 10 "cortex_a15_vfp*, cortex_a15_neon*, cortex_a15_gp_to_vfp" "cortex_a15_mov_vfp_to_gp")
+
 
 (define_insn_reservation "cortex_a15_vfp_ariths" 7
   (and (eq_attr "tune" "cortexa15")
