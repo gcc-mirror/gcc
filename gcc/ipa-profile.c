@@ -418,7 +418,8 @@ ipa_propagate_frequency (struct cgraph_node *node)
      nor about virtuals.  */
   if (!node->local.local
       || node->alias
-      || (flag_devirtualize && DECL_VIRTUAL_P (node->decl)))
+      || (opt_for_fn (node->decl, flag_devirtualize)
+	  && DECL_VIRTUAL_P (node->decl)))
     return false;
   gcc_assert (node->analyzed);
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -754,7 +755,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_ipa_profile; }
+  virtual bool gate (function *) { return flag_ipa_profile || in_lto_p; }
   virtual unsigned int execute (function *) { return ipa_profile (); }
 
 }; // class pass_ipa_profile

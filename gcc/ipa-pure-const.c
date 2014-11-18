@@ -914,7 +914,8 @@ add_new_function (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
      static declarations.  We do not need to scan them more than once
      since all we would be interested in are the addressof
      operations.  */
-  if (node->get_availability () > AVAIL_INTERPOSABLE)
+  if (node->get_availability () > AVAIL_INTERPOSABLE
+      && opt_for_fn (node->decl, flag_ipa_pure_const))
     set_function_state (node, analyze_function (node, true));
 }
 
@@ -984,7 +985,8 @@ pure_const_generate_summary (void)
      when function got cloned and the clone is AVAILABLE.  */
 
   FOR_EACH_DEFINED_FUNCTION (node)
-    if (node->get_availability () >= AVAIL_INTERPOSABLE)
+    if (node->get_availability () >= AVAIL_INTERPOSABLE
+        && opt_for_fn (node->decl, flag_ipa_pure_const))
       set_function_state (node, analyze_function (node, true));
 }
 
@@ -1595,9 +1597,7 @@ execute (function *)
 static bool
 gate_pure_const (void)
 {
-  return (flag_ipa_pure_const
-	  /* Don't bother doing anything if the program has errors.  */
-	  && !seen_error ());
+  return flag_ipa_pure_const || in_lto_p;
 }
 
 pass_ipa_pure_const::pass_ipa_pure_const(gcc::context *ctxt)

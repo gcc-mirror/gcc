@@ -1392,7 +1392,7 @@ Common Report Var(flag_inhibit_size_directive)
 Do not generate .size directives
 
 findirect-inlining
-Common Report Var(flag_indirect_inlining)
+Common Report Var(flag_indirect_inlining) Optimization
 Perform indirect inlining
 
 ; General flag to enable inlining.  Specifying -fno-inline will disable
