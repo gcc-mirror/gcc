@@ -19,6 +19,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#include <sstream>
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -51,7 +52,6 @@
 #include "df.h"
 #include "builtins.h"
 #include "hashtab.h"
-#include <sstream>
 
 /* Record the function decls we've written, and the libfuncs and function
    decls corresponding to them.  */

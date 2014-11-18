@@ -1,3 +1,7 @@
+2014-11-18  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/nvptx/nvptx.c: Include <sstream> directly after "config.h".
+
 2014-11-18  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/neon-testgen.ml (emit_prologue): Handle new
