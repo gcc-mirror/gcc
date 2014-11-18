@@ -73,15 +73,6 @@ enum arm_type_qualifiers
 static enum arm_type_qualifiers
 arm_unop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_internal };
-#define CONVERT_QUALIFIERS (arm_unop_qualifiers)
-#define COPYSIGNF_QUALIFIERS (arm_unop_qualifiers)
-#define CREATE_QUALIFIERS (arm_unop_qualifiers)
-#define DUP_QUALIFIERS (arm_unop_qualifiers)
-#define FLOAT_WIDEN_QUALIFIERS (arm_unop_qualifiers)
-#define FLOAT_NARROW_QUALIFIERS (arm_unop_qualifiers)
-#define REINTERP_QUALIFIERS (arm_unop_qualifiers)
-#define RINT_QUALIFIERS (arm_unop_qualifiers)
-#define SPLIT_QUALIFIERS (arm_unop_qualifiers)
 #define UNOP_QUALIFIERS (arm_unop_qualifiers)
 
 /* unsigned T (unsigned T).  */
@@ -95,25 +86,18 @@ static enum arm_type_qualifiers
 arm_binop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_maybe_immediate };
 #define BINOP_QUALIFIERS (arm_binop_qualifiers)
-#define FIXCONV_QUALIFIERS (arm_binop_qualifiers)
-#define SCALARMUL_QUALIFIERS (arm_binop_qualifiers)
-#define SCALARMULL_QUALIFIERS (arm_binop_qualifiers)
-#define SCALARMULH_QUALIFIERS (arm_binop_qualifiers)
 
 /* T (T, T, T).  */
 static enum arm_type_qualifiers
 arm_ternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_none };
 #define TERNOP_QUALIFIERS (arm_ternop_qualifiers)
-#define SELECT_QUALIFIERS (arm_ternop_qualifiers)
-#define VTBX_QUALIFIERS (arm_ternop_qualifiers)
 
 /* T (T, immediate).  */
 static enum arm_type_qualifiers
 arm_getlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_immediate };
 #define GETLANE_QUALIFIERS (arm_getlane_qualifiers)
-#define SHIFTIMM_QUALIFIERS (arm_getlane_qualifiers)
 
 /* T (T, T, T, immediate).  */
 static enum arm_type_qualifiers
@@ -121,32 +105,24 @@ arm_lanemac_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none,
       qualifier_none, qualifier_immediate };
 #define LANEMAC_QUALIFIERS (arm_lanemac_qualifiers)
-#define SCALARMAC_QUALIFIERS (arm_lanemac_qualifiers)
 
 /* T (T, T, immediate).  */
 static enum arm_type_qualifiers
 arm_setlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate };
-#define LANEMUL_QUALIFIERS (arm_setlane_qualifiers)
-#define LANEMULH_QUALIFIERS (arm_setlane_qualifiers)
-#define LANEMULL_QUALIFIERS (arm_setlane_qualifiers)
 #define SETLANE_QUALIFIERS (arm_setlane_qualifiers)
-#define SHIFTACC_QUALIFIERS (arm_setlane_qualifiers)
-#define SHIFTINSERT_QUALIFIERS (arm_setlane_qualifiers)
 
 /* T (T, T).  */
 static enum arm_type_qualifiers
 arm_combine_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none };
 #define COMBINE_QUALIFIERS (arm_combine_qualifiers)
-#define VTBL_QUALIFIERS (arm_combine_qualifiers)
 
 /* T ([T element type] *).  */
 static enum arm_type_qualifiers
 arm_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_const_pointer_map_mode };
 #define LOAD1_QUALIFIERS (arm_load1_qualifiers)
-#define LOADSTRUCT_QUALIFIERS (arm_load1_qualifiers)
 
 /* T ([T element type] *, T, immediate).  */
 static enum arm_type_qualifiers
@@ -154,7 +130,6 @@ arm_load1_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_const_pointer_map_mode,
       qualifier_none, qualifier_immediate };
 #define LOAD1LANE_QUALIFIERS (arm_load1_lane_qualifiers)
-#define LOADSTRUCTLANE_QUALIFIERS (arm_load1_lane_qualifiers)
 
 /* The first argument (return type) of a store should be void type,
    which we represent with qualifier_void.  Their first operand will be
@@ -167,7 +142,6 @@ static enum arm_type_qualifiers
 arm_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode, qualifier_none };
 #define STORE1_QUALIFIERS (arm_store1_qualifiers)
-#define STORESTRUCT_QUALIFIERS (arm_store1_qualifiers)
 
    /* void ([T element type] *, T, immediate).  */
 static enum arm_type_qualifiers
@@ -175,100 +149,27 @@ arm_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode,
       qualifier_none, qualifier_immediate };
 #define STORE1LANE_QUALIFIERS (arm_storestruct_lane_qualifiers)
-#define STORESTRUCTLANE_QUALIFIERS (arm_storestruct_lane_qualifiers)
 
-typedef enum {
-  T_V8QI,
-  T_V4HI,
-  T_V4HF,
-  T_V2SI,
-  T_V2SF,
-  T_DI,
-  T_V16QI,
-  T_V8HI,
-  T_V4SI,
-  T_V4SF,
-  T_V2DI,
-  T_TI,
-  T_EI,
-  T_OI,
-  T_MAX		/* Size of enum.  Keep last.  */
-} neon_builtin_type_mode;
-
-#define TYPE_MODE_BIT(X) (1 << (X))
-
-#define TB_DREG (TYPE_MODE_BIT (T_V8QI) | TYPE_MODE_BIT (T_V4HI)	\
-		 | TYPE_MODE_BIT (T_V4HF) | TYPE_MODE_BIT (T_V2SI)	\
-		 | TYPE_MODE_BIT (T_V2SF) | TYPE_MODE_BIT (T_DI))
-#define TB_QREG (TYPE_MODE_BIT (T_V16QI) | TYPE_MODE_BIT (T_V8HI)	\
-		 | TYPE_MODE_BIT (T_V4SI) | TYPE_MODE_BIT (T_V4SF)	\
-		 | TYPE_MODE_BIT (T_V2DI) | TYPE_MODE_BIT (T_TI))
-
-#define v8qi_UP  T_V8QI
-#define v4hi_UP  T_V4HI
-#define v4hf_UP  T_V4HF
-#define v2si_UP  T_V2SI
-#define v2sf_UP  T_V2SF
-#define di_UP    T_DI
-#define v16qi_UP T_V16QI
-#define v8hi_UP  T_V8HI
-#define v4si_UP  T_V4SI
-#define v4sf_UP  T_V4SF
-#define v2di_UP  T_V2DI
-#define ti_UP	 T_TI
-#define ei_UP	 T_EI
-#define oi_UP	 T_OI
+#define v8qi_UP  V8QImode
+#define v4hi_UP  V4HImode
+#define v4hf_UP  V4HFmode
+#define v2si_UP  V2SImode
+#define v2sf_UP  V2SFmode
+#define di_UP    DImode
+#define v16qi_UP V16QImode
+#define v8hi_UP  V8HImode
+#define v4si_UP  V4SImode
+#define v4sf_UP  V4SFmode
+#define v2di_UP  V2DImode
+#define ti_UP	 TImode
+#define ei_UP	 EImode
+#define oi_UP	 OImode
 
 #define UP(X) X##_UP
 
-typedef enum {
-  NEON_BINOP,
-  NEON_TERNOP,
-  NEON_UNOP,
-  NEON_BSWAP,
-  NEON_GETLANE,
-  NEON_SETLANE,
-  NEON_CREATE,
-  NEON_RINT,
-  NEON_COPYSIGNF,
-  NEON_DUP,
-  NEON_DUPLANE,
-  NEON_COMBINE,
-  NEON_SPLIT,
-  NEON_LANEMUL,
-  NEON_LANEMULL,
-  NEON_LANEMULH,
-  NEON_LANEMAC,
-  NEON_SCALARMUL,
-  NEON_SCALARMULL,
-  NEON_SCALARMULH,
-  NEON_SCALARMAC,
-  NEON_CONVERT,
-  NEON_FLOAT_WIDEN,
-  NEON_FLOAT_NARROW,
-  NEON_FIXCONV,
-  NEON_SELECT,
-  NEON_REINTERP,
-  NEON_VTBL,
-  NEON_VTBX,
-  NEON_LOAD1,
-  NEON_LOAD1LANE,
-  NEON_STORE1,
-  NEON_STORE1LANE,
-  NEON_LOADSTRUCT,
-  NEON_LOADSTRUCTLANE,
-  NEON_STORESTRUCT,
-  NEON_STORESTRUCTLANE,
-  NEON_LOGICBINOP,
-  NEON_SHIFTINSERT,
-  NEON_SHIFTIMM,
-  NEON_SHIFTACC
-} neon_itype;
-
 typedef struct {
   const char *name;
-  const neon_itype itype;
-  const neon_builtin_type_mode mode;
+  machine_mode mode;
   const enum insn_code code;
   unsigned int fcode;
   enum arm_type_qualifiers *qualifiers;
@@ -277,7 +178,7 @@ typedef struct {
 #define CF(N,X) CODE_FOR_neon_##N##X
 
 #define VAR1(T, N, A) \
-  {#N, NEON_##T, UP (A), CF (N, A), 0, T##_QUALIFIERS},
+  {#N #A, UP (A), CF (N, A), 0, T##_QUALIFIERS},
 #define VAR2(T, N, A, B) \
   VAR1 (T, N, A) \
   VAR1 (T, N, B)
@@ -310,10 +211,8 @@ typedef struct {
    The mode entries in the following table correspond to the "key" type of the
    instruction variant, i.e. equivalent to that which would be specified after
    the assembler mnemonic, which usually refers to the last vector operand.
-   (Signed/unsigned/polynomial types are not differentiated between though, and
-   are all mapped onto the same mode for a given element size.) The modes
-   listed per instruction should be the same as those defined for that
-   instruction's pattern in neon.md.  */
+   The modes listed per instruction should be the same as those defined for
+   that instruction's pattern in neon.md.  */
 
 static neon_builtin_datum neon_builtin_data[] =
 {
@@ -980,24 +879,9 @@ arm_init_neon_builtins (void)
       bool print_type_signature_p = false;
       char type_signature[SIMD_MAX_BUILTIN_ARGS] = { 0 };
       neon_builtin_datum *d = &neon_builtin_data[i];
-      const char *const modenames[] =
-	{
-	  "v8qi", "v4hi", "v4hf", "v2si", "v2sf", "di",
-	  "v16qi", "v8hi", "v4si", "v4sf", "v2di",
-	  "ti", "ei", "oi"
-	};
-      const enum machine_mode modes[] =
-	{
-	  V8QImode, V4HImode, V4HFmode, V2SImode, V2SFmode, DImode,
-	  V16QImode, V8HImode, V4SImode, V4SFmode, V2DImode,
-	  TImode, EImode, OImode
-	};
-
       char namebuf[60];
       tree ftype = NULL;
       tree fndecl = NULL;
-
-      gcc_assert (ARRAY_SIZE (modenames) == T_MAX);
 
       d->fcode = fcode;
 
@@ -1046,7 +930,7 @@ arm_init_neon_builtins (void)
 	  /* Some builtins have different user-facing types
 	     for certain arguments, encoded in d->mode.  */
 	  if (qualifiers & qualifier_map_mode)
-	      op_mode = modes[d->mode];
+	      op_mode = d->mode;
 
 	  /* For pointers, we want a pointer to the basic type
 	     of the vector.  */
@@ -1080,11 +964,11 @@ arm_init_neon_builtins (void)
       gcc_assert (ftype != NULL);
 
       if (print_type_signature_p)
-	snprintf (namebuf, sizeof (namebuf), "__builtin_neon_%s%s_%s",
-		  d->name, modenames[d->mode], type_signature);
+	snprintf (namebuf, sizeof (namebuf), "__builtin_neon_%s_%s",
+		  d->name, type_signature);
       else
-	snprintf (namebuf, sizeof (namebuf), "__builtin_neon_%s%s",
-		  d->name, modenames[d->mode]);
+	snprintf (namebuf, sizeof (namebuf), "__builtin_neon_%s",
+		  d->name);
 
       fndecl = add_builtin_function (namebuf, ftype, fcode, BUILT_IN_MD,
 				     NULL, NULL_TREE);
@@ -2048,7 +1932,7 @@ typedef enum {
 static tree
 neon_dereference_pointer (tree exp, tree type, machine_mode mem_mode,
 			  machine_mode reg_mode,
-			  neon_builtin_type_mode type_mode)
+			  machine_mode vector_mode)
 {
   HOST_WIDE_INT reg_size, vector_size, nvectors, nelems;
   tree elem_type, upper_bound, array_type;
@@ -2057,8 +1941,7 @@ neon_dereference_pointer (tree exp, tree type, machine_mode mem_mode,
   reg_size = GET_MODE_SIZE (reg_mode);
 
   /* Work out the size of each vector in bytes.  */
-  gcc_assert (TYPE_MODE_BIT (type_mode) & (TB_DREG | TB_QREG));
-  vector_size = (TYPE_MODE_BIT (type_mode) & TB_QREG ? 16 : 8);
+  vector_size = GET_MODE_SIZE (vector_mode);
 
   /* Work out how many vectors there are.  */
   gcc_assert (reg_size % vector_size == 0);
@@ -2087,21 +1970,17 @@ neon_dereference_pointer (tree exp, tree type, machine_mode mem_mode,
 
 /* Expand a Neon builtin.  */
 static rtx
-arm_expand_neon_args (rtx target, int icode, int have_retval,
-		      neon_builtin_type_mode type_mode,
-		      tree exp, int fcode, ...)
+arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
+		      int icode, int have_retval, tree exp, ...)
 {
   va_list ap;
   rtx pat;
-  tree arg[NEON_MAX_BUILTIN_ARGS];
-  rtx op[NEON_MAX_BUILTIN_ARGS];
-  tree arg_type;
-  tree formals;
+  tree arg[SIMD_MAX_BUILTIN_ARGS];
+  rtx op[SIMD_MAX_BUILTIN_ARGS];
   machine_mode tmode = insn_data[icode].operand[0].mode;
-  machine_mode mode[NEON_MAX_BUILTIN_ARGS];
-  machine_mode other_mode;
+  machine_mode mode[SIMD_MAX_BUILTIN_ARGS];
+  tree formals;
   int argc = 0;
-  int opno;
 
   if (have_retval
       && (!target
@@ -2109,7 +1988,7 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
 	  || !(*insn_data[icode].operand[0].predicate) (target, tmode)))
     target = gen_reg_rtx (tmode);
 
-  va_start (ap, fcode);
+  va_start (ap, exp);
 
   formals = TYPE_ARG_TYPES (TREE_TYPE (arm_builtin_decls[fcode]));
 
@@ -2118,19 +1997,20 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
       builtin_arg thisarg = (builtin_arg) va_arg (ap, int);
 
       if (thisarg == NEON_ARG_STOP)
-        break;
+	break;
       else
-        {
-          opno = argc + have_retval;
-          mode[argc] = insn_data[icode].operand[opno].mode;
-          arg[argc] = CALL_EXPR_ARG (exp, argc);
-	  arg_type = TREE_VALUE (formals);
+	{
+	  int opno = argc + have_retval;
+	  arg[argc] = CALL_EXPR_ARG (exp, argc);
+	  mode[argc] = insn_data[icode].operand[opno].mode;
           if (thisarg == NEON_ARG_MEMORY)
             {
-              other_mode = insn_data[icode].operand[1 - opno].mode;
-              arg[argc] = neon_dereference_pointer (arg[argc], arg_type,
+              machine_mode other_mode
+		= insn_data[icode].operand[1 - opno].mode;
+              arg[argc] = neon_dereference_pointer (arg[argc],
+						    TREE_VALUE (formals),
 						    mode[argc], other_mode,
-						    type_mode);
+						    map_mode);
             }
 
 	  /* Use EXPAND_MEMORY for NEON_ARG_MEMORY to ensure a MEM_P
@@ -2139,22 +2019,23 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
 				  (thisarg == NEON_ARG_MEMORY
 				   ? EXPAND_MEMORY : EXPAND_NORMAL));
 
-          switch (thisarg)
-            {
-            case NEON_ARG_COPY_TO_REG:
-              /*gcc_assert (GET_MODE (op[argc]) == mode[argc]);*/
-              if (!(*insn_data[icode].operand[opno].predicate)
-                     (op[argc], mode[argc]))
-                op[argc] = copy_to_mode_reg (mode[argc], op[argc]);
-              break;
+	  switch (thisarg)
+	    {
+	    case NEON_ARG_COPY_TO_REG:
+	      if (POINTER_TYPE_P (TREE_TYPE (arg[argc])))
+		op[argc] = convert_memory_address (Pmode, op[argc]);
+	      /*gcc_assert (GET_MODE (op[argc]) == mode[argc]); */
+	      if (!(*insn_data[icode].operand[opno].predicate)
+		  (op[argc], mode[argc]))
+		op[argc] = copy_to_mode_reg (mode[argc], op[argc]);
+	      break;
 
-            case NEON_ARG_CONSTANT:
-              /* FIXME: This error message is somewhat unhelpful.  */
-              if (!(*insn_data[icode].operand[opno].predicate)
-                    (op[argc], mode[argc]))
-		error ("argument must be a constant");
-              break;
-
+	    case NEON_ARG_CONSTANT:
+	      if (!(*insn_data[icode].operand[opno].predicate)
+		  (op[argc], mode[argc]))
+		error_at (EXPR_LOCATION (exp), "incompatible type for argument %d, "
+		       "expected %<const int%>", argc + 1);
+	      break;
             case NEON_ARG_MEMORY:
 	      /* Check if expand failed.  */
 	      if (op[argc] == const0_rtx)
@@ -2166,18 +2047,17 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
 		 alias safe.  */
 	      set_mem_alias_set (op[argc], 0);
 	      if (!(*insn_data[icode].operand[opno].predicate)
-                    (op[argc], mode[argc]))
+                   (op[argc], mode[argc]))
 		op[argc] = (replace_equiv_address
 			    (op[argc], force_reg (Pmode, XEXP (op[argc], 0))));
               break;
 
-            case NEON_ARG_STOP:
-              gcc_unreachable ();
-            }
+	    case NEON_ARG_STOP:
+	      gcc_unreachable ();
+	    }
 
-          argc++;
-	  formals = TREE_CHAIN (formals);
-        }
+	  argc++;
+	}
     }
 
   va_end (ap);
@@ -2229,7 +2109,7 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
 
       case 5:
 	pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4]);
-        break;
+	break;
 
       default:
 	gcc_unreachable ();
@@ -2249,113 +2129,61 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
 static rtx
 arm_expand_neon_builtin (int fcode, tree exp, rtx target)
 {
-  neon_builtin_datum *d = &neon_builtin_data[fcode - ARM_BUILTIN_NEON_BASE];
-  neon_itype itype = d->itype;
+  neon_builtin_datum *d =
+		&neon_builtin_data[fcode - ARM_BUILTIN_NEON_BASE];
   enum insn_code icode = d->code;
-  neon_builtin_type_mode type_mode = d->mode;
+  builtin_arg args[SIMD_MAX_BUILTIN_ARGS];
+  int num_args = insn_data[d->code].n_operands;
+  int is_void = 0;
+  int k;
 
-  switch (itype)
+  is_void = !!(d->qualifiers[0] & qualifier_void);
+
+  num_args += is_void;
+
+  for (k = 1; k < num_args; k++)
     {
-    case NEON_UNOP:
-    case NEON_CONVERT:
-    case NEON_DUPLANE:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
+      /* We have four arrays of data, each indexed in a different fashion.
+	 qualifiers - element 0 always describes the function return type.
+	 operands - element 0 is either the operand for return value (if
+	   the function has a non-void return type) or the operand for the
+	   first argument.
+	 expr_args - element 0 always holds the first argument.
+	 args - element 0 is always used for the return type.  */
+      int qualifiers_k = k;
+      int operands_k = k - is_void;
+      int expr_args_k = k - 1;
 
-    case NEON_BINOP:
-    case NEON_LOGICBINOP:
-    case NEON_SCALARMUL:
-    case NEON_SCALARMULL:
-    case NEON_SCALARMULH:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
-
-    case NEON_TERNOP:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
-        NEON_ARG_STOP);
-
-    case NEON_GETLANE:
-    case NEON_FIXCONV:
-    case NEON_SHIFTIMM:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
-        NEON_ARG_STOP);
-
-    case NEON_CREATE:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
-
-    case NEON_DUP:
-    case NEON_RINT:
-    case NEON_SPLIT:
-    case NEON_FLOAT_WIDEN:
-    case NEON_FLOAT_NARROW:
-    case NEON_BSWAP:
-    case NEON_REINTERP:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
-
-    case NEON_COPYSIGNF:
-    case NEON_COMBINE:
-    case NEON_VTBL:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
-
-    case NEON_LANEMUL:
-    case NEON_LANEMULL:
-    case NEON_LANEMULH:
-    case NEON_SETLANE:
-    case NEON_SHIFTINSERT:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
-        NEON_ARG_STOP);
-
-    case NEON_LANEMAC:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
-        NEON_ARG_CONSTANT, NEON_ARG_STOP);
-
-    case NEON_SHIFTACC:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
-        NEON_ARG_STOP);
-
-    case NEON_SCALARMAC:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
-        NEON_ARG_STOP);
-
-    case NEON_SELECT:
-    case NEON_VTBX:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
-        NEON_ARG_STOP);
-
-    case NEON_LOAD1:
-    case NEON_LOADSTRUCT:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-	NEON_ARG_MEMORY, NEON_ARG_STOP);
-
-    case NEON_LOAD1LANE:
-    case NEON_LOADSTRUCTLANE:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
-	NEON_ARG_STOP);
-
-    case NEON_STORE1:
-    case NEON_STORESTRUCT:
-      return arm_expand_neon_args (target, icode, 0, type_mode, exp, fcode,
-	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
-
-    case NEON_STORE1LANE:
-    case NEON_STORESTRUCTLANE:
-      return arm_expand_neon_args (target, icode, 0, type_mode, exp, fcode,
-	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
-	NEON_ARG_STOP);
+      if (d->qualifiers[qualifiers_k] & qualifier_immediate)
+	args[k] = NEON_ARG_CONSTANT;
+      else if (d->qualifiers[qualifiers_k] & qualifier_maybe_immediate)
+	{
+	  rtx arg
+	    = expand_normal (CALL_EXPR_ARG (exp,
+					    (expr_args_k)));
+	  /* Handle constants only if the predicate allows it.  */
+	  bool op_const_int_p =
+	    (CONST_INT_P (arg)
+	     && (*insn_data[icode].operand[operands_k].predicate)
+		(arg, insn_data[icode].operand[operands_k].mode));
+	  args[k] = op_const_int_p ? NEON_ARG_CONSTANT : NEON_ARG_COPY_TO_REG;
+	}
+      else if (d->qualifiers[qualifiers_k] & qualifier_pointer)
+	args[k] = NEON_ARG_MEMORY;
+      else
+	args[k] = NEON_ARG_COPY_TO_REG;
     }
+  args[k] = NEON_ARG_STOP;
 
-  gcc_unreachable ();
+  /* The interface to arm_expand_neon_args expects a 0 if
+     the function is void, and a 1 if it is not.  */
+  return arm_expand_neon_args
+	  (target, d->mode, fcode, icode, !is_void, exp,
+	   args[1],
+	   args[2],
+	   args[3],
+	   args[4],
+	   NEON_ARG_STOP);
 }
 
 /* Expand an expression EXP that calls a built-in function,
