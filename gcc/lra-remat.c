@@ -399,7 +399,13 @@ operand_to_remat (rtx_insn *insn)
 
   /* First find a pseudo which can be rematerialized.  */
   for (reg = id->regs; reg != NULL; reg = reg->next)
-    if (reg->type == OP_OUT && ! reg->subreg_p
+    /* True FRAME_POINTER_NEEDED might be because we can not follow
+       changing sp offsets, e.g. alloca is used.  If the insn contains
+       stack pointer in such case, we can not rematerialize it as we
+       can not know sp offset at a rematerialization place.  */
+    if (reg->regno == STACK_POINTER_REGNUM && frame_pointer_needed)
+      return -1;
+    else if (reg->type == OP_OUT && ! reg->subreg_p
 	&& find_regno_note (insn, REG_UNUSED, reg->regno) == NULL)
       {
 	/* We permits only one spilled reg.  */
