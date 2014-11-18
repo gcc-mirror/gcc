@@ -383,17 +383,18 @@ ubsan_maybe_instrument_array_ref (tree *expr_p, bool ignore_off_by_one)
 }
 
 static tree
-ubsan_maybe_instrument_reference_or_call (location_t loc, tree op, tree type,
+ubsan_maybe_instrument_reference_or_call (location_t loc, tree op, tree ptype,
 					  enum ubsan_null_ckind ckind)
 {
-  tree orig_op = op;
-  bool instrument = false;
-  unsigned int mina = 0;
-
   if (current_function_decl == NULL_TREE
       || lookup_attribute ("no_sanitize_undefined",
 			   DECL_ATTRIBUTES (current_function_decl)))
     return NULL_TREE;
+
+  tree type = TREE_TYPE (ptype);
+  tree orig_op = op;
+  bool instrument = false;
+  unsigned int mina = 0;
 
   if (flag_sanitize & SANITIZE_ALIGNMENT)
     {
@@ -431,13 +432,20 @@ ubsan_maybe_instrument_reference_or_call (location_t loc, tree op, tree type,
 	}
       else if (flag_sanitize & SANITIZE_NULL)
 	instrument = true;
-      if (mina && mina > get_pointer_alignment (op) / BITS_PER_UNIT)
-	instrument = true;
+      if (mina && mina > 1)
+	{
+	  if (!POINTER_TYPE_P (TREE_TYPE (op))
+	      || mina > get_pointer_alignment (op) / BITS_PER_UNIT)
+	    instrument = true;
+	}
     }
   if (!instrument)
     return NULL_TREE;
   op = save_expr (orig_op);
-  tree kind = build_int_cst (TREE_TYPE (op), ckind);
+  gcc_assert (POINTER_TYPE_P (ptype));
+  if (TREE_CODE (ptype) == REFERENCE_TYPE)
+    ptype = build_pointer_type (TREE_TYPE (ptype));
+  tree kind = build_int_cst (ptype, ckind);
   tree align = build_int_cst (pointer_sized_int_node, mina);
   tree call
     = build_call_expr_internal_loc (loc, IFN_UBSAN_NULL, void_type_node,
@@ -453,7 +461,7 @@ ubsan_maybe_instrument_reference (tree stmt)
 {
   tree op = TREE_OPERAND (stmt, 0);
   op = ubsan_maybe_instrument_reference_or_call (EXPR_LOCATION (stmt), op,
-						 TREE_TYPE (TREE_TYPE (stmt)),
+						 TREE_TYPE (stmt),
 						 UBSAN_REF_BINDING);
   if (op)
     TREE_OPERAND (stmt, 0) = op;
@@ -471,7 +479,7 @@ ubsan_maybe_instrument_member_call (tree stmt, bool is_ctor)
       || !POINTER_TYPE_P (TREE_TYPE (op)))
     return;
   op = ubsan_maybe_instrument_reference_or_call (EXPR_LOCATION (stmt), op,
-						 TREE_TYPE (TREE_TYPE (op)),
+						 TREE_TYPE (op),
 						 is_ctor ? UBSAN_CTOR_CALL
 						 : UBSAN_MEMBER_CALL);
   if (op)
