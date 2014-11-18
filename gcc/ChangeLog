@@ -1,5 +1,9 @@
 2014-11-18  Martin Liska  <mliska@suse.cz>
 
+	* tracer.c (tail_duplicate): New fibonacci_heap class is used.
+
+2014-11-18  Martin Liska  <mliska@suse.cz>
+
 	* bb-reorder.c (mark_bb_visited): New fibonacci_heap is used.
 	(find_traces): Likewise.
 	(find_traces_1_round): Likewise.
