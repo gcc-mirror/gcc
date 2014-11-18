@@ -1,3 +1,15 @@
+2014-11-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vcls.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vcnt.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vcombine.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vcreate.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvt.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vdup_lane.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vext.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vget_high.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vget_low.c: New test.
+
 2014-11-18  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* c-c++-common/tm/safe-3.c: Add bind_pic_locally.
