@@ -1461,9 +1461,17 @@ cxx_eval_unary_expression (const constexpr_ctx *ctx, tree t,
 					   addr, non_constant_p, overflow_p,
 					   NULL);
   VERIFY_CONSTANT (arg);
-  if (arg == orig_arg)
-    return t;
-  r = fold_build1 (TREE_CODE (t), TREE_TYPE (t), arg);
+  location_t loc = EXPR_LOCATION (t);
+  enum tree_code code = TREE_CODE (t);
+  tree type = TREE_TYPE (t);
+  r = fold_unary_loc (loc, code, type, arg);
+  if (r == NULL_TREE)
+    {
+      if (arg == orig_arg)
+	r = t;
+      else
+	r = build1_loc (loc, code, type, arg);
+    }
   VERIFY_CONSTANT (r);
   return r;
 }
@@ -1488,9 +1496,18 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
 				      allow_non_constant, addr,
 				      non_constant_p, overflow_p, NULL);
   VERIFY_CONSTANT (rhs);
-  if (lhs == orig_lhs && rhs == orig_rhs)
-    return t;
-  r = fold_build2 (TREE_CODE (t), TREE_TYPE (t), lhs, rhs);
+
+  location_t loc = EXPR_LOCATION (t);
+  enum tree_code code = TREE_CODE (t);
+  tree type = TREE_TYPE (t);
+  r = fold_binary_loc (loc, code, type, lhs, rhs);
+  if (r == NULL_TREE)
+    {
+      if (lhs == orig_lhs && rhs == orig_rhs)
+	r = t;
+      else
+	r = build2_loc (loc, code, type, lhs, rhs);
+    }
   VERIFY_CONSTANT (r);
   return r;
 }
