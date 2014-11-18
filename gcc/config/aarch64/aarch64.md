@@ -4169,6 +4169,43 @@
   [(set_attr "type" "mrs")])
 
 
+;; Define the subtract-one-and-jump insns so loop.c
+;; knows what to generate.
+(define_expand "doloop_end"
+  [(use (match_operand 0 "" ""))      ; loop pseudo
+   (use (match_operand 1 "" ""))]     ; label
+  "optimize > 0 && flag_modulo_sched"
+{
+  rtx s0;
+  rtx bcomp;
+  rtx loc_ref;
+  rtx cc_reg;
+  rtx insn;
+  rtx cmp;
+
+  /* Currently SMS relies on the do-loop pattern to recognize loops
+     where (1) the control part consists of all insns defining and/or
+     using a certain 'count' register and (2) the loop count can be
+     adjusted by modifying this register prior to the loop.
+     ??? The possible introduction of a new block to initialize the
+     new IV can potentially affect branch optimizations.  */
+
+  if (GET_MODE (operands[0]) != DImode)
+    FAIL;
+
+  s0 = operands [0];
+  insn = emit_insn (gen_adddi3_compare0 (s0, s0, GEN_INT (-1)));
+
+  cmp = XVECEXP (PATTERN (insn), 0, 0);
+  cc_reg = SET_DEST (cmp);
+  bcomp = gen_rtx_NE (VOIDmode, cc_reg, const0_rtx);
+  loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [1]);
+  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+			       gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
+						     loc_ref, pc_rtx)));
+  DONE;
+})
+
 ;; AdvSIMD Stuff
 (include "aarch64-simd.md")
 
