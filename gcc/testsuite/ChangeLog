@@ -1,5 +1,11 @@
 2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* g++.dg/abi/mangle-arm-crypto.C: New.
+	* g++.dg/abi/mangle-neon.C (f19): New.
+	(f20): Likewise.
+
+2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* gcc.target/arm/pr51968.c (foo): Fix call to
 	__builtin_neon_vqmovunv8hi.
 
