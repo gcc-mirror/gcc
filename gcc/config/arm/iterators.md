@@ -169,6 +169,9 @@
 
 (define_mode_iterator QMUL [HQ HA])
 
+;; Modes for polynomial or float values.
+(define_mode_iterator VPF [V8QI V16QI V2SF V4SF])
+
 ;;----------------------------------------------------------------------------
 ;; Code iterators
 ;;----------------------------------------------------------------------------
@@ -224,6 +227,92 @@
                               UNSPEC_NVRINTX UNSPEC_NVRINTA UNSPEC_NVRINTN])
 
 (define_int_iterator NEON_VCVT [UNSPEC_NVRINTP UNSPEC_NVRINTM UNSPEC_NVRINTA])
+
+(define_int_iterator VADDL [UNSPEC_VADDL_S UNSPEC_VADDL_U])
+
+(define_int_iterator VADDW [UNSPEC_VADDW_S UNSPEC_VADDW_U])
+
+(define_int_iterator VHADD [UNSPEC_VRHADD_S UNSPEC_VRHADD_U
+			    UNSPEC_VHADD_S UNSPEC_VHADD_U])
+
+(define_int_iterator VQADD [UNSPEC_VQADD_S UNSPEC_VQADD_U])
+
+(define_int_iterator VADDHN [UNSPEC_VADDHN UNSPEC_VRADDHN])
+
+(define_int_iterator VMLAL [UNSPEC_VMLAL_S UNSPEC_VMLAL_U])
+
+(define_int_iterator VMLAL_LANE [UNSPEC_VMLAL_S_LANE UNSPEC_VMLAL_U_LANE])
+
+(define_int_iterator VMLSL [UNSPEC_VMLSL_S UNSPEC_VMLSL_U])
+
+(define_int_iterator VMLSL_LANE [UNSPEC_VMLSL_S_LANE UNSPEC_VMLSL_U_LANE])
+
+(define_int_iterator VQDMULH [UNSPEC_VQDMULH UNSPEC_VQRDMULH])
+
+(define_int_iterator VQDMULH_LANE [UNSPEC_VQDMULH_LANE UNSPEC_VQRDMULH_LANE])
+
+(define_int_iterator VMULL [UNSPEC_VMULL_S UNSPEC_VMULL_U UNSPEC_VMULL_P])
+
+(define_int_iterator VMULL_LANE [UNSPEC_VMULL_S_LANE UNSPEC_VMULL_U_LANE])
+
+(define_int_iterator VSUBL [UNSPEC_VSUBL_S UNSPEC_VSUBL_U])
+
+(define_int_iterator VSUBW [UNSPEC_VSUBW_S UNSPEC_VSUBW_U])
+
+(define_int_iterator VHSUB [UNSPEC_VHSUB_S UNSPEC_VHSUB_U])
+
+(define_int_iterator VQSUB [UNSPEC_VQSUB_S UNSPEC_VQSUB_U])
+
+(define_int_iterator VSUBHN [UNSPEC_VSUBHN UNSPEC_VRSUBHN])
+
+(define_int_iterator VABD [UNSPEC_VABD_S UNSPEC_VABD_U])
+
+(define_int_iterator VABDL [UNSPEC_VABDL_S UNSPEC_VABDL_U])
+
+(define_int_iterator VMAXMIN [UNSPEC_VMAX UNSPEC_VMAX_U
+			      UNSPEC_VMIN UNSPEC_VMIN_U])
+
+(define_int_iterator VMAXMINF [UNSPEC_VMAX UNSPEC_VMIN])
+
+(define_int_iterator VPADDL [UNSPEC_VPADDL_S UNSPEC_VPADDL_U])
+
+(define_int_iterator VPADAL [UNSPEC_VPADAL_S UNSPEC_VPADAL_U])
+
+(define_int_iterator VPMAXMIN [UNSPEC_VPMAX UNSPEC_VPMAX_U
+			       UNSPEC_VPMIN UNSPEC_VPMIN_U])
+
+(define_int_iterator VPMAXMINF [UNSPEC_VPMAX UNSPEC_VPMIN])
+
+(define_int_iterator VCVT_US [UNSPEC_VCVT_S UNSPEC_VCVT_U])
+
+(define_int_iterator VCVT_US_N [UNSPEC_VCVT_S_N UNSPEC_VCVT_U_N])
+
+(define_int_iterator VQMOVN [UNSPEC_VQMOVN_S UNSPEC_VQMOVN_U])
+
+(define_int_iterator VMOVL [UNSPEC_VMOVL_S UNSPEC_VMOVL_U])
+
+(define_int_iterator VSHL [UNSPEC_VSHL_S UNSPEC_VSHL_U
+			   UNSPEC_VRSHL_S UNSPEC_VRSHL_U])
+
+(define_int_iterator VQSHL [UNSPEC_VQSHL_S UNSPEC_VQSHL_U
+			    UNSPEC_VQRSHL_S UNSPEC_VQRSHL_U])
+
+(define_int_iterator VSHR_N [UNSPEC_VSHR_S_N UNSPEC_VSHR_U_N
+			     UNSPEC_VRSHR_S_N UNSPEC_VRSHR_U_N])
+
+(define_int_iterator VSHRN_N [UNSPEC_VSHRN_N UNSPEC_VRSHRN_N])
+
+(define_int_iterator VQSHRN_N [UNSPEC_VQSHRN_S_N UNSPEC_VQSHRN_U_N
+			       UNSPEC_VQRSHRN_S_N UNSPEC_VQRSHRN_U_N])
+
+(define_int_iterator VQSHRUN_N [UNSPEC_VQSHRUN_N UNSPEC_VQRSHRUN_N])
+
+(define_int_iterator VQSHL_N [UNSPEC_VQSHL_S_N UNSPEC_VQSHL_U_N])
+
+(define_int_iterator VSHLL_N [UNSPEC_VSHLL_S_N UNSPEC_VSHLL_U_N])
+
+(define_int_iterator VSRA_N [UNSPEC_VSRA_S_N UNSPEC_VSRA_U_N
+			     UNSPEC_VRSRA_S_N UNSPEC_VRSRA_U_N])
 
 (define_int_iterator CRC [UNSPEC_CRC32B UNSPEC_CRC32H UNSPEC_CRC32W
                           UNSPEC_CRC32CB UNSPEC_CRC32CH UNSPEC_CRC32CW])
@@ -504,6 +593,8 @@
                      (DI "")   (V2DI "_q")
                      (DF "")   (V2DF "_q")])
 
+(define_mode_attr pf [(V8QI "p") (V16QI "p") (V2SF "f") (V4SF "f")])
+
 ;;----------------------------------------------------------------------------
 ;; Code attributes
 ;;----------------------------------------------------------------------------
@@ -540,6 +631,82 @@
 ;;----------------------------------------------------------------------------
 ;; Int attributes
 ;;----------------------------------------------------------------------------
+
+;; Mapping between vector UNSPEC operations and the signed ('s'),
+;; unsigned ('u'), poly ('p') or float ('f') nature of their data type.
+(define_int_attr sup [
+  (UNSPEC_VADDL_S "s") (UNSPEC_VADDL_U "u")
+  (UNSPEC_VADDW_S "s") (UNSPEC_VADDW_U "u")
+  (UNSPEC_VRHADD_S "s") (UNSPEC_VRHADD_U "u")
+  (UNSPEC_VHADD_S "s") (UNSPEC_VHADD_U "u")
+  (UNSPEC_VQADD_S "s") (UNSPEC_VQADD_U "u")
+  (UNSPEC_VMLAL_S "s") (UNSPEC_VMLAL_U "u")
+  (UNSPEC_VMLAL_S_LANE "s") (UNSPEC_VMLAL_U_LANE "u")
+  (UNSPEC_VMLSL_S "s") (UNSPEC_VMLSL_U "u")
+  (UNSPEC_VMLSL_S_LANE "s") (UNSPEC_VMLSL_U_LANE "u")
+  (UNSPEC_VMULL_S "s") (UNSPEC_VMULL_U "u") (UNSPEC_VMULL_P "p")
+  (UNSPEC_VMULL_S_LANE "s") (UNSPEC_VMULL_U_LANE "u")
+  (UNSPEC_VSUBL_S "s") (UNSPEC_VSUBL_U "u")
+  (UNSPEC_VSUBW_S "s") (UNSPEC_VSUBW_U "u")
+  (UNSPEC_VHSUB_S "s") (UNSPEC_VHSUB_U "u")
+  (UNSPEC_VQSUB_S "s") (UNSPEC_VQSUB_U "u")
+  (UNSPEC_VABD_S "s") (UNSPEC_VABD_U "u")
+  (UNSPEC_VABDL_S "s") (UNSPEC_VABDL_U "u")
+  (UNSPEC_VMAX "s") (UNSPEC_VMAX_U "u")
+  (UNSPEC_VMIN "s") (UNSPEC_VMIN_U "u")
+  (UNSPEC_VPADDL_S "s") (UNSPEC_VPADDL_U "u")
+  (UNSPEC_VPADAL_S "s") (UNSPEC_VPADAL_U "u")
+  (UNSPEC_VPMAX "s") (UNSPEC_VPMAX_U "u")
+  (UNSPEC_VPMIN "s") (UNSPEC_VPMIN_U "u")
+  (UNSPEC_VCVT_S "s") (UNSPEC_VCVT_U "u")
+  (UNSPEC_VCVT_S_N "s") (UNSPEC_VCVT_U_N "u")
+  (UNSPEC_VQMOVN_S "s") (UNSPEC_VQMOVN_U "u")
+  (UNSPEC_VMOVL_S "s") (UNSPEC_VMOVL_U "u")
+  (UNSPEC_VSHL_S "s") (UNSPEC_VSHL_U "u")
+  (UNSPEC_VRSHL_S "s") (UNSPEC_VRSHL_U "u")
+  (UNSPEC_VQSHL_S "s") (UNSPEC_VQSHL_U "u")
+  (UNSPEC_VQRSHL_S "s") (UNSPEC_VQRSHL_U "u")
+  (UNSPEC_VSHR_S_N "s") (UNSPEC_VSHR_U_N "u")
+  (UNSPEC_VRSHR_S_N "s") (UNSPEC_VRSHR_U_N "u")
+  (UNSPEC_VQSHRN_S_N "s") (UNSPEC_VQSHRN_U_N "u")
+  (UNSPEC_VQRSHRN_S_N "s") (UNSPEC_VQRSHRN_U_N "u")
+  (UNSPEC_VQSHL_S_N "s") (UNSPEC_VQSHL_U_N "u")
+  (UNSPEC_VSHLL_S_N "s") (UNSPEC_VSHLL_U_N "u")
+  (UNSPEC_VSRA_S_N "s") (UNSPEC_VSRA_U_N "u")
+  (UNSPEC_VRSRA_S_N "s") (UNSPEC_VRSRA_U_N "u")
+
+])
+
+(define_int_attr r [
+  (UNSPEC_VRHADD_S "r") (UNSPEC_VRHADD_U "r")
+  (UNSPEC_VHADD_S "") (UNSPEC_VHADD_U "")
+  (UNSPEC_VADDHN "") (UNSPEC_VRADDHN "r")
+  (UNSPEC_VQDMULH "") (UNSPEC_VQRDMULH "r")
+  (UNSPEC_VQDMULH_LANE "") (UNSPEC_VQRDMULH_LANE "r")
+  (UNSPEC_VSUBHN "") (UNSPEC_VRSUBHN "r")
+])
+
+(define_int_attr maxmin [
+  (UNSPEC_VMAX "max") (UNSPEC_VMAX_U "max")
+  (UNSPEC_VMIN "min") (UNSPEC_VMIN_U "min")
+  (UNSPEC_VPMAX "max") (UNSPEC_VPMAX_U "max")
+  (UNSPEC_VPMIN "min") (UNSPEC_VPMIN_U "min")
+])
+
+(define_int_attr shift_op [
+  (UNSPEC_VSHL_S "shl") (UNSPEC_VSHL_U "shl")
+  (UNSPEC_VRSHL_S "rshl") (UNSPEC_VRSHL_U "rshl")
+  (UNSPEC_VQSHL_S "qshl") (UNSPEC_VQSHL_U "qshl")
+  (UNSPEC_VQRSHL_S "qrshl") (UNSPEC_VQRSHL_U "qrshl")
+  (UNSPEC_VSHR_S_N "shr") (UNSPEC_VSHR_U_N "shr")
+  (UNSPEC_VRSHR_S_N "rshr") (UNSPEC_VRSHR_U_N "rshr")
+  (UNSPEC_VSHRN_N "shrn") (UNSPEC_VRSHRN_N "rshrn")
+  (UNSPEC_VQRSHRN_S_N "qrshrn") (UNSPEC_VQRSHRN_U_N "qrshrn")
+  (UNSPEC_VQSHRN_S_N "qshrn") (UNSPEC_VQSHRN_U_N "qshrn")
+  (UNSPEC_VQSHRUN_N "qshrun") (UNSPEC_VQRSHRUN_N "qrshrun")
+  (UNSPEC_VSRA_S_N "sra") (UNSPEC_VSRA_U_N "sra")
+  (UNSPEC_VRSRA_S_N "rsra") (UNSPEC_VRSRA_U_N "rsra")
+])
 
 ;; Standard names for floating point to integral rounding instructions.
 (define_int_attr vrint_pattern [(UNSPEC_VRINTZ "btrunc") (UNSPEC_VRINTP "ceil")
