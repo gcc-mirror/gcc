@@ -12034,17 +12034,17 @@ warn_deprecated_use (tree node, tree attr)
   else
     msg = NULL;
 
+  bool w;
   if (DECL_P (node))
     {
-      expanded_location xloc = expand_location (DECL_SOURCE_LOCATION (node));
       if (msg)
-	warning (OPT_Wdeprecated_declarations,
-		 "%qD is deprecated (declared at %r%s:%d%R): %s",
-		 node, "locus", xloc.file, xloc.line, msg);
+	w = warning (OPT_Wdeprecated_declarations,
+		     "%qD is deprecated: %s", node, msg);
       else
-	warning (OPT_Wdeprecated_declarations,
-		 "%qD is deprecated (declared at %r%s:%d%R)",
-		 node, "locus", xloc.file, xloc.line);
+	w = warning (OPT_Wdeprecated_declarations,
+		     "%qD is deprecated", node);
+      if (w)
+	inform (DECL_SOURCE_LOCATION (node), "declared here");
     }
   else if (TYPE_P (node))
     {
@@ -12062,30 +12062,26 @@ warn_deprecated_use (tree node, tree attr)
 
       if (decl)
 	{
-	  expanded_location xloc
-	    = expand_location (DECL_SOURCE_LOCATION (decl));
 	  if (what)
 	    {
 	      if (msg)
-		warning (OPT_Wdeprecated_declarations,
-			 "%qE is deprecated (declared at %r%s:%d%R): %s",
-			 what, "locus", xloc.file, xloc.line, msg);
+		w = warning (OPT_Wdeprecated_declarations,
+			     "%qE is deprecated: %s", what, msg);
 	      else
-		warning (OPT_Wdeprecated_declarations,
-			 "%qE is deprecated (declared at %r%s:%d%R)",
-			 what, "locus", xloc.file, xloc.line);
+		w = warning (OPT_Wdeprecated_declarations,
+			     "%qE is deprecated", what);
 	    }
 	  else
 	    {
 	      if (msg)
-		warning (OPT_Wdeprecated_declarations,
-			 "type is deprecated (declared at %r%s:%d%R): %s",
-			 "locus", xloc.file, xloc.line, msg);
+		w = warning (OPT_Wdeprecated_declarations,
+			     "type is deprecated: %s", msg);
 	      else
-		warning (OPT_Wdeprecated_declarations,
-			 "type is deprecated (declared at %r%s:%d%R)",
-			 "locus", xloc.file, xloc.line);
+		w = warning (OPT_Wdeprecated_declarations,
+			     "type is deprecated");
 	    }
+	  if (w)
+	    inform (DECL_SOURCE_LOCATION (decl), "declared here");
 	}
       else
 	{

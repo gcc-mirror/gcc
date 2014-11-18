@@ -1,3 +1,7 @@
+2014-11-18  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (warn_deprecated_use): Show declaration with inform.
+
 2014-11-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63914
