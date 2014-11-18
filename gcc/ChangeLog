@@ -1,3 +1,20 @@
+2014-11-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/63866
+	* asan.c (asan_global_struct): Create a TYPE_DECL for "__asan_global",
+	put it into TYPE_NAME and TYPE_STUB_DECL.
+	* ubsan.c (ubsan_type_descriptor_type): New variable.
+	Function renamed to ...
+	(ubsan_get_type_descriptor_type): ... this.  Cache
+	return value in ubsan_type_descriptor_type variable.
+	Create a TYPE_DECL for "__ubsan_type_descriptor", put it into
+	TYPE_NAME and TYPE_STUB_DECL.
+	(ubsan_get_source_location_type): Create a TYPE_DECL for
+	"__ubsan_source_location", put it into TYPE_NAME and TYPE_STUB_DECL.
+	(ubsan_type_descriptor, ubsan_create_data): Call
+	ubsan_get_type_descriptor_type instead of ubsan_type_descriptor_type.
+	Create a TYPE_DECL for name, put it into TYPE_NAME and TYPE_STUB_DECL.
+
 2014-11-18  Felix Yang  <felix.yang@huawei.com>
 
 	* config/aarch64/aarch64.c (doloop_end): New pattern.
