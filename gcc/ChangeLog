@@ -1,5 +1,13 @@
 2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/arm-builtins.c (VAR1): Add a comma.
+	(VAR2): Rewrite in terms of VAR1.
+	(VAR3-10): Likewise.
+	(arm_builtins): Remove leading comma before ARM_BUILTIN_MAX.
+	* config/arm/arm_neon_builtins.def: Remove trailing commas.
+
+2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config.gcc (extra_objs): Add arm-builtins.o for arm*-*-*.
 	(target_gtfiles): Add config/arm/arm-builtins.c for arm*-*-*.
 	* config/arm/arm-builtins.c: New.

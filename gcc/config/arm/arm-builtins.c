@@ -134,34 +134,34 @@ typedef struct {
 #define CF(N,X) CODE_FOR_neon_##N##X
 
 #define VAR1(T, N, A) \
-  {#N, NEON_##T, UP (A), CF (N, A), 0}
+  {#N, NEON_##T, UP (A), CF (N, A), 0},
 #define VAR2(T, N, A, B) \
-  VAR1 (T, N, A), \
-  {#N, NEON_##T, UP (B), CF (N, B), 0}
+  VAR1 (T, N, A) \
+  VAR1 (T, N, B)
 #define VAR3(T, N, A, B, C) \
-  VAR2 (T, N, A, B), \
-  {#N, NEON_##T, UP (C), CF (N, C), 0}
+  VAR2 (T, N, A, B) \
+  VAR1 (T, N, C)
 #define VAR4(T, N, A, B, C, D) \
-  VAR3 (T, N, A, B, C), \
-  {#N, NEON_##T, UP (D), CF (N, D), 0}
+  VAR3 (T, N, A, B, C) \
+  VAR1 (T, N, D)
 #define VAR5(T, N, A, B, C, D, E) \
-  VAR4 (T, N, A, B, C, D), \
-  {#N, NEON_##T, UP (E), CF (N, E), 0}
+  VAR4 (T, N, A, B, C, D) \
+  VAR1 (T, N, E)
 #define VAR6(T, N, A, B, C, D, E, F) \
-  VAR5 (T, N, A, B, C, D, E), \
-  {#N, NEON_##T, UP (F), CF (N, F), 0}
+  VAR5 (T, N, A, B, C, D, E) \
+  VAR1 (T, N, F)
 #define VAR7(T, N, A, B, C, D, E, F, G) \
-  VAR6 (T, N, A, B, C, D, E, F), \
-  {#N, NEON_##T, UP (G), CF (N, G), 0}
+  VAR6 (T, N, A, B, C, D, E, F) \
+  VAR1 (T, N, G)
 #define VAR8(T, N, A, B, C, D, E, F, G, H) \
-  VAR7 (T, N, A, B, C, D, E, F, G), \
-  {#N, NEON_##T, UP (H), CF (N, H), 0}
+  VAR7 (T, N, A, B, C, D, E, F, G) \
+  VAR1 (T, N, H)
 #define VAR9(T, N, A, B, C, D, E, F, G, H, I) \
-  VAR8 (T, N, A, B, C, D, E, F, G, H), \
-  {#N, NEON_##T, UP (I), CF (N, I), 0}
+  VAR8 (T, N, A, B, C, D, E, F, G, H) \
+  VAR1 (T, N, I)
 #define VAR10(T, N, A, B, C, D, E, F, G, H, I, J) \
-  VAR9 (T, N, A, B, C, D, E, F, G, H, I), \
-  {#N, NEON_##T, UP (J), CF (N, J), 0}
+  VAR9 (T, N, A, B, C, D, E, F, G, H, I) \
+  VAR1 (T, N, J)
 
 /* The NEON builtin data can be found in arm_neon_builtins.def.
    The mode entries in the following table correspond to the "key" type of the
@@ -179,46 +179,10 @@ static neon_builtin_datum neon_builtin_data[] =
 
 #undef CF
 #undef VAR1
-#undef VAR2
-#undef VAR3
-#undef VAR4
-#undef VAR5
-#undef VAR6
-#undef VAR7
-#undef VAR8
-#undef VAR9
-#undef VAR10
 
-#define CF(N,X) ARM_BUILTIN_NEON_##N##X
-#define VAR1(T, N, A) \
-  CF (N, A)
-#define VAR2(T, N, A, B) \
-  VAR1 (T, N, A), \
-  CF (N, B)
-#define VAR3(T, N, A, B, C) \
-  VAR2 (T, N, A, B), \
-  CF (N, C)
-#define VAR4(T, N, A, B, C, D) \
-  VAR3 (T, N, A, B, C), \
-  CF (N, D)
-#define VAR5(T, N, A, B, C, D, E) \
-  VAR4 (T, N, A, B, C, D), \
-  CF (N, E)
-#define VAR6(T, N, A, B, C, D, E, F) \
-  VAR5 (T, N, A, B, C, D, E), \
-  CF (N, F)
-#define VAR7(T, N, A, B, C, D, E, F, G) \
-  VAR6 (T, N, A, B, C, D, E, F), \
-  CF (N, G)
-#define VAR8(T, N, A, B, C, D, E, F, G, H) \
-  VAR7 (T, N, A, B, C, D, E, F, G), \
-  CF (N, H)
-#define VAR9(T, N, A, B, C, D, E, F, G, H, I) \
-  VAR8 (T, N, A, B, C, D, E, F, G, H), \
-  CF (N, I)
-#define VAR10(T, N, A, B, C, D, E, F, G, H, I, J) \
-  VAR9 (T, N, A, B, C, D, E, F, G, H, I), \
-  CF (N, J)
+#define VAR1(T, N, X) \
+  ARM_BUILTIN_NEON_##N##X,
+
 enum arm_builtins
 {
   ARM_BUILTIN_GETWCGR0,
@@ -496,7 +460,7 @@ enum arm_builtins
 
 #include "arm_neon_builtins.def"
 
-  ,ARM_BUILTIN_MAX
+  ARM_BUILTIN_MAX
 };
 
 #define ARM_BUILTIN_NEON_BASE (ARM_BUILTIN_MAX - ARRAY_SIZE (neon_builtin_data))
