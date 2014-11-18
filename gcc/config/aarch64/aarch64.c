@@ -10196,7 +10196,7 @@ aarch64_asan_shadow_offset (void)
 }
 
 static bool
-aarch64_use_by_pieces_infrastructure_p (unsigned int size,
+aarch64_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 					unsigned int align,
 					enum by_pieces_operation op,
 					bool speed_p)

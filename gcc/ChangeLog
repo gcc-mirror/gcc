@@ -1,3 +1,18 @@
+2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR target/63937
+	* target.def (use_by_pieces_infrastructure_p): Take unsigned
+	HOST_WIDE_INT as the size parameter.
+	* targhooks.c (default_use_by_pieces_infrastructure_p): Likewise.
+	* targhooks.h (default_use_by_pieces_infrastructure_p): Likewise.
+	* config/arc/arc.c (arc_use_by_pieces_infrastructure_p)): Likewise.
+	* config/mips/mips.c (mips_use_by_pieces_infrastructure_p)): Likewise.
+	* config/s390/s390.c (s390_use_by_pieces_infrastructure_p)): Likewise.
+	* config/sh/sh.c (sh_use_by_pieces_infrastructure_p)): Likewise.
+	* config/aarch64/aarch64.c
+	(aarch64_use_by_pieces_infrastructure_p)): Likewise.
+	* doc/tm.texi: Regenerate.
+
 2014-11-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (ipcp_cloning_candidate_p): Use opt_for_fn.
