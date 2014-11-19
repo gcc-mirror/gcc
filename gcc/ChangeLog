@@ -1,6 +1,12 @@
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* reginfo.c (finish_subregs_of_mode): Replace obstack_finish with
+	obstack_free when cleaning up valid_mode_changes_obstack.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* opts.c (finalize_options_struct): New.
 	* opts.h (finalize_options_struct): New.
 	* toplev.c (toplev::finalize): Call finalize_options_struct
