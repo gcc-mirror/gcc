@@ -298,7 +298,8 @@ stmt_local_def (gimple stmt)
   def_operand_p def_p;
 
   if (gimple_has_side_effects (stmt)
-      || gimple_vdef (stmt) != NULL_TREE)
+      || gimple_vdef (stmt) != NULL_TREE
+      || gimple_vuse (stmt) != NULL_TREE)
     return false;
 
   def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF);
@@ -1145,7 +1146,8 @@ gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
 						 gimple_assign_rhs1 (s2)));
       else if (TREE_CODE (lhs1) == SSA_NAME
 	       && TREE_CODE (lhs2) == SSA_NAME)
-	return vn_valueize (lhs1) == vn_valueize (lhs2);
+	return operand_equal_p (gimple_assign_rhs1 (s1),
+				gimple_assign_rhs1 (s2), 0);
       return false;
 
     case GIMPLE_COND:
