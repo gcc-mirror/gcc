@@ -1581,7 +1581,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
   edge e;
   edge_iterator ei;
   unsigned int cold_bb_count = 0;
-  vec<basic_block> bbs_in_hot_partition = vNULL;
+  auto_vec<basic_block> bbs_in_hot_partition;
 
   /* Mark which partition (hot/cold) each basic block belongs in.  */
   FOR_EACH_BB_FN (bb, cfun)
