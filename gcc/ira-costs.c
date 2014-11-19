@@ -2356,3 +2356,9 @@ ira_adjust_equiv_reg_cost (unsigned regno, int cost)
   else
     regno_equiv_gains[regno] += cost;
 }
+
+void
+ira_costs_c_finalize (void)
+{
+  this_target_ira_int->free_ira_costs ();
+}

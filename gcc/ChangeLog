@@ -1,6 +1,13 @@
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* ira-costs.c (ira_costs_c_finalize): New function.
+	* ira.h (ira_costs_c_finalize): New prototype.
+	* toplev.c (toplev::finalize): Call ira_costs_c_finalize.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* ipa-reference.c (ipa_reference_c_finalize): Release
 	optimization_summary_obstack.
 
