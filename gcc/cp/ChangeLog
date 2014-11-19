@@ -1,3 +1,9 @@
+2014-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55425
+	* constexpr.c (constexpr_fn_retval): Accept __func__, __FUNCTION__,
+	and __PRETTY_FUNCTION__.
+
 2014-11-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63924

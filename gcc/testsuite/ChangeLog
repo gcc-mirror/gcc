@@ -1,11 +1,17 @@
+2014-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55425
+	* g++.dg/cpp0x/constexpr-__func__.C
+
 2014-11-19  Renlin Li  <Renlin.Li@arm.com>
-    PR target/63424
+
+	PR target/63424
 	* gcc.target/aarch64/pr63424.c: New test.
 
 2014-11-19  Renlin Li  <Renlin.Li@arm.com>
 
-    PR middle-end/63762
-	* gcc.dg/pr63762.c: New test. 
+	PR middle-end/63762
+	* gcc.dg/pr63762.c: New test.
 
 2014-11-19  Marek Polacek  <polacek@redhat.com>
 

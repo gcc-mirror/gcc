@@ -616,9 +616,14 @@ constexpr_fn_retval (tree body)
       return break_out_target_exprs (TREE_OPERAND (body, 0));
 
     case DECL_EXPR:
-      if (TREE_CODE (DECL_EXPR_DECL (body)) == USING_DECL)
-	return NULL_TREE;
-      return error_mark_node;
+      {
+	tree decl = DECL_EXPR_DECL (body);
+	if (TREE_CODE (decl) == USING_DECL
+	    /* Accept __func__, __FUNCTION__, and __PRETTY_FUNCTION__.  */
+	    || DECL_ARTIFICIAL (decl))
+	  return NULL_TREE;
+	return error_mark_node;
+      }
 
     case CLEANUP_POINT_EXPR:
       return constexpr_fn_retval (TREE_OPERAND (body, 0));
