@@ -1,6 +1,11 @@
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* toplev.c (toplev::finalize): Free opts_obstack.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* toplev.c (toplev::finalize): Clean up save_decoded_options.
 
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
