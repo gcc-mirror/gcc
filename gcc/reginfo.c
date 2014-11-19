@@ -1343,7 +1343,7 @@ void
 finish_subregs_of_mode (void)
 {
   XDELETEVEC (valid_mode_changes);
-  obstack_finish (&valid_mode_changes_obstack);
+  obstack_free (&valid_mode_changes_obstack, NULL);
 }
 
 /* Free all data attached to the structure.  This isn't a destructor because
