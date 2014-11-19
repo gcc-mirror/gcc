@@ -1,3 +1,11 @@
+2014-11-19  Tom de Vries  <tom@codesourcery.com>
+
+	Backport from mainline
+	PR tree-optimization/62167
+	* gcc.dg/pr51879-12.c: Add xfails.
+	* gcc.dg/pr62167-run.c: New test.
+	* gcc.dg/pr62167.c: New test.
+
 2014-11-13  Teresa Johnson  <tejohnson@google.com>
 
 	PR tree-optimization/63841
