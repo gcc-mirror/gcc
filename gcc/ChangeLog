@@ -1,3 +1,9 @@
+2014-11-19  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* collect2.c (main): Don't call fatal_error before
+	diagnostic_initialize.
+	* lto-wrapper.c (main): Likewise.
+
 2014-11-19  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/62167

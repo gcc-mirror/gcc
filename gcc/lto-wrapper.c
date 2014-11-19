@@ -1314,12 +1314,12 @@ main (int argc, char *argv[])
 
   xmalloc_set_program_name (progname);
 
-  if (atexit (lto_wrapper_cleanup) != 0)
-    fatal_error ("atexit failed");
-
   gcc_init_libintl ();
 
   diagnostic_initialize (global_dc, 0);
+
+  if (atexit (lto_wrapper_cleanup) != 0)
+    fatal_error ("atexit failed");
 
   if (signal (SIGINT, SIG_IGN) != SIG_IGN)
     signal (SIGINT, fatal_signal);
