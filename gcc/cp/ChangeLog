@@ -1,5 +1,9 @@
 2014-11-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/63924
+	* constexpr.c (cxx_eval_constant_expression) [PARM_DECL]: A load
+	from a variable of empty class type is constant.
+
 	* constexpr.c (cxx_eval_statement_list): Handle statement-expressions.
 	(potential_constant_expression_1): Handle STMT_EXPR.
 
