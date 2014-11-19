@@ -1,6 +1,11 @@
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* toplev.c (toplev::finalize): Clean up save_decoded_options.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* bb-reorder.c
 	(find_rarely_executed_basic_blocks_and_crossing_edges): Convert
 	local bbs_in_hot_partition from vec<> to auto_vec<>.
