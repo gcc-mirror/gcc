@@ -1,3 +1,9 @@
+2014-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63844
+	* omp-low.c (fixup_child_record_type): Use a restrict qualified
+	referece type for the receiver parameter.
+
 2014-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/63913
