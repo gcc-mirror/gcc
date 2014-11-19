@@ -140,7 +140,7 @@
 (define_constraint "I"
   "A signed 16-bit constant"
   (and (match_code "const_int")
-       (match_test "(unsigned HOST_WIDE_INT) (ival + 0x8000) < 0x10000")))
+       (match_test "((unsigned HOST_WIDE_INT) ival + 0x8000) < 0x10000")))
 
 (define_constraint "J"
   "high-order 16 bits nonzero"
