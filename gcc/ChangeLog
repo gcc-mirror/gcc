@@ -1,6 +1,12 @@
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* ipa-reference.c (ipa_reference_c_finalize): Release
+	optimization_summary_obstack.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* toplev.c (toplev::finalize): Free opts_obstack.
 
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
