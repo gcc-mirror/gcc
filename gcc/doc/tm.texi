@@ -3462,7 +3462,7 @@ If the static chain is passed in memory, these macros should not be
 defined; instead, the @code{TARGET_STATIC_CHAIN} hook should be used.
 @end defmac
 
-@deftypefn {Target Hook} rtx TARGET_STATIC_CHAIN (const_tree @var{fndecl}, bool @var{incoming_p})
+@deftypefn {Target Hook} rtx TARGET_STATIC_CHAIN (const_tree @var{fndecl_or_type}, bool @var{incoming_p})
 This hook replaces the use of @code{STATIC_CHAIN_REGNUM} et al for
 targets that may use different static chain locations for different
 nested functions.  This may be required if the target has function

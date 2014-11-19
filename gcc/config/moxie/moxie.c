@@ -528,12 +528,9 @@ moxie_arg_partial_bytes (cumulative_args_t cum_v,
 /* Worker function for TARGET_STATIC_CHAIN.  */
 
 static rtx
-moxie_static_chain (const_tree fndecl, bool incoming_p)
+moxie_static_chain (const_tree ARG_UNUSED (fndecl_or_type), bool incoming_p)
 {
   rtx addr, mem;
-
-  if (!DECL_STATIC_CHAIN (fndecl))
-    return NULL;
 
   if (incoming_p)
     addr = plus_constant (Pmode, arg_pointer_rtx, 2 * UNITS_PER_WORD);

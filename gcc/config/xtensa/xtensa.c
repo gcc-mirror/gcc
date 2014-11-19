@@ -3626,7 +3626,7 @@ xtensa_function_value_regno_p (const unsigned int regno)
    expressions that denote where they are stored.  */
 
 static rtx
-xtensa_static_chain (const_tree ARG_UNUSED (fndecl), bool incoming_p)
+xtensa_static_chain (const_tree ARG_UNUSED (fndecl_or_type), bool incoming_p)
 {
   rtx base = incoming_p ? arg_pointer_rtx : stack_pointer_rtx;
   return gen_frame_mem (Pmode, plus_constant (Pmode, base,

@@ -4516,8 +4516,8 @@ false for naked functions.  The default implementation always returns true.",
  bool, (void),
  hook_bool_void_true)
 
-/* Return an rtx for the static chain for FNDECL.  If INCOMING_P is true,
-       then it should be for the callee; otherwise for the caller.  */
+/* Return an rtx for the static chain for FNDECL_OR_TYPE.  If INCOMING_P
+   is true, then it should be for the callee; otherwise for the caller.  */
 DEFHOOK
 (static_chain,
  "This hook replaces the use of @code{STATIC_CHAIN_REGNUM} et al for\n\
@@ -4539,7 +4539,7 @@ will be at an offset from the frame pointer.\n\
 The variables @code{stack_pointer_rtx}, @code{frame_pointer_rtx}, and\n\
 @code{arg_pointer_rtx} will have been initialized and should be used\n\
 to refer to those items.",
- rtx, (const_tree fndecl, bool incoming_p),
+ rtx, (const_tree fndecl_or_type, bool incoming_p),
  default_static_chain)
 
 /* Fill in the trampoline at MEM with a call to FNDECL and a

@@ -841,11 +841,8 @@ default_internal_arg_pointer (void)
 }
 
 rtx
-default_static_chain (const_tree fndecl, bool incoming_p)
+default_static_chain (const_tree ARG_UNUSED (fndecl_or_type), bool incoming_p)
 {
-  if (!DECL_STATIC_CHAIN (fndecl))
-    return NULL;
-
   if (incoming_p)
     {
 #ifdef STATIC_CHAIN_INCOMING_REGNUM
