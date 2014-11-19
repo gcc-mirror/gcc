@@ -3125,7 +3125,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
 	   form, so wait until instantiation time.  */
 	return decl;
       else if (decl_constant_var_p (decl))
-	return integral_constant_value (decl);
+	return scalar_constant_value (decl);
     }
 
   if (parsing_nsdmi ())

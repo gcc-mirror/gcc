@@ -1936,17 +1936,10 @@ decay_conversion (tree exp, tsubst_flags_t complain)
 
   code = TREE_CODE (type);
 
-  /* For an array decl decay_conversion should not try to return its
-     initializer.  */
-  if (code != ARRAY_TYPE)
-    {
-      /* FIXME remove? at least need to remember that this isn't really a
-	 constant expression if EXP isn't decl_constant_var_p, like with
-	 C_MAYBE_CONST_EXPR.  */
-      exp = decl_constant_value_safe (exp);
-      if (error_operand_p (exp))
-	return error_mark_node;
-    }
+  /* FIXME remove for delayed folding.  */
+  exp = scalar_constant_value (exp);
+  if (error_operand_p (exp))
+    return error_mark_node;
 
   if (NULLPTR_TYPE_P (type) && !TREE_SIDE_EFFECTS (exp))
     return nullptr_node;

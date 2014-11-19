@@ -2004,16 +2004,16 @@ build_offset_ref (tree type, tree member, bool address_p,
 
 /* If DECL is a scalar enumeration constant or variable with a
    constant initializer, return the initializer (or, its initializers,
-   recursively); otherwise, return DECL.  If INTEGRAL_P, the
-   initializer is only returned if DECL is an integral
+   recursively); otherwise, return DECL.  If STRICT_P, the
+   initializer is only returned if DECL is a
    constant-expression.  If RETURN_AGGREGATE_CST_OK_P, it is ok to
    return an aggregate constant.  */
 
 static tree
-constant_value_1 (tree decl, bool integral_p, bool return_aggregate_cst_ok_p)
+constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
 {
   while (TREE_CODE (decl) == CONST_DECL
-	 || (integral_p
+	 || (strict_p
 	     ? decl_constant_var_p (decl)
 	     : (VAR_P (decl)
 		&& CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl)))))
@@ -2047,7 +2047,7 @@ constant_value_1 (tree decl, bool integral_p, bool return_aggregate_cst_ok_p)
       if (!init
 	  || !TREE_TYPE (init)
 	  || !TREE_CONSTANT (init)
-	  || (!integral_p && !return_aggregate_cst_ok_p
+	  || (!return_aggregate_cst_ok_p
 	      /* Unless RETURN_AGGREGATE_CST_OK_P is true, do not
 		 return an aggregate constant (of which string
 		 literals are a special case), as we do not want
@@ -2062,36 +2062,35 @@ constant_value_1 (tree decl, bool integral_p, bool return_aggregate_cst_ok_p)
   return decl;
 }
 
-/* If DECL is a CONST_DECL, or a constant VAR_DECL initialized by
-   constant of integral or enumeration type, then return that value.
-   These are those variables permitted in constant expressions by
-   [5.19/1].  */
+/* If DECL is a CONST_DECL, or a constant VAR_DECL initialized by constant
+   of integral or enumeration type, or a constexpr variable of scalar type,
+   then return that value.  These are those variables permitted in constant
+   expressions by [5.19/1].  */
 
 tree
-integral_constant_value (tree decl)
+scalar_constant_value (tree decl)
 {
-  return constant_value_1 (decl, /*integral_p=*/true,
+  return constant_value_1 (decl, /*strict_p=*/true,
 			   /*return_aggregate_cst_ok_p=*/false);
 }
 
-/* A more relaxed version of integral_constant_value, used by the
+/* Like scalar_constant_value, but can also return aggregate initializers.  */
+
+tree
+decl_really_constant_value (tree decl)
+{
+  return constant_value_1 (decl, /*strict_p=*/true,
+			   /*return_aggregate_cst_ok_p=*/true);
+}
+
+/* A more relaxed version of scalar_constant_value, used by the
    common C/C++ code.  */
 
 tree
 decl_constant_value (tree decl)
 {
-  return constant_value_1 (decl, /*integral_p=*/processing_template_decl,
+  return constant_value_1 (decl, /*strict_p=*/processing_template_decl,
 			   /*return_aggregate_cst_ok_p=*/true);
-}
-
-/* A version of integral_constant_value used by the C++ front end for
-   optimization purposes.  */
-
-tree
-decl_constant_value_safe (tree decl)
-{
-  return constant_value_1 (decl, /*integral_p=*/processing_template_decl,
-			   /*return_aggregate_cst_ok_p=*/false);
 }
 
 /* Common subroutines of build_new and build_vec_delete.  */

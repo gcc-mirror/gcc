@@ -6247,7 +6247,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	 leave it as an lvalue.  */
       if (inner >= 0)
         {   
-          expr = decl_constant_value_safe (expr);
+          expr = scalar_constant_value (expr);
           if (expr == null_node && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (totype))
             /* If __null has been converted to an integer type, we do not
                want to warn about uses of EXPR as an integer, rather than
