@@ -15,8 +15,8 @@ int main() {
 }
 
 // { dg-output "AddressSanitizer:? global-buffer-overflow.*(\n|\r\n|\r)" }
-// { dg-output "    #0 0x\[0-9a-f\]+ (in \[^\n\r]*call4\[^\n\r]*|\[(\])\[^\n\r]*(\n|\r\n|\r)" }
-// { dg-output "    #1 0x\[0-9a-f\]+ (in \[^\n\r]*call3\[^\n\r]*|\[(\])\[^\n\r]*(\n|\r\n|\r)" }
-// { dg-output "    #2 0x\[0-9a-f\]+ (in \[^\n\r]*call2\[^\n\r]*|\[(\])\[^\n\r]*(\n|\r\n|\r)" }
-// { dg-output "    #3 0x\[0-9a-f\]+ (in \[^\n\r]*call1\[^\n\r]*|\[(\])\[^\n\r]*(\n|\r\n|\r)" }
-// { dg-output "    #4 0x\[0-9a-f\]+ (in \[^\n\r]*main\[^\n\r]*|\[(\])\[^\n\r]*(\n|\r\n|\r)" }
+// { dg-output "    #0 0x\[0-9a-f\]+ +(in \[^\n\r]*call4\[^\n\r]*|\[(\])\[^\n\r]*(\n|\r\n|\r)" }
+// { dg-output "    #1 0x\[0-9a-f\]+ +(in \[^\n\r]*call3\[^\n\r]*|\[(\])\[^\n\r]*(\n|\r\n|\r)" }
+// { dg-output "    #2 0x\[0-9a-f\]+ +(in \[^\n\r]*call2\[^\n\r]*|\[(\])\[^\n\r]*(\n|\r\n|\r)" }
+// { dg-output "    #3 0x\[0-9a-f\]+ +(in \[^\n\r]*call1\[^\n\r]*|\[(\])\[^\n\r]*(\n|\r\n|\r)" }
+// { dg-output "    #4 0x\[0-9a-f\]+ +(in \[^\n\r]*main\[^\n\r]*|\[(\])\[^\n\r]*(\n|\r\n|\r)" }

@@ -1,6 +1,25 @@
 2014-11-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR sanitizer/63939
+	* c-c++-common/asan/global-overflow-1.c: Allow extra spaces after
+	stack pointer address, to fit darwin output when symbolizer is not
+	present.
+	* c-c++-common/asan/heap-overflow-1.c: Likewise.
+	* c-c++-common/asan/memcmp-1.c: Likewise.
+	* c-c++-common/asan/misalign-1.c: Likewise.
+	* c-c++-common/asan/misalign-2.c: Likewise.
+	* c-c++-common/asan/null-deref-1.c: Likewise.
+	* c-c++-common/asan/stack-overflow-1.c: Likewise.
+	* c-c++-common/asan/strlen-overflow-1.c: Likewise.
+	* c-c++-common/asan/strncpy-overflow-1.c: Likewise.
+	* c-c++-common/asan/use-after-free-1.c: Likewise.
+	* g++.dg/asan/deep-stack-uaf-1.C: Likewise.
+	* g++.dg/asan/deep-tail-call-1.C: Likewise.
+	* g++.dg/asan/large-func-test-1.C: Likewise.
+
+2014-11-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR sanitizer/63939
 	* g++.dg/asan/large-func-test-1.C: Ajust dg-output.
 
 2014-11-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
