@@ -1,7 +1,12 @@
+2014-11-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/63947
+	* gcc.target/i386/pr63947.c: New test.
+
 2014-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55425
-	* g++.dg/cpp0x/constexpr-__func__.C
+	* g++.dg/cpp0x/constexpr-__func__.C: New.
 
 2014-11-19  Renlin Li  <Renlin.Li@arm.com>
 
