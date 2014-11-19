@@ -2554,7 +2554,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   else if (addr)
     return target;
   else
-    return *valp;
+    return init;
 }
 
 /* Evaluate a ++ or -- expression.  */
