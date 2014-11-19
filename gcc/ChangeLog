@@ -1,3 +1,11 @@
+2014-11-19  Felix Yang  <felix.yang@huawei.com>
+	    Shanyao Chen  <chenshanyao@huawei.com>
+
+	PR target/59593
+	* config/arm/arm.md (define_attr "arch"): Add v6t2.
+	(define_attr "arch_enabled"): Add test for the above.
+	(*movhi_insn_arch4): Add new alternative.
+
 2014-11-19  Richard Henderson  <rth@redhat.com>
 
 	* c-family/c-common.c (c_common_reswords): Add
