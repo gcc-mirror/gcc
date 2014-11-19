@@ -1,3 +1,8 @@
+2014-11-19  Renlin Li  <renlin.li@arm.com>
+
+    * config/aarch64/aarch64.h (TARGET_CPU_CPP_BUILTINS): Define __ARM_FP_FAST,
+	__ARM_FEATURE_FMA, __ARM_FP, __ARM_FEATURE_NUMERIC_MAXMIN, __ARM_NEON_FP.
+
 2014-11-19  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/63879
