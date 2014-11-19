@@ -1,6 +1,11 @@
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* pass_manager.h (GCC_PASS_LISTS): Add all_late_ipa_passes.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* lra.c (lra): After creating live ranges in preparation for call
 	to lra_inheritance, set live_p to true.
 
