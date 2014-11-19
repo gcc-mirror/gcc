@@ -325,6 +325,7 @@ extern void decode_cmdline_options_to_array (unsigned int argc,
 extern void init_options_once (void);
 extern void init_options_struct (struct gcc_options *opts,
 				 struct gcc_options *opts_set);
+extern void finalize_options_struct (struct gcc_options *opts);
 extern void decode_cmdline_options_to_array_default_mask (unsigned int argc,
 							  const char **argv, 
 							  struct cl_decoded_option **decoded_options,
