@@ -1,5 +1,9 @@
 2014-11-18  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (cxx_eval_constant_expression): Give jump_target a
+	default argument.
+	(lots): Omit NULL jump_target arguments.
+
 	* constexpr.c (struct constexpr_ctx): Add quiet field.
 	(cxx_eval_outermost_constant_expr, is_sub_constant_expr): Set it.
 	(lots): Replace allow_non_constant parameter with ctx->quiet.
