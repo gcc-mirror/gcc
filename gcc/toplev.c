@@ -2173,4 +2173,8 @@ toplev::finalize (void)
 
   finalize_options_struct (&global_options);
   finalize_options_struct (&global_options_set);
+
+  /* Clean up the context (and pass_manager etc). */
+  delete g;
+  g = NULL;
 }

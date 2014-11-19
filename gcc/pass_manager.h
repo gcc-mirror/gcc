@@ -47,8 +47,10 @@ class pass_manager
 {
 public:
   void *operator new (size_t sz);
+  void operator delete (void *ptr);
 
   pass_manager (context *ctxt);
+  ~pass_manager ();
 
   void register_pass (struct register_pass_info *pass_info);
   void register_one_dump_file (opt_pass *pass);

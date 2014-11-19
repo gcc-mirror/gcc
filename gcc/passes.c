@@ -776,7 +776,8 @@ pass_manager::register_one_dump_file (opt_pass *pass)
   if (optgroup_flags == OPTGROUP_NONE)
     optgroup_flags = OPTGROUP_OTHER;
   id = dumps->dump_register (dot_name, flag_name, glob_name, flags,
-			     optgroup_flags);
+			     optgroup_flags,
+			     true);
   set_pass_for_id (id, pass);
   full_name = concat (prefix, pass->name, num, NULL);
   register_pass_name (pass, full_name);
@@ -1527,6 +1528,12 @@ pass_manager::operator new (size_t sz)
   return xcalloc (1, sz);
 }
 
+void
+pass_manager::operator delete (void *ptr)
+{
+  free (ptr);
+}
+
 pass_manager::pass_manager (context *ctxt)
 : all_passes (NULL), all_small_ipa_passes (NULL), all_lowering_passes (NULL),
   all_regular_ipa_passes (NULL),
@@ -1582,6 +1589,36 @@ pass_manager::pass_manager (context *ctxt)
   register_dump_files (all_regular_ipa_passes);
   register_dump_files (all_late_ipa_passes);
   register_dump_files (all_passes);
+}
+
+static void
+delete_pass_tree (opt_pass *pass)
+{
+  while (pass)
+    {
+      /* Recurse into child passes.  */
+      delete_pass_tree (pass->sub);
+
+      opt_pass *next = pass->next;
+
+      /* Delete this pass.  */
+      delete pass;
+
+      /* Iterate onto sibling passes.  */
+      pass = next;
+    }
+}
+
+pass_manager::~pass_manager ()
+{
+  XDELETEVEC (passes_by_id);
+
+  /* Call delete_pass_tree on each of the pass_lists.  */
+#define DEF_PASS_LIST(LIST) \
+    delete_pass_tree (*pass_lists[PASS_LIST_NO_##LIST]);
+  GCC_PASS_LISTS
+#undef DEF_PASS_LIST
+
 }
 
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
