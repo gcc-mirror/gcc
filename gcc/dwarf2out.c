@@ -24741,6 +24741,8 @@ dwarf2out_c_finalize (void)
   frame_pointer_fb_offset = 0;
   frame_pointer_fb_offset_valid = false;
   base_types.release ();
+  XDELETEVEC (producer_string);
+  producer_string = NULL;
 }
 
 #include "gt-dwarf2out.h"
