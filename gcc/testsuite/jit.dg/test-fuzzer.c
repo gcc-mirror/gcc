@@ -105,6 +105,11 @@ fuzzer_init (fuzzer *f, gcc_jit_context *ctxt, unsigned int seed)
 
   for (i = 0; i < num_funcs; i++)
     f->funcs[f->num_funcs++] = make_random_function (f);
+
+  /* Now clean out f.  */
+  free (f->types);
+  free (f->funcs);
+  free (f->globals);
 }
 
 /* Get random int in inclusive range [min, max].  */
@@ -309,6 +314,7 @@ make_random_function (fuzzer *f)
 
   gcc_jit_function *result = ff->fn;
 
+  free (ff->locals);
   free (ff->params);
   free (ff);
 
