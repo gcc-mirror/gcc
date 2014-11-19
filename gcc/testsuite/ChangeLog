@@ -1,3 +1,11 @@
+2014-11-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR sanitizer/63939
+	* c-c++-common/asan/heap-overflow-1.c: Ajust dg-output.
+	* c-c++-common/asan/memcmp-1.c: Likewise.
+	* c-c++-common/asan/strncpy-overflow-1.c: Likewise.
+	* c-c++-common/asan/use-after-free-1.c: Likewise.
+
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
