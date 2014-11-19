@@ -1,3 +1,8 @@
+2014-11-19  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* config/rs6000/constraints.md: Avoid signed integer overflows.
+	* config/rs6000/predicates.md: Likewise.
+
 2014-11-19  Renlin Li  <Renlin.Li@arm.com>
 
     PR middle-end/63762

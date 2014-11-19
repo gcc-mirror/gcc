@@ -392,8 +392,8 @@
 ;; Return 1 if op is a constant integer valid for addition with addis, addi.
 (define_predicate "add_cint_operand"
   (and (match_code "const_int")
-       (match_test "(unsigned HOST_WIDE_INT)
-		      (INTVAL (op) + (mode == SImode ? 0x80000000 : 0x80008000))
+       (match_test "((unsigned HOST_WIDE_INT) INTVAL (op)
+		       + (mode == SImode ? 0x80000000 : 0x80008000))
 		    < (unsigned HOST_WIDE_INT) 0x100000000ll")))
 
 ;; Return 1 if op is a constant integer valid for addition
@@ -827,7 +827,7 @@
 (define_predicate "mask_operand"
   (match_code "const_int")
 {
-  HOST_WIDE_INT c, lsb;
+  unsigned HOST_WIDE_INT c, lsb;
 
   c = INTVAL (op);
 
@@ -872,7 +872,7 @@
 (define_predicate "mask_operand_wrap"
   (match_code "const_int")
 {
-  HOST_WIDE_INT c, lsb;
+  unsigned HOST_WIDE_INT c, lsb;
 
   c = INTVAL (op);
 
@@ -897,7 +897,7 @@
 (define_predicate "mask64_operand"
   (match_code "const_int")
 {
-  HOST_WIDE_INT c, lsb;
+  unsigned HOST_WIDE_INT c, lsb;
 
   c = INTVAL (op);
 
@@ -923,7 +923,7 @@
 (define_predicate "mask64_2_operand"
   (match_code "const_int")
 {
-  HOST_WIDE_INT c, lsb;
+  unsigned HOST_WIDE_INT c, lsb;
 
   c = INTVAL (op);
 
