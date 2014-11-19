@@ -1,3 +1,8 @@
+2014-11-19  Renlin Li  <Renlin.Li@arm.com>
+
+    PR middle-end/63762
+	* ira.c (ira): Update preferred class.
+
 2014-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple.h (gimple_build_assign_with_ops): Add unary arg overload.
