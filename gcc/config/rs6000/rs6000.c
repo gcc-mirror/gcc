@@ -4202,7 +4202,7 @@ rs6000_option_override (void)
      It's convenient to do it here (like i386 does).  */
   opt_pass *pass_analyze_swaps = make_pass_analyze_swaps (g);
 
-  static struct register_pass_info analyze_swaps_info
+  struct register_pass_info analyze_swaps_info
     = { pass_analyze_swaps, "cse1", 1, PASS_POS_INSERT_BEFORE };
 
   register_pass (&analyze_swaps_info);

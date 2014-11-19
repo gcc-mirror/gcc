@@ -4323,7 +4323,7 @@ static void
 ix86_option_override (void)
 {
   opt_pass *pass_insert_vzeroupper = make_pass_insert_vzeroupper (g);
-  static struct register_pass_info insert_vzeroupper_info
+  struct register_pass_info insert_vzeroupper_info
     = { pass_insert_vzeroupper, "reload",
 	1, PASS_POS_INSERT_AFTER
       };

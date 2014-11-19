@@ -399,13 +399,13 @@ alpha_option_override (void)
   };
 
   opt_pass *pass_handle_trap_shadows = make_pass_handle_trap_shadows (g);
-  static struct register_pass_info handle_trap_shadows_info
+  struct register_pass_info handle_trap_shadows_info
     = { pass_handle_trap_shadows, "eh_ranges",
 	1, PASS_POS_INSERT_AFTER
       };
 
   opt_pass *pass_align_insns = make_pass_align_insns (g);
-  static struct register_pass_info align_insns_info
+  struct register_pass_info align_insns_info
     = { pass_align_insns, "shorten",
 	1, PASS_POS_INSERT_BEFORE
       };

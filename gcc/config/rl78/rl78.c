@@ -284,7 +284,7 @@ rl78_asm_file_start (void)
     }
 
   opt_pass *rl78_devirt_pass = make_pass_rl78_devirt (g);
-  static struct register_pass_info rl78_devirt_info =
+  struct register_pass_info rl78_devirt_info =
     {
       rl78_devirt_pass,
       "pro_and_epilogue",
@@ -293,7 +293,7 @@ rl78_asm_file_start (void)
     };
 
   opt_pass *rl78_move_elim_pass = make_pass_rl78_move_elim (g);
-  static struct register_pass_info rl78_move_elim_info =
+  struct register_pass_info rl78_move_elim_info =
     {
       rl78_move_elim_pass,
       "bbro",

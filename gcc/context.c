@@ -38,3 +38,9 @@ gcc::context::context ()
   m_dumps = new gcc::dump_manager ();
   m_passes = new gcc::pass_manager (this);
 }
+
+gcc::context::~context ()
+{
+  delete m_passes;
+  delete m_dumps;
+}

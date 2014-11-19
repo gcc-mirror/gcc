@@ -1,6 +1,38 @@
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* config/alpha/alpha.c (alpha_option_override): Remove static from
+	"handle_trap_shadows_info" and "align_insns_info".
+	* config/i386/i386.c (ix86_option_override): Likewise for
+	"insert_vzeroupper_info".
+	* config/rl78/rl78.c (rl78_asm_file_start): Likewise for
+	"rl78_devirt_info" and "rl78_move_elim_info".
+	* config/rs6000/rs6000.c (rs6000_option_override): Likewise for
+	"analyze_swaps_info".
+	* context.c (gcc::context::~context): New.
+	* context.h (gcc::context::~context): New.
+	* dumpfile.c (dump_files): Add "false" initializers for new field
+	"owns_strings".
+	(gcc::dump_manager::~dump_manager): New.
+	(gcc::dump_manager::dump_register): Add param "take_ownership".
+	* dumpfile.h (struct dump_file_info): Add field "owns_strings".
+	(gcc::dump_manager::~dump_manager): New.
+	(gcc::dump_manager::dump_register): Add param "take_ownership".
+	* pass_manager.h (gcc::pass_manager::operator delete): New.
+	(gcc::pass_manager::~pass_manager): New.
+	* passes.c (pass_manager::register_one_dump_file): Pass "true" to
+	new "owns_strings" argument to dump_register.
+	(pass_manager::operator delete): New.
+	(delete_pass_tree): New function.
+	(pass_manager::~pass_manager): New.
+	* statistics.c (statistics_early_init): Pass "false" to
+	new "owns_strings" argument to dump_register.
+	* toplev.c (toplev::finalize): Clean up the context and thus the
+	things it owns.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* reginfo.c (finish_subregs_of_mode): Replace obstack_finish with
 	obstack_free when cleaning up valid_mode_changes_obstack.
 
