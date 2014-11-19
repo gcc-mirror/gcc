@@ -2179,4 +2179,6 @@ toplev::finalize (void)
   /* Clean up the context (and pass_manager etc). */
   delete g;
   g = NULL;
+
+  obstack_free (&opts_obstack, NULL);
 }
