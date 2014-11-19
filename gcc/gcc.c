@@ -4155,7 +4155,9 @@ process_command (unsigned int decoded_options_count,
 			   CL_DRIVER, &handlers, global_dc);
     }
 
-  if (output_file && strcmp (output_file, "-"))
+  if (output_file
+      && strcmp (output_file, "-") != 0
+      && strcmp (output_file, HOST_BIT_BUCKET) != 0)
     {
       int i;
       for (i = 0; i < n_infiles; i++)

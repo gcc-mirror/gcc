@@ -1,3 +1,12 @@
+2014-11-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/36312
+	PR driver/63837
+	* gcc.c (process_command): Don't check for input/output
+	filename equality if output is HOST_BIT_BUCKET.
+	* toplev.c (init_asm_output): Likewise.
+
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	Merger of git branch "gimple-classes-v2-option-3".

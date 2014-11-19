@@ -945,7 +945,8 @@ init_asm_output (const char *name)
 	}
       if (!strcmp (asm_file_name, "-"))
 	asm_out_file = stdout;
-      else if (!canonical_filename_eq (asm_file_name, name))
+      else if (!canonical_filename_eq (asm_file_name, name)
+	       || !strcmp (asm_file_name, HOST_BIT_BUCKET))
 	asm_out_file = fopen (asm_file_name, "w");
       else
 	/* Use fatal_error (UNKOWN_LOCATION) instead of just fatal_error to
