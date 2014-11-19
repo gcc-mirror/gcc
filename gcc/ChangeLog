@@ -1,3 +1,11 @@
+2014-11-19  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/62167
+	* tree-ssa-tail-merge.c (stmt_local_def): Handle statements with vuse
+	conservatively.
+	(gimple_equal_p): Don't use vn_valueize to compare for lhs equality of
+	assigns.
+
 2014-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/63915
