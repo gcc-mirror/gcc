@@ -502,11 +502,7 @@ decl_attributes (tree *node, tree attributes, int flags)
       if (spec->type_required && DECL_P (*anode))
 	{
 	  anode = &TREE_TYPE (*anode);
-	  /* Allow ATTR_FLAG_TYPE_IN_PLACE for the type's naming decl.  */
-	  if (!(TREE_CODE (*anode) == TYPE_DECL
-		&& *anode == TYPE_NAME (TYPE_MAIN_VARIANT
-					(TREE_TYPE (*anode)))))
-	    flags &= ~(int) ATTR_FLAG_TYPE_IN_PLACE;
+	  flags &= ~(int) ATTR_FLAG_TYPE_IN_PLACE;
 	}
 
       if (spec->function_type_required && TREE_CODE (*anode) != FUNCTION_TYPE
