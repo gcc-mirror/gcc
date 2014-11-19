@@ -2845,6 +2845,12 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	r = *p;
       else if (addr)
 	/* Defer in case this is only used for its type.  */;
+      else if (is_empty_class (TREE_TYPE (t)))
+	{
+	  /* If the class is empty, we aren't actually loading anything.  */
+	  r = build_constructor (TREE_TYPE (t), NULL);
+	  TREE_CONSTANT (r) = true;
+	}
       else
 	{
 	  if (!ctx->quiet)
