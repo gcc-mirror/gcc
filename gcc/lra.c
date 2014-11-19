@@ -2297,6 +2297,7 @@ lra (FILE *f)
 		     actual_call_used_reg_set,  which is needed during
 		     lra_inheritance.  */
 		  lra_create_live_ranges (true, true);
+		  live_p = true;
 		}
 	      lra_inheritance ();
 	    }
