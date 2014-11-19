@@ -1,6 +1,11 @@
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* dwarf2out.c (dwarf2out_c_finalize): Free producer_string.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* ira-costs.c (ira_costs_c_finalize): New function.
 	* ira.h (ira_costs_c_finalize): New prototype.
 	* toplev.c (toplev::finalize): Call ira_costs_c_finalize.
