@@ -1,5 +1,26 @@
 2014-11-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57979
+	* init.c (decl_really_constant_value): Rename from
+	integral_constant_value.
+	(scalar_constant_value): Similar but limited to scalar results.
+	(decl_constant_value_safe): Remove.
+	(constant_value_1): Respect return_aggregate_cst_ok_p.
+	* typeck.c (decay_conversion): Use scalar_constant_value.
+	* call.c (convert_like_real): Likewise.
+	* cvt.c (ocp_convert): No need to check CLASS_TYPE_P.
+	* typeck.c (decay_conversion): Or ARRAY_TYPE.
+	* constexpr.c (struct constexpr_ctx): Add strict field.
+	(cxx_eval_constant_expression) [VAR_DECL]: Use it to select between
+	decl_constant_value and decl_really_constant_value.
+	(cxx_eval_outermost_constant_expr): Add strict parm.
+	(maybe_constant_init): Not strict.
+	(potential_constant_expression_1): Add strict parm.
+	Shorten most internal calls with RECUR macro.
+	* cp-tree.h, pt.c, semantics.c: Adjust.
+
+2014-11-19  Jason Merrill  <jason@redhat.com>
+
 	PR c++/63928
 	* constexpr.c (cxx_eval_store_expression): Return init, not *valp.
 

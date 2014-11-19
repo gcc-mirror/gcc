@@ -12805,7 +12805,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  return t;
 	/* If ARGS is NULL, then T is known to be non-dependent.  */
 	if (args == NULL_TREE)
-	  return integral_constant_value (t);
+	  return scalar_constant_value (t);
 
 	/* Unfortunately, we cannot just call lookup_name here.
 	   Consider:
@@ -12936,7 +12936,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		      else if (decl_constant_var_p (r))
 			/* A use of a local constant decays to its value.
 			   FIXME update for core DR 696.  */
-			r = integral_constant_value (r);
+			r = scalar_constant_value (r);
 		    }
 		}
 	      /* Remember this for subsequent uses.  */
@@ -18420,7 +18420,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
     case CONST_DECL:
       if (DECL_TEMPLATE_PARM_P (parm))
 	return unify (tparms, targs, DECL_INITIAL (parm), arg, strict, explain_p);
-      if (arg != integral_constant_value (parm))
+      if (arg != scalar_constant_value (parm))
 	return unify_template_argument_mismatch (explain_p, parm, arg);
       return unify_success (explain_p);
 

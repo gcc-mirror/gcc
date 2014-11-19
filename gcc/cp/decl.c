@@ -12993,7 +12993,7 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
   tree context;
   tree type;
 
-  /* integral_constant_value will pull out this expression, so make sure
+  /* scalar_constant_value will pull out this expression, so make sure
      it's folded as appropriate.  */
   if (processing_template_decl)
     value = fold_non_dependent_expr (value);
