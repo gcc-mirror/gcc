@@ -1150,6 +1150,7 @@ thread_across_edge (gcond *dummy_cond,
 	 through the vector entries.  */
       gcc_assert (path->length () == 0);
       path->release ();
+      delete path;
 
       /* A negative status indicates the target block was deemed too big to
 	 duplicate.  Just quit now rather than trying to use the block as

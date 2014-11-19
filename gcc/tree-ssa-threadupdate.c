@@ -2481,6 +2481,7 @@ delete_jump_thread_path (vec<jump_thread_edge *> *path)
   for (unsigned int i = 0; i < path->length (); i++)
     delete (*path)[i];
   path->release();
+  delete path;
 }
 
 /* Register a jump threading opportunity.  We queue up all the jump
