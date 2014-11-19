@@ -307,6 +307,14 @@ init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
   targetm_common.option_init_struct (opts);
 }
 
+/* Release any allocations owned by OPTS.  */
+
+void
+finalize_options_struct (struct gcc_options *opts)
+{
+  XDELETEVEC (opts->x_param_values);
+}
+
 /* If indicated by the optimization level LEVEL (-Os if SIZE is set,
    -Ofast if FAST is set, -Og if DEBUG is set), apply the option DEFAULT_OPT
    to OPTS and OPTS_SET, diagnostic context DC, location LOC, with language

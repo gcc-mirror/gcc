@@ -1,3 +1,11 @@
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
+	* opts.c (finalize_options_struct): New.
+	* opts.h (finalize_options_struct): New.
+	* toplev.c (toplev::finalize): Call finalize_options_struct
+	on global_options and global_options_set.
+
 2014-11-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 

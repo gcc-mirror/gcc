@@ -2170,4 +2170,7 @@ toplev::finalize (void)
   ipa_cp_c_finalize ();
   ipa_reference_c_finalize ();
   params_c_finalize ();
+
+  finalize_options_struct (&global_options);
+  finalize_options_struct (&global_options_set);
 }
