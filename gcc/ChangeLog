@@ -1,3 +1,8 @@
+2014-11-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* attribs.c (decl_attributes): Remove always true condition,
+	TREE_TYPE(x) will never compare equal to a TYPE_DECL.
+
 2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR target/63937
