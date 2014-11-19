@@ -285,15 +285,15 @@ new_compound_type (location *loc,
 }
 
 void
-playback::compound_type::set_fields (const vec<playback::field *> &fields)
+playback::compound_type::set_fields (const auto_vec<playback::field *> *fields)
 {
   /* Compare with c/c-decl.c: finish_struct. */
   tree t = as_tree ();
 
   tree fieldlist = NULL;
-  for (unsigned i = 0; i < fields.length (); i++)
+  for (unsigned i = 0; i < fields->length (); i++)
     {
-      field *f = fields[i];
+      field *f = (*fields)[i];
       DECL_CONTEXT (f->as_tree ()) = t;
       fieldlist = chainon (f->as_tree (), fieldlist);
     }
@@ -309,7 +309,7 @@ playback::compound_type::set_fields (const vec<playback::field *> &fields)
 playback::type *
 playback::context::
 new_function_type (type *return_type,
-		   vec<type *> *param_types,
+		   const auto_vec<type *> *param_types,
 		   int is_variadic)
 {
   int i;
@@ -361,7 +361,7 @@ new_function (location *loc,
 	      enum gcc_jit_function_kind kind,
 	      type *return_type,
 	      const char *name,
-	      vec<param *> *params,
+	      const auto_vec<param *> *params,
 	      int is_variadic,
 	      enum built_in_function builtin_id)
 {
@@ -770,12 +770,12 @@ playback::rvalue *
 playback::context::
 build_call (location *loc,
 	    tree fn_ptr,
-	    vec<rvalue *> args)
+	    const auto_vec<rvalue *> *args)
 {
   vec<tree, va_gc> *tree_args;
-  vec_alloc (tree_args, args.length ());
-  for (unsigned i = 0; i < args.length (); i++)
-    tree_args->quick_push (args[i]->as_tree ());
+  vec_alloc (tree_args, args->length ());
+  for (unsigned i = 0; i < args->length (); i++)
+    tree_args->quick_push ((*args)[i]->as_tree ());
 
   if (loc)
     set_tree_location (fn_ptr, loc);
@@ -806,7 +806,7 @@ playback::rvalue *
 playback::context::
 new_call (location *loc,
 	  function *func,
-	  vec<rvalue *> args)
+	  const auto_vec<rvalue *> *args)
 {
   tree fndecl;
 
@@ -828,7 +828,7 @@ playback::rvalue *
 playback::context::
 new_call_through_ptr (location *loc,
 		      rvalue *fn_ptr,
-		      vec<rvalue *> args)
+		      const auto_vec<rvalue *> *args)
 {
   gcc_assert (fn_ptr);
   tree t_fn_ptr = fn_ptr->as_tree ();
@@ -1079,6 +1079,18 @@ get_address (location *loc)
   return new rvalue (get_context (), ptr);
 }
 
+/* The wrapper subclasses are GC-managed, but can own non-GC memory.
+   Provide this finalization hook for calling then they are collected,
+   which calls the finalizer vfunc.  This allows them to call "release"
+   on any vec<> within them.  */
+
+static void
+wrapper_finalizer (void *ptr)
+{
+  playback::wrapper *wrapper = reinterpret_cast <playback::wrapper *> (ptr);
+  wrapper->finalizer ();
+}
+
 /* gcc::jit::playback::wrapper subclasses are GC-managed:
    allocate them using ggc_internal_cleared_alloc.  */
 
@@ -1086,7 +1098,8 @@ void *
 playback::wrapper::
 operator new (size_t sz)
 {
-  return ggc_internal_cleared_alloc (sz MEM_STAT_INFO);
+  return ggc_internal_cleared_alloc (sz, wrapper_finalizer, 0, 1);
+
 }
 
 /* Constructor for gcc:jit::playback::function.  */
@@ -1126,6 +1139,15 @@ gt_ggc_mx ()
   gt_ggc_m_9tree_node (m_inner_bind_expr);
   gt_ggc_m_9tree_node (m_stmt_list);
   gt_ggc_m_9tree_node (m_inner_block);
+}
+
+/* Don't leak vec's internal buffer (in non-GC heap) when we are
+   GC-ed.  */
+
+void
+playback::function::finalizer ()
+{
+  m_blocks.release ();
 }
 
 /* Get the return type of a playback function, in tree form.  */
@@ -1260,6 +1282,15 @@ postprocess ()
 
       current_function_decl = NULL;
     }
+}
+
+/* Don't leak vec's internal buffer (in non-GC heap) when we are
+   GC-ed.  */
+
+void
+playback::block::finalizer ()
+{
+  m_stmts.release ();
 }
 
 /* Add an eval of the rvalue to the function's statement list.  */
@@ -2024,6 +2055,15 @@ playback::source_file::source_file (tree filename) :
 {
 }
 
+/* Don't leak vec's internal buffer (in non-GC heap) when we are
+   GC-ed.  */
+
+void
+playback::source_file::finalizer ()
+{
+  m_source_lines.release ();
+}
+
 /* Construct a playback::source_line for the given line
    within this source file, if one doesn't exist already.  */
 
@@ -2054,6 +2094,15 @@ playback::source_line::source_line (source_file *file, int line_num) :
   m_source_file (file),
   m_line_num (line_num)
 {
+}
+
+/* Don't leak vec's internal buffer (in non-GC heap) when we are
+   GC-ed.  */
+
+void
+playback::source_line::finalizer ()
+{
+  m_locations.release ();
 }
 
 /* Construct a playback::location for the given column

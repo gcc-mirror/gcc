@@ -1602,7 +1602,7 @@ void
 recording::function_type::replay_into (replayer *r)
 {
   /* Convert m_param_types to a vec of playback type.  */
-  vec <playback::type *> param_types;
+  auto_vec <playback::type *> param_types;
   int i;
   recording::type *type;
   param_types.create (m_param_types.length ());
@@ -1859,11 +1859,11 @@ recording::fields::fields (compound_type *struct_or_union,
 void
 recording::fields::replay_into (replayer *)
 {
-  vec<playback::field *> playback_fields;
+  auto_vec<playback::field *> playback_fields;
   playback_fields.create (m_fields.length ());
   for (unsigned i = 0; i < m_fields.length (); i++)
     playback_fields.safe_push (m_fields[i]->playback_field ());
-  m_struct_or_union->playback_compound_type ()->set_fields (playback_fields);
+  m_struct_or_union->playback_compound_type ()->set_fields (&playback_fields);
 }
 
 /* Override the default implementation of
@@ -2032,7 +2032,7 @@ void
 recording::function::replay_into (replayer *r)
 {
   /* Convert m_params to a vec of playback param.  */
-  vec <playback::param *> params;
+  auto_vec <playback::param *> params;
   int i;
   recording::param *param;
   params.create (m_params.length ());
@@ -2848,14 +2848,14 @@ recording::call::call (recording::context *ctxt,
 void
 recording::call::replay_into (replayer *r)
 {
-  vec<playback::rvalue *> playback_args;
+  auto_vec<playback::rvalue *> playback_args;
   playback_args.create (m_args.length ());
   for (unsigned i = 0; i< m_args.length (); i++)
     playback_args.safe_push (m_args[i]->playback_rvalue ());
 
   set_playback_obj (r->new_call (playback_location (r, m_loc),
 				 m_func->playback_function (),
-				 playback_args));
+				 &playback_args));
 }
 
 /* Implementation of recording::memento::make_debug_string for
@@ -2925,14 +2925,14 @@ recording::call_through_ptr::call_through_ptr (recording::context *ctxt,
 void
 recording::call_through_ptr::replay_into (replayer *r)
 {
-  vec<playback::rvalue *> playback_args;
+  auto_vec<playback::rvalue *> playback_args;
   playback_args.create (m_args.length ());
   for (unsigned i = 0; i< m_args.length (); i++)
     playback_args.safe_push (m_args[i]->playback_rvalue ());
 
   set_playback_obj (r->new_call_through_ptr (playback_location (r, m_loc),
 					     m_fn_ptr->playback_rvalue (),
-					     playback_args));
+					     &playback_args));
 }
 
 /* Implementation of recording::memento::make_debug_string for

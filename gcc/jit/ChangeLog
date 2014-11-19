@@ -1,6 +1,74 @@
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* jit-playback.c (gcc::jit::playback::compound_type::set_fields):
+	Convert param from const vec<playback::field *> & to
+	const auto_vec<playback::field *> *.
+	(gcc::jit::playback::context::new_function_type): Convert param
+	"param_types" from vec<type *> * to const auto_vec<type *> *.
+	(gcc::jit::playback::context::new_function): Convert param
+	"params" from vec<param *> * to const auto_vec<param *> *.
+	(gcc::jit::playback::context::build_call): Convert param "args"
+	from vec<rvalue *> to const auto_vec<rvalue *> *.
+	(gcc::jit::playback::context::new_call): Likewise.
+	(gcc::jit::playback::context::new_call_through_ptr): Likewise.
+	(wrapper_finalizer): New function.
+	(gcc::jit::playback::wrapper::operator new): Call the finalizer
+	variant of ggc_internal_cleared_alloc, supplying
+	wrapper_finalizer.
+	(gcc::jit::playback::function::finalizer): New.
+	(gcc::jit::playback::block::finalizer): New.
+	(gcc::jit::playback::source_file::finalizer): New.
+	(gcc::jit::playback::source_line::finalizer): New.
+
+	* jit-playback.h
+	(gcc::jit::playback::context::new_function_type): Convert param
+	"param_types" from vec<type *> * to const auto_vec<type *> *.
+	(gcc::jit::playback::context::new_function): Convert param
+	"params" from vec<param *> * to const auto_vec<param *> *.
+	(gcc::jit::playback::context::new_call): Convert param
+	"args" from vec<rvalue *> to const auto_vec<rvalue *> *.
+	(gcc::jit::playback::context::new_call_through_ptr): Likewise.
+	(gcc::jit::playback::context::build_call): Likewise.
+	(gcc::jit::playback::context): Convert fields "m_functions",
+	"m_source_files", "m_cached_locations" from vec to auto_vec.
+	(gcc::jit::playback::wrapper::finalizer): New virtual function.
+	(gcc::jit::playback::compound_type::set_fields): Convert param fro
+	const vec<playback::field *> & to
+	const auto_vec<playback::field *> *.
+	(gcc::jit::playback::function::finalizer): New.
+	(gcc::jit::playback::block::finalizer): New.
+	(gcc::jit::playback::source_file::finalizer): New.
+	(gcc::jit::playback::source_line::finalizer): New.
+
+	* jit-recording.c
+	(gcc::jit::recording::function_type::replay_into): Convert local
+	from a vec into an auto_vec.
+	(gcc::jit::recording::fields::replay_into): Likewise.
+	(gcc::jit::recording::function::replay_into): Likewise.
+	(gcc::jit::recording::call::replay_into): Likewise.
+	(gcc::jit::recording::call_through_ptr::replay_into): Likewise.
+
+	* jit-recording.h (gcc::jit::recording::context): Convert fields
+	"m_mementos", "m_compound_types", "m_functions" from vec<> to
+	auto_vec <>.
+	(gcc::jit::recording::function_type::get_param_types): Convert
+	return type from vec<type *> to const vec<type *> &.
+	(gcc::jit::recording::function_type): Convert field
+	"m_param_types" from a vec<> to an auto_vec<>.
+	(gcc::jit::recording::fields): Likewise for field "m_fields".
+	(gcc::jit::recording::function::get_params): Convert return type
+	from vec <param *> to const vec<param *> &.
+	(gcc::jit::recording::function): Convert fields "m_params",
+	"m_locals", "m_blocks" from vec<> to auto_vec<>.
+	(gcc::jit::recording::block): Likewise for field "m_statements".
+	vec<> to auto_vec<>.
+	(gcc::jit::recording::call): Likewise for field "m_args".
+	(gcc::jit::recording::call_through_ptr): Likewise.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* jit-recording.c (recording::function::validate): Convert
 	"worklist" from vec<> to autovec<> to fix a leak.
 
