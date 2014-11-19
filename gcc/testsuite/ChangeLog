@@ -1,3 +1,8 @@
+2014-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63520
+	* c-c++-common/ubsan/pr63520.c: New test.
+
 2014-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57654

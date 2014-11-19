@@ -1,3 +1,10 @@
+2014-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63520
+	* internal-fn.c (expand_ubsan_result_store): New function.
+	(expand_addsub_overflow, expand_neg_overflow, expand_mul_overflow):
+	Use it instead of just emit_move_insn.
+
 2014-11-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63844

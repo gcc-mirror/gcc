@@ -395,6 +395,21 @@ expand_arith_overflow_result_store (tree lhs, rtx target,
   write_complex_part (target, lres, false);
 }
 
+/* Helper for expand_*_overflow.  Store RES into TARGET.  */
+
+static void
+expand_ubsan_result_store (rtx target, rtx res)
+{
+  if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
+    /* If this is a scalar in a register that is stored in a wider mode   
+       than the declared mode, compute the result into its declared mode
+       and then convert to the wider mode.  Our value is the computed
+       expression.  */
+    convert_move (SUBREG_REG (target), res, SUBREG_PROMOTED_SIGN (target));
+  else
+    emit_move_insn (target, res);
+}
+
 /* Add sub/add overflow checking to the statement STMT.
    CODE says whether the operation is +, or -.  */
 
@@ -809,7 +824,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
   if (lhs)
     {
       if (is_ubsan)
-	emit_move_insn (target, res);
+	expand_ubsan_result_store (target, res);
       else
 	{
 	  if (do_xor)
@@ -904,7 +919,7 @@ expand_neg_overflow (location_t loc, tree lhs, tree arg1, bool is_ubsan)
   if (lhs)
     {
       if (is_ubsan)
-	emit_move_insn (target, res);
+	expand_ubsan_result_store (target, res);
       else
 	expand_arith_overflow_result_store (lhs, target, mode, res);
     }
@@ -1590,7 +1605,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
   if (lhs)
     {
       if (is_ubsan)
-	emit_move_insn (target, res);
+	expand_ubsan_result_store (target, res);
       else
 	expand_arith_overflow_result_store (lhs, target, mode, res);
     }
