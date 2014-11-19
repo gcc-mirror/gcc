@@ -953,6 +953,39 @@
   [(set_attr "type" "neon_minmax<q>")]
 )
 
+(define_expand "<su><maxmin>v2di3"
+ [(set (match_operand:V2DI 0 "register_operand" "")
+       (MAXMIN:V2DI (match_operand:V2DI 1 "register_operand" "")
+                    (match_operand:V2DI 2 "register_operand" "")))]
+ "TARGET_SIMD"
+{
+  enum rtx_code cmp_operator;
+  rtx cmp_fmt;
+
+  switch (<CODE>)
+    {
+    case UMIN:
+      cmp_operator = LTU;
+      break;
+    case SMIN:
+      cmp_operator = LT;
+      break;
+    case UMAX:
+      cmp_operator = GTU;
+      break;
+    case SMAX:
+      cmp_operator = GT;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  cmp_fmt = gen_rtx_fmt_ee (cmp_operator, V2DImode, operands[1], operands[2]);
+  emit_insn (gen_aarch64_vcond_internalv2div2di (operands[0], operands[1],
+              operands[2], cmp_fmt, operands[1], operands[2]));
+  DONE;
+})
+
 ;; vec_concat gives a new vector with the low elements from operand 1, and
 ;; the high elements from operand 2.  That is to say, given op1 = { a, b }
 ;; op2 = { c, d }, vec_concat (op1, op2) = { a, b, c, d }.

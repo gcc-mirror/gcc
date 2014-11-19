@@ -5,6 +5,11 @@
 
 2014-11-19  Renlin Li  <Renlin.Li@arm.com>
 
+    PR target/63424
+	* config/aarch64/aarch64-simd.md (<su><maxmin>v2di3): New.
+
+2014-11-19  Renlin Li  <Renlin.Li@arm.com>
+
     PR middle-end/63762
 	* ira.c (ira): Update preferred class.
 
