@@ -1,3 +1,8 @@
+2014-11-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63928
+	* constexpr.c (cxx_eval_store_expression): Return init, not *valp.
+
 2014-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55425
