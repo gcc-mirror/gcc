@@ -1,3 +1,16 @@
+2014-11-19  Richard Henderson  <rth@redhat.com>
+
+	* targhooks.c (default_static_chain): Remove check for
+	DECL_STATIC_CHAIN.
+	* config/moxie/moxie.c (moxie_static_chain): Likewise.
+	* config/i386/i386.c (ix86_static_chain): Allow decl or type
+	as the first argument.
+	* config/xtensa/xtensa.c (xtensa_static_chain): Change the name
+	of the unused first parameter.
+	* doc/tm.texi (TARGET_STATIC_CHAIN): Document the first parameter
+	may be a type.
+	* target.def (static_chain): Likewise.
+
 2014-11-19  Renlin Li  <renlin.li@arm.com>
 
     * config/aarch64/aarch64.h (TARGET_CPU_CPP_BUILTINS): Define __ARM_FP_FAST,
