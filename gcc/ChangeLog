@@ -1,6 +1,13 @@
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* bb-reorder.c
+	(find_rarely_executed_basic_blocks_and_crossing_edges): Convert
+	local bbs_in_hot_partition from vec<> to auto_vec<>.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* config/alpha/alpha.c (alpha_option_override): Remove static from
 	"handle_trap_shadows_info" and "align_insns_info".
 	* config/i386/i386.c (ix86_option_override): Likewise for
