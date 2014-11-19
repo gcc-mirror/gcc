@@ -1,3 +1,10 @@
+2014-11-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR sanitizer/62132
+	* c-c++-common/asan/misalign-1.c: Pass -fno-omit-frame-pointer on
+	darwin, adjust dg-output.
+	* c-c++-common/asan/misalign-2.c: Likewise.
+
 2014-11-19  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/cwsc0.c: New test.
