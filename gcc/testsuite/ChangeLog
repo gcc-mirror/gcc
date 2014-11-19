@@ -1,3 +1,7 @@
+2014-11-19  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.dg/pure-2.c: Update line numbers.
+
 2014-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/63843
