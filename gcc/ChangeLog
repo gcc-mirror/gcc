@@ -1,3 +1,14 @@
+2014-11-19  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR regression/63868
+	* cgraph.c (cgraph_node::create): Guard g->have_offload with
+	ifdef ENABLE_OFFLOADING.
+	* omp-low.c (create_omp_child_function): Likewise.
+	(expand_omp_target): Guard node->mark_force_output and offload_funcs
+	with ifdef ENABLE_OFFLOADING.
+	* varpool.c (varpool_node::get_create): Guard g->have_offload and
+	offload_vars with ifdef ENABLE_OFFLOADING.
+
 2014-11-19  Felix Yang  <felix.yang@huawei.com>
 	    Shanyao Chen  <chenshanyao@huawei.com>
 
