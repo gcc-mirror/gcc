@@ -1,3 +1,9 @@
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
+	* jit-recording.c (recording::function::validate): Convert
+	"worklist" from vec<> to autovec<> to fix a leak.
+
 2014-11-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* ChangeLog.jit: New.

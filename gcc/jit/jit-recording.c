@@ -2187,8 +2187,7 @@ recording::function::validate ()
     {
       /* Iteratively walk the graph of blocks, marking their "m_is_reachable"
 	 flag, starting at the initial block.  */
-      vec<block *> worklist;
-      worklist.create (m_blocks.length ());
+      auto_vec<block *> worklist (m_blocks.length ());
       worklist.safe_push (m_blocks[0]);
       while (worklist.length () > 0)
 	{
