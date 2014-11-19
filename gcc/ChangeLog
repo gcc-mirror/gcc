@@ -1,5 +1,11 @@
 2014-11-19  Richard Henderson  <rth@redhat.com>
 
+	* c-family/c-common.c (c_common_reswords): Add
+	__builtin_call_with_static_chain.
+	* c-family/c-common.h (RID_BUILTIN_CALL_WITH_STATIC_CHAIN): New.
+	* c/c-parser.c (c_parser_postfix_expression): Handle it.
+	* doc/extend.texi (__builtin_call_with_static_chain): Document it.
+
 	* calls.c (prepare_call_address): Allow decl or type for first arg.
 	(expand_call): Pass type to prepare_call_address if no decl.
 	* gimple-fold.c (gimple_fold_call): Eliminate the static chain if

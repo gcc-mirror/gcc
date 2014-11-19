@@ -8913,6 +8913,7 @@ in the Cilk Plus language manual which can be found at
 @node Other Builtins
 @section Other Built-in Functions Provided by GCC
 @cindex built-in functions
+@findex __builtin_call_with_static_chain
 @findex __builtin_fpclassify
 @findex __builtin_isfinite
 @findex __builtin_isnormal
@@ -9498,6 +9499,18 @@ depending on the arguments' types.  For example:
 @end smallexample
 
 @emph{Note:} This construct is only available for C@.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} @var{type} __builtin_call_with_static_chain (@var{call_exp}, @var{pointer_exp})
+
+The @var{call_exp} expression must be a function call, and the
+@var{pointer_exp} expression must be a pointer.  The @var{pointer_exp}
+is passed to the function call in the target's static chain location.
+The result of builtin is the result of the function call.
+
+@emph{Note:} This builtin is only available for C@.
+This builtin can be used to call Go closures from C.
 
 @end deftypefn
 
