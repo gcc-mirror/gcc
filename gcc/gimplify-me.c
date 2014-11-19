@@ -177,22 +177,27 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
   switch (gimple_code (stmt))
     {
     case GIMPLE_COND:
-      gimplify_expr (gimple_cond_lhs_ptr (stmt), &pre, NULL,
-		     is_gimple_val, fb_rvalue);
-      gimplify_expr (gimple_cond_rhs_ptr (stmt), &pre, NULL,
-		     is_gimple_val, fb_rvalue);
+      {
+	gcond *cond_stmt = as_a <gcond *> (stmt);
+	gimplify_expr (gimple_cond_lhs_ptr (cond_stmt), &pre, NULL,
+		       is_gimple_val, fb_rvalue);
+	gimplify_expr (gimple_cond_rhs_ptr (cond_stmt), &pre, NULL,
+		       is_gimple_val, fb_rvalue);
+      }
       break;
     case GIMPLE_SWITCH:
-      gimplify_expr (gimple_switch_index_ptr (stmt), &pre, NULL,
-		     is_gimple_val, fb_rvalue);
+      gimplify_expr (gimple_switch_index_ptr (as_a <gswitch *> (stmt)),
+		     &pre, NULL, is_gimple_val, fb_rvalue);
       break;
     case GIMPLE_OMP_ATOMIC_LOAD:
-      gimplify_expr (gimple_omp_atomic_load_rhs_ptr (stmt), &pre, NULL,
-		     is_gimple_val, fb_rvalue);
+      gimplify_expr (gimple_omp_atomic_load_rhs_ptr (
+		       as_a <gomp_atomic_load *> (stmt)),
+		     &pre, NULL, is_gimple_val, fb_rvalue);
       break;
     case GIMPLE_ASM:
       {
-	size_t i, noutputs = gimple_asm_noutputs (stmt);
+	gasm *asm_stmt = as_a <gasm *> (stmt);
+	size_t i, noutputs = gimple_asm_noutputs (asm_stmt);
 	const char *constraint, **oconstraints;
 	bool allows_mem, allows_reg, is_inout;
 
@@ -200,7 +205,7 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
 	  = (const char **) alloca ((noutputs) * sizeof (const char *));
 	for (i = 0; i < noutputs; i++)
 	  {
-	    tree op = gimple_asm_output_op (stmt, i);
+	    tree op = gimple_asm_output_op (asm_stmt, i);
 	    constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (op)));
 	    oconstraints[i] = constraint;
 	    parse_output_constraint (&constraint, i, 0, 0, &allows_mem,
@@ -209,9 +214,9 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
 			   is_inout ? is_gimple_min_lval : is_gimple_lvalue,
 			   fb_lvalue | fb_mayfail);
 	  }
-	for (i = 0; i < gimple_asm_ninputs (stmt); i++)
+	for (i = 0; i < gimple_asm_ninputs (asm_stmt); i++)
 	  {
-	    tree op = gimple_asm_input_op (stmt, i);
+	    tree op = gimple_asm_input_op (asm_stmt, i);
 	    constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (op)));
 	    parse_input_constraint (&constraint, 0, 0, noutputs, 0,
 				    oconstraints, &allows_mem, &allows_reg);

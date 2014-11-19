@@ -555,20 +555,21 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
             vectorization_factor = *max_nunits;
         }
 
-      if (is_gimple_call (stmt))
+      if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	{
 	  rhs_code = CALL_EXPR;
-	  if (gimple_call_internal_p (stmt)
-	      || gimple_call_tail_p (stmt)
-	      || gimple_call_noreturn_p (stmt)
-	      || !gimple_call_nothrow_p (stmt)
-	      || gimple_call_chain (stmt))
+	  if (gimple_call_internal_p (call_stmt)
+	      || gimple_call_tail_p (call_stmt)
+	      || gimple_call_noreturn_p (call_stmt)
+	      || !gimple_call_nothrow_p (call_stmt)
+	      || gimple_call_chain (call_stmt))
 	    {
 	      if (dump_enabled_p ())
 		{
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
 				   "Build SLP failed: unsupported call type ");
-		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				    call_stmt, 0);
                   dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 		}
 	      /* Fatal mismatch.  */

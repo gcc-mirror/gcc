@@ -691,18 +691,15 @@ chkp_recompute_phi_bounds (tree const &bounds, tree *slot,
 			   void *res ATTRIBUTE_UNUSED)
 {
   tree ptr = *slot;
-  gimple bounds_phi;
-  gimple ptr_phi;
+  gphi *bounds_phi;
+  gphi *ptr_phi;
   unsigned i;
 
   gcc_assert (TREE_CODE (bounds) == SSA_NAME);
   gcc_assert (TREE_CODE (ptr) == SSA_NAME);
 
-  bounds_phi = SSA_NAME_DEF_STMT (bounds);
-  ptr_phi = SSA_NAME_DEF_STMT (ptr);
-
-  gcc_assert (bounds_phi && gimple_code (bounds_phi) == GIMPLE_PHI);
-  gcc_assert (ptr_phi && gimple_code (ptr_phi) == GIMPLE_PHI);
+  bounds_phi = as_a <gphi *> (SSA_NAME_DEF_STMT (bounds));
+  ptr_phi = as_a <gphi *> (SSA_NAME_DEF_STMT (ptr));
 
   for (i = 0; i < gimple_phi_num_args (bounds_phi); i++)
     {
@@ -1198,7 +1195,7 @@ chkp_get_registered_bounds (tree ptr)
 static void
 chkp_add_bounds_to_ret_stmt (gimple_stmt_iterator *gsi)
 {
-  gimple ret = gsi_stmt (*gsi);
+  greturn *ret = as_a <greturn *> (gsi_stmt (*gsi));
   tree retval = gimple_return_retval (ret);
   tree ret_decl = DECL_RESULT (cfun->decl);
   tree bounds;
@@ -1637,7 +1634,7 @@ chkp_instrument_normal_builtin (tree fndecl)
 static void
 chkp_add_bounds_to_call_stmt (gimple_stmt_iterator *gsi)
 {
-  gimple call = gsi_stmt (*gsi);
+  gcall *call = as_a <gcall *> (gsi_stmt (*gsi));
   unsigned arg_no = 0;
   tree fndecl = gimple_call_fndecl (call);
   tree fntype;
@@ -1646,7 +1643,7 @@ chkp_add_bounds_to_call_stmt (gimple_stmt_iterator *gsi)
   bool use_fntype = false;
   tree op;
   ssa_op_iter iter;
-  gimple new_call;
+  gcall *new_call;
 
   /* Do nothing for internal functions.  */
   if (gimple_call_internal_p (call))
@@ -2085,7 +2082,7 @@ chkp_get_nonpointer_load_bounds (void)
 
 /* Build bounds returned by CALL.  */
 static tree
-chkp_build_returned_bound (gimple call)
+chkp_build_returned_bound (gcall *call)
 {
   gimple_stmt_iterator gsi;
   tree bounds;
@@ -2191,7 +2188,7 @@ chkp_build_returned_bound (gimple call)
 
 /* Return bounds used as returned by call
    which produced SSA name VAL.  */
-gimple
+gcall *
 chkp_retbnd_call_by_val (tree val)
 {
   if (TREE_CODE (val) != SSA_NAME)
@@ -2204,7 +2201,7 @@ chkp_retbnd_call_by_val (tree val)
   FOR_EACH_IMM_USE_FAST (use_p, use_iter, val)
     if (gimple_code (USE_STMT (use_p)) == GIMPLE_CALL
 	&& gimple_call_fndecl (USE_STMT (use_p)) == chkp_ret_bnd_fndecl)
-      return USE_STMT (use_p);
+      return as_a <gcall *> (USE_STMT (use_p));
 
   return NULL;
 }
@@ -2599,11 +2596,11 @@ chkp_compute_bounds_for_assignment (tree node, gimple assign)
    Return computed bounds.  */
 static tree
 chkp_get_bounds_by_definition (tree node, gimple def_stmt,
-			       gimple_stmt_iterator *iter)
+			       gphi_iterator *iter)
 {
   tree var, bounds;
   enum gimple_code code = gimple_code (def_stmt);
-  gimple stmt;
+  gphi *stmt;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2664,7 +2661,7 @@ chkp_get_bounds_by_definition (tree node, gimple def_stmt,
       break;
 
     case GIMPLE_CALL:
-      bounds = chkp_build_returned_bound (def_stmt);
+      bounds = chkp_build_returned_bound (as_a <gcall *> (def_stmt));
       break;
 
     case GIMPLE_PHI:
@@ -2679,7 +2676,7 @@ chkp_get_bounds_by_definition (tree node, gimple def_stmt,
 	var = chkp_get_tmp_var ();
       stmt = create_phi_node (var, gimple_bb (def_stmt));
       bounds = gimple_phi_result (stmt);
-      *iter = gsi_for_stmt (stmt);
+      *iter = gsi_for_phi (stmt);
 
       bounds = chkp_maybe_copy_and_register_bounds (node, bounds);
 
@@ -3389,21 +3386,21 @@ chkp_find_bounds_1 (tree ptr, tree ptr_src, gimple_stmt_iterator *iter)
       if (!bounds)
 	{
 	  gimple def_stmt = SSA_NAME_DEF_STMT (ptr_src);
-	  gimple_stmt_iterator phi_iter;
+	  gphi_iterator phi_iter;
 
 	  bounds = chkp_get_bounds_by_definition (ptr_src, def_stmt, &phi_iter);
 
 	  gcc_assert (bounds);
 
-	  if (gimple_code (def_stmt) == GIMPLE_PHI)
+	  if (gphi *def_phi = dyn_cast <gphi *> (def_stmt))
 	    {
 	      unsigned i;
 
-	      for (i = 0; i < gimple_phi_num_args (def_stmt); i++)
+	      for (i = 0; i < gimple_phi_num_args (def_phi); i++)
 		{
-		  tree arg = gimple_phi_arg_def (def_stmt, i);
+		  tree arg = gimple_phi_arg_def (def_phi, i);
 		  tree arg_bnd;
-		  gimple phi_bnd;
+		  gphi *phi_bnd;
 
 		  arg_bnd = chkp_find_bounds (arg, NULL);
 
@@ -3413,10 +3410,10 @@ chkp_find_bounds_1 (tree ptr, tree ptr_src, gimple_stmt_iterator *iter)
 		     Previous call to chkp_find_bounds could create
 		     new basic block and therefore change phi statement
 		     phi_iter points to.  */
-		  phi_bnd = gsi_stmt (phi_iter);
+		  phi_bnd = phi_iter.phi ();
 
 		  add_phi_arg (phi_bnd, arg_bnd,
-			       gimple_phi_arg_edge (def_stmt, i),
+			       gimple_phi_arg_edge (def_phi, i),
 			       UNKNOWN_LOCATION);
 		}
 
@@ -3874,7 +3871,9 @@ chkp_copy_bounds_for_assign (gimple assign, struct cgraph_edge *edge)
 		      || fndecl == chkp_bndldx_fndecl
 		      || fndecl == chkp_ret_bnd_fndecl);
 
-	  new_edge = edge->caller->create_edge (callee, stmt, edge->count,
+	  new_edge = edge->caller->create_edge (callee,
+						as_a <gcall *> (stmt),
+						edge->count,
 						edge->frequency);
 	  new_edge->frequency = compute_call_stmt_bb_frequency
 	    (edge->caller->decl, gimple_bb (stmt));
@@ -4036,18 +4035,21 @@ chkp_instrument_function (void)
               break;
 
             case GIMPLE_RETURN:
-              if (gimple_return_retval (s) != NULL_TREE)
-		{
-		  chkp_process_stmt (&i, gimple_return_retval (s),
-				     gimple_location (s),
-				     integer_zero_node,
-				     NULL_TREE, NULL_TREE, safe);
+	      {
+		greturn *r = as_a <greturn *> (s);
+		if (gimple_return_retval (r) != NULL_TREE)
+		  {
+		    chkp_process_stmt (&i, gimple_return_retval (r),
+				       gimple_location (r),
+				       integer_zero_node,
+				       NULL_TREE, NULL_TREE, safe);
 
-		  /* Additionally we need to add bounds
-		     to return statement.  */
-		  chkp_add_bounds_to_ret_stmt (&i);
-                }
-              break;
+		    /* Additionally we need to add bounds
+		       to return statement.  */
+		    chkp_add_bounds_to_ret_stmt (&i);
+		  }
+	      }
+	      break;
 
 	    case GIMPLE_CALL:
 	      chkp_add_bounds_to_call_stmt (&i);

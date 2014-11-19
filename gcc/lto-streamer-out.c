@@ -2023,16 +2023,17 @@ output_function (struct cgraph_node *node)
       set_gimple_stmt_max_uid (cfun, 0);
       FOR_ALL_BB_FN (bb, cfun)
 	{
-	  gimple_stmt_iterator gsi;
-	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	       gsi_next (&gsi))
 	    {
-	      gimple stmt = gsi_stmt (gsi);
+	      gphi *stmt = gsi.phi ();
 
 	      /* Virtual PHIs are not going to be streamed.  */
 	      if (!virtual_operand_p (gimple_phi_result (stmt)))
 	        gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
 	    }
-	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	       gsi_next (&gsi))
 	    {
 	      gimple stmt = gsi_stmt (gsi);
 	      gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
@@ -2042,10 +2043,10 @@ output_function (struct cgraph_node *node)
 	 virtual phis now.  */
       FOR_ALL_BB_FN (bb, cfun)
 	{
-	  gimple_stmt_iterator gsi;
-	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	       gsi_next (&gsi))
 	    {
-	      gimple stmt = gsi_stmt (gsi);
+	      gphi *stmt = gsi.phi ();
 	      if (virtual_operand_p (gimple_phi_result (stmt)))
 	        gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
 	    }

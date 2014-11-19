@@ -753,7 +753,7 @@ add_cand_for_stmt (gimple gs, slsr_cand_t c)
    is used to help find a basis for subsequent candidates.  */
 
 static void
-slsr_process_phi (gimple phi, bool speed)
+slsr_process_phi (gphi *phi, bool speed)
 {
   unsigned i;
   tree arg0_base = NULL_TREE, base_type;
@@ -1678,12 +1678,13 @@ void
 find_candidates_dom_walker::before_dom_children (basic_block bb)
 {
   bool speed = optimize_bb_for_speed_p (bb);
-  gimple_stmt_iterator gsi;
 
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    slsr_process_phi (gsi_stmt (gsi), speed);
+  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    slsr_process_phi (gsi.phi (), speed);
 
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
     {
       gimple gs = gsi_stmt (gsi);
 
@@ -2063,7 +2064,7 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, widest_int bump)
       if (bump == 0)
 	{
 	  tree lhs = gimple_assign_lhs (c->cand_stmt);
-	  gimple copy_stmt = gimple_build_assign (lhs, basis_name);
+	  gassign *copy_stmt = gimple_build_assign (lhs, basis_name);
 	  gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
 	  gimple_set_location (copy_stmt, gimple_location (c->cand_stmt));
 	  gsi_replace (&gsi, copy_stmt, false);
@@ -2162,7 +2163,7 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
   basic_block insert_bb;
   gimple_stmt_iterator gsi;
   tree lhs, basis_type;
-  gimple new_stmt;
+  gassign *new_stmt;
 
   /* If the add candidate along this incoming edge has the same
      index as C's hidden basis, the hidden basis represents this
@@ -2246,7 +2247,7 @@ create_phi_basis (slsr_cand_t c, gimple from_phi, tree basis_name,
 {
   int i;
   tree name, phi_arg;
-  gimple phi;
+  gphi *phi;
   vec<tree> phi_args;
   slsr_cand_t basis = lookup_cand (c->basis);
   int nargs = gimple_phi_num_args (from_phi);
@@ -2981,7 +2982,7 @@ ncd_for_two_cands (basic_block bb1, basic_block bb2,
    candidates, return the earliest candidate in the block in *WHERE.  */
 
 static basic_block
-ncd_with_phi (slsr_cand_t c, const widest_int &incr, gimple phi,
+ncd_with_phi (slsr_cand_t c, const widest_int &incr, gphi *phi,
 	      basic_block ncd, slsr_cand_t *where)
 {
   unsigned i;
@@ -2997,7 +2998,8 @@ ncd_with_phi (slsr_cand_t c, const widest_int &incr, gimple phi,
 	  gimple arg_def = SSA_NAME_DEF_STMT (arg);
 
 	  if (gimple_code (arg_def) == GIMPLE_PHI)
-	    ncd = ncd_with_phi (c, incr, arg_def, ncd, where);
+	    ncd = ncd_with_phi (c, incr, as_a <gphi *> (arg_def), ncd,
+				where);
 	  else 
 	    {
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
@@ -3031,7 +3033,8 @@ ncd_of_cand_and_phis (slsr_cand_t c, const widest_int &incr, slsr_cand_t *where)
     }
   
   if (phi_dependent_cand_p (c))
-    ncd = ncd_with_phi (c, incr, lookup_cand (c->def_phi)->cand_stmt,
+    ncd = ncd_with_phi (c, incr,
+			as_a <gphi *> (lookup_cand (c->def_phi)->cand_stmt),
 			ncd, where);
 
   return ncd;
@@ -3119,7 +3122,7 @@ insert_initializers (slsr_cand_t c)
     {
       basic_block bb;
       slsr_cand_t where = NULL;
-      gimple init_stmt;
+      gassign *init_stmt;
       tree stride_type, new_name, incr_tree;
       widest_int incr = incr_vec[i].incr;
 
@@ -3257,7 +3260,7 @@ static tree
 introduce_cast_before_cand (slsr_cand_t c, tree to_type, tree from_expr)
 {
   tree cast_lhs;
-  gimple cast_stmt;
+  gassign *cast_stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
 
   cast_lhs = make_temp_ssa_name (to_type, NULL, "slsr");
@@ -3418,7 +3421,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
       
       if (types_compatible_p (lhs_type, basis_type))
 	{
-	  gimple copy_stmt = gimple_build_assign (lhs, basis_name);
+	  gassign *copy_stmt = gimple_build_assign (lhs, basis_name);
 	  gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
 	  gimple_set_location (copy_stmt, gimple_location (c->cand_stmt));
 	  gsi_replace (&gsi, copy_stmt, false);
@@ -3430,8 +3433,8 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
       else
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
-	  gimple cast_stmt = gimple_build_assign_with_ops (NOP_EXPR, lhs,
-							   basis_name);
+	  gassign *cast_stmt = gimple_build_assign_with_ops (NOP_EXPR, lhs,
+							     basis_name);
 	  gimple_set_location (cast_stmt, gimple_location (c->cand_stmt));
 	  gsi_replace (&gsi, cast_stmt, false);
 	  c->cand_stmt = cast_stmt;

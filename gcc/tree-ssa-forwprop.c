@@ -355,7 +355,7 @@ remove_prop_source_from_use (tree name)
   return cfg_changed;
 }
 
-/* Return the rhs of a gimple_assign STMT in a form of a single tree,
+/* Return the rhs of a gassign *STMT in a form of a single tree,
    converted to type TYPE.
 
    This should disappear, but is needed so we can combine expressions and use
@@ -529,7 +529,7 @@ forward_propagate_into_comparison (gimple_stmt_iterator *gsi)
    This must be kept in sync with forward_propagate_into_cond.  */
 
 static int
-forward_propagate_into_gimple_cond (gimple stmt)
+forward_propagate_into_gimple_cond (gcond *stmt)
 {
   tree tmp;
   enum tree_code code = gimple_cond_code (stmt);
@@ -1043,7 +1043,7 @@ forward_propagate_addr_expr (tree name, tree rhs, bool parent_single_use_p)
    have values outside the range of the new type.  */
 
 static void
-simplify_gimple_switch_label_vec (gimple stmt, tree index_type)
+simplify_gimple_switch_label_vec (gswitch *stmt, tree index_type)
 {
   unsigned int branch_num = gimple_switch_num_labels (stmt);
   auto_vec<tree> labels (branch_num);
@@ -1113,7 +1113,7 @@ simplify_gimple_switch_label_vec (gimple stmt, tree index_type)
    the condition which we may be able to optimize better.  */
 
 static bool
-simplify_gimple_switch (gimple stmt)
+simplify_gimple_switch (gswitch *stmt)
 {
   /* The optimization that we really care about is removing unnecessary
      casts.  That will let us do much better in propagating the inferred
@@ -2233,10 +2233,10 @@ pass_forwprop::execute (function *fun)
 		bitmap_set_bit (to_purge, bb->index);
 	      /* Cleanup the CFG if we simplified a condition to
 	         true or false.  */
-	      if (gimple_code (stmt) == GIMPLE_COND
-		  && (gimple_cond_true_p (stmt)
-		      || gimple_cond_false_p (stmt)))
-		cfg_changed = true;
+	      if (gcond *cond = dyn_cast <gcond *> (stmt))
+		if (gimple_cond_true_p (cond)
+		    || gimple_cond_false_p (cond))
+		  cfg_changed = true;
 	      update_stmt (stmt);
 	    }
 
@@ -2286,13 +2286,13 @@ pass_forwprop::execute (function *fun)
 	      }
 
 	    case GIMPLE_SWITCH:
-	      changed = simplify_gimple_switch (stmt);
+	      changed = simplify_gimple_switch (as_a <gswitch *> (stmt));
 	      break;
 
 	    case GIMPLE_COND:
 	      {
-		int did_something;
-		did_something = forward_propagate_into_gimple_cond (stmt);
+		int did_something
+		  = forward_propagate_into_gimple_cond (as_a <gcond *> (stmt));
 		if (did_something == 2)
 		  cfg_changed = true;
 		changed = did_something != 0;

@@ -673,6 +673,7 @@ propagate_necessity (bool aggressive)
 	     we also consider the control dependent edges leading to the
 	     predecessor block associated with each PHI alternative as
 	     necessary.  */
+	  gphi *phi = as_a <gphi *> (stmt);
 	  size_t k;
 
 	  for (k = 0; k < gimple_phi_num_args (stmt); k++)
@@ -755,7 +756,7 @@ propagate_necessity (bool aggressive)
 	    {
 	      for (k = 0; k < gimple_phi_num_args (stmt); k++)
 		{
-		  basic_block arg_bb = gimple_phi_arg_edge (stmt, k)->src;
+		  basic_block arg_bb = gimple_phi_arg_edge (phi, k)->src;
 
 		  if (gimple_bb (stmt)
 		      != get_immediate_dominator (CDI_POST_DOMINATORS, arg_bb))
@@ -895,9 +896,9 @@ propagate_necessity (bool aggressive)
 		    mark_all_reaching_defs_necessary (stmt);
 		}
 	    }
-	  else if (gimple_code (stmt) == GIMPLE_RETURN)
+	  else if (greturn *return_stmt = dyn_cast <greturn *> (stmt))
 	    {
-	      tree rhs = gimple_return_retval (stmt);
+	      tree rhs = gimple_return_retval (return_stmt);
 	      /* A return statement may perform a load.  */
 	      if (rhs
 		  && TREE_CODE (rhs) != SSA_NAME
@@ -910,14 +911,14 @@ propagate_necessity (bool aggressive)
 		    mark_all_reaching_defs_necessary (stmt);
 		}
 	    }
-	  else if (gimple_code (stmt) == GIMPLE_ASM)
+	  else if (gasm *asm_stmt = dyn_cast <gasm *> (stmt))
 	    {
 	      unsigned i;
 	      mark_all_reaching_defs_necessary (stmt);
 	      /* Inputs may perform loads.  */
-	      for (i = 0; i < gimple_asm_ninputs (stmt); ++i)
+	      for (i = 0; i < gimple_asm_ninputs (asm_stmt); ++i)
 		{
-		  tree op = TREE_VALUE (gimple_asm_input_op (stmt, i));
+		  tree op = TREE_VALUE (gimple_asm_input_op (asm_stmt, i));
 		  if (TREE_CODE (op) != SSA_NAME
 		      && !is_gimple_min_invariant (op)
 		      && TREE_CODE (op) != CONSTRUCTOR
@@ -961,13 +962,13 @@ static bool
 remove_dead_phis (basic_block bb)
 {
   bool something_changed = false;
-  gimple phi;
-  gimple_stmt_iterator gsi;
+  gphi *phi;
+  gphi_iterator gsi;
 
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);)
     {
       stats.total_phis++;
-      phi = gsi_stmt (gsi);
+      phi = gsi.phi ();
 
       /* We do not track necessity of virtual PHI nodes.  Instead do
          very simple dead PHI removal here.  */
@@ -1019,7 +1020,7 @@ remove_dead_phis (basic_block bb)
 static edge
 forward_edge_to_pdom (edge e, basic_block post_dom_bb)
 {
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
   edge e2 = NULL;
   edge_iterator ei;
 
@@ -1043,7 +1044,7 @@ forward_edge_to_pdom (edge e, basic_block post_dom_bb)
 	  break;
       for (gsi = gsi_start_phis (post_dom_bb); !gsi_end_p (gsi);)
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  tree op;
 	  source_location locus;
 
@@ -1153,7 +1154,7 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
 	  && !DECL_HAS_VALUE_EXPR_P (lhs))
 	{
 	  tree rhs = gimple_assign_rhs1 (stmt);
-	  gimple note
+	  gdebug *note
 	    = gimple_build_debug_bind (lhs, unshare_expr (rhs), stmt);
 	  gsi_insert_after (i, note, GSI_SAME_STMT);
 	}
@@ -1369,7 +1370,7 @@ eliminate_unnecessary_stmts (void)
 	    {
 	      tree name = gimple_call_lhs (stmt);
 
-	      notice_special_calls (stmt);
+	      notice_special_calls (as_a <gcall *> (stmt));
 
 	      /* When LHS of var = call (); is dead, simplify it into
 		 call (); saving one operand.  */
@@ -1447,13 +1448,15 @@ eliminate_unnecessary_stmts (void)
 	  if (!bitmap_bit_p (bb_contains_live_stmts, bb->index)
 	      || !(bb->flags & BB_REACHABLE))
 	    {
-	      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-		if (virtual_operand_p (gimple_phi_result (gsi_stmt (gsi))))
+	      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+		   gsi_next (&gsi))
+		if (virtual_operand_p (gimple_phi_result (gsi.phi ())))
 		  {
 		    bool found = false;
 		    imm_use_iterator iter;
 
-		    FOR_EACH_IMM_USE_STMT (stmt, iter, gimple_phi_result (gsi_stmt (gsi)))
+		    FOR_EACH_IMM_USE_STMT (stmt, iter,
+					   gimple_phi_result (gsi.phi ()))
 		      {
 			if (!(gimple_bb (stmt)->flags & BB_REACHABLE))
 			  continue;
@@ -1465,7 +1468,7 @@ eliminate_unnecessary_stmts (void)
 			  }
 		      }
 		    if (found)
-		      mark_virtual_phi_result_for_renaming (gsi_stmt (gsi));
+		      mark_virtual_phi_result_for_renaming (gsi.phi ());
 		  }
 
 	      if (!(bb->flags & BB_REACHABLE))

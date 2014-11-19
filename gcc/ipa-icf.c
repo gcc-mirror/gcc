@@ -883,8 +883,8 @@ sem_function::parse_tree_args (void)
 bool
 sem_function::compare_phi_node (basic_block bb1, basic_block bb2)
 {
-  gimple_stmt_iterator si1, si2;
-  gimple phi1, phi2;
+  gphi_iterator si1, si2;
+  gphi *phi1, *phi2;
   unsigned size1, size2, i;
   tree t1, t2;
   edge e1, e2;
@@ -905,8 +905,8 @@ sem_function::compare_phi_node (basic_block bb1, basic_block bb2)
       if (gsi_end_p (si1) || gsi_end_p (si2))
 	return return_false();
 
-      phi1 = gsi_stmt (si1);
-      phi2 = gsi_stmt (si2);
+      phi1 = si1.phi ();
+      phi2 = si2.phi ();
 
       tree phi_result1 = gimple_phi_result (phi1);
       tree phi_result2 = gimple_phi_result (phi2);

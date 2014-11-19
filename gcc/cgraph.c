@@ -743,7 +743,7 @@ cgraph_node::get_edge (gimple call_stmt)
    edge, then update all components.  */
 
 void
-cgraph_edge::set_call_stmt (gimple new_stmt, bool update_speculative)
+cgraph_edge::set_call_stmt (gcall *new_stmt, bool update_speculative)
 {
   tree decl;
 
@@ -796,8 +796,8 @@ cgraph_edge::set_call_stmt (gimple new_stmt, bool update_speculative)
 
 cgraph_edge *
 symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
-		     gimple call_stmt, gcov_type count, int freq,
-		     bool indir_unknown_callee)
+			   gcall *call_stmt, gcov_type count, int freq,
+			   bool indir_unknown_callee)
 {
   cgraph_edge *edge;
 
@@ -878,7 +878,7 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
 
 cgraph_edge *
 cgraph_node::create_edge (cgraph_node *callee,
-			  gimple call_stmt, gcov_type count, int freq)
+			  gcall *call_stmt, gcov_type count, int freq)
 {
   cgraph_edge *edge = symtab->create_edge (this, callee, call_stmt, count,
 					   freq, false);
@@ -914,7 +914,7 @@ cgraph_allocate_init_indirect_info (void)
    PARAM_INDEX. */
 
 cgraph_edge *
-cgraph_node::create_indirect_edge (gimple call_stmt, int ecf_flags,
+cgraph_node::create_indirect_edge (gcall *call_stmt, int ecf_flags,
 				   gcov_type count, int freq,
 				   bool compute_indirect_info)
 {
@@ -1291,7 +1291,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 
   tree decl = gimple_call_fndecl (e->call_stmt);
   tree lhs = gimple_call_lhs (e->call_stmt);
-  gimple new_stmt;
+  gcall *new_stmt;
   gimple_stmt_iterator gsi;
 #ifdef ENABLE_CHECKING
   cgraph_node *node;
@@ -1300,7 +1300,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
   if (e->speculative)
     {
       cgraph_edge *e2;
-      gimple new_stmt;
+      gcall *new_stmt;
       ipa_ref *ref;
 
       e->speculative_call_info (e, e2, ref);
@@ -1366,8 +1366,8 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	    {
 	      tree dresult = gimple_call_lhs (new_stmt);
 	      tree iresult = gimple_call_lhs (e2->call_stmt);
-	      gimple dbndret = chkp_retbnd_call_by_val (dresult);
-	      gimple ibndret = chkp_retbnd_call_by_val (iresult);
+	      gcall *dbndret = chkp_retbnd_call_by_val (dresult);
+	      gcall *ibndret = chkp_retbnd_call_by_val (iresult);
 	      struct cgraph_edge *iedge
 		= e2->caller->cgraph_node::get_edge (ibndret);
 	      struct cgraph_edge *dedge;
@@ -1534,7 +1534,7 @@ cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
 		  if (callee->decl == new_call
 		      || callee->former_clone_of == new_call)
 		    {
-		      e->set_call_stmt (new_stmt);
+		      e->set_call_stmt (as_a <gcall *> (new_stmt));
 		      return;
 		    }
 		  callee = callee->clone_of;
@@ -1563,13 +1563,14 @@ cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
       if (new_call)
 	{
 	  ne = node->create_edge (cgraph_node::get_create (new_call),
-				  new_stmt, count, frequency);
+				  as_a <gcall *> (new_stmt), count,
+				  frequency);
 	  gcc_assert (ne->inline_failed);
 	}
     }
   /* We only updated the call stmt; update pointer in cgraph edge..  */
   else if (old_stmt != new_stmt)
-    node->get_edge (old_stmt)->set_call_stmt (new_stmt);
+    node->get_edge (old_stmt)->set_call_stmt (as_a <gcall *> (new_stmt));
 }
 
 /* Update or remove the corresponding cgraph edge if a GIMPLE_CALL

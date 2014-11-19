@@ -975,7 +975,7 @@ instrument_mem_ref (tree mem, tree base, gimple_stmt_iterator *iter,
     ikind = UBSAN_MEMBER_ACCESS;
   tree kind = build_int_cst (TREE_TYPE (t), ikind);
   tree alignt = build_int_cst (pointer_sized_int_node, align);
-  gimple g = gimple_build_call_internal (IFN_UBSAN_NULL, 3, t, kind, alignt);
+  gcall *g = gimple_build_call_internal (IFN_UBSAN_NULL, 3, t, kind, alignt);
   gimple_set_location (g, gimple_location (gsi_stmt (*iter)));
   gsi_insert_before (iter, g, GSI_SAME_STMT);
 }
@@ -1435,7 +1435,7 @@ instrument_nonnull_arg (gimple_stmt_iterator *gsi)
 static void
 instrument_nonnull_return (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  greturn *stmt = as_a <greturn *> (gsi_stmt (*gsi));
   location_t loc[2];
   tree arg = gimple_return_retval (stmt);
   /* infer_nonnull_range needs flag_delete_null_pointer_checks set,

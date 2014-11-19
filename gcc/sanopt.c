@@ -418,10 +418,11 @@ sanopt_optimize_walker (basic_block bb, struct sanopt_ctx *ctx)
 	{
 	  /* Handle asm volatile or asm with "memory" clobber
 	     the same as potentionally freeing call.  */
-	  if (gimple_code (stmt) == GIMPLE_ASM
+	  gasm *asm_stmt = dyn_cast <gasm *> (stmt);
+	  if (asm_stmt
 	      && asan_check_optimize
-	      && (gimple_asm_clobbers_memory_p (stmt)
-		  || gimple_asm_volatile_p (stmt)))
+	      && (gimple_asm_clobbers_memory_p (asm_stmt)
+		  || gimple_asm_volatile_p (asm_stmt)))
 	    info->freeing_call_events++;
 	  gsi_next (&gsi);
 	  continue;

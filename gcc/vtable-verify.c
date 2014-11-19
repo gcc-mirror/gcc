@@ -605,7 +605,7 @@ verify_bb_vtables (basic_block bb)
           tree vtbl_var_decl = NULL_TREE;
           struct vtbl_map_node *vtable_map_node;
           tree vtbl_decl = NULL_TREE;
-          gimple call_stmt;
+          gcall *call_stmt;
           const char *vtable_name = "<unknown>";
           tree tmp0;
           bool found;

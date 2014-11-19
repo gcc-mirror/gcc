@@ -107,7 +107,7 @@ insert_trap_and_remove_trailing_statements (gimple_stmt_iterator *si_p, tree op)
       update_stmt (stmt);
     }
 
-  gimple new_stmt
+  gcall *new_stmt
     = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
   gimple_seq seq = NULL;
   gimple_seq_add_stmt (&seq, new_stmt);
@@ -216,7 +216,7 @@ isolate_path (basic_block bb, basic_block duplicate,
     {
       if (ret_zero)
 	{
-	  gimple ret = gsi_stmt (si2);
+	  greturn *ret = as_a <greturn *> (gsi_stmt (si2));
 	  tree zero = build_zero_cst (TREE_TYPE (gimple_return_retval (ret)));
 	  gimple_return_set_retval (ret, zero);
 	  update_stmt (ret);
@@ -243,7 +243,7 @@ find_implicit_erroneous_behaviour (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple_stmt_iterator si;
+      gphi_iterator si;
 
       /* Out of an abundance of caution, do not isolate paths to a
 	 block where the block has any abnormal outgoing edges.
@@ -262,7 +262,7 @@ find_implicit_erroneous_behaviour (void)
 	 cases.   */
       for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
 	{
-	  gimple phi = gsi_stmt (si);
+	  gphi *phi = si.phi ();
 	  tree lhs = gimple_phi_result (phi);
 
 	  /* If the result is not a pointer, then there is no need to
@@ -296,8 +296,12 @@ find_implicit_erroneous_behaviour (void)
 		    {
 		      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
 			{
-			  if (gimple_code (use_stmt) != GIMPLE_RETURN
-			      || gimple_return_retval (use_stmt) != lhs)
+			  greturn *return_stmt
+			    = dyn_cast <greturn *> (use_stmt);
+			  if (!return_stmt)
+			    continue;
+
+			  if (gimple_return_retval (return_stmt) != lhs)
 			    continue;
 
 			  if (warning_at (gimple_location (use_stmt),
@@ -410,9 +414,9 @@ find_explicit_erroneous_behaviour (void)
 	  /* Detect returning the address of a local variable.  This only
 	     becomes undefined behavior if the result is used, so we do not
 	     insert a trap and only return NULL instead.  */
-	  if (gimple_code (stmt) == GIMPLE_RETURN)
+	  if (greturn *return_stmt = dyn_cast <greturn *> (stmt))
 	    {
-	      tree val = gimple_return_retval (stmt);
+	      tree val = gimple_return_retval (return_stmt);
 	      if (val && TREE_CODE (val) == ADDR_EXPR)
 		{
 		  tree valbase = get_base_address (TREE_OPERAND (val, 0));
@@ -436,7 +440,7 @@ find_explicit_erroneous_behaviour (void)
 				      OPT_Wreturn_local_addr, msg))
 			inform (DECL_SOURCE_LOCATION(valbase), "declared here");
 		      tree zero = build_zero_cst (TREE_TYPE (val));
-		      gimple_return_set_retval (stmt, zero);
+		      gimple_return_set_retval (return_stmt, zero);
 		      update_stmt (stmt);
 		    }
 		}

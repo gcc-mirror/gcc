@@ -91,7 +91,7 @@ struct hashable_expr
     struct { enum tree_code op;  tree opnd; } unary;
     struct { enum tree_code op;  tree opnd0, opnd1; } binary;
     struct { enum tree_code op;  tree opnd0, opnd1, opnd2; } ternary;
-    struct { gimple fn_from; bool pure; size_t nargs; tree *args; } call;
+    struct { gcall *fn_from; bool pure; size_t nargs; tree *args; } call;
     struct { size_t nargs; tree *args; } phi;
   } ops;
 };
@@ -337,18 +337,18 @@ initialize_hash_element (gimple stmt, tree lhs,
       expr->ops.binary.opnd0 = gimple_cond_lhs (stmt);
       expr->ops.binary.opnd1 = gimple_cond_rhs (stmt);
     }
-  else if (code == GIMPLE_CALL)
+  else if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
     {
-      size_t nargs = gimple_call_num_args (stmt);
+      size_t nargs = gimple_call_num_args (call_stmt);
       size_t i;
 
-      gcc_assert (gimple_call_lhs (stmt));
+      gcc_assert (gimple_call_lhs (call_stmt));
 
-      expr->type = TREE_TYPE (gimple_call_lhs (stmt));
+      expr->type = TREE_TYPE (gimple_call_lhs (call_stmt));
       expr->kind = EXPR_CALL;
-      expr->ops.call.fn_from = stmt;
+      expr->ops.call.fn_from = call_stmt;
 
-      if (gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE))
+      if (gimple_call_flags (call_stmt) & (ECF_CONST | ECF_PURE))
         expr->ops.call.pure = true;
       else
         expr->ops.call.pure = false;
@@ -356,13 +356,13 @@ initialize_hash_element (gimple stmt, tree lhs,
       expr->ops.call.nargs = nargs;
       expr->ops.call.args = XCNEWVEC (tree, nargs);
       for (i = 0; i < nargs; i++)
-        expr->ops.call.args[i] = gimple_call_arg (stmt, i);
+        expr->ops.call.args[i] = gimple_call_arg (call_stmt, i);
     }
-  else if (code == GIMPLE_SWITCH)
+  else if (gswitch *swtch_stmt = dyn_cast <gswitch *> (stmt))
     {
-      expr->type = TREE_TYPE (gimple_switch_index (stmt));
+      expr->type = TREE_TYPE (gimple_switch_index (swtch_stmt));
       expr->kind = EXPR_SINGLE;
-      expr->ops.single.rhs = gimple_switch_index (stmt);
+      expr->ops.single.rhs = gimple_switch_index (swtch_stmt);
     }
   else if (code == GIMPLE_GOTO)
     {
@@ -647,7 +647,7 @@ add_hashable_expr (const struct hashable_expr *expr, hash &hstate)
       {
         size_t i;
         enum tree_code code = CALL_EXPR;
-        gimple fn_from;
+        gcall *fn_from;
 
         hstate.add_object (code);
         fn_from = expr->ops.call.fn_from;
@@ -723,7 +723,7 @@ print_expr_hash_elt (FILE * stream, const struct expr_hash_elt *element)
         {
           size_t i;
           size_t nargs = element->expr.ops.call.nargs;
-          gimple fn_from;
+          gcall *fn_from;
 
           fn_from = element->expr.ops.call.fn_from;
           if (gimple_call_internal_p (fn_from))
@@ -843,7 +843,7 @@ public:
 private:
   void thread_across_edge (edge);
 
-  gimple m_dummy_cond;
+  gcond *m_dummy_cond;
 };
 
 /* Jump threading, redundancy elimination and const/copy propagation.
@@ -1015,7 +1015,7 @@ make_pass_dominator (gcc::context *ctxt)
    condition to a canonical form.  */
 
 static void
-canonicalize_comparison (gimple condstmt)
+canonicalize_comparison (gcond *condstmt)
 {
   tree op0;
   tree op1;
@@ -1201,11 +1201,11 @@ dom_opt_dom_walker::thread_across_edge (edge e)
 static void
 record_equivalences_from_phis (basic_block bb)
 {
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
 
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
 
       tree lhs = gimple_phi_result (phi);
       tree rhs = NULL;
@@ -1728,7 +1728,7 @@ cprop_into_successor_phis (basic_block bb)
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       int indx;
-      gimple_stmt_iterator gsi;
+      gphi_iterator gsi;
 
       /* If this is an abnormal edge, then we do not want to copy propagate
 	 into the PHI alternative associated with this edge.  */
@@ -1767,7 +1767,7 @@ cprop_into_successor_phis (basic_block bb)
 	  tree new_val;
 	  use_operand_p orig_p;
 	  tree orig_val;
-          gimple phi = gsi_stmt (gsi);
+          gphi *phi = gsi.phi ();
 
 	  /* The alternative may be associated with a constant, so verify
 	     it is an SSA_NAME before doing anything with it.  */
@@ -1807,19 +1807,20 @@ record_edge_info (basic_block bb)
 
       if (gimple_code (stmt) == GIMPLE_SWITCH)
 	{
-	  tree index = gimple_switch_index (stmt);
+	  gswitch *switch_stmt = as_a <gswitch *> (stmt);
+	  tree index = gimple_switch_index (switch_stmt);
 
 	  if (TREE_CODE (index) == SSA_NAME)
 	    {
 	      int i;
-              int n_labels = gimple_switch_num_labels (stmt);
+              int n_labels = gimple_switch_num_labels (switch_stmt);
 	      tree *info = XCNEWVEC (tree, last_basic_block_for_fn (cfun));
 	      edge e;
 	      edge_iterator ei;
 
 	      for (i = 0; i < n_labels; i++)
 		{
-		  tree label = gimple_switch_label (stmt, i);
+		  tree label = gimple_switch_label (switch_stmt, i);
 		  basic_block target_bb = label_to_block (CASE_LABEL (label));
 		  if (CASE_HIGH (label)
 		      || !CASE_LOW (label)
@@ -2092,8 +2093,8 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi)
       expr_type = TREE_TYPE (gimple_call_lhs (stmt));
       assigns_var_p = true;
     }
-  else if (gimple_code (stmt) == GIMPLE_SWITCH)
-    expr_type = TREE_TYPE (gimple_switch_index (stmt));
+  else if (gswitch *swtch_stmt = dyn_cast <gswitch *> (stmt))
+    expr_type = TREE_TYPE (gimple_switch_index (swtch_stmt));
   else if (gimple_code (stmt) == GIMPLE_PHI)
     /* We can't propagate into a phi, so the logic below doesn't apply.
        Instead record an equivalence between the cached LHS and the
@@ -2204,7 +2205,7 @@ record_equivalences_from_stmt (gimple stmt, int may_optimize_p)
       && !is_gimple_reg (lhs))
     {
       tree rhs = gimple_assign_rhs1 (stmt);
-      gimple new_stmt;
+      gassign *new_stmt;
 
       /* Build a new statement with the RHS and LHS exchanged.  */
       if (TREE_CODE (rhs) == SSA_NAME)
@@ -2337,7 +2338,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
     }
 
   if (gimple_code (stmt) == GIMPLE_COND)
-    canonicalize_comparison (stmt);
+    canonicalize_comparison (as_a <gcond *> (stmt));
 
   update_stmt_if_modified (stmt);
   opt_stats.num_stmts++;
@@ -2370,9 +2371,9 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
         rhs = gimple_assign_rhs1 (stmt);
       else if (gimple_code (stmt) == GIMPLE_GOTO)
         rhs = gimple_goto_dest (stmt);
-      else if (gimple_code (stmt) == GIMPLE_SWITCH)
+      else if (gswitch *swtch_stmt = dyn_cast <gswitch *> (stmt))
         /* This should never be an ADDR_EXPR.  */
-        rhs = gimple_switch_index (stmt);
+        rhs = gimple_switch_index (swtch_stmt);
 
       if (rhs && TREE_CODE (rhs) == ADDR_EXPR)
         recompute_tree_invariant_for_addr_expr (rhs);
@@ -2420,7 +2421,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 	  tree lhs = gimple_assign_lhs (stmt);
 	  tree rhs = gimple_assign_rhs1 (stmt);
 	  tree cached_lhs;
-	  gimple new_stmt;
+	  gassign *new_stmt;
 	  if (TREE_CODE (rhs) == SSA_NAME)
 	    {
 	      tree tem = SSA_NAME_VALUE (rhs);
@@ -2494,8 +2495,8 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
         val = fold_binary_loc (gimple_location (stmt),
 			   gimple_cond_code (stmt), boolean_type_node,
                            gimple_cond_lhs (stmt),  gimple_cond_rhs (stmt));
-      else if (gimple_code (stmt) == GIMPLE_SWITCH)
-	val = gimple_switch_index (stmt);
+      else if (gswitch *swtch_stmt = dyn_cast <gswitch *> (stmt))
+	val = gimple_switch_index (swtch_stmt);
 
       if (val && TREE_CODE (val) == INTEGER_CST && find_taken_edge (bb, val))
 	cfg_altered = true;
@@ -2656,7 +2657,7 @@ static tree
 get_rhs_or_phi_arg (gimple stmt)
 {
   if (gimple_code (stmt) == GIMPLE_PHI)
-    return degenerate_phi_result (stmt);
+    return degenerate_phi_result (as_a <gphi *> (stmt));
   else if (gimple_assign_single_p (stmt))
     return gimple_assign_rhs1 (stmt);
   else
@@ -2847,7 +2848,7 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
                                    gimple_cond_lhs (use_stmt),
                                    gimple_cond_rhs (use_stmt));
               else if (gimple_code (use_stmt) == GIMPLE_SWITCH)
-		val = gimple_switch_index (use_stmt);
+		val = gimple_switch_index (as_a <gswitch *> (use_stmt));
 	      else
 		val = gimple_goto_dest  (use_stmt);
 
@@ -2857,7 +2858,8 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
 		  edge te = find_taken_edge (bb, val);
 		  edge_iterator ei;
 		  edge e;
-		  gimple_stmt_iterator gsi, psi;
+		  gimple_stmt_iterator gsi;
+		  gphi_iterator psi;
 
 		  /* Remove all outgoing edges except TE.  */
 		  for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei));)
@@ -2870,7 +2872,7 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
                                !gsi_end_p (psi);
                                gsi_next (&psi))
                             {
-                              gimple phi = gsi_stmt (psi);
+                              gphi *phi = psi.phi ();
 
 			      tree result = gimple_phi_result (phi);
 			      int version = SSA_NAME_VERSION (result);
@@ -2980,12 +2982,12 @@ eliminate_const_or_copy (gimple stmt, bitmap interesting_names)
 static void
 eliminate_degenerate_phis_1 (basic_block bb, bitmap interesting_names)
 {
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
   basic_block son;
 
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
 
       eliminate_const_or_copy (phi, interesting_names);
     }

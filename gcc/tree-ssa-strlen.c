@@ -2130,7 +2130,6 @@ public:
 void
 strlen_dom_walker::before_dom_children (basic_block bb)
 {
-  gimple_stmt_iterator gsi;
   basic_block dombb = get_immediate_dominator (CDI_DOMINATORS, bb);
 
   if (dombb == NULL)
@@ -2140,9 +2139,10 @@ strlen_dom_walker::before_dom_children (basic_block bb)
       stridx_to_strinfo = ((vec<strinfo, va_heap, vl_embed> *) dombb->aux);
       if (stridx_to_strinfo)
 	{
-	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	       gsi_next (&gsi))
 	    {
-	      gimple phi = gsi_stmt (gsi);
+	      gphi *phi = gsi.phi ();
 	      if (virtual_operand_p (gimple_phi_result (phi)))
 		{
 		  bitmap visited = BITMAP_ALLOC (NULL);
@@ -2179,9 +2179,10 @@ strlen_dom_walker::before_dom_children (basic_block bb)
 
   /* If all PHI arguments have the same string index, the PHI result
      has it as well.  */
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       tree result = gimple_phi_result (phi);
       if (!virtual_operand_p (result) && POINTER_TYPE_P (TREE_TYPE (result)))
 	{
@@ -2199,7 +2200,7 @@ strlen_dom_walker::before_dom_children (basic_block bb)
     }
 
   /* Attempt to optimize individual statements.  */
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
     if (strlen_optimize_stmt (&gsi))
       gsi_next (&gsi);
 

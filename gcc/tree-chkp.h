@@ -46,7 +46,7 @@ extern tree chkp_build_bndstx_call (tree addr, tree ptr, tree bounds);
 extern void chkp_find_bound_slots (const_tree type, bitmap res);
 extern void chkp_build_bndstx (tree addr, tree ptr, tree bounds,
 			       gimple_stmt_iterator *gsi);
-extern gimple chkp_retbnd_call_by_val (tree val);
+extern gcall *chkp_retbnd_call_by_val (tree val);
 extern bool chkp_function_instrumented_p (tree fndecl);
 extern void chkp_function_mark_instrumented (tree fndecl);
 extern void chkp_copy_bounds_for_assign (gimple assign,

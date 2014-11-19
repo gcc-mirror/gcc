@@ -846,7 +846,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 static void
 expand_vector_condition (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gassign *stmt = as_a <gassign *> (gsi_stmt (*gsi));
   tree type = gimple_expr_type (stmt);
   tree a = gimple_assign_rhs1 (stmt);
   tree a1 = a;
@@ -909,7 +909,7 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
 
 static tree
 expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type,
-			 gimple assign, enum tree_code code)
+			 gassign *assign, enum tree_code code)
 {
   machine_mode compute_mode = TYPE_MODE (compute_type);
 
@@ -1015,7 +1015,7 @@ expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type
 static void
 optimize_vector_constructor (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gassign *stmt = as_a <gassign *> (gsi_stmt (*gsi));
   tree lhs = gimple_assign_lhs (stmt);
   tree rhs = gimple_assign_rhs1 (stmt);
   tree type = TREE_TYPE (rhs);
@@ -1230,7 +1230,7 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
 static void
 lower_vec_perm (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gassign *stmt = as_a <gassign *> (gsi_stmt (*gsi));
   tree mask = gimple_assign_rhs3 (stmt);
   tree vec0 = gimple_assign_rhs1 (stmt);
   tree vec1 = gimple_assign_rhs2 (stmt);
@@ -1403,14 +1403,15 @@ count_type_subparts (tree type)
 static void
 expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
   tree lhs, rhs1, rhs2 = NULL, type, compute_type = NULL_TREE;
   enum tree_code code;
   optab op = unknown_optab;
   enum gimple_rhs_class rhs_class;
   tree new_rhs;
 
-  if (gimple_code (stmt) != GIMPLE_ASSIGN)
+  /* Only consider code == GIMPLE_ASSIGN. */
+  gassign *stmt = dyn_cast <gassign *> (gsi_stmt (*gsi));
+  if (!stmt)
     return;
 
   code = gimple_assign_rhs_code (stmt);

@@ -595,7 +595,7 @@ rtx get_personality_function (tree);
 /* In stmt.c */
 
 /* Expand a GIMPLE_SWITCH statement.  */
-extern void expand_case (gimple);
+extern void expand_case (gswitch *);
 
 /* Like expand_case but special-case for SJLJ exception dispatching.  */
 extern void expand_sjlj_dispatch_table (rtx, vec<tree> );

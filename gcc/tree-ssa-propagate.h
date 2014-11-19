@@ -63,7 +63,7 @@ enum ssa_prop_result {
 
 /* Call-back functions used by the value propagation engine.  */
 typedef enum ssa_prop_result (*ssa_prop_visit_stmt_fn) (gimple, edge *, tree *);
-typedef enum ssa_prop_result (*ssa_prop_visit_phi_fn) (gimple);
+typedef enum ssa_prop_result (*ssa_prop_visit_phi_fn) (gphi *);
 typedef bool (*ssa_prop_fold_stmt_fn) (gimple_stmt_iterator *gsi);
 typedef tree (*ssa_prop_get_value_fn) (tree);
 

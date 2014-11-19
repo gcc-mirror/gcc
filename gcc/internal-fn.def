@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
    
    Each entry must have a corresponding expander of the form:
 
-     void expand_NAME (gimple stmt)
+     void expand_NAME (gimple_call stmt)
 
    where STMT is the statement that performs the call.  */
 

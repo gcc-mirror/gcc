@@ -10953,7 +10953,7 @@ validate_arg (const_tree arg, enum tree_code code)
    validate_arglist will then be removed.  */
 
 bool
-validate_gimple_arglist (const_gimple call, ...)
+validate_gimple_arglist (const gcall *call, ...)
 {
   enum tree_code code;
   bool res = 0;
@@ -12811,7 +12811,7 @@ do_mpc_arg2 (tree arg0, tree arg1, tree type, int do_nonfinite,
    call node earlier than the warning is generated.  */
 
 tree
-fold_call_stmt (gimple stmt, bool ignore)
+fold_call_stmt (gcall *stmt, bool ignore)
 {
   tree ret = NULL_TREE;
   tree fndecl = gimple_call_fndecl (stmt);

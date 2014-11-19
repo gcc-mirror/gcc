@@ -106,7 +106,7 @@ create_canonical_iv (struct loop *loop, edge exit, tree niter)
 {
   edge in;
   tree type, var;
-  gimple cond;
+  gcond *cond;
   gimple_stmt_iterator incr_at;
   enum tree_code cmp;
 
@@ -117,7 +117,7 @@ create_canonical_iv (struct loop *loop, edge exit, tree niter)
       fprintf (dump_file, " iterations.\n");
     }
 
-  cond = last_stmt (exit->src);
+  cond = as_a <gcond *> (last_stmt (exit->src));
   in = EDGE_SUCC (exit->src, 0);
   if (in == exit)
     in = EDGE_SUCC (exit->src, 1);
@@ -323,7 +323,9 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 		    && constant_after_peeling (gimple_cond_lhs (stmt), stmt, loop)
 		    && constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop))
 		   || (gimple_code (stmt) == GIMPLE_SWITCH
-		       && constant_after_peeling (gimple_switch_index (stmt), stmt, loop)))
+		       && constant_after_peeling (gimple_switch_index (
+						    as_a <gswitch *> (stmt)),
+						  stmt, loop)))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 	        fprintf (dump_file, "   Constant conditional.\n");
@@ -375,7 +377,9 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 	        && (!constant_after_peeling (gimple_cond_lhs (stmt), stmt, loop)
 		    || constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop)))
 	       || (gimple_code (stmt) == GIMPLE_SWITCH
-		   && !constant_after_peeling (gimple_switch_index (stmt), stmt, loop)))
+		   && !constant_after_peeling (gimple_switch_index (
+						 as_a <gswitch *> (stmt)),
+					       stmt, loop)))
 	      && (!exit || bb != exit->src))
 	    size->num_branches_on_hot_path++;
 	}
@@ -511,7 +515,7 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	  && wi::ltu_p (elt->bound, npeeled))
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (elt->stmt);
-	  gimple stmt = gimple_build_call
+	  gcall *stmt = gimple_build_call
 	      (builtin_decl_implicit (BUILT_IN_UNREACHABLE), 0);
 
 	  gimple_set_location (stmt, gimple_location (elt->stmt));
@@ -538,11 +542,12 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	  if (!loop_exit_edge_p (loop, exit_edge))
 	    exit_edge = EDGE_SUCC (bb, 1);
 	  gcc_checking_assert (loop_exit_edge_p (loop, exit_edge));
+	  gcond *cond_stmt = as_a <gcond *> (elt->stmt);
 	  if (exit_edge->flags & EDGE_TRUE_VALUE)
-	    gimple_cond_make_true (elt->stmt);
+	    gimple_cond_make_true (cond_stmt);
 	  else
-	    gimple_cond_make_false (elt->stmt);
-	  update_stmt (elt->stmt);
+	    gimple_cond_make_false (cond_stmt);
+	  update_stmt (cond_stmt);
 	  changed = true;
 	}
     }
@@ -591,11 +596,12 @@ remove_redundant_iv_tests (struct loop *loop)
 	      fprintf (dump_file, "Removed pointless exit: ");
 	      print_gimple_stmt (dump_file, elt->stmt, 0, 0);
 	    }
+	  gcond *cond_stmt = as_a <gcond *> (elt->stmt);
 	  if (exit_edge->flags & EDGE_TRUE_VALUE)
-	    gimple_cond_make_false (elt->stmt);
+	    gimple_cond_make_false (cond_stmt);
 	  else
-	    gimple_cond_make_true (elt->stmt);
-	  update_stmt (elt->stmt);
+	    gimple_cond_make_true (cond_stmt);
+	  update_stmt (cond_stmt);
 	  changed = true;
 	}
     }
@@ -630,7 +636,7 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
       edge latch_edge = loop_latch_edge (loop);
       int flags = latch_edge->flags;
       location_t locus = latch_edge->goto_locus;
-      gimple stmt;
+      gcall *stmt;
       gimple_stmt_iterator gsi;
 
       remove_exits_and_undefined_stmts (loop, n_unroll);
@@ -675,7 +681,6 @@ try_unroll_loop_completely (struct loop *loop,
 			    location_t locus)
 {
   unsigned HOST_WIDE_INT n_unroll = 0, ninsns, unr_insns;
-  gimple cond;
   struct loop_size size;
   bool n_unroll_found = false;
   edge edge_to_cancel = NULL;
@@ -880,7 +885,7 @@ try_unroll_loop_completely (struct loop *loop,
   /* Remove the conditional from the last copy of the loop.  */
   if (edge_to_cancel)
     {
-      cond = last_stmt (edge_to_cancel->src);
+      gcond *cond = as_a <gcond *> (last_stmt (edge_to_cancel->src));
       if (edge_to_cancel->flags & EDGE_TRUE_VALUE)
 	gimple_cond_make_false (cond);
       else
@@ -1219,12 +1224,10 @@ propagate_into_all_uses (tree ssa_name, tree val)
 static void
 propagate_constants_for_unrolling (basic_block bb)
 {
-  gimple_stmt_iterator gsi;
-
   /* Look for degenerate PHI nodes with constant argument.  */
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); )
+  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi); )
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       tree result = gimple_phi_result (phi);
       tree arg = gimple_phi_arg_def (phi, 0);
 
@@ -1239,7 +1242,7 @@ propagate_constants_for_unrolling (basic_block bb)
     }
 
   /* Look for assignments to SSA names with constant RHS.  */
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
     {
       gimple stmt = gsi_stmt (gsi);
       tree lhs;

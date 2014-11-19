@@ -81,7 +81,7 @@ struct copy_body_data
 
   /* GIMPLE_CALL if va arg parameter packs should be expanded or NULL
      is not.  */
-  gimple gimple_call;
+  gimple call_stmt;
 
   /* Exception landing pad the inlined call lies in.  */
   int eh_lp_nr;
@@ -133,7 +133,7 @@ struct copy_body_data
   bitmap blocks_to_copy;
 
   /* Debug statements that need processing.  */
-  vec<gimple> debug_stmts;
+  vec<gdebug *> debug_stmts;
 
   /* A map from local declarations in the inlined function to
      equivalents in the function into which it is being inlined, where
