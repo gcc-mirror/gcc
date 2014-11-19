@@ -955,15 +955,15 @@ main (int argc, char **argv)
   signal (SIGCHLD, SIG_DFL);
 #endif
 
-  if (atexit (collect_atexit) != 0)
-    fatal_error ("atexit failed");
-
   /* Unlock the stdio streams.  */
   unlock_std_streams ();
 
   gcc_init_libintl ();
 
   diagnostic_initialize (global_dc, 0);
+
+  if (atexit (collect_atexit) != 0)
+    fatal_error ("atexit failed");
 
   /* Do not invoke xcalloc before this point, since locale needs to be
      set first, in case a diagnostic is issued.  */
