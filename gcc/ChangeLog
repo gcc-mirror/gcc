@@ -1,3 +1,9 @@
+2014-11-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/63947
+	* config/i386/i386.c (put_condition_code) <case LTU, case GEU>:
+	Output "b" and "nb" suffix for FP mode.
+
 2014-11-19  Tom de Vries  <tom@codesourcery.com>
 
 	Backport from mainline
