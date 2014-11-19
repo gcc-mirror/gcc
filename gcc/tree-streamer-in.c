@@ -774,7 +774,7 @@ lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
   DECL_VINDEX (expr) = stream_read_tree (ib, data_in);
   /* DECL_STRUCT_FUNCTION is loaded on demand by cgraph_get_body.  */
   DECL_FUNCTION_PERSONALITY (expr) = stream_read_tree (ib, data_in);
-  /* DECL_FUNCTION_SPECIFIC_TARGET is regenerated from attributes.  */
+  DECL_FUNCTION_SPECIFIC_TARGET (expr) = stream_read_tree (ib, data_in);
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = stream_read_tree (ib, data_in);
 
   /* If the file contains a function with an EH personality set,

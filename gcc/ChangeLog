@@ -1,3 +1,11 @@
+2014-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/63963
+	* tree-streamer-out.c (write_ts_function_decl_tree_pointers): Stream out
+	DECL_FUNCTION_SPECIFIC_TARGET
+	* tree-streamer-in.c (lto_input_ts_function_decl_tree_pointers): Stream in
+	DECL_FUNCTION_SPECIFIC_TARGET.
+
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
