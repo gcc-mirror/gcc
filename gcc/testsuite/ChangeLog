@@ -1,5 +1,8 @@
 2014-11-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/63915
+	* c-c++-common/gomp/pr60823-4.c: New test.
+
 	PR sanitizer/63520
 	* c-c++-common/ubsan/pr63520.c: New test.
 
