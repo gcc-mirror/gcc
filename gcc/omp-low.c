@@ -1962,7 +1962,9 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
 	if (is_targetreg_ctx (octx))
 	  {
 	    cgraph_node::get_create (decl)->offloadable = 1;
+#ifdef ENABLE_OFFLOADING
 	    g->have_offload = true;
+#endif
 	    break;
 	  }
     }
@@ -8288,7 +8290,6 @@ expand_omp_target (struct omp_region *region)
   if (kind == GF_OMP_TARGET_KIND_REGION)
     {
       unsigned srcidx, dstidx, num;
-      struct cgraph_node *node;
 
       /* If the target region needs data sent from the parent
 	 function, then the very first statement (except possible
@@ -8415,18 +8416,22 @@ expand_omp_target (struct omp_region *region)
       DECL_STRUCT_FUNCTION (child_fn)->curr_properties = cfun->curr_properties;
       cgraph_node::add_new_function (child_fn, true);
 
+#ifdef ENABLE_OFFLOADING
       /* Add the new function to the offload table.  */
       vec_safe_push (offload_funcs, child_fn);
+#endif
 
       /* Fix the callgraph edges for child_cfun.  Those for cfun will be
 	 fixed in a following pass.  */
       push_cfun (child_cfun);
       cgraph_edge::rebuild_edges ();
 
+#ifdef ENABLE_OFFLOADING
       /* Prevent IPA from removing child_fn as unreachable, since there are no
 	 refs from the parent function to child_fn in offload LTO mode.  */
-      node = cgraph_node::get (child_fn);
+      struct cgraph_node *node = cgraph_node::get (child_fn);
       node->mark_force_output ();
+#endif
 
       /* Some EH regions might become dead, see PR34608.  If
 	 pass_cleanup_cfg isn't the first pass to happen with the
@@ -12503,7 +12508,7 @@ omp_finish_file (void)
 
       varpool_node::finalize_decl (vars_decl);
       varpool_node::finalize_decl (funcs_decl);
-   }
+    }
   else
     {
       for (unsigned i = 0; i < num_funcs; i++)

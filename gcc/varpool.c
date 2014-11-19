@@ -171,9 +171,11 @@ varpool_node::get_create (tree decl)
       && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
     {
       node->offloadable = 1;
+#ifdef ENABLE_OFFLOADING
       g->have_offload = true;
       if (!in_lto_p)
 	vec_safe_push (offload_vars, decl);
+#endif
     }
 
   node->register_symbol ();
