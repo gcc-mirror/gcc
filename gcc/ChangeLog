@@ -1,6 +1,12 @@
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* tree-ssa-pre.c (do_regular_insertion): Convert "avail" from
+	vec<> to auto_vec<> to fix a leak.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* dwarf2out.c (dwarf2out_c_finalize): Free producer_string.
 
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
