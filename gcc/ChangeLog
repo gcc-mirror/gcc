@@ -1,6 +1,12 @@
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* lra.c (lra): After creating live ranges in preparation for call
+	to lra_inheritance, set live_p to true.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* tree-ssa-threadedge.c (thread_across_edge): Don't just release
 	"path", delete it.
 	* tree-ssa-threadupdate.c (delete_jump_thread_path): Likewise.
