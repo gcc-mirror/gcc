@@ -1,3 +1,8 @@
+2014-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/63843
+	* gcc.c-torture/execute/pr63843.c: New test.
+
 2014-11-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR target/63937
