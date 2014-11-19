@@ -1322,6 +1322,7 @@ sem_item_optimizer::~sem_item_optimizer ()
 	delete (*it)->classes[i];
 
       (*it)->classes.release ();
+      free (*it);
     }
 
   m_items.release ();

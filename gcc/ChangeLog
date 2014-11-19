@@ -1,3 +1,9 @@
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
+	* ipa-icf.c (sem_item_optimizer::~sem_item_optimizer): Free each
+	congruence_class_group *.
+
 2014-11-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/63947
