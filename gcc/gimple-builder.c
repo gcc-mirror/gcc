@@ -120,7 +120,7 @@ build_type_cast (tree to_type, tree op, tree lhs)
 {
   if (lhs == NULL_TREE)
     lhs = make_ssa_name (to_type, NULL);
-  return gimple_build_assign_with_ops (NOP_EXPR, lhs, op, NULL_TREE);
+  return gimple_build_assign_with_ops (NOP_EXPR, lhs, op);
 }
 
 gimple

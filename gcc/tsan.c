@@ -501,8 +501,7 @@ instrument_builtin_call (gimple_stmt_iterator *gsi)
 						TREE_TYPE (args[1])))
 		  {
 		    tree var = make_ssa_name (TREE_TYPE (lhs), NULL);
-		    g = gimple_build_assign_with_ops (NOP_EXPR, var,
-						      args[1], NULL_TREE);
+		    g = gimple_build_assign_with_ops (NOP_EXPR, var, args[1]);
 		    gsi_insert_after (gsi, g, GSI_NEW_STMT);
 		    args[1] = var;
 		  }
@@ -516,8 +515,7 @@ instrument_builtin_call (gimple_stmt_iterator *gsi)
 						      gimple_call_lhs (stmt),
 						      args[1]);
 		    gsi_insert_after (gsi, g, GSI_NEW_STMT);
-		    g = gimple_build_assign_with_ops (BIT_NOT_EXPR, lhs, var,
-						      NULL_TREE);
+		    g = gimple_build_assign_with_ops (BIT_NOT_EXPR, lhs, var);
 		  }
 		else
 		  g = gimple_build_assign_with_ops (tsan_atomic_table[i].code,
@@ -560,7 +558,7 @@ instrument_builtin_call (gimple_stmt_iterator *gsi)
 		g = gimple_build_assign_with_ops (NOP_EXPR,
 						  make_ssa_name (TREE_TYPE (t),
 								 NULL),
-						  args[1], NULL_TREE);
+						  args[1]);
 		gsi_insert_before (gsi, g, GSI_SAME_STMT);
 		args[1] = gimple_assign_lhs (g);
 	      }

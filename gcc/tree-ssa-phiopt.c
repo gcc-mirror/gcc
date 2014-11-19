@@ -536,7 +536,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 
       new_var2 = make_ssa_name (TREE_TYPE (result), NULL);
       new_stmt = gimple_build_assign_with_ops (CONVERT_EXPR, new_var2,
-					       new_var, NULL);
+					       new_var);
       gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
       new_var = new_var2;
 
@@ -1254,7 +1254,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
     lhs = result;
 
   /* Build the modify expression with abs expression.  */
-  new_stmt = gimple_build_assign_with_ops (ABS_EXPR, lhs, rhs, NULL);
+  new_stmt = gimple_build_assign_with_ops (ABS_EXPR, lhs, rhs);
 
   gsi = gsi_last_bb (cond_bb);
   gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
@@ -1264,7 +1264,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
       /* Get the right GSI.  We want to insert after the recently
 	 added ABS_EXPR statement (which we know is the first statement
 	 in the block.  */
-      new_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, result, lhs, NULL);
+      new_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, result, lhs);
 
       gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
     }
@@ -1388,12 +1388,12 @@ neg_replacement (basic_block cond_bb, basic_block middle_bb,
      logical and arithmetic operations on it.  */
   tree cond_val_converted = make_ssa_name (TREE_TYPE (rhs), NULL);
   new_stmt = gimple_build_assign_with_ops (NOP_EXPR, cond_val_converted,
-					   cond_val, NULL_TREE);
+					   cond_val);
   gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
 
   tree neg_cond_val_converted = make_ssa_name (TREE_TYPE (rhs), NULL);
   new_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, neg_cond_val_converted,
-					   cond_val_converted, NULL_TREE);
+					   cond_val_converted);
   gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
 
   tree tmp = make_ssa_name (TREE_TYPE (rhs), NULL);

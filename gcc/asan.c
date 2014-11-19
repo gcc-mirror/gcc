@@ -1599,15 +1599,14 @@ build_shadow_mem_access (gimple_stmt_iterator *gsi, location_t location,
 
   g = gimple_build_assign_with_ops (NOP_EXPR,
 				    make_ssa_name (shadow_ptr_type, NULL),
-				    gimple_assign_lhs (g), NULL_TREE);
+				    gimple_assign_lhs (g));
   gimple_set_location (g, location);
   gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
   t = build2 (MEM_REF, shadow_type, gimple_assign_lhs (g),
 	      build_int_cst (shadow_ptr_type, 0));
   g = gimple_build_assign_with_ops (MEM_REF,
-				    make_ssa_name (shadow_type, NULL),
-				    t, NULL_TREE);
+				    make_ssa_name (shadow_type, NULL), t);
   gimple_set_location (g, location);
   gsi_insert_after (gsi, g, GSI_NEW_STMT);
   return gimple_assign_lhs (g);
@@ -1625,7 +1624,7 @@ maybe_create_ssa_name (location_t loc, tree base, gimple_stmt_iterator *iter,
   gimple g
     = gimple_build_assign_with_ops (TREE_CODE (base),
 				    make_ssa_name (TREE_TYPE (base), NULL),
-				    base, NULL_TREE);
+				    base);
   gimple_set_location (g, loc);
   if (before_p)
     gsi_insert_before (iter, g, GSI_SAME_STMT);
@@ -1645,8 +1644,8 @@ maybe_cast_to_ptrmode (location_t loc, tree len, gimple_stmt_iterator *iter,
     return len;
   gimple g
     = gimple_build_assign_with_ops (NOP_EXPR,
-				    make_ssa_name (pointer_sized_int_node, NULL),
-				    len, NULL);
+				    make_ssa_name (pointer_sized_int_node,
+						   NULL), len);
   gimple_set_location (g, loc);
   if (before_p)
     gsi_insert_before (iter, g, GSI_SAME_STMT);
@@ -2536,8 +2535,7 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
       gimple g
 	= gimple_build_assign_with_ops (NOP_EXPR,
 					make_ssa_name (pointer_sized_int_node,
-					NULL),
-					base, NULL_TREE);
+						       NULL), base);
       gimple_set_location (g, loc);
       gsi_insert_before (iter, g, GSI_SAME_STMT);
       tree base_addr = gimple_assign_lhs (g);
@@ -2551,8 +2549,7 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 	  gcc_assert (nargs == 2);
 	  g = gimple_build_assign_with_ops (NOP_EXPR,
 					    make_ssa_name (pointer_sized_int_node,
-							   NULL),
-					    len, NULL_TREE);
+							   NULL), len);
 	  gimple_set_location (g, loc);
 	  gsi_insert_before (iter, g, GSI_SAME_STMT);
 	  tree sz_arg = gimple_assign_lhs (g);
@@ -2610,8 +2607,7 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 
   g = gimple_build_assign_with_ops (NOP_EXPR,
 				    make_ssa_name (pointer_sized_int_node,
-						   NULL),
-				    base, NULL_TREE);
+						   NULL), base);
   gimple_set_location (g, loc);
   gsi_insert_before (&gsi, g, GSI_NEW_STMT);
   tree base_addr = gimple_assign_lhs (g);

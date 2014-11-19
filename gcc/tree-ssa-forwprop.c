@@ -757,10 +757,9 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 
       if (useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (new_def_rhs)))
 	gimple_assign_set_rhs_with_ops (use_stmt_gsi, TREE_CODE (new_def_rhs),
-					new_def_rhs, NULL_TREE);
+					new_def_rhs);
       else if (is_gimple_min_invariant (new_def_rhs))
-	gimple_assign_set_rhs_with_ops (use_stmt_gsi, NOP_EXPR,
-					new_def_rhs, NULL_TREE);
+	gimple_assign_set_rhs_with_ops (use_stmt_gsi, NOP_EXPR, new_def_rhs);
       else
 	return false;
       gcc_assert (gsi_stmt (*use_stmt_gsi) == use_stmt);
@@ -1725,8 +1724,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
     {
       g = gimple_build_assign_with_ops (NOP_EXPR,
 					make_ssa_name (TREE_TYPE (def_arg2[0]),
-						       NULL),
-					rotcnt, NULL_TREE);
+						       NULL), rotcnt);
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
       rotcnt = gimple_assign_lhs (g);
     }
@@ -1740,7 +1738,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
     {
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
       g = gimple_build_assign_with_ops (NOP_EXPR, gimple_assign_lhs (stmt),
-					lhs, NULL_TREE);
+					lhs);
     }
   gsi_replace (gsi, g, false);
   return true;
@@ -2055,7 +2053,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       for (i = 0; i < nelts; i++)
 	mask_elts[i] = build_int_cst (TREE_TYPE (mask_type), sel[i]);
       op2 = build_vector (mask_type, mask_elts);
-      gimple_assign_set_rhs_with_ops_1 (gsi, VEC_PERM_EXPR, orig, orig, op2);
+      gimple_assign_set_rhs_with_ops (gsi, VEC_PERM_EXPR, orig, orig, op2);
     }
   update_stmt (gsi_stmt (*gsi));
   return true;

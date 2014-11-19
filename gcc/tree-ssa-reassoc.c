@@ -3307,7 +3307,7 @@ maybe_optimize_range_tests (gimple stmt)
 			}
 		      else
 			g = gimple_build_assign_with_ops (rhs_code, new_lhs,
-							  new_op, NULL_TREE);
+							  new_op);
 		      gimple_stmt_iterator gsi = gsi_for_stmt (cast_stmt);
 		      gimple_set_uid (g, gimple_uid (cast_stmt));
 		      gimple_set_visited (g, true);
@@ -4214,10 +4214,11 @@ repropagate_negates (void)
 	      tree b = gimple_assign_rhs2 (user);
 	      gimple_stmt_iterator gsi = gsi_for_stmt (feed);
 	      gimple_stmt_iterator gsi2 = gsi_for_stmt (user);
-	      tree x = make_ssa_name (TREE_TYPE (gimple_assign_lhs (feed)), NULL);
+	      tree x = make_ssa_name (TREE_TYPE (gimple_assign_lhs (feed)),
+				      NULL);
 	      gimple g = gimple_build_assign_with_ops (PLUS_EXPR, x, a, b);
 	      gsi_insert_before (&gsi2, g, GSI_SAME_STMT);
-	      gimple_assign_set_rhs_with_ops (&gsi2, NEGATE_EXPR, x, NULL);
+	      gimple_assign_set_rhs_with_ops (&gsi2, NEGATE_EXPR, x);
 	      user = gsi_stmt (gsi2);
 	      update_stmt (user);
 	      reassoc_remove_stmt (&gsi);

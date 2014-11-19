@@ -2609,7 +2609,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 			       op);		  
 		  init_stmt
 		    = gimple_build_assign_with_ops (VIEW_CONVERT_EXPR,
-						    new_temp, op, NULL_TREE);
+						    new_temp, op);
 		  gimple_seq_add_stmt (&ctor_seq, init_stmt);
 		  op = new_temp;
 		}

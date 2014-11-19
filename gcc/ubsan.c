@@ -736,8 +736,7 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
       if (compare_tree_int (align, ptralign) == 1)
 	{
 	  check_align = make_ssa_name (pointer_sized_int_node, NULL);
-	  g = gimple_build_assign_with_ops (NOP_EXPR, check_align,
-					    ptr, NULL_TREE);
+	  g = gimple_build_assign_with_ops (NOP_EXPR, check_align, ptr);
 	  gimple_set_location (g, loc);
 	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 	}
@@ -934,7 +933,7 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
 	      ? BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH
 	      : BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_ABORT;
 	  tree p = make_ssa_name (pointer_sized_int_node, NULL);
-	  g = gimple_build_assign_with_ops (NOP_EXPR, p, ptr, NULL_TREE);
+	  g = gimple_build_assign_with_ops (NOP_EXPR, p, ptr);
 	  gimple_set_location (g, loc);
 	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
 	  g = gimple_build_call (builtin_decl_explicit (bcode), 2, data, p);
@@ -1175,7 +1174,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   if (can_throw)
     {
       gimple_assign_set_lhs (stmt, urhs);
-      g = gimple_build_assign_with_ops (NOP_EXPR, lhs, urhs, NULL_TREE);
+      g = gimple_build_assign_with_ops (NOP_EXPR, lhs, urhs);
       gimple_set_location (g, loc);
       edge e = find_fallthru_edge (gimple_bb (stmt)->succs);
       gsi_insert_on_edge_immediate (e, g);
@@ -1213,7 +1212,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
 
   if (!can_throw)
     {
-      gimple_assign_set_rhs_with_ops (&gsi2, NOP_EXPR, urhs, NULL_TREE);
+      gimple_assign_set_rhs_with_ops (&gsi2, NOP_EXPR, urhs);
       update_stmt (stmt);
     }
 

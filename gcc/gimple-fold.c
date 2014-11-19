@@ -2983,8 +2983,7 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	  maybe_build_generic_op (rcode,
 				  TREE_TYPE (gimple_assign_lhs (stmt)),
 				  &ops[0], ops[1], ops[2]);
-	  gimple_assign_set_rhs_with_ops_1 (gsi, rcode,
-					    ops[0], ops[1], ops[2]);
+	  gimple_assign_set_rhs_with_ops (gsi, rcode, ops[0], ops[1], ops[2]);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "gimple_simplified to ");
@@ -5644,8 +5643,8 @@ rewrite_to_defined_overflow (gimple stmt)
   if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
     gimple_assign_set_rhs_code (stmt, PLUS_EXPR);
   gimple_seq_add_stmt (&stmts, stmt);
-  gimple cvt = gimple_build_assign_with_ops
-      (NOP_EXPR, lhs, gimple_assign_lhs (stmt), NULL_TREE);
+  gimple cvt = gimple_build_assign_with_ops (NOP_EXPR, lhs,
+					     gimple_assign_lhs (stmt));
   gimple_seq_add_stmt (&stmts, cvt);
 
   return stmts;
@@ -5675,10 +5674,9 @@ gimple_build (gimple_seq *seq, location_t loc,
 	  || code == IMAGPART_EXPR
 	  || code == VIEW_CONVERT_EXPR)
 	stmt = gimple_build_assign_with_ops (code, res,
-					     build1 (code, type,
-						     op0), NULL_TREE);
+					     build1 (code, type, op0));
       else
-	stmt = gimple_build_assign_with_ops (code, res, op0, NULL_TREE);
+	stmt = gimple_build_assign_with_ops (code, res, op0);
       gimple_set_location (stmt, loc);
       gimple_seq_add_stmt_without_update (seq, stmt);
     }
@@ -5733,8 +5731,7 @@ gimple_build (gimple_seq *seq, location_t loc,
       if (code == BIT_FIELD_REF)
 	stmt = gimple_build_assign_with_ops (code, res,
 					     build3 (BIT_FIELD_REF, type,
-						     op0, op1, op2),
-					     NULL_TREE);
+						     op0, op1, op2));
       else
 	stmt = gimple_build_assign_with_ops (code, res, op0, op1, op2);
       gimple_set_location (stmt, loc);
