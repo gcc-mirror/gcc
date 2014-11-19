@@ -1,3 +1,8 @@
+2014-11-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* MAINTAINERS (OS Port Maintainers): Add overdue maintainership note
+	from 2 years ago.
+
 2014-11-19  Alex Velenko  <Alex.Velenko@arm.com>
 
 	Revert:

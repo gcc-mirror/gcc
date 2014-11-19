@@ -121,6 +121,7 @@ xtensa port		Sterling Augustine	<augustine.sterling@gmail.com>
 			OS Port Maintainers	(OS alphabetical order)
 
 aix			David Edelsohn		<dje.gcc@gmail.com>
+Android sub-port	Maxim Kuvyrkov		<maxim.kuvyrkov@linaro.org>
 darwin port		Mike Stump		<mikestump@comcast.net>
 darwin port		Eric Christopher	<echristo@gmail.com>
 darwin port		Stan Shebs		<stanshebs@earthlink.net>
