@@ -2432,7 +2432,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	}
     }
 
-  /* Finally, gimplify the function arguments.  */
+  /* Gimplify the function arguments.  */
   if (nargs > 0)
     {
       for (i = (PUSH_ARGS_REVERSED ? nargs - 1 : 0);
@@ -2452,6 +2452,21 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
                 ret = GS_ERROR;
             }
         }
+    }
+
+  /* Gimplify the static chain.  */
+  if (CALL_EXPR_STATIC_CHAIN (*expr_p))
+    {
+      if (fndecl && !DECL_STATIC_CHAIN (fndecl))
+	CALL_EXPR_STATIC_CHAIN (*expr_p) = NULL;
+      else
+	{
+	  enum gimplify_status t;
+	  t = gimplify_arg (&CALL_EXPR_STATIC_CHAIN (*expr_p), pre_p,
+			    EXPR_LOCATION (*expr_p));
+	  if (t == GS_ERROR)
+	    ret = GS_ERROR;
+	}
     }
 
   /* Verify the function result.  */

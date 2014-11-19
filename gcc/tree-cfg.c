@@ -3333,22 +3333,14 @@ verify_gimple_call (gimple stmt)
       return true;
     }
 
-  /* If there is a static chain argument, this should not be an indirect
-     call, and the decl should have DECL_STATIC_CHAIN set.  */
-  if (gimple_call_chain (stmt))
+  /* If there is a static chain argument, the call should either be
+     indirect, or the decl should have DECL_STATIC_CHAIN set.  */
+  if (gimple_call_chain (stmt)
+      && fndecl
+      && !DECL_STATIC_CHAIN (fndecl))
     {
-      if (!gimple_call_fndecl (stmt))
-	{
-	  error ("static chain in indirect gimple call");
-	  return true;
-	}
-      fn = TREE_OPERAND (fn, 0);
-
-      if (!DECL_STATIC_CHAIN (fn))
-	{
-	  error ("static chain with function that doesn%'t use one");
-	  return true;
-	}
+      error ("static chain with function that doesn%'t use one");
+      return true;
     }
 
   /* ???  The C frontend passes unpromoted arguments in case it
