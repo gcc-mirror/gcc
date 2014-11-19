@@ -333,7 +333,7 @@ simulate_stmt (gimple stmt)
 
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
-      val = ssa_prop_visit_phi (stmt);
+      val = ssa_prop_visit_phi (as_a <gphi *> (stmt));
       output_name = gimple_phi_result (stmt);
     }
   else
@@ -748,7 +748,7 @@ bool
 update_gimple_call (gimple_stmt_iterator *si_p, tree fn, int nargs, ...)
 {
   va_list ap;
-  gimple new_stmt, stmt = gsi_stmt (*si_p);
+  gcall *new_stmt, *stmt = as_a <gcall *> (gsi_stmt (*si_p));
 
   gcc_assert (is_gimple_call (stmt));
   va_start (ap, nargs);
@@ -782,7 +782,7 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
       unsigned i;
       unsigned nargs = call_expr_nargs (expr);
       vec<tree> args = vNULL;
-      gimple new_stmt;
+      gcall *new_stmt;
 
       if (nargs > 0)
         {
@@ -975,7 +975,7 @@ replace_uses_in (gimple stmt, ssa_prop_get_value_fn get_value)
    values from PROP_VALUE.  */
 
 static bool
-replace_phi_args_in (gimple phi, ssa_prop_get_value_fn get_value)
+replace_phi_args_in (gphi *phi, ssa_prop_get_value_fn get_value)
 {
   size_t i;
   bool replaced = false;
@@ -1063,12 +1063,12 @@ public:
 void
 substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 {
-  gimple_stmt_iterator i;
-
   /* Propagate known values into PHI nodes.  */
-  for (i = gsi_start_phis (bb); !gsi_end_p (i); gsi_next (&i))
+  for (gphi_iterator i = gsi_start_phis (bb);
+       !gsi_end_p (i);
+       gsi_next (&i))
     {
-      gimple phi = gsi_stmt (i);
+      gphi *phi = i.phi ();
       tree res = gimple_phi_result (phi);
       if (virtual_operand_p (res))
 	continue;
@@ -1089,7 +1089,9 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 
   /* Propagate known values into stmts.  In some case it exposes
      more trivially deletable stmts to walk backward.  */
-  for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
+  for (gimple_stmt_iterator i = gsi_start_bb (bb);
+       !gsi_end_p (i);
+       gsi_next (&i))
     {
       bool did_replace;
       gimple stmt = gsi_stmt (i);
@@ -1326,8 +1328,8 @@ may_propagate_copy_into_stmt (gimple dest, tree orig)
 
   if (gimple_assign_single_p (dest))
     return may_propagate_copy (gimple_assign_rhs1 (dest), orig);
-  else if (gimple_code (dest) == GIMPLE_SWITCH)
-    return may_propagate_copy (gimple_switch_index (dest), orig);
+  else if (gswitch *dest_swtch = dyn_cast <gswitch *> (dest))
+    return may_propagate_copy (gimple_switch_index (dest_swtch), orig);
 
   /* In other cases, the expression is not materialized, so there
      is no destination to pass to may_propagate_copy.  On the other
@@ -1455,14 +1457,14 @@ propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
       propagate_tree_value (&expr, val);
       gimple_assign_set_rhs_from_tree (gsi, expr);
     }
-  else if (gimple_code (stmt) == GIMPLE_COND)
+  else if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
     {
       tree lhs = NULL_TREE;
       tree rhs = build_zero_cst (TREE_TYPE (val));
       propagate_tree_value (&lhs, val);
-      gimple_cond_set_code (stmt, NE_EXPR);
-      gimple_cond_set_lhs (stmt, lhs);
-      gimple_cond_set_rhs (stmt, rhs);
+      gimple_cond_set_code (cond_stmt, NE_EXPR);
+      gimple_cond_set_lhs (cond_stmt, lhs);
+      gimple_cond_set_rhs (cond_stmt, rhs);
     }
   else if (is_gimple_call (stmt)
            && gimple_call_lhs (stmt) != NULL_TREE)
@@ -1473,8 +1475,8 @@ propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
       res = update_call_from_tree (gsi, expr);
       gcc_assert (res);
     }
-  else if (gimple_code (stmt) == GIMPLE_SWITCH)
-    propagate_tree_value (gimple_switch_index_ptr (stmt), val);
+  else if (gswitch *swtch_stmt = dyn_cast <gswitch *> (stmt))
+    propagate_tree_value (gimple_switch_index_ptr (swtch_stmt), val);
   else
     gcc_unreachable ();
 }

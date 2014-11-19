@@ -37,11 +37,11 @@ extern void end_recording_case_labels (void);
 extern basic_block label_to_block_fn (struct function *, tree);
 #define label_to_block(t) (label_to_block_fn (cfun, t))
 extern void cleanup_dead_labels (void);
-extern void group_case_labels_stmt (gimple);
+extern void group_case_labels_stmt (gswitch *);
 extern void group_case_labels (void);
 extern void replace_uses_by (tree, tree);
 extern basic_block single_noncomplex_succ (basic_block bb);
-extern void notice_special_calls (gimple);
+extern void notice_special_calls (gcall *);
 extern void clear_special_calls (void);
 extern edge find_taken_edge (basic_block, tree);
 extern void gimple_debug_bb (basic_block);

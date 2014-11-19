@@ -1,3 +1,726 @@
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	Merger of git branch "gimple-classes-v2-option-3".
+
+	* ChangeLog.gimple-classes: New.
+
+	* coretypes.h (struct gcond): Add forward decl.
+	(struct gdebug): Likewise.
+	(struct ggoto): Likewise.
+	(struct glabel): Likewise.
+	(struct gswitch): Likewise.
+	(struct gassign): Likewise.
+	(struct gasm): Likewise.
+	(struct gcall): Likewise.
+	(struct gtransaction): Likewise.
+	(struct greturn): Likewise.
+	(struct gbind): Likewise.
+	(struct gcatch): Likewise.
+	(struct geh_filter): Likewise.
+	(struct geh_mnt): Likewise.
+	(struct geh_else): Likewise.
+	(struct gresx): Likewise.
+	(struct geh_dispatch): Likewise.
+	(struct gphi): Likewise.
+	(struct gtry): Likewise.
+	(struct gomp_atomic_load): Likewise.
+	(struct gomp_atomic_store): Likewise.
+	(struct gomp_continue): Likewise.
+	(struct gomp_critical): Likewise.
+	(struct gomp_for): Likewise.
+	(struct gomp_parallel): Likewise.
+	(struct gomp_task): Likewise.
+	(struct gomp_sections): Likewise.
+	(struct gomp_single): Likewise.
+	(struct gomp_target): Likewise.
+	(struct gomp_teams): Likewise.
+
+	* doc/gimple.texi (Class hierarchy of GIMPLE statements): Update
+	for renaming of gimple subclasses.
+
+	* gdbhooks.py: Update.
+
+	* gimple-iterator.c (gsi_for_phi): New.
+	(gsi_start_phis): Strengthen return type from gimple_stmt_iterator
+	to gphi_iterator.
+	* gimple-iterator.h (struct gphi_iterator): New subclass of
+	gimple_stmt_iterator.
+	(gsi_for_phi): New prototype.
+	(gsi_start_phis): Strengthen return type from gimple_stmt_iterator
+	to gphi_iterator.
+	(gsi_next_nonvirtual_phi): Strengthen param from
+	gimple_stmt_iterator * to gphi_iterator *, and local "phi" from
+	gimple to gphi *.
+
+	* gsstruct.def: Update for renamings of classes.
+
+	* gimple.c (gimple_build_return): Strengthen return type from
+	gimple to greturn *.
+	(gimple_call_reset_alias_info): Strengthen param to gcall *.
+	(gimple_build_call_1): Strengthen return type from gimple to
+	gcall *.
+	(gimple_build_call_vec): Likewise.
+	(gimple_build_call): Likewise.
+	(gimple_build_call_valist): Likewise.
+	(gimple_build_call_internal_1): Likewise.
+	(gimple_build_call_internal): Likewise.
+	(gimple_build_call_internal_vec): Likewise.
+	(gimple_build_call_from_tree): Likewise.
+	(gimple_build_assign_stat): Strengthen return type from gimple to
+	gassign *.
+	(gimple_build_assign_with_ops): Likewise.
+	(gimple_build_assign_with_ops): Likewise.
+	(gimple_build_cond): Strengthen return type from gimple to
+	gcond *.
+	(gimple_build_cond_from_tree): Likewise.
+	(gimple_cond_set_condition_from_tree): Require a gcond *.
+	(gimple_build_label): Strengthen return type from gimple to
+	glabel *.
+	(gimple_build_goto): Strengthen return type from gimple to
+	ggoto *.
+	(gimple_build_bind): Strengthen return type from gimple to
+	gbind *.
+	(gimple_build_asm_1): Strengthen return type from gimple to
+	gasm *.
+	(gimple_build_asm_vec): Likewise.
+	(gimple_build_catch): Strengthen return type from gimple to
+	gcatch *.
+	(gimple_build_eh_filter): Strengthen return type from gimple to
+	geh_filter *.
+	(gimple_build_eh_must_not_throw): Strengthen return type from
+	gimple to geh_mnt *.
+	(gimple_build_eh_else): Strengthen return type from gimple to
+	geh_else *.
+	(gimple_build_try): Update for renaming of gimple_statement_try to
+	gtry.
+	(gimple_build_resx): Strengthen return type from gimple to
+	gresx *.
+	(gimple_build_switch_nlabels): Strengthen return type from gimple
+	to gswitch *.
+	(gimple_build_switch): Likewise.
+	(gimple_build_eh_dispatch): Strengthen return type from gimple to
+	geh_dispatch *.
+	(gimple_build_debug_bind_stat): Strengthen return type from gimple
+	to gdebug *.
+	(gimple_build_debug_source_bind_stat): Strengthen return type from
+	gimple to gdebug *.
+	(gimple_build_omp_critical): Strengthen return type from gimple to
+	gomp_critical *.
+	(gimple_build_omp_for): Strengthen return type from gimple to
+	gomp_for *.
+	(gimple_build_omp_parallel): Strengthen return type from gimple to
+	gomp_parallel *.
+	(gimple_build_omp_task): Strengthen return type from gimple to
+	gomp_task *.
+	(gimple_build_omp_continue): Strengthen return type from gimple to
+	gomp_continue *.
+	(gimple_build_omp_sections): Strengthen return type from gimple to
+	gomp_sections *.
+	(gimple_build_omp_single): Strengthen return type from gimple to
+	gomp_single *.
+	(gimple_build_omp_target): Strengthen return type from gimple to
+	gomp_target *.
+	(gimple_build_omp_teams): Strengthen return type from gimple to
+	gomp_teams *.
+	(gimple_build_omp_atomic_load): Strengthen return type from gimple
+	to gomp_atomic_load *.
+	(gimple_build_omp_atomic_store): Strengthen return type from gimple
+	to gomp_atomic_store *.
+	(gimple_build_transaction): Strengthen return type from gimple
+	to gtransaction *.
+	(empty_stmt_p): Replace check for GIMPLE_BIND with a dyn_cast.
+	(gimple_call_fnspec): Require a const gcall *.
+	(gimple_call_arg_flags): Likewise.
+	(gimple_call_return_flags): Likewise.
+	(gimple_set_bb): Add a checked cast.
+	(gimple_copy): Within the cases, add locals of the appropriate
+	subclass and use in place of "stmt" and "copy" for typesafety.
+	(gimple_has_side_effects): Add a checked cast.
+	(gimple_could_trap_p_1): Likewise.
+	(gimple_call_copy_skip_args): Require a gcall *, and return one.
+	(gimple_asm_clobbers_memory_p): Require a const gasm *.
+	(infer_nonnull_range): Replace a check for GIMPLE_RETURN with a
+	dyn_cast, introducing local "return_stmt" and using ti in place
+	of "stmt".
+
+	* gimple.h (gimple_vec): Eliminate this typedef.
+	(struct gimple_statement_call): Rename to...
+	(struct gcall): ...this.
+	(struct gimple_statement_bind): Rename to...
+	(struct gbind): ...this.
+	(struct gimple_statement_catch): Rename to...
+	(struct gcatch): ...this.
+	(struct gimple_statement_eh_filter): Rename to...
+	(struct geh_filter): ...this.
+	(struct gimple_statement_eh_else): Rename to...
+	(struct geh_else): ...this.
+	(struct gimple_statement_eh_mnt): Rename to...
+	(struct geh_mnt): ...this.
+	(struct gimple_statement_phi): Rename to...
+	(struct gphi): ...this.
+	(struct gimple_statement_resx): Rename to...
+	(struct gresx): ...this.
+	(struct gimple_statement_eh_dispatch): Rename to...
+	(struct geh_dispatch): ...this.
+	(struct gimple_statement_try): Rename to...
+	(struct gtry): ...this.
+	(struct gimple_statement_asm): Rename to...
+	(struct gasm): ...this.
+	(struct gimple_statement_omp_critical): Rename to...
+	(struct gomp_critical): ...this.
+	(struct gimple_statement_omp_for): Rename to...
+	(struct gomp_for): ...this.
+	(struct gimple_statement_omp_parallel): Rename to...
+	(struct gomp_parallel): ...this.
+	(struct gimple_statement_omp_target): Rename to...
+	(struct gomp_target): ...this.
+	(struct gimple_statement_omp_task): Rename to...
+	(struct gomp_task): ...this.
+	(struct gimple_statement_omp_sections): Rename to...
+	(struct gomp_sections): ...this.
+	(struct gimple_statement_omp_continue): Rename to...
+	(struct gomp_continue): ...this.
+	(struct gimple_statement_omp_single): Rename to...
+	(struct gomp_single): ...this.
+	(struct gimple_statement_omp_teams): Rename to...
+	(struct gomp_teams): ...this.
+	(struct gimple_statement_omp_atomic_load): Rename to...
+	(struct gomp_atomic_load): ...this.
+	(struct gimple_statement_omp_atomic_store :): Rename to...
+	(struct gomp_atomic_store :): ...this.
+	(struct gimple_statement_transaction): Rename to...
+	(struct gtransaction): ...this.
+	(struct gcond): New subclass.
+	(struct gdebug): New subclass.
+	(struct ggoto): New subclass.
+	(struct glabel): New subclass.
+	(struct gswitch): New subclass.
+	(struct gassign): New subclass.
+	(struct greturn): New subclass.
+	(is_a_helper <gimple_statement_asm *>::test): Rename to...
+	(is_a_helper <gasm *>::test): ...this.
+	(is_a_helper <gimple_statement_bind *>::test): Rename to...
+	(is_a_helper <gbind *>::test): ...this.
+	(is_a_helper <gassign *>::test): New.
+	(is_a_helper <gimple_statement_call *>::test): Rename to...
+	(is_a_helper <gcall *>::test): ...this.
+	(is_a_helper <gimple_statement_catch *>::test): Rename to...
+	(is_a_helper <gcatch *>::test): ...this.
+	(is_a_helper <gimple_statement_resx *>::test): Rename to...
+	(is_a_helper <gresx *>::test): ...this.
+	(is_a_helper <gcond *>::test): New.
+	(is_a_helper <gdebug *>::test): New.
+	(is_a_helper <ggoto *>::test): New.
+	(is_a_helper <glabel *>::test): New.
+	(is_a_helper <gimple_statement_eh_dispatch *>::test): Rename to...
+	(is_a_helper <geh_dispatch *>::test): ...this.
+	(is_a_helper <gimple_statement_eh_else *>::test): Rename to...
+	(is_a_helper <geh_else *>::test): ...this.
+	(is_a_helper <gimple_statement_eh_filter *>::test): Rename to...
+	(is_a_helper <geh_filter *>::test): ...this.
+	(is_a_helper <gimple_statement_eh_mnt *>::test): Rename to...
+	(is_a_helper <geh_mnt *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_atomic_load *>::test): Rename to...
+	(is_a_helper <gomp_atomic_load *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_atomic_store *>::test): Rename to...
+	(is_a_helper <gomp_atomic_store *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_continue *>::test): Rename to...
+	(is_a_helper <gomp_continue *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_critical *>::test): Rename to...
+	(is_a_helper <gomp_critical *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_for *>::test): Rename to...
+	(is_a_helper <gomp_for *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_parallel *>::test): Rename to...
+	(is_a_helper <gomp_parallel *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_target *>::test): Rename to...
+	(is_a_helper <gomp_target *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_sections *>::test): Rename to...
+	(is_a_helper <gomp_sections *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_single *>::test): Rename to...
+	(is_a_helper <gomp_single *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_teams *>::test): Rename to...
+	(is_a_helper <gomp_teams *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_task *>::test): Rename to...
+	(is_a_helper <gomp_task *>::test): ...this.
+	(is_a_helper <gimple_statement_phi *>::test): Rename to...
+	(is_a_helper <gphi *>::test): ...this.
+	(is_a_helper <gimple_statement_transaction *>::test): Rename to...
+	(is_a_helper <gtransaction *>::test): ...this.
+	(is_a_helper <greturn *>::test): New.
+	(is_a_helper <gswitch *>::test): New.
+	(is_a_helper <gimple_statement_try *>::test): Rename to...
+	(is_a_helper <gtry *>::test): ...this.
+	(is_a_helper <const gimple_statement_asm *>::test): Rename to...
+	(is_a_helper <const gasm *>::test): ...this.
+	(is_a_helper <const gimple_statement_bind *>::test): Rename to...
+	(is_a_helper <const gbind *>::test): ...this.
+	(is_a_helper <const gimple_statement_call *>::test): Rename to...
+	(is_a_helper <const gcall *>::test): ...this.
+	(is_a_helper <const gimple_statement_catch *>::test): Rename to...
+	(is_a_helper <const gcatch *>::test): ...this.
+	(is_a_helper <const gimple_statement_resx *>::test): Rename to...
+	(is_a_helper <const gresx *>::test): ...this.
+	(is_a_helper <const gimple_statement_eh_dispatch *>::test): Rename to...
+	(is_a_helper <const geh_dispatch *>::test): ...this.
+	(is_a_helper <const gimple_statement_eh_filter *>::test): Rename to...
+	(is_a_helper <const geh_filter *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_atomic_load *>::test):
+	Rename to...
+	(is_a_helper <const gomp_atomic_load *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_atomic_store *>::test):
+	Rename to...
+	(is_a_helper <const gomp_atomic_store *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_continue *>::test):
+	Rename to...
+	(is_a_helper <const gomp_continue *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_critical *>::test):
+	Rename to...
+	(is_a_helper <const gomp_critical *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_for *>::test): Rename to...
+	(is_a_helper <const gomp_for *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_parallel *>::test):
+	Rename to...
+	(is_a_helper <const gomp_parallel *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_target *>::test): Rename to...
+	(is_a_helper <const gomp_target *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_sections *>::test):
+	Rename to...
+	(is_a_helper <const gomp_sections *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_single *>::test): Rename to...
+	(is_a_helper <const gomp_single *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_teams *>::test): Rename to...
+	(is_a_helper <const gomp_teams *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_task *>::test): Rename to...
+	(is_a_helper <const gomp_task *>::test): ...this.
+	(is_a_helper <const gimple_statement_phi *>::test): Rename to...
+	(is_a_helper <const gphi *>::test): ...this.
+	(is_a_helper <const gimple_statement_transaction *>::test): Rename to...
+	(is_a_helper <const gtransaction *>::test): ...this.
+	(gimple_build_return): Strengthen return type to greturn *.
+	(gimple_call_reset_alias_info): Require a gcall *.
+	(gimple_build_call_vec): Return a gcall *.
+	(gimple_build_call): Likewise.
+	(gimple_build_call_valist): Likewise.
+	(gimple_build_call_internal): Likewise.
+	(gimple_build_call_internal_vec): Likewise.
+	(gimple_build_call_from_tree): Likewise.
+	(gimple_build_assign_stat): Return a gassign *.
+	(gimple_build_assign_with_ops): Likewise.
+	(gimple_build_cond): Return a gcond *.
+	(gimple_build_cond_from_tree): Likewise.
+	(gimple_cond_set_condition_from_tree): Require a gcond *.
+	(gimple_build_label): Return a glabel *.
+	(gimple_build_goto): Return a ggoto *.
+	(gimple_build_bind): Return a gbind *.
+	(gimple_build_asm_vec): Return a gasm *.
+	(gimple_build_catch): Return a gcatch *.
+	(gimple_build_eh_filter): Return a geh_filter *.
+	(gimple_build_eh_must_not_throw): Return a geh_mnt *.
+	(gimple_build_eh_else): Return a geh_else *.
+	(gimple_build_try): Return a gtry *.
+	(gimple_build_resx): Return a gresx *.
+	(gimple_build_switch_nlabels): Return a gswitch *.
+	(gimple_build_switch): Return a gswitch *.
+	(gimple_build_eh_dispatch): Return a geh_dispatch *.
+	(gimple_build_debug_bind_stat): Return a gdebug *.
+	(gimple_build_debug_source_bind_stat): Return a gdebug *.
+	(gimple_build_omp_critical): Return a gomp_critical *.
+	(gimple_build_omp_for): Return a gomp_for *.
+	(gimple_build_omp_parallel): Return a gomp_parallel *.
+	(gimple_build_omp_task): Return a gomp_task *.
+	(gimple_build_omp_continue): Return a gomp_continue *.
+	(gimple_build_omp_sections): Return a gomp_sections *.
+	(gimple_build_omp_single): Return a gomp_single *.
+	(gimple_build_omp_target): Return a gomp_target *.
+	(gimple_build_omp_teams): Return a gomp_teams *.
+	(gimple_build_omp_atomic_load): Return a gomp_atomic_load *.
+	(gimple_build_omp_atomic_store): Return a gomp_atomic_store *.
+	(gimple_build_transaction): Return a gtransaction *.
+	(gimple_call_arg_flags): Require a const gcall *.
+	(gimple_call_return_flags): Likewise.
+	(gimple_call_copy_skip_args): Require and return a gcall *.
+	(gimple_asm_clobbers_memory_p): Require a const gasm *.
+	(gimple_seq_first_stmt_as_a_bind): New.
+	(gimple_assign_nontemporal_move_p): Require a const gassign *
+	rather than a const_gimple.
+	(gimple_call_internal_fn): Update for renaming to gcall.
+	(gimple_call_fntype): Likewise.
+	(gimple_call_set_fntype): Require a gcall * rather than a gimple.
+	(gimple_call_set_fn): Likewise.
+	(gimple_call_set_internal_fn): Likewise.
+	(gimple_call_set_chain): Likewise.
+	(gimple_call_set_tail): Likewise.
+	(gimple_call_tail_p): Likewise.
+	(gimple_call_set_return_slot_opt): Likewise.
+	(gimple_call_return_slot_opt_p): Likewise.
+	(gimple_call_set_from_thunk): Likewise.
+	(gimple_call_from_thunk_p): Likewise.
+	(gimple_call_set_va_arg_pack): Likewise.
+	(gimple_call_va_arg_pack_p): Likewise.
+	(gimple_call_set_nothrow): Likewise.
+	(gimple_call_nothrow_p): Likewise.
+	(gimple_call_set_alloca_for_var): Likewise.
+	(gimple_call_alloca_for_var_p): Likewise.
+	(gimple_call_use_set): Likewise.
+	(gimple_call_clobber_set): Likewise.
+	(gimple_call_return_type): Require a const gcall * rather than a
+	const_gimple.
+	(gimple_call_chain_ptr): Likewise.
+	(gimple_call_copy_flags): Require a pair of gcall *.
+	(gimple_cond_set_code): Require a gcond * rather than a gimple
+	(gimple_cond_set_lhs): Likewise.
+	(gimple_cond_set_rhs): Likewise.
+	(gimple_cond_set_true_label): Likewise.
+	(gimple_cond_set_false_label): Likewise.
+	(gimple_cond_make_false): Likewise.
+	(gimple_cond_make_true): Likewise.
+	(gimple_cond_lhs_ptr): Require a const gcond * rather than a
+	const_gimple.
+	(gimple_cond_rhs_ptr): Likewise.
+	(gimple_cond_true_label): Likewise.
+	(gimple_cond_false_label): Likewise.
+	(gimple_cond_true_p): Likewise.
+	(gimple_cond_false_p): Likewise.
+	(gimple_cond_set_condition): Likewise.
+	(gimple_label_label): Require a const glabel *.
+	(gimple_label_set_label): Require a glabel *.
+	(gimple_goto_set_dest): Require a ggoto *.
+	(gimple_bind_vars): Require a const gbind *.
+	(gimple_bind_block): Likewise.
+	(gimple_bind_set_vars): Require a gbind *.
+	(gimple_bind_append_vars): Likewise.
+	(gimple_bind_body_ptr): Likewise.
+	(gimple_bind_body): Likewise.
+	(gimple_bind_set_body): Likewise.
+	(gimple_bind_add_stmt): Likewise.
+	(gimple_bind_add_seq): Likewise.
+	(gimple_bind_set_block): Likewise.
+	(gimple_asm_ninputs): Require a const gasm *.
+	(gimple_asm_noutputs): Likewise.
+	(gimple_asm_nclobbers): Likewise.
+	(gimple_asm_nlabels): Likewise.
+	(gimple_asm_input_op): Likewise.
+	(gimple_asm_input_op_ptr): Likewise.
+	(gimple_asm_output_op): Likewise.
+	(gimple_asm_output_op_ptr): Likewise.
+	(gimple_asm_clobber_op): Likewise.
+	(gimple_asm_label_op): Likewise.
+	(gimple_asm_string): Likewise.
+	(gimple_asm_volatile_p): Likewise.
+	(gimple_asm_input_p): Likewise.
+	(gimple_asm_set_input_op): Require a gasm *.
+	(gimple_asm_set_output_op): Likewise.
+	(gimple_asm_set_clobber_op): Likewise.
+	(gimple_asm_set_label_op): Likewise.
+	(gimple_asm_set_volatile): Likewise.
+	(gimple_asm_set_input): Likewise.
+	(gimple_catch_types): Require a const gcatch *.
+	(gimple_catch_types_ptr): Require a gcatch *.
+	(gimple_catch_handler_ptr): Likewise.
+	(gimple_catch_handler): Likewise.
+	(gimple_catch_set_types): Likewise.
+	(gimple_catch_set_handler): Likewise.
+	(gimple_eh_filter_types): Update for renaming of subclass to
+	geh_filter.
+	(gimple_eh_filter_types_ptr): Likewise.
+	(gimple_eh_filter_failure_ptr): Likewise.
+	(gimple_eh_filter_set_types): Require a geh_filter *.
+	(gimple_eh_filter_set_failure): Likewise.
+	(gimple_eh_must_not_throw_fndecl): Require a geh_mnt *.
+	(gimple_eh_must_not_throw_set_fndecl): Likewise.
+	(gimple_eh_else_n_body_ptr): Require a geh_else *.
+	(gimple_eh_else_n_body): Likewise.
+	(gimple_eh_else_e_body_ptr): Likewise.
+	(gimple_eh_else_e_body): Likewise.
+	(gimple_eh_else_set_n_body): Likewise.
+	(gimple_eh_else_set_e_body): Likewise.
+	(gimple_try_set_kind): Require a gtry *.
+	(gimple_try_set_catch_is_cleanup): Likewise.
+	(gimple_try_set_eval): Likewise.
+	(gimple_try_set_cleanup): Likewise.
+	(gimple_try_eval_ptr): Update for renaming of subclass to gtry.
+	(gimple_try_cleanup_ptr): Likewise.
+	(gimple_phi_capacity): Update for renaming of subclass to gphi.
+	(gimple_phi_num_args): Likewise.
+	(gimple_phi_result): Likewise.
+	(gimple_phi_result_ptr): Likewise.
+	(gimple_phi_arg): Likewise.
+	(gimple_phi_set_result): Require a gphi *.
+	(gimple_phi_set_arg): Likewise.
+	(gimple_phi_arg_def_ptr): Likewise.
+	(gimple_phi_arg_edge): Likewise.
+	(gimple_phi_arg_location): Likewise.
+	(gimple_phi_arg_location_from_edge): Likewise.
+	(gimple_phi_arg_set_location): Likewise.
+	(gimple_phi_arg_has_location): Likewise.
+	(gimple_resx_region): Require a const gresx *.
+	(gimple_resx_set_region): Require a gresx *.
+	(gimple_eh_dispatch_region): Require a const geh_dispatch *.
+	(gimple_eh_dispatch_set_region): Require a geh_dispatch *.
+	(gimple_switch_num_labels): Require a const gswitch *.
+	(gimple_switch_set_num_labels): Likewise.
+	(gimple_switch_index): Likewise.
+	(gimple_switch_index_ptr): Likewise.
+	(gimple_switch_label): Likewise.
+	(gimple_switch_default_label): Likewise.
+	(gimple_switch_set_index): Require a gswitch *.
+	(gimple_switch_set_label): Likewise.
+	(gimple_switch_set_default_label): Likewise.
+	(gimple_omp_critical_name): Require a const gomp_critical *.
+	(gimple_omp_critical_name_ptr): Require a gomp_critical *.
+	(gimple_omp_critical_set_name): Likewise.
+	(gimple_omp_for_set_kind): Require a gomp_for *.
+	(gimple_omp_for_set_combined_p): Likewise.
+	(gimple_omp_for_set_combined_into_p): Likewise.
+	(gimple_omp_for_clauses): Update for renaming of subclass to
+	gomp_for.
+	(gimple_omp_for_clauses_ptr): Likewise.
+	(gimple_omp_for_set_clauses): Likewise.
+	(gimple_omp_for_collapse): Likewise.
+	(gimple_omp_for_index): Likewise.
+	(gimple_omp_for_index_ptr): Likewise.
+	(gimple_omp_for_set_index): Likewise.
+	(gimple_omp_for_initial): Likewise.
+	(gimple_omp_for_initial_ptr): Likewise.
+	(gimple_omp_for_set_initial): Likewise.
+	(gimple_omp_for_final): Likewise.
+	(gimple_omp_for_final_ptr): Likewise.
+	(gimple_omp_for_set_final): Likewise.
+	(gimple_omp_for_incr): Likewise.
+	(gimple_omp_for_incr_ptr): Likewise.
+	(gimple_omp_for_set_incr): Likewise.
+	(gimple_omp_for_pre_body): Likewise.
+	(gimple_omp_for_set_pre_body): Likewise.
+	(gimple_omp_parallel_clauses): Update for renaming of subclass to
+	gomp_parallel.
+	(gimple_omp_parallel_clauses_ptr): Require a gomp_parallel *.
+	(gimple_omp_parallel_set_clauses): Likewise.
+	(gimple_omp_parallel_child_fn_ptr): Likewise.
+	(gimple_omp_parallel_set_child_fn): Likewise.
+	(gimple_omp_parallel_data_arg_ptr): Likewise.
+	(gimple_omp_parallel_set_data_arg): Likewise.
+	(gimple_omp_parallel_child_fn): Require a const gomp_parallel *.
+	(gimple_omp_parallel_data_arg): Likewise.
+	(gimple_omp_task_clauses): Update for renaming of subclass to
+	gomp_task.
+	(gimple_omp_task_clauses_ptr): Likewise.
+	(gimple_omp_task_set_clauses): Likewise.
+	(gimple_omp_task_child_fn): Likewise.
+	(gimple_omp_task_child_fn_ptr): Likewise.
+	(gimple_omp_task_set_child_fn): Likewise.
+	(gimple_omp_task_data_arg): Likewise.
+	(gimple_omp_task_data_arg_ptr): Likewise.
+	(gimple_omp_task_set_data_arg): Likewise.
+	(gimple_omp_taskreg_clauses): Whitespace fixes.
+	(gimple_omp_taskreg_clauses_ptr): Likewise.
+	(gimple_omp_taskreg_set_clauses): Likewise.
+	(gimple_omp_taskreg_child_fn): Likewise.
+	(gimple_omp_taskreg_child_fn_ptr): Likewise.
+	(gimple_omp_taskreg_set_child_fn): Likewise.
+	(gimple_omp_taskreg_data_arg): Likewise.
+	(gimple_omp_taskreg_data_arg_ptr): Likewise.
+	(gimple_omp_taskreg_set_data_arg): Likewise.
+	(gimple_omp_task_copy_fn): Update for renaming of subclass to
+	gomp_task.
+	(gimple_omp_task_copy_fn_ptr): Likewise.
+	(gimple_omp_task_set_copy_fn): Likewise.
+	(gimple_omp_task_arg_size): Likewise.
+	(gimple_omp_task_arg_size_ptr): Likewise.
+	(gimple_omp_task_set_arg_size): Likewise.
+	(gimple_omp_task_arg_align): Likewise.
+	(gimple_omp_task_arg_align_ptr): Likewise.
+	(gimple_omp_task_set_arg_align): Likewise.
+	(gimple_omp_single_clauses): Update for renaming of subclass to
+	gomp_single.
+	(gimple_omp_single_clauses_ptr): Likewise.
+	(gimple_omp_single_set_clauses): Likewise.
+	(gimple_omp_target_clauses): Update for renaming of subclass to
+	gomp_target.
+	(gimple_omp_target_clauses_ptr): Likewise.
+	(gimple_omp_target_set_clauses): Require a gomp_target *.
+	(gimple_omp_target_set_kind): Likewise.
+	(gimple_omp_target_child_fn_ptr): Likewise.
+	(gimple_omp_target_set_child_fn): Likewise.
+	(gimple_omp_target_data_arg_ptr): Likewise.
+	(gimple_omp_target_set_data_arg): Likewise.
+	(gimple_omp_target_child_fn): Require a const gomp_target *.
+	(gimple_omp_target_data_arg): Likewise.
+	(gimple_omp_teams_clauses): Update for renaming of subclass to
+	gomp_teams.
+	(gimple_omp_teams_clauses_ptr): Likewise.
+	(gimple_omp_teams_set_clauses): Require a gomp_teams *.
+	(gimple_omp_sections_clauses): Update for renaming of subclass to
+	gomp_sections.
+	(gimple_omp_sections_clauses_ptr): Likewise.
+	(gimple_omp_sections_set_clauses): Likewise.
+	(gimple_omp_sections_control): Likewise.
+	(gimple_omp_sections_control_ptr): Likewise.
+	(gimple_omp_sections_set_control): Likewise.
+	(gimple_omp_for_set_cond): Likewise.
+	(gimple_omp_for_cond): Likewise.
+	(gimple_omp_atomic_store_set_val): Require a gomp_atomic_store *.
+	(gimple_omp_atomic_store_val_ptr): Likewise.
+	(gimple_omp_atomic_load_set_lhs): Likewise.
+	(gimple_omp_atomic_store_val): Require a const gomp_atomic_store *.
+	(gimple_omp_atomic_load_lhs): Likewise.
+	(gimple_omp_atomic_load_rhs): Likewise.
+	(gimple_omp_atomic_load_lhs_ptr): Require a gomp_atomic_load *.
+	(gimple_omp_atomic_load_set_rhs): Likewise.
+	(gimple_omp_atomic_load_rhs_ptr): Likewise.
+	(gimple_omp_continue_control_def): Require a const gomp_continue *.
+	(gimple_omp_continue_control_use): Likewise.
+	(gimple_omp_continue_control_def_ptr): Require a gomp_continue *.
+	(gimple_omp_continue_set_control_def): Likewise.
+	(gimple_omp_continue_control_use_ptr): Likewise.
+	(gimple_omp_continue_set_control_use): Likewise.
+	(gimple_transaction_body_ptr): Require a gtransaction *.
+	(gimple_transaction_body): Likewise.
+	(gimple_transaction_label_ptr): Likewise.
+	(gimple_transaction_label): Require a const gtransaction *.
+	(gimple_transaction_subcode): Likewise.
+	(gimple_transaction_set_body): Require a gtransaction *.
+	(gimple_transaction_set_label): Likewise.
+	(gimple_transaction_set_subcode): Likewise.
+	(gimple_return_retval_ptr): Require a const greturn *.
+	(gimple_return_retval): Likewise.
+	(gimple_return_set_retval): Require a greturn *.
+	(gimple_expr_type): Introduce local "call_stmt" and use in place of
+	"stmt" for typesafety.
+
+	* asan.c: Use gimple subclasses.
+	* auto-profile.c: Likewise.
+	* builtins.c: Likewise.
+	* builtins.h: Likewise.
+	* cfgexpand.c: Likewise.
+	* cfgloop.c: Likewise.
+	* cfgloopmanip.c: Likewise.
+	* cgraph.c: Likewise.
+	* cgraph.h: Likewise.
+	* cgraphbuild.c: Likewise.
+	* cgraphclones.c: Likewise.
+	* cgraphunit.c: Likewise.
+	* expr.h: Likewise.
+	* gimple-builder.c: Likewise.
+	* gimple-builder.h: Likewise.
+	* gimple-fold.c: Likewise.
+	* gimple-low.c: Likewise.
+	* gimple-pretty-print.c: Likewise.
+	* gimple-ssa-isolate-paths.c: Likewise.
+	* gimple-ssa-strength-reduction.c: Likewise.
+	* gimple-streamer-in.c: Likewise.
+	* gimple-streamer-out.c: Likewise.
+	* gimple-walk.c: Likewise.
+	* gimplify-me.c: Likewise.
+	* gimplify.c: Likewise.
+	* gimplify.h: Likewise.
+	* graphite-scop-detection.c: Likewise.
+	* graphite-sese-to-poly.c: Likewise.
+	* internal-fn.c: Likewise.
+	* internal-fn.def:: Likewise.
+	* internal-fn.h: Likewise.
+	* ipa-icf-gimple.c: Likewise.
+	* ipa-icf-gimple.h: Likewise.
+	* ipa-icf.c: Likewise.
+	* ipa-inline-analysis.c: Likewise.
+	* ipa-prop.c: Likewise.
+	* ipa-prop.h: Likewise.
+	* ipa-pure-const.c: Likewise.
+	* ipa-split.c: Likewise.
+	* lto-streamer-in.c: Likewise.
+	* lto-streamer-out.c: Likewise.
+	* omp-low.c: Likewise.
+	* predict.c: Likewise.
+	* sanopt.c: Likewise.
+	* sese.c: Likewise.
+	* ssa-iterators.h: Likewise.
+	* stmt.c: Likewise.
+	* trans-mem.c: Likewise.
+	* tree-call-cdce.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-cfg.h: Likewise.
+	* tree-cfgcleanup.c: Likewise.
+	* tree-chkp.c: Likewise.
+	* tree-chkp.h: Likewise.
+	* tree-complex.c: Likewise.
+	* tree-data-ref.c: Likewise.
+	* tree-dfa.c: Likewise.
+	* tree-eh.c: Likewise.
+	* tree-eh.h: Likewise.
+	* tree-emutls.c: Likewise.
+	* tree-if-conv.c: Likewise.
+	* tree-inline.c: Likewise.
+	* tree-inline.h: Likewise.
+	* tree-into-ssa.c: Likewise.
+	* tree-into-ssa.h: Likewise.
+	* tree-loop-distribution.c: Likewise.
+	* tree-nrv.c: Likewise.
+	* tree-object-size.c: Likewise.
+	* tree-outof-ssa.c: Likewise.
+	* tree-parloops.c: Likewise.
+	* tree-phinodes.c: Likewise.
+	* tree-phinodes.h: Likewise.
+	* tree-predcom.c: Likewise.
+	* tree-profile.c: Likewise.
+	* tree-scalar-evolution.c: Likewise.
+	* tree-scalar-evolution.h
+	* tree-sra.cn_function):
+	* tree-ssa-alias.c: Likewise.
+	* tree-ssa-alias.h: Likewise.
+	* tree-ssa-ccp.c: Likewise.
+	* tree-ssa-coalesce.c: Likewise.
+	* tree-ssa-copy.c: Likewise.
+	* tree-ssa-copyrename.c: Likewise.
+	* tree-ssa-dce.c: Likewise.
+	* tree-ssa-dom.c: Likewise.
+	* tree-ssa-forwprop.c: Likewise.
+	* tree-ssa-ifcombine.c: Likewise.
+	* tree-ssa-live.c: Likewise.
+	* tree-ssa-loop-im.c: Likewise.
+	* tree-ssa-loop-ivcanon.c: Likewise.
+	* tree-ssa-loop-ivopts.c: Likewise.
+	* tree-ssa-loop-manip.c: Likewise.
+	* tree-ssa-loop-niter.c: Likewise.
+	* tree-ssa-loop-prefetch.c: Likewise.
+	* tree-ssa-loop-unswitch.c: Likewise.
+	* tree-ssa-math-opts.c: Likewise.
+	* tree-ssa-operands.c: Likewise.
+	* tree-ssa-phiopt.c: Likewise.
+	* tree-ssa-phiprop.c: Likewise.
+	* tree-ssa-pre.c: Likewise.
+	* tree-ssa-propagate.c: Likewise.
+	* tree-ssa-propagate.h: Likewise.
+	* tree-ssa-reassoc.c: Likewise.
+	* tree-ssa-sccvn.c: Likewise.
+	* tree-ssa-sccvn.h: Likewise.
+	* tree-ssa-sink.c: Likewise.
+	* tree-ssa-strlen.c
+	* tree-ssa-structalias.c
+	* tree-ssa-tail-merge.c: Likewise.
+	* tree-ssa-ter.c: Likewise.
+	* tree-ssa-threadedge.c: Likewise.
+	* tree-ssa-threadedge.h: Likewise.
+	* tree-ssa-threadupdate.c: Likewise.
+	* tree-ssa-uncprop.c: Likewise.
+	* tree-ssa-uninit.c: Likewise.
+	* tree-ssa.c: Likewise.
+	* tree-stdarg.c: Likewise.
+	* tree-switch-conversion.c: Likewise.
+	* tree-tailcall.c: Likewise.
+	* tree-vect-data-refs.c: Likewise.
+	* tree-vect-generic.c: Likewise.
+	* tree-vect-loop-manip.c: Likewise.
+	* tree-vect-loop.c: Likewise.
+	* tree-vect-patterns.c: Likewise.
+	* tree-vect-slp.c: Likewise.
+	* tree-vect-stmts.c: Likewise.
+	* tree-vectorizer.h: Likewise.
+	* tree-vrp.c: Likewise.
+	* tree.c: Likewise.
+	* ubsan.c: Likewise.
+	* value-prof.c: Likewise.
+	* value-prof.h: Likewise.
+	* vtable-verify.c: Likewise.
+
 2014-11-19  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* config/rs6000/constraints.md: Avoid signed integer overflows.

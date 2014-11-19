@@ -1815,7 +1815,7 @@ set_switch_stmt_execution_predicate (struct ipa_node_params *info,
 				     struct inline_summary *summary,
 				     basic_block bb)
 {
-  gimple last;
+  gimple lastg;
   tree op;
   int index;
   struct agg_position_info aggpos;
@@ -1824,9 +1824,10 @@ set_switch_stmt_execution_predicate (struct ipa_node_params *info,
   size_t n;
   size_t case_idx;
 
-  last = last_stmt (bb);
-  if (!last || gimple_code (last) != GIMPLE_SWITCH)
+  lastg = last_stmt (bb);
+  if (!lastg || gimple_code (lastg) != GIMPLE_SWITCH)
     return;
+  gswitch *last = as_a <gswitch *> (lastg);
   op = gimple_switch_index (last);
   if (!unmodified_parm_or_parm_agg_item (info, last, op, &index, &aggpos))
     return;
@@ -2276,7 +2277,7 @@ phi_result_unknown_predicate (struct ipa_node_params *info,
    NONCONSTANT_NAMES, if possible.  */
 
 static void
-predicate_for_phi_result (struct inline_summary *summary, gimple phi,
+predicate_for_phi_result (struct inline_summary *summary, gphi *phi,
 			  struct predicate *p,
 			  vec<predicate_t> nonconstant_names)
 {
@@ -2459,7 +2460,6 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   /* Benefits are scaled by probability of elimination that is in range
      <0,2>.  */
   basic_block bb;
-  gimple_stmt_iterator bsi;
   struct function *my_function = DECL_STRUCT_FUNCTION (node->decl);
   int freq;
   struct inline_summary *info = inline_summary (node);
@@ -2540,7 +2540,8 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	  struct predicate phi_predicate;
 	  bool first_phi = true;
 
-	  for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+	  for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi);
+	       gsi_next (&bsi))
 	    {
 	      if (first_phi
 		  && !phi_result_unknown_predicate (parms_info, info, bb,
@@ -2553,14 +2554,15 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		  fprintf (dump_file, "  ");
 		  print_gimple_stmt (dump_file, gsi_stmt (bsi), 0, 0);
 		}
-	      predicate_for_phi_result (info, gsi_stmt (bsi), &phi_predicate,
+	      predicate_for_phi_result (info, bsi.phi (), &phi_predicate,
 					nonconstant_names);
 	    }
 	}
 
       fix_builtin_expect_stmt = find_foldable_builtin_expect (bb);
 
-      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+      for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
+	   gsi_next (&bsi))
 	{
 	  gimple stmt = gsi_stmt (bsi);
 	  int this_size = estimate_num_insns (stmt, &eni_size_weights);

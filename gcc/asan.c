@@ -493,7 +493,7 @@ has_mem_ref_been_instrumented (const asan_mem_ref *ref, tree len)
    otherwise.  */
 
 static bool
-get_mem_ref_of_assignment (const gimple assignment,
+get_mem_ref_of_assignment (const gassign *assignment,
 			   asan_mem_ref *ref,
 			   bool *ref_is_store)
 {
@@ -521,7 +521,7 @@ get_mem_ref_of_assignment (const gimple assignment,
    representing a builtin call that has to do with memory access.  */
 
 static bool
-get_mem_refs_of_builtin_call (const gimple call,
+get_mem_refs_of_builtin_call (const gcall *call,
 			      asan_mem_ref *src0,
 			      tree *src0_len,
 			      bool *src0_is_store,
@@ -864,7 +864,8 @@ has_stmt_been_instrumented_p (gimple stmt)
       asan_mem_ref r;
       asan_mem_ref_init (&r, NULL, 1);
 
-      if (get_mem_ref_of_assignment (stmt, &r, &r_is_store))
+      if (get_mem_ref_of_assignment (as_a <gassign *> (stmt), &r,
+				     &r_is_store))
 	return has_mem_ref_been_instrumented (&r);
     }
   else if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
@@ -877,7 +878,7 @@ has_stmt_been_instrumented_p (gimple stmt)
       tree src0_len = NULL_TREE, src1_len = NULL_TREE, dest_len = NULL_TREE;
       bool src0_is_store = false, src1_is_store = false,
 	dest_is_store = false, dest_is_deref = false, intercepted_p = true;
-      if (get_mem_refs_of_builtin_call (stmt,
+      if (get_mem_refs_of_builtin_call (as_a <gcall *> (stmt),
 					&src0, &src0_len, &src0_is_store,
 					&src1, &src1_len, &src1_is_store,
 					&dest, &dest_len, &dest_is_store,
@@ -1556,7 +1557,7 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
    pointing to initially.  */
 
 static void
-insert_if_then_before_iter (gimple cond,
+insert_if_then_before_iter (gcond *cond,
 			    gimple_stmt_iterator *iter,
 			    bool then_more_likely_p,
 			    basic_block *then_bb,
@@ -1901,7 +1902,7 @@ instrument_builtin_call (gimple_stmt_iterator *iter)
     return false;
 
   bool iter_advanced_p = false;
-  gimple call = gsi_stmt (*iter);
+  gcall *call = as_a <gcall *> (gsi_stmt (*iter));
 
   gcc_checking_assert (gimple_call_builtin_p (call, BUILT_IN_NORMAL));
 
@@ -2586,8 +2587,9 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
       gimple_set_location (g, loc);
 
       basic_block then_bb, fallthrough_bb;
-      insert_if_then_before_iter (g, iter, /*then_more_likely_p=*/true,
-				 &then_bb, &fallthrough_bb);
+      insert_if_then_before_iter (as_a <gcond *> (g), iter,
+				  /*then_more_likely_p=*/true,
+				  &then_bb, &fallthrough_bb);
       /* Note that fallthrough_bb starts with the statement that was
 	pointed to by ITER.  */
 

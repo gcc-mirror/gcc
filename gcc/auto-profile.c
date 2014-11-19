@@ -243,7 +243,7 @@ public:
 
   /* Read the inlined indirect call target profile for STMT and store it in
      MAP, return the total count for all inlined indirect calls.  */
-  gcov_type find_icall_target_map (gimple stmt, icall_target_map *map) const;
+  gcov_type find_icall_target_map (gcall *stmt, icall_target_map *map) const;
 
   /* Sum of counts that is used during annotation.  */
   gcov_type total_annotated_count () const;
@@ -311,7 +311,7 @@ public:
 
   /* Update value profile INFO for STMT from the inlined indirect callsite.
      Return true if INFO is updated.  */
-  bool update_inlined_ind_target (gimple stmt, count_info *info);
+  bool update_inlined_ind_target (gcall *stmt, count_info *info);
 
   /* Mark LOC as annotated.  */
   void mark_annotated (location_t loc);
@@ -600,7 +600,7 @@ function_instance::mark_annotated (location_t loc)
    MAP, return the total count for all inlined indirect calls.  */
 
 gcov_type
-function_instance::find_icall_target_map (gimple stmt,
+function_instance::find_icall_target_map (gcall *stmt,
                                           icall_target_map *map) const
 {
   gcov_type ret = 0;
@@ -769,7 +769,7 @@ autofdo_source_profile::mark_annotated (location_t loc)
    Return true if INFO is updated.  */
 
 bool
-autofdo_source_profile::update_inlined_ind_target (gimple stmt,
+autofdo_source_profile::update_inlined_ind_target (gcall *stmt,
                                                    count_info *info)
 {
   if (LOCATION_LOCUS (gimple_location (stmt)) == cfun->function_end_locus)
@@ -963,11 +963,13 @@ static void
 afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
                     bool transform)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple gs = gsi_stmt (*gsi);
   tree callee;
 
-  if (map.size () == 0 || gimple_code (stmt) != GIMPLE_CALL
-      || gimple_call_fndecl (stmt) != NULL_TREE)
+  if (map.size () == 0)
+    return;
+  gcall *stmt = dyn_cast <gcall *> (gs);
+  if ((!stmt) || gimple_call_fndecl (stmt) != NULL_TREE)
     return;
 
   callee = gimple_call_fn (stmt);
@@ -1085,9 +1087,11 @@ afdo_set_bb_count (basic_block bb, const stmt_set &promoted)
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     afdo_source_profile->mark_annotated (gimple_location (gsi_stmt (gsi)));
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gphi_iterator gpi = gsi_start_phis (bb);
+       !gsi_end_p (gpi);
+       gsi_next (&gpi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gpi.phi ();
       size_t i;
       for (i = 0; i < gimple_phi_num_args (phi); i++)
         afdo_source_profile->mark_annotated (gimple_phi_arg_location (phi, i));
@@ -1245,7 +1249,7 @@ afdo_propagate_circuit (const bb_set &annotated_bb, edge_set *annotated_edge)
   basic_block bb;
   FOR_ALL_BB_FN (bb, cfun)
   {
-    gimple phi_stmt;
+    gimple def_stmt;
     tree cmp_rhs, cmp_lhs;
     gimple cmp_stmt = last_stmt (bb);
     edge e;
@@ -1262,12 +1266,15 @@ afdo_propagate_circuit (const bb_set &annotated_bb, edge_set *annotated_edge)
       continue;
     if (!is_bb_annotated (bb, annotated_bb))
       continue;
-    phi_stmt = SSA_NAME_DEF_STMT (cmp_lhs);
-    while (phi_stmt && gimple_code (phi_stmt) == GIMPLE_ASSIGN
-           && gimple_assign_single_p (phi_stmt)
-           && TREE_CODE (gimple_assign_rhs1 (phi_stmt)) == SSA_NAME)
-      phi_stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (phi_stmt));
-    if (!phi_stmt || gimple_code (phi_stmt) != GIMPLE_PHI)
+    def_stmt = SSA_NAME_DEF_STMT (cmp_lhs);
+    while (def_stmt && gimple_code (def_stmt) == GIMPLE_ASSIGN
+           && gimple_assign_single_p (def_stmt)
+           && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME)
+      def_stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (def_stmt));
+    if (!def_stmt)
+      continue;
+    gphi *phi_stmt = dyn_cast <gphi *> (def_stmt);
+    if (!phi_stmt)
       continue;
     FOR_EACH_EDGE (e, ei, bb->succs)
     {
@@ -1426,11 +1433,11 @@ afdo_vpt_for_early_inline (stmt_set *promoted_stmts)
 
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
-        gimple stmt = gsi_stmt (gsi);
+        gcall *stmt = dyn_cast <gcall *> (gsi_stmt (gsi));
         /* IC_promotion and early_inline_2 is done in multiple iterations.
            No need to promoted the stmt if its in promoted_stmts (means
            it is already been promoted in the previous iterations).  */
-        if (gimple_code (stmt) != GIMPLE_CALL || gimple_call_fn (stmt) == NULL
+        if ((!stmt) || gimple_call_fn (stmt) == NULL
             || TREE_CODE (gimple_call_fn (stmt)) == FUNCTION_DECL
             || promoted_stmts->find (stmt) != promoted_stmts->end ())
           continue;

@@ -82,7 +82,8 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
 	   gimple_stmt_iterator *incr_pos, bool after,
 	   tree *var_before, tree *var_after)
 {
-  gimple stmt;
+  gassign *stmt;
+  gphi *phi;
   tree initial, step1;
   gimple_seq stmts;
   tree vb, va;
@@ -154,9 +155,9 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
   if (stmts)
     gsi_insert_seq_on_edge_immediate (pe, stmts);
 
-  stmt = create_phi_node (vb, loop->header);
-  add_phi_arg (stmt, initial, loop_preheader_edge (loop), UNKNOWN_LOCATION);
-  add_phi_arg (stmt, va, loop_latch_edge (loop), UNKNOWN_LOCATION);
+  phi = create_phi_node (vb, loop->header);
+  add_phi_arg (phi, initial, loop_preheader_edge (loop), UNKNOWN_LOCATION);
+  add_phi_arg (phi, va, loop_latch_edge (loop), UNKNOWN_LOCATION);
 }
 
 /* Return the innermost superloop LOOP of USE_LOOP that is a superloop of
@@ -287,7 +288,7 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
 static void
 add_exit_phi (basic_block exit, tree var)
 {
-  gimple phi;
+  gphi *phi;
   edge e;
   edge_iterator ei;
 
@@ -441,20 +442,21 @@ find_uses_to_rename_stmt (gimple stmt, bitmap *use_blocks, bitmap need_phis)
 static void
 find_uses_to_rename_bb (basic_block bb, bitmap *use_blocks, bitmap need_phis)
 {
-  gimple_stmt_iterator bsi;
   edge e;
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    for (bsi = gsi_start_phis (e->dest); !gsi_end_p (bsi); gsi_next (&bsi))
+    for (gphi_iterator bsi = gsi_start_phis (e->dest); !gsi_end_p (bsi);
+	 gsi_next (&bsi))
       {
-        gimple phi = gsi_stmt (bsi);
+        gphi *phi = bsi.phi ();
 	if (! virtual_operand_p (gimple_phi_result (phi)))
 	  find_uses_to_rename_use (bb, PHI_ARG_DEF_FROM_EDGE (phi, e),
 				   use_blocks, need_phis);
       }
 
-  for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+  for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
+       gsi_next (&bsi))
     find_uses_to_rename_stmt (gsi_stmt (bsi), use_blocks, need_phis);
 }
 
@@ -600,8 +602,6 @@ DEBUG_FUNCTION void
 verify_loop_closed_ssa (bool verify_ssa_p)
 {
   basic_block bb;
-  gimple_stmt_iterator bsi;
-  gimple phi;
   edge e;
   edge_iterator ei;
 
@@ -615,15 +615,17 @@ verify_loop_closed_ssa (bool verify_ssa_p)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+      for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi);
+	   gsi_next (&bsi))
 	{
-	  phi = gsi_stmt (bsi);
+	  gphi *phi = bsi.phi ();
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    check_loop_closed_ssa_use (e->src,
 				       PHI_ARG_DEF_FROM_EDGE (phi, e));
 	}
 
-      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+      for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
+	   gsi_next (&bsi))
 	check_loop_closed_ssa_stmt (bb, gsi_stmt (bsi));
     }
 
@@ -638,15 +640,15 @@ split_loop_exit_edge (edge exit)
 {
   basic_block dest = exit->dest;
   basic_block bb = split_edge (exit);
-  gimple phi, new_phi;
+  gphi *phi, *new_phi;
   tree new_name, name;
   use_operand_p op_p;
-  gimple_stmt_iterator psi;
+  gphi_iterator psi;
   source_location locus;
 
   for (psi = gsi_start_phis (dest); !gsi_end_p (psi); gsi_next (&psi))
     {
-      phi = gsi_stmt (psi);
+      phi = psi.phi ();
       op_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, single_succ_edge (bb));
       locus = gimple_phi_arg_location_from_edge (phi, single_succ_edge (bb));
 
@@ -1030,12 +1032,12 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 				transform_callback transform,
 				void *data)
 {
-  gimple exit_if;
+  gcond *exit_if;
   tree ctr_before, ctr_after;
   tree enter_main_cond, exit_base, exit_step, exit_bound;
   enum tree_code exit_cmp;
-  gimple phi_old_loop, phi_new_loop, phi_rest;
-  gimple_stmt_iterator psi_old_loop, psi_new_loop;
+  gphi *phi_old_loop, *phi_new_loop, *phi_rest;
+  gphi_iterator psi_old_loop, psi_new_loop;
   tree init, next, new_init;
   struct loop *new_loop;
   basic_block rest, exit_bb;
@@ -1142,8 +1144,8 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
        !gsi_end_p (psi_old_loop);
        gsi_next (&psi_old_loop), gsi_next (&psi_new_loop))
     {
-      phi_old_loop = gsi_stmt (psi_old_loop);
-      phi_new_loop = gsi_stmt (psi_new_loop);
+      phi_old_loop = psi_old_loop.phi ();
+      phi_new_loop = psi_new_loop.phi ();
 
       init = PHI_ARG_DEF_FROM_EDGE (phi_old_loop, old_entry);
       op = PHI_ARG_DEF_PTR_FROM_EDGE (phi_new_loop, new_entry);
@@ -1227,7 +1229,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   /* Finally create the new counter for number of iterations and add the new
      exit instruction.  */
   bsi = gsi_last_nondebug_bb (exit_bb);
-  exit_if = gsi_stmt (bsi);
+  exit_if = as_a <gcond *> (gsi_stmt (bsi));
   create_iv (exit_base, exit_step, NULL_TREE, loop,
 	     &bsi, false, &ctr_before, &ctr_after);
   gimple_cond_set_code (exit_if, exit_cmp);
@@ -1259,12 +1261,13 @@ tree_unroll_loop (struct loop *loop, unsigned factor,
 
 static void
 rewrite_phi_with_iv (loop_p loop,
-		     gimple_stmt_iterator *psi,
+		     gphi_iterator *psi,
 		     gimple_stmt_iterator *gsi,
 		     tree main_iv)
 {
   affine_iv iv;
-  gimple stmt, phi = gsi_stmt (*psi);
+  gassign *stmt;
+  gphi *phi = psi->phi ();
   tree atype, mtype, val, res = PHI_RESULT (phi);
 
   if (virtual_operand_p (res) || res == main_iv)
@@ -1302,7 +1305,7 @@ rewrite_all_phi_nodes_with_iv (loop_p loop, tree main_iv)
 {
   unsigned i;
   basic_block *bbs = get_loop_body_in_dom_order (loop);
-  gimple_stmt_iterator psi;
+  gphi_iterator psi;
 
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -1335,8 +1338,9 @@ canonicalize_loop_ivs (struct loop *loop, tree *nit, bool bump_in_latch)
   unsigned precision = TYPE_PRECISION (TREE_TYPE (*nit));
   unsigned original_precision = precision;
   tree type, var_before;
-  gimple_stmt_iterator gsi, psi;
-  gimple stmt;
+  gimple_stmt_iterator gsi;
+  gphi_iterator psi;
+  gcond *stmt;
   edge exit = single_dom_exit (loop);
   gimple_seq stmts;
   machine_mode mode;
@@ -1345,7 +1349,7 @@ canonicalize_loop_ivs (struct loop *loop, tree *nit, bool bump_in_latch)
   for (psi = gsi_start_phis (loop->header);
        !gsi_end_p (psi); gsi_next (&psi))
     {
-      gimple phi = gsi_stmt (psi);
+      gphi *phi = psi.phi ();
       tree res = PHI_RESULT (phi);
       bool uns;
 
@@ -1387,7 +1391,7 @@ canonicalize_loop_ivs (struct loop *loop, tree *nit, bool bump_in_latch)
 
   rewrite_all_phi_nodes_with_iv (loop, var_before);
 
-  stmt = last_stmt (exit->src);
+  stmt = as_a <gcond *> (last_stmt (exit->src));
   /* Make the loop exit if the control condition is not satisfied.  */
   if (exit->flags & EDGE_TRUE_VALUE)
     {

@@ -353,25 +353,24 @@ pass_build_cgraph_edges::execute (function *fun)
 	  if (is_gimple_debug (stmt))
 	    continue;
 
-	  if (is_gimple_call (stmt))
+	  if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	    {
 	      int freq = compute_call_stmt_bb_frequency (current_function_decl,
 							 bb);
-	      decl = gimple_call_fndecl (stmt);
+	      decl = gimple_call_fndecl (call_stmt);
 	      if (decl)
-		node->create_edge (cgraph_node::get_create (decl), stmt, bb->count, freq);
-	      else if (gimple_call_internal_p (stmt))
+		node->create_edge (cgraph_node::get_create (decl), call_stmt, bb->count, freq);
+	      else if (gimple_call_internal_p (call_stmt))
 		;
 	      else
-		node->create_indirect_edge (stmt,
-					    gimple_call_flags (stmt),
+		node->create_indirect_edge (call_stmt,
+					    gimple_call_flags (call_stmt),
 					    bb->count, freq);
 	    }
 	  node->record_stmt_references (stmt);
-	  if (gimple_code (stmt) == GIMPLE_OMP_PARALLEL
-	      && gimple_omp_parallel_child_fn (stmt))
+	  if (gomp_parallel *omp_par_stmt = dyn_cast <gomp_parallel *> (stmt))
 	    {
-	      tree fn = gimple_omp_parallel_child_fn (stmt);
+	      tree fn = gimple_omp_parallel_child_fn (omp_par_stmt);
 	      node->create_reference (cgraph_node::get_create (fn),
 				      IPA_REF_ADDR, stmt);
 	    }
@@ -449,19 +448,19 @@ cgraph_edge::rebuild_edges (void)
 	  gimple stmt = gsi_stmt (gsi);
 	  tree decl;
 
-	  if (is_gimple_call (stmt))
+	  if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	    {
 	      int freq = compute_call_stmt_bb_frequency (current_function_decl,
 							 bb);
-	      decl = gimple_call_fndecl (stmt);
+	      decl = gimple_call_fndecl (call_stmt);
 	      if (decl)
-		node->create_edge (cgraph_node::get_create (decl), stmt,
+		node->create_edge (cgraph_node::get_create (decl), call_stmt,
 				   bb->count, freq);
-	      else if (gimple_call_internal_p (stmt))
+	      else if (gimple_call_internal_p (call_stmt))
 		;
 	      else
-		node->create_indirect_edge (stmt,
-					    gimple_call_flags (stmt),
+		node->create_indirect_edge (call_stmt,
+					    gimple_call_flags (call_stmt),
 					    bb->count, freq);
 	    }
 	  node->record_stmt_references (stmt);

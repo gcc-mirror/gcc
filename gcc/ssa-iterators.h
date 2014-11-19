@@ -194,7 +194,9 @@ struct ssa_op_iter
    a real stmt or a PHI node, looking at the USE nodes matching FLAGS.  */
 #define FOR_EACH_PHI_OR_STMT_USE(USEVAR, STMT, ITER, FLAGS)	\
   for ((USEVAR) = (gimple_code (STMT) == GIMPLE_PHI 		\
-		   ? op_iter_init_phiuse (&(ITER), STMT, FLAGS)	\
+		   ? op_iter_init_phiuse (&(ITER),              \
+					  as_a <gphi *> (STMT), \
+					  FLAGS)		\
 		   : op_iter_init_use (&(ITER), STMT, FLAGS));	\
        !op_iter_done (&(ITER));					\
        (USEVAR) = op_iter_next_use (&(ITER)))
@@ -203,7 +205,9 @@ struct ssa_op_iter
    a real stmt or a PHI node, looking at the DEF nodes matching FLAGS.  */
 #define FOR_EACH_PHI_OR_STMT_DEF(DEFVAR, STMT, ITER, FLAGS)	\
   for ((DEFVAR) = (gimple_code (STMT) == GIMPLE_PHI 		\
-		   ? op_iter_init_phidef (&(ITER), STMT, FLAGS)	\
+		   ? op_iter_init_phidef (&(ITER),		\
+					  as_a <gphi *> (STMT), \
+					  FLAGS)		\
 		   : op_iter_init_def (&(ITER), STMT, FLAGS));	\
        !op_iter_done (&(ITER));					\
        (DEFVAR) = op_iter_next_def (&(ITER)))
@@ -610,7 +614,7 @@ op_iter_init (ssa_op_iter *ptr, gimple stmt, int flags)
 	    ptr->numops = 1;
 	    break;
 	  case GIMPLE_ASM:
-	    ptr->numops = gimple_asm_noutputs (stmt);
+	    ptr->numops = gimple_asm_noutputs (as_a <gasm *> (stmt));
 	    break;
 	  default:
 	    ptr->numops = 0;
@@ -749,7 +753,7 @@ num_ssa_operands (gimple stmt, int flags)
 /* If there is a single DEF in the PHI node which matches FLAG, return it.
    Otherwise return NULL_DEF_OPERAND_P.  */
 static inline tree
-single_phi_def (gimple stmt, int flags)
+single_phi_def (gphi *stmt, int flags)
 {
   tree def = PHI_RESULT (stmt);
   if ((flags & SSA_OP_DEF) && is_gimple_reg (def))
@@ -762,7 +766,7 @@ single_phi_def (gimple stmt, int flags)
 /* Initialize the iterator PTR for uses matching FLAGS in PHI.  FLAGS should
    be either SSA_OP_USES or SSA_OP_VIRTUAL_USES.  */
 static inline use_operand_p
-op_iter_init_phiuse (ssa_op_iter *ptr, gimple phi, int flags)
+op_iter_init_phiuse (ssa_op_iter *ptr, gphi *phi, int flags)
 {
   tree phi_def = gimple_phi_result (phi);
   int comp;
@@ -792,7 +796,7 @@ op_iter_init_phiuse (ssa_op_iter *ptr, gimple phi, int flags)
 /* Start an iterator for a PHI definition.  */
 
 static inline def_operand_p
-op_iter_init_phidef (ssa_op_iter *ptr, gimple phi, int flags)
+op_iter_init_phidef (ssa_op_iter *ptr, gphi *phi, int flags)
 {
   tree phi_def = PHI_RESULT (phi);
   int comp;
@@ -881,9 +885,9 @@ link_use_stmts_after (use_operand_p head, imm_use_iterator *imm)
   /* Only look at virtual or real uses, depending on the type of HEAD.  */
   flag = (is_gimple_reg (use) ? SSA_OP_USE : SSA_OP_VIRTUAL_USES);
 
-  if (gimple_code (head_stmt) == GIMPLE_PHI)
+  if (gphi *phi = dyn_cast <gphi *> (head_stmt))
     {
-      FOR_EACH_PHI_ARG (use_p, head_stmt, op_iter, flag)
+      FOR_EACH_PHI_ARG (use_p, phi, op_iter, flag)
 	if (USE_FROM_PTR (use_p) == use)
 	  last_p = move_use_after_head (use_p, head, last_p);
     }

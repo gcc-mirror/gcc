@@ -1,3 +1,10 @@
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	Merger of git branch "gimple-classes-v2-option-3".
+	* ChangeLog.gimple-classes: New.
+	* java-gimplify.c (java_gimplify_block): Strengthen local "outer"
+	from gimple to gbind *.
+
 2014-11-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc/ChangeLog.jit: New.

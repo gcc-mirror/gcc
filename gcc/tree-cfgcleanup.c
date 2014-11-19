@@ -123,7 +123,7 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
 	  break;
 
 	case GIMPLE_SWITCH:
-	  val = gimple_switch_index (stmt);
+	  val = gimple_switch_index (as_a <gswitch *> (stmt));
 	  break;
 
 	default:
@@ -319,7 +319,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
       switch (gimple_code (stmt))
 	{
 	case GIMPLE_LABEL:
-	  if (DECL_NONLOCAL (gimple_label_label (stmt)))
+	  if (DECL_NONLOCAL (gimple_label_label (as_a <glabel *> (stmt))))
 	    return false;
 	  if (optimize == 0 && gimple_location (stmt) != locus)
 	    return false;
@@ -377,11 +377,11 @@ phi_alternatives_equal (basic_block dest, edge e1, edge e2)
 {
   int n1 = e1->dest_idx;
   int n2 = e2->dest_idx;
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
 
   for (gsi = gsi_start_phis (dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       tree val1 = gimple_phi_arg_def (phi, n1);
       tree val2 = gimple_phi_arg_def (phi, n2);
 
@@ -416,11 +416,11 @@ remove_forwarder_block (basic_block bb)
   /* If the destination block consists of a nonlocal label or is a
      EH landing pad, do not merge it.  */
   label = first_stmt (dest);
-  if (label
-      && gimple_code (label) == GIMPLE_LABEL
-      && (DECL_NONLOCAL (gimple_label_label (label))
-	  || EH_LANDING_PAD_NR (gimple_label_label (label)) != 0))
-    return false;
+  if (label)
+    if (glabel *label_stmt = dyn_cast <glabel *> (label))
+      if (DECL_NONLOCAL (gimple_label_label (label_stmt))
+	  || EH_LANDING_PAD_NR (gimple_label_label (label_stmt)) != 0)
+	return false;
 
   /* If there is an abnormal edge to basic block BB, but not into
      dest, problems might occur during removal of the phi node at out
@@ -478,11 +478,11 @@ remove_forwarder_block (basic_block bb)
 	{
 	  /* Create arguments for the phi nodes, since the edge was not
 	     here before.  */
-	  for (gsi = gsi_start_phis (dest);
-	       !gsi_end_p (gsi);
-	       gsi_next (&gsi))
+	  for (gphi_iterator psi = gsi_start_phis (dest);
+	       !gsi_end_p (psi);
+	       gsi_next (&psi))
 	    {
-	      gimple phi = gsi_stmt (gsi);
+	      gphi *phi = psi.phi ();
 	      source_location l = gimple_phi_arg_location_from_edge (phi, succ);
 	      tree def = gimple_phi_arg_def (phi, succ->dest_idx);
 	      add_phi_arg (phi, unshare_expr (def), s, l);
@@ -502,7 +502,7 @@ remove_forwarder_block (basic_block bb)
       label = gsi_stmt (gsi);
       if (is_gimple_debug (label))
 	break;
-      decl = gimple_label_label (label);
+      decl = gimple_label_label (as_a <glabel *> (label));
       if (EH_LANDING_PAD_NR (decl) != 0
 	  || DECL_NONLOCAL (decl)
 	  || FORCED_LABEL (decl)
@@ -828,10 +828,10 @@ remove_forwarder_block_with_phi (basic_block bb)
   /* If the destination block consists of a nonlocal label, do not
      merge it.  */
   label = first_stmt (dest);
-  if (label
-      && gimple_code (label) == GIMPLE_LABEL
-      && DECL_NONLOCAL (gimple_label_label (label)))
-    return false;
+  if (label)
+    if (glabel *label_stmt = dyn_cast <glabel *> (label))
+      if (DECL_NONLOCAL (gimple_label_label (label_stmt)))
+	return false;
 
   /* Record BB's single pred in case we need to update the father
      loop's latch information later.  */
@@ -843,7 +843,7 @@ remove_forwarder_block_with_phi (basic_block bb)
   while (EDGE_COUNT (bb->preds) > 0)
     {
       edge e = EDGE_PRED (bb, 0), s;
-      gimple_stmt_iterator gsi;
+      gphi_iterator gsi;
 
       s = find_edge (e->src, dest);
       if (s)
@@ -875,7 +875,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 	   !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  tree def = gimple_phi_arg_def (phi, succ->dest_idx);
 	  source_location locus = gimple_phi_arg_location_from_edge (phi, succ);
 
@@ -1023,7 +1023,7 @@ pass_merge_phi::execute (function *fun)
 	}
       else
 	{
-	  gimple_stmt_iterator gsi;
+	  gphi_iterator gsi;
 	  unsigned int dest_idx = single_succ_edge (bb)->dest_idx;
 
 	  /* BB dominates DEST.  There may be many users of the PHI
@@ -1034,7 +1034,7 @@ pass_merge_phi::execute (function *fun)
 	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 	       gsi_next (&gsi))
 	    {
-	      gimple phi = gsi_stmt (gsi);
+	      gphi *phi = gsi.phi ();
 	      tree result = gimple_phi_result (phi);
 	      use_operand_p imm_use;
 	      gimple use_stmt;

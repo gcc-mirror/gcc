@@ -593,13 +593,13 @@ eliminate_build (elim_graph g)
 {
   tree Ti;
   int p0, pi;
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
 
   clear_elim_graph (g);
 
   for (gsi = gsi_start_phis (g->e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       source_location locus;
 
       p0 = var_to_partition (g->map, gimple_phi_result (phi));
@@ -800,7 +800,7 @@ eliminate_phi (edge e, elim_graph g)
    check to see if this allows another PHI node to be removed.  */
 
 static void
-remove_gimple_phi_args (gimple phi)
+remove_gimple_phi_args (gphi *phi)
 {
   use_operand_p arg_p;
   ssa_op_iter iter;
@@ -828,7 +828,7 @@ remove_gimple_phi_args (gimple phi)
 	      /* Also remove the def if it is a PHI node.  */
 	      if (gimple_code (stmt) == GIMPLE_PHI)
 		{
-		  remove_gimple_phi_args (stmt);
+		  remove_gimple_phi_args (as_a <gphi *> (stmt));
 		  gsi = gsi_for_stmt (stmt);
 		  remove_phi_node (&gsi, true);
 		}
@@ -844,14 +844,14 @@ static void
 eliminate_useless_phis (void)
 {
   basic_block bb;
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
   tree result;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); )
         {
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  result = gimple_phi_result (phi);
 	  if (virtual_operand_p (result))
 	    {
@@ -907,10 +907,10 @@ rewrite_trees (var_map map ATTRIBUTE_UNUSED)
      create incorrect code.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple_stmt_iterator gsi;
+      gphi_iterator gsi;
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  tree T0 = var_to_partition_to_var (map, gimple_phi_result (phi));
 	  if (T0 == NULL_TREE)
 	    {
@@ -1109,7 +1109,7 @@ static void
 insert_backedge_copies (void)
 {
   basic_block bb;
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
 
   mark_dfs_back_edges ();
 
@@ -1120,7 +1120,7 @@ insert_backedge_copies (void)
 
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  tree result = gimple_phi_result (phi);
 	  size_t i;
 
@@ -1142,7 +1142,8 @@ insert_backedge_copies (void)
 		      || trivially_conflicts_p (bb, result, arg)))
 		{
 		  tree name;
-		  gimple stmt, last = NULL;
+		  gassign *stmt;
+		  gimple last = NULL;
 		  gimple_stmt_iterator gsi2;
 
 		  gsi2 = gsi_last_bb (gimple_phi_arg_edge (phi, i)->src);

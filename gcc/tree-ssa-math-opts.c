@@ -367,7 +367,7 @@ insert_reciprocals (gimple_stmt_iterator *def_gsi, struct occurrence *occ,
 		    tree def, tree recip_def, int threshold)
 {
   tree type;
-  gimple new_stmt;
+  gassign *new_stmt;
   gimple_stmt_iterator gsi;
   struct occurrence *occ_child;
 
@@ -577,20 +577,20 @@ pass_cse_reciprocals::execute (function *fun)
 
   FOR_EACH_BB_FN (bb, fun)
     {
-      gimple_stmt_iterator gsi;
-      gimple phi;
       tree def;
 
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
-	  phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  def = PHI_RESULT (phi);
 	  if (! virtual_operand_p (def)
 	      && FLOAT_TYPE_P (TREE_TYPE (def)))
 	    execute_cse_reciprocals_1 (NULL, def);
 	}
 
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_after_labels (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
         {
 	  gimple stmt = gsi_stmt (gsi);
 
@@ -605,7 +605,8 @@ pass_cse_reciprocals::execute (function *fun)
         continue;
 
       /* Scan for a/func(b) and convert it to reciprocal a*rfunc(b).  */
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_after_labels (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
         {
 	  gimple stmt = gsi_stmt (gsi);
 	  tree fndecl;
@@ -983,7 +984,7 @@ powi_as_mults_1 (gimple_stmt_iterator *gsi, location_t loc, tree type,
 {
   tree op0, op1, ssa_target;
   unsigned HOST_WIDE_INT digit;
-  gimple mult_stmt;
+  gassign *mult_stmt;
 
   if (n < POWI_TABLE_SIZE && cache[n])
     return cache[n];
@@ -1023,7 +1024,7 @@ powi_as_mults (gimple_stmt_iterator *gsi, location_t loc,
 	       tree arg0, HOST_WIDE_INT n)
 {
   tree cache[POWI_TABLE_SIZE], result, type = TREE_TYPE (arg0);
-  gimple div_stmt;
+  gassign *div_stmt;
   tree target;
 
   if (n == 0)
@@ -1076,7 +1077,7 @@ static tree
 build_and_insert_call (gimple_stmt_iterator *gsi, location_t loc,
 		       tree fn, tree arg)
 {
-  gimple call_stmt;
+  gcall *call_stmt;
   tree ssa_target;
 
   call_stmt = gimple_build_call (fn, 1, arg);
@@ -1099,7 +1100,7 @@ build_and_insert_binop (gimple_stmt_iterator *gsi, location_t loc,
 			tree arg0, tree arg1)
 {
   tree result = make_temp_ssa_name (TREE_TYPE (arg0), NULL, name);
-  gimple stmt = gimple_build_assign_with_ops (code, result, arg0, arg1);
+  gassign *stmt = gimple_build_assign_with_ops (code, result, arg0, arg1);
   gimple_set_location (stmt, loc);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
   return result;
@@ -1129,7 +1130,7 @@ build_and_insert_cast (gimple_stmt_iterator *gsi, location_t loc,
 		       tree type, tree val)
 {
   tree result = make_ssa_name (type, NULL);
-  gimple stmt = gimple_build_assign_with_ops (NOP_EXPR, result, val);
+  gassign *stmt = gimple_build_assign_with_ops (NOP_EXPR, result, val);
   gimple_set_location (stmt, loc);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
   return result;
@@ -1506,7 +1507,7 @@ pass_cse_sincos::execute (function *fun)
 		  if (result)
 		    {
 		      tree lhs = gimple_get_lhs (stmt);
-		      gimple new_stmt = gimple_build_assign (lhs, result);
+		      gassign *new_stmt = gimple_build_assign (lhs, result);
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
@@ -1524,7 +1525,7 @@ pass_cse_sincos::execute (function *fun)
 		  if (real_minus_onep (arg0))
 		    {
                       tree t0, t1, cond, one, minus_one;
-		      gimple stmt;
+		      gassign *stmt;
 
 		      t0 = TREE_TYPE (arg0);
 		      t1 = TREE_TYPE (arg1);
@@ -1558,7 +1559,7 @@ pass_cse_sincos::execute (function *fun)
 		  if (result)
 		    {
 		      tree lhs = gimple_get_lhs (stmt);
-		      gimple new_stmt = gimple_build_assign (lhs, result);
+		      gassign *new_stmt = gimple_build_assign (lhs, result);
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
@@ -1576,7 +1577,7 @@ pass_cse_sincos::execute (function *fun)
 		  if (result)
 		    {
 		      tree lhs = gimple_get_lhs (stmt);
-		      gimple new_stmt = gimple_build_assign (lhs, result);
+		      gassign *new_stmt = gimple_build_assign (lhs, result);
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
@@ -2986,7 +2987,8 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 {
   tree mul_result = gimple_get_lhs (mul_stmt);
   tree type = TREE_TYPE (mul_result);
-  gimple use_stmt, neguse_stmt, fma_stmt;
+  gimple use_stmt, neguse_stmt;
+  gassign *fma_stmt;
   use_operand_p use_p;
   imm_use_iterator imm_iter;
 

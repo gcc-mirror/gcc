@@ -161,7 +161,7 @@ public:
 
   /* Verifies for given GIMPLEs S1 and S2 that
      call statements are semantically equivalent.  */
-  bool compare_gimple_call (gimple s1, gimple s2);
+  bool compare_gimple_call (gcall *s1, gcall *s2);
 
   /* Verifies for given GIMPLEs S1 and S2 that
      assignment statements are semantically equivalent.  */
@@ -171,30 +171,31 @@ public:
      condition statements are semantically equivalent.  */
   bool compare_gimple_cond (gimple s1, gimple s2);
 
-  /* Verifies for given GIMPLEs S1 and S2 that
+  /* Verifies for given GIMPLE_LABEL stmts S1 and S2 that
      label statements are semantically equivalent.  */
-  bool compare_gimple_label (gimple s1, gimple s2);
+  bool compare_gimple_label (const glabel *s1, const glabel *s2);
 
-  /* Verifies for given GIMPLEs S1 and S2 that
+  /* Verifies for given GIMPLE_SWITCH stmts S1 and S2 that
      switch statements are semantically equivalent.  */
-  bool compare_gimple_switch (gimple s1, gimple s2);
+  bool compare_gimple_switch (const gswitch *s1, const gswitch *s2);
 
-  /* Verifies for given GIMPLEs S1 and S2 that
+  /* Verifies for given GIMPLE_RETURN stmts S1 and S2 that
      return statements are semantically equivalent.  */
-  bool compare_gimple_return (gimple s1, gimple s2);
+  bool compare_gimple_return (const greturn *s1, const greturn *s2);
 
   /* Verifies for given GIMPLEs S1 and S2 that
      goto statements are semantically equivalent.  */
   bool compare_gimple_goto (gimple s1, gimple s2);
 
-  /* Verifies for given GIMPLEs S1 and S2 that
+  /* Verifies for given GIMPLE_RESX stmts S1 and S2 that
      resx statements are semantically equivalent.  */
-  bool compare_gimple_resx (gimple s1, gimple s2);
+  bool compare_gimple_resx (const gresx *s1, const gresx *s2);
 
-  /* Verifies for given GIMPLEs S1 and S2 that ASM statements are equivalent.
+  /* Verifies for given GIMPLE_ASM stmts S1 and S2 that ASM statements
+     are equivalent.
      For the beginning, the pass only supports equality for
      '__asm__ __volatile__ ("", "", "", "memory")'.  */
-  bool compare_gimple_asm (gimple s1, gimple s2);
+  bool compare_gimple_asm (const gasm *s1, const gasm *s2);
 
   /* Verification function for declaration trees T1 and T2.  */
   bool compare_decl (tree t1, tree t2);

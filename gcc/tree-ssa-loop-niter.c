@@ -156,7 +156,7 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
     {
       edge e = loop_preheader_edge (loop);
       signop sgn = TYPE_SIGN (type);
-      gimple_stmt_iterator gsi;
+      gphi_iterator gsi;
 
       /* Either for VAR itself...  */
       rtype = get_range_info (var, &minv, &maxv);
@@ -164,7 +164,7 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 	 PHI argument from the loop preheader edge.  */
       for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  wide_int minc, maxc;
 	  if (PHI_ARG_DEF_FROM_EDGE (phi, e) == var
 	      && (get_range_info (gimple_phi_result (phi), &minc, &maxc)
@@ -1931,7 +1931,8 @@ number_of_iterations_exit (struct loop *loop, edge exit,
 			   struct tree_niter_desc *niter,
 			   bool warn, bool every_iteration)
 {
-  gimple stmt;
+  gimple last;
+  gcond *stmt;
   tree type;
   tree op0, op1;
   enum tree_code code;
@@ -1944,8 +1945,11 @@ number_of_iterations_exit (struct loop *loop, edge exit,
     return false;
 
   niter->assumptions = boolean_false_node;
-  stmt = last_stmt (exit->src);
-  if (!stmt || gimple_code (stmt) != GIMPLE_COND)
+  last = last_stmt (exit->src);
+  if (!last)
+    return false;
+  stmt = dyn_cast <gcond *> (last);
+  if (!stmt)
     return false;
 
   /* We want the condition for staying inside loop.  */
@@ -2164,7 +2168,7 @@ finite_loop_p (struct loop *loop)
    result by a chain of operations such that all but exactly one of their
    operands are constants.  */
 
-static gimple
+static gphi *
 chain_of_csts_start (struct loop *loop, tree x)
 {
   gimple stmt = SSA_NAME_DEF_STMT (x);
@@ -2179,7 +2183,7 @@ chain_of_csts_start (struct loop *loop, tree x)
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
       if (bb == loop->header)
-	return stmt;
+	return as_a <gphi *> (stmt);
 
       return NULL;
     }
@@ -2212,10 +2216,10 @@ chain_of_csts_start (struct loop *loop, tree x)
 
    If such phi node exists, it is returned, otherwise NULL is returned.  */
 
-static gimple
+static gphi *
 get_base_for (struct loop *loop, tree x)
 {
-  gimple phi;
+  gphi *phi;
   tree init, next;
 
   if (is_gimple_min_invariant (x))
@@ -2306,7 +2310,8 @@ loop_niter_by_eval (struct loop *loop, edge exit)
 {
   tree acnd;
   tree op[2], val[2], next[2], aval[2];
-  gimple phi, cond;
+  gphi *phi;
+  gimple cond;
   unsigned i, j;
   enum tree_code cmp;
 

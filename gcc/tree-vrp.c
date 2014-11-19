@@ -181,7 +181,7 @@ static bool values_propagated;
 static int *vr_phi_edge_counts;
 
 typedef struct {
-  gimple stmt;
+  gswitch *stmt;
   tree vec;
 } switch_update;
 
@@ -3690,7 +3690,7 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
    the ranges of each of its operands and the expression code.  */
 
 static void
-extract_range_from_cond_expr (value_range_t *vr, gimple stmt)
+extract_range_from_cond_expr (value_range_t *vr, gassign *stmt)
 {
   tree op0, op1;
   value_range_t vr0 = VR_INITIALIZER;
@@ -4184,7 +4184,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
    in *VR.  */
 
 static void
-extract_range_from_assignment (value_range_t *vr, gimple stmt)
+extract_range_from_assignment (value_range_t *vr, gassign *stmt)
 {
   enum tree_code code = gimple_assign_rhs_code (stmt);
 
@@ -4802,7 +4802,7 @@ static gimple
 build_assert_expr_for (tree cond, tree v)
 {
   tree a;
-  gimple assertion;
+  gassign *assertion;
 
   gcc_assert (TREE_CODE (v) == SSA_NAME
 	      && COMPARISON_CLASS_P (cond));
@@ -5869,7 +5869,7 @@ register_edge_assert_for (tree name, edge e, gimple_stmt_iterator si,
    list of assertions for the corresponding operands.  */
 
 static void
-find_conditional_asserts (basic_block bb, gimple last)
+find_conditional_asserts (basic_block bb, gcond *last)
 {
   gimple_stmt_iterator bsi;
   tree op;
@@ -5941,7 +5941,7 @@ compare_case_labels (const void *p1, const void *p2)
    list of assertions for the corresponding operands.  */
 
 static void
-find_switch_asserts (basic_block bb, gimple last)
+find_switch_asserts (basic_block bb, gswitch *last)
 {
   gimple_stmt_iterator bsi;
   tree op;
@@ -6079,7 +6079,6 @@ find_switch_asserts (basic_block bb, gimple last)
 static void
 find_assert_locations_1 (basic_block bb, sbitmap live)
 {
-  gimple_stmt_iterator si;
   gimple last;
 
   last = last_stmt (bb);
@@ -6090,18 +6089,19 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
       && gimple_code (last) == GIMPLE_COND
       && !fp_predicate (last)
       && !ZERO_SSA_OPERANDS (last, SSA_OP_USE))
-    find_conditional_asserts (bb, last);
+    find_conditional_asserts (bb, as_a <gcond *> (last));
 
   /* If BB's last statement is a switch statement involving integer
      operands, determine if we need to add ASSERT_EXPRs.  */
   if (last
       && gimple_code (last) == GIMPLE_SWITCH
       && !ZERO_SSA_OPERANDS (last, SSA_OP_USE))
-    find_switch_asserts (bb, last);
+    find_switch_asserts (bb, as_a <gswitch *> (last));
 
   /* Traverse all the statements in BB marking used names and looking
      for statements that may infer assertions for their used operands.  */
-  for (si = gsi_last_bb (bb); !gsi_end_p (si); gsi_prev (&si))
+  for (gimple_stmt_iterator si = gsi_last_bb (bb); !gsi_end_p (si);
+       gsi_prev (&si))
     {
       gimple stmt;
       tree op;
@@ -6171,11 +6171,12 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
     }
 
   /* Traverse all PHI nodes in BB, updating live.  */
-  for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+  for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
+       gsi_next (&si))
     {
       use_operand_p arg_p;
       ssa_op_iter i;
-      gimple phi = gsi_stmt (si);
+      gphi *phi = si.phi ();
       tree res = gimple_phi_result (phi);
 
       if (virtual_operand_p (res))
@@ -6216,10 +6217,10 @@ find_assert_locations (void)
     {
       i = loop->latch->index;
       unsigned int j = single_succ_edge (loop->latch)->dest_idx;
-      for (gimple_stmt_iterator gsi = gsi_start_phis (loop->header);
+      for (gphi_iterator gsi = gsi_start_phis (loop->header);
 	   !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  if (virtual_operand_p (gimple_phi_result (phi)))
 	    continue;
 	  tree arg = gimple_phi_arg_def (phi, j);
@@ -6971,11 +6972,10 @@ vrp_initialize (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple_stmt_iterator si;
-
-      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+      for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
+	   gsi_next (&si))
 	{
-	  gimple phi = gsi_stmt (si);
+	  gphi *phi = si.phi ();
 	  if (!stmt_interesting_for_vrp (phi))
 	    {
 	      tree lhs = PHI_RESULT (phi);
@@ -6986,7 +6986,8 @@ vrp_initialize (void)
 	    prop_set_simulate_again (phi, true);
 	}
 
-      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+      for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
+	   gsi_next (&si))
         {
 	  gimple stmt = gsi_stmt (si);
 
@@ -7077,7 +7078,7 @@ vrp_visit_assignment_or_call (gimple stmt, tree *output_p)
       else if (code == GIMPLE_CALL)
 	extract_range_basic (&new_vr, stmt);
       else
-	extract_range_from_assignment (&new_vr, stmt);
+	extract_range_from_assignment (&new_vr, as_a <gassign *> (stmt));
 
       if (update_value_range (lhs, &new_vr))
 	{
@@ -7478,7 +7479,7 @@ vrp_evaluate_conditional (enum tree_code code, tree op0, tree op1, gimple stmt)
    SSA_PROP_VARYING.  */
 
 static enum ssa_prop_result
-vrp_visit_cond_stmt (gimple stmt, edge *taken_edge_p)
+vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
 {
   tree val;
   bool sop;
@@ -7593,7 +7594,7 @@ vrp_visit_cond_stmt (gimple stmt, edge *taken_edge_p)
    returned. */
 
 static bool
-find_case_label_index (gimple stmt, size_t start_idx, tree val, size_t *idx)
+find_case_label_index (gswitch *stmt, size_t start_idx, tree val, size_t *idx)
 {
   size_t n = gimple_switch_num_labels (stmt);
   size_t low, high;
@@ -7643,7 +7644,7 @@ find_case_label_index (gimple stmt, size_t start_idx, tree val, size_t *idx)
    Returns true if the default label is not needed. */
 
 static bool
-find_case_label_range (gimple stmt, tree min, tree max, size_t *min_idx,
+find_case_label_range (gswitch *stmt, tree min, tree max, size_t *min_idx,
 		       size_t *max_idx)
 {
   size_t i, j;
@@ -7699,7 +7700,7 @@ find_case_label_range (gimple stmt, tree min, tree max, size_t *min_idx,
    Returns true if the default label is not needed.  */
 
 static bool
-find_case_label_ranges (gimple stmt, value_range_t *vr, size_t *min_idx1,
+find_case_label_ranges (gswitch *stmt, value_range_t *vr, size_t *min_idx1,
 			size_t *max_idx1, size_t *min_idx2,
 			size_t *max_idx2)
 {
@@ -7777,7 +7778,7 @@ find_case_label_ranges (gimple stmt, value_range_t *vr, size_t *min_idx1,
    SSA_PROP_VARYING.  */
 
 static enum ssa_prop_result
-vrp_visit_switch_stmt (gimple stmt, edge *taken_edge_p)
+vrp_visit_switch_stmt (gswitch *stmt, edge *taken_edge_p)
 {
   tree op, val;
   value_range_t *vr;
@@ -7890,9 +7891,9 @@ vrp_visit_stmt (gimple stmt, edge *taken_edge_p, tree *output_p)
   else if (is_gimple_assign (stmt) || is_gimple_call (stmt))
     return vrp_visit_assignment_or_call (stmt, output_p);
   else if (gimple_code (stmt) == GIMPLE_COND)
-    return vrp_visit_cond_stmt (stmt, taken_edge_p);
+    return vrp_visit_cond_stmt (as_a <gcond *> (stmt), taken_edge_p);
   else if (gimple_code (stmt) == GIMPLE_SWITCH)
-    return vrp_visit_switch_stmt (stmt, taken_edge_p);
+    return vrp_visit_switch_stmt (as_a <gswitch *> (stmt), taken_edge_p);
 
   /* All other statements produce nothing of interest for VRP, so mark
      their outputs varying and prevent further simulation.  */
@@ -8627,7 +8628,7 @@ vrp_meet (value_range_t *vr0, value_range_t *vr1)
    value ranges, set a new range for the LHS of PHI.  */
 
 static enum ssa_prop_result
-vrp_visit_phi_node (gimple phi)
+vrp_visit_phi_node (gphi *phi)
 {
   size_t i;
   tree lhs = PHI_RESULT (phi);
@@ -8884,7 +8885,8 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
   else if (need_conversion)
     {
       tree tem = make_ssa_name (TREE_TYPE (op0), NULL);
-      gimple newop = gimple_build_assign_with_ops (BIT_XOR_EXPR, tem, op0, op1);
+      gassign *newop
+	= gimple_build_assign_with_ops (BIT_XOR_EXPR, tem, op0, op1);
       gsi_insert_before (gsi, newop, GSI_SAME_STMT);
       gimple_assign_set_rhs_with_ops (gsi, NOP_EXPR, tem);
     }
@@ -9232,7 +9234,7 @@ range_fits_type_p (value_range_t *vr, unsigned dest_precision, signop dest_sgn)
    the original conditional.  */
 
 static bool
-simplify_cond_using_ranges (gimple stmt)
+simplify_cond_using_ranges (gcond *stmt)
 {
   tree op0 = gimple_cond_lhs (stmt);
   tree op1 = gimple_cond_rhs (stmt);
@@ -9379,7 +9381,7 @@ simplify_cond_using_ranges (gimple stmt)
    argument.  */
 
 static bool
-simplify_switch_using_ranges (gimple stmt)
+simplify_switch_using_ranges (gswitch *stmt)
 {
   tree op = gimple_switch_index (stmt);
   value_range_t *vr;
@@ -9563,7 +9565,7 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
   machine_mode fltmode = TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
   machine_mode mode;
   tree tem;
-  gimple conv;
+  gassign *conv;
 
   /* We can only handle constant ranges.  */
   if (vr->type != VR_RANGE
@@ -9785,9 +9787,9 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	}
     }
   else if (gimple_code (stmt) == GIMPLE_COND)
-    return simplify_cond_using_ranges (stmt);
+    return simplify_cond_using_ranges (as_a <gcond *> (stmt));
   else if (gimple_code (stmt) == GIMPLE_SWITCH)
-    return simplify_switch_using_ranges (stmt);
+    return simplify_switch_using_ranges (as_a <gswitch *> (stmt));
   else if (is_gimple_call (stmt)
 	   && gimple_call_internal_p (stmt))
     return simplify_internal_call_using_ranges (gsi, stmt);
@@ -9815,10 +9817,10 @@ fold_predicate_in (gimple_stmt_iterator *si)
 				      gimple_assign_rhs2 (stmt),
 				      stmt);
     }
-  else if (gimple_code (stmt) == GIMPLE_COND)
-    val = vrp_evaluate_conditional (gimple_cond_code (stmt),
-				    gimple_cond_lhs (stmt),
-				    gimple_cond_rhs (stmt),
+  else if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
+    val = vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
+				    gimple_cond_lhs (cond_stmt),
+				    gimple_cond_rhs (cond_stmt),
 				    stmt);
   else
     return false;
@@ -9842,10 +9844,11 @@ fold_predicate_in (gimple_stmt_iterator *si)
       else
 	{
 	  gcc_assert (gimple_code (stmt) == GIMPLE_COND);
+	  gcond *cond_stmt = as_a <gcond *> (stmt);
 	  if (integer_zerop (val))
-	    gimple_cond_make_false (stmt);
+	    gimple_cond_make_false (cond_stmt);
 	  else if (integer_onep (val))
-	    gimple_cond_make_true (stmt);
+	    gimple_cond_make_true (cond_stmt);
 	  else
 	    gcc_unreachable ();
 	}
@@ -9882,21 +9885,22 @@ static vec<tree> equiv_stack;
 static tree
 simplify_stmt_for_jump_threading (gimple stmt, gimple within_stmt)
 {
-  if (gimple_code (stmt) == GIMPLE_COND)
-    return vrp_evaluate_conditional (gimple_cond_code (stmt),
-				     gimple_cond_lhs (stmt),
-				     gimple_cond_rhs (stmt), within_stmt);
+  if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
+    return vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
+				     gimple_cond_lhs (cond_stmt),
+				     gimple_cond_rhs (cond_stmt),
+				     within_stmt);
 
-  if (gimple_code (stmt) == GIMPLE_ASSIGN)
+  if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))
     {
       value_range_t new_vr = VR_INITIALIZER;
-      tree lhs = gimple_assign_lhs (stmt);
+      tree lhs = gimple_assign_lhs (assign_stmt);
 
       if (TREE_CODE (lhs) == SSA_NAME
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 	      || POINTER_TYPE_P (TREE_TYPE (lhs))))
 	{
-	  extract_range_from_assignment (&new_vr, stmt);
+	  extract_range_from_assignment (&new_vr, assign_stmt);
 	  if (range_int_cst_singleton_p (&new_vr))
 	    return new_vr.min;
 	}
@@ -9929,7 +9933,7 @@ static void
 identify_jump_threads (void)
 {
   basic_block bb;
-  gimple dummy;
+  gcond *dummy;
   int i;
   edge e;
 

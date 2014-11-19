@@ -405,13 +405,13 @@ copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e)
   int tgt_idx = tgt_e->dest_idx;
 
   /* Iterate over each PHI in e->dest.  */
-  for (gimple_stmt_iterator gsi = gsi_start_phis (src_e->dest),
-			    gsi2 = gsi_start_phis (tgt_e->dest);
+  for (gphi_iterator gsi = gsi_start_phis (src_e->dest),
+			   gsi2 = gsi_start_phis (tgt_e->dest);
        !gsi_end_p (gsi);
        gsi_next (&gsi), gsi_next (&gsi2))
     {
-      gimple src_phi = gsi_stmt (gsi);
-      gimple dest_phi = gsi_stmt (gsi2);
+      gphi *src_phi = gsi.phi ();
+      gphi *dest_phi = gsi2.phi ();
       tree val = gimple_phi_arg_def (src_phi, src_idx);
       source_location locus = gimple_phi_arg_location (src_phi, src_idx);
 
@@ -430,14 +430,14 @@ get_value_locus_in_path (tree def, vec<jump_thread_edge *> *path,
 			 basic_block bb, int idx, source_location *locus)
 {
   tree arg;
-  gimple def_phi;
+  gphi *def_phi;
   basic_block def_bb;
 
   if (path == NULL || idx == 0)
     return def;
 
-  def_phi = SSA_NAME_DEF_STMT (def);
-  if (gimple_code (def_phi) != GIMPLE_PHI)
+  def_phi = dyn_cast <gphi *> (SSA_NAME_DEF_STMT (def));
+  if (!def_phi)
     return def;
 
   def_bb = gimple_bb (def_phi);
@@ -474,12 +474,12 @@ static void
 copy_phi_args (basic_block bb, edge src_e, edge tgt_e,
 	       vec<jump_thread_edge *> *path, int idx)
 {
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
   int src_indx = src_e->dest_idx;
 
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       tree def = gimple_phi_arg_def (phi, src_indx);
       source_location locus = gimple_phi_arg_location (phi, src_indx);
 
@@ -2068,13 +2068,13 @@ fail:
 static bool
 phi_args_equal_on_edges (edge e1, edge e2)
 {
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
   int indx1 = e1->dest_idx;
   int indx2 = e2->dest_idx;
 
   for (gsi = gsi_start_phis (e1->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
 
       if (!operand_equal_p (gimple_phi_arg_def (phi, indx1),
 			    gimple_phi_arg_def (phi, indx2), 0))

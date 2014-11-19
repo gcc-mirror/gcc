@@ -4339,7 +4339,7 @@ bump_vector_ptr (tree dataref_ptr, gimple ptr_incr, gimple_stmt_iterator *gsi,
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree update = TYPE_SIZE_UNIT (vectype);
-  gimple incr_stmt;
+  gassign *incr_stmt;
   ssa_op_iter iter;
   use_operand_p use_p;
   tree new_dataref_ptr;
@@ -4778,11 +4778,10 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
   gimple inc;
   tree ptr;
   tree data_ref;
-  gimple new_stmt;
   basic_block new_bb;
   tree msq_init = NULL_TREE;
   tree new_temp;
-  gimple phi_stmt;
+  gphi *phi_stmt;
   tree msq = NULL_TREE;
   gimple_seq stmts = NULL;
   bool inv_p;
@@ -4873,6 +4872,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
   if (alignment_support_scheme == dr_explicit_realign_optimized)
     {
       /* Create msq_init = *(floor(p1)) in the loop preheader  */
+      gassign *new_stmt;
 
       gcc_assert (!compute_in_loop);
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
@@ -4909,6 +4909,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
 
   if (targetm.vectorize.builtin_mask_for_load)
     {
+      gcall *new_stmt;
       tree builtin_decl;
 
       /* Compute INIT_ADDR - the initial addressed accessed by this memref.  */

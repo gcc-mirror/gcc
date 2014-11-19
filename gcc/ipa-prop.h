@@ -637,7 +637,7 @@ typedef vec<ipa_parm_adjustment> ipa_parm_adjustment_vec;
 vec<tree> ipa_get_vector_of_formal_parms (tree fndecl);
 vec<tree> ipa_get_vector_of_formal_parm_types (tree fntype);
 void ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec);
-void ipa_modify_call_arguments (struct cgraph_edge *, gimple,
+void ipa_modify_call_arguments (struct cgraph_edge *, gcall *,
 				ipa_parm_adjustment_vec);
 ipa_parm_adjustment_vec ipa_combine_adjustments (ipa_parm_adjustment_vec,
 						 ipa_parm_adjustment_vec);

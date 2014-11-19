@@ -1,0 +1,4735 @@
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple.h (struct gimple_statement_structure): Remove stray
+	newline.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple.c (gimple_build_assign_with_ops): Strengthen return type
+	of new overload, from gimple to gassign *.
+
+2014-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* cgraphbuild.c (pass_build_cgraph_edges::execute): Fix linebreak
+	at assignment statement.
+	* gimple-ssa-isolate-paths.c (find_implicit_erroneous_behaviour):
+	Likewise.
+	* gimple-ssa-strength-reduction.c (replace_one_candidate): Likewise.
+	* gimple-walk.c (walk_gimple_stmt): Likewise.
+	* gimple.c (gimple_build_return): Likewise.
+	(gimple_build_call_1): Likewise.
+	(gimple_build_call_internal_1): Likewise.
+	(gimple_build_label): Likewise.
+	(gimple_build_goto): Likewise.
+	(gimple_build_eh_filter): Likewise.
+	(gimple_build_eh_must_not_throw): Likewise.
+	(gimple_build_resx): Likewise.
+	(gimple_build_switch_nlabels): Likewise.
+	(gimple_build_eh_dispatch): Likewise.
+	(gimple_build_debug_bind_stat): Likewise.
+	(gimple_build_debug_source_bind_stat): Likewise.
+	(gimple_build_omp_critical): Likewise.
+	(gimple_build_omp_parallel): Likewise.
+	(gimple_build_omp_task): Likewise.
+	(gimple_build_omp_continue): Likewise.
+	(gimple_build_omp_sections): Likewise.
+	(gimple_build_omp_single): Likewise.
+	(gimple_build_omp_target): Likewise.
+	(gimple_build_omp_teams): Likewise.
+	(gimple_build_omp_atomic_load): Likewise.
+	(gimple_build_omp_atomic_store): Likewise.
+	(gimple_build_transaction): Likewise.
+	(gimple_copy): Likewise.
+	* gimple.h (gimple_call_fntype): Likewise.
+	(gimple_eh_filter_types): Likewise.
+	(gimple_eh_filter_types_ptr): Likewise.
+	(gimple_eh_filter_failure_ptr
+	(gimple_phi_capacity): Likewise.
+	(gimple_phi_num_args): Likewise.
+	(gimple_phi_result): Likewise.
+	(gimple_omp_for_clauses): Likewise.
+	(gimple_omp_for_clauses_ptr): Likewise.
+	(gimple_omp_for_set_clauses): Likewise.
+	(gimple_omp_for_collapse): Likewise.
+	(gimple_omp_for_index): Likewise.
+	(gimple_omp_for_index_ptr): Likewise.
+	(gimple_omp_for_set_index): Likewise.
+	(gimple_omp_for_initial): Likewise.
+	(gimple_omp_for_initial_ptr): Likewise.
+	(gimple_omp_for_set_initial): Likewise.
+	(gimple_omp_for_final): Likewise.
+	(gimple_omp_for_final_ptr): Likewise.
+	(gimple_omp_for_set_final): Likewise.
+	(gimple_omp_for_incr): Likewise.
+	(gimple_omp_for_incr_ptr): Likewise.
+	(gimple_omp_for_set_incr): Likewise.
+	(gimple_omp_for_pre_body_ptr): Likewise.
+	(gimple_omp_for_set_pre_body): Likewise.
+	(gimple_omp_parallel_clauses): Likewise.
+	(gimple_omp_task_clauses): Likewise.
+	(gimple_omp_task_clauses_ptr): Likewise.
+	(gimple_omp_task_set_clauses): Likewise.
+	(gimple_omp_task_child_fn): Likewise.
+	(gimple_omp_task_child_fn_ptr): Likewise.
+	(gimple_omp_task_set_child_fn): Likewise.
+	(gimple_omp_task_data_arg): Likewise.
+	(gimple_omp_task_data_arg_ptr): Likewise.
+	(gimple_omp_task_set_data_arg): Likewise.
+	(gimple_omp_taskreg_clauses): Likewise.
+	(gimple_omp_taskreg_clauses_ptr): Likewise.
+	(gimple_omp_taskreg_set_clauses): Likewise.
+	(gimple_omp_taskreg_child_fn): Likewise.
+	(gimple_omp_taskreg_child_fn_ptr): Likewise.
+	(gimple_omp_taskreg_set_child_fn): Likewise.
+	(gimple_omp_taskreg_data_arg): Likewise.
+	(gimple_omp_taskreg_data_arg_ptr): Likewise.
+	(gimple_omp_taskreg_set_data_arg): Likewise.
+	(gimple_omp_task_copy_fn): Likewise.
+	(gimple_omp_task_copy_fn_ptr): Likewise.
+	(gimple_omp_task_set_copy_fn): Likewise.
+	(gimple_omp_task_arg_size): Likewise.
+	(gimple_omp_task_arg_size_ptr): Likewise.
+	(gimple_omp_task_set_arg_size): Likewise.
+	(gimple_omp_task_arg_align): Likewise.
+	(gimple_omp_task_arg_align_ptr): Likewise.
+	(gimple_omp_task_set_arg_align): Likewise.
+	(gimple_omp_single_clauses): Likewise.
+	(gimple_omp_single_clauses_ptr): Likewise.
+	(gimple_omp_target_clauses): Likewise.
+	(gimple_omp_target_clauses_ptr): Likewise.
+	(gimple_omp_teams_clauses): Likewise.
+	(gimple_omp_teams_clauses_ptr): Likewise.
+	(gimple_omp_sections_clauses): Likewise.
+	(gimple_omp_sections_clauses_ptr): Likewise.
+	(gimple_omp_sections_set_clauses): Likewise.
+	(gimple_omp_sections_control): Likewise.
+	(gimple_omp_sections_control_ptr): Likewise.
+	(gimple_omp_sections_set_control): Likewise.
+	(gimple_omp_for_set_cond): Likewise.
+	(gimple_omp_for_cond): Likewise.
+	* graphite-sese-to-poly.c (follow_ssa_with_commutative_ops): Likewise.
+	(detect_commutative_reduction_assign): Likewise.
+	* ipa-split.c (verify_non_ssa_vars): Likewise.
+	(split_function): Likewise.
+	* omp-low.c (check_omp_nesting_restrictions): Likewise.
+	(remove_exit_barrier): Likewise.
+	(expand_omp_for_generic): Likewise.
+	(expand_omp_for_static_nochunk): Likewise.
+	(expand_omp_for_static_chunk): Likewise.
+	(expand_omp_atomic
+	(lower_omp_for): Likewise.
+	(lower_omp_taskreg): Likewise.
+	* predict.c (tree_estimate_probability_bb): Likewise.
+	* trans-mem.c (propagate_tm_flags_out): Likewise.
+	(execute_tm_mark): Likewise.
+	* tree-cfg.c (make_edges): Likewise.
+	* tree-inline.c (remap_gimple_stmt): Likewise.
+	(estimate_num_insns): Likewise.
+	* tree-sra.c (init_subtree_with_zero): Likewise.
+	(sra_modify_expr): Likewise.
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Likewise.
+	* tree-ssa-loop-ivopts.c (remove_unused_ivs): Likewise.
+	* tree-ssa-math-opts.c (build_and_insert_cast): Likewise.
+	(pass_cse_sincos::execute): Likewise.
+	* tree-ssa-pre.c (do_regular_insertion): Likewise.
+	(eliminate_insert): Likewise.
+	* tree-ssa-reassoc.c (update_ops): Likewise.
+	* tree-ssa-tail-merge.c (same_succ_hash): Likewise.
+	* tree-tailcall.c (static): Likewise.
+	* tree-vrp.c (simplify_truth_ops_using_ranges): Likewise.
+
+2014-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee):
+	Strengthen locals "dbndret" and "ibndret" from gimple to gcall *.
+	* gimple-iterator.c (gsi_for_phi): New function.
+	* gimple-iterator.h (gsi_for_phi): New prototype.
+	* internal-fn.c (expand_ADD_OVERFLOW): Strengthen param "stmt"
+	from gimple to gcall *.
+	(expand_SUB_OVERFLOW): Likewise.
+	(expand_MUL_OVERFLOW): Likewise.
+	* ipa-icf-gimple.c (func_checker::compare_bb): Add checked casts
+	within case GIMPLE_CALL.
+	(func_checker::compare_gimple_call): Strengthen params from gimple
+	to gcall *.
+	* ipa-icf-gimple.h (func_checker::compare_gimple_call): Likewise.
+	* sanopt.c (sanopt_optimize_walker): Replace check for GIMPLE_ASM
+	with a dyn_cast, introducing local "asm_stmt" and using it in
+	place of "stmt" for typesafety.
+	* tree-chkp.c (chkp_recompute_phi_bounds): Strengthen locals
+	"bounds_phi" and "ptr_phi" from gimple to gphi *.
+	(chkp_add_bounds_to_ret_stmt): Strengthen local "ret" from gimple
+	to greturn *.
+	(chkp_add_bounds_to_call_stmt): Strengthen locals "call" and
+	"new_call" from gimple to gcall *.
+	(chkp_build_returned_bound): Likewise for param "call".
+	(chkp_retbnd_call_by_val): Likewise for return type.
+	(chkp_get_bounds_by_definition): Strengthen param "iter" from
+	gimple_stmt_iterator * to gphi_iterator *.  Add a checked cast
+	within case GIMPLE_CALL.  Use gsi_for_phi rather than
+	gsi_for_stmt.
+	(chkp_find_bounds_1): Strengthen local "phi_iter" from
+	gimple_stmt_iterator to gphi_iterator.  Replace check for
+	GIMPLE_PHI with a dyn_cast, introducing local "def_phi" and using
+	in place of "def_stmt" for typesafety.
+	(chkp_copy_bounds_for_assign): Add checked cast.
+	(chkp_instrument_function): Within case GIMPLE_RETURN, add local
+	greturn * "r" from a checked cast and use in place of "s" for
+	typesafety.
+	* tree-chkp.h (chkp_retbnd_call_by_val): Strengthen return type
+	from gimple to gcall *.
+	* tree-inline.c (copy_bb): Update for renaming of field
+	"gimple_call" to "call_stmt" on the gimple-classes branch.
+	(expand_call_inline): Strengthen local "retbnc" from gimple to
+	gcall *.
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Replace check for
+	GIMPLE_COND with a dyn_cast, introducing local "cond" and using
+	in place of "stmt" for typesafety.
+	* value-prof.c (gimple_ic): Strengthen local "iretbnd_stmt" from
+	gimple to gcall *.  Weaken top-level local "psi" from
+	gphi_iterator back to gimple_stmt_iterator, reintroducing the
+	name as a phi_iterator within the for loop that needs it.
+
+2014-10-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* auto-profile.c (autofdo::function_instance::find_icall_target_map):
+	Strengthen param "stmt" from gimple to gcall *.
+	(autofdo::autofdo_source_profile::update_inlined_ind_target):
+	Likewise.
+	(autofdo::afdo_indirect_call): Rename local gimple "stmt" to "gs",
+	reintroducing "stmt" as a gcall * via a dyn_cast once we've
+	established that we have a GIMPLE_CALL.
+	(autofdo::afdo_set_bb_count): Use a gphi_iterator for the phi
+	iteration, renaming it from "gsi" to "gpi", strengthening
+	local "phi" from gimple to gphi *.
+	(autofdo::afdo_propagate_circuit): Rename local gimple "phi_stmt"
+	to "def_stmt".  Reintroduce "phi_stmt" as a gphi * via a dyn_cast
+	once we know we have a GIMPLE_PHI.
+	(autofdo::afdo_vpt_for_early_inline): Strengthen local "stmt" from
+	gimple to gcall *, using a dyn_cast.
+	* gimple-fold.c (replace_stmt_with_simplification): Replace check
+	against GIMPLE_COND with a dyn_cast <gcond *>, introducing local
+	"cond_stmt".  Use "cond_stmt" in place of "stmt" for typesafety.
+	* gimple-iterator.h (gsi_next_nonvirtual_phi): Strengthen param
+	from gimple_stmt_iterator * to gphi_iterator *, and local "phi"
+	from gimple to gphi *.
+	* ipa-icf-gimple.c (ipa_icf_gimple::func_checker::parse_labels):
+	Replace check against GIMPLE_LABEL with a dyn_cast <glabel *>,
+	introducing local "label_stmt".  Use it in place of "stmt" for
+	typesafety.
+	(ipa_icf_gimple::func_checker::compare_bb): Add checked casts
+	to appropriate gimple subclasses when invoking comparison methods
+	within the cases for GIMPLE_SWITCH, GIMPLE_RESX, GIMPLE_LABEL,
+	GIMPLE_RETURN, GIMPLE_ASM.
+	(ipa_icf_gimple::func_checker::compare_gimple_label): Strengthen
+	both params from gimple to const glabel *.
+	(ipa_icf_gimple::func_checker::compare_gimple_switch): Strengthen
+	both params from gimple to const gswitch *.
+	(ipa_icf_gimple::func_checker::compare_gimple_return): Strengthen
+	both params from gimple to const greturn *.
+	(ipa_icf_gimple::func_checker::compare_gimple_resx): Strengthen
+	both params from gimple to const gresx *.
+	(ipa_icf_gimple::func_checker::compare_gimple_asm): Strengthen
+	both params from gimple to const gasm *.
+	* ipa-icf-gimple.h (ipa_icf_gimple::func_checker::compare_gimple_label):
+	Strengthen both params from gimple to const glabel *.
+	(ipa_icf_gimple::func_checker::compare_gimple_switch): Strengthen
+	both params from gimple to const gswitch *.
+	(ipa_icf_gimple::func_checker::compare_gimple_return): Strengthen
+	both params from gimple to const greturn *.
+	(ipa_icf_gimple::func_checker::compare_gimple_resx): Strengthen
+	both params from gimple to const gresx *.
+	(ipa_icf_gimple::func_checker::compare_gimple_asm): Strengthen
+	both params from gimple to const gasm *.
+	* ipa-icf.c (ipa_icf_gimple::sem_function::compare_phi_node):
+	Strengthen locals "si1" and "si2" from gimple_stmt_iterator to
+	gphi_iterator, and locals "phi1" and "phi2" from gimple to gphi *.
+	* tree-ssa-forwprop.c (fold_all_stmts): Replace check against
+	GIMPLE_COND with a dyn_cast <gcond *>, introducing local
+	"cond_stmt".  Use "cond_stmt" in place of "stmt" for typesafety.
+	* tree-ssa-reassoc.c (branch_fixup): Strengthen local "phi" from
+	gimple to gphi *.
+
+2014-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/gimple.texi (Class hierarchy of GIMPLE statements): Update
+	to reflect the new gimple subclasses and the renamings of existing
+	classes.
+
+2014-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple.h (struct gdebug): Remove out-of-date references to
+	typedefs.
+	(struct ggoto): Likewise.
+	(struct glabel): Likewise.
+
+2014-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	Patch autogenerated by rename_gimple_subclasses.py from
+	https://github.com/davidmalcolm/gcc-refactoring-scripts
+	revision 7d754b63ff2bf47226a67b2c0af5d74b54d4709f
+
+	* asan.c (get_mem_ref_of_assignment): Rename gimple subclass types.
+	(instrument_strlen_call): Likewise.
+	(instrument_builtin_call): Likewise.
+	(has_mem_ref_been_instrumented): Likewise.
+	(has_stmt_been_instrumented_p): Likewise.
+	(create_cond_insert_point): Likewise.
+	(asan_expand_check_ifn): Likewise.
+	* builtins.c (validate_arg): Likewise.
+	(do_mpc_arg2): Likewise.
+	* builtins.h (validate_gimple_arglist): Likewise.
+	(fold_call_stmt): Likewise.
+	* cfgexpand.c (mark_transaction_restart_calls): Likewise.
+	(expand_gimple_stmt): Likewise.
+	(expand_asm_operands): Likewise.
+	(label_rtx_for_bb): Likewise.
+	(expand_gimple_stmt_1): Likewise.
+	(maybe_cleanup_end_of_block): Likewise.
+	(expand_gimple_basic_block): Likewise.
+	* cfgloop.c (find_subloop_latch_edge_by_ivs): Likewise.
+	* cfgloopmanip.c (create_empty_if_region_on_edge): Likewise.
+	(create_empty_loop_on_edge): Likewise.
+	* cgraph.c (cgraph_add_edge_to_call_site_hash): Likewise.
+	(cgraph_allocate_init_indirect_info): Likewise.
+	(cgraph_set_edge_callee): Likewise.
+	(cgraph_update_edges_for_call_stmt_node): Likewise.
+	* cgraph.h (set_call_stmt_including_clones): Likewise.
+	(create_indirect_edge): Likewise.
+	(create_edge_including_clones): Likewise.
+	(set_call_stmt): Likewise.
+	(redirect_call_stmt_to_callee): Likewise.
+	(rebuild_references): Likewise.
+	(create_edge): Likewise.
+	* cgraphbuild.c (mark_store): Likewise.
+	(record_references_in_initializer): Likewise.
+	* cgraphclones.c (function): Likewise.
+	(clone_function_name): Likewise.
+	* cgraphunit.c (thunk_adjust): Likewise.
+	* coretypes.h: Likewise.
+	* expr.h (expand_normal): Likewise.
+	* gimple-builder.c (get_expr_type): Likewise.
+	(build_assign): Likewise.
+	(build_type_cast): Likewise.
+	* gimple-builder.h (build_assign): Likewise.
+	(build_type_cast): Likewise.
+	* gimple-fold.c (gimple_fold_builtin_snprintf_chk): Likewise.
+	(gimple_fold_builtin_sprintf_chk): Likewise.
+	(gimple_fold_builtin_snprintf): Likewise.
+	(gimple_fold_builtin): Likewise.
+	(gimple_fold_call): Likewise.
+	(gimple_fold_stmt_to_constant_1): Likewise.
+	(fold_gimple_assign): Likewise.
+	(fold_stmt_1): Likewise.
+	* gimple-iterator.c (gsi_commit_one_edge_insert): Likewise.
+	(gsi_start_phis): Likewise.
+	* gimple-iterator.h (gsi_commit_one_edge_insert): Likewise.
+	(gimple_phi_iterator::phi): Likewise.
+	* gimple-low.c (lower_try_catch): Likewise.
+	(gimple_try_catch_may_fallthru): Likewise.
+	(lower_gimple_bind): Likewise.
+	(gimple_stmt_may_fallthru): Likewise.
+	(struct return_statements_t): Likewise.
+	(lower_gimple_return): Likewise.
+	(lower_stmt): Likewise.
+	* gimple-pretty-print.c (dump_gimple_omp_target): Likewise.
+	(dump_gimple_omp_single): Likewise.
+	(dump_gimple_omp_continue): Likewise.
+	(dump_gimple_omp_teams): Likewise.
+	(dump_gimple_omp_parallel): Likewise.
+	(dump_gimple_phi): Likewise.
+	(dump_gimple_debug): Likewise.
+	(dump_gimple_omp_block): Likewise.
+	(dump_gimple_omp_for): Likewise.
+	(dump_gimple_omp_atomic_load): Likewise.
+	(dump_gimple_omp_task): Likewise.
+	(dump_gimple_bind): Likewise.
+	(dump_ssaname_info): Likewise.
+	(dump_phi_nodes): Likewise.
+	(gimple_dump_bb_for_graph): Likewise.
+	(dump_gimple_resx): Likewise.
+	(dump_gimple_eh_else): Likewise.
+	(dump_gimple_eh_must_not_throw): Likewise.
+	(dump_gimple_eh_filter): Likewise.
+	(dump_gimple_catch): Likewise.
+	(dump_gimple_try): Likewise.
+	(dump_gimple_goto): Likewise.
+	(dump_gimple_assign): Likewise.
+	(dump_gimple_omp_return): Likewise.
+	(dump_gimple_return): Likewise.
+	(pp_points_to_solution): Likewise.
+	(dump_gimple_transaction): Likewise.
+	(dump_gimple_fmt): Likewise.
+	(dump_unary_rhs): Likewise.
+	(dump_binary_rhs): Likewise.
+	(dump_ternary_rhs): Likewise.
+	(dump_gimple_call): Likewise.
+	(dump_gimple_cond): Likewise.
+	(pp_cfg_jump): Likewise.
+	(dump_gimple_label): Likewise.
+	(dump_gimple_eh_dispatch): Likewise.
+	(dump_gimple_switch): Likewise.
+	(pp_gimple_stmt_1): Likewise.
+	* gimple-ssa-isolate-paths.c (isolate_path): Likewise.
+	(find_implicit_erroneous_behaviour): Likewise.
+	(find_explicit_erroneous_behaviour): Likewise.
+	(insert_trap_and_remove_trailing_statements): Likewise.
+	* gimple-ssa-strength-reduction.c (slsr_process_copy): Likewise.
+	(add_cand_for_stmt): Likewise.
+	(create_phi_basis): Likewise.
+	(ncd_for_two_cands): Likewise.
+	(ncd_with_phi): Likewise.
+	(ncd_of_cand_and_phis): Likewise.
+	(replace_mult_candidate): Likewise.
+	(create_add_on_incoming_edge): Likewise.
+	(insert_initializers): Likewise.
+	(introduce_cast_before_cand): Likewise.
+	(replace_one_candidate): Likewise.
+	* gimple-streamer-in.c (input_phi): Likewise.
+	(input_gimple_stmt): Likewise.
+	* gimple-streamer-out.c (output_phi): Likewise.
+	(output_bb): Likewise.
+	(output_gimple_stmt): Likewise.
+	* gimple-walk.c (walk_gimple_stmt): Likewise.
+	(walk_gimple_seq): Likewise.
+	(walk_gimple_op): Likewise.
+	(walk_stmt_load_store_addr_ops): Likewise.
+	* gimple.c (gimple_build_omp_target): Likewise.
+	(gimple_build_omp_sections_switch): Likewise.
+	(gimple_build_omp_single): Likewise.
+	(gimple_build_omp_return): Likewise.
+	(gimple_build_omp_sections): Likewise.
+	(gimple_build_omp_task): Likewise.
+	(gimple_build_omp_parallel): Likewise.
+	(gimple_build_omp_for): Likewise.
+	(gimple_build_omp_critical): Likewise.
+	(gimple_build_omp_taskgroup): Likewise.
+	(gimple_build_omp_continue): Likewise.
+	(gimple_build_omp_teams): Likewise.
+	(gimple_build_omp_atomic_load): Likewise.
+	(gimple_build_try): Likewise.
+	(gimple_build_wce): Likewise.
+	(gimple_build_eh_else): Likewise.
+	(gimple_build_eh_must_not_throw): Likewise.
+	(gimple_build_eh_filter): Likewise.
+	(gimple_build_catch): Likewise.
+	(gimple_build_nop): Likewise.
+	(empty_stmt_p): Likewise.
+	(gimple_build_with_ops_stat): Likewise.
+	(infer_nonnull_range): Likewise.
+	(gimple_build_omp_atomic_store): Likewise.
+	(gimple_build_transaction): Likewise.
+	(gimple_copy): Likewise.
+	(gimple_call_flags): Likewise.
+	(gimple_call_fnspec): Likewise.
+	(gimple_call_arg_flags): Likewise.
+	(gimple_build_return): Likewise.
+	(gimple_call_reset_alias_info): Likewise.
+	(gimple_build_call_1): Likewise.
+	(gimple_build_call_vec): Likewise.
+	(gimple_build_call): Likewise.
+	(gimple_build_call_valist): Likewise.
+	(gimple_build_call_internal_1): Likewise.
+	(gimple_build_call_internal): Likewise.
+	(gimple_build_call_internal_vec): Likewise.
+	(canonicalize_cond_expr_cond): Likewise.
+	(gimple_call_copy_skip_args): Likewise.
+	(gimple_has_side_effects): Likewise.
+	(gimple_call_builtin_p): Likewise.
+	(gimple_build_bind): Likewise.
+	(gimple_build_asm_vec): Likewise.
+	(gimple_could_trap_p_1): Likewise.
+	(gimple_build_asm_1): Likewise.
+	(gimple_build_call_from_tree): Likewise.
+	(gimple_build_assign_stat): Likewise.
+	(gimple_build_resx): Likewise.
+	(gimple_build_switch_nlabels): Likewise.
+	(gimple_build_switch): Likewise.
+	(gimple_cond_set_condition_from_tree): Likewise.
+	(gimple_set_bb): Likewise.
+	(gimple_build_label): Likewise.
+	(gimple_build_goto): Likewise.
+	(gimple_build_eh_dispatch): Likewise.
+	(gimple_build_debug_bind_stat): Likewise.
+	(gimple_build_debug_source_bind_stat): Likewise.
+	(gimple_build_assign_with_ops): Likewise.
+	(gimple_build_cond): Likewise.
+	(gimple_build_cond_from_tree): Likewise.
+	* gimple.h (gimple_build_omp_target): Likewise.
+	(gimple_omp_teams_clauses): Likewise.
+	(gimple_omp_teams_clauses_ptr): Likewise.
+	(gimple_omp_target_set_kind): Likewise.
+	(gimple_omp_target_set_child_fn): Likewise.
+	(gimple_build_omp_single): Likewise.
+	(gimple_omp_target_kind): Likewise.
+	(gimple_omp_target_child_fn): Likewise.
+	(gimple_omp_target_child_fn_ptr): Likewise.
+	(gimple_omp_target_data_arg): Likewise.
+	(gimple_omp_target_data_arg_ptr): Likewise.
+	(gimple_omp_target_clauses): Likewise.
+	(gimple_omp_target_clauses_ptr): Likewise.
+	(gimple_build_omp_sections_switch): Likewise.
+	(gimple_omp_single_clauses): Likewise.
+	(gimple_omp_single_clauses_ptr): Likewise.
+	(gimple_build_omp_return): Likewise.
+	(gimple_omp_sections_clauses): Likewise.
+	(gimple_omp_sections_clauses_ptr): Likewise.
+	(gimple_omp_sections_set_clauses): Likewise.
+	(gimple_omp_sections_control): Likewise.
+	(gimple_omp_sections_control_ptr): Likewise.
+	(gimple_omp_sections_set_control): Likewise.
+	(gimple_build_omp_parallel): Likewise.
+	(gimple_omp_task_clauses): Likewise.
+	(gimple_omp_task_clauses_ptr): Likewise.
+	(gimple_omp_task_set_clauses): Likewise.
+	(gimple_omp_task_child_fn): Likewise.
+	(gimple_omp_task_child_fn_ptr): Likewise.
+	(gimple_omp_task_set_child_fn): Likewise.
+	(gimple_omp_task_data_arg): Likewise.
+	(gimple_omp_task_data_arg_ptr): Likewise.
+	(gimple_omp_task_set_data_arg): Likewise.
+	(gimple_omp_task_copy_fn): Likewise.
+	(gimple_omp_task_copy_fn_ptr): Likewise.
+	(gimple_omp_task_set_copy_fn): Likewise.
+	(gimple_omp_task_arg_size): Likewise.
+	(gimple_omp_task_arg_size_ptr): Likewise.
+	(gimple_omp_task_set_arg_size): Likewise.
+	(gimple_omp_task_arg_align): Likewise.
+	(gimple_omp_task_arg_align_ptr): Likewise.
+	(gimple_omp_task_set_arg_align): Likewise.
+	(gimple_omp_parallel_set_clauses): Likewise.
+	(gimple_omp_parallel_set_child_fn): Likewise.
+	(gimple_build_omp_for): Likewise.
+	(gimple_omp_parallel_clauses_ptr): Likewise.
+	(gimple_omp_parallel_child_fn): Likewise.
+	(gimple_omp_parallel_child_fn_ptr): Likewise.
+	(gimple_omp_parallel_data_arg): Likewise.
+	(gimple_omp_parallel_data_arg_ptr): Likewise.
+	(gimple_omp_parallel_clauses): Likewise.
+	(gimple_build_omp_critical): Likewise.
+	(gimple_omp_for_kind): Likewise.
+	(gimple_omp_for_combined_p): Likewise.
+	(gimple_omp_for_combined_into_p): Likewise.
+	(gimple_omp_for_clauses): Likewise.
+	(gimple_omp_for_clauses_ptr): Likewise.
+	(gimple_omp_for_set_clauses): Likewise.
+	(gimple_omp_for_collapse): Likewise.
+	(gimple_omp_for_index): Likewise.
+	(gimple_omp_for_index_ptr): Likewise.
+	(gimple_omp_for_set_index): Likewise.
+	(gimple_omp_for_initial): Likewise.
+	(gimple_omp_for_initial_ptr): Likewise.
+	(gimple_omp_for_set_initial): Likewise.
+	(gimple_omp_for_final): Likewise.
+	(gimple_omp_for_final_ptr): Likewise.
+	(gimple_omp_for_set_final): Likewise.
+	(gimple_omp_for_incr): Likewise.
+	(gimple_omp_for_incr_ptr): Likewise.
+	(gimple_omp_for_set_incr): Likewise.
+	(gimple_omp_for_pre_body_ptr): Likewise.
+	(gimple_omp_for_set_pre_body): Likewise.
+	(gimple_omp_for_set_cond): Likewise.
+	(gimple_omp_set_body): Likewise.
+	(gimple_build_debug_source_bind_stat): Likewise.
+	(gimple_omp_critical_name): Likewise.
+	(gimple_omp_critical_name_ptr): Likewise.
+	(gimple_omp_atomic_load_rhs_ptr): Likewise.
+	(gimple_omp_continue_set_control_def): Likewise.
+	(gimple_build_omp_taskgroup): Likewise.
+	(gimple_omp_continue_control_def): Likewise.
+	(gimple_omp_continue_control_def_ptr): Likewise.
+	(gimple_omp_continue_control_use): Likewise.
+	(gimple_omp_continue_control_use_ptr): Likewise.
+	(gimple_omp_atomic_store_set_val): Likewise.
+	(gimple_build_omp_atomic_load): Likewise.
+	(gimple_omp_for_cond): Likewise.
+	(gimple_omp_atomic_store_val): Likewise.
+	(gimple_omp_atomic_load_set_lhs): Likewise.
+	(gimple_omp_atomic_load_set_rhs): Likewise.
+	(gimple_build_omp_teams): Likewise.
+	(gimple_omp_atomic_store_val_ptr): Likewise.
+	(gimple_omp_atomic_load_lhs): Likewise.
+	(gimple_omp_atomic_load_lhs_ptr): Likewise.
+	(gimple_omp_atomic_load_rhs): Likewise.
+	(gimple_try_kind): Likewise.
+	(gimple_try_cleanup): Likewise.
+	(gimple_try_set_catch_is_cleanup): Likewise.
+	(gimple_try_set_eval): Likewise.
+	(gimple_build_eh_else): Likewise.
+	(gimple_try_eval_ptr): Likewise.
+	(gimple_try_cleanup_ptr): Likewise.
+	(gimple_phi_capacity): Likewise.
+	(gimple_phi_num_args): Likewise.
+	(gimple_phi_result): Likewise.
+	(gimple_phi_result_ptr): Likewise.
+	(gimple_phi_arg): Likewise.
+	(gimple_phi_arg_def): Likewise.
+	(gimple_phi_arg_def_ptr): Likewise.
+	(gimple_phi_arg_edge): Likewise.
+	(gimple_phi_arg_location): Likewise.
+	(gimple_phi_arg_location_from_edge): Likewise.
+	(gimple_phi_arg_set_location): Likewise.
+	(gimple_resx_set_region): Likewise.
+	(gimple_build_switch): Likewise.
+	(gimple_eh_dispatch_region): Likewise.
+	(gimple_phi_arg_has_location): Likewise.
+	(gimple_build_wce): Likewise.
+	(gimple_resx_region): Likewise.
+	(gimple_build_eh_must_not_throw): Likewise.
+	(gimple_eh_must_not_throw_set_fndecl): Likewise.
+	(gimple_eh_else_n_body_ptr): Likewise.
+	(gimple_eh_else_n_body): Likewise.
+	(gimple_eh_else_e_body_ptr): Likewise.
+	(gimple_eh_else_e_body): Likewise.
+	(gimple_eh_else_set_n_body): Likewise.
+	(gimple_build_eh_filter): Likewise.
+	(gimple_eh_filter_set_failure): Likewise.
+	(gimple_eh_must_not_throw_fndecl): Likewise.
+	(gimple_build_catch): Likewise.
+	(gimple_eh_filter_failure): Likewise.
+	(gimple_eh_filter_set_types): Likewise.
+	(gimple_eh_filter_types): Likewise.
+	(gimple_eh_filter_types_ptr): Likewise.
+	(gimple_eh_filter_failure_ptr): Likewise.
+	(gimple_asm_input_p): Likewise.
+	(gimple_build_asm_vec): Likewise.
+	(gimple_catch_types): Likewise.
+	(gimple_catch_types_ptr): Likewise.
+	(gimple_catch_handler_ptr): Likewise.
+	(gimple_catch_handler): Likewise.
+	(gimple_catch_set_types): Likewise.
+	(gimple_statement_catch): Likewise.
+	(gimple_goto_set_dest): Likewise.
+	(gimple_bind_add_seq): Likewise.
+	(gimple_build_nop): Likewise.
+	(gimple_seq_first_stmt): Likewise.
+	(gimple_seq_first_stmt_as_a_bind): Likewise.
+	(gimple_bind_vars): Likewise.
+	(gimple_bind_set_vars): Likewise.
+	(gimple_bind_append_vars): Likewise.
+	(gimple_bind_body_ptr): Likewise.
+	(gimple_bind_body): Likewise.
+	(gimple_bind_set_body): Likewise.
+	(gimple_bind_add_stmt): Likewise.
+	(gimple_bind_block): Likewise.
+	(gimple_transaction_set_subcode): Likewise.
+	(gimple_return_retval_ptr): Likewise.
+	(gimple_alloc_stat): Likewise.
+	(gimple_return_retval): Likewise.
+	(gimple_transaction_body): Likewise.
+	(gimple_transaction_label_ptr): Likewise.
+	(gimple_build_omp_atomic_store): Likewise.
+	(gimple_omp_continue_set_control_use): Likewise.
+	(gimple_transaction_body_ptr): Likewise.
+	(gimple_transaction_label): Likewise.
+	(gimple_transaction_subcode): Likewise.
+	(gimple_transaction_set_body): Likewise.
+	(gimple_transaction_set_label): Likewise.
+	(gimple_call_arg_flags): Likewise.
+	(gimple_call_return_flags): Likewise.
+	(gimple_call_fndecl): Likewise.
+	(gimple_call_chain): Likewise.
+	(gimple_expr_type): Likewise.
+	(gimple_call_reset_alias_info): Likewise.
+	(gimple_build_call_vec): Likewise.
+	(gimple_build_call): Likewise.
+	(gimple_build_call_valist): Likewise.
+	(gimple_build_call_internal): Likewise.
+	(gimple_build_call_internal_vec): Likewise.
+	(canonicalize_cond_expr_cond): Likewise.
+	(gimple_call_copy_skip_args): Likewise.
+	(gimple_call_fn_ptr): Likewise.
+	(gimple_call_set_fndecl): Likewise.
+	(gimple_call_chain_ptr): Likewise.
+	(gimple_call_set_arg): Likewise.
+	(gimple_call_set_tail): Likewise.
+	(gimple_call_tail_p): Likewise.
+	(gimple_call_set_return_slot_opt): Likewise.
+	(gimple_call_return_slot_opt_p): Likewise.
+	(gimple_call_set_from_thunk): Likewise.
+	(gimple_call_from_thunk_p): Likewise.
+	(gimple_call_set_va_arg_pack): Likewise.
+	(gimple_call_noreturn_p): Likewise.
+	(gimple_call_set_nothrow): Likewise.
+	(gimple_call_nothrow_p): Likewise.
+	(gimple_call_set_alloca_for_var): Likewise.
+	(gimple_call_alloca_for_var_p): Likewise.
+	(gimple_call_copy_flags): Likewise.
+	(gimple_call_use_set): Likewise.
+	(gimple_statement_call): Likewise.
+	(gimple_call_internal_fn): Likewise.
+	(gimple_call_fntype): Likewise.
+	(gimple_asm_clobbers_memory_p): Likewise.
+	(gimple_bind_set_block): Likewise.
+	(gimple_asm_ninputs): Likewise.
+	(gimple_asm_noutputs): Likewise.
+	(gimple_asm_nclobbers): Likewise.
+	(gimple_asm_nlabels): Likewise.
+	(gimple_asm_input_op): Likewise.
+	(gimple_asm_set_input_op): Likewise.
+	(gimple_asm_output_op): Likewise.
+	(gimple_asm_set_output_op): Likewise.
+	(gimple_asm_set_clobber_op): Likewise.
+	(gimple_asm_set_label_op): Likewise.
+	(gimple_asm_string): Likewise.
+	(gimple_asm_set_input): Likewise.
+	(gimple_build_bind): Likewise.
+	(gimple_asm_input_op_ptr): Likewise.
+	(gimple_asm_output_op_ptr): Likewise.
+	(gimple_asm_clobber_op): Likewise.
+	(gimple_asm_label_op): Likewise.
+	(gimple_asm_volatile_p): Likewise.
+	(gimple_asm_set_volatile): Likewise.
+	(gimple_assign_set_rhs_with_ops): Likewise.
+	(gimple_build_call_from_tree): Likewise.
+	(gimple_build_assign_stat): Likewise.
+	(gimple_eh_dispatch_set_region): Likewise.
+	(gimple_switch_set_num_labels): Likewise.
+	(gimple_switch_index): Likewise.
+	(gimple_switch_set_index): Likewise.
+	(gimple_switch_set_label): Likewise.
+	(gimple_build_resx): Likewise.
+	(gimple_build_switch_nlabels): Likewise.
+	(gimple_switch_num_labels): Likewise.
+	(gimple_switch_index_ptr): Likewise.
+	(gimple_switch_label): Likewise.
+	(gimple_switch_default_label): Likewise.
+	(gimple_cond_set_condition): Likewise.
+	(gimple_label_label): Likewise.
+	(gimple_build_label): Likewise.
+	(gimple_goto_dest): Likewise.
+	(gimple_build_eh_dispatch): Likewise.
+	(gimple_build_debug_bind_stat): Likewise.
+	(gimple_cond_lhs): Likewise.
+	(gimple_cond_rhs): Likewise.
+	(gimple_cond_set_rhs): Likewise.
+	(gimple_cond_set_false_label): Likewise.
+	(gimple_cond_make_true): Likewise.
+	(gimple_cond_true_p): Likewise.
+	(gimple_build_assign_with_ops): Likewise.
+	(gimple_build_cond): Likewise.
+	(gimple_cond_set_condition_from_tree): Likewise.
+	(gimple_cond_code): Likewise.
+	(gimple_cond_lhs_ptr): Likewise.
+	(gimple_cond_rhs_ptr): Likewise.
+	(gimple_cond_true_label): Likewise.
+	(gimple_cond_set_true_label): Likewise.
+	(gimple_cond_false_label): Likewise.
+	(gimple_cond_make_false): Likewise.
+	(gimple_cond_false_p): Likewise.
+	(gimple_statement_cond): Likewise.
+	(is_a_helper <gimple_statement_cond *>): Likewise.
+	* gimplify-me.c (gimple_regimplify_operands): Likewise.
+	* gimplify.c (gimplify_omp_target_update): Likewise.
+	(gimplify_omp_for): Likewise.
+	(gimplify_omp_atomic): Likewise.
+	(gimplify_cleanup_point_expr): Likewise.
+	(struct gimplify_ctx): Likewise.
+	(pop_gimplify_context): Likewise.
+	(gimple_pop_bind_expr): Likewise.
+	(gimple_current_bind_expr): Likewise.
+	(declare_vars): Likewise.
+	(gimplify_one_sizepos): Likewise.
+	(gimplify_body): Likewise.
+	(gimplify_return_expr): Likewise.
+	(gimplify_transaction): Likewise.
+	(voidify_wrapper_expr): Likewise.
+	(gimplify_bind_expr): Likewise.
+	(gimplify_call_expr): Likewise.
+	(gimplify_modify_expr_to_memcpy): Likewise.
+	(gimplify_modify_expr_to_memset): Likewise.
+	(gimplify_modify_expr): Likewise.
+	(gimplify_expr): Likewise.
+	(gimplify_function_tree): Likewise.
+	(gimplify_asm_expr): Likewise.
+	(gimplify_init_constructor): Likewise.
+	(gimple_push_cleanup): Likewise.
+	(gimplify_switch_expr): Likewise.
+	(gimplify_case_label_expr): Likewise.
+	(gimplify_cond_expr): Likewise.
+	* gimplify.h (pop_gimplify_context): Likewise.
+	(gimple_current_bind_expr): Likewise.
+	(gimplify_one_sizepos): Likewise.
+	* graphite-scop-detection.c (limit_scops): Likewise.
+	(same_close_phi_node): Likewise.
+	(make_close_phi_nodes_unique): Likewise.
+	(canonicalize_loop_closed_ssa): Likewise.
+	* graphite-sese-to-poly.c (phi_arg_in_outermost_loop): Likewise.
+	(simple_copy_phi_p): Likewise.
+	(gsi_for_phi_node): Likewise.
+	(rewrite_close_phi_out_of_ssa): Likewise.
+	(rewrite_cross_bb_scalar_deps): Likewise.
+	(rewrite_commutative_reductions_out_of_ssa_loop): Likewise.
+	(tree_int_to_gmp): Likewise.
+	(reduction_phi_p): Likewise.
+	(build_scop_drs): Likewise.
+	(rewrite_phi_out_of_ssa): Likewise.
+	(rewrite_degenerate_phi): Likewise.
+	(rewrite_reductions_out_of_ssa): Likewise.
+	(is_reduction_operation_p): Likewise.
+	(phi_contains_arg): Likewise.
+	(follow_ssa_with_commutative_ops): Likewise.
+	(detect_commutative_reduction_arg): Likewise.
+	(detect_commutative_reduction_assign): Likewise.
+	(follow_inital_value_to_phi): Likewise.
+	(edge_initial_value_for_loop_phi): Likewise.
+	(used_outside_reduction): Likewise.
+	(detect_commutative_reduction): Likewise.
+	(dr_indices_valid_in_loop): Likewise.
+	(translate_scalar_reduction_to_array): Likewise.
+	(scop_ivs_can_be_represented): Likewise.
+	(remove_simple_copy_phi): Likewise.
+	(remove_invariant_phi): Likewise.
+	(insert_out_of_ssa_copy): Likewise.
+	(translate_scalar_reduction_to_array_for_stmt): Likewise.
+	(create_pw_aff_from_tree): Likewise.
+	(add_conditions_to_domain): Likewise.
+	(add_conditions_to_constraints): Likewise.
+	(single_pred_cond_non_loop_exit): Likewise.
+	* gsstruct.def: Likewise.
+	* internal-fn.c (get_multi_vector_move): Likewise.
+	(expand_LOAD_LANES): Likewise.
+	(expand_STORE_LANES): Likewise.
+	(expand_ANNOTATE): Likewise.
+	(expand_GOMP_SIMD_LANE): Likewise.
+	(expand_GOMP_SIMD_VF): Likewise.
+	(expand_GOMP_SIMD_LAST_LANE): Likewise.
+	(expand_UBSAN_NULL): Likewise.
+	(expand_UBSAN_BOUNDS): Likewise.
+	(expand_UBSAN_OBJECT_SIZE): Likewise.
+	(expand_ASAN_CHECK): Likewise.
+	(ubsan_expand_si_overflow_addsub_check): Likewise.
+	(ubsan_expand_si_overflow_neg_check): Likewise.
+	(ubsan_expand_si_overflow_mul_check): Likewise.
+	(expand_UBSAN_CHECK_ADD): Likewise.
+	(expand_UBSAN_CHECK_SUB): Likewise.
+	(expand_UBSAN_CHECK_MUL): Likewise.
+	(expand_LOOP_VECTORIZED): Likewise.
+	(expand_MASK_LOAD): Likewise.
+	(expand_MASK_STORE): Likewise.
+	(expand_ABNORMAL_DISPATCHER): Likewise.
+	(expand_BUILTIN_EXPECT): Likewise.
+	* internal-fn.h (internal_fn_fnspec): Likewise.
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Likewise.
+	(phi_result_unknown_predicate): Likewise.
+	(set_switch_stmt_execution_predicate): Likewise.
+	* ipa-prop.c (param_type_may_change_p): Likewise.
+	(detect_type_change_from_memory_writes): Likewise.
+	(detect_type_change): Likewise.
+	(ipa_load_from_parm_agg): Likewise.
+	(get_ancestor_addr_info): Likewise.
+	(compute_complex_ancestor_jump_func): Likewise.
+	(build_agg_jump_func_from_list): Likewise.
+	(ipa_compute_jump_functions_for_edge): Likewise.
+	(ipa_is_ssa_with_stmt_def): Likewise.
+	(ipa_note_param_call): Likewise.
+	(ipa_analyze_indirect_call_uses): Likewise.
+	(ipa_analyze_virtual_call_uses): Likewise.
+	(ipa_analyze_stmt_uses): Likewise.
+	(ipa_modify_formal_parameters): Likewise.
+	(ipa_modify_call_arguments): Likewise.
+	* ipa-prop.h (ipa_get_agg_replacements_for_node): Likewise.
+	* ipa-pure-const.c (special_builtin_state): Likewise.
+	(check_stmt): Likewise.
+	* ipa-split.c (consider_split): Likewise.
+	(visit_bb): Likewise.
+	(find_return_bb): Likewise.
+	(find_retval): Likewise.
+	(split_function): Likewise.
+	(verify_non_ssa_vars): Likewise.
+	(check_forbidden_calls): Likewise.
+	* lto-streamer-in.c (fixup_call_stmt_edges_1): Likewise.
+	* lto-streamer-out.c (output_function): Likewise.
+	* omp-low.c (scan_omp_target): Likewise.
+	(scan_omp_single): Likewise.
+	(expand_omp_target): Likewise.
+	(scan_omp_sections): Likewise.
+	(lower_omp_single_simple): Likewise.
+	(scan_omp_for): Likewise.
+	(new_omp_context): Likewise.
+	(delete_omp_context): Likewise.
+	(scan_omp_task): Likewise.
+	(expand_cilk_for_call): Likewise.
+	(task_copyfn_remap_type): Likewise.
+	(gimple_build_cond_empty): Likewise.
+	(remove_exit_barrier): Likewise.
+	(expand_omp_taskreg): Likewise.
+	(expand_cilk_for): Likewise.
+	(struct omp_for_data): Likewise.
+	(is_combined_parallel): Likewise.
+	(workshare_safe_to_combine_p): Likewise.
+	(get_ws_args_for): Likewise.
+	(scan_omp_parallel): Likewise.
+	(finish_taskreg_scan): Likewise.
+	(expand_omp_for): Likewise.
+	(check_omp_nesting_restrictions): Likewise.
+	(expand_omp_sections): Likewise.
+	(expand_omp_atomic): Likewise.
+	(expand_parallel_call): Likewise.
+	(finalize_task_copyfn): Likewise.
+	(scan_omp_1_stmt): Likewise.
+	(lower_omp_sections): Likewise.
+	(lower_omp_single): Likewise.
+	(lower_omp_master): Likewise.
+	(lower_omp_critical): Likewise.
+	(lower_omp_for): Likewise.
+	(lower_omp_taskreg): Likewise.
+	(lower_omp_target): Likewise.
+	(lower_omp_teams): Likewise.
+	(ipa_simd_modify_function_body): Likewise.
+	(build_omp_barrier): Likewise.
+	(lower_omp_taskgroup): Likewise.
+	(lower_omp_ordered): Likewise.
+	(simd_clone_adjust): Likewise.
+	(lower_rec_input_clauses): Likewise.
+	(expand_omp_for_init_vars): Likewise.
+	(expand_omp_atomic_pipeline): Likewise.
+	(expand_omp_atomic_mutex): Likewise.
+	(diagnose_sb_1): Likewise.
+	(lower_lastprivate_clauses): Likewise.
+	(lower_send_shared_vars): Likewise.
+	(expand_omp_for_init_counts): Likewise.
+	(expand_omp_for_generic): Likewise.
+	(expand_omp_for_static_nochunk): Likewise.
+	(expand_omp_for_static_chunk): Likewise.
+	(expand_omp_simd): Likewise.
+	(lower_omp_1): Likewise.
+	(diagnose_sb_2): Likewise.
+	* predict.c (apply_return_prediction): Likewise.
+	(tree_estimate_probability_bb): Likewise.
+	(get_base_value): Likewise.
+	(predict_iv_comparison): Likewise.
+	(predict_extra_loop_exits): Likewise.
+	(predict_loops): Likewise.
+	* sese.c (sese_build_liveouts_bb): Likewise.
+	(sese_add_exit_phis_edge): Likewise.
+	(set_ifsese_condition): Likewise.
+	* ssa-iterators.h (for): Likewise.
+	(num_ssa_operands): Likewise.
+	(single_phi_def): Likewise.
+	(op_iter_init_phiuse): Likewise.
+	(link_use_stmts_after): Likewise.
+	(op_iter_init): Likewise.
+	* stmt.c (reset_out_edges_aux): Likewise.
+	(compute_cases_per_edge): Likewise.
+	* trans-mem.c (diagnose_tm_1): Likewise.
+	(lower_transaction): Likewise.
+	(tm_region_init): Likewise.
+	(generate_tm_state): Likewise.
+	(make_pass_lower_tm): Likewise.
+	(transaction_subcode_ior): Likewise.
+	(build_tm_load): Likewise.
+	(build_tm_store): Likewise.
+	(expand_transaction): Likewise.
+	(expand_block_edges): Likewise.
+	(dump_tm_memopt_transform): Likewise.
+	(tm_memopt_transform_blocks): Likewise.
+	(ipa_tm_insert_irr_call): Likewise.
+	(ipa_tm_transform_calls_redirect): Likewise.
+	(expand_call_tm): Likewise.
+	(ipa_tm_insert_gettmclone_call): Likewise.
+	* tree-call-cdce.c (check_target_format): Likewise.
+	(check_pow): Likewise.
+	(check_builtin_call): Likewise.
+	(gen_conditions_for_pow_int_base): Likewise.
+	(get_no_error_domain): Likewise.
+	(gen_shrink_wrap_conditions): Likewise.
+	(shrink_wrap_one_built_in_call): Likewise.
+	(shrink_wrap_conditional_dead_built_in_calls): Likewise.
+	(gen_one_condition): Likewise.
+	* tree-cfg.c (replace_uses_by): Likewise.
+	(reinstall_phi_args): Likewise.
+	(verify_gimple_in_cfg): Likewise.
+	(gimple_make_forwarder_block): Likewise.
+	(gimple_duplicate_bb): Likewise.
+	(add_phi_args_after_copy_edge): Likewise.
+	(gimple_duplicate_sese_tail): Likewise.
+	(gimple_lv_adjust_loop_header_phi): Likewise.
+	(move_stmt_r): Likewise.
+	(do_warn_unused_result): Likewise.
+	(verify_gimple_assign): Likewise.
+	(extract_true_false_edges_from_block): Likewise.
+	(verify_gimple_transaction): Likewise.
+	(verify_gimple_in_seq_2): Likewise.
+	(single_noncomplex_succ): Likewise.
+	(valid_fixed_convert_types_p): Likewise.
+	(make_gimple_asm_edges): Likewise.
+	(is_ctrl_altering_stmt): Likewise.
+	(need_fake_edge_p): Likewise.
+	(verify_gimple_comparison): Likewise.
+	(verify_gimple_assign_unary): Likewise.
+	(verify_gimple_assign_binary): Likewise.
+	(verify_gimple_assign_ternary): Likewise.
+	(verify_gimple_assign_single): Likewise.
+	(make_gimple_switch_edges): Likewise.
+	(find_case_label_for_value): Likewise.
+	(end_recording_case_labels): Likewise.
+	(get_cases_for_edge): Likewise.
+	(group_case_labels): Likewise.
+	(find_taken_edge): Likewise.
+	(find_taken_edge_cond_expr): Likewise.
+	(find_taken_edge_switch_expr): Likewise.
+	(verify_gimple_goto): Likewise.
+	(gimple_redirect_edge_and_branch): Likewise.
+	(make_edges): Likewise.
+	(gimple_can_merge_blocks_p): Likewise.
+	(gimple_merge_blocks): Likewise.
+	(remove_bb): Likewise.
+	(stmt_starts_bb_p): Likewise.
+	(verify_gimple_debug): Likewise.
+	(gimple_verify_flow_info): Likewise.
+	(gimple_block_label): Likewise.
+	(move_block_to_fn): Likewise.
+	(verify_gimple_return): Likewise.
+	(fold_cond_expr_cond): Likewise.
+	(make_cond_expr_edges): Likewise.
+	(cleanup_dead_labels): Likewise.
+	(verify_gimple_label): Likewise.
+	(verify_gimple_stmt): Likewise.
+	* tree-cfg.h (notice_special_calls): Likewise.
+	(group_case_labels_stmt): Likewise.
+	* tree-cfgcleanup.c (phi_alternatives_equal): Likewise.
+	(cleanup_control_expr_graph): Likewise.
+	(tree_forwarder_block_p): Likewise.
+	(remove_forwarder_block): Likewise.
+	(remove_forwarder_block_with_phi): Likewise.
+	* tree-complex.c (init_dont_simulate_again): Likewise.
+	(complex_visit_stmt): Likewise.
+	(update_phi_components): Likewise.
+	(expand_complex_move): Likewise.
+	(expand_complex_libcall): Likewise.
+	(expand_complex_asm): Likewise.
+	(expand_complex_comparison): Likewise.
+	* tree-data-ref.c (get_references_in_stmt): Likewise.
+	* tree-dfa.c (collect_dfa_stats): Likewise.
+	(dump_dfa_stats): Likewise.
+	* tree-eh.c (lookup_stmt_eh_lp): Likewise.
+	(record_in_finally_tree): Likewise.
+	(collect_finally_tree_1): Likewise.
+	(outside_finally_tree): Likewise.
+	(eh_region_may_contain_throw): Likewise.
+	(lower_try_finally_dup_block): Likewise.
+	(cleanup_is_dead_in): Likewise.
+	(lower_try_finally): Likewise.
+	(lower_eh_filter): Likewise.
+	(same_handler_p): Likewise.
+	(cleanup_empty_eh_merge_phis): Likewise.
+	(emit_eh_dispatch): Likewise.
+	(make_pass_lower_eh): Likewise.
+	(redirect_eh_edge): Likewise.
+	(sink_clobbers): Likewise.
+	(lower_eh_dispatch): Likewise.
+	(verify_eh_edges): Likewise.
+	(emit_resx): Likewise.
+	(make_pass_refactor_eh): Likewise.
+	(lower_resx): Likewise.
+	(mark_reachable_handlers): Likewise.
+	(lower_try_finally_fallthru_label): Likewise.
+	(get_eh_else): Likewise.
+	(lower_try_finally_nofallthru): Likewise.
+	(lower_try_finally_copy): Likewise.
+	(lower_try_finally_switch): Likewise.
+	(decide_copy_try_finally): Likewise.
+	(honor_protect_cleanup_actions): Likewise.
+	(lower_eh_must_not_throw): Likewise.
+	(replace_goto_queue_1): Likewise.
+	(lower_catch): Likewise.
+	(refactor_eh_r): Likewise.
+	(stmt_could_throw_p): Likewise.
+	(lower_eh_constructs_2): Likewise.
+	(collect_finally_tree): Likewise.
+	(emit_post_landing_pad): Likewise.
+	(lower_try_finally_onedest): Likewise.
+	(unsplit_eh): Likewise.
+	(cleanup_empty_eh_unsplit): Likewise.
+	(do_goto_redirection): Likewise.
+	(maybe_record_in_goto_queue): Likewise.
+	* tree-eh.h (make_eh_dispatch_edges): Likewise.
+	(redirect_eh_dispatch_edge): Likewise.
+	(verify_eh_dispatch_edge): Likewise.
+	* tree-emutls.c (lower_emutls_function_body): Likewise.
+	(lower_emutls_stmt): Likewise.
+	(gen_emutls_addr): Likewise.
+	* tree-if-conv.c (if_convertible_loop_p_1): Likewise.
+	(bb_with_exit_edge_p): Likewise.
+	(convert_scalar_cond_reduction): Likewise.
+	(predicate_all_scalar_phis): Likewise.
+	* tree-inline.c (update_ssa_across_abnormal_edges): Likewise.
+	(copy_phis_for_bb): Likewise.
+	(copy_edges_for_bb): Likewise.
+	(remap_gimple_seq): Likewise.
+	(replace_locals_stmt): Likewise.
+	(copy_bb): Likewise.
+	(inline_forbidden_p_stmt): Likewise.
+	(expand_call_inline): Likewise.
+	(estimate_num_insns): Likewise.
+	(mark_local_labels_stmt): Likewise.
+	(remap_gimple_stmt): Likewise.
+	(maybe_move_debug_stmts_to_successors): Likewise.
+	(copy_cfg_body): Likewise.
+	(copy_debug_stmts): Likewise.
+	* tree-inline.h (void): Likewise.
+	* tree-into-ssa.c (node): Likewise.
+	(find_def_blocks_for): Likewise.
+	(mark_phi_for_rewrite): Likewise.
+	(insert_phi_nodes_for): Likewise.
+	(rewrite_add_phi_arguments): Likewise.
+	(rewrite_update_phi_arguments): Likewise.
+	(mark_use_interesting): Likewise.
+	(prepare_block_for_update): Likewise.
+	(prepare_use_sites_for): Likewise.
+	(delete_update_ssa): Likewise.
+	(mark_virtual_operand_for_renaming): Likewise.
+	* tree-into-ssa.h (mark_virtual_phi_result_for_renaming): Likewise.
+	* tree-loop-distribution.c (stmts_from_loop): Likewise.
+	(destroy_loop): Likewise.
+	(distribute_loop): Likewise.
+	(generate_loops_for_partition): Likewise.
+	* tree-nested.c (walk_function): Likewise.
+	(convert_nonlocal_reference_stmt): Likewise.
+	(convert_local_reference_stmt): Likewise.
+	(finalize_nesting_tree_1): Likewise.
+	(get_chain_field): Likewise.
+	(convert_nl_goto_reference): Likewise.
+	(convert_tramp_reference_op): Likewise.
+	(convert_gimple_call): Likewise.
+	(convert_nl_goto_receiver): Likewise.
+	* tree-nrv.c (finalize_nrv_r): Likewise.
+	(make_pass_nrv): Likewise.
+	(dest_safe_for_nrv_p): Likewise.
+	* tree-object-size.c (pass_through_call): Likewise.
+	(addr_object_size): Likewise.
+	(alloc_object_size): Likewise.
+	(expr_object_size): Likewise.
+	(collect_object_sizes_for): Likewise.
+	(check_for_plus_in_loops_1): Likewise.
+	(fini_object_sizes): Likewise.
+	* tree-outof-ssa.c (eliminate_build): Likewise.
+	(eliminate_phi): Likewise.
+	(remove_gimple_phi_args): Likewise.
+	(eliminate_useless_phis): Likewise.
+	(rewrite_trees): Likewise.
+	(insert_backedge_copies): Likewise.
+	* tree-parloops.c (printf): Likewise.
+	(create_phi_for_local_result): Likewise.
+	(loop_has_vector_phi_nodes): Likewise.
+	(gather_scalar_reductions): Likewise.
+	(try_create_reduction_list): Likewise.
+	(take_address_of): Likewise.
+	(transform_to_exit_first_loop): Likewise.
+	(create_parallel_loop): Likewise.
+	* tree-phinodes.c (remove_phi_args): Likewise.
+	(phinodes_print_statistics): Likewise.
+	(release_phi_node): Likewise.
+	(reserve_phi_args_for_new_edge): Likewise.
+	(add_phi_node_to_bb): Likewise.
+	(create_phi_node): Likewise.
+	(add_phi_arg): Likewise.
+	(remove_phi_nodes): Likewise.
+	(allocate_phi_node): Likewise.
+	(ideal_phi_node_len): Likewise.
+	(make_phi_node): Likewise.
+	(resize_phi_node): Likewise.
+	* tree-phinodes.h (add_phi_node_to_bb): Likewise.
+	(add_phi_arg): Likewise.
+	(degenerate_phi_result): Likewise.
+	* tree-predcom.c (valid_initializer_p): Likewise.
+	(find_looparound_phi): Likewise.
+	(add_looparound_copies): Likewise.
+	(initialize_root_vars): Likewise.
+	(eliminate_temp_copies): Likewise.
+	(replace_ref_with): Likewise.
+	(initialize_root_vars_lm): Likewise.
+	(reassociate_to_the_same_stmt): Likewise.
+	* tree-profile.c (gimple_gen_interval_profiler): Likewise.
+	(gimple_gen_pow2_profiler): Likewise.
+	(gimple_gen_one_value_profiler): Likewise.
+	(gimple_gen_time_profiler): Likewise.
+	(gimple_gen_average_profiler): Likewise.
+	(gimple_gen_ior_profiler): Likewise.
+	(gimple_gen_edge_profiler): Likewise.
+	(gimple_gen_ic_profiler): Likewise.
+	(gimple_gen_ic_func_profiler): Likewise.
+	* tree-scalar-evolution.c (follow_ssa_edge_binary): Likewise.
+	(follow_ssa_edge_expr): Likewise.
+	(follow_ssa_edge_in_rhs): Likewise.
+	(backedge_phi_arg_p): Likewise.
+	(follow_ssa_edge_in_condition_phi_branch): Likewise.
+	(follow_ssa_edge_in_condition_phi): Likewise.
+	(follow_ssa_edge_inner_loop_phi): Likewise.
+	(follow_ssa_edge): Likewise.
+	(simplify_peeled_chrec): Likewise.
+	(analyze_evolution_in_loop): Likewise.
+	(analyze_initial_condition): Likewise.
+	(interpret_loop_phi): Likewise.
+	(analyze_scalar_evolution_1): Likewise.
+	(loop_closed_phi_def): Likewise.
+	(scev_const_prop): Likewise.
+	(add_to_evolution): Likewise.
+	(get_loop_exit_condition): Likewise.
+	* tree-scalar-evolution.h (number_of_latch_executions): Likewise.
+	* tree-sra.c (replace_removed_params_ssa_names): Likewise.
+	(convert_callers): Likewise.
+	(scan_function): Likewise.
+	(sra_modify_function_body): Likewise.
+	(ipa_sra_modify_function_body): Likewise.
+	(build_ref_for_offset): Likewise.
+	(generate_subtree_copies): Likewise.
+	(init_subtree_with_zero): Likewise.
+	(sra_modify_expr): Likewise.
+	(load_assign_lhs_subreplacements): Likewise.
+	(sra_modify_assign): Likewise.
+	(sra_ipa_reset_debug_stmts): Likewise.
+	* tree-ssa-alias.c (refs_output_dependent_p): Likewise.
+	(ref_maybe_used_by_call_p_1): Likewise.
+	(ref_maybe_used_by_stmt_p): Likewise.
+	(call_may_clobber_ref_p_1): Likewise.
+	(stmt_may_clobber_ref_p_1): Likewise.
+	* tree-ssa-alias.h (call_may_clobber_ref_p): Likewise.
+	(call_may_clobber_ref_p_1): Likewise.
+	* tree-ssa-ccp.c (ccp_initialize): Likewise.
+	(ccp_lattice_meet): Likewise.
+	(insert_clobber_before_stack_restore): Likewise.
+	(ccp_fold): Likewise.
+	(evaluate_stmt): Likewise.
+	(ccp_fold_stmt): Likewise.
+	(optimize_unreachable): Likewise.
+	* tree-ssa-coalesce.c (build_ssa_conflict_graph): Likewise.
+	(coalesce_partitions): Likewise.
+	(create_outofssa_var_map): Likewise.
+	* tree-ssa-copy.c (copy_prop_visit_stmt): Likewise.
+	(init_copy_prop): Likewise.
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Likewise.
+	* tree-ssa-dce.c (remove_dead_phis): Likewise.
+	(forward_edge_to_pdom): Likewise.
+	(eliminate_unnecessary_stmts): Likewise.
+	(propagate_necessity): Likewise.
+	(remove_dead_stmt): Likewise.
+	* tree-ssa-dom.c (record_equivalences_from_phis): Likewise.
+	(cprop_into_successor_phis): Likewise.
+	(get_rhs_or_phi_arg): Likewise.
+	(eliminate_degenerate_phis_1): Likewise.
+	(struct hashable_expr): Likewise.
+	(add_hashable_expr): Likewise.
+	(print_expr_hash_elt): Likewise.
+	(record_equivalences_from_stmt): Likewise.
+	(initialize_hash_element): Likewise.
+	(record_edge_info): Likewise.
+	(eliminate_redundant_computations): Likewise.
+	(propagate_rhs_into_lhs): Likewise.
+	(free_all_edge_infos): Likewise.
+	(make_pass_dominator): Likewise.
+	(optimize_stmt): Likewise.
+	* tree-ssa-forwprop.c (remove_prop_source_from_use): Likewise.
+	(simplify_bitwise_binary): Likewise.
+	(simplify_rotate): Likewise.
+	(simplify_not_neg_expr): Likewise.
+	(simplify_gimple_switch_label_vec): Likewise.
+	(forward_propagate_into_comparison): Likewise.
+	(simplify_mult): Likewise.
+	* tree-ssa-ifcombine.c (same_phi_args_p): Likewise.
+	(get_name_for_bit_test): Likewise.
+	(recognize_single_bit_test): Likewise.
+	(ifcombine_ifandif): Likewise.
+	* tree-ssa-live.c (remove_unused_locals): Likewise.
+	(set_var_live_on_entry): Likewise.
+	(calculate_live_on_exit): Likewise.
+	(verify_live_on_entry): Likewise.
+	* tree-ssa-loop-im.c (mem_ref_in_stmt): Likewise.
+	(determine_max_movement): Likewise.
+	(execute_sm_if_changed): Likewise.
+	(rewrite_reciprocal): Likewise.
+	(execute_sm): Likewise.
+	(rewrite_bittest): Likewise.
+	* tree-ssa-loop-ivcanon.c (propagate_constants_for_unrolling):
+	Likewise.
+	(unloop_loops): Likewise.
+	(tree_estimate_loop_size): Likewise.
+	(create_canonical_iv): Likewise.
+	(remove_exits_and_undefined_stmts): Likewise.
+	(remove_redundant_iv_tests): Likewise.
+	(try_unroll_loop_completely): Likewise.
+	* tree-ssa-loop-ivopts.c (get_iv): Likewise.
+	(find_bivs): Likewise.
+	(mark_bivs): Likewise.
+	(find_interesting_uses_outside): Likewise.
+	(determine_set_costs): Likewise.
+	(rewrite_use_nonlinear_expr): Likewise.
+	(remove_unused_ivs): Likewise.
+	(extract_cond_operands): Likewise.
+	(rewrite_use_compare): Likewise.
+	* tree-ssa-loop-manip.c (tree_unroll_loop): Likewise.
+	(rewrite_all_phi_nodes_with_iv): Likewise.
+	(add_exit_phi): Likewise.
+	(find_uses_to_rename_bb): Likewise.
+	(verify_loop_closed_ssa): Likewise.
+	(split_loop_exit_edge): Likewise.
+	(create_iv): Likewise.
+	(rewrite_phi_with_iv): Likewise.
+	(tree_transform_and_unroll_loop): Likewise.
+	(canonicalize_loop_ivs): Likewise.
+	* tree-ssa-loop-niter.c (determine_value_range): Likewise.
+	(finite_loop_p): Likewise.
+	(chain_of_csts_start): Likewise.
+	(get_base_for): Likewise.
+	(loop_niter_by_eval): Likewise.
+	(number_of_iterations_exit): Likewise.
+	* tree-ssa-loop-prefetch.c (issue_prefetch_ref): Likewise.
+	(emit_mfence_after_loop): Likewise.
+	* tree-ssa-loop-unswitch.c (tree_may_unswitch_on): Likewise.
+	(tree_unswitch_single_loop): Likewise.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals_1): Likewise.
+	(build_and_insert_call): Likewise.
+	(insert_reciprocals): Likewise.
+	(powi_as_mults_1): Likewise.
+	(powi_as_mults): Likewise.
+	(build_and_insert_binop): Likewise.
+	(build_and_insert_cast): Likewise.
+	(gimple_expand_builtin_cabs): Likewise.
+	(convert_mult_to_fma): Likewise.
+	* tree-ssa-operands.c (get_tmr_operands): Likewise.
+	(maybe_add_call_vops): Likewise.
+	(parse_ssa_operands): Likewise.
+	* tree-ssa-phiopt.c (tree_ssa_cs_elim): Likewise.
+	(single_non_singleton_phi_for_edges): Likewise.
+	(tree_ssa_phiopt_worker): Likewise.
+	(replace_phi_edge_with_variable): Likewise.
+	(hoist_adjacent_loads): Likewise.
+	(conditional_replacement): Likewise.
+	(abs_replacement): Likewise.
+	(cond_store_replacement): Likewise.
+	(cond_if_else_store_replacement_1): Likewise.
+	(minmax_replacement): Likewise.
+	* tree-ssa-phiprop.c (propagate_with_phi): Likewise.
+	(phivn_valid_p): Likewise.
+	(phiprop_insert_phi): Likewise.
+	* tree-ssa-pre.c (insert_into_preds_of_block): Likewise.
+	(compute_avail): Likewise.
+	(create_expression_by_pieces): Likewise.
+	(do_regular_insertion): Likewise.
+	(eliminate_insert): Likewise.
+	* tree-ssa-propagate.c (simulate_stmt): Likewise.
+	(replace_uses_in): Likewise.
+	(replace_phi_args_in): Likewise.
+	(update_gimple_call): Likewise.
+	(update_call_from_tree): Likewise.
+	(may_propagate_copy_into_stmt): Likewise.
+	(propagate_tree_value_into_stmt): Likewise.
+	* tree-ssa-propagate.h (prop_simulate_again_p): Likewise.
+	* tree-ssa-reassoc.c (suitable_cond_bb): Likewise.
+	(is_phi_for_stmt): Likewise.
+	(build_and_add_sum): Likewise.
+	(update_ops): Likewise.
+	(get_reassociation_width): Likewise.
+	(reassociate_bb): Likewise.
+	(maybe_optimize_range_tests): Likewise.
+	* tree-ssa-sccvn.c (DFS): Likewise.
+	(ao_ref_init_from_vn_reference): Likewise.
+	(valueize_shared_reference_ops_from_ref): Likewise.
+	(vn_reference_lookup_3): Likewise.
+	(vn_reference_lookup): Likewise.
+	(visit_nary_op): Likewise.
+	(simplify_binary_expression): Likewise.
+	(simplify_unary_expression): Likewise.
+	(visit_use): Likewise.
+	(set_hashtable_value_ids): Likewise.
+	* tree-ssa-sccvn.h (vn_constant_eq_with_type): Likewise.
+	* tree-ssa-sink.c (find_bb_for_arg): Likewise.
+	(nearest_common_dominator_of_uses): Likewise.
+	(statement_sink_location): Likewise.
+	* tree-ssa-strlen.c (do_invalidate): Likewise.
+	* tree-ssa-structalias.c (new_var_info): Likewise.
+	(get_call_vi): Likewise.
+	(lookup_call_use_vi): Likewise.
+	(lookup_call_clobber_vi): Likewise.
+	(get_call_use_vi): Likewise.
+	(get_function_part_constraint): Likewise.
+	(handle_rhs_call): Likewise.
+	(handle_lhs_call): Likewise.
+	(handle_const_call): Likewise.
+	(handle_pure_call): Likewise.
+	(get_fi_for_callee): Likewise.
+	(find_func_aliases_for_builtin_call): Likewise.
+	(find_func_clobbers): Likewise.
+	(compute_points_to_sets): Likewise.
+	(ipa_pta_execute): Likewise.
+	(find_func_aliases): Likewise.
+	* tree-ssa-tail-merge.c (same_succ_hash): Likewise.
+	(release_last_vdef): Likewise.
+	(same_phi_alternatives_1): Likewise.
+	(find_clusters): Likewise.
+	(vop_phi): Likewise.
+	(replace_block_by): Likewise.
+	* tree-ssa-ter.c (ter_is_replaceable_p): Likewise.
+	* tree-ssa-threadedge.c (record_temporary_equivalences_from_phis):
+	Likewise.
+	(record_temporary_equivalences_from_stmts_at_dest): Likewise.
+	(simplify_control_stmt_condition): Likewise.
+	(dummy_simplify): Likewise.
+	(propagate_threaded_block_debug_into): Likewise.
+	(thread_around_empty_blocks): Likewise.
+	(thread_through_normal_block): Likewise.
+	* tree-ssa-threadedge.h (thread_across_edge): Likewise.
+	* tree-ssa-threadupdate.c (copy_phi_arg_into_existing_phi): Likewise.
+	(get_value_locus_in_path): Likewise.
+	(copy_phi_args): Likewise.
+	(phi_args_equal_on_edges): Likewise.
+	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Likewise.
+	* tree-ssa-uninit.c (can_skip_redundant_opnd): Likewise.
+	(find_predicates): Likewise.
+	(collect_phi_def_edges): Likewise.
+	(find_matching_predicate_in_rest_chains): Likewise.
+	(prune_uninit_phi_opnds_in_unrealizable_paths): Likewise.
+	(use_pred_not_overlap_with_undef_path_pred): Likewise.
+	(normalize_preds): Likewise.
+	(is_use_properly_guarded): Likewise.
+	(find_uninit_use): Likewise.
+	(gate_warn_uninitialized): Likewise.
+	* tree-ssa.c (ssa_redirect_edge): Likewise.
+	(flush_pending_stmts): Likewise.
+	(verify_use): Likewise.
+	(verify_ssa): Likewise.
+	(execute_update_addresses_taken): Likewise.
+	(insert_debug_temp_for_var_def): Likewise.
+	* tree-stdarg.c (check_all_va_list_escapes): Likewise.
+	* tree-switch-conversion.c (check_final_bb): Likewise.
+	(build_constructors): Likewise.
+	(build_arrays): Likewise.
+	(gen_def_assigns): Likewise.
+	(case_bit_test_cmp): Likewise.
+	(emit_case_bit_tests): Likewise.
+	(gather_default_values): Likewise.
+	(constructor_contains_same_values_p): Likewise.
+	(array_value_type): Likewise.
+	(build_one_array): Likewise.
+	(fix_phi_nodes): Likewise.
+	(process_switch): Likewise.
+	(hoist_edge_and_branch_if_true): Likewise.
+	(gen_inbound_check): Likewise.
+	* tree-tailcall.c (add_successor_phi_arg): Likewise.
+	(propagate_through_phis): Likewise.
+	(eliminate_tail_call): Likewise.
+	(create_tailcall_accumulator): Likewise.
+	(tree_optimize_tail_calls_1): Likewise.
+	(adjust_return_value): Likewise.
+	(optimize_tail_call): Likewise.
+	(independent_of_stmt_p): Likewise.
+	(find_tail_calls): Likewise.
+	(adjust_return_value_with_ops): Likewise.
+	(update_accumulator_with_ops): Likewise.
+	* tree-vect-data-refs.c (bump_vector_ptr): Likewise.
+	(vect_setup_realignment): Likewise.
+	* tree-vect-generic.c (expand_vector_condition): Likewise.
+	(optimize_vector_constructor): Likewise.
+	(lower_vec_perm): Likewise.
+	(expand_vector_operations_1): Likewise.
+	* tree-vect-loop-manip.c (rename_variables_in_bb): Likewise.
+	(vect_can_advance_ivs_p): Likewise.
+	(slpeel_update_phi_nodes_for_guard1): Likewise.
+	(slpeel_update_phi_nodes_for_guard2): Likewise.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Likewise.
+	(slpeel_tree_peel_loop_to_edge): Likewise.
+	(vect_update_ivs_after_vectorizer): Likewise.
+	(vect_loop_versioning): Likewise.
+	(slpeel_make_loop_iterate_ntimes): Likewise.
+	(slpeel_add_loop_guard): Likewise.
+	(slpeel_can_duplicate_loop_p): Likewise.
+	(set_prologue_iterations): Likewise.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Likewise.
+	(vect_analyze_scalar_cycles_1): Likewise.
+	(vect_analyze_loop_operations): Likewise.
+	(get_initial_def_for_induction): Likewise.
+	(vectorizable_reduction): Likewise.
+	(vect_transform_loop): Likewise.
+	(vect_create_epilog_for_reduction): Likewise.
+	(vect_analyze_scalar_cycles): Likewise.
+	(vect_analyze_loop_form): Likewise.
+	* tree-vect-patterns.c (vect_recog_pow_pattern): Likewise.
+	* tree-vect-slp.c (vect_build_slp_tree_1): Likewise.
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Likewise.
+	(vectorizable_load): Likewise.
+	(vect_finish_stmt_generation): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_condition): Likewise.
+	* tree-vectorizer.h (unlimited_cost_model): Likewise.
+	* tree-vrp.c (find_assert_locations): Likewise.
+	(vrp_initialize): Likewise.
+	(vrp_meet): Likewise.
+	(extract_range_from_unary_expr): Likewise.
+	(extract_range_basic): Likewise.
+	(build_assert_expr_for): Likewise.
+	(vrp_visit_assignment_or_call): Likewise.
+	(simplify_truth_ops_using_ranges): Likewise.
+	(simplify_float_conversion_using_ranges): Likewise.
+	(live_on_edge): Likewise.
+	(compare_case_labels): Likewise.
+	(vrp_visit_cond_stmt): Likewise.
+	(find_case_label_index): Likewise.
+	(find_case_label_range): Likewise.
+	(find_case_label_ranges): Likewise.
+	(simplify_cond_using_ranges): Likewise.
+	(register_edge_assert_for): Likewise.
+	(find_assert_locations_1): Likewise.
+	(vrp_evaluate_conditional): Likewise.
+	(vrp_visit_stmt): Likewise.
+	(range_fits_type_p): Likewise.
+	(simplify_stmt_using_ranges): Likewise.
+	(fold_predicate_in): Likewise.
+	(simplify_stmt_for_jump_threading): Likewise.
+	(identify_jump_threads): Likewise.
+	* tree.c (find_decls_types_in_node): Likewise.
+	* ubsan.c (instrument_nonnull_return): Likewise.
+	(instrument_mem_ref): Likewise.
+	* value-prof.c (find_func_by_profile_id): Likewise.
+	(check_ic_target): Likewise.
+	(gimple_ic_transform): Likewise.
+	(interesting_stringop_to_profile_p): Likewise.
+	(gimple_stringops_transform): Likewise.
+	(gimple_stringops_values_to_profile): Likewise.
+	(gimple_value_profile_transformations): Likewise.
+	(gimple_divmod_fixed_value_transform): Likewise.
+	(gimple_mod_pow2_value_transform): Likewise.
+	(gimple_mod_subtract_transform): Likewise.
+	(gimple_divmod_fixed_value): Likewise.
+	(gimple_mod_pow2): Likewise.
+	(gimple_mod_subtract): Likewise.
+	(gimple_ic): Likewise.
+	(gimple_stringop_fixed_value): Likewise.
+	* value-prof.h (stringop_block_profile): Likewise.
+	(gimple_ic): Likewise.
+	* vtable-verify.c (verify_bb_vtables): Likewise.
+
+2014-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* coretypes.h (gimple_cond): Drop this typedef.
+	(const_gimple_cond): Likewise.
+	(gimple_debug): Likewise.
+	(const_gimple_debug): Likewise.
+	(gimple_goto): Likewise.
+	(const_gimple_goto): Likewise.
+	(gimple_label): Likewise.
+	(const_gimple_label): Likewise.
+	(gimple_switch): Likewise.
+	(const_gimple_switch): Likewise.
+	(gimple_assign): Likewise.
+	(const_gimple_assign): Likewise.
+	(gimple_asm): Likewise.
+	(const_gimple_asm): Likewise.
+	(gimple_call): Likewise.
+	(const_gimple_call): Likewise.
+	(gimple_transaction): Likewise.
+	(const_gimple_transaction): Likewise.
+	(gimple_return): Likewise.
+	(const_gimple_return): Likewise.
+	(gimple_bind): Likewise.
+	(const_gimple_bind): Likewise.
+	(gimple_catch): Likewise.
+	(const_gimple_catch): Likewise.
+	(gimple_eh_filter): Likewise.
+	(const_gimple_eh_filter): Likewise.
+	(gimple_eh_must_not_throw;): Likewise.
+	(const_gimple_eh_must_not_throw): Likewise.
+	(gimple_eh_else): Likewise.
+	(const_gimple_eh_else): Likewise.
+	(gimple_resx): Likewise.
+	(const_gimple_resx): Likewise.
+	(gimple_eh_dispatch): Likewise.
+	(const_gimple_eh_dispatch): Likewise.
+	(gimple_phi): Likewise.
+	(const_gimple_phi): Likewise.
+	(gimple_try): Likewise.
+	(const_gimple_try): Likewise.
+	(gimple_omp_atomic_load): Likewise.
+	(const_gimple_omp_atomic_load): Likewise.
+	(gimple_omp_atomic_store): Likewise.
+	(const_gimple_omp_atomic_store): Likewise.
+	(gimple_omp_continue): Likewise.
+	(const_gimple_omp_continue): Likewise.
+	(gimple_omp_critical): Likewise.
+	(const_gimple_omp_critical): Likewise.
+	(gimple_omp_for): Likewise.
+	(const_gimple_omp_for): Likewise.
+	(gimple_omp_parallel): Likewise.
+	(const_gimple_omp_parallel): Likewise.
+	(gimple_omp_task): Likewise.
+	(const_gimple_omp_task): Likewise.
+	(gimple_omp_sections): Likewise.
+	(const_gimple_omp_sections): Likewise.
+	(gimple_omp_single): Likewise.
+	(const_gimple_omp_single): Likewise.
+	(gimple_omp_target): Likewise.
+	(const_gimple_omp_target): Likewise.
+	(gimple_omp_teams): Likewise.
+	(const_gimple_omp_teams): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-inline.h (struct copy_body_data): Rename field
+	"gimple_call" to "call_stmt".
+
+	* gimplify.c (gimplify_bind_expr): Rename local "gimple_bind" to
+	"bind_stmt".
+	(gimplify_switch_expr): Rename local "gimple_switch" to
+	"switch_stmt".
+	(gimplify_cond_expr): Rename local "gimple_cond" to "cond_stmt".
+	* tree-eh.c (lower_catch): Rename local "gcatch" to "catch_stmt".
+	* tree-inline.c (copy_bb): Update for renaming of field within
+	struct copy_body_data from "gimple_call" to "call_stmt".
+	(copy_cfg_body): Likewise.
+	(copy_debug_stmt): Likewise.
+	(expand_call_inline): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Convert various gimple to gimple_phi within ssa-iterators.h
+
+	* ssa-iterators.h (FOR_EACH_PHI_OR_STMT_USE): Add checked cast to
+	gimple_phi.
+	(FOR_EACH_PHI_OR_STMT_DEF): Likewise.
+
+	* ssa-iterators.h (single_phi_def): Require a gimple_phi.
+	(op_iter_init_phiuse): Likewise.
+	(op_iter_init_phidef): Likewise.
+	* tree-ssa-loop-im.c (extract_true_false_args_from_phi): Likewise.
+
+	* tree-ssa-loop-im.c (link_use_stmts_after): Replace check against
+	GIMPLE_PHI with add a dyn_cast to gimple_phi, using result as needed.
+	(determine_max_movement): Likewise.
+	* tree-ssa-reassoc.c (is_phi_for_stmt): Likewise.
+	* tree-ssa-sccvn.c (start_over:): Likewise.
+
+	* tree-ssa-loop-im.c
+	(move_computations_dom_walker::before_dom_children): Split iterator
+	into gimple_stmt_iterator and a gimple_phi_iterator so that a local
+	can become a gimple_phi.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Use gimple_phi in many more places.
+
+	* gimple-ssa-strength-reduction.c (slsr_process_phi): Require a
+	gimple_phi.
+	* ipa-inline-analysis.c (predicate_for_phi_result): Likewise.
+	* tree-emutls.c (lower_emutls_phi_arg): Likewise.
+	* tree-if-conv.c (predicate_scalar_phi): Likewise.
+	* tree-into-ssa.c (mark_virtual_phi_result_for_renaming): Likewise.
+	* tree-into-ssa.h (mark_virtual_phi_result_for_renaming): Likewise.
+	* tree-phinodes.c (degenerate_phi_result): Likewise.
+	* tree-phinodes.h (degenerate_phi_result): Likewise.
+	* tree-ssa.c (verify_use): Likewise.
+	* tree-switch-conversion.c (array_value_type): Likewise.
+
+	* graphite-scop-detection.c (same_close_phi_node): Require a pair
+	of gimple_phi.
+	(remove_duplicate_close_phi): Require a gimple_phi and a
+	gimple_phi_iterator.
+	(make_close_phi_nodes_unique): Convert a local into a
+	gimple_phi_iterator.
+
+	* gimple-pretty-print.c (gimple_dump_bb_for_graph): Split iterator
+	into gimple_stmt_iterator and gimple_phi_iterator, converting local
+	from gimple to gimple_phi.
+	* gimple-ssa-strength-reduction.c
+	(find_candidates_dom_walker::before_dom_children): Likewise.
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Likewise.
+	* ipa-split.c (verify_non_ssa_vars): Likewise.
+	(visit_bb): Likewise.
+	(split_function): Likewise.
+	* lto-streamer-out.c (output_function): Likewise.
+	* sese.c (sese_build_liveouts_bb): Likewise.
+	* tree-cfg.c (gimple_can_merge_blocks_p): Likewise.
+	* tree-complex.c (init_dont_simulate_again): Likewise.
+	* tree-dfa.c (collect_dfa_stats): Likewise.
+	* tree-eh.c (sink_clobbers): Likewise.
+	* tree-emutls.c (lower_emutls_function_body): Likewise.
+	* tree-into-ssa.c (rewrite_dom_walker::before_dom_children):
+	Likewise.
+	(rewrite_update_dom_walker::before_dom_children): Likewise.
+	(prepare_block_for_update): Likewise.
+	* tree-loop-distribution.c (stmts_from_loop): Likewise.
+	(generate_loops_for_partition): Likewise.
+	(destroy_loop): Likewise.
+	(tree_loop_distribution): Likewise.
+	* tree-ssa-coalesce.c (build_ssa_conflict_graph): Likewise.
+	* tree-ssa-copy.c (init_copy_prop): Likewise.
+	* tree-ssa-copyrename.c (rename_ssa_copies): Likewise.
+	* tree-ssa-loop-ivcanon.c (propagate_constants_for_unrolling): Likewise.
+	* tree-ssa-loop-manip.c (find_uses_to_rename_bb): Likewise.
+	(verify_loop_closed_ssa): Likewise.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Likewise.
+	* tree-ssa-pre.c (compute_avail): Likewise.
+	(eliminate_dom_walker::before_dom_children): Likewise.
+	* tree-ssa-strlen.c (strlen_dom_walker::before_dom_children): Likewise.
+	* tree-ssa-structalias.c (compute_points_to_sets): Likewise.
+	(ipa_pta_execute): Likewise.
+	* tree-ssa-tail-merge.c (same_succ_hash): Likewise.
+	(release_last_vdef): Likewise.
+	* tree-ssa.c (verify_ssa): Likewise.
+	(execute_update_addresses_taken): Likewise.
+	* tree-stdarg.c (check_all_va_list_escapes): Likewise.
+	(execute_optimize_stdarg): Likewise.
+	* tree-switch-conversion.c (build_arrays): Likewise.
+	* tree-vect-loop-manip.c (rename_variables_in_bb): Likewise.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Likewise.
+	(vect_analyze_loop_operations): Likewise.
+	(vect_transform_loop): Likewise.
+	* tree-vrp.c (find_assert_locations_1): Likewise.
+	(vrp_initialize): Likewise.
+
+	* graphite-sese-to-poly.c (gsi_for_phi_node): Convert psi to a
+	gimple_phi_iterator.
+	(rewrite_degenerate_phi): Require a gimple_phi_iterator; strengthen
+	local "phi" from gimple to gimple-phi.
+
+	* ipa-split.c (consider_split): Convert local psi to a
+	gimple_phi_iterator.
+	* tree-cfg.c (gimple_merge_blocks): Likewise.
+
+	* tree-eh.c (unsplit_eh): Replace reuse of gsi with a new
+	gimple_phi_iterator gpi, using it to convert statement from gimple
+	to a gimple_phi.
+	(cleanup_empty_eh_merge_phis): Strengthen ophi from gimple to
+	gimple_phi.
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Replace reuse of
+	gsi with a new gimple_phi_iterator gpi, using it to convert
+	expressions from gimple to gimple_phi; add a checked cast to
+	gimple_phi.
+
+	* tree-if-conv.c (predicate_all_scalar_phis): Convert local phi_gsi
+	to be a gimple_phi_iterator; convert "phi" to be a gimple_phi.
+	* tree-parloops.c (loop_has_vector_phi_nodes): Convert local to be a
+	gimple_phi_iterator.
+	* tree-ssa-ccp.c (ccp_initialize): Likewise.
+
+	* tree-scalar-evolution.c (analyze_initial_condition): Add checked cast
+	to a gimple_phi.
+	* tree-ssa.c (insert_debug_temp_for_var_def): Likewise.
+	* tree-ssa-dom.c (get_rhs_or_phi_arg): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Use gimple_call in some places within tree-ssa-dom.c
+
+	* tree-ssa-dom.c (struct hashable_expr): Strengthen field
+	call.fn_from from gimple to gimple_call.
+	(initialize_hash_element): Replace check against GIMPLE_CALL
+	with dyn_cast<gimple_call> and update gimple_call_ uses to use
+	new gimple_call local, along with fn_from initializer.
+	(iterative_hash_hashable_expr): Strengthen type of local "fn_from"
+	from gimple to gimple_call.
+	(print_expr_hash_elt): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_call_copy_flags and ipa_modify_call_arguments
+
+	* gimple.h (gimple_call_copy_flags): Require gimple_calls.
+
+	* ipa-prop.c (ipa_modify_call_arguments): Require a gimple_call.
+	* ipa-prop.h (ipa_modify_call_arguments): Likewise.
+
+	* tree-inline.c (copy_bb): Replace is_gimple_call with new local
+	and call to dyn_cast<gimple_call>, updating gimple_call_ uses to
+	use the type-checked local.
+
+	* tree-sra.c (convert_callers): Replace check for GIMPLE_CALL with
+	a dyn_cast.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_assign_nontemporal_move_p
+
+	* gimple.h (gimple_assign_nontemporal_move_p): Require a
+	const_gimple_assign rather than a const_gimple.
+
+	* cfgexpand.c (expand_gimple_stmt_1): Add local assign_stmt and
+	checked cast within "case GIMPLE_ASSIGN".
+
+	* gimple-streamer-out.c (output_gimple_stmt): Add checked cast to
+	gimple_assign.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_call_arg_flags
+
+	* gimple.h (gimple_call_arg_flags): Require a const_gimple_call
+	rather than a const_gimple.
+
+	* gimple.c (gimple_call_fnspec): Likewise.
+	(gimple_call_arg_flags): Likewise.
+
+	* tree-inline.c (remap_gimple_stmt): Use a dyn_cast rather than a
+	is_gimple_call and repeated checked casts.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_call_set_tail and gimple_call_tail_p
+
+	* gimple.h (gimple_call_set_tail): Require a gimple_call.
+	(gimple_call_tail_p): Likewise.
+
+	* cfgexpand.c (expand_gimple_tailcall): Likewise.
+	(expand_gimple_basic_block): Convert calls to is_gimple_call to a
+	dyn_cast, introducing a new "call_stmt" local.
+
+	* trans-mem.c (expand_block_edges): Likewise, for comparison against
+	GIMPLE_CALL.
+
+	* tree-inline.c (remap_gimple_stmt): Add checked casts to
+	gimple_call in region guarded by is_gimple_call.
+
+	* tree-tailcall.c (optimize_tail_call): Add checked cast to gimple_call
+	for t->call_gsi.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_call_set_fntype
+
+	* gimple-fold.c (gimple_fold_builtin_sprintf_chk): Strengthen
+	local "stmt" from gimple to gimple_call.
+
+	* gimple.h (gimple_call_set_fntype): Require a gimple_call.
+
+	* omp-low.c (lower_omp_1): Add a new local gimple_call "call_stmt",
+	from a checked cast to gimple_call within the "case GIMPLE_CALL",
+	for the regions where "stmt" is not subsequently overwritten.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_call_set_fn
+
+	* gimple.h (gimple_call_set_fn): Require a gimple_call.
+
+	* trans-mem.c (dump_tm_memopt_transform): Likewise.
+	(tm_memopt_transform_blocks): Add checked casts to gimple_call in
+	suites guarded by is_tm_simple_{load|store}, which enforce that
+	the statement must be a GIMPLE_CALL; use this when invoking
+	dump_tm_memopt_transform.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Tweak to gimplify_modify_expr
+
+	* gimplify.c (gimplify_modify_expr): Introduce local "call_stmt".
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_call_nothrow_p
+
+	* gimple.h (gimple_call_nothrow_p): Require a gimple_call.
+
+	* tree-eh.c (stmt_could_throw_p): Add checked cast to gimple_call.
+
+	* tree-vect-slp.c (vect_build_slp_tree_1): Replace call to
+	is_gimple_call with dyn_cast<gimple_call>, introducing a local.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_call_set_nothrow
+
+	* gimple.h (gimple_call_set_nothrow): Require a gimple_call.
+
+	* trans-mem.c (ipa_tm_insert_gettmclone_call): Likewise.
+	(ipa_tm_transform_calls_redirect): Add checked cast to gimple call; this
+	is only called for gsi on a GIMPLE_CALL statement.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize various expressions from gimple to gimple_cond
+
+	* ipa-split.c (check_forbidden_calls): Replace check against
+	GIMPLE_COND with a dyn_cast<gimple_cond>, introducing a
+	gimple_cond local.
+	* predict.c (predict_extra_loop_exits): Likewise.
+	* tree-vrp.c (fold_predicate_in): Likewise.
+	(simplify_stmt_for_jump_threading): Likewise.
+
+	* predict.c (is_comparison_with_loop_invariant_p): Require a
+	gimple_cond.
+	(predict_iv_comparison): Add checked cast to gimple_cond once we
+	know the code is GIMPLE_COND.
+	(predict_loops): Change type of "stmt" to gimple_cond,
+	adding checked casts to its assignments (which are both guarded by
+	checks against GIMPLE_COND).
+
+	* tree-vrp.c (find_conditional_asserts): Require a gimple_cond.
+	(vrp_evaluate_conditional): Likewise.
+	(find_assert_locations_1): Add checked cast to gimple_cond.
+	(vrp_visit_stmt): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_cond_{lhs|rhs}_ptr
+
+	* gimple.h (gimple_cond_lhs_ptr): Require a const_gimple_cond
+	rather than just a const_gimple_cond.
+	(gimple_cond_rhs_ptr): Likewise.
+
+	* gimplify-me.c (gimple_regimplify_operands): Add a checked cast
+	to gimple_cond within "case GIMPLE_COND".
+	* omp-low.c (lower_omp_1): Likewise.
+
+	* omp-low.c (expand_omp_simd): Introduce a new local cond_stmt
+	to express that the conditional is indeed a gimple_cond.
+
+	* tree-ssa-loop-ivopts.c (extract_cond_operands): Add a checked
+	cast to gimple_cond within a region where the code is known to
+	be GIMPLE_COND.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_cond_set_{lhs|rhs}
+
+	* gimple.h (gimple_cond_set_lhs): Require a gimple_cond.
+	(gimple_cond_set_rhs): Likewise.
+
+	* tree-parloops.c (transform_to_exit_first_loop): Convert locals
+	"cond_stmt" and "cond_nit" to gimple_cond, adding checked casts,
+	since the existing code assumes that code is GIMPLE_COND.  Convert
+	"stmt" to a gimple_assign.
+	(create_parallel_loop): Likewise for "cond_stmt".
+
+	* tree-ssa-loop-im.c (rewrite_bittest): Replace check for code
+	GIMPLE_COND with a dyn_cast, adding new local "cond_stmt".
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_cond_set_code
+
+	* gimple.h (gimple_cond_set_code): Require a gimple_cond.
+
+	* tree-complex.c (expand_complex_comparison): Add a checked cast to
+	gimple_cond within "case GIMPLE_COND".
+
+	* tree-ssa-loop-ivcanon.c (create_canonical_iv): Convert local "cond"
+	to a gimple_cond, adding a checked cast.  The existing code requires
+	that the last statement before the exit edge have code GIMPLE_COND,
+	though it's not clear to me where this is verified.
+
+	* tree-ssa-loop-ivopts.c (rewrite_use_compare): Add a checked cast
+	to gimple_cond on "use->stmt".
+
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Convert
+	local "exit_if" to gimple_cond, adding a checked cast.  It's not
+	clear to me exactly where the GIMPLE_COND-ness of this is
+	established, but the existing code requires it.
+	(canonicalize_loop_ivs): Similarly for "stmt".
+
+	* tree-ssa-propagate.c (propagate_tree_value_into_stmt): Replace
+	a check against GIMPLE_COND with a dyn_cast<gimple_cond>.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_cond_{true|false}_label
+
+	* gimple.h (gimple_cond_true_label): Require a const_gimple_cond
+	rather than just a const_gimple.
+	(gimple_cond_false_label): Likewise.
+
+	* omp-low.c (diagnose_sb_2): Add checked cast to gimple_cond within
+	case GIMPLE_COND.
+	* tree-eh.c (maybe_record_in_goto_queue): Likewise.
+
+	* tree-cfg.c (verify_gimple_stmt): Add a checked cast to gimple_cond
+	within "case GIMPLE_COND", splitting it out into...
+	(verify_gimple_label): New.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_switch_index and gimple_switch_index_ptr
+
+	* gimple.h (gimple_switch_index): Require a const_gimple_switch rather
+	than a plain const_gimple.
+	(gimple_switch_index_ptr): Likewise.
+
+	* gimplify-me.c (gimple_regimplify_operands): Add checked cast to
+	gimple_switch within "case GIMPLE_SWITCH".
+	* tree-cfgcleanup.c (cleanup_control_expr_graph): Likewise.
+	* tree-ssa-ccp.c (ccp_fold): Likewise.
+	* tree-ssa-dom.c (optimize_stmt): Likewise.
+
+	* tree-ssa-ccp.c (evaluate_stmt): Add checked cast to
+	gimple_switch within region guarded by check for GIMPLE_SWITCH.
+	* tree-ssa-dom.c (record_edge_info): Likewise.
+	(eliminate_redundant_computations): Likewise.
+	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Likewise.
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Likewise.
+
+	* tree-ssa-dom.c (initialize_hash_element): Replace check for
+	code GIMPLE_SWITCH with a dyn_cast<gimple_switch>.
+	(propagate_rhs_into_lhs): Likewise.
+	* tree-ssa-propagate.c (may_propagate_copy_into_stmt): Likewise.
+	(propagate_tree_value_into_stmt): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_cond_make_{false|true}
+
+	* gimple.h (gimple_cond_make_false): Require a gimple_cond.
+	(gimple_cond_make_true): Likewise.
+
+	* tree-cfg.c (fold_cond_expr_cond): Add a checked cast to
+	gimple_cond within region guarded by check for GIMPLE_COND.
+	* tree-ssa-ccp.c (ccp_fold_stmt): Likewise.
+
+	* tree-loop-distribution.c (generate_loops_for_partition): Replace
+	a check for GIMPLE_COND with a dyn_cast<gimple_cond>.
+	* tree-ssa-ccp.c (optimize_unreachable): Likewise.
+	* tree-ssa-loop-niter.c (number_of_iterations_exit): Likewise.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Likewise.
+
+	* tree-vrp.c (fold_predicate_in): Add a checked cast to
+	gimple_cond.  We must be dealing with a GIMPLE_COND since logic
+	at top of the function ensures we only act on GIMPLE_ASSIGN and
+	GIMPLE_COND statements, and we're now within a "not a GIMPLE_ASSIGN"
+	clause.
+
+	* tree-ssa-loop-ivcanon.c (remove_exits_and_undefined_stmts): Add
+	checked cast of elt->stmt to gimple_cond.  The existing code requires
+	this to be a GIMPLE_COND, though it's not clear to me how this
+	requirement is enforced.
+	(remove_redundant_iv_tests): Likewise.
+	(try_unroll_loop_completely): Likewise, for the last_stmt of the
+	preceding bb along edge_to_cancel.
+	* tree-ssa-reassoc.c (maybe_optimize_range_tests): Likewise, for the
+	last_stmt of bb.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize locals within expand_omp_for_init_counts
+
+	* omp-low.c (expand_omp_for_init_counts): Eliminate local "stmt"
+	in favor of new locals "cond_stmt" and "assign_stmt" with more
+	concrete types.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Make gimple_cond_set_{true|false}_label require gimple_cond.
+
+	* gimple.h (gimple_cond_set_true_label): Require a gimple_cond.
+	(gimple_cond_set_false_label): Likewise.
+
+	* tree-cfg.c (make_cond_expr_edges): Convert "entry" from gimple to
+	a gimple_cond.
+	(cleanup_dead_labels): Introduce a checked cast to a gimple_cond within
+	the GIMPLE_COND case.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize three gimple_return_ accessors
+
+	* gimple.h (gimple_return_retval_ptr): Require a const_gimple_return
+	rather than a const_gimple.
+	(gimple_return_retval): Likewise.
+	(gimple_return_set_retval): Require a gimple_return.
+
+	* cfgexpand.c (expand_gimple_stmt_1): Add a checked cast to
+	gimple_return.
+	(expand_gimple_basic_block): Likewise.
+	* tree-complex.c (expand_complex_move): Likewise.
+	(expand_complex_comparison): Likewise.
+	* tree-inline.c (remap_gimple_stmt): Likewise.
+	* tree-sra.c (scan_function): Likewise.
+	(sra_modify_function_body): Likewise.
+	(ipa_sra_modify_function_body): Likewise.
+	* tree-ssa-structalias.c (find_func_aliases): Likewise.
+
+	* gimple-ssa-isolate-paths.c (isolate_path): Strengthen local
+	"ret" from gimple to gimple_return.
+	(find_implicit_erroneous_behaviour): Replace a check for code
+	GIMPLE_RETURN with a dyn_cast and a new local.
+	(find_explicit_erroneous_behaviour): Likewise.
+	* gimple-walk.c (walk_stmt_load_store_addr_ops): Likewise.
+	* gimple.c (infer_nonnull_range): Likewise.
+	* ipa-split.c (find_return_bb): Likewise.
+	(find_retval): Likewise.
+	(split_function): Likewise.
+	* omp-low.c (ipa_simd_modify_function_body): Likewise.
+	* tree-cfg.c (pass_warn_function_return::execute): Likewise.
+	* tree-nrv.c (tree_nrv): Likewise.
+	* tree-ssa-alias.c (ref_maybe_used_by_stmt_p): Likewise.
+	* tree-ssa-dce.c (propagate_necessity): Likewise.
+	* tree-ssa-structalias.c (find_func_clobbers): Likewise.
+	* tree-tailcall.c (find_tail_calls): Likewise.
+
+	* predict.c (apply_return_prediction): Rework the search for
+	return_stmt so that the latter can have type gimple_return.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Make gimple_phi_arg_location require a gimple_phi.
+
+	* gimple.h (gimple_phi_arg_location): Require a gimple_phi.
+
+	* tree-into-ssa.c (rewrite_update_phi_arguments): Replace a check
+	for code GIMPLE_PHI with a dyn_cast and a new local.
+	* tree-ssa-ter.c (ter_is_replaceable_p): Likewise.
+
+	* tree-ssa-live.c (remove_unused_locals): Replace a
+	gimple_stmt_iterator with a gimple_phi_iterator, using it to make
+	local "phi" be a gimple_phi.
+	* tree-ssa-phiopt.c (tree_ssa_phiopt_worker): Likewise.
+
+	* tree-ssa-phiopt.c (conditional_replacement): Require a gimple_phi.
+	(single_non_singleton_phi_for_edges): Return a gimple_phi; update
+	local to be a gimple_phi, adding checked casts since we're working
+	on a sequence of gimple_phi.
+	(conditional_replacement): Require a gimple_phi.
+
+	* tree-ssa-threadupdate.c (get_value_locus_in_path): Strengthen
+	type of local "def_phi" to gimple_phi by replacing a check of the
+	code for GIMPLE_PHI with a dyn_cast<gimple_phi>.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Make gimple_phi_arg_location_from_edge require a gimple_phi
+
+	* gimple.h (gimple_phi_arg_location_from_edge): Require a
+	gimple_phi.
+
+	* tree-parloops.c (create_parallel_loop): Split up local variable
+	"stmt", introducing other locals for the various statements created
+	by this function.  Reuse "stmt" within the phi-handling code, and
+	change to type gimple_phi, since this is the only remaining
+	"non-phi" user of gimple_phi_arg_location_from_edge.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize three gimple_try_set_ accessors
+
+	* gimple.c (gimple_copy): Add checked casts to gimple_try.
+
+	* gimple.h (gimple_try_set_kind): Require a gimple_try.
+	(gimple_try_set_eval): Likewise.
+	(gimple_try_set_cleanup): Likewise.
+
+	* tree-eh.c (optimize_double_finally): Require a pair of gimple_try
+	statements.
+	(refactor_eh_r): Convert code comparisons to dynamic casts.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_try_set_catch_is_cleanup
+
+	* gimple.h (gimple_try_set_catch_is_cleanup): Require a gimple_try.
+
+	* gimplify.c (gimplify_expr): Convert local "try_" from a gimple
+	to a gimple_try.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_eh_filter_set_types and gimple_eh_filter_set_failure
+
+	* gimple.h (gimple_eh_filter_set_types): Require a gimple_eh_filter.
+	(gimple_eh_filter_set_failure): Likewise.
+	* gimple.c (gimple_copy): Add checked casts to gimple_eh_filter
+	within GIMPLE_EH_FILTER case.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_label_label
+
+	* gimple.h (gimple_label_label): Require a const_gimple_label
+	rather than just a const_gimple.
+
+	* cfgexpand.c (label_rtx_for_bb): Convert local from gimple to
+	gimple_label, replacing a check against GIMPLE_LABEL with a
+	dyn_cast<gimple_label>.
+	* predict.c (tree_estimate_probability_bb): Likewise.
+	* tree-cfg.c (make_edges): Likewise.
+	(cleanup_dead_labels): Likewise (twice).
+	(gimple_can_merge_blocks_p): Likewise.
+	(gimple_block_label): Likewise.
+	* tree-eh.c (unsplit_eh): Likewise.
+	(cleanup_empty_eh_unsplit): Likewise.
+	* tree-inline.c (mark_local_labels_stmt): Likewise.
+	* tree-nested.c (convert_nl_goto_receiver): Likewise.
+
+	* cfgexpand.c (expand_gimple_stmt_1): Add a checked cast to
+	gimple_label when invoking gimple_label_label in a region where
+	we've checked the code is GIMPLE_LABEL.
+	* gimple-pretty-print.c (pp_cfg_jump): Likewise.
+	* gimple.c (gimple_set_bb): Likewise.
+	* ipa-pure-const.c (check_stmt): Likewise.
+	* omp-low.c (diagnose_sb_1): Likewise.
+	* tree-cfg.c (gimple_verify_flow_info): Likewise.
+	* tree-cfgcleanup.c (tree_forwarder_block_p): Likewise.
+	(remove_forwarder_block): Likewise.
+	* tree-eh.c (collect_finally_tree): Likewise.
+
+	* ipa-split.c (verify_non_ssa_vars): Replace a check against
+	GIMPLE_LABEL with a dyn_cast<gimple_label>, introducing a
+	gimple_label local.
+	* tree-cfg.c (gimple_can_merge_blocks_p): Likewise.
+	(gimple_merge_blocks): Likewise.
+	(remove_bb): Likewise.
+	(stmt_starts_bb_p): Likewise.
+	(gimple_verify_flow_info): Likewise.
+	(move_block_to_fn): Likewise.
+	* tree-cfgcleanup.c (remove_forwarder_block): Likewise.
+	(remove_forwarder_block_with_phi): Likewise.
+	* tree-ssa-ccp.c (optimize_unreachable): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_call_use_set and gimple_call_clobber_set
+
+	* gimple.h (gimple_call_use_set): Require a gimple_call.
+	(gimple_call_clobber_set): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize gimple_catch_types
+
+	* gimple.h (gimple_catch_types): Require a const_gimple_catch
+	rather than a const_gimple.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Make gimple_goto_set_dest require a gimple_goto
+
+	* gimple.h (gimple_goto_set_dest): Require a gimple_goto.
+
+	* tree-cfg.c (factor_computed_gotos): Add checked cast to
+	gimple_goto.
+	(cleanup_dead_labels): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Make gimple_label_set_label require a gimple_label
+
+	* gimple.h (gimple_label_set_label): Require a gimple_label.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize parameter to gimple_call_copy_skip_args
+
+	* gimple.c (gimple_call_copy_skip_args): Require a gimple_call.
+	* gimple.h (gimple_call_copy_skip_args): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Various gimple to gimple_call conversions in IPA
+
+	* ipa-prop.c (detect_type_change_from_memory_writes): Require a
+	gimple_call rather than a plain gimple.
+	(detect_type_change): Likewise.
+	(detect_type_change_ssa): Likewise.
+	(compute_complex_assign_jump_func): Likewise.
+	(compute_complex_ancestor_jump_func): Likewise.
+	(compute_known_type_jump_func): Likewise.
+	(determine_locally_known_aggregate_parts): Likewise.
+	(ipa_compute_jump_functions_for_edge): Strengthen local "call" to
+	a gimple_call; add checked cast to gimple_phi.
+	(ipa_note_param_call): Require a gimple_call rather than a plain
+	gimple.
+	(ipa_analyze_indirect_call_uses): Likewise.
+	(ipa_analyze_virtual_call_uses): Likewise.
+	(ipa_analyze_call_uses): Likewise.
+	(ipa_analyze_stmt_uses):Add checked cast to gimple_call.
+
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Replace use of is_gimple_call with dyn_cast<gimple_call> and a
+	new local "call_stmt".
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Use gimple_call for callgraph edges
+
+	* cgraph.h (cgraph_edge::call_stmt): Strengthen field from plain
+	gimple to a gimple_call.
+	(cgraph_node::set_call_stmt_including_clones): Likewise for param
+	"new_stmt".
+	(cgraph_node::create_edge): Likewise for param "call_stmt".
+	(cgraph_node::create_indirect_edge): Likewise.
+	(cgraph_node::create_edge_including_clones): Likewise for param
+	"stmt".
+	(cgraph_edge::set_call_stmt): Likewise for param "new_stmt".
+	(cgraph_edge::clone): Likewise for param "call_stmt".
+	(symbol_table::create_edge): Likewise.
+
+	* cgraph.c (cgraph_edge::set_call_stmt): Require a gimple_call
+	rather than a plain gimple.
+	(symbol_table::create_edge): Likewise.
+	(cgraph_node::create_edge): Likewise.
+	(cgraph_node::create_indirect_edge): Likewise.
+	(cgraph_edge::redirect_call_stmt_to_callee): Strengthen local
+	"new_stmt" from gimple to gimple_call.
+	(cgraph_update_edges_for_call_stmt_node): Add checked casts to
+	gimple_call.
+
+	* cgraphbuild.c (pass_build_cgraph_edges::execute): Replace
+	is_gimple_call with dyn_cast<gimple_call> and new local
+	"call_stmt".
+	(cgraph_edge::rebuild_edges): Likewise.
+
+	* cgraphclones.c (cgraph_edge::clone): Require a gimple_call
+	rather than a plain gimple.
+	(cgraph_node::set_call_stmt_including_clones): Likewise.
+	(cgraph_node::create_edge_including_clones): Likewise.
+
+	* lto-streamer-in.c (fixup_call_stmt_edges_1): Add checked casts
+	to gimple_call.
+
+	* omp-low.c (simd_clone_adjust): Strengthen local "call" from
+	gimple to gimple_call.
+
+	* trans-mem.c (ipa_tm_insert_irr_call): Likewise for "g".
+	(ipa_tm_insert_gettmclone_call): Likewise; also strengthen "g2"
+	to gimple_assign.
+
+	* tree-emutls.c (gen_emutls_addr): Strengthen local "x" from
+	gimple to gimple_call.
+
+	* tree-inline.c (copy_bb): Replace is_gimple_call with
+	dyn_cast<gimple_call> and new local "call_stmt".
+
+	* value-prof.c (gimple_ic): Require and return a gimple_call,
+	rather than a plain gimple.
+	* value-prof.h (gimple_ic): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Make gimple_call_return_slot_opt_p require a gimple_call.
+
+	* gimple.h (gimple_call_return_slot_opt_p): Require a gimple_call
+	rather than a plain gimple.
+
+	* gimple-walk.c (walk_stmt_load_store_addr_ops): Convert usage of
+	is_gimple_call to dyn_cast<gimple_call>, introducing a new local
+	"call_stmt".
+
+	* trans-mem.c (expand_call_tm): Split local "stmt", strengthening
+	from plain gimple to a gimple_call, and introducing new local
+	gimple_assign "assign_stmt".
+
+	* tree-inline.c (expand_call_inline):  Convert check of code against
+	GIMPLE_CALL to dyn_cast<gimple_call>, introducing a new local
+	"call_stmt".
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	More gimple_phi
+
+	* gimple.h (gimple_phi_set_result): Require a gimple_phi rather
+	than a plain gimple.
+	(gimple_phi_set_arg): Likewise.
+
+	* tree-outof-ssa.c (remove_gimple_phi_args): Likewise; add a checked
+	cast to gimple_phi.
+
+	* tree-sra.c (replace_removed_params_ssa_names): Add a checked
+	cast to gimple_phi.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Make gimple_phi_arg_edge require a gimple_phi
+
+	* gimple.h (gimple_phi_arg_edge): Require a gimple_phi rather
+	than a plain gimple.
+
+	* gimple-ssa-strength-reduction.c (ncd_with_phi): Strengthen
+	param "phi" from gimple to gimple_phi.  Add a checked cast.
+	(ncd_of_cand_and_phis): Add a checked cast.
+
+	* graphite-sese-to-poly.c (rewrite_phi_out_of_ssa): Require a
+	gimple_phi_iterator; strengthen local "phi" from gimple to a
+	gimple_phi.
+	(rewrite_cross_bb_scalar_deps): Strengthen local "psi" from
+	a gimple_stmt_iterator to a gimple_phi_iterator.
+	(edge_initial_value_for_loop_phi): Require a gimple phi.
+	(initial_value_for_loop_phi): Likewise.
+
+	* ipa-split.c (consider_split): Convert "bsi" to a
+	gimple_phi_iterator and "stmt" to a gimple_phi.
+
+	* predict.c (predict_extra_loop_exits): Convert "phi_stmt" to be
+	a gimple_phi; introduce "lhs_def_stmt" as plain gimple.
+	(apply_return_prediction): Convert "phi" to be a gimple_phi.
+
+	* tree-cfg.c (replace_uses_by): Add checked cast to gimple_phi.
+	(verify_gimple_in_cfg): Introduce gimple_phi_iterator "gpi" and use
+	it to convert "phi" to a gimple_phi.
+
+	* tree-eh.c (cleanup_empty_eh_merge_phis): Convert "ngsi", "ogsi"
+	to be gimple_phi_iterators.  Convert "ophi", "nphi" to be
+	gimple_phi.
+
+	* tree-into-ssa.c (prepare_use_sites_for): Add checked cast to
+	gimple_phi.
+
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Introduce
+	gimple_phi_iterator "gpi" and use it to convert "phi" to a
+	gimple_phi.
+
+	* tree-ssa-dce.c (propagate_necessity): Introduce local "phi",
+	from checked cast to gimple_phi.
+
+	* tree-ssa-live.c (set_var_live_on_entry): Add checked cast to
+	gimple_phi.
+
+	* tree-ssa-propagate.c (replace_phi_args_in): Require a gimple_phi
+	rather than a plain gimple.
+	(substitute_and_fold_dom_walker::before_dom_children): Introduce
+	gimple_phi_iterator "gpi".
+
+	* tree-ssa-sink.c (find_bb_for_arg): Require a gimple_phi rather
+	than a plain gimple.
+	(nearest_common_dominator_of_uses): Replace check of code against
+	GIMPLE_PHI with a dyn_cast<gimple_phi>, introducing a new local.
+	(statement_sink_location): Add checked cast to gimple_phi.
+
+	* tree-ssa-uninit.c (compute_uninit_opnds_pos): Require a
+	gimple_phi rather than a plain gimple.
+	(collect_phi_def_edges): Likewise.  Add a checked cast.
+	(find_def_preds): Strengthen param "phi" from gimple to
+	gimple_phi.
+	(prune_uninit_phi_opnds_in_unrealizable_paths): Likewise for
+	params "phi" and "flag_def".  Strenghen param "visited_phis" from
+	hash_set<gimple> * to hash_set<gimple_phi> *.  Convert
+	"flag_arg_def", "phi_arg_def" to gimple_phi using
+	dyn_cast<gimple_phi>.  Similarly, introduce new local
+	"opnd_def_phi".
+	(use_pred_not_overlap_with_undef_path_pred): Strengthen param
+	"phi" from gimple to gimple_phi, and param "visited_phis" from
+	hash_set<gimple> * to hash_set<gimple_phi> *.  Add a checked cast.
+	(is_use_properly_guarded): Likewise for params.
+	(find_uninit_use): Replace check of code against GIMPLE_PHI with
+	a dyn_cast<gimple_phi>, introducing a new local "use_phi".
+	Strengthen local "visited_phis" from hash_set<gimple> to
+	hash_set<gimple_phi>.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Update GRAPHITE to use more concrete gimple statement classes
+
+	* graphite-scop-detection.c (canonicalize_loop_closed_ssa):
+	Strengthen local "psi" to be a gimple_phi_iterator and "phi" to
+	a gimple_phi.
+
+	* graphite-sese-to-poly.c (phi_arg_in_outermost_loop): Require
+	a gimple_phi rathen than a plain gimple.
+	(remove_simple_copy_phi): Require a gimple_phi_iterator;
+	strengthen local "phi" to be a gimple_phi and "stmt" to be a
+	gimple_assign.
+	(remove_invariant_phi): Likewise.
+	(simple_copy_phi_p): Require a gimple_phi.
+	(reduction_phi_p): Require a gimple_phi_iterator; strengthen
+	local "phi" to be a gimple_phi.
+	(add_condition_to_pbb): Require a gimple_cond rather than a
+	plain gimple.
+	(add_conditions_to_domain): Add checked cast to gimple_cond
+	within GIMPLE_COND case of switch statement.
+	(single_pred_cond_non_loop_exit): Return a gimple_cond rather
+	than a plain gimple, via a checked cast.
+	(sese_dom_walker::before_dom_children): Strengthen local "stmt"
+	from gimple to gimple_cond.
+	(gsi_for_phi_node): Require a gimple_phi, and return a
+	gimple_phi_iterator.
+	(insert_out_of_ssa_copy): Strengthen local "stmt" from gimple to
+	gimple_assign.
+	(rewrite_reductions_out_of_ssa): Strengthen "psi" to be a
+	gimple_phi_iterator, and "phi" to be a gimple_phi.
+	(phi_contains_arg): Require a gimple_phi.
+	(follow_ssa_with_commutative_ops): Strengthen return type from
+	gimple to gimple_phi, by converting a check for code GIMPLE_PHI to
+	a dyn_cast<gimple_phi>, and strengthening local "res" from gimple
+	to gimple_phi.
+	(detect_commutative_reduction_arg): Strengthen return type from
+	gimple to gimple_phi, and strengthen local "phi" to be a
+	gimple_phi.
+	(detect_commutative_reduction_assign): Strengthen return type from
+	gimple to gimple_phi, and strengthen local "res" to be a
+	gimple_phi.
+	(follow_inital_value_to_phi): Strengthen return type from
+	gimple to gimple_phi.  Replace check for code GIMPLE_PHI with
+	a dyn_cast<gimple_phi>.
+	(detect_commutative_reduction): Strengthen return type and locals
+	"loop_phi", "phi", "close_phi" from gimple to gimple_phi,
+	introducing a checked cast of "stmt" in region guarded by
+	scalar_close_phi_node_p (stmt).
+	(translate_scalar_reduction_to_array_for_stmt): Require param
+	"loop_phi" to be a gimple_phi.  Strengthen local "assign" from
+	gimple to gimple_assign.
+	(remove_phi): Require a gimple_phi.
+	(close_phi_written_to_memory): Likewise.
+	(translate_scalar_reduction_to_array): We expect the first element
+	in each vector to be an arbitrary statement, but all of the
+	subsequent elements to be phi nodes.  Hence the decls of gimple
+	locals "loop_phi" and "close_phi" are replaced with decls of gimple
+	"loop_stmt" and "close_stmt", with decls of the more-strongly typed
+	gimple_phi "loop_phi" and "close_phi" occurring lower down, within
+	the region where we're dealing with i > 0 and hence where we can
+	safely assign them using the checked cast as_a <gimple_phi>.
+	This allows many of the strengthenings from gimple to gimple_phi
+	above.  We eliminate the local "stmt", since we can simply use
+	"loop_stmt".
+	(rewrite_commutative_reductions_out_of_ssa_close_phi): Strengthen
+	param "close_phi" from gimple to gimple_phi, and local "gsi" from
+	gimple_stmt_iterator to gimple_phi_iterator, converting uses of
+	gsi_stmt to gsi.phi for type-safety.
+	(scop_ivs_can_be_represented): Strengthen local "gsi" from
+	gimple_stmt_iterator to gimple_phi_iterator, and "phi" from gimple
+	to gimple_phi.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Make gimple_phi_arg_set_location require a gimple_phi
+
+	* gimple.h (gimple_phi_arg_set_location): Require a gimple_phi
+	rather than a plain gimple.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Make add_phi_arg require a gimple_phi
+
+	* tree-phinodes.h (add_phi_arg): Require a gimple_phi rather than
+	a plain gimple.
+	* tree-phinodes.c (add_phi_arg): Likewise.
+
+	* gimple-ssa-strength-reduction.c (create_phi_basis): Strengthen
+	local "phi" from plain gimple to gimple_phi.
+
+	* graphite-scop-detection.c (canonicalize_loop_closed_ssa):
+	Likewise for "close_phi".
+
+	* ipa-split.c (split_function): Convert "psi" to
+	gimple_phi_iterator.
+
+	* omp-low.c (expand_omp_for_static_nochunk): Introduce
+	gimple_phi_iterator gpi, using it to strengthen "phi" to be a
+	gimple_phi.
+	(expand_omp_for_static_chunk): Likewise.
+
+	* tree-cfg.c (gimple_duplicate_bb): Make topmost "gsi" decl more
+	tightly-scoped, and eliminate decls "phis", "phi", "stmt", "copy"
+	in favor of more tightly-scoped gimple_phi_iterator gpi and
+	gimple_phi decls "phi" and "copy", and gimple decls "stmt" and
+	"copy".
+
+	* tree-parloops.c (create_parallel_loop): Introduce
+	gimple_phi_iterator gpi, using it to strengthen "phi" to be a
+	gimple_phi.
+
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Likewise.
+
+	* tree-ssa-loop-manip.c (create_iv): Split out new gimple_phi
+	local "phi" from "stmt", and convert the latter into being a
+	gimple_assign.
+
+	* tree-ssa-pre.c (insert_into_preds_of_block): Strengthen local
+	"phi" to be a gimple_phi.
+
+	* tree-ssa-tail-merge.c (vop_phi): Require a gimple_phi rather
+	than a plain gimple.
+	(replace_block_by): Strengthen local "bb2_phi" to be a gimple_phi.
+
+	* tree-tailcall.c (add_successor_phi_arg): Use gsi.phi when
+	invoking add_phi_arg.
+	(eliminate_tail_call): Introduce gimple_phi_iterator gpi, using it
+	to strengthen "phi" to be a gimple_phi.
+	(create_tailcall_accumulator): Strengthen local "phi" to be a
+	gimple_phi.
+	(tree_optimize_tail_calls_1): Likewise.
+
+	* tree-vect-data-refs.c (vect_setup_realignment): Strengthen
+	local "phi_stmt" to be a gimple_phi.
+
+	* tree-vect-loop-manip.c (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Strengthen "gsi", "gsi_orig", "gsi_new" to be
+	gimple_phi_iterators, and "phi" "orig_phi", "new_phi" to be
+	gimple_phi instances.
+	(slpeel_tree_peel_loop_to_edge): Strengthen local "new_phi" to be
+	a gimple_phi.
+
+	* tree-vect-loop.c (get_initial_def_for_induction): Likewise for
+	"induction_phi".
+	(vect_create_epilog_for_reduction): Add checked casts to
+	gimple_phi; strengthen local "outer_phi" to gimple_phi and
+	"new_vec_stmt" to gimple_assign.
+	(vect_finalize_reduction): Strengthen local "vect_phi" to
+	gimple_phi.
+	(vectorizable_reduction): Likewise for "new_phi".
+
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Likewise.
+	(vectorizable_load): Likewise for "phi".
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Make gimple_phi_arg_def_ptr and gimple_phi_arg_has_location require a gimple_phi
+
+	* gimple.h (gimple_phi_arg_def_ptr): Require a gimple_phi rather
+	than a plain gimple.
+	(gimple_phi_arg_has_location): Likewise.
+
+	* gimple-streamer-in.c (input_phi): Return a gimple_phi rather
+	than a plain gimple.
+	* gimple-streamer-out.c (output_phi): Require a gimple_phi rather
+	than a plain gimple.
+	(output_bb): Convert iteration to a gimple_phi_iterator, and local
+	"phi" to gimple_phi.
+
+	* omp-low.c (expand_omp_for_static_chunk): Convert iterator "psi"
+	to a gimple_phi_iterator; convert locals "phi" and "nphi" to be
+	gimple_phi.
+
+	* tree-cfg.c (gimple_duplicate_sese_tail): Likewise for "psi" and
+	"phi".
+	(move_block_to_fn): Introduce new gimple_phi_iterator "psi", using
+	it in place of "gsi" where necessary.  Convert "phi" to be a
+	gimple_phi.
+
+	* tree-cfgcleanup.c (remove_forwarder_block): Likewise.
+
+	* tree-vect-loop-manip.c (vect_loop_versioning): Convert "gsi" to
+	a gimple_phi_iterator, and "orig_phi" and "new_phi" to be
+	gimple_phi.
+
+	* tree.c (find_decls_types_in_node): Introduce new
+	gimple_phi_iterator "psi", using it in place of "si" where
+	necessary.  Convert "phi" to be a gimple_phi.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	omp-low.c: Use more concrete types of gimple statement for various locals
+
+	* omp-low.c (finalize_task_copyfn): Strengthen local "bind" from
+	plain gimple to gimple_bind.
+	(lower_rec_input_clauses): Strengthen local "g" from
+	plain gimple to gimple_assign.
+	(lower_lastprivate_clauses): Likewise for "stmt" to gimple_cond
+	and "g" to gimple_call.
+	(expand_omp_for_init_vars): Likewise, for two decls of "stmt" to
+	gimple_assign.
+	(expand_omp_atomic_pipeline): Likewise for one decl of "stmt".
+	(expand_omp_atomic_mutex): Likewise.
+	(lower_omp_master): Likewise for "x" to gimple_call.
+	(lower_omp_ordered): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	tree-parloops.c: Use gimple_phi in various places
+
+	* tree-parloops.c (reduction_info::keep_res): Strengthen field
+	from plain gimple to gimple_phi.
+	(transform_to_exit_first_loop): Strengthen locals "phi", "nphi"
+	to gimple_phi.  Eliminate early decl of gimple_stmt_iterator gsi
+	in favor of more tightly scoped gimple_phi_iterators, and a final
+	later decl as a gimple_stmt_iterator.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_omp_sections
+
+	* coretypes.h (gimple_omp_sections): New typedef.
+	(const_gimple_omp_sections): New typedef.
+
+	* gimple-pretty-print.c (dump_gimple_omp_sections): Require a
+	gimple_omp_sections rather than a plain gimple.
+	(pp_gimple_stmt_1): Add checked cast to gimple_omp_sections within
+	GIMPLE_OMP_SECTIONS case of switch statement.
+
+	* gimple.c (gimple_build_omp_sections): Return a
+	gimple_omp_sections rather than a plain gimple.
+
+	* gimple.h (gimple_build_omp_sections): Return a
+	gimple_omp_sections rather than a plain gimple.
+
+	* omp-low.c (scan_omp_sections): Require a gimple_omp_sections
+	rather than a plain gimple.
+	(scan_omp_1_stmt): Add checked cast to gimple_omp_sections within
+	GIMPLE_OMP_SECTIONS case of switch statement.
+	(expand_omp_sections): Strengthen local "sections_stmt" from gimple
+	to gimple_omp_sections.
+	(lower_omp_sections): Likewise for "stmt".
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_omp_teams
+
+	* coretypes.h (gimple_omp_teams): New typedef.
+	(const_gimple_omp_teams): New typedef.
+
+	* gimple.h (gimple_build_omp_teams): Return a gimple_omp_teams
+	rather than a plain gimple.
+	(gimple_omp_teams_set_clauses): Require a gimple_omp_teams rather
+	than a plain gimple.
+
+	* gimple-pretty-print.c (dump_gimple_omp_teams): Require a
+	gimple_omp_teams rather than a plain gimple.
+	(pp_gimple_stmt_1): Add checked cast to gimple_omp_teams within
+	GIMPLE_OMP_TEAMS case of switch statement.
+
+	* gimple.c (gimple_build_omp_teams): Return a gimple_omp_teams
+	rather than a plain gimple.
+
+	* omp-low.c (scan_omp_teams): Likewise.
+	(scan_omp_1_stmt): Add checked cast to gimple_omp_teams within
+	GIMPLE_OMP_TEAMS case of switch statement.
+	(lower_omp_teams): Strengthen local "teams_stmt" from gimple to
+	gimple_omp_teams.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_omp_target
+
+	* coretypes.h (gimple_omp_target): New typedef.
+	(const_gimple_omp_target): New typedef.
+
+	* gimple.h (gimple_build_omp_target): Return a gimple_omp_target
+	rather than a plain gimple.
+	(gimple_omp_target_set_clauses): Require a gimple_omp_target
+	rather than a plain gimple.
+	(gimple_omp_target_set_kind): Likewise.
+	(gimple_omp_target_child_fn_ptr): Likewise.
+	(gimple_omp_target_set_child_fn): Likewise.
+	(gimple_omp_target_data_arg_ptr): Likewise.
+	(gimple_omp_target_set_data_arg): Likewise.
+	(gimple_omp_target_child_fn): Require a const_gimple_omp_target
+	rather than a plain const_gimple.
+	(gimple_omp_target_data_arg): Likewise.
+
+	* gimple-pretty-print.c (dump_gimple_omp_target): Require a
+	gimple_omp_target rather than a plain gimple.
+	(pp_gimple_stmt_1): Add checked cast to gimple_omp_target within
+	GIMPLE_OMP_TARGET case of switch statement.
+
+	* gimple.c (gimple_build_omp_target): Return a gimple_omp_target
+	rather than a plain gimple.
+
+	* gimplify.c (gimplify_omp_target_update): Strengthen local "stmt"
+	from gimple to gimple_omp_target.
+
+	* omp-low.c (scan_omp_target): Require a gimple_omp_target rather
+	than a plain gimple.
+	(scan_omp_1_stmt): Add checked cast to gimple_omp_target within
+	GIMPLE_OMP_TARGET case of switch statement.
+	(expand_omp_target): Strengthen local "entry_stmt" from gimple to
+	gimple_omp_target.
+	(lower_omp_target): Likewise for "stmt".
+
+	* tree-nested.c (convert_nonlocal_reference_stmt): Add checked
+	cast to gimple_omp_target.
+	(convert_local_reference_stmt): Likewise.
+	(convert_gimple_call): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_omp_single
+
+	* coretypes.h (gimple_omp_single): New typedef.
+	(const_gimple_omp_single): New typedef.
+
+	* gimple.h (gimple_build_omp_single): Return a gimple_omp_single
+	rather than a plain gimple.
+	(gimple_omp_single_set_clauses): Require a gimple_omp_single
+	rather than a plain gimple.
+
+	* gimple-pretty-print.c (dump_gimple_omp_single): Require a
+	gimple_omp_single rather than a plain gimple.
+	(pp_gimple_stmt_1): Add checked cast to gimple_omp_single within
+	GIMPLE_OMP_SINGLE case of switch statement.
+
+	* gimple.c (gimple_build_omp_single): Return a gimple_omp_single
+	rather than a plain gimple.
+
+	* omp-low.c (scan_omp_single): Require a gimple_omp_single rather
+	than a plain gimple.
+	(scan_omp_1_stmt): Add checked cast to gimple_omp_single within
+	GIMPLE_OMP_SINGLE case of switch statement.
+	(lower_omp_single_simple): Require a gimple_omp_single rather
+	than a plain gimple.
+	(lower_omp_single_copy): Likewise.
+	(lower_omp_single): Strengthen local "single_stmt" from gimple to
+	gimple_omp_single.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_omp_task
+
+	* coretypes.h (gimple_omp_task): New typedef.
+	(const_gimple_omp_task): New typedef.
+
+	* gimple.h (gimple_build_omp_task): Return a gimple_omp_task
+	rather than a plain gimple.
+
+	* gimple-pretty-print.c (dump_gimple_omp_task): Require a
+	gimple_omp_task rather than a plain gimple.
+	(pp_gimple_stmt_1): Add checked cast to gimple_omp_task within
+	GIMPLE_OMP_TASK case of switch statement.
+
+	* gimple.c (gimple_build_omp_task): Return a gimple_omp_task
+	rather than a plain gimple.
+
+	* omp-low.c (finalize_task_copyfn): Require a gimple_omp_task
+	rather than a plain gimple.
+	(delete_omp_context): Add checked cast to gimple_omp_task.
+	(scan_omp_task): Strengthen local "stmt" from gimple to
+	gimple_omp_task.
+	(expand_task_call): Require a gimple_omp_task rather than a plain
+	gimple.
+	(expand_omp_taskreg): Add checked cast to gimple_omp_task.
+	(create_task_copyfn): Require a gimple_omp_task rather than a
+	plain gimple.
+	(lower_omp_taskreg): Add checked cast to gimple_omp_task.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	tree-cfg.c: Make verify_gimple_call require a gimple_call
+
+	* tree-cfg.c (verify_gimple_call): Require a gimple_call rather
+	than a plain gimple.
+	(verify_gimple_stmt): Add checked cast to gimple_call within
+	GIMPLE_CALL case of switch statement.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_omp_parallel
+
+	* coretypes.h (gimple_omp_parallel): New typedef.
+	(const_gimple_omp_parallel): New typedef.
+
+	* cgraphbuild.c (build_cgraph_edges): Convert check of code
+	against GIMPLE_OMP_PARALLEL to a dyn_cast <gimple_omp_parallel>
+	and new local.
+
+	* gimple-pretty-print.c (dump_gimple_omp_parallel): Require a
+	gimple_omp_parallel rather than a plain gimple.
+	(pp_gimple_stmt_1): Add a checked cast to gimple_omp_parallel
+	within GIMPLE_OMP_PARALLEL case of switch statement.
+
+	* gimple-walk.c (walk_gimple_op): Likewise, introducing a local.
+
+	* gimple.c (gimple_build_omp_parallel): Return a
+	gimple_omp_parallel rather than a plain gimple.
+	(gimple_copy): Add checked casts to gimple_omp_parallel within
+	GIMPLE_OMP_PARALLEL case of switch statement, introducing locals.
+
+	* gimple.h (gimple_build_omp_parallel): Return a
+	gimple_omp_parallel rather than a plain gimple.
+	(gimple_omp_parallel_clauses_ptr): Require a gimple_omp_parallel
+	rather than a plain gimple.
+	(gimple_omp_parallel_set_clauses): Likewise.
+	(gimple_omp_parallel_data_arg_ptr): Likewise.
+	(gimple_omp_parallel_set_data_arg): Likewise.
+	(gimple_omp_parallel_child_fn_ptr): Likewise.
+	(gimple_omp_parallel_set_child_fn): Likewise.
+	(gimple_omp_parallel_child_fn): Require a
+	const_gimple_omp_parallel rather than a plain const_gimple.
+	(gimple_omp_parallel_data_arg): Likewise.
+
+	* omp-low.c (scan_omp_parallel): Strengthen local "stmt" from
+	gimple to gimple_omp_parallel.
+	(expand_parallel_call): Require a gimple_omp_parallel for
+	"entry_stmt" rather than a plain gimple.
+	(remove_exit_barrier):  Strengthen local "parallel_stmt" from
+	gimple to gimple_omp_parallel.
+	(expand_omp_taskreg): Add checked casts to gimple_omp_parallel.
+
+	* tree-inline.c (remap_gimple_stmt): Add a checked cast to
+	gimple_omp_parallel within GIMPLE_OMP_PARALLEL case of switch
+	statement, introducing local.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_omp_for
+
+	* coretypes.h (gimple_omp_for): New.
+	(const_gimple_omp_for): New.
+
+	* gimple.h (gimple_build_omp_for): Return a gimple_omp_for rather
+	than a plain gimple.
+	(gimple_omp_for_set_kind): Require a gimple_omp_for rather than a
+	plain gimple.
+	(gimple_omp_for_set_combined_p): Likewise.
+	(gimple_omp_for_set_combined_into_p): Likewise.
+
+	* gimple-pretty-print.c (dump_gimple_omp_for): Require a
+	gimple_omp_for rather than a plain gimple.
+	(pp_gimple_stmt_1): Add a checked cast to gimple_omp_for in
+	GIMPLE_OMP_FOR case of switch statement.
+
+	* gimple.c (gimple_build_omp_for): Return a gimple_omp_for rather
+	than a plain gimple.
+	(gimple_copy): Add a checked cast to gimple_omp_for and a new local.
+
+	* gimplify.c (gimplify_omp_for): Strengthen local "gfor" from
+	gimple to gimple_omp_for.
+
+	* omp-low.c (omp_for_data::for_stmt): Strengthen field from gimple
+	to gimple_omp_for.
+	(extract_omp_for_data): Require a gimple_omp_for rather than a
+	plain gimple.
+	(workshare_safe_to_combine_p): Add a checked cast to
+	gimple_omp_for.
+	(get_ws_args_for): Convert check of code against GIMPLE_OMP_FOR
+	with a dyn_cast<gimple_omp_for> and a new local.
+	(scan_omp_parallel): Add a checked cast to gimple_omp_for and a
+	new local.
+	(scan_omp_for): Require a gimple_omp_for rather than a plain
+	gimple.
+	(scan_omp_1_stmt): Add a checked cast to gimple_omp_for in
+	GIMPLE_OMP_FOR case of switch statement.
+	(expand_omp_for): Add a checked cast to gimple_omp_for.
+	(lower_omp_for): Strengthen local "stmt" from gimple to
+	gimple_omp_for.
+
+	* tree-nested.c (walk_gimple_omp_for): Require a gimple_omp_for
+	rather than a plain gimple.
+	(convert_nonlocal_reference_stmt): Add a checked cast to
+	gimple_omp_for in GIMPLE_OMP_FOR case of switch statement.
+	(convert_local_reference_stmt): Likewise.
+
+	* tree-parloops.c (create_parallel_loop): Strengthen local
+	"for_stmt" from gimple to gimple_omp_for.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_omp_critical
+
+	* coretypes.h (gimple_omp_critical): New typedef.
+	(const_gimple_omp_critical): New typedef.
+
+	* gimple-pretty-print.c (dump_gimple_omp_critical): Require a
+	gimple_omp_critical rather than a plain gimple.
+	(pp_gimple_stmt_1): Add a checked cast to gimple_omp_critical
+	within GIMPLE_OMP_CRITICAL case of switch statement.
+
+	* gimple-walk.c (walk_gimple_op): Likewise.
+
+	* gimple.c (gimple_build_omp_critical): Return a gimple_omp_critical
+	rather than a plain gimple.
+	(gimple_copy): Add checked casts to gimple_omp_critical
+	within GIMPLE_OMP_CRITICAL case of switch statement.
+
+	* gimple.h (gimple_debug): Likewise.
+	(gimple_build_omp_critical): Return a gimple_omp_critical rather
+	than a plain gimple.
+	(gimple_omp_critical_name): Require a const_gimple_omp_critical
+	rather than a plain const_gimple.
+	(gimple_omp_critical_name_ptr): Require a gimple_omp_critical
+	rather than a plain gimple.
+	(gimple_omp_critical_set_name): Likewise.
+
+	* omp-low.c (check_omp_nesting_restrictions): Add a checked cast
+	to gimple_omp_critical within GIMPLE_OMP_CRITICAL case of switch
+	statement, introducing a new local "other_crit" for type-safety.
+	(lower_omp_critical): Strengthen local "stmt" to
+	gimple_omp_critical.
+
+	* tree-inline.c (remap_gimple_stmt): Add a checked cast to
+	gimple_omp_critical within GIMPLE_OMP_CRITICAL case of switch
+	statement.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_omp_continue
+
+	* coretypes.h (gimple_omp_continue): New typedef.
+	(const_gimple_omp_continue): New typedef.
+
+	* gimple.h (gimple_build_omp_continue): Return a
+	gimple_omp_continue rather than a plain gimple.
+	(gimple_omp_continue_control_def): Require a
+	const_gimple_omp_continue rather than a plain const_gimple.
+	(gimple_omp_continue_control_use): Likewise.
+	(gimple_omp_continue_control_def_ptr): Require a gimple_omp_continue
+	rather than a plain gimple.
+	(gimple_omp_continue_set_control_def): Likewise.
+	(gimple_omp_continue_control_use_ptr): Likewise.
+	(gimple_omp_continue_set_control_use): Likewise.
+
+	* gimple-pretty-print.c (dump_gimple_omp_continue): Require a
+	gimple_omp_continue rather than a plain gimple.
+	(pp_gimple_stmt_1): Add a checked cast to gimple_omp_continue
+	within GIMPLE_OMP_CONTINUE case of switch statement.
+
+	* gimple-walk.c (walk_gimple_op): Likewise, adding a new local.
+
+	* gimple.c (gimple_build_omp_continue): Return a
+	gimple_omp_continue rather than a plain gimple.
+
+	* omp-low.c (gimple_build_cond_empty): Return a gimple_cond
+	rather than a plain gimple.
+	(expand_omp_for_generic): Split local "stmt" into "assign_stmt",
+	"cont_stmt", "cond_stmt", "call_stmt" of types gimple_assign,
+	gimple_omp_continue, gimple_cond, gimple_call respectively.
+	(expand_omp_for_static_nochunk): Likewise, splitting into two
+	"cond_stmt" decls. "assign_stmt", "cont_stmt"
+	(expand_omp_for_static_chunk): Likewise, splitting into
+	"cond_stmt", "assign_stmt", "cont_stmt".
+	(expand_omp_sections): Strengthen local "cont" from gimple to
+	gimple_omp_continue.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_omp_atomic_store
+
+	* coretypes.h (gimple_omp_atomic_store): New typedef.
+	(const_gimple_omp_atomic_store): New typedef.
+
+	* gimple-pretty-print.c (dump_gimple_omp_atomic_store): Require
+	a gimple_omp_atomic_store rather than a plain gimple.
+	(pp_gimple_stmt_1): Add checked cast to gimple_omp_atomic_store
+	within GIMPLE_OMP_ATOMIC_STORE case of switch statement.
+	* gimple-walk.c (walk_gimple_op): Likewise.
+
+	* gimple.c (gimple_build_omp_atomic_store): Return a
+	gimple_omp_atomic_store rather than a plain gimple.
+
+	* gimple.h (gimple_build_omp_atomic_store): Return a
+	gimple_omp_atomic_store rather than a plain gimple.
+	(gimple_omp_atomic_store_set_val): Require a gimple_omp_atomic_store
+	rather than a plain gimple.
+	(gimple_omp_atomic_store_val_ptr): Likewise.
+	(gimple_omp_atomic_store_val): Require a
+	const_gimple_omp_atomic_store rather than a plain const_gimple.
+
+	* gimplify.c (gimplify_omp_atomic): Strengthen locals "loadstmt" and
+	"storestmt" from gimple to gimple_omp_atomic_load loadstmt and
+	gimple_omp_atomic_store storestmt respectively.
+
+	* omp-low.c (expand_omp_atomic): Strengthen local "store" from
+	gimple to gimple_omp_atomic_store.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_omp_atomic_load
+
+	* coretypes.h (gimple_omp_atomic_load): New typedef.
+	(const_gimple_omp_atomic_load): New typedef.
+
+	* gimple-pretty-print.c (dump_gimple_omp_atomic_load): Require a
+	gimple_omp_atomic_load rather than a plain gimple.
+	(pp_gimple_stmt_1): Add a checked cast to gimple_omp_atomic_load
+	within GIMPLE_OMP_ATOMIC_LOAD case of switch statement.
+
+	* gimple-walk.c (walk_gimple_op): Likewise, introducing a new local.
+
+	* gimple.c (gimple_build_omp_atomic_load): Return a
+	gimple_omp_atomic_load rather than a plain gimple.
+
+	* gimple.h (gimple_build_omp_atomic_load): Return a
+	gimple_omp_atomic_load rather than a plain gimple.
+	(gimple_omp_atomic_load_set_lhs): Require a
+	gimple_omp_atomic_load rather than a plain gimple.
+	(gimple_omp_atomic_load_lhs_ptr): Likewise.
+	(gimple_omp_atomic_load_set_rhs): Likewise.
+	(gimple_omp_atomic_load_rhs_ptr): Likewise.
+	(gimple_omp_atomic_load_lhs): Require a
+	const_gimple_omp_atomic_load rather than a plain const_gimple.
+	(gimple_omp_atomic_load_rhs): Likewise.
+
+	* gimplify-me.c (gimple_regimplify_operands): Add a checked cast
+	to gimple_omp_atomic_load within GIMPLE_OMP_ATOMIC_LOAD case of
+	switch statement.
+
+	* omp-low.c (expand_omp_atomic): Strengthen type of local "load"
+	from gimple to gimple_omp_atomic_load.
+	(lower_omp_1): Add a checked cast to gimple_omp_atomic_load within
+	GIMPLE_OMP_ATOMIC_LOAD case of switch statement.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Use more concrete types for various gimple statements
+
+	* cgraphunit.c (thunk_adjust): Strengthen local "stmt" from gimple
+	to gimple_assign.
+
+	* gimple-ssa-isolate-paths.c
+	(insert_trap_and_remove_trailing_statements): Strengthen local
+	"new_stmt" from gimple to gimple_call.
+
+	* gimple-ssa-strength-reduction.c (replace_mult_candidate):
+	Strengthen local "copy_stmt" from gimple to gimple_assign.
+	(create_add_on_incoming_edge): Likewise, for "new_stmt".
+	(insert_initializers): Likewise, for "init_stmt".
+	(introduce_cast_before_cand): Likewise, for "cast_stmt".
+	(replace_one_candidate): Likewise, for "copy_stmt" and
+	"cast_stmt".
+
+	* gimplify.c (build_stack_save_restore): Require gimple_calls
+	rather than plain gimples.
+	(gimplify_bind_expr): Strengthen locals "stack_save" and
+	"stack_restore" from gimple to gimple_call.  Strengthen "gs"
+	to gimple_try.
+	(gimplify_switch_expr): Strengthen local "gimple_switch" from
+	gimple to gimple_switch, and "new_default" to gimple_label.
+	(gimplify_cond_expr): Strengthen local "gimple_cond" from gimple
+	to gimple_cond.
+	(gimplify_init_constructor): Strengthen local "init" from gimple
+	to gimple_assign.
+	(gimplify_cleanup_point_expr): Strengthen local "gtry" from gimple
+	to gimple_try.
+	(gimple_push_cleanup): Strengthen locals "ffalse" and "ftrue" from
+	gimple to gimple_assign.
+
+	* tree-eh.c (do_goto_redirection): Strengthen local to gimple_goto.
+	(emit_post_landing_pad): Strengthen local to gimple_label.
+
+	* tree-outof-ssa.c (insert_backedge_copies): Strengthen local
+	"stmt" from gimple to gimple_assign.
+
+	* tree-parloops.c (take_address_of): Likewise.
+
+	* tree-predcom.c (replace_ref_with): Likewise, for "new_stmt".
+	(initialize_root_vars_lm): Likewise, for "init_stmt".
+	(reassociate_to_the_same_stmt): Likewise, for "new_stmt" and "tmp_stmt".
+
+	* tree-profile.c (gimple_gen_edge_profiler): Likewise, for "stmt1",
+	"stmt2", "stmt3".
+	(gimple_gen_ic_profiler): Likewise.
+	(gimple_gen_ic_func_profiler): Strengthen local "stmt1" from
+	gimple to gimple_call, and "stmt2" to gimple_assign.
+
+	* tree-scalar-evolution.c (scev_const_prop): Strengthen local
+	"ass" from gimple to gimple_assign.
+
+	* tree-sra.c (build_ref_for_offset): Likewise for "stmt".
+	(generate_subtree_copies): Likewise; also strengthen "ds" to
+	gimple_debug.
+	(init_subtree_with_zero): Likewise.
+	(sra_modify_expr): Likewise.
+	(load_assign_lhs_subreplacements): Likewise.
+	(sra_modify_assign): Strengthen "ds" to gimple_debug.
+	(sra_ipa_reset_debug_stmts): Likewise for "def_temp".
+
+	* tree-ssa-ccp.c (insert_clobber_before_stack_restore):
+	Strengthen local "clobber_stmt" from gimple to gimple_assign.
+
+	* tree-ssa-dce.c (remove_dead_stmt): Strengthen "note" to
+	gimple_debug.
+
+	* tree-ssa-dom.c (record_equivalences_from_stmt): Strengthen
+	local "new_stmt" from gimple to gimple_assign.
+	(optimize_stmt): Likewise.
+
+	* tree-ssa-forwprop.c (simplify_bitwise_binary): Likewise for
+	4 declarations of "newop".
+	(simplify_rotate): Likewise for "g".
+
+	* tree-ssa-loop-im.c (rewrite_reciprocal): Likewise for 3 locals.
+	(rewrite_bittest): Likewise for "stmt" and "stmt2".
+	(move_computations_dom_walker::before_dom_children): Likewise for
+	"new_stmt".
+	(execute_sm): Likewise for "load" and "store".
+
+	* tree-ssa-loop-ivcanon.c (remove_exits_and_undefined_stmts):
+	Strengthen local "stmt" from gimple to gimple_call.
+	(unloop_loops): Likewise.
+
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Strengthen
+	local "ass" from gimple to gimple_assign.
+	(remove_unused_ivs): Strengthen "def_temp" to gimple_debug.
+
+	* tree-ssa-loop-manip.c (rewrite_phi_with_iv): Strengthen local "stmt"
+	from gimple to gimple_assign.
+
+	* tree-ssa-loop-prefetch.c (issue_prefetch_ref): Strengthen local
+	"prefetch" from gimple to gimple_call.
+
+	* tree-ssa-math-opts.c (insert_reciprocals): Strengthen local
+	"new_stmt" from gimple to gimple_assign.
+	(powi_as_mults_1): Likewise for "mult_stmt".
+	(powi_as_mults): Likewise for "div_stmt".
+	(build_and_insert_binop): Likewise for "stmt".
+	(build_and_insert_cast): Likewise.
+	(pass_cse_sincos::execute): Likewise for "stmt" and various decls
+	of "new_stmt".
+	(convert_mult_to_fma): Likewise for "fma_stmt".
+
+	* tree-ssa-phiopt.c (conditional_replacement): Likewise for "new_stmt".
+	(abs_replacement): Likewise.
+
+	* tree-ssa-phiprop.c (phiprop_insert_phi): Likewise for "tmp".
+
+	* tree-ssa-pre.c (create_expression_by_pieces): Likewise for "newstmt".
+	(eliminate_insert): Likewise for "tem".
+
+	* tree-ssa-propagate.c (update_gimple_call): Strengthen locals
+	"new_stmt" and "stmt" from gimple to gimple_call.
+	(update_call_from_tree): Likewise for "new_stmt".
+
+	* tree-ssa-reassoc.c (build_and_add_sum): Likewise for "sum".
+	(update_ops): Likewise for "g".
+	(maybe_optimize_range_tests): Likewise.
+	(rewrite_expr_tree_parallel): Require a gimple_assign rather than
+	a plain gimple.
+	(reassociate_bb): Add a checked cast to gimple_assign.
+
+	* tree-ssa.c (insert_debug_temp_for_var_def): Strengthen local
+	"def_temp" from gimple to gimple_debug.
+
+	* tree-switch-conversion.c (emit_case_bit_tests): Strengthen local
+	"shift_stmt" from gimple to gimple_assign.
+
+	* tree-tailcall.c (adjust_return_value_with_ops): Likewise for
+	"stmt".
+	(update_accumulator_with_ops): Likewise.
+
+	* tree-vect-data-refs.c (bump_vector_ptr): Likewise for
+	"incr_stmt".
+
+	* tree-vect-stmts.c (vectorizable_condition): Likewise for
+	"new_stmt".
+
+	* tree-vrp.c (build_assert_expr_for): Likewise for "assertion".
+	(simplify_truth_ops_using_ranges): Likewise for "newop".
+	(simplify_float_conversion_using_ranges): Likewise for "conv".
+
+	* ubsan.c (instrument_mem_ref): Strengthen local "g" from gimple
+	to gimple_call.
+
+	* value-prof.c (gimple_divmod_fixed_value): Require a
+	gimple_assign rather than a plain gimple; strengthen types of locals.
+	(gimple_mod_pow2): Likewise.
+	(gimple_mod_subtract): Likewise.
+	(gimple_divmod_fixed_value_transform): Strengthen local
+	"stmt" from gimple to gimple_assign.
+	(gimple_mod_pow2_value_transform): Likewise.
+	(gimple_mod_subtract_transform): Likewise.
+	(gimple_ic): Strengthen types of locals.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_try
+
+	* coretypes.h (gimple_try): New typedef.
+	(const_gimple_try): New typedef.
+
+	* gimple-low.c (gimple_try_catch_may_fallthru): Require a
+	gimple_try rather than a plain gimple.
+	(gimple_stmt_may_fallthru): Add checked cast to gimple_try.
+
+	* gimple-pretty-print.c (dump_gimple_try): Require a gimple_try
+	rather than a plain gimple.
+	(pp_gimple_stmt_1): Add checked cast to gimple_try within
+	GIMPLE_TRY case of switch statement.
+
+	* tree-eh.c (finally_tree_node::parent): Strengthen field from
+	gimple to gimple_try.
+	(record_in_finally_tree): Require a gimple_try rather than a plain
+	gimple.
+	(collect_finally_tree): Likewise.
+	(collect_finally_tree_1): Likewise.
+	(struct leh_tf_state::try_finally_expr): Strengthen field from
+	gimple to gimple_try.
+	(struct leh_tf_state::top_p): Likewise.
+	(lower_eh_must_not_throw): Require a gimple_try rather than a
+	plain gimple.
+	(frob_into_branch_around): Likewise.
+	(lower_try_finally_dup_block): Strengthen local from gimple to
+	gimple_try.
+	(honor_protect_cleanup_actions): Split out uses of "x" into new
+	locals "eh_mnt" and "try_stmt" with stronger types.
+	(lower_try_finally): Require a gimple_try rather than a plain
+	gimple.
+	(lower_catch): Likewise.
+	(lower_eh_filter): Likewise.
+	(lower_eh_must_not_throw): Likewise.
+	(lower_cleanup): Likewise.
+	(lower_eh_constructs_2): Add checked cast to gimple_try within
+	GIMPLE_TRY case of switch statement, introducing new local
+	"try_stmt", using it for type-safety.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Use subclasses of gimple in various places
+
+	* asan.c (insert_if_then_before_iter): Require a gimple cond
+	rathern than a plain gimple.
+	(asan_expand_check_ifn): Add a checked cast to gimple_cond.
+
+	* cfgloopmanip.c (create_empty_if_region_on_edge): Likewise.
+
+	* omp-low.c (simd_clone_adjust): Strengthen local from gimple
+	to gimple_phi.
+
+	* sese.c (set_ifsese_condition): Strengthen local from gimple to
+	gimple_cond.
+
+	* tree-call-cdce.c (gen_one_condition): Strengthen locals from
+	gimple to gimple_assign and gimple_cond.
+
+	* tree-ssa-phiopt.c (minmax_replacement): Likewise.
+	(cond_store_replacement): Strengthen locals from gimple to
+	gimple_phi and gimple_assign.
+	(cond_if_else_store_replacement_1): Likewise.
+
+	* tree-ssa-pre.c (do_regular_insertion): Strengthen local from
+	gimple to gimple_assign.
+
+	* tree-switch-conversion.c (hoist_edge_and_branch_if_true):
+	Strengthen local from gimple to gimple_cond.
+	(gen_def_assigns): Return a gimple_assign rather than a plain
+	gimple.
+	(gen_inbound_check): Strengthen locals from gimple to gimple_cond
+	and gimple_assign.
+
+	* tree-vect-loop-manip.c (slpeel_add_loop_guard): Strengthen local
+	from gimple to gimple_cond.
+	(set_prologue_iterations): Strengthen locals from gimple to
+	gimple_phi and gimple_cond.
+
+	* value-prof.c (gimple_ic): Strengthen local from gimple to
+	gimple_phi.
+	(gimple_stringop_fixed_value): Strengthen locals from gimple to
+	gimple_assign, gimple_cond, gimple_call, and gimple_phi.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_eh_dispatch
+
+	* coretypes.h (gimple_eh_dispatch): New typedef.
+	(const_gimple_eh_dispatch): New typedef.
+
+	* gimple-pretty-print.c (dump_gimple_eh_dispatch): Require a
+	gimple_eh_dispatch rather than a plain gimple.
+	(pp_gimple_stmt_1): Add a checked cast to gimple_eh_dispatch
+	within GIMPLE_EH_DISPATCH case of switch statement.
+
+	* gimple-streamer-in.c (input_gimple_stmt): Likewise.
+
+	* gimple-streamer-out.c (output_gimple_stmt): Likewise.
+
+	* gimple.c (gimple_build_eh_dispatch): Return a gimple_eh_dispatch
+	rather than a plain gimple.
+
+	* gimple.h (gimple_build_eh_dispatch): Return a gimple_eh_dispatch
+	rather than a plain gimple.
+	(gimple_eh_dispatch_region): Require a const_gimple_eh_dispatch
+	rather than a plain const_gimple.
+	(gimple_eh_dispatch_set_region): Require a gimple_eh_dispatch
+	rather than a plain gimple.
+
+	* tree-cfg.c (make_edges): Add a checked cast to gimple_eh_dispatch
+	within GIMPLE_EH_DISPATCH case of switch statement.
+	(gimple_verify_flow_info): Likewise.
+	(gimple_redirect_edge_and_branch): Likewise.
+	(move_stmt_r): Likewise, adding a local.
+
+	* tree-eh.c (emit_eh_dispatch): Convert local from gimple to
+	gimple_eh_dispatch.
+	(make_eh_dispatch_edges): Require a gimple_eh_dispatch rather than
+	a plain gimple.
+	(redirect_eh_dispatch_edge): Likewise.
+	(lower_eh_dispatch): Likewise.
+	(execute_lower_eh_dispatch): Add a checked cast to
+	gimple_eh_dispatch.
+	(mark_reachable_handlers): Likewise.
+	(verify_eh_dispatch_edge): Require a gimple_eh_dispatch rather
+	than a plain gimple.
+
+	* tree-eh.h (make_eh_dispatch_edges): Likewise.
+	(redirect_eh_dispatch_edge): Likewise.
+	(verify_eh_dispatch_edge): Likewise.
+
+	* tree-inline.c (remap_gimple_stmt): Add a checked cast to
+	gimple_eh_dispatch within GIMPLE_EH_DISPATCH case of switch
+	statement, adding a local.
+	(copy_edges_for_bb): Add a checked cast to gimple_eh_dispatch.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_resx
+
+	* coretypes.h (gimple_resx): New typedef.
+	(const_gimple_resx): New typedef.
+
+	* gimple.h (gimple_build_resx): Return a gimple_resx rather than a
+	plain gimple.
+	(gimple_resx_region): Require a const_gimple_resx rather than a
+	plain const_gimple.
+	(gimple_resx_set_region): Require a gimple_resx rather than a
+	plain gimple.
+
+	* gimple-pretty-print.c (dump_gimple_resx): Require a gimple_resx
+	rather than a plain gimple.
+	(pp_gimple_stmt_1): Add a checked cast to gimple_resx within
+	GIMPLE_RESX case of switch statement.
+
+	* gimple-streamer-in.c (input_gimple_stmt): Likewise.
+
+	* gimple-streamer-out.c (output_gimple_stmt): Likewise.
+
+	* gimple.c (gimple_build_resx): Return a gimple_resx rather than
+	a plain gimple.
+
+	* tree-cfg.c (move_stmt_r): Add a checked cast to gimple_resx
+	within GIMPLE_RESX case of switch statement, adding a new local.
+
+	* tree-eh.c (emit_resx): Convert local "x" from gimple to
+	gimple_resx.
+	(lower_resx): Require a gimple_resx rather than a plain gimple.
+	(pass_lower_resx::execute): Add a checked cast to gimple_resx.
+	(mark_reachable_handlers): Likewise.
+
+	* tree-inline.c (remap_gimple_stmt): Add a checked cast to
+	gimple_resx within GIMPLE_RESX case of switch statement, adding
+	a new local.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_eh_else
+
+	* coretypes.h (gimple_eh_else): New typedef.
+	(const_gimple_eh_else): New typedef.
+
+	* gimple.h (gimple_build_eh_else): Return a gimple_eh_else rather
+	than a plain gimple.
+	(gimple_eh_else_n_body_ptr): Require a gimple_eh_else rather than
+	a plain gimple.
+	(gimple_eh_else_n_body): Likewise.
+	(gimple_eh_else_e_body_ptr): Likewise.
+	(gimple_eh_else_e_body): Likewise.
+	(gimple_eh_else_set_n_body): Likewise.
+	(gimple_eh_else_set_e_body): Likewise.
+
+	* gimple-low.c (lower_stmt): Add checked cast to gimple_eh_else
+	within GIMPLE_EH_ELSE case of switch statement, introducing a new
+	local.
+	(gimple_stmt_may_fallthru): Likewise.
+
+	* gimple-pretty-print.c (dump_gimple_eh_else): Require a
+	gimple_eh_else rather than a plain gimple.
+	(pp_gimple_stmt_1): Add checked cast to gimple_eh_else within
+	GIMPLE_EH_ELSE case of switch statement
+
+	* gimple-walk.c (walk_gimple_stmt): Add checked cast to
+	gimple_eh_else within GIMPLE_EH_ELSE case of switch statement,
+	introducing a new local.
+
+	* gimple.c (gimple_build_eh_else): Return a gimple_eh_else
+	rather than a plain gimple.
+	(gimple_copy): Add checked casts to gimple_eh_else within
+	GIMPLE_EH_ELSE case of switch statement, introducing new locals.
+
+	* tree-cfg.c (verify_gimple_in_seq_2): Add checked cast to
+	gimple_eh_else within GIMPLE_EH_ELSE case of switch statement,
+	introducing a new local.
+
+	* tree-eh.c (collect_finally_tree): Likewise.
+	(replace_goto_queue_1): Likewise.
+	(get_eh_else): Return a gimple_eh_else rather than a plain gimple.
+	(honor_protect_cleanup_actions): Convert local "eh_else" from
+	gimple to gimple_eh_else.
+	(lower_try_finally_nofallthru): Likewise.
+	(lower_try_finally_onedest): Introduce locals "eh_else" and
+	"label_stmt", using them in favor of "x" for the gimple_eh_else
+	and the gimple_label.
+	(lower_try_finally_copy): Convert local "eh_else" from gimple to
+	gimple_eh_else.
+	(lower_try_finally_switch): Likewise.
+	(decide_copy_try_finally): Likewise.
+	(refactor_eh_r): Add checked cast to gimple_eh_else within
+	GIMPLE_EH_ELSE case of switch statement, introducing a new local.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_eh_must_not_throw
+
+	* coretypes.h (gimple_eh_must_not_throw): New typedef.
+	(const_gimple_eh_must_not_throw): New typedef.
+
+	* gimple-pretty-print.c (dump_gimple_eh_must_not_throw): Require
+	a gimple_eh_must_not_throw rather than a plain gimple.
+	(pp_gimple_stmt_1): Add a checked cast to gimple_eh_must_not_throw
+	within GIMPLE_EH_MUST_NOT_THROW case of switch statement.
+
+	* gimple-streamer-in.c (input_gimple_stmt): Likewise.
+
+	* gimple-streamer-out.c (output_gimple_stmt): Likewise.
+
+	* gimple.c (gimple_build_eh_must_not_throw): Return a
+	gimple_eh_must_not_throw rather than a plain gimple.
+
+	* gimple.h (gimple_build_eh_must_not_throw): Return a
+	gimple_eh_must_not_throw rather than a plain gimple.
+	(gimple_eh_must_not_throw_fndecl): Require a
+	gimple_eh_must_not_throw rather than a plain gimple.
+	(gimple_eh_must_not_throw_set_fndecl): Likewise.
+
+	* tree-eh.c (lower_eh_must_not_throw): Add checked cast.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_eh_filter
+
+	* coretypes.h (gimple_eh_filter): New typedef.
+	(const_gimple_eh_filter): New typedef.
+
+	* gimple.h (gimple_build_eh_filter): Return a gimple_eh_filter
+	rather than a plain gimple.
+
+	* gimple-pretty-print.c (dump_gimple_eh_filter): Require a
+	gimple_eh_filter rather than a plain gimple.
+	(pp_gimple_stmt_1): Add checked cast to gimple_eh_filter within
+	GIMPLE_EH_FILTER case of switch statement.
+
+	* gimple.c (gimple_build_eh_filter): Return a gimple_eh_filter
+	rather than a plain gimple.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_catch
+
+	* coretypes.h (gimple_catch): New typedef.
+	(const_gimple_catch): New typedef.
+
+	* gimple-low.c (lower_try_catch): Add checked cast to gimple_catch.
+	(gimple_try_catch_may_fallthru): Likewise.
+
+	* gimple-pretty-print.c (dump_gimple_catch): Require a gimple_catch
+	rather than a plain gimple.
+	(pp_gimple_stmt_1): Add checked cast to gimple_catch within
+	GIMPLE_CATCH case of switch statement.
+
+	* gimple-walk.c (walk_gimple_op): Likewise.
+	(walk_gimple_stmt): Likewise.
+
+	* gimple.c (gimple_build_catch): Return a gimple_catch rather than
+	a plain gimple.
+	(gimple_copy): Add checked casts to gimple_catch within
+	GIMPLE_CATCH case of switch statement, introducing new locals.
+
+	* gimple.h (gimple_build_catch): Return a gimple_catch rather than
+	a plain gimple.
+	(gimple_catch_types_ptr): Require a gimple_catch rather than a
+	plain gimple.
+	(gimple_catch_handler_ptr): Likewise.
+	(gimple_catch_handler): Likewise.
+	(gimple_catch_set_types): Likewise.
+	(gimple_catch_set_handler): Likewise.
+
+	* omp-low.c (lower_omp_1): Add checked cast to gimple_catch within
+	GIMPLE_CATCH case of switch statement.
+
+	* tree-cfg.c (verify_gimple_in_seq_2): Likewise.
+	(do_warn_unused_result): Likewise.
+
+	* tree-eh.c (collect_finally_tree): Likewise.
+	(replace_goto_queue_1): Likewise.
+	(lower_catch): Convert local from gimple to gimple_catch.
+	(refactor_eh_r): Add checked cast to gimple_catch within
+	GIMPLE_CATCH case of switch statement.
+
+	* tree-inline.c (remap_gimple_stmt): Likewise.
+	(estimate_num_insns): Add checked cast to gimple_catch within
+	GIMPLE_CATCH case of switch statement, introducing new local.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_transaction
+
+	* coretypes.h (gimple_transaction): New typedef.
+	(const_gimple_transaction): New typedef.
+
+	* gimple.h (gimple_build_transaction): Return a gimple_transaction
+	rather than a plain gimple.
+	(gimple_transaction_body_ptr): Require a gimple_transaction rather
+	than a plain gimple.
+	(gimple_transaction_body): Likewise.
+	(gimple_transaction_label_ptr): Likewise.
+	(gimple_transaction_set_body): Likewise.
+	(gimple_transaction_set_label): Likewise.
+	(gimple_transaction_set_subcode): Likewise.
+	(gimple_transaction_label): Require a const_gimple_transaction
+	rather than a plain const_gimple.
+	(gimple_transaction_subcode): Likewise.
+
+	* gimple-low.c (lower_stmt): Add checked cast to
+	gimple_transaction within GIMPLE_TRANSACTION case of switch
+	statement.
+
+	* gimple-pretty-print.c (dump_gimple_transaction): Require a
+	gimple_transaction rather than a plain gimple.
+	(pp_gimple_stmt_1): Add checked cast to gimple_transaction within
+	GIMPLE_TRANSACTION case of switch statement.
+	* gimple-streamer-in.c (input_gimple_stmt): Likewise.
+	* gimple-streamer-out.c (output_gimple_stmt): Likewise.
+	* gimple-walk.c (walk_gimple_op): Likewise.
+	(walk_gimple_stmt): Likewise.
+
+	* gimple.c (gimple_build_transaction): Return a gimple_transaction
+	rather than a plain gimple.
+	(gimple_copy): Add checked casts to gimple_transaction within
+	GIMPLE_TRANSACTION case of switch statement.
+
+	* gimplify.c (gimplify_transaction): Split local "g" into
+	"body_stmt" and "trans_stmt", strengthening the type of the latter
+	from gimple to gimple_transaction.
+
+	* omp-low.c (lower_omp_1): Add checked cast to gimple_transaction
+	within GIMPLE_TRANSACTION case of switch statement.
+
+	* trans-mem.c (diagnose_tm_1): Add checked cast within
+	GIMPLE_TRANSACTION case of switch statement, introducing a new
+	local "trans_stmt".  Use it in place of "stmt".
+	(examine_call_tm): Convert local from gimple to gimple_transaction.
+	(tm_region::get_transaction_stmt): New method.
+	(tm_region::transaction_stmt): Add clarification of type to the
+	comment.
+	(tm_region_init_0): Require a gimple_transaction rather than a
+	plain gimple.
+	(tm_region_init): Convert a check against GIMPLE_TRANSACTION to a
+	dyn_cast<gimple_transaction> and new local.
+	(transaction_subcode_ior): Add a new local, using the new
+	get_transaction_stmt method to perform a checked cast.
+	(propagate_tm_flags_out): Likewise.
+	(expand_transaction): Add a checked cast using the new
+	get_transaction_stmt method.
+	(generate_tm_state): Likewise.
+	(execute_tm_mark): Likewise.
+	(ipa_tm_diagnose_transaction): Likewise.
+
+	* tree-cfg.c (verify_gimple_transaction): Require a
+	gimple_transaction rather than a plain gimple.
+	(make_edges): Add checked cast within GIMPLE_TRANSACTION case of
+	switch statement
+	(cleanup_dead_labels): Likewise.
+	(verify_gimple_stmt): Likewise.
+	(verify_gimple_in_seq_2): Likewise.
+	(verify_gimple_in_seq_2): Likewise.
+	(gimple_redirect_edge_and_branch): Add checked cast.
+
+	* tree-inline.c (remap_gimple_stmt): Add checked cast within
+	GIMPLE_TRANSACTION case of switch statement, introducing a new
+	local "old_trans_stmt".  Use it in place of "stmt".  Add new
+	local "new_trans_stmt", using it to initialize "copy", and for
+	type-safe operations as a transaction.
+	(estimate_num_insns): Add checked cast within GIMPLE_TRANSACTION
+	case of switch statement.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_asm
+
+	* coretypes.h (gimple_asm): New typedef.
+	(const_gimple_asm): New typedef.
+
+	* gimple.h (gimple_build_asm_vec): Return a gimple_asm rather than
+	just a gimple.
+	(gimple_asm_clobbers_memory_p): Require a const_gimple_asm rather
+	than just a const_gimple.
+	(gimple_asm_ninputs): Likewise.
+	(gimple_asm_noutputs): Likewise.
+	(gimple_asm_nclobbers): Likewise.
+	(gimple_asm_nlabels): Likewise.
+	(gimple_asm_input_op): Likewise.
+	(gimple_asm_input_op_ptr): Likewise.
+	(gimple_asm_output_op): Likewise.
+	(gimple_asm_output_op_ptr): Likewise.
+	(gimple_asm_clobber_op): Likewise.
+	(gimple_asm_label_op): Likewise.
+	(gimple_asm_string): Likewise.
+	(gimple_asm_volatile_p): Likewise.
+	(gimple_asm_input_p): Likewise.
+	(gimple_asm_set_input_op): Require a gimple_asm rather than a plain
+	gimple.
+	(gimple_asm_set_output_op): Likewise.
+	(gimple_asm_set_clobber_op): Likewise.
+	(gimple_asm_set_label_op): Likewise.
+	(gimple_asm_set_volatile): Likewise.
+	(gimple_asm_set_input): Likewise.
+
+	* cfgexpand.c (expand_asm_stmt): Require a gimple_asm rather than
+	a plain gimple.
+	(expand_gimple_stmt_1): Add checked cast to gimple_asm within
+	GIMPLE_ASM case of switch statement.
+
+	* gimple-fold.c (fold_stmt_1): Add new local from checked cast to
+	gimple_asm within case GIMPLE_ASM.
+
+	* gimple-pretty-print.c (dump_gimple_asm): Require a gimple_asm
+	rather than a plain gimple.
+	(pp_gimple_stmt_1): Add checked cast to gimple_asm within
+	GIMPLE_ASM case of switch statement.
+
+	* gimple-streamer-in.c (input_gimple_stmt): Rework existing
+	checked cast to gimple_asm; add a new one.
+
+	* gimple-streamer-out.c (output_gimple_stmt): Add new local from
+	checked cast to gimple_asm within case GIMPLE_ASM.
+
+	* gimple-walk.c (walk_gimple_asm): Require a gimple_asm rather
+	than a plain gimple.
+	(walk_gimple_op): Add checked cast to gimple_asm within GIMPLE_ASM
+	case of switch statement.
+	(walk_stmt_load_store_addr_ops): Use dyn_cast<gimple_asm> in place
+	of a code check against GIMPLE_ASM to introduce a new gimple_asm
+	local.
+
+	* gimple.c (gimple_build_asm_1): Return a gimple_asm rather than
+	a plain gimple.
+	(gimple_build_asm_vec): Likewise.
+	(gimple_has_side_effects): Add a checked cast to gimple_asm.
+	(gimple_could_trap_p_1): Likewise.
+	(gimple_call_builtin_p): Require a const_gimple_asm rather then
+	a const_gimple.
+
+	* gimplify-me.c (gimple_regimplify_operands): Add a checked cast
+	and a new local of type gimple_asm within GIMPLE_ASM case.
+
+	* gimplify.c (gimplify_asm_expr): Convert a local from gimple to
+	gimple_asm.
+
+	* ipa-pure-const.c (check_stmt): Add checked casts within
+	GIMPLE_ASM case.
+
+	* ssa-iterators.h (op_iter_init): Likewise.
+
+	* tree-cfg.c (make_goto_expr_edges): Convert a local from gimple
+	to gimple_asm.
+	(cleanup_dead_labels): Add a checked cast and a new local of type
+	gimple_asm within GIMPLE_ASM case.
+	(gimple_redirect_edge_and_branch): Likewise.
+	(is_ctrl_altering_stmt): Add a checked cast.
+	(need_fake_edge_p): Replace a code check against GIMPLE_ASM with a
+	dyn_cast<gimple_asm>.
+
+	* tree-complex.c (expand_complex_comparison): Convert a local from
+	gimple to gimple_asm.
+
+	* tree-data-ref.c (get_references_in_stmt): Add a checked cast to
+	gimple_asm.
+
+	* tree-eh.c (stmt_could_throw_p): Likewise.
+
+	* tree-inline.c (estimate_num_insns): Likewise.
+
+	* tree-sra.c (scan_function): Add a checked cast and a new local
+	of type gimple_asm within GIMPLE_ASM case.
+	(sra_modify_function_body): Likewise.
+	(ipa_sra_modify_function_body): Likewise.
+
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Likewise.
+
+	* tree-ssa-dce.c (propagate_necessity): Replace a code check
+	against GIMPLE_ASM with a dyn_cast<gimple_asm>.
+
+	* tree-ssa-operands.c (maybe_add_call_vops): Require a gimple_asm
+	rather than a plain gimple.
+	(parse_ssa_operands): Add a checked cast to gimple_asm.
+
+	* tree-ssa-structalias.c (find_func_aliases): Replace a check for
+	GIMPLE_ASM with a dyn_cast<gimple_asm>, introducing  a new local
+	"asm_stmt", using it in place of "t" for typesafety.
+
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Add a checked
+	cast to gimple_asm.
+
+	* tree-ssa.c (execute_update_addresses_taken): Add checked casts
+	and new locals of type gimple_asm within clauses guarded by code
+	check.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_goto
+
+	* coretypes.h (gimple_goto): New typedef.
+	(const_gimple_goto): New typedef.
+
+	* gimple.h (gimple_statement_goto): New subclass of
+	gimple_statement_with_ops, adding the invariant that
+	stmt->code == GIMPLE_GOTO.
+	(is_a_helper <gimple_statement_goto>::test): New.
+	(gimple_build_goto): Return a gimple_goto rather than a
+	plain gimple.
+
+	* gimple-pretty-print.c (dump_gimple_goto): Require a gimple_goto
+	rather than a plain gimple.
+	(pp_gimple_stmt_1): Add a checked cast to gimple_goto within
+	GIMPLE_GOTO case of switch statement.
+
+	* gimple.c (gimple_build_goto): Return a gimple_goto rather than a
+	plain gimple.
+
+	* tree-cfg.c (verify_gimple_goto): Require a gimple_goto rather
+	than a plain gimple.
+	(verify_gimple_stmt): Add a checked cast to gimple_goto within
+	GIMPLE_GOTO case of switch statement.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_return
+
+	* coretypes.h (gimple_return): New typedef.
+	(const_gimple_return): New typedef.
+
+	* gimple.h (gimple_statement_return): New subclass of
+	gimple_statement_with_memory_ops, adding the invariant that
+	stmt->code == GIMPLE_RETURN.
+	(is_a_helper <gimple_statement_return>::test): New.
+	(gimple_build_return): Return a gimple_return rather
+	than a plain gimple.
+
+	* gimple.c (gimple_build_return): Return a gimple_return rather
+	than a plain gimple.
+
+	* cgraphunit.c (expand_thunk): Convert local from a gimple to
+	a gimple_return.
+
+	* gimple-low.c (struct return_statements_t): Convert field "stmt"
+	from a gimple to a gimple_return.
+	(lower_gimple_return): Convert local from a gimple to a
+	gimple_return.
+
+	* gimple-pretty-print.c (dump_gimple_return): Require a
+	gimple_return rather than a plain gimple.
+	(pp_gimple_stmt_1): Add a checked cast to gimple_return within
+	case GIMPLE_RETURN of switch statement.
+
+	* gimplify.c (gimplify_return_expr): Convert locals from
+	gimple to gimple_return.
+
+	* ipa-split.c (split_function): Likewise.
+
+	* tree-cfg.c (verify_gimple_assign): Require a gimple_return
+	rather than a plain gimple.
+	(verify_gimple_stmt): Add checked cast to gimple_return within
+	case GIMPLE_RETURN of switch statement.
+
+	* tree-tailcall.c (adjust_return_value): Convert local from
+	gimple to gimple_return.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_call
+
+	* coretypes.h (gimple_call): New typedef.
+	(const_gimple_call): New typedef.
+
+	* asan.c (get_mem_refs_of_builtin_call): Require a
+	const_gimple_call rather than a const gimple.
+	(has_stmt_been_instrumented_p): Add a checked cast to
+	gimple_call.
+	(instrument_strlen_call): Likewise.
+	(instrument_builtin_call): Likewise.
+	* builtins.c (validate_gimple_arglist): Require a
+	const_gimple_call rather than a const gimple.
+	(fold_call_stmt): Require a gimple_call rather than a gimple.
+	* builtins.h (validate_gimple_arglist): Require a
+	const_gimple_call rather than a const gimple.
+	(fold_call_stmt): Require a gimple_call rather than a gimple.
+	* cfgexpand.c (expand_call_stmt): Likewise.
+	(expand_gimple_stmt_1): Add a checked cast to gimple_call within
+	GIMPLE_CALL case.
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Strengthen
+	local "new_stmt" from gimple to gimple_call, adding a checked
+	cast.
+	* cgraphunit.c (cgraph_node::expand_thunk): Likewise for local
+	"call".
+	* gimple-fold.c (gimple_fold_builtin_snprintf_chk): Likewise for
+	local "stmt".
+	(gimple_fold_builtin_snprintf): Likewise.
+	(gimple_fold_builtin): Likewise.
+	(gimple_fold_call): Likewise.
+	(gimple_fold_stmt_to_constant_1): Introduce local "call_stmt" via
+	checked cast of "stmt" to gimple_call, using it in various places
+	for typesafety.
+	* gimple-pretty-print.c (dump_gimple_call_args): Strengthen param
+	2 from gimple to gimple_call.
+	(dump_gimple_call): Likewise.
+	(pp_gimple_stmt_1): Add a checked cast to gimple_call within
+	GIMPLE_CALL case.
+	* gimple-streamer-in.c (input_gimple_stmt): Replace is_gimple_call
+	with a dyn_cast<gimple_call>, introducing local "call_stmt", and
+	using it in place of "stmt" for typesafety.  Add a checked cast
+	in statement guarded by check for GIMPLE_CALL.
+	* gimple-walk.c (walk_gimple_op): Add a checked cast to
+	gimple_call.
+	* gimple.c (gimple_call_reset_alias_info): Strengthen param from
+	gimple to gimple_call.
+	(gimple_build_call_1): Strengthen return type and local from
+	gimple to gimple_call.
+	(gimple_build_call_vec): Likewise.
+	(gimple_build_call): Likewise.
+	(gimple_build_call_valist): Likewise.
+	(gimple_build_call_internal_1): Likewise.
+	(gimple_build_call_internal): Likewise.
+	(gimple_build_call_internal_vec): Likewise.
+	(gimple_build_call_from_tree): Likewise.
+	(gimple_call_return_flags): Strengthen param from
+	const_gimple to const_gimple_call.
+	(gimple_call_copy_skip_args): Strengthen return type and local from
+	gimple to gimple_call.
+	* gimple.h (gimple_call_reset_alias_info): Strengthen param from
+	gimple to gimple_call.
+	(gimple_build_call_vec): Strengthen return type from gimple to
+	gimple_call.
+	(gimple_build_call): Likewise.
+	(gimple_build_call_valist): Likewise.
+	(gimple_build_call_internal): Likewise.
+	(gimple_build_call_internal_vec): Likewise.
+	(gimple_build_call_from_tree): Likewise.
+	(gimple_call_return_flags): Strengthen param from const_gimple to
+	const_gimple_call.
+	(gimple_call_copy_skip_args): Strengthen return type from gimple
+	to gimple_call.
+	(gimple_call_set_internal_fn): Strengthen param "call_stmt" from
+	gimple to gimple_call.
+	(gimple_call_return_type): Strengthen param from const_gimple to
+	const_gimple_call.
+	(gimple_call_chain_ptr): Likewise.
+	(gimple_call_set_chain): Strengthen param from gimple to
+	gimple_call.
+	(gimple_call_set_return_slot_opt): Likewise.
+	(gimple_call_set_from_thunk): Likewise.
+	(gimple_call_from_thunk_p): Likewise.
+	(gimple_call_set_va_arg_pack): Likewise.
+	(gimple_call_va_arg_pack_p): Likewise.
+	(gimple_call_set_alloca_for_var): Likewise.
+	(gimple_call_alloca_for_var_p): Likewise.
+	(gimple_expr_type): Introduce local "call_stmt" via a checked cast
+	and use it for typesafety.
+	* gimplify.c (gimplify_call_expr): Strengthen local "call" from
+	gimple to gimple_call.
+	(gimplify_modify_expr_to_memcpy): Likewise for local "gs".
+	(gimplify_modify_expr_to_memset): Likewise.
+	(gimplify_modify_expr): Add a checked cast to gimple_call.
+	(gimplify_expr): Strengthen local "call" from gimple to
+	gimple_call.
+	(gimplify_function_tree): Likewise.
+	* internal-fn.c (expand_LOAD_LANES): Strengthen param from gimple
+	to gimple_call.
+	(expand_STORE_LANES): Likewise.
+	(expand_ANNOTATE): Likewise.
+	(expand_GOMP_SIMD_LANE): Likewise.
+	(expand_GOMP_SIMD_VF): Likewise.
+	(expand_GOMP_SIMD_LAST_LANE): Likewise.
+	(expand_UBSAN_NULL): Likewise.
+	(expand_UBSAN_BOUNDS): Likewise.
+	(expand_UBSAN_OBJECT_SIZE): Likewise.
+	(expand_ASAN_CHECK): Likewise.
+	(ubsan_expand_si_overflow_addsub_check): Likewise.
+	(ubsan_expand_si_overflow_neg_check): Likewise.
+	(ubsan_expand_si_overflow_mul_check): Likewise.
+	(expand_UBSAN_CHECK_ADD): Likewise.
+	(expand_UBSAN_CHECK_SUB): Likewise.
+	(expand_UBSAN_CHECK_MUL): Likewise.
+	(expand_LOOP_VECTORIZED): Likewise.
+	(expand_MASK_LOAD): Likewise.
+	(expand_MASK_STORE): Likewise.
+	(expand_ABNORMAL_DISPATCHER): Likewise.
+	(expand_BUILTIN_EXPECT): Likewise.
+	(internal_fn_expanders): Likewise for entries in this table.
+	(expand_internal_call): Likewise.
+	* internal-fn.def: Update comment to reflect strengthening of
+	param of expanders.
+	* internal-fn.h (expand_internal_call): Strengthen param from
+	gimple to gimple_call.
+	* ipa-prop.c (ipa_modify_call_arguments): Likewise for local
+	"new_stmt".
+	* ipa-pure-const.c (check_call): Likewise for param "call".
+	(check_stmt): Add a checked cast to gimple_call within GIMPLE_CALL
+	case.
+	* ipa-split.c (split_function): Strengthen local "call" from
+	gimple to gimple_call.
+	* omp-low.c (build_omp_barrier): Likewise for local "g".
+	(lower_rec_input_clauses): Likewise for local "stmt".
+	* trans-mem.c (build_tm_load): Likewise for return type and local
+	"gcall".
+	(build_tm_store): Likewise.
+	(expand_transaction): Likewise for local "call".
+	* tree-call-cdce.c (check_pow): Likewise for param.
+	(check_builtin_call): Likewise.
+	(is_call_dce_candidate): Likewise.
+	(gen_conditions_for_pow): Likewise.
+	(gen_shrink_wrap_conditions): Likewise.
+	(shrink_wrap_one_built_in_call): Likewise.
+	(shrink_wrap_conditional_dead_built_in_calls): Strengthen param
+	from vec<gimple> to vec<gimple_call>, and local "bi_call" from
+	gimple to gimple_call.
+	(pass_call_cdce::execute): Strengthen local
+	"cond_dead_built_in_calls" from auto_vec<gimple> to
+	auto_vec<gimple_call> and local "stmt" from gimple to gimple_call,
+	* tree-cfg.c (notice_special_calls): Strengthen param from gimple
+	to gimple_call.
+	* tree-cfg.h (notice_special_calls): Likewise.
+	* tree-complex.c (expand_complex_libcall): Likewise for local
+	"stmt".
+	* tree-inline.c (remap_gimple_stmt): Add checked cast to
+	gimple_call.
+	(copy_bb): Likewise.  Strengthen local "new_call" from gimple to
+	gimple_call.
+	(inline_forbidden_p_stmt): Add checked cast to gimple_call.
+	* tree-nested.c (init_tmp_var_with_call): Strengthen param "call"
+	from gimple to gimple_call.
+	(convert_nl_goto_reference): Likewise for local "call".
+	(convert_tramp_reference_op): Likewise.
+	(convert_gimple_call): Add checked cast to gimple_call.
+	* tree-nrv.c (dest_safe_for_nrv_p): Strengthen param "call" from
+	gimple to gimple_call.
+	(pass_return_slot::execute): Likewise for local "stmt", using a
+	dyn_cast<gimple_call> rather than an is_gimple_call call.
+	* tree-object-size.c (alloc_object_size): Strengthen param "call"
+	from const_gimple to const_gimple_call.
+	(pass_through_call): Likewise.
+	(call_object_size): Strengthen param "call" from gimple to
+	gimple_call.
+	(collect_object_sizes_for): Introduce local "call_stmt" via a
+	checked cast, using it for typesafety.
+	(check_for_plus_in_loops_1): Likewise.
+	(pass_object_sizes::execute): Add a checked cast to gimple_call.
+	* tree-profile.c (gimple_gen_interval_profiler): Strengthen local
+	"call" from gimple to gimple_call.
+	(gimple_gen_pow2_profiler): Likewise.
+	(gimple_gen_one_value_profiler): Likewise.
+	(gimple_gen_time_profiler): Likewise.
+	(gimple_gen_average_profiler): Likewise.
+	(gimple_gen_ior_profiler): Likewise.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Likewise for
+	param "call".
+	(ref_maybe_used_by_call_p): Likewise.
+	(ref_maybe_used_by_stmt_p): Add a checked cast to gimple_call.
+	(call_may_clobber_ref_p_1): Strengthen param "call" from gimple to
+	gimple_call.
+	(call_may_clobber_ref_p): Likewise.
+	(stmt_may_clobber_ref_p_1): Add a checked cast to gimple_call.
+	* tree-ssa-alias.h (call_may_clobber_ref_p): Strengthen param 1
+	from gimple to gimple_call.
+	(call_may_clobber_ref_p_1): Likewise.
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Add a checked cast
+	to gimple_call.
+	* tree-ssa-loop-prefetch.c (emit_mfence_after_loop): Strengthen
+	local "call" from gimple to gimple_call.
+	* tree-ssa-math-opts.c (build_and_insert_call): Likewise for local
+	"call_stmt".
+	* tree-ssa-operands.c (maybe_add_call_vops): Likewise for param
+	"stmt".
+	(parse_ssa_operands): Add a checked cast to gimple_call within
+	GIMPLE_CALL case.
+	* tree-ssa-pre.c (compute_avail): Add a checked cast to
+	gimple_call.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_call): Strengthen
+	param "call" from gimple to gimple_call.
+	(valueize_shared_reference_ops_from_call): Likewise.
+	(vn_reference_lookup_3): Add a checked cast to gimple_call.
+	(vn_reference_lookup_call): Strengthen param "call" from gimple to
+	gimple_call.
+	(visit_reference_op_call): Likewise for param "stmt".
+	(visit_use): Replace is_gimple_call with a dyn_cast, introducing
+	local "call_stmt", using it in place of "stmt" for type-safety.
+	* tree-ssa-sccvn.h (vn_reference_lookup_call): Strengthen param 1
+	from gimple to gimple_call.
+	* tree-ssa-structalias.c (get_call_vi): Likewise.
+	(lookup_call_use_vi): Likewise.
+	(lookup_call_clobber_vi): Likewise.
+	(get_call_use_vi): Likewise.
+	(get_call_clobber_vi): Likewise.
+	(handle_rhs_call): Likewise.
+	(handle_lhs_call): Likewise.
+	(handle_const_call): Likewise.
+	(handle_pure_call): Likewise.
+	(get_fi_for_callee): Likewise.
+	(find_func_aliases_for_builtin_call): Likewise for param 2.
+	(find_func_aliases_for_call): Likewise.
+	(find_func_aliases): Add a checked cast to gimple_call.
+	(find_func_clobbers): Replace is_gimple_call with a dyn_cast,
+	introducing local "call_stmt", using it in place of "stmt" for
+	type-safety.
+	(compute_points_to_sets): Strengthen local "stmt" from gimple to
+	gimple_call, replacing is_gimple_call with a
+	dyn_cast <gimple_call>.
+	(ipa_pta_execute): Likewise.
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Add checked
+	cast to gimple_call.
+	* tree-tailcall.c (find_tail_calls): Strengthen local "call" from
+	gimple to gimple_call, adding a checked cast.
+	* tree-vect-data-refs.c (vect_setup_realignment): Eliminate
+	top-level local "new_stmt" in favor of more tightly-scoped locals
+	"new_stmt" of type gimple_assign and gimple_call.
+	* tree-vect-patterns.c (vect_recog_pow_pattern): Strenghthen local
+	"stmt" from gimple to gimple_call.
+	* tree-vect-stmts.c (vectorizable_function): Likewise for param
+	"call".
+	(vectorizable_call): Rename param 1 from "stmt" to "gs",
+	reintroducing "stmt" as a gimple_call once we've established that
+	we're working with a GIMPLE_CALL.
+	* tree-vectorizer.h (vectorizable_function): Strengthen param 1
+	from gimple to gimple_call.
+	* value-prof.c (check_ic_target): Likewise.
+	(gimple_ic_transform): Likewise for local "stmt", replacing a
+	check for GIMPLE_CALL with a dyn_cast.
+	(interesting_stringop_to_profile_p): Strengthen param "call"
+	from gimple to gimple_call.
+	(gimple_stringop_fixed_value): Likewise for param "vcall_stmt".
+	(gimple_stringops_transform): Likewise for local "stmt",
+	replacing a check for GIMPLE_CALL with a dyn_cast.
+	(gimple_stringops_values_to_profile): Rename param 1 from "stmt"
+	to "gs", reintroducing "stmt" as a gimple_call once we've
+	established that we're working with a GIMPLE_CALL.
+	* vtable-verify.c (verify_bb_vtables): Strengthen local
+	"call_stmt" from gimple to gimple_call.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Concretize get_loop_exit_condition et al to working on gimple_cond
+
+	* tree-scalar-evolution.h (get_loop_exit_condition): Return a
+	gimple_cond.
+	* tree-scalar-evolution.c (get_loop_exit_condition): Likewise, also
+	concretizing local "res" from gimple to gimple_cond.
+	* tree-vect-loop-manip.c (slpeel_make_loop_iterate_ntimes): Convert
+	locals from gimple to gimple_cond.
+	(slpeel_can_duplicate_loop_p): Likewise.
+	* tree-vect-loop.c (vect_get_loop_niters): Return a gimple_cond.
+	(vect_analyze_loop_form): Convert local from gimple to gimple_cond.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Update various expressions within tree-scalar-evolution.c to be gimple_phi
+
+	* tree-scalar-evolution.c (follow_ssa_edge): Require a gimple_phi,
+	rather than a gimple.
+	(follow_ssa_edge_binary): Likewise.
+	(follow_ssa_edge_expr): Likewise.
+	(follow_ssa_edge_in_rhs): Likewise.
+	(backedge_phi_arg_p): Likewise.
+	(follow_ssa_edge_in_condition_phi_branch): Likewise.
+	(follow_ssa_edge_in_condition_phi): Likewise.
+	(follow_ssa_edge_inner_loop_phi): Likewise.
+	(analyze_evolution_in_loop): Likewise.
+	(analyze_initial_condition): Likewise.
+	(interpret_loop_phi): Likewise.
+	(interpret_condition_phi): Likewise.
+	(follow_ssa_edge): Likewise; also, add checked casts to gimple_phi.
+
+	(analyze_scalar_evolution_1): Add checked casts to gimple_phi
+	within "case GIMPLE_PHI".
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	tree-ssa-loop-ivopts.c: use gimple_phi in a few places
+
+	* tree-ssa-loop-ivopts.c (determine_biv_step): Require a gimple_phi.
+	(find_bivs): Convert local "phi" into a gimple_phi.
+	(mark_bivs): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	tree-ssa-loop-manip.c: use gimple_phi in three places
+
+	* tree-ssa-loop-manip.c (add_exit_phi): Convert local "phi" to be a
+	gimple_phi.
+	(split_loop_exit_edge): Likewise for "phi" and "new_phi".
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	tree-ssa-loop-niter.c: use gimple_phi in a few places
+
+	* tree-ssa-loop-niter.c (chain_of_csts_start): Return a gimple_phi
+	rather than a gimple.
+	(get_base_for): Likewise; convert local "phi" to be a gimple_phi.
+	(loop_niter_by_eval): Convert local "phi" to be a gimple_phi.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	tree-ssa-phiprop.c: use gimple_phi
+
+	* tree-ssa-phiprop.c (phiprop_insert_phi): Strengthen types of
+	parameter "phi" and local "new_phi" from gimple to gimple_phi.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	tree-predcom.c: use gimple_phi in various places
+
+	* tree-predcom.c (find_looparound_phi): Return a gimple_phi rather
+	than just a gimple.
+	(insert_looparound_copy): Require a gimple_phi rather than just a
+	gimple.
+	(add_looparound_copies): Convert local "phi" to be a gimple_phi.
+	(initialize_root_vars): Likewise.
+	(initialize_root_vars_lm): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	tree-parloops.c: use gimple_phi in various places
+
+	* tree-parloops.c (struct reduction_info): Strengthen field "new_phi"
+	from gimple to gimple_phi.
+	(create_phi_for_local_result): Convert local "new_phi" to gimple_phi.
+	(loop_has_vector_phi_nodes): Require a gimple_phi rather than a gimple.
+	(gather_scalar_reductions): Convert to a gimple_phi_iterator and
+	gimple_phi.
+	(try_create_reduction_list): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Update ssa_prop_visit_phi_fn callbacks to take a gimple_phi
+
+	* tree-ssa-propagate.h (typedef ssa_prop_visit_phi_fn): Strengthen
+	type of parameter from gimple to gimple_phi.
+
+	* tree-complex.c (complex_visit_phi): Update signature of callback
+	implementation accordingly.
+	* tree-ssa-ccp.c (ccp_visit_phi_node): Likewise.
+	* tree-ssa-copy.c (copy_prop_visit_phi_node): Likewise.
+	* tree-vrp.c (vrp_visit_phi_node): Likewise.
+
+	* tree-ssa-propagate.c (simulate_stmt): Add a checked cast to
+	gimple_phi when invoking the ssa_prop_visit_phi callback.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_phi_iterator
+
+	* gimple-iterator.h (struct gimple_phi_iterator): New subclass of
+	gimple_stmt_iterator with identical layout, but adding...
+	(gimple_phi_iterator::phi): ...new method, equivalent to
+	gsi_stmt (), but casting the underlying gimple to gimple_phi,
+	checking that code == GIMPLE_PHI in a checked build.
+	(gsi_start_phis): Return a gimple_phi_iterator, rather than just a
+	gimple_stmt_iterator.
+
+	* tree-if-conv.c (bb_with_exit_edge_p): Require a gimple_phi rather
+	than just a gimple.
+	(if_convertible_phi_p): Likewise.
+	* tree-phinodes.h (add_phi_node_to_bb): Likewise.
+	* tree-ssa-phiprop.c (propagate_with_phi): Likewise.
+
+	* tree-ssa-uninit.c (warn_uninitialized_phi): Require a gimple_phi
+	and a vec<gimple_phi> *, rather than just a gimple and
+	vec<gimple> *, and a hash_set<gimple_phi> * rather than a
+	hash_set<gimple> *.
+	(find_uninit_use): Likewise; add checked cast to gimple_phi when
+	adding to worklist.
+	(pass_late_warn_uninitialized::execute): Strengthen types of
+	various locals, "worklist" from vec<gimple> to vec<gimple_phi>,
+	"gsi" to a gimple_phi_iterator, "phi" and "cur_phi" to a
+	gimple_phi, "added_to_worklist" from hash_set<gimple> to
+	hash_set<gimple_phi>.
+
+	* tree-ssa-loop-manip.c (rewrite_phi_with_iv): Require a
+	gimple_phi_iterator * rather than a gimple_stmt_iterator *;
+	use it to strengthen local from a gimple to a gimple_phi.
+
+	* cfgloop.c (find_subloop_latch_edge_by_ivs): Convert local from a
+	gimple_stmt_iterator to a gimple_phi_iterator.  Use the iterator's
+	"phi" method rather than gsi_stmt.  Use this checked cast to convert
+	the type of related local from a plain gimple to a gimple_phi.
+	* gimple-pretty-print.c (dump_phi_nodes): Likewise.
+	* gimple-ssa-isolate-paths.c (find_implicit_erroneous_behaviour):
+	Likewise.
+	* sese.c (sese_add_exit_phis_edge): Likewise.
+	* tree-cfg.c (reinstall_phi_args): Likewise.
+	(gimple_make_forwarder_block): Likewise.
+	(add_phi_args_after_copy_edge): Likewise.
+	(gimple_lv_adjust_loop_header_phi): Likewise.
+	* tree-cfgcleanup.c (phi_alternatives_equal): Likewise.
+	(remove_forwarder_block_with_phi): Likewise.
+	(merge_phi_nodes): Likewise.
+	* tree-complex.c (update_phi_components): Likewise.
+	* tree-if-conv.c (if_convertible_loop_p_1): Likewise.
+	* tree-inline.c (update_ssa_across_abnormal_edges): Likewise.
+	(copy_phis_for_bb): Likewise.
+	* tree-into-ssa.c (rewrite_add_phi_arguments): Likewise.
+	* tree-outof-ssa.c (eliminate_build): Likewise.
+	(eliminate_useless_phis): Likewise.
+	(rewrite_trees): Likewise.
+	(insert_backedge_copies): Likewise.
+	* tree-phinodes.c (reserve_phi_args_for_new_edge): Likewise.
+	(remove_phi_args): Likewise.
+	(remove_phi_nodes): Likewise.
+	* tree-predcom.c (find_looparound_phi): Likewise.
+	(eliminate_temp_copies): Likewise.
+	* tree-scalar-evolution.c (loop_closed_phi_def): Likewise.
+	(scev_const_prop): Likewise; also, add checked cast to phi.
+	* tree-ssa-coalesce.c (coalesce_partitions): Likewise.
+	* tree-ssa-dce.c (remove_dead_phis): Likewise.
+	(forward_edge_to_pdom): Likewise.
+	* tree-ssa-dom.c (record_equivalences_from_phis): Likewise.
+	(cprop_into_successor_phis): Likewise.
+	(propagate_rhs_into_lhs): Likewise.
+	(eliminate_degenerate_phis_1): Likewise.
+	* tree-ssa-ifcombine.c (same_phi_args_p): Likewise.
+	* tree-ssa-live.c (calculate_live_on_exit): Likewise.
+	(verify_live_on_entry): Likewise.
+	* tree-ssa-loop-im.c
+	(move_computations_dom_walker::before_dom_children): Likewise.
+	* tree-ssa-loop-ivopts.c (find_bivs): Likewise.
+	(mark_bivs): Likewise.
+	(find_interesting_uses_outside): Likewise.
+	(determine_set_costs): Likewise.
+	* tree-ssa-loop-manip.c (split_loop_exit_edge): Likewise.
+	(tree_transform_and_unroll_loop): Likewise.
+	(rewrite_all_phi_nodes_with_iv): Likewise.
+	(canonicalize_loop_ivs): Likewise.
+	* tree-ssa-loop-niter.c (determine_value_range): Likewise.
+	* tree-ssa-phiopt.c (hoist_adjacent_loads): Likewise.
+	* tree-ssa-phiprop.c (tree_ssa_phiprop): Likewise.
+	* tree-ssa-reassoc.c (suitable_cond_bb): Likewise.
+	* tree-ssa-tail-merge.c (same_phi_alternatives_1): Likewise.
+	(vop_phi): Likewise.
+	* tree-ssa-threadedge.c (record_temporary_equivalences_from_phis):
+	Likewise.
+	* tree-ssa-threadupdate.c (copy_phi_arg_into_existing_phi): Likewise.
+	(copy_phi_args): Likewise.
+	(phi_args_equal_on_edges): Likewise.
+	* tree-ssa.c (ssa_redirect_edge): Likewise.
+	(flush_pending_stmts): Likewise.
+	* tree-switch-conversion.c (check_final_bb): Likewise.
+	(gather_default_values): Likewise.
+	(build_constructors): Likewise.
+	(fix_phi_nodes): Likewise.
+	* tree-tailcall.c (propagate_through_phis): Likewise.
+	(add_successor_phi_arg): Likewise.
+	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1):
+	Likewise.
+	(slpeel_update_phi_nodes_for_guard2): Likewise.
+	(slpeel_tree_peel_loop_to_edge): Likewise.
+	(vect_can_advance_ivs_p): Likewise.
+	(vect_update_ivs_after_vectorizer): Likewise.
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Likewise.
+	* tree-vrp.c (find_assert_locations): Likewise.
+	* value-prof.c (gimple_ic): Likewise.
+
+	* omp-low.c (expand_parallel_call): Convert local to a gimple_phi.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_phi and use it in various places
+
+	* coretypes.h (gimple_phi): New typedef.
+	(const_gimple_phi): New typedef.
+
+	* gdbhooks.py (build_pretty_printer): Add gimple_phi and its
+	variants, using the gimple printer.
+
+	* gimple.h (gimple_vec): Eliminate thie typedef in the hope of using
+	vecs of more concrete gimple subclasses as appropriate; also the
+	comment is about to become misleading.
+
+	* gimple.h (gimple_phi_capacity): Use const_gimple_phi typedef
+	rather than spelling out the full type.
+	(gimple_phi_num_args): Likewise.
+	(gimple_phi_result): Likewise.
+	(gimple_phi_result_ptr): Use gimple_phi typedef.
+	(gimple_phi_set_result): Likewise.
+	(gimple_phi_arg): Likewise.
+	(gimple_phi_set_arg): Likewise.
+	* tree-phinodes.c (allocate_phi_node): Likewise.
+	(resize_phi_node): Likewise.
+	(reserve_phi_args_for_new_edge): Likewise.
+	(remove_phi_arg_num): Likewise.
+
+	* gimple-pretty-print.c (dump_gimple_phi): Require a gimple_phi
+	rather than just a gimple.
+	* tree-into-ssa.c (mark_phi_for_rewrite): Likewise.
+
+	* tree-phinodes.c (make_phi_node): Return a gimple_phi rather than
+	just a gimple.
+	(create_phi_node): Likewise.
+	* tree-phinodes.h (create_phi_node): Likewise.
+
+	* trans-mem.c (struct struct tm_log_entry): Replace use of
+	now-removed gimple_vec with a plain vec<gimple>.
+
+	* tree-into-ssa.c (phis_to_rewrite): Strengthen from a
+	vec<gimple_vec> to a vec< vec<gimple_phi> >.
+
+	* tree-into-ssa.c (insert_phi_nodes_for): Update local to be a
+	gimple_phi.
+	* tree-into-ssa.c (rewrite_update_phi_arguments): Strengthen local
+	"phis" from a gimple_vec to a vec<gimple_phi>, and local "phi" to
+	a gimple_phi.
+	* tree-into-ssa.c (delete_update_ssa): Strengthen local
+	"phis" from a gimple_vec to a vec<gimple_phi>.
+
+	* gimple-pretty-print.c (pp_gimple_stmt_1): Add checked cast to
+	gimple_phi in regions where a stmt is known to have code
+	GIMPLE_PHI.
+	* tree-into-ssa.c (mark_use_interesting): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_debug and use it in a few places
+
+	* coretypes.h (gimple_debug): New typedef.
+	(const_gimple_debug): New typedef.
+
+	* gimple.h (struct gimple_statement_debug): New subclass of
+	gimple_statement_with_ops, adding the invariant that
+	stmt->code == GIMPLE_DEBUG.
+	(is_a_helper <gimple_statement_debug>::test): New.
+
+	* gdbhooks.py (build_pretty_printer): Add gimple_debug and its
+	variants, using the gimple printer.
+
+	* gimple-pretty-print.c (dump_gimple_debug): Require a gimple_debug
+	rather than just a gimple.
+	* tree-inline.c (copy_debug_stmt): Likewise.
+
+	* tree-inline.h (struct copy_body_data): Strengthen field
+	"debug_stmts" from a vec<gimple> to a vec<gimple_debug>.
+
+	* gimple.c (gimple_build_debug_bind_stat): Return a gimple_debug
+	rather than just a gimple.
+	(gimple_build_debug_source_bind_stat): Likewise.
+	* gimple.h (gimple_build_debug_bind_stat): Likewise.
+	(gimple_build_debug_source_bind_stat): Likewise.
+
+	* tree-inline.c (remap_gimple_stmt): Update locals to be a
+	gimple_debug.
+	(maybe_move_debug_stmts_to_successors): Likewise.
+	(copy_debug_stmts): Likewise.
+
+	* gimple-pretty-print.c (pp_gimple_stmt_1): Add checked cast to
+	gimple_debug in regions where a stmt is known to have code
+	GIMPLE_DEBUG.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_label and use it in a few places
+
+	* coretypes.h (gimple_label): New typedef.
+	(const_gimple_label): New typedef.
+
+	* gimple.h (struct gimple_statement_label): New subclass of
+	gimple_statement_with_ops, adding the invariant that
+	stmt->code == GIMPLE_LABEL.
+	(is_a_helper <gimple_statement_label>::test): New.
+
+	* gdbhooks.py (build_pretty_printer): Add gimple_label and its
+	variants, reusing the gimple printer.
+
+	* gimple-pretty-print.c (dump_gimple_label): Require a gimple_label
+	rather than just a gimple.
+	* tree-cfg.c (verify_gimple_label): Likewise.
+
+	* gimple.c (gimple_build_label): Return a gimple_label rather than
+	just a gimple.
+	* gimple.h (gimple_build_label): Likewise.
+
+	* gimplify.c (gimplify_case_label_expr): Update local to be a
+	gimple_label.
+	* tree-switch-conversion.c (gen_inbound_check): Likewise.
+
+	* gimple-pretty-print.c (pp_gimple_stmt_1): Add checked cast to
+	gimple_label in regions where a stmt is known to have code
+	GIMPLE_LABEL.
+	* tree-cfg.c (verify_gimple_stmt): Likewise.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_assign and use it in various places
+
+	* coretypes.h (gimple_assign): New typedef.
+	(const_gimple_assign): New typedef.
+
+	* gimple.h (struct gimple_statement_assign): New subclass of
+	gimple_statement_with_memory_ops, adding the invariant that
+	stmt->code == GIMPLE_ASSIGN.
+	(is_a_helper <gimple_statement_assign>::test): New.
+
+	* gdbhooks.py (build_pretty_printer): Add gimple_assign and its
+	variants, using the gimple printer.
+
+	* gimple-builder.c (build_assign): Return a gimple_assign rather
+	than just a gimple from each of the overloaded variants.
+	(build_type_cast): Likewise.
+	* gimple-builder.h (build_assign): Likewise.
+	(build_type_cast): Likewise.
+	* gimple.c (gimple_build_assign_stat): Likewise.
+	(gimple_build_assign_with_ops): Likewise.
+	* gimple.h (gimple_build_assign_stat): Likewise.
+	(gimple_build_assign_with_ops): Likewise.
+
+	* asan.c (get_mem_ref_of_assignment): Require a const_gimple_assign
+	rather than just a "const gimple" (the latter is not a
+	"const_gimple").
+	* gimple-pretty-print.c (dump_unary_rhs): Require a gimple_assign
+	rather than just a gimple.
+	(dump_binary_rhs): Likewise.
+	(dump_ternary_rhs): Likewise.
+	* tree-cfg.c (verify_gimple_assign_unary): Likewise.
+	(verify_gimple_assign_binary): Likewise.
+	(verify_gimple_assign_ternary): Likewise.
+	(verify_gimple_assign_single): Likewise.
+	(verify_gimple_assign): Likewise.
+	* tree-ssa-sccvn.c (simplify_unary_expression): Likewise.
+	(try_to_simplify): Likewise.
+	* tree-tailcall.c (process_assignment): Likewise.
+	* tree-vect-generic.c (expand_vector_operation): Likewise.
+	* tree-vrp.c (extract_range_from_cond_expr): Likewise.
+	(extract_range_from_assignment): Likewise.
+
+	* asan.c (has_stmt_been_instrumented_p): Add checked cast to
+	gimple_assign in regions where a stmt is known to have code
+	GIMPLE_ASSIGN.
+	* gimple-pretty-print.c (pp_gimple_stmt_1): Likewise.
+	* tree-cfg.c (verify_gimple_stmt): Likewise.
+	* tree-ssa-sccvn.c (visit_use): Likewise.
+	* tree-tailcall.c (find_tail_calls): Likewise.
+	* tree-vrp.c (vrp_visit_assignment_or_call): Likewise.
+
+	* tree-vrp.c (simplify_stmt_for_jump_threading): Replace a check
+	against GIMPLE_ASSIGN with a dyn_cast<gimple_assign>, introducing
+	a gimple_assign local.
+
+	* tree-vect-generic.c (expand_vector_condition): Convert local to a
+	gimple_assign, adding a checked cast when extracting from gsi, since
+	this is only called when  underlying stmt has code GIMPLE_ASSIGN.
+	(optimize_vector_constructor): Likewise.
+	(lower_vec_perm): Likewise.
+	(expand_vector_operations_1): Convert local to a gimple_assign,
+	introducing a dyn_cast.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_cond and use it in various places
+
+	* coretypes.h (gimple_cond): New typedef.
+	(const_gimple_cond): Likewise.
+
+	* gimple.h (struct gimple_statement_cond): New subclass of
+	gimple_statement_with_ops, adding the invariant that
+	stmt->code == GIMPLE_COND.
+	(is_a_helper <gimple_statement_cond>::test): New.
+	(gimple_build_cond): Return a gimple_cond, rather than just
+	a gimple.
+	(gimple_build_cond_from_tree): Likewise.
+
+	* gdbhooks.py (build_pretty_printer): Add gimple_cond and its
+	variants, using the gimple printer.
+
+	* cfgexpand.c (expand_gimple_cond): Require a gimple_cond rather
+	than just a gimple.
+	* gimple.h (gimple_cond_set_condition_from_tree): Likewise.
+	(gimple_cond_true_p): Likewise.
+	(gimple_cond_false_p): Likewise.
+	(gimple_cond_set_condition): Likewise.
+	* gimple.c (gimple_cond_set_condition_from_tree): Likewise.
+	* gimple-fold.c (fold_gimple_cond): Likewise.
+	* gimple-pretty-print.c (dump_gimple_cond): Likewise.
+	* tree-ssa-dom.c (canonicalize_comparison): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_into_gimple_cond): Likewise.
+	* tree-ssa-ifcombine.c (recognize_single_bit_test): Likewise.
+	(recognize_bits_test): Likewise.
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Likewise.
+	(thread_around_empty_blocks): Likewise.
+	(thread_through_normal_block): Likewise.
+	(thread_across_edge): Likewise.
+	* tree-ssa-threadedge.h (thread_across_edge): Likewise.
+	* tree-vrp.c (range_fits_type_p): Likewise.
+
+	* cfgexpand.c (expand_gimple_basic_block): Add checked cast to
+	gimple_cond in regions where a stmt is known to have code GIMPLE_COND.
+	* gimple-fold.c (fold_stmt_1): Likewise.
+	* gimple-pretty-print.c (pp_gimple_stmt_1): Likewise.
+	* tree-ssa-dom.c (optimize_stmt): Likewise.
+	* tree-ssa-forwprop.c (ssa_forward_propagate_and_combine): Likewise.
+	* tree-ssa-loop-unswitch.c (tree_unswitch_single_loop): Likewise.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Likewise.
+	* tree-vrp.c (simplify_stmt_using_ranges): Likewise.
+
+	* cfgloopmanip.c (create_empty_loop_on_edge): Update local to be a
+	gimple_cond.
+	* tree-vrp.c (identify_jump_threads): Likewise.
+
+	* gimple.c (gimple_build_cond): Return a gimple_cond, rather than
+	just a gimple.
+	(gimple_build_cond_from_tree): Likewise.
+
+	* tree-ssa-dom.c (class dom_opt_dom_walker): Strengthen type of
+	field "m_dummy_cond" from a plain gimple to a gimple_cond.
+
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): Introduce locals
+	inner_stmt and outer_stmt so that inner_cond and outer_cond can be
+	of type gimple_cond once we know that we have code == GIMPLE_COND.
+	* tree-ssa-loop-unswitch.c (tree_may_unswitch_on): Introduce local
+	"last" so that stmt can be of type gimple_cond.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_bind and use it for accessors.
+
+	* coretypes.h (gimple_bind): New typedef.
+	(const_gimple_bind): New typedef.
+
+	* gdbhooks.py (build_pretty_printer): Add gimple_bind
+	and its variants, using the gimple printer.
+
+	* gimple-pretty-print.c (dump_gimple_bind): Update type-signature to
+	require a gimple_bind rather than just a gimple.
+
+	* gimple.c (gimple_build_bind): Return a gimple_bind rather than
+	just a gimple.
+	* gimple.h (gimple_build_bind): Likewise.
+
+	* gimple.h (gimple_seq_first_stmt_as_a_bind): New.
+
+	* gimple.h (gimple_bind_vars): Update type-signature to
+	require a gimple_bind rather than just a gimple, removing
+	as_a and hence run-time check.
+	(gimple_bind_set_vars): Likewise.
+	(gimple_bind_append_vars): Likewise.
+	(gimple_bind_body_ptr): Likewise.
+	(gimple_bind_body): Likewise.
+	(gimple_bind_set_body): Likewise.
+	(gimple_bind_add_stmt): Likewise.
+	(gimple_bind_add_seq): Likewise.
+	(gimple_bind_block): Likewise.
+	(gimple_bind_set_block): Likewise.
+	* gimplify.c (gimple_push_bind_expr): Likewise.
+	(gimple_current_bind_expr): Likewise.
+	* tree-inline.c (copy_gimple_bind): Likewise.
+
+	* gimplify.h (gimple_current_bind_expr): Return a gimple_bind
+	rather than a plain gimple.
+	(gimplify_body): Likewise.
+	(gimple_bind_expr_stack): Return a vec<gimple_bind> rather than
+	a vec<gimple>.
+
+	* gimplify.c (struct gimplify_ctx): Strengthen field
+	"bind_expr_stack" from vec<gimple> to vec<gimple_bind>.
+	(gimple_bind_expr_stack): Likewise for type of returned value.
+
+	* gimplify.c (gimplify_body): Strengthen various types from gimple
+	to gimple_bind, including the return type.
+
+	* gimplify.c (declare_vars): Introduce "gs" as a generic gimple,
+	so that local "scope" can be of type gimple_bind once we've reached
+	the region where it must be of code GIMPLE_BIND.
+
+	* gimple-low.c (lower_gimple_bind): Add checked cast to
+	gimple_bind, since both callers (lower_function_body and
+	lower_stmt) have checked the code for us.
+
+	* gimple.c (gimple_copy): Add checked cast to gimple_bind in
+	region guarded by check for code GIMPLE_BIND.
+	* gimple-low.c (gimple_stmt_may_fallthru): Likewise.
+	* gimple-pretty-print.c (pp_gimple_stmt_1): Likewise.
+	* gimple-walk.c (walk_gimple_stmt): Likewise.
+	* omp-low.c (scan_omp_1_stmt): Likewise.
+	(lower_omp_1): Likewise.
+	(lower_omp_for): Likewise.
+	* tree-cfg.c (verify_gimple_in_seq_2): Likewise.
+	(do_warn_unused_result): Likewise.
+	* tree-inline.c (remap_gimple_stmt): Likewise.
+	(estimate_num_insns): Likewise.
+	* tree-nested.c (convert_nonlocal_reference_stmt): Likewise.
+
+	* gimplify.c (gimplify_bind_expr): Update local(s) to be a
+	gimple_bind rather than just a gimple.
+	(gimplify_function_tree): Likewise.
+	* omp-low.c (lower_omp_sections): Likewise.
+	(lower_omp_single): Likewise.
+	(lower_omp_master): Likewise.
+	(lower_omp_taskgroup): Likewise.
+	(lower_omp_ordered): Likewise.
+	(lower_omp_critical): Likewise.
+	(lower_omp_taskreg): Likewise.
+	(lower_omp_teams): Likewise.
+	* omp-low.c (lower_omp_for): Likewise; use
+	gimple_seq_first_stmt_as_a_bind to encapsulate the checked cast.
+	(lower_omp_target): Likewise.
+	* tree-nested.c (finalize_nesting_tree_1): Likewise.
+
+	* gimple.c (empty_stmt_p): Add dyn_cast to a gimple_bind.
+	* tree-inline.c (replace_locals_stmt): Add dyn_cast to gimple_bind.
+
+2014-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce gimple_switch and use it in various places
+
+	* gimple.h (gimple_statement_switch): New subclass of
+	gimple_statement_with_ops, adding the invariant that
+	stmt->code == GIMPLE_SWITCH.
+	(is_a_helper <gimple_statement_switch>::test (gimple)): New.
+
+	* coretypes.h (gimple_switch): New typedef
+	(const_gimple_switch): Likewise.
+
+	* gdbhooks.py (build_pretty_printer): Add gimple_switch
+	and its variants, using the gimple printer.
+
+	* gimple.c (gimple_build_switch_nlabels): Return a gimple_switch
+	rather than just a gimple.
+	(gimple_build_switch): Likewise.
+	* gimple.h (gimple_build_switch_nlabels): Likewise.
+	(gimple_build_switch): Likewise.
+
+	* gimple.h (gimple_switch_num_labels): Update type-signature to
+	require a gimple_switch rather than just a gimple.
+	(gimple_switch_set_num_labels): Likewise.
+	(gimple_switch_set_index): Likewise.
+	(gimple_switch_label): Likewise.
+	(gimple_switch_set_label): Likewise.
+	(gimple_switch_default_label): Likewise.
+	(gimple_switch_set_default_label): Likewise.
+	* expr.h (expand_case): Likewise.
+	* gimple-pretty-print.c (dump_gimple_call): Likewise.
+	* stmt.c (compute_cases_per_edge): Likewise.
+	(expand_case): Likewise.
+	* tree-cfg.h (group_case_labels_stmt): Likewise.
+	* tree-cfg.c (make_gimple_switch_edges): Likewise.
+	(find_taken_edge_switch_expr) Likewise.
+	(find_case_label_for_value) Likewise.
+	(get_cases_for_edge): Likewise.
+	(group_case_labels_stmt): Likewise.
+	(verify_gimple_switch): Likewise.
+	* tree-eh.c (verify_norecord_switch_expr): Likewise.
+	* tree-eh.c (lower_eh_constructs_2): Likewise.
+	* tree-loop-distribution.c (generate_loops_for_partition): Likewise.
+	* tree-ssa-dom.c (record_edge_info): Likewise.
+	* tree-ssa-forwprop.c (simplify_gimple_switch_label_vec): Likewise.
+	(simplify_gimple_switch): Likewise.
+	* tree-switch-conversion.c (emit_case_bit_tests): Likewise.
+	(collect_switch_conv_info): Likewise.
+	(build_constructors): Likewise.
+	(array_value_type): Likewise.
+	(build_one_array): Likewise.
+	(build_arrays): Likewise.
+	(gen_inbound_check): Likewise.
+	* tree-vrp.c (find_switch_asserts): Likewise.
+	(find_case_label_range): Likewise.
+	(find_case_label_ranges): Likewise.
+	(vrp_visit_switch_stmt): Likewise.
+	(simplify_switch_using_ranges): Likewise.
+
+	* tree-vrp.c (switch_update): Strengthen field "stmt" from being
+	merely a gimple to being a gimple_switch.
+
+	* cfgexpand.c (expand_gimple_stmt_1): Add checked cast to
+	gimple_switch in regions where the stmt code has been tested as
+	GIMPLE_SWITCH.
+	* gimple-pretty-print.c (pp_gimple_stmt_1): Likewise.
+	* tree-cfg.c (make_edges): Likewise.
+	(end_recording_case_labels): Likewise.
+	(cleanup_dead_labels): Likewise.
+	(cleanup_dead_labels): Likewise.
+	(group_case_labels): Likewise.
+	(find_taken_edge): Likewise.
+	(find_case_label_for_value): Likewise.
+	(verify_gimple_stmt): Likewise.
+	(gimple_verify_flow_info): Likewise.
+	(gimple_redirect_edge_and_branch): Likewise.
+	* tree-inline.c (estimate_num_insns): Likewise.
+	* tree-ssa-forwprop.c (ssa_forward_propagate_and_combine): Likewise.
+	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Likewise.
+	* tree-switch-conversion.c (do_switchconv): Likewise.
+	* tree-vrp.c  (find_assert_locations_1): Likewise.
+	(vrp_visit_stmt): Likewise.
+	(simplify_stmt_using_ranges): Likewise.
+
+	* ipa-inline-analysis.c (set_switch_stmt_execution_predicate):
+	Introduce local "lastg" as a generic gimple, so that local "last"
+	can be of type gimple_switch once lastg's code has been verified.
+
+	* omp-low.c (diagnose_sb_2): Introduce switch_stmt local to handle
+	the GIMPLE_SWITCH case.
+
+	* tree-cfg.c (find_taken_edge_switch_expr): Add gimple_switch
+	argument, since the caller (find_taken_edge) has checked that
+	last_stmt is a switch.
+
+Copyright (C) 2014 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -799,7 +799,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts,
     {
       if (gimple_stmt_max_uid (fn) < cedge->lto_stmt_uid)
         fatal_error ("Cgraph edge statement index out of range");
-      cedge->call_stmt = stmts[cedge->lto_stmt_uid - 1];
+      cedge->call_stmt = as_a <gcall *> (stmts[cedge->lto_stmt_uid - 1]);
       if (!cedge->call_stmt)
         fatal_error ("Cgraph edge statement index not found");
     }
@@ -807,7 +807,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts,
     {
       if (gimple_stmt_max_uid (fn) < cedge->lto_stmt_uid)
         fatal_error ("Cgraph edge statement index out of range");
-      cedge->call_stmt = stmts[cedge->lto_stmt_uid - 1];
+      cedge->call_stmt = as_a <gcall *> (stmts[cedge->lto_stmt_uid - 1]);
       if (!cedge->call_stmt)
         fatal_error ("Cgraph edge statement index not found");
     }

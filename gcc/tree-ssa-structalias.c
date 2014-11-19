@@ -409,7 +409,7 @@ static hash_map<gimple, varinfo_t> *call_stmt_vars;
 /* Lookup or create the variable for the call statement CALL.  */
 
 static varinfo_t
-get_call_vi (gimple call)
+get_call_vi (gcall *call)
 {
   varinfo_t vi, vi2;
 
@@ -440,7 +440,7 @@ get_call_vi (gimple call)
    the uses.  Returns NULL if there is nothing special about this call.  */
 
 static varinfo_t
-lookup_call_use_vi (gimple call)
+lookup_call_use_vi (gcall *call)
 {
   varinfo_t *slot_p = call_stmt_vars->get (call);
   if (slot_p)
@@ -453,7 +453,7 @@ lookup_call_use_vi (gimple call)
    the clobbers.  Returns NULL if there is nothing special about this call.  */
 
 static varinfo_t
-lookup_call_clobber_vi (gimple call)
+lookup_call_clobber_vi (gcall *call)
 {
   varinfo_t uses = lookup_call_use_vi (call);
   if (!uses)
@@ -466,7 +466,7 @@ lookup_call_clobber_vi (gimple call)
    the uses.  */
 
 static varinfo_t
-get_call_use_vi (gimple call)
+get_call_use_vi (gcall *call)
 {
   return get_call_vi (call);
 }
@@ -475,7 +475,7 @@ get_call_use_vi (gimple call)
    the clobbers.  */
 
 static varinfo_t ATTRIBUTE_UNUSED
-get_call_clobber_vi (gimple call)
+get_call_clobber_vi (gcall *call)
 {
   return vi_next (get_call_vi (call));
 }
@@ -3854,7 +3854,7 @@ get_function_part_constraint (varinfo_t fi, unsigned part)
    RHS.  */
 
 static void
-handle_rhs_call (gimple stmt, vec<ce_s> *results)
+handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 {
   struct constraint_expr rhsc;
   unsigned i;
@@ -3956,7 +3956,7 @@ handle_rhs_call (gimple stmt, vec<ce_s> *results)
    the LHS point to global and escaped variables.  */
 
 static void
-handle_lhs_call (gimple stmt, tree lhs, int flags, vec<ce_s> rhsc,
+handle_lhs_call (gcall *stmt, tree lhs, int flags, vec<ce_s> rhsc,
 		 tree fndecl)
 {
   auto_vec<ce_s> lhsc;
@@ -4019,7 +4019,7 @@ handle_lhs_call (gimple stmt, tree lhs, int flags, vec<ce_s> rhsc,
    const function that returns a pointer in the statement STMT.  */
 
 static void
-handle_const_call (gimple stmt, vec<ce_s> *results)
+handle_const_call (gcall *stmt, vec<ce_s> *results)
 {
   struct constraint_expr rhsc;
   unsigned int k;
@@ -4060,7 +4060,7 @@ handle_const_call (gimple stmt, vec<ce_s> *results)
    pure function in statement STMT.  */
 
 static void
-handle_pure_call (gimple stmt, vec<ce_s> *results)
+handle_pure_call (gcall *stmt, vec<ce_s> *results)
 {
   struct constraint_expr rhsc;
   unsigned i;
@@ -4107,7 +4107,7 @@ handle_pure_call (gimple stmt, vec<ce_s> *results)
 /* Return the varinfo for the callee of CALL.  */
 
 static varinfo_t
-get_fi_for_callee (gimple call)
+get_fi_for_callee (gcall *call)
 {
   tree decl, fn = gimple_call_fn (call);
 
@@ -4138,7 +4138,7 @@ get_fi_for_callee (gimple call)
    was handled, otherwise false.  */
 
 static bool
-find_func_aliases_for_builtin_call (struct function *fn, gimple t)
+find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
 {
   tree fndecl = gimple_call_fndecl (t);
   auto_vec<ce_s, 2> lhsc;
@@ -4496,7 +4496,7 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 /* Create constraints for the call T.  */
 
 static void
-find_func_aliases_for_call (struct function *fn, gimple t)
+find_func_aliases_for_call (struct function *fn, gcall *t)
 {
   tree fndecl = gimple_call_fndecl (t);
   varinfo_t fi;
@@ -4659,7 +4659,7 @@ find_func_aliases (struct function *fn, gimple origt)
      In non-ipa mode, we need to generate constraints for each
      pointer passed by address.  */
   else if (is_gimple_call (t))
-    find_func_aliases_for_call (fn, t);
+    find_func_aliases_for_call (fn, as_a <gcall *> (t));
     
   /* Otherwise, just a regular assignment statement.  Only care about
      operations with pointer result, others are dealt with as escape
@@ -4744,12 +4744,13 @@ find_func_aliases (struct function *fn, gimple origt)
     }
   /* Handle escapes through return.  */
   else if (gimple_code (t) == GIMPLE_RETURN
-	   && gimple_return_retval (t) != NULL_TREE)
+	   && gimple_return_retval (as_a <greturn *> (t)) != NULL_TREE)
     {
+      greturn *return_stmt = as_a <greturn *> (t);
       fi = NULL;
       if (!in_ipa_mode
 	  || !(fi = get_vi_for_tree (fn->decl)))
-	make_escape_constraint (gimple_return_retval (t));
+	make_escape_constraint (gimple_return_retval (return_stmt));
       else if (in_ipa_mode
 	       && fi != NULL)
 	{
@@ -4758,25 +4759,25 @@ find_func_aliases (struct function *fn, gimple origt)
 	  unsigned i;
 
 	  lhs = get_function_part_constraint (fi, fi_result);
-	  get_constraint_for_rhs (gimple_return_retval (t), &rhsc);
+	  get_constraint_for_rhs (gimple_return_retval (return_stmt), &rhsc);
 	  FOR_EACH_VEC_ELT (rhsc, i, rhsp)
 	    process_constraint (new_constraint (lhs, *rhsp));
 	}
     }
   /* Handle asms conservatively by adding escape constraints to everything.  */
-  else if (gimple_code (t) == GIMPLE_ASM)
+  else if (gasm *asm_stmt = dyn_cast <gasm *> (t))
     {
       unsigned i, noutputs;
       const char **oconstraints;
       const char *constraint;
       bool allows_mem, allows_reg, is_inout;
 
-      noutputs = gimple_asm_noutputs (t);
+      noutputs = gimple_asm_noutputs (asm_stmt);
       oconstraints = XALLOCAVEC (const char *, noutputs);
 
       for (i = 0; i < noutputs; ++i)
 	{
-	  tree link = gimple_asm_output_op (t, i);
+	  tree link = gimple_asm_output_op (asm_stmt, i);
 	  tree op = TREE_VALUE (link);
 
 	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
@@ -4803,9 +4804,9 @@ find_func_aliases (struct function *fn, gimple origt)
 		process_constraint (new_constraint (*lhsp, rhsc));
 	    }
 	}
-      for (i = 0; i < gimple_asm_ninputs (t); ++i)
+      for (i = 0; i < gimple_asm_ninputs (asm_stmt); ++i)
 	{
-	  tree link = gimple_asm_input_op (t, i);
+	  tree link = gimple_asm_input_op (asm_stmt, i);
 	  tree op = TREE_VALUE (link);
 
 	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
@@ -4897,10 +4898,11 @@ find_func_clobbers (struct function *fn, gimple origt)
   /* Account for uses in assigments and returns.  */
   if (gimple_assign_single_p (t)
       || (gimple_code (t) == GIMPLE_RETURN
-	  && gimple_return_retval (t) != NULL_TREE))
+	  && gimple_return_retval (as_a <greturn *> (t)) != NULL_TREE))
     {
       tree rhs = (gimple_assign_single_p (t)
-		  ? gimple_assign_rhs1 (t) : gimple_return_retval (t));
+		  ? gimple_assign_rhs1 (t)
+		  : gimple_return_retval (as_a <greturn *> (t)));
       tree tem = rhs;
       while (handled_component_p (tem))
 	tem = TREE_OPERAND (tem, 0);
@@ -4922,7 +4924,7 @@ find_func_clobbers (struct function *fn, gimple origt)
 	}
     }
 
-  if (is_gimple_call (t))
+  if (gcall *call_stmt = dyn_cast <gcall *> (t))
     {
       varinfo_t cfi = NULL;
       tree decl = gimple_call_fndecl (t);
@@ -5059,7 +5061,7 @@ find_func_clobbers (struct function *fn, gimple origt)
 
       /* Build constraints for propagating clobbers/uses along the
 	 callgraph edges.  */
-      cfi = get_fi_for_callee (t);
+      cfi = get_fi_for_callee (call_stmt);
       if (cfi->id == anything_id)
 	{
 	  if (gimple_vdef (t))
@@ -5083,10 +5085,10 @@ find_func_clobbers (struct function *fn, gimple origt)
 	  make_copy_constraint (first_vi_for_offset (fi, fi_uses), escaped_id);
 
 	  /* Also honor the call statement use/clobber info.  */
-	  if ((vi = lookup_call_clobber_vi (t)) != NULL)
+	  if ((vi = lookup_call_clobber_vi (call_stmt)) != NULL)
 	    make_copy_constraint (first_vi_for_offset (fi, fi_clobbers),
 				  vi->id);
-	  if ((vi = lookup_call_use_vi (t)) != NULL)
+	  if ((vi = lookup_call_use_vi (call_stmt)) != NULL)
 	    make_copy_constraint (first_vi_for_offset (fi, fi_uses),
 				  vi->id);
 	  return;
@@ -6786,17 +6788,17 @@ compute_points_to_sets (void)
   /* Now walk all statements and build the constraint set.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple_stmt_iterator gsi;
-
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 
 	  if (! virtual_operand_p (gimple_phi_result (phi)))
 	    find_func_aliases (cfun, phi);
 	}
 
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
 	  gimple stmt = gsi_stmt (gsi);
 
@@ -6837,9 +6839,11 @@ compute_points_to_sets (void)
 
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gcall *stmt;
 	  struct pt_solution *pt;
-	  if (!is_gimple_call (stmt))
+
+	  stmt = dyn_cast <gcall *> (gsi_stmt (gsi));
+	  if (!stmt)
 	    continue;
 
 	  pt = gimple_call_use_set (stmt);
@@ -7174,18 +7178,17 @@ ipa_pta_execute (void)
       /* Build constriants for the function body.  */
       FOR_EACH_BB_FN (bb, func)
 	{
-	  gimple_stmt_iterator gsi;
-
-	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 	       gsi_next (&gsi))
 	    {
-	      gimple phi = gsi_stmt (gsi);
+	      gphi *phi = gsi.phi ();
 
 	      if (! virtual_operand_p (gimple_phi_result (phi)))
 		find_func_aliases (func, phi);
 	    }
 
-	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	       gsi_next (&gsi))
 	    {
 	      gimple stmt = gsi_stmt (gsi);
 
@@ -7247,12 +7250,13 @@ ipa_pta_execute (void)
 
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
-	      gimple stmt = gsi_stmt (gsi);
+	      gcall *stmt;
 	      struct pt_solution *pt;
 	      varinfo_t vi, fi;
 	      tree decl;
 
-	      if (!is_gimple_call (stmt))
+	      stmt = dyn_cast <gcall *> (gsi_stmt (gsi));
+	      if (!stmt)
 		continue;
 
 	      /* Handle direct calls to functions with body.  */

@@ -175,8 +175,8 @@ add_block_to_enclosing (tree block)
 {
   unsigned i;
   tree enclosing;
-  gimple bind;
-  vec<gimple> stack = gimple_bind_expr_stack ();
+  gbind *bind;
+  vec<gbind *> stack = gimple_bind_expr_stack ();
 
   FOR_EACH_VEC_ELT (stack, i, bind)
     if (gimple_bind_block (bind))

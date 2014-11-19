@@ -1049,7 +1049,7 @@ get_iv (struct ivopts_data *data, tree var)
    not define a simple affine biv with nonzero step.  */
 
 static tree
-determine_biv_step (gimple phi)
+determine_biv_step (gphi *phi)
 {
   struct loop *loop = gimple_bb (phi)->loop_father;
   tree name = PHI_RESULT (phi);
@@ -1069,15 +1069,15 @@ determine_biv_step (gimple phi)
 static bool
 find_bivs (struct ivopts_data *data)
 {
-  gimple phi;
+  gphi *phi;
   tree step, type, base;
   bool found = false;
   struct loop *loop = data->current_loop;
-  gimple_stmt_iterator psi;
+  gphi_iterator psi;
 
   for (psi = gsi_start_phis (loop->header); !gsi_end_p (psi); gsi_next (&psi))
     {
-      phi = gsi_stmt (psi);
+      phi = psi.phi ();
 
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (PHI_RESULT (phi)))
 	continue;
@@ -1114,16 +1114,17 @@ find_bivs (struct ivopts_data *data)
 static void
 mark_bivs (struct ivopts_data *data)
 {
-  gimple phi, def;
+  gphi *phi;
+  gimple def;
   tree var;
   struct iv *iv, *incr_iv;
   struct loop *loop = data->current_loop;
   basic_block incr_bb;
-  gimple_stmt_iterator psi;
+  gphi_iterator psi;
 
   for (psi = gsi_start_phis (loop->header); !gsi_end_p (psi); gsi_next (&psi))
     {
-      phi = gsi_stmt (psi);
+      phi = psi.phi ();
 
       iv = get_iv (data, PHI_RESULT (phi));
       if (!iv)
@@ -1390,8 +1391,9 @@ extract_cond_operands (struct ivopts_data *data, gimple stmt,
 
   if (gimple_code (stmt) == GIMPLE_COND)
     {
-      op0 = gimple_cond_lhs_ptr (stmt);
-      op1 = gimple_cond_rhs_ptr (stmt);
+      gcond *cond_stmt = as_a <gcond *> (stmt);
+      op0 = gimple_cond_lhs_ptr (cond_stmt);
+      op1 = gimple_cond_rhs_ptr (cond_stmt);
     }
   else
     {
@@ -2006,13 +2008,13 @@ find_interesting_uses_stmt (struct ivopts_data *data, gimple stmt)
 static void
 find_interesting_uses_outside (struct ivopts_data *data, edge exit)
 {
-  gimple phi;
-  gimple_stmt_iterator psi;
+  gphi *phi;
+  gphi_iterator psi;
   tree def;
 
   for (psi = gsi_start_phis (exit->dest); !gsi_end_p (psi); gsi_next (&psi))
     {
-      phi = gsi_stmt (psi);
+      phi = psi.phi ();
       def = PHI_ARG_DEF_FROM_EDGE (phi, exit);
       if (!virtual_operand_p (def))
         find_interesting_uses_op (data, def);
@@ -5177,8 +5179,8 @@ static void
 determine_set_costs (struct ivopts_data *data)
 {
   unsigned j, n;
-  gimple phi;
-  gimple_stmt_iterator psi;
+  gphi *phi;
+  gphi_iterator psi;
   tree op;
   struct loop *loop = data->current_loop;
   bitmap_iterator bi;
@@ -5195,7 +5197,7 @@ determine_set_costs (struct ivopts_data *data)
   n = 0;
   for (psi = gsi_start_phis (loop->header); !gsi_end_p (psi); gsi_next (&psi))
     {
-      phi = gsi_stmt (psi);
+      phi = psi.phi ();
       op = PHI_RESULT (phi);
 
       if (virtual_operand_p (op))
@@ -6219,7 +6221,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 {
   tree comp;
   tree op, tgt;
-  gimple ass;
+  gassign *ass;
   gimple_stmt_iterator bsi;
 
   /* An important special case -- if we are asked to express value of
@@ -6471,9 +6473,10 @@ rewrite_use_compare (struct ivopts_data *data,
 		loop_preheader_edge (data->current_loop),
 		stmts);
 
-      gimple_cond_set_lhs (use->stmt, var);
-      gimple_cond_set_code (use->stmt, compare);
-      gimple_cond_set_rhs (use->stmt, op);
+      gcond *cond_stmt = as_a <gcond *> (use->stmt);
+      gimple_cond_set_lhs (cond_stmt, var);
+      gimple_cond_set_code (cond_stmt, compare);
+      gimple_cond_set_rhs (cond_stmt, op);
       return;
     }
 
@@ -6636,7 +6639,8 @@ remove_unused_ivs (struct ivopts_data *data)
 		    DECL_MODE (vexpr) = DECL_MODE (SSA_NAME_VAR (def));
 		  else
 		    DECL_MODE (vexpr) = TYPE_MODE (TREE_TYPE (vexpr));
-		  gimple def_temp = gimple_build_debug_bind (vexpr, comp, NULL);
+		  gdebug *def_temp
+		    = gimple_build_debug_bind (vexpr, comp, NULL);
 		  gimple_stmt_iterator gsi;
 
 		  if (gimple_code (SSA_NAME_DEF_STMT (def)) == GIMPLE_PHI)

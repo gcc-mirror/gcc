@@ -1340,7 +1340,7 @@ thunk_adjust (gimple_stmt_iterator * bsi,
 	      tree ptr, bool this_adjusting,
 	      HOST_WIDE_INT fixed_offset, tree virtual_offset)
 {
-  gimple stmt;
+  gassign *stmt;
   tree ret;
 
   if (this_adjusting
@@ -1516,8 +1516,8 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       tree resdecl;
       tree restmp = NULL;
 
-      gimple call;
-      gimple ret;
+      gcall *call;
+      greturn *ret;
 
       if (in_lto_p)
 	get_untransformed_body ();

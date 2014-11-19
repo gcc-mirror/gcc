@@ -710,7 +710,7 @@ param_type_may_change_p (tree function, tree arg, gimple call)
 
 static bool
 detect_type_change_from_memory_writes (tree arg, tree base, tree comp_type,
-				       gimple call, struct ipa_jump_func *jfunc,
+				       gcall *call, struct ipa_jump_func *jfunc,
 				       HOST_WIDE_INT offset)
 {
   struct prop_type_change_info tci;
@@ -759,7 +759,7 @@ detect_type_change_from_memory_writes (tree arg, tree base, tree comp_type,
    returned by get_ref_base_and_extent, as is the offset.  */
 
 static bool
-detect_type_change (tree arg, tree base, tree comp_type, gimple call,
+detect_type_change (tree arg, tree base, tree comp_type, gcall *call,
 		    struct ipa_jump_func *jfunc, HOST_WIDE_INT offset)
 {
   if (!flag_devirtualize)
@@ -780,7 +780,7 @@ detect_type_change (tree arg, tree base, tree comp_type, gimple call,
 
 static bool
 detect_type_change_ssa (tree arg, tree comp_type,
-			gimple call, struct ipa_jump_func *jfunc)
+			gcall *call, struct ipa_jump_func *jfunc)
 {
   gcc_checking_assert (TREE_CODE (arg) == SSA_NAME);
   if (!flag_devirtualize
@@ -1157,7 +1157,7 @@ static void
 compute_complex_assign_jump_func (struct func_body_info *fbi,
 				  struct ipa_node_params *info,
 				  struct ipa_jump_func *jfunc,
-				  gimple call, gimple stmt, tree name,
+				  gcall *call, gimple stmt, tree name,
 				  tree param_type)
 {
   HOST_WIDE_INT offset, size, max_size;
@@ -1299,7 +1299,7 @@ static void
 compute_complex_ancestor_jump_func (struct func_body_info *fbi,
 				    struct ipa_node_params *info,
 				    struct ipa_jump_func *jfunc,
-				    gimple call, gimple phi)
+				    gcall *call, gphi *phi)
 {
   HOST_WIDE_INT offset;
   gimple assign, cond;
@@ -1486,7 +1486,8 @@ build_agg_jump_func_from_list (struct ipa_known_agg_contents_list *list,
    subsequently stored.  */
 
 static void
-determine_locally_known_aggregate_parts (gimple call, tree arg, tree arg_type,
+determine_locally_known_aggregate_parts (gcall *call, tree arg,
+					 tree arg_type,
 					 struct ipa_jump_func *jfunc)
 {
   struct ipa_known_agg_contents_list *list = NULL;
@@ -1682,7 +1683,7 @@ ipa_compute_jump_functions_for_edge (struct func_body_info *fbi,
 {
   struct ipa_node_params *info = IPA_NODE_REF (cs->caller);
   struct ipa_edge_args *args = IPA_EDGE_REF (cs);
-  gimple call = cs->call_stmt;
+  gcall *call = cs->call_stmt;
   int n, arg_num = gimple_call_num_args (call);
   bool useful_context = false;
 
@@ -1751,7 +1752,8 @@ ipa_compute_jump_functions_for_edge (struct func_body_info *fbi,
 						  call, stmt, arg, param_type);
 	      else if (gimple_code (stmt) == GIMPLE_PHI)
 		compute_complex_ancestor_jump_func (fbi, info, jfunc,
-						    call, stmt);
+						    call,
+						    as_a <gphi *> (stmt));
 	    }
 	}
 
@@ -1871,7 +1873,8 @@ ipa_is_ssa_with_stmt_def (tree t)
    indirect call graph edge.  */
 
 static struct cgraph_edge *
-ipa_note_param_call (struct cgraph_node *node, int param_index, gimple stmt)
+ipa_note_param_call (struct cgraph_node *node, int param_index,
+		     gcall *stmt)
 {
   struct cgraph_edge *cs;
 
@@ -1942,7 +1945,7 @@ ipa_note_param_call (struct cgraph_node *node, int param_index, gimple stmt)
    passed by value or reference.  */
 
 static void
-ipa_analyze_indirect_call_uses (struct func_body_info *fbi, gimple call,
+ipa_analyze_indirect_call_uses (struct func_body_info *fbi, gcall *call,
 				tree target)
 {
   struct ipa_node_params *info = fbi->info;
@@ -2081,7 +2084,7 @@ ipa_analyze_indirect_call_uses (struct func_body_info *fbi, gimple call,
 
 static void
 ipa_analyze_virtual_call_uses (struct func_body_info *fbi,
-			       gimple call, tree target)
+			       gcall *call, tree target)
 {
   tree obj = OBJ_TYPE_REF_OBJECT (target);
   int index;
@@ -2137,7 +2140,7 @@ ipa_analyze_virtual_call_uses (struct func_body_info *fbi,
    containing intermediate information about each formal parameter.  */
 
 static void
-ipa_analyze_call_uses (struct func_body_info *fbi, gimple call)
+ipa_analyze_call_uses (struct func_body_info *fbi, gcall *call)
 {
   tree target = gimple_call_fn (call);
 
@@ -2186,7 +2189,7 @@ static void
 ipa_analyze_stmt_uses (struct func_body_info *fbi, gimple stmt)
 {
   if (is_gimple_call (stmt))
-    ipa_analyze_call_uses (fbi, stmt);
+    ipa_analyze_call_uses (fbi, as_a <gcall *> (stmt));
 }
 
 /* Callback of walk_stmt_load_store_addr_ops for the visit_load.
@@ -3852,13 +3855,13 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments)
    contain the corresponding call graph edge.  */
 
 void
-ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
+ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 			   ipa_parm_adjustment_vec adjustments)
 {
   struct cgraph_node *current_node = cgraph_node::get (current_function_decl);
   vec<tree> vargs;
   vec<tree, va_gc> **debug_args = NULL;
-  gimple new_stmt;
+  gcall *new_stmt;
   gimple_stmt_iterator gsi, prev_gsi;
   tree callee_decl;
   int i, len;

@@ -190,7 +190,7 @@ struct finally_tree_node
      tree) leaves the TRY block, its necessary to record a tree in
      this field.  Thus a treemple is used. */
   treemple child;
-  gimple parent;
+  gtry *parent;
 };
 
 /* Hashtable helpers.  */
@@ -219,7 +219,7 @@ finally_tree_hasher::equal (const value_type *v, const compare_type *c)
 static hash_table<finally_tree_hasher> *finally_tree;
 
 static void
-record_in_finally_tree (treemple child, gimple parent)
+record_in_finally_tree (treemple child, gtry *parent)
 {
   struct finally_tree_node *n;
   finally_tree_node **slot;
@@ -234,13 +234,13 @@ record_in_finally_tree (treemple child, gimple parent)
 }
 
 static void
-collect_finally_tree (gimple stmt, gimple region);
+collect_finally_tree (gimple stmt, gtry *region);
 
 /* Go through the gimple sequence.  Works with collect_finally_tree to
    record all GIMPLE_LABEL and GIMPLE_TRY statements. */
 
 static void
-collect_finally_tree_1 (gimple_seq seq, gimple region)
+collect_finally_tree_1 (gimple_seq seq, gtry *region)
 {
   gimple_stmt_iterator gsi;
 
@@ -249,14 +249,14 @@ collect_finally_tree_1 (gimple_seq seq, gimple region)
 }
 
 static void
-collect_finally_tree (gimple stmt, gimple region)
+collect_finally_tree (gimple stmt, gtry *region)
 {
   treemple temp;
 
   switch (gimple_code (stmt))
     {
     case GIMPLE_LABEL:
-      temp.t = gimple_label_label (stmt);
+      temp.t = gimple_label_label (as_a <glabel *> (stmt));
       record_in_finally_tree (temp, region);
       break;
 
@@ -265,7 +265,8 @@ collect_finally_tree (gimple stmt, gimple region)
         {
           temp.g = stmt;
           record_in_finally_tree (temp, region);
-          collect_finally_tree_1 (gimple_try_eval (stmt), stmt);
+          collect_finally_tree_1 (gimple_try_eval (stmt),
+				  as_a <gtry *> (stmt));
 	  collect_finally_tree_1 (gimple_try_cleanup (stmt), region);
         }
       else if (gimple_try_kind (stmt) == GIMPLE_TRY_CATCH)
@@ -276,7 +277,9 @@ collect_finally_tree (gimple stmt, gimple region)
       break;
 
     case GIMPLE_CATCH:
-      collect_finally_tree_1 (gimple_catch_handler (stmt), region);
+      collect_finally_tree_1 (gimple_catch_handler (
+				 as_a <gcatch *> (stmt)),
+			      region);
       break;
 
     case GIMPLE_EH_FILTER:
@@ -284,8 +287,11 @@ collect_finally_tree (gimple stmt, gimple region)
       break;
 
     case GIMPLE_EH_ELSE:
-      collect_finally_tree_1 (gimple_eh_else_n_body (stmt), region);
-      collect_finally_tree_1 (gimple_eh_else_e_body (stmt), region);
+      {
+	geh_else *eh_else_stmt = as_a <geh_else *> (stmt);
+	collect_finally_tree_1 (gimple_eh_else_n_body (eh_else_stmt), region);
+	collect_finally_tree_1 (gimple_eh_else_e_body (eh_else_stmt), region);
+      }
       break;
 
     default:
@@ -377,8 +383,8 @@ struct leh_tf_state
      try_finally_expr is the original GIMPLE_TRY_FINALLY.  We need to retain
      this so that outside_finally_tree can reliably reference the tree used
      in the collect_finally_tree data structures.  */
-  gimple try_finally_expr;
-  gimple top_p;
+  gtry *try_finally_expr;
+  gtry *top_p;
 
   /* While lowering a top_p usually it is expanded into multiple statements,
      thus we need the following field to store them. */
@@ -418,7 +424,7 @@ struct leh_tf_state
   bool may_throw;
 };
 
-static gimple_seq lower_eh_must_not_throw (struct leh_state *, gimple);
+static gimple_seq lower_eh_must_not_throw (struct leh_state *, gtry *);
 
 /* Search for STMT in the goto queue.  Return the replacement,
    or null if the statement isn't in the queue.  */
@@ -532,14 +538,21 @@ replace_goto_queue_1 (gimple stmt, struct leh_tf_state *tf,
       replace_goto_queue_stmt_list (gimple_try_cleanup_ptr (stmt), tf);
       break;
     case GIMPLE_CATCH:
-      replace_goto_queue_stmt_list (gimple_catch_handler_ptr (stmt), tf);
+      replace_goto_queue_stmt_list (gimple_catch_handler_ptr (
+				      as_a <gcatch *> (stmt)),
+				    tf);
       break;
     case GIMPLE_EH_FILTER:
       replace_goto_queue_stmt_list (gimple_eh_filter_failure_ptr (stmt), tf);
       break;
     case GIMPLE_EH_ELSE:
-      replace_goto_queue_stmt_list (gimple_eh_else_n_body_ptr (stmt), tf);
-      replace_goto_queue_stmt_list (gimple_eh_else_e_body_ptr (stmt), tf);
+      {
+	geh_else *eh_else_stmt = as_a <geh_else *> (stmt);
+	replace_goto_queue_stmt_list (gimple_eh_else_n_body_ptr (eh_else_stmt),
+				      tf);
+	replace_goto_queue_stmt_list (gimple_eh_else_e_body_ptr (eh_else_stmt),
+				      tf);
+      }
       break;
 
     default:
@@ -671,12 +684,17 @@ maybe_record_in_goto_queue (struct leh_state *state, gimple stmt)
   switch (gimple_code (stmt))
     {
     case GIMPLE_COND:
-      new_stmt.tp = gimple_op_ptr (stmt, 2);
-      record_in_goto_queue_label (tf, new_stmt, gimple_cond_true_label (stmt),
-				  EXPR_LOCATION (*new_stmt.tp));
-      new_stmt.tp = gimple_op_ptr (stmt, 3);
-      record_in_goto_queue_label (tf, new_stmt, gimple_cond_false_label (stmt),
-				  EXPR_LOCATION (*new_stmt.tp));
+      {
+	gcond *cond_stmt = as_a <gcond *> (stmt);
+	new_stmt.tp = gimple_op_ptr (cond_stmt, 2);
+	record_in_goto_queue_label (tf, new_stmt,
+				    gimple_cond_true_label (cond_stmt),
+				    EXPR_LOCATION (*new_stmt.tp));
+	new_stmt.tp = gimple_op_ptr (cond_stmt, 3);
+	record_in_goto_queue_label (tf, new_stmt,
+				    gimple_cond_false_label (cond_stmt),
+				    EXPR_LOCATION (*new_stmt.tp));
+      }
       break;
     case GIMPLE_GOTO:
       new_stmt.g = stmt;
@@ -702,7 +720,8 @@ maybe_record_in_goto_queue (struct leh_state *state, gimple stmt)
    of the labels will leave outer GIMPLE_TRY_FINALLY nodes. Verify this.  */
 
 static void
-verify_norecord_switch_expr (struct leh_state *state, gimple switch_expr)
+verify_norecord_switch_expr (struct leh_state *state,
+			     gswitch *switch_expr)
 {
   struct leh_tf_state *tf = state->tf;
   size_t i, n;
@@ -768,7 +787,7 @@ static void
 do_goto_redirection (struct goto_queue_node *q, tree finlab, gimple_seq mod,
 		     struct leh_tf_state *tf)
 {
-  gimple x;
+  ggoto *x;
 
   gcc_assert (q->is_label);
 
@@ -788,7 +807,7 @@ static void
 emit_post_landing_pad (gimple_seq *seq, eh_region region)
 {
   eh_landing_pad lp = region->landing_pads;
-  gimple x;
+  glabel *x;
 
   if (lp == NULL)
     lp = gen_eh_landing_pad (region);
@@ -805,7 +824,7 @@ emit_post_landing_pad (gimple_seq *seq, eh_region region)
 static void
 emit_resx (gimple_seq *seq, eh_region region)
 {
-  gimple x = gimple_build_resx (region->index);
+  gresx *x = gimple_build_resx (region->index);
   gimple_seq_add_stmt (seq, x);
   if (region->outer)
     record_stmt_eh_region (region->outer, x);
@@ -816,7 +835,7 @@ emit_resx (gimple_seq *seq, eh_region region)
 static void
 emit_eh_dispatch (gimple_seq *seq, eh_region region)
 {
-  gimple x = gimple_build_eh_dispatch (region->index);
+  geh_dispatch *x = gimple_build_eh_dispatch (region->index);
   gimple_seq_add_stmt (seq, x);
 }
 
@@ -861,7 +880,7 @@ eh_region_may_contain_throw (eh_region r)
    an existing label that should be put at the exit, or NULL.  */
 
 static gimple_seq
-frob_into_branch_around (gimple tp, eh_region region, tree over)
+frob_into_branch_around (gtry *tp, eh_region region, tree over)
 {
   gimple x;
   gimple_seq cleanup, result;
@@ -898,7 +917,7 @@ static gimple_seq
 lower_try_finally_dup_block (gimple_seq seq, struct leh_state *outer_state,
 			     location_t loc)
 {
-  gimple region = NULL;
+  gtry *region = NULL;
   gimple_seq new_seq;
   gimple_stmt_iterator gsi;
 
@@ -948,14 +967,14 @@ lower_try_finally_fallthru_label (struct leh_tf_state *tf)
 /* A subroutine of lower_try_finally.  If FINALLY consits of a
    GIMPLE_EH_ELSE node, return it.  */
 
-static inline gimple
+static inline geh_else *
 get_eh_else (gimple_seq finally)
 {
   gimple x = gimple_seq_first_stmt (finally);
   if (gimple_code (x) == GIMPLE_EH_ELSE)
     {
       gcc_assert (gimple_seq_singleton_p (finally));
-      return x;
+      return as_a <geh_else *> (x);
     }
   return NULL;
 }
@@ -989,7 +1008,10 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
   gimple_stmt_iterator gsi;
   bool finally_may_fallthru;
   gimple_seq finally;
-  gimple x, eh_else;
+  gimple x;
+  geh_mnt *eh_mnt;
+  gtry *try_stmt;
+  geh_else *eh_else;
 
   /* First check for nothing to do.  */
   if (lang_hooks.eh_protect_cleanup_actions == NULL)
@@ -1031,10 +1053,10 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
     }
 
   /* Wrap the block with protect_cleanup_actions as the action.  */
-  x = gimple_build_eh_must_not_throw (protect_cleanup_actions);
-  x = gimple_build_try (finally, gimple_seq_alloc_with_stmt (x),
-			GIMPLE_TRY_CATCH);
-  finally = lower_eh_must_not_throw (outer_state, x);
+  eh_mnt = gimple_build_eh_must_not_throw (protect_cleanup_actions);
+  try_stmt = gimple_build_try (finally, gimple_seq_alloc_with_stmt (eh_mnt),
+			       GIMPLE_TRY_CATCH);
+  finally = lower_eh_must_not_throw (outer_state, try_stmt);
 
   /* Drop all of this into the exception sequence.  */
   emit_post_landing_pad (&eh_seq, tf->region);
@@ -1057,7 +1079,8 @@ lower_try_finally_nofallthru (struct leh_state *state,
 			      struct leh_tf_state *tf)
 {
   tree lab;
-  gimple x, eh_else;
+  gimple x;
+  geh_else *eh_else;
   gimple_seq finally;
   struct goto_queue_node *q, *qe;
 
@@ -1121,6 +1144,8 @@ static void
 lower_try_finally_onedest (struct leh_state *state, struct leh_tf_state *tf)
 {
   struct goto_queue_node *q, *qe;
+  geh_else *eh_else;
+  glabel *label_stmt;
   gimple x;
   gimple_seq finally;
   gimple_stmt_iterator gsi;
@@ -1133,13 +1158,13 @@ lower_try_finally_onedest (struct leh_state *state, struct leh_tf_state *tf)
   /* Since there's only one destination, and the destination edge can only
      either be EH or non-EH, that implies that all of our incoming edges
      are of the same type.  Therefore we can lower EH_ELSE immediately.  */
-  x = get_eh_else (finally);
-  if (x)
+  eh_else = get_eh_else (finally);
+  if (eh_else)
     {
       if (tf->may_throw)
-	finally = gimple_eh_else_e_body (x);
+	finally = gimple_eh_else_e_body (eh_else);
       else
-	finally = gimple_eh_else_n_body (x);
+	finally = gimple_eh_else_n_body (eh_else);
     }
 
   lower_eh_constructs_1 (state, &finally);
@@ -1174,8 +1199,8 @@ lower_try_finally_onedest (struct leh_state *state, struct leh_tf_state *tf)
     }
 
   finally_label = create_artificial_label (loc);
-  x = gimple_build_label (finally_label);
-  gimple_seq_add_stmt (&tf->top_p_seq, x);
+  label_stmt = gimple_build_label (finally_label);
+  gimple_seq_add_stmt (&tf->top_p_seq, label_stmt);
 
   gimple_seq_add_seq (&tf->top_p_seq, finally);
 
@@ -1223,7 +1248,8 @@ lower_try_finally_copy (struct leh_state *state, struct leh_tf_state *tf)
   gimple_seq finally;
   gimple_seq new_stmt;
   gimple_seq seq;
-  gimple x, eh_else;
+  gimple x;
+  geh_else *eh_else;
   tree tmp;
   location_t tf_loc = gimple_location (tf->try_finally_expr);
 
@@ -1356,7 +1382,8 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   tree last_case;
   vec<tree> case_label_vec;
   gimple_seq switch_body = NULL;
-  gimple x, eh_else;
+  gimple x;
+  geh_else *eh_else;
   tree tmp;
   gimple switch_stmt;
   gimple_seq finally;
@@ -1568,7 +1595,7 @@ static bool
 decide_copy_try_finally (int ndests, bool may_throw, gimple_seq finally)
 {
   int f_estimate, sw_estimate;
-  gimple eh_else;
+  geh_else *eh_else;
 
   /* If there's an EH_ELSE involved, the exception path is separate
      and really doesn't come into play for this computation.  */
@@ -1634,7 +1661,7 @@ cleanup_is_dead_in (eh_region reg)
    arrange for the FINALLY block to be executed on all exits.  */
 
 static gimple_seq
-lower_try_finally (struct leh_state *state, gimple tp)
+lower_try_finally (struct leh_state *state, gtry *tp)
 {
   struct leh_tf_state this_tf;
   struct leh_state this_state;
@@ -1741,7 +1768,7 @@ lower_try_finally (struct leh_state *state, gimple tp)
    exception region trees that records all the magic.  */
 
 static gimple_seq
-lower_catch (struct leh_state *state, gimple tp)
+lower_catch (struct leh_state *state, gtry *tp)
 {
   eh_region try_region = NULL;
   struct leh_state this_state = *state;
@@ -1776,13 +1803,13 @@ lower_catch (struct leh_state *state, gimple tp)
        gsi_next (&gsi))
     {
       eh_catch c;
-      gimple gcatch;
+      gcatch *catch_stmt;
       gimple_seq handler;
 
-      gcatch = gsi_stmt (gsi);
-      c = gen_eh_region_catch (try_region, gimple_catch_types (gcatch));
+      catch_stmt = as_a <gcatch *> (gsi_stmt (gsi));
+      c = gen_eh_region_catch (try_region, gimple_catch_types (catch_stmt));
 
-      handler = gimple_catch_handler (gcatch);
+      handler = gimple_catch_handler (catch_stmt);
       lower_eh_constructs_1 (&this_state, &handler);
 
       c->label = create_artificial_label (UNKNOWN_LOCATION);
@@ -1813,7 +1840,7 @@ lower_catch (struct leh_state *state, gimple tp)
    region trees that record all the magic.  */
 
 static gimple_seq
-lower_eh_filter (struct leh_state *state, gimple tp)
+lower_eh_filter (struct leh_state *state, gtry *tp)
 {
   struct leh_state this_state = *state;
   eh_region this_region = NULL;
@@ -1858,7 +1885,7 @@ lower_eh_filter (struct leh_state *state, gimple tp)
    plus the exception region trees that record all the magic.  */
 
 static gimple_seq
-lower_eh_must_not_throw (struct leh_state *state, gimple tp)
+lower_eh_must_not_throw (struct leh_state *state, gtry *tp)
 {
   struct leh_state this_state = *state;
 
@@ -1869,7 +1896,8 @@ lower_eh_must_not_throw (struct leh_state *state, gimple tp)
 
       this_region = gen_eh_region_must_not_throw (state->cur_region);
       this_region->u.must_not_throw.failure_decl
-	= gimple_eh_must_not_throw_fndecl (inner);
+	= gimple_eh_must_not_throw_fndecl (
+	    as_a <geh_mnt *> (inner));
       this_region->u.must_not_throw.failure_loc
 	= LOCATION_LOCUS (gimple_location (tp));
 
@@ -1890,7 +1918,7 @@ lower_eh_must_not_throw (struct leh_state *state, gimple tp)
    except that we only execute the cleanup block for exception edges.  */
 
 static gimple_seq
-lower_cleanup (struct leh_state *state, gimple tp)
+lower_cleanup (struct leh_state *state, gtry *tp)
 {
   struct leh_state this_state = *state;
   eh_region this_region = NULL;
@@ -2041,40 +2069,43 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
       break;
 
     case GIMPLE_SWITCH:
-      verify_norecord_switch_expr (state, stmt);
+      verify_norecord_switch_expr (state, as_a <gswitch *> (stmt));
       break;
 
     case GIMPLE_TRY:
-      if (gimple_try_kind (stmt) == GIMPLE_TRY_FINALLY)
-	replace = lower_try_finally (state, stmt);
-      else
-	{
-	  x = gimple_seq_first_stmt (gimple_try_cleanup (stmt));
-	  if (!x)
-	    {
-	      replace = gimple_try_eval (stmt);
-	      lower_eh_constructs_1 (state, &replace);
-	    }
-	  else
-	    switch (gimple_code (x))
+      {
+	gtry *try_stmt = as_a <gtry *> (stmt);
+	if (gimple_try_kind (try_stmt) == GIMPLE_TRY_FINALLY)
+	  replace = lower_try_finally (state, try_stmt);
+	else
+	  {
+	    x = gimple_seq_first_stmt (gimple_try_cleanup (try_stmt));
+	    if (!x)
 	      {
-		case GIMPLE_CATCH:
-		    replace = lower_catch (state, stmt);
-		    break;
-		case GIMPLE_EH_FILTER:
-		    replace = lower_eh_filter (state, stmt);
-		    break;
-		case GIMPLE_EH_MUST_NOT_THROW:
-		    replace = lower_eh_must_not_throw (state, stmt);
-		    break;
-		case GIMPLE_EH_ELSE:
-		    /* This code is only valid with GIMPLE_TRY_FINALLY.  */
-		    gcc_unreachable ();
-		default:
-		    replace = lower_cleanup (state, stmt);
-		    break;
+		replace = gimple_try_eval (try_stmt);
+		lower_eh_constructs_1 (state, &replace);
 	      }
-	}
+	    else
+	      switch (gimple_code (x))
+		{
+		case GIMPLE_CATCH:
+		  replace = lower_catch (state, try_stmt);
+		  break;
+		case GIMPLE_EH_FILTER:
+		  replace = lower_eh_filter (state, try_stmt);
+		  break;
+		case GIMPLE_EH_MUST_NOT_THROW:
+		  replace = lower_eh_must_not_throw (state, try_stmt);
+		  break;
+		case GIMPLE_EH_ELSE:
+		  /* This code is only valid with GIMPLE_TRY_FINALLY.  */
+		  gcc_unreachable ();
+		default:
+		  replace = lower_cleanup (state, try_stmt);
+		  break;
+		}
+	  }
+      }
 
       /* Remove the old stmt and insert the transformed sequence
 	 instead. */
@@ -2190,7 +2221,7 @@ make_pass_lower_eh (gcc::context *ctxt)
    no fallthru edge; false if there is.  */
 
 bool
-make_eh_dispatch_edges (gimple stmt)
+make_eh_dispatch_edges (geh_dispatch *stmt)
 {
   eh_region r;
   eh_catch c;
@@ -2348,7 +2379,7 @@ redirect_eh_edge (edge edge_in, basic_block new_bb)
    The actual edge update will happen in the caller.  */
 
 void
-redirect_eh_dispatch_edge (gimple stmt, edge e, basic_block new_bb)
+redirect_eh_dispatch_edge (geh_dispatch *stmt, edge e, basic_block new_bb)
 {
   tree new_lab = gimple_block_label (new_bb);
   bool any_changed = false;
@@ -2763,7 +2794,7 @@ stmt_could_throw_p (gimple stmt)
       return true;
 
     case GIMPLE_CALL:
-      return !gimple_call_nothrow_p (stmt);
+      return !gimple_call_nothrow_p (as_a <gcall *> (stmt));
 
     case GIMPLE_ASSIGN:
     case GIMPLE_COND:
@@ -2774,7 +2805,7 @@ stmt_could_throw_p (gimple stmt)
     case GIMPLE_ASM:
       if (!cfun->can_throw_non_call_exceptions)
         return false;
-      return gimple_asm_volatile_p (stmt);
+      return gimple_asm_volatile_p (as_a <gasm *> (stmt));
 
     default:
       return false;
@@ -3000,7 +3031,7 @@ same_handler_p (gimple_seq oneh, gimple_seq twoh)
    temporary used in the initializer for A.  */
 
 static void
-optimize_double_finally (gimple one, gimple two)
+optimize_double_finally (gtry *one, gtry *two)
 {
   gimple oneh;
   gimple_stmt_iterator gsi;
@@ -3047,13 +3078,12 @@ refactor_eh_r (gimple_seq seq)
 	two = NULL;
       else
 	two = gsi_stmt (gsi);
-      if (one
-	  && two
-	  && gimple_code (one) == GIMPLE_TRY
-	  && gimple_code (two) == GIMPLE_TRY
-	  && gimple_try_kind (one) == GIMPLE_TRY_FINALLY
-	  && gimple_try_kind (two) == GIMPLE_TRY_FINALLY)
-	optimize_double_finally (one, two);
+      if (one && two)
+	if (gtry *try_one = dyn_cast <gtry *> (one))
+	  if (gtry *try_two = dyn_cast <gtry *> (two))
+	    if (gimple_try_kind (try_one) == GIMPLE_TRY_FINALLY
+		&& gimple_try_kind (try_two) == GIMPLE_TRY_FINALLY)
+	      optimize_double_finally (try_one, try_two);
       if (one)
 	switch (gimple_code (one))
 	  {
@@ -3062,14 +3092,17 @@ refactor_eh_r (gimple_seq seq)
 	    refactor_eh_r (gimple_try_cleanup (one));
 	    break;
 	  case GIMPLE_CATCH:
-	    refactor_eh_r (gimple_catch_handler (one));
+	    refactor_eh_r (gimple_catch_handler (as_a <gcatch *> (one)));
 	    break;
 	  case GIMPLE_EH_FILTER:
 	    refactor_eh_r (gimple_eh_filter_failure (one));
 	    break;
 	  case GIMPLE_EH_ELSE:
-	    refactor_eh_r (gimple_eh_else_n_body (one));
-	    refactor_eh_r (gimple_eh_else_e_body (one));
+	    {
+	      geh_else *eh_else_stmt = as_a <geh_else *> (one);
+	      refactor_eh_r (gimple_eh_else_n_body (eh_else_stmt));
+	      refactor_eh_r (gimple_eh_else_e_body (eh_else_stmt));
+	    }
 	    break;
 	  default:
 	    break;
@@ -3124,7 +3157,8 @@ make_pass_refactor_eh (gcc::context *ctxt)
 /* At the end of gimple optimization, we can lower RESX.  */
 
 static bool
-lower_resx (basic_block bb, gimple stmt, hash_map<eh_region, tree> *mnt_map)
+lower_resx (basic_block bb, gresx *stmt,
+	    hash_map<eh_region, tree> *mnt_map)
 {
   int lp_nr;
   eh_region src_r, dst_r;
@@ -3312,7 +3346,8 @@ pass_lower_resx::execute (function *fun)
       gimple last = last_stmt (bb);
       if (last && is_gimple_resx (last))
 	{
-	  dominance_invalidated |= lower_resx (bb, last, &mnt_map);
+	  dominance_invalidated |=
+	    lower_resx (bb, as_a <gresx *> (last), &mnt_map);
 	  any_rewritten = true;
 	}
     }
@@ -3436,14 +3471,15 @@ sink_clobbers (basic_block bb)
 
   /* See if there is a virtual PHI node to take an updated virtual
      operand from.  */
-  gimple vphi = NULL;
+  gphi *vphi = NULL;
   tree vuse = NULL_TREE;
-  for (gsi = gsi_start_phis (succbb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gphi_iterator gpi = gsi_start_phis (succbb);
+       !gsi_end_p (gpi); gsi_next (&gpi))
     {
-      tree res = gimple_phi_result (gsi_stmt (gsi));
+      tree res = gimple_phi_result (gpi.phi ());
       if (virtual_operand_p (res))
 	{
-	  vphi = gsi_stmt (gsi);
+	  vphi = gpi.phi ();
 	  vuse = res;
 	  break;
 	}
@@ -3521,7 +3557,7 @@ sink_clobbers (basic_block bb)
    we have found some duplicate labels and removed some edges.  */
 
 static bool
-lower_eh_dispatch (basic_block src, gimple stmt)
+lower_eh_dispatch (basic_block src, geh_dispatch *stmt)
 {
   gimple_stmt_iterator gsi;
   int region_nr;
@@ -3709,7 +3745,8 @@ pass_lower_eh_dispatch::execute (function *fun)
 	continue;
       if (gimple_code (last) == GIMPLE_EH_DISPATCH)
 	{
-	  redirected |= lower_eh_dispatch (bb, last);
+	  redirected |= lower_eh_dispatch (bb,
+					   as_a <geh_dispatch *> (last));
 	  flags |= TODO_update_ssa_only_virtuals;
 	}
       else if (gimple_code (last) == GIMPLE_RESX)
@@ -3797,10 +3834,13 @@ mark_reachable_handlers (sbitmap *r_reachablep, sbitmap *lp_reachablep)
 	  switch (gimple_code (stmt))
 	    {
 	    case GIMPLE_RESX:
-	      bitmap_set_bit (r_reachable, gimple_resx_region (stmt));
+	      bitmap_set_bit (r_reachable,
+			      gimple_resx_region (as_a <gresx *> (stmt)));
 	      break;
 	    case GIMPLE_EH_DISPATCH:
-	      bitmap_set_bit (r_reachable, gimple_eh_dispatch_region (stmt));
+	      bitmap_set_bit (r_reachable,
+			      gimple_eh_dispatch_region (
+                                as_a <geh_dispatch *> (stmt)));
 	      break;
 	    default:
 	      break;
@@ -3971,13 +4011,13 @@ unsplit_eh (eh_landing_pad lp)
      for a different region.  */
   for (gsi = gsi_start_bb (e_out->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      glabel *label_stmt = dyn_cast <glabel *> (gsi_stmt (gsi));
       tree lab;
       int lp_nr;
 
-      if (gimple_code (stmt) != GIMPLE_LABEL)
+      if (!label_stmt)
 	break;
-      lab = gimple_label_label (stmt);
+      lab = gimple_label_label (label_stmt);
       lp_nr = EH_LANDING_PAD_NR (lab);
       if (lp_nr && get_eh_region_from_lp_number (lp_nr) != lp->region)
 	return false;
@@ -3994,9 +4034,10 @@ unsplit_eh (eh_landing_pad lp)
      that doesn't appear to handle virtuals.  Propagate by hand.  */
   if (!gimple_seq_empty_p (phi_nodes (bb)))
     {
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); )
+      for (gphi_iterator gpi = gsi_start_phis (bb); !gsi_end_p (gpi); )
 	{
-	  gimple use_stmt, phi = gsi_stmt (gsi);
+	  gimple use_stmt;
+	  gphi *phi = gpi.phi ();
 	  tree lhs = gimple_phi_result (phi);
 	  tree rhs = gimple_phi_arg_def (phi, 0);
 	  use_operand_p use_p;
@@ -4011,7 +4052,7 @@ unsplit_eh (eh_landing_pad lp)
 	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs) = 1;
 
-	  remove_phi_node (&gsi, true);
+	  remove_phi_node (&gpi, true);
 	}
     }
 
@@ -4060,7 +4101,7 @@ static bool
 cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
 			     edge old_bb_out, bool change_region)
 {
-  gimple_stmt_iterator ngsi, ogsi;
+  gphi_iterator ngsi, ogsi;
   edge_iterator ei;
   edge e;
   bitmap ophi_handled;
@@ -4090,7 +4131,7 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
      for the edges we're going to move.  */
   for (ngsi = gsi_start_phis (new_bb); !gsi_end_p (ngsi); gsi_next (&ngsi))
     {
-      gimple ophi, nphi = gsi_stmt (ngsi);
+      gphi *ophi, *nphi = ngsi.phi ();
       tree nresult, nop;
 
       nresult = gimple_phi_result (nphi);
@@ -4101,7 +4142,7 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
       ophi = NULL;
       for (ogsi = gsi_start_phis (old_bb); !gsi_end_p (ogsi); gsi_next (&ogsi))
 	{
-	  ophi = gsi_stmt (ogsi);
+	  ophi = ogsi.phi ();
 	  if (gimple_phi_result (ophi) == nop)
 	    break;
 	  ophi = NULL;
@@ -4154,7 +4195,7 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
      we don't know what values from the other edges into NEW_BB to use.  */
   for (ogsi = gsi_start_phis (old_bb); !gsi_end_p (ogsi); gsi_next (&ogsi))
     {
-      gimple ophi = gsi_stmt (ogsi);
+      gphi *ophi = ogsi.phi ();
       tree oresult = gimple_phi_result (ophi);
       if (!bitmap_bit_p (ophi_handled, SSA_NAME_VERSION (oresult)))
 	goto fail;
@@ -4242,10 +4283,10 @@ cleanup_empty_eh_unsplit (basic_block bb, edge e_out, eh_landing_pad lp)
   lab = NULL;
   for (gsi = gsi_start_bb (e_out->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      glabel *stmt = dyn_cast <glabel *> (gsi_stmt (gsi));
       int lp_nr;
 
-      if (gimple_code (stmt) != GIMPLE_LABEL)
+      if (!stmt)
 	break;
       lab = gimple_label_label (stmt);
       lp_nr = EH_LANDING_PAD_NR (lab);
@@ -4642,7 +4683,7 @@ verify_eh_edges (gimple stmt)
 /* Similarly, but handle GIMPLE_EH_DISPATCH specifically.  */
 
 DEBUG_FUNCTION bool
-verify_eh_dispatch_edge (gimple stmt)
+verify_eh_dispatch_edge (geh_dispatch *stmt)
 {
   eh_region r;
   eh_catch c;

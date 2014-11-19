@@ -830,12 +830,14 @@ remove_unused_locals (void)
 	    mark_all_vars_used (gimple_op_ptr (gsi_stmt (gsi), i));
 	}
 
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gphi_iterator gpi = gsi_start_phis (bb);
+	   !gsi_end_p (gpi);
+	   gsi_next (&gpi))
         {
           use_operand_p arg_p;
           ssa_op_iter i;
 	  tree def;
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gpi.phi ();
 
 	  if (virtual_operand_p (gimple_phi_result (phi)))
 	    continue;
@@ -1121,7 +1123,7 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
 	     as this is where a copy would be inserted.  Check to see if it is
 	     defined in that block, or whether its live on entry.  */
 	  int index = PHI_ARG_INDEX_FROM_USE (use);
-	  edge e = gimple_phi_arg_edge (use_stmt, index);
+	  edge e = gimple_phi_arg_edge (as_a <gphi *> (use_stmt), index);
 	  if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	    {
 	      if (e->src != def_bb)
@@ -1169,13 +1171,13 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
   /* Set all the live-on-exit bits for uses in PHIs.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple_stmt_iterator gsi;
+      gphi_iterator gsi;
       size_t i;
 
       /* Mark the PHI arguments which are live on exit to the pred block.  */
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  for (i = 0; i < gimple_phi_num_args (phi); i++)
 	    {
 	      tree t = PHI_ARG_DEF (phi, i);
@@ -1453,12 +1455,12 @@ verify_live_on_entry (tree_live_info_p live)
 		   if it occurs in a PHI argument of the block.  */
 		size_t z;
 		bool ok = false;
-		gimple_stmt_iterator gsi;
+		gphi_iterator gsi;
 		for (gsi = gsi_start_phis (e->dest);
 		     !gsi_end_p (gsi) && !ok;
 		     gsi_next (&gsi))
 		  {
-		    gimple phi = gsi_stmt (gsi);
+		    gphi *phi = gsi.phi ();
 		    for (z = 0; z < gimple_phi_num_args (phi); z++)
 		      if (var == gimple_phi_arg_def (phi, z))
 			{

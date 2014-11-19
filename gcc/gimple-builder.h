@@ -21,13 +21,13 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_BUILDER_H
 #define GCC_GIMPLE_BUILDER_H
 
-gimple build_assign (enum tree_code, tree, int, tree lhs = NULL_TREE);
-gimple build_assign (enum tree_code, gimple, int, tree lhs = NULL_TREE);
-gimple build_assign (enum tree_code, tree, tree, tree lhs = NULL_TREE);
-gimple build_assign (enum tree_code, gimple, tree, tree lhs = NULL_TREE);
-gimple build_assign (enum tree_code, tree, gimple, tree lhs = NULL_TREE);
-gimple build_assign (enum tree_code, gimple, gimple, tree lhs = NULL_TREE);
-gimple build_type_cast (tree, tree, tree lhs = NULL_TREE);
-gimple build_type_cast (tree, gimple, tree lhs = NULL_TREE);
+gassign *build_assign (enum tree_code, tree, int, tree lhs = NULL_TREE);
+gassign *build_assign (enum tree_code, gimple, int, tree lhs = NULL_TREE);
+gassign *build_assign (enum tree_code, tree, tree, tree lhs = NULL_TREE);
+gassign *build_assign (enum tree_code, gimple, tree, tree lhs = NULL_TREE);
+gassign *build_assign (enum tree_code, tree, gimple, tree lhs = NULL_TREE);
+gassign *build_assign (enum tree_code, gimple, gimple, tree lhs = NULL_TREE);
+gassign *build_type_cast (tree, tree, tree lhs = NULL_TREE);
+gassign *build_type_cast (tree, gimple, tree lhs = NULL_TREE);
 
 #endif /* GCC_GIMPLE_BUILDER_H */
