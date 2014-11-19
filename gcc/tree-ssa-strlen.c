@@ -1816,7 +1816,7 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
       enum tree_code rhs_code
 	= useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (si->endptr))
 	  ? SSA_NAME : NOP_EXPR;
-      gimple_assign_set_rhs_with_ops (gsi, rhs_code, si->endptr, NULL_TREE);
+      gimple_assign_set_rhs_with_ops (gsi, rhs_code, si->endptr);
       gcc_assert (gsi_stmt (*gsi) == stmt);
       update_stmt (stmt);
     }

@@ -446,6 +446,14 @@ gimple_build_assign_with_ops (enum tree_code subcode, tree lhs, tree op1,
 				       PASS_MEM_STAT);
 }
 
+gimple
+gimple_build_assign_with_ops (enum tree_code subcode, tree lhs, tree op1
+			      MEM_STAT_DECL)
+{
+  return gimple_build_assign_with_ops (subcode, lhs, op1, NULL_TREE, NULL_TREE
+				       PASS_MEM_STAT);
+}
+
 
 /* Build a GIMPLE_COND statement.
 
@@ -1550,7 +1558,7 @@ gimple_assign_set_rhs_from_tree (gimple_stmt_iterator *gsi, tree expr)
   tree op1, op2, op3;
 
   extract_ops_from_tree_1 (expr, &subcode, &op1, &op2, &op3);
-  gimple_assign_set_rhs_with_ops_1 (gsi, subcode, op1, op2, op3);
+  gimple_assign_set_rhs_with_ops (gsi, subcode, op1, op2, op3);
 }
 
 
@@ -1561,8 +1569,8 @@ gimple_assign_set_rhs_from_tree (gimple_stmt_iterator *gsi, tree expr)
    did not have enough operand slots.  */
 
 void
-gimple_assign_set_rhs_with_ops_1 (gimple_stmt_iterator *gsi, enum tree_code code,
-				  tree op1, tree op2, tree op3)
+gimple_assign_set_rhs_with_ops (gimple_stmt_iterator *gsi, enum tree_code code,
+				tree op1, tree op2, tree op3)
 {
   unsigned new_rhs_ops = get_gimple_rhs_num_ops (code);
   gimple stmt = gsi_stmt (*gsi);

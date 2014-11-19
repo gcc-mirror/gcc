@@ -2501,7 +2501,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
       tree rhs = gimple_assign_rhs2 (def_stmt);
       tree negrhs = make_ssa_name (TREE_TYPE (rhs), NULL);
       gimple negate_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, negrhs,
-							 rhs, NULL);
+							 rhs);
       gimple_stmt_iterator gsi = gsi_for_stmt (def_stmt);
       set_vinfo_for_stmt (negate_stmt, new_stmt_vec_info (negate_stmt, 
 							  loop_info, NULL));
@@ -3379,7 +3379,7 @@ get_initial_def_for_induction (gimple iv_phi)
 	  new_stmt = gimple_build_assign_with_ops
 	      (VIEW_CONVERT_EXPR,
 	       vect_get_new_vect_var (vectype, vect_simple_var, "vec_iv_"),
-	       build1 (VIEW_CONVERT_EXPR, vectype, vec_init), NULL_TREE);
+	       build1 (VIEW_CONVERT_EXPR, vectype, vec_init));
 	  vec_init = make_ssa_name (gimple_assign_lhs (new_stmt), new_stmt);
 	  gimple_assign_set_lhs (new_stmt, vec_init);
 	  new_bb = gsi_insert_on_edge_immediate (loop_preheader_edge (iv_loop),
@@ -3555,7 +3555,7 @@ get_initial_def_for_induction (gimple iv_phi)
 		   vect_get_new_vect_var (resvectype, vect_simple_var,
 					  "vec_iv_"),
 		   build1 (VIEW_CONVERT_EXPR, resvectype,
-			   gimple_assign_lhs (new_stmt)), NULL_TREE);
+			   gimple_assign_lhs (new_stmt)));
 	      gimple_assign_set_lhs (new_stmt,
 				     make_ssa_name
 				       (gimple_assign_lhs (new_stmt), new_stmt));
@@ -3622,7 +3622,7 @@ get_initial_def_for_induction (gimple iv_phi)
       new_stmt = gimple_build_assign_with_ops
 	 (VIEW_CONVERT_EXPR,
 	  vect_get_new_vect_var (resvectype, vect_simple_var, "vec_iv_"),
-	  build1 (VIEW_CONVERT_EXPR, resvectype, induc_def), NULL_TREE);
+	  build1 (VIEW_CONVERT_EXPR, resvectype, induc_def));
       induc_def = make_ssa_name (gimple_assign_lhs (new_stmt), new_stmt);
       gimple_assign_set_lhs (new_stmt, induc_def);
       si = gsi_after_labels (bb);

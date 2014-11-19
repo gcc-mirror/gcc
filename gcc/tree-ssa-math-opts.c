@@ -1129,7 +1129,7 @@ build_and_insert_cast (gimple_stmt_iterator *gsi, location_t loc,
 		       tree type, tree val)
 {
   tree result = make_ssa_name (type, NULL);
-  gimple stmt = gimple_build_assign_with_ops (NOP_EXPR, result, val, NULL_TREE);
+  gimple stmt = gimple_build_assign_with_ops (NOP_EXPR, result, val);
   gimple_set_location (stmt, loc);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
   return result;
@@ -2259,13 +2259,11 @@ bswap_replace (gimple cur_stmt, gimple src_stmt, tree fndecl, tree bswap_type,
 	      load_stmt = gimple_build_assign (val_tmp, val_expr);
 	      gimple_set_vuse (load_stmt, n->vuse);
 	      gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
-	      gimple_assign_set_rhs_with_ops_1 (&gsi, NOP_EXPR, val_tmp,
-						NULL_TREE, NULL_TREE);
+	      gimple_assign_set_rhs_with_ops (&gsi, NOP_EXPR, val_tmp);
 	    }
 	  else
 	    {
-	      gimple_assign_set_rhs_with_ops_1 (&gsi, MEM_REF, val_expr,
-						NULL_TREE, NULL_TREE);
+	      gimple_assign_set_rhs_with_ops (&gsi, MEM_REF, val_expr);
 	      gimple_set_vuse (cur_stmt, n->vuse);
 	    }
 	  update_stmt (cur_stmt);
@@ -2319,8 +2317,7 @@ bswap_replace (gimple cur_stmt, gimple src_stmt, tree fndecl, tree bswap_type,
 	{
 	  gimple convert_stmt;
 	  tmp = make_temp_ssa_name (bswap_type, NULL, "bswapsrc");
-	  convert_stmt = gimple_build_assign_with_ops (NOP_EXPR, tmp, src,
-						       NULL);
+	  convert_stmt = gimple_build_assign_with_ops (NOP_EXPR, tmp, src);
 	  gsi_insert_before (&gsi, convert_stmt, GSI_SAME_STMT);
 	}
 
@@ -2334,7 +2331,7 @@ bswap_replace (gimple cur_stmt, gimple src_stmt, tree fndecl, tree bswap_type,
     {
       gimple convert_stmt;
       tmp = make_temp_ssa_name (bswap_type, NULL, "bswapdst");
-      convert_stmt = gimple_build_assign_with_ops (NOP_EXPR, tgt, tmp, NULL);
+      convert_stmt = gimple_build_assign_with_ops (NOP_EXPR, tgt, tmp);
       gsi_insert_after (&gsi, convert_stmt, GSI_SAME_STMT);
     }
 
@@ -2973,8 +2970,8 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   if (TREE_CODE (mult_rhs2) == INTEGER_CST)
     mult_rhs2 = fold_convert (type2, mult_rhs2);
 
-  gimple_assign_set_rhs_with_ops_1 (gsi, wmult_code, mult_rhs1, mult_rhs2,
-				    add_rhs);
+  gimple_assign_set_rhs_with_ops (gsi, wmult_code, mult_rhs1, mult_rhs2,
+				  add_rhs);
   update_stmt (gsi_stmt (*gsi));
   widen_mul_stats.maccs_inserted++;
   return true;
@@ -3177,8 +3174,7 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 
       fma_stmt = gimple_build_assign_with_ops (FMA_EXPR,
 					       gimple_assign_lhs (use_stmt),
-					       mulop1, op2,
-					       addop);
+					       mulop1, op2, addop);
       gsi_replace (&gsi, fma_stmt, true);
       widen_mul_stats.fmas_inserted++;
     }

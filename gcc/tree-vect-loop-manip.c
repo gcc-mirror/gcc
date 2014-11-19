@@ -2157,7 +2157,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
       sprintf (tmp_name, "addr2int%d", i);
       addr_tmp_name = make_temp_ssa_name (int_ptrsize_type, NULL, tmp_name);
       addr_stmt = gimple_build_assign_with_ops (NOP_EXPR, addr_tmp_name,
-						addr_base, NULL_TREE);
+						addr_base);
       gimple_seq_add_stmt (cond_expr_stmt_list, addr_stmt);
 
       /* The addresses are OR together.  */

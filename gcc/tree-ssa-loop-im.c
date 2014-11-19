@@ -1211,7 +1211,7 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
 	  tree arg = PHI_ARG_DEF (stmt, 0);
 	  new_stmt = gimple_build_assign_with_ops (TREE_CODE (arg),
 						   gimple_phi_result (stmt),
-						   arg, NULL_TREE);
+						   arg);
 	}
       else
 	{

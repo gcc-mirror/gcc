@@ -3841,8 +3841,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
       OMP_CLAUSE_CHAIN (c) = gimple_omp_for_clauses (ctx->stmt);
       gimple_omp_for_set_clauses (ctx->stmt, c);
       g = gimple_build_assign_with_ops (INTEGER_CST, lane,
-					build_int_cst (unsigned_type_node, 0),
-					NULL_TREE);
+					build_int_cst (unsigned_type_node, 0));
       gimple_seq_add_stmt (ilist, g);
       for (int i = 0; i < 2; i++)
 	if (llist[i])
@@ -3853,7 +3852,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	    gimple_seq *seq = i == 0 ? ilist : dlist;
 	    gimple_seq_add_stmt (seq, g);
 	    tree t = build_int_cst (unsigned_type_node, 0);
-	    g = gimple_build_assign_with_ops (INTEGER_CST, idx, t, NULL_TREE);
+	    g = gimple_build_assign_with_ops (INTEGER_CST, idx, t);
 	    gimple_seq_add_stmt (seq, g);
 	    tree body = create_artificial_label (UNKNOWN_LOCATION);
 	    tree header = create_artificial_label (UNKNOWN_LOCATION);
@@ -5847,8 +5846,7 @@ expand_omp_for_generic (struct omp_region *region,
       if (useless_type_conversion_p (TREE_TYPE (fd->loop.v), TREE_TYPE (iend)))
 	stmt = gimple_build_assign (fd->loop.v, iend);
       else
-	stmt = gimple_build_assign_with_ops (NOP_EXPR, fd->loop.v, iend,
-					     NULL_TREE);
+	stmt = gimple_build_assign_with_ops (NOP_EXPR, fd->loop.v, iend);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
     }
   if (fd->collapse > 1)
@@ -6268,8 +6266,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       if (useless_type_conversion_p (TREE_TYPE (fd->loop.v), TREE_TYPE (e)))
 	stmt = gimple_build_assign (fd->loop.v, e);
       else
-	stmt = gimple_build_assign_with_ops (NOP_EXPR, fd->loop.v, e,
-					     NULL_TREE);
+	stmt = gimple_build_assign_with_ops (NOP_EXPR, fd->loop.v, e);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
     }
   if (fd->collapse > 1)
@@ -6659,8 +6656,7 @@ expand_omp_for_static_chunk (struct omp_region *region,
       if (useless_type_conversion_p (TREE_TYPE (fd->loop.v), TREE_TYPE (e)))
 	stmt = gimple_build_assign (fd->loop.v, e);
       else
-	stmt = gimple_build_assign_with_ops (NOP_EXPR, fd->loop.v, e,
-					     NULL_TREE);
+	stmt = gimple_build_assign_with_ops (NOP_EXPR, fd->loop.v, e);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
     }
   if (fd->collapse > 1)
@@ -12203,8 +12199,7 @@ simd_clone_adjust (struct cgraph_node *node)
 	      {
 		t = make_ssa_name (orig_arg, NULL);
 		g = gimple_build_assign_with_ops (NOP_EXPR, t,
-						  gimple_call_lhs (g),
-						  NULL_TREE);
+						  gimple_call_lhs (g));
 		gimple_seq_add_stmt_without_update (&seq, g);
 	      }
 	    gsi_insert_seq_on_edge_immediate
