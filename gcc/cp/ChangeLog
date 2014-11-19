@@ -1,5 +1,8 @@
 2014-11-18  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (cxx_eval_statement_list): Handle statement-expressions.
+	(potential_constant_expression_1): Handle STMT_EXPR.
+
 	* constexpr.c (cxx_eval_constant_expression): Give jump_target a
 	default argument.
 	(lots): Omit NULL jump_target arguments.

@@ -2685,6 +2685,14 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
 {
   tree_stmt_iterator i;
   tree_stmt_iterator default_label = tree_stmt_iterator();
+  tree local_target;
+  /* In a statement-expression we want to return the last value.  */
+  tree r = NULL_TREE;
+  if (!jump_target)
+    {
+      local_target = NULL_TREE;
+      jump_target = &local_target;
+    }
   for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
     {
     reenter:
@@ -2699,10 +2707,9 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
 	  else
 	    continue;
 	}
-      cxx_eval_constant_expression (ctx, stmt,
-				    false,
-				    non_constant_p, overflow_p,
-				    jump_target);
+      r = cxx_eval_constant_expression (ctx, stmt, false,
+					non_constant_p, overflow_p,
+					jump_target);
       if (*non_constant_p)
 	break;
       if (returns (jump_target) || breaks (jump_target))
@@ -2714,7 +2721,7 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
       *jump_target = NULL_TREE;
       goto reenter;
     }
-  return NULL_TREE;
+  return r;
 }
 
 /* Evaluate a LOOP_EXPR for side-effects.  Handles break and return
@@ -3885,6 +3892,9 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 	return false;
       return true;
 
+    case STMT_EXPR:
+      return potential_constant_expression_1 (STMT_EXPR_STMT (t), rval, flags);
+
     case LAMBDA_EXPR:
     case DYNAMIC_CAST_EXPR:
     case PSEUDO_DTOR_EXPR:
@@ -3900,7 +3910,6 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
     case OBJ_TYPE_REF:
-    case STMT_EXPR:
     case TRANSACTION_EXPR:
     case ASM_EXPR:
     fail:
