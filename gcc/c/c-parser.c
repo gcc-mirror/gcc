@@ -7414,6 +7414,46 @@ c_parser_postfix_expression (c_parser *parser)
 	      = comptypes (e1, e2) ? integer_one_node : integer_zero_node;
 	  }
 	  break;
+	case RID_BUILTIN_CALL_WITH_STATIC_CHAIN:
+	  {
+	    vec<c_expr_t, va_gc> *cexpr_list;
+	    c_expr_t *e2_p;
+	    tree chain_value;
+
+	    c_parser_consume_token (parser);
+	    if (!c_parser_get_builtin_args (parser,
+					    "__builtin_call_with_static_chain",
+					    &cexpr_list, false))
+	      {
+		expr.value = error_mark_node;
+		break;
+	      }
+	    if (vec_safe_length (cexpr_list) != 2)
+	      {
+		error_at (loc, "wrong number of arguments to "
+			       "%<__builtin_call_with_static_chain%>");
+		expr.value = error_mark_node;
+		break;
+	      }
+
+	    expr = (*cexpr_list)[0];
+	    e2_p = &(*cexpr_list)[1];
+	    *e2_p = convert_lvalue_to_rvalue (loc, *e2_p, true, true);
+	    chain_value = e2_p->value;
+	    mark_exp_read (chain_value);
+
+	    if (TREE_CODE (expr.value) != CALL_EXPR)
+	      error_at (loc, "first argument to "
+			"%<__builtin_call_with_static_chain%> "
+			"must be a call expression");
+	    else if (TREE_CODE (TREE_TYPE (chain_value)) != POINTER_TYPE)
+	      error_at (loc, "second argument to "
+			"%<__builtin_call_with_static_chain%> "
+			"must be a pointer type");
+	    else
+	      CALL_EXPR_STATIC_CHAIN (expr.value) = chain_value;
+	    break;
+	  }
 	case RID_BUILTIN_COMPLEX:
 	  {
 	    vec<c_expr_t, va_gc> *cexpr_list;

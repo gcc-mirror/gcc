@@ -1,3 +1,8 @@
+2014-11-19  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/cwsc0.c: New test.
+	* gcc.dg/cwsc1.c: New test.
+
 2014-11-19  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/63879
