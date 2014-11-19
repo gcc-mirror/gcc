@@ -1,5 +1,13 @@
 2014-11-19  Richard Henderson  <rth@redhat.com>
 
+	* calls.c (prepare_call_address): Allow decl or type for first arg.
+	(expand_call): Pass type to prepare_call_address if no decl.
+	* gimple-fold.c (gimple_fold_call): Eliminate the static chain if
+	the function doesn't use it; fold it otherwise.
+	* gimplify.c (gimplify_call_expr): Gimplify the static chain.
+	* tree-cfg.c (verify_gimple_call): Allow a static chain on indirect
+	function calls.
+
 	* targhooks.c (default_static_chain): Remove check for
 	DECL_STATIC_CHAIN.
 	* config/moxie/moxie.c (moxie_static_chain): Likewise.

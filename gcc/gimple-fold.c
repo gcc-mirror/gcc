@@ -2723,6 +2723,27 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	}
     }
 
+  /* Check for indirect calls that became direct calls, and then
+     no longer require a static chain.  */
+  if (gimple_call_chain (stmt))
+    {
+      tree fn = gimple_call_fndecl (stmt);
+      if (fn && !DECL_STATIC_CHAIN (fn))
+	{
+	  gimple_call_set_chain (stmt, NULL);
+	  changed = true;
+	}
+      else
+	{
+	  tree tmp = maybe_fold_reference (gimple_call_chain (stmt), false);
+	  if (tmp)
+	    {
+	      gimple_call_set_chain (stmt, tmp);
+	      changed = true;
+	    }
+	}
+    }
+
   if (inplace)
     return changed;
 
