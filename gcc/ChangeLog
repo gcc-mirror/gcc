@@ -1,3 +1,8 @@
+2014-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/63690
+	* ubsan.c (instrument_object_size): Check for MEM_REF.
+
 2014-11-19  Ilya Verbin  <ilya.verbin@intel.com>
 
 	PR regression/63868
