@@ -1,3 +1,9 @@
+2014-11-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/libgomp.c/examples-4/e.53.5.c: Require
+	vect_simd_clones effective target.
+	* testsuite/libgomp.fortran/examples-4/e.53.5.f90: Ditto.
+
 2014-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.c/examples-4/e.54.2.c (main): Use N / 8 instead
