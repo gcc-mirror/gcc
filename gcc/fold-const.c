@@ -408,8 +408,10 @@ negate_expr_p (tree t)
 	      && TYPE_OVERFLOW_WRAPS (type));
 
     case FIXED_CST:
-    case NEGATE_EXPR:
       return true;
+
+    case NEGATE_EXPR:
+      return !TYPE_OVERFLOW_SANITIZED (type);
 
     case REAL_CST:
       /* We want to canonicalize to positive real constants.  Pretend
@@ -555,7 +557,8 @@ fold_negate_expr (location_t loc, tree t)
       tem = fold_negate_const (t, type);
       if (TREE_OVERFLOW (tem) == TREE_OVERFLOW (t)
 	  || (!TYPE_OVERFLOW_TRAPS (type)
-	      && (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0))
+	      && TYPE_OVERFLOW_WRAPS (type))
+	  || (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0)
 	return tem;
       break;
 

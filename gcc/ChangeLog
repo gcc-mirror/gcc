@@ -1,3 +1,12 @@
+2014-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/63879
+	* fold-const.c (negate_expr_p) <case NEGATE_EXPR>: Return
+	!TYPE_OVERFLOW_SANITIZED.
+	(fold_negate_expr) <case INTEGER_CST>: Fold when overflow
+	does not trap and when overflow wraps, or when SANITIZE_SI_OVERFLOW
+	is 0.
+
 2014-11-19  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* collect2.c (main): Don't call fatal_error before

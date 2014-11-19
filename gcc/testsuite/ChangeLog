@@ -1,3 +1,9 @@
+2014-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/63879
+	* c-c++-common/ubsan/pr63879-1.c: New test.
+	* c-c++-common/ubsan/pr63879-2.c: New test.
+
 2014-11-19  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/62167
