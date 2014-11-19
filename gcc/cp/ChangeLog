@@ -1,5 +1,13 @@
 2014-11-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/63885
+	* constexpr.c (cxx_eval_constant_expression) [PARM_DECL]: Don't
+	complain yet about a reference.
+	[TARGET_EXPR]: Handle TARGET_EXPR with addr == true.
+	[ADDR_EXPR]: Make sure we don't take the address of a CONSTRUCTOR.
+	(cxx_bind_parameters_in_call): In the new scheme addr is always false.
+	* typeck.c (build_address): Don't take the address of a CONSTRUCTOR.
+
 	PR c++/57979
 	* init.c (decl_really_constant_value): Rename from
 	integral_constant_value.

@@ -1061,6 +1061,7 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 	  x = ctx->object;
 	  x = cp_build_addr_expr (x, tf_warning_or_error);
 	}
+      bool addr = false;
       if (parms && DECL_BY_REFERENCE (parms) && !use_new_call)
 	{
 	  /* cp_genericize made this a reference for argument passing, but
@@ -1071,9 +1072,9 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 	  gcc_assert (TREE_CODE (TREE_TYPE (x)) == REFERENCE_TYPE);
 	  type = TREE_TYPE (type);
 	  x = convert_from_reference (x);
+	  addr = true;
 	}
-      arg = cxx_eval_constant_expression (ctx, x,
-					  TREE_CODE (type) == REFERENCE_TYPE,
+      arg = cxx_eval_constant_expression (ctx, x, addr,
 					  non_constant_p, overflow_p);
       /* Don't VERIFY_CONSTANT here.  */
       if (*non_constant_p && ctx->quiet)
@@ -2854,6 +2855,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	r = *p;
       else if (addr)
 	/* Defer in case this is only used for its type.  */;
+      else if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
+	/* Defer, there's no lvalue->rvalue conversion.  */;
       else if (is_empty_class (TREE_TYPE (t)))
 	{
 	  /* If the class is empty, we aren't actually loading anything.  */
@@ -2934,6 +2937,12 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (!*non_constant_p)
 	/* Adjust the type of the result to the type of the temporary.  */
 	r = adjust_temp_type (TREE_TYPE (t), r);
+      if (addr)
+	{
+	  tree slot = TARGET_EXPR_SLOT (t);
+	  ctx->values->put (slot, r);
+	  return slot;
+	}
       break;
 
     case INIT_EXPR:
@@ -2995,6 +3004,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	/* Don't VERIFY_CONSTANT here.  */
 	if (*non_constant_p)
 	  return t;
+	gcc_checking_assert (TREE_CODE (op) != CONSTRUCTOR);
 	/* This function does more aggressive folding than fold itself.  */
 	r = build_fold_addr_expr_with_type (op, TREE_TYPE (t));
 	if (TREE_CODE (r) == ADDR_EXPR && TREE_OPERAND (r, 0) == oldop)
