@@ -229,8 +229,10 @@ __extension__
 static const struct cpu_regmove_cost generic_regmove_cost =
 {
   NAMED_PARAM (GP2GP, 1),
-  NAMED_PARAM (GP2FP, 2),
-  NAMED_PARAM (FP2GP, 2),
+  /* Avoid the use of slow int<->fp moves for spilling by setting
+     their cost higher than memmov_cost.  */
+  NAMED_PARAM (GP2FP, 5),
+  NAMED_PARAM (FP2GP, 5),
   NAMED_PARAM (FP2FP, 2)
 };
 

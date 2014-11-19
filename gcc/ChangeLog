@@ -1,3 +1,9 @@
+2014-11-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/61915
+	* config/aarch64/aarch64.c (generic_regmove_cost): Increase FP move
+	cost.
+
 2014-11-19  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/63690
