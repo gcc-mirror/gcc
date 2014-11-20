@@ -4701,6 +4701,7 @@ the current unit and any extended main source units (body and subunits.
 It also has has the effect of enforcing a transitive application of this
 aspect, so that if any unit is implicitly or explicitly WITH'ed by the
 current unit, it must also have the No_Elaboration_Code_All aspect set.
+It may be applied to package or subprogram specs or their generic versions.
 
 @node Pragma No_Inline
 @unnumberedsec Pragma No_Inline
