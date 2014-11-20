@@ -6399,22 +6399,24 @@ package body Exp_Util is
      (E       : Node_Id;
       Unc_Typ : Entity_Id) return Node_Id
    is
-      Loc         : constant Source_Ptr := Sloc (E);
       List_Constr : constant List_Id    := New_List;
+      Loc         : constant Source_Ptr := Sloc (E);
       D           : Entity_Id;
-
-      Full_Subtyp  : Entity_Id;
-      Priv_Subtyp  : Entity_Id;
-      Utyp         : Entity_Id;
-      Full_Exp     : Node_Id;
+      Full_Exp    : Node_Id;
+      Full_Subtyp : Entity_Id;
+      High_Bound  : Entity_Id;
+      Index_Typ   : Entity_Id;
+      Low_Bound   : Entity_Id;
+      Priv_Subtyp : Entity_Id;
+      Utyp        : Entity_Id;
 
    begin
       if Is_Private_Type (Unc_Typ)
         and then Has_Unknown_Discriminants (Unc_Typ)
       then
-         --  Prepare the subtype completion, Go to base type to
-         --  find underlying type, because the type may be a generic
-         --  actual or an explicit subtype.
+         --  Prepare the subtype completion. Use the base type to find the
+         --  underlying type because the type may be a generic actual or an
+         --  explicit subtype.
 
          Utyp        := Underlying_Type (Base_Type (Unc_Typ));
          Full_Subtyp := Make_Temporary (Loc, 'C');
@@ -6451,22 +6453,67 @@ package body Exp_Util is
          return New_Occurrence_Of (Priv_Subtyp, Loc);
 
       elsif Is_Array_Type (Unc_Typ) then
+         Index_Typ := First_Index (Unc_Typ);
          for J in 1 .. Number_Dimensions (Unc_Typ) loop
-            Append_To (List_Constr,
-              Make_Range (Loc,
-                Low_Bound =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix => Duplicate_Subexpr_No_Checks (E),
-                    Attribute_Name => Name_First,
-                    Expressions => New_List (
-                      Make_Integer_Literal (Loc, J))),
 
-                High_Bound =>
+            --  Capture the bounds of each index constraint in case the context
+            --  is an object declaration of an unconstrained type initialized
+            --  by a function call:
+
+            --    Obj : Unconstr_Typ := Func_Call;
+
+            --  This scenario requires secondary scope management and the index
+            --  constraint cannot depend on the temporary used to capture the
+            --  result of the function call.
+
+            --    SS_Mark;
+            --    Temp : Unconstr_Typ_Ptr := Func_Call'reference;
+            --    subtype S is Unconstr_Typ (Temp.all'First .. Temp.all'Last);
+            --    Obj : S := Temp.all;
+            --    SS_Release;  --  Temp is gone at this point, bounds of S are
+            --                 --  non existent.
+
+            --  The bounds are kept as variables rather than constants because
+            --  this prevents spurious optimizations down the line.
+
+            --  Generate:
+            --    Low_Bound : Base_Type (Index_Typ) := E'First (J);
+
+            Low_Bound := Make_Temporary (Loc, 'B');
+            Insert_Action (E,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Low_Bound,
+                Object_Definition   =>
+                  New_Occurrence_Of (Base_Type (Etype (Index_Typ)), Loc),
+                Expression          =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => Duplicate_Subexpr_No_Checks (E),
+                    Attribute_Name => Name_First,
+                    Expressions    => New_List (
+                      Make_Integer_Literal (Loc, J)))));
+
+            --  Generate:
+            --    High_Bound : Base_Type (Index_Typ) := E'Last (J);
+
+            High_Bound := Make_Temporary (Loc, 'B');
+            Insert_Action (E,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => High_Bound,
+                Object_Definition   =>
+                  New_Occurrence_Of (Base_Type (Etype (Index_Typ)), Loc),
+                Expression          =>
                   Make_Attribute_Reference (Loc,
                     Prefix         => Duplicate_Subexpr_No_Checks (E),
                     Attribute_Name => Name_Last,
                     Expressions    => New_List (
                       Make_Integer_Literal (Loc, J)))));
+
+            Append_To (List_Constr,
+              Make_Range (Loc,
+                Low_Bound  => New_Occurrence_Of (Low_Bound,  Loc),
+                High_Bound => New_Occurrence_Of (High_Bound, Loc)));
+
+            Index_Typ := Next_Index (Index_Typ);
          end loop;
 
       elsif Is_Class_Wide_Type (Unc_Typ) then

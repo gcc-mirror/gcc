@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -205,18 +205,6 @@ package body System.Tasking is
          then System.Multiprocessors.Not_A_Specific_CPU
          else System.Multiprocessors.CPU_Range (Main_CPU));
 
-      T := STPO.New_ATCB (0);
-      Initialize_ATCB
-        (null, null, Null_Address, Null_Task, null, Base_Priority, Base_CPU,
-         null, Task_Info.Unspecified_Task_Info, 0, T, Success);
-      pragma Assert (Success);
-
-      STPO.Initialize (T);
-      STPO.Set_Priority (T, T.Common.Base_Priority);
-      T.Common.State := Runnable;
-      T.Common.Task_Image_Len := Main_Task_Image'Length;
-      T.Common.Task_Image (Main_Task_Image'Range) := Main_Task_Image;
-
       --  At program start-up the environment task is allocated to the default
       --  system dispatching domain.
       --  Make sure that the processors which are not available are not taken
@@ -228,7 +216,27 @@ package body System.Tasking is
           (Multiprocessors.CPU'First .. Multiprocessors.Number_Of_CPUs =>
              True);
 
-      T.Common.Domain := System_Domain;
+      T := STPO.New_ATCB (0);
+      Initialize_ATCB
+        (Self_ID => null,
+         Task_Entry_Point => null,
+         Task_Arg => Null_Address,
+         Parent => Null_Task,
+         Elaborated => null,
+         Base_Priority => Base_Priority,
+         Base_CPU => Base_CPU,
+         Domain => System_Domain,
+         Task_Info => Task_Info.Unspecified_Task_Info,
+         Stack_Size => 0,
+         T => T,
+         Success => Success);
+      pragma Assert (Success);
+
+      STPO.Initialize (T);
+      STPO.Set_Priority (T, T.Common.Base_Priority);
+      T.Common.State := Runnable;
+      T.Common.Task_Image_Len := Main_Task_Image'Length;
+      T.Common.Task_Image (Main_Task_Image'Range) := Main_Task_Image;
 
       Dispatching_Domain_Tasks :=
         new Array_Allocated_Tasks'

@@ -1178,9 +1178,11 @@ package System.Tasking is
       Stack_Size       : System.Parameters.Size_Type;
       T                : Task_Id;
       Success          : out Boolean);
-   --  Initialize fields of a TCB and link into global TCB structures Call
-   --  this only with abort deferred and holding RTS_Lock. Need more
-   --  documentation, mention T, and describe Success ???
+   --  Initialize fields of the TCB for task T, and link into global TCB
+   --  structures. Call this only with abort deferred and holding
+   --  RTS_Lock. Self_ID is the calling task (normally the activator of
+   --  T). Success is set to indicate whether the TCB was successfully
+   --  initialized. Need more documentation ???
 
 private
 
