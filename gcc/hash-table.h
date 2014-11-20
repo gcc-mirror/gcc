@@ -1201,6 +1201,7 @@ private:
   template<typename T> friend void gt_pch_nx (hash_table<T> *,
 					      gt_pointer_operator, void *);
 
+  value_type *alloc_entries (size_t n) const;
   value_type *find_empty_slot_for_expand (hashval_t);
   void expand ();
   static bool is_deleted (value_type &v)
@@ -1259,12 +1260,7 @@ hash_table<Descriptor, Allocator, true>::hash_table (size_t size, bool ggc) :
   size_prime_index = hash_table_higher_prime_index (size);
   size = prime_tab[size_prime_index].prime;
 
-  if (!m_ggc)
-    m_entries = Allocator <value_type> ::data_alloc (size);
-  else
-    m_entries = ggc_cleared_vec_alloc<value_type> (size);
-
-  gcc_assert (m_entries != NULL);
+  m_entries = alloc_entries (size);
   m_size = size;
   m_size_prime_index = size_prime_index;
 }
@@ -1280,6 +1276,26 @@ hash_table<Descriptor, Allocator, true>::~hash_table ()
     Allocator <value_type> ::data_free (m_entries);
   else
     ggc_free (m_entries);
+}
+
+/* This function returns an array of empty hash table elements.  */
+
+template<typename Descriptor, template<typename Type> class Allocator>
+inline typename hash_table<Descriptor, Allocator, true>::value_type *
+hash_table<Descriptor, Allocator, true>::alloc_entries (size_t n) const
+{
+  value_type *nentries;
+
+  if (!m_ggc)
+    nentries = Allocator <value_type> ::data_alloc (n);
+  else
+    nentries = ::ggc_cleared_vec_alloc<value_type> (n);
+
+  gcc_assert (nentries != NULL);
+  for (size_t i = 0; i < n; i++)
+    mark_empty (nentries[i]);
+
+  return nentries;
 }
 
 /* Similar to find_slot, but without several unwanted side effects:
@@ -1351,13 +1367,7 @@ hash_table<Descriptor, Allocator, true>::expand ()
       nsize = osize;
     }
 
-  value_type *nentries;
-  if (!m_ggc)
-    nentries = Allocator <value_type> ::data_alloc (nsize);
-  else
-    nentries = ggc_cleared_vec_alloc<value_type> (nsize);
-
-  gcc_assert (nentries != NULL);
+  value_type *nentries = alloc_entries (nsize);
   m_entries = nentries;
   m_size = nsize;
   m_size_prime_index = nindex;
@@ -1405,16 +1415,11 @@ hash_table<Descriptor, Allocator, true>::empty ()
       int nsize = prime_tab[nindex].prime;
 
       if (!m_ggc)
-	{
-	  Allocator <value_type> ::data_free (m_entries);
-	  m_entries = Allocator <value_type> ::data_alloc (nsize);
-	}
+	Allocator <value_type> ::data_free (m_entries);
       else
-	{
-	  ggc_free (m_entries);
-	  m_entries = ggc_cleared_vec_alloc<value_type> (nsize);
-	}
+	ggc_free (m_entries);
 
+      m_entries = alloc_entries (nsize);
       m_size = nsize;
       m_size_prime_index = nindex;
     }
