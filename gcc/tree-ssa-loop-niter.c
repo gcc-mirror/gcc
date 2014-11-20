@@ -3417,7 +3417,7 @@ maybe_lower_iteration_bound (struct loop *loop)
 		}
 	    }
 
-	  if (exit_warned && !problem_stmts.empty ())
+	  if (exit_warned && !problem_stmts.is_empty ())
 	    {
 	      gimple stmt;
 	      int index;
