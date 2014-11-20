@@ -5929,68 +5929,62 @@ package body Sem_Util is
       Subp : Entity_Id;
 
    begin
-      if SPARK_Mode = On then
+      --  When a formal parameter is subject to Extensions_Visible, the pragma
+      --  is stored in the contract of related subprogram.
 
-         --  When a formal parameter is subject to Extensions_Visible, the
-         --  pragma is stored in the contract of related subprogram.
+      if Is_Formal (Id) then
+         Subp := Scope (Id);
 
-         if Is_Formal (Id) then
-            Subp := Scope (Id);
+      elsif Is_Subprogram_Or_Generic_Subprogram (Id) then
+         Subp := Id;
 
-         elsif Is_Subprogram_Or_Generic_Subprogram (Id) then
-            Subp := Id;
-
-         --  No other construct carries this pragma
-
-         else
-            return Extensions_Visible_None;
-         end if;
-
-         Prag := Get_Pragma (Subp, Pragma_Extensions_Visible);
-
-         --  Extract the value from the Boolean expression (if any)
-
-         if Present (Prag) then
-            Arg1 := First (Pragma_Argument_Associations (Prag));
-
-            --  The pragma appears with an argument
-
-            if Present (Arg1) then
-               Expr := Get_Pragma_Arg (Arg1);
-
-               --  Guarg against cascading errors when the argument of pragma
-               --  Extensions_Visible is not a valid static Boolean expression.
-
-               if Error_Posted (Expr) then
-                  return Extensions_Visible_None;
-
-               elsif Is_True (Expr_Value (Expr)) then
-                  return Extensions_Visible_True;
-
-               else
-                  return Extensions_Visible_False;
-               end if;
-
-            --  Otherwise the pragma defaults to True
-
-            else
-               return Extensions_Visible_True;
-            end if;
-
-         --  Otherwise pragma Expresions_Visible is not inherited or directly
-         --  specified, its value defaults to "False".
-
-         else
-            return Extensions_Visible_False;
-         end if;
-
-      --  When SPARK_Mode is disabled, all semantic checks related to pragma
-      --  Extensions_Visible are disabled as well. Instead of saturating the
-      --  code with "if SPARK_Mode /= Off then" checks, the predicate returns
-      --  a default value.
+      --  No other construct carries this pragma
 
       else
          return Extensions_Visible_None;
+      end if;
+
+      Prag := Get_Pragma (Subp, Pragma_Extensions_Visible);
+
+      --  Extract the value from the Boolean expression (if any)
+
+      if Present (Prag) then
+         Arg1 := First (Pragma_Argument_Associations (Prag));
+
+         --  The pragma appears with an argument
+
+         if Present (Arg1) then
+            Expr := Get_Pragma_Arg (Arg1);
+
+            --  Guard against cascading errors when the argument of pragma
+            --  Extensions_Visible is not a valid static Boolean expression.
+
+            if Error_Posted (Expr) then
+               return Extensions_Visible_None;
+
+            elsif Is_True (Expr_Value (Expr)) then
+               return Extensions_Visible_True;
+
+            else
+               return Extensions_Visible_False;
+            end if;
+
+         --  Otherwise the pragma defaults to True
+
+         else
+            return Extensions_Visible_True;
+         end if;
+
+      --  Otherwise pragma Extensions_Visible is not inherited or directly
+      --  specified. In SPARK code, its value defaults to "False".
+
+      elsif SPARK_Mode = On then
+         return Extensions_Visible_False;
+
+      --  In non-SPARK code, pragma Extensions_Visible defaults to "True"
+
+      else
+         return Extensions_Visible_True;
       end if;
    end Extensions_Visible_Status;
 
@@ -15364,10 +15358,20 @@ package body Sem_Util is
          --  recursive call on the prefix, which will in turn check the level
          --  of the prefix object of the selected discriminant.
 
+         --  In Ada 2012, if the discriminant has implicit dereference and
+         --  the context is a selected component, treat this as an object of
+         --  unknown scope (see below). This is necessary in compile-only mode;
+         --  otherwise expansion will already have transformed the prefix into
+         --  a temporary.
+
          if Nkind (Prefix (Obj)) = N_Selected_Component
            and then Ekind (Etype (Prefix (Obj))) = E_Anonymous_Access_Type
            and then
              Ekind (Entity (Selector_Name (Prefix (Obj)))) = E_Discriminant
+           and then
+             (not Has_Implicit_Dereference
+                    (Entity (Selector_Name (Prefix (Obj))))
+               or else Nkind (Parent (Obj)) /= N_Selected_Component)
          then
             return Object_Access_Level (Prefix (Obj));
 
