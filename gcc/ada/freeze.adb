@@ -7695,9 +7695,8 @@ package body Freeze is
 
    procedure Set_SSO_From_Default (T : Entity_Id) is
    begin
-      --  Set default SSO for an array or record base type, except in the case
-      --  of a type extension (which always inherits the SSO of its parent
-      --  type).
+      --  Set default SSO for an array or record base type, except in case of
+      --  a type extension (which always inherits the SSO of its parent type).
 
       if Is_Base_Type (T)
         and then (Is_Array_Type (T)
@@ -7705,7 +7704,7 @@ package body Freeze is
                              and then not (Is_Tagged_Type (T)
                                             and then Is_Derived_Type (T))))
       then
-         if ((Bytes_Big_Endian       and then SSO_Set_Low_By_Default  (T))
+         if ((Bytes_Big_Endian      and then SSO_Set_Low_By_Default  (T))
                 or else
             ((not Bytes_Big_Endian) and then SSO_Set_High_By_Default (T)))
 

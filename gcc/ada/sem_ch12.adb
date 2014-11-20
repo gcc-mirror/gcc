@@ -1087,7 +1087,8 @@ package body Sem_Ch12 is
 
                else
                   Parm_Type :=
-                    Make_Identifier (Loc, Chars (Etype (Etype (Form_F))));
+                    Make_Identifier (Loc,
+                      Chars => Chars (First_Subtype (Etype (Form_F))));
                end if;
 
             --  If actual is present, use the type of its own formal
@@ -1805,9 +1806,10 @@ package body Sem_Ch12 is
                                                                     E_Function
                      then
                         --  If actual is an entity (function or operator),
-                        --  build wrapper for it.
+                        --  and expander is active, build wrapper for it.
+                        --  Note that wrappers play no role within a generic.
 
-                        if Present (Match) then
+                        if Present (Match) and then Expander_Active then
                            if Nkind (Match) = N_Operator_Symbol then
 
                               --  If the name is a default, find its visible
@@ -1835,6 +1837,7 @@ package body Sem_Ch12 is
                         elsif Box_Present (Formal)
                            and then Nkind (Defining_Entity (Analyzed_Formal)) =
                                                     N_Defining_Operator_Symbol
+                           and then Expander_Active
                         then
                            Append_To (Assoc,
                              Build_Operator_Wrapper

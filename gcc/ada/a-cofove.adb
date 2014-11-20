@@ -150,7 +150,9 @@ is
 
    function Capacity (Container : Vector) return Capacity_Range is
    begin
-      return Elemsc (Container)'Length;
+      return (if Container.Elements_Ptr = null
+              then Container.Elements'Length
+              else Container.Elements_Ptr.all'Length);
    end Capacity;
 
    -----------
@@ -160,8 +162,10 @@ is
    procedure Clear (Container : in out Vector) is
    begin
       Container.Last := No_Index;
+
+      --  Free element, note that this is OK if Elements_Ptr is null
+
       Free (Container.Elements_Ptr);
-      --  It's OK if Container.Elements_Ptr is null
    end Clear;
 
    --------------
@@ -211,8 +215,7 @@ is
       Current   : Index_Type) return Vector
    is
    begin
-      return Result : Vector
-        (Count_Type (Container.Last - Current + 1))
+      return Result : Vector (Count_Type (Container.Last - Current + 1))
       do
          for X in Current .. Container.Last loop
             Append (Result, Element (Container, X));
@@ -268,16 +271,16 @@ is
    function Elems (Container : in out Vector) return Maximal_Array_Ptr is
    begin
       return (if Container.Elements_Ptr = null
-                then Container.Elements'Unrestricted_Access
-                else Container.Elements_Ptr.all'Unrestricted_Access);
+              then Container.Elements'Unrestricted_Access
+              else Container.Elements_Ptr.all'Unrestricted_Access);
    end Elems;
 
    function Elemsc
      (Container : Vector) return Maximal_Array_Ptr_Const is
    begin
       return (if Container.Elements_Ptr = null
-                then Container.Elements'Unrestricted_Access
-                else Container.Elements_Ptr.all'Unrestricted_Access);
+              then Container.Elements'Unrestricted_Access
+              else Container.Elements_Ptr.all'Unrestricted_Access);
    end Elemsc;
 
    ----------------
@@ -313,9 +316,9 @@ is
    begin
       if Is_Empty (Container) then
          raise Constraint_Error with "Container is empty";
+      else
+         return Get_Element (Container, 1);
       end if;
-
-      return Get_Element (Container, 1);
    end First_Element;
 
    -----------------
@@ -357,24 +360,15 @@ is
       ---------------
 
       function Is_Sorted (Container : Vector) return Boolean is
-         Last : constant Index_Type := Last_Index (Container);
-
+         L : constant Capacity_Range := Length (Container);
       begin
-         if Container.Last <= Last then
-            return True;
-         end if;
-
-         declare
-            L : constant Capacity_Range := Length (Container);
-         begin
-            for J in 1 .. L - 1 loop
-               if Get_Element (Container, J + 1) <
-                  Get_Element (Container, J)
-               then
-                  return False;
-               end if;
-            end loop;
-         end;
+         for J in 1 .. L - 1 loop
+            if Get_Element (Container, J + 1) <
+               Get_Element (Container, J)
+            then
+               return False;
+            end if;
+         end loop;
 
          return True;
       end Is_Sorted;
@@ -396,9 +390,9 @@ is
       begin
          if Container.Last <= Index_Type'First then
             return;
+         else
+            Sort (Elems (Container) (1 .. Len));
          end if;
-
-         Sort (Elems (Container) (1 .. Len));
       end Sort;
 
    end Generic_Sorting;
@@ -442,9 +436,9 @@ is
    begin
       if Is_Empty (Container) then
          raise Constraint_Error with "Container is empty";
+      else
+         return Get_Element (Container, Length (Container));
       end if;
-
-      return Get_Element (Container, Length (Container));
    end Last_Element;
 
    ----------------
@@ -464,7 +458,6 @@ is
       L : constant Int := Int (Last_Index (Container));
       F : constant Int := Int (Index_Type'First);
       N : constant Int'Base := L - F + 1;
-
    begin
       return Capacity_Range (N);
    end Length;
@@ -486,7 +479,6 @@ is
       declare
          II : constant Int'Base := Int (Index) - Int (No_Index);
          I  : constant Capacity_Range := Capacity_Range (II);
-
       begin
          Elems (Container) (I) := New_Item;
       end;
@@ -509,8 +501,8 @@ is
          if Capacity > Formal_Vectors.Capacity (Container) then
             declare
                New_Elements : constant Elements_Array_Ptr :=
-                 new Elements_Array (1 .. Capacity);
-               L : constant Capacity_Range := Length (Container);
+                                new Elements_Array (1 .. Capacity);
+               L            : constant Capacity_Range := Length (Container);
             begin
                New_Elements (1 .. L) := Elemsc (Container) (1 .. L);
                Free (Container.Elements_Ptr);
@@ -532,7 +524,8 @@ is
 
       declare
          I, J : Capacity_Range;
-         E    : Elements_Array renames Elems (Container).all;
+         E    : Elements_Array renames
+                  Elems (Container) (1 .. Length (Container));
 
       begin
          I := 1;
@@ -640,8 +633,10 @@ is
 
          Last := Index_Type (Last_As_Int);
 
-         return (Capacity => Length, Last => Last, Elements_Ptr => <>,
-                 Elements => (others => New_Item));
+         return (Capacity     => Length,
+                 Last         => Last,
+                 Elements_Ptr => <>,
+                 Elements     => (others => New_Item));
       end;
    end To_Vector;
 
