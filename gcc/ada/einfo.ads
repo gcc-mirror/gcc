@@ -148,7 +148,7 @@ package Einfo is
 
 --       The Object_Size for base subtypes reflect the natural hardware
 --       size in bits (see Ttypes and Cstand for integer types). For
---       enumeration and fixed-point base subtypes have 8. 16. 32 or 64
+--       enumeration and fixed-point base subtypes have 8, 16, 32, or 64
 --       bits for this size, depending on the range of values to be stored.
 
 --       The Object_Size of a subtype is the same as the Object_Size of

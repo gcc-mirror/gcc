@@ -717,7 +717,7 @@ package Opt is
 
    Generate_SCO_Instance_Table : Boolean := False;
    --  GNAT
-   --  True when switch -fdebug-instances is used. When True, a table of
+   --  True when switch -fdump-scos is used. When True, a table of
    --  instances is included in SCOs.
 
    Generating_Code : Boolean := False;

@@ -516,6 +516,12 @@ package body Sem_Elab is
       Access_Case : constant Boolean := Nkind (N) = N_Attribute_Reference;
       --  Indicates if we have Access attribute case
 
+      Variable_Case : constant Boolean :=
+                        Nkind (N) in N_Has_Entity
+                          and then Present (Entity (N))
+                          and then Ekind (Entity (N)) = E_Variable;
+      --  Indicates if we have variable reference case
+
       procedure Elab_Warning
         (Msg_D : String;
          Msg_S : String;
@@ -617,10 +623,7 @@ package body Sem_Elab is
 
       --  For a variable reference, just set Body_Acts_As_Spec to False
 
-      if Nkind (N) in N_Has_Entity
-        and then Present (Entity (N))
-        and then Ekind (Entity (N)) = E_Variable
-      then
+      if Variable_Case then
          Body_Acts_As_Spec := False;
 
       --  Additional checks for all other cases
@@ -879,7 +882,9 @@ package body Sem_Elab is
             --  Loop to carefully follow renamings and derivations one step
             --  outside the current unit, but not further.
 
-            if not Inst_Case and then Present (Alias (Ent)) then
+            if not (Inst_Case or Variable_Case)
+              and then Present (Alias (Ent))
+            then
                E_Scope := Alias (Ent);
             else
                E_Scope := Ent;
@@ -970,11 +975,7 @@ package body Sem_Elab is
 
             --  Variable reference in SPARK mode
 
-            elsif SPARK_Mode = On
-              and then Nkind (N) in N_Has_Entity
-              and then Present (Entity (N))
-              and then Ekind (Entity (N)) = E_Variable
-            then
+            elsif Variable_Case then
                Error_Msg_NE
                  ("reference to & during elaboration in SPARK", N, Ent);
 
@@ -1265,9 +1266,9 @@ package body Sem_Elab is
       elsif Nkind (N) not in N_Subprogram_Call
         and then Nkind (N) /= N_Attribute_Reference
         and then (SPARK_Mode /= On
-                    or else Nkind (N) not in N_Has_Entity
-                    or else No (Entity (N))
-                    or else Ekind (Entity (N)) /= E_Variable)
+                   or else Nkind (N) not in N_Has_Entity
+                   or else No (Entity (N))
+                   or else Ekind (Entity (N)) /= E_Variable)
       then
          return;
 
