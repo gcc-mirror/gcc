@@ -1,3 +1,29 @@
+2014-11-20  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Do not reset Is_True_Constant
+	for aliased constant objects.
+
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb (Following_Address_Clause): Use new Name_Table
+	boolean flag set by parser to avoid the search if there is no
+	address clause anywhere for the name.
+	* namet.adb (Name_Enter): Initialize Boolean_Info flag
+	(Name_Find): ditto (Reinitialize): ditto (Get_Name_Table_Boolean):
+	New function (Set_Name_Table_Boolean): New procedure
+	* namet.ads: Add and document new Boolean field in name table
+	(Get_Name_Table_Boolean): New function.
+	(Set_Name_Table_Boolean): New procedure.
+	* par-ch13.adb (P_Representation_Clause): Set Name_Table boolean
+	flag for an identifier name if we detect an address clause or
+	use-at clause for the identifier.
+	* sem_ch3.adb (Analyze_Object_Declaration): Remove comment about
+	Following_Address_Clause since this function is now optimized
+	and is not a performance concern.
+	* sem_prag.adb (Analyze_Pragma, case Elaborate): In SPARK
+	mode, pragma Elaborate is now allowed, but does not suppress
+	elaboration checking.
+
 2014-11-20  Jerome Lambourg  <lambourg@adacore.com>
 
 	* gcc-interface/Makefile.in: Add some support for VxWorks7.

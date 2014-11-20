@@ -2960,6 +2960,15 @@ package body Exp_Util is
       --  Start of processing for Following_Address_Clause
 
    begin
+      --  If parser detected no address clause for the identifier in question,
+      --  then then answer is a quick NO, without the need for a search.
+
+      if not Get_Name_Table_Boolean (Chars (Id)) then
+         return Empty;
+      end if;
+
+      --  Otherwise search current declarative unit
+
       Result := Check_Decls (Next (D));
 
       if Present (Result) then
