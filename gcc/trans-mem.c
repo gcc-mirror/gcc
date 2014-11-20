@@ -3109,15 +3109,16 @@ split_bb_make_tm_edge (gimple stmt, basic_block dest_bb,
 
   // Record the need for the edge for the benefit of the rtl passes.
   if (cfun->gimple_df->tm_restart == NULL)
-    cfun->gimple_df->tm_restart = htab_create_ggc (31, struct_ptr_hash,
-						   struct_ptr_eq, ggc_free);
+    cfun->gimple_df->tm_restart
+      = hash_table<tm_restart_hasher>::create_ggc (31);
 
   struct tm_restart_node dummy;
   dummy.stmt = stmt;
   dummy.label_or_list = gimple_block_label (dest_bb);
 
-  void **slot = htab_find_slot (cfun->gimple_df->tm_restart, &dummy, INSERT);
-  struct tm_restart_node *n = (struct tm_restart_node *) *slot;
+  tm_restart_node **slot = cfun->gimple_df->tm_restart->find_slot (&dummy,
+								   INSERT);
+  struct tm_restart_node *n = *slot;
   if (n == NULL)
     {
       n = ggc_alloc<tm_restart_node> ();
@@ -3196,7 +3197,7 @@ expand_block_edges (struct tm_region *const region, basic_block bb)
 
       if (cfun->gimple_df->tm_restart == NULL)
 	cfun->gimple_df->tm_restart
-	  = htab_create_ggc (31, struct_ptr_hash, struct_ptr_eq, ggc_free);
+	  = hash_table<tm_restart_hasher>::create_ggc (31);
 
       // All TM builtins have an abnormal edge to the outer-most transaction.
       // We never restart inner transactions.
