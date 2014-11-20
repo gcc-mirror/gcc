@@ -1459,7 +1459,7 @@ package body Exp_Ch3 is
       Discr          : Entity_Id;
       First_Arg      : Node_Id;
       Full_Init_Type : Entity_Id;
-      Full_Type      : Entity_Id := Typ;
+      Full_Type      : Entity_Id;
       Init_Type      : Entity_Id;
       Proc           : Entity_Id;
 
@@ -1490,20 +1490,38 @@ package body Exp_Ch3 is
          return Empty_List;
       end if;
 
-      --  Go to full view or underlying full view if private type. In the case
-      --  of successive private derivations, this can require two steps.
+      Full_Type := Typ;
 
-      if Is_Private_Type (Full_Type)
-        and then Present (Full_View (Full_Type))
-      then
-         Full_Type := Full_View (Full_Type);
-      end if;
+      --  Use the [underlying] full view when dealing with a private type. This
+      --  may require several steps depending on derivations.
 
-      if Is_Private_Type (Full_Type)
-        and then Present (Underlying_Full_View (Full_Type))
-      then
-         Full_Type := Underlying_Full_View (Full_Type);
-      end if;
+      loop
+         if Is_Private_Type (Full_Type) then
+            if Present (Full_View (Full_Type)) then
+               Full_Type := Full_View (Full_Type);
+
+            elsif Present (Underlying_Full_View (Full_Type)) then
+               Full_Type := Underlying_Full_View (Full_Type);
+
+            --  When a private type acts as a generic actual and lacks a full
+            --  view, use the base type.
+
+            elsif Is_Generic_Actual_Type (Full_Type) then
+               Full_Type := Base_Type (Full_Type);
+
+            --  The loop has recovered the [underlying] full view, stop the
+            --  traversal.
+
+            else
+               exit;
+            end if;
+
+         --  The type is not private, nothing to do
+
+         else
+            exit;
+         end if;
+      end loop;
 
       --  If Typ is derived, the procedure is the initialization procedure for
       --  the root type. Wrap the argument in an conversion to make it type

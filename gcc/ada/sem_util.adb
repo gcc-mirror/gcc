@@ -17619,48 +17619,87 @@ package body Sem_Util is
    -----------------------
 
    procedure Transfer_Entities (From : Entity_Id; To : Entity_Id) is
-      Ent : Entity_Id := First_Entity (From);
+      procedure Set_Public_Status_Of (Id : Entity_Id);
+      --  Set the Is_Public attribute of arbitrary entity Id by calling routine
+      --  Set_Public_Status. If successfull and Id denotes a record type, set
+      --  the Is_Public attribute of its fields.
 
-   begin
-      if No (Ent) then
-         return;
-      end if;
+      --------------------------
+      -- Set_Public_Status_Of --
+      --------------------------
 
-      if (Last_Entity (To)) = Empty then
-         Set_First_Entity (To, Ent);
-      else
-         Set_Next_Entity (Last_Entity (To), Ent);
-      end if;
+      procedure Set_Public_Status_Of (Id : Entity_Id) is
+         Field : Entity_Id;
 
-      Set_Last_Entity (To, Last_Entity (From));
+      begin
+         if not Is_Public (Id) then
+            Set_Public_Status (Id);
 
-      while Present (Ent) loop
-         Set_Scope (Ent, To);
+            --  When the input entity is a public record type, ensure that all
+            --  its internal fields are also exposed to the linker. The fields
+            --  of a class-wide type are never made public.
 
-         if not Is_Public (Ent) then
-            Set_Public_Status (Ent);
-
-            if Is_Public (Ent) and then Ekind (Ent) = E_Record_Subtype then
-
-               --  The components of the propagated Itype must also be public
-
-               declare
-                  Comp : Entity_Id;
-               begin
-                  Comp := First_Entity (Ent);
-                  while Present (Comp) loop
-                     Set_Is_Public (Comp);
-                     Next_Entity (Comp);
-                  end loop;
-               end;
+            if Is_Public (Id)
+              and then Is_Record_Type (Id)
+              and then not Is_Class_Wide_Type (Id)
+            then
+               Field := First_Entity (Id);
+               while Present (Field) loop
+                  Set_Is_Public (Field);
+                  Next_Entity (Field);
+               end loop;
             end if;
          end if;
+      end Set_Public_Status_Of;
 
-         Next_Entity (Ent);
-      end loop;
+      --  Local variables
 
-      Set_First_Entity (From, Empty);
-      Set_Last_Entity (From, Empty);
+      Full_Id : Entity_Id;
+      Id      : Entity_Id;
+
+   --  Start of processing for Transfer_Entities
+
+   begin
+      Id := First_Entity (From);
+
+      if Present (Id) then
+
+         --  Merge the entity chain of the source scope with that of the
+         --  destination scope.
+
+         if Present (Last_Entity (To)) then
+            Set_Next_Entity (Last_Entity (To), Id);
+         else
+            Set_First_Entity (To, Id);
+         end if;
+
+         Set_Last_Entity (To, Last_Entity (From));
+
+         --  Inspect the entities of the source scope and update their Scope
+         --  attribute.
+
+         while Present (Id) loop
+            Set_Scope            (Id, To);
+            Set_Public_Status_Of (Id);
+
+            --  Handle an internally generated full view for a private type
+
+            if Is_Private_Type (Id)
+              and then Present (Full_View (Id))
+              and then Is_Itype (Full_View (Id))
+            then
+               Full_Id := Full_View (Id);
+
+               Set_Scope            (Full_Id, To);
+               Set_Public_Status_Of (Full_Id);
+            end if;
+
+            Next_Entity (Id);
+         end loop;
+
+         Set_First_Entity (From, Empty);
+         Set_Last_Entity  (From, Empty);
+      end if;
    end Transfer_Entities;
 
    -----------------------

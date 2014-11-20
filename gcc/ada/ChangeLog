@@ -1,3 +1,31 @@
+2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Build_Initialization_Call): Reimplement the
+	circuitry which extraacts the [underlying] full view of a
+	private type to handle a case where the private type acts as a
+	generic actual.
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Array): Inherit the
+	loop label form the original loop regardless of whether it came
+	from source.
+	* sem_attr.adb (Analyze_Attribute): When taking 'Access of an
+	expression function with a generated body that has not been
+	analyzed yet, analyze the body to freeze the expression.
+	* sem_util.adb (Set_Public_Status_Of): New routine.
+	(Transfer_Entities): Handle the case where a private type with
+	an internally generated full view is being transfered and update
+	its full view.
+
+2014-11-20  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Object): If a unit is in a multi-source
+	file, its object file is never the same as any other unit.
+
+2014-11-20  Bob Duff  <duff@adacore.com>
+
+	* s-taskin.adb (Initialize_ATCB): Take into
+	account the fact that the domain of the activator can be null
+	if we're initializing a foreign task.
+
 2014-11-20  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch12.adb: Minor reformatting.

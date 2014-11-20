@@ -118,10 +118,17 @@ package body System.Tasking is
       T.Common.Base_Priority            := Base_Priority;
       T.Common.Base_CPU                 := Base_CPU;
 
-      --  The Domain defaults to that of the activator
+      --  The Domain defaults to that of the activator. But that can be null in
+      --  the case of foreign threads (see Register_Foreign_Thread), in which
+      --  case we default to the System_Domain.
 
-      T.Common.Domain                   :=
-        (if Domain = null then Self_ID.Common.Domain else Domain);
+      if Domain /= null then
+         T.Common.Domain := Domain;
+      elsif Self_ID.Common.Domain /= null then
+         T.Common.Domain := Self_ID.Common.Domain;
+      else
+         T.Common.Domain := System_Domain;
+      end if;
       pragma Assert (T.Common.Domain /= null);
 
       T.Common.Current_Priority         := 0;
