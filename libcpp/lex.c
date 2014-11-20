@@ -270,7 +270,7 @@ search_line_acc_char (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
    extensions used, so SSE4.2 executables cannot run on machines that
    don't support that extension.  */
 
-#if (GCC_VERSION >= 4005) && (defined(__i386__) || defined(__x86_64__)) && !(defined(__sun__) && defined(__svr4__))
+#if (GCC_VERSION >= 4005) && (__GNUC__ >= 5 || !defined(__PIC__)) && (defined(__i386__) || defined(__x86_64__)) && !(defined(__sun__) && defined(__svr4__))
 
 /* Replicated character data to be shared between implementations.
    Recall that outside of a context with vector support we can't
@@ -471,11 +471,7 @@ search_line_sse42 (const uchar *s, const uchar *end)
 
 /* Check the CPU capabilities.  */
 
-#if (GCC_VERSION >= 5000)
 #include "../gcc/config/i386/cpuid.h"
-#else
-#include <cpuid.h>
-#endif
 
 typedef const uchar * (*search_line_fast_type) (const uchar *, const uchar *);
 static search_line_fast_type search_line_fast;
