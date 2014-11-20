@@ -175,7 +175,7 @@ package GNAT.Directory_Operations is
    --  Returns Path with environment variables replaced by the current
    --  environment variable value. For example, $HOME/mydir will be replaced
    --  by /home/joe/mydir if $HOME environment variable is set to /home/joe and
-   --  Mode is UNIX. If an environment variable does not exists the variable
+   --  Mode is UNIX. If an environment variable does not exist the variable
    --  will be replaced by the empty string. Two dollar or percent signs are
    --  replaced by a single dollar/percent sign. Note that a variable must
    --  start with a letter.

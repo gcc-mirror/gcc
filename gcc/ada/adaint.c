@@ -2311,20 +2311,29 @@ __gnat_number_of_cpus (void)
    for locking and unlocking tasks since we do not support multiple
    threads on this configuration (Cert run time on native Windows). */
 
-static void dummy (void)
-{
-}
-
-void (*Lock_Task) ()   = &dummy;
-void (*Unlock_Task) () = &dummy;
+static void EnterCS (void) {}
+static void LeaveCS (void) {}
+static void SignalListChanged (void) {}
 
 #else
 
-#define Lock_Task system__soft_links__lock_task
-extern void (*Lock_Task) (void);
+CRITICAL_SECTION ProcListCS;
+HANDLE ProcListEvt;
 
-#define Unlock_Task system__soft_links__unlock_task
-extern void (*Unlock_Task) (void);
+static void EnterCS (void)
+{
+  EnterCriticalSection(&ProcListCS);
+}
+
+static void LeaveCS (void)
+{
+  LeaveCriticalSection(&ProcListCS);
+}
+
+static void SignalListChanged (void)
+{
+  SetEvent (ProcListEvt);
+}
 
 #endif
 
@@ -2335,7 +2344,7 @@ static void
 add_handle (HANDLE h, int pid)
 {
   /* -------------------- critical section -------------------- */
-  (*Lock_Task) ();
+  EnterCS();
 
   if (plist_length == plist_max_length)
     {
@@ -2350,14 +2359,19 @@ add_handle (HANDLE h, int pid)
   PID_LIST[plist_length] = pid;
   ++plist_length;
 
-  (*Unlock_Task) ();
+  SignalListChanged();
+  LeaveCS();
   /* -------------------- critical section -------------------- */
 }
 
-static void
-remove_handle (HANDLE h, int pid)
+int
+__gnat_win32_remove_handle (HANDLE h, int pid)
 {
   int j;
+  int found = 0;
+
+  /* -------------------- critical section -------------------- */
+  EnterCS();
 
   for (j = 0; j < plist_length; j++)
     {
@@ -2367,21 +2381,18 @@ remove_handle (HANDLE h, int pid)
           --plist_length;
           HANDLES_LIST[j] = HANDLES_LIST[plist_length];
           PID_LIST[j] = PID_LIST[plist_length];
+          found = 1;
           break;
         }
     }
-}
 
-void
-__gnat_win32_remove_handle (HANDLE h, int pid)
-{
+  LeaveCS();
   /* -------------------- critical section -------------------- */
-  (*Lock_Task) ();
 
-  remove_handle(h, pid);
+  if (found)
+    SignalListChanged();
 
-  (*Unlock_Task) ();
-  /* -------------------- critical section -------------------- */
+  return found;
 }
 
 static void
@@ -2466,35 +2477,70 @@ win32_wait (int *status)
   DWORD exitcode, pid;
   HANDLE *hl;
   HANDLE h;
+  int *pidl;
   DWORD res;
   int hl_len;
+  int found;
 
-  /* -------------------- critical section -------------------- */
-  (*Lock_Task) ();
+ START_WAIT:
 
   if (plist_length == 0)
     {
       errno = ECHILD;
-      (*Unlock_Task) ();
       return -1;
     }
 
+  /* -------------------- critical section -------------------- */
+  EnterCS();
+
   hl_len = plist_length;
 
+#ifdef CERT
   hl = (HANDLE *) xmalloc (sizeof (HANDLE) * hl_len);
-
   memmove (hl, HANDLES_LIST, sizeof (HANDLE) * hl_len);
+  pidl = (int *) xmalloc (sizeof (int) * hl_len);
+  memmove (pidl, PID_LIST, sizeof (int) * hl_len);
+#else
+  /* Note that index 0 contains the event hanlde that is signaled when the
+     process list has changed */
+  hl = (HANDLE *) xmalloc (sizeof (HANDLE) * hl_len + 1);
+  hl[0] = ProcListEvt;
+  memmove (&hl[1], HANDLES_LIST, sizeof (HANDLE) * hl_len);
+  pidl = (int *) xmalloc (sizeof (int) * hl_len + 1);
+  memmove (&pidl[1], PID_LIST, sizeof (int) * hl_len);
+  hl_len++;
+#endif
+
+  LeaveCS();
+  /* -------------------- critical section -------------------- */
 
   res = WaitForMultipleObjects (hl_len, hl, FALSE, INFINITE);
+
+  /* if the ProcListEvt has been signaled then the list of processes has been
+     updated to add or remove a handle, just loop over */
+
+  if (res - WAIT_OBJECT_0 == 0)
+    {
+      free (hl);
+      free (pidl);
+      goto START_WAIT;
+    }
+
   h = hl[res - WAIT_OBJECT_0];
-
   GetExitCodeProcess (h, &exitcode);
-  pid = PID_LIST [res - WAIT_OBJECT_0];
-  remove_handle (h, -1);
+  pid = pidl [res - WAIT_OBJECT_0];
 
-  (*Unlock_Task) ();
-  /* -------------------- critical section -------------------- */
+  found = __gnat_win32_remove_handle (h, -1);
+
   free (hl);
+  free (pidl);
+
+  /* if not found another process waiting has already handled this process */
+
+  if (!found)
+    {
+      goto START_WAIT;
+    }
 
   *status = (int) exitcode;
   return (int) pid;
