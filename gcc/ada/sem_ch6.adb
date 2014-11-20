@@ -924,8 +924,7 @@ package body Sem_Ch6 is
               and then Is_Progenitor (Designated_Type (R_Type),
                                       Designated_Type (Etype (Expr)))
             then
-               Rewrite (Expr,
-                 Convert_To (R_Type, Relocate_Node (Expr)));
+               Rewrite (Expr, Convert_To (R_Type, Relocate_Node (Expr)));
                Analyze (Expr);
             end if;
 
