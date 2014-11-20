@@ -1,3 +1,8 @@
+2014-11-20  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/63931
+	* gnatvsn.ads (Library_Version): Switch to "5".
+
 2014-11-20  Thomas Quinot  <quinot@adacore.com>
 
 	* freeze.adb (Freeze_Entity): Do not reset Is_True_Constant
