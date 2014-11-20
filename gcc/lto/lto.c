@@ -260,13 +260,15 @@ lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
   for (i = 0; i < LTO_N_DECL_STREAMS; i++)
     {
       uint32_t size = *data++;
-      tree *decls = ggc_vec_alloc<tree> (size);
+      vec<tree, va_gc> *decls = NULL;
+      vec_alloc (decls, size);
 
       for (j = 0; j < size; j++)
-	decls[j] = streamer_tree_cache_get_tree (data_in->reader_cache, data[j]);
+	vec_safe_push (decls,
+		       streamer_tree_cache_get_tree (data_in->reader_cache,
+						     data[j]));
 
-      state->streams[i].size = size;
-      state->streams[i].trees = decls;
+      state->streams[i] = decls;
       data += size;
     }
 
@@ -2798,20 +2800,19 @@ static void
 lto_fixup_state (struct lto_in_decl_state *state)
 {
   unsigned i, si;
-  struct lto_tree_ref_table *table;
 
   /* Although we only want to replace FUNCTION_DECLs and VAR_DECLs,
      we still need to walk from all DECLs to find the reachable
      FUNCTION_DECLs and VAR_DECLs.  */
   for (si = 0; si < LTO_N_DECL_STREAMS; si++)
     {
-      table = &state->streams[si];
-      for (i = 0; i < table->size; i++)
+      vec<tree, va_gc> *trees = state->streams[si];
+      for (i = 0; i < vec_safe_length (trees); i++)
 	{
-	  tree *tp = table->trees + i;
-	  if (VAR_OR_FUNCTION_DECL_P (*tp)
-	      && (TREE_PUBLIC (*tp) || DECL_EXTERNAL (*tp)))
-	    *tp = lto_symtab_prevailing_decl (*tp);
+	  tree t = (*trees)[i];
+	  if (VAR_OR_FUNCTION_DECL_P (t)
+	      && (TREE_PUBLIC (t) || DECL_EXTERNAL (t)))
+	    (*trees)[i] = lto_symtab_prevailing_decl (t);
 	}
     }
 }

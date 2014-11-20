@@ -2187,8 +2187,8 @@ copy_function_or_variable (struct symtab_node *node)
 
   for (i = 0; i < LTO_N_DECL_STREAMS; i++)
     {
-      size_t n = in_state->streams[i].size;
-      tree *trees = in_state->streams[i].trees;
+      size_t n = vec_safe_length (in_state->streams[i]);
+      vec<tree, va_gc> *trees = in_state->streams[i];
       struct lto_tree_ref_encoder *encoder = &(out_state->streams[i]);
 
       /* The out state must have the same indices and the in state.
@@ -2197,7 +2197,7 @@ copy_function_or_variable (struct symtab_node *node)
       gcc_assert (lto_tree_ref_encoder_size (encoder) == 0);
       encoder->trees.reserve_exact (n);
       for (j = 0; j < n; j++)
-	encoder->trees.safe_push (trees[j]);
+	encoder->trees.safe_push ((*trees)[j]);
     }
 
   lto_free_section_data (file_data, LTO_section_function_body, name,
