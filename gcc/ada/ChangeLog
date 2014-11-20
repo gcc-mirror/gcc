@@ -1,3 +1,20 @@
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+	* exp_util.adb (Following_Address_Clause): Handle case of
+	package private part.
+
+2014-11-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-cdlili.adb, a-cihama.adb, a-coinve.adb, a-cusyqu.adb, a-ciorse.adb,
+	a-coorma.adb, a-cborma.adb, a-cidlli.adb, a-cimutr.adb, a-ciormu.adb,
+	a-cbprqu.adb, a-cihase.adb, a-cohama.adb, a-coorse.adb, a-coboho.adb,
+	a-cuprqu.adb, a-cbhama.adb, a-rbtgbo.adb, a-cborse.adb, a-comutr.adb,
+	a-ciorma.adb, a-cobove.adb, a-coormu.adb, a-convec.adb, a-cohase.adb,
+	a-coinho.adb, a-coinho-shared.adb, a-cbdlli.adb, a-cbsyqu.adb,
+	a-cbmutr.adb, a-cbhase.adb: Add pragma Annotate to prevent codepeer
+	from analyzing these bodies.
+
 2014-11-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Do not apply

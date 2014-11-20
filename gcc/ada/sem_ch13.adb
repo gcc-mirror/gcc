@@ -2853,7 +2853,6 @@ package body Sem_Ch13 is
                begin
                   if A_Id = Aspect_Pre or else A_Id = Aspect_Precondition then
                      Pname := Name_Precondition;
-
                   else
                      Pname := Name_Postcondition;
                   end if;
