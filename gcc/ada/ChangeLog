@@ -1,3 +1,16 @@
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch12.adb: Minor reformatting.
+
+2014-11-20  Jerome Lambourg  <lambourg@adacore.com>
+
+	* s-osinte-vxworks.ads: Add comments. Minor reformatting.
+
+2014-11-20  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb, sem_elab.adb: Minor rewording of error message in
+	SPARK mode, for consistency.
+
 2014-11-20  Vasiliy Fofanov  <fofanov@adacore.com>
 
 	* gnat_ugn.texi: New section on gnattest stubbing. Minor

@@ -10237,7 +10237,6 @@ package body Sem_Ch12 is
                   and then Is_Constr_Subt_For_U_Nominal (Etype (Actual))
                then
                   Freeze_Before (Instantiation_Node, Etype (Actual));
-
                else
                   Freeze_Before (Instantiation_Node, Typ);
                end if;

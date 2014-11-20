@@ -924,7 +924,7 @@ package body Sem_Elab is
             if Inst_Case then
                if SPARK_Mode = On then
                   Error_Msg_NE
-                    ("instantiation of & during elaboration in SPARK mode",
+                    ("instantiation of & during elaboration in SPARK",
                      N, Ent);
 
                else
@@ -955,7 +955,7 @@ package body Sem_Elab is
 
                elsif SPARK_Mode = On then
                   Error_Msg_NE
-                    ("call to & during elaboration in SPARK mode", N, Ent);
+                    ("call to & during elaboration in SPARK", N, Ent);
 
                else
                   Elab_Warning
