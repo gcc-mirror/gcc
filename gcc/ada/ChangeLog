@@ -1,3 +1,11 @@
+2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Extensions_Visible_Status): Modify the logic to account
+	for non-SPARK code.
+	(Object_Access_Level): In ASIS mode, recognize
+	a selected component with an implicit dereference so that it
+	yields the same value with and without expansion.
+
 2014-11-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Implemented): In ASIS
