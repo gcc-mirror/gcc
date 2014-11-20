@@ -16729,9 +16729,11 @@ package body Sem_Prag is
                return;
             end if;
 
-            --  Must appear for a spec
+            --  Must appear for a spec or generic spec
 
             if not Nkind_In (Unit (Cunit (Current_Sem_Unit)),
+                             N_Generic_Package_Declaration,
+                             N_Generic_Subprogram_Declaration,
                              N_Package_Declaration,
                              N_Subprogram_Declaration)
             then

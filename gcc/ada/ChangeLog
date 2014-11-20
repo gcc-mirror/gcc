@@ -1,3 +1,39 @@
+2014-11-20  Bob Duff  <duff@adacore.com>
+
+	* debug.adb: Minor comment fix.
+
+2014-11-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-ciorma.adb: Minor update: move pragma Annotate up.
+	* a-cfdlli.adb: Skip codepeer analysis on this body.
+
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case No_Elaboration_Code_All):
+	Allow use of this pragma with generic unit (package or subprogram).
+	* gnat_rm.texi: Clarify that pragma No_Elaboration_Code_All can
+	be applied to generics.
+
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Valid_Limited_Ancestor): Ancestor part of
+	extension aggregate can itself be an extension aggregate, as
+	well as a call that is rewritten as a reference.
+
+2014-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Add_Inlined_Subprogram): Insert all programs
+	generated as a body or whose declaration was provided along with
+	the body.
+
+2014-11-20  Javier Miranda  <miranda@adacore.com>
+
+	* sem.adb (Semantics): Disable expansion if we are compiling a
+	separate unit under configurable runtime. By default separate
+	units are compiled with expansion disabled but under configurable
+	runtime we enable the expansion to get error messages about
+	missing entities.
+
 2014-11-20  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch13.adb: Minor reformatting.
