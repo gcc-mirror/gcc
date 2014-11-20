@@ -1,3 +1,20 @@
+2014-11-20  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/63870
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_args): Pass
+	expression to aarch64_simd_lane_bounds.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_lane_bounds): Update
+	prototype.
+	* config/aarch64/aarch64-simd.md: (aarch64_combinez<mode>): Update
+	call to aarch64_simd_lane_bounds.
+	(aarch64_get_lanedi): Likewise.
+	(aarch64_ld2_lane<mode>): Likewise.
+	(aarch64_ld3_lane<mode>): Likewise.
+	(aarch64_ld4_lane<mode>): Likewise.
+	(aarch64_im_lane_boundsi): Likewise.
+	* config/aarch64/aarch64.c (aarch64_simd_lane_bounds): Add exp
+	parameter. Report calling function in error message if exp is non-NULL.
+
 2014-11-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/60111

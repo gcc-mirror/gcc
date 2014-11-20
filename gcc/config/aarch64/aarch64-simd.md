@@ -2436,7 +2436,7 @@
    (match_operand:SI 2 "immediate_operand")]
   "TARGET_SIMD"
 {
-  aarch64_simd_lane_bounds (operands[2], 0, 1);
+  aarch64_simd_lane_bounds (operands[2], 0, 1, NULL);
   emit_move_insn (operands[0], operands[1]);
   DONE;
 })
@@ -4366,7 +4366,8 @@
   machine_mode mode = <V_TWO_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
-  aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
+  aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode),
+			    NULL);
   emit_insn (gen_aarch64_vec_load_lanesoi_lane<mode> (operands[0],
 						      mem,
 						      operands[2],
@@ -4385,7 +4386,8 @@
   machine_mode mode = <V_THREE_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
-  aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
+  aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode),
+			    NULL);
   emit_insn (gen_aarch64_vec_load_lanesci_lane<mode> (operands[0],
 						      mem,
 						      operands[2],
@@ -4404,7 +4406,8 @@
   machine_mode mode = <V_FOUR_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
-  aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
+  aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode),
+			    NULL);
   emit_insn (gen_aarch64_vec_load_lanesxi_lane<mode> (operands[0],
 						      mem,
 						      operands[2],
@@ -4554,7 +4557,7 @@
    (match_operand:SI 1 "immediate_operand" "i")]
   "TARGET_SIMD"
 {
-  aarch64_simd_lane_bounds (operands[0], 0, INTVAL (operands[1]));
+  aarch64_simd_lane_bounds (operands[0], 0, INTVAL (operands[1]), NULL);
   DONE;
 }
 )
