@@ -2334,7 +2334,6 @@ static int *PID_LIST = NULL, plist_length = 0, plist_max_length = 0;
 static void
 add_handle (HANDLE h, int pid)
 {
-
   /* -------------------- critical section -------------------- */
   (*Lock_Task) ();
 
@@ -2355,13 +2354,10 @@ add_handle (HANDLE h, int pid)
   /* -------------------- critical section -------------------- */
 }
 
-void
-__gnat_win32_remove_handle (HANDLE h, int pid)
+static void
+remove_handle (HANDLE h, int pid)
 {
   int j;
-
-  /* -------------------- critical section -------------------- */
-  (*Lock_Task) ();
 
   for (j = 0; j < plist_length; j++)
     {
@@ -2374,6 +2370,15 @@ __gnat_win32_remove_handle (HANDLE h, int pid)
           break;
         }
     }
+}
+
+void
+__gnat_win32_remove_handle (HANDLE h, int pid)
+{
+  /* -------------------- critical section -------------------- */
+  (*Lock_Task) ();
+
+  remove_handle(h, pid);
 
   (*Unlock_Task) ();
   /* -------------------- critical section -------------------- */
@@ -2464,14 +2469,15 @@ win32_wait (int *status)
   DWORD res;
   int hl_len;
 
+  /* -------------------- critical section -------------------- */
+  (*Lock_Task) ();
+
   if (plist_length == 0)
     {
       errno = ECHILD;
+      (*Unlock_Task) ();
       return -1;
     }
-
-  /* -------------------- critical section -------------------- */
-  (*Lock_Task) ();
 
   hl_len = plist_length;
 
@@ -2479,16 +2485,15 @@ win32_wait (int *status)
 
   memmove (hl, HANDLES_LIST, sizeof (HANDLE) * hl_len);
 
-  (*Unlock_Task) ();
-  /* -------------------- critical section -------------------- */
-
   res = WaitForMultipleObjects (hl_len, hl, FALSE, INFINITE);
   h = hl[res - WAIT_OBJECT_0];
 
   GetExitCodeProcess (h, &exitcode);
   pid = PID_LIST [res - WAIT_OBJECT_0];
-  __gnat_win32_remove_handle (h, -1);
+  remove_handle (h, -1);
 
+  (*Unlock_Task) ();
+  /* -------------------- critical section -------------------- */
   free (hl);
 
   *status = (int) exitcode;
