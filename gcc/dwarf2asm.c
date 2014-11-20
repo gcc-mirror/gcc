@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "dwarf2asm.h"
 #include "dwarf2.h"
-#include "splay-tree.h"
+#include "hash-map.h"
 #include "ggc.h"
 #include "tm_p.h"
 
@@ -790,9 +790,7 @@ dw2_asm_output_delta_sleb128 (const char *lab1 ATTRIBUTE_UNUSED,
 }
 #endif /* 0 */
 
-static int dw2_output_indirect_constant_1 (splay_tree_node, void *);
-
-static GTY((param1_is (char *), param2_is (tree))) splay_tree indirect_pool;
+static GTY(()) hash_map<const char *, tree> *indirect_pool;
 
 static GTY(()) int dw2_const_labelno;
 
@@ -802,16 +800,16 @@ static GTY(()) int dw2_const_labelno;
 # define USE_LINKONCE_INDIRECT 0
 #endif
 
-/* Comparison function for a splay tree in which the keys are strings.
-   K1 and K2 have the dynamic type "const char *".  Returns <0, 0, or
+/* Compare two std::pair<const char *, tree> by their first element.
+   Returns <0, 0, or
    >0 to indicate whether K1 is less than, equal to, or greater than
    K2, respectively.  */
 
 static int
-splay_tree_compare_strings (splay_tree_key k1, splay_tree_key k2)
+compare_strings (const void *a, const void *b)
 {
-  const char *s1 = (const char *)k1;
-  const char *s2 = (const char *)k2;
+  const char *s1 = ((const std::pair<const char *, tree> *) a)->first;
+  const char *s2 = ((const std::pair<const char *, tree> *) b)->first;
   int ret;
 
   if (s1 == s2)
@@ -836,23 +834,18 @@ splay_tree_compare_strings (splay_tree_key k1, splay_tree_key k2)
 rtx
 dw2_force_const_mem (rtx x, bool is_public)
 {
-  splay_tree_node node;
   const char *key;
   tree decl_id;
 
   if (! indirect_pool)
-    /* We use strcmp, rather than just comparing pointers, so that the
-       sort order will not depend on the host system.  */
-    indirect_pool = splay_tree_new_ggc (splay_tree_compare_strings,
-					ggc_alloc_splay_tree_str_tree_node_splay_tree_s,
-					ggc_alloc_splay_tree_str_tree_node_splay_tree_node_s);
+    indirect_pool = hash_map<const char *, tree>::create_ggc (64);
 
   gcc_assert (GET_CODE (x) == SYMBOL_REF);
 
   key = XSTR (x, 0);
-  node = splay_tree_lookup (indirect_pool, (splay_tree_key) key);
-  if (node)
-    decl_id = (tree) node->value;
+  tree *slot = indirect_pool->get (key);
+  if (slot)
+    decl_id = *slot;
   else
     {
       tree id;
@@ -881,26 +874,20 @@ dw2_force_const_mem (rtx x, bool is_public)
       if (id)
 	TREE_SYMBOL_REFERENCED (id) = 1;
 
-      splay_tree_insert (indirect_pool, (splay_tree_key) key,
-			 (splay_tree_value) decl_id);
+      indirect_pool->put (key, decl_id);
     }
 
   return gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (decl_id));
 }
 
-/* A helper function for dw2_output_indirect_constants called through
-   splay_tree_foreach.  Emit one queued constant to memory.  */
+/* A helper function for dw2_output_indirect_constants.  Emit one queued
+   constant to memory.  */
 
 static int
-dw2_output_indirect_constant_1 (splay_tree_node node,
-				void *data ATTRIBUTE_UNUSED)
+dw2_output_indirect_constant_1 (const char *sym, tree id)
 {
-  const char *sym;
   rtx sym_ref;
-  tree id, decl;
-
-  sym = (const char *) node->key;
-  id = (tree) node->value;
+  tree decl;
 
   decl = build_decl (UNKNOWN_LOCATION, VAR_DECL, id, ptr_type_node);
   SET_DECL_ASSEMBLER_NAME (decl, id);
@@ -930,8 +917,18 @@ dw2_output_indirect_constant_1 (splay_tree_node node,
 void
 dw2_output_indirect_constants (void)
 {
-  if (indirect_pool)
-    splay_tree_foreach (indirect_pool, dw2_output_indirect_constant_1, NULL);
+  if (!indirect_pool)
+    return;
+
+  auto_vec<std::pair<const char *, tree> > temp (indirect_pool->elements ());
+  for (hash_map<const char *, tree>::iterator iter = indirect_pool->begin ();
+       iter != indirect_pool->end (); ++iter)
+    temp.quick_push (*iter);
+
+    temp.qsort (compare_strings);
+
+    for (unsigned int i = 0; i < temp.length (); i++)
+    dw2_output_indirect_constant_1 (temp[i].first, temp[i].second);
 }
 
 /* Like dw2_asm_output_addr_rtx, but encode the pointer as directed.

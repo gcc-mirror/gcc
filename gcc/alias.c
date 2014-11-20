@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "diagnostic-core.h"
 #include "cselib.h"
-#include "splay-tree.h"
+#include "hash-map.h"
 #include "langhooks.h"
 #include "timevar.h"
 #include "dumpfile.h"
@@ -139,6 +139,32 @@ along with GCC; see the file COPYING3.  If not see
    However, this is no actual entry for alias set zero.  It is an
    error to attempt to explicitly construct a subset of zero.  */
 
+struct alias_set_traits : default_hashmap_traits
+{
+  template<typename T>
+  static bool
+  is_empty (T &e)
+  {
+    return e.m_key == INT_MIN;
+  }
+
+  template<typename  T>
+  static bool
+  is_deleted (T &e)
+  {
+    return e.m_key == (INT_MIN + 1);
+  }
+
+  template<typename T> static void mark_empty (T &e) { e.m_key = INT_MIN; }
+
+  template<typename T>
+  static void
+  mark_deleted (T &e)
+  {
+    e.m_key = INT_MIN + 1;
+  }
+};
+
 struct GTY(()) alias_set_entry_d {
   /* The alias set number, as stored in MEM_ALIAS_SET.  */
   alias_set_type alias_set;
@@ -154,7 +180,7 @@ struct GTY(()) alias_set_entry_d {
 
      continuing our example above, the children here will be all of
      `int', `double', `float', and `struct S'.  */
-  splay_tree GTY((param1_is (int), param2_is (int))) children;
+  hash_map<int, int, alias_set_traits> *children;
 };
 typedef struct alias_set_entry_d *alias_set_entry;
 
@@ -165,7 +191,6 @@ static int base_alias_check (rtx, rtx, rtx, rtx, machine_mode,
 			     machine_mode);
 static rtx find_base_value (rtx);
 static int mems_in_disjoint_alias_sets_p (const_rtx, const_rtx);
-static int insert_subset_children (splay_tree_node, void*);
 static alias_set_entry get_alias_set_entry (alias_set_type);
 static tree decl_for_component_ref (tree);
 static int write_dependence_p (const_rtx,
@@ -405,17 +430,6 @@ mems_in_disjoint_alias_sets_p (const_rtx mem1, const_rtx mem2)
   return ! alias_sets_conflict_p (MEM_ALIAS_SET (mem1), MEM_ALIAS_SET (mem2));
 }
 
-/* Insert the NODE into the splay tree given by DATA.  Used by
-   record_alias_subset via splay_tree_foreach.  */
-
-static int
-insert_subset_children (splay_tree_node node, void *data)
-{
-  splay_tree_insert ((splay_tree) data, node->key, node->value);
-
-  return 0;
-}
-
 /* Return true if the first alias set is a subset of the second.  */
 
 bool
@@ -431,8 +445,7 @@ alias_set_subset_of (alias_set_type set1, alias_set_type set2)
   ase = get_alias_set_entry (set2);
   if (ase != 0
       && (ase->has_zero_child
-	  || splay_tree_lookup (ase->children,
-			        (splay_tree_key) set1)))
+	  || ase->children->get (set1)))
     return true;
   return false;
 }
@@ -452,16 +465,14 @@ alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
   ase = get_alias_set_entry (set1);
   if (ase != 0
       && (ase->has_zero_child
-	  || splay_tree_lookup (ase->children,
-				(splay_tree_key) set2)))
+	  || ase->children->get (set2)))
     return 1;
 
   /* Now do the same, but with the alias sets reversed.  */
   ase = get_alias_set_entry (set2);
   if (ase != 0
       && (ase->has_zero_child
-	  || splay_tree_lookup (ase->children,
-				(splay_tree_key) set1)))
+	  || ase->children->get (set1)))
     return 1;
 
   /* The two alias sets are distinct and neither one is the
@@ -956,9 +967,7 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
       superset_entry = ggc_cleared_alloc<alias_set_entry_d> ();
       superset_entry->alias_set = superset;
       superset_entry->children
-	= splay_tree_new_ggc (splay_tree_compare_ints,
-			      ggc_alloc_splay_tree_scalar_scalar_splay_tree_s,
-			      ggc_alloc_splay_tree_scalar_scalar_splay_tree_node_s);
+	= hash_map<int, int, alias_set_traits>::create_ggc (64);
       superset_entry->has_zero_child = 0;
       (*alias_sets)[superset] = superset_entry;
     }
@@ -975,13 +984,14 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
 	  if (subset_entry->has_zero_child)
 	    superset_entry->has_zero_child = 1;
 
-	  splay_tree_foreach (subset_entry->children, insert_subset_children,
-			      superset_entry->children);
+	  hash_map<int, int, alias_set_traits>::iterator iter
+	    = subset_entry->children->begin ();
+	  for (; iter != subset_entry->children->end (); ++iter)
+	    superset_entry->children->put ((*iter).first, (*iter).second);
 	}
 
       /* Enter the SUBSET itself as a child of the SUPERSET.  */
-      splay_tree_insert (superset_entry->children,
-			 (splay_tree_key) subset, 0);
+      superset_entry->children->put (subset, 0);
     }
 }
 

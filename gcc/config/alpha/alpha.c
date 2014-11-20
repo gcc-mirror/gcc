@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "debug.h"
 #include "langhooks.h"
-#include "splay-tree.h"
+#include "hash-map.h"
 #include "hash-table.h"
 #include "predict.h"
 #include "dominance.h"
@@ -4860,6 +4860,14 @@ alpha_multipass_dfa_lookahead (void)
 
 struct GTY(()) alpha_links;
 
+struct string_traits : default_hashmap_traits
+{
+  static bool equal_keys (const char *const &a, const char *const &b)
+  {
+    return strcmp (a, b) == 0;
+  }
+};
+
 struct GTY(()) machine_function
 {
   /* For flag_reorder_blocks_and_partition.  */
@@ -4869,8 +4877,7 @@ struct GTY(()) machine_function
   bool uses_condition_handler;
 
   /* Linkage entries.  */
-  splay_tree GTY ((param1_is (char *), param2_is (struct alpha_links *)))
-    links;
+  hash_map<const char *, alpha_links *, string_traits> *links;
 };
 
 /* How to allocate a 'struct machine_function'.  */
@@ -9642,18 +9649,14 @@ alpha_use_linkage (rtx func, bool lflag, bool rflag)
 
   if (cfun->machine->links)
     {
-      splay_tree_node lnode;
-
       /* Is this name already defined?  */
-      lnode = splay_tree_lookup (cfun->machine->links, (splay_tree_key) name);
-      if (lnode)
-	al = (struct alpha_links *) lnode->value;
+      alpha_links *slot = cfun->machine->links->get (name);
+      if (slot)
+	al = *slot;
     }
   else
-    cfun->machine->links = splay_tree_new_ggc
-      ((splay_tree_compare_fn) strcmp,
-       ggc_alloc_splay_tree_str_alpha_links_splay_tree_s,
-       ggc_alloc_splay_tree_str_alpha_links_splay_tree_node_s);
+    cfun->machine->links
+      = hash_map<const char *, alpha_links *, string_traits>::create_ggc (64);
 
   if (al == NULL)
     {
@@ -9681,9 +9684,7 @@ alpha_use_linkage (rtx func, bool lflag, bool rflag)
       al->func = func;
       al->linkage = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (linksym));
 
-      splay_tree_insert (cfun->machine->links,
-                         (splay_tree_key) ggc_strdup (name),
-			 (splay_tree_value) al);
+      cfun->machine->links->put (ggc_strdup (name), al);
     }
 
   al->rkind = rflag ? KIND_CODEADDR : KIND_LINKAGE;
@@ -9695,12 +9696,8 @@ alpha_use_linkage (rtx func, bool lflag, bool rflag)
 }
 
 static int
-alpha_write_one_linkage (splay_tree_node node, void *data)
+alpha_write_one_linkage (const char *name, alpha_links *link, FILE *steam)
 {
-  const char *const name = (const char *) node->key;
-  struct alpha_links *link = (struct alpha_links *) node->value;
-  FILE *stream = (FILE *) data;
-
   ASM_OUTPUT_INTERNAL_LABEL (stream, XSTR (link->linkage, 0));
   if (link->rkind == KIND_CODEADDR)
     {
@@ -9750,8 +9747,10 @@ alpha_write_linkage (FILE *stream, const char *funname)
 
   if (cfun->machine->links)
     {
-      splay_tree_foreach (cfun->machine->links, alpha_write_one_linkage, stream);
-      /* splay_tree_delete (func->links); */
+      hash_map<const char *, alpha_links *, string_traits>::iterator iter
+	= cfun->machine->links->begin ();
+      for (; iter != cfun->machine->links->end (); ++iter)
+	alpha_write_one_linkage ((*iter).first, (*iter).second, stream);
     }
 }
 
