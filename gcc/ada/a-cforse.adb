@@ -38,8 +38,9 @@ pragma Elaborate_All
 
 with System; use type System.Address;
 
-package body Ada.Containers.Formal_Ordered_Sets is
-   pragma SPARK_Mode (Off);
+package body Ada.Containers.Formal_Ordered_Sets with
+  SPARK_Mode => Off
+is
 
    ------------------------------
    -- Access to Fields of Node --

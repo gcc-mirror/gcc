@@ -46,7 +46,9 @@ generic
    --  size, and heap allocation will be avoided. If False, the containers can
    --  grow via heap allocation.
 
-package Ada.Containers.Formal_Vectors is
+package Ada.Containers.Formal_Vectors with
+  SPARK_Mode
+is
    pragma Annotate (GNATprove, External_Axiomatization);
 
    subtype Extended_Index is Index_Type'Base
@@ -230,6 +232,7 @@ package Ada.Containers.Formal_Vectors is
    --  scanned yet.
 
 private
+   pragma SPARK_Mode (Off);
 
    pragma Inline (First_Index);
    pragma Inline (Last_Index);

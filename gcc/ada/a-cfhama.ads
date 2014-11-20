@@ -65,10 +65,11 @@ generic
    with function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
-package Ada.Containers.Formal_Hashed_Maps is
+package Ada.Containers.Formal_Hashed_Maps with
+  Pure,
+  SPARK_Mode
+is
    pragma Annotate (GNATprove, External_Axiomatization);
-   pragma Pure;
-   pragma SPARK_Mode (On);
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is private with
      Iterable => (First       => First,
@@ -272,6 +273,8 @@ package Ada.Containers.Formal_Hashed_Maps is
    --  Overlap returns True if the containers have common keys
 
 private
+   pragma SPARK_Mode (Off);
+
    pragma Inline (Length);
    pragma Inline (Is_Empty);
    pragma Inline (Clear);
@@ -282,7 +285,6 @@ private
    pragma Inline (Has_Element);
    pragma Inline (Equivalent_Keys);
    pragma Inline (Next);
-   pragma SPARK_Mode (Off);
 
    type Node_Type is record
       Key         : Key_Type;

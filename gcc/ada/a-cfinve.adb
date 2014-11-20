@@ -26,7 +26,9 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
-package body Ada.Containers.Formal_Indefinite_Vectors is
+package body Ada.Containers.Formal_Indefinite_Vectors with
+  SPARK_Mode => Off
+is
 
    function H (New_Item : Element_Type) return Holder renames To_Holder;
    function E (Container : Holder) return Element_Type renames Get;

@@ -34,8 +34,9 @@ pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Bounded_Keys);
 
 with System; use type System.Address;
 
-package body Ada.Containers.Formal_Ordered_Maps is
-   pragma SPARK_Mode (Off);
+package body Ada.Containers.Formal_Ordered_Maps with
+  SPARK_Mode => Off
+is
 
    -----------------------------
    -- Node Access Subprograms --

@@ -66,10 +66,11 @@ generic
    with function "<" (Left, Right : Key_Type) return Boolean is <>;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
-package Ada.Containers.Formal_Ordered_Maps is
+package Ada.Containers.Formal_Ordered_Maps with
+  Pure,
+  SPARK_Mode
+is
    pragma Annotate (GNATprove, External_Axiomatization);
-   pragma Pure;
-   pragma SPARK_Mode (On);
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean with
      Global => null;
@@ -273,9 +274,10 @@ package Ada.Containers.Formal_Ordered_Maps is
    --  Overlap returns True if the containers have common keys
 
 private
+   pragma SPARK_Mode (Off);
+
    pragma Inline (Next);
    pragma Inline (Previous);
-   pragma SPARK_Mode (Off);
 
    subtype Node_Access is Count_Type;
 

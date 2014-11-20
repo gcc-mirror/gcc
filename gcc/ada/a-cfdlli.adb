@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,9 @@
 
 with System;  use type System.Address;
 
-package body Ada.Containers.Formal_Doubly_Linked_Lists is
+package body Ada.Containers.Formal_Doubly_Linked_Lists with
+  SPARK_Mode => Off
+is
 
    -----------------------
    -- Local Subprograms --

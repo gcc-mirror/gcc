@@ -30,7 +30,9 @@ with Ada.Unchecked_Deallocation;
 
 with System; use type System.Address;
 
-package body Ada.Containers.Formal_Vectors is
+package body Ada.Containers.Formal_Vectors with
+  SPARK_Mode => Off
+is
 
    Growth_Factor : constant := 2;
    --  When growing a container, multiply current capacity by this. Doubling
