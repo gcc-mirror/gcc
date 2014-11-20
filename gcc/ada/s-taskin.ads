@@ -504,7 +504,7 @@ package System.Tasking is
 
    --  Section used by all GNARL implementations (regular and restricted)
 
-   type Common_ATCB is record
+   type Common_ATCB is limited record
       State : Task_States;
       pragma Atomic (State);
       --  Encodes some basic information about the state of a task,
@@ -721,7 +721,7 @@ package System.Tasking is
    --  present in the Restricted_Ada_Task_Control_Block structure.
 
    type Restricted_Ada_Task_Control_Block (Entry_Num : Task_Entry_Index) is
-   record
+   limited record
       Common : Common_ATCB;
       --  The common part between various tasking implementations
 
@@ -954,7 +954,7 @@ package System.Tasking is
    --  than 64-bits explicitly to allow codepeer to analyze this unit when
    --  a target configuration file forces the maximum integer size to 32.
 
-   type Ada_Task_Control_Block (Entry_Num : Task_Entry_Index) is record
+   type Ada_Task_Control_Block (Entry_Num : Task_Entry_Index) is limited record
       Common : Common_ATCB;
       --  The common part between various tasking implementations
 
@@ -1179,10 +1179,9 @@ package System.Tasking is
       T                : Task_Id;
       Success          : out Boolean);
    --  Initialize fields of the TCB for task T, and link into global TCB
-   --  structures. Call this only with abort deferred and holding
-   --  RTS_Lock. Self_ID is the calling task (normally the activator of
-   --  T). Success is set to indicate whether the TCB was successfully
-   --  initialized. Need more documentation ???
+   --  structures. Call this only with abort deferred and holding RTS_Lock.
+   --  Self_ID is the calling task (normally the activator of T). Success is
+   --  set to indicate whether the TCB was successfully initialized.
 
 private
 

@@ -2108,21 +2108,27 @@ package body Exp_Aggr is
       -------------------------------
 
       procedure Init_Hidden_Discriminants (Typ : Entity_Id; List : List_Id) is
-         Btype       : Entity_Id;
-         Parent_Type : Entity_Id;
-         Disc        : Entity_Id;
-         Discr_Val   : Elmt_Id;
+         Btype        : Entity_Id;
+         Parent_Type  : Entity_Id;
+         Disc         : Entity_Id;
+         Discr_Val    : Elmt_Id;
+         In_Aggr_Type : Boolean;
 
       begin
          --  The constraints on the hidden discriminants, if present, are kept
          --  in the Stored_Constraint list of the type itself, or in that of
-         --  the base type.
+         --  the base type. If not in the constraints of the aggregate itself,
+         --  we examine ancestors to find discriminants that are not renamed
+         --  by other discriminants but constrained explicitly.
+
+         In_Aggr_Type := True;
 
          Btype := Base_Type (Typ);
          while Is_Derived_Type (Btype)
            and then (Present (Stored_Constraint (Btype))
                        or else
-                     Present (Stored_Constraint (Typ)))
+                     (In_Aggr_Type
+                         and then Present (Stored_Constraint (Typ))))
          loop
             Parent_Type := Etype (Btype);
 
@@ -2149,7 +2155,7 @@ package body Exp_Aggr is
                Discr_Val := First_Elmt (Stored_Constraint (Typ));
             end if;
 
-            while Present (Discr_Val) loop
+            while Present (Discr_Val) and Present (Disc) loop
 
                --  Only those discriminants of the parent that are not
                --  renamed by discriminants of the derived type need to
@@ -2176,6 +2182,7 @@ package body Exp_Aggr is
                Next_Elmt (Discr_Val);
             end loop;
 
+            In_Aggr_Type := False;
             Btype := Base_Type (Parent_Type);
          end loop;
       end Init_Hidden_Discriminants;

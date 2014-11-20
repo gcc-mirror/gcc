@@ -662,18 +662,6 @@ package body System.Tasking.Stages is
          T.Common.Task_Image_Len := Len;
       end if;
 
-      --  The task inherits the dispatching domain of the parent only if no
-      --  specific domain has been defined in the spec of the task (using the
-      --  dispatching domain pragma or aspect).
-
-      if T.Common.Domain /= null then
-         null;
-      elsif T.Common.Activator /= null then
-         T.Common.Domain := T.Common.Activator.Common.Domain;
-      else
-         T.Common.Domain := System.Tasking.System_Domain;
-      end if;
-
       Unlock (Self_ID);
       Unlock_RTS;
 

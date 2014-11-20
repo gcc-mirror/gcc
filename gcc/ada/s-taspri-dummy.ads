@@ -46,7 +46,7 @@ package System.Task_Primitives is
 
    type Task_Body_Access is access procedure;
 
-   type Private_Data is record
+   type Private_Data is limited record
       Thread : aliased Integer;
       CV     : aliased Integer;
       L      : aliased RTS_Lock;

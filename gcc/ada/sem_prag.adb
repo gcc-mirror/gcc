@@ -13125,7 +13125,9 @@ package body Sem_Prag is
             Citem : Node_Id;
 
          begin
-            SPARK_Msg_N ("pragma Elaborate not allowed", N);
+            if SPARK_Mode = On then
+               Error_Msg_N ("pragma Elaborate not allowed in SPARK mode", N);
+            end if;
 
             --  Pragma must be in context items list of a compilation unit
 
@@ -13207,7 +13209,15 @@ package body Sem_Prag is
             --  Give a warning if operating in static mode with one of the
             --  gnatwl/-gnatwE (elaboration warnings enabled) switches set.
 
-            if Elab_Warnings and not Dynamic_Elaboration_Checks then
+            if Elab_Warnings
+                 and not Dynamic_Elaboration_Checks
+
+                 --  pragma Elaborate not allowed in SPARK mode anyway. We
+                 --  already complained about it, no point in generating any
+                 --  further complaint.
+
+                 and SPARK_Mode /= On
+            then
                Error_Msg_N
                  ("?l?use of pragma Elaborate may not be safe", N);
                Error_Msg_N
@@ -13343,8 +13353,13 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_Arg_Is_One_Of (Arg1, Name_Static, Name_Dynamic);
+
+            --  Set flag accordingly (ignore attempt at dynamic elaboration
+            --  checks in SPARK mode).
+
             Dynamic_Elaboration_Checks :=
-              (Chars (Get_Pragma_Arg (Arg1)) = Name_Dynamic);
+              (Chars (Get_Pragma_Arg (Arg1)) = Name_Dynamic)
+                and then SPARK_Mode /= On;
 
          ---------------
          -- Eliminate --
@@ -19541,6 +19556,8 @@ package body Sem_Prag is
          --  pragma SPARK_Mode [(On | Off)];
 
          when Pragma_SPARK_Mode => Do_SPARK_Mode : declare
+            Mode_Id : SPARK_Mode_Type;
+
             procedure Check_Pragma_Conformance
               (Context_Pragma : Node_Id;
                Entity_Pragma  : Node_Id;
@@ -19564,6 +19581,11 @@ package body Sem_Prag is
 
             procedure Check_Library_Level_Entity (E : Entity_Id);
             --  Verify that pragma is applied to library-level entity E
+
+            procedure Set_SPARK_Flags;
+            --  Sets SPARK_Mode from Mode_Id and SPARK_Mode_Pragma from N,
+            --  and ensures that Dynamic_Elaboration_Checks are off if the
+            --  call sets SPARK_Mode On.
 
             ------------------------------
             -- Check_Pragma_Conformance --
@@ -19642,12 +19664,25 @@ package body Sem_Prag is
                end if;
             end Check_Library_Level_Entity;
 
+            ---------------------
+            -- Set_SPARK_Flags --
+            ---------------------
+
+            procedure Set_SPARK_Flags is
+            begin
+               SPARK_Mode := Mode_Id;
+               SPARK_Mode_Pragma := N;
+
+               if SPARK_Mode = On then
+                  Dynamic_Elaboration_Checks := False;
+               end if;
+            end Set_SPARK_Flags;
+
             --  Local variables
 
             Body_Id : Entity_Id;
             Context : Node_Id;
             Mode    : Name_Id;
-            Mode_Id : SPARK_Mode_Type;
             Spec_Id : Entity_Id;
             Stmt    : Node_Id;
 
@@ -19691,8 +19726,7 @@ package body Sem_Prag is
                   raise Pragma_Exit;
                end if;
 
-               SPARK_Mode_Pragma := N;
-               SPARK_Mode := Mode_Id;
+               Set_SPARK_Flags;
 
             --  The pragma acts as a configuration pragma in a compilation unit
 
@@ -19703,8 +19737,7 @@ package body Sem_Prag is
               and then List_Containing (N) = Context_Items (Context)
             then
                Check_Valid_Configuration_Pragma;
-               SPARK_Mode_Pragma := N;
-               SPARK_Mode := Mode_Id;
+               Set_SPARK_Flags;
 
             --  Otherwise the placement of the pragma within the tree dictates
             --  its associated construct. Inspect the declarative list where
@@ -19789,8 +19822,7 @@ package body Sem_Prag is
                        (Context_Pragma => SPARK_Pragma (Spec_Id),
                         Entity_Pragma  => Empty,
                         Entity         => Empty);
-                     SPARK_Mode_Pragma := N;
-                     SPARK_Mode := Mode_Id;
+                     Set_SPARK_Flags;
 
                      Set_SPARK_Pragma               (Spec_Id, N);
                      Set_SPARK_Pragma_Inherited     (Spec_Id, False);
@@ -19808,8 +19840,7 @@ package body Sem_Prag is
                        (Context_Pragma => Empty,
                         Entity_Pragma  => SPARK_Pragma (Spec_Id),
                         Entity         => Spec_Id);
-                     SPARK_Mode_Pragma := N;
-                     SPARK_Mode := Mode_Id;
+                     Set_SPARK_Flags;
 
                      Set_SPARK_Aux_Pragma           (Spec_Id, N);
                      Set_SPARK_Aux_Pragma_Inherited (Spec_Id, False);
@@ -19828,8 +19859,7 @@ package body Sem_Prag is
                     (Context_Pragma => SPARK_Pragma (Body_Id),
                      Entity_Pragma  => SPARK_Aux_Pragma (Spec_Id),
                      Entity         => Spec_Id);
-                  SPARK_Mode_Pragma := N;
-                  SPARK_Mode := Mode_Id;
+                  Set_SPARK_Flags;
 
                   Set_SPARK_Pragma               (Body_Id, N);
                   Set_SPARK_Pragma_Inherited     (Body_Id, False);
@@ -19853,8 +19883,7 @@ package body Sem_Prag is
                     (Context_Pragma => Empty,
                      Entity_Pragma  => SPARK_Pragma (Body_Id),
                      Entity         => Body_Id);
-                  SPARK_Mode_Pragma := N;
-                  SPARK_Mode := Mode_Id;
+                  Set_SPARK_Flags;
 
                   Set_SPARK_Aux_Pragma           (Body_Id, N);
                   Set_SPARK_Aux_Pragma_Inherited (Body_Id, False);
@@ -19916,8 +19945,7 @@ package body Sem_Prag is
                         Entity         => Empty);
                   end if;
 
-                  SPARK_Mode_Pragma := N;
-                  SPARK_Mode := Mode_Id;
+                  Set_SPARK_Flags;
 
                   Set_SPARK_Pragma           (Body_Id, N);
                   Set_SPARK_Pragma_Inherited (Body_Id, False);

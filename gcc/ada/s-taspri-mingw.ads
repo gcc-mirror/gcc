@@ -97,7 +97,7 @@ private
       --  Condition variable used to queue threads until condition is signaled
    end record;
 
-   type Private_Data is record
+   type Private_Data is limited record
       Thread : aliased Win32.HANDLE;
       pragma Atomic (Thread);
       --  Thread field may be updated by two different threads of control.
