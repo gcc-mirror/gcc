@@ -1,5 +1,10 @@
 2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* ipa-utils.c, lto-section-in.c, lto-streamer.h,
+	tree-scalar-evolution.c: Replace htab with hash_table.
+
+2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* lto-section-in.c (lto_delete_in_decl_state): Adjust.
 	(lto_free_function_in_decl_state): Likewise.
 	* lto-streamer-out.c (copy_function_or_variable): Likewise.

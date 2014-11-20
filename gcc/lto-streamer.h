@@ -430,7 +430,7 @@ struct lto_tree_ref_encoder
 
 
 /* Structure to hold states of input scope.  */
-struct GTY(()) lto_in_decl_state
+struct GTY((for_user)) lto_in_decl_state
 {
   /* Array of lto_in_decl_buffers to store type and decls streams. */
   vec<tree, va_gc> *streams[LTO_N_DECL_STREAMS];
@@ -442,6 +442,20 @@ struct GTY(()) lto_in_decl_state
 
 typedef struct lto_in_decl_state *lto_in_decl_state_ptr;
 
+struct decl_state_hasher : ggc_hasher<lto_in_decl_state *>
+{
+  static hashval_t
+  hash (lto_in_decl_state *s)
+  {
+    return htab_hash_pointer (s->fn_decl);
+  }
+
+  static bool
+  equal (lto_in_decl_state *a, lto_in_decl_state *b)
+  {
+    return a->fn_decl == b->fn_decl;
+  }
+};
 
 /* The structure that holds all of the vectors of global types,
    decls and cgraph nodes used in the serialization of this file.  */
@@ -488,7 +502,7 @@ struct GTY(()) lto_file_decl_data
   lto_symtab_encoder_t GTY((skip)) symtab_node_encoder;
 
   /* Hash table maps lto-related section names to location in file.  */
-  htab_t GTY((param_is (struct lto_in_decl_state))) function_decl_states;
+  hash_table<decl_state_hasher> *function_decl_states;
 
   /* The .o file that these offsets relate to.  */
   const char *GTY((skip)) file_name;
@@ -687,8 +701,6 @@ extern const char *lto_get_decl_name_mapping (struct lto_file_decl_data *,
 					      const char *);
 extern struct lto_in_decl_state *lto_new_in_decl_state (void);
 extern void lto_delete_in_decl_state (struct lto_in_decl_state *);
-extern hashval_t lto_hash_in_decl_state (const void *);
-extern int lto_eq_in_decl_state (const void *, const void *);
 extern struct lto_in_decl_state *lto_get_function_in_decl_state (
 				      struct lto_file_decl_data *, tree);
 extern void lto_free_function_in_decl_state (struct lto_in_decl_state *);

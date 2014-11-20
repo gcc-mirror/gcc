@@ -1,5 +1,9 @@
 2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* lto.c: Replace htab with hash_table.
+
+2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* lto.c (lto_read_in_decl_state): Adjust.
 	(lto_fixup_state): Likewise.
 

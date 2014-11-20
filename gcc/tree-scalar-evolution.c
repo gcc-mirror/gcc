@@ -307,7 +307,7 @@ static tree analyze_scalar_evolution_for_address_of (struct loop *loop,
    claiming that below basic block with index INSTANTIATED_BELOW, the
    value of the SSA name can be expressed as CHREC.  */
 
-struct GTY(()) scev_info_str {
+struct GTY((for_user)) scev_info_str {
   unsigned int name_version;
   int instantiated_below;
   tree chrec;
@@ -332,7 +332,13 @@ tree chrec_dont_know;
    happen, then it qualifies it with chrec_known.  */
 tree chrec_known;
 
-static GTY ((param_is (struct scev_info_str))) htab_t scalar_evolution_info;
+struct scev_info_hasher : ggc_hasher<scev_info_str *>
+{
+  static hashval_t hash (scev_info_str *i);
+  static bool equal (const scev_info_str *a, const scev_info_str *b);
+};
+
+static GTY (()) hash_table<scev_info_hasher> *scalar_evolution_info;
 
 
 /* Constructs a new SCEV_INFO_STR structure for VAR and INSTANTIATED_BELOW.  */
@@ -352,33 +358,20 @@ new_scev_info_str (basic_block instantiated_below, tree var)
 
 /* Computes a hash function for database element ELT.  */
 
-static inline hashval_t
-hash_scev_info (const void *elt_)
+hashval_t
+scev_info_hasher::hash (scev_info_str *elt)
 {
-  const struct scev_info_str *elt = (const struct scev_info_str *) elt_;
   return elt->name_version ^ elt->instantiated_below;
 }
 
 /* Compares database elements E1 and E2.  */
 
-static inline int
-eq_scev_info (const void *e1, const void *e2)
+bool
+scev_info_hasher::equal (const scev_info_str *elt1, const scev_info_str *elt2)
 {
-  const struct scev_info_str *elt1 = (const struct scev_info_str *) e1;
-  const struct scev_info_str *elt2 = (const struct scev_info_str *) e2;
-
   return (elt1->name_version == elt2->name_version
 	  && elt1->instantiated_below == elt2->instantiated_below);
 }
-
-/* Deletes database element E.  */
-
-static void
-del_scev_info (void *e)
-{
-  ggc_free (e);
-}
-
 
 /* Get the scalar evolution of VAR for INSTANTIATED_BELOW basic block.
    A first query on VAR returns chrec_not_analyzed_yet.  */
@@ -388,15 +381,14 @@ find_var_scev_info (basic_block instantiated_below, tree var)
 {
   struct scev_info_str *res;
   struct scev_info_str tmp;
-  PTR *slot;
 
   tmp.name_version = SSA_NAME_VERSION (var);
   tmp.instantiated_below = instantiated_below->index;
-  slot = htab_find_slot (scalar_evolution_info, &tmp, INSERT);
+  scev_info_str **slot = scalar_evolution_info->find_slot (&tmp, INSERT);
 
   if (!*slot)
     *slot = new_scev_info_str (instantiated_below, var);
-  res = (struct scev_info_str *) *slot;
+  res = *slot;
 
   return &res->chrec;
 }
@@ -2209,7 +2201,7 @@ static inline hashval_t
 hash_idx_scev_info (const void *elt_)
 {
   unsigned idx = ((size_t) elt_) - 2;
-  return hash_scev_info (&global_cache->entries[idx]);
+  return scev_info_hasher::hash (&global_cache->entries[idx]);
 }
 
 /* Compares database elements E1 and E2.  */
@@ -2218,7 +2210,8 @@ static inline int
 eq_idx_scev_info (const void *e1, const void *e2)
 {
   unsigned idx1 = ((size_t) e1) - 2;
-  return eq_scev_info (&global_cache->entries[idx1], e2);
+  return scev_info_hasher::equal (&global_cache->entries[idx1],
+				  (const scev_info_str *) e2);
 }
 
 /* Returns from CACHE the slot number of the cached chrec for NAME.  */
@@ -2237,7 +2230,7 @@ get_instantiated_value_entry (instantiate_cache_type &cache,
   e.name_version = SSA_NAME_VERSION (name);
   e.instantiated_below = instantiate_below->index;
   void **slot = htab_find_slot_with_hash (cache.map, &e,
-					  hash_scev_info (&e), INSERT);
+					  scev_info_hasher::hash (&e), INSERT);
   if (!*slot)
     {
       e.chrec = chrec_not_analyzed_yet;
@@ -3052,7 +3045,7 @@ dump_chrecs_stats (FILE *file, struct chrec_stats *stats)
 	   stats->nb_undetermined);
   fprintf (file, "-----------------------------------------\n");
   fprintf (file, "%d\tchrecs in the scev database\n",
-	   (int) htab_elements (scalar_evolution_info));
+	   (int) scalar_evolution_info->elements ());
   fprintf (file, "%d\tsets in the scev database\n", nb_set_scev);
   fprintf (file, "%d\tgets in the scev database\n", nb_get_scev);
   fprintf (file, "-----------------------------------------\n");
@@ -3118,19 +3111,6 @@ gather_chrec_stats (tree chrec, struct chrec_stats *stats)
     fprintf (dump_file, ")\n");
 }
 
-/* Callback for htab_traverse, gathers information on chrecs in the
-   hashtable.  */
-
-static int
-gather_stats_on_scev_database_1 (void **slot, void *stats)
-{
-  struct scev_info_str *entry = (struct scev_info_str *) *slot;
-
-  gather_chrec_stats (entry->chrec, (struct chrec_stats *) stats);
-
-  return 1;
-}
-
 /* Classify the chrecs of the whole database.  */
 
 void
@@ -3143,8 +3123,11 @@ gather_stats_on_scev_database (void)
 
   reset_chrecs_counters (&stats);
 
-  htab_traverse (scalar_evolution_info, gather_stats_on_scev_database_1,
-		 &stats);
+  hash_table<scev_info_hasher>::iterator iter;
+  scev_info_str *elt;
+  FOR_EACH_HASH_TABLE_ELEMENT (*scalar_evolution_info, elt, scev_info_str *,
+			       iter)
+    gather_chrec_stats (elt->chrec, &stats);
 
   dump_chrecs_stats (dump_file, &stats);
 }
@@ -3174,8 +3157,7 @@ scev_initialize (void)
 {
   struct loop *loop;
 
-  scalar_evolution_info = htab_create_ggc (100, hash_scev_info, eq_scev_info,
-					   del_scev_info);
+  scalar_evolution_info = hash_table<scev_info_hasher>::create_ggc (100);
 
   initialize_scalar_evolutions_analyzer ();
 
@@ -3202,7 +3184,7 @@ scev_reset_htab (void)
   if (!scalar_evolution_info)
     return;
 
-  htab_empty (scalar_evolution_info);
+  scalar_evolution_info->empty ();
 }
 
 /* Cleans up the information cached by the scalar evolutions analysis
@@ -3297,7 +3279,7 @@ scev_finalize (void)
 {
   if (!scalar_evolution_info)
     return;
-  htab_delete (scalar_evolution_info);
+  scalar_evolution_info->empty ();
   scalar_evolution_info = NULL;
 }
 
