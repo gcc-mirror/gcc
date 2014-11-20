@@ -1,3 +1,16 @@
+2014-11-20  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* config/rs6000/constraints.md: Avoid signed integer overflows.
+	* config/rs6000/predicates.md: Likewise.
+	* config/rs6000/rs6000.c (num_insns_constant_wide): Likewise.
+	(includes_rldic_lshift_p): Likewise.
+	(includes_rldicr_lshift_p): Likewise. 
+	* emit-rtl.c (const_wide_int_htab_hash): Likewise.
+	* loop-iv.c (determine_max_iter): Likewise.
+	(iv_number_of_iterations): Likewise.
+	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Likewise.
+	* varasm.c (get_section_anchor): Likewise.
+
 2014-11-20  Charles Baylis  <charles.baylis@linaro.org>
 
 	PR target/63870
