@@ -74,6 +74,8 @@ extern void __gnat_install_SEH_handler (void *);
 
 extern int gnat_argc;
 extern char **gnat_argv;
+extern CRITICAL_SECTION ProcListCS;
+extern HANDLE ProcListEvt;
 
 #ifdef GNAT_UNICODE_SUPPORT
 
@@ -137,6 +139,11 @@ __gnat_initialize (void *eh ATTRIBUTE_UNUSED)
       precision, and we require the full precision for proper operation,
       given that we have set Max_Digits etc with this in mind */
    __gnat_init_float ();
+
+   /* Initialize the critical section and event handle for the win32_wait()
+      implementation, see adaint.c */
+   InitializeCriticalSection (&ProcListCS);
+   ProcListEvt = CreateEvent (NULL, FALSE, FALSE, NULL);
 
 #ifdef GNAT_UNICODE_SUPPORT
    /* Set current code page for filenames handling. */

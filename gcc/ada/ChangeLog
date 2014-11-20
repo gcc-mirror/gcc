@@ -1,3 +1,48 @@
+2014-11-20  Pascal Obry  <obry@adacore.com>
+
+	* initialize.c (ProcListCS): New extern variable (critical section).
+	(ProcListEvt): New extern variable (handle).
+	(__gnat_initialize)[Win32]: Initialize the ProcListCS critical
+	section object and the ProcListEvt event.
+	* final.c (__gnat_finalize)[Win32]: Properly finalize the
+	ProcListCS critical section and the ProcListEvt event.
+	* adaint.c (ProcListEvt): New Win32 event handle.
+	(EnterCS): New routine to enter the critical section when dealing with
+	child processes chain list.
+	(LeaveCS): As above to exit from the critical section.
+	(SignalListChanged): Routine to signal that the chain process list has
+	been updated.
+	(add_handle): Use EnterCS/LeaveCS, also call SignalListChanged when the
+	handle has been added.
+	(__gnat_win32_remove_handle): Use EnterCS/LeaveCS,
+	also call SignalListChanged if the handle has been found and removed.
+	(remove_handle): Routine removed, implementation merged with the above.
+	(win32_wait): Use EnterCS/LeaveCS for the critical section. Properly
+	copy the PID list locally to ensure that even if the list is updated
+	the local copy remains valid. Add into the hl (handle list) the
+	ProcListEvt handle. This handle is used to signal that a change has
+	been made into the process chain list. This is to ensure that a waiting
+	call can be resumed to take into account new processes. We also make
+	sure that if the handle was not found into the list we start over
+	the wait call. Indeed another concurrent call to win32_wait()
+	could already have handled this process.
+
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): The legality rule concerning
+	the use of class-wide actuals for a non-controlling formal are
+	not rechecked in an instance.
+
+2014-11-20  Pascal Obry  <obry@adacore.com>
+
+	* g-dirope.ads: Minor typo fix.
+
+2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference,
+	Expand_Update_Attribute): Preserve the tag of a prefix by offering
+	a specific view of the class-wide version of the prefix.
+
 2014-11-20  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch6.adb (Analyze_Function_Return): For functions returning
