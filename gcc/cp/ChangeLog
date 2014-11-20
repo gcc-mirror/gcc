@@ -1,3 +1,7 @@
+2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* cp-objcp-common.c: Use hash_table instead of htab.
+
 2014-11-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56041

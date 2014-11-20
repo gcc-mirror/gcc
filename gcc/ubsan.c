@@ -71,24 +71,40 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Map from a tree to a VAR_DECL tree.  */
 
-struct GTY(()) tree_type_map {
+struct GTY((for_user)) tree_type_map {
   struct tree_map_base type;
   tree decl;
 };
 
-#define tree_type_map_eq tree_map_base_eq
-#define tree_type_map_marked_p tree_map_base_marked_p
-
-/* Hash from a tree in a tree_type_map.  */
-
-unsigned int
-tree_type_map_hash (const void *item)
+struct tree_type_map_cache_hasher : ggc_cache_hasher<tree_type_map *>
 {
-  return TYPE_UID (((const struct tree_type_map *)item)->type.from);
-}
+  static inline hashval_t
+  hash (tree_type_map *t)
+  {
+    return TYPE_UID (t->type.from);
+  }
 
-static GTY ((if_marked ("tree_type_map_marked_p"), param_is (struct tree_type_map)))
-     htab_t decl_tree_for_type;
+  static inline bool
+  equal (tree_type_map *a, tree_type_map *b)
+  {
+    return a->type.from == b->type.from;
+  }
+
+  static void
+  handle_cache_entry (tree_type_map *&m)
+  {
+    extern void gt_ggc_mx (tree_type_map *&);
+    if (m == HTAB_EMPTY_ENTRY || m == HTAB_DELETED_ENTRY)
+      return;
+    else if (ggc_marked_p (m->type.from))
+      gt_ggc_mx (m);
+    else
+      m = static_cast<tree_type_map *> (HTAB_DELETED_ENTRY);
+  }
+};
+
+static GTY ((cache))
+     hash_table<tree_type_map_cache_hasher> *decl_tree_for_type;
 
 /* Lookup a VAR_DECL for TYPE, and return it if we find one.  */
 
@@ -98,8 +114,8 @@ decl_for_type_lookup (tree type)
   /* If the hash table is not initialized yet, create it now.  */
   if (decl_tree_for_type == NULL)
     {
-      decl_tree_for_type = htab_create_ggc (10, tree_type_map_hash,
-					    tree_type_map_eq, 0);
+      decl_tree_for_type
+	= hash_table<tree_type_map_cache_hasher>::create_ggc (10);
       /* That also means we don't have to bother with the lookup.  */
       return NULL_TREE;
     }
@@ -107,8 +123,7 @@ decl_for_type_lookup (tree type)
   struct tree_type_map *h, in;
   in.type.from = type;
 
-  h = (struct tree_type_map *)
-      htab_find_with_hash (decl_tree_for_type, &in, TYPE_UID (type));
+  h = decl_tree_for_type->find_with_hash (&in, TYPE_UID (type));
   return h ? h->decl : NULL_TREE;
 }
 
@@ -118,14 +133,11 @@ static void
 decl_for_type_insert (tree type, tree decl)
 {
   struct tree_type_map *h;
-  void **slot;
 
   h = ggc_alloc<tree_type_map> ();
   h->type.from = type;
   h->decl = decl;
-  slot = htab_find_slot_with_hash (decl_tree_for_type, h, TYPE_UID (type),
-                                  INSERT);
-  *(struct tree_type_map **) slot = h;
+  *decl_tree_for_type->find_slot_with_hash (h, TYPE_UID (type), INSERT) = h;
 }
 
 /* Helper routine, which encodes a value in the pointer_sized_int_node.

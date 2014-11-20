@@ -472,8 +472,29 @@ build_tm_abort_call (location_t loc, bool is_outer)
 /* Map for aribtrary function replacement under TM, as created
    by the tm_wrap attribute.  */
 
-static GTY((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
-     htab_t tm_wrap_map;
+struct tm_wrapper_hasher : ggc_cache_hasher<tree_map *>
+{
+  static inline hashval_t hash (tree_map *m) { return m->hash; }
+  static inline bool
+  equal (tree_map *a, tree_map *b)
+  {
+    return a->base.from == b->base.from;
+  }
+
+  static void
+  handle_cache_entry (tree_map *&m)
+    {
+      extern void gt_ggc_mx (tree_map *&);
+      if (m == HTAB_EMPTY_ENTRY || m == HTAB_DELETED_ENTRY)
+	return;
+      else if (ggc_marked_p (m->base.from))
+	gt_ggc_mx (m);
+      else
+	m = static_cast<tree_map *> (HTAB_DELETED_ENTRY);
+    }
+};
+
+static GTY((cache)) hash_table<tm_wrapper_hasher> *tm_wrap_map;
 
 void
 record_tm_replacement (tree from, tree to)
@@ -489,15 +510,14 @@ record_tm_replacement (tree from, tree to)
   DECL_UNINLINABLE (from) = 1;
 
   if (tm_wrap_map == NULL)
-    tm_wrap_map = htab_create_ggc (32, tree_map_hash, tree_map_eq, 0);
+    tm_wrap_map = hash_table<tm_wrapper_hasher>::create_ggc (32);
 
   h = ggc_alloc<tree_map> ();
   h->hash = htab_hash_pointer (from);
   h->base.from = from;
   h->to = to;
 
-  slot = (struct tree_map **)
-    htab_find_slot_with_hash (tm_wrap_map, h, h->hash, INSERT);
+  slot = tm_wrap_map->find_slot_with_hash (h, h->hash, INSERT);
   *slot = h;
 }
 
@@ -512,7 +532,7 @@ find_tm_replacement_function (tree fndecl)
 
       in.base.from = fndecl;
       in.hash = htab_hash_pointer (fndecl);
-      h = (struct tree_map *) htab_find_with_hash (tm_wrap_map, &in, in.hash);
+      h = tm_wrap_map->find_with_hash (&in, in.hash);
       if (h)
 	return h->to;
     }

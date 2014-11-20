@@ -116,10 +116,17 @@ struct machine_function * (*init_machine_status) (void);
 struct function *cfun = 0;
 
 /* These hashes record the prologue and epilogue insns.  */
-static GTY((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
-  htab_t prologue_insn_hash;
-static GTY((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
-  htab_t epilogue_insn_hash;
+
+struct insn_cache_hasher : ggc_cache_hasher<rtx>
+{
+  static hashval_t hash (rtx x) { return htab_hash_pointer (x); }
+  static bool equal (rtx a, rtx b) { return a == b; }
+};
+
+static GTY((cache))
+  hash_table<insn_cache_hasher> *prologue_insn_hash;
+static GTY((cache))
+  hash_table<insn_cache_hasher> *epilogue_insn_hash;
 
 
 hash_table<used_type_hasher> *types_used_by_vars_hash = NULL;
@@ -136,8 +143,9 @@ static tree *get_block_vector (tree, int *);
 extern tree debug_find_var_in_block_tree (tree, tree);
 /* We always define `record_insns' even if it's not used so that we
    can always export `prologue_epilogue_contains'.  */
-static void record_insns (rtx_insn *, rtx, htab_t *) ATTRIBUTE_UNUSED;
-static bool contains (const_rtx, htab_t);
+static void record_insns (rtx_insn *, rtx, hash_table<insn_cache_hasher> **)
+     ATTRIBUTE_UNUSED;
+static bool contains (const_rtx, hash_table<insn_cache_hasher> *);
 static void prepare_function_start (void);
 static void do_clobber_return_reg (rtx, void *);
 static void do_use_return_reg (rtx, void *);
@@ -5527,18 +5535,17 @@ get_arg_pointer_save_area (void)
    for the first time.  */
 
 static void
-record_insns (rtx_insn *insns, rtx end, htab_t *hashp)
+record_insns (rtx_insn *insns, rtx end, hash_table<insn_cache_hasher> **hashp)
 {
   rtx_insn *tmp;
-  htab_t hash = *hashp;
+  hash_table<insn_cache_hasher> *hash = *hashp;
 
   if (hash == NULL)
-    *hashp = hash
-      = htab_create_ggc (17, htab_hash_pointer, htab_eq_pointer, NULL);
+    *hashp = hash = hash_table<insn_cache_hasher>::create_ggc (17);
 
   for (tmp = insns; tmp != end; tmp = NEXT_INSN (tmp))
     {
-      void **slot = htab_find_slot (hash, tmp, INSERT);
+      rtx *slot = hash->find_slot (tmp, INSERT);
       gcc_assert (*slot == NULL);
       *slot = tmp;
     }
@@ -5551,18 +5558,18 @@ record_insns (rtx_insn *insns, rtx end, htab_t *hashp)
 void
 maybe_copy_prologue_epilogue_insn (rtx insn, rtx copy)
 {
-  htab_t hash;
-  void **slot;
+  hash_table<insn_cache_hasher> *hash;
+  rtx *slot;
 
   hash = epilogue_insn_hash;
-  if (!hash || !htab_find (hash, insn))
+  if (!hash || !hash->find (insn))
     {
       hash = prologue_insn_hash;
-      if (!hash || !htab_find (hash, insn))
+      if (!hash || !hash->find (insn))
 	return;
     }
 
-  slot = htab_find_slot (hash, copy, INSERT);
+  slot = hash->find_slot (copy, INSERT);
   gcc_assert (*slot == NULL);
   *slot = copy;
 }
@@ -5571,7 +5578,7 @@ maybe_copy_prologue_epilogue_insn (rtx insn, rtx copy)
    we can be running after reorg, SEQUENCE rtl is possible.  */
 
 static bool
-contains (const_rtx insn, htab_t hash)
+contains (const_rtx insn, hash_table<insn_cache_hasher> *hash)
 {
   if (hash == NULL)
     return false;
@@ -5581,12 +5588,12 @@ contains (const_rtx insn, htab_t hash)
       rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
       int i;
       for (i = seq->len () - 1; i >= 0; i--)
-	if (htab_find (hash, seq->element (i)))
+	if (hash->find (seq->element (i)))
 	  return true;
       return false;
     }
 
-  return htab_find (hash, insn) != NULL;
+  return hash->find (const_cast<rtx> (insn)) != NULL;
 }
 
 int
@@ -6198,7 +6205,7 @@ reposition_prologue_and_epilogue_notes (void)
      non-null is a signal that it is non-empty.  */
   if (prologue_insn_hash != NULL)
     {
-      size_t len = htab_elements (prologue_insn_hash);
+      size_t len = prologue_insn_hash->elements ();
       rtx_insn *insn, *last = NULL, *note = NULL;
 
       /* Scan from the beginning until we reach the last prologue insn.  */

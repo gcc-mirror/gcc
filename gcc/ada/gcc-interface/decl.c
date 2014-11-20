@@ -128,8 +128,35 @@ typedef struct variant_desc_d {
 
 
 /* A hash table used to cache the result of annotate_value.  */
-static GTY ((if_marked ("tree_int_map_marked_p"),
-	     param_is (struct tree_int_map))) htab_t annotate_value_cache;
+
+struct value_annotation_hasher : ggc_cache_hasher<tree_int_map *>
+{
+  static inline hashval_t
+  hash (tree_int_map *m)
+  {
+    return htab_hash_pointer (m->base.from);
+  }
+
+  static inline bool
+  equal (tree_int_map *a, tree_int_map *b)
+  {
+    return a->base.from == b->base.from;
+  }
+
+  static void
+  handle_cache_entry (tree_int_map *&m)
+  {
+    extern void gt_ggc_mx (tree_int_map *&);
+    if (m == HTAB_EMPTY_ENTRY || m == HTAB_DELETED_ENTRY)
+      return;
+    else if (ggc_marked_p (m->base.from))
+      gt_ggc_mx (m);
+    else
+      m = static_cast<tree_int_map *> (HTAB_DELETED_ENTRY);
+  }
+};
+
+static GTY ((cache)) hash_table<value_annotation_hasher> *annotate_value_cache;
 
 static bool allocatable_size_p (tree, bool);
 static void prepend_one_attribute (struct attrib **,
@@ -7362,7 +7389,7 @@ annotate_value (tree gnu_size)
       struct tree_int_map *e;
 
       in.base.from = gnu_size;
-      e = (struct tree_int_map *) htab_find (annotate_value_cache, &in);
+      e = annotate_value_cache->find (&in);
 
       if (e)
 	return (Node_Ref_Or_Val) e->to;
@@ -7491,8 +7518,7 @@ annotate_value (tree gnu_size)
 	 look up, so we have to search again.  Allocating and inserting an
 	 entry at that point would be an alternative, but then we'd better
 	 discard the entry if we decided not to cache it.  */
-      h = (struct tree_int_map **)
-	    htab_find_slot (annotate_value_cache, &in, INSERT);
+      h = annotate_value_cache->find_slot (&in, INSERT);
       gcc_assert (!*h);
       *h = ggc_alloc<tree_int_map> ();
       (*h)->base.from = gnu_size;
@@ -8840,8 +8866,7 @@ void
 init_gnat_decl (void)
 {
   /* Initialize the cache of annotated values.  */
-  annotate_value_cache
-    = htab_create_ggc (512, tree_int_map_hash, tree_int_map_eq, 0);
+  annotate_value_cache = hash_table<value_annotation_hasher>::create_ggc (512);
 }
 
 /* Destroy data structures of the decl.c module.  */
@@ -8850,7 +8875,7 @@ void
 destroy_gnat_decl (void)
 {
   /* Destroy the cache of annotated values.  */
-  htab_delete (annotate_value_cache);
+  annotate_value_cache->empty ();
   annotate_value_cache = NULL;
 }
 

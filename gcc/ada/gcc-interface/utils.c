@@ -233,20 +233,23 @@ static GTY(()) vec<tree, va_gc> *global_renaming_pointers;
 /* A chain of unused BLOCK nodes. */
 static GTY((deletable)) tree free_block_chain;
 
-static int pad_type_hash_marked_p (const void *p);
-static hashval_t pad_type_hash_hash (const void *p);
-static int pad_type_hash_eq (const void *p1, const void *p2);
-
 /* A hash table of padded types.  It is modelled on the generic type
    hash table in tree.c, which must thus be used as a reference.  */
-struct GTY(()) pad_type_hash {
+
+struct GTY((for_user)) pad_type_hash {
   unsigned long hash;
   tree type;
 };
 
-static GTY ((if_marked ("pad_type_hash_marked_p"),
-	     param_is (struct pad_type_hash)))
-  htab_t pad_type_hash_table;
+struct pad_type_hasher : ggc_cache_hasher<pad_type_hash *>
+{
+  static inline hashval_t hash (pad_type_hash *t) { return t->hash; }
+  static bool equal (pad_type_hash *a, pad_type_hash *b);
+  static void handle_cache_entry (pad_type_hash *&);
+};
+
+static GTY ((cache))
+  hash_table<pad_type_hasher> *pad_type_hash_table;
 
 static tree merge_sizes (tree, tree, tree, bool, bool);
 static tree compute_related_constant (tree, tree);
@@ -294,8 +297,7 @@ init_gnat_utils (void)
   dummy_node_table = ggc_cleared_vec_alloc<tree> (max_gnat_nodes);
 
   /* Initialize the hash table of padded types.  */
-  pad_type_hash_table
-    = htab_create_ggc (512, pad_type_hash_hash, pad_type_hash_eq, 0);
+  pad_type_hash_table = hash_table<pad_type_hasher>::create_ggc (512);
 }
 
 /* Destroy data structures of the utils.c module.  */
@@ -312,7 +314,7 @@ destroy_gnat_utils (void)
   dummy_node_table = NULL;
 
   /* Destroy the hash table of padded types.  */
-  htab_delete (pad_type_hash_table);
+  pad_type_hash_table->empty ();
   pad_type_hash_table = NULL;
 
   /* Invalidate the global renaming pointers.   */
@@ -1155,29 +1157,23 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 
 /* See if the data pointed to by the hash table slot is marked.  */
 
-static int
-pad_type_hash_marked_p (const void *p)
+void
+pad_type_hasher::handle_cache_entry (pad_type_hash *&t)
 {
-  const_tree const type = ((const struct pad_type_hash *) p)->type;
-
-  return ggc_marked_p (type);
+  extern void gt_ggc_mx (pad_type_hash *&);
+  if (t == HTAB_EMPTY_ENTRY || t == HTAB_DELETED_ENTRY)
+    return;
+  else if (ggc_marked_p (t->type))
+    gt_ggc_mx (t);
+  else
+    t = static_cast<pad_type_hash *> (HTAB_DELETED_ENTRY);
 }
 
-/* Return the cached hash value.  */
+/* Return true iff the padded types are equivalent.  */
 
-static hashval_t
-pad_type_hash_hash (const void *p)
+bool
+pad_type_hasher::equal (pad_type_hash *t1, pad_type_hash *t2)
 {
-  return ((const struct pad_type_hash *) p)->hash;
-}
-
-/* Return 1 iff the padded types are equivalent.  */
-
-static int
-pad_type_hash_eq (const void *p1, const void *p2)
-{
-  const struct pad_type_hash *const t1 = (const struct pad_type_hash *) p1;
-  const struct pad_type_hash *const t2 = (const struct pad_type_hash *) p2;
   tree type1, type2;
 
   if (t1->hash != t2->hash)
@@ -1204,7 +1200,6 @@ lookup_and_insert_pad_type (tree type)
 {
   hashval_t hashcode;
   struct pad_type_hash in, *h;
-  void **loc;
 
   hashcode
     = iterative_hash_object (TYPE_HASH (TREE_TYPE (TYPE_FIELDS (type))), 0);
@@ -1214,16 +1209,14 @@ lookup_and_insert_pad_type (tree type)
 
   in.hash = hashcode;
   in.type = type;
-  h = (struct pad_type_hash *)
-	htab_find_with_hash (pad_type_hash_table, &in, hashcode);
+  h = pad_type_hash_table->find_with_hash (&in, hashcode);
   if (h)
     return h->type;
 
   h = ggc_alloc<pad_type_hash> ();
   h->hash = hashcode;
   h->type = type;
-  loc = htab_find_slot_with_hash (pad_type_hash_table, h, hashcode, INSERT);
-  *loc = (void *)h;
+  *pad_type_hash_table->find_slot_with_hash (h, hashcode, INSERT) = h;
   return NULL_TREE;
 }
 

@@ -14055,14 +14055,34 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
    to symbol DECL if BEIMPORT is true.  Otherwise create or return the
    unique refptr-DECL symbol corresponding to symbol DECL.  */
 
-static GTY((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
-  htab_t dllimport_map;
+struct dllimport_hasher : ggc_cache_hasher<tree_map *>
+{
+  static inline hashval_t hash (tree_map *m) { return m->hash; }
+  static inline bool
+  equal (tree_map *a, tree_map *b)
+  {
+    return a->base.from == b->base.from;
+  }
+
+  static void
+  handle_cache_entry (tree_map *&m)
+  {
+    extern void gt_ggc_mx (tree_map *&);
+    if (m == HTAB_EMPTY_ENTRY || m == HTAB_DELETED_ENTRY)
+      return;
+    else if (ggc_marked_p (m->base.from))
+      gt_ggc_mx (m);
+    else
+      m = static_cast<tree_map *> (HTAB_DELETED_ENTRY);
+  }
+};
+
+static GTY((cache)) hash_table<dllimport_hasher> *dllimport_map;
 
 static tree
 get_dllimport_decl (tree decl, bool beimport)
 {
   struct tree_map *h, in;
-  void **loc;
   const char *name;
   const char *prefix;
   size_t namelen, prefixlen;
@@ -14071,12 +14091,12 @@ get_dllimport_decl (tree decl, bool beimport)
   rtx rtl;
 
   if (!dllimport_map)
-    dllimport_map = htab_create_ggc (512, tree_map_hash, tree_map_eq, 0);
+    dllimport_map = hash_table<dllimport_hasher>::create_ggc (512);
 
   in.hash = htab_hash_pointer (decl);
   in.base.from = decl;
-  loc = htab_find_slot_with_hash (dllimport_map, &in, in.hash, INSERT);
-  h = (struct tree_map *) *loc;
+  tree_map **loc = dllimport_map->find_slot_with_hash (&in, in.hash, INSERT);
+  h = *loc;
   if (h)
     return h->to;
 

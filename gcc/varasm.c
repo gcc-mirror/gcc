@@ -5727,8 +5727,26 @@ assemble_alias (tree decl, tree target)
    to its transaction aware clone.  Note that tm_pure functions are
    considered to be their own clone.  */
 
-static GTY((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
-     htab_t tm_clone_hash;
+struct tm_clone_hasher : ggc_cache_hasher<tree_map *>
+{
+  static hashval_t hash (tree_map *m) { return tree_map_hash (m); }
+  static bool equal (tree_map *a, tree_map *b) { return tree_map_eq (a, b); }
+
+  static void handle_cache_entry (tree_map *&e)
+  {
+    if (e != HTAB_EMPTY_ENTRY || e != HTAB_DELETED_ENTRY)
+      {
+	extern void gt_ggc_mx (tree_map *&);
+	if (ggc_marked_p (e->base.from))
+	  gt_ggc_mx (e);
+	else
+	  e = static_cast<tree_map *> (HTAB_DELETED_ENTRY);
+      }
+  }
+};
+
+static GTY((cache))
+     hash_table<tm_clone_hasher> *tm_clone_hash;
 
 void
 record_tm_clone_pair (tree o, tree n)
@@ -5736,15 +5754,14 @@ record_tm_clone_pair (tree o, tree n)
   struct tree_map **slot, *h;
 
   if (tm_clone_hash == NULL)
-    tm_clone_hash = htab_create_ggc (32, tree_map_hash, tree_map_eq, 0);
+    tm_clone_hash = hash_table<tm_clone_hasher>::create_ggc (32);
 
   h = ggc_alloc<tree_map> ();
   h->hash = htab_hash_pointer (o);
   h->base.from = o;
   h->to = n;
 
-  slot = (struct tree_map **)
-    htab_find_slot_with_hash (tm_clone_hash, h, h->hash, INSERT);
+  slot = tm_clone_hash->find_slot_with_hash (h, h->hash, INSERT);
   *slot = h;
 }
 
@@ -5757,8 +5774,7 @@ get_tm_clone_pair (tree o)
 
       in.base.from = o;
       in.hash = htab_hash_pointer (o);
-      h = (struct tree_map *) htab_find_with_hash (tm_clone_hash,
-						   &in, in.hash);
+      h = tm_clone_hash->find_with_hash (&in, in.hash);
       if (h)
 	return h->to;
     }
@@ -5772,19 +5788,6 @@ typedef struct tm_alias_pair
   tree to;
 } tm_alias_pair;
 
-
-/* Helper function for finish_tm_clone_pairs.  Dump a hash table entry
-   into a VEC in INFO.  */
-
-static int
-dump_tm_clone_to_vec (void **slot, void *info)
-{
-  struct tree_map *map = (struct tree_map *) *slot;
-  vec<tm_alias_pair> *tm_alias_pairs = (vec<tm_alias_pair> *) info;
-  tm_alias_pair p = {DECL_UID (map->base.from), map->base.from, map->to};
-  tm_alias_pairs->safe_push (p);
-  return 1;
-}
 
 /* Dump the actual pairs to the .tm_clone_table section.  */
 
@@ -5866,15 +5869,20 @@ finish_tm_clone_pairs (void)
      to a vector, sort it, and dump the vector.  */
 
   /* Dump the hashtable to a vector.  */
-  htab_traverse_noresize (tm_clone_hash, dump_tm_clone_to_vec,
-			  (void *) &tm_alias_pairs);
+  tree_map *map;
+  hash_table<tm_clone_hasher>::iterator iter;
+  FOR_EACH_HASH_TABLE_ELEMENT (*tm_clone_hash, map, tree_map *, iter)
+    {
+      tm_alias_pair p = {DECL_UID (map->base.from), map->base.from, map->to};
+      tm_alias_pairs.safe_push (p);
+    }
   /* Sort it.  */
   tm_alias_pairs.qsort (tm_alias_pair_cmp);
 
   /* Dump it.  */
   dump_tm_clone_pairs (tm_alias_pairs);
 
-  htab_delete (tm_clone_hash);
+  tm_clone_hash->empty ();
   tm_clone_hash = NULL;
   tm_alias_pairs.release ();
 }
