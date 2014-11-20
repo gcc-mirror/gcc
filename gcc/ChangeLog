@@ -1,5 +1,12 @@
 2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* hash-table.h (hash_table::hash_table): Call alloc_entries.
+	(hash_table::alloc_entries): new method.
+	(hash_table::expand): Call alloc_entries.
+	(hash_table::empty): Likewise.
+
+2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* config/i386/i386.c, function.c, trans-mem.c, tree-core.h,
 	tree.c, tree.h, ubsan.c, varasm.c: Use hash_table instead of htab.
 
