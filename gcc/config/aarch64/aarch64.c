@@ -1339,7 +1339,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	 before we start classifying the symbol.  */
       split_const (imm, &base, &offset);
 
-      sty = aarch64_classify_symbol (base, SYMBOL_CONTEXT_ADR);
+      sty = aarch64_classify_symbol (base, offset, SYMBOL_CONTEXT_ADR);
       switch (sty)
 	{
 	case SYMBOL_FORCE_TO_MEM:
@@ -3024,7 +3024,7 @@ aarch64_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
   split_const (x, &base, &offset);
   if (GET_CODE (base) == SYMBOL_REF || GET_CODE (base) == LABEL_REF)
     {
-      if (aarch64_classify_symbol (base, SYMBOL_CONTEXT_ADR)
+      if (aarch64_classify_symbol (base, offset, SYMBOL_CONTEXT_ADR)
 	  != SYMBOL_FORCE_TO_MEM)
 	return true;
       else
@@ -3438,7 +3438,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  rtx sym, offs;
 	  split_const (info->offset, &sym, &offs);
 	  if (GET_CODE (sym) == SYMBOL_REF
-	      && (aarch64_classify_symbol (sym, SYMBOL_CONTEXT_MEM)
+	      && (aarch64_classify_symbol (sym, offs, SYMBOL_CONTEXT_MEM)
 		  == SYMBOL_SMALL_ABSOLUTE))
 	    {
 	      /* The symbol and offset must be aligned to the access size.  */
@@ -3495,7 +3495,7 @@ aarch64_classify_symbolic_expression (rtx x,
   rtx offset;
 
   split_const (x, &x, &offset);
-  return aarch64_classify_symbol (x, context);
+  return aarch64_classify_symbol (x, offset, context);
 }
 
 
@@ -6834,7 +6834,7 @@ aarch64_classify_tls_symbol (rtx x)
    LABEL_REF X in context CONTEXT.  */
 
 enum aarch64_symbol_type
-aarch64_classify_symbol (rtx x,
+aarch64_classify_symbol (rtx x, rtx offset,
 			 enum aarch64_symbol_context context ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (x) == LABEL_REF)
@@ -6868,12 +6868,25 @@ aarch64_classify_symbol (rtx x,
       switch (aarch64_cmodel)
 	{
 	case AARCH64_CMODEL_TINY:
-	  if (SYMBOL_REF_WEAK (x))
+	  /* When we retreive symbol + offset address, we have to make sure
+	     the offset does not cause overflow of the final address.  But
+	     we have no way of knowing the address of symbol at compile time
+	     so we can't accurately say if the distance between the PC and
+	     symbol + offset is outside the addressible range of +/-1M in the
+	     TINY code model.  So we rely on images not being greater than
+	     1M and cap the offset at 1M and anything beyond 1M will have to
+	     be loaded using an alternative mechanism.  */
+	  if (SYMBOL_REF_WEAK (x)
+	      || INTVAL (offset) < -1048575 || INTVAL (offset) > 1048575)
 	    return SYMBOL_FORCE_TO_MEM;
 	  return SYMBOL_TINY_ABSOLUTE;
 
 	case AARCH64_CMODEL_SMALL:
-	  if (SYMBOL_REF_WEAK (x))
+	  /* Same reasoning as the tiny code model, but the offset cap here is
+	     4G.  */
+	  if (SYMBOL_REF_WEAK (x)
+	      || INTVAL (offset) < (HOST_WIDE_INT) -4294967263
+	      || INTVAL (offset) > (HOST_WIDE_INT) 4294967264)
 	    return SYMBOL_FORCE_TO_MEM;
 	  return SYMBOL_SMALL_ABSOLUTE;
 
