@@ -3550,10 +3550,19 @@ package body Sem_Ch13 is
             end if;
 
             --  Verify that the prefix of the attribute and the local name for
-            --  the type of the formal match.
+            --  the type of the formal match, or one is the class-wide of the
+            --  other, in the case of a class-wide stream operation.
 
-            if Base_Type (Typ) /= Base_Type (Ent)
-              or else Present (Next_Formal (F))
+            if  Base_Type (Typ) = Base_Type (Ent)
+              or else (Is_Class_Wide_Type (Typ)
+                and then Typ = Class_Wide_Type (Base_Type (Ent)))
+            then
+               null;
+            else
+               return False;
+            end if;
+
+            if Present ((Next_Formal (F)))
             then
                return False;
 
@@ -3635,12 +3644,14 @@ package body Sem_Ch13 is
             --  procedure (RM 13.13.2 (38/3)).
 
             elsif Is_Interface (U_Ent)
+              and then not Is_Class_Wide_Type (U_Ent)
               and then not Inside_A_Generic
-              and then Ekind (Subp) = E_Procedure
               and then
-                not Null_Present
-                  (Specification
-                     (Unit_Declaration_Node (Ultimate_Alias (Subp))))
+                (Ekind (Subp) = E_Function
+                  or else
+                    not Null_Present
+                      (Specification
+                         (Unit_Declaration_Node (Ultimate_Alias (Subp)))))
             then
                Error_Msg_N
                  ("stream subprogram for interface type "

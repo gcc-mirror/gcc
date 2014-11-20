@@ -1,3 +1,35 @@
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb: Minor reformatting.
+
+2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Make_Subtype_From_Expr): Capture the bounds of
+	all index constracts when the expression is of an array type.
+
+2014-11-20  Bob Duff  <duff@adacore.com>
+
+	* s-taskin.ads: Minor comment improvements.
+
+2014-11-20  Bob Duff  <duff@adacore.com>
+
+	* exp_ch9.adb: Minor comment fixes.
+	* s-taskin.adb (Initialize): Small simplification: pass System_Domain
+	to Initialize_ATCB instead of passing null and then setting the Domain
+	to System_Domain. This requires moving the creation of System_Domain
+	earlier.
+	* s-taprop-linux.adb (Set_Task_Affinity): Only call CPU_SET for
+	processors that have a True in the Domain. This is necessary if the
+	Domain is not all-True values.
+
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Has_Good_Profile): a) An stream attribute
+	for the class-wide type of an interface type is not a primitive
+	operation and is not subject to the restrictions of 13.13. (38/3).
+	b) A stream operation for an interface type must be a null
+	procedure, and it cannot be a function.
+
 2014-11-20  Bob Duff  <duff@adacore.com>
 
 	* exp_attr.adb (Attribute_Max_Size_In_Storage_Elements):

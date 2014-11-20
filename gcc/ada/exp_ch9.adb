@@ -14146,9 +14146,7 @@ package body Exp_Ch9 is
          --  present, then the dispatching domain is null. If a rep item is
          --  present, then the dispatching domain is taken from the
          --  _Dispatching_Domain field of the task value record, which was set
-         --  from the rep item value. Note that this parameter must not be
-         --  generated for the restricted profiles since Ravenscar does not
-         --  allow dispatching domains.
+         --  from the rep item value.
 
          --  Case where Dispatching_Domain rep item applies: use given value
 
@@ -14162,7 +14160,7 @@ package body Exp_Ch9 is
                 Selector_Name =>
                   Make_Identifier (Loc, Name_uDispatching_Domain)));
 
-         --  No pragma or aspect Dispatching_Domain apply to the task
+         --  No pragma or aspect Dispatching_Domain applies to the task
 
          else
             Append_To (Args, Make_Null (Loc));

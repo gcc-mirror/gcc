@@ -4232,10 +4232,12 @@ package body Exp_Attr is
          --  retrieve the original attribute reference from the expression.
 
          Attr := N;
+
          if Nkind (Attr) = N_Type_Conversion then
             Attr := Expression (Attr);
             Conversion_Added := True;
          end if;
+
          pragma Assert (Nkind (Attr) = N_Attribute_Reference);
 
          --  Heap-allocated controlled objects contain two extra pointers which

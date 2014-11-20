@@ -1516,7 +1516,9 @@ package body System.Task_Primitives.Operations is
                System.OS_Interface.CPU_ZERO (Size, CPU_Set);
 
                for Proc in T.Common.Domain'Range loop
-                  System.OS_Interface.CPU_SET (int (Proc), Size, CPU_Set);
+                  if T.Common.Domain (Proc) then
+                     System.OS_Interface.CPU_SET (int (Proc), Size, CPU_Set);
+                  end if;
                end loop;
             end if;
 
