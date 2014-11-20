@@ -10912,11 +10912,14 @@ package body Sem_Ch13 is
                end if;
             end if;
 
-            --  Scalar_Storage_Order (first subtypes only)
+            --  Scalar_Storage_Order
+
+            --  Note: the aspect is specified on a first subtype, but recorded
+            --  in a flag of the base type!
 
             if (Is_Record_Type (Typ) or else Is_Array_Type (Typ))
                  and then
-               Is_First_Subtype (Typ)
+               Typ = Bas_Typ
             then
 
                --  For a type extension, always inherit from parent; otherwise
@@ -10924,7 +10927,8 @@ package body Sem_Ch13 is
                --  an explicit rep item on the parent type when inheriting,
                --  because the parent SSO may itself have been set by default.
 
-               if not Has_Rep_Item (Typ, Name_Scalar_Storage_Order, False)
+               if not Has_Rep_Item (First_Subtype (Typ),
+                                    Name_Scalar_Storage_Order, False)
                  and then (Is_Tagged_Type (Bas_Typ)
                              or else
                            not (SSO_Set_Low_By_Default  (Bas_Typ)
@@ -10932,7 +10936,7 @@ package body Sem_Ch13 is
                                 SSO_Set_High_By_Default (Bas_Typ)))
                then
                   Set_Reverse_Storage_Order (Bas_Typ,
-                    Reverse_Storage_Order (First_Subtype (Etype (Bas_Typ))));
+                    Reverse_Storage_Order (Base_Type (Etype (Bas_Typ))));
 
                   --  Clear default SSO indications, since the inherited aspect
                   --  which was set explicitly overrides the default.

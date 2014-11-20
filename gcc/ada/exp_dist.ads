@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -146,14 +146,17 @@ package Exp_Dist is
    --  declaration is appended to Decls.
 
    function Build_To_Any_Call
-     (Loc   : Source_Ptr;
-      N     : Node_Id;
-      Decls : List_Id) return Node_Id;
+     (Loc         : Source_Ptr;
+      N           : Node_Id;
+      Decls       : List_Id;
+      Constrained : Boolean := False) return Node_Id;
    --  Build call to To_Any attribute function with expression as actual
    --  parameter. Loc is the reference location for generated nodes, Decls is
    --  the declarations list for an appropriate enclosing scope of the point
    --  where the call will be inserted; if the To_Any attribute for Typ needs
    --  to be generated at this point, its declaration is appended to Decls.
+   --  For limited types, if Constrained is True then use 'Write else use
+   --  'Output.
 
    function Build_TypeCode_Call
      (Loc   : Source_Ptr;

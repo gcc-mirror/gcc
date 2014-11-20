@@ -1,3 +1,10 @@
+2014-11-20  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb: Complete previous change.
+	* exp_dist.adb, exp_dist.ads: Rework PolyORB/DSA arguments processing
+	circuitry to correctly handle the case of non-private limited
+	unconstrained formals.
+
 2014-11-20  Robert Dewar  <dewar@adacore.com>
 
 	* freeze.adb, exp_dbug.adb, sem_ch13.adb: Minor reformatting.
