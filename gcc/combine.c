@@ -914,47 +914,34 @@ combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
 
   /* Disallow this combination if both new_cost and old_cost are greater than
      zero, and new_cost is greater than old cost.  */
-  if (old_cost > 0 && new_cost > old_cost)
+  int reject = old_cost > 0 && new_cost > old_cost;
+
+  if (dump_file)
     {
-      if (dump_file)
-	{
-	  if (i0)
-	    {
-	      fprintf (dump_file,
-		       "rejecting combination of insns %d, %d, %d and %d\n",
-		       INSN_UID (i0), INSN_UID (i1), INSN_UID (i2),
-		       INSN_UID (i3));
-	      fprintf (dump_file, "original costs %d + %d + %d + %d = %d\n",
-		       i0_cost, i1_cost, i2_cost, i3_cost, old_cost);
-	    }
-	  else if (i1)
-	    {
-	      fprintf (dump_file,
-		       "rejecting combination of insns %d, %d and %d\n",
-		       INSN_UID (i1), INSN_UID (i2), INSN_UID (i3));
-	      fprintf (dump_file, "original costs %d + %d + %d = %d\n",
-		       i1_cost, i2_cost, i3_cost, old_cost);
-	    }
-	  else
-	    {
-	      fprintf (dump_file,
-		       "rejecting combination of insns %d and %d\n",
-		       INSN_UID (i2), INSN_UID (i3));
-	      fprintf (dump_file, "original costs %d + %d = %d\n",
-		       i2_cost, i3_cost, old_cost);
-	    }
+      fprintf (dump_file, "%s combination of insns ",
+	       reject ? "rejecting" : "allowing");
+      if (i0)
+	fprintf (dump_file, "%d, ", INSN_UID (i0));
+      if (i1)
+	fprintf (dump_file, "%d, ", INSN_UID (i1));
+      fprintf (dump_file, "%d and %d\n", INSN_UID (i2), INSN_UID (i3));
 
-	  if (newi2pat)
-	    {
-	      fprintf (dump_file, "replacement costs %d + %d = %d\n",
-		       new_i2_cost, new_i3_cost, new_cost);
-	    }
-	  else
-	    fprintf (dump_file, "replacement cost %d\n", new_cost);
-	}
+      fprintf (dump_file, "original costs ");
+      if (i0)
+	fprintf (dump_file, "%d + ", i0_cost);
+      if (i1)
+	fprintf (dump_file, "%d + ", i1_cost);
+      fprintf (dump_file, "%d + %d = %d\n", i2_cost, i3_cost, old_cost);
 
-      return false;
+      if (newi2pat)
+	fprintf (dump_file, "replacement costs %d + %d = %d\n",
+		 new_i2_cost, new_i3_cost, new_cost);
+      else
+	fprintf (dump_file, "replacement cost %d\n", new_cost);
     }
+
+  if (reject)
+    return false;
 
   /* Update the uid_insn_cost array with the replacement costs.  */
   INSN_COST (i2) = new_i2_cost;
