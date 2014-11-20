@@ -2916,31 +2916,73 @@ package body Exp_Util is
    -- Following_Address_Clause --
    ------------------------------
 
-   --  Should this function check the private part in a package ???
-
    function Following_Address_Clause (D : Node_Id) return Node_Id is
-      Id   : constant Entity_Id := Defining_Identifier (D);
-      Decl : Node_Id;
+      Id     : constant Entity_Id := Defining_Identifier (D);
+      Result : Node_Id;
+      Par    : Node_Id;
+
+      function Check_Decls (D : Node_Id) return Node_Id;
+      --  This internal function differs from the main function in that it
+      --  gets called to deal with a following package private part, and
+      --  it checks declarations starting with D (the main function checks
+      --  declarations following D). If D is Empty, then Empty is returned.
+
+      -----------------
+      -- Check_Decls --
+      -----------------
+
+      function Check_Decls (D : Node_Id) return Node_Id is
+         Decl : Node_Id;
+
+      begin
+         Decl := D;
+         while Present (Decl) loop
+            if Nkind (Decl) = N_At_Clause
+              and then Chars (Identifier (Decl)) = Chars (Id)
+            then
+               return Decl;
+
+            elsif Nkind (Decl) = N_Attribute_Definition_Clause
+              and then Chars (Decl) = Name_Address
+              and then Chars (Name (Decl)) = Chars (Id)
+            then
+               return Decl;
+            end if;
+
+            Next (Decl);
+         end loop;
+
+         --  Otherwise not found, return Empty
+
+         return Empty;
+      end Check_Decls;
+
+      --  Start of processing for Following_Address_Clause
 
    begin
-      Decl := Next (D);
-      while Present (Decl) loop
-         if Nkind (Decl) = N_At_Clause
-           and then Chars (Identifier (Decl)) = Chars (Id)
-         then
-            return Decl;
+      Result := Check_Decls (Next (D));
 
-         elsif Nkind (Decl) = N_Attribute_Definition_Clause
-           and then Chars (Decl) = Name_Address
-           and then Chars (Name (Decl)) = Chars (Id)
-         then
-            return Decl;
-         end if;
+      if Present (Result) then
+         return Result;
+      end if;
 
-         Next (Decl);
-      end loop;
+      --  Check for possible package private part following
 
-      return Empty;
+      Par := Parent (D);
+
+      if Nkind (Par) = N_Package_Specification
+        and then Visible_Declarations (Par) = List_Containing (D)
+        and then Present (Private_Declarations (Par))
+      then
+         --  Private part present, check declarations there
+
+         return Check_Decls (First (Private_Declarations (Par)));
+
+      else
+         --  No private part, clause not found, return Empty
+
+         return Empty;
+      end if;
    end Following_Address_Clause;
 
    ----------------------

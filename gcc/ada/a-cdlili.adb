@@ -33,6 +33,8 @@ with System; use type System.Address;
 
 package body Ada.Containers.Doubly_Linked_Lists is
 
+   pragma Annotate (CodePeer, Skip_Analysis);
+
    -----------------------
    -- Local Subprograms --
    -----------------------

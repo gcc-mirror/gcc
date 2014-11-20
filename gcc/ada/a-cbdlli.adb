@@ -31,6 +31,8 @@ with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Doubly_Linked_Lists is
 
+   pragma Annotate (CodePeer, Skip_Analysis);
+
    -----------------------
    -- Local Subprograms --
    -----------------------

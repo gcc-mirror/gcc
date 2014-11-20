@@ -30,6 +30,8 @@ with Ada.Assertions; use Ada.Assertions;
 
 package body Ada.Containers.Bounded_Holders is
 
+   pragma Annotate (CodePeer, Skip_Analysis);
+
    function Size_In_Storage_Elements (Element : Element_Type) return Natural is
      (Element'Size / System.Storage_Unit)
        with Pre =>
