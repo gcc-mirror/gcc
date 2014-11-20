@@ -1,3 +1,10 @@
+2014-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Swap a couple of
+	tests in a condition so Following_Address_Clause is invoked
+	only if need be.
+	* exp_util.ads (Following_Address_Clause): Add small note.
+
 2014-11-20  Pascal Obry  <obry@adacore.com>
 
 	* adaint.c (remove_handle): New local routine without a lock.
