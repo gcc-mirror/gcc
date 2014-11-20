@@ -3035,7 +3035,8 @@ package body Sem_Ch13 is
                         --  evaluation of this aspect should be delayed to the
                         --  freeze point (why???)
 
-                        if No (Expr) or else Is_True (Static_Boolean (Expr))
+                        if No (Expr)
+                          or else Is_True (Static_Boolean (Expr))
                         then
                            Set_Uses_Lock_Free (E);
                         end if;
@@ -3725,8 +3726,7 @@ package body Sem_Ch13 is
                end if;
             end if;
 
-            if not Check_Primitive_Function (Subp)
-            then
+            if not Check_Primitive_Function (Subp) then
                Illegal_Indexing
                  ("Indexing aspect requires a function that applies to type&");
                return;
@@ -3798,7 +3798,8 @@ package body Sem_Ch13 is
                      ("variable indexing must return a reference type");
                   return;
 
-               elsif Is_Access_Constant (Etype (First_Discriminant (Ret_Type)))
+               elsif Is_Access_Constant
+                       (Etype (First_Discriminant (Ret_Type)))
                then
                   Illegal_Indexing
                     ("variable indexing must return an access to variable");
@@ -10882,7 +10883,7 @@ package body Sem_Ch13 is
                Set_Has_Volatile_Components (Imp_Bas_Typ);
             end if;
 
-            --  Finalize_Storage_Only.
+            --  Finalize_Storage_Only
 
             if not Has_Rep_Pragma (Typ, Name_Finalize_Storage_Only, False)
               and then Has_Rep_Pragma (Typ, Name_Finalize_Storage_Only)
@@ -10900,12 +10901,9 @@ package body Sem_Ch13 is
                Set_Universal_Aliasing (Imp_Bas_Typ);
             end if;
 
-            --  Record type specific aspects
+            --  Bit_Order
 
             if Is_Record_Type (Typ) then
-
-               --  Bit_Order
-
                if not Has_Rep_Item (Typ, Name_Bit_Order, False)
                  and then Has_Rep_Item (Typ, Name_Bit_Order)
                then
@@ -10913,15 +10911,29 @@ package body Sem_Ch13 is
                     Reverse_Bit_Order (Entity (Name
                       (Get_Rep_Item (Typ, Name_Bit_Order)))));
                end if;
+            end if;
 
-               --  Scalar_Storage_Order
+            --  Scalar_Storage_Order (first subtypes only)
+
+            if (Is_Record_Type (Typ) or else Is_Array_Type (Typ))
+                 and then
+               Is_First_Subtype (Typ)
+            then
+
+               --  For a type extension, always inherit from parent; otherwise
+               --  inherit if no default applies. Note: we do not check for
+               --  an explicit rep item on the parent type when inheriting,
+               --  because the parent SSO may itself have been set by default.
 
                if not Has_Rep_Item (Typ, Name_Scalar_Storage_Order, False)
-                 and then Has_Rep_Item (Typ, Name_Scalar_Storage_Order)
+                 and then (Is_Tagged_Type (Bas_Typ)
+                             or else
+                           not (SSO_Set_Low_By_Default  (Bas_Typ)
+                                  or else
+                                SSO_Set_High_By_Default (Bas_Typ)))
                then
                   Set_Reverse_Storage_Order (Bas_Typ,
-                    Reverse_Storage_Order (Entity (Name
-                      (Get_Rep_Item (Typ, Name_Scalar_Storage_Order)))));
+                    Reverse_Storage_Order (First_Subtype (Etype (Bas_Typ))));
 
                   --  Clear default SSO indications, since the inherited aspect
                   --  which was set explicitly overrides the default.

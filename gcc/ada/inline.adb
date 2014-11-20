@@ -1655,8 +1655,7 @@ package body Inline is
             Body_To_Inline := Copy_Separate_Tree (N);
          end if;
 
-         --  Remove all aspects/pragmas that have no meaining in an inlined
-         --  body.
+         --  Remove all aspects/pragmas that have no meaning in an inlined body
 
          Remove_Aspects_And_Pragmas (Body_To_Inline);
 
@@ -3938,25 +3937,6 @@ package body Inline is
       Append_New_Elmt (N, To => Backend_Calls);
    end Register_Backend_Call;
 
-   --------------------------
-   -- Remove_Dead_Instance --
-   --------------------------
-
-   procedure Remove_Dead_Instance (N : Node_Id) is
-      J : Int;
-
-   begin
-      J := 0;
-      while J <= Pending_Instantiations.Last loop
-         if Pending_Instantiations.Table (J).Inst_Node = N then
-            Pending_Instantiations.Table (J).Inst_Node := Empty;
-            return;
-         end if;
-
-         J := J + 1;
-      end loop;
-   end Remove_Dead_Instance;
-
    --------------------------------
    -- Remove_Aspects_And_Pragmas --
    --------------------------------
@@ -4015,5 +3995,24 @@ package body Inline is
       Remove_Items (Aspect_Specifications (Body_Decl));
       Remove_Items (Declarations          (Body_Decl));
    end Remove_Aspects_And_Pragmas;
+
+   --------------------------
+   -- Remove_Dead_Instance --
+   --------------------------
+
+   procedure Remove_Dead_Instance (N : Node_Id) is
+      J : Int;
+
+   begin
+      J := 0;
+      while J <= Pending_Instantiations.Last loop
+         if Pending_Instantiations.Table (J).Inst_Node = N then
+            Pending_Instantiations.Table (J).Inst_Node := Empty;
+            return;
+         end if;
+
+         J := J + 1;
+      end loop;
+   end Remove_Dead_Instance;
 
 end Inline;

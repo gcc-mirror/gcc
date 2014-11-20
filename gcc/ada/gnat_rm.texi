@@ -2552,10 +2552,12 @@ pragma Default_Scalar_Storage_Order (High_Order_First | Low_Order_First);
 
 @noindent
 Normally if no explicit @code{Scalar_Storage_Order} is given for a record
-type or array type, then the scalar storage order defaults to the ordinary
-default for the target. But this default may be overridden using this pragma.
-The pragma may appear as a configuration pragma, or locally within a package
-spec or declarative part. In the latter case, it applies to all subsequent
+type or array type, then the scalar storage order defaults to the native
+order for the target. However, this default may be overridden using
+this pragma (except for derived tagged types, which always default to
+inheriting the scalar storage order of their parent). The pragma may
+appear as a configuration pragma, or locally within a package spec or
+declarative part.  In the latter case, it applies to all subsequent
 types declared within that package spec or declarative part.
 
 If this pragma is used as a configuration pragma which appears within a

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *            Copyright (C) 1992-2011, Free Software Foundation, Inc.       *
+ *            Copyright (C) 1992-2014, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -40,6 +40,12 @@ extern Uint Denominator		(Ureal);
 
 #define Rbase urealp__rbase
 extern Nat Rbase		(Ureal);
+
+#define Norm_Den urealp__norm_den
+extern Uint Norm_Den		(Ureal);
+
+#define Norm_Num urealp__norm_num
+extern Uint Norm_Num		(Ureal);
 
 #define UR_Is_Negative urealp__ur_is_negative
 extern Boolean UR_Is_Negative	(Ureal);

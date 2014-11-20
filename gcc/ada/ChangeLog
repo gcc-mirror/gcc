@@ -1,5 +1,27 @@
 2014-11-20  Robert Dewar  <dewar@adacore.com>
 
+	* inline.adb, sem_util.adb: Minor reformatting.
+
+2014-11-20  Pierre-Marie Derodat  <derodat@adacore.com>
+
+	* uintp.h (UI_Eq): Declare.
+	* urealp.h (Norm_Den): Declare.
+	(Norm_Num): Declare.
+	* exp_dbug.adb (Is_Handled_Scale_Factor): New.
+	(Get_Encoded_Name): Do not output ___XF GNAT encodings
+	for fixed-point types when these can be handled by GCC's DWARF
+	back-end.
+
+2014-11-20  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.db (Inherit_Aspects_At_Freeze_Point): Inherit parent
+	SSO even if set through a pragma Default_Scalar_Storage_Order.
+	* freeze.adb (Set_SSO_From_Default): For a type extension,
+	do not let the default SSO override the parent SSO.
+	* gnat_rm.texi: document the above
+
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
 	* a-stream.ads, a-reatim.ads, a-calend.ads, sinfo.ads, s-crtl.ads,
 	interfac.ads, s-taskin.ads: Minor reformatting.
 

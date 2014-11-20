@@ -5966,10 +5966,10 @@ package body Sem_Util is
             --  no longer a source construct, but it must still be recognized.
 
             elsif Comes_From_Source (Decl)
-              or else (Nkind_In (Decl, N_Subprogram_Body,
-                                       N_Subprogram_Declaration)
-                         and then Is_Expression_Function
-                                    (Defining_Entity (Decl)))
+              or else
+                (Nkind_In (Decl, N_Subprogram_Body,
+                                 N_Subprogram_Declaration)
+                  and then Is_Expression_Function (Defining_Entity (Decl)))
             then
                exit;
             end if;
