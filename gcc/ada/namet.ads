@@ -115,14 +115,32 @@ package Namet is
 --  character lower case letters in the range a-z, and these names are created
 --  and initialized by the Initialize procedure.
 
---  Two values, one of type Int and one of type Byte, are stored with each
---  names table entry and subprograms are provided for setting and retrieving
---  these associated values. The usage of these values is up to the client. In
---  the compiler, the Int field is used to point to a chain of potentially
---  visible entities (see Sem.Ch8 for details), and the Byte field is used to
---  hold the Token_Type value for reserved words (see Sem for details). In the
---  binder, the Byte field is unused, and the Int field is used in various
---  ways depending on the name involved (see binder documentation).
+--  Three values, one of type Int, one of type Byte, and one of type Boolean,
+--  are stored with each names table entry and subprograms are provided for
+--  setting and retrieving these associated values. The usage of these values
+--  is up to the client:
+
+--    In the compiler we have the following uses:
+
+--      The Int field is used to point to a chain of potentially visible
+--      entities (see Sem.Ch8 for details).
+
+--      The Byte field is used to hold the Token_Type value for reserved words
+--      (see Sem for details).
+
+--      The Boolean field is used to mark address clauses to optimize the
+--      performance of the Exp_Util.Following_Address_Clause function.
+
+--    In the binder, we have the following uses:
+
+--      The Int field is used in various ways depending on the name involved,
+--      see binder documentation for details.
+
+--      The Byte and Boolean fields are unused.
+
+--  Note that the value of the Int and Byte fields are initialized to zero,
+--  and the Boolean field is initialized to False, when a new Name table entry
+--  is created.
 
    Name_Buffer : String (1 .. 4 * Max_Line_Length);
    --  This buffer is used to set the name to be stored in the table for the
@@ -349,6 +367,9 @@ package Namet is
    pragma Inline (Get_Name_Table_Info);
    --  Fetches the Int value associated with the given name
 
+   function Get_Name_Table_Boolean (Id : Name_Id) return Boolean;
+   --  Fetches the Boolean value associated with the given name
+
    function Is_Operator_Name (Id : Name_Id) return Boolean;
    --  Returns True if name given is of the form of an operator (that
    --  is, it starts with an upper case O).
@@ -386,12 +407,12 @@ package Namet is
    function Name_Find return Name_Id;
    --  Name_Find is called with a string stored in Name_Buffer whose length is
    --  in Name_Len (i.e. the characters of the name are in subscript positions
-   --  1 to Name_Len in Name_Buffer). It searches the names table to see if
-   --  the string has already been stored. If so the Id of the existing entry
-   --  is returned. Otherwise a new entry is created with its Name_Table_Info
-   --  field set to zero. The contents of Name_Buffer and Name_Len are not
-   --  modified by this call. Note that it is permissible for Name_Len to be
-   --  set to zero to lookup the null name string.
+   --  1 to Name_Len in Name_Buffer). It searches the names table to see if the
+   --  string has already been stored. If so the Id of the existing entry is
+   --  returned. Otherwise a new entry is created with its Name_Table_Info
+   --  fields set to zero/false. The contents of Name_Buffer and Name_Len are
+   --  not modified by this call. Note that it is permissible for Name_Len to
+   --  be set to zero to lookup the null name string.
 
    function Name_Enter return Name_Id;
    --  Name_Enter has the same calling interface as Name_Find. The difference
@@ -482,6 +503,9 @@ package Namet is
    procedure Set_Name_Table_Byte (Id : Name_Id; Val : Byte);
    pragma Inline (Set_Name_Table_Byte);
    --  Sets the Byte value associated with the given name
+
+   procedure Set_Name_Table_Boolean (Id : Name_Id; Val : Boolean);
+   --  Sets the Boolean value associated with the given name
 
    procedure Store_Encoded_Character (C : Char_Code);
    --  Stores given character code at the end of Name_Buffer, updating the
@@ -620,6 +644,9 @@ private
       Byte_Info : Byte;
       --  Byte value associated with this name
 
+      Boolean_Info : Boolean;
+      --  Boolean value associated with the name
+
       Name_Has_No_Encodings : Boolean;
       --  This flag is set True if the name entry is known not to contain any
       --  special character encodings. This is used to speed up repeated calls
@@ -631,13 +658,15 @@ private
 
       Int_Info : Int;
       --  Int Value associated with this name
+
    end record;
 
    for Name_Entry use record
       Name_Chars_Index      at  0 range 0 .. 31;
       Name_Len              at  4 range 0 .. 15;
       Byte_Info             at  6 range 0 .. 7;
-      Name_Has_No_Encodings at  7 range 0 .. 7;
+      Boolean_Info          at  7 range 0 .. 0;
+      Name_Has_No_Encodings at  7 range 1 .. 7;
       Hash_Link             at  8 range 0 .. 31;
       Int_Info              at 12 range 0 .. 31;
    end record;

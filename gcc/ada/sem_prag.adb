@@ -13134,10 +13134,6 @@ package body Sem_Prag is
             Citem : Node_Id;
 
          begin
-            if SPARK_Mode = On then
-               Error_Msg_N ("pragma Elaborate not allowed in SPARK", N);
-            end if;
-
             --  Pragma must be in context items list of a compilation unit
 
             if not Is_In_Context_Clause then
@@ -13197,8 +13193,15 @@ package body Sem_Prag is
                      --  to the named unit, so we keep the check enabled.
 
                      if In_Extended_Main_Source_Unit (N) then
-                        Set_Suppress_Elaboration_Warnings
-                          (Entity (Name (Citem)));
+
+                        --  This does not apply in SPARK mode, where we allow
+                        --  pragma Elaborate, but we don't trust it to be right
+                        --  so we will still insist on the Elaborate_All.
+
+                        if SPARK_Mode /= On then
+                           Set_Suppress_Elaboration_Warnings
+                             (Entity (Name (Citem)));
+                        end if;
                      end if;
 
                      exit Inner;

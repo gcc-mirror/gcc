@@ -4596,19 +4596,27 @@ package body Freeze is
 
                Check_Address_Clause (E);
 
-               --  Reset Is_True_Constant for aliased object. We consider that
-               --  the fact that something is aliased may indicate that some
-               --  funny business is going on, e.g. an aliased object is passed
-               --  by reference to a procedure which captures the address of
-               --  the object, which is later used to assign a new value. Such
-               --  code is highly dubious, but we choose to make it "work" for
-               --  aliased objects.
+               --  Reset Is_True_Constant for non-constant aliased object. We
+               --  consider that the fact that a non-constant object is aliased
+               --  may indicate that some funny business is going on, e.g. an
+               --  aliased object is passed by reference to a procedure which
+               --  captures the address of the object, which is later used to
+               --  assign a new value, even though the compiler thinks that
+               --  it is not modified. Such code is highly dubious, but we
+               --  choose to make it "work" for non-constant aliased objects.
+               --  Note that we used to do this for all aliased objects,
+               --  whether or not constant, but this caused anomalies down
+               --  the line because we ended up with static objects that
+               --  were not Is_True_Constant. Not resetting Is_True_Constant
+               --  for (aliased) constant objects ensures that this anomaly
+               --  never occurs.
 
                --  However, we don't do that for internal entities. We figure
                --  that if we deliberately set Is_True_Constant for an internal
                --  entity, e.g. a dispatch table entry, then we mean it.
 
-               if (Is_Aliased (E) or else Is_Aliased (Etype (E)))
+               if Ekind (E) /= E_Constant
+                 and then (Is_Aliased (E) or else Is_Aliased (Etype (E)))
                  and then not Is_Internal_Name (Chars (E))
                then
                   Set_Is_True_Constant (E, False);

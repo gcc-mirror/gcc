@@ -3649,11 +3649,6 @@ package body Sem_Ch3 is
          if Comes_From_Source (N)
            and then Expander_Active
            and then Nkind (E) = N_Aggregate
-
-           --  Note the importance of doing this the following test after the
-           --  N_Aggregate test to avoid inefficiencies from too many calls to
-           --  the function Following_Address_Clause which can be expensive.
-
            and then Present (Following_Address_Clause (N))
          then
             Set_Etype (E, T);

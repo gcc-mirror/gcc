@@ -601,7 +601,7 @@ package body Sem_Elab is
       Cunit_SC : Boolean := False;
       --  Set to suppress dynamic elaboration checks where one of the
       --  enclosing scopes has Elaboration_Checks_Suppressed set, or else
-      --  if a pragma Elaborate (_All) applies to that scope, in which case
+      --  if a pragma Elaborate[_All] applies to that scope, in which case
       --  warnings on the scope are also suppressed. For the internal case,
       --  we ignore this flag.
 
