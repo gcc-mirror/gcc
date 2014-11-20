@@ -16380,6 +16380,7 @@ package body Sem_Prag is
          when Pragma_Linker_Section => Linker_Section : declare
             Arg : Node_Id;
             Ent : Entity_Id;
+            LPE : Node_Id;
 
          begin
             GNAT_Pragma;
@@ -16398,9 +16399,18 @@ package body Sem_Prag is
             case Ekind (Ent) is
 
                --  Objects (constants and variables) and types. For these cases
-               --  all we need to do is to set the Linker_Section_pragma field.
+               --  all we need to do is to set the Linker_Section_pragma field,
+               --  checking that we do not have a duplicate.
 
                when E_Constant | E_Variable | Type_Kind =>
+                  LPE := Linker_Section_Pragma (Ent);
+
+                  if Present (LPE) then
+                     Error_Msg_Sloc := Sloc (LPE);
+                     Error_Msg_NE
+                       ("Linker_Section already specified for &#", Arg1, Ent);
+                  end if;
+
                   Set_Linker_Section_Pragma (Ent, N);
 
                --  Subprograms

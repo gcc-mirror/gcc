@@ -2269,6 +2269,7 @@ package body Exp_Ch4 is
 
          elsif Nkind (Parent (N)) = N_Op_Not
            and then Nkind (N) = N_Op_And
+           and then Nkind (Parent (Parent (N))) = N_Assignment_Statement
            and then Safe_In_Place_Array_Op (Name (Parent (Parent (N))), L, R)
          then
             return;

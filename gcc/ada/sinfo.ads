@@ -581,6 +581,12 @@ package Sinfo is
    --       bounds are generated from an expression: Expand_Subtype_From_Expr
    --       should be noop.
 
+   --    5. Errors (instead of warnings) are issued on compile-time known
+   --       constraint errors, except in a few selected cases where it should
+   --       be allowed to let analysis proceed (e.g. range checks on empty
+   --       ranges, typically in deactivated code based on a given
+   --       configuration).
+
    -----------------------
    -- Check Flag Fields --
    -----------------------

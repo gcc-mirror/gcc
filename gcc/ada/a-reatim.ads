@@ -94,7 +94,8 @@ package Ada.Real_Time is
    --  The delta of Duration is 10 ** (-9), so the maximum number of seconds is
    --  2**63/10**9 = 8*10**9 which does not quite fit in 32 bits.
 
-   type Seconds_Count is range -2 ** 63 .. 2 ** 63 - 1;
+   type Seconds_Count is range
+     Long_Long_Integer'First .. Long_Long_Integer'Last;
 
    procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span);
    function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;

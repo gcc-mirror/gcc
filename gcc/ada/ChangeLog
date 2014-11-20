@@ -1,3 +1,31 @@
+2014-11-20  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb: Minor reformatting.
+
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Linker_Section): Detect
+	duplicate Linker_Section.
+
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb: Add guard for build-in-place boolean op.
+
+2014-11-20  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check): In GNATprove mode,
+	put a range check when an empty range is used, instead of an
+	error message.
+	* sinfo.ads Update comment on GNATprove mode.
+
+2014-11-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-stream.ads, s-osinte-linux.ads, a-reatim.ads, a-calend.ads,
+	s-crtl.ads, interfac.ads, s-taskin.ads: Replace uses of 2 ** 63 and
+	2 ** 64 by references to Long_Long_Integer instead, to allow these
+	units to be analyzed by codepeer or spark when using a target
+	configuration file with long_long_size set to 32.
+
 2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_util.adb (Extensions_Visible_Status): Modify the logic to account
