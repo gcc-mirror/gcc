@@ -1,5 +1,12 @@
 2014-11-20  Bob Duff  <duff@adacore.com>
 
+	* exp_attr.adb (Attribute_Max_Size_In_Storage_Elements):
+	Eliminate 'Class references from the tree, because gigi crashes on
+	'Class. Also, don't check Nkind (Attr) -- it is known to be
+	N_Attribute_Reference.	Assert that instead.
+
+2014-11-20  Bob Duff  <duff@adacore.com>
+
 	* debug.adb: Minor comment fix.
 
 2014-11-20  Arnaud Charlet  <charlet@adacore.com>
