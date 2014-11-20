@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,7 +77,7 @@ package body System.Multiprocessors.Dispatching_Domains is
    is
       Target : constant ST.Task_Id := Convert_Ids (T);
 
-      use type System.Tasking.Dispatching_Domain_Access;
+      use type ST.Dispatching_Domain_Access;
 
    begin
       --  The exception Dispatching_Domain_Error is propagated if T is already
@@ -114,62 +114,49 @@ package body System.Multiprocessors.Dispatching_Domains is
    -- Create --
    ------------
 
-   function Create (First, Last : CPU) return Dispatching_Domain is
-      use type System.Tasking.Dispatching_Domain;
-      use type System.Tasking.Dispatching_Domain_Access;
-      use type System.Tasking.Array_Allocated_Tasks;
-      use type System.Tasking.Task_Id;
+   function Create (First : CPU; Last : CPU_Range) return Dispatching_Domain is
+   begin
+      return Create ((First .. Last => True));
+   end Create;
 
-      Valid_System_Domain : constant Boolean :=
-        (First > CPU'First
-          and then
-            not (System_Dispatching_Domain (CPU'First .. First - 1) =
-                                         (CPU'First .. First - 1 => False)))
-                  or else (Last < Number_Of_CPUs
-                            and then not
-                              (System_Dispatching_Domain
-                                (Last + 1 .. Number_Of_CPUs) =
-                                  (Last + 1 .. Number_Of_CPUs => False)));
-      --  Constant that indicates whether there would exist a non-empty system
-      --  dispatching domain after the creation of this dispatching domain.
+   function Create (Set : CPU_Set) return Dispatching_Domain is
+      ST_DD : aliased constant ST.Dispatching_Domain
+        := ST.Dispatching_Domain (Set);
+      subtype Rng is CPU_Range range
+        Get_First_CPU (ST_DD'Unrestricted_Access) ..
+        Get_Last_CPU (ST_DD'Unrestricted_Access);
+
+      use type ST.Dispatching_Domain;
+      use type ST.Dispatching_Domain_Access;
+      use type ST.Array_Allocated_Tasks;
+      use type ST.Task_Id;
 
       T : ST.Task_Id;
+
+      New_System_Domain : ST.Dispatching_Domain := ST.System_Domain.all;
 
       New_Domain : Dispatching_Domain;
 
    begin
-      --  The range of processors for creating a dispatching domain must
+      --  The set of processors for creating a dispatching domain must
       --  comply with the following restrictions:
-      --    - Non-empty range
-      --    - Not exceeding the range of available processors
-      --    - Range from the System_Dispatching_Domain
-      --    - Range does not contain a processor with a task assigned to it
-      --    - The allocation cannot leave System_Dispatching_Domain empty
-      --    - The calling task must be the environment task
+      --    - Not exceeding the range of available processors.
+      --    - CPUs from the System_Dispatching_Domain.
+      --    - The calling task must be the environment task.
       --    - The call to Create must take place before the call to the main
-      --      subprogram
+      --      subprogram.
+      --    - Set does not contain a processor with a task assigned to it.
+      --    - The allocation cannot leave System_Dispatching_Domain empty.
 
-      if First > Last then
-         raise Dispatching_Domain_Error with "empty dispatching domain";
+      --  Note that a previous version of the language forbade empty domains.
 
-      elsif Last > Number_Of_CPUs then
+      if Rng'Last > Number_Of_CPUs then
          raise Dispatching_Domain_Error with
-           "CPU range not supported by the target";
+           "CPU not supported by the target";
 
-      elsif
-        System_Dispatching_Domain (First .. Last) /= (First .. Last => True)
-      then
+      elsif (ST_DD and not ST.System_Domain (Rng)) /= (Rng => False) then
          raise Dispatching_Domain_Error with
-           "CPU range not currently in System_Dispatching_Domain";
-
-      elsif
-        ST.Dispatching_Domain_Tasks (First .. Last) /= (First .. Last => 0)
-      then
-         raise Dispatching_Domain_Error with "CPU range has tasks assigned";
-
-      elsif not Valid_System_Domain then
-         raise Dispatching_Domain_Error with
-           "would leave System_Dispatching_Domain empty";
+           "CPU not currently in System_Dispatching_Domain";
 
       elsif Self /= Environment_Task then
          raise Dispatching_Domain_Error with
@@ -177,10 +164,25 @@ package body System.Multiprocessors.Dispatching_Domains is
 
       elsif ST.Dispatching_Domains_Frozen then
          raise Dispatching_Domain_Error with
-           "cannot create dispatching domain after call to main program";
+           "cannot create dispatching domain after call to main procedure";
       end if;
 
-      New_Domain := new ST.Dispatching_Domain'(First .. Last => True);
+      for Proc in Rng loop
+         if ST_DD (Proc) and then
+           ST.Dispatching_Domain_Tasks (Proc) /= 0
+         then
+            raise Dispatching_Domain_Error with "CPU has tasks assigned";
+         end if;
+      end loop;
+
+      New_System_Domain (Rng) := New_System_Domain (Rng) and not ST_DD;
+
+      if New_System_Domain = (New_System_Domain'Range => False) then
+         raise Dispatching_Domain_Error with
+           "would leave System_Dispatching_Domain empty";
+      end if;
+
+      New_Domain := new ST.Dispatching_Domain'(ST_DD);
 
       --  At this point we need to fix the processors belonging to the system
       --  domain, and change the affinity of every task that has been created
@@ -190,7 +192,8 @@ package body System.Multiprocessors.Dispatching_Domains is
 
       Lock_RTS;
 
-      System_Dispatching_Domain (First .. Last) := (First .. Last => False);
+      ST.System_Domain (Rng) := New_System_Domain (Rng);
+      pragma Assert (ST.System_Domain.all = New_System_Domain);
 
       --  Iterate the list of tasks belonging to the default system
       --  dispatching domain and set the appropriate affinity.
@@ -254,6 +257,15 @@ package body System.Multiprocessors.Dispatching_Domains is
       return Convert_Ids (T).Common.Base_CPU;
    end Get_CPU;
 
+   -----------------
+   -- Get_CPU_Set --
+   -----------------
+
+   function Get_CPU_Set (Domain : Dispatching_Domain) return CPU_Set is
+   begin
+      return CPU_Set (Domain.all);
+   end Get_CPU_Set;
+
    ----------------------------
    -- Get_Dispatching_Domain --
    ----------------------------
@@ -278,16 +290,14 @@ package body System.Multiprocessors.Dispatching_Domains is
          end if;
       end loop;
 
-      --  Should never reach the following return
-
-      return Domain'First;
+      return CPU'First;
    end Get_First_CPU;
 
    ------------------
    -- Get_Last_CPU --
    ------------------
 
-   function Get_Last_CPU (Domain : Dispatching_Domain) return CPU is
+   function Get_Last_CPU (Domain : Dispatching_Domain) return CPU_Range is
    begin
       for Proc in reverse Domain'Range loop
          if Domain (Proc) then
@@ -295,9 +305,7 @@ package body System.Multiprocessors.Dispatching_Domains is
          end if;
       end loop;
 
-      --  Should never reach the following return
-
-      return Domain'Last;
+      return CPU_Range'First;
    end Get_Last_CPU;
 
    -------------
@@ -340,7 +348,7 @@ package body System.Multiprocessors.Dispatching_Domains is
    is
       Source_CPU : constant CPU_Range := T.Common.Base_CPU;
 
-      use type System.Tasking.Dispatching_Domain_Access;
+      use type ST.Dispatching_Domain_Access;
 
    begin
       Write_Lock (T);
