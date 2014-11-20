@@ -2339,7 +2339,7 @@ add_handle (HANDLE h, int pid)
 
   if (plist_length == plist_max_length)
     {
-      plist_max_length += 1000;
+      plist_max_length += 100;
       HANDLES_LIST =
         (HANDLE *) xrealloc (HANDLES_LIST, sizeof (HANDLE) * plist_max_length);
       PID_LIST =

@@ -12047,6 +12047,16 @@ package body Sem_Res is
             return Valid_Array_Conversion;
          end if;
 
+      --  Ada 2005 (AI-251): Internally generated conversions of access to
+      --  interface types added to force the displacement of the pointer to
+      --  reference the corresponding dispatch table.
+
+      elsif not Comes_From_Source (N)
+         and then Is_Access_Type (Target_Type)
+         and then Is_Interface (Designated_Type (Target_Type))
+      then
+         return True;
+
       --  Ada 2005 (AI-251): Anonymous access types where target references an
       --  interface type.
 
