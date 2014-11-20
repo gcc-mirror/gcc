@@ -1,5 +1,10 @@
 2014-11-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* combine.c (try_combine): Prefer to delete dead SETs inside
+	a PARALLEL over keeping them.
+
+2014-11-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* combine.c (combine_validate_cost): Always print the insn costs
 	to the dump file.
 

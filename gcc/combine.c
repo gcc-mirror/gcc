@@ -3265,29 +3265,25 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	RTVEC_ELT (newpat_vec_with_clobbers, i) = XVECEXP (newpat, 0, i);
     }
 
-  /* Is the result of combination a valid instruction?  */
-  insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+  /* We have recognized nothing yet.  */
+  insn_code_number = -1;
 
-  /* If the result isn't valid, see if it is a PARALLEL of two SETs where
-     the second SET's destination is a register that is unused and isn't
-     marked as an instruction that might trap in an EH region.  In that case,
-     we just need the first SET.   This can occur when simplifying a divmod
-     insn.  We *must* test for this case here because the code below that
-     splits two independent SETs doesn't handle this case correctly when it
-     updates the register status.
+  /* See if this is a PARALLEL of two SETs where one SET's destination is
+     a register that is unused and this isn't marked as an instruction that
+     might trap in an EH region.  In that case, we just need the other SET.
+     We prefer this over the PARALLEL.
+
+     This can occur when simplifying a divmod insn.  We *must* test for this
+     case here because the code below that splits two independent SETs doesn't
+     handle this case correctly when it updates the register status.
 
      It's pointless doing this if we originally had two sets, one from
      i3, and one from i2.  Combining then splitting the parallel results
      in the original i2 again plus an invalid insn (which we delete).
      The net effect is only to move instructions around, which makes
-     debug info less accurate.
+     debug info less accurate.  */
 
-     Also check the case where the first SET's destination is unused.
-     That would not cause incorrect code, but does cause an unneeded
-     insn to remain.  */
-
-  if (insn_code_number < 0
-      && !(added_sets_2 && i1 == 0)
+  if (!(added_sets_2 && i1 == 0)
       && GET_CODE (newpat) == PARALLEL
       && XVECLEN (newpat, 0) == 2
       && GET_CODE (XVECEXP (newpat, 0, 0)) == SET
@@ -3296,6 +3292,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
     {
       rtx set0 = XVECEXP (newpat, 0, 0);
       rtx set1 = XVECEXP (newpat, 0, 1);
+      rtx oldpat = newpat;
 
       if (((REG_P (SET_DEST (set1))
 	    && find_reg_note (i3, REG_UNUSED, SET_DEST (set1)))
@@ -3322,7 +3319,14 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  if (insn_code_number >= 0)
 	    changed_i3_dest = 1;
 	}
+
+      if (insn_code_number < 0)
+	newpat = oldpat;
     }
+
+  /* Is the result of combination a valid instruction?  */
+  if (insn_code_number < 0)
+    insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
 
   /* If we were combining three insns and the result is a simple SET
      with no ASM_OPERANDS that wasn't recognized, try to split it into two
