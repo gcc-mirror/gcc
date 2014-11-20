@@ -293,6 +293,14 @@ the pointed-to structure should use the same parameters as the outer
 structure.  This is done by marking the pointer with the
 @code{use_params} option.
 
+@findex cache
+@item cache
+
+When the @code{cache} option is applied to a global variable gt_clear_cache is
+called on that variable between the mark and sweep phases of garbage
+collection.  The gt_clear_cache function is free to mark blocks as used, or to
+clear pointers in the variable.
+
 @findex deletable
 @item deletable
 

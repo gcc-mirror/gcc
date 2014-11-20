@@ -131,23 +131,50 @@ rtx cc0_rtx;
 /* A hash table storing CONST_INTs whose absolute value is greater
    than MAX_SAVED_CONST_INT.  */
 
-static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
-     htab_t const_int_htab;
+struct const_int_hasher : ggc_cache_hasher<rtx>
+{
+  typedef HOST_WIDE_INT compare_type;
 
-static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
-     htab_t const_wide_int_htab;
+  static hashval_t hash (rtx i);
+  static bool equal (rtx i, HOST_WIDE_INT h);
+};
+
+static GTY ((cache)) hash_table<const_int_hasher> *const_int_htab;
+
+struct const_wide_int_hasher : ggc_cache_hasher<rtx>
+{
+  static hashval_t hash (rtx x);
+  static bool equal (rtx x, rtx y);
+};
+
+static GTY ((cache)) hash_table<const_wide_int_hasher> *const_wide_int_htab;
 
 /* A hash table storing register attribute structures.  */
-static GTY ((if_marked ("ggc_marked_p"), param_is (struct reg_attrs)))
-     htab_t reg_attrs_htab;
+struct reg_attr_hasher : ggc_cache_hasher<reg_attrs *>
+{
+  static hashval_t hash (reg_attrs *x);
+  static bool equal (reg_attrs *a, reg_attrs *b);
+};
+
+static GTY ((cache)) hash_table<reg_attr_hasher> *reg_attrs_htab;
 
 /* A hash table storing all CONST_DOUBLEs.  */
-static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
-     htab_t const_double_htab;
+struct const_double_hasher : ggc_cache_hasher<rtx>
+{
+  static hashval_t hash (rtx x);
+  static bool equal (rtx x, rtx y);
+};
+
+static GTY ((cache)) hash_table<const_double_hasher> *const_double_htab;
 
 /* A hash table storing all CONST_FIXEDs.  */
-static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
-     htab_t const_fixed_htab;
+struct const_fixed_hasher : ggc_cache_hasher<rtx>
+{
+  static hashval_t hash (rtx x);
+  static bool equal (rtx x, rtx y);
+};
+
+static GTY ((cache)) hash_table<const_fixed_hasher> *const_fixed_htab;
 
 #define cur_insn_uid (crtl->emit.x_cur_insn_uid)
 #define cur_debug_insn_uid (crtl->emit.x_cur_debug_insn_uid)
@@ -155,21 +182,11 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
 
 static void set_used_decls (tree);
 static void mark_label_nuses (rtx);
-static hashval_t const_int_htab_hash (const void *);
-static int const_int_htab_eq (const void *, const void *);
 #if TARGET_SUPPORTS_WIDE_INT
-static hashval_t const_wide_int_htab_hash (const void *);
-static int const_wide_int_htab_eq (const void *, const void *);
 static rtx lookup_const_wide_int (rtx);
 #endif
-static hashval_t const_double_htab_hash (const void *);
-static int const_double_htab_eq (const void *, const void *);
 static rtx lookup_const_double (rtx);
-static hashval_t const_fixed_htab_hash (const void *);
-static int const_fixed_htab_eq (const void *, const void *);
 static rtx lookup_const_fixed (rtx);
-static hashval_t reg_attrs_htab_hash (const void *);
-static int reg_attrs_htab_eq (const void *, const void *);
 static reg_attrs *get_reg_attrs (tree, int);
 static rtx gen_const_vector (machine_mode, int);
 static void copy_rtx_if_shared_1 (rtx *orig);
@@ -180,31 +197,31 @@ int split_branch_probability = -1;
 
 /* Returns a hash code for X (which is a really a CONST_INT).  */
 
-static hashval_t
-const_int_htab_hash (const void *x)
+hashval_t
+const_int_hasher::hash (rtx x)
 {
-  return (hashval_t) INTVAL ((const_rtx) x);
+  return (hashval_t) INTVAL (x);
 }
 
 /* Returns nonzero if the value represented by X (which is really a
    CONST_INT) is the same as that given by Y (which is really a
    HOST_WIDE_INT *).  */
 
-static int
-const_int_htab_eq (const void *x, const void *y)
+bool
+const_int_hasher::equal (rtx x, HOST_WIDE_INT y)
 {
-  return (INTVAL ((const_rtx) x) == *((const HOST_WIDE_INT *) y));
+  return (INTVAL (x) == y);
 }
 
 #if TARGET_SUPPORTS_WIDE_INT
 /* Returns a hash code for X (which is a really a CONST_WIDE_INT).  */
 
-static hashval_t
-const_wide_int_htab_hash (const void *x)
+hashval_t
+const_wide_int_hasher::hash (rtx x)
 {
   int i;
   HOST_WIDE_INT hash = 0;
-  const_rtx xr = (const_rtx) x;
+  const_rtx xr = x;
 
   for (i = 0; i < CONST_WIDE_INT_NUNITS (xr); i++)
     hash += CONST_WIDE_INT_ELT (xr, i);
@@ -216,28 +233,28 @@ const_wide_int_htab_hash (const void *x)
    CONST_WIDE_INT) is the same as that given by Y (which is really a
    CONST_WIDE_INT).  */
 
-static int
-const_wide_int_htab_eq (const void *x, const void *y)
+bool
+const_wide_int_hasher::equal (rtx x, rtx y)
 {
   int i;
-  const_rtx xr = (const_rtx) x;
-  const_rtx yr = (const_rtx) y;
+  const_rtx xr = x;
+  const_rtx yr = y;
   if (CONST_WIDE_INT_NUNITS (xr) != CONST_WIDE_INT_NUNITS (yr))
-    return 0;
+    return false;
 
   for (i = 0; i < CONST_WIDE_INT_NUNITS (xr); i++)
     if (CONST_WIDE_INT_ELT (xr, i) != CONST_WIDE_INT_ELT (yr, i))
-      return 0;
+      return false;
 
-  return 1;
+  return true;
 }
 #endif
 
 /* Returns a hash code for X (which is really a CONST_DOUBLE).  */
-static hashval_t
-const_double_htab_hash (const void *x)
+hashval_t
+const_double_hasher::hash (rtx x)
 {
-  const_rtx const value = (const_rtx) x;
+  const_rtx const value = x;
   hashval_t h;
 
   if (TARGET_SUPPORTS_WIDE_INT == 0 && GET_MODE (value) == VOIDmode)
@@ -253,10 +270,10 @@ const_double_htab_hash (const void *x)
 
 /* Returns nonzero if the value represented by X (really a ...)
    is the same as that represented by Y (really a ...) */
-static int
-const_double_htab_eq (const void *x, const void *y)
+bool
+const_double_hasher::equal (rtx x, rtx y)
 {
-  const_rtx const a = (const_rtx)x, b = (const_rtx)y;
+  const_rtx const a = x, b = y;
 
   if (GET_MODE (a) != GET_MODE (b))
     return 0;
@@ -270,10 +287,10 @@ const_double_htab_eq (const void *x, const void *y)
 
 /* Returns a hash code for X (which is really a CONST_FIXED).  */
 
-static hashval_t
-const_fixed_htab_hash (const void *x)
+hashval_t
+const_fixed_hasher::hash (rtx x)
 {
-  const_rtx const value = (const_rtx) x;
+  const_rtx const value = x;
   hashval_t h;
 
   h = fixed_hash (CONST_FIXED_VALUE (value));
@@ -282,13 +299,13 @@ const_fixed_htab_hash (const void *x)
   return h;
 }
 
-/* Returns nonzero if the value represented by X (really a ...)
-   is the same as that represented by Y (really a ...).  */
+/* Returns nonzero if the value represented by X is the same as that
+   represented by Y.  */
 
-static int
-const_fixed_htab_eq (const void *x, const void *y)
+bool
+const_fixed_hasher::equal (rtx x, rtx y)
 {
-  const_rtx const a = (const_rtx) x, b = (const_rtx) y;
+  const_rtx const a = x, b = y;
 
   if (GET_MODE (a) != GET_MODE (b))
     return 0;
@@ -338,23 +355,22 @@ set_mem_attrs (rtx mem, mem_attrs *attrs)
 
 /* Returns a hash code for X (which is a really a reg_attrs *).  */
 
-static hashval_t
-reg_attrs_htab_hash (const void *x)
+hashval_t
+reg_attr_hasher::hash (reg_attrs *x)
 {
-  const reg_attrs *const p = (const reg_attrs *) x;
+  const reg_attrs *const p = x;
 
   return ((p->offset * 1000) ^ (intptr_t) p->decl);
 }
 
-/* Returns nonzero if the value represented by X (which is really a
-   reg_attrs *) is the same as that given by Y (which is also really a
-   reg_attrs *).  */
+/* Returns nonzero if the value represented by X  is the same as that given by
+   Y.  */
 
-static int
-reg_attrs_htab_eq (const void *x, const void *y)
+bool
+reg_attr_hasher::equal (reg_attrs *x, reg_attrs *y)
 {
-  const reg_attrs *const p = (const reg_attrs *) x;
-  const reg_attrs *const q = (const reg_attrs *) y;
+  const reg_attrs *const p = x;
+  const reg_attrs *const q = y;
 
   return (p->decl == q->decl && p->offset == q->offset);
 }
@@ -366,7 +382,6 @@ static reg_attrs *
 get_reg_attrs (tree decl, int offset)
 {
   reg_attrs attrs;
-  void **slot;
 
   /* If everything is the default, we can just return zero.  */
   if (decl == 0 && offset == 0)
@@ -375,14 +390,14 @@ get_reg_attrs (tree decl, int offset)
   attrs.decl = decl;
   attrs.offset = offset;
 
-  slot = htab_find_slot (reg_attrs_htab, &attrs, INSERT);
+  reg_attrs **slot = reg_attrs_htab->find_slot (&attrs, INSERT);
   if (*slot == 0)
     {
       *slot = ggc_alloc<reg_attrs> ();
       memcpy (*slot, &attrs, sizeof (reg_attrs));
     }
 
-  return (reg_attrs *) *slot;
+  return *slot;
 }
 
 
@@ -444,8 +459,6 @@ gen_rtx_INSN (machine_mode mode, rtx_insn *prev_insn, rtx_insn *next_insn,
 rtx
 gen_rtx_CONST_INT (machine_mode mode ATTRIBUTE_UNUSED, HOST_WIDE_INT arg)
 {
-  void **slot;
-
   if (arg >= - MAX_SAVED_CONST_INT && arg <= MAX_SAVED_CONST_INT)
     return const_int_rtx[arg + MAX_SAVED_CONST_INT];
 
@@ -455,12 +468,12 @@ gen_rtx_CONST_INT (machine_mode mode ATTRIBUTE_UNUSED, HOST_WIDE_INT arg)
 #endif
 
   /* Look up the CONST_INT in the hash table.  */
-  slot = htab_find_slot_with_hash (const_int_htab, &arg,
-				   (hashval_t) arg, INSERT);
+  rtx *slot = const_int_htab->find_slot_with_hash (arg, (hashval_t) arg,
+						   INSERT);
   if (*slot == 0)
     *slot = gen_rtx_raw_CONST_INT (VOIDmode, arg);
 
-  return (rtx) *slot;
+  return *slot;
 }
 
 rtx
@@ -479,11 +492,11 @@ gen_int_mode (HOST_WIDE_INT c, machine_mode mode)
 static rtx
 lookup_const_double (rtx real)
 {
-  void **slot = htab_find_slot (const_double_htab, real, INSERT);
+  rtx *slot = const_double_htab->find_slot (real, INSERT);
   if (*slot == 0)
     *slot = real;
 
-  return (rtx) *slot;
+  return *slot;
 }
 
 /* Return a CONST_DOUBLE rtx for a floating-point value specified by
@@ -506,11 +519,11 @@ const_double_from_real_value (REAL_VALUE_TYPE value, machine_mode mode)
 static rtx
 lookup_const_fixed (rtx fixed)
 {
-  void **slot = htab_find_slot (const_fixed_htab, fixed, INSERT);
+  rtx *slot = const_fixed_htab->find_slot (fixed, INSERT);
   if (*slot == 0)
     *slot = fixed;
 
-  return (rtx) *slot;
+  return *slot;
 }
 
 /* Return a CONST_FIXED rtx for a fixed-point value specified by
@@ -557,11 +570,11 @@ rtx_to_double_int (const_rtx cst)
 static rtx
 lookup_const_wide_int (rtx wint)
 {
-  void **slot = htab_find_slot (const_wide_int_htab, wint, INSERT);
+  rtx *slot = const_wide_int_htab->find_slot (wint, INSERT);
   if (*slot == 0)
     *slot = wint;
 
-  return (rtx) *slot;
+  return *slot;
 }
 #endif
 
@@ -5812,7 +5825,7 @@ init_emit_regs (void)
   mem_attrs *attrs;
 
   /* Reset register attributes */
-  htab_empty (reg_attrs_htab);
+  reg_attrs_htab->empty ();
 
   /* We need reg_raw_mode, so initialize the modes now.  */
   init_reg_modes_target ();
@@ -5901,21 +5914,16 @@ init_emit_once (void)
 
   /* Initialize the CONST_INT, CONST_WIDE_INT, CONST_DOUBLE,
      CONST_FIXED, and memory attribute hash tables.  */
-  const_int_htab = htab_create_ggc (37, const_int_htab_hash,
-				    const_int_htab_eq, NULL);
+  const_int_htab = hash_table<const_int_hasher>::create_ggc (37);
 
 #if TARGET_SUPPORTS_WIDE_INT
-  const_wide_int_htab = htab_create_ggc (37, const_wide_int_htab_hash,
-					 const_wide_int_htab_eq, NULL);
+  const_wide_int_htab = hash_table<const_wide_int_hasher>::create_ggc (37);
 #endif
-  const_double_htab = htab_create_ggc (37, const_double_htab_hash,
-				       const_double_htab_eq, NULL);
+  const_double_htab = hash_table<const_double_hasher>::create_ggc (37);
 
-  const_fixed_htab = htab_create_ggc (37, const_fixed_htab_hash,
-				      const_fixed_htab_eq, NULL);
+  const_fixed_htab = hash_table<const_fixed_hasher>::create_ggc (37);
 
-  reg_attrs_htab = htab_create_ggc (37, reg_attrs_htab_hash,
-				    reg_attrs_htab_eq, NULL);
+  reg_attrs_htab = hash_table<reg_attr_hasher>::create_ggc (37);
 
 #ifdef INIT_EXPANDERS
   /* This is to initialize {init|mark|free}_machine_status before the first

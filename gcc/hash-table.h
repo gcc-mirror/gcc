@@ -334,6 +334,44 @@ struct ggc_hasher
   }
 };
 
+/* Hasher for cache entry in gc memory.  */
+
+template<typename T>
+struct ggc_cache_hasher
+{
+  typedef T value_type;
+  typedef T compare_type;
+  typedef int store_values_directly;
+
+  static void remove (T &) {}
+
+  /* Entries are weakly held because this is for caches.  */
+
+  static void ggc_mx (T &) {}
+
+  static void
+  pch_nx (T &p)
+  {
+  extern void gt_pch_nx (T &);
+  gt_pch_nx (p);
+  }
+
+  static void
+  pch_nx (T &p, gt_pointer_operator op, void *cookie)
+  {
+    op (&p, cookie);
+  }
+
+  /* Clear out entries if they are about to be gc'd.  */
+
+  static void
+  handle_cache_entry (T &e)
+  {
+    if (e != HTAB_EMPTY_ENTRY && e != HTAB_DELETED_ENTRY && !ggc_marked_p (e))
+      e = static_cast<T> (HTAB_DELETED_ENTRY);
+  }
+};
+
 
 /* Table of primes and their inversion information.  */
 
@@ -1665,6 +1703,18 @@ static inline void
 gt_pch_nx (hash_table<D> *h, gt_pointer_operator op, void *cookie)
 {
   op (&h->m_entries, cookie);
+}
+
+template<typename H>
+inline void
+gt_cleare_cache (hash_table<H> *h)
+{
+  if (!h)
+    return;
+
+  for (typename hash_table<H>::iterator iter = h->begin (); iter != h->end ();
+       ++iter)
+    H::handle_cache_entry (*iter);
 }
 
 #endif /* TYPED_HASHTAB_H */

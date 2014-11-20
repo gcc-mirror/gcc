@@ -1,3 +1,16 @@
+2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* doc/gty.texi: Document the new cache gty attribute.
+	* gengtype.c (finish_cache_funcs): New function.
+	(write_roots): Call gt_clear_cache on global variables with the cache
+	gty attribute.
+	* ggc-common.c (ggc_mark_roots): Call gt_clear_caches.
+	* ggc.h (gt_clear_caches): New declaration.
+	* hash-table.h (struct ggc_cache_hasher): New hasher for caches in gc
+	memory.
+	(gt_cleare_cache): New function.
+	* emit-rtl.c, rtl.h, tree.c: Use hash_table instead of htab.
+
 2014-11-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c (try_combine): Prefer to delete dead SETs inside
