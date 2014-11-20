@@ -1,3 +1,20 @@
+2014-11-20  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Return): For functions returning
+	an access to an interface add an implicit conversion to the target
+	type to force the displacement of the pointer to the object to
+	reference the secondary dispatch table.
+	(Check_Anonymous_Return): Skip internally built functions which handle
+	the case of null access when locating the master of a task.
+	* sem_res.adb (Valid_Conversion): Return true for internally
+	generated conversions of access to interface types added to force
+	the displacement of the pointer to reference the corresponding
+	dispatch table.
+
+2014-11-20  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (add_handle): realloc with a size of +100.
+
 2014-11-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Make_Call_Into_Operator): In ASIS mode, propagate
