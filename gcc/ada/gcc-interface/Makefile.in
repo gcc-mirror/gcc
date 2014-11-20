@@ -945,7 +945,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks vxworks7,$(target_cpu) $(target_vendo
         s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
         s-vxwext.ads<s-vxwext-kernel.ads \
         s-vxwext.adb<s-vxwext-kernel-smp.adb \
-        system.ads<system-vxworks-x86-kernel.ads
+        system.ads<$(SVX)-x86-kernel.ads
         EXTRA_LIBGNAT_OBJS+=affinity.o
       else
         LIBGNAT_TARGET_PAIRS += \
@@ -970,12 +970,21 @@ ifeq ($(strip $(filter-out %86 wrs vxworks vxworks7,$(target_cpu) $(target_vendo
 
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
 
-  GCC_SPEC_FILES+=vxworks-x86-link.spec
-  GCC_SPEC_FILES+=vxworks-smp-x86-link.spec
+  ifneq ($(strip $(filter-out vxworks7%, $(target_os))),)
+    GCC_SPEC_FILES+=vxworks-x86-link.spec
+    GCC_SPEC_FILES+=vxworks-smp-x86-link.spec
+  endif
 endif
 
 # ARM VxWorks
 ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(target_os))),)
+
+  ifeq ($(strip $(filter-out vxworks7%, $(target_os))),)
+     SVX=system-vxworks7
+  else
+     SVX=system-vxworks
+  endif
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
@@ -1010,7 +1019,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
     s-vxwext.ads<s-vxwext-rtp.ads \
     s-vxwext.adb<s-vxwext-rtp-smp.adb \
     s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
-    system.ads<system-vxworks-arm-rtp-smp.ads
+    system.ads<$(SVX)-arm-rtp-smp.ads
 
     EXTRA_LIBGNAT_OBJS+=affinity.o sigtramp-vxworks.o
     EXTRA_LIBGNAT_SRCS+=sigtramp.h

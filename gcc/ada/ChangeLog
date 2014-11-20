@@ -1,3 +1,7 @@
+2014-11-20  Jerome Lambourg  <lambourg@adacore.com>
+
+	* gcc-interface/Makefile.in: Add some support for VxWorks7.
+
 2014-11-20  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch13.adb, freeze.adb: Minor reformatting.
