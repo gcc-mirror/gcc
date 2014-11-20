@@ -4215,6 +4215,17 @@ package body Exp_Attr is
          --  wrapped inside a type conversion.
 
       begin
+         --  If the prefix is X'Class, we transform it into a direct reference
+         --  to the class-wide type, because the back end must not see a 'Class
+         --  reference. See also 'Size.
+
+         if Is_Entity_Name (Pref)
+           and then Is_Class_Wide_Type (Entity (Pref))
+         then
+            Rewrite (Prefix (N), New_Occurrence_Of (Entity (Pref), Loc));
+            return;
+         end if;
+
          Apply_Universal_Integer_Attribute_Checks (N);
 
          --  The universal integer check may sometimes add a type conversion,
@@ -4225,6 +4236,7 @@ package body Exp_Attr is
             Attr := Expression (Attr);
             Conversion_Added := True;
          end if;
+         pragma Assert (Nkind (Attr) = N_Attribute_Reference);
 
          --  Heap-allocated controlled objects contain two extra pointers which
          --  are not part of the actual type. Transform the attribute reference
@@ -4234,7 +4246,6 @@ package body Exp_Attr is
          --  two pointers are already present in the type.
 
          if VM_Target = No_VM
-           and then Nkind (Attr) = N_Attribute_Reference
            and then Needs_Finalization (Ptyp)
            and then not Header_Size_Added (Attr)
          then
@@ -5567,9 +5578,9 @@ package body Exp_Attr is
             end if;
          end if;
 
-         --  For class-wide types, X'Class'Size is transformed into a direct
-         --  reference to the Size of the class type, so that the back end does
-         --  not have to deal with the X'Class'Size reference.
+         --  If the prefix is X'Class, we transform it into a direct reference
+         --  to the class-wide type, because the back end must not see a 'Class
+         --  reference.
 
          if Is_Entity_Name (Pref)
            and then Is_Class_Wide_Type (Entity (Pref))
