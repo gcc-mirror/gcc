@@ -4684,7 +4684,8 @@ package body Sem_Ch6 is
       --  If both are functions/operators, check return types conform
 
       if Old_Type /= Standard_Void_Type
-        and then New_Type /= Standard_Void_Type
+           and then
+         New_Type /= Standard_Void_Type
       then
          --  If we are checking interface conformance we omit controlling
          --  arguments and result, because we are only checking the conformance

@@ -10622,7 +10622,9 @@ package body Exp_Ch4 is
 
             --  Ada 2005 (AI-251): Handle interface type conversion
 
-            if Is_Interface (Actual_Op_Typ) then
+            if Is_Interface (Actual_Op_Typ)
+              or else Is_Interface (Actual_Targ_Typ)
+            then
                Expand_Interface_Conversion (N);
                goto Done;
             end if;

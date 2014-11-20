@@ -4778,8 +4778,9 @@ package body Exp_Ch7 is
 
                --  Generate:
                --    [Deep_]Finalize (Obj_Ref);
-               --   Set type of dereference, so that proper conversion are
-               --   generated when operation is inherited.
+
+               --  Set type of dereference, so that proper conversion are
+               --  generated when operation is inherited.
 
                Obj_Ref := New_Occurrence_Of (Obj_Id, Loc);
 
