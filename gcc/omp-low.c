@@ -9330,8 +9330,7 @@ lower_omp_ordered (gimple_stmt_iterator *gsi_p, omp_context *ctx)
    requires that languages coordinate a symbol name.  It is therefore
    best put here in common code.  */
 
-static GTY((param1_is (tree), param2_is (tree)))
-  splay_tree critical_name_mutexes;
+static GTY(()) hash_map<tree, tree> *critical_name_mutexes;
 
 static void
 lower_omp_critical (gimple_stmt_iterator *gsi_p, omp_context *ctx)
@@ -9347,15 +9346,11 @@ lower_omp_critical (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   if (name)
     {
       tree decl;
-      splay_tree_node n;
 
       if (!critical_name_mutexes)
-	critical_name_mutexes
-	  = splay_tree_new_ggc (splay_tree_compare_pointers,
-				ggc_alloc_splay_tree_tree_node_tree_node_splay_tree_s,
-				ggc_alloc_splay_tree_tree_node_tree_node_splay_tree_node_s);
+	critical_name_mutexes = hash_map<tree, tree>::create_ggc (10);
 
-      n = splay_tree_lookup (critical_name_mutexes, (splay_tree_key) name);
+      tree *n = critical_name_mutexes->get (name);
       if (n == NULL)
 	{
 	  char *new_str;
@@ -9383,11 +9378,10 @@ lower_omp_critical (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
 	  varpool_node::finalize_decl (decl);
 
-	  splay_tree_insert (critical_name_mutexes, (splay_tree_key) name,
-			     (splay_tree_value) decl);
+	  critical_name_mutexes->put (name, decl);
 	}
       else
-	decl = (tree) n->value;
+	decl = *n;
 
       lock = builtin_decl_explicit (BUILT_IN_GOMP_CRITICAL_NAME_START);
       lock = build_call_expr_loc (loc, lock, 1, build_fold_addr_expr_loc (loc, decl));
