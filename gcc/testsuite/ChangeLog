@@ -1,3 +1,8 @@
+2014-11-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/undefined-loop-1.c: New file.
+	* gcc.dg/undefined-loop-2.c: New file.
+
 2014-11-20  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* gcc.target/aarch64/symbol-range.c: New.
