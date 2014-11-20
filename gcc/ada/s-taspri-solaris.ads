@@ -78,7 +78,7 @@ package System.Task_Primitives is
 
 private
 
-   type Private_Task_Serial_Number is mod 2 ** 64;
+   type Private_Task_Serial_Number is mod 2 ** Long_Long_Integer'Size;
    --  Used to give each task a unique serial number
 
    type Base_Lock is new System.OS_Interface.mutex_t;

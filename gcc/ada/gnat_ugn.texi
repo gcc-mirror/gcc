@@ -13970,6 +13970,12 @@ Same as @code{--decimal-grouping}, but for based literals. For
 example, with @code{--based-grouping=4}, @code{16#0001FFFE#} will be
 changed to @code{16#0001_FFFE#}.
 
+@item --split-line-before-op
+@cindex @option{--split-line-before-op} (@command{gnatpp})
+If it is necessary to split a line at a binary operator, by default
+the line is split after the operator. With this option, it is split
+before the operator.
+
 @item --RM-style-spacing
 @cindex @option{--RM-style-spacing} (@command{gnatpp})
 Do not insert an extra blank before various occurrences of

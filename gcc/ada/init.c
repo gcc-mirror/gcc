@@ -1800,7 +1800,7 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
       msg = "SIGBUS: possible stack overflow";
       break;
 #endif
-#elif (_WRS_VXWORKS_MAJOR == 6)
+#elif (_WRS_VXWORKS_MAJOR >= 6)
     case SIGILL:
       exception = &constraint_error;
       msg = "SIGILL";
