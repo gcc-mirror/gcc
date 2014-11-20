@@ -9117,11 +9117,15 @@ simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
    a known value range VR.
 
    If there is one and only one value which will satisfy the
-   conditional, then return that value.  Else return NULL.  */
+   conditional, then return that value.  Else return NULL.
+
+   If signed overflow must be undefined for the value to satisfy
+   the conditional, then set *STRICT_OVERFLOW_P to true.  */
 
 static tree
 test_for_singularity (enum tree_code cond_code, tree op0,
-		      tree op1, value_range_t *vr)
+		      tree op1, value_range_t *vr,
+		      bool *strict_overflow_p)
 {
   tree min = NULL;
   tree max = NULL;
@@ -9172,7 +9176,16 @@ test_for_singularity (enum tree_code cond_code, tree op0,
 	 then there is only one value which can satisfy the condition,
 	 return that value.  */
       if (operand_equal_p (min, max, 0) && is_gimple_min_invariant (min))
-	return min;
+	{
+	  if ((cond_code == LE_EXPR || cond_code == LT_EXPR)
+	      && is_overflow_infinity (vr->max))
+	    *strict_overflow_p = true;
+	  if ((cond_code == GE_EXPR || cond_code == GT_EXPR)
+	      && is_overflow_infinity (vr->min))
+	    *strict_overflow_p = true;
+
+	  return min;
+	}
     }
   return NULL;
 }
@@ -9252,9 +9265,12 @@ simplify_cond_using_ranges (gcond *stmt)
 	 able to simplify this conditional. */
       if (vr->type == VR_RANGE)
 	{
-	  tree new_tree = test_for_singularity (cond_code, op0, op1, vr);
+	  enum warn_strict_overflow_code wc = WARN_STRICT_OVERFLOW_COMPARISON;
+	  bool sop = false;
+	  tree new_tree = test_for_singularity (cond_code, op0, op1, vr, &sop);
 
-	  if (new_tree)
+	  if (new_tree
+	      && (!sop || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (op0))))
 	    {
 	      if (dump_file)
 		{
@@ -9275,16 +9291,30 @@ simplify_cond_using_ranges (gcond *stmt)
 		  fprintf (dump_file, "\n");
 		}
 
+	      if (sop && issue_strict_overflow_warning (wc))
+	        {
+	          location_t location = input_location;
+	          if (gimple_has_location (stmt))
+		    location = gimple_location (stmt);
+
+	          warning_at (location, OPT_Wstrict_overflow,
+			      "assuming signed overflow does not occur when "
+			      "simplifying conditional");
+	        }
+
 	      return true;
 	    }
 
 	  /* Try again after inverting the condition.  We only deal
 	     with integral types here, so no need to worry about
 	     issues with inverting FP comparisons.  */
-	  cond_code = invert_tree_comparison (cond_code, false);
-	  new_tree = test_for_singularity (cond_code, op0, op1, vr);
+	  sop = false;
+	  new_tree = test_for_singularity
+		       (invert_tree_comparison (cond_code, false),
+			op0, op1, vr, &sop);
 
-	  if (new_tree)
+	  if (new_tree
+	      && (!sop || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (op0))))
 	    {
 	      if (dump_file)
 		{
@@ -9304,6 +9334,17 @@ simplify_cond_using_ranges (gcond *stmt)
 		  print_gimple_stmt (dump_file, stmt, 0, 0);
 		  fprintf (dump_file, "\n");
 		}
+
+	      if (sop && issue_strict_overflow_warning (wc))
+	        {
+	          location_t location = input_location;
+	          if (gimple_has_location (stmt))
+		    location = gimple_location (stmt);
+
+	          warning_at (location, OPT_Wstrict_overflow,
+			      "assuming signed overflow does not occur when "
+			      "simplifying conditional");
+	        }
 
 	      return true;
 	    }

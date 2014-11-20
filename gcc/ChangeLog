@@ -1,3 +1,12 @@
+2014-11-20  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* tree-vrp.c (test_for_singularity): New parameter
+	strict_overflow_p.  Set *strict_overflow_p to true if signed
+	overflow must be undefined for the return value to satisfy the
+	conditional.
+	(simplify_cond_using_ranges): Don't perform the simplification
+	if it violates overflow rules.
+
 2014-11-20  Marek Polacek  <polacek@redhat.com>
 
 	* tree-ssa-loop-niter.c (maybe_lower_iteration_bound): Fix typo.
