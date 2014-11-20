@@ -1,3 +1,25 @@
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Handle properly
+	a type invariant check on an object with default initialization
+	and an address clause.
+
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_elab.adb (Check_A_Call): Handle variable ref case in
+	SPARK (Check_Elab_Call): ditto (Find_Elab_Reference): ditto
+	(Get_Referenced_Ent): ditto.
+	* sem_elab.ads: Comment fixes to account for the fact that we
+	now deal with variable references in SPARK mode.
+	* sem_res.adb (Resolve_Entity_Name): In SPARK_Mode Call
+	Check_Elab_Call for variable.
+
+2014-11-20  Yannick Moy  <moy@adacore.com>
+
+	* a-cofove.ads (Copy): Fix precondition, which should allow
+	Capacity = 0.
+	(First_To_Previous, Current_To_Last): Add necessary preconditions.
+
 2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb (Build_Initialization_Call): Reimplement the

@@ -114,7 +114,7 @@ is
       Capacity : Capacity_Range := 0) return Vector
    with
      Global => null,
-     Pre    => (if Bounded then Length (Source) <= Capacity);
+     Pre    => (if Bounded then (Capacity = 0 or Length (Source) <= Capacity));
 
    function Element
      (Container : Vector;
@@ -195,7 +195,9 @@ is
      Global => null;
 
    function Has_Element
-     (Container : Vector; Position : Extended_Index) return Boolean with
+     (Container : Vector;
+      Position  : Extended_Index) return Boolean
+   with
      Global => null;
 
    generic
@@ -212,17 +214,19 @@ is
 
    function First_To_Previous
      (Container : Vector;
-      Current : Index_Type) return Vector
+      Current   : Index_Type) return Vector
    with
      Ghost,
-     Global => null;
+     Global => null,
+     Pre    => Current in First_Index (Container) .. Last_Index (Container);
 
    function Current_To_Last
      (Container : Vector;
-      Current : Index_Type) return Vector
+      Current   : Index_Type) return Vector
    with
      Ghost,
-     Global => null;
+     Global => null,
+     Pre    => Current in First_Index (Container) .. Last_Index (Container);
    --  First_To_Previous returns a container containing all elements preceding
    --  Current (excluded) in Container. Current_To_Last returns a container
    --  containing all elements following Current (included) in Container.

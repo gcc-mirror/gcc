@@ -7172,8 +7172,8 @@ package body Sem_Res is
       if SPARK_Mode = On
         and then Is_Object (E)
         and then Is_Effectively_Volatile (E)
-        and then
-          (Async_Writers_Enabled (E) or else Effective_Reads_Enabled (E))
+        and then (Async_Writers_Enabled (E)
+                   or else Effective_Reads_Enabled (E))
         and then Comes_From_Source (N)
       then
          --  The effectively volatile objects appears in a "non-interfering
@@ -7196,6 +7196,12 @@ package body Sem_Res is
 
       if Is_Ghost_Entity (E) and then Comes_From_Source (N) then
          Check_Ghost_Context (E, N);
+      end if;
+
+      --  In SPARK mode, need to check possible elaboration issues
+
+      if SPARK_Mode = On and then Ekind (E) = E_Variable then
+         Check_Elab_Call (N);
       end if;
    end Resolve_Entity_Name;
 

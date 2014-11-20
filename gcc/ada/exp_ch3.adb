@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
@@ -5462,8 +5463,23 @@ package body Exp_Ch3 is
            and then not Has_Init_Expression (N)
            and then not No_Initialization (N)
          then
-            Insert_After (N,
-              Make_Invariant_Call (New_Occurrence_Of (Def_Id, Loc)));
+            --  If entity has an address clause or aspect, make invariant
+            --  call into a freeze action for the explicit freeze node for
+            --  object. Otherwise insert invariant check after declaration.
+
+            if Present (Following_Address_Clause (N))
+              or else Has_Aspect (Def_Id, Aspect_Address)
+            then
+               Ensure_Freeze_Node (Def_Id);
+               Set_Has_Delayed_Freeze (Def_Id);
+               Set_Is_Frozen (Def_Id, False);
+               Append_Freeze_Action (Def_Id,
+                 Make_Invariant_Call (New_Occurrence_Of (Def_Id, Loc)));
+
+            else
+               Insert_After (N,
+                 Make_Invariant_Call (New_Occurrence_Of (Def_Id, Loc)));
+            end if;
          end if;
 
          Default_Initialize_Object (Init_After);
