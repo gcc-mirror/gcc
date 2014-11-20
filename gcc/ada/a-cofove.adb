@@ -33,6 +33,7 @@ with System; use type System.Address;
 package body Ada.Containers.Formal_Vectors with
   SPARK_Mode => Off
 is
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    Growth_Factor : constant := 2;
    --  When growing a container, multiply current capacity by this. Doubling

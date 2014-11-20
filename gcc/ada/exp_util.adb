@@ -6473,11 +6473,8 @@ package body Exp_Util is
             --    SS_Release;  --  Temp is gone at this point, bounds of S are
             --                 --  non existent.
 
-            --  The bounds are kept as variables rather than constants because
-            --  this prevents spurious optimizations down the line.
-
             --  Generate:
-            --    Low_Bound : Base_Type (Index_Typ) := E'First (J);
+            --    Low_Bound : constant Base_Type (Index_Typ) := E'First (J);
 
             Low_Bound := Make_Temporary (Loc, 'B');
             Insert_Action (E,
@@ -6485,6 +6482,7 @@ package body Exp_Util is
                 Defining_Identifier => Low_Bound,
                 Object_Definition   =>
                   New_Occurrence_Of (Base_Type (Etype (Index_Typ)), Loc),
+                Constant_Present    => True,
                 Expression          =>
                   Make_Attribute_Reference (Loc,
                     Prefix         => Duplicate_Subexpr_No_Checks (E),
@@ -6493,7 +6491,7 @@ package body Exp_Util is
                       Make_Integer_Literal (Loc, J)))));
 
             --  Generate:
-            --    High_Bound : Base_Type (Index_Typ) := E'Last (J);
+            --    High_Bound : constant Base_Type (Index_Typ) := E'Last (J);
 
             High_Bound := Make_Temporary (Loc, 'B');
             Insert_Action (E,
@@ -6501,6 +6499,7 @@ package body Exp_Util is
                 Defining_Identifier => High_Bound,
                 Object_Definition   =>
                   New_Occurrence_Of (Base_Type (Etype (Index_Typ)), Loc),
+                Constant_Present    => True,
                 Expression          =>
                   Make_Attribute_Reference (Loc,
                     Prefix         => Duplicate_Subexpr_No_Checks (E),

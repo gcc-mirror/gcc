@@ -1,3 +1,38 @@
+2014-11-20  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb (To_Host_Entry): Guard against case of a
+	non-AF_INET entry.
+
+2014-11-20  Vadim Godunko  <godunko@adacore.com>
+
+	* a-strunb-shared.adb (To_Unbounded_String): Use shared empty
+	object to construct return value when source string is empty or
+	requested length is zero.
+	* a-stwiun-shared.adb (To_Unbounded_Wide_String): Likewise.
+	* a-stzunb-shared.adb (To_Unbounded_Wide_Wide_String): Likewise.
+
+2014-11-20  Yannick Moy  <moy@adacore.com>
+
+	* a-cfhase.adb, a-cfinve.adb, a-cforma.adb, a-cfhama.adb, a-cforse.adb,
+	a-cofove.adb: Skip CodePeer analysis on body of all formal containers.
+
+2014-11-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* adaint.c: Fix typo.
+	* exp_util.adb (Make_Subtype_From_Expr): Complete previous change,
+	generate constant values.
+	* sem_eval.adb (Decompose_Expr): Fix latent bug leading to a wrong
+	evaluation to '0' of some unknown values.
+
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* repinfo.adb (List_Record_Info): Do not list discriminant in
+	unchecked union.
+	* sem_ch13.adb (Has_Good_Profile): Minor reformatting
+	(Analyze_Stream_TSS_Definition): Minor reformatting
+	(Analyze_Record_Representation_Clause): Do not issue warning
+	for missing rep clause for discriminant in unchecked union.
+
 2014-11-20  Vadim Godunko  <godunko@adacore.com>
 
 	* a-strunb-shared.adb, a-stwiun-shared.adb, a-stzunb-shared.adb

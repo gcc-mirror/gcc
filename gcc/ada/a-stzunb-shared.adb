@@ -1631,19 +1631,37 @@ package body Ada.Strings.Wide_Wide_Unbounded is
    function To_Unbounded_Wide_Wide_String
      (Source : Wide_Wide_String) return Unbounded_Wide_Wide_String
    is
-      DR : constant Shared_Wide_Wide_String_Access := Allocate (Source'Length);
+      DR : Shared_Wide_Wide_String_Access;
+
    begin
-      DR.Data (1 .. Source'Length) := Source;
-      DR.Last := Source'Length;
+      if Source'Length = 0 then
+         Reference (Empty_Shared_Wide_Wide_String'Access);
+         DR := Empty_Shared_Wide_Wide_String'Access;
+
+      else
+         DR := Allocate (Source'Length);
+         DR.Data (1 .. Source'Length) := Source;
+         DR.Last := Source'Length;
+      end if;
+
       return (AF.Controlled with Reference => DR);
    end To_Unbounded_Wide_Wide_String;
 
    function To_Unbounded_Wide_Wide_String
      (Length : Natural) return Unbounded_Wide_Wide_String
    is
-      DR : constant Shared_Wide_Wide_String_Access := Allocate (Length);
+      DR : Shared_Wide_Wide_String_Access;
+
    begin
-      DR.Last := Length;
+      if Length = 0 then
+         Reference (Empty_Shared_Wide_Wide_String'Access);
+         DR := Empty_Shared_Wide_Wide_String'Access;
+
+      else
+         DR := Allocate (Length);
+         DR.Last := Length;
+      end if;
+
       return (AF.Controlled with Reference => DR);
    end To_Unbounded_Wide_Wide_String;
 
