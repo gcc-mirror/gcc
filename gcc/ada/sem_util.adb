@@ -5923,7 +5923,8 @@ package body Sem_Util is
    function Extensions_Visible_Status
      (Id : Entity_Id) return Extensions_Visible_Mode
    is
-      Arg1 : Node_Id;
+      Arg  : Node_Id;
+      Decl : Node_Id;
       Expr : Node_Id;
       Prag : Node_Id;
       Subp : Entity_Id;
@@ -5946,15 +5947,51 @@ package body Sem_Util is
 
       Prag := Get_Pragma (Subp, Pragma_Extensions_Visible);
 
+      --  In certain cases analysis may request the Extensions_Visible status
+      --  of an expression function before the pragma has been analyzed yet.
+      --  Inspect the declarative items after the expression function looking
+      --  for the pragma (if any).
+
+      if No (Prag) and then Is_Expression_Function (Subp) then
+         Decl := Next (Unit_Declaration_Node (Subp));
+         while Present (Decl) loop
+            if Nkind (Decl) = N_Pragma
+              and then Pragma_Name (Decl) = Name_Extensions_Visible
+            then
+               Prag := Decl;
+               exit;
+
+            --  A source construct ends the region where Extensions_Visible may
+            --  appear, stop the traversal. An expanded expression function is
+            --  no longer a source construct, but it must still be recognized.
+
+            elsif Comes_From_Source (Decl)
+              or else (Nkind_In (Decl, N_Subprogram_Body,
+                                       N_Subprogram_Declaration)
+                         and then Is_Expression_Function
+                                    (Defining_Entity (Decl)))
+            then
+               exit;
+            end if;
+
+            Next (Decl);
+         end loop;
+      end if;
+
       --  Extract the value from the Boolean expression (if any)
 
       if Present (Prag) then
-         Arg1 := First (Pragma_Argument_Associations (Prag));
+         Arg := First (Pragma_Argument_Associations (Prag));
 
-         --  The pragma appears with an argument
+         if Present (Arg) then
+            Expr := Get_Pragma_Arg (Arg);
 
-         if Present (Arg1) then
-            Expr := Get_Pragma_Arg (Arg1);
+            --  When the associated subprogram is an expression function, the
+            --  argument of the pragma may not have been analyzed.
+
+            if not Analyzed (Expr) then
+               Preanalyze_And_Resolve (Expr, Standard_Boolean);
+            end if;
 
             --  Guard against cascading errors when the argument of pragma
             --  Extensions_Visible is not a valid static Boolean expression.
@@ -5969,19 +6006,20 @@ package body Sem_Util is
                return Extensions_Visible_False;
             end if;
 
-         --  Otherwise the pragma defaults to True
+         --  Otherwise the aspect or pragma defaults to True
 
          else
             return Extensions_Visible_True;
          end if;
 
-      --  Otherwise pragma Extensions_Visible is not inherited or directly
-      --  specified. In SPARK code, its value defaults to "False".
+      --  Otherwise aspect or pragma Extensions_Visible is not inherited or
+      --  directly specified. In SPARK code, its value defaults to "False".
 
       elsif SPARK_Mode = On then
          return Extensions_Visible_False;
 
-      --  In non-SPARK code, pragma Extensions_Visible defaults to "True"
+      --  In non-SPARK code, aspect or pragma Extensions_Visible defaults to
+      --  "True".
 
       else
          return Extensions_Visible_True;

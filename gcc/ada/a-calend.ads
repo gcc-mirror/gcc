@@ -200,11 +200,15 @@ private
    type Time_Rep is new Long_Long_Integer;
    type Time is new Time_Rep;
    --  The underlying type of Time has been chosen to be a 64 bit signed
-   --  integer number since it allows for easier processing of sub seconds
+   --  integer number since it allows for easier processing of sub-seconds
    --  and arithmetic. We use Long_Long_Integer to allow this unit to compile
    --  when using custom target configuration files where the max integer is
-   --  32bits. This is useful for static analysis tools such as SPARK or
+   --  32 bits. This is useful for static analysis tools such as SPARK or
    --  CodePeer.
+   --
+   --  Note: the reason we have two separate types here is to avoid problems
+   --  with overloading ambiguities in the body if we tried to use Time as an
+   --  internal computational type.
 
    Days_In_Month : constant array (Month_Number) of Day_Number :=
                      (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);

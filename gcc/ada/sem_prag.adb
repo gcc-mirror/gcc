@@ -13920,11 +13920,12 @@ package body Sem_Prag is
          --  pragma Extensions_Visible [ (boolean_EXPRESSION) ];
 
          when Pragma_Extensions_Visible => Extensions_Visible : declare
-            Context : constant Node_Id := Parent (N);
-            Expr    : Node_Id;
-            Formal  : Entity_Id;
-            Subp    : Entity_Id;
-            Stmt    : Node_Id;
+            Context   : constant Node_Id := Parent (N);
+            Expr      : Node_Id;
+            Formal    : Entity_Id;
+            Orig_Stmt : Node_Id;
+            Subp      : Entity_Id;
+            Stmt      : Node_Id;
 
             Has_OK_Formal : Boolean := False;
 
@@ -13949,7 +13950,18 @@ package body Sem_Prag is
                --  Skip internally generated code
 
                elsif not Comes_From_Source (Stmt) then
-                  null;
+                  Orig_Stmt := Original_Node (Stmt);
+
+                  --  When pragma Ghost applies to an expression function, the
+                  --  expression function is transformed into a subprogram.
+
+                  if Nkind (Stmt) = N_Subprogram_Declaration
+                    and then Comes_From_Source (Orig_Stmt)
+                    and then Nkind (Orig_Stmt) = N_Expression_Function
+                  then
+                     Subp := Defining_Entity (Stmt);
+                     exit;
+                  end if;
 
                --  The associated [generic] subprogram declaration has been
                --  found, stop the search.

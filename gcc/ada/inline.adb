@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
@@ -212,11 +213,21 @@ package body Inline is
    --  function anyway. This is also the case if the function is defined in a
    --  task body or within an entry (for example, an initialization procedure).
 
-   procedure Remove_Pragmas (Bod : Node_Id);
-   --  A pragma Unreferenced or pragma Unmodified that mentions a formal
-   --  parameter has no meaning when the body is inlined and the formals
-   --  are rewritten. Remove it from body to inline. The analysis of the
-   --  non-inlined body will handle the pragma properly.
+   procedure Remove_Aspects_And_Pragmas (Body_Decl : Node_Id);
+   --  Remove all aspects and/or pragmas that have no meaning in inlined body
+   --  Body_Decl. The analysis of these items is performed on the non-inlined
+   --  body. The items currently removed are:
+   --    Contract_Cases
+   --    Global
+   --    Depends
+   --    Postcondition
+   --    Precondition
+   --    Refined_Global
+   --    Refined_Depends
+   --    Refined_Post
+   --    Test_Case
+   --    Unmodified
+   --    Unreferenced
 
    ------------------------------
    -- Deferred Cleanup Actions --
@@ -1103,12 +1114,12 @@ package body Inline is
       Set_Parameter_Specifications (Specification (Original_Body), No_List);
       Set_Defining_Unit_Name
         (Specification (Original_Body),
-          Make_Defining_Identifier (Sloc (N), Name_uParent));
+         Make_Defining_Identifier (Sloc (N), Name_uParent));
       Set_Corresponding_Spec (Original_Body, Empty);
 
-      --  Remove those pragmas that have no meaining in an inlined body.
+      --  Remove all aspects/pragmas that have no meaining in an inlined body
 
-      Remove_Pragmas (Original_Body);
+      Remove_Aspects_And_Pragmas (Original_Body);
 
       Body_To_Analyze := Copy_Generic_Node (Original_Body, Empty, False);
 
@@ -1116,8 +1127,9 @@ package body Inline is
       --  to be resolved.
 
       if Ekind (Spec_Id) = E_Function then
-         Set_Result_Definition (Specification (Body_To_Analyze),
-           New_Occurrence_Of (Etype (Spec_Id), Sloc (N)));
+         Set_Result_Definition
+           (Specification (Body_To_Analyze),
+            New_Occurrence_Of (Etype (Spec_Id), Sloc (N)));
       end if;
 
       if No (Declarations (N)) then
@@ -1126,9 +1138,9 @@ package body Inline is
          Append (Body_To_Analyze, Declarations (N));
       end if;
 
-      --  The body to inline is pre-analyzed.  In GNATprove mode we must
-      --  disable full analysis as well so that light expansion does not
-      --  take place either, and name resolution is unaffected.
+      --  The body to inline is pre-analyzed. In GNATprove mode we must disable
+      --  full analysis as well so that light expansion does not take place
+      --  either, and name resolution is unaffected.
 
       Expander_Mode_Save_And_Set (False);
       Full_Analysis := False;
@@ -1643,12 +1655,10 @@ package body Inline is
             Body_To_Inline := Copy_Separate_Tree (N);
          end if;
 
-         --  A pragma Unreferenced or pragma Unmodified that mentions a formal
-         --  parameter has no meaning when the body is inlined and the formals
-         --  are rewritten. Remove it from body to inline. The analysis of the
-         --  non-inlined body will handle the pragma properly.
+         --  Remove all aspects/pragmas that have no meaining in an inlined
+         --  body.
 
-         Remove_Pragmas (Body_To_Inline);
+         Remove_Aspects_And_Pragmas (Body_To_Inline);
 
          --  We need to capture references to the formals in order
          --  to substitute the actuals at the point of inlining, i.e.
@@ -3947,31 +3957,63 @@ package body Inline is
       end loop;
    end Remove_Dead_Instance;
 
-   --------------------
-   -- Remove_Pragmas --
-   --------------------
+   --------------------------------
+   -- Remove_Aspects_And_Pragmas --
+   --------------------------------
 
-   procedure Remove_Pragmas (Bod : Node_Id) is
-      Decl : Node_Id;
-      Nxt  : Node_Id;
+   procedure Remove_Aspects_And_Pragmas (Body_Decl : Node_Id) is
+      procedure Remove_Items (List : List_Id);
+      --  Remove all useless aspects/pragmas from a particular list
+
+      ------------------
+      -- Remove_Items --
+      ------------------
+
+      procedure Remove_Items (List : List_Id) is
+         Item      : Node_Id;
+         Item_Id   : Node_Id;
+         Next_Item : Node_Id;
+
+      begin
+         --  Traverse the list looking for an aspect specification or a pragma
+
+         Item := First (List);
+         while Present (Item) loop
+            Next_Item := Next (Item);
+
+            if Nkind (Item) = N_Aspect_Specification then
+               Item_Id := Identifier (Item);
+            elsif Nkind (Item) = N_Pragma then
+               Item_Id := Pragma_Identifier (Item);
+            else
+               Item_Id := Empty;
+            end if;
+
+            if Present (Item_Id)
+              and then Nam_In (Chars (Item_Id), Name_Contract_Cases,
+                                                Name_Global,
+                                                Name_Depends,
+                                                Name_Postcondition,
+                                                Name_Precondition,
+                                                Name_Refined_Global,
+                                                Name_Refined_Depends,
+                                                Name_Refined_Post,
+                                                Name_Test_Case,
+                                                Name_Unmodified,
+                                                Name_Unreferenced)
+            then
+               Remove (Item);
+            end if;
+
+            Item := Next_Item;
+         end loop;
+      end Remove_Items;
+
+   --  Start of processing for Remove_Aspects_And_Pragmas
 
    begin
-      Decl := First (Declarations (Bod));
-      while Present (Decl) loop
-         Nxt := Next (Decl);
-
-         if Nkind (Decl) = N_Pragma
-           and then Nam_In (Pragma_Name (Decl), Name_Contract_Cases,
-                                                Name_Precondition,
-                                                Name_Postcondition,
-                                                Name_Unreferenced,
-                                                Name_Unmodified)
-         then
-            Remove (Decl);
-         end if;
-
-         Decl := Nxt;
-      end loop;
-   end Remove_Pragmas;
+      Remove_Items (Aspect_Specifications (Body_Decl));
+      Remove_Items (Declarations          (Body_Decl));
+   end Remove_Aspects_And_Pragmas;
 
 end Inline;
