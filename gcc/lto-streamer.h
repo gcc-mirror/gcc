@@ -275,15 +275,14 @@ lto_file_decl_data_get_ ## name (struct lto_file_decl_data *data, \
 				 unsigned int idx) \
 { \
   struct lto_in_decl_state *state = data->current_decl_state; \
-  gcc_assert (idx < state->streams[LTO_DECL_STREAM_## UPPER_NAME].size); \
-  return state->streams[LTO_DECL_STREAM_## UPPER_NAME].trees[idx]; \
+   return (*state->streams[LTO_DECL_STREAM_## UPPER_NAME])[idx]; \
 } \
 \
 static inline unsigned int \
 lto_file_decl_data_num_ ## name ## s (struct lto_file_decl_data *data) \
 { \
   struct lto_in_decl_state *state = data->current_decl_state; \
-  return state->streams[LTO_DECL_STREAM_## UPPER_NAME].size; \
+  return vec_safe_length (state->streams[LTO_DECL_STREAM_## UPPER_NAME]); \
 }
 
 
@@ -421,18 +420,6 @@ struct lto_symtab_encoder_iterator
 
 
 
-
-/* Mapping from indices to trees.  */
-struct GTY(()) lto_tree_ref_table
-{
-  /* Array of referenced trees . */
-  tree * GTY((length ("%h.size"))) trees;
-
-  /* Size of array. */
-  unsigned int size;
-};
-
-
 /* The lto_tree_ref_encoder struct is used to encode trees into indices. */
 
 struct lto_tree_ref_encoder
@@ -446,7 +433,7 @@ struct lto_tree_ref_encoder
 struct GTY(()) lto_in_decl_state
 {
   /* Array of lto_in_decl_buffers to store type and decls streams. */
-  struct lto_tree_ref_table streams[LTO_N_DECL_STREAMS];
+  vec<tree, va_gc> *streams[LTO_N_DECL_STREAMS];
 
   /* If this in-decl state is associated with a function. FN_DECL
      point to the FUNCTION_DECL. */

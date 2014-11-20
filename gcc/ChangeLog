@@ -1,5 +1,15 @@
 2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* lto-section-in.c (lto_delete_in_decl_state): Adjust.
+	(lto_free_function_in_decl_state): Likewise.
+	* lto-streamer-out.c (copy_function_or_variable): Likewise.
+	* lto-streamer.h (lto_file_decl_data_get_ ## name): Likewise.
+	(lto_file_decl_data_num_ ## name ## s): Likewise.
+	(struct lto_tree_ref_table): Remove.
+	(struct lto_in_decl_state): Replace lto_tree_ref_table with vec<tree>.
+
+2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* hash-map.h (hash_map::iterator): New class.
 	(hash_map::begin): New method.
 	(hash_map::end): Likewise.
