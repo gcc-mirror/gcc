@@ -9994,17 +9994,17 @@ called after P2 returns, it would be an erroneous use of a dangling
 pointer.
 
 For objects, it is possible to use @code{Unrestricted_Access} for any
-type, but care must be exercised if it is used to create pointers to
-unconstrained array objects.  In this case, the resulting pointer has
-the same scope as the context of the attribute, and may not be
-returned to some enclosing scope.  For instance, a function cannot use
-@code{Unrestricted_Access} to create a pointer to unconstrained and
-then return that value to the caller.  In addition, it is only valid
-to create pointers to unconstrained arrays using this attribute if the
-pointer has the normal default ``fat'' representation where a pointer
-has two components, one points to the array and one points to the
-bounds.  If a size clause is used to force ``thin'' representation for
-a pointer to unconstrained where there is only space for a single
+type. However, if the result is of an access-to-unconstrained array
+subtype, then the resulting pointer has the same scope as the context
+of the attribute, and must not be returned to some enclosing scope.
+For instance, if a function uses @code{Unrestricted_Access} to create
+an access-to-unconstrained-array and returns that value to the caller,
+the result will involve dangling pointers. In addition, it is only
+valid to create pointers to unconstrained arrays using this attribute
+if the pointer has the normal default ``fat'' representation where a
+pointer has two components, one points to the array and one points to
+the bounds. If a size clause is used to force ``thin'' representation
+for a pointer to unconstrained where there is only space for a single
 pointer, then the resulting pointer is not usable.
 
 In the simple case where a direct use of Unrestricted_Access attempts

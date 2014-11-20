@@ -15726,10 +15726,11 @@ package body Sem_Util is
       end if;
 
       --  The context lacks policy pragmas, determine the mode based on whether
-      --  assertions are enabled.
+      --  assertions are enabled at the configuration level. This ensures that
+      --  the policy is preserved when analyzing generics.
 
       if Kind = No_Name then
-         if Assertions_Enabled then
+         if Assertions_Enabled_Config then
             Kind := Name_Check;
          else
             Kind := Name_Ignore;

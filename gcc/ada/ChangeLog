@@ -1,3 +1,37 @@
+2014-11-20  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb, freeze.adb: Minor reformatting.
+	* gnat_rm.texi: Minor editing.
+
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Minor reformatting.
+	(Process_Suppress_Unsuppress): Ignore suppress Elaboration_Check
+	in SPARK.
+
+2014-11-20  Bob Duff  <duff@adacore.com>
+
+	* gnat_rm.texi: Correction to documentation of
+	'Unrestricted_Access in case of access to unconstrained array.
+	* a-cofove.adb (Capacity): Fix bug -- was always
+	returning Capacity_Range'Last.
+	(Is_Sorted): Fix bug -- was always returning True, because
+	Container.Last = Last. That test isn't even needed, because the
+	loop will go around zero times in that case, so deleted that
+	test rather than fixing it.
+	(Reverse_Elements): Make sure to use the correct array bounds.
+
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations): In GNATProve mode, build
+	wrappers for functions and operators that are actuals only if
+	expander is enabled. Wrappers play no role within a generic unit.
+
+2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Policy_In_Effect): Use the
+	configuration level assertion flag.
+
 2014-11-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-parame-ae653.ads: Update comments.

@@ -2730,7 +2730,7 @@ package body Sem_Prag is
       procedure Check_Ada_83_Warning;
       --  Issues a warning message for the current pragma if operating in Ada
       --  83 mode (used for language pragmas that are not a standard part of
-      --  Ada 83). This procedure does not raise Error_Pragma. Also notes use
+      --  Ada 83). This procedure does not raise Pragma_Exit. Also notes use
       --  of 95 pragma.
 
       procedure Check_Arg_Count (Required : Nat);
@@ -9045,6 +9045,15 @@ package body Sem_Prag is
             Error_Pragma_Arg
               ("argument of pragma% is not valid check name", Arg1);
          end if;
+
+         --  Warn that suppress of Elaboration_Check has no effect in SPARK
+
+         if C = Elaboration_Check and then SPARK_Mode = On then
+            Error_Pragma_Arg
+              ("Suppress of Elaboration_Check ignored in SPARK??", Arg1);
+         end if;
+
+         --  One-argument case
 
          if Arg_Count = 1 then
 
@@ -20282,7 +20291,7 @@ package body Sem_Prag is
          --  pragma Suppress (IDENTIFIER [, [On =>] NAME]);
 
          when Pragma_Suppress =>
-            Process_Suppress_Unsuppress (True);
+            Process_Suppress_Unsuppress (Suppress_Case => True);
 
          ------------------
          -- Suppress_All --
@@ -21120,7 +21129,7 @@ package body Sem_Prag is
 
          when Pragma_Unsuppress =>
             Ada_2005_Pragma;
-            Process_Suppress_Unsuppress (False);
+            Process_Suppress_Unsuppress (Suppress_Case => False);
 
          ----------------------------
          -- Unevaluated_Use_Of_Old --

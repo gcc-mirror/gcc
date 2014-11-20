@@ -10971,10 +10971,8 @@ package body Sem_Ch13 is
             --  in a flag of the base type!
 
             if (Is_Record_Type (Typ) or else Is_Array_Type (Typ))
-                 and then
-               Typ = Bas_Typ
+                 and then Typ = Bas_Typ
             then
-
                --  For a type extension, always inherit from parent; otherwise
                --  inherit if no default applies. Note: we do not check for
                --  an explicit rep item on the parent type when inheriting,
@@ -10983,10 +10981,9 @@ package body Sem_Ch13 is
                if not Has_Rep_Item (First_Subtype (Typ),
                                     Name_Scalar_Storage_Order, False)
                  and then (Is_Tagged_Type (Bas_Typ)
-                             or else
-                           not (SSO_Set_Low_By_Default  (Bas_Typ)
-                                  or else
-                                SSO_Set_High_By_Default (Bas_Typ)))
+                            or else not (SSO_Set_Low_By_Default  (Bas_Typ)
+                                           or else
+                                         SSO_Set_High_By_Default (Bas_Typ)))
                then
                   Set_Reverse_Storage_Order (Bas_Typ,
                     Reverse_Storage_Order
