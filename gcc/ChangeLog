@@ -1,3 +1,25 @@
+2014-11-20   Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63677
+	* tree-ssa-dom.c: Include gimplify.h for unshare_expr.
+	(avail_exprs_stack): Make a vector of pairs.
+	(struct hash_expr_elt): Replace stmt member with vop member.
+	(expr_elt_hasher::equal): Simplify.
+	(initialize_hash_element): Adjust.
+	(initialize_hash_element_from_expr): Likewise.
+	(dom_opt_dom_walker::thread_across_edge): Likewise.
+	(record_cond): Likewise.
+	(dom_opt_dom_walker::before_dom_children): Likewise.
+	(print_expr_hash_elt): Likewise.
+	(remove_local_expressions_from_table): Restore previous state
+	if requested.
+	(record_equivalences_from_stmt): Record &x + CST as constant
+	&MEM[&x, CST] for further propagation.
+	(vuse_eq): New function.
+	(lookup_avail_expr): For loads use the alias oracle to see
+	whether a candidate from the expr hash is usable.
+	(avail_expr_hash): Do not hash VUSEs.
+
 2014-11-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/59593
