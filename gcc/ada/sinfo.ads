@@ -562,7 +562,7 @@ package Sinfo is
    --  not make sense from a user point-of-view, and that cross-references that
    --  do not lead to data dependences for subprograms can be safely ignored.
 
-   --  GNATprove relies on the following frontend behaviors:
+   --  GNATprove relies on the following front end behaviors:
 
    --    1. The first declarations in the list of visible declarations of
    --       a package declaration for a generic instance, up to the first
@@ -579,13 +579,17 @@ package Sinfo is
 
    --    4. Unconstrained types are not replaced by constrained types whose
    --       bounds are generated from an expression: Expand_Subtype_From_Expr
-   --       should be noop.
+   --       should be a no-op.
 
-   --    5. Errors (instead of warnings) are issued on compile-time known
-   --       constraint errors, except in a few selected cases where it should
-   --       be allowed to let analysis proceed (e.g. range checks on empty
-   --       ranges, typically in deactivated code based on a given
-   --       configuration).
+   --    5. Errors (instead of warnings) are issued on compile-time-known
+   --       constraint errors even though such cases do not correspond to
+   --       illegalities in the Ada RM (this is simply another case where
+   --       GNATprove implements a subset of the full language).
+   --
+   --       However, there are a few exceptions to this rule for cases where
+   --       we want to allow the GNATprove analysis to proceed (e.g. range
+   --       checks on empty ranges, which typically appear in deactivated
+   --       code in a particular configuration).
 
    -----------------------
    -- Check Flag Fields --

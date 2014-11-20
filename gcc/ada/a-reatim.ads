@@ -90,12 +90,14 @@ package Ada.Real_Time is
    function Minutes (M : Integer) return Time_Span;
    pragma Ada_05 (Minutes);
 
-   --  Seconds_Count needs 64 bits, since Time has the full range of Duration.
-   --  The delta of Duration is 10 ** (-9), so the maximum number of seconds is
-   --  2**63/10**9 = 8*10**9 which does not quite fit in 32 bits.
-
-   type Seconds_Count is range
-     Long_Long_Integer'First .. Long_Long_Integer'Last;
+   type Seconds_Count is new Long_Long_Integer;
+   --  Seconds_Count needs 64 bits, since Time has the full range of
+   --  Duration. The delta of Duration is 10 ** (-9), so the maximum number of
+   --  seconds is 2**63/10**9 = 8*10**9 which does not quite fit in 32 bits.
+   --  However, rather than make this explicitly 64-bits we derive from
+   --  Long_Long_Integer. In normal usage this will have the same effect.
+   --  But in the case of CodePeer with a target configuration file with a
+   --  maximum integer size of 32, it allows analysis of this unit.
 
    procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span);
    function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;

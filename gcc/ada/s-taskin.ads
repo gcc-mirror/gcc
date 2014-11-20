@@ -947,7 +947,12 @@ package System.Tasking is
    --  by Ada.Task_Attributes.
 
    type Task_Serial_Number is mod 2 ** Long_Long_Integer'Size;
-   --  Used to give each task a unique serial number
+   --  Used to give each task a unique serial number. We want 64-bits for this
+   --  type to get as much uniqueness as possible (2**64 is operationally
+   --  infinite in this context, but 2**32 perhaps could recycle). We use
+   --  Long_Long_Integer (which in the normal case is always 64-bits) rather
+   --  than 64-bits explicitly to allow codepeer to analyze this unit when
+   --  a target configuration file forces the maximum integer size to 32.
 
    type Ada_Task_Control_Block (Entry_Num : Task_Entry_Index) is record
       Common : Common_ATCB;

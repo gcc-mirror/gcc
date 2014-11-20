@@ -1,3 +1,24 @@
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* a-stream.ads, a-reatim.ads, a-calend.ads, sinfo.ads, s-crtl.ads,
+	interfac.ads, s-taskin.ads: Minor reformatting.
+
+2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Extensions_Visible can now
+	apply to an expression function.
+	* sem_util.adb (Extensions_Visible_Status): Add special processing
+	for expression functions.
+
+2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* inline.adb (Build_Body_To_Inline): Remove meaningless aspects
+	and pragmas.
+	(Generate_Subprogram_Body): Remove meaningless aspects and pragmas.
+	(Remove_Aspects_And_Pragmas): New routine.
+	(Remove_Pragmas): Removed.
+	* namet.ads, namet.adb (Nam_In): New versions of the routine.
+
 2014-11-20  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_util.adb: Minor reformatting.
