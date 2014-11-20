@@ -7196,7 +7196,7 @@ get_section_anchor (struct object_block *block, HOST_WIDE_INT offset,
     offset = 0;
   else
     {
-      bias = 1 << (GET_MODE_BITSIZE (ptr_mode) - 1);
+      bias = HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (ptr_mode) - 1);
       if (offset < 0)
 	{
 	  delta = -(unsigned HOST_WIDE_INT) offset + max_offset;

@@ -220,7 +220,7 @@ hashval_t
 const_wide_int_hasher::hash (rtx x)
 {
   int i;
-  HOST_WIDE_INT hash = 0;
+  unsigned HOST_WIDE_INT hash = 0;
   const_rtx xr = x;
 
   for (i = 0; i < CONST_WIDE_INT_NUNITS (xr); i++)

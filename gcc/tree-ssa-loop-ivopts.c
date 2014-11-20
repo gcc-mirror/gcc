@@ -4183,7 +4183,7 @@ get_computation_cost_at (struct ivopts_data *data,
 
   if (cst_and_fits_in_hwi (cbase))
     {
-      offset = - ratio * int_cst_value (cbase);
+      offset = - ratio * (unsigned HOST_WIDE_INT) int_cst_value (cbase);
       cost = difference_cost (data,
 			      ubase, build_int_cst (utype, 0),
 			      &symbol_present, &var_present, &offset,

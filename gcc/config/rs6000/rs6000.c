@@ -5083,7 +5083,7 @@ int
 num_insns_constant_wide (HOST_WIDE_INT value)
 {
   /* signed constant loadable with addi */
-  if ((unsigned HOST_WIDE_INT) (value + 0x8000) < 0x10000)
+  if (((unsigned HOST_WIDE_INT) value + 0x8000) < 0x10000)
     return 1;
 
   /* constant loadable with addis */
@@ -16194,7 +16194,7 @@ includes_rldic_lshift_p (rtx shiftop, rtx andop)
 {
   if (GET_CODE (andop) == CONST_INT)
     {
-      HOST_WIDE_INT c, lsb, shift_mask;
+      unsigned HOST_WIDE_INT c, lsb, shift_mask;
 
       c = INTVAL (andop);
       if (c == 0 || c == ~0)
@@ -16233,7 +16233,7 @@ includes_rldicr_lshift_p (rtx shiftop, rtx andop)
 {
   if (GET_CODE (andop) == CONST_INT)
     {
-      HOST_WIDE_INT c, lsb, shift_mask;
+      unsigned HOST_WIDE_INT c, lsb, shift_mask;
 
       shift_mask = ~0;
       shift_mask <<= INTVAL (shiftop);
