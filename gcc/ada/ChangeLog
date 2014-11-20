@@ -1,3 +1,13 @@
+2014-11-20  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* gnat_ugn.texi: New section on gnattest stubbing. Minor
+	reformatting.
+
+2014-11-20  Jerome Lambourg  <lambourg@adacore.com>
+
+	* s-taprop-vxworks.adb (Create_Task): Fix thread comparison.
+	Minor reformatting.
+
 2014-11-20  Robert Dewar  <dewar@adacore.com>
 
 	* s-tassta.adb, exp_aggr.adb, s-taskin.adb, exp_strm.adb: Minor

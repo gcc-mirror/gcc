@@ -4810,21 +4810,21 @@ individually controlled.  The warnings that are not turned on by this
 switch are:
 
 @itemize
-@option{-gnatwd} (implicit dereferencing)
-@option{-gnatw.d} (tag warnings with -gnatw switch)
-@option{-gnatwh} (hiding)
-@option{-gnatw.h} (holes in record layouts)
-@option{-gnatw.k} (redefinition of names in standard)
-@option{-gnatwl} (elaboration warnings)
-@option{-gnatw.l} (inherited aspects)
-@option{-gnatw.n} (atomic synchronization)
-@option{-gnatwo} (address clause overlay)
-@option{-gnatw.o} (values set by out parameters ignored)
-@option{-gnatw.s} (overridden size clause)
-@option{-gnatwt} (tracking of deleted conditional code)
-@option{-gnatw.u} (unordered enumeration)
-@option{-gnatw.w} (use of Warnings Off)
-@option{-gnatw.y} (reasons for package needing body)
+@item @option{-gnatwd} (implicit dereferencing)
+@item @option{-gnatw.d} (tag warnings with -gnatw switch)
+@item @option{-gnatwh} (hiding)
+@item @option{-gnatw.h} (holes in record layouts)
+@item @option{-gnatw.k} (redefinition of names in standard)
+@item @option{-gnatwl} (elaboration warnings)
+@item @option{-gnatw.l} (inherited aspects)
+@item @option{-gnatw.n} (atomic synchronization)
+@item @option{-gnatwo} (address clause overlay)
+@item @option{-gnatw.o} (values set by out parameters ignored)
+@item @option{-gnatw.s} (overridden size clause)
+@item @option{-gnatwt} (tracking of deleted conditional code)
+@item @option{-gnatw.u} (unordered enumeration)
+@item @option{-gnatw.w} (use of Warnings Off)
+@item @option{-gnatw.y} (reasons for package needing body)
 @end itemize
 
 All other optional warnings are turned on.
@@ -6461,7 +6461,6 @@ A unary plus or minus may not be followed by a space.
 A vertical bar must be surrounded by spaces.
 @end itemize
 
-@item
 Exactly one blank (and no other white space) must appear between
 a @code{not} token and a following @code{in} token.
 
@@ -18971,6 +18970,18 @@ as well as a test driver infrastructure (harness). @command{gnattest} creates
 a skeleton for each visible subprogram in the packages under consideration when
 they do not exist already.
 
+The user can choose to generate a single test driver
+that will run all individual tests, or separate test drivers for each test. The
+second option allows much greater flexibility in test execution environment,
+allows to benefit from parallel tests execution to increase performance, and
+provides stubbing support.
+
+@command{gnattest} also has a mode of operation where it acts as the test
+aggregator when multiple test executables must be run, in particular when
+the separate test drivers were generated. In this mode it handles individual
+tests execution and upon completion reports the summary results of the test
+run.
+
 In order to process source files from a project, @command{gnattest} has to
 semantically analyze the sources. Therefore, test skeletons can only be
 generated for legal Ada units. If a unit is dependent on other units,
@@ -18984,9 +18995,11 @@ the AUnit manual, deep knowledge of AUnit is not necessary for using gnattest.
 For correct operation of @command{gnattest}, AUnit should be installed and
 aunit.gpr must be on the project path. This happens automatically when Aunit
 is installed at its default location.
+
 @menu
 * Running gnattest::
-* Switches for gnattest::
+* Switches for gnattest in framework generation mode::
+* Switches for gnattest in tests execution mode::
 * Project Attributes for gnattest::
 * Simple Example::
 * Setting Up and Tearing Down the Testing Environment::
@@ -18997,6 +19010,8 @@ is installed at its default location.
 * Tagged Types Substitutability Testing::
 * Testing with Contracts::
 * Additional Tests::
+* Individual Test Drivers::
+* Stubbing::
 * Putting Tests under Version Control::
 * Support for other platforms/run-times::
 * Current Limitations::
@@ -19006,7 +19021,8 @@ is installed at its default location.
 @section Running @command{gnattest}
 
 @noindent
-@command{gnattest} has a command-line interface of the form
+@b{In the framework generation mode}, @command{gnattest} has a command-line
+interface of the form
 
 @smallexample
 @c $ gnattest @var{-Pprojname} @ovar{switches} @ovar{filename} @ovar{directory}
@@ -19076,25 +19092,52 @@ Note that if the project already has both my_unit.ads and my_unit-test_data.ads,
 this will cause a name conflict with the generated test package.
 @end itemize
 
-@node Switches for gnattest
-@section Switches for @command{gnattest}
+
+@noindent
+@b{In the tests execution mode mode}, @command{gnattest} has a command-line
+interface of the form
+
+@smallexample
+@c $ gnattest @var{-Pprojname} @ovar{switches} @ovar{filename} @ovar{directory}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnattest @var{test_drivers.list} @r{[}@var{switches}@r{]}
+@end smallexample
+
+@noindent
+where
+@table @var
+
+@item test_drivers.list
+is the name of the text file containing the list of executables to treat as
+test drivers. This file is automatically generated by gnattest, but can be
+hand-edited to add or remove tests. This switch is required.
+
+@item switches
+is an optional sequence of switches as described below.
+
+@end table
+
+
+@node Switches for gnattest in framework generation mode
+@section Switches for @command{gnattest} in framework generation mode
 
 @table @option
 @c !sort!
 
-@item --harness-only
-@cindex @option{--harness-only} (@command{gnattest})
-When this option is given, @command{gnattest} creates a harness for all
-sources, treating them as test packages.
+@item -q
+@cindex @option{-q} (@command{gnattest})
+Quiet mode: suppresses noncritical output messages.
 
-@item --additional-tests=@var{projname}
-@cindex @option{--additional-tests} (@command{gnattest})
-Sources described in @var{projname} are considered potential additional
-manual tests to be added to the test suite.
+@item -v
+@cindex @option{-v} (@command{gnattest})
+Verbose mode: generates version information if specified by itself on the
+command line.  If specified via GNATtest_Switches, produces output
+about the execution of the tool.
 
 @item -r
 @cindex @option{-r} (@command{gnattest})
-Recursively consider all sources from all projects.
+Recursively considers all sources from all projects.
+
 
 @item -X@var{name=value}
 @cindex @option{-X} (@command{gnattest})
@@ -19105,20 +19148,76 @@ Indicate that external variable @var{name} has the value @var{value}.
 Specifies the default location of the runtime library. Same meaning as the
 equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
 
-@item -q
-@cindex @option{-q} (@command{gnattest})
-Suppresses noncritical output messages.
 
-@item -v
-@cindex @option{-v} (@command{gnattest})
-Verbose mode: generates version information if specified by itself on the
-command line.  If specified via GNATtest_Switches, produces output
-about the execution of the tool.
+@item --additional-tests=@var{projname}
+@cindex @option{--additional-tests} (@command{gnattest})
+Sources described in @var{projname} are considered potential additional
+manual tests to be added to the test suite.
+
+@item --harness-only
+@cindex @option{--harness-only} (@command{gnattest})
+When this option is given, @command{gnattest} creates a harness for all
+sources, treating them as test packages.
+
+@item --separate-drivers
+@cindex @option{--separate-drivers} (@command{gnattest})
+Generates a separate test driver for each test, rather than a single
+executable incorporating all tests.
+
+@item --stub
+@cindex @option{--stub} (@command{gnattest})
+Generates the testing framework that uses subsystem stubbing to isolate the
+code under test.
+
+
+@item --harness-dir=@var{dirname}
+@cindex @option{--harness-dir} (@command{gnattest})
+Specifies the directory that will hold the harness packages and project file
+for the test driver. If the @var{dirname} is a relative path, it is considered
+relative to the object directory of the project file.
+
+@item --tests-dir=@var{dirname}
+@cindex @option{--tests-dir} (@command{gnattest})
+All test packages are placed in the @var{dirname} directory.
+If the @var{dirname} is a relative path, it is considered relative to the object
+directory of the project file. When all sources from all projects are taken
+recursively from all projects, @var{dirname} directories are created for each
+project in their object directories and test packages are placed accordingly.
+
+@item --subdir=@var{dirname}
+@cindex @option{--subdir} (@command{gnattest})
+Test packages are placed in a subdirectory of the corresponding source
+directory, with the name @var{dirname}. Thus, each set of unit tests is located
+in a subdirectory of the code under test.  If the sources are in separate
+directories, each source directory has a test subdirectory named @var{dirname}.
+
+@item --tests-root=@var{dirname}
+@cindex @option{--tests-root} (@command{gnattest})
+The hierarchy of source directories, if any, is recreated in the @var{dirname}
+directory, with test packages placed in directories corresponding to those
+of the sources.
+If the @var{dirname} is a relative path, it is considered relative to the object
+directory of the project file. When projects are considered recursively,
+directory hierarchies of tested sources are
+recreated for each project in their object directories and test packages are
+placed accordingly.
+
+@item --stubs-dir=@var{dirname}
+@cindex @option{--stubs-dir} (@command{gnattest})
+The hierarchy of directories containing stubbed units is recreated in
+the @var{dirname} directory, with stubs placed in directories corresponding to
+projects they are derived from.
+If the @var{dirname} is a relative path, it is considered relative to the object
+directory of the project file. When projects are considered recursively,
+directory hierarchies of stubs are
+recreated for each project in their object directories and test packages are
+placed accordingly.
+
 
 @item --validate-type-extensions
 @cindex @option{--validate-type-extensions} (@command{gnattest})
 Enables substitution check: run all tests from all parents in order
-to check substitutability.
+to check substitutability in accordance with LSP.
 
 @item --skeleton-default=@var{val}
 @cindex @option{--skeleton-default} (@command{gnattest})
@@ -19136,37 +19235,11 @@ Specifies whether or not generated test driver should return failure exit
 status if at least one test fails or crashes. @var{val} can be either
 "on" or "off", "off" being the default.
 
+@item --omit-sloc
+@cindex @option{--omit-sloc} (@command{gnattest})
+Suppresses comment line containing file name and line number of corresponding
+subprograms in test skeletons.
 
-@item --tests-root=@var{dirname}
-@cindex @option{--tests-root} (@command{gnattest})
-The hierarchy of source directories, if any, is recreated in the @var{dirname}
-directory, with test packages placed in directories corresponding to those of the sources.
-If the @var{dirname} is a relative path, it is considered relative to the object
-directory of the project file. When all sources from all projects are taken
-recursively from all projects, directory hierarchies of tested sources are
-recreated for each project in their object directories and test packages are
-placed accordingly.
-
-@item --subdir=@var{dirname}
-@cindex @option{--subdir} (@command{gnattest})
-Test packages are placed in a subdirectory of the corresponding source directory,
-with the name @var{dirname}. Thus, each set of unit tests is located in a subdirectory of the
-code under test.  If the sources are in separate directories, each source directory
-has a test subdirectory named @var{dirname}.
-
-@item --tests-dir=@var{dirname}
-@cindex @option{--tests-dir} (@command{gnattest})
-All test packages are placed in the @var{dirname} directory.
-If the @var{dirname} is a relative path, it is considered relative to the object
-directory of the project file. When all sources from all projects are taken
-recursively from all projects, @var{dirname} directories are created for each
-project in their object directories and test packages are placed accordingly.
-
-@item --harness-dir=@var{dirname}
-@cindex @option{--harness-dir} (@command{gnattest})
-specifies the directory that will hold the harness packages and project file
-for the test driver. If the @var{dirname} is a relative path, it is considered
-relative to the object directory of the project file.
 
 @item --separates
 @cindex @option{--separates} (@command{gnattest})
@@ -19186,11 +19259,6 @@ separates. Note that if separate test routines had any manually added with
 clauses they will be moved to the test package body as is and have to be moved
 by hand.
 
-@item --omit-sloc
-@cindex @option{--omit-sloc} (@command{gnattest})
-Suppresses comment line containing file name and line number of corresponding
-subprograms in test skeletons.
-
 @item --test-duration
 @cindex @option{--test-duration} (@command{gnattest})
 Adds time measurements for each test in generated test driver.
@@ -19199,6 +19267,26 @@ Adds time measurements for each test in generated test driver.
 
 @option{--tests_root}, @option{--subdir} and @option{--tests-dir} switches are
 mutually exclusive.
+
+
+@node Switches for gnattest in tests execution mode
+@section Switches for @command{gnattest} in tests execution mode
+
+@table @option
+@c !sort!
+
+@item --passed-tests=@var{val}
+@cindex @option{--passed-tests} (@command{gnattest})
+Specifies whether or not passed tests should be shown. @var{val} can be either
+"show" or "hide", "show" being the default.
+
+@item --queues=@var{n}, -j@var{n}
+@cindex @option{--queues} (@command{gnattest})
+@cindex @option{-j} (@command{gnattest})
+Runs @var{n} tests in parallel (default is 1).
+
+@end table
+
 
 @node Project Attributes for gnattest
 @section Project Attributes for @command{gnattest}
@@ -19564,6 +19652,68 @@ gnattest -Psimple.gpr --additional-tests=additional/harness/harness.gpr \
 gnatmake -Pmixing/test_driver.gpr
 mixing/test_runner
 @end smallexample
+
+
+@node Individual Test Drivers
+@section Individual Test Drivers
+
+@noindent
+By default, @command{gnattest} generates a monolithic test driver that
+aggregates the individual tests into a single executable. It is also possible
+to generate separate executables for each test, by passing the switch
+@option{--separate-drivers}. This approach scales better for large testing
+campaigns, especially involving target architectures with limited resources
+typical for embedded development. It can also provide a major performance
+benefit on multi-core systems by allowing simultaneous execution of multiple
+tests.
+
+@command{gnattest} can take charge of executing the individual tests; for this,
+instead of passing a project file, a text file containing the list of
+executables can be passed. Such a file is automatically generated by gnattest
+under the name @option{test_drivers.list}, but it can be
+hand-edited to add or remove tests, or replaced. The individual tests can
+also be executed standalone, or from any user-defined scripted framework.
+
+
+@node Stubbing
+@section Stubbing
+
+@noindent
+Depending on the testing campaign, it is sometimes necessary to isolate the
+part of the algorithm under test from its dependencies. This is accomplished
+via @emph{stubbing}, i.e. replacing the subprograms that are called from the
+subprogram under test by stand-in subprograms that match the profiles of the
+original ones, but simply return predetermined values required by the test
+scenario.
+
+This mode of test harness generation is activated by the switch @option{--stub}.
+
+The implementation approach chosen by @command{gnattest} is as follows.
+For each package under consideration all the packages it is directly depending
+on are stubbed, excluding the generic packages and package instantiations.
+The stubs are shared for each package under test. The specs of packages to stub
+remain intact, while their bodies are replaced, and hide the original bodies by
+means of extending projects. Also, for each stubbed
+package, a child package with setter routines for each subprogram declaration
+is created. These setters are meant to be used to set the behaviour of
+stubbed subprograms from within test cases.
+
+Note that subprograms belonging to the same package as the subprogram under
+test are not stubbed. This guarantees that the sources being tested are
+exactly the sources used for production, which is an important property for
+establishing the traceability between the testing campaign and production code.
+
+Due to the nature of stubbing process, this mode implies the switch
+@option{--separate-drivers}, i.e. an individual test driver (with the
+corresponding hierarchy of extending projects) is generated for each test.
+
+@quotation Note
+Developing a stubs-based testing campaign requires
+good understanding of the infrastructure created by @command{gnattest} for
+this purpose. We recommend following the stubbing tutorials provided
+under @file{<install_prefix>/share/examples/gnattest/stubbing*} before
+attempting to use this powerful feature.
+@end quotation
 
 @node Putting Tests under Version Control
 @section Putting Tests under Version Control

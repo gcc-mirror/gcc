@@ -166,16 +166,16 @@ package body System.Task_Primitives.Operations is
    --  Install the default signal handlers for the current task
 
    function Is_Task_Context return Boolean;
-   --  This function returns True if the current execution is in the context
-   --  of a task, and False if it is an interrupt context.
+   --  This function returns True if the current execution is in the context of
+   --  a task, and False if it is an interrupt context.
 
    type Set_Stack_Limit_Proc_Acc is access procedure;
    pragma Convention (C, Set_Stack_Limit_Proc_Acc);
 
    Set_Stack_Limit_Hook : Set_Stack_Limit_Proc_Acc;
    pragma Import (C, Set_Stack_Limit_Hook, "__gnat_set_stack_limit_hook");
-   --  Procedure to be called when a task is created to set stack
-   --  limit. Used only for VxWorks 5 and VxWorks MILS guest OS.
+   --  Procedure to be called when a task is created to set stack limit. Used
+   --  only for VxWorks 5 and VxWorks MILS guest OS.
 
    function To_Address is
      new Ada.Unchecked_Conversion (Task_Id, System.Address);
@@ -670,9 +670,8 @@ package body System.Task_Primitives.Operations is
 
             if Result /= 0 then
 
-               --  If Ticks = int'last, it was most probably truncated
-               --  so let's make another round after recomputing Ticks
-               --  from the absolute time.
+               --  If Ticks = int'last, it was most probably truncated, so make
+               --  another round after recomputing Ticks from absolute time.
 
                if errno = S_objLib_OBJ_TIMEOUT and then Ticks /= int'Last then
                   Timedout := True;
@@ -889,8 +888,8 @@ package body System.Task_Primitives.Operations is
       use type System.Multiprocessors.CPU_Range;
 
    begin
-      --  Check whether both Dispatching_Domain and CPU are specified for the
-      --  task, and the CPU value is not contained within the range of
+      --  Check whether both Dispatching_Domain and CPU are specified for
+      --  the task, and the CPU value is not contained within the range of
       --  processors for the domain.
 
       if T.Common.Domain /= null
@@ -968,7 +967,9 @@ package body System.Task_Primitives.Operations is
 
       Set_Task_Affinity (T);
 
-      if T.Common.LL.Thread <= Null_Thread_Id then
+      --  Only case of failure is if taskSpawn returned 0 (aka Null_Thread_Id)
+
+      if T.Common.LL.Thread = Null_Thread_Id then
          Succeeded := False;
       else
          Succeeded := True;
@@ -1038,9 +1039,9 @@ package body System.Task_Primitives.Operations is
 
       --  Initialize internal mutex
 
-      --  Use simpler binary semaphore instead of VxWorks
-      --  mutual exclusion semaphore, because we don't need
-      --  the fancier semantics and their overhead.
+      --  Use simpler binary semaphore instead of VxWorks mutual exclusion
+      --  semaphore, because we don't need the fancier semantics and their
+      --  overhead.
 
       S.L := semBCreate (SEM_Q_FIFO, SEM_FULL);
 
@@ -1122,10 +1123,10 @@ package body System.Task_Primitives.Operations is
       Result := semTake (S.L, WAIT_FOREVER);
       pragma Assert (Result = OK);
 
-      --  If there is already a task waiting on this suspension object then
-      --  we resume it, leaving the state of the suspension object to False,
-      --  as it is specified in ARM D.10 par. 9. Otherwise, it just leaves
-      --  the state to True.
+      --  If there is already a task waiting on this suspension object then we
+      --  resume it, leaving the state of the suspension object to False, as it
+      --  is specified in (RM D.10 (9)). Otherwise, it just leaves the state to
+      --  True.
 
       if S.Waiting then
          S.Waiting := False;
@@ -1165,7 +1166,7 @@ package body System.Task_Primitives.Operations is
 
          --  Program_Error must be raised upon calling Suspend_Until_True
          --  if another task is already waiting on that suspension object
-         --  (ARM D.10 par. 10).
+         --  (RM D.10(10)).
 
          Result := semGive (S.L);
          pragma Assert (Result = OK);
@@ -1177,7 +1178,7 @@ package body System.Task_Primitives.Operations is
       else
          --  Suspend the task if the state is False. Otherwise, the task
          --  continues its execution, and the state of the suspension object
-         --  is set to False (ARM D.10 par. 9).
+         --  is set to False (RM D.10 (9)).
 
          if S.State then
             S.State := False;
