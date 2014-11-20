@@ -1,5 +1,10 @@
 2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* cfgexpand.c, gimple-ssa.h, trans-mem.c: Replace htab with
+	hash_table.
+
+2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* ipa-utils.c, lto-section-in.c, lto-streamer.h,
 	tree-scalar-evolution.c: Replace htab with hash_table.
 
