@@ -3766,14 +3766,10 @@ package body Exp_Ch5 is
          end loop;
       end if;
 
-      --  If original loop has a source name, preserve it so it can be
-      --  recognized by an exit statement in the body of the rewritten loop.
-      --  This only concerns source names: the generated name of an anonymous
-      --  loop will be create again during the subsequent analysis below.
+      --  Inherit the loop identifier from the original loop. This ensures that
+      --  the scope stack is consistent after the rewriting.
 
-      if Present (Identifier (N))
-        and then Comes_From_Source (Identifier (N))
-      then
+      if Present (Identifier (N)) then
          Set_Identifier (Core_Loop, Relocate_Node (Identifier (N)));
       end if;
 
