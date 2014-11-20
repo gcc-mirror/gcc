@@ -1,3 +1,10 @@
+2014-11-20  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR sanitizer/63845
+	* function.c (assign_parms): Move init of pic_offset_table_rtx
+	from here to...
+	* cfgexpand.c (expand_used_vars): ...here.
+
 2014-11-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (free_lang_data_in_type): If BINFO has no important
