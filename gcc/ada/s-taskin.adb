@@ -110,6 +110,10 @@ package body System.Tasking is
          return;
       end if;
 
+      --  Note that use of an aggregate here for this assignment
+      --  would be illegal, because Common_ATCB is limited because
+      --  Task_Primitives.Private_Data is limited.
+
       T.Common.Parent                   := Parent;
       T.Common.Base_Priority            := Base_Priority;
       T.Common.Base_CPU                 := Base_CPU;

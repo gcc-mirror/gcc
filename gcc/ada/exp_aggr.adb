@@ -2125,10 +2125,10 @@ package body Exp_Aggr is
 
          Btype := Base_Type (Typ);
          while Is_Derived_Type (Btype)
-           and then (Present (Stored_Constraint (Btype))
-                       or else
-                     (In_Aggr_Type
-                         and then Present (Stored_Constraint (Typ))))
+           and then
+             (Present (Stored_Constraint (Btype))
+               or else
+                 (In_Aggr_Type and then Present (Stored_Constraint (Typ))))
          loop
             Parent_Type := Etype (Btype);
 
@@ -2155,7 +2155,7 @@ package body Exp_Aggr is
                Discr_Val := First_Elmt (Stored_Constraint (Typ));
             end if;
 
-            while Present (Discr_Val) and Present (Disc) loop
+            while Present (Discr_Val) and then Present (Disc) loop
 
                --  Only those discriminants of the parent that are not
                --  renamed by discriminants of the derived type need to

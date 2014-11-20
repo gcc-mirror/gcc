@@ -4455,6 +4455,10 @@ package body Sem_Ch12 is
       SPARK_Mode_Pragma        := Save_SMP;
       Style_Check              := Save_Style_Check;
 
+      if SPARK_Mode = On then
+         Dynamic_Elaboration_Checks := False;
+      end if;
+
       --  Check that if N is an instantiation of System.Dim_Float_IO or
       --  System.Dim_Integer_IO, the formal type has a dimension system.
 
@@ -4491,6 +4495,10 @@ package body Sem_Ch12 is
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
          Style_Check              := Save_Style_Check;
+
+         if SPARK_Mode = On then
+            Dynamic_Elaboration_Checks := False;
+         end if;
    end Analyze_Package_Instantiation;
 
    --------------------------
@@ -5346,6 +5354,11 @@ package body Sem_Ch12 is
          Ignore_Pragma_SPARK_Mode := Save_IPSM;
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
+
+         if SPARK_Mode = On then
+            Dynamic_Elaboration_Checks := False;
+         end if;
+
       end if;
 
    <<Leave>>
@@ -5366,6 +5379,10 @@ package body Sem_Ch12 is
          Ignore_Pragma_SPARK_Mode := Save_IPSM;
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
+
+         if SPARK_Mode = On then
+            Dynamic_Elaboration_Checks := False;
+         end if;
    end Analyze_Subprogram_Instantiation;
 
    -------------------------
@@ -9748,6 +9765,7 @@ package body Sem_Ch12 is
       Loc        : Source_Ptr;
       Nam        : Node_Id;
       New_Spec   : Node_Id;
+      New_Subp   : Entity_Id;
 
    --  Start of processing for Instantiate_Formal_Subprogram
 
@@ -9763,10 +9781,10 @@ package body Sem_Ch12 is
       --  Create new entity for the actual (New_Copy_Tree does not), and
       --  indicate that it is an actual.
 
-      Set_Defining_Unit_Name
-        (New_Spec, Make_Defining_Identifier (Loc, Chars (Formal_Sub)));
-      Set_Ekind (Defining_Unit_Name (New_Spec), Ekind (Analyzed_S));
-      Set_Is_Generic_Actual_Subprogram (Defining_Unit_Name (New_Spec));
+      New_Subp := Make_Defining_Identifier (Loc, Chars (Formal_Sub));
+      Set_Ekind (New_Subp, Ekind (Analyzed_S));
+      Set_Is_Generic_Actual_Subprogram (New_Subp);
+      Set_Defining_Unit_Name (New_Spec, New_Subp);
 
       --  Create new entities for the each of the formals in the specification
       --  of the renaming declaration built for the actual.
@@ -10208,7 +10226,21 @@ package body Sem_Ch12 is
             begin
                Typ := Get_Instance_Of (Formal_Type);
 
-               Freeze_Before (Instantiation_Node, Typ);
+               --  If the actual appears in the current or an enclosing scope,
+               --  use its type directly. This is relevant if it has an actual
+               --  subtype that is distinct from its nominal one. This cannot
+               --  be done in general because the type of the actual may
+               --  depend on other actuals, and only be fully determined when
+               --  the enclosing instance is analyzed.
+
+               if Present (Etype (Actual))
+                  and then Is_Constr_Subt_For_U_Nominal (Etype (Actual))
+               then
+                  Freeze_Before (Instantiation_Node, Etype (Actual));
+
+               else
+                  Freeze_Before (Instantiation_Node, Typ);
+               end if;
 
                --  If the actual is an aggregate, perform name resolution on
                --  its components (the analysis of an aggregate does not do it)
@@ -14424,6 +14456,12 @@ package body Sem_Ch12 is
 
          SPARK_Mode := Save_SPARK_Mode;
          SPARK_Mode_Pragma := Save_SPARK_Mode_Pragma;
+
+         --  Make sure dynamic elaboration checks are off in SPARK Mode
+
+         if SPARK_Mode = On then
+            Dynamic_Elaboration_Checks := False;
+         end if;
       end if;
 
       Current_Instantiated_Parent :=

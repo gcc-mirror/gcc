@@ -1736,6 +1736,11 @@ package body Inline is
                 Parameter_Type         => Param_Type));
 
             Formal := First_Formal (Spec_Id);
+
+            --  Note that we copy the parameter type rather than creating
+            --  a reference to it, because it may be a class-wide entity
+            --  that will not be retrieved by name.
+
             while Present (Formal) loop
                Append_To (Formal_List,
                  Make_Parameter_Specification (Loc,
@@ -1747,7 +1752,7 @@ package body Inline is
                    Null_Exclusion_Present =>
                      Null_Exclusion_Present (Parent (Formal)),
                    Parameter_Type         =>
-                     New_Occurrence_Of (Etype (Formal), Loc),
+                     New_Copy_Tree (Parameter_Type (Parent (Formal))),
                    Expression             =>
                      Copy_Separate_Tree (Expression (Parent (Formal)))));
 

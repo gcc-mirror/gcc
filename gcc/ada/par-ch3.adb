@@ -1858,7 +1858,26 @@ package body Ch3 is
          end if;
 
          Set_Defining_Identifier (Decl_Node, Idents (Ident));
-         P_Aspect_Specifications (Decl_Node);
+         P_Aspect_Specifications (Decl_Node, Semicolon => False);
+
+         --  Allow initialization expression to follow aspects (note that in
+         --  this case P_Aspect_Specifications already issued an error msg).
+
+         if Token = Tok_Colon_Equal then
+            if Is_Non_Empty_List (Aspect_Specifications (Decl_Node)) then
+               Error_Msg
+                 ("aspect specifications must come after initialization "
+                  & "expression",
+                  Sloc (First (Aspect_Specifications (Decl_Node))));
+            end if;
+
+            Set_Expression (Decl_Node, Init_Expr_Opt);
+            Set_Has_Init_Expression (Decl_Node);
+         end if;
+
+         --  Now scan out the semicolon, which we deferred above
+
+         T_Semicolon;
 
          if List_OK then
             if Ident < Num_Idents then

@@ -1,3 +1,29 @@
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* s-tassta.adb, exp_aggr.adb, s-taskin.adb, exp_strm.adb: Minor
+	reformatting.
+	* comperr.adb (Compiler_Abort): New wording for bug box.
+	* par-ch13.adb: Minor reformatting.
+	* par-ch3.adb (P_Identifier_Declarations): Handle aspect
+	specifications given before initialization expression in object
+	declaration cleanly.
+	* gnat1drv.adb (Adjust_Global_Switches): Make sure static
+	elaboration mode is set if we are operating in SPARK mode.
+	* sem_ch12.adb (Analyze_Package_Instantiation): Make
+	sure static elab mode is set if we are in SPARK mode.
+	(Analyze_Subprogram_Instantiation): ditto.
+	(Set_Instance_Env): ditto.
+	* sem_elab.adb (Check_A_Call): In SPARK mode, we require
+	Elaborate_All in the case of a call during elaboration to a
+	subprogram in another unit.
+
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Can_Split_Unconstrained_Function,
+	Build_Procedure): Copy parameter type rather than creating
+	reference to the entity, to capture class-wide reference, whose
+	name is not retrieved by visibility.
+
 2014-11-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-taspri-solaris.ads: Replace 64 by long_long_integer'size.
