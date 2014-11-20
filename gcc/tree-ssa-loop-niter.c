@@ -3294,6 +3294,7 @@ maybe_lower_iteration_bound (struct loop *loop)
   struct nb_iter_bound *elt;
   bool found_exit = false;
   vec<basic_block> queue = vNULL;
+  vec<gimple> problem_stmts = vNULL;
   bitmap visited;
 
   /* Collect all statements with interesting (i.e. lower than
@@ -3339,6 +3340,7 @@ maybe_lower_iteration_bound (struct loop *loop)
 	  if (not_executed_last_iteration->contains (stmt))
 	    {
 	      stmt_found = true;
+	      problem_stmts.safe_push (stmt);
 	      break;
 	    }
 	  if (gimple_has_side_effects (stmt))
@@ -3382,9 +3384,53 @@ maybe_lower_iteration_bound (struct loop *loop)
 		 "undefined statement must be executed at the last iteration.\n");
       record_niter_bound (loop, loop->nb_iterations_upper_bound - 1,
 			  false, true);
+
+      if (warn_aggressive_loop_optimizations)
+	{
+	  bool exit_warned = false;
+	  for (elt = loop->bounds; elt; elt = elt->next)
+	    {
+	      if (elt->is_exit
+		  && wi::gtu_p (elt->bound, loop->nb_iterations_upper_bound))
+		{
+		  basic_block bb = gimple_bb (elt->stmt);
+		  edge exit_edge = EDGE_SUCC (bb, 0);
+		  struct tree_niter_desc niter;
+
+		  if (!loop_exit_edge_p (loop, exit_edge))
+		    exit_edge = EDGE_SUCC (bb, 1);
+
+		  if(number_of_iterations_exit (loop, exit_edge,
+						&niter, false, false)
+		     && integer_onep (niter.assumptions)
+		     && integer_zerop (niter.may_be_zero)
+		     && niter.niter
+		     && TREE_CODE (niter.niter) == INTEGER_CST
+		     && wi::ltu_p (loop->nb_iterations_upper_bound,
+				   wi::to_widest (niter.niter)))
+		   {
+		     if (warning_at (gimple_location (elt->stmt),
+				     OPT_Waggressive_loop_optimizations,
+				     "loop exit may only be reached after undefined behavior"))
+		       exit_warned = true;
+		   }
+		}
+	    }
+
+	  if (exit_warned && !problem_stmts.empty ())
+	    {
+	      gimple stmt;
+	      int index;
+	      FOR_EACH_VEC_ELT (problem_stmts, index, stmt)
+		inform (gimple_location (stmt),
+			"possible undefined statement is here");
+	    }
+      }
     }
+
   BITMAP_FREE (visited);
   queue.release ();
+  problem_stmts.release ();
   delete not_executed_last_iteration;
 }
 
