@@ -1893,9 +1893,10 @@ package Prj is
    --       * user project also includes a "with" that can only be resolved
    --         once we have found the gnatls
 
-   procedure Update_Ignore_Missing_With
-     (Flags : in out Processing_Flags; Value : Boolean);
-   --  Update the value of component Ignore_Missing_With in Flags with Value
+   procedure Set_Ignore_Missing_With
+     (Flags : in out Processing_Flags;
+      Value : Boolean);
+   --  Set the value of component Ignore_Missing_With in Flags to Value
 
    Gprbuild_Flags   : constant Processing_Flags;
    Gprinstall_Flags : constant Processing_Flags;

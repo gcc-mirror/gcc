@@ -774,15 +774,20 @@ package body Inline is
             end if;
 
             J := J + 1;
+
+            if J > Inlined_Bodies.Last then
+
+               --  The analysis of required bodies may have produced additional
+               --  generic instantiations. To obtain further inlining, we need
+               --  to perform another round of generic body instantiations.
+
+               Instantiate_Bodies;
+
+               --  Symmetrically, the instantiation of required generic bodies
+               --  may have caused additional bodies to be inlined. To obtain
+               --  further inlining, we keep looping over the inlined bodies.
+            end if;
          end loop;
-
-         --  The analysis of required bodies may have produced additional
-         --  generic instantiations. To obtain further inlining, we perform
-         --  another round of generic body instantiations. Establishing a
-         --  fully recursive loop between inlining and generic instantiations
-         --  is unlikely to yield more than this one additional pass.
-
-         Instantiate_Bodies;
 
          --  The list of inlined subprograms is an overestimate, because it
          --  includes inlined functions called from functions that are compiled

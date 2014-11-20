@@ -1630,7 +1630,7 @@ package body Prj.Conf is
 
       --  Start with ignoring missing withed projects
 
-      Update_Ignore_Missing_With (Env.Flags, True);
+      Set_Ignore_Missing_With (Env.Flags, True);
 
       --  Note: If in fact the config file is automatically generated, then
       --  Automatically_Generated will be set to True after invocation of
@@ -1751,7 +1751,7 @@ package body Prj.Conf is
       --  update the project path and try again.
 
       if Main_Project /= No_Project and then Config_Try_Again then
-         Update_Ignore_Missing_With (Env.Flags, False);
+         Set_Ignore_Missing_With (Env.Flags, False);
 
          if Config_File_Path /= null then
             Conf_File_Name := new String'(Config_File_Path.all);
