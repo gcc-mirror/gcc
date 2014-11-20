@@ -1,3 +1,7 @@
+2014-11-20  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* gcc.dg/no-strict-overflow-8.c: New test.
+
 2014-11-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc.dg/undefined-loop-1.c: New file.
