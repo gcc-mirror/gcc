@@ -183,7 +183,8 @@ polymorphic_type_binfo_p (const_tree binfo)
   /* See if BINFO's type has an virtual table associtated with it.
      Check is defensive because of Java FE produces BINFOs
      without BINFO_TYPE set.   */
-  return BINFO_TYPE (binfo) && BINFO_VTABLE (TYPE_BINFO (BINFO_TYPE (binfo)));
+  return (BINFO_TYPE (binfo) && TYPE_BINFO (BINFO_TYPE (binfo))
+	  && BINFO_VTABLE (TYPE_BINFO (BINFO_TYPE (binfo))));
 }
 #endif  /* GCC_IPA_UTILS_H  */
 

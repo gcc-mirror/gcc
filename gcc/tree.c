@@ -4976,7 +4976,14 @@ free_lang_data_in_type (tree type)
 
       TYPE_METHODS (type) = NULL_TREE;
       if (TYPE_BINFO (type))
-	free_lang_data_in_binfo (TYPE_BINFO (type));
+	{
+	  free_lang_data_in_binfo (TYPE_BINFO (type));
+	  if ((!BINFO_VTABLE (TYPE_BINFO (type))
+	       || !flag_devirtualize)
+	      && (!BINFO_N_BASE_BINFOS (TYPE_BINFO (type))
+		  || debug_info_level != DINFO_LEVEL_NONE))
+	    TYPE_BINFO (type) = NULL;
+	}
     }
   else
     {
@@ -11926,7 +11933,7 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
 
       for (fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
 	{
-	  if (TREE_CODE (fld) != FIELD_DECL)
+	  if (TREE_CODE (fld) != FIELD_DECL || !DECL_ARTIFICIAL (fld))
 	    continue;
 
 	  pos = int_bit_position (fld);
@@ -11937,12 +11944,6 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
       if (!fld || TREE_CODE (TREE_TYPE (fld)) != RECORD_TYPE)
 	return NULL_TREE;
 
-      if (!DECL_ARTIFICIAL (fld))
-	{
-	  binfo = TYPE_BINFO (TREE_TYPE (fld));
-	  if (!binfo)
-	    return NULL_TREE;
-	}
       /* Offset 0 indicates the primary base, whose vtable contents are
 	 represented in the binfo for the derived class.  */
       else if (offset != 0)
@@ -11967,6 +11968,7 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
 		      * BITS_PER_UNIT < pos
 		      /* Rule out types with no virtual methods or we can get confused
 			 here by zero sized bases.  */
+		      && TYPE_BINFO (BINFO_TYPE (base_binfo))
 		      && BINFO_VTABLE (TYPE_BINFO (BINFO_TYPE (base_binfo)))
 		      && (!containing_binfo
 			  || (tree_to_shwi (BINFO_OFFSET (containing_binfo))
