@@ -2501,7 +2501,7 @@ win32_wait (int *status)
   pidl = (int *) xmalloc (sizeof (int) * hl_len);
   memmove (pidl, PID_LIST, sizeof (int) * hl_len);
 #else
-  /* Note that index 0 contains the event hanlde that is signaled when the
+  /* Note that index 0 contains the event handle that is signaled when the
      process list has changed */
   hl = (HANDLE *) xmalloc (sizeof (HANDLE) * hl_len + 1);
   hl[0] = ProcListEvt;

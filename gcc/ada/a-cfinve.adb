@@ -29,6 +29,7 @@
 package body Ada.Containers.Formal_Indefinite_Vectors with
   SPARK_Mode => Off
 is
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    function H (New_Item : Element_Type) return Holder renames To_Holder;
    function E (Container : Holder) return Element_Type renames Get;

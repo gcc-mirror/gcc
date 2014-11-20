@@ -3555,7 +3555,7 @@ package body Sem_Ch13 is
 
             if  Base_Type (Typ) = Base_Type (Ent)
               or else (Is_Class_Wide_Type (Typ)
-                and then Typ = Class_Wide_Type (Base_Type (Ent)))
+                        and then Typ = Class_Wide_Type (Base_Type (Ent)))
             then
                null;
             else
@@ -3650,8 +3650,8 @@ package body Sem_Ch13 is
                 (Ekind (Subp) = E_Function
                   or else
                     not Null_Present
-                      (Specification
-                         (Unit_Declaration_Node (Ultimate_Alias (Subp)))))
+                          (Specification
+                             (Unit_Declaration_Node (Ultimate_Alias (Subp)))))
             then
                Error_Msg_N
                  ("stream subprogram for interface type "
@@ -6600,6 +6600,12 @@ package body Sem_Ch13 is
                                or else Size_Known_At_Compile_Time
                                          (Underlying_Type (Etype (Comp))))
                     and then not Has_Warnings_Off (Rectype)
+
+                    --  Ignore discriminant in unchecked union, since it is
+                    --  not there, and cannot have a component clause.
+
+                    and then (not Is_Unchecked_Union (Rectype)
+                               or else Ekind (Comp) /= E_Discriminant)
                   then
                      Error_Msg_Sloc := Sloc (Comp);
                      Error_Msg_NE

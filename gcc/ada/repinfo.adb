@@ -847,36 +847,48 @@ package body Repinfo is
 
       Comp := First_Component_Or_Discriminant (Ent);
       while Present (Comp) loop
-         Get_Decoded_Name_String (Chars (Comp));
-         Max_Name_Length := Natural'Max (Max_Name_Length, Name_Len);
 
-         Cfbit := Component_Bit_Offset (Comp);
+         --  Skip discriminant in unchecked union (since it is not there!)
 
-         if Rep_Not_Constant (Cfbit) then
-            UI_Image_Length := 2;
+         if Ekind (Comp) = E_Discriminant
+           and then Is_Unchecked_Union (Ent)
+         then
+            null;
+
+         --  All other cases
 
          else
-            --  Complete annotation in case not done
+            Get_Decoded_Name_String (Chars (Comp));
+            Max_Name_Length := Natural'Max (Max_Name_Length, Name_Len);
 
-            Set_Normalized_Position (Comp, Cfbit / SSU);
-            Set_Normalized_First_Bit (Comp, Cfbit mod SSU);
+            Cfbit := Component_Bit_Offset (Comp);
 
-            Sunit := Cfbit / SSU;
-            UI_Image (Sunit);
+            if Rep_Not_Constant (Cfbit) then
+               UI_Image_Length := 2;
+
+            else
+               --  Complete annotation in case not done
+
+               Set_Normalized_Position (Comp, Cfbit / SSU);
+               Set_Normalized_First_Bit (Comp, Cfbit mod SSU);
+
+               Sunit := Cfbit / SSU;
+               UI_Image (Sunit);
+            end if;
+
+            --  If the record is not packed, then we know that all fields
+            --  whose position is not specified have a starting normalized
+            --  bit position of zero.
+
+            if Unknown_Normalized_First_Bit (Comp)
+              and then not Is_Packed (Ent)
+            then
+               Set_Normalized_First_Bit (Comp, Uint_0);
+            end if;
+
+            Max_Suni_Length :=
+              Natural'Max (Max_Suni_Length, UI_Image_Length);
          end if;
-
-         --  If the record is not packed, then we know that all fields whose
-         --  position is not specified have a starting normalized bit position
-         --  of zero.
-
-         if Unknown_Normalized_First_Bit (Comp)
-           and then not Is_Packed (Ent)
-         then
-            Set_Normalized_First_Bit (Comp, Uint_0);
-         end if;
-
-         Max_Suni_Length :=
-           Natural'Max (Max_Suni_Length, UI_Image_Length);
 
          Next_Component_Or_Discriminant (Comp);
       end loop;
@@ -885,6 +897,17 @@ package body Repinfo is
 
       Comp := First_Component_Or_Discriminant (Ent);
       while Present (Comp) loop
+
+         --  Skip discriminant in unchecked union (since it is not there!)
+
+         if Ekind (Comp) = E_Discriminant
+           and then Is_Unchecked_Union (Ent)
+         then
+            goto Continue;
+         end if;
+
+         --  All other cases
+
          declare
             Esiz : constant Uint := Esize (Comp);
             Bofs : constant Uint := Component_Bit_Offset (Comp);
