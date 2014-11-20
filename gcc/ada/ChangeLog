@@ -1,3 +1,29 @@
+2014-11-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-parame-ae653.ads: Update comments.
+
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* types.ads, einfo.ads: Minor reformatting.
+	* sem_elab.adb (Check_A_Call): Add guard for reference to Alias
+	for variable case.
+
+2014-11-20  Bob Duff  <duff@adacore.com>
+
+	* a-cofove.adb (Elems,Elemsc): Use access-to-constrained arrays
+	instead of access-to-unconstrained, because the latter doesn't
+	work with 'Unrestricted_Access when the result is returned from
+	a function.
+	* a-cofove.ads (Vector): Move the discriminant-dependent array
+	after the other components for efficiency. Otherwise the compiler
+	will generate a lot of code to calculate the offset of the other
+	components every time they're accessed.
+
+2014-11-20  Olivier Hainque  <hainque@adacore.com>
+
+	* opt.ads: Fix comment on Generate_SCO_Instance_Table wrt when
+	it is set to true.
+
 2014-11-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch3.adb (Expand_N_Object_Declaration): Handle properly

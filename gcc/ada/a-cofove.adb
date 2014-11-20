@@ -42,16 +42,24 @@ is
    type Int is range System.Min_Int .. System.Max_Int;
    type UInt is mod System.Max_Binary_Modulus;
 
-   type Elements_Array_Ptr_Const is access constant Elements_Array;
-
    procedure Free is
       new Ada.Unchecked_Deallocation (Elements_Array, Elements_Array_Ptr);
 
-   function Elems (Container : in out Vector) return Elements_Array_Ptr;
+   type Maximal_Array_Ptr is access all Elements_Array (Capacity_Range)
+     with Storage_Size => 0;
+   type Maximal_Array_Ptr_Const is access constant
+     Elements_Array (Capacity_Range)
+       with Storage_Size => 0;
+
+   function Elems (Container : in out Vector) return Maximal_Array_Ptr;
    function Elemsc
-     (Container : Vector) return Elements_Array_Ptr_Const;
+     (Container : Vector) return Maximal_Array_Ptr_Const;
    --  Returns a pointer to the Elements array currently in use -- either
-   --  Container.Elements_Ptr or a pointer to Container.Elements.
+   --  Container.Elements_Ptr or a pointer to Container.Elements. We work with
+   --  pointers to a bogus array subtype that is constrained with the maximum
+   --  possible bounds. This means that the pointer is a thin pointer. This is
+   --  necessary because 'Unrestricted_Access doesn't work when it produces
+   --  access-to-unconstrained and is returned from a function.
 
    function Get_Element
      (Container : Vector;
@@ -257,19 +265,19 @@ is
    -- Elements --
    --------------
 
-   function Elems (Container : in out Vector) return Elements_Array_Ptr is
+   function Elems (Container : in out Vector) return Maximal_Array_Ptr is
    begin
       return (if Container.Elements_Ptr = null
                 then Container.Elements'Unrestricted_Access
-                else Container.Elements_Ptr);
+                else Container.Elements_Ptr.all'Unrestricted_Access);
    end Elems;
 
    function Elemsc
-     (Container : Vector) return Elements_Array_Ptr_Const is
+     (Container : Vector) return Maximal_Array_Ptr_Const is
    begin
       return (if Container.Elements_Ptr = null
                 then Container.Elements'Unrestricted_Access
-                else Elements_Array_Ptr_Const (Container.Elements_Ptr));
+                else Container.Elements_Ptr.all'Unrestricted_Access);
    end Elemsc;
 
    ----------------
@@ -632,8 +640,8 @@ is
 
          Last := Index_Type (Last_As_Int);
 
-         return (Length, (others => New_Item), Last => Last,
-                 others => <>);
+         return (Capacity => Length, Last => Last, Elements_Ptr => <>,
+                 Elements => (others => New_Item));
       end;
    end To_Vector;
 

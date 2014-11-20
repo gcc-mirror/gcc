@@ -255,9 +255,9 @@ private
       --  In the bounded case, the elements are stored in Elements. In the
       --  unbounded case, the elements are initially stored in Elements, until
       --  we run out of room, then we switch to Elements_Ptr.
-      Elements     : aliased Elements_Array (1 .. Capacity);
       Last         : Extended_Index := No_Index;
       Elements_Ptr : Elements_Array_Ptr := null;
+      Elements     : aliased Elements_Array (1 .. Capacity);
    end record;
 
    --  The primary reason Vector is limited is that in the unbounded case, once
