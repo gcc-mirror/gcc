@@ -1722,6 +1722,9 @@ expand_used_vars (void)
 
   init_vars_expansion ();
 
+  if (targetm.use_pseudo_pic_reg ())
+    pic_offset_table_rtx = gen_reg_rtx (Pmode);
+
   hash_map<tree, tree> ssa_name_decls;
   for (i = 0; i < SA.map->num_partitions; i++)
     {

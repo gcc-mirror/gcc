@@ -3679,11 +3679,6 @@ assign_parms (tree fndecl)
 
   fnargs.release ();
 
-  /* Initialize pic_offset_table_rtx with a pseudo register
-     if required.  */
-  if (targetm.use_pseudo_pic_reg ())
-    pic_offset_table_rtx = gen_reg_rtx (Pmode);
-
   /* Output all parameter conversion instructions (possibly including calls)
      now that all parameters have been copied out of hard registers.  */
   emit_insn (all.first_conversion_insn);
