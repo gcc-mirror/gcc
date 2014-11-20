@@ -802,15 +802,18 @@ package body Exp_Dist is
          --  the declaration and entity for the newly-created function.
 
          function Build_To_Any_Call
-           (Loc   : Source_Ptr;
-            N     : Node_Id;
-            Decls : List_Id) return Node_Id;
+           (Loc         : Source_Ptr;
+            N           : Node_Id;
+            Decls       : List_Id;
+            Constrained : Boolean := False) return Node_Id;
          --  Build call to To_Any attribute function with expression as actual
-         --  parameter. Loc is the reference location ofr generated nodes,
+         --  parameter. Loc is the reference location of generated nodes,
          --  Decls is the declarations list for an appropriate enclosing scope
          --  of the point where the call will be inserted; if the To_Any
          --  attribute for the type of N needs to be generated at this point,
-         --  its declaration is appended to Decls.
+         --  its declaration is appended to Decls. For the case of a limited
+         --  type, there is an additional parameter Constrained indicating
+         --  whether 'Write (when True) or 'Output (when False) is used.
 
          procedure Build_To_Any_Function
            (Loc  : Source_Ptr;
@@ -853,11 +856,12 @@ package body Exp_Dist is
          --  containing the name of E, the second containing its repository id.
 
          procedure Assign_Opaque_From_Any
-           (Loc    : Source_Ptr;
-            Stms   : List_Id;
-            Typ    : Entity_Id;
-            N      : Node_Id;
-            Target : Entity_Id);
+           (Loc         : Source_Ptr;
+            Stms        : List_Id;
+            Typ         : Entity_Id;
+            N           : Node_Id;
+            Target      : Entity_Id;
+            Constrained : Boolean := False);
          --  For a Target object of type Typ, which has opaque representation
          --  as a sequence of octets determined by stream attributes (which
          --  includes all limited types), append code to Stmts performing the
@@ -866,6 +870,9 @@ package body Exp_Dist is
          --
          --  or, if Target is Empty:
          --    return Typ'From_Any (N)
+         --
+         --  Constrained determines whether 'Input (when False) or 'Read
+         --  (when True) is used.
 
       end Helpers;
 
@@ -880,9 +887,10 @@ package body Exp_Dist is
      renames PolyORB_Support.Helpers.Build_From_Any_Call;
 
    function Build_To_Any_Call
-     (Loc   : Source_Ptr;
-      N     : Node_Id;
-      Decls : List_Id) return Node_Id
+     (Loc         : Source_Ptr;
+      N           : Node_Id;
+      Decls       : List_Id;
+      Constrained : Boolean := False) return Node_Id
      renames PolyORB_Support.Helpers.Build_To_Any_Call;
 
    function Build_TypeCode_Call
@@ -7395,11 +7403,13 @@ package body Exp_Dist is
                   then
                      if Is_Limited_Type (Etyp) then
                         Helpers.Assign_Opaque_From_Any (Loc,
-                           Stms   => After_Statements,
-                           Typ    => Etyp,
-                           N      => New_Occurrence_Of (Any, Loc),
-                           Target =>
-                             Defining_Identifier (Current_Parameter));
+                           Stms        => After_Statements,
+                           Typ         => Etyp,
+                           N           => New_Occurrence_Of (Any, Loc),
+                           Target      =>
+                             Defining_Identifier (Current_Parameter),
+                           Constrained => True);
+
                      else
                         Append_To (After_Statements,
                           Make_Assignment_Statement (Loc,
@@ -7925,7 +7935,7 @@ package body Exp_Dist is
                --  An out parameter may be written back using a 'Write
                --  attribute instead of a 'Output because it has been
                --  constrained by the parameter given to the caller. Note that
-               --  out controlling arguments in the case of a RACW are not put
+               --  OUT controlling arguments in the case of a RACW are not put
                --  back in the stream because the pointer on them has not
                --  changed.
 
@@ -7938,7 +7948,10 @@ package body Exp_Dist is
                       Parameter_Associations => New_List (
                         New_Occurrence_Of (Any, Loc),
                         PolyORB_Support.Helpers.Build_To_Any_Call
-                          (Loc, New_Occurrence_Of (Object, Loc), Decls))));
+                          (Loc,
+                           New_Occurrence_Of (Object, Loc),
+                           Decls,
+                           Constrained => True))));
                end if;
 
                --  For RACW controlling formals, the Etyp of Object is always
@@ -8314,11 +8327,12 @@ package body Exp_Dist is
          -----------------------------
 
          procedure Assign_Opaque_From_Any
-           (Loc    : Source_Ptr;
-            Stms   : List_Id;
-            Typ    : Entity_Id;
-            N      : Node_Id;
-            Target : Entity_Id)
+           (Loc         : Source_Ptr;
+            Stms        : List_Id;
+            Typ         : Entity_Id;
+            N           : Node_Id;
+            Target      : Entity_Id;
+            Constrained : Boolean := False)
          is
             Strm : constant Entity_Id := Make_Temporary (Loc, 'S');
             Expr : Node_Id;
@@ -8345,7 +8359,7 @@ package body Exp_Dist is
                   N,
                   New_Occurrence_Of (Strm, Loc))));
 
-            if Transmit_As_Unconstrained (Typ) then
+            if Transmit_As_Unconstrained (Typ) and then not Constrained then
                Expr :=
                  Make_Attribute_Reference (Loc,
                    Prefix         => New_Occurrence_Of (Typ, Loc),
@@ -9223,9 +9237,10 @@ package body Exp_Dist is
          -----------------------
 
          function Build_To_Any_Call
-           (Loc   : Source_Ptr;
-            N     : Node_Id;
-            Decls : List_Id) return Node_Id
+           (Loc         : Source_Ptr;
+            N           : Node_Id;
+            Decls       : List_Id;
+            Constrained : Boolean := False) return Node_Id
          is
             Typ    : Entity_Id := Etype (N);
             U_Type : Entity_Id;
@@ -9382,11 +9397,20 @@ package body Exp_Dist is
                C_Type := U_Type;
             end if;
 
-            return
-                Make_Function_Call (Loc,
-                  Name                   => New_Occurrence_Of (Fnam, Loc),
-                  Parameter_Associations =>
-                    New_List (OK_Convert_To (C_Type, N)));
+            declare
+               Params : constant List_Id :=
+                 New_List (OK_Convert_To (C_Type, N));
+            begin
+               if Is_Limited_Type (C_Type) then
+                  Append_To (Params,
+                    New_Occurrence_Of (Boolean_Literals (Constrained), Loc));
+               end if;
+
+               return
+                   Make_Function_Call (Loc,
+                     Name                   => New_Occurrence_Of (Fnam, Loc),
+                     Parameter_Associations => Params);
+            end;
          end Build_To_Any_Call;
 
          ---------------------------
@@ -9399,13 +9423,15 @@ package body Exp_Dist is
             Decl : out Node_Id;
             Fnam : out Entity_Id)
          is
-            Spec  : Node_Id;
-            Decls : constant List_Id := New_List;
-            Stms  : constant List_Id := New_List;
+            Spec   : Node_Id;
+            Params : List_Id;
+            Decls  : List_Id;
+            Stms   : List_Id;
 
-            Expr_Parameter : Entity_Id;
-            Any            : Entity_Id;
-            Result_TC      : Node_Id;
+            Expr_Formal : Entity_Id;
+            Cstr_Formal : Entity_Id;
+            Any         : Entity_Id;
+            Result_TC   : Node_Id;
 
             Any_Decl  : Node_Id;
 
@@ -9428,21 +9454,36 @@ package body Exp_Dist is
                return;
             end if;
 
-            Expr_Parameter := Make_Defining_Identifier (Loc, Name_E);
-            Any            := Make_Defining_Identifier (Loc, Name_A);
-            Result_TC      := Build_TypeCode_Call (Loc, Typ, Decls);
+            Decls := New_List;
+            Stms  := New_List;
+
+            Any         := Make_Defining_Identifier (Loc, Name_A);
+            Result_TC   := Build_TypeCode_Call (Loc, Typ, Decls);
 
             Fnam := Make_Helper_Function_Name (Loc, Typ, Name_To_Any);
 
+            Expr_Formal := Make_Defining_Identifier (Loc, Name_E);
+            Params := New_List (
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier => Expr_Formal,
+                Parameter_Type      => New_Occurrence_Of (Typ, Loc)));
+            Set_Etype (Expr_Formal, Typ);
+
+            if Is_Limited_Type (Typ) then
+               Cstr_Formal := Make_Defining_Identifier (Loc, Name_C);
+               Append_To (Params,
+                 Make_Parameter_Specification (Loc,
+                   Defining_Identifier => Cstr_Formal,
+                   Parameter_Type      =>
+                     New_Occurrence_Of (Standard_Boolean, Loc)));
+            end if;
+
             Spec :=
               Make_Function_Specification (Loc,
-                Defining_Unit_Name => Fnam,
-                Parameter_Specifications => New_List (
-                  Make_Parameter_Specification (Loc,
-                    Defining_Identifier => Expr_Parameter,
-                    Parameter_Type => New_Occurrence_Of (Typ, Loc))),
-                Result_Definition  => New_Occurrence_Of (RTE (RE_Any), Loc));
-            Set_Etype (Expr_Parameter, Typ);
+                Defining_Unit_Name       => Fnam,
+                Parameter_Specifications => Params,
+                Result_Definition        =>
+                  New_Occurrence_Of (RTE (RE_Any), Loc));
 
             Any_Decl :=
               Make_Object_Declaration (Loc,
@@ -9472,7 +9513,7 @@ package body Exp_Dist is
                   Expr    : constant Node_Id :=
                               OK_Convert_To
                                 (Rt_Type,
-                                 New_Occurrence_Of (Expr_Parameter, Loc));
+                                 New_Occurrence_Of (Expr_Formal, Loc));
                begin
                   Set_Expression (Any_Decl,
                     Build_To_Any_Call (Loc, Expr, Decls));
@@ -9487,7 +9528,7 @@ package body Exp_Dist is
                      Rt_Type : constant Entity_Id := Etype (Typ);
                      Expr    : constant Node_Id :=
                                  OK_Convert_To (Rt_Type,
-                                   New_Occurrence_Of (Expr_Parameter, Loc));
+                                   New_Occurrence_Of (Expr_Formal, Loc));
 
                   begin
                      Set_Expression
@@ -9514,7 +9555,7 @@ package body Exp_Dist is
 
                      procedure TA_Append_Record_Traversal is
                         new Append_Record_Traversal
-                          (Rec                 => Expr_Parameter,
+                          (Rec                 => Expr_Formal,
                            Add_Process_Element => TA_Rec_Add_Process_Element);
 
                      --------------------------------
@@ -9762,7 +9803,7 @@ package body Exp_Dist is
                               Discriminant : constant Entity_Id :=
                                                Make_Selected_Component (Loc,
                                                  Prefix        =>
-                                                   Expr_Parameter,
+                                                   Expr_Formal,
                                                  Selector_Name =>
                                                    Chars (Disc));
 
@@ -9880,7 +9921,7 @@ package body Exp_Dist is
                   procedure Append_To_Any_Array_Iterator is
                     new Append_Array_Traversal (
                       Subprogram => Fnam,
-                      Arry       => Expr_Parameter,
+                      Arry       => Expr_Formal,
                       Indexes    => New_List,
                       Add_Process_Element => TA_Ary_Add_Process_Element);
 
@@ -9908,7 +9949,7 @@ package body Exp_Dist is
                                 OK_Convert_To (Etype (Index),
                                   Make_Attribute_Reference (Loc,
                                     Prefix         =>
-                                      New_Occurrence_Of (Expr_Parameter, Loc),
+                                      New_Occurrence_Of (Expr_Formal, Loc),
                                     Attribute_Name => Name_First,
                                     Expressions    => New_List (
                                       Make_Integer_Literal (Loc, J)))),
@@ -9928,7 +9969,7 @@ package body Exp_Dist is
                  Build_To_Any_Call (Loc,
                    OK_Convert_To (
                      Find_Numeric_Representation (Typ),
-                     New_Occurrence_Of (Expr_Parameter, Loc)),
+                     New_Occurrence_Of (Expr_Formal, Loc)),
                    Decls));
 
             else
@@ -9958,27 +9999,49 @@ package body Exp_Dist is
                   --    T'Output (Strm'Access, E);
                   --  or
                   --    T'Write (Strm'Access, E);
-                  --  depending on whether to transmit as unconstrained
+                  --  depending on whether to transmit as unconstrained.
+
+                  --  For limited types, select at run time depending on
+                  --  Constrained parameter.
 
                   declare
-                     Attr_Name : Name_Id;
+                     function Stream_Call (Attr : Name_Id) return Node_Id;
+                     --  Return a call to the named attribute
+
+                     -----------------
+                     -- Stream_Call --
+                     -----------------
+
+                     function Stream_Call (Attr : Name_Id) return Node_Id is
+                     begin
+                        return Make_Attribute_Reference (Loc,
+                                 Prefix         =>
+                                   New_Occurrence_Of (Typ, Loc),
+                                 Attribute_Name => Attr,
+                                 Expressions    => New_List (
+                                   Make_Attribute_Reference (Loc,
+                                     Prefix         =>
+                                       New_Occurrence_Of (Strm, Loc),
+                                     Attribute_Name => Name_Access),
+                                   New_Occurrence_Of (Expr_Formal, Loc)));
+
+                     end Stream_Call;
 
                   begin
-                     if Transmit_As_Unconstrained (Typ) then
-                        Attr_Name := Name_Output;
-                     else
-                        Attr_Name := Name_Write;
-                     end if;
+                     if Is_Limited_Type (Typ) then
+                        Append_To (Stms,
+                          Make_Implicit_If_Statement (Typ,
+                            Condition => New_Occurrence_Of (Cstr_Formal, Loc),
+                            Then_Statements => New_List (
+                              Stream_Call (Name_Write)),
+                            Else_Statements => New_List (
+                              Stream_Call (Name_Output))));
 
-                     Append_To (Stms,
-                         Make_Attribute_Reference (Loc,
-                           Prefix         => New_Occurrence_Of (Typ, Loc),
-                           Attribute_Name => Attr_Name,
-                           Expressions    => New_List (
-                             Make_Attribute_Reference (Loc,
-                               Prefix         => New_Occurrence_Of (Strm, Loc),
-                               Attribute_Name => Name_Access),
-                             New_Occurrence_Of (Expr_Parameter, Loc))));
+                     elsif Transmit_As_Unconstrained (Typ) then
+                        Append_To (Stms, Stream_Call (Name_Output));
+                     else
+                        Append_To (Stms, Stream_Call (Name_Write));
+                     end if;
                   end;
 
                   --  Generate:
