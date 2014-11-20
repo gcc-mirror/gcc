@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,11 +65,18 @@ package body System.Multiprocessors.Dispatching_Domains is
    -- Create --
    ------------
 
-   function Create (First, Last : CPU) return Dispatching_Domain is
+   function Create (First : CPU; Last : CPU_Range) return Dispatching_Domain is
       pragma Unreferenced (First, Last);
    begin
-      raise Dispatching_Domain_Error with "dispatching domains not supported";
-      return System_Dispatching_Domain;
+      return raise Dispatching_Domain_Error with
+        "dispatching domains not supported";
+   end Create;
+
+   function Create (Set : CPU_Set) return Dispatching_Domain is
+      pragma Unreferenced (Set);
+   begin
+      return raise Dispatching_Domain_Error with
+        "dispatching domains not supported";
    end Create;
 
    -----------------------------
@@ -107,6 +114,17 @@ package body System.Multiprocessors.Dispatching_Domains is
       return Not_A_Specific_CPU;
    end Get_CPU;
 
+   -----------------
+   -- Get_CPU_Set --
+   -----------------
+
+   function Get_CPU_Set (Domain : Dispatching_Domain) return CPU_Set is
+      pragma Unreferenced (Domain);
+   begin
+      return raise Dispatching_Domain_Error
+        with "dispatching domains not supported";
+   end Get_CPU_Set;
+
    ----------------------------
    -- Get_Dispatching_Domain --
    ----------------------------
@@ -134,7 +152,7 @@ package body System.Multiprocessors.Dispatching_Domains is
    -- Get_Last_CPU --
    ------------------
 
-   function Get_Last_CPU (Domain : Dispatching_Domain) return CPU is
+   function Get_Last_CPU (Domain : Dispatching_Domain) return CPU_Range is
       pragma Unreferenced (Domain);
    begin
       return Number_Of_CPUs;

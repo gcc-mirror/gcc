@@ -31,11 +31,17 @@ package System.Multiprocessors.Dispatching_Domains is
 
    System_Dispatching_Domain : constant Dispatching_Domain;
 
-   function Create (First, Last : CPU) return Dispatching_Domain;
+   function Create (First : CPU; Last : CPU_Range) return Dispatching_Domain;
 
    function Get_First_CPU (Domain : Dispatching_Domain) return CPU;
 
-   function Get_Last_CPU (Domain : Dispatching_Domain) return CPU;
+   function Get_Last_CPU (Domain : Dispatching_Domain) return CPU_Range;
+
+   type CPU_Set is array (CPU range <>) of Boolean;
+
+   function Create (Set : CPU_Set) return Dispatching_Domain;
+
+   function Get_CPU_Set (Domain : Dispatching_Domain) return CPU_Set;
 
    function Get_Dispatching_Domain
      (T : Ada.Task_Identification.Task_Id :=

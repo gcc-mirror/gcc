@@ -1,3 +1,23 @@
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Call, Inlined_Subprogram): Do not suppress
+	debugging information for a call to a predefined unit, if the
+	call comes from source and the unit is in the Ada hierarchy.
+
+2014-11-20  Bob Duff  <duff@adacore.com>
+
+	* s-mudido.ads: Update signature of Create and Get_Last_CPU. Add
+	CPU_Set, another Create, and Get_CPU_Set.
+	* s-mudido.adb: Corresponding changes to the spec. New
+	operations just raise an exception.  Also minor cleanup: use
+	raise_expressions.
+	* s-mudido-affinity.adb: Implementations of new operations from
+	* s-mudido.ads, for the platforms that actually support processor
+	affinity. The new Create (which takes a set) now does all the
+	work; the old Create (which takes a range) now just calls the
+	new one. Change error messages to reflect the fact that it's an
+	arbitrary set, not just a range.
+
 2014-11-20  Robert Dewar  <dewar@adacore.com>
 
 	* exp_attr.adb: Minor reformatting.
