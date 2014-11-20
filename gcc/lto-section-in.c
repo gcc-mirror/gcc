@@ -384,29 +384,6 @@ lto_delete_in_decl_state (struct lto_in_decl_state *state)
   ggc_free (state);
 }
 
-/* Hashtable helpers. lto_in_decl_states are hash by their function decls. */
-
-hashval_t
-lto_hash_in_decl_state (const void *p)
-{
-  const struct lto_in_decl_state *state = (const struct lto_in_decl_state *) p;
-  return htab_hash_pointer (state->fn_decl);
-}
-
-/* Return true if the fn_decl field of the lto_in_decl_state pointed to by
-   P1 equals to the function decl P2. */
-
-int
-lto_eq_in_decl_state (const void *p1, const void *p2)
-{
-  const struct lto_in_decl_state *state1 =
-   (const struct lto_in_decl_state *) p1;
-  const struct lto_in_decl_state *state2 =
-   (const struct lto_in_decl_state *) p2;
-  return state1->fn_decl == state2->fn_decl;
-}
-
-
 /* Search the in-decl state of a function FUNC contained in the file
    associated with FILE_DATA.  Return NULL if not found.  */
 
@@ -415,11 +392,11 @@ lto_get_function_in_decl_state (struct lto_file_decl_data *file_data,
 				tree func)
 {
   struct lto_in_decl_state temp;
-  void **slot;
+  lto_in_decl_state **slot;
 
   temp.fn_decl = func;
-  slot = htab_find_slot (file_data->function_decl_states, &temp, NO_INSERT);
-  return slot? ((struct lto_in_decl_state*) *slot) : NULL;
+  slot = file_data->function_decl_states->find_slot (&temp, NO_INSERT);
+  return slot? *slot : NULL;
 }
 
 /* Free decl_states.  */
@@ -440,19 +417,18 @@ void
 lto_free_function_in_decl_state_for_node (symtab_node *node)
 {
   struct lto_in_decl_state temp;
-  void **slot;
+  lto_in_decl_state **slot;
 
   if (!node->lto_file_data)
     return;
 
   temp.fn_decl = node->decl;
-  slot = htab_find_slot (node->lto_file_data->function_decl_states,
-			 &temp, NO_INSERT);
+  slot
+    = node->lto_file_data->function_decl_states->find_slot (&temp, NO_INSERT);
   if (slot && *slot)
     {
-      lto_free_function_in_decl_state ((struct lto_in_decl_state*) *slot);
-      htab_clear_slot (node->lto_file_data->function_decl_states,
-		       slot);
+      lto_free_function_in_decl_state (*slot);
+      node->lto_file_data->function_decl_states->clear_slot (slot);
     }
   node->lto_file_data = NULL;
 }

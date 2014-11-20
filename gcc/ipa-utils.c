@@ -438,17 +438,17 @@ ipa_merge_profiles (struct cgraph_node *dst,
      temporarily inconsistent.  */
   if (src->decl == dst->decl)
     {
-      void **slot;
       struct lto_in_decl_state temp;
       struct lto_in_decl_state *state;
 
       /* We are going to move the decl, we want to remove its file decl data.
 	 and link these with the new decl. */
       temp.fn_decl = src->decl;
-      slot = htab_find_slot (src->lto_file_data->function_decl_states,
-			     &temp, NO_INSERT);
-      state = (lto_in_decl_state *)*slot;
-      htab_clear_slot (src->lto_file_data->function_decl_states, slot);
+      lto_in_decl_state **slot
+	= src->lto_file_data->function_decl_states->find_slot (&temp,
+							       NO_INSERT);
+      state = *slot;
+      src->lto_file_data->function_decl_states->clear_slot (slot);
       gcc_assert (state);
 
       /* Duplicate the decl and be sure it does not link into body of DST.  */
@@ -461,8 +461,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
       /* Associate the decl state with new declaration, so LTO streamer
  	 can look it up.  */
       state->fn_decl = src->decl;
-      slot = htab_find_slot (src->lto_file_data->function_decl_states,
-			     state, INSERT);
+      slot
+	= src->lto_file_data->function_decl_states->find_slot (state, INSERT);
       gcc_assert (!*slot);
       *slot = state;
     }
