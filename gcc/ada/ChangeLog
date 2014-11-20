@@ -1,3 +1,14 @@
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb, sem_ch5.adb, sem_ch7.adb, sem_util.adb,
+	sem_ch6.adb: Minor reformatting.
+
+2014-11-20  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Add missing implicit
+	conversion to force the displacement of the pointer to the object
+	to reference the secondary dispatch table.
+
 2014-11-11  Simon Wright  <simon@pushface.org>
 
 	PR ada/42978

@@ -2444,7 +2444,8 @@ package body Sem_Ch7 is
 
    function Requires_Completion_In_Body
      (Id      : Entity_Id;
-      Pack_Id : Entity_Id) return Boolean is
+      Pack_Id : Entity_Id) return Boolean
+   is
    begin
       --  Always ignore child units. Child units get added to the entity list
       --  of a parent unit, but are not original entities of the parent, and

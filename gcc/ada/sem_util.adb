@@ -2759,7 +2759,6 @@ package body Sem_Util is
         and then Present (Generalized_Indexing (N))
       then
          Nam := Generalized_Indexing (N);
-
       else
          Nam := N;
       end if;
