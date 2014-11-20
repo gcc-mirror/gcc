@@ -112,7 +112,7 @@ possible_placement_new (tree type, tree expected_type,
 	      || !tree_fits_shwi_p (TYPE_SIZE (type))
 	      || (cur_offset
 		  + (expected_type ? tree_to_uhwi (TYPE_SIZE (expected_type))
-		     : GET_MODE_BITSIZE (Pmode))
+		     : POINTER_SIZE)
 		  <= tree_to_uhwi (TYPE_SIZE (type)))));
 }
 
@@ -155,7 +155,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
   HOST_WIDE_INT cur_offset = offset;
   bool speculative = false;
   bool size_unknown = false;
-  unsigned HOST_WIDE_INT otr_type_size = GET_MODE_BITSIZE (Pmode);
+  unsigned HOST_WIDE_INT otr_type_size = POINTER_SIZE;
 
   /* Update OUTER_TYPE to match EXPECTED_TYPE if it is not set.  */
   if (!outer_type)
@@ -316,7 +316,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 		
 	      if (pos <= (unsigned HOST_WIDE_INT)cur_offset
 		  && (pos + size) >= (unsigned HOST_WIDE_INT)cur_offset
-				     + GET_MODE_BITSIZE (Pmode)
+				     + POINTER_SIZE
 		  && (!otr_type
 		      || !TYPE_SIZE (TREE_TYPE (fld))
 		      || !tree_fits_shwi_p (TYPE_SIZE (TREE_TYPE (fld)))
@@ -1243,7 +1243,7 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci,
 	      print_generic_expr (dump_file, tci->instance, TDF_SLIM);
 	      fprintf (dump_file, " with offset %i\n", (int)tci->offset);
 	    }
-	  return tci->offset > GET_MODE_BITSIZE (Pmode) ? error_mark_node : NULL_TREE;
+	  return tci->offset > POINTER_SIZE ? error_mark_node : NULL_TREE;
 	}
       if (offset != tci->offset
 	  || size != POINTER_SIZE
@@ -1252,9 +1252,9 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci,
 	  if (dump_file)
 	    fprintf (dump_file, "    wrong offset %i!=%i or size %i\n",
 		     (int)offset, (int)tci->offset, (int)size);
-	  return offset + GET_MODE_BITSIZE (Pmode) <= tci->offset
+	  return offset + POINTER_SIZE <= tci->offset
 	         || (max_size != -1
-		     && tci->offset + GET_MODE_BITSIZE (Pmode) > offset + max_size)
+		     && tci->offset + POINTER_SIZE > offset + max_size)
 		 ? error_mark_node : NULL;
 	}
     }
