@@ -6457,7 +6457,8 @@ package body Sem_Util is
                --  be a static subtype, since otherwise it would have
                --  been diagnosed as illegal.
 
-               elsif Is_Entity_Name (Choice) and then Is_Type (Entity (Choice))
+               elsif Is_Entity_Name (Choice)
+                 and then Is_Type (Entity (Choice))
                then
                   exit Search when Is_In_Range (Expr, Etype (Choice),
                                                 Assume_Valid => False);

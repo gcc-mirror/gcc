@@ -62,7 +62,11 @@ package System.CRTL is
    type ssize_t is range -(2 ** (Standard'Address_Size - 1))
                       .. +(2 ** (Standard'Address_Size - 1)) - 1;
 
-   type int64 is range -(2 ** 63) .. (2 ** 63) - 1;
+   type int64 is range Long_Long_Integer'First .. Long_Long_Integer'Last;
+   --  Note: we use Long_Long_Integer'First instead of -2 ** 63 to allow this
+   --  unit to compile when using custom target configuration files where
+   --  the max integer is 32bits. This is useful for static analysis tools
+   --  such as SPARK or CodePeer.
 
    type Filename_Encoding is (UTF8, ASCII_8bits, Unspecified);
    for Filename_Encoding use (UTF8 => 0, ASCII_8bits => 1, Unspecified => 2);

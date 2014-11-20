@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -197,11 +197,14 @@ private
    -- Local Declarations --
    ------------------------
 
-   type Time_Rep is range -2 ** 63 .. +2 ** 63 - 1;
+   type Time_Rep is new Long_Long_Integer;
    type Time is new Time_Rep;
    --  The underlying type of Time has been chosen to be a 64 bit signed
    --  integer number since it allows for easier processing of sub seconds
-   --  and arithmetic.
+   --  and arithmetic. We use Long_Long_Integer to allow this unit to compile
+   --  when using custom target configuration files where the max integer is
+   --  32bits. This is useful for static analysis tools such as SPARK or
+   --  CodePeer.
 
    Days_In_Month : constant array (Month_Number) of Day_Number :=
                      (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);

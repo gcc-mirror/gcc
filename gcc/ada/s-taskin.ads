@@ -946,7 +946,7 @@ package System.Tasking is
    --  converted to a task attribute if it fits, or to a pointer to a record
    --  by Ada.Task_Attributes.
 
-   type Task_Serial_Number is mod 2 ** 64;
+   type Task_Serial_Number is mod 2 ** Long_Long_Integer'Size;
    --  Used to give each task a unique serial number
 
    type Ada_Task_Control_Block (Entry_Num : Task_Entry_Index) is record
