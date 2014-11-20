@@ -1,3 +1,11 @@
+2014-11-20  Andrew Pinski  <apinski@cavium.com>
+
+	PR ipa/63981
+	* ipa-polymorphic-call.c (possible_placement_new):
+	Use POINTER_SIZE instead of GET_MODE_BITSIZE (Pmode).
+	(ipa_polymorphic_call_context::restrict_to_inner_class): Likewise.
+	(extr_type_from_vtbl_ptr_store): Likewise.
+
 2014-11-20  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* config/rs6000/constraints.md: Avoid signed integer overflows.
