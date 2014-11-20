@@ -1,3 +1,9 @@
+2014-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/63966
+	* lex.c [__i386__ || __x86_64__]: Include system <cpuid.h> for
+	GCC_VERSION < 5000.
+
 2014-11-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* include/line-map.h: Include EXPR, so that unused variable warnings

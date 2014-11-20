@@ -471,7 +471,11 @@ search_line_sse42 (const uchar *s, const uchar *end)
 
 /* Check the CPU capabilities.  */
 
+#if (GCC_VERSION >= 5000)
 #include "../gcc/config/i386/cpuid.h"
+#else
+#include <cpuid.h>
+#endif
 
 typedef const uchar * (*search_line_fast_type) (const uchar *, const uchar *);
 static search_line_fast_type search_line_fast;
