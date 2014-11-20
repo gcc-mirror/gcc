@@ -10146,12 +10146,14 @@ INDEX_EXPRESSION_LIST                        ::= ( EXPRESSION @{, EXPRESSION @} 
 @end smallexample
 
 @noindent
-where @code{PREFIX} is the name of an array or record object, and
-the association list in parentheses does not contain an @code{others}
-choice. The effect is to yield a copy of the array or record value which
-is unchanged apart from the components mentioned in the association list, which
-are changed to the indicated value. The original value of the array or
-record value is not affected. For example:
+where @code{PREFIX} is the name of an array or record object, the
+association list in parentheses does not contain an @code{others}
+choice and the box symbol @code{<>} may not appear in any
+expression. The effect is to yield a copy of the array or record value
+which is unchanged apart from the components mentioned in the
+association list, which are changed to the indicated value. The
+original value of the array or record value is not affected. For
+example:
 
 @smallexample @c ada
 type Arr is Array (1 .. 5) of Integer;

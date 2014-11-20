@@ -1,3 +1,15 @@
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Error_Msg): Don't suppress continuation msgs for
+	run-time files.
+	* sem_prag.adb (Analyze_Pragma, case Elaborate): Forbid pragma
+	Elaborate in SPARK mode.
+
+2014-11-20  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Update GNAT RM with rule about expressions in
+	Update attribute.
+
 2014-11-20  Thomas Quinot  <quinot@adacore.com>
 
 	* g-socket.adb (To_Host_Entry): Guard against case of a

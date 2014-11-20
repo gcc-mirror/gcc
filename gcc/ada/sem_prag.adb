@@ -13125,6 +13125,8 @@ package body Sem_Prag is
             Citem : Node_Id;
 
          begin
+            SPARK_Msg_N ("pragma Elaborate not allowed", N);
+
             --  Pragma must be in context items list of a compilation unit
 
             if not Is_In_Context_Clause then
