@@ -91,7 +91,7 @@ package body Ada.Strings.Unbounded is
       --  Otherwise, allocate new shared string and fill data
 
       else
-         DR := Allocate (LR.Last + RR.Last);
+         DR := Allocate (DL);
          DR.Data (1 .. LR.Last) := LR.Data (1 .. LR.Last);
          DR.Data (LR.Last + 1 .. DL) := RR.Data (1 .. RR.Last);
          DR.Last := DL;

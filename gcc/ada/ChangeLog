@@ -1,3 +1,9 @@
+2014-11-20  Vadim Godunko  <godunko@adacore.com>
+
+	* a-strunb-shared.adb, a-stwiun-shared.adb, a-stzunb-shared.adb
+	("&") Use already computed value of data length to call allocation
+	subprogram.
+
 2014-11-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch6.adb (Expand_Call, Inlined_Subprogram): Do not suppress

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,7 +91,7 @@ package body Ada.Strings.Wide_Unbounded is
       --  Overwise, allocate new shared string and fill data
 
       else
-         DR := Allocate (LR.Last + RR.Last);
+         DR := Allocate (DL);
          DR.Data (1 .. LR.Last) := LR.Data (1 .. LR.Last);
          DR.Data (LR.Last + 1 .. DL) := RR.Data (1 .. RR.Last);
          DR.Last := DL;

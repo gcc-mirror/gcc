@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,7 +91,7 @@ package body Ada.Strings.Wide_Wide_Unbounded is
       --  Overwise, allocate new shared string and fill data
 
       else
-         DR := Allocate (LR.Last + RR.Last);
+         DR := Allocate (DL);
          DR.Data (1 .. LR.Last) := LR.Data (1 .. LR.Last);
          DR.Data (LR.Last + 1 .. DL) := RR.Data (1 .. RR.Last);
          DR.Last := DL;
@@ -1614,9 +1614,9 @@ package body Ada.Strings.Wide_Wide_Unbounded is
       end if;
    end Tail;
 
-   --------------------
+   -------------------------
    -- To_Wide_Wide_String --
-   --------------------
+   -------------------------
 
    function To_Wide_Wide_String
      (Source : Unbounded_Wide_Wide_String) return Wide_Wide_String is
@@ -1624,9 +1624,9 @@ package body Ada.Strings.Wide_Wide_Unbounded is
       return Source.Reference.Data (1 .. Source.Reference.Last);
    end To_Wide_Wide_String;
 
-   ------------------------------
+   -----------------------------------
    -- To_Unbounded_Wide_Wide_String --
-   ------------------------------
+   -----------------------------------
 
    function To_Unbounded_Wide_Wide_String
      (Source : Wide_Wide_String) return Unbounded_Wide_Wide_String
