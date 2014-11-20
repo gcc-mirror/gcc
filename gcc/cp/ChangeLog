@@ -1,3 +1,8 @@
+2014-11-20  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/63959
+	* tree.c (trivially_copyable_p): Check for CP_TYPE_VOLATILE_P.
+
 2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* cp-objcp-common.c: Use hash_table instead of htab.
