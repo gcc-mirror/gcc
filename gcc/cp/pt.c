@@ -5212,6 +5212,24 @@ redeclare_class_template (tree type, tree parms)
     return true;
 }
 
+/* The actual substitution part of instantiate_non_dependent_expr_sfinae,
+   to be used when the caller has already checked
+   (processing_template_decl
+    && !instantiation_dependent_expression_p (expr)
+    && potential_constant_expression (expr))
+   and cleared processing_template_decl.  */
+
+tree
+instantiate_non_dependent_expr_internal (tree expr, tsubst_flags_t complain)
+{
+  return tsubst_copy_and_build (expr,
+				/*args=*/NULL_TREE,
+				complain,
+				/*in_decl=*/NULL_TREE,
+				/*function_p=*/false,
+				/*integral_constant_expression_p=*/true);
+}
+
 /* Simplify EXPR if it is a non-dependent expression.  Returns the
    (possibly simplified) expression.  */
 
@@ -5232,17 +5250,8 @@ instantiate_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
       && !instantiation_dependent_expression_p (expr)
       && potential_constant_expression (expr))
     {
-      HOST_WIDE_INT saved_processing_template_decl;
-
-      saved_processing_template_decl = processing_template_decl;
-      processing_template_decl = 0;
-      expr = tsubst_copy_and_build (expr,
-				    /*args=*/NULL_TREE,
-				    complain,
-				    /*in_decl=*/NULL_TREE,
-				    /*function_p=*/false,
-				    /*integral_constant_expression_p=*/true);
-      processing_template_decl = saved_processing_template_decl;
+      processing_template_decl_sentinel s;
+      expr = instantiate_non_dependent_expr_internal (expr, complain);
     }
   return expr;
 }
@@ -5736,11 +5745,15 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
      so that access checking can be performed when the template is
      instantiated -- but here we need the resolved form so that we can
      convert the argument.  */
+  bool non_dep = false;
   if (TYPE_REF_OBJ_P (type)
       && has_value_dependent_address (expr))
     /* If we want the address and it's value-dependent, don't fold.  */;
-  else if (!type_unknown_p (expr))
-    expr = instantiate_non_dependent_expr_sfinae (expr, complain);
+  else if (!type_unknown_p (expr)
+	   && processing_template_decl
+	   && !instantiation_dependent_expression_p (expr)
+	   && potential_constant_expression (expr))
+    non_dep = true;
   if (error_operand_p (expr))
     return error_mark_node;
   expr_type = TREE_TYPE (expr);
@@ -5748,6 +5761,12 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
     expr = mark_lvalue_use (expr);
   else
     expr = mark_rvalue_use (expr);
+
+  /* If the argument is non-dependent, perform any conversions in
+     non-dependent context as well.  */
+  processing_template_decl_sentinel s (non_dep);
+  if (non_dep)
+    expr = instantiate_non_dependent_expr_internal (expr, complain);
 
   /* 14.3.2/5: The null pointer{,-to-member} conversion is applied
      to a non-type argument of "nullptr".  */

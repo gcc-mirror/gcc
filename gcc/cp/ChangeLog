@@ -1,5 +1,12 @@
 2014-11-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56041
+	* cp-tree.h (struct processing_template_decl_sentinel): New.
+	* pt.c (instantiate_non_dependent_expr_internal): Split out from...
+	(instantiate_non_dependent_expr_sfinae): Here.
+	(convert_nontype_argument): Use them.
+	* constexpr.c (fold_non_dependent_expr): Use them.
+
 	PR c++/63885
 	* constexpr.c (cxx_eval_constant_expression) [PARM_DECL]: Don't
 	complain yet about a reference.
