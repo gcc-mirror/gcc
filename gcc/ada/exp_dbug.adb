@@ -134,8 +134,9 @@ package body Exp_Dbug is
    --  used to determine whether encoding is required for a discrete type.
 
    function Is_Handled_Scale_Factor (U : Ureal) return Boolean;
-   --  Determine whether the back-end can handle some scale factor. When it
-   --  cannot, we have to output a GNAT encoding for the correspondig type.
+   --  The argument U is the Small_Value of a fixed-point type. This function
+   --  determines whether the back-end can handle this scale factor. When it
+   --  cannot, we have to output a GNAT encoding for the corresponding type.
 
    procedure Output_Homonym_Numbers_Suffix;
    --  If homonym numbers are stored, then output them into Name_Buffer
@@ -547,17 +548,17 @@ package body Exp_Dbug is
    begin
       --  Keep in sync with gigi (see E_*_Fixed_Point_Type handling in
       --  decl.c:gnat_to_gnu_entity).
+
       if UI_Eq (Numerator (U), Uint_1) then
-         if Rbase (U) = 2
-            or else Rbase (U) = 10
-         then
+         if Rbase (U) = 2 or else Rbase (U) = 10 then
             return True;
          end if;
       end if;
 
       return
         (UI_Is_In_Int_Range (Norm_Num (U))
-         and then UI_Is_In_Int_Range (Norm_Den (U)));
+           and then
+         UI_Is_In_Int_Range (Norm_Den (U)));
    end Is_Handled_Scale_Factor;
 
    ----------------------
@@ -622,9 +623,8 @@ package body Exp_Dbug is
       --  know the back-end will not be able to handle the scale factor.
 
       if Is_Fixed_Point_Type (E)
-           and then
-         (GNAT_Encodings /= DWARF_GNAT_Encodings_Minimal
-            or else not Is_Handled_Scale_Factor (Small_Value (E)))
+        and then (GNAT_Encodings /= DWARF_GNAT_Encodings_Minimal
+                   or else not Is_Handled_Scale_Factor (Small_Value (E)))
       then
          Get_External_Name (E, True, "XF_");
          Add_Real_To_Buffer (Delta_Value (E));

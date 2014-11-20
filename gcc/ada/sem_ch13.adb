@@ -3798,8 +3798,7 @@ package body Sem_Ch13 is
                      ("variable indexing must return a reference type");
                   return;
 
-               elsif Is_Access_Constant
-                       (Etype (First_Discriminant (Ret_Type)))
+               elsif Is_Access_Constant (Etype (First_Discriminant (Ret_Type)))
                then
                   Illegal_Indexing
                     ("variable indexing must return an access to variable");

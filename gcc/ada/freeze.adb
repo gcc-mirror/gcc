@@ -7701,15 +7701,13 @@ package body Freeze is
 
       if Is_Base_Type (T)
         and then (Is_Array_Type (T)
-                    or else
-                  (Is_Record_Type (T)
-                     and then not (Is_Tagged_Type (T)
-                                     and then
-                                   Is_Derived_Type (T))))
+                   or else (Is_Record_Type (T)
+                             and then not (Is_Tagged_Type (T)
+                                            and then Is_Derived_Type (T))))
       then
          if ((Bytes_Big_Endian and then SSO_Set_Low_By_Default (T))
                or else
-             ((not Bytes_Big_Endian) and then SSO_Set_High_By_Default (T)))
+            ((not Bytes_Big_Endian) and then SSO_Set_High_By_Default (T)))
 
            --  For a record type, if native bit order is specified explicitly,
            --  then never set reverse SSO from default.
