@@ -9801,15 +9801,11 @@ package body Exp_Dist is
                         while Present (Disc) loop
                            declare
                               Discriminant : constant Entity_Id :=
-                                               Make_Selected_Component (Loc,
-                                                 Prefix        =>
-                                                   Expr_Formal,
-                                                 Selector_Name =>
-                                                   Chars (Disc));
-
+                                Make_Selected_Component (Loc,
+                                  Prefix        => Expr_Formal,
+                                  Selector_Name => Chars (Disc));
                            begin
                               Set_Etype (Discriminant, Etype (Disc));
-
                               Append_To (Elements,
                                 Make_Component_Association (Loc,
                                   Choices => New_List (
@@ -10031,7 +10027,8 @@ package body Exp_Dist is
                      if Is_Limited_Type (Typ) then
                         Append_To (Stms,
                           Make_Implicit_If_Statement (Typ,
-                            Condition => New_Occurrence_Of (Cstr_Formal, Loc),
+                            Condition       =>
+                              New_Occurrence_Of (Cstr_Formal, Loc),
                             Then_Statements => New_List (
                               Stream_Call (Name_Write)),
                             Else_Statements => New_List (
@@ -10039,6 +10036,7 @@ package body Exp_Dist is
 
                      elsif Transmit_As_Unconstrained (Typ) then
                         Append_To (Stms, Stream_Call (Name_Output));
+
                      else
                         Append_To (Stms, Stream_Call (Name_Write));
                      end if;
@@ -10049,7 +10047,8 @@ package body Exp_Dist is
 
                   Append_To (Stms,
                     Make_Procedure_Call_Statement (Loc,
-                      Name => New_Occurrence_Of (RTE (RE_BS_To_Any), Loc),
+                      Name                   =>
+                        New_Occurrence_Of (RTE (RE_BS_To_Any), Loc),
                       Parameter_Associations => New_List (
                         New_Occurrence_Of (Strm, Loc),
                         New_Occurrence_Of (Any, Loc))));
@@ -10059,7 +10058,8 @@ package body Exp_Dist is
 
                   Append_To (Stms,
                     Make_Procedure_Call_Statement (Loc,
-                      Name => New_Occurrence_Of (RTE (RE_Release_Buffer), Loc),
+                      Name                   =>
+                        New_Occurrence_Of (RTE (RE_Release_Buffer), Loc),
                       Parameter_Associations => New_List (
                         New_Occurrence_Of (Strm, Loc))));
                end;
@@ -10070,7 +10070,8 @@ package body Exp_Dist is
             if Present (Result_TC) then
                Append_To (Stms,
                  Make_Procedure_Call_Statement (Loc,
-                   Name => New_Occurrence_Of (RTE (RE_Set_TC), Loc),
+                   Name                   =>
+                     New_Occurrence_Of (RTE (RE_Set_TC), Loc),
                    Parameter_Associations => New_List (
                      New_Occurrence_Of (Any, Loc),
                      Result_TC)));
