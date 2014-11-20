@@ -1,3 +1,7 @@
+2014-11-20  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/symbol-range.c: New.
+	* gcc.target/aarch64/symbol-range-tiny.c: New.
 2014-11-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63962

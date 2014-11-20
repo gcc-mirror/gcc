@@ -1,3 +1,14 @@
+2014-11-20  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_classify_symbol):
+	Fixup prototype.
+	* config/aarch64/aarch64.c (aarch64_expand_mov_immediate,
+	aarch64_cannot_force_const_mem, aarch64_classify_address,
+	aarch64_classify_symbolic_expression): Fixup call to
+	aarch64_classify_symbol.
+	(aarch64_classify_symbol): Add range-checking for
+	symbol + offset addressing for tiny and small models.
+
 2014-11-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63962
