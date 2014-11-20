@@ -1,3 +1,7 @@
+2014-11-20  Marek Polacek  <polacek@redhat.com>
+
+	* tree-ssa-loop-niter.c (maybe_lower_iteration_bound): Fix typo.
+
 2014-11-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	* tree-ssa-loop-niter.c (maybe_lower_iteration_bound): Warn if a loop
