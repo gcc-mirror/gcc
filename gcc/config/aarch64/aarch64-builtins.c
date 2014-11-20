@@ -909,7 +909,7 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 		{
 		  enum machine_mode vmode = mode[argc - 1];
 		  aarch64_simd_lane_bounds (op[argc],
-					    0, GET_MODE_NUNITS (vmode));
+					    0, GET_MODE_NUNITS (vmode), exp);
 		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
 		  op[argc] = GEN_INT (ENDIAN_LANE_N (vmode, INTVAL (op[argc])));
 		}

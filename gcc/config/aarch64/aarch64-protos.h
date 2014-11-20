@@ -268,7 +268,7 @@ void aarch64_simd_emit_pair_result_insn (machine_mode,
 /* Expand builtins for SIMD intrinsics.  */
 rtx aarch64_simd_expand_builtin (int, tree, rtx);
 
-void aarch64_simd_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
+void aarch64_simd_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT, const_tree);
 
 void aarch64_split_128bit_move (rtx, rtx);
 
