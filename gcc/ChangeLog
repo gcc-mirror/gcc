@@ -1,3 +1,9 @@
+2014-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63962
+	* match.pd ((p +p off1) +p off2 -> (p +p (off1 + off2))):
+	Guard with single-use operand 0.
+
 2014-11-20   Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63677

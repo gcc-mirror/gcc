@@ -370,8 +370,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Associate (p +p off1) +p off2 as (p +p (off1 + off2)).  */
 (simplify
-  (pointer_plus (pointer_plus @0 @1) @3)
-  (pointer_plus @0 (plus @1 @3)))
+  (pointer_plus (pointer_plus@2 @0 @1) @3)
+  (if (TREE_CODE (@2) != SSA_NAME || has_single_use (@2))
+   (pointer_plus @0 (plus @1 @3))))
 
 /* Pattern match
      tem1 = (long) ptr1;
