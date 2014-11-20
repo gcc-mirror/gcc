@@ -1,5 +1,21 @@
 2014-11-20  Thomas Quinot  <quinot@adacore.com>
 
+	* freeze.adb, sem_ch13.adb: Minor editing.
+
+2014-11-20  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: Remove any special processing for the ASIS tools
+	(gnatpp, gnatmetric, gnatcheck, gnatelim and gnatstup) and simply
+	invoke the tool with the provided switches and arguments.
+
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Reject declaration
+	of expression function with identical profile as previous
+	expression function.
+
+2014-11-20  Thomas Quinot  <quinot@adacore.com>
+
 	* sem_ch13.adb: Complete previous change.
 	* exp_dist.adb, exp_dist.ads: Rework PolyORB/DSA arguments processing
 	circuitry to correctly handle the case of non-private limited

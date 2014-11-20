@@ -7705,8 +7705,8 @@ package body Freeze is
                              and then not (Is_Tagged_Type (T)
                                             and then Is_Derived_Type (T))))
       then
-         if ((Bytes_Big_Endian and then SSO_Set_Low_By_Default (T))
-               or else
+         if ((Bytes_Big_Endian       and then SSO_Set_Low_By_Default  (T))
+                or else
             ((not Bytes_Big_Endian) and then SSO_Set_High_By_Default (T)))
 
            --  For a record type, if native bit order is specified explicitly,
