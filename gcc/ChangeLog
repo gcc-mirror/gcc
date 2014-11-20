@@ -1,5 +1,10 @@
 2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* config/i386/i386.c, function.c, trans-mem.c, tree-core.h,
+	tree.c, tree.h, ubsan.c, varasm.c: Use hash_table instead of htab.
+
+2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* doc/gty.texi: Document the new cache gty attribute.
 	* gengtype.c (finish_cache_funcs): New function.
 	(write_roots): Call gt_clear_cache on global variables with the cache

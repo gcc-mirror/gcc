@@ -1778,26 +1778,26 @@ struct GTY(()) tree_map_base {
 
 /* Map from a tree to another tree.  */
 
-struct GTY(()) tree_map {
+struct GTY((for_user)) tree_map {
   struct tree_map_base base;
   unsigned int hash;
   tree to;
 };
 
 /* Map from a decl tree to another tree.  */
-struct GTY(()) tree_decl_map {
+struct GTY((for_user)) tree_decl_map {
   struct tree_map_base base;
   tree to;
 };
 
 /* Map from a tree to an int.  */
-struct GTY(()) tree_int_map {
+struct GTY((for_user)) tree_int_map {
   struct tree_map_base base;
   unsigned int to;
 };
 
 /* Map from a decl tree to a tree vector.  */
-struct GTY(()) tree_vec_map {
+struct GTY((for_user)) tree_vec_map {
   struct tree_map_base base;
   vec<tree, va_gc> *to;
 };

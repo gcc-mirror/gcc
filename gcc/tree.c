@@ -185,13 +185,31 @@ static GTY(()) int next_debug_decl_uid;
 /* Since we cannot rehash a type after it is in the table, we have to
    keep the hash code.  */
 
-struct GTY(()) type_hash {
+struct GTY((for_user)) type_hash {
   unsigned long hash;
   tree type;
 };
 
 /* Initial size of the hash table (rounded to next prime).  */
 #define TYPE_HASH_INITIAL_SIZE 1000
+
+struct type_cache_hasher : ggc_cache_hasher<type_hash *>
+{
+  static hashval_t hash (type_hash *t) { return t->hash; }
+  static bool equal (type_hash *a, type_hash *b);
+
+  static void
+  handle_cache_entry (type_hash *&t)
+  {
+    extern void gt_ggc_mx (type_hash *&);
+    if (t == HTAB_DELETED_ENTRY || t == HTAB_EMPTY_ENTRY)
+      return;
+    else if (ggc_marked_p (t->type))
+      gt_ggc_mx (t);
+    else
+      t = static_cast<type_hash *> (HTAB_DELETED_ENTRY);
+  }
+};
 
 /* Now here is the hash table.  When recording a type, it is added to
    the slot whose index is the hash code.  Note that the hash table is
@@ -200,8 +218,7 @@ struct GTY(()) type_hash {
    same table, they are completely independent, and the hash code is
    computed differently for each of these.  */
 
-static GTY ((if_marked ("type_hash_marked_p"), param_is (struct type_hash)))
-     htab_t type_hash_table;
+static GTY ((cache)) hash_table<type_cache_hasher> *type_hash_table;
 
 /* Hash table and temporary node for larger integer const values.  */
 static GTY (()) tree int_cst_node;
@@ -233,22 +250,42 @@ static GTY ((cache)) hash_table<cl_option_hasher> *cl_option_hash_table;
 /* General tree->tree mapping  structure for use in hash tables.  */
 
 
-static GTY ((if_marked ("tree_decl_map_marked_p"), param_is (struct tree_decl_map)))
-     htab_t debug_expr_for_decl;
+static GTY ((cache))
+     hash_table<tree_decl_map_cache_hasher> *debug_expr_for_decl;
 
-static GTY ((if_marked ("tree_decl_map_marked_p"), param_is (struct tree_decl_map)))
-     htab_t value_expr_for_decl;
+static GTY ((cache))
+     hash_table<tree_decl_map_cache_hasher> *value_expr_for_decl;
 
-static GTY ((if_marked ("tree_vec_map_marked_p"), param_is (struct tree_vec_map)))
-     htab_t debug_args_for_decl;
+     struct tree_vec_map_cache_hasher : ggc_cache_hasher<tree_vec_map *>
+{
+  static hashval_t hash (tree_vec_map *m) { return DECL_UID (m->base.from); }
+
+  static bool
+  equal (tree_vec_map *a, tree_vec_map *b)
+  {
+    return a->base.from == b->base.from;
+  }
+
+  static void
+  handle_cache_entry (tree_vec_map *&m)
+  {
+    extern void gt_ggc_mx (tree_vec_map *&);
+    if (m == HTAB_EMPTY_ENTRY || m == HTAB_DELETED_ENTRY)
+      return;
+    else if (ggc_marked_p (m->base.from))
+      gt_ggc_mx (m);
+    else
+      m = static_cast<tree_vec_map *> (HTAB_DELETED_ENTRY);
+  }
+};
+
+static GTY ((cache))
+     hash_table<tree_vec_map_cache_hasher> *debug_args_for_decl;
 
 static void set_type_quals (tree, int);
-static int type_hash_eq (const void *, const void *);
-static hashval_t type_hash_hash (const void *);
 static void print_type_hash_statistics (void);
 static void print_debug_expr_statistics (void);
 static void print_value_expr_statistics (void);
-static int type_hash_marked_p (const void *);
 static void type_hash_list (const_tree, inchash::hash &);
 static void attribute_hash_list (const_tree, inchash::hash &);
 
@@ -584,14 +621,14 @@ void
 init_ttree (void)
 {
   /* Initialize the hash table of types.  */
-  type_hash_table = htab_create_ggc (TYPE_HASH_INITIAL_SIZE, type_hash_hash,
-				     type_hash_eq, 0);
+  type_hash_table
+    = hash_table<type_cache_hasher>::create_ggc (TYPE_HASH_INITIAL_SIZE);
 
-  debug_expr_for_decl = htab_create_ggc (512, tree_decl_map_hash,
-					 tree_decl_map_eq, 0);
+  debug_expr_for_decl
+    = hash_table<tree_decl_map_cache_hasher>::create_ggc (512);
 
-  value_expr_for_decl = htab_create_ggc (512, tree_decl_map_hash,
-					 tree_decl_map_eq, 0);
+  value_expr_for_decl
+    = hash_table<tree_decl_map_cache_hasher>::create_ggc (512);
 
   int_cst_hash_table = hash_table<int_cst_hasher>::create_ggc (1024);
 
@@ -6573,9 +6610,9 @@ static void
 print_debug_expr_statistics (void)
 {
   fprintf (stderr, "DECL_DEBUG_EXPR  hash: size %ld, %ld elements, %f collisions\n",
-	   (long) htab_size (debug_expr_for_decl),
-	   (long) htab_elements (debug_expr_for_decl),
-	   htab_collisions (debug_expr_for_decl));
+	   (long) debug_expr_for_decl->size (),
+	   (long) debug_expr_for_decl->elements (),
+	   debug_expr_for_decl->collisions ());
 }
 
 /* Print out the statistics for the DECL_VALUE_EXPR hash table.  */
@@ -6584,9 +6621,9 @@ static void
 print_value_expr_statistics (void)
 {
   fprintf (stderr, "DECL_VALUE_EXPR  hash: size %ld, %ld elements, %f collisions\n",
-	   (long) htab_size (value_expr_for_decl),
-	   (long) htab_elements (value_expr_for_decl),
-	   htab_collisions (value_expr_for_decl));
+	   (long) value_expr_for_decl->size (),
+	   (long) value_expr_for_decl->elements (),
+	   value_expr_for_decl->collisions ());
 }
 
 /* Lookup a debug expression for FROM, and return it if we find one.  */
@@ -6597,8 +6634,7 @@ decl_debug_expr_lookup (tree from)
   struct tree_decl_map *h, in;
   in.base.from = from;
 
-  h = (struct tree_decl_map *)
-      htab_find_with_hash (debug_expr_for_decl, &in, DECL_UID (from));
+  h = debug_expr_for_decl->find_with_hash (&in, DECL_UID (from));
   if (h)
     return h->to;
   return NULL_TREE;
@@ -6610,14 +6646,11 @@ void
 decl_debug_expr_insert (tree from, tree to)
 {
   struct tree_decl_map *h;
-  void **loc;
 
   h = ggc_alloc<tree_decl_map> ();
   h->base.from = from;
   h->to = to;
-  loc = htab_find_slot_with_hash (debug_expr_for_decl, h, DECL_UID (from),
-				  INSERT);
-  *(struct tree_decl_map **) loc = h;
+  *debug_expr_for_decl->find_slot_with_hash (h, DECL_UID (from), INSERT) = h;
 }
 
 /* Lookup a value expression for FROM, and return it if we find one.  */
@@ -6628,8 +6661,7 @@ decl_value_expr_lookup (tree from)
   struct tree_decl_map *h, in;
   in.base.from = from;
 
-  h = (struct tree_decl_map *)
-      htab_find_with_hash (value_expr_for_decl, &in, DECL_UID (from));
+  h = value_expr_for_decl->find_with_hash (&in, DECL_UID (from));
   if (h)
     return h->to;
   return NULL_TREE;
@@ -6641,14 +6673,11 @@ void
 decl_value_expr_insert (tree from, tree to)
 {
   struct tree_decl_map *h;
-  void **loc;
 
   h = ggc_alloc<tree_decl_map> ();
   h->base.from = from;
   h->to = to;
-  loc = htab_find_slot_with_hash (value_expr_for_decl, h, DECL_UID (from),
-				  INSERT);
-  *(struct tree_decl_map **) loc = h;
+  *value_expr_for_decl->find_slot_with_hash (h, DECL_UID (from), INSERT) = h;
 }
 
 /* Lookup a vector of debug arguments for FROM, and return it if we
@@ -6663,8 +6692,7 @@ decl_debug_args_lookup (tree from)
     return NULL;
   gcc_checking_assert (debug_args_for_decl != NULL);
   in.base.from = from;
-  h = (struct tree_vec_map *)
-      htab_find_with_hash (debug_args_for_decl, &in, DECL_UID (from));
+  h = debug_args_for_decl->find_with_hash (&in, DECL_UID (from));
   if (h)
     return &h->to;
   return NULL;
@@ -6677,19 +6705,17 @@ vec<tree, va_gc> **
 decl_debug_args_insert (tree from)
 {
   struct tree_vec_map *h;
-  void **loc;
+  tree_vec_map **loc;
 
   if (DECL_HAS_DEBUG_ARGS_P (from))
     return decl_debug_args_lookup (from);
   if (debug_args_for_decl == NULL)
-    debug_args_for_decl = htab_create_ggc (64, tree_vec_map_hash,
-					   tree_vec_map_eq, 0);
+    debug_args_for_decl = hash_table<tree_vec_map_cache_hasher>::create_ggc (64);
   h = ggc_alloc<tree_vec_map> ();
   h->base.from = from;
   h->to = NULL;
-  loc = htab_find_slot_with_hash (debug_args_for_decl, h, DECL_UID (from),
-				  INSERT);
-  *(struct tree_vec_map **) loc = h;
+  loc = debug_args_for_decl->find_slot_with_hash (h, DECL_UID (from), INSERT);
+  *loc = h;
   DECL_HAS_DEBUG_ARGS_P (from) = 1;
   return &h->to;
 }
@@ -6715,12 +6741,9 @@ type_hash_list (const_tree list, inchash::hash &hstate)
 
 /* Returns true iff the types are equivalent.  */
 
-static int
-type_hash_eq (const void *va, const void *vb)
+bool
+type_cache_hasher::equal (type_hash *a, type_hash *b)
 {
-  const struct type_hash *const a = (const struct type_hash *) va,
-    *const b = (const struct type_hash *) vb;
-
   /* First test the things that are the same for all types.  */
   if (a->hash != b->hash
       || TREE_CODE (a->type) != TREE_CODE (b->type)
@@ -6827,14 +6850,6 @@ type_hash_eq (const void *va, const void *vb)
   return 1;
 }
 
-/* Return the cached hash value.  */
-
-static hashval_t
-type_hash_hash (const void *item)
-{
-  return ((const struct type_hash *) item)->hash;
-}
-
 /* Given TYPE, and HASHCODE its hash code, return the canonical
    object for an identical type if one already exists.
    Otherwise, return TYPE, and record it as the canonical object.
@@ -6848,7 +6863,7 @@ tree
 type_hash_canon (unsigned int hashcode, tree type)
 {
   type_hash in;
-  void **loc;
+  type_hash **loc;
 
   /* The hash table only contains main variants, so ensure that's what we're
      being passed.  */
@@ -6861,7 +6876,7 @@ type_hash_canon (unsigned int hashcode, tree type)
   in.hash = hashcode;
   in.type = type;
 
-  loc = htab_find_slot_with_hash (type_hash_table, &in, hashcode, INSERT);
+  loc = type_hash_table->find_slot_with_hash (&in, hashcode, INSERT);
   if (*loc)
     {
       tree t1 = ((type_hash *) *loc)->type;
@@ -6881,31 +6896,19 @@ type_hash_canon (unsigned int hashcode, tree type)
       h = ggc_alloc<type_hash> ();
       h->hash = hashcode;
       h->type = type;
-      *loc = (void *)h;
+      *loc = h;
 
       return type;
     }
-}
-
-/* See if the data pointed to by the type hash table is marked.  We consider
-   it marked if the type is marked or if a debug type number or symbol
-   table entry has been made for the type.  */
-
-static int
-type_hash_marked_p (const void *p)
-{
-  const_tree const type = ((const struct type_hash *) p)->type;
-
-  return ggc_marked_p (type);
 }
 
 static void
 print_type_hash_statistics (void)
 {
   fprintf (stderr, "Type hash: size %ld, %ld elements, %f collisions\n",
-	   (long) htab_size (type_hash_table),
-	   (long) htab_elements (type_hash_table),
-	   htab_collisions (type_hash_table));
+	   (long) type_hash_table->size (),
+	   (long) type_hash_table->elements (),
+	   type_hash_table->collisions ());
 }
 
 /* Compute a hash code for a list of attributes (chain of TREE_LIST nodes

@@ -1,3 +1,8 @@
+2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* gcc-interface/decl.c, gcc-interface/utils.c: replace htab with
+	hash_table.
+
 2014-11-20  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Elaborate): Forbid pragma
