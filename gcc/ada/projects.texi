@@ -2643,7 +2643,7 @@ themselves (so for instance you cannot use it to change the value
 of your PATH as seen from the spawned compiler).
 
 This attribute affects the external values as seen in the rest of
-the aggreate projects, and in the aggregated projects.
+the aggregate project, and in the aggregated projects.
 
 The exact value of external a variable comes from one of three
 sources (each level overrides the previous levels):

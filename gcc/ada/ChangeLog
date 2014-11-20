@@ -1,3 +1,32 @@
+2014-11-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taspri-solaris.ads: Replace 64 by long_long_integer'size.
+
+2014-11-20  Olivier Hainque  <hainque@adacore.com>
+
+	* init.c (__gnat_map_signal for VxWorks): Use a common mapping
+	scheme for VxWorks version >= 6, instead of falling back to the
+	vx5 scheme for versions > 6.
+
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_strm.adb (Build_Mutable_Record_Read_Procedure): Use
+	base type when constructing subtype indication for constrained
+	target object.
+
+2014-11-20  Jose Ruiz  <ruiz@adacore.com>
+
+	* projects.texi: Minor spelling fix.
+
+2014-11-20  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Add doc for --split-line-before-op switch in gnatpp.
+
+2014-11-20  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb (Register_New_Package): Allow the registration
+	of an already unknown package and make it known.
+
 2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* gcc-interface/decl.c, gcc-interface/utils.c: replace htab with

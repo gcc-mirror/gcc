@@ -978,7 +978,7 @@ package body Exp_Strm is
           Defining_Identifier => Tmp,
           Object_Definition   =>
             Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+              Subtype_Mark => New_Occurrence_Of (Base_Type (Typ), Loc),
               Constraint =>
                 Make_Index_Or_Discriminant_Constraint (Loc,
                   Constraints => Cstr))));
