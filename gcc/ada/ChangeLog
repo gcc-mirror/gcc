@@ -1,5 +1,28 @@
 2014-11-20  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb (Analyze_Pragma, case Elaborate): Forbid pragma
+	Elaborate in SPARK mode.
+
+2014-11-20  Bob Duff  <duff@adacore.com>
+
+	* s-taskin.adb, s-tassta.adb (Initialize_ATCB): If Domain
+	is null, then initialize T.Common.Domain to that of the
+	activating task (not the parent task!), as required by RM-D.16.1.
+	T.Common.Domain should never be null; so Assert. Remove similar
+	code from Create_Task in s-tassta.adb.
+	* s-mudido-affinity.adb: Remove checks for Domain = null,
+	because it can't be null.
+	* s-taskin.ads, s-taspri-dummy.ads, s-taspri-mingw.ads,
+	s-taspri-posix.ads, s-taspri-posix-noaltstack.ads,
+	s-taspri-solaris.ads, s-taspri-vxworks.ads: Mark limited types as
+	explicitly limited for clarity.
+
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Init_Hidden_Discriminants): Code clean up.
+
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
 	* errout.adb (Error_Msg): Don't suppress continuation msgs for
 	run-time files.
 	* sem_prag.adb (Analyze_Pragma, case Elaborate): Forbid pragma

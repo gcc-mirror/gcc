@@ -85,8 +85,7 @@ package body System.Multiprocessors.Dispatching_Domains is
       --  System_Dispatching_Domain, or if CPU is not one of the processors of
       --  Domain (and is not Not_A_Specific_CPU).
 
-      if Target.Common.Domain /= null and then
-        Dispatching_Domain (Target.Common.Domain) /= System_Dispatching_Domain
+      if Dispatching_Domain (Target.Common.Domain) /= System_Dispatching_Domain
       then
          raise Dispatching_Domain_Error with
            "task already in user-defined dispatching domain";
@@ -201,9 +200,7 @@ package body System.Multiprocessors.Dispatching_Domains is
       T := ST.All_Tasks_List;
 
       while T /= null loop
-         if T.Common.Domain = null or else
-           T.Common.Domain = ST.System_Domain
-         then
+         if T.Common.Domain = ST.System_Domain then
             Set_Task_Affinity (T);
          end if;
 
@@ -275,7 +272,11 @@ package body System.Multiprocessors.Dispatching_Domains is
             Ada.Task_Identification.Current_Task) return Dispatching_Domain
    is
    begin
-      return Dispatching_Domain (Convert_Ids (T).Common.Domain);
+      return Result : constant Dispatching_Domain :=
+        Dispatching_Domain (Convert_Ids (T).Common.Domain)
+      do
+         pragma Assert (Result /= null);
+      end return;
    end Get_Dispatching_Domain;
 
    -------------------

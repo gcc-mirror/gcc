@@ -110,13 +110,16 @@ package body System.Tasking is
          return;
       end if;
 
-      --  Wouldn't the following be better done using an assignment of an
-      --  aggregate so that we could be sure no components were forgotten???
-
       T.Common.Parent                   := Parent;
       T.Common.Base_Priority            := Base_Priority;
       T.Common.Base_CPU                 := Base_CPU;
-      T.Common.Domain                   := Domain;
+
+      --  The Domain defaults to that of the activator
+
+      T.Common.Domain                   :=
+        (if Domain = null then Self_ID.Common.Domain else Domain);
+      pragma Assert (T.Common.Domain /= null);
+
       T.Common.Current_Priority         := 0;
       T.Common.Protected_Action_Nesting := 0;
       T.Common.Call                     := null;
@@ -218,18 +221,18 @@ package body System.Tasking is
 
       T := STPO.New_ATCB (0);
       Initialize_ATCB
-        (Self_ID => null,
+        (Self_ID          => null,
          Task_Entry_Point => null,
-         Task_Arg => Null_Address,
-         Parent => Null_Task,
-         Elaborated => null,
-         Base_Priority => Base_Priority,
-         Base_CPU => Base_CPU,
-         Domain => System_Domain,
-         Task_Info => Task_Info.Unspecified_Task_Info,
-         Stack_Size => 0,
-         T => T,
-         Success => Success);
+         Task_Arg         => Null_Address,
+         Parent           => Null_Task,
+         Elaborated       => null,
+         Base_Priority    => Base_Priority,
+         Base_CPU         => Base_CPU,
+         Domain           => System_Domain,
+         Task_Info        => Task_Info.Unspecified_Task_Info,
+         Stack_Size       => 0,
+         T                => T,
+         Success          => Success);
       pragma Assert (Success);
 
       STPO.Initialize (T);

@@ -124,7 +124,7 @@ private
    --  Note that task support on gdb relies on the fact that the first two
    --  fields of Private_Data are Thread and LWP.
 
-   type Private_Data is record
+   type Private_Data is limited record
       Thread : aliased System.OS_Interface.thread_t;
       pragma Atomic (Thread);
       --  Thread field may be updated by two different threads of control.
