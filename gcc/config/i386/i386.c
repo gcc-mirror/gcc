@@ -27360,6 +27360,12 @@ ix86_static_chain (const_tree fndecl_or_type, bool incoming_p)
 {
   unsigned regno;
 
+  /* While this function won't be called by the middle-end when a static
+     chain isn't needed, it's also used throughout the backend so it's
+     easiest to keep this check centralized.  */
+  if (DECL_P (fndecl_or_type) && !DECL_STATIC_CHAIN (fndecl_or_type))
+    return NULL;
+
   if (TARGET_64BIT)
     {
       /* We always use R10 in 64-bit mode.  */

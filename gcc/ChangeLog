@@ -1,3 +1,9 @@
+2014-11-20  Richard Henderson <rth@redhat.com>
+
+	PR target/63977
+	* config/i386/i386.c (ix86_static_chain): Reinstate the check
+	for DECL_STATIC_CHAIN.
+
 2014-11-20  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_classify_symbol):
