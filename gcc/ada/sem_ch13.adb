@@ -2853,6 +2853,7 @@ package body Sem_Ch13 is
                begin
                   if A_Id = Aspect_Pre or else A_Id = Aspect_Precondition then
                      Pname := Name_Precondition;
+
                   else
                      Pname := Name_Postcondition;
                   end if;
@@ -2925,6 +2926,7 @@ package body Sem_Ch13 is
                   --  with delay of visibility for the expression analysis.
 
                   Insert_Pragma (Aitem);
+
                   goto Continue;
                end Pre_Post;
 
@@ -3552,7 +3554,7 @@ package body Sem_Ch13 is
             --  the type of the formal match.
 
             if Base_Type (Typ) /= Base_Type (Ent)
-              or else Present ((Next_Formal (F)))
+              or else Present (Next_Formal (F))
             then
                return False;
 
@@ -3630,7 +3632,8 @@ package body Sem_Ch13 is
                Error_Msg_N ("stream subprogram must not be abstract", Expr);
                return;
 
-            --  Test for stream subprogram for interface type being non-null
+            --  A stream subprogram for an interface type must be a null
+            --  procedure (RM 13.13.2 (38/3)).
 
             elsif Is_Interface (U_Ent)
               and then not Inside_A_Generic
@@ -8268,11 +8271,44 @@ package body Sem_Ch13 is
 
          if Raise_Expression_Present then
             declare
-               Map : constant Elist_Id := New_Elmt_List;
+               Map   : constant Elist_Id := New_Elmt_List;
+               New_V : Entity_Id := Empty;
+
+               --  The unanalyzed expression will be copied and appear in
+               --  both functions. Normally expressions do not declare new
+               --  entities, but quantified expressions do, so we need to
+               --  create new entities for their bound variables, to prevent
+               --  multiple definitions in gigi.
+
+               function Reset_Loop_Variable (N : Node_Id)
+                 return Traverse_Result;
+
+               procedure Collect_Loop_Variables is
+                 new Traverse_Proc (Reset_Loop_Variable);
+
+               ------------------------
+               -- Reset_Loop_Variable --
+               ------------------------
+
+               function Reset_Loop_Variable (N : Node_Id)
+                 return Traverse_Result
+               is
+               begin
+                  if Nkind (N) = N_Iterator_Specification then
+                     New_V := Make_Defining_Identifier
+                       (Sloc (N), Chars (Defining_Identifier (N)));
+
+                     Set_Defining_Identifier (N, New_V);
+                  end if;
+
+                  return OK;
+               end Reset_Loop_Variable;
+
             begin
                Append_Elmt (Object_Entity, Map);
                Append_Elmt (Object_Entity_M, Map);
                Expr_M := New_Copy_Tree (Expr, Map => Map);
+               Collect_Loop_Variables (Expr_M);
             end;
          end if;
 

@@ -1,3 +1,44 @@
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Do not apply
+	inlining expansion if function build in place, i.e. has a limited
+	return type.
+
+2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Refined_Depends_In_Decl_Part): Add
+	variables Body_Id, Body_Inputs, Body_Outputs, Spec_Inputs,
+	Spec_Outputs. Synthesize the inputs and outputs of the subprogram
+	when pragma [Refined_]Global is missing and perform legality
+	checks on output states with visible refinement.
+	(Appears_In): Update the comment on usage.
+	(Check_Output_States): New routine.
+	(Collect_Dependency_Clause): New routine.
+	(Collect_Global_Items): Relocated to
+	Analyze_Refined_Global_In_Decl_Part.
+	(Collect_Subprogram_Inputs_Outputs): Add new formal parameters
+	Synthesize and Depends_Seen. The routine can now synthesize inputs
+	and outputs from pragma [Refined_]Depends.
+	(Normalize_Clause): Update the comment on usage. The routine no longer
+	performs normalization of outputs.
+	(Normalize_Clauses): Normalize both inputs and outputs.
+	(Normalize_Output): Relocated to Normalize_Clauses.
+	* sem_prag.ads (Collect_Subprogram_Inputs_Outputs): Add new
+	formal parameters Synthesize and Depends_Seen and update the
+	comment on usage.
+
+2014-11-20  Vincent Celier  <celier@adacore.com>
+
+	PR ada/47500
+	* back_end.adb (Scan_Back_End_Switches): Skip switch -G and
+	its argument.
+
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Reset_Loop_Variable): New subsidiary procedure
+	in Build_Predicate_Functions, to handle properly quantified
+	expressions in dynamic predicates.
+
 2014-11-20  Robert Dewar  <dewar@adacore.com>
 
 	* gnatcmd.adb, sem_ch6.adb, exp_dist.adb: Minor reformatting.

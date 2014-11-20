@@ -3691,6 +3691,11 @@ package body Sem_Ch6 is
                if Comes_From_Source (Body_Id)
                  and then Ekind (Spec_Id) = E_Function
                  and then Returns_Unconstrained_Type (Spec_Id)
+
+                 --  If function builds in place, i.e. returns a limited type,
+                 --  inlining cannot be done.
+
+                 and then not Is_Limited_Type (Etype (Spec_Id))
                then
                   Check_And_Split_Unconstrained_Function (N, Spec_Id, Body_Id);
 
