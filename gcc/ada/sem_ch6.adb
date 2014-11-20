@@ -331,8 +331,8 @@ package body Sem_Ch6 is
          --  which case the redeclaration is illegal.
 
          if Present (Prev)
-           and then Nkind (Original_Node (Unit_Declaration_Node (Prev)))
-             =  N_Expression_Function
+           and then Nkind (Original_Node (Unit_Declaration_Node (Prev))) =
+                                                        N_Expression_Function
          then
             Error_Msg_Sloc := Sloc (Prev);
             Error_Msg_N ("& conflicts with declaration#", Def_Id);

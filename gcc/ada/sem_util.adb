@@ -897,8 +897,9 @@ package body Sem_Util is
    is
    begin
       return Is_Enumeration_Type (T)
-        and then Comes_From_Source (N)
         and then Warn_On_Unordered_Enumeration_Type
+        and then not Is_Generic_Type (T)
+        and then Comes_From_Source (N)
         and then not Has_Pragma_Ordered (T)
         and then not In_Same_Extended_Unit (N, T);
    end Bad_Unordered_Enumeration_Reference;

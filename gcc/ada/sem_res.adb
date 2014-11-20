@@ -6897,42 +6897,12 @@ package body Sem_Res is
    --  Used to resolve identifiers and expanded names
 
    procedure Resolve_Entity_Name (N : Node_Id; Typ : Entity_Id) is
-      function Appears_In_Check (Nod : Node_Id) return Boolean;
-      --  Denote whether an arbitrary node Nod appears in a check node
-
       function Is_OK_Volatile_Context
         (Context : Node_Id;
          Obj_Ref : Node_Id) return Boolean;
       --  Determine whether node Context denotes a "non-interfering context"
       --  (as defined in SPARK RM 7.1.3(13)) where volatile reference Obj_Ref
       --  can safely reside.
-
-      ----------------------
-      -- Appears_In_Check --
-      ----------------------
-
-      function Appears_In_Check (Nod : Node_Id) return Boolean is
-         Par : Node_Id;
-
-      begin
-         --  Climb the parent chain looking for a check node
-
-         Par := Nod;
-         while Present (Par) loop
-            if Nkind (Par) in N_Raise_xxx_Error then
-               return True;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         return False;
-      end Appears_In_Check;
 
       ----------------------------
       -- Is_OK_Volatile_Context --
@@ -6942,6 +6912,68 @@ package body Sem_Res is
         (Context : Node_Id;
          Obj_Ref : Node_Id) return Boolean
       is
+         function Within_Check (Nod : Node_Id) return Boolean;
+         --  Determine whether an arbitrary node appears in a check node
+
+         function Within_Procedure_Call (Nod : Node_Id) return Boolean;
+         --  Determine whether an arbitrary node appears in a procedure call
+
+         ------------------
+         -- Within_Check --
+         ------------------
+
+         function Within_Check (Nod : Node_Id) return Boolean is
+            Par : Node_Id;
+
+         begin
+            --  Climb the parent chain looking for a check node
+
+            Par := Nod;
+            while Present (Par) loop
+               if Nkind (Par) in N_Raise_xxx_Error then
+                  return True;
+
+               --  Prevent the search from going too far
+
+               elsif Is_Body_Or_Package_Declaration (Par) then
+                  exit;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+
+            return False;
+         end Within_Check;
+
+         ---------------------------
+         -- Within_Procedure_Call --
+         ---------------------------
+
+         function Within_Procedure_Call (Nod : Node_Id) return Boolean is
+            Par : Node_Id;
+
+         begin
+            --  Climb the parent chain looking for a procedure call
+
+            Par := Nod;
+            while Present (Par) loop
+               if Nkind (Par) = N_Procedure_Call_Statement then
+                  return True;
+
+               --  Prevent the search from going too far
+
+               elsif Is_Body_Or_Package_Declaration (Par) then
+                  exit;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+
+            return False;
+         end Within_Procedure_Call;
+
+      --  Start of processing for Is_OK_Volatile_Context
+
       begin
          --  The volatile object appears on either side of an assignment
 
@@ -6996,8 +7028,18 @@ package body Sem_Res is
          --  Allow references to volatile objects in various checks. This is
          --  not a direct SPARK 2014 requirement.
 
-         elsif Appears_In_Check (Context) then
+         elsif Within_Check (Context) then
             return True;
+
+         --  Assume that references to effectively volatile objects that appear
+         --  as actual parameters in a procedure call are always legal. A full
+         --  legality check is done when the actuals are resolved.
+
+         elsif Within_Procedure_Call (Context) then
+            return True;
+
+         --  Otherwise the context is not suitable for an effectively volatile
+         --  object.
 
          else
             return False;
@@ -7138,13 +7180,6 @@ package body Sem_Res is
          --  context" as defined in SPARK RM 7.1.3(13).
 
          if Is_OK_Volatile_Context (Par, N) then
-            null;
-
-         --  Assume that references to effectively volatile objects that appear
-         --  as actual parameters in a procedure call are always legal. A full
-         --  legality check is done when the actuals are resolved.
-
-         elsif Nkind (Par) = N_Procedure_Call_Statement then
             null;
 
          --  Otherwise the context causes a side effect with respect to the

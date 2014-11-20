@@ -1,3 +1,19 @@
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* gnatcmd.adb, sem_ch6.adb, exp_dist.adb: Minor reformatting.
+	* sem_util.adb (Bad_Unordered_Enumeration_Reference): Suppress
+	warning (return False) for generic type.
+
+2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Appears_In_Check): Removed.
+	(Is_OK_Volatile_Context): Rewrite the checks which verify that
+	an effectively volatile object subject to enabled properties
+	Async_Writers or Effective_Reads appears in a suitable context to
+	properly recognize a procedure call.
+	(Within_Check): New routine.
+	(Within_Procedure_Call): New routine.
+
 2014-11-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb: Improve better error message.

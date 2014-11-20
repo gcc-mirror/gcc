@@ -489,9 +489,8 @@ procedure GNATCmd is
 
       for Index in 1 .. Last_Switches.Last loop
          if Last_Switches.Table (Index) (1) /= '-'
-           or else
-           (Last_Switches.Table (Index).all'Length > 7
-            and then Last_Switches.Table (Index) (1 .. 7) = "-files=")
+           or else (Last_Switches.Table (Index).all'Length > 7
+                     and then Last_Switches.Table (Index) (1 .. 7) = "-files=")
          then
             Add_Sources := False;
             exit;
@@ -507,9 +506,7 @@ procedure GNATCmd is
          --  put the list of sources in it. For gnatstack create a temporary
          --  file with the list of .ci files.
 
-         if The_Command = List   or else
-            The_Command = Stack
-         then
+         if The_Command = List or else The_Command = Stack then
             Tempdir.Create_Temp_File (FD, Temp_File_Name);
             Last_Switches.Increment_Last;
             Last_Switches.Table (Last_Switches.Last) :=
@@ -1937,6 +1934,7 @@ begin
          --  a configuration pragmas file, if necessary.
 
          if The_Command = Sync then
+
             --  If there are switches in package Compiler, put them in the
             --  Carg_Switches table.
 
@@ -2155,8 +2153,8 @@ begin
          --  on the command line, call tool with all the sources of the main
          --  project.
 
-         if The_Command = Sync   or else
-            The_Command = List   or else
+         if The_Command = Sync  or else
+            The_Command = List  or else
             The_Command = Stack
          then
             Check_Files;
