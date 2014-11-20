@@ -1794,7 +1794,7 @@ package body Sem_Res is
         and then Nkind (Original_Node (N)) = N_Function_Call
       then
          declare
-            L : constant Node_Id := Left_Opnd  (N);
+            L : Node_Id;
             R : constant Node_Id := Right_Opnd (N);
 
             Old_First : constant Node_Id :=
@@ -1803,7 +1803,8 @@ package body Sem_Res is
 
          begin
             if Is_Binary then
-               Old_Sec   := Next (Old_First);
+               L       := Left_Opnd (N);
+               Old_Sec := Next (Old_First);
 
                --  If the original call has named associations, replace the
                --  explicit actual parameter in the association with the proper

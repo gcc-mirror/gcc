@@ -61,9 +61,11 @@ generic
    with function "=" (Left, Right : Element_Type)
                       return Boolean is <>;
 
-package Ada.Containers.Formal_Doubly_Linked_Lists is
+package Ada.Containers.Formal_Doubly_Linked_Lists with
+  Pure,
+  SPARK_Mode
+is
    pragma Annotate (GNATprove, External_Axiomatization);
-   pragma Pure;
 
    type List (Capacity : Count_Type) is private with
      Iterable => (First       => First,
@@ -337,6 +339,7 @@ package Ada.Containers.Formal_Doubly_Linked_Lists is
    --  scanned yet.
 
 private
+   pragma SPARK_Mode (Off);
 
    type Node_Type is record
       Prev    : Count_Type'Base := -1;

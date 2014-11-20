@@ -14657,6 +14657,12 @@ package body Sem_Prag is
                     (Is_Concurrent_Record_Type (Typ)
                        and then Present (Interfaces (Typ)))
 
+                  --  In analysis-only mode, examine original protected type
+
+                  or else
+                    (Nkind (Parent (Typ)) = N_Protected_Type_Declaration
+                      and then Present (Interface_List (Parent (Typ))))
+
                   --  Check for a private record extension with keyword
                   --  "synchronized".
 

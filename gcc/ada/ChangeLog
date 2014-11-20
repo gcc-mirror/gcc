@@ -1,3 +1,29 @@
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Implemented): In ASIS
+	(compile-only) mode, use original type declaration to determine
+	whether protected type implements an interface.
+
+2014-11-20  Yannick Moy  <moy@adacore.com>
+
+	* a-cfdlli.adb, a-cfdlli.ads, a-cfinve.adb, a-cfinve.ads,
+	* a-cofove.adb, a-cofove.ads: Mark spec as SPARK_Mode, and private
+	part/body as SPARK_Mode Off.
+	* a-cfhama.adb, a-cfhama.ads, a-cfhase.adb, a-cfhase.ads,
+	* a-cforma.adb, a-cforma.ads, a-cforse.adb, a-cforse.ads: Use
+	aspect instead of pragma for uniformity.
+
+2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Is_EVF_Expression): Include
+	attributes 'Loop_Entry, 'Old and 'Update to the logic.
+
+2014-11-20  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Make_Call_Into_Operator): Don't
+	call Left_Opnd in the case of unary operators, because they only
+	have Right.
+
 2014-11-20  Pascal Obry  <obry@adacore.com>
 
 	* initialize.c (ProcListCS): New extern variable (critical section).

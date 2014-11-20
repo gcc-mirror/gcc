@@ -64,10 +64,11 @@ generic
    with function "<" (Left, Right : Element_Type) return Boolean is <>;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
-package Ada.Containers.Formal_Ordered_Sets is
+package Ada.Containers.Formal_Ordered_Sets with
+  Pure,
+  SPARK_Mode
+is
    pragma Annotate (GNATprove, External_Axiomatization);
-   pragma Pure;
-   pragma SPARK_Mode (On);
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean
    with
@@ -353,9 +354,10 @@ package Ada.Containers.Formal_Ordered_Sets is
    --  scanned yet.
 
 private
+   pragma SPARK_Mode (Off);
+
    pragma Inline (Next);
    pragma Inline (Previous);
-   pragma SPARK_Mode (Off);
 
    type Node_Type is record
       Has_Element : Boolean := False;

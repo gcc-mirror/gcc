@@ -10846,6 +10846,16 @@ package body Sem_Util is
                          N_Type_Conversion)
       then
          return Is_EVF_Expression (Expression (N));
+
+      --  Attributes 'Loop_Entry, 'Old and 'Update are an EVF expression when
+      --  their prefix denotes an EVF expression.
+
+      elsif Nkind (N) = N_Attribute_Reference
+        and then Nam_In (Attribute_Name (N), Name_Loop_Entry,
+                                             Name_Old,
+                                             Name_Update)
+      then
+         return Is_EVF_Expression (Prefix (N));
       end if;
 
       return False;

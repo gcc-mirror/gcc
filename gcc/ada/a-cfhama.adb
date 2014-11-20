@@ -35,8 +35,9 @@ with Ada.Containers.Prime_Numbers; use Ada.Containers.Prime_Numbers;
 
 with System; use type System.Address;
 
-package body Ada.Containers.Formal_Hashed_Maps is
-   pragma SPARK_Mode (Off);
+package body Ada.Containers.Formal_Hashed_Maps with
+  SPARK_Mode => Off
+is
 
    -----------------------
    -- Local Subprograms --
