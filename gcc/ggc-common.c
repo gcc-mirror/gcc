@@ -162,6 +162,8 @@ ggc_mark_roots (void)
   for (ct = gt_ggc_cache_rtab; *ct; ct++)
     ggc_scan_cache_tab (*ct);
 
+  gt_clear_caches ();
+
   FOR_EACH_VEC_ELT (extra_cache_vec, i, ctp)
     ggc_scan_cache_tab (ctp);
 

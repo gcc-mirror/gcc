@@ -181,7 +181,7 @@ struct GTY(()) mem_attrs
    object in the low part of a 4-byte register, the OFFSET field
    will be -3 rather than 0.  */
 
-struct GTY(()) reg_attrs {
+struct GTY((for_user)) reg_attrs {
   tree decl;			/* decl corresponding to REG.  */
   HOST_WIDE_INT offset;		/* Offset from start of DECL.  */
 };

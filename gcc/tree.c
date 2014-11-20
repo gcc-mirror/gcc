@@ -205,8 +205,14 @@ static GTY ((if_marked ("type_hash_marked_p"), param_is (struct type_hash)))
 
 /* Hash table and temporary node for larger integer const values.  */
 static GTY (()) tree int_cst_node;
-static GTY ((if_marked ("ggc_marked_p"), param_is (union tree_node)))
-     htab_t int_cst_hash_table;
+
+struct int_cst_hasher : ggc_cache_hasher<tree>
+{
+  static hashval_t hash (tree t);
+  static bool equal (tree x, tree y);
+};
+
+static GTY ((cache)) hash_table<int_cst_hasher> *int_cst_hash_table;
 
 /* Hash table for optimization flags and target option flags.  Use the same
    hash table for both sets of options.  Nodes for building the current
@@ -215,8 +221,14 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (union tree_node)))
    allocating and freeing up a node repeatably.  */
 static GTY (()) tree cl_optimization_node;
 static GTY (()) tree cl_target_option_node;
-static GTY ((if_marked ("ggc_marked_p"), param_is (union tree_node)))
-     htab_t cl_option_hash_table;
+
+struct cl_option_hasher : ggc_cache_hasher<tree>
+{
+  static hashval_t hash (tree t);
+  static bool equal (tree x, tree y);
+};
+
+static GTY ((cache)) hash_table<cl_option_hasher> *cl_option_hash_table;
 
 /* General tree->tree mapping  structure for use in hash tables.  */
 
@@ -233,10 +245,6 @@ static GTY ((if_marked ("tree_vec_map_marked_p"), param_is (struct tree_vec_map)
 static void set_type_quals (tree, int);
 static int type_hash_eq (const void *, const void *);
 static hashval_t type_hash_hash (const void *);
-static hashval_t int_cst_hash_hash (const void *);
-static int int_cst_hash_eq (const void *, const void *);
-static hashval_t cl_option_hash_hash (const void *);
-static int cl_option_hash_eq (const void *, const void *);
 static void print_type_hash_statistics (void);
 static void print_debug_expr_statistics (void);
 static void print_value_expr_statistics (void);
@@ -585,13 +593,11 @@ init_ttree (void)
   value_expr_for_decl = htab_create_ggc (512, tree_decl_map_hash,
 					 tree_decl_map_eq, 0);
 
-  int_cst_hash_table = htab_create_ggc (1024, int_cst_hash_hash,
-					int_cst_hash_eq, NULL);
+  int_cst_hash_table = hash_table<int_cst_hasher>::create_ggc (1024);
 
   int_cst_node = make_int_cst (1, 1);
 
-  cl_option_hash_table = htab_create_ggc (64, cl_option_hash_hash,
-					  cl_option_hash_eq, NULL);
+  cl_option_hash_table = hash_table<cl_option_hasher>::create_ggc (64);
 
   cl_optimization_node = make_node (OPTIMIZATION_NODE);
   cl_target_option_node = make_node (TARGET_OPTION_NODE);
@@ -1256,10 +1262,10 @@ force_fit_type (tree type, const wide_int_ref &cst,
 
 /* Return the hash code code X, an INTEGER_CST.  */
 
-static hashval_t
-int_cst_hash_hash (const void *x)
+hashval_t
+int_cst_hasher::hash (tree x)
 {
-  const_tree const t = (const_tree) x;
+  const_tree const t = x;
   hashval_t code = htab_hash_pointer (TREE_TYPE (t));
   int i;
 
@@ -1272,11 +1278,11 @@ int_cst_hash_hash (const void *x)
 /* Return nonzero if the value represented by *X (an INTEGER_CST tree node)
    is the same as that given by *Y, which is the same.  */
 
-static int
-int_cst_hash_eq (const void *x, const void *y)
+bool
+int_cst_hasher::equal (tree x, tree y)
 {
-  const_tree const xt = (const_tree) x;
-  const_tree const yt = (const_tree) y;
+  const_tree const xt = x;
+  const_tree const yt = y;
 
   if (TREE_TYPE (xt) != TREE_TYPE (yt)
       || TREE_INT_CST_NUNITS (xt) != TREE_INT_CST_NUNITS (yt)
@@ -1408,13 +1414,12 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
 	{
 	  /* Use the cache of larger shared ints, using int_cst_node as
 	     a temporary.  */
-	  void **slot;
 
 	  TREE_INT_CST_ELT (int_cst_node, 0) = hwi;
 	  TREE_TYPE (int_cst_node) = type;
 
-	  slot = htab_find_slot (int_cst_hash_table, int_cst_node, INSERT);
-	  t = (tree) *slot;
+	  tree *slot = int_cst_hash_table->find_slot (int_cst_node, INSERT);
+	  t = *slot;
 	  if (!t)
 	    {
 	      /* Insert this one into the hash table.  */
@@ -1430,11 +1435,10 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
       /* The value either hashes properly or we drop it on the floor
 	 for the gc to take care of.  There will not be enough of them
 	 to worry about.  */
-      void **slot;
 
       tree nt = build_new_int_cst (type, cst);
-      slot = htab_find_slot (int_cst_hash_table, nt, INSERT);
-      t = (tree) *slot;
+      tree *slot = int_cst_hash_table->find_slot (nt, INSERT);
+      t = *slot;
       if (!t)
 	{
 	  /* Insert this one into the hash table.  */
@@ -1539,9 +1543,7 @@ cache_integer_cst (tree t)
   else
     {
       /* Use the cache of larger shared ints.  */
-      void **slot;
-
-      slot = htab_find_slot (int_cst_hash_table, t, INSERT);
+      tree *slot = int_cst_hash_table->find_slot (t, INSERT);
       /* If there is already an entry for the number verify it's the
          same.  */
       if (*slot)
@@ -11498,10 +11500,10 @@ tree_nonartificial_location (tree exp)
 
 /* Return the hash code code X, an OPTIMIZATION_NODE or TARGET_OPTION code.  */
 
-static hashval_t
-cl_option_hash_hash (const void *x)
+hashval_t
+cl_option_hasher::hash (tree x)
 {
-  const_tree const t = (const_tree) x;
+  const_tree const t = x;
   const char *p;
   size_t i;
   size_t len = 0;
@@ -11532,11 +11534,11 @@ cl_option_hash_hash (const void *x)
    TARGET_OPTION tree node) is the same as that given by *Y, which is the
    same.  */
 
-static int
-cl_option_hash_eq (const void *x, const void *y)
+bool
+cl_option_hasher::equal (tree x, tree y)
 {
-  const_tree const xt = (const_tree) x;
-  const_tree const yt = (const_tree) y;
+  const_tree const xt = x;
+  const_tree const yt = y;
   const char *xp;
   const char *yp;
   size_t len;
@@ -11569,15 +11571,14 @@ tree
 build_optimization_node (struct gcc_options *opts)
 {
   tree t;
-  void **slot;
 
   /* Use the cache of optimization nodes.  */
 
   cl_optimization_save (TREE_OPTIMIZATION (cl_optimization_node),
 			opts);
 
-  slot = htab_find_slot (cl_option_hash_table, cl_optimization_node, INSERT);
-  t = (tree) *slot;
+  tree *slot = cl_option_hash_table->find_slot (cl_optimization_node, INSERT);
+  t = *slot;
   if (!t)
     {
       /* Insert this one into the hash table.  */
@@ -11597,15 +11598,14 @@ tree
 build_target_option_node (struct gcc_options *opts)
 {
   tree t;
-  void **slot;
 
   /* Use the cache of optimization nodes.  */
 
   cl_target_option_save (TREE_TARGET_OPTION (cl_target_option_node),
 			 opts);
 
-  slot = htab_find_slot (cl_option_hash_table, cl_target_option_node, INSERT);
-  t = (tree) *slot;
+  tree *slot = cl_option_hash_table->find_slot (cl_target_option_node, INSERT);
+  t = *slot;
   if (!t)
     {
       /* Insert this one into the hash table.  */
@@ -11619,26 +11619,16 @@ build_target_option_node (struct gcc_options *opts)
   return t;
 }
 
-/* Reset TREE_TARGET_GLOBALS cache for TARGET_OPTION_NODE.
-   Called through htab_traverse.  */
-
-static int
-prepare_target_option_node_for_pch (void **slot, void *)
-{
-  tree node = (tree) *slot;
-  if (TREE_CODE (node) == TARGET_OPTION_NODE)
-    TREE_TARGET_GLOBALS (node) = NULL;
-  return 1;
-}
-
 /* Clear TREE_TARGET_GLOBALS of all TARGET_OPTION_NODE trees,
    so that they aren't saved during PCH writing.  */
 
 void
 prepare_target_option_nodes_for_pch (void)
 {
-  htab_traverse (cl_option_hash_table, prepare_target_option_node_for_pch,
-		 NULL);
+  hash_table<cl_option_hasher>::iterator iter = cl_option_hash_table->begin ();
+  for (; iter != cl_option_hash_table->end (); ++iter)
+    if (TREE_CODE (*iter) == TARGET_OPTION_NODE)
+      TREE_TARGET_GLOBALS (*iter) = NULL;
 }
 
 /* Determine the "ultimate origin" of a block.  The block may be an inlined
