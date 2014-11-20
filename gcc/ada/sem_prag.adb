@@ -13126,7 +13126,7 @@ package body Sem_Prag is
 
          begin
             if SPARK_Mode = On then
-               Error_Msg_N ("pragma Elaborate not allowed in SPARK mode", N);
+               Error_Msg_N ("pragma Elaborate not allowed in SPARK", N);
             end if;
 
             --  Pragma must be in context items list of a compilation unit
