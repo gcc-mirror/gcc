@@ -1,6 +1,7 @@
 2014-11-20  Andrew Pinski  <apinski@cavium.com>
 
 	PR ipa/63981
+	PR ipa/63982
 	* ipa-polymorphic-call.c (possible_placement_new):
 	Use POINTER_SIZE instead of GET_MODE_BITSIZE (Pmode).
 	(ipa_polymorphic_call_context::restrict_to_inner_class): Likewise.
