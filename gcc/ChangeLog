@@ -1,3 +1,12 @@
+2014-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (free_lang_data_in_type): If BINFO has no important
+	information in it, set it to NULL.
+	(get_binfo_at_offset): Do not walk fields, only bases.
+	* ipa-utils.h (polymorphic_type_binfo_p): Be ready for BINFO_TYPE
+	to be NULL.
+	* ipa-polymorphic-call.c (record_known_type): Likewise.
+
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854

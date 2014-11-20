@@ -1849,7 +1849,7 @@ possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
 {
   tree binfo = TYPE_BINFO (type->type);
   unsigned int i;
-  vec <tree> type_binfos = vNULL;
+  auto_vec <tree, 8> type_binfos;
   bool possibly_instantiated = type_possibly_instantiated_p (type->type);
 
   /* We may need to consider types w/o instances because of possible derived
@@ -1868,7 +1868,6 @@ possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
 				inserted, matched_vtables,
 				type->anonymous_namespace, completep);
     }
-  type_binfos.release ();
   for (i = 0; i < type->derived_types.length (); i++)
     possible_polymorphic_call_targets_1 (nodes, inserted, 
 					 matched_vtables,
@@ -2226,7 +2225,7 @@ possible_polymorphic_call_targets (tree otr_type,
 {
   static struct cgraph_node_hook_list *node_removal_hook_holder;
   vec <cgraph_node *> nodes = vNULL;
-  vec <tree> bases_to_consider = vNULL;
+  auto_vec <tree, 8> bases_to_consider;
   odr_type type, outer_type;
   polymorphic_call_target_d key;
   polymorphic_call_target_d **slot;
@@ -2521,7 +2520,6 @@ possible_polymorphic_call_targets (tree otr_type,
 	}
     }
 
-  bases_to_consider.release();
   (*slot)->targets = nodes;
   (*slot)->complete = complete;
   if (completep)

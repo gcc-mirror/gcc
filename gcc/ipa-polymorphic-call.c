@@ -1307,6 +1307,7 @@ record_known_type (struct type_change_info *tci, tree type, HOST_WIDE_INT offset
   if (type
       && (offset
           || (TREE_CODE (type) != RECORD_TYPE
+	      || !TYPE_BINFO (type)
 	      || !polymorphic_type_binfo_p (TYPE_BINFO (type)))))
     {
       ipa_polymorphic_call_context context;
