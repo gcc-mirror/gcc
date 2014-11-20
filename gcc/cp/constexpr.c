@@ -3506,17 +3506,8 @@ fold_non_dependent_expr (tree t)
       if (!instantiation_dependent_expression_p (t)
 	  && potential_constant_expression (t))
 	{
-	  HOST_WIDE_INT saved_processing_template_decl;
-
-	  saved_processing_template_decl = processing_template_decl;
-	  processing_template_decl = 0;
-	  t = tsubst_copy_and_build (t,
-				     /*args=*/NULL_TREE,
-				     tf_none,
-				     /*in_decl=*/NULL_TREE,
-				     /*function_p=*/false,
-				     /*integral_constant_expression_p=*/true);
-	  processing_template_decl = saved_processing_template_decl;
+	  processing_template_decl_sentinel s;
+	  t = instantiate_non_dependent_expr_internal (t, tf_none);
 
 	  if (type_unknown_p (t)
 	      || BRACE_ENCLOSED_INITIALIZER_P (t))
