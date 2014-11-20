@@ -1327,9 +1327,9 @@ package body Inline is
       begin
          --  A call to an expression function may precede the actual body which
          --  is inserted at the end of the enclosing declarations. Ensure that
-         --  the related entity is analyzed before inspecting the contract.
+         --  the related entity is decorated before inspecting the contract.
 
-         if Analyzed (Id) then
+         if Is_Subprogram_Or_Generic_Subprogram (Id) then
             Items := Contract (Id);
 
             return Present (Items)

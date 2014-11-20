@@ -1,3 +1,38 @@
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Make_Call_Into_Operator): In ASIS mode, propagate
+	back the resolved operands to the original call node, taking
+	into account that the original call may have named associations.
+
+2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* inline.adb (Has_Some_Contract): Change the
+	guard to test the Ekind of the entity rather than the Analyzed
+	flag. This handles partially analyzed contexts.
+
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): In Ada 83 mode, do
+	not reject the renaming of a function result if the renaming
+	does not come for source.
+
+2014-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.ads: Minor addition of ??? clause.
+
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Variable): For an Ada 2012 implicit
+	dereference introduced for an indexing opertion, check that the
+	type of the corresponding access discriminant is not an access
+	to constant.
+
+2014-11-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Find_Corresponding_Spec): Inherit
+	the ghostness of the matching spec, the same way convention
+	is inherited.
+
 2014-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): Swap a couple of

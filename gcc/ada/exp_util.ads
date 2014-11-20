@@ -511,6 +511,9 @@ package Exp_Util is
    --  Note: this function can be costly and must be invoked with special care.
    --  Possibly we could introduce a flag at parse time indicating the presence
    --  of an address clause to speed this up???
+   --
+   --  Note: currently this function does not scan the private part, that seems
+   --  like a potential bug ???
 
    procedure Force_Evaluation
      (Exp      : Node_Id;

@@ -1793,15 +1793,61 @@ package body Sem_Res is
         and then Nkind (N) in N_Op
         and then Nkind (Original_Node (N)) = N_Function_Call
       then
-         if Is_Binary then
-            Rewrite (First (Parameter_Associations (Original_Node (N))),
-               Relocate_Node (Left_Opnd (N)));
-            Rewrite (Next (First (Parameter_Associations (Original_Node (N)))),
-               Relocate_Node (Right_Opnd (N)));
-         else
-            Rewrite (First (Parameter_Associations (Original_Node (N))),
-               Relocate_Node (Right_Opnd (N)));
-         end if;
+         declare
+            L : constant Node_Id := Left_Opnd  (N);
+            R : constant Node_Id := Right_Opnd (N);
+
+            Old_First : constant Node_Id :=
+                          First (Parameter_Associations (Original_Node (N)));
+            Old_Sec   : Node_Id;
+
+         begin
+            if Is_Binary then
+               Old_Sec   := Next (Old_First);
+
+               --  If the original call has named associations, replace the
+               --  explicit actual parameter in the association with the proper
+               --  resolved operand.
+
+               if Nkind (Old_First) = N_Parameter_Association then
+                  if Chars (Selector_Name (Old_First)) =
+                     Chars (First_Entity (Op_Id))
+                  then
+                     Rewrite (Explicit_Actual_Parameter (Old_First),
+                       Relocate_Node (L));
+                  else
+                     Rewrite (Explicit_Actual_Parameter (Old_First),
+                       Relocate_Node (R));
+                  end if;
+
+               else
+                  Rewrite (Old_First, Relocate_Node (L));
+               end if;
+
+               if Nkind (Old_Sec) = N_Parameter_Association then
+                  if Chars (Selector_Name (Old_Sec))  =
+                     Chars (First_Entity (Op_Id))
+                  then
+                     Rewrite (Explicit_Actual_Parameter (Old_Sec),
+                       Relocate_Node (L));
+                  else
+                     Rewrite (Explicit_Actual_Parameter (Old_Sec),
+                       Relocate_Node (R));
+                  end if;
+
+               else
+                  Rewrite (Old_Sec, Relocate_Node (R));
+               end if;
+
+            else
+               if Nkind (Old_First) = N_Parameter_Association then
+                  Rewrite (Explicit_Actual_Parameter (Old_First),
+                    Relocate_Node (R));
+               else
+                  Rewrite (Old_First, Relocate_Node (R));
+               end if;
+            end if;
+         end;
 
          Set_Parent (Original_Node (N), Parent (N));
       end if;
