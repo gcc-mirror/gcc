@@ -915,23 +915,31 @@ package body Sem_Elab is
            and then not Elaboration_Checks_Suppressed (Ent)
            and then not Suppress_Elaboration_Warnings (E_Scope)
            and then not Elaboration_Checks_Suppressed (E_Scope)
-           and then (Elab_Warnings or Elab_Info_Messages)
+           and then ((Elab_Warnings or Elab_Info_Messages)
+                      or else SPARK_Mode = On)
            and then Generate_Warnings
          then
             --  Instantiation case
 
             if Inst_Case then
-               Elab_Warning
-                 ("instantiation of& may raise Program_Error?l?",
-                  "info: instantiation of& during elaboration?$?", Ent);
+               if SPARK_Mode = On then
+                  Error_Msg_NE
+                    ("instantiation of & during elaboration in SPARK mode",
+                     N, Ent);
+
+               else
+                  Elab_Warning
+                    ("instantiation of & may raise Program_Error?l?",
+                     "info: instantiation of & during elaboration?$?", Ent);
+               end if;
 
             --  Indirect call case, info message only in static elaboration
             --  case, because the attribute reference itself cannot raise an
-            --  exception.
+            --  exception. Note that SPARK does not  permit indirect calls.
 
             elsif Access_Case then
                Elab_Warning
-                 ("", "info: access to& during elaboration?$?", Ent);
+                 ("", "info: access to & during elaboration?$?", Ent);
 
             --  Subprogram call case
 
@@ -945,6 +953,10 @@ package body Sem_Elab is
                      "info: implicit call to & during elaboration?$?",
                      Ent);
 
+               elsif SPARK_Mode = On then
+                  Error_Msg_NE
+                    ("call to & during elaboration in SPARK mode", N, Ent);
+
                else
                   Elab_Warning
                     ("call to & may raise Program_Error?l?",
@@ -955,11 +967,24 @@ package body Sem_Elab is
 
             Error_Msg_Qual_Level := Nat'Last;
 
-            if Nkind (N) in N_Subprogram_Instantiation then
+            --  Case of Elaborate_All not present and required, for SPARK this
+            --  is an error, so give an error message.
+
+            if SPARK_Mode = On then
+               Error_Msg_NE
+                 ("\Elaborate_All pragma required for&", N, W_Scope);
+
+            --  Otherwise we generate an implicit pragma. For a subprogram
+            --  instantiation, Elaborate is good enough, since no transitive
+            --  call is possible at elaboration time in this case.
+
+            elsif Nkind (N) in N_Subprogram_Instantiation then
                Elab_Warning
                  ("\missing pragma Elaborate for&?l?",
                   "\implicit pragma Elaborate for& generated?$?",
                   W_Scope);
+
+            --  For all other cases, we need an implicit Elaborate_All
 
             else
                Elab_Warning

@@ -367,21 +367,16 @@ package body Comperr is
                End_Line;
 
                Write_Str
-                 ("| Include the exact gcc or gnatmake command " &
-                  "that you entered.");
+                 ("| Include the exact command that you entered.");
                End_Line;
 
                Write_Str
-                 ("| Also include sources listed below in gnatchop format");
-               End_Line;
-
-               Write_Str
-                 ("| (concatenated together with no headers between files).");
+                 ("| Also include sources listed below.");
                End_Line;
 
                if not Is_FSF_Version then
                   Write_Str
-                    ("| Use plain ASCII or MIME attachment.");
+                    ("| Use plain ASCII or MIME attachment(s).");
                   End_Line;
                end if;
             end if;

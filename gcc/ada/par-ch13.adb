@@ -568,8 +568,7 @@ package body Ch13 is
                then
                   Scan; -- past identifier
 
-                  --  Attempt to detect ' or => following a potential aspect
-                  --  mark.
+                  --  Attempt to detect ' or => following potential aspect mark
 
                   if Token = Tok_Apostrophe or else Token = Tok_Arrow then
                      Restore_Scan_State (Scan_State);
@@ -580,14 +579,13 @@ package body Ch13 is
                   end if;
                end if;
 
-               --  The construct following the current aspect is not an
-               --  aspect.
+               --  Construct following the current aspect is not an aspect
 
                Restore_Scan_State (Scan_State);
             end;
          end if;
 
-         --  Must be terminator character
+         --  Require semicolon if caller expects to scan this out
 
          if Semicolon then
             T_Semicolon;

@@ -966,10 +966,10 @@ package body Exp_Strm is
         Make_Handled_Sequence_Of_Statements (Loc,
           Statements => Stms));
 
-      --  If Typ has controlled components (i.e. if it is classwide
-      --  or Has_Controlled), or components constrained using the discriminants
-      --  of Typ, then we need to ensure that all component assignments
-      --  are performed on an object that has been appropriately constrained
+      --  If Typ has controlled components (i.e. if it is classwide or
+      --  Has_Controlled), or components constrained using the discriminants
+      --  of Typ, then we need to ensure that all component assignments are
+      --  performed on an object that has been appropriately constrained
       --  prior to being initialized. To this effect, we wrap the component
       --  assignments in a block where V is a constrained temporary.
 
@@ -979,7 +979,7 @@ package body Exp_Strm is
           Object_Definition   =>
             Make_Subtype_Indication (Loc,
               Subtype_Mark => New_Occurrence_Of (Base_Type (Typ), Loc),
-              Constraint =>
+              Constraint   =>
                 Make_Index_Or_Discriminant_Constraint (Loc,
                   Constraints => Cstr))));
 
