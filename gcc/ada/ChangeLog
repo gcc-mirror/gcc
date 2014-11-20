@@ -1,3 +1,10 @@
+2014-11-20  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (remove_handle): New local routine without a lock.
+	(win32_wait): fix the critical section to properly protect needed
+	code, use new remove_handle.
+	(__gnat_win32_remove_handle): refactor code with remove_handle.
+
 2014-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* inline.adb (Analyze_Inlined_Bodies): Iterate between loading
