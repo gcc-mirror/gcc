@@ -1,3 +1,7 @@
+2014-11-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Improve better error message.
+
 2014-11-20  Thomas Quinot  <quinot@adacore.com>
 
 	* freeze.adb, sem_ch13.adb: Minor editing.

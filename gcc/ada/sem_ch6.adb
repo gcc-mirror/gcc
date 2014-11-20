@@ -334,7 +334,8 @@ package body Sem_Ch6 is
            and then Nkind (Original_Node (Unit_Declaration_Node (Prev)))
              =  N_Expression_Function
          then
-            Error_Msg_N ("Duplicate expression function", N);
+            Error_Msg_Sloc := Sloc (Prev);
+            Error_Msg_N ("& conflicts with declaration#", Def_Id);
             return;
          end if;
       end if;
