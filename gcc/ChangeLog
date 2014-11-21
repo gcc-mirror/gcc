@@ -1,3 +1,8 @@
+2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/63784
+	* configure: Regenerated.
+
 2014-11-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/arm_neon.h (vsqrt_f64): New intrinsic.

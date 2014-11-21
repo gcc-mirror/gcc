@@ -1,3 +1,8 @@
+2014-11-21  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR bootstrap/63784
+	* libtool.m4: Add $pic_flag with -shared.
+
 2014-11-21  Renlin Li  <Renlin.Li@arm.com>
 
 	* MAINTAINERS (Write After Approval): Added myself.
