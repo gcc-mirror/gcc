@@ -1,3 +1,9 @@
+2014-11-21  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* configure.ac: When checking for MIPS .module support ensure that
+	o32 FPXX is supported to avoid a second configure check.
+	* configure: Regenerate.
+
 2014-11-21  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/iterators.md (VS): New mode iterator.
