@@ -8294,6 +8294,9 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data,
 int
 uses_template_parms (tree t)
 {
+  if (t == NULL_TREE)
+    return false;
+
   bool dependent_p;
   int saved_processing_template_decl;
 
