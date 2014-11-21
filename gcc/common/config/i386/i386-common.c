@@ -85,6 +85,7 @@ along with GCC; see the file COPYING3.  If not see
   (OPTION_MASK_ISA_XSAVES | OPTION_MASK_ISA_XSAVE)
 #define OPTION_MASK_ISA_XSAVEC_SET \
   (OPTION_MASK_ISA_XSAVEC | OPTION_MASK_ISA_XSAVE)
+#define OPTION_MASK_ISA_CLWB_SET OPTION_MASK_ISA_CLWB
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -181,6 +182,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_CLFLUSHOPT_UNSET OPTION_MASK_ISA_CLFLUSHOPT
 #define OPTION_MASK_ISA_XSAVEC_UNSET OPTION_MASK_ISA_XSAVEC
 #define OPTION_MASK_ISA_XSAVES_UNSET OPTION_MASK_ISA_XSAVES
+#define OPTION_MASK_ISA_CLWB_UNSET OPTION_MASK_ISA_CLWB
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -898,6 +900,19 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_CLFLUSHOPT_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CLFLUSHOPT_UNSET;
+	}
+      return true;
+
+    case OPT_mclwb:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CLWB_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CLWB_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_CLWB_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CLWB_UNSET;
 	}
       return true;
 

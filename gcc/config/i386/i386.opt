@@ -721,6 +721,10 @@ mclflushopt
 Target Report Mask(ISA_CLFLUSHOPT) Var(ix86_isa_flags) Save
 Support CLFLUSHOPT instructions
 
+mclwb
+Target Report Mask(ISA_CLWB) Var(ix86_isa_flags) Save
+Support CLWB instruction
+
 mfxsr
 Target Report Mask(ISA_FXSR) Var(ix86_isa_flags) Save
 Support FXSAVE and FXRSTOR instructions
