@@ -1,3 +1,9 @@
+2014-11-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR debug/63239
+	* g++.dg/debug/dwarf2/deleted-member-function.C: Pass
+	-gno-strict-dwarf on darwin.
+
 2014-11-21  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/store-motion-fgcse-sm.c: New test.
