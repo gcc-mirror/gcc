@@ -1,3 +1,9 @@
+2014-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/61137
+	* config/ia64/ia64.c (ia64_attribute_takes_identifier_p): New function.
+	(TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P): Redefine to it.
+
 2014-11-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* sanitizer_common/Makefile.am (AM_CXXFLAGS): Use -std=gnu++11.
