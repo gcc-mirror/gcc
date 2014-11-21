@@ -1,3 +1,10 @@
+2014-11-21  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR rtl-optimization/63952
+	* optabs.c (prepare_cmp_insn): Do not call can_compare_p for CCmode.
+	* config/s390/s390.md ("cbranchcc4"): Accept any s390_comparison.
+	Remove incorrect TARGET_HARD_FLOAT check and no-op expander code.
+
 2014-11-21  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512IFMA_SET,

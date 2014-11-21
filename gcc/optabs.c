@@ -4167,8 +4167,11 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 
   if (GET_MODE_CLASS (mode) == MODE_CC)
     {
-      gcc_assert (can_compare_p (comparison, CCmode, ccp_jump));
-      *ptest = gen_rtx_fmt_ee (comparison, VOIDmode, x, y);
+      enum insn_code icode = optab_handler (cbranch_optab, CCmode);
+      test = gen_rtx_fmt_ee (comparison, VOIDmode, x, y);
+      gcc_assert (icode != CODE_FOR_nothing
+                  && insn_operand_matches (icode, 0, test));
+      *ptest = test;
       return;
     }
 
