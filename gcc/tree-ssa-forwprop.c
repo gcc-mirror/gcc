@@ -3178,7 +3178,9 @@ simplify_vce (gimple_stmt_iterator *gsi)
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (def_op))
 	      || POINTER_TYPE_P (TREE_TYPE (def_op)))
 	  && (TYPE_PRECISION (TREE_TYPE (op))
-	      == TYPE_PRECISION (TREE_TYPE (def_op))))
+	      == TYPE_PRECISION (TREE_TYPE (def_op)))
+	  && (TYPE_SIZE (TREE_TYPE (op))
+	      == TYPE_SIZE (TREE_TYPE (def_op))))
 	{
 	  TREE_OPERAND (gimple_assign_rhs1 (stmt), 0) = def_op;
 	  update_stmt (stmt);

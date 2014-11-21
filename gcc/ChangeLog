@@ -1,3 +1,9 @@
+2014-11-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61750
+	* tree-ssa-forwprop.c (simplify_vce): Verify type sizes
+	match for the resulting VIEW_CONVERT_EXPR.
+
 2014-11-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/63947
