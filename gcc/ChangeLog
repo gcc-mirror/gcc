@@ -1,3 +1,26 @@
+2014-11-21  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_PCOMMIT_UNSET,
+	OPTION_MASK_ISA_PCOMMIT_SET): New.
+	(ix86_handle_option): Handle OPT_mpcommit.
+	* config.gcc: Add pcommitintrin.h
+	* config/i386/pcommitintrin.h: New file.
+	* config/i386/cpuid.h (bit_PCOMMIT): Define.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect pcommit.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__PCOMMIT__.
+	* config/i386/i386.c (ix86_target_string): Add -mpcommit.
+	(PTA_PCOMMIT): Define.
+	(ix86_option_override_internal): Handle new option.
+	(ix86_valid_target_attribute_inner_p): Add pcommit.
+	(ix86_builtins): Add IX86_BUILTIN_PCOMMIT.
+	(bdesc_special_args): Add __builtin_ia32_pcommit.
+	* config/i386/i386.h (TARGET_PCOMMIT, TARGET_PCOMMIT_P): Define.
+	* config/i386/i386.md (unspecv): Add UNSPECV_PCOMMIT.
+	(pcommit): New instruction.
+	* config/i386/i386.opt: Add mpcommit.
+	* config/i386/x86intrin.h: Include pcommitintrin.h.
+
 2014-11-20  Mark Wielaard  <mjw@redhat.com>
 
 	PR debug/38757
@@ -33,7 +56,7 @@
 	* config.gcc: Add clwbintrin.h.
 	* config/i386/clwbintrin.h: New file.
 	* config/i386/cpuid.h (bit_CLWB): Define.
-	* config/i386/driver-i386.c (host_detect_local_cpu): Detect clwb. 
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect clwb.
 	* config/i386/i386-c.c (ix86_target_macros_internal): Define
 	__CLWB__.
 	* config/i386/i386.c (ix86_target_string): Add -mclwb.
