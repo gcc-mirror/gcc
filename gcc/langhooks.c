@@ -709,3 +709,20 @@ lhd_enum_underlying_base_type (const_tree enum_type)
   return lang_hooks.types.type_for_size (TYPE_PRECISION (enum_type),
 					 TYPE_UNSIGNED (enum_type));
 }
+
+/* Returns true if the current lang_hooks represents the GNU C frontend.  */
+
+bool
+lang_GNU_C (void)
+{
+  return (strncmp (lang_hooks.name, "GNU C", 5) == 0
+	  && (lang_hooks.name[5] == '\0' || ISDIGIT (lang_hooks.name[5])));
+}
+
+/* Returns true if the current lang_hooks represents the GNU C++ frontend.  */
+
+bool
+lang_GNU_CXX (void)
+{
+  return strncmp (lang_hooks.name, "GNU C++", 7) == 0;
+}

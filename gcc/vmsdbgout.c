@@ -1460,9 +1460,9 @@ vmsdbgout_init (const char *filename)
 
   lookup_filename (primary_filename);
 
-  if (!strcmp (language_string, "GNU C"))
+  if (lang_GNU_C ())
     module_language = DST_K_C;
-  else if (!strcmp (language_string, "GNU C++"))
+  else if (lang_GNU_CXX ())
     module_language = DST_K_CXX;
   else if (!strcmp (language_string, "GNU Ada"))
     module_language = DST_K_ADA;

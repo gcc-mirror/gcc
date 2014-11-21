@@ -261,7 +261,8 @@ struct lang_hooks_for_lto
 
 struct lang_hooks
 {
-  /* String identifying the front end.  e.g. "GNU C++".  */
+  /* String identifying the front end and optionally language standard
+     version, e.g. "GNU C++98" or "GNU Java".  */
   const char *name;
 
   /* sizeof (struct lang_identifier), so make_node () creates
@@ -503,5 +504,10 @@ extern tree add_builtin_function_ext_scope (const char *name, tree type,
 					    const char *library_name,
 					    tree attrs);
 extern tree add_builtin_type (const char *name, tree type);
+
+/* Language helper functions.  */
+
+extern bool lang_GNU_C (void);
+extern bool lang_GNU_CXX (void);
  
 #endif /* GCC_LANG_HOOKS_H */

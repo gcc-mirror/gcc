@@ -1,3 +1,14 @@
+2014-11-20  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/38757
+	* c-opts.c (set_std_c89): Set lang_hooks.name.
+	(set_std_c99): Likewise.
+	(set_std_c11): Likewise.
+	(set_std_cxx98): Likewise.
+	(set_std_cxx11): Likewise.
+	(set_std_cxx14): Likewise.
+	(set_std_cxx1z): Likewise.
+
 2014-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/63764

@@ -2909,7 +2909,7 @@ darwin_file_end (void)
      }
 
   machopic_finish (asm_out_file);
-  if (strcmp (lang_hooks.name, "GNU C++") == 0)
+  if (lang_GNU_CXX ())
     {
       switch_to_section (darwin_sections[constructor_section]);
       switch_to_section (darwin_sections[destructor_section]);
@@ -3162,7 +3162,7 @@ darwin_override_options (void)
   if (flag_mkernel || flag_apple_kext)
     {
       /* -mkernel implies -fapple-kext for C++ */
-      if (strcmp (lang_hooks.name, "GNU C++") == 0)
+      if (lang_GNU_CXX ())
 	flag_apple_kext = 1;
 
       flag_no_common = 1;

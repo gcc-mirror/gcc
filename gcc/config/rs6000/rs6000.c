@@ -25431,7 +25431,7 @@ rs6000_output_function_epilogue (FILE *file,
 	 Java is 13.  Objective-C is 14.  Objective-C++ isn't assigned
 	 a number, so for now use 9.  LTO and Go aren't assigned numbers
 	 either, so for now use 0.  */
-      if (! strcmp (language_string, "GNU C")
+      if (lang_GNU_C ()
 	  || ! strcmp (language_string, "GNU GIMPLE")
 	  || ! strcmp (language_string, "GNU Go"))
 	i = 0;
@@ -25442,7 +25442,7 @@ rs6000_output_function_epilogue (FILE *file,
 	i = 2;
       else if (! strcmp (language_string, "GNU Ada"))
 	i = 3;
-      else if (! strcmp (language_string, "GNU C++")
+      else if (lang_GNU_CXX ()
 	       || ! strcmp (language_string, "GNU Objective-C++"))
 	i = 9;
       else if (! strcmp (language_string, "GNU Java"))
