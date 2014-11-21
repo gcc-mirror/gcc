@@ -1,5 +1,12 @@
 2014-11-21  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.c (nds32_emit_stack_push_multiple): Add new
+	vaarg_p argument and create correct CFI info.
+	(nds32_expand_prologue): Pass true or false to
+	nds32_emit_stack_push_multiple function.
+
+2014-11-21  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c (nds32_expand_prologue): Set fp_adjust_insn
 	as RTX_FRAME_RELATED_P rtx.
 
