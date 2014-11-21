@@ -1,3 +1,11 @@
+2014-11-21  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR target/60451
+	* config/i386/i386.c (expand_vec_perm_even_odd_pack): New.
+	(expand_vec_perm_even_odd_1): Add new expand for V8HI mode,
+	replace for V16QI, V16HI and V32QI modes.
+	(ix86_expand_vec_perm_const_1): Add new expand.
+
 2014-11-21  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78-real.md (movqi_from_es): New pattern.
