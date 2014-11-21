@@ -381,7 +381,7 @@ nds32_compute_stack_frame (void)
      "push registers to memory",
      "adjust stack pointer".  */
 static void
-nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4)
+nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4, bool vaarg_p)
 {
   int regno;
   int extra_count;
@@ -395,6 +395,7 @@ nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4)
   rtx push_rtx;
   rtx adjust_sp_rtx;
   rtx parallel_insn;
+  rtx dwarf;
 
   /* We need to provide a customized rtx which contains
      necessary information for data analysis,
@@ -517,6 +518,15 @@ nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4)
      We need to use RTX_FRAME_RELATED_P so that GCC is able to
      generate CFI (Call Frame Information) stuff.  */
   RTX_FRAME_RELATED_P (parallel_insn) = 1;
+
+  /* Don't use GCC's logic for CFI info if we are generate a push for VAARG
+     since we will not restore those register at epilogue.  */
+  if (vaarg_p)
+    {
+      dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA,
+			      copy_rtx (adjust_sp_rtx), NULL_RTX);
+      REG_NOTES (parallel_insn) = dwarf;
+    }
 }
 
 /* Function to create a parallel rtx pattern
@@ -2866,7 +2876,7 @@ nds32_expand_prologue (void)
       Rb = gen_rtx_REG (SImode, cfun->machine->va_args_first_regno);
       Re = gen_rtx_REG (SImode, cfun->machine->va_args_last_regno);
       /* No need to push $fp, $gp, or $lp, so use GEN_INT(0).  */
-      nds32_emit_stack_push_multiple (Rb, Re, GEN_INT (0));
+      nds32_emit_stack_push_multiple (Rb, Re, GEN_INT (0), true);
 
       /* We may also need to adjust stack pointer for padding bytes
          because varargs may cause $sp not 8-byte aligned.  */
@@ -2915,7 +2925,7 @@ nds32_expand_prologue (void)
   if (!(REGNO (Rb) == SP_REGNUM && REGNO (Re) == SP_REGNUM && en4_const == 0))
     {
       /* Create multiple push instruction rtx.  */
-      nds32_emit_stack_push_multiple (Rb, Re, GEN_INT (en4_const));
+      nds32_emit_stack_push_multiple (Rb, Re, GEN_INT (en4_const), false);
     }
 
   /* Check frame_pointer_needed to see
