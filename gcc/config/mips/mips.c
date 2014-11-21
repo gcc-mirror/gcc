@@ -12997,7 +12997,14 @@ mips_process_sync_loop (rtx_insn *insn, rtx *operands)
      This will sometimes be a delayed branch; see the write code below
      for details.  */
   mips_multi_add_insn (is_64bit_p ? "scd\t%0,%1" : "sc\t%0,%1", at, mem, NULL);
-  mips_multi_add_insn ("beq%?\t%0,%.,1b", at, NULL);
+
+  /* When using branch likely (-mfix-r10000), the delay slot instruction
+     will be annulled on false.  The normal delay slot instructions
+     calculate the overall result of the atomic operation and must not
+     be annulled.  To ensure this behaviour unconditionally use a NOP
+     in the delay slot for the branch likely case.  */
+
+  mips_multi_add_insn ("beq%?\t%0,%.,1b%~", at, NULL);
 
   /* if (INSN1 != MOVE && INSN1 != LI) NEWVAL = $TMP3 [delay slot].  */
   if (insn1 != SYNC_INSN1_MOVE && insn1 != SYNC_INSN1_LI && tmp3 != newval)
@@ -13005,7 +13012,7 @@ mips_process_sync_loop (rtx_insn *insn, rtx *operands)
       mips_multi_copy_insn (tmp3_insn);
       mips_multi_set_operand (mips_multi_last_index (), 0, newval);
     }
-  else if (!(required_oldval && cmp))
+  else if (!(required_oldval && cmp) && !mips_branch_likely)
     mips_multi_add_insn ("nop", NULL);
 
   /* CMP = 1 -- either standalone or in a delay slot.  */
@@ -13029,11 +13036,11 @@ mips_process_sync_loop (rtx_insn *insn, rtx *operands)
 const char *
 mips_output_sync_loop (rtx_insn *insn, rtx *operands)
 {
-  mips_process_sync_loop (insn, operands);
-
   /* Use branch-likely instructions to work around the LL/SC R10000
      errata.  */
   mips_branch_likely = TARGET_FIX_R10000;
+
+  mips_process_sync_loop (insn, operands);
 
   mips_push_asm_switch (&mips_noreorder);
   mips_push_asm_switch (&mips_nomacro);
@@ -13056,6 +13063,9 @@ mips_output_sync_loop (rtx_insn *insn, rtx *operands)
 unsigned int
 mips_sync_loop_insns (rtx_insn *insn, rtx *operands)
 {
+  /* Use branch-likely instructions to work around the LL/SC R10000
+     errata.  */
+  mips_branch_likely = TARGET_FIX_R10000;
   mips_process_sync_loop (insn, operands);
   return mips_multi_num_insns;
 }

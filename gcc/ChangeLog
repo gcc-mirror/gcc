@@ -1,3 +1,11 @@
+2014-11-21  Andrew Bennett  <andrew.bennett@imgtec.com>
+
+	* config/mips/mips.c (mips_process_sync_loop): Place a 
+	nop in the delay slot of the branch likely instruction.
+	(mips_output_sync_loop): Ensure mips_branch_likely is 
+	set before calling mips_output_sync_loop.
+	(mips_sync_loop_insns): Likewise.
+
 2014-11-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR/target 63673
