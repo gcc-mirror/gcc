@@ -1,3 +1,17 @@
+2014-11-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/63897
+	* lra-lives.c (mark_regno_live, mark_regno_dead): Remove last
+	argument.
+	(process_bb_lives): Rename dead_insn_p on remove_p
+	and global_live_info_p on dead_insn_p.  Calculate local live info
+	unconditionally.  Remove last argument in calls mark_regno_live and
+	mark_regno_dead.  Reorganize body of EXECUTE_IF_SET_IN_BITMAP.
+	(lra_create_live_ranges): Rename to lra_create_live_ranges_1.
+	Return bool.  Rename global_live_info_p on dead_insn_p.  Return
+	flag of live info change.
+	(lra_create_live_ranges): New.
+
 2014-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/63848
