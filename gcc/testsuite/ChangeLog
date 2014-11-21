@@ -1,3 +1,8 @@
+2014-11-21  Lynn Boger  <laboger@linux.vnet.ibm.com>
+
+	* go.test/go-test.exp (go-set-goarch): Add case for ppc64le goarch
+	value for go testing.
+
 2014-11-21  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/vect_ctz_1.c: New testcase.
