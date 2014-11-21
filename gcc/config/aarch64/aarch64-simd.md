@@ -303,6 +303,20 @@
   [(set_attr "type" "neon_rbit")]
 )
 
+(define_expand "ctz<mode>2"
+  [(set (match_operand:VS 0 "register_operand")
+        (ctz:VS (match_operand:VS 1 "register_operand")))]
+  "TARGET_SIMD"
+  {
+     emit_insn (gen_bswap<mode> (operands[0], operands[1]));
+     rtx op0_castsi2qi = simplify_gen_subreg(<VS:VSI2QI>mode, operands[0],
+					     <MODE>mode, 0);
+     emit_insn (gen_aarch64_rbit<VS:vsi2qi> (op0_castsi2qi, op0_castsi2qi));
+     emit_insn (gen_clz<mode>2 (operands[0], operands[0]));
+     DONE;
+  }
+)
+
 (define_insn "*aarch64_mul3_elt<mode>"
  [(set (match_operand:VMUL 0 "register_operand" "=w")
     (mult:VMUL

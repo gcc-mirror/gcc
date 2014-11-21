@@ -1199,6 +1199,14 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
               return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_clzv4si];
             return NULL_TREE;
           }
+	case BUILT_IN_CTZ:
+          {
+	    if (AARCH64_CHECK_BUILTIN_MODE (2, S))
+	      return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_ctzv2si];
+	    else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+	      return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_ctzv4si];
+	    return NULL_TREE;
+          }
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) \
   (out_mode == N##Imode && out_n == C \
