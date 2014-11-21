@@ -180,6 +180,9 @@
 ;; All byte modes.
 (define_mode_iterator VB [V8QI V16QI])
 
+;; 2 and 4 lane SI modes.
+(define_mode_iterator VS [V2SI V4SI])
+
 (define_mode_iterator TX [TI TF])
 
 ;; Opaque structure modes.
@@ -666,6 +669,9 @@
 		      (V2SI "p") (V4SI  "v")
 		      (V2DI  "p") (V2DF  "p")
 		      (V2SF "p") (V4SF  "v")])
+
+(define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")])
+(define_mode_attr VSI2QI [(V2SI "V8QI") (V4SI "V16QI")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators

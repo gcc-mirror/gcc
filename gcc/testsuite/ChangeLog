@@ -1,3 +1,7 @@
+2014-11-21  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/vect_ctz_1.c: New testcase.
+
 2014-11-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/simd/vsqrt_f64_1.c
