@@ -1,3 +1,10 @@
+2014-11-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/63673
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Allow
+	the base pointer of vec_vsx_ld and vec_vsx_st to take a pointer to
+	double.
+
 2014-11-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61750
