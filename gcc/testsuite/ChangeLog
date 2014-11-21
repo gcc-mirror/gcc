@@ -1,3 +1,8 @@
+2014-11-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR lto/63998
+	* gcc.dg/lto/pr60820_0.c: Skip on darwin.
+
 2014-11-20  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* gcc.dg/no-strict-overflow-8.c: New test.
