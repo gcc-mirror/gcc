@@ -1,3 +1,8 @@
+2014-11-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63849
+	* mangle.c (decl_mangling_context): Use template_type_parameter_p.
+
 2014-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63265

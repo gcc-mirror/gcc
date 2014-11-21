@@ -763,8 +763,7 @@ decl_mangling_context (tree decl)
       if (extra)
 	return extra;
     }
-    else if (TREE_CODE (decl) == TYPE_DECL
-	     && TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TYPE_PARM)
+  else if (template_type_parameter_p (decl))
      /* template type parms have no mangling context.  */
       return NULL_TREE;
   return CP_DECL_CONTEXT (decl);
