@@ -1,3 +1,9 @@
+2014-11-21  Alan Lawrence  <alan.lawrence@arm.com>
+
+	Revert:
+	2014-09-22  Alan Lawrence  <alan.lawrence@arm.com>
+	* fold-const.c (tree_swap_operands_p): Strip only sign-preserving NOPs.
+
 2014-11-21  Andrew Bennett  <andrew.bennett@imgtec.com>
 
 	* config/mips/mips.c (mips_process_sync_loop): Place a 

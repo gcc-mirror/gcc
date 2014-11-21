@@ -6606,8 +6606,8 @@ tree_swap_operands_p (const_tree arg0, const_tree arg1, bool reorder)
   if (CONSTANT_CLASS_P (arg0))
     return 1;
 
-  STRIP_SIGN_NOPS (arg0);
-  STRIP_SIGN_NOPS (arg1);
+  STRIP_NOPS (arg0);
+  STRIP_NOPS (arg1);
 
   if (TREE_CONSTANT (arg1))
     return 0;
