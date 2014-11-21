@@ -350,6 +350,21 @@ proc check_effective_target_avx512bw { } {
     } "-mavx512bw" ]
 }
 
+# Return 1 if avx512ifma instructions can be compiled.
+proc check_effective_target_avx512ifma { } {
+    return [check_no_compiler_messages avx512ifma object {
+	typedef long long __v8di __attribute__ ((__vector_size__ (64)));
+	__v8di
+	_mm512_madd52lo_epu64 (__v8di __X, __v8di __Y, __v8di __Z)
+	{
+	  return (__v8di) __builtin_ia32_vpmadd52luq512_mask ((__v8di) __X,
+							       (__v8di) __Y,
+						               (__v8di) __Z,
+						               -1);
+	}
+    } "-mavx512ifma" ]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {

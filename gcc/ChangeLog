@@ -1,3 +1,52 @@
+2014-11-21  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512IFMA_SET,
+	OPTION_MASK_ISA_AVX512IFMA_UNSET): New.
+	(ix86_handle_option): Handle OPT_mavx512ifma.
+	* config.gcc: Add avx512ifmaintrin.h, avx512ifmavlintrin.h.
+	* config/i386/avx512ifmaintrin.h: New file.
+	* config/i386/avx512ifmaivlntrin.h: Ditto.
+	* config/i386/cpuid.h (bit_AVX512IFMA): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	avx512ifma.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__AVX512IFMA__.
+	* config/i386/i386.c (ix86_target_string): Add -mavx512ifma.
+	(PTA_AVX512IFMA): Define.
+	(ix86_option_override_internal): Handle new options.
+	(ix86_valid_target_attribute_inner_p): Add avx512ifma.
+	(ix86_builtins): Add IX86_BUILTIN_VPMADD52LUQ512,
+	IX86_BUILTIN_VPMADD52HUQ512, IX86_BUILTIN_VPMADD52LUQ256,
+	IX86_BUILTIN_VPMADD52HUQ256, IX86_BUILTIN_VPMADD52LUQ128,
+	IX86_BUILTIN_VPMADD52HUQ128, IX86_BUILTIN_VPMADD52LUQ512_MASKZ,
+	IX86_BUILTIN_VPMADD52HUQ512_MASKZ, IX86_BUILTIN_VPMADD52LUQ256_MASKZ,
+	IX86_BUILTIN_VPMADD52HUQ256_MASKZ, IX86_BUILTIN_VPMADD52LUQ128_MASKZ,
+	IX86_BUILTIN_VPMADD52HUQ128_MASKZ.
+	(bdesc_special_args): Add __builtin_ia32_vpmadd52luq512_mask,
+	__builtin_ia32_vpmadd52luq512_maskz,
+	__builtin_ia32_vpmadd52huq512_mask,
+	__builtin_ia32_vpmadd52huq512_maskx,
+	__builtin_ia32_vpmadd52luq256_mask,
+	__builtin_ia32_vpmadd52luq256_maskz,
+	__builtin_ia32_vpmadd52huq256_mask,
+	__builtin_ia32_vpmadd52huq256_maskz,
+	__builtin_ia32_vpmadd52luq128_mask,
+	__builtin_ia32_vpmadd52luq128_maskz,
+	__builtin_ia32_vpmadd52huq128_mask,
+	__builtin_ia32_vpmadd52huq128_maskz,
+	* config/i386/i386.h (TARGET_AVX512IFMA, TARGET_AVX512IFMA_P): Define.
+	* config/i386/i386.opt: Add mavx512ifma.
+	* config/i386/immintrin.h: Include avx512ifmaintrin.h,
+	avx512ifmavlintrin.h.
+	* config/i386/sse.md (unspec): Add UNSPEC_VPMADD52LUQ,
+	UNSPEC_VPMADD52HUQ.
+	(VPMADD52): New iterator.
+	(vpmadd52type): New attribute.
+	(vpamdd52huq<mode>_maskz): New.
+	(vpamdd52luq<mode>_maskz): Ditto.
+	(vpamdd52<vpmadd52type><mode><sd_maskz_name>): Ditto.
+	(vpamdd52<vpmadd52type><mode>_mask): Ditto.
+
 2014-11-21  Alan Lawrence  <alan.lawrence@arm.com>
 
 	Revert:

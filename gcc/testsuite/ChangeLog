@@ -1,3 +1,22 @@
+2014-11-21  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mavx512ifma.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/avx512f-helper.h: Add avx512ifma-check.h.
+	* gcc.target/i386/avx512ifma-check.h: New.
+	* gcc.target/i386/avx512ifma-vpmaddhuq-1.c: Ditto.
+	* gcc.target/i386/avx512ifma-vpmaddhuq-2.c: Ditto.
+	* gcc.target/i386/avx512ifma-vpmaddluq-1.c: Ditto.
+	* gcc.target/i386/avx512ifma-vpmaddluq-2.c: Ditto.
+	* gcc.target/i386/avx512vl-vpmaddhuq-2.c: Ditto.
+	* gcc.target/i386/avx512vl-vpmaddluq-2.c: Ditto.
+	* gcc.target/i386/i386.exp (check_effective_target_avx512ifma): New.
+	* gcc.target/i386/sse-12.c: Add new options.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
 2014-11-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	Forward-port from 2014-10-30 4_9-branch r216934
