@@ -22512,6 +22512,12 @@ vsqrtq_f32 (float32x4_t a)
   return __builtin_aarch64_sqrtv4sf (a);
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vsqrt_f64 (float64x1_t a)
+{
+  return (float64x1_t) { __builtin_sqrt (a[0]) };
+}
+
 __extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
 vsqrtq_f64 (float64x2_t a)
 {

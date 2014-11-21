@@ -1,3 +1,7 @@
+2014-11-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vsqrt_f64_1.c
+
 2014-11-21  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* g++.dg/other/i386-2.C: Add -mpcommit.
