@@ -1,3 +1,30 @@
+2014-11-20  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/38757
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Use lang_GNU_C.
+	* config/darwin.c (darwin_file_end): Use lang_GNU_CXX.
+	(darwin_override_options): Likewise.
+	* config/ia64/ia64.c (ia64_struct_retval_addr_is_first_parm_p):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue):
+	Likewise.
+	* dbxout.c (get_lang_number): Likewise.
+	(dbxout_type): Likewise.
+	(dbxout_symbol_location): Likewise.
+	* dwarf2out.c (add_prototyped_attribute): Add DW_AT_prototype
+	also for DW_LANG_{C,C99,ObjC}.
+	(highest_c_language): New function.
+	(gen_compile_unit_die): Call highest_c_language to merge LTO
+	TRANSLATION_UNIT_LANGUAGE. Use strncmp language_string to
+	determine if DW_LANG_C99 or DW_LANG_C89 should be returned.
+	* fold-const.c (fold_cond_expr_with_comparison): Use lang_GNU_CXX.
+	* langhooks.h (struct lang_hooks): Add version comment to name.
+	(lang_GNU_C): New function declaration.
+	(lang_GNU_CXX): Likewise.
+	* langhooks.c (lang_GNU_C): New function.
+	(lang_GNU_CXX): Likewise.
+	* vmsdbgout.c (vmsdbgout_init): Use lang_GNU_C and lang_GNU_CXX.
+
 2014-11-21  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_CLWB_UNSET,

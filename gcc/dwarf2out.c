@@ -16741,9 +16741,18 @@ add_bit_size_attribute (dw_die_ref die, tree decl)
 static inline void
 add_prototyped_attribute (dw_die_ref die, tree func_type)
 {
-  if (get_AT_unsigned (comp_unit_die (), DW_AT_language) == DW_LANG_C89
-      && prototype_p (func_type))
-    add_AT_flag (die, DW_AT_prototyped, 1);
+  switch (get_AT_unsigned (comp_unit_die (), DW_AT_language))
+    {
+    case DW_LANG_C:
+    case DW_LANG_C89:
+    case DW_LANG_C99:
+    case DW_LANG_ObjC:
+      if (prototype_p (func_type))
+	add_AT_flag (die, DW_AT_prototyped, 1);
+      break;
+    default:
+      break;
+    }
 }
 
 /* Add an 'abstract_origin' attribute below a given DIE.  The DIE is found
@@ -19503,6 +19512,30 @@ gen_producer_string (void)
   return producer;
 }
 
+/* Given a C and/or C++ language/version string return the "highest".
+   C++ is assumed to be "higher" than C in this case.  Used for merging
+   LTO translation unit languages.  */
+static const char *
+highest_c_language (const char *lang1, const char *lang2)
+{
+  if (strcmp ("GNU C++14", lang1) == 0 || strcmp ("GNU C++14", lang2) == 0)
+    return "GNU C++14";
+  if (strcmp ("GNU C++11", lang1) == 0 || strcmp ("GNU C++11", lang2) == 0)
+    return "GNU C++11";
+  if (strcmp ("GNU C++98", lang1) == 0 || strcmp ("GNU C++98", lang2) == 0)
+    return "GNU C++98";
+
+  if (strcmp ("GNU C11", lang1) == 0 || strcmp ("GNU C11", lang2) == 0)
+    return "GNU C11";
+  if (strcmp ("GNU C99", lang1) == 0 || strcmp ("GNU C99", lang2) == 0)
+    return "GNU C99";
+  if (strcmp ("GNU C89", lang1) == 0 || strcmp ("GNU C89", lang2) == 0)
+    return "GNU C89";
+
+  gcc_unreachable ();
+}
+
+
 /* Generate the DIE for the compilation unit.  */
 
 static dw_die_ref
@@ -19543,7 +19576,8 @@ gen_compile_unit_die (const char *filename)
 	  else if (strncmp (common_lang, "GNU C", 5) == 0
 		    && strncmp (TRANSLATION_UNIT_LANGUAGE (t), "GNU C", 5) == 0)
 	    /* Mixing C and C++ is ok, use C++ in that case.  */
-	    common_lang = "GNU C++";
+	    common_lang = highest_c_language (common_lang,
+					      TRANSLATION_UNIT_LANGUAGE (t));
 	  else
 	    {
 	      /* Fall back to C.  */
@@ -19556,8 +19590,16 @@ gen_compile_unit_die (const char *filename)
 	language_string = common_lang;
     }
 
-  language = DW_LANG_C89;
-  if (strcmp (language_string, "GNU C++") == 0)
+  language = DW_LANG_C;
+  if (strncmp (language_string, "GNU C", 5) == 0
+      && (language_string[5] == 0 || ISDIGIT (language_string[5])))
+    {
+      language = DW_LANG_C89;
+      if (dwarf_version >= 3 || !dwarf_strict)
+	if (strcmp (language_string, "GNU C99") == 0)
+	  language = DW_LANG_C99;
+    }
+  else if (strncmp (language_string, "GNU C++", 7) == 0)
     language = DW_LANG_C_plus_plus;
   else if (strcmp (language_string, "GNU F77") == 0)
     language = DW_LANG_Fortran77;

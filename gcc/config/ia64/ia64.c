@@ -10772,7 +10772,7 @@ ia64_struct_retval_addr_is_first_parm_p (tree fntype)
 	  && ret_type
 	  && TYPE_MODE (ret_type) == BLKmode 
 	  && TREE_ADDRESSABLE (ret_type)
-	  && strcmp (lang_hooks.name, "GNU C++") == 0);
+	  && lang_GNU_CXX ());
 }
 
 /* Output the assembler code for a thunk function.  THUNK_DECL is the

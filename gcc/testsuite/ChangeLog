@@ -1,3 +1,9 @@
+2014-11-20  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/38757
+	* gcc.dg/debug/dwarf2/lang-c89.c: New test.
+	* gcc.dg/debug/dwarf2/lang-c99.c: Likewise.
+
 2014-11-21  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* g++.dg/other/i386-2.C: Add -mclwb.
