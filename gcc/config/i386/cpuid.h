@@ -78,6 +78,7 @@
 #define bit_ADX	(1 << 19)
 #define bit_AVX512IFMA	(1 << 21)
 #define bit_CLFLUSHOPT	(1 << 23)
+#define bit_CLWB	(1 << 24)
 #define bit_AVX512PF	(1 << 26)
 #define bit_AVX512ER	(1 << 27)
 #define bit_AVX512CD	(1 << 28)

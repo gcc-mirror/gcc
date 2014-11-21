@@ -1,5 +1,29 @@
 2014-11-21  Ilya Tocar  <ilya.tocar@intel.com>
 
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_CLWB_UNSET,
+	OPTION_MASK_ISA_CLWB_SET): New.
+	(ix86_handle_option): Handle OPT_mclwb.
+	* config.gcc: Add clwbintrin.h.
+	* config/i386/clwbintrin.h: New file.
+	* config/i386/cpuid.h (bit_CLWB): Define.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect clwb. 
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__CLWB__.
+	* config/i386/i386.c (ix86_target_string): Add -mclwb.
+	(PTA_CLWB): Define.
+	(ix86_option_override_internal): Handle new option.
+	(ix86_valid_target_attribute_inner_p): Add clwb.
+	(ix86_builtins): Add IX86_BUILTIN_CLWB.
+	(ix86_init_mmx_sse_builtins): Add __builtin_ia32_clwb.
+	(ix86_expand_builtin): Handle IX86_BUILTIN_CLWB.
+	* config/i386/i386.h (TARGET_CLWB, TARGET_CLWB_P): Define.
+	* config/i386/i386.md (unspecv): Add UNSPECV_CLWB.
+	(clwb): New instruction.
+	* config/i386/i386.opt: Add mclwb.
+	* config/i386/x86intrin.h: Include clwbintrin.h.
+
+2014-11-21  Ilya Tocar  <ilya.tocar@intel.com>
+
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512VBMI_SET
 	OPTION_MASK_ISA_AVX512VBMI_UNSET): New.
 	(ix86_handle_option): Handle OPT_mavx512vbmi.

@@ -2657,6 +2657,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mxsavec",	OPTION_MASK_ISA_XSAVEC },
     { "-mxsaves",	OPTION_MASK_ISA_XSAVES },
     { "-mmpx",          OPTION_MASK_ISA_MPX },
+    { "-mclwb",		OPTION_MASK_ISA_CLWB },
   };
 
   /* Flag options.  */
@@ -3157,6 +3158,7 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_AVX512VL		(HOST_WIDE_INT_1 << 52)
 #define PTA_AVX512IFMA		(HOST_WIDE_INT_1 << 53)
 #define PTA_AVX512VBMI		(HOST_WIDE_INT_1 << 54)
+#define PTA_CLWB		(HOST_WIDE_INT_1 << 55)
 
 #define PTA_CORE2 \
   (PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3 \
@@ -3716,6 +3718,9 @@ ix86_option_override_internal (bool main_args_p,
 	if (processor_alias_table[i].flags & PTA_PREFETCHWT1
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PREFETCHWT1))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PREFETCHWT1;
+	if (processor_alias_table[i].flags & PTA_CLWB
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_CLWB))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CLWB;
 	if (processor_alias_table[i].flags & PTA_CLFLUSHOPT
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_CLFLUSHOPT))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CLFLUSHOPT;
@@ -4667,6 +4672,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("xsaves",	OPT_mxsaves),
     IX86_ATTR_ISA ("avx512vbmi",	OPT_mavx512vbmi),
     IX86_ATTR_ISA ("avx512ifma",	OPT_mavx512ifma),
+    IX86_ATTR_ISA ("clwb",	OPT_mclwb),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -30128,6 +30134,9 @@ enum ix86_builtins
   IX86_BUILTIN_SHA256MSG2,
   IX86_BUILTIN_SHA256RNDS2,
 
+  /* CLWB instructions.  */
+  IX86_BUILTIN_CLWB,
+
   /* CLFLUSHOPT instructions.  */
   IX86_BUILTIN_CLFLUSHOPT,
 
@@ -33987,6 +33996,10 @@ ix86_init_mmx_sse_builtins (void)
   /* CLFLUSHOPT.  */
   def_builtin (OPTION_MASK_ISA_CLFLUSHOPT, "__builtin_ia32_clflushopt",
 	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLFLUSHOPT);
+
+  /* CLWB.  */
+  def_builtin (OPTION_MASK_ISA_CLWB, "__builtin_ia32_clwb",
+	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLWB);
 
   /* Add FMA4 multi-arg argument instructions */
   for (i = 0, d = bdesc_multi_arg; i < ARRAY_SIZE (bdesc_multi_arg); i++, d++)
@@ -38705,6 +38718,16 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	  op0 = ix86_zero_extend_to_Pmode (op0);
 
 	emit_insn (gen_sse2_clflush (op0));
+	return 0;
+
+    case IX86_BUILTIN_CLWB:
+	arg0 = CALL_EXPR_ARG (exp, 0);
+	op0 = expand_normal (arg0);
+	icode = CODE_FOR_clwb;
+	if (!insn_data[icode].operand[0].predicate (op0, Pmode))
+	  op0 = ix86_zero_extend_to_Pmode (op0);
+
+	emit_insn (gen_clwb (op0));
 	return 0;
 
     case IX86_BUILTIN_CLFLUSHOPT:
