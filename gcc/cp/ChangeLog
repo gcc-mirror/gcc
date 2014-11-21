@@ -1,3 +1,7 @@
+2014-11-20  Jason Merrill  <jason@redhat.com>
+
+	* error.c (dump_expr): Avoid printing (*&i) for references.
+
 2014-11-20  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/63959

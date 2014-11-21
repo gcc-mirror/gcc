@@ -2299,7 +2299,13 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 			    TREE_TYPE (ttype)))
 	  {
 	    if (TREE_CODE (ttype) == REFERENCE_TYPE)
-	      dump_unary_op (pp, "*", t, flags);
+	      {
+		STRIP_NOPS (op);
+		if (TREE_CODE (op) == ADDR_EXPR)
+		  dump_expr (pp, TREE_OPERAND (op, 0), flags);
+		else
+		  dump_unary_op (pp, "*", t, flags);
+	      }
 	    else
 	      dump_unary_op (pp, "&", t, flags);
 	  }
