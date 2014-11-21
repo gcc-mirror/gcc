@@ -1,5 +1,11 @@
 2014-11-21  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.c (nds32_legitimate_address_p): For LO_SUM,
+	we need to look into its operand to determine if it is a valid
+	address.
+
+2014-11-21  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c (nds32_emit_stack_push_multiple): Add new
 	vaarg_p argument and create correct CFI info.
 	(nds32_expand_prologue): Pass true or false to
