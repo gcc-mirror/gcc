@@ -1,3 +1,8 @@
+2014-11-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63588
+	* pt.c (uses_template_parms): Handle null argument.
+
 2014-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/63764
