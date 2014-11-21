@@ -2495,7 +2495,8 @@ build_array_ref (location_t loc, tree array, tree index)
 
   gcc_assert (TREE_CODE (TREE_TYPE (index)) == INTEGER_TYPE);
 
-  convert_vector_to_pointer_for_subscript (loc, &array, index);
+  bool non_lvalue
+    = convert_vector_to_pointer_for_subscript (loc, &array, index);
 
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {
@@ -2557,6 +2558,8 @@ build_array_ref (location_t loc, tree array, tree index)
 	    | TREE_THIS_VOLATILE (array));
       ret = require_complete_type (rval);
       protected_set_expr_location (ret, loc);
+      if (non_lvalue)
+	ret = non_lvalue_loc (loc, ret);
       return ret;
     }
   else
@@ -2569,9 +2572,12 @@ build_array_ref (location_t loc, tree array, tree index)
       gcc_assert (TREE_CODE (TREE_TYPE (ar)) == POINTER_TYPE);
       gcc_assert (TREE_CODE (TREE_TYPE (TREE_TYPE (ar))) != FUNCTION_TYPE);
 
-      return build_indirect_ref
-	(loc, build_binary_op (loc, PLUS_EXPR, ar, index, 0),
-	 RO_ARRAY_INDEXING);
+      ret = build_indirect_ref (loc, build_binary_op (loc, PLUS_EXPR, ar,
+						      index, 0),
+				RO_ARRAY_INDEXING);
+      if (non_lvalue)
+	ret = non_lvalue_loc (loc, ret);
+      return ret;
     }
 }
 

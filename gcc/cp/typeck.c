@@ -3072,7 +3072,8 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
       break;
     }
 
-  convert_vector_to_pointer_for_subscript (loc, &array, idx);
+  bool non_lvalue
+    = convert_vector_to_pointer_for_subscript (loc, &array, idx);
 
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {
@@ -3155,6 +3156,8 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
       ret = require_complete_type_sfinae (fold_if_not_in_template (rval),
 					  complain);
       protected_set_expr_location (ret, loc);
+      if (non_lvalue)
+	ret = non_lvalue_loc (loc, ret);
       return ret;
     }
 
@@ -3194,6 +3197,8 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
                                  RO_ARRAY_INDEXING,
                                  complain);
     protected_set_expr_location (ret, loc);
+    if (non_lvalue)
+      ret = non_lvalue_loc (loc, ret);
     return ret;
   }
 }
