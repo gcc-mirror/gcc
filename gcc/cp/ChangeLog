@@ -1,5 +1,8 @@
 2014-11-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/63849
+	* mangle.c (decl_mangling_context): Use template_type_parameter_p.
+
 	PR c++/63588
 	* pt.c (uses_template_parms): Handle null argument.
 
