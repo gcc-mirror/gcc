@@ -6949,6 +6949,20 @@ stmt_interesting_for_vrp (gimple stmt)
 	  && (is_gimple_call (stmt)
 	      || !gimple_vuse (stmt)))
 	return true;
+      else if (is_gimple_call (stmt) && gimple_call_internal_p (stmt))
+	switch (gimple_call_internal_fn (stmt))
+	  {
+	  case IFN_ADD_OVERFLOW:
+	  case IFN_SUB_OVERFLOW:
+	  case IFN_MUL_OVERFLOW:
+	    /* These internal calls return _Complex integer type,
+	       but are interesting to VRP nevertheless.  */
+	    if (lhs && TREE_CODE (lhs) == SSA_NAME)
+	      return true;
+	    break;
+	  default:
+	    break;
+	  }
     }
   else if (gimple_code (stmt) == GIMPLE_COND
 	   || gimple_code (stmt) == GIMPLE_SWITCH)
@@ -7101,6 +7115,74 @@ vrp_visit_assignment_or_call (gimple stmt, tree *output_p)
 
       return SSA_PROP_NOT_INTERESTING;
     }
+  else if (is_gimple_call (stmt) && gimple_call_internal_p (stmt))
+    switch (gimple_call_internal_fn (stmt))
+      {
+      case IFN_ADD_OVERFLOW:
+      case IFN_SUB_OVERFLOW:
+      case IFN_MUL_OVERFLOW:
+	/* These internal calls return _Complex integer type,
+	   which VRP does not track, but the immediate uses
+	   thereof might be interesting.  */
+	if (lhs && TREE_CODE (lhs) == SSA_NAME)
+	  {
+	    imm_use_iterator iter;
+	    use_operand_p use_p;
+	    enum ssa_prop_result res = SSA_PROP_VARYING;
+
+	    set_value_range_to_varying (get_value_range (lhs));
+
+	    FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
+	      {
+		gimple use_stmt = USE_STMT (use_p);
+		if (!is_gimple_assign (use_stmt))
+		  continue;
+		enum tree_code rhs_code = gimple_assign_rhs_code (use_stmt);
+		if (rhs_code != REALPART_EXPR && rhs_code != IMAGPART_EXPR)
+		  continue;
+		tree rhs1 = gimple_assign_rhs1 (use_stmt);
+		tree use_lhs = gimple_assign_lhs (use_stmt);
+		if (TREE_CODE (rhs1) != rhs_code
+		    || TREE_OPERAND (rhs1, 0) != lhs
+		    || TREE_CODE (use_lhs) != SSA_NAME
+		    || !stmt_interesting_for_vrp (use_stmt)
+		    || (!INTEGRAL_TYPE_P (TREE_TYPE (use_lhs))
+			|| !TYPE_MIN_VALUE (TREE_TYPE (use_lhs))
+			|| !TYPE_MAX_VALUE (TREE_TYPE (use_lhs))))
+		  continue;
+
+		/* If there is a change in the value range for any of the
+		   REALPART_EXPR/IMAGPART_EXPR immediate uses, return
+		   SSA_PROP_INTERESTING.  If there are any REALPART_EXPR
+		   or IMAGPART_EXPR immediate uses, but none of them have
+		   a change in their value ranges, return
+		   SSA_PROP_NOT_INTERESTING.  If there are no
+		   {REAL,IMAG}PART_EXPR uses at all,
+		   return SSA_PROP_VARYING.  */
+		value_range_t new_vr = VR_INITIALIZER;
+		extract_range_basic (&new_vr, use_stmt);
+		value_range_t *old_vr = get_value_range (use_lhs);
+		if (old_vr->type != new_vr.type
+		    || !vrp_operand_equal_p (old_vr->min, new_vr.min)
+		    || !vrp_operand_equal_p (old_vr->max, new_vr.max)
+		    || !vrp_bitmap_equal_p (old_vr->equiv, new_vr.equiv))
+		  res = SSA_PROP_INTERESTING;
+		else
+		  res = SSA_PROP_NOT_INTERESTING;
+		BITMAP_FREE (new_vr.equiv);
+		if (res == SSA_PROP_INTERESTING)
+		  {
+		    *output_p = lhs;
+		    return res;
+		  }
+	      }
+
+	    return res;
+	  }
+	break;
+      default:
+	break;
+      }
 
   /* Every other statement produces no useful ranges.  */
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
