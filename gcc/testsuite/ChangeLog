@@ -2,7 +2,7 @@
 
 	PR debug/63239
 	* g++.dg/debug/dwarf2/deleted-member-function.C: Pass
-	-gno-strict-dwarf on darwin.
+	-gno-strict-dwarf.
 
 2014-11-21  Tom de Vries  <tom@codesourcery.com>
 
