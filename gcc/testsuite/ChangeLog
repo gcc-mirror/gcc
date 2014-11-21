@@ -1,3 +1,8 @@
+2014-11-21  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR target/60451
+	* gcc.target/i386/pr60451.c: New.
+
 2014-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/61773
