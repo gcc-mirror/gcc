@@ -324,6 +324,7 @@ static bool ia64_vms_valid_pointer_mode (machine_mode mode)
 static tree ia64_vms_common_object_attribute (tree *, tree, tree, int, bool *)
      ATTRIBUTE_UNUSED;
 
+static bool ia64_attribute_takes_identifier_p (const_tree);
 static tree ia64_handle_model_attribute (tree *, tree, tree, int, bool *);
 static tree ia64_handle_version_id_attribute (tree *, tree, tree, int, bool *);
 static void ia64_encode_section_info (tree, rtx, int);
@@ -669,8 +670,26 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
 #define TARGET_VECTORIZE_VEC_PERM_CONST_OK ia64_vectorize_vec_perm_const_ok
 
+#undef TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P
+#define TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P ia64_attribute_takes_identifier_p
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* Returns TRUE iff the target attribute indicated by ATTR_ID takes a plain
+   identifier as an argument, so the front end shouldn't look it up.  */
+
+static bool
+ia64_attribute_takes_identifier_p (const_tree attr_id)
+{
+  if (is_attribute_p ("model", attr_id))
+    return true;
+#if TARGET_ABI_OPEN_VMS
+  if (is_attribute_p ("common_object", attr_id))
+    return true;
+#endif
+  return false;
+}
+
 typedef enum
   {
     ADDR_AREA_NORMAL,	/* normal address area */
