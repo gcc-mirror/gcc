@@ -1,3 +1,55 @@
+2014-11-21  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512VBMI_SET
+	OPTION_MASK_ISA_AVX512VBMI_UNSET): New.
+	(ix86_handle_option): Handle OPT_mavx512vbmi.
+	* config.gcc: Add avx512vbmiintrin.h, avx512vbmivlintrin.h.
+	* config/i386/avx512vbmiintrin.h: New file.
+	* config/i386/avx512vbmivlintrin.h: Ditto.
+	* config/i386/cpuid.h (bit_AVX512VBMI): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect avx512vbmi.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__AVX512VBMI__.
+	* config/i386/i386.c (ix86_target_string): Add -mavx512vbmi.
+	(PTA_AVX512VBMI): Define.
+	(ix86_option_override_internal): Handle new options.
+	(ix86_valid_target_attribute_inner_p): Add avx512vbmi,
+	(ix86_builtins): Add IX86_BUILTIN_VPMULTISHIFTQB512,
+	IX86_BUILTIN_VPMULTISHIFTQB256, IX86_BUILTIN_VPMULTISHIFTQB128,
+	IX86_BUILTIN_VPERMVARQI512_MASK, IX86_BUILTIN_VPERMT2VARQI512,
+	IX86_BUILTIN_VPERMT2VARQI512_MASKZ, IX86_BUILTIN_VPERMI2VARQI512,
+	IX86_BUILTIN_VPERMVARQI256_MASK, IX86_BUILTIN_VPERMVARQI128_MASK,
+	IX86_BUILTIN_VPERMT2VARQI256, IX86_BUILTIN_VPERMT2VARQI256_MASKZ,
+	IX86_BUILTIN_VPERMT2VARQI128, IX86_BUILTIN_VPERMI2VARQI256,
+	IX86_BUILTIN_VPERMI2VARQI128.
+	(bdesc_special_args): Add __builtin_ia32_vpmultishiftqb512_mask,
+	__builtin_ia32_vpmultishiftqb256_mask,
+	__builtin_ia32_vpmultishiftqb128_mask,
+	__builtin_ia32_permvarqi512_mask, __builtin_ia32_vpermt2varqi512_mask,
+	__builtin_ia32_vpermt2varqi512_maskz,
+	__builtin_ia32_vpermi2varqi512_mask, __builtin_ia32_permvarqi256_mask,
+	__builtin_ia32_permvarqi128_mask, __builtin_ia32_vpermt2varqi256_mask,
+	__builtin_ia32_vpermt2varqi256_maskz,
+	__builtin_ia32_vpermt2varqi128_mask,
+	__builtin_ia32_vpermt2varqi128_maskz,
+	__builtin_ia32_vpermi2varqi256_mask,
+	__builtin_ia32_vpermi2varqi128_mask.
+	(ix86_hard_regno_mode_ok): Allow big masks for AVX512VBMI.
+	* config/i386/i386.h (TARGET_AVX512VBMI, TARGET_AVX512VBMI_P): Define.
+	* config/i386/i386.opt: Add mavx512vbmi.
+	* config/i386/immintrin.h: Include avx512vbmiintrin.h,
+	avx512vbmivlintrin.h.
+	* config/i386/sse.md (unspec): Add UNSPEC_VPMULTISHIFT.
+	(VI1_AVX512VL): New iterator.
+	(<avx512>_permvar<mode><mask_name>): Use it.
+	(<avx512>_vpermi2var<mode>3_maskz): Ditto.
+	(<avx512>_vpermi2var<mode>3<sd_maskz_name>): Ditto.
+	(<avx512>_vpermi2var<mode>3_mask): Ditto.
+	(<avx512>_vpermt2var<mode>3_maskz): Ditto.
+	(<avx512>_vpermt2var<mode>3<sd_maskz_name>): Ditto.
+	(<avx512>_vpermt2var<mode>3_mask): Ditto.
+	(vpmultishiftqb<mode><mask_name>): Ditto.
+
 2014-11-21  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR rtl-optimization/63952

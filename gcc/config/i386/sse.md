@@ -145,6 +145,9 @@
   ;; For AVX512IFMA support
   UNSPEC_VPMADD52LUQ
   UNSPEC_VPMADD52HUQ
+
+  ;; For AVX512VBMI support
+  UNSPEC_VPMULTISHIFT
 ])
 
 (define_c_enum "unspecv" [
@@ -178,6 +181,9 @@
 (define_mode_iterator VI12_AVX512VL
   [V64QI (V16QI "TARGET_AVX512VL") (V32QI "TARGET_AVX512VL")
    V32HI (V16HI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")])
+
+(define_mode_iterator VI1_AVX512VL
+  [V64QI (V16QI "TARGET_AVX512VL") (V32QI "TARGET_AVX512VL")])
 
 ;; All vector modes
 (define_mode_iterator V
@@ -16469,6 +16475,18 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<avx512>_permvar<mode><mask_name>"
+  [(set (match_operand:VI1_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI1_AVX512VL
+	  [(match_operand:VI1_AVX512VL 1 "nonimmediate_operand" "vm")
+	   (match_operand:<sseintvecmode> 2 "register_operand" "v")]
+	  UNSPEC_VPERMVAR))]
+  "TARGET_AVX512VBMI && <mask_mode512bit_condition>"
+  "vperm<ssemodesuffix>\t{%1, %2, %0<mask_operand3>|%0<mask_operand3>, %2, %1}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "<mask_prefix2>")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<avx512>_permvar<mode><mask_name>"
   [(set (match_operand:VI2_AVX512VL 0 "register_operand" "=v")
 	(unspec:VI2_AVX512VL
 	  [(match_operand:VI2_AVX512VL 1 "nonimmediate_operand" "vm")
@@ -17011,6 +17029,20 @@
 })
 
 (define_expand "<avx512>_vpermi2var<mode>3_maskz"
+  [(match_operand:VI1_AVX512VL 0 "register_operand")
+   (match_operand:VI1_AVX512VL 1 "register_operand")
+   (match_operand:<sseintvecmode> 2 "register_operand")
+   (match_operand:VI1_AVX512VL 3 "nonimmediate_operand")
+   (match_operand:<avx512fmaskmode> 4 "register_operand")]
+  "TARGET_AVX512VBMI"
+{
+  emit_insn (gen_<avx512>_vpermi2var<mode>3_maskz_1 (
+	operands[0], operands[1], operands[2], operands[3],
+	CONST0_RTX (<MODE>mode), operands[4]));
+  DONE;
+})
+
+(define_expand "<avx512>_vpermi2var<mode>3_maskz"
   [(match_operand:VI2_AVX512VL 0 "register_operand" "=v")
    (match_operand:VI2_AVX512VL 1 "register_operand" "v")
    (match_operand:<sseintvecmode> 2 "register_operand" "0")
@@ -17032,6 +17064,19 @@
 	   (match_operand:VI48F 3 "nonimmediate_operand" "vm")]
 	  UNSPEC_VPERMI2))]
   "TARGET_AVX512F"
+  "vpermi2<ssemodesuffix>\t{%3, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %3}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<avx512>_vpermi2var<mode>3<sd_maskz_name>"
+  [(set (match_operand:VI1_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI1_AVX512VL
+	  [(match_operand:VI1_AVX512VL 1 "register_operand" "v")
+	   (match_operand:<sseintvecmode> 2 "register_operand" "0")
+	   (match_operand:VI1_AVX512VL 3 "nonimmediate_operand" "vm")]
+	  UNSPEC_VPERMI2))]
+  "TARGET_AVX512VBMI"
   "vpermi2<ssemodesuffix>\t{%3, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %3}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "evex")
@@ -17061,6 +17106,22 @@
 	  (match_dup 0)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
   "TARGET_AVX512F"
+  "vpermi2<ssemodesuffix>\t{%3, %1, %0%{%4%}|%0%{%4%}, %1, %3}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<avx512>_vpermi2var<mode>3_mask"
+  [(set (match_operand:VI1_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI1_AVX512VL
+	  (unspec:VI1_AVX512VL
+	    [(match_operand:VI1_AVX512VL 1 "register_operand" "v")
+	    (match_operand:<sseintvecmode> 2 "register_operand" "0")
+	    (match_operand:VI1_AVX512VL 3 "nonimmediate_operand" "vm")]
+	    UNSPEC_VPERMI2_MASK)
+	  (match_dup 0)
+	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
+  "TARGET_AVX512VBMI"
   "vpermi2<ssemodesuffix>\t{%3, %1, %0%{%4%}|%0%{%4%}, %1, %3}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "evex")
@@ -17097,6 +17158,20 @@
 })
 
 (define_expand "<avx512>_vpermt2var<mode>3_maskz"
+  [(match_operand:VI1_AVX512VL 0 "register_operand" "=v")
+   (match_operand:<sseintvecmode> 1 "register_operand" "v")
+   (match_operand:VI1_AVX512VL 2 "register_operand" "0")
+   (match_operand:VI1_AVX512VL 3 "nonimmediate_operand" "vm")
+   (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")]
+  "TARGET_AVX512VBMI"
+{
+  emit_insn (gen_<avx512>_vpermt2var<mode>3_maskz_1 (
+	operands[0], operands[1], operands[2], operands[3],
+	CONST0_RTX (<MODE>mode), operands[4]));
+  DONE;
+})
+
+(define_expand "<avx512>_vpermt2var<mode>3_maskz"
   [(match_operand:VI2_AVX512VL 0 "register_operand" "=v")
    (match_operand:<sseintvecmode> 1 "register_operand" "v")
    (match_operand:VI2_AVX512VL 2 "register_operand" "0")
@@ -17118,6 +17193,19 @@
 	   (match_operand:VI48F 3 "nonimmediate_operand" "vm")]
 	  UNSPEC_VPERMT2))]
   "TARGET_AVX512F"
+  "vpermt2<ssemodesuffix>\t{%3, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %3}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<avx512>_vpermt2var<mode>3<sd_maskz_name>"
+  [(set (match_operand:VI1_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI1_AVX512VL
+	  [(match_operand:<sseintvecmode> 1 "register_operand" "v")
+	   (match_operand:VI1_AVX512VL 2 "register_operand" "0")
+	   (match_operand:VI1_AVX512VL 3 "nonimmediate_operand" "vm")]
+	  UNSPEC_VPERMT2))]
+  "TARGET_AVX512VBMI"
   "vpermt2<ssemodesuffix>\t{%3, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %3}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "evex")
@@ -17147,6 +17235,22 @@
 	  (match_dup 2)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
   "TARGET_AVX512F"
+  "vpermt2<ssemodesuffix>\t{%3, %1, %0%{%4%}|%0%{%4%}, %1, %3}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<avx512>_vpermt2var<mode>3_mask"
+  [(set (match_operand:VI1_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI1_AVX512VL
+	  (unspec:VI1_AVX512VL
+	    [(match_operand:<sseintvecmode> 1 "register_operand" "v")
+	    (match_operand:VI1_AVX512VL 2 "register_operand" "0")
+	    (match_operand:VI1_AVX512VL 3 "nonimmediate_operand" "vm")]
+	    UNSPEC_VPERMT2)
+	  (match_dup 2)
+	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
+  "TARGET_AVX512VBMI"
   "vpermt2<ssemodesuffix>\t{%3, %1, %0%{%4%}|%0%{%4%}, %1, %3}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "evex")
@@ -18519,3 +18623,14 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "vpmultishiftqb<mode><mask_name>"
+  [(set (match_operand:VI1_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI1_AVX512VL
+	  [(match_operand:VI1_AVX512VL 1 "register_operand" "v")
+	   (match_operand:VI1_AVX512VL 2 "nonimmediate_operand" "vm")]
+	  UNSPEC_VPMULTISHIFT))]
+  "TARGET_AVX512VBMI"
+  "vpmultishiftqb\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
