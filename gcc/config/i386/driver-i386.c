@@ -412,6 +412,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_avx512f = 0, has_sha = 0, has_prefetchwt1 = 0;
   unsigned int has_clflushopt = 0, has_xsavec = 0, has_xsaves = 0;
   unsigned int has_avx512dq = 0, has_avx512bw = 0, has_avx512vl = 0;
+  unsigned int has_avx512ifma = 0;
 
   bool arch;
 
@@ -493,6 +494,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_avx512dq = ebx & bit_AVX512DQ;
       has_avx512bw = ebx & bit_AVX512BW;
       has_avx512vl = ebx & bit_AVX512VL;
+      has_avx512vl = ebx & bit_AVX512IFMA;
 
       has_prefetchwt1 = ecx & bit_PREFETCHWT1;
     }
@@ -925,6 +927,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *avx512dq = has_avx512dq ? " -mavx512dq" : " -mno-avx512dq";
       const char *avx512bw = has_avx512bw ? " -mavx512bw" : " -mno-avx512bw";
       const char *avx512vl = has_avx512vl ? " -mavx512vl" : " -mno-avx512vl";
+      const char *avx512ifma = has_avx512ifma ? " -mavx512ifma" : " -mno-avx512ifma";
 
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
 			sse4a, cx16, sahf, movbe, aes, sha, pclmul,
@@ -934,7 +937,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 			fxsr, xsave, xsaveopt, avx512f, avx512er,
 			avx512cd, avx512pf, prefetchwt1, clflushopt,
 			xsavec, xsaves, avx512dq, avx512bw, avx512vl,
-			NULL);
+			avx512ifma, NULL);
     }
 
 done:

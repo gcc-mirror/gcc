@@ -76,6 +76,7 @@
 #define bit_AVX512DQ	(1 << 17)
 #define bit_RDSEED	(1 << 18)
 #define bit_ADX	(1 << 19)
+#define bit_AVX512IFMA	(1 << 21)
 #define bit_CLFLUSHOPT	(1 << 23)
 #define bit_AVX512PF	(1 << 26)
 #define bit_AVX512ER	(1 << 27)
