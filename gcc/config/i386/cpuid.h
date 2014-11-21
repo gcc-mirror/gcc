@@ -87,6 +87,7 @@
 
 /* %ecx */
 #define bit_PREFETCHWT1	  (1 << 0)
+#define bit_AVX512VBMI	(1 << 1)
 
 /* Extended State Enumeration Sub-leaf (%eax == 13, %ecx == 1) */
 #define bit_XSAVEOPT	(1 << 0)
