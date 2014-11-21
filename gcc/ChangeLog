@@ -1,5 +1,10 @@
 2014-11-21  Evgeny Stupachenko  <evstupac@gmail.com>
 
+	* config/i386/i386.c (ix86_option_override_internal): Increase
+	PARAM_MAX_COMPLETELY_PEELED_INSNS.
+
+2014-11-21  Evgeny Stupachenko  <evstupac@gmail.com>
+
 	PR target/60451
 	* config/i386/i386.c (expand_vec_perm_even_odd_pack): New.
 	(expand_vec_perm_even_odd_1): Add new expand for V8HI mode,

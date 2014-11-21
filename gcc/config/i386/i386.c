@@ -4122,6 +4122,12 @@ ix86_option_override_internal (bool main_args_p,
 			 opts->x_param_values,
 			 opts_set->x_param_values);
 
+  /* Increase full peel max insns parameter for x86.  */
+  maybe_set_param_value (PARAM_MAX_COMPLETELY_PEELED_INSNS,
+			 200,
+			 opts->x_param_values,
+			 opts_set->x_param_values);
+
   /* Enable sw prefetching at -O3 for CPUS that prefetching is helpful.  */
   if (opts->x_flag_prefetch_loop_arrays < 0
       && HAVE_prefetch
