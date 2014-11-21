@@ -2937,6 +2937,9 @@ nds32_expand_prologue (void)
 				   GEN_INT (fp_adjust));
       /* Emit rtx into instructions list and receive INSN rtx form.  */
       fp_adjust_insn = emit_insn (fp_adjust_insn);
+
+      /* The insn rtx 'fp_adjust_insn' will change frame layout.  */
+      RTX_FRAME_RELATED_P (fp_adjust_insn) = 1;
     }
 
   /* Adjust $sp = $sp - local_size - out_args_size
