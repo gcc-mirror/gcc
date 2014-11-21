@@ -1,3 +1,7 @@
+2014-11-21  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* MAINTAINERS (write-after-approval): Add myself.
+
 2014-11-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	* MAINTAINERS (OS Port Maintainers): Add overdue maintainership note
