@@ -2041,8 +2041,14 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	return false;
 
     case LO_SUM:
-      if (!TARGET_GP_DIRECT)
-	return true;
+      /* (mem (lo_sum (reg) (symbol_ref))) */
+      /* (mem (lo_sum (reg) (const))) */
+      gcc_assert (REG_P (XEXP (x, 0)));
+      if (GET_CODE (XEXP (x, 1)) == SYMBOL_REF
+	  || GET_CODE (XEXP (x, 1)) == CONST)
+	return nds32_legitimate_address_p (mode, XEXP (x, 1), strict);
+      else
+	return false;
 
     default:
       return false;
