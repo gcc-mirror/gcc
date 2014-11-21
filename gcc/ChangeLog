@@ -1,3 +1,16 @@
+2014-11-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/63965
+	* config/rs6000/rs6000.c (rs6000_setup_reg_addr_masks): Do not set
+	Altivec & -16 mask if the type is not valid for Altivec registers.
+	(rs6000_secondary_reload_memory): Add support for ((reg + const) +
+	reg) that occurs during push_reload processing.
+
+	* config/rs6000/altivec.md (altivec_mov<mode>): Add instruction
+	alternative for moving constant vectors which are easy altivec
+	constants to GPRs.  Set the length attribute each of the
+	alternatives.
+
 2014-11-21  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* configure.ac: When checking for MIPS .module support ensure that

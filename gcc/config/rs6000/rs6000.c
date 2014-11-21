@@ -7730,13 +7730,6 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
       && legitimate_constant_pool_address_p (x, mode,
 					     reg_ok_strict || lra_in_progress))
     return 1;
-  /* For TImode, if we have load/store quad and TImode in VSX registers, only
-     allow register indirect addresses.  This will allow the values to go in
-     either GPRs or VSX registers without reloading.  The vector types would
-     tend to go into VSX registers, so we allow REG+REG, while TImode seems
-     somewhat split, in that some uses are GPR based, and some VSX based.  */
-  if (mode == TImode && TARGET_QUAD_MEMORY && TARGET_VSX_TIMODE)
-    return 0;
   /* If not REG_OK_STRICT (before reload) let pass any stack offset.  */
   if (! reg_ok_strict
       && reg_offset_p
