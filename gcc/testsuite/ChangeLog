@@ -1,3 +1,10 @@
+2014-11-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	Forward-port from 2014-10-30 4_9-branch r216934
+
+	PR target/63633
+	* gcc.target/avr/torture/pr63633-ice-mult.c: New test.
+
 2014-11-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR debug/63239

@@ -129,6 +129,15 @@ extern bool avr_load_libgcc_p (rtx);
 extern bool avr_xload_libgcc_p (machine_mode);
 extern rtx avr_eval_addr_attrib (rtx x);
 
+static inline unsigned
+regmask (machine_mode mode, unsigned regno)
+{
+  return ((1u << GET_MODE_SIZE (mode)) - 1) << regno;
+}
+
+extern void avr_fix_inputs (rtx*, unsigned, unsigned);
+extern bool avr_emit3_fix_outputs (rtx (*)(rtx,rtx,rtx), rtx*, unsigned, unsigned);
+
 extern rtx lpm_reg_rtx;
 extern rtx lpm_addr_reg_rtx;
 extern rtx tmp_reg_rtx;
