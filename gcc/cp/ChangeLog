@@ -1,5 +1,11 @@
 2014-11-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/63942
+	* name-lookup.c (supplement_binding_1): Override a mangling alias.
+	* mangle.c (maybe_remove_implicit_alias): New.
+	(mangle_decl): Always avoid creating conflicting alias.
+	* cp-tree.h: Adjust.
+
 	PR c++/63849
 	* mangle.c (decl_mangling_context): Use template_type_parameter_p.
 
