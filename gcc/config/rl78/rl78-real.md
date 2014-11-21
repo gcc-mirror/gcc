@@ -36,6 +36,13 @@
   "mov\tes, %0"
 )
 
+(define_insn "movqi_from_es"
+  [(set (match_operand:QI 0 "register_operand" "=a")
+	(reg:QI ES_REG))]
+  ""
+  "mov\t%0, es"
+)
+
 (define_insn "movqi_cs"
   [(set (reg:QI CS_REG)
 	(match_operand:QI 0 "register_operand" "a"))]

@@ -118,6 +118,9 @@ struct GTY(()) machine_function
   int virt_insns_ok;
   /* Set if the current function needs to clean up any trampolines.  */
   int trampolines_used;
+  /* True if the ES register is used and hence
+     needs to be saved inside interrupt handlers.  */
+  bool uses_es;
 };
 
 /* This is our init_machine_status, as set in
@@ -136,38 +139,36 @@ rl78_init_machine_status (void)
 /* This pass converts virtual instructions using virtual registers, to
    real instructions using real registers.  Rather than run it as
    reorg, we reschedule it before vartrack to help with debugging.  */
-namespace {
-
-const pass_data pass_data_rl78_devirt =
+namespace
 {
-  RTL_PASS, /* type */
-  "devirt", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_MACH_DEP, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
+  const pass_data pass_data_rl78_devirt =
+    {
+      RTL_PASS, /* type */
+      "devirt", /* name */
+      OPTGROUP_NONE, /* optinfo_flags */
+      TV_MACH_DEP, /* tv_id */
+      0, /* properties_required */
+      0, /* properties_provided */
+      0, /* properties_destroyed */
+      0, /* todo_flags_start */
+      0, /* todo_flags_finish */
+    };
 
-class pass_rl78_devirt : public rtl_opt_pass
-{
-public:
-  pass_rl78_devirt(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rl78_devirt, ctxt)
+  class pass_rl78_devirt : public rtl_opt_pass
   {
-  }
+  public:
+    pass_rl78_devirt (gcc::context *ctxt)
+      : rtl_opt_pass (pass_data_rl78_devirt, ctxt)
+      {
+      }
 
-  /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+    /* opt_pass methods: */
+    virtual unsigned int execute (function *)
     {
       rl78_reorg ();
       return 0;
     }
-
-};
-
+  };
 } // anon namespace
 
 rtl_opt_pass *
@@ -203,8 +204,7 @@ move_elim_pass (void)
 	 can eliminate the second SET.  */
       if (prev
 	  && rtx_equal_p (SET_DEST (prev), SET_SRC (set))
-	  && rtx_equal_p (SET_DEST (set), SET_SRC (prev))
-	  )	  
+	  && rtx_equal_p (SET_DEST (set), SET_SRC (prev)))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, " Delete insn %d because it is redundant\n",
@@ -216,40 +216,39 @@ move_elim_pass (void)
       else
 	prev = set;
     }
-  
+
   if (dump_file)
     print_rtl_with_bb (dump_file, get_insns (), 0);
 
   return 0;
 }
 
-namespace {
-
-const pass_data pass_data_rl78_move_elim =
+namespace
 {
-  RTL_PASS, /* type */
-  "move_elim", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_MACH_DEP, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
+  const pass_data pass_data_rl78_move_elim =
+    {
+      RTL_PASS, /* type */
+      "move_elim", /* name */
+      OPTGROUP_NONE, /* optinfo_flags */
+      TV_MACH_DEP, /* tv_id */
+      0, /* properties_required */
+      0, /* properties_provided */
+      0, /* properties_destroyed */
+      0, /* todo_flags_start */
+      0, /* todo_flags_finish */
+    };
 
-class pass_rl78_move_elim : public rtl_opt_pass
-{
-public:
-  pass_rl78_move_elim(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rl78_move_elim, ctxt)
+  class pass_rl78_move_elim : public rtl_opt_pass
   {
-  }
+  public:
+    pass_rl78_move_elim (gcc::context *ctxt)
+      : rtl_opt_pass (pass_data_rl78_move_elim, ctxt)
+      {
+      }
 
-  /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return move_elim_pass (); }
-};
-
+    /* opt_pass methods: */
+    virtual unsigned int execute (function *) { return move_elim_pass (); }
+  };
 } // anon namespace
 
 rtl_opt_pass *
@@ -832,6 +831,7 @@ rl78_far_p (rtx x)
 /* Return the appropriate mode for a named address pointer.  */
 #undef  TARGET_ADDR_SPACE_POINTER_MODE
 #define TARGET_ADDR_SPACE_POINTER_MODE rl78_addr_space_pointer_mode
+
 static machine_mode
 rl78_addr_space_pointer_mode (addr_space_t addrspace)
 {
@@ -849,6 +849,7 @@ rl78_addr_space_pointer_mode (addr_space_t addrspace)
 /* Returns TRUE for valid addresses.  */
 #undef  TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE rl78_valid_pointer_mode
+
 static bool
 rl78_valid_pointer_mode (machine_mode m)
 {
@@ -858,6 +859,7 @@ rl78_valid_pointer_mode (machine_mode m)
 /* Return the appropriate mode for a named address address.  */
 #undef  TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE rl78_addr_space_address_mode
+
 static machine_mode
 rl78_addr_space_address_mode (addr_space_t addrspace)
 {
@@ -936,6 +938,7 @@ rl78_as_legitimate_address (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
 /* Determine if one named address space is a subset of another.  */
 #undef  TARGET_ADDR_SPACE_SUBSET_P
 #define TARGET_ADDR_SPACE_SUBSET_P rl78_addr_space_subset_p
+
 static bool
 rl78_addr_space_subset_p (addr_space_t subset, addr_space_t superset)
 {
@@ -951,6 +954,7 @@ rl78_addr_space_subset_p (addr_space_t subset, addr_space_t superset)
 
 #undef  TARGET_ADDR_SPACE_CONVERT
 #define TARGET_ADDR_SPACE_CONVERT rl78_addr_space_convert
+
 /* Convert from one address space to another.  */
 static rtx
 rl78_addr_space_convert (rtx op, tree from_type, tree to_type)
@@ -1007,6 +1011,34 @@ rl78_mode_code_base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
 {
   return V_REGS;
 }
+
+/* Typical stack layout should looks like this after the function's prologue:
+
+                            |    |
+                              --                       ^
+                            |    | \                   |
+                            |    |   arguments saved   | Increasing
+                            |    |   on the stack      |  addresses
+    PARENT   arg pointer -> |    | /
+  -------------------------- ---- -------------------
+    CHILD                   |ret |   return address
+                              --
+                            |    | \
+                            |    |   call saved
+                            |    |   registers
+	frame pointer ->    |    | /
+                              --
+                            |    | \
+                            |    |   local
+                            |    |   variables
+                            |    | /
+                              --
+                            |    | \
+                            |    |   outgoing          | Decreasing
+                            |    |   arguments         |  addresses
+   current stack pointer -> |    | /                   |
+  -------------------------- ---- ------------------   V
+                            |    |                 */
 
 /* Implements INITIAL_ELIMINATION_OFFSET.  The frame layout is
    described in the machine_Function struct definition, above.  */
@@ -1082,7 +1114,8 @@ rl78_expand_prologue (void)
       {
 	if (TARGET_G10)
 	  {
-	    emit_move_insn (gen_rtx_REG (HImode, 0), gen_rtx_REG (HImode, i*2));
+	    if (i != 0)
+	      emit_move_insn (gen_rtx_REG (HImode, 0), gen_rtx_REG (HImode, i * 2));
 	    F (emit_insn (gen_push (gen_rtx_REG (HImode, 0))));
 	  }
 	else
@@ -1100,6 +1133,13 @@ rl78_expand_prologue (void)
 
   if (rb != 0)
     emit_insn (gen_sel_rb (GEN_INT (0)));
+
+  /* Save ES register inside interrupt functions if it is used.  */
+  if (is_interrupt_func (cfun->decl) && cfun->machine->uses_es)
+    {
+      emit_insn (gen_movqi_from_es (gen_rtx_REG (QImode, A_REG)));
+      F (emit_insn (gen_push (gen_rtx_REG (HImode, AX_REG))));
+    }
 
   if (frame_pointer_needed)
     {
@@ -1146,6 +1186,12 @@ rl78_expand_epilogue (void)
 	  emit_insn (gen_addhi3 (sp, sp, GEN_INT (fs_byte)));
 	  fs -= fs_byte;
 	}
+    }
+
+  if (is_interrupt_func (cfun->decl) && cfun->machine->uses_es)
+    {
+      emit_insn (gen_pop (gen_rtx_REG (HImode, AX_REG)));
+      emit_insn (gen_movqi_es (gen_rtx_REG (QImode, A_REG)));
     }
 
   for (i = 15; i >= 0; i--)
@@ -1234,6 +1280,9 @@ rl78_start_function (FILE *file, HOST_WIDE_INT hwi_local ATTRIBUTE_UNUSED)
   if (cfun->machine->framesize_outgoing)
     fprintf (file, "\t; outgoing: %d byte%s\n", cfun->machine->framesize_outgoing,
 	     cfun->machine->framesize_outgoing == 1 ? "" : "s");
+
+  if (cfun->machine->uses_es)
+    fprintf (file, "\t; uses ES register\n");
 }
 
 /* Return an RTL describing where a function return value of type RET_TYPE
@@ -2170,7 +2219,7 @@ rl78_es_base (rtx addr)
    carefully to ensure that all the constraint information is accurate
    for the newly matched insn.  */
 static bool
-insn_ok_now (rtx_insn *insn)
+insn_ok_now (rtx_insn * insn)
 {
   rtx pattern = PATTERN (insn);
   int i;
@@ -2234,7 +2283,7 @@ insn_ok_now (rtx_insn *insn)
 #if DEBUG_ALLOC
 #define WORKED      fprintf (stderr, "\033[48;5;22m Worked at line %d \033[0m\n", __LINE__)
 #define FAILEDSOFAR fprintf (stderr, "\033[48;5;52m FAILED at line %d \033[0m\n", __LINE__)
-#define FAILED      fprintf (stderr, "\033[48;5;52m FAILED at line %d \033[0m\n", __LINE__), gcc_unreachable()
+#define FAILED      fprintf (stderr, "\033[48;5;52m FAILED at line %d \033[0m\n", __LINE__), gcc_unreachable ()
 #define MAYBE_OK(insn) if (insn_ok_now (insn)) { WORKED; return; } else { FAILEDSOFAR; }
 #define MUST_BE_OK(insn) if (insn_ok_now (insn)) { WORKED; return; } FAILED
 #else
@@ -2308,6 +2357,7 @@ rl78_lo16 (rtx addr)
     r = rl78_subreg (HImode, addr, SImode, 0);
 
   r = gen_es_addr (r);
+  cfun->machine->uses_es = true;
 
   return r;
 }
@@ -2496,7 +2546,10 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
   debug_rtx (m);
 #endif
   if (need_es)
-    m = change_address (m, GET_MODE (m), gen_es_addr (base));
+    {
+      m = change_address (m, GET_MODE (m), gen_es_addr (base));
+      cfun->machine->uses_es = true;
+    }
   else
     m = change_address (m, GET_MODE (m), base);
 #if DEBUG_ALLOC
@@ -2642,7 +2695,7 @@ move_to_de (int opno, rtx before)
 
 /* Devirtualize an insn of the form (SET (op) (unop (op))).  */
 static void
-rl78_alloc_physical_registers_op1 (rtx_insn *insn)
+rl78_alloc_physical_registers_op1 (rtx_insn * insn)
 {
   /* op[0] = func op[1] */
 
@@ -2721,7 +2774,7 @@ has_constraint (unsigned int opnum, enum constraint_num constraint)
 
 /* Devirtualize an insn of the form (SET (op) (binop (op) (op))).  */
 static void
-rl78_alloc_physical_registers_op2 (rtx_insn *insn)
+rl78_alloc_physical_registers_op2 (rtx_insn * insn)
 {
   rtx prev;
   rtx first;
@@ -2875,7 +2928,7 @@ rl78_alloc_physical_registers_op2 (rtx_insn *insn)
 
 /* Devirtualize an insn of the form SET (PC) (MEM/REG).  */
 static void
-rl78_alloc_physical_registers_ro1 (rtx_insn *insn)
+rl78_alloc_physical_registers_ro1 (rtx_insn * insn)
 {
   OP (0) = transcode_memory_rtx (OP (0), BC, insn);
 
@@ -2888,7 +2941,7 @@ rl78_alloc_physical_registers_ro1 (rtx_insn *insn)
 
 /* Devirtualize a compare insn.  */
 static void
-rl78_alloc_physical_registers_cmp (rtx_insn *insn)
+rl78_alloc_physical_registers_cmp (rtx_insn * insn)
 {
   int tmp_id;
   rtx saved_op1;
@@ -2981,7 +3034,7 @@ rl78_alloc_physical_registers_cmp (rtx_insn *insn)
 
 /* Like op2, but AX = A * X.  */
 static void
-rl78_alloc_physical_registers_umul (rtx_insn *insn)
+rl78_alloc_physical_registers_umul (rtx_insn * insn)
 {
   rtx prev = prev_nonnote_nondebug_insn (insn);
   rtx first;
@@ -3045,7 +3098,7 @@ rl78_alloc_physical_registers_umul (rtx_insn *insn)
 }
 
 static void
-rl78_alloc_address_registers_macax (rtx_insn *insn)
+rl78_alloc_address_registers_macax (rtx_insn * insn)
 {
   int which, op;
   bool replace_in_op0 = false;
