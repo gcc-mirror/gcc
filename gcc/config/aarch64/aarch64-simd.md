@@ -1175,7 +1175,7 @@
 			       (match_operand:VQW 2 "vect_par_cnst_lo_half" "")
 			    )))]
   "TARGET_SIMD"
-  "<su>shll %0.<Vwtype>, %1.<Vhalftype>, 0"
+  "<su>shll\t%0.<Vwtype>, %1.<Vhalftype>, 0"
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
@@ -1186,7 +1186,7 @@
 			       (match_operand:VQW 2 "vect_par_cnst_hi_half" "")
 			    )))]
   "TARGET_SIMD"
-  "<su>shll2 %0.<Vwtype>, %1.<Vtype>, 0"
+  "<su>shll2\t%0.<Vwtype>, %1.<Vtype>, 0"
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
@@ -2601,7 +2601,7 @@
 		       (ANY_EXTEND:<VWIDE>
 			   (match_operand:VDW 2 "register_operand" "w"))))]
   "TARGET_SIMD"
-  "<ANY_EXTEND:su><ADDSUB:optab>l %0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
+  "<ANY_EXTEND:su><ADDSUB:optab>l\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_<ADDSUB:optab>_long")]
 )
 

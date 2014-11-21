@@ -1,3 +1,11 @@
+2014-11-21  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_<ANY_EXTEND:su><ADDSUB:optab>l<mode>): Add a tab between
+	output mnemonic and operands.
+	(aarch64_simd_vec_unpack<su>_lo_<mode>): Likewise.
+	(aarch64_simd_vec_unpack<su>_hi_<mode>): Likewise.
+
 2014-11-21  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* config/i386/i386.c (ix86_option_override_internal): Increase
