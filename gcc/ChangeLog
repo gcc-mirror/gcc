@@ -1,3 +1,10 @@
+2014-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/63910
+	* simplify-rtx.c (simplify_immed_subreg): Return NULL for integer
+	modes wider than MAX_BITSIZE_MODE_ANY_INT.  If not using
+	CONST_WIDE_INT, make sure r fits into CONST_DOUBLE.
+
 2014-11-21  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* config/rs6000/rs6000.c (includes_rldic_lshift_p): Use

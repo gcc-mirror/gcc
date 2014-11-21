@@ -1,3 +1,8 @@
+2014-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/63910
+	* gcc.target/i386/pr63910.c: New test.
+
 2014-11-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR lto/63998
