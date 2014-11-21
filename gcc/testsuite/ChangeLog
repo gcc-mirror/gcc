@@ -1,5 +1,9 @@
 2014-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/63764
+	* c-c++-common/pr63764-1.c: New test.
+	* c-c++-common/pr63764-2.c: New test.
+
 	PR target/63910
 	* gcc.target/i386/pr63910.c: New test.
 

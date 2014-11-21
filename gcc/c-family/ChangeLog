@@ -1,3 +1,14 @@
+2014-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/63764
+	* c-common.h (convert_vector_to_pointer_for_subscript): Change
+	return type to bool.
+	* c-common.c: Include gimple-expr.c.
+	(convert_vector_to_pointer_for_subscript): Change return type to
+	bool.  If *vecp is not lvalue_p and has VECTOR_TYPE, return true
+	and copy it into a TARGET_EXPR and use that instead of *vecp
+	directly.
+
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	Merger of git branch "gimple-classes-v2-option-3".

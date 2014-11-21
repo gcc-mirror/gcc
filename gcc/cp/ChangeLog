@@ -1,3 +1,10 @@
+2014-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/63764
+	* typeck.c (cp_build_array_ref): Adjust
+	convert_vector_to_pointer_for_subscript caller.  If it returns true,
+	call non_lvalue_loc on the result.
+
 2014-11-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63658

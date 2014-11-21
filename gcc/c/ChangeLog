@@ -1,3 +1,10 @@
+2014-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/63764
+	* c-typeck.c (build_array_ref): Adjust
+	convert_vector_to_pointer_for_subscript caller.  If it returns true,
+	call non_lvalue_loc on the result.
+
 2014-11-11  Richard Biener  <rguenther@suse.de>
 
 	* c-decl.c (c_init_decl_processing): Do not set pedantic_lvalues
