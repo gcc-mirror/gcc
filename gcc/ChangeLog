@@ -1,5 +1,13 @@
 2014-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/63848
+	PR target/63975
+	* internal-fn.c (expand_arith_overflow_result_store,
+	expand_addsub_overflow, expand_neg_overflow, expand_mul_overflow): Use
+	do_compare_rtx_and_jump instead of emit_cmp_and_jump_insns everywhere,
+	adjust arguments to those functions.  Use unsignedp = true for
+	EQ, NE, GEU, LEU, LTU and GTU comparisons.
+
 	PR tree-optimization/64006
 	* tree-vrp.c (stmt_interesting_for_vrp): Return true
 	for {ADD,SUB,MUL}_OVERFLOW internal calls.
