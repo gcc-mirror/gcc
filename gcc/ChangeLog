@@ -1,3 +1,15 @@
+2014-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64006
+	* tree-vrp.c (stmt_interesting_for_vrp): Return true
+	for {ADD,SUB,MUL}_OVERFLOW internal calls.
+	(vrp_visit_assignment_or_call): For {ADD,SUB,MUL}_OVERFLOW
+	internal calls, check if any REALPART_EXPR/IMAGPART_EXPR
+	immediate uses would change their value ranges and return
+	SSA_PROP_INTERESTING if so, or SSA_PROP_NOT_INTERESTING
+	if there are some REALPART_EXPR/IMAGPART_EXPR immediate uses
+	interesting for vrp.
+
 2014-11-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/63965
