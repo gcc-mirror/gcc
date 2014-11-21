@@ -5504,6 +5504,8 @@ simplify_immed_subreg (machine_mode outermode, rtx op,
 	    HOST_WIDE_INT tmp[MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT];
 	    wide_int r;
 
+	    if (GET_MODE_PRECISION (outer_submode) > MAX_BITSIZE_MODE_ANY_INT)
+	      return NULL_RTX;
 	    for (u = 0; u < units; u++)
 	      {
 		unsigned HOST_WIDE_INT buf = 0;
@@ -5515,10 +5517,13 @@ simplify_immed_subreg (machine_mode outermode, rtx op,
 		tmp[u] = buf;
 		base += HOST_BITS_PER_WIDE_INT;
 	      }
-	    gcc_assert (GET_MODE_PRECISION (outer_submode)
-			<= MAX_BITSIZE_MODE_ANY_INT);
 	    r = wide_int::from_array (tmp, units,
 				      GET_MODE_PRECISION (outer_submode));
+#if TARGET_SUPPORTS_WIDE_INT == 0
+	    /* Make sure r will fit into CONST_INT or CONST_DOUBLE.  */
+	    if (wi::min_precision (r, SIGNED) > HOST_BITS_PER_DOUBLE_INT)
+	      return NULL_RTX;
+#endif
 	    elems[elem] = immed_wide_int_const (r, outer_submode);
 	  }
 	  break;
