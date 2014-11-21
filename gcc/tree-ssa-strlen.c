@@ -430,7 +430,6 @@ get_string_length (strinfo si)
       callee = gimple_call_fndecl (stmt);
       gcc_assert (callee && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL);
       lhs = gimple_call_lhs (stmt);
-      gcc_assert (builtin_decl_implicit_p (BUILT_IN_STPCPY));
       /* unshare_strinfo is intentionally not called here.  The (delayed)
 	 transformation of strcpy or strcat into stpcpy is done at the place
 	 of the former strcpy/strcat call and so can affect all the strinfos
@@ -479,6 +478,7 @@ get_string_length (strinfo si)
 	case BUILT_IN_STRCPY_CHK:
 	case BUILT_IN_STRCPY_CHKP:
 	case BUILT_IN_STRCPY_CHK_CHKP:
+	  gcc_assert (builtin_decl_implicit_p (BUILT_IN_STPCPY));
 	  if (gimple_call_num_args (stmt) == (with_bounds ? 4 : 2))
 	    fn = builtin_decl_implicit (BUILT_IN_STPCPY);
 	  else

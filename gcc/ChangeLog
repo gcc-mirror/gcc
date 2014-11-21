@@ -1,5 +1,9 @@
 2014-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/61773
+	* tree-ssa-strlen.c (get_string_length): Don't assert
+	stpcpy has been prototyped if si->stmt is BUILT_IN_MALLOC.
+
 	PR target/63910
 	* simplify-rtx.c (simplify_immed_subreg): Return NULL for integer
 	modes wider than MAX_BITSIZE_MODE_ANY_INT.  If not using
