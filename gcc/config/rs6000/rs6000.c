@@ -16197,10 +16197,10 @@ includes_rldic_lshift_p (rtx shiftop, rtx andop)
       unsigned HOST_WIDE_INT c, lsb, shift_mask;
 
       c = INTVAL (andop);
-      if (c == 0 || c == ~0)
+      if (c == 0 || c == HOST_WIDE_INT_M1U)
 	return 0;
 
-      shift_mask = ~0;
+      shift_mask = HOST_WIDE_INT_M1U;
       shift_mask <<= INTVAL (shiftop);
 
       /* Find the least significant one bit.  */
@@ -16235,7 +16235,7 @@ includes_rldicr_lshift_p (rtx shiftop, rtx andop)
     {
       unsigned HOST_WIDE_INT c, lsb, shift_mask;
 
-      shift_mask = ~0;
+      shift_mask = HOST_WIDE_INT_M1U;
       shift_mask <<= INTVAL (shiftop);
       c = INTVAL (andop);
 

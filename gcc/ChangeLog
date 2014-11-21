@@ -1,3 +1,9 @@
+2014-11-21  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* config/rs6000/rs6000.c (includes_rldic_lshift_p): Use
+	HOST_WIDE_INT_M1U instead of ~0.
+	(includes_rldicr_lshift_p): Likewise.
+
 2014-11-21  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (nds32_legitimate_address_p): For LO_SUM,
