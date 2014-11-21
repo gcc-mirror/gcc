@@ -1,3 +1,7 @@
+2014-11-21  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.opt (march): Add help message.
+
 2014-11-20  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* tree-vrp.c (test_for_singularity): New parameter
