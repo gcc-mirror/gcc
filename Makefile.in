@@ -35238,9 +35238,6 @@ configure-target-liboffloadmic:
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/liboffloadmic ; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	echo Configuring in $(TARGET_SUBDIR)/liboffloadmic; \
-	 \
-	this_target="${target_alias}"; \
-	 \
 	cd "$(TARGET_SUBDIR)/liboffloadmic" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
@@ -35248,14 +35245,12 @@ configure-target-liboffloadmic:
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
 	module_srcdir=liboffloadmic; \
-	srcdiroption="--srcdir=$${topdir}/liboffloadmic"; \
-	libsrcdir="$$s/liboffloadmic"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) \
 	  $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=$${this_target} $${srcdiroption} @extra_liboffloadmic_configure_flags@ \
+	  --target=${target_alias} @extra_liboffloadmic_configure_flags@ \
 	  || exit 1
 @endif target-liboffloadmic
 

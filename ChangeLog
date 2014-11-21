@@ -1,3 +1,7 @@
+2014-11-21  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* Makefile.in: Regenerate.
+
 2014-11-21  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR bootstrap/63784
