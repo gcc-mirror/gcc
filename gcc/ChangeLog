@@ -1,3 +1,15 @@
+2014-11-21  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78-real.md (movqi_from_es): New pattern.
+	* config/rl78/rl78.c (struct machine_function): Add uses_es field.
+	(rl78_expand_prologue): Save the ES register in interrupt handlers
+	that use it.
+	(rl78_expand_epilogue): Restore the ES register if necessary.
+	(rl78_start_function): Mention if the function uses the ES
+	register.
+	(rl78_lo16): Record the use of the ES register.
+	(transcode_memory_rtx): Likewise.
+
 2014-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/61773
