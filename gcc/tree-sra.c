@@ -2729,6 +2729,37 @@ init_subtree_with_zero (struct access *access, gimple_stmt_iterator *gsi,
     init_subtree_with_zero (child, gsi, insert_after, loc);
 }
 
+/* Clobber all scalar replacements in an access subtree.  ACCESS is the the
+   root of the subtree to be processed.  GSI is the statement iterator used
+   for inserting statements which are added after the current statement if
+   INSERT_AFTER is true or before it otherwise.  */
+
+static void
+clobber_subtree (struct access *access, gimple_stmt_iterator *gsi,
+		bool insert_after, location_t loc)
+
+{
+  struct access *child;
+
+  if (access->grp_to_be_replaced)
+    {
+      tree rep = get_access_replacement (access);
+      tree clobber = build_constructor (access->type, NULL);
+      TREE_THIS_VOLATILE (clobber) = 1;
+      gimple stmt = gimple_build_assign (rep, clobber);
+
+      if (insert_after)
+	gsi_insert_after (gsi, stmt, GSI_NEW_STMT);
+      else
+	gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
+      update_stmt (stmt);
+      gimple_set_location (stmt, loc);
+    }
+
+  for (child = access->first_child; child; child = child->next_sibling)
+    clobber_subtree (child, gsi, insert_after, loc);
+}
+
 /* Search for an access representative for the given expression EXPR and
    return it or NULL if it cannot be found.  */
 
@@ -3041,17 +3072,16 @@ static enum assignment_mod_result
 sra_modify_constructor_assign (gimple stmt, gimple_stmt_iterator *gsi)
 {
   tree lhs = gimple_assign_lhs (stmt);
-  struct access *acc;
-  location_t loc;
-
-  acc = get_access_for_expr (lhs);
+  struct access *acc = get_access_for_expr (lhs);
   if (!acc)
     return SRA_AM_NONE;
+  location_t loc = gimple_location (stmt);
 
   if (gimple_clobber_p (stmt))
     {
-      /* Remove clobbers of fully scalarized variables, otherwise
-	 do nothing.  */
+      /* Clobber the replacement variable.  */
+      clobber_subtree (acc, gsi, !acc->grp_covered, loc);
+      /* Remove clobbers of fully scalarized variables, they are dead.  */
       if (acc->grp_covered)
 	{
 	  unlink_stmt_vdef (stmt);
@@ -3060,10 +3090,9 @@ sra_modify_constructor_assign (gimple stmt, gimple_stmt_iterator *gsi)
 	  return SRA_AM_REMOVED;
 	}
       else
-	return SRA_AM_NONE;
+	return SRA_AM_MODIFIED;
     }
 
-  loc = gimple_location (stmt);
   if (vec_safe_length (CONSTRUCTOR_ELTS (gimple_assign_rhs1 (stmt))) > 0)
     {
       /* I have never seen this code path trigger but if it can happen the

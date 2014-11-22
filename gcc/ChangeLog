@@ -1,3 +1,9 @@
+2014-11-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/60770
+	* tree-sra.c (clobber_subtree): New function.
+	(sra_modify_constructor_assign): Call it.
+
 2014-11-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/63897
