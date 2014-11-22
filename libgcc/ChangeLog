@@ -1,3 +1,18 @@
+2014-11-21  Guy Martin  <gmsoft@tuxicoman.be>
+	    John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (__kernel_cmpxchg2): New.
+	(FETCH_AND_OP_2): New.  Use for subword and double word operations.
+	(OP_AND_FETCH_2): Likewise.
+	(COMPARE_AND_SWAP_2): Likewise.
+	(SYNC_LOCK_TEST_AND_SET_2): Likewise.
+	(SYNC_LOCK_RELEASE_2): Likewise.
+	(SUBWORD_SYNC_OP): Remove.
+	(SUBWORD_VAL_CAS): Likewise.
+	(SUBWORD_BOOL_CAS): Likewise.
+	(FETCH_AND_OP_WORD): Update.
+	Consistently use signed types.
+	
 2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>

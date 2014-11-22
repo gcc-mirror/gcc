@@ -45,7 +45,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define ABORT_INSTRUCTION asm ("iitlbp %r0,(%sr0, %r0)")
 
 /* Determine kernel LWS function call (0=32-bit, 1=64-bit userspace).  */
-#define LWS_CAS (sizeof(unsigned long) == 4 ? 0 : 1)
+#define LWS_CAS (sizeof(long) == 4 ? 0 : 1)
 
 /* Kernel helper for compare-and-exchange a 32-bit value.  */
 static inline long
@@ -75,6 +75,30 @@ __kernel_cmpxchg (int oldval, int newval, int *mem)
   return lws_errno;
 }
 
+static inline long
+__kernel_cmpxchg2 (void * oldval, void * newval, void *mem, int val_size)
+{
+  register unsigned long lws_mem asm("r26") = (unsigned long) (mem);
+  register long lws_ret   asm("r28");
+  register long lws_errno asm("r21");
+  register unsigned long lws_old asm("r25") = (unsigned long) oldval;
+  register unsigned long lws_new asm("r24") = (unsigned long) newval;
+  register int lws_size asm("r23") = val_size;
+  asm volatile (	"ble	0xb0(%%sr2, %%r0)	\n\t"
+			"ldi	%2, %%r20		\n\t"
+	: "=r" (lws_ret), "=r" (lws_errno)
+	: "i" (2), "r" (lws_mem), "r" (lws_old), "r" (lws_new), "r" (lws_size)
+	: "r1", "r20", "r22", "r29", "r31", "fr4", "memory"
+  );
+  if (__builtin_expect (lws_errno == -EFAULT || lws_errno == -ENOSYS, 0))
+    ABORT_INSTRUCTION;
+
+  /* If the kernel LWS call fails, retrun EBUSY */
+  if (!lws_errno && lws_ret)
+    lws_errno = -EBUSY;
+
+  return lws_errno;
+}
 #define HIDDEN __attribute__ ((visibility ("hidden")))
 
 /* Big endian masks  */
@@ -83,6 +107,80 @@ __kernel_cmpxchg (int oldval, int newval, int *mem)
 
 #define MASK_1 0xffu
 #define MASK_2 0xffffu
+
+#define FETCH_AND_OP_2(OP, PFX_OP, INF_OP, TYPE, WIDTH, INDEX)		\
+  TYPE HIDDEN								\
+  __sync_fetch_and_##OP##_##WIDTH (TYPE *ptr, TYPE val)			\
+  {									\
+    TYPE tmp, newval;							\
+    int failure;							\
+									\
+    do {								\
+      tmp = *ptr;							\
+      newval = PFX_OP (tmp INF_OP val);					\
+      failure = __kernel_cmpxchg2 (&tmp, &newval, ptr, INDEX);		\
+    } while (failure != 0);						\
+									\
+    return tmp;								\
+  }
+
+FETCH_AND_OP_2 (add,   , +, long long, 8, 3)
+FETCH_AND_OP_2 (sub,   , -, long long, 8, 3)
+FETCH_AND_OP_2 (or,    , |, long long, 8, 3)
+FETCH_AND_OP_2 (and,   , &, long long, 8, 3)
+FETCH_AND_OP_2 (xor,   , ^, long long, 8, 3)
+FETCH_AND_OP_2 (nand, ~, &, long long, 8, 3)
+
+FETCH_AND_OP_2 (add,   , +, short, 2, 1)
+FETCH_AND_OP_2 (sub,   , -, short, 2, 1)
+FETCH_AND_OP_2 (or,    , |, short, 2, 1)
+FETCH_AND_OP_2 (and,   , &, short, 2, 1)
+FETCH_AND_OP_2 (xor,   , ^, short, 2, 1)
+FETCH_AND_OP_2 (nand, ~, &, short, 2, 1)
+
+FETCH_AND_OP_2 (add,   , +, signed char, 1, 0)
+FETCH_AND_OP_2 (sub,   , -, signed char, 1, 0)
+FETCH_AND_OP_2 (or,    , |, signed char, 1, 0)
+FETCH_AND_OP_2 (and,   , &, signed char, 1, 0)
+FETCH_AND_OP_2 (xor,   , ^, signed char, 1, 0)
+FETCH_AND_OP_2 (nand, ~, &, signed char, 1, 0)
+
+#define OP_AND_FETCH_2(OP, PFX_OP, INF_OP, TYPE, WIDTH, INDEX)		\
+  TYPE HIDDEN								\
+  __sync_##OP##_and_fetch_##WIDTH (TYPE *ptr, TYPE val)			\
+  {									\
+    TYPE tmp, newval;							\
+    int failure;							\
+									\
+    do {								\
+      tmp = *ptr;							\
+      newval = PFX_OP (tmp INF_OP val);					\
+      failure = __kernel_cmpxchg2 (&tmp, &newval, ptr, INDEX);		\
+    } while (failure != 0);						\
+									\
+    return PFX_OP (tmp INF_OP val);					\
+  }
+
+OP_AND_FETCH_2 (add,   , +, long long, 8, 3)
+OP_AND_FETCH_2 (sub,   , -, long long, 8, 3)
+OP_AND_FETCH_2 (or,    , |, long long, 8, 3)
+OP_AND_FETCH_2 (and,   , &, long long, 8, 3)
+OP_AND_FETCH_2 (xor,   , ^, long long, 8, 3)
+OP_AND_FETCH_2 (nand, ~, &, long long, 8, 3)
+
+OP_AND_FETCH_2 (add,   , +, short, 2, 1)
+OP_AND_FETCH_2 (sub,   , -, short, 2, 1)
+OP_AND_FETCH_2 (or,    , |, short, 2, 1)
+OP_AND_FETCH_2 (and,   , &, short, 2, 1)
+OP_AND_FETCH_2 (xor,   , ^, short, 2, 1)
+OP_AND_FETCH_2 (nand, ~, &, short, 2, 1)
+
+OP_AND_FETCH_2 (add,   , +, signed char, 1, 0)
+OP_AND_FETCH_2 (sub,   , -, signed char, 1, 0)
+OP_AND_FETCH_2 (or,    , |, signed char, 1, 0)
+OP_AND_FETCH_2 (and,   , &, signed char, 1, 0)
+OP_AND_FETCH_2 (xor,   , ^, signed char, 1, 0)
+OP_AND_FETCH_2 (nand, ~, &, signed char, 1, 0)
 
 #define FETCH_AND_OP_WORD(OP, PFX_OP, INF_OP)				\
   int HIDDEN								\
@@ -105,48 +203,6 @@ FETCH_AND_OP_WORD (and,   , &)
 FETCH_AND_OP_WORD (xor,   , ^)
 FETCH_AND_OP_WORD (nand, ~, &)
 
-#define NAME_oldval(OP, WIDTH) __sync_fetch_and_##OP##_##WIDTH
-#define NAME_newval(OP, WIDTH) __sync_##OP##_and_fetch_##WIDTH
-
-/* Implement both __sync_<op>_and_fetch and __sync_fetch_and_<op> for
-   subword-sized quantities.  */
-
-#define SUBWORD_SYNC_OP(OP, PFX_OP, INF_OP, TYPE, WIDTH, RETURN)	\
-  TYPE HIDDEN								\
-  NAME##_##RETURN (OP, WIDTH) (TYPE *ptr, TYPE val)			\
-  {									\
-    int *wordptr = (int *) ((unsigned long) ptr & ~3);			\
-    unsigned int mask, shift, oldval, newval;				\
-    int failure;							\
-									\
-    shift = (((unsigned long) ptr & 3) << 3) ^ INVERT_MASK_##WIDTH;	\
-    mask = MASK_##WIDTH << shift;					\
-									\
-    do {								\
-      oldval = *wordptr;						\
-      newval = ((PFX_OP (((oldval & mask) >> shift)			\
-                         INF_OP (unsigned int) val)) << shift) & mask;	\
-      newval |= oldval & ~mask;						\
-      failure = __kernel_cmpxchg (oldval, newval, wordptr);		\
-    } while (failure != 0);						\
-									\
-    return (RETURN & mask) >> shift;					\
-  }
-
-SUBWORD_SYNC_OP (add,   , +, unsigned short, 2, oldval)
-SUBWORD_SYNC_OP (sub,   , -, unsigned short, 2, oldval)
-SUBWORD_SYNC_OP (or,    , |, unsigned short, 2, oldval)
-SUBWORD_SYNC_OP (and,   , &, unsigned short, 2, oldval)
-SUBWORD_SYNC_OP (xor,   , ^, unsigned short, 2, oldval)
-SUBWORD_SYNC_OP (nand, ~, &, unsigned short, 2, oldval)
-
-SUBWORD_SYNC_OP (add,   , +, unsigned char, 1, oldval)
-SUBWORD_SYNC_OP (sub,   , -, unsigned char, 1, oldval)
-SUBWORD_SYNC_OP (or,    , |, unsigned char, 1, oldval)
-SUBWORD_SYNC_OP (and,   , &, unsigned char, 1, oldval)
-SUBWORD_SYNC_OP (xor,   , ^, unsigned char, 1, oldval)
-SUBWORD_SYNC_OP (nand, ~, &, unsigned char, 1, oldval)
-
 #define OP_AND_FETCH_WORD(OP, PFX_OP, INF_OP)				\
   int HIDDEN								\
   __sync_##OP##_and_fetch_4 (int *ptr, int val)				\
@@ -168,19 +224,41 @@ OP_AND_FETCH_WORD (and,   , &)
 OP_AND_FETCH_WORD (xor,   , ^)
 OP_AND_FETCH_WORD (nand, ~, &)
 
-SUBWORD_SYNC_OP (add,   , +, unsigned short, 2, newval)
-SUBWORD_SYNC_OP (sub,   , -, unsigned short, 2, newval)
-SUBWORD_SYNC_OP (or,    , |, unsigned short, 2, newval)
-SUBWORD_SYNC_OP (and,   , &, unsigned short, 2, newval)
-SUBWORD_SYNC_OP (xor,   , ^, unsigned short, 2, newval)
-SUBWORD_SYNC_OP (nand, ~, &, unsigned short, 2, newval)
+typedef unsigned char bool;
 
-SUBWORD_SYNC_OP (add,   , +, unsigned char, 1, newval)
-SUBWORD_SYNC_OP (sub,   , -, unsigned char, 1, newval)
-SUBWORD_SYNC_OP (or,    , |, unsigned char, 1, newval)
-SUBWORD_SYNC_OP (and,   , &, unsigned char, 1, newval)
-SUBWORD_SYNC_OP (xor,   , ^, unsigned char, 1, newval)
-SUBWORD_SYNC_OP (nand, ~, &, unsigned char, 1, newval)
+#define COMPARE_AND_SWAP_2(TYPE, WIDTH, INDEX)				\
+  TYPE HIDDEN								\
+  __sync_val_compare_and_swap_##WIDTH (TYPE *ptr, TYPE oldval,		\
+				       TYPE newval)			\
+  {									\
+    TYPE actual_oldval;							\
+    int fail;								\
+									\
+    while (1)								\
+      {									\
+	actual_oldval = *ptr;						\
+									\
+	if (__builtin_expect (oldval != actual_oldval, 0))		\
+	  return actual_oldval;						\
+									\
+	fail = __kernel_cmpxchg2 (&actual_oldval, &newval, ptr, INDEX);	\
+									\
+	if (__builtin_expect (!fail, 1))				\
+	  return actual_oldval;						\
+    }									\
+  }									\
+									\
+  bool HIDDEN								\
+  __sync_bool_compare_and_swap_##WIDTH (TYPE *ptr, TYPE oldval,		\
+					TYPE newval)			\
+  {									\
+    int failure = __kernel_cmpxchg2 (&oldval, &newval, ptr, INDEX);	\
+    return (failure != 0);						\
+  }
+
+COMPARE_AND_SWAP_2 (long long, 8, 3)
+COMPARE_AND_SWAP_2 (short, 2, 1)
+COMPARE_AND_SWAP_2 (char, 1, 0)
 
 int HIDDEN
 __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
@@ -201,41 +279,6 @@ __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
     }
 }
 
-#define SUBWORD_VAL_CAS(TYPE, WIDTH)					\
-  TYPE HIDDEN								\
-  __sync_val_compare_and_swap_##WIDTH (TYPE *ptr, TYPE oldval,		\
-				       TYPE newval)			\
-  {									\
-    int *wordptr = (int *)((unsigned long) ptr & ~3), fail;		\
-    unsigned int mask, shift, actual_oldval, actual_newval;		\
-									\
-    shift = (((unsigned long) ptr & 3) << 3) ^ INVERT_MASK_##WIDTH;	\
-    mask = MASK_##WIDTH << shift;					\
-									\
-    while (1)								\
-      {									\
-	actual_oldval = *wordptr;					\
-									\
-	if (__builtin_expect (((actual_oldval & mask) >> shift)		\
-			      != (unsigned int) oldval, 0))		\
-	  return (actual_oldval & mask) >> shift;			\
-									\
-	actual_newval = (actual_oldval & ~mask)				\
-			| (((unsigned int) newval << shift) & mask);	\
-									\
-	fail = __kernel_cmpxchg (actual_oldval, actual_newval,		\
-				 wordptr);				\
-									\
-	if (__builtin_expect (!fail, 1))				\
-	  return (actual_oldval & mask) >> shift;			\
-      }									\
-  }
-
-SUBWORD_VAL_CAS (unsigned short, 2)
-SUBWORD_VAL_CAS (unsigned char,  1)
-
-typedef unsigned char bool;
-
 bool HIDDEN
 __sync_bool_compare_and_swap_4 (int *ptr, int oldval, int newval)
 {
@@ -243,18 +286,24 @@ __sync_bool_compare_and_swap_4 (int *ptr, int oldval, int newval)
   return (failure == 0);
 }
 
-#define SUBWORD_BOOL_CAS(TYPE, WIDTH)					\
-  bool HIDDEN								\
-  __sync_bool_compare_and_swap_##WIDTH (TYPE *ptr, TYPE oldval,		\
-					TYPE newval)			\
+#define SYNC_LOCK_TEST_AND_SET_2(TYPE, WIDTH, INDEX)			\
+TYPE HIDDEN								\
+  __sync_lock_test_and_set_##WIDTH (TYPE *ptr, TYPE val)		\
   {									\
-    TYPE actual_oldval							\
-      = __sync_val_compare_and_swap_##WIDTH (ptr, oldval, newval);	\
-    return (oldval == actual_oldval);					\
+    TYPE oldval;							\
+    int failure;							\
+									\
+    do {								\
+      oldval = *ptr;							\
+      failure = __kernel_cmpxchg2 (&oldval, &val, ptr, INDEX);		\
+    } while (failure != 0);						\
+									\
+    return oldval;							\
   }
 
-SUBWORD_BOOL_CAS (unsigned short, 2)
-SUBWORD_BOOL_CAS (unsigned char,  1)
+SYNC_LOCK_TEST_AND_SET_2 (long long, 8, 3)
+SYNC_LOCK_TEST_AND_SET_2 (short, 2, 1)
+SYNC_LOCK_TEST_AND_SET_2 (signed char, 1, 0)
 
 int HIDDEN
 __sync_lock_test_and_set_4 (int *ptr, int val)
@@ -269,29 +318,21 @@ __sync_lock_test_and_set_4 (int *ptr, int val)
   return oldval;
 }
 
-#define SUBWORD_TEST_AND_SET(TYPE, WIDTH)				\
-  TYPE HIDDEN								\
-  __sync_lock_test_and_set_##WIDTH (TYPE *ptr, TYPE val)		\
-  {									\
-    int failure;							\
-    unsigned int oldval, newval, shift, mask;				\
-    int *wordptr = (int *) ((unsigned long) ptr & ~3);			\
-									\
-    shift = (((unsigned long) ptr & 3) << 3) ^ INVERT_MASK_##WIDTH;	\
-    mask = MASK_##WIDTH << shift;					\
-									\
-    do {								\
-      oldval = *wordptr;						\
-      newval = (oldval & ~mask)						\
-	       | (((unsigned int) val << shift) & mask);		\
-      failure = __kernel_cmpxchg (oldval, newval, wordptr);		\
-    } while (failure != 0);						\
-									\
-    return (oldval & mask) >> shift;					\
+#define SYNC_LOCK_RELEASE_2(TYPE, WIDTH, INDEX)			\
+  void HIDDEN							\
+  __sync_lock_release_##WIDTH (TYPE *ptr)			\
+  {								\
+    TYPE failure, oldval, zero = 0;				\
+								\
+    do {							\
+      oldval = *ptr;						\
+      failure = __kernel_cmpxchg2 (&oldval, &zero, ptr, INDEX);	\
+    } while (failure != 0);					\
   }
 
-SUBWORD_TEST_AND_SET (unsigned short, 2)
-SUBWORD_TEST_AND_SET (unsigned char,  1)
+SYNC_LOCK_RELEASE_2 (long long, 8, 3)
+SYNC_LOCK_RELEASE_2 (short, 2, 1)
+SYNC_LOCK_RELEASE_2 (signed char, 1, 0)
 
 void HIDDEN
 __sync_lock_release_4 (int *ptr)
@@ -303,24 +344,3 @@ __sync_lock_release_4 (int *ptr)
     failure = __kernel_cmpxchg (oldval, 0, ptr);
   } while (failure != 0);
 }
-
-#define SYNC_LOCK_RELEASE(TYPE, WIDTH)					\
-  void HIDDEN								\
-  __sync_lock_release_##WIDTH (TYPE *ptr)				\
-  {									\
-    int failure;							\
-    unsigned int oldval, newval, shift, mask;				\
-    int *wordptr = (int *) ((unsigned long) ptr & ~3);			\
-									\
-    shift = (((unsigned long) ptr & 3) << 3) ^ INVERT_MASK_##WIDTH;	\
-    mask = MASK_##WIDTH << shift;					\
-									\
-    do {								\
-      oldval = *wordptr;						\
-      newval = oldval & ~mask;						\
-      failure = __kernel_cmpxchg (oldval, newval, wordptr);		\
-    } while (failure != 0);						\
-  }
-
-SYNC_LOCK_RELEASE (short, 2)
-SYNC_LOCK_RELEASE (char,  1)
