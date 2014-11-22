@@ -1,3 +1,11 @@
+2014-11-22  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR other/63694
+	* configure.ac: Check for strtol, strtoul, strtoll and strtoull
+	declarations.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+
 2014-11-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa.c (symbol_table::remove_unreachable_nodes): Mark all inline clones
