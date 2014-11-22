@@ -1,5 +1,11 @@
 2014-11-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/63657
+	PR c++/38958
+	* call.c (set_up_extended_ref_temp): Set TREE_USED on the reference
+	if the temporary has a non-trivial destructor.
+	* decl.c (poplevel): Don't look through references.
+
 	PR c++/63942
 	* name-lookup.c (supplement_binding_1): Override a mangling alias.
 	* mangle.c (maybe_remove_implicit_alias): New.
