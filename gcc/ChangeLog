@@ -1,5 +1,13 @@
 2014-11-22  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/63783
+	PR target/51244
+	* config/sh/sh_treg_combine.cc (sh_treg_combine::make_not_reg_insn):
+	Do not emit bitwise not insn.  Emit logical not insn sequence instead.
+	Adjust related comments throughout the file.
+
+2014-11-22  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/63986
 	PR target/51244
 	* config/sh/sh.c (sh_is_logical_t_store_expr,
