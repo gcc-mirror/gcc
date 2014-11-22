@@ -1,3 +1,12 @@
+2014-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2014-11-20  Vincent Celier  <celier@adacore.com>
+
+	PR ada/47500
+	* back_end.adb (Scan_Back_End_Switches): Skip switch -G and
+	its argument.
+
 2014-10-13  Eric Botcazou  <ebotcazou@adacore.com>
             Alan Modra  <amodra@gmail.com>
 
