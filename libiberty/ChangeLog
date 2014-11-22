@@ -1,3 +1,10 @@
+2014-11-22  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR other/63694
+	* configure.ac: Check for strtol, strtoul, strtoll and strtoull
+	declarations.
+	* configure: Regenerated.
+
 2014-11-12  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* testsuite/test-strtol.c (run_tests): Cast strtol return to
