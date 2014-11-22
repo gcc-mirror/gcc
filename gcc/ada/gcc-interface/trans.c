@@ -4016,9 +4016,10 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
        gnat_formal = Next_Formal_With_Extras (gnat_formal),
        gnat_actual = Next_Actual (gnat_actual))
     {
+      Entity_Id gnat_formal_type = Etype (gnat_formal);
       tree gnu_formal = present_gnu_tree (gnat_formal)
 			? get_gnu_tree (gnat_formal) : NULL_TREE;
-      tree gnu_formal_type = gnat_to_gnu_type (Etype (gnat_formal));
+      tree gnu_formal_type = gnat_to_gnu_type (gnat_formal_type);
       const bool is_true_formal_parm
 	= gnu_formal && TREE_CODE (gnu_formal) == PARM_DECL;
       const bool is_by_ref_formal_parm
@@ -4031,13 +4032,16 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	 address if it's passed by reference or as target of the back copy
 	 done after the call if it uses the copy-in/copy-out mechanism.
 	 We do it in the In case too, except for an unchecked conversion
-	 because it alone can cause the actual to be misaligned and the
-	 addressability test is applied to the real object.  */
+	 to an elementary type or a constrained composite type because it
+	 alone can cause the actual to be misaligned and the addressability
+	 test is applied to the real object.  */
       const bool suppress_type_conversion
 	= ((Nkind (gnat_actual) == N_Unchecked_Type_Conversion
-	    && Ekind (gnat_formal) != E_In_Parameter)
+	    && (Ekind (gnat_formal) != E_In_Parameter
+		|| (Is_Composite_Type (Underlying_Type (gnat_formal_type))
+		    && !Is_Constrained (Underlying_Type (gnat_formal_type)))))
 	   || (Nkind (gnat_actual) == N_Type_Conversion
-	       && Is_Composite_Type (Underlying_Type (Etype (gnat_formal)))));
+	       && Is_Composite_Type (Underlying_Type (gnat_formal_type))));
       Node_Id gnat_name = suppress_type_conversion
 			  ? Expression (gnat_actual) : gnat_actual;
       tree gnu_name = gnat_to_gnu (gnat_name), gnu_name_type;
@@ -4200,7 +4204,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       if (Ekind (gnat_formal) != E_Out_Parameter
 	  && Do_Range_Check (gnat_actual))
 	gnu_actual
-	  = emit_range_check (gnu_actual, Etype (gnat_formal), gnat_actual);
+	  = emit_range_check (gnu_actual, gnat_formal_type, gnat_actual);
 
       /* Unless this is an In parameter, we must remove any justified modular
 	 building from GNU_NAME to get an lvalue.  */

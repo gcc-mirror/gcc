@@ -1,5 +1,9 @@
 2014-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/pack11.ads: New test.
+
+2014-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/specs/no_streams.ads: New test.
 
 2014-11-22  Uros Bizjak  <ubizjak@gmail.com>
