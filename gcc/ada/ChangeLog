@@ -1,5 +1,11 @@
 2014-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Call_to_gnu): Strip unchecked conversions on
+	actuals of In parameters if the destination type is an unconstrained
+	composite type.
+
+2014-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_gimplify_expr): Add 'type' variable.
 	<case NULL_EXPR>: Deal with unconstrained array types and use 'type'.
 	<case ADDR_EXPR>: Use 'type'.
