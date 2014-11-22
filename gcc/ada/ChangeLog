@@ -1,3 +1,10 @@
+2014-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_gimplify_expr): Add 'type' variable.
+	<case NULL_EXPR>: Deal with unconstrained array types and use 'type'.
+	<case ADDR_EXPR>: Use 'type'.
+	<case DECL_EXPR>: Likewise.
+
 2014-11-20  Arnaud Charlet  <charlet@adacore.com>
 
 	PR ada/63931

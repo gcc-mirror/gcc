@@ -1,3 +1,7 @@
+2014-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/no_streams.ads: New test.
+
 2014-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/store-motion-fgcse-sm.c (dg-final): Cleanup
