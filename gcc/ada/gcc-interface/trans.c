@@ -7657,6 +7657,7 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 		    gimple_seq *post_p ATTRIBUTE_UNUSED)
 {
   tree expr = *expr_p;
+  tree type = TREE_TYPE (expr);
   tree op;
 
   if (IS_ADA_STMT (expr))
@@ -7665,16 +7666,17 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
   switch (TREE_CODE (expr))
     {
     case NULL_EXPR:
-      /* If this is for a scalar, just make a VAR_DECL for it.  If for
-	 an aggregate, get a null pointer of the appropriate type and
-	 dereference it.  */
-      if (AGGREGATE_TYPE_P (TREE_TYPE (expr)))
-	*expr_p = build1 (INDIRECT_REF, TREE_TYPE (expr),
-			  convert (build_pointer_type (TREE_TYPE (expr)),
-				   integer_zero_node));
+      /* If this is an aggregate type, build a null pointer of the appropriate
+	 type and dereference it.  */
+      if (AGGREGATE_TYPE_P (type)
+	  || TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
+	*expr_p = build_unary_op (INDIRECT_REF, NULL_TREE,
+				  convert (build_pointer_type (type),
+					   integer_zero_node));
+      /* Otherwise, just make a VAR_DECL.  */
       else
 	{
-	  *expr_p = create_tmp_var (TREE_TYPE (expr), NULL);
+	  *expr_p = create_tmp_var (type, NULL);
 	  TREE_NO_WARNING (*expr_p) = 1;
 	}
 
@@ -7697,7 +7699,7 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
       if (TREE_CODE (op) == CONSTRUCTOR && TREE_CONSTANT (op))
 	{
 	  tree addr = build_fold_addr_expr (tree_output_constant_def (op));
-	  *expr_p = fold_convert (TREE_TYPE (expr), addr);
+	  *expr_p = fold_convert (type, addr);
 	  return GS_ALL_DONE;
 	}
 
@@ -7711,7 +7713,7 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 	 required if the type is passed by reference.  */
       if ((TREE_CODE (op) == CONSTRUCTOR || TREE_CODE (op) == CALL_EXPR)
 	  && AGGREGATE_TYPE_P (TREE_TYPE (op))
-	  && !AGGREGATE_TYPE_P (TREE_TYPE (expr)))
+	  && !AGGREGATE_TYPE_P (type))
 	{
 	  tree mod, new_var = create_tmp_var_raw (TREE_TYPE (op), "C");
 	  gimple_add_tmp_var (new_var);
