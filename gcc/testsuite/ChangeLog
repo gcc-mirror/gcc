@@ -1,5 +1,12 @@
 2014-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/store-motion-fgcse-sm.c (dg-final): Cleanup
+	store_modtion rtl dump.
+	* gcc.dg/var-expand1.c (dg-final): Cleanup loop2_unroll rtl dump.
+	* gcc.dg/var-expand3.c (dg-final): Ditto.
+
+2014-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/avx512vl-vpermb-2.c: Require avx512vbmi.
 	* gcc.target/i386/avx512vl-vpermi2b-2.c: Ditto.
 	* gcc.target/i386/avx512vl-vpermt2b-2.c: Ditto.
@@ -1876,7 +1883,7 @@
 	* g++.dg/ipa/devirt-45.C (dg-options): Ditto.
 	* g++.dg/tree-prof/morefunc.C (dg-final-use): Cleanup profile ipa dump.
 	* g++.dg/tree-prof/reorder.C (dg-final-use): Ditto.
-	* g++.dg/tree-prof/pr35545.C (dg-fina-use): Cleanup profile_estimate
+	* g++.dg/tree-prof/pr35545.C (dg-final-use): Cleanup profile_estimate
 	ipa dump.
 	* gcc.dg/fold-reassoc-3.c (dg-final): Fix scan string.
 	Cleanup original tree dump.
