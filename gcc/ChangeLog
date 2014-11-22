@@ -1,3 +1,21 @@
+2014-11-22  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/63986
+	PR target/51244
+	* config/sh/sh.c (sh_is_logical_t_store_expr,
+	sh_try_omit_signzero_extend): Use rtx_insn* for insn argument.
+	(sh_split_movrt_negc_to_movt_xor): New function.
+	(sh_find_set_of_reg): Move to ...
+	* config/sh/sh-protos.h (sh_find_set_of_reg): ... here and convert
+	to template function.
+	(set_of_reg): Use rtx_insn* for insn member.
+	(sh_is_logical_t_store_expr, sh_try_omit_signzero_extend): Use
+	rtx_insn* for insn argument.
+	* config/sh/sh.md (movrt_negc, *movrt_negc): Split into movt-xor
+	sequence using new sh_split_movrt_negc_to_movt_xor function.
+	(movrt_xor): Allow also for SH2A.
+	(*movt_movrt): Delete insns and splits.
+
 2014-11-22  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/60770
