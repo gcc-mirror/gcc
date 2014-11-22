@@ -678,6 +678,7 @@ if test -z "${setobjs}"; then
   AC_CHECK_FUNCS($checkfuncs)
   AC_CHECK_DECLS([basename(char *), ffs, asprintf, vasprintf, snprintf, vsnprintf])
   AC_CHECK_DECLS([calloc, getenv, getopt, malloc, realloc, sbrk])
+  AC_CHECK_DECLS([strtol, strtoul, strtoll, strtoull])
   AC_CHECK_DECLS([strverscmp])
   libiberty_NEED_DECLARATION(canonicalize_file_name)
 fi
