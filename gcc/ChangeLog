@@ -1,3 +1,9 @@
+2014-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* params.def (PARAM_MAX_COMPLETELY_PEELED_INSNS): Increase to 200.
+	* config/i386/i386.c (ix86_option_override_internal): Do not increase
+	PARAM_MAX_COMPLETELY_PEELED_INSNS.
+
 2014-11-22  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/63783
