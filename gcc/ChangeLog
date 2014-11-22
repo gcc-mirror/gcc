@@ -1,3 +1,11 @@
+2014-11-22  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2014-11-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/60111
+	* config/sh/sh.c: Use signed char for signed field.
+
 2014-11-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/63673
