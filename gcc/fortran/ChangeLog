@@ -1,3 +1,7 @@
+2014-11-22  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-expr.c (gfc_caf_get_image_index): Fix image calculation.
+
 2014-11-15  Tobias Burnus  <burnus@net-b.de>
 
 	* error.c (gfc_fatal_error_1): Renamed from gfc_fatal_error.

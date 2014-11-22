@@ -1518,8 +1518,8 @@ gfc_get_caf_token_offset (tree *token, tree *offset, tree caf_decl, tree se_expr
 
 
 /* Convert the coindex of a coarray into an image index; the result is
-   image_num =  (idx(1)-lcobound(1)+1) + (idx(2)-lcobound(2)+1)*extent(1)
-              + (idx(3)-lcobound(3)+1)*extent(2) + ...  */
+   image_num =  (idx(1)-lcobound(1)+1) + (idx(2)-lcobound(2))*extent(1)
+              + (idx(3)-lcobound(3))*extend(1)*extent(2) + ...  */
 
 tree
 gfc_caf_get_image_index (stmtblock_t *block, gfc_expr *e, tree desc)
@@ -1553,8 +1553,10 @@ gfc_caf_get_image_index (stmtblock_t *block, gfc_expr *e, tree desc)
 	if (i < ref->u.ar.dimen + ref->u.ar.codimen - 1)
 	  {
 	    ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
-	    extent = gfc_conv_array_extent_dim (lbound, ubound, NULL);
-	    extent = fold_convert (integer_type_node, extent);
+	    tmp = gfc_conv_array_extent_dim (lbound, ubound, NULL);
+	    tmp = fold_convert (integer_type_node, tmp);
+	    extent = fold_build2_loc (input_location, MULT_EXPR,
+				      integer_type_node, extent, tmp);
 	  }
       }
   else
@@ -1575,10 +1577,12 @@ gfc_caf_get_image_index (stmtblock_t *block, gfc_expr *e, tree desc)
 	  {
 	    ubound = GFC_TYPE_ARRAY_UBOUND (TREE_TYPE (desc), i);
 	    ubound = fold_convert (integer_type_node, ubound);
-	    extent = fold_build2_loc (input_location, MINUS_EXPR,
+	    tmp = fold_build2_loc (input_location, MINUS_EXPR,
 				      integer_type_node, ubound, lbound);
-	    extent = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
-				      extent, integer_one_node);
+	    tmp = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
+				   tmp, integer_one_node);
+	    extent = fold_build2_loc (input_location, MULT_EXPR,
+				      integer_type_node, extent, tmp);
 	  }
       }
   img_idx = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
