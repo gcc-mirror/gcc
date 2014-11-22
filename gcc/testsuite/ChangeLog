@@ -1,3 +1,15 @@
+2014-11-22  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2014-11-22  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/63783
+	PR target/51244
+	* gcc.target/sh/torture/pr63783-1.c: New.
+	* gcc.target/sh/torture/pr63783-2.c: New.
+	* gcc.target/sh/pr51244-20.c: Adjust.
+	* gcc.target/sh/pr51244-20-sh2a.c: Adjust.
+
 2014-11-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/63947
