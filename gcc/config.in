@@ -952,6 +952,34 @@
 #endif
 
 
+/* Define to 1 if we found a declaration for 'strtol', otherwise define to 0.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_STRTOL
+#endif
+
+
+/* Define to 1 if we found a declaration for 'strtoll', otherwise define to 0.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_STRTOLL
+#endif
+
+
+/* Define to 1 if we found a declaration for 'strtoul', otherwise define to 0.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_STRTOUL
+#endif
+
+
+/* Define to 1 if we found a declaration for 'strtoull', otherwise define to
+   0. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_STRTOULL
+#endif
+
+
 /* Define to 1 if we found a declaration for 'strverscmp', otherwise define to
    0. */
 #ifndef USED_FOR_TARGET
