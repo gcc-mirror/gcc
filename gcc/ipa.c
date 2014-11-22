@@ -360,9 +360,18 @@ symbol_table::remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	      && DECL_ABSTRACT_ORIGIN (node->decl))
 	    {
 	      struct cgraph_node *origin_node
-	      = cgraph_node::get_create (DECL_ABSTRACT_ORIGIN (node->decl));
-	      origin_node->used_as_abstract_origin = true;
-	      enqueue_node (origin_node, &first, &reachable);
+	      = cgraph_node::get (DECL_ABSTRACT_ORIGIN (node->decl));
+	      if (origin_node && !origin_node->used_as_abstract_origin)
+		{
+	          origin_node->used_as_abstract_origin = true;
+		  gcc_assert (!origin_node->prev_sibling_clone);
+		  gcc_assert (!origin_node->next_sibling_clone);
+		  for (cgraph_node *n = origin_node->clones; n;
+		       n = n->next_sibling_clone)
+		    if (n->decl == DECL_ABSTRACT_ORIGIN (node->decl))
+		      n->used_as_abstract_origin = true;
+	          enqueue_node (origin_node, &first, &reachable);
+		}
 	    }
 	  /* If any symbol in a comdat group is reachable, force
 	     all externally visible symbols in the same comdat

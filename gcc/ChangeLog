@@ -1,3 +1,11 @@
+2014-11-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa.c (symbol_table::remove_unreachable_nodes): Mark all inline clones
+	as having abstract origin used.
+	* ipa-inline-transform.c (can_remove_node_now_p_1): Drop abstract origin check.
+	(clone_inlined_nodes): Copy abstract originflag.
+	* lto-cgraph.c (compute_ltrans_boundary): Use get_create to get abstract origin node.
+
 2014-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* params.def (PARAM_MAX_COMPLETELY_PEELED_INSNS): Increase to 200.
