@@ -13503,47 +13503,10 @@ sh_find_equiv_gbr_addr (rtx_insn* insn, rtx mem)
   Manual insn combine support code.
 */
 
-/* Given a reg rtx and a start insn, try to find the insn that sets the
-   specified reg by using the specified insn stepping function, such as 
-   'prev_nonnote_insn_bb'.  When the insn is found, try to extract the rtx
-   of the reg set.  */
-set_of_reg
-sh_find_set_of_reg (rtx reg, rtx insn, rtx_insn *(*stepfunc)(rtx))
-{
-  set_of_reg result;
-  result.insn = insn;
-  result.set_rtx = NULL_RTX;
-  result.set_src = NULL_RTX;
-
-  if (!REG_P (reg) || insn == NULL_RTX)
-    return result;
-
-  for (result.insn = stepfunc (insn); result.insn != NULL_RTX;
-       result.insn = stepfunc (result.insn))
-    {
-      if (BARRIER_P (result.insn))
-	return result;
-      if (!NONJUMP_INSN_P (result.insn))
-	continue;
-      if (reg_set_p (reg, result.insn))
-	{
-	  result.set_rtx = set_of (reg, result.insn);
-
-	  if (result.set_rtx == NULL_RTX || GET_CODE (result.set_rtx) != SET)
-	    return result;
-
-	  result.set_src = XEXP (result.set_rtx, 1);
-	  return result;
-	}
-    }
-
-  return result;
-}
-
 /* Given an op rtx and an insn, try to find out whether the result of the
    specified op consists only of logical operations on T bit stores.  */
 bool
-sh_is_logical_t_store_expr (rtx op, rtx insn)
+sh_is_logical_t_store_expr (rtx op, rtx_insn* insn)
 {
   if (!logical_operator (op, SImode))
     return false;
@@ -13579,7 +13542,7 @@ sh_is_logical_t_store_expr (rtx op, rtx insn)
    by a simple reg-reg copy.  If so, the replacement reg rtx is returned,
    NULL_RTX otherwise.  */
 rtx
-sh_try_omit_signzero_extend (rtx extended_op, rtx insn)
+sh_try_omit_signzero_extend (rtx extended_op, rtx_insn* insn)
 {
   if (REG_P (extended_op))
     extended_op = extended_op;
@@ -13607,6 +13570,42 @@ sh_try_omit_signzero_extend (rtx extended_op, rtx insn)
     return extended_op;
 
   return NULL_RTX;
+}
+
+/* Given the current insn, which is assumed to be a movrt_negc insn, try to
+   figure out whether it should be converted into a movt-xor sequence in
+   the movrt_negc splitter.
+   Returns true if insns have been modified and the splitter has succeeded.  */
+bool
+sh_split_movrt_negc_to_movt_xor (rtx_insn* curr_insn, rtx operands[])
+{
+  /* In cases such as
+	tst	r4,r4
+	mov	#-1,r1
+	negc	r1,r1
+	tst	r4,r4
+     we can replace the T bit clobbering negc with a movt-xor sequence and
+     eliminate the redundant comparison.
+     Because the xor insn depends on register allocation results, allow this
+     only before reload.  */
+  if (!can_create_pseudo_p ())
+    return false;
+
+  set_of_reg t_before_negc = sh_find_set_of_reg (get_t_reg_rtx (), curr_insn,
+						 prev_nonnote_insn_bb);
+  set_of_reg t_after_negc = sh_find_set_of_reg (get_t_reg_rtx (), curr_insn,
+						next_nonnote_insn_bb);
+
+  if (t_before_negc.set_rtx != NULL_RTX && t_after_negc.set_rtx != NULL_RTX
+      && rtx_equal_p (t_before_negc.set_rtx, t_after_negc.set_rtx)
+      && !reg_used_between_p (get_t_reg_rtx (), curr_insn, t_after_negc.insn))
+    {
+      emit_insn (gen_movrt_xor (operands[0], get_t_reg_rtx ()));
+      set_insn_deleted (t_after_negc.insn);
+      return true;
+    }
+  else
+    return false;
 }
 
 static void
