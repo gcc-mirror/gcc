@@ -1,5 +1,10 @@
 2014-11-23  Tobias Burnus  <burnus@net-b.de>
 
+	* invoke.texi (-Wtabs): Swap -Wtabs/-Wno-tabs now that
+	-Wtabs enables the warning.
+
+2014-11-23  Tobias Burnus  <burnus@net-b.de>
+
 	* error.c (gfc_diagnostic_build_prefix): Correct coloring
 	of the colon of the prefix.
 
