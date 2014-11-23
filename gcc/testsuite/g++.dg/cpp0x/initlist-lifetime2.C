@@ -53,9 +53,11 @@ struct D {
   D() { ok = true; }
 };
 
+volatile bool always_false = false;
+
 int main(int argc, const char** argv)
 {
-  do_throw = (argc > 1);	// always false, but optimizer can't tell
+  do_throw = always_false;	// always false, but optimizer can't tell
   ok = false;
   C c;
   ok = false;
