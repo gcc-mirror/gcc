@@ -23,9 +23,11 @@ struct B {
   const AL& alr;
 };
 
+volatile bool always_false = false;
+
 int main(int argc, const char** argv)
 {
-  do_throw = (argc > 1);	// always false, but optimizer can't tell
+  do_throw = always_false;	// always false, but optimizer can't tell
   AL ar[] = {{1,2},{3,4}};
   B b = {{5,6},{7,8}};
   AL3 al3 = {{{1},{2},{3}}};

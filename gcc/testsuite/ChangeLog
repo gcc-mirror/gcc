@@ -1,5 +1,11 @@
 2014-11-22  Andrew Pinski  <apinski@cavium.com>
 
+	* g++.dg/cpp0x/initlist-lifetime1.C: Fix testcase where
+	argc is always greater than 1 (octeon simulator).
+	* g++.dg/cpp0x/initlist-lifetime2.C: Likewise.
+
+2014-11-22  Andrew Pinski  <apinski@cavium.com>
+
 	PR target/63971
 	* gcc.target/aarch64/test_frame_1.c: Expect only two loads of
 	x30 (in the epilogue).
