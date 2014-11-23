@@ -218,7 +218,7 @@ Fortran
 ; Documented in C
 
 Wcharacter-truncation
-Fortran Warning
+Fortran Var(warn_character_truncation) Warning LangEnabledBy(Fortran,Wall)
 Warn about truncated character expressions
 
 Wcompare-reals
