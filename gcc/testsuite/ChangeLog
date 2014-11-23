@@ -1,3 +1,8 @@
+2014-11-23  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/compile/20120927-1.c: New testcase.
+	* gcc.c-torture/compile/20120830-1.c: New testcase.
+
 2014-11-22  Andrew Pinski  <apinski@cavium.com>
 
 	* g++.dg/cpp0x/initlist-lifetime1.C: Fix testcase where
