@@ -964,6 +964,7 @@ gfc_warning_now (const char *gmsgid, ...)
    to handle Fortran specific format specifiers with the following meanings:
 
    %C  Current locus (no argument)
+   %L  Takes locus argument
 */
 static bool
 gfc_format_decoder (pretty_printer *pp,
@@ -974,15 +975,21 @@ gfc_format_decoder (pretty_printer *pp,
   switch (*spec)
     {
     case 'C':
+    case 'L':
       {
 	static const char *result = "(1)";
-	gcc_assert (gfc_current_locus.nextc - gfc_current_locus.lb->line >= 0);
-	unsigned int c1 = gfc_current_locus.nextc - gfc_current_locus.lb->line;
+	locus *loc;
+	if (*spec == 'C')
+	  loc = &gfc_current_locus;
+	else
+	  loc = va_arg (*text->args_ptr, locus *);
+	gcc_assert (loc->nextc - loc->lb->line >= 0);
+	unsigned int offset = loc->nextc - loc->lb->line;
 	gcc_assert (text->locus);
 	*text->locus
 	  = linemap_position_for_loc_and_offset (line_table,
-						 gfc_current_locus.lb->location,
-						 c1);
+						 loc->lb->location,
+						 offset);
 	global_dc->caret_char = '1';
 	pp_string (pp, result);
 	return true;

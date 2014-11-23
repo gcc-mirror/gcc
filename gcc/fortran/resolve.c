@@ -9208,7 +9208,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
     }
 
   if (lhs->ts.type == BT_CHARACTER
-	&& gfc_option.warn_character_truncation)
+	&& warn_character_truncation)
     {
       if (lhs->ts.u.cl != NULL
 	    && lhs->ts.u.cl->length != NULL
@@ -9224,9 +9224,10 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	rlen = mpz_get_si (rhs->ts.u.cl->length->value.integer);
 
       if (rlen && llen && rlen > llen)
-	gfc_warning_now ("CHARACTER expression will be truncated "
-			 "in assignment (%d/%d) at %L",
-			 llen, rlen, &code->loc);
+	gfc_warning_now_2 (OPT_Wcharacter_truncation,
+			   "CHARACTER expression will be truncated "
+			   "in assignment (%d/%d) at %L",
+			   llen, rlen, &code->loc);
     }
 
   /* Ensure that a vector index expression for the lvalue is evaluated

@@ -990,10 +990,9 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
     {
       if (sym->attr.is_bind_c == 0)
         {
-          gfc_error_now ("Procedure '%s' at %L must have the BIND(C) "
-                         "attribute to be C interoperable", sym->name,
-                         &(sym->declared_at));
-
+          gfc_error_now_2 ("Procedure %qs at %L must have the BIND(C) "
+			   "attribute to be C interoperable", sym->name,
+			   &(sym->declared_at));
           return false;
         }
       else
@@ -1224,9 +1223,10 @@ gfc_set_constant_character_len (int len, gfc_expr *expr, int check_len)
       if (len > slen)
 	gfc_wide_memset (&s[slen], ' ', len - slen);
 
-      if (gfc_option.warn_character_truncation && slen > len)
-	gfc_warning_now ("CHARACTER expression at %L is being truncated "
-			 "(%d/%d)", &expr->where, slen, len);
+      if (warn_character_truncation && slen > len)
+	gfc_warning_now_2 (OPT_Wcharacter_truncation,
+			   "CHARACTER expression at %L is being truncated "
+			   "(%d/%d)", &expr->where, slen, len);
 
       /* Apply the standard by 'hand' otherwise it gets cleared for
 	 initializers.  */
