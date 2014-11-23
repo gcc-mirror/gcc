@@ -111,7 +111,7 @@ private:
   // Given a start insn and its basic block, recursively determine all
   // possible ccreg values in all basic block paths that can lead to the
   // start insn.
-  void find_last_ccreg_values (rtx start_insn, basic_block bb,
+  bool find_last_ccreg_values (rtx start_insn, basic_block bb,
 			       std::vector<ccreg_value>& values_out,
 			       std::vector<basic_block>& prev_visited_bb) const;
 
@@ -226,8 +226,8 @@ sh_optimize_sett_clrt::execute (void)
 
 	    ccreg_values.clear ();
 	    visited_bbs.clear ();
-	    find_last_ccreg_values (PREV_INSN (i), bb, ccreg_values,
-				    visited_bbs);
+	    bool ok = find_last_ccreg_values (PREV_INSN (i), bb, ccreg_values,
+					      visited_bbs);
 
 	    log_msg ("number of ccreg values collected: %u\n",
 		     (unsigned int)ccreg_values.size ());
@@ -235,7 +235,7 @@ sh_optimize_sett_clrt::execute (void)
 	    // If all the collected values are equal and are equal to the
 	    // constant value of the setcc insn, the setcc insn can be
 	    // removed.
-	    if (all_ccreg_values_equal (ccreg_values)
+	    if (ok && all_ccreg_values_equal (ccreg_values)
 		&& rtx_equal_p (ccreg_values.front ().value, setcc_val))
 	      {
 		log_msg ("all values are ");
@@ -309,7 +309,7 @@ sh_optimize_sett_clrt
     gcc_unreachable ();
 }
 
-void
+bool
 sh_optimize_sett_clrt
 ::find_last_ccreg_values (rtx start_insn, basic_block bb,
 			  std::vector<ccreg_value>& values_out,
@@ -348,7 +348,7 @@ sh_optimize_sett_clrt
 	  log_msg ("\n");
 
 	  values_out.push_back (v);
-	  return;
+	  return true;
 	}
 
       if (any_condjump_p (i) && onlyjump_p (i) && !prev_visited_bb.empty ())
@@ -372,7 +372,7 @@ sh_optimize_sett_clrt
 	  log_msg ("\n");
 
 	  values_out.push_back (v);
-	  return;
+	  return true;
 	}
     }
 
@@ -393,10 +393,14 @@ sh_optimize_sett_clrt
       for (edge_iterator ei = ei_start (bb->preds); !ei_end_p (ei);
 	   ei_next (&ei))
 	{
+	  if (ei_edge (ei)->flags & EDGE_COMPLEX)
+	    log_return (false, "aborting due to complex edge\n");
+
 	  basic_block pred_bb = ei_edge (ei)->src;
 	  pred_bb_count += 1;
-	  find_last_ccreg_values (BB_END (pred_bb), pred_bb, values_out,
-				  prev_visited_bb);
+	  if (!find_last_ccreg_values (BB_END (pred_bb), pred_bb, values_out,
+				       prev_visited_bb))
+	    return false;
 	}
 
       prev_visited_bb.pop_back ();
@@ -419,6 +423,8 @@ sh_optimize_sett_clrt
 
     values_out.push_back (v);
   }
+
+  return true;
 }
 
 bool

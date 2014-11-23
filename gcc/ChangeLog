@@ -1,3 +1,15 @@
+2014-11-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2014-11-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53976
+	* config/sh/sh_optimize_sett_clrt.cc
+	(sh_optimize_sett_clrt::find_last_ccreg_values): Return bool instead
+	of void.  Abort at complex edges.
+	(sh_optimize_sett_clrt::execute): Do nothing if find_last_ccreg_values
+	returned false.
+
 2014-11-22  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
