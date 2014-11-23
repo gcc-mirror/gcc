@@ -1,3 +1,7 @@
+2014-11-23  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/tab_continuation.f: Update dg-*.
+
 2014-11-23  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.c-torture/compile/20120927-1.c: New testcase.
