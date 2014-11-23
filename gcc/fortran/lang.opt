@@ -269,6 +269,10 @@ Wopenmp-simd
 Fortran
 ; Documented in C
 
+Wpedantic
+Fortran
+; Documented in common.opt
+
 Wreal-q-constant
 Fortran Warning
 Warn about real-literal-constants with 'q' exponent-letter
@@ -294,8 +298,12 @@ Fortran Warning
 Warn about \"suspicious\" constructs
 
 Wtabs
-Fortran Warning
+Fortran Warning Var(warn_tabs) LangEnabledBy(Fortran,Wall)
 Permit nonconforming uses of the tab character
+
+Wtabs
+LangEnabledBy(Fortran,Wpedantic)
+;
 
 Wunderflow
 Fortran Warning

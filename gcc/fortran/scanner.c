@@ -1382,7 +1382,7 @@ gfc_gobble_whitespace (void)
       /* Issue a warning for nonconforming tabs.  We keep track of the line
 	 number because the Fortran matchers will often back up and the same
 	 line will be scanned multiple times.  */
-      if (!gfc_option.warn_tabs && c == '\t')
+      if (warn_tabs && c == '\t')
 	{
 	  int cur_linenum = LOCATION_LINE (gfc_current_locus.lb->location);
 	  if (cur_linenum != linenum)
@@ -1534,12 +1534,12 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	{
 	  found_tab = true;
 
-	  if (!gfc_option.warn_tabs && seen_comment == 0
-	      && current_line != linenum)
+	  if (warn_tabs && seen_comment == 0 && current_line != linenum)
 	    {
 	      linenum = current_line;
-	      gfc_warning_now_2 ("Nonconforming tab character in column %d "
-				   "of line %d", i+1, linenum);
+	      gfc_warning_now_2 (OPT_Wtabs,
+				 "Nonconforming tab character in column %d "
+				 "of line %d", i+1, linenum);
 	    }
 
 	  while (i < 6)

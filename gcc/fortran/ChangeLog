@@ -1,3 +1,16 @@
+2014-11-23  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gfortran.h (gfc_option_t): Remove warn_tabs.
+	* lang.opt (Wpedantic): Add.
+	(Wtabs): Use Var and LangEnabledBy.
+	* options.c (gfc_init_options, gfc_post_options,
+	set_Wall): Remove -Wtabs handling.
+	(gfc_handle_option): Update -std=, remove OPT_Wtabs.
+	* scanner.c (gfc_gobble_whitespace): Update for
+	flag-variable renaming.
+	(load_line): Ditto. Pass warn flag to diagnostic.
+
 2014-11-22  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-expr.c (gfc_caf_get_image_index): Fix image calculation.
