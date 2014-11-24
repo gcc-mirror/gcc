@@ -82,7 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* real constants: 0, 1, 1-1/REG_BR_PROB_BASE, REG_BR_PROB_BASE,
 		   1/REG_BR_PROB_BASE, 0.5, BB_FREQ_MAX.  */
-static sreal real_zero, real_one, real_almost_one, real_br_prob_base,
+static sreal real_almost_one, real_br_prob_base,
 	     real_inv_br_prob_base, real_one_half, real_bb_freq_max;
 
 static void combine_predictions_for_insn (rtx_insn *, basic_block);
@@ -2541,13 +2541,13 @@ propagate_freq (basic_block head, bitmap tovisit)
 	bb->count = bb->frequency = 0;
     }
 
-  BLOCK_INFO (head)->frequency = real_one;
+  BLOCK_INFO (head)->frequency = 1;
   last = head;
   for (bb = head; bb; bb = nextbb)
     {
       edge_iterator ei;
-      sreal cyclic_probability = real_zero;
-      sreal frequency = real_zero;
+      sreal cyclic_probability = 0;
+      sreal frequency = 0;
 
       nextbb = BLOCK_INFO (bb)->next;
       BLOCK_INFO (bb)->next = NULL;
@@ -2572,13 +2572,13 @@ propagate_freq (basic_block head, bitmap tovisit)
 				  * BLOCK_INFO (e->src)->frequency /
 				  REG_BR_PROB_BASE);  */
 
-		sreal tmp (e->probability, 0);
+		sreal tmp = e->probability;
 		tmp *= BLOCK_INFO (e->src)->frequency;
 		tmp *= real_inv_br_prob_base;
 		frequency += tmp;
 	      }
 
-	  if (cyclic_probability == real_zero)
+	  if (cyclic_probability == 0)
 	    {
 	      BLOCK_INFO (bb)->frequency = frequency;
 	    }
@@ -2590,7 +2590,7 @@ propagate_freq (basic_block head, bitmap tovisit)
 	      /* BLOCK_INFO (bb)->frequency = frequency
 					      / (1 - cyclic_probability) */
 
-	      cyclic_probability = real_one - cyclic_probability;
+	      cyclic_probability = sreal (1) - cyclic_probability;
 	      BLOCK_INFO (bb)->frequency = frequency / cyclic_probability;
 	    }
 	}
@@ -2604,7 +2604,7 @@ propagate_freq (basic_block head, bitmap tovisit)
 	     = ((e->probability * BLOCK_INFO (bb)->frequency)
 	     / REG_BR_PROB_BASE); */
 
-	  sreal tmp (e->probability, 0);
+	  sreal tmp = e->probability;
 	  tmp *= BLOCK_INFO (bb)->frequency;
 	  EDGE_INFO (e)->back_edge_prob = tmp * real_inv_br_prob_base;
 	}
@@ -2886,13 +2886,11 @@ estimate_bb_frequencies (bool force)
       if (!real_values_initialized)
         {
 	  real_values_initialized = 1;
-	  real_zero = sreal (0, 0);
-	  real_one = sreal (1, 0);
-	  real_br_prob_base = sreal (REG_BR_PROB_BASE, 0);
-	  real_bb_freq_max = sreal (BB_FREQ_MAX, 0);
+	  real_br_prob_base = REG_BR_PROB_BASE;
+	  real_bb_freq_max = BB_FREQ_MAX;
 	  real_one_half = sreal (1, -1);
-	  real_inv_br_prob_base = real_one / real_br_prob_base;
-	  real_almost_one = real_one - real_inv_br_prob_base;
+	  real_inv_br_prob_base = sreal (1) / real_br_prob_base;
+	  real_almost_one = sreal (1) - real_inv_br_prob_base;
 	}
 
       mark_dfs_back_edges ();
@@ -2910,7 +2908,7 @@ estimate_bb_frequencies (bool force)
 
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
-	      EDGE_INFO (e)->back_edge_prob = sreal (e->probability, 0);
+	      EDGE_INFO (e)->back_edge_prob = e->probability;
 	      EDGE_INFO (e)->back_edge_prob *= real_inv_br_prob_base;
 	    }
 	}
@@ -2919,7 +2917,7 @@ estimate_bb_frequencies (bool force)
          to outermost to examine frequencies for back edges.  */
       estimate_loops ();
 
-      freq_max = real_zero;
+      freq_max = 0;
       FOR_EACH_BB_FN (bb, cfun)
 	if (freq_max < BLOCK_INFO (bb)->frequency)
 	  freq_max = BLOCK_INFO (bb)->frequency;
