@@ -1,3 +1,9 @@
+2014-11-24  Jonathan Wakely  <jwakely@redhat.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63203
+	* g++.dg/warn/Winit-self-2.C: New.
+
 2014-11-24  Petr Murzin  <petr.murzin@intel.com>
 
 	* gcc.target/i386/extract-insert-combining.c: New test.

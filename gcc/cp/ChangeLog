@@ -1,3 +1,10 @@
+2014-11-24  Jonathan Wakely  <jwakely@redhat.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63203
+	* decl.c (initialize_local_var): Add -Winit-self warning for
+	references initialized with themselves.
+
 2014-11-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63942
