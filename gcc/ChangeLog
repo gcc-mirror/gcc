@@ -1,5 +1,12 @@
 2014-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* sched-deps.c (sched_macro_fuse_insns): Do not check modified_in_p
+	in the not conditional jump case.
+	* doc/tm.texi (TARGET_SCHED_MACRO_FUSION_PAIR_P): Update description.
+	* target.def (TARGET_SCHED_MACRO_FUSION_PAIR_P): Update description.
+
+2014-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c: Include tm-constrs.h
 	(AARCH64_FUSE_ADRP_ADD): Define.
 	(cortexa57_tunings): Add AARCH64_FUSE_ADRP_ADD to fuseable_ops.
