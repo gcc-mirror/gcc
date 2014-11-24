@@ -1,5 +1,12 @@
 2014-11-24  Martin Liska  <mliska@suse.cz>
 
+	* ipa-inline.c (edge_badness): long is replaced by sreal
+	as fibonacci_heap template type.
+	(update_edge_key): Likewise.
+	(inline_small_functions): Likewise.
+
+2014-11-24  Martin Liska  <mliska@suse.cz>
+
 	* predict.c (propagate_freq): More elegant sreal API is used.
 	(estimate_bb_frequencies): Precomputed constants replaced by integer
 	constants.

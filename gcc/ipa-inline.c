@@ -139,8 +139,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "fibonacci_heap.h"
 
-typedef fibonacci_heap <long, cgraph_edge> edge_heap_t;
-typedef fibonacci_node <long, cgraph_edge> edge_heap_node_t;
+typedef fibonacci_heap <sreal, cgraph_edge> edge_heap_t;
+typedef fibonacci_node <sreal, cgraph_edge> edge_heap_node_t;
 
 /* Statistics we collect about inlining algorithm.  */
 static int overall_size;
@@ -903,10 +903,10 @@ relative_time_benefit (struct inline_summary *callee_info,
    metrics may accurately depend on values such as number of inlinable callers
    of the function or function body size.  */
 
-static int
+static sreal
 edge_badness (struct cgraph_edge *edge, bool dump)
 {
-  gcov_type badness;
+  sreal badness;
   int growth, edge_time;
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
   struct inline_summary *callee_info = inline_summary (callee);
@@ -943,7 +943,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
     {
       badness = INT_MIN / 2 + growth;
       if (dump)
-	fprintf (dump_file, "      %i: Growth %i <= 0\n", (int) badness,
+	fprintf (dump_file, "      %"PRId64": Growth %d <= 0\n", badness.to_int (),
 		 growth);
     }
 
@@ -985,9 +985,9 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       if (dump)
 	{
 	  fprintf (dump_file,
-		   "      %i (relative %f): profile info. Relative count %f%s"
+		   "      %"PRId64" (relative %f): profile info. Relative count %f%s"
 		   " * Relative benefit %f\n",
-		   (int) badness, (double) badness / INT_MIN,
+		   badness.to_int (), (double) badness.to_int () / INT_MIN,
 		   (double) edge_count / max_count,
 		   edge->count > max_count ? " (capped to max_count)" : "",
 		   relbenefit * 100.0 / RELATIVE_TIME_BENEFIT_RANGE);
@@ -1030,10 +1030,10 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       if (dump)
 	{
 	  fprintf (dump_file,
-		   "      %i: guessed profile. frequency %f,"
+		   "      %"PRId64": guessed profile. frequency %f,"
 		   " benefit %f%%, time w/o inlining %i, time w inlining %i"
 		   " overall growth %i (current) %i (original)\n",
-		   (int) badness, (double)edge->frequency / CGRAPH_FREQ_BASE,
+		   badness.to_int (), (double)edge->frequency / CGRAPH_FREQ_BASE,
 		   relative_time_benefit (callee_info, edge, edge_time) * 100.0
 		   / RELATIVE_TIME_BENEFIT_RANGE, 
 		   (int)compute_uninlined_call_time (callee_info, edge),
@@ -1053,13 +1053,13 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 
       /* Decrease badness if call is nested.  */
       if (badness > 0)
-	badness >>= nest;
+	badness = badness >> nest;
       else
 	{
-	  badness <<= nest;
+	  badness = badness << nest;
 	}
       if (dump)
-	fprintf (dump_file, "      %i: no profile. nest %i\n", (int) badness,
+	fprintf (dump_file, "      %"PRId64": no profile. nest %i\n", badness.to_int (),
 		 nest);
     }
 
@@ -1077,7 +1077,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 static inline void
 update_edge_key (edge_heap_t *heap, struct cgraph_edge *edge)
 {
-  int badness = edge_badness (edge, false);
+  sreal badness = edge_badness (edge, false);
   if (edge->aux)
     {
       edge_heap_node_t *n = (edge_heap_node_t *) edge->aux;
@@ -1092,13 +1092,14 @@ update_edge_key (edge_heap_t *heap, struct cgraph_edge *edge)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file,
-		       "  decreasing badness %s/%i -> %s/%i, %i to %i\n",
+		       "  decreasing badness %s/%i -> %s/%i, %"PRId64
+		       " to %"PRId64"\n",
 		       xstrdup (edge->caller->name ()),
 		       edge->caller->order,
 		       xstrdup (edge->callee->name ()),
 		       edge->callee->order,
-		       (int)n->get_key (),
-		       badness);
+		       n->get_key ().to_int (),
+		       badness.to_int ());
 	    }
 	  heap->decrease_key (n, badness);
 	  gcc_checking_assert (n->get_key () == badness);
@@ -1109,12 +1110,12 @@ update_edge_key (edge_heap_t *heap, struct cgraph_edge *edge)
        if (dump_file && (dump_flags & TDF_DETAILS))
 	 {
 	   fprintf (dump_file,
-		    "  enqueuing call %s/%i -> %s/%i, badness %i\n",
+		    "  enqueuing call %s/%i -> %s/%i, badness %"PRId64"\n",
 		    xstrdup (edge->caller->name ()),
 		    edge->caller->order,
 		    xstrdup (edge->callee->name ()),
 		    edge->callee->order,
-		    badness);
+		    badness.to_int ());
 	 }
       edge->aux = heap->insert (badness, edge);
     }
@@ -1564,7 +1565,7 @@ inline_small_functions (void)
 {
   struct cgraph_node *node;
   struct cgraph_edge *edge;
-  edge_heap_t edge_heap (LONG_MIN);
+  edge_heap_t edge_heap (sreal::min ());
   bitmap updated_nodes = BITMAP_ALLOC (NULL);
   int min_size, max_size;
   auto_vec<cgraph_edge *> new_indirect_edges;
@@ -1682,9 +1683,9 @@ inline_small_functions (void)
     {
       int old_size = overall_size;
       struct cgraph_node *where, *callee;
-      int badness = edge_heap.min_key ();
-      int current_badness;
-      int cached_badness;
+      sreal badness = edge_heap.min_key ();
+      sreal current_badness;
+      sreal cached_badness;
       int growth;
 
       edge = edge_heap.extract_min ();
@@ -1728,13 +1729,13 @@ inline_small_functions (void)
 		   inline_summary (callee)->size);
 	  fprintf (dump_file,
 		   " to be inlined into %s/%i in %s:%i\n"
-		   " Estimated badness is %i, frequency %.2f.\n",
+		   " Estimated badness is %"PRId64", frequency %.2f.\n",
 		   edge->caller->name (), edge->caller->order,
 		   flag_wpa ? "unknown"
 		   : gimple_filename ((const_gimple) edge->call_stmt),
 		   flag_wpa ? -1
 		   : gimple_lineno ((const_gimple) edge->call_stmt),
-		   badness,
+		   badness.to_int (),
 		   edge->frequency / (double)CGRAPH_FREQ_BASE);
 	  if (edge->count)
 	    fprintf (dump_file," Called %"PRId64"x\n",
