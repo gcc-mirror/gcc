@@ -795,6 +795,21 @@
   }
 )
 
+;; For 64-bit modes we use ushl/r, as this does not require a SIMD zero.
+(define_insn "vec_shr_<mode>"
+  [(set (match_operand:VD 0 "register_operand" "=w")
+        (lshiftrt:VD (match_operand:VD 1 "register_operand" "w")
+		     (match_operand:SI 2 "immediate_operand" "i")))]
+  "TARGET_SIMD"
+  {
+    if (BYTES_BIG_ENDIAN)
+      return "ushl %d0, %d1, %2";
+    else
+      return "ushr %d0, %d1, %2";
+  }
+  [(set_attr "type" "neon_shift_imm")]
+)
+
 (define_insn "aarch64_simd_vec_setv2di"
   [(set (match_operand:V2DI 0 "register_operand" "=w,w")
         (vec_merge:V2DI
