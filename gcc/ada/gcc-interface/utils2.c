@@ -2780,7 +2780,13 @@ gnat_invariant_expr (tree expr)
 	  || (TREE_CODE (expr) == VAR_DECL && TREE_READONLY (expr)))
 	 && decl_function_context (expr) == current_function_decl
 	 && DECL_INITIAL (expr))
-    expr = remove_conversions (DECL_INITIAL (expr), false);
+    {
+      expr = DECL_INITIAL (expr);
+      /* Look into CONSTRUCTORs built to initialize padded types.  */
+      if (TYPE_IS_PADDING_P (TREE_TYPE (expr)))
+	expr = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (expr))), expr);
+      expr = remove_conversions (expr, false);
+    }
 
   if (TREE_CONSTANT (expr))
     return fold_convert (type, expr);
@@ -2836,7 +2842,7 @@ object:
   if (!TREE_READONLY (t))
     return NULL_TREE;
 
-  if (TREE_CODE (t) == CONSTRUCTOR || TREE_CODE (t) == PARM_DECL)
+  if (TREE_CODE (t) == PARM_DECL)
     return fold_convert (type, expr);
 
   if (TREE_CODE (t) == VAR_DECL
