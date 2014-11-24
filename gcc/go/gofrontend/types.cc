@@ -10035,6 +10035,18 @@ Type::find_field_or_method(const Type* type,
 
   if (found_level == 0)
     return false;
+  else if (found_is_method
+	   && type->named_type() != NULL
+	   && type->points_to() != NULL)
+    {
+      // If this is a method inherited from a struct field in a named pointer
+      // type, it is invalid to automatically dereference the pointer to the
+      // struct to find this method.
+      if (level != NULL)
+	*level = found_level;
+      *is_method = true;
+      return false;
+    }
   else if (!found_ambig1.empty())
     {
       go_assert(!found_ambig1.empty());
