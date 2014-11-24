@@ -1,3 +1,9 @@
+2014-11-24  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR c++/58561
+	* dbxout.c: Include stringpool.h
+	(dbxout_type) [default]: Ignore auto type.
+
 2014-11-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63679
