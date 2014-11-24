@@ -77,6 +77,7 @@
 #include "dumpfile.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+#include "tm-constrs.h"
 
 /* Defined for convenience.  */
 #define POINTER_BYTES (POINTER_SIZE / BITS_PER_UNIT)
@@ -306,6 +307,7 @@ static const struct cpu_vector_cost cortexa57_vector_cost =
 
 #define AARCH64_FUSE_NOTHING	(0)
 #define AARCH64_FUSE_MOV_MOVK	(1 << 0)
+#define AARCH64_FUSE_ADRP_ADD	(1 << 1)
 
 #if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
 __extension__
@@ -329,7 +331,7 @@ static const struct tune_params cortexa53_tunings =
   &generic_vector_cost,
   NAMED_PARAM (memmov_cost, 4),
   NAMED_PARAM (issue_rate, 2),
-  NAMED_PARAM (fuseable_ops, AARCH64_FUSE_MOV_MOVK)
+  NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD))
 };
 
 static const struct tune_params cortexa57_tunings =
@@ -340,7 +342,7 @@ static const struct tune_params cortexa57_tunings =
   &cortexa57_vector_cost,
   NAMED_PARAM (memmov_cost, 4),
   NAMED_PARAM (issue_rate, 3),
-  NAMED_PARAM (fuseable_ops, AARCH64_FUSE_MOV_MOVK)
+  NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD))
 };
 
 static const struct tune_params thunderx_tunings =
@@ -10424,6 +10426,32 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
           && REGNO (XEXP (set_dest, 0)) == REGNO (SET_DEST (prev_set)))
         {
           return true;
+        }
+    }
+
+  if (simple_sets_p
+      && (aarch64_tune_params->fuseable_ops & AARCH64_FUSE_ADRP_ADD))
+    {
+
+      /*  We're trying to match:
+          prev (adrp) == (set (reg r1)
+                              (high (symbol_ref ("SYM"))))
+          curr (add) == (set (reg r0)
+                             (lo_sum (reg r1)
+                                     (symbol_ref ("SYM"))))
+          Note that r0 need not necessarily be the same as r1, especially
+          during pre-regalloc scheduling.  */
+
+      if (satisfies_constraint_Ush (SET_SRC (prev_set))
+          && REG_P (SET_DEST (prev_set)) && REG_P (SET_DEST (curr_set)))
+        {
+          if (GET_CODE (SET_SRC (curr_set)) == LO_SUM
+              && REG_P (XEXP (SET_SRC (curr_set), 0))
+              && REGNO (XEXP (SET_SRC (curr_set), 0))
+                 == REGNO (SET_DEST (prev_set))
+              && rtx_equal_p (XEXP (SET_SRC (prev_set), 0),
+                              XEXP (SET_SRC (curr_set), 1)))
+            return true;
         }
     }
 
