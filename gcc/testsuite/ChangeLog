@@ -1,3 +1,10 @@
+2014-11-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/63847
+	* c-c++-common/cilk-plus/AN/builtin_fn_custom.c: Add -ffloat-store
+	for 32bit x86 targets.
+	* c-c++-common/cilk-plus/AN/builtin_fn_mutating.c: Ditto.
+
 2014-11-24  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_collectives_3.f90: Add dg-excess-errors.
@@ -57,7 +64,7 @@
 	* gcc.dg/torture/pr59166.c: XFAIL on AIX.
 	* gcc.dg/pr63914.c: Ignore non-standard ABI warning.
 	* gcc.dg/pr63594-[12].c: Ignore non-standard ABI warning.
-	
+
 2014-11-23  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/tab_continuation.f: Update dg-*.
