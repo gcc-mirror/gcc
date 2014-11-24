@@ -1,5 +1,9 @@
 2014-11-24  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-simd.md (vec_shr<mode>): New.
+
+2014-11-24  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_args):
 	Refactor by combining switch statements and make arrays into scalars.
 

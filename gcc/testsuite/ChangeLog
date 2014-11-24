@@ -1,3 +1,8 @@
+2014-11-24  Alan Lawrence  <alan.lawrence@arm.com>
+
+        * lib/target-supports.exp (check_effective_target_whole_vector_shift):
+	Add aarch64{,_be}.
+
 2014-11-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63679
