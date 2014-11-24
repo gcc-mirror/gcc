@@ -1,3 +1,7 @@
+2014-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt45.adb: New test.
+
 2014-11-22  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline

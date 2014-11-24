@@ -2424,9 +2424,6 @@ push_range_check_info (tree var)
   struct loop_info_d *iter = NULL;
   unsigned int i;
 
-  if (vec_safe_is_empty (gnu_loop_stack))
-    return NULL;
-
   var = remove_conversions (var, false);
 
   if (TREE_CODE (var) != VAR_DECL)
@@ -2434,6 +2431,8 @@ push_range_check_info (tree var)
 
   if (decl_function_context (var) != current_function_decl)
     return NULL;
+
+  gcc_assert (vec_safe_length (gnu_loop_stack) > 0);
 
   for (i = vec_safe_length (gnu_loop_stack) - 1;
        vec_safe_iterate (gnu_loop_stack, i, &iter);
@@ -5165,6 +5164,7 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	     the original checks reinstated, and a run time selection.
 	     The former loop will be suitable for vectorization.  */
 	  if (flag_unswitch_loops
+	      && !vec_safe_is_empty (gnu_loop_stack)
 	      && (!gnu_low_bound
 		  || (gnu_low_bound = gnat_invariant_expr (gnu_low_bound)))
 	      && (!gnu_high_bound

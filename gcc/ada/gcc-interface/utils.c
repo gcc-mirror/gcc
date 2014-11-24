@@ -4371,8 +4371,7 @@ convert_to_fat_pointer (tree type, tree expr)
 	{
 	  /* The template type can still be dummy at this point so we build an
 	     empty constructor.  The middle-end will fill it in with zeros.  */
-	  t = build_constructor (template_type,
-				 NULL);
+	  t = build_constructor (template_type, NULL);
 	  TREE_CONSTANT (t) = TREE_STATIC (t) = 1;
 	  null_bounds = build_unary_op (ADDR_EXPR, NULL_TREE, t);
 	  SET_TYPE_NULL_BOUNDS (ptr_template_type, null_bounds);

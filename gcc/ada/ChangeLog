@@ -1,3 +1,13 @@
+2014-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (push_range_check_info): Replace early test
+	with assertion.
+	(Raise_Error_to_gnu): Do not call push_range_check_info if the loop
+	stack is empty.
+	* gcc-interface/utils.c (convert_to_fat_pointer): Fix formatting.
+	* gcc-interface/utils2.c (gnat_invariant_expr): Deal with padded types
+	and revert latest change.
+
 2014-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline
