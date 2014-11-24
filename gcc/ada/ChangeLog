@@ -28,6 +28,19 @@
 	<case ADDR_EXPR>: Use 'type'.
 	<case DECL_EXPR>: Likewise.
 
+2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* gcc-interface/decl.c (annotate_value_cache): Replace htab with
+	hash_table.
+	(annotate_value): Adjust.
+	(init_gnat_decl): Likewise.
+	(destroy_gnat_decl): Likewise.
+	* gcc-interface/utils.c (pad_type_hash_table): Replace htab with
+	hash_table.
+	(init_gnat_utils): Adjust.
+	(destroy_gnat_utils): Likewise.
+	(lookup_and_insert_pad_type): Likewise.
+
 2014-11-20  Arnaud Charlet  <charlet@adacore.com>
 
 	PR ada/63931
