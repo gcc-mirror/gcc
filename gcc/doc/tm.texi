@@ -6484,11 +6484,13 @@ cycle.  These other insns can then be taken into account properly.
 This hook is used to check whether target platform supports macro fusion.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SCHED_MACRO_FUSION_PAIR_P (rtx_insn *@var{condgen}, rtx_insn *@var{condjmp})
-This hook is used to check whether two insns could be macro fused for
-target microarchitecture. If this hook returns true for the given insn pair
-(@var{condgen} and @var{condjmp}), scheduler will put them into a sched
-group, and they will not be scheduled apart.
+@deftypefn {Target Hook} bool TARGET_SCHED_MACRO_FUSION_PAIR_P (rtx_insn *@var{prev}, rtx_insn *@var{curr})
+This hook is used to check whether two insns should be macro fused for
+a target microarchitecture. If this hook returns true for the given insn pair
+(@var{prev} and @var{curr}), the scheduler will put them into a sched
+group, and they will not be scheduled apart.  The two insns will be either
+two SET insns or a compare and a conditional jump and this hook should
+validate any dependencies needed to fuse the two insns together.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK (rtx_insn *@var{head}, rtx_insn *@var{tail})

@@ -1067,11 +1067,13 @@ DEFHOOK
 
 DEFHOOK
 (macro_fusion_pair_p,
- "This hook is used to check whether two insns could be macro fused for\n\
-target microarchitecture. If this hook returns true for the given insn pair\n\
-(@var{condgen} and @var{condjmp}), scheduler will put them into a sched\n\
-group, and they will not be scheduled apart.",
- bool, (rtx_insn *condgen, rtx_insn *condjmp), NULL)
+ "This hook is used to check whether two insns should be macro fused for\n\
+a target microarchitecture. If this hook returns true for the given insn pair\n\
+(@var{prev} and @var{curr}), the scheduler will put them into a sched\n\
+group, and they will not be scheduled apart.  The two insns will be either\n\
+two SET insns or a compare and a conditional jump and this hook should\n\
+validate any dependencies needed to fuse the two insns together.",
+ bool, (rtx_insn *prev, rtx_insn *curr), NULL)
 
 /* The following member value is a pointer to a function called
    after evaluation forward dependencies of insns in chain given
