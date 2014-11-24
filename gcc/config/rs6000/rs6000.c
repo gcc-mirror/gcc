@@ -2505,7 +2505,8 @@ rs6000_setup_reg_addr_masks (void)
 
 	  /* VMX registers can do (REG & -16) and ((REG+REG) & -16)
 	     addressing on 128-bit types.  */
-	  if (rc == RELOAD_REG_VMX && GET_MODE_SIZE (m2) == 16)
+	  if (rc == RELOAD_REG_VMX && GET_MODE_SIZE (m2) == 16
+	      && (addr_mask & RELOAD_REG_VALID) != 0)
 	    addr_mask |= RELOAD_REG_AND_M16;
 
 	  reg_addr[m].addr_mask[rc] = addr_mask;
@@ -16649,6 +16650,17 @@ rs6000_secondary_reload_memory (rtx addr,
 	    {
 	      extra_cost = 1;
 	      type = "offset";
+	    }
+	}
+
+      /* (plus (plus (reg) (constant)) (reg)) is also generated during
+	 push_reload processing, so handle it now.  */
+      else if (GET_CODE (plus_arg0) == PLUS && REG_P (plus_arg1))
+	{
+	  if ((addr_mask & RELOAD_REG_INDEXED) == 0)
+	    {
+	      extra_cost = 1;
+	      type = "indexed #2";
 	    }
 	}
 
