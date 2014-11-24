@@ -3518,6 +3518,12 @@ mangle_decl (const tree decl)
       if (IDENTIFIER_GLOBAL_VALUE (id2))
 	return;
 
+      struct cgraph_node *n = NULL;
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && !(n = cgraph_node::get (decl)))
+	/* Don't create an alias to an unreferenced function.  */
+	return;
+
       tree alias = make_alias_for (decl, id2);
       SET_IDENTIFIER_GLOBAL_VALUE (id2, alias);
       DECL_IGNORED_P (alias) = 1;
@@ -3526,11 +3532,7 @@ mangle_decl (const tree decl)
       if (vague_linkage_p (decl))
 	DECL_WEAK (alias) = 1;
       if (TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  /* Don't create an alias to an unreferenced function.  */
-	  if (struct cgraph_node *n = cgraph_node::get (decl))
-	    n->create_same_body_alias (alias, decl);
-	}
+	n->create_same_body_alias (alias, decl);
       else
 	varpool_node::create_extra_name_alias (alias, decl);
 #endif
