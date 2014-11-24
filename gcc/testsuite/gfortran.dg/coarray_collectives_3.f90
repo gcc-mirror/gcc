@@ -8,3 +8,4 @@ program test
   integer :: val
   call co_max(val) ! { dg-error "Coarrays disabled at .1., use '-fcoarray=' to enable" }
 end program test
+! { dg-excess-errors "compilation terminated" }

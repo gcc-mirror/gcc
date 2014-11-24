@@ -1,6 +1,12 @@
+2014-11-24  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_collectives_3.f90: Add dg-excess-errors.
+	* gfortran.dg/dollar_sym_1.f90: Ditto.
+	* gfortran.dg/dollar_sym_3.f: Ditto.
+
 2014-11-24  Alan Lawrence  <alan.lawrence@arm.com>
 
-        * lib/target-supports.exp (check_effective_target_whole_vector_shift):
+	* lib/target-supports.exp (check_effective_target_whole_vector_shift):
 	Add aarch64{,_be}.
 
 2014-11-24  Richard Biener  <rguenther@suse.de>
@@ -43,7 +49,7 @@
 2014-11-24  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/dollar_sym_3.f: Update dg-error.
-	* gfortran.dg/dollar_sym_3.f: Ditto.
+	* gfortran.dg/coarray_collectives_3.f90: Ditto.
 
 2014-11-23  David Edelsohn  <dje.gcc@gmail.com>
 
