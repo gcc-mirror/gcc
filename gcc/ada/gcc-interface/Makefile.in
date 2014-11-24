@@ -1678,8 +1678,6 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   a-exetim.ads<a-exetim-mingw.ads \
   a-intnam.ads<a-intnam-mingw.ads \
   g-sercom.adb<g-sercom-mingw.adb \
-  s-trasym.adb<s-trasym-dwarf.adb \
-  s-tsmona.adb<s-tsmona-mingw.adb \
   s-interr.adb<s-interr-sigaction.adb \
   s-intman.adb<s-intman-mingw.adb \
   s-mudido.adb<s-mudido-affinity.adb \
@@ -1700,30 +1698,11 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
       SO_OPTS = -m64 -Wl,-soname,
     endif
   else
-    LIBGNAT_TARGET_PAIRS += \
-    a-exetim.adb<a-exetim-mingw.adb \
-    a-exetim.ads<a-exetim-mingw.ads \
-    a-intnam.ads<a-intnam-mingw.ads \
-    g-sercom.adb<g-sercom-mingw.adb \
-    s-interr.adb<s-interr-sigaction.adb \
-    s-intman.adb<s-intman-mingw.adb \
-    s-mudido.adb<s-mudido-affinity.adb \
-    s-osinte.ads<s-osinte-mingw.ads \
-    s-osprim.adb<s-osprim-mingw.adb \
-    s-taprop.adb<s-taprop-mingw.adb
-
-    ifeq ($(strip $(filter-out x86_64%,$(target_cpu))),)
-      ifeq ($(strip $(MULTISUBDIR)),/32)
-	LIBGNAT_TARGET_PAIRS += \
-	  $(X86_TARGET_PAIRS) \
-	  system.ads<system-mingw.ads
-	SO_OPTS= -m32 -Wl,-soname,
-      else
-	LIBGNAT_TARGET_PAIRS += \
-	  $(X86_64_TARGET_PAIRS) \
-	  system.ads<system-mingw-x86_64.ads
-	SO_OPTS = -m64 -Wl,-soname,
-      endif
+    ifeq ($(strip $(MULTISUBDIR)),/64)
+      LIBGNAT_TARGET_PAIRS += \
+        $(X86_64_TARGET_PAIRS) \
+        system.ads<system-mingw-x86_64.ads
+      SO_OPTS = -m64 -Wl,-soname,
     else
       LIBGNAT_TARGET_PAIRS += \
         $(X86_TARGET_PAIRS) \

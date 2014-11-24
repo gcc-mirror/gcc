@@ -1,5 +1,9 @@
 2014-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/Makefile.in (Cygwin/Mingw): Fix previous change.
+
+2014-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (build_return_expr): Use INIT_EXPR instead of
 	MODIFY_EXPR to assign to the return object.
 	(finalize_nrv_r): Adjust to above change.
