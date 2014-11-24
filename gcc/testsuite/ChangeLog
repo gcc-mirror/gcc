@@ -1,3 +1,7 @@
+2014-11-24  Petr Murzin  <petr.murzin@intel.com>
+
+	* gcc.target/i386/extract-insert-combining.c: New test.
+
 2014-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/fuse_adrp_add_1.c: New test.
