@@ -1,3 +1,7 @@
+2014-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt45.adb: New test.
+
 2014-11-24  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/dollar_sym_3.f: Update dg-error.
