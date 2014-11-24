@@ -1,3 +1,9 @@
+2014-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/63938
+	* libgomp.fortran/pr63938-1.f90: New test.
+	* libgomp.fortran/pr63938-2.f90: New test.
+
 2014-11-21  Steve Ellcey  <sellcey@imgtec.com>
 
 	* config/linux/mips/futex.h (SYS_futex): Define if not already done.
