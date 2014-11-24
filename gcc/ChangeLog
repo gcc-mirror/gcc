@@ -1,5 +1,12 @@
 2014-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (AARCH64_FUSE_MOVK_MOVK): Define.
+	(cortexa53_tunings): Specify AARCH64_FUSE_MOVK_MOVK in fuseable_ops.
+	(cortexa57_tunings): Likewise.
+	(aarch_macro_fusion_pair_p): Handle AARCH64_FUSE_MOVK_MOVK.
+
+2014-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* sched-deps.c (sched_macro_fuse_insns): Do not check modified_in_p
 	in the not conditional jump case.
 	* doc/tm.texi (TARGET_SCHED_MACRO_FUSION_PAIR_P): Update description.
