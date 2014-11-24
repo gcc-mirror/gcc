@@ -93,19 +93,28 @@ update_noncloned_frequencies (struct cgraph_node *node,
    copy of function was removed.  */
 
 static bool
-can_remove_node_now_p_1 (struct cgraph_node *node)
+can_remove_node_now_p_1 (struct cgraph_node *node, struct cgraph_edge *e)
 {
+  ipa_ref *ref;
+
+  FOR_EACH_ALIAS (node, ref)
+    {
+      cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
+      if ((alias->callers && alias->callers != e)
+          || !can_remove_node_now_p_1 (alias, e))
+	return false;
+    }
   /* FIXME: When address is taken of DECL_EXTERNAL function we still
      can remove its offline copy, but we would need to keep unanalyzed node in
      the callgraph so references can point to it.  */
   return (!node->address_taken
-	  && !node->has_aliases_p ()
 	  && node->can_remove_if_no_direct_calls_p ()
 	  /* Inlining might enable more devirtualizing, so we want to remove
 	     those only after all devirtualizable virtual calls are processed.
 	     Lacking may edges in callgraph we just preserve them post
 	     inlining.  */
-	  && !DECL_VIRTUAL_P (node->decl)
+	  && (!DECL_VIRTUAL_P (node->decl)
+	      || !opt_for_fn (node->decl, flag_devirtualize))
 	  /* During early inlining some unanalyzed cgraph nodes might be in the
 	     callgraph and they might reffer the function in question.  */
 	  && !cgraph_new_nodes.exists ());
@@ -119,7 +128,7 @@ static bool
 can_remove_node_now_p (struct cgraph_node *node, struct cgraph_edge *e)
 {
   struct cgraph_node *next;
-  if (!can_remove_node_now_p_1 (node))
+  if (!can_remove_node_now_p_1 (node, e))
     return false;
 
   /* When we see same comdat group, we need to be sure that all
@@ -128,9 +137,13 @@ can_remove_node_now_p (struct cgraph_node *node, struct cgraph_edge *e)
     return true;
   for (next = dyn_cast<cgraph_node *> (node->same_comdat_group);
        next != node; next = dyn_cast<cgraph_node *> (next->same_comdat_group))
-    if ((next->callers && next->callers != e)
-	|| !can_remove_node_now_p_1 (next))
-      return false;
+    {
+      if (next->alias)
+	continue;
+      if ((next->callers && next->callers != e)
+	  || !can_remove_node_now_p_1 (next, e))
+        return false;
+    }
   return true;
 }
 
