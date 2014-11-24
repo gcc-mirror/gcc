@@ -1482,8 +1482,8 @@ check_co_collective (gfc_expr *a, gfc_expr *image_idx, gfc_expr *stat,
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error_1 ("Coarrays disabled at %L, use -fcoarray= to enable",
-			 &a->where);
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
+		       &a->where);
       return false;
     }
 

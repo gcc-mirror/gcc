@@ -865,9 +865,9 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 	{
 	  /* FIXME.  */
 	  if (code->expr1->ts.kind != gfc_c_int_kind)
-	    gfc_fatal_error_1 ("Sorry, only support for integer kind %d "
-			       "implemented for image-set at %L",
-			       gfc_c_int_kind, &code->expr1->where);
+	    gfc_fatal_error ("Sorry, only support for integer kind %d "
+			     "implemented for image-set at %L",
+			     gfc_c_int_kind, &code->expr1->where);
 
 	  gfc_conv_array_parameter (&se, code->expr1, true, NULL, NULL, &len);
 	  images = se.expr;
