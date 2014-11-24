@@ -37,6 +37,26 @@ enum copy_body_cge_which
   CB_CGE_MOVE_CLONES
 };
 
+struct dependence_hasher : default_hashmap_traits
+{
+  template<typename T>
+  static void
+  mark_deleted (T &e)
+    { gcc_unreachable (); }
+
+  template<typename T>
+  static void
+  mark_empty (T &e)
+    { e.m_key = 0; }
+
+  template<typename T>
+  static bool
+  is_deleted (T &)
+    { return false; }
+
+  template<typename T> static bool is_empty (T &e) { return e.m_key == 0; }
+};
+
 /* Data required for function body duplication.  */
 
 struct copy_body_data
@@ -144,6 +164,10 @@ struct copy_body_data
   /* Cilk keywords currently need to replace some variables that
      ordinary nested functions do not.  */ 
   bool remap_var_for_cilk;
+
+  /* A map from the inlined functions dependence info cliques to
+     equivalents in the function into which it is being inlined.  */
+  hash_map<unsigned short, unsigned short, dependence_hasher> *dependence_map;
 };
 
 /* Weights of constructions for estimate_num_insns.  */

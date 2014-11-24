@@ -484,7 +484,18 @@ unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
     unpack_ts_type_common_value_fields (bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_EXP))
-    SET_EXPR_LOCATION (expr, stream_input_location (bp, data_in));
+    {
+      SET_EXPR_LOCATION (expr, stream_input_location (bp, data_in));
+      if (code == MEM_REF
+	  || code == TARGET_MEM_REF)
+	{
+	  MR_DEPENDENCE_CLIQUE (expr)
+	    = (unsigned)bp_unpack_value (bp, sizeof (short) * 8);
+	  if (MR_DEPENDENCE_CLIQUE (expr) != 0)
+	    MR_DEPENDENCE_BASE (expr)
+	      = (unsigned)bp_unpack_value (bp, sizeof (short) * 8);
+	}
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
     unpack_ts_block_value_fields (data_in, bp, expr);
