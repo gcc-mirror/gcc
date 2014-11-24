@@ -1,5 +1,12 @@
 2014-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (build_return_expr): Use INIT_EXPR instead of
+	MODIFY_EXPR to assign to the return object.
+	(finalize_nrv_r): Adjust to above change.
+	(finalize_nrv_unc_r): Likewise.
+
+2014-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (push_range_check_info): Replace early test
 	with assertion.
 	(Raise_Error_to_gnu): Do not call push_range_check_info if the loop
