@@ -1,3 +1,8 @@
+2014-11-24  Andrew Pinski  <apinski@cavium.com>
+
+	PR rtl-opt/63972
+	* shrink-wrap.c (move_insn_for_shrink_wrap): Allow LO_SUM also.
+
 2014-11-24  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-simd.md (vec_shr<mode>): New.
