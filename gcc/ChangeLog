@@ -1,3 +1,18 @@
+2014-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-protos.h (struct tune_params): Add
+	fuseable_ops field.
+	* config/aarch64/aarch64.c (generic_tunings): Specify fuseable_ops.
+	(cortexa53_tunings): Likewise.
+	(cortexa57_tunings): Likewise.
+	(thunderx_tunings): Likewise.
+	(aarch64_macro_fusion_p): New function.
+	(aarch_macro_fusion_pair_p): Likewise.
+	(TARGET_SCHED_MACRO_FUSION_P): Define.
+	(TARGET_SCHED_MACRO_FUSION_PAIR_P): Likewise.
+	(AARCH64_FUSE_MOV_MOVK): Likewise.
+	(AARCH64_FUSE_NOTHING): Likewise.
+
 2014-11-24  Martin Liska  <mliska@suse.cz>
 
 	PR lto/63968
