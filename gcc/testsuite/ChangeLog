@@ -1,5 +1,10 @@
 2014-11-24  Richard Biener  <rguenther@suse.de>
 
+	PR testsuite/64039
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: XFAIL for hppa*-*-*.
+
+2014-11-24  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/55334
 	* gcc.dg/tree-ssa/restrict-5.c: New testcase.
 
