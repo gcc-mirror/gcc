@@ -1,3 +1,8 @@
+2014-11-24  Petr Murzin  <petr.murzin@intel.com>
+
+	* simplify-rtx.c (simplify_ternary_operation): Simplify
+	vec_merge (vec_duplicate (vec_select)).
+
 2014-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (AARCH64_FUSE_ADRP_LDR): Define.

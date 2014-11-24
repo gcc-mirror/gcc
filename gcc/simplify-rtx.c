@@ -5233,6 +5233,22 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 						 op0, XEXP (op1, 0), op2);
 		}
 	    }
+
+	  /* Replace (vec_merge (vec_duplicate (vec_select a parallel (i))) a 1 << i)
+	     with a.  */
+	  if (GET_CODE (op0) == VEC_DUPLICATE
+	      && GET_CODE (XEXP (op0, 0)) == VEC_SELECT
+	      && GET_CODE (XEXP (XEXP (op0, 0), 1)) == PARALLEL
+	      && mode_nunits[GET_MODE (XEXP (op0, 0))] == 1)
+	    {
+	      tem = XVECEXP ((XEXP (XEXP (op0, 0), 1)), 0, 0);
+	      if (CONST_INT_P (tem) && CONST_INT_P (op2))
+		{
+		  if (XEXP (XEXP (op0, 0), 0) == op1
+		      && UINTVAL (op2) == HOST_WIDE_INT_1U << UINTVAL (tem))
+		    return op1;
+		}
+	    }
 	}
 
       if (rtx_equal_p (op0, op1)
