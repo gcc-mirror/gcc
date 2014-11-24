@@ -1,6 +1,6 @@
 /* PR rtl-optimization/59166 */
 /* { dg-additional-options "-fcompare-debug" } */
-/* { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
+/* { dg-xfail-if "compare-debug failure" { powerpc-ibm-aix* } { "*" } { "" } } */
 
 int a, b, c, f, g;
 

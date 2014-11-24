@@ -1,3 +1,10 @@
+2014-11-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/autopar/pr46799.c: XFAIL on AIX.
+	* gcc.dg/torture/pr59166.c: XFAIL on AIX.
+	* gcc.dg/pr63914.c: Ignore non-standard ABI warning.
+	* gcc.dg/pr63594-[12].c: Ignore non-standard ABI warning.
+	
 2014-11-23  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/tab_continuation.f: Update dg-*.
