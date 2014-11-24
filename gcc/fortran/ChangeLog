@@ -1,3 +1,13 @@
+2014-11-24  Tobias Burnus  <burnus@net-b.de>
+
+	* error.c (gfc_fatal_error_1): Remove.
+	* gfortran.h (gfc_fatal_error_1): Remove.
+	* check.c (check_co_collective): Change gfc_fatal_error_1 to
+	gfc_fatal_error.
+	* match.c (gfc_match_name): Ditto.
+	* trans-array.c (gfc_conv_array_initializer): Ditto.
+	* trans-stmt.c (gfc_trans_sync): Ditto.
+
 2014-11-23  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054

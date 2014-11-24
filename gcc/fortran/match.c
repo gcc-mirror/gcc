@@ -557,8 +557,8 @@ gfc_match_name (char *buffer)
 
   if (c == '$' && !gfc_option.flag_dollar_ok)
     {
-      gfc_fatal_error_1 ("Invalid character '$' at %L. Use -fdollar-ok to allow"
-			 " it as an extension", &old_loc);
+      gfc_fatal_error ("Invalid character %<$%> at %L. Use %<-fdollar-ok%> to "
+		       "allow it as an extension", &old_loc);
       return MATCH_ERROR;
     }
 

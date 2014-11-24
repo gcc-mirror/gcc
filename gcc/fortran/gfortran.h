@@ -2705,7 +2705,6 @@ void gfc_warning_check (void);
 void gfc_error (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_error_now (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_error_now_2 (const char *gmsgid, ...) ATTRIBUTE_GCC_GFC(1,2);
-void gfc_fatal_error_1 (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC(1,2);
 void gfc_fatal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC(1,2);
 void gfc_internal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC(1,2);
 void gfc_clear_error (void);

@@ -1148,7 +1148,6 @@ gfc_error_now_2 (const char *gmsgid, ...)
 
 
 /* Fatal error, never returns.  */
-/* This function uses the common diagnostics, but does not support %L, yet.  */
 
 void
 gfc_fatal_error (const char *gmsgid, ...)
@@ -1269,24 +1268,6 @@ gfc_error_now (const char *gmsgid, ...)
 
   if (flag_fatal_errors)
     exit (FATAL_EXIT_CODE);
-}
-
-
-/* Fatal error, never returns.  */
-/* Use gfc_fatal_error instead, unless gmsgid contains a %L.  */
-
-void
-gfc_fatal_error_1 (const char *gmsgid, ...)
-{
-  va_list argp;
-
-  buffer_flag = 0;
-
-  va_start (argp, gmsgid);
-  error_print (_("Fatal Error:"), _(gmsgid), argp);
-  va_end (argp);
-
-  exit (FATAL_EXIT_CODE);
 }
 
 

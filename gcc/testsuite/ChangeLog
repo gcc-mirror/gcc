@@ -1,3 +1,8 @@
+2014-11-24  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/dollar_sym_3.f: Update dg-error.
+	* gfortran.dg/dollar_sym_3.f: Ditto.
+
 2014-11-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/autopar/pr46799.c: XFAIL on AIX.
