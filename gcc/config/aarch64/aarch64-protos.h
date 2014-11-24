@@ -170,6 +170,7 @@ struct tune_params
   const struct cpu_vector_cost *const vec_costs;
   const int memmov_cost;
   const int issue_rate;
+  const unsigned int fuseable_ops;
 };
 
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
