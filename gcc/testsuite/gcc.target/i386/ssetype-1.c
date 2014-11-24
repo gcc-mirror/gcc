@@ -14,7 +14,7 @@
 
 #include <xmmintrin.h>
 
-static __m128d magic_a, magic_b;
+__m128d magic_a, magic_b;
 
 __m128d
 t1(void)
