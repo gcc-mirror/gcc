@@ -1,5 +1,11 @@
 2014-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (AARCH64_FUSE_ADRP_LDR): Define.
+	(cortexa53_tunings): Specify AARCH64_FUSE_ADRP_LDR in fuseable_ops.
+	(aarch_macro_fusion_pair_p): Handle AARCH64_FUSE_ADRP_LDR.
+
+2014-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (AARCH64_FUSE_MOVK_MOVK): Define.
 	(cortexa53_tunings): Specify AARCH64_FUSE_MOVK_MOVK in fuseable_ops.
 	(cortexa57_tunings): Likewise.
