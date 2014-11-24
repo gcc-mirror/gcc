@@ -867,60 +867,61 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 			  tree exp, builtin_simd_arg *args)
 {
   rtx pat;
-  tree arg[SIMD_MAX_BUILTIN_ARGS];
-  rtx op[SIMD_MAX_BUILTIN_ARGS];
-  machine_mode tmode = insn_data[icode].operand[0].mode;
-  machine_mode mode[SIMD_MAX_BUILTIN_ARGS];
-  int argc = 0;
+  rtx op[SIMD_MAX_BUILTIN_ARGS + 1]; /* First element for result operand.  */
+  int opc = 0;
 
-  if (have_retval
-      && (!target
+  if (have_retval)
+    {
+      machine_mode tmode = insn_data[icode].operand[0].mode;
+      if (!target
 	  || GET_MODE (target) != tmode
-	  || !(*insn_data[icode].operand[0].predicate) (target, tmode)))
-    target = gen_reg_rtx (tmode);
+	  || !(*insn_data[icode].operand[0].predicate) (target, tmode))
+	target = gen_reg_rtx (tmode);
+      op[opc++] = target;
+    }
 
   for (;;)
     {
-      builtin_simd_arg thisarg = args[argc];
+      builtin_simd_arg thisarg = args[opc - have_retval];
 
       if (thisarg == SIMD_ARG_STOP)
 	break;
       else
 	{
-	  arg[argc] = CALL_EXPR_ARG (exp, argc);
-	  op[argc] = expand_normal (arg[argc]);
-	  mode[argc] = insn_data[icode].operand[argc + have_retval].mode;
+	  tree arg = CALL_EXPR_ARG (exp, opc - have_retval);
+	  enum machine_mode mode = insn_data[icode].operand[opc].mode;
+	  op[opc] = expand_normal (arg);
 
 	  switch (thisarg)
 	    {
 	    case SIMD_ARG_COPY_TO_REG:
-	      if (POINTER_TYPE_P (TREE_TYPE (arg[argc])))
-		op[argc] = convert_memory_address (Pmode, op[argc]);
-	      /*gcc_assert (GET_MODE (op[argc]) == mode[argc]); */
-	      if (!(*insn_data[icode].operand[argc + have_retval].predicate)
-		  (op[argc], mode[argc]))
-		op[argc] = copy_to_mode_reg (mode[argc], op[argc]);
+	      if (POINTER_TYPE_P (TREE_TYPE (arg)))
+		op[opc] = convert_memory_address (Pmode, op[opc]);
+	      /*gcc_assert (GET_MODE (op[opc]) == mode); */
+	      if (!(*insn_data[icode].operand[opc].predicate)
+		  (op[opc], mode))
+		op[opc] = copy_to_mode_reg (mode, op[opc]);
 	      break;
 
 	    case SIMD_ARG_LANE_INDEX:
 	      /* Must be a previous operand into which this is an index.  */
-	      gcc_assert (argc > 0);
-	      if (CONST_INT_P (op[argc]))
+	      gcc_assert (opc > 0);
+	      if (CONST_INT_P (op[opc]))
 		{
-		  enum machine_mode vmode = mode[argc - 1];
-		  aarch64_simd_lane_bounds (op[argc],
+		  machine_mode vmode = insn_data[icode].operand[opc - 1].mode;
+		  aarch64_simd_lane_bounds (op[opc],
 					    0, GET_MODE_NUNITS (vmode), exp);
 		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
-		  op[argc] = GEN_INT (ENDIAN_LANE_N (vmode, INTVAL (op[argc])));
+		  op[opc] = GEN_INT (ENDIAN_LANE_N (vmode, INTVAL (op[opc])));
 		}
 	      /* Fall through - if the lane index isn't a constant then
 		 the next case will error.  */
 	    case SIMD_ARG_CONSTANT:
-	      if (!(*insn_data[icode].operand[argc + have_retval].predicate)
-		  (op[argc], mode[argc]))
+	      if (!(*insn_data[icode].operand[opc].predicate)
+		  (op[opc], mode))
 	      {
 		error_at (EXPR_LOCATION (exp), "incompatible type for argument %d, "
-		       "expected %<const int%>", argc + 1);
+		       "expected %<const int%>", opc + 1);
 		return const0_rtx;
 	      }
 	      break;
@@ -929,62 +930,39 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 	      gcc_unreachable ();
 	    }
 
-	  argc++;
+	  opc++;
 	}
     }
 
-  if (have_retval)
-    switch (argc)
-      {
-      case 1:
-	pat = GEN_FCN (icode) (target, op[0]);
-	break;
+  switch (opc)
+    {
+    case 1:
+      pat = GEN_FCN (icode) (op[0]);
+      break;
 
-      case 2:
-	pat = GEN_FCN (icode) (target, op[0], op[1]);
-	break;
+    case 2:
+      pat = GEN_FCN (icode) (op[0], op[1]);
+      break;
 
-      case 3:
-	pat = GEN_FCN (icode) (target, op[0], op[1], op[2]);
-	break;
+    case 3:
+      pat = GEN_FCN (icode) (op[0], op[1], op[2]);
+      break;
 
-      case 4:
-	pat = GEN_FCN (icode) (target, op[0], op[1], op[2], op[3]);
-	break;
+    case 4:
+      pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3]);
+      break;
 
-      case 5:
-	pat = GEN_FCN (icode) (target, op[0], op[1], op[2], op[3], op[4]);
-	break;
+    case 5:
+      pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4]);
+      break;
 
-      default:
-	gcc_unreachable ();
-      }
-  else
-    switch (argc)
-      {
-      case 1:
-	pat = GEN_FCN (icode) (op[0]);
-	break;
+    case 6:
+      pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4], op[5]);
+      break;
 
-      case 2:
-	pat = GEN_FCN (icode) (op[0], op[1]);
-	break;
-
-      case 3:
-	pat = GEN_FCN (icode) (op[0], op[1], op[2]);
-	break;
-
-      case 4:
-	pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3]);
-	break;
-
-      case 5:
-	pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4]);
-	break;
-
-      default:
-	gcc_unreachable ();
-      }
+    default:
+      gcc_unreachable ();
+    }
 
   if (!pat)
     return NULL_RTX;
