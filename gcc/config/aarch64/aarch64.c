@@ -308,6 +308,7 @@ static const struct cpu_vector_cost cortexa57_vector_cost =
 #define AARCH64_FUSE_NOTHING	(0)
 #define AARCH64_FUSE_MOV_MOVK	(1 << 0)
 #define AARCH64_FUSE_ADRP_ADD	(1 << 1)
+#define AARCH64_FUSE_MOVK_MOVK	(1 << 2)
 
 #if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
 __extension__
@@ -331,7 +332,7 @@ static const struct tune_params cortexa53_tunings =
   &generic_vector_cost,
   NAMED_PARAM (memmov_cost, 4),
   NAMED_PARAM (issue_rate, 2),
-  NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD))
+  NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD | AARCH64_FUSE_MOVK_MOVK))
 };
 
 static const struct tune_params cortexa57_tunings =
@@ -342,7 +343,7 @@ static const struct tune_params cortexa57_tunings =
   &cortexa57_vector_cost,
   NAMED_PARAM (memmov_cost, 4),
   NAMED_PARAM (issue_rate, 3),
-  NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD))
+  NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD | AARCH64_FUSE_MOVK_MOVK))
 };
 
 static const struct tune_params thunderx_tunings =
@@ -10453,6 +10454,36 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
                               XEXP (SET_SRC (curr_set), 1)))
             return true;
         }
+    }
+
+  if (simple_sets_p
+      && (aarch64_tune_params->fuseable_ops & AARCH64_FUSE_MOVK_MOVK))
+    {
+
+      /* We're trying to match:
+         prev (movk) == (set (zero_extract (reg r0)
+                                           (const_int 16)
+                                           (const_int 32))
+                             (const_int imm16_1))
+         curr (movk) == (set (zero_extract (reg r0)
+                                           (const_int 16)
+                                           (const_int 48))
+                             (const_int imm16_2))  */
+
+      if (GET_CODE (SET_DEST (prev_set)) == ZERO_EXTRACT
+          && GET_CODE (SET_DEST (curr_set)) == ZERO_EXTRACT
+          && REG_P (XEXP (SET_DEST (prev_set), 0))
+          && REG_P (XEXP (SET_DEST (curr_set), 0))
+          && REGNO (XEXP (SET_DEST (prev_set), 0))
+             == REGNO (XEXP (SET_DEST (curr_set), 0))
+          && CONST_INT_P (XEXP (SET_DEST (prev_set), 2))
+          && CONST_INT_P (XEXP (SET_DEST (curr_set), 2))
+          && INTVAL (XEXP (SET_DEST (prev_set), 2)) == 32
+          && INTVAL (XEXP (SET_DEST (curr_set), 2)) == 48
+          && CONST_INT_P (SET_SRC (prev_set))
+          && CONST_INT_P (SET_SRC (curr_set)))
+        return true;
+
     }
 
   return false;
