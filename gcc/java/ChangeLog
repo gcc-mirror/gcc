@@ -1,3 +1,8 @@
+2014-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR java/64004
+	* class.c (build_classdollar_field): Do not set TREE_READONLY.
+
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	Merger of git branch "gimple-classes-v2-option-3".
