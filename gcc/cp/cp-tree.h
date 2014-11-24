@@ -2051,8 +2051,6 @@ struct GTY(()) lang_decl_fn {
 
   unsigned global_ctor_p : 1;
   unsigned global_dtor_p : 1;
-  unsigned constructor_attr : 1;
-  unsigned destructor_attr : 1;
   unsigned assignment_operator_p : 1;
   unsigned static_function : 1;
   unsigned pure_virtual : 1;
@@ -2066,7 +2064,7 @@ struct GTY(()) lang_decl_fn {
   unsigned this_thunk_p : 1;
   unsigned hidden_friend_p : 1;
   unsigned omp_declare_reduction_p : 1;
-  /* No spare bits on 32-bit hosts, 32 on 64-bit hosts.  */
+  /* 2 spare bits on 32-bit hosts, 34 on 64-bit hosts.  */
 
   /* For a non-thunk function decl, this is a tree list of
      friendly classes. For a thunk function decl, it is the

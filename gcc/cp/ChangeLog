@@ -1,3 +1,8 @@
+2014-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63905
+	* cp-tree.h (lang_decl_fn): Remove constructor_attr, destructor_attr.
+
 2014-11-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/63657
