@@ -644,7 +644,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 				   (long) bbd[e->dest->index].node->get_key (),
 				   key);
 			}
-		      bbd[e->dest->index].heap->decrease_key
+		      bbd[e->dest->index].heap->replace_key
 		        (bbd[e->dest->index].node, key);
 		    }
 		}
@@ -812,7 +812,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 			       e->dest->index,
 			       (long) bbd[e->dest->index].node->get_key (), key);
 		    }
-		  bbd[e->dest->index].heap->decrease_key
+		  bbd[e->dest->index].heap->replace_key
 		    (bbd[e->dest->index].node, key);
 		}
 	    }

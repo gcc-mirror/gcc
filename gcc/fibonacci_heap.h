@@ -183,20 +183,27 @@ public:
   }
 
   /* For given NODE, set new KEY value.  */
-  K decrease_key (fibonacci_node_t *node, K key)
+  K replace_key (fibonacci_node_t *node, K key)
   {
     K okey = node->m_key;
-    gcc_assert (key <= okey);
 
     replace_key_data (node, key, node->m_data);
     return okey;
   }
 
+  /* For given NODE, decrease value to new KEY.  */
+  K decrease_key (fibonacci_node_t *node, K key)
+  {
+    gcc_assert (key <= node->m_key);
+    return replace_key (node, key);
+  }
+
   /* For given NODE, set new KEY and DATA value.  */
   V *replace_key_data (fibonacci_node_t *node, K key, V *data);
 
-  /* Extract minimum node in the heap. */
-  V *extract_min ();
+  /* Extract minimum node in the heap. If RELEASE is specified,
+     memory is released.  */
+  V *extract_min (bool release = true);
 
   /* Return value associated with minimum node in the heap.  */
   V *min ()
@@ -214,12 +221,15 @@ public:
   }
 
   /* Delete NODE in the heap.  */
-  V *delete_node (fibonacci_node_t *node);
+  V *delete_node (fibonacci_node_t *node, bool release = true);
 
   /* Union the heap with HEAPB.  */
   fibonacci_heap *union_with (fibonacci_heap *heapb);
 
 private:
+  /* Insert new NODE given by KEY and DATA associated with the key.  */
+  fibonacci_node_t *insert (fibonacci_node_t *node, K key, V *data);
+
   /* Insert it into the root list.  */
   void insert_root (fibonacci_node_t *node);
 
@@ -322,6 +332,15 @@ fibonacci_heap<K,V>::insert (K key, V *data)
   /* Create the new node.  */
   fibonacci_node<K,V> *node = new fibonacci_node_t ();
 
+  return insert (node, key, data);
+}
+
+/* Insert new NODE given by KEY and DATA associated with the key.  */
+
+template<class K, class V>
+fibonacci_node<K,V>*
+fibonacci_heap<K,V>::insert (fibonacci_node_t *node, K key, V *data)
+{
   /* Set the node's data.  */
   node->m_data = data;
   node->m_key = key;
@@ -345,17 +364,22 @@ V*
 fibonacci_heap<K,V>::replace_key_data (fibonacci_node<K,V> *node, K key,
 				       V *data)
 {
-  V *odata;
   K okey;
   fibonacci_node<K,V> *y;
+  V *odata = node->m_data;
 
-  /* If we wanted to, we could actually do a real increase by redeleting and
-     inserting. However, this would require O (log n) time. So just bail out
-     for now.  */
+  /* If we wanted to, we do a real increase by redeleting and
+     inserting.  */
   if (node->compare_data (key) > 0)
-    return NULL;
+    {
+      delete_node (node, false);
 
-  odata = node->m_data;
+      node = new (node) fibonacci_node_t ();
+      insert (node, key, data);
+
+      return odata;
+    }
+
   okey = node->m_key;
   node->m_data = data;
   node->m_key = key;
@@ -385,7 +409,7 @@ fibonacci_heap<K,V>::replace_key_data (fibonacci_node<K,V> *node, K key,
 /* Extract minimum node in the heap.  */
 template<class K, class V>
 V*
-fibonacci_heap<K,V>::extract_min ()
+fibonacci_heap<K,V>::extract_min (bool release)
 {
   fibonacci_node<K,V> *z;
   V *ret = NULL;
@@ -397,28 +421,30 @@ fibonacci_heap<K,V>::extract_min ()
        node's data.  */
       z = extract_minimum_node ();
       ret = z->m_data;
-      delete (z);
+
+      if (release)
+        delete (z);
     }
 
   return ret;
 }
 
-/* Delete NODE in the heap.  */
+/* Delete NODE in the heap, if RELEASE is specified memory is released.  */
 
 template<class K, class V>
 V*
-fibonacci_heap<K,V>::delete_node (fibonacci_node<K,V> *node)
+fibonacci_heap<K,V>::delete_node (fibonacci_node<K,V> *node, bool release)
 {
   V *ret = node->m_data;
 
   /* To perform delete, we just make it the min key, and extract.  */
-  decrease_key (node, m_global_min_key);
+  replace_key (node, m_global_min_key);
   if (node != m_min)
     {
       fprintf (stderr, "Can't force minimum on fibheap.\n");
       abort ();
     }
-  extract_min ();
+  extract_min (release);
 
   return ret;
 }
