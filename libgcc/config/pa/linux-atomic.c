@@ -41,9 +41,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    using the kernel helper defined below.  There is no support for
    64-bit operations yet.  */
 
-/* A privileged instruction to crash a userspace program with SIGILL.  */
-#define ABORT_INSTRUCTION asm ("iitlbp %r0,(%sr0, %r0)")
-
 /* Determine kernel LWS function call (0=32-bit, 1=64-bit userspace).  */
 #define LWS_CAS (sizeof(long) == 4 ? 0 : 1)
 
@@ -64,7 +61,7 @@ __kernel_cmpxchg (int oldval, int newval, int *mem)
 	: "r1", "r20", "r22", "r23", "r29", "r31", "memory"
   );
   if (__builtin_expect (lws_errno == -EFAULT || lws_errno == -ENOSYS, 0))
-    ABORT_INSTRUCTION;
+    __builtin_trap ();
 
   /* If the kernel LWS call succeeded (lws_errno == 0), lws_ret contains
      the old value from memory.  If this value is equal to OLDVAL, the
@@ -91,7 +88,7 @@ __kernel_cmpxchg2 (void * oldval, void * newval, void *mem, int val_size)
 	: "r1", "r20", "r22", "r29", "r31", "fr4", "memory"
   );
   if (__builtin_expect (lws_errno == -EFAULT || lws_errno == -ENOSYS, 0))
-    ABORT_INSTRUCTION;
+    __builtin_trap ();
 
   /* If the kernel LWS call fails, retrun EBUSY */
   if (!lws_errno && lws_ret)
