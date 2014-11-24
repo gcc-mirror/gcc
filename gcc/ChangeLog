@@ -1,3 +1,19 @@
+2014-11-24  Martin Liska  <mliska@suse.cz>
+
+	* predict.c (propagate_freq): More elegant sreal API is used.
+	(estimate_bb_frequencies): Precomputed constants replaced by integer
+	constants.
+	* sreal.c (sreal::normalize): New function.
+	(sreal::to_int): Likewise.
+	(sreal::operator+): Likewise.
+	(sreal::operator-): Likewise.
+	(sreal::signedless_plus): Likewise.
+	(sreal::signedless_minus): Likewise.
+	(sreal::operator/): Negative number support is added.
+	* sreal.h: Definition of new functions added.
+	(inline sreal operator<<): New function.
+	(inline sreal operator>>): Likewise.
+
 2014-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-protos.h (struct tune_params): Add
