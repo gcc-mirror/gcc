@@ -3062,7 +3062,8 @@ maybe_canonicalize_mem_ref_addr (tree *t)
      accessed is a decl that has the same access semantics as the MEM_REF.  */
   if (TREE_CODE (*t) == MEM_REF
       && TREE_CODE (TREE_OPERAND (*t, 0)) == ADDR_EXPR
-      && integer_zerop (TREE_OPERAND (*t, 1)))
+      && integer_zerop (TREE_OPERAND (*t, 1))
+      && MR_DEPENDENCE_CLIQUE (*t) == 0)
     {
       tree decl = TREE_OPERAND (TREE_OPERAND (*t, 0), 0);
       tree alias_type = TREE_TYPE (TREE_OPERAND (*t, 1));

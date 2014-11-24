@@ -1,3 +1,8 @@
+2014-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55334
+	* gcc.dg/tree-ssa/restrict-5.c: New testcase.
+
 2014-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt45.adb: New test.

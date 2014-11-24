@@ -1,3 +1,44 @@
+2014-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55334
+	* function.h (struct function): Add last_clique member.
+	* tree-inline.c (remap_dependence_clique): New function.
+	(remap_gimple_op_r): Remap dependence cliques in MEM_REFs.
+	(copy_tree_body_r): Likewise.
+	(copy_cfg_body): Free dependence map.
+	(copy_gimple_seq_and_replace_locals): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Dump
+	dependence info.
+	* tree-ssa-alias.c (refs_may_alias_p_1): Use dependence info
+	to answer alias query.
+	* tree-ssa-structalias.c: Include tree-phinodes.h, ssa-iterators.h,
+	tree-pretty-print.h and gimple-walk.h.
+	(struct variable_info): Add is_restrict_var flag and ruid
+	member.
+	(new_var_info): Initialize is_restrict_var.
+	(make_constraint_from_restrict): Likewise.
+	(create_variable_info_for): Exclude restricts from global vars
+	from new handling.
+	(intra_create_variable_infos): But not those from parameters.
+	(visit_loadstore): New function.
+	(maybe_set_dependence_info): Likewise.
+	(compute_dependence_clique): Likewise.
+	(compute_may_aliases): Call compute_dependence_clique.
+	* tree-data-ref.c (dr_analyze_indices): Copy dependence info
+	to fake MEM_REF.
+	(dr_may_alias_p): Use recorded dependence info to answer
+	alias query.
+	* tree-core.h (struct tree_base): Add clique, base struct in
+	union.
+	* tree.h (MR_DEPENDENCE_CLIQUE): New macro.
+	(MR_DEPENDENCE_BASE): Likewise.
+	* tree-inline.h (dependence_hasher): New hash-map kind.
+	(struct copy_body_data): Add dependence_map pointer.
+	* gimple-fold.c (maybe_canonicalize_mem_ref_addr): Avoid
+	throwing away dependence info.
+	* tree-streamer-in.c (unpack_value_fields): Stream dependence info.
+	* tree-streamer-out.c (streamer_pack_tree_bitfields): Likewise.
+
 2014-11-23  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53976

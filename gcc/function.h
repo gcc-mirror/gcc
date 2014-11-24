@@ -589,6 +589,9 @@ struct GTY(()) function {
      a string describing the reason for failure.  */
   const char * GTY((skip)) cannot_be_copied_reason;
 
+  /* Last assigned dependence info clique.  */
+  unsigned short last_clique;
+
   /* Collected bit flags.  */
 
   /* Number of units of general registers that need saving in stdarg
