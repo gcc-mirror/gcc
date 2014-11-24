@@ -13,7 +13,7 @@ struct rtx_def
   unsigned int unchanging:1;
 
 };
-static rtx current_sym_addr;
+rtx current_sym_addr;
 
 int
 foo ()

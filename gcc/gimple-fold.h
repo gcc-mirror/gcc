@@ -39,6 +39,8 @@ extern tree follow_single_use_edges (tree);
 extern tree gimple_fold_stmt_to_constant_1 (gimple, tree (*) (tree),
 					    tree (*) (tree) = no_follow_ssa_edges);
 extern tree gimple_fold_stmt_to_constant (gimple, tree (*) (tree));
+extern tree fold_ctor_reference (tree, tree, unsigned HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT, tree);
 extern tree fold_const_aggregate_ref_1 (tree, tree (*) (tree));
 extern tree fold_const_aggregate_ref (tree);
 extern tree gimple_get_virt_method_for_binfo (HOST_WIDE_INT, tree,

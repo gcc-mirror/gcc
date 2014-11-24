@@ -1,3 +1,17 @@
+2014-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63679
+	* tree-ssa-sccvn.c: Include ipa-ref.h, plugin-api.h and cgraph.h.
+	(copy_reference_ops_from_ref): Fix non-constant ADDR_EXPR case
+	to properly leave off at -1.
+	(fully_constant_vn_reference_p): Generalize folding from
+	constant initializers.
+	(vn_reference_lookup_3): When looking through aggregate copies
+	handle offsetted reads and try simplifying the result to
+	a constant.
+	* gimple-fold.h (fold_ctor_reference): Export.
+	* gimple-fold.c (fold_ctor_reference): Likewise.
+
 2014-11-24  Petr Murzin  <petr.murzin@intel.com>
 
 	* simplify-rtx.c (simplify_ternary_operation): Simplify
