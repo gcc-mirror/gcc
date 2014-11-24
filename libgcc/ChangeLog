@@ -1,3 +1,8 @@
+2014-11-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (ABORT_INSTRUCTION): Use __builtin_trap()
+	instead.
+
 2014-11-21  Guy Martin  <gmsoft@tuxicoman.be>
 	    John David Anglin  <danglin@gcc.gnu.org>
 
