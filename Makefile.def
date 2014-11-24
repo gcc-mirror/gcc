@@ -48,7 +48,8 @@ host_modules= { module= gas; bootstrap=true; };
 host_modules= { module= gcc; bootstrap=true; 
 		extra_make_flags="$(EXTRA_GCC_FLAGS)"; };
 host_modules= { module= gmp; lib_path=.libs; bootstrap=true;
-		extra_configure_flags='--disable-shared';
+		// Work around in-tree gmp configure bug with missing flex.
+		extra_configure_flags='--disable-shared LEX="touch lex.yy.c"';
 		no_install= true;
 		// none-*-* disables asm optimizations, bootstrap-testing
 		// the compiler more thoroughly.
