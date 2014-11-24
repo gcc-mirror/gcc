@@ -1,3 +1,9 @@
+2014-11-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63942
+	* mangle.c (mangle_decl): If we aren't going to create a symbol
+	alias, don't build the alias DECL either.
+
 2014-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63905
