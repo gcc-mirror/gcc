@@ -309,6 +309,7 @@ static const struct cpu_vector_cost cortexa57_vector_cost =
 #define AARCH64_FUSE_MOV_MOVK	(1 << 0)
 #define AARCH64_FUSE_ADRP_ADD	(1 << 1)
 #define AARCH64_FUSE_MOVK_MOVK	(1 << 2)
+#define AARCH64_FUSE_ADRP_LDR	(1 << 3)
 
 #if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
 __extension__
@@ -332,7 +333,8 @@ static const struct tune_params cortexa53_tunings =
   &generic_vector_cost,
   NAMED_PARAM (memmov_cost, 4),
   NAMED_PARAM (issue_rate, 2),
-  NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD | AARCH64_FUSE_MOVK_MOVK))
+  NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
+                             | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR))
 };
 
 static const struct tune_params cortexa57_tunings =
@@ -10484,6 +10486,37 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
           && CONST_INT_P (SET_SRC (curr_set)))
         return true;
 
+    }
+  if (simple_sets_p
+      && (aarch64_tune_params->fuseable_ops & AARCH64_FUSE_ADRP_LDR))
+    {
+      /* We're trying to match:
+          prev (adrp) == (set (reg r0)
+                              (high (symbol_ref ("SYM"))))
+          curr (ldr) == (set (reg r1)
+                             (mem (lo_sum (reg r0)
+                                             (symbol_ref ("SYM")))))
+                 or
+          curr (ldr) == (set (reg r1)
+                             (zero_extend (mem
+                                           (lo_sum (reg r0)
+                                                   (symbol_ref ("SYM"))))))  */
+      if (satisfies_constraint_Ush (SET_SRC (prev_set))
+          && REG_P (SET_DEST (prev_set)) && REG_P (SET_DEST (curr_set)))
+        {
+          rtx curr_src = SET_SRC (curr_set);
+
+          if (GET_CODE (curr_src) == ZERO_EXTEND)
+            curr_src = XEXP (curr_src, 0);
+
+          if (MEM_P (curr_src) && GET_CODE (XEXP (curr_src, 0)) == LO_SUM
+              && REG_P (XEXP (XEXP (curr_src, 0), 0))
+              && REGNO (XEXP (XEXP (curr_src, 0), 0))
+                 == REGNO (SET_DEST (prev_set))
+              && rtx_equal_p (XEXP (XEXP (curr_src, 0), 1),
+                              XEXP (SET_SRC (prev_set), 0)))
+              return true;
+        }
     }
 
   return false;
