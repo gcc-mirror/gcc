@@ -26067,7 +26067,9 @@ $as_echo "#define HAVE_FPSETMASK 1" >>confdefs.h
   fi
 
 ac_fn_c_check_type "$LINENO" "fp_except" "ac_cv_type_fp_except" "
+#ifdef HAVE_IEEEFP_H
 #include <ieeefp.h>
+#endif
 #include <math.h>
 
 "
@@ -26080,7 +26082,9 @@ _ACEOF
 
 fi
 ac_fn_c_check_type "$LINENO" "fp_except_t" "ac_cv_type_fp_except_t" "
+#ifdef HAVE_IEEEFP_H
 #include <ieeefp.h>
+#endif
 #include <math.h>
 
 "
@@ -26094,7 +26098,9 @@ _ACEOF
 fi
 
 ac_fn_c_check_type "$LINENO" "fp_rnd" "ac_cv_type_fp_rnd" "
+#ifdef HAVE_IEEEFP_H
 #include <ieeefp.h>
+#endif
 #include <math.h>
 
 "
@@ -26107,7 +26113,9 @@ _ACEOF
 
 fi
 ac_fn_c_check_type "$LINENO" "fp_rnd_t" "ac_cv_type_fp_rnd_t" "
+#ifdef HAVE_IEEEFP_H
 #include <ieeefp.h>
+#endif
 #include <math.h>
 
 "

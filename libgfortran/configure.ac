@@ -524,11 +524,15 @@ fi
 # Check for SysV fpsetmask
 LIBGFOR_CHECK_FPSETMASK
 AC_CHECK_TYPES([fp_except,fp_except_t], [], [], [[
+#ifdef HAVE_IEEEFP_H
 #include <ieeefp.h>
+#endif
 #include <math.h>
 ]])
 AC_CHECK_TYPES([fp_rnd,fp_rnd_t], [], [], [[
+#ifdef HAVE_IEEEFP_H
 #include <ieeefp.h>
+#endif
 #include <math.h>
 ]])
 
