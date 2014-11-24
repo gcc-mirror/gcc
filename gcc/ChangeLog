@@ -1,3 +1,10 @@
+2014-11-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/63671
+	* ipa-inline-transform.c (can_remove_node_now_p_1): Handle alises
+	and -fno-devirtualize more carefully.
+	(can_remove_node_now_p): Update.
+
 2014-11-24  Andrew Pinski  <apinski@cavium.com>
 
 	PR rtl-opt/63972
