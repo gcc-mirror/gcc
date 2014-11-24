@@ -1,3 +1,15 @@
+2014-11-24  Martin Liska  <mliska@suse.cz>
+
+	PR lto/63968
+	* bb-reorder.c (find_traces_1_round): decreate_key is replaced
+	with replace_key method.
+	* fibonacci_heap.h (fibonacci_heap::insert): New argument.
+	(fibonacci_heap::replace_key_data): Likewise.
+	(fibonacci_heap::replace_key): New method that can even increment key,
+	this operation costs O(log N).
+	(fibonacci_heap::extract_min): New argument.
+	(fibonacci_heap::delete_node): Likewise.
+
 2014-11-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55334
