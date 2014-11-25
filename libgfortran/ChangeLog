@@ -1,3 +1,7 @@
+2014-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* intrinsics/env.c (getenv): Remove unused variable res_len.
+
 2014-11-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	* configure.ac: Guard include of <ieeefp.h>.

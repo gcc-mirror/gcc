@@ -42,7 +42,6 @@ PREFIX(getenv) (char * name, char * value, gfc_charlen_type name_len,
 {
   char *name_nt;
   char *res = NULL;
-  int res_len;
 
   if (name == NULL || value == NULL)
     runtime_error ("Both arguments to getenv are mandatory.");
