@@ -1,5 +1,10 @@
 2014-11-25  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/63534
+	* gcc.target/i386/pr63534.c: New test.
+
+2014-11-25  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/63527
 	* gcc.target/i386/pr63527.c: New test.
 
