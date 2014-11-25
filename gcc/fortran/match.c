@@ -4299,18 +4299,18 @@ gfc_match_common (void)
                   /* If we find an error, just print it and continue,
                      cause it's just semantic, and we can see if there
                      are more errors.  */
-                  gfc_error_now ("Variable '%s' at %L in common block '%s' "
-                                 "at %C must be declared with a C "
-                                 "interoperable kind since common block "
-                                 "'%s' is bind(c)",
-                                 sym->name, &(sym->declared_at), t->name,
-                                 t->name);
+                  gfc_error_now_1 ("Variable '%s' at %L in common block '%s' "
+				   "at %C must be declared with a C "
+				   "interoperable kind since common block "
+				   "'%s' is bind(c)",
+				   sym->name, &(sym->declared_at), t->name,
+				   t->name);
                 }
 
               if (sym->attr.is_bind_c == 1)
-                gfc_error_now ("Variable '%s' in common block "
-                               "'%s' at %C can not be bind(c) since "
-                               "it is not global", sym->name, t->name);
+                gfc_error_now ("Variable %qs in common block %qs at %C can not "
+                               "be bind(c) since it is not global", sym->name,
+			       t->name);
             }
 
 	  if (sym->attr.in_common)

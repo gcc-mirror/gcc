@@ -270,11 +270,12 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
 	   && !gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as))
     return false;
 
-  if (sym->attr.is_bind_c == 1 && gfc_option.warn_c_binding_type)
+  if (sym->attr.is_bind_c == 1 && warn_c_binding_type)
     {
       /* BIND(C) variables should not be implicitly declared.  */
-      gfc_warning_now ("Implicitly declared BIND(C) variable '%s' at %L may "
-                       "not be C interoperable", sym->name, &sym->declared_at);
+      gfc_warning_now (OPT_Wc_binding_type, "Implicitly declared BIND(C) "
+		       "variable %qs at %L may not be C interoperable",
+		       sym->name, &sym->declared_at);
       sym->ts.f90_type = sym->ts.type;
     }
 
@@ -284,14 +285,15 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
 	  && (sym->ns->proc_name->attr.subroutine != 0
 	      || sym->ns->proc_name->attr.function != 0)
 	  && sym->ns->proc_name->attr.is_bind_c != 0
-	  && gfc_option.warn_c_binding_type)
+	  && warn_c_binding_type)
         {
           /* Dummy args to a BIND(C) routine may not be interoperable if
              they are implicitly typed.  */
-          gfc_warning_now ("Implicitly declared variable '%s' at %L may not "
-                           "be C interoperable but it is a dummy argument to "
-                           "the BIND(C) procedure '%s' at %L", sym->name,
-                           &(sym->declared_at), sym->ns->proc_name->name,
+          gfc_warning_now (OPT_Wc_binding_type, "Implicitly declared variable "
+			   "%qs at %L may not be C interoperable but it is a "
+			   "dummy argument to the BIND(C) procedure %qs at %L",
+			   sym->name, &(sym->declared_at),
+			   sym->ns->proc_name->name,
                            &(sym->ns->proc_name->declared_at));
           sym->ts.f90_type = sym->ts.type;
         }
@@ -3854,7 +3856,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
   if (derived_sym->attr.is_bind_c != 1)
     {
       derived_sym->ts.is_c_interop = 0;
-      gfc_error_now ("Derived type '%s' declared at %L must have the BIND "
+      gfc_error_now ("Derived type %qs declared at %L must have the BIND "
                      "attribute to be C interoperable", derived_sym->name,
                      &(derived_sym->declared_at));
       retval = false;
@@ -3949,8 +3951,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
 		 recompiles with different flags (e.g., -m32 and -m64 on
 		 x86_64 and using integer(4) to claim interop with a
 		 C_LONG).  */
-	      if (derived_sym->attr.is_bind_c == 1
-		  && gfc_option.warn_c_binding_type)
+	      if (derived_sym->attr.is_bind_c == 1 && warn_c_binding_type)
 		/* If the derived type is bind(c), all fields must be
 		   interop.  */
 		gfc_warning ("Component '%s' in derived type '%s' at %L "
@@ -3958,7 +3959,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
                              "derived type '%s' is BIND(C)",
                              curr_comp->name, derived_sym->name,
                              &(curr_comp->loc), derived_sym->name);
-	      else if (gfc_option.warn_c_binding_type)
+	      else if (warn_c_binding_type)
 		/* If derived type is param to bind(c) routine, or to one
 		   of the iso_c_binding procs, it must be interoperable, so
 		   all fields must interop too.	 */

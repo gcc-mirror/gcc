@@ -1,6 +1,7 @@
 C { dg-do compile }
 C { dg-options "-Werror -fmax-errors=1" }
-100   ! { dg-warning "empty statement" }
+100   ! { dg-error "empty statement" }
       end
-C { dg-error "count reached limit" "" { target *-*-* } 0 }
-C { dg-excess-errors "compilation terminated" }
+subroutine foo ! Not checked ...
+end function ! ... but an error
+C { dg-excess-errors "warnings being treated as errors" }

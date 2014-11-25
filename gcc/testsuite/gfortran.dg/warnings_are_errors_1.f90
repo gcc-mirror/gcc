@@ -21,6 +21,7 @@
       cplx = 20.
 
 ! gfc_warning_now:
- 1 ! { dg-warning "Ignoring statement label in empty statement" }
+ 1 ! { dg-error "Ignoring statement label in empty statement" }
        end
 ! { dg-final { output-exists-not } }
+! { dg-excess-errors "warnings being treated as errors" }

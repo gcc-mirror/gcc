@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "flags.h"
 #include "gfortran.h"
 #include "arith.h"
 #include "match.h"
@@ -3227,7 +3228,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
   if (rvalue->expr_type == EXPR_CONSTANT && lvalue->ts.type == rvalue->ts.type
       && (lvalue->ts.type == BT_REAL || lvalue->ts.type == BT_COMPLEX))
     {
-      if (lvalue->ts.kind < rvalue->ts.kind && gfc_option.gfc_warn_conversion)
+      if (lvalue->ts.kind < rvalue->ts.kind && warn_conversion)
 	{
 	  /* As a special bonus, don't warn about REAL rvalues which are not
 	     changed by the conversion if -Wconversion is specified.  */
@@ -3258,8 +3259,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 			 gfc_typename (&lvalue->ts), &rvalue->where);
 
 	}
-      else if (gfc_option.warn_conversion_extra
-	       && lvalue->ts.kind > rvalue->ts.kind)
+      else if (warn_conversion_extra && lvalue->ts.kind > rvalue->ts.kind)
 	{
 	  gfc_warning ("Conversion from %s to %s at %L",
 		       gfc_typename (&rvalue->ts),
@@ -4971,11 +4971,12 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 			  if (gfc_dep_compare_expr (ec, en) == 0)
 			    {
 			      if (context)
-				gfc_error_now ("Elements with the same value at %L"
-					       " and %L in vector subscript"
-					       " in a variable definition"
-					       " context (%s)", &(ec->where),
-					     &(en->where), context);
+				gfc_error_now_1 ("Elements with the same value "
+						 "at %L and %L in vector "
+						 "subscript in a variable "
+						 "definition context (%s)",
+						 &(ec->where), &(en->where),
+						 context);
 			      return false;
 			    }
 			}

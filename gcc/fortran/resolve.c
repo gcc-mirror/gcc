@@ -924,7 +924,7 @@ resolve_common_vars (gfc_symbol *sym, bool named_common)
 	}
 
       if (UNLIMITED_POLY (csym))
-	gfc_error_now ("'%s' in cannot appear in COMMON at %L "
+	gfc_error_now ("%qs in cannot appear in COMMON at %L "
 		       "[F2008:C5100]", csym->name, &csym->declared_at);
 
       if (csym->ts.type != BT_DERIVED)
@@ -932,15 +932,15 @@ resolve_common_vars (gfc_symbol *sym, bool named_common)
 
       if (!(csym->ts.u.derived->attr.sequence
 	    || csym->ts.u.derived->attr.is_bind_c))
-	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
+	gfc_error_now ("Derived type variable %qs in COMMON at %L "
 		       "has neither the SEQUENCE nor the BIND(C) "
 		       "attribute", csym->name, &csym->declared_at);
       if (csym->ts.u.derived->attr.alloc_comp)
-	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
+	gfc_error_now ("Derived type variable %qs in COMMON at %L "
 		       "has an ultimate component that is "
 		       "allocatable", csym->name, &csym->declared_at);
       if (gfc_has_default_initializer (csym->ts.u.derived))
-	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
+	gfc_error_now ("Derived type variable %qs in COMMON at %L "
 		       "may not have default initializer", csym->name,
 		       &csym->declared_at);
 
@@ -9224,10 +9224,10 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	rlen = mpz_get_si (rhs->ts.u.cl->length->value.integer);
 
       if (rlen && llen && rlen > llen)
-	gfc_warning_now_2 (OPT_Wcharacter_truncation,
-			   "CHARACTER expression will be truncated "
-			   "in assignment (%d/%d) at %L",
-			   llen, rlen, &code->loc);
+	gfc_warning_now (OPT_Wcharacter_truncation,
+			 "CHARACTER expression will be truncated "
+			 "in assignment (%d/%d) at %L",
+			 llen, rlen, &code->loc);
     }
 
   /* Ensure that a vector index expression for the lvalue is evaluated

@@ -1398,17 +1398,18 @@ gfc_check_cmplx (gfc_expr *x, gfc_expr *y, gfc_expr *kind)
   if (!kind_check (kind, 2, BT_COMPLEX))
     return false;
 
-  if (!kind && gfc_option.gfc_warn_conversion
+  if (!kind && warn_conversion
       && x->ts.type == BT_REAL && x->ts.kind > gfc_default_real_kind)
-    gfc_warning_now ("Conversion from %s to default-kind COMPLEX(%d) at %L "
-		     "might lose precision, consider using the KIND argument",
-		     gfc_typename (&x->ts), gfc_default_real_kind, &x->where);
-  else if (y && !kind && gfc_option.gfc_warn_conversion
+    gfc_warning_now (OPT_Wconversion, "Conversion from %s to default-kind "
+		     "COMPLEX(%d) at %L might lose precision, consider using "
+		     "the KIND argument", gfc_typename (&x->ts),
+		     gfc_default_real_kind, &x->where);
+  else if (y && !kind && warn_conversion
 	   && y->ts.type == BT_REAL && y->ts.kind > gfc_default_real_kind)
-    gfc_warning_now ("Conversion from %s to default-kind COMPLEX(%d) at %L "
-		     "might lose precision, consider using the KIND argument",
-		     gfc_typename (&y->ts), gfc_default_real_kind, &y->where);
-
+    gfc_warning_now (OPT_Wconversion, "Conversion from %s to default-kind "
+		     "COMPLEX(%d) at %L might lose precision, consider using "
+		     "the KIND argument", gfc_typename (&y->ts),
+		     gfc_default_real_kind, &y->where);
   return true;
 }
 

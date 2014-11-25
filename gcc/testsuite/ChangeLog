@@ -1,9 +1,16 @@
+2014-11-25  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/empty_label.f: Change test to continue testing
+	for -fmax-errors=1.
+	* gfortran.dg/empty_label.f90: Ditto.
+	* gfortran.dg/warnings_are_errors_1.f90: Update dg-*.
+
 2014-11-26  Andreas Tobler  <andreast@gcc.gnu.org>
 
-        * g++.old-deja/g++.jason/enum6.C: Use arm_eabi for dg-options.
-        Update comment.
-        * g++.old-deja/g++.law/enum9.C: Likewise.
-        * g++.old-deja/g++.other/enum4.C: Likewise.
+	* g++.old-deja/g++.jason/enum6.C: Use arm_eabi for dg-options.
+	Update comment.
+	* g++.old-deja/g++.law/enum9.C: Likewise.
+	* g++.old-deja/g++.other/enum4.C: Likewise.
 
 2014-11-25  H.J. Lu  <hongjiu.lu@intel.com>
 

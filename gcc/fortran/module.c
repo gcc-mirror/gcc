@@ -6602,7 +6602,7 @@ use_iso_fortran_env_module (void)
 		gfc_warning_now ("Use of the NUMERIC_STORAGE_SIZE named "
 				 "constant from intrinsic module "
 				 "ISO_FORTRAN_ENV at %L is incompatible with "
-				 "option %s", &u->where,
+				 "option %qs", &u->where,
 				 gfc_option.flag_default_integer
 				   ? "-fdefault-integer-8"
 				   : "-fdefault-real-8");
@@ -6745,8 +6745,8 @@ gfc_use_module (gfc_use_list *module)
   current_intmod = INTMOD_NONE;
 
   if (!only_flag)
-    gfc_warning_now_2 (OPT_Wuse_without_only,
-		       "USE statement at %C has no ONLY qualifier");
+    gfc_warning_now (OPT_Wuse_without_only,
+		     "USE statement at %C has no ONLY qualifier");
 
   filename = XALLOCAVEC (char, strlen (module_name) + strlen (MODULE_EXTENSION)
 			       + 1);
