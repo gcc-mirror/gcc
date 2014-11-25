@@ -1,5 +1,10 @@
 2014-11-25  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/mn10300/mn10300.c (mn10300_insert_setlb_lcc): Remove
+	PATTERN call.
+
+2014-11-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/sysv4.h (ASM_OUTPUT_REG_POP): Use addi instead
 	of addic.
 
