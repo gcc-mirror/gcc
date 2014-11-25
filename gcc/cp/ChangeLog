@@ -1,3 +1,9 @@
+2014-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63786
+	* parser.c (cp_parser_label_for_labeled_statement): Check the case
+	with check_for_bare_parameter_packs.
+
 2014-11-24  Jonathan Wakely  <jwakely@redhat.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
