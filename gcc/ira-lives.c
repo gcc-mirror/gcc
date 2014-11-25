@@ -1123,10 +1123,9 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	 pessimistic, but it probably doesn't matter much in practice.  */
       FOR_BB_INSNS_REVERSE (bb, insn)
 	{
-	  int regno;
 	  ira_allocno_t a;
 	  df_ref def, use;
-	  bool call_p, clear_pic_use_conflict_p;
+	  bool call_p;
 
 	  if (!NONDEBUG_INSN_P (insn))
 	    continue;
@@ -1137,7 +1136,9 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		     curr_point);
 
 	  call_p = CALL_P (insn);
-	  clear_pic_use_conflict_p = false;
+#ifdef REAL_PIC_OFFSET_TABLE_REGNUM
+	  int regno;
+	  bool clear_pic_use_conflict_p = false;
 	  /* Processing insn usage in call insn can create conflict
 	     with pic pseudo and pic hard reg and that is wrong.
 	     Check this situation and fix it at the end of the insn
@@ -1150,6 +1151,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		   && ! TEST_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS
 					   (ALLOCNO_OBJECT (a, 0)),
 					   REAL_PIC_OFFSET_TABLE_REGNUM));
+#endif
 
 	  /* Mark each defined value as live.  We need to do this for
 	     unused values because they still conflict with quantities
@@ -1302,6 +1304,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		}
 	    }
 
+#ifdef REAL_PIC_OFFSET_TABLE_REGNUM
 	  if (clear_pic_use_conflict_p)
 	    {
 	      regno = REGNO (pic_offset_table_rtx);
@@ -1312,7 +1315,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 				  (ALLOCNO_OBJECT (a, 0)),
 				  REAL_PIC_OFFSET_TABLE_REGNUM);
 	    }
-
+#endif
 	  curr_point++;
 	}
 
