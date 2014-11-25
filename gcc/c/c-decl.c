@@ -8353,7 +8353,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   else if (warn_missing_declarations
 	   && TREE_PUBLIC (decl1)
 	   && old_decl == 0
-	   && !MAIN_NAME_P (DECL_NAME (decl1)))
+	   && !MAIN_NAME_P (DECL_NAME (decl1))
+	   && !DECL_DECLARED_INLINE_P (decl1))
     warning_at (loc, OPT_Wmissing_declarations,
 		"no previous declaration for %qD",
 		decl1);

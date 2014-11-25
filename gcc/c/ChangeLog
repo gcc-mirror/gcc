@@ -1,3 +1,9 @@
+2014-11-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63877
+	* c-decl.c (start_function): Disable -Wmissing-declarations warning
+	for inline functions.
+
 2014-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/63764
