@@ -1,3 +1,11 @@
+2014-11-25  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/mips.exp: Add support for -msoft-float and
+	-mhard-float options.  Ensure that explicit -mfp* options imply
+	both -mhard-float and -mdouble-float.
+	* gcc.target/mips/call-clobbered-1.c: Add -mhard-float to the
+	compile options.
+
 2014-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63786

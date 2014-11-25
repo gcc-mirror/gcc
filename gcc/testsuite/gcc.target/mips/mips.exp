@@ -234,6 +234,7 @@ set mips_option_groups {
     dump_pattern "-dp"
     endianness "-E(L|B)|-me(l|b)"
     float "-m(hard|soft)-float"
+    fpu "-m(double|single)-float"
     forbid_cpu "forbid_cpu=.*"
     fp "-mfp(32|xx|64)"
     gp "-mgp(32|64)"
@@ -858,6 +859,8 @@ proc mips-dg-finish {} {
 #            |                           |
 #         -modd-spreg                 -mno-odd-spreg
 #            |                           |
+#         -mdouble-float              -msingle-float
+#            |                           |
 #         -mabs=2008/-mabs=legacy     <no option>
 #            |                           |
 #         -mhard-float                -msoft-float
@@ -947,7 +950,12 @@ proc mips-dg-options { args } {
     mips_option_dependency options "-mips3d" "-mpaired-single"
     mips_option_dependency options "-mpaired-single" "-mfp64"
     mips_option_dependency options "-mfp64" "-mhard-float"
+    mips_option_dependency options "-mfp32" "-mhard-float"
+    mips_option_dependency options "-mfpxx" "-mhard-float"
     mips_option_dependency options "-mfp64" "-modd-spreg"
+    mips_option_dependency options "-mfp64" "-mdouble-float"
+    mips_option_dependency options "-mfp32" "-mdouble-float"
+    mips_option_dependency options "-mfpxx" "-mdouble-float"
     mips_option_dependency options "-mabs=2008" "-mhard-float"
     mips_option_dependency options "-mabs=legacy" "-mhard-float"
     mips_option_dependency options "-mrelax-pic-calls" "-mno-plt"
