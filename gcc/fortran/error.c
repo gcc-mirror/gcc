@@ -1282,21 +1282,17 @@ gfc_error_now_1 (const char *gmsgid, ...)
 /* This shouldn't happen... but sometimes does.  */
 
 void
-gfc_internal_error (const char *format, ...)
+gfc_internal_error (const char *gmsgid, ...)
 {
   va_list argp;
+  diagnostic_info diagnostic;
 
-  buffer_flag = 0;
-
-  va_start (argp, format);
-
-  show_loci (&gfc_current_locus, NULL);
-  error_printf ("Internal Error at (1):");
-
-  error_print ("", format, argp);
+  va_start (argp, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION, DK_ICE);
+  report_diagnostic (&diagnostic);
   va_end (argp);
 
-  exit (ICE_EXIT_CODE);
+  gcc_unreachable ();
 }
 
 

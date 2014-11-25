@@ -3933,7 +3933,7 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
 	  break;
 	
 	default:
-	  internal_error ("gfc_trans_omp_workshare(): Bad statement code");
+	  gfc_internal_error ("gfc_trans_omp_workshare(): Bad statement code");
 	}
 
       gfc_set_backend_locus (&code->loc);

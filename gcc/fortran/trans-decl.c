@@ -1435,7 +1435,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     }
 
   if (sym->attr.intrinsic)
-    internal_error ("intrinsic variable which isn't a procedure");
+    gfc_internal_error ("intrinsic variable which isn't a procedure");
 
   /* Create string length decl first so that they can be used in the
      type declaration.  */
@@ -4418,8 +4418,8 @@ gfc_create_module_variable (gfc_symbol * sym)
     return;
 
   if (sym->backend_decl && !sym->attr.vtab && !sym->attr.target)
-    internal_error ("backend decl for module variable %s already exists",
-		    sym->name);
+    gfc_internal_error ("backend decl for module variable %qs already exists",
+			sym->name);
 
   if (sym->module && !sym->attr.result && !sym->attr.dummy
       && (sym->attr.access == ACCESS_UNKNOWN

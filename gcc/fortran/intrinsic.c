@@ -1086,7 +1086,7 @@ make_generic (const char *name, gfc_isym_id id, int standard ATTRIBUTE_UNUSED)
 
   g = gfc_find_function (name);
   if (g == NULL)
-    gfc_internal_error ("make_generic(): Can't find generic symbol '%s'",
+    gfc_internal_error ("make_generic(): Can't find generic symbol %qs",
 			name);
 
   gcc_assert (g->id == id);
@@ -4307,7 +4307,7 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
       break;
 
     default:
-      gfc_internal_error ("Invalid standard code on intrinsic '%s' (%d)",
+      gfc_internal_error ("Invalid standard code on intrinsic %qs (%d)",
 			  isym->name, isym->standard);
     }
 
@@ -4735,7 +4735,7 @@ bad:
       return false;
     }
 
-  gfc_internal_error ("Can't convert %s to %s at %L",
+  gfc_internal_error ("Can't convert %qs to %qs at %L",
 		      gfc_typename (&from_ts), gfc_typename (ts),
 		      &expr->where);
   /* Not reached */

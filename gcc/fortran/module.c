@@ -5496,7 +5496,7 @@ write_symbol (int n, gfc_symbol *sym)
   const char *label;
 
   if (sym->attr.flavor == FL_UNKNOWN || sym->attr.flavor == FL_LABEL)
-    gfc_internal_error ("write_symbol(): bad module symbol '%s'", sym->name);
+    gfc_internal_error ("write_symbol(): bad module symbol %qs", sym->name);
 
   mio_integer (&n);
 

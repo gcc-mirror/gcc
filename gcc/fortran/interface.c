@@ -3542,7 +3542,7 @@ gfc_find_sym_in_symtree (gfc_symbol *sym)
       if (st)
 	return st;
     }
-  gfc_internal_error ("Unable to find symbol %s", sym->name);
+  gfc_internal_error ("Unable to find symbol %qs", sym->name);
   /* Not reached.  */
 }
 
