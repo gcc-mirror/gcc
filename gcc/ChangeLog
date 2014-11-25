@@ -1,3 +1,9 @@
+2014-11-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/63527
+	* ira-lives.c (process_bb_node_lives): Check and remove conflict
+	of pic pseudo with pic hard reg.
+
 2014-11-25  Rohit  <rohitarulraj@freescale.com>
 
 	PR bootstrap/63703
