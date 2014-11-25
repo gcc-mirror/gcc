@@ -587,7 +587,7 @@ append_offload_options (obstack *argv_obstack, const char *target,
 	    {
 	      next = strchr (cur, ',');
 	      if (next == NULL)
-		next = strchr (cur, '\0');
+		next = opts;
 	      next = (next > opts) ? opts : next;
 
 	      if (strlen (target) == (size_t) (next - cur)
