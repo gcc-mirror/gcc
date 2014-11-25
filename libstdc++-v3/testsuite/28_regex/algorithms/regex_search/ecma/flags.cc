@@ -65,6 +65,8 @@ test01()
 			     regex_constants::match_prev_avail));
   VERIFY( regex_search_debug("ba"+1, regex("\\Ba"),
 			     regex_constants::match_prev_avail));
+  // PR libstdc++/63920
+  VERIFY(!regex_search_debug("a", regex("b*"), regex_constants::match_not_null));
 }
 
 int

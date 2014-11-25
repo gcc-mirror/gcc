@@ -1,3 +1,13 @@
+2014-11-25  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/63920
+	* include/bits/regex_executor.h: Make _M_begin non const.
+	* include/bits/regex_executor.tcc (_Executor<>::_M_search): Increase
+	_M_begin in search algorithm, so that _M_begin is treated as
+	"current start position" for each search iteration.
+	* testsuite/28_regex/algorithms/regex_search/ecma/flags.cc: New
+	testcase.
+
 2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/63784
