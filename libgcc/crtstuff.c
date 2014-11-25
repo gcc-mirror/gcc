@@ -582,7 +582,7 @@ __do_global_ctors_1(void)
 #endif
 
 #ifdef __LIBGCC_JCR_SECTION_NAME__
-  void **jcr_list
+  void **jcr_list;
   __asm ("" : "=g" (jcr_list) : "0" (__JCR_LIST__));
   if (__builtin_expect (*jcr_list != NULL, 0))
     {
