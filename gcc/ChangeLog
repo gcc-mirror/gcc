@@ -1,3 +1,9 @@
+2014-11-25  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-cfg.c (verify_sese): New function.
+	(move_sese_region_to_fn): Call verify_sese.
+	* tree-cfg.h (verify_sese): Declare.
+
 2014-11-25  Richard Biener  <rguenther@suse.de>
 
 	PR lto/64065

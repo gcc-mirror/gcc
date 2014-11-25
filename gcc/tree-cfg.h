@@ -73,6 +73,7 @@ extern bool gimple_duplicate_sese_tail (edge, edge, basic_block *, unsigned,
 				      basic_block *);
 extern void gather_blocks_in_sese_region (basic_block entry, basic_block exit,
 					  vec<basic_block> *bbs_p);
+extern void verify_sese (basic_block, basic_block, vec<basic_block> *);
 extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 				           basic_block, tree);
 extern void dump_function_to_file (tree, FILE *, int);
