@@ -1050,11 +1050,10 @@ gfc_is_intrinsic (gfc_symbol* sym, int subroutine_flag, locus loc)
   if (!gfc_check_intrinsic_standard (isym, &symstd, false, loc)
       && !sym->attr.artificial)
     {
-      if (sym->attr.proc == PROC_UNKNOWN
-	  && gfc_option.warn_intrinsics_std)
-	gfc_warning_now ("The intrinsic '%s' at %L is not included in the"
-			 " selected standard but %s and '%s' will be"
-			 " treated as if declared EXTERNAL.  Use an"
+      if (sym->attr.proc == PROC_UNKNOWN && warn_intrinsics_std)
+	gfc_warning_now (OPT_Wintrinsics_std, "The intrinsic %qs at %L is not "
+			 "included in the selected standard but %s and %qs will"
+			 " be treated as if declared EXTERNAL.  Use an"
 			 " appropriate -std=* option or define"
 			 " -fall-intrinsics to allow this intrinsic.",
 			 sym->name, &loc, symstd, sym->name);
@@ -4652,14 +4651,14 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	  /* Larger kinds can hold values of smaller kinds without problems.
 	     Hence, only warn if target kind is smaller than the source
 	     kind - or if -Wconversion-extra is specified.  */
-	  if (gfc_option.warn_conversion_extra)
-	    gfc_warning_now ("Conversion from %s to %s at %L",
+	  if (warn_conversion && from_ts.kind > ts->kind)
+	    gfc_warning_now (OPT_Wconversion, "Possible change of value in "
+			     "conversion from %s to %s at %L",
 			     gfc_typename (&from_ts), gfc_typename (ts),
 			     &expr->where);
-	  else if (gfc_option.gfc_warn_conversion
-		   && from_ts.kind > ts->kind)
-	    gfc_warning_now ("Possible change of value in conversion "
-			     "from %s to %s at %L", gfc_typename (&from_ts),
+	  else if (warn_conversion_extra)
+	    gfc_warning_now (OPT_Wconversion_extra, "Conversion from %s to %s "
+			     "at %L", gfc_typename (&from_ts),
 			     gfc_typename (ts), &expr->where);
 	}
       else if ((from_ts.type == BT_REAL && ts->type == BT_INTEGER)
@@ -4668,18 +4667,17 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	{
 	  /* Conversion from REAL/COMPLEX to INTEGER or COMPLEX to REAL
 	     usually comes with a loss of information, regardless of kinds.  */
-	  if (gfc_option.warn_conversion_extra
-	      || gfc_option.gfc_warn_conversion)
-	    gfc_warning_now ("Possible change of value in conversion "
-			     "from %s to %s at %L", gfc_typename (&from_ts),
-			     gfc_typename (ts), &expr->where);
+	  if (warn_conversion)
+	    gfc_warning_now (OPT_Wconversion, "Possible change of value in "
+			     "conversion from %s to %s at %L",
+			     gfc_typename (&from_ts), gfc_typename (ts),
+			     &expr->where);
 	}
       else if (from_ts.type == BT_HOLLERITH || ts->type == BT_HOLLERITH)
 	{
 	  /* If HOLLERITH is involved, all bets are off.  */
-	  if (gfc_option.warn_conversion_extra
-	      || gfc_option.gfc_warn_conversion)
-	    gfc_warning_now ("Conversion from %s to %s at %L",
+	  if (warn_conversion)
+	    gfc_warning_now (OPT_Wconversion, "Conversion from %s to %s at %L",
 			     gfc_typename (&from_ts), gfc_typename (ts),
 			     &expr->where);
 	}

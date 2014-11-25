@@ -803,7 +803,8 @@ the expression after conversion. Implied by @option{-Wall}.
 @opindex @code{Wconversion-extra}
 @cindex warnings, conversion
 @cindex conversion
-Warn about implicit conversions between different types and kinds.
+Warn about implicit conversions between different types and kinds. This
+option does @emph{not} imply @option{-Wconversion}.
 
 @item -Wextra
 @opindex @code{Wextra}

@@ -1,3 +1,42 @@
+2014-11-25  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_option_t): Remove flags moved as Var to .opt.
+	(gfc_error_now_1): Renamed from gfc_error_now.
+	(gfc_error_now): Renamed from gfc_error_now_2.
+	(gfc_warning_now_1): Renamed from gfc_warning_now.
+	(gfc_warning_now): Renamed from gfc_warning_now_2.
+	* error.c (gfc_error_now_1): Renamed from gfc_error_now.
+	(gfc_error_now): Renamed from gfc_error_now_2.
+	(gfc_warning_now_1): Renamed from gfc_warning_now.
+	(gfc_warning_now): Renamed from gfc_warning_now_2.
+	(gfc_get_errors): Include common diagnostic in count.
+	* lang.opt (Wc-binding-type, Wconversion, Wconversion-extra,
+	Wintrinsics-std): Create a Var for those warnings.
+	* check.c (gfc_check_cmplx): Pass warning flag to
+	diagnostic function.
+	* decl.c (get_proc_name, gfc_verify_c_interop_param, build_sym
+	gfc_set_constant_character_len, verify_bind_c_sym): Ditto; use
+	_1 for old diagnostic, remove _2 for new diagnostic.
+	* expr.c (gfc_check_assign, gfc_check_vardef_context): Ditto.
+	* frontend-passes.c (doloop_code, do_function): Ditto.
+	* intrinsic.c (gfc_is_intrinsic, gfc_convert_type_warn): Ditto.
+	* match.c (gfc_match_common): Ditto.
+	* module.c (use_iso_fortran_env_module, gfc_use_module): Ditto.
+	* parse.c (decode_statement, decode_gcc_attribute, next_free,
+	next_fixed, gfc_check_do_variable): Ditto.
+	* resolve.c (resolve_common_vars, resolve_ordinary_assign):
+	Ditto.
+	* scanner.c (add_path_to_list, skip_free_comments,
+	gfc_next_char_literal, gfc_gobble_whitespace, load_line,
+	preprocessor_line, load_file): Ditto.
+	* symbol.c (gfc_set_default_type, verify_bind_c_derived_type):
+	Ditto.
+	* options.c (gfc_post_options): Ditto.
+	(gfc_init_options, set_Wall, gfc_handle_option): Ditto; remove
+	flags which now have a Var.
+	* invoke.texi (Wconversion-extra): Make clear that the flag
+	does not imply -Wconversion.
+
 2014-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/63938

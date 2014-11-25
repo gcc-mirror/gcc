@@ -898,17 +898,17 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 	  && sym->attr.proc != 0
 	  && (sym->attr.subroutine || sym->attr.function)
 	  && sym->attr.if_source != IFSRC_UNKNOWN)
-	gfc_error_now ("Procedure '%s' at %C is already defined at %L",
-		       name, &sym->declared_at);
+	gfc_error_now_1 ("Procedure '%s' at %C is already defined at %L",
+			 name, &sym->declared_at);
 
       /* Trap a procedure with a name the same as interface in the
 	 encompassing scope.  */
       if (sym->attr.generic != 0
 	  && (sym->attr.subroutine || sym->attr.function)
 	  && !sym->attr.mod_proc)
-	gfc_error_now ("Name '%s' at %C is already defined"
-		       " as a generic interface at %L",
-		       name, &sym->declared_at);
+	gfc_error_now_1 ("Name '%s' at %C is already defined"
+			 " as a generic interface at %L",
+			 name, &sym->declared_at);
 
       /* Trap declarations of attributes in encompassing scope.  The
 	 signature for this is that ts.kind is set.  Legitimate
@@ -919,9 +919,9 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 	  && gfc_current_ns->parent != NULL
 	  && sym->attr.access == 0
 	  && !module_fcn_entry)
-	gfc_error_now ("Procedure '%s' at %C has an explicit interface "
-		       "and must not have attributes declared at %L",
-		       name, &sym->declared_at);
+	gfc_error_now_1 ("Procedure '%s' at %C has an explicit interface "
+			 "and must not have attributes declared at %L",
+			 name, &sym->declared_at);
     }
 
   if (gfc_current_ns->parent == NULL || *result == NULL)
@@ -990,9 +990,9 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
     {
       if (sym->attr.is_bind_c == 0)
         {
-          gfc_error_now_2 ("Procedure %qs at %L must have the BIND(C) "
-			   "attribute to be C interoperable", sym->name,
-			   &(sym->declared_at));
+          gfc_error_now ("Procedure %qs at %L must have the BIND(C) "
+			 "attribute to be C interoperable", sym->name,
+			 &(sym->declared_at));
           return false;
         }
       else
@@ -1029,7 +1029,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 			   "because it is polymorphic",
 			   sym->name, &(sym->declared_at),
 			   sym->ns->proc_name->name);
-	      else if (gfc_option.warn_c_binding_type)
+	      else if (warn_c_binding_type)
 		gfc_warning ("Variable '%s' at %L is a dummy argument of the "
 			     "BIND(C) procedure '%s' but may not be C "
 			     "interoperable",
@@ -1182,9 +1182,9 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
       if (sym->common_block != NULL && sym->common_block->is_bind_c == 1
           && sym->ts.is_c_interop != 1)
         {
-          gfc_error_now ("Variable '%s' in common block '%s' at %C "
+          gfc_error_now ("Variable %qs in common block %qs at %C "
                          "must be declared with a C interoperable "
-                         "kind since common block '%s' is BIND(C)",
+                         "kind since common block %qs is BIND(C)",
                          sym->name, sym->common_block->name,
                          sym->common_block->name);
           gfc_clear_error ();
@@ -1224,9 +1224,9 @@ gfc_set_constant_character_len (int len, gfc_expr *expr, int check_len)
 	gfc_wide_memset (&s[slen], ' ', len - slen);
 
       if (warn_character_truncation && slen > len)
-	gfc_warning_now_2 (OPT_Wcharacter_truncation,
-			   "CHARACTER expression at %L is being truncated "
-			   "(%d/%d)", &expr->where, slen, len);
+	gfc_warning_now (OPT_Wcharacter_truncation,
+			 "CHARACTER expression at %L is being truncated "
+			 "(%d/%d)", &expr->where, slen, len);
 
       /* Apply the standard by 'hand' otherwise it gets cleared for
 	 initializers.  */
@@ -4029,7 +4029,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
     {
       tmp_sym = tmp_sym->result;
       /* Make sure it wasn't an implicitly typed result.  */
-      if (tmp_sym->attr.implicit_type && gfc_option.warn_c_binding_type)
+      if (tmp_sym->attr.implicit_type && warn_c_binding_type)
 	{
 	  gfc_warning ("Implicitly declared BIND(C) function '%s' at "
                        "%L may not be C interoperable", tmp_sym->name,
@@ -4050,7 +4050,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
       if (!gfc_verify_c_interop (&(tmp_sym->ts)))
 	{
 	  /* See if we're dealing with a sym in a common block or not.	*/
-	  if (is_in_common == 1 && gfc_option.warn_c_binding_type)
+	  if (is_in_common == 1 && warn_c_binding_type)
 	    {
 	      gfc_warning ("Variable '%s' in common block '%s' at %L "
                            "may not be a C interoperable "
@@ -4064,7 +4064,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
                 gfc_error ("Type declaration '%s' at %L is not C "
                            "interoperable but it is BIND(C)",
                            tmp_sym->name, &(tmp_sym->declared_at));
-              else if (gfc_option.warn_c_binding_type)
+              else if (warn_c_binding_type)
                 gfc_warning ("Variable '%s' at %L "
                              "may not be a C interoperable "
                              "kind but it is bind(c)",
@@ -4130,8 +4130,8 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
       && tmp_sym->binding_label)
       /* Use gfc_warning_now because we won't say that the symbol fails
 	 just because of this.	*/
-      gfc_warning_now ("Symbol '%s' at %L is marked PRIVATE but has been "
-		       "given the binding label '%s'", tmp_sym->name,
+      gfc_warning_now ("Symbol %qs at %L is marked PRIVATE but has been "
+		       "given the binding label %qs", tmp_sym->name,
 		       &(tmp_sym->declared_at), tmp_sym->binding_label);
 
   return retval;

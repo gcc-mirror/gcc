@@ -210,7 +210,7 @@ Fortran Warning
 Warn about creation of array temporaries
 
 Wc-binding-type
-Fortran Warning
+Fortran Var(warn_c_binding_type) Warning LangEnabledBy(Fortran,Wall)
 Warn if the type of a variable might be not interoperable with C
 
 Wdate-time
@@ -226,11 +226,11 @@ Fortran Warning
 Warn about equality comparisons involving REAL or COMPLEX expressions
 
 Wconversion
-Fortran Warning
+Fortran Var(warn_conversion) Warning LangEnabledBy(Fortran,Wall)
 ; Documented in C
 
 Wconversion-extra
-Fortran Warning
+Fortran Var(warn_conversion_extra) Warning
 Warn about most implicit conversions
 
 Wextra
@@ -254,7 +254,7 @@ Fortran Warning
 Warn about truncated source lines
 
 Wintrinsics-std
-Fortran Warning
+Fortran Var(warn_intrinsics_std) Warning LangEnabledBy(Fortran,Wall)
 Warn on intrinsics not part of the selected standard
 
 Wmissing-include-dirs
