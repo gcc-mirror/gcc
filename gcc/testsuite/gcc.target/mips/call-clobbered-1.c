@@ -1,6 +1,6 @@
 /* Check that we handle call-clobbered FPRs correctly.  */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
-/* { dg-options "isa>=2 -mabi=32 -ffixed-f0 -ffixed-f1 -ffixed-f2 -ffixed-f3 -ffixed-f4 -ffixed-f5 -ffixed-f6 -ffixed-f7 -ffixed-f8 -ffixed-f9 -ffixed-f10 -ffixed-f11 -ffixed-f12 -ffixed-f13 -ffixed-f14 -ffixed-f15 -ffixed-f16 -ffixed-f17 -ffixed-f18 -ffixed-f19" } */
+/* { dg-options "isa>=2 -mabi=32 -mhard-float -ffixed-f0 -ffixed-f1 -ffixed-f2 -ffixed-f3 -ffixed-f4 -ffixed-f5 -ffixed-f6 -ffixed-f7 -ffixed-f8 -ffixed-f9 -ffixed-f10 -ffixed-f11 -ffixed-f12 -ffixed-f13 -ffixed-f14 -ffixed-f15 -ffixed-f16 -ffixed-f17 -ffixed-f18 -ffixed-f19" } */
 
 void bar (void);
 double a;
