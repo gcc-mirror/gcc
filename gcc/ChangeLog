@@ -1,3 +1,9 @@
+2014-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61927
+	* tree-vect-loop.c (vect_analyze_loop_2): Revert ordering
+	of group and pattern analysis to the one in GCC 4.8.
+
 2014-11-25  Ilya Tocar  <ilya.tocar@intel.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
