@@ -29,31 +29,45 @@
 use File::Temp;
 use File::Copy qw(cp mv);
 
-# Change these settings to reflect your profile.
-$username = $ENV{'USER'};
-$name = `finger $username | grep -o 'Name: .*'`;
-@n = split(/: /, $name);
-$name = $n[1]; chop($name);
-$addr = $username . "\@my.domain.org";
 $date = `date +%Y-%m-%d`; chop ($date);
+
+$dot_mklog_format_msg =
+    "The .mklog format is:\n"
+    . "NAME = ...\n"
+    . "EMAIL = ...\n";
+
+# Create a .mklog to reflect your profile, if necessary.
+my $conf = "$ENV{HOME}/.mklog";
+if (-f "$conf") {
+    open (CONF, "$conf")
+	or die "Could not open file '$conf' for reading: $!\n";
+    while (<CONF>) {
+	if (m/^\s*NAME\s*=\s*(.*?)\s*$/) {
+	    $name = $1;
+	} elsif (m/^\s*EMAIL\s*=\s*(.*?)\s*$/) {
+	    $addr = $1;
+	}
+    }
+    if (!($name && $addr)) {
+	die "Could not read .mklog settings.\n"
+	    . $dot_mklog_format_msg;
+    }
+} else {
+    $name = `git config user.name`;
+    chomp($name);
+    $addr = `git config user.email`;
+    chomp($addr);
+
+    if (!($name && $addr)) {
+	die "Could not read git user.name and user.email settings.\n"
+	    . "Please add missing git settings, or create a .mklog file in"
+	    . " $ENV{HOME}.\n"
+	    . $dot_mklog_format_msg;
+    }
+}
 
 $gcc_root = $0;
 $gcc_root =~ s/[^\\\/]+$/../;
-
-# if this is a git tree then take name and email from the git configuration
-if (-d "$gcc_root/.git") {
-  $gitname = `git config user.name`;
-  chomp($gitname);
-  if ($gitname) {
-	  $name = $gitname;
-  }
-
-  $gitaddr = `git config user.email`;
-  chomp($gitaddr);
-  if ($gitaddr) {
-	  $addr = $gitaddr;
-  }
-}
 
 #-----------------------------------------------------------------------------
 # Program starts here. You should not need to edit anything below this

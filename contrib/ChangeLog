@@ -1,3 +1,9 @@
+2014-11-25  Tom de Vries  <tom@codesourcery.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
+
+	* mklog: Handle .mklog.  Use git setting independent of presence .git
+	directory.
+
 2014-11-14  Tom de Vries  <tom@codesourcery.com>
 
 	* mklog: Move reading of .diff file up and add comment.  Copy diff_lines
