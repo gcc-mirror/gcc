@@ -1,3 +1,8 @@
+2014-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/rs6000/rs6000.c (rs6000_call_aix): For the AIX ABI, do not
+	load the static chain if the call was originally direct.
+
 2014-11-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/64059

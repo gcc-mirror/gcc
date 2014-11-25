@@ -32853,6 +32853,8 @@ rs6000_legitimate_constant_p (machine_mode mode, rtx x)
 void
 rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 {
+  const bool direct_call_p
+    = GET_CODE (func_desc) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (func_desc);
   rtx toc_reg = gen_rtx_REG (Pmode, TOC_REGNUM);
   rtx toc_load = NULL_RTX;
   rtx toc_restore = NULL_RTX;
@@ -32921,8 +32923,11 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 							func_toc_offset));
 	  toc_load = gen_rtx_USE (VOIDmode, func_toc_mem);
 
-	  /* If we have a static chain, load it up.  */
-	  if (TARGET_POINTERS_TO_NESTED_FUNCTIONS)
+	  /* If we have a static chain, load it up.  But, if the call was
+	     originally direct, the 3rd word has not been written since no
+	     trampoline has been built, so we ought not to load it, lest we
+	     override a static chain value.  */
+	  if (!direct_call_p && TARGET_POINTERS_TO_NESTED_FUNCTIONS)
 	    {
 	      rtx sc_reg = gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
 	      rtx func_sc_offset = GEN_INT (2 * GET_MODE_SIZE (Pmode));
