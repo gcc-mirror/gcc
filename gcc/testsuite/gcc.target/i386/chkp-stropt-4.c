@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target mpx } */
+/* { dg-require-effective-target mempcpy } */
 /* { dg-options "-fcheck-pointer-bounds -mmpx -O2 -fdump-tree-chkpopt -fchkp-use-nochk-string-functions -D_GNU_SOURCE" } */
 /* { dg-final { scan-tree-dump "mempcpy_nochk" "chkpopt" } } */
 /* { dg-final { cleanup-tree-dump "chkpopt" } } */
