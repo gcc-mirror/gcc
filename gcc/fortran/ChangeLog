@@ -1,5 +1,23 @@
 2014-11-25  Tobias Burnus  <burnus@net-b.de>
 
+	* error.c (gfc_internal_error): Convert to common diagnostics.
+	* interface.c (gfc_find_sym_in_symtree): Use %qs.
+	* intrinsic.c (make_generic, gfc_check_intrinsic_standard,
+	gfc_convert_type_warn): Ditto.
+	* module.c (write_symbol): Ditto.
+	* symbol.c (gfc_get_default_type): Ditto; use fatal instead
+	of internal error.
+	* trans-array.c (gfc_walk_subexpr): Replace internal_error by
+	gfc_internal_error.
+	* trans-decl.c (gfc_get_symbol_decl,
+	(gfc_create_module_variable): Ditto. Use %qs.
+	* trans-intrinsic.c (gfc_conv_intrinsic_lib_function): Ditto.
+	* trans-io.c (transfer_expr): Ditto.
+	* trans-openmp.c (gfc_trans_omp_workshare): Ditto.
+	* trans.c (trans_code): Ditto.
+
+2014-11-25  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.h (gfc_option_t): Remove flags moved as Var to .opt.
 	(gfc_error_now_1): Renamed from gfc_error_now.
 	(gfc_error_now): Renamed from gfc_error_now_2.

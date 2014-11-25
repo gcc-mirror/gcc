@@ -221,12 +221,12 @@ gfc_get_default_type (const char *name, gfc_namespace *ns)
   letter = name[0];
 
   if (gfc_option.flag_allow_leading_underscore && letter == '_')
-    gfc_internal_error ("Option -fallow-leading-underscore is for use only by "
-			"gfortran developers, and should not be used for "
-			"implicitly typed variables");
+    gfc_fatal_error ("Option %<-fallow-leading-underscore%> is for use only by "
+		     "gfortran developers, and should not be used for "
+		     "implicitly typed variables");
 
   if (letter < 'a' || letter > 'z')
-    gfc_internal_error ("gfc_get_default_type(): Bad symbol '%s'", name);
+    gfc_internal_error ("gfc_get_default_type(): Bad symbol %qs", name);
 
   if (ns == NULL)
     ns = gfc_current_ns;

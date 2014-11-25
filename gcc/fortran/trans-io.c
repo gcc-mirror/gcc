@@ -2192,7 +2192,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
       return;
 
     default:
-      internal_error ("Bad IO basetype (%d)", ts->type);
+      gfc_internal_error ("Bad IO basetype (%d)", ts->type);
     }
 
   tmp = gfc_build_addr_expr (NULL_TREE, dt_parm);
