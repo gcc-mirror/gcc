@@ -903,6 +903,7 @@ input_struct_function_base (struct function *fn, struct data_in *data_in,
   fn->has_simduid_loops = bp_unpack_value (&bp, 1);
   fn->va_list_fpr_size = bp_unpack_value (&bp, 8);
   fn->va_list_gpr_size = bp_unpack_value (&bp, 8);
+  fn->last_clique = bp_unpack_value (&bp, sizeof (short) * 8);
 
   /* Input the function start and end loci.  */
   fn->function_start_locus = stream_input_location (&bp, data_in);
