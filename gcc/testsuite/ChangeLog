@@ -1,3 +1,11 @@
+2014-11-25  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/64050
+	PR ipa/64060
+	* gcc.dg/plugin/plugin.exp: New plugin.
+	* gcc.dg/plugin/sreal-test-1.c: New test.
+	* gcc.dg/plugin/sreal_plugin.c: New test.
+
 2014-11-25  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* gcc.target/mips/mips.exp: Add support for -msoft-float and

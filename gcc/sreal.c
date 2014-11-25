@@ -182,9 +182,9 @@ sreal::operator+ (const sreal &other) const
     {
       sreal tmp = -(*b_p);
       if (*a_p < tmp)
-	return signedless_minus (tmp, *a_p, false);
+	return signedless_minus (tmp, *a_p, true);
       else
-	return signedless_minus (*a_p, tmp, true);
+	return signedless_minus (*a_p, tmp, false);
     }
 
   gcc_checking_assert (a_p->m_negative == b_p->m_negative);
@@ -203,7 +203,7 @@ sreal::signedless_plus (const sreal &a, const sreal &b, bool negative)
   const sreal *a_p = &a;
   const sreal *b_p = &b;
 
-  if (*a_p < *b_p)
+  if (a_p->m_exp < b_p->m_exp)
     std::swap (a_p, b_p);
 
   dexp = a_p->m_exp - b_p->m_exp;
@@ -211,6 +211,7 @@ sreal::signedless_plus (const sreal &a, const sreal &b, bool negative)
   if (dexp > SREAL_BITS)
     {
       r.m_sig = a_p->m_sig;
+      r.m_negative = negative;
       return r;
     }
 
@@ -248,11 +249,11 @@ sreal::operator- (const sreal &other) const
   /* We want to substract a smaller number from bigger
     for nonegative numbers.  */
   if (!m_negative && *this < other)
-    return -signedless_minus (other, *this, true);
+    return signedless_minus (other, *this, true);
 
   /* Example: -2 - (-3) => 3 - 2 */
   if (m_negative && *this > other)
-    return signedless_minus (-other, -(*this), true);
+    return signedless_minus (-other, -(*this), false);
 
   sreal r = signedless_minus (*this, other, m_negative);
 
@@ -274,6 +275,7 @@ sreal::signedless_minus (const sreal &a, const sreal &b, bool negative)
   if (dexp > SREAL_BITS)
     {
       r.m_sig = a_p->m_sig;
+      r.m_negative = negative;
       return r;
     }
   if (dexp == 0)
