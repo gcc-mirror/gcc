@@ -1,5 +1,10 @@
 2014-11-25  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* bt-load.c (migrate_btr_defs): Get the key of a heap entry
+	before removing it, not after.
+
+2014-11-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/mn10300/mn10300.c (mn10300_insert_setlb_lcc): Remove
 	PATTERN call.
 

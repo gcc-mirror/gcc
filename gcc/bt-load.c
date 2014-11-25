@@ -1434,8 +1434,8 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 
   while (!all_btr_defs.empty ())
     {
-      btr_def def = all_btr_defs.extract_min ();
       int min_cost = -all_btr_defs.min_key ();
+      btr_def def = all_btr_defs.extract_min ();
       if (migrate_btr_def (def, min_cost))
 	{
 	  all_btr_defs.insert (-def->cost, def);
