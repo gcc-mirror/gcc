@@ -1,3 +1,8 @@
+2014-11-25  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libstdc++-prettyprinters/prettyprinters.exp: Add missing
+	dg-finish.  Only print unsupported message once.
+
 2014-11-25  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/63920
