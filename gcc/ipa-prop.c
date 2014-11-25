@@ -2155,7 +2155,7 @@ ipa_analyze_call_uses (struct func_body_info *fbi, gcall *call)
   if (cs && !cs->indirect_unknown_callee)
     return;
 
-  if (cs->indirect_info->polymorphic)
+  if (cs->indirect_info->polymorphic && flag_devirtualize)
     {
       tree instance;
       tree target = gimple_call_fn (call);
