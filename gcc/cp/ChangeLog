@@ -1,3 +1,7 @@
+2014-11-24  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (lookup_template_variable): Always unknown_type_node.
+
 2014-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63786

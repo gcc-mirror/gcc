@@ -8026,19 +8026,14 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
   return ret;
 }
 
-/* Return a TEMPLATE_ID_EXPR for the given variable template and ARGLIST. 
-   If the ARGLIST refers to any template parameters, the type of the
-   expression is the unknown_type_node since the template-id could
-   refer to an explicit or partial specialization. */
+/* Return a TEMPLATE_ID_EXPR for the given variable template and ARGLIST.
+   The type of the expression is the unknown_type_node since the
+   template-id could refer to an explicit or partial specialization. */
 
 tree
 lookup_template_variable (tree templ, tree arglist)
 {
-  tree type;
-  if (uses_template_parms (arglist))
-    type = unknown_type_node;
-  else
-    type = TREE_TYPE (templ);
+  tree type = unknown_type_node;
   tsubst_flags_t complain = tf_warning_or_error;
   tree parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (templ));
   arglist = coerce_template_parms (parms, arglist, templ, complain,
