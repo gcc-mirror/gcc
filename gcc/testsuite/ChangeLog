@@ -1,3 +1,8 @@
+2014-11-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/63527
+	* gcc.target/i386/pr63527.c: New test.
+
 2014-11-25  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/64050
