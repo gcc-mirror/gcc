@@ -6870,6 +6870,61 @@ fixup_loop_arrays_after_move (struct function *fn1, struct function *fn2,
     fixup_loop_arrays_after_move (fn1, fn2, loop);
 }
 
+/* Verify that the blocks in BBS_P are a single-entry, single-exit region
+   delimited by ENTRY_BB and EXIT_BB, possibly containing noreturn blocks.  */
+
+DEBUG_FUNCTION void
+verify_sese (basic_block entry, basic_block exit, vec<basic_block> *bbs_p)
+{
+  basic_block bb;
+  edge_iterator ei;
+  edge e;
+  bitmap bbs = BITMAP_ALLOC (NULL);
+  int i;
+
+  gcc_assert (entry != NULL);
+  gcc_assert (entry != exit);
+  gcc_assert (bbs_p != NULL);
+
+  gcc_assert (bbs_p->length () > 0);
+
+  FOR_EACH_VEC_ELT (*bbs_p, i, bb)
+    bitmap_set_bit (bbs, bb->index);
+
+  gcc_assert (bitmap_bit_p (bbs, entry->index));
+  gcc_assert (exit == NULL || bitmap_bit_p (bbs, exit->index));
+
+  FOR_EACH_VEC_ELT (*bbs_p, i, bb)
+    {
+      if (bb == entry)
+	{
+	  gcc_assert (single_pred_p (entry));
+	  gcc_assert (!bitmap_bit_p (bbs, single_pred (entry)->index));
+	}
+      else
+	for (ei = ei_start (bb->preds); !ei_end_p (ei); ei_next (&ei))
+	  {
+	    e = ei_edge (ei);
+	    gcc_assert (bitmap_bit_p (bbs, e->src->index));
+	  }
+
+      if (bb == exit)
+	{
+	  gcc_assert (single_succ_p (exit));
+	  gcc_assert (!bitmap_bit_p (bbs, single_succ (exit)->index));
+	}
+      else
+	for (ei = ei_start (bb->succs); !ei_end_p (ei); ei_next (&ei))
+	  {
+	    e = ei_edge (ei);
+	    gcc_assert (bitmap_bit_p (bbs, e->dest->index));
+	  }
+    }
+
+  BITMAP_FREE (bbs);
+}
+
+
 /* Move a single-entry, single-exit region delimited by ENTRY_BB and
    EXIT_BB to function DEST_CFUN.  The whole region is replaced by a
    single basic block in the original CFG and the new basic block is
@@ -6918,6 +6973,9 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   bbs.create (0);
   bbs.safe_push (entry_bb);
   gather_blocks_in_sese_region (entry_bb, exit_bb, &bbs);
+#ifdef ENABLE_CHECKING
+  verify_sese (entry_bb, exit_bb, &bbs);
+#endif
 
   /* The blocks that used to be dominated by something in BBS will now be
      dominated by the new block.  */
