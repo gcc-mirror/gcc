@@ -1,3 +1,9 @@
+2014-11-25  Rohit  <rohitarulraj@freescale.com>
+
+	PR bootstrap/63703
+	* config/rs6000/darwin.h (REGISTER_NAMES): Update based on 32 newly
+	added GCC hard register numbers for SPE high registers.
+
 2014-11-25  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* bt-load.c (migrate_btr_defs): Get the key of a heap entry
