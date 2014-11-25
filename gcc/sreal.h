@@ -60,6 +60,11 @@ public:
 
   bool operator< (const sreal &other) const
   {
+    /* We negate result in case of negative numbers and
+       it would return true for equal negative numbers.  */
+    if (*this == other)
+      return false;
+
     if (m_negative != other.m_negative)
       return m_negative > other.m_negative;
 
@@ -86,10 +91,19 @@ public:
     return tmp;
   }
 
-  sreal shift (int sig) const
+  sreal shift (int s) const
   {
+    gcc_checking_assert (s <= SREAL_BITS);
+    gcc_checking_assert (s >= -SREAL_BITS);
+
+    /* Exponent should never be so large because shift_right is used only by
+     sreal_add and sreal_sub ant thus the number cannot be shifted out from
+     exponent range.  */
+    gcc_checking_assert (m_exp + s <= SREAL_MAX_EXP);
+    gcc_checking_assert (m_exp + s >= -SREAL_MAX_EXP);
+
     sreal tmp = *this;
-    tmp.m_sig += sig;
+    tmp.m_exp += s;
 
     return tmp;
   }

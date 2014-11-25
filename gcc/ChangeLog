@@ -1,3 +1,18 @@
+2014-11-25  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/64050
+	PR ipa/64060
+	* sreal.c (sreal::operator+): Addition fixed.
+	(sreal::signedless_plus): Negative numbers are
+	handled correctly.
+	(sreal::operator-): Subtraction is fixed.
+	(sreal::signedless_minus): Negative numbers are
+	handled correctly.
+	* sreal.h (sreal::operator<): Equal negative numbers
+	are compared correctly.
+	(sreal::shift): New checking asserts are introduced.
+	Operation is fixed.
+
 2014-11-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61927
