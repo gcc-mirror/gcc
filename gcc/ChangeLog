@@ -1,5 +1,10 @@
 2014-11-25  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/sysv4.h (ASM_OUTPUT_REG_POP): Use addi instead
+	of addic.
+
+2014-11-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (iorxor, IORXOR): Delete code_attrs.
 	(rest of file): Replace those with code resp. CODE.
 
