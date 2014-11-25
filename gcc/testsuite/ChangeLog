@@ -1,3 +1,8 @@
+2014-11-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63877
+	* gcc.dg/pr63877.c: New test.
+
 2014-11-25  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR ipa/64059
