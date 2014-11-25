@@ -7,10 +7,8 @@
 // enum-size attributes should only be emitted if there are values of
 // enum type that can escape the compilation unit, gcc cannot currently
 // detect this; if this facility is added then this linker option should
-// not be needed.  arm-*-linux* should be a good approximation to
-// those platforms where the EABI supplement defines enum values to be
-// 32 bits wide.
-// { dg-options "-fshort-enums -Wl,--no-enum-size-warning" { target arm*-*-linux* } }
+// not be needed.
+// { dg-options "-fshort-enums -Wl,--no-enum-size-warning" { target arm_eabi } }
 
 // GROUPS passed enums
   extern "C" int printf (const char *, ...);
