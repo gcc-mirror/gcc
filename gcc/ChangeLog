@@ -1,3 +1,10 @@
+2014-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR lto/64065
+	* lto-streamer-out.c (output_struct_function_base): Stream
+	last_clique field.
+	* lto-streamer-in.c (input_struct_function_base): Likewise.
+
 2014-11-25  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/64050
