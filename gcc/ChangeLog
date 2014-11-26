@@ -1,4 +1,9 @@
-2014-11-25  Mark Wielaard  <mjw@redhat.com>
+2014-11-26  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (get_symbol_constant_value): Allow all
+	GIMPLE register type zero-constants.
+
+2014-11-26  Mark Wielaard  <mjw@redhat.com>
 
 	* dwarf2out.c (gen_subprogram_die): Add DW_AT_noreturn when the
 	function decl has TREE_THIS_VOLATILE.
