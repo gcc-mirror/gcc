@@ -674,6 +674,9 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 
     case SSA_NAME:
       {
+	if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0))
+	  return false;
+
 	gimple def_stmt = SSA_NAME_DEF_STMT (op0);
 	enum tree_code subcode;
 
