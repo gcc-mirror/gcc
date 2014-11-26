@@ -1,3 +1,21 @@
+2014-11-26  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR ipa/61190
+	* cgraph.h (symtab_node::call_for_symbol_and_aliases): Fix comment.
+	(cgraph_node::function_or_virtual_thunk_symbol): New function.
+	(cgraph_node::call_for_symbol_and_aliases): Fix comment.
+	(cgraph_node::call_for_symbol_thunks_and_aliases): Adjust comment.
+	Add new optional parameter exclude_virtual_thunks.
+	* cgraph.c (cgraph_node::call_for_symbol_thunks_and_aliases): Add new
+	optional parameter exclude_virtual_thunks.
+	(cgraph_node::set_const_flag): Don't propagate to virtual thunks.
+	(cgraph_node::set_pure_flag): Likewise.
+	(cgraph_node::function_symbol): Simplified.
+	(cgraph_node::function_or_virtual_thunk_symbol): New function.
+	* ipa-pure-const.c (analyze_function): For virtual thunks set
+	pure_const_state to IPA_NEITHER.
+	(propagate_pure_const): Use function_or_virtual_thunk_symbol.
+
 2014-11-26  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63738

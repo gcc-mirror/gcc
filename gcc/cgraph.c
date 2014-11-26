@@ -2193,15 +2193,16 @@ cgraph_node::can_be_local_p (void)
 						NULL, true));
 }
 
-/* Call calback on cgraph_node, thunks and aliases associated to cgraph_node.
+/* Call callback on cgraph_node, thunks and aliases associated to cgraph_node.
    When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
-   skipped. */
-
+   skipped.  When EXCLUDE_VIRTUAL_THUNKS is true, virtual thunks are
+   skipped.  */
 bool
 cgraph_node::call_for_symbol_thunks_and_aliases (bool (*callback)
 						   (cgraph_node *, void *),
 						 void *data,
-						 bool include_overwritable)
+						 bool include_overwritable,
+						 bool exclude_virtual_thunks)
 {
   cgraph_edge *e;
   ipa_ref *ref;
@@ -2211,9 +2212,12 @@ cgraph_node::call_for_symbol_thunks_and_aliases (bool (*callback)
   for (e = callers; e; e = e->next_caller)
     if (e->caller->thunk.thunk_p
 	&& (include_overwritable
-	    || e->caller->get_availability () > AVAIL_INTERPOSABLE))
+	    || e->caller->get_availability () > AVAIL_INTERPOSABLE)
+	&& !(exclude_virtual_thunks
+	     && e->caller->thunk.virtual_offset_p))
       if (e->caller->call_for_symbol_thunks_and_aliases (callback, data,
-						       include_overwritable))
+						       include_overwritable,
+						       exclude_virtual_thunks))
 	return true;
 
   FOR_EACH_ALIAS (this, ref)
@@ -2222,15 +2226,16 @@ cgraph_node::call_for_symbol_thunks_and_aliases (bool (*callback)
       if (include_overwritable
 	  || alias->get_availability () > AVAIL_INTERPOSABLE)
 	if (alias->call_for_symbol_thunks_and_aliases (callback, data,
-						     include_overwritable))
+						     include_overwritable,
+						     exclude_virtual_thunks))
 	  return true;
     }
   return false;
 }
 
-/* Call calback on function and aliases associated to the function.
+/* Call callback on function and aliases associated to the function.
    When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
-   skipped. */
+   skipped.  */
 
 bool
 cgraph_node::call_for_symbol_and_aliases (bool (*callback) (cgraph_node *,
@@ -2338,7 +2343,7 @@ cgraph_node::set_const_flag (bool readonly, bool looping)
 {
   call_for_symbol_thunks_and_aliases (cgraph_set_const_flag_1,
 				    (void *)(size_t)(readonly + (int)looping * 2),
-				      false);
+				    false, true);
 }
 
 /* Worker to set pure flag.  */
@@ -2368,7 +2373,7 @@ cgraph_node::set_pure_flag (bool pure, bool looping)
 {
   call_for_symbol_thunks_and_aliases (cgraph_set_pure_flag_1,
 				    (void *)(size_t)(pure + (int)looping * 2),
-				    false);
+				    false, true);
 }
 
 /* Return true when cgraph_node can not return or throw and thus
@@ -3118,30 +3123,52 @@ cgraph_node::verify_cgraph_nodes (void)
 }
 
 /* Walk the alias chain to return the function cgraph_node is alias of.
-   Walk through thunk, too.
+   Walk through thunks, too.
    When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
 
 cgraph_node *
 cgraph_node::function_symbol (enum availability *availability)
 {
-  cgraph_node *node = this;
+  cgraph_node *node = ultimate_alias_target (availability);
 
-  do
+  while (node->thunk.thunk_p)
     {
-      node = node->ultimate_alias_target (availability);
-      if (node->thunk.thunk_p)
+      node = node->callees->callee;
+      if (availability)
 	{
-	  node = node->callees->callee;
-	  if (availability)
-	    {
-	      enum availability a;
-	      a = node->get_availability ();
-	      if (a < *availability)
-		*availability = a;
-	    }
-	  node = node->ultimate_alias_target (availability);
+	  enum availability a;
+	  a = node->get_availability ();
+	  if (a < *availability)
+	    *availability = a;
 	}
-    } while (node && node->thunk.thunk_p);
+      node = node->ultimate_alias_target (availability);
+    }
+  return node;
+}
+
+/* Walk the alias chain to return the function cgraph_node is alias of.
+   Walk through non virtual thunks, too.  Thus we return either a function
+   or a virtual thunk node.
+   When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
+
+cgraph_node *
+cgraph_node::function_or_virtual_thunk_symbol
+				(enum availability *availability)
+{
+  cgraph_node *node = ultimate_alias_target (availability);
+
+  while (node->thunk.thunk_p && !node->thunk.virtual_offset_p)
+    {
+      node = node->callees->callee;
+      if (availability)
+	{
+	  enum availability a;
+	  a = node->get_availability ();
+	  if (a < *availability)
+	    *availability = a;
+	}
+      node = node->ultimate_alias_target (availability);
+    }
   return node;
 }
 

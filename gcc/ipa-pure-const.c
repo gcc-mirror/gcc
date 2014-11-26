@@ -806,6 +806,8 @@ analyze_function (struct cgraph_node *fn, bool ipa)
     {
       /* Thunk gets propagated through, so nothing interesting happens.  */
       gcc_assert (ipa);
+      if (fn->thunk.thunk_p && fn->thunk.virtual_offset_p)
+	l->pure_const_state = IPA_NEITHER;
       return l;
     }
 
@@ -1247,7 +1249,8 @@ propagate_pure_const (void)
 	  for (e = w->callees; e; e = e->next_callee)
 	    {
 	      enum availability avail;
-	      struct cgraph_node *y = e->callee->function_symbol (&avail);
+	      struct cgraph_node *y = e->callee->
+				function_or_virtual_thunk_symbol (&avail);
 	      enum pure_const_state_e edge_state = IPA_CONST;
 	      bool edge_looping = false;
 
@@ -1387,7 +1390,8 @@ propagate_pure_const (void)
 	  for (e = w->callees; e && !can_free; e = e->next_callee)
 	    {
 	      enum availability avail;
-	      struct cgraph_node *y = e->callee->function_symbol (&avail);
+	      struct cgraph_node *y = e->callee->
+				function_or_virtual_thunk_symbol (&avail);
 
 	      if (avail > AVAIL_INTERPOSABLE)
 		can_free = get_function_state (y)->can_free;
@@ -1517,7 +1521,8 @@ propagate_nothrow (void)
 	  for (e = w->callees; e && !can_throw; e = e->next_callee)
 	    {
 	      enum availability avail;
-	      struct cgraph_node *y = e->callee->function_symbol (&avail);
+	      struct cgraph_node *y = e->callee->
+				function_or_virtual_thunk_symbol (&avail);
 
 	      if (avail > AVAIL_INTERPOSABLE)
 		{
