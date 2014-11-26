@@ -2139,12 +2139,18 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
 	  || TREE_CODE (TREE_OPERAND (exp, 0)) != STRING_CST)
 	return 0;
     }
-
-  /* This warning is not very useful, as it complains about printf.  */
   if (warn)
-    warning (OPT_Wwrite_strings,
-	     "deprecated conversion from string constant to %qT",
-	     totype);
+    {
+      if (cxx_dialect >= cxx11)
+	pedwarn (input_location,
+		 pedantic ? OPT_Wpedantic : OPT_Wwrite_strings,
+		 "ISO C++ forbids converting a string constant to %qT",
+		 totype);
+      else
+	warning (OPT_Wwrite_strings,
+		 "deprecated conversion from string constant to %qT",
+		 totype);
+    }
 
   return 1;
 }

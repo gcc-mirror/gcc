@@ -1,3 +1,10 @@
+2014-11-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Diagnose string constant conversion to char* in c++11 and above
+	as forbidden, not deprecated.
+	* typeck.c (string_conv_p): Do a pedwarn in c++11 and above,
+	change the diagnostic for the Wwrite-strings case for c++11 and above.
+
 2014-11-24  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (lookup_template_variable): Always unknown_type_node.
