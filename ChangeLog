@@ -1,3 +1,8 @@
+2014-11-26  Tobias Burnus  <burnus@net-b.de>
+
+	* Makefile.def: Make more dependent on mpfr, mpc and isl.
+	* Makefile.in: Regenerate.
+
 2014-11-26  Prachi Godbole  <prachi.godbole@imgtec.com>
 
 	* config/mips/mips.c (mips_rtx_cost_data): Fix memory_latency cost
