@@ -1402,8 +1402,8 @@ ref_at_iteration (data_reference_p dr, int iter, gimple_seq *stmts)
     off = size_binop (PLUS_EXPR, off,
 		      size_binop (MULT_EXPR, DR_STEP (dr), ssize_int (iter)));
   tree addr = fold_build_pointer_plus (DR_BASE_ADDRESS (dr), off);
-  addr = force_gimple_operand_1 (addr, stmts, is_gimple_mem_ref_addr,
-				 NULL_TREE);
+  addr = force_gimple_operand_1 (unshare_expr (addr), stmts,
+				 is_gimple_mem_ref_addr, NULL_TREE);
   tree alias_ptr = fold_convert (reference_alias_ptr_type (DR_REF (dr)), coff);
   /* While data-ref analysis punts on bit offsets it still handles
      bitfield accesses at byte boundaries.  Cope with that.  Note that
@@ -2354,7 +2354,6 @@ prepare_initializers_chain (struct loop *loop, chain_p chain)
   unsigned i, n = (chain->type == CT_INVARIANT) ? 1 : chain->length;
   struct data_reference *dr = get_chain_root (chain)->ref;
   tree init;
-  gimple_seq stmts;
   dref laref;
   edge entry = loop_preheader_edge (loop);
 
@@ -2378,12 +2377,17 @@ prepare_initializers_chain (struct loop *loop, chain_p chain)
 
   for (i = 0; i < n; i++)
     {
+      gimple_seq stmts = NULL;
+
       if (chain->inits[i] != NULL_TREE)
 	continue;
 
       init = ref_at_iteration (dr, (int) i - n, &stmts);
       if (!chain->all_always_accessed && tree_could_trap_p (init))
-	return false;
+	{
+	  gimple_seq_discard (stmts);
+	  return false;
+	}
 
       if (stmts)
 	gsi_insert_seq_on_edge_immediate (entry, stmts);
