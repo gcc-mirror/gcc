@@ -178,8 +178,7 @@ tree_nrv (void)
 		 same type and alignment as the function's result.  */
 	      if (TREE_CODE (found) != VAR_DECL
 		  || TREE_THIS_VOLATILE (found)
-		  || DECL_CONTEXT (found) != current_function_decl
-		  || TREE_STATIC (found)
+		  || !auto_var_in_fn_p (found, current_function_decl)
 		  || TREE_ADDRESSABLE (found)
 		  || DECL_ALIGN (found) > DECL_ALIGN (result)
 		  || !useless_type_conversion_p (result_type,

@@ -919,7 +919,6 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 	  ref = fold_build2_loc (EXPR_LOCATION (ref),
 				 MEM_REF, TREE_TYPE (ref),
 				 base, memoff);
-	  DR_UNCONSTRAINED_BASE (dr) = true;
 	  access_fns.safe_push (access_fn);
 	}
     }
@@ -1326,14 +1325,20 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
 	return false;
     }
 
-  /* If we had an evolution in a MEM_REF BASE_OBJECT we do not know
-     the size of the base-object.  So we cannot do any offset/overlap
-     based analysis but have to rely on points-to information only.  */
+  /* If we had an evolution in a pointer-based MEM_REF BASE_OBJECT we
+     do not know the size of the base-object.  So we cannot do any
+     offset/overlap based analysis but have to rely on points-to
+     information only.  */
   if (TREE_CODE (addr_a) == MEM_REF
-      && DR_UNCONSTRAINED_BASE (a))
+      && TREE_CODE (TREE_OPERAND (addr_a, 0)) == SSA_NAME)
     {
-      if (TREE_CODE (addr_b) == MEM_REF
-	  && DR_UNCONSTRAINED_BASE (b))
+      /* For true dependences we can apply TBAA.  */
+      if (flag_strict_aliasing
+	  && DR_IS_WRITE (a) && DR_IS_READ (b)
+	  && !alias_sets_conflict_p (get_alias_set (DR_REF (a)),
+				     get_alias_set (DR_REF (b))))
+	return false;
+      if (TREE_CODE (addr_b) == MEM_REF)
 	return ptr_derefs_may_alias_p (TREE_OPERAND (addr_a, 0),
 				       TREE_OPERAND (addr_b, 0));
       else
@@ -1341,9 +1346,21 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
 				       build_fold_addr_expr (addr_b));
     }
   else if (TREE_CODE (addr_b) == MEM_REF
-	   && DR_UNCONSTRAINED_BASE (b))
-    return ptr_derefs_may_alias_p (build_fold_addr_expr (addr_a),
-				   TREE_OPERAND (addr_b, 0));
+	   && TREE_CODE (TREE_OPERAND (addr_b, 0)) == SSA_NAME)
+    {
+      /* For true dependences we can apply TBAA.  */
+      if (flag_strict_aliasing
+	  && DR_IS_WRITE (a) && DR_IS_READ (b)
+	  && !alias_sets_conflict_p (get_alias_set (DR_REF (a)),
+				     get_alias_set (DR_REF (b))))
+	return false;
+      if (TREE_CODE (addr_a) == MEM_REF)
+	return ptr_derefs_may_alias_p (TREE_OPERAND (addr_a, 0),
+				       TREE_OPERAND (addr_b, 0));
+      else
+	return ptr_derefs_may_alias_p (build_fold_addr_expr (addr_a),
+				       TREE_OPERAND (addr_b, 0));
+    }
 
   /* Otherwise DR_BASE_OBJECT is an access that covers the whole object
      that is being subsetted in the loop nest.  */

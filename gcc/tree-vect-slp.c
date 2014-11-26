@@ -2380,13 +2380,21 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
             neutral_op = build_int_cst (TREE_TYPE (op), -1);
             break;
 
-          case MAX_EXPR:
-          case MIN_EXPR:
-            def_stmt = SSA_NAME_DEF_STMT (op);
-            loop = (gimple_bb (stmt))->loop_father;
-            neutral_op = PHI_ARG_DEF_FROM_EDGE (def_stmt,
-                                                loop_preheader_edge (loop));
-            break;
+	  /* For MIN/MAX we don't have an easy neutral operand but
+	     the initial values can be used fine here.  Only for
+	     a reduction chain we have to force a neutral element.  */
+	  case MAX_EXPR:
+	  case MIN_EXPR:
+	    if (!GROUP_FIRST_ELEMENT (stmt_vinfo))
+	      neutral_op = NULL;
+	    else
+	      {
+		def_stmt = SSA_NAME_DEF_STMT (op);
+		loop = (gimple_bb (stmt))->loop_father;
+		neutral_op = PHI_ARG_DEF_FROM_EDGE (def_stmt,
+						    loop_preheader_edge (loop));
+	      }
+	    break;
 
           default:
             neutral_op = NULL;
