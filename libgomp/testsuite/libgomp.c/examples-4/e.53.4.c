@@ -1,9 +1,13 @@
 /* { dg-do run } */
+/* { dg-additional-options "-DTESTITERS=20" { target { ! run_expensive_tests } } } */
 
 #include <stdlib.h>
 
 #define EPS 0.00001
 #define N 1000
+#ifndef TESTITERS
+#define TESTITERS N
+#endif
 
 #pragma omp declare target
 float Q[N][N];
@@ -60,7 +64,7 @@ int main ()
 
   #pragma omp target update to(Q)
 
-  for (i = 0; i < N; i++)
+  for (i = 0; i < TESTITERS; i++)
     check (accum (i), accum_ref (i));
 
   return 0;
