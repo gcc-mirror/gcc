@@ -1,3 +1,9 @@
+2014-11-24  Mark Wielaard  <mjw@redhat.com>
+
+	* g++.dg/debug/dwarf2/noreturn-function.C: New test.
+	* gcc.dg/debug/dwarf2/noreturn-function-attribute.c: Likewise.
+	* gcc.dg/debug/dwarf2/noreturn-function-keyword.c: Likewise.
+
 2014-11-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62238
