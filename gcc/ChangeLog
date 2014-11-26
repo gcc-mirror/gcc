@@ -1,3 +1,8 @@
+2014-11-25  Mark Wielaard  <mjw@redhat.com>
+
+	* dwarf2out.c (gen_subprogram_die): Add DW_AT_noreturn when the
+	function decl has TREE_THIS_VOLATILE.
+
 2014-11-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62238

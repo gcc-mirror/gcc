@@ -1,3 +1,7 @@
+2014-11-25  Mark Wielaard  <mjw@redhat.com>
+
+	* dwarf2.def (DW_AT_noreturn): New DWARF5 attribute.
+
 2014-11-14  Shinichiro Hamaji  <shinichiro.hamaji@gmail.com>
 
 	* dwarf2.def (DW_AT_APPLE_optimized, DW_AT_APPLE_flags)
