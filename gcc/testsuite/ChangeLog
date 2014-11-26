@@ -1,5 +1,10 @@
 2014-11-26  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	PR bootstrap/63995
+	* gcc.target/i386/pr63995-2.c: New.
+
+2014-11-26  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	PR lto/64075
 	* gcc.dg/pr64075.c: New.
 

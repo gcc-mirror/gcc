@@ -1,3 +1,10 @@
+2014-11-26  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR bootstrap/63995
+	* tree-chkp-opt.c (chkp_reduce_bounds_lifetime): Ignore
+	debug statement when searching for a new position for
+	bounds load/creation statement.
+
 2014-11-26  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/63788

@@ -1175,6 +1175,9 @@ chkp_reduce_bounds_lifetime (void)
 
       FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, op)
 	{
+	  if (is_gimple_debug (use_stmt))
+	    continue;
+
 	  if (dom_bb &&
 	      dominated_by_p (CDI_DOMINATORS,
 			      dom_bb, gimple_bb (use_stmt)))
