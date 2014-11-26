@@ -1,5 +1,8 @@
 2014-11-26  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (cxx_eval_constant_expression) [SAVE_EXPR]: Avoid
+	multiple evaluation.
+
 	* constexpr.c (cxx_eval_call_expression): Don't talk about
 	flowing off the end if we're already non-constant.
 
