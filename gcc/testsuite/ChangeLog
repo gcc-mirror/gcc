@@ -1,3 +1,8 @@
+2014-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63757
+	* g++.dg/cpp0x/nullptr33.C: New.
+
 2014-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/tsan-dg.exp (check_effective_target_fsanitize_thread,

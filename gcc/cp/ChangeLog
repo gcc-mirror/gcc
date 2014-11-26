@@ -1,3 +1,9 @@
+2014-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63757
+	* call.c (standard_conversion): Do not require expr to be non-null
+	when NULLPTR_TYPE_P (from) is true.
+
 2014-11-26  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.c (cxx_eval_constant_expression) [SAVE_EXPR]: Avoid
