@@ -254,8 +254,7 @@ get_symbol_constant_value (tree sym)
 	 have zero as the initializer if they may not be
 	 overridden at link or run time.  */
       if (!val
-          && (INTEGRAL_TYPE_P (TREE_TYPE (sym))
-	       || SCALAR_FLOAT_TYPE_P (TREE_TYPE (sym))))
+          && is_gimple_reg_type (TREE_TYPE (sym)))
 	return build_zero_cst (TREE_TYPE (sym));
     }
 
