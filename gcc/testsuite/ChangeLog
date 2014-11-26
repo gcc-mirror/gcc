@@ -1,3 +1,10 @@
+2014-11-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr63620.c: XFAIL get_pc_thunk scan on
+	*-*-solaris* && !gld.
+	* gcc.target/i386/mcount_pic.c: Likewise.
+	Use -pg.
+
 2014-11-21  Mark Wielaard  <mjw@redhat.com>
 
 	* gcc.dg/debug/dwarf2/lang-c11.c: New test.
