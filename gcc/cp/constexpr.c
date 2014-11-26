@@ -2974,11 +2974,22 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       *jump_target = t;
       break;
 
+    case SAVE_EXPR:
+      /* Avoid evaluating a SAVE_EXPR more than once.  */
+      if (tree *p = ctx->values->get (t))
+	r = *p;
+      else
+	{
+	  r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0), addr,
+					    non_constant_p, overflow_p);
+	  ctx->values->put (t, r);
+	}
+      break;
+
     case NON_LVALUE_EXPR:
     case TRY_CATCH_EXPR:
     case CLEANUP_POINT_EXPR:
     case MUST_NOT_THROW_EXPR:
-    case SAVE_EXPR:
     case EXPR_STMT:
     case EH_SPEC_BLOCK:
       r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0),
