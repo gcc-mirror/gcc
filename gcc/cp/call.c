@@ -1194,7 +1194,8 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
      rvalue of type std::nullptr_t. */
   if ((tcode == POINTER_TYPE || TYPE_PTRMEM_P (to)
        || NULLPTR_TYPE_P (to))
-      && expr && null_ptr_cst_p (expr))
+      && ((expr && null_ptr_cst_p (expr))
+	  || NULLPTR_TYPE_P (from)))
     conv = build_conv (ck_std, to, conv);
   else if ((tcode == INTEGER_TYPE && fcode == POINTER_TYPE)
 	   || (tcode == POINTER_TYPE && fcode == INTEGER_TYPE))
