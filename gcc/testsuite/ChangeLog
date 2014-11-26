@@ -1,3 +1,11 @@
+2014-11-21  Mark Wielaard  <mjw@redhat.com>
+
+	* gcc.dg/debug/dwarf2/lang-c11.c: New test.
+	* gcc.dg/debug/dwarf2/lang-c11-d4-strict.c: Likewise.
+	* g++.dg/debug/dwarf2/lang-cpp11.C: Likewise.
+	* g++.dg/debug/dwarf2/lang-cpp14.C: Likewise.
+	* g++.dg/debug/dwarf2/lang-cpp98.C: Likewise.
+
 2014-11-24  Mark Wielaard  <mjw@redhat.com>
 
 	* g++.dg/debug/dwarf2/noreturn-function.C: New test.
