@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++11" }
 // { dg-require-string-conversions "" }
+// { dg-xfail-run-if "PR libstdc++/64054" { *-*-solaris* } }
 
 // 2014-03-27 Rüdiger Sonderfeld
 // test the hexadecimal floating point inserters (facet num_put)
