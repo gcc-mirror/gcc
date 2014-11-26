@@ -1010,6 +1010,10 @@ case "${target}" in
     ;;
   *-*-rtems*)
     noconfigdirs="$noconfigdirs target-libgloss"
+    # this is not caught below because this stanza matches earlier
+    case $target in
+      or1k*-*-*) noconfigdirs="$noconfigdirs gdb" ;;
+    esac
     ;;
     # The tpf target doesn't support gdb yet.
   *-*-tpf*)
@@ -1185,7 +1189,7 @@ case "${target}" in
   microblaze*)
     noconfigdirs="$noconfigdirs gprof"
     ;;
-  mips*-sde-elf* | mips*-mti-elf*)
+  mips*-sde-elf* | mips*-mti-elf* | mips*-img-elf*)
     if test x$with_newlib = xyes; then
       noconfigdirs="$noconfigdirs gprof"
     fi
@@ -1208,9 +1212,15 @@ case "${target}" in
   mips*-*-*)
     noconfigdirs="$noconfigdirs gprof"
     ;;
+  nds32*-*-*)
+    noconfigdirs="$noconfigdirs gdb"
+    ;;
   nvptx*-*-*)
     # nvptx is just a compiler
     noconfigdirs="$noconfigdirs target-libssp target-libstdc++-v3 target-libobjc"
+    ;;
+  or1k*-*-*)
+    noconfigdirs="$noconfigdirs gdb"
     ;;
   sh-*-* | sh64-*-*)
     case "${target}" in
@@ -2454,7 +2464,7 @@ case "${target}" in
   spu-*-*)
     target_makefile_frag="config/mt-spu"
     ;;
-  mips*-sde-elf* | mips*-mti-elf*)
+  mips*-sde-elf* | mips*-mti-elf* | mips*-img-elf*)
     target_makefile_frag="config/mt-sde"
     ;;
   mipsisa*-*-elfoabi*)

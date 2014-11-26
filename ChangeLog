@@ -1,3 +1,7 @@
+2014-11-26  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* configure.ac: Merge with Binutils.
+
 2014-11-26  Tobias Burnus  <burnus@net-b.de>
 
 	* Makefile.def: Make more dependent on mpfr, mpc and isl.
