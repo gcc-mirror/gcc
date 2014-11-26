@@ -1,3 +1,30 @@
+2014-11-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62238
+	* tree-predcom.c (ref_at_iteration): Unshare the expression
+	before gimplifying it.
+
+	2014-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61927
+	* tree-vect-loop.c (vect_analyze_loop_2): Revert ordering
+	of group and pattern analysis to the one in GCC 4.8.
+
+	2014-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63605
+	* fold-const.c (fold_binary_loc): Properly use element_precision
+	for types that may not be scalar.
+
+	2014-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63665
+	* fold-const.c (fold_comparison): Properly guard simplifying
+	against INT_MAX/INT_MIN with !TYPE_OVERFLOW_WRAPS.
+
 2014-11-25  Rohit  <rohitarulraj@freescale.com>
 
 	PR bootstrap/63703

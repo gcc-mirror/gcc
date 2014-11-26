@@ -9024,7 +9024,8 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
       /* If the constant operation overflowed this can be
 	 simplified as a comparison against INT_MAX/INT_MIN.  */
       if (TREE_CODE (lhs) == INTEGER_CST
-	  && TREE_OVERFLOW (lhs))
+	  && TREE_OVERFLOW (lhs)
+	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0)))
 	{
 	  int const1_sgn = tree_int_cst_sgn (const1);
 	  enum tree_code code2 = code;
@@ -13295,7 +13296,7 @@ fold_binary_loc (location_t loc,
 	  tree itype = TREE_TYPE (arg00);
 	  if (TREE_INT_CST_HIGH (arg01) == 0
 	      && TREE_INT_CST_LOW (arg01)
-		 == (unsigned HOST_WIDE_INT) (TYPE_PRECISION (itype) - 1))
+		 == (unsigned HOST_WIDE_INT) (element_precision (itype) - 1))
 	    {
 	      if (TYPE_UNSIGNED (itype))
 		{
