@@ -1212,7 +1212,9 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 	tree args = TREE_OPERAND (t, 1);
 
 	if (is_overloaded_fn (name))
-	  name = DECL_NAME (get_first_fn (name));
+	  name = get_first_fn (name);
+	if (DECL_P (name))
+	  name = DECL_NAME (name);
 	dump_decl (pp, name, flags);
 	pp_cxx_begin_template_argument_list (pp);
 	if (args == error_mark_node)
