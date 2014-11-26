@@ -1,3 +1,8 @@
+2014-11-26  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR ipa/61190
+	* g++.old-deja/g++.mike/p4736b.C: Use -O2.
+
 2014-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59114

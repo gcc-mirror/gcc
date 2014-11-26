@@ -254,9 +254,9 @@ public:
      body aliases.  */
   void fixup_same_cpp_alias_visibility (symtab_node *target);
 
-  /* Call calback on symtab node and aliases associated to this node.
+  /* Call callback on symtab node and aliases associated to this node.
      When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
-     skipped. */
+     skipped.  */
   bool call_for_symbol_and_aliases (bool (*callback) (symtab_node *, void *),
 				  void *data,
 				  bool include_overwrite);
@@ -793,6 +793,13 @@ public:
      When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
   cgraph_node *function_symbol (enum availability *avail = NULL);
 
+  /* Walk the alias chain to return the function cgraph_node is alias of.
+     Walk through non virtual thunks, too.  Thus we return either a function
+     or a virtual thunk node.
+     When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
+  cgraph_node *function_or_virtual_thunk_symbol
+				(enum availability *avail = NULL);
+
   /* Create node representing clone of N executed COUNT times.  Decrease
      the execution counts from original node too.
      The new clone will have decl set to DECL that may or may not be the same
@@ -1015,7 +1022,7 @@ public:
      if any to PURE.  */
   void set_pure_flag (bool pure, bool looping);
 
-  /* Call calback on function and aliases associated to the function.
+  /* Call callback on function and aliases associated to the function.
      When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
      skipped. */
 
@@ -1023,13 +1030,15 @@ public:
 						      void *),
 				    void *data, bool include_overwritable);
 
-  /* Call calback on cgraph_node, thunks and aliases associated to NODE.
+  /* Call callback on cgraph_node, thunks and aliases associated to NODE.
      When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
+     skipped.  When EXCLUDE_VIRTUAL_THUNKS is true, virtual thunks are
      skipped.  */
   bool call_for_symbol_thunks_and_aliases (bool (*callback) (cgraph_node *node,
-							   void *data),
-					 void *data,
-					 bool include_overwritable);
+							     void *data),
+					   void *data,
+					   bool include_overwritable,
+					   bool exclude_virtual_thunks = false);
 
   /* Likewise indicate that a node is needed, i.e. reachable via some
      external means.  */
