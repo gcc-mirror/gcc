@@ -1,3 +1,20 @@
+2014-11-26  Jason Merrill  <jason@redhat.com>
+
+	Allow partial specialization of variable templates.
+	* cp-tree.h (TINFO_USED_TEMPLATE_ID): New.
+	* decl.c (duplicate_decls): Copy it.
+	* error.c (dump_decl) [TEMPLATE_ID_EXPR]: Handle variables.
+	* parser.c (cp_parser_decltype_expr): Do call finish_id_expression
+	on template-ids.
+	* pt.c (register_specialization): Remember variable template insts.
+	(instantiate_template_1): Find the matching partial specialization.
+	(check_explicit_specialization): Allow variable partial specialization.
+	(process_partial_specialization): Likewise.
+	(push_template_decl_real): Likewise.
+	(more_specialized_partial_spec): Rename from more_specialized_class.
+	(most_specialized_partial_spec): Rename from most_specialized_class.
+	(get_partial_spec_bindings): Rename from get_class_bindings.
+
 2014-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63757

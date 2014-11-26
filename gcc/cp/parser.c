@@ -12175,7 +12175,6 @@ cp_parser_decltype_expr (cp_parser *parser,
 
       if (expr
           && expr != error_mark_node
-          && TREE_CODE (expr) != TEMPLATE_ID_EXPR
           && TREE_CODE (expr) != TYPE_DECL
 	  && (TREE_CODE (expr) != BIT_NOT_EXPR
 	      || !TYPE_P (TREE_OPERAND (expr, 0)))

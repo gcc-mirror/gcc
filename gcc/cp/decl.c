@@ -2137,7 +2137,14 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  DECL_LANG_SPECIFIC (newdecl)->u.min.u2 =
 	    DECL_LANG_SPECIFIC (olddecl)->u.min.u2;
 	  if (DECL_TEMPLATE_INFO (newdecl))
-	    new_template_info = DECL_TEMPLATE_INFO (newdecl);
+	    {
+	      new_template_info = DECL_TEMPLATE_INFO (newdecl);
+	      if (DECL_TEMPLATE_INSTANTIATION (olddecl)
+		  && DECL_TEMPLATE_SPECIALIZATION (newdecl))
+		/* Remember the presence of explicit specialization args.  */
+		TINFO_USED_TEMPLATE_ID (DECL_TEMPLATE_INFO (olddecl))
+		  = TINFO_USED_TEMPLATE_ID (new_template_info);
+	    }
 	  DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	}
       /* Only functions have these fields.  */
