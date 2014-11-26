@@ -1,3 +1,21 @@
+2014-11-26  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.h (const_unop): Declare.
+	(const_binop): Likewise.
+	* fold-const.c (const_binop): Export overload that expects
+	a type parameter and dispatches to fold_relational_const as well.
+	Check both operand kinds for guarding the transforms.
+	(const_unop): New function, with constant folding from fold_unary_loc.
+	(fold_unary_loc): Dispatch to const_unop for tcc_constant operand.
+	Remove constant folding done there from the simplifications.
+	(fold_binary_loc): Check for constants using CONSTANT_CLASS_P.
+	(fold_negate_expr): Remove dead code from the REAL_CST case.
+	Avoid building garbage in the COMPLEX_CST case.
+	* gimple-match-head.c (gimple_resimplify1): Dispatch to
+	const_unop.
+	(gimple_resimplify2): Dispatch to const_binop.
+	(gimple_simplify): Likewise.
+
 2014-11-26  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR bootstrap/63995

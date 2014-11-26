@@ -94,7 +94,7 @@ gimple_resimplify1 (gimple_seq *seq,
     {
       tree tem = NULL_TREE;
       if (res_code->is_tree_code ())
-	tem = fold_unary_to_constant (*res_code, type, res_ops[0]);
+	tem = const_unop (*res_code, type, res_ops[0]);
       else
 	{
 	  tree decl = builtin_decl_implicit (*res_code);
@@ -150,8 +150,7 @@ gimple_resimplify2 (gimple_seq *seq,
     {
       tree tem = NULL_TREE;
       if (res_code->is_tree_code ())
-	tem = fold_binary_to_constant (*res_code, type,
-				       res_ops[0], res_ops[1]);
+	tem = const_binop (*res_code, type, res_ops[0], res_ops[1]);
       else
 	{
 	  tree decl = builtin_decl_implicit (*res_code);
@@ -386,7 +385,7 @@ gimple_simplify (enum tree_code code, tree type,
 {
   if (constant_for_folding (op0))
     {
-      tree res = fold_unary_to_constant (code, type, op0);
+      tree res = const_unop (code, type, op0);
       if (res != NULL_TREE
 	  && CONSTANT_CLASS_P (res))
 	return res;
@@ -409,7 +408,7 @@ gimple_simplify (enum tree_code code, tree type,
 {
   if (constant_for_folding (op0) && constant_for_folding (op1))
     {
-      tree res = fold_binary_to_constant (code, type, op0, op1);
+      tree res = const_binop (code, type, op0, op1);
       if (res != NULL_TREE
 	  && CONSTANT_CLASS_P (res))
 	return res;
