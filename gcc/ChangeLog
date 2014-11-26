@@ -1,3 +1,10 @@
+2014-11-26  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR lto/64075
+	* tree-streamer-in.c (unpack_ts_function_decl_value_fields): Use
+	proper size for function_code bitfield.
+	(pack_ts_function_decl_value_fields): Likewise.
+
 2014-11-21  Mark Wielaard  <mjw@redhat.com>
 
 	* doc/invoke.texi (-gdwarf-@{version}): Mention experimental DWARFv5.

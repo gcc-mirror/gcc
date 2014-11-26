@@ -333,7 +333,7 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   if (DECL_BUILT_IN_CLASS (expr) != NOT_BUILT_IN)
     {
       DECL_FUNCTION_CODE (expr) = (enum built_in_function) bp_unpack_value (bp,
-	                                                                    11);
+	                                                                    12);
       if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_NORMAL
 	  && DECL_FUNCTION_CODE (expr) >= END_BUILTINS)
 	fatal_error ("machine independent builtin code out of range");
