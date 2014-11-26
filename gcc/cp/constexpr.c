@@ -1344,7 +1344,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      else
 		{
 		  result = *ctx->values->get (slot ? slot : res);
-		  if (result == NULL_TREE)
+		  if (result == NULL_TREE && !*non_constant_p)
 		    {
 		      if (!ctx->quiet)
 			error ("constexpr call flows off the end "
