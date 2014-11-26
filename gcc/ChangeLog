@@ -1,5 +1,11 @@
 2014-11-26  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/63738
+	* tree-data-ref.c (split_constant_offset_1): Do not follow
+	SSA edges for SSA names with SSA_NAME_OCCURS_IN_ABNORMAL_PHI.
+
+2014-11-26  Richard Biener  <rguenther@suse.de>
+
 	Backport from mainline
 	2014-11-26  Richard Biener  <rguenther@suse.de>
 
