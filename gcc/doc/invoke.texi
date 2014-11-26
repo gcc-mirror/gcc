@@ -5407,8 +5407,8 @@ assembler (GAS) to fail with an error.
 @item -gdwarf-@var{version}
 @opindex gdwarf-@var{version}
 Produce debugging information in DWARF format (if that is supported).
-The value of @var{version} may be either 2, 3 or 4; the default version
-for most targets is 4.
+The value of @var{version} may be either 2, 3, 4 or 5; the default version
+for most targets is 4.  DWARF Version 5 is only experimental.
 
 Note that with DWARF Version 2, some ports require and always
 use some non-conflicting DWARF 3 extensions in the unwind tables.

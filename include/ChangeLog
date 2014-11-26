@@ -1,3 +1,8 @@
+2014-11-21  Mark Wielaard  <mjw@redhat.com>
+
+	* dwarf2.h: Add DW_LANG_C_plus_plus_11, DW_LANG_C11 and
+	DW_LANG_C_plus_plus_14.
+
 2014-11-25  Mark Wielaard  <mjw@redhat.com>
 
 	* dwarf2.def (DW_AT_noreturn): New DWARF5 attribute.

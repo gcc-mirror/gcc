@@ -1,3 +1,17 @@
+2014-11-21  Mark Wielaard  <mjw@redhat.com>
+
+	* doc/invoke.texi (-gdwarf-@{version}): Mention experimental DWARFv5.
+	* opts.c (common_handle_option): Accept -gdwarf-5.
+	* dwarf2out.c (is_cxx): Add DW_LANG_C_plus_plus_11 and
+	DW_LANG_C_plus_plus_14.
+	(lower_bound_default): Likewise. Plus DW_LANG_C11.
+	(gen_compile_unit_die): Output DW_LANG_C_plus_plus_11,
+	DW_LANG_C_plus_plus_14 or DW_LANG_C11.
+	(output_compilation_unit_header): Output at most a DWARFv4 header.
+	(output_skeleton_debug_sections): Likewise.
+	(output_line_info): Likewise.
+	(output_aranges): Document header version number.
+
 2014-11-26  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.c (get_symbol_constant_value): Allow all
