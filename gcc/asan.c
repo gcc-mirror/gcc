@@ -2295,6 +2295,9 @@ initialize_sanitizer_builtins (void)
 				pointer_sized_int_node, NULL_TREE);
   tree BT_FN_VOID_INT
     = build_function_type_list (void_type_node, integer_type_node, NULL_TREE);
+  tree BT_FN_SIZE_CONST_PTR_INT
+    = build_function_type_list (size_type_node, const_ptr_type_node,
+				integer_type_node, NULL_TREE);
   tree BT_FN_BOOL_VPTR_PTR_IX_INT_INT[5];
   tree BT_FN_IX_CONST_VPTR_INT[5];
   tree BT_FN_IX_VPTR_IX_INT[5];
@@ -2366,6 +2369,8 @@ initialize_sanitizer_builtins (void)
 #undef ATTR_COLD_CONST_NORETURN_NOTHROW_LEAF_LIST
 #define ATTR_COLD_CONST_NORETURN_NOTHROW_LEAF_LIST \
   /* ECF_COLD missing */ ATTR_CONST_NORETURN_NOTHROW_LEAF_LIST
+#undef ATTR_PURE_NOTHROW_LEAF_LIST
+#define ATTR_PURE_NOTHROW_LEAF_LIST ECF_PURE | ATTR_NOTHROW_LEAF_LIST
 #undef DEF_SANITIZER_BUILTIN
 #define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
   decl = add_builtin_function ("__builtin_" NAME, TYPE, ENUM,		\
@@ -2374,6 +2379,15 @@ initialize_sanitizer_builtins (void)
   set_builtin_decl (ENUM, decl, true);
 
 #include "sanitizer.def"
+
+  /* -fsanitize=object-size uses __builtin_object_size, but that might
+     not be available for e.g. Fortran at this point.  We use
+     DEF_SANITIZER_BUILTIN here only as a convenience macro.  */
+  if ((flag_sanitize & SANITIZE_OBJECT_SIZE)
+      && !builtin_decl_implicit_p (BUILT_IN_OBJECT_SIZE))
+    DEF_SANITIZER_BUILTIN (BUILT_IN_OBJECT_SIZE, "object_size",
+			   BT_FN_SIZE_CONST_PTR_INT,
+			   ATTR_PURE_NOTHROW_LEAF_LIST)
 
 #undef DEF_SANITIZER_BUILTIN
 }
