@@ -1,10 +1,11 @@
 /* { dg-do run } */
+/* { dg-additional-options "-DCHUNKSZ=5000" { target { ! run_expensive_tests } } } */
+/* { dg-additional-options "-DCHUNKSZ=1000" { target run_expensive_tests } } */
 
 #include <stdlib.h>
 
 #define EPS 0.00001
 #define N 100000
-#define CHUNKSZ 1000
 
 float Y[N];
 float Z[N];

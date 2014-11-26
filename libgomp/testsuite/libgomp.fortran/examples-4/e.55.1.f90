@@ -1,7 +1,7 @@
 ! { dg-do run }
 
 module e_55_1_mod
-  integer, parameter :: N = 10000000, CHUNKSZ = 100000
+  integer, parameter :: N = 100000, CHUNKSZ = 10000
   real :: Y(N), Z(N)
 end module
 
