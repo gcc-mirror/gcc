@@ -790,7 +790,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 
   value = extend_ref_init_temps (decl, value, cleanups);
 
-  /* In C++0x constant expression is a semantic, not syntactic, property.
+  /* In C++11 constant expression is a semantic, not syntactic, property.
      In C++98, make sure that what we thought was a constant expression at
      template definition time is still constant and otherwise perform this
      as optimization, e.g. to fold SIZEOF_EXPRs in the initializer.  */
