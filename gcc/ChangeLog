@@ -1,3 +1,10 @@
+2014-11-26  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/63788
+	* asan.c (initialize_sanitizer_builtins): Add BT_FN_SIZE_CONST_PTR_INT
+	var.  Conditionally build BUILT_IN_OBJECT_SIZE decl.
+	(ATTR_PURE_NOTHROW_LEAF_LIST): Define.
+
 2014-11-26  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR lto/64075
