@@ -1,3 +1,8 @@
+2014-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (SANITIZER_SPEC): Don't error on -fsanitize=thread
+	without -pie or -shared, error on -fsanitize=thread -static instead.
+
 2014-11-26  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR ipa/61190

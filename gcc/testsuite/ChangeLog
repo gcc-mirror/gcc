@@ -1,3 +1,8 @@
+2014-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/tsan-dg.exp (check_effective_target_fsanitize_thread,
+	tsan_init): Don't use -fPIE or -pie.
+
 2014-11-26  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR ipa/61190
