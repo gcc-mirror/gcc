@@ -1252,7 +1252,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    the pic register when possible.  The change is visible after the
    prologue has been emitted.  */
 
-#define REAL_PIC_OFFSET_TABLE_REGNUM  BX_REG
+#define REAL_PIC_OFFSET_TABLE_REGNUM  (TARGET_64BIT ? R15_REG : BX_REG)
 
 #define PIC_OFFSET_TABLE_REGNUM						\
   ((TARGET_64BIT && (ix86_cmodel == CM_SMALL_PIC			\
