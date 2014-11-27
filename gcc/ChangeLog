@@ -1,5 +1,10 @@
 2014-11-27  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.c (try_to_simplify): Allow
+	gimple_fold_stmt_to_constant_1 to follow SSA edges.
+
+2014-11-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/64083
 	* tree-ssa-threadupdate.c (thread_through_all_blocks): Do not
 	forcibly mark loop for removal the wrong way.
