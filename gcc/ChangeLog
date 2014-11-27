@@ -1,3 +1,16 @@
+2014-11-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/59593
+	* config/arm/arm.c (dump_minipool): dispatch to consttable pattern
+	based on mode size.
+	* config/arm/arm.md (consttable_1): Move from config/arm/thumb1.md and
+	make it TARGET_EITHER.
+	(consttable_2): Move from config/arm/thumb1.md, make it TARGET_EITHER
+	and move HFmode handling from consttable_4 to it.
+	(consttable_4): Move HFmode handling to consttable_2 pattern.
+	* config/arm/thumb1.md (consttable_1): Move to config/arm/arm.md.
+	(consttable_2): Ditto.
+
 2014-11-27  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (try_to_simplify): Allow
