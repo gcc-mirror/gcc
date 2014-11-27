@@ -1,3 +1,9 @@
+2014-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/64025
+	* alias.c (find_base_term): Use std::swap.  Prefer tmp2
+	if it is CONSTANT_P other than CONST_INT.
+
 2014-11-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/59593

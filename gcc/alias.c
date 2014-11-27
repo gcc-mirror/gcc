@@ -1748,11 +1748,11 @@ find_base_term (rtx x)
 	if (REG_P (tmp1) && REG_POINTER (tmp1))
 	  ;
 	else if (REG_P (tmp2) && REG_POINTER (tmp2))
-	  {
-	    rtx tem = tmp1;
-	    tmp1 = tmp2;
-	    tmp2 = tem;
-	  }
+	  std::swap (tmp1, tmp2);
+	/* If second argument is constant which has base term, prefer it
+	   over variable tmp1.  See PR64025.  */
+	else if (CONSTANT_P (tmp2) && !CONST_INT_P (tmp2))
+	  std::swap (tmp1, tmp2);
 
 	/* Go ahead and find the base term for both operands.  If either base
 	   term is from a pointer or is a named object or a special address
