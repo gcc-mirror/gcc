@@ -1,5 +1,18 @@
 2014-11-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/64024
+	* tree-vectorizer.h (struct _stmt_vec_info): Remove simd_clone_fndecl
+	field.  Add simd_clone_info field.
+	(STMT_VINFO_SIMD_CLONE_FNDECL): Remove.
+	(STMT_VINFO_SIMD_CLONE_INFO): Define.
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Adjust for
+	STMT_VINFO_SIMD_CLONE_FNDECL becoming first element of
+	STMT_VINFO_SIMD_CLONE_INFO vector.  For linear arguments, remember
+	base and linear_step from analysis phase and use it during transform
+	phase, biased by the difference between LOOP_VINFO_NITERS{_UNCHANGED,}
+	multiplied by linear_step.
+	(free_stmt_vec_info): Release STMT_VINFO_SIMD_CLONE_INFO.
+
 	PR lto/64025
 	* alias.c (find_base_term): Use std::swap.  Prefer tmp2
 	if it is CONSTANT_P other than CONST_INT.
