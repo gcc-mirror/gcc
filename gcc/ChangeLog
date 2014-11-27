@@ -1,3 +1,13 @@
+2014-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64088
+	* fold-const.c (const_unop): Re-instantiate missing condition
+	before calling fold_abs_const.
+
+	PR tree-optimization/64088
+	* tree-ssa-tail-merge.c (update_debug_stmt): After resetting
+	the stmt break from the loop over use operands.
+
 2014-11-27  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/cpuid.h (bit_MPX, bit_BNDREGS, bit_BNDCSR):

@@ -1606,9 +1606,7 @@ update_debug_stmt (gimple stmt)
 {
   use_operand_p use_p;
   ssa_op_iter oi;
-  basic_block bbdef, bbuse;
-  gimple def_stmt;
-  tree name;
+  basic_block bbuse;
 
   if (!gimple_debug_bind_p (stmt))
     return;
@@ -1616,19 +1614,16 @@ update_debug_stmt (gimple stmt)
   bbuse = gimple_bb (stmt);
   FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, oi, SSA_OP_USE)
     {
-      name = USE_FROM_PTR (use_p);
-      gcc_assert (TREE_CODE (name) == SSA_NAME);
-
-      def_stmt = SSA_NAME_DEF_STMT (name);
-      gcc_assert (def_stmt != NULL);
-
-      bbdef = gimple_bb (def_stmt);
+      tree name = USE_FROM_PTR (use_p);
+      gimple def_stmt = SSA_NAME_DEF_STMT (name);
+      basic_block bbdef = gimple_bb (def_stmt);
       if (bbdef == NULL || bbuse == bbdef
 	  || dominated_by_p (CDI_DOMINATORS, bbuse, bbdef))
 	continue;
 
       gimple_debug_bind_reset_value (stmt);
       update_stmt (stmt);
+      break;
     }
 }
 

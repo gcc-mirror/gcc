@@ -1,3 +1,11 @@
+2014-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64088
+	* gcc.dg/torture/pr64088.c: New testcase.
+
+	PR tree-optimization/64088
+	* gcc.dg/torture/pr64091.c: New testcase.
+
 2014-11-27  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* g++.dg/ext/mv2.C: Add test for target ("avx512f").
