@@ -1,13 +1,29 @@
+2014-11-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (preferred_for_size): New attribute
+	(*pushxf): Split Yx*r constraints to r,*r.  Use preferred_for_size
+	attribute to conditionally disable alternative 1.
+	(*pushdf): Split Yd*r constraints to r,*r.  Use preferred_for_size
+	and prefered_for_speed attributes to conditionally disable
+	alternative 1.
+	(*movxf_internal): Split Yx*r constraints to r,*r.  Use
+	preferred_for_size attribute to conditionally disable
+	alternatives 3 and 4.
+	(*movdf_internal): Split Yd*r constraints to r,*r.  Use
+	preferred_for_size and prefered_for_speed attributes to conditionally
+	disable alternatives 3 and 4.
+	* config/i386/constraints.md (Yd, Yx): Remove register constraints.
+
 2014-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (set_block_origin_self): Skip nested functions.
 
 2014-11-27  H.J. Lu  <hongjiu.lu@intel.com>
 
-	 PR target/63833
-	 * config/i386/i386.h (REAL_PIC_OFFSET_TABLE_REGNUM): Use
-	 R15_REG for 64-bit.
-	 * config/i386/rdos64.h (REAL_PIC_OFFSET_TABLE_REGNUM): Removed.
+	PR target/63833
+	* config/i386/i386.h (REAL_PIC_OFFSET_TABLE_REGNUM): Use
+	R15_REG for 64-bit.
+	* config/i386/rdos64.h (REAL_PIC_OFFSET_TABLE_REGNUM): Removed.
 
 2014-11-27  Martin Liska  <mliska@suse.cz>
 	    David Malcolm  <dmalcolm@redhat.com>
