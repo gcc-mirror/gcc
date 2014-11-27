@@ -1,3 +1,9 @@
+2014-11-27  Tony Wang  <tony.wang@arm.com>
+
+	* config/arm/lib1funcs.S (FUNC_START): Add conditional section
+	redefine for macro L_arm_muldivsf3 and L_arm_muldivdf3.
+	(SYM_END, ARM_SYM_START): Add macros used to expose function Symbols.
+
 2014-11-25  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* crtstuff.c (__do_glbal_ctors_1): Add missing semicolon.
