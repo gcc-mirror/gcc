@@ -1,3 +1,9 @@
+2014-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64024
+	* gcc.dg/vect/vect-simd-clone-13.c: New test.
+	* gcc.dg/vect/vect-simd-clone-14.c: New test.
+
 2014-11-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/59593

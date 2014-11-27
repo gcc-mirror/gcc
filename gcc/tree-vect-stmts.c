@@ -2715,12 +2715,40 @@ vectorizable_simd_clone_call (gimple stmt, gimple_stmt_iterator *gsi,
       else
 	gcc_assert (thisarginfo.vectype != NULL_TREE);
 
-      if (thisarginfo.dt != vect_constant_def
-	  && thisarginfo.dt != vect_external_def
-	  && loop_vinfo
-	  && TREE_CODE (op) == SSA_NAME
-	  && simple_iv (loop, loop_containing_stmt (stmt), op, &iv, false)
-	  && tree_fits_shwi_p (iv.step))
+      /* For linear arguments, the analyze phase should have saved
+	 the base and step in STMT_VINFO_SIMD_CLONE_INFO.  */
+      if (i * 2 + 3 <= STMT_VINFO_SIMD_CLONE_INFO (stmt_info).length ()
+	  && STMT_VINFO_SIMD_CLONE_INFO (stmt_info)[i * 2 + 2])
+	{
+	  gcc_assert (vec_stmt);
+	  thisarginfo.linear_step
+	    = tree_to_shwi (STMT_VINFO_SIMD_CLONE_INFO (stmt_info)[i * 2 + 2]);
+	  thisarginfo.op
+	    = STMT_VINFO_SIMD_CLONE_INFO (stmt_info)[i * 2 + 1];
+	  /* If loop has been peeled for alignment, we need to adjust it.  */
+	  tree n1 = LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo);
+	  tree n2 = LOOP_VINFO_NITERS (loop_vinfo);
+	  if (n1 != n2)
+	    {
+	      tree bias = fold_build2 (MINUS_EXPR, TREE_TYPE (n1), n1, n2);
+	      tree step = STMT_VINFO_SIMD_CLONE_INFO (stmt_info)[i * 2 + 2];
+	      tree opt = TREE_TYPE (thisarginfo.op);
+	      bias = fold_convert (TREE_TYPE (step), bias);
+	      bias = fold_build2 (MULT_EXPR, TREE_TYPE (step), bias, step);
+	      thisarginfo.op
+		= fold_build2 (POINTER_TYPE_P (opt)
+			       ? POINTER_PLUS_EXPR : PLUS_EXPR, opt,
+			       thisarginfo.op, bias);
+	    }
+	}
+      else if (!vec_stmt
+	       && thisarginfo.dt != vect_constant_def
+	       && thisarginfo.dt != vect_external_def
+	       && loop_vinfo
+	       && TREE_CODE (op) == SSA_NAME
+	       && simple_iv (loop, loop_containing_stmt (stmt), op,
+			     &iv, false)
+	       && tree_fits_shwi_p (iv.step))
 	{
 	  thisarginfo.linear_step = tree_to_shwi (iv.step);
 	  thisarginfo.op = iv.base;
@@ -2735,8 +2763,8 @@ vectorizable_simd_clone_call (gimple stmt, gimple_stmt_iterator *gsi,
 
   unsigned int badness = 0;
   struct cgraph_node *bestn = NULL;
-  if (STMT_VINFO_SIMD_CLONE_FNDECL (stmt_info))
-    bestn = cgraph_node::get (STMT_VINFO_SIMD_CLONE_FNDECL (stmt_info));
+  if (STMT_VINFO_SIMD_CLONE_INFO (stmt_info).exists ())
+    bestn = cgraph_node::get (STMT_VINFO_SIMD_CLONE_INFO (stmt_info)[0]);
   else
     for (struct cgraph_node *n = node->simd_clones; n != NULL;
 	 n = n->simdclone->next_clone)
@@ -2855,7 +2883,19 @@ vectorizable_simd_clone_call (gimple stmt, gimple_stmt_iterator *gsi,
 
   if (!vec_stmt) /* transformation not required.  */
     {
-      STMT_VINFO_SIMD_CLONE_FNDECL (stmt_info) = bestn->decl;
+      STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_push (bestn->decl);
+      for (i = 0; i < nargs; i++)
+	if (bestn->simdclone->args[i].arg_type
+	    == SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP)
+	  {
+	    STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_grow_cleared (i * 2
+									+ 1);
+	    STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_push (arginfo[i].op);
+	    tree lst = POINTER_TYPE_P (TREE_TYPE (arginfo[i].op))
+		       ? size_type_node : TREE_TYPE (arginfo[i].op);
+	    tree ls = build_int_cst (lst, arginfo[i].linear_step);
+	    STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_push (ls);
+	  }
       STMT_VINFO_TYPE (stmt_info) = call_simd_clone_vec_info_type;
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
@@ -7479,6 +7519,7 @@ free_stmt_vec_info (gimple stmt)
     }
 
   STMT_VINFO_SAME_ALIGN_REFS (stmt_info).release ();
+  STMT_VINFO_SIMD_CLONE_INFO (stmt_info).release ();
   set_vinfo_for_stmt (stmt, NULL);
   free (stmt_info);
 }

@@ -602,8 +602,10 @@ typedef struct _stmt_vec_info {
      of this stmt.  */
   vec<dr_p> same_align_refs;
 
-  /* Selected SIMD clone's function decl.  */
-  tree simd_clone_fndecl;
+  /* Selected SIMD clone's function info.  First vector element
+     is SIMD clone's function decl, followed by a pair of trees (base + step)
+     for linear arguments (pair of NULLs for other arguments).  */
+  vec<tree> simd_clone_info;
 
   /* Classify the def of this stmt.  */
   enum vect_def_type def_type;
@@ -677,7 +679,7 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_RELATED_STMT(S)         (S)->related_stmt
 #define STMT_VINFO_PATTERN_DEF_SEQ(S)      (S)->pattern_def_seq
 #define STMT_VINFO_SAME_ALIGN_REFS(S)      (S)->same_align_refs
-#define STMT_VINFO_SIMD_CLONE_FNDECL(S)	   (S)->simd_clone_fndecl
+#define STMT_VINFO_SIMD_CLONE_INFO(S)	   (S)->simd_clone_info
 #define STMT_VINFO_DEF_TYPE(S)             (S)->def_type
 #define STMT_VINFO_GROUP_FIRST_ELEMENT(S)  (S)->first_element
 #define STMT_VINFO_GROUP_NEXT_ELEMENT(S)   (S)->next_element
