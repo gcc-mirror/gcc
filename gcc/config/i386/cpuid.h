@@ -72,6 +72,7 @@
 #define bit_AVX2	(1 << 5)
 #define bit_BMI2	(1 << 8)
 #define bit_RTM	(1 << 11)
+#define bit_MPX	(1 << 14)
 #define bit_AVX512F	(1 << 16)
 #define bit_AVX512DQ	(1 << 17)
 #define bit_RDSEED	(1 << 18)
@@ -90,6 +91,10 @@
 /* %ecx */
 #define bit_PREFETCHWT1	  (1 << 0)
 #define bit_AVX512VBMI	(1 << 1)
+
+/* XFEATURE_ENABLED_MASK register bits (%eax == 13, %ecx == 0) */
+#define bit_BNDREGS     (1 << 3)
+#define bit_BNDCSR      (1 << 4)
 
 /* Extended State Enumeration Sub-leaf (%eax == 13, %ecx == 1) */
 #define bit_XSAVEOPT	(1 << 0)
