@@ -1,3 +1,13 @@
+2014-11-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2014-09-10  Tony Wang  <tony.wang@arm.com>
+
+	PR target/56846
+	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION):
+	Return with CONTINUE_UNWINDING when the state pattern
+	contains: _US_VIRTUAL_UNWIND_FRAME | _US_FORCE_UNWIND
+
 2014-11-05  David Edelsohn  <dje.gcc@gmail.com>
 
 	Backported from mainline.
