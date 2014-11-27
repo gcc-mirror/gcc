@@ -1481,7 +1481,9 @@ const_unop (enum tree_code code, tree type, tree arg0)
       }
 
     case ABS_EXPR:
-      return fold_abs_const (arg0, type);
+      if (TREE_CODE (arg0) == INTEGER_CST || TREE_CODE (arg0) == REAL_CST)
+	return fold_abs_const (arg0, type);
+      break;
 
     case CONJ_EXPR:
       if (TREE_CODE (arg0) == COMPLEX_CST)
