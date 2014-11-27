@@ -1,3 +1,8 @@
+2014-11-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/59593
+	* gcc.target/arm/constant-pool.c: New test.
+
 2014-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/simd/vsqrt_f64_1.c: Mark variable volatile.

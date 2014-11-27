@@ -10594,6 +10594,42 @@
   [(set_attr "type" "no_insn")]
 )
 
+(define_insn "consttable_1"
+  [(unspec_volatile [(match_operand 0 "" "")] VUNSPEC_POOL_1)]
+  "TARGET_EITHER"
+  "*
+  making_const_table = TRUE;
+  assemble_integer (operands[0], 1, BITS_PER_WORD, 1);
+  assemble_zeros (3);
+  return \"\";
+  "
+  [(set_attr "length" "4")
+   (set_attr "type" "no_insn")]
+)
+
+(define_insn "consttable_2"
+  [(unspec_volatile [(match_operand 0 "" "")] VUNSPEC_POOL_2)]
+  "TARGET_EITHER"
+  "*
+  {
+    rtx x = operands[0];
+    making_const_table = TRUE;
+    switch (GET_MODE_CLASS (GET_MODE (x)))
+      {
+      case MODE_FLOAT:
+	arm_emit_fp16_const (x);
+	break;
+      default:
+	assemble_integer (operands[0], 2, BITS_PER_WORD, 1);
+	assemble_zeros (2);
+	break;
+      }
+    return \"\";
+  }"
+  [(set_attr "length" "4")
+   (set_attr "type" "no_insn")]
+)
+
 (define_insn "consttable_4"
   [(unspec_volatile [(match_operand 0 "" "")] VUNSPEC_POOL_4)]
   "TARGET_EITHER"
@@ -10604,15 +10640,12 @@
     switch (GET_MODE_CLASS (GET_MODE (x)))
       {
       case MODE_FLOAT:
- 	if (GET_MODE (x) == HFmode)
- 	  arm_emit_fp16_const (x);
- 	else
- 	  {
- 	    REAL_VALUE_TYPE r;
- 	    REAL_VALUE_FROM_CONST_DOUBLE (r, x);
- 	    assemble_real (r, GET_MODE (x), BITS_PER_WORD);
- 	  }
- 	break;
+	{
+	  REAL_VALUE_TYPE r;
+	  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+	  assemble_real (r, GET_MODE (x), BITS_PER_WORD);
+	  break;
+	}
       default:
 	/* XXX: Sometimes gcc does something really dumb and ends up with
 	   a HIGH in a constant pool entry, usually because it's trying to

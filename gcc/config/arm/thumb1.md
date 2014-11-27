@@ -1735,33 +1735,6 @@
    (set_attr "conds" "clob")]
 )
 
-(define_insn "consttable_1"
-  [(unspec_volatile [(match_operand 0 "" "")] VUNSPEC_POOL_1)]
-  "TARGET_THUMB1"
-  "*
-  making_const_table = TRUE;
-  assemble_integer (operands[0], 1, BITS_PER_WORD, 1);
-  assemble_zeros (3);
-  return \"\";
-  "
-  [(set_attr "length" "4")
-   (set_attr "type" "no_insn")]
-)
-
-(define_insn "consttable_2"
-  [(unspec_volatile [(match_operand 0 "" "")] VUNSPEC_POOL_2)]
-  "TARGET_THUMB1"
-  "*
-  making_const_table = TRUE;
-  gcc_assert (GET_MODE_CLASS (GET_MODE (operands[0])) != MODE_FLOAT);
-  assemble_integer (operands[0], 2, BITS_PER_WORD, 1);
-  assemble_zeros (2);
-  return \"\";
-  "
-  [(set_attr "length" "4")
-   (set_attr "type" "no_insn")]
-)
-
 ;; Miscellaneous Thumb patterns
 (define_expand "tablejump"
   [(parallel [(set (pc) (match_operand:SI 0 "register_operand" ""))
