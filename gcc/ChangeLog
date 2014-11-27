@@ -1,3 +1,12 @@
+2014-11-27  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	Revert:
+	2014-11-17  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+	* config/aarch64/aarch64.c (aarch64_code_to_ccmode,
+	aarch64_convert_mode, aarch64_gen_ccmp_first,
+	aarch64_gen_ccmp_next): New functions.
+	(TARGET_GEN_CCMP_FIRST, TARGET_GEN_CCMP_NEXT): Define.
+
 2014-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c (SANITIZER_SPEC): Don't error on -fsanitize=thread
