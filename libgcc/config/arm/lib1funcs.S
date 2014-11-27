@@ -418,8 +418,12 @@ SYM (\name):
 #define THUMB_SYNTAX
 #endif
 
-.macro FUNC_START name
+.macro FUNC_START name sp_section=
+  .ifc \sp_section, function_section
+	.section	.text.__\name,"ax",%progbits
+  .else
 	.text
+  .endif
 	.globl SYM (__\name)
 	TYPE (__\name)
 	.align 0
@@ -429,14 +433,24 @@ SYM (\name):
 SYM (__\name):
 .endm
 
+.macro ARM_SYM_START name
+       TYPE (\name)
+       .align 0
+SYM (\name):
+.endm
+
+.macro SYM_END name
+       SIZE (\name)
+.endm
+
 /* Special function that will always be coded in ARM assembly, even if
    in Thumb-only compilation.  */
 
 #if defined(__thumb2__)
 
 /* For Thumb-2 we build everything in thumb mode.  */
-.macro ARM_FUNC_START name
-       FUNC_START \name
+.macro ARM_FUNC_START name sp_section=
+       FUNC_START \name \sp_section
        .syntax unified
 .endm
 #define EQUIV .thumb_set
@@ -467,8 +481,12 @@ _L__\name:
 #ifdef __ARM_ARCH_6M__
 #define EQUIV .thumb_set
 #else
-.macro	ARM_FUNC_START name
+.macro	ARM_FUNC_START name sp_section=
+  .ifc \sp_section, function_section
+	.section	.text.__\name,"ax",%progbits
+  .else
 	.text
+  .endif
 	.globl SYM (__\name)
 	TYPE (__\name)
 	.align 0
