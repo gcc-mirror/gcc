@@ -1,3 +1,8 @@
+2014-11-27  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/63904
+	* g++.dg/cpp0x/pr63904.C: New.
+
 2014-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/64067
