@@ -275,7 +275,7 @@ private:
 
   /* Basic blocks dictionary BB_DICT returns true if SOURCE index BB
      corresponds to TARGET.  */
-  bool bb_dict_test (int* bb_dict, int source, int target);
+  bool bb_dict_test (auto_vec<int> bb_dict, int source, int target);
 
   /* Iterates all tree types in T1 and T2 and returns true if all types
      are compatible. If COMPARE_POLYMORPHIC is set to true,
