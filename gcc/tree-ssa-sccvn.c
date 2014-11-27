@@ -3461,7 +3461,7 @@ try_to_simplify (gassign *stmt)
     return NULL_TREE;
 
   /* First try constant folding based on our current lattice.  */
-  tem = gimple_fold_stmt_to_constant_1 (stmt, vn_valueize);
+  tem = gimple_fold_stmt_to_constant_1 (stmt, vn_valueize, vn_valueize);
   if (tem
       && (TREE_CODE (tem) == SSA_NAME
 	  || is_gimple_min_invariant (tem)))
