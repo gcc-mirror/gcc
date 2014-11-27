@@ -1,3 +1,7 @@
+2014-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vsqrt_f64_1.c: Mark variable volatile.
+
 2014-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64083

@@ -11,7 +11,7 @@ extern void abort (void);
 int
 main (void)
 {
-  float64x1_t in = vcreate_f64(0x3febd3e560634d7bULL);
+  volatile float64x1_t in = vcreate_f64(0x3febd3e560634d7bULL);
   float64x1_t result = vsqrt_f64 (in);
   float64_t expected = 0.9325321502142351;
 
