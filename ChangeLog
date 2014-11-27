@@ -1,3 +1,7 @@
+2014-11-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* MAINTAINERS (nvptx port): New entry.
+
 2014-11-26  Jan-benedict Glaw  <jbglaw@lug-owl.de>
 
 	* configure: Regenerate.
