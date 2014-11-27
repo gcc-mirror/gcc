@@ -1,3 +1,8 @@
+2014-11-27  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/cpuinfo.c (processor_features): Add FEATURE_AVX512F.
+	* config/i386/cpuinfo.c (get_available_features): Detect it.
+
 2014-11-27  Tony Wang  <tony.wang@arm.com>
 
 	* config/arm/lib1funcs.S (FUNC_START): Add conditional section

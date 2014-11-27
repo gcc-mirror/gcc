@@ -11642,6 +11642,8 @@ SSE4.2 instructions.
 AVX instructions.
 @item avx2
 AVX2 instructions.
+@item avx512f
+AVX512F instructions.
 @end table
 
 Here is an example:

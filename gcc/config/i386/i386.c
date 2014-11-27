@@ -34235,7 +34235,8 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
     P_FMA,    
     P_PROC_FMA,
     P_AVX2,
-    P_PROC_AVX2
+    P_PROC_AVX2,
+    P_AVX512F
   };
 
  enum feature_priority priority = P_ZERO;
@@ -34263,7 +34264,8 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
       {"fma4", P_FMA4},
       {"xop", P_XOP},
       {"fma", P_FMA},
-      {"avx2", P_AVX2}
+      {"avx2", P_AVX2},
+      {"avx512f", P_AVX512F}
     };
 
 
@@ -35238,6 +35240,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
     F_FMA4,
     F_XOP,
     F_FMA,
+    F_AVX512F,
     F_MAX
   };
 
@@ -35326,7 +35329,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"fma4",   F_FMA4},
       {"xop",    F_XOP},
       {"fma",    F_FMA},
-      {"avx2",   F_AVX2}
+      {"avx2",   F_AVX2},
+      {"avx512f",F_AVX512F}
     };
 
   tree __processor_model_type = build_processor_model_struct ();

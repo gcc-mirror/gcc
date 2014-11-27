@@ -1,3 +1,8 @@
+2014-11-27  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* g++.dg/ext/mv2.C: Add test for target ("avx512f").
+	* gcc.target/i386/builtin_target.c: Ditto.
+
 2014-11-27  Kai Tietz  <ktietz@redhat.com>
 
 	PR c++/63904

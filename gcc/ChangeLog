@@ -1,3 +1,11 @@
+2014-11-27  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/cpuid.h (bit_MPX, bit_BNDREGS, bit_BNDCSR):
+	Define.
+	* config/i386/i386.c (get_builtin_code_for_version): Add avx512f.
+	(fold_builtin_cpu): Ditto.
+	* doc/extend.texi: Documment it.
+
 2014-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/64067
