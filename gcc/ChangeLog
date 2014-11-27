@@ -1,5 +1,11 @@
 2014-11-27  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/63704
+	* alias.c (mems_in_disjoint_alias_sets_p): Remove assert
+	and instead return false when !fstrict-aliasing.
+
+2014-11-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/61634
 	* tree-vect-slp.c: Include gimple-walk.h.
 	(vect_detect_hybrid_slp_stmts): Rewrite to propagate hybrid
