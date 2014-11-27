@@ -1,5 +1,11 @@
 2014-11-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/64083
+	* tree-ssa-threadupdate.c (thread_through_all_blocks): Do not
+	forcibly mark loop for removal the wrong way.
+
+2014-11-27  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/63704
 	* alias.c (mems_in_disjoint_alias_sets_p): Remove assert
 	and instead return false when !fstrict-aliasing.
