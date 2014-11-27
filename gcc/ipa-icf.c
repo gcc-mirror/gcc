@@ -410,7 +410,6 @@ sem_function::equals_private (sem_item *item,
   basic_block bb1, bb2;
   edge e1, e2;
   edge_iterator ei1, ei2;
-  int *bb_dict = NULL;
   bool result = true;
   tree arg1, arg2;
 
@@ -486,12 +485,11 @@ sem_function::equals_private (sem_item *item,
 
   dump_message ("All BBs are equal\n");
 
+  auto_vec <int> bb_dict;
+
   /* Basic block edges check.  */
   for (unsigned i = 0; i < bb_sorted.length (); ++i)
     {
-      bb_dict = XNEWVEC (int, bb_sorted.length () + 2);
-      memset (bb_dict, -1, (bb_sorted.length () + 2) * sizeof (int));
-
       bb1 = bb_sorted[i]->bb;
       bb2 = m_compared_func->bb_sorted[i]->bb;
 
@@ -957,9 +955,15 @@ sem_function::icf_handled_component_p (tree t)
    corresponds to TARGET.  */
 
 bool
-sem_function::bb_dict_test (int* bb_dict, int source, int target)
+sem_function::bb_dict_test (auto_vec<int> bb_dict, int source, int target)
 {
-  if (bb_dict[source] == -1)
+  source++;
+  target++;
+
+  if (bb_dict.length () <= (unsigned)source)
+    bb_dict.safe_grow_cleared (source + 1);
+
+  if (bb_dict[source] == 0)
     {
       bb_dict[source] = target;
       return true;

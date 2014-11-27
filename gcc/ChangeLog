@@ -1,3 +1,11 @@
+2014-11-27  Martin Liska  <mliska@suse.cz>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	* ipa-icf.c (sem_function::equals_private): int* is replaced with
+	auto_vec.
+	(sem_function::bb_dict_test): Likewise.
+	* ipa-icf.h: Likewise.
+
 2014-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64088
