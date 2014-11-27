@@ -1,3 +1,10 @@
+2014-11-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	 PR target/63833
+	 * config/i386/i386.h (REAL_PIC_OFFSET_TABLE_REGNUM): Use
+	 R15_REG for 64-bit.
+	 * config/i386/rdos64.h (REAL_PIC_OFFSET_TABLE_REGNUM): Removed.
+
 2014-11-27  Martin Liska  <mliska@suse.cz>
 	    David Malcolm  <dmalcolm@redhat.com>
 
