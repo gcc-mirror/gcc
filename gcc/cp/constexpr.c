@@ -2013,12 +2013,12 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 		     bool *non_constant_p, bool *overflow_p)
 {
   tree elttype = TREE_TYPE (atype);
-  int max = tree_to_shwi (array_type_nelts (atype));
+  unsigned HOST_WIDE_INT max = tree_to_uhwi (array_type_nelts_top (atype));
   verify_ctor_sanity (ctx, atype);
   vec<constructor_elt, va_gc> **p = &CONSTRUCTOR_ELTS (ctx->ctor);
   vec_alloc (*p, max + 1);
   bool pre_init = false;
-  int i;
+  unsigned HOST_WIDE_INT i;
 
   /* For the default constructor, build up a call to the default
      constructor of the element type.  We only need to handle class types
@@ -2043,7 +2043,7 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
       pre_init = true;
     }
 
-  for (i = 0; i <= max; ++i)
+  for (i = 0; i < max; ++i)
     {
       tree idx = build_int_cst (size_type_node, i);
       tree eltinit;

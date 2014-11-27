@@ -1,3 +1,9 @@
+2014-11-27  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/63904
+	* constexpr.c (cxx_eval_vec_init_1): Avoid
+	type-overflow issue.
+
 2014-11-26  Jason Merrill  <jason@redhat.com>
 
 	Allow partial specialization of variable templates.
