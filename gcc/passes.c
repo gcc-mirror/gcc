@@ -2466,7 +2466,7 @@ ipa_write_summaries (bool offload_lto_mode)
   struct cgraph_node *node;
   struct cgraph_node **order;
 
-  if (!flag_generate_lto || seen_error ())
+  if ((!flag_generate_lto && !flag_generate_offload) || seen_error ())
     return;
 
   select_what_to_stream (offload_lto_mode);

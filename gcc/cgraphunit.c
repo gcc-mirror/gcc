@@ -2075,7 +2075,7 @@ ipa_passes (void)
     }
 
   /* Some targets need to handle LTO assembler output specially.  */
-  if (flag_generate_lto)
+  if (flag_generate_lto || flag_generate_offload)
     targetm.asm_out.lto_start ();
 
   if (!in_lto_p)
@@ -2092,7 +2092,7 @@ ipa_passes (void)
 	}
     }
 
-  if (flag_generate_lto)
+  if (flag_generate_lto || flag_generate_offload)
     targetm.asm_out.lto_end ();
 
   if (!flag_ltrans && (in_lto_p || !flag_lto || flag_fat_lto_objects))
@@ -2176,10 +2176,10 @@ symbol_table::compile (void)
 
   /* Offloading requires LTO infrastructure.  */
   if (!in_lto_p && g->have_offload)
-    flag_generate_lto = 1;
+    flag_generate_offload = 1;
 
   /* If LTO is enabled, initialize the streamer hooks needed by GIMPLE.  */
-  if (flag_generate_lto)
+  if (flag_generate_lto || flag_generate_offload)
     lto_streamer_hooks_init ();
 
   /* Don't run the IPA passes if there was any error or sorry messages.  */

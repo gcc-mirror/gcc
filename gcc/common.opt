@@ -67,6 +67,10 @@ int *param_values
 Variable
 int flag_generate_lto
 
+; Nonzero if we should write GIMPLE bytecode for offload compilation.
+Variable
+int flag_generate_offload = 0
+
 ; True to warn about any objects definitions whose size is larger
 ; than N bytes.  Also want about function definitions whose returned
 ; values are larger than N bytes, where N is 'larger_than_size'.

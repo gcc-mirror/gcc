@@ -639,7 +639,7 @@ compile_file (void)
      We used to emit an undefined reference here, but this produces
      link errors if an object file with IL is stored into a shared
      library without invoking lto1.  */
-  if (flag_generate_lto)
+  if (flag_generate_lto || flag_generate_offload)
     {
 #if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
       ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE,
@@ -653,23 +653,23 @@ compile_file (void)
 			 (unsigned HOST_WIDE_INT) 1,
 			 (unsigned HOST_WIDE_INT) 1);
 #endif
-      /* Let linker plugin know that this is a slim object and must be LTOed
-         even when user did not ask for it.  */
-      if (!flag_fat_lto_objects)
-        {
+    }
+
+  /* Let linker plugin know that this is a slim object and must be LTOed
+     even when user did not ask for it.  */
+  if (flag_generate_lto && !flag_fat_lto_objects)
+    {
 #if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
-	  ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE,
-					  "__gnu_lto_slim",
-					  (unsigned HOST_WIDE_INT) 1, 8);
+      ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE, "__gnu_lto_slim",
+				      (unsigned HOST_WIDE_INT) 1, 8);
 #elif defined ASM_OUTPUT_ALIGNED_COMMON
-	  ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_lto_slim",
-				     (unsigned HOST_WIDE_INT) 1, 8);
+      ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_lto_slim",
+				 (unsigned HOST_WIDE_INT) 1, 8);
 #else
-	  ASM_OUTPUT_COMMON (asm_out_file, "__gnu_lto_slim",
-			     (unsigned HOST_WIDE_INT) 1,
-			     (unsigned HOST_WIDE_INT) 1);
+      ASM_OUTPUT_COMMON (asm_out_file, "__gnu_lto_slim",
+			 (unsigned HOST_WIDE_INT) 1,
+			 (unsigned HOST_WIDE_INT) 1);
 #endif
-        }
     }
 
   /* Attach a special .ident directive to the end of the file to identify
