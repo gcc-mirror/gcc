@@ -1,3 +1,13 @@
+2014-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/60436
+	* line-map.c (linemap_line_start): If highest is above 0x60000000
+	and we are still tracking columns or highest is above 0x70000000,
+	force add_map.
+
 2014-10-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline r215873

@@ -527,10 +527,10 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
 	  && line_delta * ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map) > 1000)
       || (max_column_hint >= (1U << ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map)))
       || (max_column_hint <= 80
-	  && ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map) >= 10))
-    {
-      add_map = true;
-    }
+	  && ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map) >= 10)
+      || (highest > 0x60000000
+	  && (set->max_column_hint || highest > 0x70000000)))
+    add_map = true;
   else
     max_column_hint = set->max_column_hint;
   if (add_map)
@@ -541,7 +541,7 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
 	  /* If the column number is ridiculous or we've allocated a huge
 	     number of source_locations, give up on column numbers. */
 	  max_column_hint = 0;
-	  if (highest >0x70000000)
+	  if (highest > 0x70000000)
 	    return 0;
 	  column_bits = 0;
 	}
