@@ -1,3 +1,10 @@
+2014-11-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr63661.c: Replace -mtune=native with
+	-mtune=nehalem.
+	(foo): Replace "!=" with delta.
+	(main): Remove __builtin_printf.
+
 2014-11-28  Renlin Li  <renlin.li@arm.com>
 
 	PR target/63661

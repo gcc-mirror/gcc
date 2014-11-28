@@ -1,7 +1,7 @@
 /* PR target/63661 */
 /* { dg-do run } */
 /* { dg-require-effective-target fpic } */
-/* { dg-options "-mtune=native -fPIC -O2" } */
+/* { dg-options "-mtune=nehalem -fPIC -O2" } */
 
 static void __attribute__((noinline,noclone,hot))
 foo (double a, double q, double *ff, double *gx, int e, int ni)
@@ -11,11 +11,15 @@ foo (double a, double q, double *ff, double *gx, int e, int ni)
       double n;
       unsigned long long o;
     } punner;
+  double d;
 
   punner.n = q;
    __builtin_printf("B: 0x%016llx ---- %g\n", punner.o, q);
 
-  if(q != 5)
+  d = q - 5;
+  if(d < 0)
+    d = -d;
+  if (d > 0.1)
     __builtin_abort();
 }
 
@@ -71,7 +75,6 @@ main ()
 {
   double c[1000];
 
-  __builtin_printf("A: 0x%016llx\n", (unsigned long long)c);
   bar (1, 5.0, c);
   return 0;
 }
