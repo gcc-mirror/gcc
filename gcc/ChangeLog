@@ -1,5 +1,10 @@
 2014-11-28  Ilya Verbin  <ilya.verbin@intel.com>
 
+	* lto-wrapper.c (run_gcc): Set have_lto and have_offload if at least one
+	file contains sections with LTO and offload IR, respectively.
+
+2014-11-28  Ilya Verbin  <ilya.verbin@intel.com>
+
 	* cgraphunit.c (ipa_passes): Handle flag_generate_offload.
 	(symbol_table::compile): Set flag_generate_offload if there is something
 	to offload.
