@@ -1,3 +1,10 @@
+2014-11-28  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/63497
+	include/bits/regex_executor.tcc (_Executor::_M_dfs,
+	_Executor::_M_word_boundary): Avoid dereferecing _M_current at _M_end
+	or other invalid position.
+
 2014-11-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline

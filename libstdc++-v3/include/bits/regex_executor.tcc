@@ -267,9 +267,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_dfs<__match_mode>(__state._M_next);
 	  break;
 	case _S_opcode_match:
+	  if (_M_current == _M_end)
+	    break;
 	  if (__dfs_mode)
 	    {
-	      if (_M_current != _M_end && __state._M_matches(*_M_current))
+	      if (__state._M_matches(*_M_current))
 		{
 		  ++_M_current;
 		  _M_dfs<__match_mode>(__state._M_next);
@@ -350,23 +352,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_word_boundary(_State<_TraitsT> __state) const
     {
-      // By definition.
-      bool __ans = false;
-      auto __pre = _M_current;
-      --__pre;
-      if (!(_M_at_begin() && _M_at_end()))
+      bool __left_is_word = false;
+      if (_M_current != _M_begin
+	  || (_M_flags & regex_constants::match_prev_avail))
 	{
-	  if (_M_at_begin())
-	    __ans = _M_is_word(*_M_current)
-	      && !(_M_flags & regex_constants::match_not_bow);
-	  else if (_M_at_end())
-	    __ans = _M_is_word(*__pre)
-	      && !(_M_flags & regex_constants::match_not_eow);
-	  else
-	    __ans = _M_is_word(*_M_current)
-	      != _M_is_word(*__pre);
+	  auto __prev = _M_current;
+	  if (_M_is_word(*std::prev(__prev)))
+	    __left_is_word = true;
 	}
-      return __ans;
+      bool __right_is_word =
+	_M_current != _M_end && _M_is_word(*_M_current);
+
+      if (__left_is_word == __right_is_word)
+	return false;
+      if (__left_is_word && !(_M_flags & regex_constants::match_not_eow))
+	return true;
+      if (__right_is_word && !(_M_flags & regex_constants::match_not_bow))
+	return true;
+      return false;
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION
