@@ -1,3 +1,8 @@
+2014-11-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/64037
+	* g++.dg/pr64037.C: New test.
+
 2014-11-28  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* gcc.target/i386/pr52252-atom-1.c: Delete.
