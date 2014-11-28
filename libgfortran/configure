@@ -641,6 +641,8 @@ RANLIB
 AR
 AS
 SECTION_FLAGS
+LIBGFOR_MINIMAL_FALSE
+LIBGFOR_MINIMAL_TRUE
 LIBGFOR_USE_SYMVER_SUN_FALSE
 LIBGFOR_USE_SYMVER_SUN_TRUE
 LIBGFOR_USE_SYMVER_GNU_FALSE
@@ -5892,6 +5894,25 @@ fi
 else
   LIBGFOR_USE_SYMVER_SUN_TRUE='#'
   LIBGFOR_USE_SYMVER_SUN_FALSE=
+fi
+
+
+# For GPU offloading, not everything in libfortran can be supported.
+# Currently, the only target that has this problem is nvptx.  The
+# following is a (partial) list of features that are unsupportable on
+# this particular target:
+# * Constructors
+# * alloca
+# * C library support for I/O, with printf as the one notable exception
+# * C library support for other features such as signal, environment
+#   variables, time functions
+
+ if test "x${target_cpu}" = xnvptx; then
+  LIBGFOR_MINIMAL_TRUE=
+  LIBGFOR_MINIMAL_FALSE='#'
+else
+  LIBGFOR_MINIMAL_TRUE='#'
+  LIBGFOR_MINIMAL_FALSE=
 fi
 
 
@@ -12355,7 +12376,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12358 "configure"
+#line 12379 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12461,7 +12482,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12464 "configure"
+#line 12485 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26820,6 +26841,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGFOR_USE_SYMVER_SUN_TRUE}" && test -z "${LIBGFOR_USE_SYMVER_SUN_FALSE}"; then
   as_fn_error "conditional \"LIBGFOR_USE_SYMVER_SUN\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGFOR_MINIMAL_TRUE}" && test -z "${LIBGFOR_MINIMAL_FALSE}"; then
+  as_fn_error "conditional \"LIBGFOR_MINIMAL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGFOR_BUILD_QUAD_TRUE}" && test -z "${LIBGFOR_BUILD_QUAD_FALSE}"; then
