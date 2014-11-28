@@ -1,3 +1,9 @@
+2014-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/64093
+	* config/rs6000/rs6000.md (and<mode>3): Don't generate
+	and<mode>3_imm unless rs6000_gen_cell_microcode is true.
+
 2014-11-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/64087
