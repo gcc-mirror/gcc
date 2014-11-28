@@ -1,4 +1,9 @@
-2014-11-27  Renlin Li  <renlin.li@arm.com>
+2014-11-28  Renlin Li  <renlin.li@arm.com>
+
+	PR target/63661
+	* gcc.target/i386/pr63661.c: Use native tune.
+
+2014-11-28  Renlin Li  <renlin.li@arm.com>
 
 	PR target/63661
 	* gcc.target/i386/pr63661.c: New test.

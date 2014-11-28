@@ -1,7 +1,7 @@
 /* PR target/63661 */
 /* { dg-do run } */
 /* { dg-require-effective-target fpic } */
-/* { dg-options "-mtune=nehalem -fPIC -O2" } */
+/* { dg-options "-mtune=native -fPIC -O2" } */
 
 static void __attribute__((noinline,noclone,hot))
 foo (double a, double q, double *ff, double *gx, int e, int ni)
