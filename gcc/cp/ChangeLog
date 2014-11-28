@@ -1,3 +1,9 @@
+2014-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63862
+	* typeck.c (cp_build_binary_op) <RSHIFT_EXPR, LSHIFT_EXPR>: Don't
+	convert the right operand to integer type.
+
 2014-11-27  Kai Tietz  <ktietz@redhat.com>
 
 	PR c++/63904

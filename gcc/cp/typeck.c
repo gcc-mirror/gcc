@@ -4295,10 +4295,6 @@ cp_build_binary_op (location_t location,
 			     "right shift count >= width of type");
 		}
 	    }
-	  /* Convert the shift-count to an integer, regardless of
-	     size of value being shifted.  */
-	  if (TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
-	    op1 = cp_convert (integer_type_node, op1, complain);
 	  /* Avoid converting op1 to result_type later.  */
 	  converted = 1;
 	}
@@ -4344,10 +4340,6 @@ cp_build_binary_op (location_t location,
 			     "left shift count >= width of type");
 		}
 	    }
-	  /* Convert the shift-count to an integer, regardless of
-	     size of value being shifted.  */
-	  if (TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
-	    op1 = cp_convert (integer_type_node, op1, complain);
 	  /* Avoid converting op1 to result_type later.  */
 	  converted = 1;
 	}

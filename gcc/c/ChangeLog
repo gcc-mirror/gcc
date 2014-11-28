@@ -1,3 +1,9 @@
+2014-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63862
+	* c-typeck.c (build_binary_op) <RSHIFT_EXPR, LSHIFT_EXPR>: Don't
+	convert the right operand to integer type.
+
 2014-11-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63877

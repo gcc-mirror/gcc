@@ -151,7 +151,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
       && !TYPE_UNSIGNED (type0)
       && flag_isoc99)
     {
-      tree x = fold_build2 (MINUS_EXPR, unsigned_type_node, uprecm1,
+      tree x = fold_build2 (MINUS_EXPR, op1_utype, uprecm1,
 			    fold_convert (op1_utype, op1));
       tt = fold_convert_loc (loc, unsigned_type_for (type0), op0);
       tt = fold_build2 (RSHIFT_EXPR, TREE_TYPE (tt), tt, x);
