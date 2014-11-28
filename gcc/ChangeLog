@@ -1,3 +1,10 @@
+2014-11-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/64087
+	* lra-lives.c (process_bb_lives): Add debug output.
+	(lra_create_live_ranges): Don't remove dead insn on the second
+	call of lra_create_live_ranges_1.
+
 2014-11-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/64037
