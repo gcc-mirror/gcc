@@ -1,3 +1,10 @@
+2014-11-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Backport from mainline.
+        2014-11-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+        * config/arm/t-aprofile (MULTILIB_MATCHES): New entry for
+        -march=armv8-a+crc.
+
 2014-11-26  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63738
