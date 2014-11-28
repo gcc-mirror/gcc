@@ -1806,7 +1806,8 @@ lra_substitute_pseudo (rtx *loc, int old_regno, rtx new_reg)
       machine_mode mode = GET_MODE (*loc);
       machine_mode inner_mode = GET_MODE (new_reg);
 
-      if (mode != inner_mode)
+      if (mode != inner_mode
+	  && ! (CONST_INT_P (new_reg) && SCALAR_INT_MODE_P (mode)))
 	{
 	  if (GET_MODE_SIZE (mode) >= GET_MODE_SIZE (inner_mode)
 	      || ! SCALAR_INT_MODE_P (inner_mode))

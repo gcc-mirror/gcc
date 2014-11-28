@@ -1,3 +1,9 @@
+2014-11-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/64061
+	* lra.c (lra_substitute_pseudo): Ignore constant with int mode for
+	subreg.
+
 2014-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/64093
