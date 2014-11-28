@@ -1,6 +1,14 @@
 2014-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2014-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/64067
+	* expr.c (expand_expr_addr_expr_1) <case COMPOUND_LITERAL_EXPR>:
+	Handle it by returning address of COMPOUND_LITERAL_EXPR_DECL
+	not only if modifier is EXPAND_INITIALIZER, but whenever
+	COMPOUND_LITERAL_EXPR_DECL is non-NULL and TREE_STATIC.
+
 	2014-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/63659
