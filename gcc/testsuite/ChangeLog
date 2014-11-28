@@ -1,6 +1,11 @@
 2014-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2014-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/63659
+	* gcc.c-torture/execute/pr63659.c: New test.
+
 	2014-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/61200

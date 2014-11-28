@@ -261,6 +261,50 @@ typedef struct ext_cand
 
 static int max_insn_uid;
 
+/* Update or remove REG_EQUAL or REG_EQUIV notes for INSN.  */
+
+static bool
+update_reg_equal_equiv_notes (rtx insn, enum machine_mode new_mode,
+			      enum machine_mode old_mode, enum rtx_code code)
+{
+  rtx *loc = &REG_NOTES (insn);
+  while (*loc)
+    {
+      enum reg_note kind = REG_NOTE_KIND (*loc);
+      if (kind == REG_EQUAL || kind == REG_EQUIV)
+	{
+	  rtx orig_src = XEXP (*loc, 0);
+	  /* Update equivalency constants.  Recall that RTL constants are
+	     sign-extended.  */
+	  if (GET_CODE (orig_src) == CONST_INT
+	      && HOST_BITS_PER_WIDE_INT >= GET_MODE_BITSIZE (new_mode))
+	    {
+	      if (INTVAL (orig_src) >= 0 || code == SIGN_EXTEND)
+		/* Nothing needed.  */;
+	      else
+		{
+		  /* Zero-extend the negative constant by masking out the
+		     bits outside the source mode.  */
+		  rtx new_const_int
+		    = gen_int_mode (INTVAL (orig_src)
+				    & GET_MODE_MASK (old_mode),
+				    new_mode);
+		  if (!validate_change (insn, &XEXP (*loc, 0),
+					new_const_int, true))
+		    return false;
+		}
+	      loc = &XEXP (*loc, 1);
+	    }
+	  /* Drop all other notes, they assume a wrong mode.  */
+	  else if (!validate_change (insn, loc, XEXP (*loc, 1), true))
+	    return false;
+	}
+      else
+	loc = &XEXP (*loc, 1);
+    }
+  return true;
+}
+
 /* Given a insn (CURR_INSN), an extension candidate for removal (CAND)
    and a pointer to the SET rtx (ORIG_SET) that needs to be modified,
    this code modifies the SET rtx to a new SET rtx that extends the
@@ -282,6 +326,7 @@ static bool
 combine_set_extension (ext_cand *cand, rtx curr_insn, rtx *orig_set)
 {
   rtx orig_src = SET_SRC (*orig_set);
+  enum machine_mode orig_mode = GET_MODE (SET_DEST (*orig_set));
   rtx new_reg = gen_rtx_REG (cand->mode, REGNO (SET_DEST (*orig_set)));
   rtx new_set;
 
@@ -296,9 +341,8 @@ combine_set_extension (ext_cand *cand, rtx curr_insn, rtx *orig_set)
 	{
 	  /* Zero-extend the negative constant by masking out the bits outside
 	     the source mode.  */
-	  enum machine_mode src_mode = GET_MODE (SET_DEST (*orig_set));
 	  rtx new_const_int
-	    = GEN_INT (INTVAL (orig_src) & GET_MODE_MASK (src_mode));
+	    = GEN_INT (INTVAL (orig_src) & GET_MODE_MASK (orig_mode));
 	  new_set = gen_rtx_SET (VOIDmode, new_reg, new_const_int);
 	}
     }
@@ -336,7 +380,9 @@ combine_set_extension (ext_cand *cand, rtx curr_insn, rtx *orig_set)
 
   /* This change is a part of a group of changes.  Hence,
      validate_change will not try to commit the change.  */
-  if (validate_change (curr_insn, orig_set, new_set, true))
+  if (validate_change (curr_insn, orig_set, new_set, true)
+      && update_reg_equal_equiv_notes (curr_insn, cand->mode, orig_mode,
+				       cand->code))
     {
       if (dump_file)
         {
@@ -385,7 +431,9 @@ transform_ifelse (ext_cand *cand, rtx def_insn)
   ifexpr = gen_rtx_IF_THEN_ELSE (cand->mode, cond, map_srcreg, map_srcreg2);
   new_set = gen_rtx_SET (VOIDmode, map_dstreg, ifexpr);
 
-  if (validate_change (def_insn, &PATTERN (def_insn), new_set, true))
+  if (validate_change (def_insn, &PATTERN (def_insn), new_set, true)
+      && update_reg_equal_equiv_notes (def_insn, cand->mode, GET_MODE (dstreg),
+				       cand->code))
     {
       if (dump_file)
         {
