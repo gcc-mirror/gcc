@@ -1,3 +1,7 @@
+2014-11-28  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* gcc.target/i386/pr52252-atom-1.c: Delete.
+
 2014-11-28  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/arm/copysign_softfloat_1.c: New copysign/copysignf
