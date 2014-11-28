@@ -921,13 +921,14 @@ run_gcc (unsigned argc, char *argv[])
 	continue;
 
       have_lto
-	= find_and_merge_options (fd, file_offset, LTO_SECTION_NAME_PREFIX,
-				  &fdecoded_options, &fdecoded_options_count,
-				  collect_gcc);
+	|= find_and_merge_options (fd, file_offset, LTO_SECTION_NAME_PREFIX,
+				   &fdecoded_options, &fdecoded_options_count,
+				   collect_gcc);
       have_offload
-	= find_and_merge_options (fd, file_offset, OFFLOAD_SECTION_NAME_PREFIX,
-				  &offload_fdecoded_options,
-				  &offload_fdecoded_options_count, collect_gcc);
+	|= find_and_merge_options (fd, file_offset, OFFLOAD_SECTION_NAME_PREFIX,
+				   &offload_fdecoded_options,
+				   &offload_fdecoded_options_count,
+				   collect_gcc);
       close (fd);
     }
 
