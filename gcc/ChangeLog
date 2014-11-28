@@ -1,3 +1,17 @@
+2014-11-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (generic_sched): Specify cortexa17 in 'no' list.
+	Include cortex-a17.md.
+	* config/arm/arm.c (arm_issue_rate): Specify 2 for cortexa17.
+	* config/arm/arm-cores.def (cortex-a17): New entry.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Specify mcpu=cortex-a17.
+	* config/arm/cortex-a17.md: New file.
+	* config/arm/cortex-a17-neon.md: New file.
+	* config/arm/driver-arm.c (arm_cpu_table): Add entry for cortex-a17.
+	* config/arm/t-aprofile: Add cortex-a17 entries to MULTILIB_MATCHES.
+
 2014-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64084
