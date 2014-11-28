@@ -1,3 +1,9 @@
+2014-11-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/64037
+	* combine.c (setup_incoming_promotions): Pass the argument
+	before any promotions happen to promote_function_mode.
+
 2014-11-28  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* tree-vect-data-refs.c (vect_transform_grouped_load): Limit shift
