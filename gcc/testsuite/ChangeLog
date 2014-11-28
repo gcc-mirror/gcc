@@ -1,6 +1,11 @@
 2014-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2014-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63913
+	* g++.dg/ubsan/pr63913.C: New test.
+
 	2014-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/63659

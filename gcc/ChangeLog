@@ -1,6 +1,12 @@
 2014-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2014-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63913
+	* ubsan.c: Include tree-eh.h.
+	(instrument_bool_enum_load): Handle loads that can throw.
+
 	2014-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/63659
