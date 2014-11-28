@@ -5617,6 +5617,7 @@ vect_transform_grouped_load (gimple stmt, vec<tree> dr_chain, int size,
      get chain for loads group using vect_shift_permute_load_chain.  */
   mode = TYPE_MODE (STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt)));
   if (targetm.sched.reassociation_width (VEC_PERM_EXPR, mode) > 1
+      || exact_log2 (size) != -1
       || !vect_shift_permute_load_chain (dr_chain, size, stmt,
 					 gsi, &result_chain))
     vect_permute_load_chain (dr_chain, size, stmt, gsi, &result_chain);
