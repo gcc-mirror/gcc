@@ -1,3 +1,8 @@
+2014-11-28  Mike Stump  <mikestump@comcast.net>
+
+	* bitmap.c (bitmap_ior): Zap current as it could be deleted.
+	(bitmap_ior_and_compl): Likewise.
+
 2014-11-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/64061
