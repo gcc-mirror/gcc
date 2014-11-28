@@ -680,10 +680,9 @@ package Opt is
 
    Full_Path_Name_For_Brief_Errors : Boolean := False;
    --  PROJECT MANAGER
-   --  When True, in Brief_Output mode, each error message line
-   --  will start with the full path name of the source.
-   --  When False, only the file name without directory information
-   --  is used.
+   --  When True, in Brief_Output mode, each error message line will start with
+   --  the full path name of the source. When False, only the file name without
+   --  directory information is used.
 
    Full_List : Boolean := False;
    --  GNAT
@@ -697,8 +696,8 @@ package Opt is
 
    Generate_CodePeer_Messages : Boolean := False;
    --  GNAT
-   --  Generate CodePeer messages. Ignored if CodePeer_Mode is false.
-   --  This is turned on by -gnateC.
+   --  Generate CodePeer messages. Ignored if CodePeer_Mode is false. This is
+   --  turned on by -gnateC.
 
    Generate_Processed_File : Boolean := False;
    --  GNAT
@@ -717,8 +716,8 @@ package Opt is
 
    Generate_SCO_Instance_Table : Boolean := False;
    --  GNAT
-   --  True when switch -fdump-scos is used. When True, a table of
-   --  instances is included in SCOs.
+   --  True when switch -fdump-scos is used. When True, a table of instances is
+   --  included in SCOs.
 
    Generating_Code : Boolean := False;
    --  GNAT
@@ -906,10 +905,9 @@ package Opt is
 
    List_Dependencies : Boolean := False;
    --  GNATMAKE
-   --  When True gnatmake verifies that the objects are up to date and
-   --  outputs the list of object dependencies (-M switch).
-   --  Output depends if -a switch is used or not.
-   --  This list can be used directly in a Makefile.
+   --  When True gnatmake verifies that the objects are up to date and outputs
+   --  the list of object dependencies (-M switch). Output depends if -a switch
+   --  is used or not. This list can be used directly in a Makefile.
 
    List_Representation_Info : Int range 0 .. 3 := 0;
    --  GNAT
@@ -1067,8 +1065,8 @@ package Opt is
 
    No_Run_Time_Mode : Boolean := False;
    --  GNAT, GNATBIND
-   --  This flag is set True if a No_Run_Time pragma is encountered. See
-   --  spec of Rtsfind for a full description of handling of this pragma.
+   --  This flag is set True if a No_Run_Time pragma is encountered. See spec
+   --  of Rtsfind for a full description of handling of this pragma.
 
    No_Split_Units : Boolean := False;
    --  GPRBUILD
@@ -1214,9 +1212,8 @@ package Opt is
 
    Preprocessing_Symbol_Defs : String_List_Access := new String_List (1 .. 4);
    --  An extensible array to temporarily stores symbol definitions specified
-   --  on the command line with -gnateD switches.
-   --  What is this magic constant 4 ???
-   --  What is extensible about this fixed length array ???
+   --  on the command line with -gnateD switches. The value 4 is an arbitrary
+   --  starting point, if more space is needed it is allocated as required.
 
    Preprocessing_Symbol_Last : Natural := 0;
    --  Index of last symbol definition in array Symbol_Definitions
@@ -1261,13 +1258,13 @@ package Opt is
 
    Relaxed_RM_Semantics : Boolean := False;
    --  GNAT
-   --  Set to True to ignore some Ada semantic error to help parse legacy
-   --  Ada code for use in e.g. static analysis (such as CodePeer). This
-   --  deals with cases where other compilers allow illegal constructs. Tools
-   --  such as CodePeer are interested in analyzing code rather than enforcing
-   --  legality rules, so as long as these illegal constructs end up with code
-   --  that can be handled by the tool in question, there is no reason to
-   --  reject the code that is considered correct by the other compiler.
+   --  Set to True to ignore some Ada semantic error to help parse legacy Ada
+   --  code for use in e.g. static analysis (such as CodePeer). This deals
+   --  with cases where other compilers allow illegal constructs. Tools such as
+   --  CodePeer are interested in analyzing code rather than enforcing legality
+   --  rules, so as long as these illegal constructs end up with code that can
+   --  be handled by the tool in question, there is no reason to reject the
+   --  code that is considered correct by the other compiler.
 
    Replace_In_Comments : Boolean := False;
    --  GNATPREP
@@ -2254,7 +2251,4 @@ private
    --  Indicates which version of gcc is in use (3 = 3.x, 4 = 4.x). Note that
    --  gcc 2.8.1 (which used to be a value of 2) is no longer supported.
 
-   -------------------------
-   -- Effect of GNAT_Mode --
-   -------------------------
 end Opt;
