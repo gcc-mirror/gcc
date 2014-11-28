@@ -88,6 +88,9 @@ MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a53
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a57
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a57.cortex-a53
 
+# Arch Matches
+MULTILIB_MATCHES       += march?armv8-a=march?armv8-a+crc
+
 # FPU matches
 MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3
 MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3-fp16
