@@ -385,8 +385,8 @@
           (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,\
                                 arm926ejs,arm1020e,arm1026ejs,arm1136js,\
                                 arm1136jfs,cortexa5,cortexa7,cortexa8,\
-                                cortexa9,cortexa12,cortexa15,cortexa53,\
-                                cortexm4,cortexm7,marvell_pj4")
+                                cortexa9,cortexa12,cortexa15,cortexa17,\
+                                cortexa53,cortexm4,cortexm7,marvell_pj4")
 	       (eq_attr "tune_cortexr4" "yes"))
           (const_string "no")
           (const_string "yes"))))
@@ -417,6 +417,7 @@
 (include "cortex-a8.md")
 (include "cortex-a9.md")
 (include "cortex-a15.md")
+(include "cortex-a17.md")
 (include "cortex-a53.md")
 (include "cortex-r4.md")
 (include "cortex-r4f.md")
