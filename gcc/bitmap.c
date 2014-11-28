@@ -1595,6 +1595,8 @@ bitmap_ior (bitmap dst, const_bitmap a, const_bitmap b)
   if (dst_elt)
     {
       changed = true;
+      /* Ensure that dst->current is valid.  */
+      dst->current = dst->first;
       bitmap_elt_clear_from (dst, dst_elt);
     }
   gcc_checking_assert (!dst->current == !dst->first);
@@ -1951,6 +1953,8 @@ bitmap_ior_and_compl (bitmap dst, const_bitmap a, const_bitmap b, const_bitmap k
   if (dst_elt)
     {
       changed = true;
+      /* Ensure that dst->current is valid.  */
+      dst->current = dst->first;
       bitmap_elt_clear_from (dst, dst_elt);
     }
   gcc_checking_assert (!dst->current == !dst->first);
