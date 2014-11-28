@@ -1,3 +1,11 @@
+2014-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63862
+	* c-ubsan.c (ubsan_instrument_shift): Change the type of a MINUS_EXPR
+	to op1_utype.
+	* c-gimplify.c (c_gimplify_expr): Convert right operand of a shift
+	expression to unsigned_type_node.
+
 2014-11-20  Mark Wielaard  <mjw@redhat.com>
 
 	PR debug/38757

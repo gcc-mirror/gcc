@@ -242,6 +242,24 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 
   switch (code)
     {
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+      {
+	/* We used to convert the right operand of a shift-expression
+	   to an integer_type_node in the FEs.  But it is unnecessary
+	   and not desirable for diagnostics and sanitizers.  We keep
+	   this here to not pessimize the code, but we convert to an
+	   unsigned type, because negative shift counts are undefined
+	   anyway.
+	   We should get rid of this conversion when we have a proper
+	   type demotion/promotion pass.  */
+	tree *op1_p = &TREE_OPERAND (*expr_p, 1);
+	if (TREE_CODE (TREE_TYPE (*op1_p)) != VECTOR_TYPE
+	    && TYPE_MAIN_VARIANT (TREE_TYPE (*op1_p)) != unsigned_type_node)
+	  *op1_p = convert (unsigned_type_node, *op1_p);
+	break;
+      }
+
     case DECL_EXPR:
       /* This is handled mostly by gimplify.c, but we have to deal with
 	 not warning about int x = x; as it is a GCC extension to turn off

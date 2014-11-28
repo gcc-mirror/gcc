@@ -1,3 +1,9 @@
+2014-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63862
+	* gcc.c-torture/execute/shiftopt-1.c: Don't XFAIL anymore.
+	* c-c++-common/ubsan/shift-7.c: New test.
+
 2014-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64084

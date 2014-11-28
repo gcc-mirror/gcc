@@ -10513,11 +10513,6 @@ build_binary_op (location_t location, enum tree_code code,
 
 	  /* Use the type of the value to be shifted.  */
 	  result_type = type0;
-	  /* Convert the non vector shift-count to an integer, regardless
-	     of size of value being shifted.  */
-	  if (TREE_CODE (TREE_TYPE (op1)) != VECTOR_TYPE
-	      && TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
-	    op1 = convert (integer_type_node, op1);
 	  /* Avoid converting op1 to result_type later.  */
 	  converted = 1;
 	}
@@ -10563,11 +10558,6 @@ build_binary_op (location_t location, enum tree_code code,
 
 	  /* Use the type of the value to be shifted.  */
 	  result_type = type0;
-	  /* Convert the non vector shift-count to an integer, regardless
-	     of size of value being shifted.  */
-	  if (TREE_CODE (TREE_TYPE (op1)) != VECTOR_TYPE
-	      && TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
-	    op1 = convert (integer_type_node, op1);
 	  /* Avoid converting op1 to result_type later.  */
 	  converted = 1;
 	}
