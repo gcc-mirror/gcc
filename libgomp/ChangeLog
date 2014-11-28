@@ -1,3 +1,8 @@
+2014-11-28  Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* testsuite/libgomp.c/target-critical-1.c: New test.
+
 2014-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/examples-4/e.53.4.c: Add -DITESTITERS=20
