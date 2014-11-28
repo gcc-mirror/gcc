@@ -1,3 +1,20 @@
+2014-11-28  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* cgraphunit.c (ipa_passes): Handle flag_generate_offload.
+	(symbol_table::compile): Set flag_generate_offload if there is something
+	to offload.
+	* common.opt (flag_generate_offload): New Variable declaration.
+	* dwarf2out.c (dwarf2out_finish): Handle flag_generate_offload.
+	* ipa-inline-analysis.c (inline_generate_summary): Do not skip if
+	flag_generate_offload is set.
+	* lto-streamer.c (gate_lto_out): Handle flag_generate_offload.
+	* passes.c (ipa_write_summaries): Do not skip if flag_generate_offload
+	is set.
+	* toplev.c (compile_file): Emit LTO marker if offload info has been
+	previously emitted.  Do not emit lto_slim marker if
+	flag_generate_offload is without flag_generate_lto.
+	* tree.c (free_lang_data): Do not skip if flag_generate_offload is set.
+
 2014-11-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-cores.def (cortex-a17.cortex-a7): New entry.
