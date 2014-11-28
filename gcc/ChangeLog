@@ -1,3 +1,14 @@
+2014-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64084
+	* genmatch.c (dt_node::gen_kids_1): New function, split out
+	from dt_node::gen_kids.
+	(decision_tree::cmp_node): DT_TRUE are generally not equal.
+	(decision_tree::find_node): Treat DT_TRUE as barrier for
+	node CSE on the same level.
+	(dt_node::append_node): Do not keep DT_TRUE last.
+	(dt_node::gen_kids): Emit code after each DT_TRUE node seen.
+
 2014-11-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/t-aprofile (MULTILIB_MATCHES): New entry for

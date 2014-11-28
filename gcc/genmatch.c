@@ -1098,6 +1098,9 @@ struct dt_node
   virtual void gen (FILE *, bool) {}
 
   void gen_kids (FILE *, bool);
+  void gen_kids_1 (FILE *, bool,
+		   vec<dt_operand *>, vec<dt_operand *>, vec<dt_operand *>,
+		   vec<dt_operand *>, vec<dt_operand *>, vec<dt_node *>);
 };
 
 /* Generic decision tree node used for DT_OPERAND and DT_MATCH.  */
@@ -1203,8 +1206,11 @@ decision_tree::cmp_node (dt_node *n1, dt_node *n2)
   if (!n1 || !n2 || n1->type != n2->type)
     return false;
 
-  if (n1 == n2 || n1->type == dt_node::DT_TRUE)
+  if (n1 == n2)
     return true;
+
+  if (n1->type == dt_node::DT_TRUE)
+    return false;
 
   if (n1->type == dt_node::DT_OPERAND)
     return cmp_operand ((as_a<dt_operand *> (n1))->op,
@@ -1220,10 +1226,21 @@ decision_tree::cmp_node (dt_node *n1, dt_node *n2)
 dt_node *
 decision_tree::find_node (vec<dt_node *>& ops, dt_node *p)
 {
-  for (unsigned i = 0; i < ops.length (); ++i)
-    if (decision_tree::cmp_node (ops[i], p))
-      return ops[i];
-
+  /* We can merge adjacent DT_TRUE.  */
+  if (p->type == dt_node::DT_TRUE
+      && !ops.is_empty ()
+      && ops.last ()->type == dt_node::DT_TRUE)
+    return ops.last ();
+  for (int i = ops.length () - 1; i >= 0; --i)
+    {
+      /* But we can't merge across DT_TRUE nodes as they serve as
+         pattern order barriers to make sure that patterns apply
+	 in order of appearance in case multiple matches are possible.  */
+      if (ops[i]->type == dt_node::DT_TRUE)
+	return NULL;
+      if (decision_tree::cmp_node (ops[i], p))
+	return ops[i];
+    }
   return NULL;
 }
 
@@ -1241,15 +1258,6 @@ dt_node::append_node (dt_node *n)
 
   kids.safe_push (n);
   n->level = this->level + 1;
-
-  unsigned len = kids.length ();
-
-  if (len > 1 && kids[len - 2]->type == dt_node::DT_TRUE)
-    {
-      dt_node *p = kids[len - 2];
-      kids[len - 2] = kids[len - 1];
-      kids[len - 1] = p;
-    }
 
   return n;
 }
@@ -2006,7 +2014,6 @@ dt_node::gen_kids (FILE *f, bool gimple)
   auto_vec<dt_operand *> generic_fns;
   auto_vec<dt_operand *> preds;
   auto_vec<dt_node *> others;
-  dt_node *true_operand = NULL;
 
   for (unsigned i = 0; i < kids.length (); ++i)
     {
@@ -2044,11 +2051,40 @@ dt_node::gen_kids (FILE *f, bool gimple)
 	       || kids[i]->type == dt_node::DT_SIMPLIFY)
 	others.safe_push (kids[i]);
       else if (kids[i]->type == dt_node::DT_TRUE)
-	true_operand = kids[i];
+	{
+	  /* A DT_TRUE operand serves as a barrier - generate code now
+	     for what we have collected sofar.  */
+	  gen_kids_1 (f, gimple, gimple_exprs, generic_exprs,
+		      fns, generic_fns, preds, others);
+	  /* And output the true operand itself.  */
+	  kids[i]->gen (f, gimple);
+	  gimple_exprs.truncate (0);
+	  generic_exprs.truncate (0);
+	  fns.truncate (0);
+	  generic_fns.truncate (0);
+	  preds.truncate (0);
+	  others.truncate (0);
+	}
       else
 	gcc_unreachable ();
     }
 
+  /* Generate code for the remains.  */
+  gen_kids_1 (f, gimple, gimple_exprs, generic_exprs,
+	      fns, generic_fns, preds, others);
+}
+
+/* Generate matching code for the children of the decision tree node.  */
+
+void
+dt_node::gen_kids_1 (FILE *f, bool gimple,
+		     vec<dt_operand *> gimple_exprs,
+		     vec<dt_operand *> generic_exprs,
+		     vec<dt_operand *> fns,
+		     vec<dt_operand *> generic_fns,
+		     vec<dt_operand *> preds,
+		     vec<dt_node *> others)
+{
   char buf[128];
   char *kid_opname = buf;
 
@@ -2200,9 +2236,6 @@ dt_node::gen_kids (FILE *f, bool gimple)
 
   for (unsigned i = 0; i < others.length (); ++i)
     others[i]->gen (f, gimple);
-
-  if (true_operand)
-    true_operand->gen (f, gimple);
 }
 
 /* Generate matching code for the decision tree operand.  */
