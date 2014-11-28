@@ -54,10 +54,72 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@IEEE_SUPPORT_TRUE@am__append_1 = ieee/ieee_helper.c
+@LIBGFOR_MINIMAL_TRUE@am__append_1 = -DLIBGFOR_MINIMAL
+@LIBGFOR_MINIMAL_FALSE@am__append_2 = \
+@LIBGFOR_MINIMAL_FALSE@io/close.c \
+@LIBGFOR_MINIMAL_FALSE@io/file_pos.c \
+@LIBGFOR_MINIMAL_FALSE@io/format.c \
+@LIBGFOR_MINIMAL_FALSE@io/inquire.c \
+@LIBGFOR_MINIMAL_FALSE@io/intrinsics.c \
+@LIBGFOR_MINIMAL_FALSE@io/list_read.c \
+@LIBGFOR_MINIMAL_FALSE@io/lock.c \
+@LIBGFOR_MINIMAL_FALSE@io/open.c \
+@LIBGFOR_MINIMAL_FALSE@io/read.c \
+@LIBGFOR_MINIMAL_FALSE@io/transfer.c \
+@LIBGFOR_MINIMAL_FALSE@io/transfer128.c \
+@LIBGFOR_MINIMAL_FALSE@io/unit.c \
+@LIBGFOR_MINIMAL_FALSE@io/unix.c \
+@LIBGFOR_MINIMAL_FALSE@io/write.c \
+@LIBGFOR_MINIMAL_FALSE@io/fbuf.c
+
+@LIBGFOR_MINIMAL_FALSE@am__append_3 = \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/access.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/c99_functions.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/chdir.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/chmod.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/clock.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/cpu_time.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/ctime.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/date_and_time.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/dtime.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/env.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/etime.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/execute_command_line.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/exit.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/gerror.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/getcwd.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/getlog.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/getXid.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/hostnm.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/kill.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/link.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/perror.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/signal.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/sleep.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/system.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/rename.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/stat.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/symlnk.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/system_clock.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/time.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/umask.c \
+@LIBGFOR_MINIMAL_FALSE@intrinsics/unlink.c
+
+@IEEE_SUPPORT_TRUE@am__append_4 = ieee/ieee_helper.c
+@LIBGFOR_MINIMAL_TRUE@am__append_5 = runtime/minimal.c
+@LIBGFOR_MINIMAL_FALSE@am__append_6 = \
+@LIBGFOR_MINIMAL_FALSE@runtime/backtrace.c \
+@LIBGFOR_MINIMAL_FALSE@runtime/convert_char.c \
+@LIBGFOR_MINIMAL_FALSE@runtime/environ.c \
+@LIBGFOR_MINIMAL_FALSE@runtime/error.c \
+@LIBGFOR_MINIMAL_FALSE@runtime/fpu.c \
+@LIBGFOR_MINIMAL_FALSE@runtime/main.c \
+@LIBGFOR_MINIMAL_FALSE@runtime/pause.c \
+@LIBGFOR_MINIMAL_FALSE@runtime/stop.c
+
 
 # dummy sources for libtool
-@onestep_TRUE@am__append_2 = libgfortran_c.c libgfortran_f.f90
+@onestep_TRUE@am__append_7 = libgfortran_c.c libgfortran_f.f90
 subdir = .
 DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -121,14 +183,17 @@ libcaf_single_la_LIBADD =
 am_libcaf_single_la_OBJECTS = single.lo
 libcaf_single_la_OBJECTS = $(am_libcaf_single_la_OBJECTS)
 libgfortran_la_LIBADD =
-am__objects_1 = backtrace.lo bounds.lo compile_options.lo \
-	convert_char.lo environ.lo error.lo fpu.lo main.lo memory.lo \
-	pause.lo stop.lo string.lo select.lo
-am__objects_2 = all_l1.lo all_l2.lo all_l4.lo all_l8.lo all_l16.lo
-am__objects_3 = any_l1.lo any_l2.lo any_l4.lo any_l8.lo any_l16.lo
-am__objects_4 = count_1_l.lo count_2_l.lo count_4_l.lo count_8_l.lo \
+@LIBGFOR_MINIMAL_TRUE@am__objects_1 = minimal.lo
+@LIBGFOR_MINIMAL_FALSE@am__objects_2 = backtrace.lo convert_char.lo \
+@LIBGFOR_MINIMAL_FALSE@	environ.lo error.lo fpu.lo main.lo \
+@LIBGFOR_MINIMAL_FALSE@	pause.lo stop.lo
+am__objects_3 = bounds.lo compile_options.lo memory.lo string.lo \
+	select.lo $(am__objects_1) $(am__objects_2)
+am__objects_4 = all_l1.lo all_l2.lo all_l4.lo all_l8.lo all_l16.lo
+am__objects_5 = any_l1.lo any_l2.lo any_l4.lo any_l8.lo any_l16.lo
+am__objects_6 = count_1_l.lo count_2_l.lo count_4_l.lo count_8_l.lo \
 	count_16_l.lo
-am__objects_5 = maxloc0_4_i1.lo maxloc0_8_i1.lo maxloc0_16_i1.lo \
+am__objects_7 = maxloc0_4_i1.lo maxloc0_8_i1.lo maxloc0_16_i1.lo \
 	maxloc0_4_i2.lo maxloc0_8_i2.lo maxloc0_16_i2.lo \
 	maxloc0_4_i4.lo maxloc0_8_i4.lo maxloc0_16_i4.lo \
 	maxloc0_4_i8.lo maxloc0_8_i8.lo maxloc0_16_i8.lo \
@@ -137,7 +202,7 @@ am__objects_5 = maxloc0_4_i1.lo maxloc0_8_i1.lo maxloc0_16_i1.lo \
 	maxloc0_4_r8.lo maxloc0_8_r8.lo maxloc0_16_r8.lo \
 	maxloc0_4_r10.lo maxloc0_8_r10.lo maxloc0_16_r10.lo \
 	maxloc0_4_r16.lo maxloc0_8_r16.lo maxloc0_16_r16.lo
-am__objects_6 = maxloc1_4_i1.lo maxloc1_8_i1.lo maxloc1_16_i1.lo \
+am__objects_8 = maxloc1_4_i1.lo maxloc1_8_i1.lo maxloc1_16_i1.lo \
 	maxloc1_4_i2.lo maxloc1_8_i2.lo maxloc1_16_i2.lo \
 	maxloc1_4_i4.lo maxloc1_8_i4.lo maxloc1_16_i4.lo \
 	maxloc1_4_i8.lo maxloc1_8_i8.lo maxloc1_16_i8.lo \
@@ -146,10 +211,10 @@ am__objects_6 = maxloc1_4_i1.lo maxloc1_8_i1.lo maxloc1_16_i1.lo \
 	maxloc1_4_r8.lo maxloc1_8_r8.lo maxloc1_16_r8.lo \
 	maxloc1_4_r10.lo maxloc1_8_r10.lo maxloc1_16_r10.lo \
 	maxloc1_4_r16.lo maxloc1_8_r16.lo maxloc1_16_r16.lo
-am__objects_7 = maxval_i1.lo maxval_i2.lo maxval_i4.lo maxval_i8.lo \
+am__objects_9 = maxval_i1.lo maxval_i2.lo maxval_i4.lo maxval_i8.lo \
 	maxval_i16.lo maxval_r4.lo maxval_r8.lo maxval_r10.lo \
 	maxval_r16.lo
-am__objects_8 = minloc0_4_i1.lo minloc0_8_i1.lo minloc0_16_i1.lo \
+am__objects_10 = minloc0_4_i1.lo minloc0_8_i1.lo minloc0_16_i1.lo \
 	minloc0_4_i2.lo minloc0_8_i2.lo minloc0_16_i2.lo \
 	minloc0_4_i4.lo minloc0_8_i4.lo minloc0_16_i4.lo \
 	minloc0_4_i8.lo minloc0_8_i8.lo minloc0_16_i8.lo \
@@ -158,7 +223,7 @@ am__objects_8 = minloc0_4_i1.lo minloc0_8_i1.lo minloc0_16_i1.lo \
 	minloc0_4_r8.lo minloc0_8_r8.lo minloc0_16_r8.lo \
 	minloc0_4_r10.lo minloc0_8_r10.lo minloc0_16_r10.lo \
 	minloc0_4_r16.lo minloc0_8_r16.lo minloc0_16_r16.lo
-am__objects_9 = minloc1_4_i1.lo minloc1_8_i1.lo minloc1_16_i1.lo \
+am__objects_11 = minloc1_4_i1.lo minloc1_8_i1.lo minloc1_16_i1.lo \
 	minloc1_4_i2.lo minloc1_8_i2.lo minloc1_16_i2.lo \
 	minloc1_4_i4.lo minloc1_8_i4.lo minloc1_16_i4.lo \
 	minloc1_4_i8.lo minloc1_8_i8.lo minloc1_16_i8.lo \
@@ -167,60 +232,60 @@ am__objects_9 = minloc1_4_i1.lo minloc1_8_i1.lo minloc1_16_i1.lo \
 	minloc1_4_r8.lo minloc1_8_r8.lo minloc1_16_r8.lo \
 	minloc1_4_r10.lo minloc1_8_r10.lo minloc1_16_r10.lo \
 	minloc1_4_r16.lo minloc1_8_r16.lo minloc1_16_r16.lo
-am__objects_10 = minval_i1.lo minval_i2.lo minval_i4.lo minval_i8.lo \
+am__objects_12 = minval_i1.lo minval_i2.lo minval_i4.lo minval_i8.lo \
 	minval_i16.lo minval_r4.lo minval_r8.lo minval_r10.lo \
 	minval_r16.lo
-am__objects_11 = product_i1.lo product_i2.lo product_i4.lo \
+am__objects_13 = product_i1.lo product_i2.lo product_i4.lo \
 	product_i8.lo product_i16.lo product_r4.lo product_r8.lo \
 	product_r10.lo product_r16.lo product_c4.lo product_c8.lo \
 	product_c10.lo product_c16.lo
-am__objects_12 = sum_i1.lo sum_i2.lo sum_i4.lo sum_i8.lo sum_i16.lo \
+am__objects_14 = sum_i1.lo sum_i2.lo sum_i4.lo sum_i8.lo sum_i16.lo \
 	sum_r4.lo sum_r8.lo sum_r10.lo sum_r16.lo sum_c4.lo sum_c8.lo \
 	sum_c10.lo sum_c16.lo
-am__objects_13 = bessel_r4.lo bessel_r8.lo bessel_r10.lo bessel_r16.lo
-am__objects_14 = iall_i1.lo iall_i2.lo iall_i4.lo iall_i8.lo \
+am__objects_15 = bessel_r4.lo bessel_r8.lo bessel_r10.lo bessel_r16.lo
+am__objects_16 = iall_i1.lo iall_i2.lo iall_i4.lo iall_i8.lo \
 	iall_i16.lo
-am__objects_15 = iany_i1.lo iany_i2.lo iany_i4.lo iany_i8.lo \
+am__objects_17 = iany_i1.lo iany_i2.lo iany_i4.lo iany_i8.lo \
 	iany_i16.lo
-am__objects_16 = iparity_i1.lo iparity_i2.lo iparity_i4.lo \
+am__objects_18 = iparity_i1.lo iparity_i2.lo iparity_i4.lo \
 	iparity_i8.lo iparity_i16.lo
-am__objects_17 = norm2_r4.lo norm2_r8.lo norm2_r10.lo norm2_r16.lo
-am__objects_18 = parity_l1.lo parity_l2.lo parity_l4.lo parity_l8.lo \
+am__objects_19 = norm2_r4.lo norm2_r8.lo norm2_r10.lo norm2_r16.lo
+am__objects_20 = parity_l1.lo parity_l2.lo parity_l4.lo parity_l8.lo \
 	parity_l16.lo
-am__objects_19 = matmul_i1.lo matmul_i2.lo matmul_i4.lo matmul_i8.lo \
+am__objects_21 = matmul_i1.lo matmul_i2.lo matmul_i4.lo matmul_i8.lo \
 	matmul_i16.lo matmul_r4.lo matmul_r8.lo matmul_r10.lo \
 	matmul_r16.lo matmul_c4.lo matmul_c8.lo matmul_c10.lo \
 	matmul_c16.lo
-am__objects_20 = matmul_l4.lo matmul_l8.lo matmul_l16.lo
-am__objects_21 = transpose_i4.lo transpose_i8.lo transpose_i16.lo \
+am__objects_22 = matmul_l4.lo matmul_l8.lo matmul_l16.lo
+am__objects_23 = transpose_i4.lo transpose_i8.lo transpose_i16.lo \
 	transpose_r4.lo transpose_r8.lo transpose_r10.lo \
 	transpose_r16.lo transpose_c4.lo transpose_c8.lo \
 	transpose_c10.lo transpose_c16.lo
-am__objects_22 = shape_i4.lo shape_i8.lo shape_i16.lo
-am__objects_23 = eoshift1_4.lo eoshift1_8.lo eoshift1_16.lo
-am__objects_24 = eoshift3_4.lo eoshift3_8.lo eoshift3_16.lo
-am__objects_25 = cshift1_4.lo cshift1_8.lo cshift1_16.lo
-am__objects_26 = reshape_i4.lo reshape_i8.lo reshape_i16.lo \
+am__objects_24 = shape_i4.lo shape_i8.lo shape_i16.lo
+am__objects_25 = eoshift1_4.lo eoshift1_8.lo eoshift1_16.lo
+am__objects_26 = eoshift3_4.lo eoshift3_8.lo eoshift3_16.lo
+am__objects_27 = cshift1_4.lo cshift1_8.lo cshift1_16.lo
+am__objects_28 = reshape_i4.lo reshape_i8.lo reshape_i16.lo \
 	reshape_r4.lo reshape_r8.lo reshape_r10.lo reshape_r16.lo \
 	reshape_c4.lo reshape_c8.lo reshape_c10.lo reshape_c16.lo
-am__objects_27 = in_pack_i1.lo in_pack_i2.lo in_pack_i4.lo \
+am__objects_29 = in_pack_i1.lo in_pack_i2.lo in_pack_i4.lo \
 	in_pack_i8.lo in_pack_i16.lo in_pack_r4.lo in_pack_r8.lo \
 	in_pack_r10.lo in_pack_r16.lo in_pack_c4.lo in_pack_c8.lo \
 	in_pack_c10.lo in_pack_c16.lo
-am__objects_28 = in_unpack_i1.lo in_unpack_i2.lo in_unpack_i4.lo \
+am__objects_30 = in_unpack_i1.lo in_unpack_i2.lo in_unpack_i4.lo \
 	in_unpack_i8.lo in_unpack_i16.lo in_unpack_r4.lo \
 	in_unpack_r8.lo in_unpack_r10.lo in_unpack_r16.lo \
 	in_unpack_c4.lo in_unpack_c8.lo in_unpack_c10.lo \
 	in_unpack_c16.lo
-am__objects_29 = exponent_r4.lo exponent_r8.lo exponent_r10.lo \
+am__objects_31 = exponent_r4.lo exponent_r8.lo exponent_r10.lo \
 	exponent_r16.lo
-am__objects_30 = fraction_r4.lo fraction_r8.lo fraction_r10.lo \
+am__objects_32 = fraction_r4.lo fraction_r8.lo fraction_r10.lo \
 	fraction_r16.lo
-am__objects_31 = nearest_r4.lo nearest_r8.lo nearest_r10.lo \
+am__objects_33 = nearest_r4.lo nearest_r8.lo nearest_r10.lo \
 	nearest_r16.lo
-am__objects_32 = set_exponent_r4.lo set_exponent_r8.lo \
+am__objects_34 = set_exponent_r4.lo set_exponent_r8.lo \
 	set_exponent_r10.lo set_exponent_r16.lo
-am__objects_33 = pow_i4_i4.lo pow_i8_i4.lo pow_i16_i4.lo pow_r16_i4.lo \
+am__objects_35 = pow_i4_i4.lo pow_i8_i4.lo pow_i16_i4.lo pow_r16_i4.lo \
 	pow_c4_i4.lo pow_c8_i4.lo pow_c10_i4.lo pow_c16_i4.lo \
 	pow_i4_i8.lo pow_i8_i8.lo pow_i16_i8.lo pow_r4_i8.lo \
 	pow_r8_i8.lo pow_r10_i8.lo pow_r16_i8.lo pow_c4_i8.lo \
@@ -228,62 +293,69 @@ am__objects_33 = pow_i4_i4.lo pow_i8_i4.lo pow_i16_i4.lo pow_r16_i4.lo \
 	pow_i8_i16.lo pow_i16_i16.lo pow_r4_i16.lo pow_r8_i16.lo \
 	pow_r10_i16.lo pow_r16_i16.lo pow_c4_i16.lo pow_c8_i16.lo \
 	pow_c10_i16.lo pow_c16_i16.lo
-am__objects_34 = rrspacing_r4.lo rrspacing_r8.lo rrspacing_r10.lo \
+am__objects_36 = rrspacing_r4.lo rrspacing_r8.lo rrspacing_r10.lo \
 	rrspacing_r16.lo
-am__objects_35 = spacing_r4.lo spacing_r8.lo spacing_r10.lo \
+am__objects_37 = spacing_r4.lo spacing_r8.lo spacing_r10.lo \
 	spacing_r16.lo
-am__objects_36 = pack_i1.lo pack_i2.lo pack_i4.lo pack_i8.lo \
+am__objects_38 = pack_i1.lo pack_i2.lo pack_i4.lo pack_i8.lo \
 	pack_i16.lo pack_r4.lo pack_r8.lo pack_r10.lo pack_r16.lo \
 	pack_c4.lo pack_c8.lo pack_c10.lo pack_c16.lo
-am__objects_37 = unpack_i1.lo unpack_i2.lo unpack_i4.lo unpack_i8.lo \
+am__objects_39 = unpack_i1.lo unpack_i2.lo unpack_i4.lo unpack_i8.lo \
 	unpack_i16.lo unpack_r4.lo unpack_r8.lo unpack_r10.lo \
 	unpack_r16.lo unpack_c4.lo unpack_c8.lo unpack_c10.lo \
 	unpack_c16.lo
-am__objects_38 = spread_i1.lo spread_i2.lo spread_i4.lo spread_i8.lo \
+am__objects_40 = spread_i1.lo spread_i2.lo spread_i4.lo spread_i8.lo \
 	spread_i16.lo spread_r4.lo spread_r8.lo spread_r10.lo \
 	spread_r16.lo spread_c4.lo spread_c8.lo spread_c10.lo \
 	spread_c16.lo
-am__objects_39 = cshift0_i1.lo cshift0_i2.lo cshift0_i4.lo \
+am__objects_41 = cshift0_i1.lo cshift0_i2.lo cshift0_i4.lo \
 	cshift0_i8.lo cshift0_i16.lo cshift0_r4.lo cshift0_r8.lo \
 	cshift0_r10.lo cshift0_r16.lo cshift0_c4.lo cshift0_c8.lo \
 	cshift0_c10.lo cshift0_c16.lo
-am__objects_40 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
-	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
-	$(am__objects_8) $(am__objects_9) $(am__objects_10) \
-	$(am__objects_11) $(am__objects_12) $(am__objects_13) \
-	$(am__objects_14) $(am__objects_15) $(am__objects_16) \
-	$(am__objects_17) $(am__objects_18) $(am__objects_19) \
-	$(am__objects_20) $(am__objects_21) $(am__objects_22) \
-	$(am__objects_23) $(am__objects_24) $(am__objects_25) \
-	$(am__objects_26) $(am__objects_27) $(am__objects_28) \
-	$(am__objects_29) $(am__objects_30) $(am__objects_31) \
-	$(am__objects_32) $(am__objects_33) $(am__objects_34) \
-	$(am__objects_35) $(am__objects_36) $(am__objects_37) \
-	$(am__objects_38) $(am__objects_39)
-am__objects_41 = close.lo file_pos.lo format.lo inquire.lo \
-	intrinsics.lo list_read.lo lock.lo open.lo read.lo \
-	size_from_kind.lo transfer.lo transfer128.lo unit.lo unix.lo \
-	write.lo fbuf.lo
-@IEEE_SUPPORT_TRUE@am__objects_42 = ieee_helper.lo
-am__objects_43 = associated.lo abort.lo access.lo args.lo \
-	bit_intrinsics.lo c99_functions.lo chdir.lo chmod.lo clock.lo \
-	cpu_time.lo cshift0.lo ctime.lo date_and_time.lo dtime.lo \
-	env.lo eoshift0.lo eoshift2.lo erfc_scaled.lo etime.lo \
-	execute_command_line.lo exit.lo extends_type_of.lo fnum.lo \
-	gerror.lo getcwd.lo getlog.lo getXid.lo hostnm.lo ierrno.lo \
-	ishftc.lo iso_c_generated_procs.lo iso_c_binding.lo kill.lo \
-	link.lo malloc.lo mvbits.lo move_alloc.lo pack_generic.lo \
-	perror.lo selected_char_kind.lo signal.lo size.lo sleep.lo \
-	spread_generic.lo string_intrinsics.lo system.lo rand.lo \
-	random.lo rename.lo reshape_generic.lo reshape_packed.lo \
-	selected_int_kind.lo selected_real_kind.lo stat.lo symlnk.lo \
-	system_clock.lo time.lo transpose_generic.lo umask.lo \
-	unlink.lo unpack_generic.lo in_pack_generic.lo \
-	in_unpack_generic.lo $(am__objects_42)
-@IEEE_SUPPORT_TRUE@am__objects_44 = ieee_arithmetic.lo \
+am__objects_42 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
+	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
+	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
+	$(am__objects_13) $(am__objects_14) $(am__objects_15) \
+	$(am__objects_16) $(am__objects_17) $(am__objects_18) \
+	$(am__objects_19) $(am__objects_20) $(am__objects_21) \
+	$(am__objects_22) $(am__objects_23) $(am__objects_24) \
+	$(am__objects_25) $(am__objects_26) $(am__objects_27) \
+	$(am__objects_28) $(am__objects_29) $(am__objects_30) \
+	$(am__objects_31) $(am__objects_32) $(am__objects_33) \
+	$(am__objects_34) $(am__objects_35) $(am__objects_36) \
+	$(am__objects_37) $(am__objects_38) $(am__objects_39) \
+	$(am__objects_40) $(am__objects_41)
+@LIBGFOR_MINIMAL_FALSE@am__objects_43 = close.lo file_pos.lo format.lo \
+@LIBGFOR_MINIMAL_FALSE@	inquire.lo intrinsics.lo list_read.lo \
+@LIBGFOR_MINIMAL_FALSE@	lock.lo open.lo read.lo transfer.lo \
+@LIBGFOR_MINIMAL_FALSE@	transfer128.lo unit.lo unix.lo write.lo \
+@LIBGFOR_MINIMAL_FALSE@	fbuf.lo
+am__objects_44 = size_from_kind.lo $(am__objects_43)
+@LIBGFOR_MINIMAL_FALSE@am__objects_45 = access.lo c99_functions.lo \
+@LIBGFOR_MINIMAL_FALSE@	chdir.lo chmod.lo clock.lo cpu_time.lo \
+@LIBGFOR_MINIMAL_FALSE@	ctime.lo date_and_time.lo dtime.lo \
+@LIBGFOR_MINIMAL_FALSE@	env.lo etime.lo execute_command_line.lo \
+@LIBGFOR_MINIMAL_FALSE@	exit.lo gerror.lo getcwd.lo getlog.lo \
+@LIBGFOR_MINIMAL_FALSE@	getXid.lo hostnm.lo kill.lo link.lo \
+@LIBGFOR_MINIMAL_FALSE@	perror.lo signal.lo sleep.lo system.lo \
+@LIBGFOR_MINIMAL_FALSE@	rename.lo stat.lo symlnk.lo \
+@LIBGFOR_MINIMAL_FALSE@	system_clock.lo time.lo umask.lo \
+@LIBGFOR_MINIMAL_FALSE@	unlink.lo
+@IEEE_SUPPORT_TRUE@am__objects_46 = ieee_helper.lo
+am__objects_47 = associated.lo abort.lo args.lo bit_intrinsics.lo \
+	cshift0.lo eoshift0.lo eoshift2.lo erfc_scaled.lo \
+	extends_type_of.lo fnum.lo ierrno.lo ishftc.lo \
+	iso_c_generated_procs.lo iso_c_binding.lo malloc.lo mvbits.lo \
+	move_alloc.lo pack_generic.lo selected_char_kind.lo size.lo \
+	spread_generic.lo string_intrinsics.lo rand.lo random.lo \
+	reshape_generic.lo reshape_packed.lo selected_int_kind.lo \
+	selected_real_kind.lo transpose_generic.lo unpack_generic.lo \
+	in_pack_generic.lo in_unpack_generic.lo $(am__objects_45) \
+	$(am__objects_46)
+@IEEE_SUPPORT_TRUE@am__objects_48 = ieee_arithmetic.lo \
 @IEEE_SUPPORT_TRUE@	ieee_exceptions.lo ieee_features.lo
-am__objects_45 =
-am__objects_46 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
+am__objects_49 =
+am__objects_50 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
 	_abs_r10.lo _abs_r16.lo _aimag_c4.lo _aimag_c8.lo \
 	_aimag_c10.lo _aimag_c16.lo _exp_r4.lo _exp_r8.lo _exp_r10.lo \
@@ -307,19 +379,19 @@ am__objects_46 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_conjg_c4.lo _conjg_c8.lo _conjg_c10.lo _conjg_c16.lo \
 	_aint_r4.lo _aint_r8.lo _aint_r10.lo _aint_r16.lo _anint_r4.lo \
 	_anint_r8.lo _anint_r10.lo _anint_r16.lo
-am__objects_47 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
+am__objects_51 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 	_sign_r8.lo _sign_r10.lo _sign_r16.lo _dim_i4.lo _dim_i8.lo \
 	_dim_i16.lo _dim_r4.lo _dim_r8.lo _dim_r10.lo _dim_r16.lo \
 	_atan2_r4.lo _atan2_r8.lo _atan2_r10.lo _atan2_r16.lo \
 	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo \
 	_mod_r10.lo _mod_r16.lo
-am__objects_48 = misc_specifics.lo
-am__objects_49 = $(am__objects_46) $(am__objects_47) $(am__objects_48) \
+am__objects_52 = misc_specifics.lo
+am__objects_53 = $(am__objects_50) $(am__objects_51) $(am__objects_52) \
 	dprod_r8.lo f2c_specifics.lo
-am__objects_50 = $(am__objects_1) $(am__objects_40) $(am__objects_41) \
-	$(am__objects_43) $(am__objects_44) $(am__objects_45) \
-	$(am__objects_49)
-@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_50)
+am__objects_54 = $(am__objects_3) $(am__objects_42) $(am__objects_44) \
+	$(am__objects_47) $(am__objects_48) $(am__objects_49) \
+	$(am__objects_53)
+@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_54)
 @onestep_TRUE@am_libgfortran_la_OBJECTS = libgfortran_c.lo
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 libgfortranbegin_la_LIBADD =
@@ -376,7 +448,7 @@ AMTAR = @AMTAR@
 
 # Some targets require additional compiler options for IEEE compatibility.
 AM_CFLAGS = @AM_CFLAGS@ -fcx-fortran-rules $(SECTION_FLAGS) \
-	$(IEEE_FLAGS)
+	$(IEEE_FLAGS) $(am__append_1)
 AM_FCFLAGS = @AM_FCFLAGS@ $(IEEE_FLAGS)
 AR = @AR@
 AS = @AS@
@@ -554,24 +626,7 @@ AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
 	      -I$(srcdir)/$(MULTISRCTOP)../libgcc \
 	      -I$(MULTIBUILDTOP)../libgcc
 
-gfor_io_src = \
-io/close.c \
-io/file_pos.c \
-io/format.c \
-io/inquire.c \
-io/intrinsics.c \
-io/list_read.c \
-io/lock.c \
-io/open.c \
-io/read.c \
-io/size_from_kind.c \
-io/transfer.c \
-io/transfer128.c \
-io/unit.c \
-io/unix.c \
-io/write.c \
-io/fbuf.c
-
+gfor_io_src = io/size_from_kind.c $(am__append_2)
 gfor_io_headers = \
 io/io.h \
 io/fbuf.h \
@@ -579,54 +634,32 @@ io/format.h \
 io/unix.h
 
 gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
-	intrinsics/access.c intrinsics/args.c \
-	intrinsics/bit_intrinsics.c intrinsics/c99_functions.c \
-	intrinsics/chdir.c intrinsics/chmod.c intrinsics/clock.c \
-	intrinsics/cpu_time.c intrinsics/cshift0.c intrinsics/ctime.c \
-	intrinsics/date_and_time.c intrinsics/dtime.c intrinsics/env.c \
-	intrinsics/eoshift0.c intrinsics/eoshift2.c \
-	intrinsics/erfc_scaled.c intrinsics/etime.c \
-	intrinsics/execute_command_line.c intrinsics/exit.c \
+	intrinsics/args.c intrinsics/bit_intrinsics.c \
+	intrinsics/cshift0.c intrinsics/eoshift0.c \
+	intrinsics/eoshift2.c intrinsics/erfc_scaled.c \
 	intrinsics/extends_type_of.c intrinsics/fnum.c \
-	intrinsics/gerror.c intrinsics/getcwd.c intrinsics/getlog.c \
-	intrinsics/getXid.c intrinsics/hostnm.c intrinsics/ierrno.c \
-	intrinsics/ishftc.c intrinsics/iso_c_generated_procs.c \
-	intrinsics/iso_c_binding.c intrinsics/kill.c intrinsics/link.c \
+	intrinsics/ierrno.c intrinsics/ishftc.c \
+	intrinsics/iso_c_generated_procs.c intrinsics/iso_c_binding.c \
 	intrinsics/malloc.c intrinsics/mvbits.c \
 	intrinsics/move_alloc.c intrinsics/pack_generic.c \
-	intrinsics/perror.c intrinsics/selected_char_kind.c \
-	intrinsics/signal.c intrinsics/size.c intrinsics/sleep.c \
+	intrinsics/selected_char_kind.c intrinsics/size.c \
 	intrinsics/spread_generic.c intrinsics/string_intrinsics.c \
-	intrinsics/system.c intrinsics/rand.c intrinsics/random.c \
-	intrinsics/rename.c intrinsics/reshape_generic.c \
-	intrinsics/reshape_packed.c intrinsics/selected_int_kind.f90 \
-	intrinsics/selected_real_kind.f90 intrinsics/stat.c \
-	intrinsics/symlnk.c intrinsics/system_clock.c \
-	intrinsics/time.c intrinsics/transpose_generic.c \
-	intrinsics/umask.c intrinsics/unlink.c \
-	intrinsics/unpack_generic.c runtime/in_pack_generic.c \
-	runtime/in_unpack_generic.c $(am__append_1)
+	intrinsics/rand.c intrinsics/random.c \
+	intrinsics/reshape_generic.c intrinsics/reshape_packed.c \
+	intrinsics/selected_int_kind.f90 \
+	intrinsics/selected_real_kind.f90 \
+	intrinsics/transpose_generic.c intrinsics/unpack_generic.c \
+	runtime/in_pack_generic.c runtime/in_unpack_generic.c \
+	$(am__append_3) $(am__append_4)
 @IEEE_SUPPORT_FALSE@gfor_ieee_src = 
 @IEEE_SUPPORT_TRUE@gfor_ieee_src = \
 @IEEE_SUPPORT_TRUE@ieee/ieee_arithmetic.F90 \
 @IEEE_SUPPORT_TRUE@ieee/ieee_exceptions.F90 \
 @IEEE_SUPPORT_TRUE@ieee/ieee_features.F90
 
-gfor_src = \
-runtime/backtrace.c \
-runtime/bounds.c \
-runtime/compile_options.c \
-runtime/convert_char.c \
-runtime/environ.c \
-runtime/error.c \
-runtime/fpu.c \
-runtime/main.c \
-runtime/memory.c \
-runtime/pause.c \
-runtime/stop.c \
-runtime/string.c \
-runtime/select.c
-
+gfor_src = runtime/bounds.c runtime/compile_options.c runtime/memory.c \
+	runtime/string.c runtime/select.c $(am__append_5) \
+	$(am__append_6)
 i_all_c = \
 $(srcdir)/generated/all_l1.c \
 $(srcdir)/generated/all_l2.c \
@@ -1255,7 +1288,7 @@ intrinsics/f2c_specifics.F90
 
 BUILT_SOURCES = $(gfor_built_src) $(gfor_built_specific_src) \
 	$(gfor_built_specific2_src) $(gfor_misc_specifics) \
-	$(am__append_2)
+	$(am__append_7)
 prereq_SRC = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
     $(gfor_helper_src) $(gfor_ieee_src) $(gfor_io_headers) $(gfor_specific_src)
 
@@ -1669,6 +1702,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxval_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxval_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/memory.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minimal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_16_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_16_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_16_i2.Plo@am__quote@
@@ -2372,13 +2406,6 @@ single.lo: caf/single.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o single.lo `test -f 'caf/single.c' || echo '$(srcdir)/'`caf/single.c
 
-backtrace.lo: runtime/backtrace.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT backtrace.lo -MD -MP -MF $(DEPDIR)/backtrace.Tpo -c -o backtrace.lo `test -f 'runtime/backtrace.c' || echo '$(srcdir)/'`runtime/backtrace.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/backtrace.Tpo $(DEPDIR)/backtrace.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/backtrace.c' object='backtrace.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o backtrace.lo `test -f 'runtime/backtrace.c' || echo '$(srcdir)/'`runtime/backtrace.c
-
 bounds.lo: runtime/bounds.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT bounds.lo -MD -MP -MF $(DEPDIR)/bounds.Tpo -c -o bounds.lo `test -f 'runtime/bounds.c' || echo '$(srcdir)/'`runtime/bounds.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/bounds.Tpo $(DEPDIR)/bounds.Plo
@@ -2392,6 +2419,41 @@ compile_options.lo: runtime/compile_options.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/compile_options.c' object='compile_options.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o compile_options.lo `test -f 'runtime/compile_options.c' || echo '$(srcdir)/'`runtime/compile_options.c
+
+memory.lo: runtime/memory.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT memory.lo -MD -MP -MF $(DEPDIR)/memory.Tpo -c -o memory.lo `test -f 'runtime/memory.c' || echo '$(srcdir)/'`runtime/memory.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/memory.Tpo $(DEPDIR)/memory.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/memory.c' object='memory.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o memory.lo `test -f 'runtime/memory.c' || echo '$(srcdir)/'`runtime/memory.c
+
+string.lo: runtime/string.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT string.lo -MD -MP -MF $(DEPDIR)/string.Tpo -c -o string.lo `test -f 'runtime/string.c' || echo '$(srcdir)/'`runtime/string.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/string.Tpo $(DEPDIR)/string.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/string.c' object='string.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o string.lo `test -f 'runtime/string.c' || echo '$(srcdir)/'`runtime/string.c
+
+select.lo: runtime/select.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT select.lo -MD -MP -MF $(DEPDIR)/select.Tpo -c -o select.lo `test -f 'runtime/select.c' || echo '$(srcdir)/'`runtime/select.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/select.Tpo $(DEPDIR)/select.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/select.c' object='select.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o select.lo `test -f 'runtime/select.c' || echo '$(srcdir)/'`runtime/select.c
+
+minimal.lo: runtime/minimal.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minimal.lo -MD -MP -MF $(DEPDIR)/minimal.Tpo -c -o minimal.lo `test -f 'runtime/minimal.c' || echo '$(srcdir)/'`runtime/minimal.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minimal.Tpo $(DEPDIR)/minimal.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/minimal.c' object='minimal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minimal.lo `test -f 'runtime/minimal.c' || echo '$(srcdir)/'`runtime/minimal.c
+
+backtrace.lo: runtime/backtrace.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT backtrace.lo -MD -MP -MF $(DEPDIR)/backtrace.Tpo -c -o backtrace.lo `test -f 'runtime/backtrace.c' || echo '$(srcdir)/'`runtime/backtrace.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/backtrace.Tpo $(DEPDIR)/backtrace.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/backtrace.c' object='backtrace.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o backtrace.lo `test -f 'runtime/backtrace.c' || echo '$(srcdir)/'`runtime/backtrace.c
 
 convert_char.lo: runtime/convert_char.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT convert_char.lo -MD -MP -MF $(DEPDIR)/convert_char.Tpo -c -o convert_char.lo `test -f 'runtime/convert_char.c' || echo '$(srcdir)/'`runtime/convert_char.c
@@ -2428,13 +2490,6 @@ main.lo: runtime/main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o main.lo `test -f 'runtime/main.c' || echo '$(srcdir)/'`runtime/main.c
 
-memory.lo: runtime/memory.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT memory.lo -MD -MP -MF $(DEPDIR)/memory.Tpo -c -o memory.lo `test -f 'runtime/memory.c' || echo '$(srcdir)/'`runtime/memory.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/memory.Tpo $(DEPDIR)/memory.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/memory.c' object='memory.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o memory.lo `test -f 'runtime/memory.c' || echo '$(srcdir)/'`runtime/memory.c
-
 pause.lo: runtime/pause.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pause.lo -MD -MP -MF $(DEPDIR)/pause.Tpo -c -o pause.lo `test -f 'runtime/pause.c' || echo '$(srcdir)/'`runtime/pause.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/pause.Tpo $(DEPDIR)/pause.Plo
@@ -2448,20 +2503,6 @@ stop.lo: runtime/stop.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/stop.c' object='stop.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stop.lo `test -f 'runtime/stop.c' || echo '$(srcdir)/'`runtime/stop.c
-
-string.lo: runtime/string.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT string.lo -MD -MP -MF $(DEPDIR)/string.Tpo -c -o string.lo `test -f 'runtime/string.c' || echo '$(srcdir)/'`runtime/string.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/string.Tpo $(DEPDIR)/string.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/string.c' object='string.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o string.lo `test -f 'runtime/string.c' || echo '$(srcdir)/'`runtime/string.c
-
-select.lo: runtime/select.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT select.lo -MD -MP -MF $(DEPDIR)/select.Tpo -c -o select.lo `test -f 'runtime/select.c' || echo '$(srcdir)/'`runtime/select.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/select.Tpo $(DEPDIR)/select.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/select.c' object='select.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o select.lo `test -f 'runtime/select.c' || echo '$(srcdir)/'`runtime/select.c
 
 all_l1.lo: $(srcdir)/generated/all_l1.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT all_l1.lo -MD -MP -MF $(DEPDIR)/all_l1.Tpo -c -o all_l1.lo `test -f '$(srcdir)/generated/all_l1.c' || echo '$(srcdir)/'`$(srcdir)/generated/all_l1.c
@@ -5102,6 +5143,13 @@ cshift0_c16.lo: $(srcdir)/generated/cshift0_c16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_c16.lo `test -f '$(srcdir)/generated/cshift0_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_c16.c
 
+size_from_kind.lo: io/size_from_kind.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT size_from_kind.lo -MD -MP -MF $(DEPDIR)/size_from_kind.Tpo -c -o size_from_kind.lo `test -f 'io/size_from_kind.c' || echo '$(srcdir)/'`io/size_from_kind.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/size_from_kind.Tpo $(DEPDIR)/size_from_kind.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='io/size_from_kind.c' object='size_from_kind.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o size_from_kind.lo `test -f 'io/size_from_kind.c' || echo '$(srcdir)/'`io/size_from_kind.c
+
 close.lo: io/close.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT close.lo -MD -MP -MF $(DEPDIR)/close.Tpo -c -o close.lo `test -f 'io/close.c' || echo '$(srcdir)/'`io/close.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/close.Tpo $(DEPDIR)/close.Plo
@@ -5165,13 +5213,6 @@ read.lo: io/read.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o read.lo `test -f 'io/read.c' || echo '$(srcdir)/'`io/read.c
 
-size_from_kind.lo: io/size_from_kind.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT size_from_kind.lo -MD -MP -MF $(DEPDIR)/size_from_kind.Tpo -c -o size_from_kind.lo `test -f 'io/size_from_kind.c' || echo '$(srcdir)/'`io/size_from_kind.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/size_from_kind.Tpo $(DEPDIR)/size_from_kind.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='io/size_from_kind.c' object='size_from_kind.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o size_from_kind.lo `test -f 'io/size_from_kind.c' || echo '$(srcdir)/'`io/size_from_kind.c
-
 transfer.lo: io/transfer.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT transfer.lo -MD -MP -MF $(DEPDIR)/transfer.Tpo -c -o transfer.lo `test -f 'io/transfer.c' || echo '$(srcdir)/'`io/transfer.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/transfer.Tpo $(DEPDIR)/transfer.Plo
@@ -5228,13 +5269,6 @@ abort.lo: intrinsics/abort.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o abort.lo `test -f 'intrinsics/abort.c' || echo '$(srcdir)/'`intrinsics/abort.c
 
-access.lo: intrinsics/access.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT access.lo -MD -MP -MF $(DEPDIR)/access.Tpo -c -o access.lo `test -f 'intrinsics/access.c' || echo '$(srcdir)/'`intrinsics/access.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/access.Tpo $(DEPDIR)/access.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/access.c' object='access.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o access.lo `test -f 'intrinsics/access.c' || echo '$(srcdir)/'`intrinsics/access.c
-
 args.lo: intrinsics/args.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT args.lo -MD -MP -MF $(DEPDIR)/args.Tpo -c -o args.lo `test -f 'intrinsics/args.c' || echo '$(srcdir)/'`intrinsics/args.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/args.Tpo $(DEPDIR)/args.Plo
@@ -5248,6 +5282,195 @@ bit_intrinsics.lo: intrinsics/bit_intrinsics.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/bit_intrinsics.c' object='bit_intrinsics.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bit_intrinsics.lo `test -f 'intrinsics/bit_intrinsics.c' || echo '$(srcdir)/'`intrinsics/bit_intrinsics.c
+
+cshift0.lo: intrinsics/cshift0.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0.lo -MD -MP -MF $(DEPDIR)/cshift0.Tpo -c -o cshift0.lo `test -f 'intrinsics/cshift0.c' || echo '$(srcdir)/'`intrinsics/cshift0.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift0.Tpo $(DEPDIR)/cshift0.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/cshift0.c' object='cshift0.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0.lo `test -f 'intrinsics/cshift0.c' || echo '$(srcdir)/'`intrinsics/cshift0.c
+
+eoshift0.lo: intrinsics/eoshift0.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT eoshift0.lo -MD -MP -MF $(DEPDIR)/eoshift0.Tpo -c -o eoshift0.lo `test -f 'intrinsics/eoshift0.c' || echo '$(srcdir)/'`intrinsics/eoshift0.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/eoshift0.Tpo $(DEPDIR)/eoshift0.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/eoshift0.c' object='eoshift0.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift0.lo `test -f 'intrinsics/eoshift0.c' || echo '$(srcdir)/'`intrinsics/eoshift0.c
+
+eoshift2.lo: intrinsics/eoshift2.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT eoshift2.lo -MD -MP -MF $(DEPDIR)/eoshift2.Tpo -c -o eoshift2.lo `test -f 'intrinsics/eoshift2.c' || echo '$(srcdir)/'`intrinsics/eoshift2.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/eoshift2.Tpo $(DEPDIR)/eoshift2.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/eoshift2.c' object='eoshift2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift2.lo `test -f 'intrinsics/eoshift2.c' || echo '$(srcdir)/'`intrinsics/eoshift2.c
+
+erfc_scaled.lo: intrinsics/erfc_scaled.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT erfc_scaled.lo -MD -MP -MF $(DEPDIR)/erfc_scaled.Tpo -c -o erfc_scaled.lo `test -f 'intrinsics/erfc_scaled.c' || echo '$(srcdir)/'`intrinsics/erfc_scaled.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/erfc_scaled.Tpo $(DEPDIR)/erfc_scaled.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/erfc_scaled.c' object='erfc_scaled.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o erfc_scaled.lo `test -f 'intrinsics/erfc_scaled.c' || echo '$(srcdir)/'`intrinsics/erfc_scaled.c
+
+extends_type_of.lo: intrinsics/extends_type_of.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT extends_type_of.lo -MD -MP -MF $(DEPDIR)/extends_type_of.Tpo -c -o extends_type_of.lo `test -f 'intrinsics/extends_type_of.c' || echo '$(srcdir)/'`intrinsics/extends_type_of.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/extends_type_of.Tpo $(DEPDIR)/extends_type_of.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/extends_type_of.c' object='extends_type_of.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o extends_type_of.lo `test -f 'intrinsics/extends_type_of.c' || echo '$(srcdir)/'`intrinsics/extends_type_of.c
+
+fnum.lo: intrinsics/fnum.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fnum.lo -MD -MP -MF $(DEPDIR)/fnum.Tpo -c -o fnum.lo `test -f 'intrinsics/fnum.c' || echo '$(srcdir)/'`intrinsics/fnum.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/fnum.Tpo $(DEPDIR)/fnum.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/fnum.c' object='fnum.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fnum.lo `test -f 'intrinsics/fnum.c' || echo '$(srcdir)/'`intrinsics/fnum.c
+
+ierrno.lo: intrinsics/ierrno.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ierrno.lo -MD -MP -MF $(DEPDIR)/ierrno.Tpo -c -o ierrno.lo `test -f 'intrinsics/ierrno.c' || echo '$(srcdir)/'`intrinsics/ierrno.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/ierrno.Tpo $(DEPDIR)/ierrno.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/ierrno.c' object='ierrno.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ierrno.lo `test -f 'intrinsics/ierrno.c' || echo '$(srcdir)/'`intrinsics/ierrno.c
+
+ishftc.lo: intrinsics/ishftc.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ishftc.lo -MD -MP -MF $(DEPDIR)/ishftc.Tpo -c -o ishftc.lo `test -f 'intrinsics/ishftc.c' || echo '$(srcdir)/'`intrinsics/ishftc.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/ishftc.Tpo $(DEPDIR)/ishftc.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/ishftc.c' object='ishftc.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ishftc.lo `test -f 'intrinsics/ishftc.c' || echo '$(srcdir)/'`intrinsics/ishftc.c
+
+iso_c_generated_procs.lo: intrinsics/iso_c_generated_procs.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT iso_c_generated_procs.lo -MD -MP -MF $(DEPDIR)/iso_c_generated_procs.Tpo -c -o iso_c_generated_procs.lo `test -f 'intrinsics/iso_c_generated_procs.c' || echo '$(srcdir)/'`intrinsics/iso_c_generated_procs.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/iso_c_generated_procs.Tpo $(DEPDIR)/iso_c_generated_procs.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/iso_c_generated_procs.c' object='iso_c_generated_procs.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iso_c_generated_procs.lo `test -f 'intrinsics/iso_c_generated_procs.c' || echo '$(srcdir)/'`intrinsics/iso_c_generated_procs.c
+
+iso_c_binding.lo: intrinsics/iso_c_binding.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT iso_c_binding.lo -MD -MP -MF $(DEPDIR)/iso_c_binding.Tpo -c -o iso_c_binding.lo `test -f 'intrinsics/iso_c_binding.c' || echo '$(srcdir)/'`intrinsics/iso_c_binding.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/iso_c_binding.Tpo $(DEPDIR)/iso_c_binding.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/iso_c_binding.c' object='iso_c_binding.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iso_c_binding.lo `test -f 'intrinsics/iso_c_binding.c' || echo '$(srcdir)/'`intrinsics/iso_c_binding.c
+
+malloc.lo: intrinsics/malloc.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT malloc.lo -MD -MP -MF $(DEPDIR)/malloc.Tpo -c -o malloc.lo `test -f 'intrinsics/malloc.c' || echo '$(srcdir)/'`intrinsics/malloc.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/malloc.Tpo $(DEPDIR)/malloc.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/malloc.c' object='malloc.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o malloc.lo `test -f 'intrinsics/malloc.c' || echo '$(srcdir)/'`intrinsics/malloc.c
+
+mvbits.lo: intrinsics/mvbits.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mvbits.lo -MD -MP -MF $(DEPDIR)/mvbits.Tpo -c -o mvbits.lo `test -f 'intrinsics/mvbits.c' || echo '$(srcdir)/'`intrinsics/mvbits.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/mvbits.Tpo $(DEPDIR)/mvbits.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/mvbits.c' object='mvbits.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mvbits.lo `test -f 'intrinsics/mvbits.c' || echo '$(srcdir)/'`intrinsics/mvbits.c
+
+move_alloc.lo: intrinsics/move_alloc.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT move_alloc.lo -MD -MP -MF $(DEPDIR)/move_alloc.Tpo -c -o move_alloc.lo `test -f 'intrinsics/move_alloc.c' || echo '$(srcdir)/'`intrinsics/move_alloc.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/move_alloc.Tpo $(DEPDIR)/move_alloc.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/move_alloc.c' object='move_alloc.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o move_alloc.lo `test -f 'intrinsics/move_alloc.c' || echo '$(srcdir)/'`intrinsics/move_alloc.c
+
+pack_generic.lo: intrinsics/pack_generic.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pack_generic.lo -MD -MP -MF $(DEPDIR)/pack_generic.Tpo -c -o pack_generic.lo `test -f 'intrinsics/pack_generic.c' || echo '$(srcdir)/'`intrinsics/pack_generic.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/pack_generic.Tpo $(DEPDIR)/pack_generic.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/pack_generic.c' object='pack_generic.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pack_generic.lo `test -f 'intrinsics/pack_generic.c' || echo '$(srcdir)/'`intrinsics/pack_generic.c
+
+selected_char_kind.lo: intrinsics/selected_char_kind.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT selected_char_kind.lo -MD -MP -MF $(DEPDIR)/selected_char_kind.Tpo -c -o selected_char_kind.lo `test -f 'intrinsics/selected_char_kind.c' || echo '$(srcdir)/'`intrinsics/selected_char_kind.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/selected_char_kind.Tpo $(DEPDIR)/selected_char_kind.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/selected_char_kind.c' object='selected_char_kind.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o selected_char_kind.lo `test -f 'intrinsics/selected_char_kind.c' || echo '$(srcdir)/'`intrinsics/selected_char_kind.c
+
+size.lo: intrinsics/size.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT size.lo -MD -MP -MF $(DEPDIR)/size.Tpo -c -o size.lo `test -f 'intrinsics/size.c' || echo '$(srcdir)/'`intrinsics/size.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/size.Tpo $(DEPDIR)/size.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/size.c' object='size.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o size.lo `test -f 'intrinsics/size.c' || echo '$(srcdir)/'`intrinsics/size.c
+
+spread_generic.lo: intrinsics/spread_generic.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT spread_generic.lo -MD -MP -MF $(DEPDIR)/spread_generic.Tpo -c -o spread_generic.lo `test -f 'intrinsics/spread_generic.c' || echo '$(srcdir)/'`intrinsics/spread_generic.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/spread_generic.Tpo $(DEPDIR)/spread_generic.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/spread_generic.c' object='spread_generic.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o spread_generic.lo `test -f 'intrinsics/spread_generic.c' || echo '$(srcdir)/'`intrinsics/spread_generic.c
+
+string_intrinsics.lo: intrinsics/string_intrinsics.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT string_intrinsics.lo -MD -MP -MF $(DEPDIR)/string_intrinsics.Tpo -c -o string_intrinsics.lo `test -f 'intrinsics/string_intrinsics.c' || echo '$(srcdir)/'`intrinsics/string_intrinsics.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/string_intrinsics.Tpo $(DEPDIR)/string_intrinsics.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/string_intrinsics.c' object='string_intrinsics.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o string_intrinsics.lo `test -f 'intrinsics/string_intrinsics.c' || echo '$(srcdir)/'`intrinsics/string_intrinsics.c
+
+rand.lo: intrinsics/rand.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT rand.lo -MD -MP -MF $(DEPDIR)/rand.Tpo -c -o rand.lo `test -f 'intrinsics/rand.c' || echo '$(srcdir)/'`intrinsics/rand.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/rand.Tpo $(DEPDIR)/rand.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/rand.c' object='rand.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rand.lo `test -f 'intrinsics/rand.c' || echo '$(srcdir)/'`intrinsics/rand.c
+
+random.lo: intrinsics/random.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT random.lo -MD -MP -MF $(DEPDIR)/random.Tpo -c -o random.lo `test -f 'intrinsics/random.c' || echo '$(srcdir)/'`intrinsics/random.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/random.Tpo $(DEPDIR)/random.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/random.c' object='random.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o random.lo `test -f 'intrinsics/random.c' || echo '$(srcdir)/'`intrinsics/random.c
+
+reshape_generic.lo: intrinsics/reshape_generic.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT reshape_generic.lo -MD -MP -MF $(DEPDIR)/reshape_generic.Tpo -c -o reshape_generic.lo `test -f 'intrinsics/reshape_generic.c' || echo '$(srcdir)/'`intrinsics/reshape_generic.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/reshape_generic.Tpo $(DEPDIR)/reshape_generic.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/reshape_generic.c' object='reshape_generic.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_generic.lo `test -f 'intrinsics/reshape_generic.c' || echo '$(srcdir)/'`intrinsics/reshape_generic.c
+
+reshape_packed.lo: intrinsics/reshape_packed.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT reshape_packed.lo -MD -MP -MF $(DEPDIR)/reshape_packed.Tpo -c -o reshape_packed.lo `test -f 'intrinsics/reshape_packed.c' || echo '$(srcdir)/'`intrinsics/reshape_packed.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/reshape_packed.Tpo $(DEPDIR)/reshape_packed.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/reshape_packed.c' object='reshape_packed.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_packed.lo `test -f 'intrinsics/reshape_packed.c' || echo '$(srcdir)/'`intrinsics/reshape_packed.c
+
+transpose_generic.lo: intrinsics/transpose_generic.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT transpose_generic.lo -MD -MP -MF $(DEPDIR)/transpose_generic.Tpo -c -o transpose_generic.lo `test -f 'intrinsics/transpose_generic.c' || echo '$(srcdir)/'`intrinsics/transpose_generic.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/transpose_generic.Tpo $(DEPDIR)/transpose_generic.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/transpose_generic.c' object='transpose_generic.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_generic.lo `test -f 'intrinsics/transpose_generic.c' || echo '$(srcdir)/'`intrinsics/transpose_generic.c
+
+unpack_generic.lo: intrinsics/unpack_generic.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT unpack_generic.lo -MD -MP -MF $(DEPDIR)/unpack_generic.Tpo -c -o unpack_generic.lo `test -f 'intrinsics/unpack_generic.c' || echo '$(srcdir)/'`intrinsics/unpack_generic.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/unpack_generic.Tpo $(DEPDIR)/unpack_generic.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/unpack_generic.c' object='unpack_generic.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unpack_generic.lo `test -f 'intrinsics/unpack_generic.c' || echo '$(srcdir)/'`intrinsics/unpack_generic.c
+
+in_pack_generic.lo: runtime/in_pack_generic.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_pack_generic.lo -MD -MP -MF $(DEPDIR)/in_pack_generic.Tpo -c -o in_pack_generic.lo `test -f 'runtime/in_pack_generic.c' || echo '$(srcdir)/'`runtime/in_pack_generic.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/in_pack_generic.Tpo $(DEPDIR)/in_pack_generic.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/in_pack_generic.c' object='in_pack_generic.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_generic.lo `test -f 'runtime/in_pack_generic.c' || echo '$(srcdir)/'`runtime/in_pack_generic.c
+
+in_unpack_generic.lo: runtime/in_unpack_generic.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_unpack_generic.lo -MD -MP -MF $(DEPDIR)/in_unpack_generic.Tpo -c -o in_unpack_generic.lo `test -f 'runtime/in_unpack_generic.c' || echo '$(srcdir)/'`runtime/in_unpack_generic.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/in_unpack_generic.Tpo $(DEPDIR)/in_unpack_generic.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/in_unpack_generic.c' object='in_unpack_generic.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_generic.lo `test -f 'runtime/in_unpack_generic.c' || echo '$(srcdir)/'`runtime/in_unpack_generic.c
+
+access.lo: intrinsics/access.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT access.lo -MD -MP -MF $(DEPDIR)/access.Tpo -c -o access.lo `test -f 'intrinsics/access.c' || echo '$(srcdir)/'`intrinsics/access.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/access.Tpo $(DEPDIR)/access.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/access.c' object='access.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o access.lo `test -f 'intrinsics/access.c' || echo '$(srcdir)/'`intrinsics/access.c
 
 c99_functions.lo: intrinsics/c99_functions.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT c99_functions.lo -MD -MP -MF $(DEPDIR)/c99_functions.Tpo -c -o c99_functions.lo `test -f 'intrinsics/c99_functions.c' || echo '$(srcdir)/'`intrinsics/c99_functions.c
@@ -5284,13 +5507,6 @@ cpu_time.lo: intrinsics/cpu_time.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cpu_time.lo `test -f 'intrinsics/cpu_time.c' || echo '$(srcdir)/'`intrinsics/cpu_time.c
 
-cshift0.lo: intrinsics/cshift0.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0.lo -MD -MP -MF $(DEPDIR)/cshift0.Tpo -c -o cshift0.lo `test -f 'intrinsics/cshift0.c' || echo '$(srcdir)/'`intrinsics/cshift0.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift0.Tpo $(DEPDIR)/cshift0.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/cshift0.c' object='cshift0.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0.lo `test -f 'intrinsics/cshift0.c' || echo '$(srcdir)/'`intrinsics/cshift0.c
-
 ctime.lo: intrinsics/ctime.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ctime.lo -MD -MP -MF $(DEPDIR)/ctime.Tpo -c -o ctime.lo `test -f 'intrinsics/ctime.c' || echo '$(srcdir)/'`intrinsics/ctime.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/ctime.Tpo $(DEPDIR)/ctime.Plo
@@ -5319,27 +5535,6 @@ env.lo: intrinsics/env.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o env.lo `test -f 'intrinsics/env.c' || echo '$(srcdir)/'`intrinsics/env.c
 
-eoshift0.lo: intrinsics/eoshift0.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT eoshift0.lo -MD -MP -MF $(DEPDIR)/eoshift0.Tpo -c -o eoshift0.lo `test -f 'intrinsics/eoshift0.c' || echo '$(srcdir)/'`intrinsics/eoshift0.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/eoshift0.Tpo $(DEPDIR)/eoshift0.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/eoshift0.c' object='eoshift0.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift0.lo `test -f 'intrinsics/eoshift0.c' || echo '$(srcdir)/'`intrinsics/eoshift0.c
-
-eoshift2.lo: intrinsics/eoshift2.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT eoshift2.lo -MD -MP -MF $(DEPDIR)/eoshift2.Tpo -c -o eoshift2.lo `test -f 'intrinsics/eoshift2.c' || echo '$(srcdir)/'`intrinsics/eoshift2.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/eoshift2.Tpo $(DEPDIR)/eoshift2.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/eoshift2.c' object='eoshift2.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift2.lo `test -f 'intrinsics/eoshift2.c' || echo '$(srcdir)/'`intrinsics/eoshift2.c
-
-erfc_scaled.lo: intrinsics/erfc_scaled.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT erfc_scaled.lo -MD -MP -MF $(DEPDIR)/erfc_scaled.Tpo -c -o erfc_scaled.lo `test -f 'intrinsics/erfc_scaled.c' || echo '$(srcdir)/'`intrinsics/erfc_scaled.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/erfc_scaled.Tpo $(DEPDIR)/erfc_scaled.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/erfc_scaled.c' object='erfc_scaled.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o erfc_scaled.lo `test -f 'intrinsics/erfc_scaled.c' || echo '$(srcdir)/'`intrinsics/erfc_scaled.c
-
 etime.lo: intrinsics/etime.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT etime.lo -MD -MP -MF $(DEPDIR)/etime.Tpo -c -o etime.lo `test -f 'intrinsics/etime.c' || echo '$(srcdir)/'`intrinsics/etime.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/etime.Tpo $(DEPDIR)/etime.Plo
@@ -5360,20 +5555,6 @@ exit.lo: intrinsics/exit.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/exit.c' object='exit.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o exit.lo `test -f 'intrinsics/exit.c' || echo '$(srcdir)/'`intrinsics/exit.c
-
-extends_type_of.lo: intrinsics/extends_type_of.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT extends_type_of.lo -MD -MP -MF $(DEPDIR)/extends_type_of.Tpo -c -o extends_type_of.lo `test -f 'intrinsics/extends_type_of.c' || echo '$(srcdir)/'`intrinsics/extends_type_of.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/extends_type_of.Tpo $(DEPDIR)/extends_type_of.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/extends_type_of.c' object='extends_type_of.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o extends_type_of.lo `test -f 'intrinsics/extends_type_of.c' || echo '$(srcdir)/'`intrinsics/extends_type_of.c
-
-fnum.lo: intrinsics/fnum.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fnum.lo -MD -MP -MF $(DEPDIR)/fnum.Tpo -c -o fnum.lo `test -f 'intrinsics/fnum.c' || echo '$(srcdir)/'`intrinsics/fnum.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/fnum.Tpo $(DEPDIR)/fnum.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/fnum.c' object='fnum.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fnum.lo `test -f 'intrinsics/fnum.c' || echo '$(srcdir)/'`intrinsics/fnum.c
 
 gerror.lo: intrinsics/gerror.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gerror.lo -MD -MP -MF $(DEPDIR)/gerror.Tpo -c -o gerror.lo `test -f 'intrinsics/gerror.c' || echo '$(srcdir)/'`intrinsics/gerror.c
@@ -5410,34 +5591,6 @@ hostnm.lo: intrinsics/hostnm.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hostnm.lo `test -f 'intrinsics/hostnm.c' || echo '$(srcdir)/'`intrinsics/hostnm.c
 
-ierrno.lo: intrinsics/ierrno.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ierrno.lo -MD -MP -MF $(DEPDIR)/ierrno.Tpo -c -o ierrno.lo `test -f 'intrinsics/ierrno.c' || echo '$(srcdir)/'`intrinsics/ierrno.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/ierrno.Tpo $(DEPDIR)/ierrno.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/ierrno.c' object='ierrno.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ierrno.lo `test -f 'intrinsics/ierrno.c' || echo '$(srcdir)/'`intrinsics/ierrno.c
-
-ishftc.lo: intrinsics/ishftc.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ishftc.lo -MD -MP -MF $(DEPDIR)/ishftc.Tpo -c -o ishftc.lo `test -f 'intrinsics/ishftc.c' || echo '$(srcdir)/'`intrinsics/ishftc.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/ishftc.Tpo $(DEPDIR)/ishftc.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/ishftc.c' object='ishftc.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ishftc.lo `test -f 'intrinsics/ishftc.c' || echo '$(srcdir)/'`intrinsics/ishftc.c
-
-iso_c_generated_procs.lo: intrinsics/iso_c_generated_procs.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT iso_c_generated_procs.lo -MD -MP -MF $(DEPDIR)/iso_c_generated_procs.Tpo -c -o iso_c_generated_procs.lo `test -f 'intrinsics/iso_c_generated_procs.c' || echo '$(srcdir)/'`intrinsics/iso_c_generated_procs.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/iso_c_generated_procs.Tpo $(DEPDIR)/iso_c_generated_procs.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/iso_c_generated_procs.c' object='iso_c_generated_procs.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iso_c_generated_procs.lo `test -f 'intrinsics/iso_c_generated_procs.c' || echo '$(srcdir)/'`intrinsics/iso_c_generated_procs.c
-
-iso_c_binding.lo: intrinsics/iso_c_binding.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT iso_c_binding.lo -MD -MP -MF $(DEPDIR)/iso_c_binding.Tpo -c -o iso_c_binding.lo `test -f 'intrinsics/iso_c_binding.c' || echo '$(srcdir)/'`intrinsics/iso_c_binding.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/iso_c_binding.Tpo $(DEPDIR)/iso_c_binding.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/iso_c_binding.c' object='iso_c_binding.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iso_c_binding.lo `test -f 'intrinsics/iso_c_binding.c' || echo '$(srcdir)/'`intrinsics/iso_c_binding.c
-
 kill.lo: intrinsics/kill.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT kill.lo -MD -MP -MF $(DEPDIR)/kill.Tpo -c -o kill.lo `test -f 'intrinsics/kill.c' || echo '$(srcdir)/'`intrinsics/kill.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/kill.Tpo $(DEPDIR)/kill.Plo
@@ -5452,47 +5605,12 @@ link.lo: intrinsics/link.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o link.lo `test -f 'intrinsics/link.c' || echo '$(srcdir)/'`intrinsics/link.c
 
-malloc.lo: intrinsics/malloc.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT malloc.lo -MD -MP -MF $(DEPDIR)/malloc.Tpo -c -o malloc.lo `test -f 'intrinsics/malloc.c' || echo '$(srcdir)/'`intrinsics/malloc.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/malloc.Tpo $(DEPDIR)/malloc.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/malloc.c' object='malloc.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o malloc.lo `test -f 'intrinsics/malloc.c' || echo '$(srcdir)/'`intrinsics/malloc.c
-
-mvbits.lo: intrinsics/mvbits.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mvbits.lo -MD -MP -MF $(DEPDIR)/mvbits.Tpo -c -o mvbits.lo `test -f 'intrinsics/mvbits.c' || echo '$(srcdir)/'`intrinsics/mvbits.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/mvbits.Tpo $(DEPDIR)/mvbits.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/mvbits.c' object='mvbits.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mvbits.lo `test -f 'intrinsics/mvbits.c' || echo '$(srcdir)/'`intrinsics/mvbits.c
-
-move_alloc.lo: intrinsics/move_alloc.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT move_alloc.lo -MD -MP -MF $(DEPDIR)/move_alloc.Tpo -c -o move_alloc.lo `test -f 'intrinsics/move_alloc.c' || echo '$(srcdir)/'`intrinsics/move_alloc.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/move_alloc.Tpo $(DEPDIR)/move_alloc.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/move_alloc.c' object='move_alloc.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o move_alloc.lo `test -f 'intrinsics/move_alloc.c' || echo '$(srcdir)/'`intrinsics/move_alloc.c
-
-pack_generic.lo: intrinsics/pack_generic.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pack_generic.lo -MD -MP -MF $(DEPDIR)/pack_generic.Tpo -c -o pack_generic.lo `test -f 'intrinsics/pack_generic.c' || echo '$(srcdir)/'`intrinsics/pack_generic.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/pack_generic.Tpo $(DEPDIR)/pack_generic.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/pack_generic.c' object='pack_generic.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pack_generic.lo `test -f 'intrinsics/pack_generic.c' || echo '$(srcdir)/'`intrinsics/pack_generic.c
-
 perror.lo: intrinsics/perror.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT perror.lo -MD -MP -MF $(DEPDIR)/perror.Tpo -c -o perror.lo `test -f 'intrinsics/perror.c' || echo '$(srcdir)/'`intrinsics/perror.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/perror.Tpo $(DEPDIR)/perror.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/perror.c' object='perror.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o perror.lo `test -f 'intrinsics/perror.c' || echo '$(srcdir)/'`intrinsics/perror.c
-
-selected_char_kind.lo: intrinsics/selected_char_kind.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT selected_char_kind.lo -MD -MP -MF $(DEPDIR)/selected_char_kind.Tpo -c -o selected_char_kind.lo `test -f 'intrinsics/selected_char_kind.c' || echo '$(srcdir)/'`intrinsics/selected_char_kind.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/selected_char_kind.Tpo $(DEPDIR)/selected_char_kind.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/selected_char_kind.c' object='selected_char_kind.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o selected_char_kind.lo `test -f 'intrinsics/selected_char_kind.c' || echo '$(srcdir)/'`intrinsics/selected_char_kind.c
 
 signal.lo: intrinsics/signal.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT signal.lo -MD -MP -MF $(DEPDIR)/signal.Tpo -c -o signal.lo `test -f 'intrinsics/signal.c' || echo '$(srcdir)/'`intrinsics/signal.c
@@ -5501,33 +5619,12 @@ signal.lo: intrinsics/signal.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o signal.lo `test -f 'intrinsics/signal.c' || echo '$(srcdir)/'`intrinsics/signal.c
 
-size.lo: intrinsics/size.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT size.lo -MD -MP -MF $(DEPDIR)/size.Tpo -c -o size.lo `test -f 'intrinsics/size.c' || echo '$(srcdir)/'`intrinsics/size.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/size.Tpo $(DEPDIR)/size.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/size.c' object='size.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o size.lo `test -f 'intrinsics/size.c' || echo '$(srcdir)/'`intrinsics/size.c
-
 sleep.lo: intrinsics/sleep.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sleep.lo -MD -MP -MF $(DEPDIR)/sleep.Tpo -c -o sleep.lo `test -f 'intrinsics/sleep.c' || echo '$(srcdir)/'`intrinsics/sleep.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/sleep.Tpo $(DEPDIR)/sleep.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/sleep.c' object='sleep.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sleep.lo `test -f 'intrinsics/sleep.c' || echo '$(srcdir)/'`intrinsics/sleep.c
-
-spread_generic.lo: intrinsics/spread_generic.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT spread_generic.lo -MD -MP -MF $(DEPDIR)/spread_generic.Tpo -c -o spread_generic.lo `test -f 'intrinsics/spread_generic.c' || echo '$(srcdir)/'`intrinsics/spread_generic.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/spread_generic.Tpo $(DEPDIR)/spread_generic.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/spread_generic.c' object='spread_generic.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o spread_generic.lo `test -f 'intrinsics/spread_generic.c' || echo '$(srcdir)/'`intrinsics/spread_generic.c
-
-string_intrinsics.lo: intrinsics/string_intrinsics.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT string_intrinsics.lo -MD -MP -MF $(DEPDIR)/string_intrinsics.Tpo -c -o string_intrinsics.lo `test -f 'intrinsics/string_intrinsics.c' || echo '$(srcdir)/'`intrinsics/string_intrinsics.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/string_intrinsics.Tpo $(DEPDIR)/string_intrinsics.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/string_intrinsics.c' object='string_intrinsics.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o string_intrinsics.lo `test -f 'intrinsics/string_intrinsics.c' || echo '$(srcdir)/'`intrinsics/string_intrinsics.c
 
 system.lo: intrinsics/system.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT system.lo -MD -MP -MF $(DEPDIR)/system.Tpo -c -o system.lo `test -f 'intrinsics/system.c' || echo '$(srcdir)/'`intrinsics/system.c
@@ -5536,40 +5633,12 @@ system.lo: intrinsics/system.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o system.lo `test -f 'intrinsics/system.c' || echo '$(srcdir)/'`intrinsics/system.c
 
-rand.lo: intrinsics/rand.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT rand.lo -MD -MP -MF $(DEPDIR)/rand.Tpo -c -o rand.lo `test -f 'intrinsics/rand.c' || echo '$(srcdir)/'`intrinsics/rand.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/rand.Tpo $(DEPDIR)/rand.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/rand.c' object='rand.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rand.lo `test -f 'intrinsics/rand.c' || echo '$(srcdir)/'`intrinsics/rand.c
-
-random.lo: intrinsics/random.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT random.lo -MD -MP -MF $(DEPDIR)/random.Tpo -c -o random.lo `test -f 'intrinsics/random.c' || echo '$(srcdir)/'`intrinsics/random.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/random.Tpo $(DEPDIR)/random.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/random.c' object='random.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o random.lo `test -f 'intrinsics/random.c' || echo '$(srcdir)/'`intrinsics/random.c
-
 rename.lo: intrinsics/rename.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT rename.lo -MD -MP -MF $(DEPDIR)/rename.Tpo -c -o rename.lo `test -f 'intrinsics/rename.c' || echo '$(srcdir)/'`intrinsics/rename.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/rename.Tpo $(DEPDIR)/rename.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/rename.c' object='rename.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rename.lo `test -f 'intrinsics/rename.c' || echo '$(srcdir)/'`intrinsics/rename.c
-
-reshape_generic.lo: intrinsics/reshape_generic.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT reshape_generic.lo -MD -MP -MF $(DEPDIR)/reshape_generic.Tpo -c -o reshape_generic.lo `test -f 'intrinsics/reshape_generic.c' || echo '$(srcdir)/'`intrinsics/reshape_generic.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/reshape_generic.Tpo $(DEPDIR)/reshape_generic.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/reshape_generic.c' object='reshape_generic.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_generic.lo `test -f 'intrinsics/reshape_generic.c' || echo '$(srcdir)/'`intrinsics/reshape_generic.c
-
-reshape_packed.lo: intrinsics/reshape_packed.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT reshape_packed.lo -MD -MP -MF $(DEPDIR)/reshape_packed.Tpo -c -o reshape_packed.lo `test -f 'intrinsics/reshape_packed.c' || echo '$(srcdir)/'`intrinsics/reshape_packed.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/reshape_packed.Tpo $(DEPDIR)/reshape_packed.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/reshape_packed.c' object='reshape_packed.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_packed.lo `test -f 'intrinsics/reshape_packed.c' || echo '$(srcdir)/'`intrinsics/reshape_packed.c
 
 stat.lo: intrinsics/stat.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stat.lo -MD -MP -MF $(DEPDIR)/stat.Tpo -c -o stat.lo `test -f 'intrinsics/stat.c' || echo '$(srcdir)/'`intrinsics/stat.c
@@ -5599,13 +5668,6 @@ time.lo: intrinsics/time.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o time.lo `test -f 'intrinsics/time.c' || echo '$(srcdir)/'`intrinsics/time.c
 
-transpose_generic.lo: intrinsics/transpose_generic.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT transpose_generic.lo -MD -MP -MF $(DEPDIR)/transpose_generic.Tpo -c -o transpose_generic.lo `test -f 'intrinsics/transpose_generic.c' || echo '$(srcdir)/'`intrinsics/transpose_generic.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/transpose_generic.Tpo $(DEPDIR)/transpose_generic.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/transpose_generic.c' object='transpose_generic.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_generic.lo `test -f 'intrinsics/transpose_generic.c' || echo '$(srcdir)/'`intrinsics/transpose_generic.c
-
 umask.lo: intrinsics/umask.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT umask.lo -MD -MP -MF $(DEPDIR)/umask.Tpo -c -o umask.lo `test -f 'intrinsics/umask.c' || echo '$(srcdir)/'`intrinsics/umask.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/umask.Tpo $(DEPDIR)/umask.Plo
@@ -5619,27 +5681,6 @@ unlink.lo: intrinsics/unlink.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/unlink.c' object='unlink.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unlink.lo `test -f 'intrinsics/unlink.c' || echo '$(srcdir)/'`intrinsics/unlink.c
-
-unpack_generic.lo: intrinsics/unpack_generic.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT unpack_generic.lo -MD -MP -MF $(DEPDIR)/unpack_generic.Tpo -c -o unpack_generic.lo `test -f 'intrinsics/unpack_generic.c' || echo '$(srcdir)/'`intrinsics/unpack_generic.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/unpack_generic.Tpo $(DEPDIR)/unpack_generic.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/unpack_generic.c' object='unpack_generic.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unpack_generic.lo `test -f 'intrinsics/unpack_generic.c' || echo '$(srcdir)/'`intrinsics/unpack_generic.c
-
-in_pack_generic.lo: runtime/in_pack_generic.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_pack_generic.lo -MD -MP -MF $(DEPDIR)/in_pack_generic.Tpo -c -o in_pack_generic.lo `test -f 'runtime/in_pack_generic.c' || echo '$(srcdir)/'`runtime/in_pack_generic.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/in_pack_generic.Tpo $(DEPDIR)/in_pack_generic.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/in_pack_generic.c' object='in_pack_generic.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_generic.lo `test -f 'runtime/in_pack_generic.c' || echo '$(srcdir)/'`runtime/in_pack_generic.c
-
-in_unpack_generic.lo: runtime/in_unpack_generic.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_unpack_generic.lo -MD -MP -MF $(DEPDIR)/in_unpack_generic.Tpo -c -o in_unpack_generic.lo `test -f 'runtime/in_unpack_generic.c' || echo '$(srcdir)/'`runtime/in_unpack_generic.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/in_unpack_generic.Tpo $(DEPDIR)/in_unpack_generic.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/in_unpack_generic.c' object='in_unpack_generic.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_generic.lo `test -f 'runtime/in_unpack_generic.c' || echo '$(srcdir)/'`runtime/in_unpack_generic.c
 
 ieee_helper.lo: ieee/ieee_helper.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ieee_helper.lo -MD -MP -MF $(DEPDIR)/ieee_helper.Tpo -c -o ieee_helper.lo `test -f 'ieee/ieee_helper.c' || echo '$(srcdir)/'`ieee/ieee_helper.c

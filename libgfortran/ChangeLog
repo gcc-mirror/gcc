@@ -1,3 +1,19 @@
+2014-11-28  Bernd Schmidt  <bernds@codesourcery.com>
+
+        * Makefile.am (AM_CFLAGS): Add -DLIBGFOR_MINIMAL if LIBGFOR_MINIMAL.
+        (gfor_io_src, gfor_heper_src, gfor_src): Split into minimal and
+        always included sources.
+        * Makefile.in: Regenerate.
+        * configure.ac (LIBGFOR_MINIMAL): New AM_CONDITIONAL.
+        * configure: Regenerate.
+        * caf/single.c (caf_runtime_error): Don't print messages if
+        LIBGFOR_MINIMAL.
+        * runtime/compile_options.c (fatal_error_in_progress,
+        show_signal, backtrace_handler, maybe_find_addr2line): Guard with
+        !defined LIBGFOR_MINIMAL.
+        (set_options): Likewise for the backtrace code.
+        * runtime/minimal.c: New file.
+
 2014-11-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* intrinsics/env.c (getenv): Remove unused variable res_len.
