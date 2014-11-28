@@ -1,3 +1,8 @@
+2014-11-27  Renlin Li  <renlin.li@arm.com>
+
+	PR target/63661
+	* gcc.target/i386/pr63661.c: New test.
+
 2014-11-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63862
