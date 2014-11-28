@@ -1,3 +1,9 @@
+2014-11-28  Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* omp-low.c (lower_omp_critical): Mark critical sections
+	inside target functions as offloadable.
+
 2014-11-28  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* lto-wrapper.c (run_gcc): Set have_lto and have_offload if at least one

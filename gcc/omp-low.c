@@ -9366,22 +9366,26 @@ lower_omp_critical (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  DECL_ARTIFICIAL (decl) = 1;
 	  DECL_IGNORED_P (decl) = 1;
 
-	  /* If '#pragma omp critical' is inside target region, the symbol must
-	     be marked for offloading.  */
-	  omp_context *octx;
-	  for (octx = ctx->outer; octx; octx = octx->outer)
-	    if (is_targetreg_ctx (octx))
-	      {
-		varpool_node::get_create (decl)->offloadable = 1;
-		break;
-	      }
-
 	  varpool_node::finalize_decl (decl);
 
 	  critical_name_mutexes->put (name, decl);
 	}
       else
 	decl = *n;
+
+      /* If '#pragma omp critical' is inside target region or
+	 inside function marked as offloadable, the symbol must be
+	 marked as offloadable too.  */
+      omp_context *octx;
+      if (cgraph_node::get (current_function_decl)->offloadable)
+	varpool_node::get_create (decl)->offloadable = 1;
+      else
+	for (octx = ctx->outer; octx; octx = octx->outer)
+	  if (is_targetreg_ctx (octx))
+	    {
+	      varpool_node::get_create (decl)->offloadable = 1;
+	      break;
+	    }
 
       lock = builtin_decl_explicit (BUILT_IN_GOMP_CRITICAL_NAME_START);
       lock = build_call_expr_loc (loc, lock, 1, build_fold_addr_expr_loc (loc, decl));
