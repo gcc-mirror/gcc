@@ -1,3 +1,8 @@
+2014-11-28  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/arm/arm.md (copysignsf3): New pattern.
+	(copysigndf3): Likewise.
+
 2014-11-28  Andrey Turetskiy  <andrey.turetskiy@intel.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
 

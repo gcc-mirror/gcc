@@ -11192,6 +11192,47 @@
   [(set_attr "predicable" "yes")]
 )
 
+(define_expand "copysignsf3"
+  [(match_operand:SF 0 "register_operand")
+   (match_operand:SF 1 "register_operand")
+   (match_operand:SF 2 "register_operand")]
+  "TARGET_SOFT_FLOAT && arm_arch_thumb2"
+  "{
+     emit_move_insn (operands[0], operands[2]);
+     emit_insn (gen_insv_t2 (simplify_gen_subreg (SImode, operands[0], SFmode, 0),
+		GEN_INT (31), GEN_INT (0),
+		simplify_gen_subreg (SImode, operands[1], SFmode, 0)));
+     DONE;
+  }"
+)
+
+(define_expand "copysigndf3"
+  [(match_operand:DF 0 "register_operand")
+   (match_operand:DF 1 "register_operand")
+   (match_operand:DF 2 "register_operand")]
+  "TARGET_SOFT_FLOAT && arm_arch_thumb2"
+  "{
+     rtx op0_low = gen_lowpart (SImode, operands[0]);
+     rtx op0_high = gen_highpart (SImode, operands[0]);
+     rtx op1_low = gen_lowpart (SImode, operands[1]);
+     rtx op1_high = gen_highpart (SImode, operands[1]);
+     rtx op2_high = gen_highpart (SImode, operands[2]);
+
+     rtx scratch1 = gen_reg_rtx (SImode);
+     rtx scratch2 = gen_reg_rtx (SImode);
+     emit_move_insn (scratch1, op2_high);
+     emit_move_insn (scratch2, op1_high);
+
+     emit_insn(gen_rtx_SET(SImode, scratch1,
+			   gen_rtx_LSHIFTRT (SImode, op2_high, GEN_INT(31))));
+     emit_insn(gen_insv_t2(scratch2, GEN_INT(1), GEN_INT(31), scratch1));
+     emit_move_insn (op0_low, op1_low);
+     emit_move_insn (op0_high, scratch2);
+
+     DONE;
+  }"
+)
+
 ;; Vector bits common to IWMMXT and Neon
 (include "vec-common.md")
 ;; Load the Intel Wireless Multimedia Extension patterns
