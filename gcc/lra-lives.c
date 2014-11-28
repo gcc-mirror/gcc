@@ -971,14 +971,23 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       live_pseudos_num++;
       if (! sparseset_bit_p (pseudos_live, j))
 	{
-	  live_change_p = TRUE;
+	  live_change_p = true;
+	  if (lra_dump_file != NULL)
+	    fprintf (lra_dump_file,
+		     "  r%d is removed as live at bb%d start\n", j, bb->index);
 	  break;
 	}
     }
-  live_change_p
-    = (live_change_p
-       || sparseset_cardinality (pseudos_live) != live_pseudos_num);
-  
+  if (! live_change_p
+      && sparseset_cardinality (pseudos_live) != live_pseudos_num)
+    {
+      live_change_p = true;
+      if (lra_dump_file != NULL)
+	EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, j)
+	  if (! bitmap_bit_p (df_get_live_in (bb), j))
+	    fprintf (lra_dump_file,
+		     "  r%d is added to live at bb%d start\n", j, bb->index);
+    }
   /* See if we'll need an increment at the end of this basic block.
      An increment is needed if the PSEUDOS_LIVE set is not empty,
      to make sure the finish points are set up correctly.  */
@@ -1322,11 +1331,16 @@ lra_create_live_ranges (bool all_p, bool dead_insn_p)
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file, "Live info was changed -- recalculate it\n");
   /* Live info was changed on a bb border.  It means that some info,
-     e.g. about conflict regs, calls crossed may be wrong, live
-     ranges.  We need this info for allocation.  So recalcualate it
-     again.  */
+     e.g. about conflict regs, calls crossed, and live ranges may be
+     wrong.  We need this info for allocation.  So recalculate it
+     again but without removing dead insns which can change live info
+     again.  Repetitive live range calculations are expensive therefore
+     we stop here as we already have correct info although some
+     improvement in rare cases could be possible on this sub-pass if
+     we do dead insn elimination again (still the improvement may
+     happen later).  */
   lra_clear_live_ranges ();
-  bool res = lra_create_live_ranges_1 (all_p, dead_insn_p);
+  bool res = lra_create_live_ranges_1 (all_p, false);
   lra_assert (! res);
 }
 
