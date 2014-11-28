@@ -3,6 +3,9 @@
 	Backported from mainline
 	2014-11-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/63915
+	* c-c++-common/gomp/pr60823-4.c: New test.
+
 	PR sanitizer/63913
 	* g++.dg/ubsan/pr63913.C: New test.
 

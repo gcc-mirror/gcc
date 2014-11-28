@@ -3,6 +3,10 @@
 	Backported from mainline
 	2014-11-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/63915
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Pass
+	true instead of false as last argument to gsi_replace.
+
 	PR sanitizer/63913
 	* ubsan.c: Include tree-eh.h.
 	(instrument_bool_enum_load): Handle loads that can throw.
