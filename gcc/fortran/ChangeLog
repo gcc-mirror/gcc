@@ -1,4 +1,9 @@
 2014-11-29  Tobias Burnus  <burnus@net-b.de>
+
+	* scanner.c (skip_free_comments, gfc_gobble_whitespace): Use
+	gfc_warning_now instead of ..._now_1.
+
+2014-11-29  Tobias Burnus  <burnus@net-b.de>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* lang.opt (Wtabs): Combine duplicated item into a single
