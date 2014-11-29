@@ -172,7 +172,7 @@ ubsan_encode_value (tree t, bool in_expand_p)
 	{
 	  /* The reason for this is that we don't want to pessimize
 	     code by making vars unnecessarily addressable.  */
-	  tree var = create_tmp_var (type, NULL);
+	  tree var = create_tmp_var (type);
 	  tree tem = build2 (MODIFY_EXPR, void_type_node, var, t);
 	  if (in_expand_p)
 	    {
@@ -747,7 +747,7 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
       unsigned int ptralign = get_pointer_alignment (ptr) / BITS_PER_UNIT;
       if (compare_tree_int (align, ptralign) == 1)
 	{
-	  check_align = make_ssa_name (pointer_sized_int_node, NULL);
+	  check_align = make_ssa_name (pointer_sized_int_node);
 	  g = gimple_build_assign_with_ops (NOP_EXPR, check_align, ptr);
 	  gimple_set_location (g, loc);
 	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
@@ -871,8 +871,7 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
       tree mask = build_int_cst (pointer_sized_int_node,
 				 tree_to_uhwi (align) - 1);
       g = gimple_build_assign_with_ops (BIT_AND_EXPR,
-					make_ssa_name (pointer_sized_int_node,
-						       NULL),
+					make_ssa_name (pointer_sized_int_node),
 					check_align, mask);
       gimple_set_location (g, loc);
       if (check_null)
@@ -944,7 +943,7 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
 	    = (flag_sanitize_recover & SANITIZE_OBJECT_SIZE)
 	      ? BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH
 	      : BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_ABORT;
-	  tree p = make_ssa_name (pointer_sized_int_node, NULL);
+	  tree p = make_ssa_name (pointer_sized_int_node);
 	  g = gimple_build_assign_with_ops (NOP_EXPR, p, ptr);
 	  gimple_set_location (g, loc);
 	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
@@ -1113,7 +1112,7 @@ instrument_si_overflow (gimple_stmt_iterator gsi)
       a = build_int_cst (lhstype, 0);
       b = gimple_assign_rhs1 (stmt);
       g = gimple_build_call_internal (IFN_UBSAN_CHECK_SUB, 2, a, b);
-      a = make_ssa_name (lhstype, NULL);
+      a = make_ssa_name (lhstype);
       gimple_call_set_lhs (g, a);
       gimple_set_location (g, gimple_location (stmt));
       gsi_insert_before (&gsi, g, GSI_SAME_STMT);
@@ -1176,13 +1175,13 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   tree lhs = gimple_assign_lhs (stmt);
   tree ptype = build_pointer_type (TREE_TYPE (rhs));
   tree atype = reference_alias_ptr_type (rhs);
-  gimple g = gimple_build_assign (make_ssa_name (ptype, NULL),
+  gimple g = gimple_build_assign (make_ssa_name (ptype),
 				  build_fold_addr_expr (rhs));
   gimple_set_location (g, loc);
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
   tree mem = build2 (MEM_REF, utype, gimple_assign_lhs (g),
 		     build_int_cst (atype, 0));
-  tree urhs = make_ssa_name (utype, NULL);
+  tree urhs = make_ssa_name (utype);
   if (can_throw)
     {
       gimple_assign_set_lhs (stmt, urhs);
@@ -1205,8 +1204,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   maxv = fold_convert (utype, maxv);
   if (!integer_zerop (minv))
     {
-      g = gimple_build_assign_with_ops (MINUS_EXPR,
-					make_ssa_name (utype, NULL),
+      g = gimple_build_assign_with_ops (MINUS_EXPR, make_ssa_name (utype),
 					urhs, minv);
       gimple_set_location (g, loc);
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
@@ -1399,8 +1397,7 @@ instrument_nonnull_arg (gimple_stmt_iterator *gsi)
 	  gimple g;
 	  if (!is_gimple_val (arg))
 	    {
-	      g = gimple_build_assign (make_ssa_name (TREE_TYPE (arg), NULL),
-				       arg);
+	      g = gimple_build_assign (make_ssa_name (TREE_TYPE (arg)), arg);
 	      gimple_set_location (g, loc[0]);
 	      gsi_insert_before (gsi, g, GSI_SAME_STMT);
 	      arg = gimple_assign_lhs (g);

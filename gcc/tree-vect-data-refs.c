@@ -4347,7 +4347,7 @@ bump_vector_ptr (tree dataref_ptr, gimple ptr_incr, gimple_stmt_iterator *gsi,
   if (bump)
     update = bump;
 
-  new_dataref_ptr = copy_ssa_name (dataref_ptr, NULL);
+  new_dataref_ptr = copy_ssa_name (dataref_ptr);
   incr_stmt = gimple_build_assign_with_ops (POINTER_PLUS_EXPR, new_dataref_ptr,
 					    dataref_ptr, update);
   vect_finish_stmt_generation (stmt, incr_stmt, gsi);
@@ -4879,7 +4879,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
       ptr = vect_create_data_ref_ptr (stmt, vectype, loop_for_initial_load,
 				      NULL_TREE, &init_addr, NULL, &inc,
 				      true, &inv_p);
-      new_temp = copy_ssa_name (ptr, NULL);
+      new_temp = copy_ssa_name (ptr);
       new_stmt = gimple_build_assign_with_ops
 		   (BIT_AND_EXPR, new_temp, ptr,
 		    build_int_cst (TREE_TYPE (ptr),
@@ -4967,7 +4967,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
 
   pe = loop_preheader_edge (containing_loop);
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
-  msq = make_ssa_name (vec_dest, NULL);
+  msq = make_ssa_name (vec_dest);
   phi_stmt = create_phi_node (msq, containing_loop->header);
   add_phi_arg (phi_stmt, msq_init, pe, UNKNOWN_LOCATION);
 

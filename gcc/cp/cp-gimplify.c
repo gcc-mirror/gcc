@@ -1410,13 +1410,13 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       end1 = TYPE_SIZE_UNIT (TREE_TYPE (arg1));
       end1 = fold_build_pointer_plus (start1, end1);
 
-      p1 = create_tmp_var (TREE_TYPE (start1), NULL);
+      p1 = create_tmp_var (TREE_TYPE (start1));
       t = build2 (MODIFY_EXPR, TREE_TYPE (p1), p1, start1);
       append_to_statement_list (t, &ret);
 
       if (arg2)
 	{
-	  p2 = create_tmp_var (TREE_TYPE (start2), NULL);
+	  p2 = create_tmp_var (TREE_TYPE (start2));
 	  t = build2 (MODIFY_EXPR, TREE_TYPE (p2), p2, start2);
 	  append_to_statement_list (t, &ret);
 	}

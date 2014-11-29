@@ -2108,7 +2108,7 @@ static bool
 version_loop_for_if_conversion (struct loop *loop)
 {
   basic_block cond_bb;
-  tree cond = make_ssa_name (boolean_type_node, NULL);
+  tree cond = make_ssa_name (boolean_type_node);
   struct loop *new_loop;
   gimple g;
   gimple_stmt_iterator gsi;

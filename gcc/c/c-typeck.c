@@ -2012,7 +2012,7 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
       /* Remove the qualifiers for the rest of the expressions and
 	 create the VAL temp variable to hold the RHS.  */
       nonatomic_type = build_qualified_type (expr_type, TYPE_UNQUALIFIED);
-      tmp = create_tmp_var (nonatomic_type, NULL);
+      tmp = create_tmp_var (nonatomic_type);
       tmp_addr = build_unary_op (loc, ADDR_EXPR, tmp, 0);
       TREE_ADDRESSABLE (tmp) = 1;
       TREE_NO_WARNING (tmp) = 1;
@@ -3632,7 +3632,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
      the VAL temp variable to hold the RHS.  */
   nonatomic_lhs_type = build_qualified_type (lhs_type, TYPE_UNQUALIFIED);
   nonatomic_rhs_type = build_qualified_type (rhs_type, TYPE_UNQUALIFIED);
-  val = create_tmp_var (nonatomic_rhs_type, NULL);
+  val = create_tmp_var (nonatomic_rhs_type);
   TREE_ADDRESSABLE (val) = 1;
   TREE_NO_WARNING (val) = 1;
   rhs = build2 (MODIFY_EXPR, nonatomic_rhs_type, val, rhs);
@@ -3661,12 +3661,12 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
     }
 
   /* Create the variables and labels required for the op= form.  */
-  old = create_tmp_var (nonatomic_lhs_type, NULL);
+  old = create_tmp_var (nonatomic_lhs_type);
   old_addr = build_unary_op (loc, ADDR_EXPR, old, 0);
   TREE_ADDRESSABLE (old) = 1;
   TREE_NO_WARNING (old) = 1;
 
-  newval = create_tmp_var (nonatomic_lhs_type, NULL);
+  newval = create_tmp_var (nonatomic_lhs_type);
   newval_addr = build_unary_op (loc, ADDR_EXPR, newval, 0);
   TREE_ADDRESSABLE (newval) = 1;
 
@@ -9956,7 +9956,7 @@ c_finish_stmt_expr (location_t loc, tree body)
   /* Now that we've located the expression containing the value, it seems
      silly to make voidify_wrapper_expr repeat the process.  Create a
      temporary of the appropriate type and stick it in a TARGET_EXPR.  */
-  tmp = create_tmp_var_raw (type, NULL);
+  tmp = create_tmp_var_raw (type);
 
   /* Unwrap a no-op NOP_EXPR as added by c_finish_expr_stmt.  This avoids
      tree_expr_nonnegative_p giving up immediately.  */

@@ -444,7 +444,7 @@ emit_case_bit_tests (gswitch *swtch, tree index_expr,
     }
 
   /* csui = (1 << (word_mode) idx) */
-  csui = make_ssa_name (word_type_node, NULL);
+  csui = make_ssa_name (word_type_node);
   tmp = fold_build2 (LSHIFT_EXPR, word_type_node, word_mode_one,
 		     fold_convert (word_type_node, idx));
   tmp = force_gimple_operand_gsi (&gsi, tmp,
@@ -1047,7 +1047,7 @@ build_one_array (gswitch *swtch, int num, tree arr_index_type,
 
   gcc_assert (info->default_values[num]);
 
-  name = copy_ssa_name (PHI_RESULT (phi), NULL);
+  name = copy_ssa_name (PHI_RESULT (phi));
   info->target_inbound_names[num] = name;
 
   cst = constructor_contains_same_values_p (info->constructors[num]);
@@ -1123,7 +1123,7 @@ build_arrays (gswitch *swtch, struct switch_conv_info *info)
     utype = lang_hooks.types.type_for_mode (TYPE_MODE (utype), 1);
 
   arr_index_type = build_index_type (info->range_size);
-  tidx = make_ssa_name (utype, NULL);
+  tidx = make_ssa_name (utype);
   sub = fold_build2_loc (loc, MINUS_EXPR, utype,
 			 fold_convert_loc (loc, utype, info->index_expr),
 			 fold_convert_loc (loc, utype, info->range_min));
@@ -1151,7 +1151,7 @@ gen_def_assigns (gimple_stmt_iterator *gsi, struct switch_conv_info *info)
 
   for (i = 0; i < info->phi_count; i++)
     {
-      tree name = copy_ssa_name (info->target_inbound_names[i], NULL);
+      tree name = copy_ssa_name (info->target_inbound_names[i]);
       info->target_outbound_names[i] = name;
       assign = gimple_build_assign (name, info->default_values[i]);
       gsi_insert_before (gsi, assign, GSI_SAME_STMT);

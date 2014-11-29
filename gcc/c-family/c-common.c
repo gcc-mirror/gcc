@@ -12052,7 +12052,7 @@ convert_vector_to_pointer_for_subscript (location_t loc,
 
       if (ret)
 	{
-	  tree tmp = create_tmp_var_raw (type, NULL);
+	  tree tmp = create_tmp_var_raw (type);
 	  DECL_SOURCE_LOCATION (tmp) = loc;
 	  *vecp = c_save_expr (*vecp);
 	  if (TREE_CODE (*vecp) == C_MAYBE_CONST_EXPR)

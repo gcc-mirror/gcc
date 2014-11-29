@@ -546,7 +546,7 @@ make_blocks (gimple_seq seq)
 	      && is_gimple_reg_type (TREE_TYPE (gimple_get_lhs (stmt))))
 	    {
 	      tree lhs = gimple_get_lhs (stmt);
-	      tree tmp = create_tmp_var (TREE_TYPE (lhs), NULL);
+	      tree tmp = create_tmp_var (TREE_TYPE (lhs));
 	      gimple s = gimple_build_assign (lhs, tmp);
 	      gimple_set_location (s, gimple_location (stmt));
 	      gimple_set_block (s, gimple_block (stmt));

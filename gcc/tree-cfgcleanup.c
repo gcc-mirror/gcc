@@ -598,7 +598,7 @@ fixup_noreturn_call (gimple stmt)
       /* We need to fix up the SSA name to avoid checking errors.  */
       if (TREE_CODE (lhs) == SSA_NAME)
 	{
-	  tree new_var = create_tmp_reg (TREE_TYPE (lhs), NULL);
+	  tree new_var = create_tmp_reg (TREE_TYPE (lhs));
 	  SET_SSA_NAME_VAR_OR_IDENTIFIER (lhs, new_var);
 	  SSA_NAME_DEF_STMT (lhs) = gimple_build_nop ();
 	  set_ssa_default_def (cfun, new_var, lhs);

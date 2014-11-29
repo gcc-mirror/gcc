@@ -1491,7 +1491,7 @@ initialize_root_vars (struct loop *loop, chain_p chain, bitmap tmp_vars)
     chain->vars.quick_push (chain->vars[0]);
 
   FOR_EACH_VEC_ELT (chain->vars, i, var)
-    chain->vars[i] = make_ssa_name (var, NULL);
+    chain->vars[i] = make_ssa_name (var);
 
   for (i = 0; i < n; i++)
     {
@@ -1555,7 +1555,7 @@ initialize_root_vars_lm (struct loop *loop, dref root, bool written,
     vars->quick_push ((*vars)[0]);
 
   FOR_EACH_VEC_ELT (*vars, i, var)
-    (*vars)[i] = make_ssa_name (var, NULL);
+    (*vars)[i] = make_ssa_name (var);
 
   var = (*vars)[0];
 
@@ -1613,7 +1613,7 @@ execute_load_motion (struct loop *loop, chain_p chain, bitmap tmp_vars)
 	  if (n_writes)
 	    {
 	      var = vars[0];
-	      var = make_ssa_name (SSA_NAME_VAR (var), NULL);
+	      var = make_ssa_name (SSA_NAME_VAR (var));
 	      vars[0] = var;
 	    }
 	  else
@@ -2191,11 +2191,11 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
   /* Insert the new statement combining NAME1 and NAME2 before S1, and
      combine it with the rhs of S1.  */
   var = create_tmp_reg (type, "predreastmp");
-  new_name = make_ssa_name (var, NULL);
+  new_name = make_ssa_name (var);
   new_stmt = gimple_build_assign_with_ops (code, new_name, name1, name2);
 
   var = create_tmp_reg (type, "predreastmp");
-  tmp_name = make_ssa_name (var, NULL);
+  tmp_name = make_ssa_name (var);
 
   /* Rhs of S1 may now be either a binary expression with operation
      CODE, or gimple_val (in case that stmt1 == s1 or stmt2 == s1,

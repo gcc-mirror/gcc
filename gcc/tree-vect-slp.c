@@ -2669,8 +2669,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 		}
 	      else
 		{
-		  tree new_temp
-		    = make_ssa_name (TREE_TYPE (vector_type), NULL);
+		  tree new_temp = make_ssa_name (TREE_TYPE (vector_type));
 		  gimple init_stmt;
 		  op = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (vector_type),
 			       op);		  

@@ -260,7 +260,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  && !DECL_NAME (var)))
     {
       struct ptr_info_def *pi;
-      new_tree = make_ssa_name (remap_type (TREE_TYPE (name), id), NULL);
+      new_tree = make_ssa_name (remap_type (TREE_TYPE (name), id));
       if (!var && SSA_NAME_IDENTIFIER (name))
 	SET_SSA_NAME_VAR_OR_IDENTIFIER (new_tree, SSA_NAME_IDENTIFIER (name));
       insert_decl_map (id, name, new_tree);
@@ -294,7 +294,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  || !id->transform_return_to_modify))
     {
       struct ptr_info_def *pi;
-      new_tree = make_ssa_name (new_tree, NULL);
+      new_tree = make_ssa_name (new_tree);
       insert_decl_map (id, name, new_tree);
       SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_tree)
 	= SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name);
@@ -3189,7 +3189,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	    }
 	  else if (!optimize)
 	    {
-	      def = make_ssa_name (var, NULL);
+	      def = make_ssa_name (var);
 	      init_stmt = gimple_build_assign (def, rhs);
 	    }
 	}
@@ -3454,7 +3454,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
       if (gimple_in_ssa_p (id->src_cfun)
 	  && is_gimple_reg (result))
 	{
-	  temp = make_ssa_name (temp, NULL);
+	  temp = make_ssa_name (temp);
 	  insert_decl_map (id, ssa_default_def (id->src_cfun, result), temp);
 	}
       insert_init_stmt (id, entry_bb, gimple_build_assign (temp, var));
@@ -5719,7 +5719,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	  && DECL_BY_REFERENCE (DECL_RESULT (old_decl))
 	  && (old_name = ssa_default_def (id.src_cfun, DECL_RESULT (old_decl))))
 	{
-	  tree new_name = make_ssa_name (DECL_RESULT (new_decl), NULL);
+	  tree new_name = make_ssa_name (DECL_RESULT (new_decl));
 	  insert_decl_map (&id, old_name, new_name);
 	  SSA_NAME_DEF_STMT (new_name) = gimple_build_nop ();
 	  set_ssa_default_def (cfun, DECL_RESULT (new_decl), new_name);

@@ -1585,29 +1585,25 @@ build_shadow_mem_access (gimple_stmt_iterator *gsi, location_t location,
   gimple g;
 
   t = build_int_cst (uintptr_type, ASAN_SHADOW_SHIFT);
-  g = gimple_build_assign_with_ops (RSHIFT_EXPR,
-				    make_ssa_name (uintptr_type, NULL),
+  g = gimple_build_assign_with_ops (RSHIFT_EXPR, make_ssa_name (uintptr_type),
 				    base_addr, t);
   gimple_set_location (g, location);
   gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
   t = build_int_cst (uintptr_type, asan_shadow_offset ());
-  g = gimple_build_assign_with_ops (PLUS_EXPR,
-				    make_ssa_name (uintptr_type, NULL),
+  g = gimple_build_assign_with_ops (PLUS_EXPR, make_ssa_name (uintptr_type),
 				    gimple_assign_lhs (g), t);
   gimple_set_location (g, location);
   gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
-  g = gimple_build_assign_with_ops (NOP_EXPR,
-				    make_ssa_name (shadow_ptr_type, NULL),
+  g = gimple_build_assign_with_ops (NOP_EXPR, make_ssa_name (shadow_ptr_type),
 				    gimple_assign_lhs (g));
   gimple_set_location (g, location);
   gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
   t = build2 (MEM_REF, shadow_type, gimple_assign_lhs (g),
 	      build_int_cst (shadow_ptr_type, 0));
-  g = gimple_build_assign_with_ops (MEM_REF,
-				    make_ssa_name (shadow_type, NULL), t);
+  g = gimple_build_assign_with_ops (MEM_REF, make_ssa_name (shadow_type), t);
   gimple_set_location (g, location);
   gsi_insert_after (gsi, g, GSI_NEW_STMT);
   return gimple_assign_lhs (g);
@@ -1624,8 +1620,7 @@ maybe_create_ssa_name (location_t loc, tree base, gimple_stmt_iterator *iter,
     return base;
   gimple g
     = gimple_build_assign_with_ops (TREE_CODE (base),
-				    make_ssa_name (TREE_TYPE (base), NULL),
-				    base);
+				    make_ssa_name (TREE_TYPE (base)), base);
   gimple_set_location (g, loc);
   if (before_p)
     gsi_insert_before (iter, g, GSI_SAME_STMT);
@@ -1645,8 +1640,8 @@ maybe_cast_to_ptrmode (location_t loc, tree len, gimple_stmt_iterator *iter,
     return len;
   gimple g
     = gimple_build_assign_with_ops (NOP_EXPR,
-				    make_ssa_name (pointer_sized_int_node,
-						   NULL), len);
+				    make_ssa_name (pointer_sized_int_node),
+				    len);
   gimple_set_location (g, loc);
   if (before_p)
     gsi_insert_before (iter, g, GSI_SAME_STMT);
@@ -2549,8 +2544,8 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
       /* Instrument using callbacks.  */
       gimple g
 	= gimple_build_assign_with_ops (NOP_EXPR,
-					make_ssa_name (pointer_sized_int_node,
-						       NULL), base);
+					make_ssa_name (pointer_sized_int_node),
+					base);
       gimple_set_location (g, loc);
       gsi_insert_before (iter, g, GSI_SAME_STMT);
       tree base_addr = gimple_assign_lhs (g);
@@ -2563,8 +2558,8 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 	{
 	  gcc_assert (nargs == 2);
 	  g = gimple_build_assign_with_ops (NOP_EXPR,
-					    make_ssa_name (pointer_sized_int_node,
-							   NULL), len);
+					    make_ssa_name (pointer_sized_int_node),
+					    len);
 	  gimple_set_location (g, loc);
 	  gsi_insert_before (iter, g, GSI_SAME_STMT);
 	  tree sz_arg = gimple_assign_lhs (g);
@@ -2622,8 +2617,8 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 				  &else_bb);
 
   g = gimple_build_assign_with_ops (NOP_EXPR,
-				    make_ssa_name (pointer_sized_int_node,
-						   NULL), base);
+				    make_ssa_name (pointer_sized_int_node),
+				    base);
   gimple_set_location (g, loc);
   gsi_insert_before (&gsi, g, GSI_NEW_STMT);
   tree base_addr = gimple_assign_lhs (g);
@@ -2676,14 +2671,14 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
       if (size_in_bytes == -1)
 	{
 	  g = gimple_build_assign_with_ops (MINUS_EXPR,
-					    make_ssa_name (pointer_sized_int_node, NULL),
+					    make_ssa_name (pointer_sized_int_node),
 					    len,
 					    build_int_cst (pointer_sized_int_node, 1));
 	  gimple_set_location (g, loc);
 	  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
 	  tree last = gimple_assign_lhs (g);
 	  g = gimple_build_assign_with_ops (PLUS_EXPR,
-					    make_ssa_name (pointer_sized_int_node, NULL),
+					    make_ssa_name (pointer_sized_int_node),
 					    base_addr,
 					    last);
 	  gimple_set_location (g, loc);

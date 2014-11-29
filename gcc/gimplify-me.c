@@ -78,7 +78,7 @@ force_gimple_operand_1 (tree expr, gimple_seq *stmts,
   if (var)
     {
       if (gimple_in_ssa_p (cfun) && is_gimple_reg (var))
-	var = make_ssa_name (var, NULL);
+	var = make_ssa_name (var);
       expr = build2 (MODIFY_EXPR, TREE_TYPE (var), var, expr);
     }
 
@@ -313,9 +313,9 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
 	    }
 	  if (need_temp)
 	    {
-	      tree temp = create_tmp_reg (TREE_TYPE (lhs), NULL);
+	      tree temp = create_tmp_reg (TREE_TYPE (lhs));
 	      if (gimple_in_ssa_p (cfun))
-		temp = make_ssa_name (temp, NULL);
+		temp = make_ssa_name (temp);
 	      gimple_set_lhs (stmt, temp);
 	      post_stmt = gimple_build_assign (lhs, temp);
 	    }

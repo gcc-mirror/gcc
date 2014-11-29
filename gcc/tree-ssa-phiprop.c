@@ -208,7 +208,7 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple use_stmt,
 	{
 	  tree rhs = gimple_assign_rhs1 (use_stmt);
 	  gcc_assert (TREE_CODE (old_arg) == ADDR_EXPR);
-	  new_var = make_ssa_name (TREE_TYPE (rhs), NULL);
+	  new_var = make_ssa_name (TREE_TYPE (rhs));
 	  if (!is_gimple_min_invariant (old_arg))
 	    old_arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
 	  else

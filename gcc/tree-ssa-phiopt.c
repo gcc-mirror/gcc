@@ -536,7 +536,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
     {
       source_location locus_0, locus_1;
 
-      new_var2 = make_ssa_name (TREE_TYPE (result), NULL);
+      new_var2 = make_ssa_name (TREE_TYPE (result));
       new_stmt = gimple_build_assign_with_ops (CONVERT_EXPR, new_var2,
 					       new_var);
       gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
@@ -1253,7 +1253,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
   result = duplicate_ssa_name (result, NULL);
 
   if (negate)
-    lhs = make_ssa_name (TREE_TYPE (result), NULL);
+    lhs = make_ssa_name (TREE_TYPE (result));
   else
     lhs = result;
 
@@ -1370,7 +1370,7 @@ neg_replacement (basic_block cond_bb, basic_block middle_bb,
 	}
     }
 
-  tree cond_val = make_ssa_name (boolean_type_node, NULL);
+  tree cond_val = make_ssa_name (boolean_type_node);
   new_stmt = gimple_build_assign_with_ops (cond_code, cond_val,
 					   gimple_cond_lhs (cond),
 					   gimple_cond_rhs (cond));
@@ -1381,7 +1381,7 @@ neg_replacement (basic_block cond_bb, basic_block middle_bb,
      condition.  */
   if (invert)
     {
-      tree tmp = make_ssa_name (boolean_type_node, NULL);
+      tree tmp = make_ssa_name (boolean_type_node);
       new_stmt = gimple_build_assign_with_ops (BIT_XOR_EXPR, tmp,
 					       cond_val, boolean_true_node);
       gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
@@ -1390,22 +1390,22 @@ neg_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* Get the condition in the right type so that we can perform
      logical and arithmetic operations on it.  */
-  tree cond_val_converted = make_ssa_name (TREE_TYPE (rhs), NULL);
+  tree cond_val_converted = make_ssa_name (TREE_TYPE (rhs));
   new_stmt = gimple_build_assign_with_ops (NOP_EXPR, cond_val_converted,
 					   cond_val);
   gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
 
-  tree neg_cond_val_converted = make_ssa_name (TREE_TYPE (rhs), NULL);
+  tree neg_cond_val_converted = make_ssa_name (TREE_TYPE (rhs));
   new_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, neg_cond_val_converted,
 					   cond_val_converted);
   gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
 
-  tree tmp = make_ssa_name (TREE_TYPE (rhs), NULL);
+  tree tmp = make_ssa_name (TREE_TYPE (rhs));
   new_stmt = gimple_build_assign_with_ops (BIT_XOR_EXPR, tmp,
 					   rhs, neg_cond_val_converted);
   gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
 
-  tree new_lhs = make_ssa_name (TREE_TYPE (rhs), NULL);
+  tree new_lhs = make_ssa_name (TREE_TYPE (rhs));
   new_stmt = gimple_build_assign_with_ops (PLUS_EXPR, new_lhs,
 					   tmp, cond_val_converted);
   gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);

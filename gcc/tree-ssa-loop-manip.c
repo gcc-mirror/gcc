@@ -92,8 +92,8 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
 
   if (var != NULL_TREE)
     {
-      vb = make_ssa_name (var, NULL);
-      va = make_ssa_name (var, NULL);
+      vb = make_ssa_name (var);
+      va = make_ssa_name (var);
     }
   else
     {
@@ -1158,11 +1158,11 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
       if (TREE_CODE (next) == SSA_NAME
 	  && useless_type_conversion_p (TREE_TYPE (next),
 					TREE_TYPE (init)))
-	new_init = copy_ssa_name (next, NULL);
+	new_init = copy_ssa_name (next);
       else if (TREE_CODE (init) == SSA_NAME
 	       && useless_type_conversion_p (TREE_TYPE (init),
 					     TREE_TYPE (next)))
-	new_init = copy_ssa_name (init, NULL);
+	new_init = copy_ssa_name (init);
       else if (useless_type_conversion_p (TREE_TYPE (next), TREE_TYPE (init)))
 	new_init = make_temp_ssa_name (TREE_TYPE (next), NULL, "unrinittmp");
       else

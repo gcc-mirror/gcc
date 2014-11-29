@@ -1,3 +1,12 @@
+2014-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (convert_lvalue_to_rvalue, build_atomic_assign,
+	c_finish_stmt_expr): Remove NULL last argument from
+	create_tmp_var_raw and create_tmp_var calls.
+	* c-array-notation.c (fix_builtin_array_notation_fn,
+	build_array_notation_expr, fix_conditional_array_notations_1,
+	fix_array_notation_expr, fix_array_notation_call_expr): Likewise.
+
 2014-11-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63862

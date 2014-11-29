@@ -1,3 +1,8 @@
+2014-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cxx_omp_clause_apply_fn): Remove NULL last argument
+	from create_tmp_var calls.
+
 2014-11-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63862

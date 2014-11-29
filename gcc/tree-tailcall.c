@@ -694,7 +694,7 @@ update_accumulator_with_ops (enum tree_code code, tree acc, tree op1,
 			     gimple_stmt_iterator gsi)
 {
   gassign *stmt;
-  tree var = copy_ssa_name (acc, NULL);
+  tree var = copy_ssa_name (acc);
   if (types_compatible_p (TREE_TYPE (acc), TREE_TYPE (op1)))
     stmt = gimple_build_assign_with_ops (code, var, acc, op1);
   else

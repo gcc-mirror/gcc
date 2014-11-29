@@ -2110,7 +2110,7 @@ scan_omp_parallel (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
 	    count += fd.collapse - 1;
 	  for (i = 0; i < count; i++)
 	    {
-	      tree temp = create_tmp_var (type, NULL);
+	      tree temp = create_tmp_var (type);
 	      tree c = build_omp_clause (UNKNOWN_LOCATION,
 					 OMP_CLAUSE__LOOPTEMP_);
 	      insert_decl_map (&outer_ctx->cb, temp, temp);
@@ -3165,15 +3165,15 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx, int &max_vf,
 	}
       if (max_vf > 1)
 	{
-	  idx = create_tmp_var (unsigned_type_node, NULL);
-	  lane = create_tmp_var (unsigned_type_node, NULL);
+	  idx = create_tmp_var (unsigned_type_node);
+	  lane = create_tmp_var (unsigned_type_node);
 	}
     }
   if (max_vf == 1)
     return false;
 
   tree atype = build_array_type_nelts (TREE_TYPE (new_var), max_vf);
-  tree avar = create_tmp_var_raw (atype, NULL);
+  tree avar = create_tmp_var_raw (atype);
   if (TREE_ADDRESSABLE (new_var))
     TREE_ADDRESSABLE (avar) = 1;
   DECL_ATTRIBUTES (avar)
@@ -3343,7 +3343,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  t = build_call_expr_loc (clause_loc, t2, 2, t,
 					   omp_clause_aligned_alignment (c));
 		  t = fold_convert_loc (clause_loc, ptype, t);
-		  x = create_tmp_var (ptype, NULL);
+		  x = create_tmp_var (ptype);
 		  t = build2 (MODIFY_EXPR, ptype, x, t);
 		  gimplify_and_add (t, ilist);
 		  t = build_simple_mem_ref_loc (clause_loc, x);
@@ -3386,7 +3386,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  /* void *tmp = __builtin_alloca */
 		  atmp = builtin_decl_explicit (BUILT_IN_ALLOCA);
 		  stmt = gimple_build_call (atmp, 1, x);
-		  tmp = create_tmp_var_raw (ptr_type_node, NULL);
+		  tmp = create_tmp_var_raw (ptr_type_node);
 		  gimple_add_tmp_var (tmp);
 		  gimple_call_set_lhs (stmt, tmp);
 
@@ -3622,7 +3622,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		    {
 		      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR)
 			{
-			  tree iv = create_tmp_var (TREE_TYPE (new_var), NULL);
+			  tree iv = create_tmp_var (TREE_TYPE (new_var));
 			  x = lang_hooks.decls.omp_clause_copy_ctor (c, iv, x);
 			  gimplify_and_add (x, ilist);
 			  gimple_stmt_iterator gsi
@@ -3851,7 +3851,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
       for (int i = 0; i < 2; i++)
 	if (llist[i])
 	  {
-	    tree vf = create_tmp_var (unsigned_type_node, NULL);
+	    tree vf = create_tmp_var (unsigned_type_node);
 	    g = gimple_build_call_internal (IFN_GOMP_SIMD_VF, 1, uid);
 	    gimple_call_set_lhs (g, vf);
 	    gimple_seq *seq = i == 0 ? ilist : dlist;
@@ -4009,7 +4009,7 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *stmt_list,
 		{
 		  if (lastlane == NULL)
 		    {
-		      lastlane = create_tmp_var (unsigned_type_node, NULL);
+		      lastlane = create_tmp_var (unsigned_type_node);
 		      gcall *g
 			= gimple_build_call_internal (IFN_GOMP_SIMD_LAST_LANE,
 						      2, simduid,
@@ -4464,12 +4464,12 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 	  edge e, e_then, e_else;
 	  tree tmp_then, tmp_else, tmp_join, tmp_var;
 
-	  tmp_var = create_tmp_var (TREE_TYPE (val), NULL);
+	  tmp_var = create_tmp_var (TREE_TYPE (val));
 	  if (gimple_in_ssa_p (cfun))
 	    {
-	      tmp_then = make_ssa_name (tmp_var, NULL);
-	      tmp_else = make_ssa_name (tmp_var, NULL);
-	      tmp_join = make_ssa_name (tmp_var, NULL);
+	      tmp_then = make_ssa_name (tmp_var);
+	      tmp_else = make_ssa_name (tmp_var);
+	      tmp_join = make_ssa_name (tmp_var);
 	    }
 	  else
 	    {
@@ -6572,9 +6572,9 @@ expand_omp_for_static_chunk (struct omp_region *region,
   trip_var = create_tmp_reg (itype, ".trip");
   if (gimple_in_ssa_p (cfun))
     {
-      trip_init = make_ssa_name (trip_var, NULL);
-      trip_main = make_ssa_name (trip_var, NULL);
-      trip_back = make_ssa_name (trip_var, NULL);
+      trip_init = make_ssa_name (trip_var);
+      trip_main = make_ssa_name (trip_var);
+      trip_back = make_ssa_name (trip_var);
     }
   else
     {
@@ -8009,16 +8009,16 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
       tree iaddr_val;
 
       iaddr = create_tmp_reg (build_pointer_type_for_mode (itype, ptr_mode,
-							   true), NULL);
+							   true));
       iaddr_val
 	= force_gimple_operand_gsi (&si,
 				    fold_convert (TREE_TYPE (iaddr), addr),
 				    false, NULL_TREE, true, GSI_SAME_STMT);
       stmt = gimple_build_assign (iaddr, iaddr_val);
       gsi_insert_before (&si, stmt, GSI_SAME_STMT);
-      loadedi = create_tmp_var (itype, NULL);
+      loadedi = create_tmp_var (itype);
       if (gimple_in_ssa_p (cfun))
-	loadedi = make_ssa_name (loadedi, NULL);
+	loadedi = make_ssa_name (loadedi);
     }
   else
     {
@@ -8102,7 +8102,7 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
     old_vali = loadedi;
   else
     {
-      old_vali = create_tmp_var (TREE_TYPE (loadedi), NULL);
+      old_vali = create_tmp_var (TREE_TYPE (loadedi));
       stmt = gimple_build_assign (old_vali, loadedi);
       gsi_insert_before (&si, stmt, GSI_SAME_STMT);
 
@@ -8508,7 +8508,7 @@ expand_omp_target (struct omp_region *region)
       edge e;
       tree tmp_var;
 
-      tmp_var = create_tmp_var (TREE_TYPE (device), NULL);
+      tmp_var = create_tmp_var (TREE_TYPE (device));
       if (kind != GF_OMP_TARGET_KIND_REGION)
 	{
 	  gsi = gsi_last_bb (new_bb);
@@ -8930,7 +8930,7 @@ maybe_add_implicit_barrier_cancel (omp_context *ctx, gimple_seq *body)
     {
       tree fndecl = builtin_decl_explicit (BUILT_IN_GOMP_CANCEL);
       tree c_bool_type = TREE_TYPE (TREE_TYPE (fndecl));
-      tree lhs = create_tmp_var (c_bool_type, NULL);
+      tree lhs = create_tmp_var (c_bool_type);
       gimple_omp_return_set_lhs (omp_return, lhs);
       tree fallthru_label = create_artificial_label (UNKNOWN_LOCATION);
       gimple g = gimple_build_cond (NE_EXPR, lhs,
@@ -9059,7 +9059,7 @@ lower_omp_single_simple (gomp_single *single_stmt, gimple_seq *pre_p)
   tree lhs, decl;
 
   decl = builtin_decl_explicit (BUILT_IN_GOMP_SINGLE_START);
-  lhs = create_tmp_var (TREE_TYPE (TREE_TYPE (decl)), NULL);
+  lhs = create_tmp_var (TREE_TYPE (TREE_TYPE (decl)));
   call = gimple_build_call (decl, 0);
   gimple_call_set_lhs (call, lhs);
   gimple_seq_add_stmt (pre_p, call);
@@ -9355,7 +9355,7 @@ lower_omp_critical (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	{
 	  char *new_str;
 
-	  decl = create_tmp_var_raw (ptr_type_node, NULL);
+	  decl = create_tmp_var_raw (ptr_type_node);
 
 	  new_str = ACONCAT ((".gomp_critical_user_",
 			      IDENTIFIER_POINTER (name), NULL));
@@ -9555,7 +9555,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    }
 	  else
 	    {
-	      temp = create_tmp_var (type, NULL);
+	      temp = create_tmp_var (type);
 	      insert_decl_map (&ctx->outer->cb, temp, temp);
 	    }
 	  *pc = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE__LOOPTEMP_);
@@ -9675,7 +9675,7 @@ task_copyfn_copy_decl (tree var, copy_body_data *cb)
   struct omp_taskcopy_context *tcctx = (struct omp_taskcopy_context *) cb;
 
   if (splay_tree_lookup (tcctx->ctx->sfield_map, (splay_tree_key) var))
-    return create_tmp_var (TREE_TYPE (var), NULL);
+    return create_tmp_var (TREE_TYPE (var));
 
   return var;
 }
@@ -9964,7 +9964,7 @@ lower_depend_clauses (gimple stmt, gimple_seq *iseq, gimple_seq *oseq)
 	  gcc_unreachable ();
 	}
   tree type = build_array_type_nelts (ptr_type_node, n_in + n_out + 2);
-  tree array = create_tmp_var (type, NULL);
+  tree array = create_tmp_var (type);
   tree r = build4 (ARRAY_REF, ptr_type_node, array, size_int (0), NULL_TREE,
 		   NULL_TREE);
   g = gimple_build_assign (r, build_int_cst (ptr_type_node, n_in + n_out));
@@ -10306,7 +10306,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		  {
 		    gcc_assert (kind == GF_OMP_TARGET_KIND_REGION);
 		    tree avar
-		      = create_tmp_var (TREE_TYPE (TREE_TYPE (x)), NULL);
+		      = create_tmp_var (TREE_TYPE (TREE_TYPE (x)));
 		    mark_addressable (avar);
 		    gimplify_assign (avar, build_fold_addr_expr (var), &ilist);
 		    talign = DECL_ALIGN_UNIT (avar);
@@ -10316,7 +10316,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		else if (is_gimple_reg (var))
 		  {
 		    gcc_assert (kind == GF_OMP_TARGET_KIND_REGION);
-		    tree avar = create_tmp_var (TREE_TYPE (var), NULL);
+		    tree avar = create_tmp_var (TREE_TYPE (var));
 		    mark_addressable (avar);
 		    if (OMP_CLAUSE_MAP_KIND (c) != OMP_CLAUSE_MAP_ALLOC
 			&& OMP_CLAUSE_MAP_KIND (c) != OMP_CLAUSE_MAP_FROM)
@@ -10685,7 +10685,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		gimple_call_set_fntype (call_stmt, TREE_TYPE (fndecl));
 	      }
 	    tree lhs;
-	    lhs = create_tmp_var (TREE_TYPE (TREE_TYPE (fndecl)), NULL);
+	    lhs = create_tmp_var (TREE_TYPE (TREE_TYPE (fndecl)));
 	    gimple_call_set_lhs (call_stmt, lhs);
 	    tree fallthru_label;
 	    fallthru_label = create_artificial_label (UNKNOWN_LOCATION);
@@ -11924,8 +11924,7 @@ ipa_simd_modify_stmt_ops (tree *tp, int *walk_subtrees, void *data)
 	}
       else
 	{
-	  stmt = gimple_build_assign (make_ssa_name (TREE_TYPE (repl),
-						     NULL), repl);
+	  stmt = gimple_build_assign (make_ssa_name (TREE_TYPE (repl)), repl);
 	  repl = gimple_assign_lhs (stmt);
 	}
       gimple_stmt_iterator gsi = gsi_for_stmt (info->stmt);
@@ -12090,8 +12089,8 @@ simd_clone_adjust (struct cgraph_node *node)
   /* Adjust all uses of vector arguments accordingly.  Adjust all
      return values accordingly.  */
   tree iter = create_tmp_var (unsigned_type_node, "iter");
-  tree iter1 = make_ssa_name (iter, NULL);
-  tree iter2 = make_ssa_name (iter, NULL);
+  tree iter1 = make_ssa_name (iter);
+  tree iter2 = make_ssa_name (iter);
   ipa_simd_modify_function_body (node, adjustments, retval, iter1);
 
   /* Initialize the iteration variable.  */
@@ -12140,7 +12139,7 @@ simd_clone_adjust (struct cgraph_node *node)
       gimple_stmt_iterator gsi = gsi_last_bb (loop->header);
       tree mask_array
 	= node->simdclone->args[node->simdclone->nargs - 1].simd_array;
-      tree mask = make_ssa_name (TREE_TYPE (TREE_TYPE (mask_array)), NULL);
+      tree mask = make_ssa_name (TREE_TYPE (TREE_TYPE (mask_array)));
       tree aref = build4 (ARRAY_REF,
 			  TREE_TYPE (TREE_TYPE (mask_array)),
 			  mask_array, iter1,
@@ -12152,7 +12151,7 @@ simd_clone_adjust (struct cgraph_node *node)
 	{
 	  aref = build1 (VIEW_CONVERT_EXPR,
 			 build_nonstandard_integer_type (bitsize, 0), mask);
-	  mask = make_ssa_name (TREE_TYPE (aref), NULL);
+	  mask = make_ssa_name (TREE_TYPE (aref));
 	  g = gimple_build_assign (mask, aref);
 	  gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
 	}
@@ -12234,12 +12233,12 @@ simd_clone_adjust (struct cgraph_node *node)
 	    if (!useless_type_conversion_p (TREE_TYPE (orig_arg),
 					    ptr_type_node))
 	      need_cvt = true;
-	    tree t = make_ssa_name (need_cvt ? ptr_type_node : orig_arg, NULL);
+	    tree t = make_ssa_name (need_cvt ? ptr_type_node : orig_arg);
 	    gimple_call_set_lhs (g, t);
 	    gimple_seq_add_stmt_without_update (&seq, g);
 	    if (need_cvt)
 	      {
-		t = make_ssa_name (orig_arg, NULL);
+		t = make_ssa_name (orig_arg);
 		g = gimple_build_assign_with_ops (NOP_EXPR, t,
 						  gimple_call_lhs (g));
 		gimple_seq_add_stmt_without_update (&seq, g);
@@ -12274,8 +12273,8 @@ simd_clone_adjust (struct cgraph_node *node)
 		    || POINTER_TYPE_P (TREE_TYPE (orig_arg)));
 	if (def && !has_zero_uses (def))
 	  {
-	    iter1 = make_ssa_name (orig_arg, NULL);
-	    iter2 = make_ssa_name (orig_arg, NULL);
+	    iter1 = make_ssa_name (orig_arg);
+	    iter2 = make_ssa_name (orig_arg);
 	    phi = create_phi_node (iter1, body_bb);
 	    add_phi_arg (phi, def, preheader_edge, UNKNOWN_LOCATION);
 	    add_phi_arg (phi, iter2, latch_edge, UNKNOWN_LOCATION);

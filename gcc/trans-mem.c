@@ -1675,7 +1675,7 @@ lower_transaction (gimple_stmt_iterator *gsi, struct walk_stmt_info *wi)
 
       g = gimple_build_call (builtin_decl_explicit (BUILT_IN_EH_POINTER),
 			     1, integer_zero_node);
-      ptr = create_tmp_var (ptr_type_node, NULL);
+      ptr = create_tmp_var (ptr_type_node);
       gimple_call_set_lhs (g, ptr);
       gimple_seq_add_stmt (&e_seq, g);
 
@@ -2195,7 +2195,7 @@ build_tm_load (location_t loc, tree lhs, tree rhs, gimple_stmt_iterator *gsi)
       gimple g;
       tree temp;
 
-      temp = create_tmp_reg (t, NULL);
+      temp = create_tmp_reg (t);
       gimple_call_set_lhs (gcall, temp);
       gsi_insert_before (gsi, gcall, GSI_SAME_STMT);
 
@@ -2273,7 +2273,7 @@ build_tm_store (location_t loc, tree lhs, tree rhs, gimple_stmt_iterator *gsi)
       gimple g;
       tree temp;
 
-      temp = create_tmp_reg (simple_type, NULL);
+      temp = create_tmp_reg (simple_type);
       t = fold_build1 (VIEW_CONVERT_EXPR, simple_type, rhs);
       g = gimple_build_assign (temp, t);
       gimple_set_location (g, loc);
@@ -2339,7 +2339,7 @@ expand_assign_tm (struct tm_region *region, gimple_stmt_iterator *gsi)
 
       if (load_p && is_gimple_reg (lhs))
 	{
-	  tmp = create_tmp_var (TREE_TYPE (lhs), NULL);
+	  tmp = create_tmp_var (TREE_TYPE (lhs));
 	  lhs_addr = build_fold_addr_expr (tmp);
 	}
       else
@@ -2466,7 +2466,7 @@ expand_call_tm (struct tm_region *region,
   if (lhs && requires_barrier (region->entry_block, lhs, stmt)
       && !gimple_call_return_slot_opt_p (stmt))
     {
-      tree tmp = create_tmp_reg (TREE_TYPE (lhs), NULL);
+      tree tmp = create_tmp_reg (TREE_TYPE (lhs));
       location_t loc = gimple_location (stmt);
       edge fallthru_edge = NULL;
       gassign *assign_stmt;
@@ -2805,7 +2805,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       if (region->restart_block == region->entry_block)
 	region->restart_block = test_bb;
 
-      tree t1 = create_tmp_reg (tm_state_type, NULL);
+      tree t1 = create_tmp_reg (tm_state_type);
       tree t2 = build_int_cst (tm_state_type, A_RESTORELIVEVARIABLES);
       gimple stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, t1,
 						  tm_state, t2);
@@ -2846,7 +2846,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       if (region->restart_block == region->entry_block)
 	region->restart_block = test_bb;
 
-      tree t1 = create_tmp_reg (tm_state_type, NULL);
+      tree t1 = create_tmp_reg (tm_state_type);
       tree t2 = build_int_cst (tm_state_type, A_ABORTTRANSACTION);
       gimple stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, t1,
 						  tm_state, t2);
@@ -2888,7 +2888,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       if (region->restart_block == region->entry_block)
 	region->restart_block = test_bb;
 
-      tree t1 = create_tmp_reg (tm_state_type, NULL);
+      tree t1 = create_tmp_reg (tm_state_type);
       tree t2 = build_int_cst (tm_state_type, A_RUNUNINSTRUMENTEDCODE);
 
       gimple stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, t1,
@@ -5053,7 +5053,7 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
   safe = is_tm_safe (TREE_TYPE (old_fn));
   gettm_fn = builtin_decl_explicit (safe ? BUILT_IN_TM_GETTMCLONE_SAFE
 				    : BUILT_IN_TM_GETTMCLONE_IRR);
-  ret = create_tmp_var (ptr_type_node, NULL);
+  ret = create_tmp_var (ptr_type_node);
 
   if (!safe)
     transaction_subcode_ior (region, GTMA_MAY_ENTER_IRREVOCABLE);
@@ -5074,7 +5074,7 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
 
   /* Cast return value from tm_gettmclone* into appropriate function
      pointer.  */
-  callfn = create_tmp_var (TREE_TYPE (old_fn), NULL);
+  callfn = create_tmp_var (TREE_TYPE (old_fn));
   g2 = gimple_build_assign (callfn,
 			    fold_build1 (NOP_EXPR, TREE_TYPE (callfn), ret));
   callfn = make_ssa_name (callfn, g2);
@@ -5099,7 +5099,7 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
     {
       tree temp;
 
-      temp = create_tmp_reg (rettype, 0);
+      temp = create_tmp_reg (rettype);
       gimple_call_set_lhs (stmt, temp);
 
       g2 = gimple_build_assign (lhs,

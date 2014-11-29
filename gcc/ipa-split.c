@@ -1584,7 +1584,7 @@ split_function (struct split_point *split_point)
 		  if (!useless_type_conversion_p (TREE_TYPE (retval), restype))
 		    {
 		      gimple cpy;
-		      tree tem = create_tmp_reg (restype, NULL);
+		      tree tem = create_tmp_reg (restype);
 		      tem = make_ssa_name (tem, call);
 		      cpy = gimple_build_assign_with_ops (NOP_EXPR, retval,
 							  tem);
@@ -1614,14 +1614,14 @@ split_function (struct split_point *split_point)
 
 	      if (chkp_function_instrumented_p (current_function_decl)
 		  && BOUNDED_P (retval))
-		retbnd = create_tmp_reg (pointer_bounds_type_node, NULL);
+		retbnd = create_tmp_reg (pointer_bounds_type_node);
 
 	      /* We use temporary register to hold value when aggregate_value_p
 		 is false.  Similarly for DECL_BY_REFERENCE we must avoid extra
 		 copy.  */
 	      if (!aggregate_value_p (retval, TREE_TYPE (current_function_decl))
 		  && !DECL_BY_REFERENCE (retval))
-		retval = create_tmp_reg (TREE_TYPE (retval), NULL);
+		retval = create_tmp_reg (TREE_TYPE (retval));
 	      if (is_gimple_reg (retval))
 		{
 		  /* When returning by reference, there is only one SSA name

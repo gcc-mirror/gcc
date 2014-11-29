@@ -1,3 +1,10 @@
+2014-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (convert_vector_to_pointer_for_subscript): Remove NULL
+	last argument from create_tmp_var_raw and create_tmp_var calls.
+	* cilk.c (gimplify_cilk_spawn): Likewise.
+	* c-omp.c (c_finish_omp_atomic): Likewise.
+
 2014-11-28  Marek Polacek  <polacek@redhat.com>
 
 	* c-ubsan.c (ubsan_instrument_shift): Use op1_utype for MINUS_EXPR

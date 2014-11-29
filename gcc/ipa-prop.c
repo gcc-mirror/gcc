@@ -4004,7 +4004,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 		      expr = make_ssa_name (TREE_TYPE (expr), tem);
 		    }
 		  else
-		    expr = create_tmp_reg (TREE_TYPE (expr), NULL);
+		    expr = create_tmp_reg (TREE_TYPE (expr));
 		  gimple_assign_set_lhs (tem, expr);
 		  gsi_insert_before (&gsi, tem, GSI_SAME_STMT);
 		}

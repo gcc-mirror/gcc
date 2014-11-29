@@ -468,7 +468,7 @@ get_string_length (strinfo si)
 	  lenstmt
 	    = gimple_build_assign_with_ops
 	        (POINTER_PLUS_EXPR,
-		 make_ssa_name (TREE_TYPE (gimple_call_arg (stmt, 0)), NULL),
+		 make_ssa_name (TREE_TYPE (gimple_call_arg (stmt, 0))),
 		 tem, lhs);
 	  gsi_insert_before (&gsi, lenstmt, GSI_SAME_STMT);
 	  gimple_call_set_arg (stmt, 0, gimple_assign_lhs (lenstmt));

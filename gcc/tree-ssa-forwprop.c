@@ -1723,14 +1723,14 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 				  TREE_TYPE (rotcnt)))
     {
       g = gimple_build_assign_with_ops (NOP_EXPR,
-					make_ssa_name (TREE_TYPE (def_arg2[0]),
-						       NULL), rotcnt);
+					make_ssa_name (TREE_TYPE (def_arg2[0])),
+					rotcnt);
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
       rotcnt = gimple_assign_lhs (g);
     }
   lhs = gimple_assign_lhs (stmt);
   if (!useless_type_conversion_p (rtype, TREE_TYPE (def_arg1[0])))
-    lhs = make_ssa_name (TREE_TYPE (def_arg1[0]), NULL);
+    lhs = make_ssa_name (TREE_TYPE (def_arg1[0]));
   g = gimple_build_assign_with_ops (((def_code[0] == LSHIFT_EXPR) ^ swapped_p)
 				    ? LROTATE_EXPR : RROTATE_EXPR,
 				    lhs, def_arg1[0], rotcnt);
