@@ -1069,7 +1069,7 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
       OMP_CLAUSE_MAP_KIND (c3) = OMP_CLAUSE_MAP_POINTER;
       OMP_CLAUSE_DECL (c3) = gfc_conv_descriptor_data_get (decl);
       OMP_CLAUSE_SIZE (c3) = size_int (0);
-      tree size = create_tmp_var (gfc_array_index_type, NULL);
+      tree size = create_tmp_var (gfc_array_index_type);
       tree elemsz = TYPE_SIZE_UNIT (gfc_get_element_type (type));
       elemsz = fold_convert (gfc_array_index_type, elemsz);
       if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER
@@ -1361,7 +1361,7 @@ gfc_trans_omp_array_reduction_or_udr (tree c, gfc_omp_namelist *n, locus where)
   decl = OMP_CLAUSE_DECL (c);
   gfc_current_locus = where;
   type = TREE_TYPE (decl);
-  outer_decl = create_tmp_var_raw (type, NULL);
+  outer_decl = create_tmp_var_raw (type);
   if (TREE_CODE (decl) == PARM_DECL
       && TREE_CODE (type) == REFERENCE_TYPE
       && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (type))
@@ -2689,7 +2689,7 @@ gfc_trans_omp_atomic (gfc_code *code)
     {
       /* Make sure LHS is simple enough so that goa_lhs_expr_p can recognize
 	 it even after unsharing function body.  */
-      tree var = create_tmp_var_raw (TREE_TYPE (lhsaddr), NULL);
+      tree var = create_tmp_var_raw (TREE_TYPE (lhsaddr));
       DECL_CONTEXT (var) = current_function_decl;
       lhsaddr = build4 (TARGET_EXPR, TREE_TYPE (lhsaddr), var, lhsaddr,
 			NULL_TREE, NULL_TREE);

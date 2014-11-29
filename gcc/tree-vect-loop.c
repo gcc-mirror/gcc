@@ -2502,7 +2502,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
   if (orig_code == MINUS_EXPR)
     {
       tree rhs = gimple_assign_rhs2 (def_stmt);
-      tree negrhs = make_ssa_name (TREE_TYPE (rhs), NULL);
+      tree negrhs = make_ssa_name (TREE_TYPE (rhs));
       gimple negate_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, negrhs,
 							 rhs);
       gimple_stmt_iterator gsi = gsi_for_stmt (def_stmt);
@@ -4074,7 +4074,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
     {
       for (j = 0; j < ncopies; j++)
         {
-	  tree new_def = copy_ssa_name (def, NULL);
+	  tree new_def = copy_ssa_name (def);
           phi = create_phi_node (new_def, exit_bb);
           set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, loop_vinfo, NULL));
           if (j == 0)
@@ -4099,7 +4099,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
       inner_phis.create (vect_defs.length ());
       FOR_EACH_VEC_ELT (new_phis, i, phi)
 	{
-	  tree new_result = copy_ssa_name (PHI_RESULT (phi), NULL);
+	  tree new_result = copy_ssa_name (PHI_RESULT (phi));
 	  gphi *outer_phi = create_phi_node (new_result, exit_bb);
 	  SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
 			   PHI_RESULT (phi));
@@ -4111,7 +4111,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
           while (STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi)))
             {
 	      phi = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi));
-	      new_result = copy_ssa_name (PHI_RESULT (phi), NULL);
+	      new_result = copy_ssa_name (PHI_RESULT (phi));
 	      outer_phi = create_phi_node (new_result, exit_bb);
 	      SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
 			       PHI_RESULT (phi));

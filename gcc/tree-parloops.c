@@ -533,7 +533,7 @@ take_address_of (tree obj, tree type, edge entry,
       if (obj_name)
 	name = make_temp_ssa_name (TREE_TYPE (addr), NULL, obj_name);
       else
-	name = make_ssa_name (TREE_TYPE (addr), NULL);
+	name = make_ssa_name (TREE_TYPE (addr));
       stmt = gimple_build_assign (name, addr);
       gsi_insert_on_edge_immediate (entry, stmt);
 
@@ -1057,7 +1057,7 @@ create_phi_for_local_result (reduction_info **slot, struct loop *loop)
     e = EDGE_PRED (store_bb, 1);
   else
     e = EDGE_PRED (store_bb, 0);
-  local_res = copy_ssa_name (gimple_assign_lhs (reduc->reduc_stmt), NULL);
+  local_res = copy_ssa_name (gimple_assign_lhs (reduc->reduc_stmt));
   locus = gimple_location (reduc->reduc_stmt);
   new_phi = create_phi_node (local_res, store_bb);
   add_phi_arg (new_phi, reduc->init, e, locus);
@@ -1107,8 +1107,8 @@ create_call_for_reduction_1 (reduction_info **slot, struct clsn_data *clsn_data)
   e = split_block (bb, t);
   new_bb = e->dest;
 
-  tmp_load = create_tmp_var (TREE_TYPE (TREE_TYPE (addr)), NULL);
-  tmp_load = make_ssa_name (tmp_load, NULL);
+  tmp_load = create_tmp_var (TREE_TYPE (TREE_TYPE (addr)));
+  tmp_load = make_ssa_name (tmp_load);
   load = gimple_build_omp_atomic_load (tmp_load, addr);
   SSA_NAME_DEF_STMT (tmp_load) = load;
   gsi = gsi_start_bb (new_bb);
@@ -1388,7 +1388,7 @@ separate_decls_in_region (edge entry, edge exit,
       /* Create the loads and stores.  */
       *arg_struct = create_tmp_var (type, ".paral_data_store");
       nvar = create_tmp_var (build_pointer_type (type), ".paral_data_load");
-      *new_arg_struct = make_ssa_name (nvar, NULL);
+      *new_arg_struct = make_ssa_name (nvar);
 
       ld_st_data->store = *arg_struct;
       ld_st_data->load = *new_arg_struct;
@@ -1406,7 +1406,7 @@ separate_decls_in_region (edge entry, edge exit,
 	  reduction_list
 	    ->traverse <struct clsn_data *, create_stores_for_reduction>
 	    (ld_st_data);
-	  clsn_data.load = make_ssa_name (nvar, NULL);
+	  clsn_data.load = make_ssa_name (nvar);
 	  clsn_data.load_bb = exit->dest;
 	  clsn_data.store = ld_st_data->store;
 	  create_final_loads_for_reduction (reduction_list, &clsn_data);
@@ -1649,7 +1649,7 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 
       gsi = gsi_after_labels (bb);
 
-      param = make_ssa_name (DECL_ARGUMENTS (loop_fn), NULL);
+      param = make_ssa_name (DECL_ARGUMENTS (loop_fn));
       assign_stmt = gimple_build_assign (param, build_fold_addr_expr (data));
       gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
 
@@ -1673,7 +1673,7 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   cvar_base = SSA_NAME_VAR (cvar);
   phi = SSA_NAME_DEF_STMT (cvar);
   cvar_init = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
-  initvar = copy_ssa_name (cvar, NULL);
+  initvar = copy_ssa_name (cvar);
   SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (phi, loop_preheader_edge (loop)),
 	   initvar);
   cvar_next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop));

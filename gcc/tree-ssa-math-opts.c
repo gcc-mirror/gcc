@@ -1129,7 +1129,7 @@ static tree
 build_and_insert_cast (gimple_stmt_iterator *gsi, location_t loc,
 		       tree type, tree val)
 {
-  tree result = make_ssa_name (type, NULL);
+  tree result = make_ssa_name (type);
   gassign *stmt = gimple_build_assign_with_ops (NOP_EXPR, result, val);
   gimple_set_location (stmt, loc);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);

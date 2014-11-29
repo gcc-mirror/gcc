@@ -2044,7 +2044,7 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
 	  && is_gimple_reg_type (TREE_TYPE (gimple_get_lhs (stmt))))
 	{
 	  tree lhs = gimple_get_lhs (stmt);
-	  tree tmp = create_tmp_var (TREE_TYPE (lhs), NULL);
+	  tree tmp = create_tmp_var (TREE_TYPE (lhs));
 	  gimple s = gimple_build_assign (lhs, tmp);
 	  gimple_set_location (s, gimple_location (stmt));
 	  gimple_set_block (s, gimple_block (stmt));
@@ -3286,7 +3286,7 @@ lower_resx (basic_block bb, gresx *stmt,
 	  fn = builtin_decl_implicit (BUILT_IN_EH_POINTER);
 	  src_nr = build_int_cst (integer_type_node, src_r->index);
 	  x = gimple_build_call (fn, 1, src_nr);
-	  var = create_tmp_var (ptr_type_node, NULL);
+	  var = create_tmp_var (ptr_type_node);
 	  var = make_ssa_name (var, x);
 	  gimple_call_set_lhs (x, var);
 	  gsi_insert_before (&gsi, x, GSI_SAME_STMT);
@@ -3652,7 +3652,7 @@ lower_eh_dispatch (basic_block src, geh_dispatch *stmt)
 	    fn = builtin_decl_implicit (BUILT_IN_EH_FILTER);
 	    x = gimple_build_call (fn, 1, build_int_cst (integer_type_node,
 							 region_nr));
-	    filter = create_tmp_var (TREE_TYPE (TREE_TYPE (fn)), NULL);
+	    filter = create_tmp_var (TREE_TYPE (TREE_TYPE (fn)));
 	    filter = make_ssa_name (filter, x);
 	    gimple_call_set_lhs (x, filter);
 	    gsi_insert_before (&gsi, x, GSI_SAME_STMT);
@@ -3675,7 +3675,7 @@ lower_eh_dispatch (basic_block src, geh_dispatch *stmt)
 	fn = builtin_decl_implicit (BUILT_IN_EH_FILTER);
 	x = gimple_build_call (fn, 1, build_int_cst (integer_type_node,
 						     region_nr));
-	filter = create_tmp_var (TREE_TYPE (TREE_TYPE (fn)), NULL);
+	filter = create_tmp_var (TREE_TYPE (TREE_TYPE (fn)));
 	filter = make_ssa_name (filter, x);
 	gimple_call_set_lhs (x, filter);
 	gsi_insert_before (&gsi, x, GSI_SAME_STMT);

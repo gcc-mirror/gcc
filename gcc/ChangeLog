@@ -1,3 +1,103 @@
+2014-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-expr.h (create_tmp_var_raw, create_tmp_var,
+	create_tmp_reg): Add default NULL value to last argument.
+	* tree-ssanames.h (make_ssa_name, copy_ssa_name): Likewise.
+	* gimple-low.c (lower_builtin_posix_memalign): Remove NULL
+	last argument from create_tmp_var_raw, create_tmp_var,
+	create_tmp_reg, make_ssa_name and copy_ssa_name calls.
+	* tree-ssa-strlen.c (get_string_length): Likewise.
+	* tree-emutls.c (gen_emutls_addr, lower_emutls_1): Likewise.
+	* tree-ssa-phiprop.c (phiprop_insert_phi): Likewise.
+	* tree-vect-slp.c (vect_get_constant_vectors): Likewise.
+	* ipa-prop.c (ipa_modify_call_arguments): Likewise.
+	* tree-ssa-forwprop.c (simplify_rotate): Likewise.
+	* tree-ssa-ccp.c (fold_builtin_alloca_with_align): Likewise.
+	* asan.c (build_shadow_mem_access, maybe_create_ssa_name,
+	maybe_cast_to_ptrmode, asan_expand_check_ifn): Likewise.
+	* tsan.c (instrument_expr, instrument_builtin_call,
+	instrument_func_entry): Likewise.
+	* varpool.c (add_new_static_var): Likewise.
+	* tree-loop-distribution.c (generate_memset_builtin): Likewise.
+	* gimplify.c (internal_get_tmp_var, gimplify_return_expr,
+	gimplify_modify_expr_to_memcpy, gimplify_modify_expr_to_memset,
+	gimplify_init_ctor_eval_range, gimplify_init_constructor,
+	gimplify_omp_atomic, gimplify_expr): Likewise.
+	* gimple-builder.c (build_assign, build_type_cast): Likewise.
+	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1,
+	slpeel_update_phi_nodes_for_guard2, slpeel_tree_peel_loop_to_edge,
+	vect_loop_versioning): Likewise.
+	* tree-if-conv.c (version_loop_for_if_conversion): Likewise.
+	* gimple-match-head.c (maybe_push_res_to_seq): Likewise.
+	* tree-vect-patterns.c (vect_handle_widen_op_by_const,
+	vect_recog_widen_mult_pattern, vect_operation_fits_smaller_type,
+	vect_recog_over_widening_pattern): Likewise.
+	* tree-sra.c (build_ref_for_offset, create_access_replacement):
+	Likewise.
+	* tree-cfg.c (make_blocks): Likewise.
+	* tree-eh.c (lower_eh_constructs_2, lower_resx, lower_eh_dispatch):
+	Likewise.
+	* tree-ssa-propagate.c (update_call_from_tree): Likewise.
+	* tree-complex.c (get_component_ssa_name, expand_complex_div_wide):
+	Likewise.
+	* tree-ssa-math-opts.c (build_and_insert_cast): Likewise.
+	* tree-tailcall.c (update_accumulator_with_ops): Likewise.
+	* tree-predcom.c (initialize_root_vars, initialize_root_vars_lm,
+	execute_load_motion, reassociate_to_the_same_stmt): Likewise.
+	* tree-ssa-reassoc.c (build_and_add_sum,
+	optimize_range_tests_to_bit_test, update_ops,
+	maybe_optimize_range_tests, rewrite_expr_tree, linearize_expr,
+	negate_value, repropagate_negates): Likewise.
+	* tree-vect-loop.c (vect_is_simple_reduction_1,
+	vect_create_epilog_for_reduction): Likewise.
+	* ipa-split.c (split_function): Likewise.
+	* tree-inline.c (remap_ssa_name, setup_one_parameter,
+	declare_return_variable, tree_function_versioning): Likewise.
+	* tree-cfgcleanup.c (fixup_noreturn_call): Likewise.
+	* cfgexpand.c (update_alias_info_with_stack_vars, expand_used_vars):
+	Likewise.
+	* tree-ssa-phiopt.c (conditional_replacement, abs_replacement,
+	neg_replacement): Likewise.
+	* gimplify-me.c (force_gimple_operand_1, gimple_regimplify_operands):
+	Likewise.
+	* tree-vrp.c (simplify_truth_ops_using_ranges,
+	simplify_float_conversion_using_ranges,
+	simplify_internal_call_using_ranges): Likewise.
+	* tree-switch-conversion.c (emit_case_bit_tests,
+	build_one_array, build_arrays, gen_def_assigns): Likewise.
+	* gimple-fold.c (gimple_fold_builtin_memory_op,
+	gimple_fold_builtin_strcat, gimple_fold_call, gimple_build): Likewise.
+	* tree-vect-generic.c (expand_vector_divmod,
+	optimize_vector_constructor): Likewise.
+	* ubsan.c (ubsan_encode_value, ubsan_expand_null_ifn,
+	ubsan_expand_objsize_ifn, instrument_si_overflow,
+	instrument_bool_enum_load, instrument_nonnull_arg): Likewise.
+	* tree-outof-ssa.c (insert_backedge_copies): Likewise.
+	* tree-ssa-loop-manip.c (create_iv,
+	tree_transform_and_unroll_loop): Likewise.
+	* omp-low.c (scan_omp_parallel, lower_rec_simd_input_clauses,
+	lower_rec_input_clauses, lower_lastprivate_clauses,
+	expand_parallel_call, expand_omp_for_static_chunk,
+	expand_omp_atomic_pipeline, expand_omp_target,
+	maybe_add_implicit_barrier_cancel, lower_omp_single_simple,
+	lower_omp_critical, lower_omp_for, task_copyfn_copy_decl,
+	lower_depend_clauses, lower_omp_target, lower_omp_1,
+	ipa_simd_modify_stmt_ops, simd_clone_adjust): Likewise.
+	* tree-parloops.c (take_address_of, create_phi_for_local_result,
+	create_call_for_reduction_1, separate_decls_in_region,
+	create_parallel_loop): Likewise.
+	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_dependence,
+	handle_scalar_deps_crossing_scop_limits): Likewise.
+	* trans-mem.c (lower_transaction, build_tm_load, build_tm_store,
+	expand_assign_tm, expand_call_tm, expand_transaction,
+	ipa_tm_insert_gettmclone_call): Likewise.
+	* tree-vect-data-refs.c (bump_vector_ptr, vect_setup_realignment):
+	Likewise.
+	* tree-vect-stmts.c (vect_init_vector, vectorizable_mask_load_store,
+	vectorizable_call, vectorizable_simd_clone_call,
+	vectorizable_conversion, vectorizable_store, permute_vec_elements,
+	vectorizable_load): Likewise.
+
 2014-11-29  Tobias Burnus  <burnus@net-b.de>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 

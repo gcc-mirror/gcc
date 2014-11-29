@@ -530,7 +530,7 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
 
   if (gimplify_ctxp->into_ssa
       && is_gimple_reg_type (TREE_TYPE (val)))
-    t = make_ssa_name (TYPE_MAIN_VARIANT (TREE_TYPE (val)), NULL);
+    t = make_ssa_name (TYPE_MAIN_VARIANT (TREE_TYPE (val)));
   else
     t = lookup_tmp_var (val, is_formal);
 
@@ -1271,7 +1271,7 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
     result = gimplify_ctxp->return_temp;
   else
     {
-      result = create_tmp_reg (TREE_TYPE (result_decl), NULL);
+      result = create_tmp_reg (TREE_TYPE (result_decl));
 
       /* ??? With complex control flow (usually involving abnormal edges),
 	 we can wind up warning about an uninitialized value for this.  Due
@@ -3263,7 +3263,7 @@ gimplify_modify_expr_to_memcpy (tree *expr_p, tree size, bool want_value,
   if (want_value)
     {
       /* tmp = memcpy() */
-      t = create_tmp_var (TREE_TYPE (to_ptr), NULL);
+      t = create_tmp_var (TREE_TYPE (to_ptr));
       gimple_call_set_lhs (gs, t);
       gimplify_seq_add_stmt (seq_p, gs);
 
@@ -3310,7 +3310,7 @@ gimplify_modify_expr_to_memset (tree *expr_p, tree size, bool want_value,
   if (want_value)
     {
       /* tmp = memset() */
-      t = create_tmp_var (TREE_TYPE (to_ptr), NULL);
+      t = create_tmp_var (TREE_TYPE (to_ptr));
       gimple_call_set_lhs (gs, t);
       gimplify_seq_add_stmt (seq_p, gs);
 
@@ -3486,7 +3486,7 @@ gimplify_init_ctor_eval_range (tree object, tree lower, tree upper,
 
   /* Create and initialize the index variable.  */
   var_type = TREE_TYPE (upper);
-  var = create_tmp_var (var_type, NULL);
+  var = create_tmp_var (var_type);
   gimplify_seq_add_stmt (pre_p, gimple_build_assign (var, lower));
 
   /* Add the loop entry label.  */
@@ -3945,7 +3945,7 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    && num_nonzero_elements > 0
 	    && vec_safe_length (elts) > 1)
 	  {
-	    tree temp = create_tmp_var (TYPE_MAIN_VARIANT (type), NULL);
+	    tree temp = create_tmp_var (TYPE_MAIN_VARIANT (type));
 	    TREE_OPERAND (*expr_p, 0) = temp;
 	    *expr_p = build2 (COMPOUND_EXPR, TREE_TYPE (*expr_p),
 			      *expr_p,
@@ -7374,7 +7374,7 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
   gomp_atomic_load *loadstmt;
   gomp_atomic_store *storestmt;
 
-  tmp_load = create_tmp_reg (type, NULL);
+  tmp_load = create_tmp_reg (type);
   if (rhs && goa_stabilize_expr (&rhs, pre_p, addr, tmp_load) < 0)
     return GS_ERROR;
 
@@ -7791,7 +7791,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		ret = GS_OK;
 		break;
 	      }
-	    tree tmp = create_tmp_var (type, NULL);
+	    tree tmp = create_tmp_var (type);
 	    gimplify_arg (&cond, pre_p, EXPR_LOCATION (*expr_p));
 	    gcall *call
 	      = gimple_build_call_internal (IFN_ANNOTATE, 2, cond, kind);

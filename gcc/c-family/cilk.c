@@ -792,7 +792,7 @@ gimplify_cilk_spawn (tree *spawn_p)
   tree frame_ptr = build1 (ADDR_EXPR, f_ptr_type, cfun->cilk_frame_decl);
   tree save_fp = build_call_expr (cilk_save_fp_fndecl, 1, frame_ptr);
   append_to_statement_list (save_fp, spawn_p);		  
-  setjmp_value = create_tmp_var (TREE_TYPE (call1), NULL);
+  setjmp_value = create_tmp_var (TREE_TYPE (call1));
   setjmp_expr = fold_build2 (MODIFY_EXPR, void_type_node, setjmp_value, call1);
 
   append_to_statement_list_force (setjmp_expr, spawn_p);

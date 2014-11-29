@@ -828,10 +828,10 @@ lower_builtin_posix_memalign (gimple_stmt_iterator *gsi)
   tree pptr = gimple_call_arg (call, 0);
   tree align = gimple_call_arg (call, 1);
   tree res = gimple_call_lhs (call);
-  tree ptr = create_tmp_reg (ptr_type_node, NULL);
+  tree ptr = create_tmp_reg (ptr_type_node);
   if (TREE_CODE (pptr) == ADDR_EXPR)
     {
-      tree tem = create_tmp_var (ptr_type_node, NULL);
+      tree tem = create_tmp_var (ptr_type_node);
       TREE_ADDRESSABLE (tem) = 1;
       gimple_call_set_arg (call, 0, build_fold_addr_expr (tem));
       stmt = gimple_build_assign (ptr, tem);
@@ -842,7 +842,7 @@ lower_builtin_posix_memalign (gimple_stmt_iterator *gsi)
 					     build_int_cst (ptr_type_node, 0)));
   if (res == NULL_TREE)
     {
-      res = create_tmp_reg (integer_type_node, NULL);
+      res = create_tmp_reg (integer_type_node);
       gimple_call_set_lhs (call, res);
     }
   tree align_label = create_artificial_label (UNKNOWN_LOCATION);

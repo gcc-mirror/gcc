@@ -1548,7 +1548,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
       tree tmp, addr;
 
       gcc_checking_assert (gsi);
-      tmp = make_ssa_name (build_pointer_type (TREE_TYPE (prev_base)), NULL);
+      tmp = make_ssa_name (build_pointer_type (TREE_TYPE (prev_base)));
       addr = build_fold_addr_expr (unshare_expr (prev_base));
       STRIP_USELESS_TYPE_CONVERSION (addr);
       stmt = gimple_build_assign (tmp, addr);
@@ -1990,7 +1990,7 @@ create_access_replacement (struct access *access)
 
   if (access->grp_to_be_debug_replaced)
     {
-      repl = create_tmp_var_raw (access->type, NULL);
+      repl = create_tmp_var_raw (access->type);
       DECL_CONTEXT (repl) = current_function_decl;
     }
   else

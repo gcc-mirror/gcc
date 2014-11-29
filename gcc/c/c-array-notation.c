@@ -295,7 +295,7 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
 
   for (ii = 0; ii < rank; ii++)
     {
-      an_loop_info[ii].var = create_tmp_var (integer_type_node, NULL);
+      an_loop_info[ii].var = create_tmp_var (integer_type_node);
       an_loop_info[ii].ind_init =
 	build_modify_expr (location, an_loop_info[ii].var,
 			   TREE_TYPE (an_loop_info[ii].var), NOP_EXPR,
@@ -795,8 +795,7 @@ build_array_notation_expr (location_t location, tree lhs, tree lhs_origtype,
   for (ii = 0; ii < lhs_rank; ii++)
     if (lhs_an_info[0][ii].is_vector)
       {
-	lhs_an_loop_info[ii].var = create_tmp_var (integer_type_node,
-						   NULL);
+	lhs_an_loop_info[ii].var = create_tmp_var (integer_type_node);
 	lhs_an_loop_info[ii].ind_init = build_modify_expr
 	  (location, lhs_an_loop_info[ii].var,
 	   TREE_TYPE (lhs_an_loop_info[ii].var), NOP_EXPR,
@@ -807,8 +806,7 @@ build_array_notation_expr (location_t location, tree lhs, tree lhs_origtype,
     {
       /* When we have a polynomial, we assume that the indices are of type 
 	 integer.  */
-      rhs_an_loop_info[ii].var = create_tmp_var (integer_type_node,
-						 NULL);
+      rhs_an_loop_info[ii].var = create_tmp_var (integer_type_node);
       rhs_an_loop_info[ii].ind_init = build_modify_expr
 	(location, rhs_an_loop_info[ii].var,
 	 TREE_TYPE (rhs_an_loop_info[ii].var), NOP_EXPR,
@@ -984,7 +982,7 @@ fix_conditional_array_notations_1 (tree stmt)
   cilkplus_extract_an_triplets (array_list, list_size, rank, &an_info);
   for (ii = 0; ii < rank; ii++)
     {
-      an_loop_info[ii].var = create_tmp_var (integer_type_node, NULL);
+      an_loop_info[ii].var = create_tmp_var (integer_type_node);
       an_loop_info[ii].ind_init =
 	build_modify_expr (location, an_loop_info[ii].var,
 			   TREE_TYPE (an_loop_info[ii].var), NOP_EXPR,
@@ -1080,7 +1078,7 @@ fix_array_notation_expr (location_t location, enum tree_code code,
   loop_init = push_stmt_list ();
   for (ii = 0; ii < rank; ii++)
     {
-      an_loop_info[ii].var = create_tmp_var (integer_type_node, NULL);
+      an_loop_info[ii].var = create_tmp_var (integer_type_node);
       an_loop_info[ii].ind_init =
 	build_modify_expr (location, an_loop_info[ii].var,
 			   TREE_TYPE (an_loop_info[ii].var), NOP_EXPR,
@@ -1175,7 +1173,7 @@ fix_array_notation_call_expr (tree arg)
     }
   for (ii = 0; ii < rank; ii++)
     {
-      an_loop_info[ii].var = create_tmp_var (integer_type_node, NULL);
+      an_loop_info[ii].var = create_tmp_var (integer_type_node);
       an_loop_info[ii].ind_init =
 	build_modify_expr (location, an_loop_info[ii].var,
 			   TREE_TYPE (an_loop_info[ii].var), NOP_EXPR, location,

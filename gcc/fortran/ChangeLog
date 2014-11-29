@@ -1,3 +1,9 @@
+2014-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.c (gfc_omp_finish_clause,
+	gfc_trans_omp_array_reduction_or_udr, gfc_trans_omp_atomic): Remove
+	NULL last argument from create_tmp_var_raw and create_tmp_var calls.
+
 2014-11-29  Tobias Burnus  <burnus@net-b.de>
 
 	* scanner.c (skip_free_comments, gfc_gobble_whitespace): Use

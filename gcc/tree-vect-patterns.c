@@ -759,7 +759,7 @@ vect_handle_widen_op_by_const (gimple stmt, enum tree_code code,
     {
       /* Create a_T = (NEW_TYPE) a_t;  */
       *oprnd = gimple_assign_rhs1 (def_stmt);
-      new_oprnd = make_ssa_name (new_type, NULL);
+      new_oprnd = make_ssa_name (new_type);
       new_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd, *oprnd);
       STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt)) = new_stmt;
       stmts->safe_push (def_stmt);
@@ -932,7 +932,7 @@ vect_recog_widen_mult_pattern (vec<gimple> *stmts,
 	}
 
         tree old_oprnd = gimple_assign_rhs1 (def_stmt);
-        tree new_oprnd = make_ssa_name (half_type0, NULL);
+	tree new_oprnd = make_ssa_name (half_type0);
         new_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd,
 						 old_oprnd);
         *oprnd = new_oprnd;
@@ -1439,7 +1439,7 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
             {
               /* Create NEW_OPRND = (INTERM_TYPE) OPRND.  */
               oprnd = gimple_assign_rhs1 (def_stmt);
-              new_oprnd = make_ssa_name (interm_type, NULL);
+	      new_oprnd = make_ssa_name (interm_type);
               new_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd,
 						       oprnd);
               STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt)) = new_stmt;
@@ -1458,7 +1458,7 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
       if (interm_type)
         {
           /* Create a type conversion HALF_TYPE->INTERM_TYPE.  */
-          new_oprnd = make_ssa_name (interm_type, NULL);
+	  new_oprnd = make_ssa_name (interm_type);
           new_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd,
 						   oprnd);
           oprnd = new_oprnd;
@@ -1590,7 +1590,7 @@ vect_recog_over_widening_pattern (vec<gimple> *stmts,
           || TYPE_PRECISION (new_type) != TYPE_PRECISION (use_type))
         {
           /* Create NEW_TYPE->USE_TYPE conversion.  */
-          new_oprnd = make_ssa_name (use_type, NULL);
+	  new_oprnd = make_ssa_name (use_type);
           pattern_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd,
 						       var);
           STMT_VINFO_RELATED_STMT (vinfo_for_stmt (use_stmt)) = pattern_stmt;

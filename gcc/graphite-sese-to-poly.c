@@ -2347,7 +2347,7 @@ rewrite_cross_bb_scalar_dependence (scop_p scop, tree zero_dim_array,
 
   gcc_assert (gimple_code (use_stmt) != GIMPLE_PHI);
 
-  name = copy_ssa_name (def, NULL);
+  name = copy_ssa_name (def);
   name_stmt = gimple_build_assign (name, zero_dim_array);
 
   gimple_assign_set_lhs (name_stmt, name);
@@ -2367,7 +2367,7 @@ rewrite_cross_bb_scalar_dependence (scop_p scop, tree zero_dim_array,
 static void
 handle_scalar_deps_crossing_scop_limits (scop_p scop, tree def, gimple stmt)
 {
-  tree var = create_tmp_reg (TREE_TYPE (def), NULL);
+  tree var = create_tmp_reg (TREE_TYPE (def));
   tree new_name = make_ssa_name (var, stmt);
   bool needs_copy = false;
   use_operand_p use_p;

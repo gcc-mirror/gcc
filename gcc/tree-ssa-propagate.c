@@ -835,9 +835,9 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
              with a dummy (unused) lhs variable.  */
           STRIP_USELESS_TYPE_CONVERSION (expr);
 	  if (gimple_in_ssa_p (cfun))
-	    lhs = make_ssa_name (TREE_TYPE (expr), NULL);
+	    lhs = make_ssa_name (TREE_TYPE (expr));
 	  else
-	    lhs = create_tmp_var (TREE_TYPE (expr), NULL);
+	    lhs = create_tmp_var (TREE_TYPE (expr));
           new_stmt = gimple_build_assign (lhs, expr);
 	  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
 	  gimple_set_vdef (new_stmt, gimple_vdef (stmt));

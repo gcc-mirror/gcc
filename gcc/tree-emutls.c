@@ -425,7 +425,7 @@ gen_emutls_addr (tree decl, struct lower_emutls_data *d)
       cdecl = cvar->decl;
       TREE_ADDRESSABLE (cdecl) = 1;
 
-      addr = create_tmp_var (build_pointer_type (TREE_TYPE (decl)), NULL);
+      addr = create_tmp_var (build_pointer_type (TREE_TYPE (decl)));
       x = gimple_build_call (d->builtin_decl, 1, build_fold_addr_expr (cdecl));
       gimple_set_location (x, d->loc);
 
@@ -493,7 +493,7 @@ lower_emutls_1 (tree *ptr, int *walk_subtrees, void *cb_data)
 	    {
 	      gimple x;
 
-	      addr = create_tmp_var (TREE_TYPE (t), NULL);
+	      addr = create_tmp_var (TREE_TYPE (t));
 	      x = gimple_build_assign (addr, t);
 	      gimple_set_location (x, d->loc);
 

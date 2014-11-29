@@ -514,7 +514,7 @@ get_component_ssa_name (tree ssa_name, bool imag_p)
 	ret = get_component_var (SSA_NAME_VAR (ssa_name), imag_p);
       else
 	ret = TREE_TYPE (TREE_TYPE (ssa_name));
-      ret = make_ssa_name (ret, NULL);
+      ret = make_ssa_name (ret);
 
       /* Copy some properties from the original.  In particular, whether it
 	 is used in an abnormal phi, and whether it's uninitialized.  */
@@ -1143,11 +1143,11 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
       gimple stmt;
       tree cond, tmp;
 
-      tmp = create_tmp_var (boolean_type_node, NULL);
+      tmp = create_tmp_var (boolean_type_node);
       stmt = gimple_build_assign (tmp, compare);
       if (gimple_in_ssa_p (cfun))
 	{
-	  tmp = make_ssa_name (tmp,  stmt);
+	  tmp = make_ssa_name (tmp, stmt);
 	  gimple_assign_set_lhs (stmt, tmp);
 	}
 
@@ -1182,8 +1182,8 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
           set_immediate_dominator (CDI_DOMINATORS, bb_false, bb_cond);
         }
 
-      rr = create_tmp_reg (inner_type, NULL);
-      ri = create_tmp_reg (inner_type, NULL);
+      rr = create_tmp_reg (inner_type);
+      ri = create_tmp_reg (inner_type);
     }
 
   /* In the TRUE branch, we compute
