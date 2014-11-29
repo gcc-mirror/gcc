@@ -375,17 +375,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   : _M_refcount(__refs), _M_facets(0), _M_facets_size(_GLIBCXX_NUM_FACETS),
   _M_caches(0), _M_names(0)    
   {
-    _M_facets = new (&facet_vec) const facet*[_M_facets_size];
-    _M_caches = new (&cache_vec) const facet*[_M_facets_size];
-    for (size_t __i = 0; __i < _M_facets_size; ++__i)
-      _M_facets[__i] = _M_caches[__i] = 0;
+    _M_facets = new (&facet_vec) const facet*[_M_facets_size]();
+    _M_caches = new (&cache_vec) const facet*[_M_facets_size]();
 
     // Name the categories.
-    _M_names = new (&name_vec) char*[_S_categories_size];
+    _M_names = new (&name_vec) char*[_S_categories_size]();
     _M_names[0] = new (&name_c[0]) char[2];
     std::memcpy(_M_names[0], locale::facet::_S_get_c_name(), 2);
-    for (size_t __j = 1; __j < _S_categories_size; ++__j)
-      _M_names[__j] = 0;
 
     // This is needed as presently the C++ version of "C" locales
     // != data in the underlying locale model for __timepunct,
