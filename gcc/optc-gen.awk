@@ -38,8 +38,16 @@ for (i = 0; i < n_langs; i++) {
 for (i = 0; i < n_opts; i++) {
     enabledby_arg = opt_args("EnabledBy", flags[i]);
     if (enabledby_arg != "") {
-        n_enabledby_names = split(enabledby_arg, enabledby_names, " && ");
-        if (n_enabledby_names > 2) {
+        logical_and = index(enabledby_arg, " && ");
+        if (logical_and != 0) {
+            # EnabledBy(arg1 && arg2)
+            split_sep = " && ";
+        } else {
+            # EnabledBy(arg) or EnabledBy(arg1 || arg2 || arg3)
+            split_sep = " \\|\\| ";
+        }
+        n_enabledby_names = split(enabledby_arg, enabledby_names, split_sep);
+        if (logical_and != 0 && n_enabledby_names > 2) {
             print "#error EnabledBy (Wfoo && Wbar && Wbaz) not currently supported"
         }
         for (j = 1; j <= n_enabledby_names; j++) {
@@ -49,7 +57,7 @@ for (i = 0; i < n_opts; i++) {
                 print "#error Enabledby: " enabledby_name 
             } else {
                 condition = "";
-                if (n_enabledby_names == 2) {
+                if (logical_and != 0) {
                     opt_var_name_1 = search_var_name(enabledby_names[1], opt_numbers, opts, flags, n_opts);
                     opt_var_name_2 = search_var_name(enabledby_names[2], opt_numbers, opts, flags, n_opts);
                     if (opt_var_name_1 == "") {

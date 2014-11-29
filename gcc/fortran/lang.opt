@@ -298,12 +298,8 @@ Fortran Warning
 Warn about \"suspicious\" constructs
 
 Wtabs
-Fortran Warning Var(warn_tabs) LangEnabledBy(Fortran,Wall)
+Fortran Warning Var(warn_tabs) LangEnabledBy(Fortran,Wall || Wpedantic)
 Permit nonconforming uses of the tab character
-
-Wtabs
-LangEnabledBy(Fortran,Wpedantic)
-;
 
 Wunderflow
 Fortran Warning

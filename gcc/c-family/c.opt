@@ -372,12 +372,8 @@ C++ ObjC++ Var(warn_delete_incomplete) Init(1) Warning
 Warn when deleting a pointer to incomplete type
 
 Wdelete-non-virtual-dtor
-C++ ObjC++ Var(warn_delnonvdtor) Warning LangEnabledBy(C++ ObjC++,Wall)
+C++ ObjC++ Var(warn_delnonvdtor) Warning LangEnabledBy(C++ ObjC++,Wall || Weffc++)
 Warn about deleting polymorphic objects with non-virtual destructors
-
-Wdelete-non-virtual-dtor
-LangEnabledBy(C++ ObjC++,Weffc++)
-;
 
 Wdeprecated
 C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) CppReason(CPP_W_DEPRECATED) Var(warn_deprecated) Init(1) Warning
@@ -408,12 +404,8 @@ C ObjC C++ ObjC++ CPP(warn_endif_labels) CppReason(CPP_W_ENDIF_LABELS) Var(cpp_w
 Warn about stray tokens after #elif and #endif
 
 Wenum-compare
-C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning LangEnabledBy(C ObjC,Wall)
+C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning LangEnabledBy(C ObjC,Wall || Wc++-compat)
 Warn about comparison of different enum types
-
-Wenum-compare
-LangEnabledBy(C ObjC,Wc++-compat)
-;
 
 Werror
 C ObjC C++ ObjC++
@@ -614,12 +606,8 @@ C ObjC C++ ObjC++ CPP(warn_multichar) CppReason(CPP_W_MULTICHAR) Var(cpp_warn_mu
 Warn about use of multi-character character constants
 
 Wnarrowing
-C ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(-1) LangEnabledBy(C++ ObjC++,Wall)
+C ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(-1) LangEnabledBy(C++ ObjC++,Wall || Wc++0x-compat)
 Warn about narrowing conversions within { } that are ill-formed in C++11
-
-Wnarrowing
-C ObjC C++ ObjC++ LangEnabledBy(C++ ObjC++,Wc++0x-compat)
-;
 
 Wnested-externs
 C ObjC Var(warn_nested_externs) Warning
@@ -721,12 +709,8 @@ C ObjC C++ ObjC++ Var(warn_pointer_arith) Warning LangEnabledBy(C ObjC C++ ObjC+
 Warn about function pointer arithmetic
 
 Wpointer-sign
-C ObjC Var(warn_pointer_sign) Warning LangEnabledBy(C ObjC,Wall)
+C ObjC Var(warn_pointer_sign) Warning LangEnabledBy(C ObjC,Wall || Wpedantic)
 Warn when a pointer differs in signedness in an assignment
-
-Wpointer-sign
-C ObjC LangEnabledBy(C ObjC,Wpedantic)
-;
 
 Wpointer-to-int-cast
 C ObjC Var(warn_pointer_to_int_cast) Init(1) Warning
@@ -877,12 +861,8 @@ C ObjC C++ ObjC++ Var(warn_unused_result) Init(1) Warning
 Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value
 
 Wvariadic-macros
-C ObjC C++ ObjC++ CPP(warn_variadic_macros) CppReason(CPP_W_VARIADIC_MACROS) Var(cpp_warn_variadic_macros) Init(0) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic)
+C ObjC C++ ObjC++ CPP(warn_variadic_macros) CppReason(CPP_W_VARIADIC_MACROS) Var(cpp_warn_variadic_macros) Init(0) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic || Wtraditional)
 Warn about using variadic macros
-
-Wvariadic-macros
-LangEnabledBy(C ObjC C++ ObjC++,Wtraditional)
-;
 
 Wvarargs
 C ObjC C++ ObjC++ Warning Var(warn_varargs) Init(1)

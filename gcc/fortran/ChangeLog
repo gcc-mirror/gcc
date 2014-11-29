@@ -1,3 +1,9 @@
+2014-11-29  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* lang.opt (Wtabs): Combine duplicated item into a single
+	one using || for LangEnabledBy.
+
 2014-11-25  Tobias Burnus  <burnus@net-b.de>
 
 	* error.c (gfc_internal_error): Convert to common diagnostics.
