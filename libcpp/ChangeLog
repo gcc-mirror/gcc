@@ -1,3 +1,9 @@
+2014-11-29  John Schmerge  <jbschmerge@gmail.com>
+
+	PR preprocessor/41698
+	* charset.c (one_utf8_to_utf16): Do not produce surrogate pairs
+	for 0xffff.
+
 2014-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/60436
