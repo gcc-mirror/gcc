@@ -775,10 +775,10 @@ skip_free_comments (void)
 				}
 			    }
 			  else
-			    gfc_warning_now_1 ("!$OMP at %C starts a commented "
-					       "line as it neither is followed "
-					       "by a space nor is a "
-					       "continuation line");
+			    gfc_warning_now ("!$OMP at %C starts a commented "
+					     "line as it neither is followed "
+					     "by a space nor is a "
+					     "continuation line");
 			}
 		      gfc_current_locus = old_loc;
 		      next_char ();
@@ -1388,7 +1388,7 @@ gfc_gobble_whitespace (void)
 	  if (cur_linenum != linenum)
 	    {
 	      linenum = cur_linenum;
-	      gfc_warning_now_1 ("Nonconforming tab character at %C");
+	      gfc_warning_now (OPT_Wtabs, "Nonconforming tab character at %C");
 	    }
 	}
     }
