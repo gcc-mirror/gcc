@@ -1,3 +1,9 @@
+2014-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_facets/nonio.h (__timepunct): Remove unused
+	typedef.
+	(time_get): Likewise. Fix comments.
+
 2014-11-26  Jonathan Wakely  <jwakely@redhat.com>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
