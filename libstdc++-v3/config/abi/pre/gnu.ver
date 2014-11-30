@@ -85,7 +85,11 @@ GLIBCXX_3.4 {
       std::invalid_argument::i*;
 #     std::invalid_argument::~i*;
 #     std::ios_base::[A-Ha-z]*;
-      std::ios_base::[A-Ha-f]*;
+      std::ios_base::[A-Ha-e]*;
+      std::ios_base::failbit;
+#     std::ios_base::failure*;
+      std::ios_base::fixed;
+      std::ios_base::floatfield;
       std::ios_base::goodbit;
       std::ios_base::[h-z]*;
       std::ios_base::_M_grow_words*;
@@ -498,6 +502,11 @@ GLIBCXX_3.4 {
     # std::ios_base, std::ios_base::Init destructors
     _ZNSt8ios_baseD*;
     _ZNSt8ios_base4InitD*;
+
+    # std::ios_base::failure constructors, destructors, virtual function
+    _ZNSt8ios_base7failureC*;
+    _ZNSt8ios_base7failureD*;
+    _ZNKSt8ios_base7failure4whatEv;
 
     # bool std::has_facet
     _ZSt9has_facetIS*;
