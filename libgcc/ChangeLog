@@ -1,3 +1,8 @@
+2014-11-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/lib1funcs.S: Check value of __SHMEDIA__ instead of checking
+	whether it's defined.
+
 2014-11-27  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/cpuinfo.c (processor_features): Add FEATURE_AVX512F.
