@@ -3171,7 +3171,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
     }
 
   /* This is possibly a typo: x = f() instead of x => f().  */
-  if (gfc_option.warn_surprising
+  if (warn_surprising
       && rvalue->expr_type == EXPR_FUNCTION && gfc_expr_attr (rvalue).pointer)
     gfc_warning ("POINTER-valued function appears on right-hand side of "
 		 "assignment at %L", &rvalue->where);
@@ -3197,7 +3197,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
   if (rvalue->is_boz && lvalue->ts.type != BT_INTEGER)
     {
       int rc;
-      if (gfc_option.warn_surprising)
+      if (warn_surprising)
         gfc_warning ("BOZ literal at %L is bitwise transferred "
                      "non-integer symbol '%s'", &rvalue->where,
                      lvalue->symtree->n.sym->name);
@@ -3750,7 +3750,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
     }
 
   /* Warn if it is the LHS pointer may lives longer than the RHS target.  */
-  if (gfc_option.warn_target_lifetime
+  if (warn_target_lifetime
       && rvalue->expr_type == EXPR_VARIABLE
       && !rvalue->symtree->n.sym->attr.save
       && !attr.pointer && !rvalue->symtree->n.sym->attr.host_assoc

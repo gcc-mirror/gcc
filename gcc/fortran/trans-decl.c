@@ -4989,8 +4989,7 @@ generate_local_decl (gfc_symbol * sym)
       else if (sym->attr.dummy && !sym->attr.in_namelist)
 	{
 	  /* INTENT(out) dummy arguments are likely meant to be set.  */
-	  if (gfc_option.warn_unused_dummy_argument
-	      && sym->attr.intent == INTENT_OUT)
+	  if (warn_unused_dummy_argument && sym->attr.intent == INTENT_OUT)
 	    {
 	      if (sym->ts.type != BT_DERIVED)
 		gfc_warning ("Dummy argument '%s' at %L was declared "
@@ -5005,7 +5004,7 @@ generate_local_decl (gfc_symbol * sym)
 	      if (sym->backend_decl != NULL_TREE)
 		TREE_NO_WARNING(sym->backend_decl) = 1;
 	    }
-	  else if (gfc_option.warn_unused_dummy_argument)
+	  else if (warn_unused_dummy_argument)
 	    {
 	      gfc_warning ("Unused dummy argument '%s' at %L", sym->name,
 			 &sym->declared_at);
@@ -5121,7 +5120,7 @@ generate_local_decl (gfc_symbol * sym)
 	{
 	  if (!sym->attr.referenced)
 	    {
-	      if (gfc_option.warn_unused_dummy_argument)
+	      if (warn_unused_dummy_argument)
 		gfc_warning ("Unused dummy argument '%s' at %L", sym->name,
 			     &sym->declared_at);
 	    }

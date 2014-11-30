@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "flags.h"
 #include "gfortran.h"
 #include "match.h"
 #include "arith.h"
@@ -2145,8 +2146,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		       formal->name);
 	    return 0;
 	}
-      else if (gfc_option.warn_surprising && where
-	       && formal->attr.intent != INTENT_IN)
+      else if (warn_surprising && where && formal->attr.intent != INTENT_IN)
 	gfc_warning ("Passing coarray at %L to allocatable, noncoarray dummy "
 		     "argument '%s', which is invalid if the allocation status"
 		     " is modified",  &actual->where, formal->name);
@@ -3260,11 +3260,10 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 		     sym->name, where);
 	  return false;
 	}
-      if (gfc_option.warn_implicit_interface)
+      if (warn_implicit_interface)
 	gfc_warning ("Procedure '%s' called with an implicit interface at %L",
 		     sym->name, where);
-      else if (gfc_option.warn_implicit_procedure
-	       && sym->attr.proc == PROC_UNKNOWN)
+      else if (warn_implicit_procedure && sym->attr.proc == PROC_UNKNOWN)
 	gfc_warning ("Procedure '%s' called at %L is not explicitly declared",
 		     sym->name, where);
     }
@@ -3357,7 +3356,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
   if (!check_intents (dummy_args, *ap))
     return false;
 
-  if (gfc_option.warn_aliasing)
+  if (warn_aliasing)
     check_some_aliasing (dummy_args, *ap);
 
   return true;
@@ -3374,7 +3373,7 @@ gfc_ppc_use (gfc_component *comp, gfc_actual_arglist **ap, locus *where)
   /* Warn about calls with an implicit interface.  Special case
      for calling a ISO_C_BINDING because c_loc and c_funloc
      are pseudo-unknown.  */
-  if (gfc_option.warn_implicit_interface
+  if (warn_implicit_interface
       && comp->attr.if_source == IFSRC_UNKNOWN
       && !comp->attr.is_iso_c)
     gfc_warning ("Procedure pointer component '%s' called with an implicit "
@@ -3403,7 +3402,7 @@ gfc_ppc_use (gfc_component *comp, gfc_actual_arglist **ap, locus *where)
     return;
 
   check_intents (comp->ts.interface->formal, *ap);
-  if (gfc_option.warn_aliasing)
+  if (warn_aliasing)
     check_some_aliasing (comp->ts.interface->formal, *ap);
 }
 
@@ -3426,7 +3425,7 @@ gfc_arglist_matches_symbol (gfc_actual_arglist** args, gfc_symbol* sym)
   if (compare_actual_formal (args, dummy_args, r, !r, NULL))
     {
       check_intents (dummy_args, *args);
-      if (gfc_option.warn_aliasing)
+      if (warn_aliasing)
 	check_some_aliasing (dummy_args, *args);
       return true;
     }
