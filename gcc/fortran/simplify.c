@@ -715,8 +715,7 @@ simplify_achar_char (gfc_expr *e, gfc_expr *k, const char *name, bool ascii)
       return &gfc_bad_expr;
     }
 
-  if (ascii && gfc_option.warn_surprising
-      && mpz_cmp_si (e->value.integer, 127) > 0)
+  if (ascii && warn_surprising && mpz_cmp_si (e->value.integer, 127) > 0)
     gfc_warning ("Argument of %s function at %L outside of range [0,127]",
 		 name, &e->where);
 
@@ -2505,7 +2504,7 @@ gfc_simplify_iachar (gfc_expr *e, gfc_expr *kind)
 
   index = e->value.character.string[0];
 
-  if (gfc_option.warn_surprising && index > 127)
+  if (warn_surprising && index > 127)
     gfc_warning ("Argument of IACHAR function at %L outside of range 0..127",
 		 &e->where);
 

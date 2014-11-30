@@ -5284,7 +5284,7 @@ gfc_match_procedure (void)
    parser-state-stack to find out whether we're in a module.  */
 
 static void
-warn_intrinsic_shadow (const gfc_symbol* sym, bool func)
+do_warn_intrinsic_shadow (const gfc_symbol* sym, bool func)
 {
   bool in_module;
 
@@ -5420,7 +5420,7 @@ gfc_match_function_decl (void)
 	}
 
       /* Warn if this procedure has the same name as an intrinsic.  */
-      warn_intrinsic_shadow (sym, true);
+      do_warn_intrinsic_shadow (sym, true);
 
       return MATCH_YES;
     }
@@ -5851,7 +5851,7 @@ gfc_match_subroutine (void)
     return MATCH_ERROR;
 
   /* Warn if it has the same name as an intrinsic.  */
-  warn_intrinsic_shadow (sym, false);
+  do_warn_intrinsic_shadow (sym, false);
 
   return MATCH_YES;
 }

@@ -194,19 +194,19 @@ Fortran
 ; Documented in C
 
 Waliasing
-Fortran Warning
+Fortran Warning Var(warn_aliasing) LangEnabledBy(Fortran,Wall)
 Warn about possible aliasing of dummy arguments
 
 Walign-commons
-Fortran Warning
+Fortran Warning Var(warn_align_commons) Init(1)
 Warn about alignment of COMMON blocks
 
 Wampersand
-Fortran Warning
+Fortran Warning Var(warn_ampersand) LangEnabledBy(Fortran,Wall || Wpedantic)
 Warn about missing ampersand in continued character constants
 
 Warray-temporaries
-Fortran Warning
+Fortran Warning Var(warn_array_temporaries)
 Warn about creation of array temporaries
 
 Wc-binding-type
@@ -222,7 +222,7 @@ Fortran Var(warn_character_truncation) Warning LangEnabledBy(Fortran,Wall)
 Warn about truncated character expressions
 
 Wcompare-reals
-Fortran Warning
+Fortran Warning Var(warn_compare_reals) LangEnabledBy(Fortran,Wextra)
 Warn about equality comparisons involving REAL or COMPLEX expressions
 
 Wconversion
@@ -235,27 +235,31 @@ Warn about most implicit conversions
 
 Wextra
 Fortran Warning
-Print extra (possibly unwanted) warnings
+; Documented in common
 
 Wfunction-elimination
-Fortran Warning
+Fortran Warning Var(warn_function_elimination)
 Warn about function call elimination
 
 Wimplicit-interface
-Fortran Warning
+Fortran Warning Var(warn_implicit_interface)
 Warn about calls with implicit interface
 
 Wimplicit-procedure
-Fortran Warning
+Fortran Warning Var(warn_implicit_procedure)
 Warn about called procedures not explicitly declared
 
 Wline-truncation
-Fortran Warning
+Fortran Warning Var(warn_line_truncation) LangEnabledBy(Fortran,Wall)
 Warn about truncated source lines
 
 Wintrinsics-std
 Fortran Var(warn_intrinsics_std) Warning LangEnabledBy(Fortran,Wall)
 Warn on intrinsics not part of the selected standard
+
+Wmaybe-uninitialized
+Fortran LangEnabledBy(Fortran,Wall)
+; Documented in common.opt
 
 Wmissing-include-dirs
 Fortran
@@ -274,27 +278,27 @@ Fortran
 ; Documented in common.opt
 
 Wreal-q-constant
-Fortran Warning
+Fortran Warning Var(warn_real_q_constant) LangEnabledBy(Fortran,Wall)
 Warn about real-literal-constants with 'q' exponent-letter
 
 Wrealloc-lhs
-Fortran Warning
+Fortran Warning Var(warn_realloc_lhs) LangEnabledBy(Fortran,Wrealloc-lhs-all)
 Warn when a left-hand-side array variable is reallocated
 
 Wrealloc-lhs-all
-Fortran Warning
+Fortran Warning Var(warn_realloc_lhs_all)
 Warn when a left-hand-side variable is reallocated
 
 Wtarget-lifetime
-Fortran Warning
+Fortran Warning Var(warn_target_lifetime) LangEnabledBy(Fortran,Wall)
 Warn if the pointer in a pointer assignment might outlive its target
 
 Wreturn-type
-Fortran Warning
+Fortran Warning LangEnabledBy(Fortran,Wall)
 ; Documented in C
 
 Wsurprising
-Fortran Warning
+Fortran Warning Var(warn_surprising) LangEnabledBy(Fortran,Wall)
 Warn about \"suspicious\" constructs
 
 Wtabs
@@ -302,19 +306,27 @@ Fortran Warning Var(warn_tabs) LangEnabledBy(Fortran,Wall || Wpedantic)
 Permit nonconforming uses of the tab character
 
 Wunderflow
-Fortran Warning
+Fortran Warning Var(warn_underflow) Init(1)
 Warn about underflow of numerical constant expressions
 
+Wuninitialized
+Fortran LangEnabledBy(Fortran,Wall)
+; Documented in common.opt
+
 Wintrinsic-shadow
-Fortran Warning
+Fortran Warning Var(warn_intrinsic_shadow) LangEnabledBy(Fortran,Wall)
 Warn if a user-procedure has the same name as an intrinsic
 
+Wunused
+LangEnabledBy(Fortran,Wall)
+; Documented in common.opt
+
 Wunused-dummy-argument
-Fortran Warning
+Fortran Warning Var(warn_unused_dummy_argument) LangEnabledBy(Fortran,Wall)
 Warn about unused dummy arguments.
 
 Wzerotrip
-Fortran Warning
+Fortran Warning Var(warn_zerotrip) LangEnabledBy(Fortran,Wall)
 Warn about zero-trip DO loops
 
 cpp

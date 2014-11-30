@@ -5070,7 +5070,7 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
 	return false;
     }
 
-  if (!gfc_option.warn_surprising)
+  if (!warn_surprising)
     return true;
 
   /* If we can't calculate the sizes, we cannot check any more.

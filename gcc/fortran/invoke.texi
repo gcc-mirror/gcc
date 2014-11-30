@@ -886,7 +886,7 @@ is active for @option{-pedantic}, @option{-std=f95}, @option{-std=f2003},
 @cindex warnings, underflow
 @cindex underflow
 Produce a warning when numerical constant expressions are
-encountered, which yield an UNDERFLOW during compilation.
+encountered, which yield an UNDERFLOW during compilation. Enabled by default.
 
 @item -Wintrinsic-shadow
 @opindex @code{Wintrinsic-shadow}

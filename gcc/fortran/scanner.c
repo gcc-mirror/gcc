@@ -1048,7 +1048,7 @@ restart:
 	}
 
       /* Check to see if the continuation line was truncated.  */
-      if (gfc_option.warn_line_truncation && gfc_current_locus.lb != NULL
+      if (warn_line_truncation && gfc_current_locus.lb != NULL
 	  && gfc_current_locus.lb->truncated)
 	{
 	  int maxlen = gfc_option.free_line_length;
@@ -1154,7 +1154,7 @@ restart:
 	  if (in_string)
 	    {
 	      gfc_current_locus.nextc--;
-	      if (gfc_option.warn_ampersand && in_string == INSTRING_WARN)
+	      if (warn_ampersand && in_string == INSTRING_WARN)
 		gfc_warning ("Missing '&' in continued character "
 			     "constant at %C");
 	    }
@@ -1190,7 +1190,7 @@ restart:
 	goto done;
 
       /* Check to see if the continuation line was truncated.  */
-      if (gfc_option.warn_line_truncation && gfc_current_locus.lb != NULL
+      if (warn_line_truncation && gfc_current_locus.lb != NULL
 	  && gfc_current_locus.lb->truncated)
 	{
 	  gfc_current_locus.lb->truncated = 0;

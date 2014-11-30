@@ -2442,24 +2442,6 @@ typedef struct
   int dump_fortran_original;
   int dump_fortran_optimized;
 
-  int warn_aliasing;
-  int warn_ampersand;
-  int warn_function_elimination;
-  int warn_implicit_interface;
-  int warn_implicit_procedure;
-  int warn_line_truncation;
-  int warn_surprising;
-  int warn_underflow;
-  int warn_intrinsic_shadow;
-  int warn_array_temp;
-  int warn_align_commons;
-  int warn_real_q_constant;
-  int warn_unused_dummy_argument;
-  int warn_zerotrip;
-  int warn_realloc_lhs;
-  int warn_realloc_lhs_all;
-  int warn_compare_reals;
-  int warn_target_lifetime;
   int max_errors;
 
   int flag_all_intrinsics;

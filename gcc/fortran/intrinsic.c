@@ -4807,7 +4807,7 @@ gfc_warn_intrinsic_shadow (const gfc_symbol* sym, bool in_module, bool func)
   gfc_intrinsic_sym* isym;
 
   /* If the warning is disabled, do nothing at all.  */
-  if (!gfc_option.warn_intrinsic_shadow)
+  if (!warn_intrinsic_shadow)
     return;
 
   /* Try to find an intrinsic of the same name.  */
