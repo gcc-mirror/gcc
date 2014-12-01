@@ -101,6 +101,7 @@ Tutorial
 
 Tutorial part 2: Creating a trivial machine code function
 
+* Error-handling:: 
 * Options:: 
 * Full example:: 
 
@@ -143,7 +144,7 @@ Compilation contexts
 
 * Lifetime-management:: 
 * Thread-safety:: 
-* Error-handling:: 
+* Error-handling: Error-handling<2>. 
 * Debugging:: 
 * Options: Options<2>. 
 
@@ -661,25 +662,72 @@ result: 25
 
 @noindent
 
+Once we're done with the code, we can release the result:
+
+@example
+gcc_jit_result_release (result);
+@end example
+
+@noindent
+
+We can't call @code{square} anymore once we've released @code{result}.
+
 @menu
+* Error-handling:: 
 * Options:: 
 * Full example:: 
 
 @end menu
 
-@node Options,Full example,,Tutorial part 2 Creating a trivial machine code function
-@anchor{intro/tutorial02 options}@anchor{18}
+@node Error-handling,Options,,Tutorial part 2 Creating a trivial machine code function
+@anchor{intro/tutorial02 error-handling}@anchor{18}
+@subsection Error-handling
+
+
+Various kinds of errors are possible when using the API, such as
+mismatched types in an assignment.  You can only compile and get code
+from a context if no errors occur.
+
+Errors are printed on stderr; they typically contain the name of the API
+entrypoint where the error occurred, and pertinent information on the
+problem:
+
+@example
+./buggy-program: error: gcc_jit_block_add_assignment: mismatching types: assignment to i (type: int) from "hello world" (type: const char *)
+@end example
+
+@noindent
+
+The API is designed to cope with errors without crashing, so you can get
+away with having a single error-handling check in your code:
+
+@example
+void *fn_ptr = gcc_jit_result_get_code (result, "square");
+if (!fn_ptr)
+  @{
+    fprintf (stderr, "NULL fn_ptr");
+    goto error;
+  @}
+@end example
+
+@noindent
+
+For more information, see the @pxref{19,,error-handling guide}
+within the Topic eference.
+
+@node Options,Full example,Error-handling,Tutorial part 2 Creating a trivial machine code function
+@anchor{intro/tutorial02 options}@anchor{1a}
 @subsection Options
 
 
 To get more information on what's going on, you can set debugging flags
-on the context using @pxref{19,,gcc_jit_context_set_bool_option()}.
+on the context using @pxref{1b,,gcc_jit_context_set_bool_option()}.
 
 @c (I'm deliberately not mentioning
 @c :c:macro:`GCC_JIT_BOOL_OPTION_DUMP_INITIAL_TREE` here since I think
 @c it's probably more of use to implementors than to users)
 
-Setting @pxref{1a,,GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE} will dump a
+Setting @pxref{1c,,GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE} will dump a
 C-like representation to stderr when you compile (GCC's "GIMPLE"
 representation):
 
@@ -707,7 +755,7 @@ square (signed int i)
 @noindent
 
 We can see the generated machine code in assembler form (on stderr) by
-setting @pxref{1b,,GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE} on the context
+setting @pxref{1d,,GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE} on the context
 before compiling:
 
 @example
@@ -751,8 +799,8 @@ square:
 
 By default, no optimizations are performed, the equivalent of GCC's
 @cite{-O0} option.  We can turn things up to e.g. @cite{-O3} by calling
-@pxref{1c,,gcc_jit_context_set_int_option()} with
-@pxref{1d,,GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL}:
+@pxref{1e,,gcc_jit_context_set_int_option()} with
+@pxref{1f,,GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL}:
 
 @example
 gcc_jit_context_set_int_option (
@@ -788,7 +836,7 @@ square:
 Naturally this has only a small effect on such a trivial function.
 
 @node Full example,,Options,Tutorial part 2 Creating a trivial machine code function
-@anchor{intro/tutorial02 full-example}@anchor{1e}
+@anchor{intro/tutorial02 full-example}@anchor{20}
 @subsection Full example
 
 
@@ -943,7 +991,7 @@ result: 25
 @c <http://www.gnu.org/licenses/>.
 
 @node Tutorial part 3 Loops and variables,Tutorial part 4 Adding JIT-compilation to a toy interpreter,Tutorial part 2 Creating a trivial machine code function,Tutorial
-@anchor{intro/tutorial03 tutorial-part-3-loops-and-variables}@anchor{1f}@anchor{intro/tutorial03 doc}@anchor{20}
+@anchor{intro/tutorial03 tutorial-part-3-loops-and-variables}@anchor{21}@anchor{intro/tutorial03 doc}@anchor{22}
 @section Tutorial part 3: Loops and variables
 
 
@@ -1060,7 +1108,7 @@ gcc_jit_function *func =
 @end menu
 
 @node Expressions lvalues and rvalues,Control flow,,Tutorial part 3 Loops and variables
-@anchor{intro/tutorial03 expressions-lvalues-and-rvalues}@anchor{21}
+@anchor{intro/tutorial03 expressions-lvalues-and-rvalues}@anchor{23}
 @subsection Expressions: lvalues and rvalues
 
 
@@ -1070,8 +1118,8 @@ an assignment: a value that can be computed somehow, and assigned
 @emph{to} a storage area (such as a variable).  It has a specific
 @pxref{a,,gcc_jit_type *}.
 
-Anothe important class is @pxref{22,,gcc_jit_lvalue *}.
-A @pxref{22,,gcc_jit_lvalue *}. is something that can of the @emph{left}-hand
+Anothe important class is @pxref{24,,gcc_jit_lvalue *}.
+A @pxref{24,,gcc_jit_lvalue *}. is something that can of the @emph{left}-hand
 side of an assignment: a storage area (such as a variable).
 
 In other words, every assignment can be thought of as:
@@ -1082,7 +1130,7 @@ LVALUE = RVALUE;
 
 @noindent
 
-Note that @pxref{22,,gcc_jit_lvalue *} is a subclass of
+Note that @pxref{24,,gcc_jit_lvalue *} is a subclass of
 @pxref{13,,gcc_jit_rvalue *}, where in an assignment of the form:
 
 @example
@@ -1109,13 +1157,13 @@ gcc_jit_rvalue *expr =
 
 which is a @pxref{13,,gcc_jit_rvalue *}, and the various function
 parameters: @cite{param_i} and @cite{param_n}, instances of
-@pxref{23,,gcc_jit_param *}, which is a subclass of
-@pxref{22,,gcc_jit_lvalue *} (and, in turn, of @pxref{13,,gcc_jit_rvalue *}):
+@pxref{25,,gcc_jit_param *}, which is a subclass of
+@pxref{24,,gcc_jit_lvalue *} (and, in turn, of @pxref{13,,gcc_jit_rvalue *}):
 we can both read from and write to function parameters within the
 body of a function.
 
 Our new example has a couple of local variables.  We create them by
-calling @pxref{24,,gcc_jit_function_new_local()}, supplying a type and a
+calling @pxref{26,,gcc_jit_function_new_local()}, supplying a type and a
 name:
 
 @example
@@ -1128,7 +1176,7 @@ gcc_jit_lvalue *sum =
 
 @noindent
 
-These are instances of @pxref{22,,gcc_jit_lvalue *} - they can be read from
+These are instances of @pxref{24,,gcc_jit_lvalue *} - they can be read from
 and written to.
 
 Note that there is no precanned way to create @emph{and} initialize a variable
@@ -1144,7 +1192,7 @@ Instead, having added the local to the function, we have to separately add
 an assignment of @cite{0} to @cite{local_i} at the beginning of the function.
 
 @node Control flow,Visualizing the control flow graph,Expressions lvalues and rvalues,Tutorial part 3 Loops and variables
-@anchor{intro/tutorial03 control-flow}@anchor{25}
+@anchor{intro/tutorial03 control-flow}@anchor{27}
 @subsection Control flow
 
 
@@ -1167,8 +1215,8 @@ the body of the loop
 after the loop terminates (@cite{return sum})
 @end enumerate
 
-so we create these as @pxref{26,,gcc_jit_block *} instances within the
-@pxref{27,,gcc_jit_function *}:
+so we create these as @pxref{28,,gcc_jit_block *} instances within the
+@pxref{29,,gcc_jit_function *}:
 
 @example
 gcc_jit_block *b_initial =
@@ -1187,8 +1235,8 @@ We now populate each block with statements.
 
 The entry block @cite{b_initial} consists of initializations followed by a jump
 to the conditional.  We assign @cite{0} to @cite{i} and to @cite{sum}, using
-@pxref{28,,gcc_jit_block_add_assignment()} to add
-an assignment statement, and using @pxref{29,,gcc_jit_context_zero()} to get
+@pxref{2a,,gcc_jit_block_add_assignment()} to add
+an assignment statement, and using @pxref{2b,,gcc_jit_context_zero()} to get
 the constant value @cite{0} for the relevant type for the right-hand side of
 the assignment:
 
@@ -1220,7 +1268,7 @@ The conditional block is equivalent to the line @cite{while (i < n)} from our
 C example. It contains a single statement: a conditional, which jumps to
 one of two destination blocks depending on a boolean
 @pxref{13,,gcc_jit_rvalue *}, in this case the comparison of @cite{i} and @cite{n}.
-We build the comparison using @pxref{2a,,gcc_jit_context_new_comparison()}:
+We build the comparison using @pxref{2c,,gcc_jit_context_new_comparison()}:
 
 @example
 gcc_jit_rvalue *guard =
@@ -1234,7 +1282,7 @@ gcc_jit_rvalue *guard =
 @noindent
 
 and can then use this to add @cite{b_loop_cond}'s sole statement, via
-@pxref{2b,,gcc_jit_block_end_with_conditional()}:
+@pxref{2d,,gcc_jit_block_end_with_conditional()}:
 
 @example
 gcc_jit_block_end_with_conditional (b_loop_cond, NULL, guard);
@@ -1246,7 +1294,7 @@ Next, we populate the body of the loop.
 
 The C statement @cite{sum += i * i;} is an assignment operation, where an
 lvalue is modified "in-place".  We use
-@pxref{2c,,gcc_jit_block_add_assignment_op()} to handle these operations:
+@pxref{2e,,gcc_jit_block_add_assignment_op()} to handle these operations:
 
 @example
 /* sum += i * i */
@@ -1264,7 +1312,7 @@ gcc_jit_block_add_assignment_op (
 @noindent
 
 The @cite{i++} can be thought of as @cite{i += 1}, and can thus be handled in
-a similar way.  We use @pxref{2d,,gcc_jit_context_one()} to get the constant
+a similar way.  We use @pxref{2f,,gcc_jit_context_one()} to get the constant
 value @cite{1} (for the relevant type) for the right-hand side
 of the assignment.
 
@@ -1282,8 +1330,8 @@ gcc_jit_block_add_assignment_op (
 @cartouche
 @quotation Note 
 For numeric constants other than 0 or 1, we could use
-@pxref{2e,,gcc_jit_context_new_rvalue_from_int()} and
-@pxref{2f,,gcc_jit_context_new_rvalue_from_double()}.
+@pxref{30,,gcc_jit_context_new_rvalue_from_int()} and
+@pxref{31,,gcc_jit_context_new_rvalue_from_double()}.
 @end quotation
 @end cartouche
 
@@ -1349,12 +1397,12 @@ result: 285
 @noindent
 
 @node Visualizing the control flow graph,Full example<2>,Control flow,Tutorial part 3 Loops and variables
-@anchor{intro/tutorial03 visualizing-the-control-flow-graph}@anchor{30}
+@anchor{intro/tutorial03 visualizing-the-control-flow-graph}@anchor{32}
 @subsection Visualizing the control flow graph
 
 
 You can see the control flow graph of a function using
-@pxref{31,,gcc_jit_function_dump_to_dot()}:
+@pxref{33,,gcc_jit_function_dump_to_dot()}:
 
 @example
 gcc_jit_function_dump_to_dot (func, "/tmp/sum-of-squares.dot");
@@ -1388,7 +1436,7 @@ install it with @cite{yum install python-xdot}):
 @end quotation
 
 @node Full example<2>,,Visualizing the control flow graph,Tutorial part 3 Loops and variables
-@anchor{intro/tutorial03 full-example}@anchor{32}
+@anchor{intro/tutorial03 full-example}@anchor{34}
 @subsection Full example
 
 
@@ -1606,7 +1654,7 @@ loop_test returned: 285
 @c <http://www.gnu.org/licenses/>.
 
 @node Tutorial part 4 Adding JIT-compilation to a toy interpreter,,Tutorial part 3 Loops and variables,Tutorial
-@anchor{intro/tutorial04 tutorial-part-4-adding-jit-compilation-to-a-toy-interpreter}@anchor{33}@anchor{intro/tutorial04 doc}@anchor{34}
+@anchor{intro/tutorial04 tutorial-part-4-adding-jit-compilation-to-a-toy-interpreter}@anchor{35}@anchor{intro/tutorial04 doc}@anchor{36}
 @section Tutorial part 4: Adding JIT-compilation to a toy interpreter
 
 
@@ -1628,7 +1676,7 @@ to it.
 @end menu
 
 @node Our toy interpreter,Compiling to machine code,,Tutorial part 4 Adding JIT-compilation to a toy interpreter
-@anchor{intro/tutorial04 our-toy-interpreter}@anchor{35}
+@anchor{intro/tutorial04 our-toy-interpreter}@anchor{37}
 @subsection Our toy interpreter
 
 
@@ -2036,7 +2084,7 @@ toyvm_function_interpret (toyvm_function *fn, int arg, FILE *trace)
 @end quotation
 
 @node Compiling to machine code,Setting things up,Our toy interpreter,Tutorial part 4 Adding JIT-compilation to a toy interpreter
-@anchor{intro/tutorial04 compiling-to-machine-code}@anchor{36}
+@anchor{intro/tutorial04 compiling-to-machine-code}@anchor{38}
 @subsection Compiling to machine code
 
 
@@ -2056,7 +2104,7 @@ typedef int (*toyvm_compiled_code) (int);
 
 The lifetime of the code is tied to that of a @pxref{16,,gcc_jit_result *}.
 We'll handle this by bundling them up in a structure, so that we can
-clean them up together by calling @pxref{37,,gcc_jit_result_release()}:
+clean them up together by calling @pxref{39,,gcc_jit_result_release()}:
 
 @quotation
 
@@ -2138,7 +2186,7 @@ struct compilation_state
 @end quotation
 
 @node Setting things up,Populating the function,Compiling to machine code,Tutorial part 4 Adding JIT-compilation to a toy interpreter
-@anchor{intro/tutorial04 setting-things-up}@anchor{38}
+@anchor{intro/tutorial04 setting-things-up}@anchor{3a}
 @subsection Setting things up
 
 
@@ -2244,7 +2292,7 @@ add_pop (compilation_state *state,
 @end quotation
 
 We will support single-stepping through the generated code in the
-debugger, so we need to create @pxref{39,,gcc_jit_location} instances, one
+debugger, so we need to create @pxref{3b,,gcc_jit_location} instances, one
 per operation in the source code.  These will reference the lines of
 e.g. @code{factorial.toy}.
 
@@ -2315,7 +2363,7 @@ We create the locals within the function.
 @end quotation
 
 @node Populating the function,Verifying the control flow graph,Setting things up,Tutorial part 4 Adding JIT-compilation to a toy interpreter
-@anchor{intro/tutorial04 populating-the-function}@anchor{3a}
+@anchor{intro/tutorial04 populating-the-function}@anchor{3c}
 @subsection Populating the function
 
 
@@ -2447,7 +2495,7 @@ stack into @code{y} instead erroneously assigned it to @code{x}, leaving @code{y
 uninitialized.
 
 To track this kind of thing down, we can use
-@pxref{3b,,gcc_jit_block_add_comment()} to add descriptive comments
+@pxref{3d,,gcc_jit_block_add_comment()} to add descriptive comments
 to the internal representation.  This is invaluable when looking through
 the generated IR for, say @code{factorial}:
 
@@ -2621,14 +2669,14 @@ to the next block.
 This is analogous to simply incrementing the program counter.
 
 @node Verifying the control flow graph,Compiling the context,Populating the function,Tutorial part 4 Adding JIT-compilation to a toy interpreter
-@anchor{intro/tutorial04 verifying-the-control-flow-graph}@anchor{3c}
+@anchor{intro/tutorial04 verifying-the-control-flow-graph}@anchor{3e}
 @subsection Verifying the control flow graph
 
 
 Having finished looping over the blocks, the context is complete.
 
 As before, we can verify that the control flow and statements are sane by
-using @pxref{31,,gcc_jit_function_dump_to_dot()}:
+using @pxref{33,,gcc_jit_function_dump_to_dot()}:
 
 @example
 gcc_jit_function_dump_to_dot (state.fn, "/tmp/factorial.dot");
@@ -2652,7 +2700,7 @@ errors in our compiler.
 @end quotation
 
 @node Compiling the context,Single-stepping through the generated code,Verifying the control flow graph,Tutorial part 4 Adding JIT-compilation to a toy interpreter
-@anchor{intro/tutorial04 compiling-the-context}@anchor{3d}
+@anchor{intro/tutorial04 compiling-the-context}@anchor{3f}
 @subsection Compiling the context
 
 
@@ -2854,7 +2902,7 @@ We can now run the result:
 @end quotation
 
 @node Single-stepping through the generated code,Examining the generated code,Compiling the context,Tutorial part 4 Adding JIT-compilation to a toy interpreter
-@anchor{intro/tutorial04 single-stepping-through-the-generated-code}@anchor{3e}
+@anchor{intro/tutorial04 single-stepping-through-the-generated-code}@anchor{40}
 @subsection Single-stepping through the generated code
 
 
@@ -2868,14 +2916,14 @@ It's possible to debug the generated code.  To do this we need to both:
 @item 
 Set up source code locations for our statements, so that we can
 meaningfully step through the code.  We did this above by
-calling @pxref{3f,,gcc_jit_context_new_location()} and using the
+calling @pxref{41,,gcc_jit_context_new_location()} and using the
 results.
 
 @item 
 Enable the generation of debugging information, by setting
-@pxref{40,,GCC_JIT_BOOL_OPTION_DEBUGINFO} on the
+@pxref{42,,GCC_JIT_BOOL_OPTION_DEBUGINFO} on the
 @pxref{8,,gcc_jit_context} via
-@pxref{19,,gcc_jit_context_set_bool_option()}:
+@pxref{1b,,gcc_jit_context_set_bool_option()}:
 
 @example
 gcc_jit_context_set_bool_option (
@@ -2950,15 +2998,15 @@ optimization level in a regular compiler.
 @end cartouche
 
 @node Examining the generated code,Putting it all together,Single-stepping through the generated code,Tutorial part 4 Adding JIT-compilation to a toy interpreter
-@anchor{intro/tutorial04 examining-the-generated-code}@anchor{41}
+@anchor{intro/tutorial04 examining-the-generated-code}@anchor{43}
 @subsection Examining the generated code
 
 
 How good is the optimized code?
 
 We can turn up optimizations, by calling
-@pxref{1c,,gcc_jit_context_set_int_option()} with
-@pxref{1d,,GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL}:
+@pxref{1e,,gcc_jit_context_set_int_option()} with
+@pxref{1f,,GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL}:
 
 @example
 gcc_jit_context_set_int_option (
@@ -3150,7 +3198,7 @@ Note that the stack pushing and popping have been eliminated, as has the
 recursive call (in favor of an iteration).
 
 @node Putting it all together,Behind the curtain How does our code get optimized?,Examining the generated code,Tutorial part 4 Adding JIT-compilation to a toy interpreter
-@anchor{intro/tutorial04 putting-it-all-together}@anchor{42}
+@anchor{intro/tutorial04 putting-it-all-together}@anchor{44}
 @subsection Putting it all together
 
 
@@ -3183,7 +3231,7 @@ compiler result: 55
 @noindent
 
 @node Behind the curtain How does our code get optimized?,,Putting it all together,Tutorial part 4 Adding JIT-compilation to a toy interpreter
-@anchor{intro/tutorial04 behind-the-curtain-how-does-our-code-get-optimized}@anchor{43}
+@anchor{intro/tutorial04 behind-the-curtain-how-does-our-code-get-optimized}@anchor{45}
 @subsection Behind the curtain: How does our code get optimized?
 
 
@@ -3281,7 +3329,7 @@ initial:
 @noindent
 
 We can perhaps better see the code by turning off
-@pxref{40,,GCC_JIT_BOOL_OPTION_DEBUGINFO} to suppress all those @code{DEBUG}
+@pxref{42,,GCC_JIT_BOOL_OPTION_DEBUGINFO} to suppress all those @code{DEBUG}
 statements, giving:
 
 @example
@@ -3377,7 +3425,7 @@ instr9:
 
 @noindent
 
-Note in the above how all the @pxref{26,,gcc_jit_block} instances we
+Note in the above how all the @pxref{28,,gcc_jit_block} instances we
 created have been consolidated into just 3 blocks in GCC's internal
 representation: @code{initial}, @code{instr4} and @code{instr9}.
 
@@ -3388,7 +3436,7 @@ representation: @code{initial}, @code{instr4} and @code{instr9}.
 @end menu
 
 @node Optimizing away stack manipulation,Elimination of tail recursion,,Behind the curtain How does our code get optimized?
-@anchor{intro/tutorial04 optimizing-away-stack-manipulation}@anchor{44}
+@anchor{intro/tutorial04 optimizing-away-stack-manipulation}@anchor{46}
 @subsubsection Optimizing away stack manipulation
 
 
@@ -3668,7 +3716,7 @@ instr9:
 @noindent
 
 @node Elimination of tail recursion,,Optimizing away stack manipulation,Behind the curtain How does our code get optimized?
-@anchor{intro/tutorial04 elimination-of-tail-recursion}@anchor{45}
+@anchor{intro/tutorial04 elimination-of-tail-recursion}@anchor{47}
 @subsubsection Elimination of tail recursion
 
 
@@ -3755,7 +3803,7 @@ instr9:
 @c <http://www.gnu.org/licenses/>.
 
 @node Topic Reference,Internals,Tutorial,Top
-@anchor{topics/index doc}@anchor{46}@anchor{topics/index topic-reference}@anchor{47}
+@anchor{topics/index doc}@anchor{48}@anchor{topics/index topic-reference}@anchor{49}
 @chapter Topic Reference
 
 
@@ -3789,7 +3837,7 @@ Compilation contexts
 
 * Lifetime-management:: 
 * Thread-safety:: 
-* Error-handling:: 
+* Error-handling: Error-handling<2>. 
 * Debugging:: 
 * Options: Options<2>. 
 
@@ -3839,7 +3887,7 @@ Source Locations
 
 
 @node Compilation contexts,Objects,,Topic Reference
-@anchor{topics/contexts compilation-contexts}@anchor{48}@anchor{topics/contexts doc}@anchor{49}
+@anchor{topics/contexts compilation-contexts}@anchor{4a}@anchor{topics/contexts doc}@anchor{4b}
 @section Compilation contexts
 
 
@@ -3860,14 +3908,14 @@ Invoking @pxref{15,,gcc_jit_context_compile()} on it gives you a
 @menu
 * Lifetime-management:: 
 * Thread-safety:: 
-* Error-handling:: 
+* Error-handling: Error-handling<2>. 
 * Debugging:: 
 * Options: Options<2>. 
 
 @end menu
 
 @node Lifetime-management,Thread-safety,,Compilation contexts
-@anchor{topics/contexts lifetime-management}@anchor{4a}
+@anchor{topics/contexts lifetime-management}@anchor{4c}
 @subsection Lifetime-management
 
 
@@ -3904,7 +3952,7 @@ gcc_jit_context_release (ctxt);
 @end deffn
 
 @geindex gcc_jit_context_new_child_context (C function)
-@anchor{topics/contexts gcc_jit_context_new_child_context}@anchor{4b}
+@anchor{topics/contexts gcc_jit_context_new_child_context}@anchor{4d}
 @deffn {C Function} gcc_jit_context * gcc_jit_context_new_child_context (gcc_jit_context@w{ }*parent_ctxt)
 
 Given an existing JIT context, create a child context.
@@ -3935,8 +3983,8 @@ followed, but it's probably not worth going above 2 or 3 levels, and
 there will likely be a performance hit for such nesting.
 @end deffn
 
-@node Thread-safety,Error-handling,Lifetime-management,Compilation contexts
-@anchor{topics/contexts thread-safety}@anchor{4c}
+@node Thread-safety,Error-handling<2>,Lifetime-management,Compilation contexts
+@anchor{topics/contexts thread-safety}@anchor{4e}
 @subsection Thread-safety
 
 
@@ -3945,29 +3993,42 @@ Instances of @pxref{e,,gcc_jit_object *} created via
 only one thread may use a given context at once, but multiple threads
 could each have their own contexts without needing locks.
 
-Contexts created via @pxref{4b,,gcc_jit_context_new_child_context()} are
+Contexts created via @pxref{4d,,gcc_jit_context_new_child_context()} are
 related to their parent context.  They can be partitioned by their
 ultimate ancestor into independent "family trees".   Only one thread
 within a process may use a given "family tree" of such contexts at once,
 and if you're using multiple threads you should provide your own locking
 around entire such context partitions.
 
-@node Error-handling,Debugging,Thread-safety,Compilation contexts
-@anchor{topics/contexts error-handling}@anchor{4d}
+@node Error-handling<2>,Debugging,Thread-safety,Compilation contexts
+@anchor{topics/contexts error-handling}@anchor{19}@anchor{topics/contexts id1}@anchor{4f}
 @subsection Error-handling
 
 
-You can only compile and get code from a context if no errors occur.
-
-In general, if an error occurs when using an API entrypoint, it returns
-NULL.  You don't have to check everywhere for NULL results, since the
-API gracefully handles a NULL being passed in for any argument.
+Various kinds of errors are possible when using the API, such as
+mismatched types in an assignment.  You can only compile and get code from
+a context if no errors occur.
 
 Errors are printed on stderr and can be queried using
-@pxref{4e,,gcc_jit_context_get_first_error()}.
+@pxref{50,,gcc_jit_context_get_first_error()}.
+
+They typically contain the name of the API entrypoint where the error
+occurred, and pertinent information on the problem:
+
+@example
+./buggy-program: error: gcc_jit_block_add_assignment: mismatching types: assignment to i (type: int) from "hello world" (type: const char *)
+@end example
+
+@noindent
+
+In general, if an error occurs when using an API entrypoint, the
+entrypoint returns NULL.  You don't have to check everywhere for NULL
+results, since the API handles a NULL being passed in for any
+argument by issuing another error.  This typically leads to a cascade of
+followup error messages, but is safe (albeit verbose).
 
 @geindex gcc_jit_context_get_first_error (C function)
-@anchor{topics/contexts gcc_jit_context_get_first_error}@anchor{4e}
+@anchor{topics/contexts gcc_jit_context_get_first_error}@anchor{50}
 @deffn {C Function} const char *           gcc_jit_context_get_first_error (gcc_jit_context@w{ }*ctxt)
 
 Returns the first error message that occurred on the context.
@@ -3978,27 +4039,27 @@ context.
 If no errors occurred, this will be NULL.
 @end deffn
 
-@node Debugging,Options<2>,Error-handling,Compilation contexts
-@anchor{topics/contexts debugging}@anchor{4f}
+@node Debugging,Options<2>,Error-handling<2>,Compilation contexts
+@anchor{topics/contexts debugging}@anchor{51}
 @subsection Debugging
 
 
 @geindex gcc_jit_context_dump_to_file (C function)
-@anchor{topics/contexts gcc_jit_context_dump_to_file}@anchor{50}
+@anchor{topics/contexts gcc_jit_context_dump_to_file}@anchor{52}
 @deffn {C Function} void           gcc_jit_context_dump_to_file (gcc_jit_context@w{ }*ctxt, const char@w{ }*path, int@w{ }update_locations)
 
 To help with debugging: dump a C-like representation to the given path,
 describing what's been set up on the context.
 
-If "update_locations" is true, then also set up @pxref{39,,gcc_jit_location}
+If "update_locations" is true, then also set up @pxref{3b,,gcc_jit_location}
 information throughout the context, pointing at the dump file as if it
 were a source file.  This may be of use in conjunction with
-@pxref{40,,GCC_JIT_BOOL_OPTION_DEBUGINFO} to allow stepping through the
+@pxref{42,,GCC_JIT_BOOL_OPTION_DEBUGINFO} to allow stepping through the
 code in a debugger.
 @end deffn
 
 @node Options<2>,,Debugging,Compilation contexts
-@anchor{topics/contexts options}@anchor{51}
+@anchor{topics/contexts options}@anchor{53}
 @subsection Options
 
 
@@ -4010,25 +4071,25 @@ code in a debugger.
 @end menu
 
 @node String Options,Boolean options,,Options<2>
-@anchor{topics/contexts string-options}@anchor{52}
+@anchor{topics/contexts string-options}@anchor{54}
 @subsubsection String Options
 
 
 @geindex gcc_jit_context_set_str_option (C function)
-@anchor{topics/contexts gcc_jit_context_set_str_option}@anchor{53}
+@anchor{topics/contexts gcc_jit_context_set_str_option}@anchor{55}
 @deffn {C Function} void gcc_jit_context_set_str_option (gcc_jit_context@w{ }*ctxt, enum gcc_jit_str_option@w{ }opt, const char@w{ }*value)
 
 Set a string option of the context.
 
 @geindex gcc_jit_str_option (C type)
-@anchor{topics/contexts gcc_jit_str_option}@anchor{54}
+@anchor{topics/contexts gcc_jit_str_option}@anchor{56}
 @deffn {C Type} enum gcc_jit_str_option
 @end deffn
 
 There is currently just one string option:
 
 @geindex GCC_JIT_STR_OPTION_PROGNAME (C macro)
-@anchor{topics/contexts GCC_JIT_STR_OPTION_PROGNAME}@anchor{55}
+@anchor{topics/contexts GCC_JIT_STR_OPTION_PROGNAME}@anchor{57}
 @deffn {C Macro} GCC_JIT_STR_OPTION_PROGNAME
 
 The name of the program, for use as a prefix when printing error
@@ -4037,24 +4098,24 @@ messages to stderr.  If @cite{NULL}, or default, "libgccjit.so" is used.
 @end deffn
 
 @node Boolean options,Integer options,String Options,Options<2>
-@anchor{topics/contexts boolean-options}@anchor{56}
+@anchor{topics/contexts boolean-options}@anchor{58}
 @subsubsection Boolean options
 
 
 @geindex gcc_jit_context_set_bool_option (C function)
-@anchor{topics/contexts gcc_jit_context_set_bool_option}@anchor{19}
+@anchor{topics/contexts gcc_jit_context_set_bool_option}@anchor{1b}
 @deffn {C Function} void gcc_jit_context_set_bool_option (gcc_jit_context@w{ }*ctxt, enum gcc_jit_bool_option@w{ }opt, int@w{ }value)
 
 Set a boolean option of the context.
 Zero is "false" (the default), non-zero is "true".
 
 @geindex gcc_jit_bool_option (C type)
-@anchor{topics/contexts gcc_jit_bool_option}@anchor{57}
+@anchor{topics/contexts gcc_jit_bool_option}@anchor{59}
 @deffn {C Type} enum gcc_jit_bool_option
 @end deffn
 
 @geindex GCC_JIT_BOOL_OPTION_DEBUGINFO (C macro)
-@anchor{topics/contexts GCC_JIT_BOOL_OPTION_DEBUGINFO}@anchor{40}
+@anchor{topics/contexts GCC_JIT_BOOL_OPTION_DEBUGINFO}@anchor{42}
 @deffn {C Macro} GCC_JIT_BOOL_OPTION_DEBUGINFO
 
 If true, @pxref{15,,gcc_jit_context_compile()} will attempt to do the right
@@ -4063,11 +4124,11 @@ be able to inspect variables and step through your code.
 
 Note that you can't step through code unless you set up source
 location information for the code (by creating and passing in
-@pxref{39,,gcc_jit_location} instances).
+@pxref{3b,,gcc_jit_location} instances).
 @end deffn
 
 @geindex GCC_JIT_BOOL_OPTION_DUMP_INITIAL_TREE (C macro)
-@anchor{topics/contexts GCC_JIT_BOOL_OPTION_DUMP_INITIAL_TREE}@anchor{58}
+@anchor{topics/contexts GCC_JIT_BOOL_OPTION_DUMP_INITIAL_TREE}@anchor{5a}
 @deffn {C Macro} GCC_JIT_BOOL_OPTION_DUMP_INITIAL_TREE
 
 If true, @pxref{15,,gcc_jit_context_compile()} will dump its initial
@@ -4105,7 +4166,7 @@ Here's some sample output (from the @cite{square} example):
 @end deffn
 
 @geindex GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE (C macro)
-@anchor{topics/contexts GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE}@anchor{1a}
+@anchor{topics/contexts GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE}@anchor{1c}
 @deffn {C Macro} GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE
 
 If true, @pxref{15,,gcc_jit_context_compile()} will dump the "gimple"
@@ -4127,7 +4188,7 @@ square (signed int i)
 @end deffn
 
 @geindex GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE (C macro)
-@anchor{topics/contexts GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE}@anchor{1b}
+@anchor{topics/contexts GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE}@anchor{1d}
 @deffn {C Macro} GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE
 
 If true, @pxref{15,,gcc_jit_context_compile()} will dump the final
@@ -4164,7 +4225,7 @@ square:
 @end deffn
 
 @geindex GCC_JIT_BOOL_OPTION_DUMP_SUMMARY (C macro)
-@anchor{topics/contexts GCC_JIT_BOOL_OPTION_DUMP_SUMMARY}@anchor{59}
+@anchor{topics/contexts GCC_JIT_BOOL_OPTION_DUMP_SUMMARY}@anchor{5b}
 @deffn {C Macro} GCC_JIT_BOOL_OPTION_DUMP_SUMMARY
 
 If true, @pxref{15,,gcc_jit_context_compile()} will print information to stderr
@@ -4173,19 +4234,19 @@ the time taken and memory usage of each phase.
 @end deffn
 
 @geindex GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING (C macro)
-@anchor{topics/contexts GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING}@anchor{5a}
+@anchor{topics/contexts GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING}@anchor{5c}
 @deffn {C Macro} GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING
 
 If true, @pxref{15,,gcc_jit_context_compile()} will dump copious
 amount of information on what it's doing to various
 files within a temporary directory.  Use
-@pxref{5b,,GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES} (see below) to
+@pxref{5d,,GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES} (see below) to
 see the results.  The files are intended to be human-readable,
 but the exact files and their formats are subject to change.
 @end deffn
 
 @geindex GCC_JIT_BOOL_OPTION_SELFCHECK_GC (C macro)
-@anchor{topics/contexts GCC_JIT_BOOL_OPTION_SELFCHECK_GC}@anchor{5c}
+@anchor{topics/contexts GCC_JIT_BOOL_OPTION_SELFCHECK_GC}@anchor{5e}
 @deffn {C Macro} GCC_JIT_BOOL_OPTION_SELFCHECK_GC
 
 If true, libgccjit will aggressively run its garbage collector, to
@@ -4195,7 +4256,7 @@ used when running the selftest suite.
 @end deffn
 
 @geindex GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES (C macro)
-@anchor{topics/contexts GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES}@anchor{5b}
+@anchor{topics/contexts GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES}@anchor{5d}
 @deffn {C Macro} GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES
 
 If true, the @pxref{8,,gcc_jit_context} will not clean up intermediate files
@@ -4204,25 +4265,25 @@ written to the filesystem, and will display their location on stderr.
 @end deffn
 
 @node Integer options,,Boolean options,Options<2>
-@anchor{topics/contexts integer-options}@anchor{5d}
+@anchor{topics/contexts integer-options}@anchor{5f}
 @subsubsection Integer options
 
 
 @geindex gcc_jit_context_set_int_option (C function)
-@anchor{topics/contexts gcc_jit_context_set_int_option}@anchor{1c}
+@anchor{topics/contexts gcc_jit_context_set_int_option}@anchor{1e}
 @deffn {C Function} void gcc_jit_context_set_int_option (gcc_jit_context@w{ }*ctxt, enum gcc_jit_int_option@w{ }opt, int@w{ }value)
 
 Set an integer option of the context.
 
 @geindex gcc_jit_int_option (C type)
-@anchor{topics/contexts gcc_jit_int_option}@anchor{5e}
+@anchor{topics/contexts gcc_jit_int_option}@anchor{60}
 @deffn {C Type} enum gcc_jit_int_option
 @end deffn
 
 There is currently just one integer option:
 
 @geindex GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL (C macro)
-@anchor{topics/contexts GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL}@anchor{1d}
+@anchor{topics/contexts GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL}@anchor{1f}
 @deffn {C Macro} GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL
 
 How much to optimize the code.
@@ -4252,7 +4313,7 @@ The default value is 0 (unoptimized).
 @c <http://www.gnu.org/licenses/>.
 
 @node Objects,Types,Compilation contexts,Topic Reference
-@anchor{topics/objects objects}@anchor{5f}@anchor{topics/objects doc}@anchor{60}
+@anchor{topics/objects objects}@anchor{61}@anchor{topics/objects doc}@anchor{62}
 @section Objects
 
 
@@ -4312,7 +4373,7 @@ gcc_jit_object *obj = gcc_jit_type_as_object (int_type);
 The object "base class" has the following operations:
 
 @geindex gcc_jit_object_get_context (C function)
-@anchor{topics/objects gcc_jit_object_get_context}@anchor{61}
+@anchor{topics/objects gcc_jit_object_get_context}@anchor{63}
 @deffn {C Function} gcc_jit_context *gcc_jit_object_get_context (gcc_jit_object@w{ }*obj)
 
 Which context is "obj" within?
@@ -4368,7 +4429,7 @@ object's context is released.
 @c <http://www.gnu.org/licenses/>.
 
 @node Types,Expressions,Objects,Topic Reference
-@anchor{topics/types doc}@anchor{62}@anchor{topics/types types}@anchor{63}
+@anchor{topics/types doc}@anchor{64}@anchor{topics/types types}@anchor{65}
 @section Types
 
 
@@ -4405,7 +4466,7 @@ See @pxref{b,,gcc_jit_context_get_type()} for the available types.
 
 @item 
 derived types can be accessed by using functions such as
-@pxref{64,,gcc_jit_type_get_pointer()} and @pxref{65,,gcc_jit_type_get_const()}:
+@pxref{66,,gcc_jit_type_get_pointer()} and @pxref{67,,gcc_jit_type_get_const()}:
 
 @example
 gcc_jit_type *const_int_star = gcc_jit_type_get_pointer (gcc_jit_type_get_const (int_type));
@@ -4426,7 +4487,7 @@ by creating structures (see below).
 @end menu
 
 @node Standard types,Pointers const and volatile,,Types
-@anchor{topics/types standard-types}@anchor{66}
+@anchor{topics/types standard-types}@anchor{68}
 @subsection Standard types
 
 
@@ -4631,66 +4692,66 @@ C99's @code{_Complex long double}
 @end deffn
 
 @geindex gcc_jit_context_get_int_type (C function)
-@anchor{topics/types gcc_jit_context_get_int_type}@anchor{67}
+@anchor{topics/types gcc_jit_context_get_int_type}@anchor{69}
 @deffn {C Function} gcc_jit_type *           gcc_jit_context_get_int_type (gcc_jit_context@w{ }*ctxt, int@w{ }num_bytes, int@w{ }is_signed)
 
 Access the integer type of the given size.
 @end deffn
 
 @node Pointers const and volatile,Structures and unions,Standard types,Types
-@anchor{topics/types pointers-const-and-volatile}@anchor{68}
+@anchor{topics/types pointers-const-and-volatile}@anchor{6a}
 @subsection Pointers, @cite{const}, and @cite{volatile}
 
 
 @geindex gcc_jit_type_get_pointer (C function)
-@anchor{topics/types gcc_jit_type_get_pointer}@anchor{64}
+@anchor{topics/types gcc_jit_type_get_pointer}@anchor{66}
 @deffn {C Function} gcc_jit_type *gcc_jit_type_get_pointer (gcc_jit_type@w{ }*type)
 
 Given type "T", get type "T*".
 @end deffn
 
 @geindex gcc_jit_type_get_const (C function)
-@anchor{topics/types gcc_jit_type_get_const}@anchor{65}
+@anchor{topics/types gcc_jit_type_get_const}@anchor{67}
 @deffn {C Function} gcc_jit_type *gcc_jit_type_get_const (gcc_jit_type@w{ }*type)
 
 Given type "T", get type "const T".
 @end deffn
 
 @geindex gcc_jit_type_get_volatile (C function)
-@anchor{topics/types gcc_jit_type_get_volatile}@anchor{69}
+@anchor{topics/types gcc_jit_type_get_volatile}@anchor{6b}
 @deffn {C Function} gcc_jit_type *gcc_jit_type_get_volatile (gcc_jit_type@w{ }*type)
 
 Given type "T", get type "volatile T".
 @end deffn
 
 @geindex gcc_jit_context_new_array_type (C function)
-@anchor{topics/types gcc_jit_context_new_array_type}@anchor{6a}
+@anchor{topics/types gcc_jit_context_new_array_type}@anchor{6c}
 @deffn {C Function} gcc_jit_type *            gcc_jit_context_new_array_type (gcc_jit_context@w{ }*ctxt, gcc_jit_location@w{ }*loc, gcc_jit_type@w{ }*element_type, int@w{ }num_elements)
 
 Given type "T", get type "T[N]" (for a constant N).
 @end deffn
 
 @node Structures and unions,,Pointers const and volatile,Types
-@anchor{topics/types structures-and-unions}@anchor{6b}
+@anchor{topics/types structures-and-unions}@anchor{6d}
 @subsection Structures and unions
 
 
 @geindex gcc_jit_struct (C type)
-@anchor{topics/types gcc_jit_struct}@anchor{6c}
+@anchor{topics/types gcc_jit_struct}@anchor{6e}
 @deffn {C Type} gcc_jit_struct
 @end deffn
 
 A compound type analagous to a C @cite{struct}.
 
 @geindex gcc_jit_field (C type)
-@anchor{topics/types gcc_jit_field}@anchor{6d}
+@anchor{topics/types gcc_jit_field}@anchor{6f}
 @deffn {C Type} gcc_jit_field
 @end deffn
 
-A field within a @pxref{6c,,gcc_jit_struct}.
+A field within a @pxref{6e,,gcc_jit_struct}.
 
-You can model C @cite{struct} types by creating @pxref{6c,,gcc_jit_struct *} and
-@pxref{6d,,gcc_jit_field} instances, in either order:
+You can model C @cite{struct} types by creating @pxref{6e,,gcc_jit_struct *} and
+@pxref{6f,,gcc_jit_field} instances, in either order:
 
 
 @itemize *
@@ -4747,21 +4808,21 @@ gcc_jit_struct_set_fields (node, NULL, 2, fields);
 @end itemize
 
 @geindex gcc_jit_context_new_field (C function)
-@anchor{topics/types gcc_jit_context_new_field}@anchor{6e}
+@anchor{topics/types gcc_jit_context_new_field}@anchor{70}
 @deffn {C Function} gcc_jit_field *           gcc_jit_context_new_field (gcc_jit_context@w{ }*ctxt, gcc_jit_location@w{ }*loc, gcc_jit_type@w{ }*type, const char@w{ }*name)
 
 Construct a new field, with the given type and name.
 @end deffn
 
 @geindex gcc_jit_field_as_object (C function)
-@anchor{topics/types gcc_jit_field_as_object}@anchor{6f}
+@anchor{topics/types gcc_jit_field_as_object}@anchor{71}
 @deffn {C Function} gcc_jit_object *           gcc_jit_field_as_object (gcc_jit_field@w{ }*field)
 
 Upcast from field to object.
 @end deffn
 
 @geindex gcc_jit_context_new_struct_type (C function)
-@anchor{topics/types gcc_jit_context_new_struct_type}@anchor{70}
+@anchor{topics/types gcc_jit_context_new_struct_type}@anchor{72}
 @deffn {C Function} gcc_jit_struct *gcc_jit_context_new_struct_type (gcc_jit_context@w{ }*ctxt, gcc_jit_location@w{ }*loc, const char@w{ }*name, int@w{ }num_fields, gcc_jit_field@w{ }**fields)
 
 @quotation
@@ -4771,24 +4832,24 @@ Construct a new struct type, with the given name and fields.
 @end deffn
 
 @geindex gcc_jit_context_new_opaque_struct (C function)
-@anchor{topics/types gcc_jit_context_new_opaque_struct}@anchor{71}
+@anchor{topics/types gcc_jit_context_new_opaque_struct}@anchor{73}
 @deffn {C Function} gcc_jit_struct *         gcc_jit_context_new_opaque_struct (gcc_jit_context@w{ }*ctxt, gcc_jit_location@w{ }*loc, const char@w{ }*name)
 
 Construct a new struct type, with the given name, but without
 specifying the fields.   The fields can be omitted (in which case the
 size of the struct is not known), or later specified using
-@pxref{72,,gcc_jit_struct_set_fields()}.
+@pxref{74,,gcc_jit_struct_set_fields()}.
 @end deffn
 
 @geindex gcc_jit_struct_as_type (C function)
-@anchor{topics/types gcc_jit_struct_as_type}@anchor{73}
+@anchor{topics/types gcc_jit_struct_as_type}@anchor{75}
 @deffn {C Function} gcc_jit_type *           gcc_jit_struct_as_type (gcc_jit_struct@w{ }*struct_type)
 
 Upcast from struct to type.
 @end deffn
 
 @geindex gcc_jit_struct_set_fields (C function)
-@anchor{topics/types gcc_jit_struct_set_fields}@anchor{72}
+@anchor{topics/types gcc_jit_struct_set_fields}@anchor{74}
 @deffn {C Function} void           gcc_jit_struct_set_fields (gcc_jit_struct@w{ }*struct_type, gcc_jit_location@w{ }*loc, int@w{ }num_fields, gcc_jit_field@w{ }**fields)
 
 Populate the fields of a formerly-opaque struct type.
@@ -4814,7 +4875,7 @@ This can only be called once on a given struct type.
 @c <http://www.gnu.org/licenses/>.
 
 @node Expressions,Creating and using functions,Types,Topic Reference
-@anchor{topics/expressions expressions}@anchor{74}@anchor{topics/expressions doc}@anchor{75}
+@anchor{topics/expressions expressions}@anchor{76}@anchor{topics/expressions doc}@anchor{77}
 @section Expressions
 
 
@@ -4840,7 +4901,7 @@ Lvalues
 
 
 @node Rvalues,Lvalues,,Expressions
-@anchor{topics/expressions rvalues}@anchor{76}
+@anchor{topics/expressions rvalues}@anchor{78}
 @subsection Rvalues
 
 
@@ -4894,7 +4955,7 @@ Every rvalue has an associated type, and the API will check to ensure
 that types match up correctly (otherwise the context will emit an error).
 
 @geindex gcc_jit_rvalue_get_type (C function)
-@anchor{topics/expressions gcc_jit_rvalue_get_type}@anchor{77}
+@anchor{topics/expressions gcc_jit_rvalue_get_type}@anchor{79}
 @deffn {C Function} gcc_jit_type *gcc_jit_rvalue_get_type (gcc_jit_rvalue@w{ }*rvalue)
 
 Get the type of this rvalue.
@@ -4918,12 +4979,12 @@ Upcast the given rvalue to be an object.
 @end menu
 
 @node Simple expressions,Unary Operations,,Rvalues
-@anchor{topics/expressions simple-expressions}@anchor{78}
+@anchor{topics/expressions simple-expressions}@anchor{7a}
 @subsubsection Simple expressions
 
 
 @geindex gcc_jit_context_new_rvalue_from_int (C function)
-@anchor{topics/expressions gcc_jit_context_new_rvalue_from_int}@anchor{2e}
+@anchor{topics/expressions gcc_jit_context_new_rvalue_from_int}@anchor{30}
 @deffn {C Function} gcc_jit_rvalue *           gcc_jit_context_new_rvalue_from_int (gcc_jit_context@w{ }*ctxt, gcc_jit_type@w{ }*numeric_type, int@w{ }value)
 
 Given a numeric type (integer or floating point), build an rvalue for
@@ -4931,7 +4992,7 @@ the given constant value.
 @end deffn
 
 @geindex gcc_jit_context_zero (C function)
-@anchor{topics/expressions gcc_jit_context_zero}@anchor{29}
+@anchor{topics/expressions gcc_jit_context_zero}@anchor{2b}
 @deffn {C Function} gcc_jit_rvalue *gcc_jit_context_zero (gcc_jit_context@w{ }*ctxt, gcc_jit_type@w{ }*numeric_type)
 
 Given a numeric type (integer or floating point), get the rvalue for
@@ -4945,7 +5006,7 @@ gcc_jit_context_new_rvalue_from_int (ctxt, numeric_type, 0)
 @end deffn
 
 @geindex gcc_jit_context_one (C function)
-@anchor{topics/expressions gcc_jit_context_one}@anchor{2d}
+@anchor{topics/expressions gcc_jit_context_one}@anchor{2f}
 @deffn {C Function} gcc_jit_rvalue *gcc_jit_context_one (gcc_jit_context@w{ }*ctxt, gcc_jit_type@w{ }*numeric_type)
 
 Given a numeric type (integer or floating point), get the rvalue for
@@ -4959,7 +5020,7 @@ gcc_jit_context_new_rvalue_from_int (ctxt, numeric_type, 1)
 @end deffn
 
 @geindex gcc_jit_context_new_rvalue_from_double (C function)
-@anchor{topics/expressions gcc_jit_context_new_rvalue_from_double}@anchor{2f}
+@anchor{topics/expressions gcc_jit_context_new_rvalue_from_double}@anchor{31}
 @deffn {C Function} gcc_jit_rvalue *            gcc_jit_context_new_rvalue_from_double (gcc_jit_context@w{ }*ctxt, gcc_jit_type@w{ }*numeric_type, double@w{ }value)
 
 Given a numeric type (integer or floating point), build an rvalue for
@@ -4967,14 +5028,14 @@ the given constant value.
 @end deffn
 
 @geindex gcc_jit_context_new_rvalue_from_ptr (C function)
-@anchor{topics/expressions gcc_jit_context_new_rvalue_from_ptr}@anchor{79}
+@anchor{topics/expressions gcc_jit_context_new_rvalue_from_ptr}@anchor{7b}
 @deffn {C Function} gcc_jit_rvalue *           gcc_jit_context_new_rvalue_from_ptr (gcc_jit_context@w{ }*ctxt, gcc_jit_type@w{ }*pointer_type, void@w{ }*value)
 
 Given a pointer type, build an rvalue for the given address.
 @end deffn
 
 @geindex gcc_jit_context_null (C function)
-@anchor{topics/expressions gcc_jit_context_null}@anchor{7a}
+@anchor{topics/expressions gcc_jit_context_null}@anchor{7c}
 @deffn {C Function} gcc_jit_rvalue *gcc_jit_context_null (gcc_jit_context@w{ }*ctxt, gcc_jit_type@w{ }*pointer_type)
 
 Given a pointer type, build an rvalue for @code{NULL}.  Essentially this
@@ -4988,7 +5049,7 @@ gcc_jit_context_new_rvalue_from_ptr (ctxt, pointer_type, NULL)
 @end deffn
 
 @geindex gcc_jit_context_new_string_literal (C function)
-@anchor{topics/expressions gcc_jit_context_new_string_literal}@anchor{7b}
+@anchor{topics/expressions gcc_jit_context_new_string_literal}@anchor{7d}
 @deffn {C Function} gcc_jit_rvalue *           gcc_jit_context_new_string_literal (gcc_jit_context@w{ }*ctxt, const char@w{ }*value)
 
 Generate an rvalue for the given NIL-terminated string, of type
@@ -4996,19 +5057,19 @@ Generate an rvalue for the given NIL-terminated string, of type
 @end deffn
 
 @node Unary Operations,Binary Operations,Simple expressions,Rvalues
-@anchor{topics/expressions unary-operations}@anchor{7c}
+@anchor{topics/expressions unary-operations}@anchor{7e}
 @subsubsection Unary Operations
 
 
 @geindex gcc_jit_context_new_unary_op (C function)
-@anchor{topics/expressions gcc_jit_context_new_unary_op}@anchor{7d}
+@anchor{topics/expressions gcc_jit_context_new_unary_op}@anchor{7f}
 @deffn {C Function} gcc_jit_rvalue *            gcc_jit_context_new_unary_op (gcc_jit_context@w{ }*ctxt, gcc_jit_location@w{ }*loc, enum gcc_jit_unary_op@w{ }op, gcc_jit_type@w{ }*result_type, gcc_jit_rvalue@w{ }*rvalue)
 
 Build a unary operation out of an input rvalue.
 @end deffn
 
 @geindex gcc_jit_unary_op (C type)
-@anchor{topics/expressions gcc_jit_unary_op}@anchor{7e}
+@anchor{topics/expressions gcc_jit_unary_op}@anchor{80}
 @deffn {C Type} enum gcc_jit_unary_op
 @end deffn
 
@@ -5026,7 +5087,7 @@ C equivalent
 
 @item
 
-@pxref{7f,,GCC_JIT_UNARY_OP_MINUS}
+@pxref{81,,GCC_JIT_UNARY_OP_MINUS}
 
 @tab
 
@@ -5034,7 +5095,7 @@ C equivalent
 
 @item
 
-@pxref{80,,GCC_JIT_UNARY_OP_BITWISE_NEGATE}
+@pxref{82,,GCC_JIT_UNARY_OP_BITWISE_NEGATE}
 
 @tab
 
@@ -5042,7 +5103,7 @@ C equivalent
 
 @item
 
-@pxref{81,,GCC_JIT_UNARY_OP_LOGICAL_NEGATE}
+@pxref{83,,GCC_JIT_UNARY_OP_LOGICAL_NEGATE}
 
 @tab
 
@@ -5052,7 +5113,7 @@ C equivalent
 
 
 @geindex GCC_JIT_UNARY_OP_MINUS (C macro)
-@anchor{topics/expressions GCC_JIT_UNARY_OP_MINUS}@anchor{7f}
+@anchor{topics/expressions GCC_JIT_UNARY_OP_MINUS}@anchor{81}
 @deffn {C Macro} GCC_JIT_UNARY_OP_MINUS
 
 Negate an arithmetic value; analogous to:
@@ -5067,7 +5128,7 @@ in C.
 @end deffn
 
 @geindex GCC_JIT_UNARY_OP_BITWISE_NEGATE (C macro)
-@anchor{topics/expressions GCC_JIT_UNARY_OP_BITWISE_NEGATE}@anchor{80}
+@anchor{topics/expressions GCC_JIT_UNARY_OP_BITWISE_NEGATE}@anchor{82}
 @deffn {C Macro} GCC_JIT_UNARY_OP_BITWISE_NEGATE
 
 Bitwise negation of an integer value (one's complement); analogous
@@ -5083,7 +5144,7 @@ in C.
 @end deffn
 
 @geindex GCC_JIT_UNARY_OP_LOGICAL_NEGATE (C macro)
-@anchor{topics/expressions GCC_JIT_UNARY_OP_LOGICAL_NEGATE}@anchor{81}
+@anchor{topics/expressions GCC_JIT_UNARY_OP_LOGICAL_NEGATE}@anchor{83}
 @deffn {C Macro} GCC_JIT_UNARY_OP_LOGICAL_NEGATE
 
 Logical negation of an arithmetic or pointer value; analogous to:
@@ -5098,7 +5159,7 @@ in C.
 @end deffn
 
 @node Binary Operations,Comparisons,Unary Operations,Rvalues
-@anchor{topics/expressions binary-operations}@anchor{82}
+@anchor{topics/expressions binary-operations}@anchor{84}
 @subsubsection Binary Operations
 
 
@@ -5110,7 +5171,7 @@ Build a binary operation out of two constituent rvalues.
 @end deffn
 
 @geindex gcc_jit_binary_op (C type)
-@anchor{topics/expressions gcc_jit_binary_op}@anchor{83}
+@anchor{topics/expressions gcc_jit_binary_op}@anchor{85}
 @deffn {C Type} enum gcc_jit_binary_op
 @end deffn
 
@@ -5128,7 +5189,7 @@ C equivalent
 
 @item
 
-@pxref{84,,GCC_JIT_BINARY_OP_PLUS}
+@pxref{86,,GCC_JIT_BINARY_OP_PLUS}
 
 @tab
 
@@ -5144,7 +5205,7 @@ C equivalent
 
 @item
 
-@pxref{85,,GCC_JIT_BINARY_OP_MULT}
+@pxref{87,,GCC_JIT_BINARY_OP_MULT}
 
 @tab
 
@@ -5152,7 +5213,7 @@ C equivalent
 
 @item
 
-@pxref{86,,GCC_JIT_BINARY_OP_DIVIDE}
+@pxref{88,,GCC_JIT_BINARY_OP_DIVIDE}
 
 @tab
 
@@ -5160,7 +5221,7 @@ C equivalent
 
 @item
 
-@pxref{87,,GCC_JIT_BINARY_OP_MODULO}
+@pxref{89,,GCC_JIT_BINARY_OP_MODULO}
 
 @tab
 
@@ -5168,7 +5229,7 @@ C equivalent
 
 @item
 
-@pxref{88,,GCC_JIT_BINARY_OP_BITWISE_AND}
+@pxref{8a,,GCC_JIT_BINARY_OP_BITWISE_AND}
 
 @tab
 
@@ -5176,7 +5237,7 @@ C equivalent
 
 @item
 
-@pxref{89,,GCC_JIT_BINARY_OP_BITWISE_XOR}
+@pxref{8b,,GCC_JIT_BINARY_OP_BITWISE_XOR}
 
 @tab
 
@@ -5184,7 +5245,7 @@ C equivalent
 
 @item
 
-@pxref{8a,,GCC_JIT_BINARY_OP_BITWISE_OR}
+@pxref{8c,,GCC_JIT_BINARY_OP_BITWISE_OR}
 
 @tab
 
@@ -5192,7 +5253,7 @@ C equivalent
 
 @item
 
-@pxref{8b,,GCC_JIT_BINARY_OP_LOGICAL_AND}
+@pxref{8d,,GCC_JIT_BINARY_OP_LOGICAL_AND}
 
 @tab
 
@@ -5200,7 +5261,7 @@ C equivalent
 
 @item
 
-@pxref{8c,,GCC_JIT_BINARY_OP_LOGICAL_OR}
+@pxref{8e,,GCC_JIT_BINARY_OP_LOGICAL_OR}
 
 @tab
 
@@ -5208,7 +5269,7 @@ C equivalent
 
 @item
 
-@pxref{8d,,GCC_JIT_BINARY_OP_LSHIFT}
+@pxref{8f,,GCC_JIT_BINARY_OP_LSHIFT}
 
 @tab
 
@@ -5216,7 +5277,7 @@ C equivalent
 
 @item
 
-@pxref{8e,,GCC_JIT_BINARY_OP_RSHIFT}
+@pxref{90,,GCC_JIT_BINARY_OP_RSHIFT}
 
 @tab
 
@@ -5226,7 +5287,7 @@ C equivalent
 
 
 @geindex GCC_JIT_BINARY_OP_PLUS (C macro)
-@anchor{topics/expressions GCC_JIT_BINARY_OP_PLUS}@anchor{84}
+@anchor{topics/expressions GCC_JIT_BINARY_OP_PLUS}@anchor{86}
 @deffn {C Macro} GCC_JIT_BINARY_OP_PLUS
 
 Addition of arithmetic values; analogous to:
@@ -5239,7 +5300,7 @@ Addition of arithmetic values; analogous to:
 
 in C.
 
-For pointer addition, use @pxref{8f,,gcc_jit_context_new_array_access()}.
+For pointer addition, use @pxref{91,,gcc_jit_context_new_array_access()}.
 @end deffn
 
 
@@ -5257,7 +5318,7 @@ in C.
 @end deffn
 
 @geindex GCC_JIT_BINARY_OP_MULT (C macro)
-@anchor{topics/expressions GCC_JIT_BINARY_OP_MULT}@anchor{85}
+@anchor{topics/expressions GCC_JIT_BINARY_OP_MULT}@anchor{87}
 @deffn {C Macro} GCC_JIT_BINARY_OP_MULT
 
 Multiplication of a pair of arithmetic values; analogous to:
@@ -5272,7 +5333,7 @@ in C.
 @end deffn
 
 @geindex GCC_JIT_BINARY_OP_DIVIDE (C macro)
-@anchor{topics/expressions GCC_JIT_BINARY_OP_DIVIDE}@anchor{86}
+@anchor{topics/expressions GCC_JIT_BINARY_OP_DIVIDE}@anchor{88}
 @deffn {C Macro} GCC_JIT_BINARY_OP_DIVIDE
 
 Quotient of division of arithmetic values; analogous to:
@@ -5291,7 +5352,7 @@ a floating-point result type indicates floating-point division.
 @end deffn
 
 @geindex GCC_JIT_BINARY_OP_MODULO (C macro)
-@anchor{topics/expressions GCC_JIT_BINARY_OP_MODULO}@anchor{87}
+@anchor{topics/expressions GCC_JIT_BINARY_OP_MODULO}@anchor{89}
 @deffn {C Macro} GCC_JIT_BINARY_OP_MODULO
 
 Remainder of division of arithmetic values; analogous to:
@@ -5306,7 +5367,7 @@ in C.
 @end deffn
 
 @geindex GCC_JIT_BINARY_OP_BITWISE_AND (C macro)
-@anchor{topics/expressions GCC_JIT_BINARY_OP_BITWISE_AND}@anchor{88}
+@anchor{topics/expressions GCC_JIT_BINARY_OP_BITWISE_AND}@anchor{8a}
 @deffn {C Macro} GCC_JIT_BINARY_OP_BITWISE_AND
 
 Bitwise AND; analogous to:
@@ -5321,7 +5382,7 @@ in C.
 @end deffn
 
 @geindex GCC_JIT_BINARY_OP_BITWISE_XOR (C macro)
-@anchor{topics/expressions GCC_JIT_BINARY_OP_BITWISE_XOR}@anchor{89}
+@anchor{topics/expressions GCC_JIT_BINARY_OP_BITWISE_XOR}@anchor{8b}
 @deffn {C Macro} GCC_JIT_BINARY_OP_BITWISE_XOR
 
 Bitwise exclusive OR; analogous to:
@@ -5336,7 +5397,7 @@ in C.
 @end deffn
 
 @geindex GCC_JIT_BINARY_OP_BITWISE_OR (C macro)
-@anchor{topics/expressions GCC_JIT_BINARY_OP_BITWISE_OR}@anchor{8a}
+@anchor{topics/expressions GCC_JIT_BINARY_OP_BITWISE_OR}@anchor{8c}
 @deffn {C Macro} GCC_JIT_BINARY_OP_BITWISE_OR
 
 Bitwise inclusive OR; analogous to:
@@ -5351,7 +5412,7 @@ in C.
 @end deffn
 
 @geindex GCC_JIT_BINARY_OP_LOGICAL_AND (C macro)
-@anchor{topics/expressions GCC_JIT_BINARY_OP_LOGICAL_AND}@anchor{8b}
+@anchor{topics/expressions GCC_JIT_BINARY_OP_LOGICAL_AND}@anchor{8d}
 @deffn {C Macro} GCC_JIT_BINARY_OP_LOGICAL_AND
 
 Logical AND; analogous to:
@@ -5366,7 +5427,7 @@ in C.
 @end deffn
 
 @geindex GCC_JIT_BINARY_OP_LOGICAL_OR (C macro)
-@anchor{topics/expressions GCC_JIT_BINARY_OP_LOGICAL_OR}@anchor{8c}
+@anchor{topics/expressions GCC_JIT_BINARY_OP_LOGICAL_OR}@anchor{8e}
 @deffn {C Macro} GCC_JIT_BINARY_OP_LOGICAL_OR
 
 Logical OR; analogous to:
@@ -5381,7 +5442,7 @@ in C.
 @end deffn
 
 @geindex GCC_JIT_BINARY_OP_LSHIFT (C macro)
-@anchor{topics/expressions GCC_JIT_BINARY_OP_LSHIFT}@anchor{8d}
+@anchor{topics/expressions GCC_JIT_BINARY_OP_LSHIFT}@anchor{8f}
 @deffn {C Macro} GCC_JIT_BINARY_OP_LSHIFT
 
 Left shift; analogous to:
@@ -5396,7 +5457,7 @@ in C.
 @end deffn
 
 @geindex GCC_JIT_BINARY_OP_RSHIFT (C macro)
-@anchor{topics/expressions GCC_JIT_BINARY_OP_RSHIFT}@anchor{8e}
+@anchor{topics/expressions GCC_JIT_BINARY_OP_RSHIFT}@anchor{90}
 @deffn {C Macro} GCC_JIT_BINARY_OP_RSHIFT
 
 Right shift; analogous to:
@@ -5411,19 +5472,19 @@ in C.
 @end deffn
 
 @node Comparisons,Function calls,Binary Operations,Rvalues
-@anchor{topics/expressions comparisons}@anchor{90}
+@anchor{topics/expressions comparisons}@anchor{92}
 @subsubsection Comparisons
 
 
 @geindex gcc_jit_context_new_comparison (C function)
-@anchor{topics/expressions gcc_jit_context_new_comparison}@anchor{2a}
+@anchor{topics/expressions gcc_jit_context_new_comparison}@anchor{2c}
 @deffn {C Function} gcc_jit_rvalue *           gcc_jit_context_new_comparison (gcc_jit_context@w{ }*ctxt, gcc_jit_location@w{ }*loc, enum gcc_jit_comparison@w{ }op, gcc_jit_rvalue@w{ }*a, gcc_jit_rvalue@w{ }*b)
 
 Build a boolean rvalue out of the comparison of two other rvalues.
 @end deffn
 
 @geindex gcc_jit_comparison (C type)
-@anchor{topics/expressions gcc_jit_comparison}@anchor{91}
+@anchor{topics/expressions gcc_jit_comparison}@anchor{93}
 @deffn {C Type} enum gcc_jit_comparison
 @end deffn
 
@@ -5489,12 +5550,12 @@ C equivalent
 
 
 @node Function calls,Type-coercion,Comparisons,Rvalues
-@anchor{topics/expressions function-calls}@anchor{92}
+@anchor{topics/expressions function-calls}@anchor{94}
 @subsubsection Function calls
 
 
 @geindex gcc_jit_context_new_call (C function)
-@anchor{topics/expressions gcc_jit_context_new_call}@anchor{93}
+@anchor{topics/expressions gcc_jit_context_new_call}@anchor{95}
 @deffn {C Function} gcc_jit_rvalue *           gcc_jit_context_new_call (gcc_jit_context@w{ }*ctxt, gcc_jit_location@w{ }*loc, gcc_jit_function@w{ }*func, int@w{ }numargs, gcc_jit_rvalue@w{ }**args)
 
 Given a function and the given table of argument rvalues, construct a
@@ -5502,7 +5563,7 @@ call to the function, with the result as an rvalue.
 
 @cartouche
 @quotation Note 
-@pxref{93,,gcc_jit_context_new_call()} merely builds a
+@pxref{95,,gcc_jit_context_new_call()} merely builds a
 @pxref{13,,gcc_jit_rvalue} i.e. an expression that can be evaluated,
 perhaps as part of a more complicated expression.
 The call @emph{won't} happen unless you add a statement to a function
@@ -5510,7 +5571,7 @@ that evaluates the expression.
 
 For example, if you want to call a function and discard the result
 (or to call a function with @code{void} return type), use
-@pxref{94,,gcc_jit_block_add_eval()}:
+@pxref{96,,gcc_jit_block_add_eval()}:
 
 @example
 /* Add "(void)printf (arg0, arg1);".  */
@@ -5529,12 +5590,12 @@ gcc_jit_block_add_eval (
 @end deffn
 
 @node Type-coercion,,Function calls,Rvalues
-@anchor{topics/expressions type-coercion}@anchor{95}
+@anchor{topics/expressions type-coercion}@anchor{97}
 @subsubsection Type-coercion
 
 
 @geindex gcc_jit_context_new_cast (C function)
-@anchor{topics/expressions gcc_jit_context_new_cast}@anchor{96}
+@anchor{topics/expressions gcc_jit_context_new_cast}@anchor{98}
 @deffn {C Function} gcc_jit_rvalue *           gcc_jit_context_new_cast (gcc_jit_context@w{ }*ctxt, gcc_jit_location@w{ }*loc, gcc_jit_rvalue@w{ }*rvalue, gcc_jit_type@w{ }*type)
 
 Given an rvalue of T, construct another rvalue of another type.
@@ -5559,12 +5620,12 @@ P*  <-> Q*, for pointer types P and Q
 @end deffn
 
 @node Lvalues,Working with pointers structs and unions,Rvalues,Expressions
-@anchor{topics/expressions lvalues}@anchor{97}
+@anchor{topics/expressions lvalues}@anchor{99}
 @subsection Lvalues
 
 
 @geindex gcc_jit_lvalue (C type)
-@anchor{topics/expressions gcc_jit_lvalue}@anchor{22}
+@anchor{topics/expressions gcc_jit_lvalue}@anchor{24}
 @deffn {C Type} gcc_jit_lvalue
 @end deffn
 
@@ -5573,21 +5634,21 @@ a storage area (such as a variable).  It is also usable as an rvalue,
 where the rvalue is computed by reading from the storage area.
 
 @geindex gcc_jit_lvalue_as_object (C function)
-@anchor{topics/expressions gcc_jit_lvalue_as_object}@anchor{98}
+@anchor{topics/expressions gcc_jit_lvalue_as_object}@anchor{9a}
 @deffn {C Function} gcc_jit_object *           gcc_jit_lvalue_as_object (gcc_jit_lvalue@w{ }*lvalue)
 
 Upcast an lvalue to be an object.
 @end deffn
 
 @geindex gcc_jit_lvalue_as_rvalue (C function)
-@anchor{topics/expressions gcc_jit_lvalue_as_rvalue}@anchor{99}
+@anchor{topics/expressions gcc_jit_lvalue_as_rvalue}@anchor{9b}
 @deffn {C Function} gcc_jit_rvalue *           gcc_jit_lvalue_as_rvalue (gcc_jit_lvalue@w{ }*lvalue)
 
 Upcast an lvalue to be an rvalue.
 @end deffn
 
 @geindex gcc_jit_lvalue_get_address (C function)
-@anchor{topics/expressions gcc_jit_lvalue_get_address}@anchor{9a}
+@anchor{topics/expressions gcc_jit_lvalue_get_address}@anchor{9c}
 @deffn {C Function} gcc_jit_rvalue *           gcc_jit_lvalue_get_address (gcc_jit_lvalue@w{ }*lvalue, gcc_jit_location@w{ }*loc)
 
 Take the address of an lvalue; analogous to:
@@ -5607,24 +5668,24 @@ in C.
 @end menu
 
 @node Global variables,,,Lvalues
-@anchor{topics/expressions global-variables}@anchor{9b}
+@anchor{topics/expressions global-variables}@anchor{9d}
 @subsubsection Global variables
 
 
 @geindex gcc_jit_context_new_global (C function)
-@anchor{topics/expressions gcc_jit_context_new_global}@anchor{9c}
+@anchor{topics/expressions gcc_jit_context_new_global}@anchor{9e}
 @deffn {C Function} gcc_jit_lvalue *           gcc_jit_context_new_global (gcc_jit_context@w{ }*ctxt, gcc_jit_location@w{ }*loc, gcc_jit_type@w{ }*type, const char@w{ }*name)
 
 Add a new global variable of the given type and name to the context.
 @end deffn
 
 @node Working with pointers structs and unions,,Lvalues,Expressions
-@anchor{topics/expressions working-with-pointers-structs-and-unions}@anchor{9d}
+@anchor{topics/expressions working-with-pointers-structs-and-unions}@anchor{9f}
 @subsection Working with pointers, structs and unions
 
 
 @geindex gcc_jit_rvalue_dereference (C function)
-@anchor{topics/expressions gcc_jit_rvalue_dereference}@anchor{9e}
+@anchor{topics/expressions gcc_jit_rvalue_dereference}@anchor{a0}
 @deffn {C Function} gcc_jit_lvalue *           gcc_jit_rvalue_dereference (gcc_jit_rvalue@w{ }*rvalue, gcc_jit_location@w{ }*loc)
 
 Given an rvalue of pointer type @code{T *}, dereferencing the pointer,
@@ -5642,7 +5703,7 @@ in C.
 Field access is provided separately for both lvalues and rvalues.
 
 @geindex gcc_jit_lvalue_access_field (C function)
-@anchor{topics/expressions gcc_jit_lvalue_access_field}@anchor{9f}
+@anchor{topics/expressions gcc_jit_lvalue_access_field}@anchor{a1}
 @deffn {C Function} gcc_jit_lvalue *           gcc_jit_lvalue_access_field (gcc_jit_lvalue@w{ }*struct_, gcc_jit_location@w{ }*loc, gcc_jit_field@w{ }*field)
 
 Given an lvalue of struct or union type, access the given field,
@@ -5658,7 +5719,7 @@ in C.
 @end deffn
 
 @geindex gcc_jit_rvalue_access_field (C function)
-@anchor{topics/expressions gcc_jit_rvalue_access_field}@anchor{a0}
+@anchor{topics/expressions gcc_jit_rvalue_access_field}@anchor{a2}
 @deffn {C Function} gcc_jit_rvalue *           gcc_jit_rvalue_access_field (gcc_jit_rvalue@w{ }*struct_, gcc_jit_location@w{ }*loc, gcc_jit_field@w{ }*field)
 
 Given an rvalue of struct or union type, access the given field
@@ -5674,7 +5735,7 @@ in C.
 @end deffn
 
 @geindex gcc_jit_rvalue_dereference_field (C function)
-@anchor{topics/expressions gcc_jit_rvalue_dereference_field}@anchor{a1}
+@anchor{topics/expressions gcc_jit_rvalue_dereference_field}@anchor{a3}
 @deffn {C Function} gcc_jit_lvalue *           gcc_jit_rvalue_dereference_field (gcc_jit_rvalue@w{ }*ptr, gcc_jit_location@w{ }*loc, gcc_jit_field@w{ }*field)
 
 Given an rvalue of pointer type @code{T *} where T is of struct or union
@@ -5690,7 +5751,7 @@ in C, itself equivalent to @code{(*EXPR).FIELD}.
 @end deffn
 
 @geindex gcc_jit_context_new_array_access (C function)
-@anchor{topics/expressions gcc_jit_context_new_array_access}@anchor{8f}
+@anchor{topics/expressions gcc_jit_context_new_array_access}@anchor{91}
 @deffn {C Function} gcc_jit_lvalue *           gcc_jit_context_new_array_access (gcc_jit_context@w{ }*ctxt, gcc_jit_location@w{ }*loc, gcc_jit_rvalue@w{ }*ptr, gcc_jit_rvalue@w{ }*index)
 
 Given an rvalue of pointer type @code{T *}, get at the element @cite{T} at
@@ -5725,7 +5786,7 @@ in C (or, indeed, to @code{PTR + INDEX}).
 @c <http://www.gnu.org/licenses/>.
 
 @node Creating and using functions,Source Locations,Expressions,Topic Reference
-@anchor{topics/functions doc}@anchor{a2}@anchor{topics/functions creating-and-using-functions}@anchor{a3}
+@anchor{topics/functions doc}@anchor{a4}@anchor{topics/functions creating-and-using-functions}@anchor{a5}
 @section Creating and using functions
 
 
@@ -5738,12 +5799,12 @@ in C (or, indeed, to @code{PTR + INDEX}).
 @end menu
 
 @node Params,Functions,,Creating and using functions
-@anchor{topics/functions params}@anchor{a4}
+@anchor{topics/functions params}@anchor{a6}
 @subsection Params
 
 
 @geindex gcc_jit_param (C type)
-@anchor{topics/functions gcc_jit_param}@anchor{23}
+@anchor{topics/functions gcc_jit_param}@anchor{25}
 @deffn {C Type} gcc_jit_param
 
 A @cite{gcc_jit_param} represents a parameter to a function.
@@ -5761,33 +5822,33 @@ Parameters are lvalues, and thus are also rvalues (and objects), so the
 following upcasts are available:
 
 @geindex gcc_jit_param_as_lvalue (C function)
-@anchor{topics/functions gcc_jit_param_as_lvalue}@anchor{a5}
+@anchor{topics/functions gcc_jit_param_as_lvalue}@anchor{a7}
 @deffn {C Function} gcc_jit_lvalue *            gcc_jit_param_as_lvalue (gcc_jit_param@w{ }*param)
 
 Upcasting from param to lvalue.
 @end deffn
 
 @geindex gcc_jit_param_as_rvalue (C function)
-@anchor{topics/functions gcc_jit_param_as_rvalue}@anchor{a6}
+@anchor{topics/functions gcc_jit_param_as_rvalue}@anchor{a8}
 @deffn {C Function} gcc_jit_rvalue *            gcc_jit_param_as_rvalue (gcc_jit_param@w{ }*param)
 
 Upcasting from param to rvalue.
 @end deffn
 
 @geindex gcc_jit_param_as_object (C function)
-@anchor{topics/functions gcc_jit_param_as_object}@anchor{a7}
+@anchor{topics/functions gcc_jit_param_as_object}@anchor{a9}
 @deffn {C Function} gcc_jit_object *            gcc_jit_param_as_object (gcc_jit_param@w{ }*param)
 
 Upcasting from param to object.
 @end deffn
 
 @node Functions,Blocks,Params,Creating and using functions
-@anchor{topics/functions functions}@anchor{a8}
+@anchor{topics/functions functions}@anchor{aa}
 @subsection Functions
 
 
 @geindex gcc_jit_function (C type)
-@anchor{topics/functions gcc_jit_function}@anchor{27}
+@anchor{topics/functions gcc_jit_function}@anchor{29}
 @deffn {C Type} gcc_jit_function
 
 A @cite{gcc_jit_function} represents a function - either one that we're
@@ -5801,7 +5862,7 @@ creating ourselves, or one that we're referencing.
 Create a gcc_jit_function with the given name and parameters.
 
 @geindex gcc_jit_function_kind (C type)
-@anchor{topics/functions gcc_jit_function_kind}@anchor{a9}
+@anchor{topics/functions gcc_jit_function_kind}@anchor{ab}
 @deffn {C Type} enum gcc_jit_function_kind
 @end deffn
 
@@ -5811,7 +5872,7 @@ values:
 @quotation
 
 @geindex GCC_JIT_FUNCTION_EXPORTED (C macro)
-@anchor{topics/functions GCC_JIT_FUNCTION_EXPORTED}@anchor{aa}
+@anchor{topics/functions GCC_JIT_FUNCTION_EXPORTED}@anchor{ac}
 @deffn {C Macro} GCC_JIT_FUNCTION_EXPORTED
 
 Function is defined by the client code and visible
@@ -5819,7 +5880,7 @@ by name outside of the JIT.
 @end deffn
 
 @geindex GCC_JIT_FUNCTION_INTERNAL (C macro)
-@anchor{topics/functions GCC_JIT_FUNCTION_INTERNAL}@anchor{ab}
+@anchor{topics/functions GCC_JIT_FUNCTION_INTERNAL}@anchor{ad}
 @deffn {C Macro} GCC_JIT_FUNCTION_INTERNAL
 
 Function is defined by the client code, but is invisible
@@ -5827,7 +5888,7 @@ outside of the JIT.  Analogous to a "static" function.
 @end deffn
 
 @geindex GCC_JIT_FUNCTION_IMPORTED (C macro)
-@anchor{topics/functions GCC_JIT_FUNCTION_IMPORTED}@anchor{ac}
+@anchor{topics/functions GCC_JIT_FUNCTION_IMPORTED}@anchor{ae}
 @deffn {C Macro} GCC_JIT_FUNCTION_IMPORTED
 
 Function is not defined by the client code; we're merely
@@ -5836,7 +5897,7 @@ header file.
 @end deffn
 
 @geindex GCC_JIT_FUNCTION_ALWAYS_INLINE (C macro)
-@anchor{topics/functions GCC_JIT_FUNCTION_ALWAYS_INLINE}@anchor{ad}
+@anchor{topics/functions GCC_JIT_FUNCTION_ALWAYS_INLINE}@anchor{af}
 @deffn {C Macro} GCC_JIT_FUNCTION_ALWAYS_INLINE
 
 Function is only ever inlined into other functions, and is
@@ -5853,33 +5914,33 @@ same as GCC_JIT_FUNCTION_INTERNAL.
 @end deffn
 
 @geindex gcc_jit_context_get_builtin_function (C function)
-@anchor{topics/functions gcc_jit_context_get_builtin_function}@anchor{ae}
+@anchor{topics/functions gcc_jit_context_get_builtin_function}@anchor{b0}
 @deffn {C Function} gcc_jit_function *gcc_jit_context_get_builtin_function (gcc_jit_context@w{ }*ctxt, const char@w{ }*name)
 @end deffn
 
 @geindex gcc_jit_function_as_object (C function)
-@anchor{topics/functions gcc_jit_function_as_object}@anchor{af}
+@anchor{topics/functions gcc_jit_function_as_object}@anchor{b1}
 @deffn {C Function} gcc_jit_object *           gcc_jit_function_as_object (gcc_jit_function@w{ }*func)
 
 Upcasting from function to object.
 @end deffn
 
 @geindex gcc_jit_function_get_param (C function)
-@anchor{topics/functions gcc_jit_function_get_param}@anchor{b0}
+@anchor{topics/functions gcc_jit_function_get_param}@anchor{b2}
 @deffn {C Function} gcc_jit_param *            gcc_jit_function_get_param (gcc_jit_function@w{ }*func, int@w{ }index)
 
 Get the param of the given index (0-based).
 @end deffn
 
 @geindex gcc_jit_function_dump_to_dot (C function)
-@anchor{topics/functions gcc_jit_function_dump_to_dot}@anchor{31}
+@anchor{topics/functions gcc_jit_function_dump_to_dot}@anchor{33}
 @deffn {C Function} void             gcc_jit_function_dump_to_dot (gcc_jit_function@w{ }*func, const char@w{ }*path)
 
 Emit the function in graphviz format to the given path.
 @end deffn
 
 @geindex gcc_jit_function_new_local (C function)
-@anchor{topics/functions gcc_jit_function_new_local}@anchor{24}
+@anchor{topics/functions gcc_jit_function_new_local}@anchor{26}
 @deffn {C Function} gcc_jit_lvalue *           gcc_jit_function_new_local (gcc_jit_function@w{ }*func, gcc_jit_location@w{ }*loc, gcc_jit_type@w{ }*type, const char@w{ }*name)
 
 Create a new local variable within the function, of the given type and
@@ -5887,12 +5948,12 @@ name.
 @end deffn
 
 @node Blocks,Statements,Functions,Creating and using functions
-@anchor{topics/functions blocks}@anchor{b1}
+@anchor{topics/functions blocks}@anchor{b3}
 @subsection Blocks
 
 
 @geindex gcc_jit_block (C type)
-@anchor{topics/functions gcc_jit_block}@anchor{26}
+@anchor{topics/functions gcc_jit_block}@anchor{28}
 @deffn {C Type} gcc_jit_block
 
 A @cite{gcc_jit_block} represents a basic block within a function  i.e. a
@@ -5910,7 +5971,7 @@ one function.
 @end deffn
 
 @geindex gcc_jit_function_new_block (C function)
-@anchor{topics/functions gcc_jit_function_new_block}@anchor{b2}
+@anchor{topics/functions gcc_jit_function_new_block}@anchor{b4}
 @deffn {C Function} gcc_jit_block *            gcc_jit_function_new_block (gcc_jit_function@w{ }*func, const char@w{ }*name)
 
 Create a basic block of the given name.  The name may be NULL, but
@@ -5920,26 +5981,26 @@ messages.
 @end deffn
 
 @geindex gcc_jit_block_as_object (C function)
-@anchor{topics/functions gcc_jit_block_as_object}@anchor{b3}
+@anchor{topics/functions gcc_jit_block_as_object}@anchor{b5}
 @deffn {C Function} gcc_jit_object *            gcc_jit_block_as_object (gcc_jit_block@w{ }*block)
 
 Upcast from block to object.
 @end deffn
 
 @geindex gcc_jit_block_get_function (C function)
-@anchor{topics/functions gcc_jit_block_get_function}@anchor{b4}
+@anchor{topics/functions gcc_jit_block_get_function}@anchor{b6}
 @deffn {C Function} gcc_jit_function *            gcc_jit_block_get_function (gcc_jit_block@w{ }*block)
 
 Which function is this block within?
 @end deffn
 
 @node Statements,,Blocks,Creating and using functions
-@anchor{topics/functions statements}@anchor{b5}
+@anchor{topics/functions statements}@anchor{b7}
 @subsection Statements
 
 
 @geindex gcc_jit_block_add_eval (C function)
-@anchor{topics/functions gcc_jit_block_add_eval}@anchor{94}
+@anchor{topics/functions gcc_jit_block_add_eval}@anchor{96}
 @deffn {C Function} void           gcc_jit_block_add_eval (gcc_jit_block@w{ }*block, gcc_jit_location@w{ }*loc, gcc_jit_rvalue@w{ }*rvalue)
 
 Add evaluation of an rvalue, discarding the result
@@ -5955,7 +6016,7 @@ This is equivalent to this C code:
 @end deffn
 
 @geindex gcc_jit_block_add_assignment (C function)
-@anchor{topics/functions gcc_jit_block_add_assignment}@anchor{28}
+@anchor{topics/functions gcc_jit_block_add_assignment}@anchor{2a}
 @deffn {C Function} void           gcc_jit_block_add_assignment (gcc_jit_block@w{ }*block, gcc_jit_location@w{ }*loc, gcc_jit_lvalue@w{ }*lvalue, gcc_jit_rvalue@w{ }*rvalue)
 
 Add evaluation of an rvalue, assigning the result to the given
@@ -5971,7 +6032,7 @@ lvalue = rvalue;
 @end deffn
 
 @geindex gcc_jit_block_add_assignment_op (C function)
-@anchor{topics/functions gcc_jit_block_add_assignment_op}@anchor{2c}
+@anchor{topics/functions gcc_jit_block_add_assignment_op}@anchor{2e}
 @deffn {C Function} void           gcc_jit_block_add_assignment_op (gcc_jit_block@w{ }*block, gcc_jit_location@w{ }*loc, gcc_jit_lvalue@w{ }*lvalue, enum gcc_jit_binary_op@w{ }op, gcc_jit_rvalue@w{ }*rvalue)
 
 Add evaluation of an rvalue, using the result to modify an
@@ -6002,19 +6063,19 @@ gcc_jit_block_add_assignment_op (
 @end deffn
 
 @geindex gcc_jit_block_add_comment (C function)
-@anchor{topics/functions gcc_jit_block_add_comment}@anchor{3b}
+@anchor{topics/functions gcc_jit_block_add_comment}@anchor{3d}
 @deffn {C Function} void           gcc_jit_block_add_comment (gcc_jit_block@w{ }*block, gcc_jit_location@w{ }*loc, const char@w{ }*text)
 
 Add a no-op textual comment to the internal representation of the
 code.  It will be optimized away, but will be visible in the dumps
-seen via @pxref{58,,GCC_JIT_BOOL_OPTION_DUMP_INITIAL_TREE}
-and @pxref{1a,,GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE},
+seen via @pxref{5a,,GCC_JIT_BOOL_OPTION_DUMP_INITIAL_TREE}
+and @pxref{1c,,GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE},
 and thus may be of use when debugging how your project's internal
 representation gets converted to the libgccjit IR.
 @end deffn
 
 @geindex gcc_jit_block_end_with_conditional (C function)
-@anchor{topics/functions gcc_jit_block_end_with_conditional}@anchor{2b}
+@anchor{topics/functions gcc_jit_block_end_with_conditional}@anchor{2d}
 @deffn {C Function} void           gcc_jit_block_end_with_conditional (gcc_jit_block@w{ }*block, gcc_jit_location@w{ }*loc, gcc_jit_rvalue@w{ }*boolval, gcc_jit_block@w{ }*on_true, gcc_jit_block@w{ }*on_false)
 
 Terminate a block by adding evaluation of an rvalue, branching on the
@@ -6035,7 +6096,7 @@ block, boolval, on_true, and on_false must be non-NULL.
 @end deffn
 
 @geindex gcc_jit_block_end_with_jump (C function)
-@anchor{topics/functions gcc_jit_block_end_with_jump}@anchor{b6}
+@anchor{topics/functions gcc_jit_block_end_with_jump}@anchor{b8}
 @deffn {C Function} void           gcc_jit_block_end_with_jump (gcc_jit_block@w{ }*block, gcc_jit_location@w{ }*loc, gcc_jit_block@w{ }*target)
 
 Terminate a block by adding a jump to the given target block.
@@ -6050,7 +6111,7 @@ goto target;
 @end deffn
 
 @geindex gcc_jit_block_end_with_return (C function)
-@anchor{topics/functions gcc_jit_block_end_with_return}@anchor{b7}
+@anchor{topics/functions gcc_jit_block_end_with_return}@anchor{b9}
 @deffn {C Function} void           gcc_jit_block_end_with_return (gcc_jit_block@w{ }*block, gcc_jit_location@w{ }*loc, gcc_jit_rvalue@w{ }*rvalue)
 
 Terminate a block by adding evaluation of an rvalue, returning the value.
@@ -6065,7 +6126,7 @@ return expression;
 @end deffn
 
 @geindex gcc_jit_block_end_with_void_return (C function)
-@anchor{topics/functions gcc_jit_block_end_with_void_return}@anchor{b8}
+@anchor{topics/functions gcc_jit_block_end_with_void_return}@anchor{ba}
 @deffn {C Function} void           gcc_jit_block_end_with_void_return (gcc_jit_block@w{ }*block, gcc_jit_location@w{ }*loc)
 
 Terminate a block by adding a valueless return, for use within a function
@@ -6098,12 +6159,12 @@ return;
 @c <http://www.gnu.org/licenses/>.
 
 @node Source Locations,Compilation results,Creating and using functions,Topic Reference
-@anchor{topics/locations source-locations}@anchor{b9}@anchor{topics/locations doc}@anchor{ba}
+@anchor{topics/locations source-locations}@anchor{bb}@anchor{topics/locations doc}@anchor{bc}
 @section Source Locations
 
 
 @geindex gcc_jit_location (C type)
-@anchor{topics/locations gcc_jit_location}@anchor{39}
+@anchor{topics/locations gcc_jit_location}@anchor{3b}
 @deffn {C Type} gcc_jit_location
 
 A @cite{gcc_jit_location} encapsulates a source code location, so that
@@ -6114,9 +6175,9 @@ single-step through your language.
 @cite{gcc_jit_location} instances are optional: you can always pass NULL to
 any API entrypoint accepting one.
 
-You can construct them using @pxref{3f,,gcc_jit_context_new_location()}.
+You can construct them using @pxref{41,,gcc_jit_context_new_location()}.
 
-You need to enable @pxref{40,,GCC_JIT_BOOL_OPTION_DEBUGINFO} on the
+You need to enable @pxref{42,,GCC_JIT_BOOL_OPTION_DEBUGINFO} on the
 @pxref{8,,gcc_jit_context} for these locations to actually be usable by
 the debugger:
 
@@ -6131,7 +6192,7 @@ gcc_jit_context_set_bool_option (
 @end deffn
 
 @geindex gcc_jit_context_new_location (C function)
-@anchor{topics/locations gcc_jit_context_new_location}@anchor{3f}
+@anchor{topics/locations gcc_jit_context_new_location}@anchor{41}
 @deffn {C Function} gcc_jit_location *           gcc_jit_context_new_location (gcc_jit_context@w{ }*ctxt, const char@w{ }*filename, int@w{ }line, int@w{ }column)
 
 Create a @cite{gcc_jit_location} instance representing the given source
@@ -6144,13 +6205,13 @@ location.
 @end menu
 
 @node Faking it,,,Source Locations
-@anchor{topics/locations faking-it}@anchor{bb}
+@anchor{topics/locations faking-it}@anchor{bd}
 @subsection Faking it
 
 
 If you don't have source code for your internal representation, but need
 to debug, you can generate a C-like representation of the functions in
-your context using @pxref{50,,gcc_jit_context_dump_to_file()}:
+your context using @pxref{52,,gcc_jit_context_dump_to_file()}:
 
 @example
 gcc_jit_context_dump_to_file (ctxt, "/tmp/something.c",
@@ -6182,7 +6243,7 @@ file, giving you @emph{something} you can step through in the debugger.
 @c <http://www.gnu.org/licenses/>.
 
 @node Compilation results,,Source Locations,Topic Reference
-@anchor{topics/results compilation-results}@anchor{bc}@anchor{topics/results doc}@anchor{bd}
+@anchor{topics/results compilation-results}@anchor{be}@anchor{topics/results doc}@anchor{bf}
 @section Compilation results
 
 
@@ -6211,7 +6272,7 @@ correct type before it can be called.
 @end deffn
 
 @geindex gcc_jit_result_release (C function)
-@anchor{topics/results gcc_jit_result_release}@anchor{37}
+@anchor{topics/results gcc_jit_result_release}@anchor{39}
 @deffn {C Function} void           gcc_jit_result_release (gcc_jit_result@w{ }*result)
 
 Once we're done with the code, this unloads the built .so file.
@@ -6237,7 +6298,7 @@ valid to use the result.
 @c <http://www.gnu.org/licenses/>.
 
 @node Internals,Indices and tables,Topic Reference,Top
-@anchor{internals/index internals}@anchor{be}@anchor{internals/index doc}@anchor{bf}
+@anchor{internals/index internals}@anchor{c0}@anchor{internals/index doc}@anchor{c1}
 @chapter Internals
 
 
@@ -6250,7 +6311,7 @@ valid to use the result.
 @end menu
 
 @node Working on the JIT library,Running the test suite,,Internals
-@anchor{internals/index working-on-the-jit-library}@anchor{c0}
+@anchor{internals/index working-on-the-jit-library}@anchor{c2}
 @section Working on the JIT library
 
 
@@ -6287,7 +6348,7 @@ gcc/libgccjit.so.0.0.1: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), 
 Here's what those configuration options mean:
 
 @geindex command line option; --enable-host-shared
-@anchor{internals/index cmdoption--enable-host-shared}@anchor{c1}
+@anchor{internals/index cmdoption--enable-host-shared}@anchor{c3}
 @deffn {Option} --enable-host-shared
 
 Configuring with this option means that the compiler is built as
@@ -6296,7 +6357,7 @@ but it necessary for a shared library.
 @end deffn
 
 @geindex command line option; --enable-languages=jit
-@anchor{internals/index cmdoption--enable-languages}@anchor{c2}
+@anchor{internals/index cmdoption--enable-languages}@anchor{c4}
 @deffn {Option} --enable-languages=jit
 
 This specifies which frontends to build.  The JIT library looks like
@@ -6304,7 +6365,7 @@ a frontend to the rest of the code.
 @end deffn
 
 @geindex command line option; --disable-bootstrap
-@anchor{internals/index cmdoption--disable-bootstrap}@anchor{c3}
+@anchor{internals/index cmdoption--disable-bootstrap}@anchor{c5}
 @deffn {Option} --disable-bootstrap
 
 For hacking on the "jit" subdirectory, performing a full
@@ -6314,7 +6375,7 @@ the compiler can still bootstrap itself.
 @end deffn
 
 @geindex command line option; --enable-checking=release
-@anchor{internals/index cmdoption--enable-checking}@anchor{c4}
+@anchor{internals/index cmdoption--enable-checking}@anchor{c6}
 @deffn {Option} --enable-checking=release
 
 The compile can perform extensive self-checking as it runs, useful when
@@ -6325,7 +6386,7 @@ disable this self-checking.
 @end deffn
 
 @node Running the test suite,Environment variables,Working on the JIT library,Internals
-@anchor{internals/index running-the-test-suite}@anchor{c5}
+@anchor{internals/index running-the-test-suite}@anchor{c7}
 @section Running the test suite
 
 
@@ -6383,7 +6444,7 @@ and once a test has been compiled, you can debug it directly:
 @noindent
 
 @node Environment variables,Overview of code structure,Running the test suite,Internals
-@anchor{internals/index environment-variables}@anchor{c6}
+@anchor{internals/index environment-variables}@anchor{c8}
 @section Environment variables
 
 
@@ -6391,7 +6452,7 @@ When running client code against a locally-built libgccjit, three
 environment variables need to be set up:
 
 @geindex environment variable; LD_LIBRARY_PATH
-@anchor{internals/index envvar-LD_LIBRARY_PATH}@anchor{c7}
+@anchor{internals/index envvar-LD_LIBRARY_PATH}@anchor{c9}
 @deffn {Environment Variable} LD_LIBRARY_PATH
 
 @quotation
@@ -6413,7 +6474,7 @@ libgccjit.so.0.0.1: ELF 64-bit LSB shared object, x86-64, version 1 (GNU/Linux),
 @end deffn
 
 @geindex environment variable; PATH
-@anchor{internals/index envvar-PATH}@anchor{c8}
+@anchor{internals/index envvar-PATH}@anchor{ca}
 @deffn {Environment Variable} PATH
 
 The library uses a driver executable for converting from .s assembler
@@ -6432,7 +6493,7 @@ of development.
 @end deffn
 
 @geindex environment variable; LIBRARY_PATH
-@anchor{internals/index envvar-LIBRARY_PATH}@anchor{c9}
+@anchor{internals/index envvar-LIBRARY_PATH}@anchor{cb}
 @deffn {Environment Variable} LIBRARY_PATH
 
 The driver executable invokes the linker, and the latter needs to locate
@@ -6468,7 +6529,7 @@ hello world
 @noindent
 
 @node Overview of code structure,,Environment variables,Internals
-@anchor{internals/index overview-of-code-structure}@anchor{ca}
+@anchor{internals/index overview-of-code-structure}@anchor{cc}
 @section Overview of code structure
 
 
@@ -6709,7 +6770,7 @@ the APIs are not yet set in stone, and they shouldn't be used in
 production yet.
 
 @node Indices and tables,Index,Internals,Top
-@anchor{index indices-and-tables}@anchor{cb}
+@anchor{index indices-and-tables}@anchor{cd}
 @unnumbered Indices and tables
 
 
