@@ -209,8 +209,8 @@ gengtype-lex.o-warn = -Wno-error
 libgcov-util.o-warn = -Wno-error
 libgcov-driver-tool.o-warn = -Wno-error
 libgcov-merge-tool.o-warn = -Wno-error
-gimple-match.o-warn = -Wno-unused-variable -Wno-unused-parameter
-generic-match.o-warn = -Wno-unused-variable -Wno-unused-parameter
+gimple-match.o-warn = -Wno-unused-variable -Wno-unused-but-set-variable
+generic-match.o-warn = -Wno-unused-variable -Wno-unused-but-set-variable
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either

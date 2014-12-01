@@ -1,5 +1,12 @@
 2014-12-01  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/15346
+	* Makefile.in (gimple-match.o-warn): Remove -Wno-unused-parameter,
+	add -Wno-unused-but-set-variable.
+	* match.pd: Combine two successive divisions.
+
+2014-12-01  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/64126
 	* match.pd: Allow conversions in ~A + 1 -> -A, add -A - 1 -> ~A
 	and -1 - A -> ~A.
