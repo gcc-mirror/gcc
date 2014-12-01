@@ -65,6 +65,35 @@ proc parse_valgrind_logfile {name logfile} {
     close $f
 }
 
+# Given WRES, the result from "wait", issue a PASS
+# if the spawnee exited cleanly, or a FAIL for various kinds of
+# unexpected exits.
+
+proc verify_exit_status { executable wres } {
+    lassign $wres pid spawnid os_error_flag value
+    verbose "pid: $pid" 3
+    verbose "spawnid: $spawnid" 3
+    verbose "os_error_flag: $os_error_flag" 3
+    verbose "value: $value" 3
+
+    # Detect segfaults etc:
+    if { [llength $wres] > 4 } {
+	if { [lindex $wres 4] == "CHILDKILLED" } {
+	    fail "$executable killed: $wres"
+	    return
+	}
+    }
+    if { $os_error_flag != 0 } {
+	fail "$executable: OS error: $wres"
+	return
+    }
+    if { $value != 0 } {
+	fail "$executable: non-zero exit code: $wres"
+	return
+    }
+    pass "$executable exited cleanly"
+}
+
 # This is host_execute from dejagnu.exp commit
 #   126a089777158a7891ff975473939f08c0e31a1c
 # with the following patch applied, and renaming to "fixed_host_execute".
@@ -214,6 +243,7 @@ proc fixed_host_execute {args} {
 
     catch wait wres
     verbose "wres: $wres" 2
+    verify_exit_status $executable $wres
 
     if $run_under_valgrind {
 	upvar 2 name name
