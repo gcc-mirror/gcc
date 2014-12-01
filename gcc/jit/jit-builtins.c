@@ -160,8 +160,12 @@ builtins_manager::get_builtin_function (const char *name)
      the same id on a context give back the same object.  */
   if (!m_builtin_functions[builtin_id])
     {
-      m_builtin_functions[builtin_id] = make_builtin_function (builtin_id);
-      m_ctxt->record (m_builtin_functions[builtin_id]);
+      function *fn = make_builtin_function (builtin_id);
+      if (fn)
+	{
+	  m_builtin_functions[builtin_id] = fn;
+	  m_ctxt->record (fn);
+	}
     }
 
   return m_builtin_functions[builtin_id];
@@ -174,7 +178,10 @@ builtins_manager::make_builtin_function (enum built_in_function builtin_id)
 {
   const struct builtin_data& bd = builtin_data[builtin_id];
   enum jit_builtin_type type_id = bd.type;
-  function_type *func_type = get_type (type_id)->as_a_function_type ();
+  type *t = get_type (type_id);
+  if (!t)
+    return NULL;
+  function_type *func_type = t->as_a_function_type ();
   if (!func_type)
     return NULL;
 

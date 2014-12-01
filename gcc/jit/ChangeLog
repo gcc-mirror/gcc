@@ -1,5 +1,13 @@
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit-builtins.c
+	(gcc::jit::recording::builtins_manager::get_builtin_function):
+	Check for NULL return from make_builtin_function.
+	(gcc::jit::recording::builtins_manager::make_builtin_function):
+	Check for NULL return from get_type.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit-playback.c (gcc::jit::playback::context::compile): Move DSO
 	creation code into...
 	(gcc::jit::playback::context::convert_to_dso): New function.
