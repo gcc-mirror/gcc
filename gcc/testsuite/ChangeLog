@@ -1,3 +1,8 @@
+2014-12-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR rtl-optimization/59278
+	* gcc.target/sh/pr59278.c: New.
+
 2014-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60859
