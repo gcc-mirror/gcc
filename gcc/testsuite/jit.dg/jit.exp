@@ -199,7 +199,7 @@ proc fixed_host_execute {args} {
 		incr timetol
 		exp_continue
 	    } else {
-		-		catch close
+		catch close
 		return "Timed out executing test case"
 	    }
 	}
