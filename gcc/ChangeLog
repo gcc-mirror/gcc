@@ -1,5 +1,12 @@
 2014-12-01  Richard Biener  <rguenther@suse.de>
 
+	* Makefile.in (gimple-match.o-warn): Use -Wno-unused instead of
+	-Wno-unused-variable and -Wno-unused-but-set-variable to restore
+	bootstrap with old GCC.
+	(generic-match.o-warn): Likewise.
+
+2014-12-01  Richard Biener  <rguenther@suse.de>
+
 	* fold-const.c (const_binop): Handle POINTER_PLUS_EXPR.
 	Properly handle FIXED_CST shifts by INTEGER_CST.
 	(const_binop): Move COMPLEX_EXPR, VEC_PACK_TRUNC_EXPR,
