@@ -1563,7 +1563,14 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
 	      && POINTER_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (def_stmt))))
 	  || (is_gimple_assign (def_stmt)
 	      && gimple_assign_rhs_code (def_stmt) == POINTER_PLUS_EXPR))
-	base = gimple_assign_rhs1 (def_stmt);
+	{
+	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	  if (TREE_CODE (rhs1) == SSA_NAME
+	    && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1))
+	    break;
+	  else
+	    base = rhs1;
+	}
       else
 	break;
     }
