@@ -202,7 +202,8 @@ proc jit-dg-test { prog do_what extra_tool_flags } {
     # Create the test executable:
     set comp_output [gcc_target_compile $prog $output_file $do_what \
 			"{additional_flags=$extra_tool_flags}"]
-    if ![jit_check_compile "$prog" "initial compilation" \
+    upvar 1 name name
+    if ![jit_check_compile "$name" "initial compilation" \
 	    $output_file $comp_output] then {
       return
     }
