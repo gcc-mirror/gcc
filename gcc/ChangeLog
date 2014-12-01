@@ -1,4 +1,11 @@
 2014-12-01  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64121
+	* ubsan.c (instrument_object_size): Stop searching if the base
+	occurs in abnormal phi.
+
+2014-12-01  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/63956
 	* ubsan.c (is_ubsan_builtin_p): Check also built-in class.
