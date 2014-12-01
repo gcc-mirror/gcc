@@ -1,3 +1,9 @@
+2014-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60845
+	* typeck.c (finish_class_member_access_expr): Use %q#T instead of
+	%qD in error message.
+
 2014-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-gimplify.c (cxx_omp_clause_apply_fn): Remove NULL last argument
