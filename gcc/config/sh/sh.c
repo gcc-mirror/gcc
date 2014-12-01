@@ -13503,6 +13503,47 @@ sh_find_equiv_gbr_addr (rtx_insn* insn, rtx mem)
   Manual insn combine support code.
 */
 
+/* Return true if the specified insn contains any UNSPECs or
+   UNSPEC_VOLATILEs.  */
+static bool
+sh_unspec_insn_p (rtx_insn* insn)
+{
+  bool result = false;
+
+  struct note_uses_func
+  {
+    static void
+    func (rtx* x, void* data)
+    {
+      if (GET_CODE (*x) == UNSPEC || GET_CODE (*x) == UNSPEC_VOLATILE)
+	*(static_cast<bool*> (data)) = true;
+    }
+  };
+
+  note_uses (&PATTERN (insn), note_uses_func::func, &result);
+  return result;
+}
+
+/* Return true if the register operands of the specified insn are modified
+   between the specified from and to insns (exclusive of those two).  */
+static bool
+sh_insn_operands_modified_between_p (rtx_insn* operands_insn,
+				     const rtx_insn* from,
+				     const rtx_insn* to)
+{
+  /*  FIXME: Return true for multiple sets for now.  */
+  rtx s = single_set (operands_insn);
+  if (s == NULL_RTX)
+    return true;
+
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (i, array, SET_SRC (s), ALL)
+    if ((REG_P (*i) || SUBREG_P (*i)) && reg_set_between_p (*i, from, to))
+      return true;
+
+  return false;
+}
+
 /* Given an op rtx and an insn, try to find out whether the result of the
    specified op consists only of logical operations on T bit stores.  */
 bool
@@ -13598,7 +13639,14 @@ sh_split_movrt_negc_to_movt_xor (rtx_insn* curr_insn, rtx operands[])
 
   if (t_before_negc.set_rtx != NULL_RTX && t_after_negc.set_rtx != NULL_RTX
       && rtx_equal_p (t_before_negc.set_rtx, t_after_negc.set_rtx)
-      && !reg_used_between_p (get_t_reg_rtx (), curr_insn, t_after_negc.insn))
+      && !reg_used_between_p (get_t_reg_rtx (), curr_insn, t_after_negc.insn)
+      && !sh_insn_operands_modified_between_p (t_before_negc.insn,
+					       t_before_negc.insn,
+					       t_after_negc.insn)
+      && !sh_unspec_insn_p (t_after_negc.insn)
+      && !volatile_insn_p (PATTERN (t_after_negc.insn))
+      && !side_effects_p (PATTERN (t_after_negc.insn))
+      && !may_trap_or_fault_p (PATTERN (t_after_negc.insn)))
     {
       emit_insn (gen_movrt_xor (operands[0], get_t_reg_rtx ()));
       set_insn_deleted (t_after_negc.insn);

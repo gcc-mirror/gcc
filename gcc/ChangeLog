@@ -1,3 +1,12 @@
+2014-12-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/63986
+	PR target/51244
+	* config/sh/sh.c (sh_unspec_insn_p,
+	sh_insn_operands_modified_between_p): New functions.
+	(sh_split_movrt_negc_to_movt_xor): Do not delete insn if its operands
+	are modified or if it has side effects, may trap or is volatile.
+
 2014-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-expr.h (create_tmp_var_raw, create_tmp_var,
