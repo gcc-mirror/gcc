@@ -33,9 +33,10 @@ typedef struct toyvm_op toyvm_op;
 typedef struct toyvm_function toyvm_function;
 typedef struct toyvm_frame toyvm_frame;
 typedef struct compilation_state compilation_state;
+typedef struct toyvm_compiled_function toyvm_compiled_function;
 
 /* Functions are compiled to this function ptr type.  */
-typedef int (*toyvm_compiled_func) (int);
+typedef int (*toyvm_compiled_code) (int);
 
 enum opcode {
   /* Ops taking no operand.  */
@@ -440,9 +441,17 @@ add_pop (compilation_state *state,
 	gcc_jit_lvalue_as_rvalue (state->stack_depth))));
 }
 
+/* A struct to hold the compilation results.  */
+
+struct toyvm_compiled_function
+{
+  gcc_jit_result *cf_jit_result;
+  toyvm_compiled_code cf_code;
+};
+
 /* The main compilation hook.  */
 
-static toyvm_compiled_func
+static toyvm_compiled_function *
 toyvm_function_compile (toyvm_function *fn)
 {
   compilation_state state;
@@ -724,12 +733,26 @@ toyvm_function_compile (toyvm_function *fn)
     } /* end of loop on PC locations.  */
 
   /* We've now finished populating the context.  Compile it.  */
-  gcc_jit_result *result = gcc_jit_context_compile (state.ctxt);
+  gcc_jit_result *jit_result = gcc_jit_context_compile (state.ctxt);
   gcc_jit_context_release (state.ctxt);
 
-  return (toyvm_compiled_func)gcc_jit_result_get_code (result,
-						       funcname);
-  /* (this leaks "result" and "funcname") */
+  toyvm_compiled_function *toyvm_result =
+    (toyvm_compiled_function *)calloc (1, sizeof (toyvm_compiled_function));
+  if (!toyvm_result)
+    {
+      fprintf (stderr, "out of memory allocating toyvm_compiled_function\n");
+      gcc_jit_result_release (jit_result);
+      return NULL;
+    }
+
+  toyvm_result->cf_jit_result = jit_result;
+  toyvm_result->cf_code =
+    (toyvm_compiled_code)gcc_jit_result_get_code (jit_result,
+						  funcname);
+
+  free (funcname);
+
+  return toyvm_result;
 }
 
 char test[1024];
@@ -768,7 +791,8 @@ test_script (const char *scripts_dir, const char *script_name, int input,
   char *script_path;
   toyvm_function *fn;
   int interpreted_result;
-  toyvm_compiled_func code;
+  toyvm_compiled_function *compiled_fn;
+  toyvm_compiled_code code;
   int compiled_result;
 
   snprintf (test, sizeof (test), "toyvm.c: %s", script_name);
@@ -784,12 +808,18 @@ test_script (const char *scripts_dir, const char *script_name, int input,
   interpreted_result = toyvm_function_interpret (fn, input, NULL);
   CHECK_VALUE (interpreted_result, expected_result);
 
-  code = toyvm_function_compile (fn);
+  compiled_fn = toyvm_function_compile (fn);
+  CHECK_NON_NULL (compiled_fn);
+
+  code = (toyvm_compiled_code)compiled_fn->cf_code;
   CHECK_NON_NULL (code);
 
   compiled_result = code (input);
   CHECK_VALUE (compiled_result, expected_result);
 
+  gcc_jit_result_release (compiled_fn->cf_jit_result);
+  free (compiled_fn);
+  free (fn);
   free (script_path);
 }
 
@@ -853,9 +883,15 @@ main (int argc, char **argv)
 	  toyvm_function_interpret (fn, atoi (argv[2]), NULL));
 
   /* JIT-compilation.  */
-  toyvm_compiled_func code = toyvm_function_compile (fn);
+  toyvm_compiled_function *compiled_fn
+    = toyvm_function_compile (fn);
+
+  toyvm_compiled_code code = compiled_fn->cf_code;
   printf ("compiler result: %d\n",
 	  code (atoi (argv[2])));
+
+  gcc_jit_result_release (compiled_fn->cf_jit_result);
+  free (compiled_fn);
 
  return 0;
 }
