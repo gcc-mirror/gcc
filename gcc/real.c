@@ -2067,6 +2067,7 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 	  gcc_assert (r->cl = rvc_normal);
 	  /* Set a sticky bit if mpfr_strtofr was inexact.  */
 	  r->sig[0] |= inexact;
+	  mpfr_clear (m);
 	}
     }
 
