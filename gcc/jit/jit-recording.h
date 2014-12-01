@@ -1576,21 +1576,6 @@ private:
 
 } // namespace gcc::jit::recording
 
-/* The result of JIT-compilation.  */
-class result
-{
-public:
-  result(void *dso_handle);
-
-  virtual ~result();
-
-  void *
-  get_code (const char *funcname);
-
-private:
-  void *m_dso_handle;
-};
-
 } // namespace gcc::jit
 
 } // namespace gcc

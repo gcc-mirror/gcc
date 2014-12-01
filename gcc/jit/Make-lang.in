@@ -64,6 +64,7 @@ jit_OBJS = attribs.o \
 	jit/libgccjit.o \
 	jit/jit-recording.o \
 	jit/jit-playback.o \
+	jit/jit-result.o \
 	jit/jit-builtins.o
 
 # Use strict warnings for this front end.
