@@ -1,3 +1,9 @@
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/jit.exp (jit-dg-test): Use $name rathen than $prog
+	when calling jit_check_compile to avoid embedding the full path of
+	the testcase into the test results.
+
 2014-12-01  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/64121
