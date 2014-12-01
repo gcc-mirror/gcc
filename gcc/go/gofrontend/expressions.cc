@@ -8735,7 +8735,11 @@ Call_expression::do_flatten(Gogo* gogo, Named_object*,
   // Add temporary variables for all arguments that require type
   // conversion.
   Function_type* fntype = this->get_function_type();
-  go_assert(fntype != NULL);
+  if (fntype == NULL)
+    {
+      go_assert(saw_errors());
+      return this;
+    }
   if (this->args_ != NULL && !this->args_->empty()
       && fntype->parameters() != NULL && !fntype->parameters()->empty())
     {
@@ -10901,9 +10905,8 @@ Interface_field_reference_expression::do_traverse(Traverse* traverse)
 // interface.  So introduce a temporary variable if necessary.
 
 Expression*
-Interface_field_reference_expression::do_lower(Gogo*, Named_object*,
-					       Statement_inserter* inserter,
-					       int)
+Interface_field_reference_expression::do_flatten(Gogo*, Named_object*,
+						 Statement_inserter* inserter)
 {
   if (!this->expr_->is_variable())
     {
