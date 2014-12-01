@@ -1,5 +1,9 @@
 2014-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* combine.c (try_combine): Use is_parallel_of_n_reg_sets some more.
+
+2014-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* combine.c (is_parallel_of_n_reg_sets): New function.
 	(can_split_parallel_of_n_reg_sets): New function.
 	(try_combine): If I2 is a PARALLEL of two SETs, split it into
