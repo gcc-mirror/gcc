@@ -1,3 +1,10 @@
+2014-12-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/63941
+	* tree-if-conv.c (add_to_predicate_list): Delete wrong assertion that
+	DOM_BB has non-true predicate, conditionally set non-true predicate
+	for BB.
+
 2014-12-01  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/63551
