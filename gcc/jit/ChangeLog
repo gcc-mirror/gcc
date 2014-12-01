@@ -1,5 +1,14 @@
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
+	PR jit/64018
+	* docs/intro/tutorial02.rst: Spell out lifetime of generated code.
+	Add description of error-handling, taken in part from...
+	* docs/topics/contexts.rst (Error-handling): Expand, and move some
+	content to tutorial02.rst.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/64020
 	* docs/topics/types.rst (Standard types) Add new enum values to
 	the table of enum gcc_jit_types: GCC_JIT_TYPE_COMPLEX_FLOAT,
