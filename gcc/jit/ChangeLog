@@ -1,5 +1,20 @@
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
+	PR jit/63854
+	* jit-builtins.c
+	(gcc::jit::recording::builtins_manager::make_fn_type): Call the
+	context's new_function_type method, rather than directly creating
+	a function_type instance.
+	* jit-recording.c
+	(gcc::jit::recording::context::new_function_type): New method,
+	adapted from part of...
+	(gcc::jit::recording::context::new_function_ptr_type): ...this.
+	Update to call new_function_type.
+	* jit-recording.h
+	(gcc::jit::recording::context::new_function_type): New method.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/63969
 	* jit-playback.c: Ensure that ctxt_progname is non-NULL.
 
