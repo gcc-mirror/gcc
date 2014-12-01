@@ -1,5 +1,11 @@
 2014-12-01  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/64111
+	* tree.c (int_cst_hasher::hash): Use TYPE_UID instead of
+	htab_hash_pointer to not break PCH.
+
+2014-12-01  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/15346
 	* Makefile.in (gimple-match.o-warn): Remove -Wno-unused-parameter,
 	add -Wno-unused-but-set-variable.
