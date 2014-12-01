@@ -1,3 +1,9 @@
+2014-12-01  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/64055
+	* tree-chkp.c (chkp_find_bound_slots_1): Allow non constant
+	values in array domain.
+
 2014-12-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/63941

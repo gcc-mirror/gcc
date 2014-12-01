@@ -1565,7 +1565,9 @@ chkp_find_bound_slots_1 (const_tree type, bitmap have_bound,
       HOST_WIDE_INT esize = TREE_INT_CST_LOW (TYPE_SIZE (etype));
       unsigned HOST_WIDE_INT cur;
 
-      if (!maxval || integer_minus_onep (maxval))
+      if (!maxval
+	  || TREE_CODE (maxval) != INTEGER_CST
+	  || integer_minus_onep (maxval))
 	return;
 
       for (cur = 0; cur <= TREE_INT_CST_LOW (maxval); cur++)
