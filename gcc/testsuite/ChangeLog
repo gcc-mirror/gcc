@@ -1,3 +1,8 @@
+2014-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60845
+	* g++.dg/parse/error55.C: New.
+
 2014-12-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/15346
