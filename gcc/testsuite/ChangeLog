@@ -1,3 +1,8 @@
+2014-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60859
+	* g++.dg/cpp0x/initlist88.C: New.
+
 2014-12-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/fuse_adrp_add_1.c: Gate test on aarch64_small.

@@ -5511,9 +5511,15 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	{
 	  if (SCALAR_TYPE_P (type))
 	    {
-	      if (complain & tf_error)
-		error ("braces around scalar initializer for type %qT", type);
-	      init = error_mark_node;
+	      if (cxx_dialect < cxx11
+		  /* Isn't value-initialization.  */
+		  || CONSTRUCTOR_NELTS (init) > 0)
+		{
+		  if (complain & tf_error)
+		    error ("braces around scalar initializer for type %qT",
+			   type);
+		  init = error_mark_node;
+		}
 	    }
 	  else
 	    maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
