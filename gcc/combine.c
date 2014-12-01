@@ -12990,6 +12990,9 @@ reg_dead_at_p (rtx reg, rtx_insn *insn)
     {
       if (INSN_P (insn))
         {
+	  if (find_regno_note (insn, REG_UNUSED, reg_dead_regno))
+	    return 1;
+
 	  note_stores (PATTERN (insn), reg_dead_at_p_1, NULL);
 	  if (reg_dead_flag)
 	    return reg_dead_flag == 1 ? 1 : 0;
