@@ -1,3 +1,9 @@
+2014-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60859
+	* decl.c (reshape_init_r): Do not reject value-initialization of
+	scalar array element.
+
 2014-12-01  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/63956
