@@ -28057,6 +28057,47 @@ $as_echo "#define HAVE_isl 1" >>confdefs.h
 
 fi
 
+# Check whether isl_schedule_constraints_compute_schedule is available;
+# it's new in ISL-0.13.
+if test "x${ISLLIBS}" != "x" ; then
+  saved_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS $ISLINC"
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS $ISLLIBS $GMPLIBS"
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking Checking for isl_schedule_constraints_compute_schedule" >&5
+$as_echo_n "checking Checking for isl_schedule_constraints_compute_schedule... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <isl/schedule.h>
+int
+main ()
+{
+isl_schedule_constraints_compute_schedule (NULL);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_has_isl_schedule_constraints_compute_schedule=yes
+else
+  ac_has_isl_schedule_constraints_compute_schedule=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_isl_schedule_constraints_compute_schedule" >&5
+$as_echo "$ac_has_isl_schedule_constraints_compute_schedule" >&6; }
+
+  LIBS="$saved_LIBS"
+  CFLAGS="$saved_CFLAGS"
+
+  if test x"$ac_has_isl_schedule_constraints_compute_schedule" = x"yes"; then
+
+$as_echo "#define HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE 1" >>confdefs.h
+
+  fi
+fi
+
 # Check for plugin support
    # Check whether --enable-plugin was given.
 if test "${enable_plugin+set}" = set; then :

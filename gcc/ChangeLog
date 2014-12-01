@@ -1,3 +1,19 @@
+2014-12-01  Tobias Burnus  <burnus@net-b.de>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR middle-end/64017
+	* configure.ac (ac_has_isl_schedule_constraints_compute_schedule):
+	New check.
+	* doc/install.texi (ISL): Permit ISL 0.14.
+	* graphite-optimize-isl.c (getScheduleForBandList, optimize_isl):
+	Conditionally use ISL 0.13+ functions.
+	* graphite-interchange.c: Make 'extern "C"' conditional.
+	* graphite-isl-ast-to-gimple.c: Ditto.
+	* graphite-poly.c: Ditto.
+	* graphite-sese-to-poly.c: Ditto.
+	* config.in: Regenerate.
+	* gcc/configure: Regenerate.
+
 2014-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c (distribute_links): Handle multiple SETs.
