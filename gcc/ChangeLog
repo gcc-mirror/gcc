@@ -1,3 +1,14 @@
+2014-12-01  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (const_binop): Handle POINTER_PLUS_EXPR.
+	Properly handle FIXED_CST shifts by INTEGER_CST.
+	(const_binop): Move COMPLEX_EXPR, VEC_PACK_TRUNC_EXPR,
+	VEC_PACK_FIX_TRUNC_EXPR, VEC_WIDEN_MULT_LO_EXPR,
+	VEC_WIDEN_MULT_HI_EXPR, VEC_WIDEN_MULT_EVEN_EXPR and
+	VEC_WIDEN_MULT_ODD_EXPR handling here from ...
+	(fold_binary_loc): ... here.  Call const_binop overload
+	with result type.
+
 2014-12-01  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
