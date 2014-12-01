@@ -1,3 +1,9 @@
+2014-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64111
+	* tree.c (int_cst_hash_hash): Use TYPE_UID instead of
+	htab_hash_pointer to not break PCH.
+
 2014-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

@@ -1130,7 +1130,7 @@ int_cst_hash_hash (const void *x)
   const_tree const t = (const_tree) x;
 
   return (TREE_INT_CST_HIGH (t) ^ TREE_INT_CST_LOW (t)
-	  ^ htab_hash_pointer (TREE_TYPE (t)));
+	  ^ TYPE_UID (TREE_TYPE (t)));
 }
 
 /* Return nonzero if the value represented by *X (an INTEGER_CST tree node)
