@@ -1,6 +1,11 @@
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* real.c (real_from_string): Add missing mpfr_clear.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* tree-ssa-math-opts.c (execute_cse_sincos_1): Fix a missing
 	release of stmts by converting it to an auto_vec.
 
