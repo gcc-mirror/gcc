@@ -1,3 +1,10 @@
+2014-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64126
+	* match.pd: Allow conversions in ~A + 1 -> -A, add -A - 1 -> ~A
+	and -1 - A -> ~A.
+	* fold-const.c (fold_binary_loc): Remove transforms here.
+
 2014-12-01  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/mips/mips.c (mips16_build_call_stub): Move the save of
