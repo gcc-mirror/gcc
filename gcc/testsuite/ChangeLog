@@ -1,3 +1,8 @@
+2014-12-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/63941
+	* gcc.dg/torture/pr63941.c: New test.
+
 2014-12-01  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/63551
