@@ -192,6 +192,12 @@ OK, we've populated the context.  We can now compile it using
 
 and get a :c:type:`gcc_jit_result *`.
 
+At this point we're done with the context; we can release it:
+
+.. code-block:: c
+
+   gcc_jit_context_release (ctxt);
+
 We can now use :c:func:`gcc_jit_result_get_code` to look up a specific
 machine code routine within the result, in this case, the function we
 created above.
