@@ -5642,8 +5642,7 @@ rewrite_to_defined_overflow (gimple stmt)
   if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
     gimple_assign_set_rhs_code (stmt, PLUS_EXPR);
   gimple_seq_add_stmt (&stmts, stmt);
-  gimple cvt = gimple_build_assign_with_ops (NOP_EXPR, lhs,
-					     gimple_assign_lhs (stmt));
+  gimple cvt = gimple_build_assign (lhs, NOP_EXPR, gimple_assign_lhs (stmt));
   gimple_seq_add_stmt (&stmts, cvt);
 
   return stmts;
@@ -5672,10 +5671,9 @@ gimple_build (gimple_seq *seq, location_t loc,
       if (code == REALPART_EXPR
 	  || code == IMAGPART_EXPR
 	  || code == VIEW_CONVERT_EXPR)
-	stmt = gimple_build_assign_with_ops (code, res,
-					     build1 (code, type, op0));
+	stmt = gimple_build_assign (res, code, build1 (code, type, op0));
       else
-	stmt = gimple_build_assign_with_ops (code, res, op0);
+	stmt = gimple_build_assign (res, code, op0);
       gimple_set_location (stmt, loc);
       gimple_seq_add_stmt_without_update (seq, stmt);
     }
@@ -5700,7 +5698,7 @@ gimple_build (gimple_seq *seq, location_t loc,
 	res = make_ssa_name (type);
       else
 	res = create_tmp_reg (type);
-      gimple stmt = gimple_build_assign_with_ops (code, res, op0, op1);
+      gimple stmt = gimple_build_assign (res, code, op0, op1);
       gimple_set_location (stmt, loc);
       gimple_seq_add_stmt_without_update (seq, stmt);
     }
@@ -5728,11 +5726,10 @@ gimple_build (gimple_seq *seq, location_t loc,
 	res = create_tmp_reg (type);
       gimple stmt;
       if (code == BIT_FIELD_REF)
-	stmt = gimple_build_assign_with_ops (code, res,
-					     build3 (BIT_FIELD_REF, type,
-						     op0, op1, op2));
+	stmt = gimple_build_assign (res, code,
+				    build3 (code, type, op0, op1, op2));
       else
-	stmt = gimple_build_assign_with_ops (code, res, op0, op1, op2);
+	stmt = gimple_build_assign (res, code, op0, op1, op2);
       gimple_set_location (stmt, loc);
       gimple_seq_add_stmt_without_update (seq, stmt);
     }

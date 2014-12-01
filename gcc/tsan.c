@@ -500,7 +500,7 @@ instrument_builtin_call (gimple_stmt_iterator *gsi)
 						TREE_TYPE (args[1])))
 		  {
 		    tree var = make_ssa_name (TREE_TYPE (lhs));
-		    g = gimple_build_assign_with_ops (NOP_EXPR, var, args[1]);
+		    g = gimple_build_assign (var, NOP_EXPR, args[1]);
 		    gsi_insert_after (gsi, g, GSI_NEW_STMT);
 		    args[1] = var;
 		  }
@@ -509,17 +509,14 @@ instrument_builtin_call (gimple_stmt_iterator *gsi)
 		if (tsan_atomic_table[i].code == BIT_NOT_EXPR)
 		  {
 		    tree var = make_ssa_name (TREE_TYPE (lhs));
-		    g = gimple_build_assign_with_ops (BIT_AND_EXPR, var,
-						      gimple_call_lhs (stmt),
-						      args[1]);
+		    g = gimple_build_assign (var, BIT_AND_EXPR,
+					     gimple_call_lhs (stmt), args[1]);
 		    gsi_insert_after (gsi, g, GSI_NEW_STMT);
-		    g = gimple_build_assign_with_ops (BIT_NOT_EXPR, lhs, var);
+		    g = gimple_build_assign (lhs, BIT_NOT_EXPR, var);
 		  }
 		else
-		  g = gimple_build_assign_with_ops (tsan_atomic_table[i].code,
-						    lhs,
-						    gimple_call_lhs (stmt),
-						    args[1]);
+		  g = gimple_build_assign (lhs, tsan_atomic_table[i].code,
+					   gimple_call_lhs (stmt), args[1]);
 		update_stmt (stmt);
 		gsi_insert_after (gsi, g, GSI_NEW_STMT);
 	      }
@@ -553,9 +550,8 @@ instrument_builtin_call (gimple_stmt_iterator *gsi)
 	    if (!useless_type_conversion_p (TREE_TYPE (t),
 					    TREE_TYPE (args[1])))
 	      {
-		g = gimple_build_assign_with_ops (NOP_EXPR,
-						  make_ssa_name (TREE_TYPE (t)),
-						  args[1]);
+		g = gimple_build_assign (make_ssa_name (TREE_TYPE (t)),
+					 NOP_EXPR, args[1]);
 		gsi_insert_before (gsi, g, GSI_SAME_STMT);
 		args[1] = gimple_assign_lhs (g);
 	      }
@@ -577,9 +573,8 @@ instrument_builtin_call (gimple_stmt_iterator *gsi)
 		t = make_ssa_name (TREE_TYPE (TREE_TYPE (decl)), stmt);
 		cond = build2 (NE_EXPR, boolean_type_node, t,
 			       build_int_cst (TREE_TYPE (t), 0));
-		g = gimple_build_assign_with_ops (COND_EXPR, lhs, cond,
-						  args[1],
-						  gimple_assign_lhs (g));
+		g = gimple_build_assign (lhs, COND_EXPR, cond, args[1],
+					 gimple_assign_lhs (g));
 		gimple_call_set_lhs (stmt, t);
 		update_stmt (stmt);
 		gsi_insert_after (gsi, g, GSI_NEW_STMT);

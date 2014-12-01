@@ -1,3 +1,86 @@
+2014-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple.h (gimple_build_assign_stat): Remove prototype.
+	(gimple_build_assign): Remove define.  Add overload prototypes
+	with tree lhs and either a tree rhs, or enum tree_code and
+	1, 2 or 3 tree operands.
+	* gimple.c (gimple_build_assign_stat): Renamed to...
+	(gimple_build_assign): ... this.  Add overloads with
+	enum tree_code and 1, 2 or 3 tree operands.
+	(gimple_build_assign_with_ops): Remove 1 and 2 operand overloads.
+	Rename the 3 operand overload to ...
+	(gimple_build_assign_1): ... this.  Make it static inline.
+	* tree-ssa-strlen.c (get_string_length): Use gimple_build_assign
+	instead of gimple_build_assign_with_ops, swap the order of first
+	two arguments and adjust formatting where necessary.
+	* tree-vect-slp.c (vect_get_constant_vectors,
+	vect_create_mask_and_perm): Likewise.
+	* tree-ssa-forwprop.c (simplify_rotate): Likewise.
+	* asan.c (build_shadow_mem_access, maybe_create_ssa_name,
+	maybe_cast_to_ptrmode, asan_expand_check_ifn): Likewise.
+	* tsan.c (instrument_builtin_call): Likewise.
+	* tree-chkp.c (chkp_compute_bounds_for_assignment,
+	chkp_generate_extern_var_bounds): Likewise.
+	* tree-loop-distribution.c (generate_memset_builtin): Likewise.
+	* tree-ssa-loop-im.c (rewrite_reciprocal): Likewise.
+	* gimple-builder.c (build_assign, build_type_cast): Likewise.
+	* tree-vect-loop-manip.c (vect_create_cond_for_align_checks): Likewise.
+	* value-prof.c (gimple_divmod_fixed_value, gimple_mod_pow2,
+	gimple_mod_subtract): Likewise.
+	* gimple-match-head.c (maybe_push_res_to_seq): Likewise.
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern,
+	vect_recog_sad_pattern, vect_handle_widen_op_by_const,
+	vect_recog_widen_mult_pattern, vect_recog_pow_pattern,
+	vect_recog_widen_sum_pattern, vect_operation_fits_smaller_type,
+	vect_recog_over_widening_pattern, vect_recog_widen_shift_pattern,
+	vect_recog_rotate_pattern, vect_recog_vector_vector_shift_pattern,
+	vect_recog_divmod_pattern, vect_recog_mixed_size_cond_pattern,
+	adjust_bool_pattern_cast, adjust_bool_pattern,
+	vect_recog_bool_pattern): Likewise.
+	* gimple-ssa-strength-reduction.c (create_add_on_incoming_edge,
+	insert_initializers, introduce_cast_before_cand,
+	replace_one_candidate): Likewise.
+	* tree-ssa-math-opts.c (insert_reciprocals, powi_as_mults_1,
+	powi_as_mults, build_and_insert_binop, build_and_insert_cast,
+	pass_cse_sincos::execute, bswap_replace, convert_mult_to_fma):
+	Likewise.
+	* tree-tailcall.c (adjust_return_value_with_ops,
+	update_accumulator_with_ops): Likewise.
+	* tree-predcom.c (reassociate_to_the_same_stmt): Likewise.
+	* tree-ssa-reassoc.c (build_and_add_sum,
+	optimize_range_tests_to_bit_test, update_ops,
+	maybe_optimize_range_tests, rewrite_expr_tree, linearize_expr,
+	negate_value, repropagate_negates, attempt_builtin_powi,
+	reassociate_bb): Likewise.
+	* tree-vect-loop.c (vect_is_simple_reduction_1,
+	get_initial_def_for_induction, vect_create_epilog_for_reduction):
+	Likewise.
+	* ipa-split.c (split_function): Likewise.
+	* tree-ssa-phiopt.c (conditional_replacement, minmax_replacement,
+	abs_replacement, neg_replacement): Likewise.
+	* tree-profile.c (gimple_gen_edge_profiler): Likewise.
+	* tree-vrp.c (simplify_truth_ops_using_ranges,
+	simplify_float_conversion_using_ranges,
+	simplify_internal_call_using_ranges): Likewise.
+	* gimple-fold.c (rewrite_to_defined_overflow, gimple_build): Likewise.
+	* tree-vect-generic.c (expand_vector_divmod,
+	optimize_vector_constructor): Likewise.
+	* ubsan.c (ubsan_expand_null_ifn, ubsan_expand_objsize_ifn,
+	instrument_bool_enum_load): Likewise.
+	* tree-ssa-loop-manip.c (create_iv): Likewise.
+	* omp-low.c (lower_rec_input_clauses, expand_omp_for_generic,
+	expand_omp_for_static_nochunk, expand_omp_for_static_chunk,
+	expand_cilk_for, simd_clone_adjust): Likewise.
+	* trans-mem.c (expand_transaction): Likewise.
+	* tree-vect-data-refs.c (bump_vector_ptr, vect_permute_store_chain,
+	vect_setup_realignment, vect_permute_load_chain,
+	vect_shift_permute_load_chain): Likewise.
+	* tree-vect-stmts.c (vect_init_vector, vectorizable_mask_load_store,
+	vectorizable_simd_clone_call, vect_gen_widened_results_half,
+	vect_create_vectorized_demotion_stmts, vectorizable_conversion,
+	vectorizable_shift, vectorizable_operation, vectorizable_store,
+	permute_vec_elements, vectorizable_load): Likewise.
+
 2014-12-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64111

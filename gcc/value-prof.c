@@ -775,13 +775,11 @@ gimple_divmod_fixed_value (gassign *stmt, tree value, int prob,
   bb1end = stmt3;
 
   tmp2 = create_tmp_reg (optype, "PROF");
-  stmt1 = gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt), tmp2,
-					op1, tmp0);
+  stmt1 = gimple_build_assign (tmp2, gimple_assign_rhs_code (stmt), op1, tmp0);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   bb2end = stmt1;
 
-  stmt1 = gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt), tmp2,
-					op1, op2);
+  stmt1 = gimple_build_assign (tmp2, gimple_assign_rhs_code (stmt), op1, op2);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   bb3end = stmt1;
 
@@ -930,9 +928,9 @@ gimple_mod_pow2 (gassign *stmt, int prob, gcov_type count, gcov_type all)
   result = create_tmp_reg (optype, "PROF");
   tmp2 = make_temp_ssa_name (optype, NULL, "PROF");
   tmp3 = make_temp_ssa_name (optype, NULL, "PROF");
-  stmt2 = gimple_build_assign_with_ops (PLUS_EXPR, tmp2, op2,
-					build_int_cst (optype, -1));
-  stmt3 = gimple_build_assign_with_ops (BIT_AND_EXPR, tmp3, tmp2, op2);
+  stmt2 = gimple_build_assign (tmp2, PLUS_EXPR, op2,
+			       build_int_cst (optype, -1));
+  stmt3 = gimple_build_assign (tmp3, BIT_AND_EXPR, tmp2, op2);
   stmt4 = gimple_build_cond (NE_EXPR, tmp3, build_int_cst (optype, 0),
 			     NULL_TREE, NULL_TREE);
   gsi_insert_before (&gsi, stmt2, GSI_SAME_STMT);
@@ -941,12 +939,12 @@ gimple_mod_pow2 (gassign *stmt, int prob, gcov_type count, gcov_type all)
   bb1end = stmt4;
 
   /* tmp2 == op2-1 inherited from previous block.  */
-  stmt1 = gimple_build_assign_with_ops (BIT_AND_EXPR, result, op1, tmp2);
+  stmt1 = gimple_build_assign (result, BIT_AND_EXPR, op1, tmp2);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   bb2end = stmt1;
 
-  stmt1 = gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt), result,
-					op1, op2);
+  stmt1 = gimple_build_assign (result, gimple_assign_rhs_code (stmt),
+			       op1, op2);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   bb3end = stmt1;
 
@@ -1094,7 +1092,7 @@ gimple_mod_subtract (gassign *stmt, int prob1, int prob2, int ncounts,
 
   if (ncounts)	/* Assumed to be 0 or 1 */
     {
-      stmt1 = gimple_build_assign_with_ops (MINUS_EXPR, result, result, tmp1);
+      stmt1 = gimple_build_assign (result, MINUS_EXPR, result, tmp1);
       stmt2 = gimple_build_cond (LT_EXPR, result, tmp1, NULL_TREE, NULL_TREE);
       gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
       gsi_insert_before (&gsi, stmt2, GSI_SAME_STMT);
@@ -1102,8 +1100,8 @@ gimple_mod_subtract (gassign *stmt, int prob1, int prob2, int ncounts,
     }
 
   /* Fallback case. */
-  stmt1 = gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt), result,
-					result, tmp1);
+  stmt1 = gimple_build_assign (result, gimple_assign_rhs_code (stmt),
+			       result, tmp1);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   bb3end = stmt1;
 

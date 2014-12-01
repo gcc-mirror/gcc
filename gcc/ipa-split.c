@@ -1586,8 +1586,7 @@ split_function (struct split_point *split_point)
 		      gimple cpy;
 		      tree tem = create_tmp_reg (restype);
 		      tem = make_ssa_name (tem, call);
-		      cpy = gimple_build_assign_with_ops (NOP_EXPR, retval,
-							  tem);
+		      cpy = gimple_build_assign (retval, NOP_EXPR, tem);
 		      gsi_insert_after (&gsi, cpy, GSI_NEW_STMT);
 		      retval = tem;
 		    }

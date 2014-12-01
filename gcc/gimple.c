@@ -399,24 +399,22 @@ gimple_build_call_from_tree (tree t)
    RHS of the assignment which can be unary or binary.  */
 
 gassign *
-gimple_build_assign_stat (tree lhs, tree rhs MEM_STAT_DECL)
+gimple_build_assign (tree lhs, tree rhs MEM_STAT_DECL)
 {
   enum tree_code subcode;
   tree op1, op2, op3;
 
   extract_ops_from_tree_1 (rhs, &subcode, &op1, &op2, &op3);
-  return gimple_build_assign_with_ops (subcode, lhs, op1, op2, op3
-				       PASS_MEM_STAT);
+  return gimple_build_assign (lhs, subcode, op1, op2, op3 PASS_MEM_STAT);
 }
 
 
 /* Build a GIMPLE_ASSIGN statement with subcode SUBCODE and operands
-   OP1 and OP2.  If OP2 is NULL then SUBCODE must be of class
-   GIMPLE_UNARY_RHS or GIMPLE_SINGLE_RHS.  */
+   OP1, OP2 and OP3.  */
 
-gassign *
-gimple_build_assign_with_ops (enum tree_code subcode, tree lhs, tree op1,
-			      tree op2, tree op3 MEM_STAT_DECL)
+static inline gassign *
+gimple_build_assign_1 (tree lhs, enum tree_code subcode, tree op1,
+		       tree op2, tree op3 MEM_STAT_DECL)
 {
   unsigned num_ops;
   gassign *p;
@@ -445,20 +443,34 @@ gimple_build_assign_with_ops (enum tree_code subcode, tree lhs, tree op1,
   return p;
 }
 
-gassign *
-gimple_build_assign_with_ops (enum tree_code subcode, tree lhs, tree op1,
-			      tree op2 MEM_STAT_DECL)
-{
-  return gimple_build_assign_with_ops (subcode, lhs, op1, op2, NULL_TREE
-				       PASS_MEM_STAT);
-}
+/* Build a GIMPLE_ASSIGN statement with subcode SUBCODE and operands
+   OP1, OP2 and OP3.  */
 
 gassign *
-gimple_build_assign_with_ops (enum tree_code subcode, tree lhs, tree op1
-			      MEM_STAT_DECL)
+gimple_build_assign (tree lhs, enum tree_code subcode, tree op1,
+		     tree op2, tree op3 MEM_STAT_DECL)
 {
-  return gimple_build_assign_with_ops (subcode, lhs, op1, NULL_TREE, NULL_TREE
-				       PASS_MEM_STAT);
+  return gimple_build_assign_1 (lhs, subcode, op1, op2, op3 PASS_MEM_STAT);
+}
+
+/* Build a GIMPLE_ASSIGN statement with subcode SUBCODE and operands
+   OP1 and OP2.  */
+
+gassign *
+gimple_build_assign (tree lhs, enum tree_code subcode, tree op1,
+		     tree op2 MEM_STAT_DECL)
+{
+  return gimple_build_assign_1 (lhs, subcode, op1, op2, NULL_TREE
+				PASS_MEM_STAT);
+}
+
+/* Build a GIMPLE_ASSIGN statement with subcode SUBCODE and operand OP1.  */
+
+gassign *
+gimple_build_assign (tree lhs, enum tree_code subcode, tree op1 MEM_STAT_DECL)
+{
+  return gimple_build_assign_1 (lhs, subcode, op1, NULL_TREE, NULL_TREE
+				PASS_MEM_STAT);
 }
 
 

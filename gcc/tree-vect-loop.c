@@ -2503,8 +2503,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
     {
       tree rhs = gimple_assign_rhs2 (def_stmt);
       tree negrhs = make_ssa_name (TREE_TYPE (rhs));
-      gimple negate_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, negrhs,
-							 rhs);
+      gimple negate_stmt = gimple_build_assign (negrhs, NEGATE_EXPR, rhs);
       gimple_stmt_iterator gsi = gsi_for_stmt (def_stmt);
       set_vinfo_for_stmt (negate_stmt, new_stmt_vec_info (negate_stmt, 
 							  loop_info, NULL));
@@ -3380,10 +3379,13 @@ get_initial_def_for_induction (gimple iv_phi)
       /* If the initial value is not of proper type, convert it.  */
       if (!useless_type_conversion_p (vectype, TREE_TYPE (vec_init)))
 	{
-	  new_stmt = gimple_build_assign_with_ops
-	      (VIEW_CONVERT_EXPR,
-	       vect_get_new_vect_var (vectype, vect_simple_var, "vec_iv_"),
-	       build1 (VIEW_CONVERT_EXPR, vectype, vec_init));
+	  new_stmt
+	    = gimple_build_assign (vect_get_new_vect_var (vectype,
+							  vect_simple_var,
+							  "vec_iv_"),
+				   VIEW_CONVERT_EXPR,
+				   build1 (VIEW_CONVERT_EXPR, vectype,
+					   vec_init));
 	  vec_init = make_ssa_name (gimple_assign_lhs (new_stmt), new_stmt);
 	  gimple_assign_set_lhs (new_stmt, vec_init);
 	  new_bb = gsi_insert_on_edge_immediate (loop_preheader_edge (iv_loop),
@@ -3496,8 +3498,7 @@ get_initial_def_for_induction (gimple iv_phi)
   induc_def = PHI_RESULT (induction_phi);
 
   /* Create the iv update inside the loop  */
-  new_stmt = gimple_build_assign_with_ops (PLUS_EXPR, vec_dest,
-					   induc_def, vec_step);
+  new_stmt = gimple_build_assign (vec_dest, PLUS_EXPR, induc_def, vec_step);
   vec_def = make_ssa_name (vec_dest, new_stmt);
   gimple_assign_set_lhs (new_stmt, vec_def);
   gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
@@ -3546,20 +3547,21 @@ get_initial_def_for_induction (gimple iv_phi)
       for (i = 1; i < ncopies; i++)
 	{
 	  /* vec_i = vec_prev + vec_step  */
-	  new_stmt = gimple_build_assign_with_ops (PLUS_EXPR, vec_dest,
-						   vec_def, vec_step);
+	  new_stmt = gimple_build_assign (vec_dest, PLUS_EXPR,
+					  vec_def, vec_step);
 	  vec_def = make_ssa_name (vec_dest, new_stmt);
 	  gimple_assign_set_lhs (new_stmt, vec_def);
  
 	  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
 	  if (!useless_type_conversion_p (resvectype, vectype))
 	    {
-	      new_stmt = gimple_build_assign_with_ops
-		  (VIEW_CONVERT_EXPR,
-		   vect_get_new_vect_var (resvectype, vect_simple_var,
-					  "vec_iv_"),
-		   build1 (VIEW_CONVERT_EXPR, resvectype,
-			   gimple_assign_lhs (new_stmt)));
+	      new_stmt
+		= gimple_build_assign
+			(vect_get_new_vect_var (resvectype, vect_simple_var,
+						"vec_iv_"),
+			 VIEW_CONVERT_EXPR,
+			 build1 (VIEW_CONVERT_EXPR, resvectype,
+				 gimple_assign_lhs (new_stmt)));
 	      gimple_assign_set_lhs (new_stmt,
 				     make_ssa_name
 				       (gimple_assign_lhs (new_stmt), new_stmt));
@@ -3623,10 +3625,12 @@ get_initial_def_for_induction (gimple iv_phi)
   STMT_VINFO_VEC_STMT (phi_info) = induction_phi;
   if (!useless_type_conversion_p (resvectype, vectype))
     {
-      new_stmt = gimple_build_assign_with_ops
-	 (VIEW_CONVERT_EXPR,
-	  vect_get_new_vect_var (resvectype, vect_simple_var, "vec_iv_"),
-	  build1 (VIEW_CONVERT_EXPR, resvectype, induc_def));
+      new_stmt = gimple_build_assign (vect_get_new_vect_var (resvectype,
+							     vect_simple_var,
+							     "vec_iv_"),
+				      VIEW_CONVERT_EXPR,
+				      build1 (VIEW_CONVERT_EXPR, resvectype,
+					      induc_def));
       induc_def = make_ssa_name (gimple_assign_lhs (new_stmt), new_stmt);
       gimple_assign_set_lhs (new_stmt, induc_def);
       si = gsi_after_labels (bb);
@@ -4299,15 +4303,14 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
             {
               calc_vec_perm_mask_for_shift (mode, elt_offset, sel);
               tree mask = vect_gen_perm_mask_any (vectype, sel);
-	      epilog_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR,
-							  vec_dest, new_temp,
-							  zero_vec, mask);
+	      epilog_stmt = gimple_build_assign (vec_dest, VEC_PERM_EXPR,
+						 new_temp, zero_vec, mask);
               new_name = make_ssa_name (vec_dest, epilog_stmt);
               gimple_assign_set_lhs (epilog_stmt, new_name);
               gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 
-              epilog_stmt = gimple_build_assign_with_ops (code, vec_dest,
-                                                          new_name, new_temp);
+	      epilog_stmt = gimple_build_assign (vec_dest, code, new_name,
+						 new_temp);
               new_temp = make_ssa_name (vec_dest, epilog_stmt);
               gimple_assign_set_lhs (epilog_stmt, new_temp);
               gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
@@ -4386,8 +4389,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
                     }
                   else
                     {
-                      epilog_stmt = gimple_build_assign_with_ops (code,
-                                          new_scalar_dest, new_name, new_temp);
+		      epilog_stmt = gimple_build_assign (new_scalar_dest, code,
+							 new_name, new_temp);
                       new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
                       gimple_assign_set_lhs (epilog_stmt, new_temp);
                       gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
@@ -4409,8 +4412,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
                    j++)
                 {
                   first_res = scalar_results[j % group_size];
-                  new_stmt = gimple_build_assign_with_ops (code,
-                                              new_scalar_dest, first_res, res);
+		  new_stmt = gimple_build_assign (new_scalar_dest, code,
+						  first_res, res);
                   new_res = make_ssa_name (new_scalar_dest, new_stmt);
                   gimple_assign_set_lhs (new_stmt, new_res);
                   gsi_insert_before (&exit_gsi, new_stmt, GSI_SAME_STMT);
