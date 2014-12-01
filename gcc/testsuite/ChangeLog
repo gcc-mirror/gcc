@@ -1,3 +1,8 @@
+2014-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63738
+	* gcc.dg/torture/pr63738.c: Fix call to setjmp.
+
 2014-11-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/64114

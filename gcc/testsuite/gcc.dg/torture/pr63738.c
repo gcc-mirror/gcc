@@ -16,7 +16,7 @@ extern long interprete()
   int n;
 
   struct longjmp_buffer raise_buf;
-  _setjmp (raise_buf.buf);
+  setjmp (raise_buf.buf);
 
   plouf();
   sp -= 4;
