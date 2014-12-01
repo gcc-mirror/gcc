@@ -1,3 +1,9 @@
+2014-12-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/63551
+	* ipa-inline-analysis.c (evaluate_conditions_for_known_args): Convert
+	value of the argument to the type of the value in the condition.
+
 2014-12-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/63986

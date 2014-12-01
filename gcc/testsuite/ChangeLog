@@ -1,3 +1,9 @@
+2014-12-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/63551
+	* gcc.dg/ipa/pr63551.c: New test.
+	* gcc.dg/ipa/pr64041.c: Likewise.
+
 2014-12-01  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* gcc.target/i386/avx512bw-vdbpsadbw-2.c: Move defines from options.
