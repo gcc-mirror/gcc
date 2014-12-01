@@ -10,20 +10,20 @@
 
 #if defined (AVX512F) && !defined (AVX512VL)
 #include "avx512f-check.h"
-#elif defined (AVX512ER)
+#elif defined (AVX512ER) && !defined (AVX512VL)
 #include "avx512er-check.h"
-#elif defined (AVX512CD)
+#elif defined (AVX512CD) && !defined (AVX512VL)
 #include "avx512cd-check.h"
-#elif defined (AVX512DQ)
+#elif defined (AVX512DQ) && !defined (AVX512VL)
 #include "avx512dq-check.h"
-#elif defined (AVX512BW)
+#elif defined (AVX512BW) && !defined (AVX512VL)
 #include "avx512bw-check.h"
+#elif defined (AVX512IFMA) && !defined (AVX512VL)
+#include "avx512ifma-check.h"
+#elif defined (AVX512VBMI) && !defined (AVX512VL)
+#include "avx512vbmi-check.h"
 #elif defined (AVX512VL)
 #include "avx512vl-check.h"
-#elif defined (AVX512IFMA)
-#include "avx512ifma-check.h"
-#elif defined (AVX512VBMI)
-#include "avx512vbmi-check.h"
 #endif
 
 /* Macros expansion.  */
@@ -114,27 +114,27 @@ void test_128 ();
 #if defined (AVX512F) && !defined (AVX512VL)
 void
 avx512f_test (void) { test_512 (); }
-#elif defined (AVX512CD)
+#elif defined (AVX512CD) && !defined (AVX512VL)
 void
 avx512cd_test (void) { test_512 (); }
-#elif defined (AVX512ER)
+#elif defined (AVX512ER) && !defined (AVX512VL)
 void
 avx512er_test (void) { test_512 (); }
-#elif defined (AVX512DQ)
+#elif defined (AVX512DQ) && !defined (AVX512VL)
 void
 avx512dq_test (void) { test_512 (); }
-#elif defined (AVX512BW)
+#elif defined (AVX512BW) && !defined (AVX512VL)
 void
 avx512bw_test (void) { test_512 (); }
+#elif defined (AVX512IFMA) && !defined (AVX512VL)
+void
+avx512ifma_test (void) { test_512 (); }
+#elif defined (AVX512VBMI) && !defined (AVX512VL)
+void
+avx512vbmi_test (void) { test_512 (); }
 #elif defined (AVX512VL)
 void
 avx512vl_test (void) { test_256 (); test_128 (); }
-#elif defined (AVX512IFMA)
-void
-avx512ifma_test (void) { test_512 (); }
-#elif defined (AVX512VBMI)
-void
-avx512vbmi_test (void) { test_512 (); }
 #endif
 
 #endif /* AVX512F_HELPER_INCLUDED */

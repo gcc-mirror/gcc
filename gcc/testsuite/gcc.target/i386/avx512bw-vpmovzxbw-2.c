@@ -1,7 +1,8 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mavx512bw -DAVX512BW" } */
+/* { dg-options "-O2 -mavx512bw" } */
 /* { dg-require-effective-target avx512bw } */
 
+#define AVX512BW
 #include "avx512f-helper.h"
 
 #define SRC_SIZE (AVX512F_LEN_HALF / 8)
