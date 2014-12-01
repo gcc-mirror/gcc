@@ -13817,24 +13817,46 @@ distribute_links (struct insn_link *links)
 
       next_link = link->next;
 
-      /* If the insn that this link points to is a NOTE or isn't a single
-	 set, ignore it.  In the latter case, it isn't clear what we
-	 can do other than ignore the link, since we can't tell which
-	 register it was for.  Such links wouldn't be used by combine
-	 anyway.
+      /* If the insn that this link points to is a NOTE, ignore it.  */
+      if (NOTE_P (link->insn))
+	continue;
 
-	 It is not possible for the destination of the target of the link to
-	 have been changed by combine.  The only potential of this is if we
-	 replace I3, I2, and I1 by I3 and I2.  But in that case the
-	 destination of I2 also remains unchanged.  */
+      set = 0;
+      rtx pat = PATTERN (link->insn);
+      if (GET_CODE (pat) == SET)
+	set = pat;
+      else if (GET_CODE (pat) == PARALLEL)
+	{
+	  int i;
+	  for (i = 0; i < XVECLEN (pat, 0); i++)
+	    {
+	      set = XVECEXP (pat, 0, i);
+	      if (GET_CODE (set) != SET)
+		continue;
 
-      if (NOTE_P (link->insn)
-	  || (set = single_set (link->insn)) == 0)
+	      reg = SET_DEST (set);
+	      while (GET_CODE (reg) == ZERO_EXTRACT
+		     || GET_CODE (reg) == STRICT_LOW_PART
+		     || GET_CODE (reg) == SUBREG)
+		reg = XEXP (reg, 0);
+
+	      if (!REG_P (reg))
+		continue;
+
+	      if (REGNO (reg) == link->regno)
+		break;
+	    }
+	  if (i == XVECLEN (pat, 0))
+	    continue;
+	}
+      else
 	continue;
 
       reg = SET_DEST (set);
-      while (GET_CODE (reg) == SUBREG || GET_CODE (reg) == ZERO_EXTRACT
-	     || GET_CODE (reg) == STRICT_LOW_PART)
+
+      while (GET_CODE (reg) == ZERO_EXTRACT
+	     || GET_CODE (reg) == STRICT_LOW_PART
+	     || GET_CODE (reg) == SUBREG)
 	reg = XEXP (reg, 0);
 
       /* A LOG_LINK is defined as being placed on the first insn that uses
