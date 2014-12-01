@@ -2832,43 +2832,33 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      This undoes a previous combination and allows us to match a branch-and-
      decrement insn.  */
 
-  if (i1 == 0 && GET_CODE (PATTERN (i2)) == PARALLEL
-      && XVECLEN (PATTERN (i2), 0) >= 2
-      && GET_CODE (XVECEXP (PATTERN (i2), 0, 0)) == SET
+  if (i1 == 0
+      && is_parallel_of_n_reg_sets (i2, 2)
       && (GET_MODE_CLASS (GET_MODE (SET_DEST (XVECEXP (PATTERN (i2), 0, 0))))
 	  == MODE_CC)
       && GET_CODE (SET_SRC (XVECEXP (PATTERN (i2), 0, 0))) == COMPARE
       && XEXP (SET_SRC (XVECEXP (PATTERN (i2), 0, 0)), 1) == const0_rtx
-      && GET_CODE (XVECEXP (PATTERN (i2), 0, 1)) == SET
-      && REG_P (SET_DEST (XVECEXP (PATTERN (i2), 0, 1)))
       && rtx_equal_p (XEXP (SET_SRC (XVECEXP (PATTERN (i2), 0, 0)), 0),
 		      SET_SRC (XVECEXP (PATTERN (i2), 0, 1)))
       && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 0)), i2, i3)
       && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 1)), i2, i3))
     {
-      for (i = XVECLEN (PATTERN (i2), 0) - 1; i >= 2; i--)
-	if (GET_CODE (XVECEXP (PATTERN (i2), 0, i)) != CLOBBER)
-	  break;
+      /* We make I1 with the same INSN_UID as I2.  This gives it
+	 the same DF_INSN_LUID for value tracking.  Our fake I1 will
+	 never appear in the insn stream so giving it the same INSN_UID
+	 as I2 will not cause a problem.  */
 
-      if (i == 1)
-	{
-	  /* We make I1 with the same INSN_UID as I2.  This gives it
-	     the same DF_INSN_LUID for value tracking.  Our fake I1 will
-	     never appear in the insn stream so giving it the same INSN_UID
-	     as I2 will not cause a problem.  */
+      i1 = gen_rtx_INSN (VOIDmode, NULL, i2, BLOCK_FOR_INSN (i2),
+			 XVECEXP (PATTERN (i2), 0, 1), INSN_LOCATION (i2),
+			 -1, NULL_RTX);
+      INSN_UID (i1) = INSN_UID (i2);
 
-	  i1 = gen_rtx_INSN (VOIDmode, NULL, i2, BLOCK_FOR_INSN (i2),
-			     XVECEXP (PATTERN (i2), 0, 1), INSN_LOCATION (i2),
-			     -1, NULL_RTX);
-	  INSN_UID (i1) = INSN_UID (i2);
-
-	  SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 0));
-	  SUBST (XEXP (SET_SRC (PATTERN (i2)), 0),
-		 SET_DEST (PATTERN (i1)));
-	  unsigned int regno = REGNO (SET_DEST (PATTERN (i1)));
-	  SUBST_LINK (LOG_LINKS (i2),
-		      alloc_insn_link (i1, regno, LOG_LINKS (i2)));
-	}
+      SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 0));
+      SUBST (XEXP (SET_SRC (PATTERN (i2)), 0),
+	     SET_DEST (PATTERN (i1)));
+      unsigned int regno = REGNO (SET_DEST (PATTERN (i1)));
+      SUBST_LINK (LOG_LINKS (i2),
+		  alloc_insn_link (i1, regno, LOG_LINKS (i2)));
     }
 
   /* If I2 is a PARALLEL of two SETs of REGs (and perhaps some CLOBBERs),
