@@ -2112,9 +2112,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (static_cast<bool>(__x))
 	{
+	  __x._M_manager(_M_functor, __x._M_functor, __clone_functor);
 	  _M_invoker = __x._M_invoker;
 	  _M_manager = __x._M_manager;
-	  __x._M_manager(_M_functor, __x._M_functor, __clone_functor);
 	}
     }
 
@@ -2130,9 +2130,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	if (_My_handler::_M_not_empty_function(__f))
 	  {
+	    _My_handler::_M_init_functor(_M_functor, __f);
 	    _M_invoker = &_My_handler::_M_invoke;
 	    _M_manager = &_My_handler::_M_manager;
-	    _My_handler::_M_init_functor(_M_functor, __f);
 	  }
       }
 
