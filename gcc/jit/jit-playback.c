@@ -1548,8 +1548,6 @@ compile ()
   void *handle = NULL;
   const char *ctxt_progname;
   result *result_obj = NULL;
-  const char *fake_args[20];
-  unsigned int num_args;
 
   m_path_template = make_tempdir_path_template ();
   if (!m_path_template)
@@ -1576,77 +1574,14 @@ compile ()
   if (!ctxt_progname)
     ctxt_progname = "libgccjit.so";
 
-  fake_args[0] = ctxt_progname;
-  fake_args[1] = m_path_c_file;
-  num_args = 2;
-
-#define ADD_ARG(arg) \
-  do \
-    { \
-      gcc_assert(num_args < sizeof(fake_args)/sizeof(char*)); \
-      fake_args[num_args++] = arg; \
-    } \
-  while (0)
-
-  ADD_ARG ("-fPIC");
-
-  /* Handle int options: */
-  switch (get_int_option (GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL))
-    {
-    default:
-      add_error (NULL,
-		 "unrecognized optimization level: %i",
-		 get_int_option (GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL));
-      return NULL;
-
-    case 0:
-      ADD_ARG ("-O0");
-      break;
-
-    case 1:
-      ADD_ARG ("-O1");
-      break;
-
-    case 2:
-      ADD_ARG ("-O2");
-      break;
-
-    case 3:
-      ADD_ARG ("-O3");
-      break;
-    }
-  /* What about -Os? */
-
-  /* Handle bool options: */
-  if (get_bool_option (GCC_JIT_BOOL_OPTION_DEBUGINFO))
-    ADD_ARG ("-g");
-
-  /* Suppress timing (and other) info.  */
-  if (!get_bool_option (GCC_JIT_BOOL_OPTION_DUMP_SUMMARY))
-    {
-      ADD_ARG ("-quiet");
-      quiet_flag = 1;
-    }
-
-  /* Aggressively garbage-collect, to shake out bugs: */
-  if (get_bool_option (GCC_JIT_BOOL_OPTION_SELFCHECK_GC))
-    {
-      ADD_ARG ("--param");
-      ADD_ARG ("ggc-min-expand=0");
-      ADD_ARG ("--param");
-      ADD_ARG ("ggc-min-heapsize=0");
-    }
-
-  if (get_bool_option (GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING))
-    {
-      ADD_ARG ("-fdump-tree-all");
-      ADD_ARG ("-fdump-rtl-all");
-      ADD_ARG ("-fdump-ipa-all");
-    }
+  auto_vec <const char *> fake_args;
+  make_fake_args (&fake_args, ctxt_progname);
+  if (errors_occurred ())
+    return NULL;
 
   toplev toplev (false);
-
-  toplev.main (num_args, const_cast <char **> (fake_args));
+  toplev.main (fake_args.length (),
+	       const_cast <char **> (fake_args.address ()));
   toplev.finalize ();
 
   active_playback_ctxt = NULL;
@@ -1748,6 +1683,78 @@ compile ()
   }
 
   return result_obj;
+}
+
+/* Helper functions for gcc::jit::playback::context::compile.  */
+
+/* Build a fake argv for toplev::main from the options set
+   by the user on the context .  */
+
+void
+playback::context::
+make_fake_args (auto_vec <const char *> *argvec,
+		const char *ctxt_progname)
+{
+#define ADD_ARG(arg) argvec->safe_push (arg)
+
+  ADD_ARG (ctxt_progname);
+  ADD_ARG (m_path_c_file);
+  ADD_ARG ("-fPIC");
+
+  /* Handle int options: */
+  switch (get_int_option (GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL))
+    {
+    default:
+      add_error (NULL,
+		 "unrecognized optimization level: %i",
+		 get_int_option (GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL));
+      return;
+
+    case 0:
+      ADD_ARG ("-O0");
+      break;
+
+    case 1:
+      ADD_ARG ("-O1");
+      break;
+
+    case 2:
+      ADD_ARG ("-O2");
+      break;
+
+    case 3:
+      ADD_ARG ("-O3");
+      break;
+    }
+  /* What about -Os? */
+
+  /* Handle bool options: */
+  if (get_bool_option (GCC_JIT_BOOL_OPTION_DEBUGINFO))
+    ADD_ARG ("-g");
+
+  /* Suppress timing (and other) info.  */
+  if (!get_bool_option (GCC_JIT_BOOL_OPTION_DUMP_SUMMARY))
+    {
+      ADD_ARG ("-quiet");
+      quiet_flag = 1;
+    }
+
+  /* Aggressively garbage-collect, to shake out bugs: */
+  if (get_bool_option (GCC_JIT_BOOL_OPTION_SELFCHECK_GC))
+    {
+      ADD_ARG ("--param");
+      ADD_ARG ("ggc-min-expand=0");
+      ADD_ARG ("--param");
+      ADD_ARG ("ggc-min-heapsize=0");
+    }
+
+  if (get_bool_option (GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING))
+    {
+      ADD_ARG ("-fdump-tree-all");
+      ADD_ARG ("-fdump-rtl-all");
+      ADD_ARG ("-fdump-ipa-all");
+    }
+#undef ADD_ARG
 }
 
 /* Top-level hook for playing back a recording context.

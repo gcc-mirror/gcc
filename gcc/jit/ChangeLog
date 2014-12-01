@@ -1,5 +1,14 @@
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit-playback.c (gcc::jit::playback::context::compile): Use an
+	auto_vec<const char *> rather than a const char *[20] for the
+	top-level argv, and move the logic to build it to...
+	(gcc::jit::playback::context::make_fake_args): New function.
+	* jit-playback.h (gcc::jit::playback::context::make_fake_args):
+	New function.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
 	* Make-lang.in (jit_OBJS): Add jit/jit-result.o.
 	* jit-playback.c: Include new header jit-result.h.
 	(gcc::jit::result::result): Move to new file jit-result.c.
