@@ -2461,6 +2461,59 @@ update_cfg_for_uncondjump (rtx_insn *insn)
     }
 }
 
+/* Return whether INSN is a PARALLEL of exactly N register SETs followed
+   by an arbitrary number of CLOBBERs.  */
+static bool
+is_parallel_of_n_reg_sets (rtx_insn *insn, int n)
+{
+  rtx pat = PATTERN (insn);
+
+  if (GET_CODE (pat) != PARALLEL)
+    return false;
+
+  int len = XVECLEN (pat, 0);
+  if (len < n)
+    return false;
+
+  int i;
+  for (i = 0; i < n; i++)
+    if (GET_CODE (XVECEXP (pat, 0, i)) != SET
+	|| !REG_P (SET_DEST (XVECEXP (pat, 0, i))))
+      return false;
+  for ( ; i < len; i++)
+    if (GET_CODE (XVECEXP (pat, 0, i)) != CLOBBER)
+      return false;
+
+  return true;
+}
+
+/* Return whether INSN, a PARALLEL of N register SETs (and maybe some
+   CLOBBERs), can be split into individual SETs in that order, without
+   changing semantics.  */
+static bool
+can_split_parallel_of_n_reg_sets (rtx_insn *insn, int n)
+{
+  if (!insn_nothrow_p (insn))
+    return false;
+
+  rtx pat = PATTERN (insn);
+
+  int i, j;
+  for (i = 0; i < n; i++)
+    {
+      if (side_effects_p (SET_SRC (XVECEXP (pat, 0, i))))
+	return false;
+
+      rtx reg = SET_DEST (XVECEXP (pat, 0, i));
+
+      for (j = i + 1; j < n; j++)
+	if (reg_referenced_p (reg, XVECEXP (pat, 0, j)))
+	  return false;
+    }
+
+  return true;
+}
+
 /* Try to combine the insns I0, I1 and I2 into I3.
    Here I0, I1 and I2 appear earlier than I3.
    I0 and I1 can be zero; then we combine just I2 into I3, or I1 and I2 into
@@ -2816,6 +2869,31 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  SUBST_LINK (LOG_LINKS (i2),
 		      alloc_insn_link (i1, regno, LOG_LINKS (i2)));
 	}
+    }
+
+  /* If I2 is a PARALLEL of two SETs of REGs (and perhaps some CLOBBERs),
+     make those two SETs separate I1 and I2 insns, and make an I0 that is
+     the original I1.  */
+  if (i0 == 0
+      && is_parallel_of_n_reg_sets (i2, 2)
+      && can_split_parallel_of_n_reg_sets (i2, 2)
+      && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 0)), i2, i3)
+      && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 1)), i2, i3))
+    {
+      /* If there is no I1, there is no I0 either.  */
+      i0 = i1;
+
+      /* We make I1 with the same INSN_UID as I2.  This gives it
+	 the same DF_INSN_LUID for value tracking.  Our fake I1 will
+	 never appear in the insn stream so giving it the same INSN_UID
+	 as I2 will not cause a problem.  */
+
+      i1 = gen_rtx_INSN (VOIDmode, NULL, i2, BLOCK_FOR_INSN (i2),
+			 XVECEXP (PATTERN (i2), 0, 0), INSN_LOCATION (i2),
+			 -1, NULL_RTX);
+      INSN_UID (i1) = INSN_UID (i2);
+
+      SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 1));
     }
 #endif
 
