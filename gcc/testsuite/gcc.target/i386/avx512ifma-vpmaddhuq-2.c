@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mavx512ifma -DAVX512IFMA" } */
+/* { dg-options "-O2 -mavx512ifma" } */
 /* { dg-require-effective-target avx512ifma } */
 
 #include "avx512f-helper.h"
