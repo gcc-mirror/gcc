@@ -460,7 +460,11 @@ getScheduleForBandList (isl_band_list *BandList, isl_union_map **map_sepcl)
 	      if (flag_loop_unroll_jam && (i != (ScheduleDimensions - depth)))
 		continue;
 
+#ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
+	      if (isl_band_member_is_coincident (Band, i))
+#else
 	      if (isl_band_member_is_zero_distance (Band, i))
+#endif
 		{
 		  isl_map *TileMap;
 		  isl_union_map *TileUMap;
@@ -564,6 +568,9 @@ optimize_isl (scop_p scop)
 {
 
   isl_schedule *schedule;
+#ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
+  isl_schedule_constraints *schedule_constraints;
+#endif
   isl_union_set *domain;
   isl_union_map *validity, *proximity, *dependences;
   isl_union_map *schedule_map;
@@ -579,11 +586,30 @@ optimize_isl (scop_p scop)
 
   proximity = isl_union_map_copy (validity);
 
+#ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
+  schedule_constraints = isl_schedule_constraints_on_domain (domain);
+  schedule_constraints
+	= isl_schedule_constraints_set_proximity (schedule_constraints,
+						  proximity);
+  schedule_constraints
+	= isl_schedule_constraints_set_validity (schedule_constraints,
+						 isl_union_map_copy (validity));
+  schedule_constraints
+	= isl_schedule_constraints_set_coincidence (schedule_constraints,
+						    validity);
+#endif
+
   isl_options_set_schedule_max_constant_term (scop->ctx, CONSTANT_BOUND);
   isl_options_set_schedule_maximize_band_depth (scop->ctx, 1);
   isl_options_set_schedule_fuse (scop->ctx, ISL_SCHEDULE_FUSE_MIN);
   isl_options_set_on_error (scop->ctx, ISL_ON_ERROR_CONTINUE);
+
+#ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
+  schedule = isl_schedule_constraints_compute_schedule(schedule_constraints);
+#else
   schedule = isl_union_set_compute_schedule (domain, validity, proximity);
+#endif
+
   isl_options_set_on_error (scop->ctx, ISL_ON_ERROR_ABORT);
 
   if (!schedule)

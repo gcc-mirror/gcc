@@ -27,15 +27,13 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/constraint.h>
 #include <isl/aff.h>
 #include <isl/val.h>
-/* For C++ linkage of C functions.
-   Missing from  isl/val_gmp.h in isl 0.12 versions.
-   Appearing in isl/val_gmp.h in isl 0.13.
-   To be removed when passing to isl 0.13. */
-#if defined(__cplusplus)
+
+/* Since ISL-0.13, the extern is in val_gmp.h.  */
+#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
 extern "C" {
 #endif
 #include <isl/val_gmp.h>
-#if defined(__cplusplus)
+#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
 }
 #endif
 #endif
