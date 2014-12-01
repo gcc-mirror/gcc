@@ -1,3 +1,8 @@
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63969
+	* jit-playback.c: Ensure that ctxt_progname is non-NULL.
+
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854

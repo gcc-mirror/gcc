@@ -1571,9 +1571,11 @@ compile ()
   /* Pass in user-provided program name as argv0, if any, so that it
      makes it into GCC's "progname" global, used in various diagnostics. */
   ctxt_progname = get_str_option (GCC_JIT_STR_OPTION_PROGNAME);
-  fake_args[0] =
-    (ctxt_progname ? ctxt_progname : "libgccjit.so");
 
+  if (!ctxt_progname)
+    ctxt_progname = "libgccjit.so";
+
+  fake_args[0] = ctxt_progname;
   fake_args[1] = m_path_c_file;
   num_args = 2;
 
@@ -1688,6 +1690,9 @@ compile ()
 
     /* pex argv arrays are NULL-terminated.  */
     argv[6] = NULL;
+
+    /* pex_one's error-handling requires pname to be non-NULL.  */
+    gcc_assert (ctxt_progname);
 
     errmsg = pex_one (PEX_SEARCH, /* int flags, */
 		      gcc_driver_name,
