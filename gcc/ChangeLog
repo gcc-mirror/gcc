@@ -1,5 +1,9 @@
 2014-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* combine.c (distribute_links): Handle multiple SETs.
+
+2014-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* combine.c (struct insn_link): New field `regno'.
 	(alloc_insn_link): New parameter `regno'.  Use it.
 	(find_single_use): Check the new field.
