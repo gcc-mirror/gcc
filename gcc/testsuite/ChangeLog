@@ -1,5 +1,18 @@
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
+	PR jit/63854
+	* jit.dg/jit.exp (report_leak): New.
+	(parse_valgrind_logfile): New.
+	(fixed_host_execute): Detect if RUN_UNDER_VALGRIND is present
+	in the environment, and if so, run the executable under
+	valgrind, capturing valgrind's output to a logfile.  Parse the
+	log file, generating PASSes and XFAILs for the summary of leaks.
+	Use "wait" before "close": valgrind might not have finished
+	writing the log out before we parse it, so we need to wait for
+	the spawnee to finish.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/63969
 	* jit.dg/harness.h (CHECK_STRING_STARTS_WITH): New.
 	(check_string_starts_with): New.
