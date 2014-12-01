@@ -1134,7 +1134,13 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
   STRIP_NOPS (arg2);
 
   if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg2) == INTEGER_CST)
-    return int_const_binop (code, arg1, arg2);
+    {
+      if (code == POINTER_PLUS_EXPR)
+	return int_const_binop (PLUS_EXPR,
+				arg1, fold_convert (TREE_TYPE (arg1), arg2));
+
+      return int_const_binop (code, arg1, arg2);
+    }
 
   if (TREE_CODE (arg1) == REAL_CST && TREE_CODE (arg2) == REAL_CST)
     {
@@ -1214,7 +1220,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       return t;
     }
 
-  if (TREE_CODE (arg1) == FIXED_CST && TREE_CODE (arg2) == FIXED_CST)
+  if (TREE_CODE (arg1) == FIXED_CST)
     {
       FIXED_VALUE_TYPE f1;
       FIXED_VALUE_TYPE f2;
@@ -1230,12 +1236,16 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
 	case MINUS_EXPR:
 	case MULT_EXPR:
 	case TRUNC_DIV_EXPR:
+	  if (TREE_CODE (arg2) != FIXED_CST)
+	    return NULL_TREE;
 	  f2 = TREE_FIXED_CST (arg2);
 	  break;
 
 	case LSHIFT_EXPR:
 	case RSHIFT_EXPR:
 	  {
+	    if (TREE_CODE (arg2) != INTEGER_CST)
+	      return NULL_TREE;
 	    wide_int w2 = arg2;
 	    f2.data.high = w2.elt (1);
 	    f2.data.low = w2.elt (0);
@@ -1443,8 +1453,102 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 {
   if (TREE_CODE_CLASS (code) == tcc_comparison)
     return fold_relational_const (code, type, arg1, arg2);
-  else
-    return const_binop (code, arg1, arg2);
+
+  /* ???  Until we make the const_binop worker take the type of the
+     result as argument put those cases that need it here.  */
+  switch (code)
+    {
+    case COMPLEX_EXPR:
+      if ((TREE_CODE (arg1) == REAL_CST
+	   && TREE_CODE (arg2) == REAL_CST)
+	  || (TREE_CODE (arg1) == INTEGER_CST
+	      && TREE_CODE (arg2) == INTEGER_CST))
+	return build_complex (type, arg1, arg2);
+      return NULL_TREE;
+
+    case VEC_PACK_TRUNC_EXPR:
+    case VEC_PACK_FIX_TRUNC_EXPR:
+      {
+	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
+	tree *elts;
+
+	gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1)) == nelts / 2
+		    && TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg2)) == nelts / 2);
+	if (TREE_CODE (arg1) != VECTOR_CST
+	    || TREE_CODE (arg2) != VECTOR_CST)
+	  return NULL_TREE;
+
+	elts = XALLOCAVEC (tree, nelts);
+	if (!vec_cst_ctor_to_array (arg1, elts)
+	    || !vec_cst_ctor_to_array (arg2, elts + nelts / 2))
+	  return NULL_TREE;
+
+	for (i = 0; i < nelts; i++)
+	  {
+	    elts[i] = fold_convert_const (code == VEC_PACK_TRUNC_EXPR
+					  ? NOP_EXPR : FIX_TRUNC_EXPR,
+					  TREE_TYPE (type), elts[i]);
+	    if (elts[i] == NULL_TREE || !CONSTANT_CLASS_P (elts[i]))
+	      return NULL_TREE;
+	  }
+
+	return build_vector (type, elts);
+      }
+
+    case VEC_WIDEN_MULT_LO_EXPR:
+    case VEC_WIDEN_MULT_HI_EXPR:
+    case VEC_WIDEN_MULT_EVEN_EXPR:
+    case VEC_WIDEN_MULT_ODD_EXPR:
+      {
+	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type);
+	unsigned int out, ofs, scale;
+	tree *elts;
+
+	gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1)) == nelts * 2
+		    && TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg2)) == nelts * 2);
+	if (TREE_CODE (arg1) != VECTOR_CST || TREE_CODE (arg2) != VECTOR_CST)
+	  return NULL_TREE;
+
+	elts = XALLOCAVEC (tree, nelts * 4);
+	if (!vec_cst_ctor_to_array (arg1, elts)
+	    || !vec_cst_ctor_to_array (arg2, elts + nelts * 2))
+	  return NULL_TREE;
+
+	if (code == VEC_WIDEN_MULT_LO_EXPR)
+	  scale = 0, ofs = BYTES_BIG_ENDIAN ? nelts : 0;
+	else if (code == VEC_WIDEN_MULT_HI_EXPR)
+	  scale = 0, ofs = BYTES_BIG_ENDIAN ? 0 : nelts;
+	else if (code == VEC_WIDEN_MULT_EVEN_EXPR)
+	  scale = 1, ofs = 0;
+	else /* if (code == VEC_WIDEN_MULT_ODD_EXPR) */
+	  scale = 1, ofs = 1;
+
+	for (out = 0; out < nelts; out++)
+	  {
+	    unsigned int in1 = (out << scale) + ofs;
+	    unsigned int in2 = in1 + nelts * 2;
+	    tree t1, t2;
+
+	    t1 = fold_convert_const (NOP_EXPR, TREE_TYPE (type), elts[in1]);
+	    t2 = fold_convert_const (NOP_EXPR, TREE_TYPE (type), elts[in2]);
+
+	    if (t1 == NULL_TREE || t2 == NULL_TREE)
+	      return NULL_TREE;
+	    elts[out] = const_binop (MULT_EXPR, t1, t2);
+	    if (elts[out] == NULL_TREE || !CONSTANT_CLASS_P (elts[out]))
+	      return NULL_TREE;
+	  }
+
+	return build_vector (type, elts);
+      }
+
+    default:;
+    }
+
+  /* Make sure type and arg0 have the same saturating flag.  */
+  gcc_checking_assert (TYPE_SATURATING (type)
+		       == TYPE_SATURATING (TREE_TYPE (arg1)));
+  return const_binop (code, arg1, arg2);
 }
 
 /* Compute CODE ARG1 with resulting type TYPE with ARG1 being constant.
@@ -9756,18 +9860,7 @@ fold_binary_loc (location_t loc,
      constant but we can't do arithmetic on them.  */
   if (CONSTANT_CLASS_P (arg0) && CONSTANT_CLASS_P (arg1))
     {
-      if (kind == tcc_binary)
-	{
-	  /* Make sure type and arg0 have the same saturating flag.  */
-	  gcc_checking_assert (TYPE_SATURATING (type)
-			       == TYPE_SATURATING (TREE_TYPE (arg0)));
-	  tem = const_binop (code, arg0, arg1);
-	}
-      else if (kind == tcc_comparison)
-	tem = fold_relational_const (code, type, arg0, arg1);
-      else
-	tem = NULL_TREE;
-
+      tem = const_binop (code, type, arg0, arg1);
       if (tem != NULL_TREE)
 	{
 	  if (TREE_TYPE (tem) != type)
@@ -9919,11 +10012,6 @@ fold_binary_loc (location_t loc,
 								arg1),
 					      fold_convert_loc (loc, sizetype,
 								arg0)));
-
-      /* PTR_CST +p CST -> CST1 */
-      if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
-	return fold_build2_loc (loc, PLUS_EXPR, type, arg0,
-			    fold_convert_loc (loc, type, arg1));
 
       return NULL_TREE;
 
@@ -13126,92 +13214,9 @@ fold_binary_loc (location_t loc,
 				 : fold_convert_loc (loc, type, arg1);
       return pedantic_non_lvalue_loc (loc, tem);
 
-    case COMPLEX_EXPR:
-      if ((TREE_CODE (arg0) == REAL_CST
-	   && TREE_CODE (arg1) == REAL_CST)
-	  || (TREE_CODE (arg0) == INTEGER_CST
-	      && TREE_CODE (arg1) == INTEGER_CST))
-	return build_complex (type, arg0, arg1);
-      return NULL_TREE;
-
     case ASSERT_EXPR:
       /* An ASSERT_EXPR should never be passed to fold_binary.  */
       gcc_unreachable ();
-
-    case VEC_PACK_TRUNC_EXPR:
-    case VEC_PACK_FIX_TRUNC_EXPR:
-      {
-	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
-	tree *elts;
-
-	gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)) == nelts / 2
-		    && TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1)) == nelts / 2);
-	if (TREE_CODE (arg0) != VECTOR_CST || TREE_CODE (arg1) != VECTOR_CST)
-	  return NULL_TREE;
-
-	elts = XALLOCAVEC (tree, nelts);
-	if (!vec_cst_ctor_to_array (arg0, elts)
-	    || !vec_cst_ctor_to_array (arg1, elts + nelts / 2))
-	  return NULL_TREE;
-
-	for (i = 0; i < nelts; i++)
-	  {
-	    elts[i] = fold_convert_const (code == VEC_PACK_TRUNC_EXPR
-					  ? NOP_EXPR : FIX_TRUNC_EXPR,
-					  TREE_TYPE (type), elts[i]);
-	    if (elts[i] == NULL_TREE || !CONSTANT_CLASS_P (elts[i]))
-	      return NULL_TREE;
-	  }
-
-	return build_vector (type, elts);
-      }
-
-    case VEC_WIDEN_MULT_LO_EXPR:
-    case VEC_WIDEN_MULT_HI_EXPR:
-    case VEC_WIDEN_MULT_EVEN_EXPR:
-    case VEC_WIDEN_MULT_ODD_EXPR:
-      {
-	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type);
-	unsigned int out, ofs, scale;
-	tree *elts;
-
-	gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)) == nelts * 2
-		    && TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1)) == nelts * 2);
-	if (TREE_CODE (arg0) != VECTOR_CST || TREE_CODE (arg1) != VECTOR_CST)
-	  return NULL_TREE;
-
-	elts = XALLOCAVEC (tree, nelts * 4);
-	if (!vec_cst_ctor_to_array (arg0, elts)
-	    || !vec_cst_ctor_to_array (arg1, elts + nelts * 2))
-	  return NULL_TREE;
-
-	if (code == VEC_WIDEN_MULT_LO_EXPR)
-	  scale = 0, ofs = BYTES_BIG_ENDIAN ? nelts : 0;
-	else if (code == VEC_WIDEN_MULT_HI_EXPR)
-	  scale = 0, ofs = BYTES_BIG_ENDIAN ? 0 : nelts;
-	else if (code == VEC_WIDEN_MULT_EVEN_EXPR)
-	  scale = 1, ofs = 0;
-	else /* if (code == VEC_WIDEN_MULT_ODD_EXPR) */
-	  scale = 1, ofs = 1;
-	
-	for (out = 0; out < nelts; out++)
-	  {
-	    unsigned int in1 = (out << scale) + ofs;
-	    unsigned int in2 = in1 + nelts * 2;
-	    tree t1, t2;
-
-	    t1 = fold_convert_const (NOP_EXPR, TREE_TYPE (type), elts[in1]);
-	    t2 = fold_convert_const (NOP_EXPR, TREE_TYPE (type), elts[in2]);
-
-	    if (t1 == NULL_TREE || t2 == NULL_TREE)
-	      return NULL_TREE;
-	    elts[out] = const_binop (MULT_EXPR, t1, t2);
-	    if (elts[out] == NULL_TREE || !CONSTANT_CLASS_P (elts[out]))
-	      return NULL_TREE;
-	  }
-
-	return build_vector (type, elts);
-      }
 
     default:
       return NULL_TREE;
