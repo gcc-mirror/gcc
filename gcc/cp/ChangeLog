@@ -1,3 +1,7 @@
+2014-12-01  Marek Polacek  <polacek@redhat.com>
+
+	* constexpr.c (literal_type_p): Return true for void type in C++14.
+
 2014-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60845

@@ -29,7 +29,7 @@ int next(constexpr int x) {	// { dg-error "parameter" }
 extern constexpr int memsz;	// { dg-error "definition" }
 
 // error: return type is void
-constexpr void f(int x)		// { dg-error "void" }
+constexpr void f(int x)		// { dg-error "void" "" { target c++11_only } }
 { /* ... */ }
 // error: use of decrement
 constexpr int prev(int x)
