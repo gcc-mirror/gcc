@@ -101,6 +101,15 @@ then directly executed in-process:
     :end-before: enum opcode
     :language: c
 
+The lifetime of the code is tied to that of a :c:type:`gcc_jit_result *`.
+We'll handle this by bundling them up in a structure, so that we can
+clean them up together by calling :c:func:`gcc_jit_result_release`:
+
+   .. literalinclude:: ../examples/tut04-toyvm/toyvm.c
+    :start-after: /* A struct to hold the compilation results.  */
+    :end-before: /* The main compilation hook.  */
+    :language: c
+
 Our compiler isn't very sophisticated; it takes the implementation of
 each opcode above, and maps it directly to the operations supported by
 the libgccjit API.
@@ -155,7 +164,7 @@ a block, implementing pushing and popping values:
 
    .. literalinclude:: ../examples/tut04-toyvm/toyvm.c
     :start-after: /* Stack manipulation.  */
-    :end-before: /* The main compilation hook.  */
+    :end-before: /* A struct to hold the compilation results.  */
     :language: c
 
 We will support single-stepping through the generated code in the

@@ -1,6 +1,23 @@
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* docs/examples/tut04-toyvm/toyvm.c
+	(toyvm_compiled_function): New typedef.
+	(toyvm_compiled_func) Rename to...
+	(toyvm_compiled_code) ...this.
+	(struct toyvm_compiled_function): New struct.
+	(toyvm_function_compile): Return a toyvm_compiled_function *
+	rather than a toyvm_compiled_func, so that the caller can fully
+	clean things up.  Free "funcname".
+	(test_script): Update for change to toyvm_function_compile.
+	Clean up the toyvm_compiled_function.
+	(main): Likewise.
+	(docs/intro/tutorial04.rst): Update to reflect the above changes,
+	and to better spell out the lifetime of the compiled code.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* jit-builtins.c
 	(gcc::jit::recording::builtins_manager::make_fn_type): Call the
 	context's new_function_type method, rather than directly creating
