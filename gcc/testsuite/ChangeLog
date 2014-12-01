@@ -1,3 +1,8 @@
+2014-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/15346
+	* gcc.dg/tree-ssa/forwprop-32.c: New testcase.
+
 2014-12-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/63941
