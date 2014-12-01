@@ -23,7 +23,7 @@ constexpr int area = squarei(side); // { dg-error "side|argument" }
 int next(constexpr int x) // { dg-error "parameter" }
 { return x + 1; }
 
-constexpr void f(int x)       // { dg-error "return type .void" }
+constexpr void f(int x)       // { dg-error "return type .void" "" { target c++11_only } }
 { /* ... */ }
 
 constexpr int prev(int x)

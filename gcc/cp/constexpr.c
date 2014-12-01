@@ -59,7 +59,8 @@ literal_type_p (tree t)
 {
   if (SCALAR_TYPE_P (t)
       || TREE_CODE (t) == VECTOR_TYPE
-      || TREE_CODE (t) == REFERENCE_TYPE)
+      || TREE_CODE (t) == REFERENCE_TYPE
+      || (VOID_TYPE_P (t) && cxx_dialect >= cxx14))
     return true;
   if (CLASS_TYPE_P (t))
     {

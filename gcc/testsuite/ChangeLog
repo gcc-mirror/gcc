@@ -1,3 +1,9 @@
+2014-12-01  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-function2.C: Limit dg-error to C++11.
+	* g++.dg/cpp0x/constexpr-neg1.C: Likewise.
+	* g++.dg/cpp1y/constexpr-void1.C: New test.
+
 2014-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60845
