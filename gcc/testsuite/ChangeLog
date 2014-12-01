@@ -1,3 +1,7 @@
+2014-12-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/fuse_adrp_add_1.c: Gate test on aarch64_small.
+
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/jit.exp (verify_exit_status): New function.
