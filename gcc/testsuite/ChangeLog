@@ -1,5 +1,12 @@
 2014-12-01  Marek Polacek  <polacek@redhat.com>
 
+	PR sanitizer/63956
+	* c-c++-common/ubsan/shift-5.c: Add xfails.
+	* g++.dg/ubsan/div-by-zero-1.C: Don't use -w.  Add xfail.
+	* g++.dg/ubsan/pr63956.C: New test.
+
+2014-12-01  Marek Polacek  <polacek@redhat.com>
+
 	* g++.dg/cpp0x/constexpr-function2.C: Limit dg-error to C++11.
 	* g++.dg/cpp0x/constexpr-neg1.C: Likewise.
 	* g++.dg/cpp1y/constexpr-void1.C: New test.

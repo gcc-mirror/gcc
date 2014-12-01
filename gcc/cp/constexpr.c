@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "builtins.h"
 #include "tree-inline.h"
+#include "ubsan.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -1152,6 +1153,19 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   constexpr_call *entry;
   bool depth_ok;
 
+  if (fun == NULL_TREE)
+    switch (CALL_EXPR_IFN (t))
+      {
+      case IFN_UBSAN_NULL:
+      case IFN_UBSAN_BOUNDS:
+	return void_node;
+      default:
+	if (!ctx->quiet)
+	  error_at (loc, "call to internal function");
+	*non_constant_p = true;
+	return t;
+      }
+
   if (TREE_CODE (fun) != FUNCTION_DECL)
     {
       /* Might be a constexpr function pointer.  */
@@ -1172,6 +1186,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     }
   if (DECL_CLONED_FUNCTION_P (fun))
     fun = DECL_CLONED_FUNCTION (fun);
+
+  if (is_ubsan_builtin_p (fun))
+    return void_node;
+
   if (is_builtin_fn (fun))
     return cxx_eval_builtin_function_call (ctx, t,
 					   addr, non_constant_p, overflow_p);
