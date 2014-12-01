@@ -398,11 +398,10 @@ builtins_manager::make_fn_type (enum jit_builtin_type,
   if (!return_type)
     goto error;
 
-  result = new function_type (m_ctxt,
-			      return_type,
-			      num_args,
-			      param_types,
-			      is_variadic);
+  result = m_ctxt->new_function_type (return_type,
+				      num_args,
+				      param_types,
+				      is_variadic);
 
  error:
   delete[] param_types;

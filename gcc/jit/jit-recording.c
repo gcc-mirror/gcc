@@ -492,6 +492,27 @@ recording::context::new_union_type (recording::location *loc,
   return result;
 }
 
+/* Create a recording::function_type instance and add it to this context's
+   list of mementos.
+
+   Used by new_function_ptr_type and by builtins_manager::make_fn_type.  */
+
+recording::function_type *
+recording::context::new_function_type (recording::type *return_type,
+				       int num_params,
+				       recording::type **param_types,
+				       int is_variadic)
+{
+  recording::function_type *fn_type
+    = new function_type (this,
+			 return_type,
+			 num_params,
+			 param_types,
+			 is_variadic);
+  record (fn_type);
+  return fn_type;
+}
+
 /* Create a recording::type instance and add it to this context's list
    of mementos.
 
@@ -505,13 +526,11 @@ recording::context::new_function_ptr_type (recording::location *, /* unused loc 
 					   recording::type **param_types,
 					   int is_variadic)
 {
-  recording::function_type *fn_type =
-    new function_type (this,
-		       return_type,
-		       num_params,
-		       param_types,
-		       is_variadic);
-  record (fn_type);
+  recording::function_type *fn_type
+    = new_function_type (return_type,
+			 num_params,
+			 param_types,
+			 is_variadic);
 
   /* Return a pointer-type to the the function type.  */
   return fn_type->get_pointer ();

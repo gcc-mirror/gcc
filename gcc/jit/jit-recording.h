@@ -88,6 +88,12 @@ public:
   new_union_type (location *loc,
 		  const char *name);
 
+  function_type *
+  new_function_type (type *return_type,
+		     int num_params,
+		     type **param_types,
+		     int is_variadic);
+
   type *
   new_function_ptr_type (location *loc,
 			 type *return_type,
