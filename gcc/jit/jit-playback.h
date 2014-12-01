@@ -234,6 +234,9 @@ private:
   make_fake_args (auto_vec <const char *> *argvec,
 		  const char *ctxt_progname);
 
+  void
+  convert_to_dso (const char *ctxt_progname);
+
 private:
   ::gcc::jit::recording::context *m_recording_ctxt;
 

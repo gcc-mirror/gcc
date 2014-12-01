@@ -1590,78 +1590,11 @@ compile ()
     return NULL;
 
   if (get_bool_option (GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE))
-   dump_generated_code ();
+    dump_generated_code ();
 
-  /* Gross hacks follow:
-     We have a .s file; we want a .so file.
-     We could reuse parts of gcc/gcc.c to do this.
-     For now, just use the driver binary from the install, as
-     named in gcc-driver-name.h
-     e.g. "x86_64-unknown-linux-gnu-gcc-5.0.0".
-   */
-  {
-    auto_timevar assemble_timevar (TV_ASSEMBLE);
-    const char *errmsg;
-    const char *argv[7];
-    int exit_status = 0;
-    int err = 0;
-    const char *gcc_driver_name = GCC_DRIVER_NAME;
-
-    argv[0] = gcc_driver_name;
-    argv[1] = "-shared";
-    /* The input: assembler.  */
-    argv[2] = m_path_s_file;
-    /* The output: shared library.  */
-    argv[3] = "-o";
-    argv[4] = m_path_so_file;
-
-    /* Don't use the linker plugin.
-       If running with just a "make" and not a "make install", then we'd
-       run into
-          "fatal error: -fuse-linker-plugin, but liblto_plugin.so not found"
-       libto_plugin is a .la at build time, with it becoming installed with
-       ".so" suffix: i.e. it doesn't exist with a .so suffix until install
-       time.  */
-    argv[5] = "-fno-use-linker-plugin";
-
-    /* pex argv arrays are NULL-terminated.  */
-    argv[6] = NULL;
-
-    /* pex_one's error-handling requires pname to be non-NULL.  */
-    gcc_assert (ctxt_progname);
-
-    errmsg = pex_one (PEX_SEARCH, /* int flags, */
-		      gcc_driver_name,
-		      const_cast<char * const *> (argv),
-		      ctxt_progname, /* const char *pname */
-		      NULL, /* const char *outname */
-		      NULL, /* const char *errname */
-		      &exit_status, /* int *status */
-		      &err); /* int *err*/
-    if (errmsg)
-      {
-	add_error (NULL, "error invoking gcc driver: %s", errmsg);
-	return NULL;
-      }
-
-    /* pex_one can return a NULL errmsg when the executable wasn't
-       found (or doesn't exist), so trap these cases also.  */
-    if (exit_status || err)
-      {
-	add_error (NULL,
-		   "error invoking gcc driver: exit_status: %i err: %i",
-		   exit_status, err);
-	add_error (NULL,
-		   "whilst attempting to run a driver named: %s",
-		   gcc_driver_name);
-	add_error (NULL,
-		   "PATH was: %s",
-		   getenv ("PATH"));
-	return NULL;
-      }
-  }
-
-  // TODO: split out assembles vs linker
+  convert_to_dso (ctxt_progname);
+  if (errors_occurred ())
+    return NULL;
 
   /* dlopen the .so file. */
   {
@@ -1755,6 +1688,81 @@ make_fake_args (auto_vec <const char *> *argvec,
       ADD_ARG ("-fdump-ipa-all");
     }
 #undef ADD_ARG
+}
+
+/* Part of playback::context::compile ().
+
+   We have a .s file; we want a .so file.
+   We could reuse parts of gcc/gcc.c to do this.
+   For now, just use the driver binary from the install, as
+   named in gcc-driver-name.h
+   e.g. "x86_64-unknown-linux-gnu-gcc-5.0.0".  */
+
+void
+playback::context::
+convert_to_dso (const char *ctxt_progname)
+{
+  /* Currently this lumps together both assembling and linking into
+     TV_ASSEMBLE.  */
+  auto_timevar assemble_timevar (TV_ASSEMBLE);
+  const char *errmsg;
+  const char *argv[7];
+  int exit_status = 0;
+  int err = 0;
+  const char *gcc_driver_name = GCC_DRIVER_NAME;
+
+  argv[0] = gcc_driver_name;
+  argv[1] = "-shared";
+  /* The input: assembler.  */
+  argv[2] = m_path_s_file;
+  /* The output: shared library.  */
+  argv[3] = "-o";
+  argv[4] = m_path_so_file;
+
+  /* Don't use the linker plugin.
+     If running with just a "make" and not a "make install", then we'd
+     run into
+       "fatal error: -fuse-linker-plugin, but liblto_plugin.so not found"
+     libto_plugin is a .la at build time, with it becoming installed with
+     ".so" suffix: i.e. it doesn't exist with a .so suffix until install
+     time.  */
+  argv[5] = "-fno-use-linker-plugin";
+
+  /* pex argv arrays are NULL-terminated.  */
+  argv[6] = NULL;
+
+  /* pex_one's error-handling requires pname to be non-NULL.  */
+  gcc_assert (ctxt_progname);
+
+  errmsg = pex_one (PEX_SEARCH, /* int flags, */
+		    gcc_driver_name,
+		    const_cast<char * const *> (argv),
+		    ctxt_progname, /* const char *pname */
+		    NULL, /* const char *outname */
+		    NULL, /* const char *errname */
+		    &exit_status, /* int *status */
+		    &err); /* int *err*/
+  if (errmsg)
+    {
+      add_error (NULL, "error invoking gcc driver: %s", errmsg);
+      return;
+    }
+
+  /* pex_one can return a NULL errmsg when the executable wasn't
+     found (or doesn't exist), so trap these cases also.  */
+  if (exit_status || err)
+    {
+      add_error (NULL,
+		 "error invoking gcc driver: exit_status: %i err: %i",
+		 exit_status, err);
+      add_error (NULL,
+		 "whilst attempting to run a driver named: %s",
+		 gcc_driver_name);
+      add_error (NULL,
+		 "PATH was: %s",
+		 getenv ("PATH"));
+      return;
+    }
 }
 
 /* Top-level hook for playing back a recording context.

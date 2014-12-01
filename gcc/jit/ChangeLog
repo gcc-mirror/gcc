@@ -1,5 +1,13 @@
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit-playback.c (gcc::jit::playback::context::compile): Move DSO
+	creation code into...
+	(gcc::jit::playback::context::convert_to_dso): New function.
+	* jit-playback.h (gcc::jit::playback::context::convert_to_dso):
+	New function.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit-playback.c (gcc::jit::playback::context::compile): Use an
 	auto_vec<const char *> rather than a const char *[20] for the
 	top-level argv, and move the logic to build it to...
