@@ -382,7 +382,13 @@ enum gcc_jit_types
   GCC_JIT_TYPE_SIZE_T,
 
  /* C type: (FILE *)  */
-  GCC_JIT_TYPE_FILE_PTR
+  GCC_JIT_TYPE_FILE_PTR,
+
+  /* Complex numbers.  */
+  GCC_JIT_TYPE_COMPLEX_FLOAT,
+  GCC_JIT_TYPE_COMPLEX_DOUBLE,
+  GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE
+
 };
 
 extern gcc_jit_type *

@@ -26,8 +26,6 @@ namespace gcc {
 
 namespace jit {
 
-namespace recording {
-
 /* Create an enum of the builtin types.  */
 
 enum jit_builtin_type
@@ -71,43 +69,91 @@ enum jit_builtin_type
   BT_LAST
 }; /* enum jit_builtin_type */
 
+/* Create an enum of the attributes that can be present on builtins.  */
+
+enum built_in_attribute
+{
+#define DEF_ATTR_NULL_TREE(ENUM) ENUM,
+#define DEF_ATTR_INT(ENUM, VALUE) ENUM,
+#define DEF_ATTR_STRING(ENUM, VALUE) ENUM,
+#define DEF_ATTR_IDENT(ENUM, STRING) ENUM,
+#define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN) ENUM,
+#include "builtin-attrs.def"
+#undef DEF_ATTR_NULL_TREE
+#undef DEF_ATTR_INT
+#undef DEF_ATTR_STRING
+#undef DEF_ATTR_IDENT
+#undef DEF_ATTR_TREE_LIST
+  ATTR_LAST
+};
+
 /***********************************************************************/
 
 class builtins_manager
 {
 public:
-  builtins_manager (context *ctxt);
+  builtins_manager (recording::context *ctxt);
 
-  function *
+  recording::function *
   get_builtin_function (const char *name);
 
+  static enum built_in_class
+  get_class (enum built_in_function builtin_id);
+
+  static bool
+  implicit_p (enum built_in_function builtin_id);
+
+  tree
+  get_attrs_tree (enum built_in_function builtin_id);
+
+  tree
+  get_attrs_tree (enum built_in_attribute attr);
+
+  void
+  finish_playback (void);
+
 private:
-  function *make_builtin_function (enum built_in_function builtin_id);
+  recording::function *
+  get_builtin_function_by_id (enum built_in_function builtin_id);
 
-  type *get_type (enum jit_builtin_type type_id);
+  recording::function *
+  make_builtin_function (enum built_in_function builtin_id);
 
-  type *make_type (enum jit_builtin_type type_id);
+  recording::type *
+  get_type (enum jit_builtin_type type_id);
 
-  type*
+  recording::type *
+  make_type (enum jit_builtin_type type_id);
+
+  recording::type*
   make_primitive_type (enum jit_builtin_type type_id);
 
-  function_type*
+  recording::function_type*
   make_fn_type (enum jit_builtin_type type_id,
 		enum jit_builtin_type return_type_id,
 		bool is_variadic,
 		int num_args, ...);
 
-  type*
+  recording::type*
   make_ptr_type (enum jit_builtin_type type_id,
 		 enum jit_builtin_type other_type_id);
 
+  tree
+  make_attrs_tree (enum built_in_attribute attr);
+
 private:
-  context *m_ctxt;
-  type *m_types[BT_LAST];
-  function *m_builtin_functions[END_BUILTINS];
+  /* Recording fields.  */
+  recording::context *m_ctxt;
+  recording::type *m_types[BT_LAST];
+  recording::function *m_builtin_functions[END_BUILTINS];
+
+  /* Playback fields.  */
+  /* m_attributes is not GTY-marked, but is only ever used from within
+     the region of playback::context::replay () in which a GC can't
+     happen.  */
+  tree m_attributes[ATTR_LAST];
 };
 
-} // namespace recording
 } // namespace jit
 } // namespace gcc
 

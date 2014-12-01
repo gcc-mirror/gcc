@@ -23,16 +23,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "tree.h"
 #include "target.h"
+#include "stringpool.h"
 
 #include "jit-common.h"
 #include "jit-builtins.h"
 #include "jit-recording.h"
+#include "jit-playback.h"
 
 namespace gcc {
 
 namespace jit {
-
-namespace recording {
 
 const char *const prefix = "__builtin_";
 const size_t prefix_len = strlen (prefix);
@@ -41,9 +41,12 @@ const size_t prefix_len = strlen (prefix);
 struct builtin_data
 {
   const char *name;
+  enum built_in_class fnclass;
   enum jit_builtin_type type;
   bool both_p;
   bool fallback_p;
+  enum built_in_attribute attr;
+  bool implicit_p;
 
   const char *get_asm_name () const
   {
@@ -54,8 +57,9 @@ struct builtin_data
   }
 };
 
-#define DEF_BUILTIN(X, NAME, C, TYPE, LT, BOTH_P, FALLBACK_P, NA, AT, IM, COND)\
-  {NAME, TYPE, BOTH_P, FALLBACK_P},
+#define DEF_BUILTIN(X, NAME, CLASS, TYPE, LT, BOTH_P, FALLBACK_P, \
+		    NONANSI_P, ATTRS, IMPLICIT, COND)		  \
+  {NAME, CLASS, TYPE, BOTH_P, FALLBACK_P, ATTRS, IMPLICIT},
 static const struct builtin_data builtin_data[] =
 {
 #include "builtins.def"
@@ -130,20 +134,21 @@ find_builtin_by_name (const char *in_name,
 
 // class builtins_manager
 
-/* Constructor for gcc::jit::recording::builtins_manager.  */
+/* Constructor for gcc::jit::builtins_manager.  */
 
-builtins_manager::builtins_manager (context *ctxt)
+builtins_manager::builtins_manager (recording::context *ctxt)
   : m_ctxt (ctxt)
 {
   memset (m_types, 0, sizeof (m_types));
   memset (m_builtin_functions, 0, sizeof (m_builtin_functions));
+  memset (m_attributes, 0, sizeof (m_attributes));
 }
 
 /* Locate a builtin function by name.
    Create a recording::function of the appropriate type, reusing them
    if they've already been seen.  */
 
-function *
+recording::function *
 builtins_manager::get_builtin_function (const char *name)
 {
   enum built_in_function builtin_id;
@@ -153,6 +158,16 @@ builtins_manager::get_builtin_function (const char *name)
       return NULL;
     }
 
+  return get_builtin_function_by_id (builtin_id);
+}
+
+/* Locate a builtin function by id.
+   Create a recording::function of the appropriate type, reusing them
+   if they've already been seen.  */
+
+recording::function *
+builtins_manager::get_builtin_function_by_id (enum built_in_function builtin_id)
+{
   gcc_assert (builtin_id >= 0);
   gcc_assert (builtin_id < END_BUILTINS);
 
@@ -160,7 +175,7 @@ builtins_manager::get_builtin_function (const char *name)
      the same id on a context give back the same object.  */
   if (!m_builtin_functions[builtin_id])
     {
-      function *fn = make_builtin_function (builtin_id);
+      recording::function *fn = make_builtin_function (builtin_id);
       if (fn)
 	{
 	  m_builtin_functions[builtin_id] = fn;
@@ -173,23 +188,23 @@ builtins_manager::get_builtin_function (const char *name)
 
 /* Create the recording::function for a given builtin function, by ID.  */
 
-function *
+recording::function *
 builtins_manager::make_builtin_function (enum built_in_function builtin_id)
 {
   const struct builtin_data& bd = builtin_data[builtin_id];
   enum jit_builtin_type type_id = bd.type;
-  type *t = get_type (type_id);
+  recording::type *t = get_type (type_id);
   if (!t)
     return NULL;
-  function_type *func_type = t->as_a_function_type ();
+  recording::function_type *func_type = t->as_a_function_type ();
   if (!func_type)
     return NULL;
 
-  vec<type *> param_types = func_type->get_param_types ();
+  vec<recording::type *> param_types = func_type->get_param_types ();
   recording::param **params = new recording::param *[param_types.length ()];
 
   int i;
-  type *param_type;
+  recording::type *param_type;
   FOR_EACH_VEC_ELT (param_types, i, param_type)
     {
       char buf[16];
@@ -199,24 +214,47 @@ builtins_manager::make_builtin_function (enum built_in_function builtin_id)
 				     buf);
     }
   const char *asm_name = bd.get_asm_name ();
-  function *result =
-    new function (m_ctxt,
-		  NULL,
-		  GCC_JIT_FUNCTION_IMPORTED, // FIXME
-		  func_type->get_return_type (),
-		  m_ctxt->new_string (asm_name),
-		  param_types.length (),
-		  params,
-		  func_type->is_variadic (),
-		  builtin_id);
+  recording::function *result =
+    new recording::function (m_ctxt,
+			     NULL,
+			     GCC_JIT_FUNCTION_IMPORTED, // FIXME
+			     func_type->get_return_type (),
+			     m_ctxt->new_string (asm_name),
+			     param_types.length (),
+			     params,
+			     func_type->is_variadic (),
+			     builtin_id);
   delete[] params;
+
+  /* PR/64020 - If the client code is using builtin cos or sin,
+     tree-ssa-math-opt.c's execute_cse_sincos_1 may attempt
+     to optimize them to use __builtin_cexpi; for this,
+     BUILT_IN_CEXPI needs to exist.
+
+     Hence query the cache for BUILT_IN_CEXPI to ensure it gets
+     built.  */
+  if (builtin_id == BUILT_IN_COS || builtin_id == BUILT_IN_SIN)
+    (void)get_builtin_function_by_id (BUILT_IN_CEXPI);
+
+  /* builtins.c:expand_builtin_cexpi can optimize the various
+     CEXP builtins to SINCOS builtins, and hence we may require
+     SINCOS builtins latter.
+
+     Ensure the appropriate SINCOS builtin exists.  */
+  if (builtin_id == BUILT_IN_CEXPIF)
+    (void)get_builtin_function_by_id (BUILT_IN_SINCOSF);
+  else if (builtin_id == BUILT_IN_CEXPI)
+    (void)get_builtin_function_by_id (BUILT_IN_SINCOS);
+  else if (builtin_id == BUILT_IN_CEXPIL)
+    (void)get_builtin_function_by_id (BUILT_IN_SINCOSL);
+
   return result;
 }
 
 /* Get the recording::type for a given type of builtin function,
    by ID, creating it if it doesn't already exist.  */
 
-type *
+recording::type *
 builtins_manager::get_type (enum jit_builtin_type type_id)
 {
   if (!m_types[type_id])
@@ -226,7 +264,7 @@ builtins_manager::get_type (enum jit_builtin_type type_id)
 
 /* Create the recording::type for a given type of builtin function.  */
 
-type *
+recording::type *
 builtins_manager::make_type (enum jit_builtin_type type_id)
 {
   /* Use builtin-types.def to construct a switch statement, with each
@@ -283,12 +321,15 @@ builtins_manager::make_type (enum jit_builtin_type type_id)
 #include "builtin-types.def"
 
 #undef DEF_PRIMITIVE_TYPE
+#undef DEF_FUNCTION_TYPE_0
 #undef DEF_FUNCTION_TYPE_1
 #undef DEF_FUNCTION_TYPE_2
 #undef DEF_FUNCTION_TYPE_3
 #undef DEF_FUNCTION_TYPE_4
 #undef DEF_FUNCTION_TYPE_5
 #undef DEF_FUNCTION_TYPE_6
+#undef DEF_FUNCTION_TYPE_7
+#undef DEF_FUNCTION_TYPE_8
 #undef DEF_FUNCTION_TYPE_VAR_0
 #undef DEF_FUNCTION_TYPE_VAR_1
 #undef DEF_FUNCTION_TYPE_VAR_2
@@ -307,7 +348,7 @@ builtins_manager::make_type (enum jit_builtin_type type_id)
 
    Only some types are currently supported.  */
 
-type*
+recording::type*
 builtins_manager::make_primitive_type (enum jit_builtin_type type_id)
 {
   switch (type_id)
@@ -339,9 +380,12 @@ builtins_manager::make_primitive_type (enum jit_builtin_type type_id)
     case BT_FLOAT: return m_ctxt->get_type (GCC_JIT_TYPE_FLOAT);
     case BT_DOUBLE: return m_ctxt->get_type (GCC_JIT_TYPE_DOUBLE);
     case BT_LONGDOUBLE: return m_ctxt->get_type (GCC_JIT_TYPE_LONG_DOUBLE);
-    // case BT_COMPLEX_FLOAT:
-    // case BT_COMPLEX_DOUBLE:
-    // case BT_COMPLEX_LONGDOUBLE:
+    case BT_COMPLEX_FLOAT:
+      return m_ctxt->get_type (GCC_JIT_TYPE_COMPLEX_FLOAT);
+    case BT_COMPLEX_DOUBLE:
+      return m_ctxt->get_type (GCC_JIT_TYPE_COMPLEX_DOUBLE);
+    case BT_COMPLEX_LONGDOUBLE:
+      return m_ctxt->get_type (GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE);
     case BT_PTR: return m_ctxt->get_type (GCC_JIT_TYPE_VOID_PTR);
     case BT_FILEPTR: return m_ctxt->get_type (GCC_JIT_TYPE_FILE_PTR);
     // case BT_CONST:
@@ -350,7 +394,8 @@ builtins_manager::make_primitive_type (enum jit_builtin_type type_id)
     // case BT_PTRMODE:
     // case BT_INT_PTR:
     // case BT_FLOAT_PTR:
-    // case BT_DOUBLE_PTR:
+    case BT_DOUBLE_PTR:
+      return m_ctxt->get_type (GCC_JIT_TYPE_DOUBLE)->get_pointer ();
     // case BT_CONST_DOUBLE_PTR:
     // case BT_LONGDOUBLE_PTR:
     // case BT_PID:
@@ -378,7 +423,7 @@ builtins_manager::make_primitive_type (enum jit_builtin_type type_id)
 /* Create the recording::function_type for a given function type
    signature.  */
 
-function_type *
+recording::function_type *
 builtins_manager::make_fn_type (enum jit_builtin_type,
 				enum jit_builtin_type return_type_id,
 				bool is_variadic,
@@ -386,9 +431,9 @@ builtins_manager::make_fn_type (enum jit_builtin_type,
 {
   va_list list;
   int i;
-  type **param_types = new type *[num_args];
-  type *return_type = NULL;
-  function_type *result = NULL;
+  recording::type **param_types = new recording::type *[num_args];
+  recording::type *return_type = NULL;
+  recording::function_type *result = NULL;
 
   va_start (list, num_args);
   for (i = 0; i < num_args; ++i)
@@ -417,14 +462,104 @@ builtins_manager::make_fn_type (enum jit_builtin_type,
 
 /* Handler for DEF_POINTER_TYPE within builtins_manager::make_type.  */
 
-type *
+recording::type *
 builtins_manager::make_ptr_type (enum jit_builtin_type,
 				 enum jit_builtin_type other_type_id)
 {
-  type *base_type = get_type (other_type_id);
+  recording::type *base_type = get_type (other_type_id);
   return base_type->get_pointer ();
 }
 
-} // namespace recording
+/* Playback support.  */
+
+/* A builtins_manager is associated with a recording::context
+   and might be reused for multiple compiles on various
+   playback::contexts, perhaps with different options.
+
+   Purge any playback state.  Currently this is just the table of
+   attributes.  */
+
+void
+builtins_manager::finish_playback (void)
+{
+  memset (m_attributes, 0, sizeof (m_attributes));
+}
+
+/* Get the enum built_in_class for BUILTIN_ID.  */
+
+enum built_in_class
+builtins_manager::get_class (enum built_in_function builtin_id)
+{
+  return builtin_data[builtin_id].fnclass;
+}
+
+/* Is BUILTIN_ID implicit?  */
+
+bool
+builtins_manager::implicit_p (enum built_in_function builtin_id)
+{
+  return builtin_data[builtin_id].implicit_p;
+}
+
+/* Get any attributes (in tree form) for the function declaration
+   for BUILTIN_ID.
+
+   These are created on-demand, and cached within the m_attributes
+   array, until finish_playback.  */
+
+tree
+builtins_manager::get_attrs_tree (enum built_in_function builtin_id)
+{
+  enum built_in_attribute attr = builtin_data[builtin_id].attr;
+  return get_attrs_tree (attr);
+}
+
+/* As above, but for an enum built_in_attribute.  */
+
+tree
+builtins_manager::get_attrs_tree (enum built_in_attribute attr)
+{
+  gcc_assert (attr < ATTR_LAST);
+  if (!m_attributes [attr])
+    m_attributes [attr] = make_attrs_tree (attr);
+  return m_attributes [attr];
+}
+
+/* Handle a cache-miss within the m_attributes array by
+   generating the attributes for enum built_in_attribute
+   in tree form.  */
+
+tree
+builtins_manager::make_attrs_tree (enum built_in_attribute attr)
+{
+  switch (attr)
+    {
+      /* Generate cases from builtin-attrs.def.  */
+#define DEF_ATTR_NULL_TREE(ENUM)				\
+      case ENUM: return NULL_TREE;
+#define DEF_ATTR_INT(ENUM, VALUE)				\
+      case ENUM: return build_int_cst (integer_type_node, VALUE);
+#define DEF_ATTR_STRING(ENUM, VALUE)				\
+      case ENUM: return build_string (strlen (VALUE), VALUE);
+#define DEF_ATTR_IDENT(ENUM, STRING)				\
+      case ENUM: return get_identifier (STRING);
+#define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN)	\
+      case ENUM: return tree_cons (get_attrs_tree (PURPOSE),	\
+				   get_attrs_tree (VALUE),	\
+				   get_attrs_tree (CHAIN));
+#include "builtin-attrs.def"
+#undef DEF_ATTR_NULL_TREE
+#undef DEF_ATTR_INT
+#undef DEF_ATTR_IDENT
+#undef DEF_ATTR_TREE_LIST
+
+    default:
+      /* We somehow got a value not covered by the autogenerated
+	 cases.  */
+      gcc_unreachable ();
+      return NULL;
+    }
+}
+
 } // namespace jit
 } // namespace gcc

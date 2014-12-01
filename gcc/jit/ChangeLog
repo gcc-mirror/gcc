@@ -1,5 +1,101 @@
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
+	PR jit/64020
+	* docs/topics/types.rst (Standard types) Add new enum values to
+	the table of enum gcc_jit_types: GCC_JIT_TYPE_COMPLEX_FLOAT,
+	GCC_JIT_TYPE_COMPLEX_DOUBLE, GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE.
+	Widen the left-hand column so that
+	GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE will fit.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+	* jit-builtins.c: Include stringpool.h and jit-playback.h.
+	Move everything out of the gcc::jit::recording namespace into
+	just gcc::jit.
+	(struct builtin_data): Add fields "fnclass", "attr", and
+	"implicit_p".
+	(DEF_BUILTIN): Update macro so populate the new fields.
+	(builtins_manager::builtins_manager): Update for move out of
+	recording namespace.  Initialize the m_attributes array.
+	(builtins_manager::get_builtin_function): Likewise.
+	(builtins_manager::get_builtin_function_by_id): New function.
+	(builtins_manager::make_builtin_function): Update for move out of
+	recording namespace.  Add fix for PR jit/64020 by detecting
+	specific builtin ids and having them ensure that builtins for
+	other ids are created as necessary.
+	(builtins_manager::get_type): Update for move out of recording
+	namespace.
+	(builtins_manager::make_type): Likewise.  Add some missing
+	#undefs.
+	(builtins_manager::make_primitive_type): Update for move out of
+	recording namespace.  Implement the three BT_COMPLEX_ cases and
+	BT_DOUBLE_PTR.
+	(builtins_manager::make_fn_type): Update for move out of recording
+	namespace.
+	(builtins_manager::make_ptr_type): Likewise.
+	(builtins_manager::finish_playback): New function.
+	(builtins_manager::get_class): New function.
+	(builtins_manager::implicit_p): New function.
+	(builtins_manager::get_attrs_tree): Two new functions.
+	(builtins_manager::make_attrs_tree): New function.
+
+	* jit-builtins.h: Move everything out of the gcc::jit::recording
+	namespace into just gcc::jit.
+	(enum built_in_attribute): New.
+	(builtins_manager::builtins_manager): Update decl for namespace
+	change.
+	(builtins_manager::get_builtin_function): Likewise.
+	(builtins_manager::get_class): New.
+	(builtins_manager::implicit_p): New.
+	(builtins_manager::get_attrs_tree): Two new functions.
+	(builtins_manager::make_attrs_tree): New function.
+	(builtins_manager::finish_playback): New.
+	(builtins_manager::get_builtin_function_by_id): New.
+	(builtins_manager::make_builtin_function): Update decl for
+	namespace change.
+	(builtins_manager::get_type): Likewise.
+	(builtins_manager::make_type): Likewise.
+	(builtins_manager::make_primitive_type): Likewise.
+	(builtins_manager::make_fn_type): Likewise.
+	(builtins_manager::make_ptr_type): Likewise.
+	(builtins_manager): Likewise for fields.  Add new field
+	"m_attributes".
+
+	* jit-common.h (NUM_GCC_JIT_TYPES): Update.
+	(builtins_manager): Update forward decl to reflect namespace
+	change.
+
+	* jit-playback.c: Include attribs.h and jit-builtins.h.
+	(gcc::jit::playback::context::get_tree_node_for_type): Add cases
+	for the new COMPLEX_ types.
+	(gcc::jit::playback::context::new_function): If creating a
+	builtin, set the DECL_BUILT_IN_CLASS and attributes on the fndecl,
+	and call set_builtin_decl.
+	(gcc::jit::playback::context::replay): If we have a
+	builtins_manager, call its finish_playback method when we're done.
+
+	* jit-playback.h:
+	(gcc::jit::playback::context::get_builtins_manager): New function.
+
+	* jit-recording.c
+	(gcc::jit::recording::context::get_builtins_manager): New function.
+	(gcc::jit::recording::get_builtin_function): Use
+	get_builtins_manager, in case we're a child context.
+	(gcc::jit::recording::memento_of_get_type::dereference): Add the
+	COMPLEX_ types.
+	(gcc::jit::recording::memento_of_get_type::is_int): Likewise.
+	(gcc::jit::recording::memento_of_get_type::is_float): Likewise.
+	(gcc::jit::recording::memento_of_get_type::is_bool): Likewise.
+	(get_type_strings): Likewise.
+
+	* jit-recording.h
+	(gcc::jit::recording::context::get_builtins_manager): New.
+
+	* libgccjit.h (enum gcc_jit_types): Add
+	GCC_JIT_TYPE_COMPLEX_FLOAT, GCC_JIT_TYPE_COMPLEX_DOUBLE,
+	GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit-builtins.c
 	(gcc::jit::recording::builtins_manager::get_builtin_function):
 	Check for NULL return from make_builtin_function.
