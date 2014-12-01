@@ -10391,19 +10391,6 @@ fold_binary_loc (location_t loc,
 					      negate_expr (arg1)),
 			    fold_convert_loc (loc, type,
 					      TREE_OPERAND (arg0, 0)));
-      /* Convert -A - 1 to ~A.  */
-      if (TREE_CODE (arg0) == NEGATE_EXPR
-	  && integer_each_onep (arg1)
-	  && !TYPE_OVERFLOW_TRAPS (type))
-	return fold_build1_loc (loc, BIT_NOT_EXPR, type,
-			    fold_convert_loc (loc, type,
-					      TREE_OPERAND (arg0, 0)));
-
-      /* Convert -1 - A to ~A.  */
-      if (TREE_CODE (type) != COMPLEX_TYPE
-	  && integer_all_onesp (arg0))
-	return fold_build1_loc (loc, BIT_NOT_EXPR, type, op1);
-
 
       /* X - (X / Y) * Y is X % Y.  */
       if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
