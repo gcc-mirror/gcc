@@ -23,6 +23,48 @@ load_lib target-libpath.exp
 load_lib gcc.exp
 load_lib dejagnu.exp
 
+# Look for lines of the form:
+#   definitely lost: 11,316 bytes in 235 blocks
+#   indirectly lost: 352 bytes in 4 blocks
+# Ideally these would report zero bytes lost (which is a PASS);
+# for now, report non-zero leaks as XFAILs.
+proc report_leak {kind name logfile line} {
+    set match [regexp "$kind lost: .*" $line result]
+    if $match {
+	verbose "Saw \"$result\" within \"$line\"" 4
+	# Extract bytes and blocks.
+	# These can contain commas as well as numerals,
+	# but we only care about whether we have zero.
+	regexp "$kind lost: (.+) bytes in (.+) blocks" \
+	    $result -> bytes blocks
+	verbose "bytes: '$bytes'" 4
+	verbose "blocks: '$blocks'" 4
+	if { $bytes == 0 } {
+	    pass "$name: $logfile: $result"
+	} else {
+	    xfail "$name: $logfile: $result"
+	}
+    }
+}
+
+proc parse_valgrind_logfile {name logfile} {
+    verbose "parse_valgrind_logfile: $logfile" 2
+    if [catch {set f [open $logfile]}] {
+	fail "$name: unable to read $logfile"
+	return
+    }
+
+    while { [gets $f line] >= 0 } {
+	# Strip off the PID prefix e.g. ==7675==
+	set line [regsub "==\[0-9\]*== " $line ""]
+	verbose $line 2
+
+	report_leak "definitely" $name $logfile $line
+	report_leak "indirectly" $name $logfile $line
+    }
+    close $f
+}
+
 # This is host_execute from dejagnu.exp commit
 #   126a089777158a7891ff975473939f08c0e31a1c
 # with the following patch applied, and renaming to "fixed_host_execute".
@@ -49,6 +91,7 @@ load_lib dejagnu.exp
 #	if there was a problem.
 #
 proc fixed_host_execute {args} {
+    global env
     global text
     global spawn_id
 
@@ -75,7 +118,28 @@ proc fixed_host_execute {args} {
     # spawn the executable and look for the DejaGnu output messages from the
     # test case.
     # spawn -noecho -open [open "|./${executable}" "r"]
-    spawn -noecho "./${executable}" ${params}
+
+    # Run under valgrind if RUN_UNDER_VALGRIND is present in the environment.
+    # Note that it's best to configure gcc with --enable-valgrind-annotations
+    # when testing under valgrind.
+    set run_under_valgrind [info exists env(RUN_UNDER_VALGRIND)]
+    if $run_under_valgrind {
+	set valgrind_logfile "${executable}.valgrind.txt"
+	set valgrind_params {"valgrind"}
+	lappend valgrind_params "--leak-check=full"
+	lappend valgrind_params "--log-file=${valgrind_logfile}"
+    } else {
+	set valgrind_params {}
+    }
+    verbose "valgrind_params: $valgrind_params" 2
+
+    set args ${valgrind_params}
+    lappend args "./${executable}"
+    set args [concat $args ${params}]
+    verbose "args: $args" 2
+
+    eval spawn -noecho $args
+
     expect_after full_buffer {	error "got full_buffer" }
 
     set prefix "\[^\r\n\]*"
@@ -142,6 +206,18 @@ proc fixed_host_execute {args} {
 	-re "^$prefix\r\n" {
 	    exp_continue
 	}
+    }
+
+    # Use "wait" before "close": valgrind might not have finished
+    # writing the log out before we parse it, so we need to wait for
+    # the spawnee to finish.
+
+    catch wait wres
+    verbose "wres: $wres" 2
+
+    if $run_under_valgrind {
+	upvar 2 name name
+	parse_valgrind_logfile $name $valgrind_logfile
     }
 
     # force a close of the executable to be safe.
