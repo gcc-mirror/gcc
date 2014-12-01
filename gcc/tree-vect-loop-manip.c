@@ -2157,8 +2157,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
 
       sprintf (tmp_name, "addr2int%d", i);
       addr_tmp_name = make_temp_ssa_name (int_ptrsize_type, NULL, tmp_name);
-      addr_stmt = gimple_build_assign_with_ops (NOP_EXPR, addr_tmp_name,
-						addr_base);
+      addr_stmt = gimple_build_assign (addr_tmp_name, NOP_EXPR, addr_base);
       gimple_seq_add_stmt (cond_expr_stmt_list, addr_stmt);
 
       /* The addresses are OR together.  */
@@ -2168,9 +2167,8 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
           /* create: or_tmp = or_tmp | addr_tmp */
           sprintf (tmp_name, "orptrs%d", i);
 	  new_or_tmp_name = make_temp_ssa_name (int_ptrsize_type, NULL, tmp_name);
-	  or_stmt = gimple_build_assign_with_ops (BIT_IOR_EXPR,
-						  new_or_tmp_name,
-						  or_tmp_name, addr_tmp_name);
+	  or_stmt = gimple_build_assign (new_or_tmp_name, BIT_IOR_EXPR,
+					 or_tmp_name, addr_tmp_name);
 	  gimple_seq_add_stmt (cond_expr_stmt_list, or_stmt);
           or_tmp_name = new_or_tmp_name;
         }
@@ -2184,8 +2182,8 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   /* create: and_tmp = or_tmp & mask  */
   and_tmp_name = make_temp_ssa_name (int_ptrsize_type, NULL, "andmask");
 
-  and_stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, and_tmp_name,
-					   or_tmp_name, mask_cst);
+  and_stmt = gimple_build_assign (and_tmp_name, BIT_AND_EXPR,
+				  or_tmp_name, mask_cst);
   gimple_seq_add_stmt (cond_expr_stmt_list, and_stmt);
 
   /* Make and_tmp the left operand of the conditional test against zero.

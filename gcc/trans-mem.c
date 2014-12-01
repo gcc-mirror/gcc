@@ -2807,8 +2807,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
 
       tree t1 = create_tmp_reg (tm_state_type);
       tree t2 = build_int_cst (tm_state_type, A_RESTORELIVEVARIABLES);
-      gimple stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, t1,
-						  tm_state, t2);
+      gimple stmt = gimple_build_assign (t1, BIT_AND_EXPR, tm_state, t2);
       gimple_stmt_iterator gsi = gsi_last_bb (test_bb);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
@@ -2848,8 +2847,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
 
       tree t1 = create_tmp_reg (tm_state_type);
       tree t2 = build_int_cst (tm_state_type, A_ABORTTRANSACTION);
-      gimple stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, t1,
-						  tm_state, t2);
+      gimple stmt = gimple_build_assign (t1, BIT_AND_EXPR, tm_state, t2);
       gimple_stmt_iterator gsi = gsi_last_bb (test_bb);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
@@ -2891,8 +2889,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       tree t1 = create_tmp_reg (tm_state_type);
       tree t2 = build_int_cst (tm_state_type, A_RUNUNINSTRUMENTEDCODE);
 
-      gimple stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, t1,
-						  tm_state, t2);
+      gimple stmt = gimple_build_assign (t1, BIT_AND_EXPR, tm_state, t2);
       gimple_stmt_iterator gsi = gsi_last_bb (test_bb);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 

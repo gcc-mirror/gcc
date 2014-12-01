@@ -378,8 +378,8 @@ insert_reciprocals (gimple_stmt_iterator *def_gsi, struct occurrence *occ,
       /* Make a variable with the replacement and substitute it.  */
       type = TREE_TYPE (def);
       recip_def = create_tmp_reg (type, "reciptmp");
-      new_stmt = gimple_build_assign_with_ops (RDIV_EXPR, recip_def,
-					       build_one_cst (type), def);
+      new_stmt = gimple_build_assign (recip_def, RDIV_EXPR,
+				      build_one_cst (type), def);
 
       if (occ->bb_has_division)
         {
@@ -1009,7 +1009,7 @@ powi_as_mults_1 (gimple_stmt_iterator *gsi, location_t loc, tree type,
       op1 = op0;
     }
 
-  mult_stmt = gimple_build_assign_with_ops (MULT_EXPR, ssa_target, op0, op1);
+  mult_stmt = gimple_build_assign (ssa_target, MULT_EXPR, op0, op1);
   gimple_set_location (mult_stmt, loc);
   gsi_insert_before (gsi, mult_stmt, GSI_SAME_STMT);
 
@@ -1039,9 +1039,8 @@ powi_as_mults (gimple_stmt_iterator *gsi, location_t loc,
 
   /* If the original exponent was negative, reciprocate the result.  */
   target = make_temp_ssa_name (type, NULL, "powmult");
-  div_stmt = gimple_build_assign_with_ops (RDIV_EXPR, target, 
-					   build_real (type, dconst1),
-					   result);
+  div_stmt = gimple_build_assign (target, RDIV_EXPR,
+				  build_real (type, dconst1), result);
   gimple_set_location (div_stmt, loc);
   gsi_insert_before (gsi, div_stmt, GSI_SAME_STMT);
 
@@ -1100,7 +1099,7 @@ build_and_insert_binop (gimple_stmt_iterator *gsi, location_t loc,
 			tree arg0, tree arg1)
 {
   tree result = make_temp_ssa_name (TREE_TYPE (arg0), NULL, name);
-  gassign *stmt = gimple_build_assign_with_ops (code, result, arg0, arg1);
+  gassign *stmt = gimple_build_assign (result, code, arg0, arg1);
   gimple_set_location (stmt, loc);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
   return result;
@@ -1130,7 +1129,7 @@ build_and_insert_cast (gimple_stmt_iterator *gsi, location_t loc,
 		       tree type, tree val)
 {
   tree result = make_ssa_name (type);
-  gassign *stmt = gimple_build_assign_with_ops (NOP_EXPR, result, val);
+  gassign *stmt = gimple_build_assign (result, NOP_EXPR, val);
   gimple_set_location (stmt, loc);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
   return result;
@@ -1533,17 +1532,14 @@ pass_cse_sincos::execute (function *fun)
 		      minus_one = build_real (t0, dconstm1);
 
 		      cond = make_temp_ssa_name (t1, NULL, "powi_cond");
-		      stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, cond,
-							   arg1,
-							   build_int_cst (t1,
-									  1));
+		      stmt = gimple_build_assign (cond, BIT_AND_EXPR,
+						  arg1, build_int_cst (t1, 1));
 		      gimple_set_location (stmt, loc);
 		      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
 
 		      result = make_temp_ssa_name (t0, NULL, "powi");
-		      stmt = gimple_build_assign_with_ops (COND_EXPR, result,
-							   cond,
-							   minus_one, one);
+		      stmt = gimple_build_assign (result, COND_EXPR, cond,
+						  minus_one, one);
 		      gimple_set_location (stmt, loc);
 		      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
 		    }
@@ -2318,7 +2314,7 @@ bswap_replace (gimple cur_stmt, gimple src_stmt, tree fndecl, tree bswap_type,
 	{
 	  gimple convert_stmt;
 	  tmp = make_temp_ssa_name (bswap_type, NULL, "bswapsrc");
-	  convert_stmt = gimple_build_assign_with_ops (NOP_EXPR, tmp, src);
+	  convert_stmt = gimple_build_assign (tmp, NOP_EXPR, src);
 	  gsi_insert_before (&gsi, convert_stmt, GSI_SAME_STMT);
 	}
 
@@ -2332,7 +2328,7 @@ bswap_replace (gimple cur_stmt, gimple src_stmt, tree fndecl, tree bswap_type,
     {
       gimple convert_stmt;
       tmp = make_temp_ssa_name (bswap_type, NULL, "bswapdst");
-      convert_stmt = gimple_build_assign_with_ops (NOP_EXPR, tgt, tmp);
+      convert_stmt = gimple_build_assign (tgt, NOP_EXPR, tmp);
       gsi_insert_after (&gsi, convert_stmt, GSI_SAME_STMT);
     }
 
@@ -3174,9 +3170,8 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 					   true, NULL_TREE, true,
 					   GSI_SAME_STMT);
 
-      fma_stmt = gimple_build_assign_with_ops (FMA_EXPR,
-					       gimple_assign_lhs (use_stmt),
-					       mulop1, op2, addop);
+      fma_stmt = gimple_build_assign (gimple_assign_lhs (use_stmt),
+				      FMA_EXPR, mulop1, op2, addop);
       gsi_replace (&gsi, fma_stmt, true);
       widen_mul_stats.fmas_inserted++;
     }

@@ -2538,8 +2538,7 @@ chkp_compute_bounds_for_assignment (tree node, gimple assign)
 	    rhs1 = unshare_expr (rhs1);
 
 	    bounds = chkp_get_tmp_reg (assign);
-	    stmt = gimple_build_assign_with_ops (COND_EXPR, bounds,
-						  rhs1, bnd1, bnd2);
+	    stmt = gimple_build_assign (bounds, COND_EXPR, rhs1, bnd1, bnd2);
 	    gsi_insert_after (&iter, stmt, GSI_SAME_STMT);
 
 	    if (!chkp_valid_bounds (bnd1) && !chkp_valid_bounds (bnd2))
@@ -2565,8 +2564,7 @@ chkp_compute_bounds_for_assignment (tree node, gimple assign)
 	    tree cond = build2 (rhs_code == MAX_EXPR ? GT_EXPR : LT_EXPR,
 				boolean_type_node, rhs1, rhs2);
 	    bounds = chkp_get_tmp_reg (assign);
-	    stmt = gimple_build_assign_with_ops (COND_EXPR, bounds,
-						  cond, bnd1, bnd2);
+	    stmt = gimple_build_assign (bounds, COND_EXPR, cond, bnd1, bnd2);
 
 	    gsi_insert_after (&iter, stmt, GSI_SAME_STMT);
 
@@ -2842,9 +2840,9 @@ chkp_generate_extern_var_bounds (tree var)
 			 fold_convert (chkp_uintptr_type, lb));
       max_size = chkp_force_gimple_call_op (max_size, &seq);
 
-      cond = build2 (NE_EXPR, boolean_type_node, size_reloc, integer_zero_node);
-      stmt = gimple_build_assign_with_ops (COND_EXPR, size,
-					   cond, size_reloc, max_size);
+      cond = build2 (NE_EXPR, boolean_type_node,
+		     size_reloc, integer_zero_node);
+      stmt = gimple_build_assign (size, COND_EXPR, cond, size_reloc, max_size);
       gimple_seq_add_stmt (&seq, stmt);
     }
   else
