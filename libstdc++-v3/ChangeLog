@@ -1,3 +1,13 @@
+2014-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/63840
+	* include/std/functional (function::function(const function&)): Set
+	_M_manager after operations that might throw.
+	* include/tr1/functional (function::function(const function&),
+	function::function(_Functor, _Useless)): Likewise.
+	* testsuite/20_util/function/63840.cc: New.
+	* testsuite/tr1/3_function_objects/function/63840.cc: New.
+
 2014-11-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver: Fix ios_base::failure exports.
