@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "jit-common.h"
 #include "jit-playback.h"
+#include "jit-result.h"
 
 
 /* gcc::jit::playback::context::build_cast uses the convert.h API,
@@ -1949,48 +1950,6 @@ add_error_va (location *loc, const char *fmt, va_list ap)
 {
   m_recording_ctxt->add_error_va (loc ? loc->get_recording_loc () : NULL,
 				  fmt, ap);
-}
-
-/* Constructor for gcc::jit::playback::result.  */
-
-result::
-result(void *dso_handle)
-  : m_dso_handle(dso_handle)
-{
-}
-
-/* gcc::jit::playback::result's destructor.
-
-   Called implicitly by gcc_jit_result_release.  */
-
-result::~result()
-{
-  dlclose (m_dso_handle);
-}
-
-/* Attempt to locate the given function by name within the
-   playback::result, using dlsym.
-
-   Implements the post-error-checking part of
-   gcc_jit_result_get_code.  */
-
-void *
-result::
-get_code (const char *funcname)
-{
-  void *code;
-  const char *error;
-
-  /* Clear any existing error.  */
-  dlerror ();
-
-  code = dlsym (m_dso_handle, funcname);
-
-  if ((error = dlerror()) != NULL)  {
-    fprintf(stderr, "%s\n", error);
-  }
-
-  return code;
 }
 
 /* Dealing with the linemap API.  */

@@ -1,5 +1,26 @@
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
+	* Make-lang.in (jit_OBJS): Add jit/jit-result.o.
+	* jit-playback.c: Include new header jit-result.h.
+	(gcc::jit::result::result): Move to new file jit-result.c.
+	(gcc::jit::result::~result): Likewise.
+	(gcc::jit::playback::result): Likewise.
+	* jit-recording.h (class gcc::jit::result): Move to new
+	header jit-result.h.
+	* jit-result.c: New file, to contain...
+	(gcc::jit::result::result): Move here from jit-playback.c,
+	removing erroneous "playback" namespace from comment.
+	(gcc::jit::result::~result): Likewise.
+	(gcc::jit::playback::result): Likewise.
+	* jit-result.h: New file, to contain...
+	(class gcc::jit::result): Move from jit-recording.h.
+	* libgccjit.c: Include jit-result.h.
+	(gcc_jit_result_get_code): Update comment to reflect move
+	of implementation.
+	(gcc_jit_result_release): Likewise.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/63854
 	* docs/examples/tut04-toyvm/toyvm.c
 	(toyvm_compiled_function): New typedef.
