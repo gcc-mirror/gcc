@@ -1,5 +1,14 @@
 2014-12-01  Marek Polacek  <polacek@redhat.com>
 
+	PR sanitizer/63956
+	* constexpr.c: Include ubsan.h.
+	(cxx_eval_call_expression): Bail out for IFN_UBSAN_{NULL,BOUNDS}
+	internal functions and for ubsan builtins.
+	* error.c: Include internal-fn.h.
+	(dump_expr): Add printing of internal functions.
+
+2014-12-01  Marek Polacek  <polacek@redhat.com>
+
 	* constexpr.c (literal_type_p): Return true for void type in C++14.
 
 2014-12-01  Paolo Carlini  <paolo.carlini@oracle.com>

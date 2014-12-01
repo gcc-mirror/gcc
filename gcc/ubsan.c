@@ -653,6 +653,7 @@ bool
 is_ubsan_builtin_p (tree t)
 {
   return TREE_CODE (t) == FUNCTION_DECL
+	 && DECL_BUILT_IN_CLASS (t) == BUILT_IN_NORMAL
 	 && strncmp (IDENTIFIER_POINTER (DECL_NAME (t)),
 		     "__builtin___ubsan_", 18) == 0;
 }
