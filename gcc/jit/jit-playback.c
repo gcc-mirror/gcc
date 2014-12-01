@@ -46,10 +46,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-tree.h"
 #include "gimplify.h"
 #include "gcc-driver-name.h"
+#include "attribs.h"
 
 #include "jit-common.h"
 #include "jit-playback.h"
 #include "jit-result.h"
+#include "jit-builtins.h"
 
 
 /* gcc::jit::playback::context::build_cast uses the convert.h API,
@@ -198,6 +200,13 @@ get_tree_node_for_type (enum gcc_jit_types type_)
 
     case GCC_JIT_TYPE_FILE_PTR:
       return fileptr_type_node;
+
+    case GCC_JIT_TYPE_COMPLEX_FLOAT:
+      return complex_float_type_node;
+    case GCC_JIT_TYPE_COMPLEX_DOUBLE:
+      return complex_double_type_node;
+    case GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE:
+      return complex_long_double_type_node;
     }
 
   return NULL;
@@ -399,10 +408,21 @@ new_function (location *loc,
 
   if (builtin_id)
     {
-      DECL_BUILT_IN_CLASS (fndecl) = BUILT_IN_NORMAL;
       DECL_FUNCTION_CODE (fndecl) = builtin_id;
       gcc_assert (loc == NULL);
       DECL_SOURCE_LOCATION (fndecl) = BUILTINS_LOCATION;
+
+      DECL_BUILT_IN_CLASS (fndecl) =
+	builtins_manager::get_class (builtin_id);
+      set_builtin_decl (builtin_id, fndecl,
+			builtins_manager::implicit_p (builtin_id));
+
+      builtins_manager *bm = get_builtins_manager ();
+      tree attrs = bm->get_attrs_tree (builtin_id);
+      if (attrs)
+	decl_attributes (&fndecl, attrs, ATTR_FLAG_BUILT_IN);
+      else
+	decl_attributes (&fndecl, NULL_TREE, 0);
     }
 
   if (kind != GCC_JIT_FUNCTION_IMPORTED)
@@ -1794,6 +1814,14 @@ replay ()
      latter are GC-allocated, but the former don't mark these
      refs.  Hence we must stop using them before the GC can run.  */
   m_recording_ctxt->disassociate_from_playback ();
+
+  /* The builtins_manager, if any, is associated with the recording::context
+     and might be reused for future compiles on other playback::contexts,
+     but its m_attributes array is not GTY-labeled and hence will become
+     nonsense if the GC runs.  Purge this state.  */
+  builtins_manager *bm = get_builtins_manager ();
+  if (bm)
+    bm->finish_playback ();
 
   timevar_pop (TV_JIT_REPLAY);
 

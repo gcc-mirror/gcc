@@ -175,6 +175,11 @@ public:
     return m_recording_ctxt->get_bool_option (opt);
   }
 
+  builtins_manager *get_builtins_manager () const
+  {
+    return m_recording_ctxt->get_builtins_manager ();
+  }
+
   result *
   compile ();
 

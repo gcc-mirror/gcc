@@ -52,6 +52,9 @@ public:
   context (context *parent_ctxt);
   ~context ();
 
+  builtins_manager *
+  get_builtins_manager ();
+
   void record (memento *m);
   void replay_into (replayer *r);
   void disassociate_from_playback ();
