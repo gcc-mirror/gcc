@@ -2397,7 +2397,7 @@ class Interface_field_reference_expression : public Expression
   do_traverse(Traverse* traverse);
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
 
   Type*
   do_type();

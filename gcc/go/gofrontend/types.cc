@@ -6361,7 +6361,13 @@ Array_type::do_reflection(Gogo* gogo, std::string* ret) const
       unsigned long val;
       if (!this->length_->numeric_constant_value(&nc)
 	  || nc.to_unsigned_long(&val) != Numeric_constant::NC_UL_VALID)
-	error_at(this->length_->location(), "invalid array length");
+	{
+	  if (!this->issued_length_error_)
+	    {
+	      error_at(this->length_->location(), "invalid array length");
+	      this->issued_length_error_ = true;
+	    }
+	}
       else
 	{
 	  char buf[50];
@@ -6488,7 +6494,13 @@ Array_type::do_mangled_name(Gogo* gogo, std::string* ret) const
       unsigned long val;
       if (!this->length_->numeric_constant_value(&nc)
 	  || nc.to_unsigned_long(&val) != Numeric_constant::NC_UL_VALID)
-	error_at(this->length_->location(), "invalid array length");
+	{
+	  if (!this->issued_length_error_)
+	    {
+	      error_at(this->length_->location(), "invalid array length");
+	      this->issued_length_error_ = true;
+	    }
+	}
       else
 	{
 	  char buf[50];
@@ -10221,7 +10233,12 @@ Type*
 Forward_declaration_type::real_type()
 {
   if (this->is_defined())
-    return this->named_object()->type_value();
+    {
+      Named_type* nt = this->named_object()->type_value();
+      if (!nt->is_valid())
+	return Type::make_error_type();
+      return this->named_object()->type_value();
+    }
   else
     {
       this->warn();
@@ -10233,7 +10250,12 @@ const Type*
 Forward_declaration_type::real_type() const
 {
   if (this->is_defined())
-    return this->named_object()->type_value();
+    {
+      const Named_type* nt = this->named_object()->type_value();
+      if (!nt->is_valid())
+	return Type::make_error_type();
+      return this->named_object()->type_value();
+    }
   else
     {
       this->warn();
