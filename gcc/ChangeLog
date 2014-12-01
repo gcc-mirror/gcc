@@ -1,3 +1,18 @@
+2014-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine.c (struct insn_link): New field `regno'.
+	(alloc_insn_link): New parameter `regno'.  Use it.
+	(find_single_use): Check the new field.
+	(can_combine_def_p, can_combine_use_p): New functions.  Split
+	off from ...
+	(create_log_links): ... here.  Correct data type of `regno'.
+	Adjust call to alloc_insn_link.
+	(adjust_for_new_dest): Find regno, use it in call to
+	alloc_insn_link.
+	(try_combine): Check reg_used_between_p when combining a PARALLEL
+	as earlier insn.  Adjust call to alloc_insn_link.
+	(distribute_links): Check the new field.
+
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854

@@ -328,6 +328,7 @@ static int *uid_insn_cost;
 
 struct insn_link {
   rtx_insn *insn;
+  unsigned int regno;
   struct insn_link *next;
 };
 
@@ -346,12 +347,13 @@ static struct obstack insn_link_obstack;
 /* Allocate a link.  */
 
 static inline struct insn_link *
-alloc_insn_link (rtx_insn *insn, struct insn_link *next)
+alloc_insn_link (rtx_insn *insn, unsigned int regno, struct insn_link *next)
 {
   struct insn_link *l
     = (struct insn_link *) obstack_alloc (&insn_link_obstack,
 					  sizeof (struct insn_link));
   l->insn = insn;
+  l->regno = regno;
   l->next = next;
   return l;
 }
@@ -686,7 +688,7 @@ find_single_use (rtx dest, rtx_insn *insn, rtx_insn **ploc)
     if (INSN_P (next) && dead_or_set_p (next, dest))
       {
 	FOR_EACH_LOG_LINK (link, next)
-	  if (link->insn == insn)
+	  if (link->insn == insn && link->regno == REGNO (dest))
 	    break;
 
 	if (link)
@@ -982,6 +984,43 @@ delete_noop_moves (void)
 }
 
 
+/* Return false if we do not want to (or cannot) combine DEF.  */
+static bool
+can_combine_def_p (df_ref def)
+{
+  /* Do not consider if it is pre/post modification in MEM.  */
+  if (DF_REF_FLAGS (def) & DF_REF_PRE_POST_MODIFY)
+    return false;
+
+  unsigned int regno = DF_REF_REGNO (def);
+
+  /* Do not combine frame pointer adjustments.  */
+  if ((regno == FRAME_POINTER_REGNUM
+       && (!reload_completed || frame_pointer_needed))
+#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
+      || (regno == HARD_FRAME_POINTER_REGNUM
+	  && (!reload_completed || frame_pointer_needed))
+#endif
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+      || (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
+#endif
+      )
+    return false;
+
+  return true;
+}
+
+/* Return false if we do not want to (or cannot) combine USE.  */
+static bool
+can_combine_use_p (df_ref use)
+{
+  /* Do not consider the usage of the stack pointer by function call.  */
+  if (DF_REF_FLAGS (use) & DF_REF_CALL_STACK_USAGE)
+    return false;
+
+  return true;
+}
+
 /* Fill in log links field for all insns.  */
 
 static void
@@ -1015,67 +1054,46 @@ create_log_links (void)
 
 	  FOR_EACH_INSN_DEF (def, insn)
             {
-              int regno = DF_REF_REGNO (def);
+              unsigned int regno = DF_REF_REGNO (def);
               rtx_insn *use_insn;
 
               if (!next_use[regno])
                 continue;
 
-              /* Do not consider if it is pre/post modification in MEM.  */
-              if (DF_REF_FLAGS (def) & DF_REF_PRE_POST_MODIFY)
-                continue;
+	      if (!can_combine_def_p (def))
+		continue;
 
-              /* Do not make the log link for frame pointer.  */
-              if ((regno == FRAME_POINTER_REGNUM
-                   && (! reload_completed || frame_pointer_needed))
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-                  || (regno == HARD_FRAME_POINTER_REGNUM
-                      && (! reload_completed || frame_pointer_needed))
-#endif
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-                  || (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
-#endif
-                  )
-                continue;
+	      use_insn = next_use[regno];
+	      next_use[regno] = NULL;
 
-              use_insn = next_use[regno];
-              if (BLOCK_FOR_INSN (use_insn) == bb)
-                {
-                  /* flow.c claimed:
+	      if (BLOCK_FOR_INSN (use_insn) != bb)
+		continue;
 
-                     We don't build a LOG_LINK for hard registers contained
-                     in ASM_OPERANDs.  If these registers get replaced,
-                     we might wind up changing the semantics of the insn,
-                     even if reload can make what appear to be valid
-                     assignments later.  */
-                  if (regno >= FIRST_PSEUDO_REGISTER
-                      || asm_noperands (PATTERN (use_insn)) < 0)
-		    {
-		      /* Don't add duplicate links between instructions.  */
-		      struct insn_link *links;
-		      FOR_EACH_LOG_LINK (links, use_insn)
-		        if (insn == links->insn)
-			  break;
+	      /* flow.c claimed:
 
-		      if (!links)
-			LOG_LINKS (use_insn)
-			  = alloc_insn_link (insn, LOG_LINKS (use_insn));
-		    }
-                }
-              next_use[regno] = NULL;
+		 We don't build a LOG_LINK for hard registers contained
+		 in ASM_OPERANDs.  If these registers get replaced,
+		 we might wind up changing the semantics of the insn,
+		 even if reload can make what appear to be valid
+		 assignments later.  */
+	      if (regno < FIRST_PSEUDO_REGISTER
+		  && asm_noperands (PATTERN (use_insn)) >= 0)
+		continue;
+
+	      /* Don't add duplicate links between instructions.  */
+	      struct insn_link *links;
+	      FOR_EACH_LOG_LINK (links, use_insn)
+	        if (insn == links->insn && regno == links->regno)
+		  break;
+
+	      if (!links)
+		LOG_LINKS (use_insn)
+		  = alloc_insn_link (insn, regno, LOG_LINKS (use_insn));
             }
 
 	  FOR_EACH_INSN_USE (use, insn)
-            {
-	      int regno = DF_REF_REGNO (use);
-
-              /* Do not consider the usage of the stack pointer
-		 by function call.  */
-              if (DF_REF_FLAGS (use) & DF_REF_CALL_STACK_USAGE)
-                continue;
-
-              next_use[regno] = insn;
-            }
+	    if (can_combine_use_p (use))
+	      next_use[DF_REF_REGNO (use)] = insn;
         }
     }
 
@@ -2347,7 +2365,19 @@ adjust_for_new_dest (rtx_insn *insn)
   /* The new insn will have a destination that was previously the destination
      of an insn just above it.  Call distribute_links to make a LOG_LINK from
      the next use of that destination.  */
-  distribute_links (alloc_insn_link (insn, NULL));
+
+  rtx set = single_set (insn);
+  gcc_assert (set);
+
+  rtx reg = SET_DEST (set);
+
+  while (GET_CODE (reg) == ZERO_EXTRACT
+	 || GET_CODE (reg) == STRICT_LOW_PART
+	 || GET_CODE (reg) == SUBREG)
+    reg = XEXP (reg, 0);
+  gcc_assert (REG_P (reg));
+
+  distribute_links (alloc_insn_link (insn, REGNO (reg), NULL));
 
   df_insn_rescan (insn);
 }
@@ -2759,7 +2789,9 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       && GET_CODE (XVECEXP (PATTERN (i2), 0, 1)) == SET
       && REG_P (SET_DEST (XVECEXP (PATTERN (i2), 0, 1)))
       && rtx_equal_p (XEXP (SET_SRC (XVECEXP (PATTERN (i2), 0, 0)), 0),
-		      SET_SRC (XVECEXP (PATTERN (i2), 0, 1))))
+		      SET_SRC (XVECEXP (PATTERN (i2), 0, 1)))
+      && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 0)), i2, i3)
+      && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 1)), i2, i3))
     {
       for (i = XVECLEN (PATTERN (i2), 0) - 1; i >= 2; i--)
 	if (GET_CODE (XVECEXP (PATTERN (i2), 0, i)) != CLOBBER)
@@ -2780,7 +2812,9 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 0));
 	  SUBST (XEXP (SET_SRC (PATTERN (i2)), 0),
 		 SET_DEST (PATTERN (i1)));
-	  SUBST_LINK (LOG_LINKS (i2), alloc_insn_link (i1, LOG_LINKS (i2)));
+	  unsigned int regno = REGNO (SET_DEST (PATTERN (i1)));
+	  SUBST_LINK (LOG_LINKS (i2),
+		      alloc_insn_link (i1, regno, LOG_LINKS (i2)));
 	}
     }
 #endif
@@ -13841,7 +13875,7 @@ distribute_links (struct insn_link *links)
 	  struct insn_link *link2;
 
 	  FOR_EACH_LOG_LINK (link2, place)
-	    if (link2->insn == link->insn)
+	    if (link2->insn == link->insn && link2->regno == link->regno)
 	      break;
 
 	  if (link2 == NULL)
