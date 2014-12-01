@@ -740,7 +740,7 @@ execute_cse_sincos_1 (tree name)
   tree fndecl, res, type;
   gimple def_stmt, use_stmt, stmt;
   int seen_cos = 0, seen_sin = 0, seen_cexpi = 0;
-  vec<gimple> stmts = vNULL;
+  auto_vec<gimple> stmts;
   basic_block top_bb = NULL;
   int i;
   bool cfg_changed = false;
@@ -773,10 +773,7 @@ execute_cse_sincos_1 (tree name)
     }
 
   if (seen_cos + seen_sin + seen_cexpi <= 1)
-    {
-      stmts.release ();
-      return false;
-    }
+    return false;
 
   /* Simply insert cexpi at the beginning of top_bb but not earlier than
      the name def statement.  */
@@ -834,8 +831,6 @@ execute_cse_sincos_1 (tree name)
 	if (gimple_purge_dead_eh_edges (gimple_bb (stmt)))
 	  cfg_changed = true;
     }
-
-  stmts.release ();
 
   return cfg_changed;
 }

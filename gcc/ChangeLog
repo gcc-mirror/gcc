@@ -1,3 +1,9 @@
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
+	* tree-ssa-math-opts.c (execute_cse_sincos_1): Fix a missing
+	release of stmts by converting it to an auto_vec.
+
 2014-12-01  Richard Biener  <rguenther@suse.de>
 
 	* Makefile.in (gimple-match.o-warn): Use -Wno-unused instead of
