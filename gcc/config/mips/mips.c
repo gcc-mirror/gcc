@@ -6942,6 +6942,17 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 	  /* "Save" $sp in itself so we don't use the fake CFA.
 	     This is: DW_CFA_val_expression r29, { DW_OP_reg29 }.  */
 	  fprintf (asm_out_file, "\t.cfi_escape 0x16,29,1,0x6d\n");
+
+	  /* Save the return address in $18.  The stub's caller knows
+	     that $18 might be clobbered, even though $18 is usually
+	     a call-saved register.
+
+	     Do it early on in case the last move to a floating-point
+	     register can be scheduled into the delay slot of the
+	     call we are about to make.  */
+	  fprintf (asm_out_file, "\tmove\t%s,%s\n",
+		   reg_names[GP_REG_FIRST + 18],
+		   reg_names[RETURN_ADDR_REGNUM]);
 	}
       else
 	{
@@ -6963,11 +6974,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 
       if (fp_ret_p)
 	{
-	  /* Save the return address in $18 and call the non-MIPS16 function.
-	     The stub's caller knows that $18 might be clobbered, even though
-	     $18 is usually a call-saved register.  */
-	  fprintf (asm_out_file, "\tmove\t%s,%s\n",
-		   reg_names[GP_REG_FIRST + 18], reg_names[RETURN_ADDR_REGNUM]);
+	  /* Now call the non-MIPS16 function.  */
 	  output_asm_insn (MIPS_CALL ("jal", &fn, 0, -1), &fn);
 	  fprintf (asm_out_file, "\t.cfi_register 31,18\n");
 

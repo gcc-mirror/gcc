@@ -1,3 +1,8 @@
+2014-12-01  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/mips/mips.c (mips16_build_call_stub): Move the save of
+	the return address in $18 ahead of passing arguments to FPRs.
+
 2014-12-01  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/64055
