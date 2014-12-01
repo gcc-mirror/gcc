@@ -84,6 +84,10 @@ Functions
          Function is defined by the client code and visible
          by name outside of the JIT.
 
+         This value is required if you want to extract machine code
+         for this function from a :type:`gcc_jit_result` via
+         :func:`gcc_jit_result_get_code`.
+
       .. macro::   GCC_JIT_FUNCTION_INTERNAL
 
          Function is defined by the client code, but is invisible

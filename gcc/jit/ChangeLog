@@ -1,5 +1,21 @@
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
+	* docs/examples/tut02-square.c (main): Release the context
+	earlier, to show that this is possible.  Update error-handling
+	to avoid a double-release of the context, and to avoid
+	releasing a NULL result.
+	* docs/intro/tutorial02.rst: Discuss gcc_jit_context_release.
+	* docs/topics/functions.rst (GCC_JIT_FUNCTION_EXPORTED): Emphasize
+	* docs/topics/results.rst (gcc_jit_result): Mention that this
+	controls the lifetimes of machine code functions.
+	(gcc_jit_result_get_code): Spell out the requirements for this
+	to succeed, and the lifetime of the result.
+	(gcc_jit_result_release): Mention that this invalidates any code
+	that was obtained from the result.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/64018
 	* docs/intro/tutorial02.rst: Spell out lifetime of generated code.
 	Add description of error-handling, taken in part from...

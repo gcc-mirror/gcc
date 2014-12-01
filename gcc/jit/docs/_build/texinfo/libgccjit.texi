@@ -630,6 +630,14 @@ result = gcc_jit_context_compile (ctxt);
 
 and get a @pxref{16,,gcc_jit_result *}.
 
+At this point we're done with the context; we can release it:
+
+@example
+gcc_jit_context_release (ctxt);
+@end example
+
+@noindent
+
 We can now use @pxref{17,,gcc_jit_result_get_code()} to look up a specific
 machine code routine within the result, in this case, the function we
 created above.
@@ -935,6 +943,10 @@ main (int argc, char **argv)
       goto error;
     @}
 
+  /* We're done with the context; we can release it: */
+  gcc_jit_context_release (ctxt);
+  ctxt = NULL;
+
   /* Extract the generated code from "result".  */
   void *fn_ptr = gcc_jit_result_get_code (result, "square");
   if (!fn_ptr)
@@ -948,8 +960,10 @@ main (int argc, char **argv)
   printf ("result: %d", square (5));
 
  error:
-  gcc_jit_context_release (ctxt);
-  gcc_jit_result_release (result);
+  if (ctxt)
+    gcc_jit_context_release (ctxt);
+  if (result)
+    gcc_jit_result_release (result);
   return 0;
 @}
 
@@ -5877,6 +5891,10 @@ values:
 
 Function is defined by the client code and visible
 by name outside of the JIT.
+
+This value is required if you want to extract machine code
+for this function from a @pxref{16,,gcc_jit_result} via
+@pxref{17,,gcc_jit_result_get_code()}.
 @end deffn
 
 @geindex GCC_JIT_FUNCTION_INTERNAL (C macro)
@@ -6251,7 +6269,9 @@ file, giving you @emph{something} you can step through in the debugger.
 @anchor{topics/results gcc_jit_result}@anchor{16}
 @deffn {C Type} gcc_jit_result
 
-A @cite{gcc_jit_result} encapsulates the result of compiling a context.
+A @cite{gcc_jit_result} encapsulates the result of compiling a context,
+and the lifetimes of any machine code functions that are
+returned.
 @end deffn
 
 @geindex gcc_jit_context_compile (C function)
@@ -6267,8 +6287,38 @@ This calls into GCC and builds the code, returning a
 @deffn {C Function} void *           gcc_jit_result_get_code (gcc_jit_result@w{ }*result, const char@w{ }*funcname)
 
 Locate a given function within the built machine code.
-This will need to be cast to a function pointer of the
-correct type before it can be called.
+
+Functions are looked up by name.  For this to succeed, a function
+with a name matching @cite{funcname} must have been created on
+@cite{result}'s context (or a parent context) via a call to
+@pxref{11,,gcc_jit_context_new_function()} with @cite{kind}
+@pxref{ac,,GCC_JIT_FUNCTION_EXPORTED}:
+
+@example
+gcc_jit_context_new_function (ctxt,
+                              any_location, /* or NULL */
+                              /* Required for func to be visible to
+                                 gcc_jit_result_get_code: */
+                              GCC_JIT_FUNCTION_EXPORTED,
+                              any_return_type,
+                              /* Must string-compare equal: */
+                              funcname,
+                              /* etc */);
+@end example
+
+@noindent
+
+If such a function is not found (or @cite{result} or @cite{funcname} are
+@code{NULL}), an error message will be emitted on stderr and
+@code{NULL} will be returned.
+
+If the function is found, the result will need to be cast to a
+function pointer of the correct type before it can be called.
+
+Note that the resulting machine code becomes invalid after
+@pxref{39,,gcc_jit_result_release()} is called on the
+@cite{gcc_jit_result *}; attempting to call it after that may lead
+to a segmentation fault.
 @end deffn
 
 @geindex gcc_jit_result_release (C function)
@@ -6277,7 +6327,8 @@ correct type before it can be called.
 
 Once we're done with the code, this unloads the built .so file.
 This cleans up the result; after calling this, it's no longer
-valid to use the result.
+valid to use the result, or any code that was obtained by calling
+@pxref{17,,gcc_jit_result_get_code()} on it.
 @end deffn
 
 @c Copyright (C) 2014 Free Software Foundation, Inc.
