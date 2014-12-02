@@ -1,3 +1,9 @@
+2014-12-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/63718
+	* config/arm/arm.c (arm_option_override): Disable fuse-caller-save for
+	Thumb1.
+
 2014-12-02  Richard Biener  <rguenther@suse.de>
 
 	* match.pd: When combining divisions exclude the degenerate
