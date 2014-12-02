@@ -128,7 +128,8 @@ GLIBCXX_3.4 {
       std::messages*;
       std::money*;
 #     std::n[^u]*;
-      std::n[^aue]*;
+      std::n[^aueo]*;
+      std::nothrow;
       std::nu[^m]*;
       std::num[^e]*;
       std::ostrstream*;
@@ -1499,6 +1500,11 @@ GLIBCXX_3.4.21 {
 
     # std::_Sp_locker::*
     _ZNSt10_Sp_locker[CD]*;
+
+    # std::notify_all_at_thread_exit
+    _ZSt25notify_all_at_thread_exitRSt18condition_variableSt11unique_lockISt5mutexE;
+    # std::__future_base::_State_baseV2::_Make_ready::_M_set()
+    _ZNSt13__future_base13_State_baseV211_Make_ready6_M_setEv;
 
 } GLIBCXX_3.4.20;
 

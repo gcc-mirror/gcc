@@ -170,6 +170,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
   };
 
+  void
+  notify_all_at_thread_exit(condition_variable&, unique_lock<mutex>);
+
+  struct __at_thread_exit_elt
+  {
+    __at_thread_exit_elt* _M_next;
+    void (*_M_cb)(void*);
+  };
+
   inline namespace _V2 {
 
   /// condition_variable_any
