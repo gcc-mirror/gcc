@@ -1,3 +1,12 @@
+2014-12-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx512ifma-vpmaddhuq-2.c: Define AVX512IFMA.
+	* gcc.target/i386/avx512ifma-vpmaddluq-2.c: Ditto.
+	* gcc.target/i386/avx512vbmi-vpermb-2.c: Define AVX512VBMI.
+	* gcc.target/i386/avx512vbmi-vpermi2b-2.c: Ditto.
+	* gcc.target/i386/avx512vbmi-vpermt2b-2.c: Ditto.
+	* gcc.target/i386/avx512vbmi-vpmultishiftqb-2.c: Ditto.
+
 2014-12-02  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-shift1.C: New test.
