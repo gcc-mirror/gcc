@@ -1,3 +1,8 @@
+2014-12-02  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: When combining divisions exclude the degenerate
+	case involving INT_MIN from overflow handling.
+
 2014-12-02  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* ira-costs.c (scan_one_insn): Improve spill cost adjustment.
