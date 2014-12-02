@@ -1,3 +1,9 @@
+2014-12-02  Marek Polacek  <polacek@redhat.com>
+
+	* constexpr.c (cxx_eval_check_shift_p): New function.
+	(cxx_eval_binary_expression): Call it.  Set NON_CONSTANT_P if it
+	returns true.
+
 2014-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60859
