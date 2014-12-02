@@ -140,7 +140,9 @@ along with GCC; see the file COPYING3.  If not see
    }
    (if (!overflow_p)
     (div @0 { wide_int_to_tree (type, mul); }))
-   (if (overflow_p)
+   (if (overflow_p
+        && (TYPE_UNSIGNED (type)
+	    || mul != wi::min_value (TYPE_PRECISION (type), SIGNED)))
     { build_zero_cst (type); }))))
 
 /* Optimize A / A to 1.0 if we don't care about
