@@ -310,6 +310,8 @@ diagnostic_show_locus (diagnostic_context * context,
 
   context->last_location = diagnostic->location;
   s = expand_location_to_spelling_point (diagnostic->location);
+  if (diagnostic->override_column)
+    s.column = diagnostic->override_column;
   line = location_get_source_line (s, &line_width);
   if (line == NULL || s.column > line_width)
     return;

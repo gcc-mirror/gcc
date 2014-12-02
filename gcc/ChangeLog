@@ -1,3 +1,8 @@
+2014-12-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* diagnostic.c (diagnostic_show_locus): Honor override_column when
+	placing the caret.
+
 2014-12-02  Dmitry Vyukov  <dvyukov@google.com>
 
 	* asan.c: (asan_finish_file): Use default priority for constructors
