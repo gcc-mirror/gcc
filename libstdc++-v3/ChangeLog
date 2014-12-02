@@ -31,6 +31,10 @@
 	* testsuite/30_threads/packaged_task/members/at_thread_exit.cc: New.
 	* testsuite/30_threads/promise/members/at_thread_exit.cc: New.
 
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* doc/xml/manual/status_cxx2014.xml: Update.
+	* doc/html/manual/status.html: Regenerate.
+
 2014-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/63840
