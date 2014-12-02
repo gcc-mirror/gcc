@@ -2701,7 +2701,7 @@ void gfc_pop_error (gfc_error_buf *);
 void gfc_free_error (gfc_error_buf *);
 
 void gfc_get_errors (int *, int *);
-void gfc_errors_to_warnings (int);
+void gfc_errors_to_warnings (bool);
 
 /* arith.c */
 void gfc_arith_init_1 (void);
