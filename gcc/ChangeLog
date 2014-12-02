@@ -1,3 +1,8 @@
+2014-12-02  Dmitry Vyukov  <dvyukov@google.com>
+
+	* asan.c: (asan_finish_file): Use default priority for constructors
+	in kernel mode.
+
 2014-12-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR target/64115
