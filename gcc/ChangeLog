@@ -1,4 +1,19 @@
 2014-12-02  Richard Biener  <rguenther@suse.de>
+	Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* genmatch.c: Include hash-set.h.
+	(fatal_at): Add source_location overload.
+	(parser::record_operlist): New method.
+	(parser::push_simplify): Likewise.
+	(parser::oper_lists_set): New member.
+	(parser::oper_lists): Likewise.
+	(parser::parse_operation): Record seen operator list references.
+	(parser::parse_c_expr): Likewise.
+	(parser::parse_simplify): Init oper_lists_set and oper_lists
+	and use push_simplify.
+	(parser::parser): Init oper_lists_set and oper_lists.
+
+2014-12-02  Richard Biener  <rguenther@suse.de>
 
 	* match.pd: Restrict division combining to trunc_div and
 	exact_div.
