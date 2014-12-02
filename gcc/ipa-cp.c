@@ -2779,17 +2779,31 @@ get_clone_agg_value (struct cgraph_node *node, HOST_WIDE_INT offset,
   return NULL_TREE;
 }
 
-/* Return true if edge CS does bring about the value described by SRC.  */
+/* Return true is NODE is DEST or its clone for all contexts.  */
 
 static bool
-cgraph_edge_brings_value_p (struct cgraph_edge *cs,
-			    ipcp_value_source<tree> *src)
+same_node_or_its_all_contexts_clone_p (cgraph_node *node, cgraph_node *dest)
+{
+  if (node == dest)
+    return true;
+
+  struct ipa_node_params *info = IPA_NODE_REF (node);
+  return info->is_all_contexts_clone && info->ipcp_orig_node == dest;
+}
+
+/* Return true if edge CS does bring about the value described by SRC to node
+   DEST or its clone for all contexts.  */
+
+static bool
+cgraph_edge_brings_value_p (cgraph_edge *cs, ipcp_value_source<tree> *src,
+			    cgraph_node *dest)
 {
   struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
-  cgraph_node *real_dest = cs->callee->function_symbol ();
-  struct ipa_node_params *dst_info = IPA_NODE_REF (real_dest);
+  enum availability availability;
+  cgraph_node *real_dest = cs->callee->function_symbol (&availability);
 
-  if ((dst_info->ipcp_orig_node && !dst_info->is_all_contexts_clone)
+  if (!same_node_or_its_all_contexts_clone_p (real_dest, dest)
+      || availability <= AVAIL_INTERPOSABLE
       || caller_info->node_dead)
     return false;
   if (!src->val)
@@ -2828,18 +2842,18 @@ cgraph_edge_brings_value_p (struct cgraph_edge *cs,
     }
 }
 
-/* Return true if edge CS does bring about the value described by SRC.  */
+/* Return true if edge CS does bring about the value described by SRC to node
+   DEST or its clone for all contexts.  */
 
 static bool
-cgraph_edge_brings_value_p (struct cgraph_edge *cs,
-			    ipcp_value_source<ipa_polymorphic_call_context>
-			    *src)
+cgraph_edge_brings_value_p (cgraph_edge *cs,
+			    ipcp_value_source<ipa_polymorphic_call_context> *src,
+			    cgraph_node *dest)
 {
   struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
   cgraph_node *real_dest = cs->callee->function_symbol ();
-  struct ipa_node_params *dst_info = IPA_NODE_REF (real_dest);
 
-  if ((dst_info->ipcp_orig_node && !dst_info->is_all_contexts_clone)
+  if (!same_node_or_its_all_contexts_clone_p (real_dest, dest)
       || caller_info->node_dead)
     return false;
   if (!src->val)
@@ -2865,13 +2879,14 @@ get_next_cgraph_edge_clone (struct cgraph_edge *cs)
   return next_edge_clone[cs->uid];
 }
 
-/* Given VAL, iterate over all its sources and if they still hold, add their
-   edge frequency and their number into *FREQUENCY and *CALLER_COUNT
-   respectively.  */
+/* Given VAL that is intended for DEST, iterate over all its sources and if
+   they still hold, add their edge frequency and their number into *FREQUENCY
+   and *CALLER_COUNT respectively.  */
 
 template <typename valtype>
 static bool
-get_info_about_necessary_edges (ipcp_value<valtype> *val, int *freq_sum,
+get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
+				int *freq_sum,
 				gcov_type *count_sum, int *caller_count)
 {
   ipcp_value_source<valtype> *src;
@@ -2884,7 +2899,7 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, int *freq_sum,
       struct cgraph_edge *cs = src->cs;
       while (cs)
 	{
-	  if (cgraph_edge_brings_value_p (cs, src))
+	  if (cgraph_edge_brings_value_p (cs, src, dest))
 	    {
 	      count++;
 	      freq += cs->frequency;
@@ -2901,12 +2916,13 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, int *freq_sum,
   return hot;
 }
 
-/* Return a vector of incoming edges that do bring value VAL.  It is assumed
-   their number is known and equal to CALLER_COUNT.  */
+/* Return a vector of incoming edges that do bring value VAL to node DEST.  It
+   is assumed their number is known and equal to CALLER_COUNT.  */
 
 template <typename valtype>
 static vec<cgraph_edge *>
-gather_edges_for_value (ipcp_value<valtype> *val, int caller_count)
+gather_edges_for_value (ipcp_value<valtype> *val, cgraph_node *dest,
+			int caller_count)
 {
   ipcp_value_source<valtype> *src;
   vec<cgraph_edge *> ret;
@@ -2917,7 +2933,7 @@ gather_edges_for_value (ipcp_value<valtype> *val, int caller_count)
       struct cgraph_edge *cs = src->cs;
       while (cs)
 	{
-	  if (cgraph_edge_brings_value_p (cs, src))
+	  if (cgraph_edge_brings_value_p (cs, src, dest))
 	    ret.quick_push (cs);
 	  cs = get_next_cgraph_edge_clone (cs);
 	}
@@ -3778,27 +3794,20 @@ perhaps_add_new_callers (cgraph_node *node, ipcp_value<valtype> *val)
       struct cgraph_edge *cs = src->cs;
       while (cs)
 	{
-	  enum availability availability;
-	  struct cgraph_node *dst = cs->callee->function_symbol (&availability);
-	  if ((dst == node || IPA_NODE_REF (dst)->is_all_contexts_clone)
-	      && availability > AVAIL_INTERPOSABLE
-	      && cgraph_edge_brings_value_p (cs, src))
+	  if (cgraph_edge_brings_value_p (cs, src, node)
+	      && cgraph_edge_brings_all_scalars_for_node (cs, val->spec_node)
+	      && cgraph_edge_brings_all_agg_vals_for_node (cs, val->spec_node))
 	    {
-	      if (cgraph_edge_brings_all_scalars_for_node (cs, val->spec_node)
-		  && cgraph_edge_brings_all_agg_vals_for_node (cs,
-							       val->spec_node))
-		{
-		  if (dump_file)
-		    fprintf (dump_file, " - adding an extra caller %s/%i"
-			     " of %s/%i\n",
-			     xstrdup (cs->caller->name ()),
-			     cs->caller->order,
-			     xstrdup (val->spec_node->name ()),
-			     val->spec_node->order);
+	      if (dump_file)
+		fprintf (dump_file, " - adding an extra caller %s/%i"
+			 " of %s/%i\n",
+			 xstrdup (cs->caller->name ()),
+			 cs->caller->order,
+			 xstrdup (val->spec_node->name ()),
+			 val->spec_node->order);
 
-		  cs->redirect_callee (val->spec_node);
-		  redirected_sum += cs->count;
-		}
+	      cs->redirect_callee (val->spec_node);
+	      redirected_sum += cs->count;
 	    }
 	  cs = get_next_cgraph_edge_clone (cs);
 	}
@@ -3923,7 +3932,7 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
 		 val->local_size_cost + overall_size);
       return false;
     }
-  else if (!get_info_about_necessary_edges (val, &freq_sum, &count_sum,
+  else if (!get_info_about_necessary_edges (val, node, &freq_sum, &count_sum,
 					    &caller_count))
     return false;
 
@@ -3953,7 +3962,7 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
     fprintf (dump_file, "  Creating a specialized node of %s/%i.\n",
 	     node->name (), node->order);
 
-  callers = gather_edges_for_value (val, caller_count);
+  callers = gather_edges_for_value (val, node, caller_count);
   if (offset == -1)
     modify_known_vectors_with_val (&known_csts, &known_contexts, val, index);
   else

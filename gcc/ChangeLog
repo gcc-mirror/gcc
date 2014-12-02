@@ -1,3 +1,16 @@
+2014-12-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/63814
+	* ipa-cp.c (same_node_or_its_all_contexts_clone_p): New function.
+	(cgraph_edge_brings_value_p): New parameter dest, use
+	same_node_or_its_all_contexts_clone_p and check availability.
+	(cgraph_edge_brings_value_p): Likewise.
+	(get_info_about_necessary_edges): New parameter dest, pass it to
+	cgraph_edge_brings_value_p.  Update caller.
+	(gather_edges_for_value): Likewise.
+	(perhaps_add_new_callers): Use cgraph_edge_brings_value_p to check
+	both the destination and availability.
+
 2014-12-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/64113
