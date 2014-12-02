@@ -1,3 +1,17 @@
+2014-12-02  Matthias Klose  <doko@ubuntu.com>
+
+	PR libstdc++/64103
+	Backport from mainline
+	2014-11-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/parallel/algo.h: Do not use default arguments in function
+	template redeclarations (definitions).
+
+	2014-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/parallel/numeric.h: Do not use default arguments in function
+	template redeclarations (definitions).
+
 2014-11-28  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/63497
