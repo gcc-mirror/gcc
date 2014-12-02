@@ -330,7 +330,7 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 
       if (MAIN_FILE_P (map - 1))
 	{
-	  /* So this _should_ means we are leaving the main file --
+	  /* So this _should_ mean we are leaving the main file --
 	     effectively ending the compilation unit. But to_file not
 	     being NULL means the caller thinks we are leaving to
 	     another file. This is an erroneous behaviour but we'll
