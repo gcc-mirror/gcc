@@ -1,5 +1,10 @@
 2014-12-02  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	* include/line-map.h (linemap_assert_fails): Declare.
+	* line-map.c (linemap_position_for_loc_and_offset): Use it.
+
+2014-12-02  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
         * line-map.c (linemap_add): Fix typo.
         (linemap_line_start): Fix whitespace.
 
