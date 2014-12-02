@@ -3597,7 +3597,7 @@ mep_gimplify_va_arg_expr (tree valist, tree type,
 
   label_sover = create_artificial_label (UNKNOWN_LOCATION);
   label_selse = create_artificial_label (UNKNOWN_LOCATION);
-  res_addr = create_tmp_var (ptr_type_node, NULL);
+  res_addr = create_tmp_var (ptr_type_node);
 
   tmp = build2 (GE_EXPR, boolean_type_node, next_gp,
 		unshare_expr (next_gp_limit));

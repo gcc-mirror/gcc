@@ -9885,7 +9885,7 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
        __ieee_set_fp_control (masked_fenv);  */
 
-  fenv_var = create_tmp_var (long_unsigned_type_node, NULL);
+  fenv_var = create_tmp_var (long_unsigned_type_node);
   get_fpscr
     = build_fn_decl ("__ieee_get_fp_control",
 		     build_function_type_list (long_unsigned_type_node, NULL));
@@ -9914,7 +9914,7 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
        __atomic_feraiseexcept (new_fenv_var);  */
 
-  new_fenv_var = create_tmp_var (long_unsigned_type_node, NULL);
+  new_fenv_var = create_tmp_var (long_unsigned_type_node);
   reload_fenv = build2 (MODIFY_EXPR, long_unsigned_type_node, new_fenv_var,
 			build_call_expr (get_fpscr, 0));
   restore_fnenv = build_call_expr (set_fpscr, 1, fenv_var);
