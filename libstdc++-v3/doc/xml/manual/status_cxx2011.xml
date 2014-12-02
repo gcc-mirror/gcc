@@ -2434,11 +2434,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.5</entry>
       <entry>Condition variables</entry>
-      <entry>Partial</entry>
-      <entry>Missing notify_all_at_thread_exit</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>30.5.1</entry>
@@ -2483,11 +2482,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.6.5</entry>
       <entry>Class template <code>promise</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing set_*_at_thread_exit</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>30.6.6</entry>
@@ -2508,11 +2506,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.6.9</entry>
       <entry>Class template <code>packaged_task</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing make_ready_at_thread_exit</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>

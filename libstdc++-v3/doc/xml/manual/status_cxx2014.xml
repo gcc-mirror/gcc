@@ -283,18 +283,6 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3783.pdf">
-	  N3783
-	</link>
-      </entry>
-      <entry>Network byte order conversion</entry>
-      <entry>N</entry>
-      <entry>Library Fundamentals TS</entry>
-    </row>
-
-    <row>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3793.html">
 	  N3793
@@ -397,14 +385,13 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8C8B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3932.htm">
 	  N3932
 	</link>
       </entry>
       <entry>Variable Templates For Type Traits</entry>
-      <entry>Partial</entry>
+      <entry>Y</entry>
       <entry>Library Fundamentals TS</entry>
     </row>
 
