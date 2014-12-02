@@ -1,3 +1,36 @@
+2014-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Add new exports.
+	* include/std/condition_variable (notify_all_at_thread_exit): Declare.
+	(__at_thread_exit_elt): New base class.
+	* include/std/future: Add comments documenting the implementation.
+	(__future_base::_State_baseV2::_State_baseV2()): Use brace-or-equal
+	initializers and define constructor as defaulted.
+	(__future_base::_State_baseV2::_M_ready): Replace member function
+	with member variable.
+	(__future_base::_State_baseV2::_M_set_result): Set _M_ready.
+	(__future_base::_State_baseV2::_M_set_delayed_result): Define.
+	(__future_base::_State_baseV2::_M_break_promise): Set _M_ready.
+	(__future_base::_State_baseV2::_Make_ready): New helper class.
+	(__future_base::_Deferred_state::_M_has_deferred): Remove requirement
+	for caller to own mutex.
+	(__future_base::_Async_state_impl::~_Async_state_impl): Call join
+	directly.
+	(__future_base::_Task_state_base::_M_run): Take arguments by
+	reference.
+	(__future_base::_Task_state_base::_M_run_delayed): Declare new pure
+	virtual function.
+	(__future_base::_Task_state::_M_run_delayed): Define override.
+	(promise::set_value_at_thread_exit): Define.
+	(promise::set_exception_at_thread_exit): Define.
+	(packaged_task::make_ready_at_thread_exit): Define.
+	* src/c++11/condition_variable.cc (notify_all_at_thread_exit): Define.
+	* src/c++11/future.cc
+	(__future_base::_State_baseV2::_Make_ready::_M_set): Define.
+	* testsuite/30_threads/condition_variable/members/3.cc: New.
+	* testsuite/30_threads/packaged_task/members/at_thread_exit.cc: New.
+	* testsuite/30_threads/promise/members/at_thread_exit.cc: New.
+
 2014-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/63840
