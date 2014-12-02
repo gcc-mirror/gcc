@@ -1,3 +1,9 @@
+2014-12-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/64108
+	* config/i386/i386.c (decide_alg): Stop only if there aren't
+	any usable algorithms.
+
 2014-12-02  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/63718

@@ -1,3 +1,8 @@
+2014-12-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/64108
+	* gcc.target/i386/memset-strategy-2.c: New test.
+
 2014-12-02  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/torture/20141202-1.c: New testcase.
