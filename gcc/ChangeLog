@@ -1,3 +1,9 @@
+2014-12-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR target/64115
+	* config/rs6000/rs6000.c (rs6000_delegitimize_address): Remove
+	invalid UNSPEC_TOCREL sanity check under ENABLE_CHECKING.
+
 2014-12-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64111
