@@ -1,3 +1,10 @@
+2014-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/64137
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Check
+	proper expressions type, use proper type for computing
+	-Huge - 1.
+
 2014-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-openmp.c (gfc_omp_finish_clause,
