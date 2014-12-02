@@ -1348,7 +1348,9 @@ asan_protect_global (tree decl)
 	 the var that is selected by the linker will have
 	 padding or not.  */
       || DECL_ONE_ONLY (decl)
-      /* Similarly for common vars.  People can use -fno-common.  */
+      /* Similarly for common vars.  People can use -fno-common.
+	 Note: Linux kernel is built with -fno-common, so we do instrument
+	 globals there even if it is C.  */
       || (DECL_COMMON (decl) && TREE_PUBLIC (decl))
       /* Don't protect if using user section, often vars placed
 	 into user section from multiple TUs are then assumed
@@ -2448,6 +2450,13 @@ asan_finish_file (void)
      nor after .LASAN* array.  */
   flag_sanitize &= ~SANITIZE_ADDRESS;
 
+  /* For user-space we want asan constructors to run first.
+     Linux kernel does not support priorities other than default, and the only
+     other user of constructors is coverage. So we run with the default
+     priority.  */
+  int priority = flag_sanitize & SANITIZE_USER_ADDRESS
+                 ? MAX_RESERVED_INIT_PRIORITY - 1 : DEFAULT_INIT_PRIORITY;
+
   if (flag_sanitize & SANITIZE_USER_ADDRESS)
     {
       tree fn = builtin_decl_implicit (BUILT_IN_ASAN_INIT);
@@ -2503,12 +2512,10 @@ asan_finish_file (void)
 						 build_fold_addr_expr (var),
 						 gcount_tree),
 				&dtor_statements);
-      cgraph_build_static_cdtor ('D', dtor_statements,
-				 MAX_RESERVED_INIT_PRIORITY - 1);
+      cgraph_build_static_cdtor ('D', dtor_statements, priority);
     }
   if (asan_ctor_statements)
-    cgraph_build_static_cdtor ('I', asan_ctor_statements,
-			       MAX_RESERVED_INIT_PRIORITY - 1);
+    cgraph_build_static_cdtor ('I', asan_ctor_statements, priority);
   flag_sanitize |= SANITIZE_ADDRESS;
 }
 
