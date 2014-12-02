@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "hash-table.h"
 #include "hash-map.h"
+#include "hash-set.h"
 #include "vec.h"
 #include "is-a.h"
 
@@ -102,6 +103,18 @@ fatal_at (const cpp_token *tk, const char *msg, ...)
   va_list ap;
   va_start (ap, msg);
   error_cb (NULL, CPP_DL_FATAL, 0, tk->src_loc, 0, msg, &ap);
+  va_end (ap);
+}
+
+static void
+#if GCC_VERSION >= 4001
+__attribute__((format (printf, 2, 3)))
+#endif
+fatal_at (source_location loc, const char *msg, ...)
+{
+  va_list ap;
+  va_start (ap, msg);
+  error_cb (NULL, CPP_DL_FATAL, 0, loc, 0, msg, &ap);
   va_end (ap);
 }
 
@@ -2704,7 +2717,11 @@ private:
   c_expr *parse_c_expr (cpp_ttype);
   operand *parse_op ();
 
+  void record_operlist (source_location, user_id *);
+
   void parse_pattern ();
+  void push_simplify (vec<simplify *>&, operand *, source_location,
+		      operand *, source_location);
   void parse_simplify (source_location, vec<simplify *>&, predicate_id *,
 		       expr *);
   void parse_for (source_location);
@@ -2715,6 +2732,8 @@ private:
   cpp_reader *r;
   vec<if_or_with> active_ifs;
   vec<vec<user_id *> > active_fors;
+  hash_set<user_id *> *oper_lists_set;
+  vec<user_id *> oper_lists;
 
   cid_map_t *capture_ids;
 
@@ -2845,6 +2864,21 @@ parser::get_number ()
 }
 
 
+/* Record an operator-list use for transparent for handling.  */
+
+void
+parser::record_operlist (source_location loc, user_id *p)
+{
+  if (!oper_lists_set->add (p))
+    {
+      if (!oper_lists.is_empty ()
+	  && oper_lists[0]->substitutes.length () != p->substitutes.length ())
+	fatal_at (loc, "User-defined operator list does not have the "
+		  "same number of entries as others used in the pattern");
+      oper_lists.safe_push (p);
+    }
+}
+
 /* Parse the operator ID, special-casing convert?, convert1? and
    convert2?  */
 
@@ -2882,8 +2916,7 @@ parser::parse_operation ()
 
   user_id *p = dyn_cast<user_id *> (op);
   if (p && p->is_oper_list)
-    fatal_at (id_tok, "operator-list not allowed in expression");
-
+    record_operlist (id_tok->src_loc, p);
   return op;
 }
 
@@ -3020,8 +3053,13 @@ parser::parse_c_expr (cpp_ttype start)
 
       /* If this is possibly a user-defined identifier mark it used.  */
       if (token->type == CPP_NAME)
-	get_operator ((const char *)CPP_HASHNODE
-		        (token->val.node.node)->ident.str);
+	{
+	  id_base *idb = get_operator ((const char *)CPP_HASHNODE
+				      (token->val.node.node)->ident.str);
+	  user_id *p;
+	  if (idb && (p = dyn_cast<user_id *> (idb)) && p->is_oper_list)
+	    record_operlist (token->src_loc, p);
+	}
 
       /* Record the token.  */
       code.safe_push (*token);
@@ -3097,6 +3135,26 @@ parser::parse_op ()
   return op;
 }
 
+/* Create a new simplify from the current parsing state and MATCH,
+   MATCH_LOC, RESULT and RESULT_LOC and push it to SIMPLIFIERS.  */
+
+void
+parser::push_simplify (vec<simplify *>& simplifiers,
+		       operand *match, source_location match_loc,
+		       operand *result, source_location result_loc)
+{
+  /* Build and push a temporary for for operator list uses in expressions.  */
+  if (!oper_lists.is_empty ())
+    active_fors.safe_push (oper_lists);
+
+  simplifiers.safe_push
+    (new simplify (match, match_loc, result, result_loc,
+		   active_ifs.copy (), active_fors.copy (), capture_ids));
+
+  if (!oper_lists.is_empty ())
+    active_fors.pop ();
+}
+
 /* Parse
      simplify = 'simplify' <expr> <result-op>
    or
@@ -3114,6 +3172,10 @@ parser::parse_simplify (source_location match_location,
 {
   /* Reset the capture map.  */
   capture_ids = new cid_map_t;
+  /* Reset oper_lists and set.  */
+  hash_set <user_id *> olist;
+  oper_lists_set = &olist;
+  oper_lists = vNULL;
 
   const cpp_token *loc = peek ();
   parsing_match_operand = true;
@@ -3133,10 +3195,8 @@ parser::parse_simplify (source_location match_location,
     {
       if (!matcher)
 	fatal_at (token, "expected transform expression");
-      simplifiers.safe_push
-	(new simplify (match, match_location, result, token->src_loc,
-		       active_ifs.copy (), active_fors.copy (),
-		       capture_ids));
+      push_simplify (simplifiers, match, match_location,
+		     result, token->src_loc);
       return;
     }
 
@@ -3159,10 +3219,8 @@ parser::parse_simplify (source_location match_location,
 		{
 		  if (!matcher)
 		    fatal_at (token, "manual transform not implemented");
-		  simplifiers.safe_push
-		      (new simplify (match, match_location, result,
-				     paren_loc, active_ifs.copy (),
-				     active_fors.copy (), capture_ids));
+		  push_simplify (simplifiers, match, match_location,
+				 result, paren_loc);
 		}
 	    }
 	  else if (peek_ident ("with"))
@@ -3178,10 +3236,8 @@ parser::parse_simplify (source_location match_location,
 	      operand *op = result;
 	      if (!matcher)
 		op = parse_expr ();
-	      simplifiers.safe_push
-		  (new simplify (match, match_location, op,
-				 token->src_loc, active_ifs.copy (),
-				 active_fors.copy (), capture_ids));
+	      push_simplify (simplifiers, match, match_location,
+			     op, token->src_loc);
 	      eat_token (CPP_CLOSE_PAREN);
 	      /* A "default" result closes the enclosing scope.  */
 	      if (active_ifs.length () > active_ifs_len)
@@ -3209,11 +3265,8 @@ parser::parse_simplify (source_location match_location,
 	{
 	  if (matcher)
 	    fatal_at (token, "expected match operand expression");
-	  simplifiers.safe_push
-	      (new simplify (match, match_location,
-			     matcher ? result : parse_op (),
-			     token->src_loc, active_ifs.copy (),
-			     active_fors.copy (), capture_ids));
+	  push_simplify (simplifiers, match, match_location,
+			 matcher ? result : parse_op (), token->src_loc);
 	  /* A "default" result closes the enclosing scope.  */
 	  if (active_ifs.length () > active_ifs_len)
 	    {
@@ -3507,6 +3560,8 @@ parser::parser (cpp_reader *r_)
   active_ifs = vNULL;
   active_fors = vNULL;
   simplifiers = vNULL;
+  oper_lists_set = NULL;
+  oper_lists = vNULL;
   user_predicates = vNULL;
   parsing_match_operand = false;
 
