@@ -1,3 +1,7 @@
+2014-12-02  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* ira-costs.c (scan_one_insn): Improve spill cost adjustment.
+
 2014-12-02  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/63814
