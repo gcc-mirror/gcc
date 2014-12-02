@@ -1,3 +1,8 @@
+2014-12-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR ipa/63814
+	* g++.dg/ipa/pr63814.C: New test.
+
 2014-12-02  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* gcc.target/aarch64/remat1.c: New testcase.
