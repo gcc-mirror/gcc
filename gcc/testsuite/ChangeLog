@@ -1,3 +1,9 @@
+2014-12-02  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-shift1.C: New test.
+	* g++.dg/cpp1y/constexpr-shift1.C: New test.
+	* g++.dg/ubsan/pr63956.C: Add dg-errors.
+
 2014-12-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/64108

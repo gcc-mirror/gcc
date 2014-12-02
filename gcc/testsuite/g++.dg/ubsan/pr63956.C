@@ -14,11 +14,11 @@ fn1 (int a, int b)
 }
 
 constexpr int i1 = fn1 (5, 3);
-constexpr int i2 = fn1 (5, -2);
-constexpr int i3 = fn1 (5, sizeof (int) * __CHAR_BIT__);
-constexpr int i4 = fn1 (5, 256);
+constexpr int i2 = fn1 (5, -2); // { dg-error "is negative" }
+constexpr int i3 = fn1 (5, sizeof (int) * __CHAR_BIT__); // { dg-error "is >= than the precision of the left operand" }
+constexpr int i4 = fn1 (5, 256); // { dg-error "is >= than the precision of the left operand" }
 constexpr int i5 = fn1 (5, 2);
-constexpr int i6 = fn1 (-2, 4);
+constexpr int i6 = fn1 (-2, 4); // { dg-error "is negative" }
 constexpr int i7 = fn1 (0, 2);
 
 SA (i1 == 40);
@@ -34,9 +34,9 @@ fn2 (int a, int b)
 }
 
 constexpr int j1 = fn2 (4, 1);
-constexpr int j2 = fn2 (4, -1);
-constexpr int j3 = fn2 (10, sizeof (int) * __CHAR_BIT__);
-constexpr int j4 = fn2 (1, 256);
+constexpr int j2 = fn2 (4, -1); // { dg-error "is negative" }
+constexpr int j3 = fn2 (10, sizeof (int) * __CHAR_BIT__); // { dg-error "is >= than the precision of the left operand" }
+constexpr int j4 = fn2 (1, 256); // { dg-error "is >= than the precision of the left operand" }
 constexpr int j5 = fn2 (5, 2);
 constexpr int j6 = fn2 (-2, 4);
 constexpr int j7 = fn2 (0, 4);
