@@ -1462,12 +1462,11 @@ scan_one_insn (rtx_insn *insn)
       && ((MEM_P (XEXP (note, 0))
 	   && !side_effects_p (SET_SRC (set)))
 	  || (CONSTANT_P (XEXP (note, 0))
-	      && targetm.legitimate_constant_p (GET_MODE (SET_DEST (set)),
-						XEXP (note, 0))
+	      && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (XEXP (note, 0)))
 	      && REG_N_SETS (REGNO (SET_DEST (set))) == 1))
       && general_operand (SET_SRC (set), GET_MODE (SET_SRC (set))))
     {
-      enum reg_class cl = GENERAL_REGS;
+      enum reg_class cl = ALL_REGS;
       rtx reg = SET_DEST (set);
       int num = COST_INDEX (REGNO (reg));
 
