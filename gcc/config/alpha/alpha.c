@@ -7224,11 +7224,8 @@ alpha_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	      arg0 = gimple_call_arg (stmt, 0);
 	      arg1 = gimple_call_arg (stmt, 1);
 
-	      new_stmt
-		= gimple_build_assign_with_ops (MULT_HIGHPART_EXPR,
-						gimple_call_lhs (stmt),
-						arg0,
-						arg1);
+	      new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+					      MULT_HIGHPART_EXPR, arg0, arg1);
 	      break;
 	    default:
 	      break;

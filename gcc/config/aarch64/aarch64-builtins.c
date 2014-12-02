@@ -1322,27 +1322,18 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  switch (fcode)
 	    {
 	      BUILTIN_VALL (UNOP, reduc_plus_scal_, 10)
-	        new_stmt = gimple_build_assign_with_ops (
-						REDUC_PLUS_EXPR,
-						gimple_call_lhs (stmt),
-						args[0],
-						NULL_TREE);
+	        new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+						REDUC_PLUS_EXPR, args[0]);
 		break;
 	      BUILTIN_VDQIF (UNOP, reduc_smax_scal_, 10)
 	      BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10)
-		new_stmt = gimple_build_assign_with_ops (
-						REDUC_MAX_EXPR,
-						gimple_call_lhs (stmt),
-						args[0],
-						NULL_TREE);
+		new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+						REDUC_MAX_EXPR, args[0]);
 		break;
 	      BUILTIN_VDQIF (UNOP, reduc_smin_scal_, 10)
 	      BUILTIN_VDQ_BHSI (UNOPU, reduc_umin_scal_, 10)
-		new_stmt = gimple_build_assign_with_ops (
-						REDUC_MIN_EXPR,
-						gimple_call_lhs (stmt),
-						args[0],
-						NULL_TREE);
+		new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+						REDUC_MIN_EXPR, args[0]);
 		break;
 
 	    default:
