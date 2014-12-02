@@ -1,5 +1,16 @@
+2014-12-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/64113
+	* config/alpha/alpha.md (call_value_osf_tlsgd): Do not split insn
+	using post-reload splitter.  Use peephole2 pass instead.
+	(call_value_osf_tlsldm): Ditto.
+	(TLS_CALL): New int iterator.
+	(tls): New int attribute.
+	(call_value_osf_<tls>): Merge insn pattern from call_value_osf_tlsgd
+	and call_value_tlsldm using TLS_CALL int iterator.
+
 2014-12-02  Richard Biener  <rguenther@suse.de>
-	Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+	    Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
 
 	* genmatch.c: Include hash-set.h.
 	(fatal_at): Add source_location overload.
@@ -45,7 +56,7 @@
 2014-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/59278
-	combine (reg_dead_at_p): Consider REG_UNUSED notes.
+	* combine (reg_dead_at_p): Consider REG_UNUSED notes.
 
 2014-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
