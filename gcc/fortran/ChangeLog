@@ -1,3 +1,12 @@
+2014-12-02  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* error.c (warnings_not_errors): Use bool.
+	(gfc_clear_error): Update.
+	(gfc_get_errors): Ditto. Use bool argument.
+	* gfortran.h (gfc_get_errors): Update prototype.
+	* resolve.c (resolve_global_procedure): Update call.
+
 2014-12-02  Richard Biener  <rguenther@suse.de>
 
 	PR fortran/64137

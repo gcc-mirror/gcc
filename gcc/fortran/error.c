@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static int suppress_errors = 0;
 
-static int warnings_not_errors = 0; 
+static bool warnings_not_errors = false;
 
 static int terminal_width, buffer_flag, errors, warnings;
 
@@ -1302,7 +1302,7 @@ void
 gfc_clear_error (void)
 {
   error_buffer.flag = 0;
-  warnings_not_errors = 0;
+  warnings_not_errors = false;
 }
 
 
@@ -1395,9 +1395,9 @@ gfc_get_errors (int *w, int *e)
 /* Switch errors into warnings.  */
 
 void
-gfc_errors_to_warnings (int f)
+gfc_errors_to_warnings (bool f)
 {
-  warnings_not_errors = (f == 1) ? 1 : 0;
+  warnings_not_errors = f;
 }
 
 void

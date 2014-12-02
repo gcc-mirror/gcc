@@ -2431,7 +2431,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 
       if (!pedantic && (gfc_option.allow_std & GFC_STD_GNU))
 	/* Turn erros into warnings with -std=gnu and -std=legacy.  */
-	gfc_errors_to_warnings (1);
+	gfc_errors_to_warnings (true);
 
       if (!gfc_compare_interfaces (sym, def_sym, sym->name, 0, 1,
 				   reason, sizeof(reason), NULL, NULL))
@@ -2444,14 +2444,14 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
       if (!pedantic
 	  || ((gfc_option.warn_std & GFC_STD_LEGACY)
 	      && !(gfc_option.warn_std & GFC_STD_GNU)))
-	gfc_errors_to_warnings (1);
+	gfc_errors_to_warnings (true);
 
       if (sym->attr.if_source != IFSRC_IFBODY)
 	gfc_procedure_use (def_sym, actual, where);
     }
 
 done:
-  gfc_errors_to_warnings (0);
+  gfc_errors_to_warnings (false);
 
   if (gsym->type == GSYM_UNKNOWN)
     {
