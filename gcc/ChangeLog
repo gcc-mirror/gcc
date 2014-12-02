@@ -1,5 +1,21 @@
 2014-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/sparc/sparc.c (sparc_atomic_assign_expand_fenv):
+	Remove NULL last argument from create_tmp_var calls.
+	* config/mips/mips.c (mips_atomic_assign_expand_fenv): Likewise.
+	* config/arm/arm-builtins.c (arm_atomic_assign_expand_fenv): Likewise.
+	* config/i386/i386.c (add_condition_to_bb,
+	ix86_atomic_assign_expand_fenv): Likewise.
+	* config/mep/mep.c (mep_gimplify_va_arg_expr): Likewise.
+	* config/xtensa/xtensa.c (xtensa_gimplify_va_arg_expr): Likewise.
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_atomic_assign_expand_fenv): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_gimplify_va_arg_expr):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_atomic_assign_expand_fenv): Likewise.
+	* config/alpha/alpha.c (alpha_atomic_assign_expand_fenv): Likewise.
+	* config/sh/sh.c (sh_gimplify_va_arg_expr): Likewise.
+
 	* config/alpha/alpha.c (alpha_gimple_fold_builtin): Use
 	gimple_build_assign instead of gimple_build_assign_with_ops and swap
 	the order of first two arguments.

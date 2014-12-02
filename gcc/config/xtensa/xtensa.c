@@ -3014,7 +3014,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
          && !must_pass_in_stack (type))
         __array = (AP).__va_reg; */
 
-  array = create_tmp_var (ptr_type_node, NULL);
+  array = create_tmp_var (ptr_type_node);
 
   lab_over = NULL;
   if (!targetm.calls.must_pass_in_stack (TYPE_MODE (type), type))

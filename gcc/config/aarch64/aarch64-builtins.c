@@ -1391,8 +1391,8 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
        __builtin_aarch64_set_cr (masked_cr);
        __builtin_aarch64_set_sr (masked_sr);  */
 
-  fenv_cr = create_tmp_var (unsigned_type_node, NULL);
-  fenv_sr = create_tmp_var (unsigned_type_node, NULL);
+  fenv_cr = create_tmp_var (unsigned_type_node);
+  fenv_sr = create_tmp_var (unsigned_type_node);
 
   get_fpcr = aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPCR];
   set_fpcr = aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPCR];
@@ -1438,7 +1438,7 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
        __atomic_feraiseexcept (new_fenv_var);  */
 
-  new_fenv_var = create_tmp_var (unsigned_type_node, NULL);
+  new_fenv_var = create_tmp_var (unsigned_type_node);
   reload_fenv = build2 (MODIFY_EXPR, unsigned_type_node,
 			new_fenv_var, build_call_expr (get_fpsr, 0));
   restore_fnenv = build_call_expr (set_fpsr, 1, fenv_sr);

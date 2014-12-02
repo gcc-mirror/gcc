@@ -34111,7 +34111,7 @@ add_condition_to_bb (tree function_decl, tree version_decl,
 
   convert_expr = build1 (CONVERT_EXPR, ptr_type_node,
 	     		 build_fold_addr_expr (version_decl));
-  result_var = create_tmp_var (ptr_type_node, NULL);
+  result_var = create_tmp_var (ptr_type_node);
   convert_stmt = gimple_build_assign (result_var, convert_expr); 
   return_stmt = gimple_build_return (result_var);
 
@@ -34128,7 +34128,7 @@ add_condition_to_bb (tree function_decl, tree version_decl,
 
   while (predicate_chain != NULL)
     {
-      cond_var = create_tmp_var (integer_type_node, NULL);
+      cond_var = create_tmp_var (integer_type_node);
       predicate_decl = TREE_PURPOSE (predicate_chain);
       predicate_arg = TREE_VALUE (predicate_chain);
       call_cond_stmt = gimple_build_call (predicate_decl, 1, predicate_arg);
@@ -51337,12 +51337,12 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {
   if (!TARGET_80387 && !TARGET_SSE_MATH)
     return;
-  tree exceptions_var = create_tmp_var (integer_type_node, NULL);
+  tree exceptions_var = create_tmp_var (integer_type_node);
   if (TARGET_80387)
     {
       tree fenv_index_type = build_index_type (size_int (6));
       tree fenv_type = build_array_type (unsigned_type_node, fenv_index_type);
-      tree fenv_var = create_tmp_var (fenv_type, NULL);
+      tree fenv_var = create_tmp_var (fenv_type);
       mark_addressable (fenv_var);
       tree fenv_ptr = build_pointer_type (fenv_type);
       tree fenv_addr = build1 (ADDR_EXPR, fenv_ptr, fenv_var);
@@ -51356,7 +51356,7 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
       *hold = build2 (COMPOUND_EXPR, void_type_node, hold_fnstenv,
 		      hold_fnclex);
       *clear = build_call_expr (fnclex, 0);
-      tree sw_var = create_tmp_var (short_unsigned_type_node, NULL);
+      tree sw_var = create_tmp_var (short_unsigned_type_node);
       tree fnstsw_call = build_call_expr (fnstsw, 0);
       tree sw_mod = build2 (MODIFY_EXPR, short_unsigned_type_node,
 			    sw_var, fnstsw_call);
@@ -51370,8 +51370,8 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
     }
   if (TARGET_SSE_MATH)
     {
-      tree mxcsr_orig_var = create_tmp_var (unsigned_type_node, NULL);
-      tree mxcsr_mod_var = create_tmp_var (unsigned_type_node, NULL);
+      tree mxcsr_orig_var = create_tmp_var (unsigned_type_node);
+      tree mxcsr_mod_var = create_tmp_var (unsigned_type_node);
       tree stmxcsr = ix86_builtins[IX86_BUILTIN_STMXCSR];
       tree ldmxcsr = ix86_builtins[IX86_BUILTIN_LDMXCSR];
       tree stmxcsr_hold_call = build_call_expr (stmxcsr, 0);
