@@ -1,3 +1,8 @@
+2014-12-02  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Restrict division combining to trunc_div and
+	exact_div.
+
 2014-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.c (sparc_atomic_assign_expand_fenv):

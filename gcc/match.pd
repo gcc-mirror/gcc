@@ -129,8 +129,9 @@ along with GCC; see the file COPYING3.  If not see
       && TYPE_UNSIGNED (type))
   (trunc_div @0 @1)))
 
-/* Combine two successive divisions.  */
-(for div (trunc_div ceil_div floor_div round_div exact_div)
+/* Combine two successive divisions.  Note that combining ceil_div
+   and floor_div is trickier and combining round_div even more so.  */
+(for div (trunc_div exact_div)
  (simplify
   (div (div @0 INTEGER_CST@1) INTEGER_CST@2)
   (with {
