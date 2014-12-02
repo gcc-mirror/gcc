@@ -1,3 +1,7 @@
+2014-12-02  Tobias Burnus  <burnus@net-b.de>
+
+	* download_prerequisites: Download ISL 0.14 instead of 0.12.2.
+
 2014-11-25  Tom de Vries  <tom@codesourcery.com>
 	    Peter Bergner  <bergner@vnet.ibm.com>
 
