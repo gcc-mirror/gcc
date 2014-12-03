@@ -1124,9 +1124,35 @@ already have a tree expression that you want to convert into a
 tuple.  However, try to avoid building expression trees for the
 sole purpose of calling this function.  If you already have the
 operands in separate trees, it is better to use
-@code{gimple_build_assign_with_ops}.
+@code{gimple_build_assign} with @code{enum tree_code} argument and separate
+arguments for each operand.
 @end deftypefn
 
+@deftypefn {GIMPLE function} gimple gimple_build_assign @
+(tree lhs, enum tree_code subcode, tree op1, tree op2, tree op3)
+This function is similar to two operand @code{gimple_build_assign},
+but is used to build a @code{GIMPLE_ASSIGN} statement when the operands of the
+right-hand side of the assignment are already split into
+different operands.
+
+The left-hand side is an lvalue passed in lhs.  Subcode is the
+@code{tree_code} for the right-hand side of the assignment.  Op1, op2 and op3
+are the operands.
+@end deftypefn
+
+@deftypefn {GIMPLE function} gimple gimple_build_assign @
+(tree lhs, enum tree_code subcode, tree op1, tree op2)
+Like the above 5 operand @code{gimple_build_assign}, but with the last
+argument @code{NULL} - this overload should not be used for
+@code{GIMPLE_TERNARY_RHS} assignments.
+@end deftypefn
+
+@deftypefn {GIMPLE function} gimple gimple_build_assign @
+(tree lhs, enum tree_code subcode, tree op1)
+Like the above 4 operand @code{gimple_build_assign}, but with the last
+argument @code{NULL} - this overload should be used only for
+@code{GIMPLE_UNARY_RHS} and @code{GIMPLE_SINGLE_RHS} assignments.
+@end deftypefn
 
 @deftypefn {GIMPLE function} gimple gimplify_assign (tree dst, tree src, gimple_seq *seq_p)
 Build a new @code{GIMPLE_ASSIGN} tuple and append it to the end of
@@ -1138,19 +1164,6 @@ pass ungimplified trees in @code{DST} or @code{SRC}, in which
 case they will be converted to a gimple operand if necessary.
 
 This function returns the newly created @code{GIMPLE_ASSIGN} tuple.
-
-@deftypefn {GIMPLE function} gimple gimple_build_assign_with_ops @
-(enum tree_code subcode, tree lhs, tree op1, tree op2)
-This function is similar to @code{gimple_build_assign}, but is used to
-build a @code{GIMPLE_ASSIGN} statement when the operands of the
-right-hand side of the assignment are already split into
-different operands.
-
-The left-hand side is an lvalue passed in lhs.  Subcode is the
-@code{tree_code} for the right-hand side of the assignment.  Op1 and op2
-are the operands.  If op2 is null, subcode must be a @code{tree_code}
-for a unary expression.
-@end deftypefn
 
 @deftypefn {GIMPLE function} {enum tree_code} gimple_assign_rhs_code (gimple g)
 Return the code of the expression computed on the @code{RHS} of
