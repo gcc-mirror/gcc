@@ -195,7 +195,6 @@ static tree fold_builtin_0 (location_t, tree, bool);
 static tree fold_builtin_1 (location_t, tree, tree, bool);
 static tree fold_builtin_2 (location_t, tree, tree, tree, bool);
 static tree fold_builtin_3 (location_t, tree, tree, tree, tree, bool);
-static tree fold_builtin_4 (location_t, tree, tree, tree, tree, tree, bool);
 static tree fold_builtin_varargs (location_t, tree, tree*, int, bool);
 
 static tree fold_builtin_strpbrk (location_t, tree, tree, tree);
@@ -213,14 +212,12 @@ static void maybe_emit_sprintf_chk_warning (tree, enum built_in_function);
 static void maybe_emit_free_warning (tree);
 static tree fold_builtin_object_size (tree, tree);
 static tree fold_builtin_printf (location_t, tree, tree, tree, bool, enum built_in_function);
-static tree fold_builtin_fprintf (location_t, tree, tree, tree, tree, bool,
-				  enum built_in_function);
 
 static unsigned HOST_WIDE_INT target_newline;
 unsigned HOST_WIDE_INT target_percent;
 static unsigned HOST_WIDE_INT target_c;
 static unsigned HOST_WIDE_INT target_s;
-static char target_percent_c[3];
+char target_percent_c[3];
 char target_percent_s[3];
 static char target_percent_s_newline[4];
 static tree do_mpfr_arg1 (tree, tree, int (*)(mpfr_ptr, mpfr_srcptr, mp_rnd_t),
@@ -10481,12 +10478,6 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1, bool ignore)
 				    arg1, NULL_TREE, ignore, fcode);
     break;
 
-    case BUILT_IN_FPRINTF:
-    case BUILT_IN_FPRINTF_UNLOCKED:
-    case BUILT_IN_VFPRINTF:
-      return fold_builtin_fprintf (loc, fndecl, arg0, arg1, NULL_TREE,
-				   ignore, fcode);
-
     case BUILT_IN_ATOMIC_ALWAYS_LOCK_FREE:
       return fold_builtin_atomic_always_lock_free (arg0, arg1);
 
@@ -10548,21 +10539,6 @@ fold_builtin_3 (location_t loc, tree fndecl,
 	return fold_builtin_printf (loc, fndecl, arg1, arg2, ignore, fcode);
     break;
 
-    case BUILT_IN_FPRINTF:
-    case BUILT_IN_FPRINTF_UNLOCKED:
-    case BUILT_IN_VFPRINTF:
-      return fold_builtin_fprintf (loc, fndecl, arg0, arg1, arg2,
-				   ignore, fcode);
-
-    case BUILT_IN_FPRINTF_CHK:
-    case BUILT_IN_VFPRINTF_CHK:
-      if (!validate_arg (arg1, INTEGER_TYPE)
-	  || TREE_SIDE_EFFECTS (arg1))
-	return NULL_TREE;
-      else
-	return fold_builtin_fprintf (loc, fndecl, arg0, arg2, NULL_TREE,
-				     ignore, fcode);
-
     case BUILT_IN_EXPECT:
       return fold_builtin_expect (loc, arg0, arg1, arg2);
 
@@ -10595,35 +10571,6 @@ fold_builtin_3 (location_t loc, tree fndecl,
   return NULL_TREE;
 }
 
-/* Fold a call to built-in function FNDECL with 4 arguments, ARG0, ARG1,
-   ARG2, and ARG3.  IGNORE is true if the result of the function call is
-   ignored.  This function returns NULL_TREE if no simplification was
-   possible.  */
-
-static tree
-fold_builtin_4 (location_t loc, tree fndecl,
-		tree arg0, tree arg1, tree arg2, tree arg3, bool ignore)
-{
-  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
-
-  switch (fcode)
-    {
-    case BUILT_IN_FPRINTF_CHK:
-    case BUILT_IN_VFPRINTF_CHK:
-      if (!validate_arg (arg1, INTEGER_TYPE)
-	  || TREE_SIDE_EFFECTS (arg1))
-	return NULL_TREE;
-      else
-	return fold_builtin_fprintf (loc, fndecl, arg0, arg2, arg3,
-				     ignore, fcode);
-    break;
-
-    default:
-      break;
-    }
-  return NULL_TREE;
-}
-
 /* Fold a call to built-in function FNDECL.  ARGS is an array of NARGS
    arguments.  IGNORE is true if the result of the
    function call is ignored.  This function returns NULL_TREE if no
@@ -10647,10 +10594,6 @@ fold_builtin_n (location_t loc, tree fndecl, tree *args, int nargs, bool ignore)
       break;
     case 3:
       ret = fold_builtin_3 (loc, fndecl, args[0], args[1], args[2], ignore);
-      break;
-    case 4:
-      ret = fold_builtin_4 (loc, fndecl, args[0], args[1], args[2], args[3],
- 			    ignore);
       break;
     default:
       ret = fold_builtin_varargs (loc, fndecl, args, nargs, ignore);
@@ -11974,105 +11917,6 @@ fold_builtin_printf (location_t loc, tree fndecl, tree fmt,
   if (!call)
     return NULL_TREE;
 
-  return fold_convert_loc (loc, TREE_TYPE (TREE_TYPE (fndecl)), call);
-}
-
-/* Fold a call to the {,v}fprintf{,_unlocked} and __{,v}printf_chk builtins.
-   FP, FMT, and ARG are the arguments to the call.  We don't fold calls with
-   more than 3 arguments, and ARG may be null in the 2-argument case.
-
-   Return NULL_TREE if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.  FCODE is the BUILT_IN_*
-   code of the function to be simplified.  */
-
-static tree
-fold_builtin_fprintf (location_t loc, tree fndecl, tree fp,
-		      tree fmt, tree arg, bool ignore,
-		      enum built_in_function fcode)
-{
-  tree fn_fputc, fn_fputs, call = NULL_TREE;
-  const char *fmt_str = NULL;
-
-  /* If the return value is used, don't do the transformation.  */
-  if (! ignore)
-    return NULL_TREE;
-
-  /* Verify the required arguments in the original call.  */
-  if (!validate_arg (fp, POINTER_TYPE))
-    return NULL_TREE;
-  if (!validate_arg (fmt, POINTER_TYPE))
-    return NULL_TREE;
-
-  /* Check whether the format is a literal string constant.  */
-  fmt_str = c_getstr (fmt);
-  if (fmt_str == NULL)
-    return NULL_TREE;
-
-  if (fcode == BUILT_IN_FPRINTF_UNLOCKED)
-    {
-      /* If we're using an unlocked function, assume the other
-	 unlocked functions exist explicitly.  */
-      fn_fputc = builtin_decl_explicit (BUILT_IN_FPUTC_UNLOCKED);
-      fn_fputs = builtin_decl_explicit (BUILT_IN_FPUTS_UNLOCKED);
-    }
-  else
-    {
-      fn_fputc = builtin_decl_implicit (BUILT_IN_FPUTC);
-      fn_fputs = builtin_decl_implicit (BUILT_IN_FPUTS);
-    }
-
-  if (!init_target_chars ())
-    return NULL_TREE;
-
-  /* If the format doesn't contain % args or %%, use strcpy.  */
-  if (strchr (fmt_str, target_percent) == NULL)
-    {
-      if (fcode != BUILT_IN_VFPRINTF && fcode != BUILT_IN_VFPRINTF_CHK
-	  && arg)
-	return NULL_TREE;
-
-      /* If the format specifier was "", fprintf does nothing.  */
-      if (fmt_str[0] == '\0')
-	{
-	  /* If FP has side-effects, just wait until gimplification is
-	     done.  */
-	  if (TREE_SIDE_EFFECTS (fp))
-	    return NULL_TREE;
-
-	  return build_int_cst (TREE_TYPE (TREE_TYPE (fndecl)), 0);
-	}
-
-      /* When "string" doesn't contain %, replace all cases of
-	 fprintf (fp, string) with fputs (string, fp).  The fputs
-	 builtin will take care of special cases like length == 1.  */
-      if (fn_fputs)
-	call = build_call_expr_loc (loc, fn_fputs, 2, fmt, fp);
-    }
-
-  /* The other optimizations can be done only on the non-va_list variants.  */
-  else if (fcode == BUILT_IN_VFPRINTF || fcode == BUILT_IN_VFPRINTF_CHK)
-    return NULL_TREE;
-
-  /* If the format specifier was "%s", call __builtin_fputs (arg, fp).  */
-  else if (strcmp (fmt_str, target_percent_s) == 0)
-    {
-      if (!arg || !validate_arg (arg, POINTER_TYPE))
-	return NULL_TREE;
-      if (fn_fputs)
-	call = build_call_expr_loc (loc, fn_fputs, 2, arg, fp);
-    }
-
-  /* If the format specifier was "%c", call __builtin_fputc (arg, fp).  */
-  else if (strcmp (fmt_str, target_percent_c) == 0)
-    {
-      if (!arg || !validate_arg (arg, INTEGER_TYPE))
-	return NULL_TREE;
-      if (fn_fputc)
-	call = build_call_expr_loc (loc, fn_fputc, 2, arg, fp);
-    }
-
-  if (!call)
-    return NULL_TREE;
   return fold_convert_loc (loc, TREE_TYPE (TREE_TYPE (fndecl)), call);
 }
 

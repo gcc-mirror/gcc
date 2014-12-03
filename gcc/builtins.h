@@ -91,5 +91,6 @@ extern const char *c_getstr (tree);
 extern bool init_target_chars (void);
 extern unsigned HOST_WIDE_INT target_percent;
 extern char target_percent_s[3];
+extern char target_percent_c[3];
 
 #endif
