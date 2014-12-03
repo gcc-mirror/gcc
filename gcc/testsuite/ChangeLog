@@ -1,3 +1,7 @@
+2014-12-03  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/ext/visibility/anon[12].C: Require visibility support.
+
 2014-12-03  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.target/epiphany/fcmp-1.c: New test.
