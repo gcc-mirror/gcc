@@ -3812,15 +3812,20 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   /* Similarly, check for a case where we have a PARALLEL of two independent
      SETs but we started with three insns.  In this case, we can do the sets
      as two separate insns.  This case occurs when some SET allows two
-     other insns to combine, but the destination of that SET is still live.  */
+     other insns to combine, but the destination of that SET is still live.
 
-  else if (i1 && insn_code_number < 0 && asm_noperands (newpat) < 0
+     Also do this if we started with two insns and (at least) one of the
+     resulting sets is a noop; this noop will be deleted later.  */
+
+  else if (insn_code_number < 0 && asm_noperands (newpat) < 0
 	   && GET_CODE (newpat) == PARALLEL
 	   && XVECLEN (newpat, 0) == 2
 	   && GET_CODE (XVECEXP (newpat, 0, 0)) == SET
+	   && GET_CODE (XVECEXP (newpat, 0, 1)) == SET
+	   && (i1 || set_noop_p (XVECEXP (newpat, 0, 0))
+		  || set_noop_p (XVECEXP (newpat, 0, 1)))
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 0))) != ZERO_EXTRACT
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 0))) != STRICT_LOW_PART
-	   && GET_CODE (XVECEXP (newpat, 0, 1)) == SET
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) != ZERO_EXTRACT
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) != STRICT_LOW_PART
 	   && ! reg_referenced_p (SET_DEST (XVECEXP (newpat, 0, 1)),
