@@ -1,3 +1,10 @@
+2014-12-03  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.c (epiphany_override_options):
+	If TARGET_SOFT_CMPSF is not enabled, set flag_finite_math_only.
+	* config/epiphany/epiphany.md (mov<mode>cc): Don't use
+	reverse_condition_maybe_unordered if flag_finite_math_only is set.
+
 2014-12-03  Andrew Stubbs  <ams@codesourcery.com>
 
 	Revert:
