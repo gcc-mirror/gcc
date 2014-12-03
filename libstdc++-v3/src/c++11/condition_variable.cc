@@ -23,6 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <condition_variable>
+#include <cstdlib>
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 

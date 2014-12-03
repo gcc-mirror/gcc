@@ -1,3 +1,8 @@
+2014-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64161
+	* src/c++11/condition_variable.cc: Include <cstdlib>.
+
 2014-12-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver: Add new exports.
