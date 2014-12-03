@@ -1,5 +1,7 @@
 2014-12-03  Jakub Jelinek  <jakub@redhat.com>
 
+	* expmed.c (expand_mult): Use std::swap.
+
 	PR c/59708
 	* expmed.c (expand_widening_mult): Return const0_rtx if
 	coeff is 0.
