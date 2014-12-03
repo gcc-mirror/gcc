@@ -8375,99 +8375,6 @@ fold_builtin_bswap (tree fndecl, tree arg)
   return NULL_TREE;
 }
 
-/* A subroutine of fold_builtin to fold the various logarithmic
-   functions.  Return NULL_TREE if no simplification can me made.
-   FUNC is the corresponding MPFR logarithm function.  */
-
-static tree
-fold_builtin_logarithm (location_t loc, tree fndecl, tree arg,
-			int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t))
-{
-  if (validate_arg (arg, REAL_TYPE))
-    {
-      tree type = TREE_TYPE (TREE_TYPE (fndecl));
-      tree res;
-      const enum built_in_function fcode = builtin_mathfn_code (arg);
-
-      /* Calculate the result when the argument is a constant.  */
-      if ((res = do_mpfr_arg1 (arg, type, func, &dconst0, NULL, false)))
-	return res;
-
-      /* Special case, optimize logN(expN(x)) = x.  */
-      if (flag_unsafe_math_optimizations
-	  && ((func == mpfr_log
-	       && (fcode == BUILT_IN_EXP
-		   || fcode == BUILT_IN_EXPF
-		   || fcode == BUILT_IN_EXPL))
-	      || (func == mpfr_log2
-		  && (fcode == BUILT_IN_EXP2
-		      || fcode == BUILT_IN_EXP2F
-		      || fcode == BUILT_IN_EXP2L))
-	      || (func == mpfr_log10 && (BUILTIN_EXP10_P (fcode)))))
-	return fold_convert_loc (loc, type, CALL_EXPR_ARG (arg, 0));
-
-      /* Optimize logN(func()) for various exponential functions.  We
-	 want to determine the value "x" and the power "exponent" in
-	 order to transform logN(x**exponent) into exponent*logN(x).  */
-      if (flag_unsafe_math_optimizations)
-	{
-	  tree exponent = 0, x = 0;
-
-	  switch (fcode)
-	  {
-	  CASE_FLT_FN (BUILT_IN_EXP):
-	    /* Prepare to do logN(exp(exponent) -> exponent*logN(e).  */
-	    x = build_real (type, real_value_truncate (TYPE_MODE (type),
-                                                       dconst_e ()));
-	    exponent = CALL_EXPR_ARG (arg, 0);
-	    break;
-	  CASE_FLT_FN (BUILT_IN_EXP2):
-	    /* Prepare to do logN(exp2(exponent) -> exponent*logN(2).  */
-	    x = build_real (type, dconst2);
-	    exponent = CALL_EXPR_ARG (arg, 0);
-	    break;
-	  CASE_FLT_FN (BUILT_IN_EXP10):
-	  CASE_FLT_FN (BUILT_IN_POW10):
-	    /* Prepare to do logN(exp10(exponent) -> exponent*logN(10).  */
-	    {
-	      REAL_VALUE_TYPE dconst10;
-	      real_from_integer (&dconst10, VOIDmode, 10, SIGNED);
-	      x = build_real (type, dconst10);
-	    }
-	    exponent = CALL_EXPR_ARG (arg, 0);
-	    break;
-	  CASE_FLT_FN (BUILT_IN_SQRT):
-	    /* Prepare to do logN(sqrt(x) -> 0.5*logN(x).  */
-	    x = CALL_EXPR_ARG (arg, 0);
-	    exponent = build_real (type, dconsthalf);
-	    break;
-	  CASE_FLT_FN (BUILT_IN_CBRT):
-	    /* Prepare to do logN(cbrt(x) -> (1/3)*logN(x).  */
-	    x = CALL_EXPR_ARG (arg, 0);
-	    exponent = build_real (type, real_value_truncate (TYPE_MODE (type),
-							      dconst_third ()));
-	    break;
-	  CASE_FLT_FN (BUILT_IN_POW):
-	    /* Prepare to do logN(pow(x,exponent) -> exponent*logN(x).  */
-	    x = CALL_EXPR_ARG (arg, 0);
-	    exponent = CALL_EXPR_ARG (arg, 1);
-	    break;
-	  default:
-	    break;
-	  }
-
-	  /* Now perform the optimization.  */
-	  if (x && exponent)
-	    {
-	      tree logfn = build_call_expr_loc (loc, fndecl, 1, x);
-	      return fold_build2_loc (loc, MULT_EXPR, type, exponent, logfn);
-	    }
-	}
-    }
-
-  return NULL_TREE;
-}
-
 /* Fold a builtin function call to hypot, hypotf, or hypotl.  Return
    NULL_TREE if no simplification can be made.  */
 
@@ -10226,16 +10133,22 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
     CASE_FLT_FN (BUILT_IN_EXPM1):
       if (validate_arg (arg0, REAL_TYPE))
 	return do_mpfr_arg1 (arg0, type, mpfr_expm1, NULL, NULL, 0);
-    break;
+      break;
 
     CASE_FLT_FN (BUILT_IN_LOG):
-    return fold_builtin_logarithm (loc, fndecl, arg0, mpfr_log);
+      if (validate_arg (arg0, REAL_TYPE))
+        return do_mpfr_arg1 (arg0, type, mpfr_log, &dconst0, NULL, false);
+      break;
 
     CASE_FLT_FN (BUILT_IN_LOG2):
-      return fold_builtin_logarithm (loc, fndecl, arg0, mpfr_log2);
+      if (validate_arg (arg0, REAL_TYPE))
+        return do_mpfr_arg1 (arg0, type, mpfr_log2, &dconst0, NULL, false);
+      break;
 
     CASE_FLT_FN (BUILT_IN_LOG10):
-      return fold_builtin_logarithm (loc, fndecl, arg0, mpfr_log10);
+      if (validate_arg (arg0, REAL_TYPE))
+        return do_mpfr_arg1 (arg0, type, mpfr_log10, &dconst0, NULL, false);
+      break;
 
     CASE_FLT_FN (BUILT_IN_LOG1P):
       if (validate_arg (arg0, REAL_TYPE))

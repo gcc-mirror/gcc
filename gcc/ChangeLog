@@ -1,3 +1,9 @@
+2014-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/14541
+	* builtins.c (fold_builtin_logarithm): Implement simplifications ...
+	* match.pd: ... here as patterns.
+
 2014-12-03  Prachi Godbole  <prachi.godbole@imgtec.com>
 
 	* config/mips/p5600.md (define_automaton, define_cpu_unit): Replace
