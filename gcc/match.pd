@@ -918,3 +918,90 @@ along with GCC; see the file COPYING3.  If not see
     (icmp @0 @1))
    (if (ic == ncmp)
     (ncmp @0 @1)))))
+
+
+/* Simplification of math builtins.  */
+
+(define_operator_list LOG BUILT_IN_LOGF BUILT_IN_LOG BUILT_IN_LOGL)
+(define_operator_list EXP BUILT_IN_EXPF BUILT_IN_EXP BUILT_IN_EXPL)
+(define_operator_list LOG2 BUILT_IN_LOG2F BUILT_IN_LOG2 BUILT_IN_LOG2L)
+(define_operator_list EXP2 BUILT_IN_EXP2F BUILT_IN_EXP2 BUILT_IN_EXP2L)
+(define_operator_list LOG10 BUILT_IN_LOG10F BUILT_IN_LOG10 BUILT_IN_LOG10L)
+(define_operator_list EXP10 BUILT_IN_EXP10F BUILT_IN_EXP10 BUILT_IN_EXP10L)
+(define_operator_list POW BUILT_IN_POWF BUILT_IN_POW BUILT_IN_POWL)
+(define_operator_list POW10 BUILT_IN_POW10F BUILT_IN_POW10 BUILT_IN_POW10L)
+(define_operator_list SQRT BUILT_IN_SQRTF BUILT_IN_SQRT BUILT_IN_SQRTL)
+(define_operator_list CBRT BUILT_IN_CBRTF BUILT_IN_CBRT BUILT_IN_CBRTL)
+
+
+/* fold_builtin_logarithm */
+(if (flag_unsafe_math_optimizations)
+ /* Special case, optimize logN(expN(x)) = x.  */
+ (for logs (LOG LOG2 LOG10)
+      exps (EXP EXP2 EXP10)
+  (simplify
+   (logs (exps @0))
+    @0))
+ /* Optimize logN(func()) for various exponential functions.  We
+    want to determine the value "x" and the power "exponent" in
+    order to transform logN(x**exponent) into exponent*logN(x).  */
+ (for logs (LOG LOG LOG LOG
+            LOG2 LOG2 LOG2 LOG2
+	    LOG10 LOG10 LOG10 LOG10)
+      exps (EXP EXP2 EXP10 POW10)
+  (simplify
+   (logs (exps @0))
+   (with {
+     tree x;
+     switch (exps)
+       {
+       CASE_FLT_FN (BUILT_IN_EXP):
+         /* Prepare to do logN(exp(exponent) -> exponent*logN(e).  */
+	 x = build_real (type, real_value_truncate (TYPE_MODE (type),
+						    dconst_e ()));
+         break;
+       CASE_FLT_FN (BUILT_IN_EXP2):
+         /* Prepare to do logN(exp2(exponent) -> exponent*logN(2).  */
+         x = build_real (type, dconst2);
+         break;
+       CASE_FLT_FN (BUILT_IN_EXP10):
+       CASE_FLT_FN (BUILT_IN_POW10):
+	 /* Prepare to do logN(exp10(exponent) -> exponent*logN(10).  */
+	 {
+	   REAL_VALUE_TYPE dconst10;
+	   real_from_integer (&dconst10, VOIDmode, 10, SIGNED);
+	   x = build_real (type, dconst10);
+	 }
+         break;
+       }
+     }
+    (mult (logs { x; }) @0))))
+ (for logs (LOG LOG
+            LOG2 LOG2
+	    LOG10 LOG10)
+      exps (SQRT CBRT)
+  (simplify
+   (logs (exps @0))
+   (with {
+     tree x;
+     switch (exps)
+       {
+       CASE_FLT_FN (BUILT_IN_SQRT):
+	 /* Prepare to do logN(sqrt(x) -> 0.5*logN(x).  */
+	 x = build_real (type, dconsthalf);
+         break;
+       CASE_FLT_FN (BUILT_IN_CBRT):
+	 /* Prepare to do logN(cbrt(x) -> (1/3)*logN(x).  */
+         x = build_real (type, real_value_truncate (TYPE_MODE (type),
+						    dconst_third ()));
+         break;
+       }
+     }
+    (mult { x; } (logs @0)))))
+ /* logN(pow(x,exponent) -> exponent*logN(x).  */
+ (for logs (LOG LOG2 LOG10)
+      pows (POW)
+  (simplify
+   (logs (pows @0 @1))
+   (mult @1 (logs @0)))))
+
