@@ -6797,6 +6797,7 @@ instructions.
 
 Given below example:
 
+@smallexample
     ldr r10, [r1, 4]
     add r4, r4, r10
     ldr r15, [r2, 8]
@@ -6805,6 +6806,7 @@ Given below example:
     add r4, r4, r11
     ldr r16, [r2, 12]
     sub r5, r5, r16
+@end smallexample
 
 On targets like ARM/AArch64, the two pairs of consecutive loads should be
 merged.  Since peephole2 pass can't help in this case unless consecutive
@@ -6812,19 +6814,22 @@ loads are actually next to each other in instruction flow.  That's where
 this scheduling fusion pass works.  This hook calculates priority for each
 instruction based on its fustion type, like:
 
-    ldr r10, [r1, 4]  ; fusion_pri=99,  pri=96   
-    add r4, r4, r10   ; fusion_pri=100, pri=100  
-    ldr r15, [r2, 8]  ; fusion_pri=98,  pri=92   
-    sub r5, r5, r15   ; fusion_pri=100, pri=100  
-    ldr r11, [r1, 0]  ; fusion_pri=99,  pri=100  
-    add r4, r4, r11   ; fusion_pri=100, pri=100  
-    ldr r16, [r2, 12] ; fusion_pri=98,  pri=88   
-    sub r5, r5, r16   ; fusion_pri=100, pri=100  
+@smallexample
+    ldr r10, [r1, 4]  ; fusion_pri=99,  pri=96
+    add r4, r4, r10   ; fusion_pri=100, pri=100
+    ldr r15, [r2, 8]  ; fusion_pri=98,  pri=92
+    sub r5, r5, r15   ; fusion_pri=100, pri=100
+    ldr r11, [r1, 0]  ; fusion_pri=99,  pri=100
+    add r4, r4, r11   ; fusion_pri=100, pri=100
+    ldr r16, [r2, 12] ; fusion_pri=98,  pri=88
+    sub r5, r5, r16   ; fusion_pri=100, pri=100
+@end smallexample
 
 Scheduling fusion pass then sorts all ready to issue instructions according
 to the priorities.  As a result, instructions of same fusion type will be
 pushed together in instruction flow, like:
 
+@smallexample
     ldr r11, [r1, 0]
     ldr r10, [r1, 4]
     ldr r15, [r2, 8]
@@ -6833,6 +6838,7 @@ pushed together in instruction flow, like:
     sub r5, r5, r15
     add r4, r4, r11
     sub r5, r5, r16
+@end smallexample
 
 Now peephole2 pass can simply merge the two pairs of loads.
 
