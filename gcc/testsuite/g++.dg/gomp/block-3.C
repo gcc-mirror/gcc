@@ -18,19 +18,21 @@ void foo()
     #pragma omp section
       { bad1: ; }		// { dg-error "jump to label" }
     #pragma omp section
-      goto bad1;		// { dg-error "from here|enters OpenMP" }
+      goto bad1;		// { dg-message "from here|enters OpenMP" }
     }
 
   #pragma omp sections
     {
-      goto bad2;		// { dg-error "from here" }
+      goto bad2;		// { dg-message "from here" }
     }
-  bad2:;			// { dg-error "jump|exits OpenMP" }
+  bad2:;			// { dg-error "jump" }
+                                // { dg-message "exits OpenMP" "" { target *-*-* } 28 }
 
-  goto bad3;			// { dg-error "from here" }
+  goto bad3;			// { dg-message "from here" }
   #pragma omp sections
     {
-      bad3: ;			// { dg-error "jump|enters OpenMP" }
+      bad3: ;			// { dg-error "jump" }
+                                // { dg-message "enters OpenMP" "" { target *-*-* } 34 }
     }
 
   #pragma omp sections
@@ -60,4 +62,4 @@ void foo()
 
 // { dg-message "error: invalid branch to/from an OpenMP structured block" "" { target *-*-* } 21 }
 // { dg-message "error: invalid branch to/from an OpenMP structured block" "" { target *-*-* } 26 }
-// { dg-message "error: invalid entry to OpenMP structured block" "" { target *-*-* } 30 }
+// { dg-message "error: invalid entry to OpenMP structured block" "" { target *-*-* } 31 }

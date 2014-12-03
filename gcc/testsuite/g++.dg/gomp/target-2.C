@@ -5,12 +5,13 @@ foo (int x, int y)
 {
   bad1:				// { dg-error "jump to label" }
   #pragma omp target data map(tofrom: y)
-    goto bad1;			// { dg-error "from here|exits OpenMP" }
+    goto bad1;			// { dg-message "from here|exits OpenMP" }
 
-  goto bad2;			// { dg-error "from here" }
+  goto bad2;			// { dg-message "from here" }
   #pragma omp target data map(tofrom: y)
     {
-      bad2: ;			// { dg-error "jump to label|enters OpenMP" }
+      bad2: ;			// { dg-error "jump to label" }
+                                // { dg-message "enters OpenMP" "" { target *-*-* } 13 }
     }
 
   #pragma omp target data map(tofrom: y)
@@ -24,7 +25,8 @@ foo (int x, int y)
   switch (x)
   {
   #pragma omp target data map(tofrom: y)
-    { case 0:; }		// { dg-error "jump|enters" }
+    { case 0:; }		// { dg-error "jump" }
+                                // { dg-message "enters" "" { target *-*-* } 28 }
   }
 }
 

@@ -1,3 +1,25 @@
+2014-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63558
+	* g++.dg/init/goto3.C: New.
+	* g++.dg/eh/goto2.C: Adjust.
+	* g++.dg/ext/vla14.C: Likewise.
+	* g++.dg/gomp/block-1.C: Likewise.
+	* g++.dg/gomp/block-2.C: Likewise.
+	* g++.dg/gomp/block-3.C: Likewise.
+	* g++.dg/gomp/block-5.C: Likewise.
+	* g++.dg/gomp/target-1.C: Likewise.
+	* g++.dg/gomp/target-2.C: Likewise.
+	* g++.dg/gomp/taskgroup-1.C: Likewise.
+	* g++.dg/gomp/teams-1.C: Likewise.
+	* g++.dg/init/goto2.C: Likewise.
+	* g++.dg/warn/pedantic1.C: Likewise.
+	* g++.old-deja/g++.jason/jump.C: Likewise.
+	* g++.old-deja/g++.law/arm6.C: Likewise.
+	* g++.old-deja/g++.other/goto1.C: Likewise.
+	* g++.old-deja/g++.other/goto3.C: Likewise.
+	* g++.old-deja/g++.other/init9.C: Likewise.
+
 2014-12-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/64019

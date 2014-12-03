@@ -12,7 +12,7 @@ int main() {
 
         switch (a) {
         case 1:
-                int v2 = 3;// { dg-error "" }    crosses.*
+                int v2 = 3;// { dg-message "" }    crosses.*
         case 2:// { dg-error "" }  jump.*
                 if (v2 == 7)    // error not flagged by 2.3.1
                         ;

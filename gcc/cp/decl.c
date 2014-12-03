@@ -2874,15 +2874,15 @@ decl_jump_unsafe (tree decl)
 
 /* A subroutine of check_previous_goto_1 to identify a branch to the user.  */
 
-static void
+static bool
 identify_goto (tree decl, const location_t *locus)
 {
-  if (decl)
-    permerror (input_location, "jump to label %qD", decl);
-  else
-    permerror (input_location, "jump to case label");
-  if (locus)
-    permerror (*locus, "  from here");
+  bool complained = (decl
+		     ? permerror (input_location, "jump to label %qD", decl)
+		     : permerror (input_location, "jump to case label"));
+  if (complained && locus)
+    inform (*locus, "  from here");
+  return complained;
 }
 
 /* Check that a single previously seen jump to a newly defined label
@@ -2896,12 +2896,14 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 		       bool exited_omp, const location_t *locus)
 {
   cp_binding_level *b;
-  bool identified = false, saw_eh = false, saw_omp = false;
+  bool identified = false, complained = false;
+  bool saw_eh = false, saw_omp = false;
 
   if (exited_omp)
     {
-      identify_goto (decl, locus);
-      error ("  exits OpenMP structured block");
+      complained = identify_goto (decl, locus);
+      if (complained)
+	inform (input_location, "  exits OpenMP structured block");
       identified = saw_omp = true;
     }
 
@@ -2919,14 +2921,18 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 
 	  if (!identified)
 	    {
-	      identify_goto (decl, locus);
+	      complained = identify_goto (decl, locus);
 	      identified = true;
 	    }
-	  if (problem > 1)
-	    error ("  crosses initialization of %q+#D", new_decls);
-	  else
-	    permerror (input_location, "  enters scope of %q+#D which has "
-		       "non-trivial destructor", new_decls);
+	  if (complained)
+	    {
+	      if (problem > 1)
+		inform (input_location,
+			"  crosses initialization of %q+#D", new_decls);
+	      else
+		inform (input_location, "  enters scope of %q+#D which has "
+			"non-trivial destructor", new_decls);
+	    }
 	}
 
       if (b == level)
@@ -2935,23 +2941,27 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	{
 	  if (!identified)
 	    {
-	      identify_goto (decl, locus);
+	      complained = identify_goto (decl, locus);
 	      identified = true;
 	    }
-	  if (b->kind == sk_try)
-	    error ("  enters try block");
-	  else
-	    error ("  enters catch block");
+	  if (complained)
+	    {
+	      if (b->kind == sk_try)
+		inform (input_location, "  enters try block");
+	      else
+		inform (input_location, "  enters catch block");
+	    }
 	  saw_eh = true;
 	}
       if (b->kind == sk_omp && !saw_omp)
 	{
 	  if (!identified)
 	    {
-	      identify_goto (decl, locus);
+	      complained = identify_goto (decl, locus);
 	      identified = true;
 	    }
-	  error ("  enters OpenMP structured block");
+	  if (complained)
+	    inform (input_location, "  enters OpenMP structured block");
 	  saw_omp = true;
 	}
     }
@@ -2980,7 +2990,7 @@ void
 check_goto (tree decl)
 {
   struct named_label_entry *ent, dummy;
-  bool saw_catch = false, identified = false;
+  bool saw_catch = false, identified = false, complained = false;
   tree bad;
   unsigned ix;
 
@@ -3023,8 +3033,9 @@ check_goto (tree decl)
   if (ent->in_try_scope || ent->in_catch_scope
       || ent->in_omp_scope || !vec_safe_is_empty (ent->bad_decls))
     {
-      permerror (input_location, "jump to label %q+D", decl);
-      permerror (input_location, "  from here");
+      complained = permerror (input_location, "jump to label %q+D", decl);
+      if (complained)
+	inform (input_location, "  from here");
       identified = true;
     }
 
@@ -3035,23 +3046,33 @@ check_goto (tree decl)
       if (u > 1 && DECL_ARTIFICIAL (bad))
 	{
 	  /* Can't skip init of __exception_info.  */
-	  error_at (DECL_SOURCE_LOCATION (bad), "  enters catch block");
+	  if (complained)
+	    inform (DECL_SOURCE_LOCATION (bad), "  enters catch block");
 	  saw_catch = true;
 	}
-      else if (u > 1)
-	error ("  skips initialization of %q+#D", bad);
-      else
-	permerror (input_location, "  enters scope of %q+#D which has "
-		   "non-trivial destructor", bad);
+      else if (complained)
+	{
+	  if (u > 1)
+	    inform (input_location, "  skips initialization of %q+#D", bad);
+	  else
+	    inform (input_location, "  enters scope of %q+#D which has "
+		    "non-trivial destructor", bad);
+	}
     }
 
-  if (ent->in_try_scope)
-    error ("  enters try block");
-  else if (ent->in_catch_scope && !saw_catch)
-    error ("  enters catch block");
+  if (complained)
+    {
+      if (ent->in_try_scope)
+	inform (input_location, "  enters try block");
+      else if (ent->in_catch_scope && !saw_catch)
+	inform (input_location, "  enters catch block");
+    }
 
   if (ent->in_omp_scope)
-    error ("  enters OpenMP structured block");
+    {
+      if (complained)
+	inform (input_location, "  enters OpenMP structured block");
+    }
   else if (flag_openmp)
     {
       cp_binding_level *b;
@@ -3063,11 +3084,14 @@ check_goto (tree decl)
 	    {
 	      if (!identified)
 		{
-		  permerror (input_location, "jump to label %q+D", decl);
-		  permerror (input_location, "  from here");
+		  complained = permerror (input_location,
+					  "jump to label %q+D", decl);
+		  if (complained)
+		    inform (input_location, "  from here");
 		  identified = true;
 		}
-	      error ("  exits OpenMP structured block");
+	      if (complained)
+		inform (input_location, "  exits OpenMP structured block");
 	      break;
 	    }
 	}

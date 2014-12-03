@@ -13,8 +13,8 @@ struct A {
 };
 
 void a() {
-  goto bar; // { dg-error "" } jump from here
-  A x; // { dg-error "" } jump crosses initialization
+  goto bar; // { dg-message "" } jump from here
+  A x; // { dg-message "" } jump crosses initialization
  bar: // { dg-error "" } jump to here
   ;
 }
@@ -24,8 +24,8 @@ struct X {
 };
 
 void b() {
-  goto bar; // { dg-error "" } jump from here
-  X x; // { dg-error "" } jump crosses initialization
+  goto bar; // { dg-message "" } jump from here
+  X x; // { dg-message "" } jump crosses initialization
  bar: // { dg-error "" } jump to here
   ;
 }
@@ -33,8 +33,8 @@ void b() {
 #include <vector>
 
 void c() {
-  goto bar; // { dg-error "" } jump from here
-  std::vector<int> x; // { dg-error "" } jump crosses initialization
+  goto bar; // { dg-message "" } jump from here
+  std::vector<int> x; // { dg-message "" } jump crosses initialization
  bar: // { dg-error "" } jump to here
   ;
 }
