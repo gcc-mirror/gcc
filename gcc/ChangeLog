@@ -1,3 +1,8 @@
+2014-12-03  Ulrich Drepper  <drepper@gmail.com>
+
+	* Makefile.in: Use $(LN_S) instead of $(LN) -s and remove file first
+	if it exists.
+
 2014-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* expmed.c (expand_mult): Use std::swap.

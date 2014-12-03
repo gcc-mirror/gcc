@@ -1546,7 +1546,8 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
 # from within the *build* directory, for use when running the JIT library
 # from there (e.g. when running its testsuite).
 $(FULL_DRIVER_NAME): ./xgcc
-	$(LN) -s $< $@
+	rm -f $@
+	$(LN_S) $< $@
 
 #
 # Language makefile fragments.
