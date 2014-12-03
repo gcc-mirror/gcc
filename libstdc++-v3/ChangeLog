@@ -1,3 +1,33 @@
+2014-12-03  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/13631
+	* include/bits/codecvt.h (codecvt<char, char, mbstate_t>): friend class
+	std::messages<char>.
+	(codecvt<wchar_t, char, mbstate_t>): friend class
+	std::messages<wchar_t>.
+	* config/locale/gnu/messages_member.h
+	(messages<char>::do_open): Specialized.
+	(messages<char>::do_close): Likewise.
+	(messages<wchar_t>::do_open): Likewise.
+	(messages<wchar_t>::do_close): Likewise.
+	* config/locale/gnu/messages_member.cc:
+	(messages<char>::do_open): Implement. Use bind_textdomain_codeset based
+	on codecvt<char, char, mbstate_t>._M_c_locale_codecvt code set. Use
+	internal cache to keep opened domain name with locale information.
+	(messages<wchar_t>::do_open): Likewise with
+	codecvt<wchar_t, char, mbstate_t>.
+	(messages<char>::do_close): Implement. Clean cache information.
+	(messages<wchar_t>::do_close): Likewise.
+	(get_glibc_msg): New. Use dgettext rather than gettext using cached
+	domain name associated to catalog id.
+	(messages<char>::do_get): Use latter.
+	(messages<wchar_t>::do_get): Likewise and use also cached locale
+	codecvt<wchar_t, char, mbstate_t> facet to convert wchar_t default
+	value to char and the result back to wchar_t.
+	* testsuite/22_locale/messages/13631.cc: New.
+	* testsuite/22_locale/messages/members/char/2.cc: Use also fr_FR locale
+	for charset conversion to get the expected accented character.
+
 2014-12-03  Marek Polacek  <polacek@redhat.com>
 
 	* include/bits/regex_compiler.h (_S_cache_size): Multiply the
