@@ -1,3 +1,22 @@
+2014-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (ALL_HOST_BACKEND_OBJS): Add $(GENGTYPE_OBJS),
+	gcc-ar.o, gcc-nm.o and gcc-ranlib.o.
+	(GENGTYPE_OBJS): New.
+	(gengtype-lex.o, gengtype-parse.o, gengtype-state.o, gengtype.o):
+	Remove explicit dependencies.
+	(CFLAGS-gengtype-lex.o, CFLAGS-gengtype-parse.o,
+	CFLAGS-gengtype-state.o, CFLAGS-gengtype.o): Add -DHOST_GENERATOR_FILE
+	instead of -DGENERATOR_FILE.
+	(CFLAGS-errors.o): New.
+	* gengtype.c: Instead of testing GENERATOR_FILE define, test
+	HOST_GENERATOR_FILE.  If defined, include config.h and define
+	GENERATOR_FILE afterwards, otherwise include bconfig.h.
+	* gengtype-parse.c: Likewise.
+	* gengtype-state.c: Likewise.
+	* gengtype-lex.l: Likewise.
+	* errors.c: Likewise.
+
 2014-12-03  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.c (epiphany_override_options):
@@ -10,8 +29,8 @@
 	Revert:
 
 	2014-09-17  Andrew Stubbs  <ams@codesourcery.com>
-       * config/arm/arm.c (arm_option_override): Reject -mfpu=neon
-       when architecture is older than ARMv7.
+	* config/arm/arm.c (arm_option_override): Reject -mfpu=neon
+	when architecture is older than ARMv7.
 
 2014-12-03  Richard Biener  <rguenther@suse.de>
 
@@ -5079,16 +5098,16 @@
 	separation class.
 	(generate_luj_sepclass_opt): Build the separation class option.
 	(generate_luj_options): Set unroll and jam options.
-        (set_options): Support for unroll and jam options.
+	(set_options): Support for unroll and jam options.
 	(scop_to_isl_ast): Likewise
 	* graphite-optimize-isl.c (getPrevectorMap_full): New function for
-        computing the separating class map.
+	computing the separating class map.
 	(optimize_isl): Support for the separating class map.
 	(apply_schedule_map_to_scop): Likewise.
 	(getScheduleMap): Likewise.
 	(getScheduleForBand): Likewise.
 	(getScheduleForBandList): Likewise.
-        * graphite.c (gate_graphite_transforms): Add unroll and jam flag.
+	* graphite.c (gate_graphite_transforms): Add unroll and jam flag.
 	* toplev.c (process_options) Likewise.
 
 2014-11-15  Eric Botcazou  <ebotcazou@adacore.com>
@@ -5498,15 +5517,15 @@
 2014-11-14  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/63724
-        * config/aarch64/aarch64.c (aarch64_expand_mov_immediate): Split out
-        numerical immediate handling to...
-        (aarch64_internal_mov_immediate): ...this. New.
-        (aarch64_rtx_costs): Use aarch64_internal_mov_immediate.
-        (aarch64_mov_operand_p): Relax predicate.
-        * config/aarch64/aarch64.md (mov<mode>:GPI): Do not expand CONST_INTs.
-        (*movsi_aarch64): Turn into define_insn_and_split and new alternative
-        for 'n'.
-        (*movdi_aarch64): Likewise.
+	* config/aarch64/aarch64.c (aarch64_expand_mov_immediate): Split out
+	numerical immediate handling to...
+	(aarch64_internal_mov_immediate): ...this. New.
+	(aarch64_rtx_costs): Use aarch64_internal_mov_immediate.
+	(aarch64_mov_operand_p): Relax predicate.
+	* config/aarch64/aarch64.md (mov<mode>:GPI): Do not expand CONST_INTs.
+	(*movsi_aarch64): Turn into define_insn_and_split and new alternative
+	for 'n'.
+	(*movdi_aarch64): Likewise.
 
 2014-11-14  Richard Biener  <rguenther@suse.de>
 
@@ -5627,22 +5646,20 @@
 
 2014-11-13  Alan Lawrence  <alan.lawrence@arm.com>
 
-        * tree-vectorizer.h (vect_gen_perm_mask): Remove.
-        (vect_gen_perm_mask_checked, vect_gen_perm_mask_any): New.
+	* tree-vectorizer.h (vect_gen_perm_mask): Remove.
+	(vect_gen_perm_mask_checked, vect_gen_perm_mask_any): New.
 
-        tree_vec_data_refs.c (vect_permute_load_chain, vec_permute_store_chain,
-        vec_shift_permute_load_chain): Replace vect_gen_perm_mask & assert
-        with vect_gen_perm_mask_checked.
+	* tree_vec_data_refs.c (vect_permute_load_chain,
+	vec_permute_store_chain, vec_shift_permute_load_chain): Replace
+	vect_gen_perm_mask & assert with vect_gen_perm_mask_checked.
 
-        * tree-vect-stmts.c (vectorizable_mask_load_store, vectorizable_load):
-        Likewise.
-
-        (vect_gen_perm_mask_checked): New.
-        (vect_gen_perm_mask): Remove can_vec_perm_p check, rename to...
-        (vect_gen_perm_mask_any): ...this.
-
-        (perm_mask_for_reverse): Call can_vec_perm_p and
-        vect_gen_perm_mask_checked.
+	* tree-vect-stmts.c (vectorizable_mask_load_store, vectorizable_load):
+	Likewise.
+	(vect_gen_perm_mask_checked): New.
+	(vect_gen_perm_mask): Remove can_vec_perm_p check, rename to...
+	(vect_gen_perm_mask_any): ...this.
+	(perm_mask_for_reverse): Call can_vec_perm_p and
+	vect_gen_perm_mask_checked.
 
 2014-11-13  Felix Yang  <felix.yang@huawei.com>
 
@@ -6459,7 +6476,7 @@
 
 2014-11-11  Evgeny Stupachenko  <evstupac@gmail.com>
 
-        * tree-vect-data-refs.c (vect_shift_permute_load_chain): Extend shift
+	* tree-vect-data-refs.c (vect_shift_permute_load_chain): Extend shift
 	permutations on power of 2 cases.
 
 2014-11-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
