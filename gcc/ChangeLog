@@ -1,3 +1,8 @@
+2014-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/gimple.texi (gimple_build_assign_with_ops): Remove.
+	(gimple_build_assign): Document the new overloads.
+
 2014-12-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/64019
