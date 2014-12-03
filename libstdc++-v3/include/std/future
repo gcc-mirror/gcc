@@ -1606,7 +1606,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Caller should check whether the state is ready first, because this
       // function will return true even after the deferred function has run.
-      virtual bool _M_has_deferred() const { true; }
+      virtual bool _M_has_deferred() const { return true; }
     };
 
   // Common functionality hoisted out of the _Async_state_impl template.

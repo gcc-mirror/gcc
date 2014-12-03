@@ -1,5 +1,10 @@
 2014-12-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/64168
+	* include/std/future (_Deferred_state::_M_has_deferred): Fix return.
+
+2014-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/bits/hashtable.h: Fix whitespace and simplify function
 	definitions with trailing return types.
 
