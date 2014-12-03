@@ -1,9 +1,11 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512dq -mavx512vl -O2" } */
-/* { dg-final { scan-assembler-times "vextractf64x2\[ \\t\]+\[^\n\]*%zmm\[0-9\]" 3 } } */
-/* { dg-final { scan-assembler-times "vextractf64x2\[ \\t\]+\[^\n\]*%xmm\[0-9\]\{%k\[1-7\]\}\{z\}" 2 } } */
-/* { dg-final { scan-assembler-times "vextractf64x2\[ \\t\]+\[^\n\]*%xmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 2 } } */
-/* { dg-final { scan-assembler-times "vextractf64x2\[ \\t\]+\[^\n\]*%ymm\[0-9\]" 3 } } */
+/* { dg-final { scan-assembler-times "vextractf64x2\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+.{7}(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vextractf64x2\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+.{7}\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vextractf64x2\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+.{7}\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vextractf64x2\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+.{7}(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vextractf64x2\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+.{7}\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vextractf64x2\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+.{7}\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
 
 #include <immintrin.h>
 

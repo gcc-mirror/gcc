@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512f -O2" } */
-/* { dg-final { scan-assembler "vcomisd\[ \\t\]+\[^\n\]*\{sae\}\[^\n\]*%xmm"  } } */
+/* { dg-final { scan-assembler-times "vcomisd\[ \\t\]+\[^\n\]*\{sae\}\[^\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  } } */
 
 #include <immintrin.h>
 

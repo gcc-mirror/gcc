@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512pf -O2" } */
-/* { dg-final { scan-assembler-times "vscatterpf1dpd\[ \\t\]+\[^\n\]*%ymm\[0-9\]" 2 } } */
-/* { dg-final { scan-assembler-times "vscatterpf1dpd\[ \\t\]+\[^\n\]*\{%k\[1-7\]" 1 } } */
+/* { dg-final { scan-assembler-times "vscatterpf1dpd\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*\\)(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vscatterpf1dpd\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*\\)\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 

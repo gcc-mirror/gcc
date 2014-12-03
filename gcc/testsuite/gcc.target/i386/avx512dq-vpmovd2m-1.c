@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512dq -mavx512vl -O2" } */
-/* { dg-final { scan-assembler "vpmovd2m\[ \\t\]+\[^\n\]*%xmm\[0-9\]\[^\n\]*%k\[1-7\]" } } */
-/* { dg-final { scan-assembler "vpmovd2m\[ \\t\]+\[^\n\]*%ymm\[0-9\]\[^\n\]*%k\[1-7\]" } } */
-/* { dg-final { scan-assembler "vpmovd2m\[ \\t\]+\[^\n\]*%zmm\[0-9\]\[^\n\]*%k\[1-7\]" } } */
+/* { dg-final { scan-assembler-times "vpmovd2m\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpmovd2m\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpmovd2m\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\[^\n\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 

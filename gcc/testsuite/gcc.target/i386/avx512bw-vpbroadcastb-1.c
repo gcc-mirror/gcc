@@ -1,12 +1,12 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512bw -mavx512vl -O2" } */
-/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\n\]*%zmm\[0-9\]\[^\{\]" 2 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 2 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\{z\}" 2 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\n\]*%ymm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 2 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\n\]*%ymm\[0-9\]\{%k\[1-7\]\}\{z\}" 2 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\n\]*%xmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 2 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\n\]*%xmm\[0-9\]\{%k\[1-7\]\}\{z\}" 2 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 2 } } */
 
 #include <immintrin.h>
 

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512f -O2" } */
-/* { dg-final { scan-assembler-times "vgatherqps\[ \\t\]+\[^\n\]*zmm\[0-9\]\[^\n\]*ymm\[0-9\]{%k\[1-7\]}" 2 } } */
+/* { dg-final { scan-assembler-times "vgatherqps\[ \\t\]+\[^\{\n\]*zmm\[0-9\]\[^\n\]*ymm\[0-9\]{%k\[1-7\]}(?:\n|\[ \\t\]+#)" 2 } } */
 
 #include <immintrin.h>
 

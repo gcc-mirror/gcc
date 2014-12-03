@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512vbmi -mavx512vl -O2" } */
-/* { dg-final { scan-assembler-times "vpermi2b\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vpermi2b\[ \\t\]+\[^\n\]*%ymm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vpermi2b\[ \\t\]+\[^\n\]*%xmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vpermi2b\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vpermi2b\[ \\t\]+\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vpermi2b\[ \\t\]+\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
 
 #include <immintrin.h>
 

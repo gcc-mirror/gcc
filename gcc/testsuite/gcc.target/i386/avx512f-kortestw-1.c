@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O0 -mavx512f" } */
-/* { dg-final { scan-assembler-times "kortestw\[ \\t\]+\[^\n\]*%k\[0-7\]" 4 } } */
+/* { dg-final { scan-assembler-times "kortestw\[ \\t\]+\[^\{\n\]*%k\[0-7\](?:\n|\[ \\t\]+#)"  4 } } */
 
 #include <immintrin.h>
 
