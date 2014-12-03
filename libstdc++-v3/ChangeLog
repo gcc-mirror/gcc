@@ -1,5 +1,10 @@
 2014-12-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/hashtable.h: Fix whitespace and simplify function
+	definitions with trailing return types.
+
+2014-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/64161
 	* src/c++11/condition_variable.cc: Include <cstdlib>.
 
