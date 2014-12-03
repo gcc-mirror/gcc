@@ -1,3 +1,9 @@
+2014-12-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/52714
+	* combine.c (try_combine): Allow combining two insns into two
+	new insns if at least one of those is a noop.
+
 2014-12-03  Bin Cheng  <bin.cheng@arm.com>
 
 	* target.def (fusion_priority): Wrap code with @smallexample.
