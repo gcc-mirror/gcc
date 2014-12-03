@@ -2453,6 +2453,108 @@ gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
   return false;
 }
 
+/* Fold a call to the {,v}fprintf{,_unlocked} and __{,v}printf_chk builtins.
+   FP, FMT, and ARG are the arguments to the call.  We don't fold calls with
+   more than 3 arguments, and ARG may be null in the 2-argument case.
+
+   Return NULL_TREE if no simplification was possible, otherwise return the
+   simplified form of the call as a tree.  FCODE is the BUILT_IN_*
+   code of the function to be simplified.  */
+
+static bool 
+gimple_fold_builtin_fprintf (gimple_stmt_iterator *gsi,
+			     tree fp, tree fmt, tree arg,
+			     enum built_in_function fcode)
+{
+  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
+  tree fn_fputc, fn_fputs;
+  const char *fmt_str = NULL;
+
+  /* If the return value is used, don't do the transformation.  */
+  if (gimple_call_lhs (stmt) != NULL_TREE)
+    return false;
+
+  /* Check whether the format is a literal string constant.  */
+  fmt_str = c_getstr (fmt);
+  if (fmt_str == NULL)
+    return false;
+
+  if (fcode == BUILT_IN_FPRINTF_UNLOCKED)
+    {
+      /* If we're using an unlocked function, assume the other
+	 unlocked functions exist explicitly.  */
+      fn_fputc = builtin_decl_explicit (BUILT_IN_FPUTC_UNLOCKED);
+      fn_fputs = builtin_decl_explicit (BUILT_IN_FPUTS_UNLOCKED);
+    }
+  else
+    {
+      fn_fputc = builtin_decl_implicit (BUILT_IN_FPUTC);
+      fn_fputs = builtin_decl_implicit (BUILT_IN_FPUTS);
+    }
+
+  if (!init_target_chars ())
+    return false;
+
+  /* If the format doesn't contain % args or %%, use strcpy.  */
+  if (strchr (fmt_str, target_percent) == NULL)
+    {
+      if (fcode != BUILT_IN_VFPRINTF && fcode != BUILT_IN_VFPRINTF_CHK
+	  && arg)
+	return false;
+
+      /* If the format specifier was "", fprintf does nothing.  */
+      if (fmt_str[0] == '\0')
+	{
+	  replace_call_with_value (gsi, NULL_TREE);
+	  return true;
+	}
+
+      /* When "string" doesn't contain %, replace all cases of
+	 fprintf (fp, string) with fputs (string, fp).  The fputs
+	 builtin will take care of special cases like length == 1.  */
+      if (fn_fputs)
+	{
+	  gcall *repl = gimple_build_call (fn_fputs, 2, fmt, fp);
+	  replace_call_with_call_and_fold (gsi, repl);
+	  return true;
+	}
+    }
+
+  /* The other optimizations can be done only on the non-va_list variants.  */
+  else if (fcode == BUILT_IN_VFPRINTF || fcode == BUILT_IN_VFPRINTF_CHK)
+    return false;
+
+  /* If the format specifier was "%s", call __builtin_fputs (arg, fp).  */
+  else if (strcmp (fmt_str, target_percent_s) == 0)
+    {
+      if (!arg || ! POINTER_TYPE_P (TREE_TYPE (arg)))
+	return false;
+      if (fn_fputs)
+	{
+	  gcall *repl = gimple_build_call (fn_fputs, 2, arg, fp);
+	  replace_call_with_call_and_fold (gsi, repl);
+	  return true;
+	}
+    }
+
+  /* If the format specifier was "%c", call __builtin_fputc (arg, fp).  */
+  else if (strcmp (fmt_str, target_percent_c) == 0)
+    {
+      if (!arg
+	  || ! useless_type_conversion_p (integer_type_node, TREE_TYPE (arg)))
+	return false;
+      if (fn_fputc)
+	{
+	  gcall *repl = gimple_build_call (fn_fputc, 2, arg, fp);
+	  replace_call_with_call_and_fold (gsi, repl);
+	  return true;
+	}
+    }
+
+  return false;
+}
+
+
 
 /* Fold a call to __builtin_strlen with known length LEN.  */
 
@@ -2483,7 +2585,9 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
   if (avoid_folding_inline_builtin (callee))
     return false;
 
-  switch (DECL_FUNCTION_CODE (callee))
+  unsigned n = gimple_call_num_args (stmt);
+  enum built_in_function fcode = DECL_FUNCTION_CODE (callee);
+  switch (fcode)
     {
     case BUILT_IN_BZERO:
       return gimple_fold_builtin_memset (gsi, integer_zero_node,
@@ -2506,7 +2610,7 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					    gimple_call_arg (stmt, 1), 3);
     case BUILT_IN_SPRINTF_CHK:
     case BUILT_IN_VSPRINTF_CHK:
-      return gimple_fold_builtin_sprintf_chk (gsi, DECL_FUNCTION_CODE (callee));
+      return gimple_fold_builtin_sprintf_chk (gsi, fcode);
     case BUILT_IN_STRCAT_CHK:
       return gimple_fold_builtin_strcat_chk (gsi);
     case BUILT_IN_STRNCAT_CHK:
@@ -2540,14 +2644,14 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					     gimple_call_arg (stmt, 1),
 					     gimple_call_arg (stmt, 2),
 					     gimple_call_arg (stmt, 3),
-					     DECL_FUNCTION_CODE (callee));
+					     fcode);
     case BUILT_IN_STRCPY_CHK:
     case BUILT_IN_STPCPY_CHK:
       return gimple_fold_builtin_stxcpy_chk (gsi,
 					     gimple_call_arg (stmt, 0),
 					     gimple_call_arg (stmt, 1),
 					     gimple_call_arg (stmt, 2),
-					     DECL_FUNCTION_CODE (callee));
+					     fcode);
     case BUILT_IN_STRNCPY_CHK:
     case BUILT_IN_STPNCPY_CHK:
       return gimple_fold_builtin_stxncpy_chk (gsi,
@@ -2555,15 +2659,37 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					      gimple_call_arg (stmt, 1),
 					      gimple_call_arg (stmt, 2),
 					      gimple_call_arg (stmt, 3),
-					      DECL_FUNCTION_CODE (callee));
+					      fcode);
     case BUILT_IN_SNPRINTF_CHK:
     case BUILT_IN_VSNPRINTF_CHK:
-      return gimple_fold_builtin_snprintf_chk (gsi,
-					       DECL_FUNCTION_CODE (callee));
+      return gimple_fold_builtin_snprintf_chk (gsi, fcode);
     case BUILT_IN_SNPRINTF:
       return gimple_fold_builtin_snprintf (gsi);
     case BUILT_IN_SPRINTF:
       return gimple_fold_builtin_sprintf (gsi);
+    case BUILT_IN_FPRINTF:
+    case BUILT_IN_FPRINTF_UNLOCKED:
+    case BUILT_IN_VFPRINTF:
+      if (n == 2 || n == 3)
+	return gimple_fold_builtin_fprintf (gsi,
+					    gimple_call_arg (stmt, 0),
+					    gimple_call_arg (stmt, 1),
+					    n == 3
+					    ? gimple_call_arg (stmt, 2)
+					    : NULL_TREE,
+					    fcode);
+      break;
+    case BUILT_IN_FPRINTF_CHK:
+    case BUILT_IN_VFPRINTF_CHK:
+      if (n == 3 || n == 4)
+	return gimple_fold_builtin_fprintf (gsi,
+					    gimple_call_arg (stmt, 0),
+					    gimple_call_arg (stmt, 2),
+					    n == 4
+					    ? gimple_call_arg (stmt, 3)
+					    : NULL_TREE,
+					    fcode);
+      break;
     default:;
     }
 

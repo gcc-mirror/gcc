@@ -1,3 +1,17 @@
+2014-12-03  Richard Biener  <rguenther@suse.de>
+
+	* builtins.c (target_percent_c): Export.
+	(fold_builtin_fprintf): Move to gimple-fold.c.
+	(fold_builtin_2): Do not fold fprintf functions.
+	(fold_builtin_3): Likewise.
+	(fold_builtin_4): Remove.
+	(fold_builtin_n): Do not call fold_builtin_4.
+	* builtins.h (target_percent_c): Declare.
+	* gimple-fold.c (gimple_fold_builtin_fprintf): Move from
+	builtins.c and gimplify.
+	(gimple_fold_builtin): Fold fprintf, fprintf_unlocked, vfprintf,
+	fprintf_chk and vfprintf_chk here.
+
 2014-12-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/64153
