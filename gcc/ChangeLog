@@ -1,3 +1,12 @@
+2014-12-03  Renlin Li  <Renlin.Li@arm.com>
+
+	Backported from mainline
+	2014-12-03  Renlin Li  <Renlin.Li@arm.com>
+
+	PR middle-end/63762
+	PR target/63661
+	* ira.c (ira): Update preferred class.
+
 2014-12-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/64113

@@ -1,3 +1,14 @@
+2014-12-03  Renlin Li  <Renlin.Li@arm.com>
+
+	Backported from mainline
+	2014-12-03  Renlin Li  <Renlin.Li@arm.com>
+		    H.J. Lu  <hongjiu.lu@intel.com>
+
+	 PR middle-end/63762
+	 PR target/63661
+	 * gcc.dg/pr63762.c: New test.
+	 * gcc.target/i386/pr63661.c: New test.
+
 2014-12-01  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/63551
