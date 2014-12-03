@@ -18,7 +18,7 @@
        end do
        call foo j bar
 ! gfc_warning:
-       r2(4) = 0 ! { dg-warning "is out of bounds" }
+       r2(4) = 0 ! { dg-error "is out of bounds" }
        
        goto 3 45
        end

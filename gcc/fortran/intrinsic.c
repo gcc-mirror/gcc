@@ -4316,7 +4316,7 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
     {
       /* Do only print a warning if not a GNU extension.  */
       if (!silent && isym->standard != GFC_STD_GNU)
-	gfc_warning ("Intrinsic '%s' (is %s) is used at %L",
+	gfc_warning ("Intrinsic %qs (is %s) is used at %L",
 		     isym->name, _(symstd_msg), &where);
 
       return true;
@@ -4824,12 +4824,14 @@ gfc_warn_intrinsic_shadow (const gfc_symbol* sym, bool in_module, bool func)
 
   /* Emit the warning.  */
   if (in_module || sym->ns->proc_name)
-    gfc_warning ("'%s' declared at %L may shadow the intrinsic of the same"
+    gfc_warning (OPT_Wintrinsic_shadow,
+		 "%qs declared at %L may shadow the intrinsic of the same"
 		 " name.  In order to call the intrinsic, explicit INTRINSIC"
 		 " declarations may be required.",
 		 sym->name, &sym->declared_at);
   else
-    gfc_warning ("'%s' declared at %L is also the name of an intrinsic.  It can"
+    gfc_warning (OPT_Wintrinsic_shadow,
+		 "%qs declared at %L is also the name of an intrinsic.  It can"
 		 " only be called via an explicit interface or if declared"
 		 " EXTERNAL.", sym->name, &sym->declared_at);
 }

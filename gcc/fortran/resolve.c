@@ -1645,7 +1645,8 @@ gfc_resolve_intrinsic (gfc_symbol *sym, locus *loc)
     {
       if (sym->ts.type != BT_UNKNOWN && warn_surprising
 	  && !sym->attr.implicit_type)
-	gfc_warning ("Type specified for intrinsic function '%s' at %L is"
+	gfc_warning (OPT_Wsurprising,
+		     "Type specified for intrinsic function %qs at %L is"
 		      " ignored", sym->name, &sym->declared_at);
 
       if (!sym->attr.function &&
@@ -1718,9 +1719,9 @@ resolve_procedure_expression (gfc_expr* expr)
   /* A non-RECURSIVE procedure that is used as procedure expression within its
      own body is in danger of being called recursively.  */
   if (is_illegal_recursion (sym, gfc_current_ns))
-    gfc_warning ("Non-RECURSIVE procedure '%s' at %L is possibly calling"
+    gfc_warning ("Non-RECURSIVE procedure %qs at %L is possibly calling"
 		 " itself recursively.  Declare it RECURSIVE or use"
-		 " -frecursive", sym->name, &expr->where);
+		 " %<-frecursive%>", sym->name, &expr->where);
 
   return true;
 }
@@ -2101,7 +2102,7 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
 	  && (set_by_optional || arg->expr->rank != rank)
 	  && !(isym && isym->id == GFC_ISYM_CONVERSION))
 	{
-	  gfc_warning ("'%s' at %L is an array and OPTIONAL; IF IT IS "
+	  gfc_warning ("%qs at %L is an array and OPTIONAL; IF IT IS "
 		       "MISSING, it cannot be the actual argument of an "
 		       "ELEMENTAL procedure unless there is a non-optional "
 		       "argument with the same rank (12.4.1.5)",
@@ -6332,8 +6333,8 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok, bool own_scope)
 	  cmp = mpfr_cmp (iter->end->value.real, iter->start->value.real);
 	}
       if (warn_zerotrip && ((sgn > 0 && cmp < 0) || (sgn < 0 && cmp > 0)))
-	gfc_warning ("DO loop at %L will be executed zero times"
-		     " (use -Wno-zerotrip to suppress)",
+	gfc_warning (OPT_Wzerotrip,
+		     "DO loop at %L will be executed zero times",
 		     &iter->step->where);
     }
 
@@ -7709,8 +7710,9 @@ resolve_select (gfc_code *code, bool select_type)
 	      && gfc_compare_expr (cp->low, cp->high, INTRINSIC_GT) > 0)
 	    {
 	      if (warn_surprising)
-		gfc_warning ("Range specification at %L can never "
-			     "be matched", &cp->where);
+		gfc_warning (OPT_Wsurprising,
+			     "Range specification at %L can never be matched",
+			     &cp->where);
 
 	      cp->unreachable = 1;
 	      seen_unreachable = 1;
@@ -7811,7 +7813,8 @@ resolve_select (gfc_code *code, bool select_type)
   /* More than two cases is legal but insane for logical selects.
      Issue a warning for it.  */
   if (warn_surprising && type == BT_LOGICAL && ncases > 2)
-    gfc_warning ("Logical SELECT CASE block at %L has more that two cases",
+    gfc_warning (OPT_Wsurprising,
+		 "Logical SELECT CASE block at %L has more that two cases",
 		 &code->loc);
 }
 
@@ -8799,7 +8802,7 @@ gfc_resolve_assign_in_forall (gfc_code *code, int nvar, gfc_expr **var_expr)
 	     assignment.  Emit a warning rather than an error because the
 	     mask could be resolving this problem.  */
 	  if (!find_forall_index (code->expr1, forall_index, 0))
-	    gfc_warning ("The FORALL with index '%s' is not used on the "
+	    gfc_warning ("The FORALL with index %qs is not used on the "
 			 "left side of the assignment at %L and so might "
 			 "cause multiple assignment to this object",
 			 var_expr[n]->symtree->name, &code->expr1->where);
@@ -9181,8 +9184,9 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
     {
       int rc;
       if (warn_surprising)
-	gfc_warning ("BOZ literal at %L is bitwise transferred "
-		     "non-integer symbol '%s'", &code->loc,
+	gfc_warning (OPT_Wsurprising,
+		     "BOZ literal at %L is bitwise transferred "
+		     "non-integer symbol %qs", &code->loc,
 		     lhs->symtree->n.sym->name);
 
       if (!gfc_convert_boz (rhs, &lhs->ts))
@@ -10482,7 +10486,8 @@ resolve_charlen (gfc_charlen *cl)
   if (cl->length && !gfc_extract_int (cl->length, &i) && i < 0)
     {
       if (warn_surprising)
-	gfc_warning_now ("CHARACTER variable at %L has negative length %d,"
+	gfc_warning_now (OPT_Wsurprising,
+			 "CHARACTER variable at %L has negative length %d,"
 			 " the length has been set to zero",
 			 &cl->length->where, i);
       gfc_replace_expr (cl->length,
@@ -11499,7 +11504,8 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
       /* Warn if the procedure is non-scalar and not assumed shape.  */
       if (warn_surprising && arg->as && arg->as->rank != 0
 	  && arg->as->type != AS_ASSUMED_SHAPE)
-	gfc_warning ("Non-scalar FINAL procedure at %L should have assumed"
+	gfc_warning (OPT_Wsurprising,
+		     "Non-scalar FINAL procedure at %L should have assumed"
 		     " shape argument", &arg->declared_at);
 
       /* Check that it does not match in kind and rank with a FINAL procedure
@@ -11557,7 +11563,8 @@ error:
      were nodes in the list, must have been for arrays.  It is surely a good
      idea to have a scalar version there if there's something to finalize.  */
   if (warn_surprising && result && !seen_scalar)
-    gfc_warning ("Only array FINAL procedures declared for derived type '%s'"
+    gfc_warning (OPT_Wsurprising,
+		 "Only array FINAL procedures declared for derived type %qs"
 		 " defined at %L, suggest also scalar one",
 		 derived->name, &derived->declared_at);
 

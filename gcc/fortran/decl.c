@@ -1030,8 +1030,9 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 			   sym->name, &(sym->declared_at),
 			   sym->ns->proc_name->name);
 	      else if (warn_c_binding_type)
-		gfc_warning ("Variable '%s' at %L is a dummy argument of the "
-			     "BIND(C) procedure '%s' but may not be C "
+		gfc_warning (OPT_Wc_binding_type,
+			     "Variable %qs at %L is a dummy argument of the "
+			     "BIND(C) procedure %qs but may not be C "
 			     "interoperable",
 			     sym->name, &(sym->declared_at),
 			     sym->ns->proc_name->name);
@@ -3294,8 +3295,8 @@ gfc_match_import (void)
 
 	  if (gfc_find_symtree (gfc_current_ns->sym_root, name))
 	    {
-	      gfc_warning ("'%s' is already IMPORTed from host scoping unit "
-			   "at %C.", name);
+	      gfc_warning ("%qs is already IMPORTed from host scoping unit "
+			   "at %C", name);
 	      goto next_item;
 	    }
 
@@ -4031,7 +4032,8 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
       /* Make sure it wasn't an implicitly typed result.  */
       if (tmp_sym->attr.implicit_type && warn_c_binding_type)
 	{
-	  gfc_warning ("Implicitly declared BIND(C) function '%s' at "
+	  gfc_warning (OPT_Wc_binding_type,
+		       "Implicitly declared BIND(C) function %qs at "
                        "%L may not be C interoperable", tmp_sym->name,
                        &tmp_sym->declared_at);
 	  tmp_sym->ts.f90_type = tmp_sym->ts.type;
@@ -4052,9 +4054,10 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
 	  /* See if we're dealing with a sym in a common block or not.	*/
 	  if (is_in_common == 1 && warn_c_binding_type)
 	    {
-	      gfc_warning ("Variable '%s' in common block '%s' at %L "
+	      gfc_warning (OPT_Wc_binding_type,
+			   "Variable %qs in common block %qs at %L "
                            "may not be a C interoperable "
-                           "kind though common block '%s' is BIND(C)",
+                           "kind though common block %qs is BIND(C)",
                            tmp_sym->name, com_block->name,
                            &(tmp_sym->declared_at), com_block->name);
 	    }
@@ -4065,7 +4068,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
                            "interoperable but it is BIND(C)",
                            tmp_sym->name, &(tmp_sym->declared_at));
               else if (warn_c_binding_type)
-                gfc_warning ("Variable '%s' at %L "
+                gfc_warning (OPT_Wc_binding_type, "Variable %qs at %L "
                              "may not be a C interoperable "
                              "kind but it is bind(c)",
                              tmp_sym->name, &(tmp_sym->declared_at));

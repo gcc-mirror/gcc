@@ -1721,7 +1721,7 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
 	if (n == WARNING || (warn && n == ERROR))
 	  {
 	    gfc_warning ("Fortran 2003: %s specifier in %s statement at %C "
-			 "has value '%s'", specifier, statement,
+			 "has value %qs", specifier, statement,
 			 allowed_f2003[i]);
 	    return 1;
 	  }
@@ -1748,7 +1748,7 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
 	if (n == WARNING || (warn && n == ERROR))
 	  {
 	    gfc_warning ("Extension: %s specifier in %s statement at %C "
-			 "has value '%s'", specifier, statement,
+			 "has value %qs", specifier, statement,
 			 allowed_gnu[i]);
 	    return 1;
 	  }

@@ -397,7 +397,7 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 	 blank common blocks may be of different sizes.  */
       if (!tree_int_cst_equal (DECL_SIZE_UNIT (decl), size)
 	  && strcmp (com->name, BLANK_COMMON_NAME))
-	gfc_warning ("Named COMMON block '%s' at %L shall be of the "
+	gfc_warning ("Named COMMON block %qs at %L shall be of the "
 		     "same size as elsewhere (%lu vs %lu bytes)", com->name,
 		     &com->where,
 		     (unsigned long) TREE_INT_CST_LOW (size),
@@ -1136,12 +1136,12 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 	      if (warn_align_commons)
 		{
 		  if (strcmp (common->name, BLANK_COMMON_NAME))
-		    gfc_warning ("Padding of %d bytes required before '%s' in "
-				 "COMMON '%s' at %L; reorder elements or use "
+		    gfc_warning ("Padding of %d bytes required before %qs in "
+				 "COMMON %qs at %L; reorder elements or use "
 				 "-fno-align-commons", (int)offset,
 				 s->sym->name, common->name, &common->where);
 		  else
-		    gfc_warning ("Padding of %d bytes required before '%s' in "
+		    gfc_warning ("Padding of %d bytes required before %qs in "
 				 "COMMON at %L; reorder elements or use "
 				 "-fno-align-commons", (int)offset,
 				 s->sym->name, &common->where);
@@ -1170,12 +1170,14 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
   if (common_segment->offset != 0 && warn_align_commons)
     {
       if (strcmp (common->name, BLANK_COMMON_NAME))
-	gfc_warning ("COMMON '%s' at %L requires %d bytes of padding; "
-		     "reorder elements or use -fno-align-commons",
+	gfc_warning (OPT_Walign_commons,
+		     "COMMON %qs at %L requires %d bytes of padding; "
+		     "reorder elements or use %<-fno-align-commons%>",
 		     common->name, &common->where, (int)common_segment->offset);
       else
-	gfc_warning ("COMMON at %L requires %d bytes of padding; "
-		     "reorder elements or use -fno-align-commons",
+	gfc_warning (OPT_Walign_commons,
+		     "COMMON at %L requires %d bytes of padding; "
+		     "reorder elements or use %<-fno-align-commons%>",
 		     &common->where, (int)common_segment->offset);
     }
 

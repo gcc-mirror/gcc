@@ -540,7 +540,7 @@ gfc_trans_return (gfc_code * code)
       if (!result)
 	{
 	  gfc_warning ("An alternate return at %L without a * dummy argument",
-			&code->expr1->where);
+		       &code->expr1->where);
 	  return gfc_generate_return ();
 	}
 
