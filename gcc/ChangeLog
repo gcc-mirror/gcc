@@ -1,3 +1,10 @@
+2014-12-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR rtl-optimization/64010
+	* reload.c (push_reload): Before reusing a register contained
+	in an operand as input reload register, ensure that it is not
+	used in CALL_INSN_FUNCTION_USAGE.
+
 2014-12-03  Ulrich Drepper  <drepper@gmail.com>
 
 	* Makefile.in: Use $(LN_S) instead of $(LN) -s and remove file first
