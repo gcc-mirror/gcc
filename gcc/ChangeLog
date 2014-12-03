@@ -1,3 +1,10 @@
+2014-12-03  Prachi Godbole  <prachi.godbole@imgtec.com>
+
+	* config/mips/p5600.md (define_automaton, define_cpu_unit): Replace
+	p5600_agen_pipe and p5600_alu_pipe with p5600_agen_alq_pipe.
+	(p5600_int_arith_1, p5600_int_arith_2, p5600_int_arith_4): Change
+	reservation order.
+
 2014-12-03  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/63957
