@@ -1,3 +1,10 @@
+2014-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63558
+	* decl.c (identify_goto): Return a bool if diagnostic is emitted.
+	(check_previous_goto_1): Consistently emit permerror + inform.
+	(check_goto): Likewise.
+
 2014-12-03  Richard Biener  <rguenther@suse.de>
 
 	* constexpr.c (cxx_eval_builtin_function_call): Use

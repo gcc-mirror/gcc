@@ -10,12 +10,12 @@ struct S
 void f ()
 {
   {
-    S s1; // { dg-error "" } skips initialization
+    S s1; // { dg-message "" } skips initialization
   
   t:	  // { dg-error "" } jump to label
     S s2;
     ;
   }
 
-  goto t; // { dg-error "" } from here
+  goto t; // { dg-message "" } from here
 }
