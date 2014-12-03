@@ -1311,6 +1311,7 @@ enum reg_class
   FP_TOP_REG, FP_SECOND_REG,	/* %st(0) %st(1) */
   FLOAT_REGS,
   SSE_FIRST_REG,
+  NO_REX_SSE_REGS,
   SSE_REGS,
   EVEX_SSE_REGS,
   BND_REGS,
@@ -1369,6 +1370,7 @@ enum reg_class
    "FP_TOP_REG", "FP_SECOND_REG",	\
    "FLOAT_REGS",			\
    "SSE_FIRST_REG",			\
+   "NO_REX_SSE_REGS",			\
    "SSE_REGS",				\
    "EVEX_SSE_REGS",			\
    "BND_REGS",				\
@@ -1409,6 +1411,7 @@ enum reg_class
     { 0x0200,       0x0,    0x0 },       /* FP_SECOND_REG */             \
     { 0xff00,       0x0,    0x0 },       /* FLOAT_REGS */                \
   { 0x200000,       0x0,    0x0 },       /* SSE_FIRST_REG */             \
+{ 0x1fe00000,  0x000000,    0x0 },       /* NO_REX_SSE_REGS */           \
 { 0x1fe00000,  0x1fe000,    0x0 },       /* SSE_REGS */                  \
        { 0x0,0xffe00000,   0x1f },       /* EVEX_SSE_REGS */             \
        { 0x0,       0x0,0x1e000 },       /* BND_REGS */			 \

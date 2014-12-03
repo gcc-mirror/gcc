@@ -1,3 +1,8 @@
+2014-12-03  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.target/i386/sse2-init-v2di-2.c: Adjust to changed
+	vec_concatv2di template.
+
 2014-12-03  Segher Boessenkool  <segher.kernel.crashing.org>
 
 	PR rtl-optimization/52714

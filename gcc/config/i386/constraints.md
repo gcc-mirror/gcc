@@ -106,6 +106,8 @@
 ;;  a	Integer register when zero extensions with AND are disabled
 ;;  p	Integer register when TARGET_PARTIAL_REG_STALL is disabled
 ;;  f	x87 register when 80387 floating point arithmetic is enabled
+;;  r	SSE regs not requiring REX prefix when prefixes avoidance is enabled
+;;	and all SSE regs otherwise
 
 (define_register_constraint "Yz" "TARGET_SSE ? SSE_FIRST_REG : NO_REGS"
  "First SSE register (@code{%xmm0}).")
@@ -138,6 +140,10 @@
 (define_register_constraint "Yf"
  "(ix86_fpmath & FPMATH_387) ? FLOAT_REGS : NO_REGS"
  "@internal Any x87 register when 80387 FP arithmetic is enabled.")
+
+(define_register_constraint "Yr"
+ "TARGET_SSE ? (X86_TUNE_AVOID_4BYTE_PREFIXES ? NO_REX_SSE_REGS : ALL_SSE_REGS) : NO_REGS"
+ "@internal Lower SSE register when avoiding REX prefix and all SSE registers otherwise.")
 
 ;; We use the B prefix to denote any number of internal operands:
 ;;  s  Sibcall memory operand, not valid for TARGET_X32
