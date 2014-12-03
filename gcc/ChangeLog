@@ -1,5 +1,9 @@
 2014-12-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/59708
+	* expmed.c (expand_widening_mult): Return const0_rtx if
+	coeff is 0.
+
 	* doc/gimple.texi (gimple_build_assign_with_ops): Remove.
 	(gimple_build_assign): Document the new overloads.
 

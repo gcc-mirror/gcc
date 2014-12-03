@@ -3289,6 +3289,9 @@ expand_widening_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
       enum mult_variant variant;
       struct algorithm algorithm;
 
+      if (coeff == 0)
+	return CONST0_RTX (mode);
+
       /* Special case powers of two.  */
       if (EXACT_POWER_OF_2_OR_ZERO_P (coeff))
 	{
