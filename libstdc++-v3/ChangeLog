@@ -1,3 +1,8 @@
+2014-12-03  Marek Polacek  <polacek@redhat.com>
+
+	* include/bits/regex_compiler.h (_S_cache_size): Multiply the
+	RHS of the shift-expression by _UseCache::value.
+
 2014-12-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64168
