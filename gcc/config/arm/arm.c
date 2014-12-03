@@ -2824,9 +2824,6 @@ arm_option_override (void)
 
   arm_fpu_desc = &all_fpus[arm_fpu_index];
 
-  if (TARGET_NEON && !arm_arch7)
-    error ("target CPU does not support NEON");
-
   switch (arm_fpu_desc->model)
     {
     case ARM_FP_MODEL_VFP:
