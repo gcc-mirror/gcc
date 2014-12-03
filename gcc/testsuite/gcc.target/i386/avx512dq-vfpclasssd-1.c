@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512dq -O2" } */
-/* { dg-final { scan-assembler "vfpclasssd\[ \\t\]+\[^\n\]*%xmm\[0-9\]\[^\n^k\]*%k\[1-7\]\[^\{\]" } } */
+/* { dg-final { scan-assembler-times "vfpclasssd\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n^k\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 

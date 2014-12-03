@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512vl -O2" } */
-/* { dg-final { scan-assembler-times "vpscatterdq\[ \\t\]+\[^\n\]*ymm\[0-9\]\[^\n\]*xmm\[0-9\]\[^\n\]*{%k\[1-7\]}" 2 } } */
-/* { dg-final { scan-assembler-times "vpscatterdq\[ \\t\]+\[^\n\]*xmm\[0-9\]\[^\n\]*xmm\[0-9\]\[^\n\]*{%k\[1-7\]}" 2 } } */
+/* { dg-final { scan-assembler-times "vpscatterdq\[ \\t\]+\[^\{\n\]*ymm\[0-9\]\[^\n\]*xmm\[0-9\]\[^\n\]*{%k\[1-7\]}(?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vpscatterdq\[ \\t\]+\[^\{\n\]*xmm\[0-9\]\[^\n\]*xmm\[0-9\]\[^\n\]*{%k\[1-7\]}(?:\n|\[ \\t\]+#)" 2 } } */
 
 #include <immintrin.h>
 

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512bw -O2" } */
-/* { dg-final { scan-assembler-times "vpsrldq\[ \\t\]+\[^\n\]*%zmm\[0-9\]\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vpsrldq\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 

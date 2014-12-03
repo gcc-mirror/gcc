@@ -1,9 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512f -O2" } */
-/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+%r\[^\n\]+%zmm\[0-9\]\[^\{\]" 1 { target { ! { ia32 } } } } } */
-/* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+%e\[^\n\]+%zmm\[0-9\]\[^\{\]" 1 { target { ! { ia32 } } } } } */
-/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+\[^\n\]+%zmm\[0-9\]\[^\{\]" 1 { target ia32 } } } */
-/* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+\[^\n\]+%zmm\[0-9\]\[^\{\]" 1 { target ia32 } } } */
+/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+%r\[^\n\]+%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { target { ! { ia32 } } } } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+%e\[^\n\]+%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { target { ! { ia32 } } } } } */
+/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+\[^\n\]+%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { target ia32 } } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+\[^\n\]+%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { target ia32 } } } */
 
 #include <x86intrin.h>
 

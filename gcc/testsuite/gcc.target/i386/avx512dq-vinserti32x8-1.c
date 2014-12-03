@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512dq -O2" } */
-/* { dg-final { scan-assembler-times "vinserti32x8\[ \\t\]+\[^\n\]*" 3 } } */
-/* { dg-final { scan-assembler-times "vinserti32x8\[ \\t\]+\[^\n\]*\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vinserti32x8\[ \\t\]+\[^\n\]*\{z\}" 1 } } */
+/* { dg-final { scan-assembler-times "vinserti32x8\[ \\t\]+\[^\{\n\]*(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vinserti32x8\[ \\t\]+\[^\{\n\]*\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vinserti32x8\[ \\t\]+\[^\{\n\]*\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 
