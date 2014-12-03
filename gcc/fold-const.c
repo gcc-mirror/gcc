@@ -14405,6 +14405,8 @@ fold_build_call_array_loc (location_t loc, tree type, tree fn,
 #endif
 
   tem = fold_builtin_call_array (loc, type, fn, nargs, argarray);
+  if (!tem)
+    tem = build_call_array_loc (loc, type, fn, nargs, argarray);
 
 #ifdef ENABLE_FOLD_CHECKING
   md5_init_ctx (&ctx);

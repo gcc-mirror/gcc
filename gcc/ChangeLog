@@ -1,3 +1,22 @@
+2014-12-03  Richard Biener  <rguenther@suse.de>
+
+	* builtins.c (fold_builtin_fpclassify): Change to take
+	array of arguments instead of CALL_EXPR tree.
+	(MAX_ARGS_TO_FOLD_BUILTIN): Remove.
+	(fold_builtin_n): Dispatch to fold_builtin_varargs.
+	(fold_call_expr): Always use fold_builtin_n.
+	(fold_builtin_call_array): Change to not build the unfolded call,
+	always use fold_builtin_n.
+	(fold_builtin_varargs): Change to take array of arguments instead
+	of CALL_EXPR tree.
+	(fold_call_stmt): Always use fold_builtin_n.
+	* tree.c (build_call_expr_loc_array): Use fold_build_call_array_loc.
+	* fold-const.c (fold_build_call_array_loc): Build the call
+	if fold_builtin_call_array returned NULL_TREE.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Do not build
+	a CALL_EXPR and use fold_builtin_call_array instead of
+	fold_call_expr.
+
 2014-12-03  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_simd_dup<mode>, orn<mode>3,

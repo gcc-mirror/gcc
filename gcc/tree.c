@@ -10591,7 +10591,7 @@ build_call_expr_loc_array (location_t loc, tree fndecl, int n, tree *argarray)
   tree fntype = TREE_TYPE (fndecl);
   tree fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
  
-  return fold_builtin_call_array (loc, TREE_TYPE (fntype), fn, n, argarray);
+  return fold_build_call_array_loc (loc, TREE_TYPE (fntype), fn, n, argarray);
 }
 
 /* Conveniently construct a function call expression.  FNDECL names the
