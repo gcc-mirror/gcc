@@ -4473,7 +4473,7 @@ rest_of_handle_final (void)
   assemble_start_function (current_function_decl, fnname);
   final_start_function (get_insns (), asm_out_file, optimize);
   final (get_insns (), asm_out_file, optimize);
-  if (flag_use_caller_save)
+  if (flag_ipa_ra)
     collect_fn_hard_reg_usage ();
   final_end_function ();
 
@@ -4887,7 +4887,7 @@ bool
 get_call_reg_set_usage (rtx_insn *insn, HARD_REG_SET *reg_set,
 			HARD_REG_SET default_set)
 {
-  if (flag_use_caller_save)
+  if (flag_ipa_ra)
     {
       struct cgraph_rtl_info *node = get_call_cgraph_rtl_info (insn);
       if (node != NULL

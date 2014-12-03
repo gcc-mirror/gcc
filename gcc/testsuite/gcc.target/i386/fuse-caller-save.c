@@ -1,8 +1,8 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fuse-caller-save -fomit-frame-pointer" } */
+/* { dg-options "-O2 -fipa-ra -fomit-frame-pointer" } */
 /* { dg-additional-options "-mregparm=1" { target ia32 } } */
 
-/* Testing -fuse-caller-save optimization option.  */
+/* Testing -fipa-ra optimization option.  */
 
 static int __attribute__((noinline))
 bar (int x)

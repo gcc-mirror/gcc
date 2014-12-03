@@ -3109,13 +3109,12 @@ arm_option_override (void)
      - epilogue_insns - does not accurately model the corresponding insns
      emitted in the asm file.  In particular, see the comment in thumb_exit
      'Find out how many of the (return) argument registers we can corrupt'.
-     As a consequence, the epilogue may clobber registers without
-     fuse-caller-save finding out about it.  Therefore, disable fuse-caller-save
-     in Thumb1 mode.
+     As a consequence, the epilogue may clobber registers without fipa-ra
+     finding out about it.  Therefore, disable fipa-ra in Thumb1 mode.
      TODO: Accurately model clobbers for epilogue_insns and reenable
-     fuse-caller-save.  */
+     fipa-ra.  */
   if (TARGET_THUMB1)
-    flag_use_caller_save = 0;
+    flag_ipa_ra = 0;
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();

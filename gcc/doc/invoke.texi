@@ -438,7 +438,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-vectorize -ftree-vrp @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
--fuse-caller-save -fvariable-expansion-in-unroller -fvect-cost-model -fvpt @gol
+-fipa-ra -fvariable-expansion-in-unroller -fvect-cost-model -fvpt @gol
 -fweb -fwhole-program -fwpa -fuse-ld=@var{linker} -fuse-linker-plugin @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os -Ofast -Og}
@@ -7202,7 +7202,7 @@ also turns on the following optimization flags:
 -ftree-switch-conversion -ftree-tail-merge @gol
 -ftree-pre @gol
 -ftree-vrp @gol
--fuse-caller-save}
+-fipa-ra}
 
 Please note the warning under @option{-fgcse} about
 invoking @option{-O2} on programs that use computed gotos.
@@ -8034,7 +8034,7 @@ and then tries to find ways to combine them.
 
 Enabled by default at @option{-O1} and higher.
 
-@item -fuse-caller-save
+@item -fipa-ra
 Use caller save registers for allocation if those registers are not used by
 any called function.  In that case it is not necessary to save and restore
 them around calls.  This is only possible if called functions are part of

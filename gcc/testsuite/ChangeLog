@@ -1,3 +1,23 @@
+2014-12-03  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/63957
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Replace -fno-use-caller-save with
+	-fno-ipa-ra.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: Same.
+	* gcc.target/aarch64/aapcs64/aapcs64.exp: Same.
+	* gcc.dg/fuse-caller-save.c: Replace -fuse-caller-save with -fipa-ra.
+	* gcc.target/aarch64/fuse-caller-save.c: Same.
+	* gcc.target/arm/fuse-caller-save.c: Same.
+	* gcc.target/i386/fuse-caller-save-rec.c: Same.
+	* gcc.target/i386/fuse-caller-save-xmm-run.c: Same.
+	* gcc.target/i386/fuse-caller-save-xmm.c: Same.
+	* gcc.target/i386/fuse-caller-save.c: Same.
+	* gcc.target/mips/fuse-caller-save-micromips.c: Same.
+	* gcc.target/mips/fuse-caller-save-mips16.c: Same.
+	* gcc.target/mips/fuse-caller-save.c: Same.
+	* gcc.target/mips/mips.exp: Replace use-caller-save with ipa-ra in
+	-ffoo/-fno-foo options.
+
 2014-12-03  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* gcc.target/i386/sse2-init-v2di-2.c: Adjust to changed
