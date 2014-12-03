@@ -40,7 +40,8 @@ output_buffer::output_buffer ()
     cur_chunk_array (),
     stream (stderr),
     line_length (),
-    digit_buffer ()
+    digit_buffer (),
+    flush_p (true)
 {
   obstack_init (&formatted_obstack);
   obstack_init (&chunk_obstack);
@@ -679,12 +680,25 @@ pp_format_verbatim (pretty_printer *pp, text_info *text)
   pp_wrapping_mode (pp) = oldmode;
 }
 
-/* Flush the content of BUFFER onto the attached stream.  */
+/* Flush the content of BUFFER onto the attached stream.  This
+   function does nothing unless pp->output_buffer->flush_p.  */
 void
 pp_flush (pretty_printer *pp)
 {
-  pp_write_text_to_stream (pp);
   pp_clear_state (pp);
+  if (!pp->buffer->flush_p)
+    return;
+  pp_write_text_to_stream (pp);
+  fflush (pp_buffer (pp)->stream);
+}
+
+/* Flush the content of BUFFER onto the attached stream independently
+   of the value of pp->output_buffer->flush_p.  */
+void
+pp_really_flush (pretty_printer *pp)
+{
+  pp_clear_state (pp);
+  pp_write_text_to_stream (pp);
   fflush (pp_buffer (pp)->stream);
 }
 

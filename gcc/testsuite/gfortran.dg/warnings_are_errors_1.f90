@@ -17,7 +17,7 @@
 
        implicit none
 ! gfc_warning:
-1234  complex :: cplx ! { dg-warning "defined but cannot be used" }
+1234  complex :: cplx ! { dg-error "defined but cannot be used" }
       cplx = 20.
 
 ! gfc_warning_now:

@@ -1,3 +1,25 @@
+2014-12-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* gfortran.h (gfc_warning): Now returns bool. Add overload that
+	accepts opt.
+	(gfc_warning_1): Declare.
+	* error.c
+	(pp_warning_buffer,warningcount_buffered,werrorcount_buffered):	New.
+	(gfc_buffer_error): Set pp_warning_buffer.flush_p.
+	(gfc_clear_pp_buffer): New.
+	(gfc_warning_1): Renamed from gfc_warning.
+	(gfc_warning): Add three new overloads. One that takes just a
+	format string and ellipsis, another that takes also a warning
+	option, and another that takes also va_list instead of ellipsis.
+	(gfc_clear_warning): Clear pp_warning_buffer.
+	(gfc_warning_check): Flush pp_warning_buffer and update warning
+	and werror counters.
+	(gfc_diagnostics_init): Init pp_warning_buffer.
+
+	* Update all gfc_warning calls that do not use multiple
+	locations to use %qs and OPT_W*, otherwise use gfc_warning_1.
+
 2014-12-02  Tobias Burnus  <burnus@net-b.de>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 

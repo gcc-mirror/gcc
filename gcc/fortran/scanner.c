@@ -1155,7 +1155,8 @@ restart:
 	    {
 	      gfc_current_locus.nextc--;
 	      if (warn_ampersand && in_string == INSTRING_WARN)
-		gfc_warning ("Missing '&' in continued character "
+		gfc_warning (OPT_Wampersand, 
+			     "Missing %<&%> in continued character "
 			     "constant at %C");
 	    }
 	  /* Both !$omp and !$ -fopenmp continuation lines have & on the

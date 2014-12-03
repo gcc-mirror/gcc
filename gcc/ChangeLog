@@ -1,3 +1,12 @@
+2014-12-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* pretty-print.c (output_buffer::output_buffer): Init flush_p to true.
+	(pp_flush): Flush only if flush_p.
+	(pp_really_flush): New.
+	* pretty-print.h (struct output_buffer): Add flush_p.
+	(pp_really_flush): Declare.
+
 2014-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (ALL_HOST_BACKEND_OBJS): Add $(GENGTYPE_OBJS),

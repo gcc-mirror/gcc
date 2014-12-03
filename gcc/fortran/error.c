@@ -50,6 +50,10 @@ static int terminal_width, buffer_flag, errors, warnings;
 
 static gfc_error_buf error_buffer, warning_buffer, *cur_error_buffer;
 
+static output_buffer pp_warning_buffer;
+static int warningcount_buffered, werrorcount_buffered;
+
+#include <new> /* For placement-new */
 
 /* Go one level deeper suppressing errors.  */
 
@@ -122,6 +126,7 @@ void
 gfc_buffer_error (int flag)
 {
   buffer_flag = flag;
+  pp_warning_buffer.flush_p = !flag;
 }
 
 
@@ -804,10 +809,25 @@ gfc_increment_error_count (void)
 }
 
 
+/* Clear any output buffered in a pretty-print output_buffer.  */
+
+static void
+gfc_clear_pp_buffer (output_buffer *this_buffer)
+{
+  pretty_printer *pp = global_dc->printer;
+  output_buffer *tmp_buffer = pp->buffer;
+  pp->buffer = this_buffer;
+  pp_clear_output_area (pp);
+  pp->buffer = tmp_buffer;
+}
+
+
 /* Issue a warning.  */
+/* Use gfc_warning instead, unless two locations are used in the same
+   warning or for scanner.c, if the location is not properly set up.  */
 
 void
-gfc_warning (const char *gmsgid, ...)
+gfc_warning_1 (const char *gmsgid, ...)
 {
   va_list argp;
 
@@ -830,6 +850,88 @@ gfc_warning (const char *gmsgid, ...)
     if (warnings_are_errors)
       gfc_increment_error_count();
   }
+}
+
+
+/* This is just a helper function to avoid duplicating the logic of
+   gfc_warning.  */
+
+static bool
+gfc_warning (int opt, const char *gmsgid, va_list ap) ATTRIBUTE_GCC_GFC(2,0);
+
+static bool
+gfc_warning (int opt, const char *gmsgid, va_list ap)
+{
+  va_list argp;
+  va_copy (argp, ap);
+
+  diagnostic_info diagnostic;
+  bool fatal_errors = global_dc->fatal_errors;
+  pretty_printer *pp = global_dc->printer;
+  output_buffer *tmp_buffer = pp->buffer;
+  bool buffered_p = !pp_warning_buffer.flush_p;
+
+  gfc_clear_pp_buffer (&pp_warning_buffer);
+
+  if (buffered_p)
+    {
+      pp->buffer = &pp_warning_buffer;
+      global_dc->fatal_errors = false;
+      /* To prevent -fmax-errors= triggering.  */
+      --werrorcount;
+    }
+
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION,
+		       DK_WARNING);
+  diagnostic.option_index = opt;
+  bool ret = report_diagnostic (&diagnostic);
+
+  if (buffered_p)
+    {
+      pp->buffer = tmp_buffer;
+      global_dc->fatal_errors = fatal_errors;
+
+      warningcount_buffered = 0;
+      werrorcount_buffered = 0;
+      /* Undo the above --werrorcount if not Werror, otherwise
+	 werrorcount is correct already.  */
+      if (!ret)
+	++werrorcount;
+      else if (diagnostic.kind == DK_ERROR)
+	++werrorcount_buffered;
+      else 
+	++werrorcount, --warningcount, ++warningcount_buffered;
+    }
+  
+  va_end (argp);
+  return ret;
+}
+
+/* Issue a warning.  */
+/* This function uses the common diagnostics, but does not support
+   two locations; when being used in scanner.c, ensure that the location
+   is properly setup. Otherwise, use gfc_warning_1.   */
+
+bool
+gfc_warning (int opt, const char *gmsgid, ...)
+{
+  va_list argp;
+
+  va_start (argp, gmsgid);
+  bool ret = gfc_warning (opt, gmsgid, argp);
+  va_end (argp);
+  return ret;
+}
+
+bool
+gfc_warning (const char *gmsgid, ...)
+{
+  va_list argp;
+
+  va_start (argp, gmsgid);
+  bool ret = gfc_warning (0, gmsgid, argp);
+  va_end (argp);
+  return ret;
 }
 
 
@@ -1176,6 +1278,11 @@ void
 gfc_clear_warning (void)
 {
   warning_buffer.flag = 0;
+
+  gfc_clear_pp_buffer (&pp_warning_buffer);
+  warningcount_buffered = 0;
+  werrorcount_buffered = 0;
+  pp_warning_buffer.flush_p = false;
 }
 
 
@@ -1192,6 +1299,20 @@ gfc_warning_check (void)
 	fputs (warning_buffer.message, stderr);
       warning_buffer.flag = 0;
     }
+
+  /* This is for the new diagnostics machinery.  */
+  pretty_printer *pp = global_dc->printer;
+  output_buffer *tmp_buffer = pp->buffer;
+  pp->buffer = &pp_warning_buffer;
+  if (pp_last_position_in_text (pp) != NULL)
+    {
+      pp_really_flush (pp);
+      pp_warning_buffer.flush_p = true;
+      warningcount += warningcount_buffered;
+      werrorcount += werrorcount_buffered;
+    }
+
+  pp->buffer = tmp_buffer;
 }
 
 
@@ -1407,6 +1528,7 @@ gfc_diagnostics_init (void)
   diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
   diagnostic_format_decoder (global_dc) = gfc_format_decoder;
   global_dc->caret_char = '^';
+  new (&pp_warning_buffer) output_buffer ();
 }
 
 void

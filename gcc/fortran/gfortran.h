@@ -2672,7 +2672,9 @@ void gfc_buffer_error (int);
 
 const char *gfc_print_wide_char (gfc_char_t);
 
-void gfc_warning (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
+void gfc_warning_1 (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
+bool gfc_warning (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
+bool gfc_warning (int opt, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 void gfc_warning_now_1 (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 bool gfc_warning_now (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 bool gfc_warning_now (int opt, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
