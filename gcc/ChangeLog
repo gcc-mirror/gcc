@@ -1,3 +1,9 @@
+2014-12-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/64151
+	PR rtl-optimization/64156
+	* ira-costs.c (scan_one_insn): Revert r218266.
+
 2014-12-03  Richard Biener  <rguenther@suse.de>
 
 	* builtins.c (fold_builtin_fpclassify): Change to take
