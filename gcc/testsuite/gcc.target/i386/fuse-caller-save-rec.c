@@ -1,8 +1,8 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fuse-caller-save -fomit-frame-pointer -fno-optimize-sibling-calls" } */
+/* { dg-options "-O2 -fipa-ra -fomit-frame-pointer -fno-optimize-sibling-calls" } */
 /* { dg-additional-options "-mregparm=1" { target ia32 } } */
 
-/* Test -fuse-caller-save optimization on self-recursive function.  */
+/* Test -fipa-ra optimization on self-recursive function.  */
 
 static int __attribute__((noinline))
 bar (int x)

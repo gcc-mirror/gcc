@@ -3330,7 +3330,7 @@ expand_call (tree exp, rtx target, int ignore)
 		   next_arg_reg, valreg, old_inhibit_defer_pop, call_fusage,
 		   flags, args_so_far);
 
-      if (flag_use_caller_save)
+      if (flag_ipa_ra)
 	{
 	  rtx_call_insn *last;
 	  rtx datum = NULL_RTX;
@@ -4370,7 +4370,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	       valreg,
 	       old_inhibit_defer_pop + 1, call_fusage, flags, args_so_far);
 
-  if (flag_use_caller_save)
+  if (flag_ipa_ra)
     {
       rtx last, datum = orgfun;
       gcc_assert (GET_CODE (datum) == SYMBOL_REF);

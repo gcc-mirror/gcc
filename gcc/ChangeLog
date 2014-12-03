@@ -1,3 +1,24 @@
+2014-12-03  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/63957
+	* doc/invoke.texi: Replace -fuse-caller-save with -fipa-ra.
+	* final.c (rest_of_handle_final): Replace flag_use_caller_save with
+	flag_ipa_ra.
+	(get_call_reg_set_usage): Same.
+	* lra-assigns.c (lra_assign): Same.
+	* lra-constraints.c (need_for_call_save_p): Same.
+	* lra-lives.c (process_bb_lives): Same.
+	* lra.c (lra): Same.
+	* calls.c (expand_call): Same.
+	(emit_library_call_value_1): Same.
+	* config/arm/arm.c (arm_option_override): Same.
+	* opts.c (default_options_table): Replace OPT_fuse_caller_save with
+	OPT_fipa_ra.
+	* target.def (call_fusage_contains_non_callee_clobbers): Replace
+	fuse-caller-save with fipa-ra.
+	* doc/tm.texi (TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS): Same.
+	* common.opt: Same.
+
 2014-12-03  Yury Gribov  <y.gribov@samsung.com>
 
 	* sanopt.c (maybe_get_single_definition): New function.

@@ -1527,7 +1527,7 @@ lra_assign (void)
   create_live_range_start_chains ();
   setup_live_pseudos_and_spill_after_risky_transforms (&all_spilled_pseudos);
 #ifdef ENABLE_CHECKING
-  if (!flag_use_caller_save)
+  if (!flag_ipa_ra)
     for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
       if (lra_reg_info[i].nrefs != 0 && reg_renumber[i] >= 0
 	  && lra_reg_info[i].call_p

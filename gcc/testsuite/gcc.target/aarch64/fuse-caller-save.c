@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fuse-caller-save" } */
-/* Testing -fuse-caller-save optimization option.  */
+/* { dg-options "-O2 -fipa-ra" } */
+/* Testing -fipa-ra optimization option.  */
 
 static int __attribute__((noinline))
 bar (int x)

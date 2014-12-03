@@ -5553,7 +5553,7 @@ linker (e.g. stubs, veneers, branch islands), but not including those\n\
 modifiable by the callee.  The affected registers may be mentioned explicitly\n\
 in the call pattern, or included as clobbers in CALL_INSN_FUNCTION_USAGE.\n\
 The default version of this hook is set to false.  The purpose of this hook\n\
-is to enable the fuse-caller-save optimization.",
+is to enable the fipa-ra optimization.",
  bool, 
  false)
 

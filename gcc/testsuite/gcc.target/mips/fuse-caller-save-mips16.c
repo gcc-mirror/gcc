@@ -1,9 +1,9 @@
 /* { dg-do compile } */
-/* { dg-options "-fuse-caller-save (-mips16) addressing=absolute isa_rev=0" } */
+/* { dg-options "-fipa-ra (-mips16) addressing=absolute isa_rev=0" } */
 /* At -O0 and -O1, the register allocator behaves more conservatively, and
-   the fuse-caller-save optimization doesnt' trigger.  */
+   the fipa-ra optimization doesnt' trigger.  */
 /* { dg-skip-if "" { *-*-* }  { "-O0" "-O1" } } */
-/* Testing -fuse-caller-save optimization option.  */
+/* Testing -fipa-ra optimization option.  */
 
 #define ATTRIBUTE MIPS16
 #include "fuse-caller-save.h"

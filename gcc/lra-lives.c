@@ -835,7 +835,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 
       if (call_p)
 	{
-	  if (flag_use_caller_save)
+	  if (flag_ipa_ra)
 	    {
 	      HARD_REG_SET this_call_used_reg_set;
 	      get_call_reg_set_usage (curr_insn, &this_call_used_reg_set,

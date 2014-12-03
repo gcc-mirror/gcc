@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse2 -mno-avx -fuse-caller-save -fomit-frame-pointer" } */
+/* { dg-options "-O2 -msse2 -mno-avx -fipa-ra -fomit-frame-pointer" } */
 
 typedef double v2df __attribute__((vector_size (16)));
 
@@ -16,7 +16,7 @@ foo (v2df y)
 }
 
 /* Check presence of all insns on xmm registers.  These checks are expected to
-   pass with both -fuse-caller-save and -fno-use-caller-save.  */
+   pass with both -fipa-ra and -fno-ipa-ra.  */
 /* { dg-final { scan-assembler-times "addpd\t\\.?LC0.*, %xmm0" 1 } } */
 /* { dg-final { scan-assembler-times "addpd\t%xmm1, %xmm0" 1 } } */
 /* { dg-final { scan-assembler-times "movapd\t%xmm0, %xmm1" 1 } } */
