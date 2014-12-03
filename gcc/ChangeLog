@@ -1,3 +1,9 @@
+2014-12-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/64153
+	* ipa-inline-analysis.c (evaluate_conditions_for_known_args): Check
+	type sizes before view_converting.
+
 2014-12-03  Shanyao Chen  <chenshanyao@huawei.com>
 
 	Backport from mainline
