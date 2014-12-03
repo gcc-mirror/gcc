@@ -3087,11 +3087,7 @@ expand_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
   bool do_trapv = flag_trapv && SCALAR_INT_MODE_P (mode) && !unsignedp;
 
   if (CONSTANT_P (op0))
-    {
-      rtx temp = op0;
-      op0 = op1;
-      op1 = temp;
-    }
+    std::swap (op0, op1);
 
   /* For vectors, there are several simplifications that can be made if
      all elements of the vector constant are identical.  */
