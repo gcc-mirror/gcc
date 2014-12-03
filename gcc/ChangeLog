@@ -1,3 +1,17 @@
+2014-12-03  Yury Gribov  <y.gribov@samsung.com>
+
+	* sanopt.c (maybe_get_single_definition): New function.
+	(maybe_get_dominating_check): Ditto.
+	(can_remove_asan_check): Ditto.
+	(struct tree_map_traits): New struct.
+	(struct sanopt_ctx): Use custom traits for asan_check_map.
+	(maybe_optimize_ubsan_null_ifn): Move code to
+	maybe_get_dominating_check.
+	(maybe_optimize_asan_check_ifn): Move code and take non-SSA expressions
+	into account when optimizing.
+	(sanopt_optimize_walker): Optimize ASan checks even when
+	recovering.
+
 2014-12-03  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* config/i386/constraints.md (Yr): New.
