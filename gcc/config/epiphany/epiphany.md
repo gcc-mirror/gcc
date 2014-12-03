@@ -1960,7 +1960,7 @@
       && !rtx_equal_p (operands[0], operands[3]))
     {
       rtx tmp = operands[2]; operands[2] = operands[3]; operands[3] = tmp;
-      code = (FLOAT_MODE_P (GET_MODE (cmp_op0))
+      code = (FLOAT_MODE_P (GET_MODE (cmp_op0)) && !flag_finite_math_only
 	      ? reverse_condition_maybe_unordered (code)
 	      : reverse_condition (code));
     }

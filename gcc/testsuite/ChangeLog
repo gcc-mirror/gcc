@@ -1,3 +1,7 @@
+2014-12-03  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.target/epiphany/fcmp-1.c: New test.
+
 2014-12-03  Petr Murzin  <petr.murzin@intel.com>
 
 	* gcc.target/i386/avx512bw-kunpckdq-1.c: Fix regexps for assembler
