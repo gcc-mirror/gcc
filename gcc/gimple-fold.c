@@ -4744,14 +4744,13 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree),
 						       TREE_OPERAND (fn, 0)))
 	  {
 	    tree *args = XALLOCAVEC (tree, gimple_call_num_args (stmt));
-	    tree call, retval;
+	    tree retval;
 	    unsigned i;
 	    for (i = 0; i < gimple_call_num_args (stmt); ++i)
 	      args[i] = (*valueize) (gimple_call_arg (stmt, i));
-	    call = build_call_array_loc (loc,
+	    retval = fold_builtin_call_array (loc,
 					 gimple_call_return_type (call_stmt),
 					 fn, gimple_call_num_args (stmt), args);
-	    retval = fold_call_expr (EXPR_LOCATION (call), call, false);
 	    if (retval)
 	      {
 		/* fold_call_expr wraps the result inside a NOP_EXPR.  */

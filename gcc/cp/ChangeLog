@@ -1,3 +1,8 @@
+2014-12-03  Richard Biener  <rguenther@suse.de>
+
+	* constexpr.c (cxx_eval_builtin_function_call): Use
+	fold_build_call_array_loc.
+
 2014-12-02  Marek Polacek  <polacek@redhat.com>
 
 	* constexpr.c (cxx_eval_check_shift_p): New function.

@@ -196,7 +196,7 @@ static tree fold_builtin_1 (location_t, tree, tree, bool);
 static tree fold_builtin_2 (location_t, tree, tree, tree, bool);
 static tree fold_builtin_3 (location_t, tree, tree, tree, tree, bool);
 static tree fold_builtin_4 (location_t, tree, tree, tree, tree, tree, bool);
-static tree fold_builtin_varargs (location_t, tree, tree, bool);
+static tree fold_builtin_varargs (location_t, tree, tree*, int, bool);
 
 static tree fold_builtin_strpbrk (location_t, tree, tree, tree);
 static tree fold_builtin_strstr (location_t, tree, tree, tree);
@@ -9692,7 +9692,7 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
    one floating point argument which is "type generic".  */
 
 static tree
-fold_builtin_fpclassify (location_t loc, tree exp)
+fold_builtin_fpclassify (location_t loc, tree *args, int nargs)
 {
   tree fp_nan, fp_infinite, fp_normal, fp_subnormal, fp_zero,
     arg, type, res, tmp;
@@ -9701,17 +9701,21 @@ fold_builtin_fpclassify (location_t loc, tree exp)
   char buf[128];
 
   /* Verify the required arguments in the original call.  */
-  if (!validate_arglist (exp, INTEGER_TYPE, INTEGER_TYPE,
-			 INTEGER_TYPE, INTEGER_TYPE,
-			 INTEGER_TYPE, REAL_TYPE, VOID_TYPE))
+  if (nargs != 6
+      || !validate_arg (args[0], INTEGER_TYPE)
+      || !validate_arg (args[1], INTEGER_TYPE)
+      || !validate_arg (args[2], INTEGER_TYPE)
+      || !validate_arg (args[3], INTEGER_TYPE)
+      || !validate_arg (args[4], INTEGER_TYPE)
+      || !validate_arg (args[5], REAL_TYPE))
     return NULL_TREE;
 
-  fp_nan = CALL_EXPR_ARG (exp, 0);
-  fp_infinite = CALL_EXPR_ARG (exp, 1);
-  fp_normal = CALL_EXPR_ARG (exp, 2);
-  fp_subnormal = CALL_EXPR_ARG (exp, 3);
-  fp_zero = CALL_EXPR_ARG (exp, 4);
-  arg = CALL_EXPR_ARG (exp, 5);
+  fp_nan = args[0];
+  fp_infinite = args[1];
+  fp_normal = args[2];
+  fp_subnormal = args[3];
+  fp_zero = args[4];
+  arg = args[5];
   type = TREE_TYPE (arg);
   mode = TYPE_MODE (type);
   arg = builtin_save_expr (fold_build1_loc (loc, ABS_EXPR, type, arg));
@@ -10621,14 +10625,9 @@ fold_builtin_4 (location_t loc, tree fndecl,
 }
 
 /* Fold a call to built-in function FNDECL.  ARGS is an array of NARGS
-    arguments, where NARGS <= 4.  IGNORE is true if the result of the
-    function call is ignored.  This function returns NULL_TREE if no
-    simplification was possible.  Note that this only folds builtins with
-    fixed argument patterns.  Foldings that do varargs-to-varargs
-    transformations, or that match calls with more than 4 arguments,
-    need to be handled with fold_builtin_varargs instead.  */
-
-#define MAX_ARGS_TO_FOLD_BUILTIN 4
+   arguments.  IGNORE is true if the result of the
+   function call is ignored.  This function returns NULL_TREE if no
+   simplification was possible.  */
 
 tree
 fold_builtin_n (location_t loc, tree fndecl, tree *args, int nargs, bool ignore)
@@ -10654,6 +10653,7 @@ fold_builtin_n (location_t loc, tree fndecl, tree *args, int nargs, bool ignore)
  			    ignore);
       break;
     default:
+      ret = fold_builtin_varargs (loc, fndecl, args, nargs, ignore);
       break;
     }
   if (ret)
@@ -10750,13 +10750,8 @@ fold_call_expr (location_t loc, tree exp, bool ignore)
 				     CALL_EXPR_ARGP (exp), ignore);
       else
 	{
-	  if (nargs <= MAX_ARGS_TO_FOLD_BUILTIN)
-	    {
-	      tree *args = CALL_EXPR_ARGP (exp);
-	      ret = fold_builtin_n (loc, fndecl, args, nargs, ignore);
-	    }
-	  if (!ret)
-	    ret = fold_builtin_varargs (loc, fndecl, exp, ignore);
+	  tree *args = CALL_EXPR_ARGP (exp);
+	  ret = fold_builtin_n (loc, fndecl, args, nargs, ignore);
 	  if (ret)
 	    return ret;
 	}
@@ -10764,62 +10759,43 @@ fold_call_expr (location_t loc, tree exp, bool ignore)
   return NULL_TREE;
 }
 
-/* Construct a CALL_EXPR with type TYPE with FN as the function expression.
-   N arguments are passed in the array ARGARRAY.  */
+/* Fold a CALL_EXPR with type TYPE with FN as the function expression.
+   N arguments are passed in the array ARGARRAY.  Return a folded
+   expression or NULL_TREE if no simplification was possible.  */
 
 tree
-fold_builtin_call_array (location_t loc, tree type,
+fold_builtin_call_array (location_t loc, tree,
 			 tree fn,
 			 int n,
 			 tree *argarray)
 {
-  tree ret = NULL_TREE;
-   tree exp;
+  if (TREE_CODE (fn) != ADDR_EXPR)
+    return NULL_TREE;
 
-  if (TREE_CODE (fn) == ADDR_EXPR)
-  {
-    tree fndecl = TREE_OPERAND (fn, 0);
-    if (TREE_CODE (fndecl) == FUNCTION_DECL
-        && DECL_BUILT_IN (fndecl))
-      {
-	/* If last argument is __builtin_va_arg_pack (), arguments to this
-	   function are not finalized yet.  Defer folding until they are.  */
-	if (n && TREE_CODE (argarray[n - 1]) == CALL_EXPR)
-	  {
-	    tree fndecl2 = get_callee_fndecl (argarray[n - 1]);
-	    if (fndecl2
-		&& TREE_CODE (fndecl2) == FUNCTION_DECL
-		&& DECL_BUILT_IN_CLASS (fndecl2) == BUILT_IN_NORMAL
-		&& DECL_FUNCTION_CODE (fndecl2) == BUILT_IN_VA_ARG_PACK)
-	      return build_call_array_loc (loc, type, fn, n, argarray);
-	  }
-	if (avoid_folding_inline_builtin (fndecl))
-	  return build_call_array_loc (loc, type, fn, n, argarray);
-        if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-          {
-	    ret = targetm.fold_builtin (fndecl, n, argarray, false);
-	    if (ret)
-	      return ret;
+  tree fndecl = TREE_OPERAND (fn, 0);
+  if (TREE_CODE (fndecl) == FUNCTION_DECL
+      && DECL_BUILT_IN (fndecl))
+    {
+      /* If last argument is __builtin_va_arg_pack (), arguments to this
+	 function are not finalized yet.  Defer folding until they are.  */
+      if (n && TREE_CODE (argarray[n - 1]) == CALL_EXPR)
+	{
+	  tree fndecl2 = get_callee_fndecl (argarray[n - 1]);
+	  if (fndecl2
+	      && TREE_CODE (fndecl2) == FUNCTION_DECL
+	      && DECL_BUILT_IN_CLASS (fndecl2) == BUILT_IN_NORMAL
+	      && DECL_FUNCTION_CODE (fndecl2) == BUILT_IN_VA_ARG_PACK)
+	    return NULL_TREE;
+	}
+      if (avoid_folding_inline_builtin (fndecl))
+	return NULL_TREE;
+      if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
+	return targetm.fold_builtin (fndecl, n, argarray, false);
+      else
+	return fold_builtin_n (loc, fndecl, argarray, n, false);
+    }
 
-	    return build_call_array_loc (loc, type, fn, n, argarray);
-          }
-        else if (n <= MAX_ARGS_TO_FOLD_BUILTIN)
-          {
-            /* First try the transformations that don't require consing up
-               an exp.  */
-            ret = fold_builtin_n (loc, fndecl, argarray, n, false);
-            if (ret)
-              return ret;
-          }
-
-        /* If we got this far, we need to build an exp.  */
-        exp = build_call_array_loc (loc, type, fn, n, argarray);
-        ret = fold_builtin_varargs (loc, fndecl, exp, false);
-        return ret ? ret : exp;
-      }
-  }
-
-  return build_call_array_loc (loc, type, fn, n, argarray);
+  return NULL_TREE;
 }
 
 /* Construct a new CALL_EXPR using the tail of the argument list of EXP
@@ -11827,7 +11803,7 @@ fold_builtin_object_size (tree ptr, tree ost)
    result of the function call is ignored.  */
 
 static tree
-fold_builtin_varargs (location_t loc, tree fndecl, tree exp,
+fold_builtin_varargs (location_t loc, tree fndecl, tree *args, int nargs,
 		      bool ignore ATTRIBUTE_UNUSED)
 {
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
@@ -11836,7 +11812,7 @@ fold_builtin_varargs (location_t loc, tree fndecl, tree exp,
   switch (fcode)
     {
     case BUILT_IN_FPCLASSIFY:
-      ret = fold_builtin_fpclassify (loc, exp);
+      ret = fold_builtin_fpclassify (loc, args, nargs);
       break;
 
     default:
@@ -12747,8 +12723,7 @@ fold_call_stmt (gcall *stmt, bool ignore)
         }
       else
 	{
-	  if (nargs <= MAX_ARGS_TO_FOLD_BUILTIN)
-	    ret = fold_builtin_n (loc, fndecl, args, nargs, ignore);
+	  ret = fold_builtin_n (loc, fndecl, args, nargs, ignore);
 	  if (ret)
 	    {
 	      /* Propagate location information from original call to

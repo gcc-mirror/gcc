@@ -1008,8 +1008,8 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t,
     }
   if (*non_constant_p)
     return t;
-  new_call = fold_builtin_call_array (EXPR_LOCATION (t), TREE_TYPE (t),
-				      CALL_EXPR_FN (t), nargs, args);
+  new_call = fold_build_call_array_loc (EXPR_LOCATION (t), TREE_TYPE (t),
+					CALL_EXPR_FN (t), nargs, args);
   VERIFY_CONSTANT (new_call);
   return new_call;
 }
