@@ -1509,7 +1509,8 @@ ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
 ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
   $(OBJS-libcommon-target) @TREEBROWSER@ main.o c-family/cppspec.o \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS) \
-  $(GCOV_TOOL_OBJS) lto-wrapper.o collect-utils.o
+  $(GCOV_TOOL_OBJS) $(GENGTYPE_OBJS) gcc-ar.o gcc-nm.o gcc-ranlib.o \
+  lto-wrapper.o collect-utils.o
 
 # This lists all host object files, whether they are included in this
 # compilation or not.
@@ -2484,29 +2485,30 @@ build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
 # on BCONFIG_H.  For the build objects, add -DGENERATOR_FILE manually,
 # the build-%: rule doesn't apply to them.
 
+GENGTYPE_OBJS = gengtype.o gengtype-parse.o gengtype-state.o \
+  gengtype-lex.o errors.o
+
 gengtype-lex.o build/gengtype-lex.o : gengtype-lex.c gengtype.h $(SYSTEM_H)
-gengtype-lex.o: $(CONFIG_H) $(BCONFIG_H)
-CFLAGS-gengtype-lex.o += -DGENERATOR_FILE
+CFLAGS-gengtype-lex.o += -DHOST_GENERATOR_FILE
 build/gengtype-lex.o: $(BCONFIG_H)
 
 gengtype-parse.o build/gengtype-parse.o : gengtype-parse.c gengtype.h \
   $(SYSTEM_H)
-gengtype-parse.o: $(CONFIG_H)
-CFLAGS-gengtype-parse.o += -DGENERATOR_FILE
+CFLAGS-gengtype-parse.o += -DHOST_GENERATOR_FILE
 build/gengtype-parse.o: $(BCONFIG_H)
 
 gengtype-state.o build/gengtype-state.o: gengtype-state.c $(SYSTEM_H) \
   gengtype.h errors.h double-int.h version.h $(HASHTAB_H) $(OBSTACK_H) \
   $(XREGEX_H)
-gengtype-state.o: $(CONFIG_H)
-CFLAGS-gengtype-state.o += -DGENERATOR_FILE
+CFLAGS-gengtype-state.o += -DHOST_GENERATOR_FILE
 build/gengtype-state.o: $(BCONFIG_H)
 gengtype.o build/gengtype.o : gengtype.c $(SYSTEM_H) gengtype.h 	\
   rtl.def insn-notes.def errors.h double-int.h version.h     		\
   $(HASHTAB_H) $(OBSTACK_H) $(XREGEX_H)
-gengtype.o: $(CONFIG_H)
-CFLAGS-gengtype.o += -DGENERATOR_FILE
+CFLAGS-gengtype.o += -DHOST_GENERATOR_FILE
 build/gengtype.o: $(BCONFIG_H)
+
+CFLAGS-errors.o += -DHOST_GENERATOR_FILE
 
 build/genmddeps.o: genmddeps.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
   errors.h $(READ_MD_H)
