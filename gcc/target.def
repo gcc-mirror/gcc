@@ -1555,6 +1555,7 @@ instructions.\n\
 \n\
 Given below example:\n\
 \n\
+@smallexample\n\
     ldr r10, [r1, 4]\n\
     add r4, r4, r10\n\
     ldr r15, [r2, 8]\n\
@@ -1563,6 +1564,7 @@ Given below example:\n\
     add r4, r4, r11\n\
     ldr r16, [r2, 12]\n\
     sub r5, r5, r16\n\
+@end smallexample\n\
 \n\
 On targets like ARM/AArch64, the two pairs of consecutive loads should be\n\
 merged.  Since peephole2 pass can't help in this case unless consecutive\n\
@@ -1570,19 +1572,22 @@ loads are actually next to each other in instruction flow.  That's where\n\
 this scheduling fusion pass works.  This hook calculates priority for each\n\
 instruction based on its fustion type, like:\n\
 \n\
-    ldr r10, [r1, 4]  ; fusion_pri=99,  pri=96   \n\
-    add r4, r4, r10   ; fusion_pri=100, pri=100  \n\
-    ldr r15, [r2, 8]  ; fusion_pri=98,  pri=92   \n\
-    sub r5, r5, r15   ; fusion_pri=100, pri=100  \n\
-    ldr r11, [r1, 0]  ; fusion_pri=99,  pri=100  \n\
-    add r4, r4, r11   ; fusion_pri=100, pri=100  \n\
-    ldr r16, [r2, 12] ; fusion_pri=98,  pri=88   \n\
-    sub r5, r5, r16   ; fusion_pri=100, pri=100  \n\
+@smallexample\n\
+    ldr r10, [r1, 4]  ; fusion_pri=99,  pri=96\n\
+    add r4, r4, r10   ; fusion_pri=100, pri=100\n\
+    ldr r15, [r2, 8]  ; fusion_pri=98,  pri=92\n\
+    sub r5, r5, r15   ; fusion_pri=100, pri=100\n\
+    ldr r11, [r1, 0]  ; fusion_pri=99,  pri=100\n\
+    add r4, r4, r11   ; fusion_pri=100, pri=100\n\
+    ldr r16, [r2, 12] ; fusion_pri=98,  pri=88\n\
+    sub r5, r5, r16   ; fusion_pri=100, pri=100\n\
+@end smallexample\n\
 \n\
 Scheduling fusion pass then sorts all ready to issue instructions according\n\
 to the priorities.  As a result, instructions of same fusion type will be\n\
 pushed together in instruction flow, like:\n\
 \n\
+@smallexample\n\
     ldr r11, [r1, 0]\n\
     ldr r10, [r1, 4]\n\
     ldr r15, [r2, 8]\n\
@@ -1591,6 +1596,7 @@ pushed together in instruction flow, like:\n\
     sub r5, r5, r15\n\
     add r4, r4, r11\n\
     sub r5, r5, r16\n\
+@end smallexample\n\
 \n\
 Now peephole2 pass can simply merge the two pairs of loads.\n\
 \n\
