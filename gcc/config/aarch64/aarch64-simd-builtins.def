@@ -114,20 +114,20 @@
   BUILTIN_VQW (BINOP, ssubw2, 0)
   BUILTIN_VQW (BINOP, usubw2, 0)
   /* Implemented by aarch64_<ANY_EXTEND:su><ADDSUB:optab>l<mode>.  */
-  BUILTIN_VDW (BINOP, saddl, 0)
-  BUILTIN_VDW (BINOP, uaddl, 0)
-  BUILTIN_VDW (BINOP, ssubl, 0)
-  BUILTIN_VDW (BINOP, usubl, 0)
+  BUILTIN_VD_BHSI (BINOP, saddl, 0)
+  BUILTIN_VD_BHSI (BINOP, uaddl, 0)
+  BUILTIN_VD_BHSI (BINOP, ssubl, 0)
+  BUILTIN_VD_BHSI (BINOP, usubl, 0)
   /* Implemented by aarch64_<ANY_EXTEND:su><ADDSUB:optab>w<mode>.  */
-  BUILTIN_VDW (BINOP, saddw, 0)
-  BUILTIN_VDW (BINOP, uaddw, 0)
-  BUILTIN_VDW (BINOP, ssubw, 0)
-  BUILTIN_VDW (BINOP, usubw, 0)
+  BUILTIN_VD_BHSI (BINOP, saddw, 0)
+  BUILTIN_VD_BHSI (BINOP, uaddw, 0)
+  BUILTIN_VD_BHSI (BINOP, ssubw, 0)
+  BUILTIN_VD_BHSI (BINOP, usubw, 0)
   /* Implemented by aarch64_<sur>h<addsub><mode>.  */
-  BUILTIN_VQ_S (BINOP, shadd, 0)
-  BUILTIN_VQ_S (BINOP, uhadd, 0)
-  BUILTIN_VQ_S (BINOP, srhadd, 0)
-  BUILTIN_VQ_S (BINOP, urhadd, 0)
+  BUILTIN_VDQ_BHSI (BINOP, shadd, 0)
+  BUILTIN_VDQ_BHSI (BINOP, uhadd, 0)
+  BUILTIN_VDQ_BHSI (BINOP, srhadd, 0)
+  BUILTIN_VDQ_BHSI (BINOP, urhadd, 0)
   /* Implemented by aarch64_<sur><addsub>hn<mode>.  */
   BUILTIN_VQN (BINOP, addhn, 0)
   BUILTIN_VQN (BINOP, raddhn, 0)
@@ -202,8 +202,8 @@
   BUILTIN_VSDQ_I_DI (SHIFTACC, srsra_n, 0)
   BUILTIN_VSDQ_I_DI (USHIFTACC, ursra_n, 0)
   /* Implemented by aarch64_<sur>shll_n<mode>.  */
-  BUILTIN_VDW (SHIFTIMM, sshll_n, 0)
-  BUILTIN_VDW (USHIFTIMM, ushll_n, 0)
+  BUILTIN_VD_BHSI (SHIFTIMM, sshll_n, 0)
+  BUILTIN_VD_BHSI (USHIFTIMM, ushll_n, 0)
   /* Implemented by aarch64_<sur>shll2_n<mode>.  */
   BUILTIN_VQW (SHIFTIMM, sshll2_n, 0)
   BUILTIN_VQW (SHIFTIMM, ushll2_n, 0)

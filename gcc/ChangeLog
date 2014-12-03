@@ -1,3 +1,36 @@
+2014-12-03  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_dup<mode>, orn<mode>3,
+	bic<mode>3, add<mode>3, sub<mode>3, neg<mode>2, abs<mode>2, and<mode>3,
+	ior<mode>3, xor<mode>3, one_cmpl<mode>2,
+	aarch64_simd_lshr<mode> ,arch64_simd_ashr<mode>,
+	aarch64_simd_imm_shl<mode>, aarch64_simd_reg_sshl<mode>,
+	aarch64_simd_reg_shl<mode>_unsigned, aarch64_simd_reg_shr<mode>_signed,
+	ashl<mode>3, lshr<mode>3, ashr<mode>3, vashl<mode>3,
+	reduc_plus_scal_<mode>, aarch64_vcond_internal<mode><mode>,
+	vcondu<mode><mode>, aarch64_cm<optab><mode>, aarch64_cmtst<mode>):
+	Change VDQ to VDQ_I.
+
+	(mul<mode>3): Change VDQM to VDQ_BHSI.
+	(aarch64_simd_vec_set<mode>,vashr<mode>3, vlshr<mode>3, vec_set<mode>,
+	aarch64_mla<mode>, aarch64_mls<mode>, <su><maxmin><mode>3,
+	aarch64_<sur>h<addsub><mode>): Change VQ_S to VDQ_BHSI.
+	
+	(*aarch64_<su>mlal<mode>, *aarch64_<su>mlsl<mode>,
+	aarch64_<ANY_EXTEND:su><ADDSUB:optab>l<mode>,
+	aarch64_<ANY_EXTEND:su><ADDSUB:optab>w<mode>, aarch64_<sur>shll_n<mode>):
+	Change VDW to VD_BHSI.
+	(*aarch64_combinez<mode>, *aarch64_combinez_be<mode>):
+	Change VDIC to VD_BHSI.
+
+	* config/aarch64/aarch64-simd-builtins.def (saddl, uaddl, ssubl, usubl,
+	saddw, uaddw, ssubw, usubw, shadd, uhadd, srhadd, urhadd, sshll_n,
+	ushll_n): Change BUILTIN_VDW to BUILTIN_VD_BHSI.
+
+	* config/aarch64/iterators.md (SDQ_I, VDQ, VQ_S, VSDQ_I_BHSI, VDQM, VDW,
+	VDIC, VDQQHS): Remove.
+	(Vwtype): Update comment (changing VDW to VD_BHSI).
+
 2014-12-03  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/14541
