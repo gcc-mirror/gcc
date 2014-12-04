@@ -1,3 +1,7 @@
+2014-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	* Makefile.in: Remove CLOOGLIB and CLOOGINC.
+
 2014-12-04  Richard Biener  <rguenther@suse.de>
 
 	* doc/match-and-simplify.texi: Update for recent changes.
