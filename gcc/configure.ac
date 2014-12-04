@@ -4730,10 +4730,10 @@ EOF
       ;;
     esac
   fi
-  AC_DEFINE_UNQUOTED(HAVE_LD_PIE_COPYRELOC,
-    [`if test x"$gcc_cv_ld_pie_copyreloc" = xyes; then echo 1; else echo 0; fi`],
-    [Define 0/1 if your linker supports -pie option with copy reloc.])
 fi
+AC_DEFINE_UNQUOTED(HAVE_LD_PIE_COPYRELOC,
+  [`if test x"$gcc_cv_ld_pie_copyreloc" = xyes; then echo 1; else echo 0; fi`],
+  [Define 0/1 if your linker supports -pie option with copy reloc.])
 AC_MSG_RESULT($gcc_cv_ld_pie_copyreloc)
 
 AC_MSG_CHECKING(linker EH-compatible garbage collection of sections)

@@ -27063,12 +27063,12 @@ EOF
       ;;
     esac
   fi
+fi
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_LD_PIE_COPYRELOC `if test x"$gcc_cv_ld_pie_copyreloc" = xyes; then echo 1; else echo 0; fi`
 _ACEOF
 
-fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_pie_copyreloc" >&5
 $as_echo "$gcc_cv_ld_pie_copyreloc" >&6; }
 
