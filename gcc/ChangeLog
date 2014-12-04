@@ -1,3 +1,48 @@
+2014-12-04  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (ipa_alignment): New type.
+	(ipa_jump_func): New field alignment.
+	(ipcp_transformation_summary) New type.
+	(ipcp_grow_transformations_if_necessary): Declare.
+	(ipa_node_agg_replacements): Removed.
+	(ipcp_transformations): Declare.
+	(ipcp_get_transformation_summary): New function.
+	(ipa_get_agg_replacements_for_node): Use it.
+	* ipa-cp.c (ipcp_param_lattices): New field alignment.
+	(print_all_lattices): Also print alignment.
+	(alignment_bottom_p): New function.
+	(set_alignment_to_bottom): Likewise.
+	(set_all_contains_variable): Also set alignment to bottom.
+	(initialize_node_lattices): Likewise.
+	(propagate_alignment_accross_jump_function): New function.
+	(propagate_constants_accross_call): Call it.
+	(ipcp_store_alignment_results): New function.
+	(ipcp_driver): Call it.
+	* ipa-prop.c (ipa_node_agg_replacements): Removed.
+	(ipcp_transformations): New.
+	(ipa_print_node_jump_functions_for_edge): Also print alignment.
+	(ipa_set_jf_unknown): New function.
+	(detect_type_change_from_memory_writes): Use ipa_set_jf_unknown.
+	(ipa_compute_jump_functions_for_edge): Also calculate alignment.
+	(update_jump_functions_after_inlining): Use ipa_set_jf_unknown.
+	(ipcp_grow_transformations_if_necessary): New function.
+	(ipa_set_node_agg_value_chain): Use ipcp_transformations.
+	(ipa_node_removal_hook): Likewise.
+	(ipa_node_duplication_hook): Also duplicate alignment results.
+	(ipa_write_jump_function): Also stream alignments.
+	(ipa_read_jump_function): Use ipa_set_jf_unknown, also stream
+	alignments.
+	(write_agg_replacement_chain): Renamed to
+	write_ipcp_transformation_info, also stream alignments.
+	(read_agg_replacement_chain): Renamed to
+	read_ipcp_transformation_info, also stream alignments.
+	(ipa_prop_write_all_agg_replacement): Renamed to
+	ipcp_write_transformation_summaries. Stream always.
+	(ipa_prop_read_all_agg_replacement): Renamed to
+	ipcp_read_transformation_summaries.
+	(ipcp_update_alignments): New function.
+	(ipcp_transform_function): Call it, free also alignments.
+
 2014-12-04  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.c (replace_stmt_with_simplification): Properly

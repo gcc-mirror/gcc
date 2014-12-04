@@ -1,3 +1,8 @@
+2014-12-04  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/propalign-1.c: New test.
+	* gcc.dg/ipa/propalign-2.c: Likewise.
+
 2014-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/56493
