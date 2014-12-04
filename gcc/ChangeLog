@@ -1,3 +1,9 @@
+2014-12-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/64189
+	* configure.ac (HAVE_LD_PIE_COPYRELOC): Always define.
+	* configure: Regenerated.
+
 2014-12-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* diagnostic.c (diagnostic_color_init): New.
