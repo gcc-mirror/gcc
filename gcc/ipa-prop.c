@@ -133,8 +133,8 @@ struct func_body_info
 
 /* Vector where the parameter infos are actually stored. */
 vec<ipa_node_params> ipa_node_params_vector;
-/* Vector of known aggregate values in cloned nodes.  */
-vec<ipa_agg_replacement_value_p, va_gc> *ipa_node_agg_replacements;
+/* Vector of IPA-CP transformation data for each clone.  */
+vec<ipcp_transformation_summary, va_gc> *ipcp_transformations;
 /* Vector where the parameter infos are actually stored. */
 vec<ipa_edge_args, va_gc> *ipa_edge_args_vector;
 
@@ -372,6 +372,15 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	  fprintf (f, "         Context: ");
 	  ctx->dump (dump_file);
 	}
+
+      if (jump_func->alignment.known)
+	{
+	  fprintf (f, "         Alignment: %u, misalignment: %u\n",
+		   jump_func->alignment.align,
+		   jump_func->alignment.misalign);
+	}
+      else
+	fprintf (f, "         Unknown alignment\n");
     }
 }
 
@@ -442,6 +451,15 @@ ipa_print_all_jump_functions (FILE *f)
     {
       ipa_print_node_jump_functions (f, node);
     }
+}
+
+/* Set jfunc to be a know-really nothing jump function.  */
+
+static void
+ipa_set_jf_unknown (struct ipa_jump_func *jfunc)
+{
+  jfunc->type = IPA_JF_UNKNOWN;
+  jfunc->alignment.known = false;
 }
 
 /* Set JFUNC to be a copy of another jmp (to be used by jump function
@@ -748,7 +766,7 @@ detect_type_change_from_memory_writes (tree arg, tree base, tree comp_type,
   if (!tci.type_maybe_changed)
     return false;
 
-  jfunc->type = IPA_JF_UNKNOWN;
+  ipa_set_jf_unknown (jfunc);
   return true;
 }
 
@@ -1715,6 +1733,24 @@ ipa_compute_jump_functions_for_edge (struct func_body_info *fbi,
 	    useful_context = true;
 	}
 
+      if (POINTER_TYPE_P (TREE_TYPE(arg)))
+	{
+	  unsigned HOST_WIDE_INT hwi_bitpos;
+	  unsigned align;
+
+	  if (get_pointer_alignment_1 (arg, &align, &hwi_bitpos)
+	      && align > BITS_PER_UNIT)
+	    {
+	      jfunc->alignment.known = true;
+	      jfunc->alignment.align = align;
+	      jfunc->alignment.misalign = hwi_bitpos / BITS_PER_UNIT;
+	    }
+	  else
+	    gcc_assert (!jfunc->alignment.known);
+	}
+      else
+	gcc_assert (!jfunc->alignment.known);
+
       if (is_gimple_ip_invariant (arg))
 	ipa_set_jf_constant (jfunc, arg, cs);
       else if (!is_gimple_reg_type (TREE_TYPE (arg))
@@ -2412,7 +2448,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	     don't.  */
 	  if (dst_fid >= ipa_get_cs_argument_count (top))
 	    {
-	      dst->type = IPA_JF_UNKNOWN;
+	      ipa_set_jf_unknown (dst);
 	      continue;
 	    }
 
@@ -2466,7 +2502,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		src->value.ancestor.agg_preserved;
 	    }
 	  else
-	    dst->type = IPA_JF_UNKNOWN;
+	    ipa_set_jf_unknown (dst);
 	}
       else if (dst->type == IPA_JF_PASS_THROUGH)
 	{
@@ -2504,7 +2540,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      switch (src->type)
 		{
 		case IPA_JF_UNKNOWN:
-		  dst->type = IPA_JF_UNKNOWN;
+		  ipa_set_jf_unknown (dst);
 		  break;
 		case IPA_JF_CONST:
 		  ipa_set_jf_cst_copy (dst, src);
@@ -2558,7 +2594,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		}
 	    }
 	  else
-	    dst->type = IPA_JF_UNKNOWN;
+	    ipa_set_jf_unknown (dst);
 	}
     }
 }
@@ -3329,18 +3365,24 @@ ipa_free_all_node_params (void)
   ipa_node_params_vector.release ();
 }
 
+/* Grow ipcp_transformations if necessary.  */
+
+void
+ipcp_grow_transformations_if_necessary (void)
+{
+  if (vec_safe_length (ipcp_transformations)
+      <= (unsigned) symtab->cgraph_max_uid)
+    vec_safe_grow_cleared (ipcp_transformations, symtab->cgraph_max_uid + 1);
+}
+
 /* Set the aggregate replacements of NODE to be AGGVALS.  */
 
 void
 ipa_set_node_agg_value_chain (struct cgraph_node *node,
 			      struct ipa_agg_replacement_value *aggvals)
 {
-  if (vec_safe_length (ipa_node_agg_replacements)
-      <= (unsigned) symtab->cgraph_max_uid)
-    vec_safe_grow_cleared (ipa_node_agg_replacements,
-			   symtab->cgraph_max_uid + 1);
-
-  (*ipa_node_agg_replacements)[node->uid] = aggvals;
+  ipcp_grow_transformations_if_necessary ();
+  (*ipcp_transformations)[node->uid].agg_values = aggvals;
 }
 
 /* Hook that is called by cgraph.c when an edge is removed.  */
@@ -3381,8 +3423,11 @@ ipa_node_removal_hook (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
   /* During IPA-CP updating we can be called on not-yet analyze clones.  */
   if (ipa_node_params_vector.length () > (unsigned)node->uid)
     ipa_free_node_params_substructures (IPA_NODE_REF (node));
-  if (vec_safe_length (ipa_node_agg_replacements) > (unsigned)node->uid)
-    (*ipa_node_agg_replacements)[(unsigned)node->uid] = NULL;
+  if (vec_safe_length (ipcp_transformations) > (unsigned)node->uid)
+    {
+      (*ipcp_transformations)[(unsigned)node->uid].agg_values = NULL;
+      (*ipcp_transformations)[(unsigned)node->uid].alignments = NULL;
+    }
 }
 
 /* Hook that is called by cgraph.c when an edge is duplicated.  */
@@ -3510,21 +3555,35 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
   new_info->node_enqueued = old_info->node_enqueued;
 
   old_av = ipa_get_agg_replacements_for_node (src);
-  if (!old_av)
-    return;
-
-  new_av = NULL;
-  while (old_av)
+  if (old_av)
     {
-      struct ipa_agg_replacement_value *v;
+      new_av = NULL;
+      while (old_av)
+	{
+	  struct ipa_agg_replacement_value *v;
 
-      v = ggc_alloc<ipa_agg_replacement_value> ();
-      memcpy (v, old_av, sizeof (*v));
-      v->next = new_av;
-      new_av = v;
-      old_av = old_av->next;
+	  v = ggc_alloc<ipa_agg_replacement_value> ();
+	  memcpy (v, old_av, sizeof (*v));
+	  v->next = new_av;
+	  new_av = v;
+	  old_av = old_av->next;
+	}
+      ipa_set_node_agg_value_chain (dst, new_av);
     }
-  ipa_set_node_agg_value_chain (dst, new_av);
+
+  ipcp_transformation_summary *src_trans = ipcp_get_transformation_summary (src);
+
+  if (src_trans && vec_safe_length (src_trans->alignments) > 0)
+    {
+      ipcp_grow_transformations_if_necessary ();
+      src_trans = ipcp_get_transformation_summary (src);
+      const vec<ipa_alignment, va_gc> *src_alignments = src_trans->alignments;
+      vec<ipa_alignment, va_gc> *&dst_alignments
+	= ipcp_get_transformation_summary (dst)->alignments;
+      vec_safe_reserve_exact (dst_alignments, src_alignments->length ());
+      for (unsigned i = 0; i < src_alignments->length (); ++i)
+	dst_alignments->quick_push ((*src_alignments)[i]);
+    }
 }
 
 
@@ -4452,6 +4511,15 @@ ipa_write_jump_function (struct output_block *ob,
       streamer_write_uhwi (ob, item->offset);
       stream_write_tree (ob, item->value, true);
     }
+
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, jump_func->alignment.known, 1);
+  streamer_write_bitpack (&bp);
+  if (jump_func->alignment.known)
+    {
+      streamer_write_uhwi (ob, jump_func->alignment.align);
+      streamer_write_uhwi (ob, jump_func->alignment.misalign);
+    }
 }
 
 /* Read in jump function JUMP_FUNC from IB.  */
@@ -4470,7 +4538,7 @@ ipa_read_jump_function (struct lto_input_block *ib,
   switch (jftype)
     {
     case IPA_JF_UNKNOWN:
-      jump_func->type = IPA_JF_UNKNOWN;
+      ipa_set_jf_unknown (jump_func);
       break;
     case IPA_JF_CONST:
       ipa_set_jf_constant (jump_func, stream_read_tree (ib, data_in), cs);
@@ -4517,6 +4585,17 @@ ipa_read_jump_function (struct lto_input_block *ib,
       item.value = stream_read_tree (ib, data_in);
       jump_func->agg.items->quick_push (item);
     }
+
+  struct bitpack_d bp = streamer_read_bitpack (ib);
+  bool alignment_known = bp_unpack_value (&bp, 1);
+  if (alignment_known)
+    {
+      jump_func->alignment.known = true;
+      jump_func->alignment.align = streamer_read_uhwi (ib);
+      jump_func->alignment.misalign = streamer_read_uhwi (ib);
+    }
+  else
+    jump_func->alignment.known = false;
 }
 
 /* Stream out parts of cgraph_indirect_call_info corresponding to CS that are
@@ -4828,7 +4907,7 @@ ipa_update_after_lto_read (void)
 }
 
 void
-write_agg_replacement_chain (struct output_block *ob, struct cgraph_node *node)
+write_ipcp_transformation_info (output_block *ob, cgraph_node *node)
 {
   int node_ref;
   unsigned int count = 0;
@@ -4856,14 +4935,38 @@ write_agg_replacement_chain (struct output_block *ob, struct cgraph_node *node)
       bp_pack_value (&bp, av->by_ref, 1);
       streamer_write_bitpack (&bp);
     }
+
+  ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+  if (ts && vec_safe_length (ts->alignments) > 0)
+    {
+      count = ts->alignments->length ();
+
+      streamer_write_uhwi (ob, count);
+      for (unsigned i = 0; i < count; ++i)
+	{
+	  ipa_alignment *parm_al = &(*ts->alignments)[i];
+
+	  struct bitpack_d bp;
+	  bp = bitpack_create (ob->main_stream);
+	  bp_pack_value (&bp, parm_al->known, 1);
+	  streamer_write_bitpack (&bp);
+	  if (parm_al->known)
+	    {
+	      streamer_write_uhwi (ob, parm_al->align);
+	      streamer_write_hwi_in_range (ob->main_stream, 0, parm_al->align,
+					   parm_al->misalign);
+	    }
+	}
+    }
+  else
+    streamer_write_uhwi (ob, 0);
 }
 
 /* Stream in the aggregate value replacement chain for NODE from IB.  */
 
 static void
-read_agg_replacement_chain (struct lto_input_block *ib,
-			    struct cgraph_node *node,
-			    struct data_in *data_in)
+read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
+			       data_in *data_in)
 {
   struct ipa_agg_replacement_value *aggvals = NULL;
   unsigned int count, i;
@@ -4884,21 +4987,43 @@ read_agg_replacement_chain (struct lto_input_block *ib,
       aggvals = av;
     }
   ipa_set_node_agg_value_chain (node, aggvals);
+
+  count = streamer_read_uhwi (ib);
+  if (count > 0)
+    {
+      ipcp_grow_transformations_if_necessary ();
+
+      ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+      vec_safe_grow_cleared (ts->alignments, count);
+
+      for (i = 0; i < count; i++)
+	{
+	  ipa_alignment *parm_al;
+	  parm_al = &(*ts->alignments)[i];
+	  struct bitpack_d bp;
+	  bp = streamer_read_bitpack (ib);
+	  parm_al->known = bp_unpack_value (&bp, 1);
+	  if (parm_al->known)
+	    {
+	      parm_al->align = streamer_read_uhwi (ib);
+	      parm_al->misalign
+		= streamer_read_hwi_in_range (ib, "ipa-prop misalign",
+					      0, parm_al->align);
+	    }
+	}
+    }
 }
 
 /* Write all aggregate replacement for nodes in set.  */
 
 void
-ipa_prop_write_all_agg_replacement (void)
+ipcp_write_transformation_summaries (void)
 {
   struct cgraph_node *node;
   struct output_block *ob;
   unsigned int count = 0;
   lto_symtab_encoder_iterator lsei;
   lto_symtab_encoder_t encoder;
-
-  if (!ipa_node_agg_replacements)
-    return;
 
   ob = create_output_block (LTO_section_ipcp_transform);
   encoder = ob->decl_state->symtab_node_encoder;
@@ -4907,8 +5032,7 @@ ipa_prop_write_all_agg_replacement (void)
        lsei_next_function_in_partition (&lsei))
     {
       node = lsei_cgraph_node (lsei);
-      if (node->has_gimple_body_p ()
-	  && ipa_get_agg_replacements_for_node (node) != NULL)
+      if (node->has_gimple_body_p ())
 	count++;
     }
 
@@ -4918,9 +5042,8 @@ ipa_prop_write_all_agg_replacement (void)
        lsei_next_function_in_partition (&lsei))
     {
       node = lsei_cgraph_node (lsei);
-      if (node->has_gimple_body_p ()
-	  && ipa_get_agg_replacements_for_node (node) != NULL)
-	write_agg_replacement_chain (ob, node);
+      if (node->has_gimple_body_p ())
+	write_ipcp_transformation_info (ob, node);
     }
   streamer_write_char_stream (ob->main_stream, 0);
   produce_asm (ob, NULL);
@@ -4962,7 +5085,7 @@ read_replacements_section (struct lto_file_decl_data *file_data,
       node = dyn_cast<cgraph_node *> (lto_symtab_encoder_deref (encoder,
 								index));
       gcc_assert (node->definition);
-      read_agg_replacement_chain (&ib_main, node, data_in);
+      read_ipcp_transformation_info (&ib_main, node, data_in);
     }
   lto_free_section_data (file_data, LTO_section_jump_functions, NULL, data,
 			 len);
@@ -4972,7 +5095,7 @@ read_replacements_section (struct lto_file_decl_data *file_data,
 /* Read IPA-CP aggregate replacements.  */
 
 void
-ipa_prop_read_all_agg_replacement (void)
+ipcp_read_transformation_summaries (void)
 {
   struct lto_file_decl_data **file_data_vec = lto_get_file_decl_data ();
   struct lto_file_decl_data *file_data;
@@ -5139,6 +5262,58 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
 
 }
 
+/* Update alignment of formal parameters as described in
+   ipcp_transformation_summary.  */
+
+static void
+ipcp_update_alignments (struct cgraph_node *node)
+{
+  tree fndecl = node->decl;
+  tree parm = DECL_ARGUMENTS (fndecl);
+  tree next_parm = parm;
+  ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+  if (!ts || vec_safe_length (ts->alignments) == 0)
+    return;
+  const vec<ipa_alignment, va_gc> &alignments = *ts->alignments;
+  unsigned count = alignments.length ();
+
+  for (unsigned i = 0; i < count; ++i, parm = next_parm)
+    {
+      if (node->clone.combined_args_to_skip
+	  && bitmap_bit_p (node->clone.combined_args_to_skip, i))
+	continue;
+      gcc_checking_assert (parm);
+      next_parm = DECL_CHAIN (parm);
+
+      if (!alignments[i].known || !is_gimple_reg (parm))
+	continue;
+      tree ddef = ssa_default_def (DECL_STRUCT_FUNCTION (node->decl), parm);
+      if (!ddef)
+	continue;
+
+      if (dump_file)
+	fprintf (dump_file, "  Adjusting alignment of param %u to %u, "
+		 "misalignment to %u\n", i, alignments[i].align,
+		 alignments[i].misalign);
+
+      struct ptr_info_def *pi = get_ptr_info (ddef);
+      gcc_checking_assert (pi);
+      unsigned old_align;
+      unsigned old_misalign;
+      bool old_known = get_ptr_info_alignment (pi, &old_align, &old_misalign);
+
+      if (old_known
+	  && old_align >= alignments[i].align)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "    But the alignment was already %u.\n",
+		     old_align);
+	  continue;
+	}
+      set_ptr_info_alignment (pi, alignments[i].align, alignments[i].misalign);
+    }
+}
+
 /* IPCP transformation phase doing propagation of aggregate values.  */
 
 unsigned int
@@ -5157,6 +5332,7 @@ ipcp_transform_function (struct cgraph_node *node)
     fprintf (dump_file, "Modification phase of node %s/%i\n",
 	     node->name (), node->order);
 
+  ipcp_update_alignments (node);
   aggval = ipa_get_agg_replacements_for_node (node);
   if (!aggval)
       return 0;
@@ -5186,7 +5362,8 @@ ipcp_transform_function (struct cgraph_node *node)
     free_ipa_bb_info (bi);
   fbi.bb_infos.release ();
   free_dominance_info (CDI_DOMINATORS);
-  (*ipa_node_agg_replacements)[node->uid] = NULL;
+  (*ipcp_transformations)[node->uid].agg_values = NULL;
+  (*ipcp_transformations)[node->uid].alignments = NULL;
   descriptors.release ();
 
   if (!something_changed)
