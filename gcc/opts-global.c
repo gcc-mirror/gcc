@@ -261,6 +261,11 @@ init_options_once (void)
   initial_lang_mask = lang_hooks.option_lang_mask ();
 
   lang_hooks.initialize_diagnostics (global_dc);
+  /* ??? Ideally, we should do this earlier and the FEs will override
+     it if desired (none do it so far).  However, the way the FEs
+     construct their pretty-printers means that all previous settings
+     are overriden.  */
+  diagnostic_color_init (global_dc);
 }
 
 /* Decode command-line options to an array, like

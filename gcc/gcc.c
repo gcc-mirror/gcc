@@ -3608,6 +3608,10 @@ driver_handle_option (struct gcc_options *opts,
       save_switch (compare_debug_replacement_opt, 0, NULL, validated, true);
       return true;
 
+    case OPT_fdiagnostics_color_:
+      diagnostic_color_init (dc, value);
+      break;
+
     case OPT_Wa_:
       {
 	int prev, j;
@@ -6975,6 +6979,7 @@ driver::global_initializations ()
   gcc_init_libintl ();
 
   diagnostic_initialize (global_dc, 0);
+  diagnostic_color_init (global_dc);
 
 #ifdef GCC_DRIVER_HOST_INITIALIZATION
   /* Perform host dependent initialization when needed.  */

@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "params.h"
 #include "diagnostic.h"
-#include "diagnostic-color.h"
 #include "opts-diagnostic.h"
 #include "insn-attr-common.h"
 #include "common/common-target.h"
@@ -1771,8 +1770,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_color_:
-      pp_show_color (dc->printer)
-	= colorize_init ((diagnostic_color_rule_t) value);
+      diagnostic_color_init (dc, value);
       break;
 
     case OPT_fdiagnostics_show_option:
