@@ -2583,19 +2583,22 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 
 	default:
 	  object = probe;
-	  gcc_assert (DECL_P (object));
 	}
     }
 
   /* And then find/build up our initializer for the path to the subobject
      we're initializing.  */
-  tree *valp = ctx->values->get (object);
+  tree *valp;
+  if (DECL_P (object))
+    valp = ctx->values->get (object);
+  else
+    valp = NULL;
   if (!valp)
     {
       /* A constant-expression cannot modify objects from outside the
 	 constant-expression.  */
       if (!ctx->quiet)
-	error ("modification of %qD is not a constant-expression", object);
+	error ("modification of %qE is not a constant-expression", object);
       *non_constant_p = true;
       return t;
     }
