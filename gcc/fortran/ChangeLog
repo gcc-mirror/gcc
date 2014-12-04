@@ -1,3 +1,10 @@
+2014-12-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* scanner.c (gfc_next_char_literal): Use gfc_warning_now.
+	(load_file): Use the line length as the column hint for
+	linemap_line_start. Reserve a location for the highest column of
+	the line.
+
 2014-12-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054

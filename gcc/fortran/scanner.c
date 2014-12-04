@@ -1056,7 +1056,8 @@ restart:
 
 	  gfc_current_locus.lb->truncated = 0;
 	  gfc_current_locus.nextc =  gfc_current_locus.lb->line + maxlen;
-	  gfc_warning_now_1 ("Line truncated at %L", &gfc_current_locus);
+	  gfc_warning_now (OPT_Wline_truncation,
+			   "Line truncated at %L", &gfc_current_locus);
 	  gfc_current_locus.nextc = current_nextc;
 	}
 
@@ -1195,7 +1196,8 @@ restart:
 	  && gfc_current_locus.lb->truncated)
 	{
 	  gfc_current_locus.lb->truncated = 0;
-	  gfc_warning_now_1 ("Line truncated at %L", &gfc_current_locus);
+	  gfc_warning_now (OPT_Wline_truncation,
+			   "Line truncated at %L", &gfc_current_locus);
 	}
 
       prev_openmp_flag = openmp_flag;
@@ -2044,7 +2046,13 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 		    + (len + 1) * sizeof (gfc_char_t));
 
       b->location
-	= linemap_line_start (line_table, current_file->line++, 120);
+	= linemap_line_start (line_table, current_file->line++, len);
+      /* ??? We add the location for the maximum column possible here,
+	 because otherwise if the next call creates a new line-map, it
+	 will not reserve space for any offset.  */
+      if (len > 0)
+	linemap_position_for_column (line_table, len);
+
       b->file = current_file;
       b->truncated = trunc;
       wide_strcpy (b->line, line);
