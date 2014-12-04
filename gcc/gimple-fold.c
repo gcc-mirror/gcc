@@ -3345,8 +3345,9 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
       if (gimple_has_lhs (stmt))
 	{
 	  tree lhs = gimple_get_lhs (stmt);
-	  maybe_push_res_to_seq (rcode, TREE_TYPE (lhs),
-				 ops, seq, lhs);
+	  if (!maybe_push_res_to_seq (rcode, TREE_TYPE (lhs),
+				      ops, seq, lhs))
+	    return false;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "gimple_simplified to ");

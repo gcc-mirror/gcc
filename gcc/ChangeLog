@@ -1,3 +1,8 @@
+2014-12-04  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (replace_stmt_with_simplification): Properly
+	fail when maybe_push_res_to_seq fails.
+
 2014-12-04 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* config/aarch64/aarch64.md (define_insn "prefetch"): New.
