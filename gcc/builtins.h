@@ -89,8 +89,10 @@ extern bool is_inexpensive_builtin (tree);
 extern bool readonly_data_expr (tree exp);
 extern const char *c_getstr (tree);
 extern bool init_target_chars (void);
+extern unsigned HOST_WIDE_INT target_newline;
 extern unsigned HOST_WIDE_INT target_percent;
 extern char target_percent_s[3];
 extern char target_percent_c[3];
+extern char target_percent_s_newline[4];
 
 #endif

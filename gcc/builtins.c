@@ -200,7 +200,6 @@ static tree fold_builtin_varargs (location_t, tree, tree*, int, bool);
 static tree fold_builtin_strpbrk (location_t, tree, tree, tree);
 static tree fold_builtin_strstr (location_t, tree, tree, tree);
 static tree fold_builtin_strrchr (location_t, tree, tree, tree);
-static tree fold_builtin_strncat (location_t, tree, tree, tree);
 static tree fold_builtin_strspn (location_t, tree, tree);
 static tree fold_builtin_strcspn (location_t, tree, tree);
 
@@ -211,15 +210,14 @@ static void maybe_emit_chk_warning (tree, enum built_in_function);
 static void maybe_emit_sprintf_chk_warning (tree, enum built_in_function);
 static void maybe_emit_free_warning (tree);
 static tree fold_builtin_object_size (tree, tree);
-static tree fold_builtin_printf (location_t, tree, tree, tree, bool, enum built_in_function);
 
-static unsigned HOST_WIDE_INT target_newline;
+unsigned HOST_WIDE_INT target_newline;
 unsigned HOST_WIDE_INT target_percent;
 static unsigned HOST_WIDE_INT target_c;
 static unsigned HOST_WIDE_INT target_s;
 char target_percent_c[3];
 char target_percent_s[3];
-static char target_percent_s_newline[4];
+char target_percent_s_newline[4];
 static tree do_mpfr_arg1 (tree, tree, int (*)(mpfr_ptr, mpfr_srcptr, mp_rnd_t),
 			  const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *, bool);
 static tree do_mpfr_arg2 (tree, tree, tree,
@@ -9892,7 +9890,7 @@ fold_builtin_0 (location_t loc, tree fndecl, bool ignore ATTRIBUTE_UNUSED)
    function returns NULL_TREE if no simplification was possible.  */
 
 static tree
-fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
+fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool)
 {
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
@@ -10289,11 +10287,6 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
     case BUILT_IN_ISNAND128:
       return fold_builtin_classify (loc, fndecl, arg0, BUILT_IN_ISNAN);
 
-    case BUILT_IN_PRINTF:
-    case BUILT_IN_PRINTF_UNLOCKED:
-    case BUILT_IN_VPRINTF:
-      return fold_builtin_printf (loc, fndecl, arg0, NULL_TREE, ignore, fcode);
-
     case BUILT_IN_FREE:
       if (integer_zerop (arg0))
 	return build_empty_stmt (loc);
@@ -10463,21 +10456,6 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1, bool ignore)
     case BUILT_IN_OBJECT_SIZE:
       return fold_builtin_object_size (arg0, arg1);
 
-    case BUILT_IN_PRINTF:
-    case BUILT_IN_PRINTF_UNLOCKED:
-    case BUILT_IN_VPRINTF:
-      return fold_builtin_printf (loc, fndecl, arg0, arg1, ignore, fcode);
-
-    case BUILT_IN_PRINTF_CHK:
-    case BUILT_IN_VPRINTF_CHK:
-      if (!validate_arg (arg0, INTEGER_TYPE)
-	  || TREE_SIDE_EFFECTS (arg0))
-	return NULL_TREE;
-      else
-	return fold_builtin_printf (loc, fndecl,
-				    arg1, NULL_TREE, ignore, fcode);
-    break;
-
     case BUILT_IN_ATOMIC_ALWAYS_LOCK_FREE:
       return fold_builtin_atomic_always_lock_free (arg0, arg1);
 
@@ -10496,7 +10474,7 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1, bool ignore)
 
 static tree
 fold_builtin_3 (location_t loc, tree fndecl,
-		tree arg0, tree arg1, tree arg2, bool ignore)
+		tree arg0, tree arg1, tree arg2, bool)
 {
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
@@ -10517,9 +10495,6 @@ fold_builtin_3 (location_t loc, tree fndecl,
 	return do_mpfr_remquo (arg0, arg1, arg2);
     break;
 
-    case BUILT_IN_STRNCAT:
-      return fold_builtin_strncat (loc, arg0, arg1, arg2);
-
     case BUILT_IN_STRNCMP:
       return fold_builtin_strncmp (loc, arg0, arg1, arg2);
 
@@ -10529,15 +10504,6 @@ fold_builtin_3 (location_t loc, tree fndecl,
     case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
       return fold_builtin_memcmp (loc, arg0, arg1, arg2);;
-
-    case BUILT_IN_PRINTF_CHK:
-    case BUILT_IN_VPRINTF_CHK:
-      if (!validate_arg (arg0, INTEGER_TYPE)
-	  || TREE_SIDE_EFFECTS (arg0))
-	return NULL_TREE;
-      else
-	return fold_builtin_printf (loc, fndecl, arg1, arg2, ignore, fcode);
-    break;
 
     case BUILT_IN_EXPECT:
       return fold_builtin_expect (loc, arg0, arg1, arg2);
@@ -11115,58 +11081,6 @@ fold_builtin_strpbrk (location_t loc, tree s1, tree s2, tree type)
 	 strchr(s1, s2[0]).  */
       return build_call_expr_loc (loc, fn, 2, s1,
 				  build_int_cst (integer_type_node, p2[0]));
-    }
-}
-
-/* Simplify a call to the strncat builtin.  DST, SRC, and LEN are the
-   arguments to the call.
-
-   Return NULL_TREE if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.
-
-   The simplified form may be a constant or other expression which
-   computes the same value, but in a more efficient manner (including
-   calls to other builtin functions).
-
-   The call may contain arguments which need to be evaluated, but
-   which are not useful to determine the result of the call.  In
-   this case we return a chain of COMPOUND_EXPRs.  The LHS of each
-   COMPOUND_EXPR will be an argument which must be evaluated.
-   COMPOUND_EXPRs are chained through their RHS.  The RHS of the last
-   COMPOUND_EXPR in the chain will contain the tree for the simplified
-   form of the builtin function call.  */
-
-static tree
-fold_builtin_strncat (location_t loc, tree dst, tree src, tree len)
-{
-  if (!validate_arg (dst, POINTER_TYPE)
-      || !validate_arg (src, POINTER_TYPE)
-      || !validate_arg (len, INTEGER_TYPE))
-    return NULL_TREE;
-  else
-    {
-      const char *p = c_getstr (src);
-
-      /* If the requested length is zero, or the src parameter string
-	 length is zero, return the dst parameter.  */
-      if (integer_zerop (len) || (p && *p == '\0'))
-	return omit_two_operands_loc (loc, TREE_TYPE (dst), dst, src, len);
-
-      /* If the requested len is greater than or equal to the string
-	 length, call strcat.  */
-      if (TREE_CODE (len) == INTEGER_CST && p
-	  && compare_tree_int (len, strlen (p)) >= 0)
-	{
-	  tree fn = builtin_decl_implicit (BUILT_IN_STRCAT);
-
-	  /* If the replacement _DECL isn't initialized, don't do the
-	     transformation.  */
-	  if (!fn)
-	    return NULL_TREE;
-
-	  return build_call_expr_loc (loc, fn, 2, dst, src);
-	}
-      return NULL_TREE;
     }
 }
 
@@ -11769,155 +11683,6 @@ fold_builtin_varargs (location_t loc, tree fndecl, tree *args, int nargs,
       return ret;
     }
   return NULL_TREE;
-}
-
-/* Fold a call to the {,v}printf{,_unlocked} and __{,v}printf_chk builtins.
-   FMT and ARG are the arguments to the call; we don't fold cases with
-   more than 2 arguments, and ARG may be null if this is a 1-argument case.
-
-   Return NULL_TREE if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.  FCODE is the BUILT_IN_*
-   code of the function to be simplified.  */
-
-static tree
-fold_builtin_printf (location_t loc, tree fndecl, tree fmt,
-		     tree arg, bool ignore,
-		     enum built_in_function fcode)
-{
-  tree fn_putchar, fn_puts, newarg, call = NULL_TREE;
-  const char *fmt_str = NULL;
-
-  /* If the return value is used, don't do the transformation.  */
-  if (! ignore)
-    return NULL_TREE;
-
-  /* Verify the required arguments in the original call.  */
-  if (!validate_arg (fmt, POINTER_TYPE))
-    return NULL_TREE;
-
-  /* Check whether the format is a literal string constant.  */
-  fmt_str = c_getstr (fmt);
-  if (fmt_str == NULL)
-    return NULL_TREE;
-
-  if (fcode == BUILT_IN_PRINTF_UNLOCKED)
-    {
-      /* If we're using an unlocked function, assume the other
-	 unlocked functions exist explicitly.  */
-      fn_putchar = builtin_decl_explicit (BUILT_IN_PUTCHAR_UNLOCKED);
-      fn_puts = builtin_decl_explicit (BUILT_IN_PUTS_UNLOCKED);
-    }
-  else
-    {
-      fn_putchar = builtin_decl_implicit (BUILT_IN_PUTCHAR);
-      fn_puts = builtin_decl_implicit (BUILT_IN_PUTS);
-    }
-
-  if (!init_target_chars ())
-    return NULL_TREE;
-
-  if (strcmp (fmt_str, target_percent_s) == 0
-      || strchr (fmt_str, target_percent) == NULL)
-    {
-      const char *str;
-
-      if (strcmp (fmt_str, target_percent_s) == 0)
-	{
-	  if (fcode == BUILT_IN_VPRINTF || fcode == BUILT_IN_VPRINTF_CHK)
-	    return NULL_TREE;
-
-	  if (!arg || !validate_arg (arg, POINTER_TYPE))
-	    return NULL_TREE;
-
-	  str = c_getstr (arg);
-	  if (str == NULL)
-	    return NULL_TREE;
-	}
-      else
-	{
-	  /* The format specifier doesn't contain any '%' characters.  */
-	  if (fcode != BUILT_IN_VPRINTF && fcode != BUILT_IN_VPRINTF_CHK
-	      && arg)
-	    return NULL_TREE;
-	  str = fmt_str;
-	}
-
-      /* If the string was "", printf does nothing.  */
-      if (str[0] == '\0')
-	return build_int_cst (TREE_TYPE (TREE_TYPE (fndecl)), 0);
-
-      /* If the string has length of 1, call putchar.  */
-      if (str[1] == '\0')
-	{
-	  /* Given printf("c"), (where c is any one character,)
-	     convert "c"[0] to an int and pass that to the replacement
-	     function.  */
-	  newarg = build_int_cst (integer_type_node, str[0]);
-	  if (fn_putchar)
-	    call = build_call_expr_loc (loc, fn_putchar, 1, newarg);
-	}
-      else
-	{
-	  /* If the string was "string\n", call puts("string").  */
-	  size_t len = strlen (str);
-	  if ((unsigned char)str[len - 1] == target_newline
-	      && (size_t) (int) len == len
-	      && (int) len > 0)
-	    {
-	      char *newstr;
-	      tree offset_node, string_cst;
-
-	      /* Create a NUL-terminated string that's one char shorter
-		 than the original, stripping off the trailing '\n'.  */
-	      newarg = build_string_literal (len, str);
-	      string_cst = string_constant (newarg, &offset_node);
-	      gcc_checking_assert (string_cst
-				   && (TREE_STRING_LENGTH (string_cst)
-				       == (int) len)
-				   && integer_zerop (offset_node)
-				   && (unsigned char)
-				      TREE_STRING_POINTER (string_cst)[len - 1]
-				      == target_newline);
-	      /* build_string_literal creates a new STRING_CST,
-		 modify it in place to avoid double copying.  */
-	      newstr = CONST_CAST (char *, TREE_STRING_POINTER (string_cst));
-	      newstr[len - 1] = '\0';
-	      if (fn_puts)
-		call = build_call_expr_loc (loc, fn_puts, 1, newarg);
-	    }
-	  else
-	    /* We'd like to arrange to call fputs(string,stdout) here,
-	       but we need stdout and don't have a way to get it yet.  */
-	    return NULL_TREE;
-	}
-    }
-
-  /* The other optimizations can be done only on the non-va_list variants.  */
-  else if (fcode == BUILT_IN_VPRINTF || fcode == BUILT_IN_VPRINTF_CHK)
-    return NULL_TREE;
-
-  /* If the format specifier was "%s\n", call __builtin_puts(arg).  */
-  else if (strcmp (fmt_str, target_percent_s_newline) == 0)
-    {
-      if (!arg || !validate_arg (arg, POINTER_TYPE))
-	return NULL_TREE;
-      if (fn_puts)
-	call = build_call_expr_loc (loc, fn_puts, 1, arg);
-    }
-
-  /* If the format specifier was "%c", call __builtin_putchar(arg).  */
-  else if (strcmp (fmt_str, target_percent_c) == 0)
-    {
-      if (!arg || !validate_arg (arg, INTEGER_TYPE))
-	return NULL_TREE;
-      if (fn_putchar)
-	call = build_call_expr_loc (loc, fn_putchar, 1, arg);
-    }
-
-  if (!call)
-    return NULL_TREE;
-
-  return fold_convert_loc (loc, TREE_TYPE (TREE_TYPE (fndecl)), call);
 }
 
 /* Initialize format string characters in the target charset.  */
