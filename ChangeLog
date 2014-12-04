@@ -1,3 +1,10 @@
+2014-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	* configure.ac: Permit also ISL 0.14 with CLooG.
+	* Makefile.def: Make more dependent on mpfr, mpc, isl, and cloog.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2014-10-30  Release Manager
 
 	* GCC 4.9.2 released.

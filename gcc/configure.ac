@@ -5495,7 +5495,30 @@ AC_ARG_VAR(CLOOGLIBS,[How to link CLOOG])
 AC_ARG_VAR(CLOOGINC,[How to find CLOOG include files])
 if test "x${CLOOGLIBS}" != "x" ; then 
    AC_DEFINE(HAVE_cloog, 1, [Define if cloog is in use.])
+
+  # Check whether isl_schedule_constraints_compute_schedule is available;
+  # it's new in ISL-0.13.
+  saved_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS $ISLINC"
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS $CLOOGLIBS $ISLLIBS $GMPLIBS"
+
+  AC_MSG_CHECKING([Checking for isl_schedule_constraints_compute_schedule])
+  AC_TRY_LINK([#include <isl/schedule.h>],
+              [isl_schedule_constraints_compute_schedule (NULL);],
+              [ac_has_isl_schedule_constraints_compute_schedule=yes],
+              [ac_has_isl_schedule_constraints_compute_schedule=no])
+  AC_MSG_RESULT($ac_has_isl_schedule_constraints_compute_schedule)
+
+  LIBS="$saved_LIBS"
+  CFLAGS="$saved_CFLAGS"
+
+  if test x"$ac_has_isl_schedule_constraints_compute_schedule" = x"yes"; then
+     AC_DEFINE(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE, 1,
+               [Define if isl_schedule_constraints_compute_schedule exists.])
+  fi
 fi
+
 
 # Check for plugin support
 AC_ARG_ENABLE(plugin,
