@@ -1,3 +1,20 @@
+2014-12-04  Richard Biener  <rguenther@suse.de>
+
+	* builtins.c (target_newline): Export.
+	(target_percent_s_newline): Likewise.
+	(fold_builtin_1): Do not fold printf functions here.
+	(fold_builtin_2): Likewise.
+	(fold_builtin_3): Likewise, do not fold strncat.
+	(fold_builtin_strncat): Move to gimple-fold.c.
+	(fold_builtin_printf): Likewise.
+	* builtins.h (target_newline): Declare.
+	(target_percent_s_newline): Likewise.
+	* gimple-fold.c (gimple_fold_builtin_strncat): Move from
+	builtins.c and gimplify.
+	(gimple_fold_builtin_printf): Likewise.
+	(gimple_fold_builtin): Fold strncat, printf, printf_unlocked,
+	vprintf, printf_chk and vprintf_chk here.
+
 2014-12-03  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.md (floatsidf2_internal): Use std::swap.
