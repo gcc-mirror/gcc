@@ -1411,6 +1411,12 @@
 #endif
 
 
+/* Define 0/1 if your linker supports -pie option with copy reloc. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_PIE_COPYRELOC
+#endif
+
+
 /* Define if your linker links a mix of read-only and read-write sections into
    a read-write section. */
 #ifndef USED_FOR_TARGET

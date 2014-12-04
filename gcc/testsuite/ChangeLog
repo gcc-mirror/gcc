@@ -1,3 +1,14 @@
+2014-12-04  Sriraman Tallam  <tmsriram@google.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pie-copyrelocs-1.c: New test.
+	* gcc.target/i386/pie-copyrelocs-2.c: Likewise.
+	* gcc.target/i386/pie-copyrelocs-3.c: Likewise.
+	* gcc.target/i386/pie-copyrelocs-4.c: Likewise.
+
+	* lib/target-supports.exp (check_effective_target_pie_copyreloc):
+	New procedure.
+
 2014-12-04  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/56917

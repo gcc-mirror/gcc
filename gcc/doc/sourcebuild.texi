@@ -1717,6 +1717,9 @@ or @code{EM_SPARCV9} executables.
 
 @item vect_cmdline_needed
 Target requires a command line argument to enable a SIMD instruction set.
+
+@item pie_copyreloc
+The x86-64 target linker supports PIE with copy reloc.
 @end table
 
 @subsubsection Environment attributes

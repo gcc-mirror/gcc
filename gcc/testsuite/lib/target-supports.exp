@@ -6098,3 +6098,54 @@ proc force_conventional_output_for { test } {
     }
 }
 
+# Return 1 if the x86-64 target supports PIE with copy reloc, 0
+# otherwise.  Cache the result.
+
+proc check_effective_target_pie_copyreloc { } {
+    global pie_copyreloc_available_saved
+    global tool
+    global GCC_UNDER_TEST
+
+    if { !([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
+	return 0
+    }
+
+    # Need auto-host.h to check linker support.
+    if { ![file exists ../../auto-host.h ] } {
+	return 0
+    }
+
+    if [info exists pie_copyreloc_available_saved] {
+	verbose "check_effective_target_pie_copyreloc returning saved $pie_copyreloc_available_saved" 2
+    } else {
+	# Set up and compile to see if linker supports PIE with copy
+	# reloc.  Include the current process ID in the file names to
+	# prevent conflicts with invocations for multiple testsuites.
+
+	set src pie[pid].c
+	set obj pie[pid].o
+
+	set f [open $src "w"]
+	puts $f "#include \"../../auto-host.h\""
+	puts $f "#if HAVE_LD_PIE_COPYRELOC == 0"
+	puts $f "# error Linker does not support PIE with copy reloc."
+	puts $f "#endif"
+	close $f
+
+	verbose "check_effective_target_pie_copyreloc compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $obj object ""]
+
+	file delete $src
+	file delete $obj
+
+	if [string match "" $lines] then {
+	    verbose "check_effective_target_pie_copyreloc testfile compilation passed" 2
+	    set pie_copyreloc_available_saved 1
+	} else {
+	    verbose "check_effective_target_pie_copyreloc testfile compilation failed" 2
+	    set pie_copyreloc_available_saved 0
+	}
+    }
+
+    return $pie_copyreloc_available_saved
+}

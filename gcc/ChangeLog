@@ -1,3 +1,18 @@
+2014-12-04  Sriraman Tallam  <tmsriram@google.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac (HAVE_LD_PIE_COPYRELOC): Defined to 1 if
+	Linux/x86-64 linker supports PIE with copy reloc.
+	* config.in: Regenerated.
+	* configure: Likewise.
+
+	* config/i386/i386.c (legitimate_pic_address_disp_p): Allow
+	pc-relative address for undefined, non-weak, non-function
+	symbol reference in 64-bit PIE if linker supports PIE with
+	copy reloc.
+
+	* doc/sourcebuild.texi: Document pie_copyreloc target.
+
 2014-12-04  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/56917
