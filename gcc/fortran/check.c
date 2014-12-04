@@ -1398,17 +1398,18 @@ gfc_check_cmplx (gfc_expr *x, gfc_expr *y, gfc_expr *kind)
   if (!kind_check (kind, 2, BT_COMPLEX))
     return false;
 
-  if (!kind && gfc_option.gfc_warn_conversion
+  if (!kind && warn_conversion
       && x->ts.type == BT_REAL && x->ts.kind > gfc_default_real_kind)
-    gfc_warning_now ("Conversion from %s to default-kind COMPLEX(%d) at %L "
-		     "might lose precision, consider using the KIND argument",
-		     gfc_typename (&x->ts), gfc_default_real_kind, &x->where);
-  else if (y && !kind && gfc_option.gfc_warn_conversion
+    gfc_warning_now (OPT_Wconversion, "Conversion from %s to default-kind "
+		     "COMPLEX(%d) at %L might lose precision, consider using "
+		     "the KIND argument", gfc_typename (&x->ts),
+		     gfc_default_real_kind, &x->where);
+  else if (y && !kind && warn_conversion
 	   && y->ts.type == BT_REAL && y->ts.kind > gfc_default_real_kind)
-    gfc_warning_now ("Conversion from %s to default-kind COMPLEX(%d) at %L "
-		     "might lose precision, consider using the KIND argument",
-		     gfc_typename (&y->ts), gfc_default_real_kind, &y->where);
-
+    gfc_warning_now (OPT_Wconversion, "Conversion from %s to default-kind "
+		     "COMPLEX(%d) at %L might lose precision, consider using "
+		     "the KIND argument", gfc_typename (&y->ts),
+		     gfc_default_real_kind, &y->where);
   return true;
 }
 
@@ -1482,7 +1483,7 @@ check_co_collective (gfc_expr *a, gfc_expr *image_idx, gfc_expr *stat,
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %L, use -fcoarray= to enable",
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
 		       &a->where);
       return false;
     }
@@ -2569,7 +2570,7 @@ gfc_check_lcobound (gfc_expr *coarray, gfc_expr *dim, gfc_expr *kind)
 {
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 
@@ -4847,7 +4848,7 @@ gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 
@@ -4885,7 +4886,7 @@ gfc_check_num_images (gfc_expr *distance, gfc_expr *failed)
 {
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 
@@ -4927,7 +4928,7 @@ gfc_check_this_image (gfc_expr *coarray, gfc_expr *dim, gfc_expr *distance)
 {
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 
@@ -5069,7 +5070,7 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
 	return false;
     }
 
-  if (!gfc_option.warn_surprising)
+  if (!warn_surprising)
     return true;
 
   /* If we can't calculate the sizes, we cannot check any more.
@@ -5126,7 +5127,7 @@ gfc_check_ucobound (gfc_expr *coarray, gfc_expr *dim, gfc_expr *kind)
 {
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 

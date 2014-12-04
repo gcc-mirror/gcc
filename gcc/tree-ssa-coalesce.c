@@ -834,12 +834,11 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple_stmt_iterator gsi;
-
       /* Start with live on exit temporaries.  */
       live_track_init (live, live_on_exit (liveinfo, bb));
 
-      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_last_bb (bb); !gsi_end_p (gsi);
+	   gsi_prev (&gsi))
         {
 	  tree var;
 	  gimple stmt = gsi_stmt (gsi);
@@ -876,9 +875,10 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
 	 There must be a conflict recorded between the result of the PHI and
 	 any variables that are live.  Otherwise the out-of-ssa translation
 	 may create incorrect code.  */
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  tree result = PHI_RESULT (phi);
 	  if (live_track_live_p (live, result))
 	    live_track_process_def (live, result, graph);
@@ -944,9 +944,11 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
     {
       tree arg;
 
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gphi_iterator gpi = gsi_start_phis (bb);
+	   !gsi_end_p (gpi);
+	   gsi_next (&gpi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gpi.phi ();
 	  size_t i;
 	  int ver;
 	  tree res;
@@ -1018,15 +1020,16 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 
 	    case GIMPLE_ASM:
 	      {
+		gasm *asm_stmt = as_a <gasm *> (stmt);
 		unsigned long noutputs, i;
 		unsigned long ninputs;
 		tree *outputs, link;
-		noutputs = gimple_asm_noutputs (stmt);
-		ninputs = gimple_asm_ninputs (stmt);
+		noutputs = gimple_asm_noutputs (asm_stmt);
+		ninputs = gimple_asm_ninputs (asm_stmt);
 		outputs = (tree *) alloca (noutputs * sizeof (tree));
 		for (i = 0; i < noutputs; ++i)
 		  {
-		    link = gimple_asm_output_op (stmt, i);
+		    link = gimple_asm_output_op (asm_stmt, i);
 		    outputs[i] = TREE_VALUE (link);
 		  }
 
@@ -1037,7 +1040,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 		    char *end;
 		    unsigned long match;
 
-		    link = gimple_asm_input_op (stmt, i);
+		    link = gimple_asm_input_op (asm_stmt, i);
 		    constraint
 		      = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
 		    input = TREE_VALUE (link);
@@ -1199,11 +1202,11 @@ coalesce_partitions (var_map map, ssa_conflicts_p graph, coalesce_list_p cl,
       FOR_EACH_EDGE (e, ei, bb->preds)
 	if (e->flags & EDGE_ABNORMAL)
 	  {
-	    gimple_stmt_iterator gsi;
+	    gphi_iterator gsi;
 	    for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 		 gsi_next (&gsi))
 	      {
-		gimple phi = gsi_stmt (gsi);
+		gphi *phi = gsi.phi ();
 		tree res = PHI_RESULT (phi);
 	        tree arg = PHI_ARG_DEF (phi, e->dest_idx);
 		int v1 = SSA_NAME_VERSION (res);

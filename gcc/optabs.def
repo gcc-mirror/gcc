@@ -190,6 +190,7 @@ OPTAB_D (ctrap_optab, "ctrap$a4")
 OPTAB_D (addv4_optab, "addv$I$a4")
 OPTAB_D (subv4_optab, "subv$I$a4")
 OPTAB_D (mulv4_optab, "mulv$I$a4")
+OPTAB_D (umulv4_optab, "umulv$I$a4")
 OPTAB_D (negv3_optab, "negv$I$a3")
 OPTAB_D (addptr3_optab, "addptr$a3")
 

@@ -1,7 +1,8 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mavx512dq -DAVX512DQ" } */
+/* { dg-options "-O2 -mavx512dq" } */
 /* { dg-require-effective-target avx512dq } */
 
+#define AVX512DQ
 #include "avx512f-helper.h"
 
 #define SIZE    (AVX512F_LEN / 64)

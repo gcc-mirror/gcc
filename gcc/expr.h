@@ -255,6 +255,7 @@ extern rtx_insn *emit_move_insn_1 (rtx, rtx);
 
 extern rtx_insn *emit_move_complex_push (machine_mode, rtx, rtx);
 extern rtx_insn *emit_move_complex_parts (rtx, rtx);
+extern void write_complex_part (rtx, rtx, bool);
 extern rtx emit_move_resolve_push (machine_mode, rtx);
 
 /* Push a block of length SIZE (perhaps variable)
@@ -272,6 +273,7 @@ extern void expand_assignment (tree, tree, bool);
    and storing the value into TARGET.
    If SUGGEST_REG is nonzero, copy the value through a register
    and return that register, if that is possible.  */
+extern rtx store_expr_with_bounds (tree, rtx, int, bool, tree);
 extern rtx store_expr (tree, rtx, int, bool);
 
 /* Given an rtx that may include add and multiply operations,
@@ -593,7 +595,7 @@ rtx get_personality_function (tree);
 /* In stmt.c */
 
 /* Expand a GIMPLE_SWITCH statement.  */
-extern void expand_case (gimple);
+extern void expand_case (gswitch *);
 
 /* Like expand_case but special-case for SJLJ exception dispatching.  */
 extern void expand_sjlj_dispatch_table (rtx, vec<tree> );
@@ -617,4 +619,6 @@ extern bool categorize_ctor_elements (const_tree, HOST_WIDE_INT *,
    by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
 extern tree component_ref_field_offset (tree);
 
+extern void expand_operands (tree, tree, rtx, rtx*, rtx*,
+			     enum expand_modifier);
 #endif /* GCC_EXPR_H */

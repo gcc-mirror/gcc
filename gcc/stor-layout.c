@@ -409,6 +409,7 @@ int_mode_for_mode (machine_mode mode)
     case MODE_VECTOR_ACCUM:
     case MODE_VECTOR_UFRACT:
     case MODE_VECTOR_UACCUM:
+    case MODE_POINTER_BOUNDS:
       mode = mode_for_size (GET_MODE_BITSIZE (mode), MODE_INT, 0);
       break;
 
@@ -2232,6 +2233,11 @@ layout_type (tree type)
       SET_TYPE_MODE (type, VOIDmode);
       break;
 
+    case POINTER_BOUNDS_TYPE:
+      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
+      TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
+      break;
+
     case OFFSET_TYPE:
       TYPE_SIZE (type) = bitsize_int (POINTER_SIZE);
       TYPE_SIZE_UNIT (type) = size_int (POINTER_SIZE_UNITS);
@@ -2428,9 +2434,9 @@ unsigned int
 min_align_of_type (tree type)
 {
   unsigned int align = TYPE_ALIGN (type);
-  align = MIN (align, BIGGEST_ALIGNMENT);
   if (!TYPE_USER_ALIGN (type))
     {
+      align = MIN (align, BIGGEST_ALIGNMENT);
 #ifdef BIGGEST_FIELD_ALIGNMENT
       align = MIN (align, BIGGEST_FIELD_ALIGNMENT);
 #endif

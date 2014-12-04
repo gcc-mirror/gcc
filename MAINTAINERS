@@ -91,6 +91,7 @@ nds32 port		Chung-Ju Wu		<jasonwucj@gmail.com>
 nds32 port		Shiva Chen		<shiva0217@gmail.com>
 nios2 port		Chung-Lin Tang		<cltang@codesourcery.com>
 nios2 port		Sandra Loosemore	<sandra@codesourcery.com>
+nvptx port		Bernd Schmidt		<bernds@codesourcery.com>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
 picochip port		Daniel Towner		<dant@picochip.com>
 rl78 port		DJ Delorie		<dj@redhat.com>
@@ -121,6 +122,7 @@ xtensa port		Sterling Augustine	<augustine.sterling@gmail.com>
 			OS Port Maintainers	(OS alphabetical order)
 
 aix			David Edelsohn		<dje.gcc@gmail.com>
+Android sub-port	Maxim Kuvyrkov		<maxim.kuvyrkov@linaro.org>
 darwin port		Mike Stump		<mikestump@comcast.net>
 darwin port		Eric Christopher	<echristo@gmail.com>
 darwin port		Stan Shebs		<stanshebs@earthlink.net>
@@ -181,6 +183,7 @@ libobjc			Andrew Pinski		<pinskia@gmail.com>
 libquadmath		Tobias Burnus		<burnus@net-b.de>
 libquadmath		Jakub Jelinek		<jakub@redhat.com>
 libvtv			Caroline Tice		<cmtice@google.com>
+line map		Dodji Seketeli		<dodji@redhat.com>
 loop discovery		Michael Hayes		<m.hayes@elec.canterbury.ac.nz>
 soft-fp			Joseph Myers		<joseph@codesourcery.com>
 scheduler (+ haifa)	Jim Wilson		<wilson@tuliptree.org>
@@ -260,6 +263,7 @@ testsuite		Janis Johnson		<janisjo@codesourcery.com>
 register allocation	Vladimir Makarov	<vmakarov@redhat.com>
 gdbhooks.py		David Malcolm		<dmalcolm@redhat.com>
 SLSR			Bill Schmidt		<wschmidt@linux.vnet.ibm.com>
+jit			David Malcolm		<dmalcolm@redhat.com>
 
 Note that individuals who maintain parts of the compiler need approval to
 check in changes outside of the parts of the compiler they maintain.
@@ -395,6 +399,7 @@ Matthew Gingell					<gingell@gnat.com>
 Tristan Gingold					<gingold@adacore.com>
 Jan-Benedict Glaw				<jbglaw@lug-owl.de>
 Marc Glisse					<marc.glisse@inria.fr>
+Prachi Godbole					<prachi.godbole@imgtec.com>
 Anthony Green					<green@redhat.com>
 James Greenhalgh				<james.greenhalgh@arm.com>
 Doug Gregor					<doug.gregor@gmail.com>
@@ -458,6 +463,7 @@ Georg-Johann Lay				<avr@gjlay.de>
 Marc Lehmann					<pcg@goof.com>
 James Lemke					<jwlemke@codesourcery.com>
 Kriang Lerdsuwanakij				<lerdsuwa@users.sourceforge.net>
+Renlin Li					<renlin.li@arm.com>
 Xinliang David Li				<davidxl@google.com>
 Jiangning Liu					<jiangning.liu@arm.com>
 Sa Liu						<saliu@de.ibm.com>
@@ -567,6 +573,7 @@ David Ung					<davidu@mips.com>
 Neil Vachharajani				<nvachhar@gmail.com>
 Kris Van Hees					<kris.van.hees@oracle.com>
 Joost VandeVondele				<joost.vandevondele@mat.ethz.ch>
+Alex Velenko					<alex.velenko@arm.com>
 Ilya Verbin					<iverbin@gmail.com>
 Kugan Vivekanandarajah				<kuganv@linaro.org>
 Tom de Vries					<tom@codesourcery.com>

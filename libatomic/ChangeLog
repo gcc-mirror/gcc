@@ -1,3 +1,17 @@
+2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/63784
+	* configure: Regenerated.
+
+2014-11-13  Andrew Waterman <waterman@cs.berkeley.edu>
+
+	* cas_n.c (libat_compare_exchange): Add missing cast.
+
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/63610
+	* configure: Regenerate.
+
 2014-08-19  Yaakov Selkowitz  <yselkowi@redhat.com>
 
 	* configure.tgt: Add cygwin to supported targets.

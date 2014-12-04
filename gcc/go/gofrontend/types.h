@@ -2360,7 +2360,8 @@ class Array_type : public Type
  public:
   Array_type(Type* element_type, Expression* length)
     : Type(TYPE_ARRAY),
-      element_type_(element_type), length_(length), blength_(NULL)
+      element_type_(element_type), length_(length), blength_(NULL),
+      issued_length_error_(false)
   { }
 
   // Return the element type.
@@ -2479,6 +2480,9 @@ class Array_type : public Type
   // The backend representation of the length.
   // We only want to compute this once.
   Bexpression* blength_;
+  // Whether or not an invalid length error has been issued for this type,
+  // to avoid knock-on errors.
+  mutable bool issued_length_error_;
 };
 
 // The type of a map.
@@ -2925,6 +2929,11 @@ class Named_type : public Type
   // and rune.
   bool
   is_alias() const;
+
+  // Whether this named type is valid.  A recursive named type is invalid.
+  bool
+  is_valid() const
+  { return !this->is_error_; }
 
   // Whether this is a circular type: a pointer or function type that
   // refers to itself, which is not possible in C.

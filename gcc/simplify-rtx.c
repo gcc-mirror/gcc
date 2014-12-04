@@ -3104,6 +3104,43 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  && UINTVAL (trueop0) == GET_MODE_MASK (mode)
 	  && ! side_effects_p (op1))
 	return op0;
+      /* Given:
+	 scalar modes M1, M2
+	 scalar constants c1, c2
+	 size (M2) > size (M1)
+	 c1 == size (M2) - size (M1)
+	 optimize:
+	 (ashiftrt:M1 (subreg:M1 (lshiftrt:M2 (reg:M2) (const_int <c1>))
+				 <low_part>)
+		      (const_int <c2>))
+	 to:
+	 (subreg:M1 (ashiftrt:M2 (reg:M2) (const_int <c1 + c2>))
+		    <low_part>).  */
+      if (code == ASHIFTRT
+	  && !VECTOR_MODE_P (mode)
+	  && SUBREG_P (op0)
+	  && CONST_INT_P (op1)
+	  && GET_CODE (SUBREG_REG (op0)) == LSHIFTRT
+	  && !VECTOR_MODE_P (GET_MODE (SUBREG_REG (op0)))
+	  && CONST_INT_P (XEXP (SUBREG_REG (op0), 1))
+	  && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
+	      > GET_MODE_BITSIZE (mode))
+	  && (INTVAL (XEXP (SUBREG_REG (op0), 1))
+	      == (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
+		  - GET_MODE_BITSIZE (mode)))
+	  && subreg_lowpart_p (op0))
+	{
+	  rtx tmp = GEN_INT (INTVAL (XEXP (SUBREG_REG (op0), 1))
+			     + INTVAL (op1));
+	  machine_mode inner_mode = GET_MODE (SUBREG_REG (op0));
+	  tmp = simplify_gen_binary (ASHIFTRT,
+				     GET_MODE (SUBREG_REG (op0)),
+				     XEXP (SUBREG_REG (op0), 0),
+				     tmp);
+	  return simplify_gen_subreg (mode, tmp, inner_mode,
+				      subreg_lowpart_offset (mode,
+							     inner_mode));
+	}
     canonicalize_shift:
       if (SHIFT_COUNT_TRUNCATED && CONST_INT_P (op1))
 	{
@@ -5196,6 +5233,22 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 						 op0, XEXP (op1, 0), op2);
 		}
 	    }
+
+	  /* Replace (vec_merge (vec_duplicate (vec_select a parallel (i))) a 1 << i)
+	     with a.  */
+	  if (GET_CODE (op0) == VEC_DUPLICATE
+	      && GET_CODE (XEXP (op0, 0)) == VEC_SELECT
+	      && GET_CODE (XEXP (XEXP (op0, 0), 1)) == PARALLEL
+	      && mode_nunits[GET_MODE (XEXP (op0, 0))] == 1)
+	    {
+	      tem = XVECEXP ((XEXP (XEXP (op0, 0), 1)), 0, 0);
+	      if (CONST_INT_P (tem) && CONST_INT_P (op2))
+		{
+		  if (XEXP (XEXP (op0, 0), 0) == op1
+		      && UINTVAL (op2) == HOST_WIDE_INT_1U << UINTVAL (tem))
+		    return op1;
+		}
+	    }
 	}
 
       if (rtx_equal_p (op0, op1)
@@ -5467,6 +5520,8 @@ simplify_immed_subreg (machine_mode outermode, rtx op,
 	    HOST_WIDE_INT tmp[MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT];
 	    wide_int r;
 
+	    if (GET_MODE_PRECISION (outer_submode) > MAX_BITSIZE_MODE_ANY_INT)
+	      return NULL_RTX;
 	    for (u = 0; u < units; u++)
 	      {
 		unsigned HOST_WIDE_INT buf = 0;
@@ -5478,10 +5533,13 @@ simplify_immed_subreg (machine_mode outermode, rtx op,
 		tmp[u] = buf;
 		base += HOST_BITS_PER_WIDE_INT;
 	      }
-	    gcc_assert (GET_MODE_PRECISION (outer_submode)
-			<= MAX_BITSIZE_MODE_ANY_INT);
 	    r = wide_int::from_array (tmp, units,
 				      GET_MODE_PRECISION (outer_submode));
+#if TARGET_SUPPORTS_WIDE_INT == 0
+	    /* Make sure r will fit into CONST_INT or CONST_DOUBLE.  */
+	    if (wi::min_precision (r, SIGNED) > HOST_BITS_PER_DOUBLE_INT)
+	      return NULL_RTX;
+#endif
 	    elems[elem] = immed_wide_int_const (r, outer_submode);
 	  }
 	  break;

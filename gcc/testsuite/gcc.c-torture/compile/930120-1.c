@@ -1,3 +1,4 @@
+/* { dg-require-effective-target untyped_assembly } */
 union {
   short I[2];
   long int L;

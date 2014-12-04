@@ -40,15 +40,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr allocator_arg_t allocator_arg = allocator_arg_t();
 
-_GLIBCXX_HAS_NESTED_TYPE(allocator_type)
-
-  template<typename _Tp, typename _Alloc,
-	   bool = __has_allocator_type<_Tp>::value>
+  template<typename _Tp, typename _Alloc, typename = __void_t<>>
     struct __uses_allocator_helper
     : false_type { };
 
   template<typename _Tp, typename _Alloc>
-    struct __uses_allocator_helper<_Tp, _Alloc, true>
+    struct __uses_allocator_helper<_Tp, _Alloc,
+				   __void_t<typename _Tp::allocator_type>>
     : is_convertible<_Alloc, typename _Tp::allocator_type>::type
     { };
 

@@ -224,8 +224,6 @@ HOST_EXPORTS = \
 	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
 	ISLLIBS="$(HOST_ISLLIBS)"; export ISLLIBS; \
 	ISLINC="$(HOST_ISLINC)"; export ISLINC; \
-	CLOOGLIBS="$(HOST_CLOOGLIBS)"; export CLOOGLIBS; \
-	CLOOGINC="$(HOST_CLOOGINC)"; export CLOOGINC; \
 	LIBELFLIBS="$(HOST_LIBELFLIBS)" ; export LIBELFLIBS; \
 	LIBELFINC="$(HOST_LIBELFINC)" ; export LIBELFINC; \
 @if gcc-bootstrap
@@ -318,10 +316,6 @@ HOST_GMPINC = @gmpinc@
 # Where to find ISL
 HOST_ISLLIBS = @isllibs@
 HOST_ISLINC = @islinc@
-
-# Where to find CLOOG
-HOST_CLOOGLIBS = @clooglibs@
-HOST_CLOOGINC = @clooginc@
 
 # Where to find libelf
 HOST_LIBELFLIBS = @libelflibs@
@@ -588,7 +582,7 @@ all:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the target machine work.
-TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_libcilkrts)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
+TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_libcilkrts)$(TARGET_LIB_PATH_liboffloadmic)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
 
 @if target-libstdc++-v3
 TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:
@@ -605,6 +599,10 @@ TARGET_LIB_PATH_libvtv = $$r/$(TARGET_SUBDIR)/libvtv/.libs:
 @if target-libcilkrts
 TARGET_LIB_PATH_libcilkrts = $$r/$(TARGET_SUBDIR)/libcilkrts/.libs:
 @endif target-libcilkrts
+
+@if target-liboffloadmic
+TARGET_LIB_PATH_liboffloadmic = $$r/$(TARGET_SUBDIR)/liboffloadmic/.libs:
+@endif target-liboffloadmic
 
 @if target-libssp
 TARGET_LIB_PATH_libssp = $$r/$(TARGET_SUBDIR)/libssp/.libs:
@@ -626,7 +624,7 @@ TARGET_LIB_PATH_libatomic = $$r/$(TARGET_SUBDIR)/libatomic/.libs:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the host machine work.
-HOST_LIB_PATH = $(HOST_LIB_PATH_gmp)$(HOST_LIB_PATH_mpfr)$(HOST_LIB_PATH_mpc)$(HOST_LIB_PATH_isl)$(HOST_LIB_PATH_cloog)$(HOST_LIB_PATH_libelf)
+HOST_LIB_PATH = $(HOST_LIB_PATH_gmp)$(HOST_LIB_PATH_mpfr)$(HOST_LIB_PATH_mpc)$(HOST_LIB_PATH_isl)$(HOST_LIB_PATH_libelf)
 
 # Define HOST_LIB_PATH_gcc here, for the sake of TARGET_LIB_PATH, ouch
 @if gcc
@@ -653,11 +651,6 @@ HOST_LIB_PATH_mpc = \
 HOST_LIB_PATH_isl = \
   $$r/$(HOST_SUBDIR)/isl/.libs:$$r/$(HOST_SUBDIR)/prev-isl/.libs:
 @endif isl
-
-@if cloog
-HOST_LIB_PATH_cloog = \
-  $$r/$(HOST_SUBDIR)/cloog/.libs:$$r/$(HOST_SUBDIR)/prev-cloog/.libs:
-@endif cloog
 
 @if libelf
 HOST_LIB_PATH_libelf = \
@@ -915,7 +908,6 @@ configure-host:  \
     maybe-configure-mpfr \
     maybe-configure-mpc \
     maybe-configure-isl \
-    maybe-configure-cloog \
     maybe-configure-libelf \
     maybe-configure-gold \
     maybe-configure-gprof \
@@ -951,6 +943,7 @@ configure-target:  \
     maybe-configure-target-libsanitizer \
     maybe-configure-target-libvtv \
     maybe-configure-target-libcilkrts \
+    maybe-configure-target-liboffloadmic \
     maybe-configure-target-libssp \
     maybe-configure-target-newlib \
     maybe-configure-target-libgcc \
@@ -1046,9 +1039,6 @@ all-host: maybe-all-mpc
 @if isl-no-bootstrap
 all-host: maybe-all-isl
 @endif isl-no-bootstrap
-@if cloog-no-bootstrap
-all-host: maybe-all-cloog
-@endif cloog-no-bootstrap
 @if libelf-no-bootstrap
 all-host: maybe-all-libelf
 @endif libelf-no-bootstrap
@@ -1113,6 +1103,7 @@ all-target: maybe-all-target-libsanitizer
 all-target: maybe-all-target-libvtv
 @endif target-libvtv-no-bootstrap
 all-target: maybe-all-target-libcilkrts
+all-target: maybe-all-target-liboffloadmic
 all-target: maybe-all-target-libssp
 all-target: maybe-all-target-newlib
 @if target-libgcc-no-bootstrap
@@ -1171,7 +1162,6 @@ info-host: maybe-info-gmp
 info-host: maybe-info-mpfr
 info-host: maybe-info-mpc
 info-host: maybe-info-isl
-info-host: maybe-info-cloog
 info-host: maybe-info-libelf
 info-host: maybe-info-gold
 info-host: maybe-info-gprof
@@ -1208,6 +1198,7 @@ info-target: maybe-info-target-libstdc++-v3
 info-target: maybe-info-target-libsanitizer
 info-target: maybe-info-target-libvtv
 info-target: maybe-info-target-libcilkrts
+info-target: maybe-info-target-liboffloadmic
 info-target: maybe-info-target-libssp
 info-target: maybe-info-target-newlib
 info-target: maybe-info-target-libgcc
@@ -1257,7 +1248,6 @@ dvi-host: maybe-dvi-gmp
 dvi-host: maybe-dvi-mpfr
 dvi-host: maybe-dvi-mpc
 dvi-host: maybe-dvi-isl
-dvi-host: maybe-dvi-cloog
 dvi-host: maybe-dvi-libelf
 dvi-host: maybe-dvi-gold
 dvi-host: maybe-dvi-gprof
@@ -1294,6 +1284,7 @@ dvi-target: maybe-dvi-target-libstdc++-v3
 dvi-target: maybe-dvi-target-libsanitizer
 dvi-target: maybe-dvi-target-libvtv
 dvi-target: maybe-dvi-target-libcilkrts
+dvi-target: maybe-dvi-target-liboffloadmic
 dvi-target: maybe-dvi-target-libssp
 dvi-target: maybe-dvi-target-newlib
 dvi-target: maybe-dvi-target-libgcc
@@ -1343,7 +1334,6 @@ pdf-host: maybe-pdf-gmp
 pdf-host: maybe-pdf-mpfr
 pdf-host: maybe-pdf-mpc
 pdf-host: maybe-pdf-isl
-pdf-host: maybe-pdf-cloog
 pdf-host: maybe-pdf-libelf
 pdf-host: maybe-pdf-gold
 pdf-host: maybe-pdf-gprof
@@ -1380,6 +1370,7 @@ pdf-target: maybe-pdf-target-libstdc++-v3
 pdf-target: maybe-pdf-target-libsanitizer
 pdf-target: maybe-pdf-target-libvtv
 pdf-target: maybe-pdf-target-libcilkrts
+pdf-target: maybe-pdf-target-liboffloadmic
 pdf-target: maybe-pdf-target-libssp
 pdf-target: maybe-pdf-target-newlib
 pdf-target: maybe-pdf-target-libgcc
@@ -1429,7 +1420,6 @@ html-host: maybe-html-gmp
 html-host: maybe-html-mpfr
 html-host: maybe-html-mpc
 html-host: maybe-html-isl
-html-host: maybe-html-cloog
 html-host: maybe-html-libelf
 html-host: maybe-html-gold
 html-host: maybe-html-gprof
@@ -1466,6 +1456,7 @@ html-target: maybe-html-target-libstdc++-v3
 html-target: maybe-html-target-libsanitizer
 html-target: maybe-html-target-libvtv
 html-target: maybe-html-target-libcilkrts
+html-target: maybe-html-target-liboffloadmic
 html-target: maybe-html-target-libssp
 html-target: maybe-html-target-newlib
 html-target: maybe-html-target-libgcc
@@ -1515,7 +1506,6 @@ TAGS-host: maybe-TAGS-gmp
 TAGS-host: maybe-TAGS-mpfr
 TAGS-host: maybe-TAGS-mpc
 TAGS-host: maybe-TAGS-isl
-TAGS-host: maybe-TAGS-cloog
 TAGS-host: maybe-TAGS-libelf
 TAGS-host: maybe-TAGS-gold
 TAGS-host: maybe-TAGS-gprof
@@ -1552,6 +1542,7 @@ TAGS-target: maybe-TAGS-target-libstdc++-v3
 TAGS-target: maybe-TAGS-target-libsanitizer
 TAGS-target: maybe-TAGS-target-libvtv
 TAGS-target: maybe-TAGS-target-libcilkrts
+TAGS-target: maybe-TAGS-target-liboffloadmic
 TAGS-target: maybe-TAGS-target-libssp
 TAGS-target: maybe-TAGS-target-newlib
 TAGS-target: maybe-TAGS-target-libgcc
@@ -1601,7 +1592,6 @@ install-info-host: maybe-install-info-gmp
 install-info-host: maybe-install-info-mpfr
 install-info-host: maybe-install-info-mpc
 install-info-host: maybe-install-info-isl
-install-info-host: maybe-install-info-cloog
 install-info-host: maybe-install-info-libelf
 install-info-host: maybe-install-info-gold
 install-info-host: maybe-install-info-gprof
@@ -1638,6 +1628,7 @@ install-info-target: maybe-install-info-target-libstdc++-v3
 install-info-target: maybe-install-info-target-libsanitizer
 install-info-target: maybe-install-info-target-libvtv
 install-info-target: maybe-install-info-target-libcilkrts
+install-info-target: maybe-install-info-target-liboffloadmic
 install-info-target: maybe-install-info-target-libssp
 install-info-target: maybe-install-info-target-newlib
 install-info-target: maybe-install-info-target-libgcc
@@ -1687,7 +1678,6 @@ install-pdf-host: maybe-install-pdf-gmp
 install-pdf-host: maybe-install-pdf-mpfr
 install-pdf-host: maybe-install-pdf-mpc
 install-pdf-host: maybe-install-pdf-isl
-install-pdf-host: maybe-install-pdf-cloog
 install-pdf-host: maybe-install-pdf-libelf
 install-pdf-host: maybe-install-pdf-gold
 install-pdf-host: maybe-install-pdf-gprof
@@ -1724,6 +1714,7 @@ install-pdf-target: maybe-install-pdf-target-libstdc++-v3
 install-pdf-target: maybe-install-pdf-target-libsanitizer
 install-pdf-target: maybe-install-pdf-target-libvtv
 install-pdf-target: maybe-install-pdf-target-libcilkrts
+install-pdf-target: maybe-install-pdf-target-liboffloadmic
 install-pdf-target: maybe-install-pdf-target-libssp
 install-pdf-target: maybe-install-pdf-target-newlib
 install-pdf-target: maybe-install-pdf-target-libgcc
@@ -1773,7 +1764,6 @@ install-html-host: maybe-install-html-gmp
 install-html-host: maybe-install-html-mpfr
 install-html-host: maybe-install-html-mpc
 install-html-host: maybe-install-html-isl
-install-html-host: maybe-install-html-cloog
 install-html-host: maybe-install-html-libelf
 install-html-host: maybe-install-html-gold
 install-html-host: maybe-install-html-gprof
@@ -1810,6 +1800,7 @@ install-html-target: maybe-install-html-target-libstdc++-v3
 install-html-target: maybe-install-html-target-libsanitizer
 install-html-target: maybe-install-html-target-libvtv
 install-html-target: maybe-install-html-target-libcilkrts
+install-html-target: maybe-install-html-target-liboffloadmic
 install-html-target: maybe-install-html-target-libssp
 install-html-target: maybe-install-html-target-newlib
 install-html-target: maybe-install-html-target-libgcc
@@ -1859,7 +1850,6 @@ installcheck-host: maybe-installcheck-gmp
 installcheck-host: maybe-installcheck-mpfr
 installcheck-host: maybe-installcheck-mpc
 installcheck-host: maybe-installcheck-isl
-installcheck-host: maybe-installcheck-cloog
 installcheck-host: maybe-installcheck-libelf
 installcheck-host: maybe-installcheck-gold
 installcheck-host: maybe-installcheck-gprof
@@ -1896,6 +1886,7 @@ installcheck-target: maybe-installcheck-target-libstdc++-v3
 installcheck-target: maybe-installcheck-target-libsanitizer
 installcheck-target: maybe-installcheck-target-libvtv
 installcheck-target: maybe-installcheck-target-libcilkrts
+installcheck-target: maybe-installcheck-target-liboffloadmic
 installcheck-target: maybe-installcheck-target-libssp
 installcheck-target: maybe-installcheck-target-newlib
 installcheck-target: maybe-installcheck-target-libgcc
@@ -1945,7 +1936,6 @@ mostlyclean-host: maybe-mostlyclean-gmp
 mostlyclean-host: maybe-mostlyclean-mpfr
 mostlyclean-host: maybe-mostlyclean-mpc
 mostlyclean-host: maybe-mostlyclean-isl
-mostlyclean-host: maybe-mostlyclean-cloog
 mostlyclean-host: maybe-mostlyclean-libelf
 mostlyclean-host: maybe-mostlyclean-gold
 mostlyclean-host: maybe-mostlyclean-gprof
@@ -1982,6 +1972,7 @@ mostlyclean-target: maybe-mostlyclean-target-libstdc++-v3
 mostlyclean-target: maybe-mostlyclean-target-libsanitizer
 mostlyclean-target: maybe-mostlyclean-target-libvtv
 mostlyclean-target: maybe-mostlyclean-target-libcilkrts
+mostlyclean-target: maybe-mostlyclean-target-liboffloadmic
 mostlyclean-target: maybe-mostlyclean-target-libssp
 mostlyclean-target: maybe-mostlyclean-target-newlib
 mostlyclean-target: maybe-mostlyclean-target-libgcc
@@ -2031,7 +2022,6 @@ clean-host: maybe-clean-gmp
 clean-host: maybe-clean-mpfr
 clean-host: maybe-clean-mpc
 clean-host: maybe-clean-isl
-clean-host: maybe-clean-cloog
 clean-host: maybe-clean-libelf
 clean-host: maybe-clean-gold
 clean-host: maybe-clean-gprof
@@ -2068,6 +2058,7 @@ clean-target: maybe-clean-target-libstdc++-v3
 clean-target: maybe-clean-target-libsanitizer
 clean-target: maybe-clean-target-libvtv
 clean-target: maybe-clean-target-libcilkrts
+clean-target: maybe-clean-target-liboffloadmic
 clean-target: maybe-clean-target-libssp
 clean-target: maybe-clean-target-newlib
 clean-target: maybe-clean-target-libgcc
@@ -2117,7 +2108,6 @@ distclean-host: maybe-distclean-gmp
 distclean-host: maybe-distclean-mpfr
 distclean-host: maybe-distclean-mpc
 distclean-host: maybe-distclean-isl
-distclean-host: maybe-distclean-cloog
 distclean-host: maybe-distclean-libelf
 distclean-host: maybe-distclean-gold
 distclean-host: maybe-distclean-gprof
@@ -2154,6 +2144,7 @@ distclean-target: maybe-distclean-target-libstdc++-v3
 distclean-target: maybe-distclean-target-libsanitizer
 distclean-target: maybe-distclean-target-libvtv
 distclean-target: maybe-distclean-target-libcilkrts
+distclean-target: maybe-distclean-target-liboffloadmic
 distclean-target: maybe-distclean-target-libssp
 distclean-target: maybe-distclean-target-newlib
 distclean-target: maybe-distclean-target-libgcc
@@ -2203,7 +2194,6 @@ maintainer-clean-host: maybe-maintainer-clean-gmp
 maintainer-clean-host: maybe-maintainer-clean-mpfr
 maintainer-clean-host: maybe-maintainer-clean-mpc
 maintainer-clean-host: maybe-maintainer-clean-isl
-maintainer-clean-host: maybe-maintainer-clean-cloog
 maintainer-clean-host: maybe-maintainer-clean-libelf
 maintainer-clean-host: maybe-maintainer-clean-gold
 maintainer-clean-host: maybe-maintainer-clean-gprof
@@ -2240,6 +2230,7 @@ maintainer-clean-target: maybe-maintainer-clean-target-libstdc++-v3
 maintainer-clean-target: maybe-maintainer-clean-target-libsanitizer
 maintainer-clean-target: maybe-maintainer-clean-target-libvtv
 maintainer-clean-target: maybe-maintainer-clean-target-libcilkrts
+maintainer-clean-target: maybe-maintainer-clean-target-liboffloadmic
 maintainer-clean-target: maybe-maintainer-clean-target-libssp
 maintainer-clean-target: maybe-maintainer-clean-target-newlib
 maintainer-clean-target: maybe-maintainer-clean-target-libgcc
@@ -2344,7 +2335,6 @@ check-host:  \
     maybe-check-mpfr \
     maybe-check-mpc \
     maybe-check-isl \
-    maybe-check-cloog \
     maybe-check-libelf \
     maybe-check-gold \
     maybe-check-gprof \
@@ -2381,6 +2371,7 @@ check-target:  \
     maybe-check-target-libsanitizer \
     maybe-check-target-libvtv \
     maybe-check-target-libcilkrts \
+    maybe-check-target-liboffloadmic \
     maybe-check-target-libssp \
     maybe-check-target-newlib \
     maybe-check-target-libgcc \
@@ -2456,7 +2447,6 @@ install-host-nogcc:  \
     maybe-install-mpfr \
     maybe-install-mpc \
     maybe-install-isl \
-    maybe-install-cloog \
     maybe-install-libelf \
     maybe-install-gold \
     maybe-install-gprof \
@@ -2505,7 +2495,6 @@ install-host:  \
     maybe-install-mpfr \
     maybe-install-mpc \
     maybe-install-isl \
-    maybe-install-cloog \
     maybe-install-libelf \
     maybe-install-gold \
     maybe-install-gprof \
@@ -2542,6 +2531,7 @@ install-target:  \
     maybe-install-target-libsanitizer \
     maybe-install-target-libvtv \
     maybe-install-target-libcilkrts \
+    maybe-install-target-liboffloadmic \
     maybe-install-target-libssp \
     maybe-install-target-newlib \
     maybe-install-target-libgcc \
@@ -2611,7 +2601,6 @@ install-strip-host:  \
     maybe-install-strip-mpfr \
     maybe-install-strip-mpc \
     maybe-install-strip-isl \
-    maybe-install-strip-cloog \
     maybe-install-strip-libelf \
     maybe-install-strip-gold \
     maybe-install-strip-gprof \
@@ -2648,6 +2637,7 @@ install-strip-target:  \
     maybe-install-strip-target-libsanitizer \
     maybe-install-strip-target-libvtv \
     maybe-install-strip-target-libcilkrts \
+    maybe-install-strip-target-liboffloadmic \
     maybe-install-strip-target-libssp \
     maybe-install-strip-target-newlib \
     maybe-install-strip-target-libgcc \
@@ -11027,7 +11017,7 @@ configure-gmp:
 	  $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
-	  --target=none-${host_vendor}-${host_os} --disable-shared \
+	  --target=none-${host_vendor}-${host_os} --disable-shared LEX="touch lex.yy.c" \
 	  || exit 1
 @endif gmp
 
@@ -11063,7 +11053,7 @@ configure-stage1-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared LEX="touch lex.yy.c"
 @endif gmp-bootstrap
 
 .PHONY: configure-stage2-gmp maybe-configure-stage2-gmp
@@ -11097,7 +11087,7 @@ configure-stage2-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared LEX="touch lex.yy.c"
 @endif gmp-bootstrap
 
 .PHONY: configure-stage3-gmp maybe-configure-stage3-gmp
@@ -11131,7 +11121,7 @@ configure-stage3-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared LEX="touch lex.yy.c"
 @endif gmp-bootstrap
 
 .PHONY: configure-stage4-gmp maybe-configure-stage4-gmp
@@ -11165,7 +11155,7 @@ configure-stage4-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared LEX="touch lex.yy.c"
 @endif gmp-bootstrap
 
 .PHONY: configure-stageprofile-gmp maybe-configure-stageprofile-gmp
@@ -11199,7 +11189,7 @@ configure-stageprofile-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared LEX="touch lex.yy.c"
 @endif gmp-bootstrap
 
 .PHONY: configure-stagefeedback-gmp maybe-configure-stagefeedback-gmp
@@ -11233,7 +11223,7 @@ configure-stagefeedback-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared LEX="touch lex.yy.c"
 @endif gmp-bootstrap
 
 
@@ -14471,874 +14461,6 @@ maintainer-clean-isl:
 	  || exit 1
 
 @endif isl
-
-
-
-.PHONY: configure-cloog maybe-configure-cloog
-maybe-configure-cloog:
-@if gcc-bootstrap
-configure-cloog: stage_current
-@endif gcc-bootstrap
-@if cloog
-maybe-configure-cloog: configure-cloog
-configure-cloog: 
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	test ! -f $(HOST_SUBDIR)/cloog/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
-	$(HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	echo Configuring in $(HOST_SUBDIR)/cloog; \
-	cd "$(HOST_SUBDIR)/cloog" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=cloog; \
-	$(SHELL) \
-	  $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system \
-	  || exit 1
-@endif cloog
-
-
-
-.PHONY: configure-stage1-cloog maybe-configure-stage1-cloog
-maybe-configure-stage1-cloog:
-@if cloog-bootstrap
-maybe-configure-stage1-cloog: configure-stage1-cloog
-configure-stage1-cloog:
-	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE1_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/cloog/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS; CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	echo Configuring stage 1 in $(HOST_SUBDIR)/cloog ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
-	cd $(HOST_SUBDIR)/cloog || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=cloog; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	   \
-	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
-@endif cloog-bootstrap
-
-.PHONY: configure-stage2-cloog maybe-configure-stage2-cloog
-maybe-configure-stage2-cloog:
-@if cloog-bootstrap
-maybe-configure-stage2-cloog: configure-stage2-cloog
-configure-stage2-cloog:
-	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE2_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/cloog/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	echo Configuring stage 2 in $(HOST_SUBDIR)/cloog ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
-	cd $(HOST_SUBDIR)/cloog || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=cloog; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	   --with-build-libsubdir=$(HOST_SUBDIR)  \
-	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
-@endif cloog-bootstrap
-
-.PHONY: configure-stage3-cloog maybe-configure-stage3-cloog
-maybe-configure-stage3-cloog:
-@if cloog-bootstrap
-maybe-configure-stage3-cloog: configure-stage3-cloog
-configure-stage3-cloog:
-	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE3_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/cloog/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	echo Configuring stage 3 in $(HOST_SUBDIR)/cloog ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
-	cd $(HOST_SUBDIR)/cloog || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=cloog; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	   --with-build-libsubdir=$(HOST_SUBDIR)  \
-	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
-@endif cloog-bootstrap
-
-.PHONY: configure-stage4-cloog maybe-configure-stage4-cloog
-maybe-configure-stage4-cloog:
-@if cloog-bootstrap
-maybe-configure-stage4-cloog: configure-stage4-cloog
-configure-stage4-cloog:
-	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE4_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/cloog/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	echo Configuring stage 4 in $(HOST_SUBDIR)/cloog ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
-	cd $(HOST_SUBDIR)/cloog || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=cloog; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	   --with-build-libsubdir=$(HOST_SUBDIR)  \
-	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
-@endif cloog-bootstrap
-
-.PHONY: configure-stageprofile-cloog maybe-configure-stageprofile-cloog
-maybe-configure-stageprofile-cloog:
-@if cloog-bootstrap
-maybe-configure-stageprofile-cloog: configure-stageprofile-cloog
-configure-stageprofile-cloog:
-	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEprofile_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/cloog/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	echo Configuring stage profile in $(HOST_SUBDIR)/cloog ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
-	cd $(HOST_SUBDIR)/cloog || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=cloog; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	   --with-build-libsubdir=$(HOST_SUBDIR)  \
-	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
-@endif cloog-bootstrap
-
-.PHONY: configure-stagefeedback-cloog maybe-configure-stagefeedback-cloog
-maybe-configure-stagefeedback-cloog:
-@if cloog-bootstrap
-maybe-configure-stagefeedback-cloog: configure-stagefeedback-cloog
-configure-stagefeedback-cloog:
-	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/cloog/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	echo Configuring stage feedback in $(HOST_SUBDIR)/cloog ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
-	cd $(HOST_SUBDIR)/cloog || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=cloog; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	   --with-build-libsubdir=$(HOST_SUBDIR)  \
-	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
-@endif cloog-bootstrap
-
-
-
-
-
-.PHONY: all-cloog maybe-all-cloog
-maybe-all-cloog:
-@if gcc-bootstrap
-all-cloog: stage_current
-@endif gcc-bootstrap
-@if cloog
-TARGET-cloog=all
-maybe-all-cloog: all-cloog
-all-cloog: configure-cloog
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
-		$(TARGET-cloog))
-@endif cloog
-
-
-
-.PHONY: all-stage1-cloog maybe-all-stage1-cloog
-.PHONY: clean-stage1-cloog maybe-clean-stage1-cloog
-maybe-all-stage1-cloog:
-maybe-clean-stage1-cloog:
-@if cloog-bootstrap
-maybe-all-stage1-cloog: all-stage1-cloog
-all-stage1: all-stage1-cloog
-TARGET-stage1-cloog = $(TARGET-cloog)
-all-stage1-cloog: configure-stage1-cloog
-	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE1_TFLAGS)"; \
-	$(HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE1_CFLAGS)" \
-		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
-		LIBCFLAGS="$(LIBCFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)  \
-		$(STAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
-		TFLAGS="$(STAGE1_TFLAGS)" \
-		$(TARGET-stage1-cloog)
-
-maybe-clean-stage1-cloog: clean-stage1-cloog
-clean-stage1: clean-stage1-cloog
-clean-stage1-cloog:
-	@if [ $(current_stage) = stage1 ]; then \
-	  [ -f $(HOST_SUBDIR)/cloog/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stage1-cloog/Makefile ] || exit 0; \
-	  $(MAKE) stage1-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-	$(STAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
-@endif cloog-bootstrap
-
-
-.PHONY: all-stage2-cloog maybe-all-stage2-cloog
-.PHONY: clean-stage2-cloog maybe-clean-stage2-cloog
-maybe-all-stage2-cloog:
-maybe-clean-stage2-cloog:
-@if cloog-bootstrap
-maybe-all-stage2-cloog: all-stage2-cloog
-all-stage2: all-stage2-cloog
-TARGET-stage2-cloog = $(TARGET-cloog)
-all-stage2-cloog: configure-stage2-cloog
-	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE2_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE2_CFLAGS)" \
-		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGE2_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
-		TFLAGS="$(STAGE2_TFLAGS)" \
-		$(TARGET-stage2-cloog)
-
-maybe-clean-stage2-cloog: clean-stage2-cloog
-clean-stage2: clean-stage2-cloog
-clean-stage2-cloog:
-	@if [ $(current_stage) = stage2 ]; then \
-	  [ -f $(HOST_SUBDIR)/cloog/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stage2-cloog/Makefile ] || exit 0; \
-	  $(MAKE) stage2-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
-@endif cloog-bootstrap
-
-
-.PHONY: all-stage3-cloog maybe-all-stage3-cloog
-.PHONY: clean-stage3-cloog maybe-clean-stage3-cloog
-maybe-all-stage3-cloog:
-maybe-clean-stage3-cloog:
-@if cloog-bootstrap
-maybe-all-stage3-cloog: all-stage3-cloog
-all-stage3: all-stage3-cloog
-TARGET-stage3-cloog = $(TARGET-cloog)
-all-stage3-cloog: configure-stage3-cloog
-	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE3_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE3_CFLAGS)" \
-		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGE3_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
-		TFLAGS="$(STAGE3_TFLAGS)" \
-		$(TARGET-stage3-cloog)
-
-maybe-clean-stage3-cloog: clean-stage3-cloog
-clean-stage3: clean-stage3-cloog
-clean-stage3-cloog:
-	@if [ $(current_stage) = stage3 ]; then \
-	  [ -f $(HOST_SUBDIR)/cloog/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stage3-cloog/Makefile ] || exit 0; \
-	  $(MAKE) stage3-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
-@endif cloog-bootstrap
-
-
-.PHONY: all-stage4-cloog maybe-all-stage4-cloog
-.PHONY: clean-stage4-cloog maybe-clean-stage4-cloog
-maybe-all-stage4-cloog:
-maybe-clean-stage4-cloog:
-@if cloog-bootstrap
-maybe-all-stage4-cloog: all-stage4-cloog
-all-stage4: all-stage4-cloog
-TARGET-stage4-cloog = $(TARGET-cloog)
-all-stage4-cloog: configure-stage4-cloog
-	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE4_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE4_CFLAGS)" \
-		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGE4_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
-		TFLAGS="$(STAGE4_TFLAGS)" \
-		$(TARGET-stage4-cloog)
-
-maybe-clean-stage4-cloog: clean-stage4-cloog
-clean-stage4: clean-stage4-cloog
-clean-stage4-cloog:
-	@if [ $(current_stage) = stage4 ]; then \
-	  [ -f $(HOST_SUBDIR)/cloog/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stage4-cloog/Makefile ] || exit 0; \
-	  $(MAKE) stage4-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
-@endif cloog-bootstrap
-
-
-.PHONY: all-stageprofile-cloog maybe-all-stageprofile-cloog
-.PHONY: clean-stageprofile-cloog maybe-clean-stageprofile-cloog
-maybe-all-stageprofile-cloog:
-maybe-clean-stageprofile-cloog:
-@if cloog-bootstrap
-maybe-all-stageprofile-cloog: all-stageprofile-cloog
-all-stageprofile: all-stageprofile-cloog
-TARGET-stageprofile-cloog = $(TARGET-cloog)
-all-stageprofile-cloog: configure-stageprofile-cloog
-	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEprofile_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGEprofile_CFLAGS)" \
-		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
-		TFLAGS="$(STAGEprofile_TFLAGS)" \
-		$(TARGET-stageprofile-cloog)
-
-maybe-clean-stageprofile-cloog: clean-stageprofile-cloog
-clean-stageprofile: clean-stageprofile-cloog
-clean-stageprofile-cloog:
-	@if [ $(current_stage) = stageprofile ]; then \
-	  [ -f $(HOST_SUBDIR)/cloog/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stageprofile-cloog/Makefile ] || exit 0; \
-	  $(MAKE) stageprofile-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
-@endif cloog-bootstrap
-
-
-.PHONY: all-stagefeedback-cloog maybe-all-stagefeedback-cloog
-.PHONY: clean-stagefeedback-cloog maybe-clean-stagefeedback-cloog
-maybe-all-stagefeedback-cloog:
-maybe-clean-stagefeedback-cloog:
-@if cloog-bootstrap
-maybe-all-stagefeedback-cloog: all-stagefeedback-cloog
-all-stagefeedback: all-stagefeedback-cloog
-TARGET-stagefeedback-cloog = $(TARGET-cloog)
-all-stagefeedback-cloog: configure-stagefeedback-cloog
-	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
-	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGEfeedback_CFLAGS)" \
-		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
-		TFLAGS="$(STAGEfeedback_TFLAGS)" \
-		$(TARGET-stagefeedback-cloog)
-
-maybe-clean-stagefeedback-cloog: clean-stagefeedback-cloog
-clean-stagefeedback: clean-stagefeedback-cloog
-clean-stagefeedback-cloog:
-	@if [ $(current_stage) = stagefeedback ]; then \
-	  [ -f $(HOST_SUBDIR)/cloog/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stagefeedback-cloog/Makefile ] || exit 0; \
-	  $(MAKE) stagefeedback-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
-@endif cloog-bootstrap
-
-
-
-
-
-.PHONY: check-cloog maybe-check-cloog
-maybe-check-cloog:
-@if cloog
-maybe-check-cloog: check-cloog
-
-check-cloog:
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 check)
-
-@endif cloog
-
-.PHONY: install-cloog maybe-install-cloog
-maybe-install-cloog:
-@if cloog
-maybe-install-cloog: install-cloog
-
-install-cloog:
-
-@endif cloog
-
-.PHONY: install-strip-cloog maybe-install-strip-cloog
-maybe-install-strip-cloog:
-@if cloog
-maybe-install-strip-cloog: install-strip-cloog
-
-install-strip-cloog:
-
-@endif cloog
-
-# Other targets (info, dvi, pdf, etc.)
-
-.PHONY: maybe-info-cloog info-cloog
-maybe-info-cloog:
-@if cloog
-maybe-info-cloog: info-cloog
-
-info-cloog: \
-    configure-cloog 
-	@[ -f ./cloog/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing info in cloog" ; \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          info) \
-	  || exit 1
-
-@endif cloog
-
-.PHONY: maybe-dvi-cloog dvi-cloog
-maybe-dvi-cloog:
-@if cloog
-maybe-dvi-cloog: dvi-cloog
-
-dvi-cloog: \
-    configure-cloog 
-	@[ -f ./cloog/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing dvi in cloog" ; \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          dvi) \
-	  || exit 1
-
-@endif cloog
-
-.PHONY: maybe-pdf-cloog pdf-cloog
-maybe-pdf-cloog:
-@if cloog
-maybe-pdf-cloog: pdf-cloog
-
-pdf-cloog: \
-    configure-cloog 
-	@[ -f ./cloog/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing pdf in cloog" ; \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          pdf) \
-	  || exit 1
-
-@endif cloog
-
-.PHONY: maybe-html-cloog html-cloog
-maybe-html-cloog:
-@if cloog
-maybe-html-cloog: html-cloog
-
-html-cloog: \
-    configure-cloog 
-	@[ -f ./cloog/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing html in cloog" ; \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          html) \
-	  || exit 1
-
-@endif cloog
-
-.PHONY: maybe-TAGS-cloog TAGS-cloog
-maybe-TAGS-cloog:
-@if cloog
-maybe-TAGS-cloog: TAGS-cloog
-
-TAGS-cloog: \
-    configure-cloog 
-	@[ -f ./cloog/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing TAGS in cloog" ; \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          TAGS) \
-	  || exit 1
-
-@endif cloog
-
-.PHONY: maybe-install-info-cloog install-info-cloog
-maybe-install-info-cloog:
-@if cloog
-maybe-install-info-cloog: install-info-cloog
-
-install-info-cloog: \
-    configure-cloog \
-    info-cloog 
-	@[ -f ./cloog/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-info in cloog" ; \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-info) \
-	  || exit 1
-
-@endif cloog
-
-.PHONY: maybe-install-pdf-cloog install-pdf-cloog
-maybe-install-pdf-cloog:
-@if cloog
-maybe-install-pdf-cloog: install-pdf-cloog
-
-install-pdf-cloog: \
-    configure-cloog \
-    pdf-cloog 
-	@[ -f ./cloog/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-pdf in cloog" ; \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-pdf) \
-	  || exit 1
-
-@endif cloog
-
-.PHONY: maybe-install-html-cloog install-html-cloog
-maybe-install-html-cloog:
-@if cloog
-maybe-install-html-cloog: install-html-cloog
-
-install-html-cloog: \
-    configure-cloog \
-    html-cloog 
-	@[ -f ./cloog/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-html in cloog" ; \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-html) \
-	  || exit 1
-
-@endif cloog
-
-.PHONY: maybe-installcheck-cloog installcheck-cloog
-maybe-installcheck-cloog:
-@if cloog
-maybe-installcheck-cloog: installcheck-cloog
-
-installcheck-cloog: \
-    configure-cloog 
-	@[ -f ./cloog/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing installcheck in cloog" ; \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          installcheck) \
-	  || exit 1
-
-@endif cloog
-
-.PHONY: maybe-mostlyclean-cloog mostlyclean-cloog
-maybe-mostlyclean-cloog:
-@if cloog
-maybe-mostlyclean-cloog: mostlyclean-cloog
-
-mostlyclean-cloog: 
-	@[ -f ./cloog/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing mostlyclean in cloog" ; \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          mostlyclean) \
-	  || exit 1
-
-@endif cloog
-
-.PHONY: maybe-clean-cloog clean-cloog
-maybe-clean-cloog:
-@if cloog
-maybe-clean-cloog: clean-cloog
-
-clean-cloog: 
-	@[ -f ./cloog/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing clean in cloog" ; \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          clean) \
-	  || exit 1
-
-@endif cloog
-
-.PHONY: maybe-distclean-cloog distclean-cloog
-maybe-distclean-cloog:
-@if cloog
-maybe-distclean-cloog: distclean-cloog
-
-distclean-cloog: 
-	@[ -f ./cloog/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing distclean in cloog" ; \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          distclean) \
-	  || exit 1
-
-@endif cloog
-
-.PHONY: maybe-maintainer-clean-cloog maintainer-clean-cloog
-maybe-maintainer-clean-cloog:
-@if cloog
-maybe-maintainer-clean-cloog: maintainer-clean-cloog
-
-maintainer-clean-cloog: 
-	@[ -f ./cloog/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing maintainer-clean in cloog" ; \
-	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          maintainer-clean) \
-	  || exit 1
-
-@endif cloog
 
 
 
@@ -36119,6 +35241,464 @@ maintainer-clean-target-libcilkrts:
 
 
 
+.PHONY: configure-target-liboffloadmic maybe-configure-target-liboffloadmic
+maybe-configure-target-liboffloadmic:
+@if gcc-bootstrap
+configure-target-liboffloadmic: stage_current
+@endif gcc-bootstrap
+@if target-liboffloadmic
+maybe-configure-target-liboffloadmic: configure-target-liboffloadmic
+configure-target-liboffloadmic: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for liboffloadmic..."; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/liboffloadmic ; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/liboffloadmic/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/liboffloadmic/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/liboffloadmic/multilib.tmp $(TARGET_SUBDIR)/liboffloadmic/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/liboffloadmic/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/liboffloadmic/Makefile; \
+	    mv $(TARGET_SUBDIR)/liboffloadmic/multilib.tmp $(TARGET_SUBDIR)/liboffloadmic/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/liboffloadmic/multilib.tmp $(TARGET_SUBDIR)/liboffloadmic/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/liboffloadmic/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/liboffloadmic ; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	echo Configuring in $(TARGET_SUBDIR)/liboffloadmic; \
+	cd "$(TARGET_SUBDIR)/liboffloadmic" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/liboffloadmic/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=liboffloadmic; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} @extra_liboffloadmic_configure_flags@ \
+	  || exit 1
+@endif target-liboffloadmic
+
+
+
+
+
+.PHONY: all-target-liboffloadmic maybe-all-target-liboffloadmic
+maybe-all-target-liboffloadmic:
+@if gcc-bootstrap
+all-target-liboffloadmic: stage_current
+@endif gcc-bootstrap
+@if target-liboffloadmic
+TARGET-target-liboffloadmic=all
+maybe-all-target-liboffloadmic: all-target-liboffloadmic
+all-target-liboffloadmic: configure-target-liboffloadmic
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
+		$(TARGET-target-liboffloadmic))
+@endif target-liboffloadmic
+
+
+
+
+
+.PHONY: check-target-liboffloadmic maybe-check-target-liboffloadmic
+maybe-check-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-check-target-liboffloadmic: check-target-liboffloadmic
+
+check-target-liboffloadmic:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
+
+@endif target-liboffloadmic
+
+.PHONY: install-target-liboffloadmic maybe-install-target-liboffloadmic
+maybe-install-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-install-target-liboffloadmic: install-target-liboffloadmic
+
+install-target-liboffloadmic: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-liboffloadmic
+
+.PHONY: install-strip-target-liboffloadmic maybe-install-strip-target-liboffloadmic
+maybe-install-strip-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-install-strip-target-liboffloadmic: install-strip-target-liboffloadmic
+
+install-strip-target-liboffloadmic: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-liboffloadmic
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-target-liboffloadmic info-target-liboffloadmic
+maybe-info-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-info-target-liboffloadmic: info-target-liboffloadmic
+
+info-target-liboffloadmic: \
+    configure-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing info in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           info) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-dvi-target-liboffloadmic dvi-target-liboffloadmic
+maybe-dvi-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-dvi-target-liboffloadmic: dvi-target-liboffloadmic
+
+dvi-target-liboffloadmic: \
+    configure-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           dvi) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-pdf-target-liboffloadmic pdf-target-liboffloadmic
+maybe-pdf-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-pdf-target-liboffloadmic: pdf-target-liboffloadmic
+
+pdf-target-liboffloadmic: \
+    configure-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing pdf in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           pdf) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-html-target-liboffloadmic html-target-liboffloadmic
+maybe-html-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-html-target-liboffloadmic: html-target-liboffloadmic
+
+html-target-liboffloadmic: \
+    configure-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing html in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           html) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-TAGS-target-liboffloadmic TAGS-target-liboffloadmic
+maybe-TAGS-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-TAGS-target-liboffloadmic: TAGS-target-liboffloadmic
+
+TAGS-target-liboffloadmic: \
+    configure-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           TAGS) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-install-info-target-liboffloadmic install-info-target-liboffloadmic
+maybe-install-info-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-install-info-target-liboffloadmic: install-info-target-liboffloadmic
+
+install-info-target-liboffloadmic: \
+    configure-target-liboffloadmic \
+    info-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-info) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-install-pdf-target-liboffloadmic install-pdf-target-liboffloadmic
+maybe-install-pdf-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-install-pdf-target-liboffloadmic: install-pdf-target-liboffloadmic
+
+install-pdf-target-liboffloadmic: \
+    configure-target-liboffloadmic \
+    pdf-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-install-html-target-liboffloadmic install-html-target-liboffloadmic
+maybe-install-html-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-install-html-target-liboffloadmic: install-html-target-liboffloadmic
+
+install-html-target-liboffloadmic: \
+    configure-target-liboffloadmic \
+    html-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-html in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-html) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-installcheck-target-liboffloadmic installcheck-target-liboffloadmic
+maybe-installcheck-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-installcheck-target-liboffloadmic: installcheck-target-liboffloadmic
+
+installcheck-target-liboffloadmic: \
+    configure-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           installcheck) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-mostlyclean-target-liboffloadmic mostlyclean-target-liboffloadmic
+maybe-mostlyclean-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-mostlyclean-target-liboffloadmic: mostlyclean-target-liboffloadmic
+
+mostlyclean-target-liboffloadmic: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           mostlyclean) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-clean-target-liboffloadmic clean-target-liboffloadmic
+maybe-clean-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-clean-target-liboffloadmic: clean-target-liboffloadmic
+
+clean-target-liboffloadmic: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing clean in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           clean) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-distclean-target-liboffloadmic distclean-target-liboffloadmic
+maybe-distclean-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-distclean-target-liboffloadmic: distclean-target-liboffloadmic
+
+distclean-target-liboffloadmic: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           distclean) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-maintainer-clean-target-liboffloadmic maintainer-clean-target-liboffloadmic
+maybe-maintainer-clean-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-maintainer-clean-target-liboffloadmic: maintainer-clean-target-liboffloadmic
+
+maintainer-clean-target-liboffloadmic: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/liboffloadmic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           maintainer-clean) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+
+
+
+
 .PHONY: configure-target-libssp maybe-configure-target-libssp
 maybe-configure-target-libssp:
 @if gcc-bootstrap
@@ -39872,12 +39452,13 @@ configure-target-libgupc:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgupc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgupc"; \
-	libsrcdir="$$s/libgupc"; \
+	module_srcdir=libgupc; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libgupc
 
@@ -46913,11 +46494,6 @@ stage1-start::
 	  mkdir stage1-isl; \
 	mv stage1-isl isl 
 @endif isl
-@if cloog
-	@cd $(HOST_SUBDIR); [ -d stage1-cloog ] || \
-	  mkdir stage1-cloog; \
-	mv stage1-cloog cloog 
-@endif cloog
 @if libelf
 	@cd $(HOST_SUBDIR); [ -d stage1-libelf ] || \
 	  mkdir stage1-libelf; \
@@ -47028,11 +46604,6 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv isl stage1-isl  ; \
 	fi
 @endif isl
-@if cloog
-	@if test -d $(HOST_SUBDIR)/cloog ; then \
-	  cd $(HOST_SUBDIR); mv cloog stage1-cloog  ; \
-	fi
-@endif cloog
 @if libelf
 	@if test -d $(HOST_SUBDIR)/libelf ; then \
 	  cd $(HOST_SUBDIR); mv libelf stage1-libelf  ; \
@@ -47196,12 +46767,6 @@ stage2-start::
 	mv stage2-isl isl  ; \
 	mv stage1-isl prev-isl || test -f stage1-lean 
 @endif isl
-@if cloog
-	@cd $(HOST_SUBDIR); [ -d stage2-cloog ] || \
-	  mkdir stage2-cloog; \
-	mv stage2-cloog cloog  ; \
-	mv stage1-cloog prev-cloog || test -f stage1-lean 
-@endif cloog
 @if libelf
 	@cd $(HOST_SUBDIR); [ -d stage2-libelf ] || \
 	  mkdir stage2-libelf; \
@@ -47334,12 +46899,6 @@ stage2-end::
 	  mv prev-isl stage1-isl ; :  ; \
 	fi
 @endif isl
-@if cloog
-	@if test -d $(HOST_SUBDIR)/cloog ; then \
-	  cd $(HOST_SUBDIR); mv cloog stage2-cloog ; \
-	  mv prev-cloog stage1-cloog ; :  ; \
-	fi
-@endif cloog
 @if libelf
 	@if test -d $(HOST_SUBDIR)/libelf ; then \
 	  cd $(HOST_SUBDIR); mv libelf stage2-libelf ; \
@@ -47538,12 +47097,6 @@ stage3-start::
 	mv stage3-isl isl  ; \
 	mv stage2-isl prev-isl || test -f stage2-lean 
 @endif isl
-@if cloog
-	@cd $(HOST_SUBDIR); [ -d stage3-cloog ] || \
-	  mkdir stage3-cloog; \
-	mv stage3-cloog cloog  ; \
-	mv stage2-cloog prev-cloog || test -f stage2-lean 
-@endif cloog
 @if libelf
 	@cd $(HOST_SUBDIR); [ -d stage3-libelf ] || \
 	  mkdir stage3-libelf; \
@@ -47676,12 +47229,6 @@ stage3-end::
 	  mv prev-isl stage2-isl ; :  ; \
 	fi
 @endif isl
-@if cloog
-	@if test -d $(HOST_SUBDIR)/cloog ; then \
-	  cd $(HOST_SUBDIR); mv cloog stage3-cloog ; \
-	  mv prev-cloog stage2-cloog ; :  ; \
-	fi
-@endif cloog
 @if libelf
 	@if test -d $(HOST_SUBDIR)/libelf ; then \
 	  cd $(HOST_SUBDIR); mv libelf stage3-libelf ; \
@@ -47936,12 +47483,6 @@ stage4-start::
 	mv stage4-isl isl  ; \
 	mv stage3-isl prev-isl || test -f stage3-lean 
 @endif isl
-@if cloog
-	@cd $(HOST_SUBDIR); [ -d stage4-cloog ] || \
-	  mkdir stage4-cloog; \
-	mv stage4-cloog cloog  ; \
-	mv stage3-cloog prev-cloog || test -f stage3-lean 
-@endif cloog
 @if libelf
 	@cd $(HOST_SUBDIR); [ -d stage4-libelf ] || \
 	  mkdir stage4-libelf; \
@@ -48074,12 +47615,6 @@ stage4-end::
 	  mv prev-isl stage3-isl ; :  ; \
 	fi
 @endif isl
-@if cloog
-	@if test -d $(HOST_SUBDIR)/cloog ; then \
-	  cd $(HOST_SUBDIR); mv cloog stage4-cloog ; \
-	  mv prev-cloog stage3-cloog ; :  ; \
-	fi
-@endif cloog
 @if libelf
 	@if test -d $(HOST_SUBDIR)/libelf ; then \
 	  cd $(HOST_SUBDIR); mv libelf stage4-libelf ; \
@@ -48322,12 +47857,6 @@ stageprofile-start::
 	mv stageprofile-isl isl  ; \
 	mv stage1-isl prev-isl || test -f stage1-lean 
 @endif isl
-@if cloog
-	@cd $(HOST_SUBDIR); [ -d stageprofile-cloog ] || \
-	  mkdir stageprofile-cloog; \
-	mv stageprofile-cloog cloog  ; \
-	mv stage1-cloog prev-cloog || test -f stage1-lean 
-@endif cloog
 @if libelf
 	@cd $(HOST_SUBDIR); [ -d stageprofile-libelf ] || \
 	  mkdir stageprofile-libelf; \
@@ -48460,12 +47989,6 @@ stageprofile-end::
 	  mv prev-isl stage1-isl ; :  ; \
 	fi
 @endif isl
-@if cloog
-	@if test -d $(HOST_SUBDIR)/cloog ; then \
-	  cd $(HOST_SUBDIR); mv cloog stageprofile-cloog ; \
-	  mv prev-cloog stage1-cloog ; :  ; \
-	fi
-@endif cloog
 @if libelf
 	@if test -d $(HOST_SUBDIR)/libelf ; then \
 	  cd $(HOST_SUBDIR); mv libelf stageprofile-libelf ; \
@@ -48641,12 +48164,6 @@ stagefeedback-start::
 	mv stagefeedback-isl isl  ; \
 	mv stageprofile-isl prev-isl || test -f stageprofile-lean 
 @endif isl
-@if cloog
-	@cd $(HOST_SUBDIR); [ -d stagefeedback-cloog ] || \
-	  mkdir stagefeedback-cloog; \
-	mv stagefeedback-cloog cloog  ; \
-	mv stageprofile-cloog prev-cloog || test -f stageprofile-lean 
-@endif cloog
 @if libelf
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-libelf ] || \
 	  mkdir stagefeedback-libelf; \
@@ -48779,12 +48296,6 @@ stagefeedback-end::
 	  mv prev-isl stageprofile-isl ; :  ; \
 	fi
 @endif isl
-@if cloog
-	@if test -d $(HOST_SUBDIR)/cloog ; then \
-	  cd $(HOST_SUBDIR); mv cloog stagefeedback-cloog ; \
-	  mv prev-cloog stageprofile-cloog ; :  ; \
-	fi
-@endif cloog
 @if libelf
 	@if test -d $(HOST_SUBDIR)/libelf ; then \
 	  cd $(HOST_SUBDIR); mv libelf stagefeedback-libelf ; \
@@ -48977,6 +48488,7 @@ configure-stage4-target-libvtv: maybe-all-stage4-gcc
 configure-stageprofile-target-libvtv: maybe-all-stageprofile-gcc
 configure-stagefeedback-target-libvtv: maybe-all-stagefeedback-gcc
 configure-target-libcilkrts: stage_last
+configure-target-liboffloadmic: stage_last
 configure-target-libssp: stage_last
 configure-target-newlib: stage_last
 configure-stage1-target-libgcc: maybe-all-stage1-gcc
@@ -49015,6 +48527,7 @@ configure-target-libstdc++-v3: maybe-all-gcc
 configure-target-libsanitizer: maybe-all-gcc
 configure-target-libvtv: maybe-all-gcc
 configure-target-libcilkrts: maybe-all-gcc
+configure-target-liboffloadmic: maybe-all-gcc
 configure-target-libssp: maybe-all-gcc
 configure-target-newlib: maybe-all-gcc
 configure-target-libgcc: maybe-all-gcc
@@ -49080,6 +48593,30 @@ configure-stage3-gcc: maybe-all-stage3-gmp
 configure-stage4-gcc: maybe-all-stage4-gmp
 configure-stageprofile-gcc: maybe-all-stageprofile-gmp
 configure-stagefeedback-gcc: maybe-all-stagefeedback-gmp
+configure-gcc: maybe-all-mpfr
+
+configure-stage1-gcc: maybe-all-stage1-mpfr
+configure-stage2-gcc: maybe-all-stage2-mpfr
+configure-stage3-gcc: maybe-all-stage3-mpfr
+configure-stage4-gcc: maybe-all-stage4-mpfr
+configure-stageprofile-gcc: maybe-all-stageprofile-mpfr
+configure-stagefeedback-gcc: maybe-all-stagefeedback-mpfr
+configure-gcc: maybe-all-mpc
+
+configure-stage1-gcc: maybe-all-stage1-mpc
+configure-stage2-gcc: maybe-all-stage2-mpc
+configure-stage3-gcc: maybe-all-stage3-mpc
+configure-stage4-gcc: maybe-all-stage4-mpc
+configure-stageprofile-gcc: maybe-all-stageprofile-mpc
+configure-stagefeedback-gcc: maybe-all-stagefeedback-mpc
+configure-gcc: maybe-all-isl
+
+configure-stage1-gcc: maybe-all-stage1-isl
+configure-stage2-gcc: maybe-all-stage2-isl
+configure-stage3-gcc: maybe-all-stage3-isl
+configure-stage4-gcc: maybe-all-stage4-isl
+configure-stageprofile-gcc: maybe-all-stageprofile-isl
+configure-stagefeedback-gcc: maybe-all-stagefeedback-isl
 configure-gcc: maybe-all-lto-plugin
 
 configure-stage1-gcc: maybe-all-stage1-lto-plugin
@@ -49160,14 +48697,14 @@ all-stage3-gcc: maybe-all-stage3-mpc
 all-stage4-gcc: maybe-all-stage4-mpc
 all-stageprofile-gcc: maybe-all-stageprofile-mpc
 all-stagefeedback-gcc: maybe-all-stagefeedback-mpc
-all-gcc: maybe-all-cloog
+all-gcc: maybe-all-isl
 
-all-stage1-gcc: maybe-all-stage1-cloog
-all-stage2-gcc: maybe-all-stage2-cloog
-all-stage3-gcc: maybe-all-stage3-cloog
-all-stage4-gcc: maybe-all-stage4-cloog
-all-stageprofile-gcc: maybe-all-stageprofile-cloog
-all-stagefeedback-gcc: maybe-all-stagefeedback-cloog
+all-stage1-gcc: maybe-all-stage1-isl
+all-stage2-gcc: maybe-all-stage2-isl
+all-stage3-gcc: maybe-all-stage3-isl
+all-stage4-gcc: maybe-all-stage4-isl
+all-stageprofile-gcc: maybe-all-stageprofile-isl
+all-stagefeedback-gcc: maybe-all-stagefeedback-isl
 all-gcc: maybe-all-build-texinfo
 
 all-stage1-gcc: maybe-all-build-texinfo
@@ -49393,22 +48930,6 @@ configure-stage3-isl: maybe-all-stage3-gmp
 configure-stage4-isl: maybe-all-stage4-gmp
 configure-stageprofile-isl: maybe-all-stageprofile-gmp
 configure-stagefeedback-isl: maybe-all-stagefeedback-gmp
-configure-cloog: maybe-all-isl
-
-configure-stage1-cloog: maybe-all-stage1-isl
-configure-stage2-cloog: maybe-all-stage2-isl
-configure-stage3-cloog: maybe-all-stage3-isl
-configure-stage4-cloog: maybe-all-stage4-isl
-configure-stageprofile-cloog: maybe-all-stageprofile-isl
-configure-stagefeedback-cloog: maybe-all-stagefeedback-isl
-configure-cloog: maybe-all-gmp
-
-configure-stage1-cloog: maybe-all-stage1-gmp
-configure-stage2-cloog: maybe-all-stage2-gmp
-configure-stage3-cloog: maybe-all-stage3-gmp
-configure-stage4-cloog: maybe-all-stage4-gmp
-configure-stageprofile-cloog: maybe-all-stageprofile-gmp
-configure-stagefeedback-cloog: maybe-all-stagefeedback-gmp
 configure-gdb: maybe-all-intl
 configure-gdb: maybe-configure-sim
 configure-gdb: maybe-all-bfd
@@ -49827,6 +49348,7 @@ configure-stage3-target-libstdc++-v3: maybe-configure-stage3-target-libgomp
 configure-stage4-target-libstdc++-v3: maybe-configure-stage4-target-libgomp
 configure-stageprofile-target-libstdc++-v3: maybe-configure-stageprofile-target-libgomp
 configure-stagefeedback-target-libstdc++-v3: maybe-configure-stagefeedback-target-libgomp
+configure-target-liboffloadmic: maybe-configure-target-libgomp
 configure-target-libsanitizer: maybe-all-target-libstdc++-v3
 
 configure-stage1-target-libsanitizer: maybe-all-stage1-target-libstdc++-v3
@@ -49852,6 +49374,7 @@ all-stage4-target-libstdc++-v3: maybe-configure-stage4-target-libgomp
 all-stageprofile-target-libstdc++-v3: maybe-configure-stageprofile-target-libgomp
 all-stagefeedback-target-libstdc++-v3: maybe-configure-stagefeedback-target-libgomp
 install-target-libgupc: maybe-install-gcc
+all-target-liboffloadmic: maybe-configure-target-libgomp
 install-target-libgo: maybe-install-target-libatomic
 install-target-libgfortran: maybe-install-target-libquadmath
 install-target-libgfortran: maybe-install-target-libgcc
@@ -49861,6 +49384,8 @@ install-target-libvtv: maybe-install-target-libstdc++-v3
 install-target-libvtv: maybe-install-target-libgcc
 install-target-libcilkrts: maybe-install-target-libstdc++-v3
 install-target-libcilkrts: maybe-install-target-libgcc
+install-target-liboffloadmic: maybe-install-target-libstdc++-v3
+install-target-liboffloadmic: maybe-install-target-libgcc
 install-target-libjava: maybe-install-target-libgcc
 install-target-libitm: maybe-install-target-libgcc
 install-target-libobjc: maybe-install-target-libgcc
@@ -49910,6 +49435,7 @@ configure-target-libstdc++-v3: maybe-all-target-libgcc
 configure-target-libsanitizer: maybe-all-target-libgcc
 configure-target-libvtv: maybe-all-target-libgcc
 configure-target-libcilkrts: maybe-all-target-libgcc
+configure-target-liboffloadmic: maybe-all-target-libgcc
 configure-target-libssp: maybe-all-target-libgcc
 configure-target-newlib: maybe-all-target-libgcc
 configure-target-libbacktrace: maybe-all-target-libgcc
@@ -49941,6 +49467,9 @@ configure-target-libvtv: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libcilkrts: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libcilkrts: maybe-all-target-libstdc++-v3
+
+configure-target-liboffloadmic: maybe-all-target-newlib maybe-all-target-libgloss
+configure-target-liboffloadmic: maybe-all-target-libstdc++-v3
 
 configure-target-libssp: maybe-all-target-newlib maybe-all-target-libgloss
 

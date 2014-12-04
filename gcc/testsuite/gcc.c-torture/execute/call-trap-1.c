@@ -2,6 +2,7 @@
    type does not appear until after the function designator and
    arguments have been evaluated.  PR 38483.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
+/* { dg-require-effective-target untyped_assembly } */
 
 extern void exit (int);
 extern void abort (void);

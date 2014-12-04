@@ -6700,6 +6700,47 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_SBRK $ac_have_decl
 _ACEOF
 
+  ac_fn_c_check_decl "$LINENO" "strtol" "ac_cv_have_decl_strtol" "$ac_includes_default"
+if test "x$ac_cv_have_decl_strtol" = x""yes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_STRTOL $ac_have_decl
+_ACEOF
+ac_fn_c_check_decl "$LINENO" "strtoul" "ac_cv_have_decl_strtoul" "$ac_includes_default"
+if test "x$ac_cv_have_decl_strtoul" = x""yes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_STRTOUL $ac_have_decl
+_ACEOF
+ac_fn_c_check_decl "$LINENO" "strtoll" "ac_cv_have_decl_strtoll" "$ac_includes_default"
+if test "x$ac_cv_have_decl_strtoll" = x""yes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_STRTOLL $ac_have_decl
+_ACEOF
+ac_fn_c_check_decl "$LINENO" "strtoull" "ac_cv_have_decl_strtoull" "$ac_includes_default"
+if test "x$ac_cv_have_decl_strtoull" = x""yes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_STRTOULL $ac_have_decl
+_ACEOF
+
   ac_fn_c_check_decl "$LINENO" "strverscmp" "ac_cv_have_decl_strverscmp" "$ac_includes_default"
 if test "x$ac_cv_have_decl_strverscmp" = x""yes; then :
   ac_have_decl=1

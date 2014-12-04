@@ -79,6 +79,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "cfgexpand.h"
 #include "builtins.h"
+#include "tree-chkp.h"
+#include "rtl-chkp.h"
+#include "ccmp.h"
 
 #ifndef STACK_PUSH_CODE
 #ifdef STACK_GROWS_DOWNWARD
@@ -157,8 +160,6 @@ static rtx store_field (rtx, HOST_WIDE_INT, HOST_WIDE_INT,
 static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (const_tree, const_tree);
 
 static int is_aligning_offset (const_tree, const_tree);
-static void expand_operands (tree, tree, rtx, rtx*, rtx*,
-			     enum expand_modifier);
 static rtx reduce_to_bit_field_precision (rtx, rtx, tree);
 static rtx do_store_flag (sepops, rtx, machine_mode);
 #ifdef PUSH_ROUNDING
@@ -166,7 +167,6 @@ static void emit_single_push_insn (machine_mode, rtx, tree);
 #endif
 static void do_tablejump (rtx, machine_mode, rtx, rtx, rtx, int);
 static rtx const_vector_from_tree (tree);
-static void write_complex_part (rtx, rtx, bool);
 
 
 /* This is run to set up which modes can be used
@@ -2340,7 +2340,10 @@ copy_blkmode_to_reg (machine_mode mode, tree src)
 void
 use_reg_mode (rtx *call_fusage, rtx reg, machine_mode mode)
 {
-  gcc_assert (REG_P (reg) && REGNO (reg) < FIRST_PSEUDO_REGISTER);
+  gcc_assert (REG_P (reg));
+
+  if (!HARD_REGISTER_P (reg))
+    return;
 
   *call_fusage
     = gen_rtx_EXPR_LIST (mode, gen_rtx_USE (VOIDmode, reg), *call_fusage);
@@ -2990,7 +2993,7 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
 /* Write to one of the components of the complex value CPLX.  Write VAL to
    the real part if IMAG_P is false, and the imaginary part if its true.  */
 
-static void
+void
 write_complex_part (rtx cplx, rtx val, bool imag_p)
 {
   machine_mode cmode;
@@ -5006,9 +5009,14 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    || TREE_CODE (to) == SSA_NAME))
     {
       rtx value;
+      rtx bounds;
 
       push_temp_slots ();
       value = expand_normal (from);
+
+      /* Split value and bounds to store them separately.  */
+      chkp_split_slot (value, &value, &bounds);
+
       if (to_rtx == 0)
 	to_rtx = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
@@ -5042,6 +5050,15 @@ expand_assignment (tree to, tree from, bool nontemporal)
 
 	  emit_move_insn (to_rtx, value);
 	}
+
+      /* Store bounds if required.  */
+      if (bounds
+	  && (BOUNDED_P (to) || chkp_type_has_pointer (TREE_TYPE (to))))
+	{
+	  gcc_assert (MEM_P (to_rtx));
+	  chkp_emit_bounds_store (bounds, value, to_rtx);
+	}
+
       preserve_temp_slots (to_rtx);
       pop_temp_slots ();
       return;
@@ -5117,7 +5134,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
   /* Compute FROM and store the value in the rtx we got.  */
 
   push_temp_slots ();
-  result = store_expr (from, to_rtx, 0, nontemporal);
+  result = store_expr_with_bounds (from, to_rtx, 0, nontemporal, to);
   preserve_temp_slots (result);
   pop_temp_slots ();
   return;
@@ -5154,10 +5171,14 @@ emit_storent_insn (rtx to, rtx from)
    If CALL_PARAM_P is nonzero, this is a store into a call param on the
    stack, and block moves may need to be treated specially.
 
-   If NONTEMPORAL is true, try using a nontemporal store instruction.  */
+   If NONTEMPORAL is true, try using a nontemporal store instruction.
+
+   If BTARGET is not NULL then computed bounds of EXP are
+   associated with BTARGET.  */
 
 rtx
-store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
+store_expr_with_bounds (tree exp, rtx target, int call_param_p,
+			bool nontemporal, tree btarget)
 {
   rtx temp;
   rtx alt_rtl = NULL_RTX;
@@ -5178,8 +5199,8 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 	 part.  */
       expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
 		   call_param_p ? EXPAND_STACK_PARM : EXPAND_NORMAL);
-      return store_expr (TREE_OPERAND (exp, 1), target, call_param_p,
-			 nontemporal);
+      return store_expr_with_bounds (TREE_OPERAND (exp, 1), target,
+				     call_param_p, nontemporal, btarget);
     }
   else if (TREE_CODE (exp) == COND_EXPR && GET_MODE (target) == BLKmode)
     {
@@ -5193,13 +5214,13 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
       do_pending_stack_adjust ();
       NO_DEFER_POP;
       jumpifnot (TREE_OPERAND (exp, 0), lab1, -1);
-      store_expr (TREE_OPERAND (exp, 1), target, call_param_p,
-		  nontemporal);
+      store_expr_with_bounds (TREE_OPERAND (exp, 1), target, call_param_p,
+			      nontemporal, btarget);
       emit_jump_insn (gen_jump (lab2));
       emit_barrier ();
       emit_label (lab1);
-      store_expr (TREE_OPERAND (exp, 2), target, call_param_p,
-		  nontemporal);
+      store_expr_with_bounds (TREE_OPERAND (exp, 2), target, call_param_p,
+			      nontemporal, btarget);
       emit_label (lab2);
       OK_DEFER_POP;
 
@@ -5250,6 +5271,19 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 
       temp = expand_expr (exp, inner_target, VOIDmode,
 			  call_param_p ? EXPAND_STACK_PARM : EXPAND_NORMAL);
+
+      /* Handle bounds returned by call.  */
+      if (TREE_CODE (exp) == CALL_EXPR)
+	{
+	  rtx bounds;
+	  chkp_split_slot (temp, &temp, &bounds);
+	  if (bounds && btarget)
+	    {
+	      gcc_assert (TREE_CODE (btarget) == SSA_NAME);
+	      rtx tmp = targetm.calls.load_returned_bounds (bounds);
+	      chkp_set_rtl_bounds (btarget, tmp);
+	    }
+	}
 
       /* If TEMP is a VOIDmode constant, use convert_modes to make
 	 sure that we properly convert it.  */
@@ -5332,6 +5366,19 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 			       (call_param_p
 				? EXPAND_STACK_PARM : EXPAND_NORMAL),
 			       &alt_rtl, false);
+
+      /* Handle bounds returned by call.  */
+      if (TREE_CODE (exp) == CALL_EXPR)
+	{
+	  rtx bounds;
+	  chkp_split_slot (temp, &temp, &bounds);
+	  if (bounds && btarget)
+	    {
+	      gcc_assert (TREE_CODE (btarget) == SSA_NAME);
+	      rtx tmp = targetm.calls.load_returned_bounds (bounds);
+	      chkp_set_rtl_bounds (btarget, tmp);
+	    }
+	}
     }
 
   /* If TEMP is a VOIDmode constant and the mode of the type of EXP is not
@@ -5495,6 +5542,13 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
     }
 
   return NULL_RTX;
+}
+
+/* Same as store_expr_with_bounds but ignoring bounds of EXP.  */
+rtx
+store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
+{
+  return store_expr_with_bounds (exp, target, call_param_p, nontemporal, NULL);
 }
 
 /* Return true if field F of structure TYPE is a flexible array.  */
@@ -7518,7 +7572,7 @@ convert_tree_comp_to_rtx (enum tree_code tcode, int unsignedp)
    The value may be stored in TARGET if TARGET is nonzero.  The
    MODIFIER argument is as documented by expand_expr.  */
 
-static void
+void
 expand_operands (tree exp0, tree exp1, rtx target, rtx *op0, rtx *op1,
 		 enum expand_modifier modifier)
 {
@@ -7623,11 +7677,13 @@ expand_expr_addr_expr_1 (tree exp, rtx target, machine_mode tmode,
       break;
 
     case COMPOUND_LITERAL_EXPR:
-      /* Allow COMPOUND_LITERAL_EXPR in initializers, if e.g.
-	 rtl_for_decl_init is called on DECL_INITIAL with
-	 COMPOUNT_LITERAL_EXPRs in it, they aren't gimplified.  */
-      if (modifier == EXPAND_INITIALIZER
-	  && COMPOUND_LITERAL_EXPR_DECL (exp))
+      /* Allow COMPOUND_LITERAL_EXPR in initializers or coming from
+	 initializers, if e.g. rtl_for_decl_init is called on DECL_INITIAL
+	 with COMPOUND_LITERAL_EXPRs in it, or ARRAY_REF on a const static
+	 array with address of COMPOUND_LITERAL_EXPR in DECL_INITIAL;
+	 the initializers aren't gimplified.  */
+      if (COMPOUND_LITERAL_EXPR_DECL (exp)
+	  && TREE_STATIC (COMPOUND_LITERAL_EXPR_DECL (exp)))
 	return expand_expr_addr_expr_1 (COMPOUND_LITERAL_EXPR_DECL (exp),
 					target, tmode, modifier, as);
       /* FALLTHRU */
@@ -8009,7 +8065,9 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
       op00 = expand_normal (treeop0);
       op01 = const0_rtx;
       comparison_code = NE;
-      comparison_mode = TYPE_MODE (TREE_TYPE (treeop0));
+      comparison_mode = GET_MODE (op00);
+      if (comparison_mode == VOIDmode)
+	comparison_mode = TYPE_MODE (TREE_TYPE (treeop0));
     }
 
   if (GET_MODE (op1) != mode)
@@ -8565,6 +8623,19 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  }
 
 	def0 = get_def_for_expr (treeop0, NEGATE_EXPR);
+	/* The multiplication is commutative - look at its 2nd operand
+	   if the first isn't fed by a negate.  */
+	if (!def0)
+	  {
+	    def0 = get_def_for_expr (treeop1, NEGATE_EXPR);
+	    /* Swap operands if the 2nd operand is fed by a negate.  */
+	    if (def0)
+	      {
+		tree tem = treeop0;
+		treeop0 = treeop1;
+		treeop1 = tem;
+	      }
+	  }
 	def2 = get_def_for_expr (treeop2, NEGATE_EXPR);
 
 	op0 = op2 = NULL;
@@ -9074,12 +9145,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
         return temp;
       }
 
-    case VEC_RSHIFT_EXPR:
-      {
-	target = expand_vec_shift_expr (ops, target);
-	return target;
-      }
-
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_LO_EXPR:
       {
@@ -9444,6 +9509,15 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	      /* Fallthru */
 	    case GIMPLE_BINARY_RHS:
 	      ops.op1 = gimple_assign_rhs2 (g);
+
+	      /* Try to expand conditonal compare.  */
+	      if (targetm.gen_ccmp_first)
+		{
+		  gcc_checking_assert (targetm.gen_ccmp_next != NULL);
+		  r = expand_ccmp_expr (g);
+		  if (r)
+		    break;
+		}
 	      /* Fallthru */
 	    case GIMPLE_UNARY_RHS:
 	      ops.op0 = gimple_assign_rhs1 (g);
@@ -10390,7 +10464,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	if (fndecl && DECL_BUILT_IN (fndecl))
 	  {
 	    gcc_assert (DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_FRONTEND);
-	    return expand_builtin (exp, target, subtarget, tmode, ignore);
+	    if (CALL_WITH_BOUNDS_P (exp))
+	      return expand_builtin_with_bounds (exp, target, subtarget,
+						 tmode, ignore);
+	    else
+	      return expand_builtin (exp, target, subtarget, tmode, ignore);
 	  }
       }
       return expand_call (exp, target, ignore);

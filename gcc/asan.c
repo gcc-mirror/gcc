@@ -493,7 +493,7 @@ has_mem_ref_been_instrumented (const asan_mem_ref *ref, tree len)
    otherwise.  */
 
 static bool
-get_mem_ref_of_assignment (const gimple assignment,
+get_mem_ref_of_assignment (const gassign *assignment,
 			   asan_mem_ref *ref,
 			   bool *ref_is_store)
 {
@@ -521,7 +521,7 @@ get_mem_ref_of_assignment (const gimple assignment,
    representing a builtin call that has to do with memory access.  */
 
 static bool
-get_mem_refs_of_builtin_call (const gimple call,
+get_mem_refs_of_builtin_call (const gcall *call,
 			      asan_mem_ref *src0,
 			      tree *src0_len,
 			      bool *src0_is_store,
@@ -864,7 +864,8 @@ has_stmt_been_instrumented_p (gimple stmt)
       asan_mem_ref r;
       asan_mem_ref_init (&r, NULL, 1);
 
-      if (get_mem_ref_of_assignment (stmt, &r, &r_is_store))
+      if (get_mem_ref_of_assignment (as_a <gassign *> (stmt), &r,
+				     &r_is_store))
 	return has_mem_ref_been_instrumented (&r);
     }
   else if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
@@ -877,7 +878,7 @@ has_stmt_been_instrumented_p (gimple stmt)
       tree src0_len = NULL_TREE, src1_len = NULL_TREE, dest_len = NULL_TREE;
       bool src0_is_store = false, src1_is_store = false,
 	dest_is_store = false, dest_is_deref = false, intercepted_p = true;
-      if (get_mem_refs_of_builtin_call (stmt,
+      if (get_mem_refs_of_builtin_call (as_a <gcall *> (stmt),
 					&src0, &src0_len, &src0_is_store,
 					&src1, &src1_len, &src1_is_store,
 					&dest, &dest_len, &dest_is_store,
@@ -1556,7 +1557,7 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
    pointing to initially.  */
 
 static void
-insert_if_then_before_iter (gimple cond,
+insert_if_then_before_iter (gcond *cond,
 			    gimple_stmt_iterator *iter,
 			    bool then_more_likely_p,
 			    basic_block *then_bb,
@@ -1584,30 +1585,25 @@ build_shadow_mem_access (gimple_stmt_iterator *gsi, location_t location,
   gimple g;
 
   t = build_int_cst (uintptr_type, ASAN_SHADOW_SHIFT);
-  g = gimple_build_assign_with_ops (RSHIFT_EXPR,
-				    make_ssa_name (uintptr_type, NULL),
+  g = gimple_build_assign_with_ops (RSHIFT_EXPR, make_ssa_name (uintptr_type),
 				    base_addr, t);
   gimple_set_location (g, location);
   gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
   t = build_int_cst (uintptr_type, asan_shadow_offset ());
-  g = gimple_build_assign_with_ops (PLUS_EXPR,
-				    make_ssa_name (uintptr_type, NULL),
+  g = gimple_build_assign_with_ops (PLUS_EXPR, make_ssa_name (uintptr_type),
 				    gimple_assign_lhs (g), t);
   gimple_set_location (g, location);
   gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
-  g = gimple_build_assign_with_ops (NOP_EXPR,
-				    make_ssa_name (shadow_ptr_type, NULL),
-				    gimple_assign_lhs (g), NULL_TREE);
+  g = gimple_build_assign_with_ops (NOP_EXPR, make_ssa_name (shadow_ptr_type),
+				    gimple_assign_lhs (g));
   gimple_set_location (g, location);
   gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
   t = build2 (MEM_REF, shadow_type, gimple_assign_lhs (g),
 	      build_int_cst (shadow_ptr_type, 0));
-  g = gimple_build_assign_with_ops (MEM_REF,
-				    make_ssa_name (shadow_type, NULL),
-				    t, NULL_TREE);
+  g = gimple_build_assign_with_ops (MEM_REF, make_ssa_name (shadow_type), t);
   gimple_set_location (g, location);
   gsi_insert_after (gsi, g, GSI_NEW_STMT);
   return gimple_assign_lhs (g);
@@ -1624,8 +1620,7 @@ maybe_create_ssa_name (location_t loc, tree base, gimple_stmt_iterator *iter,
     return base;
   gimple g
     = gimple_build_assign_with_ops (TREE_CODE (base),
-				    make_ssa_name (TREE_TYPE (base), NULL),
-				    base, NULL_TREE);
+				    make_ssa_name (TREE_TYPE (base)), base);
   gimple_set_location (g, loc);
   if (before_p)
     gsi_insert_before (iter, g, GSI_SAME_STMT);
@@ -1645,8 +1640,8 @@ maybe_cast_to_ptrmode (location_t loc, tree len, gimple_stmt_iterator *iter,
     return len;
   gimple g
     = gimple_build_assign_with_ops (NOP_EXPR,
-				    make_ssa_name (pointer_sized_int_node, NULL),
-				    len, NULL);
+				    make_ssa_name (pointer_sized_int_node),
+				    len);
   gimple_set_location (g, loc);
   if (before_p)
     gsi_insert_before (iter, g, GSI_SAME_STMT);
@@ -1902,7 +1897,7 @@ instrument_builtin_call (gimple_stmt_iterator *iter)
     return false;
 
   bool iter_advanced_p = false;
-  gimple call = gsi_stmt (*iter);
+  gcall *call = as_a <gcall *> (gsi_stmt (*iter));
 
   gcc_checking_assert (gimple_call_builtin_p (call, BUILT_IN_NORMAL));
 
@@ -2168,8 +2163,13 @@ asan_global_struct (void)
       if (i)
 	DECL_CHAIN (fields[i - 1]) = fields[i];
     }
+  tree type_decl = build_decl (input_location, TYPE_DECL,
+			       get_identifier ("__asan_global"), ret);
+  DECL_IGNORED_P (type_decl) = 1;
+  DECL_ARTIFICIAL (type_decl) = 1;
   TYPE_FIELDS (ret) = fields[0];
-  TYPE_NAME (ret) = get_identifier ("__asan_global");
+  TYPE_NAME (ret) = type_decl;
+  TYPE_STUB_DECL (ret) = type_decl;
   layout_type (ret);
   return ret;
 }
@@ -2290,6 +2290,9 @@ initialize_sanitizer_builtins (void)
 				pointer_sized_int_node, NULL_TREE);
   tree BT_FN_VOID_INT
     = build_function_type_list (void_type_node, integer_type_node, NULL_TREE);
+  tree BT_FN_SIZE_CONST_PTR_INT
+    = build_function_type_list (size_type_node, const_ptr_type_node,
+				integer_type_node, NULL_TREE);
   tree BT_FN_BOOL_VPTR_PTR_IX_INT_INT[5];
   tree BT_FN_IX_CONST_VPTR_INT[5];
   tree BT_FN_IX_VPTR_IX_INT[5];
@@ -2346,6 +2349,9 @@ initialize_sanitizer_builtins (void)
 #define ATTR_TMPURE_NOTHROW_LEAF_LIST ECF_TM_PURE | ATTR_NOTHROW_LEAF_LIST
 #undef ATTR_NORETURN_NOTHROW_LEAF_LIST
 #define ATTR_NORETURN_NOTHROW_LEAF_LIST ECF_NORETURN | ATTR_NOTHROW_LEAF_LIST
+#undef ATTR_CONST_NORETURN_NOTHROW_LEAF_LIST
+#define ATTR_CONST_NORETURN_NOTHROW_LEAF_LIST \
+  ECF_CONST | ATTR_NORETURN_NOTHROW_LEAF_LIST
 #undef ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST
 #define ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST \
   ECF_TM_PURE | ATTR_NORETURN_NOTHROW_LEAF_LIST
@@ -2355,6 +2361,11 @@ initialize_sanitizer_builtins (void)
 #undef ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST
 #define ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST \
   /* ECF_COLD missing */ ATTR_NORETURN_NOTHROW_LEAF_LIST
+#undef ATTR_COLD_CONST_NORETURN_NOTHROW_LEAF_LIST
+#define ATTR_COLD_CONST_NORETURN_NOTHROW_LEAF_LIST \
+  /* ECF_COLD missing */ ATTR_CONST_NORETURN_NOTHROW_LEAF_LIST
+#undef ATTR_PURE_NOTHROW_LEAF_LIST
+#define ATTR_PURE_NOTHROW_LEAF_LIST ECF_PURE | ATTR_NOTHROW_LEAF_LIST
 #undef DEF_SANITIZER_BUILTIN
 #define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
   decl = add_builtin_function ("__builtin_" NAME, TYPE, ENUM,		\
@@ -2363,6 +2374,15 @@ initialize_sanitizer_builtins (void)
   set_builtin_decl (ENUM, decl, true);
 
 #include "sanitizer.def"
+
+  /* -fsanitize=object-size uses __builtin_object_size, but that might
+     not be available for e.g. Fortran at this point.  We use
+     DEF_SANITIZER_BUILTIN here only as a convenience macro.  */
+  if ((flag_sanitize & SANITIZE_OBJECT_SIZE)
+      && !builtin_decl_implicit_p (BUILT_IN_OBJECT_SIZE))
+    DEF_SANITIZER_BUILTIN (BUILT_IN_OBJECT_SIZE, "object_size",
+			   BT_FN_SIZE_CONST_PTR_INT,
+			   ATTR_PURE_NOTHROW_LEAF_LIST)
 
 #undef DEF_SANITIZER_BUILTIN
 }
@@ -2497,7 +2517,7 @@ asan_finish_file (void)
 
 /* Expand the ASAN_{LOAD,STORE} builtins.  */
 
-static bool
+bool
 asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 {
   gimple g = gsi_stmt (*iter);
@@ -2524,9 +2544,8 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
       /* Instrument using callbacks.  */
       gimple g
 	= gimple_build_assign_with_ops (NOP_EXPR,
-					make_ssa_name (pointer_sized_int_node,
-					NULL),
-					base, NULL_TREE);
+					make_ssa_name (pointer_sized_int_node),
+					base);
       gimple_set_location (g, loc);
       gsi_insert_before (iter, g, GSI_SAME_STMT);
       tree base_addr = gimple_assign_lhs (g);
@@ -2539,9 +2558,8 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 	{
 	  gcc_assert (nargs == 2);
 	  g = gimple_build_assign_with_ops (NOP_EXPR,
-					    make_ssa_name (pointer_sized_int_node,
-							   NULL),
-					    len, NULL_TREE);
+					    make_ssa_name (pointer_sized_int_node),
+					    len);
 	  gimple_set_location (g, loc);
 	  gsi_insert_before (iter, g, GSI_SAME_STMT);
 	  tree sz_arg = gimple_assign_lhs (g);
@@ -2578,8 +2596,9 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
       gimple_set_location (g, loc);
 
       basic_block then_bb, fallthrough_bb;
-      insert_if_then_before_iter (g, iter, /*then_more_likely_p=*/true,
-				 &then_bb, &fallthrough_bb);
+      insert_if_then_before_iter (as_a <gcond *> (g), iter,
+				  /*then_more_likely_p=*/true,
+				  &then_bb, &fallthrough_bb);
       /* Note that fallthrough_bb starts with the statement that was
 	pointed to by ITER.  */
 
@@ -2598,9 +2617,8 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 				  &else_bb);
 
   g = gimple_build_assign_with_ops (NOP_EXPR,
-				    make_ssa_name (pointer_sized_int_node,
-						   NULL),
-				    base, NULL_TREE);
+				    make_ssa_name (pointer_sized_int_node),
+				    base);
   gimple_set_location (g, loc);
   gsi_insert_before (&gsi, g, GSI_NEW_STMT);
   tree base_addr = gimple_assign_lhs (g);
@@ -2653,14 +2671,14 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
       if (size_in_bytes == -1)
 	{
 	  g = gimple_build_assign_with_ops (MINUS_EXPR,
-					    make_ssa_name (pointer_sized_int_node, NULL),
+					    make_ssa_name (pointer_sized_int_node),
 					    len,
 					    build_int_cst (pointer_sized_int_node, 1));
 	  gimple_set_location (g, loc);
 	  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
 	  tree last = gimple_assign_lhs (g);
 	  g = gimple_build_assign_with_ops (PLUS_EXPR,
-					    make_ssa_name (pointer_sized_int_node, NULL),
+					    make_ssa_name (pointer_sized_int_node),
 					    base_addr,
 					    last);
 	  gimple_set_location (g, loc);
@@ -2798,116 +2816,6 @@ gimple_opt_pass *
 make_pass_asan_O0 (gcc::context *ctxt)
 {
   return new pass_asan_O0 (ctxt);
-}
-
-/* Perform optimization of sanitize functions.  */
-
-namespace {
-
-const pass_data pass_data_sanopt =
-{
-  GIMPLE_PASS, /* type */
-  "sanopt", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
-  ( PROP_ssa | PROP_cfg | PROP_gimple_leh ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  TODO_update_ssa, /* todo_flags_finish */
-};
-
-class pass_sanopt : public gimple_opt_pass
-{
-public:
-  pass_sanopt (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_sanopt, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_sanitize; }
-  virtual unsigned int execute (function *);
-
-}; // class pass_sanopt
-
-unsigned int
-pass_sanopt::execute (function *fun)
-{
-  basic_block bb;
-
-  int asan_num_accesses = 0;
-  if (flag_sanitize & SANITIZE_ADDRESS)
-    {
-      gimple_stmt_iterator gsi;
-      FOR_EACH_BB_FN (bb, fun)
-	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	  {
- 	    gimple stmt = gsi_stmt (gsi);
-	    if (is_gimple_call (stmt) && gimple_call_internal_p (stmt)
-		&& gimple_call_internal_fn (stmt) == IFN_ASAN_CHECK)
-	      ++asan_num_accesses;
-	  }
-    }
-
-  bool use_calls = ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD < INT_MAX
-    && asan_num_accesses >= ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD;
-
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      gimple_stmt_iterator gsi;
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
-	{
-	  gimple stmt = gsi_stmt (gsi);
-	  bool no_next = false;
-
-	  if (!is_gimple_call (stmt))
-	    {
-	      gsi_next (&gsi);
-	      continue;
-	    }
-
-	  if (gimple_call_internal_p (stmt))
-	    {
-	      enum internal_fn ifn = gimple_call_internal_fn (stmt);
-	      switch (ifn)
-		{
-		case IFN_UBSAN_NULL:
-		  no_next = ubsan_expand_null_ifn (&gsi);
-		  break;
-		case IFN_UBSAN_BOUNDS:
-		  no_next = ubsan_expand_bounds_ifn (&gsi);
-		  break;
-		case IFN_UBSAN_OBJECT_SIZE:
-		  no_next = ubsan_expand_objsize_ifn (&gsi);
-		  break;
-		case IFN_ASAN_CHECK:
-		  no_next = asan_expand_check_ifn (&gsi, use_calls);
-		  break;
-		default:
-		  break;
-		}
-	    }
-
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "Optimized\n  ");
-	      print_gimple_stmt (dump_file, stmt, 0, dump_flags);
-	      fprintf (dump_file, "\n");
-	    }
-
-	  if (!no_next)
-	    gsi_next (&gsi);
-	}
-    }
-  return 0;
-}
-
-} // anon namespace
-
-gimple_opt_pass *
-make_pass_sanopt (gcc::context *ctxt)
-{
-  return new pass_sanopt (ctxt);
 }
 
 #include "gt-asan.h"

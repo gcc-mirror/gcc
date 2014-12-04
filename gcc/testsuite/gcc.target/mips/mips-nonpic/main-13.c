@@ -2,6 +2,7 @@
 
 #include "mips-nonpic.h"
 
+int
 main ()
 {
   nonpic_nothing ();

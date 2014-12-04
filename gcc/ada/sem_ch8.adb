@@ -1058,10 +1058,11 @@ package body Sem_Ch8 is
       if Nkind (Nam) = N_Function_Call then
          case Ada_Version is
 
-            --  Usage is illegal in Ada 83
+            --  Usage is illegal in Ada 83, but renamings are also introduced
+            --  during expansion, and error does not apply to those.
 
             when Ada_83 =>
-               if Comes_From_Source (Nam) then
+               if Comes_From_Source (N) then
                   Error_Msg_N
                     ("(Ada 83) cannot rename function return object", Nam);
                end if;

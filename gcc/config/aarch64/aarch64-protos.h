@@ -170,6 +170,7 @@ struct tune_params
   const struct cpu_vector_cost *const vec_costs;
   const int memmov_cost;
   const int issue_rate;
+  const unsigned int fuseable_ops;
 };
 
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
@@ -214,10 +215,11 @@ bool aarch64_simd_valid_immediate (rtx, machine_mode, bool,
 bool aarch64_symbolic_address_p (rtx);
 bool aarch64_uimm12_shift (HOST_WIDE_INT);
 bool aarch64_use_return_insn_p (void);
+const char *aarch64_mangle_builtin_type (const_tree);
 const char *aarch64_output_casesi (rtx *);
 const char *aarch64_rewrite_selected_cpu (const char *name);
 
-enum aarch64_symbol_type aarch64_classify_symbol (rtx,
+enum aarch64_symbol_type aarch64_classify_symbol (rtx, rtx,
 						  enum aarch64_symbol_context);
 enum aarch64_symbol_type aarch64_classify_tls_symbol (rtx);
 enum reg_class aarch64_regno_regclass (unsigned);
@@ -267,7 +269,7 @@ void aarch64_simd_emit_pair_result_insn (machine_mode,
 /* Expand builtins for SIMD intrinsics.  */
 rtx aarch64_simd_expand_builtin (int, tree, rtx);
 
-void aarch64_simd_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
+void aarch64_simd_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT, const_tree);
 
 void aarch64_split_128bit_move (rtx, rtx);
 
@@ -313,4 +315,5 @@ extern void aarch64_final_prescan_insn (rtx_insn *);
 extern bool
 aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
 void aarch64_atomic_assign_expand_fenv (tree *, tree *, tree *);
+int aarch64_ccmp_mode_to_code (enum machine_mode mode);
 #endif /* GCC_AARCH64_PROTOS_H */

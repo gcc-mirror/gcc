@@ -24,7 +24,7 @@ typedef enum {red, green, blue} Color __attribute__((deprecated("Please avoid Co
 int g1;
 int g2 __attribute__ ((deprecated("Please avoid g2")));
 int g3 __attribute__ ((__deprecated__("Please avoid g3")));
-Color k;				/* { dg-warning "'Color' is deprecated .declared at \[^\n\]*: Please avoid Color" "" } */
+Color k;				/* { dg-warning "'Color' is deprecated: Please avoid Color" "" } */
 
 typedef struct {
   int field1;
@@ -49,13 +49,13 @@ int func1()
    int x __attribute__ ((deprecated("Avoid x")));
    int y __attribute__ ((__deprecated__("Bad y")));
    int z;
-   int (*pf)() = f1;			/* { dg-warning "'f1' is deprecated .declared at \[^\n\]*: Please avoid f1" "" } */
+   int (*pf)() = f1;			/* { dg-warning "'f1' is deprecated: Please avoid f1" "" } */
 
-   z = w + x + y + g1 + g2 + g3;	/* { dg-warning "'x' is deprecated .declared at \[^\n\]*: Avoid x" "" } */
-					/* { dg-warning "'y' is deprecated .declared at \[^\n\]*: Bad y" "y" { target *-*-* } 54  } */
-					/* { dg-warning "'g2' is deprecated .declared at \[^\n\]*: Please avoid g2" "g2" { target *-*-* } 54  }  */
-					/* { dg-warning "'g3' is deprecated .declared at \[^\n\]*: Please avoid g3" "g3" { target *-*-* } 54  } */
-   return f1(); 			/* { dg-warning "'f1' is deprecated .declared at \[^\n\]*: Please avoid f1" "" } */
+   z = w + x + y + g1 + g2 + g3;	/* { dg-warning "'x' is deprecated: Avoid x" "" } */
+					/* { dg-warning "'y' is deprecated: Bad y" "y" { target *-*-* } 54  } */
+					/* { dg-warning "'g2' is deprecated: Please avoid g2" "g2" { target *-*-* } 54  }  */
+					/* { dg-warning "'g3' is deprecated: Please avoid g3" "g3" { target *-*-* } 54  } */
+   return f1(); 			/* { dg-warning "'f1' is deprecated: Please avoid f1" "" } */
 }
 
 int func2(S1 *p)
@@ -63,14 +63,14 @@ int func2(S1 *p)
   S1 lp;
   
   if (p->field1)
-     return p->field2;			/* { dg-warning "'field2' is deprecated .declared at \[^\n\]*: Please avoid field2" "" } */
-  else if (lp.field4)			/* { dg-warning "'field4' is deprecated .declared at \[^\n\]*: Please avoid field4" "" } */
+     return p->field2;			/* { dg-warning "'field2' is deprecated: Please avoid field2" "" } */
+  else if (lp.field4)			/* { dg-warning "'field4' is deprecated: Please avoid field4" "" } */
      return p->field3;
   
   p->u1.field5 = g1 + p->field7;
-  p->u2.field9;				/* { dg-warning "'u2' is deprecated .declared at \[^\n\]*: Please avoid u2" "" } */
-  return p->u1.field6 + p->field8;	/* { dg-warning "'field6' is deprecated .declared at \[^\n\]*: Please avoid field6" "" } */
-  					/* { dg-warning "'field8' is deprecated .declared at \[^\n\]*: Please avoid field8" "field8" { target *-*-* } 72 } */
+  p->u2.field9;				/* { dg-warning "'u2' is deprecated: Please avoid u2" "" } */
+  return p->u1.field6 + p->field8;	/* { dg-warning "'field6' is deprecated: Please avoid field6" "" } */
+					/* { dg-warning "'field8' is deprecated: Please avoid field8" "field8" { target *-*-* } 72 } */
 }
 
 struct SS1 {
@@ -78,11 +78,11 @@ struct SS1 {
   INT1 y; 				/* { dg-warning "'INT1' is deprecated: Please avoid INT1" "" } */
 } __attribute__ ((deprecated("Please avoid SS1")));
 
-struct SS1 *p1;				/* { dg-warning "'SS1' is deprecated .declared at \[^\n\]*: Please avoid SS1" "" } */
+struct SS1 *p1;				/* { dg-warning "'SS1' is deprecated: Please avoid SS1" "" } */
 
 struct __attribute__ ((__deprecated__("Please avoid SS2"))) SS2 {
   int x;
   INT1 y; 				/* { dg-warning "'INT1' is deprecated: Please avoid INT1" "" } */
 };
 
-struct SS2 *p2;				/* { dg-warning "'SS2' is deprecated .declared at \[^\n\]*: Please avoid SS2" "" } */
+struct SS2 *p2;				/* { dg-warning "'SS2' is deprecated: Please avoid SS2" "" } */

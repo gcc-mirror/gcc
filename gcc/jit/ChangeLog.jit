@@ -1,0 +1,3498 @@
+2014-11-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2014-11-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.c: Add includes now needed since r216805 by
+	cgraph.h: hash-map.h, is-a.h, plugin-api.h, vec.h, hashtab.h,
+	hash-set.h, machmode.h, tm.h, hard-reg-set.h, function.h,
+	ipa-ref.h, dumpfile.h.
+	* jit-playback.c: Likewise.
+
+2014-11-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (gcc::jit::playback::context::handle_locations):
+	Drop the disabled debugging code.
+
+2014-11-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/expressions.rst (Type-coercion): Casts between
+	pointer types are valid.
+	* libgccjit.c: Document that gcc_jit_context et al are actually
+	subclasses of the gcc::jit::recording classes.
+	(RETURN_VAL_IF_FAIL): Add top-level descriptive comment.
+	(RETURN_IF_NOT_VALID_BLOCK): Likewise.
+	(RETURN_NULL_IF_NOT_VALID_BLOCK): Likewise.
+	(jit_error): Likewise.
+	(compatible_types): Likewise.
+	(gcc_jit_context_acquire): Likewise.
+	(gcc_jit_context_release): Likewise.
+	(gcc_jit_context_new_child_context): Likewise.
+	(gcc_jit_context_new_location): Likewise.
+	(gcc_jit_location_as_object): Likewise.
+	(gcc_jit_type_as_object): Likewise.
+	(gcc_jit_context_get_type): Likewise.
+	(gcc_jit_context_get_int_type): Likewise.
+	(gcc_jit_type_get_pointer): Likewise.
+	(gcc_jit_type_get_const): Likewise.
+	(gcc_jit_type_get_volatile): Likewise.
+	(gcc_jit_context_new_array_type): Likewise.  Also document that
+	LOC can be NULL.  Fail with an error on negative size.
+	(gcc_jit_context_new_field): Add top-level descriptive comment and
+	document that LOC can be NULL.
+	(gcc_jit_field_as_object): Add top-level descriptive comment.
+	(gcc_jit_context_new_struct_type): Likewise.  Also document that
+	LOC can be NULL.
+	(gcc_jit_context_new_opaque_struct): Likewise.
+	(gcc_jit_struct_as_type): Add top-level descriptive comment.
+	(gcc_jit_struct_set_fields): Likewise.  Also document that LOC can
+	be NULL.
+	(gcc_jit_context_new_union_type): Likewise.
+	(gcc_jit_context_new_function_ptr_type): Likewise.
+	(gcc_jit_context_new_param): Likewise.
+	(gcc_jit_param_as_object): Add top-level descriptive comment.
+	(gcc_jit_param_as_lvalue): Likewise.
+	(gcc_jit_param_as_rvalue): Likewise.
+	(gcc_jit_context_new_function): Likewise.  Also document that LOC
+	can be NULL.
+	(gcc_jit_context_get_builtin_function): Add top-level descriptive
+	comment.
+	(gcc_jit_function_as_object): Likewise.
+	(gcc_jit_function_get_param): Likewise.
+	(gcc_jit_function_dump_to_dot): Likewise.
+	(gcc_jit_function_new_block): Likewise.
+	(gcc_jit_block_as_object): Likewise.
+	(gcc_jit_block_get_function): Likewise.
+	(gcc_jit_context_new_global): Likewise.  Also document that LOC
+	can be NULL.
+	(gcc_jit_lvalue_as_object): Add top-level descriptive comment.
+	(gcc_jit_lvalue_as_rvalue): Likewise.
+	(gcc_jit_rvalue_as_object): Likewise.
+	(gcc_jit_rvalue_get_type): Likewise.
+	(RETURN_NULL_IF_FAIL_NONNULL_NUMERIC_TYPE): Likewise.
+	(gcc_jit_context_new_rvalue_from_int): Likewise.
+	(gcc_jit_context_zero): Likewise.
+	(gcc_jit_context_one): Likewise.
+	(gcc_jit_context_new_rvalue_from_double): Likewise.
+	(gcc_jit_context_new_rvalue_from_ptr): Likewise.
+	(gcc_jit_context_null): Likewise.
+	(gcc_jit_context_new_string_literal): Likewise.
+	(gcc_jit_context_new_unary_op): Likewise.  Also document that LOC
+	can be NULL.
+	(gcc_jit_context_new_binary_op): Likewise.
+	(gcc_jit_context_new_comparison): Likewise.
+	(gcc_jit_context_new_call): Likewise.
+	(gcc_jit_context_new_call_through_ptr): Likewise.
+	(is_valid_cast): Add top-level descriptive comment.
+	(gcc_jit_context_new_cast): Likewise.  Also document that LOC can
+	be NULL.
+	(gcc_jit_context_new_array_access): Likewise.
+	(gcc_jit_object_get_context): Add top-level descriptive comment.
+	(gcc_jit_object_get_debug_string): Likewise.
+	(gcc_jit_lvalue_access_field): Likewise.  Also document that LOC can
+	be NULL.
+	(gcc_jit_rvalue_access_field): Likewise.
+	(gcc_jit_rvalue_dereference_field): Likewise.
+	(gcc_jit_rvalue_dereference): Likewise.
+	(gcc_jit_lvalue_get_address): Likewise.
+	(gcc_jit_function_new_local): Likewise.
+	(gcc_jit_block_add_eval): Likewise.
+	(gcc_jit_block_add_assignment): Likewise.
+	(gcc_jit_block_add_assignment_op): Likewise.
+	(is_bool): Add top-level descriptive comment.
+	(gcc_jit_block_end_with_conditional): Likewise.  Also document
+	that LOC can be NULL.
+	(gcc_jit_block_add_comment): Likewise.
+	(gcc_jit_block_end_with_jump): Likewise.
+	(gcc_jit_block_end_with_return): Likewise.
+	(gcc_jit_block_end_with_void_return): Likewise.
+	(gcc_jit_context_set_str_option): Add top-level descriptive
+	comment.
+	(gcc_jit_context_set_int_option): Likewise.
+	(gcc_jit_context_set_bool_option): Likewise.
+	(gcc_jit_context_compile): Likewise.
+	(gcc_jit_context_dump_to_file): Likewise.
+	(gcc_jit_context_get_first_error): Likewise.
+	(gcc_jit_result_get_code): Likewise.
+	(gcc_jit_result_release): Likewise.
+
+	* libgccjit.h (gcc_jit_context_acquire): Remove FIXME from
+	comment.
+	(gcc_jit_context_get_int_type): Add comment.
+	(gcc_jit_context_new_field): Likewise.
+	(gcc_jit_context_new_struct_type): Likewise.
+	(gcc_jit_context_new_opaque_struct): Likewise.
+	(gcc_jit_struct_as_type): Likewise.
+	(gcc_jit_context_new_param): Likewise.
+	(gcc_jit_param_as_lvalue): Likewise.
+	(gcc_jit_param_as_rvalue): Likewise.
+	(enum gcc_jit_function_kind): Likewise.
+	(gcc_jit_context_new_function): Likewise.
+	(gcc_jit_context_get_builtin_function): Likewise.
+	(gcc_jit_function_get_param): Likewise.
+
+2014-11-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c (gcc_jit_context_get_type): Verify that "type"
+	is valid immediately, rather than relying on called code.
+	(gcc_jit_context_new_function): Likewise for "kind".
+	(gcc_jit_context_new_unary_op): Likewise for "op".
+	(valid_binary_op_p): New.
+	(gcc_jit_context_new_binary_op): Verify that "op" is valid
+	immediately, rather than relying on called code.
+	(gcc_jit_context_new_comparison): Likewise.
+	(gcc_jit_block_add_assignment_op): Likewise.
+
+2014-11-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c: Include safe-ctype.h from libiberty.
+	(IS_ASCII_ALPHA): Delete.
+	(IS_ASCII_DIGIT): Delete.
+	(IS_ASCII_ALNUM): Delete.
+	(gcc_jit_context_new_function): Replace use of IS_ASCII_ALPHA and
+	IS_ASCII_ALNUM with ISALPHA and ISALNUM respectively, from
+	libiberty.
+
+2014-10-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.c (jit_langhook_init): Remove some dead code.
+
+2014-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.c: Drop includes of tree-iterator.h,
+	tree-ssa-alias.h, gimple-expr.h, gimple.h, gimple-pretty-print.h.
+	* jit-playback.c: Drop includes of debug.h, langhooks.h,
+	langhooks-def.h, tree-iterator.h, gimple-expr.h, tree-ssa-alias.h,
+	gimple.h, gimple-pretty-print.h, diagnostic-core.h, dumpfile.h.
+
+2014-10-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c: Include tm.h.  Don't include function.h.
+
+2014-10-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2014-10-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/intro/index.rst: Drop install.rst.  Add tutorial04.rst.
+	* docs/intro/install.rst: Rename to...
+	* docs/intro/tutorial01.rst: ...this, renaming old tutorial01.rst to...
+	* docs/intro/tutorial02.rst: ...this, renaming old tutorial02.rst to...
+	* docs/intro/tutorial03.rst: ...this, renaming old tutorial03.rst to...
+	* docs/intro/tutorial04.rst: ...this.
+	* docs/examples/install-hello-world.c: Rename to...
+	* docs/examples/tut01-hello-world.c: ...this.
+	* docs/examples/tut01-square.c: Rename to...
+	* docs/examples/tut02-square.c: ...this.
+	* docs/examples/tut02-sum-of-squares.c: Rename to...
+	* docs/examples/tut03-sum-of-squares.c: ...this.
+	* docs/examples/tut03-toyvm: Rename directory to...
+	* docs/examples/tut04-toyvm: ...this.
+	* docs/examples/tut04-toyvm/toyvm.c (PATH_TO_SCRIPTS): Update
+	for directory renaming.
+
+2014-10-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/intro/install.rst ("Installation via packages"): Drop
+	this section.
+	("Installation from source"): Drop this section, moving parts
+	of it to https://gcc.gnu.org/wiki/JIT and some others to
+	docs/internals/index.rst.
+	("Hello world"): This section becomes the only remaining part
+	of this file.  Eliminate references to pkg-config.
+
+	* docs/internals/index.rst
+	("Using a working copy without installing every time"): Rewrite
+	as...
+	("Working on the JIT library"): ...new section, aimed at
+	contributors (and myself) working from a build directory,
+	eliminating references to installation.  Add description
+	of pertinent configuration options.
+	("Running the test suite"): Add setting of LIBRARY_PATH to
+	description of how to run a built binary outside of the test
+	suite.
+	("Environment variables"): New section, describing pertinent
+	environment variables.
+
+2014-10-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c (gcc::jit::dump::dump): Handle fopen failures
+	by emitting an error on the context.
+	(gcc::jit::dump::~dump): Likewise for fclose failures.
+	(gcc::jit::dump::write): Don't attempt further work if the fopen
+	failed.  Handle fwrite failures by emitting an error on the
+	context.
+
+2014-10-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (jit.install-common): Drop installation of
+	libgccjit.pc.
+	* config-lang.in (outputs): Drop jit/libgccjit.pc.
+	* libgccjit.pc.in: Delete.
+
+2014-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (jit): Add $(FULL_DRIVER_NAME) as a dependency, so
+	that the symlink is created for testing.
+
+	* jit-playback.c (gcc::jit::playback::context::compile): Add
+	"-fno-use-linker-plugin" when invoking the driver.  Update error
+	messages to talk about the "gcc driver" rather than the
+	"gcc harness".  To ease troubleshooting, add error messages giving
+	the driver name and PATH to the error-handling code that fires
+	when the driver can't be found.
+
+2014-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2014-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/index.rst (Overview of code structure): Directly
+	include the comment from jit-common.h as rst, rather than as a
+	quoted C++ comment.
+	* jit-common.h: Convert the summary format to valid reStructured
+	text for inclusion by docs/internals/index.rst.
+	* notes.txt: Clarify where libgccjit.c, jit-recording.c and
+	jit-playback.c fit into the high-level diagram.
+
+2014-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (jit_OBJS): Drop jit/internal-api.o.
+	Add jit/jit-recording.o and jit/jit-playback.o.
+
+	* internal-api.c: Delete, moving content to new files jit-recording.c
+	and jit-playback.c.
+	* internal-api.h: Delete, moving content to new files
+	jit-common.h, jit-playback.h, jit-recording.h.
+	* jit-common.h: New file, containing the forward decls of classes
+	formerly in internal-api.h.
+	* jit-recording.c: New file, containing the gcc::jit::recording
+	code formerly in internal-api.c, and gcc::jit::dump.
+	* jit-recording.h: New file, containing the gcc::jit::recording
+	prototypes formerly in internal-api.h.
+	* jit-playback.c: New file, containing the gcc::jit::playback
+	code formerly in internal-api.c.
+	* jit-playback.h: New file, containing the gcc::jit::playback
+	prototypes formerly in internal-api.h.
+
+	* dummy-frontend.c: Don't include "internal-api.h".  Add includes
+	of jit-common.h and jit-playback.h.
+	* jit-builtins.h: Replace include of internal-api.h with
+	jit-common.h.
+	* jit-builtins.c: Replace include of internal-api.h with
+	jit-common.h.  Add include of jit-recording.h.
+	* libgccjit.c: Likewise.
+
+	* docs/internals/index.rst (Overview of code structure): Update
+	to reflect the above changes.
+
+2014-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/index.rst
+	(Using a working copy without installing): Rename to...
+	(Using a working copy without installing every time): ...this, and
+	update to reflect the need to have installed the driver binary
+	when running directly from a build directory.
+	(Running the test suite): Add PATH setting to the example.
+	* docs/intro/install.rst ("Hello world"): Likewise.
+	* internal-api.c: Include new autogenerated header
+	"gcc-driver-name.h".
+	(gcc::jit::playback::context::compile): Rather than looking for a
+	"gcc" on the path, look for GCC_DRIVER_NAME from gcc-driver-name.h,
+	as created by the configure script, so that we are using one for
+	the correct target.
+
+2014-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (jit.info): Implement.
+	(jit.install-info): Implement.
+	(jit.dvi): Implement.
+	(jit.pdf): Implement in terms of new target "jit.texinfo.pdf".
+	(jit.install-pdf): Likewise for new target
+	"jit.texinfo.install-pdf".
+	(jit.install-html): Implement in terms of
+	"jit.$(doc_build_sys).install-html" to redirect to new targets
+	"jit.sphinx.install-html" or "jit.texinfo.install-html".
+	(jit.html): Implement in terms of "jit.$(doc_build_sys).html" to
+	redirect to new targets "jit.sphinx.html" or "jit.texinfo.html".
+	(JIT_TEXI_FILES): New variable.
+	(jit.texinfo.html): New target.
+	(jit.texinfo.install-html): New target.
+	(jit.texinfo.pdf): New target.
+	(jit.texinfo.install-pdf): New target.
+	(SPHINX_BUILD_DIR): New variable.
+	(jit.sphinx.html): New target.
+	(jit_htmldir): New variable.
+	(jit.sphinx.install-html): New target.
+	(jit.sphinx.pdf): New target.
+
+2014-09-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.h (gcc::jit::recording::context): Convert field
+	"m_first_error_str" from a fixed-size buffer to a pointer, and add
+	a field "m_owns_first_error_str" to determine if we're responsible
+	for freeing it.
+	* internal-api.c (gcc::jit::recording::context::context): Update
+	initializations in ctor for above change.
+	(gcc::jit::recording::context::~context): Free m_first_error_str
+	if we own it.
+	(gcc::jit::recording::context::add_error_va): When capturing the
+	first error message on a context, rather than copying "errmsg" to
+	a fixed-size buffer and truncating if oversize, simply store the
+	pointer to the error message, and flag whether we need to free it.
+	(gcc::jit::recording::context::get_first_error): Update for change
+	of "m_first_error_str" from an internal buffer to a pointer.
+
+2014-09-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::playback::context::compile): Use
+	pex_one rather than system when invoking "gcc" to go from a .s
+	file to a .so file.
+
+2014-09-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (make_tempdir_path_template): New.
+	(gcc::jit::playback::context::compile): Call
+	make_tempdir_path_template to make m_path_template, rather than
+	hardcoding "/tmp/" within "/tmp/libgccjit-XXXXXX".
+
+2014-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/index.rst ("Overview of code structure"): Add
+	more descriptive text, including various fragments of
+	internal-api.h as appropriate.
+	* internal-api.h: Add marker comments for use by "literalinclude"
+	directives in docs/internals/index.rst.
+
+2014-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.c (my_walker): Rename to...
+	(my_ggc_walker): ...this.
+	(my_root_tab): Rename to...
+	(jit_root_tab): ...this.
+	(jit_langhook_init): Update for renaming of "my_root_tab" to
+	"jit_root_tab".
+	* internal-api.c: Add descriptive API comments to functions
+	throughout.
+	(mutex): Rename to...
+	(jit_mutex): ...this.
+	(gcc::jit::recording::context::compile): Update for renaming of
+	"mutex" to "jit_mutex".
+	* internal-api.h: Add descriptive API comments to functions
+	throughout.  Add indentation to forward declarations of classes
+	to indicate inheritance.
+	* jit-builtins.c: Likewise.
+
+2014-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::dump::write): Eliminate fixed-size
+	buffer "buf" by replacing call to vsnprintf with one to vasprintf
+	and a free, emitting an error on the dump's context if a malloc
+	failure occurs.
+	(gcc::jit::recording::context::add_error_va): Likewise, using
+	a precanned message if the malloc inside vasprinf fails.  Split
+	local "buf" into "malloced_msg" and "errmsg" to ensure that we
+	free the message iff we're using one malloc-ed by vasprintf.
+	(gcc::jit::recording::string::from_printf): Eliminate fixed-size
+	buffer "buf" by replacing call to vsnprintf with one to vasprintf
+	and a free, emitting an error on the relevant context if a malloc
+	failure occurs.
+
+2014-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.c: Update copyright year.  Follow standard for
+	initial includes by removing redundant include of "ansidecl.h".
+	* internal-api.c: Follow standard for initial includes by removing
+	redundant include of "ansidecl.h".
+	* jit-builtins.c: Likewise.
+	* libgccjit.c: Likewise.
+
+2014-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: Add copyright footer.
+	* Make-lang.in: Update copyright.
+	* config-lang.in: Update copyright.
+	* docs/examples/install-hello-world.c: Add copyright header.
+	* docs/examples/tut01-square.c: Likewise.
+	* docs/examples/tut02-sum-of-squares.c: Likewise.
+	* docs/examples/tut03-toyvm/toyvm.c: Likewise.
+	* internal-api.c: Likewise.
+	* internal-api.h: Likewise.
+	* libgccjit++.h: Likewise.
+	* libgccjit.c: Likewise.
+	* libgccjit.h: Likewise.
+	* libgccjit.map: Likewise.
+
+2014-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst (API): Shift operators are done.
+	* docs/topics/expressions.rst (Binary): Add shift operators.
+	* internal-api.c (binary_op_strings): Likewise.
+	(gcc::jit::playback::context::new_binary_op): Likewise.
+	* libgccjit.h (enum gcc_jit_binary_op): Likewise.
+
+2014-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst: Rename "Initial Release" section to "API", and
+	remove completed items: builtins, docs, pkgconfig file, fuzz
+	testing.  Move ability to name contexts and stmt_list per block
+	ideas to a new "Nice to have" section and note that it might be
+	better to go straight to gimple.
+	Move code coverage to "Test suite" section.
+	Add a "Probably not needed" section, moving some items to it.
+	Note that we're still missing shift operators.
+	Add idea that we could warn about unused objects in a context.
+
+2014-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/examples/tut03-toyvm/toyvm.c: Include <dejagnu.h>.
+	Add missing typedef of compilation_state.
+	(toyvm_function_parse): Add "name param.
+	(test): New.
+	(CHECK_NON_NULL): New, from harness.h
+	(CHECK_VALUE): Likewise.
+	(test_script): New.
+	(PATH_TO_SCRIPTS): New define.
+	(test_suite): New.
+	(main): If called with no args, run the test suite.
+
+2014-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/conf.py (__read_file): New helper function, for
+	extracting...
+	(gcc_BASEVER): New variable, read from "BASE-VER" in gcc src dir.
+	(gcc_DEVPHASE): Likewise, from file "DEV-PHASE".
+	(gcc_DATESTAMP): Likewise, from file "DATESTAMP".
+	(gcc_REVISION): Likewise, from file "REVISION" (if present).
+	(version): Rather than hardcoding this variable, extract from file
+	BASE-VER, via gcc_BASEVER local.
+	(release): Likewise, building it up from the files read above.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2014-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/intro/tutorial01.rst: Remove stray "FIXME".
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2014-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/index.rst: Add internals/index.rst.
+	* docs/internals/index.rst: New.
+	* notes.txt: Update to reflect renaming of toplev_main to
+	toplev::main.
+
+2014-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/intro/install.rst: Reduce width of listing.
+	* docs/intro/tutorial01.rst: Use <libgccjit.h> rather than
+	"libgccjit.h" when including the header.
+	* docs/intro/tutorial02.rst: Likewise.
+	* docs/intro/tutorial03.rst: Clarify various sections; show
+	effect of reducing optimization level down from 3 to 2.
+	("Putting it all together"): Move to above...
+	("Behind the curtain: optimizing away stack manipulation"):
+	...this, and rename this to...
+	("Behind the curtain: How does our code get optimized?"): ...and
+	add more detail, and discussion of elimination of tail recursion.
+
+2014-09-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst: Add detection of uninitialized variables, since
+	this bit me when developing "toyvm".
+
+	* docs/examples/tut03-toyvm/Makefile: New.
+	* docs/examples/tut03-toyvm/factorial.toy: New.
+	* docs/examples/tut03-toyvm/fibonacci.toy: New.
+	* docs/examples/tut03-toyvm/toyvm.c: New.
+
+	* docs/intro/index.rst: Add tutorial03.rst.
+	* docs/intro/tutorial01.rst: Fix example of how to dump
+	generated machine code.
+	* docs/intro/tutorial03.rst: New.
+	* docs/intro/factorial.png: New.
+
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/_build/texinfo/factorial.png: New (copied by sphinx from
+	docs/intro/factorial.png).
+
+2014-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (jit.install-common): Install libgccjit.pc to
+	"$(DESTDIR)/$(libdir)/pkgconfig".
+	* config-lang.in (outputs): Define this, adding jit/libgccjit.pc
+	so that it makes it into AC_CONFIG_FILES and is thus generated from
+	jit/libgccjit.pc.in at configure time.
+	* docs/intro/install.rst ("Hello world"): Add discussion about the
+	use of pkg-config when building against an install in
+	a non-standard location.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* libgccjit.pc.in: New.
+
+2014-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/index.rst: Split index out into two new files...
+	* docs/intro/index.rst: New file.
+	* docs/topics/index.rst: New file.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2014-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/_build/texinfo/Makefile: New file, generated by Sphinx, by
+	running "make texinfo" in docs directory.
+	* docs/_build/texinfo/libgccjit.texi: Likewise.
+	* docs/_build/texinfo/sum-of-squares.png: Likewise.
+
+2014-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/conf.py (Options for HTML output): Update html_theme from
+	"default" to "pyramid".
+
+2014-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/intro/install.rst: Markup fixes.
+	* docs/intro/tutorial01.rst: Likewise.
+	* docs/intro/tutorial02.rst: Likewise.
+	* docs/topics/contexts.rst: Likewise.
+	* docs/topics/expressions.rst: Likewise.
+	* docs/topics/functions.rst: Likewise.
+	* docs/topics/locations.rst: Likewise.
+	* docs/topics/types.rst: Likewise.
+
+2014-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/examples/install-hello-world.c (main): Fix missing
+	"return".
+	* docs/examples/tut01-square.c (main): Likewise.
+	* docs/examples/tut02-sum-of-squares.c (main): Likewise.
+
+2014-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/Makefile: New file.
+	* docs/conf.py: New file.
+	* docs/examples/install-hello-world.c: New file.
+	* docs/examples/tut01-square.c: New file.
+	* docs/examples/tut02-sum-of-squares.c: New file.
+	* docs/index.rst: New file.
+	* docs/intro/install.rst: New file.
+	* docs/intro/sum-of-squares.png: New file.
+	* docs/intro/tutorial01.rst: New file.
+	* docs/intro/tutorial02.rst: New file.
+	* docs/topics/contexts.rst: New file.
+	* docs/topics/expressions.rst: New file.
+	* docs/topics/functions.rst: New file.
+	* docs/topics/locations.rst: New file.
+	* docs/topics/objects.rst: New file.
+	* docs/topics/results.rst: New file.
+	* docs/topics/types.rst: New file.
+
+2014-09-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst (Initial Release): Update for addition of myself as
+	maintainer.
+
+2014-09-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst (Test suite): Multithreaded test is done.
+
+2014-09-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.c: Fix up for the header file flattening on
+	trunk by adding includes of signop.h, tree-core.h, stor-layout.h,
+	tree-ssa-alias.h, gimple-expr.h.
+	(jit_langhook_write_globals): Update call to
+	finalize_compilation_unit to symtab->finalize_compilation_unit to
+	track change made on trunk in r214422.
+
+	* internal-api.c: Fix up for the header file flattening on trunk
+	by adding includes of gimple-expr.h, tree-ssa-alias.h,
+	stringpool.h, stor-layout.h, print-tree.h, gimplify.h.
+	(new_rvalue_from_int): Update call to real_from_integer.
+	(gcc::jit::playback::wrapper::operator new): Use
+	ggc_internal_cleared_alloc rather than
+	ggc_internal_cleared_alloc_stat.
+	(gcc::jit::playback::function::postprocess): Update call to
+	cgraph_finalize_function tocgraph_node::finalize_function.
+	(gcc::jit::playback::block::add_comment): Update call to
+	ggc_internal_alloc_stat to ggc_internal_alloc.
+
+2014-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_context_new_union_type): New entrypoint.
+	(gcc_jit_lvalue_access_field): Rename first param from "struct_"
+	to "struct_or_union".
+	(gcc_jit_rvalue_access_field): Likewise.
+
+	* libgccjit.c (gcc_jit_context_new_union_type): New entrypoint.
+
+	* libgccjit.map (gcc_jit_context_new_union_type): New entrypoint.
+
+	* internal-api.h (gcc::jit::recording::compound_type): New class
+	(gcc::jit::recording::union): New class.
+	(gcc::jit::playback::struct_): Rename this class to...
+	(gcc::jit::playback::compound_type): ...this.
+	(gcc::jit::recording::context::new_union_type): New method.
+	(gcc::jit::recording::context): Rename field "m_structs" to
+	"m_compound_types", generalizing from a vec <struct_ *> to a
+	vec<compound_type *>.
+	(gcc::jit::recording::field): Update field m_container from
+	struct * to container_type *.
+	(gcc::jit::recording::field::get_container): Generalize from
+	struct_ * to container_type *.
+	(gcc::jit::recording::field::set_container): Likewise.
+	(gcc::jit::recording::compound_type): New subclass of type, to
+	be a superclass of existing class struct_ and new class union_.
+	(gcc::jit::recording::struct_::get_name): Move to...
+	(gcc::jit::recording::compound_type::get_name): ...here.
+	(gcc::jit::recording::struct_::get_loc): Move to...
+	(gcc::jit::recording::compound_type::get_loc): ...here.
+	(gcc::jit::recording::struct_::set_fields): Move to...
+	(gcc::jit::recording::compound_type::set_fields): ...here.
+	(gcc::jit::recording::struct_::dereference): Move to...
+	(gcc::jit::recording::compound_type::dereference): ...here.
+	(gcc::jit::recording::struct_::is_int): Move to...
+	(gcc::jit::recording::compound_type::is_int): ...here.
+	(gcc::jit::recording::struct_::is_float): Move to...
+	(gcc::jit::recording::compound_type::is_float): ...here.
+	(gcc::jit::recording::struct_::is_bool): Move to...
+	(gcc::jit::recording::compound_type::is_bool): ...here.
+	(gcc::jit::recording::struct_::is_pointer): Move to...
+	(gcc::jit::recording::compound_type::is_pointer): ...here.
+	(gcc::jit::recording::struct_::is_array): Move to...
+	(gcc::jit::recording::compound_type::is_array): ...here.
+	(gcc::jit::recording::struct_::playback_struct): Move to...
+	(gcc::jit::recording::compound_type::playback_compound_type):
+	...here, renaming and updating return type.
+	(gcc::jit::recording::struct_): Inherit from compound_type,
+	rather than just type.
+	(gcc::jit::recording::fields): Update to work on compound_type *
+	rather than struct_ *, renaming "m_struct" to "m_struct_or_union".
+	(gcc::jit::recording::union): New subclass of compound_type.
+	(gcc::jit::playback::context::new_struct_type): Generalize by
+	renaming to...
+	(gcc::jit::playback::context::new_compound_type): ...this, and
+	and an "is_struct" bool param.
+	(gcc::jit::playback::struct_): Generalize by renaming class to...
+	(gcc::jit::playback::compound_type): ...this.
+
+	* internal-api.c (gcc::jit::recording::context::context): Rename
+	field "m_structs" to "m_compound_types".
+	(gcc::jit::recording::context::new_struct_type): Likewise.
+	(gcc::jit::recording::context::new_union_type): New method.
+	(gcc::jit::recording::context::dump_to_file): Field "m_structs"
+	is renamed "m_compound_types" and changes type from struct_ *
+	to compound_type *.
+	(gcc::jit::recording::compound_type::compound_type): New ctor,
+	built from old body of gcc::jit::recording::struct_::struct_.
+	(gcc::jit::recording::struct_::set_fields): Move class to...
+	(gcc::jit::recording::compound_type::set_fields): ... here.
+	(gcc::jit::recording::struct_::dereference): Move class to...
+	(gcc::jit::recording::compound_type::dereference): ...here.
+	(gcc::jit::recording::struct_::struct_): Reimplement by calling
+	base class ctor.
+	(gcc::jit::recording::struct_::replay_into): The playback hook
+	is now "new_compound_type" and adds a bool, with true for
+	"is_struct" (vs a union).
+	(gcc::jit::recording::struct_::make_debug_string): "m_name" is
+	now moved to base class and private, so use an accessor.
+	(gcc::jit::recording::union_::union_): New function.
+	(gcc::jit::recording::union_::replay_into): New function.
+	(gcc::jit::recording::union_::make_debug_string): New function.
+	(gcc::jit::recording::fields::fields): Update first param from
+	struct_ * to compound_type *, and rename field "m_struct" to
+	"m_struct_or_union".
+	(gcc::jit::recording::fields::replay_into): "m_struct" is now
+	"m_struct_or_union" and has a playback_compound_type rather
+	than a playback_struct.
+	(gcc::jit::recording::fields::write_to_dump): Update for
+	renaming of m_struct to m_struct_or_union.
+	(gcc::jit::playback::context::new_struct_type): Rename method
+	to...
+	(gcc::jit::playback::context::new_compound_type): this,
+	generalizing so that it can make unions as well as structs; the
+	underlying playback type is now called "compound_type".
+	(gcc::jit::playback::struct_::set_fields): This method's class has
+	changed name, so this is now...
+	(gcc::jit::playback::compound_type::set_fields): ...this method.
+
+	* TODO.rst: Unions are done.
+
+2014-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst: Function ptrs are done.
+	* internal-api.c
+	(gcc::jit::recording::context::new_function_ptr_type): New method.
+	(gcc::jit::recording::context::new_call_through_ptr): New method.
+	(gcc::jit::recording::memento_of_get_pointer::make_debug_string):
+	Add special-case handling of function pointer types.
+	(gcc::jit::recording::function_type::make_debug_string_with_ptr):
+	New method.
+	(gcc::jit::recording::function_type::make_debug_string):
+	Reimplement in terms of...
+	(gcc::jit::recording::function_type::make_debug_string_with): New
+	method, based on make_debug_string, but allowing for arbitrary
+	text between the return type and the parameters.
+	(gcc::jit::recording::call_through_ptr::call_through_ptr): New
+	method.
+	(gcc::jit::recording::call_through_ptr::replay_into): New method.
+	(gcc::jit::recording::call_through_ptr::make_debug_string): New
+	method.
+	(gcc::jit::playback::context::new_call): Reimplement in terms of...
+	(gcc::jit::playback::context::build_call): New method, using parts
+	of old implementation of new_call, so that we can share this
+	with...
+	(gcc::jit::playback::context::new_call_through_ptr): New method.
+	* internal-api.h
+	(gcc::jit::recording::context::new_function_ptr_type): New method.
+	(gcc::jit::recording::context::new_call_through_ptr): New method.
+	(gcc::jit::recording::type::dyn_cast_function_type): New method.
+	(gcc::jit::recording::function_type::dyn_cast_function_type): New
+	method.
+	(gcc::jit::recording::function_type::make_debug_string_with_ptr):
+	New method.
+	(gcc::jit::recording::function_type::make_debug_string_with): New
+	method.
+	(gcc::jit::recording::call_through_ptr): New subclass of rvalue.
+	(gcc::jit::playback::context::new_call_through_ptr): New method.
+	(gcc::jit::playback::context::build_call): New method.
+	* libgccjit.c (gcc_jit_context_new_function_ptr_type): New
+	function.
+	(gcc_jit_context_new_call_through_ptr): New function.
+	* libgccjit.h (gcc_jit_context_new_function_ptr_type): New
+	function.
+	(gcc_jit_context_new_call_through_ptr): New function.
+	* libgccjit.map (gcc_jit_context_new_call_through_ptr): New function.
+	(gcc_jit_context_new_function_ptr_type): New function.
+
+2014-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst (error-checking): Remove various items that either
+	already were implemented, or are implemented by this commit.
+	* internal-api.h (gcc::jit::recording::type::is_numeric): New.
+	* libgccjit.c (RETURN_NULL_IF_FAIL_NONNULL_NUMERIC_TYPE): New macro.
+        (gcc_jit_context_new_rvalue_from_int): Verify that numeric_type is
+	indeed numeric.
+	(gcc_jit_context_zero): Likewise.
+	(gcc_jit_context_one): Likewise.
+	(gcc_jit_context_new_rvalue_from_double): Likewise.
+	(gcc_jit_context_new_array_access): Likewise for type of "index".
+
+2014-07-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::recording::context::new_array_type):
+	Reject attempts to create an array of a struct if the fields of
+	the struct haven't yet been set.
+	* internal-api.h (gcc::jit::recording::type::dyn_cast_struct): New
+	virtual function.
+	(gcc::jit::recording::struct_::dyn_cast_struct): New, overriding
+	for this subclass.
+	(gcc::jit::recording::struct_::get_name): New.
+
+2014-05-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (LIBGCCJIT_LINKER_NAME): New.
+	(LIBGCCJIT_VERSION_NUM): New.
+	(LIBGCCJIT_MINOR_NUM): New.
+	(LIBGCCJIT_RELEASE_NUM): New.
+	(LIBGCCJIT_SONAME): New.
+	(LIBGCCJIT_FILENAME): New.
+	(LIBGCCJIT_LINKER_NAME_SYMLINK): New.
+	(LIBGCCJIT_SONAME_SYMLINK): New.
+	(jit): Add symlink targets.
+	(libgccjit.so): Convert to...
+	(LIBGCCJIT_FILENAME): ...and add a soname.
+	(jit.install-common): Install the library with a soname, and
+	symlinks.  Install libgccjit++.h.
+
+2014-04-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::playback::context::compile): Put
+	any output of dlerror through the add_error method, rather
+	than merely printing it to stderr, so that the error is also
+	recorded on the context.
+
+2014-03-19  Tom Tromey  <tromey@redhat.com>
+
+	* internal-api.c (compile): Use auto_timevar.
+
+2014-03-19  Tom Tromey  <tromey@redhat.com>
+
+	* internal-api.c (compile): Use toplev, not toplev_options.
+	Simplify.
+
+2014-03-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::recording::context::add_error_va):
+	Rename local "progname" to "ctxt_progname" to avoid shadowing
+	the related global, for clarity.
+	(gcc::jit::playback::context::compile): Likewise.
+
+2014-03-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::recording::memento_of_get_pointer::
+	accepts_writes_from): Accept writes from pointers, but not arrays.
+
+	* internal-api.h (gcc::jit::recording::type::is_pointer): New.
+	(gcc::jit::recording::type::is_array): New.
+	(gcc::jit::recording::memento_of_get_type::accepts_writes_from):
+	Allow (void *) to accept writes of pointers, but not arrays.
+	(gcc::jit::recording::memento_of_get_type::is_pointer): New.
+	(gcc::jit::recording::memento_of_get_type::is_array): New.
+	(gcc::jit::recording::memento_of_get_pointer::is_pointer): New.
+	(gcc::jit::recording::memento_of_get_pointer::is_array): New.
+	(gcc::jit::recording::memento_of_get_const::is_pointer): New.
+	(gcc::jit::recording::memento_of_get_const::is_array): New.
+	(gcc::jit::recording::memento_of_get_volatile::is_pointer): New.
+	(gcc::jit::recording::memento_of_get_volatile::is_array): New.
+	(gcc::jit::recording::array_type::is_pointer): New.
+	(gcc::jit::recording::array_type::is_array): New.
+	(gcc::jit::recording::function_type::is_pointer): New.
+	(gcc::jit::recording::function_type::is_array): New.
+	(gcc::jit::recording::struct_::is_pointer): New.
+	(gcc::jit::recording::struct_::is_array): New.
+
+	* libgccjit.c (gcc_jit_context_new_rvalue_from_ptr): Require the
+	pointer_type to be a pointer, not an array.
+	(gcc_jit_context_null): Likewise.
+	(is_valid_cast): Require pointer casts to be between pointer types,
+	not arrays.
+	(gcc_jit_context_new_array_access): Update error message from "not
+	a pointer" to "not a pointer or array".
+	(gcc_jit_rvalue_dereference_field): Require the pointer arg to be
+	of pointer type, not an array.
+	(gcc_jit_rvalue_dereference): Likewise.
+
+2014-03-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c (is_valid_cast): Permit casts between pointer types.
+
+	* internal-api.c (convert): Report more information if this ever
+	occurs, and make the error occur on the playback context, so that
+	it makes the gcc_jit_result be NULL.
+	(gcc::jit::playback::context::build_cast): Handle pointers.  Report
+	more information if an unhandlable cast reaches here.
+
+2014-03-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c (is_valid_cast): New.
+	(gcc_jit_context_new_cast): Check for compatible types.
+
+	* internal-api.c (gcc::jit::recording::memento_of_get_type::
+	is_int): New.
+	(gcc::jit::recording::memento_of_get_type::is_float): New.
+	(gcc::jit::recording::memento_of_get_type::is_bool): New.
+
+	* internal-api.h (gcc::jit::recording::type::is_int): New.
+	(gcc::jit::recording::type::is_float): New.
+	(gcc::jit::recording::type::is_bool): New.
+
+	(gcc::jit::recording::memento_of_get_type::is_int): New.
+	(gcc::jit::recording::memento_of_get_type::is_float): New.
+	(gcc::jit::recording::memento_of_get_type::is_bool): New.
+
+	(gcc::jit::recording::memento_of_get_pointer::is_int): New.
+	(gcc::jit::recording::memento_of_get_pointer::is_float): New.
+	(gcc::jit::recording::memento_of_get_pointer::is_bool): New.
+
+	(gcc::jit::recording::memento_of_get_const::is_int): New.
+	(gcc::jit::recording::memento_of_get_const::is_float): New.
+	(gcc::jit::recording::memento_of_get_const::is_bool): New.
+
+	(gcc::jit::recording::memento_of_get_volatile::is_int): New.
+	(gcc::jit::recording::memento_of_get_volatile::is_float): New.
+	(gcc::jit::recording::memento_of_get_volatile::is_bool): New.
+
+	(gcc::jit::recording::array_type::is_int): New.
+	(gcc::jit::recording::array_type::is_float): New.
+	(gcc::jit::recording::array_type::is_bool): New.
+
+	(gcc::jit::recording::function_type::is_int): New.
+	(gcc::jit::recording::function_type::is_float): New.
+	(gcc::jit::recording::function_type::is_bool): New.
+
+	(gcc::jit::recording::struct_::is_int): New.
+	(gcc::jit::recording::struct_::is_float): New.
+	(gcc::jit::recording::struct_::is_bool): New.
+
+2014-03-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::recording::context::set_str_option):
+	Provide NULL recording::location to add_error.
+	(gcc::jit::recording::context::set_int_option): Likewise.
+	(gcc::jit::recording::context::set_bool_option): Likewise.
+	(gcc::jit::playback::context::compile): Likewise.
+	(gcc::jit::recording::context::add_error): Add recording::location
+	param.
+	(gcc::jit::recording::context::add_error_va): Likewise; print it
+	when present; add "error: " to stderr messages.
+	(gcc::jit::recording::location::replay_into): Provide
+	recording::location to the playback::location.
+
+	(gcc::jit::recording::function::validate): Add locations to the
+	add_error invocations.
+	(gcc::jit::recording::block::validate): Likewise.
+	(gcc::jit::playback::context::get_type): Likewise.
+	(gcc::jit::playback::context::new_unary_op): Likewise.
+	(gcc::jit::playback::context::new_binary_op): Likewise.
+	(gcc::jit::playback::context::new_comparison): Likewise.
+
+	(gcc::jit::recording::block::get_loc): New.
+	(gcc::jit::recording::block::get_first_statement): New.
+
+	(gcc::jit::playback::context::build_cast): Pass in higher-level
+	arguments in the hope of eventually providing better error
+	messages when a cast isn't possible.
+	(gcc::jit::playback::context::new_cast): As above.
+
+	(gcc::jit::playback::context::add_error): Add playback::location
+	parameter, using it to provide the corresponding
+	recording::location (if any) when reporting the error to the
+	recording::context.
+	(gcc::jit::playback::context::add_error_va): Likewise.
+	(gcc::jit::playback::context::new_location): Likewise.
+	(gcc::jit::playback::source_line::get_location): Likewise.
+	(gcc::jit::playback::location::location): Likewise.
+
+	* internal-api.h (gcc::jit::recording::context::add_error): Add
+	recording::location param.
+	(gcc::jit::recording::context::add_error_va): Likewise.
+
+	(gcc::jit::recording::context::errors_occurred): Also consider
+	errors that occur on a parent or ancestor context, recursively.
+
+	(gcc::jit::recording::block::get_loc): New.
+	(gcc::jit::recording::block::get_first_statement): New.
+	(gcc::jit::recording::statement::get_loc): New.
+
+	(gcc::jit::playback::context::new_location): Add recording::location
+	parameter.
+
+	(gcc::jit::playback::context::add_error): Add playback::location
+	parameter.
+	(gcc::jit::playback::context::add_error_va): Likewise.
+
+	(gcc::jit::playback::context::build_cast): Pass in higher-level
+	arguments in the hope of eventually providing better error
+	messages when a cast isn't possible.
+
+	(gcc::jit::playback::source_line::get_location): Add
+	recording::location parameter.
+	(gcc::jit::playback::location::location): Likewise.
+	(gcc::jit::playback::location::get_recording_loc): New.
+	(gcc::jit::playback::location::m_recording_loc): New.
+
+	* jit-builtins.c (gcc::jit::builtins_manager::get_builtin_function):
+	Provide NULL recording::location to add_error.
+	(gcc::jit::builtins_manager::make_primitive_type): Likewise.
+
+	* libgccjit.c (RETURN_VAL_IF_FAIL): Add location argument.
+	(RETURN_VAL_IF_FAIL_PRINTF1): Likewise.
+	(RETURN_VAL_IF_FAIL_PRINTF2): Likewise.
+	(RETURN_VAL_IF_FAIL_PRINTF3): Likewise.
+	(RETURN_VAL_IF_FAIL_PRINTF4): Likewise.
+	(RETURN_VAL_IF_FAIL_PRINTF6): Likewise.
+	(RETURN_NULL_IF_FAIL): Likewise.
+	(RETURN_NULL_IF_FAIL_PRINTF1): Likewise.
+	(RETURN_NULL_IF_FAIL_PRINTF2): Likewise.
+	(RETURN_NULL_IF_FAIL_PRINTF3): Likewise.
+	(RETURN_NULL_IF_FAIL_PRINTF4): Likewise.
+	(RETURN_NULL_IF_FAIL_PRINTF6): Likewise.
+	(RETURN_IF_FAIL): Likewise.
+	(RETURN_IF_FAIL_PRINTF1): Likewise.
+	(RETURN_IF_FAIL_PRINTF2): Likewise.
+	(RETURN_IF_FAIL_PRINTF4): Likewise.
+	(RETURN_IF_NOT_VALID_BLOCK): Likewise.
+	(RETURN_NULL_IF_NOT_VALID_BLOCK): Likewise.
+
+	(jit_error): Likewise.
+
+	(gcc_jit_location_as_object): Provided location argument to
+	error-handling macros.
+	(gcc_jit_type_as_object): Likewise.
+	(gcc_jit_context_get_type): Likewise.
+	(gcc_jit_context_get_int_type): Likewise.
+	(gcc_jit_type_get_pointer): Likewise.
+	(gcc_jit_type_get_const): Likewise.
+	(gcc_jit_type_get_volatile): Likewise.
+	(gcc_jit_context_new_array_type): Likewise.
+	(gcc_jit_context_new_field): Likewise.
+	(gcc_jit_context_new_struct_type): Likewise.
+	(gcc_jit_context_new_opaque_struct): Likewise.
+	(gcc_jit_struct_as_type): Likewise.
+	(gcc_jit_struct_set_fields): Likewise.
+	(gcc_jit_context_new_param): Likewise.
+	(gcc_jit_param_as_object): Likewise.
+	(gcc_jit_param_as_lvalue): Likewise.
+	(gcc_jit_param_as_rvalue): Likewise.
+	(gcc_jit_context_new_function): Likewise.
+	(gcc_jit_context_get_builtin_function): Likewise.
+	(gcc_jit_function_as_object): Likewise.
+	(gcc_jit_function_get_param): Likewise.
+	(gcc_jit_function_dump_to_dot): Likewise.
+	(gcc_jit_function_new_block): Likewise.
+	(gcc_jit_block_as_object): Likewise.
+	(gcc_jit_block_get_function): Likewise.
+	(gcc_jit_context_new_global): Likewise.
+	(gcc_jit_lvalue_as_object): Likewise.
+	(gcc_jit_lvalue_as_rvalue): Likewise.
+	(gcc_jit_rvalue_as_object): Likewise.
+	(gcc_jit_rvalue_get_type): Likewise.
+	(gcc_jit_context_new_rvalue_from_int): Likewise.
+	(gcc_jit_context_zero): Likewise.
+	(gcc_jit_context_one): Likewise.
+	(gcc_jit_context_new_rvalue_from_double): Likewise.
+	(gcc_jit_context_new_rvalue_from_ptr): Likewise.
+	(gcc_jit_context_null): Likewise.
+	(gcc_jit_context_new_string_literal): Likewise.
+	(gcc_jit_context_new_unary_op): Likewise.
+	(gcc_jit_context_new_binary_op): Likewise.
+	(gcc_jit_context_new_comparison): Likewise.
+	(gcc_jit_context_new_call): Likewise.
+	(gcc_jit_context_new_cast): Likewise.
+	(gcc_jit_context_new_array_access): Likewise.
+	(gcc_jit_object_get_context): Likewise.
+	(gcc_jit_object_get_debug_string): Likewise.
+	(gcc_jit_lvalue_access_field): Likewise.
+	(gcc_jit_rvalue_access_field): Likewise.
+	(gcc_jit_rvalue_dereference_field): Likewise.
+	(gcc_jit_rvalue_dereference_field): Likewise.
+	(gcc_jit_rvalue_dereference): Likewise.
+	(gcc_jit_lvalue_get_address): Likewise.
+	(gcc_jit_function_new_local): Likewise.
+	(gcc_jit_block_add_eval): Likewise.
+	(gcc_jit_block_add_assignment): Likewise.
+	(gcc_jit_block_add_assignment_op): Likewise.
+	(gcc_jit_block_end_with_conditional): Likewise.
+	(gcc_jit_block_add_comment): Likewise.
+	(gcc_jit_block_end_with_jump): Likewise.
+	(gcc_jit_block_end_with_return): Likewise.
+	(gcc_jit_block_end_with_void_return): Likewise.
+	(gcc_jit_context_set_str_option): Likewise.
+	(gcc_jit_context_set_int_option): Likewise.
+	(gcc_jit_context_set_bool_option): Likewise.
+	(gcc_jit_context_compile): Likewise.
+	(gcc_jit_context_dump_to_file): Likewise.
+	(gcc_jit_context_get_first_error): Likewise.
+	(gcc_jit_result_get_code): Likewise.
+	(gcc_jit_result_get_code): Likewise.
+	(gcc_jit_result_release): Likewise.
+
+2014-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h (gccjit::context::new_rvalue): Make these
+	methods const.
+	(gccjit::context::zero): Likewise.
+	(gccjit::context::one): Likewise.
+	(gccjit::function::get_param): Likewise.
+
+2014-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h (gccjit::error): New class, for exceptions.
+	(gccjit::context::get_inner_context): New accessor, so that we
+	can...
+	(gccjit::context::m_inner_ctxt): Make private.
+	(gccjit::context::context): Throw a gccjit::error if a NULL
+	context is passed in.
+	(gccjit::context::compile): Throw a gccjit::error if a NULL
+	result is returned from the C API, which indicates an error.
+	(gccjit::object::object): Throw a gccjit::error if a NULL
+	object is passed in, since that indicates that an error has
+	occurred.
+	(gccjit::location::location): In the default ctor, call the
+	base class default ctor rather than passing in a NULL to the
+	single-argument ctor, since the latter now indicates an error
+	has occurred at the C API level.
+	(gccjit::field::field): Likewise.
+	(gccjit::type::type): Likewise.
+	(gccjit::function::function): Likewise.
+	(gccjit::block::block): Likewise.
+	(gccjit::rvalue::rvalue): Likewise.
+
+2014-03-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (enum gcc_jit_function_kind): Add
+	GCC_JIT_FUNCTION_ALWAYS_INLINE.
+	* internal-api.c (gcc::jit::recording::function::write_to_dump):
+	Handle GCC_JIT_FUNCTION_ALWAYS_INLINE.
+	(gcc::jit::playback::context::new_function): Likewise.
+	(gcc::jit::playback::context::postprocess): Handle
+	GCC_JIT_FUNCTION_INTERNAL and GCC_JIT_FUNCTION_ALWAYS_INLINE by
+	clearing DECL_EXTERNAL and TREE_PUBLIC.  Doing so fixes the
+	"undefined symbol" bug seen with GCC_JIT_FUNCTION_INTERNAL.
+	* TODO.rst: Update.
+
+2014-03-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h (gccjit::context::new_global): New.
+
+2014-03-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::playback::context::handle_locations):
+	Add a disabled call to line_table_dump, in case it's handy for
+	debugging in the future.
+	(gcc::jit::playback::context::set_tree_location): Assert that
+	the location is non-NULL.
+	(gcc::jit::playback::location::location): Initialize m_src_loc
+	to UNKNOWN_LOCATION.  This field should always be overwritten by
+	handle_locations before use, but given recent issues with bogus
+	locations it seems safer to initialize it.
+
+2014-03-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::recording::context::
+	disassociate_from_playback): Recursively visit parent contexts.
+
+2014-03-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_function_dump_to_dot): New.
+	* libgccjit.map (gcc_jit_function_dump_to_dot): New.
+	* libgccjit++.h (gccjit::function::dump_to_dot): New.
+	* libgccjit.c (gcc_jit_function_dump_to_dot): New.
+	* internal-api.h (gcc::jit::recording::function::dump_to_dot): New.
+	(gcc::jit::recording::block::block): Add m_index member.
+	(gcc::jit::recording::block::dump_to_dot): New.
+	(gcc::jit::recording::block::dump_edges_to_dot): New.
+	* internal-api.c (gcc::jit::recording::function::new_block): Give
+	each block an index.
+	(gcc::jit::recording::function::dump_to_dot): New.
+	(gcc::jit::recording::block::dump_to_dot): New.
+	(gcc::jit::recording::block::dump_edges_to_dot): New.
+
+2014-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::recording::memento_of_get_pointer::
+	accepts_writes_from): Avoid segfaulting when the argument is not
+	of pointer type.
+	* internal-api.h (gcc::jit::recording::accepts_writes_from): Add
+	an assertion.
+	* libgccjit.c (gcc_jit_context_new_comparison): Strip away const
+	and volatile when comparing input types.
+
+2014-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_type_get_volatile): New.
+	* libgccjit.map (gcc_jit_type_get_volatile): New.
+	* libgccjit.c (gcc_jit_type_get_volatile): New.
+	* libgccjit++.h (gccjit::type::get_volatile): New.
+	* internal-api.c (gcc::jit::recording::type::get_volatile): New.
+	(gcc::jit::recording::memento_of_get_volatile::replay_into): New.
+	(gcc::jit::recording::memento_of_get_volatile::make_debug_string): New.
+	* internal-api.h (gcc::jit::recording::type::get_volatile): New.
+	(gcc::jit::recording::type::accepts_writes_from): Strip off
+	qualifiers such as "const" and "volatile" from the source type.
+	(gcc::jit::recording::memento_of_get_volatile): New class.
+	(gcc::jit::playback::type::get_volatile): New.
+	* TODO.rst: Update.
+
+2014-03-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h (gccjit::function::operator()): Add overload for
+	a call with 3 arguments.
+	(gccjit::block::add_call): Likewise for 4 arguments.
+	(gccjit::rvalue::cast_to): New method.
+	(gccjit::rvalue::operator[]): New methods.
+
+2014-02-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c (gcc_jit_context_new_binary_op): Check that the
+	operands have the same type.
+	(gcc_jit_context_new_comparison): Likewise.
+
+2014-02-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_context_new_cast): New.
+	* libgccjit.map (gcc_jit_context_new_cast): New.
+	* libgccjit++.h (gccjit::context::new_cast): New method.
+	* libgccjit.c (gcc_jit_context_new_cast): New.
+
+	* internal-api.h (gcc::jit::recording::context::new_cast): New method.
+	(gcc::jit::recording::cast): New subclass of rvalue.
+	(gcc::jit::playback::context::new_cast): New method.
+	(gcc::jit::playback::context::build_cast): New method.
+
+	* internal-api.c (convert): New.
+	(gcc::jit::recording::context::new_cast): New.
+	(gcc::jit::recording::cast::replay_into): New.
+	(gcc::jit::recording::cast::make_debug_string): New.
+	(gcc::jit::playback::context::build_cast): New.
+	(gcc::jit::playback::context::new_cast): New.
+
+	* TODO.rst: Update.
+
+2014-02-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_block_get_function): New.
+	* libgccjit.map (gcc_jit_block_get_function): New.
+	* libgccjit++.h (gccjit::block::get_function): New method.
+	* libgccjit.c (gcc_jit_block_get_function): New.
+
+2014-02-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_label): Delete in favor of...
+	(gcc_jit_block): New type.
+	(gcc_jit_loop): Delete.
+
+	(gcc_jit_function_new_forward_label): Delete in favor of...
+	(gcc_jit_function_new_block): New.
+
+	(gcc_jit_label_as_object): Delete in favor of...
+	(gcc_jit_block_as_object): New.
+
+	(gcc_jit_function_add_eval): Delete in favor of...
+	(gcc_jit_block_add_eval): New.
+
+	(gcc_jit_function_add_assignment): Delete in favor of...
+	(gcc_jit_block_add_assignment): New.
+
+	(gcc_jit_function_add_assignment_op): Delete in favor of...
+	(gcc_jit_block_add_assignment_op): New.
+
+	(gcc_jit_function_add_comment): Delete in favor of...
+	(gcc_jit_block_add_comment): New.
+
+	(gcc_jit_label_as_object): Delete in favor of...
+	(gcc_jit_block_as_object): New.
+
+	(gcc_jit_function_add_conditional): Delete in favor of...
+	(gcc_jit_block_end_with_conditional): New.
+
+	(gcc_jit_function_add_jump): Delete in favor of...
+	(gcc_jit_block_end_with_jump): New.
+
+	(gcc_jit_function_add_return): Delete in favor of...
+	(gcc_jit_block_end_with_return): New.
+
+	(gcc_jit_function_add_void_return): Delete in favor of...
+	(gcc_jit_block_end_with_void_return): New.
+
+	(gcc_jit_function_new_loop): Delete.
+	(gcc_jit_function_new_loop_over_range): Delete.
+	(gcc_jit_loop_as_object): Delete.
+	(gcc_jit_loop_end): Delete.
+
+	* libgccjit.map (gcc_jit_function_add_assignment): Delete in favor of...
+	(gcc_jit_block_add_assignment): New.
+
+	(gcc_jit_function_add_assignment_op): Delete in favor of...
+	(gcc_jit_block_add_assignment_op): New.
+
+	(gcc_jit_function_add_comment): Delete in favor of...
+	(gcc_jit_block_add_comment): New.
+
+	(gcc_jit_function_add_eval): Delete in favor of...
+	(gcc_jit_block_add_eval): New.
+
+	(gcc_jit_label_as_object): Delete in favor of...
+	(gcc_jit_block_as_object): New.
+
+	(gcc_jit_function_add_conditional): Delete in favor of...
+	(gcc_jit_block_end_with_conditional): New.
+
+	(gcc_jit_function_add_jump): Delete in favor of...
+	(gcc_jit_block_end_with_jump): New.
+
+	(gcc_jit_function_add_return): Delete in favor of...
+	(gcc_jit_block_end_with_return): New.
+
+	(gcc_jit_function_add_void_return): Delete in favor of...
+	(gcc_jit_block_end_with_void_return): New.
+
+	(gcc_jit_function_add_label): Delete in favor of...
+	(gcc_jit_function_new_block): New.
+	(gcc_jit_function_new_forward_label): Delete.
+	(gcc_jit_function_place_forward_label): Delete.
+
+	(gcc_jit_function_new_loop): Delete.
+	(gcc_jit_function_new_loop_over_range): Delete.
+	(gcc_jit_loop_as_object): Delete.
+	(gcc_jit_loop_end): Delete.
+
+	* libgccjit.c (gcc_jit_label): Delete in favor of...
+	(gcc_jit_block): New type.
+	(gcc_jit_loop): Delete.
+
+	(RETURN_IF_NOT_FUNC_DEFINITION): Delete in favor of...
+	(RETURN_IF_NOT_VALID_BLOCK): New macro.
+	(RETURN_NULL_IF_NOT_FUNC_DEFINITION): Delete in favor of...
+	(RETURN_NULL_IF_NOT_VALID_BLOCK): New macro.
+
+	(gcc_jit_function_new_forward_label): Delete in favor of...
+	(gcc_jit_function_new_block): New.
+
+	(gcc_jit_label_as_object): Delete in favor of...
+	(gcc_jit_block_as_object): New.
+
+	(gcc_jit_rvalue_dereference_field): Ensure that field has been
+	placed.
+
+	(gcc_jit_function_add_label): Delete
+	(gcc_jit_function_place_forward_label): Delete.
+
+	(gcc_jit_function_add_eval): Delete in favor of...
+	(gcc_jit_block_add_eval): New.
+
+	(gcc_jit_function_add_assignment): Delete in favor of...
+	(gcc_jit_block_add_assignment): New.
+
+	(gcc_jit_function_add_assignment_op): Delete in favor of...
+	(gcc_jit_block_add_assignment_op): New.
+
+	(gcc_jit_function_add_conditional): Delete in favor of...
+	(gcc_jit_block_end_with_conditional): New.
+
+	(gcc_jit_function_add_comment): Delete in favor of...
+	(gcc_jit_block_add_comment): New.
+
+	(gcc_jit_function_add_jump): Delete in favor of...
+	(gcc_jit_block_end_with_jump): New.
+
+	(gcc_jit_function_add_return): Delete in favor of...
+	(gcc_jit_block_end_with_return): New.
+
+	(gcc_jit_function_add_void_return): Delete in favor of...
+	(gcc_jit_block_end_with_void_return): New.
+
+	(gcc_jit_function_new_loop): Delete.
+	(gcc_jit_function_new_loop_over_range): Delete.
+	(gcc_jit_loop_as_object): Delete.
+	(gcc_jit_loop_end): Delete.
+
+	* internal-api.h (gcc::jit::recording::label): Delete class in
+	favor of...
+	(gcc::jit::recording::block): New class.
+	(gcc::jit::recording::loop): Delete class.
+	(gcc::jit::recording::loop_end): Delete class.
+
+	(gcc::jit::playback::label): Delete class in favor of...
+	(gcc::jit::playback::block): New class.
+
+	(gcc::jit::playback::loop): Delete class.
+
+	(gcc::jit::recording::playback_label): Delete function in favor of...
+	(gcc::jit::recording::playback_block): New function.
+
+	(gcc::jit::recording::context::validate): New.
+
+	(gcc::jit::recording::function::new_forward_label): Delete method.
+	(gcc::jit::recording::function::add_eval): Delete method in favor
+	of method of new gcc::jit::recording::block class.
+	(gcc::jit::recording::function::add_assignment): Likewise.
+	(gcc::jit::recording::function::add_assignment_op): Likewise.
+	(gcc::jit::recording::function::add_comment): Likewise.
+	(gcc::jit::recording::function::add_conditional): Likewise.
+	(gcc::jit::recording::function::place_forward_label): Likewise.
+	(gcc::jit::recording::function::add_jump): Likewise.
+	(gcc::jit::recording::function::add_return): Likewise.
+
+	(gcc::jit::recording::function::add_label): Delete method in favor of...
+	(gcc::jit::recording::function::new_block): New method.
+
+	(gcc::jit::recording::function::new_loop): Delete method.
+
+	(gcc::jit::recording::function::validate): New method.
+	(gcc::jit::recording::function::m_activity): Delete field in favor of...
+	(gcc::jit::recording::function::m_blocks): New field.
+
+	(gcc::jit::recording::statement::get_successor_blocks): New method.
+	(gcc::jit::recording::statement::write_to_dump): Make public.
+	(gcc::jit::recording::statement::statement): Accept a block rather
+	than a function.
+	(gcc::jit::recording::statement::playback_function): Delete.
+	(gcc::jit::recording::statement::get_block): New.
+	(gcc::jit::recording::statement::m_func): Delete in favor of...
+	(gcc::jit::recording::statement::m_block): ...this.
+
+	(gcc::jit::recording::eval::eval): Accept a block rather than a
+	function.
+	(gcc::jit::recording::assignment::assignment): Likewise.
+	(gcc::jit::recording::assignment_op::assignment_op): Likewise.
+	(gcc::jit::recording::comment::comment): Likewise.
+	(gcc::jit::recording::return::return): Likewise.
+	(gcc::jit::recording::conditional::conditional): Likewise; accept
+	blocks rather than labels.
+	(gcc::jit::recording::jump::jump): Likewise.
+	(gcc::jit::recording::conditional::get_successor_blocks): New.
+	(gcc::jit::recording::jump::get_successor_blocks): New.
+
+	(gcc::jit::playback::function::new_forward_label): Delete method
+	in favor of...
+	(gcc::jit::playback::function::new_block): New method.
+	(gcc::jit::playback::function::build_stmt_list): New method.
+	(gcc::jit::playback::function::m_blocks): New field.
+
+	* libgccjit++.h (gccjit::label): Delete class in favor of...
+	(gccjit::block): New class.
+	(gccjit::function::new_forward_label): Delete methods in favor of...
+	(gccjit::function::new_block): New methods.
+	(gccjit::function::add_comment): Delete methods in favor of methods
+	of new class gccjit::block.
+	(gccjit::function::add_conditional): Likewise.
+	(gccjit::function::add_label): Likewise.
+	(gccjit::function::place_forward_label): Likewise.
+	(gccjit::function::add_jump): Likewise.
+	(gccjit::function::add_return): Likewise.
+	(gccjit::function::add_call): Likewise.
+
+	* internal-api.c (gcc::jit::recording::playback_label): Delete in
+	favor of...
+	(gcc::jit::recording::playback_block): New.
+	(gcc::jit::recording::context::compile): Validate.
+	(gcc::jit::recording::context::validate): New.
+	(gcc::jit::recording::function::function): Update.
+	(gcc::jit::recording::function::new_forward_label): Delete.
+	(gcc::jit::recording::function::add_eval): Delete.
+	(gcc::jit::recording::function::add_assignment): Delete.
+	(gcc::jit::recording::function::add_assignment_op): Delete.
+	(gcc::jit::recording::function::new_block): New.
+	(gcc::jit::recording::function::add_comment): Delete.
+	(gcc::jit::ecording::function::add_conditional): Delete.
+	(gcc::jit::recording::function::add_label): Delete.
+	(gcc::jit::recording::function::place_forward_label): Delete.
+	(gcc::jit::recording::function::add_jump): Delete.
+	(gcc::jit::recording::function::add_return): Delete.
+	(gcc::jit::recording::function::new_loop): Delete.
+	(gcc::jit::recording::function::write_to_dump): Port to block-based
+	representation.
+	(gcc::jit::recording::function::validate): New.
+	(gcc::jit::recording::block::add_eval): New.
+	(gcc::jit::recording::block::add_assignment): New.
+	(gcc::jit::recording::label::replay_into): Delete.
+	(gcc::jit::recording::block::add_assignment_op): New.
+	(gcc::jit::recording::block::add_comment): New.
+	(gcc::jit::recording::block::end_with_conditional): New.
+	(gcc::jit::recording::block::end_with_jump): New.
+	(gcc::jit::recording::block::end_with_return): New.
+	(gcc::jit::recording::block::write_to_dump): New.
+	(gcc::jit::recording::block::validate): New.
+	(gcc::jit::recording::block::get_last_statement): New.
+	(gcc::jit::recording::block::get_successor_blocks): New.
+	(gcc::jit::recording::block::replay_into): New.
+	(gcc::jit::recording::label::make_debug_string): Delete.
+	(gcc::jit::recording::block::make_debug_string): New.
+	(gcc::jit::recording::statement::get_successor_blocks): New.
+	(gcc::jit::recording::eval::replay_into): Port to block-based
+	representation.
+	(gcc::jit::recording::assignment::replay_into): Likewise.
+	(gcc::jit::recording::assignment_op::replay_into): Likewise.
+	(gcc::jit::recording::comment::replay_into): Likewise.
+	(gcc::jit::recording::conditional::replay_into): Likewise.
+	(gcc::jit::recording::jump::replay_into): Likewise.
+	(gcc::jit::recording::return_::replay_into): Likewise.
+
+	(gcc::jit::recording::conditional::get_successor_blocks): New.
+	(gcc::jit::recording::place_label::place_label): Delete.
+	(gcc::jit::recording::place_label::replay_into): Delete.
+	(gcc::jit::recording::place_label::make_debug_string): Delete.
+	(gcc::jit::recording::place_label::write_to_dump): Delete.
+
+	(gcc::jit::recording::jump::get_successor_blocks): New.
+	(gcc::jit::recording::return_::get_successor_blocks): New.
+
+	(gcc::jit::recording::loop::replay_into): Delete.
+	(gcc::jit::recording::loop::make_debug_string): Delete.
+	(gcc::jit::recording::loop::end): Delete.
+	(gcc::jit::recording::loop_end::replay_into): Delete.
+	(gcc::jit::recording::loop_end::make_debug_string): Delete.
+
+	(gcc::jit::playback::function::new_forward_label): Delete.
+	(gcc::jit::playback::function::new_block): New.
+	(gcc::jit::playback::function::build_stmt_list): New.
+	(gcc::jit::playback::function::add_eval): Replace with...
+	(gcc::jit::playback::block::add_eval): New.
+	(gcc::jit::playback::function::add_assignment): Replace with...
+	(gcc::jit::playback::block::add_assignment): New.
+	(gcc::jit::playback::function::add_comment): Replace with...
+	(gcc::jit::playback::block::add_comment): New, reimplementing,
+	given that we no longer have labels.
+	(gcc::jit::playback::function::add_conditional): Replace with...
+	(gcc::jit::playback::block::add_conditional): New, reworking,
+	given that on_false can no longer be NULL.
+	(gcc::jit::playback::function::add_label): Delete.
+	(gcc::jit::playback::function::place_forward_label): Delete.
+	(gcc::jit::playback::function::add_jump): Replace with...
+	(gcc::jit::playback::block::add_jump): New.
+	(gcc::jit::playback::function::add_return): Replace with...
+	(gcc::jit::playback::block::add_return): New.
+	(gcc::jit::playback::function::new_loop): Delete.
+	(gcc::jit::playback::label::label): Replace with...
+	(gcc::jit::playback::block::block): ...this.
+
+	(gcc::jit::playback::loop::loop): Delete.
+	(gcc::jit::playback::loop::end): Delete.
+
+	(gcc::jit::playback::context::replay): Call each function's
+	build_stmt_list.
+
+	* TODO.rst: Update
+
+2014-02-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_function_add_void_return): New.
+	* libgccjit.map (gcc_jit_function_add_void_return): New.
+	* libgccjit.c (gcc_jit_function_add_void_return): New.
+	* libgccjit++.h (add_return): Add overloaded variant with no
+	rvalue, calling gcc_jit_function_add_void_return.
+
+	* internal-api.c (gcc::jit::recording::function::add_return): Add
+	comment that rvalue could be NULL.
+	(gcc::jit::playback::function::add_return): Support rvalue being
+	NULL.
+
+2014-02-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.h (gcc::jit::playback::function): Add field
+	m_inner_block.
+
+	* internal-api.c (gcc::jit::playback::function::function):
+	Create BLOCK here and link it to the BIND_EXPR.
+	(gcc::jit::playback::function::gt_ggc_mx): Walk m_inner_block.
+	(gcc::jit::playback::function::postprocess): Set up BLOCK_VARS on
+	the block, so that the local variables make it into the debuginfo.
+
+2014-02-24  Philip Herron <redbrain@gcc.gnu.org>
+
+	* Make-lang.in (jit.install-common): Implement.
+
+2014-02-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_context_dump_to_file): New.
+	* libgccjit.map (gcc_jit_context_dump_to_file): New.
+	* libgccjit.c (gcc_jit_context_dump_to_file): New.
+	* libgccjit++.h (gccjit::context::dump_to_file): New.
+
+	* internal-api.h (gcc::jit::dump): New class.
+	(gcc::jit::recording::playback_location): Add a replayer argument,
+	so that playback locations can be created before playback statements.
+	(gcc::jit::recording::location::playback_location): Likewise.
+	(gcc::jit::recording::statement::playback_location): Likewise.
+	(gcc::jit::recording::context::dump_to_file): New.
+	(gcc::jit::recording::context::m_structs): New field, for use by
+	dump_to_file.
+	(gcc::jit::recording::context::m_functions): Likewise.
+	(gcc::jit::recording::memento::write_to_dump): New virtual function.
+	(gcc::jit::recording::field::write_to_dump): New.
+	(gcc::jit::recording::fields::write_to_dump): New.
+	(gcc::jit::recording::function::write_to_dump): New.
+	(gcc::jit::recording::function::m_locals): New field for use by
+	write_to_dump.
+	(gcc::jit::recording::function::m_activity): Likewise.
+	(gcc::jit::recording::local::write_to_dump): New.
+	(gcc::jit::recording::statement::write_to_dump): New.
+	(gcc::jit::recording::place_label::write_to_dump): New.
+
+	* internal-api.c (gcc::jit::dump::dump): New.
+	(gcc::jit::dump::~dump): New.
+	(gcc::jit::dump::write): New.
+	(gcc::jit::dump::make_location): New.
+	(gcc::jit::recording::playback_location): Add a replayer argument,
+	so that playback locations can be created before playback statements.
+
+	(gcc::jit::recording::context::context): Initialize new fields.
+	(gcc::jit::recording::function::function): Likewise.
+
+	(gcc::jit::recording::context::new_struct_type): Add struct to the
+	context's m_structs vector.
+	(gcc::jit::recording::context::new_function): Add function to the
+	context's m_functions vector.
+	(gcc::jit::recording::context::dump_to_file): New.
+	(gcc::jit::recording::memento::write_to_dump): New.
+	(gcc::jit::recording::field::write_to_dump): New.
+	(gcc::jit::recording::fields::write_to_dump): New.
+	(gcc::jit::recording::function::write_to_dump): New.
+	(gcc::jit::recording::local::write_to_dump): New.
+	(gcc::jit::recording::statement::write_to_dump): New.
+	(gcc::jit::recording::place_label::write_to_dump): New.
+
+	(gcc::jit::recording::array_type::replay_into): Pass on replayer
+	to call to playback_location.
+	(gcc::jit::recording::field::replay_into): Likewise.
+	(gcc::jit::recording::struct_::replay_into): Likewise.
+	(gcc::jit::recording::param::replay_into): Likewise.
+	(gcc::jit::recording::function::replay_into): Likewise.
+	(gcc::jit::recording::global::replay_into): Likewise.
+	(gcc::jit::recording::unary_op::replay_into): Likewise.
+	(gcc::jit::recording::binary_op::replay_into): Likewise.
+	(gcc::jit::recording::comparison::replay_into): Likewise.
+	(gcc::jit::recording::call::replay_into): Likewise.
+	(gcc::jit::recording::array_access::replay_into): Likewise.
+	(gcc::jit::recording::access_field_of_lvalue::replay_into): Likewise.
+	(gcc::jit::recording::access_field_rvalue::replay_into): Likewise.
+	(gcc::jit::recording::dereference_field_rvalue::replay_into): Likewise.
+	(gcc::jit::recording::dereference_rvalue::replay_into): Likewise.
+	(gcc::jit::recording::get_address_of_lvalue::replay_into): Likewise.
+	(gcc::jit::recording::local::replay_into): Likewise.
+	(gcc::jit::recording::eval::replay_into): Likewise.
+	(gcc::jit::recording::assignment::replay_into): Likewise.
+	(gcc::jit::recording::assignment_op::replay_into): Likewise.
+	(gcc::jit::recording::comment::replay_into): Likewise.
+	(gcc::jit::recording::conditional::replay_into): Likewise.
+	(gcc::jit::recording::place_label::replay_into): Likewise.
+	(gcc::jit::recording::jump::replay_into): Likewise.
+	(gcc::jit::recording::return_::replay_into): Likewise.
+	(gcc::jit::recording::loop::replay_into): Likewise.
+	(gcc::jit::recording::loop_end::replay_into): Likewise.
+
+	(gcc::jit::recording::function::new_local): Add to the function's
+	vector of locals.
+	(gcc::jit::recording::function::add_eval): Add to the function's
+	m_activity field.
+	(gcc::jit::recording::function::add_assignment): Likewise.
+	(gcc::jit::recording::function::add_assignment_op): Likewise.
+	(gcc::jit::recording::function::add_comment): Likewise.
+	(gcc::jit::recording::function::add_conditional): Likewise.
+	(gcc::jit::recording::function::place_forward_label): Likewise.
+	(gcc::jit::recording::function::add_jump): Likewise.
+	(gcc::jit::recording::function::add_return): Likewise.
+	(gcc::jit::recording::function::new_loop): Likewise.
+
+	(gcc::jit::recording::conditional::make_debug_string): Add missing
+	semicolon.
+
+2014-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c (gcc_jit_context_new_rvalue_from_ptr): Verify that
+	pointer_type is indeed a pointer type.
+	(gcc_jit_context_null): Likewise.
+	(gcc_jit_context_new_array_access): Verify that ptr is indeed a
+	pointer.
+
+	* TODO.rst: Update
+
+2014-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_struct): New.
+	(gcc_jit_context_new_struct_type): Change return type from gcc_jit_type
+	to gcc_jit_struct.
+	(gcc_jit_context_new_opaque_struct): New.
+	(gcc_jit_struct_as_type): New.
+	(gcc_jit_struct_set_fields): New.
+	(gcc_jit_context_null): New.
+
+	* libgccjit.map (gcc_jit_context_new_opaque_struct): New.
+	(gcc_jit_context_null): New.
+	(gcc_jit_struct_as_type): New.
+	(gcc_jit_struct_set_fields): New.
+
+	* libgccjit++.h (gccjit::context::new_struct_type): Return a
+	struct_ rather than a type.
+	(gccjit::context::new_opaque_struct_type): New.
+	(gccjit::struct_): New subclass of type.
+
+	* libgccjit.c (gcc_jit_struct): New.
+	(RETURN_VAL_IF_FAIL_PRINTF1): New.
+	(RETURN_VAL_IF_FAIL_PRINTF2): New.
+	(RETURN_NULL_IF_FAIL_PRINTF1): New.
+	(RETURN_IF_FAIL_PRINTF1): New.
+	(RETURN_IF_FAIL_PRINTF2): New.
+	(gcc_jit_context_new_struct_type): Return a gcc_jit_struct rather
+	than a gcc_jit_type; implement by creating the struct, then
+	setting the fields in it.
+	(gcc_jit_context_new_opaque_struct): New.
+	(gcc_jit_struct_as_type): New.
+	(gcc_jit_struct_set_fields): New.
+	(gcc_jit_context_null): New.
+	(gcc_jit_lvalue_access_field): Use the struct's context when
+	reporting on a NULL field; verify that the field has been placed
+	in a struct.
+	(gcc_jit_rvalue_access_field): Likewise.
+	(is_bool): New.
+	(gcc_jit_function_add_conditional): Use the function's context
+	when reporting errors; verify that boolval's type is indeed
+	boolean.
+	(gcc_jit_function_new_loop): Likewise.
+
+	* internal-api.h (gcc::jit::recording::context::new_struct_type):
+	Don't accept fields, and return a struct_ rather than a type_, so
+	that fields can be set later.
+	(gcc::jit::recording::struct_::struct_): Store a (fields *) rather
+	than a vec of fields.
+	(gcc::jit::recording::struct_::as_type): New.
+	(gcc::jit::recording::struct_::get_fields): New.
+	(gcc::jit::recording::struct_::set_fields): New.
+	(gcc::jit::recording::struct_::playback_struct): New.
+	(gcc::jit::recording::fields): New class.
+	(gcc::jit::playback::context::new_struct_type): Don't accept
+	fields, and return a struct_ rather than a type_, so that fields
+	can be set later.
+	(gcc::jit::playback::struct_): New subclass of type.
+
+	* internal-api.c (gcc::jit::recording::context::get_type): With
+	nested contexts, create basic types within the ultimate parent
+	context, allowing for a fast check for the boolean type using
+	pointer equality.
+	(gcc::jit::recording::context::new_struct_type): Don't accept
+	fields, and return a struct_ rather than a type_, so that fields
+	can be set later.
+	(gcc::jit::recording::context::get_opaque_FILE_type): Update for
+	struct-creation changes.
+	(gcc::jit::recording::struct_::struct_): Store a (fields *) rather
+	than a vec of fields.
+	(gcc::jit::recording::struct_::set_fields): New.
+	(gcc::jit::recording::struct_::replay_into): Don't playback the
+	fields, as this is now done by a fields instance.
+	(gcc::jit::recording::fields::fields): New.
+	(gcc::jit::recording::fields::replay_into): New.
+	(gcc::jit::recording::fields::make_debug_string): New.
+	(gcc::jit:: playback::context::new_struct_type): Don't accept
+	fields, and return a struct_ rather than a type_, so that fields
+	can be set later.
+	(gcc::jit::playback::struct_::set_fields): New.
+
+	* TODO.rst: Update.
+
+2014-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c (gcc_jit_function_new_local): Use the context of the
+	function when reporting errors.
+	(gcc_jit_function_place_forward_label): Likewise.
+	(gcc_jit_function_add_eval): Likewise.
+	(gcc_jit_function_add_assignment_op): Likewise.
+	(gcc_jit_function_add_comment): Likewise.
+	(gcc_jit_function_add_jump): Likewise.
+
+2014-02-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h (gccjit::type::zero): New method.
+	(gccjit::type::one): New method.
+	(gccjit::function::add_call): New family of overloaded methods.
+
+2014-02-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_context_get_builtin_function): New.
+	* libgccjit.map (gcc_jit_context_get_builtin_function): New.
+	* libgccjit++.h (gccjit::context::get_builtin_function): New method.
+
+	* Make-lang.in (jit_OBJS): Add jit/jit-builtins.o
+	* jit-builtins.c: New source file, for managing builtin functions
+	and their types.
+	* jit-builtins.h: Likewise.
+
+	* libgccjit.c (gcc_jit_context_new_function): Pass BUILT_IN_NONE for
+	the new argument of new_function
+	(gcc_jit_context_get_builtin_function): New.
+
+	* internal-api.h: Add idempotency guards.
+	(gcc::jit::recording::context::new_function): Add parameter
+	for builtin functions.
+	(gcc::jit::recording::context::get_builtin_function): New method.
+	(gcc::jit::recording::context::m_builtins_manager): New field.
+	(gcc::jit::recording::type::as_a_function_type): New virtual function.
+	(gcc::jit::recording::function_type): New subclass of type.
+	(gcc::jit::recording::function::function): Add parameter for
+	builtin functions.
+	(gcc::jit::recording::function::m_builtin_id): New field.
+	(gcc::jit::recording::function::new_function_type): New method.
+	(gcc::jit::playback::function::function):  Add parameter for
+	builtin functions.
+	* internal-api.c (gcc::jit::recording::context::context):
+	NULL-initialize new field m_builtins_manager.
+	(gcc::jit::recording::context::~context): Clean up the builtins
+	manager, if one has been created.
+	(gcc::jit::recording::context::new_function): Add parameter
+	(gcc::jit::recording::context::get_builtin_function): New method.
+	(gcc::jit::recording::function_type::function_type): Implement
+	constructor for new subclass.
+	(gcc::jit::recording::function_type::dereference): Implement
+	method for new subclass.
+	(gcc::jit::recording::function_type::replay_into): Likewise.
+	(gcc::jit::recording::function_type::make_debug_string): Likewise.
+	(gcc::jit::recording::function::function): Add parameter for
+	builtin functions.
+	(gcc::jit::recording::function::replay_into): Likewise for
+	creation of playback object.
+	(gcc::jit::recording::function::new_function_type): New method.
+	(gcc::jit::playback::function::new_function):  Add parameter for
+	builtin functions, using it to set up the fndecl accordingly.
+
+2014-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c (IS_ASCII_ALPHA): New macro.
+	(IS_ASCII_DIGIT): New macro.
+	(IS_ASCII_ALNUM): New macro.
+	(gcc_jit_context_new_function): Require that function names be valid
+	C identifiers for now, to avoid later problems in the assembler.
+
+2014-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (enum gcc_jit_types): Add GCC_JIT_TYPE_BOOL.
+
+	* internal-api.h (gcc::jit::recording::comparison::comparison): Use
+	GCC_JIT_TYPE_BOOL as the types of comparisons, rather than
+	GCC_JIT_TYPE_INT.
+
+	* internal-api.c (gcc::jit::recording::memento_of_get_type::
+	dereference): Handle GCC_JIT_TYPE_BOOL (with an error).
+	(get_type_strings): Add GCC_JIT_TYPE_BOOL.
+	(get_tree_node_for_type): Handle GCC_JIT_TYPE_BOOL.
+
+2014-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::recording::context::add_error_va): If
+	GCC_JIT_STR_OPTION_PROGNAME is NULL, use "libgccjit.so", as per
+	the comment in libgccjit.h
+	(gcc::jit::recording::label::replay_into): When reporting on an
+	unplaced label, include the name of the containing function in
+	the error message.
+	* libgccjit.c: Remove comment about "Functions for use within the
+	code factory", as this distinction went away in commit
+	96b218c9a1d5f39fb649e02c0e77586b180e8516.
+	(RETURN_VAL_IF_FAIL_PRINTF4): New.
+	(RETURN_NULL_IF_FAIL_PRINTF4): New.
+	(jit_error): Invoke vfprintf with the correct format string in
+	the NULL context case.
+	(gcc_jit_context_new_call): Check for NULL entries within the
+	array of arguments.
+
+2014-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_context_get_int_type): New.
+	* libgccjit.map (gcc_jit_context_get_int_type): New.
+	* libgccjit.c (gcc_jit_context_get_int_type): New.
+
+	* internal-api.h (gcc::jit::recording::context::get_int_type): New.
+	(gcc::jit::recording::context::get_int_type<T>): New template.
+	* internal-api.c (gcc::jit::recording::context::get_int_type): New.
+
+	* libgccjit++.h: Include <limits> so we can use std::numeric_limits.
+	(gccjit::context::get_int_type): New.
+	(gccjit::context::get_int_type<T>): New.
+
+2014-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_function_get_param): New.
+	* libgccjit.map (gcc_jit_function_get_param): New.
+	* libgccjit.c (gcc_jit_function_get_param): New.
+	* libgccjit++.h (gccjit::function::get_param): New.
+
+2014-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h (gccjit::object::get_inner_object): Make const.
+	(gccjit::location::get_inner_location): Likewise.
+	(gccjit::field::get_inner_field): Likewise.
+	(gccjit::type::get_inner_type): Likewise.
+	(gccjit::function::get_inner_function): Likewise.
+	(gccjit::label::get_inner_label): Likewise.
+	(gccjit::rvalue::get_inner_rvalue): Likewise.
+	(gccjit::lvalue::get_inner_lvalue): Likewise.
+	(gccjit::param::get_inner_param): Likewise.
+
+2014-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h (gccjit::object::get_context): New method.
+	(gccjit::function): Add overloaded operator () for various
+	numbers of arguments as a very terse way of creating function calls.
+	(gccjit::rvalue::get_type): New method.
+
+	(operator-): New overloaded unary op for rvalues.
+	(operator~): Likewise.
+	(operator!): Likewise.
+
+	(operator+): New overloaded binary op for rvalues.
+	(operator-): Likewise.
+	(operator*): Likewise.
+	(operator/): Likewise.
+	(operator%): Likewise.
+	(operator&): Likewise.
+	(operator^): Likewise.
+	(operator|): Likewise.
+	(operator&&): Likewise.
+	(operator||): Likewise.
+
+	(operator==): New overloaded comparison for rvalues.
+	(operator!=): Likewise.
+	(operator<): Likewise.
+	(operator<=): Likewise.
+	(operator>): Likewise.
+	(operator>=): Likewise.
+
+	(operator*): New overloaded operator for dereferencing an
+	rvalue representing a pointer.
+
+	* libgccjit.c (gcc_jit_rvalue_get_type): New.
+	* libgccjit.h (gcc_jit_rvalue_get_type): New.
+	* libgccjit.map (gcc_jit_rvalue_get_type): New.
+
+2014-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h (gccjit::context::new_minus): New method,
+	providing a way to do a specific unary op with less typing.
+	(gccjit::context::new_bitwise_negate): Likewise.
+	(gccjit::context::new_logical_negate): Likewise.
+
+	(gccjit::context::new_plus): Likewise, for binary op.
+	(gccjit::context::new_minus): Likewise.
+	(gccjit::context::new_mult): Likewise.
+	(gccjit::context::new_divide): Likewise.
+	(gccjit::context::new_modulo): Likewise.
+	(gccjit::context::new_bitwise_and): Likewise.
+	(gccjit::context::new_bitwise_xor): Likewise.
+	(gccjit::context::new_bitwise_or): Likewise.
+	(gccjit::context::new_logical_and): Likewise.
+	(gccjit::context::new_logical_or): Likewise.
+
+	(gccjit::context::new_eq): Likewise, for comparison.
+	(gccjit::context::new_ne): Likewise.
+	(gccjit::context::new_lt): Likewise.
+	(gccjit::context::new_le): Likewise.
+	(gccjit::context::gccjit::context::new_gt): Likewise.
+	(gccjit::context::gccjit::context::new_ge): Likewise.
+
+	(gccjit::context::new_call): Add a series of overloaded methods
+	for specific numbers of args (from 0 - 6), to avoid the need for
+	client code to manually build a std::vector (or requiring C++11).
+
+2014-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h (gccjit::context::new_struct_type): Pass std::vector
+	"fields" argument by reference rather than by value.
+	(gccjit::context::new_function): Likewise, for "params" arg.
+	(gccjit::context::new_call): Likewise, for "args" arg.
+
+2014-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h (gccjit::context::new_location): Update filename
+	arg from a const char * to a const std::string &.
+	(gccjit::context::new_field): Likewise for "name" arg.
+	(gccjit::context::new_struct_type): Likewise.
+	(gccjit::context::new_param): Likewise.
+	(gccjit::context::new_function): Likewise.
+	(gccjit::function::new_local): Likewise.
+	(gccjit::context::new_rvalue): Likewise for "value" arg.
+	(gccjit::function::add_comment): Likewise for "text" arg.
+	(gccjit::function::new_forward_label): Likewise for "name" arg; add
+	variant taking no args for anonymous labels.
+	(gccjit::function::add_label): Likewise.
+
+2014-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h (gccjit::object, gccjit::location): Move
+	these declarations to before that of gccjit::context so that
+	the various methods of context taking a location can have a
+	default location value.
+	(gccjit::context::new_array_type): Consolidate two methods,
+	one accepting a gccjit::location, the other without, by
+	providing a default argument (which thus has to be moved to the
+	end of the argument list).
+	(gccjit::context::new_field): Likewise.
+	(gccjit::context::new_struct_type): Likewise.
+	(gccjit::context::new_param): Likewise.
+	(gccjit::context::new_function): Likewise.
+	(gccjit::context::new_unary_op): Likewise.
+	(gccjit::context::new_binary_op): Likewise.
+	(gccjit::context::new_comparison): Likewise.
+	(gccjit::context::new_call): Likewise.
+	(gccjit::context::new_array_access): Likewise.
+	(gccjit::function::new_local): Likewise.
+	(gccjit::function::add_eval): Likewise.
+	(gccjit::function::add_assignment): Likewise.
+	(gccjit::function::add_assignment_op): Likewise.
+	(gccjit::function::add_comment): Likewise.
+	(gccjit::function::add_conditional): Likewise.
+	(gccjit::function::add_label): Likewise.
+	(gccjit::function::place_forward_label): Likewise.
+	(gccjit::function::add_jump): Likewise.
+	(gccjit::function::add_return): Likewise.
+	(gccjit::rvalue::access_field): Likewise.
+	(gccjit::rvalue::dereference_field): Likewise.
+	(gccjit::rvalue::dereference): Likewise.
+	(gccjit::lvalue::access_field): Likewise.
+	(gccjit::lvalue::get_address): Likewise.
+
+2014-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst: Update.
+
+2014-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h: Include <ostream> rather than <iostream>, since
+	the former gets us std::ostream, and the latter may introduce
+	startup-time overhead for constructing std::cout et al.
+	(gccjit::context::new_child_context): New.
+	(gccjit::context::release): New.
+	(gccjit::context::compile): New.
+	(gccjit::context::set_int_option): New.
+	(gccjit::context::set_bool_option): New.
+
+2014-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (struct gcc_jit_object): New.
+	(gcc_jit_object_get_context): New.
+	(gcc_jit_object_get_debug_string): New.
+	(gcc_jit_location_as_object): New.
+	(gcc_jit_type_as_object): New.
+	(gcc_jit_field_as_object): New.
+	(gcc_jit_param_as_object): New.
+	(gcc_jit_function_as_object): New.
+	(gcc_jit_label_as_object): New.
+	(gcc_jit_lvalue_as_object): New.
+	(gcc_jit_rvalue_as_object): New.
+	(gcc_jit_loop_as_object): New.
+
+	* libgccjit.map (gcc_jit_field_as_object): New.
+	(gcc_jit_function_as_object): New.
+	(gcc_jit_label_as_object): New.
+	(gcc_jit_location_as_object): New.
+	(gcc_jit_loop_as_object): New.
+	(gcc_jit_lvalue_as_object): New.
+	(gcc_jit_object_get_context): New.
+	(gcc_jit_object_get_debug_string): New.
+	(gcc_jit_param_as_object): New.
+	(gcc_jit_rvalue_as_object): New.
+	(gcc_jit_type_as_object): New.
+
+	* libgccjit.c (struct gcc_jit_object): New.
+	(gcc_jit_location_as_object): New.
+	(gcc_jit_type_as_object): New.
+	(gcc_jit_field_as_object): New.
+	(gcc_jit_param_as_object): New.
+	(gcc_jit_function_as_object): New.
+	(gcc_jit_label_as_object): New.
+	(gcc_jit_lvalue_as_object): New.
+	(gcc_jit_rvalue_as_object): New.
+	(gcc_jit_object_get_context): New.
+	(gcc_jit_object_get_debug_string): New.
+	(gcc_jit_loop_as_object): New.
+	* internal-api.h (gcc::jit::recording::memento::get_context): New.
+	(gcc::jit::recording::memento::as_object): New.
+
+	* libgccjit++.h: Require iostream, for std::ostream.
+	(class object): New base class.
+	(operator << (std::ostream& stream, const object &obj)): New.
+	(location): Inherit from the new "object" base class.
+	(location::m_inner_loc): Remove, in favor of...
+	(location::get_inner_location): ...new method.
+	(field): Inherit from the new "object" base class.
+	(field::m_inner_field): Remove, in favor of...
+	(field::get_inner_field): ...new method.
+	(type): Inherit from the new "object" base class.
+	(type::m_inner_type): Remove, in favor of...
+	(type::get_inner_type): ...new method.
+	(function): Inherit from the new "object" base class.
+	(function::m_inner_func): Remove, in favor of...
+	(function::get_inner_function): ...new method.
+	(label): Inherit from the new "object" base class.
+	(label::m_inner_label): Remove, in favor of...
+	(label::get_inner_label): ...new method.
+	(rvalue) Inherit from the new "object" base class.
+	(rvalue::m_inner_rvalue): Remove, in favor of...
+	(rvalue::get_inner_rvalue): ...new method.
+
+	(context::new_field): Update for move of inner pointer to the
+	"object" base class.
+	(context::new_struct_type): Likewise.
+	(context::new_param): Likewise.
+	(context::new_function): Likewise.
+	(context::new_rvalue): Likewise.
+	(context::zero): Likewise.
+	(context::one): Likewise.
+	(context::new_rvalue): Likewise.
+	(context::new_rvalue): Likewise.
+	(context::new_unary_op): Likewise.
+	(context::new_binary_op): Likewise.
+	(context::new_comparison): Likewise.
+	(context::new_call): Likewise.
+
+	(object::get_debug_string): New.
+	(object::object): New.
+	(object::get_inner_object): New.
+	(operator << (std::ostream&, const object &)): New.
+
+	(location::location): Update for move of inner pointer to the
+	"object" base class.
+	(location::get_inner_location): New.
+
+	(field::field): Update for move of inner pointer to the
+	"object" base class.
+	(field::get_inner_field): New.
+
+	(type::type): Update for move of inner pointer to the
+	"object" base class.
+	(type::get_pointer): Likewise.
+	(type::get_inner_type): New.
+
+	(function::function): Update for move of inner pointer to the
+	"object" base class.
+	(function::new_forward_label): Likewise.
+	(function::new_local): Likewise.
+	(function::add_eval): Likewise.
+	(function::add_assignment): Likewise.
+	(function::add_assignment_op): Likewise.
+	(function::add_comment): Likewise.
+	(function::add_conditional): Likewise.
+	(function::add_label): Likewise.
+	(function::place_forward_label): Likewise.
+	(function::add_jump): Likewise.
+	(function::add_return): Likewise.
+	(function::get_inner_function): New.
+
+	(label::label): Update for move of inner pointer to the "object"
+	base class.
+	(label::get_inner_label): New
+
+	(rvalue::rvalue): Update for move of inner pointer to the "object"
+	base class.
+	(rvalue::get_inner_rvalue): New.
+	(rvalue::access_field): Likewise.
+	(rvalue::dereference_field): Likewise.
+	(rvalue::dereference): Likewise.
+
+	(lvalue::get_inner_lvalue): Update for move of inner pointer to
+	the "object" base class.
+	(lvalue::access_field): Likewise.
+	(lvalue::get_address): Likewise.
+
+2014-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h: New file - a C++ wrapper for the libgccjit.h API.
+
+	* TODO.rst ("Test Suite"): New section, adding note about C++
+	tests.
+
+2014-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_context_new_rvalue_from_int): Give the type
+	parameter a more descriptive name.
+	(gcc_jit_context_zero): Likewise.
+	(gcc_jit_context_one): Likewise.
+	(gcc_jit_context_new_rvalue_from_double): Likewise.
+	(gcc_jit_context_new_rvalue_from_ptr): Likewise.
+
+	* libgccjit.c (gcc_jit_context_new_rvalue_from_int): Likewise.
+	(gcc_jit_context_zero): Likewise.
+	(gcc_jit_context_one): Likewise.
+	(gcc_jit_context_new_rvalue_from_double): Likewise.
+	(gcc_jit_context_new_rvalue_from_ptr): Likewise.
+
+	* internal-api.h (gcc::jit::recording::context::
+	new_rvalue_from_int): Likewise.
+	(gcc::jit::recording::context::
+	new_rvalue_from_double): Likewise.
+	(gcc::jit::recording::memento_of_new_rvalue_from_int::
+	memento_of_new_rvalue_from_int): Likewise.
+	(gcc::jit::recording::memento_of_new_rvalue_from_double::
+	memento_of_new_rvalue_from_double): Likewise.
+	(gcc::jit::recording::memento_of_new_rvalue_from_ptr::
+	memento_of_new_rvalue_from_ptr): Likewise.
+
+2014-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst: Label-placement is now checked.
+
+	* internal-api.c (gcc::jit::recording::context::replay_into): Give
+	up if any errors occur during the playback.
+	(gcc::jit::recording::label::replay_into): Issue an error if the
+	label has not yet been placed (at playback time).
+	(gcc::jit::recording::place_label::place_label): Move this here
+	from internal-api.h.  Issue an error if the label has already
+	been placed (at recording time).
+
+	* internal-api.h (gcc::jit::recording::label): Add an
+	m_has_been_placed field, and make class place_label a friend so
+	it can set it.
+	(gcc::jit::recording::label::has_been_placed): New accessor.
+	(gcc::jit::recording::place_label::place_label): Move to
+	internal-api.c.
+
+	(gcc::jit::playback::context::errors_occurred): Make public, for
+	use by gcc::jit::recording::context::replay_into.
+
+2014-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::recording::type::get_pointer):
+	Ensure that repeated calls yield the same type.
+	(gcc::jit::recording::memento_of_get_pointer::
+	accepts_writes_from): New.
+	(gcc::jit::recording::context::new_call): Move
+	the existing argument checking to...
+
+	* libgccjit.c (gcc_jit_context_new_call): ...here, and add
+	checking of the types of the arguments against the function.
+	(RETURN_VAL_IF_FAIL_PRINTF6): New.
+	(RETURN_NULL_IF_FAIL_PRINTF6): New.
+
+	* internal-api.h (gcc::jit::recording::type): New field
+	m_pointer_to_this_type, for use by get_pointer method.
+	(gcc::jit::recording::memento_of_get_pointer::
+	accepts_writes_from): New.
+	(gcc::jit::recording::function::get_param): New.
+
+	* TODO.rst (argument checking of gcc_jit_context_new_call): Done.
+
+2014-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst: begin a list of error-checking we could do that this
+	commit *doesn't* cover.
+
+	* libgccjit.h (gcc_jit_field): Add note that fields can't be
+	shared between structs.
+	(GCC_JIT_BINARY_OP_MODULO): Fix typo in comment.
+
+	* libgccjit.c: (RETURN_VAL_IF_FAIL_PRINTF2): New.
+	(RETURN_VAL_IF_FAIL_PRINTF3): New.
+	(RETURN_NULL_IF_FAIL_PRINTF2): New.
+	(RETURN_NULL_IF_FAIL_PRINTF3): New.
+	(RETURN_IF_FAIL_PRINTF4): New.
+
+	(jit_error): Take a gcc::jit::recording::context rather than
+	a gcc_jit_context so that we pass in contexts from the inner
+	layer.
+
+	(compatible_types): New, for use in type-checking.
+
+	(gcc_jit_context_new_struct_type): Check each field to ensure that
+	it isn't already in use by another struct.
+
+	(gcc_jit_rvalue_dereference_field): Check that ptr is of a pointer
+	type and that the field is within the correct struct, using new
+	get_debug_string hooks to generate error messages.
+
+	(gcc_jit_rvalue_dereference): Check that rvalue is of a pointer
+	type.
+
+	(gcc_jit_function_add_assignment): Use the function's context when
+	reporting on NULL lvalue or rvalue.  Verify that the lvalue and
+	rvalue have compatible types.
+
+	(gcc_jit_function_add_return): Use the function's context when
+	reporting on NULL rvalue.  Verify that the rvalue is of an
+	appropriate type given the function's return type.
+
+	* internal-api.h (NUM_GCC_JIT_TYPES): New.
+	(gcc::jit::recording::context::record): Move from here to
+	internal-api.c.
+	(gcc::jit::recording::context::get_opaque_FILE_type): New.
+	(gcc::jit::recording::context::m_basic_types): New field.
+	(gcc::jit::recording::context::m_FILE_type): New field.
+
+	(gcc::jit::recording::memento::get_debug_string): New method.
+	(gcc::jit::recording::memento::memento): Initialize new field
+	m_debug_string, and verify context is non-NULL.
+	(gcc::jit::recording::memento::make_debug_string): New
+	pure-virtual function lazily used by get_debug_string.
+	(gcc::jit::recording::memento::m_debug_string): New field, for
+	get_debug_string to use as a cache.
+
+	(gcc::jit::recording::string): Rename field m_copy to m_buffer.
+	(gcc::jit::recording::from_printf): New factory function.
+	(gcc::jit::recording::make_debug_string): New.
+
+	(gcc::jit::recording::location::make_debug_string): New.
+
+	(gcc::jit::recording::type::dereference): New pure-virtual
+	function.
+	(gcc::jit::recording::type::accepts_writes_from): New virtual
+	function.
+	(gcc::jit::recording::type::unqualified): New virtual function.
+
+	(gcc::jit::recording::memento_of_get_type::dereference): New.
+	(gcc::jit::recording::memento_of_get_type::
+	accepts_writes_from): New.
+	(gcc::jit::recording::memento_of_get_type::make_debug_string):
+	New.
+
+	(gcc::jit::recording::memento_of_get_pointer::make_debug_string):
+	New.
+	(gcc::jit::recording::memento_of_get_pointer::dereference): New.
+	New.
+
+	(gcc::jit::recording::memento_of_get_const::make_debug_string):
+	New.
+	(gcc::jit::recording::memento_of_get_const::dereference): New.
+	New.
+	(gcc::jit::recording::memento_of_get_const::accepts_writes_from):
+	New.
+	(gcc::jit::recording::memento_of_get_const::unqualified): New.
+
+	(gcc::jit::recording::field): New field m_container, for the
+	containing struct (or union, if we implement that).
+	(gcc::jit::recording::field::get_type): New.
+	(gcc::jit::recording::field::get_container): New.
+	(gcc::jit::recording::field:set_container): New.
+	(gcc::jit::recording::field::make_debug_string): New.
+
+	(gcc::jit::recording::struct_::struct_): Move ctor implementation
+	from here into internal-api.c.
+	(gcc::jit::recording::struct_::dereference): New.
+	(gcc::jit::recording::struct_::make_debug_string): New.
+
+	(gcc::jit::recording::rvalue::m_type): New field.
+	(gcc::jit::recording::rvalue::rvalue): Require a non-NULL type for
+	new rvalue instances.
+	(gcc::jit::recording::rvalue::get_type): New accessor.
+
+	(gcc::jit::recording::lvalue): Eliminate field m_type in favor of
+	that within the rvalue base class.
+
+	(gcc::jit::recording::param::make_debug_string): New.
+
+	(gcc::jit::recording::function::get_return_type): New accessor.
+	(gcc::jit::recording::function::make_debug_string): New.
+
+	(gcc::jit::recording::label::make_debug_string): New.
+
+	(gcc::jit::recording::global): Eliminate field m_type in favor of
+	that within the rvalue ultimate base class (via lvalue).
+	(gcc::jit::recording::make_debug_string): New.
+
+	(gcc::jit::recording::memento_of_new_rvalue_from_int): Eliminate
+	field m_type in favor of that within the rvalue base class.
+	(gcc::jit::recording::memento_of_new_rvalue_from_int::
+	make_debug_string): New.
+
+	(gcc::jit::recording::memento_of_new_rvalue_from_double): Eliminate
+	field m_type in favor of that within the rvalue base class.
+	(gcc::jit::recording::memento_of_new_rvalue_from_double::
+	make_debug_string): New.
+
+	(gcc::jit::recording::memento_of_new_rvalue_from_ptr): Eliminate
+	field m_type in favor of that within the rvalue base class.
+	(gcc::jit::recording::memento_of_new_rvalue_from_ptr::
+	make_debug_string): New.
+
+	(gcc::jit::recording::memento_of_new_string_literal::
+	memento_of_new_string_literal): Initialize type.
+	(gcc::jit::recording::memento_of_new_string_literal::
+	make_debug_string): New.
+
+	(gcc::jit::recording::unary_op): Eliminate field m_result_type in
+	favor of m_type within the rvalue base class.
+	(gcc::jit::recording::unary_op::make_debug_string): New.
+
+	(gcc::jit::recording::binary_op): Eliminate field m_result_type in
+	favor of m_type within the rvalue base class.
+	(gcc::jit::recording::binary_op::make_debug_string): New.
+
+	(gcc::jit::recording::comparison): Eliminate field m_result_type
+	in favor of m_type within the rvalue base class.
+	(gcc::jit::recording::comparison::make_debug_string): New.
+
+	(gcc::jit::recording::make_debug_string): New.
+
+	(gcc::jit::recording::array_lookup::array_lookup): Initialize type
+	by dereferencing the type of the pointer.
+	(gcc::jit::recording::array_lookup::make_debug_string): New.
+
+	(gcc::jit::recording::access_field_of_lvalue::
+	access_field_of_lvalue): Initialize type from that of the field.
+	(gcc::jit::recording::access_field_of_lvalue::
+	make_debug_string): New.
+
+	(gcc::jit::recording::access_field_rvalue::
+	access_field_of_rvalue): Initialize type from that of the field.
+	(gcc::jit::recording::access_field_rvalue::make_debug_string):
+	New.
+
+	(gcc::jit::recording::dereference_field_rvalue::
+	dereference_field_rvalue): Initialize type from that of the field.
+	(gcc::jit::recording::dereference_field_rvalue::
+	make_debug_string): New.
+
+	(gcc::jit::recording::dereference_rvalue::dereference_rvalue):
+	Initialize type by dereferencing the type of the pointer.
+	(gcc::jit::recording::dereference_rvalue::make_debug_string): New.
+
+	(gcc::jit::recording::get_address_of_lvalue::
+	get_address_of_lvalue):  Initialize type by dereferencing the type
+	of the pointer.
+	(gcc::jit::recording::get_address_of_lvalue::make_debug_string):
+	New.
+
+	(gcc::jit::recording::local): Eliminate field m_type in favor of
+	that within the rvalue ultimate base class (via lvalue).
+	(gcc::jit::recording::make_debug_string): New.
+
+	(gcc::jit::recording::eval::make_debug_string): New.
+	(gcc::jit::recording::assignment::make_debug_string): New.
+	(gcc::jit::recording::assignment_op::make_debug_string): New.
+	(gcc::jit::recording::comment::make_debug_string): New.
+	(gcc::jit::recording::conditional::make_debug_string): New.
+	(gcc::jit::recording::place_label::make_debug_string): New.
+	(gcc::jit::recording::jump::make_debug_string): New.
+	(gcc::jit::recording::return_::make_debug_string): New.
+	(gcc::jit::recording::loop::make_debug_string): New.
+	(gcc::jit::recording::loop_end::make_debug_string): New.
+
+	* internal-api.c (gcc::jit::recording::context::context):
+	Initialize m_FILE_type and m_basic_types.
+	(gcc::jit::recording::context::record): Move here from
+	internal-api.h.
+	(gcc::jit::recording::context::replay_into): Add a disabled way to
+	log everything during a replay, exercising the stringification
+	machinery.
+	(gcc::jit::recording::context::get_type): Cache and reuse the
+	types, so that repeated calls on the context give the same object.
+	(gcc::jit::recording::context::get_opaque_FILE_type): New, for
+	the result of dereferencing (FILE*), mostly so that fuzz-testing
+	that tries this gets something sane back.
+	(gcc::jit::recording::memento::get_debug_string): New method,
+	giving a way to easily get a descriptive (const char *) for
+	an API entity.  Internally, it lazily calls the make_debug_string
+	virtual function, storing the result in m_debug_string.
+
+	(gcc::jit::recording::string::string): Rename field m_copy to m_buffer.
+	(gcc::jit::recording::string::~string): Likewise.
+	(gcc::jit::recording::string::from_printf): New factory function,
+	to make it easy to implement the make_debug_string hooks.
+
+	(gcc::jit::recording::string::make_debug_string): New.
+
+	(gcc::jit::recording::location::make_debug_string): New.
+
+	(gcc::jit::recording::memento_of_get_type::dereference): New.
+
+	(get_type_strings): New table of strings, for use by...
+	(gcc::jit::recording::memento_of_get_type::make_debug_string): New.
+
+	(gcc::jit::recording::memento_of_get_pointer::make_debug_string): New.
+
+	(gcc::jit::recording::memento_of_get_const::make_debug_string): New.
+
+	(gcc::jit::recording::field::make_debug_string): New.
+
+	(gcc::jit::recording::struct_::struct_): Move here from
+	internal-api.h.  Mark all fields as belonging to the new struct.
+
+	(gcc::jit::recording::struct_::dereference): New.
+	(gcc::jit::recording::struct_::make_debug_string): New.
+
+	(gcc::jit::recording::function::make_debug_string): New.
+
+	(gcc::jit::recording::label::make_debug_string): New.
+
+	(gcc::jit::recording::memento_of_new_rvalue_from_int::
+	make_debug_string): New.
+	(gcc::jit::recording::memento_of_new_rvalue_from_double::
+	make_debug_string): New.
+	(gcc::jit::recording::memento_of_new_rvalue_from_ptr::
+	make_debug_string): New.
+	(gcc::jit::recording::memento_of_new_string_literal::
+	make_debug_string): New.
+
+	(gcc::jit::recording::unary_op::replay_into): Use get_type ()
+	rather than the now-defunct m_result_type.
+	(gcc::jit::recording::binary_op::replay_into): Likewise.
+
+	(unary_op_strings): New table of strings for use by...
+	(gcc::jit::recording::unary_op::make_debug_string): New.
+
+	(binary_op_strings): New table of strings for use by...
+	(gcc::jit::recording::binary_op::make_debug_string): New.
+
+	(comparison_strings): New table of strings for use by...
+	(gcc::jit::recording::comparison::make_debug_string): New.
+
+	(gcc::jit::recording::call::call): Initialize the type.
+	(gcc::jit::recording::call::make_debug_string): New.
+
+	(gcc::jit::recording::array_lookup::make_debug_string): New.
+	(gcc::jit::recording::access_field_of_lvalue::
+	make_debug_string): New.
+	(gcc::jit::recording::access_field_rvalue::
+	make_debug_string): New.
+	(gcc::jit::recording::dereference_field_rvalue::
+	make_debug_string): New.
+	(gcc::jit::recording::dereference_rvalue::make_debug_string): New.
+	(gcc::jit::recording::get_address_of_lvalue::
+	make_debug_string): New.
+	(gcc::jit::recording::eval::make_debug_string): New.
+	(gcc::jit::recording::assignment::make_debug_string): New.
+	(gcc::jit::recording::assignment_op::make_debug_string): New.
+	(gcc::jit::recording::comment::make_debug_string): New.
+	(gcc::jit::recording::conditional::make_debug_string): New.
+	(gcc::jit::recording::place_label::make_debug_string): New.
+	(gcc::jit::recording::jump::make_debug_string): New.
+	(gcc::jit::recording::return_::make_debug_string): New.
+	(gcc::jit::recording::loop::make_debug_string): New.
+	(gcc::jit::recording::loop_end::make_debug_string): New.
+
+2014-01-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_lvalue_access_field): Require
+	a (gcc_jit_field *) rather than a field name.
+	(gcc_jit_rvalue_access_field): Likewise.
+	(gcc_jit_rvalue_dereference_field): Likewise.
+
+	* libgccjit.c (gcc_jit_lvalue_access_field): Require
+	a (gcc_jit_field *) rather than a field name.
+	(gcc_jit_rvalue_access_field): Likewise.
+	(gcc_jit_rvalue_dereference_field): Likewise.
+
+	* internal-api.c (gcc::jit::recording::rvalue::access_field):
+	Require a field rather than a fieldname string.
+	(gcc::jit::recording::rvalue::dereference_field): Likewise.
+	(gcc::jit::recording::lvalue::access_field): Likewise.
+
+	(gcc::jit::recording::access_field_of_lvalue::replay_into): Update
+	given that this now has a field, rather than a fieldname.
+	(gcc::jit::recording::access_field_rvalue::replay_into): Likewise.
+	(gcc::jit::recording::dereference_field_rvalue::replay_into): Likewise.
+
+	(get_field): Delete, as we no longer need to convert
+	from (struct, identifier) pairs to fields, instead directly using
+	fields.
+
+	(gcc::jit::playback::context::new_field_access): Require a field
+	rather than a fieldname, removing the need to look up the field by
+	name within the struct.
+
+	(gcc::jit::playback::lvalue::access_field): Likewise.
+	(gcc::jit::playback::rvalue::access_field): Likewise.
+	(gcc::jit::playback::rvalue::dereference_field): Likewise.
+
+	* internal-api.h (gcc::jit::recording::rvalue::access_field):
+	Require a field rather than a fieldname string.
+	(gcc::jit::recording::rvalue::dereference_field): Likewise.
+	(gcc::jit::recording::lvalue::access_field): Likewise.
+
+	(gcc::jit::recording::access_field_of_lvalue::access_field_of_lvalue):
+	Likewise.
+	(gcc::jit::recording::access_field_of_lvalue::m_fieldname): Drop
+	string field in favor of...
+	(gcc::jit::recording::access_field_of_lvalue::m_field):
+	..."field" field, as it were.
+
+	(gcc::jit::recording::access_field_of_rvalue::access_field_of_rvalue):
+	Likewise.
+	(gcc::jit::recording::access_field_of_rvalue::m_fieldname): Drop
+	string field in favor of...
+	(gcc::jit::recording::access_field_of_rvalue::m_field):
+	..."field" field.
+
+	(gcc::jit::recording::dereference_field_rvalue::
+	dereference_field_rvalue): Likewise.
+	(gcc::jit::recording::dereference_field_rvalue::m_fieldname): Drop
+	string field in favor of...
+	(gcc::jit::recording::dereference_field_rvalue::m_field):
+	..."field" field.
+
+	(gcc::jit::playback::context::new_field_access): Require a field
+	rather than a fieldname string.
+	(gcc::jit::playback::context::access_field): Likewise.
+	(gcc::jit::playback::context::dereference_field): Likewise.
+	(gcc::jit::playback::rvalue::access_field):
+
+2014-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_context_new_child_context): New function.
+
+	* libgccjit.map (gcc_jit_context_new_child_context): New function.
+
+	* libgccjit.c (gcc_jit_context): Make the constructor explicit,
+	with a parent context as a parameter.
+	(gcc_jit_context_acquire): Create context with a NULL parent.
+	(gcc_jit_context_new_child_context): New function, creating a
+	context with the given parent.
+
+	* internal-api.h (gcc::jit::recording::context::context): New
+	explicit constructor, taking a parent context as a parameter.
+	(gcc::jit::recording::context::m_parent_ctxt): New field.
+
+	* internal-api.c (gcc::jit::recording::context::context): New
+	explicit constructor, taking a parent context as a parameter.
+	(gcc::jit::recording::context::replay_into): Replay parent contexts
+	before replaying the context itself.
+
+2014-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::playback::context::compile): Removal
+	of the code-creation callback (96b218c9a1d5f39fb649e02c0e77586b180e8516)
+	accidentally removed the implementation of
+	GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE; reinstate it.
+
+2014-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api (gcc::jit::recording::context::new_call): Verify
+	the argument count of the call against the parameter count of the
+	function, issuing an error if there's a mismatch.
+
+	* internal-api.h (gcc::jit::recording::function::get_name): New.
+	* (gcc::jit::recording::function::get_params): New.
+	* (gcc::jit::recording::function::is_variadic): New.
+
+2014-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (enum gcc_jit_binary_op): Remove
+	GCC_JIT_BINARY_OP_FLOATING_DIVIDE, which I accidentally added
+	as part of a880c0d9c642730550f39d328f29a1d9935cb07e.
+
+2014-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h: Update comments to eliminate the code-creation
+	callback.  All "contextual" objects change from merely being
+	"alive" during the callback to having a lifetime equal to that
+	of the context they are created within, with automatic cleanup
+	when the context is released.
+	(gcc_jit_code_callback): Delete.
+	(gcc_jit_context_set_code_factory): Delete.
+
+	* libgccjit.map (gcc_jit_context_set_code_factory): Delete.
+
+	* dummy-frontend.c (my_walker): Update for rename of the singleton
+	reference-owning context.
+	(jit_langhook_parse_file): Rather than run a client-provided
+	callback, we now replay a recording of the client activity.
+
+	* internal-api.h (gcc::jit): Split the existing API into two
+	copies...
+	(gcc::jit::recording): ...a class hierarchy used to implement
+	the client-facing API, which records the API calls made to it
+	and...
+	(gcc::jit::playback): ...a class hierarchy used within the
+	dummy GCC frontend, which plays back the recorded API calls once
+	GCC is initialized.
+
+	* internal-api.c (gcc::jit::recording::playback_location): New
+	API, in which client API calls are recorded as a list of "memento"
+	objects, to be played back into GCC when the dummy frontend runs.
+	(gcc::jit::recording::playback_string): Likewise.
+	(gcc::jit::recording::playback_label): Likewise.
+	(gcc::jit::recording::context::~context): Likewise.
+	(gcc::jit::recording::context::replay_into): Likewise.
+	(gcc::jit::recording::context::disassociate_from_playback): Likewise.
+	(gcc::jit::recording::context::new_string): Likewise.
+	(gcc::jit::recording::context::new_location): Likewise.
+	(gcc::jit::recording::context::get_type): Likewise.
+	(gcc::jit::recording::context::new_field): Likewise.
+	(gcc::jit::recording::context::new_struct_type): Likewise.
+	(gcc::jit::recording::context::new_param): Likewise.
+	(gcc::jit::recording::context::new_function): Likewise.
+	(gcc::jit::recording::context::new_global): Likewise.
+	(gcc::jit::recording::context::new_rvalue_from_int): Likewise.
+	(gcc::jit::recording::context::new_rvalue_from_double): Likewise.
+	(gcc::jit::recording::context::new_rvalue_from_ptr): Likewise.
+	(gcc::jit::recording::context::new_string_literal): Likewise.
+	(gcc::jit::recording::context::new_unary_op): Likewise.
+	(gcc::jit::recording::context::new_binary_op): Likewise.
+	(gcc::jit::recording::context::new_comparison): Likewise.
+	(gcc::jit::recording::context::new_call): Likewise.
+	(gcc::jit::recording::context::new_array_lookup): Likewise.
+	(gcc::jit::recording::string::string): Likewise.
+	(gcc::jit::recording::string::~string): Likewise.
+	(gcc::jit::recording::location::replay_into): Likewise.
+	(gcc::jit::recording::type::get_pointer): Likewise.
+	(gcc::jit::recording::type::get_const): Likewise.
+	(gcc::jit::recording::memento_of_get_type::replay_into): Likewise.
+	(gcc::jit::recording::memento_of_get_pointer::replay_into): Likewise.
+	(gcc::jit::recording::memento_of_get_const::replay_into): Likewise.
+	(gcc::jit::recording::field::replay_into): Likewise.
+	(gcc::jit::recording::struct_::replay_into): Likewise.
+	(gcc::jit::recording::rvalue::access_field): Likewise.
+	(gcc::jit::recording::rvalue::dereference_field): Likewise.
+	(gcc::jit::recording::rvalue::dereference): Likewise.
+	(gcc::jit::recording::lvalue::access_field): Likewise.
+	(gcc::jit::recording::lvalue::get_address): Likewise.
+	(gcc::jit::recording::param::replay_into): Likewise.
+	(gcc::jit::recording::function::function): Likewise.
+	(gcc::jit::recording::function::replay_into): Likewise.
+	(gcc::jit::recording::function::new_local): Likewise.
+	(gcc::jit::recording::function::new_forward_label): Likewise.
+	(gcc::jit::recording::function::add_eval): Likewise.
+	(gcc::jit::recording::function::add_assignment): Likewise.
+	(gcc::jit::recording::function::add_assignment_op): Likewise.
+	(gcc::jit::recording::function::add_comment): Likewise.
+	(gcc::jit::recording::function::add_conditional): Likewise.
+	(gcc::jit::recording::function::add_label): Likewise.
+	(gcc::jit::recording::function::place_forward_label): Likewise.
+	(gcc::jit::recording::function::add_jump): Likewise.
+	(gcc::jit::recording::function::add_return): Likewise.
+	(gcc::jit::recording::function::new_loop): Likewise.
+	(gcc::jit::recording::label::replay_into): Likewise.
+	(gcc::jit::recording::global::replay_into): Likewise.
+	(gcc::jit::recording::memento_of_new_rvalue_from_int::replay_into):
+	Likewise.
+	(gcc::jit::recording::memento_of_new_rvalue_from_double::replay_into):
+	Likewise.
+	(gcc::jit::recording::memento_of_new_rvalue_from_ptr::replay_into):
+	Likewise.
+	(gcc::jit::recording::memento_of_new_string_literal::replay_into):
+	Likewise.
+	(gcc::jit::recording::unary_op::replay_into): Likewise.
+	(gcc::jit::recording::binary_op::replay_into): Likewise.
+	(gcc::jit::recording::comparison::replay_into): Likewise.
+	(gcc::jit::recording::call::call): Likewise.
+	(gcc::jit::recording::call::replay_into): Likewise.
+	(gcc::jit::recording::array_lookup::replay_into): Likewise.
+	(gcc::jit::recording::access_field_of_lvalue::replay_into): Likewise.
+	(gcc::jit::recording::access_field_rvalue::replay_into): Likewise.
+	(gcc::jit::recording::dereference_field_rvalue::replay_into): Likewise.
+	(gcc::jit::recording::dereference_rvalue::replay_into): Likewise.
+	(gcc::jit::recording::get_address_of_lvalue::replay_into): Likewise.
+	(gcc::jit::recording::local::replay_into): Likewise.
+	(gcc::jit::recording::eval::replay_into): Likewise.
+	(gcc::jit::recording::assignment::replay_into): Likewise.
+	(gcc::jit::recording::assignment_op::replay_into): Likewise.
+	(gcc::jit::recording::comment::replay_into): Likewise.
+	(gcc::jit::recording::conditional::replay_into): Likewise.
+	(gcc::jit::recording::place_label::replay_into): Likewise.
+	(gcc::jit::recording::jump::replay_into): Likewise.
+	(gcc::jit::recording::return_::replay_into): Likewise.
+	(gcc::jit::recording::loop::replay_into): Likewise.
+	(gcc::jit::recording::loop::end): Likewise.
+	(gcc::jit::recording::loop_end::replay_into): Likewise.
+
+	(gcc::jit::recording::context::set_str_option): Likewise.
+	Option setting and error-handling is now "owned" by the recording
+	context; the playback context delegates to the recording context
+	for these aspects.
+	(gcc::jit::recording::context::set_int_option): Likewise.
+	(gcc::jit::recording::context::set_bool_option): Likewise.
+	(gcc::jit::recording::context::compile): Likewise.
+	(gcc::jit::recording::context::add_error): Likewise.
+	(gcc::jit::recording::context::add_error_va): Likewise.
+	(gcc::jit::recording::context::get_first_error): Likewise.
+
+	(gcc::jit::context::context): Rename to...
+	(gcc::jit::playback::context::context): ...this.
+	(gcc::jit::context::~context): Rename to...
+	(gcc::jit::playback::context::~context): ...this.
+	(gcc::jit::context::gt_ggc_mx): Rename to...
+	(gcc::jit::playback::context::gt_ggc_mx): ...this.
+
+	(gcc::jit::context::set_code_factory): Eliminate.
+
+	(gcc::jit::context::get_type): Rename to...
+	(gcc::jit::playback::context::get_type): ...this.
+	(gcc::jit::context::new_field): Rename to...
+	(gcc::jit::playback::context::new_field): ...this.
+	(gcc::jit::context::new_struct_type): Rename to...
+	(gcc::jit::playback::context::new_struct_type): ...this, and
+	update to require a vec<field *>.
+	(gcc::jit::context::new_param): Rename to...
+	(gcc::jit::playback::context::new_param): ...this.
+	(gcc::jit::context::new_function): Rename to...
+	(gcc::jit::playback::context::new_function): ...this, and update
+	to require a vec<param *>.
+	(gcc::jit::context::new_global): Rename to...
+	(gcc::jit::playback::context::new_global): ...this.
+	(gcc::jit::context::new_rvalue_from_int): Rename to...
+	(gcc::jit::playback::context::new_rvalue_from_int): ...this.
+	(gcc::jit::context::new_rvalue_from_double): Rename to...
+	(gcc::jit::playback::context::new_rvalue_from_double): ...this.
+	(gcc::jit::context::new_rvalue_from_ptr): Rename to...
+	(gcc::jit::playback::context::new_rvalue_from_ptr): ...this.
+	(gcc::jit::context::new_string_literal): Rename to...
+	(gcc::jit::playback::context::new_string_literal): ...this.
+	(gcc::jit::context::as_truth_value): Rename to...
+	(gcc::jit::playback::context::as_truth_value): ...this.
+	(gcc::jit::context::new_unary_op): Rename to...
+	(gcc::jit::playback::context::new_unary_op): ...this.
+	(gcc::jit::context::new_binary_op): Rename to...
+	(gcc::jit::playback::context::new_binary_op): ...this.
+	(gcc::jit::context::new_comparison): Rename to...
+	(gcc::jit::playback::context::new_comparison): ...this.
+	(gcc::jit::context::new_call): Rename to...
+	(gcc::jit::playback::context::new_call): ...this, and update
+	to require a vec<rvalue *>.
+	(gcc::jit::context::new_array_lookup): Rename to...
+	(gcc::jit::playback::context::new_array_lookup): ...this.
+	(gcc::jit::context::new_field_access): Rename to...
+	(gcc::jit::playback::context::new_field_access): ...this.
+	(gcc::jit::context::new_dereference): Rename to...
+	(gcc::jit::playback::context::new_dereference): ...this.
+
+	(gcc::jit::lvalue::access_field): Rename to...
+	(gcc::jit::playback::lvalue::access_field): ...this.
+	(gcc::jit::lvalue::get_address): Rename to...
+	(gcc::jit::playback::lvalue::get_address): ...this.
+
+	(gcc::jit::rvalue::dereference_field): Rename to...
+	(gcc::jit::playback::rvalue::dereference_field): ...this.
+
+	(gcc::jit::rvalue::dereference): Rename to...
+	(gcc::jit::playback::rvalue::dereference): ...this.
+
+	(gcc::jit::wrapper::operator new): Rename to...
+	(gcc::jit::playback::wrapper::operator new): ...this.
+
+	(gcc::jit::function::function): Rename to...
+	(gcc::jit::playback::function::function): ...this.
+	(gcc::jit::function::gt_ggc_mx): Rename to...
+	(gcc::jit::playback::function::gt_ggc_mx): ...this.
+	(gcc::jit::function::get_return_type_as_tree): Rename to...
+	(gcc::jit::playback::function::get_return_type_as_tree): ...this.
+	(gcc::jit::function::new_local): Rename to...
+	(gcc::jit::playback::function::new_local): ...this.
+	(gcc::jit::function::new_forward_label): Rename to...
+	(gcc::jit::playback::function::new_forward_label): ...this.
+	(gcc::jit::function::postprocess): Rename to...
+	(gcc::jit::playback::function::postprocess): ...this.
+	(gcc::jit::function::add_eval): Rename to...
+	(gcc::jit::playback::function::add_eval): ...this.
+	(gcc::jit::function::add_assignment): Rename to...
+	(gcc::jit::playback::function::add_assignment): ...this.
+	(gcc::jit::function::add_comment): Rename to...
+	(gcc::jit::playback::function::add_comment): ...this.
+	(gcc::jit::function::add_conditional): Rename to...
+	(gcc::jit::playback::function::add_conditional): ...this.
+	(gcc::jit::function::add_label): Rename to...
+	(gcc::jit::playback::function::add_label): ...this.
+	(gcc::jit::function::place_forward_label): Rename to...
+	(gcc::jit::playback::function::place_forward_label): ...this.
+	(gcc::jit::function::add_jump): Rename to...
+	(gcc::jit::playback::function::add_jump): ...this.
+	(gcc::jit::function::add_return): Rename to...
+	(gcc::jit::playback::function::add_return): ...this.
+	(gcc::jit::function::new_loop): Rename to...
+	(gcc::jit::playback::function::new_loop): ...this.
+
+	(gcc::jit::label::label): Rename to...
+	(gcc::jit::playback::label::label): ...this.
+
+	(gcc::jit::loop::loop): Rename to...
+	(gc::jit::playback::loop::loop): ...this.
+	(gcc::jit::loop::end): Rename to...
+	(gcc::jit::playback::loop): ...this.
+
+	(gcc::jit::active_jit_ctxt): Eliminate in favor of...
+	(gcc::jit::active_playback_ctxt): ...this.
+
+	(gcc::jit::context::compile): Rename to...
+	(gcc::jit::playback::context::compile): ...this, and eliminate the
+	mutex handling; this is done for us by the caller.
+
+	(gcc::jit::context::invoke_code_factory): Rename to...
+	(gcc::jit::playback::context::replay): this.  Rather than call
+	a client-provided callback, instead replay the recorded API
+	calls.
+
+	(gcc::jit::context::dump_generated_code): Rename to...
+	(gcc::jit::playback::context::dump_generated_code): ...this.
+
+	(location_comparator): Update for renamed types.
+
+	(gcc::jit::context::handle_locations): Rename to...
+	(gcc::jit::playback::context::handle_locations): ...this.
+
+	(gcc::jit::context::add_error): Rename to...
+	(gcc::jit::playback::context::add_error): this, and delegate to
+	the recording context's add_error_va.
+
+	(gcc::jit::context::add_error_va): Rename to...
+	(gcc::jit::playback::context::add_error_va): this, and delegate
+	to the recording context.
+
+	(gcc::jit::context::new_location): Rename to...
+	(gcc::jit::playback::context::new_location): ...this.
+	(gcc::jit::context::set_tree_location): Rename to...
+	(gcc::jit::playback::context::set_tree_location): ...this.
+	(gcc::jit::context::get_source_file): Rename to...
+	(gcc::jit::playback::context::get_source_file): ...this.
+	(gcc::jit::source_file::source_file): Rename to...
+	(gcc::jit::playback::source_file::source_file): ...this.
+	(gcc::jit::source_file::get_source_line): Rename to...
+	(gcc::jit::playback::source_file::get_source_line): ...this.
+	(gcc::jit::source_line::source_line): Rename to...
+	(gcc::jit::playback::source_line::source_line): ...this.
+	(gcc::jit::source_line::get_location): Rename to...
+	(gcc::jit::playback::source_line::get_location): ...this.
+
+	(gcc::jit::location::location): Rename to...
+	(gcc::jit::playback::location::location): ...this.
+
+	* libgccjit.c: Update classes to derive from the "jit::recording"
+	class hierarchy.
+	(RETURN_IF_NOT_INITIAL_CTXT): Eliminate, as it relates to
+	code-creation callbacks.
+	(RETURN_NULL_IF_NOT_INITIAL_CTXT): Likewise.
+	(RETURN_NULL_IF_NOT_CALLBACK_CTXT): Likewise.
+	(jit_error): There isn't an "active jit context" anymore, except
+	during actual compilation, so simplify the logic here.
+	(gcc_jit_context_set_code_factory): Delete.
+
+	(gcc_jit_context_new_location): Update preconditions now that we
+	don't have code-creation callbacks.
+	(gcc_jit_context_get_type): Likewise.
+	(gcc_jit_type_get_pointer): Likewise.
+	(gcc_jit_type_get_const): Likewise.
+	(gcc_jit_context_new_field): Likewise.
+	(gcc_jit_context_new_struct_type): Likewise.
+	(gcc_jit_context_new_param): Likewise.
+	(gcc_jit_param_as_lvalue): Likewise.
+	(gcc_jit_param_as_rvalue): Likewise.
+	(gcc_jit_context_new_function): Likewise.
+	(gcc_jit_context_new_function): Likewise.
+	(gcc_jit_function_new_forward_label): Likewise.
+	(gcc_jit_context_new_global): Likewise.
+	(gcc_jit_lvalue_as_rvalue): Likewise.
+	(gcc_jit_context_new_rvalue_from_int): Likewise.
+	(gcc_jit_context_zero): Likewise.
+	(gcc_jit_context_one): Likewise.
+	(gcc_jit_context_new_rvalue_from_double): Likewise.
+	(gcc_jit_context_new_rvalue_from_ptr): Likewise.
+	(gcc_jit_context_new_string_literal): Likewise.
+	(gcc_jit_context_new_unary_op): Likewise.
+	(gcc_jit_context_new_binary_op): Likewise.
+	(gcc_jit_context_new_comparison): Likewise.
+	(gcc_jit_context_new_call): Likewise.
+	(gcc_jit_context_new_call): Likewise.
+	(gcc_jit_context_new_array_lookup): Likewise.
+	(gcc_jit_context_set_str_option): Likewise.
+	(gcc_jit_context_set_int_option): Likewise.
+	(gcc_jit_context_set_bool_option): Likewise.
+	(gcc_jit_context_compile): Likewise.
+	(gcc_jit_function_add_assignment_op): Likewise.  Also,
+	reimplement as a separate kind of recording, since we can't know
+	the type of the lvalue at recording-time.
+
+	* notes.txt: Update diagram to reflect the new implementation.
+
+2014-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (enum gcc_jit_binary_op): We will use the result
+	type to determine if GCC_JIT_BINARY_OP_DIVIDE should
+	truncate towards zero, or be floating-point division.
+
+	* internal-api.c (gcc::jit::context::new_binary_op): Likewise.
+
+2014-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.h (gcc::jit::context::get_str_option): New access
+	method.
+	(gcc::jit::context::get_int_option): Likewise.
+
+	* internal-api.c (gcc::jit::context::~context): Use access methods
+	for options, rather than direct field access.
+	(gcc::jit::context::compile): Likewise.
+
+2014-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (enum gcc_jit_bool_option): New value:
+	GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE.
+
+	* internal-api.c (gcc::jit::context::compile): Call
+	dump_generated_code if the user has requested it.
+	(gcc::jit::context::dump_generated_code): New, copying
+	from the .s file to stderr.
+
+	* internal-api.h (gcc::jit::context::dump_generated_code): New.
+
+2014-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.h (gcc::jit::function): Add field
+	"m_inner_bind_expr".
+	* internal-api.c (gcc::jit::function::function): Create a BIND_EXPR
+	for all non-imported functions, and put the statement list within
+	it.
+	(gcc::jit::function::gt_ggc_mx): Visit m_inner_bind_expr.
+	(gcc::jit::function::new_local): Set the DECL_CONTEXT of the new
+	local to be the function's BIND_EXPR, and prepend the new local
+	to said BIND_EXPR's BIND_EXPR_VARS chain.
+	(gcc::jit::function::postprocess): Set the DECL_SAVED_TREE of the
+	FUNCTION_DECL to be the BIND_EXPR, rather than the statement list.
+	The latter is now contained within the former.
+
+2014-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.h (gcc::jit::function::add_stmt): New.
+
+	* internal-api.c (gcc::jit::function::add_eval): Replace use of
+	tsi_link_stmt with call to add_stmt.
+	(gcc::jit::function::add_assignment): Likewise.
+	(gcc::jit::function::add_conditional): Likewise.
+	(gcc::jit::function::place_forward_label): Likewise.
+	(gcc::jit::function::add_jump): Likewise.
+	(gcc::jit::function::add_return): Likewise.
+
+2014-01-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::function::add_comment): New.
+	* internal-api.h (gcc::jit::function::add_comment): New.
+	* libgccjit.c (gcc_jit_function_add_comment): New.
+	* libgccjit.h (gcc_jit_function_add_comment): New.
+	* libgccjit.map: Add gcc_jit_function_add_comment.
+
+2013-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::function::add_eval): Handle non-NULL
+	locations.
+	(gcc::jit::context::handle_locations): Fix test for the various
+	kinds of declarations, replacing use of DECL_MINIMAL_CHECK,
+	which aborts on failure (such as if we saw a type).
+	* libgccjit.h (GCC_JIT_BOOL_OPTION_DEBUGINFO): Fix out-of-date
+	comment.
+
+2013-10-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c: Update for rename of tree-flow.h to tree-cfg.h
+	in r203320, for declaration of dump_function_to_file.
+	* TODO.rst ("segfault seen in libbacktrace"): Remove - this was
+	fixed by Ian in r203810.
+
+2013-10-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c: Add missing include of diagnostic-core.h
+
+2013-10-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::context::add_error_va): Record the
+	first error that occurs on a context.
+	(gcc::jit::context::get_first_error): New.
+	* internal-api.h (gcc::jit::context::get_first_error): New.
+	(gcc::jit::context::m_first_error_str): New.
+	* libgccjit.c (gcc_jit_context_get_first_error): New.
+	* libgccjit.h (gcc_jit_context_get_first_error): New.
+	* libgccjit.map (gcc_jit_context_get_first_error): New.
+
+2013-10-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::context::compile): Correctly cleanup
+	timevars in error-handling, preventing an issue where an error
+	on a context left timevar.c in an unstopped state, leading to an
+	assertion failure when restarting timevars in the next compile.
+	Found via fuzz-testing.
+
+2013-10-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::context::postprocess): Show source
+	line numbers (if any) in gimple dump.
+
+2013-10-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c (gcc_jit_function_new_local): Use a more clear
+	error message for the case where someone tries to add a local
+	to a function imported from elsewhere.
+
+2013-10-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst ("the C unary prefix "&" operator"): Remove completed item.
+	* internal-api.c (gcc::jit::lvalue::get_address): New.
+	* internal-api.h (gcc::jit::lvalue::get_address): New.
+	* libgccjit.c (gcc_jit_lvalue_get_address): New.
+	* libgccjit.h (gcc_jit_lvalue_get_address): New.
+	* libgccjit.map (gcc_jit_lvalue_get_address): New.
+
+2013-10-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::context::new_param): Add context
+	argument to ctor for rvalue and its subclasses.
+	(gcc::jit::context::new_global): Likewise.
+	(gcc::jit::context::new_rvalue_from_int): Likewise.
+	(gcc::jit::context::new_rvalue_from_double): Likewise.
+	(gcc::jit::context::new_rvalue_from_ptr): Likewise.
+	(gcc::jit::context::new_string_literal): Likewise.
+	(gcc::jit::context::new_call): Likewise.
+	(gcc::jit::context::new_array_lookup): Likewise.
+	(gcc::jit::function::new_local): Likewise.
+	(gcc::jit::context::new_binary_op): Likewise; add new
+	operations.
+	(gcc::jit::context::new_comparison): Likewise; add new
+	comparisons.
+	(gcc::jit::context::as_truth_value): New.
+	(gcc::jit::context::new_unary_op): New.
+	(gcc::jit::context::new_field_access): Convert to a helper
+	method for use by the access_fields methods.
+	(gcc::jit::context::new_dereference): New.
+	(gcc::jit::lvalue::access_field): New.
+	(gcc::jit::rvalue::access_field): New.
+	(gcc::jit::rvalue::dereference_field): New.
+	(gcc::jit::rvalue::dereference): New.
+	* internal-api.h (gcc::jit::context::new_unary_op): New.
+	(gcc::jit::context::new_field_access): Work
+	(gcc::jit::context::new_dereference): New.
+	(gcc::jit::context::as_truth_value): New.
+	(gcc::jit::rvalue): Add a context field.
+	(gcc::jit::rvalue::access_field): New.
+	(gcc::jit::rvalue::dereference_field): New.
+	(gcc::jit::rvalue::dereference): New.
+	(gcc::jit::lvalue::lvalue): Add context to ctor.
+	(gcc::jit::lvalue::access_field): New.
+	(gcc::jit::param::param): Add context to ctor.
+	* libgccjit.c (gcc_jit_context_new_unary_op): New.
+	(gcc_jit_context_new_field_access): Remove.
+	(gcc_jit_lvalue_access_field): New.
+	(gcc_jit_rvalue_access_field): New.
+	(gcc_jit_rvalue_dereference_field): New.
+	(gcc_jit_rvalue_dereference): New.
+	*libgccjit.h (enum gcc_jit_unary_op): New.
+	(gcc_jit_context_new_unary_op): New.
+	(enum gcc_jit_binary_op): Document values, and add...
+	(GCC_JIT_BINARY_OP_DIVIDE): New.
+	(GCC_JIT_BINARY_OP_MODULO): New.
+	(GCC_JIT_BINARY_OP_BITWISE_AND): New.
+	(GCC_JIT_BINARY_OP_BITWISE_XOR): New.
+	(GCC_JIT_BINARY_OP_BITWISE_OR): New.
+	(GCC_JIT_BINARY_OP_LOGICAL_AND): New.
+	(GCC_JIT_BINARY_OP_LOGICAL_OR): New.
+	(enum gcc_jit_comparison): Document values, and add...
+	(GCC_JIT_COMPARISON_EQ): New.
+	(GCC_JIT_COMPARISON_NE): New.
+	(GCC_JIT_COMPARISON_LE): New.
+	(GCC_JIT_COMPARISON_GT): New.
+	(GCC_JIT_COMPARISON_GE): New.
+	(gcc_jit_context_new_field_access): Remove.
+	(gcc_jit_lvalue_access_field): New.
+	(gcc_jit_rvalue_access_field): New.
+	(gcc_jit_rvalue_dereference_field): New.
+	(gcc_jit_rvalue_dereference): New.
+	* libgccjit.map (gcc_jit_context_new_field_access): Remove.
+	(gcc_jit_lvalue_access_field): New.
+	(gcc_jit_rvalue_access_field): New.
+	(gcc_jit_rvalue_dereference_field): New.
+	(gcc_jit_rvalue_dereference): New.
+	* TODO.rst: Update
+
+2013-10-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::context::get_type): Improve error
+	message, and report the bogus value.
+	(gcc::jit::context::new_binary_op): Likewise.
+	(gcc::jit::context::new_comparison): Likewise.
+	(gcc::jit::context::set_str_option): Likewise.
+	(gcc::jit::context::set_int_option): Likewise.
+	(gcc::jit::context::set_bool_option): Likewise.
+	(gcc::jit::context::compile): Likewise, and make the errors
+	block the creation of result, rather than just the return
+	value of the client callback.
+	(gcc::jit::context::add_error): Add varargs and provide
+	implementation, calling into...
+	(gcc::jit::context::add_error_va): New.
+	* internal-api.h (GNU_PRINTF): New.
+	(gcc::jit::context::add_error): Add varargs and GNU_PRINTF
+	attribute macro.
+	(gcc::jit::context::add_error_va): New.
+	(gcc::jit::context::errors_occurred): New.
+	(gcc::jit::context::m_error_count): New.
+	(gcc::jit::function::get_kind): New.
+	* libgccjit.c (JIT_BEGIN_STMT): New.
+	(JIT_END_STMT): New.
+	(RETURN_VAL_IF_FAIL): New.
+	(RETURN_NULL_IF_FAIL): New.
+	(RETURN_IF_FAIL): New.
+	(RETURN_IF_NOT_INITIAL_CTXT): New.
+	(RETURN_NULL_IF_NOT_INITIAL_CTXT): New.
+	(RETURN_NULL_IF_NOT_CALLBACK_CTXT): New.
+	(RETURN_IF_NOT_FUNC_DEFINITION): New.
+	(RETURN_NULL_IF_NOT_FUNC_DEFINITION): New.
+	(jit_error): New.
+	(gcc_jit_context_set_code_factory): Use new error-checking
+	macros.
+	(ASSERT_WITHIN_CALLBACK): Remove.
+	(ASSERT_NOT_WITHIN_CALLBACK): Remove.
+	(gcc_jit_context_new_location): Use new error-checking macros.
+	(gcc_jit_context_get_type): Likewise.
+	(gcc_jit_type_get_pointer): Likewise.
+	(gcc_jit_type_get_const): Likewise.
+	(gcc_jit_context_new_field): Likewise.
+	(gcc_jit_context_new_struct_type): Likewise.
+	(gcc_jit_context_new_param): Likewise.
+	(gcc_jit_param_as_lvalue): Likewise.
+	(gcc_jit_param_as_rvalue): Likewise.
+	(gcc_jit_context_new_function): Likewise.
+	(gcc_jit_function_new_forward_label): Likewise.
+	(gcc_jit_context_new_global): Likewise.
+	(gcc_jit_lvalue_as_rvalue): Likewise.
+	(gcc_jit_context_new_rvalue_from_int): Likewise.
+	(gcc_jit_context_zero): Likewise.
+	(gcc_jit_context_one): Likewise.
+	(gcc_jit_context_new_rvalue_from_double): Likewise.
+	(gcc_jit_context_new_rvalue_from_ptr): Likewise.
+	(gcc_jit_context_new_string_literal): Likewise.
+	(gcc_jit_context_new_binary_op): Likewise.
+	(gcc_jit_context_new_comparison): Likewise.
+	(gcc_jit_context_new_call): Likewise.
+	(gcc_jit_context_new_array_lookup): Likewise.
+	(gcc_jit_context_new_field_access): Likewise.
+	(gcc_jit_function_new_local): Likewise.
+	(gcc_jit_function_add_label): Likewise.
+	(gcc_jit_function_place_forward_label): Likewise.
+	(gcc_jit_function_add_eval): Likewise.
+	(gcc_jit_function_add_assignment): Likewise.
+	(gcc_jit_function_add_assignment_op): Likewise.
+	(gcc_jit_function_add_conditional): Likewise.
+	(gcc_jit_function_add_jump): Likewise.
+	(gcc_jit_function_add_return): Likewise.
+	(gcc_jit_function_new_loop): Likewise.
+	(gcc_jit_loop_end): Likewise.
+	(gcc_jit_context_set_str_option): Likewise.
+	(gcc_jit_context_set_int_option): Likewise.
+	(gcc_jit_context_set_bool_option): Likewise.
+	(gcc_jit_context_compile): Likewise.
+	(gcc_jit_result_get_code): Likewise.
+	(gcc_jit_result_release): Likewise.
+	* libgccjit.h (gcc_jit_function_new_forward_label): Clarify
+	behavior.
+	(gcc_jit_function_add_label): Likewise.
+
+2013-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::context::get_void_type): Remove.
+	(gcc::jit::context::get_char_type): Remove.
+	(gcc::jit::context::get_int_type): Remove.
+	(gcc::jit::context::get_float_type): Remove.
+	(gcc::jit::context::get_double_type): Remove.
+	(get_tree_node_for_type): New.
+	(gcc::jit::context::get_type): New.
+	(gcc::jit::context::new_rvalue_from_double): New.
+	(gcc::jit::context::new_rvalue_from_ptr): New.
+	* internal-api.h (gcc::jit::context::get_void_type): Remove.
+	(gcc::jit::context::get_char_type): Remove.
+	(gcc::jit::context::get_int_type): Remove.
+	(gcc::jit::context::get_float_type): Remove.
+	(gcc::jit::context::get_double_type): Remove.
+	(gcc::jit::context::get_type): New.
+	(gcc::jit::context::new_rvalue_from_double): New.
+	(gcc::jit::context::new_rvalue_from_ptr): New.
+	* libgccjit.c (gcc_jit_context_get_void_type): Remove.
+	(gcc_jit_context_get_char_type): Remove.
+	(gcc_jit_context_get_int_type): Remove.
+	(gcc_jit_context_get_float_type): Remove.
+	(gcc_jit_context_get_double_type): Remove.
+	(gcc_jit_context_get_type): New.
+	(gcc_jit_context_new_rvalue_from_double): New.
+	(gcc_jit_context_new_rvalue_from_ptr): New.
+	* libgccjit.h (gcc_jit_context_get_void_type): Remove.
+	(gcc_jit_context_get_char_type): Remove.
+	(gcc_jit_context_get_int_type): Remove.
+	(gcc_jit_context_get_float_type): Remove.
+	(gcc_jit_context_get_double_type): Remove.
+	(enum gcc_jit_types): New.
+	(gcc_jit_context_get_type): New.
+	(gcc_jit_context_new_rvalue_from_double): New.
+	(gcc_jit_context_new_rvalue_from_ptr): New.
+	* libgccjit.map (gcc_jit_context_get_void_type): Remove.
+	(gcc_jit_context_get_char_type): Remove.
+	(gcc_jit_context_get_int_type): Remove.
+	(gcc_jit_context_get_float_type): Remove.
+	(gcc_jit_context_get_double_type): Remove.
+	(enum gcc_jit_types): New.
+	(gcc_jit_context_get_type): New.
+	(gcc_jit_context_new_rvalue_from_double): New.
+	(gcc_jit_context_new_rvalue_from_ptr): New.
+	* TODO.rst ("access to more primitive types"): Remove
+	completed item.
+
+2013-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h: Add and reword comments throughout.
+
+2013-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst: Update.
+
+2013-10-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst (gcc_jit_context_new_local): Remove completed item.
+	* internal-api.c (gcc::jit::context::new_local): Replace with...
+	(gcc::jit::function::new_local): ...this, and change return type
+	from (local*) to (lvalue*).
+	* internal-api.h (gcc::jit::local): Eliminate.
+	(gcc::jit::context::new_local): Replace with...
+	(gcc::jit::function::new_local): ...this, and change return type
+	from (local*) to (lvalue*).
+	* libgccjit.c (gcc_jit_local): Eliminate.
+	(gcc_jit_context_new_local): Replace with...
+	(gcc_jit_function_new_local): ...this, and change return type
+	from (gcc_jit_local*) to (gcc_jit_lvalue*).
+	(gcc_jit_local_as_lvalue): Remove.
+	(gcc_jit_local_as_rvalue): Remove.
+	* libgccjit.h (gcc_jit_local): Remove.
+	(gcc_jit_context_new_local): Replace with...
+	(gcc_jit_function_new_local): ...this, and change return type
+	from (gcc_jit_local*) to (gcc_jit_lvalue*).
+	(gcc_jit_local_as_lvalue): Remove.
+	(gcc_jit_local_as_rvalue): Remove.
+	* libgccjit.map (gcc_jit_context_new_local): Replace with...
+	(gcc_jit_function_new_local): ...this.
+	(gcc_jit_local_as_lvalue): Remove.
+	(gcc_jit_local_as_rvalue): Remove.
+
+2013-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (gcc_jit_location): Rewrite comment to reflect
+	that this part of the API is now implemented.
+	("Functions for use within the code factory."): Add notes on
+	memory-management and lifetimes.
+	* notes.txt: Update diagram to show handle_locations.
+
+2013-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* TODO.rst: Update.
+
+2013-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.map: Alphabetize the exported symbols.
+
+2013-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::context::new_field): Implement
+	location support, by calling set_tree_location.
+	(gcc::jit::context::new_struct_type): Likewise.
+	(gcc::jit::context::new_param): Likewise.
+	(gcc::jit::context::new_function): Likewise.
+	(gcc::jit::context::new_global): Likewise.
+	(gcc::jit::context::new_local): Likewise.
+	(gcc::jit::context::new_binary_op): Likewise.
+	(gcc::jit::context::new_comparison): Likewise.
+	(gcc::jit::context::new_call): Likewise.
+	(gcc::jit::context::new_array_lookup): Likewise.
+	(gcc::jit::context::new_field_access): Likewise.
+	(gcc::jit::context::add_assignment): Likewise.
+	(gcc::jit::context::add_conditional): Likewise.
+	(gcc::jit::function::add_label): Likewise.
+	(gcc::jit::function::add_jump): Likewise.
+	(gcc::jit::function::add_return): Likewise.
+	(gcc::jit::function::place_forward_label): Likewise, adding
+	location parameter.
+	(gcc::jit::loop::loop): Add loc arg to place_forward_label.
+	(gcc::jit::loop::end): Likewise.
+	(gcc::jit::context::invoke_code_factory): Call handle_locations
+	after the client callback is done, before any GC can run.
+	(line_comparator): New.
+	(location_comparator): New.
+	(gcc::jit::context::handle_locations): New.
+	(gcc::jit::context::new_location): New.
+	(gcc::jit::context::set_tree_location): New.
+	(gcc::jit::context::get_source_file): New.
+	(gcc::jit::source_file::source_file): New.
+	(gcc::jit::source_file::get_source_line): New.
+	(gcc::jit::source_line::source_line): New.
+	(gcc::jit::source_line::get_location): New.
+	(gcc::jit::location::location): New.
+	* internal-api.h (gcc::jit::context::new_location): New.
+	(gcc::jit::context::set_tree_location): New.
+	(gcc::jit::context::handle_locations): New.
+	(gcc::jit::context::get_source_file): New.
+	(gcc::jit::context::m_source_files): New field.
+	(gcc::jit::context::m_cached_locations: New field.
+	(gcc::jit::function::place_forward_label): Add location
+	parameter.
+	(gcc::jit::function::set_tree_location): New.
+	(gcc::jit::source_file): New class.
+	(gcc::jit::source_line): New class.
+	(gcc::jit::location): New class.
+	* libgccjit.c (gcc_jit_context_new_location): New.
+	(gcc_jit_function_place_forward_label): Add location parameter,
+	changing public API.
+	* libgccjit.h (gcc_jit_context_new_location): New.
+	(gcc_jit_function_place_forward_label): Add location parameter,
+	changing public API.
+	* libgccjit.map (gcc_jit_context_new_location): New.
+	(main): Remove obsolete export.
+	(called_function): Likewise.
+
+2013-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c: Update includes to reflect move of decl of
+	dump_function_to_file from tree-dump.h to tree-flow.h in
+	r203320.
+
+2013-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (GCC_JIT_BOOL_OPTION_DUMP_SUMMARY): New.
+	* internal-api.c ((gcc::jit::context::compile): Implement
+	GCC_JIT_BOOL_OPTION_DUMP_SUMMARY.
+
+2013-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (GCC_JIT_BOOL_OPTION_SELFCHECK_GC): Improve
+	documentation.
+	(GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE): Likewise.
+
+2013-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h: Clarify the separation of the API into "outside
+	the callback" and "within the callback" entrypoints, moving the
+	latter to the bottom of the header.
+
+2013-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h: Add comments throughout.
+
+2013-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::context::~context): Fix indentation;
+	clean up memory allocations when using
+	GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES.
+
+2013-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (enum gcc_jit_bool_option): Add
+	GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING.
+	* internal-api.c (gcc::jit::context::compile): Implement
+	GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING.
+
+2013-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h (enum gcc_jit_bool_option): Add
+	GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES.
+	* internal-api.c (gcc::jit::context::~context): Implement
+	GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES.
+
+2013-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::context::compile): Use mkdtemp to
+	create a temporary directory and create the .s and .so files
+	there, rather than writing to "fake.s" and then reading it to
+	make "fake.so", then using it, fixing various possible race
+	attacks by processes that can write to the process' current
+	working directory.
+	(gcc::jit::context::~context): Clean up tempfiles and path
+	buffers.
+	* internal-api.h (gcc::jit::context): Add fields
+	m_path_template, m_path_tempdir, m_path_c_file, m_path_s_file,
+	m_path_so_file.
+
+2013-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::context::new_function): Fix leak of
+	arg_types.
+
+2013-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::context::~context): New.
+	* internal-api.h (gcc::jit::context::~context): New.
+
+2013-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::context::compile): Implement
+	GCC_JIT_BOOL_OPTION_SELFCHECK_GC.
+
+	* libgccjit.h (enum gcc_jit_bool_option): Add
+	GCC_JIT_BOOL_OPTION_SELFCHECK_GC.
+
+2013-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in: Rename JIT_OBJS to jit_OBJS.  Delete manual
+	dependencies.
+
+2013-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::context::new_global): New.
+	* internal-api.h (gcc::jit::context::new_global): New.
+	* libgccjit.c (gcc_jit_context_new_global) New.
+	* libgccjit.h (gcc_jit_context_new_global) New.
+	* libgccjit.map: Add gcc_jit_context_new_global.
+
+2013-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c (gcc_jit_param_as_lvalue): New.
+	* libgccjit.h (gcc_jit_param_as_lvalue): New.
+	* libgccjit.map: Add gcc_jit_param_as_lvalue.
+
+2013-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* internal-api.c (gcc::jit::function::postprocess): Dump gimple
+	using dump_function_to_file rather than debug_gimple_seq so that
+	we also get the declaration.
+
+2013-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in: New.
+	* TODO.rst: New.
+	* config-lang.in: New.
+	* dummy-frontend.c: New.
+	* internal-api.c: New.
+	* internal-api.h: New.
+	* libgccjit.c: New.
+	* libgccjit.h: New.
+	* libgccjit.map: New.
+	* notes.txt: New.
+
+Copyright (C) 2013-2014 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

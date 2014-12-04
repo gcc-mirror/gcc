@@ -13,25 +13,25 @@ struct metatuple<add_pointer> {
 };
 
 template<template<class T> class Meta>
-struct metatuple<Meta, Meta> { // { dg-error "candidates" }
+struct metatuple<Meta, Meta> { // { dg-message "candidates" }
   static const int value = 2;
 };
 
 template<template<class T> class... Metafunctions>
-struct metatuple<add_pointer, Metafunctions...> { // { dg-error "" }
+struct metatuple<add_pointer, Metafunctions...> { // { dg-message "" }
   static const int value = 3;
 };
 
 template<template<class T> class First,
          template<class T> class... Metafunctions>
-struct metatuple<First, Metafunctions...> { // { dg-error "struct" }
+struct metatuple<First, Metafunctions...> { // { dg-message "struct" }
   static const int value = 4;
 };
 
 template<template<class T> class First,
          template<class T> class Second,
          template<class T> class... Metafunctions>
-struct metatuple<First, Second, Metafunctions...> { // { dg-error "struct" }
+struct metatuple<First, Second, Metafunctions...> { // { dg-message "struct" }
   static const int value = 5;
 };
 

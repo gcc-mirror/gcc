@@ -23,9 +23,10 @@
 // <http://www.gnu.org/licenses/>.
 
 //
-// ISO C++ 14882: 27.4.2.1.1  Class ios_base::failure
+// ISO C++ 14882:1998: 27.4.2.1.1  Class ios_base::failure
 //
 
+#define _GLIBCXX_USE_CXX11_ABI 0
 #include <ios>
 
 namespace std _GLIBCXX_VISIBILITY(default)

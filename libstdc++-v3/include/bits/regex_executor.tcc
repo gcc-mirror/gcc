@@ -39,17 +39,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_search()
     {
+      if (_M_search_from_first())
+	return true;
       if (_M_flags & regex_constants::match_continuous)
-	return _M_search_from_first();
-      auto __cur = _M_begin;
-      do
+	return false;
+      _M_flags |= regex_constants::match_prev_avail;
+      while (_M_begin != _M_end)
 	{
-	  _M_current = __cur;
-	  if (_M_main(_Match_mode::_Prefix))
+	  ++_M_begin;
+	  if (_M_search_from_first())
 	    return true;
 	}
-      // Continue when __cur == _M_end
-      while (__cur++ != _M_end);
       return false;
     }
 

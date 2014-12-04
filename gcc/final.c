@@ -3189,7 +3189,7 @@ alter_subreg (rtx *xp, bool final_p)
       else
 	*xp = adjust_address_nv (y, GET_MODE (x), offset);
     }
-  else
+  else if (REG_P (y) && HARD_REGISTER_P (y))
     {
       rtx new_rtx = simplify_subreg (GET_MODE (x), y, GET_MODE (y),
 				     SUBREG_BYTE (x));
@@ -3857,7 +3857,8 @@ output_operand (rtx x, int code ATTRIBUTE_UNUSED)
     x = alter_subreg (&x, true);
 
   /* X must not be a pseudo reg.  */
-  gcc_assert (!x || !REG_P (x) || REGNO (x) < FIRST_PSEUDO_REGISTER);
+  if (!targetm.no_register_allocation)
+    gcc_assert (!x || !REG_P (x) || REGNO (x) < FIRST_PSEUDO_REGISTER);
 
   targetm.asm_out.print_operand (asm_out_file, x, code);
 
@@ -4467,17 +4468,7 @@ leaf_renumber_regs_insn (rtx in_rtx)
 static unsigned int
 rest_of_handle_final (void)
 {
-  rtx x;
-  const char *fnname;
-
-  /* Get the function's name, as described by its RTL.  This may be
-     different from the DECL_NAME name used in the source file.  */
-
-  x = DECL_RTL (current_function_decl);
-  gcc_assert (MEM_P (x));
-  x = XEXP (x, 0);
-  gcc_assert (GET_CODE (x) == SYMBOL_REF);
-  fnname = XSTR (x, 0);
+  const char *fnname = get_fnname_from_decl (current_function_decl);
 
   assemble_start_function (current_function_decl, fnname);
   final_start_function (get_insns (), asm_out_file, optimize);

@@ -11,9 +11,29 @@
 #include "tsan_report.h"
 #include "tsan_platform.h"
 #include "tsan_rtl.h"
+#include "sanitizer_common/sanitizer_placement_new.h"
 #include "sanitizer_common/sanitizer_report_decorator.h"
+#include "sanitizer_common/sanitizer_stacktrace_printer.h"
 
 namespace __tsan {
+
+ReportStack::ReportStack() : next(nullptr), info(), suppressable(false) {}
+
+ReportStack *ReportStack::New(uptr addr) {
+  void *mem = internal_alloc(MBlockReportStack, sizeof(ReportStack));
+  ReportStack *res = new(mem) ReportStack();
+  res->info.address = addr;
+  return res;
+}
+
+ReportLocation::ReportLocation(ReportLocationType type)
+    : type(type), global(), heap_chunk_start(0), heap_chunk_size(0), tid(0),
+      fd(0), suppressable(false), stack(nullptr) {}
+
+ReportLocation *ReportLocation::New(ReportLocationType type) {
+  void *mem = internal_alloc(MBlockReportStack, sizeof(ReportLocation));
+  return new(mem) ReportLocation(type);
+}
 
 class Decorator: public __sanitizer::SanitizerCommonDecorator {
  public:
@@ -68,6 +88,8 @@ static const char *ReportTypeString(ReportType typ) {
     return "data race on vptr (ctor/dtor vs virtual call)";
   if (typ == ReportTypeUseAfterFree)
     return "heap-use-after-free";
+  if (typ == ReportTypeVptrUseAfterFree)
+    return "heap-use-after-free (virtual call vs free)";
   if (typ == ReportTypeThreadLeak)
     return "thread leak";
   if (typ == ReportTypeMutexDestroyLocked)
@@ -94,14 +116,11 @@ void PrintStack(const ReportStack *ent) {
     Printf("    [failed to restore the stack]\n\n");
     return;
   }
-  for (int i = 0; ent; ent = ent->next, i++) {
-    Printf("    #%d %s %s:%d", i, ent->func, ent->file, ent->line);
-    if (ent->col)
-      Printf(":%d", ent->col);
-    if (ent->module && ent->offset)
-      Printf(" (%s+%p)\n", ent->module, (void*)ent->offset);
-    else
-      Printf(" (%p)\n", (void*)ent->pc);
+  for (int i = 0; ent && ent->info.address; ent = ent->next, i++) {
+    InternalScopedString res(2 * GetPageSizeCached());
+    RenderFrame(&res, common_flags()->stack_trace_format, i, ent->info,
+                common_flags()->strip_path_prefix, "__interceptor_");
+    Printf("%s\n", res.data());
   }
   Printf("\n");
 }
@@ -143,12 +162,15 @@ static void PrintLocation(const ReportLocation *loc) {
   bool print_stack = false;
   Printf("%s", d.Location());
   if (loc->type == ReportLocationGlobal) {
+    const DataInfo &global = loc->global;
     Printf("  Location is global '%s' of size %zu at %p (%s+%p)\n\n",
-               loc->name, loc->size, loc->addr, loc->module, loc->offset);
+           global.name, global.size, global.start,
+           StripModuleName(global.module), global.module_offset);
   } else if (loc->type == ReportLocationHeap) {
     char thrbuf[kThreadBufSize];
     Printf("  Location is heap block of size %zu at %p allocated by %s:\n",
-        loc->size, loc->addr, thread_name(thrbuf, loc->tid));
+           loc->heap_chunk_size, loc->heap_chunk_start,
+           thread_name(thrbuf, loc->tid));
     print_stack = true;
   } else if (loc->type == ReportLocationStack) {
     Printf("  Location is stack of %s.\n\n", thread_name(thrbuf, loc->tid));
@@ -301,8 +323,10 @@ void PrintReport(const ReportDesc *rep) {
   if (rep->typ == ReportTypeThreadLeak && rep->count > 1)
     Printf("  And %d more similar thread leaks.\n\n", rep->count - 1);
 
-  if (ReportStack *ent = SkipTsanInternalFrames(ChooseSummaryStack(rep)))
-    ReportErrorSummary(rep_typ_str, ent->file, ent->line, ent->func);
+  if (ReportStack *ent = SkipTsanInternalFrames(ChooseSummaryStack(rep))) {
+    const AddressInfo &info = ent->info;
+    ReportErrorSummary(rep_typ_str, info.file, info.line, info.function);
+  }
 
   Printf("==================\n");
 }
@@ -317,8 +341,9 @@ void PrintStack(const ReportStack *ent) {
     return;
   }
   for (int i = 0; ent; ent = ent->next, i++) {
-    Printf("  %s()\n      %s:%d +0x%zx\n",
-        ent->func, ent->file, ent->line, (void*)ent->offset);
+    const AddressInfo &info = ent->info;
+    Printf("  %s()\n      %s:%d +0x%zx\n", info.function, info.file, info.line,
+           (void *)info.module_offset);
   }
 }
 

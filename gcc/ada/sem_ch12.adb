@@ -1087,7 +1087,8 @@ package body Sem_Ch12 is
 
                else
                   Parm_Type :=
-                    Make_Identifier (Loc, Chars (Etype (Etype (Form_F))));
+                    Make_Identifier (Loc,
+                      Chars => Chars (First_Subtype (Etype (Form_F))));
                end if;
 
             --  If actual is present, use the type of its own formal
@@ -1805,9 +1806,10 @@ package body Sem_Ch12 is
                                                                     E_Function
                      then
                         --  If actual is an entity (function or operator),
-                        --  build wrapper for it.
+                        --  and expander is active, build wrapper for it.
+                        --  Note that wrappers play no role within a generic.
 
-                        if Present (Match) then
+                        if Present (Match) and then Expander_Active then
                            if Nkind (Match) = N_Operator_Symbol then
 
                               --  If the name is a default, find its visible
@@ -1835,6 +1837,7 @@ package body Sem_Ch12 is
                         elsif Box_Present (Formal)
                            and then Nkind (Defining_Entity (Analyzed_Formal)) =
                                                     N_Defining_Operator_Symbol
+                           and then Expander_Active
                         then
                            Append_To (Assoc,
                              Build_Operator_Wrapper
@@ -3454,9 +3457,10 @@ package body Sem_Ch12 is
             ASN : Node_Id;
 
          begin
-            ASN := Make_Aspect_Specification (Loc,
-               Identifier => Make_Identifier (Loc, Name_Default_Storage_Pool),
-               Expression => New_Copy (Default_Pool));
+            ASN :=
+              Make_Aspect_Specification (Loc,
+                Identifier => Make_Identifier (Loc, Name_Default_Storage_Pool),
+                Expression => New_Copy (Default_Pool));
 
             if No (Aspect_Specifications (Specification (N))) then
                Set_Aspect_Specifications (Specification (N), New_List (ASN));
@@ -3972,8 +3976,8 @@ package body Sem_Ch12 is
 
                         ASN2 := First (Aspect_Specifications (Gen_Spec));
                         while Present (ASN2) loop
-                           if Chars (Identifier (ASN2))
-                              = Name_Default_Storage_Pool
+                           if Chars (Identifier (ASN2)) =
+                                                    Name_Default_Storage_Pool
                            then
                               Remove (ASN2);
                               exit;
@@ -4454,6 +4458,10 @@ package body Sem_Ch12 is
       SPARK_Mode_Pragma        := Save_SMP;
       Style_Check              := Save_Style_Check;
 
+      if SPARK_Mode = On then
+         Dynamic_Elaboration_Checks := False;
+      end if;
+
       --  Check that if N is an instantiation of System.Dim_Float_IO or
       --  System.Dim_Integer_IO, the formal type has a dimension system.
 
@@ -4490,6 +4498,10 @@ package body Sem_Ch12 is
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
          Style_Check              := Save_Style_Check;
+
+         if SPARK_Mode = On then
+            Dynamic_Elaboration_Checks := False;
+         end if;
    end Analyze_Package_Instantiation;
 
    --------------------------
@@ -5345,6 +5357,11 @@ package body Sem_Ch12 is
          Ignore_Pragma_SPARK_Mode := Save_IPSM;
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
+
+         if SPARK_Mode = On then
+            Dynamic_Elaboration_Checks := False;
+         end if;
+
       end if;
 
    <<Leave>>
@@ -5365,6 +5382,10 @@ package body Sem_Ch12 is
          Ignore_Pragma_SPARK_Mode := Save_IPSM;
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
+
+         if SPARK_Mode = On then
+            Dynamic_Elaboration_Checks := False;
+         end if;
    end Analyze_Subprogram_Instantiation;
 
    -------------------------
@@ -9747,6 +9768,7 @@ package body Sem_Ch12 is
       Loc        : Source_Ptr;
       Nam        : Node_Id;
       New_Spec   : Node_Id;
+      New_Subp   : Entity_Id;
 
    --  Start of processing for Instantiate_Formal_Subprogram
 
@@ -9762,10 +9784,10 @@ package body Sem_Ch12 is
       --  Create new entity for the actual (New_Copy_Tree does not), and
       --  indicate that it is an actual.
 
-      Set_Defining_Unit_Name
-        (New_Spec, Make_Defining_Identifier (Loc, Chars (Formal_Sub)));
-      Set_Ekind (Defining_Unit_Name (New_Spec), Ekind (Analyzed_S));
-      Set_Is_Generic_Actual_Subprogram (Defining_Unit_Name (New_Spec));
+      New_Subp := Make_Defining_Identifier (Loc, Chars (Formal_Sub));
+      Set_Ekind (New_Subp, Ekind (Analyzed_S));
+      Set_Is_Generic_Actual_Subprogram (New_Subp);
+      Set_Defining_Unit_Name (New_Spec, New_Subp);
 
       --  Create new entities for the each of the formals in the specification
       --  of the renaming declaration built for the actual.
@@ -10207,7 +10229,20 @@ package body Sem_Ch12 is
             begin
                Typ := Get_Instance_Of (Formal_Type);
 
-               Freeze_Before (Instantiation_Node, Typ);
+               --  If the actual appears in the current or an enclosing scope,
+               --  use its type directly. This is relevant if it has an actual
+               --  subtype that is distinct from its nominal one. This cannot
+               --  be done in general because the type of the actual may
+               --  depend on other actuals, and only be fully determined when
+               --  the enclosing instance is analyzed.
+
+               if Present (Etype (Actual))
+                  and then Is_Constr_Subt_For_U_Nominal (Etype (Actual))
+               then
+                  Freeze_Before (Instantiation_Node, Etype (Actual));
+               else
+                  Freeze_Before (Instantiation_Node, Typ);
+               end if;
 
                --  If the actual is an aggregate, perform name resolution on
                --  its components (the analysis of an aggregate does not do it)
@@ -14423,6 +14458,12 @@ package body Sem_Ch12 is
 
          SPARK_Mode := Save_SPARK_Mode;
          SPARK_Mode_Pragma := Save_SPARK_Mode_Pragma;
+
+         --  Make sure dynamic elaboration checks are off in SPARK Mode
+
+         if SPARK_Mode = On then
+            Dynamic_Elaboration_Checks := False;
+         end if;
       end if;
 
       Current_Instantiated_Parent :=

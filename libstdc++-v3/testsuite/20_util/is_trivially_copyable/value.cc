@@ -47,6 +47,8 @@ void test01()
 
   static_assert(test_property<is_trivially_copyable, 
 		int>(true), "");
+  static_assert(test_property<is_trivially_copyable,
+		volatile int>(false), "");
   static_assert(test_property<is_trivially_copyable, 
 		TType>(true), "");
   static_assert(test_property<is_trivially_copyable, 

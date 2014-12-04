@@ -1,4 +1,6 @@
 /* PR rtl-optimization/51495 */
+/* { dg-require-effective-target indirect_jumps } */
+/* { dg-require-effective-target label_values } */
 
 void bar (void);
 

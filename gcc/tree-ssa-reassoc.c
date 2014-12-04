@@ -1338,10 +1338,10 @@ build_and_add_sum (tree type, tree op1, tree op2, enum tree_code opcode)
   gimple op1def = NULL, op2def = NULL;
   gimple_stmt_iterator gsi;
   tree op;
-  gimple sum;
+  gassign *sum;
 
   /* Create the addition statement.  */
-  op = make_ssa_name (type, NULL);
+  op = make_ssa_name (type);
   sum = gimple_build_assign_with_ops (opcode, op, op1, op2);
 
   /* Find an insertion place and insert.  */
@@ -2594,8 +2594,7 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 	  gimple_set_visited (SSA_NAME_DEF_STMT (exp), true);
 	  gimple g
 	    = gimple_build_assign_with_ops (BIT_IOR_EXPR,
-					    make_ssa_name (optype, NULL),
-					    tem, exp);
+					    make_ssa_name (optype), tem, exp);
 	  gimple_set_location (g, loc);
 	  gimple_seq_add_stmt_without_update (&seq, g);
 	  exp = gimple_assign_lhs (g);
@@ -2787,7 +2786,7 @@ suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
   edge_iterator ei, ei2;
   edge e, e2;
   gimple stmt;
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
   bool other_edge_seen = false;
   bool is_cond;
 
@@ -2849,7 +2848,7 @@ suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
   e2 = find_edge (test_bb, *other_bb);
   for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       /* If both BB and TEST_BB end with GIMPLE_COND, all PHI arguments
 	 corresponding to BB and TEST_BB predecessor must be the same.  */
       if (!operand_equal_p (gimple_phi_arg_def (phi, e->dest_idx),
@@ -2999,9 +2998,9 @@ update_ops (tree var, enum tree_code code, vec<operand_entry_t> ops,
       && (rhs[2] != rhs[1] || rhs[3] != rhs[0]))
     {
       gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-      var = make_ssa_name (TREE_TYPE (var), NULL);
-      gimple g = gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt),
-					       var, rhs[2], rhs[3]);
+      var = make_ssa_name (TREE_TYPE (var));
+      gassign *g = gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt),
+						 var, rhs[2], rhs[3]);
       gimple_set_uid (g, gimple_uid (stmt));
       gimple_set_visited (g, true);
       gsi_insert_before (&gsi, g, GSI_SAME_STMT);
@@ -3296,10 +3295,10 @@ maybe_optimize_range_tests (gimple stmt)
 		    {
 		      gcc_assert (bb == last_bb);
 		      tree lhs = gimple_assign_lhs (cast_stmt);
-		      tree new_lhs = make_ssa_name (TREE_TYPE (lhs), NULL);
+		      tree new_lhs = make_ssa_name (TREE_TYPE (lhs));
 		      enum tree_code rhs_code
 			= gimple_assign_rhs_code (cast_stmt);
-		      gimple g;
+		      gassign *g;
 		      if (is_gimple_min_invariant (new_op))
 			{
 			  new_op = fold_convert (TREE_TYPE (lhs), new_op);
@@ -3307,7 +3306,7 @@ maybe_optimize_range_tests (gimple stmt)
 			}
 		      else
 			g = gimple_build_assign_with_ops (rhs_code, new_lhs,
-							  new_op, NULL_TREE);
+							  new_op);
 		      gimple_stmt_iterator gsi = gsi_for_stmt (cast_stmt);
 		      gimple_set_uid (g, gimple_uid (cast_stmt));
 		      gimple_set_visited (g, true);
@@ -3333,18 +3332,19 @@ maybe_optimize_range_tests (gimple stmt)
 	      && bbinfo[idx].op == NULL_TREE
 	      && ops[bbinfo[idx].first_idx]->op != NULL_TREE)
 	    {
-	      stmt = last_stmt (bb);
+	      gcond *cond_stmt = as_a <gcond *> (last_stmt (bb));
 	      if (integer_zerop (ops[bbinfo[idx].first_idx]->op))
-		gimple_cond_make_false (stmt);
+		gimple_cond_make_false (cond_stmt);
 	      else if (integer_onep (ops[bbinfo[idx].first_idx]->op))
-		gimple_cond_make_true (stmt);
+		gimple_cond_make_true (cond_stmt);
 	      else
 		{
-		  gimple_cond_set_code (stmt, NE_EXPR);
-		  gimple_cond_set_lhs (stmt, ops[bbinfo[idx].first_idx]->op);
-		  gimple_cond_set_rhs (stmt, boolean_false_node);
+		  gimple_cond_set_code (cond_stmt, NE_EXPR);
+		  gimple_cond_set_lhs (cond_stmt,
+				       ops[bbinfo[idx].first_idx]->op);
+		  gimple_cond_set_rhs (cond_stmt, boolean_false_node);
 		}
-	      update_stmt (stmt);
+	      update_stmt (cond_stmt);
 	    }
 	  if (bb == first_bb)
 	    break;
@@ -3360,6 +3360,7 @@ static bool
 is_phi_for_stmt (gimple stmt, tree operand)
 {
   gimple def_stmt;
+  gphi *def_phi;
   tree lhs;
   use_operand_p arg_p;
   ssa_op_iter i;
@@ -3370,10 +3371,11 @@ is_phi_for_stmt (gimple stmt, tree operand)
   lhs = gimple_assign_lhs (stmt);
 
   def_stmt = SSA_NAME_DEF_STMT (operand);
-  if (gimple_code (def_stmt) != GIMPLE_PHI)
+  def_phi = dyn_cast <gphi *> (def_stmt);
+  if (!def_phi)
     return false;
 
-  FOR_EACH_PHI_ARG (arg_p, def_stmt, i, SSA_OP_USE)
+  FOR_EACH_PHI_ARG (arg_p, def_phi, i, SSA_OP_USE)
     if (lhs == USE_FROM_PTR (arg_p))
       return true;
   return false;
@@ -3515,7 +3517,7 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
 	  if (changed)
 	    {
 	      gimple insert_point = find_insert_point (stmt, oe1->op, oe2->op);
-	      lhs = make_ssa_name (TREE_TYPE (lhs), NULL);
+	      lhs = make_ssa_name (TREE_TYPE (lhs));
 	      stmt
 		= gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt),
 						lhs, oe1->op, oe2->op);
@@ -3580,7 +3582,7 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
 	  unsigned int uid = gimple_uid (stmt);
 	  gimple insert_point = find_insert_point (stmt, new_rhs1, oe->op);
 
-	  lhs = make_ssa_name (TREE_TYPE (lhs), NULL);
+	  lhs = make_ssa_name (TREE_TYPE (lhs));
 	  stmt = gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt),
 					       lhs, new_rhs1, oe->op);
 	  gimple_set_uid (stmt, uid);
@@ -3686,7 +3688,7 @@ get_reassociation_width (int ops_num, enum tree_code opc,
    parallel.  */
 
 static void
-rewrite_expr_tree_parallel (gimple stmt, int width,
+rewrite_expr_tree_parallel (gassign *stmt, int width,
 			    vec<operand_entry_t> ops)
 {
   enum tree_code opcode = gimple_assign_rhs_code (stmt);
@@ -3799,7 +3801,7 @@ linearize_expr (gimple stmt)
 
   gimple_assign_set_rhs2 (stmt, gimple_assign_rhs1 (binrhs));
   binrhs = gimple_build_assign_with_ops (gimple_assign_rhs_code (binrhs),
-					 make_ssa_name (TREE_TYPE (lhs), NULL),
+					 make_ssa_name (TREE_TYPE (lhs)),
 					 gimple_assign_lhs (binlhs),
 					 gimple_assign_rhs2 (binrhs));
   gimple_assign_set_rhs1 (stmt, gimple_assign_lhs (binrhs));
@@ -3887,7 +3889,7 @@ negate_value (tree tonegate, gimple_stmt_iterator *gsip)
       rhs2 = negate_value (rhs2, &gsi);
 
       gsi = gsi_for_stmt (negatedefstmt);
-      lhs = make_ssa_name (TREE_TYPE (lhs), NULL);
+      lhs = make_ssa_name (TREE_TYPE (lhs));
       gimple_set_visited (negatedefstmt, true);
       g = gimple_build_assign_with_ops (PLUS_EXPR, lhs, rhs1, rhs2);
       gimple_set_uid (g, gimple_uid (negatedefstmt));
@@ -4214,10 +4216,10 @@ repropagate_negates (void)
 	      tree b = gimple_assign_rhs2 (user);
 	      gimple_stmt_iterator gsi = gsi_for_stmt (feed);
 	      gimple_stmt_iterator gsi2 = gsi_for_stmt (user);
-	      tree x = make_ssa_name (TREE_TYPE (gimple_assign_lhs (feed)), NULL);
+	      tree x = make_ssa_name (TREE_TYPE (gimple_assign_lhs (feed)));
 	      gimple g = gimple_build_assign_with_ops (PLUS_EXPR, x, a, b);
 	      gsi_insert_before (&gsi2, g, GSI_SAME_STMT);
-	      gimple_assign_set_rhs_with_ops (&gsi2, NEGATE_EXPR, x, NULL);
+	      gimple_assign_set_rhs_with_ops (&gsi2, NEGATE_EXPR, x);
 	      user = gsi_stmt (gsi2);
 	      update_stmt (user);
 	      reassoc_remove_stmt (&gsi);
@@ -4827,7 +4829,8 @@ reassociate_bb (basic_block bb)
 
 		  if (width > 1
 		      && ops.length () > 3)
-		    rewrite_expr_tree_parallel (stmt, width, ops);
+		    rewrite_expr_tree_parallel (as_a <gassign *> (stmt),
+						width, ops);
 		  else
                     {
                       /* When there are three operands left, we want
@@ -4934,7 +4937,7 @@ branch_fixup (void)
       else
 	gcc_unreachable ();
       tree lhs = gimple_assign_lhs (use_stmt);
-      gimple phi = create_phi_node (lhs, merge_bb);
+      gphi *phi = create_phi_node (lhs, merge_bb);
       add_phi_arg (phi, build_one_cst (TREE_TYPE (lhs)), etrue, loc);
       add_phi_arg (phi, othervar, single_succ_edge (then_bb), loc);
       gsi = gsi_for_stmt (use_stmt);

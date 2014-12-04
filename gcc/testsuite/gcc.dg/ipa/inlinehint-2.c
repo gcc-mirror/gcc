@@ -1,4 +1,6 @@
 /* { dg-options "-O3 -c -fdump-ipa-inline-details -fno-early-inlining -fno-ipa-cp"  } */
+/* { dg-add-options bind_pic_locally } */
+
 int
 t(int s, void **p)
 {

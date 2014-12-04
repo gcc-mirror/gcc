@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-options " -Werror" }
+! { dg-message "warnings being treated as errors" "" { target *-*-* } 0 }
 ! PR fortran/21061
 ! gfortran ignores -Werror
 ! fixed-form tests
@@ -8,7 +9,7 @@
        integer(kind=1) :: i
        real :: r1, r2(3)
 ! gfc_warning_now:
-0      r1 = 0 ! { dg-warning "Zero is not a valid statement label" }
+0      r1 = 0 ! { dg-error "Zero is not a valid statement label" }
 !
 34 5   i=0 
 ! gfc_notify_std(GFC_STD_F95_DEL):

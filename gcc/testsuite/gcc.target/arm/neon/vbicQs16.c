@@ -3,16 +3,16 @@
 
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-save-temps -O0" } */
+/* { dg-options "-save-temps -O2" } */
 /* { dg-add-options arm_neon } */
 
 #include "arm_neon.h"
 
+int16x8_t out_int16x8_t;
+int16x8_t arg0_int16x8_t;
+int16x8_t arg1_int16x8_t;
 void test_vbicQs16 (void)
 {
-  int16x8_t out_int16x8_t;
-  int16x8_t arg0_int16x8_t;
-  int16x8_t arg1_int16x8_t;
 
   out_int16x8_t = vbicq_s16 (arg0_int16x8_t, arg1_int16x8_t);
 }

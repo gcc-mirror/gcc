@@ -1,10 +1,9 @@
 #! /bin/sh
 # ylwrap - wrapper for lex/yacc invocations.
 
-scriptversion=2009-04-28.21; # UTC
+scriptversion=2013-01-12.17; # UTC
 
-# Copyright (C) 1996, 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005,
-# 2007, 2009 Free Software Foundation, Inc.
+# Copyright (C) 1996-2014 Free Software Foundation, Inc.
 #
 # Written by Tom Tromey <tromey@cygnus.com>.
 #
@@ -30,9 +29,41 @@ scriptversion=2009-04-28.21; # UTC
 # bugs to <bug-automake@gnu.org> or send patches to
 # <automake-patches@gnu.org>.
 
+get_dirname ()
+{
+  case $1 in
+    */*|*\\*) printf '%s\n' "$1" | sed -e 's|\([\\/]\)[^\\/]*$|\1|';;
+    # Otherwise,  we want the empty string (not ".").
+  esac
+}
+
+# guard FILE
+# ----------
+# The CPP macro used to guard inclusion of FILE.
+guard ()
+{
+  printf '%s\n' "$1"                                                    \
+    | sed                                                               \
+        -e 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/'   \
+        -e 's/[^ABCDEFGHIJKLMNOPQRSTUVWXYZ]/_/g'                        \
+        -e 's/__*/_/g'
+}
+
+# quote_for_sed [STRING]
+# ----------------------
+# Return STRING (or stdin) quoted to be used as a sed pattern.
+quote_for_sed ()
+{
+  case $# in
+    0) cat;;
+    1) printf '%s\n' "$1";;
+  esac \
+    | sed -e 's|[][\\.*]|\\&|g'
+}
+
 case "$1" in
   '')
-    echo "$0: No files given.  Try \`$0 --help' for more information." 1>&2
+    echo "$0: No files given.  Try '$0 --help' for more information." 1>&2
     exit 1
     ;;
   --basedir)
@@ -65,41 +96,62 @@ esac
 
 
 # The input.
-input="$1"
+input=$1
 shift
-case "$input" in
+# We'll later need for a correct munging of "#line" directives.
+input_sub_rx=`get_dirname "$input" | quote_for_sed`
+case $input in
   [\\/]* | ?:[\\/]*)
     # Absolute path; do nothing.
     ;;
   *)
     # Relative path.  Make it absolute.
-    input="`pwd`/$input"
+    input=`pwd`/$input
     ;;
 esac
+input_rx=`get_dirname "$input" | quote_for_sed`
 
-pairlist=
-while test "$#" -ne 0; do
-  if test "$1" = "--"; then
+# The parser itself, the first file, is the destination of the .y.c
+# rule in the Makefile.
+parser=$1
+
+# A sed program to s/FROM/TO/g for all the FROM/TO so that, for
+# instance, we rename #include "y.tab.h" into #include "parse.h"
+# during the conversion from y.tab.c to parse.c.
+sed_fix_filenames=
+
+# Also rename header guards, as Bison 2.7 for instance uses its header
+# guard in its implementation file.
+sed_fix_header_guards=
+
+while test $# -ne 0; do
+  if test x"$1" = x"--"; then
     shift
     break
   fi
-  pairlist="$pairlist $1"
+  from=$1
   shift
+  to=$1
+  shift
+  sed_fix_filenames="${sed_fix_filenames}s|"`quote_for_sed "$from"`"|$to|g;"
+  sed_fix_header_guards="${sed_fix_header_guards}s|"`guard "$from"`"|"`guard "$to"`"|g;"
 done
 
 # The program to run.
-prog="$1"
+prog=$1
 shift
 # Make any relative path in $prog absolute.
-case "$prog" in
+case $prog in
   [\\/]* | ?:[\\/]*) ;;
-  *[\\/]*) prog="`pwd`/$prog" ;;
+  *[\\/]*) prog=`pwd`/$prog ;;
 esac
 
-# FIXME: add hostname here for parallel makes that run commands on
-# other machines.  But that might take us over the 14-char limit.
 dirname=ylwrap$$
-trap "cd '`pwd`'; rm -rf $dirname > /dev/null 2>&1" 1 2 3 15
+do_exit="cd '`pwd`' && rm -rf $dirname > /dev/null 2>&1;"' (exit $ret); exit $ret'
+trap "ret=129; $do_exit" 1
+trap "ret=130; $do_exit" 2
+trap "ret=141; $do_exit" 13
+trap "ret=143; $do_exit" 15
 mkdir $dirname || exit 1
 
 cd $dirname
@@ -111,98 +163,56 @@ esac
 ret=$?
 
 if test $ret -eq 0; then
-  set X $pairlist
-  shift
-  first=yes
-  # Since DOS filename conventions don't allow two dots,
-  # the DOS version of Bison writes out y_tab.c instead of y.tab.c
-  # and y_tab.h instead of y.tab.h. Test to see if this is the case.
-  y_tab_nodot="no"
-  if test -f y_tab.c || test -f y_tab.h; then
-    y_tab_nodot="yes"
-  fi
-
-  # The directory holding the input.
-  input_dir=`echo "$input" | sed -e 's,\([\\/]\)[^\\/]*$,\1,'`
-  # Quote $INPUT_DIR so we can use it in a regexp.
-  # FIXME: really we should care about more than `.' and `\'.
-  input_rx=`echo "$input_dir" | sed 's,\\\\,\\\\\\\\,g;s,\\.,\\\\.,g'`
-
-  while test "$#" -ne 0; do
-    from="$1"
-    # Handle y_tab.c and y_tab.h output by DOS
-    if test $y_tab_nodot = "yes"; then
-      if test $from = "y.tab.c"; then
-    	from="y_tab.c"
-      else
-    	if test $from = "y.tab.h"; then
-    	  from="y_tab.h"
-    	fi
-      fi
-    fi
+  for from in *
+  do
+    to=`printf '%s\n' "$from" | sed "$sed_fix_filenames"`
     if test -f "$from"; then
       # If $2 is an absolute path name, then just use that,
-      # otherwise prepend `../'.
-      case "$2" in
-    	[\\/]* | ?:[\\/]*) target="$2";;
-    	*) target="../$2";;
+      # otherwise prepend '../'.
+      case $to in
+        [\\/]* | ?:[\\/]*) target=$to;;
+        *) target=../$to;;
       esac
 
-      # We do not want to overwrite a header file if it hasn't
-      # changed.  This avoid useless recompilations.  However the
-      # parser itself (the first file) should always be updated,
-      # because it is the destination of the .y.c rule in the
-      # Makefile.  Divert the output of all other files to a temporary
-      # file so we can compare them to existing versions.
-      if test $first = no; then
-	realtarget="$target"
-	target="tmp-`echo $target | sed s/.*[\\/]//g`"
+      # Do not overwrite unchanged header files to avoid useless
+      # recompilations.  Always update the parser itself: it is the
+      # destination of the .y.c rule in the Makefile.  Divert the
+      # output of all other files to a temporary file so we can
+      # compare them to existing versions.
+      if test $from != $parser; then
+        realtarget=$target
+        target=tmp-`printf '%s\n' "$target" | sed 's|.*[\\/]||g'`
       fi
-      # Edit out `#line' or `#' directives.
-      #
-      # We don't want the resulting debug information to point at
-      # an absolute srcdir; it is better for it to just mention the
-      # .y file with no path.
-      #
-      # We want to use the real output file name, not yy.lex.c for
-      # instance.
-      #
-      # We want the include guards to be adjusted too.
-      FROM=`echo "$from" | sed \
-            -e 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/'\
-            -e 's/[^ABCDEFGHIJKLMNOPQRSTUVWXYZ]/_/g'`
-      TARGET=`echo "$2" | sed \
-            -e 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/'\
-            -e 's/[^ABCDEFGHIJKLMNOPQRSTUVWXYZ]/_/g'`
 
-      sed -e "/^#/!b" -e "s,$input_rx,," -e "s,$from,$2," \
-          -e "s,$FROM,$TARGET," "$from" >"$target" || ret=$?
+      # Munge "#line" or "#" directives.  Don't let the resulting
+      # debug information point at an absolute srcdir.  Use the real
+      # output file name, not yy.lex.c for instance.  Adjust the
+      # include guards too.
+      sed -e "/^#/!b"                           \
+          -e "s|$input_rx|$input_sub_rx|"       \
+          -e "$sed_fix_filenames"               \
+          -e "$sed_fix_header_guards"           \
+        "$from" >"$target" || ret=$?
 
-      # Check whether header files must be updated.
-      if test $first = no; then
-	if test -f "$realtarget" && cmp -s "$realtarget" "$target"; then
-	  echo "$2" is unchanged
-	  rm -f "$target"
-	else
-          echo updating "$2"
+      # Check whether files must be updated.
+      if test "$from" != "$parser"; then
+        if test -f "$realtarget" && cmp -s "$realtarget" "$target"; then
+          echo "$to is unchanged"
+          rm -f "$target"
+        else
+          echo "updating $to"
           mv -f "$target" "$realtarget"
         fi
       fi
     else
-      # A missing file is only an error for the first file.  This
-      # is a blatant hack to let us support using "yacc -d".  If -d
-      # is not specified, we don't want an error when the header
-      # file is "missing".
-      if test $first = yes; then
+      # A missing file is only an error for the parser.  This is a
+      # blatant hack to let us support using "yacc -d".  If -d is not
+      # specified, don't fail when the header file is "missing".
+      if test "$from" = "$parser"; then
         ret=1
       fi
     fi
-    shift
-    shift
-    first=no
   done
-else
-  ret=$?
 fi
 
 # Remove the directory.

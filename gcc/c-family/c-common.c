@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "gimplify.h"
 #include "wide-int-print.h"
+#include "gimple-expr.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -407,6 +408,9 @@ static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int,
 static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_designated_init_attribute (tree *, tree, tree, int, bool *);
+static tree handle_bnd_variable_size_attribute (tree *, tree, tree, int, bool *);
+static tree handle_bnd_legacy (tree *, tree, tree, int, bool *);
+static tree handle_bnd_instrument (tree *, tree, tree, int, bool *);
 
 static void check_function_nonnull (tree, int, tree *);
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
@@ -467,6 +471,8 @@ const struct c_common_resword c_common_reswords[] =
   { "__attribute__",	RID_ATTRIBUTE,	0 },
   { "__auto_type",	RID_AUTO_TYPE,	D_CONLY },
   { "__bases",          RID_BASES, D_CXXONLY },
+  { "__builtin_call_with_static_chain",
+    RID_BUILTIN_CALL_WITH_STATIC_CHAIN, D_CONLY },
   { "__builtin_choose_expr", RID_CHOOSE_EXPR, D_CONLY },
   { "__builtin_complex", RID_BUILTIN_COMPLEX, D_CONLY },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
@@ -653,7 +659,12 @@ const struct c_common_resword c_common_reswords[] =
 const unsigned int num_c_common_reswords =
   sizeof c_common_reswords / sizeof (struct c_common_resword);
 
-/* Table of machine-independent attributes common to all C-like languages.  */
+/* Table of machine-independent attributes common to all C-like languages.
+
+   All attributes referencing arguments should be additionally processed
+   in chkp_copy_function_type_adding_bounds for correct instrumentation
+   by Pointer Bounds Checker.
+   Current list of processed common attributes: nonnull.  */
 const struct attribute_spec c_common_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
@@ -820,12 +831,22 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_assume_aligned_attribute, false },
   { "designated_init",        0, 0, false, true, false,
 			      handle_designated_init_attribute, false },
+  { "bnd_variable_size",      0, 0, true,  false, false,
+			      handle_bnd_variable_size_attribute, false },
+  { "bnd_legacy",             0, 0, true, false, false,
+			      handle_bnd_legacy, false },
+  { "bnd_instrument",         0, 0, true, false, false,
+			      handle_bnd_instrument, false },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
 /* Give the specifications for the format attributes, used by C and all
-   descendants.  */
+   descendants.
 
+   All attributes referencing arguments should be additionally processed
+   in chkp_copy_function_type_adding_bounds for correct instrumentation
+   by Pointer Bounds Checker.
+   Current list of processed format attributes: format, format_arg.  */
 const struct attribute_spec c_common_format_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
@@ -4347,9 +4368,15 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
   /* If either arg is decimal float and the other is float, find the
      proper common type to use for comparison.  */
   else if (real1 && real2
+	   && DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop0)))
+	   && DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop1))))
+    type = common_type (TREE_TYPE (primop0), TREE_TYPE (primop1));
+
+  /* If either arg is decimal float and the other is float, fail.  */
+  else if (real1 && real2
 	   && (DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop0)))
 	       || DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop1)))))
-    type = common_type (TREE_TYPE (primop0), TREE_TYPE (primop1));
+    return 0;
 
   else if (real1 && real2
 	   && (TYPE_PRECISION (TREE_TYPE (primop0))
@@ -8364,6 +8391,54 @@ handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
   return NULL_TREE;
 }
 
+/* Handle a "bnd_variable_size" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_bnd_variable_size_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+				    int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FIELD_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "bnd_legacy" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_bnd_legacy (tree *node, tree name, tree ARG_UNUSED (args),
+		   int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "bnd_instrument" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_bnd_instrument (tree *node, tree name, tree ARG_UNUSED (args),
+		       int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* Handle a "warn_unused" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -9683,6 +9758,30 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
 	  if (nargs >= 3 && TREE_CODE (TREE_TYPE (args[2])) != INTEGER_TYPE)
 	    {
 	      error ("non-integer argument 3 in call to function %qE", fndecl);
+	      return false;
+	    }
+	  return true;
+	}
+      return false;
+
+    case BUILT_IN_ADD_OVERFLOW:
+    case BUILT_IN_SUB_OVERFLOW:
+    case BUILT_IN_MUL_OVERFLOW:
+      if (builtin_function_validate_nargs (fndecl, nargs, 3))
+	{
+	  unsigned i;
+	  for (i = 0; i < 2; i++)
+	    if (!INTEGRAL_TYPE_P (TREE_TYPE (args[i])))
+	      {
+		error ("argument %u in call to function %qE does not have "
+		       "integral type", i + 1, fndecl);
+		return false;
+	      }
+	  if (TREE_CODE (TREE_TYPE (args[2])) != POINTER_TYPE
+	      || TREE_CODE (TREE_TYPE (TREE_TYPE (args[2]))) != INTEGER_TYPE)
+	    {
+	      error ("argument 3 in call to function %qE does not have "
+		     "pointer to integer type", fndecl);
 	      return false;
 	    }
 	  return true;
@@ -12050,22 +12149,47 @@ build_userdef_literal (tree suffix_id, tree value,
 }
 
 /* For vector[index], convert the vector to a
-   pointer of the underlying type.  */
-void
+   pointer of the underlying type.  Return true if the resulting
+   ARRAY_REF should not be an lvalue.  */
+
+bool
 convert_vector_to_pointer_for_subscript (location_t loc,
-					 tree* vecp, tree index)
+					 tree *vecp, tree index)
 {
+  bool ret = false;
   if (TREE_CODE (TREE_TYPE (*vecp)) == VECTOR_TYPE)
     {
       tree type = TREE_TYPE (*vecp);
       tree type1;
 
+      ret = !lvalue_p (*vecp);
       if (TREE_CODE (index) == INTEGER_CST)
         if (!tree_fits_uhwi_p (index)
             || tree_to_uhwi (index) >= TYPE_VECTOR_SUBPARTS (type))
           warning_at (loc, OPT_Warray_bounds, "index value is out of bound");
 
-      c_common_mark_addressable_vec (*vecp);
+      if (ret)
+	{
+	  tree tmp = create_tmp_var_raw (type);
+	  DECL_SOURCE_LOCATION (tmp) = loc;
+	  *vecp = c_save_expr (*vecp);
+	  if (TREE_CODE (*vecp) == C_MAYBE_CONST_EXPR)
+	    {
+	      bool non_const = C_MAYBE_CONST_EXPR_NON_CONST (*vecp);
+	      *vecp = C_MAYBE_CONST_EXPR_EXPR (*vecp);
+	      *vecp
+		= c_wrap_maybe_const (build4 (TARGET_EXPR, type, tmp,
+					      *vecp, NULL_TREE, NULL_TREE),
+				      non_const);
+	    }
+	  else
+	    *vecp = build4 (TARGET_EXPR, type, tmp, *vecp,
+			    NULL_TREE, NULL_TREE);
+	  SET_EXPR_LOCATION (*vecp, loc);
+	  c_common_mark_addressable_vec (tmp);
+	}
+      else
+	c_common_mark_addressable_vec (*vecp);
       type = build_qualified_type (TREE_TYPE (type), TYPE_QUALS (type));
       type1 = build_pointer_type (TREE_TYPE (*vecp));
       bool ref_all = TYPE_REF_CAN_ALIAS_ALL (type1);
@@ -12085,6 +12209,7 @@ convert_vector_to_pointer_for_subscript (location_t loc,
       *vecp = build1 (ADDR_EXPR, type1, *vecp);
       *vecp = convert (type, *vecp);
     }
+  return ret;
 }
 
 /* Determine which of the operands, if any, is a scalar that needs to be

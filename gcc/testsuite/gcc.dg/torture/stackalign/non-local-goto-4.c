@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target nonlocal_goto } */
 
 extern void abort (void);
 extern void exit (int);

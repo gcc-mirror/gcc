@@ -223,7 +223,8 @@ void initialize_inline_failed (struct cgraph_edge *);
 int estimate_time_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
-					vec<tree>,  vec<tree>,
+					vec<tree>,
+					vec<ipa_polymorphic_call_context>,
 					vec<ipa_agg_jump_function_p>,
 					int *, int *, inline_hints *);
 int do_estimate_growth (struct cgraph_node *);

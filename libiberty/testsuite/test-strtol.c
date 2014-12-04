@@ -132,7 +132,8 @@ run_tests (const struct test_data_t *test_data, size_t ntests)
       switch (test_data[i].fun)
 	{
 	case STRTOL:
-	  res = strtol (test_data[i].nptr, 0, test_data[i].base);
+	  res = (unsigned long) strtol (test_data[i].nptr,
+					0, test_data[i].base);
 	  break;
 	case STRTOUL:
 	  res = strtoul (test_data[i].nptr, 0, test_data[i].base);

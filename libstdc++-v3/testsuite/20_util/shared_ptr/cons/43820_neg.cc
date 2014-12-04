@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=gnu++11 -Wno-deprecated" }
 // { dg-do compile }
 
 // Copyright (C) 2010-2014 Free Software Foundation, Inc.
@@ -32,7 +32,7 @@ void test01()
 {
   X* px = 0;
   std::shared_ptr<X> p1(px);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 864 }
+  // { dg-error "incomplete" "" { target *-*-* } 886 }
 
   std::shared_ptr<X> p9(ap());  // { dg-error "here" }
   // { dg-error "incomplete" "" { target *-*-* } 307 }

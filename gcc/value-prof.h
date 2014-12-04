@@ -92,8 +92,9 @@ void gimple_move_stmt_histograms (struct function *, gimple, gimple);
 void verify_histograms (void);
 void free_histograms (void);
 void stringop_block_profile (gimple, unsigned int *, HOST_WIDE_INT *);
-gimple gimple_ic (gimple, struct cgraph_node *, int, gcov_type, gcov_type);
-bool check_ic_target (gimple, struct cgraph_node *);
+gcall *gimple_ic (gcall *, struct cgraph_node *, int, gcov_type,
+		  gcov_type);
+bool check_ic_target (gcall *, struct cgraph_node *);
 
 
 /* In tree-profile.c.  */

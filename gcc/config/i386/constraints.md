@@ -19,7 +19,7 @@
 
 ;;; Unused letters:
 ;;;           H
-;;;           h j            w  z
+;;;           h j               z
 
 ;; Integer register constraints.
 ;; It is not necessary to define 'r' here.
@@ -94,6 +94,9 @@
 (define_register_constraint "v" "TARGET_SSE ? ALL_SSE_REGS : NO_REGS"
  "Any EVEX encodable SSE register (@code{%xmm0-%xmm31}).")
 
+(define_register_constraint "w" "TARGET_MPX ? BND_REGS : NO_REGS"
+ "@internal Any bound register.")
+
 ;; We use the Y prefix to denote any number of conditional register sets:
 ;;  z	First SSE register.
 ;;  i	SSE2 inter-unit moves to SSE register enabled
@@ -102,8 +105,6 @@
 ;;  n	MMX inter-unit moves from MMX register enabled
 ;;  a	Integer register when zero extensions with AND are disabled
 ;;  p	Integer register when TARGET_PARTIAL_REG_STALL is disabled
-;;  d	Integer register when integer DFmode moves are enabled
-;;  x	Integer register when integer XFmode moves are enabled
 ;;  f	x87 register when 80387 floating point arithmetic is enabled
 
 (define_register_constraint "Yz" "TARGET_SSE ? SSE_FIRST_REG : NO_REGS"
@@ -133,15 +134,6 @@
  "TARGET_ZERO_EXTEND_WITH_AND && optimize_function_for_speed_p (cfun)
   ? NO_REGS : GENERAL_REGS"
  "@internal Any integer register when zero extensions with AND are disabled.")
-
-(define_register_constraint "Yd"
- "TARGET_INTEGER_DFMODE_MOVES && optimize_function_for_speed_p (cfun)
-  ? GENERAL_REGS : NO_REGS"
- "@internal Any integer register when integer DFmode moves are enabled.")
-
-(define_register_constraint "Yx"
- "optimize_function_for_speed_p (cfun) ? GENERAL_REGS : NO_REGS"
- "@internal Any integer register when integer XFmode moves are enabled.")
 
 (define_register_constraint "Yf"
  "(ix86_fpmath & FPMATH_387) ? FLOAT_REGS : NO_REGS"
@@ -253,6 +245,8 @@
 ;; T prefix is used for different address constraints
 ;;   v - VSIB address
 ;;   s - address with no segment register
+;;   i - address with no index and no rip
+;;   b - address with no base and no rip
 
 (define_address_constraint "Tv"
   "VSIB address operand"
@@ -261,3 +255,11 @@
 (define_address_constraint "Ts"
   "Address operand without segment register"
   (match_operand 0 "address_no_seg_operand"))
+
+(define_address_constraint "Ti"
+  "MPX address operand without index"
+  (match_operand 0 "address_mpx_no_index_operand"))
+
+(define_address_constraint "Tb"
+  "MPX address operand without base"
+  (match_operand 0 "address_mpx_no_base_operand"))

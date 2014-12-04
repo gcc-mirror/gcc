@@ -4,4 +4,4 @@
 /* { dg-options "" } */
 
 struct { int a; } __attribute__((deprecated ("Do not use"))) x; /* { dg-warning "type is deprecated" } */
-typeof(x) y; /* { dg-warning "type is deprecated .declared at .*.: Do not use" } */
+typeof(x) y; /* { dg-warning "type is deprecated: Do not use" } */

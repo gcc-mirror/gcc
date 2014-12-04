@@ -914,6 +914,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case VOID_TYPE:
+    case POINTER_BOUNDS_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
@@ -1122,7 +1123,9 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	    /* Same value types ignoring qualifiers.  */
 	    && (TYPE_MAIN_VARIANT (TREE_TYPE (node))
 		== TYPE_MAIN_VARIANT
-		    (TREE_TYPE (TREE_TYPE (TREE_OPERAND (node, 1))))))
+		    (TREE_TYPE (TREE_TYPE (TREE_OPERAND (node, 1)))))
+	    && (!(flags & TDF_ALIAS)
+		|| MR_DEPENDENCE_CLIQUE (node) == 0))
 	  {
 	    if (TREE_CODE (TREE_OPERAND (node, 0)) != ADDR_EXPR)
 	      {
@@ -1152,6 +1155,14 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		pp_string (buffer, " + ");
 		dump_generic_node (buffer, TREE_OPERAND (node, 1),
 				   spc, flags, false);
+	      }
+	    if ((flags & TDF_ALIAS)
+		&& MR_DEPENDENCE_CLIQUE (node) != 0)
+	      {
+		pp_string (buffer, " clique ");
+		pp_unsigned_wide_integer (buffer, MR_DEPENDENCE_CLIQUE (node));
+		pp_string (buffer, " base ");
+		pp_unsigned_wide_integer (buffer, MR_DEPENDENCE_BASE (node));
 	      }
 	    pp_right_bracket (buffer);
 	  }
@@ -1498,7 +1509,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		  /* Same value types ignoring qualifiers.  */
 		  && (TYPE_MAIN_VARIANT (TREE_TYPE (op0))
 		      == TYPE_MAIN_VARIANT
-		          (TREE_TYPE (TREE_TYPE (TREE_OPERAND (op0, 1))))))))
+		          (TREE_TYPE (TREE_TYPE (TREE_OPERAND (op0, 1)))))
+		  && MR_DEPENDENCE_CLIQUE (op0) == 0)))
 	{
 	  op0 = TREE_OPERAND (op0, 0);
 	  str = "->";
@@ -1894,7 +1906,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case RSHIFT_EXPR:
     case LROTATE_EXPR:
     case RROTATE_EXPR:
-    case VEC_RSHIFT_EXPR:
     case WIDEN_LSHIFT_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
@@ -3074,7 +3085,6 @@ op_code_prio (enum tree_code code)
     case REDUC_MAX_EXPR:
     case REDUC_MIN_EXPR:
     case REDUC_PLUS_EXPR:
-    case VEC_RSHIFT_EXPR:
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_LO_EXPR:
     case VEC_UNPACK_FLOAT_HI_EXPR:
@@ -3183,9 +3193,6 @@ op_symbol_code (enum tree_code code)
 
     case RROTATE_EXPR:
       return "r>>";
-
-    case VEC_RSHIFT_EXPR:
-      return "v>>";
 
     case WIDEN_LSHIFT_EXPR:
       return "w<<";

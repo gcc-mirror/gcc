@@ -1,4 +1,5 @@
 /* { dg-do assemble } */
+/* { dg-skip-if "ptxas times out" { nvptx-*-* } { "-O1" } { "" } } */
 
 foo ()
 {

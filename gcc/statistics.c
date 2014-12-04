@@ -270,7 +270,8 @@ statistics_early_init (void)
   gcc::dump_manager *dumps = g->get_dumps ();
   statistics_dump_nr = dumps->dump_register (".statistics", "statistics",
 					     "statistics", TDF_TREE,
-					     OPTGROUP_NONE);
+					     OPTGROUP_NONE,
+					     false);
 }
 
 /* Init the statistics.  */

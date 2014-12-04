@@ -1,3 +1,33 @@
+2014-11-25  Tom de Vries  <tom@codesourcery.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
+
+	* mklog: Handle .mklog.  Use git setting independent of presence .git
+	directory.
+
+2014-11-14  Tom de Vries  <tom@codesourcery.com>
+
+	* mklog: Move reading of .diff file up and add comment.  Copy diff_lines
+	to orig_diff_lines.  Use orig_diff_lines when appending patch.
+
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+	* jit-coverage-report.py: New file: a script to print crude
+	code-coverage information for the libgccjit API.
+
+2014-11-11  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* mklog: Symbol '}' stops search for changes.  
+
+2014-11-11  Tobias Burnus  <burnus@net-b.de>
+
+	* download_prerequisites: Stop downloading CLooG.
+
+2014-11-07  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* mklog: Always doubt in functions.  
+	Add EOF protection.  
+
 2014-10-31  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config-list.mk: Don't build Go for certain targets.

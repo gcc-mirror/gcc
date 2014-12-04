@@ -1,4 +1,4 @@
-/* { dg-do compile { target ia32 } } */
+/* { dg-do compile { target { { ! x32 }  && nonpic } } } */
 /* { dg-options "-O2" } */
 
 extern int (*foo)(int);

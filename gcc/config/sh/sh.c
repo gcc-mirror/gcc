@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include <sstream>
 #include <vector>
-#include <algorithm>
 
 #include "config.h"
 #include "system.h"
@@ -339,7 +338,7 @@ static void sh_conditional_register_usage (void);
 static bool sh_legitimate_constant_p (machine_mode, rtx);
 static int mov_insn_size (machine_mode, bool);
 static int mov_insn_alignment_mask (machine_mode, bool);
-static bool sh_use_by_pieces_infrastructure_p (unsigned int,
+static bool sh_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 					       unsigned int,
 					       enum by_pieces_operation,
 					       bool);
@@ -2351,11 +2350,7 @@ sh_emit_scc_to_t (enum rtx_code code, rtx op0, rtx op1)
       break;
     }
   if (code != oldcode)
-    {
-      rtx tmp = op0;
-      op0 = op1;
-      op1 = tmp;
-    }
+    std::swap (op0, op1);
 
   mode = GET_MODE (op0);
   if (mode == VOIDmode)
@@ -2436,7 +2431,7 @@ sh_emit_compare_and_branch (rtx *operands, machine_mode mode)
   enum rtx_code branch_code;
   rtx op0 = operands[1];
   rtx op1 = operands[2];
-  rtx insn, tem;
+  rtx insn;
   bool need_ccmpeq = false;
 
   if (TARGET_SH2E && GET_MODE_CLASS (mode) == MODE_FLOAT)
@@ -2461,7 +2456,7 @@ sh_emit_compare_and_branch (rtx *operands, machine_mode mode)
 	  || (code == LE && TARGET_IEEE && TARGET_SH2E)
 	  || (code == GE && !(TARGET_IEEE && TARGET_SH2E)))
 	{
-	  tem = op0, op0 = op1, op1 = tem;
+	  std::swap (op0, op1);
 	  code = swap_condition (code);
 	}
 
@@ -2520,7 +2515,6 @@ sh_emit_compare_and_set (rtx *operands, machine_mode mode)
   rtx op1 = operands[3];
   rtx_code_label *lab = NULL;
   bool invert = false;
-  rtx tem;
 
   op0 = force_reg (mode, op0);
   if ((code != EQ && code != NE
@@ -2534,8 +2528,8 @@ sh_emit_compare_and_set (rtx *operands, machine_mode mode)
     {
       if (code == LT || code == LE)
 	{
+	  std::swap (op0, op1);
 	  code = swap_condition (code);
-	  tem = op0, op0 = op1, op1 = tem;
 	}
       if (code == GE)
 	{
@@ -3013,7 +3007,7 @@ enum
 struct ashl_lshr_sequence
 {
   char insn_count;
-  char amount[6];
+  signed char amount[6];
   char clobbers_t;
 };
 
@@ -10024,7 +10018,7 @@ static GTY(()) tree fpscr_values;
 static void
 emit_fpu_switch (rtx scratch, int index)
 {
-  rtx dst, src;
+  rtx src;
 
   if (fpscr_values == NULL)
     {
@@ -13509,47 +13503,51 @@ sh_find_equiv_gbr_addr (rtx_insn* insn, rtx mem)
   Manual insn combine support code.
 */
 
-/* Given a reg rtx and a start insn, try to find the insn that sets the
-   specified reg by using the specified insn stepping function, such as 
-   'prev_nonnote_insn_bb'.  When the insn is found, try to extract the rtx
-   of the reg set.  */
-set_of_reg
-sh_find_set_of_reg (rtx reg, rtx insn, rtx_insn *(*stepfunc)(rtx))
+/* Return true if the specified insn contains any UNSPECs or
+   UNSPEC_VOLATILEs.  */
+static bool
+sh_unspec_insn_p (rtx_insn* insn)
 {
-  set_of_reg result;
-  result.insn = insn;
-  result.set_rtx = NULL_RTX;
-  result.set_src = NULL_RTX;
+  bool result = false;
 
-  if (!REG_P (reg) || insn == NULL_RTX)
-    return result;
-
-  for (result.insn = stepfunc (insn); result.insn != NULL_RTX;
-       result.insn = stepfunc (result.insn))
+  struct note_uses_func
+  {
+    static void
+    func (rtx* x, void* data)
     {
-      if (BARRIER_P (result.insn))
-	return result;
-      if (!NONJUMP_INSN_P (result.insn))
-	continue;
-      if (reg_set_p (reg, result.insn))
-	{
-	  result.set_rtx = set_of (reg, result.insn);
-
-	  if (result.set_rtx == NULL_RTX || GET_CODE (result.set_rtx) != SET)
-	    return result;
-
-	  result.set_src = XEXP (result.set_rtx, 1);
-	  return result;
-	}
+      if (GET_CODE (*x) == UNSPEC || GET_CODE (*x) == UNSPEC_VOLATILE)
+	*(static_cast<bool*> (data)) = true;
     }
+  };
 
+  note_uses (&PATTERN (insn), note_uses_func::func, &result);
   return result;
+}
+
+/* Return true if the register operands of the specified insn are modified
+   between the specified from and to insns (exclusive of those two).  */
+static bool
+sh_insn_operands_modified_between_p (rtx_insn* operands_insn,
+				     const rtx_insn* from,
+				     const rtx_insn* to)
+{
+  /*  FIXME: Return true for multiple sets for now.  */
+  rtx s = single_set (operands_insn);
+  if (s == NULL_RTX)
+    return true;
+
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (i, array, SET_SRC (s), ALL)
+    if ((REG_P (*i) || SUBREG_P (*i)) && reg_set_between_p (*i, from, to))
+      return true;
+
+  return false;
 }
 
 /* Given an op rtx and an insn, try to find out whether the result of the
    specified op consists only of logical operations on T bit stores.  */
 bool
-sh_is_logical_t_store_expr (rtx op, rtx insn)
+sh_is_logical_t_store_expr (rtx op, rtx_insn* insn)
 {
   if (!logical_operator (op, SImode))
     return false;
@@ -13585,7 +13583,7 @@ sh_is_logical_t_store_expr (rtx op, rtx insn)
    by a simple reg-reg copy.  If so, the replacement reg rtx is returned,
    NULL_RTX otherwise.  */
 rtx
-sh_try_omit_signzero_extend (rtx extended_op, rtx insn)
+sh_try_omit_signzero_extend (rtx extended_op, rtx_insn* insn)
 {
   if (REG_P (extended_op))
     extended_op = extended_op;
@@ -13613,6 +13611,49 @@ sh_try_omit_signzero_extend (rtx extended_op, rtx insn)
     return extended_op;
 
   return NULL_RTX;
+}
+
+/* Given the current insn, which is assumed to be a movrt_negc insn, try to
+   figure out whether it should be converted into a movt-xor sequence in
+   the movrt_negc splitter.
+   Returns true if insns have been modified and the splitter has succeeded.  */
+bool
+sh_split_movrt_negc_to_movt_xor (rtx_insn* curr_insn, rtx operands[])
+{
+  /* In cases such as
+	tst	r4,r4
+	mov	#-1,r1
+	negc	r1,r1
+	tst	r4,r4
+     we can replace the T bit clobbering negc with a movt-xor sequence and
+     eliminate the redundant comparison.
+     Because the xor insn depends on register allocation results, allow this
+     only before reload.  */
+  if (!can_create_pseudo_p ())
+    return false;
+
+  set_of_reg t_before_negc = sh_find_set_of_reg (get_t_reg_rtx (), curr_insn,
+						 prev_nonnote_insn_bb);
+  set_of_reg t_after_negc = sh_find_set_of_reg (get_t_reg_rtx (), curr_insn,
+						next_nonnote_insn_bb);
+
+  if (t_before_negc.set_rtx != NULL_RTX && t_after_negc.set_rtx != NULL_RTX
+      && rtx_equal_p (t_before_negc.set_rtx, t_after_negc.set_rtx)
+      && !reg_used_between_p (get_t_reg_rtx (), curr_insn, t_after_negc.insn)
+      && !sh_insn_operands_modified_between_p (t_before_negc.insn,
+					       t_before_negc.insn,
+					       t_after_negc.insn)
+      && !sh_unspec_insn_p (t_after_negc.insn)
+      && !volatile_insn_p (PATTERN (t_after_negc.insn))
+      && !side_effects_p (PATTERN (t_after_negc.insn))
+      && !may_trap_or_fault_p (PATTERN (t_after_negc.insn)))
+    {
+      emit_insn (gen_movrt_xor (operands[0], get_t_reg_rtx ()));
+      set_insn_deleted (t_after_negc.insn);
+      return true;
+    }
+  else
+    return false;
 }
 
 static void
@@ -13686,7 +13727,7 @@ sh_mode_priority (int entity ATTRIBUTE_UNUSED, int n)
 /* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
 
 static bool
-sh_use_by_pieces_infrastructure_p (unsigned int size,
+sh_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 				   unsigned int align,
 				   enum by_pieces_operation op,
 				   bool speed_p)

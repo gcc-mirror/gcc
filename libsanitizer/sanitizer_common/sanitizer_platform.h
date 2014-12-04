@@ -47,7 +47,7 @@
 # define SANITIZER_WINDOWS 0
 #endif
 
-#if defined(__ANDROID__) || defined(ANDROID)
+#if defined(__ANDROID__)
 # define SANITIZER_ANDROID 1
 #else
 # define SANITIZER_ANDROID 0
@@ -79,7 +79,7 @@
 // For such platforms build this code with -DSANITIZER_CAN_USE_ALLOCATOR64=0 or
 // change the definition of SANITIZER_CAN_USE_ALLOCATOR64 here.
 #ifndef SANITIZER_CAN_USE_ALLOCATOR64
-# if defined(__aarch64__)
+# if defined(__aarch64__) || defined(__mips64)
 #  define SANITIZER_CAN_USE_ALLOCATOR64 0
 # else
 #  define SANITIZER_CAN_USE_ALLOCATOR64 (SANITIZER_WORDSIZE == 64)
@@ -105,6 +105,12 @@
 # else
 # define SANITIZER_USES_CANONICAL_LINUX_SYSCALLS 0
 # endif
+#endif
+
+#ifdef __mips__
+# define SANITIZER_POINTER_FORMAT_LENGTH FIRST_32_SECOND_64(8, 10)
+#else
+# define SANITIZER_POINTER_FORMAT_LENGTH FIRST_32_SECOND_64(8, 12)
 #endif
 
 #endif // SANITIZER_PLATFORM_H

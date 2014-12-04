@@ -3658,6 +3658,17 @@ rest_of_handle_sched2 (void)
   return 0;
 }
 
+static unsigned int
+rest_of_handle_sched_fusion (void)
+{
+#ifdef INSN_SCHEDULING
+  sched_fusion = true;
+  schedule_insns ();
+  sched_fusion = false;
+#endif
+  return 0;
+}
+
 namespace {
 
 const pass_data pass_data_live_range_shrinkage =
@@ -3799,4 +3810,56 @@ rtl_opt_pass *
 make_pass_sched2 (gcc::context *ctxt)
 {
   return new pass_sched2 (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_sched_fusion =
+{
+  RTL_PASS, /* type */
+  "sched_fusion", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_SCHED_FUSION, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_df_finish, /* todo_flags_finish */
+};
+
+class pass_sched_fusion : public rtl_opt_pass
+{
+public:
+  pass_sched_fusion (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_sched_fusion, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *);
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_sched_fusion ();
+    }
+
+}; // class pass_sched2
+
+bool
+pass_sched_fusion::gate (function *)
+{
+#ifdef INSN_SCHEDULING
+  /* Scheduling fusion relies on peephole2 to do real fusion work,
+     so only enable it if peephole2 is in effect.  */
+  return (optimize > 0 && flag_peephole2
+    && flag_schedule_fusion && targetm.sched.fusion_priority != NULL);
+#else
+  return 0;
+#endif
+}
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_sched_fusion (gcc::context *ctxt)
+{
+  return new pass_sched_fusion (ctxt);
 }

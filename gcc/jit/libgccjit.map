@@ -1,0 +1,100 @@
+# Linker script for libgccjit.so
+#   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+#   Contributed by David Malcolm <dmalcolm@redhat.com>.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.  */
+{
+  global:
+    # Keep this list sorted alphabetically:
+    gcc_jit_block_add_assignment;
+    gcc_jit_block_add_assignment_op;
+    gcc_jit_block_add_comment;
+    gcc_jit_block_add_eval;
+    gcc_jit_block_as_object;
+    gcc_jit_block_end_with_conditional;
+    gcc_jit_block_end_with_jump;
+    gcc_jit_block_end_with_return;
+    gcc_jit_block_end_with_void_return;
+    gcc_jit_block_get_function;
+    gcc_jit_context_acquire;
+    gcc_jit_context_compile;
+    gcc_jit_context_dump_to_file;
+    gcc_jit_context_get_builtin_function;
+    gcc_jit_context_get_first_error;
+    gcc_jit_context_get_type;
+    gcc_jit_context_get_int_type;
+    gcc_jit_context_new_array_access;
+    gcc_jit_context_new_array_type;
+    gcc_jit_context_new_binary_op;
+    gcc_jit_context_new_call;
+    gcc_jit_context_new_call_through_ptr;
+    gcc_jit_context_new_cast;
+    gcc_jit_context_new_child_context;
+    gcc_jit_context_new_comparison;
+    gcc_jit_context_new_field;
+    gcc_jit_context_new_function;
+    gcc_jit_context_new_function_ptr_type;
+    gcc_jit_context_new_global;
+    gcc_jit_context_new_location;
+    gcc_jit_context_new_opaque_struct;
+    gcc_jit_context_new_param;
+    gcc_jit_context_new_rvalue_from_double;
+    gcc_jit_context_new_rvalue_from_int;
+    gcc_jit_context_new_rvalue_from_ptr;
+    gcc_jit_context_new_string_literal;
+    gcc_jit_context_new_struct_type;
+    gcc_jit_context_new_unary_op;
+    gcc_jit_context_new_union_type;
+    gcc_jit_context_null;
+    gcc_jit_context_one;
+    gcc_jit_context_release;
+    gcc_jit_context_set_bool_option;
+    gcc_jit_context_set_int_option;
+    gcc_jit_context_set_str_option;
+    gcc_jit_context_zero;
+    gcc_jit_field_as_object;
+    gcc_jit_function_as_object;
+    gcc_jit_function_dump_to_dot;
+    gcc_jit_function_get_param;
+    gcc_jit_function_new_block;
+    gcc_jit_function_new_local;
+    gcc_jit_location_as_object;
+    gcc_jit_lvalue_as_object;
+    gcc_jit_lvalue_as_rvalue;
+    gcc_jit_lvalue_access_field;
+    gcc_jit_lvalue_get_address;
+    gcc_jit_object_get_context;
+    gcc_jit_object_get_debug_string;
+    gcc_jit_param_as_lvalue;
+    gcc_jit_param_as_object;
+    gcc_jit_param_as_rvalue;
+    gcc_jit_result_get_code;
+    gcc_jit_result_release;
+    gcc_jit_rvalue_access_field;
+    gcc_jit_rvalue_as_object;
+    gcc_jit_rvalue_dereference;
+    gcc_jit_rvalue_dereference_field;
+    gcc_jit_rvalue_get_type;
+    gcc_jit_struct_as_type;
+    gcc_jit_struct_set_fields;
+    gcc_jit_type_as_object;
+    gcc_jit_type_get_const;
+    gcc_jit_type_get_pointer;
+    gcc_jit_type_get_volatile;
+
+  local: *;
+};

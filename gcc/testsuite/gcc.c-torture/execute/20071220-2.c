@@ -1,4 +1,5 @@
 /* PR tree-optimization/29484 */
+/* { dg-require-effective-target label_values } */
 
 extern void abort (void);
 

@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "asan.h"
 #include "rtl-iter.h"
+#include "tree-chkp.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -1243,6 +1244,30 @@ use_blocks_for_decl_p (tree decl)
   return targetm.use_blocks_for_decl_p (decl);
 }
 
+/* Follow the IDENTIFIER_TRANSPARENT_ALIAS chain starting at *ALIAS
+   until we find an identifier that is not itself a transparent alias.
+   Modify the alias passed to it by reference (and all aliases on the
+   way to the ultimate target), such that they do not have to be
+   followed again, and return the ultimate target of the alias
+   chain.  */
+
+static inline tree
+ultimate_transparent_alias_target (tree *alias)
+{
+  tree target = *alias;
+
+  if (IDENTIFIER_TRANSPARENT_ALIAS (target))
+    {
+      gcc_assert (TREE_CHAIN (target));
+      target = ultimate_transparent_alias_target (&TREE_CHAIN (target));
+      gcc_assert (! IDENTIFIER_TRANSPARENT_ALIAS (target)
+		  && ! TREE_CHAIN (target));
+      *alias = target;
+    }
+
+  return target;
+}
+
 /* Create the DECL_RTL for a VAR_DECL or FUNCTION_DECL.  DECL should
    have static storage duration.  In other words, it should not be an
    automatic variable, including PARM_DECLs.
@@ -1257,6 +1282,7 @@ make_decl_rtl (tree decl)
 {
   const char *name = 0;
   int reg_number;
+  tree id;
   rtx x;
 
   /* Check that we are not being given an automatic variable.  */
@@ -1314,7 +1340,12 @@ make_decl_rtl (tree decl)
       return;
     }
 
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  id = DECL_ASSEMBLER_NAME (decl);
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && cgraph_node::get (decl)
+      && cgraph_node::get (decl)->instrumentation_clone)
+    ultimate_transparent_alias_target (&id);
+  name = IDENTIFIER_POINTER (id);
 
   if (name[0] != '*' && TREE_CODE (decl) != FUNCTION_DECL
       && DECL_REGISTER (decl))
@@ -1642,6 +1673,18 @@ decide_function_section (tree decl)
   in_cold_section_p = first_function_block_is_cold;
 }
 
+/* Get the function's name, as described by its RTL.  This may be
+   different from the DECL_NAME name used in the source file.  */
+const char *
+get_fnname_from_decl (tree decl)
+{
+  rtx x = DECL_RTL (decl);
+  gcc_assert (MEM_P (x));
+  x = XEXP (x, 0);
+  gcc_assert (GET_CODE (x) == SYMBOL_REF);
+  return XSTR (x, 0);
+}
+
 /* Output assembler code for the constant pool of a function and associated
    with defining the name of the function.  DECL describes the function.
    NAME is the function's name.  For the constant pool, we use the current
@@ -1748,7 +1791,10 @@ assemble_start_function (tree decl, const char *fnname)
 
   /* Make function name accessible from other files, if appropriate.  */
 
-  if (TREE_PUBLIC (decl))
+  if (TREE_PUBLIC (decl)
+      || (cgraph_node::get (decl)->instrumentation_clone
+	  && cgraph_node::get (decl)->instrumented_version
+	  && TREE_PUBLIC (cgraph_node::get (decl)->instrumented_version->decl)))
     {
       notice_global_symbol (decl);
 
@@ -2007,7 +2053,17 @@ assemble_variable_contents (tree decl, const char *name,
       else
 	/* Leave space for it.  */
 	assemble_zeros (tree_to_uhwi (DECL_SIZE_UNIT (decl)));
+      targetm.asm_out.decl_end ();
     }
+}
+
+/* Write out assembly for the variable DECL, which is not defined in
+   the current translation unit.  */
+void
+assemble_undefined_decl (tree decl)
+{
+  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  targetm.asm_out.assemble_undefined_decl (asm_out_file, name, decl);
 }
 
 /* Assemble everything that is needed for a variable or function declaration.
@@ -2437,30 +2493,6 @@ mark_decl_referenced (tree decl)
      which do not need to be marked.  */
 }
 
-
-/* Follow the IDENTIFIER_TRANSPARENT_ALIAS chain starting at *ALIAS
-   until we find an identifier that is not itself a transparent alias.
-   Modify the alias passed to it by reference (and all aliases on the
-   way to the ultimate target), such that they do not have to be
-   followed again, and return the ultimate target of the alias
-   chain.  */
-
-static inline tree
-ultimate_transparent_alias_target (tree *alias)
-{
-  tree target = *alias;
-
-  if (IDENTIFIER_TRANSPARENT_ALIAS (target))
-    {
-      gcc_assert (TREE_CHAIN (target));
-      target = ultimate_transparent_alias_target (&TREE_CHAIN (target));
-      gcc_assert (! IDENTIFIER_TRANSPARENT_ALIAS (target)
-		  && ! TREE_CHAIN (target));
-      *alias = target;
-    }
-
-  return target;
-}
 
 /* Output to FILE (an assembly file) a reference to NAME.  If NAME
    starts with a *, the rest of NAME is output verbatim.  Otherwise
@@ -3337,6 +3369,8 @@ assemble_constant_contents (tree exp, const char *label, unsigned int align)
 
   /* Output the value of EXP.  */
   output_constant (exp, size, align);
+
+  targetm.asm_out.decl_end ();
 }
 
 /* We must output the constant data referred to by SYMBOL; do so.  */
@@ -3778,6 +3812,7 @@ output_constant_pool_2 (machine_mode mode, rtx x, unsigned int align)
     case MODE_UFRACT:
     case MODE_ACCUM:
     case MODE_UACCUM:
+    case MODE_POINTER_BOUNDS:
       assemble_integer (x, GET_MODE_SIZE (mode), align, 1);
       break;
 
@@ -4677,6 +4712,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
     case REFERENCE_TYPE:
     case OFFSET_TYPE:
     case FIXED_POINT_TYPE:
+    case POINTER_BOUNDS_TYPE:
     case NULLPTR_TYPE:
       if (! assemble_integer (expand_expr (exp, NULL_RTX, VOIDmode,
 					   EXPAND_INITIALIZER),
@@ -5510,6 +5546,8 @@ vec<alias_pair, va_gc> *alias_pairs;
 void
 do_assemble_alias (tree decl, tree target)
 {
+  tree id;
+
   /* Emulated TLS had better not get this var.  */
   gcc_assert (!(!targetm.have_tls
 		&& TREE_CODE (decl) == VAR_DECL
@@ -5518,12 +5556,16 @@ do_assemble_alias (tree decl, tree target)
   if (TREE_ASM_WRITTEN (decl))
     return;
 
+  id = DECL_ASSEMBLER_NAME (decl);
+  ultimate_transparent_alias_target (&id);
+
   /* We must force creation of DECL_RTL for debug info generation, even though
      we don't use it here.  */
   make_decl_rtl (decl);
 
   TREE_ASM_WRITTEN (decl) = 1;
   TREE_ASM_WRITTEN (DECL_ASSEMBLER_NAME (decl)) = 1;
+  TREE_ASM_WRITTEN (id) = 1;
 
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
     {
@@ -5534,7 +5576,7 @@ do_assemble_alias (tree decl, tree target)
 
 #ifdef ASM_OUTPUT_WEAKREF
       ASM_OUTPUT_WEAKREF (asm_out_file, decl,
-			  IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+			  IDENTIFIER_POINTER (id),
 			  IDENTIFIER_POINTER (target));
 #else
       if (!TARGET_SUPPORTS_WEAK)
@@ -5548,9 +5590,16 @@ do_assemble_alias (tree decl, tree target)
     }
 
 #ifdef ASM_OUTPUT_DEF
+  tree orig_decl = decl;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && cgraph_node::get (decl)->instrumentation_clone
+      && cgraph_node::get (decl)->instrumented_version)
+    orig_decl = cgraph_node::get (decl)->instrumented_version->decl;
+
   /* Make name accessible from other files, if appropriate.  */
 
-  if (TREE_PUBLIC (decl))
+  if (TREE_PUBLIC (decl) || TREE_PUBLIC (orig_decl))
     {
       globalize_decl (decl);
       maybe_assemble_visibility (decl);
@@ -5560,7 +5609,7 @@ do_assemble_alias (tree decl, tree target)
 #if defined (ASM_OUTPUT_TYPE_DIRECTIVE)
       if (targetm.has_ifunc_p ())
 	ASM_OUTPUT_TYPE_DIRECTIVE
-	  (asm_out_file, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+	  (asm_out_file, IDENTIFIER_POINTER (id),
 	   IFUNC_ASM_TYPE);
       else
 #endif
@@ -5572,7 +5621,7 @@ do_assemble_alias (tree decl, tree target)
   ASM_OUTPUT_DEF_FROM_DECLS (asm_out_file, decl, target);
 # else
   ASM_OUTPUT_DEF (asm_out_file,
-		  IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+		  IDENTIFIER_POINTER (id),
 		  IDENTIFIER_POINTER (target));
 # endif
 #elif defined (ASM_OUTPUT_WEAK_ALIAS) || defined (ASM_WEAKEN_DECL)
@@ -5580,7 +5629,7 @@ do_assemble_alias (tree decl, tree target)
     const char *name;
     tree *p, t;
 
-    name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+    name = IDENTIFIER_POINTER (id);
 # ifdef ASM_WEAKEN_DECL
     ASM_WEAKEN_DECL (asm_out_file, decl, name, IDENTIFIER_POINTER (target));
 # else
@@ -5589,7 +5638,8 @@ do_assemble_alias (tree decl, tree target)
     /* Remove this function from the pending weak list so that
        we do not emit multiple .weak directives for it.  */
     for (p = &weak_decls; (t = *p) ; )
-      if (DECL_ASSEMBLER_NAME (decl) == DECL_ASSEMBLER_NAME (TREE_VALUE (t)))
+      if (DECL_ASSEMBLER_NAME (decl) == DECL_ASSEMBLER_NAME (TREE_VALUE (t))
+	  || id == DECL_ASSEMBLER_NAME (TREE_VALUE (t)))
 	*p = TREE_CHAIN (t);
       else
 	p = &TREE_CHAIN (t);
@@ -5598,8 +5648,7 @@ do_assemble_alias (tree decl, tree target)
        list, for the same reason.  */
     for (p = &weakref_targets; (t = *p) ; )
       {
-	if (DECL_ASSEMBLER_NAME (decl)
-	    == ultimate_transparent_alias_target (&TREE_VALUE (t)))
+	if (id == ultimate_transparent_alias_target (&TREE_VALUE (t)))
 	  *p = TREE_CHAIN (t);
 	else
 	  p = &TREE_CHAIN (t);
@@ -5678,8 +5727,26 @@ assemble_alias (tree decl, tree target)
    to its transaction aware clone.  Note that tm_pure functions are
    considered to be their own clone.  */
 
-static GTY((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
-     htab_t tm_clone_hash;
+struct tm_clone_hasher : ggc_cache_hasher<tree_map *>
+{
+  static hashval_t hash (tree_map *m) { return tree_map_hash (m); }
+  static bool equal (tree_map *a, tree_map *b) { return tree_map_eq (a, b); }
+
+  static void handle_cache_entry (tree_map *&e)
+  {
+    if (e != HTAB_EMPTY_ENTRY || e != HTAB_DELETED_ENTRY)
+      {
+	extern void gt_ggc_mx (tree_map *&);
+	if (ggc_marked_p (e->base.from))
+	  gt_ggc_mx (e);
+	else
+	  e = static_cast<tree_map *> (HTAB_DELETED_ENTRY);
+      }
+  }
+};
+
+static GTY((cache))
+     hash_table<tm_clone_hasher> *tm_clone_hash;
 
 void
 record_tm_clone_pair (tree o, tree n)
@@ -5687,15 +5754,14 @@ record_tm_clone_pair (tree o, tree n)
   struct tree_map **slot, *h;
 
   if (tm_clone_hash == NULL)
-    tm_clone_hash = htab_create_ggc (32, tree_map_hash, tree_map_eq, 0);
+    tm_clone_hash = hash_table<tm_clone_hasher>::create_ggc (32);
 
   h = ggc_alloc<tree_map> ();
   h->hash = htab_hash_pointer (o);
   h->base.from = o;
   h->to = n;
 
-  slot = (struct tree_map **)
-    htab_find_slot_with_hash (tm_clone_hash, h, h->hash, INSERT);
+  slot = tm_clone_hash->find_slot_with_hash (h, h->hash, INSERT);
   *slot = h;
 }
 
@@ -5708,8 +5774,7 @@ get_tm_clone_pair (tree o)
 
       in.base.from = o;
       in.hash = htab_hash_pointer (o);
-      h = (struct tree_map *) htab_find_with_hash (tm_clone_hash,
-						   &in, in.hash);
+      h = tm_clone_hash->find_with_hash (&in, in.hash);
       if (h)
 	return h->to;
     }
@@ -5723,19 +5788,6 @@ typedef struct tm_alias_pair
   tree to;
 } tm_alias_pair;
 
-
-/* Helper function for finish_tm_clone_pairs.  Dump a hash table entry
-   into a VEC in INFO.  */
-
-static int
-dump_tm_clone_to_vec (void **slot, void *info)
-{
-  struct tree_map *map = (struct tree_map *) *slot;
-  vec<tm_alias_pair> *tm_alias_pairs = (vec<tm_alias_pair> *) info;
-  tm_alias_pair p = {DECL_UID (map->base.from), map->base.from, map->to};
-  tm_alias_pairs->safe_push (p);
-  return 1;
-}
 
 /* Dump the actual pairs to the .tm_clone_table section.  */
 
@@ -5817,15 +5869,20 @@ finish_tm_clone_pairs (void)
      to a vector, sort it, and dump the vector.  */
 
   /* Dump the hashtable to a vector.  */
-  htab_traverse_noresize (tm_clone_hash, dump_tm_clone_to_vec,
-			  (void *) &tm_alias_pairs);
+  tree_map *map;
+  hash_table<tm_clone_hasher>::iterator iter;
+  FOR_EACH_HASH_TABLE_ELEMENT (*tm_clone_hash, map, tree_map *, iter)
+    {
+      tm_alias_pair p = {DECL_UID (map->base.from), map->base.from, map->to};
+      tm_alias_pairs.safe_push (p);
+    }
   /* Sort it.  */
   tm_alias_pairs.qsort (tm_alias_pair_cmp);
 
   /* Dump it.  */
   dump_tm_clone_pairs (tm_alias_pairs);
 
-  htab_delete (tm_clone_hash);
+  tm_clone_hash->empty ();
   tm_clone_hash = NULL;
   tm_alias_pairs.release ();
 }
@@ -5864,6 +5921,12 @@ int
 maybe_assemble_visibility (tree decl)
 {
   enum symbol_visibility vis = DECL_VISIBILITY (decl);
+
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && cgraph_node::get (decl)
+      && cgraph_node::get (decl)->instrumentation_clone
+      && cgraph_node::get (decl)->instrumented_version)
+    vis = DECL_VISIBILITY (cgraph_node::get (decl)->instrumented_version->decl);
 
   if (vis != VISIBILITY_DEFAULT)
     {
@@ -6448,6 +6511,7 @@ default_unique_section (tree decl, int reloc)
   bool one_only = DECL_ONE_ONLY (decl) && !HAVE_COMDAT_GROUP;
   const char *prefix, *name, *linkonce;
   char *string;
+  tree id;
 
   switch (categorize_decl_for_section (decl, reloc))
     {
@@ -6497,7 +6561,9 @@ default_unique_section (tree decl, int reloc)
       gcc_unreachable ();
     }
 
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  id = DECL_ASSEMBLER_NAME (decl);
+  ultimate_transparent_alias_target (&id);
+  name = IDENTIFIER_POINTER (id);
   name = targetm.strip_name_encoding (name);
 
   /* If we're using one_only, then there needs to be a .gnu.linkonce
@@ -7143,7 +7209,7 @@ get_section_anchor (struct object_block *block, HOST_WIDE_INT offset,
     offset = 0;
   else
     {
-      bias = 1 << (GET_MODE_BITSIZE (ptr_mode) - 1);
+      bias = HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (ptr_mode) - 1);
       if (offset < 0)
 	{
 	  delta = -(unsigned HOST_WIDE_INT) offset + max_offset;

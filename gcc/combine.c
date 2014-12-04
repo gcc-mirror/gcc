@@ -914,47 +914,34 @@ combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
 
   /* Disallow this combination if both new_cost and old_cost are greater than
      zero, and new_cost is greater than old cost.  */
-  if (old_cost > 0 && new_cost > old_cost)
+  int reject = old_cost > 0 && new_cost > old_cost;
+
+  if (dump_file)
     {
-      if (dump_file)
-	{
-	  if (i0)
-	    {
-	      fprintf (dump_file,
-		       "rejecting combination of insns %d, %d, %d and %d\n",
-		       INSN_UID (i0), INSN_UID (i1), INSN_UID (i2),
-		       INSN_UID (i3));
-	      fprintf (dump_file, "original costs %d + %d + %d + %d = %d\n",
-		       i0_cost, i1_cost, i2_cost, i3_cost, old_cost);
-	    }
-	  else if (i1)
-	    {
-	      fprintf (dump_file,
-		       "rejecting combination of insns %d, %d and %d\n",
-		       INSN_UID (i1), INSN_UID (i2), INSN_UID (i3));
-	      fprintf (dump_file, "original costs %d + %d + %d = %d\n",
-		       i1_cost, i2_cost, i3_cost, old_cost);
-	    }
-	  else
-	    {
-	      fprintf (dump_file,
-		       "rejecting combination of insns %d and %d\n",
-		       INSN_UID (i2), INSN_UID (i3));
-	      fprintf (dump_file, "original costs %d + %d = %d\n",
-		       i2_cost, i3_cost, old_cost);
-	    }
+      fprintf (dump_file, "%s combination of insns ",
+	       reject ? "rejecting" : "allowing");
+      if (i0)
+	fprintf (dump_file, "%d, ", INSN_UID (i0));
+      if (i1)
+	fprintf (dump_file, "%d, ", INSN_UID (i1));
+      fprintf (dump_file, "%d and %d\n", INSN_UID (i2), INSN_UID (i3));
 
-	  if (newi2pat)
-	    {
-	      fprintf (dump_file, "replacement costs %d + %d = %d\n",
-		       new_i2_cost, new_i3_cost, new_cost);
-	    }
-	  else
-	    fprintf (dump_file, "replacement cost %d\n", new_cost);
-	}
+      fprintf (dump_file, "original costs ");
+      if (i0)
+	fprintf (dump_file, "%d + ", i0_cost);
+      if (i1)
+	fprintf (dump_file, "%d + ", i1_cost);
+      fprintf (dump_file, "%d + %d = %d\n", i2_cost, i3_cost, old_cost);
 
-      return false;
+      if (newi2pat)
+	fprintf (dump_file, "replacement costs %d + %d = %d\n",
+		 new_i2_cost, new_i3_cost, new_cost);
+      else
+	fprintf (dump_file, "replacement cost %d\n", new_cost);
     }
+
+  if (reject)
+    return false;
 
   /* Update the uid_insn_cost array with the replacement costs.  */
   INSN_COST (i2) = new_i2_cost;
@@ -1574,8 +1561,8 @@ setup_incoming_promotions (rtx_insn *first)
       uns3 = TYPE_UNSIGNED (DECL_ARG_TYPE (arg));
 
       /* The mode and signedness of the argument as it is actually passed,
-         after any TARGET_PROMOTE_FUNCTION_ARGS-driven ABI promotions.  */
-      mode3 = promote_function_mode (DECL_ARG_TYPE (arg), mode2, &uns3,
+         see assign_parm_setup_reg in function.c.  */
+      mode3 = promote_function_mode (TREE_TYPE (arg), mode1, &uns1,
 				     TREE_TYPE (cfun->decl), 0);
 
       /* The mode of the register in which the argument is being passed.  */
@@ -2553,7 +2540,10 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
   /* Exit early if one of the insns involved can't be used for
      combinations.  */
-  if (cant_combine_insn_p (i3)
+  if (CALL_P (i2)
+      || (i1 && CALL_P (i1))
+      || (i0 && CALL_P (i0))
+      || cant_combine_insn_p (i3)
       || cant_combine_insn_p (i2)
       || (i1 && cant_combine_insn_p (i1))
       || (i0 && cant_combine_insn_p (i0))
@@ -3275,29 +3265,25 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	RTVEC_ELT (newpat_vec_with_clobbers, i) = XVECEXP (newpat, 0, i);
     }
 
-  /* Is the result of combination a valid instruction?  */
-  insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+  /* We have recognized nothing yet.  */
+  insn_code_number = -1;
 
-  /* If the result isn't valid, see if it is a PARALLEL of two SETs where
-     the second SET's destination is a register that is unused and isn't
-     marked as an instruction that might trap in an EH region.  In that case,
-     we just need the first SET.   This can occur when simplifying a divmod
-     insn.  We *must* test for this case here because the code below that
-     splits two independent SETs doesn't handle this case correctly when it
-     updates the register status.
+  /* See if this is a PARALLEL of two SETs where one SET's destination is
+     a register that is unused and this isn't marked as an instruction that
+     might trap in an EH region.  In that case, we just need the other SET.
+     We prefer this over the PARALLEL.
+
+     This can occur when simplifying a divmod insn.  We *must* test for this
+     case here because the code below that splits two independent SETs doesn't
+     handle this case correctly when it updates the register status.
 
      It's pointless doing this if we originally had two sets, one from
      i3, and one from i2.  Combining then splitting the parallel results
      in the original i2 again plus an invalid insn (which we delete).
      The net effect is only to move instructions around, which makes
-     debug info less accurate.
+     debug info less accurate.  */
 
-     Also check the case where the first SET's destination is unused.
-     That would not cause incorrect code, but does cause an unneeded
-     insn to remain.  */
-
-  if (insn_code_number < 0
-      && !(added_sets_2 && i1 == 0)
+  if (!(added_sets_2 && i1 == 0)
       && GET_CODE (newpat) == PARALLEL
       && XVECLEN (newpat, 0) == 2
       && GET_CODE (XVECEXP (newpat, 0, 0)) == SET
@@ -3306,6 +3292,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
     {
       rtx set0 = XVECEXP (newpat, 0, 0);
       rtx set1 = XVECEXP (newpat, 0, 1);
+      rtx oldpat = newpat;
 
       if (((REG_P (SET_DEST (set1))
 	    && find_reg_note (i3, REG_UNUSED, SET_DEST (set1)))
@@ -3332,7 +3319,14 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  if (insn_code_number >= 0)
 	    changed_i3_dest = 1;
 	}
+
+      if (insn_code_number < 0)
+	newpat = oldpat;
     }
+
+  /* Is the result of combination a valid instruction?  */
+  if (insn_code_number < 0)
+    insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
 
   /* If we were combining three insns and the result is a simple SET
      with no ASM_OPERANDS that wasn't recognized, try to split it into two
@@ -5811,10 +5805,11 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	    ;
 
 	  else if (STORE_FLAG_VALUE == -1
-	      && new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
-	      && op1 == const0_rtx
-	      && (num_sign_bit_copies (op0, mode)
-		  == GET_MODE_PRECISION (mode)))
+		   && new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
+		   && op1 == const0_rtx
+		   && mode == GET_MODE (op0)
+		   && (num_sign_bit_copies (op0, mode)
+		       == GET_MODE_PRECISION (mode)))
 	    return gen_lowpart (mode,
 				expand_compound_operation (op0));
 

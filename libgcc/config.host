@@ -1256,6 +1256,10 @@ mep*-*-*)
 	tmake_file="mep/t-mep t-fdpbit"
 	extra_parts="crtbegin.o crtend.o"
 	;;
+nvptx-*)
+	tmake_file="$tmake_file nvptx/t-nvptx"
+	extra_parts="crt0.o"
+	;;
 *)
 	echo "*** Configuration ${host} not supported" 1>&2
 	exit 1

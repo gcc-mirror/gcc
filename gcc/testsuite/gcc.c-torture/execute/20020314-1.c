@@ -1,3 +1,4 @@
+/* { dg-require-effective-target alloca } */
 void f(void * a, double y)
 {
 }

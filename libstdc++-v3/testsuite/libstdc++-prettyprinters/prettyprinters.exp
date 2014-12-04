@@ -30,7 +30,14 @@ if ![info exists ::env(GUALITY_GDB_NAME)] {
 }
 
 if {! [gdb_version_check]} {
+    dg-finish
+    # Only print unsupported message in one instance.
+    if ![gcc_parallel_test_run_p prettyprinters] {
+	return
+    }
+    gcc_parallel_test_enable 0
     unsupported "prettyprinters.exp"
+    gcc_parallel_test_enable 1
     return
 }
 

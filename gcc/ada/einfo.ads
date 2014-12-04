@@ -148,7 +148,7 @@ package Einfo is
 
 --       The Object_Size for base subtypes reflect the natural hardware
 --       size in bits (see Ttypes and Cstand for integer types). For
---       enumeration and fixed-point base subtypes have 8. 16. 32 or 64
+--       enumeration and fixed-point base subtypes have 8, 16, 32, or 64
 --       bits for this size, depending on the range of values to be stored.
 
 --       The Object_Size of a subtype is the same as the Object_Size of
@@ -4159,7 +4159,7 @@ package Einfo is
 --       the full view of a private type T is derived from another private type
 --       with discriminants Td, the full view of T is also private, and there
 --       is no way to attach to it a further full view that would convey the
---       structure of T to the backend. The Underlying_Full_ View is an
+--       structure of T to the backend. The Underlying_Full_View is an
 --       attribute of the full view that is a subtype of Td with the same
 --       constraint as the declaration for T. The declaration for this subtype
 --       is built at the point of the declaration of T, either as completion,

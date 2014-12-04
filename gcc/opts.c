@@ -307,6 +307,14 @@ init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
   targetm_common.option_init_struct (opts);
 }
 
+/* Release any allocations owned by OPTS.  */
+
+void
+finalize_options_struct (struct gcc_options *opts)
+{
+  XDELETEVEC (opts->x_param_values);
+}
+
 /* If indicated by the optimization level LEVEL (-Os if SIZE is set,
    -Ofast if FAST is set, -Og if DEBUG is set), apply the option DEFAULT_OPT
    to OPTS and OPTS_SET, diagnostic context DC, location LOC, with language
@@ -500,6 +508,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_fipa_icf, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fisolate_erroneous_paths_dereference, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fuse_caller_save, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_flra_remat, NULL, 1 },
 
     /* -O3 optimizations.  */
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
@@ -903,6 +912,19 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   if (opts->x_flag_sanitize_recover & SANITIZE_LEAK)
     error_at (loc, "-fsanitize-recover=leak is not supported");
+
+  /* When instrumenting the pointers, we don't want to remove
+     the null pointer checks.  */
+  if (opts->x_flag_sanitize & (SANITIZE_NULL | SANITIZE_NONNULL_ATTRIBUTE
+				| SANITIZE_RETURNS_NONNULL_ATTRIBUTE))
+    opts->x_flag_delete_null_pointer_checks = 0;
+
+  /* Aggressive compiler optimizations may cause false negatives.  */
+  if (opts->x_flag_sanitize)
+    {
+      opts->x_flag_aggressive_loop_optimizations = 0;
+      opts->x_flag_strict_overflow = 0;
+    }
 }
 
 #define LEFT_COLUMN	27
@@ -1621,12 +1643,6 @@ common_handle_option (struct gcc_options *opts,
 	if (code != OPT_fsanitize_)
 	  break;
 
-	/* When instrumenting the pointers, we don't want to remove
-	   the null pointer checks.  */
-	if (opts->x_flag_sanitize & (SANITIZE_NULL | SANITIZE_NONNULL_ATTRIBUTE
-				     | SANITIZE_RETURNS_NONNULL_ATTRIBUTE))
-	  opts->x_flag_delete_null_pointer_checks = 0;
-
 	/* Kernel ASan implies normal ASan but does not yet support
 	   all features.  */
 	if (opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS)
@@ -1806,6 +1822,17 @@ common_handle_option (struct gcc_options *opts,
       /* Deferred.  */
       break;
 
+    case OPT_foffload_:
+      /* Deferred.  */
+      break;
+
+#ifndef ACCEL_COMPILER
+    case OPT_foffload_abi_:
+      error_at (loc, "-foffload-abi option can be specified only for "
+		"offload compiler");
+      break;
+#endif
+
     case OPT_fpack_struct_:
       if (value <= 0 || (value & (value - 1)) || value > 16)
 	error_at (loc,
@@ -1923,7 +1950,7 @@ common_handle_option (struct gcc_options *opts,
 			     ? STATIC_BUILTIN_STACK_CHECK
 			     : GENERIC_STACK_CHECK;
       else
-	warning_at (loc, 0, "unknown stack check parameter \"%s\"", arg);
+	warning_at (loc, 0, "unknown stack check parameter %qs", arg);
       break;
 
     case OPT_fstack_limit:
@@ -1965,7 +1992,7 @@ common_handle_option (struct gcc_options *opts,
       
       /* FALLTHRU */
     case OPT_gdwarf_:
-      if (value < 2 || value > 4)
+      if (value < 2 || value > 5)
 	error_at (loc, "dwarf version %d is not supported", value);
       else
 	opts->x_dwarf_version = value;
@@ -2199,7 +2226,7 @@ set_debug_level (enum debug_info_type type, int extended, const char *arg,
       if (opts_set->x_write_symbols != NO_DEBUG
 	  && opts->x_write_symbols != NO_DEBUG
 	  && type != opts->x_write_symbols)
-	error_at (loc, "debug format \"%s\" conflicts with prior selection",
+	error_at (loc, "debug format %qs conflicts with prior selection",
 		  debug_type_names[type]);
       opts->x_write_symbols = type;
       opts_set->x_write_symbols = type;
@@ -2217,9 +2244,9 @@ set_debug_level (enum debug_info_type type, int extended, const char *arg,
     {
       int argval = integral_argument (arg);
       if (argval == -1)
-	error_at (loc, "unrecognised debug output level \"%s\"", arg);
+	error_at (loc, "unrecognised debug output level %qs", arg);
       else if (argval > 3)
-	error_at (loc, "debug output level %s is too high", arg);
+	error_at (loc, "debug output level %qs is too high", arg);
       else
 	opts->x_debug_info_level = (enum debug_info_levels) argval;
     }

@@ -63,6 +63,36 @@ if test "$GXX" = yes; then
 fi
 AC_SUBST(libsuffix)
 
+dnl Test for -lsocket and -lnsl.  Copied from libgo/configure.ac.
+AC_CACHE_CHECK([for socket libraries], libcc1_cv_lib_sockets,
+  [libcc1_cv_lib_sockets=
+   libcc1_check_both=no
+   AC_CHECK_FUNC(connect, libcc1_check_socket=no, libcc1_check_socket=yes)
+   if test "$libcc1_check_socket" = "yes"; then
+     unset ac_cv_func_connect
+     AC_CHECK_LIB(socket, main, libcc1_cv_lib_sockets="-lsocket",
+     		  libcc1_check_both=yes)
+   fi
+   if test "$libcc1_check_both" = "yes"; then
+     libcc1_old_libs=$LIBS
+     LIBS="$LIBS -lsocket -lnsl"
+     unset ac_cv_func_accept
+     AC_CHECK_FUNC(accept,
+		   [libcc1_check_nsl=no
+		    libcc1_cv_lib_sockets="-lsocket -lnsl"])
+     unset ac_cv_func_accept
+     LIBS=$libcc1_old_libs
+   fi
+   unset ac_cv_func_gethostbyname
+   libcc1_old_libs="$LIBS"
+   AC_CHECK_FUNC(gethostbyname, ,
+		 [AC_CHECK_LIB(nsl, main,
+		 	[libcc1_cv_lib_sockets="$libcc1_cv_lib_sockets -lnsl"])])
+   unset ac_cv_func_gethostbyname
+   LIBS=$libcc1_old_libs
+])
+LIBS="$LIBS $libcc1_cv_lib_sockets"
+
 # If any of these functions are missing, simply don't bother building
 # this plugin.
 GCC_ENABLE_PLUGINS

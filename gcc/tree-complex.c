@@ -211,20 +211,20 @@ static bool
 init_dont_simulate_again (void)
 {
   basic_block bb;
-  gimple_stmt_iterator gsi;
-  gimple phi;
   bool saw_a_complex_op = false;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
-	  phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  prop_set_simulate_again (phi,
 				   is_complex_reg (gimple_phi_result (phi)));
 	}
 
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
 	  gimple stmt;
 	  tree op0, op1;
@@ -409,7 +409,7 @@ complex_visit_stmt (gimple stmt, edge *taken_edge_p ATTRIBUTE_UNUSED,
 /* Evaluate a PHI node against the complex lattice defined above.  */
 
 static enum ssa_prop_result
-complex_visit_phi (gimple phi)
+complex_visit_phi (gphi *phi)
 {
   complex_lattice_t new_l, old_l;
   unsigned int ver;
@@ -514,7 +514,7 @@ get_component_ssa_name (tree ssa_name, bool imag_p)
 	ret = get_component_var (SSA_NAME_VAR (ssa_name), imag_p);
       else
 	ret = TREE_TYPE (TREE_TYPE (ssa_name));
-      ret = make_ssa_name (ret, NULL);
+      ret = make_ssa_name (ret);
 
       /* Copy some properties from the original.  In particular, whether it
 	 is used in an abnormal phi, and whether it's uninitialized.  */
@@ -732,11 +732,11 @@ update_parameter_components (void)
 static void
 update_phi_components (basic_block bb)
 {
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
 
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
 
       if (is_complex_reg (gimple_phi_result (phi)))
 	{
@@ -865,7 +865,7 @@ expand_complex_move (gimple_stmt_iterator *gsi, tree type)
 
 	  stmt = gsi_stmt (*gsi);
 	  gcc_assert (gimple_code (stmt) == GIMPLE_RETURN);
-	  gimple_return_set_retval (stmt, lhs);
+	  gimple_return_set_retval (as_a <greturn *> (stmt), lhs);
 	}
 
       update_stmt (stmt);
@@ -960,7 +960,8 @@ expand_complex_libcall (gimple_stmt_iterator *gsi, tree ar, tree ai,
   machine_mode mode;
   enum built_in_function bcode;
   tree fn, type, lhs;
-  gimple old_stmt, stmt;
+  gimple old_stmt;
+  gcall *stmt;
 
   old_stmt = gsi_stmt (*gsi);
   lhs = gimple_assign_lhs (old_stmt);
@@ -1142,11 +1143,11 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
       gimple stmt;
       tree cond, tmp;
 
-      tmp = create_tmp_var (boolean_type_node, NULL);
+      tmp = create_tmp_var (boolean_type_node);
       stmt = gimple_build_assign (tmp, compare);
       if (gimple_in_ssa_p (cfun))
 	{
-	  tmp = make_ssa_name (tmp,  stmt);
+	  tmp = make_ssa_name (tmp, stmt);
 	  gimple_assign_set_lhs (stmt, tmp);
 	}
 
@@ -1181,8 +1182,8 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
           set_immediate_dominator (CDI_DOMINATORS, bb_false, bb_cond);
         }
 
-      rr = create_tmp_reg (inner_type, NULL);
-      ri = create_tmp_reg (inner_type, NULL);
+      rr = create_tmp_reg (inner_type);
+      ri = create_tmp_reg (inner_type);
     }
 
   /* In the TRUE branch, we compute
@@ -1400,8 +1401,11 @@ expand_complex_comparison (gimple_stmt_iterator *gsi, tree ar, tree ai,
   switch (gimple_code (stmt))
     {
     case GIMPLE_RETURN:
-      type = TREE_TYPE (gimple_return_retval (stmt));
-      gimple_return_set_retval (stmt, fold_convert (type, cc));
+      {
+	greturn *return_stmt = as_a <greturn *> (stmt);
+	type = TREE_TYPE (gimple_return_retval (return_stmt));
+	gimple_return_set_retval (return_stmt, fold_convert (type, cc));
+      }
       break;
 
     case GIMPLE_ASSIGN:
@@ -1411,9 +1415,12 @@ expand_complex_comparison (gimple_stmt_iterator *gsi, tree ar, tree ai,
       break;
 
     case GIMPLE_COND:
-      gimple_cond_set_code (stmt, EQ_EXPR);
-      gimple_cond_set_lhs (stmt, cc);
-      gimple_cond_set_rhs (stmt, boolean_true_node);
+      {
+	gcond *cond_stmt = as_a <gcond *> (stmt);
+	gimple_cond_set_code (cond_stmt, EQ_EXPR);
+	gimple_cond_set_lhs (cond_stmt, cc);
+	gimple_cond_set_rhs (cond_stmt, boolean_true_node);
+      }
       break;
 
     default:
@@ -1428,7 +1435,7 @@ expand_complex_comparison (gimple_stmt_iterator *gsi, tree ar, tree ai,
 static void
 expand_complex_asm (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gasm *stmt = as_a <gasm *> (gsi_stmt (*gsi));
   unsigned int i;
 
   for (i = 0; i < gimple_asm_noutputs (stmt); ++i)

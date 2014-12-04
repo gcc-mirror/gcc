@@ -18,6 +18,7 @@
 // 25.3.1.2 [lib.stable.sort]
 
 #include <algorithm>
+#include <testsuite_new_operators.h>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
@@ -30,7 +31,7 @@ typedef test_container<int, random_access_iterator_wrapper> Container;
 void 
 test1()
 {
-  int array[]={0};
+  int array[] = { 0 };
   Container con(array, array);
   stable_sort(con.begin(), con.end());
 }
@@ -38,13 +39,14 @@ test1()
 void 
 test2()
 {
-  int array[] = {6, 5, 4, 3, 2, 1, 0};
+  int array[] = { 6, 5, 4, 3, 2, 1, 0 };
   Container con(array, array + 7);
   stable_sort(con.begin(), con.end());
   VERIFY(array[0] == 0 && array[1] == 1 && array[2] == 2 &&
 	 array[3] == 3 && array[4] == 4 && array[5] == 5 &&
 	 array[6] == 6);
 }
+
 struct S
 {
   int i;
@@ -72,8 +74,7 @@ operator<(const S& s1, const S& s2)
 void 
 test3()
 {
-
-  S array[] = {-1, -2, 1, 2, -3 ,-5 ,3 , -4, 5, 4};
+  S array[] = { -1, -2, 1, 2, -3 ,-5 ,3 , -4, 5, 4 };
   test_container<S, random_access_iterator_wrapper> con(array,array + 10);
   stable_sort(con.begin(), con.end());
   for(int i = 0; i < 10; ++i)
@@ -85,5 +86,15 @@ main()
 {
   test1();
   test2();
+
+  test3();
+
+  __gnu_test::set_new_limit(sizeof(S) * 5);
+  test3();
+
+  __gnu_test::set_new_limit(sizeof(S));
+  test3();
+
+  __gnu_test::set_new_limit(0);
   test3();
 }

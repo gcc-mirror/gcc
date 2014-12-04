@@ -64,17 +64,17 @@ static void SignalUnsafeCall(ThreadState *thr, uptr pc) {
   if (atomic_load(&thr->in_signal_handler, memory_order_relaxed) == 0 ||
       !flags()->report_signal_unsafe)
     return;
-  StackTrace stack;
-  stack.ObtainCurrent(thr, pc);
+  VarSizeStackTrace stack;
+  ObtainCurrentStack(thr, pc, &stack);
   ThreadRegistryLock l(ctx->thread_registry);
   ScopedReport rep(ReportTypeSignalUnsafe);
   if (!IsFiredSuppression(ctx, rep, stack)) {
-    rep.AddStack(&stack, true);
+    rep.AddStack(stack, true);
     OutputReport(thr, rep);
   }
 }
 
-void *user_alloc(ThreadState *thr, uptr pc, uptr sz, uptr align) {
+void *user_alloc(ThreadState *thr, uptr pc, uptr sz, uptr align, bool signal) {
   if ((sz >= (1ull << 40)) || (align >= (1ull << 40)))
     return AllocatorReturnNull();
   void *p = allocator()->Allocate(&thr->alloc_cache, sz, align);
@@ -82,15 +82,17 @@ void *user_alloc(ThreadState *thr, uptr pc, uptr sz, uptr align) {
     return 0;
   if (ctx && ctx->initialized)
     OnUserAlloc(thr, pc, (uptr)p, sz, true);
-  SignalUnsafeCall(thr, pc);
+  if (signal)
+    SignalUnsafeCall(thr, pc);
   return p;
 }
 
-void user_free(ThreadState *thr, uptr pc, void *p) {
+void user_free(ThreadState *thr, uptr pc, void *p, bool signal) {
   if (ctx && ctx->initialized)
     OnUserFree(thr, pc, (uptr)p, true);
   allocator()->Deallocate(&thr->alloc_cache, p);
-  SignalUnsafeCall(thr, pc);
+  if (signal)
+    SignalUnsafeCall(thr, pc);
 }
 
 void OnUserAlloc(ThreadState *thr, uptr pc, uptr p, uptr sz, bool write) {

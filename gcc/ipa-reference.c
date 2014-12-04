@@ -1193,5 +1193,9 @@ make_pass_ipa_reference (gcc::context *ctxt)
 void
 ipa_reference_c_finalize (void)
 {
-  ipa_init_p = false;
+  if (ipa_init_p)
+    {
+      bitmap_obstack_release (&optimization_summary_obstack);
+      ipa_init_p = false;
+    }
 }

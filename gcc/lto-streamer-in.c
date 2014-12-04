@@ -799,7 +799,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts,
     {
       if (gimple_stmt_max_uid (fn) < cedge->lto_stmt_uid)
         fatal_error ("Cgraph edge statement index out of range");
-      cedge->call_stmt = stmts[cedge->lto_stmt_uid - 1];
+      cedge->call_stmt = as_a <gcall *> (stmts[cedge->lto_stmt_uid - 1]);
       if (!cedge->call_stmt)
         fatal_error ("Cgraph edge statement index not found");
     }
@@ -807,7 +807,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts,
     {
       if (gimple_stmt_max_uid (fn) < cedge->lto_stmt_uid)
         fatal_error ("Cgraph edge statement index out of range");
-      cedge->call_stmt = stmts[cedge->lto_stmt_uid - 1];
+      cedge->call_stmt = as_a <gcall *> (stmts[cedge->lto_stmt_uid - 1]);
       if (!cedge->call_stmt)
         fatal_error ("Cgraph edge statement index not found");
     }
@@ -903,6 +903,7 @@ input_struct_function_base (struct function *fn, struct data_in *data_in,
   fn->has_simduid_loops = bp_unpack_value (&bp, 1);
   fn->va_list_fpr_size = bp_unpack_value (&bp, 8);
   fn->va_list_gpr_size = bp_unpack_value (&bp, 8);
+  fn->last_clique = bp_unpack_value (&bp, sizeof (short) * 8);
 
   /* Input the function start and end loci.  */
   fn->function_start_locus = stream_input_location (&bp, data_in);

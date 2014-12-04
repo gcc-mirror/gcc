@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
 /* { dg-options "-O2 -ftree-vectorize -mcpu=power6 -maltivec" } */
 /* { dg-final { scan-assembler "vsel" } } */
 /* { dg-final { scan-assembler "vrfim" } } */

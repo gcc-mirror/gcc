@@ -35,6 +35,9 @@ along with GCC; see the file COPYING3.  If not see
 bool
 is_sec_implicit_index_fn (tree fndecl)
 {
+  if (!fndecl)
+    return false;
+
   if (TREE_CODE (fndecl) == ADDR_EXPR)
     fndecl = TREE_OPERAND (fndecl, 0);
 
@@ -327,6 +330,9 @@ extract_array_notation_exprs (tree node, bool ignore_builtin_fn,
 			      vec<tree, va_gc> **array_list)
 {
   size_t ii = 0;  
+
+  if (!node)
+    return;
   if (TREE_CODE (node) == ARRAY_NOTATION_REF)
     {
       vec_safe_push (*array_list, node);

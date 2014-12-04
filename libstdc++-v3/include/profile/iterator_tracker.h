@@ -123,6 +123,7 @@ namespace __profile
       operator=(const __iterator_tracker& __x) _GLIBCXX_NOEXCEPT
       {
 	_M_current = __x._M_current;
+	_M_ds = __x._M_ds;
 	return *this;
       }
 
@@ -164,10 +165,6 @@ namespace __profile
 	__tmp -= __n;
 	return __tmp;
       }
-
-      void
-      _M_find()
-      { _M_ds->_M_profile_find(); }
 
       const _Sequence*
       _M_get_sequence() const

@@ -4798,7 +4798,7 @@ of a wider mode.)
 
 @cindex @code{vec_shr_@var{m}} instruction pattern
 @item @samp{vec_shr_@var{m}}
-Whole vector right shift in bits.
+Whole vector right shift in bits, i.e. towards element 0.
 Operand 1 is a vector to be shifted.
 Operand 2 is an integer shift amount in bits.
 Operand 0 is where the resulting shifted vector is stored.

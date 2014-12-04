@@ -184,12 +184,13 @@ associate_equivalences_with_edges (void)
 	 target block creates an equivalence.  */
       else if (gimple_code (stmt) == GIMPLE_SWITCH)
 	{
-	  tree cond = gimple_switch_index (stmt);
+	  gswitch *switch_stmt = as_a <gswitch *> (stmt);
+	  tree cond = gimple_switch_index (switch_stmt);
 
 	  if (TREE_CODE (cond) == SSA_NAME
 	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (cond))
 	    {
-	      int i, n_labels = gimple_switch_num_labels (stmt);
+	      int i, n_labels = gimple_switch_num_labels (switch_stmt);
 	      tree *info = XCNEWVEC (tree, last_basic_block_for_fn (cfun));
 
 	      /* Walk over the case label vector.  Record blocks
@@ -197,7 +198,7 @@ associate_equivalences_with_edges (void)
 		 a single value.  */
 	      for (i = 0; i < n_labels; i++)
 		{
-		  tree label = gimple_switch_label (stmt, i);
+		  tree label = gimple_switch_label (switch_stmt, i);
 		  basic_block bb = label_to_block (CASE_LABEL (label));
 
 		  if (CASE_HIGH (label)

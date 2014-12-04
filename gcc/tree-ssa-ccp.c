@@ -164,6 +164,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "wide-int-print.h"
 #include "builtins.h"
+#include "tree-chkp.h"
 
 
 /* Possible lattice values.  */
@@ -401,58 +402,16 @@ set_value_varying (tree var)
   val->mask = -1;
 }
 
-/* For float types, modify the value of VAL to make ccp work correctly
-   for non-standard values (-0, NaN):
-
-   If HONOR_SIGNED_ZEROS is false, and VAL = -0, we canonicalize it to 0.
-   If HONOR_NANS is false, and VAL is NaN, we canonicalize it to UNDEFINED.
-     This is to fix the following problem (see PR 29921): Suppose we have
-
-     x = 0.0 * y
-
-     and we set value of y to NaN.  This causes value of x to be set to NaN.
-     When we later determine that y is in fact VARYING, fold uses the fact
-     that HONOR_NANS is false, and we try to change the value of x to 0,
-     causing an ICE.  With HONOR_NANS being false, the real appearance of
-     NaN would cause undefined behavior, though, so claiming that y (and x)
-     are UNDEFINED initially is correct.
-
-  For other constants, make sure to drop TREE_OVERFLOW.  */
+/* For integer constants, make sure to drop TREE_OVERFLOW.  */
 
 static void
 canonicalize_value (ccp_prop_value_t *val)
 {
-  machine_mode mode;
-  tree type;
-  REAL_VALUE_TYPE d;
-
   if (val->lattice_val != CONSTANT)
     return;
 
   if (TREE_OVERFLOW_P (val->value))
     val->value = drop_tree_overflow (val->value);
-
-  if (TREE_CODE (val->value) != REAL_CST)
-    return;
-
-  d = TREE_REAL_CST (val->value);
-  type = TREE_TYPE (val->value);
-  mode = TYPE_MODE (type);
-
-  if (!HONOR_SIGNED_ZEROS (mode)
-      && REAL_VALUE_MINUS_ZERO (d))
-    {
-      val->value = build_real (type, dconst0);
-      return;
-    }
-
-  if (!HONOR_NANS (mode)
-      && REAL_VALUE_ISNAN (d))
-    {
-      val->lattice_val = UNDEFINED;
-      val->value = NULL;
-      return;
-    }
 }
 
 /* Return whether the lattice transition is valid.  */
@@ -486,7 +445,49 @@ valid_lattice_transition (ccp_prop_value_t old_val, ccp_prop_value_t new_val)
 	    == wi::bit_and_not (wi::to_widest (new_val.value), new_val.mask));
 
   /* Otherwise constant values have to agree.  */
-  return operand_equal_p (old_val.value, new_val.value, 0);
+  if (operand_equal_p (old_val.value, new_val.value, 0))
+    return true;
+
+  /* At least the kinds and types should agree now.  */
+  if (TREE_CODE (old_val.value) != TREE_CODE (new_val.value)
+      || !types_compatible_p (TREE_TYPE (old_val.value),
+			      TREE_TYPE (new_val.value)))
+    return false;
+
+  /* For floats and !HONOR_NANS allow transitions from (partial) NaN
+     to non-NaN.  */
+  tree type = TREE_TYPE (new_val.value);
+  if (SCALAR_FLOAT_TYPE_P (type)
+      && !HONOR_NANS (TYPE_MODE (type)))
+    {
+      if (REAL_VALUE_ISNAN (TREE_REAL_CST (old_val.value)))
+	return true;
+    }
+  else if (VECTOR_FLOAT_TYPE_P (type)
+	   && !HONOR_NANS (TYPE_MODE (TREE_TYPE (type))))
+    {
+      for (unsigned i = 0; i < VECTOR_CST_NELTS (old_val.value); ++i)
+	if (!REAL_VALUE_ISNAN
+	       (TREE_REAL_CST (VECTOR_CST_ELT (old_val.value, i)))
+	    && !operand_equal_p (VECTOR_CST_ELT (old_val.value, i),
+				 VECTOR_CST_ELT (new_val.value, i), 0))
+	  return false;
+      return true;
+    }
+  else if (COMPLEX_FLOAT_TYPE_P (type)
+	   && !HONOR_NANS (TYPE_MODE (TREE_TYPE (type))))
+    {
+      if (!REAL_VALUE_ISNAN (TREE_REAL_CST (TREE_REALPART (old_val.value)))
+	  && !operand_equal_p (TREE_REALPART (old_val.value),
+			       TREE_REALPART (new_val.value), 0))
+	return false;
+      if (!REAL_VALUE_ISNAN (TREE_REAL_CST (TREE_IMAGPART (old_val.value)))
+	  && !operand_equal_p (TREE_IMAGPART (old_val.value),
+			       TREE_IMAGPART (new_val.value), 0))
+	return false;
+      return true;
+    }
+  return false;
 }
 
 /* Set the value for variable VAR to NEW_VAL.  Return true if the new
@@ -513,7 +514,7 @@ set_lattice_value (tree var, ccp_prop_value_t new_val)
       new_val.mask = new_val.mask | old_val->mask | diff;
     }
 
-  gcc_assert (valid_lattice_transition (*old_val, new_val));
+  gcc_checking_assert (valid_lattice_transition (*old_val, new_val));
 
   /* If *OLD_VAL and NEW_VAL are the same, return false to inform the
      caller that this was a non-transition.  */
@@ -838,11 +839,11 @@ ccp_initialize (void)
      except for phi nodes for virtual operands when we do not do store ccp.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple_stmt_iterator i;
+      gphi_iterator i;
 
       for (i = gsi_start_phis (bb); !gsi_end_p (i); gsi_next (&i))
         {
-          gimple phi = gsi_stmt (i);
+          gphi *phi = i.phi ();
 
 	  if (virtual_operand_p (gimple_phi_result (phi)))
             prop_set_simulate_again (phi, false);
@@ -1027,7 +1028,7 @@ ccp_lattice_meet (ccp_prop_value_t *val1, ccp_prop_value_t *val2)
    of the PHI node that are incoming via executable edges.  */
 
 static enum ssa_prop_result
-ccp_visit_phi_node (gimple phi)
+ccp_visit_phi_node (gphi *phi)
 {
   unsigned i;
   ccp_prop_value_t *old_val, new_val;
@@ -1125,6 +1126,27 @@ valueize_op (tree op)
   return op;
 }
 
+/* Return the constant value for OP, but signal to not follow SSA
+   edges if the definition may be simulated again.  */
+
+static tree
+valueize_op_1 (tree op)
+{
+  if (TREE_CODE (op) == SSA_NAME)
+    {
+      tree tem = get_constant_value (op);
+      if (tem)
+	return tem;
+      /* If the definition may be simulated again we cannot follow
+         this SSA edge as the SSA propagator does not necessarily
+	 re-visit the use.  */
+      gimple def_stmt = SSA_NAME_DEF_STMT (op);
+      if (prop_simulate_again_p (def_stmt))
+	return NULL_TREE;
+    }
+  return op;
+}
+
 /* CCP specific front-end to the non-destructive constant folding
    routines.
 
@@ -1152,12 +1174,13 @@ ccp_fold (gimple stmt)
     case GIMPLE_SWITCH:
       {
 	/* Return the constant switch index.  */
-        return valueize_op (gimple_switch_index (stmt));
+        return valueize_op (gimple_switch_index (as_a <gswitch *> (stmt)));
       }
 
     case GIMPLE_ASSIGN:
     case GIMPLE_CALL:
-      return gimple_fold_stmt_to_constant_1 (stmt, valueize_op);
+      return gimple_fold_stmt_to_constant_1 (stmt,
+					     valueize_op, valueize_op_1);
 
     default:
       gcc_unreachable ();
@@ -1701,7 +1724,7 @@ evaluate_stmt (gimple stmt)
             simplified = gimple_assign_rhs1 (stmt);
         }
       else if (code == GIMPLE_SWITCH)
-        simplified = gimple_switch_index (stmt);
+        simplified = gimple_switch_index (as_a <gswitch *> (stmt));
       else
 	/* These cannot satisfy is_gimple_min_invariant without folding.  */
 	gcc_assert (code == GIMPLE_CALL || code == GIMPLE_COND);
@@ -1912,7 +1935,8 @@ static void
 insert_clobber_before_stack_restore (tree saved_val, tree var,
 				     gimple_htab **visited)
 {
-  gimple stmt, clobber_stmt;
+  gimple stmt;
+  gassign *clobber_stmt;
   tree clobber;
   imm_use_iterator iter;
   gimple_stmt_iterator i;
@@ -1945,6 +1969,8 @@ insert_clobber_before_stack_restore (tree saved_val, tree var,
     else if (gimple_assign_ssa_name_copy_p (stmt))
       insert_clobber_before_stack_restore (gimple_assign_lhs (stmt), var,
 					   visited);
+    else if (chkp_gimple_call_builtin_p (stmt, BUILT_IN_CHKP_BNDRET))
+      continue;
     else
       gcc_assert (is_gimple_debug (stmt));
 }
@@ -2039,7 +2065,7 @@ fold_builtin_alloca_with_align (gimple stmt)
   elem_type = build_nonstandard_integer_type (BITS_PER_UNIT, 1);
   n_elem = size * 8 / BITS_PER_UNIT;
   array_type = build_array_type_nelts (elem_type, n_elem);
-  var = create_tmp_var (array_type, NULL);
+  var = create_tmp_var (array_type);
   DECL_ALIGN (var) = TREE_INT_CST_LOW (gimple_call_arg (stmt, 1));
   {
     struct ptr_info_def *pi = SSA_NAME_PTR_INFO (lhs);
@@ -2069,6 +2095,7 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
     {
     case GIMPLE_COND:
       {
+	gcond *cond_stmt = as_a <gcond *> (stmt);
 	ccp_prop_value_t val;
 	/* Statement evaluation will handle type mismatches in constants
 	   more gracefully than the final propagation.  This allows us to
@@ -2088,9 +2115,9 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 	  }
 
 	if (integer_zerop (val.value))
-	  gimple_cond_make_false (stmt);
+	  gimple_cond_make_false (cond_stmt);
 	else
-	  gimple_cond_make_true (stmt);
+	  gimple_cond_make_true (cond_stmt);
 
 	return true;
       }
@@ -2565,6 +2592,9 @@ optimize_unreachable (gimple_stmt_iterator i)
   edge e;
   bool ret;
 
+  if (flag_sanitize & SANITIZE_UNREACHABLE)
+    return false;
+
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       stmt = gsi_stmt (gsi);
@@ -2572,10 +2602,10 @@ optimize_unreachable (gimple_stmt_iterator i)
       if (is_gimple_debug (stmt))
        continue;
 
-      if (gimple_code (stmt) == GIMPLE_LABEL)
+      if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
 	{
 	  /* Verify we do not need to preserve the label.  */
-	  if (FORCED_LABEL (gimple_label_label (stmt)))
+	  if (FORCED_LABEL (gimple_label_label (label_stmt)))
 	    return false;
 
 	  continue;
@@ -2596,15 +2626,15 @@ optimize_unreachable (gimple_stmt_iterator i)
 	continue;
 
       stmt = gsi_stmt (gsi);
-      if (gimple_code (stmt) == GIMPLE_COND)
+      if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
 	{
 	  if (e->flags & EDGE_TRUE_VALUE)
-	    gimple_cond_make_false (stmt);
+	    gimple_cond_make_false (cond_stmt);
 	  else if (e->flags & EDGE_FALSE_VALUE)
-	    gimple_cond_make_true (stmt);
+	    gimple_cond_make_true (cond_stmt);
 	  else
 	    gcc_unreachable ();
-	  update_stmt (stmt);
+	  update_stmt (cond_stmt);
 	}
       else
 	{

@@ -1085,7 +1085,6 @@ build_classdollar_field (tree type)
 			TYPE_QUAL_CONST)));
       TREE_STATIC (decl) = 1;
       TREE_CONSTANT (decl) = 1;
-      TREE_READONLY (decl) = 1;
       TREE_PUBLIC (decl) = 1;
       java_hide_decl (decl);
       DECL_IGNORED_P (decl) = 1;

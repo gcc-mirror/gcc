@@ -191,6 +191,18 @@ sem_item::dump (void)
     }
 }
 
+/* Return true if target supports alias symbols.  */
+
+bool
+sem_item::target_supports_symbol_aliases_p (void)
+{
+#if !defined (ASM_OUTPUT_DEF) || (!defined(ASM_OUTPUT_WEAK_ALIAS) && !defined (ASM_WEAKEN_DECL))
+  return false;
+#else
+  return true;
+#endif
+}
+
 /* Semantic function constructor that uses STACK as bitmap memory stack.  */
 
 sem_function::sem_function (bitmap_obstack *stack): sem_item (FUNC, stack),
@@ -398,7 +410,6 @@ sem_function::equals_private (sem_item *item,
   basic_block bb1, bb2;
   edge e1, e2;
   edge_iterator ei1, ei2;
-  int *bb_dict = NULL;
   bool result = true;
   tree arg1, arg2;
 
@@ -474,12 +485,11 @@ sem_function::equals_private (sem_item *item,
 
   dump_message ("All BBs are equal\n");
 
+  auto_vec <int> bb_dict;
+
   /* Basic block edges check.  */
   for (unsigned i = 0; i < bb_sorted.length (); ++i)
     {
-      bb_dict = XNEWVEC (int, bb_sorted.length () + 2);
-      memset (bb_dict, -1, (bb_sorted.length () + 2) * sizeof (int));
-
       bb1 = bb_sorted[i]->bb;
       bb2 = m_compared_func->bb_sorted[i]->bb;
 
@@ -579,7 +589,8 @@ sem_function::merge (sem_item *alias_item)
       redirect_callers
 	= (!original_discardable
 	   && alias->get_availability () > AVAIL_INTERPOSABLE
-	   && original->get_availability () > AVAIL_INTERPOSABLE);
+	   && original->get_availability () > AVAIL_INTERPOSABLE
+	   && !alias->instrumented_version);
     }
   else
     {
@@ -588,7 +599,8 @@ sem_function::merge (sem_item *alias_item)
       redirect_callers = false;
     }
 
-  if (create_alias && DECL_COMDAT_GROUP (alias->decl))
+  if (create_alias && (DECL_COMDAT_GROUP (alias->decl)
+		       || !sem_item::target_supports_symbol_aliases_p ()))
     {
       create_alias = false;
       create_thunk = true;
@@ -603,6 +615,14 @@ sem_function::merge (sem_item *alias_item)
 		  == DECL_COMDAT_GROUP (alias->decl)))))
     local_original
       = dyn_cast <cgraph_node *> (original->noninterposable_alias ());
+
+    if (!local_original)
+      {
+	if (dump_file)
+	  fprintf (dump_file, "Noninterposable alias cannot be created.\n\n");
+
+	return false;
+      }
 
   if (redirect_callers)
     {
@@ -648,7 +668,7 @@ sem_function::merge (sem_item *alias_item)
       alias->resolve_alias (original);
 
       /* Workaround for PR63566 that forces equal calling convention
-	 to be used.  */
+       to be used.  */
       alias->local.local = false;
       original->local.local = false;
 
@@ -684,7 +704,7 @@ void
 sem_function::init (void)
 {
   if (in_lto_p)
-    get_node ()->get_body ();
+    get_node ()->get_untransformed_body ();
 
   tree fndecl = node->decl;
   function *func = DECL_STRUCT_FUNCTION (fndecl);
@@ -861,8 +881,8 @@ sem_function::parse_tree_args (void)
 bool
 sem_function::compare_phi_node (basic_block bb1, basic_block bb2)
 {
-  gimple_stmt_iterator si1, si2;
-  gimple phi1, phi2;
+  gphi_iterator si1, si2;
+  gphi *phi1, *phi2;
   unsigned size1, size2, i;
   tree t1, t2;
   edge e1, e2;
@@ -883,8 +903,8 @@ sem_function::compare_phi_node (basic_block bb1, basic_block bb2)
       if (gsi_end_p (si1) || gsi_end_p (si2))
 	return return_false();
 
-      phi1 = gsi_stmt (si1);
-      phi2 = gsi_stmt (si2);
+      phi1 = si1.phi ();
+      phi2 = si2.phi ();
 
       tree phi_result1 = gimple_phi_result (phi1);
       tree phi_result2 = gimple_phi_result (phi2);
@@ -935,9 +955,15 @@ sem_function::icf_handled_component_p (tree t)
    corresponds to TARGET.  */
 
 bool
-sem_function::bb_dict_test (int* bb_dict, int source, int target)
+sem_function::bb_dict_test (auto_vec<int> bb_dict, int source, int target)
 {
-  if (bb_dict[source] == -1)
+  source++;
+  target++;
+
+  if (bb_dict.length () <= (unsigned)source)
+    bb_dict.safe_grow_cleared (source + 1);
+
+  if (bb_dict[source] == 0)
     {
       bb_dict[source] = target;
       return true;
@@ -1154,6 +1180,13 @@ sem_variable::merge (sem_item *alias_item)
 {
   gcc_assert (alias_item->type == VAR);
 
+  if (!sem_item::target_supports_symbol_aliases_p ())
+    {
+      if (dump_file)
+	fprintf (dump_file, "Symbol aliases are not supported by target\n\n");
+      return false;
+    }
+
   sem_variable *alias_var = static_cast<sem_variable *> (alias_item);
 
   varpool_node *original = get_node ();
@@ -1200,6 +1233,7 @@ sem_variable::merge (sem_item *alias_item)
       alias->analyzed = false;
 
       DECL_INITIAL (alias->decl) = NULL;
+      alias->need_bounds_init = false;
       alias->remove_all_references ();
 
       varpool_node::create_alias (alias_var->decl, decl);
@@ -1292,6 +1326,7 @@ sem_item_optimizer::~sem_item_optimizer ()
 	delete (*it)->classes[i];
 
       (*it)->classes.release ();
+      free (*it);
     }
 
   m_items.release ();

@@ -1,4 +1,5 @@
 /* PR middle-end/53411 */
+/* { dg-require-effective-target untyped_assembly } */
 
 int a, b, c, d, e, f, g, h;
 void fn1 (void);

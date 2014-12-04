@@ -23,11 +23,9 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef __RL78_G10__
-
 #include "vregs.h"
 
-	.macro make_generic  which,need_result
+.macro MAKE_GENERIC  which,need_result
 
 	.if \need_result
 	quot = r8
@@ -69,6 +67,8 @@
 	bitB2 = bit+2
 	bitB3 = bit+3
 
+START_FUNC __generic_sidivmod\which
+
 num_lt_den\which:
 	.if \need_result
 	movw	r8, #0
@@ -100,12 +100,13 @@ shift_den_bit16\which:
 	;; to store sign information that must remain intact
 
 	.if \need_result
-
-generic_div:
+	.global __generic_sidiv
+__generic_sidiv:
 
 	.else
 
-generic_mod:
+	.global __generic_simod
+__generic_simod:
 
 	.endif
 
@@ -119,12 +120,21 @@ generic_mod:
 	cmpw	ax, [hl+8] ; numL
 	bh	$num_lt_den\which
 
+#ifdef __RL78_G10__
+	movw	ax, denL
+	push	ax
+	movw	ax, bitL
+	push	ax
+	movw	ax, bitH
+	push	ax
+#else
 	sel	rb2
 	push	ax		; denL
 ;	push	bc		; denH
 	push	de		; bitL
 	push	hl		; bitH - stored in BC
 	sel	rb0
+#endif
 
 	;; (quot,rem) = 16[sp] /% 20[sp]
 
@@ -360,41 +370,49 @@ next_loop_himode\which:
 	bnz	$main_loop_himode\which
 
 main_loop_done_himode\which:	
+#ifdef __RL78_G10__
+	pop	ax
+	movw	bitH, ax
+	pop	ax
+	movw	bitL, ax
+	pop	ax
+	movw	denL, ax
+#else
 	sel	rb2
 	pop	hl		; bitH - stored in BC
 	pop	de		; bitL
 ;	pop	bc		; denH
 	pop	ax		; denL
 	sel	rb0
+#endif
 
 	ret
-	.endm
-
-	make_generic _d 1
-	make_generic _m 0
+END_FUNC __generic_sidivmod\which
+.endm
 
 ;----------------------------------------------------------------------
 
-	.global	___udivsi3
-	.type	___udivsi3,@function
-___udivsi3:
+	MAKE_GENERIC _d 1
+	MAKE_GENERIC _m 0
+
+;----------------------------------------------------------------------
+
+START_FUNC ___udivsi3
 	;; r8 = 4[sp] / 8[sp]
-	call	$!generic_div
+	call	$!__generic_sidiv
 	ret
-	.size	___udivsi3, . - ___udivsi3
+END_FUNC ___udivsi3
 	
 
-	.global	___umodsi3
-	.type	___umodsi3,@function
-___umodsi3:
+START_FUNC ___umodsi3
 	;; r8 = 4[sp] % 8[sp]
-	call	$!generic_mod
+	call	$!__generic_simod
 	ret
-	.size	___umodsi3, . - ___umodsi3
+END_FUNC ___umodsi3
 
 ;----------------------------------------------------------------------
 
-	.macro neg_ax
+.macro NEG_AX
 	movw	hl, ax
 	movw	ax, #0
 	subw	ax, [hl]
@@ -404,11 +422,11 @@ ___umodsi3:
 	decw	ax
 	subw	ax, [hl+2]
 	movw	[hl+2], ax
-	.endm
+.endm
 
-	.global	___divsi3
-	.type	___divsi3,@function
-___divsi3:
+;----------------------------------------------------------------------
+
+START_FUNC ___divsi3
 	;; r8 = 4[sp] / 8[sp]
 	movw	de, #0
 	mov	a, [sp+7]
@@ -417,14 +435,14 @@ ___divsi3:
 	mov	a, [sp+11]
 	mov1	cy, a.7
 	bc	$div_signed_den
-	call	$!generic_div
+	call	$!__generic_sidiv
 	ret
-	
+
 div_signed_num:
 	;; neg [sp+4]
 	movw	ax, sp
 	addw	ax, #4
-	neg_ax
+	NEG_AX
 	mov	d, #1
 	mov	a, [sp+11]
 	mov1	cy, a.7
@@ -433,10 +451,10 @@ div_signed_den:
 	;; neg [sp+8]
 	movw	ax, sp
 	addw	ax, #8
-	neg_ax
+	NEG_AX
 	mov	e, #1
 div_unsigned_den:	
-	call	$!generic_div
+	call	$!__generic_sidiv
 
 	mov	a, d
 	cmp0	a
@@ -444,13 +462,13 @@ div_unsigned_den:
 	;;  We have to restore the numerator [sp+4]
 	movw	ax, sp
 	addw	ax, #4
-	neg_ax
+	NEG_AX
 	mov	a, d
 div_skip_restore_num:	
 	xor	a, e
 	bz	$div_no_neg
 	movw	ax, #r8
-	neg_ax
+	NEG_AX
 div_no_neg:
 	mov	a, e
 	cmp0	a
@@ -458,15 +476,13 @@ div_no_neg:
 	;;  We have to restore the denominator [sp+8]
 	movw	ax, sp
 	addw	ax, #8
-	neg_ax
+	NEG_AX
 div_skip_restore_den:
 	ret
-	.size	___divsi3, . - ___divsi3
+END_FUNC ___divsi3
 	
 
-	.global	___modsi3
-	.type	___modsi3,@function
-___modsi3:
+START_FUNC ___modsi3
 	;; r8 = 4[sp] % 8[sp]
 	movw	de, #0
 	mov	a, [sp+7]
@@ -475,14 +491,14 @@ ___modsi3:
 	mov	a, [sp+11]
 	mov1	cy, a.7
 	bc	$mod_signed_den
-	call	$!generic_mod
+	call	$!__generic_simod
 	ret
-	
+
 mod_signed_num:
 	;; neg [sp+4]
 	movw	ax, sp
 	addw	ax, #4
-	neg_ax
+	NEG_AX
 	mov	d, #1
 	mov	a, [sp+11]
 	mov1	cy, a.7
@@ -491,20 +507,20 @@ mod_signed_den:
 	;; neg [sp+8]
 	movw	ax, sp
 	addw	ax, #8
-	neg_ax
+	NEG_AX
 	mov	e, #1
 mod_unsigned_den:	
-	call	$!generic_mod
+	call	$!__generic_simod
 
 	mov	a, d
 	cmp0	a
 	bz	$mod_no_neg
 	movw	ax, #r8
-	neg_ax
+	NEG_AX
 	;;  We have to restore [sp+4] as well.
 	movw	ax, sp
 	addw	ax, #4
-	neg_ax
+	NEG_AX
 mod_no_neg:
  .if 1
 	mov	a, e
@@ -512,10 +528,8 @@ mod_no_neg:
 	bz	$mod_skip_restore_den
 	movw	ax, sp
 	addw	ax, #8
-	neg_ax
+	NEG_AX
 mod_skip_restore_den:	
  .endif	
 	ret
-	.size	___modsi3, . - ___modsi3
-
-#endif
+END_FUNC ___modsi3

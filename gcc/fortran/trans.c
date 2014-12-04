@@ -1890,7 +1890,7 @@ trans_code (gfc_code * code, tree cond)
 	  break;
 
 	default:
-	  internal_error ("gfc_trans_code(): Bad statement code");
+	  gfc_internal_error ("gfc_trans_code(): Bad statement code");
 	}
 
       gfc_set_backend_locus (&code->loc);

@@ -73,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool);
 static bool conditional_replacement (basic_block, basic_block,
-				     edge, edge, gimple, tree, tree);
+				     edge, edge, gphi *, tree, tree);
 static int value_replacement (basic_block, basic_block,
 			      edge, edge, gimple, tree, tree);
 static bool minmax_replacement (basic_block, basic_block,
@@ -149,16 +149,16 @@ tree_ssa_cs_elim (void)
 
 /* Return the singleton PHI in the SEQ of PHIs for edges E0 and E1. */
 
-static gimple
+static gphi *
 single_non_singleton_phi_for_edges (gimple_seq seq, edge e0, edge e1)
 {
   gimple_stmt_iterator i;
-  gimple phi = NULL;
+  gphi *phi = NULL;
   if (gimple_seq_singleton_p (seq))
-    return gsi_stmt (gsi_start (seq));
+    return as_a <gphi *> (gsi_stmt (gsi_start (seq)));
   for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
     {
-      gimple p = gsi_stmt (i);
+      gphi *p = as_a <gphi *> (gsi_stmt (i));
       /* If the PHI arguments are equal then we can skip this PHI. */
       if (operand_equal_for_phi_arg_p (gimple_phi_arg_def (p, e0->dest_idx),
 				       gimple_phi_arg_def (p, e1->dest_idx)))
@@ -222,7 +222,8 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 
   for (i = 0; i < n; i++)
     {
-      gimple cond_stmt, phi;
+      gimple cond_stmt;
+      gphi *phi;
       basic_block bb1, bb2;
       edge e1, e2;
       tree arg0, arg1;
@@ -333,7 +334,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 	     so try that first. */
 	  for (gsi = gsi_start (phis); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
-	      phi = gsi_stmt (gsi);
+	      phi = as_a <gphi *> (gsi_stmt (gsi));
 	      arg0 = gimple_phi_arg_def (phi, e1->dest_idx);
 	      arg1 = gimple_phi_arg_def (phi, e2->dest_idx);
 	      if (value_replacement (bb, bb1, e1, e2, phi, arg0, arg1) == 2)
@@ -444,11 +445,12 @@ replace_phi_edge_with_variable (basic_block cond_block,
 
 static bool
 conditional_replacement (basic_block cond_bb, basic_block middle_bb,
-			 edge e0, edge e1, gimple phi,
+			 edge e0, edge e1, gphi *phi,
 			 tree arg0, tree arg1)
 {
   tree result;
-  gimple stmt, new_stmt;
+  gimple stmt;
+  gassign *new_stmt;
   tree cond;
   gimple_stmt_iterator gsi;
   edge true_edge, false_edge;
@@ -534,9 +536,9 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
     {
       source_location locus_0, locus_1;
 
-      new_var2 = make_ssa_name (TREE_TYPE (result), NULL);
+      new_var2 = make_ssa_name (TREE_TYPE (result));
       new_stmt = gimple_build_assign_with_ops (CONVERT_EXPR, new_var2,
-					       new_var, NULL);
+					       new_var);
       gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
       new_var = new_var2;
 
@@ -921,7 +923,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 		    tree arg0, tree arg1)
 {
   tree result, type;
-  gimple cond, new_stmt;
+  gcond *cond;
+  gassign *new_stmt;
   edge true_edge, false_edge;
   enum tree_code cmp, minmax, ass_code;
   tree smaller, larger, arg_true, arg_false;
@@ -933,7 +936,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
   if (HONOR_NANS (TYPE_MODE (type)))
     return false;
 
-  cond = last_stmt (cond_bb);
+  cond = as_a <gcond *> (last_stmt (cond_bb));
   cmp = gimple_cond_code (cond);
 
   /* This transformation is only valid for order comparisons.  Record which
@@ -1168,7 +1171,8 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
 		 gimple phi, tree arg0, tree arg1)
 {
   tree result;
-  gimple new_stmt, cond;
+  gassign *new_stmt;
+  gimple cond;
   gimple_stmt_iterator gsi;
   edge true_edge, false_edge;
   gimple assign;
@@ -1249,12 +1253,12 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
   result = duplicate_ssa_name (result, NULL);
 
   if (negate)
-    lhs = make_ssa_name (TREE_TYPE (result), NULL);
+    lhs = make_ssa_name (TREE_TYPE (result));
   else
     lhs = result;
 
   /* Build the modify expression with abs expression.  */
-  new_stmt = gimple_build_assign_with_ops (ABS_EXPR, lhs, rhs, NULL);
+  new_stmt = gimple_build_assign_with_ops (ABS_EXPR, lhs, rhs);
 
   gsi = gsi_last_bb (cond_bb);
   gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
@@ -1264,7 +1268,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
       /* Get the right GSI.  We want to insert after the recently
 	 added ABS_EXPR statement (which we know is the first statement
 	 in the block.  */
-      new_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, result, lhs, NULL);
+      new_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, result, lhs);
 
       gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
     }
@@ -1366,7 +1370,7 @@ neg_replacement (basic_block cond_bb, basic_block middle_bb,
 	}
     }
 
-  tree cond_val = make_ssa_name (boolean_type_node, NULL);
+  tree cond_val = make_ssa_name (boolean_type_node);
   new_stmt = gimple_build_assign_with_ops (cond_code, cond_val,
 					   gimple_cond_lhs (cond),
 					   gimple_cond_rhs (cond));
@@ -1377,7 +1381,7 @@ neg_replacement (basic_block cond_bb, basic_block middle_bb,
      condition.  */
   if (invert)
     {
-      tree tmp = make_ssa_name (boolean_type_node, NULL);
+      tree tmp = make_ssa_name (boolean_type_node);
       new_stmt = gimple_build_assign_with_ops (BIT_XOR_EXPR, tmp,
 					       cond_val, boolean_true_node);
       gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
@@ -1386,22 +1390,22 @@ neg_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* Get the condition in the right type so that we can perform
      logical and arithmetic operations on it.  */
-  tree cond_val_converted = make_ssa_name (TREE_TYPE (rhs), NULL);
+  tree cond_val_converted = make_ssa_name (TREE_TYPE (rhs));
   new_stmt = gimple_build_assign_with_ops (NOP_EXPR, cond_val_converted,
-					   cond_val, NULL_TREE);
+					   cond_val);
   gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
 
-  tree neg_cond_val_converted = make_ssa_name (TREE_TYPE (rhs), NULL);
+  tree neg_cond_val_converted = make_ssa_name (TREE_TYPE (rhs));
   new_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, neg_cond_val_converted,
-					   cond_val_converted, NULL_TREE);
+					   cond_val_converted);
   gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
 
-  tree tmp = make_ssa_name (TREE_TYPE (rhs), NULL);
+  tree tmp = make_ssa_name (TREE_TYPE (rhs));
   new_stmt = gimple_build_assign_with_ops (BIT_XOR_EXPR, tmp,
 					   rhs, neg_cond_val_converted);
   gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
 
-  tree new_lhs = make_ssa_name (TREE_TYPE (rhs), NULL);
+  tree new_lhs = make_ssa_name (TREE_TYPE (rhs));
   new_stmt = gimple_build_assign_with_ops (PLUS_EXPR, new_lhs,
 					   tmp, cond_val_converted);
   gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
@@ -1649,7 +1653,8 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
 {
   gimple assign = last_and_only_stmt (middle_bb);
   tree lhs, rhs, name, name2;
-  gimple newphi, new_stmt;
+  gphi *newphi;
+  gassign *new_stmt;
   gimple_stmt_iterator gsi;
   source_location locus;
 
@@ -1722,7 +1727,8 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   tree lhs_base, lhs, then_rhs, else_rhs, name;
   source_location then_locus, else_locus;
   gimple_stmt_iterator gsi;
-  gimple newphi, new_stmt;
+  gphi *newphi;
+  gassign *new_stmt;
 
   if (then_assign == NULL
       || !gimple_assign_single_p (then_assign)
@@ -2016,14 +2022,14 @@ hoist_adjacent_loads (basic_block bb0, basic_block bb1,
 {
   int param_align = PARAM_VALUE (PARAM_L1_CACHE_LINE_SIZE);
   unsigned param_align_bits = (unsigned) (param_align * BITS_PER_UNIT);
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
 
   /* Walk the phis in bb3 looking for an opportunity.  We are looking
      for phis of two SSA names, one each of which is defined in bb1 and
      bb2.  */
   for (gsi = gsi_start_phis (bb3); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi_stmt = gsi_stmt (gsi);
+      gphi *phi_stmt = gsi.phi ();
       gimple def1, def2, defswap;
       tree arg1, arg2, ref1, ref2, field1, field2, fieldswap;
       tree tree_offset1, tree_offset2, tree_size2, next;

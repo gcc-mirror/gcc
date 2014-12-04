@@ -24,6 +24,7 @@ struct Foo
 {
   void r()&& { }
   int l() const& { return 0; }
+  void lv(int, ...)& { }
 };
 
 void test01()
@@ -31,4 +32,5 @@ void test01()
   Foo f;
   int i = std::mem_fn(&Foo::l)( f );
   std::mem_fn(&Foo::r)( std::move(f) );
+  std::mem_fn(&Foo::lv)( f, 1, 2, 3 );
 }

@@ -284,6 +284,7 @@ extern lra_insn_recog_data_t *lra_insn_recog_data;
 
 extern int lra_curr_reload_num;
 
+extern void lra_dump_bitmap_with_title (const char *, bitmap, int);
 extern void lra_push_insn (rtx_insn *);
 extern void lra_push_insn_by_uid (unsigned int);
 extern void lra_push_insn_and_update_insn_regno_info (rtx_insn *);
@@ -302,6 +303,9 @@ extern void lra_update_dups (lra_insn_recog_data_t, signed char *);
 
 extern void lra_process_new_insns (rtx_insn *, rtx_insn *, rtx_insn *,
 				   const char *);
+
+extern bool lra_substitute_pseudo (rtx *, int, rtx);
+extern bool lra_substitute_pseudo_within_insn (rtx_insn *, int, rtx);
 
 extern lra_insn_recog_data_t lra_set_insn_recog_data (rtx_insn *);
 extern lra_insn_recog_data_t lra_update_insn_recog_data (rtx_insn *);
@@ -324,7 +328,6 @@ extern bitmap_head lra_inheritance_pseudos;
 extern bitmap_head lra_split_regs;
 extern bitmap_head lra_subreg_reload_pseudos;
 extern bitmap_head lra_optional_reload_pseudos;
-extern int lra_constraint_new_insn_uid_start;
 
 /* lra-constraints.c: */
 
@@ -335,6 +338,7 @@ extern int lra_constraint_iter;
 extern bool lra_risky_transformations_p;
 extern int lra_inheritance_iter;
 extern int lra_undo_inheritance_iter;
+extern bool lra_constrain_insn (rtx_insn *);
 extern bool lra_constraints (bool);
 extern void lra_constraints_init (void);
 extern void lra_constraints_finish (void);
@@ -349,7 +353,7 @@ extern int *lra_point_freq;
 extern int lra_hard_reg_usage[FIRST_PSEUDO_REGISTER];
 
 extern int lra_live_range_iter;
-extern void lra_create_live_ranges (bool);
+extern void lra_create_live_ranges (bool, bool);
 extern lra_live_range_t lra_copy_live_range_list (lra_live_range_t);
 extern lra_live_range_t lra_merge_live_ranges (lra_live_range_t,
 					       lra_live_range_t);
@@ -385,13 +389,17 @@ extern bool lra_need_for_spills_p (void);
 extern void lra_spill (void);
 extern void lra_final_code_change (void);
 
+/* lra-remat.c:  */
+
+extern bool lra_remat (void);
 
 /* lra-elimination.c: */
 
 extern void lra_debug_elim_table (void);
 extern int lra_get_elimination_hard_regno (int);
-extern rtx lra_eliminate_regs_1 (rtx_insn *, rtx, machine_mode, bool,
-				 bool, bool);
+extern rtx lra_eliminate_regs_1 (rtx_insn *, rtx, machine_mode,
+				 bool, bool, HOST_WIDE_INT, bool);
+extern void eliminate_regs_in_insn (rtx_insn *insn, bool, bool, HOST_WIDE_INT);
 extern void lra_eliminate (bool, bool);
 
 extern void lra_eliminate_reg_if_possible (rtx *);

@@ -416,7 +416,7 @@ static void output_short_suffix (FILE *file);
 
 static bool arc_frame_pointer_required (void);
 
-static bool arc_use_by_pieces_infrastructure_p (unsigned int,
+static bool arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						unsigned int,
 						enum by_pieces_operation op,
 						bool);
@@ -9374,7 +9374,7 @@ arc_legitimize_reload_address (rtx *p, machine_mode mode, int opnum,
 /* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
 
 static bool
-arc_use_by_pieces_infrastructure_p (unsigned int size,
+arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 				    unsigned int align,
 				    enum by_pieces_operation op,
 				    bool speed_p)

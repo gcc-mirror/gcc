@@ -24,8 +24,13 @@
 #include <string.h>
 #endif
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #include "filenames.h"
 #include "safe-ctype.h"
+#include "libiberty.h"
 
 /*
 
@@ -189,4 +194,28 @@ filename_eq (const void *s1, const void *s2)
 {
   /* The casts are for -Wc++-compat.  */
   return filename_cmp ((const char *) s1, (const char *) s2) == 0;
+}
+
+/*
+
+@deftypefn Extension int canonical_filename_eq (const char *@var{a}, const char *@var{b})
+
+Return non-zero if file names @var{a} and @var{b} are equivalent.
+This function compares the canonical versions of the filenames as returned by
+@code{lrealpath()}, so that so that different file names pointing to the same
+underlying file are treated as being identical.
+
+@end deftypefn
+
+*/
+
+int
+canonical_filename_eq (const char * a, const char * b)
+{
+  char * ca = lrealpath(a);
+  char * cb = lrealpath(b);
+  int res = filename_eq (ca, cb);
+  free (ca);
+  free (cb);
+  return res;
 }

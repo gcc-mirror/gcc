@@ -39,7 +39,6 @@
 
 namespace __gnu_profile
 {
-  typedef const void* __object_t;
   typedef void* __instruction_address_t;
   typedef std::_GLIBCXX_STD_C::vector<__instruction_address_t> __stack_npt;
   typedef __stack_npt* __stack_t;
@@ -50,15 +49,20 @@ namespace __gnu_profile
   __get_stack()
   {
 #if defined _GLIBCXX_HAVE_EXECINFO_H
-    std::size_t __max_depth = __stack_max_depth();
-    if (__max_depth == 0)
-      return 0;
-    __stack_npt __buffer(__max_depth);
-    int __depth = backtrace(&__buffer[0], __max_depth);
-    __stack_t __stack = new __stack_npt(__depth);
-    __builtin_memcpy(&(*__stack)[0], &__buffer[0],
-		     __depth * sizeof(__object_t));
-    return __stack;
+    __try
+      {
+	std::size_t __max_depth = __stack_max_depth();
+	if (__max_depth == 0)
+	  return 0;
+	__stack_npt __buffer(__max_depth);
+	int __depth = backtrace(&__buffer[0], __max_depth);
+	return new(std::nothrow) __stack_npt(__buffer.begin(),
+					     __buffer.begin() + __depth);
+      }
+    __catch(...)
+      {
+	return 0;
+      }
 #else
     return 0;
 #endif
@@ -123,44 +127,29 @@ namespace __gnu_profile
   class __object_info_base
   {
   public:
-    __object_info_base() { }
-
     __object_info_base(__stack_t __stack)
     : _M_stack(__stack), _M_valid(true) { }
-
-    __object_info_base(const __object_info_base& __o)
-    : _M_stack(__o._M_stack), _M_valid(__o._M_valid) { }
-
-    virtual ~__object_info_base() { }
 
     bool
     __is_valid() const 
     { return _M_valid; }
     
+    void
+    __set_invalid()
+    { _M_valid = false; }
+
+    void
+    __merge(const __object_info_base& __o)
+    { _M_valid &= __o._M_valid; }
+
     __stack_t
     __stack() const
     { return _M_stack; }
     
-    virtual void __write(FILE* __f) const = 0;
-
   protected:
     __stack_t _M_stack;
     bool _M_valid;
   };
-
-
-  /** @brief Base class for a line in the stack table.  */
-  template<typename __object_info>
-    class __stack_info_base
-    {
-    public:
-      __stack_info_base() { }
-      __stack_info_base(const __object_info& __info) = 0;
-      virtual ~__stack_info_base() {}
-      void __merge(const __object_info& __info) = 0;
-      virtual float __magnitude() const = 0;
-      virtual const char* __get_id() const = 0;
-    };
 
 } // namespace __gnu_profile
 #endif /* _GLIBCXX_PROFILE_PROFILER_NODE_H */

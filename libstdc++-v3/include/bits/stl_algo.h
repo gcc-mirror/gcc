@@ -1512,34 +1512,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // partition
 
   /// This is a helper function...
-  /// Requires __len != 0 and !__pred(*__first),
-  /// same as __stable_partition_adaptive.
-  template<typename _ForwardIterator, typename _Predicate, typename _Distance>
-    _ForwardIterator
-    __inplace_stable_partition(_ForwardIterator __first,
-			       _Predicate __pred, _Distance __len)
-    {
-      if (__len == 1)
-	return __first;
-      _ForwardIterator __middle = __first;
-      std::advance(__middle, __len / 2);
-      _ForwardIterator __left_split =
-	std::__inplace_stable_partition(__first, __pred, __len / 2);
-      // Advance past true-predicate values to satisfy this
-      // function's preconditions.
-      _Distance __right_len = __len - __len / 2;
-      _ForwardIterator __right_split =
-	std::__find_if_not_n(__middle, __right_len, __pred);
-      if (__right_len)
-	__right_split = std::__inplace_stable_partition(__middle,
-							__pred,
-							__right_len);
-      std::rotate(__left_split, __middle, __right_split);
-      std::advance(__left_split, std::distance(__middle, __right_split));
-      return __left_split;
-    }
-
-  /// This is a helper function...
   /// Requires __first != __last and !__pred(__first)
   /// and __len == distance(__first, __last).
   ///
@@ -1554,10 +1526,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				_Pointer __buffer,
 				_Distance __buffer_size)
     {
+      if (__len == 1)
+	return __first;
+
       if (__len <= __buffer_size)
 	{
 	  _ForwardIterator __result1 = __first;
 	  _Pointer __result2 = __buffer;
+
 	  // The precondition guarantees that !__pred(__first), so
 	  // move that element to the buffer before starting the loop.
 	  // This ensures that we only call __pred once per element.
@@ -1575,31 +1551,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		*__result2 = _GLIBCXX_MOVE(*__first);
 		++__result2;
 	      }
+
 	  _GLIBCXX_MOVE3(__buffer, __result2, __result1);
 	  return __result1;
 	}
-      else
-	{
-	  _ForwardIterator __middle = __first;
-	  std::advance(__middle, __len / 2);
-	  _ForwardIterator __left_split =
-	    std::__stable_partition_adaptive(__first, __middle, __pred,
-					     __len / 2, __buffer,
-					     __buffer_size);
-	  // Advance past true-predicate values to satisfy this
-	  // function's preconditions.
-	  _Distance __right_len = __len - __len / 2;
-	  _ForwardIterator __right_split =
-	    std::__find_if_not_n(__middle, __right_len, __pred);
-	  if (__right_len)
-	    __right_split =
-	      std::__stable_partition_adaptive(__right_split, __last, __pred,
-					       __right_len,
-					       __buffer, __buffer_size);
-	  std::rotate(__left_split, __middle, __right_split);
-	  std::advance(__left_split, std::distance(__middle, __right_split));
-	  return __left_split;
-	}
+
+      _ForwardIterator __middle = __first;
+      std::advance(__middle, __len / 2);
+      _ForwardIterator __left_split =
+	std::__stable_partition_adaptive(__first, __middle, __pred,
+					 __len / 2, __buffer,
+					 __buffer_size);
+
+      // Advance past true-predicate values to satisfy this
+      // function's preconditions.
+      _Distance __right_len = __len - __len / 2;
+      _ForwardIterator __right_split =
+	std::__find_if_not_n(__middle, __right_len, __pred);
+
+      if (__right_len)
+	__right_split =
+	  std::__stable_partition_adaptive(__right_split, __last, __pred,
+					   __right_len,
+					   __buffer, __buffer_size);
+
+      std::rotate(__left_split, __middle, __right_split);
+      std::advance(__left_split, std::distance(__middle, __right_split));
+      return __left_split;
     }
 
   template<typename _ForwardIterator, typename _Predicate>
@@ -1618,16 +1596,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_DistanceType;
 
       _Temporary_buffer<_ForwardIterator, _ValueType> __buf(__first, __last);
-      if (__buf.size() > 0)
-	return
-	  std::__stable_partition_adaptive(__first, __last, __pred,
-					   _DistanceType(__buf.requested_size()),
-					   __buf.begin(),
-					   _DistanceType(__buf.size()));
-      else
-	return
-	  std::__inplace_stable_partition(__first, __pred,
-					  _DistanceType(__buf.requested_size()));
+      return
+	std::__stable_partition_adaptive(__first, __last, __pred,
+					 _DistanceType(__buf.requested_size()),
+					 __buf.begin(),
+					 _DistanceType(__buf.size()));
     }
 
   /**
@@ -2471,6 +2444,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				     __gnu_cxx::__ops::__val_comp_iter(__comp));
 	      __len11 = std::distance(__first, __first_cut);
 	    }
+
 	  _BidirectionalIterator __new_middle
 	    = std::__rotate_adaptive(__first_cut, __middle, __second_cut,
 				     __len1 - __len11, __len22, __buffer,
@@ -2496,12 +2470,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__len1 == 0 || __len2 == 0)
 	return;
+
       if (__len1 + __len2 == 2)
 	{
 	  if (__comp(__middle, __first))
 	    std::iter_swap(__first, __middle);
 	  return;
 	}
+
       _BidirectionalIterator __first_cut = __first;
       _BidirectionalIterator __second_cut = __middle;
       _Distance __len11 = 0;
@@ -2524,6 +2500,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				 __gnu_cxx::__ops::__val_comp_iter(__comp));
 	  __len11 = std::distance(__first, __first_cut);
 	}
+
       std::rotate(__first_cut, __middle, __second_cut);
       _BidirectionalIterator __new_middle = __first_cut;
       std::advance(__new_middle, std::distance(__middle, __second_cut));

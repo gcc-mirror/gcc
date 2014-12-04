@@ -64,8 +64,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "builtins.h"
 #include "asan.h"
-#include "ubsan.h"
 #include "cilk.h"
+#include "ipa-ref.h"
+#include "lto-streamer.h"
+#include "cgraph.h"
+#include "tree-chkp.h"
+#include "rtl-chkp.h"
 
 
 static tree do_mpc_arg1 (tree, tree, int (*)(mpc_ptr, mpc_srcptr, mpc_rnd_t));
@@ -128,15 +132,19 @@ static rtx expand_builtin_strcmp (tree, rtx);
 static rtx expand_builtin_strncmp (tree, rtx, machine_mode);
 static rtx builtin_memcpy_read_str (void *, HOST_WIDE_INT, machine_mode);
 static rtx expand_builtin_memcpy (tree, rtx);
+static rtx expand_builtin_memcpy_with_bounds (tree, rtx);
+static rtx expand_builtin_memcpy_args (tree, tree, tree, rtx, tree);
 static rtx expand_builtin_mempcpy (tree, rtx, machine_mode);
+static rtx expand_builtin_mempcpy_with_bounds (tree, rtx, machine_mode);
 static rtx expand_builtin_mempcpy_args (tree, tree, tree, rtx,
-					machine_mode, int);
+					machine_mode, int, tree);
 static rtx expand_builtin_strcpy (tree, rtx);
 static rtx expand_builtin_strcpy_args (tree, tree, rtx);
 static rtx expand_builtin_stpcpy (tree, rtx, machine_mode);
 static rtx expand_builtin_strncpy (tree, rtx);
 static rtx builtin_memset_gen_str (void *, HOST_WIDE_INT, machine_mode);
 static rtx expand_builtin_memset (tree, rtx, machine_mode);
+static rtx expand_builtin_memset_with_bounds (tree, rtx, machine_mode);
 static rtx expand_builtin_memset_args (tree, tree, tree, rtx, machine_mode, tree);
 static rtx expand_builtin_bzero (tree);
 static rtx expand_builtin_strlen (tree, rtx, machine_mode);
@@ -3171,6 +3179,81 @@ determine_block_size (tree len, rtx len_rtx,
 			  GET_MODE_MASK (GET_MODE (len_rtx)));
 }
 
+/* Helper function to do the actual work for expand_builtin_memcpy.  */
+
+static rtx
+expand_builtin_memcpy_args (tree dest, tree src, tree len, rtx target, tree exp)
+{
+  const char *src_str;
+  unsigned int src_align = get_pointer_alignment (src);
+  unsigned int dest_align = get_pointer_alignment (dest);
+  rtx dest_mem, src_mem, dest_addr, len_rtx;
+  HOST_WIDE_INT expected_size = -1;
+  unsigned int expected_align = 0;
+  unsigned HOST_WIDE_INT min_size;
+  unsigned HOST_WIDE_INT max_size;
+  unsigned HOST_WIDE_INT probable_max_size;
+
+  /* If DEST is not a pointer type, call the normal function.  */
+  if (dest_align == 0)
+    return NULL_RTX;
+
+  /* If either SRC is not a pointer type, don't do this
+     operation in-line.  */
+  if (src_align == 0)
+    return NULL_RTX;
+
+  if (currently_expanding_gimple_stmt)
+    stringop_block_profile (currently_expanding_gimple_stmt,
+			    &expected_align, &expected_size);
+
+  if (expected_align < dest_align)
+    expected_align = dest_align;
+  dest_mem = get_memory_rtx (dest, len);
+  set_mem_align (dest_mem, dest_align);
+  len_rtx = expand_normal (len);
+  determine_block_size (len, len_rtx, &min_size, &max_size,
+			&probable_max_size);
+  src_str = c_getstr (src);
+
+  /* If SRC is a string constant and block move would be done
+     by pieces, we can avoid loading the string from memory
+     and only stored the computed constants.  */
+  if (src_str
+      && CONST_INT_P (len_rtx)
+      && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
+      && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
+			      CONST_CAST (char *, src_str),
+			      dest_align, false))
+    {
+      dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
+				  builtin_memcpy_read_str,
+				  CONST_CAST (char *, src_str),
+				  dest_align, false, 0);
+      dest_mem = force_operand (XEXP (dest_mem, 0), target);
+      dest_mem = convert_memory_address (ptr_mode, dest_mem);
+      return dest_mem;
+    }
+
+  src_mem = get_memory_rtx (src, len);
+  set_mem_align (src_mem, src_align);
+
+  /* Copy word part most expediently.  */
+  dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx,
+				     CALL_EXPR_TAILCALL (exp)
+				     ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL,
+				     expected_align, expected_size,
+				     min_size, max_size, probable_max_size);
+
+  if (dest_addr == 0)
+    {
+      dest_addr = force_operand (XEXP (dest_mem, 0), target);
+      dest_addr = convert_memory_address (ptr_mode, dest_addr);
+    }
+
+  return dest_addr;
+}
+
 /* Expand a call EXP to the memcpy builtin.
    Return NULL_RTX if we failed, the caller should emit a normal call,
    otherwise try to get the result in TARGET, if convenient (and in
@@ -3187,73 +3270,38 @@ expand_builtin_memcpy (tree exp, rtx target)
       tree dest = CALL_EXPR_ARG (exp, 0);
       tree src = CALL_EXPR_ARG (exp, 1);
       tree len = CALL_EXPR_ARG (exp, 2);
-      const char *src_str;
-      unsigned int src_align = get_pointer_alignment (src);
-      unsigned int dest_align = get_pointer_alignment (dest);
-      rtx dest_mem, src_mem, dest_addr, len_rtx;
-      HOST_WIDE_INT expected_size = -1;
-      unsigned int expected_align = 0;
-      unsigned HOST_WIDE_INT min_size;
-      unsigned HOST_WIDE_INT max_size;
-      unsigned HOST_WIDE_INT probable_max_size;
+      return expand_builtin_memcpy_args (dest, src, len, target, exp);
+    }
+}
 
-      /* If DEST is not a pointer type, call the normal function.  */
-      if (dest_align == 0)
-	return NULL_RTX;
+/* Expand an instrumented call EXP to the memcpy builtin.
+   Return NULL_RTX if we failed, the caller should emit a normal call,
+   otherwise try to get the result in TARGET, if convenient (and in
+   mode MODE if that's convenient).  */
 
-      /* If either SRC is not a pointer type, don't do this
-	 operation in-line.  */
-      if (src_align == 0)
-	return NULL_RTX;
+static rtx
+expand_builtin_memcpy_with_bounds (tree exp, rtx target)
+{
+  if (!validate_arglist (exp,
+			 POINTER_TYPE, POINTER_BOUNDS_TYPE,
+			 POINTER_TYPE, POINTER_BOUNDS_TYPE,
+			 INTEGER_TYPE, VOID_TYPE))
+    return NULL_RTX;
+  else
+    {
+      tree dest = CALL_EXPR_ARG (exp, 0);
+      tree src = CALL_EXPR_ARG (exp, 2);
+      tree len = CALL_EXPR_ARG (exp, 4);
+      rtx res = expand_builtin_memcpy_args (dest, src, len, target, exp);
 
-      if (currently_expanding_gimple_stmt)
-        stringop_block_profile (currently_expanding_gimple_stmt,
-				&expected_align, &expected_size);
-
-      if (expected_align < dest_align)
-	expected_align = dest_align;
-      dest_mem = get_memory_rtx (dest, len);
-      set_mem_align (dest_mem, dest_align);
-      len_rtx = expand_normal (len);
-      determine_block_size (len, len_rtx, &min_size, &max_size,
-			    &probable_max_size);
-      src_str = c_getstr (src);
-
-      /* If SRC is a string constant and block move would be done
-	 by pieces, we can avoid loading the string from memory
-	 and only stored the computed constants.  */
-      if (src_str
-	  && CONST_INT_P (len_rtx)
-	  && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
-	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
-				  CONST_CAST (char *, src_str),
-				  dest_align, false))
+      /* Return src bounds with the result.  */
+      if (res)
 	{
-	  dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
-				      builtin_memcpy_read_str,
-				      CONST_CAST (char *, src_str),
-				      dest_align, false, 0);
-	  dest_mem = force_operand (XEXP (dest_mem, 0), target);
-	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
-	  return dest_mem;
+	  rtx bnd = force_reg (targetm.chkp_bound_mode (),
+			       expand_normal (CALL_EXPR_ARG (exp, 1)));
+	  res = chkp_join_splitted_slot (res, bnd);
 	}
-
-      src_mem = get_memory_rtx (src, len);
-      set_mem_align (src_mem, src_align);
-
-      /* Copy word part most expediently.  */
-      dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx,
-				         CALL_EXPR_TAILCALL (exp)
-				         ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL,
-					 expected_align, expected_size,
-					 min_size, max_size, probable_max_size);
-
-      if (dest_addr == 0)
-	{
-	  dest_addr = force_operand (XEXP (dest_mem, 0), target);
-	  dest_addr = convert_memory_address (ptr_mode, dest_addr);
-	}
-      return dest_addr;
+      return res;
     }
 }
 
@@ -3277,7 +3325,40 @@ expand_builtin_mempcpy (tree exp, rtx target, machine_mode mode)
       tree src = CALL_EXPR_ARG (exp, 1);
       tree len = CALL_EXPR_ARG (exp, 2);
       return expand_builtin_mempcpy_args (dest, src, len,
-					  target, mode, /*endp=*/ 1);
+					  target, mode, /*endp=*/ 1,
+					  exp);
+    }
+}
+
+/* Expand an instrumented call EXP to the mempcpy builtin.
+   Return NULL_RTX if we failed, the caller should emit a normal call,
+   otherwise try to get the result in TARGET, if convenient (and in
+   mode MODE if that's convenient).  */
+
+static rtx
+expand_builtin_mempcpy_with_bounds (tree exp, rtx target, machine_mode mode)
+{
+  if (!validate_arglist (exp,
+			 POINTER_TYPE, POINTER_BOUNDS_TYPE,
+			 POINTER_TYPE, POINTER_BOUNDS_TYPE,
+			 INTEGER_TYPE, VOID_TYPE))
+    return NULL_RTX;
+  else
+    {
+      tree dest = CALL_EXPR_ARG (exp, 0);
+      tree src = CALL_EXPR_ARG (exp, 2);
+      tree len = CALL_EXPR_ARG (exp, 4);
+      rtx res = expand_builtin_mempcpy_args (dest, src, len, target,
+					     mode, 1, exp);
+
+      /* Return src bounds with the result.  */
+      if (res)
+	{
+	  rtx bnd = force_reg (targetm.chkp_bound_mode (),
+			       expand_normal (CALL_EXPR_ARG (exp, 1)));
+	  res = chkp_join_splitted_slot (res, bnd);
+	}
+      return res;
     }
 }
 
@@ -3289,10 +3370,23 @@ expand_builtin_mempcpy (tree exp, rtx target, machine_mode mode)
 
 static rtx
 expand_builtin_mempcpy_args (tree dest, tree src, tree len,
-			     rtx target, machine_mode mode, int endp)
+			     rtx target, machine_mode mode, int endp,
+			     tree orig_exp)
 {
+  tree fndecl = get_callee_fndecl (orig_exp);
+
     /* If return value is ignored, transform mempcpy into memcpy.  */
-  if (target == const0_rtx && builtin_decl_implicit_p (BUILT_IN_MEMCPY))
+  if (target == const0_rtx
+      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CHKP_MEMPCPY_NOBND_NOCHK_CHKP
+      && builtin_decl_implicit_p (BUILT_IN_CHKP_MEMCPY_NOBND_NOCHK_CHKP))
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_CHKP_MEMCPY_NOBND_NOCHK_CHKP);
+      tree result = build_call_nofold_loc (UNKNOWN_LOCATION, fn, 3,
+					   dest, src, len);
+      return expand_expr (result, target, mode, EXPAND_NORMAL);
+    }
+  else if (target == const0_rtx
+	   && builtin_decl_implicit_p (BUILT_IN_MEMCPY))
     {
       tree fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
       tree result = build_call_nofold_loc (UNKNOWN_LOCATION, fn, 3,
@@ -3477,7 +3571,8 @@ expand_builtin_stpcpy (tree exp, rtx target, machine_mode mode)
 
       lenp1 = size_binop_loc (loc, PLUS_EXPR, len, ssize_int (1));
       ret = expand_builtin_mempcpy_args (dst, src, lenp1,
- 					 target, mode, /*endp=*/2);
+					 target, mode, /*endp=*/2,
+					 exp);
 
       if (ret)
 	return ret;
@@ -3643,6 +3738,36 @@ expand_builtin_memset (tree exp, rtx target, machine_mode mode)
     }
 }
 
+/* Expand expression EXP, which is an instrumented call to the memset builtin.
+   Return NULL_RTX if we failed the caller should emit a normal call, otherwise
+   try to get the result in TARGET, if convenient (and in mode MODE if that's
+   convenient).  */
+
+static rtx
+expand_builtin_memset_with_bounds (tree exp, rtx target, machine_mode mode)
+{
+  if (!validate_arglist (exp,
+			 POINTER_TYPE, POINTER_BOUNDS_TYPE,
+			 INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return NULL_RTX;
+  else
+    {
+      tree dest = CALL_EXPR_ARG (exp, 0);
+      tree val = CALL_EXPR_ARG (exp, 2);
+      tree len = CALL_EXPR_ARG (exp, 3);
+      rtx res = expand_builtin_memset_args (dest, val, len, target, mode, exp);
+
+      /* Return src bounds with the result.  */
+      if (res)
+	{
+	  rtx bnd = force_reg (targetm.chkp_bound_mode (),
+			       expand_normal (CALL_EXPR_ARG (exp, 1)));
+	  res = chkp_join_splitted_slot (res, bnd);
+	}
+      return res;
+    }
+}
+
 /* Helper function to do the actual work for expand_builtin_memset.  The
    arguments to the builtin_memset call DEST, VAL, and LEN are broken out
    so that this can also be called without constructing an actual CALL_EXPR.
@@ -3771,7 +3896,8 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
  do_libcall:
   fndecl = get_callee_fndecl (orig_exp);
   fcode = DECL_FUNCTION_CODE (fndecl);
-  if (fcode == BUILT_IN_MEMSET)
+  if (fcode == BUILT_IN_MEMSET
+      || fcode == BUILT_IN_CHKP_MEMSET_NOBND_NOCHK_CHKP)
     fn = build_call_nofold_loc (EXPR_LOCATION (orig_exp), fndecl, 3,
 				dest, val, len);
   else if (fcode == BUILT_IN_BZERO)
@@ -4324,6 +4450,13 @@ std_expand_builtin_va_start (tree valist, rtx nextarg)
 {
   rtx va_r = expand_expr (valist, NULL_RTX, VOIDmode, EXPAND_WRITE);
   convert_move (va_r, nextarg, 0);
+
+  /* We do not have any valid bounds for the pointer, so
+     just store zero bounds for it.  */
+  if (chkp_function_instrumented_p (current_function_decl))
+    chkp_expand_bounds_reset_for_mem (valist,
+				      make_tree (TREE_TYPE (valist),
+						 nextarg));
 }
 
 /* Expand EXP, a call to __builtin_va_start.  */
@@ -5791,7 +5924,19 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       && fcode != BUILT_IN_EXECVE
       && fcode != BUILT_IN_ALLOCA
       && fcode != BUILT_IN_ALLOCA_WITH_ALIGN
-      && fcode != BUILT_IN_FREE)
+      && fcode != BUILT_IN_FREE
+      && fcode != BUILT_IN_CHKP_SET_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_INIT_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_NULL_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_COPY_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_NARROW_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_STORE_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_CHECK_PTR_LBOUNDS
+      && fcode != BUILT_IN_CHKP_CHECK_PTR_UBOUNDS
+      && fcode != BUILT_IN_CHKP_CHECK_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_GET_PTR_LBOUND
+      && fcode != BUILT_IN_CHKP_GET_PTR_UBOUND
+      && fcode != BUILT_IN_CHKP_BNDRET)
     return expand_call (exp, target, ignore);
 
   /* The built-in function expanders test for target == const0_rtx
@@ -5824,6 +5969,10 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	  return const0_rtx;
 	}
     }
+
+  /* expand_builtin_with_bounds is supposed to be used for
+     instrumented builtin calls.  */
+  gcc_assert (!CALL_WITH_BOUNDS_P (exp));
 
   switch (fcode)
     {
@@ -6829,6 +6978,51 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       expand_builtin_cilk_pop_frame (exp);
       return const0_rtx;
 
+    case BUILT_IN_CHKP_INIT_PTR_BOUNDS:
+    case BUILT_IN_CHKP_NULL_PTR_BOUNDS:
+    case BUILT_IN_CHKP_COPY_PTR_BOUNDS:
+    case BUILT_IN_CHKP_CHECK_PTR_LBOUNDS:
+    case BUILT_IN_CHKP_CHECK_PTR_UBOUNDS:
+    case BUILT_IN_CHKP_CHECK_PTR_BOUNDS:
+    case BUILT_IN_CHKP_SET_PTR_BOUNDS:
+    case BUILT_IN_CHKP_NARROW_PTR_BOUNDS:
+    case BUILT_IN_CHKP_STORE_PTR_BOUNDS:
+    case BUILT_IN_CHKP_GET_PTR_LBOUND:
+    case BUILT_IN_CHKP_GET_PTR_UBOUND:
+      /* We allow user CHKP builtins if Pointer Bounds
+	 Checker is off.  */
+      if (!chkp_function_instrumented_p (current_function_decl))
+	{
+	  if (fcode == BUILT_IN_CHKP_SET_PTR_BOUNDS
+	      || fcode == BUILT_IN_CHKP_NARROW_PTR_BOUNDS
+	      || fcode == BUILT_IN_CHKP_INIT_PTR_BOUNDS
+	      || fcode == BUILT_IN_CHKP_NULL_PTR_BOUNDS
+	      || fcode == BUILT_IN_CHKP_COPY_PTR_BOUNDS)
+	    return expand_normal (CALL_EXPR_ARG (exp, 0));
+	  else if (fcode == BUILT_IN_CHKP_GET_PTR_LBOUND)
+	    return expand_normal (size_zero_node);
+	  else if (fcode == BUILT_IN_CHKP_GET_PTR_UBOUND)
+	    return expand_normal (size_int (-1));
+	  else
+	    return const0_rtx;
+	}
+      /* FALLTHROUGH */
+
+    case BUILT_IN_CHKP_BNDMK:
+    case BUILT_IN_CHKP_BNDSTX:
+    case BUILT_IN_CHKP_BNDCL:
+    case BUILT_IN_CHKP_BNDCU:
+    case BUILT_IN_CHKP_BNDLDX:
+    case BUILT_IN_CHKP_BNDRET:
+    case BUILT_IN_CHKP_INTERSECT:
+    case BUILT_IN_CHKP_NARROW:
+    case BUILT_IN_CHKP_EXTRACT_LOWER:
+    case BUILT_IN_CHKP_EXTRACT_UPPER:
+      /* Software implementation of Pointer Bounds Checker is NYI.
+	 Target support is required.  */
+      error ("Your target platform does not support -fcheck-pointer-bounds");
+      break;
+
     default:	/* just do library call, if unknown builtin */
       break;
     }
@@ -6837,6 +7031,53 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
      to be called normally.  */
   return expand_call (exp, target, ignore);
 }
+
+/* Similar to expand_builtin but is used for instrumented calls.  */
+
+rtx
+expand_builtin_with_bounds (tree exp, rtx target,
+			    rtx subtarget ATTRIBUTE_UNUSED,
+			    machine_mode mode, int ignore)
+{
+  tree fndecl = get_callee_fndecl (exp);
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
+
+  gcc_assert (CALL_WITH_BOUNDS_P (exp));
+
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
+    return targetm.expand_builtin (exp, target, subtarget, mode, ignore);
+
+  gcc_assert (fcode > BEGIN_CHKP_BUILTINS
+	      && fcode < END_CHKP_BUILTINS);
+
+  switch (fcode)
+    {
+    case BUILT_IN_CHKP_MEMCPY_NOBND_NOCHK_CHKP:
+      target = expand_builtin_memcpy_with_bounds (exp, target);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_CHKP_MEMPCPY_NOBND_NOCHK_CHKP:
+      target = expand_builtin_mempcpy_with_bounds (exp, target, mode);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_CHKP_MEMSET_NOBND_NOCHK_CHKP:
+      target = expand_builtin_memset_with_bounds (exp, target, mode);
+      if (target)
+	return target;
+      break;
+
+    default:
+      break;
+    }
+
+  /* The switch statement above can drop through to cause the function
+     to be called normally.  */
+  return expand_call (exp, target, ignore);
+ }
 
 /* Determine whether a tree node represents a call to a built-in
    function.  If the tree T is a call to a built-in function with
@@ -9653,6 +9894,62 @@ fold_builtin_unordered_cmp (location_t loc, tree fndecl, tree arg0, tree arg1,
 		      fold_build2_loc (loc, code, type, arg0, arg1));
 }
 
+/* Fold __builtin_{,s,u}{add,sub,mul}{,l,ll}_overflow, either into normal
+   arithmetics if it can never overflow, or into internal functions that
+   return both result of arithmetics and overflowed boolean flag in
+   a complex integer result, or some other check for overflow.  */
+
+static tree
+fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
+			     tree arg0, tree arg1, tree arg2)
+{
+  enum internal_fn ifn = IFN_LAST;
+  tree type = TREE_TYPE (TREE_TYPE (arg2));
+  tree mem_arg2 = build_fold_indirect_ref_loc (loc, arg2);
+  switch (fcode)
+    {
+    case BUILT_IN_ADD_OVERFLOW:
+    case BUILT_IN_SADD_OVERFLOW:
+    case BUILT_IN_SADDL_OVERFLOW:
+    case BUILT_IN_SADDLL_OVERFLOW:
+    case BUILT_IN_UADD_OVERFLOW:
+    case BUILT_IN_UADDL_OVERFLOW:
+    case BUILT_IN_UADDLL_OVERFLOW:
+      ifn = IFN_ADD_OVERFLOW;
+      break;
+    case BUILT_IN_SUB_OVERFLOW:
+    case BUILT_IN_SSUB_OVERFLOW:
+    case BUILT_IN_SSUBL_OVERFLOW:
+    case BUILT_IN_SSUBLL_OVERFLOW:
+    case BUILT_IN_USUB_OVERFLOW:
+    case BUILT_IN_USUBL_OVERFLOW:
+    case BUILT_IN_USUBLL_OVERFLOW:
+      ifn = IFN_SUB_OVERFLOW;
+      break;
+    case BUILT_IN_MUL_OVERFLOW:
+    case BUILT_IN_SMUL_OVERFLOW:
+    case BUILT_IN_SMULL_OVERFLOW:
+    case BUILT_IN_SMULLL_OVERFLOW:
+    case BUILT_IN_UMUL_OVERFLOW:
+    case BUILT_IN_UMULL_OVERFLOW:
+    case BUILT_IN_UMULLL_OVERFLOW:
+      ifn = IFN_MUL_OVERFLOW;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  tree ctype = build_complex_type (type);
+  tree call = build_call_expr_internal_loc (loc, ifn, ctype,
+					    2, arg0, arg1);
+  tree tgt = save_expr (call);
+  tree intres = build1_loc (loc, REALPART_EXPR, type, tgt);
+  tree ovfres = build1_loc (loc, IMAGPART_EXPR, type, tgt);
+  ovfres = fold_convert_loc (loc, boolean_type_node, ovfres);
+  tree store
+    = fold_build2_loc (loc, MODIFY_EXPR, void_type_node, mem_arg2, intres);
+  return build2_loc (loc, COMPOUND_EXPR, boolean_type_node, store, ovfres);
+}
+
 /* Fold a call to built-in function FNDECL with 0 arguments.
    IGNORE is true if the result of the function call is ignored.  This
    function returns NULL_TREE if no simplification was possible.  */
@@ -9675,14 +9972,6 @@ fold_builtin_0 (location_t loc, tree fndecl, bool ignore ATTRIBUTE_UNUSED)
 
     case BUILT_IN_CLASSIFY_TYPE:
       return fold_builtin_classify_type (NULL_TREE);
-
-    case BUILT_IN_UNREACHABLE:
-      if (flag_sanitize & SANITIZE_UNREACHABLE
-	  && (current_function_decl == NULL
-	      || !lookup_attribute ("no_sanitize_undefined",
-				    DECL_ATTRIBUTES (current_function_decl))))
-	return ubsan_instrument_unreachable (loc);
-      break;
 
     default:
       break;
@@ -10360,6 +10649,29 @@ fold_builtin_3 (location_t loc, tree fndecl,
     case BUILT_IN_EXPECT:
       return fold_builtin_expect (loc, arg0, arg1, arg2);
 
+    case BUILT_IN_ADD_OVERFLOW:
+    case BUILT_IN_SUB_OVERFLOW:
+    case BUILT_IN_MUL_OVERFLOW:
+    case BUILT_IN_SADD_OVERFLOW:
+    case BUILT_IN_SADDL_OVERFLOW:
+    case BUILT_IN_SADDLL_OVERFLOW:
+    case BUILT_IN_SSUB_OVERFLOW:
+    case BUILT_IN_SSUBL_OVERFLOW:
+    case BUILT_IN_SSUBLL_OVERFLOW:
+    case BUILT_IN_SMUL_OVERFLOW:
+    case BUILT_IN_SMULL_OVERFLOW:
+    case BUILT_IN_SMULLL_OVERFLOW:
+    case BUILT_IN_UADD_OVERFLOW:
+    case BUILT_IN_UADDL_OVERFLOW:
+    case BUILT_IN_UADDLL_OVERFLOW:
+    case BUILT_IN_USUB_OVERFLOW:
+    case BUILT_IN_USUBL_OVERFLOW:
+    case BUILT_IN_USUBLL_OVERFLOW:
+    case BUILT_IN_UMUL_OVERFLOW:
+    case BUILT_IN_UMULL_OVERFLOW:
+    case BUILT_IN_UMULLL_OVERFLOW:
+      return fold_builtin_arith_overflow (loc, fcode, arg0, arg1, arg2);
+
     default:
       break;
     }
@@ -10641,7 +10953,7 @@ validate_arg (const_tree arg, enum tree_code code)
    validate_arglist will then be removed.  */
 
 bool
-validate_gimple_arglist (const_gimple call, ...)
+validate_gimple_arglist (const gcall *call, ...)
 {
   enum tree_code code;
   bool res = 0;
@@ -12499,7 +12811,7 @@ do_mpc_arg2 (tree arg0, tree arg1, tree type, int do_nonfinite,
    call node earlier than the warning is generated.  */
 
 tree
-fold_call_stmt (gimple stmt, bool ignore)
+fold_call_stmt (gcall *stmt, bool ignore)
 {
   tree ret = NULL_TREE;
   tree fndecl = gimple_call_fndecl (stmt);

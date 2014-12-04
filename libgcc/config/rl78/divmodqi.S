@@ -23,11 +23,9 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef __RL78_G10__
-
 #include "vregs.h"
 
-	.macro make_generic  which,need_result
+.macro MAKE_GENERIC  which,need_result
 
 	.if \need_result
 	quot = r8
@@ -41,11 +39,11 @@
 	bit = r14
 	.endif
 
-#if 1
 #define bit	b
 #define den	c
 #define bitden	bc
-#endif
+
+	START_FUNC __generic_qidivmod\which
 
 num_lt_den\which:
 	.if \need_result
@@ -72,12 +70,13 @@ den_is_zero\which:
 	;; to store sign information that must remain intact
 
 	.if \need_result
-
-generic_div:
+	.global __generic_qidiv
+__generic_qidiv:
 
 	.else
 
-generic_mod:
+	.global __generic_qimod
+__generic_qimod:
 
 	.endif
 
@@ -111,7 +110,8 @@ den_not_zero\which:
 ; while (den < num && !(den & (1L << BITS_MINUS_1)))
 
 shift_den_bit\which:
-	.macro	sdb_one\which
+
+.macro	SDB_ONE\which
 	mov	a, den
 	mov1	cy,a.7
 	bc	$enter_main_loop\which
@@ -125,10 +125,10 @@ shift_den_bit\which:
 
 	;; bit <<= 1
 	shl	bit, 1
-	.endm
+.endm
 
-	sdb_one\which
-	sdb_one\which
+	SDB_ONE\which
+	SDB_ONE\which
 
 	br	$shift_den_bit\which
 
@@ -164,42 +164,41 @@ enter_main_loop\which:
 
 main_loop_done\which:	
 	ret
-	.endm
-
-	make_generic _d 1
-	make_generic _m 0
+	END_FUNC __generic_qidivmod\which
+.endm
 
 ;----------------------------------------------------------------------
 
-	.global	___udivqi3
-	.type	___udivqi3,@function
-___udivqi3:
+	MAKE_GENERIC _d 1
+	MAKE_GENERIC _m 0
+
+;----------------------------------------------------------------------
+
+START_FUNC ___udivqi3
 	;; r8 = 4[sp] / 6[sp]
 	movw	hl, sp
-	br	$!generic_div
-	.size	___udivqi3, . - ___udivqi3
+	br	$!__generic_qidiv
+END_FUNC ___udivqi3
 	
 
-	.global	___umodqi3
-	.type	___umodqi3,@function
-___umodqi3:
+START_FUNC ___umodqi3
 	;; r8 = 4[sp] % 6[sp]
 	movw	hl, sp
-	br	$!generic_mod
-	.size	___umodqi3, . - ___umodqi3
+	br	$!__generic_qimod
+END_FUNC ___umodqi3
 
 ;----------------------------------------------------------------------
 
-	.macro neg_ax
+.macro NEG_AX
 	movw	hl, ax
 	mov	a, #0
 	sub	a, [hl]
 	mov	[hl], a
-	.endm
+.endm
 
-	.global	___divqi3
-	.type	___divqi3,@function
-___divqi3:
+;----------------------------------------------------------------------
+
+START_FUNC	___divqi3
 	;; r8 = 4[sp] / 6[sp]
 	movw	hl, sp
 	movw	de, #0
@@ -209,7 +208,7 @@ ___divqi3:
 	mov	a, [sp+6]
 	mov1	cy, a.7
 	bc	$div_signed_den
-	br	$!generic_div
+	br	$!__generic_qidiv
 	
 div_signed_num:
 	;; neg [sp+4]
@@ -227,7 +226,7 @@ div_signed_den:
 	mov	[hl+6], a
 	mov	e, #1
 div_unsigned_den:	
-	call	$!generic_div
+	call	$!__generic_qidiv
 
 	mov	a, d
 	cmp0	a
@@ -235,28 +234,26 @@ div_unsigned_den:
 	;;  We have to restore the numerator [sp+4]
 	movw	ax, sp
 	addw	ax, #4
-	neg_ax
+	NEG_AX
 	mov	a, d
 div_skip_restore_num:	
 	xor	a, e
 	bz	$div_no_neg
 	movw	ax, #r8
-	neg_ax
+	NEG_AX
 div_no_neg:
 	mov	a, e
 	cmp0	a
 	bz	$div_skip_restore_den
 	movw	ax, sp
 	addw	ax, #6
-	neg_ax
+	NEG_AX
 div_skip_restore_den:	
 	ret
-	.size	___divqi3, . - ___divqi3
+END_FUNC ___divqi3
 	
 
-	.global	___modqi3
-	.type	___modqi3,@function
-___modqi3:
+START_FUNC ___modqi3
 	;; r8 = 4[sp] % 6[sp]
 	movw	hl, sp
 	movw	de, #0
@@ -266,7 +263,7 @@ ___modqi3:
 	mov	a, [hl+6]
 	mov1	cy, a.7
 	bc	$mod_signed_den
-	br	$!generic_mod
+	br	$!__generic_qimod
 	
 mod_signed_num:
 	;; neg [sp+4]
@@ -284,7 +281,7 @@ mod_signed_den:
 	mov	[hl+6], a
 	mov	e, #1
 mod_unsigned_den:	
-	call	$!generic_mod
+	call	$!__generic_qimod
 
 	mov	a, d
 	cmp0	a
@@ -295,16 +292,14 @@ mod_unsigned_den:
 	;;  Also restore numerator
 	movw 	ax, sp
 	addw	ax, #4
-	neg_ax
+	NEG_AX
 mod_no_neg:
 	mov	a, e
 	cmp0	a
 	bz	$mod_skip_restore_den
 	movw	ax, sp
 	addw	ax, #6
-	neg_ax
+	NEG_AX
 mod_skip_restore_den:	
 	ret
-	.size	___modqi3, . - ___modqi3
-
-#endif
+END_FUNC ___modqi3

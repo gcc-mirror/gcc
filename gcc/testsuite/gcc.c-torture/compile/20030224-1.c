@@ -1,3 +1,4 @@
+/* { dg-require-effective-target alloca } */
 void zzz (char *s1, char *s2, int len, int *q)
 {
   int z = 5;

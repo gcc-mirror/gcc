@@ -1,7 +1,7 @@
 /* Verify diagnostics for extended identifiers refer to UCNs (in the C
    locale).  Further tests of C front-end diagnostics.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -fextended-identifiers -Wvla" } */
+/* { dg-options "-std=gnu99 -Wvla" } */
 /* { dg-require-ascii-locale "" } */
 /* { dg-skip-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
 

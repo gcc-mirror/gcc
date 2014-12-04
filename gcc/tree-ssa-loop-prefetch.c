@@ -1137,7 +1137,7 @@ issue_prefetch_ref (struct mem_ref *ref, unsigned unroll_factor, unsigned ahead)
 {
   HOST_WIDE_INT delta;
   tree addr, addr_base, write_p, local, forward;
-  gimple prefetch;
+  gcall *prefetch;
   gimple_stmt_iterator bsi;
   unsigned n_prefetches, ap;
   bool nontemporal = ref->reuse_distance >= L2_CACHE_SIZE_BYTES;
@@ -1254,7 +1254,7 @@ emit_mfence_after_loop (struct loop *loop)
 {
   vec<edge> exits = get_loop_exit_edges (loop);
   edge exit;
-  gimple call;
+  gcall *call;
   gimple_stmt_iterator bsi;
   unsigned i;
 

@@ -1,0 +1,10 @@
+# Appended to version file.
+
+CXXABI_FLOAT128 {
+
+    # typeinfo and typeinfo name for __float128
+    _ZT[IS]g;
+    _ZT[IS]Pg;
+    _ZT[IS]PKg;
+
+};

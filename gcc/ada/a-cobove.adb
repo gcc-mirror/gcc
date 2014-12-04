@@ -33,6 +33,8 @@ with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Vectors is
 
+   pragma Annotate (CodePeer, Skip_Analysis);
+
    -----------------------
    -- Local Subprograms --
    -----------------------

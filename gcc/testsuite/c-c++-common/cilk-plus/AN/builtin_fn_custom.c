@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fcilkplus" } */
+/* { dg-additional-options "-ffloat-store" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 #define NUMBER 100
 #if HAVE_IO

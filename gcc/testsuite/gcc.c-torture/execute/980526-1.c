@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires indirect jumps" { ! indirect_jumps } { "-O0" } { "" } } */
+/* { dg-skip-if "requires label values" { ! label_values } { "-O0" } { "" } } */
 int expect_do1 = 1, expect_do2 = 2;
  
 static int doit(int x){

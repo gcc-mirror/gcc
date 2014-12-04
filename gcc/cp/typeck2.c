@@ -790,14 +790,14 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 
   value = extend_ref_init_temps (decl, value, cleanups);
 
-  /* In C++0x constant expression is a semantic, not syntactic, property.
+  /* In C++11 constant expression is a semantic, not syntactic, property.
      In C++98, make sure that what we thought was a constant expression at
      template definition time is still constant and otherwise perform this
      as optimization, e.g. to fold SIZEOF_EXPRs in the initializer.  */
   if (decl_maybe_constant_var_p (decl) || TREE_STATIC (decl))
     {
       bool const_init;
-      value = fold_non_dependent_expr (value);
+      value = instantiate_non_dependent_expr (value);
       if (DECL_DECLARED_CONSTEXPR_P (decl)
 	  || DECL_IN_AGGR_P (decl))
 	{
@@ -809,6 +809,10 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 	    value = cxx_constant_value (value, decl);
 	}
       value = maybe_constant_init (value, decl);
+      if (TREE_CODE (value) == CONSTRUCTOR && cp_has_mutable_p (type))
+	/* Poison this CONSTRUCTOR so it can't be copied to another
+	   constexpr variable.  */
+	CONSTRUCTOR_MUTABLE_POISON (value) = true;
       const_init = (reduced_constant_expression_p (value)
 		    || error_operand_p (value));
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = const_init;
@@ -872,7 +876,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
       return ok;
     }
 
-  init = maybe_constant_value (fold_non_dependent_expr_sfinae (init, tf_none));
+  init = fold_non_dependent_expr (init);
 
   if (TREE_CODE (type) == INTEGER_TYPE
       && TREE_CODE (ftype) == REAL_TYPE)
@@ -1176,7 +1180,7 @@ massage_init_elt (tree type, tree init, tsubst_flags_t complain)
     init = TARGET_EXPR_INITIAL (init);
   /* When we defer constant folding within a statement, we may want to
      defer this folding as well.  */
-  tree t = fold_non_dependent_expr_sfinae (init, complain);
+  tree t = fold_non_dependent_expr (init);
   t = maybe_constant_init (t);
   if (TREE_CONSTANT (t))
     init = t;

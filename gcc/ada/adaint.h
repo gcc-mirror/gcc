@@ -299,7 +299,7 @@ extern void   __gnat_cpu_set                       (int, size_t, cpu_set_t *);
 #if defined (_WIN32)
 /* Interface to delete a handle from internally maintained list of child
    process handles on Windows */
-extern void
+extern int
 __gnat_win32_remove_handle (HANDLE h, int pid);
 #endif
 

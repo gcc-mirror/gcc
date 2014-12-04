@@ -26,6 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 
 #ifdef HAVE_UNISTD_H
@@ -44,18 +45,10 @@ void
 chdir_i4_sub (char *dir, GFC_INTEGER_4 *status, gfc_charlen_type dir_len)
 {
   int val;
-  char *str;
-
-  /* Trim trailing spaces from paths.  */
-  while (dir_len > 0 && dir[dir_len - 1] == ' ')
-    dir_len--;
-
-  /* Make a null terminated copy of the strings.  */
-  str = gfc_alloca (dir_len + 1);
-  memcpy (str, dir, dir_len);
-  str[dir_len] = '\0';
+  char *str = fc_strdup (dir, dir_len);
 
   val = chdir (str);
+  free (str);
 
   if (status != NULL)
     *status = (val == 0) ? 0 : errno;
@@ -69,18 +62,10 @@ void
 chdir_i8_sub (char *dir, GFC_INTEGER_8 *status, gfc_charlen_type dir_len)
 {
   int val;
-  char *str;
-
-  /* Trim trailing spaces from paths.  */
-  while (dir_len > 0 && dir[dir_len - 1] == ' ')
-    dir_len--;
-
-  /* Make a null terminated copy of the strings.  */
-  str = gfc_alloca (dir_len + 1);
-  memcpy (str, dir, dir_len);
-  str[dir_len] = '\0';
+  char *str = fc_strdup (dir, dir_len);
 
   val = chdir (str);
+  free (str);
 
   if (status != NULL)
     *status = (val == 0) ? 0 : errno;

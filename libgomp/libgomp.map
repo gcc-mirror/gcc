@@ -227,3 +227,8 @@ GOMP_4.0 {
 	GOMP_target_update;
 	GOMP_teams;
 } GOMP_3.0;
+
+GOMP_4.0.1 {
+  global:
+	GOMP_offload_register;
+} GOMP_4.0;

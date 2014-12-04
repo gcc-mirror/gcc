@@ -1111,7 +1111,7 @@ reset_out_edges_aux (basic_block bb)
    STMT. Record this information in the aux field of the edge.  */
 
 static inline void
-compute_cases_per_edge (gimple stmt)
+compute_cases_per_edge (gswitch *stmt)
 {
   basic_block bb = gimple_bb (stmt);
   reset_out_edges_aux (bb);
@@ -1133,7 +1133,7 @@ compute_cases_per_edge (gimple stmt)
    Generate the code to test it and jump to the right place.  */
 
 void
-expand_case (gimple stmt)
+expand_case (gswitch *stmt)
 {
   tree minval = NULL_TREE, maxval = NULL_TREE, range = NULL_TREE;
   rtx default_label = NULL_RTX;

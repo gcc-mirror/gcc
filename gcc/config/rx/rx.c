@@ -2672,7 +2672,7 @@ rx_elf_asm_destructor (rtx symbol, int priority)
 static tree
 rx_handle_func_attribute (tree * node,
 			  tree   name,
-			  tree   args,
+			  tree   args ATTRIBUTE_UNUSED,
 			  int    flags ATTRIBUTE_UNUSED,
 			  bool * no_add_attrs)
 {

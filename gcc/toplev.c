@@ -97,6 +97,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcse.h"
 #include "insn-codes.h"
 #include "optabs.h"
+#include "tree-chkp.h"
+#include "omp-low.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -597,6 +599,11 @@ compile_file (void)
       if (flag_sanitize & SANITIZE_THREAD)
 	tsan_finish_file ();
 
+      if (flag_check_pointer_bounds)
+	chkp_finish_file ();
+
+      omp_finish_file ();
+
       output_shared_constant_pool ();
       output_object_blocks ();
       finish_tm_clone_pairs ();
@@ -632,7 +639,7 @@ compile_file (void)
      We used to emit an undefined reference here, but this produces
      link errors if an object file with IL is stored into a shared
      library without invoking lto1.  */
-  if (flag_generate_lto)
+  if (flag_generate_lto || flag_generate_offload)
     {
 #if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
       ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE,
@@ -646,23 +653,23 @@ compile_file (void)
 			 (unsigned HOST_WIDE_INT) 1,
 			 (unsigned HOST_WIDE_INT) 1);
 #endif
-      /* Let linker plugin know that this is a slim object and must be LTOed
-         even when user did not ask for it.  */
-      if (!flag_fat_lto_objects)
-        {
+    }
+
+  /* Let linker plugin know that this is a slim object and must be LTOed
+     even when user did not ask for it.  */
+  if (flag_generate_lto && !flag_fat_lto_objects)
+    {
 #if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
-	  ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE,
-					  "__gnu_lto_slim",
-					  (unsigned HOST_WIDE_INT) 1, 8);
+      ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE, "__gnu_lto_slim",
+				      (unsigned HOST_WIDE_INT) 1, 8);
 #elif defined ASM_OUTPUT_ALIGNED_COMMON
-	  ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_lto_slim",
-				     (unsigned HOST_WIDE_INT) 1, 8);
+      ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_lto_slim",
+				 (unsigned HOST_WIDE_INT) 1, 8);
 #else
-	  ASM_OUTPUT_COMMON (asm_out_file, "__gnu_lto_slim",
-			     (unsigned HOST_WIDE_INT) 1,
-			     (unsigned HOST_WIDE_INT) 1);
+      ASM_OUTPUT_COMMON (asm_out_file, "__gnu_lto_slim",
+			 (unsigned HOST_WIDE_INT) 1,
+			 (unsigned HOST_WIDE_INT) 1);
 #endif
-        }
     }
 
   /* Attach a special .ident directive to the end of the file to identify
@@ -938,10 +945,18 @@ init_asm_output (const char *name)
 	}
       if (!strcmp (asm_file_name, "-"))
 	asm_out_file = stdout;
-      else
+      else if (!canonical_filename_eq (asm_file_name, name)
+	       || !strcmp (asm_file_name, HOST_BIT_BUCKET))
 	asm_out_file = fopen (asm_file_name, "w");
+      else
+	/* Use fatal_error (UNKOWN_LOCATION) instead of just fatal_error to
+	   prevent gcc from printing the first line in the current file. */
+	fatal_error (UNKNOWN_LOCATION,
+		     "input file %qs is the same as output file",
+		     asm_file_name);
       if (asm_out_file == 0)
-	fatal_error ("can%'t open %s for writing: %m", asm_file_name);
+	fatal_error (UNKNOWN_LOCATION,
+		     "can%'t open %qs for writing: %m", asm_file_name);
     }
 
   if (!flag_syntax_only)
@@ -1253,18 +1268,48 @@ process_options (void)
 
   maximum_field_alignment = initial_max_fld_align * BITS_PER_UNIT;
 
-  /* Default to -fdiagnostics-color=auto if GCC_COLORS is in the environment,
-     otherwise default to -fdiagnostics-color=never.  */
-  if (!global_options_set.x_flag_diagnostics_show_color
-      && getenv ("GCC_COLORS"))
-    pp_show_color (global_dc->printer)
-      = colorize_init (DIAGNOSTICS_COLOR_AUTO);
+  /* If DIAGNOSTICS_COLOR_DEFAULT is -1, default to -fdiagnostics-color=auto
+     if GCC_COLORS is in the environment, otherwise default to
+     -fdiagnostics-color=never, for other values default to that
+     -fdiagnostics-color={never,auto,always}.  */
+  if (!global_options_set.x_flag_diagnostics_show_color)
+    switch ((int) DIAGNOSTICS_COLOR_DEFAULT)
+      {
+      case -1:
+	if (!getenv ("GCC_COLORS"))
+	  break;
+	/* FALLTHRU */
+      case DIAGNOSTICS_COLOR_AUTO:
+	pp_show_color (global_dc->printer)
+	  = colorize_init (DIAGNOSTICS_COLOR_AUTO);
+	break;
+      case DIAGNOSTICS_COLOR_YES:
+	pp_show_color (global_dc->printer)
+	  = colorize_init (DIAGNOSTICS_COLOR_YES);
+	break;
+      default:
+	break;
+      }
 
   /* Allow the front end to perform consistency checks and do further
      initialization based on the command line options.  This hook also
      sets the original filename if appropriate (e.g. foo.i -> foo.c)
      so we can correctly initialize debug output.  */
   no_backend = lang_hooks.post_options (&main_input_filename);
+
+  /* Set default values for parameters relation to the Scalar Reduction
+     of Aggregates passes (SRA and IP-SRA).  We must do this here, rather
+     than in opts.c:default_options_optimization as historically these
+     tuning heuristics have been based on MOVE_RATIO, which on some
+     targets requires other symbols from the backend.  */
+  maybe_set_param_value
+    (PARAM_SRA_MAX_SCALARIZATION_SIZE_SPEED,
+     get_move_ratio (true) * UNITS_PER_WORD,
+     global_options.x_param_values, global_options_set.x_param_values);
+  maybe_set_param_value
+    (PARAM_SRA_MAX_SCALARIZATION_SIZE_SIZE,
+     get_move_ratio (false) * UNITS_PER_WORD,
+     global_options.x_param_values, global_options_set.x_param_values);
 
   /* Some machines may reject certain combinations of options.  */
   targetm.target_option.override ();
@@ -1302,12 +1347,19 @@ process_options (void)
       || flag_loop_block
       || flag_loop_interchange
       || flag_loop_strip_mine
-      || flag_loop_parallelize_all)
+      || flag_loop_parallelize_all
+      || flag_loop_unroll_jam)
     sorry ("Graphite loop optimizations cannot be used (ISL is not available)" 
 	   "(-fgraphite, -fgraphite-identity, -floop-block, "
 	   "-floop-interchange, -floop-strip-mine, -floop-parallelize-all, "
-	   "and -ftree-loop-linear)");
+	   "-floop-unroll-and-jam, and -ftree-loop-linear)");
 #endif
+
+  if (flag_check_pointer_bounds)
+    {
+      if (targetm.chkp_bound_mode () == VOIDmode)
+	error ("-fcheck-pointer-bounds is not supported for this target");
+    }
 
   /* One region RA really helps to decrease the code size.  */
   if (flag_ira_region == IRA_REGION_AUTODETECT)
@@ -1439,7 +1491,7 @@ process_options (void)
     debug_hooks = &vmsdbg_debug_hooks;
 #endif
   else
-    error ("target system does not support the \"%s\" debug format",
+    error ("target system does not support the %qs debug format",
 	   debug_type_names[write_symbols]);
 
   /* We know which debug output will be used so we can set flag_var_tracking
@@ -2117,5 +2169,17 @@ toplev::finalize (void)
   gcse_c_finalize ();
   ipa_cp_c_finalize ();
   ipa_reference_c_finalize ();
+  ira_costs_c_finalize ();
   params_c_finalize ();
+
+  finalize_options_struct (&global_options);
+  finalize_options_struct (&global_options_set);
+
+  XDELETEVEC (save_decoded_options);
+
+  /* Clean up the context (and pass_manager etc). */
+  delete g;
+  g = NULL;
+
+  obstack_free (&opts_obstack, NULL);
 }

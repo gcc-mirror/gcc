@@ -32,6 +32,11 @@ load_lib torture-options.exp
 
 dg-init
 
+if {[istarget arm*-*-*]
+    && ![check_effective_target_arm_neon_ok]} then {
+  return
+}
+
 torture-init
 set-torture-options $C_TORTURE_OPTIONS {{}} $LTO_TORTURE_OPTIONS
 

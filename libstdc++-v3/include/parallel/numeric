@@ -85,8 +85,7 @@ namespace __parallel
     __accumulate_switch(__RAIter __begin, __RAIter __end, 
                       _Tp __init, _BinaryOperation __binary_op, 
                       random_access_iterator_tag, 
-                      __gnu_parallel::_Parallelism __parallelism_tag  
-                      = __gnu_parallel::parallel_unbalanced)
+                      __gnu_parallel::_Parallelism __parallelism_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
             static_cast<__gnu_parallel::_SequenceIndex>(__end - __begin)
@@ -193,8 +192,7 @@ namespace __parallel
 			   _BinaryFunction2 __binary_op2,
 			   random_access_iterator_tag,
 			   random_access_iterator_tag,
-			   __gnu_parallel::_Parallelism __parallelism_tag
-			   = __gnu_parallel::parallel_unbalanced)
+			   __gnu_parallel::_Parallelism __parallelism_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION((__last1 - __first1)
                                       >= __gnu_parallel::_Settings::get().
@@ -419,8 +417,7 @@ namespace __parallel
 				 random_access_iterator_tag,
 				 random_access_iterator_tag,
 				 __gnu_parallel::_Parallelism
-				 __parallelism_tag
-				 = __gnu_parallel::parallel_balanced)
+				 __parallelism_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
             static_cast<__gnu_parallel::_SequenceIndex>(__end - __begin)

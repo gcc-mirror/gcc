@@ -195,6 +195,9 @@ encode_pattern_1 (rtx x)
       if (GET_MODE_SIZE (GET_MODE (x)) !=
 	  GET_MODE_SIZE (GET_MODE (XEXP (x, 0))))
 	*patternp++ = 'S';
+      if (GET_MODE (x) == PSImode
+	  && GET_CODE (XEXP (x, 0)) == REG)
+	*patternp++ = 'S';
       encode_pattern_1 (XEXP (x, 0));
       break;
     case MEM:
@@ -1008,12 +1011,9 @@ m32c_eh_return_data_regno (int n)
   switch (n)
     {
     case 0:
-      return A0_REGNO;
+      return MEM0_REGNO;
     case 1:
-      if (TARGET_A16)
-	return R3_REGNO;
-      else
-	return R1_REGNO;
+      return MEM0_REGNO+4;
     default:
       return INVALID_REGNUM;
     }
@@ -1790,6 +1790,8 @@ m32c_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	  /*    case SB_REGNO: */
 	  return 1;
 	default:
+	  if (GET_CODE (reg) == SUBREG)
+	    return 0;
 	  if (IS_PSEUDO (reg, strict))
 	    return 1;
 	  return 0;

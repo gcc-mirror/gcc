@@ -16,3 +16,4 @@ critical ! "Coarrays disabled"  (but error above is fatal)
 end critical ! "Expecting END PROGRAM statement"  (but error above is fatal)
 
 end
+! { dg-excess-errors "compilation terminated" }

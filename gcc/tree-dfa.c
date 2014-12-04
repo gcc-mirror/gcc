@@ -241,7 +241,7 @@ dump_dfa_stats (FILE *file)
   fprintf (file, fmt_str_1, "VDEF operands", dfa_stats.num_vdefs,
 	   SCALE (size), LABEL (size));
 
-  size = dfa_stats.num_phis * sizeof (struct gimple_statement_phi);
+  size = dfa_stats.num_phis * sizeof (struct gphi);
   total += size;
   fprintf (file, fmt_str_1, "PHI nodes", dfa_stats.num_phis,
 	   SCALE (size), LABEL (size));
@@ -290,18 +290,18 @@ collect_dfa_stats (struct dfa_stats_d *dfa_stats_p ATTRIBUTE_UNUSED)
   /* Walk all the statements in the function counting references.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple_stmt_iterator si;
-
-      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+      for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
+	   gsi_next (&si))
 	{
-	  gimple phi = gsi_stmt (si);
+	  gphi *phi = si.phi ();
 	  dfa_stats_p->num_phis++;
 	  dfa_stats_p->num_phi_args += gimple_phi_num_args (phi);
 	  if (gimple_phi_num_args (phi) > dfa_stats_p->max_num_phi_args)
 	    dfa_stats_p->max_num_phi_args = gimple_phi_num_args (phi);
 	}
 
-      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+      for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
+	   gsi_next (&si))
 	{
 	  gimple stmt = gsi_stmt (si);
 	  dfa_stats_p->num_defs += NUM_SSA_OPERANDS (stmt, SSA_OP_DEF);

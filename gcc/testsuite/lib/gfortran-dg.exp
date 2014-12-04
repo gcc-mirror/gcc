@@ -49,34 +49,45 @@ proc gfortran-dg-test { prog do_what extra_tool_flags } {
     #              1       2
     #     Error: Some error at (1) and (2)
     #
-    # Where [locus] is either [line] or [line].[columns] .
+    # or
+    #     [name]:[locus]: Error: Some error
+    #
+    # Where [locus] is either [line] or [line].[column] or
+    # [line].[column]-[column] .
     #
     # We collapse these to look like:
     #  [name]:[line]:[column]: Error: Some error at (1) and (2)
     # or
     #  [name]:[line]:[column]: Error: Some error at (1) and (2)
     #  [name]:[line2]:[column]: Error: Some error at (1) and (2)
-    # We proceed in two steps: first we deal with the form with two
-    # different locus lines, then with the form with only one locus line.
     #
     # Note that these regexps only make sense in the combinations used below.
     # Note also that is imperative that we first deal with the form with
     # two loci.
-    set locus_regexp "(\[^\n\]*):(\[0-9\]+)\[\.:\](\[0-9\]*)(-\[0-9\]*)?:\n\n\[^\n\]*\n\[^\n\]*\n"
-    set diag_regexp "(\[^\n\]*)\n"
+    set locus_regexp "(\[^\n\]+:\[0-9\]+)\[\.:\](\[0-9\]+)(-\[0-9\]+)?:\n\n\[^\n\]+\n\[^\n\]+\n"
+    set diag_regexp "(\[^\n\]+)\n"
 
-    # Add column number if none exists
-    set colnum_regexp "(Warning: |Error: )?(\[^\n\]*):(\[0-9\]+):(\[ \n\])"
-    regsub -all $colnum_regexp $comp_output "\\2:\\3:0:\\4\\1" comp_output
+    # We proceed in steps:
 
-    set two_loci "$locus_regexp$locus_regexp$diag_regexp"
-    set single_locus "$locus_regexp$diag_regexp"
-    regsub -all $two_loci $comp_output "\\1:\\2:\\3: \\9\n\\5:\\6:\\7: \\9\n" comp_output
-    regsub -all $single_locus $comp_output "\\1:\\2:\\3: \\5\n" comp_output
+    # 1. We add first a column number if none exists.
+    # (Some Fortran diagnostics have the locus after Warning|Error)
+    set colnum_regexp "(^|\n)(Warning: |Error: )?(\[^:\n\]+:\[0-9\]+):(\[ \n\])"
+    regsub -all $colnum_regexp $comp_output "\\1\\3:0:\\4\\2" comp_output
+    verbose "comput_output0:\n$comp_output"
 
-    # Add a line number if none exists
+    # 2. We deal with the form with two different locus lines,
+    set two_loci "(^|\n)$locus_regexp$locus_regexp$diag_regexp"
+    regsub -all $two_loci $comp_output "\\1\\2:\\3: \\8\n\\5\:\\6: \\8\n" comp_output
+    verbose "comput_output1:\n$comp_output"
+
+    # 3. then with the form with only one locus line.
+    set single_locus "(^|\n)$locus_regexp$diag_regexp"
+    regsub -all $single_locus $comp_output "\\1\\2:\\3: \\5\n" comp_output
+    verbose "comput_output2:\n$comp_output"
+
+    # 4. Add a line number if none exists
     regsub -all "(^|\n)(Warning: |Error: )" $comp_output "\\1:0:0: \\2" comp_output
-
+    verbose "comput_output3:\n$comp_output"
     return [list $comp_output $output_file]
 }
 

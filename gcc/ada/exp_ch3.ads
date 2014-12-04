@@ -107,10 +107,10 @@ package Exp_Ch3 is
    function Make_Tag_Assignment (N : Node_Id) return Node_Id;
    --  An object declaration that has an initialization for a tagged object
    --  requires a separate reassignment of the tag of the given type, because
-   --  the expression may include an unchecked conversion. This tag
-   --  assignment is inserted after the declaration, but if the object has
-   --  an address clause the assignment is handled as part of the freezing
-   --  of the object, see Check_Address_Clause.
+   --  the expression may include an unchecked conversion. This tag assignment
+   --  is inserted after the declaration, but if the object has an address
+   --  clause the assignment is handled as part of the freezing of the object,
+   --  see Check_Address_Clause.
 
    function Needs_Simple_Initialization
      (T           : Entity_Id;

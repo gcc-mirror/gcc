@@ -2925,6 +2925,7 @@ package body Sem_Ch13 is
                   --  with delay of visibility for the expression analysis.
 
                   Insert_Pragma (Aitem);
+
                   goto Continue;
                end Pre_Post;
 
@@ -3035,7 +3036,8 @@ package body Sem_Ch13 is
                         --  evaluation of this aspect should be delayed to the
                         --  freeze point (why???)
 
-                        if No (Expr) or else Is_True (Static_Boolean (Expr))
+                        if No (Expr)
+                          or else Is_True (Static_Boolean (Expr))
                         then
                            Set_Uses_Lock_Free (E);
                         end if;
@@ -3548,10 +3550,19 @@ package body Sem_Ch13 is
             end if;
 
             --  Verify that the prefix of the attribute and the local name for
-            --  the type of the formal match.
+            --  the type of the formal match, or one is the class-wide of the
+            --  other, in the case of a class-wide stream operation.
 
-            if Base_Type (Typ) /= Base_Type (Ent)
-              or else Present ((Next_Formal (F)))
+            if  Base_Type (Typ) = Base_Type (Ent)
+              or else (Is_Class_Wide_Type (Typ)
+                        and then Typ = Class_Wide_Type (Base_Type (Ent)))
+            then
+               null;
+            else
+               return False;
+            end if;
+
+            if Present ((Next_Formal (F)))
             then
                return False;
 
@@ -3629,15 +3640,18 @@ package body Sem_Ch13 is
                Error_Msg_N ("stream subprogram must not be abstract", Expr);
                return;
 
-            --  Test for stream subprogram for interface type being non-null
+            --  A stream subprogram for an interface type must be a null
+            --  procedure (RM 13.13.2 (38/3)).
 
             elsif Is_Interface (U_Ent)
+              and then not Is_Class_Wide_Type (U_Ent)
               and then not Inside_A_Generic
-              and then Ekind (Subp) = E_Procedure
               and then
-                not Null_Present
-                  (Specification
-                     (Unit_Declaration_Node (Ultimate_Alias (Subp))))
+                (Ekind (Subp) = E_Function
+                  or else
+                    not Null_Present
+                          (Specification
+                             (Unit_Declaration_Node (Ultimate_Alias (Subp)))))
             then
                Error_Msg_N
                  ("stream subprogram for interface type "
@@ -3725,8 +3739,7 @@ package body Sem_Ch13 is
                end if;
             end if;
 
-            if not Check_Primitive_Function (Subp)
-            then
+            if not Check_Primitive_Function (Subp) then
                Illegal_Indexing
                  ("Indexing aspect requires a function that applies to type&");
                return;
@@ -3798,7 +3811,8 @@ package body Sem_Ch13 is
                      ("variable indexing must return a reference type");
                   return;
 
-               elsif Is_Access_Constant (Etype (First_Discriminant (Ret_Type)))
+               elsif Is_Access_Constant
+                       (Etype (First_Discriminant (Ret_Type)))
                then
                   Illegal_Indexing
                     ("variable indexing must return an access to variable");
@@ -6586,6 +6600,12 @@ package body Sem_Ch13 is
                                or else Size_Known_At_Compile_Time
                                          (Underlying_Type (Etype (Comp))))
                     and then not Has_Warnings_Off (Rectype)
+
+                    --  Ignore discriminant in unchecked union, since it is
+                    --  not there, and cannot have a component clause.
+
+                    and then (not Is_Unchecked_Union (Rectype)
+                               or else Ekind (Comp) /= E_Discriminant)
                   then
                      Error_Msg_Sloc := Sloc (Comp);
                      Error_Msg_NE
@@ -8267,11 +8287,44 @@ package body Sem_Ch13 is
 
          if Raise_Expression_Present then
             declare
-               Map : constant Elist_Id := New_Elmt_List;
+               Map   : constant Elist_Id := New_Elmt_List;
+               New_V : Entity_Id := Empty;
+
+               --  The unanalyzed expression will be copied and appear in
+               --  both functions. Normally expressions do not declare new
+               --  entities, but quantified expressions do, so we need to
+               --  create new entities for their bound variables, to prevent
+               --  multiple definitions in gigi.
+
+               function Reset_Loop_Variable (N : Node_Id)
+                 return Traverse_Result;
+
+               procedure Collect_Loop_Variables is
+                 new Traverse_Proc (Reset_Loop_Variable);
+
+               ------------------------
+               -- Reset_Loop_Variable --
+               ------------------------
+
+               function Reset_Loop_Variable (N : Node_Id)
+                 return Traverse_Result
+               is
+               begin
+                  if Nkind (N) = N_Iterator_Specification then
+                     New_V := Make_Defining_Identifier
+                       (Sloc (N), Chars (Defining_Identifier (N)));
+
+                     Set_Defining_Identifier (N, New_V);
+                  end if;
+
+                  return OK;
+               end Reset_Loop_Variable;
+
             begin
                Append_Elmt (Object_Entity, Map);
                Append_Elmt (Object_Entity_M, Map);
                Expr_M := New_Copy_Tree (Expr, Map => Map);
+               Collect_Loop_Variables (Expr_M);
             end;
          end if;
 
@@ -9234,10 +9287,10 @@ package body Sem_Ch13 is
 
    begin
       --  If rep_clauses are to be ignored, no need for legality checks. In
-      --  particular, no need to pester user about rep clauses that violate
-      --  the rule on constant addresses, given that these clauses will be
-      --  removed by Freeze before they reach the back end.
-      --  Similarly in CodePeer mode, we want to relax these checks.
+      --  particular, no need to pester user about rep clauses that violate the
+      --  rule on constant addresses, given that these clauses will be removed
+      --  by Freeze before they reach the back end. Similarly in CodePeer mode,
+      --  we want to relax these checks.
 
       if not Ignore_Rep_Clauses and not CodePeer_Mode then
          Check_Expr_Constants (Expr);
@@ -10882,7 +10935,7 @@ package body Sem_Ch13 is
                Set_Has_Volatile_Components (Imp_Bas_Typ);
             end if;
 
-            --  Finalize_Storage_Only.
+            --  Finalize_Storage_Only
 
             if not Has_Rep_Pragma (Typ, Name_Finalize_Storage_Only, False)
               and then Has_Rep_Pragma (Typ, Name_Finalize_Storage_Only)
@@ -10900,12 +10953,9 @@ package body Sem_Ch13 is
                Set_Universal_Aliasing (Imp_Bas_Typ);
             end if;
 
-            --  Record type specific aspects
+            --  Bit_Order
 
             if Is_Record_Type (Typ) then
-
-               --  Bit_Order
-
                if not Has_Rep_Item (Typ, Name_Bit_Order, False)
                  and then Has_Rep_Item (Typ, Name_Bit_Order)
                then
@@ -10913,15 +10963,31 @@ package body Sem_Ch13 is
                     Reverse_Bit_Order (Entity (Name
                       (Get_Rep_Item (Typ, Name_Bit_Order)))));
                end if;
+            end if;
 
-               --  Scalar_Storage_Order
+            --  Scalar_Storage_Order
 
-               if not Has_Rep_Item (Typ, Name_Scalar_Storage_Order, False)
-                 and then Has_Rep_Item (Typ, Name_Scalar_Storage_Order)
+            --  Note: the aspect is specified on a first subtype, but recorded
+            --  in a flag of the base type!
+
+            if (Is_Record_Type (Typ) or else Is_Array_Type (Typ))
+                 and then Typ = Bas_Typ
+            then
+               --  For a type extension, always inherit from parent; otherwise
+               --  inherit if no default applies. Note: we do not check for
+               --  an explicit rep item on the parent type when inheriting,
+               --  because the parent SSO may itself have been set by default.
+
+               if not Has_Rep_Item (First_Subtype (Typ),
+                                    Name_Scalar_Storage_Order, False)
+                 and then (Is_Tagged_Type (Bas_Typ)
+                            or else not (SSO_Set_Low_By_Default  (Bas_Typ)
+                                           or else
+                                         SSO_Set_High_By_Default (Bas_Typ)))
                then
                   Set_Reverse_Storage_Order (Bas_Typ,
-                    Reverse_Storage_Order (Entity (Name
-                      (Get_Rep_Item (Typ, Name_Scalar_Storage_Order)))));
+                    Reverse_Storage_Order
+                      (Implementation_Base_Type (Etype (Bas_Typ))));
 
                   --  Clear default SSO indications, since the inherited aspect
                   --  which was set explicitly overrides the default.

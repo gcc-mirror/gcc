@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* This test checks for absolute memory operands.  */
 /* { dg-require-effective-target nonpic } */
-/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=k8" } } */
+/* { dg-skip-if "" { *-*-* } { "-march=*" } { "-march=k8" } } */
 /* { dg-options "-O2 -msse2 -march=k8" } */
 /* { dg-final { scan-assembler "pand\[^\\n\]*magic" } } */
 /* { dg-final { scan-assembler "pandn\[^\\n\]*magic" } } */
@@ -13,7 +13,7 @@
 /* Verify that we generate proper instruction with memory operand.  */
 
 #include <xmmintrin.h>
-static __m128i magic_a, magic_b;
+__m128i magic_a, magic_b;
 __m128i
 t1(void)
 {

@@ -2577,7 +2577,7 @@ package body Prj.Nmsc is
             Error_Msg_Name_1 := Lang_Index.Display_Name;
             Error_Msg
               (Data.Flags,
-               "?no compiler specified for language %%" &
+               "?\no compiler specified for language %%" &
                  ", ignoring all its sources",
                No_Location, Project);
 
@@ -2604,7 +2604,7 @@ package body Prj.Nmsc is
             if Lang_Index.Config.Naming_Data.Spec_Suffix = No_File then
                Error_Msg
                  (Data.Flags,
-                  "Spec_Suffix not specified for " &
+                  "\Spec_Suffix not specified for " &
                   Get_Name_String (Lang_Index.Name),
                   No_Location, Project);
             end if;
@@ -2612,7 +2612,7 @@ package body Prj.Nmsc is
             if Lang_Index.Config.Naming_Data.Body_Suffix = No_File then
                Error_Msg
                  (Data.Flags,
-                  "Body_Suffix not specified for " &
+                  "\Body_Suffix not specified for " &
                   Get_Name_String (Lang_Index.Name),
                   No_Location, Project);
             end if;
@@ -2630,7 +2630,7 @@ package body Prj.Nmsc is
                Error_Msg_Name_1 := Lang_Index.Display_Name;
                Error_Msg
                  (Data.Flags,
-                  "no suffixes specified for %%",
+                  "\no suffixes specified for %%",
                   No_Location, Project);
             end if;
          end if;
@@ -3770,7 +3770,7 @@ package body Prj.Nmsc is
                if Switches /= No_Array_Element then
                   Error_Msg
                     (Data.Flags,
-                     "?Linker switches not taken into account in library " &
+                     "?\Linker switches not taken into account in library " &
                      "projects",
                      No_Location, Project);
                end if;
@@ -6793,7 +6793,7 @@ package body Prj.Nmsc is
                         Error_Msg_Name_2 := Source.Unit.Name;
                         Error_Or_Warning
                           (Data.Flags, Data.Flags.Missing_Source_Files,
-                           "source file %% for unit %% not found",
+                           "\source file %% for unit %% not found",
                            No_Location, Project.Project);
                      end if;
                   end if;
@@ -7789,7 +7789,7 @@ package body Prj.Nmsc is
             Error_Msg_File_1 := Source.File;
             Error_Msg
               (Data.Flags,
-               "{ cannot be both excluded and an exception file name",
+               "\{ cannot be both excluded and an exception file name",
                No_Location, Project.Project);
          end if;
 
@@ -7936,13 +7936,15 @@ package body Prj.Nmsc is
          if Source /= No_Source
            and then Source.Replaced_By = No_Source
            and then Source.Path /= Src.Path
+           and then Source.Index = 0
+           and then Src.Index = 0
            and then Is_Extending (Src.Project, Source.Project)
          then
             Error_Msg_File_1 := Src.File;
             Error_Msg_File_2 := Source.File;
             Error_Msg
               (Data.Flags,
-               "{ and { have the same object file name",
+               "\{ and { have the same object file name",
                No_Location, Project.Project);
 
          else

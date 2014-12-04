@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
 /* { dg-options "-mcpu=power7 -O2 -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details" } */
 
 /* Taken from vect/vect-95.c.  */

@@ -1,6 +1,7 @@
 /* PR middle-end/38338 */
 /* { dg-options "-O0" } */
 /* { dg-options "-O0 -fPIC" { target fpic } } */
+/* { dg-require-effective-target untyped_assembly } */
 
 typedef void (*fnp) (void);
 

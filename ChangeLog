@@ -1,3 +1,153 @@
+2014-11-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* MAINTAINERS (nvptx port): New entry.
+
+2014-11-26  Jan-benedict Glaw  <jbglaw@lug-owl.de>
+
+	* configure: Regenerate.
+
+2014-11-26  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* configure.ac: Merge with Binutils.
+
+2014-11-26  Tobias Burnus  <burnus@net-b.de>
+
+	* Makefile.def: Make more dependent on mpfr, mpc and isl.
+	* Makefile.in: Regenerate.
+
+2014-11-26  Prachi Godbole  <prachi.godbole@imgtec.com>
+
+	* config/mips/mips.c (mips_rtx_cost_data): Fix memory_latency cost
+	for p5600.
+
+2014-11-24  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* Makefile.def (module=gmp): Work around in-tree gmp configure bug with
+	missing flex.
+	* Makefile.in: Regenerated.
+
+2014-11-21  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* Makefile.in: Regenerate.
+
+2014-11-21  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR bootstrap/63784
+	* libtool.m4: Add $pic_flag with -shared.
+
+2014-11-21  Renlin Li  <Renlin.Li@arm.com>
+
+	* MAINTAINERS (Write After Approval): Added myself.
+
+2014-11-21  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* MAINTAINERS (write-after-approval): Add myself.
+
+2014-11-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* MAINTAINERS (OS Port Maintainers): Add overdue maintainership note
+	from 2 years ago.
+
+2014-11-19  Alex Velenko  <Alex.Velenko@arm.com>
+
+	Revert:
+	2014-11-19  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* MAINTAINERS (Write After Approval): Added myself as line map
+	maintainer.
+
+2014-11-19  Renlin Li  <Renlin.Li@arm.com>
+
+	Revert:
+	2014-11-19  Renlin Li  <Renlin.Li@arm.com>
+
+	* MAINTAINERS (Write After Approval): Added myself.
+
+2014-11-19  Renlin Li  <Renlin.Li@arm.com>
+
+	* MAINTAINERS (Write After Approval): Added myself.
+
+2014-11-19  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* MAINTAINERS (Write After Approval): Added myself as line map
+	maintainer.
+
+2014-11-17  Dodji Seketeli  <dodji@redhat.com>
+
+	* MAINTAINERS (Various Maintainers): Added myself as line map
+	maintainer.
+
+2014-11-16  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* move-if-change: Sync from upstream gnulib.
+
+2014-11-16  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* compile: Sync with upstream Automake.
+	* depcomp: Ditto.
+	* install-sh: Ditto.
+	* missing: Ditto.
+	* mkinstalldirs: Ditto.
+	* ylwrap: Ditto.
+
+2014-11-16  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config.sub: Update from upstream config repo.
+	* config.guess: Ditto.
+
+2014-11-13  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* Makefile.def: Add liboffloadmic to target_modules.  Make
+	liboffloadmic depend on libgomp's configure, libstdc++ and libgcc.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add liboffloadmic to target binaries.
+	Restrict liboffloadmic for POSIX and i*86, and x86_64 architectures.
+	Add liboffloadmic to noconfig list when C++ is not supported.
+
+2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+
+	* configure: Regenerate.
+	* configure.ac (--enable-as-accelerator-for)
+	(--enable-offload-targets): New configure options.
+
+2014-11-11  Tobias Burnus  <burnus@net-b.de>
+
+	* Makefile.def: Make all-gcc depend on all-isl.
+	* Makefile.in: Regenerate.
+
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+	* MAINTAINERS (Various Maintainers): Add myself as jit maintainer.
+
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/63610
+	* libtool.m4: Fix globbing of darwin versions.
+	* configure: Regenerate.
+
+2014-11-11  Tobias Burnus  <burnus@net-b.de>
+
+	* config/cloog.m4: Remove.
+	* Makefile.def: Remove CLooG.
+	* Makefile.tpl: Ditto.
+	* configure.ac: Ditto.
+	* configure: Regenerate.
+	* Makefile.in: Ditto.
+
+2014-11-06  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* configure.ac: Handle nvptx-*-*.
+	* configure: Regenerate.
+
+2014-11-06  Prachi Godbole  <prachi.godbole@imgtec.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2014-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.def (libcc1): Remove bootstrap=true;.

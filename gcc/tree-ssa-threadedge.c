@@ -209,14 +209,14 @@ record_temporary_equivalence (tree x, tree y, vec<tree> *stack)
 static bool
 record_temporary_equivalences_from_phis (edge e, vec<tree> *stack)
 {
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
 
   /* Each PHI creates a temporary equivalence, record them.
      These are context sensitive equivalences and will be removed
      later.  */
   for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       tree src = PHI_ARG_DEF_FROM_EDGE (phi, e);
       tree dst = gimple_phi_result (phi);
 
@@ -290,15 +290,40 @@ fold_assignment_stmt (gimple stmt)
 }
 
 /* A new value has been assigned to LHS.  If necessary, invalidate any
-   equivalences that are no longer valid.  */
+   equivalences that are no longer valid.   This includes invaliding
+   LHS and any objects that are currently equivalent to LHS.
+
+   Finding the objects that are currently marked as equivalent to LHS
+   is a bit tricky.  We could walk the ssa names and see if any have
+   SSA_NAME_VALUE that is the same as LHS.  That's expensive.
+
+   However, it's far more efficient to look at the unwinding stack as
+   that will have all context sensitive equivalences which are the only
+   ones that we really have to worry about here.   */
 static void
 invalidate_equivalences (tree lhs, vec<tree> *stack)
 {
 
-  for (unsigned int i = 1; i < num_ssa_names; i++)
-    if (ssa_name (i) && SSA_NAME_VALUE (ssa_name (i)) == lhs)
-      record_temporary_equivalence (ssa_name (i), NULL_TREE, stack);
+  /* The stack is an unwinding stack.  If the current element is NULL
+     then it's a "stop unwinding" marker.  Else the current marker is
+     the SSA_NAME with an equivalence and the prior entry in the stack
+     is what the current element is equivalent to.  */
+  for (int i = stack->length() - 1; i >= 0; i--)
+    {
+      /* Ignore the stop unwinding markers.  */
+      if ((*stack)[i] == NULL)
+	continue;
 
+      /* We want to check the current value of stack[i] to see if
+	 it matches LHS.  If so, then invalidate.  */
+      if (SSA_NAME_VALUE ((*stack)[i]) == lhs)
+	record_temporary_equivalence ((*stack)[i], NULL_TREE, stack);
+
+      /* Remember, we're dealing with two elements in this case.  */
+      i--;
+    }
+
+  /* And invalidate any known value for LHS itself.  */
   if (SSA_NAME_VALUE (lhs))
     record_temporary_equivalence (lhs, NULL_TREE, stack);
 }
@@ -352,7 +377,8 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
       /* If the statement has volatile operands, then we assume we
 	 can not thread through this block.  This is overly
 	 conservative in some ways.  */
-      if (gimple_code (stmt) == GIMPLE_ASM && gimple_asm_volatile_p (stmt))
+      if (gimple_code (stmt) == GIMPLE_ASM
+	  && gimple_asm_volatile_p (as_a <gasm *> (stmt)))
 	return NULL;
 
       /* If duplicating this block is going to cause too much code
@@ -470,7 +496,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	  /* Try to fold/lookup the new expression.  Inserting the
 	     expression into the hash table is unlikely to help.  */
           if (is_gimple_call (stmt))
-            cached_lhs = fold_call_stmt (stmt, false);
+            cached_lhs = fold_call_stmt (as_a <gcall *> (stmt), false);
 	  else
             cached_lhs = fold_assignment_stmt (stmt);
 
@@ -528,7 +554,7 @@ dummy_simplify (gimple stmt1 ATTRIBUTE_UNUSED, gimple stmt2 ATTRIBUTE_UNUSED)
 static tree
 simplify_control_stmt_condition (edge e,
 				 gimple stmt,
-				 gimple dummy_cond,
+				 gcond *dummy_cond,
 				 tree (*simplify) (gimple, gimple),
 				 bool handle_dominating_asserts)
 {
@@ -625,7 +651,7 @@ simplify_control_stmt_condition (edge e,
     }
 
   if (code == GIMPLE_SWITCH)
-    cond = gimple_switch_index (stmt);
+    cond = gimple_switch_index (as_a <gswitch *> (stmt));
   else if (code == GIMPLE_GOTO)
     cond = gimple_goto_dest (stmt);
   else
@@ -809,7 +835,7 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
    try and simplify the condition at the end of TAKEN_EDGE->dest.  */
 static bool
 thread_around_empty_blocks (edge taken_edge,
-			    gimple dummy_cond,
+			    gcond *dummy_cond,
 			    bool handle_dominating_asserts,
 			    tree (*simplify) (gimple, gimple),
 			    bitmap visited,
@@ -957,7 +983,7 @@ thread_around_empty_blocks (edge taken_edge,
 
 static int
 thread_through_normal_block (edge e,
-			     gimple dummy_cond,
+			     gcond *dummy_cond,
 			     bool handle_dominating_asserts,
 			     vec<tree> *stack,
 			     tree (*simplify) (gimple, gimple),
@@ -1085,7 +1111,7 @@ thread_through_normal_block (edge e,
    SIMPLIFY is a pass-specific function used to simplify statements.  */
 
 void
-thread_across_edge (gimple dummy_cond,
+thread_across_edge (gcond *dummy_cond,
 		    edge e,
 		    bool handle_dominating_asserts,
 		    vec<tree> *stack,
@@ -1124,6 +1150,7 @@ thread_across_edge (gimple dummy_cond,
 	 through the vector entries.  */
       gcc_assert (path->length () == 0);
       path->release ();
+      delete path;
 
       /* A negative status indicates the target block was deemed too big to
 	 duplicate.  Just quit now rather than trying to use the block as

@@ -71,7 +71,10 @@ extern void hook_void_void (void);
 extern void hook_void_constcharptr (const char *);
 extern void hook_void_rtx_insn_int (rtx_insn *, int);
 extern void hook_void_FILEptr_constcharptr (FILE *, const char *);
+extern void hook_void_FILEptr_constcharptr_const_tree (FILE *, const char *,
+						       const_tree);
 extern bool hook_bool_FILEptr_rtx_false (FILE *, rtx);
+extern void hook_void_rtx_tree (rtx, tree);
 extern void hook_void_tree (tree);
 extern void hook_void_tree_treeptr (tree, tree *);
 extern void hook_void_int_int (int, int);
@@ -104,6 +107,7 @@ extern rtx hook_rtx_rtx_identity (rtx);
 extern rtx hook_rtx_rtx_null (rtx);
 extern rtx hook_rtx_tree_int_null (tree, int);
 
+extern char *hook_charptr_void_null (void);
 extern const char *hook_constcharptr_void_null (void);
 extern const char *hook_constcharptr_const_tree_null (const_tree);
 extern const char *hook_constcharptr_const_rtx_insn_null (const rtx_insn *);

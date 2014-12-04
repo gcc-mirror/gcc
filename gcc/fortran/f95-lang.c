@@ -230,6 +230,10 @@ gfc_be_parse_file (void)
   /* Clear the binding level stack.  */
   while (!global_bindings_p ())
     poplevel (0, 0);
+
+  /* Switch to the default tree diagnostics here, because there may be
+     diagnostics before gfc_finish().  */
+  gfc_diagnostics_finish ();
 }
 
 
@@ -823,11 +827,11 @@ gfc_init_builtin_functions (void)
   gfc_define_builtin ("__builtin_fabsf", mfunc_float[0], 
 		      BUILT_IN_FABSF, "fabsf", ATTR_CONST_NOTHROW_LEAF_LIST);
  
-  gfc_define_builtin ("__builtin_scalbnl", mfunc_longdouble[5], 
+  gfc_define_builtin ("__builtin_scalbnl", mfunc_longdouble[2],
 		      BUILT_IN_SCALBNL, "scalbnl", ATTR_CONST_NOTHROW_LEAF_LIST);
-  gfc_define_builtin ("__builtin_scalbn", mfunc_double[5], 
+  gfc_define_builtin ("__builtin_scalbn", mfunc_double[2],
 		      BUILT_IN_SCALBN, "scalbn", ATTR_CONST_NOTHROW_LEAF_LIST);
-  gfc_define_builtin ("__builtin_scalbnf", mfunc_float[5], 
+  gfc_define_builtin ("__builtin_scalbnf", mfunc_float[2],
 		      BUILT_IN_SCALBNF, "scalbnf", ATTR_CONST_NOTHROW_LEAF_LIST);
  
   gfc_define_builtin ("__builtin_fmodl", mfunc_longdouble[1], 
@@ -890,11 +894,11 @@ gfc_init_builtin_functions (void)
 		      BUILT_IN_CPOW, "cpow", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_cpowf", mfunc_cfloat[1], 
 		      BUILT_IN_CPOWF, "cpowf", ATTR_CONST_NOTHROW_LEAF_LIST);
-  gfc_define_builtin ("__builtin_powil", mfunc_longdouble[2], 
+  gfc_define_builtin ("__builtin_powil", mfunc_longdouble[2],
 		      BUILT_IN_POWIL, "powil", ATTR_CONST_NOTHROW_LEAF_LIST);
-  gfc_define_builtin ("__builtin_powi", mfunc_double[2], 
+  gfc_define_builtin ("__builtin_powi", mfunc_double[2],
 		      BUILT_IN_POWI, "powi", ATTR_CONST_NOTHROW_LEAF_LIST);
-  gfc_define_builtin ("__builtin_powif", mfunc_float[2], 
+  gfc_define_builtin ("__builtin_powif", mfunc_float[2],
 		      BUILT_IN_POWIF, "powif", ATTR_CONST_NOTHROW_LEAF_LIST);
 
 

@@ -179,7 +179,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       // Types:
       typedef _CharT			__char_type;
-      typedef basic_string<_CharT>	__string_type;
       typedef __timepunct_cache<_CharT>	__cache_type;
 
     protected:
@@ -374,7 +373,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _CharT			char_type;
       typedef _InIter			iter_type;
       //@}
-      typedef basic_string<_CharT>	__string_type;
 
       /// Numpunct facet id.
       static locale::id			id;
@@ -393,15 +391,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  @brief  Return preferred order of month, day, and year.
        *
-       *  This function returns an enum from timebase::dateorder giving the
+       *  This function returns an enum from time_base::dateorder giving the
        *  preferred ordering if the format @a x given to time_put::put() only
        *  uses month, day, and year.  If the format @a x for the associated
        *  locale uses other fields, this function returns
-       *  timebase::dateorder::noorder.
+       *  time_base::dateorder::noorder.
        *
        *  NOTE: The library always returns noorder at the moment.
        *
-       *  @return  A member of timebase::dateorder.
+       *  @return  A member of time_base::dateorder.
       */
       dateorder
       date_order()  const
@@ -548,12 +546,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  @brief  Return preferred order of month, day, and year.
        *
-       *  This function returns an enum from timebase::dateorder giving the
+       *  This function returns an enum from time_base::dateorder giving the
        *  preferred ordering if the format @a x given to time_put::put() only
        *  uses month, day, and year.  This function is a hook for derived
        *  classes to change the value returned.
        *
-       *  @return  A member of timebase::dateorder.
+       *  @return  A member of time_base::dateorder.
       */
       virtual dateorder
       do_date_order() const;

@@ -1547,6 +1547,8 @@ emit_support_tinfos (void)
 	emit_support_tinfo_1 (int_n_trees[ix].signed_type);
 	emit_support_tinfo_1 (int_n_trees[ix].unsigned_type);
       }
+  for (tree t = registered_builtin_types; t; t = TREE_CHAIN (t))
+    emit_support_tinfo_1 (TREE_VALUE (t));
 }
 
 /* Finish a type info decl. DECL_PTR is a pointer to an unemitted

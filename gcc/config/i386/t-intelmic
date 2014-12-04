@@ -1,0 +1,9 @@
+mkoffload.o: $(srcdir)/config/i386/intelmic-mkoffload.c | insn-modes.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	  -I$(srcdir)/../libgomp \
+	  -DDEFAULT_REAL_TARGET_MACHINE=\"$(real_target_noncanonical)\" \
+	  -DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\" \
+	  $< $(OUTPUT_OPTION)
+
+mkoffload$(exeext): mkoffload.o collect-utils.o libcommon-target.a $(LIBIBERTY) $(LIBDEPS)
+	$(COMPILER) -o $@ mkoffload.o collect-utils.o libcommon-target.a $(LIBIBERTY) $(LIBS)

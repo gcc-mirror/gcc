@@ -199,4 +199,7 @@ extern bool ira_bad_reload_regno (int, rtx, rtx);
 
 extern void ira_adjust_equiv_reg_cost (unsigned, int);
 
+/* ira-costs.c */
+extern void ira_costs_c_finalize (void);
+
 #endif /* GCC_IRA_H */

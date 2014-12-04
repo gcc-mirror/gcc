@@ -1,4 +1,4 @@
-/* { dg-do run { target arm*-*-symbianelf* arm*-*-eabi* } } */
+/* { dg-do run { target arm_eabi } } */
 /* { dg-options "" } */
 
 /* This file tests most of the non-C++ run-time helper functions

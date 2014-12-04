@@ -1,3 +1,7 @@
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+
 2014-01-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59871

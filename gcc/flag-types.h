@@ -263,10 +263,4 @@ enum lto_partition_model {
   LTO_PARTITION_MAX = 4
 };
 
-/* The code generator used by graphite */
-enum fgraphite_generator {
-  FGRAPHITE_CODE_GEN_ISL = 0,
-  FGRAPHITE_CODE_GEN_CLOOG = 1
-};
-
 #endif /* ! GCC_FLAG_TYPES_H */

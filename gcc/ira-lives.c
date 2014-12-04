@@ -1123,6 +1123,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	 pessimistic, but it probably doesn't matter much in practice.  */
       FOR_BB_INSNS_REVERSE (bb, insn)
 	{
+	  ira_allocno_t a;
 	  df_ref def, use;
 	  bool call_p;
 
@@ -1134,6 +1135,24 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		     INSN_UID (insn), loop_tree_node->parent->loop_num,
 		     curr_point);
 
+	  call_p = CALL_P (insn);
+#ifdef REAL_PIC_OFFSET_TABLE_REGNUM
+	  int regno;
+	  bool clear_pic_use_conflict_p = false;
+	  /* Processing insn usage in call insn can create conflict
+	     with pic pseudo and pic hard reg and that is wrong.
+	     Check this situation and fix it at the end of the insn
+	     processing.  */
+	  if (call_p && pic_offset_table_rtx != NULL_RTX
+	      && (regno = REGNO (pic_offset_table_rtx)) >= FIRST_PSEUDO_REGISTER
+	      && (a = ira_curr_regno_allocno_map[regno]) != NULL)
+	    clear_pic_use_conflict_p
+		= (find_regno_fusage (insn, USE, REAL_PIC_OFFSET_TABLE_REGNUM)
+		   && ! TEST_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS
+					   (ALLOCNO_OBJECT (a, 0)),
+					   REAL_PIC_OFFSET_TABLE_REGNUM));
+#endif
+
 	  /* Mark each defined value as live.  We need to do this for
 	     unused values because they still conflict with quantities
 	     that are live at the time of the definition.
@@ -1143,7 +1162,6 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	     on a call-clobbered register.  Marking the register as
 	     live would stop us from allocating it to a call-crossing
 	     allocno.  */
-	  call_p = CALL_P (insn);
 	  FOR_EACH_INSN_DEF (def, insn)
 	    if (!call_p || !DF_REF_FLAGS_IS_SET (def, DF_REF_MAY_CLOBBER))
 	      mark_ref_live (def);
@@ -1207,7 +1225,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	      EXECUTE_IF_SET_IN_SPARSESET (objects_live, i)
 	        {
 		  ira_object_t obj = ira_object_id_map[i];
-		  ira_allocno_t a = OBJECT_ALLOCNO (obj);
+		  a = OBJECT_ALLOCNO (obj);
 		  int num = ALLOCNO_NUM (a);
 		  HARD_REG_SET this_call_used_reg_set;
 
@@ -1257,7 +1275,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  make_early_clobber_and_input_conflicts ();
 
 	  curr_point++;
-
+	  
 	  /* Mark each used value as live.  */
 	  FOR_EACH_INSN_USE (use, insn)
 	    mark_ref_live (use);
@@ -1286,6 +1304,18 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		}
 	    }
 
+#ifdef REAL_PIC_OFFSET_TABLE_REGNUM
+	  if (clear_pic_use_conflict_p)
+	    {
+	      regno = REGNO (pic_offset_table_rtx);
+	      a = ira_curr_regno_allocno_map[regno];
+	      CLEAR_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (ALLOCNO_OBJECT (a, 0)),
+				  REAL_PIC_OFFSET_TABLE_REGNUM);
+	      CLEAR_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS
+				  (ALLOCNO_OBJECT (a, 0)),
+				  REAL_PIC_OFFSET_TABLE_REGNUM);
+	    }
+#endif
 	  curr_point++;
 	}
 

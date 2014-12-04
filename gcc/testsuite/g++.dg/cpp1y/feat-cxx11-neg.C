@@ -41,9 +41,13 @@
 #  error "__cpp_runtime_arrays" // { dg-error "error" }
 #endif
 
-//  Attribute checks:
+//  C++14 attributes:
 
 //  Attribute [[deprecated]] is allowed in C++11 as an extension (with pedwarn).
-//#ifndef __cpp_attribute_deprecated
-//#  error "__cpp_attribute_deprecated"
+//#ifdef __has_cpp_attribute
+//#  if __has_cpp_attribute(deprecated) == 201309
+//#    error "__has_cpp_attribute(deprecated)" // {  }
+//#  endif
+//#else
+//#  error "__has_cpp_attribute"
 //#endif

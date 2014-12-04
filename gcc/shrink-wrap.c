@@ -248,6 +248,7 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
 		case SUBREG:
 		case STRICT_LOW_PART:
 		case PC:
+		case LO_SUM:
 		  /* Ok.  Continue.  */
 		  break;
 

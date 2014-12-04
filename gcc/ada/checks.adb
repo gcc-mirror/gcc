@@ -2926,7 +2926,21 @@ package body Checks is
                   --  since all possible values will raise CE).
 
                   if Lov > Hiv then
-                     Bad_Value;
+
+                     --  In GNATprove mode, do not issue a message in that case
+                     --  (which would be an error stopping analysis), as this
+                     --  likely corresponds to deactivated code based on a
+                     --  given configuration (say, dead code inside a loop over
+                     --  the empty range). Instead, we enable the range check
+                     --  so that GNATprove will issue a message if it cannot be
+                     --  proved.
+
+                     if GNATprove_Mode then
+                        Enable_Range_Check (Expr);
+                     else
+                        Bad_Value;
+                     end if;
+
                      return;
                   end if;
 

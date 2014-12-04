@@ -41,9 +41,13 @@
 typedef double __v4df __attribute__ ((__vector_size__ (32)));
 typedef float __v8sf __attribute__ ((__vector_size__ (32)));
 typedef long long __v4di __attribute__ ((__vector_size__ (32)));
+typedef unsigned long long __v4du __attribute__ ((__vector_size__ (32)));
 typedef int __v8si __attribute__ ((__vector_size__ (32)));
+typedef unsigned int __v8su __attribute__ ((__vector_size__ (32)));
 typedef short __v16hi __attribute__ ((__vector_size__ (32)));
+typedef unsigned short __v16hu __attribute__ ((__vector_size__ (32)));
 typedef char __v32qi __attribute__ ((__vector_size__ (32)));
+typedef unsigned char __v32qu __attribute__ ((__vector_size__ (32)));
 
 /* The Intel API is flexible enough that we must allow aliasing with other
    vector types, and their scalar components.  */
@@ -124,13 +128,13 @@ typedef double __m256d __attribute__ ((__vector_size__ (32),
 extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_add_pd (__m256d __A, __m256d __B)
 {
-  return (__m256d) __builtin_ia32_addpd256 ((__v4df)__A, (__v4df)__B);
+  return (__m256d) ((__v4df)__A + (__v4df)__B);
 }
 
 extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_add_ps (__m256 __A, __m256 __B)
 {
-  return (__m256) __builtin_ia32_addps256 ((__v8sf)__A, (__v8sf)__B);
+  return (__m256) ((__v8sf)__A + (__v8sf)__B);
 }
 
 extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -218,13 +222,13 @@ _mm256_blendv_ps (__m256 __X, __m256 __Y, __m256 __M)
 extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_div_pd (__m256d __A, __m256d __B)
 {
-  return (__m256d) __builtin_ia32_divpd256 ((__v4df)__A, (__v4df)__B);
+  return (__m256d) ((__v4df)__A / (__v4df)__B);
 }
 
 extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_div_ps (__m256 __A, __m256 __B)
 {
-  return (__m256) __builtin_ia32_divps256 ((__v8sf)__A, (__v8sf)__B);
+  return (__m256) ((__v8sf)__A / (__v8sf)__B);
 }
 
 /* Dot product instructions with mask-defined summing and zeroing parts
@@ -295,13 +299,13 @@ _mm256_min_ps (__m256 __A, __m256 __B)
 extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mul_pd (__m256d __A, __m256d __B)
 {
-  return (__m256d) __builtin_ia32_mulpd256 ((__v4df)__A, (__v4df)__B);
+  return (__m256d) ((__v4df)__A * (__v4df)__B);
 }
 
 extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mul_ps (__m256 __A, __m256 __B)
 {
-  return (__m256) __builtin_ia32_mulps256 ((__v8sf)__A, (__v8sf)__B);
+  return (__m256) ((__v8sf)__A * (__v8sf)__B);
 }
 
 extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -343,13 +347,13 @@ _mm256_shuffle_ps (__m256 __A, __m256 __B, const int __mask)
 extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_sub_pd (__m256d __A, __m256d __B)
 {
-  return (__m256d) __builtin_ia32_subpd256 ((__v4df)__A, (__v4df)__B);
+  return (__m256d) ((__v4df)__A - (__v4df)__B);
 }
 
 extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_sub_ps (__m256 __A, __m256 __B)
 {
-  return (__m256) __builtin_ia32_subps256 ((__v8sf)__A, (__v8sf)__B);
+  return (__m256) ((__v8sf)__A - (__v8sf)__B);
 }
 
 extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))

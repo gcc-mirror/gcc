@@ -42,6 +42,8 @@ with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Ordered_Sets is
 
+   pragma Annotate (CodePeer, Skip_Analysis);
+
    ------------------------------
    -- Access to Fields of Node --
    ------------------------------

@@ -49,6 +49,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-alias.h"
 #include "gimple.h"
 #include "lto-streamer.h"
+#include "context.h"
+#include "omp-low.h"
 
 const char * const tls_model_names[]={"none", "tls-emulated", "tls-real",
 				      "tls-global-dynamic", "tls-local-dynamic",
@@ -164,6 +166,18 @@ varpool_node::get_create (tree decl)
 
   node = varpool_node::create_empty ();
   node->decl = decl;
+
+  if (flag_openmp
+      && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
+    {
+      node->offloadable = 1;
+#ifdef ENABLE_OFFLOADING
+      g->have_offload = true;
+      if (!in_lto_p)
+	vec_safe_push (offload_vars, decl);
+#endif
+    }
+
   node->register_symbol ();
   return node;
 }
@@ -221,6 +235,8 @@ varpool_node::dump (FILE *f)
     fprintf (f, " output");
   if (used_by_single_function)
     fprintf (f, " used-by-single-function");
+  if (need_bounds_init)
+    fprintf (f, " need-bounds-init");
   if (TREE_READONLY (decl))
     fprintf (f, " read-only");
   if (ctor_useable_for_folding_p ())
@@ -388,6 +404,12 @@ ctor_for_folding (tree decl)
 
   if (TREE_CODE (decl) != VAR_DECL
       && TREE_CODE (decl) != CONST_DECL)
+    return error_mark_node;
+
+  /* Static constant bounds are created to be
+     used instead of constants and therefore
+     do not let folding it.  */
+  if (POINTER_BOUNDS_P (decl))
     return error_mark_node;
 
   if (TREE_CODE (decl) == CONST_DECL
@@ -699,6 +721,9 @@ symbol_table::output_variables (void)
 
   timevar_push (TV_VAROUT);
 
+  FOR_EACH_VARIABLE (node)
+    if (!node->definition)
+      assemble_undefined_decl (node->decl);
   FOR_EACH_DEFINED_VARIABLE (node)
     {
       /* Handled in output_in_order.  */
@@ -727,7 +752,7 @@ add_new_static_var (tree type)
   tree new_decl;
   varpool_node *new_node;
 
-  new_decl = create_tmp_var_raw (type, NULL);
+  new_decl = create_tmp_var_raw (type);
   DECL_NAME (new_decl) = create_tmp_var_name (NULL);
   TREE_READONLY (new_decl) = 0;
   TREE_STATIC (new_decl) = 1;

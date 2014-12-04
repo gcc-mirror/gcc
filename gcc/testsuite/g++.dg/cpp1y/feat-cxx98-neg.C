@@ -51,6 +51,26 @@
 #  error "__cpp_variadic_templates" // { dg-error "error" }
 #endif
 
+#ifndef __cpp_initializer_lists
+#  error "__cpp_initializer_lists" // { dg-error "error" }
+#endif
+
+#ifndef __cpp_delegating_constructors
+#  error "__cpp_delegating_constructors" // { dg-error "error" }
+#endif
+
+#ifndef __cpp_nsdmi
+#  error "__cpp_nsdmi" // { dg-error "error" }
+#endif
+
+#ifndef __cpp_inheriting_constructors
+#  error "__cpp_inheriting_constructors" // { dg-error "error" }
+#endif
+
+#ifndef __cpp_ref_qualifiers
+#  error "__cpp_ref_qualifiers" // { dg-error "error" }
+#endif
+
 #ifndef __cpp_alias_templates
 #  error "__cpp_alias_templates" // { dg-error "error" }
 #endif
@@ -95,8 +115,32 @@
 //#  error "__cpp_sized_deallocation"
 //#endif
 
-//  Attribute checks:
+//  C++11 attributes:
 
-#ifndef __cpp_attribute_deprecated
-#  error "__cpp_attribute_deprecated" // { dg-error "error" }
+#ifdef __has_cpp_attribute
+#  if __has_cpp_attribute(noreturn) == 200809
+#    error "__has_cpp_attribute(noreturn) == 200809" // { dg-error "error" }
+#  endif
+#else
+#  error "__has_cpp_attribute"
 #endif
+
+//  Attribute carries_dependency not in yet.
+//#ifdef __has_cpp_attribute
+//#  if __has_cpp_attribute(carries_dependency) == 200809
+//#    error "__has_cpp_attribute(carries_dependency) == 200809" // {  }
+//#  endif
+//#else
+//#  error "__has_cpp_attribute"
+//#endif
+
+//  C++14 attributes:
+
+//  Attribute [[deprecated]] is allowed in C++11 as an extension (with pedwarn).
+//#ifdef __has_cpp_attribute
+//#  if __has_cpp_attribute(deprecated) == 201309
+//#    error "__has_cpp_attribute(deprecated)" // {  }
+//#  endif
+//#else
+//#  error "__has_cpp_attribute"
+//#endif

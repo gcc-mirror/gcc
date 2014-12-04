@@ -165,7 +165,7 @@ struct set_of_reg
 {
   /* The insn where sh_find_set_of_reg stopped looking.
      Can be NULL_RTX if the end of the insn list was reached.  */
-  rtx insn;
+  rtx_insn* insn;
 
   /* The set rtx of the specified reg if found, NULL_RTX otherwise.  */
   const_rtx set_rtx;
@@ -175,9 +175,47 @@ struct set_of_reg
   rtx set_src;
 };
 
-extern set_of_reg sh_find_set_of_reg (rtx reg, rtx insn, rtx_insn *(*stepfunc)(rtx));
-extern bool sh_is_logical_t_store_expr (rtx op, rtx insn);
-extern rtx sh_try_omit_signzero_extend (rtx extended_op, rtx insn);
+/* Given a reg rtx and a start insn, try to find the insn that sets the
+   specified reg by using the specified insn stepping function, such as 
+   'prev_nonnote_insn_bb'.  When the insn is found, try to extract the rtx
+   of the reg set.  */
+template <typename F> inline set_of_reg
+sh_find_set_of_reg (rtx reg, rtx_insn* insn, F stepfunc)
+{
+  set_of_reg result;
+  result.insn = insn;
+  result.set_rtx = NULL_RTX;
+  result.set_src = NULL_RTX;
+
+  if (!REG_P (reg) || insn == NULL_RTX)
+    return result;
+
+  for (result.insn = stepfunc (insn); result.insn != NULL_RTX;
+       result.insn = stepfunc (result.insn))
+    {
+      if (BARRIER_P (result.insn))
+	return result;
+      if (!NONJUMP_INSN_P (result.insn))
+	continue;
+      if (reg_set_p (reg, result.insn))
+	{
+	  result.set_rtx = set_of (reg, result.insn);
+
+	  if (result.set_rtx == NULL_RTX || GET_CODE (result.set_rtx) != SET)
+	    return result;
+
+	  result.set_src = XEXP (result.set_rtx, 1);
+	  return result;
+	}
+    }
+
+  return result;
+}
+
+extern bool sh_is_logical_t_store_expr (rtx op, rtx_insn* insn);
+extern rtx sh_try_omit_signzero_extend (rtx extended_op, rtx_insn* insn);
+extern bool sh_split_movrt_negc_to_movt_xor (rtx_insn* curr_insn,
+					     rtx operands[]);
 #endif /* RTX_CODE */
 
 extern void sh_cpu_cpp_builtins (cpp_reader* pfile);

@@ -204,8 +204,8 @@
 
 (define_insn_and_split "movqicc_<code>_<mode>"
   [(set (match_operand:QI 0 "register_operand" "=R0w")
-        (if_then_else:QI (eqne_cond:QI (match_operand:QHPSI 1 "mra_operand" "RraSd")
-				       (match_operand:QHPSI 2 "mrai_operand" "RraSdi"))
+        (if_then_else:QI (eqne_cond (match_operand:QHPSI 1 "mra_operand" "RraSd")
+				    (match_operand:QHPSI 2 "mrai_operand" "RraSdi"))
 			  (match_operand:QI 3 "const_int_operand" "")
 			  (match_operand:QI 4 "const_int_operand" "")))]
   ""
@@ -215,7 +215,7 @@
 	(compare (match_dup 1)
 		 (match_dup 2)))
    (set (match_dup 0)
-        (if_then_else:QI (eqne_cond:QI (reg:CC FLG_REGNO) (const_int 0))
+        (if_then_else:QI (eqne_cond (reg:CC FLG_REGNO) (const_int 0))
 			 (match_dup 3)
 			 (match_dup 4)))]
   ""
@@ -224,10 +224,10 @@
 
 (define_insn_and_split "movhicc_<code>_<mode>"
   [(set (match_operand:HI 0 "register_operand" "=R0w")
-        (if_then_else:HI (eqne_cond:HI (match_operand:QHPSI 1 "mra_operand" "RraSd")
-				       (match_operand:QHPSI 2 "mrai_operand" "RraSdi"))
-			  (match_operand:QI 3 "const_int_operand" "")
-			  (match_operand:QI 4 "const_int_operand" "")))]
+        (if_then_else:HI (eqne_cond (match_operand:QHPSI 1 "mra_operand" "RraSd")
+				    (match_operand:QHPSI 2 "mrai_operand" "RraSdi"))
+			  (match_operand:HI 3 "const_int_operand" "")
+			  (match_operand:HI 4 "const_int_operand" "")))]
   "TARGET_A24"
   "#"
   "reload_completed"
@@ -235,7 +235,7 @@
 	(compare (match_dup 1)
 		 (match_dup 2)))
    (set (match_dup 0)
-        (if_then_else:HI (eqne_cond:HI (reg:CC FLG_REGNO) (const_int 0))
+        (if_then_else:HI (eqne_cond (reg:CC FLG_REGNO) (const_int 0))
 			 (match_dup 3)
 			 (match_dup 4)))]
   ""

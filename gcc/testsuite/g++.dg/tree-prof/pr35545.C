@@ -47,6 +47,6 @@ int main()
 
 }
 /* { dg-final-use { scan-ipa-dump "Indirect call -> direct call" "profile_estimate" } } */
-/* { dg-final-use { cleanup-ipa-dump "profile" } } */
+/* { dg-final-use { cleanup-ipa-dump "profile_estimate" } } */
 /* { dg-final-use { scan-tree-dump-not "OBJ_TYPE_REF" "optimized" } } */
 /* { dg-final-use { cleanup-tree-dump "optimized" } } */

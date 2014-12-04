@@ -594,7 +594,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
     {
       DFS_follow_tree_edge (DECL_VINDEX (expr));
       DFS_follow_tree_edge (DECL_FUNCTION_PERSONALITY (expr));
-      /* Do not DECL_FUNCTION_SPECIFIC_TARGET.  They will be regenerated.  */
+      DFS_follow_tree_edge (DECL_FUNCTION_SPECIFIC_TARGET (expr));
       DFS_follow_tree_edge (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr));
     }
 
@@ -945,10 +945,10 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 			strlen (TRANSLATION_UNIT_LANGUAGE (t)));
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    gcc_unreachable ();
+    hstate.add_wide_int (cl_target_option_hash (TREE_TARGET_OPTION (t)));
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
-    hstate.add (t, sizeof (struct cl_optimization));
+    hstate.add_wide_int (cl_optimization_hash (TREE_OPTIMIZATION (t)));
 
   if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
     hstate.merge_hash (IDENTIFIER_HASH_VALUE (t));
@@ -1028,7 +1028,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
     {
       visit (DECL_VINDEX (t));
       visit (DECL_FUNCTION_PERSONALITY (t));
-      /* Do not follow DECL_FUNCTION_SPECIFIC_TARGET.  */
+      visit (DECL_FUNCTION_SPECIFIC_TARGET (t));
       visit (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (t));
     }
 
@@ -1956,6 +1956,7 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   bp_pack_value (&bp, fn->has_simduid_loops, 1);
   bp_pack_value (&bp, fn->va_list_fpr_size, 8);
   bp_pack_value (&bp, fn->va_list_gpr_size, 8);
+  bp_pack_value (&bp, fn->last_clique, sizeof (short) * 8);
 
   /* Output the function start and end loci.  */
   stream_output_location (ob, &bp, fn->function_start_locus);
@@ -2023,16 +2024,17 @@ output_function (struct cgraph_node *node)
       set_gimple_stmt_max_uid (cfun, 0);
       FOR_ALL_BB_FN (bb, cfun)
 	{
-	  gimple_stmt_iterator gsi;
-	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	       gsi_next (&gsi))
 	    {
-	      gimple stmt = gsi_stmt (gsi);
+	      gphi *stmt = gsi.phi ();
 
 	      /* Virtual PHIs are not going to be streamed.  */
 	      if (!virtual_operand_p (gimple_phi_result (stmt)))
 	        gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
 	    }
-	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	       gsi_next (&gsi))
 	    {
 	      gimple stmt = gsi_stmt (gsi);
 	      gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
@@ -2042,10 +2044,10 @@ output_function (struct cgraph_node *node)
 	 virtual phis now.  */
       FOR_ALL_BB_FN (bb, cfun)
 	{
-	  gimple_stmt_iterator gsi;
-	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	       gsi_next (&gsi))
 	    {
-	      gimple stmt = gsi_stmt (gsi);
+	      gphi *stmt = gsi.phi ();
 	      if (virtual_operand_p (gimple_phi_result (stmt)))
 	        gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
 	    }
@@ -2186,8 +2188,8 @@ copy_function_or_variable (struct symtab_node *node)
 
   for (i = 0; i < LTO_N_DECL_STREAMS; i++)
     {
-      size_t n = in_state->streams[i].size;
-      tree *trees = in_state->streams[i].trees;
+      size_t n = vec_safe_length (in_state->streams[i]);
+      vec<tree, va_gc> *trees = in_state->streams[i];
       struct lto_tree_ref_encoder *encoder = &(out_state->streams[i]);
 
       /* The out state must have the same indices and the in state.
@@ -2196,7 +2198,7 @@ copy_function_or_variable (struct symtab_node *node)
       gcc_assert (lto_tree_ref_encoder_size (encoder) == 0);
       encoder->trees.reserve_exact (n);
       for (j = 0; j < n; j++)
-	encoder->trees.safe_push (trees[j]);
+	encoder->trees.safe_push ((*trees)[j]);
     }
 
   lto_free_section_data (file_data, LTO_section_function_body, name,
@@ -2307,6 +2309,8 @@ lto_output (void)
      have been renumbered so that edges can be associated with call
      statements using the statement UIDs.  */
   output_symtab ();
+
+  output_offload_tables ();
 
 #ifdef ENABLE_CHECKING
   lto_bitmap_free (output);

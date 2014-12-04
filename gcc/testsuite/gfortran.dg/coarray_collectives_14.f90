@@ -15,24 +15,24 @@ program test
   external ext
 
   type t
-    procedure(), nopass :: ext
-    procedure(valid), nopass :: valid
-    procedure(sub), nopass :: sub
-    procedure(nonpure), nopass :: nonpure
-    procedure(arg1), nopass :: arg1
-    procedure(arg2), nopass :: arg2
-    procedure(elem), nopass :: elem
-    procedure(realo), nopass :: realo
-    procedure(int8), nopass :: int8
-    procedure(arr), nopass :: arr
-    procedure(ptr), nopass :: ptr
-    procedure(alloc), nopass :: alloc
-    procedure(opt), nopass :: opt
-    procedure(val), nopass :: val
-    procedure(async), nopass :: async
-    procedure(tgt), nopass :: tgt
-    procedure(char44), nopass :: char44
-    procedure(char34), nopass :: char34
+    procedure(), pointer, nopass :: ext
+    procedure(valid), pointer, nopass :: valid
+    procedure(sub), pointer, nopass :: sub
+    procedure(nonpure), pointer, nopass :: nonpure
+    procedure(arg1), pointer, nopass :: arg1
+    procedure(arg3), pointer, nopass :: arg3
+    procedure(elem), pointer, nopass :: elem
+    procedure(realo), pointer, nopass :: realo
+    procedure(int8), pointer, nopass :: int8
+    procedure(arr), pointer, nopass :: arr
+    procedure(ptr), pointer, nopass :: ptr
+    procedure(alloc), pointer, nopass :: alloc
+    procedure(opt), pointer, nopass :: opt
+    procedure(val), pointer, nopass :: val
+    procedure(async), pointer, nopass :: async
+    procedure(tgt), pointer, nopass :: tgt
+    procedure(char44), pointer, nopass :: char44
+    procedure(char34), pointer, nopass :: char34
   end type t
 
   type(t) :: dt
@@ -62,7 +62,7 @@ program test
   call co_reduce(caf, arg3) ! { dg-error "shall have two arguments" }
   call co_reduce(caf, dt%arg3) ! { dg-error "shall have two arguments" }
   call co_reduce(caf, elem) ! { dg-error "ELEMENTAL non-INTRINSIC procedure 'elem' is not allowed as an actual argument" }
-  call co_reduce(caf, dt%elem) ! { dg-error "ELEMENTAL non-INTRINSIC procedure 'elem' is not allowed as an actual argument" }
+  call co_reduce(caf, dt%elem) ! { FIXME: "ELEMENTAL non-INTRINSIC procedure 'elem' is not allowed as an actual argument" }
   call co_reduce(caf, realo) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATOR at .2. returns REAL.4." }
   call co_reduce(caf, dt%realo) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATOR at .2. returns REAL.4." }
   call co_reduce(caf, int8) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATOR at .2. returns INTEGER.8." }

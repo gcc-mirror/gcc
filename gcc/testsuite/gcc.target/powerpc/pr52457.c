@@ -2,6 +2,7 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-skip-if "" { powerpc*-*-*spe* } { "*" } { "" } } */
 /* { dg-require-effective-target vsx_hw } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
 /* { dg-options "-O1 -mcpu=power7" } */
 
 extern void abort (void);

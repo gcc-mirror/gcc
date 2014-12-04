@@ -10517,10 +10517,8 @@ package body Sem_Attr is
                   Scop      : constant Entity_Id := Scope (Subp_Id);
                   Subp_Decl : constant Node_Id   :=
                                 Unit_Declaration_Node (Subp_Id);
-
-                  Flag_Id : Entity_Id;
-                  HSS     : Node_Id;
-                  Stmt    : Node_Id;
+                  Flag_Id   : Entity_Id;
+                  Subp_Body : Node_Id;
 
                --  If the access has been taken and the body of the subprogram
                --  has not been see yet, indirect calls must be protected with
@@ -10571,24 +10569,20 @@ package body Sem_Attr is
                   --  generated body is immediately analyzed and the expression
                   --  is automatically frozen.
 
-                  if Ekind (Subp_Id) = E_Function
-                    and then Nkind (Subp_Decl) = N_Subprogram_Declaration
-                    and then Nkind (Original_Node (Subp_Decl)) =
-                                                        N_Expression_Function
+                  if Is_Expression_Function (Subp_Id)
                     and then Present (Corresponding_Body (Subp_Decl))
-                    and then not Analyzed (Corresponding_Body (Subp_Decl))
                   then
-                     HSS :=
-                       Handled_Statement_Sequence
-                         (Unit_Declaration_Node
-                            (Corresponding_Body (Subp_Decl)));
+                     Subp_Body :=
+                       Unit_Declaration_Node (Corresponding_Body (Subp_Decl));
 
-                     if Present (HSS) then
-                        Stmt := First (Statements (HSS));
+                     --  Analyze the body of the expression function to freeze
+                     --  the expression. This takes care of the case where the
+                     --  'Access is part of dispatch table initialization and
+                     --  the generated body of the expression function has not
+                     --  been analyzed yet.
 
-                        if Nkind (Stmt) = N_Simple_Return_Statement then
-                           Freeze_Expression (Expression (Stmt));
-                        end if;
+                     if not Analyzed (Subp_Body) then
+                        Analyze (Subp_Body);
                      end if;
                   end if;
                end;

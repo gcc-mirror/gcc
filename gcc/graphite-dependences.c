@@ -27,10 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/union_map.h>
 #include <isl/flow.h>
 #include <isl/constraint.h>
-#ifdef HAVE_cloog
-#include <cloog/cloog.h>
-#include <cloog/isl/domain.h>
-#endif
 #endif
 
 #include "system.h"
@@ -64,7 +60,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef HAVE_isl
 #include "graphite-poly.h"
-#include "graphite-htab.h"
 
 isl_union_map *
 scop_get_dependences (scop_p scop)
@@ -643,61 +638,4 @@ graphite_legal_transform (scop_p scop)
   return res;
 }
 
-#ifdef HAVE_cloog
-
-/* Return true when the loop at DEPTH carries dependences.  BODY is
-   the body of the loop.  */
-
-static bool
-loop_level_carries_dependences (scop_p scop, vec<poly_bb_p> body,
-				int depth)
-{
-  isl_union_map *transform = scop_get_transformed_schedule (scop, body);
-  isl_union_map *must_raw, *may_raw;
-  isl_union_map *must_war, *may_war;
-  isl_union_map *must_waw, *may_waw;
-  int res;
-
-  compute_deps (scop, body,
-		&must_raw, &may_raw, NULL, NULL,
-		&must_war, &may_war, NULL, NULL,
-		&must_waw, &may_waw, NULL, NULL);
-
-  res = (carries_deps (transform, must_raw, depth)
-	 || carries_deps (transform, may_raw, depth)
-	 || carries_deps (transform, must_war, depth)
-	 || carries_deps (transform, may_war, depth)
-	 || carries_deps (transform, must_waw, depth)
-	 || carries_deps (transform, may_waw, depth));
-
-  isl_union_map_free (transform);
-  isl_union_map_free (must_raw);
-  isl_union_map_free (may_raw);
-  isl_union_map_free (must_war);
-  isl_union_map_free (may_war);
-  isl_union_map_free (must_waw);
-  isl_union_map_free (may_waw);
-  return res;
-}
-
-/* Returns true when the loop L at level DEPTH is parallel.
-   BB_PBB_MAPPING is a map between a basic_block and its related
-   poly_bb_p.  */
-
-bool
-loop_is_parallel_p (loop_p loop, bb_pbb_htab_type *bb_pbb_mapping, int depth)
-{
-  bool dependences;
-  scop_p scop;
-
-  timevar_push (TV_GRAPHITE_DATA_DEPS);
-  auto_vec<poly_bb_p, 3> body;
-  scop = get_loop_body_pbbs (loop, bb_pbb_mapping, &body);
-  dependences = loop_level_carries_dependences (scop, body, depth);
-  timevar_pop (TV_GRAPHITE_DATA_DEPS);
-
-  return !dependences;
-}
-
-#endif
 #endif

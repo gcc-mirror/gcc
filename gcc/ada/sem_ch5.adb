@@ -2012,8 +2012,8 @@ package body Sem_Ch5 is
                   else
                      Set_Etype (Def_Id, Entity (Element));
 
-                     --  If subtype indication was given, verify that it
-                     --  covers the element type of the container.
+                     --  If subtype indication was given, verify that it covers
+                     --  the element type of the container.
 
                      if Present (Subt)
                        and then not Covers (Bas, Etype (Def_Id))
@@ -2063,6 +2063,10 @@ package body Sem_Ch5 is
                   Error_Msg_NE
                     ("\to iterate directly over the elements of a container, "
                      & "write `of &`", Name (N), Original_Node (Name (N)));
+
+                  --  No point in continuing analysis of iterator spec
+
+                  return;
                end if;
             end if;
 

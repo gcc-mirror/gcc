@@ -25,6 +25,11 @@
 /* Provide target-specific access to the futex system call.  */
 
 #include <sys/syscall.h>
+
+#if !defined (SYS_futex)
+#define SYS_futex __NR_futex
+#endif
+
 #define FUTEX_WAIT 0
 #define FUTEX_WAKE 1
 

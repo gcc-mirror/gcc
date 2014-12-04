@@ -1,0 +1,293 @@
+# Test code for libgccjit.so
+#
+# We will compile each of jit.dg/test-*.c into an executable
+# dynamically linked against libgccjit.so, and then run each
+# such executable.
+#
+# These executables call into the libgccjit.so API to create
+# code, compile it, and run it, verifying that the results
+# are as expected.  See harness.h for shared code used by all
+# such executables.
+#
+# The executables call into DejaGnu's unit testing C API to
+# report PASS/FAIL results, which this script gathers back
+# up into the Tcl world, reporting a summary of all results
+# across all of the executables.
+
+load_lib dg.exp
+load_lib prune.exp
+load_lib target-supports.exp
+load_lib gcc-defs.exp
+load_lib timeout.exp
+load_lib target-libpath.exp
+load_lib gcc.exp
+load_lib dejagnu.exp
+
+# This is host_execute from dejagnu.exp commit
+#   126a089777158a7891ff975473939f08c0e31a1c
+# with the following patch applied, and renaming to "fixed_host_execute".
+# See the discussion at
+#  http://lists.gnu.org/archive/html/dejagnu/2014-10/msg00000.html
+#
+#  --- /usr/share/dejagnu/dejagnu.exp.old  2014-10-08 13:38:57.274068541 -0400
+#  +++ /usr/share/dejagnu/dejagnu.exp      2014-10-10 12:27:51.113813659 -0400
+#  @@ -113,8 +113,6 @@ proc host_execute {args} {
+#       set timetol 0
+#       set arguments ""
+#   
+#  -    expect_before buffer_full { perror "Buffer full" }
+#  -
+#       if { [llength $args] == 0} {
+#          set executable $args
+#       } else {
+
+
+# Execute the executable file, and anaylyse the output for the
+# test state keywords.
+#    Returns:
+#	A "" (empty) string if everything worked, or an error message
+#	if there was a problem.
+#
+proc fixed_host_execute {args} {
+    global text
+    global spawn_id
+
+    set timeoutmsg "Timed out: Never got started, "
+    set timeout 100
+    set file all
+    set timetol 0
+    set arguments ""
+
+    if { [llength $args] == 0} {
+	set executable $args
+    } else {
+	set executable [string trimleft [lindex [split $args " "] 0] "\{"]
+	set params [string trimleft [lindex [split $args " "] 1] "\{"]
+	set params [string trimright $params "\}"]
+    }
+
+    verbose "The executable is $executable" 2
+    if {![file exists ${executable}]} {
+	perror "The executable, \"$executable\" is missing" 0
+	return "No source file found"
+    }
+
+    # spawn the executable and look for the DejaGnu output messages from the
+    # test case.
+    # spawn -noecho -open [open "|./${executable}" "r"]
+    spawn -noecho "./${executable}" ${params}
+    expect_after full_buffer {	error "got full_buffer" }
+
+    set prefix "\[^\r\n\]*"
+    expect {
+	-re "^$prefix\[0-9\]\[0-9\]:..:..:${text}*\r\n" {
+	    regsub "\[\n\r\t\]*NOTE: $text\r\n" $expect_out(0,string) "" output
+	    verbose "$output" 3
+	    set timetol 0
+	    exp_continue
+	}
+	-re "^$prefix\tNOTE:${text}*" {
+	    regsub "\[\n\r\t\]*NOTE: $text\r\n" $expect_out(0,string) "" output
+	    set output [string range $output 6 end]
+	    verbose "$output" 2
+	    set timetol 0
+	    exp_continue
+	}
+	-re "^$prefix\tPASSED:${text}*" {
+	    regsub "\[\n\r\t\]*PASSED: $text\r\n" $expect_out(0,string) "" output
+	    set output [string range $output 8 end]
+	    pass "$output"
+	    set timetol 0
+	    exp_continue
+	}
+	-re "^$prefix\tFAILED:${text}*" {
+	    regsub "\[\n\r\t\]*FAILED: $text\r\n" $expect_out(0,string) "" output
+	    set output [string range $output 8 end]
+	    fail "$output"
+	    set timetol 0
+	    exp_continue
+	}
+	-re "^$prefix\tUNTESTED:${text}*" {
+	    regsub "\[\n\r\t\]*TESTED: $text\r\n" $expect_out(0,string) "" output
+	    set output [string range $output 8 end]
+	    untested "$output"
+	    set timetol 0
+	    exp_continue
+	}
+	-re "^$prefix\tUNRESOLVED:${text}*" {
+	    regsub "\[\n\r\t\]*UNRESOLVED: $text\r\n" $expect_out(0,string) "" output
+	    set output [string range $output 8 end]
+	    unresolved "$output"
+	    set timetol 0
+	    exp_continue
+	}
+	-re "^Totals" {
+	    verbose "All done" 2
+	}
+	eof {
+	    #	    unresolved "${executable} died prematurely"
+	    #	    catch close
+	    #	    return "${executable} died prematurely"
+	}
+	timeout {
+	    warning "Timed out executing test case"
+	    if { $timetol <= 2 } {
+		incr timetol
+		exp_continue
+	    } else {
+		-		catch close
+		return "Timed out executing test case"
+	    }
+	}
+	-re "^$prefix\r\n" {
+	    exp_continue
+	}
+    }
+
+    # force a close of the executable to be safe.
+    catch close
+
+    return ""
+}
+
+# (end of code from dejagnu.exp)
+
+# GCC_UNDER_TEST is needed by gcc_target_compile
+global GCC_UNDER_TEST
+if ![info exists GCC_UNDER_TEST] {
+    set GCC_UNDER_TEST "[find_gcc]"
+}
+
+# Initialize dg.
+dg-init
+
+# Gather a list of all tests.
+
+# Tests within the testsuite: gcc/testsuite/jit.dg/test-*.c
+set tests [lsort [find $srcdir/$subdir test-*.c]]
+
+# We also test the examples within the documentation, to ensure that
+# they compile:
+set tests [lsort [concat $tests [find $srcdir/../jit/docs/examples *.c]]]
+
+verbose "tests: $tests"
+
+# libgloss has found the driver (as "xgcc" or "gcc) and stored
+# its full path as GCC_UNDER_TEST.
+proc get_path_of_driver {} {
+    global GCC_UNDER_TEST
+
+    verbose "GCC_UNDER_TEST: $GCC_UNDER_TEST"
+    set binary [lindex $GCC_UNDER_TEST 0]
+    verbose "binary: $binary"
+
+    return [file dirname $binary]
+}
+
+proc jit-dg-test { prog do_what extra_tool_flags } {
+    verbose "within jit-dg-test..."
+    verbose "  prog: $prog"
+    verbose "  do_what: $do_what"
+    verbose "  extra_tool_flags: $extra_tool_flags"
+
+    # test-threads.c needs to be linked against pthreads
+    if {[string match "*test-threads.c" $prog]} {
+	append extra_tool_flags " -lpthread"
+    }
+
+    # Determine what to name the built executable.
+    set output_file "[file rootname [file tail $prog]].exe"
+    verbose "output_file: $output_file"
+
+    # Create the test executable:
+    set comp_output [gcc_target_compile $prog $output_file $do_what \
+			"{additional_flags=$extra_tool_flags}"]
+    if ![jit_check_compile "$prog" "initial compilation" \
+	    $output_file $comp_output] then {
+      return
+    }
+
+    # Run the test executable, capturing the PASS/FAIL textual output
+    # from the C API, converting it into the Tcl API.
+
+    # We need to set LD_LIBRARY_PATH so that the test files can find
+    # libgccjit.so
+    # Do this using set_ld_library_path_env_vars from target-libpath.exp
+    global ld_library_path
+    global base_dir
+    set ld_library_path "$base_dir/../../"
+    set_ld_library_path_env_vars
+
+    # libgccjit uses the driver to convert .s files to .so libraries
+    # via its *installed* name, FULL_DRIVER_NAME
+    #   ${target_noncanonical}-gcc-${gcc_BASEVER}${exeext}
+    # e.g. "x86_64-unknown-linux-gnu-gcc-5.0.0"
+    # looking for it on PATH.  Hence we need to prepend the location of
+    # that executable to PATH when running the tests
+    set dir_containing_driver [get_path_of_driver ]
+    verbose "dir_containing_driver: $dir_containing_driver"
+    global env
+    set old_path $env(PATH)
+    setenv "PATH" $dir_containing_driver:$old_path
+    verbose -log "PATH=[getenv PATH]"
+
+    # We have:
+    #   test-executables
+    #     linked to -> libgccjit.so
+    #                    -> invokes driver:
+    #                         -> invokes the assembler
+    #                         -> invokes the linker
+    # We want to be able to run this from the builddir without installing
+    # but the linker needs to be able to locate various libraries, or we
+    # get:
+    #   ld: cannot find crtbeginS.o: No such file or directory
+    #   ld: cannot find -lgcc
+    #   ld: cannot find -lgcc_s
+    # These can be found in the "gcc" subdir of the build.
+    # Hence to be able to run the testsuite without installing, we need
+    # to set or prepend the "gcc" subdir of the build to LIBRARY_PATH:
+    if { [info exists env(LIBRARY_PATH) ] } {
+	set old_library_path $env(LIBRARY_PATH)
+	setenv "LIBRARY_PATH" $dir_containing_driver:$old_library_path
+    } else {
+	setenv "LIBRARY_PATH" $dir_containing_driver
+    }
+    verbose -log "LIBRARY_PATH=[getenv LIBRARY_PATH]"
+
+    # dejagnu.exp's host_execute has code to scrape out test results
+    # from the DejaGnu C API and bring back into the tcl world, so we
+    # use that to invoke the built code.
+    # However, it appears to be buggy; see:
+    #  http://lists.gnu.org/archive/html/dejagnu/2014-10/msg00000.html
+    # We instead call a patched local copy, "fixed_host_execute", defined
+    # above.
+    set result [fixed_host_execute $output_file]
+    verbose "result: $result"
+
+    # Restore PATH
+    setenv "PATH" $old_path
+
+    # Restore LIBRARY_PATH
+    if { [info exists old_library_path] } {
+	setenv "LIBRARY_PATH" $old_library_path
+    } else {
+	unsetenv "LIBRARY_PATH"
+    }
+
+    restore_ld_library_path_env_vars
+}
+
+# We need to link with --export-dynamic for test-calling-external-function.c
+# so that the JIT-built code can call into functions from the main program.
+set DEFAULT_CFLAGS "-I$srcdir/../jit -lgccjit -g -Wall -Werror -Wl,--export-dynamic"
+
+# <dejagnu.h> assumes -fgnu89-inline
+# See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63613
+# and http://lists.gnu.org/archive/html/dejagnu/2014-10/msg00011.html
+append DEFAULT_CFLAGS " -fgnu89-inline"
+
+# Main loop.  This will invoke jig-dg-test on each test-*.c file.
+dg-runtest $tests "" $DEFAULT_CFLAGS
+
+# All done.
+dg-finish

@@ -1,0 +1,84 @@
+Client Code   . Generated .            libgccjit.so
+              . code      .
+              .           . JIT API  . JIT "Frontend". (libbackend.a)
+....................................................................................
+   │          .           .          .               .
+    ──────────────────────────>      .               .
+              .           .    │     .               .
+              .           .    V     .               .
+              .           .    ──> libgccjit.c       .
+              .           .        │ (error-checking).
+              .           .        │                 .
+              .           .        ──> jit-recording.c
+              .           .              (record API calls)
+              .           .    <───────              .
+              .           .    │     .               .
+   <───────────────────────────      .               .
+   │          .           .          .               .
+   │          .           .          .               .
+   V          .           .  gcc_jit_context_compile .
+    ──────────────────────────>      .               .
+              .           .    │     .               .
+              .           .    │ ACQUIRE MUTEX       .
+              .           .    │     .               .
+              .           .    V───────────────────────> toplev::main (for now)
+              .           .          .               .       │
+              .           .          .               .   (various code)
+              .           .          .               .       │
+              .           .          .               .       V
+              .           .          .    <───────────────── langhook:parse_file
+              .           .          .    │          .
+              .           .          .    │ (jit_langhook_parse_file)
+              .           .          .    │          .
+..........................................│..................VVVVVVVVVVVVV...
+              .           .          .    │          .       No GC in here
+              .           .          .    │ jit-playback.c
+              .           .          .    │   (playback of API calls)
+              .           .          .    ───────────────> creation of functions,
+              .           .          .               .     types, expression trees
+              .           .          .    <──────────────── etc
+              .           .          .    │(handle_locations: add locations to
+              .           .          .    │ linemap and associate them with trees)
+              .           .          .    │          .
+              .           .          .    │          .       No GC in here
+..........................................│..................AAAAAAAAAAAAA...
+              .           .          .    │ for each function
+              .           .          .    ──> postprocess
+              .           .          .        │      .
+              .           .          .        ────────────> cgraph_finalize_function
+              .           .          .        <────────────
+              .           .          .     <──       .
+              .           .          .    │          .
+              .           .          .    ──────────────────> (end of
+              .           .          .               .       │ langhook_parse_file)
+              .           .          .               .       │
+              .           .          .               .   (various code)
+              .           .          .               .       │
+              .           .          .               .       ↓
+              .           .          .    <───────────────── langhook:write_globals
+              .           .          .    │          .
+              .           .          .    │ (jit_langhook_write_globals)
+              .           .          .    │          .
+              .           .          .    │          .
+              .           .          .    ──────────────────> finalize_compilation_unit
+              .           .          .               .       │
+              .           .          .               .   (the middle─end and backend)
+              .           .          .               .       ↓
+              .           .    <───────────────────────────── end of toplev::main
+              .           .    │ RELEASE MUTEX       .
+              .           .    │     .               .
+              .           .    │ Convert assembler to DSO
+              .           .    │     .               .
+              .           .    │ Load DSO            .
+   <───────────────────────────      .               .
+   │          .           .          .               .
+   Get (void*).           .          .               .
+   │          .           .          .               .
+   │ Call it  .           .          .               .
+   ───────────────>       .          .               .
+              .    │      .          .               .
+              .    │      .          .               .
+   <───────────────       .          .               .
+   │          .           .          .               .
+   │          .           .          .               .
+etc

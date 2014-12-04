@@ -247,6 +247,7 @@ enum lto_section_type
   LTO_section_inline_summary,
   LTO_section_ipcp_transform,
   LTO_section_ipa_icf,
+  LTO_section_offload_table,
   LTO_N_SECTION_TYPES		/* Must be last.  */
 };
 
@@ -274,15 +275,14 @@ lto_file_decl_data_get_ ## name (struct lto_file_decl_data *data, \
 				 unsigned int idx) \
 { \
   struct lto_in_decl_state *state = data->current_decl_state; \
-  gcc_assert (idx < state->streams[LTO_DECL_STREAM_## UPPER_NAME].size); \
-  return state->streams[LTO_DECL_STREAM_## UPPER_NAME].trees[idx]; \
+   return (*state->streams[LTO_DECL_STREAM_## UPPER_NAME])[idx]; \
 } \
 \
 static inline unsigned int \
 lto_file_decl_data_num_ ## name ## s (struct lto_file_decl_data *data) \
 { \
   struct lto_in_decl_state *state = data->current_decl_state; \
-  return state->streams[LTO_DECL_STREAM_## UPPER_NAME].size; \
+  return vec_safe_length (state->streams[LTO_DECL_STREAM_## UPPER_NAME]); \
 }
 
 
@@ -420,18 +420,6 @@ struct lto_symtab_encoder_iterator
 
 
 
-
-/* Mapping from indices to trees.  */
-struct GTY(()) lto_tree_ref_table
-{
-  /* Array of referenced trees . */
-  tree * GTY((length ("%h.size"))) trees;
-
-  /* Size of array. */
-  unsigned int size;
-};
-
-
 /* The lto_tree_ref_encoder struct is used to encode trees into indices. */
 
 struct lto_tree_ref_encoder
@@ -442,10 +430,10 @@ struct lto_tree_ref_encoder
 
 
 /* Structure to hold states of input scope.  */
-struct GTY(()) lto_in_decl_state
+struct GTY((for_user)) lto_in_decl_state
 {
   /* Array of lto_in_decl_buffers to store type and decls streams. */
-  struct lto_tree_ref_table streams[LTO_N_DECL_STREAMS];
+  vec<tree, va_gc> *streams[LTO_N_DECL_STREAMS];
 
   /* If this in-decl state is associated with a function. FN_DECL
      point to the FUNCTION_DECL. */
@@ -454,6 +442,20 @@ struct GTY(()) lto_in_decl_state
 
 typedef struct lto_in_decl_state *lto_in_decl_state_ptr;
 
+struct decl_state_hasher : ggc_hasher<lto_in_decl_state *>
+{
+  static hashval_t
+  hash (lto_in_decl_state *s)
+  {
+    return htab_hash_pointer (s->fn_decl);
+  }
+
+  static bool
+  equal (lto_in_decl_state *a, lto_in_decl_state *b)
+  {
+    return a->fn_decl == b->fn_decl;
+  }
+};
 
 /* The structure that holds all of the vectors of global types,
    decls and cgraph nodes used in the serialization of this file.  */
@@ -500,7 +502,7 @@ struct GTY(()) lto_file_decl_data
   lto_symtab_encoder_t GTY((skip)) symtab_node_encoder;
 
   /* Hash table maps lto-related section names to location in file.  */
-  htab_t GTY((param_is (struct lto_in_decl_state))) function_decl_states;
+  hash_table<decl_state_hasher> *function_decl_states;
 
   /* The .o file that these offsets relate to.  */
   const char *GTY((skip)) file_name;
@@ -699,8 +701,6 @@ extern const char *lto_get_decl_name_mapping (struct lto_file_decl_data *,
 					      const char *);
 extern struct lto_in_decl_state *lto_new_in_decl_state (void);
 extern void lto_delete_in_decl_state (struct lto_in_decl_state *);
-extern hashval_t lto_hash_in_decl_state (const void *);
-extern int lto_eq_in_decl_state (const void *, const void *);
 extern struct lto_in_decl_state *lto_get_function_in_decl_state (
 				      struct lto_file_decl_data *, tree);
 extern void lto_free_function_in_decl_state (struct lto_in_decl_state *);
@@ -822,6 +822,8 @@ bool lto_symtab_encoder_encode_initializer_p (lto_symtab_encoder_t,
 					      varpool_node *);
 void output_symtab (void);
 void input_symtab (void);
+void output_offload_tables (void);
+void input_offload_tables (void);
 bool referenced_from_other_partition_p (struct ipa_ref_list *,
 				        lto_symtab_encoder_t);
 bool reachable_from_other_partition_p (struct cgraph_node *,
@@ -831,6 +833,19 @@ bool referenced_from_this_partition_p (symtab_node *,
 bool reachable_from_this_partition_p (struct cgraph_node *,
 				      lto_symtab_encoder_t);
 lto_symtab_encoder_t compute_ltrans_boundary (lto_symtab_encoder_t encoder);
+void select_what_to_stream (bool);
+
+/* In options-save.c.  */
+void cl_target_option_stream_out (struct output_block *, struct bitpack_d *,
+				  struct cl_target_option *);
+
+void cl_target_option_stream_in (struct data_in *,
+				 struct bitpack_d *,
+				 struct cl_target_option *);
+
+void cl_optimization_stream_out (struct bitpack_d *, struct cl_optimization *);
+
+void cl_optimization_stream_in (struct bitpack_d *, struct cl_optimization *);
 
 
 /* In lto-symtab.c.  */

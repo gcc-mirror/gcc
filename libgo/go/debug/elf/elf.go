@@ -1340,6 +1340,72 @@ var rppc64Strings = []intName{
 func (i R_PPC64) String() string   { return stringName(uint32(i), rppc64Strings, false) }
 func (i R_PPC64) GoString() string { return stringName(uint32(i), rppc64Strings, true) }
 
+// Relocation types for s390
+type R_390 int
+
+const (
+	R_390_NONE     R_390 = 0
+	R_390_8        R_390 = 1
+	R_390_12       R_390 = 2
+	R_390_16       R_390 = 3
+	R_390_32       R_390 = 4
+	R_390_PC32     R_390 = 5
+	R_390_GOT12    R_390 = 6
+	R_390_GOT32    R_390 = 7
+	R_390_PLT32    R_390 = 8
+	R_390_COPY     R_390 = 9
+	R_390_GLOB_DAT R_390 = 10
+	R_390_JMP_SLOT R_390 = 11
+	R_390_RELATIVE R_390 = 12
+	R_390_GOTOFF   R_390 = 13
+	R_390_GOTPC    R_390 = 14
+	R_390_GOT16    R_390 = 15
+	R_390_PC16     R_390 = 16
+	R_390_PC16DBL  R_390 = 17
+	R_390_PLT16DBL R_390 = 18
+	R_390_PC32DBL  R_390 = 19
+	R_390_PLT32DBL R_390 = 20
+	R_390_GOTPCDBL R_390 = 21
+	R_390_64       R_390 = 22
+	R_390_PC64     R_390 = 23
+	R_390_GOT64    R_390 = 24
+	R_390_PLT64    R_390 = 25
+	R_390_GOTENT   R_390 = 26
+)
+
+var r390Strings = []intName{
+	{0, "R_390_NONE"},
+	{1, "R_390_8"},
+	{2, "R_390_12"},
+	{3, "R_390_16"},
+	{4, "R_390_32"},
+	{5, "R_390_PC32"},
+	{6, "R_390_GOT12"},
+	{7, "R_390_GOT32"},
+	{8, "R_390_PLT32"},
+	{9, "R_390_COPY"},
+	{10, "R_390_GLOB_DAT"},
+	{11, "R_390_JMP_SLOT"},
+	{12, "R_390_RELATIVE"},
+	{13, "R_390_GOTOFF"},
+	{14, "R_390_GOTPC"},
+	{15, "R_390_GOT16"},
+	{16, "R_390_PC16"},
+	{17, "R_390_PC16DBL"},
+	{18, "R_390_PLT16DBL"},
+	{19, "R_390_PC32DBL"},
+	{20, "R_390_PLT32DBL"},
+	{21, "R_390_GOTPCDBL"},
+	{22, "R_390_64"},
+	{23, "R_390_PC64"},
+	{24, "R_390_GOT64"},
+	{25, "R_390_PLT64"},
+	{26, "R_390_GOTENT"},
+}
+
+func (i R_390) String() string   { return stringName(uint32(i), r390Strings, false) }
+func (i R_390) GoString() string { return stringName(uint32(i), r390Strings, true) }
+
 // Relocation types for SPARC.
 type R_SPARC int
 

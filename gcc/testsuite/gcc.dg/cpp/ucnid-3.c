@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c99 -fextended-identifiers" } */
+/* { dg-options "-std=c99" } */
 
 #define paste(x, y) x ## y
 

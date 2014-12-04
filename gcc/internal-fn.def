@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
    
    Each entry must have a corresponding expander of the form:
 
-     void expand_NAME (gimple stmt)
+     void expand_NAME (gimple_call stmt)
 
    where STMT is the statement that performs the call.  */
 
@@ -57,3 +57,6 @@ DEF_INTERNAL_FN (UBSAN_OBJECT_SIZE, ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (ABNORMAL_DISPATCHER, ECF_NORETURN, NULL)
 DEF_INTERNAL_FN (BUILTIN_EXPECT, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (ASAN_CHECK, ECF_TM_PURE | ECF_LEAF | ECF_NOTHROW, ".W...")
+DEF_INTERNAL_FN (ADD_OVERFLOW, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
+DEF_INTERNAL_FN (SUB_OVERFLOW, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
+DEF_INTERNAL_FN (MUL_OVERFLOW, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)

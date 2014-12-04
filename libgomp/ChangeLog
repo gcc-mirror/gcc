@@ -1,3 +1,188 @@
+2014-11-28  Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* testsuite/libgomp.c/target-critical-1.c: New test.
+
+2014-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/examples-4/e.53.4.c: Add -DITESTITERS=20
+	to dg-options unless expensive testing is on.  
+	(TESTITERS): Define to N if not defined.
+	(main): Use TESTITERS instead of N.
+	* testsuite/libgomp.c/examples-4/e.55.1.c: Define CHUNKSZ from
+	dg-additional-options depending on whether expensive testing is on.
+	* testsuite/libgomp.fortran/examples-4/e.55.1.f90 (e_55_1_mod):
+	Decrease N to 100000 and CHUNKSZ to 10000.
+
+2014-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/63938
+	* testsuite/libgomp.fortran/pr63938-1.f90: New test.
+	* testsuite/libgomp.fortran/pr63938-2.f90: New test.
+
+2014-11-21  Steve Ellcey  <sellcey@imgtec.com>
+
+	* config/linux/mips/futex.h (SYS_futex): Define if not already done.
+
+2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/63784
+	* configure: Regenerated.
+
+2014-11-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/libgomp.c/examples-4/e.53.5.c: Require
+	vect_simd_clones effective target.
+	* testsuite/libgomp.fortran/examples-4/e.53.5.f90: Ditto.
+
+2014-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.c/examples-4/e.54.2.c (main): Use N / 8 instead
+	of 32 as block_size.
+	* libgomp.fortran/examples-4/e.54.2.f90 (e_54_1): Use n / 8
+	instead of 32 as block_size.
+
+2014-11-13  Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Set up offload_additional_options,
+	offload_additional_lib_paths and offload_targets.
+	* testsuite/Makefile.am: Export environment variables: OFFLOAD_TARGETS,
+	OFFLOAD_ADDITIONAL_OPTIONS, OFFLOAD_ADDITIONAL_LIB_PATHS.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/lib/libgomp.exp (libgomp_init): Append
+	offload_additional_lib_paths to LD_LIBRARY_PATH.  Append
+	offload_additional_options to ALWAYS_CFLAGS.  Append liboffloadmic
+	build directory to LD_LIBRARY_PATH for intelmic offload targets.
+
+2014-11-13  Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_device): New.
+	* testsuite/libgomp.c++/c++.exp: Include tests from subdirectories.
+	* testsuite/libgomp.c++/examples-4/e.51.5.C: New test.
+	* testsuite/libgomp.c++/examples-4/e.53.2.C: Ditto.
+	* testsuite/libgomp.c/examples-4/e.50.1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.50.2.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.50.3.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.50.4.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.50.5.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.51.1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.51.2.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.51.3.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.51.4.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.51.6.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.51.7.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.52.1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.52.2.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.53.1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.53.3.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.53.4.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.53.5.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.54.2.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.54.3.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.54.4.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.54.5.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.54.6.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.55.1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.55.2.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.56.3.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.56.4.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.57.1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.57.2.c: Ditto.
+	* testsuite/libgomp.c/examples-4/e.57.3.c: Ditto.
+	* testsuite/libgomp.c/target-7.c: Fix test.
+	* testsuite/libgomp.fortran/examples-4/e.50.1.f90: New test.
+	* testsuite/libgomp.fortran/examples-4/e.50.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.50.3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.50.4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.50.5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.6.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.51.7.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.52.1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.52.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.53.1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.53.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.53.3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.53.4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.53.5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.54.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.54.3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.54.4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.54.5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.54.6.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.55.1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.55.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.56.3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.56.4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.57.1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.57.2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/e.57.3.f90: Ditto.
+
+2014-11-13  Jakub Jelinek  <jakub@redhat.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+
+	* libgomp.map (GOMP_4.0.1): New symbol version.
+	Add GOMP_offload_register.
+	* libgomp_target.h: New file.
+	* splay-tree.h: New file.
+	* target.c: Include config.h, libgomp_target.h, dlfcn.h, splay-tree.h.
+	(gomp_target_init): New forward declaration.
+	(gomp_is_initialized): New static variable.
+	(splay_tree_node, splay_tree, splay_tree_key): New typedefs.
+	(struct target_mem_desc, struct splay_tree_key_s, offload_image_descr):
+	New structures.
+	(offload_images, num_offload_images, devices, num_devices): New static
+	variables.
+	(splay_compare): New static function.
+	(struct gomp_device_descr): New structure.
+	(gomp_get_num_devices): Call gomp_target_init.
+	(resolve_device, gomp_map_vars_existing, gomp_map_vars, gomp_unmap_tgt)
+	(gomp_unmap_vars, gomp_update, gomp_init_device): New static functions.
+	(GOMP_offload_register): New function.
+	(GOMP_target): Arrange for host callback to be performed in a separate
+	initial thread and contention group, inheriting ICVs from
+	gomp_global_icv etc.  Call gomp_map_vars and gomp_unmap_vars.
+	Add device initialization and lookup for target function in splay tree.
+	(GOMP_target_data): Add device initialization and call gomp_map_vars.
+	(GOMP_target_end_data): Call gomp_unmap_vars.
+	(GOMP_target_update): Add device initialization and call gomp_update.
+	(gomp_load_plugin_for_device, gomp_register_images_for_device)
+	(gomp_target_init): New static functions.
+
+2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for libdl, required for plugin support.
+	(PLUGIN_SUPPORT): Define if plugins are supported.
+	(enable_offload_targets): Support Intel MIC targets.
+	(OFFLOAD_TARGETS): List of target names suitable for offloading.
+
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/63610
+	* configure: Regenerate.
+
+2014-11-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/posix/lock.c (_XOPEN_SOURCE) Define as 600.
+
 2014-10-06  Marek Polacek  <polacek@redhat.com>
 
 	* testsuite/libgomp.c/affinity-1.c: Include <sys/wait.h>.

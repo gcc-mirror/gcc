@@ -3,6 +3,7 @@
 /* { dg-do preprocess { target c99_runtime } } */
 /* { dg-options "-std=iso9899:1999" } */
 /* { dg-add-options c99_runtime } */
+/* { dg-require-effective-target tgmath_h } */
 
 /* Test that tgmath defines the macros it's supposed to. */
 #include <tgmath.h>

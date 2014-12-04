@@ -21,11 +21,12 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <experimental/optional>
-#include <testsuite_hooks.h>
 
 struct value_type
 {
   int i;
+
+  void* operator&() { return nullptr; } // N.B. non-const
 };
 
 int main()

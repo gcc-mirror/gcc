@@ -29,7 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Useful compile-time options will be stored in here.  */
 compile_options_t compile_options;
 
-
+#ifndef LIBGFOR_MINIMAL
 volatile sig_atomic_t fatal_error_in_progress = 0;
 
 
@@ -146,6 +146,7 @@ maybe_find_addr2line (void)
   if (options.backtrace == -1)
     find_addr2line ();
 }
+#endif
 
 /* Set the usual compile-time options.  */
 extern void set_options (int , int []);
@@ -176,6 +177,7 @@ set_options (int num, int options[])
   if (num >= 9)
     compile_options.fpe_summary = options[8];
 
+#ifndef LIBGFOR_MINIMAL
   /* If backtrace is required, we set signal handlers on the POSIX
      2001 signals with core action.  */
   if (compile_options.backtrace)
@@ -212,6 +214,7 @@ set_options (int num, int options[])
 
       maybe_find_addr2line ();
     }
+#endif
 }
 
 

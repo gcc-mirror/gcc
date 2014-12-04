@@ -939,8 +939,8 @@ package Sem_Util is
    --  as an access type internally, this function tests only for access types
    --  known to the programmer. See also Has_Tagged_Component.
 
-      function Has_Defaulted_Discriminants (Typ : Entity_Id) return Boolean;
-      --  Simple predicate to test for defaulted discriminants
+   function Has_Defaulted_Discriminants (Typ : Entity_Id) return Boolean;
+   --  Simple predicate to test for defaulted discriminants
 
    type Alignment_Result is (Known_Compatible, Unknown, Known_Incompatible);
    --  Result of Has_Compatible_Alignment test, description found below. Note

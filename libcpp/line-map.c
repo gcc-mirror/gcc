@@ -529,10 +529,10 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
 	  && line_delta * ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map) > 1000)
       || (max_column_hint >= (1U << ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map)))
       || (max_column_hint <= 80
-	  && ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map) >= 10))
-    {
-      add_map = true;
-    }
+	  && ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map) >= 10)
+      || (highest > 0x60000000
+	  && (set->max_column_hint || highest > 0x70000000)))
+    add_map = true;
   else
     max_column_hint = set->max_column_hint;
   if (add_map)
@@ -543,7 +543,7 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
 	  /* If the column number is ridiculous or we've allocated a huge
 	     number of source_locations, give up on column numbers. */
 	  max_column_hint = 0;
-	  if (highest >0x70000000)
+	  if (highest > 0x70000000)
 	    return 0;
 	  column_bits = 0;
 	}
@@ -631,6 +631,50 @@ linemap_position_for_line_and_column (const struct line_map *map,
 	  + ((line - ORDINARY_MAP_STARTING_LINE_NUMBER (map))
 	     << ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map))
 	  + (column & ((1 << ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map)) - 1)));
+}
+
+/* Encode and return a source_location starting from location LOC and
+   shifting it by OFFSET columns.  This function does not support
+   virtual locations.  */
+
+source_location
+linemap_position_for_loc_and_offset (struct line_maps *set,
+				     source_location loc,
+				     unsigned int offset)
+{
+  const struct line_map * map = NULL;
+
+  /* This function does not support virtual locations yet.  */
+  linemap_assert (!linemap_location_from_macro_expansion_p (set, loc));
+
+  if (offset == 0
+      /* Adding an offset to a reserved location (like
+	 UNKNOWN_LOCATION for the C/C++ FEs) does not really make
+	 sense.  So let's leave the location intact in that case.  */
+      || loc < RESERVED_LOCATION_COUNT)
+    return loc;
+
+  /* We find the real location and shift it.  */
+  loc = linemap_resolve_location (set, loc, LRK_SPELLING_LOCATION, &map);
+  /* The new location (loc + offset) should be higher than the first
+     location encoded by MAP.  */
+  linemap_assert (MAP_START_LOCATION (map) < loc + offset);
+
+  /* If MAP is not the last line map of its set, then the new location
+     (loc + offset) should be less than the first location encoded by
+     the next line map of the set.  */
+  if (map != LINEMAPS_LAST_ORDINARY_MAP (set))
+    linemap_assert (loc + offset < MAP_START_LOCATION (&map[1]));
+
+  offset += SOURCE_COLUMN (map, loc);
+  linemap_assert (offset < (1u << map->d.ordinary.column_bits));
+
+  source_location r = 
+    linemap_position_for_line_and_column (map,
+					  SOURCE_LINE (map, loc),
+					  offset);
+  linemap_assert (map == linemap_lookup (set, r));
+  return r;
 }
 
 /* Given a virtual source location yielded by a map (either an

@@ -1,6 +1,6 @@
 /* { dg-do preprocess } */
-/* { dg-options "-std=c99 -fextended-identifiers -Wnormalized=id" { target c } } */
-/* { dg-options "-fextended-identifiers -Wnormalized=id" { target c++ } } */
+/* { dg-options "-std=c99 -Wnormalized=id" { target c } } */
+/* { dg-options "-Wnormalized=id" { target c++ } } */
 
 \u00AA
 \u00B7

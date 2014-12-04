@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2013, AdaCore                     --
+--                     Copyright (C) 2002-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -282,6 +282,10 @@ package body MLib.Utl is
          if not Opt.Quiet_Output then
             Write_Str  (Ranlib_Name.all);
             Write_Char (' ');
+            for J in Ranlib_Options'Range loop
+               Write_Str  (Ranlib_Options (J).all);
+               Write_Char (' ');
+            end loop;
             Write_Line (Arguments (Ar_Options'Length + 1).all);
          end if;
 

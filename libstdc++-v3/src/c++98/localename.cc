@@ -184,15 +184,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     __try
       {
-	_M_facets = new const facet*[_M_facets_size];
-	for (size_t __i = 0; __i < _M_facets_size; ++__i)
-	  _M_facets[__i] = 0;
-	_M_caches = new const facet*[_M_facets_size];
-	for (size_t __j = 0; __j < _M_facets_size; ++__j)
-	  _M_caches[__j] = 0;
-	_M_names = new char*[_S_categories_size];
-	for (size_t __k = 0; __k < _S_categories_size; ++__k)
-	  _M_names[__k] = 0;
+	_M_facets = new const facet*[_M_facets_size]();
+	_M_caches = new const facet*[_M_facets_size]();
+	_M_names = new char*[_S_categories_size]();
 
 	// Name the categories.
 	const char* __smon = __s;

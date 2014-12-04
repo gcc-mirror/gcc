@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fgraphite-identity -fgraphite-code-generator=isl" } */
+/* { dg-options "-O2 -fgraphite-identity" } */
 
 static int __attribute__((noinline))
 foo (int k, int n1, int n2, int n3)

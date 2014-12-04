@@ -80,7 +80,9 @@ typedef const struct vn_phi_s *const_vn_phi_t;
 
 typedef struct vn_reference_op_struct
 {
-  enum tree_code opcode;
+  ENUM_BITFIELD(tree_code) opcode : 16;
+  /* 1 for instrumented calls.  */
+  unsigned with_bounds : 1;
   /* Constant offset this op adds or -1 if it is variable.  */
   HOST_WIDE_INT off;
   tree type;
@@ -210,7 +212,7 @@ tree vn_reference_lookup_pieces (tree, alias_set_type, tree,
 				 vec<vn_reference_op_s> ,
 				 vn_reference_t *, vn_lookup_kind);
 tree vn_reference_lookup (tree, tree, vn_lookup_kind, vn_reference_t *);
-void vn_reference_lookup_call (gimple, vn_reference_t *, vn_reference_t);
+void vn_reference_lookup_call (gcall *, vn_reference_t *, vn_reference_t);
 vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, tree,
 					   vec<vn_reference_op_s> ,
 					   tree, unsigned int);

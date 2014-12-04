@@ -29,7 +29,6 @@ m4_include([ltsugar.m4])
 m4_include([ltversion.m4])
 m4_include([lt~obsolete.m4])
 m4_include([config/isl.m4])
-m4_include([config/cloog.m4])
 
 AC_INIT(move-if-change)
 AC_PREREQ(2.64)
@@ -133,7 +132,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #f
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl cloog libelf libiconv"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl libelf libiconv"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -157,6 +156,7 @@ target_libraries="target-libgcc \
 		target-newlib \
 		target-libgomp \
 		target-libcilkrts \
+		target-liboffloadmic \
 		target-libatomic \
 		target-libitm \
 		target-libstdc++-v3 \
@@ -286,6 +286,24 @@ case ${with_newlib} in
   no) skipdirs="${skipdirs} target-newlib" ;;
   yes) skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'` ;;
 esac
+
+AC_ARG_ENABLE(as-accelerator-for,
+[AS_HELP_STRING([--enable-as-accelerator-for=ARG],
+		[build as offload target compiler.
+		Specify offload host triple by ARG])],
+ENABLE_AS_ACCELERATOR_FOR=$enableval,
+ENABLE_AS_ACCELERATOR_FOR=no)
+
+AC_ARG_ENABLE(offload-targets,
+[AS_HELP_STRING([--enable-offload-targets=LIST],
+		[enable offloading to devices from comma-separated LIST of
+		TARGET[=DIR]. Use optional path to find offload target compiler
+		during the build])],
+[
+  if test x"$enable_offload_targets" = x; then
+    AC_MSG_ERROR([no offload targets specified])
+  fi
+], [enable_offload_targets=])
 
 # Handle --enable-gold, --enable-ld.
 # --disable-gold [--enable-ld]
@@ -440,6 +458,42 @@ ENABLE_LIBSTDCXX=default)
   noconfigdirs="$noconfigdirs target-libstdc++-v3"
 fi]
 
+# If this is accelerator compiler and its target is intelmic we enable
+# target liboffloadmic by default.  If this is compiler with offloading
+# for intelmic we enable host liboffloadmic by default.  Otherwise
+# liboffloadmic is disabled by default.
+AC_ARG_ENABLE([liboffloadmic],
+AC_HELP_STRING([[--enable-liboffloadmic[=ARG]]],
+	       [build liboffloadmic @<:@ARG={no,host,target}@:>@]),
+[case "$enableval" in
+  no | host | target)
+    enable_liboffloadmic=$enableval ;;
+  *)
+    AC_MSG_ERROR([--enable-liboffloadmic=no/host/target]) ;;
+esac],
+[if test "${ENABLE_AS_ACCELERATOR_FOR}" != "no"; then
+  case "${target}" in
+    *-intelmic-* | *-intelmicemul-*)
+      enable_liboffloadmic=target
+      extra_liboffloadmic_configure_flags="--enable-liboffloadmic=target"
+      ;;
+    *)
+      enable_liboffloadmic=no
+      ;;
+  esac
+else
+  case "${enable_offload_targets}" in
+    *-intelmic-* | *-intelmicemul-*)
+      enable_liboffloadmic=host
+      extra_liboffloadmic_configure_flags="--enable-liboffloadmic=host"
+      ;;
+    *)
+      enable_liboffloadmic=no
+      ;;
+    esac
+fi])
+AC_SUBST(extra_liboffloadmic_configure_flags)
+
 # Save it here so that, even in case of --enable-libgcj, if the Java
 # front-end isn't enabled, we still get libgcj disabled.
 libgcj_saved=$libgcj
@@ -528,6 +582,22 @@ if test -d ${srcdir}/libcilkrts; then
 	then
 	    AC_MSG_RESULT([no])
 	    noconfigdirs="$noconfigdirs target-libcilkrts"
+	else
+	    AC_MSG_RESULT([yes])
+	fi
+    fi
+fi
+
+# Disable liboffloadmic on unsupported systems.
+if test -d ${srcdir}/liboffloadmic; then
+    if test x$enable_liboffloadmic != xno; then
+	AC_MSG_CHECKING([for liboffloadmic support])
+	if (srcdir=${srcdir}/liboffloadmic; \
+		. ${srcdir}/configure.tgt; \
+		test -n "$UNSUPPORTED")
+	then
+	    AC_MSG_RESULT([no])
+	    noconfigdirs="$noconfigdirs target-liboffloadmic"
 	else
 	    AC_MSG_RESULT([yes])
 	fi
@@ -950,6 +1020,10 @@ case "${target}" in
     ;;
   *-*-rtems*)
     noconfigdirs="$noconfigdirs target-libgloss"
+    # this is not caught below because this stanza matches earlier
+    case $target in
+      or1k*-*-*) noconfigdirs="$noconfigdirs gdb" ;;
+    esac
     ;;
     # The tpf target doesn't support gdb yet.
   *-*-tpf*)
@@ -1125,7 +1199,7 @@ case "${target}" in
   microblaze*)
     noconfigdirs="$noconfigdirs gprof"
     ;;
-  mips*-sde-elf* | mips*-mti-elf*)
+  mips*-sde-elf* | mips*-mti-elf* | mips*-img-elf*)
     if test x$with_newlib = xyes; then
       noconfigdirs="$noconfigdirs gprof"
     fi
@@ -1147,6 +1221,16 @@ case "${target}" in
     ;;
   mips*-*-*)
     noconfigdirs="$noconfigdirs gprof"
+    ;;
+  nds32*-*-*)
+    noconfigdirs="$noconfigdirs gdb"
+    ;;
+  nvptx*-*-*)
+    # nvptx is just a compiler
+    noconfigdirs="$noconfigdirs target-libssp target-libstdc++-v3 target-libobjc"
+    ;;
+  or1k*-*-*)
+    noconfigdirs="$noconfigdirs gdb"
     ;;
   sh-*-* | sh64-*-*)
     case "${target}" in
@@ -1648,16 +1732,9 @@ AC_ARG_WITH(boot-ldflags,
  fi])
 AC_SUBST(poststage1_ldflags)
 
-# GCC GRAPHITE dependences, ISL and CLOOG which in turn requires ISL.
-# Basic setup is inlined here, actual checks are in config/cloog.m4 and
-# config/isl.m4
+# GCC GRAPHITE dependency ISL.
+# Basic setup is inlined here, actual checks are in config/isl.m4
 
-AC_ARG_WITH(cloog,
-  [AS_HELP_STRING(
-    [--with-cloog=PATH],
-    [Specify prefix directory for the installed CLooG-ISL package.
-     Equivalent to --with-cloog-include=PATH/include
-     plus --with-cloog-lib=PATH/lib])])
 AC_ARG_WITH(isl,
   [AS_HELP_STRING(
    [--with-isl=PATH],
@@ -1677,44 +1754,17 @@ if test "x$with_isl" != "xno"; then
   dnl Only execute fail-action, if ISL has been requested.
   ISL_IF_FAILED([
     AC_MSG_ERROR([Unable to find a usable ISL.  See config.log for details.])])
-
-  if test "x$gcc_cv_isl" != "xno"; then
-    # Check for CLOOG
-    dnl Provide configure switches and initialize clooginc & clooglibs
-    dnl with user input.
-    CLOOG_INIT_FLAGS
-    dnl The versions of CLooG that work for Graphite.
-    CLOOG_CHECK_VERSION(0,18,1)
-
-    dnl Only execute fail-action, if CLooG has been requested.
-    CLOOG_IF_FAILED([
-      AC_MSG_ERROR([Unable to find a usable CLooG.  See config.log for details.])])
-  fi
 fi
 
-# If the ISL check failed, disable builds of in-tree
-# variants of both ISL and CLooG
+# If the ISL check failed, disable builds of in-tree variant of ISL
 if test "x$with_isl" = xno ||
    test "x$gcc_cv_isl" = xno; then
-  noconfigdirs="$noconfigdirs cloog isl"
+  noconfigdirs="$noconfigdirs isl"
   islinc=
-  clooginc=
-  clooglibs=
-fi
-
-# If the CLooG check failed, disable builds of in-tree
-# variants of CLooG
-if test "x$with_cloog" = xno ||
-   test "x$gcc_cv_cloog" = xno; then
-  noconfigdirs="$noconfigdirs cloog isl"
-  clooginc=
-  clooglibs=
 fi
 
 AC_SUBST(isllibs)
 AC_SUBST(islinc)
-AC_SUBST(clooglibs)
-AC_SUBST(clooginc)
 
 # Check for LTO support.
 AC_ARG_ENABLE(lto,
@@ -2098,7 +2148,7 @@ AS_HELP_STRING(
   fi
 ],[])
 
-# Disable libcilkrts, libitm, libsanitizer, libvtv if we're not building C++
+# Disable libcilkrts, libitm, libsanitizer, libvtv, liboffloadmic if we're not building C++
 case ,${enable_languages}, in
   *,c++,*)
     # Disable libcilkrts, libitm, libsanitizer if we're not building libstdc++
@@ -2110,7 +2160,7 @@ case ,${enable_languages}, in
     esac
     ;;
   *)
-    noconfigdirs="$noconfigdirs target-libcilkrts target-libitm target-libsanitizer target-libvtv"
+    noconfigdirs="$noconfigdirs target-libcilkrts target-liboffloadmic target-libitm target-libsanitizer target-libvtv"
     ;;
 esac
 
@@ -2436,7 +2486,7 @@ case "${target}" in
   spu-*-*)
     target_makefile_frag="config/mt-spu"
     ;;
-  mips*-sde-elf* | mips*-mti-elf*)
+  mips*-sde-elf* | mips*-mti-elf* | mips*-img-elf*)
     target_makefile_frag="config/mt-sde"
     ;;
   mipsisa*-*-elfoabi*)
@@ -2857,7 +2907,7 @@ changequote(,)
 changequote([,])
 
     case $lib in
-    mpc | mpfr | gmp | isl | cloog)
+    mpc | mpfr | gmp | isl)
       # If we're processing --with-$lib, --with-$lib-include or
       # --with-$lib-lib, for one of the libs above, and target is
       # different from host, don't pass the current argument to any

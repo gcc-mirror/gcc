@@ -1,4 +1,5 @@
 /* { dg-do compile { target powerpc_altivec_ok } } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=G5" } } */
 /* { dg-options "-maltivec -mcpu=G5 -O2 -Wno-deprecated" } */
 
 #include <altivec.h>

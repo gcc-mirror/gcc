@@ -86,6 +86,8 @@ along with this program; see the file COPYING3.  If not see
 
 #define LTO_SECTION_PREFIX	".gnu.lto_.symtab"
 #define LTO_SECTION_PREFIX_LEN	(sizeof (LTO_SECTION_PREFIX) - 1)
+#define OFFLOAD_SECTION		".gnu.offload_lto_.opts"
+#define OFFLOAD_SECTION_LEN	(sizeof (OFFLOAD_SECTION) - 1)
 
 /* The part of the symbol table the plugin has to keep track of. Note that we
    must keep SYMS until all_symbols_read is called to give the linker time to
@@ -111,6 +113,7 @@ struct plugin_symtab
 struct plugin_objfile
 {
   int found;
+  int offload;
   simple_object_read *objfile;
   struct plugin_symtab *out;
   const struct ld_plugin_input_file *file;
@@ -862,6 +865,21 @@ err:
   return 0;
 }
 
+/* Find an offload section of an object file.  */
+
+static int
+process_offload_section (void *data, const char *name, off_t offset, off_t len)
+{
+  if (!strncmp (name, OFFLOAD_SECTION, OFFLOAD_SECTION_LEN))
+    {
+      struct plugin_objfile *obj = (struct plugin_objfile *) data;
+      obj->offload = 1;
+      return 0;
+    }
+
+  return 1;
+}
+
 /* Callback used by gold to check if the plugin will claim FILE. Writes
    the result in CLAIMED. */
 
@@ -899,6 +917,7 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   *claimed = 0;
   obj.file = file;
   obj.found = 0;
+  obj.offload = 0;
   obj.out = &lto_file.symtab;
   errmsg = NULL;
   obj.objfile = simple_object_start_read (file->fd, file->offset, LTO_SEGMENT_NAME,
@@ -920,7 +939,11 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
       goto err;
     }
 
-  if (obj.found == 0)
+  if (obj.objfile)
+    simple_object_find_sections (obj.objfile, process_offload_section,
+				 &obj, &err);
+
+  if (obj.found == 0 && obj.offload == 0)
     goto err;
 
   if (obj.found > 1)

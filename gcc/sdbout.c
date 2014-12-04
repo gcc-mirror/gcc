@@ -739,13 +739,16 @@ sdbout_symbol (tree decl, int local)
       if (!DECL_RTL_SET_P (decl))
 	return;
 
-      SET_DECL_RTL (decl,
-		    eliminate_regs (DECL_RTL (decl), VOIDmode, NULL_RTX));
+      value = DECL_RTL (decl);
+
+      if (!is_global_var (decl))
+	value = eliminate_regs (value, VOIDmode, NULL_RTX);
+
+      SET_DECL_RTL (decl, value);
 #ifdef LEAF_REG_REMAP
       if (crtl->uses_only_leaf_regs)
-	leaf_renumber_regs_insn (DECL_RTL (decl));
+	leaf_renumber_regs_insn (value);
 #endif
-      value = DECL_RTL (decl);
 
       /* Don't mention a variable at all
 	 if it was completely optimized into nothingness.

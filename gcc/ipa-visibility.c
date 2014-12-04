@@ -270,6 +270,10 @@ cgraph_externally_visible_p (struct cgraph_node *node,
   if (MAIN_NAME_P (DECL_NAME (node->decl)))
     return true;
 
+  if (node->instrumentation_clone
+      && MAIN_NAME_P (DECL_NAME (node->orig_decl)))
+    return true;
+
   return false;
 }
 
@@ -554,6 +558,7 @@ function_and_variable_visibility (bool whole_program)
 	}
 
       if (node->thunk.thunk_p
+	  && !node->thunk.add_pointer_bounds_args
 	  && TREE_PUBLIC (node->decl))
 	{
 	  struct cgraph_node *decl_node = node;

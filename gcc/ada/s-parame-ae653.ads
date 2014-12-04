@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the default VxWorks AE 653 version of the package
+--  Version is used by VxWorks 653, VxWorks MILS, and VxWorks6 cert Ravenscar
 
 --  This package defines some system dependent parameters for GNAT. These
 --  are values that are referenced by the runtime library and are therefore

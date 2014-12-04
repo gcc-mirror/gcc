@@ -1,3 +1,17 @@
+2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/63784
+	* configure: Regenerated.
+
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/63610
+	* configure: Regenerate.
+
 2014-10-23  Ian Lance Taylor  <iant@google.com>
 
 	* internal.h (backtrace_atomic_load_pointer) [no atomic or sync]:

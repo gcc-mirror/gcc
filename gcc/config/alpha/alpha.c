@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "debug.h"
 #include "langhooks.h"
-#include "splay-tree.h"
+#include "hash-map.h"
 #include "hash-table.h"
 #include "predict.h"
 #include "dominance.h"
@@ -399,13 +399,13 @@ alpha_option_override (void)
   };
 
   opt_pass *pass_handle_trap_shadows = make_pass_handle_trap_shadows (g);
-  static struct register_pass_info handle_trap_shadows_info
+  struct register_pass_info handle_trap_shadows_info
     = { pass_handle_trap_shadows, "eh_ranges",
 	1, PASS_POS_INSERT_AFTER
       };
 
   opt_pass *pass_align_insns = make_pass_align_insns (g);
-  static struct register_pass_info align_insns_info
+  struct register_pass_info align_insns_info
     = { pass_align_insns, "shorten",
 	1, PASS_POS_INSERT_BEFORE
       };
@@ -2545,7 +2545,7 @@ alpha_emit_conditional_branch (rtx operands[], machine_mode cmp_mode)
 	{
 	  cmp_code = swap_condition (code);
 	  branch_code = NE;
-	  tem = op0, op0 = op1, op1 = tem;
+	  std::swap (op0, op1);
 	}
       else
 	{
@@ -2569,7 +2569,7 @@ alpha_emit_conditional_branch (rtx operands[], machine_mode cmp_mode)
 	  else if (op0 == CONST0_RTX (DFmode))
 	    {
 	      /* Undo the swap we probably did just above.  */
-	      tem = op0, op0 = op1, op1 = tem;
+	      std::swap (op0, op1);
 	      branch_code = swap_condition (cmp_code);
 	      cmp_code = UNKNOWN;
 	    }
@@ -2689,7 +2689,7 @@ alpha_emit_setcc (rtx operands[], machine_mode cmp_mode)
       code = swap_condition (code);
       if (cmp_mode == DFmode)
 	cmp_code = code, code = NE;
-      tmp = op0, op0 = op1, op1 = tmp;
+      std::swap (op0, op1);
       break;
 
     default:
@@ -2786,7 +2786,7 @@ alpha_emit_conditional_move (rtx cmp, machine_mode mode)
 	    {
 	      cmp_code = swap_condition (code);
 	      code = NE;
-	      tem = op0, op0 = op1, op1 = tem;
+	      std::swap (op0, op1);
 	    }
 	  break;
 
@@ -2857,7 +2857,7 @@ alpha_emit_conditional_move (rtx cmp, machine_mode mode)
       if (cmp_mode == DImode && op1 == const0_rtx)
 	break;
       code = swap_condition (code);
-      tem = op0, op0 = op1, op1 = tem;
+      std::swap (op0, op1);
       break;
 
     default:
@@ -3318,9 +3318,8 @@ alpha_split_tmode_pair (rtx operands[4], machine_mode mode,
 
   if (fixup_overlap && reg_overlap_mentioned_p (operands[0], operands[3]))
     {
-      rtx tmp;
-      tmp = operands[0], operands[0] = operands[1], operands[1] = tmp;
-      tmp = operands[2], operands[2] = operands[3], operands[3] = tmp;
+      std::swap (operands[0], operands[1]);
+      std::swap (operands[2], operands[3]);
     }
 }
 
@@ -4861,6 +4860,14 @@ alpha_multipass_dfa_lookahead (void)
 
 struct GTY(()) alpha_links;
 
+struct string_traits : default_hashmap_traits
+{
+  static bool equal_keys (const char *const &a, const char *const &b)
+  {
+    return strcmp (a, b) == 0;
+  }
+};
+
 struct GTY(()) machine_function
 {
   /* For flag_reorder_blocks_and_partition.  */
@@ -4870,8 +4877,7 @@ struct GTY(()) machine_function
   bool uses_condition_handler;
 
   /* Linkage entries.  */
-  splay_tree GTY ((param1_is (char *), param2_is (struct alpha_links *)))
-    links;
+  hash_map<const char *, alpha_links *, string_traits> *links;
 };
 
 /* How to allocate a 'struct machine_function'.  */
@@ -9643,18 +9649,14 @@ alpha_use_linkage (rtx func, bool lflag, bool rflag)
 
   if (cfun->machine->links)
     {
-      splay_tree_node lnode;
-
       /* Is this name already defined?  */
-      lnode = splay_tree_lookup (cfun->machine->links, (splay_tree_key) name);
-      if (lnode)
-	al = (struct alpha_links *) lnode->value;
+      alpha_links *slot = cfun->machine->links->get (name);
+      if (slot)
+	al = *slot;
     }
   else
-    cfun->machine->links = splay_tree_new_ggc
-      ((splay_tree_compare_fn) strcmp,
-       ggc_alloc_splay_tree_str_alpha_links_splay_tree_s,
-       ggc_alloc_splay_tree_str_alpha_links_splay_tree_node_s);
+    cfun->machine->links
+      = hash_map<const char *, alpha_links *, string_traits>::create_ggc (64);
 
   if (al == NULL)
     {
@@ -9682,9 +9684,7 @@ alpha_use_linkage (rtx func, bool lflag, bool rflag)
       al->func = func;
       al->linkage = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (linksym));
 
-      splay_tree_insert (cfun->machine->links,
-                         (splay_tree_key) ggc_strdup (name),
-			 (splay_tree_value) al);
+      cfun->machine->links->put (ggc_strdup (name), al);
     }
 
   al->rkind = rflag ? KIND_CODEADDR : KIND_LINKAGE;
@@ -9696,12 +9696,8 @@ alpha_use_linkage (rtx func, bool lflag, bool rflag)
 }
 
 static int
-alpha_write_one_linkage (splay_tree_node node, void *data)
+alpha_write_one_linkage (const char *name, alpha_links *link, FILE *steam)
 {
-  const char *const name = (const char *) node->key;
-  struct alpha_links *link = (struct alpha_links *) node->value;
-  FILE *stream = (FILE *) data;
-
   ASM_OUTPUT_INTERNAL_LABEL (stream, XSTR (link->linkage, 0));
   if (link->rkind == KIND_CODEADDR)
     {
@@ -9751,8 +9747,10 @@ alpha_write_linkage (FILE *stream, const char *funname)
 
   if (cfun->machine->links)
     {
-      splay_tree_foreach (cfun->machine->links, alpha_write_one_linkage, stream);
-      /* splay_tree_delete (func->links); */
+      hash_map<const char *, alpha_links *, string_traits>::iterator iter
+	= cfun->machine->links->begin ();
+      for (; iter != cfun->machine->links->end (); ++iter)
+	alpha_write_one_linkage ((*iter).first, (*iter).second, stream);
     }
 }
 

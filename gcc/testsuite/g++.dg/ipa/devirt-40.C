@@ -19,5 +19,5 @@ A::m_fn1 (UnicodeString &, int &p2, UErrorCode &) const
   UnicodeString a[2];
 }
 
-/* { dg-final { scan-tree-dump "converting indirect call to function virtual UnicodeString" "fre2"  } } */
+/* { dg-final { scan-tree-dump-not "\\n  OBJ_TYPE_REF" "fre2"  } } */
 /* { dg-final { cleanup-tree-dump "fre2" } } */

@@ -1663,6 +1663,7 @@ begin
            ("Default runtime not available. Use --RTS= with a valid runtime");
          Write_Eol;
          Write_Eol;
+         Exit_Status := E_Warnings;
       end if;
 
       Write_Str ("Source Search Path:");
@@ -1775,10 +1776,11 @@ begin
             Usage;
          else
             Try_Help;
+            Exit_Status := E_Fatal;
          end if;
       end if;
 
-      Exit_Program (E_Fatal);
+      Exit_Program (Exit_Status);
    end if;
 
    Initialize_ALI;

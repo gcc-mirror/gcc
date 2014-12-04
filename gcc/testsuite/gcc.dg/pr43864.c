@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-pre" } */
+/* { dg-options "-O2 -ftree-tail-merge -fdump-tree-pre" } */
 
 extern void foo (char*, int);
 extern void mysprintf (char *, char *);

@@ -259,14 +259,36 @@ void MapShadow(uptr addr, uptr size) {
 
 void MapThreadTrace(uptr addr, uptr size) {
   DPrintf("#0: Mapping trace at %p-%p(0x%zx)\n", addr, addr + size, size);
-  CHECK_GE(addr, kTraceMemBegin);
-  CHECK_LE(addr + size, kTraceMemBegin + kTraceMemSize);
+  CHECK_GE(addr, kTraceMemBeg);
+  CHECK_LE(addr + size, kTraceMemEnd);
   CHECK_EQ(addr, addr & ~((64 << 10) - 1));  // windows wants 64K alignment
   uptr addr1 = (uptr)MmapFixedNoReserve(addr, size);
   if (addr1 != addr) {
     Printf("FATAL: ThreadSanitizer can not mmap thread trace (%p/%p->%p)\n",
         addr, size, addr1);
     Die();
+  }
+}
+
+static void CheckShadowMapping() {
+  for (uptr i = 0; i < ARRAY_SIZE(UserRegions); i += 2) {
+    const uptr beg = UserRegions[i];
+    const uptr end = UserRegions[i + 1];
+    VPrintf(3, "checking shadow region %p-%p\n", beg, end);
+    for (uptr p0 = beg; p0 <= end; p0 += (end - beg) / 4) {
+      for (int x = -1; x <= 1; x++) {
+        const uptr p = p0 + x;
+        if (p < beg || p >= end)
+          continue;
+        const uptr s = MemToShadow(p);
+        VPrintf(3, "  checking pointer %p -> %p\n", p, s);
+        CHECK(IsAppMem(p));
+        CHECK(IsShadowMem(s));
+        CHECK_EQ(p & ~(kShadowCell - 1), ShadowToMem(s));
+        const uptr m = (uptr)MemToMeta(p);
+        CHECK(IsMetaMem(m));
+      }
+    }
   }
 }
 
@@ -289,6 +311,7 @@ void Initialize(ThreadState *thr) {
   InitializeAllocator();
 #endif
   InitializeInterceptors();
+  CheckShadowMapping();
   InitializePlatform();
   InitializeMutex();
   InitializeDynamicAnnotations();
@@ -437,8 +460,8 @@ u32 CurrentStackId(ThreadState *thr, uptr pc) {
     thr->shadow_stack_pos[0] = pc;
     thr->shadow_stack_pos++;
   }
-  u32 id = StackDepotPut(thr->shadow_stack,
-                         thr->shadow_stack_pos - thr->shadow_stack);
+  u32 id = StackDepotPut(
+      StackTrace(thr->shadow_stack, thr->shadow_stack_pos - thr->shadow_stack));
   if (pc != 0)
     thr->shadow_stack_pos--;
   return id;
@@ -451,7 +474,7 @@ void TraceSwitch(ThreadState *thr) {
   unsigned trace = (thr->fast_state.epoch() / kTracePartSize) % TraceParts();
   TraceHeader *hdr = &thr_trace->headers[trace];
   hdr->epoch0 = thr->fast_state.epoch();
-  hdr->stack0.ObtainCurrent(thr, 0);
+  ObtainCurrentStack(thr, 0, &hdr->stack0);
   hdr->mset0 = thr->mset;
   thr->nomalloc--;
 }
@@ -690,6 +713,8 @@ ALWAYS_INLINE
 bool ContainsSameAccess(u64 *s, u64 a, u64 sync_epoch, bool is_write) {
 #if defined(__SSE3__) && TSAN_SHADOW_COUNT == 4
   bool res = ContainsSameAccessFast(s, a, sync_epoch, is_write);
+  // NOTE: this check can fail if the shadow is concurrently mutated
+  // by other threads.
   DCHECK_EQ(res, ContainsSameAccessSlow(s, a, sync_epoch, is_write));
   return res;
 #else

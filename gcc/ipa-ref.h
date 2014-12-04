@@ -32,7 +32,8 @@ enum GTY(()) ipa_ref_use
   IPA_REF_LOAD,
   IPA_REF_STORE,
   IPA_REF_ADDR,
-  IPA_REF_ALIAS
+  IPA_REF_ALIAS,
+  IPA_REF_CHKP
 };
 
 /* Record of reference in callgraph or varpool.  */
@@ -57,7 +58,7 @@ public:
   gimple stmt;
   unsigned int lto_stmt_uid;
   unsigned int referred_index;
-  ENUM_BITFIELD (ipa_ref_use) use:2;
+  ENUM_BITFIELD (ipa_ref_use) use:3;
   unsigned int speculative:1;
 };
 

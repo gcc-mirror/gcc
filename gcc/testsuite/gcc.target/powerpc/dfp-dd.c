@@ -1,6 +1,7 @@
 /* Test generation of DFP instructions for POWER6.  */
 /* Origin: Janis Johnson <janis187@us.ibm.com> */
 /* { dg-do compile { target { powerpc*-*-linux* && powerpc_fprs } } } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
 /* { dg-options "-std=gnu99 -mcpu=power6" } */
 
 /* { dg-final { scan-assembler "dadd" } } */

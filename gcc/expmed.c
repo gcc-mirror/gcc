@@ -2164,6 +2164,18 @@ expand_shift_1 (enum tree_code code, machine_mode mode, rtx shifted,
       code = left ? LROTATE_EXPR : RROTATE_EXPR;
     }
 
+  /* Rotation of 16bit values by 8 bits is effectively equivalent to a bswaphi.
+     Note that this is not the case for bigger values.  For instance a rotation
+     of 0x01020304 by 16 bits gives 0x03040102 which is different from
+     0x04030201 (bswapsi).  */
+  if (rotate
+      && CONST_INT_P (op1)
+      && INTVAL (op1) == BITS_PER_UNIT
+      && GET_MODE_SIZE (scalar_mode) == 2
+      && optab_handler (bswap_optab, HImode) != CODE_FOR_nothing)
+    return expand_unop (HImode, bswap_optab, shifted, NULL_RTX,
+				  unsignedp);
+
   if (op1 == const0_rtx)
     return shifted;
 
@@ -5097,7 +5109,7 @@ expand_and (machine_mode mode, rtx op0, rtx op1, rtx target)
 }
 
 /* Helper function for emit_store_flag.  */
-static rtx
+rtx
 emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
 	     machine_mode mode, machine_mode compare_mode,
 	     int unsignedp, rtx x, rtx y, int normalizep,

@@ -3,6 +3,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -mtune=i586" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-xfail-if "doesn't support self-referential initializers" { nvptx-*-* } } */
 
 struct A
 {

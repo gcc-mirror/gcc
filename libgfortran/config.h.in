@@ -429,6 +429,9 @@
 /* fp_trap is present */
 #undef HAVE_FP_TRAP
 
+/* Define to 1 if you have the `freelocale' function. */
+#undef HAVE_FREELOCALE
+
 /* Define to 1 if you have the `frexp' function. */
 #undef HAVE_FREXP
 
@@ -621,6 +624,9 @@
 /* Define to 1 if you have the `mkstemp' function. */
 #undef HAVE_MKSTEMP
 
+/* Define to 1 if you have the `newlocale' function. */
+#undef HAVE_NEWLOCALE
+
 /* Define to 1 if you have the `nextafter' function. */
 #undef HAVE_NEXTAFTER
 
@@ -722,6 +728,9 @@
 
 /* Define to 1 if you have the `strcasestr' function. */
 #undef HAVE_STRCASESTR
+
+/* Define to 1 if you have the `strerror_l' function. */
+#undef HAVE_STRERROR_L
 
 /* Define if strerror_r is available in <string.h>. */
 #undef HAVE_STRERROR_R
@@ -840,6 +849,9 @@
 /* Define if target can unlink open files. */
 #undef HAVE_UNLINK_OPEN_FILE
 
+/* Define to 1 if you have the `uselocale' function. */
+#undef HAVE_USELOCALE
+
 /* Define to 1 if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
 
@@ -848,6 +860,9 @@
 
 /* Define if target has a reliable stat. */
 #undef HAVE_WORKING_STAT
+
+/* Define to 1 if you have the <xlocale.h> header file. */
+#undef HAVE_XLOCALE_H
 
 /* Define to 1 if you have the `y0' function. */
 #undef HAVE_Y0

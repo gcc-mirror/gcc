@@ -599,9 +599,6 @@ private
 
    type pid_t is new int;
 
-   type unsigned_long_long_t is mod 2 ** 64;
-   --  Local type only used to get the alignment of this type below
-
    subtype char_array is Interfaces.C.char_array;
 
    type pthread_attr_t is record
@@ -644,7 +641,7 @@ private
       Data : char_array (1 .. OS_Constants.PTHREAD_COND_SIZE);
    end record;
    pragma Convention (C, pthread_cond_t);
-   for pthread_cond_t'Alignment use unsigned_long_long_t'Alignment;
+   for pthread_cond_t'Alignment use Interfaces.Unsigned_64'Alignment;
 
    type pthread_key_t is new unsigned;
 

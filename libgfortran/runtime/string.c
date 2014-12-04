@@ -134,6 +134,20 @@ fc_strdup (const char *src, gfc_charlen_type src_len)
 }
 
 
+/* Duplicate a non-null-terminated Fortran string to a malloced
+   null-terminated C string, without getting rid of trailing
+   blanks.  */
+
+char *
+fc_strdup_notrim (const char *src, gfc_charlen_type src_len)
+{
+  char *p = strndup (src, src_len);
+  if (!p)
+    os_error ("Memory allocation failed in fc_strdup");
+  return p;
+}
+
+
 /* Given a fortran string and an array of st_option structures, search through
    the array to find a match.  If the option is not found, we generate an error
    if no default is provided.  */

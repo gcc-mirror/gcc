@@ -966,10 +966,10 @@ package body Exp_Strm is
         Make_Handled_Sequence_Of_Statements (Loc,
           Statements => Stms));
 
-      --  If Typ has controlled components (i.e. if it is classwide
-      --  or Has_Controlled), or components constrained using the discriminants
-      --  of Typ, then we need to ensure that all component assignments
-      --  are performed on an object that has been appropriately constrained
+      --  If Typ has controlled components (i.e. if it is classwide or
+      --  Has_Controlled), or components constrained using the discriminants
+      --  of Typ, then we need to ensure that all component assignments are
+      --  performed on an object that has been appropriately constrained
       --  prior to being initialized. To this effect, we wrap the component
       --  assignments in a block where V is a constrained temporary.
 
@@ -978,8 +978,8 @@ package body Exp_Strm is
           Defining_Identifier => Tmp,
           Object_Definition   =>
             Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Occurrence_Of (Typ, Loc),
-              Constraint =>
+              Subtype_Mark => New_Occurrence_Of (Base_Type (Typ), Loc),
+              Constraint   =>
                 Make_Index_Or_Discriminant_Constraint (Loc,
                   Constraints => Cstr))));
 
@@ -1123,9 +1123,14 @@ package body Exp_Strm is
 
       J := 1;
 
+      --  In the presence of multiple instantiations (as in uses of the Booch
+      --  components) the base type may be private, and the underlying type
+      --  already constrained, in which case there's no discriminant constraint
+      --  to construct.
+
       if Has_Discriminants (Typ)
-        and then
-          No (Discriminant_Default_Value (First_Discriminant (Typ)))
+        and then No (Discriminant_Default_Value (First_Discriminant (Typ)))
+        and then not Is_Constrained (Underlying_Type (B_Typ))
       then
          Discr := First_Discriminant (B_Typ);
 
@@ -1142,7 +1147,7 @@ package body Exp_Strm is
             Decl :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Make_Defining_Identifier (Loc, Cn),
-                Object_Definition =>
+                Object_Definition   =>
                   New_Occurrence_Of (Etype (Discr), Loc));
 
             --  If this is an access discriminant, do not perform default
@@ -1157,9 +1162,9 @@ package body Exp_Strm is
             Append_To (Decls, Decl);
             Append_To (Decls,
               Make_Attribute_Reference (Loc,
-                Prefix => New_Occurrence_Of (Etype (Discr), Loc),
+                Prefix         => New_Occurrence_Of (Etype (Discr), Loc),
                 Attribute_Name => Name_Read,
-                Expressions => New_List (
+                Expressions    => New_List (
                   Make_Identifier (Loc, Name_S),
                   Make_Identifier (Loc, Cn))));
 
@@ -1189,7 +1194,7 @@ package body Exp_Strm is
          Odef :=
            Make_Subtype_Indication (Loc,
              Subtype_Mark => New_Occurrence_Of (B_Typ, Loc),
-             Constraint =>
+             Constraint   =>
                Make_Index_Or_Discriminant_Constraint (Loc,
                  Constraints => Constr));
 
@@ -1258,11 +1263,9 @@ package body Exp_Strm is
       --  because those are written by 'Write.
 
       if Has_Discriminants (Typ)
-        and then
-          No (Discriminant_Default_Value (First_Discriminant (Typ)))
+        and then No (Discriminant_Default_Value (First_Discriminant (Typ)))
       then
          Disc := First_Discriminant (Typ);
-
          while Present (Disc) loop
 
             --  If the type is an unchecked union, it must have default
@@ -1281,10 +1284,10 @@ package body Exp_Strm is
 
             Append_To (Stms,
               Make_Attribute_Reference (Loc,
-                Prefix =>
+                Prefix         =>
                   New_Occurrence_Of (Stream_Base_Type (Etype (Disc)), Loc),
                 Attribute_Name => Name_Write,
-                Expressions => New_List (
+                Expressions    => New_List (
                   Make_Identifier (Loc, Name_S),
                   Disc_Ref)));
 
@@ -1294,9 +1297,9 @@ package body Exp_Strm is
 
       Append_To (Stms,
         Make_Attribute_Reference (Loc,
-          Prefix => New_Occurrence_Of (Typ, Loc),
+          Prefix         => New_Occurrence_Of (Typ, Loc),
           Attribute_Name => Name_Write,
-          Expressions => New_List (
+          Expressions    => New_List (
             Make_Identifier (Loc, Name_S),
             Make_Identifier (Loc, Name_V))));
 
@@ -1442,7 +1445,7 @@ package body Exp_Strm is
 
             Append_To (Result,
               Make_Case_Statement (Loc,
-                Expression => D_Ref,
+                Expression   => D_Ref,
                 Alternatives => Alts));
          end if;
 
@@ -1479,10 +1482,9 @@ package body Exp_Strm is
 
          return
            Make_Attribute_Reference (Loc,
-             Prefix =>
-               New_Occurrence_Of (Field_Typ, Loc),
+             Prefix         => New_Occurrence_Of (Field_Typ, Loc),
              Attribute_Name => Nam,
-             Expressions => New_List (
+             Expressions    => New_List (
                Make_Identifier (Loc, Name_S),
                Make_Selected_Component (Loc,
                  Prefix        => Make_Identifier (Loc, Name_V),
@@ -1648,18 +1650,19 @@ package body Exp_Strm is
           Parameter_Specifications => New_List (
             Make_Parameter_Specification (Loc,
               Defining_Identifier => Make_Defining_Identifier (Loc, Name_S),
-              Parameter_Type =>
+              Parameter_Type      =>
                 Make_Access_Definition (Loc,
                   Null_Exclusion_Present => True,
-                  Subtype_Mark => New_Occurrence_Of (
-                    Class_Wide_Type (RTE (RE_Root_Stream_Type)), Loc)))),
+                  Subtype_Mark           =>
+                    New_Occurrence_Of
+                      (Class_Wide_Type (RTE (RE_Root_Stream_Type)), Loc)))),
 
           Result_Definition => New_Occurrence_Of (Typ, Loc));
 
       Decl :=
         Make_Subprogram_Body (Loc,
-          Specification => Spec,
-          Declarations => Decls,
+          Specification              => Spec,
+          Declarations               => Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => Stms));
@@ -1692,11 +1695,12 @@ package body Exp_Strm is
           Parameter_Specifications => New_List (
             Make_Parameter_Specification (Loc,
               Defining_Identifier => Make_Defining_Identifier (Loc, Name_S),
-              Parameter_Type =>
+              Parameter_Type      =>
                 Make_Access_Definition (Loc,
                   Null_Exclusion_Present => True,
-                  Subtype_Mark => New_Occurrence_Of (
-                    Class_Wide_Type (RTE (RE_Root_Stream_Type)), Loc))),
+                  Subtype_Mark           =>
+                    New_Occurrence_Of
+                      (Class_Wide_Type (RTE (RE_Root_Stream_Type)), Loc))),
 
             Make_Parameter_Specification (Loc,
               Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
@@ -1705,8 +1709,8 @@ package body Exp_Strm is
 
       Decl :=
         Make_Subprogram_Body (Loc,
-          Specification => Spec,
-          Declarations => Empty_List,
+          Specification              => Spec,
+          Declarations               => Empty_List,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => Stms));

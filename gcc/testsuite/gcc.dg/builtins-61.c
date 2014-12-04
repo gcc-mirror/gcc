@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O -ffast-math -fdump-tree-optimized" } */
 /* { dg-require-effective-target c99_runtime } */
+/* { dg-require-effective-target libc_has_complex_functions } */
 
 double test1 (double x)
 {

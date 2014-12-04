@@ -20,5 +20,5 @@ int foo (void)
 {
   obj *p = [obj new];
   
-  return [p vargsn:0];  /* { dg-warning "'vargsn:' is deprecated .declared at" } */
+  return [p vargsn:0];  /* { dg-warning "'vargsn:' is deprecated" } */
 }

@@ -97,14 +97,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       struct _RegexMask
 	{
-	  typedef typename std::ctype<char_type>::mask _BaseType;
+	  typedef std::ctype_base::mask _BaseType;
 	  _BaseType _M_base;
 	  unsigned char _M_extended;
 	  static constexpr unsigned char _S_under = 1 << 0;
-	  // FIXME: _S_blank should be removed in the future,
-	  // when locale's complete.
-	  static constexpr unsigned char _S_blank = 1 << 1;
-	  static constexpr unsigned char _S_valid_mask = 0x3;
+	  static constexpr unsigned char _S_valid_mask = 0x1;
 
 	  constexpr _RegexMask(_BaseType __base = 0,
 			       unsigned char __extended = 0)
@@ -1009,7 +1006,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator==(const __sub_match_string<_Bi_iter, _Ch_traits, _Ch_alloc>& __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __rhs.compare(__lhs.c_str()) == 0; }
+    {
+      typedef typename sub_match<_Bi_iter>::string_type string_type;
+      return __rhs.compare(string_type(__lhs.data(), __lhs.size())) == 0;
+    }
 
   /**
    * @brief Tests the inequivalence of a string and a regular expression
@@ -1034,7 +1034,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator<(const __sub_match_string<_Bi_iter, _Ch_traits, _Ch_alloc>& __lhs,
 	      const sub_match<_Bi_iter>& __rhs)
-     { return __rhs.compare(__lhs.c_str()) > 0; }
+    {
+      typedef typename sub_match<_Bi_iter>::string_type string_type;
+      return __rhs.compare(string_type(__lhs.data(), __lhs.size())) > 0;
+    }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1083,7 +1086,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator==(const sub_match<_Bi_iter>& __lhs,
 	       const __sub_match_string<_Bi_iter, _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.compare(__rhs.c_str()) == 0; }
+    {
+      typedef typename sub_match<_Bi_iter>::string_type string_type;
+      return __lhs.compare(string_type(__rhs.data(), __rhs.size())) == 0;
+    }
 
   /**
    * @brief Tests the inequivalence of a regular expression submatch and a
@@ -1108,7 +1114,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator<(const sub_match<_Bi_iter>& __lhs,
 	      const __sub_match_string<_Bi_iter, _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.compare(__rhs.c_str()) < 0; }
+    {
+      typedef typename sub_match<_Bi_iter>::string_type string_type;
+      return __lhs.compare(string_type(__rhs.data(), __rhs.size())) < 0;
+    }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.

@@ -2517,6 +2517,8 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 				   (TREE_CODE (fn) == FUNCTION_DECL
 				    ? build_fold_addr_expr (fn) : fn),
 				   nargs, args);
+	if (currop->with_bounds)
+	  CALL_WITH_BOUNDS_P (folded) = true;
 	free (args);
 	if (sc)
 	  CALL_EXPR_STATIC_CHAIN (folded) = sc;
@@ -2799,7 +2801,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
   gimple_stmt_iterator gsi;
   tree exprtype = type ? type : get_expr_type (expr);
   pre_expr nameexpr;
-  gimple newstmt;
+  gassign *newstmt;
 
   switch (expr->kind)
     {
@@ -2981,7 +2983,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
   edge_iterator ei;
   tree type = get_expr_type (expr);
   tree temp;
-  gimple phi;
+  gphi *phi;
 
   /* Make sure we aren't creating an induction variable.  */
   if (bb_loop_depth (block) > 0 && EDGE_COUNT (block->preds) == 2)
@@ -3200,7 +3202,7 @@ do_regular_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  vec<pre_expr> avail = vNULL;
+  auto_vec<pre_expr> avail;
   int i;
 
   exprs = sorted_array_from_bitmap_set (ANTIC_IN (block));
@@ -3330,8 +3332,11 @@ do_regular_insertion (basic_block block, basic_block dom)
 
 	      tree temp = make_temp_ssa_name (get_expr_type (expr),
 					      NULL, "pretmp");
-	      gimple assign = gimple_build_assign (temp,
-						   edoubleprime->kind == CONSTANT ? PRE_EXPR_CONSTANT (edoubleprime) : PRE_EXPR_NAME (edoubleprime));
+	      gassign *assign
+		= gimple_build_assign (temp,
+				       edoubleprime->kind == CONSTANT ?
+				       PRE_EXPR_CONSTANT (edoubleprime) :
+				       PRE_EXPR_NAME (edoubleprime));
 	      gimple_stmt_iterator gsi = gsi_after_labels (block);
 	      gsi_insert_before (&gsi, assign, GSI_NEW_STMT);
 
@@ -3628,7 +3633,6 @@ compute_avail (void)
   /* Loop until the worklist is empty.  */
   while (sp)
     {
-      gimple_stmt_iterator gsi;
       gimple stmt;
       basic_block dom;
 
@@ -3645,9 +3649,10 @@ compute_avail (void)
 	}
 
       /* Generate values for PHI nodes.  */
-      for (gsi = gsi_start_phis (block); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gphi_iterator gsi = gsi_start_phis (block); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
-	  tree result = gimple_phi_result (gsi_stmt (gsi));
+	  tree result = gimple_phi_result (gsi.phi ());
 
 	  /* We have no need for virtual phis, as they don't represent
 	     actual computations.  */
@@ -3667,7 +3672,8 @@ compute_avail (void)
 
       /* Now compute value numbers and populate value sets with all
 	 the expressions computed in BLOCK.  */
-      for (gsi = gsi_start_bb (block); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_start_bb (block); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
 	  ssa_op_iter iter;
 	  tree op;
@@ -3730,7 +3736,7 @@ compute_avail (void)
 		if (gimple_call_internal_p (stmt))
 		  continue;
 
-		vn_reference_lookup_call (stmt, &ref, &ref1);
+		vn_reference_lookup_call (as_a <gcall *> (stmt), &ref, &ref1);
 		if (!ref)
 		  continue;
 
@@ -3904,8 +3910,11 @@ eliminate_push_avail (tree op)
     {
       if (el_avail.length () <= SSA_NAME_VERSION (valnum))
 	el_avail.safe_grow_cleared (SSA_NAME_VERSION (valnum) + 1);
+      tree pushop = op;
+      if (el_avail[SSA_NAME_VERSION (valnum)])
+	pushop = el_avail[SSA_NAME_VERSION (valnum)];
+      el_avail_stack.safe_push (pushop);
       el_avail[SSA_NAME_VERSION (valnum)] = op;
-      el_avail_stack.safe_push (op);
     }
 }
 
@@ -3926,9 +3935,9 @@ eliminate_insert (gimple_stmt_iterator *gsi, tree val)
     return NULL_TREE;
 
   tree res = make_temp_ssa_name (TREE_TYPE (val), NULL, "pretmp");
-  gimple tem = gimple_build_assign (res,
-				    fold_build1 (TREE_CODE (expr),
-						 TREE_TYPE (expr), leader));
+  gassign *tem = gimple_build_assign (res,
+				      fold_build1 (TREE_CODE (expr),
+						   TREE_TYPE (expr), leader));
   gsi_insert_before (gsi, tem, GSI_SAME_STMT);
   VN_INFO_GET (res)->valnum = val;
 
@@ -3962,9 +3971,6 @@ public:
 void
 eliminate_dom_walker::before_dom_children (basic_block b)
 {
-  gimple_stmt_iterator gsi;
-  gimple stmt;
-
   /* Mark new bb.  */
   el_avail_stack.safe_push (NULL_TREE);
 
@@ -3972,9 +3978,9 @@ eliminate_dom_walker::before_dom_children (basic_block b)
      tailmerging.  Eventually we can reduce its reliance on SCCVN now
      that we fully copy/constant-propagate (most) things.  */
 
-  for (gsi = gsi_start_phis (b); !gsi_end_p (gsi);)
+  for (gphi_iterator gsi = gsi_start_phis (b); !gsi_end_p (gsi);)
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       tree res = PHI_RESULT (phi);
 
       if (virtual_operand_p (res))
@@ -4035,10 +4041,12 @@ eliminate_dom_walker::before_dom_children (basic_block b)
       gsi_next (&gsi);
     }
 
-  for (gsi = gsi_start_bb (b); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gimple_stmt_iterator gsi = gsi_start_bb (b);
+       !gsi_end_p (gsi);
+       gsi_next (&gsi))
     {
       tree sprime = NULL_TREE;
-      stmt = gsi_stmt (gsi);
+      gimple stmt = gsi_stmt (gsi);
       tree lhs = gimple_get_lhs (stmt);
       if (lhs && TREE_CODE (lhs) == SSA_NAME
 	  && !gimple_has_volatile_ops (stmt)
@@ -4311,9 +4319,9 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 
       /* Visit indirect calls and turn them into direct calls if
 	 possible using the devirtualization machinery.  */
-      if (is_gimple_call (stmt))
+      if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	{
-	  tree fn = gimple_call_fn (stmt);
+	  tree fn = gimple_call_fn (call_stmt);
 	  if (fn
 	      && flag_devirtualize
 	      && virtual_method_call_p (fn))
@@ -4352,7 +4360,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 				       "function %s\n",
 				       cgraph_node::get (fn)->name ());
 		    }
-		  gimple_call_set_fndecl (stmt, fn);
+		  gimple_call_set_fndecl (call_stmt, fn);
 		  gimple_set_modified (stmt, true);
 		}
 	    }
@@ -4382,10 +4390,12 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	      fold_stmt (&gsi);
 	      stmt = gsi_stmt (gsi);
 	      if ((gimple_code (stmt) == GIMPLE_COND
-		   && (gimple_cond_true_p (stmt)
-		       || gimple_cond_false_p (stmt)))
+		   && (gimple_cond_true_p (as_a <gcond *> (stmt))
+		       || gimple_cond_false_p (as_a <gcond *> (stmt))))
 		  || (gimple_code (stmt) == GIMPLE_SWITCH
-		      && TREE_CODE (gimple_switch_index (stmt)) == INTEGER_CST))
+		      && TREE_CODE (gimple_switch_index (
+				      as_a <gswitch *> (stmt)))
+		         == INTEGER_CST))
 		el_todo |= TODO_cleanup_cfg;
 	    }
 	  /* If we removed EH side-effects from the statement, clean
@@ -4423,9 +4433,11 @@ eliminate_dom_walker::before_dom_children (basic_block b)
   edge e;
   FOR_EACH_EDGE (e, ei, b->succs)
     {
-      for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gphi_iterator gsi = gsi_start_phis (e->dest);
+	   !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  use_operand_p use_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
 	  tree arg = USE_FROM_PTR (use_p);
 	  if (TREE_CODE (arg) != SSA_NAME
@@ -4449,7 +4461,14 @@ eliminate_dom_walker::after_dom_children (basic_block)
 {
   tree entry;
   while ((entry = el_avail_stack.pop ()) != NULL_TREE)
-    el_avail[SSA_NAME_VERSION (VN_INFO (entry)->valnum)] = NULL_TREE;
+    {
+      tree valnum = VN_INFO (entry)->valnum;
+      tree old = el_avail[SSA_NAME_VERSION (valnum)];
+      if (old == entry)
+	el_avail[SSA_NAME_VERSION (valnum)] = NULL_TREE;
+      else
+	el_avail[SSA_NAME_VERSION (valnum)] = entry;
+    }
 }
 
 /* Eliminate fully redundant computations.  */

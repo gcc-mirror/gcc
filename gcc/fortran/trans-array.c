@@ -1041,7 +1041,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
   gcc_assert (ss->dimen > 0);
   gcc_assert (ss->loop->dimen == ss->dimen);
 
-  if (gfc_option.warn_array_temp && where)
+  if (warn_array_temporaries && where)
     gfc_warning ("Creating array temporary at %L", where);
 
   /* Set the lower bound to zero.  */
@@ -5425,10 +5425,11 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
             {
               /* Problems occur when we get something like
                  integer :: a(lots) = (/(i, i=1, lots)/)  */
-              gfc_fatal_error ("The number of elements in the array constructor "
-			       "at %L requires an increase of the allowed %d "
-			       "upper limit.   See -fmax-array-constructor "
-			       "option", &expr->where,
+              gfc_fatal_error ("The number of elements in the array "
+			       "constructor at %L requires an increase of "
+			       "the allowed %d upper limit. See "
+			       "%<-fmax-array-constructor%> option",
+			       &expr->where,
 			       gfc_option.flag_max_array_constructor);
 	      return NULL_TREE;
 	    }
@@ -5920,7 +5921,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
 
       stride = gfc_index_one_node;
 
-      if (gfc_option.warn_array_temp)
+      if (warn_array_temporaries)
 	gfc_warning ("Creating array temporary at %L", &loc);
     }
 
@@ -7201,7 +7202,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	}
 
       /* Repack the array.  */
-      if (gfc_option.warn_array_temp)
+      if (warn_array_temporaries)
 	{
 	  if (fsym)
 	    gfc_warning ("Creating array temporary at %L for argument '%s'",
@@ -9092,7 +9093,7 @@ gfc_walk_subexpr (gfc_ss * ss, gfc_expr * expr)
       break;
 
     default:
-      internal_error ("bad expression type during walk (%d)",
+      gfc_internal_error ("bad expression type during walk (%d)",
 		      expr->expr_type);
     }
   return ss;

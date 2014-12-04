@@ -65,10 +65,6 @@ static unsigned int cached_num_sign_bit_copies (const_rtx, machine_mode, const_r
 static unsigned int num_sign_bit_copies1 (const_rtx, machine_mode, const_rtx,
                                           machine_mode, unsigned int);
 
-/* Offset of the first 'e', 'E' or 'V' operand for each rtx code, or
-   -1 if a code has no such operand.  */
-static int non_rtx_starting_operands[NUM_RTX_CODE];
-
 rtx_subrtx_bound_info rtx_all_subrtx_bounds[NUM_RTX_CODE];
 rtx_subrtx_bound_info rtx_nonconst_subrtx_bounds[NUM_RTX_CODE];
 
@@ -3020,137 +3016,6 @@ computed_jump_p (const_rtx insn)
   return 0;
 }
 
-/* Optimized loop of for_each_rtx, trying to avoid useless recursive
-   calls.  Processes the subexpressions of EXP and passes them to F.  */
-static int
-for_each_rtx_1 (rtx exp, int n, rtx_function f, void *data)
-{
-  int result, i, j;
-  const char *format = GET_RTX_FORMAT (GET_CODE (exp));
-  rtx *x;
-
-  for (; format[n] != '\0'; n++)
-    {
-      switch (format[n])
-	{
-	case 'e':
-	  /* Call F on X.  */
-	  x = &XEXP (exp, n);
-	  result = (*f) (x, data);
-	  if (result == -1)
-	    /* Do not traverse sub-expressions.  */
-	    continue;
-	  else if (result != 0)
-	    /* Stop the traversal.  */
-	    return result;
-
-	  if (*x == NULL_RTX)
-	    /* There are no sub-expressions.  */
-	    continue;
-
-	  i = non_rtx_starting_operands[GET_CODE (*x)];
-	  if (i >= 0)
-	    {
-	      result = for_each_rtx_1 (*x, i, f, data);
-	      if (result != 0)
-		return result;
-	    }
-	  break;
-
-	case 'V':
-	case 'E':
-	  if (XVEC (exp, n) == 0)
-	    continue;
-	  for (j = 0; j < XVECLEN (exp, n); ++j)
-	    {
-	      /* Call F on X.  */
-	      x = &XVECEXP (exp, n, j);
-	      result = (*f) (x, data);
-	      if (result == -1)
-		/* Do not traverse sub-expressions.  */
-		continue;
-	      else if (result != 0)
-		/* Stop the traversal.  */
-		return result;
-
-	      if (*x == NULL_RTX)
-		/* There are no sub-expressions.  */
-		continue;
-
-	      i = non_rtx_starting_operands[GET_CODE (*x)];
-	      if (i >= 0)
-		{
-		  result = for_each_rtx_1 (*x, i, f, data);
-		  if (result != 0)
-		    return result;
-	        }
-	    }
-	  break;
-
-	default:
-	  /* Nothing to do.  */
-	  break;
-	}
-    }
-
-  return 0;
-}
-
-/* Traverse X via depth-first search, calling F for each
-   sub-expression (including X itself).  F is also passed the DATA.
-   If F returns -1, do not traverse sub-expressions, but continue
-   traversing the rest of the tree.  If F ever returns any other
-   nonzero value, stop the traversal, and return the value returned
-   by F.  Otherwise, return 0.  This function does not traverse inside
-   tree structure that contains RTX_EXPRs, or into sub-expressions
-   whose format code is `0' since it is not known whether or not those
-   codes are actually RTL.
-
-   This routine is very general, and could (should?) be used to
-   implement many of the other routines in this file.  */
-
-int
-for_each_rtx (rtx *x, rtx_function f, void *data)
-{
-  int result;
-  int i;
-
-  /* Call F on X.  */
-  result = (*f) (x, data);
-  if (result == -1)
-    /* Do not traverse sub-expressions.  */
-    return 0;
-  else if (result != 0)
-    /* Stop the traversal.  */
-    return result;
-
-  if (*x == NULL_RTX)
-    /* There are no sub-expressions.  */
-    return 0;
-
-  i = non_rtx_starting_operands[GET_CODE (*x)];
-  if (i < 0)
-    return 0;
-
-  return for_each_rtx_1 (*x, i, f, data);
-}
-
-/* Like "for_each_rtx", but for calling on an rtx_insn **.  */
-
-int
-for_each_rtx_in_insn (rtx_insn **insn, rtx_function f, void *data)
-{
-  rtx insn_as_rtx = *insn;
-  int result;
-
-  result = for_each_rtx (&insn_as_rtx, f, data);
-
-  if (insn_as_rtx != *insn)
-    *insn = safe_as_a <rtx_insn *> (insn_as_rtx);
-
-  return result;
-}
-
 
 
 /* MEM has a PRE/POST-INC/DEC/MODIFY address X.  Extract the operands of
@@ -5496,17 +5361,13 @@ setup_reg_subrtx_bounds (unsigned int code)
   return true;
 }
 
-/* Initialize non_rtx_starting_operands, which is used to speed up
-   for_each_rtx, and rtx_all_subrtx_bounds.  */
+/* Initialize rtx_all_subrtx_bounds.  */
 void
 init_rtlanal (void)
 {
   int i;
   for (i = 0; i < NUM_RTX_CODE; i++)
     {
-      const char *format = GET_RTX_FORMAT (i);
-      const char *first = strpbrk (format, "eEV");
-      non_rtx_starting_operands[i] = first ? first - format : -1;
       if (!setup_reg_subrtx_bounds (i))
 	rtx_all_subrtx_bounds[i].count = UCHAR_MAX;
       if (GET_RTX_CLASS (i) != RTX_CONST_OBJ)

@@ -139,6 +139,13 @@ hook_void_FILEptr_constcharptr (FILE *a ATTRIBUTE_UNUSED, const char *b ATTRIBUT
 {
 }
 
+/* Generic hook that takes (FILE *, const char *, constr_tree *) and does
+   nothing.  */
+void
+hook_void_FILEptr_constcharptr_const_tree (FILE *, const char *, const_tree)
+{
+}
+
 /* Generic hook that takes (FILE *, rtx) and returns false.  */
 bool
 hook_bool_FILEptr_rtx_false (FILE *a ATTRIBUTE_UNUSED,
@@ -241,6 +248,11 @@ hook_uint_void_0 (void)
 
 void
 hook_void_tree (tree a ATTRIBUTE_UNUSED)
+{
+}
+
+void
+hook_void_rtx_tree (rtx, tree)
 {
 }
 
@@ -369,9 +381,16 @@ hook_tree_tree_tree_tree_3rd_identity (tree a ATTRIBUTE_UNUSED,
   return c;
 }
 
-/* Generic hook that takes no arguments and returns a NULL string.  */
+/* Generic hook that takes no arguments and returns a NULL const string.  */
 const char *
 hook_constcharptr_void_null (void)
+{
+  return NULL;
+}
+
+/* Generic hook that takes no arguments and returns a NULL string.  */
+char *
+hook_charptr_void_null (void)
 {
   return NULL;
 }

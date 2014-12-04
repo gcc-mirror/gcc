@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-std=c99 -fextended-identifiers" } */
+/* { dg-options "-std=c99 -g" } */
 void abort (void);
 
 int main (void)

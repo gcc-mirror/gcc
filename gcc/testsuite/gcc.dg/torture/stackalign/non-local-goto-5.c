@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target nonlocal_goto } */
 
 extern void exit (int);
 #if !defined (NO_LABEL_VALUES) && !defined (NO_TRAMPOLINES)

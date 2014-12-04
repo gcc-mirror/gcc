@@ -399,6 +399,10 @@ package body Table is
          Tree_Read_Data
            (Tree_Get_Table_Address,
              (Last_Val - Int (First) + 1) *
+
+               --  Note the importance of parenthesizing the following division
+               --  to avoid the possibility of intermediate overflow.
+
                (Table_Type'Component_Size / Storage_Unit));
       end Tree_Read;
 

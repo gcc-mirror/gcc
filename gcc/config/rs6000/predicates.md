@@ -392,8 +392,8 @@
 ;; Return 1 if op is a constant integer valid for addition with addis, addi.
 (define_predicate "add_cint_operand"
   (and (match_code "const_int")
-       (match_test "(unsigned HOST_WIDE_INT)
-		      (INTVAL (op) + (mode == SImode ? 0x80000000 : 0x80008000))
+       (match_test "((unsigned HOST_WIDE_INT) INTVAL (op)
+		       + (mode == SImode ? 0x80000000 : 0x80008000))
 		    < (unsigned HOST_WIDE_INT) 0x100000000ll")))
 
 ;; Return 1 if op is a constant integer valid for addition
@@ -408,7 +408,7 @@
 (define_predicate "reg_or_sub_cint_operand"
   (if_then_else (match_code "const_int")
     (match_test "(unsigned HOST_WIDE_INT)
-		   (- INTVAL (op) + (mode == SImode ? 0x80000000 : 0x80008000))
+		   (- UINTVAL (op) + (mode == SImode ? 0x80000000 : 0x80008000))
 		 < (unsigned HOST_WIDE_INT) 0x100000000ll")
     (match_operand 0 "gpc_reg_operand")))
 
@@ -479,10 +479,6 @@
 	      && num_insns_constant_wide ((HOST_WIDE_INT) k[3]) == 1);
 
     case DFmode:
-      /* The constant 0.f is easy under VSX.  */
-      if (op == CONST0_RTX (DFmode) && VECTOR_UNIT_VSX_P (DFmode))
-	return 1;
-
       /* Force constants to memory before reload to utilize
 	 compress_float_constant.
 	 Avoid this when flag_unsafe_math_optimizations is enabled
@@ -500,10 +496,6 @@
 	      && num_insns_constant_wide ((HOST_WIDE_INT) k[1]) == 1);
 
     case SFmode:
-      /* The constant 0.f is easy.  */
-      if (op == CONST0_RTX (SFmode))
-	return 1;
-
       /* Force constants to memory before reload to utilize
 	 compress_float_constant.
 	 Avoid this when flag_unsafe_math_optimizations is enabled
@@ -527,6 +519,27 @@
   default:
     gcc_unreachable ();
   }
+})
+
+;; Return 1 if the operand must be loaded from memory.  This is used by a
+;; define_split to insure constants get pushed to the constant pool before
+;; reload.  If -ffast-math is used, easy_fp_constant will allow move insns to
+;; have constants in order not interfere with reciprocal estimation.  However,
+;; with -mupper-regs support, these constants must be moved to the constant
+;; pool before register allocation.
+
+(define_predicate "memory_fp_constant"
+  (match_code "const_double")
+{
+  if (TARGET_VSX && op == CONST0_RTX (mode))
+    return 0;
+
+  if (!TARGET_HARD_FLOAT || !TARGET_FPRS
+      || (mode == SFmode && !TARGET_SINGLE_FLOAT)
+      || (mode == DFmode && !TARGET_DOUBLE_FLOAT))
+    return 0;
+	  
+  return 1;
 })
 
 ;; Return 1 if the operand is a CONST_VECTOR and can be loaded into a
@@ -814,7 +827,7 @@
 (define_predicate "mask_operand"
   (match_code "const_int")
 {
-  HOST_WIDE_INT c, lsb;
+  unsigned HOST_WIDE_INT c, lsb;
 
   c = INTVAL (op);
 
@@ -859,7 +872,7 @@
 (define_predicate "mask_operand_wrap"
   (match_code "const_int")
 {
-  HOST_WIDE_INT c, lsb;
+  unsigned HOST_WIDE_INT c, lsb;
 
   c = INTVAL (op);
 
@@ -884,7 +897,7 @@
 (define_predicate "mask64_operand"
   (match_code "const_int")
 {
-  HOST_WIDE_INT c, lsb;
+  unsigned HOST_WIDE_INT c, lsb;
 
   c = INTVAL (op);
 
@@ -910,7 +923,7 @@
 (define_predicate "mask64_2_operand"
   (match_code "const_int")
 {
-  HOST_WIDE_INT c, lsb;
+  unsigned HOST_WIDE_INT c, lsb;
 
   c = INTVAL (op);
 

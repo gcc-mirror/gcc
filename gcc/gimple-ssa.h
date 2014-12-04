@@ -28,9 +28,22 @@ along with GCC; see the file COPYING3.  If not see
 /* This structure is used to map a gimple statement to a label,
    or list of labels to represent transaction restart.  */
 
-struct GTY(()) tm_restart_node {
+struct GTY((for_user)) tm_restart_node {
   gimple stmt;
   tree label_or_list;
+};
+
+/* Hasher for tm_restart_node.  */
+
+struct tm_restart_hasher : ggc_hasher<tm_restart_node *>
+{
+  static hashval_t hash (tm_restart_node *n) { return htab_hash_pointer (n); }
+
+  static bool
+  equal (tm_restart_node *a, tm_restart_node *b)
+  {
+    return a == b;
+  }
 };
 
 struct ssa_name_hasher : ggc_hasher<tree>
@@ -101,7 +114,7 @@ struct GTY(()) gimple_df {
 
   /* Map gimple stmt to tree label (or list of labels) for transaction
      restart and abort.  */
-  htab_t GTY ((param_is (struct tm_restart_node))) tm_restart;
+  hash_table<tm_restart_hasher> *tm_restart;
 };
 
 

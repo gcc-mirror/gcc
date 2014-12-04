@@ -225,11 +225,7 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mullo_epi64 (__m512i __A, __m512i __B)
 {
-  return (__m512i) __builtin_ia32_pmullq512_mask ((__v8di) __A,
-						  (__v8di) __B,
-						  (__v8di)
-						  _mm512_setzero_si512 (),
-						  (__mmask8) -1);
+  return (__m512i) ((__v8du) __A * (__v8du) __B);
 }
 
 extern __inline __m512i

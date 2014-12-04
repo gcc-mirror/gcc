@@ -54,6 +54,9 @@ extern int gt_pch_note_object (void *, void *, gt_note_pointers);
    function.  */
 extern void gt_pch_note_reorder (void *, void *, gt_handle_reorder);
 
+/* generated function to clear caches in gc memory.  */
+extern void gt_clear_caches ();
+
 /* Mark the object in the first parameter and anything it points to.  */
 typedef void (*gt_pointer_walker) (void *);
 

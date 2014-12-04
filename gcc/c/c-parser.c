@@ -5020,6 +5020,11 @@ c_parser_statement_after_labels (c_parser *parser)
 
 	      c_parser_consume_token (parser);
 	      val = c_parser_expression (parser);
+	      if (check_no_cilk (val.value,
+				 "Cilk array notation cannot be used as a computed goto expression",
+				 "%<_Cilk_spawn%> statement cannot be used as a computed goto expression",
+				 loc))
+	        val.value = error_mark_node;
 	      val = convert_lvalue_to_rvalue (loc, val, false, true);
 	      stmt = c_finish_goto_ptr (loc, val.value);
 	    }
@@ -5073,8 +5078,15 @@ c_parser_statement_after_labels (c_parser *parser)
 	    {
 	      struct c_expr expr = c_parser_expression (parser);
 	      expr = convert_lvalue_to_rvalue (loc, expr, false, false);
-	      expr.value = c_fully_fold (expr.value, false, NULL);
-	      stmt = objc_build_throw_stmt (loc, expr.value);
+	      if (check_no_cilk (expr.value,
+		 "Cilk array notation cannot be used for a throw expression",
+		 "%<_Cilk_spawn%> statement cannot be used for a throw expression"))
+	        expr.value = error_mark_node;
+	      else
+		{
+	          expr.value = c_fully_fold (expr.value, false, NULL);
+	          stmt = objc_build_throw_stmt (loc, expr.value);
+		}
 	      goto expect_semicolon;
 	    }
 	  break;
@@ -5265,6 +5277,11 @@ c_parser_if_statement (c_parser *parser)
   block = c_begin_compound_stmt (flag_isoc99);
   loc = c_parser_peek_token (parser)->location;
   cond = c_parser_paren_condition (parser);
+  if (flag_cilkplus && contains_cilk_spawn_stmt (cond))
+    {
+      error_at (loc, "if statement cannot contain %<Cilk_spawn%>");
+      cond = error_mark_node;
+    }
   in_if_block = parser->in_if_block;
   parser->in_if_block = true;
   first_body = c_parser_if_body (parser, &first_if);
@@ -5311,13 +5328,12 @@ c_parser_switch_statement (c_parser *parser)
       ce = c_parser_expression (parser);
       ce = convert_lvalue_to_rvalue (switch_cond_loc, ce, true, false);
       expr = ce.value;
-      if (flag_cilkplus && contains_array_notation_expr (expr))
-	{
-	  error_at (switch_cond_loc,
-		    "array notations cannot be used as a condition for switch "
-		    "statement");
-	  expr = error_mark_node;
-	}
+      /* ??? expr has no valid location?  */
+      if (check_no_cilk (expr,
+	 "Cilk array notation cannot be used as a condition for switch statement",
+	 "%<_Cilk_spawn%> statement cannot be used as a condition for switch statement",
+			 switch_cond_loc))
+        expr = error_mark_node;
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
     }
   else
@@ -5357,13 +5373,10 @@ c_parser_while_statement (c_parser *parser, bool ivdep)
   block = c_begin_compound_stmt (flag_isoc99);
   loc = c_parser_peek_token (parser)->location;
   cond = c_parser_paren_condition (parser);
-  if (flag_cilkplus && contains_array_notation_expr (cond))
-    {
-      error_at (loc, "array notations cannot be used as a condition for while "
-		"statement");
-      cond = error_mark_node;
-    }
-
+  if (check_no_cilk (cond,
+         "Cilk array notation cannot be used as a condition for while statement",
+	 "%<_Cilk_spawn%> statement cannot be used as a condition for while statement"))
+    cond = error_mark_node;
   if (ivdep && cond != error_mark_node)
     cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node,
@@ -5409,12 +5422,10 @@ c_parser_do_statement (c_parser *parser, bool ivdep)
   new_cont = c_cont_label;
   c_cont_label = save_cont;
   cond = c_parser_paren_condition (parser);
-  if (flag_cilkplus && contains_array_notation_expr (cond))
-    {
-      error_at (loc, "array notations cannot be used as a condition for a "
-		"do-while statement");
-      cond = error_mark_node;
-    }
+  if (check_no_cilk (cond,
+	 "Cilk array notation cannot be used as a condition for a do-while statement",
+	 "%<_Cilk_spawn%> statement cannot be used as a condition for a do-while statement"))
+    cond = error_mark_node;
   if (ivdep && cond != error_mark_node)
     cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node,
@@ -5566,6 +5577,8 @@ c_parser_for_statement (c_parser *parser, bool ivdep)
 	    struct c_expr ce;
 	    tree init_expression;
 	    ce = c_parser_expression (parser);
+	    /* In theory we could forbid _Cilk_spawn here, as the spec says "only in top
+	       level statement", but it works just fine, so allow it.  */
 	    init_expression = ce.value;
 	    parser->objc_could_be_foreach_context = false;
 	    if (c_parser_next_token_is_keyword (parser, RID_IN))
@@ -5607,12 +5620,10 @@ c_parser_for_statement (c_parser *parser, bool ivdep)
 	  else
 	    {
 	      cond = c_parser_condition (parser);
-	      if (flag_cilkplus && contains_array_notation_expr (cond))
-		{
-		  error_at (loc, "array notations cannot be used in a "
-			    "condition for a for-loop");
-		  cond = error_mark_node;
-		}
+	      if (check_no_cilk (cond,
+		 "Cilk array notation cannot be used in a condition for a for-loop",
+		 "%<_Cilk_spawn%> statement cannot be used in a condition for a for-loop"))
+		cond = error_mark_node;
 	      c_parser_skip_until_found (parser, CPP_SEMICOLON,
 					 "expected %<;%>");
 	    }
@@ -7644,6 +7655,46 @@ c_parser_postfix_expression (c_parser *parser)
 	      = comptypes (e1, e2) ? integer_one_node : integer_zero_node;
 	  }
 	  break;
+	case RID_BUILTIN_CALL_WITH_STATIC_CHAIN:
+	  {
+	    vec<c_expr_t, va_gc> *cexpr_list;
+	    c_expr_t *e2_p;
+	    tree chain_value;
+
+	    c_parser_consume_token (parser);
+	    if (!c_parser_get_builtin_args (parser,
+					    "__builtin_call_with_static_chain",
+					    &cexpr_list, false))
+	      {
+		expr.value = error_mark_node;
+		break;
+	      }
+	    if (vec_safe_length (cexpr_list) != 2)
+	      {
+		error_at (loc, "wrong number of arguments to "
+			       "%<__builtin_call_with_static_chain%>");
+		expr.value = error_mark_node;
+		break;
+	      }
+
+	    expr = (*cexpr_list)[0];
+	    e2_p = &(*cexpr_list)[1];
+	    *e2_p = convert_lvalue_to_rvalue (loc, *e2_p, true, true);
+	    chain_value = e2_p->value;
+	    mark_exp_read (chain_value);
+
+	    if (TREE_CODE (expr.value) != CALL_EXPR)
+	      error_at (loc, "first argument to "
+			"%<__builtin_call_with_static_chain%> "
+			"must be a call expression");
+	    else if (TREE_CODE (TREE_TYPE (chain_value)) != POINTER_TYPE)
+	      error_at (loc, "second argument to "
+			"%<__builtin_call_with_static_chain%> "
+			"must be a pointer type");
+	    else
+	      CALL_EXPR_STATIC_CHAIN (expr.value) = chain_value;
+	    break;
+	  }
 	case RID_BUILTIN_COMPLEX:
 	  {
 	    vec<c_expr_t, va_gc> *cexpr_list;

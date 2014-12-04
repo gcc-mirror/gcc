@@ -52,7 +52,9 @@ generic
    --  size, and heap allocation will be avoided. If False, the containers can
    --  grow via heap allocation.
 
-package Ada.Containers.Formal_Indefinite_Vectors is
+package Ada.Containers.Formal_Indefinite_Vectors with
+  SPARK_Mode => On
+is
    pragma Annotate (GNATprove, External_Axiomatization);
 
    subtype Extended_Index is Index_Type'Base
@@ -209,14 +211,18 @@ package Ada.Containers.Formal_Indefinite_Vectors is
      (Container : Vector;
       Current : Index_Type) return Vector
    with
+     Ghost,
      Global => null;
+
    function Current_To_Last
      (Container : Vector;
       Current : Index_Type) return Vector
    with
+     Ghost,
      Global => null;
 
 private
+   pragma SPARK_Mode (Off);
 
    pragma Inline (First_Index);
    pragma Inline (Last_Index);

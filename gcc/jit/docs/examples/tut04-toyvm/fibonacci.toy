@@ -1,0 +1,66 @@
+# Simple recursive fibonacci implementation, roughly equivalent to:
+#
+#  int fibonacci (int arg)
+#  {
+#     if (arg < 2)
+#       return arg
+#     return fibonacci (arg-1) + fibonacci (arg-2)
+#  }
+
+# Initial state:
+# stack: [arg]
+
+# 0:
+DUP
+# stack: [arg, arg]
+
+# 1:
+PUSH_CONST 2
+# stack: [arg, arg, 2]
+
+# 2:
+BINARY_COMPARE_LT
+# stack: [arg, (arg < 2)]
+
+# 3:
+JUMP_ABS_IF_TRUE 13
+# stack: [arg]
+
+# 4:
+DUP
+# stack: [arg, arg]
+
+# 5:
+PUSH_CONST  1
+# stack: [arg, arg, 1]
+
+# 6:
+BINARY_SUBTRACT
+# stack: [arg,  (arg - 1)
+
+# 7:
+RECURSE
+# stack: [arg, fib(arg - 1)]
+
+# 8:
+ROT
+# stack: [fib(arg - 1), arg]
+
+# 9:
+PUSH_CONST  2
+# stack: [fib(arg - 1), arg, 2]
+
+# 10:
+BINARY_SUBTRACT
+# stack: [fib(arg - 1), arg,  (arg - 2)
+
+# 11:
+RECURSE
+# stack: [fib(arg - 1), fib(arg - 1)]
+
+# 12:
+BINARY_ADD
+# stack: [fib(arg - 1) + fib(arg - 1)]
+
+# 13:
+RETURN

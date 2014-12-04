@@ -194,6 +194,13 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
 #undef fread_unlocked
 #undef fwrite_unlocked
 
+/* Include <string> before "safe-ctype.h" to avoid GCC poisoning
+   the ctype macros through safe-ctype.h */
+
+#ifdef __cplusplus
+# include <string>
+#endif
+
 /* There are an extraordinary number of issues with <ctype.h>.
    The last straw is that it varies with the locale.  Use libiberty's
    replacement instead.  */
@@ -208,7 +215,9 @@ extern int errno;
 #endif
 
 #ifdef __cplusplus
+# include <algorithm>
 # include <cstring>
+# include <utility>
 #endif
 
 /* Some of glibc's string inlines cause warnings.  Plus we'd rather

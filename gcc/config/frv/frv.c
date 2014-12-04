@@ -21,13 +21,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "rtl.h"
 #include "tree.h"
 #include "varasm.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "regs.h"
 #include "hard-reg-set.h"
+#include "rtl.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "insn-flags.h"
@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "builtins.h"
 #include "ifcvt.h"
+#include "rtl-iter.h"
 
 #ifndef FRV_INLINE
 #define FRV_INLINE inline
@@ -335,16 +336,13 @@ static rtx frv_expand_mwtacc_builtin		(enum insn_code, tree);
 static rtx frv_expand_noargs_builtin		(enum insn_code);
 static void frv_split_iacc_move			(rtx, rtx);
 static rtx frv_emit_comparison			(enum rtx_code, rtx, rtx);
-static int frv_clear_registers_used		(rtx *, void *);
 static void frv_ifcvt_add_insn			(rtx, rtx, int);
 static rtx frv_ifcvt_rewrite_mem		(rtx, machine_mode, rtx);
 static rtx frv_ifcvt_load_value			(rtx, rtx);
-static int frv_acc_group_1			(rtx *, void *);
 static unsigned int frv_insn_unit		(rtx_insn *);
 static bool frv_issues_to_branch_unit_p		(rtx_insn *);
 static int frv_cond_flags 			(rtx);
 static bool frv_regstate_conflict_p 		(regstate_t, regstate_t);
-static int frv_registers_conflict_p_1 		(rtx *, void *);
 static bool frv_registers_conflict_p 		(rtx);
 static void frv_registers_update_1 		(rtx, const_rtx, void *);
 static void frv_registers_update 		(rtx);
@@ -5194,33 +5192,6 @@ frv_split_abs (rtx operands[])
 }
 
 
-/* An internal function called by for_each_rtx to clear in a hard_reg set each
-   register used in an insn.  */
-
-static int
-frv_clear_registers_used (rtx *ptr, void *data)
-{
-  if (GET_CODE (*ptr) == REG)
-    {
-      int regno = REGNO (*ptr);
-      HARD_REG_SET *p_regs = (HARD_REG_SET *)data;
-
-      if (regno < FIRST_PSEUDO_REGISTER)
-	{
-	  int reg_max = regno + HARD_REGNO_NREGS (regno, GET_MODE (*ptr));
-
-	  while (regno < reg_max)
-	    {
-	      CLEAR_HARD_REG_BIT (*p_regs, regno);
-	      regno++;
-	    }
-	}
-    }
-
-  return 0;
-}
-
-
 /* Initialize machine-specific if-conversion data.
    On the FR-V, we don't have any extra fields per se, but it is useful hook to
    initialize the static storage.  */
@@ -5413,9 +5384,11 @@ frv_ifcvt_modify_tests (ce_if_block *ce_info, rtx *p_true, rtx *p_false)
 	      rtx pattern;
 	      rtx set;
 	      int skip_nested_if = FALSE;
+	      HARD_REG_SET mentioned_regs;
 
-	      for_each_rtx (&PATTERN (insn), frv_clear_registers_used,
-			    (void *)&tmp_reg->regs);
+	      CLEAR_HARD_REG_SET (mentioned_regs);
+	      find_all_hard_regs (PATTERN (insn), &mentioned_regs);
+	      AND_COMPL_HARD_REG_SET (tmp_reg->regs, mentioned_regs);
 
 	      pattern = PATTERN (insn);
 	      if (GET_CODE (pattern) == COND_EXEC)
@@ -5451,8 +5424,8 @@ frv_ifcvt_modify_tests (ce_if_block *ce_info, rtx *p_true, rtx *p_false)
 		}
 
 	      if (! skip_nested_if)
-		for_each_rtx (&PATTERN (insn), frv_clear_registers_used,
-			      (void *)&frv_ifcvt.nested_cc_ok_rewrite);
+		AND_COMPL_HARD_REG_SET (frv_ifcvt.nested_cc_ok_rewrite,
+					mentioned_regs);
 	    }
 
 	  if (insn == last_insn)
@@ -7039,33 +7012,29 @@ frv_issue_rate (void)
     }
 }
 
-/* A for_each_rtx callback.  If X refers to an accumulator, return
-   ACC_GROUP_ODD if the bit 2 of the register number is set and
-   ACC_GROUP_EVEN if it is clear.  Return 0 (ACC_GROUP_NONE)
-   otherwise.  */
-
-static int
-frv_acc_group_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
-{
-  if (REG_P (*x))
-    {
-      if (ACC_P (REGNO (*x)))
-	return (REGNO (*x) - ACC_FIRST) & 4 ? ACC_GROUP_ODD : ACC_GROUP_EVEN;
-      if (ACCG_P (REGNO (*x)))
-	return (REGNO (*x) - ACCG_FIRST) & 4 ? ACC_GROUP_ODD : ACC_GROUP_EVEN;
-    }
-  return 0;
-}
-
 /* Return the value of INSN's acc_group attribute.  */
 
 int
 frv_acc_group (rtx insn)
 {
   /* This distinction only applies to the FR550 packing constraints.  */
-  if (frv_cpu_type != FRV_CPU_FR550)
-    return ACC_GROUP_NONE;
-  return for_each_rtx (&PATTERN (insn), frv_acc_group_1, 0);
+  if (frv_cpu_type == FRV_CPU_FR550)
+    {
+      subrtx_iterator::array_type array;
+      FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+	if (REG_P (*iter))
+	  {
+	    unsigned int regno = REGNO (*iter);
+	    /* If REGNO refers to an accumulator, return ACC_GROUP_ODD if
+	       the bit 2 of the register number is set and ACC_GROUP_EVEN if
+	       it is clear.  */
+	    if (ACC_P (regno))
+	      return (regno - ACC_FIRST) & 4 ? ACC_GROUP_ODD : ACC_GROUP_EVEN;
+	    if (ACCG_P (regno))
+	      return (regno - ACCG_FIRST) & 4 ? ACC_GROUP_ODD : ACC_GROUP_EVEN;
+	  }
+    }
+  return ACC_GROUP_NONE;
 }
 
 /* Return the index of the DFA unit in FRV_UNIT_NAMES[] that instruction
@@ -7201,53 +7170,49 @@ frv_regstate_conflict_p (regstate_t cond1, regstate_t cond2)
 }
 
 
-/* A for_each_rtx callback.  Return 1 if *X depends on an instruction in
-   the current packet.  DATA points to a regstate_t that describes the
-   condition under which *X might be set or used.  */
+/* Return true if an instruction with pattern PAT depends on an
+   instruction in the current packet.  COND describes the condition
+   under which PAT might be set or used.  */
 
-static int
-frv_registers_conflict_p_1 (rtx *x, void *data)
+static bool
+frv_registers_conflict_p_1 (rtx pat, regstate_t cond)
 {
-  unsigned int regno, i;
-  regstate_t cond;
-
-  cond = *(regstate_t *) data;
-
-  if (GET_CODE (*x) == REG)
-    FOR_EACH_REGNO (regno, *x)
-      if ((frv_packet.regstate[regno] & REGSTATE_MODIFIED) != 0)
-	if (frv_regstate_conflict_p (frv_packet.regstate[regno], cond))
-	  return 1;
-
-  if (GET_CODE (*x) == MEM)
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, pat, NONCONST)
     {
-      /* If we ran out of memory slots, assume a conflict.  */
-      if (frv_packet.num_mems > ARRAY_SIZE (frv_packet.mems))
-	return 1;
+      rtx x = *iter;
+      if (GET_CODE (x) == REG)
+	{
+	  unsigned int regno;
+	  FOR_EACH_REGNO (regno, x)
+	    if ((frv_packet.regstate[regno] & REGSTATE_MODIFIED) != 0)
+	      if (frv_regstate_conflict_p (frv_packet.regstate[regno], cond))
+		return true;
+	}
+      else if (GET_CODE (x) == MEM)
+	{
+	  /* If we ran out of memory slots, assume a conflict.  */
+	  if (frv_packet.num_mems > ARRAY_SIZE (frv_packet.mems))
+	    return 1;
 
-      /* Check for output or true dependencies with earlier MEMs.  */
-      for (i = 0; i < frv_packet.num_mems; i++)
-	if (frv_regstate_conflict_p (frv_packet.mems[i].cond, cond))
-	  {
-	    if (true_dependence (frv_packet.mems[i].mem, VOIDmode, *x))
-	      return 1;
+	  /* Check for output or true dependencies with earlier MEMs.  */
+	  for (unsigned int i = 0; i < frv_packet.num_mems; i++)
+	    if (frv_regstate_conflict_p (frv_packet.mems[i].cond, cond))
+	      {
+		if (true_dependence (frv_packet.mems[i].mem, VOIDmode, x))
+		  return true;
 
-	    if (output_dependence (frv_packet.mems[i].mem, *x))
-	      return 1;
-	  }
+		if (output_dependence (frv_packet.mems[i].mem, x))
+		  return true;
+	      }
+	}
+
+      /* The return values of calls aren't significant: they describe
+	 the effect of the call as a whole, not of the insn itself.  */
+      else if (GET_CODE (x) == SET && GET_CODE (SET_SRC (x)) == CALL)
+	iter.substitute (SET_SRC (x));
     }
-
-  /* The return values of calls aren't significant: they describe
-     the effect of the call as a whole, not of the insn itself.  */
-  if (GET_CODE (*x) == SET && GET_CODE (SET_SRC (*x)) == CALL)
-    {
-      if (for_each_rtx (&SET_SRC (*x), frv_registers_conflict_p_1, data))
-	return 1;
-      return -1;
-    }
-
-  /* Check subexpressions.  */
-  return 0;
+  return false;
 }
 
 
@@ -7262,13 +7227,13 @@ frv_registers_conflict_p (rtx x)
   flags = 0;
   if (GET_CODE (x) == COND_EXEC)
     {
-      if (for_each_rtx (&XEXP (x, 0), frv_registers_conflict_p_1, &flags))
+      if (frv_registers_conflict_p_1 (XEXP (x, 0), flags))
 	return true;
 
       flags |= frv_cond_flags (XEXP (x, 0));
       x = XEXP (x, 1);
     }
-  return for_each_rtx (&x, frv_registers_conflict_p_1, &flags);
+  return frv_registers_conflict_p_1 (x, flags);
 }
 
 
@@ -7837,29 +7802,13 @@ frv_io_handle_set (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
       CLEAR_HARD_REG_BIT (*set, regno);
 }
 
-/* A for_each_rtx callback for which DATA points to a HARD_REG_SET.
-   Add every register in *X to the set.  */
-
-static int
-frv_io_handle_use_1 (rtx *x, void *data)
-{
-  HARD_REG_SET *set = (HARD_REG_SET *) data;
-  unsigned int regno;
-
-  if (REG_P (*x))
-    FOR_EACH_REGNO (regno, *x)
-      SET_HARD_REG_BIT (*set, regno);
-
-  return 0;
-}
-
-/* A note_stores callback that applies frv_io_handle_use_1 to an
-   entire rhs value.  */
+/* A note_uses callback that adds all registers in *X to hard register
+   set *DATA.  */
 
 static void
 frv_io_handle_use (rtx *x, void *data)
 {
-  for_each_rtx (x, frv_io_handle_use_1, data);
+  find_all_hard_regs (*x, (HARD_REG_SET *) data);
 }
 
 /* Go through block BB looking for membars to remove.  There are two

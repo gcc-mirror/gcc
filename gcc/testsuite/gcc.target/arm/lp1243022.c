@@ -47,6 +47,7 @@ dma_addr_t xhci_trb_virt_to_dma (struct xhci_segment * seg,
 				 union xhci_trb * trb);
 struct xhci_segment *trb_in_td (struct xhci_segment *start_seg,
 				dma_addr_t suspect_dma);
+int
 xhci_test_trb_in_td (struct xhci_hcd *xhci, struct xhci_segment *input_seg,
 		     union xhci_trb *start_trb, union xhci_trb *end_trb,
 		     dma_addr_t input_dma, struct xhci_segment *result_seg,
@@ -64,6 +65,7 @@ xhci_test_trb_in_td (struct xhci_hcd *xhci, struct xhci_segment *input_seg,
                   "Expected seg %p, got seg %p\n", result_seg, seg);
     }
 }
+int
 xhci_check_trb_in_td_math (struct xhci_hcd *xhci, gfp_t mem_flags)
 {
     struct

@@ -1,3 +1,89 @@
+2014-11-29  John Schmerge  <jbschmerge@gmail.com>
+
+	PR preprocessor/41698
+	* charset.c (one_utf8_to_utf16): Do not produce surrogate pairs
+	for 0xffff.
+
+2014-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/60436
+	* line-map.c (linemap_line_start): If highest is above 0x60000000
+	and we are still tracking columns or highest is above 0x70000000,
+	force add_map.
+
+2014-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/63966
+	* lex.c [__i386__ || __x86_64__]: Compile special SSE functions
+	only for (__GNUC__ >= 5 || !defined(__PIC__)).
+
+2014-11-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* include/line-map.h: Include EXPR, so that unused variable warnings
+	do not occur.
+
+2014-11-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* include/line-map.h (linemap_position_for_loc_and_offset):
+	Declare.
+	* line-map.c (linemap_position_for_loc_and_offset): New.
+
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+
+2014-11-10  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/cpplib.h (cpp_callbacks): Add has_attribute.
+	* internal.h (lexer_state): Add in__has_attribute__.
+	* directives.c (lex_macro_node): Prevent use of __has_attribute__
+	as a macro.
+	* expr.c (parse_has_attribute): New function; (eval_token): Look for
+	__has_attribute__ and route to parse_has_attribute.
+	* identifiers.c (_cpp_init_hashtable): Initialize n__has_attribute__.
+	* pch.c (cpp_read_state): Initialize n__has_attribute__.
+	* traditional.c (enum ls): Add ls_has_attribute, ls_has_attribute_close;
+	(_cpp_scan_out_logical_line): Attend to __has_attribute__.
+
+2014-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpp-id-data.h (struct cpp_macro): Update comment
+	regarding parameters.
+	* include/cpplib.h (struct cpp_macro_arg, struct cpp_identifier):
+	Add spelling fields.
+	(struct cpp_token): Update comment on macro_arg.
+	* internal.h (_cpp_save_parameter): Add extra argument.
+	(_cpp_spell_ident_ucns): New declaration.
+	* lex.c (lex_identifier): Add SPELLING argument.  Set *SPELLING to
+	original spelling of identifier.
+	(_cpp_lex_direct): Update calls to lex_identifier.
+	(_cpp_spell_ident_ucns): New function, factored out of
+	cpp_spell_token.
+	(cpp_spell_token): Adjust FORSTRING argument semantics to return
+	original spelling of identifiers.  Use _cpp_spell_ident_ucns in
+	!FORSTRING case.
+	(_cpp_equiv_tokens): Check spellings of identifiers and macro
+	arguments are identical.
+	* macro.c (macro_arg_saved_data): New structure.
+	(paste_tokens): Use original spellings of identifiers from
+	cpp_spell_token.
+	(_cpp_save_parameter): Add argument SPELLING.  Save both canonical
+	node and its value.
+	(parse_params): Update calls to _cpp_save_parameter.
+	(lex_expansion_token): Save spelling of macro argument tokens.
+	(_cpp_create_definition): Extract canonical node from saved data.
+	(cpp_macro_definition): Use UCNs in spelling of macro name.  Use
+	original spellings of macro argument tokens and identifiers.
+	* traditional.c (scan_parameters): Update call to
+	_cpp_save_parameter.
+
+2014-11-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/9449
+	* init.c (lang_defaults): Enable extended identifiers for C++ and
+	C99-based standards.
+
 2014-10-22  Alan Modra  <amodra@gmail.com>
 
 	* symtab.c (ht_create): Use obstack_specify_allocation in place of

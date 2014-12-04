@@ -220,6 +220,7 @@ protected:
 #define PROP_gimple_lcx		(1 << 10)       /* lowered complex */
 #define PROP_loops		(1 << 11)	/* preserve loop structures */
 #define PROP_gimple_lvec	(1 << 12)       /* lowered vector */
+#define PROP_gimple_eomp	(1 << 13)       /* no OpenMP directives */
 
 #define PROP_trees \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)
@@ -332,6 +333,10 @@ extern void register_pass (register_pass_info *);
 extern void register_pass (opt_pass* pass, pass_positioning_ops pos,
 			   const char* ref_pass_name, int ref_pass_inst_number);
 
+extern simple_ipa_opt_pass *make_pass_ipa_chkp_versioning (gcc::context *ctxt);
+extern simple_ipa_opt_pass *make_pass_ipa_chkp_produce_thunks (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_chkp (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_chkp_opt (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_asan (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_asan_O0 (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tsan (gcc::context *ctxt);
@@ -395,6 +400,7 @@ extern gimple_opt_pass *make_pass_lower_vector_ssa (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_omp (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_diagnose_omp_blocks (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_expand_omp (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_expand_omp_ssa (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_object_sizes (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_strlen (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_fold_builtins (gcc::context *ctxt);
@@ -451,7 +457,9 @@ extern simple_ipa_opt_pass
 extern simple_ipa_opt_pass *make_pass_ipa_tree_profile (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_auto_profile (gcc::context *ctxt);
 
-extern simple_ipa_opt_pass *make_pass_early_local_passes (gcc::context *ctxt);
+extern simple_ipa_opt_pass *make_pass_build_ssa_passes (gcc::context *ctxt);
+extern simple_ipa_opt_pass *make_pass_chkp_instrumentation_passes (gcc::context *ctxt);
+extern simple_ipa_opt_pass *make_pass_local_optimization_passes (gcc::context *ctxt);
 
 extern ipa_opt_pass_d *make_pass_ipa_whole_program_visibility (gcc::context
 							       *ctxt);
@@ -544,6 +552,7 @@ extern rtl_opt_pass *make_pass_branch_target_load_optimize1 (gcc::context
 extern rtl_opt_pass *make_pass_thread_prologue_and_epilogue (gcc::context
 							     *ctxt);
 extern rtl_opt_pass *make_pass_stack_adjustments (gcc::context *ctxt);
+extern rtl_opt_pass *make_pass_sched_fusion (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_peephole2 (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_if_after_reload (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_regrename (gcc::context *ctxt);
@@ -594,7 +603,7 @@ extern void pass_fini_dump_file (opt_pass *);
 extern const char *get_current_pass_name (void);
 extern void print_current_pass (FILE *);
 extern void debug_pass (void);
-extern void ipa_write_summaries (void);
+extern void ipa_write_summaries (bool);
 extern void ipa_write_optimization_summaries (struct lto_symtab_encoder_d *);
 extern void ipa_read_summaries (void);
 extern void ipa_read_optimization_summaries (void);

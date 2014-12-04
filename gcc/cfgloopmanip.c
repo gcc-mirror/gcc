@@ -701,7 +701,7 @@ create_empty_if_region_on_edge (edge entry_edge, tree condition)
 
   basic_block cond_bb, true_bb, false_bb, join_bb;
   edge e_true, e_false, exit_edge;
-  gimple cond_stmt;
+  gcond *cond_stmt;
   tree simple_cond;
   gimple_stmt_iterator gsi;
 
@@ -787,7 +787,7 @@ create_empty_loop_on_edge (edge entry_edge,
   struct loop *loop;
   gimple_stmt_iterator gsi;
   gimple_seq stmts;
-  gimple cond_expr;
+  gcond *cond_expr;
   tree exit_test;
   edge exit_e;
   int prob;

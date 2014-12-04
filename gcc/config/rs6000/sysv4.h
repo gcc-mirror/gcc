@@ -457,7 +457,7 @@ do {									\
 do {									\
   if (DEFAULT_ABI == ABI_V4)						\
     asm_fprintf (FILE,							\
-		 "\tlwz %s,12(%s)\n\taddic %s,%s,16\n",	\
+		 "\tlwz %s,12(%s)\n\taddi %s,%s,16\n",	\
 		 reg_names[REGNO], reg_names[1], reg_names[1],		\
 		 reg_names[1]);						\
 } while (0)

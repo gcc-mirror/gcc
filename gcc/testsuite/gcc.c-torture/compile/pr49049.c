@@ -1,3 +1,5 @@
+/* { dg-skip-if "ptxas times out" { nvptx-*-* } { "-Os" } { "" } } */
+
 __extension__ typedef unsigned long long int uint64_t;
 
 static int

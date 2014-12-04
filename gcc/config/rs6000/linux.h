@@ -127,3 +127,10 @@
 #undef TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P
 #define TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P \
   rs6000_linux_float_exceptions_rounding_supported_p
+
+/* Support for TARGET_ATOMIC_ASSIGN_EXPAND_FENV without FPRs depends
+   on glibc 2.19 or greater.  */
+#if TARGET_GLIBC_MAJOR > 2 \
+  || (TARGET_GLIBC_MAJOR == 2 && TARGET_GLIBC_MINOR >= 19)
+#define RS6000_GLIBC_ATOMIC_FENV 1
+#endif

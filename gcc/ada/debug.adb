@@ -121,7 +121,7 @@ package body Debug is
    --  d.A  Read/write Aspect_Specifications hash table to tree
    --  d.B
    --  d.C  Generate concatenation call, do not generate inline code
-   --  d.D
+   --  d.D  Disable errors on use of overriding keyword in Ada 95 mode
    --  d.E  Turn selected errors into warnings
    --  d.F  Debug mode for GNATprove
    --  d.G  Ignore calls through generic formal parameters for elaboration
@@ -249,7 +249,7 @@ package body Debug is
    --       output (dt) or recreated source output (dg,do,ds) includes only
    --       the main unit. If df is set, then the output in either case
    --       includes all compiled units (see also dg,do,ds,dt). Note that to
-   --       be effective, this swich must be used in combination with one or
+   --       be effective, this switch must be used in combination with one or
    --       more of dt, dg, do or ds.
 
    --  dg   Print the source recreated from the generated tree. In the case
@@ -601,6 +601,10 @@ package body Debug is
 
    --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
    --       where we would normally generate inline concatenation code.
+
+   --  d.D  For compatibility with some Ada 95 compilers implementing only
+   --       one feature of Ada 2005 (overriding keyword), disable errors on use
+   --       of overriding keyword in Ada 95 mode.
 
    --  d.E  Turn selected errors into warnings. This debug switch causes a
    --       specific set of error messages into warnings. Setting this switch

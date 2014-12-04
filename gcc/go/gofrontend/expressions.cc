@@ -5314,15 +5314,6 @@ Binary_expression::do_determine_type(const Type_context* context)
       subcontext.type = NULL;
     }
 
-  if (this->op_ == OPERATOR_ANDAND || this->op_ == OPERATOR_OROR)
-    {
-      // For a logical operation, the context does not determine the
-      // types of the operands.  The operands must be some boolean
-      // type but if the context has a boolean type they do not
-      // inherit it.  See http://golang.org/issue/3924.
-      subcontext.type = NULL;
-    }
-
   // Set the context for the left hand operand.
   if (is_shift_op)
     {
@@ -8744,7 +8735,11 @@ Call_expression::do_flatten(Gogo* gogo, Named_object*,
   // Add temporary variables for all arguments that require type
   // conversion.
   Function_type* fntype = this->get_function_type();
-  go_assert(fntype != NULL);
+  if (fntype == NULL)
+    {
+      go_assert(saw_errors());
+      return this;
+    }
   if (this->args_ != NULL && !this->args_->empty()
       && fntype->parameters() != NULL && !fntype->parameters()->empty())
     {
@@ -10910,9 +10905,8 @@ Interface_field_reference_expression::do_traverse(Traverse* traverse)
 // interface.  So introduce a temporary variable if necessary.
 
 Expression*
-Interface_field_reference_expression::do_lower(Gogo*, Named_object*,
-					       Statement_inserter* inserter,
-					       int)
+Interface_field_reference_expression::do_flatten(Gogo*, Named_object*,
+						 Statement_inserter* inserter)
 {
   if (!this->expr_->is_variable())
     {
@@ -12800,6 +12794,16 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 	{
 	case EXPRESSION_UNKNOWN_REFERENCE:
 	  name = name_expr->unknown_expression()->name();
+	  if (type->named_type() != NULL)
+	    {
+	      // If the named object found for this field name comes from a
+	      // different package than the struct it is a part of, do not count
+	      // this incorrect lookup as a usage of the object's package.
+	      no = name_expr->unknown_expression()->named_object();
+	      if (no->package() != NULL
+		  && no->package() != type->named_type()->named_object()->package())
+		no->package()->forget_usage(name_expr);
+	    }
 	  break;
 
 	case EXPRESSION_CONST_REFERENCE:

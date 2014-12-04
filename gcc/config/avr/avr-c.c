@@ -386,7 +386,7 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
      (as mentioned in ISO/IEC DTR 18037; Annex F.2) which is not
      implemented in GCC up to now.  */
 
-  if (!strcmp (lang_hooks.name, "GNU C"))
+  if (lang_GNU_C ())
     {
       for (i = 0; i < ADDR_SPACE_COUNT; i++)
         if (!ADDR_SPACE_GENERIC_P (i)

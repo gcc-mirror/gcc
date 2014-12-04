@@ -30,9 +30,9 @@ extern const char *gimple_decl_printable_name (tree, int);
 extern tree copy_var_decl (tree, tree, tree);
 extern bool gimple_can_coalesce_p (tree, tree);
 extern tree create_tmp_var_name (const char *);
-extern tree create_tmp_var_raw (tree, const char *);
-extern tree create_tmp_var (tree, const char *);
-extern tree create_tmp_reg (tree, const char *);
+extern tree create_tmp_var_raw (tree, const char * = NULL);
+extern tree create_tmp_var (tree, const char * = NULL);
+extern tree create_tmp_reg (tree, const char * = NULL);
 extern tree create_tmp_reg_fn (struct function *, tree, const char *);
 
 

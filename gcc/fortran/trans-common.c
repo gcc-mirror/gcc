@@ -1133,7 +1133,7 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 	      /* The required offset conflicts with previous alignment
 		 requirements.  Insert padding immediately before this
 		 segment.  */
-	      if (gfc_option.warn_align_commons)
+	      if (warn_align_commons)
 		{
 		  if (strcmp (common->name, BLANK_COMMON_NAME))
 		    gfc_warning ("Padding of %d bytes required before '%s' in "
@@ -1167,7 +1167,7 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
       return;
     }
 
-  if (common_segment->offset != 0 && gfc_option.warn_align_commons)
+  if (common_segment->offset != 0 && warn_align_commons)
     {
       if (strcmp (common->name, BLANK_COMMON_NAME))
 	gfc_warning ("COMMON '%s' at %L requires %d bytes of padding; "

@@ -18,9 +18,9 @@
 # code, 0 otherwise.
 
 proc check_effective_target_fsanitize_thread {} {
-    return [check_no_compiler_messages fanitize_thread executable {
+    return [check_no_compiler_messages fsanitize_thread executable {
 	int main (void) { return 0; }
-    } "-fPIE -pie -fsanitize=thread"]
+    } "-fsanitize=thread"]
 }
 
 #
@@ -93,12 +93,12 @@ proc tsan_init { args } {
     if [info exists ALWAYS_CXXFLAGS] {
 	set tsan_saved_ALWAYS_CXXFLAGS $ALWAYS_CXXFLAGS
 	set ALWAYS_CXXFLAGS [concat "{ldflags=$link_flags}" $ALWAYS_CXXFLAGS]
-	set ALWAYS_CXXFLAGS [concat "{additional_flags=-fPIE -pie -fsanitize=thread -g}" $ALWAYS_CXXFLAGS]
+	set ALWAYS_CXXFLAGS [concat "{additional_flags=-fsanitize=thread -g}" $ALWAYS_CXXFLAGS]
     } else {
 	if [info exists TEST_ALWAYS_FLAGS] {
-	    set TEST_ALWAYS_FLAGS "$link_flags -fPIE -pie -fsanitize=thread -g $TEST_ALWAYS_FLAGS"
+	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=thread -g $TEST_ALWAYS_FLAGS"
 	} else {
-	    set TEST_ALWAYS_FLAGS "$link_flags -fPIE -pie -fsanitize=thread -g"
+	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=thread -g"
 	}
     }
 
@@ -110,7 +110,7 @@ proc tsan_init { args } {
 	set individual_timeout 20
 	if [check_runtime_nocache tsan_works {
 		int main () { return 0; }
-	    } "-fPIE -pie -fsanitize=thread -g"] {
+	    } "-fsanitize=thread -g"] {
 	    set dg-do-what-default run
 	} else {
 	    set dg-do-what-default compile

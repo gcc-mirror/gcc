@@ -905,6 +905,7 @@ package body Prj.Attr is
 
    procedure Register_New_Package (Name : String; Id : out Package_Node_Id) is
       Pkg_Name : Name_Id;
+      Found    : Boolean := False;
 
    begin
       if Name'Length = 0 then
@@ -917,17 +918,27 @@ package body Prj.Attr is
 
       for Index in Package_Attributes.First .. Package_Attributes.Last loop
          if Package_Attributes.Table (Index).Name = Pkg_Name then
-            Fail ("cannot register a package with a non unique name """
-                  & Name
-                  & """");
-            Id := Empty_Package;
-            return;
+            if Package_Attributes.Table (Index).Known then
+               Fail ("cannot register a package with a non unique name """
+                     & Name
+                     & """");
+               Id := Empty_Package;
+               return;
+
+            else
+               Found := True;
+               Id := (Value => Index);
+               exit;
+            end if;
          end if;
       end loop;
 
-      Package_Attributes.Increment_Last;
-      Id := (Value => Package_Attributes.Last);
-      Package_Attributes.Table (Package_Attributes.Last) :=
+      if not Found then
+         Package_Attributes.Increment_Last;
+         Id := (Value => Package_Attributes.Last);
+      end if;
+
+      Package_Attributes.Table (Id.Value) :=
         (Name             => Pkg_Name,
          Known            => True,
          First_Attribute  => Empty_Attr);

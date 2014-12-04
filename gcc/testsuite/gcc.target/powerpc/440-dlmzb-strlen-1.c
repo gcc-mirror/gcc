@@ -3,6 +3,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-aix* } { "*" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=440" } } */
 /* { dg-options "-O2 -mcpu=440" } */
 
 /* { dg-final { scan-assembler "dlmzb\\. " } } */

@@ -61,7 +61,7 @@ func MakeFunc(typ Type, fn func(args []Value) (results []Value)) Value {
 	var code uintptr
 	var ffi *ffiData
 	switch runtime.GOARCH {
-	case "amd64", "386":
+	case "amd64", "386", "s390", "s390x":
 		// Indirect Go func value (dummy) to obtain actual
 		// code address. (A Go func value is a pointer to a C
 		// function pointer. http://golang.org/s/go11func.)
@@ -159,7 +159,7 @@ func makeValueMethod(v Value) Value {
 	}
 
 	switch runtime.GOARCH {
-	case "amd64", "386":
+	case "amd64", "386", "s390", "s390x":
 		// Indirect Go func value (dummy) to obtain actual
 		// code address. (A Go func value is a pointer to a C
 		// function pointer. http://golang.org/s/go11func.)

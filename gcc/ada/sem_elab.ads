@@ -35,41 +35,48 @@ package Sem_Elab is
    -- Description of Approach --
    -----------------------------
 
-   --  Every non-static call that is encountered by Sem_Res results in
-   --  a call to Check_Elab_Call, with N being the call node, and Outer
-   --  set to its default value of True.
+   --  Every non-static call that is encountered by Sem_Res results in a call
+   --  to Check_Elab_Call, with N being the call node, and Outer set to its
+   --  default value of True. In addition X'Access is treated like a call
+   --  for the access-to-procedure case, and in SPARK mode only we also
+   --  check variable references.
 
-   --  The goal of Check_Elab_Call is to determine whether or not the
-   --  call in question can generate an access before elaboration
-   --  error (raising Program_Error) either by directly calling a
-   --  subprogram whose body has not yet been elaborated, or indirectly,
-   --  by calling a subprogram whose body has been elaborated, but which
-   --  contains a call to such a subprogram.
+   --  The goal of Check_Elab_Call is to determine whether or not the reference
+   --  in question can generate an access before elaboration error (raising
+   --  Program_Error) either by directly calling a subprogram whose body
+   --  has not yet been elaborated, or indirectly, by calling a subprogram
+   --  whose body has been elaborated, but which contains a call to such a
+   --  subprogram.
 
-   --  The only calls that we need to look at at the outer level are
-   --  calls that occur in elaboration code. There are two cases. The
-   --  call can be at the outer level of elaboration code, or it can
+   --  In addition, in SPARK mode, we are checking for a variable reference in
+   --  another package, which requires an explicit Elaborate_All pragma.
+
+   --  The only references that we need to look at at the outer level are
+   --  references that occur in elaboration code. There are two cases. The
+   --  reference can be at the outer level of elaboration code, or it can
    --  be within another unit, e.g. the elaboration code of a subprogram.
 
-   --  In the case of an elaboration call at the outer level, we must
-   --  trace all calls to outer level routines either within the current
-   --  unit or to other units that are with'ed. For calls within the
-   --  current unit, we can determine if the body has been elaborated
-   --  or not, and if it has not, then a warning is generated.
+   --  In the case of an elaboration call at the outer level, we must trace
+   --  all calls to outer level routines either within the current unit or to
+   --  other units that are with'ed. For calls within the current unit, we can
+   --  determine if the body has been elaborated or not, and if it has not,
+   --  then a warning is generated.
 
-   --  Note that there are two subcases. If the original call directly
-   --  calls a subprogram whose body has not been elaborated, then we
-   --  know that an ABE will take place, and we replace the call by
-   --  a raise of Program_Error. If the call is indirect, then we don't
-   --  know that the PE will be raised, since the call might be guarded
-   --  by a conditional. In this case we set Do_Elab_Check on the call
-   --  so that a dynamic check is generated, and output a warning.
+   --  Note that there are two subcases. If the original call directly calls a
+   --  subprogram whose body has not been elaborated, then we know that an ABE
+   --  will take place, and we replace the call by a raise of Program_Error.
+   --  If the call is indirect, then we don't know that the PE will be raised,
+   --  since the call might be guarded by a conditional. In this case we set
+   --  Do_Elab_Check on the call so that a dynamic check is generated, and
+   --  output a warning.
 
-   --  For calls to a subprogram in a with'ed unit, we require that
-   --  a pragma Elaborate_All or pragma Elaborate be present, or that
-   --  the referenced unit have a pragma Preelaborate, pragma Pure, or
-   --  pragma Elaborate_Body. If none of these conditions is met, then
-   --  a warning is generated that a pragma Elaborate_All may be needed.
+   --  For calls to a subprogram in a with'ed unit or a 'Access or variable
+   --  refernece (SPARK mode case), we require that a pragma Elaborate_All
+   --  or pragma Elaborate be present, or that the referenced unit have a
+   --  pragma Preelaborate, pragma Pure, or pragma Elaborate_Body. If none
+   --  of these conditions is met, then a warning is generated that a pragma
+   --  Elaborate_All may be needed (error in the SPARK case), or an implicit
+   --  pragma is generated.
 
    --  For the case of an elaboration call at some inner level, we are
    --  interested in tracing only calls to subprograms at the same level,
@@ -86,9 +93,8 @@ package Sem_Elab is
    --  Elaborate on a with'ed unit guarantees that subprograms within the
    --  unit can be called without causing an ABE. This is not in fact the
    --  case since pragma Elaborate does not guarantee the transitive
-   --  coverage guaranteed by Elaborate_All. However, we leave this issue
-   --  up to the binder, which has generates warnings if there are possible
-   --  problems in the use of pragma Elaborate.
+   --  coverage guaranteed by Elaborate_All. However, we decide to trust
+   --  the user in this case.
 
    --------------------------------------
    -- Instantiation Elaboration Errors --
@@ -124,11 +130,21 @@ package Sem_Elab is
       In_Init_Proc : Boolean   := False);
    --  Check a call for possible elaboration problems. The node N is either an
    --  N_Function_Call or N_Procedure_Call_Statement node or an access
-   --  attribute reference whose prefix is a subprogram. The Outer_Scope
-   --  argument indicates whether this is an outer level call from Sem_Res
-   --  (Outer_Scope set to Empty), or an internal recursive call (Outer_Scope
-   --  set to entity of outermost call, see body). Flag In_Init_Proc should be
-   --  set whenever the current context is a type init proc.
+   --  attribute reference whose prefix is a subprogram.
+   --
+   --  If SPARK_Mode is On, then N can also be a variablr reference, since
+   --  SPARK requires the use of Elaborate_All for references to variables
+   --  in other packages.
+
+   --  The Outer_Scope argument indicates whether this is an outer level
+   --  call from Sem_Res (Outer_Scope set to Empty), or an internal recursive
+   --  call (Outer_Scope set to entity of outermost call, see body). The flag
+   --  In_Init_Proc should be set whenever the current context is a type
+   --  init proc.
+
+   --  Note: this might better be called Check_Elab_Reference (to recognize
+   --  the SPARK case), but we prefer to keep the original name, since this
+   --  is primarily used for checking for calls that could generate an ABE).
 
    procedure Check_Elab_Calls;
    --  Not all the processing for Check_Elab_Call can be done at the time

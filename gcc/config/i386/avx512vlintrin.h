@@ -1710,7 +1710,7 @@ _mm256_cvtepi32_epi16 (__m256i __A)
 						  (__mmask8) -1);
 }
 
-extern __inline
+extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_cvtepi32_storeu_epi16 (void *  __P, __mmask8 __M, __m256i __A)
 {
@@ -1813,7 +1813,7 @@ _mm_cvtusepi32_epi16 (__m128i __A)
 						    (__mmask8) -1);
 }
 
-extern __inline
+extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_cvtusepi32_storeu_epi16 (void * __P, __mmask8 __M, __m128i __A)
 {
@@ -2360,7 +2360,7 @@ _mm_cvtsepi64_epi32 (__m128i __A)
 						   (__mmask8) -1);
 }
 
-extern __inline
+extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_cvtsepi64_storeu_epi32 (void * __P, __mmask8 __M, __m128i __A)
 {

@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "lto-streamer.h"
+#include "lto-section-names.h"
 #include "toplev.h"
 
 /* Append the option piece OPT to the COLLECT_GCC_OPTIONS string
@@ -158,6 +159,23 @@ lto_write_options (void)
     append_to_collect_gcc_options (&temporary_obstack, &first_p,
 			       "-fno-strict-overflow");
 
+  /* Append options from target hook and store them to offload_lto section.  */
+  if (strcmp (section_name_prefix, OFFLOAD_SECTION_NAME_PREFIX) == 0)
+    {
+      char *offload_opts = targetm.offload_options ();
+      char *offload_ptr = offload_opts;
+      while (offload_ptr)
+       {
+	 char *next = strchr (offload_ptr, ' ');
+	 if (next)
+	   *next++ = '\0';
+	 append_to_collect_gcc_options (&temporary_obstack, &first_p,
+					offload_ptr);
+	 offload_ptr = next;
+       }
+      free (offload_opts);
+    }
+
   /* Output explicitly passed options.  */
   for (i = 1; i < save_decoded_options_count; ++i)
     {
@@ -181,15 +199,23 @@ lto_write_options (void)
       if (!(cl_options[option->opt_index].flags & (CL_COMMON|CL_TARGET|CL_LTO)))
 	continue;
 
+      /* Do not store target-specific options in offload_lto section.  */
+      if ((cl_options[option->opt_index].flags & CL_TARGET)
+	 && strcmp (section_name_prefix, OFFLOAD_SECTION_NAME_PREFIX) == 0)
+       continue;
+
       /* Drop options created from the gcc driver that will be rejected
 	 when passed on to the driver again.  */
       if (cl_options[option->opt_index].cl_reject_driver)
 	continue;
 
       /* Also drop all options that are handled by the driver as well,
-         which includes things like -o and -v or -fhelp for example.
-	 We do not need those.  Also drop all diagnostic options.  */
-      if (cl_options[option->opt_index].flags & (CL_DRIVER|CL_WARNING))
+	 which includes things like -o and -v or -fhelp for example.
+	 We do not need those.  The only exception is -foffload option, if we
+	 write it in offload_lto section.  Also drop all diagnostic options.  */
+      if ((cl_options[option->opt_index].flags & (CL_DRIVER|CL_WARNING))
+	  && (strcmp (section_name_prefix, OFFLOAD_SECTION_NAME_PREFIX) != 0
+	      || option->opt_index != OPT_foffload_))
 	continue;
 
       for (j = 0; j < option->canonical_option_num_elements; ++j)

@@ -46,7 +46,9 @@ generic
    --  size, and heap allocation will be avoided. If False, the containers can
    --  grow via heap allocation.
 
-package Ada.Containers.Formal_Vectors is
+package Ada.Containers.Formal_Vectors with
+  SPARK_Mode
+is
    pragma Annotate (GNATprove, External_Axiomatization);
 
    subtype Extended_Index is Index_Type'Base
@@ -112,7 +114,7 @@ package Ada.Containers.Formal_Vectors is
       Capacity : Capacity_Range := 0) return Vector
    with
      Global => null,
-     Pre    => (if Bounded then Length (Source) <= Capacity);
+     Pre    => (if Bounded then (Capacity = 0 or Length (Source) <= Capacity));
 
    function Element
      (Container : Vector;
@@ -193,7 +195,9 @@ package Ada.Containers.Formal_Vectors is
      Global => null;
 
    function Has_Element
-     (Container : Vector; Position : Extended_Index) return Boolean with
+     (Container : Vector;
+      Position  : Extended_Index) return Boolean
+   with
      Global => null;
 
    generic
@@ -210,14 +214,19 @@ package Ada.Containers.Formal_Vectors is
 
    function First_To_Previous
      (Container : Vector;
-      Current : Index_Type) return Vector
+      Current   : Index_Type) return Vector
    with
-     Global => null;
+     Ghost,
+     Global => null,
+     Pre    => Current in First_Index (Container) .. Last_Index (Container);
+
    function Current_To_Last
      (Container : Vector;
-      Current : Index_Type) return Vector
+      Current   : Index_Type) return Vector
    with
-     Global => null;
+     Ghost,
+     Global => null,
+     Pre    => Current in First_Index (Container) .. Last_Index (Container);
    --  First_To_Previous returns a container containing all elements preceding
    --  Current (excluded) in Container. Current_To_Last returns a container
    --  containing all elements following Current (included) in Container.
@@ -227,6 +236,7 @@ package Ada.Containers.Formal_Vectors is
    --  scanned yet.
 
 private
+   pragma SPARK_Mode (Off);
 
    pragma Inline (First_Index);
    pragma Inline (Last_Index);
@@ -245,9 +255,9 @@ private
       --  In the bounded case, the elements are stored in Elements. In the
       --  unbounded case, the elements are initially stored in Elements, until
       --  we run out of room, then we switch to Elements_Ptr.
-      Elements     : aliased Elements_Array (1 .. Capacity);
       Last         : Extended_Index := No_Index;
       Elements_Ptr : Elements_Array_Ptr := null;
+      Elements     : aliased Elements_Array (1 .. Capacity);
    end record;
 
    --  The primary reason Vector is limited is that in the unbounded case, once

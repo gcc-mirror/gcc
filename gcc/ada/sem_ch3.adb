@@ -3185,24 +3185,22 @@ package body Sem_Ch3 is
                      Obj_Id);
                end if;
             end if;
+         end if;
 
-            if Is_Ghost_Entity (Obj_Id) then
+         if Is_Ghost_Entity (Obj_Id) then
 
-               --  A Ghost object cannot be effectively volatile
-               --  (SPARK RM 6.9(8)).
+            --  A Ghost object cannot be effectively volatile (SPARK RM 6.9(8))
 
-               if Is_Effectively_Volatile (Obj_Id) then
-                  SPARK_Msg_N ("ghost variable & cannot be volatile", Obj_Id);
+            if Is_Effectively_Volatile (Obj_Id) then
+               Error_Msg_N ("ghost variable & cannot be volatile", Obj_Id);
 
-               --  A Ghost object cannot be imported or exported
-               --  (SPARK RM 6.9(8)).
+            --  A Ghost object cannot be imported or exported (SPARK RM 6.9(8))
 
-               elsif Is_Imported (Obj_Id) then
-                  SPARK_Msg_N ("ghost object & cannot be imported", Obj_Id);
+            elsif Is_Imported (Obj_Id) then
+               Error_Msg_N ("ghost object & cannot be imported", Obj_Id);
 
-               elsif Is_Exported (Obj_Id) then
-                  SPARK_Msg_N ("ghost object & cannot be exported", Obj_Id);
-               end if;
+            elsif Is_Exported (Obj_Id) then
+               Error_Msg_N ("ghost object & cannot be exported", Obj_Id);
             end if;
          end if;
 
@@ -3256,10 +3254,10 @@ package body Sem_Ch3 is
 
       if Is_Ghost_Entity (Obj_Id) then
          if Is_Exported (Obj_Id) then
-            SPARK_Msg_N ("ghost object & cannot be exported", Obj_Id);
+            Error_Msg_N ("ghost object & cannot be exported", Obj_Id);
 
          elsif Is_Imported (Obj_Id) then
-            SPARK_Msg_N ("ghost object & cannot be imported", Obj_Id);
+            Error_Msg_N ("ghost object & cannot be imported", Obj_Id);
          end if;
       end if;
    end Analyze_Object_Contract;
@@ -3650,8 +3648,8 @@ package body Sem_Ch3 is
 
          if Comes_From_Source (N)
            and then Expander_Active
-           and then Present (Following_Address_Clause (N))
            and then Nkind (E) = N_Aggregate
+           and then Present (Following_Address_Clause (N))
          then
             Set_Etype (E, T);
 
@@ -3927,7 +3925,7 @@ package body Sem_Ch3 is
 
                   --  The Ghost policy in effect at the point of declaration
                   --  and at the point of completion must match
-                  --  (SPARK RM 6.9(14)).
+                  --  (SPARK RM 6.9(15)).
 
                   if Present (Prev_Entity)
                     and then Is_Ghost_Entity (Prev_Entity)
@@ -4114,7 +4112,7 @@ package body Sem_Ch3 is
          Set_Is_Ghost_Entity (Id);
 
          --  The Ghost policy in effect at the point of declaration and at the
-         --  point of completion must match (SPARK RM 6.9(14)).
+         --  point of completion must match (SPARK RM 6.9(16)).
 
          if Present (Prev_Entity) and then Is_Ghost_Entity (Prev_Entity) then
             Check_Ghost_Completion (Prev_Entity, Id);
@@ -4788,8 +4786,6 @@ package body Sem_Ch3 is
 
             when Class_Wide_Kind =>
                Set_Ekind                (Id, E_Class_Wide_Subtype);
-               Set_First_Entity         (Id, First_Entity       (T));
-               Set_Last_Entity          (Id, Last_Entity        (T));
                Set_Class_Wide_Type      (Id, Class_Wide_Type    (T));
                Set_Cloned_Subtype       (Id, T);
                Set_Is_Tagged_Type       (Id, True);
@@ -11701,12 +11697,13 @@ package body Sem_Ch3 is
          Item := First_Rep_Item (Full);
 
          --  If no existing rep items on full type, we can just link directly
-         --  to the list of items on the private type. Same if the rep items
-         --  are only those inherited from the base
+         --  to the list of items on the private type, if any exist.. Same if
+         --  the rep items are only those inherited from the base
 
-         if No (Item)
-           or else Nkind (Item) /= N_Aspect_Specification
-           or else Entity (Item) = Full_Base
+         if (No (Item)
+              or else Nkind (Item) /= N_Aspect_Specification
+              or else Entity (Item) = Full_Base)
+             and then Present (First_Rep_Item (Priv))
          then
             Set_First_Rep_Item (Full, First_Rep_Item (Priv));
 
@@ -19789,7 +19786,7 @@ package body Sem_Ch3 is
          Set_Is_Ghost_Entity (Full_T);
 
          --  The Ghost policy in effect at the point of declaration and at the
-         --  point of completion must match (SPARK RM 6.9(14)).
+         --  point of completion must match (SPARK RM 6.9(15)).
 
          Check_Ghost_Completion (Priv_T, Full_T);
 

@@ -1,3 +1,89 @@
+2014-11-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/lib1funcs.S: Check value of __SHMEDIA__ instead of checking
+	whether it's defined.
+
+2014-11-27  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/cpuinfo.c (processor_features): Add FEATURE_AVX512F.
+	* config/i386/cpuinfo.c (get_available_features): Detect it.
+
+2014-11-27  Tony Wang  <tony.wang@arm.com>
+
+	* config/arm/lib1funcs.S (FUNC_START): Add conditional section
+	redefine for macro L_arm_muldivsf3 and L_arm_muldivdf3.
+	(SYM_END, ARM_SYM_START): Add macros used to expose function Symbols.
+
+2014-11-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* crtstuff.c (__do_glbal_ctors_1): Add missing semicolon.
+
+2014-11-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (ABORT_INSTRUCTION): Use __builtin_trap()
+	instead.
+
+2014-11-21  Guy Martin  <gmsoft@tuxicoman.be>
+	    John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (__kernel_cmpxchg2): New.
+	(FETCH_AND_OP_2): New.  Use for subword and double word operations.
+	(OP_AND_FETCH_2): Likewise.
+	(COMPARE_AND_SWAP_2): Likewise.
+	(SYNC_LOCK_TEST_AND_SET_2): Likewise.
+	(SYNC_LOCK_RELEASE_2): Likewise.
+	(SUBWORD_SYNC_OP): Remove.
+	(SUBWORD_VAL_CAS): Likewise.
+	(SUBWORD_BOOL_CAS): Likewise.
+	(FETCH_AND_OP_WORD): Update.
+	Consistently use signed types.
+	
+2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+
+	* Makefile.in (crtoffloadbegin$(objext)): New rule.
+	(crtoffloadend$(objext)): Likewise.
+	* configure: Regenerate.
+	* configure.ac (accel_dir_suffix): Compute new variable.
+	(extra_parts): Add crtoffloadbegin.o and crtoffloadend.o
+	if enable_offload_targets is not empty.
+	* offloadstuff.c: New file.
+
+2014-11-13  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/divmodhi.S: Add support for the G10 architecture.
+	Use START_FUNC and END_FUNC macros to enable linker garbage
+	collection.
+	* config/rl78/divmodqi.S: Likewise.
+	* config/rl78/divmodsi.S: Likewise.
+	* config/rl78/mulsi3.S: Likewise.
+	* config/rl78/lib2div.c: Remove G10 functions.
+	* config/rl78/lib2muls.c: Likewise.
+	* config/rl78/t-rl8 (HOST_LIBGCC2_CFLAGS): Define.
+	* config/rl78/vregs.h (START_FUNC): New macro.
+	(END_FUNC): New macro.
+
+2014-11-12  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips16.S: Set .module when supported.  Update O32
+	FP64 calling convention and use for FPXX when possible.  Add FPXX
+	calling convention fallback case.
+
+2014-11-06  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config.host: Handle nvptx-*-*.
+	* shared-object.mk (as-flags-$o): Define.
+	($(base)$(objext), $(base)_s$(objext)): Use it instead of
+	-xassembler-with-cpp.
+	* static-object.mk: Identical changes.
+	* config/nvptx/t-nvptx: New file.
+	* config/nvptx/crt0.s: New file.
+	* config/nvptx/free.asm: New file.
+	* config/nvptx/malloc.asm: New file.
+	* config/nvptx/realloc.c: New file.
+
 2014-10-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* Makefile.in (libgcc.map.in): New target.

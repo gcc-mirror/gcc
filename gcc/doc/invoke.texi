@@ -269,6 +269,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
+-Wshift-count-negative -Wshift-count-overflow @gol
 -Wsign-compare  -Wsign-conversion -Wfloat-conversion @gol
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
@@ -390,8 +391,9 @@ Objective-C and Objective-C++ Dialects}.
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts -flive-range-shrinkage @gol
--floop-block -floop-interchange -floop-strip-mine -floop-nest-optimize @gol
--floop-parallelize-all -flto -flto-compression-level @gol
+-floop-block -floop-interchange -floop-strip-mine @gol  
+-floop-unroll-and-jam -floop-nest-optimize @gol
+-floop-parallelize-all -flra-remat -flto -flto-compression-level @gol
 -flto-partition=@var{alg} -flto-report -flto-report-wpa -fmerge-all-constants @gol
 -fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
 -fmove-loop-invariants -fno-branch-count-reg @gol
@@ -405,7 +407,7 @@ Objective-C and Objective-C++ Dialects}.
 -fprofile-correction -fprofile-dir=@var{path} -fprofile-generate @gol
 -fprofile-generate=@var{path} @gol
 -fprofile-use -fprofile-use=@var{path} -fprofile-values -fprofile-reorder-functions @gol
--freciprocal-math -free -frename-registers -freorder-blocks @gol
+-freciprocal-math -free -frename-registers -fschedule-fusion -freorder-blocks @gol
 -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop -freschedule-modulo-scheduled-loops @gol
 -frounding-math -fsched2-use-superblocks -fsched-pressure @gol
@@ -546,6 +548,7 @@ Objective-C and Objective-C++ Dialects}.
 -munaligned-access @gol
 -mneon-for-64bits @gol
 -mslow-flash-data @gol
+-masm-syntax-unified @gol
 -mrestrict-it}
 
 @emph{AVR Options}
@@ -682,7 +685,7 @@ Objective-C and Objective-C++ Dialects}.
 -maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma -mprefetchwt1 @gol
 -mclflushopt -mxsavec -mxsaves @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
--mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mthreads @gol
+-mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mmpx -mthreads @gol
 -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy}
@@ -786,8 +789,9 @@ Objective-C and Objective-C++ Dialects}.
 -minterlink-mips16  -mno-interlink-mips16 @gol
 -mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
 -mshared  -mno-shared  -mplt  -mno-plt  -mxgot  -mno-xgot @gol
--mgp32  -mgp64  -mfp32  -mfp64  -mhard-float  -msoft-float @gol
+-mgp32  -mgp64  -mfp32  -mfpxx  -mfp64  -mhard-float  -msoft-float @gol
 -mno-float  -msingle-float  -mdouble-float @gol
+-modd-spreg -mno-odd-spreg @gol
 -mabs=@var{mode}  -mnan=@var{encoding} @gol
 -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
 -mmcu -mmno-mcu @gol
@@ -937,7 +941,9 @@ See RS/6000 and PowerPC Options.
 -mcrypto -mno-crypto -mdirect-move -mno-direct-move @gol
 -mquad-memory -mno-quad-memory @gol
 -mquad-memory-atomic -mno-quad-memory-atomic @gol
--mcompat-align-parm -mno-compat-align-parm}
+-mcompat-align-parm -mno-compat-align-parm @gol
+-mupper-regs-df -mno-upper-regs-df -mupper-regs-sf -mno-upper-regs-sf @gol
+-mupper-regs -mno-upper-regs}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -1674,8 +1680,7 @@ ISO C90 as modified in amendment 1.
 @itemx iso9899:1999
 @itemx iso9899:199x
 ISO C99.  This standard is substantially completely supported, modulo
-bugs, extended identifiers (supported except for corner cases when
-@option{-fextended-identifiers} is used) and floating-point issues
+bugs and floating-point issues
 (mainly but not entirely relating to optional C99 features from
 Annexes F and G).  See
 @w{@uref{http://gcc.gnu.org/c99status.html}} for more information.  The
@@ -1685,9 +1690,7 @@ names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 @itemx c1x
 @itemx iso9899:2011
 ISO C11, the 2011 revision of the ISO C standard.  This standard is
-substantially completely supported, modulo bugs, extended identifiers
-(supported except for corner cases when
-@option{-fextended-identifiers} is used), floating-point issues
+substantially completely supported, modulo bugs, floating-point issues
 (mainly but not entirely relating to optional C11 features from
 Annexes F and G) and the optional Annexes K (Bounds-checking
 interfaces) and L (Analyzability).  The name @samp{c1x} is deprecated.
@@ -3104,8 +3107,10 @@ a message which is too long to fit on a single line.
 @cindex highlight, color, colour
 @vindex GCC_COLORS @r{environment variable}
 Use color in diagnostics.  @var{WHEN} is @samp{never}, @samp{always},
-or @samp{auto}.  The default is @samp{never} if @env{GCC_COLORS} environment
-variable isn't present in the environment, and @samp{auto} otherwise.
+or @samp{auto}.  The default depends on how the compiler has been configured,
+it can be any of the above @var{WHEN} options or also @samp{never}
+if @env{GCC_COLORS} environment variable isn't present in the environment,
+and @samp{auto} otherwise.
 @samp{auto} means to use color only when the standard error is a terminal.
 The forms @option{-fdiagnostics-color} and @option{-fno-diagnostics-color} are
 aliases for @option{-fdiagnostics-color=always} and
@@ -3826,6 +3831,16 @@ message, even when @option{-Wno-return-type} is specified.  The only
 exceptions are @samp{main} and functions defined in system headers.
 
 This warning is enabled by @option{-Wall}.
+
+@item -Wshift-count-negative
+@opindex Wshift-count-negative
+@opindex Wno-shift-count-negative
+Warn if shift count is negative. This warning is enabled by default.
+
+@item -Wshift-count-overflow
+@opindex Wshift-count-overflow
+@opindex Wno-shift-count-overflow
+Warn if shift count >= width of type. This warning is enabled by default.
 
 @item -Wswitch
 @opindex Wswitch
@@ -5392,8 +5407,8 @@ assembler (GAS) to fail with an error.
 @item -gdwarf-@var{version}
 @opindex gdwarf-@var{version}
 Produce debugging information in DWARF format (if that is supported).
-The value of @var{version} may be either 2, 3 or 4; the default version
-for most targets is 4.
+The value of @var{version} may be either 2, 3, 4 or 5; the default version
+for most targets is 4.  DWARF Version 5 is only experimental.
 
 Note that with DWARF Version 2, some ports require and always
 use some non-conflicting DWARF 3 extensions in the unwind tables.
@@ -7173,6 +7188,7 @@ also turns on the following optimization flags:
 -fipa-sra @gol
 -fipa-icf @gol
 -fisolate-erroneous-paths-dereference @gol
+-flra-remat @gol
 -foptimize-sibling-calls @gol
 -foptimize-strlen @gol
 -fpartial-inlining @gol
@@ -7801,6 +7817,14 @@ Control the verbosity of the dump file for the integrated register allocator.
 The default value is 5.  If the value @var{n} is greater or equal to 10,
 the dump output is sent to stderr using the same format as @var{n} minus 10.
 
+@item -flra-remat
+@opindex fcaller-saves
+Enable CFG-sensitive rematerialization in LRA.  Instead of loading
+values of spilled pseudos, LRA tries to rematerialize (recalculate)
+values if it is profitable.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -fdelayed-branch
 @opindex fdelayed-branch
 If supported for the target machine, attempt to reorder instructions
@@ -8328,6 +8352,13 @@ Enable the ISL based loop nest optimizer.  This is a generic loop nest
 optimizer based on the Pluto optimization algorithms.  It calculates a loop
 structure optimized for data-locality and parallelism.  This option
 is experimental.
+
+@item -floop-unroll-and-jam
+@opindex floop-unroll-and-jam
+Enable unroll and jam for the ISL based loop nest optimizer.  The unroll 
+factor can be changed using the @option{loop-unroll-jam-size} parameter.
+The unrolled dimension (counting from the most inner one) can be changed 
+using the @option{loop-unroll-jam-depth} parameter.                 .
 
 @item -floop-parallelize-all
 @opindex floop-parallelize-all
@@ -9556,6 +9587,14 @@ a ``home register''.
 
 Enabled by default with @option{-funroll-loops} and @option{-fpeel-loops}.
 
+@item -fschedule-fusion
+@opindex fschedule-fusion
+Performs a target dependent pass over the instruction stream to schedule
+instructions of same type together because target machine can execute them
+more efficiently if they are adjacent to each other in the instruction flow.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -ftracer
 @opindex ftracer
 Perform tail duplication to enlarge superblock size.  This transformation
@@ -10403,6 +10442,16 @@ parameters only when their cumulative size is less or equal to
 @option{ipa-sra-ptr-growth-factor} times the size of the original
 pointer parameter.
 
+@item sra-max-scalarization-size-Ospeed
+@item sra-max-scalarization-size-Osize
+The two Scalar Reduction of Aggregates passes (SRA and IPA-SRA) aim to
+replace scalar parts of aggregates with uses of independent scalar
+variables.  These parameters control the maximum size, in storage units,
+of aggregate which will be considered for replacement when compiling for
+speed
+(@option{sra-max-scalarization-size-Ospeed}) or size
+(@option{sra-max-scalarization-size-Osize}) respectively.
+
 @item tm-max-aggregate-size
 When making copies of thread-local variables in a transaction, this
 parameter specifies the size in bytes after which variables are
@@ -10427,6 +10476,14 @@ Loop blocking or strip mining transforms, enabled with
 loop in the loop nest by a given number of iterations.  The strip
 length can be changed using the @option{loop-block-tile-size}
 parameter.  The default value is 51 iterations.
+
+@item loop-unroll-jam-size
+Specify the unroll factor for the @option{-floop-unroll-and-jam}.  The 
+default value is 4.
+
+@item loop-unroll-jam-depth
+Specify the dimension to be unrolled (counting from the most inner loop)
+for the  @option{-floop-unroll-and-jam}.  The default value is 2.
 
 @item ipa-cp-value-list-size
 IPA-CP attempts to track all possible values and types passed to a function's
@@ -10560,6 +10617,12 @@ If number of memory accesses in function being instrumented
 is greater or equal to this number, use callbacks instead of inline checks.
 E.g. to disable inline code use
 @option{--param asan-instrumentation-with-call-threshold=0}.
+
+@item chkp-max-ctor-size
+Static constructors generated by Pointer Bounds Checker may become very
+large and significantly increase compile time at optimization level
+@option{-O1} and higher.  This parameter is a maximum nubmer of statements
+in a single generated constructor.  Default value is 5000.
 
 @end table
 @end table
@@ -12743,6 +12806,9 @@ Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{cortex-m1},
 @samp{cortex-m0},
 @samp{cortex-m0plus},
+@samp{cortex-m1.small-multiply},
+@samp{cortex-m0.small-multiply},
+@samp{cortex-m0plus.small-multiply},
 @samp{marvell-pj4},
 @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312},
 @samp{fa526}, @samp{fa626},
@@ -13009,6 +13075,14 @@ Assume loading data from flash is slower than fetching instruction.
 Therefore literal load is minimized for better performance.
 This option is only supported when compiling for ARMv7 M-profile and
 off by default.
+
+@item -masm-syntax-unified
+@opindex masm-syntax-unified
+Assume inline assembler is using unified asm syntax.  The default is
+currently off which implies divided syntax.  Currently this option is
+available only for Thumb1 and has no effect on ARM state and Thumb2.
+However, this may change in future releases of GCC.  Divided syntax
+should be considered deprecated.
 
 @item -mrestrict-it
 @opindex mrestrict-it
@@ -15774,6 +15848,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mno-xsavec
 @itemx -mxsaves
 @itemx -mno-xsaves
+@itemx -mmpx
+@itemx -mno-mpx
 @opindex mmmx
 @opindex mno-mmx
 @opindex msse
@@ -15783,7 +15859,7 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 These switches enable or disable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 SHA, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
-BMI, BMI2, FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, or 3DNow!@:
+BMI, BMI2, FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MPX or 3DNow!@:
 extended instruction sets.
 These extensions are also available as built-in functions: see
 @ref{X86 Built-in Functions}, for details of the functions enabled and
@@ -17707,7 +17783,20 @@ same, but each scalar value is passed in a single 64-bit register
 rather than a pair of 32-bit registers.  For example, scalar
 floating-point values are returned in @samp{$f0} only, not a
 @samp{$f0}/@samp{$f1} pair.  The set of call-saved registers also
-remains the same, but all 64 bits are saved.
+remains the same in that the even-numbered double-precision registers
+are saved.
+
+Two additional variants of the o32 ABI are supported to enable
+a transition from 32-bit to 64-bit registers.  These are FPXX
+(@option{-mfpxx}) and FP64A (@option{-mfp64} @option{-mno-odd-spreg}).
+The FPXX extension mandates that all code must execute correctly
+when run using 32-bit or 64-bit registers.  The code can be interlinked
+with either FP32 or FP64, but not both.
+The FP64A extension is similar to the FP64 extension but forbids the
+use of odd-numbered single-precision registers.  This can be used
+in conjunction with the @code{FRE} mode of FPUs in MIPS32R5
+processors and allows both FP32 and FP64A code to interlink and
+run in the same process without changing FPU modes.
 
 @item -mabicalls
 @itemx -mno-abicalls
@@ -17796,6 +17885,10 @@ Assume that floating-point registers are 32 bits wide.
 @opindex mfp64
 Assume that floating-point registers are 64 bits wide.
 
+@item -mfpxx
+@opindex mfpxx
+Do not assume the width of floating-point registers.
+
 @item -mhard-float
 @opindex mhard-float
 Use floating-point coprocessor instructions.
@@ -17826,6 +17919,15 @@ operations.
 @opindex mdouble-float
 Assume that the floating-point coprocessor supports double-precision
 operations.  This is the default.
+
+@item -modd-spreg
+@itemx -mno-odd-spreg
+@opindex modd-spreg
+@opindex mno-odd-spreg
+Enable the use of odd-numbered single-precision floating-point registers
+for the o32 ABI.  This is the default for processors that are known to
+support these registers.  When using the o32 FPXX ABI, @code{-mno-odd-spreg}
+is set by default.
 
 @item -mabs=2008
 @itemx -mabs=legacy
@@ -19644,6 +19746,39 @@ instructions.  The @option{-mquad-memory} option requires use of
 Generate code that uses (does not use) the atomic quad word memory
 instructions.  The @option{-mquad-memory-atomic} option requires use of
 64-bit mode.
+
+@item -mupper-regs-df
+@itemx -mno-upper-regs-df
+@opindex mupper-regs-df
+@opindex mno-upper-regs-df
+Generate code that uses (does not use) the scalar double precision
+instructions that target all 64 registers in the vector/scalar
+floating point register set that were added in version 2.06 of the
+PowerPC ISA.  The @option{-mupper-regs-df} turned on by default if you
+use either of the @option{-mcpu=power7}, @option{-mcpu=power8}, or
+@option{-mvsx} options.
+
+@item -mupper-regs-sf
+@itemx -mno-upper-regs-sf
+@opindex mupper-regs-sf
+@opindex mno-upper-regs-sf
+Generate code that uses (does not use) the scalar single precision
+instructions that target all 64 registers in the vector/scalar
+floating point register set that were added in version 2.07 of the
+PowerPC ISA.  The @option{-mupper-regs-sf} turned on by default if you
+use either of the @option{-mcpu=power8}, or @option{-mpower8-vector}
+options.
+
+@item -mupper-regs
+@itemx -mno-upper-regs
+@opindex mupper-regs
+@opindex mno-upper-regs
+Generate code that uses (does not use) the scalar
+instructions that target all 64 registers in the vector/scalar
+floating point register set, depending on the model of the machine.
+
+If the @option{-mno-upper-regs} option was used, it will turn off both
+@option{-mupper-regs-sf} and @option{-mupper-regs-df} options.
 
 @item -mfloat-gprs=@var{yes/single/double/no}
 @itemx -mfloat-gprs

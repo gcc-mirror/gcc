@@ -308,11 +308,13 @@ package body Errout is
       end if;
 
       --  If we already have messages, and we are trying to place a message at
-      --  No_Location or in package Standard, then just ignore the attempt
-      --  since we assume that what is happening is some cascaded junk. Note
-      --  that this is safe in the sense that proceeding will surely bomb.
+      --  No_Location, then just ignore the attempt since we assume that what
+      --  is happening is some cascaded junk. Note that this is safe in the
+      --  sense that proceeding will surely bomb. We will also bomb if the flag
+      --  location is No_Location and we don't have any messages so far, but
+      --  that is a real bug and a legitimate bomb, so we go ahead.
 
-      if Flag_Location < First_Source_Ptr
+      if Flag_Location = No_Location
         and then Total_Errors_Detected > 0
       then
          return;

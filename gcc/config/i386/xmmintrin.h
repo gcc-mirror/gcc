@@ -180,25 +180,25 @@ _mm_max_ss (__m128 __A, __m128 __B)
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_add_ps (__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_addps ((__v4sf)__A, (__v4sf)__B);
+  return (__m128) ((__v4sf)__A + (__v4sf)__B);
 }
 
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sub_ps (__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_subps ((__v4sf)__A, (__v4sf)__B);
+  return (__m128) ((__v4sf)__A - (__v4sf)__B);
 }
 
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mul_ps (__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_mulps ((__v4sf)__A, (__v4sf)__B);
+  return (__m128) ((__v4sf)__A * (__v4sf)__B);
 }
 
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_div_ps (__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_divps ((__v4sf)__A, (__v4sf)__B);
+  return (__m128) ((__v4sf)__A / (__v4sf)__B);
 }
 
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -957,13 +957,13 @@ _mm_setr_ps (float __Z, float __Y, float __X, float __W)
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_store_ss (float *__P, __m128 __A)
 {
-  *__P = __builtin_ia32_vec_ext_v4sf ((__v4sf)__A, 0);
+  *__P = ((__v4sf)__A)[0];
 }
 
 extern __inline float __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtss_f32 (__m128 __A)
 {
-  return __builtin_ia32_vec_ext_v4sf ((__v4sf)__A, 0);
+  return ((__v4sf)__A)[0];
 }
 
 /* Store four SPFP values.  The address must be 16-byte aligned.  */

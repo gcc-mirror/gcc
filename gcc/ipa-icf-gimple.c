@@ -539,9 +539,9 @@ func_checker::parse_labels (sem_bb *bb)
     {
       gimple stmt = gsi_stmt (gsi);
 
-      if (gimple_code (stmt) == GIMPLE_LABEL)
+      if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
 	{
-	  tree t = gimple_label_label (stmt);
+	  tree t = gimple_label_label (label_stmt);
 	  gcc_assert (TREE_CODE (t) == LABEL_DECL);
 
 	  m_label_bb_map.put (t, bb->bb->index);
@@ -554,7 +554,7 @@ func_checker::parse_labels (sem_bb *bb)
 
    In general, a collection of equivalence dictionaries is built for types
    like SSA names, declarations (VAR_DECL, PARM_DECL, ..). This infrastructure
-   is utilized by every statement-by-stament comparison function.  */
+   is utilized by every statement-by-statement comparison function.  */
 
 bool
 func_checker::compare_bb (sem_bb *bb1, sem_bb *bb2)
@@ -595,7 +595,8 @@ func_checker::compare_bb (sem_bb *bb1, sem_bb *bb2)
       switch (gimple_code (s1))
 	{
 	case GIMPLE_CALL:
-	  if (!compare_gimple_call (s1, s2))
+	  if (!compare_gimple_call (as_a <gcall *> (s1),
+				    as_a <gcall *> (s2)))
 	    return return_different_stmts (s1, s2, "GIMPLE_CALL");
 	  break;
 	case GIMPLE_ASSIGN:
@@ -607,22 +608,26 @@ func_checker::compare_bb (sem_bb *bb1, sem_bb *bb2)
 	    return return_different_stmts (s1, s2, "GIMPLE_COND");
 	  break;
 	case GIMPLE_SWITCH:
-	  if (!compare_gimple_switch (s1, s2))
+	  if (!compare_gimple_switch (as_a <gswitch *> (s1),
+				      as_a <gswitch *> (s2)))
 	    return return_different_stmts (s1, s2, "GIMPLE_SWITCH");
 	  break;
 	case GIMPLE_DEBUG:
 	case GIMPLE_EH_DISPATCH:
 	  break;
 	case GIMPLE_RESX:
-	  if (!compare_gimple_resx (s1, s2))
+	  if (!compare_gimple_resx (as_a <gresx *> (s1),
+				    as_a <gresx *> (s2)))
 	    return return_different_stmts (s1, s2, "GIMPLE_RESX");
 	  break;
 	case GIMPLE_LABEL:
-	  if (!compare_gimple_label (s1, s2))
+	  if (!compare_gimple_label (as_a <glabel *> (s1),
+				     as_a <glabel *> (s2)))
 	    return return_different_stmts (s1, s2, "GIMPLE_LABEL");
 	  break;
 	case GIMPLE_RETURN:
-	  if (!compare_gimple_return (s1, s2))
+	  if (!compare_gimple_return (as_a <greturn *> (s1),
+				      as_a <greturn *> (s2)))
 	    return return_different_stmts (s1, s2, "GIMPLE_RETURN");
 	  break;
 	case GIMPLE_GOTO:
@@ -630,7 +635,8 @@ func_checker::compare_bb (sem_bb *bb1, sem_bb *bb2)
 	    return return_different_stmts (s1, s2, "GIMPLE_GOTO");
 	  break;
 	case GIMPLE_ASM:
-	  if (!compare_gimple_asm (s1, s2))
+	  if (!compare_gimple_asm (as_a <gasm *> (s1),
+				   as_a <gasm *> (s2)))
 	    return return_different_stmts (s1, s2, "GIMPLE_ASM");
 	  break;
 	case GIMPLE_PREDICT:
@@ -651,7 +657,7 @@ func_checker::compare_bb (sem_bb *bb1, sem_bb *bb2)
    call statements are semantically equivalent.  */
 
 bool
-func_checker::compare_gimple_call (gimple s1, gimple s2)
+func_checker::compare_gimple_call (gcall *s1, gcall *s2)
 {
   unsigned i;
   tree t1, t2;
@@ -659,12 +665,39 @@ func_checker::compare_gimple_call (gimple s1, gimple s2)
   if (gimple_call_num_args (s1) != gimple_call_num_args (s2))
     return false;
 
-  t1 = gimple_call_fndecl (s1);
-  t2 = gimple_call_fndecl (s2);
-
-  /* Function pointer variables are not supported yet.  */
+  t1 = gimple_call_fn (s1);
+  t2 = gimple_call_fn (s2);
   if (!compare_operand (t1, t2))
-    return return_false();
+    return return_false ();
+
+  /* Compare flags.  */
+  if (gimple_call_internal_p (s1) != gimple_call_internal_p (s2)
+      || gimple_call_ctrl_altering_p (s1) != gimple_call_ctrl_altering_p (s2)
+      || gimple_call_tail_p (s1) != gimple_call_tail_p (s2)
+      || gimple_call_return_slot_opt_p (s1) != gimple_call_return_slot_opt_p (s2)
+      || gimple_call_from_thunk_p (s1) != gimple_call_from_thunk_p (s2)
+      || gimple_call_va_arg_pack_p (s1) != gimple_call_va_arg_pack_p (s2)
+      || gimple_call_alloca_for_var_p (s1) != gimple_call_alloca_for_var_p (s2)
+      || gimple_call_with_bounds_p (s1) != gimple_call_with_bounds_p (s2))
+    return false;
+
+  if (gimple_call_internal_p (s1)
+      && gimple_call_internal_fn (s1) != gimple_call_internal_fn (s2))
+    return false;
+
+  tree fntype1 = gimple_call_fntype (s1);
+  tree fntype2 = gimple_call_fntype (s2);
+  if ((fntype1 && !fntype2)
+      || (!fntype1 && fntype2)
+      || (fntype1 && !types_compatible_p (fntype1, fntype2)))
+    return return_false_with_msg ("call function types are not compatible");
+
+  tree chain1 = gimple_call_chain (s1);
+  tree chain2 = gimple_call_chain (s2);
+  if ((chain1 && !chain2)
+      || (!chain1 && chain2)
+      || !compare_operand (chain1, chain2))
+    return return_false_with_msg ("static call chains are different");
 
   /* Checking of argument.  */
   for (i = 0; i < gimple_call_num_args (s1); ++i)
@@ -754,11 +787,11 @@ func_checker::compare_tree_ssa_label (tree t1, tree t2)
   return compare_operand (t1, t2);
 }
 
-/* Verifies for given GIMPLEs S1 and S2 that
+/* Verifies for given GIMPLE_LABEL stmts S1 and S2 that
    label statements are semantically equivalent.  */
 
 bool
-func_checker::compare_gimple_label (gimple g1, gimple g2)
+func_checker::compare_gimple_label (const glabel *g1, const glabel *g2)
 {
   if (m_ignore_labels)
     return true;
@@ -773,11 +806,11 @@ func_checker::compare_gimple_label (gimple g1, gimple g2)
   return true;
 }
 
-/* Verifies for given GIMPLEs S1 and S2 that
+/* Verifies for given GIMPLE_SWITCH stmts S1 and S2 that
    switch statements are semantically equivalent.  */
 
 bool
-func_checker::compare_gimple_switch (gimple g1, gimple g2)
+func_checker::compare_gimple_switch (const gswitch *g1, const gswitch *g2)
 {
   unsigned lsize1, lsize2, i;
 
@@ -798,6 +831,19 @@ func_checker::compare_gimple_switch (gimple g1, gimple g2)
       tree label1 = gimple_switch_label (g1, i);
       tree label2 = gimple_switch_label (g2, i);
 
+      /* Label LOW and HIGH comparison.  */
+      tree low1 = CASE_LOW (label1);
+      tree low2 = CASE_LOW (label2);
+
+      if (!tree_int_cst_equal (low1, low2))
+	return return_false_with_msg ("case low values are different");
+
+      tree high1 = CASE_HIGH (label1);
+      tree high2 = CASE_HIGH (label2);
+
+      if (!tree_int_cst_equal (high1, high2))
+	return return_false_with_msg ("case high values are different");
+
       if (TREE_CODE (label1) == CASE_LABEL_EXPR
 	  && TREE_CODE (label2) == CASE_LABEL_EXPR)
 	{
@@ -814,11 +860,11 @@ func_checker::compare_gimple_switch (gimple g1, gimple g2)
   return true;
 }
 
-/* Verifies for given GIMPLEs S1 and S2 that
+/* Verifies for given GIMPLE_RETURN stmts S1 and S2 that
    return statements are semantically equivalent.  */
 
 bool
-func_checker::compare_gimple_return (gimple g1, gimple g2)
+func_checker::compare_gimple_return (const greturn *g1, const greturn *g2)
 {
   tree t1, t2;
 
@@ -849,11 +895,11 @@ func_checker::compare_gimple_goto (gimple g1, gimple g2)
   return compare_operand (dest1, dest2);
 }
 
-/* Verifies for given GIMPLEs S1 and S2 that
+/* Verifies for given GIMPLE_RESX stmts S1 and S2 that
    resx statements are semantically equivalent.  */
 
 bool
-func_checker::compare_gimple_resx (gimple g1, gimple g2)
+func_checker::compare_gimple_resx (const gresx *g1, const gresx *g2)
 {
   return gimple_resx_region (g1) == gimple_resx_region (g2);
 }
@@ -863,7 +909,7 @@ func_checker::compare_gimple_resx (gimple g1, gimple g2)
    '__asm__ __volatile__ ("", "", "", "memory")'.  */
 
 bool
-func_checker::compare_gimple_asm (gimple g1, gimple g2)
+func_checker::compare_gimple_asm (const gasm *g1, const gasm *g2)
 {
   if (gimple_asm_volatile_p (g1) != gimple_asm_volatile_p (g2))
     return false;

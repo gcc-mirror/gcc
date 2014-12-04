@@ -169,12 +169,12 @@ same_phi_args_p (basic_block bb1, basic_block bb2, basic_block dest)
 {
   edge e1 = find_edge (bb1, dest);
   edge e2 = find_edge (bb2, dest);
-  gimple_stmt_iterator gsi;
-  gimple phi;
+  gphi_iterator gsi;
+  gphi *phi;
 
   for (gsi = gsi_start_phis (dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      phi = gsi_stmt (gsi);
+      phi = gsi.phi ();
       if (!operand_equal_p (PHI_ARG_DEF_FROM_EDGE (phi, e1),
 			    PHI_ARG_DEF_FROM_EDGE (phi, e2), 0))
         return false;
@@ -213,7 +213,7 @@ get_name_for_bit_test (tree candidate)
    Returns true if the pattern matched, false otherwise.  */
 
 static bool
-recognize_single_bit_test (gimple cond, tree *name, tree *bit, bool inv)
+recognize_single_bit_test (gcond *cond, tree *name, tree *bit, bool inv)
 {
   gimple stmt;
 
@@ -322,7 +322,7 @@ recognize_single_bit_test (gimple cond, tree *name, tree *bit, bool inv)
    Returns true if the pattern matched, false otherwise.  */
 
 static bool
-recognize_bits_test (gimple cond, tree *name, tree *bits, bool inv)
+recognize_bits_test (gcond *cond, tree *name, tree *bits, bool inv)
 {
   gimple stmt;
 
@@ -353,18 +353,21 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 		   basic_block outer_cond_bb, bool outer_inv, bool result_inv)
 {
   gimple_stmt_iterator gsi;
-  gimple inner_cond, outer_cond;
+  gimple inner_stmt, outer_stmt;
+  gcond *inner_cond, *outer_cond;
   tree name1, name2, bit1, bit2, bits1, bits2;
 
-  inner_cond = last_stmt (inner_cond_bb);
-  if (!inner_cond
-      || gimple_code (inner_cond) != GIMPLE_COND)
+  inner_stmt = last_stmt (inner_cond_bb);
+  if (!inner_stmt
+      || gimple_code (inner_stmt) != GIMPLE_COND)
     return false;
+  inner_cond = as_a <gcond *> (inner_stmt);
 
-  outer_cond = last_stmt (outer_cond_bb);
-  if (!outer_cond
-      || gimple_code (outer_cond) != GIMPLE_COND)
+  outer_stmt = last_stmt (outer_cond_bb);
+  if (!outer_stmt
+      || gimple_code (outer_stmt) != GIMPLE_COND)
     return false;
+  outer_cond = as_a <gcond *> (outer_stmt);
 
   /* See if we test a single bit of the same name in both tests.  In
      that case remove the outer test, merging both else edges,

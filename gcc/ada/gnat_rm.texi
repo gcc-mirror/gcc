@@ -2552,10 +2552,12 @@ pragma Default_Scalar_Storage_Order (High_Order_First | Low_Order_First);
 
 @noindent
 Normally if no explicit @code{Scalar_Storage_Order} is given for a record
-type or array type, then the scalar storage order defaults to the ordinary
-default for the target. But this default may be overridden using this pragma.
-The pragma may appear as a configuration pragma, or locally within a package
-spec or declarative part. In the latter case, it applies to all subsequent
+type or array type, then the scalar storage order defaults to the native
+order for the target. However, this default may be overridden using
+this pragma (except for derived tagged types, which always default to
+inheriting the scalar storage order of their parent). The pragma may
+appear as a configuration pragma, or locally within a package spec or
+declarative part.  In the latter case, it applies to all subsequent
 types declared within that package spec or declarative part.
 
 If this pragma is used as a configuration pragma which appears within a
@@ -4699,6 +4701,7 @@ the current unit and any extended main source units (body and subunits.
 It also has has the effect of enforcing a transitive application of this
 aspect, so that if any unit is implicitly or explicitly WITH'ed by the
 current unit, it must also have the No_Elaboration_Code_All aspect set.
+It may be applied to package or subprogram specs or their generic versions.
 
 @node Pragma No_Inline
 @unnumberedsec Pragma No_Inline
@@ -9991,17 +9994,17 @@ called after P2 returns, it would be an erroneous use of a dangling
 pointer.
 
 For objects, it is possible to use @code{Unrestricted_Access} for any
-type, but care must be exercised if it is used to create pointers to
-unconstrained array objects.  In this case, the resulting pointer has
-the same scope as the context of the attribute, and may not be
-returned to some enclosing scope.  For instance, a function cannot use
-@code{Unrestricted_Access} to create a pointer to unconstrained and
-then return that value to the caller.  In addition, it is only valid
-to create pointers to unconstrained arrays using this attribute if the
-pointer has the normal default ``fat'' representation where a pointer
-has two components, one points to the array and one points to the
-bounds.  If a size clause is used to force ``thin'' representation for
-a pointer to unconstrained where there is only space for a single
+type. However, if the result is of an access-to-unconstrained array
+subtype, then the resulting pointer has the same scope as the context
+of the attribute, and must not be returned to some enclosing scope.
+For instance, if a function uses @code{Unrestricted_Access} to create
+an access-to-unconstrained-array and returns that value to the caller,
+the result will involve dangling pointers. In addition, it is only
+valid to create pointers to unconstrained arrays using this attribute
+if the pointer has the normal default ``fat'' representation where a
+pointer has two components, one points to the array and one points to
+the bounds. If a size clause is used to force ``thin'' representation
+for a pointer to unconstrained where there is only space for a single
 pointer, then the resulting pointer is not usable.
 
 In the simple case where a direct use of Unrestricted_Access attempts
@@ -10143,12 +10146,14 @@ INDEX_EXPRESSION_LIST                        ::= ( EXPRESSION @{, EXPRESSION @} 
 @end smallexample
 
 @noindent
-where @code{PREFIX} is the name of an array or record object, and
-the association list in parentheses does not contain an @code{others}
-choice. The effect is to yield a copy of the array or record value which
-is unchanged apart from the components mentioned in the association list, which
-are changed to the indicated value. The original value of the array or
-record value is not affected. For example:
+where @code{PREFIX} is the name of an array or record object, the
+association list in parentheses does not contain an @code{others}
+choice and the box symbol @code{<>} may not appear in any
+expression. The effect is to yield a copy of the array or record value
+which is unchanged apart from the components mentioned in the
+association list, which are changed to the indicated value. The
+original value of the array or record value is not affected. For
+example:
 
 @smallexample @c ada
 type Arr is Array (1 .. 5) of Integer;

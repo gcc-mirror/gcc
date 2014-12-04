@@ -1,3 +1,5 @@
+/* { dg-require-effective-target label_values } */
+
 void jumpfunc(int copy, void *p)
 {
   void *l = &&jumplabel;

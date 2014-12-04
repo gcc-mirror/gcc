@@ -96,7 +96,8 @@ enum processor_features
   FEATURE_SSE4_A,
   FEATURE_FMA4,
   FEATURE_XOP,
-  FEATURE_FMA
+  FEATURE_FMA,
+  FEATURE_AVX512F
 };
 
 struct __processor_model
@@ -278,6 +279,8 @@ get_available_features (unsigned int ecx, unsigned int edx,
       __cpuid_count (7, 0, eax, ebx, ecx, edx);
       if (ebx & bit_AVX2)
 	features |= (1 << FEATURE_AVX2);
+      if (ebx & bit_AVX512F)
+	features |= (1 << FEATURE_AVX512F);
     }
 
   unsigned int ext_level;

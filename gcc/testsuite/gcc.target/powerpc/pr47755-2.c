@@ -1,6 +1,7 @@
 /* { dg-do run { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target vsx_hw } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
 /* { dg-options "-O3 -mcpu=power7" } */
 
 /* PR 47755: Make sure compiler generates correct code for various

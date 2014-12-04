@@ -112,11 +112,15 @@ struct funct_state_d
   bool looping;
 
   bool can_throw;
+
+  /* If function can call free, munmap or otherwise make previously
+     non-trapping memory accesses trapping.  */
+  bool can_free;
 };
 
 /* State used when we know nothing about function.  */
 static struct funct_state_d varying_state
-   = { IPA_NEITHER, IPA_NEITHER, true, true, true };
+   = { IPA_NEITHER, IPA_NEITHER, true, true, true, true };
 
 
 typedef struct funct_state_d * funct_state;
@@ -514,7 +518,7 @@ special_builtin_state (enum pure_const_state_e *state, bool *looping,
    the entire call expression.  */
 
 static void
-check_call (funct_state local, gimple call, bool ipa)
+check_call (funct_state local, gcall *call, bool ipa)
 {
   int flags = gimple_call_flags (call);
   tree callee_t = gimple_call_fndecl (call);
@@ -559,6 +563,10 @@ check_call (funct_state local, gimple call, bool ipa)
       enum pure_const_state_e call_state;
       bool call_looping;
 
+      if (gimple_call_builtin_p (call, BUILT_IN_NORMAL)
+	  && !nonfreeing_call_p (call))
+	local->can_free = true;
+
       if (special_builtin_state (&call_state, &call_looping, callee_t))
 	{
 	  worse_state (&local->pure_const_state, &local->looping,
@@ -589,6 +597,8 @@ check_call (funct_state local, gimple call, bool ipa)
 	    break;
 	  }
     }
+  else if (gimple_call_internal_p (call) && !nonfreeing_call_p (call))
+    local->can_free = true;
 
   /* When not in IPA mode, we can still handle self recursion.  */
   if (!ipa && callee_t
@@ -735,10 +745,10 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
   switch (gimple_code (stmt))
     {
     case GIMPLE_CALL:
-      check_call (local, stmt, ipa);
+      check_call (local, as_a <gcall *> (stmt), ipa);
       break;
     case GIMPLE_LABEL:
-      if (DECL_NONLOCAL (gimple_label_label (stmt)))
+      if (DECL_NONLOCAL (gimple_label_label (as_a <glabel *> (stmt))))
 	/* Target of long jump. */
 	{
           if (dump_file)
@@ -747,20 +757,22 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
 	}
       break;
     case GIMPLE_ASM:
-      if (gimple_asm_clobbers_memory_p (stmt))
+      if (gimple_asm_clobbers_memory_p (as_a <gasm *> (stmt)))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "    memory asm clobber is not const/pure\n");
 	  /* Abandon all hope, ye who enter here. */
 	  local->pure_const_state = IPA_NEITHER;
+	  local->can_free = true;
 	}
-      if (gimple_asm_volatile_p (stmt))
+      if (gimple_asm_volatile_p (as_a <gasm *> (stmt)))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "    volatile is not const/pure\n");
 	  /* Abandon all hope, ye who enter here. */
 	  local->pure_const_state = IPA_NEITHER;
-          local->looping = true;
+	  local->looping = true;
+	  local->can_free = true;
 	}
       return;
     default:
@@ -785,6 +797,7 @@ analyze_function (struct cgraph_node *fn, bool ipa)
   l->looping_previously_known = true;
   l->looping = false;
   l->can_throw = false;
+  l->can_free = false;
   state_from_flags (&l->state_previously_known, &l->looping_previously_known,
 		    flags_from_decl_or_type (fn->decl),
 		    fn->cannot_return_p ());
@@ -793,6 +806,8 @@ analyze_function (struct cgraph_node *fn, bool ipa)
     {
       /* Thunk gets propagated through, so nothing interesting happens.  */
       gcc_assert (ipa);
+      if (fn->thunk.thunk_p && fn->thunk.virtual_offset_p)
+	l->pure_const_state = IPA_NEITHER;
       return l;
     }
 
@@ -815,7 +830,10 @@ analyze_function (struct cgraph_node *fn, bool ipa)
 	   gsi_next (&gsi))
 	{
 	  check_stmt (&gsi, l, ipa);
-	  if (l->pure_const_state == IPA_NEITHER && l->looping && l->can_throw)
+	  if (l->pure_const_state == IPA_NEITHER
+	      && l->looping
+	      && l->can_throw
+	      && l->can_free)
 	    goto end;
 	}
     }
@@ -882,6 +900,8 @@ end:
         fprintf (dump_file, "Function is locally const.\n");
       if (l->pure_const_state == IPA_PURE)
         fprintf (dump_file, "Function is locally pure.\n");
+      if (l->can_free)
+	fprintf (dump_file, "Function can locally free.\n");
     }
   return l;
 }
@@ -896,7 +916,8 @@ add_new_function (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
      static declarations.  We do not need to scan them more than once
      since all we would be interested in are the addressof
      operations.  */
-  if (node->get_availability () > AVAIL_INTERPOSABLE)
+  if (node->get_availability () > AVAIL_INTERPOSABLE
+      && opt_for_fn (node->decl, flag_ipa_pure_const))
     set_function_state (node, analyze_function (node, true));
 }
 
@@ -966,7 +987,8 @@ pure_const_generate_summary (void)
      when function got cloned and the clone is AVAILABLE.  */
 
   FOR_EACH_DEFINED_FUNCTION (node)
-    if (node->get_availability () >= AVAIL_INTERPOSABLE)
+    if (node->get_availability () >= AVAIL_INTERPOSABLE
+        && opt_for_fn (node->decl, flag_ipa_pure_const))
       set_function_state (node, analyze_function (node, true));
 }
 
@@ -1021,6 +1043,7 @@ pure_const_write_summary (void)
 	  bp_pack_value (&bp, fs->looping_previously_known, 1);
 	  bp_pack_value (&bp, fs->looping, 1);
 	  bp_pack_value (&bp, fs->can_throw, 1);
+	  bp_pack_value (&bp, fs->can_free, 1);
 	  streamer_write_bitpack (&bp);
 	}
     }
@@ -1080,6 +1103,7 @@ pure_const_read_summary (void)
 	      fs->looping_previously_known = bp_unpack_value (&bp, 1);
 	      fs->looping = bp_unpack_value (&bp, 1);
 	      fs->can_throw = bp_unpack_value (&bp, 1);
+	      fs->can_free = bp_unpack_value (&bp, 1);
 	      if (dump_file)
 		{
 		  int flags = flags_from_decl_or_type (node->decl);
@@ -1102,6 +1126,8 @@ pure_const_read_summary (void)
 		    fprintf (dump_file,"  function is previously known looping\n");
 		  if (fs->can_throw)
 		    fprintf (dump_file,"  function is locally throwing\n");
+		  if (fs->can_free)
+		    fprintf (dump_file,"  function can locally free\n");
 		}
 	    }
 
@@ -1223,7 +1249,8 @@ propagate_pure_const (void)
 	  for (e = w->callees; e; e = e->next_callee)
 	    {
 	      enum availability avail;
-	      struct cgraph_node *y = e->callee->function_symbol (&avail);
+	      struct cgraph_node *y = e->callee->
+				function_or_virtual_thunk_symbol (&avail);
 	      enum pure_const_state_e edge_state = IPA_CONST;
 	      bool edge_looping = false;
 
@@ -1326,6 +1353,7 @@ propagate_pure_const (void)
 		    fprintf (dump_file, "    global var write\n");
 		  break;
 		case IPA_REF_ADDR:
+		case IPA_REF_CHKP:
 		  break;
 		default:
 		  gcc_unreachable ();
@@ -1346,6 +1374,34 @@ propagate_pure_const (void)
 		 pure_const_names [pure_const_state],
 		 looping);
 
+      /* Find the worst state of can_free for any node in the cycle.  */
+      bool can_free = false;
+      w = node;
+      while (w && !can_free)
+	{
+	  struct cgraph_edge *e;
+	  funct_state w_l = get_function_state (w);
+
+	  if (w_l->can_free
+	      || w->get_availability () == AVAIL_INTERPOSABLE
+	      || w->indirect_calls)
+	    can_free = true;
+
+	  for (e = w->callees; e && !can_free; e = e->next_callee)
+	    {
+	      enum availability avail;
+	      struct cgraph_node *y = e->callee->
+				function_or_virtual_thunk_symbol (&avail);
+
+	      if (avail > AVAIL_INTERPOSABLE)
+		can_free = get_function_state (y)->can_free;
+	      else
+		can_free = true;
+	    }
+	  w_info = (struct ipa_dfs_info *) w->aux;
+	  w = w_info->next_cycle;
+	}
+
       /* Copy back the region's pure_const_state which is shared by
 	 all nodes in the region.  */
       w = node;
@@ -1354,6 +1410,12 @@ propagate_pure_const (void)
 	  funct_state w_l = get_function_state (w);
 	  enum pure_const_state_e this_state = pure_const_state;
 	  bool this_looping = looping;
+
+	  w_l->can_free = can_free;
+	  w->nonfreeing_fn = !can_free;
+	  if (!can_free && dump_file)
+	    fprintf (dump_file, "Function found not to call free: %s\n",
+		     w->name ());
 
 	  if (w_l->state_previously_known != IPA_NEITHER
 	      && this_state > w_l->state_previously_known)
@@ -1447,7 +1509,7 @@ propagate_nothrow (void)
 
       /* Find the worst state for any node in the cycle.  */
       w = node;
-      while (w)
+      while (w && !can_throw)
 	{
 	  struct cgraph_edge *e, *ie;
 	  funct_state w_l = get_function_state (w);
@@ -1456,20 +1518,16 @@ propagate_nothrow (void)
 	      || w->get_availability () == AVAIL_INTERPOSABLE)
 	    can_throw = true;
 
-	  if (can_throw)
-	    break;
-
-	  for (e = w->callees; e; e = e->next_callee)
+	  for (e = w->callees; e && !can_throw; e = e->next_callee)
 	    {
 	      enum availability avail;
-	      struct cgraph_node *y = e->callee->function_symbol (&avail);
+	      struct cgraph_node *y = e->callee->
+				function_or_virtual_thunk_symbol (&avail);
 
 	      if (avail > AVAIL_INTERPOSABLE)
 		{
 		  funct_state y_l = get_function_state (y);
 
-		  if (can_throw)
-		    break;
 		  if (y_l->can_throw && !TREE_NOTHROW (w->decl)
 		      && e->can_throw_external)
 		    can_throw = true;
@@ -1477,12 +1535,9 @@ propagate_nothrow (void)
 	      else if (e->can_throw_external && !TREE_NOTHROW (y->decl))
 	        can_throw = true;
 	    }
-          for (ie = node->indirect_calls; ie; ie = ie->next_callee)
+          for (ie = w->indirect_calls; ie && !can_throw; ie = ie->next_callee)
 	    if (ie->can_throw_external)
-	      {
-		can_throw = true;
-		break;
-	      }
+	      can_throw = true;
 	  w_info = (struct ipa_dfs_info *) w->aux;
 	  w = w_info->next_cycle;
 	}
@@ -1547,9 +1602,7 @@ execute (function *)
 static bool
 gate_pure_const (void)
 {
-  return (flag_ipa_pure_const
-	  /* Don't bother doing anything if the program has errors.  */
-	  && !seen_error ());
+  return flag_ipa_pure_const || in_lto_p;
 }
 
 pass_ipa_pure_const::pass_ipa_pure_const(gcc::context *ctxt)
@@ -1793,5 +1846,3 @@ make_pass_warn_function_noreturn (gcc::context *ctxt)
 {
   return new pass_warn_function_noreturn (ctxt);
 }
-
-

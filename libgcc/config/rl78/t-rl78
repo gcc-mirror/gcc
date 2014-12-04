@@ -30,3 +30,5 @@ LIB2ADD = \
 	$(srcdir)/config/rl78/divmodqi.S \
 	$(srcdir)/config/rl78/signbit.S \
 	$(srcdir)/config/rl78/cmpsi2.S
+
+HOST_LIBGCC2_CFLAGS += -Os -ffunction-sections -fdata-sections

@@ -1,7 +1,7 @@
 /* Verify diagnostics for extended identifiers refer to UCNs (in the C
    locale).  */
 /* { dg-do compile } */
-/* { dg-options "-std=c99 -fextended-identifiers" } */
+/* { dg-options "-std=c99" } */
 /* { dg-require-ascii-locale "" } */
 /* { dg-skip-if "" { "powerpc-ibm-aix*" } { "*" } { "" } } */
 

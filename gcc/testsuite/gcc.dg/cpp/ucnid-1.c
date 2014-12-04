@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-std=c99 -fextended-identifiers" } */
+/* { dg-options "-std=c99 -g3" } */
 void abort (void);
 
 #define \u00C0 1

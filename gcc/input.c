@@ -749,19 +749,20 @@ expand_location (source_location loc)
 expanded_location
 expand_location_to_spelling_point (source_location loc)
 {
-  return expand_location_1 (loc, /*expansion_piont_p=*/false);
+  return expand_location_1 (loc, /*expansion_point_p=*/false);
 }
 
-/* If LOCATION is in a system header and if it's a virtual location for
-   a token coming from the expansion of a macro M, unwind it to the
-   location of the expansion point of M.  Otherwise, just return
+/* If LOCATION is in a system header and if it is a virtual location for
+   a token coming from the expansion of a macro, unwind it to the
+   location of the expansion point of the macro.  Otherwise, just return
    LOCATION.
 
    This is used for instance when we want to emit diagnostics about a
-   token that is located in a macro that is itself defined in a system
-   header -- e.g for the NULL macro.  In that case, if LOCATION is
-   passed to diagnostics emitting functions like warning_at as is, no
-   diagnostic won't be emitted.  */
+   token that may be located in a macro that is itself defined in a
+   system header, for example, for the NULL macro.  In such a case, if
+   LOCATION were passed directly to diagnostic functions such as
+   warning_at, the diagnostic would be suppressed (unless
+   -Wsystem-headers).  */
 
 source_location
 expansion_point_location_if_in_system_header (source_location location)

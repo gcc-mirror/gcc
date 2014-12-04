@@ -205,7 +205,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       _ResultsVec                                           _M_cur_results;
       _BiIter                                               _M_current;
-      const _BiIter                                         _M_begin;
+      _BiIter                                               _M_begin;
       const _BiIter                                         _M_end;
       const _RegexT&                                        _M_re;
       const _NFAT&                                          _M_nfa;

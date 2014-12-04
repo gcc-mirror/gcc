@@ -60,6 +60,14 @@
 
 #include <avx512vldqintrin.h>
 
+#include <avx512ifmaintrin.h>
+
+#include <avx512ifmavlintrin.h>
+
+#include <avx512vbmiintrin.h>
+
+#include <avx512vbmivlintrin.h>
+
 #include <shaintrin.h>
 
 #include <lzcntintrin.h>

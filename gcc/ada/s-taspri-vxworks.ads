@@ -98,7 +98,7 @@ private
       --  Condition variable used to queue threads until condition is signaled
    end record;
 
-   type Private_Data is record
+   type Private_Data is limited record
       Thread : aliased System.OS_Interface.t_id := 0;
       pragma Atomic (Thread);
       --  Thread field may be updated by two different threads of control.

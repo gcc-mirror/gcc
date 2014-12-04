@@ -119,7 +119,7 @@
   [(set (match_operand:ALLI 0 "aarch64_sync_memory_operand" "+Q")
     (unspec_volatile:ALLI
       [(atomic_op:ALLI (match_dup 0)
-	(match_operand:ALLI 1 "<atomic_op_operand>" "rn"))
+	(match_operand:ALLI 1 "<atomic_op_operand>" "r<lconst_atomic>"))
        (match_operand:SI 2 "const_int_operand")]		;; model
       UNSPECV_ATOMIC_OP))
        (clobber (reg:CC CC_REGNUM))
@@ -141,7 +141,7 @@
     (unspec_volatile:ALLI
       [(not:ALLI
 	(and:ALLI (match_dup 0)
-	  (match_operand:ALLI 1 "aarch64_logical_operand" "rn")))
+	  (match_operand:ALLI 1 "aarch64_logical_operand" "r<lconst_atomic>")))
        (match_operand:SI 2 "const_int_operand")]		;; model
       UNSPECV_ATOMIC_OP))
    (clobber (reg:CC CC_REGNUM))
@@ -164,7 +164,7 @@
    (set (match_dup 1)
     (unspec_volatile:ALLI
       [(atomic_op:ALLI (match_dup 1)
-	(match_operand:ALLI 2 "<atomic_op_operand>" "rn"))
+	(match_operand:ALLI 2 "<atomic_op_operand>" "r<lconst_atomic>"))
        (match_operand:SI 3 "const_int_operand")]		;; model
       UNSPECV_ATOMIC_OP))
    (clobber (reg:CC CC_REGNUM))
@@ -188,7 +188,7 @@
     (unspec_volatile:ALLI
       [(not:ALLI
 	 (and:ALLI (match_dup 1)
-	   (match_operand:ALLI 2 "aarch64_logical_operand" "rn")))
+	   (match_operand:ALLI 2 "aarch64_logical_operand" "r<lconst_atomic>")))
        (match_operand:SI 3 "const_int_operand")]		;; model
       UNSPECV_ATOMIC_OP))
    (clobber (reg:CC CC_REGNUM))
@@ -209,7 +209,7 @@
   [(set (match_operand:ALLI 0 "register_operand" "=&r")
     (atomic_op:ALLI
       (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q")
-      (match_operand:ALLI 2 "<atomic_op_operand>" "rn")))
+      (match_operand:ALLI 2 "<atomic_op_operand>" "r<lconst_atomic>")))
    (set (match_dup 1)
     (unspec_volatile:ALLI
       [(match_dup 1) (match_dup 2)
@@ -233,7 +233,7 @@
     (not:ALLI
       (and:ALLI
 	(match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q")
-	(match_operand:ALLI 2 "aarch64_logical_operand" "rn"))))
+	(match_operand:ALLI 2 "aarch64_logical_operand" "r<lconst_atomic>"))))
    (set (match_dup 1)
     (unspec_volatile:ALLI
       [(match_dup 1) (match_dup 2)

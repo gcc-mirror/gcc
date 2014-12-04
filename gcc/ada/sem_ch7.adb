@@ -735,7 +735,7 @@ package body Sem_Ch7 is
          Set_Is_Ghost_Entity (Body_Id);
 
          --  The Ghost policy in effect at the point of declaration and at the
-         --  point of completion must match (SPARK RM 6.9(14)).
+         --  point of completion must match (SPARK RM 6.9(15)).
 
          Check_Ghost_Completion (Spec_Id, Body_Id);
       end if;
@@ -2444,7 +2444,8 @@ package body Sem_Ch7 is
 
    function Requires_Completion_In_Body
      (Id      : Entity_Id;
-      Pack_Id : Entity_Id) return Boolean is
+      Pack_Id : Entity_Id) return Boolean
+   is
    begin
       --  Always ignore child units. Child units get added to the entity list
       --  of a parent unit, but are not original entities of the parent, and

@@ -3509,8 +3509,6 @@ stack.
 
 @hook TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 
-@hook TARGET_FLAGS_REGNUM
-
 @node Scalar Return
 @subsection How Scalar Function Values Are Returned
 @cindex return values in registers
@@ -3567,6 +3565,8 @@ Define this macro if @samp{untyped_call} and @samp{untyped_return}
 need more space than is implied by @code{FUNCTION_VALUE_REGNO_P} for
 saving and restoring an arbitrary return value.
 @end defmac
+
+@hook TARGET_OMIT_STRUCT_RETURN_REG
 
 @hook TARGET_RETURN_IN_MSB
 
@@ -3859,7 +3859,23 @@ These machine description macros help implement varargs:
 
 @hook TARGET_STRICT_ARGUMENT_NAMING
 
+@hook TARGET_CALL_ARGS
+
+@hook TARGET_END_CALL_ARGS
+
 @hook TARGET_PRETEND_OUTGOING_VARARGS_NAMED
+
+@hook TARGET_LOAD_BOUNDS_FOR_ARG
+
+@hook TARGET_STORE_BOUNDS_FOR_ARG
+
+@hook TARGET_LOAD_RETURNED_BOUNDS
+
+@hook TARGET_STORE_RETURNED_BOUNDS
+
+@hook TARGET_CHKP_FUNCTION_VALUE_BOUNDS
+
+@hook TARGET_SETUP_INCOMING_VARARG_BOUNDS
 
 @node Trampolines
 @section Trampolines for Nested Functions
@@ -4424,10 +4440,11 @@ for comparisons whose argument is a @code{plus}:
 
 @smallexample
 #define SELECT_CC_MODE(OP,X,Y) \
-  (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT          \
-   ? ((OP == EQ || OP == NE) ? CCFPmode : CCFPEmode)    \
-   : ((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS    \
-       || GET_CODE (X) == NEG) \
+  (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT           \
+   ? ((OP == LT || OP == LE || OP == GT || OP == GE)     \
+      ? CCFPEmode : CCFPmode)                            \
+   : ((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS     \
+       || GET_CODE (X) == NEG || GET_CODE (x) == ASHIFT) \
       ? CC_NOOVmode : CCmode))
 @end smallexample
 
@@ -4450,10 +4467,11 @@ then @code{REVERSIBLE_CC_MODE (@var{mode})} must be zero.
 You need not define this macro if it would always returns zero or if the
 floating-point format is anything other than @code{IEEE_FLOAT_FORMAT}.
 For example, here is the definition used on the SPARC, where floating-point
-inequality comparisons are always given @code{CCFPEmode}:
+inequality comparisons are given either @code{CCFPEmode} or @code{CCFPmode}:
 
 @smallexample
-#define REVERSIBLE_CC_MODE(MODE)  ((MODE) != CCFPEmode)
+#define REVERSIBLE_CC_MODE(MODE) \
+   ((MODE) != CCFPEmode && (MODE) != CCFPmode)
 @end smallexample
 @end defmac
 
@@ -4463,7 +4481,7 @@ comparison done in CC_MODE @var{mode}.  The macro is used only in case
 @code{REVERSIBLE_CC_MODE (@var{mode})} is nonzero.  Define this macro in case
 machine has some non-standard way how to reverse certain conditionals.  For
 instance in case all floating point conditions are non-trapping, compiler may
-freely convert unordered compares to ordered one.  Then definition may look
+freely convert unordered compares to ordered ones.  Then definition may look
 like:
 
 @smallexample
@@ -4476,6 +4494,8 @@ like:
 @hook TARGET_FIXED_CONDITION_CODE_REGS
 
 @hook TARGET_CC_MODES_COMPATIBLE
+
+@hook TARGET_FLAGS_REGNUM
 
 @node Costs
 @section Describing Relative Costs of Operations
@@ -4791,6 +4811,8 @@ them: try the first ones in this list first.
 @hook TARGET_SCHED_EXPOSED_PIPELINE
 
 @hook TARGET_SCHED_REASSOCIATION_WIDTH
+
+@hook TARGET_SCHED_FUSION_PRIORITY
 
 @node Sections
 @section Dividing the Output into Sections (Texts, Data, @dots{})
@@ -5179,6 +5201,8 @@ It must not be modified by command-line option processing.
 @hook TARGET_ASM_BYTE_OP
 
 @hook TARGET_ASM_INTEGER
+
+@hook TARGET_ASM_DECL_END
 
 @hook TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 
@@ -5586,6 +5610,8 @@ You may wish to use @code{ASM_OUTPUT_SIZE_DIRECTIVE} and/or
 @hook TARGET_ASM_GLOBALIZE_LABEL
 
 @hook TARGET_ASM_GLOBALIZE_DECL_NAME
+
+@hook TARGET_ASM_ASSEMBLE_UNDEFINED_DECL
 
 @defmac ASM_WEAKEN_LABEL (@var{stream}, @var{name})
 A C statement (sans semicolon) to output to the stdio stream
@@ -6949,6 +6975,8 @@ tables, and hence is desirable if it works.
 
 @hook TARGET_DELAY_VARTRACK
 
+@hook TARGET_NO_REGISTER_ALLOCATION
+
 @defmac ASM_OUTPUT_DWARF_DELTA (@var{stream}, @var{size}, @var{label1}, @var{label2})
 A C statement to issue assembly directives that create a difference
 @var{lab1} minus @var{lab2}, using an integer of the given @var{size}.
@@ -7995,6 +8023,12 @@ to by @var{ce_info}.
 
 @hook TARGET_EXPAND_BUILTIN
 
+@hook TARGET_BUILTIN_CHKP_FUNCTION
+@hook TARGET_CHKP_BOUND_TYPE
+@hook TARGET_CHKP_BOUND_MODE
+@hook TARGET_CHKP_MAKE_BOUNDS_CONSTANT
+@hook TARGET_CHKP_INITIALIZE_BOUNDS
+
 @hook TARGET_RESOLVE_OVERLOADED_BUILTIN
 
 @hook TARGET_FOLD_BUILTIN
@@ -8078,6 +8112,10 @@ build_type_attribute_variant (@var{mdecl},
 @hook TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED
 
 @hook TARGET_HAVE_CONDITIONAL_EXECUTION
+
+@hook TARGET_GEN_CCMP_FIRST
+
+@hook TARGET_GEN_CCMP_NEXT
 
 @hook TARGET_LOOP_UNROLL_ADJUST
 
@@ -8205,6 +8243,10 @@ and the associated definitions of those functions.
 @hook TARGET_ATOMIC_ALIGN_FOR_MODE
 
 @hook TARGET_ATOMIC_ASSIGN_EXPAND_FENV
+
+@hook TARGET_RECORD_OFFLOAD_SYMBOL
+
+@hook TARGET_OFFLOAD_OPTIONS
 
 @defmac TARGET_SUPPORTS_WIDE_INT
 

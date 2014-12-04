@@ -311,111 +311,126 @@ kinds, along with their relationships to @code{GSS_} values (layouts) and
      |   |    (no GSS layout)
      |   |
      |   + gimple_statement_with_ops
-     |   |        layout: GSS_WITH_OPS
-     |   |        Used for 5 codes: GIMPLE_COND
-     |   |                          GIMPLE_DEBUG
-     |   |                          GIMPLE_GOTO
-     |   |                          GIMPLE_LABEL
-     |   |                          GIMPLE_SWITCH
+     |   |   |    layout: GSS_WITH_OPS
+     |   |   |
+     |   |   + gcond
+     |   |   |     code: GIMPLE_COND
+     |   |   |
+     |   |   + gdebug
+     |   |   |     code: GIMPLE_DEBUG
+     |   |   |
+     |   |   + ggoto
+     |   |   |     code: GIMPLE_GOTO
+     |   |   |
+     |   |   + glabel
+     |   |   |     code: GIMPLE_LABEL
+     |   |   |
+     |   |   + gswitch
+     |   |         code: GIMPLE_SWITCH
      |   |
      |   + gimple_statement_with_memory_ops_base
      |       |    layout: GSS_WITH_MEM_OPS_BASE
      |       |
      |       + gimple_statement_with_memory_ops
-     |       |        layout: GSS_WITH_MEM_OPS.
-     |       |        used for codes GIMPLE_ASSIGN and GIMPLE_RETURN.
+     |       |   |    layout: GSS_WITH_MEM_OPS
+     |       |   |
+     |       |   + gassign
+     |       |   |    code GIMPLE_ASSIGN
+     |       |   |
+     |       |   + greturn
+     |       |        code GIMPLE_RETURN
      |       |
-     |       + gimple_statement_call
+     |       + gcall
      |       |        layout: GSS_CALL, code: GIMPLE_CALL
      |       |
-     |       + gimple_statement_asm
+     |       + gasm
      |       |        layout: GSS_ASM, code: GIMPLE_ASM
      |       |
-     |       + gimple_statement_transaction
+     |       + gtransaction
      |                layout: GSS_TRANSACTION, code: GIMPLE_TRANSACTION
      |
      + gimple_statement_omp
      |   |    layout: GSS_OMP.  Used for code GIMPLE_OMP_SECTION
      |   |
-     |   + gimple_statement_omp_critical
+     |   + gomp_critical
      |   |        layout: GSS_OMP_CRITICAL, code: GIMPLE_OMP_CRITICAL
      |   |
-     |   + gimple_statement_omp_for
+     |   + gomp_for
      |   |        layout: GSS_OMP_FOR, code: GIMPLE_OMP_FOR
      |   |
-     |   + gimple_statement_omp_parallel_layout
+     |   + gomp_parallel_layout
      |   |   |    layout: GSS_OMP_PARALLEL_LAYOUT
      |   |   |
      |   |   + gimple_statement_omp_taskreg
      |   |   |   |
-     |   |   |   + gimple_statement_omp_parallel
+     |   |   |   + gomp_parallel
      |   |   |   |        code: GIMPLE_OMP_PARALLEL
      |   |   |   |
-     |   |   |   + gimple_statement_omp_task
+     |   |   |   + gomp_task
      |   |   |            code: GIMPLE_OMP_TASK
      |   |   |
      |   |   + gimple_statement_omp_target
      |   |            code: GIMPLE_OMP_TARGET
      |   |
-     |   + gimple_statement_omp_sections
+     |   + gomp_sections
      |   |        layout: GSS_OMP_SECTIONS, code: GIMPLE_OMP_SECTIONS
      |   |
      |   + gimple_statement_omp_single_layout
      |       |    layout: GSS_OMP_SINGLE_LAYOUT
      |       |
-     |       + gimple_statement_omp_single
+     |       + gomp_single
      |       |        code: GIMPLE_OMP_SINGLE
      |       |
-     |       + gimple_statement_omp_teams
+     |       + gomp_teams
      |                code: GIMPLE_OMP_TEAMS
      |
-     + gimple_statement_bind
+     + gbind
      |        layout: GSS_BIND, code: GIMPLE_BIND
      |
-     + gimple_statement_catch
+     + gcatch
      |        layout: GSS_CATCH, code: GIMPLE_CATCH
      |
-     + gimple_statement_eh_filter
+     + geh_filter
      |        layout: GSS_EH_FILTER, code: GIMPLE_EH_FILTER
      |
-     + gimple_statement_eh_else
+     + geh_else
      |        layout: GSS_EH_ELSE, code: GIMPLE_EH_ELSE
      |
-     + gimple_statement_eh_mnt
+     + geh_mnt
      |        layout: GSS_EH_MNT, code: GIMPLE_EH_MUST_NOT_THROW
      |
-     + gimple_statement_phi
+     + gphi
      |        layout: GSS_PHI, code: GIMPLE_PHI
      |
      + gimple_statement_eh_ctrl
      |   |    layout: GSS_EH_CTRL
      |   |
-     |   + gimple_statement_resx
+     |   + gresx
      |   |        code: GIMPLE_RESX
      |   |
-     |   + gimple_statement_eh_dispatch
+     |   + geh_dispatch
      |            code: GIMPLE_EH_DISPATCH
      |
-     + gimple_statement_try
+     + gtry
      |        layout: GSS_TRY, code: GIMPLE_TRY
      |
      + gimple_statement_wce
      |        layout: GSS_WCE, code: GIMPLE_WITH_CLEANUP_EXPR
      |
-     + gimple_statement_omp_continue
+     + gomp_continue
      |        layout: GSS_OMP_CONTINUE, code: GIMPLE_OMP_CONTINUE
      |
-     + gimple_statement_omp_atomic_load
+     + gomp_atomic_load
      |        layout: GSS_OMP_ATOMIC_LOAD, code: GIMPLE_OMP_ATOMIC_LOAD
      |
      + gimple_statement_omp_atomic_store_layout
          |    layout: GSS_OMP_ATOMIC_STORE_LAYOUT,
          |    code: GIMPLE_OMP_ATOMIC_STORE
          |
-         + gimple_statement_omp_atomic_store
+         + gomp_atomic_store
          |        code: GIMPLE_OMP_ATOMIC_STORE
          |
-         + gimple_statement_omp_return
+         + gomp_return
                   code: GIMPLE_OMP_RETURN
 @end smallexample
 

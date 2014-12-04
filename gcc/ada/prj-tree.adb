@@ -2458,8 +2458,7 @@ package body Prj.Tree is
    begin
       pragma Assert
         (Present (Node)
-         and then
-         In_Tree.Project_Nodes.Table (Node).Kind = N_Project);
+          and then In_Tree.Project_Nodes.Table (Node).Kind = N_Project);
       In_Tree.Project_Nodes.Table (Node).Display_Name := To;
    end Set_Display_Name_Of;
 

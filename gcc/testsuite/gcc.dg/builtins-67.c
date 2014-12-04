@@ -3,6 +3,8 @@
 /* { dg-do link } */
 /* { dg-options "-ffast-math -lm" }  */
 /* { dg-add-options c99_runtime } */
+/* Bionic doesn't have rintl */
+/* { dg-require-effective-target non_bionic } */
 
 #include "builtins-config.h"
 

@@ -2,6 +2,8 @@
    A is noreturn.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-ipa-devirt-details -fdump-tree-optimized"  } */
+/* { dg-add-options bind_pic_locally } */
+
 class A {
 public:
   virtual int foo(void)

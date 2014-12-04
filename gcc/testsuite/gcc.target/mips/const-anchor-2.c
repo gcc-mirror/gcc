@@ -3,6 +3,8 @@
 /* { dg-final { scan-assembler-not "0x300000|196608" } } */
 /* { dg-final { scan-assembler "\td?addiu\t\\\$4,\\\$\[0-9\]*,32763" } } */
 
+extern void g (int, int);
+
 NOMIPS16 void f ()
 {
   g (0x30001, 0x28006);

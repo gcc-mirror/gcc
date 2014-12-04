@@ -39,6 +39,8 @@ with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Ordered_Maps is
 
+   pragma Annotate (CodePeer, Skip_Analysis);
+
    -----------------------------
    -- Node Access Subprograms --
    -----------------------------

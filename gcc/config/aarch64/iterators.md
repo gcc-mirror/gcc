@@ -147,9 +147,6 @@
 ;; Double vector modes for combines.
 (define_mode_iterator VDIC [V8QI V4HI V2SI])
 
-;; Double vector modes inc V1DF
-(define_mode_iterator VD1 [V8QI V4HI V2SI V2SF V1DF])
-
 ;; Vector modes except double int.
 (define_mode_iterator VDQIF [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF V2DF])
 
@@ -182,6 +179,9 @@
 
 ;; All byte modes.
 (define_mode_iterator VB [V8QI V16QI])
+
+;; 2 and 4 lane SI modes.
+(define_mode_iterator VS [V2SI V4SI])
 
 (define_mode_iterator TX [TI TF])
 
@@ -360,6 +360,9 @@
 
 ;; Attribute to describe constants acceptable in logical operations
 (define_mode_attr lconst [(SI "K") (DI "L")])
+
+;; Attribute to describe constants acceptable in atomic logical operations
+(define_mode_attr lconst_atomic [(QI "K") (HI "K") (SI "K") (DI "L")])
 
 ;; Map a mode to a specific constraint character.
 (define_mode_attr cmode [(QI "q") (HI "h") (SI "s") (DI "d")])
@@ -666,6 +669,9 @@
 		      (V2SI "p") (V4SI  "v")
 		      (V2DI  "p") (V2DF  "p")
 		      (V2SF "p") (V4SF  "v")])
+
+(define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")])
+(define_mode_attr VSI2QI [(V2SI "V8QI") (V4SI "V16QI")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators

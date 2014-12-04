@@ -326,6 +326,18 @@ package body Sem_Ch6 is
       then
          Def_Id := Analyze_Subprogram_Specification (Spec);
          Prev   := Find_Corresponding_Spec (N);
+
+         --  The previous entity may be an expression function as well, in
+         --  which case the redeclaration is illegal.
+
+         if Present (Prev)
+           and then Nkind (Original_Node (Unit_Declaration_Node (Prev))) =
+                                                        N_Expression_Function
+         then
+            Error_Msg_Sloc := Sloc (Prev);
+            Error_Msg_N ("& conflicts with declaration#", Def_Id);
+            return;
+         end if;
       end if;
 
       Ret := Make_Simple_Return_Statement (LocX, Expression (N));
@@ -901,7 +913,34 @@ package body Sem_Ch6 is
                return;
             end if;
 
-            Analyze_And_Resolve (Expr, R_Type);
+            Analyze (Expr);
+
+            --  Ada 2005 (AI-251): If the type of the returned object is
+            --  an access to an interface type then we add an implicit type
+            --  conversion to force the displacement of the "this" pointer to
+            --  reference the secondary dispatch table. We cannot delay the
+            --  generation of this implicit conversion until the expansion
+            --  because in this case the type resolution changes the decoration
+            --  of the expression node to match R_Type; by contrast, if the
+            --  returned object is a class-wide interface type then it is too
+            --  early to generate here the implicit conversion since the return
+            --  statement may be rewritten by the expander into an extended
+            --  return statement whose expansion takes care of adding the
+            --  implicit type conversion to displace the pointer to the object.
+
+            if Expander_Active
+              and then Serious_Errors_Detected = 0
+              and then Is_Access_Type (R_Type)
+              and then Nkind (Expr) /= N_Null
+              and then Is_Interface (Designated_Type (R_Type))
+              and then Is_Progenitor (Designated_Type (R_Type),
+                                      Designated_Type (Etype (Expr)))
+            then
+               Rewrite (Expr, Convert_To (R_Type, Relocate_Node (Expr)));
+               Analyze (Expr);
+            end if;
+
+            Resolve (Expr, R_Type);
             Check_Limited_Return (Expr);
          end if;
 
@@ -1220,7 +1259,7 @@ package body Sem_Ch6 is
             Set_Is_Ghost_Entity (Body_Id);
 
             --  The Ghost policy in effect at the point of declaration and at
-            --  the point of completion must match (SPARK RM 6.9(14)).
+            --  the point of completion must match (SPARK RM 6.9(15)).
 
             Check_Ghost_Completion (Gen_Id, Body_Id);
          end if;
@@ -1452,6 +1491,11 @@ package body Sem_Ch6 is
          --  this as a null body (even if expansion is not active), because
          --  there are various error checks that are applied on this body
          --  when it is analyzed (e.g. correct aspect placement).
+
+         if Has_Completion (Prev) then
+            Error_Msg_Sloc := Sloc (Prev);
+            Error_Msg_NE ("duplicate body for & declared#", N, Prev);
+         end if;
 
          Is_Completion := True;
          Rewrite (N, Null_Body);
@@ -2507,6 +2551,13 @@ package body Sem_Ch6 is
          if Ekind (Scop) = E_Function
            and then Ekind (Etype (Scop)) = E_Anonymous_Access_Type
            and then not Is_Thunk (Scop)
+
+            --  Skip internally built functions which handle the case of
+            --  a null access (see Expand_Interface_Conversion)
+
+           and then not (Is_Interface (Designated_Type (Etype (Scop)))
+                           and then not Comes_From_Source (Parent (Scop)))
+
            and then (Has_Task (Designated_Type (Etype (Scop)))
                       or else
                        (Is_Class_Wide_Type (Designated_Type (Etype (Scop)))
@@ -3338,7 +3389,7 @@ package body Sem_Ch6 is
                Set_Is_Ghost_Entity (Body_Id);
 
                --  The Ghost policy in effect at the point of declaration and
-               --  at the point of completion must match (SPARK RM 6.9(14)).
+               --  at the point of completion must match (SPARK RM 6.9(15)).
 
                Check_Ghost_Completion (Spec_Id, Body_Id);
             end if;
@@ -3640,6 +3691,11 @@ package body Sem_Ch6 is
                if Comes_From_Source (Body_Id)
                  and then Ekind (Spec_Id) = E_Function
                  and then Returns_Unconstrained_Type (Spec_Id)
+
+                 --  If function builds in place, i.e. returns a limited type,
+                 --  inlining cannot be done.
+
+                 and then not Is_Limited_Type (Etype (Spec_Id))
                then
                   Check_And_Split_Unconstrained_Function (N, Spec_Id, Body_Id);
 
@@ -4679,7 +4735,8 @@ package body Sem_Ch6 is
       --  If both are functions/operators, check return types conform
 
       if Old_Type /= Standard_Void_Type
-        and then New_Type /= Standard_Void_Type
+           and then
+         New_Type /= Standard_Void_Type
       then
          --  If we are checking interface conformance we omit controlling
          --  arguments and result, because we are only checking the conformance
@@ -4761,9 +4818,14 @@ package body Sem_Ch6 is
             return;
 
          --  Pragma Ghost behaves as a convention in the context of subtype
-         --  conformance (SPARK RM 6.9(5)).
+         --  conformance (SPARK RM 6.9(5)). Do not check internally generated
+         --  subprograms as their spec may reside in a Ghost region and their
+         --  body not, or vice versa.
 
-         elsif Is_Ghost_Entity (Old_Id) /= Is_Ghost_Entity (New_Id) then
+         elsif Comes_From_Source (Old_Id)
+           and then Comes_From_Source (New_Id)
+           and then Is_Ghost_Entity (Old_Id) /= Is_Ghost_Entity (New_Id)
+         then
             Conformance_Error ("\ghost modes do not match!");
             return;
          end if;
@@ -7404,7 +7466,15 @@ package body Sem_Ch6 is
                --  spec to match a body, full conformance is expected.
 
                if In_Instance then
+
+                  --  Inherit the convention and "ghostness" of the matching
+                  --  spec to ensure proper full and subtype conformance.
+
                   Set_Convention (Designator, Convention (E));
+
+                  if Is_Ghost_Entity (E) then
+                     Set_Is_Ghost_Entity (Designator);
+                  end if;
 
                   --  Skip past subprogram bodies and subprogram renamings that
                   --  may appear to have a matching spec, but that aren't fully

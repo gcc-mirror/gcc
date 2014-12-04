@@ -805,6 +805,9 @@ struct _haifa_insn_data
   /* A priority for each insn.  */
   int priority;
 
+  /* The fusion priority for each insn.  */
+  int fusion_priority;
+
   /* The minimum clock tick at which the insn becomes ready.  This is
      used to note timing constraints for the insns in the pending list.  */
   int tick;
@@ -903,6 +906,7 @@ extern vec<haifa_insn_data_def> h_i_d;
 /* Accessor macros for h_i_d.  There are more in haifa-sched.c and
    sched-rgn.c.  */
 #define INSN_PRIORITY(INSN) (HID (INSN)->priority)
+#define INSN_FUSION_PRIORITY(INSN) (HID (INSN)->fusion_priority)
 #define INSN_REG_PRESSURE(INSN) (HID (INSN)->reg_pressure)
 #define INSN_MAX_REG_PRESSURE(INSN) (HID (INSN)->max_reg_pressure)
 #define INSN_REG_USE_LIST(INSN) (HID (INSN)->reg_use_list)
@@ -1619,6 +1623,10 @@ extern void sd_unresolve_dep (sd_iterator_def);
 extern void sd_copy_back_deps (rtx_insn *, rtx_insn *, bool);
 extern void sd_delete_dep (sd_iterator_def);
 extern void sd_debug_lists (rtx, sd_list_types_def);
+
+/* Macros and declarations for scheduling fusion.  */
+#define FUSION_MAX_PRIORITY (INT_MAX)
+extern bool sched_fusion;
 
 #endif /* INSN_SCHEDULING */
 

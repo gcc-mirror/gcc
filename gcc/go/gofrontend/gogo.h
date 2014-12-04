@@ -2645,17 +2645,25 @@ class Package
   // Whether some symbol from the package was used.
   bool
   used() const
-  { return this->used_; }
+  { return this->used_ > 0; }
 
   // Note that some symbol from this package was used.
   void
-  set_used() const
-  { this->used_ = true; }
+  note_usage() const
+  { this->used_++; }
+
+  // Note that USAGE might be a fake usage of this package.
+  void
+  note_fake_usage(Expression* usage) const
+  { this->fake_uses_.insert(usage); }
+
+  // Forget a given USAGE of this package.
+  void
+  forget_usage(Expression* usage) const;
 
   // Clear the used field for the next file.
   void
-  clear_used()
-  { this->used_ = false; }
+  clear_used();
 
   // Whether this package was imported in the current file.
   bool
@@ -2749,10 +2757,12 @@ class Package
   int priority_;
   // The location of the import statement.
   Location location_;
-  // True if some name from this package was used.  This is mutable
-  // because we can use a package even if we have a const pointer to
-  // it.
-  mutable bool used_;
+  // The amount of times some name from this package was used.  This is mutable
+  // because we can use a package even if we have a const pointer to it.
+  mutable size_t used_;
+  // A set of possibly fake uses of this package.  This is mutable because we
+  // can track fake uses of a package even if we have a const pointer to it.
+  mutable std::set<Expression*> fake_uses_;
   // True if this package was imported in the current file.
   bool is_imported_;
   // True if this package was imported with a name of "_".

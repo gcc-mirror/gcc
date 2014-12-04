@@ -568,8 +568,7 @@ package body Ch13 is
                then
                   Scan; -- past identifier
 
-                  --  Attempt to detect ' or => following a potential aspect
-                  --  mark.
+                  --  Attempt to detect ' or => following potential aspect mark
 
                   if Token = Tok_Apostrophe or else Token = Tok_Arrow then
                      Restore_Scan_State (Scan_State);
@@ -580,14 +579,13 @@ package body Ch13 is
                   end if;
                end if;
 
-               --  The construct following the current aspect is not an
-               --  aspect.
+               --  Construct following the current aspect is not an aspect
 
                Restore_Scan_State (Scan_State);
             end;
          end if;
 
-         --  Must be terminator character
+         --  Require semicolon if caller expects to scan this out
 
          if Semicolon then
             T_Semicolon;
@@ -728,14 +726,23 @@ package body Ch13 is
                end if;
             end if;
 
-            --  We come here with an OK attribute scanned, and the
-            --  corresponding Attribute identifier node stored in Ident_Node.
+            --  Here we have an OK attribute scanned, and the corresponding
+            --  Attribute identifier node is stored in Ident_Node.
 
             Prefix_Node := Name_Node;
             Name_Node := New_Node (N_Attribute_Reference, Prev_Token_Ptr);
             Set_Prefix (Name_Node, Prefix_Node);
             Set_Attribute_Name (Name_Node, Attr_Name);
             Scan;
+
+            --  Check for Address clause which needs to be marked for use in
+            --  optimizing performance of Exp_Util.Following_Address_Clause.
+
+            if Attr_Name = Name_Address
+              and then Nkind (Prefix_Node) = N_Identifier
+            then
+               Set_Name_Table_Boolean (Chars (Prefix_Node), True);
+            end if;
          end loop;
 
          Rep_Clause_Node := New_Node (N_Attribute_Definition_Clause, For_Loc);
@@ -760,6 +767,11 @@ package body Ch13 is
             Expr_Node := P_Expression_No_Right_Paren;
             Check_Simple_Expression_In_Ada_83 (Expr_Node);
             Set_Expression (Rep_Clause_Node, Expr_Node);
+
+            --  Mark occurrence of address clause (used to optimize performance
+            --  of Exp_Util.Following_Address_Clause).
+
+            Set_Name_Table_Boolean (Chars (Identifier_Node), True);
 
          --  RECORD follows USE (Record Representation Clause)
 

@@ -3,6 +3,7 @@
 /* { dg-require-effective-target ptr32plus } */
 /* { dg-options "-Os" } */
 /* { dg-final { scan-assembler-times "2112543726\|7deadbee" 2 } } */
+/* { dg-skip-if "integer output is different here" { nvptx-*-* } } */
 
 struct S
 {

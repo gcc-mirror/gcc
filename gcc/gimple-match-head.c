@@ -94,7 +94,7 @@ gimple_resimplify1 (gimple_seq *seq,
     {
       tree tem = NULL_TREE;
       if (res_code->is_tree_code ())
-	tem = fold_unary_to_constant (*res_code, type, res_ops[0]);
+	tem = const_unop (*res_code, type, res_ops[0]);
       else
 	{
 	  tree decl = builtin_decl_implicit (*res_code);
@@ -150,8 +150,7 @@ gimple_resimplify2 (gimple_seq *seq,
     {
       tree tem = NULL_TREE;
       if (res_code->is_tree_code ())
-	tem = fold_binary_to_constant (*res_code, type,
-				       res_ops[0], res_ops[1]);
+	tem = const_binop (*res_code, type, res_ops[0], res_ops[1]);
       else
 	{
 	  tree decl = builtin_decl_implicit (*res_code);
@@ -331,7 +330,7 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
 	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[2])))
 	return NULL_TREE;
       if (!res)
-	res = make_ssa_name (type, NULL);
+	res = make_ssa_name (type);
       maybe_build_generic_op (rcode, type, &ops[0], ops[1], ops[2]);
       gimple new_stmt = gimple_build_assign_with_ops (rcode, res,
 						      ops[0], ops[1], ops[2]);
@@ -359,7 +358,7 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
 	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[2])))
 	return NULL_TREE;
       if (!res)
-	res = make_ssa_name (type, NULL);
+	res = make_ssa_name (type);
       gimple new_stmt = gimple_build_call (decl, nargs, ops[0], ops[1], ops[2]);
       gimple_call_set_lhs (new_stmt, res);
       gimple_seq_add_stmt_without_update (seq, new_stmt);
@@ -386,7 +385,7 @@ gimple_simplify (enum tree_code code, tree type,
 {
   if (constant_for_folding (op0))
     {
-      tree res = fold_unary_to_constant (code, type, op0);
+      tree res = const_unop (code, type, op0);
       if (res != NULL_TREE
 	  && CONSTANT_CLASS_P (res))
 	return res;
@@ -409,7 +408,7 @@ gimple_simplify (enum tree_code code, tree type,
 {
   if (constant_for_folding (op0) && constant_for_folding (op1))
     {
-      tree res = fold_binary_to_constant (code, type, op0, op1);
+      tree res = const_binop (code, type, op0, op1);
       if (res != NULL_TREE
 	  && CONSTANT_CLASS_P (res))
 	return res;

@@ -1,3 +1,114 @@
+2014-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (convert_vector_to_pointer_for_subscript): Remove NULL
+	last argument from create_tmp_var_raw and create_tmp_var calls.
+	* cilk.c (gimplify_cilk_spawn): Likewise.
+	* c-omp.c (c_finish_omp_atomic): Likewise.
+
+2014-11-28  Marek Polacek  <polacek@redhat.com>
+
+	* c-ubsan.c (ubsan_instrument_shift): Use op1_utype for MINUS_EXPR
+	instead of unsigned_type_node.
+
+2014-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63862
+	* c-ubsan.c (ubsan_instrument_shift): Change the type of a MINUS_EXPR
+	to op1_utype.
+	* c-gimplify.c (c_gimplify_expr): Convert right operand of a shift
+	expression to unsigned_type_node.
+
+2014-11-20  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/38757
+	* c-opts.c (set_std_c89): Set lang_hooks.name.
+	(set_std_c99): Likewise.
+	(set_std_c11): Likewise.
+	(set_std_cxx98): Likewise.
+	(set_std_cxx11): Likewise.
+	(set_std_cxx14): Likewise.
+	(set_std_cxx1z): Likewise.
+
+2014-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/63764
+	* c-common.h (convert_vector_to_pointer_for_subscript): Change
+	return type to bool.
+	* c-common.c: Include gimple-expr.c.
+	(convert_vector_to_pointer_for_subscript): Change return type to
+	bool.  If *vecp is not lvalue_p and has VECTOR_TYPE, return true
+	and copy it into a TARGET_EXPR and use that instead of *vecp
+	directly.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	Merger of git branch "gimple-classes-v2-option-3".
+	* ChangeLog.gimple-classes: New.
+	* c-gimplify.c (add_block_to_enclosing): Strengthen local "stack"
+	from being just a vec<gimple> to a vec<gbind *>.
+
+2014-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63813
+	* c-ubsan.c (ubsan_maybe_instrument_reference_or_call): Change type
+	argument to ptype, set type to TREE_TYPE (ptype).  Don't call
+	get_pointer_alignment for non-pointers.  Use ptype, or if it is
+	reference type, corresponding pointer type, as type of kind
+	argument.
+	(ubsan_maybe_instrument_reference,
+	ubsan_maybe_instrument_member_call): Adjust callers.
+
+2014-11-15  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/63884
+	* array-notation-common.c (is_sec_implicit_index_fn): Return false
+	for NULL fndecl.
+	(extract_array_notation_exprs): Return for NULL node.
+
+2014-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): Define and
+	undefine __NO_MATH_ERRNO__ based on changes to -fmath-errno state.
+
+2014-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59708
+	* c-common.c (check_builtin_function_arguments): Handle
+	BUILT_IN_{ADD,SUB,MUL}_OVERFLOW.
+
+2014-11-10  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/60804
+	* c-common.h (check_no_cilk): Declare.
+	* cilk.c (get_error_location): New function.
+	(check_no_cilk): Dito.
+
+2014-11-10  Andi Kleen  <ak@linux.intel.com>
+
+	* cilk.c (recognize_spawn): Use expression location
+	for error message.
+
+2014-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c.opt ([Wshift-count-negative, Wshift-count-overflow]): Add.
+
+2014-11-10  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* c-cppbuiltin.c (__has_attribute, __has_cpp_attribute): New macros;
+	(__cpp_rtti, __cpp_exceptions): New macros for C++98;
+	(__cpp_range_based_for, __cpp_initializer_lists,
+	__cpp_delegating_constructors, __cpp_nsdmi,
+	__cpp_inheriting_constructors, __cpp_ref_qualifiers): New macros
+	for C++11; (__cpp_attribute_deprecated): Remove in favor of
+	__has_cpp_attribute.
+	* c-lex.c (cb_has_attribute): New callback CPP function;
+	(init_c_lex): Set has_attribute callback.
+
+2014-11-04  Richard Biener  <rguenther@suse.de>
+
+	* c-common.c (shorten_compare): Do not shorten mixed
+	DFP and non-DFP compares.
+
 2014-11-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* g++.dg/cpp1y/feat-cxx11.C: Commentary and rearrangement of tests.

@@ -1618,14 +1618,9 @@
   extract_insn (insn2);
   if (! constrain_operands (1, get_preferred_alternatives (insn2, bb)))
     {
-      rtx tmp;
     failure:
-      tmp = replacements[0];
-      replacements[0] = replacements[1];
-      replacements[1] = tmp;
-      tmp = replacements[2];
-      replacements[2] = replacements[3];
-      replacements[3] = tmp;
+      std::swap (replacements[0], replacements[1]);
+      std::swap (replacements[2], replacements[3]);
       replace_n_hard_rtx (SET_DEST (set1), replacements, 2, 1);
       replace_n_hard_rtx (SET_DEST (set2), replacements, 2, 1);
       replace_n_hard_rtx (SET_SRC (set2), replacements, 2, 1);
@@ -11348,9 +11343,7 @@ label:
 
   if (swap)
     {
-      rtx tem = operands[2];
-      operands[2] = operands[3];
-      operands[3] = tem;
+      std::swap (operands[2], operands[3]);
       code = swap_condition (code);
     }
 
@@ -11452,13 +11445,21 @@ label:
   DONE;
 })
 
-(define_insn "movrt_negc"
+(define_insn_and_split "movrt_negc"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(xor:SI (match_operand:SI 1 "t_reg_operand" "") (const_int 1)))
+	(xor:SI (match_operand:SI 1 "t_reg_operand") (const_int 1)))
    (set (reg:SI T_REG) (const_int 1))
    (use (match_operand:SI 2 "arith_reg_operand" "r"))]
   "TARGET_SH1"
   "negc	%2,%0"
+  "&& 1"
+  [(const_int 0)]
+{
+  if (sh_split_movrt_negc_to_movt_xor (curr_insn, operands))
+    DONE;
+  else
+    FAIL;
+}
   [(set_attr "type" "arith")])
 
 ;; The -1 constant will not be CSE-ed for the *movrt_negc pattern, but the
@@ -11467,17 +11468,25 @@ label:
 ;; generating a pseudo reg before reload.
 (define_insn_and_split "*movrt_negc"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(xor:SI (match_operand:SI 1 "t_reg_operand" "") (const_int 1)))
+	(xor:SI (match_operand:SI 1 "t_reg_operand") (const_int 1)))
    (clobber (match_scratch:SI 2 "=r"))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && ! TARGET_SH2A"
   "#"
-  "&& reload_completed"
-  [(set (match_dup 2) (const_int -1))
-   (parallel
-       [(set (match_dup 0) (xor:SI (match_dup 1) (const_int 1)))
-	(set (reg:SI T_REG) (const_int 1))
-	(use (match_dup 2))])])
+  "&& 1"
+  [(const_int 0)]
+{
+  if (sh_split_movrt_negc_to_movt_xor (curr_insn, operands))
+    DONE;
+  else if (reload_completed)
+    {
+      emit_move_insn (operands[2], gen_int_mode (-1, SImode));
+      emit_insn (gen_movrt_negc (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+  else
+    FAIL;
+})
 
 ;; Store the negated T bit in a reg using r0 and xor.  This one doesn't
 ;; clobber the T bit, which is useful when storing the T bit and the
@@ -11488,44 +11497,11 @@ label:
   [(set (match_operand:SI 0 "arith_reg_dest" "=z")
 	(xor:SI (match_operand:SI 1 "t_reg_operand") (const_int 1)))
    (use (reg:SI T_REG))]
-  "TARGET_SH1 && !TARGET_SH2A"
+  "TARGET_SH1"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (reg:SI T_REG))
    (set (match_dup 0) (xor:SI (match_dup 0) (const_int 1)))])
-
-;; Store the T bit and the negated T bit in two regs in parallel.  There is
-;; no real insn to do that, but specifying this pattern will give combine
-;; some opportunities.
-(define_insn_and_split "*movt_movrt"
-  [(parallel [(set (match_operand:SI 0 "arith_reg_dest")
-		   (match_operand:SI 1 "negt_reg_operand"))
-	      (set (match_operand:SI 2 "arith_reg_dest")
-		   (match_operand:SI 3 "t_reg_operand"))])]
-  "TARGET_SH1"
-  "#"
-  "&& 1"
-  [(const_int 0)]
-{
-  rtx i = TARGET_SH2A
-	  ? gen_movrt (operands[0], get_t_reg_rtx ())
-	  : gen_movrt_xor (operands[0], get_t_reg_rtx ());
-  
-  emit_insn (i);
-  emit_insn (gen_movt (operands[2], get_t_reg_rtx ()));
-  DONE;
-})
-
-(define_insn_and_split "*movt_movrt"
-  [(parallel [(set (match_operand:SI 0 "arith_reg_dest")
-		   (match_operand:SI 1 "t_reg_operand"))
-	      (set (match_operand:SI 2 "arith_reg_dest")
-		   (match_operand:SI 3 "negt_reg_operand"))])]
-  "TARGET_SH1"
-  "#"
-  "&& 1"
-  [(parallel [(set (match_dup 2) (match_dup 3))
-	      (set (match_dup 0) (match_dup 1))])])
 
 ;; Use negc to store the T bit in a MSB of a reg in the following way:
 ;;	T = 1: 0x80000000 -> reg
@@ -12538,11 +12514,7 @@ label:
   /* Change 'b * a + a' into 'a * b + a'.
      This is better for register allocation.  */
   if (REGNO (operands[2]) == REGNO (operands[3]))
-    {
-      rtx tmp = operands[1];
-      operands[1] = operands[2];
-      operands[2] = tmp;
-    }
+    std::swap (operands[1], operands[2]);
 }
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])

@@ -586,7 +586,8 @@ bool linemap_location_from_macro_expansion_p (const struct line_maps *,
   ({linemap_assert (!linemap_macro_expansion_map_p (LINE_MAP)); \
     (LINE_MAP);})
 #else
-#define linemap_assert(EXPR)
+/* Include EXPR, so that unused variable warnings do not occur.  */
+#define linemap_assert(EXPR) ((void)(0 && (EXPR)))
 #define linemap_check_ordinary(LINE_MAP) (LINE_MAP)
 #endif
 
@@ -602,6 +603,14 @@ linemap_position_for_column (struct line_maps *, unsigned int);
 source_location
 linemap_position_for_line_and_column (const struct line_map *,
 				      linenum_type, unsigned int);
+
+/* Encode and return a source_location starting from location LOC and
+   shifting it by OFFSET columns.  This function does not support
+   virtual locations.  */
+source_location
+linemap_position_for_loc_and_offset (struct line_maps *set,
+				     source_location loc,
+				     unsigned int offset);
 
 /* Return the file this map is for.  */
 #define LINEMAP_FILE(MAP)					\

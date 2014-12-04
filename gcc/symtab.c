@@ -54,7 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "calls.h"
 
-static const char *ipa_ref_use_name[] = {"read","write","addr","alias"};
+static const char *ipa_ref_use_name[] = {"read","write","addr","alias","chkp"};
 
 const char * const ld_plugin_symbol_resolution_names[]=
 {

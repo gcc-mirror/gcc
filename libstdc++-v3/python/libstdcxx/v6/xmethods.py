@@ -422,6 +422,50 @@ class VectorMethodsMatcher(gdb.xmethod.XMethodMatcher):
             return None
         return method.worker_class(class_type.template_argument(0))
 
+# Xmethods for associative containers
+
+class AssociativeContainerWorkerBase(gdb.xmethod.XMethodWorker):
+    def __init__(self, unordered):
+        self._unordered = unordered
+
+    def node_count(self, obj):
+        if self._unordered:
+            return obj['_M_h']['_M_element_count']
+        else:
+            return obj['_M_t']['_M_impl']['_M_node_count']
+
+    def get_arg_types(self):
+        return None
+
+class AssociativeContainerEmptyWorker(AssociativeContainerWorkerBase):
+    def __call__(self, obj):
+        return int(self.node_count(obj)) == 0
+
+class AssociativeContainerSizeWorker(AssociativeContainerWorkerBase):
+    def __call__(self, obj):
+        return self.node_count(obj)
+
+class AssociativeContainerMethodsMatcher(gdb.xmethod.XMethodMatcher):
+    def __init__(self, name):
+        gdb.xmethod.XMethodMatcher.__init__(self,
+                                            matcher_name_prefix + name)
+        self._name = name
+        self._method_dict = {
+            'size': LibStdCxxXMethod('size', AssociativeContainerSizeWorker),
+            'empty': LibStdCxxXMethod('empty',
+                                      AssociativeContainerEmptyWorker),
+        }
+        self.methods = [self._method_dict[m] for m in self._method_dict]
+
+    def match(self, class_type, method_name):
+        if not re.match('^std::%s<.*>$' % self._name, class_type.tag):
+            return None
+        method = self._method_dict.get(method_name)
+        if method is None or not method.enabled:
+            return None
+        unordered = 'unordered' in self._name
+        return method.worker_class(unordered)
+
 # Xmethods for std::unique_ptr
 
 class UniquePtrGetWorker(gdb.xmethod.XMethodWorker):
@@ -465,4 +509,20 @@ def register_libstdcxx_xmethods(locus):
     gdb.xmethod.register_xmethod_matcher(locus, DequeMethodsMatcher())
     gdb.xmethod.register_xmethod_matcher(locus, ListMethodsMatcher())
     gdb.xmethod.register_xmethod_matcher(locus, VectorMethodsMatcher())
+    gdb.xmethod.register_xmethod_matcher(
+        locus, AssociativeContainerMethodsMatcher('set'))
+    gdb.xmethod.register_xmethod_matcher(
+        locus, AssociativeContainerMethodsMatcher('map'))
+    gdb.xmethod.register_xmethod_matcher(
+        locus, AssociativeContainerMethodsMatcher('multiset'))
+    gdb.xmethod.register_xmethod_matcher(
+        locus, AssociativeContainerMethodsMatcher('multimap'))
+    gdb.xmethod.register_xmethod_matcher(
+        locus, AssociativeContainerMethodsMatcher('unordered_set'))
+    gdb.xmethod.register_xmethod_matcher(
+        locus, AssociativeContainerMethodsMatcher('unordered_map'))
+    gdb.xmethod.register_xmethod_matcher(
+        locus, AssociativeContainerMethodsMatcher('unordered_multiset'))
+    gdb.xmethod.register_xmethod_matcher(
+        locus, AssociativeContainerMethodsMatcher('unordered_multimap'))
     gdb.xmethod.register_xmethod_matcher(locus, UniquePtrMethodsMatcher())

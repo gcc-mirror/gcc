@@ -3720,7 +3720,17 @@ package body Exp_Ch6 is
                  (Unit_File_Name (Get_Source_Unit (Sloc (Subp))))
               and then In_Extended_Main_Source_Unit (N)
             then
-               Set_Needs_Debug_Info (Subp, False);
+               --  We make an exception for calls to the Ada hierarchy if call
+               --  comes from source, because some user applications need the
+               --  debugging information for such calls.
+
+               if Comes_From_Source (Call_Node)
+                 and then Name_Buffer (1 .. 2) = "a-"
+               then
+                  null;
+               else
+                  Set_Needs_Debug_Info (Subp, False);
+               end if;
             end if;
 
          --  Front end expansion of simple functions returning unconstrained

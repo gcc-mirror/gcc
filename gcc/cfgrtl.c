@@ -1461,7 +1461,24 @@ emit_barrier_after_bb (basic_block bb)
   gcc_assert (current_ir_type () == IR_RTL_CFGRTL
               || current_ir_type () == IR_RTL_CFGLAYOUT);
   if (current_ir_type () == IR_RTL_CFGLAYOUT)
-    BB_FOOTER (bb) = unlink_insn_chain (barrier, barrier);
+    {
+      rtx_insn *insn = unlink_insn_chain (barrier, barrier);
+
+      if (BB_FOOTER (bb))
+	{
+          rtx_insn *footer_tail = BB_FOOTER (bb);
+
+          while (NEXT_INSN (footer_tail))
+            footer_tail = NEXT_INSN (footer_tail);
+          if (!BARRIER_P (footer_tail))
+            {
+              SET_NEXT_INSN (footer_tail) = insn;
+              SET_PREV_INSN (insn) = footer_tail;
+            }
+	}
+      else
+        BB_FOOTER (bb) = insn;
+    }
 }
 
 /* Like force_nonfallthru below, but additionally performs redirection
