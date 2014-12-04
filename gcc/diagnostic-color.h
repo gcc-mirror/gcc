@@ -41,11 +41,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTIC_COLOR_H
 #define GCC_DIAGNOSTIC_COLOR_H
 
-/* How often diagnostics are prefixed by their locations:
-   o DIAGNOSTICS_SHOW_PREFIX_NEVER: never - not yet supported;
-   o DIAGNOSTICS_SHOW_PREFIX_ONCE: emit only once;
-   o DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE: emit each time a physical
-   line is started.  */
+/* Whether to add color to diagnostics:
+   o DIAGNOSTICS_COLOR_NO: never
+   o DIAGNOSTICS_COLOR_YES: always
+   o DIAGNOSTICS_COLOR_AUTO: depending on the output stream.  */
 typedef enum
 {
   DIAGNOSTICS_COLOR_NO       = 0,

@@ -1,3 +1,16 @@
+2014-12-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* diagnostic.c (diagnostic_color_init): New.
+	* diagnostic.h: Declare.
+	* gcc.c (driver::global_initializations): Use it.
+	(driver_handle_option): Handle -fdiagnostics-color_.
+	* toplev.c: Do not include diagnostic-color.h.
+	(process_options): Do not initialize color diagnostics here.
+	* common.opt (fdiagnostics-color=): Add Driver.
+	* opts-global.c (init_options_once): Initialize color here.
+	* opts.c (common_handle_option): Use diagnostics_color_init.
+	* diagnostic-color.h: Fix comment.
+
 2014-12-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* tree-pretty-print.c (INDENT): Rename "buffer" to "pp".
