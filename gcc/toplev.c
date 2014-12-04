@@ -2163,12 +2163,14 @@ toplev::finalize (void)
   rtl_initialized = false;
   this_target_rtl->target_specific_initialized = false;
 
+  /* Needs to be called before cgraph_c_finalize since it uses symtab.  */
+  ipa_reference_c_finalize ();
+
   cgraph_c_finalize ();
   cgraphunit_c_finalize ();
   dwarf2out_c_finalize ();
   gcse_c_finalize ();
   ipa_cp_c_finalize ();
-  ipa_reference_c_finalize ();
   ira_costs_c_finalize ();
   params_c_finalize ();
 

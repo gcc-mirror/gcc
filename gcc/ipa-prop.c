@@ -3613,7 +3613,8 @@ ipa_register_cgraph_hooks (void)
   if (!node_duplication_hook_holder)
     node_duplication_hook_holder =
       symtab->add_cgraph_duplication_hook (&ipa_node_duplication_hook, NULL);
-  function_insertion_hook_holder =
+  if (!function_insertion_hook_holder)
+    function_insertion_hook_holder =
       symtab->add_cgraph_insertion_hook (&ipa_add_new_function, NULL);
 }
 
