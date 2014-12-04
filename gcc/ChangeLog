@@ -1,3 +1,8 @@
+2014-12-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* doc/install.texi: Remove mentions of cloog and ppl.
+	* doc/invoke.texi: Likewise
+
 2014-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/56493

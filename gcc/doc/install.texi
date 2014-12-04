@@ -1719,21 +1719,13 @@ a cross compiler, they will not be used to configure target libraries.
 @item --with-isl=@var{pathname}
 @itemx --with-isl-include=@var{pathname}
 @itemx --with-isl-lib=@var{pathname}
-@itemx --with-cloog=@var{pathname}
-@itemx --with-cloog-include=@var{pathname}
-@itemx --with-cloog-lib=@var{pathname}
-If you do not have ISL and the CLooG
-libraries installed in a standard location and you want to build GCC,
-you can explicitly specify the directory where they are installed
-(@samp{--with-isl=@/@var{islinstalldir}},
-@samp{--with-cloog=@/@var{clooginstalldir}}). The
+If you do not have the ISL library installed in a standard location and you
+want to build GCC, you can explicitly specify the directory where it is
+installed (@samp{--with-isl=@/@var{islinstalldir}}). The
 @option{--with-isl=@/@var{islinstalldir}} option is shorthand for
 @option{--with-isl-lib=@/@var{islinstalldir}/lib} and
-@option{--with-isl-include=@/@var{islinstalldir}/include}.  Likewise the
-@option{--with-cloog=@/@var{clooginstalldir}} option is shorthand for
-@option{--with-cloog-lib=@/@var{clooginstalldir}/lib} and
-@option{--with-cloog-include=@/@var{clooginstalldir}/include}.  If these
-shorthand assumptions are not correct, you can use the explicit
+@option{--with-isl-include=@/@var{islinstalldir}/include}. If this
+shorthand assumption is not correct, you can use the explicit
 include and lib options directly.
 
 These flags are applicable to the host platform only.  When building
