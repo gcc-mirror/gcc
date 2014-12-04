@@ -1,5 +1,17 @@
 2014-12-04  David Malcolm  <dmalcolm@redhat.com>
 
+	PR jit/63854
+	* ipa-prop.c (ipa_register_cgraph_hooks): Guard insertion of
+	ipa_add_new_function on function_insertion_hook_holder being
+	non-NULL.
+	* ipa-reference.c (ipa_reference_c_finalize): Remove
+	node_removal_hook_holder and node_duplication_hook_holder if
+	they've been added to symtab.
+	* toplev.c (toplev::finalize): Call ipa_reference_c_finalize
+	before cgraph_c_finalize so that the former can access "symtab".
+
+2014-12-04  David Malcolm  <dmalcolm@redhat.com>
+
 	* doc/cfg.texi (GIMPLE statement iterators): Add note about
 	gphi_iterator, and use one in the example.
 	* doc/gimple.texi (Tuple specific accessors): Add missing
