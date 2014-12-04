@@ -1,3 +1,8 @@
+2014-12-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* check_GNU_style.sh: Warn for incorrect number of spaces in function
+	call only if 0 or 2+ spaces found.
+
 2014-12-02  Tobias Burnus  <burnus@net-b.de>
 
 	* download_prerequisites: Download ISL 0.14 instead of 0.12.2.
