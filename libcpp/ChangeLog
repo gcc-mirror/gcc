@@ -1,3 +1,8 @@
+2014-12-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* line-map.c (linemap_position_for_loc_and_offset): Add new
+	linemap_assert_fails.
+
 2014-12-02  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* include/line-map.h (linemap_assert_fails): Declare.

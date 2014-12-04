@@ -678,7 +678,8 @@ linemap_position_for_loc_and_offset (struct line_maps *set,
     linemap_position_for_line_and_column (map,
 					  SOURCE_LINE (map, loc),
 					  offset);
-  if (linemap_assert_fails (map == linemap_lookup (set, r)))
+  if (linemap_assert_fails (r <= set->highest_location)
+      || linemap_assert_fails (map == linemap_lookup (set, r)))
     return loc;
 
   return r;
