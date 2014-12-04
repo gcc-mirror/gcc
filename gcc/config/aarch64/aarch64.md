@@ -375,6 +375,33 @@
   [(set_attr "type" "no_insn")]
 )
 
+(define_insn "prefetch"
+  [(prefetch (match_operand:DI 0 "address_operand" "r")
+            (match_operand:QI 1 "const_int_operand" "")
+            (match_operand:QI 2 "const_int_operand" ""))]
+  ""
+  {
+    const char * pftype[2][4] = 
+    {
+      {"prfm\\tPLDL1STRM, %a0",
+       "prfm\\tPLDL3KEEP, %a0",
+       "prfm\\tPLDL2KEEP, %a0",
+       "prfm\\tPLDL1KEEP, %a0"},
+      {"prfm\\tPSTL1STRM, %a0",
+       "prfm\\tPSTL3KEEP, %a0",
+       "prfm\\tPSTL2KEEP, %a0",
+       "prfm\\tPSTL1KEEP, %a0"},
+    };
+
+    int locality = INTVAL (operands[2]);
+
+    gcc_assert (IN_RANGE (locality, 0, 3));
+
+    return pftype[INTVAL(operands[1])][locality];
+  }
+  [(set_attr "type" "load1")]
+)
+
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 8))]
   ""

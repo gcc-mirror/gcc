@@ -1,3 +1,7 @@
+2014-12-04 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/aarch64/aarch64.md (define_insn "prefetch"): New.
+
 2014-12-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* doc/install.texi: Remove mentions of cloog and ppl.
