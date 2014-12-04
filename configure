@@ -5939,7 +5939,6 @@ fi
 $as_echo "$as_me: WARNING: using in-tree ISL, disabling version check" >&2;}
   fi
 
-  islinc="-DCLOOG_INT_GMP ${islinc}"
   isllibs="${isllibs} -lisl"
 
 
