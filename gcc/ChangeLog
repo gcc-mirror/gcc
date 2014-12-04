@@ -1,5 +1,35 @@
 2014-12-04  David Malcolm  <dmalcolm@redhat.com>
 
+	* tree-pretty-print.c (INDENT): Rename "buffer" to "pp".
+	(NIY): Likewise.
+	(buffer): Rename this variable to...
+	(tree_pp): ...this.
+
+	(do_niy): Rename param from "buffer" to "pp".
+	(dump_decl_name): Likewise.
+	(dump_function_name): Likewise.
+	(dump_function_declaration): Likewise.
+	(dump_array_domain): Likewise.
+	(dump_omp_clause): Likewise.
+	(dump_omp_clauses): Likewise.
+	(dump_location): Likewise.
+	(dump_block_node): Likewise.
+	(dump_generic_node): Likewise.
+	(print_declaration): Likewise.
+	(print_struct_decl): Likewise.
+	(print_call_name): Likewise.
+	(pretty_print_string): Likewise.
+	(newline_and_indent): Likewise.
+
+	(print_generic_decl): Update for renaming of "buffer" to
+	"tree_pp".
+	(print_generic_stmt): Likewise.
+	(print_generic_stmt_indented): Likewise.
+	(print_generic_expr): Likewise.
+	(maybe_init_pretty_print): Likewise.
+
+2014-12-04  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/63854
 	* tree-pretty-print.c: Eliminate include of <new>.
 	(buffer): Convert this variable from a pretty_printer to a
