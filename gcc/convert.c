@@ -95,6 +95,15 @@ convert_to_real (tree type, tree expr)
   enum built_in_function fcode = builtin_mathfn_code (expr);
   tree itype = TREE_TYPE (expr);
 
+  if (TREE_CODE (expr) == COMPOUND_EXPR)
+    {
+      tree t = convert_to_real (type, TREE_OPERAND (expr, 1));
+      if (t == TREE_OPERAND (expr, 1))
+	return expr;
+      return build2_loc (EXPR_LOCATION (expr), COMPOUND_EXPR, TREE_TYPE (t),
+			 TREE_OPERAND (expr, 0), t);
+    }    
+
   /* Disable until we figure out how to decide whether the functions are
      present in runtime.  */
   /* Convert (float)sqrt((double)x) where x is float into sqrtf(x) */
@@ -365,6 +374,15 @@ convert_to_integer (tree type, tree expr)
       error ("conversion to incomplete type");
       return error_mark_node;
     }
+
+  if (ex_form == COMPOUND_EXPR)
+    {
+      tree t = convert_to_integer (type, TREE_OPERAND (expr, 1));
+      if (t == TREE_OPERAND (expr, 1))
+	return expr;
+      return build2_loc (EXPR_LOCATION (expr), COMPOUND_EXPR, TREE_TYPE (t),
+			 TREE_OPERAND (expr, 0), t);
+    }    
 
   /* Convert e.g. (long)round(d) -> lround(d).  */
   /* If we're converting to char, we may encounter differing behavior
@@ -854,6 +872,14 @@ convert_to_complex (tree type, tree expr)
 
 	if (TYPE_MAIN_VARIANT (elt_type) == TYPE_MAIN_VARIANT (subtype))
 	  return expr;
+	else if (TREE_CODE (expr) == COMPOUND_EXPR)
+	  {
+	    tree t = convert_to_complex (type, TREE_OPERAND (expr, 1));
+	    if (t == TREE_OPERAND (expr, 1))
+	      return expr;
+	    return build2_loc (EXPR_LOCATION (expr), COMPOUND_EXPR,
+			       TREE_TYPE (t), TREE_OPERAND (expr, 0), t);
+	  }    
 	else if (TREE_CODE (expr) == COMPLEX_EXPR)
 	  return fold_build2 (COMPLEX_EXPR, type,
 			      convert (subtype, TREE_OPERAND (expr, 0)),
