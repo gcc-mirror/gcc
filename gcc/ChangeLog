@@ -1,3 +1,13 @@
+2014-12-03  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.md (floatsidf2_internal): Use std::swap.
+	(floatunssidf2_internal): Same.
+	* config/rs6000/rs6000.c (rs6000_emit_vector_compare): Same.
+	(rs6000_emit_int_cmove): Same.
+	(rs6000_sched_reorder): Same.
+	(altivec_expand_vec_perm_const): Same.
+	(rs6000_expand_vec_perm_const_1): Same.
+
 2014-12-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR rtl-optimization/64010
