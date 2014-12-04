@@ -1143,10 +1143,7 @@ gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
   pretty_printer *pp = context->printer;
   const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
-  expanded_location s = expand_location_to_spelling_point (diagnostic->location);
-  if (diagnostic->override_column)
-    s.column = diagnostic->override_column;
-
+  expanded_location s = diagnostic_expand_location (diagnostic);
   return (s.file == NULL
 	  ? build_message_string ("%s%s:%s", locus_cs, progname, locus_ce )
 	  : !strcmp (s.file, N_("<built-in>"))

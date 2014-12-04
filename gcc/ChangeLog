@@ -1,3 +1,9 @@
+2014-12-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* diagnostic.h (diagnostic_expand_location): New inline function.
+	* diagnostic.c (diagnostic_build_prefix): Use it.
+	(diagnostic_show_locus): Likewise.
+
 2014-12-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/64189

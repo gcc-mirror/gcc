@@ -297,6 +297,18 @@ void diagnostic_set_caret_max_width (diagnostic_context *context, int value);
 
 void diagnostic_file_cache_fini (void);
 
+/* Expand the location of this diagnostic. Use this function for consistency. */
+
+static inline expanded_location
+diagnostic_expand_location (const diagnostic_info * diagnostic)
+{
+  expanded_location s
+    = expand_location_to_spelling_point (diagnostic->location);
+  if (diagnostic->override_column)
+    s.column = diagnostic->override_column;
+  return s;
+}
+
 /* Pure text formatting support functions.  */
 extern char *file_name_as_prefix (diagnostic_context *, const char *);
 
