@@ -19796,12 +19796,7 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
   if (try_again)
     {
       if (swap_operands)
-	{
-	  rtx tmp;
-	  tmp = op0;
-	  op0 = op1;
-	  op1 = tmp;
-	}
+	std::swap (op0, op1);
 
       mask = rs6000_emit_vector_compare_inner (rcode, op0, op1);
       if (mask)
@@ -20114,9 +20109,7 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
     default:
       /* We need to swap the sense of the comparison.  */
       {
-	rtx t = true_cond;
-	true_cond = false_cond;
-	false_cond = t;
+	std::swap (false_cond, true_cond);
 	PUT_CODE (condition_rtx, reverse_condition (cond_code));
       }
       break;
@@ -27496,11 +27489,7 @@ rs6000_sched_reorder (FILE *dump ATTRIBUTE_UNUSED, int sched_verbose,
     if (is_nonpipeline_insn (ready[n_ready - 1])
         && (recog_memoized (ready[n_ready - 2]) > 0))
       /* Simply swap first two insns.  */
-      {
-	rtx_insn *tmp = ready[n_ready - 1];
-	ready[n_ready - 1] = ready[n_ready - 2];
-	ready[n_ready - 2] = tmp;
-      }
+      std::swap (ready[n_ready - 1], ready[n_ready - 2]);
   }
 
   if (rs6000_cpu == PROCESSOR_POWER6)
@@ -31305,7 +31294,7 @@ altivec_expand_vec_perm_const (rtx operands[4])
              (or swapped back) to ensure proper right-to-left numbering
              from 0 to 2N-1.  */
 	  if (swapped ^ !BYTES_BIG_ENDIAN)
-	    x = op0, op0 = op1, op1 = x;
+	    std::swap (op0, op1);
 	  if (imode != V16QImode)
 	    {
 	      op0 = gen_lowpart (imode, op0);
@@ -31361,7 +31350,7 @@ rs6000_expand_vec_perm_const_1 (rtx target, rtx op0, rtx op1,
 	return false;
       perm0 -= 2;
       perm1 += 2;
-      x = op0, op0 = op1, op1 = x;
+      std::swap (op0, op1);
     }
   /* If the second selector does not come from the second operand, fail.  */
   else if ((perm1 & 2) == 0)
