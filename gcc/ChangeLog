@@ -1,3 +1,75 @@
+2014-12-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/cfg.texi (GIMPLE statement iterators): Add note about
+	gphi_iterator, and use one in the example.
+	* doc/gimple.texi (Tuple specific accessors): Add missing
+	GIMPLE_GOTO section and menu item.
+	(gimple_build_asm, gimple gimple_build_assign_with_ops)
+	gimple_call_mark_uninlinable, gimple_call_cannot_inline_p): Remove
+	description of removed functions.
+	(gimple_build_assign, gimple_build_bind, gimple_build_call,
+	gimple_build_call_from_tree, gimple_build_call_vec,
+	gimple_build_catch, gimple_build_cond,
+	gimple_build_cond_from_tree, gimple_build_debug_bind,
+	gimple_build_eh_filter, gimple_build_label, gimple_build_goto,
+	gimple_build_omp_atomic_load, gimple_build_omp_atomic_store,
+	gimple_build_omp_continue, gimple_build_omp_critical,
+	gimple_build_omp_for, gimple_build_omp_parallel,
+	gimple_build_omp_sections, gimple_build_omp_single,
+	gimple_build_return, gimple_build_resx, gimple_build_switch,
+	gimple_build_try): Update return type within description to
+	reflect changes in gimple.h to using gimple subclasses.
+	(gimple_build_asm_vec): Update return type, params and
+	description.
+	(gimple_asm_ninputs): Update param.
+	(gimple_asm_noutputs, gimple_asm_nclobbers, gimple_asm_input_op
+	gimple_asm_set_input_op, gimple_asm_output_op
+	gimple_asm_set_output_op, gimple_asm_clobber_op,
+	gimple_asm_set_clobber_op, gimple_asm_string,
+	gimple_asm_volatile_p, gimple_asm_set_volatile, gimple_bind_vars,
+	gimple_bind_set_vars, gimple_bind_append_vars, gimple_bind_body,
+	gimple_bind_set_body, gimple_bind_add_stmt, gimple_bind_add_seq,
+	gimple_bind_block, gimple_bind_set_block, gimple_call_set_fn,
+	gimple_call_return_type, gimple_call_set_chain,
+	gimple_call_set_tail, gimple_call_tail_p,
+	gimple_call_copy_skip_args, gimple_catch_types,
+	gimple_catch_types_ptr, gimple_catch_handler,
+	gimple_catch_set_types, gimple_catch_set_handler,
+	gimple_cond_set_code, gimple_cond_set_lhs, gimple_cond_set_rhs,
+	gimple_cond_true_label, gimple_cond_set_true_label,
+	gimple_cond_set_false_label, gimple_cond_false_label,
+	gimple_cond_make_false, gimple_cond_make_true,
+	gimple_eh_filter_set_types, gimple_eh_filter_set_failure,
+	gimple_eh_must_not_throw_fndecl,
+	gimple_eh_must_not_throw_set_fndecl, gimple_label_label,
+	gimple_label_set_label, gimple_goto_set_dest,
+	gimple_omp_atomic_load_set_lhs, gimple_omp_atomic_load_lhs,
+	gimple_omp_atomic_load_set_rhs, gimple_omp_atomic_load_rhs,
+	gimple_omp_atomic_store_set_val, gimple_omp_atomic_store_val,
+	gimple_omp_continue_control_def,
+	gimple_omp_continue_control_def_ptr,
+	gimple_omp_continue_set_control_def,
+	gimple_omp_continue_control_use,
+	gimple_omp_continue_control_use_ptr,
+	gimple_omp_continue_set_control_use, gimple_omp_critical_name,
+	gimple_omp_critical_name_ptr, gimple_omp_critical_set_name,
+	gimple_omp_parallel_clauses_ptr, gimple_omp_parallel_set_clauses,
+	gimple_omp_parallel_child_fn, gimple_omp_parallel_child_fn_ptr,
+	gimple_omp_parallel_set_child_fn, gimple_omp_parallel_data_arg,
+	gimple_omp_parallel_data_arg_ptr,
+	gimple_omp_parallel_set_data_arg, gimple_omp_single_set_clauses,
+	gimple_phi_set_result, gimple_phi_set_arg, gimple_resx_region,
+	gimple_resx_set_region, gimple_return_retval,
+	gimple_return_set_retval, gimple_switch_num_labels,
+	gimple_switch_set_num_labels, gimple_switch_index,
+	gimple_switch_set_index, gimple_switch_label,
+	gimple_switch_set_label, gimple_switch_default_label,
+	gimple_switch_set_default_label, gimple_try_set_eval,
+	gimple_try_set_cleanup): Update initial param within description
+	to reflect changes in gimple.h to using gimple subclasses.
+	(Adding a new GIMPLE statement code): Update to reflect gimple
+	statement subclassing.
+
 2014-12-04  Sriraman Tallam  <tmsriram@google.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
