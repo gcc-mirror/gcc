@@ -224,6 +224,46 @@ In this example the pattern will be repeated four times with
 @code{plus, minus, minus}, @code{minus, plus, plus},
 @code{minus, plus, minus}.
 
+To avoid repeating operator lists in @code{for} you can name
+them via
+
+@smallexample
+(define_operator_list pmm plus minus mult)
+@end smallexample
+
+and use them in @code{for} operator lists where they get expanded.
+
+@smallexample
+(for opa (pmm trunc_div)
+ (simplify...
+@end smallexample
+
+So this example iterates over @code{plus}, @code{minus}, @code{mult}
+and @code{trunc_div}.
+
+Using operator lists can also remove the need to explicitely write
+a @code{for}.  All operator list uses that appear in a @code{simplify}
+or @code{match} pattern in operator positions will implicitely
+be added to a new @code{for}.  For example
+
+@smallexample
+(define_operator_list SQRT BUILT_IN_SQRTF BUILT_IN_SQRT BUILT_IN_SQRTL)
+(define_operator_list POW BUILT_IN_POWF BUILT_IN_POW BUILT_IN_POWL)
+(simplify
+ (SQRT (POW @@0 @@1))
+ (POW (abs @@0) (mult @@1 @{ built_real (TREE_TYPE (@@1), dconsthalf); @})))
+@end smallexample
+
+is the same as
+
+@smallexample
+(for SQRT (BUILT_IN_SQRTF BUILT_IN_SQRT BUILT_IN_SQRTL)
+     POW (BUILT_IN_POWF BUILT_IN_POW BUILT_IN_POWL)
+ (simplify
+  (SQRT (POW @@0 @@1))
+  (POW (abs @@0) (mult @@1 @{ built_real (TREE_TYPE (@@1), dconsthalf); @}))))
+@end smallexample
+
 Another building block are @code{with} expressions in the
 result expression which nest the generated code in a new C block
 followed by its argument:

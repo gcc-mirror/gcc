@@ -1,3 +1,7 @@
+2014-12-04  Richard Biener  <rguenther@suse.de>
+
+	* doc/match-and-simplify.texi: Update for recent changes.
+
 2014-12-04  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (ipa_alignment): New type.
