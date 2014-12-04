@@ -1,3 +1,8 @@
+2014-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56493
+	* c-c++-common/pr56493.c: New test.
+
 2014-12-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_tiny): Cache
