@@ -1,5 +1,8 @@
 2014-12-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64029
+	* decl.c (grok_reference_init): Complete array type.
+
 	PR c++/64080
 	* constexpr.c (cxx_eval_store_expression): Handle non-decl store
 	targets.
