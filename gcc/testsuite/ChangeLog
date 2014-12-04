@@ -1,3 +1,8 @@
+2014-12-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_tiny): Cache
+	predicate value.
+
 2014-12-04  Jack Howarth  <howarth@bromo.med.uc.edu>
 	
 	PR testsuite/64145
