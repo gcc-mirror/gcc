@@ -48,8 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int-print.h"
 #include "internal-fn.h"
 
-#include <new>                           // For placement-new.
-
 /* Local functions, macros and variables.  */
 static const char *op_symbol (const_tree);
 static void pretty_print_string (pretty_printer *, const char*);
@@ -63,8 +61,7 @@ static void do_niy (pretty_printer *, const_tree);
 
 #define NIY do_niy (buffer, node)
 
-static pretty_printer buffer;
-static int initialized = 0;
+static pretty_printer *buffer;
 
 /* Try to print something for an unknown tree code.  */
 
@@ -135,8 +132,8 @@ void
 print_generic_decl (FILE *file, tree decl, int flags)
 {
   maybe_init_pretty_print (file);
-  print_declaration (&buffer, decl, 2, flags);
-  pp_write_text_to_stream (&buffer);
+  print_declaration (buffer, decl, 2, flags);
+  pp_write_text_to_stream (buffer);
 }
 
 /* Print tree T, and its successors, on file FILE.  FLAGS specifies details
@@ -146,8 +143,8 @@ void
 print_generic_stmt (FILE *file, tree t, int flags)
 {
   maybe_init_pretty_print (file);
-  dump_generic_node (&buffer, t, 0, flags, true);
-  pp_newline_and_flush (&buffer);
+  dump_generic_node (buffer, t, 0, flags, true);
+  pp_newline_and_flush (buffer);
 }
 
 /* Print tree T, and its successors, on file FILE.  FLAGS specifies details
@@ -162,9 +159,9 @@ print_generic_stmt_indented (FILE *file, tree t, int flags, int indent)
   maybe_init_pretty_print (file);
 
   for (i = 0; i < indent; i++)
-    pp_space (&buffer);
-  dump_generic_node (&buffer, t, indent, flags, true);
-  pp_newline_and_flush (&buffer);
+    pp_space (buffer);
+  dump_generic_node (buffer, t, indent, flags, true);
+  pp_newline_and_flush (buffer);
 }
 
 /* Print a single expression T on file FILE.  FLAGS specifies details to show
@@ -174,8 +171,8 @@ void
 print_generic_expr (FILE *file, tree t, int flags)
 {
   maybe_init_pretty_print (file);
-  dump_generic_node (&buffer, t, 0, flags, false);
-  pp_flush (&buffer);
+  dump_generic_node (buffer, t, 0, flags, false);
+  pp_flush (buffer);
 }
 
 /* Dump the name of a _DECL node and its DECL_UID if TDF_UID is set
@@ -3400,15 +3397,14 @@ pretty_print_string (pretty_printer *buffer, const char *str)
 static void
 maybe_init_pretty_print (FILE *file)
 {
-  if (!initialized)
+  if (!buffer)
     {
-      new (&buffer) pretty_printer ();
-      pp_needs_newline (&buffer) = true;
-      pp_translate_identifiers (&buffer) = false;
-      initialized = 1;
+      buffer = new pretty_printer ();
+      pp_needs_newline (buffer) = true;
+      pp_translate_identifiers (buffer) = false;
     }
 
-  buffer.buffer->stream = file;
+  buffer->buffer->stream = file;
 }
 
 static void

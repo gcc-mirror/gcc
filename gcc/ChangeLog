@@ -1,6 +1,21 @@
 2014-12-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854
+	* tree-pretty-print.c: Eliminate include of <new>.
+	(buffer): Convert this variable from a pretty_printer to a
+	pretty_printer *.
+	(initialized): Eliminate this variable in favor of the NULL-ness
+	of "buffer".
+	(print_generic_decl): Update for "buffer" becoming a pointer.
+	(print_generic_stmt): Likewise.
+	(print_generic_stmt_indented): Likewise.
+	(print_generic_expr): Likewise.
+	(maybe_init_pretty_print): Likewise, allocating "buffer" on the
+	heap and using its non-NULL-ness to ensure idempotency.
+
+2014-12-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
 	* ipa-prop.c (ipa_register_cgraph_hooks): Guard insertion of
 	ipa_add_new_function on function_insertion_hook_holder being
 	non-NULL.
