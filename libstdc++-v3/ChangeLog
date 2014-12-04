@@ -1,3 +1,11 @@
+2014-12-04  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/64140
+	* include/bits/regex.tcc (regex_iterator<>::operator++): Update
+	prefix.matched after modifying prefix.first.
+	* testsuite/28_regex/iterators/regex_iterator/char/64140.cc: New
+	testcase.
+
 2014-12-03  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/13631
