@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-graphite-all" } */
+/* { dg-options "-O2 -fgraphite-identity -fdump-tree-graphite-all" } */
 
 int
 main (int n, int *a)
