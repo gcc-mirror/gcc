@@ -317,7 +317,7 @@
   VAR1 (UNOP, floatunsv4si, 2, v4sf)
   VAR1 (UNOP, floatunsv2di, 2, v2df)
 
-  VAR5 (UNOPU, bswap, 10, v4hi, v8hi, v2si, v4si, v2di)
+  VAR5 (UNOPU, bswap, 2, v4hi, v8hi, v2si, v4si, v2di)
 
   BUILTIN_VB (UNOP, rbit, 0)
 

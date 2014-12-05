@@ -1,3 +1,10 @@
+2014-12-05  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (bswap): Use CF2 rather
+	than CF10 so 2 is appended on the code.
+	* config/aarch64/aarch64-simd.md (bswap<mode>): Rename to ...
+	(bswap<mode>2): This so it matches for the optabs.
+
 2014-12-05  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* regrename.c (find_best_rename_reg): Rename to ...
