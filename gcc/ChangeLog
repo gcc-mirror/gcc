@@ -1,3 +1,10 @@
+2014-12-05  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* regrename.c (find_best_rename_reg): Rename to ...
+	(find_rename_reg): This. Also add a parameter to skip tick check.
+	* regrename.h: Likewise.
+	* config/c6x/c6x.c (try_rename_operands): Adapt to above renaming.
+
 2014-12-05  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/64192
