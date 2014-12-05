@@ -1,5 +1,11 @@
 2014-12-05  Olivier Hainque  <hainque@adacore.com>
 
+	* defaults.h: (DWARF_REG_TO_UNWIND_COLUMN): Define default.
+	* dwarf2cfi.c (init_one_dwarf_reg_size): Honor
+	DWARF_REG_TO_UNWIND_COLUMN.
+
+2014-12-05  Olivier Hainque  <hainque@adacore.com>
+
 	* dwarf2cfi.c (init_one_dwarf_reg_size): New helper, processing
 	one particular reg for expand_builtin_init_dwarf_reg_sizes.
 	(expand_builtin_init_dwarf_reg_sizes): Rework to use helper and

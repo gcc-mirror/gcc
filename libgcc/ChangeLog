@@ -1,3 +1,8 @@
+2014-12-05  Olivier Hainque  <hainque@adacore.com>
+
+	* unwind-dw2.c (DWARF_REG_TO_UNWIND_COLUMN): Remove default def,
+	now provided by defaults.h.
+
 2014-11-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/lib1funcs.S: Check value of __SHMEDIA__ instead of checking
