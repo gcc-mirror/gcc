@@ -55,10 +55,6 @@
 #define PRE_GCC3_DWARF_FRAME_REGISTERS __LIBGCC_DWARF_FRAME_REGISTERS__
 #endif
 
-#ifndef DWARF_REG_TO_UNWIND_COLUMN
-#define DWARF_REG_TO_UNWIND_COLUMN(REGNO) (REGNO)
-#endif
-
 /* ??? For the public function interfaces, we tend to gcc_assert that the
    column numbers are in range.  For the dwarf2 unwind info this does happen,
    although so far in a case that doesn't actually matter.

@@ -286,8 +286,9 @@ void init_one_dwarf_reg_size (int regno, machine_mode regmode,
 {
   const unsigned int dnum = DWARF_FRAME_REGNUM (regno);
   const unsigned int rnum = DWARF2_FRAME_REG_OUT (dnum, 1);
+  const unsigned int dcol = DWARF_REG_TO_UNWIND_COLUMN (rnum);
   
-  const HOST_WIDE_INT slotoffset = rnum * GET_MODE_SIZE (slotmode);
+  const HOST_WIDE_INT slotoffset = dcol * GET_MODE_SIZE (slotmode);
   const HOST_WIDE_INT regsize = GET_MODE_SIZE (regmode);
 
   init_state->processed_regno[regno] = true;
