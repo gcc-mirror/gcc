@@ -1,3 +1,8 @@
+2014-12-05  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* combine.c (is_parallel_of_n_reg_sets)
+	(can_split_parallel_of_n_reg_sets): Only define if !HAVE_cc0.
+
 2014-12-05  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64-simd-builtins.def (bswap): Use CF2 rather
