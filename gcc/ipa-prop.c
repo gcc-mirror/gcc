@@ -1739,10 +1739,11 @@ ipa_compute_jump_functions_for_edge (struct func_body_info *fbi,
 	  unsigned align;
 
 	  if (get_pointer_alignment_1 (arg, &align, &hwi_bitpos)
-	      && align > BITS_PER_UNIT)
+	      && align % BITS_PER_UNIT == 0
+	      && hwi_bitpos % BITS_PER_UNIT == 0)
 	    {
 	      jfunc->alignment.known = true;
-	      jfunc->alignment.align = align;
+	      jfunc->alignment.align = align / BITS_PER_UNIT;
 	      jfunc->alignment.misalign = hwi_bitpos / BITS_PER_UNIT;
 	    }
 	  else
