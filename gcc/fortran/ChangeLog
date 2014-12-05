@@ -1,3 +1,9 @@
+2014-12-05  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/60414
+	* interface.c (compare_parameter): Remove class argument rank
+	check short circuit.
+
 2014-12-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* error.c (gfc_diagnostic_build_locus_prefix): Use

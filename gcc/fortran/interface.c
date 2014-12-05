@@ -2157,10 +2157,6 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (symbol_rank (formal) == actual->rank || symbol_rank (formal) == -1)
     return 1;
 
-  if (actual->ts.type == BT_CLASS && CLASS_DATA (actual)->as
-	&& CLASS_DATA (actual)->as->rank == symbol_rank (formal))
-    return 1;
-
   rank_check = where != NULL && !is_elemental && formal->as
 	       && (formal->as->type == AS_ASSUMED_SHAPE
 		   || formal->as->type == AS_DEFERRED)
