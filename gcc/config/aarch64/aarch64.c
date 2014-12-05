@@ -6625,7 +6625,6 @@ aarch64_parse_cpu (void)
       if (strlen (cpu->name) == len && strncmp (cpu->name, str, len) == 0)
 	{
 	  selected_cpu = cpu;
-	  selected_tune = cpu;
 	  aarch64_isa_flags = selected_cpu->flags;
 
 	  if (ext != NULL)
@@ -6721,9 +6720,8 @@ aarch64_override_options (void)
 
   gcc_assert (selected_cpu);
 
-  /* The selected cpu may be an architecture, so lookup tuning by core ID.  */
   if (!selected_tune)
-    selected_tune = &all_cores[selected_cpu->core];
+    selected_tune = selected_cpu;
 
   aarch64_tune_flags = selected_tune->flags;
   aarch64_tune = selected_tune->core;
