@@ -79,7 +79,7 @@ if test $enable_linux_futex = yes; then
 	config_path="linux/x86 linux posix"
 	case " ${CC} ${CFLAGS} " in
 	  *" -m32 "*)
-	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=i686"
+	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=generic"
 	    ;;
 	esac
 	;;

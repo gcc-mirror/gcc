@@ -101,7 +101,7 @@ case "${target_cpu}" in
   x86_64)
 	case " ${CC} ${CFLAGS} " in
 	  *" -m32 "*)
-	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=i686"
+	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=generic"
 	    XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
 	    ;;
 	esac
