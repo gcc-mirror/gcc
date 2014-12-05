@@ -1,3 +1,17 @@
+2014-12-05  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.h (cgraph_node): New method expand_all_artificial_thunks.
+	(cgraph_edge): New method redirect_callee_duplicating_thunks.
+	* cgraphclones.c (duplicate_thunk_for_node): Donot expand newly
+	created thunks.
+	(redirect_edge_duplicating_thunks): Turned into edge method
+	redirect_callee_duplicating_thunks.
+	(cgraph_node::expand_all_artificial_thunks): New method.
+	(create_clone): Call expand_all_artificial_thunks.
+	* ipa-cp.c (perhaps_add_new_callers): Call
+	redirect_callee_duplicating_thunks instead of redirect_callee.
+	Also call expand_all_artificial_thunks.
+
 2014-12-05  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/64056

@@ -908,6 +908,10 @@ public:
      thunks that are not lowered.  */
   bool expand_thunk (bool output_asm_thunks, bool force_gimple_thunk);
 
+  /*  Call expand_thunk on all callers that are thunks and analyze those
+      nodes that were expanded.  */
+  void expand_all_artificial_thunks ();
+
   /* Assemble thunks and aliases associated to node.  */
   void assemble_thunks_and_aliases (void);
 
@@ -1476,6 +1480,12 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Redirect callee of the edge to N.  The function does not update underlying
      call expression.  */
   void redirect_callee (cgraph_node *n);
+
+  /* If the edge does not lead to a thunk, simply redirect it to N.  Otherwise
+     create one or more equivalent thunks for N and redirect E to the first in
+     the chain.  Note that it is then necessary to call
+     n->expand_all_artificial_thunks once all callers are redirected.  */
+  void redirect_callee_duplicating_thunks (cgraph_node *n);
 
   /* Make an indirect edge with an unknown callee an ordinary edge leading to
      CALLEE.  DELTA is an integer constant that is to be added to the this

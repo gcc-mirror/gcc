@@ -3912,7 +3912,8 @@ perhaps_add_new_callers (cgraph_node *node, ipcp_value<valtype> *val)
 			 xstrdup (val->spec_node->name ()),
 			 val->spec_node->order);
 
-	      cs->redirect_callee (val->spec_node);
+	      cs->redirect_callee_duplicating_thunks (val->spec_node);
+	      val->spec_node->expand_all_artificial_thunks ();
 	      redirected_sum += cs->count;
 	    }
 	  cs = get_next_cgraph_edge_clone (cs);
