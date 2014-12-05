@@ -1,3 +1,9 @@
+2014-12-05  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_parse_cpu): Don't define
+	selected_tune.
+	(aarch64_override_options): Use selected_cpu's tuning.
+
 2014-12-05  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/xcoff.h (ASM_OUTPUT_ALIGNED_LOCAL): Append
