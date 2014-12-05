@@ -1,3 +1,13 @@
+2014-12-05  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_1.c: New test.
+	* gcc.target/aarch64/ldp_stp_2.c: New test.
+	* gcc.target/aarch64/ldp_stp_3.c: New test.
+	* gcc.target/aarch64/ldp_stp_4.c: New test.
+	* gcc.target/aarch64/ldp_stp_5.c: New test.
+	* gcc.target/aarch64/lr_free_1.c: Disable scheduling fusion
+	and peephole2 pass.
+
 2014-12-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.dg/vect/pr63341-1.c: Remove explicit "dg-do run".

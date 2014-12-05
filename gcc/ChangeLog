@@ -1,3 +1,33 @@
+2014-12-05  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/aarch64/aarch64.md (load_pair<mode>): Split to
+	load_pairsi, load_pairdi, load_pairsf and load_pairdf.
+	(load_pairsi, load_pairdi, load_pairsf, load_pairdf): Split
+	from load_pair<mode>.  New alternative to support int/fp
+	registers in fp/int mode patterns.
+	(store_pair<mode>:): Split to store_pairsi, store_pairdi,
+	store_pairsf and store_pairdi.
+	(store_pairsi, store_pairdi, store_pairsf, store_pairdf): Split
+	from store_pair<mode>.  New alternative to support int/fp
+	registers in fp/int mode patterns.
+	(*load_pair_extendsidi2_aarch64): New pattern.
+	(*load_pair_zero_extendsidi2_aarch64): New pattern.
+	(aarch64-ldpstp.md): Include.
+	* config/aarch64/aarch64-ldpstp.md: New file.
+	* config/aarch64/aarch64-protos.h (aarch64_gen_adjusted_ldpstp):
+	New.
+	(extract_base_offset_in_addr): New.
+	(aarch64_operands_ok_for_ldpstp): New.
+	(aarch64_operands_adjust_ok_for_ldpstp): New.
+	* config/aarch64/aarch64.c (enum sched_fusion_type): New enum.
+	(TARGET_SCHED_FUSION_PRIORITY): New hook.
+	(fusion_load_store): New functon.
+	(extract_base_offset_in_addr): New function.
+	(aarch64_gen_adjusted_ldpstp): New function.
+	(aarch64_sched_fusion_priority): New function.
+	(aarch64_operands_ok_for_ldpstp): New function.
+	(aarch64_operands_adjust_ok_for_ldpstp): New function.
+
 2014-12-05  Olivier Hainque  <hainque@adacore.com>
 
 	* defaults.h: (DWARF_REG_TO_UNWIND_COLUMN): Define default.
