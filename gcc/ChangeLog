@@ -1,3 +1,13 @@
+2014-12-05  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/64003
+	* config/i386/i386.md (*jcc_1_bnd): New.
+	(*jcc_2_bnd): New.
+	(jump_bnd): New.
+	(*jcc_1): Remove bnd prefix.
+	(*jcc_2): Likewise.
+	(jump): Likewise.
+
 2014-12-05  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_parse_cpu): Don't define
