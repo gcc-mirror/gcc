@@ -1,3 +1,8 @@
+2014-12-05  Jeff Law  <law@redhat.com>
+
+	* doc/md.texi: Note problems using function calls to determine
+	insn lengths and point readers to a potential workaround.
+
 2014-12-05  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* combine.c (is_parallel_of_n_reg_sets)
