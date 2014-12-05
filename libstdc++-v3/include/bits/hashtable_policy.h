@@ -584,12 +584,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash,
 	   typename _RehashPolicy, typename _Traits>
-    typename _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
-		       _H1, _H2, _Hash, _RehashPolicy, _Traits, true>
-		       ::mapped_type&
+    auto
     _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
 	      _H1, _H2, _Hash, _RehashPolicy, _Traits, true>::
     operator[](const key_type& __k)
+    -> mapped_type&
     {
       __hashtable* __h = static_cast<__hashtable*>(this);
       __hash_code __code = __h->_M_hash_code(__k);
@@ -610,12 +609,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash,
 	   typename _RehashPolicy, typename _Traits>
-    typename _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
-		       _H1, _H2, _Hash, _RehashPolicy, _Traits, true>
-		       ::mapped_type&
+    auto
     _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
 	      _H1, _H2, _Hash, _RehashPolicy, _Traits, true>::
     operator[](key_type&& __k)
+    -> mapped_type&
     {
       __hashtable* __h = static_cast<__hashtable*>(this);
       __hash_code __code = __h->_M_hash_code(__k);
@@ -636,12 +634,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash,
 	   typename _RehashPolicy, typename _Traits>
-    typename _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
-		       _H1, _H2, _Hash, _RehashPolicy, _Traits, true>
-		       ::mapped_type&
+    auto
     _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
 	      _H1, _H2, _Hash, _RehashPolicy, _Traits, true>::
     at(const key_type& __k)
+    -> mapped_type&
     {
       __hashtable* __h = static_cast<__hashtable*>(this);
       __hash_code __code = __h->_M_hash_code(__k);
@@ -656,12 +653,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash,
 	   typename _RehashPolicy, typename _Traits>
-    const typename _Map_base<_Key, _Pair, _Alloc, _Select1st,
-			     _Equal, _H1, _H2, _Hash, _RehashPolicy,
-			     _Traits, true>::mapped_type&
+    auto
     _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
 	      _H1, _H2, _Hash, _RehashPolicy, _Traits, true>::
     at(const key_type& __k) const
+    -> const mapped_type&
     {
       const __hashtable* __h = static_cast<const __hashtable*>(this);
       __hash_code __code = __h->_M_hash_code(__k);

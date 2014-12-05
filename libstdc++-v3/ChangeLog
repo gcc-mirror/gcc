@@ -1,3 +1,8 @@
+2014-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_Map_base::operator[],
+	_Map_base::at): Simplify definitions with trailing return types.
+
 2014-12-04  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/64140
