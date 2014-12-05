@@ -2461,6 +2461,7 @@ update_cfg_for_uncondjump (rtx_insn *insn)
     }
 }
 
+#ifndef HAVE_cc0
 /* Return whether INSN is a PARALLEL of exactly N register SETs followed
    by an arbitrary number of CLOBBERs.  */
 static bool
@@ -2513,6 +2514,7 @@ can_split_parallel_of_n_reg_sets (rtx_insn *insn, int n)
 
   return true;
 }
+#endif
 
 /* Try to combine the insns I0, I1 and I2 into I3.
    Here I0, I1 and I2 appear earlier than I3.
