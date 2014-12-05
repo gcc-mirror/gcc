@@ -1764,6 +1764,9 @@ Target might have errors of a few ULP in string to floating-point
 conversion functions and overflow is not always detected correctly by
 those functions.
 
+@item mempcpy
+Target provides @code{mempcpy} function.
+
 @item mmap
 Target supports @code{mmap}.
 
@@ -1792,6 +1795,9 @@ hardware (i.e. fast).
 Target has the basic signed and unsigned C types in @code{stdint.h}.
 This will be obsolete when GCC ensures a working @code{stdint.h} for
 all targets.
+
+@item stpcpy
+Target provides @code{stpcpy} function.
 
 @item trampolines
 Target supports trampolines.
