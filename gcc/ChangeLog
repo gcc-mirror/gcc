@@ -1,3 +1,9 @@
+2014-12-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/64192
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Convert alignment
+	from bits to bytes after checking they are byte-aligned.
+
 2014-12-05  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64-opts.h (AARCH64_CORE): Rename IDENT to SCHED.
