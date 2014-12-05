@@ -1,3 +1,10 @@
+2014-12-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.dg/vect/pr63341-1.c: Remove explicit "dg-do run".
+	* gcc.dg/vect/pr63341-2.c: Likewise.
+	* gcc.dg/vect/pr63379.c: Likewise.
+	* gcc.dg/vect/pr63605.c: Likewise.
+
 2014-12-05  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/60414
