@@ -5856,6 +5856,12 @@ proc check_effective_target_mempcpy {} {
     return [check_function_available "mempcpy"]
 }
 
+# Returns 1 if "stpcpy" is available on the target system.
+
+proc check_effective_target_stpcpy {} {
+    return [check_function_available "stpcpy"]
+}
+
 # Check whether the vectorizer tests are supported by the target and
 # append additional target-dependent compile flags to DEFAULT_VECTCFLAGS.
 # Set dg-do-what-default to either compile or run, depending on target

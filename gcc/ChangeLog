@@ -1,3 +1,8 @@
+2014-12-05  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/64056
+	* doc/sourcebuild.texi: Add mempcpy and stpcpy for Effective-Target Keywords.
+
 2014-12-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* diagnostic.h (diagnostic_expand_location): New inline function.
