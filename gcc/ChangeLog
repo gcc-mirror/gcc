@@ -1,3 +1,10 @@
+2014-12-05  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64-opts.h (AARCH64_CORE): Rename IDENT to SCHED.
+	* config/aarch64/aarch64.h (AARCH64_CORE): Likewise.
+	* config/aarch64/aarch64.c (AARCH64_CORE): Rename X to IDENT,
+	IDENT to SCHED.
+
 2014-12-05  Bin Cheng  <bin.cheng@arm.com>
 
 	* config/aarch64/aarch64.md (load_pair<mode>): Split to
