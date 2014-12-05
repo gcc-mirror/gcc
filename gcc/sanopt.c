@@ -408,12 +408,13 @@ maybe_optimize_asan_check_ifn (struct sanopt_ctx *ctx, gimple stmt)
     }
 
   gimple g = maybe_get_dominating_check (*ptr_checks);
+  gimple g2 = NULL;
 
-  if (!g && base_checks)
+  if (base_checks)
     /* Try with base address as well.  */
-    g = maybe_get_dominating_check (*base_checks);
+    g2 = maybe_get_dominating_check (*base_checks);
 
-  if (!g)
+  if (g == NULL && g2 == NULL)
     {
       /* For this PTR we don't have any ASAN_CHECK stmts recorded, so there's
 	 nothing to optimize yet.  */
