@@ -1,3 +1,10 @@
+2014-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64170
+	* sanopt.c (maybe_optimize_asan_check_ifn): If base_checks is
+	non-NULL, call maybe_get_dominating_check on it even if g is
+	non-NULL.
+
 2014-12-05  Jeff Law  <law@redhat.com>
 
 	* doc/md.texi: Note problems using function calls to determine
