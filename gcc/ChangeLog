@@ -1,3 +1,10 @@
+2014-12-05  Olivier Hainque  <hainque@adacore.com>
+
+	* dwarf2cfi.c (init_one_dwarf_reg_size): New helper, processing
+	one particular reg for expand_builtin_init_dwarf_reg_sizes.
+	(expand_builtin_init_dwarf_reg_sizes): Rework to use helper and
+	account for dwarf register spans.
+
 2014-12-05  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/64003

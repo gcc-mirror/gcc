@@ -258,7 +258,59 @@ init_return_column_size (machine_mode mode, rtx mem, unsigned int c)
 		  gen_int_mode (size, mode));
 }
 
-/* Generate code to initialize the register size table.  */
+/* Datastructure used by expand_builtin_init_dwarf_reg_sizes and
+   init_one_dwarf_reg_size to communicate on what has been done by the
+   latter.  */
+
+typedef struct
+{
+  /* Whether the dwarf return column was initialized.  */
+  bool wrote_return_column;
+
+  /* For each hard register REGNO, whether init_one_dwarf_reg_size
+     was given REGNO to process already.  */
+  bool processed_regno [FIRST_PSEUDO_REGISTER];
+
+} init_one_dwarf_reg_state;
+
+/* Helper for expand_builtin_init_dwarf_reg_sizes.  Generate code to
+   initialize the dwarf register size table entry corresponding to register
+   REGNO in REGMODE.  TABLE is the table base address, SLOTMODE is the mode to
+   use for the size entry to initialize, and INIT_STATE is the communication
+   datastructure conveying what we're doing to our caller.  */
+
+static
+void init_one_dwarf_reg_size (int regno, machine_mode regmode,
+			      rtx table, machine_mode slotmode,
+			      init_one_dwarf_reg_state *init_state)
+{
+  const unsigned int dnum = DWARF_FRAME_REGNUM (regno);
+  const unsigned int rnum = DWARF2_FRAME_REG_OUT (dnum, 1);
+  
+  const HOST_WIDE_INT slotoffset = rnum * GET_MODE_SIZE (slotmode);
+  const HOST_WIDE_INT regsize = GET_MODE_SIZE (regmode);
+
+  init_state->processed_regno[regno] = true;
+
+  if (rnum >= DWARF_FRAME_REGISTERS)
+    return;
+
+  if (dnum == DWARF_FRAME_RETURN_COLUMN)
+    {
+      if (regmode == VOIDmode)
+	return;
+      init_state->wrote_return_column = true;
+    }
+
+  if (slotoffset < 0)
+    return;
+
+  emit_move_insn (adjust_address (table, slotmode, slotoffset),
+		  gen_int_mode (regsize, slotmode));
+}
+
+/* Generate code to initialize the dwarf register size table located
+   at the provided ADDRESS.  */
 
 void
 expand_builtin_init_dwarf_reg_sizes (tree address)
@@ -267,35 +319,41 @@ expand_builtin_init_dwarf_reg_sizes (tree address)
   machine_mode mode = TYPE_MODE (char_type_node);
   rtx addr = expand_normal (address);
   rtx mem = gen_rtx_MEM (BLKmode, addr);
-  bool wrote_return_column = false;
+
+  init_one_dwarf_reg_state init_state;
+
+  memset ((char *)&init_state, 0, sizeof (init_state));
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      unsigned int dnum = DWARF_FRAME_REGNUM (i);
-      unsigned int rnum = DWARF2_FRAME_REG_OUT (dnum, 1);
+      machine_mode save_mode;
+      rtx span;
 
-      if (rnum < DWARF_FRAME_REGISTERS)
+      /* No point in processing a register multiple times.  This could happen
+	 with register spans, e.g. when a reg is first processed as a piece of
+	 a span, then as a register on its own later on.  */
+
+      if (init_state.processed_regno[i])
+	continue;
+
+      save_mode = targetm.dwarf_frame_reg_mode (i);
+      span = targetm.dwarf_register_span (gen_rtx_REG (save_mode, i));
+
+      if (!span)
+	init_one_dwarf_reg_size (i, save_mode, mem, mode, &init_state);
+      else
 	{
-	  HOST_WIDE_INT offset = rnum * GET_MODE_SIZE (mode);
-	  HOST_WIDE_INT size;
-	  machine_mode save_mode = targetm.dwarf_frame_reg_mode (i);
-
-	  if (dnum == DWARF_FRAME_RETURN_COLUMN)
+	  for (int si = 0; si < XVECLEN (span, 0); si++)
 	    {
-	      if (save_mode == VOIDmode)
-		continue;
-	      wrote_return_column = true;
-	    }
-	  size = GET_MODE_SIZE (save_mode);
-	  if (offset < 0)
-	    continue;
+	      rtx reg = XVECEXP (span, 0, si);
 
-	  emit_move_insn (adjust_address (mem, mode, offset),
-			  gen_int_mode (size, mode));
+	      init_one_dwarf_reg_size
+		(REGNO (reg), GET_MODE (reg), mem, mode, &init_state);
+	    }
 	}
     }
 
-  if (!wrote_return_column)
+  if (!init_state.wrote_return_column)
     init_return_column_size (mode, mem, DWARF_FRAME_RETURN_COLUMN);
 
 #ifdef DWARF_ALT_FRAME_RETURN_COLUMN
