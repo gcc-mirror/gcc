@@ -88,21 +88,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Head_base(const _Head& __h)
       : _Head(__h) { }
 
-      template<typename _UHead, typename = typename
-	       enable_if<!is_convertible<_UHead,
-	                                 __uses_alloc_base>::value>::type>
+      constexpr _Head_base(const _Head_base&) = default;
+      constexpr _Head_base(_Head_base&&) = default;
+
+      template<typename _UHead>
         constexpr _Head_base(_UHead&& __h)
 	: _Head(std::forward<_UHead>(__h)) { }
 
-      _Head_base(__uses_alloc0)
+      _Head_base(allocator_arg_t, __uses_alloc0)
       : _Head() { }
 
       template<typename _Alloc>
-	_Head_base(__uses_alloc1<_Alloc> __a)
+	_Head_base(allocator_arg_t, __uses_alloc1<_Alloc> __a)
 	: _Head(allocator_arg, *__a._M_a) { }
 
       template<typename _Alloc>
-	_Head_base(__uses_alloc2<_Alloc> __a)
+	_Head_base(allocator_arg_t, __uses_alloc2<_Alloc> __a)
 	: _Head(*__a._M_a) { }
 
       template<typename _UHead>
@@ -133,21 +134,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Head_base(const _Head& __h)
       : _M_head_impl(__h) { }
 
-      template<typename _UHead, typename = typename
-	       enable_if<!is_convertible<_UHead,
-	                                 __uses_alloc_base>::value>::type>
+      constexpr _Head_base(const _Head_base&) = default;
+      constexpr _Head_base(_Head_base&&) = default;
+
+      template<typename _UHead>
         constexpr _Head_base(_UHead&& __h)
 	: _M_head_impl(std::forward<_UHead>(__h)) { }
 
-      _Head_base(__uses_alloc0)
+      _Head_base(allocator_arg_t, __uses_alloc0)
       : _M_head_impl() { }
 
       template<typename _Alloc>
-	_Head_base(__uses_alloc1<_Alloc> __a)
+	_Head_base(allocator_arg_t, __uses_alloc1<_Alloc> __a)
 	: _M_head_impl(allocator_arg, *__a._M_a) { }
 
       template<typename _Alloc>
-	_Head_base(__uses_alloc2<_Alloc> __a)
+	_Head_base(allocator_arg_t, __uses_alloc2<_Alloc> __a)
 	: _M_head_impl(*__a._M_a) { }
 
       template<typename _UHead>
@@ -285,7 +287,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc>
 	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a)
 	: _Inherited(__tag, __a),
-          _Base(__use_alloc<_Head>(__a)) { }
+          _Base(__tag, __use_alloc<_Head>(__a)) { }
 
       template<typename _Alloc>
 	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
