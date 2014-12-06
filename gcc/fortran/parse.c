@@ -110,9 +110,9 @@ use_modules (void)
   gfc_error_buf old_error;
 
   gfc_push_error (&old_error);
-  gfc_buffer_error (0);
+  gfc_buffer_error (false);
   gfc_use_modules ();
-  gfc_buffer_error (1);
+  gfc_buffer_error (true);
   gfc_pop_error (&old_error);
   gfc_commit_symbols ();
   gfc_warning_check ();
@@ -279,7 +279,7 @@ decode_specification_statement (void)
 
 end_of_block:
   gfc_clear_error ();
-  gfc_buffer_error (0);
+  gfc_buffer_error (false);
   gfc_current_locus = old_locus;
 
   return ST_GET_FCN_CHARACTERISTICS;
@@ -994,7 +994,7 @@ next_fixed (void)
 
 	      if (c != ' ' && c != '0')
 		{
-		  gfc_buffer_error (0);
+		  gfc_buffer_error (false);
 		  gfc_error ("Bad continuation line at %C");
 		  return ST_NONE;
 		}
@@ -1008,7 +1008,7 @@ next_fixed (void)
 	     here so don't bother checking for them.  */
 
 	default:
-	  gfc_buffer_error (0);
+	  gfc_buffer_error (false);
 	  gfc_error ("Non-numeric character in statement label at %C");
 	  return ST_NONE;
 	}
@@ -1035,7 +1035,7 @@ next_fixed (void)
 
   if (c != ' ' && c != '0')
     {
-      gfc_buffer_error (0);
+      gfc_buffer_error (false);
       gfc_error ("Bad continuation line at %C");
       return ST_NONE;
     }
@@ -1100,7 +1100,7 @@ next_statement (void)
   for (;;)
     {
       gfc_statement_label = NULL;
-      gfc_buffer_error (1);
+      gfc_buffer_error (true);
 
       if (gfc_at_eol ())
 	gfc_advance_line ();
@@ -1124,7 +1124,7 @@ next_statement (void)
 	break;
     }
 
-  gfc_buffer_error (0);
+  gfc_buffer_error (false);
 
   if (st == ST_GET_FCN_CHARACTERISTICS && gfc_statement_label != NULL)
     {
@@ -2815,9 +2815,9 @@ match_deferred_characteristics (gfc_typespec * ts)
   gfc_current_locus = gfc_current_block ()->declared_at;
 
   gfc_clear_error ();
-  gfc_buffer_error (1);
+  gfc_buffer_error (true);
   m = gfc_match_prefix (ts);
-  gfc_buffer_error (0);
+  gfc_buffer_error (false);
 
   if (ts->type == BT_DERIVED)
     {

@@ -46,10 +46,15 @@ static int suppress_errors = 0;
 
 static bool warnings_not_errors = false;
 
-static int terminal_width, buffer_flag, errors, warnings;
+static int terminal_width, errors, warnings;
 
 static gfc_error_buf error_buffer, warning_buffer, *cur_error_buffer;
 
+/* True if the error/warnings should be buffered.  */
+static bool buffered_p;
+
+/* These are always buffered buffers (.flush_p == false) to be used by
+   the pretty-printer.  */
 static output_buffer pp_warning_buffer;
 static int warningcount_buffered, werrorcount_buffered;
 
@@ -116,27 +121,27 @@ gfc_error_init_1 (void)
   terminal_width = get_terminal_width ();
   errors = 0;
   warnings = 0;
-  buffer_flag = 0;
+  gfc_buffer_error (false);
 }
 
 
 /* Set the flag for buffering errors or not.  */
 
 void
-gfc_buffer_error (int flag)
+gfc_buffer_error (bool flag)
 {
-  buffer_flag = flag;
+  buffered_p = flag;
   pp_warning_buffer.flush_p = !flag;
 }
 
 
 /* Add a single character to the error buffer or output depending on
-   buffer_flag.  */
+   buffered_p.  */
 
 static void
 error_char (char c)
 {
-  if (buffer_flag)
+  if (buffered_p)
     {
       if (cur_error_buffer->index >= cur_error_buffer->allocated)
 	{
@@ -844,7 +849,7 @@ gfc_warning_1 (const char *gmsgid, ...)
 
   error_char ('\0');
 
-  if (buffer_flag == 0)
+  if (!buffered_p)
   {
     warnings++;
     if (warnings_are_errors)
@@ -869,7 +874,6 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
   bool fatal_errors = global_dc->fatal_errors;
   pretty_printer *pp = global_dc->printer;
   output_buffer *tmp_buffer = pp->buffer;
-  bool buffered_p = !pp_warning_buffer.flush_p;
 
   gfc_clear_pp_buffer (&pp_warning_buffer);
 
@@ -1021,7 +1025,7 @@ gfc_notify_std (int std, const char *gmsgid, ...)
 
   error_char ('\0');
 
-  if (buffer_flag == 0)
+  if (!buffered_p)
     {
       if (warning && !warnings_are_errors)
 	warnings++;
@@ -1042,13 +1046,13 @@ void
 gfc_warning_now_1 (const char *gmsgid, ...)
 {
   va_list argp;
-  int i;
+  bool buffered_p_saved;
 
   if (inhibit_warnings)
     return;
 
-  i = buffer_flag;
-  buffer_flag = 0;
+  buffered_p_saved = buffered_p;
+  buffered_p = false;
   warnings++;
 
   va_start (argp, gmsgid);
@@ -1060,7 +1064,7 @@ gfc_warning_now_1 (const char *gmsgid, ...)
   if (warnings_are_errors)
     gfc_increment_error_count();
 
-  buffer_flag = i;
+  buffered_p = buffered_p_saved;
 }
 
 /* Called from output_format -- during diagnostic message processing
@@ -1336,7 +1340,7 @@ gfc_error (const char *gmsgid, ...)
 
   error_char ('\0');
 
-  if (buffer_flag == 0)
+  if (!buffered_p)
     gfc_increment_error_count();
 
   return;
@@ -1356,7 +1360,7 @@ warning:
 
   error_char ('\0');
 
-  if (buffer_flag == 0)
+  if (!buffered_p)
   {
     warnings++;
     if (warnings_are_errors)
@@ -1373,14 +1377,14 @@ void
 gfc_error_now_1 (const char *gmsgid, ...)
 {
   va_list argp;
-  int i;
+  bool buffered_p_saved;
 
   error_buffer.flag = 1;
   error_buffer.index = 0;
   cur_error_buffer = &error_buffer;
 
-  i = buffer_flag;
-  buffer_flag = 0;
+  buffered_p_saved = buffered_p;
+  buffered_p = false;
 
   va_start (argp, gmsgid);
   error_print (_("Error:"), _(gmsgid), argp);
@@ -1390,7 +1394,7 @@ gfc_error_now_1 (const char *gmsgid, ...)
 
   gfc_increment_error_count();
 
-  buffer_flag = i;
+  buffered_p = buffered_p_saved;
 
   if (flag_fatal_errors)
     exit (FATAL_EXIT_CODE);
@@ -1426,7 +1430,7 @@ gfc_clear_error (void)
 
 /* Tests the state of error_flag.  */
 
-int
+bool
 gfc_error_flag_test (void)
 {
   return error_buffer.flag;

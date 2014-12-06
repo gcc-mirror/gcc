@@ -1,3 +1,20 @@
+2014-12-06  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* error.c (gfc_buffer_error, gfc_error_flag_test): Use bool not int.
+	(buffer_flag): Remove static variable.
+	(buffered_p): Add static variable.
+	(gfc_error_init_1): Call gfc_buffer_error.
+	(gfc_warning_1, gfc_warning, gfc_warning_now_1, gfc_error,
+	gfc_error_now_1): Update for static variable change.
+	* gfortran.h (gfc_buffer_error, gfc_error_flag_test): Update
+	prototype.
+	* parse.c (use_modules, decode_specification_statement,
+	next_fixed, next_statement, match_deferred_characteristics):
+	Update calls.
+	* decl.c (gfc_match_data_decl): Ditto.
+	* match.c (gfc_match_name): Ditto.
+
 2014-12-05  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/60414
