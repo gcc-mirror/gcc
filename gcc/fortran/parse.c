@@ -549,7 +549,7 @@ decode_statement (void)
   /* All else has failed, so give up.  See if any of the matchers has
      stored an error message of some sort.  */
 
-  if (gfc_error_check () == 0)
+  if (!gfc_error_check ())
     gfc_error_now ("Unclassifiable statement at %C");
 
   reject_statement ();
@@ -769,7 +769,7 @@ decode_omp_directive (void)
 
   if (gfc_option.gfc_flag_openmp || simd_matched)
     {
-      if (gfc_error_check () == 0)
+      if (!gfc_error_check ())
 	gfc_error_now ("Unclassifiable OpenMP directive at %C");
     }
 
@@ -796,7 +796,7 @@ decode_gcc_attribute (void)
   /* All else has failed, so give up.  See if any of the matchers has
      stored an error message of some sort.  */
 
-  if (gfc_error_check () == 0)
+  if (!gfc_error_check ())
     gfc_error_now ("Unclassifiable GCC directive at %C");
 
   reject_statement ();
