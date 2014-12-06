@@ -2439,9 +2439,9 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     {
       if (static_cast<bool>(__x))
 	{
+	  __x._M_manager(_M_functor, __x._M_functor, __clone_functor);
 	  _M_invoker = __x._M_invoker;
 	  _M_manager = __x._M_manager;
-	  __x._M_manager(_M_functor, __x._M_functor, __clone_functor);
 	}
     }
 
