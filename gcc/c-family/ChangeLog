@@ -1,3 +1,9 @@
+2014-12-06  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/64183
+	* c-gimplify.c (c_gimplify_expr): Don't convert the RHS of a
+	shift-expression if it is integer_type_node.  Use types_compatible_p.
+
 2014-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (convert_vector_to_pointer_for_subscript): Remove NULL
