@@ -10623,6 +10623,18 @@ large and significantly increase compile time at optimization level
 @option{-O1} and higher.  This parameter is a maximum nubmer of statements
 in a single generated constructor.  Default value is 5000.
 
+@item max-fsm-thread-path-insns
+Maximum number of instructions to copy when duplicating blocks on a
+finite state automaton jump thread path.  The default is 100.
+
+@item max-fsm-thread-length
+Maximum number of basic blocks on a finite state automaton jump thread
+path.  The default is 10.
+
+@item max-fsm-thread-paths
+Maximum number of new jump thread paths to create for a finite state
+automaton.  The default is 50.
+
 @end table
 @end table
 
