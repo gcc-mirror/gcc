@@ -255,7 +255,10 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	   type demotion/promotion pass.  */
 	tree *op1_p = &TREE_OPERAND (*expr_p, 1);
 	if (TREE_CODE (TREE_TYPE (*op1_p)) != VECTOR_TYPE
-	    && TYPE_MAIN_VARIANT (TREE_TYPE (*op1_p)) != unsigned_type_node)
+	    && !types_compatible_p (TYPE_MAIN_VARIANT (TREE_TYPE (*op1_p)),
+				    unsigned_type_node)
+	    && !types_compatible_p (TYPE_MAIN_VARIANT (TREE_TYPE (*op1_p)),
+				    integer_type_node))
 	  *op1_p = convert (unsigned_type_node, *op1_p);
 	break;
       }
