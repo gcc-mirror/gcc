@@ -8,6 +8,13 @@
 	* testsuite/20_util/function/63840.cc: New.
 	* testsuite/tr1/3_function_objects/function/63840.cc: New.
 
+	PR libstdc++/61947
+	* include/std/tuple (_Head_base): Use allocator_arg_t parameters to
+	disambiguate unary constructors.
+	(_Tuple_impl): Pass allocator_arg_t arguments.
+	* testsuite/20_util/tuple/61947.cc: New.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Adjust dg-error line.
+
 2014-12-06  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/64140

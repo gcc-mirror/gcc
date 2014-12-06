@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-do compile }
 
-// Copyright (C) 2011-2014 Free Software Foundation, Inc.
+// Copyright (C) 2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,30 +18,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.4.2.1 [tuple.cnstr] Allocator-extended constructors
-
-#include <memory>
 #include <tuple>
 
-struct MyAlloc { };
-
-struct Type
-{
-  typedef MyAlloc allocator_type; // uses_allocator<Type, MyAlloc> is true
-
-  explicit Type(int) { }
-
-  Type(std::allocator_arg_t, MyAlloc) { }
-  Type(MyAlloc) { }
+struct ConvertibleToAny {
+  template <class T> operator T() const { return T(); }
 };
 
-void test01()
-{
-  using std::allocator_arg;
-  using std::tuple;
-
-  MyAlloc a;
-
-  tuple<Type> t(allocator_arg, a, 1);
+int main() {
+  std::tuple<ConvertibleToAny&&> t(ConvertibleToAny{});
 }
-// { dg-error "no matching function" "" { target *-*-* } 119 }
