@@ -5193,7 +5193,12 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
       if (__first != __last)
 	for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
-	  std::iter_swap(__i, __first + (std::rand() % ((__i - __first) + 1)));
+	  {
+	    _RandomAccessIterator __j = __first
+					+ std::rand() % ((__i - __first) + 1);
+	    if (__i != __j)
+	      std::iter_swap(__i, __j);
+	  }
     }
 
   /**
@@ -5227,7 +5232,11 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       if (__first == __last)
 	return;
       for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
-	std::iter_swap(__i, __first + __rand((__i - __first) + 1));
+	{
+	  _RandomAccessIterator __j = __first + __rand((__i - __first) + 1);
+	  if (__i != __j)
+	    std::iter_swap(__i, __j);
+	}
     }
 
 

@@ -15,6 +15,10 @@
 	* testsuite/20_util/tuple/61947.cc: New.
 	* testsuite/20_util/uses_allocator/cons_neg.cc: Adjust dg-error line.
 
+	PR libstdc++/59603
+	* include/bits/stl_algo.h (random_shuffle): Prevent self-swapping.
+	* testsuite/25_algorithms/random_shuffle/59603.cc: New.
+
 2014-11-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline
