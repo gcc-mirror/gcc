@@ -4397,7 +4397,7 @@ ok:
 	break;
     }
 
-  if (gfc_error_flag_test () == 0)
+  if (!gfc_error_flag_test ())
     gfc_error ("Syntax error in data declaration at %C");
   m = MATCH_ERROR;
 
