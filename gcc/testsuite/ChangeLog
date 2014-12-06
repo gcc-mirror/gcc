@@ -1,3 +1,11 @@
+2014-12-06  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+	    Brian Rzycki  <b.rzycki@samsung.com>
+
+	PR tree-optimization/54742
+	* gcc.dg/tree-ssa/ssa-dom-thread-6.c: New test.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: New test.
+
 2014-12-06  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/64183

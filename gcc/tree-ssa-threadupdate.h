@@ -26,6 +26,7 @@ extern bool thread_through_all_blocks (bool);
 enum jump_thread_edge_type
 {
   EDGE_START_JUMP_THREAD,
+  EDGE_FSM_THREAD,
   EDGE_COPY_SRC_BLOCK,
   EDGE_COPY_SRC_JOINER_BLOCK,
   EDGE_NO_COPY_SRC_BLOCK

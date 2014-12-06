@@ -1,3 +1,32 @@
+2014-12-06  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+	    Brian Rzycki  <b.rzycki@samsung.com>
+
+	PR tree-optimization/54742
+	* params.def (max-fsm-thread-path-insns, max-fsm-thread-length,
+	max-fsm-thread-paths): New.
+
+	* doc/invoke.texi (max-fsm-thread-path-insns, max-fsm-thread-length,
+	max-fsm-thread-paths): Documented.
+
+	* tree-cfg.c (split_edge_bb_loc): Export.
+	* tree-cfg.h (split_edge_bb_loc): Declared extern.
+
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Restore the
+	original value of cond when simplification fails.
+	(fsm_find_thread_path): New.
+	(fsm_find_control_statement_thread_paths): New.
+	(thread_through_normal_block): Call find_control_statement_thread_paths.
+
+	* tree-ssa-threadupdate.c (dump_jump_thread_path): Pretty print
+	EDGE_FSM_THREAD.
+	(verify_seme): New.
+	(duplicate_seme_region): New.
+	(thread_through_all_blocks): Generate code for EDGE_FSM_THREAD edges
+	calling duplicate_seme_region.
+
+	* tree-ssa-threadupdate.h (jump_thread_edge_type): Add EDGE_FSM_THREAD.
+
 2014-12-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/64200

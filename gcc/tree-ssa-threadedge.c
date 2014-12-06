@@ -56,6 +56,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-ssa-threadedge.h"
 #include "builtins.h"
+#include "cfg.h"
+#include "cfganal.h"
 
 /* To avoid code explosion due to jump threading, we limit the
    number of statements we are going to copy.  This variable
@@ -661,6 +663,7 @@ simplify_control_stmt_condition (edge e,
      rather than use a relational operator.  These are simpler to handle.  */
   if (TREE_CODE (cond) == SSA_NAME)
     {
+      tree original_lhs = cond;
       cached_lhs = cond;
 
       /* Get the variable's current value from the equivalence chains.
@@ -689,6 +692,12 @@ simplify_control_stmt_condition (edge e,
 	 pass specific callback to try and simplify it further.  */
       if (cached_lhs && ! is_gimple_min_invariant (cached_lhs))
         cached_lhs = (*simplify) (stmt, stmt);
+
+      /* We couldn't find an invariant.  But, callers of this
+	 function may be able to do something useful with the
+	 unmodified destination.  */
+      if (!cached_lhs)
+	cached_lhs = original_lhs;
     }
   else
     cached_lhs = NULL;
@@ -948,6 +957,249 @@ thread_around_empty_blocks (edge taken_edge,
   return false;
 }
 
+/* Return true if the CFG contains at least one path from START_BB to END_BB.
+   When a path is found, record in PATH the blocks from END_BB to START_BB.
+   VISITED_BBS is used to make sure we don't fall into an infinite loop.  Bound
+   the recursion to basic blocks belonging to LOOP.  */
+
+static bool
+fsm_find_thread_path (basic_block start_bb, basic_block end_bb,
+		      vec<basic_block, va_gc> *&path,
+		      hash_set<basic_block> *visited_bbs, loop_p loop)
+{
+  if (loop != start_bb->loop_father)
+    return false;
+
+  if (start_bb == end_bb)
+    {
+      vec_safe_push (path, start_bb);
+      return true;
+    }
+
+  if (!visited_bbs->add (start_bb))
+    {
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, start_bb->succs)
+	if (fsm_find_thread_path (e->dest, end_bb, path, visited_bbs, loop))
+	  {
+	    vec_safe_push (path, start_bb);
+	    return true;
+	  }
+    }
+
+  return false;
+}
+
+static int max_threaded_paths;
+
+/* We trace the value of the variable EXPR back through any phi nodes looking
+   for places where it gets a constant value and save the path.  Stop after
+   having recorded MAX_PATHS jump threading paths.  */
+
+static void
+fsm_find_control_statement_thread_paths (tree expr,
+					 hash_set<gimple> *visited_phis,
+					 vec<basic_block, va_gc> *&path)
+{
+  tree var = SSA_NAME_VAR (expr);
+  gimple def_stmt = SSA_NAME_DEF_STMT (expr);
+  basic_block var_bb = gimple_bb (def_stmt);
+
+  if (var == NULL || var_bb == NULL)
+    return;
+
+  /* For the moment we assume that an SSA chain only contains phi nodes, and
+     eventually one of the phi arguments will be an integer constant.  In the
+     future, this could be extended to also handle simple assignments of
+     arithmetic operations.  */
+  if (gimple_code (def_stmt) != GIMPLE_PHI)
+    return;
+
+  /* Avoid infinite recursion.  */
+  if (visited_phis->add (def_stmt))
+    return;
+
+  gphi *phi = as_a <gphi *> (def_stmt);
+  int next_path_length = 0;
+  basic_block last_bb_in_path = path->last ();
+
+  /* Following the chain of SSA_NAME definitions, we jumped from a definition in
+     LAST_BB_IN_PATH to a definition in VAR_BB.  When these basic blocks are
+     different, append to PATH the blocks from LAST_BB_IN_PATH to VAR_BB.  */
+  if (var_bb != last_bb_in_path)
+    {
+      edge e;
+      int e_count = 0;
+      edge_iterator ei;
+      vec<basic_block, va_gc> *next_path;
+      vec_alloc (next_path, n_basic_blocks_for_fn (cfun));
+
+      FOR_EACH_EDGE (e, ei, last_bb_in_path->preds)
+	{
+	  hash_set<basic_block> *visited_bbs = new hash_set<basic_block>;
+
+	  if (fsm_find_thread_path (var_bb, e->src, next_path, visited_bbs,
+				    e->src->loop_father))
+	    ++e_count;
+
+	  delete visited_bbs;
+
+	  /* If there is more than one path, stop.  */
+	  if (e_count > 1)
+	    {
+	      vec_free (next_path);
+	      return;
+	    }
+	}
+
+      /* Stop if we have not found a path: this could occur when the recursion
+	 is stopped by one of the bounds.  */
+      if (e_count == 0)
+	{
+	  vec_free (next_path);
+	  return;
+	}
+
+      /* Append all the nodes from NEXT_PATH to PATH.  */
+      vec_safe_splice (path, next_path);
+      next_path_length = next_path->length ();
+      vec_free (next_path);
+    }
+
+  gcc_assert (path->last () == var_bb);
+
+  /* Iterate over the arguments of PHI.  */
+  unsigned int i;
+  for (i = 0; i < gimple_phi_num_args (phi); i++)
+    {
+      tree arg = gimple_phi_arg_def (phi, i);
+      basic_block bbi = gimple_phi_arg_edge (phi, i)->src;
+
+      /* Skip edges pointing outside the current loop.  */
+      if (!arg || var_bb->loop_father != bbi->loop_father)
+	continue;
+
+      if (TREE_CODE (arg) == SSA_NAME)
+	{
+	  vec_safe_push (path, bbi);
+	  /* Recursively follow SSA_NAMEs looking for a constant definition.  */
+	  fsm_find_control_statement_thread_paths (arg, visited_phis, path);
+	  path->pop ();
+	  continue;
+	}
+
+      if (TREE_CODE (arg) != INTEGER_CST)
+	continue;
+
+      int path_length = path->length ();
+      /* A path with less than 2 basic blocks should not be jump-threaded.  */
+      if (path_length < 2)
+	continue;
+
+      if (path_length > PARAM_VALUE (PARAM_MAX_FSM_THREAD_LENGTH))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "FSM jump-thread path not considered: "
+		     "the number of basic blocks on the path "
+		     "exceeds PARAM_MAX_FSM_THREAD_LENGTH.\n");
+	  continue;
+	}
+
+      if (max_threaded_paths <= 0)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "FSM jump-thread path not considered: "
+		     "the number of previously recorded FSM paths to thread "
+		     "exceeds PARAM_MAX_FSM_THREAD_PATHS.\n");
+	  continue;
+	}
+
+      /* Add BBI to the path.  */
+      vec_safe_push (path, bbi);
+      ++path_length;
+
+      int n_insns = 0;
+      gimple_stmt_iterator gsi;
+      int j;
+      loop_p loop = (*path)[0]->loop_father;
+      bool path_crosses_loops = false;
+
+      /* Count the number of instructions on the path: as these instructions
+	 will have to be duplicated, we will not record the path if there are
+	 too many instructions on the path.  Also check that all the blocks in
+	 the path belong to a single loop.  */
+      for (j = 1; j < path_length - 1; j++)
+	{
+	  basic_block bb = (*path)[j];
+
+	  if (bb->loop_father != loop)
+	    {
+	      path_crosses_loops = true;
+	      break;
+	    }
+
+	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple stmt = gsi_stmt (gsi);
+	      /* Do not count empty statements and labels.  */
+	      if (gimple_code (stmt) != GIMPLE_NOP
+		  && gimple_code (stmt) != GIMPLE_LABEL
+		  && !is_gimple_debug (stmt))
+		++n_insns;
+	    }
+	}
+
+      if (path_crosses_loops)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "FSM jump-thread path not considered: "
+		     "the path crosses loops.\n");
+	  path->pop ();
+	  continue;
+	}
+
+      if (n_insns >= PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATH_INSNS))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "FSM jump-thread path not considered: "
+		     "the number of instructions on the path "
+		     "exceeds PARAM_MAX_FSM_THREAD_PATH_INSNS.\n");
+	  path->pop ();
+	  continue;
+	}
+
+      vec<jump_thread_edge *> *jump_thread_path
+	= new vec<jump_thread_edge *> ();
+
+      /* Record the edges between the blocks in PATH.  */
+      for (j = 0; j < path_length - 1; j++)
+	{
+	  edge e = find_edge ((*path)[path_length - j - 1],
+			      (*path)[path_length - j - 2]);
+	  gcc_assert (e);
+	  jump_thread_edge *x = new jump_thread_edge (e, EDGE_FSM_THREAD);
+	  jump_thread_path->safe_push (x);
+	}
+
+      /* Add the edge taken when the control variable has value ARG.  */
+      edge taken_edge = find_taken_edge ((*path)[0], arg);
+      jump_thread_edge *x
+	= new jump_thread_edge (taken_edge, EDGE_NO_COPY_SRC_BLOCK);
+      jump_thread_path->safe_push (x);
+
+      register_jump_thread (jump_thread_path);
+      --max_threaded_paths;
+
+      /* Remove BBI from the path.  */
+      path->pop ();
+    }
+
+  /* Remove all the nodes that we added from NEXT_PATH.  */
+  if (next_path_length)
+    vec_safe_truncate (path, (path->length () - next_path_length));
+}
+
 /* We are exiting E->src, see if E->dest ends with a conditional
    jump which has a known value when reached via E.
 
@@ -1033,7 +1285,10 @@ thread_through_normal_block (edge e,
       cond = simplify_control_stmt_condition (e, stmt, dummy_cond, simplify,
 					      handle_dominating_asserts);
 
-      if (cond && is_gimple_min_invariant (cond))
+      if (!cond)
+	return 0;
+
+      if (is_gimple_min_invariant (cond))
 	{
 	  edge taken_edge = find_taken_edge (e->dest, cond);
 	  basic_block dest = (taken_edge ? taken_edge->dest : NULL);
@@ -1079,6 +1334,27 @@ thread_through_normal_block (edge e,
 				      backedge_seen_p);
 	  return 1;
 	}
+
+      if (!flag_expensive_optimizations
+	  || optimize_function_for_size_p (cfun)
+	  || TREE_CODE (cond) != SSA_NAME
+	  || e->dest->loop_father != e->src->loop_father
+	  || loop_depth (e->dest->loop_father) == 0)
+	return 0;
+
+      /* When COND cannot be simplified, try to find paths from a control
+	 statement back through the PHI nodes which would affect that control
+	 statement.  */
+      vec<basic_block, va_gc> *bb_path;
+      vec_alloc (bb_path, n_basic_blocks_for_fn (cfun));
+      vec_safe_push (bb_path, e->dest);
+      hash_set<gimple> *visited_phis = new hash_set<gimple>;
+
+      max_threaded_paths = PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATHS);
+      fsm_find_control_statement_thread_paths (cond, visited_phis, bb_path);
+
+      delete visited_phis;
+      vec_free (bb_path);
     }
   return 0;
 }
