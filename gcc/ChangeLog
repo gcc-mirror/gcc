@@ -1,3 +1,9 @@
+2014-12-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/64200
+	* config/i386/i386.c (decide_alg): Don't assert "alg != libcall"
+	for TARGET_INLINE_STRINGOPS_DYNAMICALLY.
+
 2014-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/64170
