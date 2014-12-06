@@ -1497,7 +1497,7 @@ gfc_match_if (gfc_statement *if_type)
 
   /* All else has failed, so give up.  See if any of the matchers has
      stored an error message of some sort.  */
-  if (gfc_error_check () == 0)
+  if (!gfc_error_check ())
     gfc_error ("Unclassifiable statement in IF-clause at %C");
 
   gfc_free_expr (expr);

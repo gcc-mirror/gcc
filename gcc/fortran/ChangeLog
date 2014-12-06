@@ -1,4 +1,12 @@
 2014-12-06  Tobias Burnus  <burnus@net-b.de>
+
+	* error.c (gfc_error_check): Use bool not int.
+	* gfortran.h (gfc_error_check): Update prototype.
+	* match.c (gfc_match_if): Update call.
+	* parse.c (decode_statement, decode_omp_directive,
+	decode_gcc_attribute): Ditto.
+
+2014-12-06  Tobias Burnus  <burnus@net-b.de>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* error.c (gfc_buffer_error, gfc_error_flag_test): Use bool not int.

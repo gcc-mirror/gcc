@@ -2688,7 +2688,7 @@ void gfc_error_now (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_fatal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC(1,2);
 void gfc_internal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC(1,2);
 void gfc_clear_error (void);
-int gfc_error_check (void);
+bool gfc_error_check (void);
 bool gfc_error_flag_test (void);
 
 notification gfc_notification_std (int);

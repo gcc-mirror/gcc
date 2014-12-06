@@ -1440,14 +1440,12 @@ gfc_error_flag_test (void)
 /* Check to see if any errors have been saved.
    If so, print the error.  Returns the state of error_flag.  */
 
-int
+bool
 gfc_error_check (void)
 {
-  int rc;
+  bool error_raised = (bool) error_buffer.flag;
 
-  rc = error_buffer.flag;
-
-  if (error_buffer.flag)
+  if (error_raised)
     {
       if (error_buffer.message != NULL)
 	fputs (error_buffer.message, stderr);
@@ -1459,7 +1457,7 @@ gfc_error_check (void)
 	exit (FATAL_EXIT_CODE);
     }
 
-  return rc;
+  return error_raised;
 }
 
 
