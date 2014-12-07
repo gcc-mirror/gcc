@@ -1,3 +1,9 @@
+2014-12-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/64038
+	* gcc.dg/ipa/ipa-icf-5.c: Require c99_runtime.  Add c99_runtime options.
+	* gcc.dg/ipa/ipa-icf-7.c: Likewise.
+
 2014-12-07  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* gcc.target/h8300/h8300.exp: Fix duplicated text.
