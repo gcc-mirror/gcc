@@ -1,3 +1,11 @@
+2014-12-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2014-12-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/50751
+	* config/sh/sh.md (extendqihi2): Allow only for TARGET_SH1.
+
 2014-12-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

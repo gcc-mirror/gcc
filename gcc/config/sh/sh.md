@@ -6133,10 +6133,9 @@ label:
 })
 
 (define_expand "extendqihi2"
-  [(set (match_operand:HI 0 "arith_reg_dest" "")
-	(sign_extend:HI (match_operand:QI 1 "arith_reg_operand" "")))]
-  ""
-  "")
+  [(set (match_operand:HI 0 "arith_reg_dest")
+	(sign_extend:HI (match_operand:QI 1 "arith_reg_operand")))]
+  "TARGET_SH1")
 
 (define_insn "*extendqihi2_compact_reg"
   [(set (match_operand:HI 0 "arith_reg_dest" "=r")
