@@ -1,3 +1,11 @@
+2014-12-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vaddhn.c: Actually execute
+	the test.
+	* gcc.target/aarch64/advsimd-intrinsics/vaddl.c: Actually execute
+	the test. Fix expected output.
+	* gcc.target/aarch64/advsimd-intrinsics/vaddw.c: Likewise.
+
 2014-12-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/addr_equal-1.c: New testcase.
