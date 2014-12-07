@@ -1,3 +1,8 @@
+2014-12-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/50751
+	* config/sh/sh.md (extendqihi2): Allow only for TARGET_SH1.
+
 2014-12-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* compare-elim.c: Fix head comment.
