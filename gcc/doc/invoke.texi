@@ -4240,20 +4240,22 @@ appropriate may not be detected.
 @opindex Wno-suggest-final-types
 @opindex Wsuggest-final-types
 Warn about types with virtual methods where code quality would be improved
-if the type was declared with C++11 final specifier, or, if possible,
-declared in anonymous namespace. This allows GCC to devritualize more aggressively
-the polymorphic calls. This warning is more effective with link time optimization,
-where the information about the class hiearchy graph is more complete.
+if the type was declared with the C++11 final specifier, or, if possible,
+declared in an anonymous namespace. This allows GCC to more aggressively
+devirtualize the polymorphic calls. This warning is more effective with link
+time optimization, where the information about the class hierarchy graph is
+more complete.
 
 @item -Wsuggest-final-methods
 @opindex Wno-suggest-final-methods
 @opindex Wsuggest-final-methods
 Warn about virtual methods where code quality would be improved if the method
-was declared with C++11 final specifier, or, if possible, its type was declared
-in the anonymous namespace or with final specifier. This warning is more
-effective with link time optimization, where the information about the class
-hiearchy graph is more complete. It is recommended to first consider suggestins
-of @option{-Wsuggest-final-types} and then rebuild with new annotations.
+was declared with the C++11 final specifier, or, if possible, its type was
+declared in an anonymous namespace or with the final specifier. This warning is
+more effective with link time optimization, where the information about the
+class hierarchy graph is more complete. It is recommended to first consider
+suggestions of @option{-Wsuggest-final-types} and then rebuild with new
+annotations.
 
 @item -Warray-bounds
 @opindex Wno-array-bounds
@@ -4288,7 +4290,8 @@ can be used to suppress such a warning.
 @opindex Wincompatible-pointer-types
 Do not warn when there is a conversion between pointers that have incompatible
 types.  This warning is for cases not covered by @option{-Wno-pointer-sign},
-which warns for pointer argument passing or assignment with different signedness
+which warns for pointer argument passing or assignment with different
+signedness.
 
 @item -Wno-int-conversion @r{(C and Objective-C only)}
 @opindex Wno-int-conversion
