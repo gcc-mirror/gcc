@@ -332,6 +332,11 @@ public:
   /* Return true if symbol is known to be nonzero.  */
   bool nonzero_address ();
 
+  /* Return 0 if symbol is known to have different address than S2,
+     Return 1 if symbol is known to have same address as S2,
+     return 2 otherwise.   */
+  int equal_address_to (symtab_node *s2);
+
   /* Return symbol table node associated with DECL, if any,
      and NULL otherwise.  */
   static inline symtab_node *get (const_tree decl)
