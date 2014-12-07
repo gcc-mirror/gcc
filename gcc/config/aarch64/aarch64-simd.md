@@ -1903,12 +1903,28 @@
   DONE;
 })
 
+(define_insn "clrsb<mode>2"
+  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
+        (clrsb:VDQ_BHSI (match_operand:VDQ_BHSI 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "cls\\t%0.<Vtype>, %1.<Vtype>"
+  [(set_attr "type" "neon_cls<q>")]
+)
+
 (define_insn "clz<mode>2"
  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
        (clz:VDQ_BHSI (match_operand:VDQ_BHSI 1 "register_operand" "w")))]
  "TARGET_SIMD"
  "clz\\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "type" "neon_cls<q>")]
+)
+
+(define_insn "popcount<mode>2"
+  [(set (match_operand:VB 0 "register_operand" "=w")
+        (popcount:VB (match_operand:VB 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "cnt\\t%0.<Vbtype>, %1.<Vbtype>"
+  [(set_attr "type" "neon_cnt<q>")]
 )
 
 ;; 'across lanes' max and min ops.
