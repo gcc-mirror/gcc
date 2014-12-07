@@ -1860,3 +1860,90 @@ symtab_node::nonzero_address ()
     return true;
   return false;
 }
+
+/* Return 0 if symbol is known to have different address than S2,
+   Return 1 if symbol is known to have same address as S2,
+   return 2 otherwise.   */
+int
+symtab_node::equal_address_to (symtab_node *s2)
+{
+  enum availability avail1, avail2;
+
+  /* A Shortcut: equivalent symbols are always equivalent.  */
+  if (this == s2)
+    return 1;
+
+  /* For non-interposable aliases, lookup and compare their actual definitions.
+     Also check if the symbol needs to bind to given definition.  */
+  symtab_node *rs1 = ultimate_alias_target (&avail1);
+  symtab_node *rs2 = s2->ultimate_alias_target (&avail2);
+  bool binds_local1 = rs1->analyzed && decl_binds_to_current_def_p (this->decl);
+  bool binds_local2 = rs2->analyzed && decl_binds_to_current_def_p (s2->decl);
+  bool really_binds_local1 = binds_local1;
+  bool really_binds_local2 = binds_local2;
+
+  /* Addresses of vtables and virtual functions can not be used by user
+     code and are used only within speculation.  In this case we may make
+     symbol equivalent to its alias even if interposition may break this
+     rule.  Doing so will allow us to turn speculative inlining into
+     non-speculative more agressively.  */
+  if (DECL_VIRTUAL_P (this->decl) && avail1 >= AVAIL_AVAILABLE)
+    binds_local1 = true;
+  if (DECL_VIRTUAL_P (s2->decl) && avail2 >= AVAIL_AVAILABLE)
+    binds_local2 = true;
+
+  /* If both definitions are available we know that even if they are bound
+     to other unit they must be defined same way and therefore we can use
+     equivalence test.  */
+  if (rs1 != rs2 && avail1 >= AVAIL_AVAILABLE && avail2 >= AVAIL_AVAILABLE)
+    binds_local1 = binds_local2 = true;
+
+  if ((binds_local1 ? rs1 : this)
+       == (binds_local2 ? rs2 : s2))
+    {
+      /* We made use of the fact that alias is not weak.  */
+      if (binds_local1 && rs1 != this)
+        refuse_visibility_changes = true;
+      if (binds_local2 && rs2 != s2)
+        s2->refuse_visibility_changes = true;
+      return 1;
+    }
+
+  /* If both symbols may resolve to NULL, we can not really prove them different.  */
+  if (!nonzero_address () && !s2->nonzero_address ())
+    return 2;
+
+  /* Except for NULL, functions and variables never overlap.  */
+  if (TREE_CODE (decl) != TREE_CODE (s2->decl))
+    return 0;
+
+  /* If one of the symbols is unresolved alias, punt.  */
+  if (rs1->alias || rs2->alias)
+    return 2;
+
+  /* If we have a non-interposale definition of at least one of the symbols
+     and the other symbol is different, we know other unit can not interpose
+     it to the first symbol; all aliases of the definition needs to be 
+     present in the current unit.  */
+  if (((really_binds_local1 || really_binds_local2)
+      /* If we have both definitions and they are different, we know they
+	 will be different even in units they binds to.  */
+       || (binds_local1 && binds_local2))
+      && rs1 != rs2)
+    {
+      /* We make use of the fact that one symbol is not alias of the other
+	 and that the definition is non-interposable.  */
+      refuse_visibility_changes = true;
+      s2->refuse_visibility_changes = true;
+      rs1->refuse_visibility_changes = true;
+      rs2->refuse_visibility_changes = true;
+      return 0;
+    }
+
+  /* TODO: Alias oracle basically assume that addresses of global variables
+     are different unless they are declared as alias of one to another.
+     We probably should be consistent and use this fact here, too, and update
+     alias oracle to use this predicate.  */
+
+  return 2;
+}

@@ -1,3 +1,7 @@
+2014-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/addr_equal-1.c: New testcase.
+
 2014-12-06  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 	    Brian Rzycki  <b.rzycki@samsung.com>

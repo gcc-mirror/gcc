@@ -8985,7 +8985,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	    }
 	}
       /* For non-equal bases we can simplify if they are addresses
-	 of local binding decls or constants.  */
+	 declarations with different addresses.  */
       else if (indirect_base0 && indirect_base1
 	       /* We know that !operand_equal_p (base0, base1, 0)
 		  because the if condition was false.  But make
@@ -8993,16 +8993,13 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	       && base0 != base1
 	       && TREE_CODE (arg0) == ADDR_EXPR
 	       && TREE_CODE (arg1) == ADDR_EXPR
-	       && (((TREE_CODE (base0) == VAR_DECL
-		     || TREE_CODE (base0) == PARM_DECL)
-		    && (targetm.binds_local_p (base0)
-			|| CONSTANT_CLASS_P (base1)))
-		   || CONSTANT_CLASS_P (base0))
-	       && (((TREE_CODE (base1) == VAR_DECL
-		     || TREE_CODE (base1) == PARM_DECL)
-		    && (targetm.binds_local_p (base1)
-			|| CONSTANT_CLASS_P (base0)))
-		   || CONSTANT_CLASS_P (base1)))
+	       && DECL_P (base0)
+	       && DECL_P (base1)
+	       /* Watch for aliases.  */
+	       && (!decl_in_symtab_p (base0)
+		   || !decl_in_symtab_p (base1)
+		   || !symtab_node::get_create (base0)->equal_address_to
+			 (symtab_node::get_create (base1))))
 	{
 	  if (code == EQ_EXPR)
 	    return omit_two_operands_loc (loc, type, boolean_false_node,
@@ -12257,33 +12254,23 @@ fold_binary_loc (location_t loc,
 	 unaliased symbols neither of which are extern (since we do not
 	 have access to attributes for externs), then we know the result.  */
       if (TREE_CODE (arg0) == ADDR_EXPR
-	  && VAR_OR_FUNCTION_DECL_P (TREE_OPERAND (arg0, 0))
-	  && ! DECL_WEAK (TREE_OPERAND (arg0, 0))
-	  && ! lookup_attribute ("alias",
-				 DECL_ATTRIBUTES (TREE_OPERAND (arg0, 0)))
-	  && ! DECL_EXTERNAL (TREE_OPERAND (arg0, 0))
+	  && DECL_P (TREE_OPERAND (arg0, 0))
 	  && TREE_CODE (arg1) == ADDR_EXPR
-	  && VAR_OR_FUNCTION_DECL_P (TREE_OPERAND (arg1, 0))
-	  && ! DECL_WEAK (TREE_OPERAND (arg1, 0))
-	  && ! lookup_attribute ("alias",
-				 DECL_ATTRIBUTES (TREE_OPERAND (arg1, 0)))
-	  && ! DECL_EXTERNAL (TREE_OPERAND (arg1, 0)))
+	  && DECL_P (TREE_OPERAND (arg1, 0)))
 	{
-	  /* We know that we're looking at the address of two
-	     non-weak, unaliased, static _DECL nodes.
+	  int equal;
 
-	     It is both wasteful and incorrect to call operand_equal_p
-	     to compare the two ADDR_EXPR nodes.  It is wasteful in that
-	     all we need to do is test pointer equality for the arguments
-	     to the two ADDR_EXPR nodes.  It is incorrect to use
-	     operand_equal_p as that function is NOT equivalent to a
-	     C equality test.  It can in fact return false for two
-	     objects which would test as equal using the C equality
-	     operator.  */
-	  bool equal = TREE_OPERAND (arg0, 0) == TREE_OPERAND (arg1, 0);
-	  return constant_boolean_node (equal
-				        ? code == EQ_EXPR : code != EQ_EXPR,
-				        type);
+	  if (decl_in_symtab_p (TREE_OPERAND (arg0, 0))
+	      && decl_in_symtab_p (TREE_OPERAND (arg1, 0)))
+	    equal = symtab_node::get_create (TREE_OPERAND (arg0, 0))
+		    ->equal_address_to (symtab_node::get_create
+					  (TREE_OPERAND (arg1, 0)));
+	  else
+	    equal = TREE_OPERAND (arg0, 0) == TREE_OPERAND (arg1, 0);
+	  if (equal != 2)
+	    return constant_boolean_node (equal
+				          ? code == EQ_EXPR : code != EQ_EXPR,
+				          type);
 	}
 
       /* Similarly for a NEGATE_EXPR.  */
