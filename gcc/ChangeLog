@@ -1,3 +1,14 @@
+2014-12-07  Felix Yang  <felix.yang@huawei.com>
+	    Shanyao Chen  <chenshanyao@huawei.com>
+
+	* config/aarch64/aarch64-simd.md (clrsb<mode>2, popcount<mode>2): New
+	patterns.
+	* config/aarch64/aarch64-simd-builtins.def (clrsb, popcount): New
+	builtins.
+	* config/aarch64/arm_neon.h (vcls_s8, vcls_s16, vcls_s32, vclsq_s8,
+	vclsq_s16, vclsq_s32, vcnt_p8, vcnt_s8, vcnt_u8, vcntq_p8, vcntq_s8,
+	vcntq_u8): Rewrite using builtin functions.
+
 2014-12-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* symtab.c (symtab_node::equal_address_to): New function.
