@@ -1,3 +1,7 @@
+2014-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (Warning Options): Fix spelling and grammar.
+
 2014-12-06  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 	    Brian Rzycki  <b.rzycki@samsung.com>
