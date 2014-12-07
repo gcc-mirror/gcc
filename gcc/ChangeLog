@@ -1,3 +1,12 @@
+2014-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* compare-elim.c: Fix head comment.
+	(conforming_compare): Remove redundant test.
+	(can_eliminate_compare): New function extracted from...
+	(before_dom_children): ...here.  Use it, replace direct uses of
+	flag_non_call_exceptions and tidy up.
+	(maybe_select_cc_mode): Tidy up.
+
 2014-12-07  Felix Yang  <felix.yang@huawei.com>
 	    Shanyao Chen  <chenshanyao@huawei.com>
 
