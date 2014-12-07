@@ -1,3 +1,8 @@
+2014-12-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53513
+	* gcc.target/sh/pr54602-4.c: Fix matching of rte-nop sequence.
+
 2014-12-07  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR testsuite/64038
