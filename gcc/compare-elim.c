@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 
    (1) All comparison patterns are represented as
 
-	[(set (reg:CC) (compare:CC (reg) (immediate)))]
+	[(set (reg:CC) (compare:CC (reg) (reg_or_immediate)))]
 
    (2) All insn patterns that modify the flags are represented as
 
@@ -157,7 +157,6 @@ conforming_compare (rtx_insn *insn)
     return NULL;
 
   if (REG_P (XEXP (src, 0))
-      && REG_P (XEXP (src, 0))
       && (REG_P (XEXP (src, 1)) || CONSTANT_P (XEXP (src, 1))))
     return src;
 
@@ -266,6 +265,45 @@ public:
   virtual void before_dom_children (basic_block);
 };
 
+/* Return true if conforming COMPARE with EH_NOTE is redundant with comparison
+   CMP and can thus be eliminated.  */
+
+static bool
+can_eliminate_compare (rtx compare, rtx eh_note, struct comparison *cmp)
+{
+  /* Take care that it's in the same EH region.  */
+  if (cfun->can_throw_non_call_exceptions
+      && !rtx_equal_p (eh_note, cmp->eh_note))
+    return false;
+
+  /* Make sure the compare is redundant with the previous.  */
+  if (!rtx_equal_p (XEXP (compare, 0), cmp->in_a)
+      || !rtx_equal_p (XEXP (compare, 1), cmp->in_b))
+    return false;
+
+  /* New mode must be compatible with the previous compare mode.  */
+  enum machine_mode new_mode
+    = targetm.cc_modes_compatible (GET_MODE (compare), cmp->orig_mode);
+
+  if (new_mode == VOIDmode)
+    return false;
+
+  if (cmp->orig_mode != new_mode)
+    {
+      /* Generate new comparison for substitution.  */
+      rtx flags = gen_rtx_REG (new_mode, targetm.flags_regnum);
+      rtx x = gen_rtx_COMPARE (new_mode, cmp->in_a, cmp->in_b);
+      x = gen_rtx_SET (VOIDmode, flags, x);
+
+      if (!validate_change (cmp->insn, &PATTERN (cmp->insn), x, false))
+	return false;
+
+      cmp->orig_mode = new_mode;
+    }
+
+  return true;
+}
+
 /* Identify comparison instructions within BB.  If the flags from the last
    compare in the BB is live at the end of the block, install the compare
    in BB->AUX.  Called via dom_walker.walk ().  */
@@ -317,62 +355,26 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
       src = conforming_compare (insn);
       if (src)
 	{
-	  machine_mode src_mode = GET_MODE (src);
 	  rtx eh_note = NULL;
 
-	  if (flag_non_call_exceptions)
+	  if (cfun->can_throw_non_call_exceptions)
 	    eh_note = find_reg_note (insn, REG_EH_REGION, NULL);
 
-	  if (!last_cmp_valid)
-	    goto dont_delete;
+	  if (last_cmp_valid && can_eliminate_compare (src, eh_note, last_cmp))
+	    {
+	      if (eh_note)
+		need_purge = true;
+	      delete_insn (insn);
+	      continue;
+	    }
 
-	  /* Take care that it's in the same EH region.  */
-	  if (flag_non_call_exceptions
-	      && !rtx_equal_p (eh_note, last_cmp->eh_note))
-	    goto dont_delete;
-
-	  /* Make sure the compare is redundant with the previous.  */
-	  if (!rtx_equal_p (last_cmp->in_a, XEXP (src, 0))
-	      || !rtx_equal_p (last_cmp->in_b, XEXP (src, 1)))
-	    goto dont_delete;
-
-	  /* New mode must be compatible with the previous compare mode.  */
-	  {
-	    machine_mode new_mode
-	      = targetm.cc_modes_compatible (last_cmp->orig_mode, src_mode);
-	    if (new_mode == VOIDmode)
-	      goto dont_delete;
-
-	    if (new_mode != last_cmp->orig_mode)
-	      {
-		rtx x, flags = gen_rtx_REG (src_mode, targetm.flags_regnum);
-
-		/* Generate new comparison for substitution.  */
-		x = gen_rtx_COMPARE (new_mode, XEXP (src, 0), XEXP (src, 1));
-		x = gen_rtx_SET (VOIDmode, flags, x);
-
-		if (!validate_change (last_cmp->insn,
-				      &PATTERN (last_cmp->insn), x, false))
-		  goto dont_delete;
-
-		last_cmp->orig_mode = new_mode;
-	      }
-	  }
-
-	  /* All tests and substitutions succeeded!  */
-	  if (eh_note)
-	    need_purge = true;
-	  delete_insn (insn);
-	  continue;
-
-	dont_delete:
 	  last_cmp = XCNEW (struct comparison);
 	  last_cmp->insn = insn;
 	  last_cmp->prev_clobber = last_clobber;
 	  last_cmp->in_a = XEXP (src, 0);
 	  last_cmp->in_b = XEXP (src, 1);
 	  last_cmp->eh_note = eh_note;
-	  last_cmp->orig_mode = src_mode;
+	  last_cmp->orig_mode = GET_MODE (src);
 	  all_compares.safe_push (last_cmp);
 
 	  /* It's unusual, but be prepared for comparison patterns that
@@ -391,7 +393,6 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
 	  /* In either case, the previous compare is no longer valid.  */
 	  last_cmp = NULL;
 	  last_cmp_valid = false;
-	  continue;
 	}
 
       /* Notice if this instruction uses the flags register.  */
@@ -425,8 +426,7 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
 	      basic_block dest = e->dest;
-	      if (bitmap_bit_p (df_get_live_in (bb),
-				targetm.flags_regnum)
+	      if (bitmap_bit_p (df_get_live_in (bb), targetm.flags_regnum)
 		  && !single_pred_p (dest))
 		{
 		  last_cmp->missing_uses = true;
@@ -498,8 +498,7 @@ maybe_select_cc_mode (struct comparison *cmp, rtx a ATTRIBUTE_UNUSED,
       sel_mode = SELECT_CC_MODE (cmp->uses[0].code, a, b);
       for (i = 1; i < n; ++i)
 	{
-	  machine_mode new_mode;
-	  new_mode = SELECT_CC_MODE (cmp->uses[i].code, a, b);
+	  machine_mode new_mode = SELECT_CC_MODE (cmp->uses[i].code, a, b);
 	  if (new_mode != sel_mode)
 	    {
 	      sel_mode = targetm.cc_modes_compatible (sel_mode, new_mode);
@@ -507,7 +506,7 @@ maybe_select_cc_mode (struct comparison *cmp, rtx a ATTRIBUTE_UNUSED,
 		return NULL;
 	    }
 	}
-      
+
       if (sel_mode != cmp->orig_mode)
 	{
 	  flags = gen_rtx_REG (sel_mode, targetm.flags_regnum);
@@ -633,7 +632,7 @@ try_eliminate_compare (struct comparison *cmp)
   validate_change (insn, &XVECEXP (PATTERN (insn), 0, 1), x, true);
   if (!apply_change_group ())
     return false;
- 
+
   /* Success.  Delete the compare insn...  */
   delete_insn (cmp->insn);
 
