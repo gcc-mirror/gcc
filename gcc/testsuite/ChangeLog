@@ -1,3 +1,12 @@
+2014-12-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2014-12-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/h8300/h8300.exp: Fix duplicated text.
+	* gcc.target/h8300/pragma-isr.c: Likewise.
+	* gcc.target/h8300/pragma-isr2.c: Likewise.
+
 2014-12-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
