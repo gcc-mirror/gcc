@@ -5,13 +5,13 @@
 /* Expected results.  */
 VECT_VAR_DECL(expected,int,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
 				       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,int,16,4) [] = { 0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,int,32,2) [] = { 0x33, 0x33 };
+VECT_VAR_DECL(expected,int,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
+VECT_VAR_DECL(expected,int,32,2) [] = { 0x33333333, 0x33333333 };
 VECT_VAR_DECL(expected,int,64,1) [] = { 0x3333333333333333 };
-VECT_VAR_DECL(expected,uint,8,8) [] = { 0x3, 0x3, 0x3, 0x3,
-					0x3, 0x3, 0x3, 0x3 };
-VECT_VAR_DECL(expected,uint,16,4) [] = { 0x37, 0x37, 0x37, 0x37 };
-VECT_VAR_DECL(expected,uint,32,2) [] = { 0x3, 0x3 };
+VECT_VAR_DECL(expected,uint,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
+					0x33, 0x33, 0x33, 0x33 };
+VECT_VAR_DECL(expected,uint,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
+VECT_VAR_DECL(expected,uint,32,2) [] = { 0x33333333, 0x33333333 };
 VECT_VAR_DECL(expected,uint,64,1) [] = { 0x3333333333333333 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
 					0x33, 0x33, 0x33, 0x33 };
@@ -45,15 +45,13 @@ VECT_VAR_DECL(expected,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0x33333333, 0x33333333,
 					   0x33333333, 0x33333333 };
 
-#ifndef INSN_NAME
 #define INSN_NAME vaddl
 #define TEST_MSG "VADDL"
-#endif
 
-#define FNNAME1(NAME) void exec_ ## NAME (void)
+#define FNNAME1(NAME) exec_ ## NAME
 #define FNNAME(NAME) FNNAME1(NAME)
 
-FNNAME (INSN_NAME)
+void FNNAME (INSN_NAME) (void)
 {
   /* Basic test: y=vaddl(x1,x2), then store the result.  */
 #define TEST_VADDL1(INSN, T1, T2, W, W2, N)				\
@@ -117,6 +115,6 @@ FNNAME (INSN_NAME)
 
 int main (void)
 {
-  FNNAME (INSN_NAME);
+  FNNAME (INSN_NAME) ();
   return 0;
 }
