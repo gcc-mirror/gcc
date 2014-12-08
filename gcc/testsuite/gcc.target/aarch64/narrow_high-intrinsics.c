@@ -107,9 +107,9 @@ ONE (vmovn_high, uint16x8_t, uint16x4_t, uint32x4_t, u32)
 ONE (vmovn_high, uint32x4_t, uint32x2_t, uint64x2_t, u64)
 
 
-/* { dg-final { scan-assembler-times "\\tsubhn2 v" 6} }  */
+/* { dg-final { scan-assembler-times "\\tsubhn2\\tv" 6} }  */
 /* { dg-final { scan-assembler-times "\\taddhn2\\tv" 6} }  */
-/* { dg-final { scan-assembler-times "rsubhn2 v" 6} }  */
+/* { dg-final { scan-assembler-times "rsubhn2\\tv" 6} }  */
 /* { dg-final { scan-assembler-times "raddhn2\\tv" 6} }  */
 /* { dg-final { scan-assembler-times "\\trshrn2 v" 6} }  */
 /* { dg-final { scan-assembler-times "\\tshrn2 v" 6} }  */

@@ -1,3 +1,26 @@
+2014-12-08  Felix Yang  <felix.yang@huawei.com>
+	    Haijian Zhang  <z.zhanghaijian@huawei.com>
+	    Jiji Jiang  <jiangjiji@huawei.com>
+	    Pengfei Sui  <suipengfei@huawei.com>
+
+	* config/aarch64/arm_neon.h (vrecpe_u32, vrecpeq_u32): Rewrite using
+	builtin functions.
+	(vfma_f32, vfmaq_f32, vfmaq_f64, vfma_n_f32, vfmaq_n_f32, vfmaq_n_f64,
+	vfms_f32, vfmsq_f32, vfmsq_f64): Likewise.
+	(vhsub_s8, vhsub_u8, vhsub_s16, vhsub_u16, vhsub_s32, vhsub_u32,
+	vhsubq_s8, vhsubq_u8, vhsubq_s16, vhsubq_u16, vhsubq_s32, vhsubq_u32,
+	vsubhn_s16, vsubhn_u16, vsubhn_s32, vsubhn_u32, vsubhn_s64, vsubhn_u66,
+	vrsubhn_s16, vrsubhn_u16, vrsubhn_s32, vrsubhn_u32, vrsubhn_s64,
+	vrsubhn_u64, vsubhn_high_s16, vsubhn_high_u16, vsubhn_high_s32,
+	vsubhn_high_u32, vsubhn_high_s64, vsubhn_high_u64, vrsubhn_high_s16,
+	vrsubhn_high_u16, vrsubhn_high_s32, vrsubhn_high_u32, vrsubhn_high_s64,
+	vrsubhn_high_u64): Likewise.
+	* config/aarch64/iterators.md (VDQ_SI): New mode iterator.
+	* config/aarch64/aarch64.md (define_c_enum "unspec"): Add UNSPEC_URECPE.
+	* config/aarch64/aarch64-simd.md (aarch64_urecpe<mode>): New pattern.
+	* config/aarch64/aarch64-simd-builtins.def (shsub, uhsub, subhn, rsubhn,
+	subhn2, rsubhn2, urecpe): New builtins.
+
 2014-12-08  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/i386.c (ix86_expand_vec_perm_vpermi2): Handle v64qi.
@@ -5996,7 +6019,6 @@
 
 	* config/aarch64/aarch64-simd.md (*aarch64_simd_ld1r<mode>): Use
 	VALL mode iterator instead of VALLDI.
-
 
 2014-11-14  Jan Hubicka  <hubicka@ucw.cz>
 

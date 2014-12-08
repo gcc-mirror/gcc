@@ -127,15 +127,21 @@
   BUILTIN_VD_BHSI (BINOP, usubw, 0)
   /* Implemented by aarch64_<sur>h<addsub><mode>.  */
   BUILTIN_VDQ_BHSI (BINOP, shadd, 0)
+  BUILTIN_VDQ_BHSI (BINOP, shsub, 0)
   BUILTIN_VDQ_BHSI (BINOP, uhadd, 0)
+  BUILTIN_VDQ_BHSI (BINOP, uhsub, 0)
   BUILTIN_VDQ_BHSI (BINOP, srhadd, 0)
   BUILTIN_VDQ_BHSI (BINOP, urhadd, 0)
   /* Implemented by aarch64_<sur><addsub>hn<mode>.  */
   BUILTIN_VQN (BINOP, addhn, 0)
+  BUILTIN_VQN (BINOP, subhn, 0)
   BUILTIN_VQN (BINOP, raddhn, 0)
+  BUILTIN_VQN (BINOP, rsubhn, 0)
   /* Implemented by aarch64_<sur><addsub>hn2<mode>.  */
   BUILTIN_VQN (TERNOP, addhn2, 0)
+  BUILTIN_VQN (TERNOP, subhn2, 0)
   BUILTIN_VQN (TERNOP, raddhn2, 0)
+  BUILTIN_VQN (TERNOP, rsubhn2, 0)
 
   BUILTIN_VSQN_HSDI (UNOP, sqmovun, 0)
   /* Implemented by aarch64_<sur>qmovn<mode>.  */
@@ -337,6 +343,8 @@
   BUILTIN_GPF (UNOP, frecpe, 0)
   BUILTIN_GPF (BINOP, frecps, 0)
   BUILTIN_GPF (UNOP, frecpx, 0)
+
+  BUILTIN_VDQ_SI (UNOP, urecpe, 0)
 
   BUILTIN_VDQF (UNOP, frecpe, 0)
   BUILTIN_VDQF (BINOP, frecps, 0)

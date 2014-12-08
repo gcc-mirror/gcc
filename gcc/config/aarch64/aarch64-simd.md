@@ -4840,6 +4840,14 @@
   [(set_attr "type" "neon_fp_recps_<Vetype><q>")]
 )
 
+(define_insn "aarch64_urecpe<mode>"
+  [(set (match_operand:VDQ_SI 0 "register_operand" "=w")
+        (unspec:VDQ_SI [(match_operand:VDQ_SI 1 "register_operand" "w")]
+                UNSPEC_URECPE))]
+ "TARGET_SIMD"
+ "urecpe\\t%0.<Vtype>, %1.<Vtype>"
+  [(set_attr "type" "neon_fp_recpe_<Vetype><q>")])
+
 ;; Standard pattern name vec_extract<mode>.
 
 (define_expand "vec_extract<mode>"
