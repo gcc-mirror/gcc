@@ -21835,6 +21835,10 @@ ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1,
       if (TARGET_AVX512VL && TARGET_AVX512BW)
 	gen = gen_avx512vl_vpermi2varv16hi3;
       break;
+    case V64QImode:
+      if (TARGET_AVX512VBMI)
+	gen = gen_avx512bw_vpermi2varv64qi3;
+      break;
     case V32HImode:
       if (TARGET_AVX512BW)
 	gen = gen_avx512bw_vpermi2varv32hi3;
