@@ -3190,9 +3190,12 @@ Parse::call(Expression* func)
   if (token->is_op(OPERATOR_COMMA))
     token = this->advance_token();
   if (!token->is_op(OPERATOR_RPAREN))
-    error_at(this->location(), "missing %<)%>");
-  else
-    this->advance_token();
+    {
+      error_at(this->location(), "missing %<)%>");
+      if (!this->skip_past_error(OPERATOR_RPAREN))
+	return Expression::make_error(this->location());
+    }
+  this->advance_token();
   if (func->is_error_expression())
     return func;
   return Expression::make_call(func, args, is_varargs, func->location());
