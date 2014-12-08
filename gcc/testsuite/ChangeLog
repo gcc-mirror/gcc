@@ -1,3 +1,14 @@
+2014-12-08  Felix Yang  <felix.yang@huawei.com>
+	   Haijian Zhang  <z.zhanghaijian@huawei.com>
+	   Jiji Jiang  <jiangjiji@huawei.com>
+	   Pengfei Sui  <suipengfei@huawei.com>
+
+	* gcc.target/aarch64/vfma.c: New test.
+	* gcc.target/aarch64/vfma_n.c: New test.
+	* gcc.target/aarch64/vfms.c: New test.
+	* gcc.target/aarch64/narrow_high-intrinsics.c: Fix expected assembler
+	for rsubhn2 & subhn2.
+
 2014-12-08  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* gcc.target/i386/chkp-bndret.c: New.

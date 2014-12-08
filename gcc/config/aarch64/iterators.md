@@ -128,6 +128,9 @@
 ;; Vector modes except double int.
 (define_mode_iterator VDQIF [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF V2DF])
 
+;; Vector modes for S type.
+(define_mode_iterator VDQ_SI [V2SI V4SI])
+
 ;; Vector modes for Q and H types.
 (define_mode_iterator VDQQH [V8QI V16QI V4HI V8HI])
 
