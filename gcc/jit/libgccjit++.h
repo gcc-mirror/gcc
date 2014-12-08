@@ -32,16 +32,19 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace gccjit
 {
+  /* Indentation indicates inheritance.  */
   class context;
-  class location;
-  class field;
-  class type;
-  class struct_;
-  class param;
-  class function;
-  class block;
-  class rvalue;
-  class lvalue;
+  class error;
+  class object;
+    class location;
+    class field;
+    class type;
+      class struct_;
+    class function;
+    class block;
+    class rvalue;
+     class lvalue;
+       class param;
 
   /* Errors within the API become C++ exceptions of this class.  */
   class error
