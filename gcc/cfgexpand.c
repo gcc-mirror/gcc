@@ -2594,7 +2594,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
     }
 
   ninputs += ninout;
-  if (ninputs + noutputs > MAX_RECOG_OPERANDS)
+  if (ninputs + noutputs + nlabels > MAX_RECOG_OPERANDS)
     {
       error ("more than %d operands in %<asm%>", MAX_RECOG_OPERANDS);
       return;
