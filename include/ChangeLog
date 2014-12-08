@@ -1,3 +1,8 @@
+2014-12-08  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/60782
+	* dwarf2.def: Add DWARFv5 DW_TAG_atomic_type.
+
 2014-11-21  Mark Wielaard  <mjw@redhat.com>
 
 	* dwarf2.h: Add DW_LANG_C_plus_plus_11, DW_LANG_C11 and

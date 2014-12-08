@@ -133,6 +133,8 @@ DW_TAG (DW_TAG_shared_type, 0x40)
 DW_TAG (DW_TAG_type_unit, 0x41)
 DW_TAG (DW_TAG_rvalue_reference_type, 0x42)
 DW_TAG (DW_TAG_template_alias, 0x43)
+/* DWARF 5.  */
+DW_TAG (DW_TAG_atomic_type, 0x47)
 
 DW_TAG_DUP (DW_TAG_lo_user, 0x4080)
 DW_TAG_DUP (DW_TAG_hi_user, 0xffff)
