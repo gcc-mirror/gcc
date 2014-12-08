@@ -18,8 +18,12 @@ Client Code   . Generated .            libgccjit.so
    │          .           .          .               .
    V          .           .  gcc_jit_context_compile .
     ──────────────────────────>      .               .
+              .           .    │ start of recording::context::compile ()
               .           .    │     .               .
               .           .    │ ACQUIRE MUTEX       .
+              .           .    │     .               .
+              .           .    │ start of playback::context::compile ()
+              .           .    │   (create tempdir)  .
               .           .    │     .               .
               .           .    V───────────────────────> toplev::main (for now)
               .           .          .               .       │
@@ -65,13 +69,33 @@ Client Code   . Generated .            libgccjit.so
               .           .          .               .   (the middle─end and backend)
               .           .          .               .       ↓
               .           .    <───────────────────────────── end of toplev::main
+              .           .    │     .               .
+              .           .    V───────────────────────> toplev::finalize
+              .           .          .               . │   (purge internal state)
+              .           .    <──────────────────────── end of toplev::finalize
+              .           .    │     .               .
+              .           .    │ Convert assembler to DSO ("fake.so")
+              .           .    │     .               .
+              .           .    │ Load DSO (dlopen "fake.so")
+              .           .    │     .               .
+              .           .    │ end of playback::context::compile ()
+              .           .    │     .               .
+              .           .    │ playback::context dtor
+              .           .     ──>  .               .
+              .           .       │ Cleanup tempdir  .
+              .           .       │   ("fake.so" is unlinked from the
+              .           .       │    filesystem at this point)
+              .           .    <──   .               .
+              .           .    │     .               .
               .           .    │ RELEASE MUTEX       .
               .           .    │     .               .
-              .           .    │ Convert assembler to DSO
-              .           .    │     .               .
-              .           .    │ Load DSO            .
+              .           .    │ end of recording::context::compile ()
    <───────────────────────────      .               .
    │          .           .          .               .
+   V          .           .  gcc_jit_result_get_code .
+    ──────────────────────────>      .               .
+              .           .    │ dlsym () within loaded DSO
+   <───────────────────────────      .               .
    Get (void*).           .          .               .
    │          .           .          .               .
    │ Call it  .           .          .               .
@@ -80,5 +104,11 @@ Client Code   . Generated .            libgccjit.so
               .    │      .          .               .
    <───────────────       .          .               .
    │          .           .          .               .
+etc│          .           .          .               .
    │          .           .          .               .
-etc
+   V          .           .  gcc_jit_result_release  .
+    ──────────────────────────>      .               .
+              .           .    │ dlclose () the loaded DSO
+              .           .    │    (code becomes uncallable)
+   <───────────────────────────      .               .
+   │          .           .          .               .
