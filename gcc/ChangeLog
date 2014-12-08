@@ -1,3 +1,8 @@
+2014-12-07  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* symtab.c (symtab_node::verify): Check for section attribute before
+	asserting something isn't in a section and a comdat group.
+
 2014-12-07  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/50751

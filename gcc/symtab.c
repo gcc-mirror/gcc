@@ -1102,7 +1102,8 @@ symtab_node::verify_base (void)
       error_found = true;
     }
   if (get_section () && get_comdat_group ()
-      && !implicit_section)
+      && !implicit_section
+      && !lookup_attribute ("section", DECL_ATTRIBUTES (decl)))
     {
       error ("Both section and comdat group is set");
       error_found = true;
