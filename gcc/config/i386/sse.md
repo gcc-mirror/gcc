@@ -10713,7 +10713,7 @@
    (V32QI "TARGET_AVX2") (V16HI "TARGET_AVX2")
    (V16SI "TARGET_AVX512F") (V8DI "TARGET_AVX512F")
    (V16SF "TARGET_AVX512F") (V8DF "TARGET_AVX512F")
-   (V32HI "TARGET_AVX512BW")])
+   (V32HI "TARGET_AVX512BW") (V64QI "TARGET_AVX512BW")])
 
 (define_expand "vec_perm_const<mode>"
   [(match_operand:VEC_PERM_CONST 0 "register_operand")
