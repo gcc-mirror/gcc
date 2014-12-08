@@ -1,3 +1,7 @@
+2014-12-08  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/aarch64/bics_3.c : New testcase.
+
 2014-12-08  Felix Yang  <felix.yang@huawei.com>
 	   Haijian Zhang  <z.zhanghaijian@huawei.com>
 	   Jiji Jiang  <jiangjiji@huawei.com>

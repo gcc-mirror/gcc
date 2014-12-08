@@ -3058,6 +3058,18 @@
   [(set_attr "type" "logics_reg")]
 )
 
+(define_insn "*and_one_cmpl<mode>3_compare0_no_reuse"
+  [(set (reg:CC_NZ CC_REGNUM)
+    (compare:CC_NZ
+     (and:GPI (not:GPI
+           (match_operand:GPI 0 "register_operand" "r"))
+          (match_operand:GPI 1 "register_operand" "r"))
+     (const_int 0)))]
+  ""
+  "bics\\t<w>zr, %<w>1, %<w>0"
+  [(set_attr "type" "logics_reg")]
+)
+
 (define_insn "*<LOGICAL:optab>_one_cmpl_<SHIFT:optab><mode>3"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(LOGICAL:GPI (not:GPI
@@ -3104,6 +3116,20 @@
 			  (SHIFT:SI (match_dup 1) (match_dup 2))) (match_dup 3))))]
   ""
   "bics\\t%w0, %w3, %w1, <SHIFT:shift> %2"
+  [(set_attr "type" "logics_shift_imm")]
+)
+
+(define_insn "*and_one_cmpl_<SHIFT:optab><mode>3_compare0_no_reuse"
+  [(set (reg:CC_NZ CC_REGNUM)
+    (compare:CC_NZ
+     (and:GPI (not:GPI
+           (SHIFT:GPI
+            (match_operand:GPI 0 "register_operand" "r")
+            (match_operand:QI 1 "aarch64_shift_imm_<mode>" "n")))
+          (match_operand:GPI 2 "register_operand" "r"))
+     (const_int 0)))]
+  ""
+  "bics\\t<w>zr, %<w>2, %<w>0, <SHIFT:shift> %1"
   [(set_attr "type" "logics_shift_imm")]
 )
 
