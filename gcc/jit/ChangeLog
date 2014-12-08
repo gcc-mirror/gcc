@@ -1,3 +1,12 @@
+2014-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* notes.txt: Show the beginning and ending of
+	recording::context::compile vs playback::context::compile.  Show
+	the creation and unlinking of the tempdir.  Show toplev::finalize.
+	Move "RELEASE MUTEX" to the correct location.  Show
+	gcc_jit_result_release, and indicate where the
+	dlopen/dlsym/dlclose occur.
+
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/examples/tut02-square.c (main): Release the context
