@@ -1,3 +1,10 @@
+2014-12-08  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/64226
+	* config/rs6000/rs6000.c (rs6000_secondary_reload_inner)
+	[SYMBOL_REF]: Do not explicitly call create_TOC_reference for
+	TARGET_TOC. Always use rs6000_emit_move.
+
 2014-12-08  Mark Wielaard  <mjw@redhat.com>
 
 	PR debug/60782
