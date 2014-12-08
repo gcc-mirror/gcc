@@ -1,5 +1,10 @@
 2014-12-08  Ilya Tocar  <ilya.tocar@intel.com>
 
+	* config/i386/i386.c (ix86_expand_vec_perm_vpermi2): Handle v64qi.
+	* config/i386/sse.md (VEC_PERM_AVX2): Add v64qi.
+
+2014-12-08  Ilya Tocar  <ilya.tocar@intel.com>
+
 	* config/i386/i386.c (expand_vec_perm_broadcast_1): Handle v64qi.
 	(expand_vec_perm_vpermi2_vpshub2): New.
 	(ix86_expand_vec_perm_const_1): Use it.
