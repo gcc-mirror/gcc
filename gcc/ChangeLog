@@ -1,3 +1,8 @@
+2014-11-15  David Wohlferd <dw@LimeGreenSocks.com>
+
+        PR target/61692
+	* cfgexpand.c (expand_asm_operands): Count all inline asm params.
+
 2014-12-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/63854

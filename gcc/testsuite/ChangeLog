@@ -1,3 +1,8 @@
+2014-11-15  David Wohlferd <dw@LimeGreenSocks.com> 
+
+	PR target/61692
+        * gcc.dg/pr61692.c: New test.
+
 2014-12-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR ipa/64049
