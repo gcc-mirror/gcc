@@ -2082,6 +2082,38 @@ chkp_get_nonpointer_load_bounds (void)
   return chkp_get_zero_bounds ();
 }
 
+/* Return 1 if may use bndret call to get bounds for pointer
+   returned by CALL.  */
+static bool
+chkp_call_returns_bounds_p (gcall *call)
+{
+  if (gimple_call_internal_p (call))
+    return false;
+
+  tree fndecl = gimple_call_fndecl (call);
+
+  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
+    return false;
+
+  if (fndecl
+      && lookup_attribute ("bnd_legacy", DECL_ATTRIBUTES (fndecl)))
+    return false;
+
+  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    {
+      if (chkp_instrument_normal_builtin (fndecl))
+	return true;
+
+      if (!lookup_attribute ("always_inline", DECL_ATTRIBUTES (fndecl)))
+	return false;
+
+      struct cgraph_node *clone = chkp_maybe_create_clone (fndecl);
+      return (clone && gimple_has_body_p (clone->decl));
+    }
+
+  return true;
+}
+
 /* Build bounds returned by CALL.  */
 static tree
 chkp_build_returned_bound (gcall *call)
@@ -2156,7 +2188,7 @@ chkp_build_returned_bound (gcall *call)
 
       bounds = chkp_find_bounds (gimple_call_arg (call, argno), &iter);
     }
-  else
+  else if (chkp_call_returns_bounds_p (call))
     {
       gcc_assert (TREE_CODE (gimple_call_lhs (call)) == SSA_NAME);
 
@@ -2174,6 +2206,8 @@ chkp_build_returned_bound (gcall *call)
 
       update_stmt (stmt);
     }
+  else
+    bounds = chkp_get_zero_bounds ();
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
