@@ -1,3 +1,15 @@
+2014-12-08  Richard Biener  <rguenther@suse.de>
+
+	* builtins.c (fold_builtin_0): Remove unused ignore parameter.
+	(fold_builtin_1): Likewise.
+	(fold_builtin_3): Likewise.
+	(fold_builtin_varargs): Likewise.
+	(fold_builtin_2): Likewise.  Do not fold stpcpy here.
+	(fold_builtin_n): Adjust.
+	(fold_builtin_stpcpy): Move to gimple-fold.c.
+	(gimple_fold_builtin_stpcpy): Moved and gimplified from builtins.c.
+	(gimple_fold_builtin): Fold stpcpy here.
+
 2014-12-07  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* symtab.c (symtab_node::verify): Check for section attribute before

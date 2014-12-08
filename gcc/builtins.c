@@ -191,11 +191,11 @@ static tree fold_builtin_fabs (location_t, tree, tree);
 static tree fold_builtin_abs (location_t, tree, tree);
 static tree fold_builtin_unordered_cmp (location_t, tree, tree, tree, enum tree_code,
 					enum tree_code);
-static tree fold_builtin_0 (location_t, tree, bool);
-static tree fold_builtin_1 (location_t, tree, tree, bool);
-static tree fold_builtin_2 (location_t, tree, tree, tree, bool);
-static tree fold_builtin_3 (location_t, tree, tree, tree, tree, bool);
-static tree fold_builtin_varargs (location_t, tree, tree*, int, bool);
+static tree fold_builtin_0 (location_t, tree);
+static tree fold_builtin_1 (location_t, tree, tree);
+static tree fold_builtin_2 (location_t, tree, tree, tree);
+static tree fold_builtin_3 (location_t, tree, tree, tree, tree);
+static tree fold_builtin_varargs (location_t, tree, tree*, int);
 
 static tree fold_builtin_strpbrk (location_t, tree, tree, tree);
 static tree fold_builtin_strstr (location_t, tree, tree, tree);
@@ -8657,47 +8657,6 @@ fold_builtin_exponent (location_t loc, tree fndecl, tree arg,
   return NULL_TREE;
 }
 
-/* Fold function call to builtin stpcpy with arguments DEST and SRC.
-   Return NULL_TREE if no simplification can be made.  */
-
-static tree
-fold_builtin_stpcpy (location_t loc, tree fndecl, tree dest, tree src)
-{
-  tree fn, len, lenp1, call, type;
-
-  if (!validate_arg (dest, POINTER_TYPE)
-      || !validate_arg (src, POINTER_TYPE))
-    return NULL_TREE;
-
-  len = c_strlen (src, 1);
-  if (!len
-      || TREE_CODE (len) != INTEGER_CST)
-    return NULL_TREE;
-
-  if (optimize_function_for_size_p (cfun)
-      /* If length is zero it's small enough.  */
-      && !integer_zerop (len))
-    return NULL_TREE;
-
-  fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
-  if (!fn)
-    return NULL_TREE;
-
-  lenp1 = size_binop_loc (loc, PLUS_EXPR,
-			  fold_convert_loc (loc, size_type_node, len),
-			  build_int_cst (size_type_node, 1));
-  /* We use dest twice in building our expression.  Save it from
-     multiple expansions.  */
-  dest = builtin_save_expr (dest);
-  call = build_call_expr_loc (loc, fn, 3, dest, src, lenp1);
-
-  type = TREE_TYPE (TREE_TYPE (fndecl));
-  dest = fold_build_pointer_plus_loc (loc, dest, len);
-  dest = fold_convert_loc (loc, type, dest);
-  dest = omit_one_operand_loc (loc, type, dest, call);
-  return dest;
-}
-
 /* Fold function call to builtin memchr.  ARG1, ARG2 and LEN are the
    arguments to the call, and TYPE is its return type.
    Return NULL_TREE if no simplification can be made.  */
@@ -9857,11 +9816,10 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
 }
 
 /* Fold a call to built-in function FNDECL with 0 arguments.
-   IGNORE is true if the result of the function call is ignored.  This
-   function returns NULL_TREE if no simplification was possible.  */
+   This function returns NULL_TREE if no simplification was possible.  */
 
 static tree
-fold_builtin_0 (location_t loc, tree fndecl, bool ignore ATTRIBUTE_UNUSED)
+fold_builtin_0 (location_t loc, tree fndecl)
 {
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
@@ -9886,11 +9844,10 @@ fold_builtin_0 (location_t loc, tree fndecl, bool ignore ATTRIBUTE_UNUSED)
 }
 
 /* Fold a call to built-in function FNDECL with 1 argument, ARG0.
-   IGNORE is true if the result of the function call is ignored.  This
-   function returns NULL_TREE if no simplification was possible.  */
+   This function returns NULL_TREE if no simplification was possible.  */
 
 static tree
-fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool)
+fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
 {
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
@@ -10301,11 +10258,10 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool)
 }
 
 /* Fold a call to built-in function FNDECL with 2 arguments, ARG0 and ARG1.
-   IGNORE is true if the result of the function call is ignored.  This
-   function returns NULL_TREE if no simplification was possible.  */
+   This function returns NULL_TREE if no simplification was possible.  */
 
 static tree
-fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1, bool ignore)
+fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
 {
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
@@ -10392,19 +10348,6 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1, bool ignore)
     case BUILT_IN_RINDEX:
       return fold_builtin_strrchr (loc, arg0, arg1, type);
 
-    case BUILT_IN_STPCPY:
-      if (ignore)
-	{
-	  tree fn = builtin_decl_implicit (BUILT_IN_STRCPY);
-	  if (!fn)
-	    break;
-
-	  return build_call_expr_loc (loc, fn, 2, arg0, arg1);
-	}
-      else
-	return fold_builtin_stpcpy (loc, fndecl, arg0, arg1);
-      break;
-
     case BUILT_IN_STRCMP:
       return fold_builtin_strcmp (loc, arg0, arg1);
 
@@ -10469,12 +10412,12 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1, bool ignore)
 }
 
 /* Fold a call to built-in function FNDECL with 3 arguments, ARG0, ARG1,
-   and ARG2.  IGNORE is true if the result of the function call is ignored.
+   and ARG2.
    This function returns NULL_TREE if no simplification was possible.  */
 
 static tree
 fold_builtin_3 (location_t loc, tree fndecl,
-		tree arg0, tree arg1, tree arg2, bool)
+		tree arg0, tree arg1, tree arg2)
 {
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
@@ -10543,26 +10486,26 @@ fold_builtin_3 (location_t loc, tree fndecl,
    simplification was possible.  */
 
 tree
-fold_builtin_n (location_t loc, tree fndecl, tree *args, int nargs, bool ignore)
+fold_builtin_n (location_t loc, tree fndecl, tree *args, int nargs, bool)
 {
   tree ret = NULL_TREE;
 
   switch (nargs)
     {
     case 0:
-      ret = fold_builtin_0 (loc, fndecl, ignore);
+      ret = fold_builtin_0 (loc, fndecl);
       break;
     case 1:
-      ret = fold_builtin_1 (loc, fndecl, args[0], ignore);
+      ret = fold_builtin_1 (loc, fndecl, args[0]);
       break;
     case 2:
-      ret = fold_builtin_2 (loc, fndecl, args[0], args[1], ignore);
+      ret = fold_builtin_2 (loc, fndecl, args[0], args[1]);
       break;
     case 3:
-      ret = fold_builtin_3 (loc, fndecl, args[0], args[1], args[2], ignore);
+      ret = fold_builtin_3 (loc, fndecl, args[0], args[1], args[2]);
       break;
     default:
-      ret = fold_builtin_varargs (loc, fndecl, args, nargs, ignore);
+      ret = fold_builtin_varargs (loc, fndecl, args, nargs);
       break;
     }
   if (ret)
@@ -11656,12 +11599,10 @@ fold_builtin_object_size (tree ptr, tree ost)
    need special handling; we need to store the arguments in a convenient
    data structure before attempting any folding.  Fortunately there are
    only a few builtins that fall into this category.  FNDECL is the
-   function, EXP is the CALL_EXPR for the call, and IGNORE is true if the
-   result of the function call is ignored.  */
+   function, EXP is the CALL_EXPR for the call.  */
 
 static tree
-fold_builtin_varargs (location_t loc, tree fndecl, tree *args, int nargs,
-		      bool ignore ATTRIBUTE_UNUSED)
+fold_builtin_varargs (location_t loc, tree fndecl, tree *args, int nargs)
 {
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   tree ret = NULL_TREE;
