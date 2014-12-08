@@ -2165,8 +2165,7 @@ chkp_build_returned_bound (gcall *call)
     }
   /* Do not use retbnd when returned bounds are equal to some
      of passed bounds.  */
-  else if ((gimple_call_return_flags (call) & ERF_RETURNS_ARG)
-	   || gimple_call_builtin_p (call, BUILT_IN_STRCHR))
+  else if (gimple_call_return_flags (call) & ERF_RETURNS_ARG)
     {
       gimple_stmt_iterator iter = gsi_for_stmt (call);
       unsigned int retarg = 0, argno;

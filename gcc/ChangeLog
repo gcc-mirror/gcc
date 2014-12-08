@@ -1,5 +1,10 @@
 2014-12-08  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* tree-chkp.c (chkp_build_returned_bound): Don't predict
+	return bounds for strchr calls.
+
+2014-12-08  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* tree-chkp.c (chkp_call_returns_bounds_p): New.
 	(chkp_build_returned_bound): Use zero bounds as
 	returned by calls not returning bounds.
