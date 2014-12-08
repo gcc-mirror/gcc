@@ -17379,12 +17379,7 @@ rs6000_secondary_reload_inner (rtx reg, rtx mem, rtx scratch, bool store_p)
     case SYMBOL_REF:
     case CONST:
     case LABEL_REF:
-      if (TARGET_TOC)
-	emit_insn (gen_rtx_SET (VOIDmode, scratch,
-				create_TOC_reference (addr, scratch)));
-      else
-	rs6000_emit_move (scratch, addr, Pmode);
-
+      rs6000_emit_move (scratch, addr, Pmode);
       new_addr = scratch;
       break;
 
