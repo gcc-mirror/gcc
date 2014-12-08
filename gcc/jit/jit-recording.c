@@ -492,6 +492,27 @@ recording::context::new_union_type (recording::location *loc,
   return result;
 }
 
+/* Create a recording::function_type instance and add it to this context's
+   list of mementos.
+
+   Used by new_function_ptr_type and by builtins_manager::make_fn_type.  */
+
+recording::function_type *
+recording::context::new_function_type (recording::type *return_type,
+				       int num_params,
+				       recording::type **param_types,
+				       int is_variadic)
+{
+  recording::function_type *fn_type
+    = new function_type (this,
+			 return_type,
+			 num_params,
+			 param_types,
+			 is_variadic);
+  record (fn_type);
+  return fn_type;
+}
+
 /* Create a recording::type instance and add it to this context's list
    of mementos.
 
@@ -505,13 +526,11 @@ recording::context::new_function_ptr_type (recording::location *, /* unused loc 
 					   recording::type **param_types,
 					   int is_variadic)
 {
-  recording::function_type *fn_type =
-    new function_type (this,
-		       return_type,
-		       num_params,
-		       param_types,
-		       is_variadic);
-  record (fn_type);
+  recording::function_type *fn_type
+    = new_function_type (return_type,
+			 num_params,
+			 param_types,
+			 is_variadic);
 
   /* Return a pointer-type to the the function type.  */
   return fn_type->get_pointer ();
@@ -561,6 +580,25 @@ recording::context::new_function (recording::location *loc,
   return result;
 }
 
+/* Locate the builtins_manager (if any) for this family of contexts,
+   creating it if it doesn't exist already.
+
+   All of the recording contexts in a family share one builtins_manager:
+   if we have a child context, follow the parent links to get the
+   ultimate ancestor context, and look for it/store it there.  */
+
+builtins_manager *
+recording::context::get_builtins_manager ()
+{
+  if (m_parent_ctxt)
+    return m_parent_ctxt->get_builtins_manager ();
+
+  if (!m_builtins_manager)
+    m_builtins_manager = new builtins_manager (this);
+
+  return m_builtins_manager;
+}
+
 /* Get a recording::function instance, which is lazily-created and added
    to the context's lists of mementos.
 
@@ -570,9 +608,8 @@ recording::context::new_function (recording::location *loc,
 recording::function *
 recording::context::get_builtin_function (const char *name)
 {
-  if (!m_builtins_manager)
-    m_builtins_manager = new builtins_manager (this);
-  return m_builtins_manager->get_builtin_function (name);
+  builtins_manager *bm = get_builtins_manager ();
+  return bm->get_builtin_function (name);
 }
 
 /* Create a recording::global instance and add it to this context's list
@@ -1229,6 +1266,9 @@ recording::memento_of_get_type::dereference ()
     case GCC_JIT_TYPE_FLOAT:
     case GCC_JIT_TYPE_DOUBLE:
     case GCC_JIT_TYPE_LONG_DOUBLE:
+    case GCC_JIT_TYPE_COMPLEX_FLOAT:
+    case GCC_JIT_TYPE_COMPLEX_DOUBLE:
+    case GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE:
       /* Not a pointer: */
       return NULL;
 
@@ -1290,6 +1330,11 @@ recording::memento_of_get_type::is_int () const
 
     case GCC_JIT_TYPE_FILE_PTR:
       return false;
+
+    case GCC_JIT_TYPE_COMPLEX_FLOAT:
+    case GCC_JIT_TYPE_COMPLEX_DOUBLE:
+    case GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE:
+      return false;
     }
 }
 
@@ -1338,6 +1383,11 @@ recording::memento_of_get_type::is_float () const
 
     case GCC_JIT_TYPE_FILE_PTR:
       return false;
+
+    case GCC_JIT_TYPE_COMPLEX_FLOAT:
+    case GCC_JIT_TYPE_COMPLEX_DOUBLE:
+    case GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE:
+      return true;
     }
 }
 
@@ -1386,6 +1436,11 @@ recording::memento_of_get_type::is_bool () const
 
     case GCC_JIT_TYPE_FILE_PTR:
       return false;
+
+    case GCC_JIT_TYPE_COMPLEX_FLOAT:
+    case GCC_JIT_TYPE_COMPLEX_DOUBLE:
+    case GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE:
+      return false;
     }
 }
 
@@ -1432,7 +1487,11 @@ static const char * const get_type_strings[] = {
 
   "size_t",  /* GCC_JIT_TYPE_SIZE_T */
 
-  "FILE *"  /* GCC_JIT_TYPE_FILE_PTR */
+  "FILE *",  /* GCC_JIT_TYPE_FILE_PTR */
+
+  "complex float", /* GCC_JIT_TYPE_COMPLEX_FLOAT */
+  "complex double", /* GCC_JIT_TYPE_COMPLEX_DOUBLE */
+  "complex long double"  /* GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE */
 
 };
 

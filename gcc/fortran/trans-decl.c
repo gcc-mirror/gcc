@@ -3795,7 +3795,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	    }
 	  /* TODO: move to the appropriate place in resolve.c.  */
 	  if (warn_return_type && el == NULL)
-	    gfc_warning ("Return value of function '%s' at %L not set",
+	    gfc_warning (OPT_Wreturn_type,
+			 "Return value of function %qs at %L not set",
 			 proc_sym->name, &proc_sym->declared_at);
 	}
       else if (proc_sym->as)
@@ -4430,7 +4431,8 @@ gfc_create_module_variable (gfc_symbol * sym)
 
   if (warn_unused_variable && !sym->attr.referenced
       && sym->attr.access == ACCESS_PRIVATE)
-    gfc_warning ("Unused PRIVATE module variable '%s' declared at %L",
+    gfc_warning (OPT_Wunused_value,
+		 "Unused PRIVATE module variable %qs declared at %L",
 		 sym->name, &sym->declared_at);
 
   /* We always want module variables to be created.  */
@@ -4992,12 +4994,14 @@ generate_local_decl (gfc_symbol * sym)
 	  if (warn_unused_dummy_argument && sym->attr.intent == INTENT_OUT)
 	    {
 	      if (sym->ts.type != BT_DERIVED)
-		gfc_warning ("Dummy argument '%s' at %L was declared "
+		gfc_warning (OPT_Wunused_dummy_argument,
+			     "Dummy argument %qs at %L was declared "
 			     "INTENT(OUT) but was not set",  sym->name,
 			     &sym->declared_at);
 	      else if (!gfc_has_default_initializer (sym->ts.u.derived)
 		       && !sym->ts.u.derived->attr.zero_comp)
-		gfc_warning ("Derived-type dummy argument '%s' at %L was "
+		gfc_warning (OPT_Wunused_dummy_argument,
+			     "Derived-type dummy argument %qs at %L was "
 			     "declared INTENT(OUT) but was not set and "
 			     "does not have a default initializer",
 			     sym->name, &sym->declared_at);
@@ -5006,8 +5010,9 @@ generate_local_decl (gfc_symbol * sym)
 	    }
 	  else if (warn_unused_dummy_argument)
 	    {
-	      gfc_warning ("Unused dummy argument '%s' at %L", sym->name,
-			 &sym->declared_at);
+	      gfc_warning (OPT_Wunused_dummy_argument,
+			   "Unused dummy argument %qs at %L", sym->name,
+			   &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
 		TREE_NO_WARNING(sym->backend_decl) = 1;
 	    }
@@ -5020,7 +5025,8 @@ generate_local_decl (gfc_symbol * sym)
 	{
 	  if (sym->attr.use_only)
 	    {
-	      gfc_warning ("Unused module variable '%s' which has been "
+	      gfc_warning (OPT_Wunused_variable,
+			   "Unused module variable %qs which has been "
 			   "explicitly imported at %L", sym->name,
 			   &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
@@ -5028,7 +5034,8 @@ generate_local_decl (gfc_symbol * sym)
 	    }
 	  else if (!sym->attr.use_assoc)
 	    {
-	      gfc_warning ("Unused variable '%s' declared at %L",
+	      gfc_warning (OPT_Wunused_variable,
+			   "Unused variable %qs declared at %L",
 			   sym->name, &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
 		TREE_NO_WARNING(sym->backend_decl) = 1;
@@ -5076,10 +5083,12 @@ generate_local_decl (gfc_symbol * sym)
            && !sym->attr.referenced)
 	{
            if (!sym->attr.use_assoc)
-	     gfc_warning ("Unused parameter '%s' declared at %L", sym->name,
+	     gfc_warning (OPT_Wunused_parameter,
+			  "Unused parameter %qs declared at %L", sym->name,
 			  &sym->declared_at);
 	   else if (sym->attr.use_only)
-	     gfc_warning ("Unused parameter '%s' which has been explicitly "
+	     gfc_warning (OPT_Wunused_parameter,
+			  "Unused parameter %qs which has been explicitly "
 			  "imported at %L", sym->name, &sym->declared_at);
 	}
     }
@@ -5094,7 +5103,8 @@ generate_local_decl (gfc_symbol * sym)
 	  && !sym->attr.use_assoc
 	  && sym->attr.if_source != IFSRC_IFBODY)
 	{
-	  gfc_warning ("Return value '%s' of function '%s' declared at "
+	  gfc_warning (OPT_Wreturn_type,
+		       "Return value %qs of function %qs declared at "
 		       "%L not set", sym->result->name, sym->name,
 		        &sym->result->declared_at);
 
@@ -5121,7 +5131,8 @@ generate_local_decl (gfc_symbol * sym)
 	  if (!sym->attr.referenced)
 	    {
 	      if (warn_unused_dummy_argument)
-		gfc_warning ("Unused dummy argument '%s' at %L", sym->name,
+		gfc_warning (OPT_Wunused_dummy_argument,
+			     "Unused dummy argument %qs at %L", sym->name,
 			     &sym->declared_at);
 	    }
 
@@ -5801,7 +5812,8 @@ gfc_generate_function_code (gfc_namespace * ns)
 	{
 	  /* TODO: move to the appropriate place in resolve.c.  */
 	  if (warn_return_type && sym == sym->result)
-	    gfc_warning ("Return value of function '%s' at %L not set",
+	    gfc_warning (OPT_Wreturn_type,
+			 "Return value of function %qs at %L not set",
 			 sym->name, &sym->declared_at);
 	  if (warn_return_type)
 	    TREE_NO_WARNING(sym->backend_decl) = 1;

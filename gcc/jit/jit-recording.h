@@ -52,6 +52,9 @@ public:
   context (context *parent_ctxt);
   ~context ();
 
+  builtins_manager *
+  get_builtins_manager ();
+
   void record (memento *m);
   void replay_into (replayer *r);
   void disassociate_from_playback ();
@@ -87,6 +90,12 @@ public:
   union_ *
   new_union_type (location *loc,
 		  const char *name);
+
+  function_type *
+  new_function_type (type *return_type,
+		     int num_params,
+		     type **param_types,
+		     int is_variadic);
 
   type *
   new_function_ptr_type (location *loc,
@@ -1569,21 +1578,6 @@ private:
 };
 
 } // namespace gcc::jit::recording
-
-/* The result of JIT-compilation.  */
-class result
-{
-public:
-  result(void *dso_handle);
-
-  virtual ~result();
-
-  void *
-  get_code (const char *funcname);
-
-private:
-  void *m_dso_handle;
-};
 
 } // namespace gcc::jit
 

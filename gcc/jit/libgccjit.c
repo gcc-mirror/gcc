@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "libgccjit.h"
 #include "jit-common.h"
 #include "jit-recording.h"
+#include "jit-result.h"
 
 /* The opaque types used by the public API are actually subclasses
    of the gcc::jit::recording classes.  */
@@ -2047,8 +2048,7 @@ gcc_jit_context_get_first_error (gcc_jit_context *ctxt)
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
-   gcc::jit::playback::result::get_code method in
-   jit-playback.c.  */
+   gcc::jit::result::get_code method in jit-result.c.  */
 
 void *
 gcc_jit_result_get_code (gcc_jit_result *result,
@@ -2063,7 +2063,7 @@ gcc_jit_result_get_code (gcc_jit_result *result,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, this is essentially a wrapper around the
-   destructor for gcc::jit::playback::result in jit-playback.c.  */
+   destructor for gcc::jit::result in jit-result.c.  */
 
 void
 gcc_jit_result_release (gcc_jit_result *result)

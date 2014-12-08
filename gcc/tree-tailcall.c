@@ -665,7 +665,7 @@ adjust_return_value_with_ops (enum tree_code code, const char *label,
     }
   if (types_compatible_p (TREE_TYPE (acc), TREE_TYPE (op1))
       && code != POINTER_PLUS_EXPR)
-    stmt = gimple_build_assign_with_ops (code, result, acc, op1);
+    stmt = gimple_build_assign (result, code, acc, op1);
   else
     {
       tree tem;
@@ -696,7 +696,7 @@ update_accumulator_with_ops (enum tree_code code, tree acc, tree op1,
   gassign *stmt;
   tree var = copy_ssa_name (acc);
   if (types_compatible_p (TREE_TYPE (acc), TREE_TYPE (op1)))
-    stmt = gimple_build_assign_with_ops (code, var, acc, op1);
+    stmt = gimple_build_assign (var, code, acc, op1);
   else
     {
       tree rhs = fold_convert (TREE_TYPE (acc),

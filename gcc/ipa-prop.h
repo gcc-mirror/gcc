@@ -144,6 +144,17 @@ struct GTY(()) ipa_agg_jump_function
 
 typedef struct ipa_agg_jump_function *ipa_agg_jump_function_p;
 
+/* Info about pointer alignments. */
+struct GTY(()) ipa_alignment
+{
+  /* The data fields below are valid only if known is true.  */
+  bool known;
+  /* See ptr_info_def and get_pointer_alignment_1 for description of these
+     two.  */
+  unsigned align;
+  unsigned misalign;
+};
+
 /* A jump function for a callsite represents the values passed as actual
    arguments of the callsite. See enum jump_func_type for the various
    types of jump functions supported.  */
@@ -152,6 +163,9 @@ struct GTY (()) ipa_jump_func
   /* Aggregate contants description.  See struct ipa_agg_jump_function and its
      description.  */
   struct ipa_agg_jump_function agg;
+
+  /* Information about alignment of pointers. */
+  struct ipa_alignment alignment;
 
   enum jump_func_type type;
   /* Represents a value of a jump function.  pass_through is used only in jump
@@ -402,10 +416,19 @@ struct GTY(()) ipa_agg_replacement_value
   bool by_ref;
 };
 
-typedef struct ipa_agg_replacement_value *ipa_agg_replacement_value_p;
+/* Structure holding information for the transformation phase of IPA-CP.  */
+
+struct GTY(()) ipcp_transformation_summary
+{
+  /* Linked list of known aggregate values.  */
+  ipa_agg_replacement_value *agg_values;
+  /* Alignment information for pointers.  */
+  vec<ipa_alignment, va_gc> *alignments;
+};
 
 void ipa_set_node_agg_value_chain (struct cgraph_node *node,
 				   struct ipa_agg_replacement_value *aggvals);
+void ipcp_grow_transformations_if_necessary (void);
 
 /* ipa_edge_args stores information related to a callsite and particularly its
    arguments.  It can be accessed by the IPA_EDGE_REF macro.  */
@@ -451,8 +474,8 @@ ipa_get_ith_polymorhic_call_context (struct ipa_edge_args *args, int i)
 
 /* Vector where the parameter infos are actually stored. */
 extern vec<ipa_node_params> ipa_node_params_vector;
-/* Vector of known aggregate values in cloned nodes.  */
-extern GTY(()) vec<ipa_agg_replacement_value_p, va_gc> *ipa_node_agg_replacements;
+/* Vector of IPA-CP transformation data for each clone.  */
+extern GTY(()) vec<ipcp_transformation_summary, va_gc> *ipcp_transformations;
 /* Vector where the parameter infos are actually stored. */
 extern GTY(()) vec<ipa_edge_args, va_gc> *ipa_edge_args_vector;
 
@@ -510,14 +533,21 @@ ipa_edge_args_info_available_for_edge_p (struct cgraph_edge *edge)
   return ((unsigned) edge->uid < vec_safe_length (ipa_edge_args_vector));
 }
 
+static inline ipcp_transformation_summary *
+ipcp_get_transformation_summary (cgraph_node *node)
+{
+  if ((unsigned) node->uid >= vec_safe_length (ipcp_transformations))
+    return NULL;
+  return &(*ipcp_transformations)[node->uid];
+}
+
 /* Return the aggregate replacements for NODE, if there are any.  */
 
 static inline struct ipa_agg_replacement_value *
-ipa_get_agg_replacements_for_node (struct cgraph_node *node)
+ipa_get_agg_replacements_for_node (cgraph_node *node)
 {
-  if ((unsigned) node->uid >= vec_safe_length (ipa_node_agg_replacements))
-    return NULL;
-  return (*ipa_node_agg_replacements)[node->uid];
+  ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+  return ts ? ts->agg_values : NULL;
 }
 
 /* Function formal parameters related computations.  */
@@ -646,8 +676,8 @@ void ipa_dump_agg_replacement_values (FILE *f,
 				      struct ipa_agg_replacement_value *av);
 void ipa_prop_write_jump_functions (void);
 void ipa_prop_read_jump_functions (void);
-void ipa_prop_write_all_agg_replacement (void);
-void ipa_prop_read_all_agg_replacement (void);
+void ipcp_write_transformation_summaries (void);
+void ipcp_read_transformation_summaries (void);
 void ipa_update_after_lto_read (void);
 int ipa_get_param_decl_index (struct ipa_node_params *, tree);
 tree ipa_value_from_jfunc (struct ipa_node_params *info,

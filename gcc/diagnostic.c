@@ -155,6 +155,34 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->inhibit_notes_p = false;
 }
 
+/* Maybe initialize the color support. We require clients to do this
+   explicitly, since most clients don't want color.  When called
+   without a VALUE, it initializes with DIAGNOSTICS_COLOR_DEFAULT.  */
+
+void
+diagnostic_color_init (diagnostic_context *context, int value /*= -1 */)
+{
+  /* value == -1 is the default value.  */
+  if (value < 0)
+    {
+      /* If DIAGNOSTICS_COLOR_DEFAULT is -1, default to
+	 -fdiagnostics-color=auto if GCC_COLORS is in the environment,
+	 otherwise default to -fdiagnostics-color=never, for other
+	 values default to that
+	 -fdiagnostics-color={never,auto,always}.  */
+      if (DIAGNOSTICS_COLOR_DEFAULT == -1)
+	{
+	  if (!getenv ("GCC_COLORS"))
+	    return;
+	  value = DIAGNOSTICS_COLOR_AUTO;
+	}
+      else
+	value = DIAGNOSTICS_COLOR_DEFAULT;
+    }
+  pp_show_color (context->printer)
+    = colorize_init ((diagnostic_color_rule_t) value);
+}
+
 /* Do any cleaning up required after the last diagnostic is emitted.  */
 
 void
@@ -232,6 +260,8 @@ diagnostic_build_prefix (diagnostic_context *context,
 #undef DEFINE_DIAGNOSTIC_KIND
     NULL
   };
+  gcc_assert (diagnostic->kind < DK_LAST_DIAGNOSTIC_KIND);
+
   const char *text = _(diagnostic_kind_text[diagnostic->kind]);
   const char *text_cs = "", *text_ce = "";
   const char *locus_cs, *locus_ce;
@@ -246,11 +276,7 @@ diagnostic_build_prefix (diagnostic_context *context,
   locus_cs = colorize_start (pp_show_color (pp), "locus");
   locus_ce = colorize_stop (pp_show_color (pp));
 
-  expanded_location s = expand_location_to_spelling_point (diagnostic->location);
-  if (diagnostic->override_column)
-    s.column = diagnostic->override_column;
-  gcc_assert (diagnostic->kind < DK_LAST_DIAGNOSTIC_KIND);
-
+  expanded_location s = diagnostic_expand_location (diagnostic);
   return
     (s.file == NULL
      ? build_message_string ("%s%s:%s %s%s%s", locus_cs, progname, locus_ce,
@@ -261,8 +287,8 @@ diagnostic_build_prefix (diagnostic_context *context,
      : context->show_column
      ? build_message_string ("%s%s:%d:%d:%s %s%s%s", locus_cs, s.file, s.line,
 			     s.column, locus_ce, text_cs, text, text_ce)
-     : build_message_string ("%s%s:%d:%s %s%s%s", locus_cs, s.file, s.line, locus_ce,
-			     text_cs, text, text_ce));
+     : build_message_string ("%s%s:%d:%s %s%s%s", locus_cs, s.file, s.line,
+			     locus_ce, text_cs, text, text_ce));
 }
 
 /* If LINE is longer than MAX_WIDTH, and COLUMN is not smaller than
@@ -309,7 +335,7 @@ diagnostic_show_locus (diagnostic_context * context,
     return;
 
   context->last_location = diagnostic->location;
-  s = expand_location_to_spelling_point (diagnostic->location);
+  s = diagnostic_expand_location (diagnostic);
   line = location_get_source_line (s, &line_width);
   if (line == NULL || s.column > line_width)
     return;

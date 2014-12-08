@@ -101,17 +101,29 @@ within a process may use a given "family tree" of such contexts at once,
 and if you're using multiple threads you should provide your own locking
 around entire such context partitions.
 
+.. _error-handling:
 
 Error-handling
 --------------
-You can only compile and get code from a context if no errors occur.
-
-In general, if an error occurs when using an API entrypoint, it returns
-NULL.  You don't have to check everywhere for NULL results, since the
-API gracefully handles a NULL being passed in for any argument.
+Various kinds of errors are possible when using the API, such as
+mismatched types in an assignment.  You can only compile and get code from
+a context if no errors occur.
 
 Errors are printed on stderr and can be queried using
 :c:func:`gcc_jit_context_get_first_error`.
+
+They typically contain the name of the API entrypoint where the error
+occurred, and pertinent information on the problem:
+
+.. code-block:: console
+
+  ./buggy-program: error: gcc_jit_block_add_assignment: mismatching types: assignment to i (type: int) from "hello world" (type: const char *)
+
+In general, if an error occurs when using an API entrypoint, the
+entrypoint returns NULL.  You don't have to check everywhere for NULL
+results, since the API handles a NULL being passed in for any
+argument by issuing another error.  This typically leads to a cascade of
+followup error messages, but is safe (albeit verbose).
 
 .. function:: const char *\
               gcc_jit_context_get_first_error (gcc_jit_context *ctxt)

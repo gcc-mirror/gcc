@@ -1373,7 +1373,7 @@ xstormy16_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   count_tmp = get_initialized_tmp_var (count, pre_p, NULL);
   lab_gotaddr = create_artificial_label (UNKNOWN_LOCATION);
   lab_fromstack = create_artificial_label (UNKNOWN_LOCATION);
-  addr = create_tmp_var (ptr_type_node, NULL);
+  addr = create_tmp_var (ptr_type_node);
 
   if (!must_stack)
     {

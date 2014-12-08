@@ -2671,11 +2671,9 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 		{
 		  tree new_temp = make_ssa_name (TREE_TYPE (vector_type));
 		  gimple init_stmt;
-		  op = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (vector_type),
-			       op);		  
+		  op = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (vector_type), op);
 		  init_stmt
-		    = gimple_build_assign_with_ops (VIEW_CONVERT_EXPR,
-						    new_temp, op);
+		    = gimple_build_assign (new_temp, VIEW_CONVERT_EXPR, op);
 		  gimple_seq_add_stmt (&ctor_seq, init_stmt);
 		  op = new_temp;
 		}
@@ -2899,8 +2897,8 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
       second_vec = dr_chain[second_vec_indx];
 
       /* Generate the permute statement.  */
-      perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, perm_dest,
-						first_vec, second_vec, mask);
+      perm_stmt = gimple_build_assign (perm_dest, VEC_PERM_EXPR,
+				       first_vec, second_vec, mask);
       data_ref = make_ssa_name (perm_dest, perm_stmt);
       gimple_set_lhs (perm_stmt, data_ref);
       vect_finish_stmt_generation (stmt, perm_stmt, gsi);

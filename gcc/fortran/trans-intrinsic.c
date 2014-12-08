@@ -3729,9 +3729,9 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
      possible value is HUGE in both cases.  */
   if (op == GT_EXPR)
     tmp = fold_build1_loc (input_location, NEGATE_EXPR, TREE_TYPE (tmp), tmp);
-  if (op == GT_EXPR && expr->ts.type == BT_INTEGER)
+  if (op == GT_EXPR && arrayexpr->ts.type == BT_INTEGER)
     tmp = fold_build2_loc (input_location, MINUS_EXPR, TREE_TYPE (tmp), tmp,
-			   build_int_cst (type, 1));
+			   build_int_cst (TREE_TYPE (tmp), 1));
 
   gfc_add_modify (&se->pre, limit, tmp);
 
@@ -6147,7 +6147,8 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 	  tmp = gfc_build_addr_expr (NULL_TREE, argse.expr);
 
 	  if (warn_array_temporaries)
-	    gfc_warning ("Creating array temporary at %L", &expr->where);
+	    gfc_warning (OPT_Warray_temporaries,
+			 "Creating array temporary at %L", &expr->where);
 
 	  source = build_call_expr_loc (input_location,
 				    gfor_fndecl_in_pack, 1, tmp);

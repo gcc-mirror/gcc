@@ -29,11 +29,13 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/ilp.h>
 #include <isl/aff.h>
 #include <isl/val.h>
-#if defined(__cplusplus)
+
+/* Since ISL-0.13, the extern is in val_gmp.h.  */
+#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
 extern "C" {
 #endif
 #include <isl/val_gmp.h>
-#if defined(__cplusplus)
+#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
 }
 #endif
 #endif

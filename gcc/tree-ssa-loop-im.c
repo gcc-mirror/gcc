@@ -898,11 +898,10 @@ rewrite_reciprocal (gimple_stmt_iterator *bsi)
   real_one = build_one_cst (type);
 
   name = make_temp_ssa_name (type, NULL, "reciptmp");
-  stmt1 = gimple_build_assign_with_ops (RDIV_EXPR, name, real_one,
-					gimple_assign_rhs2 (stmt));
-
-  stmt2 = gimple_build_assign_with_ops (MULT_EXPR, lhs, name,
-					gimple_assign_rhs1 (stmt));
+  stmt1 = gimple_build_assign (name, RDIV_EXPR, real_one,
+			       gimple_assign_rhs2 (stmt));
+  stmt2 = gimple_build_assign (lhs, MULT_EXPR, name,
+			       gimple_assign_rhs1 (stmt));
 
   /* Replace division stmt with reciprocal and multiply stmts.
      The multiply stmt is not invariant, so update iterator
@@ -1215,9 +1214,8 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
       if (gimple_phi_num_args (stmt) == 1)
 	{
 	  tree arg = PHI_ARG_DEF (stmt, 0);
-	  new_stmt = gimple_build_assign_with_ops (TREE_CODE (arg),
-						   gimple_phi_result (stmt),
-						   arg);
+	  new_stmt = gimple_build_assign (gimple_phi_result (stmt),
+					  TREE_CODE (arg), arg);
 	}
       else
 	{
@@ -1230,9 +1228,8 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
 	  gcc_assert (arg0 && arg1);
 	  t = build2 (gimple_cond_code (cond), boolean_type_node,
 		      gimple_cond_lhs (cond), gimple_cond_rhs (cond));
-	  new_stmt = gimple_build_assign_with_ops (COND_EXPR,
-						   gimple_phi_result (stmt),
-						   t, arg0, arg1);
+	  new_stmt = gimple_build_assign (gimple_phi_result (stmt),
+					  COND_EXPR, t, arg0, arg1);
 	  todo_ |= TODO_cleanup_cfg;
 	}
       gsi_insert_on_edge (loop_preheader_edge (level), new_stmt);

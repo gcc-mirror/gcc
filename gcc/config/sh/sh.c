@@ -8629,7 +8629,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  pass_as_float = (TREE_CODE (eff_type) == REAL_TYPE && size == 4);
 	}
 
-      addr = create_tmp_var (pptr_type_node, NULL);
+      addr = create_tmp_var (pptr_type_node);
       lab_false = create_artificial_label (UNKNOWN_LOCATION);
       lab_over = create_artificial_label (UNKNOWN_LOCATION);
 
@@ -8637,7 +8637,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
       if (pass_as_float)
 	{
-	  tree next_fp_tmp = create_tmp_var (TREE_TYPE (f_next_fp), NULL);
+	  tree next_fp_tmp = create_tmp_var (TREE_TYPE (f_next_fp));
 	  tree cmp;
 	  bool is_double = size == 8 && TREE_CODE (eff_type) == REAL_TYPE;
 

@@ -653,6 +653,7 @@ bool
 is_ubsan_builtin_p (tree t)
 {
   return TREE_CODE (t) == FUNCTION_DECL
+	 && DECL_BUILT_IN_CLASS (t) == BUILT_IN_NORMAL
 	 && strncmp (IDENTIFIER_POINTER (DECL_NAME (t)),
 		     "__builtin___ubsan_", 18) == 0;
 }
@@ -748,7 +749,7 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
       if (compare_tree_int (align, ptralign) == 1)
 	{
 	  check_align = make_ssa_name (pointer_sized_int_node);
-	  g = gimple_build_assign_with_ops (NOP_EXPR, check_align, ptr);
+	  g = gimple_build_assign (check_align, NOP_EXPR, ptr);
 	  gimple_set_location (g, loc);
 	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 	}
@@ -870,9 +871,8 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
 
       tree mask = build_int_cst (pointer_sized_int_node,
 				 tree_to_uhwi (align) - 1);
-      g = gimple_build_assign_with_ops (BIT_AND_EXPR,
-					make_ssa_name (pointer_sized_int_node),
-					check_align, mask);
+      g = gimple_build_assign (make_ssa_name (pointer_sized_int_node),
+			       BIT_AND_EXPR, check_align, mask);
       gimple_set_location (g, loc);
       if (check_null)
 	gsi_insert_after (&gsi2, g, GSI_NEW_STMT);
@@ -944,7 +944,7 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
 	      ? BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH
 	      : BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_ABORT;
 	  tree p = make_ssa_name (pointer_sized_int_node);
-	  g = gimple_build_assign_with_ops (NOP_EXPR, p, ptr);
+	  g = gimple_build_assign (p, NOP_EXPR, ptr);
 	  gimple_set_location (g, loc);
 	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
 	  g = gimple_build_call (builtin_decl_explicit (bcode), 2, data, p);
@@ -1185,7 +1185,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   if (can_throw)
     {
       gimple_assign_set_lhs (stmt, urhs);
-      g = gimple_build_assign_with_ops (NOP_EXPR, lhs, urhs);
+      g = gimple_build_assign (lhs, NOP_EXPR, urhs);
       gimple_set_location (g, loc);
       edge e = find_fallthru_edge (gimple_bb (stmt)->succs);
       gsi_insert_on_edge_immediate (e, g);
@@ -1204,8 +1204,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   maxv = fold_convert (utype, maxv);
   if (!integer_zerop (minv))
     {
-      g = gimple_build_assign_with_ops (MINUS_EXPR, make_ssa_name (utype),
-					urhs, minv);
+      g = gimple_build_assign (make_ssa_name (utype), MINUS_EXPR, urhs, minv);
       gimple_set_location (g, loc);
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
     }
@@ -1564,7 +1563,14 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
 	      && POINTER_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (def_stmt))))
 	  || (is_gimple_assign (def_stmt)
 	      && gimple_assign_rhs_code (def_stmt) == POINTER_PLUS_EXPR))
-	base = gimple_assign_rhs1 (def_stmt);
+	{
+	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	  if (TREE_CODE (rhs1) == SSA_NAME
+	    && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1))
+	    break;
+	  else
+	    base = rhs1;
+	}
       else
 	break;
     }

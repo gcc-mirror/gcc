@@ -12608,13 +12608,13 @@ sparc_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
        __builtin_load_fsr (&tmp1_var);  */
 
-  tree fenv_var = create_tmp_var (unsigned_type_node, NULL);
+  tree fenv_var = create_tmp_var (unsigned_type_node);
   mark_addressable (fenv_var);
   tree fenv_addr = build_fold_addr_expr (fenv_var);
   tree stfsr = sparc_builtins[SPARC_BUILTIN_STFSR];
   tree hold_stfsr = build_call_expr (stfsr, 1, fenv_addr);
 
-  tree tmp1_var = create_tmp_var (unsigned_type_node, NULL);
+  tree tmp1_var = create_tmp_var (unsigned_type_node);
   mark_addressable (tmp1_var);
   tree masked_fenv_var
     = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var,
@@ -12646,7 +12646,7 @@ sparc_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
          tmp2_var >>= 5;
        __atomic_feraiseexcept ((int) tmp2_var);  */
 
-  tree tmp2_var = create_tmp_var (unsigned_type_node, NULL);
+  tree tmp2_var = create_tmp_var (unsigned_type_node);
   mark_addressable (tmp2_var);
   tree tmp3_addr = build_fold_addr_expr (tmp2_var);
   tree update_stfsr = build_call_expr (stfsr, 1, tmp3_addr);

@@ -2824,9 +2824,6 @@ arm_option_override (void)
 
   arm_fpu_desc = &all_fpus[arm_fpu_index];
 
-  if (TARGET_NEON && !arm_arch7)
-    error ("target CPU does not support NEON");
-
   switch (arm_fpu_desc->model)
     {
     case ARM_FP_MODEL_VFP:
@@ -3104,6 +3101,17 @@ arm_option_override (void)
   if (flag_schedule_fusion == 2
       && (!arm_arch7 || !current_tune->prefer_ldrd_strd))
     flag_schedule_fusion = 0;
+
+  /* In Thumb1 mode, we emit the epilogue in RTL, but the last insn
+     - epilogue_insns - does not accurately model the corresponding insns
+     emitted in the asm file.  In particular, see the comment in thumb_exit
+     'Find out how many of the (return) argument registers we can corrupt'.
+     As a consequence, the epilogue may clobber registers without fipa-ra
+     finding out about it.  Therefore, disable fipa-ra in Thumb1 mode.
+     TODO: Accurately model clobbers for epilogue_insns and reenable
+     fipa-ra.  */
+  if (TARGET_THUMB1)
+    flag_ipa_ra = 0;
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();

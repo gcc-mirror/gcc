@@ -2290,7 +2290,7 @@ lra (FILE *f)
 	  /* Do inheritance only for regular algorithms.  */
 	  if (! lra_simple_p)
 	    {
-	      if (flag_use_caller_save)
+	      if (flag_ipa_ra)
 		{
 		  if (live_p)
 		    lra_clear_live_ranges ();

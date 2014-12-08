@@ -1,9 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512vl -O2" } */
-/* { dg-final { scan-assembler "vpcmpuq\[ \\t\]+\[^\n\]*%ymm\[0-9\]\[^\n\]*%k\[1-7\]\[^\{\]" } } */
-/* { dg-final { scan-assembler "vpcmpuq\[ \\t\]+\[^\n\]*%xmm\[0-9\]\[^\n\]*%k\[1-7\]\[^\{\]" } } */
-/* { dg-final { scan-assembler "vpcmpuq\[ \\t\]+\[^\n\]*%ymm\[0-9\]\[^\n\]*%k\[1-7\]\{%k\[1-7\]\}" } } */
-/* { dg-final { scan-assembler "vpcmpuq\[ \\t\]+\[^\n\]*%xmm\[0-9\]\[^\n\]*%k\[1-7\]\{%k\[1-7\]\}" } } */
+/* { dg-final { scan-assembler-times "vpcmpuq\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpcmpuq\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpcmpuq\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*%k\[1-7\]\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpcmpuq\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*%k\[1-7\]\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 

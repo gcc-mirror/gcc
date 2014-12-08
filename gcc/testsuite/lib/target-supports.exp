@@ -5892,6 +5892,12 @@ proc check_effective_target_mempcpy {} {
     return [check_function_available "mempcpy"]
 }
 
+# Returns 1 if "stpcpy" is available on the target system.
+
+proc check_effective_target_stpcpy {} {
+    return [check_function_available "stpcpy"]
+}
+
 # Check whether the vectorizer tests are supported by the target and
 # append additional target-dependent compile flags to DEFAULT_VECTCFLAGS.
 # Set dg-do-what-default to either compile or run, depending on target
@@ -6089,11 +6095,19 @@ proc check_effective_target_fenv_exceptions {} {
 }
 
 proc check_effective_target_tiny {} {
-    if { [istarget aarch64*-*-*]
-         && [check_effective_target_aarch64_tiny] } {
-        return 1
+    global et_target_tiny_saved
+
+    if [info exists et_target_tine_saved] {
+      verbose "check_effective_target_tiny: using cached result" 2
+    } else {
+       set et_target_tiny_saved 0
+       if { [istarget aarch64*-*-*]
+             && [check_effective_target_aarch64_tiny] } {
+         set et_target_tiny_saved 1
+       }
     }
-    return 0
+
+    return $et_target_tiny_saved
 }
 
 # Return 1 if LOGICAL_OP_NON_SHORT_CIRCUIT is set to 0 for the current target.
@@ -6126,3 +6140,54 @@ proc force_conventional_output_for { test } {
     }
 }
 
+# Return 1 if the x86-64 target supports PIE with copy reloc, 0
+# otherwise.  Cache the result.
+
+proc check_effective_target_pie_copyreloc { } {
+    global pie_copyreloc_available_saved
+    global tool
+    global GCC_UNDER_TEST
+
+    if { !([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
+	return 0
+    }
+
+    # Need auto-host.h to check linker support.
+    if { ![file exists ../../auto-host.h ] } {
+	return 0
+    }
+
+    if [info exists pie_copyreloc_available_saved] {
+	verbose "check_effective_target_pie_copyreloc returning saved $pie_copyreloc_available_saved" 2
+    } else {
+	# Set up and compile to see if linker supports PIE with copy
+	# reloc.  Include the current process ID in the file names to
+	# prevent conflicts with invocations for multiple testsuites.
+
+	set src pie[pid].c
+	set obj pie[pid].o
+
+	set f [open $src "w"]
+	puts $f "#include \"../../auto-host.h\""
+	puts $f "#if HAVE_LD_PIE_COPYRELOC == 0"
+	puts $f "# error Linker does not support PIE with copy reloc."
+	puts $f "#endif"
+	close $f
+
+	verbose "check_effective_target_pie_copyreloc compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $obj object ""]
+
+	file delete $src
+	file delete $obj
+
+	if [string match "" $lines] then {
+	    verbose "check_effective_target_pie_copyreloc testfile compilation passed" 2
+	    set pie_copyreloc_available_saved 1
+	} else {
+	    verbose "check_effective_target_pie_copyreloc testfile compilation failed" 2
+	    set pie_copyreloc_available_saved 0
+	}
+    }
+
+    return $pie_copyreloc_available_saved
+}

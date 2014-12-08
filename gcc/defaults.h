@@ -438,6 +438,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DWARF_FRAME_REGNUM(REG) DBX_REGISTER_NUMBER (REG)
 #endif
 
+/* The mapping from dwarf CFA reg number to internal dwarf reg numbers.  */
+#ifndef DWARF_REG_TO_UNWIND_COLUMN
+#define DWARF_REG_TO_UNWIND_COLUMN(REGNO) (REGNO)
+#endif
+
 /* Map register numbers held in the call frame info that gcc has
    collected using DWARF_FRAME_REGNUM to those that should be output in
    .debug_frame and .eh_frame.  */

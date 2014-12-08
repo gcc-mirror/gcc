@@ -2668,11 +2668,13 @@ typedef struct gfc_error_buf
 void gfc_error_init_1 (void);
 void gfc_diagnostics_init (void);
 void gfc_diagnostics_finish (void);
-void gfc_buffer_error (int);
+void gfc_buffer_error (bool);
 
 const char *gfc_print_wide_char (gfc_char_t);
 
-void gfc_warning (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
+void gfc_warning_1 (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
+bool gfc_warning (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
+bool gfc_warning (int opt, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 void gfc_warning_now_1 (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 bool gfc_warning_now (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 bool gfc_warning_now (int opt, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
@@ -2686,8 +2688,8 @@ void gfc_error_now (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_fatal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC(1,2);
 void gfc_internal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC(1,2);
 void gfc_clear_error (void);
-int gfc_error_check (void);
-int gfc_error_flag_test (void);
+bool gfc_error_check (void);
+bool gfc_error_flag_test (void);
 
 notification gfc_notification_std (int);
 bool gfc_notify_std (int, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
@@ -2701,7 +2703,7 @@ void gfc_pop_error (gfc_error_buf *);
 void gfc_free_error (gfc_error_buf *);
 
 void gfc_get_errors (int *, int *);
-void gfc_errors_to_warnings (int);
+void gfc_errors_to_warnings (bool);
 
 /* arith.c */
 void gfc_arith_init_1 (void);

@@ -4,12 +4,13 @@ void foo()
 {
   bad1:				// { dg-error "jump to label" }
   #pragma omp parallel
-    goto bad1;			// { dg-error "from here|exits OpenMP" }
+    goto bad1;			// { dg-message "from here|exits OpenMP" }
 
-  goto bad2;			// { dg-error "from here" }
+  goto bad2;			// { dg-message "from here" }
   #pragma omp parallel
     {
-      bad2: ;			// { dg-error "jump to label|enters OpenMP" }
+      bad2: ;			// { dg-error "jump to label" }
+                                // { dg-message "enters OpenMP" "" { target *-*-* } 12 }
     }
 
   #pragma omp parallel

@@ -435,8 +435,10 @@ add_to_predicate_list (struct loop *loop, basic_block bb, tree nc)
     {
       gcc_assert (flow_bb_inside_loop_p (loop, dom_bb));
       bc = bb_predicate (dom_bb);
-      gcc_assert (!is_true_predicate (bc));
-      set_bb_predicate (bb, bc);
+      if (!is_true_predicate (bc))
+	set_bb_predicate (bb, bc);
+      else
+	gcc_assert (is_true_predicate (bb_predicate (bb)));
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Use predicate of bb#%d for bb#%d\n",
 		 dom_bb->index, bb->index);

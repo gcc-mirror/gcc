@@ -1,14 +1,12 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512bw -mavx512vl" } */
-/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\n\]*%zmm\[0-9\]\[^\{\]" 3 } } */
-/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\{z\}" 1 } } */
-/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\n\]*%ymm\[0-9\]\[^\{\]" 2 } } */
-/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\n\]*%ymm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\n\]*%ymm\[0-9\]\{%k\[1-7\]\}\{z\}" 1 } } */
-/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\n\]*%xmm\[0-9\]\[^\{\]" 2 } } */
-/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\n\]*%xmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\n\]*%xmm\[0-9\]\{%k\[1-7\]\}\{z\}" 1 } } */
+/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpsubsb\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 

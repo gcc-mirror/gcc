@@ -192,6 +192,12 @@ OK, we've populated the context.  We can now compile it using
 
 and get a :c:type:`gcc_jit_result *`.
 
+At this point we're done with the context; we can release it:
+
+.. code-block:: c
+
+   gcc_jit_context_release (ctxt);
+
 We can now use :c:func:`gcc_jit_result_get_code` to look up a specific
 machine code routine within the result, in this case, the function we
 created above.
@@ -217,6 +223,44 @@ then call it:
 .. code-block:: bash
 
   result: 25
+
+Once we're done with the code, we can release the result:
+
+.. code-block:: c
+
+   gcc_jit_result_release (result);
+
+We can't call ``square`` anymore once we've released ``result``.
+
+
+Error-handling
+**************
+Various kinds of errors are possible when using the API, such as
+mismatched types in an assignment.  You can only compile and get code
+from a context if no errors occur.
+
+Errors are printed on stderr; they typically contain the name of the API
+entrypoint where the error occurred, and pertinent information on the
+problem:
+
+.. code-block:: console
+
+  ./buggy-program: error: gcc_jit_block_add_assignment: mismatching types: assignment to i (type: int) from "hello world" (type: const char *)
+
+The API is designed to cope with errors without crashing, so you can get
+away with having a single error-handling check in your code:
+
+.. code-block:: c
+
+   void *fn_ptr = gcc_jit_result_get_code (result, "square");
+   if (!fn_ptr)
+     {
+       fprintf (stderr, "NULL fn_ptr");
+       goto error;
+     }
+
+For more information, see the :ref:`error-handling guide <error-handling>`
+within the Topic eference.
 
 
 Options

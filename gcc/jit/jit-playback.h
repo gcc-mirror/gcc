@@ -175,6 +175,11 @@ public:
     return m_recording_ctxt->get_bool_option (opt);
   }
 
+  builtins_manager *get_builtins_manager () const
+  {
+    return m_recording_ctxt->get_builtins_manager ();
+  }
+
   result *
   compile ();
 
@@ -225,6 +230,17 @@ private:
   get_source_file (const char *filename);
 
   void handle_locations ();
+
+private:
+
+  /* Functions for implementing "compile".  */
+
+  void
+  make_fake_args (auto_vec <const char *> *argvec,
+		  const char *ctxt_progname);
+
+  void
+  convert_to_dso (const char *ctxt_progname);
 
 private:
   ::gcc::jit::recording::context *m_recording_ctxt;

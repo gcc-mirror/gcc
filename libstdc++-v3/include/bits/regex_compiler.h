@@ -417,7 +417,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename std::is_same<_CharT, char>::type _UseCache;
 
       static constexpr size_t
-      _S_cache_size() { return 1ul << (sizeof(_CharT) * __CHAR_BIT__); }
+      _S_cache_size()
+      {
+	return 1ul << (sizeof(_CharT) * __CHAR_BIT__ * int(_UseCache::value));
+      }
 
       struct _Dummy { };
       typedef typename std::conditional<_UseCache::value,

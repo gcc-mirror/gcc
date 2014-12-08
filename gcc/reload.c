@@ -1625,6 +1625,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 					       end_hard_regno (rel_mode,
 							       regno),
 					       PATTERN (this_insn), inloc)
+	    && ! find_reg_fusage (this_insn, USE, XEXP (note, 0))
 	    /* If this is also an output reload, IN cannot be used as
 	       the reload register if it is set in this insn unless IN
 	       is also OUT.  */

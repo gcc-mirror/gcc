@@ -1,9 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512f" } */
-/* { dg-final { scan-assembler "vcmpsd\[ \\t\]+\[^\n\]*\[^\}\]%xmm\[0-9\]\[^\n^k\]*%k\[1-7\]\[^\{\]" } } */
-/* { dg-final { scan-assembler "vcmpsd\[ \\t\]+\[^\n\]*\[^\}\]%xmm\[0-9\]\[^\n^k\]*%k\[1-7\]\{" } } */
-/* { dg-final { scan-assembler "vcmpsd\[ \\t\]+\[^\n\]*\{sae\}\[^\n\]*%xmm\[0-9\]\[^\n^k\]*%k\[1-7\]\[^\{\]" } } */
-/* { dg-final { scan-assembler "vcmpsd\[ \\t\]+\[^\n\]*\{sae\}\[^\n\]*%xmm\[0-9\]\[^\n^k\]*%k\[1-7\]\{" } } */
+/* { dg-final { scan-assembler-times "vcmpsd\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n^k\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vcmpsd\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n^k\]*%k\[1-7\]\{%k\[0-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vcmpsd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%xmm\[0-9\]+\[^\n^k\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vcmpsd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%xmm\[0-9\]+\[^\n^k\]*%k\[1-7\]\{%k\[0-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 

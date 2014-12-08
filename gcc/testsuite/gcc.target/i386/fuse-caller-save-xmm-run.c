@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -msse -fuse-caller-save" } */
+/* { dg-options "-O2 -msse -fipa-ra" } */
 
 typedef double v2df __attribute__((vector_size (16)));
 

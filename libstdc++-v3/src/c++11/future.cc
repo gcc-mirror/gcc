@@ -82,6 +82,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __future_base::_Result_base::_Result_base() = default;
 
   __future_base::_Result_base::~_Result_base() = default;
+
+  void
+  __future_base::_State_baseV2::_Make_ready::_S_run(void* p)
+  {
+    unique_ptr<_Make_ready> mr{static_cast<_Make_ready*>(p)};
+    if (auto state = mr->_M_shared_state.lock())
+      {
+	{
+	  lock_guard<mutex> __lock{state->_M_mutex};
+	  state->_M_ready = true;
+	}
+	state->_M_cond.notify_all();
+      }
+  }
+
+  // defined in src/c++11/condition_variable.cc
+  extern void
+  __at_thread_exit(__at_thread_exit_elt* elt);
+
+  void
+  __future_base::_State_baseV2::_Make_ready::_M_set()
+  {
+    _M_cb = &_Make_ready::_S_run;
+    __at_thread_exit(this);
+  }
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

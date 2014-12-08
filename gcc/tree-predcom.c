@@ -2192,7 +2192,7 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
      combine it with the rhs of S1.  */
   var = create_tmp_reg (type, "predreastmp");
   new_name = make_ssa_name (var);
-  new_stmt = gimple_build_assign_with_ops (code, new_name, name1, name2);
+  new_stmt = gimple_build_assign (new_name, code, name1, name2);
 
   var = create_tmp_reg (type, "predreastmp");
   tmp_name = make_ssa_name (var);
@@ -2200,10 +2200,9 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
   /* Rhs of S1 may now be either a binary expression with operation
      CODE, or gimple_val (in case that stmt1 == s1 or stmt2 == s1,
      so that name1 or name2 was removed from it).  */
-  tmp_stmt = gimple_build_assign_with_ops (gimple_assign_rhs_code (s1),
-					   tmp_name,
-					   gimple_assign_rhs1 (s1),
-					   gimple_assign_rhs2 (s1));
+  tmp_stmt = gimple_build_assign (tmp_name, gimple_assign_rhs_code (s1),
+				  gimple_assign_rhs1 (s1),
+				  gimple_assign_rhs2 (s1));
 
   bsi = gsi_for_stmt (s1);
   gimple_assign_set_rhs_with_ops (&bsi, code, new_name, tmp_name);

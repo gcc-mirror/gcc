@@ -23,10 +23,11 @@
    and Basile Starynkevitch <basile@starynkevitch.net>
 */
 
-#ifdef GENERATOR_FILE
-#include "bconfig.h"
-#else
+#ifdef HOST_GENERATOR_FILE
 #include "config.h"
+#define GENERATOR_FILE 1
+#else
+#include "bconfig.h"
 #endif
 #include "system.h"
 #include "errors.h"	/* For fatal.  */

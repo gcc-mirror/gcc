@@ -52,15 +52,13 @@ VECT_VAR_DECL(expected,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0x33333333, 0x33333333,
 					   0x33333333, 0x33333333 };
 
-#ifndef INSN_NAME
 #define INSN_NAME vaddhn
 #define TEST_MSG "VADDHN"
-#endif
 
-#define FNNAME1(NAME) void exec_ ## NAME (void)
+#define FNNAME1(NAME) exec_ ## NAME
 #define FNNAME(NAME) FNNAME1(NAME)
 
-FNNAME (INSN_NAME)
+void FNNAME (INSN_NAME) (void)
 {
   /* Basic test: vec64=vaddhn(vec128_a, vec128_b), then store the result.  */
 #define TEST_VADDHN1(INSN, T1, T2, W, W2, N)				\
@@ -104,6 +102,6 @@ FNNAME (INSN_NAME)
 
 int main (void)
 {
-  FNNAME (INSN_NAME);
+  FNNAME (INSN_NAME) ();
   return 0;
 }

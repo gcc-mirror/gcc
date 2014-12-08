@@ -569,7 +569,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				   | regex_constants::match_continuous))
 		    {
 		      _GLIBCXX_DEBUG_ASSERT(_M_match[0].matched);
-		      _M_match.at(_M_match.size()).first = __prefix_first;
+		      auto& __prefix = _M_match.at(_M_match.size());
+		      __prefix.first = __prefix_first;
+		      __prefix.matched = __prefix.first != __prefix.second;
 		      _M_match._M_in_iterator = true;
 		      _M_match._M_begin = _M_begin;
 		      return *this;
@@ -582,7 +584,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (regex_search(__start, _M_end, _M_match, *_M_pregex, _M_flags))
 	    {
 	      _GLIBCXX_DEBUG_ASSERT(_M_match[0].matched);
-	      _M_match.at(_M_match.size()).first = __prefix_first;
+	      auto& __prefix = _M_match.at(_M_match.size());
+	      __prefix.first = __prefix_first;
+	      __prefix.matched = __prefix.first != __prefix.second;
 	      _M_match._M_in_iterator = true;
 	      _M_match._M_begin = _M_begin;
 	    }

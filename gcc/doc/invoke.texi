@@ -438,7 +438,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-vectorize -ftree-vrp @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
--fuse-caller-save -fvariable-expansion-in-unroller -fvect-cost-model -fvpt @gol
+-fipa-ra -fvariable-expansion-in-unroller -fvect-cost-model -fvpt @gol
 -fweb -fwhole-program -fwpa -fuse-ld=@var{linker} -fuse-linker-plugin @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os -Ofast -Og}
@@ -4240,20 +4240,22 @@ appropriate may not be detected.
 @opindex Wno-suggest-final-types
 @opindex Wsuggest-final-types
 Warn about types with virtual methods where code quality would be improved
-if the type was declared with C++11 final specifier, or, if possible,
-declared in anonymous namespace. This allows GCC to devritualize more aggressively
-the polymorphic calls. This warning is more effective with link time optimization,
-where the information about the class hiearchy graph is more complete.
+if the type was declared with the C++11 final specifier, or, if possible,
+declared in an anonymous namespace. This allows GCC to more aggressively
+devirtualize the polymorphic calls. This warning is more effective with link
+time optimization, where the information about the class hierarchy graph is
+more complete.
 
 @item -Wsuggest-final-methods
 @opindex Wno-suggest-final-methods
 @opindex Wsuggest-final-methods
 Warn about virtual methods where code quality would be improved if the method
-was declared with C++11 final specifier, or, if possible, its type was declared
-in the anonymous namespace or with final specifier. This warning is more
-effective with link time optimization, where the information about the class
-hiearchy graph is more complete. It is recommended to first consider suggestins
-of @option{-Wsuggest-final-types} and then rebuild with new annotations.
+was declared with the C++11 final specifier, or, if possible, its type was
+declared in an anonymous namespace or with the final specifier. This warning is
+more effective with link time optimization, where the information about the
+class hierarchy graph is more complete. It is recommended to first consider
+suggestions of @option{-Wsuggest-final-types} and then rebuild with new
+annotations.
 
 @item -Warray-bounds
 @opindex Wno-array-bounds
@@ -4288,7 +4290,8 @@ can be used to suppress such a warning.
 @opindex Wincompatible-pointer-types
 Do not warn when there is a conversion between pointers that have incompatible
 types.  This warning is for cases not covered by @option{-Wno-pointer-sign},
-which warns for pointer argument passing or assignment with different signedness
+which warns for pointer argument passing or assignment with different
+signedness.
 
 @item -Wno-int-conversion @r{(C and Objective-C only)}
 @opindex Wno-int-conversion
@@ -7202,7 +7205,7 @@ also turns on the following optimization flags:
 -ftree-switch-conversion -ftree-tail-merge @gol
 -ftree-pre @gol
 -ftree-vrp @gol
--fuse-caller-save}
+-fipa-ra}
 
 Please note the warning under @option{-fgcse} about
 invoking @option{-O2} on programs that use computed gotos.
@@ -8034,7 +8037,7 @@ and then tries to find ways to combine them.
 
 Enabled by default at @option{-O1} and higher.
 
-@item -fuse-caller-save
+@item -fipa-ra
 Use caller save registers for allocation if those registers are not used by
 any called function.  In that case it is not necessary to save and restore
 them around calls.  This is only possible if called functions are part of
@@ -8245,8 +8248,8 @@ at @option{-O} and higher.
 @opindex ftree-loop-linear
 Perform loop interchange transformations on tree.  Same as
 @option{-floop-interchange}.  To use this code transformation, GCC has
-to be configured with @option{--with-ppl} and @option{--with-cloog} to
-enable the Graphite loop transformation infrastructure.
+to be configured with @option{--with-isl} to enable the Graphite loop
+transformation infrastructure.
 
 @item -floop-interchange
 @opindex floop-interchange
@@ -8274,8 +8277,8 @@ contiguously by column, and the original loop iterates over rows,
 potentially creating at each access a cache miss.  This optimization
 applies to all the languages supported by GCC and is not limited to
 Fortran.  To use this code transformation, GCC has to be configured
-with @option{--with-ppl} and @option{--with-cloog} to enable the
-Graphite loop transformation infrastructure.
+with @option{--with-isl} to enable the Graphite loop transformation
+infrastructure.
 
 @item -floop-strip-mine
 @opindex floop-strip-mine
@@ -8300,8 +8303,8 @@ ENDDO
 @end smallexample
 This optimization applies to all the languages supported by GCC and is
 not limited to Fortran.  To use this code transformation, GCC has to
-be configured with @option{--with-ppl} and @option{--with-cloog} to
-enable the Graphite loop transformation infrastructure.
+be configured with @option{--with-isl} to enable the Graphite loop
+transformation infrastructure.
 
 @item -floop-block
 @opindex floop-block
@@ -8333,9 +8336,8 @@ which can be beneficial when @code{M} is larger than the caches,
 because the innermost loop iterates over a smaller amount of data
 which can be kept in the caches.  This optimization applies to all the
 languages supported by GCC and is not limited to Fortran.  To use this
-code transformation, GCC has to be configured with @option{--with-ppl}
-and @option{--with-cloog} to enable the Graphite loop transformation
-infrastructure.
+code transformation, GCC has to be configured with @option{--with-isl}
+to enable the Graphite loop transformation infrastructure.
 
 @item -fgraphite-identity
 @opindex fgraphite-identity
@@ -8343,7 +8345,7 @@ Enable the identity transformation for graphite.  For every SCoP we generate
 the polyhedral representation and transform it back to gimple.  Using
 @option{-fgraphite-identity} we can check the costs or benefits of the
 GIMPLE -> GRAPHITE -> GIMPLE transformation.  Some minimal optimizations
-are also performed by the code generator CLooG, like index splitting and
+are also performed by the code generator ISL, like index splitting and
 dead code elimination in loops.
 
 @item -floop-nest-optimize
@@ -10623,6 +10625,18 @@ Static constructors generated by Pointer Bounds Checker may become very
 large and significantly increase compile time at optimization level
 @option{-O1} and higher.  This parameter is a maximum nubmer of statements
 in a single generated constructor.  Default value is 5000.
+
+@item max-fsm-thread-path-insns
+Maximum number of instructions to copy when duplicating blocks on a
+finite state automaton jump thread path.  The default is 100.
+
+@item max-fsm-thread-length
+Maximum number of basic blocks on a finite state automaton jump thread
+path.  The default is 10.
+
+@item max-fsm-thread-paths
+Maximum number of new jump thread paths to create for a finite state
+automaton.  The default is 50.
 
 @end table
 @end table

@@ -315,8 +315,8 @@ gimple_gen_edge_profiler (int edgeno, edge e)
   stmt1 = gimple_build_assign (gcov_type_tmp_var, ref);
   gcov_type_tmp_var = make_temp_ssa_name (gcov_type_node,
 					  NULL, "PROF_edge_counter");
-  stmt2 = gimple_build_assign_with_ops (PLUS_EXPR, gcov_type_tmp_var,
-					gimple_assign_lhs (stmt1), one);
+  stmt2 = gimple_build_assign (gcov_type_tmp_var, PLUS_EXPR,
+			       gimple_assign_lhs (stmt1), one);
   stmt3 = gimple_build_assign (unshare_expr (ref), gimple_assign_lhs (stmt2));
   gsi_insert_on_edge (e, stmt1);
   gsi_insert_on_edge (e, stmt2);

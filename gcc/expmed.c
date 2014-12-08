@@ -3087,11 +3087,7 @@ expand_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
   bool do_trapv = flag_trapv && SCALAR_INT_MODE_P (mode) && !unsignedp;
 
   if (CONSTANT_P (op0))
-    {
-      rtx temp = op0;
-      op0 = op1;
-      op1 = temp;
-    }
+    std::swap (op0, op1);
 
   /* For vectors, there are several simplifications that can be made if
      all elements of the vector constant are identical.  */
@@ -3288,6 +3284,9 @@ expand_widening_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
       int max_cost;
       enum mult_variant variant;
       struct algorithm algorithm;
+
+      if (coeff == 0)
+	return CONST0_RTX (mode);
 
       /* Special case powers of two.  */
       if (EXACT_POWER_OF_2_OR_ZERO_P (coeff))

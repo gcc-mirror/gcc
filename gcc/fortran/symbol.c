@@ -3874,7 +3874,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
   */
   if (curr_comp == NULL)
     {
-      gfc_warning ("Derived type '%s' with BIND(C) attribute at %L is empty, "
+      gfc_warning ("Derived type %qs with BIND(C) attribute at %L is empty, "
 		   "and may be inaccessible by the C companion processor",
 		   derived_sym->name, &(derived_sym->declared_at));
       derived_sym->ts.is_c_interop = 1;
@@ -3954,16 +3954,18 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
 	      if (derived_sym->attr.is_bind_c == 1 && warn_c_binding_type)
 		/* If the derived type is bind(c), all fields must be
 		   interop.  */
-		gfc_warning ("Component '%s' in derived type '%s' at %L "
+		gfc_warning (OPT_Wc_binding_type,
+			     "Component %qs in derived type %qs at %L "
                              "may not be C interoperable, even though "
-                             "derived type '%s' is BIND(C)",
+                             "derived type %qs is BIND(C)",
                              curr_comp->name, derived_sym->name,
                              &(curr_comp->loc), derived_sym->name);
 	      else if (warn_c_binding_type)
 		/* If derived type is param to bind(c) routine, or to one
 		   of the iso_c_binding procs, it must be interoperable, so
 		   all fields must interop too.	 */
-		gfc_warning ("Component '%s' in derived type '%s' at %L "
+		gfc_warning (OPT_Wc_binding_type,
+			     "Component %qs in derived type %qs at %L "
                              "may not be C interoperable",
                              curr_comp->name, derived_sym->name,
                              &(curr_comp->loc));

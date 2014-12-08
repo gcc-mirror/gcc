@@ -167,8 +167,9 @@ dump_jump_thread_path (FILE *dump_file, vec<jump_thread_edge *> path,
 		       bool registering)
 {
   fprintf (dump_file,
-	   "  %s jump thread: (%d, %d) incoming edge; ",
+	   "  %s%s jump thread: (%d, %d) incoming edge; ",
 	   (registering ? "Registering" : "Cancelling"),
+	   (path[0]->type == EDGE_FSM_THREAD ? " FSM": ""),
 	   path[0]->e->src->index, path[0]->e->dest->index);
 
   for (unsigned int i = 1; i < path.length (); i++)
@@ -2317,6 +2318,155 @@ bb_ends_with_multiway_branch (basic_block bb ATTRIBUTE_UNUSED)
   return false;
 }
 
+/* Verify that the REGION is a Single Entry Multiple Exits region: make sure no
+   edge other than ENTRY is entering the REGION.  */
+
+DEBUG_FUNCTION void
+verify_seme (edge entry, basic_block *region, unsigned n_region)
+{
+  bitmap bbs = BITMAP_ALLOC (NULL);
+
+  for (unsigned i = 0; i < n_region; i++)
+    bitmap_set_bit (bbs, region[i]->index);
+
+  for (unsigned i = 0; i < n_region; i++)
+    {
+      edge e;
+      edge_iterator ei;
+      basic_block bb = region[i];
+
+      /* All predecessors other than ENTRY->src should be in the region.  */
+      for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); ei_next (&ei))
+	if (e != entry)
+	  gcc_assert (bitmap_bit_p (bbs, e->src->index));
+    }
+
+  BITMAP_FREE (bbs);
+}
+
+/* Duplicates a Single Entry Multiple Exit REGION (set of N_REGION basic
+   blocks).  The ENTRY edge is redirected to the duplicate of the region.  If
+   REGION is not a Single Entry region, ignore any incoming edges other than
+   ENTRY: this makes the copied region a Single Entry region.
+
+   Remove the last conditional statement in the last basic block in the REGION,
+   and create a single fallthru edge pointing to the same destination as the
+   EXIT edge.
+
+   The new basic blocks are stored to REGION_COPY in the same order as they had
+   in REGION, provided that REGION_COPY is not NULL.
+
+   Returns false if it is unable to copy the region, true otherwise.  */
+
+static bool
+duplicate_seme_region (edge entry, edge exit,
+		       basic_block *region, unsigned n_region,
+		       basic_block *region_copy)
+{
+  unsigned i;
+  bool free_region_copy = false, copying_header = false;
+  struct loop *loop = entry->dest->loop_father;
+  edge exit_copy;
+  edge redirected;
+  int total_freq = 0, entry_freq = 0;
+  gcov_type total_count = 0, entry_count = 0;
+
+  if (!can_copy_bbs_p (region, n_region))
+    return false;
+
+  /* Some sanity checking.  Note that we do not check for all possible
+     missuses of the functions.  I.e. if you ask to copy something weird,
+     it will work, but the state of structures probably will not be
+     correct.  */
+  for (i = 0; i < n_region; i++)
+    {
+      /* We do not handle subloops, i.e. all the blocks must belong to the
+	 same loop.  */
+      if (region[i]->loop_father != loop)
+	return false;
+    }
+
+  initialize_original_copy_tables ();
+
+  if (copying_header)
+    set_loop_copy (loop, loop_outer (loop));
+  else
+    set_loop_copy (loop, loop);
+
+  if (!region_copy)
+    {
+      region_copy = XNEWVEC (basic_block, n_region);
+      free_region_copy = true;
+    }
+
+  if (entry->dest->count)
+    {
+      total_count = entry->dest->count;
+      entry_count = entry->count;
+      /* Fix up corner cases, to avoid division by zero or creation of negative
+	 frequencies.  */
+      if (entry_count > total_count)
+	entry_count = total_count;
+    }
+  else
+    {
+      total_freq = entry->dest->frequency;
+      entry_freq = EDGE_FREQUENCY (entry);
+      /* Fix up corner cases, to avoid division by zero or creation of negative
+	 frequencies.  */
+      if (total_freq == 0)
+	total_freq = 1;
+      else if (entry_freq > total_freq)
+	entry_freq = total_freq;
+    }
+
+  copy_bbs (region, n_region, region_copy, &exit, 1, &exit_copy, loop,
+	    split_edge_bb_loc (entry), 0);
+  if (total_count)
+    {
+      scale_bbs_frequencies_gcov_type (region, n_region,
+				       total_count - entry_count,
+				       total_count);
+      scale_bbs_frequencies_gcov_type (region_copy, n_region, entry_count,
+				       total_count);
+    }
+  else
+    {
+      scale_bbs_frequencies_int (region, n_region, total_freq - entry_freq,
+				 total_freq);
+      scale_bbs_frequencies_int (region_copy, n_region, entry_freq, total_freq);
+    }
+
+#ifdef ENABLE_CHECKING
+  /* Make sure no edge other than ENTRY is entering the copied region.  */
+  verify_seme (entry, region_copy, n_region);
+#endif
+
+  /* Remove the last branch in the jump thread path.  */
+  remove_ctrl_stmt_and_useless_edges (region_copy[n_region - 1], exit->dest);
+  edge e = make_edge (region_copy[n_region - 1], exit->dest, EDGE_FALLTHRU);
+
+  if (e) {
+    rescan_loop_exit (e, true, false);
+    e->probability = REG_BR_PROB_BASE;
+    e->count = region_copy[n_region - 1]->count;
+  }
+
+  /* Redirect the entry and add the phi node arguments.  */
+  redirected = redirect_edge_and_branch (entry, get_bb_copy (entry->dest));
+  gcc_assert (redirected != NULL);
+  flush_pending_stmts (entry);
+
+  /* Add the other PHI node arguments.  */
+  add_phi_args_after_copy (region_copy, n_region, NULL);
+
+  if (free_region_copy)
+    free (region_copy);
+
+  free_original_copy_tables ();
+  return true;
+}
+
 /* Walk through all blocks and thread incoming edges to the appropriate
    outgoing edge for each edge pair recorded in THREADED_EDGES.
 
@@ -2342,6 +2492,57 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 
   threaded_blocks = BITMAP_ALLOC (NULL);
   memset (&thread_stats, 0, sizeof (thread_stats));
+
+  /* Jump-thread all FSM threads before other jump-threads.  */
+  for (i = 0; i < paths.length ();)
+    {
+      vec<jump_thread_edge *> *path = paths[i];
+      edge entry = (*path)[0]->e;
+
+      if ((*path)[0]->type != EDGE_FSM_THREAD
+	  /* Do not jump-thread twice from the same block.  */
+	  || bitmap_bit_p (threaded_blocks, entry->src->index)) {
+	i++;
+	continue;
+      }
+
+      unsigned len = path->length ();
+      edge exit = (*path)[len - 1]->e;
+      basic_block *region = XNEWVEC (basic_block, len - 1);
+
+      for (unsigned int j = 0; j < len - 1; j++)
+	region[j] = (*path)[j]->e->dest;
+
+      if (duplicate_seme_region (entry, exit, region, len - 1, NULL))
+	{
+	  /* We do not update dominance info.  */
+	  free_dominance_info (CDI_DOMINATORS);
+	  bitmap_set_bit (threaded_blocks, entry->src->index);
+	  retval = true;
+	}
+
+      delete_jump_thread_path (path);
+      paths.unordered_remove (i);
+    }
+
+  /* Remove from PATHS all the jump-threads starting with an edge already
+     jump-threaded.  */
+  for (i = 0; i < paths.length ();)
+    {
+      vec<jump_thread_edge *> *path = paths[i];
+      edge entry = (*path)[0]->e;
+
+      /* Do not jump-thread twice from the same block.  */
+      if (bitmap_bit_p (threaded_blocks, entry->src->index))
+	{
+	  delete_jump_thread_path (path);
+	  paths.unordered_remove (i);
+	}
+      else
+	i++;
+    }
+
+  bitmap_clear (threaded_blocks);
 
   mark_threaded_blocks (threaded_blocks);
 

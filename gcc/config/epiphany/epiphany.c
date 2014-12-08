@@ -1542,6 +1542,8 @@ epiphany_override_options (void)
   if (epiphany_stack_offset & 3)
     error ("stack_offset must be a multiple of 4");
   epiphany_stack_offset = (epiphany_stack_offset + 3) & -4;
+ if (!TARGET_SOFT_CMPSF)
+   flag_finite_math_only = 1;
 
   /* This needs to be done at start up.  It's convenient to do it here.  */
   epiphany_init ();

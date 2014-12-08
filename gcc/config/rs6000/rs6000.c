@@ -7033,24 +7033,6 @@ rs6000_delegitimize_address (rtx orig_x)
   if (GET_CODE (y) == UNSPEC
       && XINT (y, 1) == UNSPEC_TOCREL)
     {
-#ifdef ENABLE_CHECKING
-      if (REG_P (XVECEXP (y, 0, 1))
-	  && REGNO (XVECEXP (y, 0, 1)) == TOC_REGISTER)
-	{
-	  /* All good.  */
-	}
-      else if (GET_CODE (XVECEXP (y, 0, 1)) == DEBUG_EXPR)
-	{
-	  /* Weirdness alert.  df_note_compute can replace r2 with a
-	     debug_expr when this unspec is in a debug_insn.
-	     Seen in gcc.dg/pr51957-1.c  */
-	}
-      else
-	{
-	  debug_rtx (orig_x);
-	  abort ();
-	}
-#endif
       y = XVECEXP (y, 0, 0);
 
 #ifdef HAVE_AS_TLS
@@ -7593,7 +7575,11 @@ rs6000_legitimize_reload_address (rtx x, machine_mode mode,
 	 naturally aligned.  Since we say the address is good here, we
 	 can't disable offsets from LO_SUMs in mem_operand_gpr.
 	 FIXME: Allow offset from lo_sum for other modes too, when
-	 mem is sufficiently aligned.  */
+	 mem is sufficiently aligned.
+
+	 Also disallow this if the type can go in VMX/Altivec registers, since
+	 those registers do not have d-form (reg+offset) address modes.  */
+      && !reg_addr[mode].scalar_in_vmx_p
       && mode != TFmode
       && mode != TDmode
       && (mode != TImode || !TARGET_VSX_TIMODE)
@@ -19826,12 +19812,7 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
   if (try_again)
     {
       if (swap_operands)
-	{
-	  rtx tmp;
-	  tmp = op0;
-	  op0 = op1;
-	  op1 = tmp;
-	}
+	std::swap (op0, op1);
 
       mask = rs6000_emit_vector_compare_inner (rcode, op0, op1);
       if (mask)
@@ -20144,9 +20125,7 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
     default:
       /* We need to swap the sense of the comparison.  */
       {
-	rtx t = true_cond;
-	true_cond = false_cond;
-	false_cond = t;
+	std::swap (false_cond, true_cond);
 	PUT_CODE (condition_rtx, reverse_condition (cond_code));
       }
       break;
@@ -27527,11 +27506,7 @@ rs6000_sched_reorder (FILE *dump ATTRIBUTE_UNUSED, int sched_verbose,
     if (is_nonpipeline_insn (ready[n_ready - 1])
         && (recog_memoized (ready[n_ready - 2]) > 0))
       /* Simply swap first two insns.  */
-      {
-	rtx_insn *tmp = ready[n_ready - 1];
-	ready[n_ready - 1] = ready[n_ready - 2];
-	ready[n_ready - 2] = tmp;
-      }
+      std::swap (ready[n_ready - 1], ready[n_ready - 2]);
   }
 
   if (rs6000_cpu == PROCESSOR_POWER6)
@@ -31336,7 +31311,7 @@ altivec_expand_vec_perm_const (rtx operands[4])
              (or swapped back) to ensure proper right-to-left numbering
              from 0 to 2N-1.  */
 	  if (swapped ^ !BYTES_BIG_ENDIAN)
-	    x = op0, op0 = op1, op1 = x;
+	    std::swap (op0, op1);
 	  if (imode != V16QImode)
 	    {
 	      op0 = gen_lowpart (imode, op0);
@@ -31392,7 +31367,7 @@ rs6000_expand_vec_perm_const_1 (rtx target, rtx op0, rtx op1,
 	return false;
       perm0 -= 2;
       perm1 += 2;
-      x = op0, op0 = op1, op1 = x;
+      std::swap (op0, op1);
     }
   /* If the second selector does not come from the second operand, fail.  */
   else if ((perm1 & 2) == 0)
@@ -34931,7 +34906,7 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 	  DECL_EXTERNAL (atomic_update_decl) = 1;
 	}
 
-      tree fenv_var = create_tmp_var (double_type_node, NULL);
+      tree fenv_var = create_tmp_var (double_type_node);
       mark_addressable (fenv_var);
       tree fenv_addr = build1 (ADDR_EXPR, double_ptr_type_node, fenv_var);
 
@@ -34959,7 +34934,7 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   const unsigned HOST_WIDE_INT hold_exception_mask =
     HOST_WIDE_INT_C (0xffffffff00000007);
 
-  tree fenv_var = create_tmp_var (double_type_node, NULL);
+  tree fenv_var = create_tmp_var (double_type_node);
 
   tree hold_mffs = build2 (MODIFY_EXPR, void_type_node, fenv_var, call_mffs);
 
@@ -34988,7 +34963,7 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   const unsigned HOST_WIDE_INT clear_exception_mask =
     HOST_WIDE_INT_C (0xffffffff00000000);
 
-  tree fenv_clear = create_tmp_var (double_type_node, NULL);
+  tree fenv_clear = create_tmp_var (double_type_node);
 
   tree clear_mffs = build2 (MODIFY_EXPR, void_type_node, fenv_clear, call_mffs);
 
@@ -35020,7 +34995,7 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   const unsigned HOST_WIDE_INT new_exception_mask =
     HOST_WIDE_INT_C (0x1ff80fff);
 
-  tree old_fenv = create_tmp_var (double_type_node, NULL);
+  tree old_fenv = create_tmp_var (double_type_node);
   tree update_mffs = build2 (MODIFY_EXPR, void_type_node, old_fenv, call_mffs);
 
   tree old_llu = build1 (VIEW_CONVERT_EXPR, uint64_type_node, old_fenv);

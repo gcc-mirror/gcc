@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "builtins.h"
 #include "tree-inline.h"
+#include "ubsan.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -59,7 +60,8 @@ literal_type_p (tree t)
 {
   if (SCALAR_TYPE_P (t)
       || TREE_CODE (t) == VECTOR_TYPE
-      || TREE_CODE (t) == REFERENCE_TYPE)
+      || TREE_CODE (t) == REFERENCE_TYPE
+      || (VOID_TYPE_P (t) && cxx_dialect >= cxx14))
     return true;
   if (CLASS_TYPE_P (t))
     {
@@ -1006,8 +1008,8 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t,
     }
   if (*non_constant_p)
     return t;
-  new_call = fold_builtin_call_array (EXPR_LOCATION (t), TREE_TYPE (t),
-				      CALL_EXPR_FN (t), nargs, args);
+  new_call = fold_build_call_array_loc (EXPR_LOCATION (t), TREE_TYPE (t),
+					CALL_EXPR_FN (t), nargs, args);
   VERIFY_CONSTANT (new_call);
   return new_call;
 }
@@ -1151,6 +1153,19 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   constexpr_call *entry;
   bool depth_ok;
 
+  if (fun == NULL_TREE)
+    switch (CALL_EXPR_IFN (t))
+      {
+      case IFN_UBSAN_NULL:
+      case IFN_UBSAN_BOUNDS:
+	return void_node;
+      default:
+	if (!ctx->quiet)
+	  error_at (loc, "call to internal function");
+	*non_constant_p = true;
+	return t;
+      }
+
   if (TREE_CODE (fun) != FUNCTION_DECL)
     {
       /* Might be a constexpr function pointer.  */
@@ -1171,6 +1186,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     }
   if (DECL_CLONED_FUNCTION_P (fun))
     fun = DECL_CLONED_FUNCTION (fun);
+
+  if (is_ubsan_builtin_p (fun))
+    return void_node;
+
   if (is_builtin_fn (fun))
     return cxx_eval_builtin_function_call (ctx, t,
 					   addr, non_constant_p, overflow_p);
@@ -1451,6 +1470,79 @@ verify_constant (tree t, bool allow_non_constant, bool *non_constant_p,
   return *non_constant_p;
 }
 
+/* Check whether the shift operation with code CODE and type TYPE on LHS
+   and RHS is undefined.  If it is, give an error with an explanation,
+   and return true; return false otherwise.  */
+
+static bool
+cxx_eval_check_shift_p (location_t loc, const constexpr_ctx *ctx,
+			enum tree_code code, tree type, tree lhs, tree rhs)
+{
+  if ((code != LSHIFT_EXPR && code != RSHIFT_EXPR)
+      || TREE_CODE (lhs) != INTEGER_CST
+      || TREE_CODE (rhs) != INTEGER_CST)
+    return false;
+
+  tree lhstype = TREE_TYPE (lhs);
+  unsigned HOST_WIDE_INT uprec = TYPE_PRECISION (TREE_TYPE (lhs));
+
+  /* [expr.shift] The behavior is undefined if the right operand
+     is negative, or greater than or equal to the length in bits
+     of the promoted left operand.  */
+  if (tree_int_cst_sgn (rhs) == -1)
+    {
+      if (!ctx->quiet)
+	error_at (loc, "right operand of shift expression %q+E is negative",
+		  build2_loc (loc, code, type, lhs, rhs));
+      return true;
+    }
+  if (compare_tree_int (rhs, uprec) >= 0)
+    {
+      if (!ctx->quiet)
+	error_at (loc, "right operand of shift expression %q+E is >= than "
+		  "the precision of the left operand",
+		  build2_loc (loc, code, type, lhs, rhs));
+      return true;
+    }
+
+  /* The value of E1 << E2 is E1 left-shifted E2 bit positions; [...]
+     if E1 has a signed type and non-negative value, and E1x2^E2 is
+     representable in the corresponding unsigned type of the result type,
+     then that value, converted to the result type, is the resulting value;
+     otherwise, the behavior is undefined.  */
+  if (code == LSHIFT_EXPR && !TYPE_UNSIGNED (lhstype)
+      && (cxx_dialect >= cxx11))
+    {
+      if (tree_int_cst_sgn (lhs) == -1)
+	{
+	  if (!ctx->quiet)
+	    error_at (loc, "left operand of shift expression %q+E is negative",
+		      build2_loc (loc, code, type, lhs, rhs));
+	  return true;
+	}
+      /* For signed x << y the following:
+	 (unsigned) x >> ((prec (lhs) - 1) - y)
+	 if > 1, is undefined.  The right-hand side of this formula
+	 is the highest bit of the LHS that can be set (starting from 0),
+	 so that the shift doesn't overflow.  We then right-shift the LHS
+	 to see whether any other bit is set making the original shift
+	 undefined -- the result is not representable in the corresponding
+	 unsigned type.  */
+      tree t = build_int_cst (unsigned_type_node, uprec - 1);
+      t = fold_build2 (MINUS_EXPR, unsigned_type_node, t, rhs);
+      tree ulhs = fold_convert (unsigned_type_for (lhstype), lhs);
+      t = fold_build2 (RSHIFT_EXPR, TREE_TYPE (ulhs), ulhs, t);
+      if (tree_int_cst_lt (integer_one_node, t))
+	{
+	  if (!ctx->quiet)
+	    error_at (loc, "shift expression %q+E overflows",
+		      build2_loc (loc, code, type, lhs, rhs));
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Attempt to reduce the unary expression tree T to a compile time value.
    If successful, return the value.  Otherwise issue a diagnostic
@@ -1513,6 +1605,8 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
       else
 	r = build2_loc (loc, code, type, lhs, rhs);
     }
+  else if (cxx_eval_check_shift_p (loc, ctx, code, type, lhs, rhs))
+    *non_constant_p = true;
   VERIFY_CONSTANT (r);
   return r;
 }
@@ -2489,19 +2583,22 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 
 	default:
 	  object = probe;
-	  gcc_assert (DECL_P (object));
 	}
     }
 
   /* And then find/build up our initializer for the path to the subobject
      we're initializing.  */
-  tree *valp = ctx->values->get (object);
+  tree *valp;
+  if (DECL_P (object))
+    valp = ctx->values->get (object);
+  else
+    valp = NULL;
   if (!valp)
     {
       /* A constant-expression cannot modify objects from outside the
 	 constant-expression.  */
       if (!ctx->quiet)
-	error ("modification of %qD is not a constant-expression", object);
+	error ("modification of %qE is not a constant-expression", object);
       *non_constant_p = true;
       return t;
     }

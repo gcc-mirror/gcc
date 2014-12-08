@@ -1,14 +1,14 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512vbmi -mavx512vl -O2" } */
-/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%xmm\[0-9\]\[^\n\]*%xmm\[0-9\]\[^\n\]*%xmm\[0-9\]" 3 } } */
-/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%xmm\[0-9\]\[^\n\]*%xmm\[0-9\]\[^\n\]*%xmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%xmm\[0-9\]\[^\n\]*%xmm\[0-9\]\[^\n\]*%xmm\[0-9\]\{%k\[1-7\]\}\{z\}" 1 } } */
-/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%ymm\[0-9\]\[^\n\]*%ymm\[0-9\]\[^\n\]*%ymm\[0-9\]" 3 } } */
-/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%ymm\[0-9\]\[^\n\]*%ymm\[0-9\]\[^\n\]*%ymm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%ymm\[0-9\]\[^\n\]*%ymm\[0-9\]\[^\n\]*%ymm\[0-9\]\{%k\[1-7\]\}\{z\}" 1 } } */
-/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%zmm\[0-9\]\[^\n\]*%zmm\[0-9\]\[^\n\]*%zmm\[0-9\]" 3 } } */
-/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%zmm\[0-9\]\[^\n\]*%zmm\[0-9\]\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%zmm\[0-9\]\[^\n\]*%zmm\[0-9\]\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\{z\}" 1 } } */
+/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%xmm\[0-9\]+\[^\n\]*%xmm\[0-9\]+\[^\n\]*%xmm\[0-9\]+" 3 } } */
+/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%xmm\[0-9\]+\[^\n\]*%xmm\[0-9\]+\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%xmm\[0-9\]+\[^\n\]*%xmm\[0-9\]+\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}" 1 } } */
+/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%ymm\[0-9\]+\[^\n\]*%ymm\[0-9\]+\[^\n\]*%ymm\[0-9\]+" 3 } } */
+/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%ymm\[0-9\]+\[^\n\]*%ymm\[0-9\]+\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%ymm\[0-9\]+\[^\n\]*%ymm\[0-9\]+\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}" 1 } } */
+/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]+" 3 } } */
+/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vpmultishiftqb\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}" 1 } } */
 
 #include <immintrin.h>
 

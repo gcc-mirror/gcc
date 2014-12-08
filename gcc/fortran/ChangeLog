@@ -1,3 +1,84 @@
+2014-12-06  Tobias Burnus  <burnus@net-b.de>
+
+	* error.c (gfc_error_check): Use bool not int.
+	* gfortran.h (gfc_error_check): Update prototype.
+	* match.c (gfc_match_if): Update call.
+	* parse.c (decode_statement, decode_omp_directive,
+	decode_gcc_attribute): Ditto.
+
+2014-12-06  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* error.c (gfc_buffer_error, gfc_error_flag_test): Use bool not int.
+	(buffer_flag): Remove static variable.
+	(buffered_p): Add static variable.
+	(gfc_error_init_1): Call gfc_buffer_error.
+	(gfc_warning_1, gfc_warning, gfc_warning_now_1, gfc_error,
+	gfc_error_now_1): Update for static variable change.
+	* gfortran.h (gfc_buffer_error, gfc_error_flag_test): Update
+	prototype.
+	* parse.c (use_modules, decode_specification_statement,
+	next_fixed, next_statement, match_deferred_characteristics):
+	Update calls.
+	* decl.c (gfc_match_data_decl): Ditto.
+	* match.c (gfc_match_name): Ditto.
+
+2014-12-05  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/60414
+	* interface.c (compare_parameter): Remove class argument rank
+	check short circuit.
+
+2014-12-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* error.c (gfc_diagnostic_build_locus_prefix): Use
+	diagnostic_expand_location.
+
+2014-12-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* scanner.c (gfc_next_char_literal): Use gfc_warning_now.
+	(load_file): Use the line length as the column hint for
+	linemap_line_start. Reserve a location for the highest column of
+	the line.
+
+2014-12-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* gfortran.h (gfc_warning): Now returns bool. Add overload that
+	accepts opt.
+	(gfc_warning_1): Declare.
+	* error.c
+	(pp_warning_buffer,warningcount_buffered,werrorcount_buffered):	New.
+	(gfc_buffer_error): Set pp_warning_buffer.flush_p.
+	(gfc_clear_pp_buffer): New.
+	(gfc_warning_1): Renamed from gfc_warning.
+	(gfc_warning): Add three new overloads. One that takes just a
+	format string and ellipsis, another that takes also a warning
+	option, and another that takes also va_list instead of ellipsis.
+	(gfc_clear_warning): Clear pp_warning_buffer.
+	(gfc_warning_check): Flush pp_warning_buffer and update warning
+	and werror counters.
+	(gfc_diagnostics_init): Init pp_warning_buffer.
+
+	* Update all gfc_warning calls that do not use multiple
+	locations to use %qs and OPT_W*, otherwise use gfc_warning_1.
+
+2014-12-02  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* error.c (warnings_not_errors): Use bool.
+	(gfc_clear_error): Update.
+	(gfc_get_errors): Ditto. Use bool argument.
+	* gfortran.h (gfc_get_errors): Update prototype.
+	* resolve.c (resolve_global_procedure): Update call.
+
+2014-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/64137
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Check
+	proper expressions type, use proper type for computing
+	-Huge - 1.
+
 2014-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-openmp.c (gfc_omp_finish_clause,

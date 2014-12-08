@@ -21,10 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 %option noinput
 
 %{
-#ifdef GENERATOR_FILE
-#include "bconfig.h"
-#else
+#ifdef HOST_GENERATOR_FILE
 #include "config.h"
+#define GENERATOR_FILE 1
+#else
+#include "bconfig.h"
 #endif
 #include "system.h"
 

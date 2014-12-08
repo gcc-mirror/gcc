@@ -1628,6 +1628,46 @@ gimple_fold_builtin_strcat_chk (gimple_stmt_iterator *gsi)
   return true;
 }
 
+/* Simplify a call to the strncat builtin.  */
+
+static bool
+gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
+{
+  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
+  tree dst = gimple_call_arg (stmt, 0);
+  tree src = gimple_call_arg (stmt, 1);
+  tree len = gimple_call_arg (stmt, 2);
+
+  const char *p = c_getstr (src);
+
+  /* If the requested length is zero, or the src parameter string
+     length is zero, return the dst parameter.  */
+  if (integer_zerop (len) || (p && *p == '\0'))
+    {
+      replace_call_with_value (gsi, dst);
+      return true;
+    }
+
+  /* If the requested len is greater than or equal to the string
+     length, call strcat.  */
+  if (TREE_CODE (len) == INTEGER_CST && p
+      && compare_tree_int (len, strlen (p)) >= 0)
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_STRCAT);
+
+      /* If the replacement _DECL isn't initialized, don't do the
+	 transformation.  */
+      if (!fn)
+	return false;
+
+      gcall *repl = gimple_build_call (fn, 2, dst, src);
+      replace_call_with_call_and_fold (gsi, repl);
+      return true;
+    }
+
+  return false;
+}
+
 /* Fold a call to the __strncat_chk builtin with arguments DEST, SRC,
    LEN, and SIZE.  */
 
@@ -2009,6 +2049,70 @@ gimple_fold_builtin_stxncpy_chk (gimple_stmt_iterator *gsi,
 
   gimple repl = gimple_build_call (fn, 3, dest, src, len);
   replace_call_with_call_and_fold (gsi, repl);
+  return true;
+}
+
+/* Fold function call to builtin stpcpy with arguments DEST and SRC.
+   Return NULL_TREE if no simplification can be made.  */
+
+static bool
+gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
+{
+  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
+  location_t loc = gimple_location (stmt);
+  tree dest = gimple_call_arg (stmt, 0);
+  tree src = gimple_call_arg (stmt, 1);
+  tree fn, len, lenp1;
+
+  /* If the result is unused, replace stpcpy with strcpy.  */
+  if (gimple_call_lhs (stmt) == NULL_TREE)
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_STRCPY);
+      if (!fn)
+	return false;
+      gimple_call_set_fndecl (stmt, fn);
+      fold_stmt (gsi);
+      return true;
+    }
+
+  len = c_strlen (src, 1);
+  if (!len
+      || TREE_CODE (len) != INTEGER_CST)
+    return false;
+
+  if (optimize_function_for_size_p (cfun)
+      /* If length is zero it's small enough.  */
+      && !integer_zerop (len))
+    return false;
+
+  /* If the source has a known length replace stpcpy with memcpy.  */
+  fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
+  if (!fn)
+    return false;
+
+  gimple_seq stmts = NULL;
+  tree tem = gimple_convert (&stmts, loc, size_type_node, len);
+  lenp1 = gimple_build (&stmts, loc, PLUS_EXPR, size_type_node,
+			tem, build_int_cst (size_type_node, 1));
+  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+  gcall *repl = gimple_build_call (fn, 3, dest, src, lenp1);
+  gimple_set_vuse (repl, gimple_vuse (stmt));
+  gimple_set_vdef (repl, gimple_vdef (stmt));
+  if (gimple_vdef (repl)
+      && TREE_CODE (gimple_vdef (repl)) == SSA_NAME)
+    SSA_NAME_DEF_STMT (gimple_vdef (repl)) = repl;
+  gsi_insert_before (gsi, repl, GSI_SAME_STMT);
+  /* Replace the result with dest + len.  */
+  stmts = NULL;
+  tem = gimple_convert (&stmts, loc, sizetype, len);
+  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+  gassign *ret = gimple_build_assign (gimple_call_lhs (stmt),
+				      POINTER_PLUS_EXPR, dest, tem);
+  gsi_replace (gsi, ret, true);
+  /* Finally fold the memcpy call.  */
+  gimple_stmt_iterator gsi2 = *gsi;
+  gsi_prev (&gsi2);
+  fold_stmt (&gsi2);
   return true;
 }
 
@@ -2453,6 +2557,270 @@ gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
   return false;
 }
 
+/* Fold a call to the {,v}fprintf{,_unlocked} and __{,v}printf_chk builtins.
+   FP, FMT, and ARG are the arguments to the call.  We don't fold calls with
+   more than 3 arguments, and ARG may be null in the 2-argument case.
+
+   Return NULL_TREE if no simplification was possible, otherwise return the
+   simplified form of the call as a tree.  FCODE is the BUILT_IN_*
+   code of the function to be simplified.  */
+
+static bool 
+gimple_fold_builtin_fprintf (gimple_stmt_iterator *gsi,
+			     tree fp, tree fmt, tree arg,
+			     enum built_in_function fcode)
+{
+  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
+  tree fn_fputc, fn_fputs;
+  const char *fmt_str = NULL;
+
+  /* If the return value is used, don't do the transformation.  */
+  if (gimple_call_lhs (stmt) != NULL_TREE)
+    return false;
+
+  /* Check whether the format is a literal string constant.  */
+  fmt_str = c_getstr (fmt);
+  if (fmt_str == NULL)
+    return false;
+
+  if (fcode == BUILT_IN_FPRINTF_UNLOCKED)
+    {
+      /* If we're using an unlocked function, assume the other
+	 unlocked functions exist explicitly.  */
+      fn_fputc = builtin_decl_explicit (BUILT_IN_FPUTC_UNLOCKED);
+      fn_fputs = builtin_decl_explicit (BUILT_IN_FPUTS_UNLOCKED);
+    }
+  else
+    {
+      fn_fputc = builtin_decl_implicit (BUILT_IN_FPUTC);
+      fn_fputs = builtin_decl_implicit (BUILT_IN_FPUTS);
+    }
+
+  if (!init_target_chars ())
+    return false;
+
+  /* If the format doesn't contain % args or %%, use strcpy.  */
+  if (strchr (fmt_str, target_percent) == NULL)
+    {
+      if (fcode != BUILT_IN_VFPRINTF && fcode != BUILT_IN_VFPRINTF_CHK
+	  && arg)
+	return false;
+
+      /* If the format specifier was "", fprintf does nothing.  */
+      if (fmt_str[0] == '\0')
+	{
+	  replace_call_with_value (gsi, NULL_TREE);
+	  return true;
+	}
+
+      /* When "string" doesn't contain %, replace all cases of
+	 fprintf (fp, string) with fputs (string, fp).  The fputs
+	 builtin will take care of special cases like length == 1.  */
+      if (fn_fputs)
+	{
+	  gcall *repl = gimple_build_call (fn_fputs, 2, fmt, fp);
+	  replace_call_with_call_and_fold (gsi, repl);
+	  return true;
+	}
+    }
+
+  /* The other optimizations can be done only on the non-va_list variants.  */
+  else if (fcode == BUILT_IN_VFPRINTF || fcode == BUILT_IN_VFPRINTF_CHK)
+    return false;
+
+  /* If the format specifier was "%s", call __builtin_fputs (arg, fp).  */
+  else if (strcmp (fmt_str, target_percent_s) == 0)
+    {
+      if (!arg || ! POINTER_TYPE_P (TREE_TYPE (arg)))
+	return false;
+      if (fn_fputs)
+	{
+	  gcall *repl = gimple_build_call (fn_fputs, 2, arg, fp);
+	  replace_call_with_call_and_fold (gsi, repl);
+	  return true;
+	}
+    }
+
+  /* If the format specifier was "%c", call __builtin_fputc (arg, fp).  */
+  else if (strcmp (fmt_str, target_percent_c) == 0)
+    {
+      if (!arg
+	  || ! useless_type_conversion_p (integer_type_node, TREE_TYPE (arg)))
+	return false;
+      if (fn_fputc)
+	{
+	  gcall *repl = gimple_build_call (fn_fputc, 2, arg, fp);
+	  replace_call_with_call_and_fold (gsi, repl);
+	  return true;
+	}
+    }
+
+  return false;
+}
+
+/* Fold a call to the {,v}printf{,_unlocked} and __{,v}printf_chk builtins.
+   FMT and ARG are the arguments to the call; we don't fold cases with
+   more than 2 arguments, and ARG may be null if this is a 1-argument case.
+
+   Return NULL_TREE if no simplification was possible, otherwise return the
+   simplified form of the call as a tree.  FCODE is the BUILT_IN_*
+   code of the function to be simplified.  */
+
+static bool
+gimple_fold_builtin_printf (gimple_stmt_iterator *gsi, tree fmt,
+			    tree arg, enum built_in_function fcode)
+{
+  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
+  tree fn_putchar, fn_puts, newarg;
+  const char *fmt_str = NULL;
+
+  /* If the return value is used, don't do the transformation.  */
+  if (gimple_call_lhs (stmt) != NULL_TREE)
+    return false;
+
+  /* Check whether the format is a literal string constant.  */
+  fmt_str = c_getstr (fmt);
+  if (fmt_str == NULL)
+    return false;
+
+  if (fcode == BUILT_IN_PRINTF_UNLOCKED)
+    {
+      /* If we're using an unlocked function, assume the other
+	 unlocked functions exist explicitly.  */
+      fn_putchar = builtin_decl_explicit (BUILT_IN_PUTCHAR_UNLOCKED);
+      fn_puts = builtin_decl_explicit (BUILT_IN_PUTS_UNLOCKED);
+    }
+  else
+    {
+      fn_putchar = builtin_decl_implicit (BUILT_IN_PUTCHAR);
+      fn_puts = builtin_decl_implicit (BUILT_IN_PUTS);
+    }
+
+  if (!init_target_chars ())
+    return false;
+
+  if (strcmp (fmt_str, target_percent_s) == 0
+      || strchr (fmt_str, target_percent) == NULL)
+    {
+      const char *str;
+
+      if (strcmp (fmt_str, target_percent_s) == 0)
+	{
+	  if (fcode == BUILT_IN_VPRINTF || fcode == BUILT_IN_VPRINTF_CHK)
+	    return false;
+
+	  if (!arg || ! POINTER_TYPE_P (TREE_TYPE (arg)))
+	    return false;
+
+	  str = c_getstr (arg);
+	  if (str == NULL)
+	    return false;
+	}
+      else
+	{
+	  /* The format specifier doesn't contain any '%' characters.  */
+	  if (fcode != BUILT_IN_VPRINTF && fcode != BUILT_IN_VPRINTF_CHK
+	      && arg)
+	    return false;
+	  str = fmt_str;
+	}
+
+      /* If the string was "", printf does nothing.  */
+      if (str[0] == '\0')
+	{
+	  replace_call_with_value (gsi, NULL_TREE);
+	  return true;
+	}
+
+      /* If the string has length of 1, call putchar.  */
+      if (str[1] == '\0')
+	{
+	  /* Given printf("c"), (where c is any one character,)
+	     convert "c"[0] to an int and pass that to the replacement
+	     function.  */
+	  newarg = build_int_cst (integer_type_node, str[0]);
+	  if (fn_putchar)
+	    {
+	      gcall *repl = gimple_build_call (fn_putchar, 1, newarg);
+	      replace_call_with_call_and_fold (gsi, repl);
+	      return true;
+	    }
+	}
+      else
+	{
+	  /* If the string was "string\n", call puts("string").  */
+	  size_t len = strlen (str);
+	  if ((unsigned char)str[len - 1] == target_newline
+	      && (size_t) (int) len == len
+	      && (int) len > 0)
+	    {
+	      char *newstr;
+	      tree offset_node, string_cst;
+
+	      /* Create a NUL-terminated string that's one char shorter
+		 than the original, stripping off the trailing '\n'.  */
+	      newarg = build_string_literal (len, str);
+	      string_cst = string_constant (newarg, &offset_node);
+	      gcc_checking_assert (string_cst
+				   && (TREE_STRING_LENGTH (string_cst)
+				       == (int) len)
+				   && integer_zerop (offset_node)
+				   && (unsigned char)
+				      TREE_STRING_POINTER (string_cst)[len - 1]
+				      == target_newline);
+	      /* build_string_literal creates a new STRING_CST,
+		 modify it in place to avoid double copying.  */
+	      newstr = CONST_CAST (char *, TREE_STRING_POINTER (string_cst));
+	      newstr[len - 1] = '\0';
+	      if (fn_puts)
+		{
+		  gcall *repl = gimple_build_call (fn_puts, 1, newarg);
+		  replace_call_with_call_and_fold (gsi, repl);
+		  return true;
+		}
+	    }
+	  else
+	    /* We'd like to arrange to call fputs(string,stdout) here,
+	       but we need stdout and don't have a way to get it yet.  */
+	    return false;
+	}
+    }
+
+  /* The other optimizations can be done only on the non-va_list variants.  */
+  else if (fcode == BUILT_IN_VPRINTF || fcode == BUILT_IN_VPRINTF_CHK)
+    return false;
+
+  /* If the format specifier was "%s\n", call __builtin_puts(arg).  */
+  else if (strcmp (fmt_str, target_percent_s_newline) == 0)
+    {
+      if (!arg || ! POINTER_TYPE_P (TREE_TYPE (arg)))
+	return false;
+      if (fn_puts)
+	{
+	  gcall *repl = gimple_build_call (fn_puts, 1, arg);
+	  replace_call_with_call_and_fold (gsi, repl);
+	  return true;
+	}
+    }
+
+  /* If the format specifier was "%c", call __builtin_putchar(arg).  */
+  else if (strcmp (fmt_str, target_percent_c) == 0)
+    {
+      if (!arg || ! useless_type_conversion_p (integer_type_node,
+					       TREE_TYPE (arg)))
+	return false;
+      if (fn_putchar)
+	{
+	  gcall *repl = gimple_build_call (fn_putchar, 1, arg);
+	  replace_call_with_call_and_fold (gsi, repl);
+	  return true;
+	}
+    }
+
+  return false;
+}
+
+
 
 /* Fold a call to __builtin_strlen with known length LEN.  */
 
@@ -2483,7 +2851,9 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
   if (avoid_folding_inline_builtin (callee))
     return false;
 
-  switch (DECL_FUNCTION_CODE (callee))
+  unsigned n = gimple_call_num_args (stmt);
+  enum built_in_function fcode = DECL_FUNCTION_CODE (callee);
+  switch (fcode)
     {
     case BUILT_IN_BZERO:
       return gimple_fold_builtin_memset (gsi, integer_zero_node,
@@ -2506,7 +2876,7 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					    gimple_call_arg (stmt, 1), 3);
     case BUILT_IN_SPRINTF_CHK:
     case BUILT_IN_VSPRINTF_CHK:
-      return gimple_fold_builtin_sprintf_chk (gsi, DECL_FUNCTION_CODE (callee));
+      return gimple_fold_builtin_sprintf_chk (gsi, fcode);
     case BUILT_IN_STRCAT_CHK:
       return gimple_fold_builtin_strcat_chk (gsi);
     case BUILT_IN_STRNCAT_CHK:
@@ -2525,6 +2895,8 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_STRCAT:
       return gimple_fold_builtin_strcat (gsi, gimple_call_arg (stmt, 0),
 					 gimple_call_arg (stmt, 1));
+    case BUILT_IN_STRNCAT:
+      return gimple_fold_builtin_strncat (gsi);
     case BUILT_IN_FPUTS:
       return gimple_fold_builtin_fputs (gsi, gimple_call_arg (stmt, 0),
 					gimple_call_arg (stmt, 1), false);
@@ -2540,14 +2912,16 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					     gimple_call_arg (stmt, 1),
 					     gimple_call_arg (stmt, 2),
 					     gimple_call_arg (stmt, 3),
-					     DECL_FUNCTION_CODE (callee));
+					     fcode);
+    case BUILT_IN_STPCPY:
+      return gimple_fold_builtin_stpcpy (gsi);
     case BUILT_IN_STRCPY_CHK:
     case BUILT_IN_STPCPY_CHK:
       return gimple_fold_builtin_stxcpy_chk (gsi,
 					     gimple_call_arg (stmt, 0),
 					     gimple_call_arg (stmt, 1),
 					     gimple_call_arg (stmt, 2),
-					     DECL_FUNCTION_CODE (callee));
+					     fcode);
     case BUILT_IN_STRNCPY_CHK:
     case BUILT_IN_STPNCPY_CHK:
       return gimple_fold_builtin_stxncpy_chk (gsi,
@@ -2555,15 +2929,53 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					      gimple_call_arg (stmt, 1),
 					      gimple_call_arg (stmt, 2),
 					      gimple_call_arg (stmt, 3),
-					      DECL_FUNCTION_CODE (callee));
+					      fcode);
     case BUILT_IN_SNPRINTF_CHK:
     case BUILT_IN_VSNPRINTF_CHK:
-      return gimple_fold_builtin_snprintf_chk (gsi,
-					       DECL_FUNCTION_CODE (callee));
+      return gimple_fold_builtin_snprintf_chk (gsi, fcode);
     case BUILT_IN_SNPRINTF:
       return gimple_fold_builtin_snprintf (gsi);
     case BUILT_IN_SPRINTF:
       return gimple_fold_builtin_sprintf (gsi);
+    case BUILT_IN_FPRINTF:
+    case BUILT_IN_FPRINTF_UNLOCKED:
+    case BUILT_IN_VFPRINTF:
+      if (n == 2 || n == 3)
+	return gimple_fold_builtin_fprintf (gsi,
+					    gimple_call_arg (stmt, 0),
+					    gimple_call_arg (stmt, 1),
+					    n == 3
+					    ? gimple_call_arg (stmt, 2)
+					    : NULL_TREE,
+					    fcode);
+      break;
+    case BUILT_IN_FPRINTF_CHK:
+    case BUILT_IN_VFPRINTF_CHK:
+      if (n == 3 || n == 4)
+	return gimple_fold_builtin_fprintf (gsi,
+					    gimple_call_arg (stmt, 0),
+					    gimple_call_arg (stmt, 2),
+					    n == 4
+					    ? gimple_call_arg (stmt, 3)
+					    : NULL_TREE,
+					    fcode);
+      break;
+    case BUILT_IN_PRINTF:
+    case BUILT_IN_PRINTF_UNLOCKED:
+    case BUILT_IN_VPRINTF:
+      if (n == 1 || n == 2)
+	return gimple_fold_builtin_printf (gsi, gimple_call_arg (stmt, 0),
+					   n == 2
+					   ? gimple_call_arg (stmt, 1)
+					   : NULL_TREE, fcode);
+      break;
+    case BUILT_IN_PRINTF_CHK:
+    case BUILT_IN_VPRINTF_CHK:
+      if (n == 2 || n == 3)
+	return gimple_fold_builtin_printf (gsi, gimple_call_arg (stmt, 1),
+					   n == 3
+					   ? gimple_call_arg (stmt, 2)
+					   : NULL_TREE, fcode);
     default:;
     }
 
@@ -2999,8 +3411,9 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
       if (gimple_has_lhs (stmt))
 	{
 	  tree lhs = gimple_get_lhs (stmt);
-	  maybe_push_res_to_seq (rcode, TREE_TYPE (lhs),
-				 ops, seq, lhs);
+	  if (!maybe_push_res_to_seq (rcode, TREE_TYPE (lhs),
+				      ops, seq, lhs))
+	    return false;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "gimple_simplified to ");
@@ -4744,14 +5157,13 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree),
 						       TREE_OPERAND (fn, 0)))
 	  {
 	    tree *args = XALLOCAVEC (tree, gimple_call_num_args (stmt));
-	    tree call, retval;
+	    tree retval;
 	    unsigned i;
 	    for (i = 0; i < gimple_call_num_args (stmt); ++i)
 	      args[i] = (*valueize) (gimple_call_arg (stmt, i));
-	    call = build_call_array_loc (loc,
+	    retval = fold_builtin_call_array (loc,
 					 gimple_call_return_type (call_stmt),
 					 fn, gimple_call_num_args (stmt), args);
-	    retval = fold_call_expr (EXPR_LOCATION (call), call, false);
 	    if (retval)
 	      {
 		/* fold_call_expr wraps the result inside a NOP_EXPR.  */
@@ -5642,8 +6054,7 @@ rewrite_to_defined_overflow (gimple stmt)
   if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
     gimple_assign_set_rhs_code (stmt, PLUS_EXPR);
   gimple_seq_add_stmt (&stmts, stmt);
-  gimple cvt = gimple_build_assign_with_ops (NOP_EXPR, lhs,
-					     gimple_assign_lhs (stmt));
+  gimple cvt = gimple_build_assign (lhs, NOP_EXPR, gimple_assign_lhs (stmt));
   gimple_seq_add_stmt (&stmts, cvt);
 
   return stmts;
@@ -5672,10 +6083,9 @@ gimple_build (gimple_seq *seq, location_t loc,
       if (code == REALPART_EXPR
 	  || code == IMAGPART_EXPR
 	  || code == VIEW_CONVERT_EXPR)
-	stmt = gimple_build_assign_with_ops (code, res,
-					     build1 (code, type, op0));
+	stmt = gimple_build_assign (res, code, build1 (code, type, op0));
       else
-	stmt = gimple_build_assign_with_ops (code, res, op0);
+	stmt = gimple_build_assign (res, code, op0);
       gimple_set_location (stmt, loc);
       gimple_seq_add_stmt_without_update (seq, stmt);
     }
@@ -5700,7 +6110,7 @@ gimple_build (gimple_seq *seq, location_t loc,
 	res = make_ssa_name (type);
       else
 	res = create_tmp_reg (type);
-      gimple stmt = gimple_build_assign_with_ops (code, res, op0, op1);
+      gimple stmt = gimple_build_assign (res, code, op0, op1);
       gimple_set_location (stmt, loc);
       gimple_seq_add_stmt_without_update (seq, stmt);
     }
@@ -5728,11 +6138,10 @@ gimple_build (gimple_seq *seq, location_t loc,
 	res = create_tmp_reg (type);
       gimple stmt;
       if (code == BIT_FIELD_REF)
-	stmt = gimple_build_assign_with_ops (code, res,
-					     build3 (BIT_FIELD_REF, type,
-						     op0, op1, op2));
+	stmt = gimple_build_assign (res, code,
+				    build3 (code, type, op0, op1, op2));
       else
-	stmt = gimple_build_assign_with_ops (code, res, op0, op1, op2);
+	stmt = gimple_build_assign (res, code, op0, op1, op2);
       gimple_set_location (stmt, loc);
       gimple_seq_add_stmt_without_update (seq, stmt);
     }

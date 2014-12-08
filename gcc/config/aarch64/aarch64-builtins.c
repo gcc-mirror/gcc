@@ -1322,27 +1322,18 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  switch (fcode)
 	    {
 	      BUILTIN_VALL (UNOP, reduc_plus_scal_, 10)
-	        new_stmt = gimple_build_assign_with_ops (
-						REDUC_PLUS_EXPR,
-						gimple_call_lhs (stmt),
-						args[0],
-						NULL_TREE);
+	        new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+						REDUC_PLUS_EXPR, args[0]);
 		break;
 	      BUILTIN_VDQIF (UNOP, reduc_smax_scal_, 10)
 	      BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10)
-		new_stmt = gimple_build_assign_with_ops (
-						REDUC_MAX_EXPR,
-						gimple_call_lhs (stmt),
-						args[0],
-						NULL_TREE);
+		new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+						REDUC_MAX_EXPR, args[0]);
 		break;
 	      BUILTIN_VDQIF (UNOP, reduc_smin_scal_, 10)
 	      BUILTIN_VDQ_BHSI (UNOPU, reduc_umin_scal_, 10)
-		new_stmt = gimple_build_assign_with_ops (
-						REDUC_MIN_EXPR,
-						gimple_call_lhs (stmt),
-						args[0],
-						NULL_TREE);
+		new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+						REDUC_MIN_EXPR, args[0]);
 		break;
 
 	    default:
@@ -1400,8 +1391,8 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
        __builtin_aarch64_set_cr (masked_cr);
        __builtin_aarch64_set_sr (masked_sr);  */
 
-  fenv_cr = create_tmp_var (unsigned_type_node, NULL);
-  fenv_sr = create_tmp_var (unsigned_type_node, NULL);
+  fenv_cr = create_tmp_var (unsigned_type_node);
+  fenv_sr = create_tmp_var (unsigned_type_node);
 
   get_fpcr = aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPCR];
   set_fpcr = aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPCR];
@@ -1447,7 +1438,7 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
        __atomic_feraiseexcept (new_fenv_var);  */
 
-  new_fenv_var = create_tmp_var (unsigned_type_node, NULL);
+  new_fenv_var = create_tmp_var (unsigned_type_node);
   reload_fenv = build2 (MODIFY_EXPR, unsigned_type_node,
 			new_fenv_var, build_call_expr (get_fpsr, 0));
   restore_fnenv = build_call_expr (set_fpsr, 1, fenv_sr);

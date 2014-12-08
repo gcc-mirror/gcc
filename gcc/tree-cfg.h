@@ -67,6 +67,7 @@ extern void verify_gimple_in_cfg (struct function *, bool);
 extern tree gimple_block_label (basic_block);
 extern void add_phi_args_after_copy_bb (basic_block);
 extern void add_phi_args_after_copy (basic_block *, unsigned, edge);
+extern basic_block split_edge_bb_loc (edge);
 extern bool gimple_duplicate_sese_region (edge, edge, basic_block *, unsigned,
 					basic_block *, bool);
 extern bool gimple_duplicate_sese_tail (edge, edge, basic_block *, unsigned,

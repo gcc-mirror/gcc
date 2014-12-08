@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #endif
 
-const int NUM_GCC_JIT_TYPES = GCC_JIT_TYPE_FILE_PTR + 1;
+const int NUM_GCC_JIT_TYPES = GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE + 1;
 
 /* This comment is included by the docs.
 
@@ -97,6 +97,7 @@ namespace jit {
 
 class result;
 class dump;
+class builtins_manager; // declared within jit-builtins.h
 
 namespace recording {
 
@@ -104,7 +105,6 @@ namespace recording {
 
   /* Indentation indicates inheritance: */
   class context;
-  class builtins_manager; // declared within jit-builtins.h
   class memento;
     class string;
     class location;

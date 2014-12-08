@@ -2186,8 +2186,7 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
 	}
 
       bump_tree = wide_int_to_tree (basis_type, bump);
-      new_stmt = gimple_build_assign_with_ops (code, lhs, basis_name,
-					       bump_tree);
+      new_stmt = gimple_build_assign (lhs, code, basis_name, bump_tree);
     }
   else
     {
@@ -2199,15 +2198,14 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
       if (incr_vec[i].initializer)
 	{
 	  enum tree_code code = negate_incr ? MINUS_EXPR : PLUS_EXPR;
-	  new_stmt = gimple_build_assign_with_ops (code, lhs, basis_name,
-						   incr_vec[i].initializer);
+	  new_stmt = gimple_build_assign (lhs, code, basis_name,
+					  incr_vec[i].initializer);
 	}
       else if (increment == 1)
-	new_stmt = gimple_build_assign_with_ops (PLUS_EXPR, lhs, basis_name,
-						 c->stride);
+	new_stmt = gimple_build_assign (lhs, PLUS_EXPR, basis_name, c->stride);
       else if (increment == -1)
-	new_stmt = gimple_build_assign_with_ops (MINUS_EXPR, lhs, basis_name,
-						 c->stride);
+	new_stmt = gimple_build_assign (lhs, MINUS_EXPR, basis_name,
+					c->stride);
       else
 	gcc_unreachable ();
     }
@@ -3160,8 +3158,8 @@ insert_initializers (slsr_cand_t c)
       /* Create the initializer and insert it in the latest possible
 	 dominating position.  */
       incr_tree = wide_int_to_tree (stride_type, incr);
-      init_stmt = gimple_build_assign_with_ops (MULT_EXPR, new_name,
-						c->stride, incr_tree);
+      init_stmt = gimple_build_assign (new_name, MULT_EXPR,
+				       c->stride, incr_tree);
       if (where)
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (where->cand_stmt);
@@ -3264,7 +3262,7 @@ introduce_cast_before_cand (slsr_cand_t c, tree to_type, tree from_expr)
   gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
 
   cast_lhs = make_temp_ssa_name (to_type, NULL, "slsr");
-  cast_stmt = gimple_build_assign_with_ops (NOP_EXPR, cast_lhs, from_expr);
+  cast_stmt = gimple_build_assign (cast_lhs, NOP_EXPR, from_expr);
   gimple_set_location (cast_stmt, gimple_location (c->cand_stmt));
   gsi_insert_before (&gsi, cast_stmt, GSI_SAME_STMT);
 
@@ -3433,8 +3431,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
       else
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
-	  gassign *cast_stmt = gimple_build_assign_with_ops (NOP_EXPR, lhs,
-							     basis_name);
+	  gassign *cast_stmt = gimple_build_assign (lhs, NOP_EXPR, basis_name);
 	  gimple_set_location (cast_stmt, gimple_location (c->cand_stmt));
 	  gsi_replace (&gsi, cast_stmt, false);
 	  c->cand_stmt = cast_stmt;

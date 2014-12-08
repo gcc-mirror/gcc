@@ -2,6 +2,8 @@
 /* { dg-options "-O2 -mavx512vbmi" } */
 /* { dg-require-effective-target avx512vbmi } */
 
+#define AVX512VBMI
+
 #include "avx512f-helper.h"
 
 #define SIZE (AVX512F_LEN / 8)

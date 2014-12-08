@@ -4644,7 +4644,7 @@ need_for_call_save_p (int regno)
   lra_assert (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] >= 0);
   return (usage_insns[regno].calls_num < calls_num
 	  && (overlaps_hard_reg_set_p
-	      ((flag_use_caller_save &&
+	      ((flag_ipa_ra &&
 		! hard_reg_set_empty_p (lra_reg_info[regno].actual_call_used_reg_set))
 	       ? lra_reg_info[regno].actual_call_used_reg_set
 	       : call_used_reg_set,

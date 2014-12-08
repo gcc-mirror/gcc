@@ -100,6 +100,11 @@ struct output_buffer
   /* This must be large enough to hold any printed integer or
      floating-point value.  */
   char digit_buffer[128];
+
+  /* Nonzero means that text should be flushed when
+     appropriate. Otherwise, text is buffered until either
+     pp_really_flush or pp_clear_output_area are called.  */
+  bool flush_p;
 };
 
 /* The type of pretty-printer flags passed to clients.  */
@@ -314,6 +319,7 @@ extern void pp_printf (pretty_printer *, const char *, ...)
 extern void pp_verbatim (pretty_printer *, const char *, ...)
      ATTRIBUTE_GCC_PPDIAG(2,3);
 extern void pp_flush (pretty_printer *);
+extern void pp_really_flush (pretty_printer *);
 extern void pp_format (pretty_printer *, text_info *);
 extern void pp_output_formatted_text (pretty_printer *);
 extern void pp_format_verbatim (pretty_printer *, text_info *);

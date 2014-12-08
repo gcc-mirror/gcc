@@ -956,7 +956,7 @@ gfc_check_argument_var_dependency (gfc_expr *var, sym_intent intent,
 		     If a dependency is found in the case
 		     elemental == ELEM_CHECK_VARIABLE, we will generate
 		     a temporary, so we don't need to bother the user.  */
-		  gfc_warning ("INTENT(%s) actual argument at %L might "
+		  gfc_warning_1 ("INTENT(%s) actual argument at %L might "
 			       "interfere with actual argument at %L.",
 		   	       intent == INTENT_OUT ? "OUT" : "INOUT",
 		   	       &var->where, &expr->where);

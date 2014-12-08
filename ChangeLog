@@ -1,3 +1,8 @@
+2014-12-04	Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* config/isl.m4: Don't pass -DCLOOG_INT_GMP on islinc.
+	* configure: Regenerated.
+
 2014-11-27  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* MAINTAINERS (nvptx port): New entry.

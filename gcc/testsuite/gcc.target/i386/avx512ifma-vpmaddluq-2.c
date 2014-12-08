@@ -2,6 +2,8 @@
 /* { dg-options "-O2 -mavx512ifma" } */
 /* { dg-require-effective-target avx512ifma } */
 
+#define AVX512IFMA
+
 #include "avx512f-helper.h"
 
 #define SIZE (AVX512F_LEN / 64)

@@ -3513,7 +3513,8 @@ try_rename_operands (rtx_insn *head, rtx_insn *tail, unit_req_table reqs,
   COMPL_HARD_REG_SET (unavailable, reg_class_contents[(int) super_class]);
 
   old_reg = this_head->regno;
-  best_reg = find_best_rename_reg (this_head, super_class, &unavailable, old_reg);
+  best_reg =
+    find_rename_reg (this_head, super_class, &unavailable, old_reg, true);
 
   regrename_do_replace (this_head, best_reg);
 

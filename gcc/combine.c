@@ -328,6 +328,7 @@ static int *uid_insn_cost;
 
 struct insn_link {
   rtx_insn *insn;
+  unsigned int regno;
   struct insn_link *next;
 };
 
@@ -346,12 +347,13 @@ static struct obstack insn_link_obstack;
 /* Allocate a link.  */
 
 static inline struct insn_link *
-alloc_insn_link (rtx_insn *insn, struct insn_link *next)
+alloc_insn_link (rtx_insn *insn, unsigned int regno, struct insn_link *next)
 {
   struct insn_link *l
     = (struct insn_link *) obstack_alloc (&insn_link_obstack,
 					  sizeof (struct insn_link));
   l->insn = insn;
+  l->regno = regno;
   l->next = next;
   return l;
 }
@@ -686,7 +688,7 @@ find_single_use (rtx dest, rtx_insn *insn, rtx_insn **ploc)
     if (INSN_P (next) && dead_or_set_p (next, dest))
       {
 	FOR_EACH_LOG_LINK (link, next)
-	  if (link->insn == insn)
+	  if (link->insn == insn && link->regno == REGNO (dest))
 	    break;
 
 	if (link)
@@ -982,6 +984,43 @@ delete_noop_moves (void)
 }
 
 
+/* Return false if we do not want to (or cannot) combine DEF.  */
+static bool
+can_combine_def_p (df_ref def)
+{
+  /* Do not consider if it is pre/post modification in MEM.  */
+  if (DF_REF_FLAGS (def) & DF_REF_PRE_POST_MODIFY)
+    return false;
+
+  unsigned int regno = DF_REF_REGNO (def);
+
+  /* Do not combine frame pointer adjustments.  */
+  if ((regno == FRAME_POINTER_REGNUM
+       && (!reload_completed || frame_pointer_needed))
+#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
+      || (regno == HARD_FRAME_POINTER_REGNUM
+	  && (!reload_completed || frame_pointer_needed))
+#endif
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+      || (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
+#endif
+      )
+    return false;
+
+  return true;
+}
+
+/* Return false if we do not want to (or cannot) combine USE.  */
+static bool
+can_combine_use_p (df_ref use)
+{
+  /* Do not consider the usage of the stack pointer by function call.  */
+  if (DF_REF_FLAGS (use) & DF_REF_CALL_STACK_USAGE)
+    return false;
+
+  return true;
+}
+
 /* Fill in log links field for all insns.  */
 
 static void
@@ -1015,67 +1054,46 @@ create_log_links (void)
 
 	  FOR_EACH_INSN_DEF (def, insn)
             {
-              int regno = DF_REF_REGNO (def);
+              unsigned int regno = DF_REF_REGNO (def);
               rtx_insn *use_insn;
 
               if (!next_use[regno])
                 continue;
 
-              /* Do not consider if it is pre/post modification in MEM.  */
-              if (DF_REF_FLAGS (def) & DF_REF_PRE_POST_MODIFY)
-                continue;
+	      if (!can_combine_def_p (def))
+		continue;
 
-              /* Do not make the log link for frame pointer.  */
-              if ((regno == FRAME_POINTER_REGNUM
-                   && (! reload_completed || frame_pointer_needed))
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-                  || (regno == HARD_FRAME_POINTER_REGNUM
-                      && (! reload_completed || frame_pointer_needed))
-#endif
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-                  || (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
-#endif
-                  )
-                continue;
+	      use_insn = next_use[regno];
+	      next_use[regno] = NULL;
 
-              use_insn = next_use[regno];
-              if (BLOCK_FOR_INSN (use_insn) == bb)
-                {
-                  /* flow.c claimed:
+	      if (BLOCK_FOR_INSN (use_insn) != bb)
+		continue;
 
-                     We don't build a LOG_LINK for hard registers contained
-                     in ASM_OPERANDs.  If these registers get replaced,
-                     we might wind up changing the semantics of the insn,
-                     even if reload can make what appear to be valid
-                     assignments later.  */
-                  if (regno >= FIRST_PSEUDO_REGISTER
-                      || asm_noperands (PATTERN (use_insn)) < 0)
-		    {
-		      /* Don't add duplicate links between instructions.  */
-		      struct insn_link *links;
-		      FOR_EACH_LOG_LINK (links, use_insn)
-		        if (insn == links->insn)
-			  break;
+	      /* flow.c claimed:
 
-		      if (!links)
-			LOG_LINKS (use_insn)
-			  = alloc_insn_link (insn, LOG_LINKS (use_insn));
-		    }
-                }
-              next_use[regno] = NULL;
+		 We don't build a LOG_LINK for hard registers contained
+		 in ASM_OPERANDs.  If these registers get replaced,
+		 we might wind up changing the semantics of the insn,
+		 even if reload can make what appear to be valid
+		 assignments later.  */
+	      if (regno < FIRST_PSEUDO_REGISTER
+		  && asm_noperands (PATTERN (use_insn)) >= 0)
+		continue;
+
+	      /* Don't add duplicate links between instructions.  */
+	      struct insn_link *links;
+	      FOR_EACH_LOG_LINK (links, use_insn)
+	        if (insn == links->insn && regno == links->regno)
+		  break;
+
+	      if (!links)
+		LOG_LINKS (use_insn)
+		  = alloc_insn_link (insn, regno, LOG_LINKS (use_insn));
             }
 
 	  FOR_EACH_INSN_USE (use, insn)
-            {
-	      int regno = DF_REF_REGNO (use);
-
-              /* Do not consider the usage of the stack pointer
-		 by function call.  */
-              if (DF_REF_FLAGS (use) & DF_REF_CALL_STACK_USAGE)
-                continue;
-
-              next_use[regno] = insn;
-            }
+	    if (can_combine_use_p (use))
+	      next_use[DF_REF_REGNO (use)] = insn;
         }
     }
 
@@ -2347,7 +2365,19 @@ adjust_for_new_dest (rtx_insn *insn)
   /* The new insn will have a destination that was previously the destination
      of an insn just above it.  Call distribute_links to make a LOG_LINK from
      the next use of that destination.  */
-  distribute_links (alloc_insn_link (insn, NULL));
+
+  rtx set = single_set (insn);
+  gcc_assert (set);
+
+  rtx reg = SET_DEST (set);
+
+  while (GET_CODE (reg) == ZERO_EXTRACT
+	 || GET_CODE (reg) == STRICT_LOW_PART
+	 || GET_CODE (reg) == SUBREG)
+    reg = XEXP (reg, 0);
+  gcc_assert (REG_P (reg));
+
+  distribute_links (alloc_insn_link (insn, REGNO (reg), NULL));
 
   df_insn_rescan (insn);
 }
@@ -2430,6 +2460,61 @@ update_cfg_for_uncondjump (rtx_insn *insn)
 	  break;
     }
 }
+
+#ifndef HAVE_cc0
+/* Return whether INSN is a PARALLEL of exactly N register SETs followed
+   by an arbitrary number of CLOBBERs.  */
+static bool
+is_parallel_of_n_reg_sets (rtx_insn *insn, int n)
+{
+  rtx pat = PATTERN (insn);
+
+  if (GET_CODE (pat) != PARALLEL)
+    return false;
+
+  int len = XVECLEN (pat, 0);
+  if (len < n)
+    return false;
+
+  int i;
+  for (i = 0; i < n; i++)
+    if (GET_CODE (XVECEXP (pat, 0, i)) != SET
+	|| !REG_P (SET_DEST (XVECEXP (pat, 0, i))))
+      return false;
+  for ( ; i < len; i++)
+    if (GET_CODE (XVECEXP (pat, 0, i)) != CLOBBER)
+      return false;
+
+  return true;
+}
+
+/* Return whether INSN, a PARALLEL of N register SETs (and maybe some
+   CLOBBERs), can be split into individual SETs in that order, without
+   changing semantics.  */
+static bool
+can_split_parallel_of_n_reg_sets (rtx_insn *insn, int n)
+{
+  if (!insn_nothrow_p (insn))
+    return false;
+
+  rtx pat = PATTERN (insn);
+
+  int i, j;
+  for (i = 0; i < n; i++)
+    {
+      if (side_effects_p (SET_SRC (XVECEXP (pat, 0, i))))
+	return false;
+
+      rtx reg = SET_DEST (XVECEXP (pat, 0, i));
+
+      for (j = i + 1; j < n; j++)
+	if (reg_referenced_p (reg, XVECEXP (pat, 0, j)))
+	  return false;
+    }
+
+  return true;
+}
+#endif
 
 /* Try to combine the insns I0, I1 and I2 into I3.
    Here I0, I1 and I2 appear earlier than I3.
@@ -2749,39 +2834,58 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      This undoes a previous combination and allows us to match a branch-and-
      decrement insn.  */
 
-  if (i1 == 0 && GET_CODE (PATTERN (i2)) == PARALLEL
-      && XVECLEN (PATTERN (i2), 0) >= 2
-      && GET_CODE (XVECEXP (PATTERN (i2), 0, 0)) == SET
+  if (i1 == 0
+      && is_parallel_of_n_reg_sets (i2, 2)
       && (GET_MODE_CLASS (GET_MODE (SET_DEST (XVECEXP (PATTERN (i2), 0, 0))))
 	  == MODE_CC)
       && GET_CODE (SET_SRC (XVECEXP (PATTERN (i2), 0, 0))) == COMPARE
       && XEXP (SET_SRC (XVECEXP (PATTERN (i2), 0, 0)), 1) == const0_rtx
-      && GET_CODE (XVECEXP (PATTERN (i2), 0, 1)) == SET
-      && REG_P (SET_DEST (XVECEXP (PATTERN (i2), 0, 1)))
       && rtx_equal_p (XEXP (SET_SRC (XVECEXP (PATTERN (i2), 0, 0)), 0),
-		      SET_SRC (XVECEXP (PATTERN (i2), 0, 1))))
+		      SET_SRC (XVECEXP (PATTERN (i2), 0, 1)))
+      && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 0)), i2, i3)
+      && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 1)), i2, i3))
     {
-      for (i = XVECLEN (PATTERN (i2), 0) - 1; i >= 2; i--)
-	if (GET_CODE (XVECEXP (PATTERN (i2), 0, i)) != CLOBBER)
-	  break;
+      /* We make I1 with the same INSN_UID as I2.  This gives it
+	 the same DF_INSN_LUID for value tracking.  Our fake I1 will
+	 never appear in the insn stream so giving it the same INSN_UID
+	 as I2 will not cause a problem.  */
 
-      if (i == 1)
-	{
-	  /* We make I1 with the same INSN_UID as I2.  This gives it
-	     the same DF_INSN_LUID for value tracking.  Our fake I1 will
-	     never appear in the insn stream so giving it the same INSN_UID
-	     as I2 will not cause a problem.  */
+      i1 = gen_rtx_INSN (VOIDmode, NULL, i2, BLOCK_FOR_INSN (i2),
+			 XVECEXP (PATTERN (i2), 0, 1), INSN_LOCATION (i2),
+			 -1, NULL_RTX);
+      INSN_UID (i1) = INSN_UID (i2);
 
-	  i1 = gen_rtx_INSN (VOIDmode, NULL, i2, BLOCK_FOR_INSN (i2),
-			     XVECEXP (PATTERN (i2), 0, 1), INSN_LOCATION (i2),
-			     -1, NULL_RTX);
-	  INSN_UID (i1) = INSN_UID (i2);
+      SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 0));
+      SUBST (XEXP (SET_SRC (PATTERN (i2)), 0),
+	     SET_DEST (PATTERN (i1)));
+      unsigned int regno = REGNO (SET_DEST (PATTERN (i1)));
+      SUBST_LINK (LOG_LINKS (i2),
+		  alloc_insn_link (i1, regno, LOG_LINKS (i2)));
+    }
 
-	  SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 0));
-	  SUBST (XEXP (SET_SRC (PATTERN (i2)), 0),
-		 SET_DEST (PATTERN (i1)));
-	  SUBST_LINK (LOG_LINKS (i2), alloc_insn_link (i1, LOG_LINKS (i2)));
-	}
+  /* If I2 is a PARALLEL of two SETs of REGs (and perhaps some CLOBBERs),
+     make those two SETs separate I1 and I2 insns, and make an I0 that is
+     the original I1.  */
+  if (i0 == 0
+      && is_parallel_of_n_reg_sets (i2, 2)
+      && can_split_parallel_of_n_reg_sets (i2, 2)
+      && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 0)), i2, i3)
+      && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 1)), i2, i3))
+    {
+      /* If there is no I1, there is no I0 either.  */
+      i0 = i1;
+
+      /* We make I1 with the same INSN_UID as I2.  This gives it
+	 the same DF_INSN_LUID for value tracking.  Our fake I1 will
+	 never appear in the insn stream so giving it the same INSN_UID
+	 as I2 will not cause a problem.  */
+
+      i1 = gen_rtx_INSN (VOIDmode, NULL, i2, BLOCK_FOR_INSN (i2),
+			 XVECEXP (PATTERN (i2), 0, 0), INSN_LOCATION (i2),
+			 -1, NULL_RTX);
+      INSN_UID (i1) = INSN_UID (i2);
+
+      SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 1));
     }
 #endif
 
@@ -3710,15 +3814,20 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   /* Similarly, check for a case where we have a PARALLEL of two independent
      SETs but we started with three insns.  In this case, we can do the sets
      as two separate insns.  This case occurs when some SET allows two
-     other insns to combine, but the destination of that SET is still live.  */
+     other insns to combine, but the destination of that SET is still live.
 
-  else if (i1 && insn_code_number < 0 && asm_noperands (newpat) < 0
+     Also do this if we started with two insns and (at least) one of the
+     resulting sets is a noop; this noop will be deleted later.  */
+
+  else if (insn_code_number < 0 && asm_noperands (newpat) < 0
 	   && GET_CODE (newpat) == PARALLEL
 	   && XVECLEN (newpat, 0) == 2
 	   && GET_CODE (XVECEXP (newpat, 0, 0)) == SET
+	   && GET_CODE (XVECEXP (newpat, 0, 1)) == SET
+	   && (i1 || set_noop_p (XVECEXP (newpat, 0, 0))
+		  || set_noop_p (XVECEXP (newpat, 0, 1)))
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 0))) != ZERO_EXTRACT
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 0))) != STRICT_LOW_PART
-	   && GET_CODE (XVECEXP (newpat, 0, 1)) == SET
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) != ZERO_EXTRACT
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) != STRICT_LOW_PART
 	   && ! reg_referenced_p (SET_DEST (XVECEXP (newpat, 0, 1)),
@@ -12888,6 +12997,9 @@ reg_dead_at_p (rtx reg, rtx_insn *insn)
     {
       if (INSN_P (insn))
         {
+	  if (find_regno_note (insn, REG_UNUSED, reg_dead_regno))
+	    return 1;
+
 	  note_stores (PATTERN (insn), reg_dead_at_p_1, NULL);
 	  if (reg_dead_flag)
 	    return reg_dead_flag == 1 ? 1 : 0;
@@ -13783,24 +13895,46 @@ distribute_links (struct insn_link *links)
 
       next_link = link->next;
 
-      /* If the insn that this link points to is a NOTE or isn't a single
-	 set, ignore it.  In the latter case, it isn't clear what we
-	 can do other than ignore the link, since we can't tell which
-	 register it was for.  Such links wouldn't be used by combine
-	 anyway.
+      /* If the insn that this link points to is a NOTE, ignore it.  */
+      if (NOTE_P (link->insn))
+	continue;
 
-	 It is not possible for the destination of the target of the link to
-	 have been changed by combine.  The only potential of this is if we
-	 replace I3, I2, and I1 by I3 and I2.  But in that case the
-	 destination of I2 also remains unchanged.  */
+      set = 0;
+      rtx pat = PATTERN (link->insn);
+      if (GET_CODE (pat) == SET)
+	set = pat;
+      else if (GET_CODE (pat) == PARALLEL)
+	{
+	  int i;
+	  for (i = 0; i < XVECLEN (pat, 0); i++)
+	    {
+	      set = XVECEXP (pat, 0, i);
+	      if (GET_CODE (set) != SET)
+		continue;
 
-      if (NOTE_P (link->insn)
-	  || (set = single_set (link->insn)) == 0)
+	      reg = SET_DEST (set);
+	      while (GET_CODE (reg) == ZERO_EXTRACT
+		     || GET_CODE (reg) == STRICT_LOW_PART
+		     || GET_CODE (reg) == SUBREG)
+		reg = XEXP (reg, 0);
+
+	      if (!REG_P (reg))
+		continue;
+
+	      if (REGNO (reg) == link->regno)
+		break;
+	    }
+	  if (i == XVECLEN (pat, 0))
+	    continue;
+	}
+      else
 	continue;
 
       reg = SET_DEST (set);
-      while (GET_CODE (reg) == SUBREG || GET_CODE (reg) == ZERO_EXTRACT
-	     || GET_CODE (reg) == STRICT_LOW_PART)
+
+      while (GET_CODE (reg) == ZERO_EXTRACT
+	     || GET_CODE (reg) == STRICT_LOW_PART
+	     || GET_CODE (reg) == SUBREG)
 	reg = XEXP (reg, 0);
 
       /* A LOG_LINK is defined as being placed on the first insn that uses
@@ -13841,7 +13975,7 @@ distribute_links (struct insn_link *links)
 	  struct insn_link *link2;
 
 	  FOR_EACH_LOG_LINK (link2, place)
-	    if (link2->insn == link->insn)
+	    if (link2->insn == link->insn && link2->regno == link->regno)
 	      break;
 
 	  if (link2 == NULL)

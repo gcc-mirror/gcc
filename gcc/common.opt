@@ -1096,7 +1096,7 @@ Common Alias(fdiagnostics-color=,always,never)
 ;
 
 fdiagnostics-color=
-Common Joined RejectNegative Var(flag_diagnostics_show_color) Enum(diagnostic_color_rule) Init(DIAGNOSTICS_COLOR_NO)
+Driver Common Joined RejectNegative Var(flag_diagnostics_show_color) Enum(diagnostic_color_rule) Init(DIAGNOSTICS_COLOR_NO)
 -fdiagnostics-color=[never|always|auto]	Colorize diagnostics
 
 ; Required for these enum values.
@@ -2826,8 +2826,8 @@ Create a position independent executable
 z
 Driver Joined Separate
 
-fuse-caller-save
-Common Report Var(flag_use_caller_save) Optimization
+fipa-ra
+Common Report Var(flag_ipa_ra) Optimization
 Use caller save register across calls if possible
 
 ; This comment is to ensure we retain the blank line above.

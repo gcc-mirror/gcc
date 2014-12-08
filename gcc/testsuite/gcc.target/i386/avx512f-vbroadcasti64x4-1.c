@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512f -O2" } */
-/* { dg-final { scan-assembler-times "vbroadcasti64x4\[ \\t\]+\[^\n\]*%zmm\[0-9\]\[^\{\]|vshufi64x2\[ \\t\]+\[^\n\]*%zmm\[0-9\]\[^\n\]*%zmm\[0-9\]\[^\n\]*%zmm\[0-9\]\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vbroadcasti64x4\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\[^\{\]|vshufi64x2\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\{z\}" 1 } } */
-/* { dg-final { scan-assembler-times "vbroadcasti64x4\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\{z\}|vshufi64x2\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vbroadcasti64x4\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\[^\{\]|vshufi64x2\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vbroadcasti64x4\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\[^\{\]|vshufi64x2\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vbroadcasti64x4\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}|vshufi64x2\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 

@@ -4,8 +4,8 @@
 void
 f (int n)
 {
-  goto label; // { dg-error "from here" }
-  int a[n]; // { dg-error "crosses initialization" }
+  goto label; // { dg-message "from here" }
+  int a[n]; // { dg-message "crosses initialization" }
 label: // { dg-error "jump to label" }
   ;
 }
@@ -16,7 +16,7 @@ g (int n)
   switch (1)
   {
   case 1:
-    int (*a)[n]; // { dg-error "crosses initialization" }
+    int (*a)[n]; // { dg-message "crosses initialization" }
   default: // { dg-error "jump to case label" }
     ;
   }

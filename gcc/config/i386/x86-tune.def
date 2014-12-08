@@ -395,6 +395,10 @@ DEF_TUNE (X86_TUNE_SLOW_PSHUFB, "slow_pshufb",
 DEF_TUNE (X86_TUNE_VECTOR_PARALLEL_EXECUTION, "vec_parallel",
           m_NEHALEM | m_SANDYBRIDGE | m_HASWELL)
 
+/* X86_TUNE_AVOID_4BYTE_PREFIXES: Avoid instructions requiring 4+ bytes of prefixes.  */
+DEF_TUNE (X86_TUNE_AVOID_4BYTE_PREFIXES, "avoid_4byte_prefixes",
+          m_SILVERMONT | m_INTEL)
+
 /*****************************************************************************/
 /* AVX instruction selection tuning (some of SSE flags affects AVX, too)     */
 /*****************************************************************************/
