@@ -1,3 +1,9 @@
+2014-12-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR ipa/64049
+	* ipa-polymorphic-call.c
+	(pa_polymorphic_call_context::ipa_polymorphic_call): Allow RESULT_DECL.
+
 2014-12-08  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* config/aarch64/aarch64.md (and_one_cmpl<mode>3_compare0_no_reuse):

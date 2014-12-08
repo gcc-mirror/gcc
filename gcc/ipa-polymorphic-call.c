@@ -1047,7 +1047,8 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 
   if (TREE_CODE (base_pointer) == SSA_NAME
       && SSA_NAME_IS_DEFAULT_DEF (base_pointer)
-      && TREE_CODE (SSA_NAME_VAR (base_pointer)) != PARM_DECL)
+      && !(TREE_CODE (SSA_NAME_VAR (base_pointer)) == PARM_DECL
+	   || TREE_CODE (SSA_NAME_VAR (base_pointer)) == RESULT_DECL))
     {
       invalid = true;
       if (instance)

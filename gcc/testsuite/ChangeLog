@@ -1,3 +1,10 @@
+2014-12-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR ipa/64049
+	* g++.dg/ipa/pr64049.h: New.
+	* g++.dg/ipa/pr64049-1.C: New.
+	* g++.dg/ipa/pr64049-2.C: New.
+
 2014-12-08  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* gcc.target/aarch64/bics_3.c : New testcase.
