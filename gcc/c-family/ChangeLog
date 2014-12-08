@@ -40,7 +40,7 @@
 	PR target/63764
 	* c-common.h (convert_vector_to_pointer_for_subscript): Change
 	return type to bool.
-	* c-common.c: Include gimple-expr.c.
+	* c-common.c: Include gimple-expr.h.
 	(convert_vector_to_pointer_for_subscript): Change return type to
 	bool.  If *vecp is not lvalue_p and has VECTOR_TYPE, return true
 	and copy it into a TARGET_EXPR and use that instead of *vecp
