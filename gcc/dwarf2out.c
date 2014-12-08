@@ -10551,7 +10551,7 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
   dw_die_ref mod_scope;
   /* Only these cv-qualifiers are currently handled.  */
   const int cv_qual_mask = (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE
-			    | TYPE_QUAL_RESTRICT);
+			    | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC);
 
   if (code == ERROR_MARK)
     return NULL;
@@ -10563,6 +10563,10 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
      to handle it.  */
   if (dwarf_version < 3)
     cv_quals &= ~TYPE_QUAL_RESTRICT;
+
+  /* Likewise for DW_TAG_atomic_type for DWARFv5.  */
+  if (dwarf_version < 5)
+    cv_quals &= ~TYPE_QUAL_ATOMIC;
 
   /* See if we already have the appropriately qualified variant of
      this type.  */
@@ -10625,6 +10629,7 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
       struct qual_info { int q; enum dwarf_tag t; };
       static const struct qual_info qual_info[] =
 	{
+	  { TYPE_QUAL_ATOMIC, DW_TAG_atomic_type },
 	  { TYPE_QUAL_RESTRICT, DW_TAG_restrict_type },
 	  { TYPE_QUAL_VOLATILE, DW_TAG_volatile_type },
 	  { TYPE_QUAL_CONST, DW_TAG_const_type },

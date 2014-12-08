@@ -1,3 +1,9 @@
+2014-12-08  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/60782
+	* gcc.dg/debug/dwarf2/atomic.c: New test.
+	* gcc.dg/debug/dwarf2/stacked-qualified-types-3.c: Likewise.
+
 2014-11-15  David Wohlferd <dw@LimeGreenSocks.com> 
 
 	PR target/61692
