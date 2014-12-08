@@ -1,3 +1,9 @@
+2014-12-08  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* tree-chkp.c (chkp_call_returns_bounds_p): New.
+	(chkp_build_returned_bound): Use zero bounds as
+	returned by calls not returning bounds.
+
 2014-12-08  Richard Biener  <rguenther@suse.de>
 
 	* builtins.c (fold_builtin_0): Remove unused ignore parameter.

@@ -1,3 +1,8 @@
+2014-12-08  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.target/i386/chkp-bndret.c: New.
+	* gcc.target/i386/chkp-strchr.c: New.
+
 2014-12-07  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53513
