@@ -2833,4 +2833,32 @@ cgraph_local_p (cgraph_node *node)
   return node->local.local && node->instrumented_version->local.local;
 }
 
+/* When using fprintf (or similar), problems can arise with
+   transient generated strings.  Many string-generation APIs
+   only support one result being alive at once (e.g. by
+   returning a pointer to a statically-allocated buffer).
+
+   If there is more than one generated string within one
+   fprintf call: the first string gets evicted or overwritten
+   by the second, before fprintf is fully evaluated.
+   See e.g. PR/53136.
+
+   This function provides a workaround for this, by providing
+   a simple way to create copies of these transient strings,
+   without the need to have explicit cleanup:
+
+       fprintf (dumpfile, "string 1: %s string 2:%s\n",
+                xstrdup_for_dump (EXPR_1),
+                xstrdup_for_dump (EXPR_2));
+
+   This is actually a simple wrapper around ggc_strdup, but
+   the name documents the intent.  We require that no GC can occur
+   within the fprintf call.  */
+
+static inline const char *
+xstrdup_for_dump (const char *transient_str)
+{
+  return ggc_strdup (transient_str);
+}
+
 #endif  /* GCC_CGRAPH_H  */

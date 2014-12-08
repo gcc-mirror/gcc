@@ -1094,8 +1094,8 @@ symbol_table::materialize_all_clones (void)
 		  if (symtab->dump_file)
 		    {
 		      fprintf (symtab->dump_file, "cloning %s to %s\n",
-			       xstrdup (node->clone_of->name ()),
-			       xstrdup (node->name ()));
+			       xstrdup_for_dump (node->clone_of->name ()),
+			       xstrdup_for_dump (node->name ()));
 		      if (node->clone.tree_map)
 		        {
 			  unsigned int i;

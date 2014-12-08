@@ -1,3 +1,28 @@
+2014-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
+	* cgraph.h (xstrdup_for_dump): New function.
+	* cgraph.c (cgraph_node::get_create): Replace use of xstrdup
+	within fprintf with xstrdup_for_dump.
+	(cgraph_edge::make_speculative): Likewise.
+	(cgraph_edge::resolve_speculation): Likewise.
+	(cgraph_edge::redirect_call_stmt_to_callee): Likewise.
+	(cgraph_node::dump): Likewise.
+	* cgraphclones.c (symbol_table::materialize_all_clones): Likewise.
+	* ipa-cp.c (perhaps_add_new_callers): Likewise.
+	* ipa-inline.c (report_inline_failed_reason): Likewise.
+	(want_early_inline_function_p): Likewise.
+	(edge_badness): Likewise.
+	(update_edge_key): Likewise.
+	(flatten_function): Likewise.
+	(inline_always_inline_functions): Likewise.
+	* ipa-profile.c (ipa_profile): Likewise.
+	* ipa-prop.c (ipa_print_node_jump_functions): Likewise.
+	(ipa_make_edge_direct_to_target): Likewise.
+	(remove_described_reference): Likewise.
+	(propagate_controlled_uses): Likewise.
+	* ipa-utils.c (ipa_merge_profiles): Likewise.
+
 2014-12-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR ipa/64049
