@@ -2052,6 +2052,70 @@ gimple_fold_builtin_stxncpy_chk (gimple_stmt_iterator *gsi,
   return true;
 }
 
+/* Fold function call to builtin stpcpy with arguments DEST and SRC.
+   Return NULL_TREE if no simplification can be made.  */
+
+static bool
+gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
+{
+  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
+  location_t loc = gimple_location (stmt);
+  tree dest = gimple_call_arg (stmt, 0);
+  tree src = gimple_call_arg (stmt, 1);
+  tree fn, len, lenp1;
+
+  /* If the result is unused, replace stpcpy with strcpy.  */
+  if (gimple_call_lhs (stmt) == NULL_TREE)
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_STRCPY);
+      if (!fn)
+	return false;
+      gimple_call_set_fndecl (stmt, fn);
+      fold_stmt (gsi);
+      return true;
+    }
+
+  len = c_strlen (src, 1);
+  if (!len
+      || TREE_CODE (len) != INTEGER_CST)
+    return false;
+
+  if (optimize_function_for_size_p (cfun)
+      /* If length is zero it's small enough.  */
+      && !integer_zerop (len))
+    return false;
+
+  /* If the source has a known length replace stpcpy with memcpy.  */
+  fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
+  if (!fn)
+    return false;
+
+  gimple_seq stmts = NULL;
+  tree tem = gimple_convert (&stmts, loc, size_type_node, len);
+  lenp1 = gimple_build (&stmts, loc, PLUS_EXPR, size_type_node,
+			tem, build_int_cst (size_type_node, 1));
+  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+  gcall *repl = gimple_build_call (fn, 3, dest, src, lenp1);
+  gimple_set_vuse (repl, gimple_vuse (stmt));
+  gimple_set_vdef (repl, gimple_vdef (stmt));
+  if (gimple_vdef (repl)
+      && TREE_CODE (gimple_vdef (repl)) == SSA_NAME)
+    SSA_NAME_DEF_STMT (gimple_vdef (repl)) = repl;
+  gsi_insert_before (gsi, repl, GSI_SAME_STMT);
+  /* Replace the result with dest + len.  */
+  stmts = NULL;
+  tem = gimple_convert (&stmts, loc, sizetype, len);
+  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+  gassign *ret = gimple_build_assign (gimple_call_lhs (stmt),
+				      POINTER_PLUS_EXPR, dest, tem);
+  gsi_replace (gsi, ret, true);
+  /* Finally fold the memcpy call.  */
+  gimple_stmt_iterator gsi2 = *gsi;
+  gsi_prev (&gsi2);
+  fold_stmt (&gsi2);
+  return true;
+}
+
 /* Fold a call EXP to {,v}snprintf having NARGS passed as ARGS.  Return
    NULL_TREE if a normal call should be emitted rather than expanding
    the function inline.  FCODE is either BUILT_IN_SNPRINTF_CHK or
@@ -2849,6 +2913,8 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					     gimple_call_arg (stmt, 2),
 					     gimple_call_arg (stmt, 3),
 					     fcode);
+    case BUILT_IN_STPCPY:
+      return gimple_fold_builtin_stpcpy (gsi);
     case BUILT_IN_STRCPY_CHK:
     case BUILT_IN_STPCPY_CHK:
       return gimple_fold_builtin_stxcpy_chk (gsi,
