@@ -45483,6 +45483,38 @@ configure-stage3-gcc: maybe-all-stage3-gmp
 configure-stage4-gcc: maybe-all-stage4-gmp
 configure-stageprofile-gcc: maybe-all-stageprofile-gmp
 configure-stagefeedback-gcc: maybe-all-stagefeedback-gmp
+configure-gcc: maybe-all-mpfr
+
+configure-stage1-gcc: maybe-all-stage1-mpfr
+configure-stage2-gcc: maybe-all-stage2-mpfr
+configure-stage3-gcc: maybe-all-stage3-mpfr
+configure-stage4-gcc: maybe-all-stage4-mpfr
+configure-stageprofile-gcc: maybe-all-stageprofile-mpfr
+configure-stagefeedback-gcc: maybe-all-stagefeedback-mpfr
+configure-gcc: maybe-all-mpc
+
+configure-stage1-gcc: maybe-all-stage1-mpc
+configure-stage2-gcc: maybe-all-stage2-mpc
+configure-stage3-gcc: maybe-all-stage3-mpc
+configure-stage4-gcc: maybe-all-stage4-mpc
+configure-stageprofile-gcc: maybe-all-stageprofile-mpc
+configure-stagefeedback-gcc: maybe-all-stagefeedback-mpc
+configure-gcc: maybe-all-isl
+
+configure-stage1-gcc: maybe-all-stage1-isl
+configure-stage2-gcc: maybe-all-stage2-isl
+configure-stage3-gcc: maybe-all-stage3-isl
+configure-stage4-gcc: maybe-all-stage4-isl
+configure-stageprofile-gcc: maybe-all-stageprofile-isl
+configure-stagefeedback-gcc: maybe-all-stagefeedback-isl
+configure-gcc: maybe-all-cloog
+
+configure-stage1-gcc: maybe-all-stage1-cloog
+configure-stage2-gcc: maybe-all-stage2-cloog
+configure-stage3-gcc: maybe-all-stage3-cloog
+configure-stage4-gcc: maybe-all-stage4-cloog
+configure-stageprofile-gcc: maybe-all-stageprofile-cloog
+configure-stagefeedback-gcc: maybe-all-stagefeedback-cloog
 configure-gcc: maybe-all-lto-plugin
 
 configure-stage1-gcc: maybe-all-stage1-lto-plugin

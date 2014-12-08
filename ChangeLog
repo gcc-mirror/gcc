@@ -1,3 +1,13 @@
+2014-12-08  Richard Biener  <rguenther@suse.de>
+
+	Backport from 4.9 branch
+	2014-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	* configure.ac: Permit also ISL 0.14 with CLooG.
+	* Makefile.def: Make more dependent on mpfr, mpc, isl, and cloog.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2014-07-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/47230

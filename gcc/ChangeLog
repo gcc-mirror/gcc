@@ -1,3 +1,18 @@
+2014-12-08  Richard Biener  <rguenther@suse.de>
+
+	Backport from 4.9 branch
+	* configure.ac
+	(ac_has_isl_schedule_constraints_compute_schedule):
+	New check.
+	* graphite-clast-to-gimple.c: For ISL 0.14, include deprecate headers.
+	* graphite-interchange.c: Ditto.
+	* graphite-poly.c: Ditto.
+	* graphite-sese-to-poly.c: Ditto.
+	* graphite-optimize-isl.c (getScheduleForBandList): Ditto.
+	Conditionally use ISL 0.13+ functions.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
 2014-12-07  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline

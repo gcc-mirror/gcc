@@ -28,6 +28,10 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/band.h>
 #include <isl/aff.h>
 #include <isl/options.h>
+#ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
+#include <isl/deprecated/int.h>
+#include <isl/deprecated/aff_int.h>
+#endif
 #endif
 
 #include "system.h"
@@ -365,7 +369,11 @@ getScheduleForBandList(isl_band_list *BandList)
 	{
 	  for (i = ScheduleDimensions - 1 ;  i >= 0 ; i--)
 	    {
+#ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
+	      if (isl_band_member_is_coincident (Band, i))
+#else
 	      if (isl_band_member_is_zero_distance(Band, i))
+#endif
 		{
 		  isl_map *TileMap;
 		  isl_union_map *TileUMap;
