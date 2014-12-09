@@ -56,12 +56,24 @@
 /* Record the function decls we've written, and the libfuncs and function
    decls corresponding to them.  */
 static std::stringstream func_decls;
-static GTY((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
-  htab_t declared_libfuncs_htab;
-static GTY((if_marked ("ggc_marked_p"), param_is (union tree_node)))
-  htab_t declared_fndecls_htab;
-static GTY((if_marked ("ggc_marked_p"), param_is (union tree_node)))
-  htab_t needed_fndecls_htab;
+
+struct declared_libfunc_hasher : ggc_cache_hasher<rtx>
+{
+  static hashval_t hash (rtx x) { return htab_hash_pointer (x); }
+  static bool equal (rtx a, rtx b) { return a == b; }
+};
+
+static GTY((cache))
+  hash_table<declared_libfunc_hasher> *declared_libfuncs_htab;
+
+  struct tree_hasher : ggc_cache_hasher<tree>
+{
+  static hashval_t hash (tree t) { return htab_hash_pointer (t); }
+  static bool equal (tree a, tree b) { return a == b; }
+};
+
+static GTY((cache)) hash_table<tree_hasher> *declared_fndecls_htab;
+static GTY((cache)) hash_table<tree_hasher> *needed_fndecls_htab;
 
 /* Allocate a new, cleared machine_function structure.  */
 
@@ -86,12 +98,10 @@ nvptx_option_override (void)
   write_symbols = NO_DEBUG;
   debug_info_level = DINFO_LEVEL_NONE;
 
-  declared_fndecls_htab
-    = htab_create_ggc (17, htab_hash_pointer, htab_eq_pointer, NULL);
-  needed_fndecls_htab
-    = htab_create_ggc (17, htab_hash_pointer, htab_eq_pointer, NULL);
+  declared_fndecls_htab = hash_table<tree_hasher>::create_ggc (17);
+  needed_fndecls_htab = hash_table<tree_hasher>::create_ggc (17);
   declared_libfuncs_htab
-    = htab_create_ggc (17, htab_hash_pointer, htab_eq_pointer, NULL);
+    = hash_table<declared_libfunc_hasher>::create_ggc (17);
 }
 
 /* Return the mode to be used when declaring a ptx object for OBJ.
@@ -455,7 +465,7 @@ nvptx_record_fndecl (tree decl, bool force = false)
   if (!force && TYPE_ARG_TYPES (TREE_TYPE (decl)) == NULL_TREE)
     return false;
 
-  void **slot = htab_find_slot (declared_fndecls_htab, decl, INSERT);
+  tree *slot = declared_fndecls_htab->find_slot (decl, INSERT);
   if (*slot == NULL)
     {
       *slot = decl;
@@ -476,7 +486,7 @@ nvptx_record_needed_fndecl (tree decl)
   if (nvptx_record_fndecl (decl))
     return;
 
-  void **slot = htab_find_slot (needed_fndecls_htab, decl, INSERT);
+  tree *slot = needed_fndecls_htab->find_slot (decl, INSERT);
   if (*slot == NULL)
     *slot = decl;
 }
@@ -818,7 +828,7 @@ nvptx_expand_call (rtx retval, rtx address)
       && (decl_type == NULL_TREE
 	  || (external_decl && TYPE_ARG_TYPES (decl_type) == NULL_TREE)))
     {
-      void **slot = htab_find_slot (declared_libfuncs_htab, callee, INSERT);
+      rtx *slot = declared_libfuncs_htab->find_slot (callee, INSERT);
       if (*slot == NULL)
 	{
 	  *slot = callee;
@@ -2012,25 +2022,15 @@ nvptx_file_start (void)
   fputs ("// END PREAMBLE\n", asm_out_file);
 }
 
-/* Called through htab_traverse; call nvptx_record_fndecl for every
-   SLOT.  */
-
-static int
-write_one_fndecl (void **slot, void *)
-{
-  tree decl = (tree)*slot;
-  nvptx_record_fndecl (decl, true);
-  return 1;
-}
-
 /* Write out the function declarations we've collected.  */
 
 static void
 nvptx_file_end (void)
 {
-  htab_traverse (needed_fndecls_htab,
-		 write_one_fndecl,
-		 NULL);
+  hash_table<tree_hasher>::iterator iter;
+  tree decl;
+  FOR_EACH_HASH_TABLE_ELEMENT (*needed_fndecls_htab, decl, tree, iter)
+    nvptx_record_fndecl (decl, true);
   fputs (func_decls.str().c_str(), asm_out_file);
 }
 

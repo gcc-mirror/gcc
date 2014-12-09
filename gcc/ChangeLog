@@ -1,3 +1,7 @@
+2014-12-08  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config/nvptx/nvptx.c: Convert htabs to hash_table.
+
 2014-12-08  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/64226
