@@ -1,5 +1,16 @@
 2014-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* docs/examples/tut04-toyvm/toyvm.c (toyvm_function_compile): Move
+	logic for determine "funcname" to new function...
+	(get_function_name): ...here, adding logic to skip any leading
+	path from the filename.
+	(toyvm_function_parse): Use the filename for fn_filename, rather
+	than "name", so that the debugger can locate the source .toy
+	file.
+	(toyvm_function_parse): Don't fclose a NULL FILE *.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/63854
 	* docs/internals/index.rst (Running under valgrind): New
 	subsection.
