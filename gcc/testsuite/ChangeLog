@@ -1,3 +1,7 @@
+2014-12-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/aarch64/bics_4.c: New.
+
 2014-12-08  Mark Wielaard  <mjw@redhat.com>
 
 	PR debug/60782
