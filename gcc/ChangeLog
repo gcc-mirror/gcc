@@ -1,5 +1,10 @@
 2014-12-09  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/64199
+	* fold-const.c (fold_binary_loc): Use TREE_OVERFLOW_P.
+
+2014-12-09  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/64191
 	* tree-vect-stmts.c (vect_stmt_relevant_p): Clobbers are
 	not relevant (nor are their uses).
