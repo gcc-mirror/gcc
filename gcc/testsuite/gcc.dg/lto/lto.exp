@@ -30,6 +30,7 @@ if $tracelevel then {
 # Load procedures from common libraries. 
 load_lib standard.exp
 load_lib gcc.exp
+load_lib mpx-dg.exp
 
 # Load the language-independent compabibility support procedures.
 load_lib lto.exp

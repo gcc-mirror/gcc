@@ -787,8 +787,16 @@ static bool
 privatize_symbol_name (symtab_node *node)
 {
   tree decl = node->decl;
-  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  cgraph_node *cnode;
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+  const char *name;
+
+  /* If we want to privatize instrumentation clone
+     then we need to change original function name
+     which is used via transparent alias chain.  */
+  if (cnode && cnode->instrumentation_clone)
+    decl = cnode->orig_decl;
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
   /* Our renaming machinery do not handle more than one change of assembler name.
      We should not need more than one anyway.  */
@@ -821,15 +829,20 @@ privatize_symbol_name (symtab_node *node)
 			     (DECL_ASSEMBLER_NAME (decl)));
   /* We could change name which is a target of transparent alias
      chain of instrumented function name.  Fix alias chain if so  .*/
-  if ((cnode = dyn_cast <cgraph_node *> (node))
-      && !cnode->instrumentation_clone
-      && cnode->instrumented_version
-      && cnode->instrumented_version->orig_decl == decl)
+  if (cnode)
     {
-      tree iname = DECL_ASSEMBLER_NAME (cnode->instrumented_version->decl);
+      tree iname = NULL_TREE;
+      if (cnode->instrumentation_clone)
+	iname = DECL_ASSEMBLER_NAME (cnode->decl);
+      else if (cnode->instrumented_version
+	       && cnode->instrumented_version->orig_decl == decl)
+	iname = DECL_ASSEMBLER_NAME (cnode->instrumented_version->decl);
 
-      gcc_assert (IDENTIFIER_TRANSPARENT_ALIAS (iname));
-      TREE_CHAIN (iname) = DECL_ASSEMBLER_NAME (decl);
+      if (iname)
+	{
+	  gcc_assert (IDENTIFIER_TRANSPARENT_ALIAS (iname));
+	  TREE_CHAIN (iname) = DECL_ASSEMBLER_NAME (decl);
+	}
     }
   if (symtab->dump_file)
     fprintf (symtab->dump_file,

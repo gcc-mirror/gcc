@@ -1,5 +1,10 @@
 2014-12-09  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* lto/lto-partition.c (privatize_symbol_name): Correctly
+	privatize instrumentation clones.
+
+2014-12-09  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* lto-cgraph.c (input_cgraph_1): Don't break existing
 	instrumentation clone references.
 	* lto/lto-symtab.c (lto_cgraph_replace_node): Redirect
