@@ -236,8 +236,16 @@ private:
   /* Functions for implementing "compile".  */
 
   void
-  make_fake_args (auto_vec <const char *> *argvec,
-		  const char *ctxt_progname);
+  make_fake_args (vec <char *> *argvec,
+		  const char *ctxt_progname,
+		  vec <recording::requested_dump> *requested_dumps);
+
+  void
+  extract_any_requested_dumps
+    (vec <recording::requested_dump> *requested_dumps);
+
+  char *
+  read_dump_file (const char *path);
 
   void
   convert_to_dso (const char *ctxt_progname);

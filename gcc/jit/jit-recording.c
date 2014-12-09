@@ -868,6 +868,27 @@ recording::context::set_bool_option (enum gcc_jit_bool_option opt,
   m_bool_options[opt] = value ? true : false;
 }
 
+/* Add the given dumpname/out_ptr pair to this context's list of requested
+   dumps.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_enable_dump.  */
+
+void
+recording::context::enable_dump (const char *dumpname,
+				 char **out_ptr)
+{
+  requested_dump d;
+  gcc_assert (dumpname);
+  gcc_assert (out_ptr);
+
+  d.m_dumpname = dumpname;
+  d.m_out_ptr = out_ptr;
+  *out_ptr = NULL;
+  m_requested_dumps.safe_push (d);
+}
+
+
 /* This mutex guards gcc::jit::recording::context::compile, so that only
    one thread can be accessing the bulk of GCC's state at once.  */
 
@@ -1024,6 +1045,19 @@ recording::context::dump_to_file (const char *path, bool update_locations)
     {
       fn->write_to_dump (d);
     }
+}
+
+/* Copy the requested dumps within this context and all ancestors into
+   OUT. */
+
+void
+recording::context::get_all_requested_dumps (vec <recording::requested_dump> *out)
+{
+  if (m_parent_ctxt)
+    m_parent_ctxt->get_all_requested_dumps (out);
+
+  out->reserve (m_requested_dumps.length ());
+  out->splice (m_requested_dumps);
 }
 
 /* This is a pre-compilation check for the context (and any parents).

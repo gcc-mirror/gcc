@@ -167,6 +167,9 @@ create_test_of_builtin_strcmp (gcc_jit_context *ctxt)
   gcc_jit_block_end_with_return (initial, NULL, call);
 }
 
+static char *trig_sincos_dump;
+static char *trig_statistics_dump;
+
 static void
 create_test_of_builtin_trig (gcc_jit_context *ctxt)
 {
@@ -178,6 +181,14 @@ create_test_of_builtin_trig (gcc_jit_context *ctxt)
        }
        (in theory, optimizable to sin (2 * theta))
   */
+
+  gcc_jit_context_enable_dump (ctxt,
+			       "tree-sincos",
+			       &trig_sincos_dump);
+  gcc_jit_context_enable_dump (ctxt,
+			       "statistics",
+			       &trig_statistics_dump);
+
   gcc_jit_type *double_t =
     gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_DOUBLE);
 
@@ -266,6 +277,22 @@ verify_test_of_builtin_trig (gcc_jit_context *ctxt, gcc_jit_result *result)
   CHECK_DOUBLE_VALUE (test_of_builtin_trig (M_PI_2      ),  0.0);
   CHECK_DOUBLE_VALUE (test_of_builtin_trig (M_PI_4 * 3.0), -1.0);
   CHECK_DOUBLE_VALUE (test_of_builtin_trig (M_PI        ),  0.0);
+
+  /* PR jit/64020:
+     The "sincos" pass merges sin/cos calls into the cexpi builtin.
+     Verify that a dump of the "sincos" pass was provided, and that it
+     shows a call to the cexpi builtin on a SSA name of "theta".  */
+  CHECK_NON_NULL (trig_sincos_dump);
+  CHECK_STRING_CONTAINS (trig_sincos_dump, " = __builtin_cexpi (theta_");
+  free (trig_sincos_dump);
+
+  /* Similarly, verify that the statistics dump was provided, and that
+     it shows the sincos optimization.  */
+  CHECK_NON_NULL (trig_statistics_dump);
+  CHECK_STRING_CONTAINS (
+    trig_statistics_dump,
+    "sincos \"sincos statements inserted\" \"test_of_builtin_trig\" 1");
+  free (trig_statistics_dump);
 }
 
 static void

@@ -2004,6 +2004,24 @@ gcc_jit_context_set_bool_option (gcc_jit_context *ctxt,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::context::enable_dump method in
+   jit-recording.c.  */
+
+void
+gcc_jit_context_enable_dump (gcc_jit_context *ctxt,
+			     const char *dumpname,
+			     char **out_ptr)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  RETURN_IF_FAIL (dumpname, ctxt, NULL, "NULL dumpname");
+  RETURN_IF_FAIL (out_ptr, ctxt, NULL, "NULL out_ptr");
+
+  ctxt->enable_dump (dumpname, out_ptr);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::context::compile method in
    jit-recording.c.  */
 

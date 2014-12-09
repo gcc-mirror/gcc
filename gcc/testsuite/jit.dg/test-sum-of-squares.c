@@ -6,6 +6,8 @@
 
 #include "harness.h"
 
+static char *dump_vrp1;
+
 void
 create_code (gcc_jit_context *ctxt, void *user_data)
 {
@@ -22,6 +24,8 @@ create_code (gcc_jit_context *ctxt, void *user_data)
       }
       return sum;
    */
+  gcc_jit_context_enable_dump (ctxt, "tree-vrp1", &dump_vrp1);
+
   gcc_jit_type *the_type =
     gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT);
   gcc_jit_type *return_type = the_type;
@@ -123,4 +127,16 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
   int val = loop_test (10);
   note ("loop_test returned: %d", val);
   CHECK_VALUE (val, 285);
+
+  CHECK_NON_NULL (dump_vrp1);
+  /* PR jit/64166
+     An example of using gcc_jit_context_enable_dump to verify a property
+     of the compile.
+
+     In this case, verify that vrp is able to deduce the
+     bounds of the iteration variable. Specifically, verify that some
+     variable is known to be in the range negative infinity to some
+     expression based on param "n" (actually n-1).  */
+  CHECK_STRING_CONTAINS (dump_vrp1, ": [-INF, n_");
+  free (dump_vrp1);
 }

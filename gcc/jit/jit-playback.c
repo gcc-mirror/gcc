@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "gcc-driver-name.h"
 #include "attribs.h"
+#include "context.h"
 
 #include "jit-common.h"
 #include "jit-playback.h"
@@ -1552,6 +1553,26 @@ make_tempdir_path_template ()
   return result;
 }
 
+/* A subclass of auto_vec <char *> that frees all of its elements on
+   deletion.  */
+
+class auto_argvec : public auto_vec <char *>
+{
+ public:
+  ~auto_argvec ();
+};
+
+/* auto_argvec's dtor, freeing all contained strings, automatically
+   chaining up to ~auto_vec <char *>, which frees the internal buffer.  */
+
+auto_argvec::~auto_argvec ()
+{
+  int i;
+  char *str;
+  FOR_EACH_VEC_ELT (*this, i, str)
+    free (str);
+}
+
 /* Compile a playback::context:
 
    - Use the context's options to cconstruct command-line options, and
@@ -1594,14 +1615,25 @@ compile ()
   if (!ctxt_progname)
     ctxt_progname = "libgccjit.so";
 
-  auto_vec <const char *> fake_args;
-  make_fake_args (&fake_args, ctxt_progname);
+  auto_vec <recording::requested_dump> requested_dumps;
+  m_recording_ctxt->get_all_requested_dumps (&requested_dumps);
+
+  auto_argvec fake_args;
+  make_fake_args (&fake_args, ctxt_progname, &requested_dumps);
   if (errors_occurred ())
     return NULL;
 
+  /* This runs the compiler.  */
   toplev toplev (false);
   toplev.main (fake_args.length (),
 	       const_cast <char **> (fake_args.address ()));
+
+  /* Extracting dumps makes use of the gcc::dump_manager, hence we
+     need to do it between toplev::main (which creates the dump manager)
+     and toplev::finalize (which deletes it).  */
+  extract_any_requested_dumps (&requested_dumps);
+
+  /* Clean up the compiler.  */
   toplev.finalize ();
 
   active_playback_ctxt = NULL;
@@ -1645,10 +1677,12 @@ compile ()
 
 void
 playback::context::
-make_fake_args (auto_vec <const char *> *argvec,
-		const char *ctxt_progname)
+make_fake_args (vec <char *> *argvec,
+		const char *ctxt_progname,
+		vec <recording::requested_dump> *requested_dumps)
 {
-#define ADD_ARG(arg) argvec->safe_push (arg)
+#define ADD_ARG(arg) argvec->safe_push (xstrdup (arg))
+#define ADD_ARG_TAKE_OWNERSHIP(arg) argvec->safe_push (arg)
 
   ADD_ARG (ctxt_progname);
   ADD_ARG (m_path_c_file);
@@ -1707,7 +1741,104 @@ make_fake_args (auto_vec <const char *> *argvec,
       ADD_ARG ("-fdump-rtl-all");
       ADD_ARG ("-fdump-ipa-all");
     }
+
+  /* Add "-fdump-" options for any calls to
+     gcc_jit_context_enable_dump.  */
+  {
+    int i;
+    recording::requested_dump *d;
+    FOR_EACH_VEC_ELT (*requested_dumps, i, d)
+      {
+	char *arg = concat ("-fdump-", d->m_dumpname, NULL);
+	ADD_ARG_TAKE_OWNERSHIP (arg);
+      }
+  }
+
 #undef ADD_ARG
+#undef ADD_ARG_TAKE_OWNERSHIP
+}
+
+/* The second half of the implementation of gcc_jit_context_enable_dump.
+   Iterate through the requested dumps, reading the underlying files
+   into heap-allocated buffers, writing pointers to the buffers into
+   the char ** pointers provided by client code.
+   Client code is responsible for calling free on the results.  */
+
+void
+playback::context::
+extract_any_requested_dumps (vec <recording::requested_dump> *requested_dumps)
+{
+  int i;
+  recording::requested_dump *d;
+  FOR_EACH_VEC_ELT (*requested_dumps, i, d)
+    {
+      dump_file_info *dfi;
+      char *filename;
+      char *content;
+
+      dfi = g->get_dumps ()->get_dump_file_info_by_switch (d->m_dumpname);
+      if (!dfi)
+	{
+	  add_error (NULL, "unrecognized dump: %s", d->m_dumpname);
+	  continue;
+	}
+
+      filename = g->get_dumps ()->get_dump_file_name (dfi);
+      content = read_dump_file (filename);
+      *(d->m_out_ptr) = content;
+      free (filename);
+    }
+}
+
+/* Helper function for playback::context::extract_any_requested_dumps
+   (itself for use in implementation of gcc_jit_context_enable_dump).
+
+   Attempt to read the complete file at the given path, returning the
+   bytes found there as a buffer.
+   The caller is responsible for calling free on the result.
+   Errors will be reported on the context, and lead to NULL being
+   returned; an out-of-memory error will terminate the process.  */
+
+char *
+playback::context::read_dump_file (const char *path)
+{
+  char *result = NULL;
+  size_t total_sz = 0;
+  char buf[4096];
+  size_t sz;
+  FILE *f_in;
+
+  f_in = fopen (path, "r");
+  if (!f_in)
+    {
+      add_error (NULL, "unable to open %s for reading", path);
+      return NULL;
+    }
+
+  while ( (sz = fread (buf, 1, sizeof (buf), f_in)) )
+    {
+      size_t old_total_sz = total_sz;
+      total_sz += sz;
+      result = reinterpret_cast <char *> (xrealloc (result, total_sz + 1));
+      memcpy (result + old_total_sz, buf, sz);
+    }
+
+  if (!feof (f_in))
+    {
+      add_error (NULL, "error reading from %s", path);
+      free (result);
+      return NULL;
+    }
+
+  fclose (f_in);
+
+  if (result)
+    {
+      result[total_sz] = '\0';
+      return result;
+    }
+  else
+    return xstrdup ("");
 }
 
 /* Part of playback::context::compile ().

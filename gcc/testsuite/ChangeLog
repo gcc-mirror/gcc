@@ -1,3 +1,20 @@
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64166
+	PR jit/64020
+	* jit.dg/harness.h (CHECK_STRING_CONTAINS): New macro.
+	(check_string_contains): New function.
+	* jit.dg/test-error-unrecognized-dump.c: New file.
+	* jit.dg/test-functions.c (trig_sincos_dump): New variable.
+	(trig_statistics_dump): New variable.
+	(create_test_of_builtin_trig): Enable dumping of "sincos" and
+	"statistics" into "trig_sincos_dump" and "trig_statistics_dump".
+	(verify_test_of_builtin_trig): Verify the sincos and statistics
+	dumps.
+	* jit.dg/test-sum-of-squares.c (dump_vrp1): New variable.
+	(create_code): Enable dumping of "tree-vrp1" into dump_vrp1.
+	(verify_code): Verify the tree-vrp1 dump.
+
 2014-12-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR bootstrap/64213
