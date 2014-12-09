@@ -1,3 +1,12 @@
+2014-12-09  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* lto-wrapper.c (compile_offload_image): Start processing in_argv
+	from 0 instead of 1.
+	(run_gcc): Put offload objects into offload_argv, put LTO objects and
+	possible preceding arguments into lto_argv.
+	Pass offload_argv to compile_images_for_offload_targets instead of argv.
+	Use lto_argv for LTO recompilation instead of argv.
+
 2014-12-09  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
 
 	* doc/install.texi: Describe --with-aix-soname option.
