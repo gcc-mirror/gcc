@@ -2760,9 +2760,23 @@ chkp_make_static_bounds (tree obj)
   /* First check if we already have required var.  */
   if (chkp_static_var_bounds)
     {
-      slot = chkp_static_var_bounds->get (obj);
-      if (slot)
-	return *slot;
+      /* For vars we use assembler name as a key in
+	 chkp_static_var_bounds map.  It allows to
+	 avoid duplicating bound vars for decls
+	 sharing assembler name.  */
+      if (TREE_CODE (obj) == VAR_DECL)
+	{
+	  tree name = DECL_ASSEMBLER_NAME (obj);
+	  slot = chkp_static_var_bounds->get (name);
+	  if (slot)
+	    return *slot;
+	}
+      else
+	{
+	  slot = chkp_static_var_bounds->get (obj);
+	  if (slot)
+	    return *slot;
+	}
     }
 
   /* Build decl for bounds var.  */
@@ -2826,7 +2840,13 @@ chkp_make_static_bounds (tree obj)
   if (!chkp_static_var_bounds)
     chkp_static_var_bounds = new hash_map<tree, tree>;
 
-  chkp_static_var_bounds->put (obj, bnd_var);
+  if (TREE_CODE (obj) == VAR_DECL)
+    {
+      tree name = DECL_ASSEMBLER_NAME (obj);
+      chkp_static_var_bounds->put (name, bnd_var);
+    }
+  else
+    chkp_static_var_bounds->put (obj, bnd_var);
 
   return bnd_var;
 }
