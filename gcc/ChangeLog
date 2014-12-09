@@ -1,3 +1,8 @@
+2014-12-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* simplify-rtx.c (simplify_relational_operation_1): Handle
+	simplification identities for BICS patterns.
+
 2014-12-08  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* config/nvptx/nvptx.c: Convert htabs to hash_table.

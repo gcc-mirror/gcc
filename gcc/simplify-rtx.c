@@ -4550,6 +4550,32 @@ simplify_relational_operation_1 (enum rtx_code code, machine_mode mode,
 				    simplify_gen_binary (XOR, cmp_mode,
 							 XEXP (op0, 1), op1));
 
+  /* (eq/ne (and x y) x) simplifies to (eq/ne (and (not y) x) 0), which
+     can be implemented with a BICS instruction on some targets, or
+     constant-folded if y is a constant.  */
+  if ((code == EQ || code == NE)
+      && op0code == AND
+      && rtx_equal_p (XEXP (op0, 0), op1)
+      && !side_effects_p (op1))
+    {
+      rtx not_y = simplify_gen_unary (NOT, cmp_mode, XEXP (op0, 1), cmp_mode);
+      rtx lhs = simplify_gen_binary (AND, cmp_mode, not_y, XEXP (op0, 0));
+
+      return simplify_gen_relational (code, mode, cmp_mode, lhs, const0_rtx);
+    }
+
+  /* Likewise for (eq/ne (and x y) y).  */
+  if ((code == EQ || code == NE)
+      && op0code == AND
+      && rtx_equal_p (XEXP (op0, 1), op1)
+      && !side_effects_p (op1))
+    {
+      rtx not_x = simplify_gen_unary (NOT, cmp_mode, XEXP (op0, 0), cmp_mode);
+      rtx lhs = simplify_gen_binary (AND, cmp_mode, not_x, XEXP (op0, 1));
+
+      return simplify_gen_relational (code, mode, cmp_mode, lhs, const0_rtx);
+    }
+
   /* (eq/ne (bswap x) C1) simplifies to (eq/ne x C2) with C2 swapped.  */
   if ((code == EQ || code == NE)
       && GET_CODE (op0) == BSWAP
