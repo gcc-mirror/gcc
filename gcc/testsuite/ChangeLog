@@ -1,5 +1,11 @@
 2014-12-09  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* gcc.dg/lto/lto.exp: Load mpx-dg.exp.
+	* gcc.dg/lto/chkp-privatize_0.c: New.
+	* gcc.dg/lto/chkp-privatize_1.c: New.
+
+2014-12-09  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	PR bootstrap/63995
 	* g++.dg/dg.exp: Add mpx-dg.exp.
 	* g++.dg/pr63995-1.C: New.
