@@ -1248,7 +1248,7 @@ GLOBAL(sdivsi3_2):
 #endif
 	ENDFUNC(GLOBAL(sdivsi3_2))
 #endif
-#elif defined __SHMEDIA__
+#elif __SHMEDIA__
 /* m5compact-nofpu */
  // clobbered: r18,r19,r20,r21,r25,tr0,tr1,tr2
 	.mode	SHmedia
@@ -1598,7 +1598,7 @@ GLOBAL(udivsi3):
  add.l r18,r25,r0
  blink tr0,r63
 #endif
-#elif defined (__SHMEDIA__)
+#elif __SHMEDIA__
 /* m5compact-nofpu - more emphasis on code size than on speed, but don't
    ignore speed altogether - div1 needs 9 cycles, subc 7 and rotcl 4.
    So use a short shmedia loop.  */
@@ -1622,7 +1622,7 @@ LOCAL(udivsi3_dontsub):
  bnei r25,-32,tr1
  add.l r20,r63,r0
  blink tr2,r63
-#else /* ! defined (__SHMEDIA__) */
+#else /* ! __SHMEDIA__ */
 LOCAL(div8):
  div1 r5,r4
 LOCAL(div7):
@@ -1688,7 +1688,7 @@ LOCAL(large_divisor):
 #endif /* L_udivsi3 */
 
 #ifdef L_udivdi3
-#ifdef __SHMEDIA__
+#if __SHMEDIA__
 	.mode	SHmedia
 	.section	.text..SHmedia32,"ax"
 	.align	2
@@ -1816,7 +1816,7 @@ LOCAL(no_lo_adj):
 #endif /* L_udivdi3 */
 
 #ifdef L_divdi3
-#ifdef __SHMEDIA__
+#if __SHMEDIA__
 	.mode	SHmedia
 	.section	.text..SHmedia32,"ax"
 	.align	2
@@ -1840,7 +1840,7 @@ GLOBAL(divdi3):
 #endif /* L_divdi3 */
 
 #ifdef L_umoddi3
-#ifdef __SHMEDIA__
+#if __SHMEDIA__
 	.mode	SHmedia
 	.section	.text..SHmedia32,"ax"
 	.align	2
@@ -1969,7 +1969,7 @@ LOCAL(no_lo_adj):
 #endif /* L_umoddi3 */
 
 #ifdef L_moddi3
-#ifdef __SHMEDIA__
+#if __SHMEDIA__
 	.mode	SHmedia
 	.section	.text..SHmedia32,"ax"
 	.align	2
@@ -3057,7 +3057,7 @@ GLOBAL(GCC_pop_shmedia_regs_nofpu):
 
 #ifdef L_div_table
 #if __SH5__
-#if defined(__pic__) && defined(__SHMEDIA__)
+#if defined(__pic__) && __SHMEDIA__
 	.global	GLOBAL(sdivsi3)
 	FUNC(GLOBAL(sdivsi3))
 #if __SH5__ == 32
@@ -3130,7 +3130,7 @@ Defects for bias -330:
 #else /* ! __pic__ || ! __SHMEDIA__ */
 	.section	.rodata
 #endif /* __pic__ */
-#if defined(TEXT_DATA_BUG) && defined(__pic__) && defined(__SHMEDIA__)
+#if defined(TEXT_DATA_BUG) && defined(__pic__) && __SHMEDIA__
 	.balign 2
 	.type	Local_div_table,@object
 	.size	Local_div_table,128
