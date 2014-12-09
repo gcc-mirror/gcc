@@ -1,4 +1,4 @@
-2015-12-09  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
+2014-12-09  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in (with_aix_soname): Define.
 	* config/rs6000/t-slibgcc-aix: Act upon --with-aix-soname option.
