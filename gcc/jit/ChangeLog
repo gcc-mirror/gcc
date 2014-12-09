@@ -1,5 +1,12 @@
 2014-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	PR jit/63854
+	* docs/internals/index.rst (Running under valgrind): New
+	subsection.
+	(docs/_build/texinfo/libgccjit.texi): Regenerate.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
         PR jit/64206
 	* Make-lang.in (jit_OBJS): Add jit/jit-tempdir.o.
 	* jit-common.h (gcc::jit::tempdir): New forward decl.

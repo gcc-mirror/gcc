@@ -197,6 +197,10 @@ Internals
 * Environment variables:: 
 * Overview of code structure:: 
 
+Running the test suite
+
+* Running under valgrind:: 
+
 @end detailmenu
 @end menu
 
@@ -6548,8 +6552,61 @@ and once a test has been compiled, you can debug it directly:
 
 @noindent
 
+@menu
+* Running under valgrind:: 
+
+@end menu
+
+@node Running under valgrind,,,Running the test suite
+@anchor{internals/index running-under-valgrind}@anchor{c9}
+@subsection Running under valgrind
+
+
+The jit testsuite detects if RUN_UNDER_VALGRIND is present in the
+environment (with any value).  If it is present, it runs the test client
+code under valgrind@footnote{http://valgrind.org},
+specifcally, the default
+memcheck@footnote{http://valgrind.org/docs/manual/mc-manual.html}
+tool with
+--leak-check=full@footnote{http://valgrind.org/docs/manual/mc-manual.html#opt.leak-check}.
+
+It automatically parses the output from valgrind, injecting XFAIL results if
+any issues are found, or PASS results if the output is clean.  The output
+is saved to @code{TESTNAME.exe.valgrind.txt}.
+
+For example, the following invocation verbosely runs the testcase
+@code{test-sum-of-squares.c} under valgrind, showing an issue:
+
+@example
+$ RUN_UNDER_VALGRIND= \
+    make check-jit \
+      RUNTESTFLAGS="-v -v -v jit.exp=test-sum-of-squares.c"
+
+(...verbose log contains detailed valgrind errors, if any...)
+
+                === jit Summary ===
+
+# of expected passes            28
+# of expected failures          2
+
+$ less testsuite/jit/jit.sum
+(...other results...)
+XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.exe.valgrind.txt: definitely lost: 8 bytes in 1 blocks
+XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.exe.valgrind.txt: unsuppressed errors: 1
+(...other results...)
+
+$ less testsuite/jit/test-sum-of-squares.exe.valgrind.txt
+(...shows full valgrind report for this test case...)
+@end example
+
+@noindent
+
+When running under valgrind, it's best to have configured gcc with
+@code{--enable-valgrind-annotations}, which automatically suppresses
+various known false positives.
+
 @node Environment variables,Overview of code structure,Running the test suite,Internals
-@anchor{internals/index environment-variables}@anchor{c9}
+@anchor{internals/index environment-variables}@anchor{ca}
 @section Environment variables
 
 
@@ -6557,7 +6614,7 @@ When running client code against a locally-built libgccjit, three
 environment variables need to be set up:
 
 @geindex environment variable; LD_LIBRARY_PATH
-@anchor{internals/index envvar-LD_LIBRARY_PATH}@anchor{ca}
+@anchor{internals/index envvar-LD_LIBRARY_PATH}@anchor{cb}
 @deffn {Environment Variable} LD_LIBRARY_PATH
 
 @quotation
@@ -6579,7 +6636,7 @@ libgccjit.so.0.0.1: ELF 64-bit LSB shared object, x86-64, version 1 (GNU/Linux),
 @end deffn
 
 @geindex environment variable; PATH
-@anchor{internals/index envvar-PATH}@anchor{cb}
+@anchor{internals/index envvar-PATH}@anchor{cc}
 @deffn {Environment Variable} PATH
 
 The library uses a driver executable for converting from .s assembler
@@ -6598,7 +6655,7 @@ of development.
 @end deffn
 
 @geindex environment variable; LIBRARY_PATH
-@anchor{internals/index envvar-LIBRARY_PATH}@anchor{cc}
+@anchor{internals/index envvar-LIBRARY_PATH}@anchor{cd}
 @deffn {Environment Variable} LIBRARY_PATH
 
 The driver executable invokes the linker, and the latter needs to locate
@@ -6634,7 +6691,7 @@ hello world
 @noindent
 
 @node Overview of code structure,,Environment variables,Internals
-@anchor{internals/index overview-of-code-structure}@anchor{cd}
+@anchor{internals/index overview-of-code-structure}@anchor{ce}
 @section Overview of code structure
 
 
@@ -6733,10 +6790,10 @@ Client Code   . Generated .            libgccjit.so
     ──────────────────────────>      .               .
               .           .    │ start of recording::context::compile ()
               .           .    │     .               .
-              .           .    │ ACQUIRE MUTEX       .
-              .           .    │     .               .
               .           .    │ start of playback::context::compile ()
               .           .    │   (create tempdir)  .
+              .           .    │     .               .
+              .           .    │ ACQUIRE MUTEX       .
               .           .    │     .               .
               .           .    V───────────────────────> toplev::main (for now)
               .           .          .               .       │
@@ -6791,6 +6848,8 @@ Client Code   . Generated .            libgccjit.so
               .           .    │     .               .
               .           .    │ Load DSO (dlopen "fake.so")
               .           .    │     .               .
+              .           .    │ RELEASE MUTEX       .
+              .           .    │     .               .
               .           .    │ end of playback::context::compile ()
               .           .    │     .               .
               .           .    │ playback::context dtor
@@ -6799,8 +6858,6 @@ Client Code   . Generated .            libgccjit.so
               .           .       │   ("fake.so" is unlinked from the
               .           .       │    filesystem at this point)
               .           .    <──   .               .
-              .           .    │     .               .
-              .           .    │ RELEASE MUTEX       .
               .           .    │     .               .
               .           .    │ end of recording::context::compile ()
    <───────────────────────────      .               .
@@ -6905,7 +6962,7 @@ the APIs are not yet set in stone, and they shouldn't be used in
 production yet.
 
 @node Indices and tables,Index,Internals,Top
-@anchor{index indices-and-tables}@anchor{ce}
+@anchor{index indices-and-tables}@anchor{cf}
 @unnumbered Indices and tables
 
 
