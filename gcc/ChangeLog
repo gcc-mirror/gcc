@@ -1,10 +1,12 @@
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
+	PR target/63870
 	* gcc/config/aarch64-builtins.c (aarch64_simd_expand_args): Update error
 	message for SIMD_ARG_CONSTANT.
 
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
+	PR target/63870
 	* config/aarch64/aarch64-builtins.c (aarch64_types_binopv_qualifiers,
 	TYPES_BINOPV): Delete.
 	(enum aarch64_builtins): Add AARCH64_BUILTIN_SIMD_LANE_CHECK and
@@ -28,6 +30,7 @@
 
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
+	PR target/63950
 	* config/aarch64/arm_neon.h (__AARCH64_NUM_LANES, __aarch64_lane *2):
 	New.
 	(aarch64_vset_lane_any): Redefine using previous, same for BE + LE.

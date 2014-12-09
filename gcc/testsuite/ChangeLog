@@ -1,14 +1,17 @@
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
+	PR target/63870
 	* gcc.target/aarch64/arg-type-diagnostics-1.c: Call intrinsic, update
 	expected error message.
 
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
+	PR target/63870
 	* gcc.target/aarch64/simd/vset_lane_s16_const_1.c: New test.
 
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
+	PR target/63950
 	* gcc.target/aarch64/vld1_lane-o0.c: New test.
 
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
