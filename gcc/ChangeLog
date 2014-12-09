@@ -1,3 +1,15 @@
+2014-12-09  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc/config/aarch64/aarch64-protos.h (tune-params): Add reasociation
+	tuning parameters.
+	* gcc/config/aarch64/aarch64.c (TARGET_SCHED_REASSOCIATION_WIDTH):
+	Define.
+	(aarch64_reassociation_width): New function.
+	(generic_tunings): Add reassociation tuning parameters.
+	(cortexa53_tunings): Likewise.
+	(cortexa57_tunings): Likewise.
+	(thunderx_tunings): Likewise.
+
 2014-12-09  Andrew Pinski  apinski@cavium.com
             Kyrylo Tkachov  kyrylo.tkachov@arm.com
 
