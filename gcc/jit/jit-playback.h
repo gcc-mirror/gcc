@@ -235,6 +235,9 @@ private:
 
   /* Functions for implementing "compile".  */
 
+  void acquire_mutex ();
+  void release_mutex ();
+
   void
   make_fake_args (vec <char *> *argvec,
 		  const char *ctxt_progname,
