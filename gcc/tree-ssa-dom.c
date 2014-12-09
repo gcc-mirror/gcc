@@ -2635,7 +2635,7 @@ lookup_avail_expr (gimple stmt, bool insert)
 	    && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
 	    && (ao_ref_init (&ref, gimple_assign_rhs1 (stmt)), true)
 	    && walk_non_aliased_vuses (&ref, vuse2,
-				       vuse_eq, NULL, vuse1) != NULL))
+				       vuse_eq, NULL, NULL, vuse1) != NULL))
 	{
 	  struct expr_hash_elt *element2 = XNEW (struct expr_hash_elt);
 	  *element2 = element;

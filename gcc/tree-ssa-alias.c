@@ -2632,12 +2632,18 @@ get_continuation_for_phi (gimple phi, ao_ref *ref,
    If TRANSLATE returns NULL the walk continues and TRANSLATE is supposed
    to adjust REF and *DATA to make that valid.
 
+   VALUEIZE if non-NULL is called with the next VUSE that is considered
+   and return value is substituted for that.  This can be used to
+   implement optimistic value-numbering for example.  Note that the
+   VUSE argument is assumed to be valueized already.
+
    TODO: Cache the vector of equivalent vuses per ref, vuse pair.  */
 
 void *
 walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 			void *(*walker)(ao_ref *, tree, unsigned int, void *),
 			void *(*translate)(ao_ref *, tree, void *, bool),
+			tree (*valueize)(tree),
 			void *data)
 {
   bitmap visited = NULL;
@@ -2663,6 +2669,8 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
       else if (res != NULL)
 	break;
 
+      if (valueize)
+	vuse = valueize (vuse);
       def_stmt = SSA_NAME_DEF_STMT (vuse);
       if (gimple_nop_p (def_stmt))
 	break;

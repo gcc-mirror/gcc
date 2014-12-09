@@ -1,5 +1,17 @@
 2014-12-09  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/64193
+	* tree-ssa-alias.c (walk_non_aliased_vuses): Add valueize parameter
+	and valueize the VUSE before looking up the def stmt.
+	* tree-ssa-alias.h (walk_non_aliased_vuses): Adjust prototype.
+	* tree-ssa-sccvn.c (vn_reference_lookup_pieces): Pass vn_valueize
+	to walk_non_aliased_vuses.
+	(vn_reference_lookup): Likewise.
+	* tree-ssa-dom.c (lookup_avail_expr): Pass NULL as valueize
+	callback to walk_non_aliased_vuses.
+
+2014-12-09  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/64199
 	* fold-const.c (fold_binary_loc): Use TREE_OVERFLOW_P.
 
