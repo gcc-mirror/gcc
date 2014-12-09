@@ -1,3 +1,9 @@
+2014-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64203
+	* include/std/shared_mutex: Fix preprocessor conditions.
+	* testsuite/experimental/feat-cxx14.cc: Check conditions.
+
 2014-12-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/hashtable_policy.h (_Map_base::operator[],
