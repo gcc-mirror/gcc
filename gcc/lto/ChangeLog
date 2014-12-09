@@ -1,3 +1,8 @@
+2014-12-08  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* lto.c (read_cgraph_and_symbols): allocate gimple_canonical_types
+	htab with malloc instead of ggc.
+
 2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* lto.c: Replace htab with hash_table.
