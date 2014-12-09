@@ -1,5 +1,28 @@
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-builtins.c (aarch64_types_binopv_qualifiers,
+	TYPES_BINOPV): Delete.
+	(enum aarch64_builtins): Add AARCH64_BUILTIN_SIMD_LANE_CHECK and
+	AARCH64_SIMD_PATTERN_START.
+	(aarch64_init_simd_builtins): Register
+	__builtin_aarch64_im_lane_boundsi; use  AARCH64_SIMD_PATTERN_START.
+	(aarch64_simd_expand_builtin): Handle AARCH64_BUILTIN_LANE_CHECK; use
+	AARCH64_SIMD_PATTERN_START.
+
+	* config/aarch64/aarch64-simd.md (aarch64_im_lane_boundsi): Delete.
+	* config/aarch64/aarch64-simd-builtins.def (im_lane_bound): Delete.
+
+	* config/aarch64/arm_neon.h (__AARCH64_LANE_CHECK): New.
+	(__aarch64_vget_lane_f64, __aarch64_vget_lane_s64,
+	__aarch64_vget_lane_u64, __aarch64_vset_lane_any, vdupd_lane_f64,
+	vdupd_lane_s64, vdupd_lane_u64, vext_f32, vext_f64, vext_p8, vext_p16,
+	vext_s8, vext_s16, vext_s32, vext_s64, vext_u8, vext_u16, vext_u32,
+	vext_u64, vextq_f32, vextq_f64, vextq_p8, vextq_p16, vextq_s8,
+	vextq_s16, vextq_s32, vextq_s64, vextq_u8, vextq_u16, vextq_u32,
+	vextq_u64, vmulq_lane_f64): Use __AARCH64_LANE_CHECK.
+
+2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/arm_neon.h (__AARCH64_NUM_LANES, __aarch64_lane *2):
 	New.
 	(aarch64_vset_lane_any): Redefine using previous, same for BE + LE.

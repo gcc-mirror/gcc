@@ -141,10 +141,6 @@ aarch64_types_binop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_maybe_immediate };
 #define TYPES_BINOP (aarch64_types_binop_qualifiers)
 static enum aarch64_type_qualifiers
-aarch64_types_binopv_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_none, qualifier_none };
-#define TYPES_BINOPV (aarch64_types_binopv_qualifiers)
-static enum aarch64_type_qualifiers
 aarch64_types_binopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned };
 #define TYPES_BINOPU (aarch64_types_binopu_qualifiers)
@@ -342,9 +338,12 @@ enum aarch64_builtins
   AARCH64_BUILTIN_SET_FPSR,
 
   AARCH64_SIMD_BUILTIN_BASE,
+  AARCH64_SIMD_BUILTIN_LANE_CHECK,
 #include "aarch64-simd-builtins.def"
-  AARCH64_SIMD_BUILTIN_MAX = AARCH64_SIMD_BUILTIN_BASE
-			      + ARRAY_SIZE (aarch64_simd_builtin_data),
+  /* The first enum element which is based on an insn_data pattern.  */
+  AARCH64_SIMD_PATTERN_START = AARCH64_SIMD_BUILTIN_LANE_CHECK + 1,
+  AARCH64_SIMD_BUILTIN_MAX = AARCH64_SIMD_PATTERN_START
+			      + ARRAY_SIZE (aarch64_simd_builtin_data) - 1,
   AARCH64_CRC32_BUILTIN_BASE,
   AARCH64_CRC32_BUILTINS
   AARCH64_CRC32_BUILTIN_MAX,
@@ -685,7 +684,7 @@ aarch64_init_simd_builtin_scalar_types (void)
 static void
 aarch64_init_simd_builtins (void)
 {
-  unsigned int i, fcode = AARCH64_SIMD_BUILTIN_BASE + 1;
+  unsigned int i, fcode = AARCH64_SIMD_PATTERN_START;
 
   aarch64_init_simd_builtin_types ();
 
@@ -695,6 +694,15 @@ aarch64_init_simd_builtins (void)
      system.  */
   aarch64_init_simd_builtin_scalar_types ();
  
+  tree lane_check_fpr = build_function_type_list (void_type_node,
+						  intSI_type_node,
+						  intSI_type_node,
+						  NULL);
+  aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_LANE_CHECK] =
+      add_builtin_function ("__builtin_aarch64_im_lane_boundsi", lane_check_fpr,
+			    AARCH64_SIMD_BUILTIN_LANE_CHECK, BUILT_IN_MD,
+			    NULL, NULL_TREE);
+
   for (i = 0; i < ARRAY_SIZE (aarch64_simd_builtin_data); i++, fcode++)
     {
       bool print_type_signature_p = false;
@@ -974,8 +982,20 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 rtx
 aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
 {
+  if (fcode == AARCH64_SIMD_BUILTIN_LANE_CHECK)
+    {
+      tree nlanes = CALL_EXPR_ARG (exp, 0);
+      gcc_assert (TREE_CODE (nlanes) == INTEGER_CST);
+      rtx lane_idx = expand_normal (CALL_EXPR_ARG (exp, 1));
+      if (CONST_INT_P (lane_idx))
+	aarch64_simd_lane_bounds (lane_idx, 0, TREE_INT_CST_LOW (nlanes), exp);
+      else
+	error ("%Klane index must be a constant immediate", exp);
+      /* Don't generate any RTL.  */
+      return const0_rtx;
+    }
   aarch64_simd_builtin_datum *d =
-		&aarch64_simd_builtin_data[fcode - (AARCH64_SIMD_BUILTIN_BASE + 1)];
+		&aarch64_simd_builtin_data[fcode - AARCH64_SIMD_PATTERN_START];
   enum insn_code icode = d->code;
   builtin_simd_arg args[SIMD_MAX_BUILTIN_ARGS];
   int num_args = insn_data[d->code].n_operands;
