@@ -2926,8 +2926,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   symtab->state = LTO_STREAMING;
 
   canonical_type_hash_cache = new hash_map<const_tree, hashval_t> (251);
-  gimple_canonical_types = htab_create_ggc (16381, gimple_canonical_type_hash,
-					    gimple_canonical_type_eq, 0);
+  gimple_canonical_types = htab_create (16381, gimple_canonical_type_hash,
+					gimple_canonical_type_eq, NULL);
   gcc_obstack_init (&tree_scc_hash_obstack);
   tree_scc_hash = new hash_table<tree_scc_hasher> (4096);
 
