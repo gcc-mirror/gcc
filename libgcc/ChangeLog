@@ -12,6 +12,7 @@
 
 2014-11-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/55351
 	* config/sh/lib1funcs.S: Check value of __SHMEDIA__ instead of checking
 	whether it's defined.
 
