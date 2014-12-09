@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "jit-playback.h"
 #include "jit-result.h"
 #include "jit-builtins.h"
+#include "jit-tempdir.h"
 
 
 /* gcc::jit::playback::context::build_cast uses the convert.h API,
@@ -86,6 +87,7 @@ namespace jit {
 
 playback::context::context (recording::context *ctxt)
   : m_recording_ctxt (ctxt),
+    m_tempdir (NULL),
     m_char_array_type_node (NULL),
     m_const_char_ptr (NULL)
 {
@@ -98,25 +100,8 @@ playback::context::context (recording::context *ctxt)
 
 playback::context::~context ()
 {
-  if (get_bool_option (GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES))
-    fprintf (stderr, "intermediate files written to %s\n", m_path_tempdir);
-  else
-    {
-      /* Clean up .s/.so and tempdir. */
-      if (m_path_s_file)
-        unlink (m_path_s_file);
-      if (m_path_so_file)
-        unlink (m_path_so_file);
-      if (m_path_tempdir)
-        rmdir (m_path_tempdir);
-    }
-
-  free (m_path_template);
-  /* m_path_tempdir aliases m_path_template, or is NULL, so don't
-     attempt to free it .  */
-  free (m_path_c_file);
-  free (m_path_s_file);
-  free (m_path_so_file);
+  if (m_tempdir)
+    delete m_tempdir;
   m_functions.release ();
 }
 
@@ -1515,44 +1500,6 @@ block (function *func,
   m_label_expr = NULL;
 }
 
-/* Construct a tempdir path template suitable for use by mkdtemp
-   e.g. "/tmp/libgccjit-XXXXXX", but respecting the rules in
-   libiberty's choose_tempdir rather than hardcoding "/tmp/".
-
-   The memory is allocated using malloc and must be freed.
-   Aborts the process if allocation fails. */
-
-static char *
-make_tempdir_path_template ()
-{
-  const char *tmpdir_buf;
-  size_t tmpdir_len;
-  const char *file_template_buf;
-  size_t file_template_len;
-  char *result;
-
-  /* The result of choose_tmpdir is a cached buffer within libiberty, so
-     we must *not* free it.  */
-  tmpdir_buf = choose_tmpdir ();
-
-  /* choose_tmpdir aborts on malloc failure.  */
-  gcc_assert (tmpdir_buf);
-
-  tmpdir_len = strlen (tmpdir_buf);
-  /* tmpdir_buf should now have a dir separator as the final byte.  */
-  gcc_assert (tmpdir_len > 0);
-  gcc_assert (tmpdir_buf[tmpdir_len - 1] == DIR_SEPARATOR);
-
-  file_template_buf = "libgccjit-XXXXXX";
-  file_template_len = strlen (file_template_buf);
-
-  result = XNEWVEC (char, tmpdir_len + file_template_len + 1);
-  strcpy (result, tmpdir_buf);
-  strcpy (result + tmpdir_len, file_template_buf);
-
-  return result;
-}
-
 /* A subclass of auto_vec <char *> that frees all of its elements on
    deletion.  */
 
@@ -1589,19 +1536,12 @@ compile ()
   const char *ctxt_progname;
   result *result_obj = NULL;
 
-  m_path_template = make_tempdir_path_template ();
-  if (!m_path_template)
-    return NULL;
+  int keep_intermediates =
+    get_bool_option (GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES);
 
-  /* Create tempdir using mkdtemp.  This is created with 0700 perms and
-     is unique.  Hence no other (non-root) users should have access to
-     the paths within it.  */
-  m_path_tempdir = mkdtemp (m_path_template);
-  if (!m_path_tempdir)
+  m_tempdir = new tempdir (keep_intermediates);
+  if (!m_tempdir->create ())
     return NULL;
-  m_path_c_file = concat (m_path_tempdir, "/fake.c", NULL);
-  m_path_s_file = concat (m_path_tempdir, "/fake.s", NULL);
-  m_path_so_file = concat (m_path_tempdir, "/fake.so", NULL);
 
   /* Call into the rest of gcc.
      For now, we have to assemble command-line options to pass into
@@ -1706,7 +1646,7 @@ make_fake_args (vec <char *> *argvec,
 #define ADD_ARG_TAKE_OWNERSHIP(arg) argvec->safe_push (arg)
 
   ADD_ARG (ctxt_progname);
-  ADD_ARG (m_path_c_file);
+  ADD_ARG (get_path_c_file ());
   ADD_ARG ("-fPIC");
 
   /* Handle int options: */
@@ -1886,10 +1826,10 @@ convert_to_dso (const char *ctxt_progname)
   argv[0] = gcc_driver_name;
   argv[1] = "-shared";
   /* The input: assembler.  */
-  argv[2] = m_path_s_file;
+  argv[2] = m_tempdir->get_path_s_file ();
   /* The output: shared library.  */
   argv[3] = "-o";
-  argv[4] = m_path_so_file;
+  argv[4] = m_tempdir->get_path_so_file ();
 
   /* Don't use the linker plugin.
      If running with just a "make" and not a "make install", then we'd
@@ -1953,7 +1893,8 @@ dlopen_built_dso ()
   /* Clear any existing error.  */
   dlerror ();
 
-  handle = dlopen (m_path_so_file, RTLD_NOW | RTLD_LOCAL);
+  handle = dlopen (m_tempdir->get_path_so_file (),
+		   RTLD_NOW | RTLD_LOCAL);
   if ((error = dlerror()) != NULL)  {
     add_error (NULL, "%s", error);
   }
@@ -2038,7 +1979,7 @@ dump_generated_code ()
 {
   char buf[4096];
   size_t sz;
-  FILE *f_in = fopen (m_path_s_file, "r");
+  FILE *f_in = fopen (get_path_s_file (), "r");
   if (!f_in)
     return;
 
@@ -2046,6 +1987,37 @@ dump_generated_code ()
     fwrite (buf, 1, sz, stderr);
 
   fclose (f_in);
+}
+
+/* Get the supposed path of the notional "fake.c" file within the
+   tempdir.  This file doesn't exist, but the rest of the compiler
+   needs a name.  */
+
+const char *
+playback::context::
+get_path_c_file () const
+{
+  return m_tempdir->get_path_c_file ();
+}
+
+/* Get the path of the assembler output file "fake.s" file within the
+   tempdir. */
+
+const char *
+playback::context::
+get_path_s_file () const
+{
+  return m_tempdir->get_path_s_file ();
+}
+
+/* Get the path of the DSO object file "fake.so" file within the
+   tempdir. */
+
+const char *
+playback::context::
+get_path_so_file () const
+{
+  return m_tempdir->get_path_so_file ();
 }
 
 /* qsort comparator for comparing pairs of playback::source_line *,

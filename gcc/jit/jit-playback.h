@@ -231,6 +231,10 @@ private:
 
   void handle_locations ();
 
+  const char * get_path_c_file () const;
+  const char * get_path_s_file () const;
+  const char * get_path_so_file () const;
+
 private:
 
   /* Functions for implementing "compile".  */
@@ -259,16 +263,7 @@ private:
 private:
   ::gcc::jit::recording::context *m_recording_ctxt;
 
-  /* Allocated using xmalloc (by xstrdup).  */
-  char *m_path_template;
-
-  /* This either aliases m_path_template, or is NULL.  */
-  char *m_path_tempdir;
-
-  /* The following are allocated using xmalloc.  */
-  char *m_path_c_file;
-  char *m_path_s_file;
-  char *m_path_so_file;
+  tempdir *m_tempdir;
 
   auto_vec<function *> m_functions;
   tree m_char_array_type_node;

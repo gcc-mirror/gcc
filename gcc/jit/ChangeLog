@@ -1,5 +1,35 @@
 2014-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+        PR jit/64206
+	* Make-lang.in (jit_OBJS): Add jit/jit-tempdir.o.
+	* jit-common.h (gcc::jit::tempdir): New forward decl.
+	* jit-playback.c: Include jit-tempdir.h.
+	(gcc::jit::playback::context::context): Initialize m_tempdir.
+	(gcc::jit::playback::context::~context): Move tempdir
+	cleanup to new file jit-tempdir.c
+	(make_tempdir_path_template): Move to new file jit-tempdir.c.
+	(gcc::jit::playback::context::compile): Move tempdir creation
+	to new tempdir object in new file jit-tempdir.c.
+	(gcc::jit::playback::context::make_fake_args): Get path from
+	tempdir object rather than from member data.
+	(gcc::jit::playback::context::convert_to_dso): Likewise.
+	(gcc::jit::playback::context::dlopen_built_dso): Likewise.
+	(gcc::jit::playback::context::dump_generated_code): Likewise.
+	(gcc::jit::playback::context::get_path_c_file): New function.
+	(gcc::jit::playback::context::get_path_s_file): New function.
+	(gcc::jit::playback::context::get_path_so_file): New function.
+	* jit-playback.h (gcc::jit::playback::context::get_path_c_file):
+	New function.
+	(gcc::jit::playback::context::get_path_s_file): New function.
+	(gcc::jit::playback::context::get_path_so_file): New function.
+	(gcc::jit::playback::context): Move fields "m_path_template",
+	"m_path_tempdir", "m_path_c_file", "m_path_s_file",
+	"m_path_so_file" to new jit::tempdir class; add field "m_tempdir".
+	* jit-tempdir.c: New file.
+	* jit-tempdir.h: New file.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit-playback.c (gcc::jit::playback::context::compile): Acquire the
 	mutex here, immediately before using toplev, and release it here, on
 	each exit path after acquisition.
