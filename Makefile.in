@@ -2392,6 +2392,18 @@ mail-report-with-warnings.log: warning.log
 	chmod +x $@
 	echo If you really want to send e-mail, run ./$@ now
 
+# Local Vim config
+
+$(srcdir)/.local.vimrc:
+	$(LN_S) $(srcdir)/contrib/vimrc $@
+
+$(srcdir)/.lvimrc:
+	$(LN_S) $(srcdir)/contrib/vimrc $@
+
+vimrc: $(srcdir)/.local.vimrc $(srcdir)/.lvimrc
+
+.PHONY: vimrc
+
 # Installation targets.
 
 .PHONY: install uninstall

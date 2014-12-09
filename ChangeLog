@@ -1,4 +1,11 @@
-2014-12-04	Jack Howarth  <howarth@bromo.med.uc.edu>
+2014-12-09  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	* .gitignore: Added .local.vimrc and .lvimrc.
+	* Makefile.tpl (vimrc, .lvimrc, .local.vimrc): New targets.
+	* Makefile.in: Regenerate.
+
+2014-12-04  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* config/isl.m4: Don't pass -DCLOOG_INT_GMP on islinc.
 	* configure: Regenerated.
