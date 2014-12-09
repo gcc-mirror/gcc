@@ -1,3 +1,12 @@
+2014-12-09  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backport from mainline
+	2014-12-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/xcoff.h (ASM_OUTPUT_ALIGNED_LOCAL): Append
+	alignment to section name. Increase default alignment to
+	word.
+
 2014-12-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR bootstrap/64213
