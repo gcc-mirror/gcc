@@ -1,5 +1,9 @@
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-simd.md (aarch64_get_lanedi): Remove.
+
+2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
+
 	PR target/63870
 	* config/aarch64/aarch64-simd-builtins.def (be_checked_get_lane):
 	Delete.

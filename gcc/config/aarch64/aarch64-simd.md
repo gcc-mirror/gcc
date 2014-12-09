@@ -2464,17 +2464,6 @@
   [(set_attr "type" "neon_to_gp<q>, neon_dup<q>, neon_store1_one_lane<q>")]
 )
 
-(define_expand "aarch64_get_lanedi"
-  [(match_operand:DI 0 "register_operand")
-   (match_operand:DI 1 "register_operand")
-   (match_operand:SI 2 "immediate_operand")]
-  "TARGET_SIMD"
-{
-  aarch64_simd_lane_bounds (operands[2], 0, 1, NULL);
-  emit_move_insn (operands[0], operands[1]);
-  DONE;
-})
-
 ;; In this insn, operand 1 should be low, and operand 2 the high part of the
 ;; dest vector.
 
