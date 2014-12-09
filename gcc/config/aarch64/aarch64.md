@@ -2154,9 +2154,8 @@
 )
 
 (define_insn_and_split "absdi2"
-  [(set (match_operand:DI 0 "register_operand" "=r,w")
-	(abs:DI (match_operand:DI 1 "register_operand" "r,w")))
-   (clobber (match_scratch:DI 2 "=&r,X"))]
+  [(set (match_operand:DI 0 "register_operand" "=&r,w")
+	(abs:DI (match_operand:DI 1 "register_operand" "r,w")))]
   ""
   "@
    #
@@ -2166,7 +2165,7 @@
    && GP_REGNUM_P (REGNO (operands[1]))"
   [(const_int 0)]
   {
-    emit_insn (gen_rtx_SET (VOIDmode, operands[2],
+    emit_insn (gen_rtx_SET (VOIDmode, operands[0],
 			    gen_rtx_XOR (DImode,
 					 gen_rtx_ASHIFTRT (DImode,
 							   operands[1],
@@ -2175,7 +2174,7 @@
     emit_insn (gen_rtx_SET (VOIDmode,
 			    operands[0],
 			    gen_rtx_MINUS (DImode,
-					   operands[2],
+					   operands[0],
 					   gen_rtx_ASHIFTRT (DImode,
 							     operands[1],
 							     GEN_INT (63)))));

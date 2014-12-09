@@ -128,11 +128,9 @@ typedef struct
   enum aarch64_type_qualifiers *qualifiers;
 } aarch64_simd_builtin_datum;
 
-/*  The qualifier_internal allows generation of a unary builtin from
-    a pattern with a third pseudo-operand such as a match_scratch.  */
 static enum aarch64_type_qualifiers
 aarch64_types_unop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_none, qualifier_internal };
+  = { qualifier_none, qualifier_none };
 #define TYPES_UNOP (aarch64_types_unop_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_unopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -1282,7 +1280,7 @@ aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
 
   switch (fcode)
     {
-      BUILTIN_VALLDI (UNOP, abs, 2)
+      BUILTIN_VDQF (UNOP, abs, 2)
 	return fold_build1 (ABS_EXPR, type, args[0]);
 	break;
       VAR1 (UNOP, floatv2si, 2, v2sf)
