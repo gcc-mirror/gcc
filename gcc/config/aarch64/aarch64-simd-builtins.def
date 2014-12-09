@@ -49,9 +49,6 @@
   BUILTIN_VS (UNOP, ctz, 2)
   BUILTIN_VB (UNOP, popcount, 2)
 
-  /* be_checked_get_lane does its own lane swapping, so not a lane index.  */
-  BUILTIN_VALL (GETREG, be_checked_get_lane, 0)
-
   /* Implemented by aarch64_<sur>q<r>shl<mode>.  */
   BUILTIN_VSDQ_I (BINOP, sqshl, 0)
   BUILTIN_VSDQ_I (BINOP_UUS, uqshl, 0)

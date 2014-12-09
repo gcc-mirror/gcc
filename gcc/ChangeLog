@@ -1,6 +1,74 @@
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/63870
+	* config/aarch64/aarch64-simd-builtins.def (be_checked_get_lane):
+	Delete.
+	* config/aarch64/aarch64-simd.md (aarch64_be_checked_get_lane<mode\>):
+	Delete.
+	* config/aarch64/arm_neon.h (aarch64_vget_lane_any): Use GCC
+	vector extensions, __aarch64_lane, __builtin_aarch64_im_lane_boundsi.
+	(__aarch64_vget_lane_f32, __aarch64_vget_lane_f64,
+	__aarch64_vget_lane_p8, __aarch64_vget_lane_p16,
+	__aarch64_vget_lane_s8, __aarch64_vget_lane_s16,
+	__aarch64_vget_lane_s32, __aarch64_vget_lane_s64,
+	__aarch64_vget_lane_u8, __aarch64_vget_lane_u16,
+	__aarch64_vget_lane_u32, __aarch64_vget_lane_u64,
+	__aarch64_vgetq_lane_f32, __aarch64_vgetq_lane_f64,
+	__aarch64_vgetq_lane_p8, __aarch64_vgetq_lane_p16,
+	__aarch64_vgetq_lane_s8, __aarch64_vgetq_lane_s16,
+	__aarch64_vgetq_lane_s32, __aarch64_vgetq_lane_s64,
+	__aarch64_vgetq_lane_u8, __aarch64_vgetq_lane_u16,
+	__aarch64_vgetq_lane_u32, __aarch64_vgetq_lane_u64): Delete.
+	(__aarch64_vdup_lane_any): Use __aarch64_vget_lane_any, remove
+	'q2' argument.
+	(__aarch64_vdup_lane_f32, __aarch64_vdup_lane_f64,
+	__aarch64_vdup_lane_p8, __aarch64_vdup_lane_p16,
+	__aarch64_vdup_lane_s8, __aarch64_vdup_lane_s16,
+	__aarch64_vdup_lane_s32, __aarch64_vdup_lane_s64,
+	__aarch64_vdup_lane_u8, __aarch64_vdup_lane_u16,
+	__aarch64_vdup_lane_u32, __aarch64_vdup_lane_u64,
+	__aarch64_vdup_laneq_f32, __aarch64_vdup_laneq_f64,
+	__aarch64_vdup_laneq_p8, __aarch64_vdup_laneq_p16,
+	__aarch64_vdup_laneq_s8, __aarch64_vdup_laneq_s16,
+	__aarch64_vdup_laneq_s32, __aarch64_vdup_laneq_s64,
+	__aarch64_vdup_laneq_u8, __aarch64_vdup_laneq_u16,
+	__aarch64_vdup_laneq_u32, __aarch64_vdup_laneq_u64): Remove argument
+	to __aarch64_vdup_lane_any.
+	(vget_lane_f32, vget_lane_f64, vget_lane_p8, vget_lane_p16,
+	vget_lane_s8, vget_lane_s16, vget_lane_s32, vget_lane_s64,
+	vget_lane_u8, vget_lane_u16, vget_lane_u32, vget_lane_u64,
+	vgetq_lane_f32, vgetq_lane_f64, vgetq_lane_p8, vgetq_lane_p16,
+	vgetq_lane_s8, vgetq_lane_s16, vgetq_lane_s32, vgetq_lane_s64,
+	vgetq_lane_u8, vgetq_lane_u16, vgetq_lane_u32, vgetq_lane_u64,
+	vdupb_lane_p8, vdupb_lane_s8, vdupb_lane_u8, vduph_lane_p16,
+	vduph_lane_s16, vduph_lane_u16, vdups_lane_f32, vdups_lane_s32,
+	vdups_lane_u32, vdupb_laneq_p8, vdupb_laneq_s8, vdupb_laneq_u8,
+	vduph_laneq_p16, vduph_laneq_s16, vduph_laneq_u16, vdups_laneq_f32,
+	vdups_laneq_s32, vdups_laneq_u32, vdupd_laneq_f64, vdupd_laneq_s64,
+	vdupd_laneq_u64, vfmas_lane_f32, vfma_laneq_f64, vfmad_laneq_f64,
+	vfmas_laneq_f32, vfmss_lane_f32, vfms_laneq_f64, vfmsd_laneq_f64,
+	vfmss_laneq_f32, vmla_lane_f32, vmla_lane_s16, vmla_lane_s32,
+	vmla_lane_u16, vmla_lane_u32, vmla_laneq_f32, vmla_laneq_s16,
+	vmla_laneq_s32, vmla_laneq_u16, vmla_laneq_u32, vmlaq_lane_f32,
+	vmlaq_lane_s16, vmlaq_lane_s32, vmlaq_lane_u16, vmlaq_lane_u32,
+	vmlaq_laneq_f32, vmlaq_laneq_s16, vmlaq_laneq_s32, vmlaq_laneq_u16,
+	vmlaq_laneq_u32, vmls_lane_f32, vmls_lane_s16, vmls_lane_s32,
+	vmls_lane_u16, vmls_lane_u32, vmls_laneq_f32, vmls_laneq_s16,
+	vmls_laneq_s32, vmls_laneq_u16, vmls_laneq_u32, vmlsq_lane_f32,
+	vmlsq_lane_s16, vmlsq_lane_s32, vmlsq_lane_u16, vmlsq_lane_u32,
+	vmlsq_laneq_f32, vmlsq_laneq_s16, vmlsq_laneq_s32, vmlsq_laneq_u16,
+	vmlsq_laneq_u32, vmul_lane_f32, vmul_lane_s16, vmul_lane_s32,
+	vmul_lane_u16, vmul_lane_u32, vmuld_lane_f64, vmuld_laneq_f64,
+	vmuls_lane_f32, vmuls_laneq_f32, vmul_laneq_f32, vmul_laneq_f64,
+	vmul_laneq_s16, vmul_laneq_s32, vmul_laneq_u16, vmul_laneq_u32,
+	vmulq_lane_f32, vmulq_lane_s16, vmulq_lane_s32, vmulq_lane_u16,
+	vmulq_lane_u32, vmulq_laneq_f32, vmulq_laneq_f64, vmulq_laneq_s16,
+	vmulq_laneq_s32, vmulq_laneq_u16, vmulq_laneq_u32) : Use
+	__aarch64_vget_lane_any.
+
+2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/63870
 	* gcc/config/aarch64-builtins.c (aarch64_simd_expand_args): Update error
 	message for SIMD_ARG_CONSTANT.
 
