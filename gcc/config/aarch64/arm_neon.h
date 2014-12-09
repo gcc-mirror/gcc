@@ -604,173 +604,28 @@ typedef struct poly16x8x4_t
 #define __aarch64_vdupq_laneq_u64(__a, __b) \
    __aarch64_vdup_lane_any (u64, q, q, __a, __b)
 
-/* vset_lane and vld1_lane internal macro.  */
+/* Internal macro for lane indices.  */
 
-#ifdef __AARCH64EB__
+#define __AARCH64_NUM_LANES(__v) (sizeof (__v) / sizeof (__v[0]))
+
 /* For big-endian, GCC's vector indices are the opposite way around
    to the architectural lane indices used by Neon intrinsics.  */
-#define __aarch64_vset_lane_any(__vec, __index, __val, __lanes) \
-  __extension__							\
-  ({								\
-    __builtin_aarch64_im_lane_boundsi (__index, __lanes);	\
-    __vec[__lanes - 1 - __index] = __val;			\
-    __vec;							\
-  })
+#ifdef __AARCH64EB__
+#define __aarch64_lane(__vec, __idx) (__AARCH64_NUM_LANES (__vec) - 1 - __idx)
 #else
-#define __aarch64_vset_lane_any(__vec, __index, __val, __lanes) \
-  __extension__							\
-  ({								\
-    __builtin_aarch64_im_lane_boundsi (__index, __lanes);	\
-    __vec[__index] = __val;					\
-    __vec;							\
-  })
+#define __aarch64_lane(__vec, __idx) __idx
 #endif
 
-/* vset_lane  */
+/* vset_lane and vld1_lane internal macro.  */
 
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vset_lane_f32 (float32_t __elem, float32x2_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 2);
-}
-
-__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
-vset_lane_f64 (float64_t __elem, float64x1_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 1);
-}
-
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vset_lane_p8 (poly8_t __elem, poly8x8_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 8);
-}
-
-__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
-vset_lane_p16 (poly16_t __elem, poly16x4_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 4);
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vset_lane_s8 (int8_t __elem, int8x8_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 8);
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vset_lane_s16 (int16_t __elem, int16x4_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 4);
-}
-
-__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vset_lane_s32 (int32_t __elem, int32x2_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 2);
-}
-
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vset_lane_s64 (int64_t __elem, int64x1_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 1);
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vset_lane_u8 (uint8_t __elem, uint8x8_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 8);
-}
-
-__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vset_lane_u16 (uint16_t __elem, uint16x4_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 4);
-}
-
-__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
-vset_lane_u32 (uint32_t __elem, uint32x2_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 2);
-}
-
-__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
-vset_lane_u64 (uint64_t __elem, uint64x1_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 1);
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vsetq_lane_f32 (float32_t __elem, float32x4_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 4);
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vsetq_lane_f64 (float64_t __elem, float64x2_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 2);
-}
-
-__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
-vsetq_lane_p8 (poly8_t __elem, poly8x16_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 16);
-}
-
-__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
-vsetq_lane_p16 (poly16_t __elem, poly16x8_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 8);
-}
-
-__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vsetq_lane_s8 (int8_t __elem, int8x16_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 16);
-}
-
-__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
-vsetq_lane_s16 (int16_t __elem, int16x8_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 8);
-}
-
-__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
-vsetq_lane_s32 (int32_t __elem, int32x4_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 4);
-}
-
-__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
-vsetq_lane_s64 (int64_t __elem, int64x2_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 2);
-}
-
-__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
-vsetq_lane_u8 (uint8_t __elem, uint8x16_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 16);
-}
-
-__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
-vsetq_lane_u16 (uint16_t __elem, uint16x8_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 8);
-}
-
-__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
-vsetq_lane_u32 (uint32_t __elem, uint32x4_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 4);
-}
-
-__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
-vsetq_lane_u64 (uint64_t __elem, uint64x2_t __vec, const int __index)
-{
-  return __aarch64_vset_lane_any (__vec, __index, __elem, 2);
-}
+#define __aarch64_vset_lane_any(__elem, __vec, __index)			\
+  __extension__								\
+  ({									\
+    __builtin_aarch64_im_lane_boundsi (__index,			\
+       __AARCH64_NUM_LANES (__vec));					\
+    __vec[__aarch64_lane (__vec, __index)] = __elem;			\
+    __vec;								\
+  })
 
 /* vadd  */
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
@@ -4625,6 +4480,154 @@ __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vreinterpretq_u32_p16 (poly16x8_t __a)
 {
   return (uint32x4_t) __a;
+}
+
+/* vset_lane  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vset_lane_f32 (float32_t __elem, float32x2_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vset_lane_f64 (float64_t __elem, float64x1_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vset_lane_p8 (poly8_t __elem, poly8x8_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vset_lane_p16 (poly16_t __elem, poly16x4_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vset_lane_s8 (int8_t __elem, int8x8_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vset_lane_s16 (int16_t __elem, int16x4_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vset_lane_s32 (int32_t __elem, int32x2_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vset_lane_s64 (int64_t __elem, int64x1_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vset_lane_u8 (uint8_t __elem, uint8x8_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vset_lane_u16 (uint16_t __elem, uint16x4_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vset_lane_u32 (uint32_t __elem, uint32x2_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vset_lane_u64 (uint64_t __elem, uint64x1_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+/* vsetq_lane  */
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vsetq_lane_f32 (float32_t __elem, float32x4_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vsetq_lane_f64 (float64_t __elem, float64x2_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vsetq_lane_p8 (poly8_t __elem, poly8x16_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
+vsetq_lane_p16 (poly16_t __elem, poly16x8_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vsetq_lane_s8 (int8_t __elem, int8x16_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vsetq_lane_s16 (int16_t __elem, int16x8_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vsetq_lane_s32 (int32_t __elem, int32x4_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vsetq_lane_s64 (int64_t __elem, int64x2_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vsetq_lane_u8 (uint8_t __elem, uint8x16_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vsetq_lane_u16 (uint16_t __elem, uint16x8_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vsetq_lane_u32 (uint32_t __elem, uint32x4_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
+}
+
+__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
+vsetq_lane_u64 (uint64_t __elem, uint64x2_t __vec, const int __index)
+{
+  return __aarch64_vset_lane_any (__elem, __vec, __index);
 }
 
 #define __GET_LOW(__TYPE) \
@@ -15730,73 +15733,73 @@ vld1q_dup_u64 (const uint64_t* __a)
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vld1_lane_f32 (const float32_t *__src, float32x2_t __vec, const int __lane)
 {
-  return vset_lane_f32 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
 vld1_lane_f64 (const float64_t *__src, float64x1_t __vec, const int __lane)
 {
-  return vset_lane_f64 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
 vld1_lane_p8 (const poly8_t *__src, poly8x8_t __vec, const int __lane)
 {
-  return vset_lane_p8 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
 vld1_lane_p16 (const poly16_t *__src, poly16x4_t __vec, const int __lane)
 {
-  return vset_lane_p16 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vld1_lane_s8 (const int8_t *__src, int8x8_t __vec, const int __lane)
 {
-  return vset_lane_s8 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 vld1_lane_s16 (const int16_t *__src, int16x4_t __vec, const int __lane)
 {
-  return vset_lane_s16 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
 vld1_lane_s32 (const int32_t *__src, int32x2_t __vec, const int __lane)
 {
-  return vset_lane_s32 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vld1_lane_s64 (const int64_t *__src, int64x1_t __vec, const int __lane)
 {
-  return vset_lane_s64 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
 vld1_lane_u8 (const uint8_t *__src, uint8x8_t __vec, const int __lane)
 {
-  return vset_lane_u8 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
 vld1_lane_u16 (const uint16_t *__src, uint16x4_t __vec, const int __lane)
 {
-  return vset_lane_u16 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vld1_lane_u32 (const uint32_t *__src, uint32x2_t __vec, const int __lane)
 {
-  return vset_lane_u32 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vld1_lane_u64 (const uint64_t *__src, uint64x1_t __vec, const int __lane)
 {
-  return vset_lane_u64 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 /* vld1q_lane  */
@@ -15804,73 +15807,73 @@ vld1_lane_u64 (const uint64_t *__src, uint64x1_t __vec, const int __lane)
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vld1q_lane_f32 (const float32_t *__src, float32x4_t __vec, const int __lane)
 {
-  return vsetq_lane_f32 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
 vld1q_lane_f64 (const float64_t *__src, float64x2_t __vec, const int __lane)
 {
-  return vsetq_lane_f64 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
 vld1q_lane_p8 (const poly8_t *__src, poly8x16_t __vec, const int __lane)
 {
-  return vsetq_lane_p8 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
 vld1q_lane_p16 (const poly16_t *__src, poly16x8_t __vec, const int __lane)
 {
-  return vsetq_lane_p16 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vld1q_lane_s8 (const int8_t *__src, int8x16_t __vec, const int __lane)
 {
-  return vsetq_lane_s8 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
 vld1q_lane_s16 (const int16_t *__src, int16x8_t __vec, const int __lane)
 {
-  return vsetq_lane_s16 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
 vld1q_lane_s32 (const int32_t *__src, int32x4_t __vec, const int __lane)
 {
-  return vsetq_lane_s32 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vld1q_lane_s64 (const int64_t *__src, int64x2_t __vec, const int __lane)
 {
-  return vsetq_lane_s64 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vld1q_lane_u8 (const uint8_t *__src, uint8x16_t __vec, const int __lane)
 {
-  return vsetq_lane_u8 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vld1q_lane_u16 (const uint16_t *__src, uint16x8_t __vec, const int __lane)
 {
-  return vsetq_lane_u16 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vld1q_lane_u32 (const uint32_t *__src, uint32x4_t __vec, const int __lane)
 {
-  return vsetq_lane_u32 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
 vld1q_lane_u64 (const uint64_t *__src, uint64x2_t __vec, const int __lane)
 {
-  return vsetq_lane_u64 (*__src, __vec, __lane);
+  return __aarch64_vset_lane_any (*__src, __vec, __lane);
 }
 
 /* vldn */

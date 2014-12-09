@@ -1,5 +1,9 @@
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/vld1_lane-o0.c: New test.
+
+2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/vabs_intrinsic_2.c: New test.
 
 2014-12-09  David Malcolm  <dmalcolm@redhat.com>

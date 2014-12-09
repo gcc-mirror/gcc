@@ -1,5 +1,19 @@
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/arm_neon.h (__AARCH64_NUM_LANES, __aarch64_lane *2):
+	New.
+	(aarch64_vset_lane_any): Redefine using previous, same for BE + LE.
+	(vset_lane_f32, vset_lane_f64, vset_lane_p8, vset_lane_p16,
+	vset_lane_s8, vset_lane_s16, vset_lane_s32, vset_lane_s64,
+	vset_lane_u8, vset_lane_u16, vset_lane_u32, vset_lane_u64): Remove
+	number of lanes.
+	(vld1_lane_f32, vld1_lane_f64, vld1_lane_p8, vld1_lane_p16,
+	vld1_lane_s8, vld1_lane_s16, vld1_lane_s32, vld1_lane_s64,
+	vld1_lane_u8, vld1_lane_u16, vld1_lane_u32, vld1_lane_u64): Call
+	__aarch64_vset_lane_any rather than vset_lane_xxx.
+
+2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64.md (absdi2): Remove scratch operand by
 	earlyclobbering result operand.
 
