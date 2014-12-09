@@ -436,7 +436,7 @@ typedef struct poly16x8x4_t
   __aarch64_vget_lane_any (v2sf, , , __a, __b)
 #define __aarch64_vget_lane_f64(__a, __b) __extension__	\
   ({							\
-    __builtin_aarch64_im_lane_boundsi (__b, 1);		\
+    __AARCH64_LANE_CHECK (__a, __b);		\
     __a[0];						\
   })
 
@@ -453,7 +453,7 @@ typedef struct poly16x8x4_t
   __aarch64_vget_lane_any (v2si, , ,__a, __b)
 #define __aarch64_vget_lane_s64(__a, __b) __extension__	\
   ({							\
-    __builtin_aarch64_im_lane_boundsi (__b, 1);		\
+    __AARCH64_LANE_CHECK (__a, __b);		\
     __a[0];						\
   })
 
@@ -465,7 +465,7 @@ typedef struct poly16x8x4_t
   __aarch64_vget_lane_any (v2si, (uint32_t), (int32x2_t), __a, __b)
 #define __aarch64_vget_lane_u64(__a, __b) __extension__	\
   ({							\
-    __builtin_aarch64_im_lane_boundsi (__b, 1);		\
+    __AARCH64_LANE_CHECK (__a, __b);		\
     __a[0];						\
   })
 
@@ -607,6 +607,8 @@ typedef struct poly16x8x4_t
 /* Internal macro for lane indices.  */
 
 #define __AARCH64_NUM_LANES(__v) (sizeof (__v) / sizeof (__v[0]))
+#define __AARCH64_LANE_CHECK(__vec, __idx)	\
+	__builtin_aarch64_im_lane_boundsi (__AARCH64_NUM_LANES (__vec), __idx)
 
 /* For big-endian, GCC's vector indices are the opposite way around
    to the architectural lane indices used by Neon intrinsics.  */
@@ -621,8 +623,7 @@ typedef struct poly16x8x4_t
 #define __aarch64_vset_lane_any(__elem, __vec, __index)			\
   __extension__								\
   ({									\
-    __builtin_aarch64_im_lane_boundsi (__index,			\
-       __AARCH64_NUM_LANES (__vec));					\
+    __AARCH64_LANE_CHECK (__vec, __index);				\
     __vec[__aarch64_lane (__vec, __index)] = __elem;			\
     __vec;								\
   })
@@ -14764,21 +14765,21 @@ vdups_lane_u32 (uint32x2_t __a, const int __b)
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vdupd_lane_f64 (float64x1_t __a, const int __b)
 {
-  __builtin_aarch64_im_lane_boundsi (__b, 1);
+  __AARCH64_LANE_CHECK (__a, __b);
   return __a[0];
 }
 
 __extension__ static __inline int64_t __attribute__ ((__always_inline__))
 vdupd_lane_s64 (int64x1_t __a, const int __b)
 {
-  __builtin_aarch64_im_lane_boundsi (__b, 1);
+  __AARCH64_LANE_CHECK (__a, __b);
   return __a[0];
 }
 
 __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
 vdupd_lane_u64 (uint64x1_t __a, const int __b)
 {
-  __builtin_aarch64_im_lane_boundsi (__b, 1);
+  __AARCH64_LANE_CHECK (__a, __b);
   return __a[0];
 }
 
@@ -14863,7 +14864,7 @@ vdupd_laneq_u64 (uint64x2_t __a, const int __b)
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vext_f32 (float32x2_t __a, float32x2_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 2);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint32x2_t) {2-__c, 3-__c});
 #else
@@ -14874,14 +14875,14 @@ vext_f32 (float32x2_t __a, float32x2_t __b, __const int __c)
 __extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
 vext_f64 (float64x1_t __a, float64x1_t __b, __const int __c)
 {
+  __AARCH64_LANE_CHECK (__a, __c);
   /* The only possible index to the assembler instruction returns element 0.  */
-  __builtin_aarch64_im_lane_boundsi (__c, 1);
   return __a;
 }
 __extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
 vext_p8 (poly8x8_t __a, poly8x8_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 8);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint8x8_t)
       {8-__c, 9-__c, 10-__c, 11-__c, 12-__c, 13-__c, 14-__c, 15-__c});
@@ -14894,7 +14895,7 @@ vext_p8 (poly8x8_t __a, poly8x8_t __b, __const int __c)
 __extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
 vext_p16 (poly16x4_t __a, poly16x4_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 4);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a,
       (uint16x4_t) {4-__c, 5-__c, 6-__c, 7-__c});
@@ -14906,7 +14907,7 @@ vext_p16 (poly16x4_t __a, poly16x4_t __b, __const int __c)
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vext_s8 (int8x8_t __a, int8x8_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 8);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint8x8_t)
       {8-__c, 9-__c, 10-__c, 11-__c, 12-__c, 13-__c, 14-__c, 15-__c});
@@ -14919,7 +14920,7 @@ vext_s8 (int8x8_t __a, int8x8_t __b, __const int __c)
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 vext_s16 (int16x4_t __a, int16x4_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 4);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a,
       (uint16x4_t) {4-__c, 5-__c, 6-__c, 7-__c});
@@ -14931,7 +14932,7 @@ vext_s16 (int16x4_t __a, int16x4_t __b, __const int __c)
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
 vext_s32 (int32x2_t __a, int32x2_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 2);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint32x2_t) {2-__c, 3-__c});
 #else
@@ -14942,15 +14943,15 @@ vext_s32 (int32x2_t __a, int32x2_t __b, __const int __c)
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vext_s64 (int64x1_t __a, int64x1_t __b, __const int __c)
 {
+  __AARCH64_LANE_CHECK (__a, __c);
   /* The only possible index to the assembler instruction returns element 0.  */
-  __builtin_aarch64_im_lane_boundsi (__c, 1);
   return __a;
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
 vext_u8 (uint8x8_t __a, uint8x8_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 8);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint8x8_t)
       {8-__c, 9-__c, 10-__c, 11-__c, 12-__c, 13-__c, 14-__c, 15-__c});
@@ -14963,7 +14964,7 @@ vext_u8 (uint8x8_t __a, uint8x8_t __b, __const int __c)
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
 vext_u16 (uint16x4_t __a, uint16x4_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 4);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a,
       (uint16x4_t) {4-__c, 5-__c, 6-__c, 7-__c});
@@ -14975,7 +14976,7 @@ vext_u16 (uint16x4_t __a, uint16x4_t __b, __const int __c)
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vext_u32 (uint32x2_t __a, uint32x2_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 2);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint32x2_t) {2-__c, 3-__c});
 #else
@@ -14986,15 +14987,15 @@ vext_u32 (uint32x2_t __a, uint32x2_t __b, __const int __c)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vext_u64 (uint64x1_t __a, uint64x1_t __b, __const int __c)
 {
+  __AARCH64_LANE_CHECK (__a, __c);
   /* The only possible index to the assembler instruction returns element 0.  */
-  __builtin_aarch64_im_lane_boundsi (__c, 1);
   return __a;
 }
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vextq_f32 (float32x4_t __a, float32x4_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 4);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a,
       (uint32x4_t) {4-__c, 5-__c, 6-__c, 7-__c});
@@ -15006,7 +15007,7 @@ vextq_f32 (float32x4_t __a, float32x4_t __b, __const int __c)
 __extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
 vextq_f64 (float64x2_t __a, float64x2_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 2);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint64x2_t) {2-__c, 3-__c});
 #else
@@ -15017,7 +15018,7 @@ vextq_f64 (float64x2_t __a, float64x2_t __b, __const int __c)
 __extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
 vextq_p8 (poly8x16_t __a, poly8x16_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 16);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint8x16_t)
       {16-__c, 17-__c, 18-__c, 19-__c, 20-__c, 21-__c, 22-__c, 23-__c,
@@ -15032,7 +15033,7 @@ vextq_p8 (poly8x16_t __a, poly8x16_t __b, __const int __c)
 __extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
 vextq_p16 (poly16x8_t __a, poly16x8_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 8);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint16x8_t)
       {8-__c, 9-__c, 10-__c, 11-__c, 12-__c, 13-__c, 14-__c, 15-__c});
@@ -15045,7 +15046,7 @@ vextq_p16 (poly16x8_t __a, poly16x8_t __b, __const int __c)
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vextq_s8 (int8x16_t __a, int8x16_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 16);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint8x16_t)
       {16-__c, 17-__c, 18-__c, 19-__c, 20-__c, 21-__c, 22-__c, 23-__c,
@@ -15060,7 +15061,7 @@ vextq_s8 (int8x16_t __a, int8x16_t __b, __const int __c)
 __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
 vextq_s16 (int16x8_t __a, int16x8_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 8);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint16x8_t)
       {8-__c, 9-__c, 10-__c, 11-__c, 12-__c, 13-__c, 14-__c, 15-__c});
@@ -15073,7 +15074,7 @@ vextq_s16 (int16x8_t __a, int16x8_t __b, __const int __c)
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
 vextq_s32 (int32x4_t __a, int32x4_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 4);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a,
       (uint32x4_t) {4-__c, 5-__c, 6-__c, 7-__c});
@@ -15085,7 +15086,7 @@ vextq_s32 (int32x4_t __a, int32x4_t __b, __const int __c)
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vextq_s64 (int64x2_t __a, int64x2_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 2);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint64x2_t) {2-__c, 3-__c});
 #else
@@ -15096,7 +15097,7 @@ vextq_s64 (int64x2_t __a, int64x2_t __b, __const int __c)
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vextq_u8 (uint8x16_t __a, uint8x16_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 16);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint8x16_t)
       {16-__c, 17-__c, 18-__c, 19-__c, 20-__c, 21-__c, 22-__c, 23-__c,
@@ -15111,7 +15112,7 @@ vextq_u8 (uint8x16_t __a, uint8x16_t __b, __const int __c)
 __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vextq_u16 (uint16x8_t __a, uint16x8_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 8);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint16x8_t)
       {8-__c, 9-__c, 10-__c, 11-__c, 12-__c, 13-__c, 14-__c, 15-__c});
@@ -15124,7 +15125,7 @@ vextq_u16 (uint16x8_t __a, uint16x8_t __b, __const int __c)
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vextq_u32 (uint32x4_t __a, uint32x4_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 4);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a,
       (uint32x4_t) {4-__c, 5-__c, 6-__c, 7-__c});
@@ -15136,7 +15137,7 @@ vextq_u32 (uint32x4_t __a, uint32x4_t __b, __const int __c)
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
 vextq_u64 (uint64x2_t __a, uint64x2_t __b, __const int __c)
 {
-  __builtin_aarch64_im_lane_boundsi (__c, 2);
+  __AARCH64_LANE_CHECK (__a, __c);
 #ifdef __AARCH64EB__
   return __builtin_shuffle (__b, __a, (uint64x2_t) {2-__c, 3-__c});
 #else
@@ -18965,7 +18966,7 @@ vmulq_lane_f32 (float32x4_t __a, float32x2_t __b, const int __lane)
 __extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
 vmulq_lane_f64 (float64x2_t __a, float64x1_t __b, const int __lane)
 {
-  __builtin_aarch64_im_lane_boundsi (__lane, 1);
+  __AARCH64_LANE_CHECK (__a, __lane);
   return __a * __b[0];
 }
 

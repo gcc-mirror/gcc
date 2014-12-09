@@ -4596,19 +4596,6 @@
   [(set_attr "type" "neon_ext<q>")]
 )
 
-;; This exists solely to check the arguments to the corresponding __builtin.
-;; Used where we want an error for out-of-range indices which would otherwise
-;; be silently wrapped (e.g. the mask to a __builtin_shuffle).
-(define_expand "aarch64_im_lane_boundsi"
-  [(match_operand:SI 0 "immediate_operand" "i")
-   (match_operand:SI 1 "immediate_operand" "i")]
-  "TARGET_SIMD"
-{
-  aarch64_simd_lane_bounds (operands[0], 0, INTVAL (operands[1]), NULL);
-  DONE;
-}
-)
-
 (define_insn "aarch64_rev<REVERSE:rev_op><mode>"
   [(set (match_operand:VALL 0 "register_operand" "=w")
 	(unspec:VALL [(match_operand:VALL 1 "register_operand" "w")]
