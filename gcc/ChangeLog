@@ -1,5 +1,12 @@
 2014-12-09  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* lto-cgraph.c (input_cgraph_1): Don't break existing
+	instrumentation clone references.
+	* lto/lto-symtab.c (lto_cgraph_replace_node): Redirect
+	instrumented_version references appropriately.
+
+2014-12-09  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	PR bootstrap/63995
 	* tree-chkp.c (chkp_make_static_bounds): Share bounds var
 	between nodes sharing assembler name.
