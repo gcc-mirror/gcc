@@ -1,3 +1,12 @@
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (gcc::jit::playback::context::compile): Move the
+	dlopen code into...
+	(gcc::jit::playback::context::dlopen_built_dso): ...this new
+	function.
+	* jit-playback.h (gcc::jit::playback::context::dlopen_built_dso):
+	New function.
+
 2014-12-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* libgccjit++.h: Indent the forward declarations of the classes to

@@ -250,6 +250,9 @@ private:
   void
   convert_to_dso (const char *ctxt_progname);
 
+  result *
+  dlopen_built_dso ();
+
 private:
   ::gcc::jit::recording::context *m_recording_ctxt;
 
