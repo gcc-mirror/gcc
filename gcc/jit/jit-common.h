@@ -98,6 +98,7 @@ namespace jit {
 class result;
 class dump;
 class builtins_manager; // declared within jit-builtins.h
+class tempdir;
 
 namespace recording {
 
