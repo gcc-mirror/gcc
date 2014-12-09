@@ -926,8 +926,8 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 	      if (!(*insn_data[icode].operand[opc].predicate)
 		  (op[opc], mode))
 	      {
-		error_at (EXPR_LOCATION (exp), "incompatible type for argument %d, "
-		       "expected %<const int%>", opc + 1);
+		error ("%Kargument %d must be a constant immediate",
+		       exp, opc + 1 - have_retval);
 		return const0_rtx;
 	      }
 	      break;

@@ -1,5 +1,10 @@
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc/config/aarch64-builtins.c (aarch64_simd_expand_args): Update error
+	message for SIMD_ARG_CONSTANT.
+
+2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-builtins.c (aarch64_types_binopv_qualifiers,
 	TYPES_BINOPV): Delete.
 	(enum aarch64_builtins): Add AARCH64_BUILTIN_SIMD_LANE_CHECK and
