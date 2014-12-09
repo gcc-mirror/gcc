@@ -1,3 +1,8 @@
+2014-12-09  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	* vimrc: New file.
+
 2014-12-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* check_GNU_style.sh: Warn for incorrect number of spaces in function
