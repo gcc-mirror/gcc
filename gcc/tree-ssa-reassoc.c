@@ -3988,6 +3988,9 @@ acceptable_pow_call (gimple stmt, tree *base, HOST_WIDE_INT *exponent)
   switch (DECL_FUNCTION_CODE (fndecl))
     {
     CASE_FLT_FN (BUILT_IN_POW):
+      if (flag_errno_math)
+	return false;
+
       *base = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
 
