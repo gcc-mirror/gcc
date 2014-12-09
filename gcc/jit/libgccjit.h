@@ -985,6 +985,40 @@ gcc_jit_block_end_with_void_return (gcc_jit_block *block,
 extern gcc_jit_context *
 gcc_jit_context_new_child_context (gcc_jit_context *parent_ctxt);
 
+/**********************************************************************
+ Implementation support.
+ **********************************************************************/
+
+/* Enable the dumping of a specific set of internal state from the
+   compilation, capturing the result in-memory as a buffer.
+
+   Parameter "dumpname" corresponds to the equivalent gcc command-line
+   option, without the "-fdump-" prefix.
+   For example, to get the equivalent of "-fdump-tree-vrp1", supply
+   "tree-vrp1".
+   The context directly stores the dumpname as a (const char *), so the
+   passed string must outlive the context.
+
+   gcc_jit_context_compile will capture the dump as a
+   dynamically-allocated buffer, writing it to ``*out_ptr``.
+
+   The caller becomes responsible for calling
+      free (*out_ptr)
+   each time that gcc_jit_context_compile is called.  *out_ptr will be
+   written to, either with the address of a buffer, or with NULL if an
+   error occurred.
+
+   This API entrypoint is likely to be less stable than the others.
+   In particular, both the precise dumpnames, and the format and content
+   of the dumps are subject to change.
+
+   It exists primarily for writing the library's own test suite.  */
+
+extern void
+gcc_jit_context_enable_dump (gcc_jit_context *ctxt,
+			     const char *dumpname,
+			     char **out_ptr);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -1,6 +1,48 @@
 2014-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/64166
+	* docs/topics/contexts.rst (Debugging): Add description of
+	gcc_jit_context_enable_dump.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c: Include context.h.
+	(class auto_argvec): New class.
+	(auto_argvec::~auto_argvec): New function.
+	(gcc::jit::playback::context::compile): Convert fake_args to be
+	an auto_argvec, so that it can contain dynamically-allocated
+	strings.   Construct a vec of all requested dumps, and pass it to
+	make_fake_args.  Extract requested dumps between the calls to
+	toplev::main and toplev::finalize.
+	(gcc::jit::playback::context::make_fake_args): Convert param
+	"argvec" to be a vec <char *>, and gain a "requested_dumps"
+	param.  Convert to dynamically-allocated arg strings by converting
+	ADD_ARG to take a copy of the arg, and add ADD_ARG_TAKE_OWNERSHIP
+	for args that are already a copy.  Add args for all requested dumps.
+	(gcc::jit::playback::context::extract_any_requested_dumps): New
+	function.
+	(gcc::jit::playback::context::read_dump_file): New function.
+	* jit-playback.h (gcc::jit::playback::context::make_fake_args):
+	Convert param "argvec" to be a vec <char *>, and gain a
+	"requested_dumps" param.
+	(gcc::jit::playback::context::extract_any_requested_dumps): New
+	function.
+	(gcc::jit::playback::context::read_dump_file): New function.
+	* jit-recording.c (gcc::jit::recording::context::enable_dump): New
+	function.
+	(gcc::jit::recording::context::get_all_requested_dumps): New
+	function.
+	* jit-recording.h (gcc::jit::recording::requested_dump): New
+	struct.
+	(gcc::jit::recording::context::enable_dump): New function.
+	(gcc::jit::recording::context::get_all_requested_dumps): New
+	function.
+	(gcc::jit::recording::context::m_requested_dumps): New field.
+	* libgccjit.c (gcc_jit_context_enable_dump): New API entrypoint.
+	* libgccjit.h (gcc_jit_context_enable_dump): New API entrypoint.
+	* libgccjit.map (gcc_jit_context_enable_dump): New API entrypoint.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64166
 	* dumpfile.c (gcc::dump_manager::get_dump_file_info_by_switch):
 	New function.
 	(gcc::dump_manager::get_dump_file_name): Split out bulk of

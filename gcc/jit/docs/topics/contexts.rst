@@ -152,6 +152,53 @@ Debugging
    :macro:`GCC_JIT_BOOL_OPTION_DEBUGINFO` to allow stepping through the
    code in a debugger.
 
+.. function:: void\
+              gcc_jit_context_enable_dump (gcc_jit_context *ctxt,\
+                                           const char *dumpname, \
+                                           char **out_ptr)
+
+   Enable the dumping of a specific set of internal state from the
+   compilation, capturing the result in-memory as a buffer.
+
+   Parameter "dumpname" corresponds to the equivalent gcc command-line
+   option, without the "-fdump-" prefix.
+   For example, to get the equivalent of :option:`-fdump-tree-vrp1`,
+   supply ``"tree-vrp1"``:
+
+   .. code-block:: c
+
+      static char *dump_vrp1;
+
+      void
+      create_code (gcc_jit_context *ctxt)
+      {
+         gcc_jit_context_enable_dump (ctxt, "tree-vrp1", &dump_vrp1);
+         /* (other API calls omitted for brevity) */
+      }
+
+   The context directly stores the dumpname as a ``(const char *)``, so
+   the passed string must outlive the context.
+
+   :func:`gcc_jit_context_compile` will capture the dump as a
+   dynamically-allocated buffer, writing it to ``*out_ptr``.
+
+   The caller becomes responsible for calling:
+
+   .. code-block:: c
+
+      free (*out_ptr)
+
+   each time that :func:`gcc_jit_context_compile` is called.
+   ``*out_ptr`` will be written to, either with the address of a buffer,
+   or with ``NULL`` if an error occurred.
+
+   .. warning::
+
+      This API entrypoint is likely to be less stable than the others.
+      In particular, both the precise dumpnames, and the format and content
+      of the dumps are subject to change.
+
+      It exists primarily for writing the library's own test suite.
 
 Options
 -------
