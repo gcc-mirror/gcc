@@ -20,10 +20,10 @@ Client Code   . Generated .            libgccjit.so
     ──────────────────────────>      .               .
               .           .    │ start of recording::context::compile ()
               .           .    │     .               .
-              .           .    │ ACQUIRE MUTEX       .
-              .           .    │     .               .
               .           .    │ start of playback::context::compile ()
               .           .    │   (create tempdir)  .
+              .           .    │     .               .
+              .           .    │ ACQUIRE MUTEX       .
               .           .    │     .               .
               .           .    V───────────────────────> toplev::main (for now)
               .           .          .               .       │
@@ -78,6 +78,8 @@ Client Code   . Generated .            libgccjit.so
               .           .    │     .               .
               .           .    │ Load DSO (dlopen "fake.so")
               .           .    │     .               .
+              .           .    │ RELEASE MUTEX       .
+              .           .    │     .               .
               .           .    │ end of playback::context::compile ()
               .           .    │     .               .
               .           .    │ playback::context dtor
@@ -86,8 +88,6 @@ Client Code   . Generated .            libgccjit.so
               .           .       │   ("fake.so" is unlinked from the
               .           .       │    filesystem at this point)
               .           .    <──   .               .
-              .           .    │     .               .
-              .           .    │ RELEASE MUTEX       .
               .           .    │     .               .
               .           .    │ end of recording::context::compile ()
    <───────────────────────────      .               .

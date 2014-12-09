@@ -1622,6 +1622,9 @@ compile ()
   if (errors_occurred ())
     return NULL;
 
+  /* Acquire the JIT mutex and set "this" as the active playback ctxt.  */
+  acquire_mutex ();
+
   /* This runs the compiler.  */
   toplev toplev (false);
   toplev.main (fake_args.length (),
@@ -1635,24 +1638,60 @@ compile ()
   /* Clean up the compiler.  */
   toplev.finalize ();
 
-  active_playback_ctxt = NULL;
+  /* Ideally we would release the jit mutex here, but we can't yet since
+     followup activities use timevars, which are global state.  */
 
   if (errors_occurred ())
-    return NULL;
+    {
+      release_mutex ();
+      return NULL;
+    }
 
   if (get_bool_option (GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE))
     dump_generated_code ();
 
   convert_to_dso (ctxt_progname);
   if (errors_occurred ())
-    return NULL;
+    {
+      release_mutex ();
+      return NULL;
+    }
 
   result_obj = dlopen_built_dso ();
+
+  release_mutex ();
 
   return result_obj;
 }
 
 /* Helper functions for gcc::jit::playback::context::compile.  */
+
+/* This mutex guards gcc::jit::recording::context::compile, so that only
+   one thread can be accessing the bulk of GCC's state at once.  */
+
+static pthread_mutex_t jit_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+/* Acquire jit_mutex and set "this" as the active playback ctxt.  */
+
+void
+playback::context::acquire_mutex ()
+{
+  /* Acquire the big GCC mutex. */
+  pthread_mutex_lock (&jit_mutex);
+  gcc_assert (NULL == active_playback_ctxt);
+  active_playback_ctxt = this;
+}
+
+/* Release jit_mutex and clear the active playback ctxt.  */
+
+void
+playback::context::release_mutex ()
+{
+  /* Release the big GCC mutex. */
+  gcc_assert (active_playback_ctxt == this);
+  active_playback_ctxt = NULL;
+  pthread_mutex_unlock (&jit_mutex);
+}
 
 /* Build a fake argv for toplev::main from the options set
    by the user on the context .  */

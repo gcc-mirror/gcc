@@ -1,5 +1,23 @@
 2014-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit-playback.c (gcc::jit::playback::context::compile): Acquire the
+	mutex here, immediately before using toplev, and release it here, on
+	each exit path after acquisition.
+	(jit_mutex): Move this variable here, from jit-recording.c.
+	(gcc::jit::playback::context::acquire_mutex): New function, based on
+	code in jit-recording.c.
+	(gcc::jit::playback::context::release_mutex): Likewise.
+	* jit-playback.h (gcc::jit::playback::context::acquire_mutex): New
+	function.
+	(gcc::jit::playback::context::release_mutex): New function.
+	* jit-recording.c (jit_mutex): Move this variable to jit-playback.c.
+	(gcc::jit::recording::context::compile): Move mutex-handling from
+	here into jit-playback.c's gcc::jit::playback::context::compile.
+	* notes.txt: Update to show the new locations of ACQUIRE_MUTEX
+	and RELEASE_MUTEX.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit-playback.c (gcc::jit::playback::context::compile): Move the
 	dlopen code into...
 	(gcc::jit::playback::context::dlopen_built_dso): ...this new

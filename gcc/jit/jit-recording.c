@@ -888,12 +888,6 @@ recording::context::enable_dump (const char *dumpname,
   m_requested_dumps.safe_push (d);
 }
 
-
-/* This mutex guards gcc::jit::recording::context::compile, so that only
-   one thread can be accessing the bulk of GCC's state at once.  */
-
-static pthread_mutex_t jit_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 /* Validate this context, and if it passes, compile it within a
    mutex.
 
@@ -908,19 +902,11 @@ recording::context::compile ()
   if (errors_occurred ())
     return NULL;
 
-  /* Acquire the big GCC mutex. */
-  pthread_mutex_lock (&jit_mutex);
-  gcc_assert (NULL == ::gcc::jit::active_playback_ctxt);
-
   /* Set up a playback context.  */
   ::gcc::jit::playback::context replayer (this);
-  ::gcc::jit::active_playback_ctxt = &replayer;
 
+  /* Use it.  */
   result *result_obj = replayer.compile ();
-
-  /* Release the big GCC mutex. */
-  ::gcc::jit::active_playback_ctxt = NULL;
-  pthread_mutex_unlock (&jit_mutex);
 
   return result_obj;
 }
