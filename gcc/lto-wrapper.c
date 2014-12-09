@@ -669,7 +669,7 @@ compile_offload_image (const char *target, const char *compiler_path,
       obstack_ptr_grow (&argv_obstack, filename);
 
       /* Append names of input object files.  */
-      for (unsigned i = 1; i < in_argc; i++)
+      for (unsigned i = 0; i < in_argc; i++)
 	obstack_ptr_grow (&argv_obstack, in_argv[i]);
 
       /* Append options from offload_lto sections.  */
@@ -883,6 +883,8 @@ run_gcc (unsigned argc, char *argv[])
   int new_head_argc;
   bool have_lto = false;
   bool have_offload = false;
+  unsigned lto_argc = 0, offload_argc = 0;
+  char **lto_argv, **offload_argv;
 
   /* Get the driver and options.  */
   collect_gcc = getenv ("COLLECT_GCC");
@@ -895,6 +897,11 @@ run_gcc (unsigned argc, char *argv[])
 					CL_LANG_ALL,
 					&decoded_options,
 					&decoded_options_count);
+
+  /* Allocate arrays for input object files with LTO or offload IL,
+     and for possible preceding arguments.  */
+  lto_argv = XNEWVEC (char *, argc);
+  offload_argv = XNEWVEC (char *, argc);
 
   /* Look at saved options in the IL files.  */
   for (i = 1; i < argc; ++i)
@@ -918,17 +925,27 @@ run_gcc (unsigned argc, char *argv[])
 	}
       fd = open (argv[i], O_RDONLY);
       if (fd == -1)
-	continue;
+	{
+	  lto_argv[lto_argc++] = argv[i];
+	  continue;
+	}
 
-      have_lto
-	|= find_and_merge_options (fd, file_offset, LTO_SECTION_NAME_PREFIX,
-				   &fdecoded_options, &fdecoded_options_count,
-				   collect_gcc);
-      have_offload
-	|= find_and_merge_options (fd, file_offset, OFFLOAD_SECTION_NAME_PREFIX,
-				   &offload_fdecoded_options,
-				   &offload_fdecoded_options_count,
-				   collect_gcc);
+      if (find_and_merge_options (fd, file_offset, LTO_SECTION_NAME_PREFIX,
+				  &fdecoded_options, &fdecoded_options_count,
+				  collect_gcc))
+	{
+	  have_lto = true;
+	  lto_argv[lto_argc++] = argv[i];
+	}
+
+      if (find_and_merge_options (fd, file_offset, OFFLOAD_SECTION_NAME_PREFIX,
+				  &offload_fdecoded_options,
+				  &offload_fdecoded_options_count, collect_gcc))
+	{
+	  have_offload = true;
+	  offload_argv[offload_argc++] = argv[i];
+	}
+
       close (fd);
     }
 
@@ -1027,7 +1044,8 @@ run_gcc (unsigned argc, char *argv[])
 
   if (have_offload)
     {
-      compile_images_for_offload_targets (argc, argv, offload_fdecoded_options,
+      compile_images_for_offload_targets (offload_argc, offload_argv,
+					  offload_fdecoded_options,
 					  offload_fdecoded_options_count,
 					  decoded_options,
 					  decoded_options_count);
@@ -1119,8 +1137,8 @@ run_gcc (unsigned argc, char *argv[])
     }
 
   /* Append the input objects and possible preceding arguments.  */
-  for (i = 1; i < argc; ++i)
-    obstack_ptr_grow (&argv_obstack, argv[i]);
+  for (i = 0; i < lto_argc; ++i)
+    obstack_ptr_grow (&argv_obstack, lto_argv[i]);
   obstack_ptr_grow (&argv_obstack, NULL);
 
   new_argv = XOBFINISH (&argv_obstack, const char **);
@@ -1295,6 +1313,8 @@ cont:
   if (offloadend)
     printf ("%s\n", offloadend);
 
+  XDELETE (lto_argv);
+  XDELETE (offload_argv);
   obstack_free (&argv_obstack, NULL);
 }
 

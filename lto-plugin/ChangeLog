@@ -1,3 +1,13 @@
+2014-12-09  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* lto-plugin.c (offload_files, num_offload_files): New static variables.
+	(free_1): Use arguments instead of global variables.
+	(free_2): Free offload_files.
+	(all_symbols_read_handler): Add names from offload_files to lto-wrapper
+	arguments.
+	(claim_file_handler): Do not add file to claimed_files if it contains
+	offload sections without LTO sections.  Add it to offload_files instead.
+
 2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/63784
