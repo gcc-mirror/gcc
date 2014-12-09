@@ -1,3 +1,9 @@
+2014-12-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR middle-end/64225
+	* tree-ssa-reassoc.c (acceptable_pow_call): Disable transformation
+	for BUILT_IN_POW when flag_errno_math is present.
+
 2014-12-09  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* lto-wrapper.c (compile_offload_image): Start processing in_argv
