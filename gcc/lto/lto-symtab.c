@@ -99,6 +99,20 @@ lto_cgraph_replace_node (struct cgraph_node *node,
   /* Redirect incomming references.  */
   prevailing_node->clone_referring (node);
 
+  /* Fix instrumentation references.  */
+  if (node->instrumented_version)
+    {
+      gcc_assert (node->instrumentation_clone
+		  == prevailing_node->instrumentation_clone);
+      node->instrumented_version->instrumented_version = prevailing_node;
+      if (!prevailing_node->instrumented_version)
+	prevailing_node->instrumented_version = node->instrumented_version;
+      /* Need to reset node->instrumented_version to NULL,
+	 otherwise node removal code would reset
+	 node->instrumented_version->instrumented_version.  */
+      node->instrumented_version = NULL;
+    }
+
   ipa_merge_profiles (prevailing_node, node);
   lto_free_function_in_decl_state_for_node (node);
 

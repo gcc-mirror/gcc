@@ -1562,7 +1562,18 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 
 	      cnode->instrumented_version = cgraph_node::get (cnode->orig_decl);
 	      if (cnode->instrumented_version)
-		cnode->instrumented_version->instrumented_version = cnode;
+		{
+		  /* We may have multiple nodes for a single function which
+		     will be merged later.  To have a proper merge we need
+		     to keep instrumentation_version reference between nodes
+		     consistent: each instrumented_version reference should
+		     have proper reverse reference.  Thus don't break existing
+		     instrumented_version reference if it already exists.  */
+		  if (cnode->instrumented_version->instrumented_version)
+		    cnode->instrumented_version = NULL;
+		  else
+		    cnode->instrumented_version->instrumented_version = cnode;
+		}
 
 	      /* Restore decl names reference.  */
 	      if (IDENTIFIER_TRANSPARENT_ALIAS (DECL_ASSEMBLER_NAME (cnode->decl))
