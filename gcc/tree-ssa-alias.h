@@ -124,6 +124,7 @@ extern void *walk_non_aliased_vuses (ao_ref *, tree,
 				     void *(*)(ao_ref *, tree,
 					       unsigned int, void *),
 				     void *(*)(ao_ref *, tree, void *, bool),
+				     tree (*)(tree),
 				     void *);
 extern unsigned int walk_aliased_vdefs (ao_ref *, tree,
 					bool (*)(ao_ref *, tree, void *),
