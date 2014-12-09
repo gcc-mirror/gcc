@@ -36,10 +36,8 @@
 #else
 
 #include <bits/c++config.h>
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
-# include <mutex>
-# include <condition_variable>
-#endif
+#include <mutex>
+#include <condition_variable>
 #include <bits/functexcept.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -51,7 +49,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_HAS_GTHREADS
 
 #define __cpp_lib_shared_timed_mutex 201402
 
@@ -254,7 +253,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
   };
-#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
+#endif // _GLIBCXX_HAS_GTHREADS
 
   /// shared_lock
   template<typename _Mutex>
@@ -392,6 +391,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     swap(shared_lock<_Mutex>& __x, shared_lock<_Mutex>& __y) noexcept
     { __x.swap(__y); }
+
+#endif // _GLIBCXX_USE_C99_STDINT_TR1
 
   // @} group mutexes
 _GLIBCXX_END_NAMESPACE_VERSION
