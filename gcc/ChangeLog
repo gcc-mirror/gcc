@@ -1,3 +1,7 @@
+2014-12-09  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
+
+	* doc/install.texi: Describe --with-aix-soname option.
+
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_get_lanedi): Remove.

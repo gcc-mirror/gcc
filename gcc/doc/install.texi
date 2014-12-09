@@ -1430,6 +1430,114 @@ particularly useful if you intend to use several versions of GCC in
 parallel.  This is currently supported by @samp{libgfortran},
 @samp{libjava}, @samp{libstdc++}, and @samp{libobjc}.
 
+@item @anchor{WithAixSoname}--with-aix-soname=@samp{aix}, @samp{svr4} or @samp{both}
+Traditional AIX shared library versioning (versioned @code{Shared Object}
+files as members of unversioned @code{Archive Library} files named
+@samp{lib.a}) causes numerous headaches for package managers. However,
+@code{Import Files} as members of @code{Archive Library} files allow for
+@strong{filename-based versioning} of shared libraries as seen on Linux/SVR4,
+where this is called the "SONAME". But as they prevent static linking,
+@code{Import Files} may be used with @code{Runtime Linking} only, where the
+linker does search for @samp{libNAME.so} before @samp{libNAME.a} library
+filenames with the @samp{-lNAME} linker flag.
+
+@anchor{AixLdCommand}For detailed information please refer to the AIX
+@uref{http://www-01.ibm.com/support/knowledgecenter/search/%22the%20ld%20command%2C%20also%20called%20the%20linkage%20editor%20or%20binder%22,,ld
+Command} reference.
+
+As long as shared library creation is enabled, upon:
+@table @code
+@item --with-aix-soname=aix
+@item --with-aix-soname=both
+ A (traditional AIX) @code{Shared Archive Library} file is created:
+ @itemize @bullet
+  @item using the @samp{libNAME.a} filename scheme
+  @item with the @code{Shared Object} file as archive member named
+  @samp{libNAME.so.V} (except for @samp{libgcc_s}, where the @code{Shared
+  Object} file is named @samp{shr.o} for backwards compatibility), which
+  @itemize @minus
+   @item is used for runtime loading from inside the @samp{libNAME.a} file
+   @item is used for dynamic loading via
+   @code{dlopen("libNAME.a(libNAME.so.V)", RTLD_MEMBER)}
+   @item is used for shared linking
+   @item is used for static linking, so no separate @code{Static Archive
+   Library} file is needed
+  @end itemize
+ @end itemize
+@item --with-aix-soname=both
+@item --with-aix-soname=svr4
+ A (second) @code{Shared Archive Library} file is created:
+ @itemize @bullet
+ @item using the @samp{libNAME.so.V} filename scheme
+ @item with the @code{Shared Object} file as archive member named
+ @samp{shr.o}, which
+  @itemize @minus
+   @item is created with the @code{-G linker flag}
+   @item has the @code{F_LOADONLY} flag set
+   @item is used for runtime loading from inside the @samp{libNAME.so.V} file
+   @item is used for dynamic loading via @code{dlopen("libNAME.so.V(shr.o)",
+   RTLD_MEMBER)}
+  @end itemize
+ @item with the @code{Import File} as archive member named @samp{shr.imp},
+ which
+  @itemize @minus
+   @item refers to @samp{libNAME.so.V(shr.o)} as the "SONAME", to be recorded
+   in the @code{Loader Section} of subsequent binaries
+   @item indicates whether @samp{libNAME.so.V(shr.o)} is 32 or 64 bit
+   @item lists all the public symbols exported by @samp{lib.so.V(shr.o)},
+   eventually decorated with the @code{@samp{weak} Keyword}
+   @item is necessary for shared linking against @samp{lib.so.V(shr.o)}
+   @end itemize
+  @end itemize
+  A symbolic link using the @samp{libNAME.so} filename scheme is created:
+  @itemize @bullet
+  @item pointing to the @samp{libNAME.so.V} @code{Shared Archive Library} file
+  @item to permit the @code{ld Command} to find @samp{lib.so.V(shr.imp)} via
+  the @samp{-lNAME} argument (requires @code{Runtime Linking} to be enabled)
+  @item to permit dynamic loading of @samp{lib.so.V(shr.o)} without the need
+  to specify the version number via @code{dlopen("libNAME.so(shr.o)",
+  RTLD_MEMBER)}
+  @end itemize
+@end table
+
+As long as static library creation is enabled, upon:
+@table @code
+@item --with-aix-soname=svr4
+ A @code{Static Archive Library} is created:
+ @itemize @bullet
+ @item using the @samp{libNAME.a} filename scheme
+ @item with all the @code{Static Object} files as archive members, which
+  @itemize @minus
+   @item are used for static linking
+  @end itemize
+ @end itemize
+@end table
+
+While the aix-soname=@samp{svr4} option does not create @code{Shared Object}
+files as members of unversioned @code{Archive Library} files any more, package
+managers still are responsible to
+@uref{./specific.html#TransferAixShobj,,transfer} @code{Shared Object} files
+found as member of a previously installed unversioned @code{Archive Library}
+file into the newly installed @code{Archive Library} file with the same
+filename.
+
+@emph{WARNING:} Creating @code{Shared Object} files with @code{Runtime Linking}
+enabled may bloat the TOC, eventually leading to @code{TOC overflow} errors,
+requiring the use of either the @option{-Wl,-bbigtoc} linker flag (seen to
+break with the @code{GDB} debugger) or some of the TOC-related compiler flags,
+@ifnothtml
+@xref{RS/6000 and PowerPC Options,, RS/6000 and PowerPC Options, gcc,
+Using the GNU Compiler Collection (GCC)}.
+@end ifnothtml
+@ifhtml
+see ``RS/6000 and PowerPC Options'' in the main manual.
+@end ifhtml
+
+@option{--with-aix-soname} is currently supported by @samp{libgcc_s} only, so
+this option is still experimental and not for normal use yet.
+
+Default is the traditional behaviour @option{--with-aix-soname=@samp{aix}}.
+
 @item --enable-languages=@var{lang1},@var{lang2},@dots{}
 Specify that only a particular subset of compilers and
 their runtime libraries should be built.  For a list of valid values for
@@ -3878,6 +3986,7 @@ APAR IY26685 (AIX 4.3) or APAR IY25528 (AIX 5.1).  It also requires a
 fix for another AIX Assembler bug and a co-dependent AIX Archiver fix
 referenced as APAR IY53606 (AIX 5.2) or as APAR IY54774 (AIX 5.1)
 
+@anchor{TransferAixShobj}
 @samp{libstdc++} in GCC 3.4 increments the major version number of the
 shared object and GCC installation places the @file{libstdc++.a}
 shared library in a common location which will overwrite the and GCC
@@ -3907,6 +4016,11 @@ Archive the runtime-only shared object in the GCC 3.4
 @smallexample
 % ar -q libstdc++.a libstdc++.so.4 libstdc++.so.5
 @end smallexample
+
+Eventually, the
+@uref{./configure.html#WithAixSoname,,@option{--with-aix-soname=svr4}}
+configure option may drop the need for this procedure for libraries that
+support it.
 
 Linking executables and shared libraries may produce warnings of
 duplicate symbols.  The assembly files generated by GCC for AIX always
