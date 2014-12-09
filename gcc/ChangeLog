@@ -1,3 +1,9 @@
+2014-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64191
+	* tree-vect-stmts.c (vect_stmt_relevant_p): Clobbers are
+	not relevant (nor are their uses).
+
 2014-12-09  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* lto/lto-partition.c (privatize_symbol_name): Correctly
