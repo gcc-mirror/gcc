@@ -1,3 +1,16 @@
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64166
+	* dumpfile.c (gcc::dump_manager::get_dump_file_info_by_switch):
+	New function.
+	(gcc::dump_manager::get_dump_file_name): Split out bulk of
+	implementation into a new overloaded variant taking a
+	dump_file_info *.
+	* dumpfile.h (gcc::dump_manager::get_dump_file_info_by_switch):
+	New function.
+	(gcc::dump_manager::get_dump_file_name): New overloaded variant of
+	this function, taking a dump_file_info *.
+
 2014-12-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR bootstrap/64213
