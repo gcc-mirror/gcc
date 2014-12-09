@@ -1,6 +1,34 @@
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/63870
+	* gcc.target/aarch64/simd/vget_lane_f32_indices_1.c: New test.
+	* gcc.target/aarch64/simd/vget_lane_f64_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vget_lane_p16_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vget_lane_p8_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vget_lane_s16_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vget_lane_s32_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vget_lane_s64_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vget_lane_s8_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vget_lane_u16_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vget_lane_u32_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vget_lane_u64_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vget_lane_u8_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vgetq_lane_f32_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vgetq_lane_f64_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vgetq_lane_p16_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vgetq_lane_p8_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vgetq_lane_s16_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vgetq_lane_s32_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vgetq_lane_s64_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vgetq_lane_s8_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vgetq_lane_u16_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vgetq_lane_u32_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vgetq_lane_u64_indices_1.c: Likewise.
+	* gcc.target/aarch64/simd/vgetq_lane_u8_indices_1.c: Likewise.
+
+2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/63870
 	* gcc.target/aarch64/arg-type-diagnostics-1.c: Call intrinsic, update
 	expected error message.
 

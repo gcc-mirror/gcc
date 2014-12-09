@@ -2438,22 +2438,9 @@
   [(set_attr "type" "neon_to_gp<q>")]
 )
 
-(define_expand "aarch64_be_checked_get_lane<mode>"
-  [(match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand")
-   (match_operand:VALL 1 "register_operand")
-   (match_operand:SI 2 "immediate_operand")]
-  "TARGET_SIMD"
-  {
-    operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
-    emit_insn (gen_aarch64_get_lane<mode> (operands[0],
-					   operands[1],
-					   operands[2]));
-    DONE;
-  }
-)
-
 ;; Lane extraction of a value, neither sign nor zero extension
 ;; is guaranteed so upper bits should be considered undefined.
+;; RTL uses GCC vector extension indices throughout so flip only for assembly.
 (define_insn "aarch64_get_lane<mode>"
   [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=r, w, Utv")
 	(vec_select:<VEL>
