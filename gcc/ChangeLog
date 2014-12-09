@@ -1,3 +1,10 @@
+2014-12-09  Andrew Pinski  apinski@cavium.com
+            Kyrylo Tkachov  kyrylo.tkachov@arm.com
+
+	* config/aarch64/aarch64.c (AARCH64_FUSE_CMP_BRANCH): New define.
+	(thunderx_tunings): Add AARCH64_FUSE_CMP_BRANCH to fuseable_ops.
+	(aarch_macro_fusion_pair_p): Handle AARCH64_FUSE_CMP_BRANCH.
+
 2014-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/64166

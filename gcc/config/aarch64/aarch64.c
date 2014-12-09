@@ -310,6 +310,7 @@ static const struct cpu_vector_cost cortexa57_vector_cost =
 #define AARCH64_FUSE_ADRP_ADD	(1 << 1)
 #define AARCH64_FUSE_MOVK_MOVK	(1 << 2)
 #define AARCH64_FUSE_ADRP_LDR	(1 << 3)
+#define AARCH64_FUSE_CMP_BRANCH	(1 << 4)
 
 #if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
 __extension__
@@ -356,7 +357,7 @@ static const struct tune_params thunderx_tunings =
   &generic_vector_cost,
   NAMED_PARAM (memmov_cost, 6),
   NAMED_PARAM (issue_rate, 2),
-  NAMED_PARAM (fuseable_ops, AARCH64_FUSE_NOTHING)
+  NAMED_PARAM (fuseable_ops, AARCH64_FUSE_CMP_BRANCH)
 };
 
 /* A processor implementing AArch64.  */
@@ -10377,6 +10378,20 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
                               XEXP (SET_SRC (prev_set), 0)))
               return true;
         }
+    }
+
+  if ((aarch64_tune_params->fuseable_ops & AARCH64_FUSE_CMP_BRANCH)
+      && any_condjump_p (curr))
+    {
+      enum attr_type prev_type = get_attr_type (prev);
+
+      /* FIXME: this misses some which is considered simple arthematic
+         instructions for ThunderX.  Simple shifts are missed here.  */
+      if (prev_type == TYPE_ALUS_SREG
+          || prev_type == TYPE_ALUS_IMM
+          || prev_type == TYPE_LOGICS_REG
+          || prev_type == TYPE_LOGICS_IMM)
+        return true;
     }
 
   return false;
