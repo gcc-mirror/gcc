@@ -1,3 +1,14 @@
+2014-12-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/64204
+	* config/rs6000/rs6000.c (rs6000_emit_move): Do not split TFmode
+	constant moves if -mupper-regs-df.
+
+	* config/rs6000/rs6000.md (mov<mode>_64bit_dm): Optimize moving
+	0.0L to TFmode.
+	(movtd_64bit_nodm): Likewise.
+	(mov<mode>_32bit, FMOVE128 case): Likewise.
+
 2014-12-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* simplify-rtx.c (simplify_relational_operation_1): Handle
