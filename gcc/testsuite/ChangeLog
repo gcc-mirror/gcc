@@ -1,3 +1,9 @@
+2014-12-09  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR bootstrap/63995
+	* g++.dg/dg.exp: Add mpx-dg.exp.
+	* g++.dg/pr63995-1.C: New.
+
 2014-12-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.target/aarch64/bics_4.c: New.
