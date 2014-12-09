@@ -1586,7 +1586,6 @@ result *
 playback::context::
 compile ()
 {
-  void *handle = NULL;
   const char *ctxt_progname;
   result *result_obj = NULL;
 
@@ -1648,24 +1647,7 @@ compile ()
   if (errors_occurred ())
     return NULL;
 
-  /* dlopen the .so file. */
-  {
-    auto_timevar load_timevar (TV_LOAD);
-
-    const char *error;
-
-    /* Clear any existing error.  */
-    dlerror ();
-
-    handle = dlopen (m_path_so_file, RTLD_NOW | RTLD_LOCAL);
-    if ((error = dlerror()) != NULL)  {
-      add_error (NULL, "%s", error);
-    }
-    if (handle)
-      result_obj = new result (handle);
-    else
-      result_obj = NULL;
-  }
+  result_obj = dlopen_built_dso ();
 
   return result_obj;
 }
@@ -1914,6 +1896,34 @@ convert_to_dso (const char *ctxt_progname)
 		 getenv ("PATH"));
       return;
     }
+}
+
+/* Dynamically-link the built DSO file into this process, using dlopen.
+   Wrap it up within a jit::result *, and return that.
+   Return NULL if any errors occur, reporting them on this context.  */
+
+result *
+playback::context::
+dlopen_built_dso ()
+{
+  auto_timevar load_timevar (TV_LOAD);
+  void *handle = NULL;
+  const char *error = NULL;
+  result *result_obj = NULL;
+
+  /* Clear any existing error.  */
+  dlerror ();
+
+  handle = dlopen (m_path_so_file, RTLD_NOW | RTLD_LOCAL);
+  if ((error = dlerror()) != NULL)  {
+    add_error (NULL, "%s", error);
+  }
+  if (handle)
+    result_obj = new result (handle);
+  else
+    result_obj = NULL;
+
+  return result_obj;
 }
 
 /* Top-level hook for playing back a recording context.
