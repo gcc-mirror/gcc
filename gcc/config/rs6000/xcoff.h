@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for some generic XCOFF file format
-   Copyright (C) 2001-2013 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -304,14 +304,15 @@
   do { fputs (LOCAL_COMMON_ASM_OP, (FILE));			\
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));			\
        if ((ALIGN) > 32)					\
-	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%s,%u\n",	\
+	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%s%u_,%u\n",	\
 		  (SIZE), xcoff_bss_section_name,			\
+		  floor_log2 ((ALIGN) / BITS_PER_UNIT),			\
 		  floor_log2 ((ALIGN) / BITS_PER_UNIT));		\
        else if ((SIZE) > 4)					\
-	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%s,3\n",	\
+	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%s3_,3\n",	\
 		  (SIZE), xcoff_bss_section_name);		\
        else							\
-	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%s\n",	\
+	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%s,2\n",	\
 		  (SIZE), xcoff_bss_section_name);		\
      } while (0)
 #endif
