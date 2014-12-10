@@ -25,8 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define UINT64_BITS	64
 
-#define SREAL_MIN_SIG ((uint64_t) 1 << (SREAL_PART_BITS - 1))
-#define SREAL_MAX_SIG (((uint64_t) 1 << SREAL_PART_BITS) - 1)
+#define SREAL_MIN_SIG ((int64_t) 1 << (SREAL_PART_BITS - 2))
+#define SREAL_MAX_SIG (((int64_t) 1 << (SREAL_PART_BITS - 1)) - 1)
 #define SREAL_MAX_EXP (INT_MAX / 4)
 
 #define SREAL_BITS SREAL_PART_BITS
@@ -36,18 +36,11 @@ class sreal
 {
 public:
   /* Construct an uninitialized sreal.  */
-  sreal () : m_sig (-1), m_exp (-1), m_negative (0) {}
+  sreal () : m_sig (-1), m_exp (-1) {}
 
   /* Construct a sreal.  */
-  sreal (int64_t sig, int exp = 0) : m_exp (exp)
+  sreal (int64_t sig, int exp = 0) : m_sig (sig), m_exp (exp)
   {
-    m_negative = sig < 0;
-
-    if (sig < 0)
-      sig = -sig;
-
-    m_sig = (uint64_t) sig;
-
     normalize ();
   }
 
@@ -60,33 +53,30 @@ public:
 
   bool operator< (const sreal &other) const
   {
-    /* We negate result in case of negative numbers and
-       it would return true for equal negative numbers.  */
-    if (*this == other)
-      return false;
+    if (m_exp == other.m_exp)
+      return m_sig < other.m_sig;
+    else
+    {
+      bool negative = m_sig < 0;
+      bool other_negative = other.m_sig < 0;
 
-    if (m_negative != other.m_negative)
-      return m_negative > other.m_negative;
+      if (negative != other_negative)
+        return negative > other_negative;
 
-    bool r = m_exp < other.m_exp
-      || (m_exp == other.m_exp && m_sig < other.m_sig);
-
-    return m_negative ? !r : r;
+      bool r = m_exp < other.m_exp;
+      return negative ? !r : r;
+    }
   }
 
   bool operator== (const sreal &other) const
   {
-    return m_exp == other.m_exp && m_sig == other.m_sig
-		    && m_negative == other.m_negative;
+    return m_exp == other.m_exp && m_sig == other.m_sig;
   }
 
   sreal operator- () const
   {
-    if (m_sig == 0)
-      return *this;
-
     sreal tmp = *this;
-    tmp.m_negative = !tmp.m_negative;
+    tmp.m_sig *= -1;
 
     return tmp;
   }
@@ -125,17 +115,15 @@ public:
 private:
   void normalize ();
   void shift_right (int amount);
-
   static sreal signedless_plus (const sreal &a, const sreal &b, bool negative);
   static sreal signedless_minus (const sreal &a, const sreal &b, bool negative);
 
-  uint64_t m_sig;			/* Significant.  */
+  int64_t m_sig;			/* Significant.  */
   signed int m_exp;			/* Exponent.  */
-  bool m_negative;			/* Negative sign.  */
 };
 
-extern void debug (sreal &ref);
-extern void debug (sreal *ptr);
+extern void debug (const sreal &ref);
+extern void debug (const sreal *ptr);
 
 inline sreal &operator+= (sreal &a, const sreal &b)
 {
