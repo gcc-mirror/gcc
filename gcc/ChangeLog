@@ -1,3 +1,12 @@
+2014-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* doc/invoke.texi: (-devirtualize-at-ltrans): Document.
+	* lto-cgraph.c (lto_output_varpool_node): Mark initializer as removed
+	when it is not streamed to the given ltrans.
+	(compute_ltrans_boundary): Make code adding all polymorphic
+	call targets conditional with !flag_wpa || flag_ltrans_devirtualize.
+	* common.opt (fdevirtualize-at-ltrans): New flag.
+
 2014-12-10  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* varpool.c (varpool_node::get_create): Force output of vars with
