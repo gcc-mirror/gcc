@@ -1,3 +1,9 @@
+2014-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64191
+	* g++.dg/pr64191.C: Make sure we can DCE empty loops with
+	indirect clobbers.
+
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/63870
