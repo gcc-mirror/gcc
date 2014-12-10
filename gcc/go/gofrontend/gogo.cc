@@ -4433,6 +4433,7 @@ Function::Function(Function_type* type, Function* enclosing, Block* block,
     is_sink_(false), results_are_named_(false), nointerface_(false),
     is_unnamed_type_stub_method_(false), calls_recover_(false),
     is_recover_thunk_(false), has_recover_thunk_(false),
+    calls_defer_retaddr_(false), is_type_specific_function_(false),
     in_unique_section_(false)
 {
 }

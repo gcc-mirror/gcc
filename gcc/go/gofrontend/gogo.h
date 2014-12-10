@@ -1071,6 +1071,18 @@ class Function
   set_calls_defer_retaddr()
   { this->calls_defer_retaddr_ = true; }
 
+  // Whether this is a type hash or equality function created by the
+  // compiler.
+  bool
+  is_type_specific_function()
+  { return this->is_type_specific_function_; }
+
+  // Record that this function is a type hash or equality function
+  // created by the compiler.
+  void
+  set_is_type_specific_function()
+  { this->is_type_specific_function_ = true; }
+
   // Mark the function as going into a unique section.
   void
   set_in_unique_section()
@@ -1199,6 +1211,9 @@ class Function
   // True if this is a thunk built for a defer statement that calls
   // the __go_set_defer_retaddr runtime function.
   bool calls_defer_retaddr_ : 1;
+  // True if this is a function built by the compiler to as a hash or
+  // equality function for some type.
+  bool is_type_specific_function_ : 1;
   // True if this function should be put in a unique section.  This is
   // turned on for field tracking.
   bool in_unique_section_ : 1;
