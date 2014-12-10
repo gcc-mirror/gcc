@@ -726,6 +726,17 @@ Move_ordered_evals::expression(Expression** pexpr)
 
   if ((*pexpr)->must_eval_in_order())
     {
+      Call_expression* call = (*pexpr)->call_expression();
+      if (call != NULL && call->is_multi_value_arg())
+	{
+	  // A call expression which returns multiple results as an argument
+	  // to another call must be handled specially.  We can't create a
+	  // temporary because there is no type to give it.  Instead, group
+	  // the caller and this multi-valued call argument and use a temporary
+	  // variable to hold them.
+	  return TRAVERSE_SKIP_COMPONENTS;
+	}
+
       Location loc = (*pexpr)->location();
       Temporary_statement* temp = Statement::make_temporary(NULL, *pexpr, loc);
       this->block_->add_statement(temp);
