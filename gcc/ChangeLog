@@ -1,5 +1,9 @@
 2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (*add<mode>3): Remove condition.
+
+2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/40x.md (ppc403-compare): Remove "compare".
 	config/rs6000/440.md (ppc440-compare): Remove "compare".
 	config/rs6000/476.md (ppc476-compare): Remove "compare".
