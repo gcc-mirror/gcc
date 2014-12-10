@@ -1,3 +1,32 @@
+2014-12-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/index.rst: New file.
+	* docs/cp/intro/index.rst: New file.
+	* docs/cp/intro/tutorial01.rst: New file.
+	* docs/cp/intro/tutorial02.rst: New file.
+	* docs/cp/intro/tutorial03.rst: New file.
+	* docs/cp/intro/tutorial04.rst: New file.
+	* docs/cp/topics/contexts.rst: New file.
+	* docs/cp/topics/expressions.rst: New file.
+	* docs/cp/topics/functions.rst: New file.
+	* docs/cp/topics/index.rst: New file.
+	* docs/cp/topics/locations.rst: New file.
+	* docs/cp/topics/objects.rst: New file.
+	* docs/cp/topics/results.rst: New file.
+	* docs/cp/topics/types.rst: New file.
+	* docs/examples/tut01-hello-world.cc: New file.
+	* docs/examples/tut02-square.c: Fix missing newline in output.
+	* docs/examples/tut02-square.cc: New file.
+	* docs/examples/tut03-sum-of-squares.cc: New file.
+	* docs/examples/tut04-toyvm/toyvm.cc: New file.
+	* docs/index.rst: Move summary to above the table of contents.
+	Add text about the C vs C++ APIs.
+	* docs/topics/contexts.rst: Fix a typo.
+
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/_build/texinfo/factorial1.png: New file.
+	* docs/_build/texinfo/sum-of-squares1.png: New file.
+
 2014-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/examples/tut04-toyvm/toyvm.c (toyvm_function_compile): Move
