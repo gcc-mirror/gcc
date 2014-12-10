@@ -2519,7 +2519,7 @@
 
 (define_insn_and_split "*mov_si<mode>_e500_subreg0_elf_low_be"
   [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r") 0)
-	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "r")
+	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "b")
 		   (match_operand 2 "" "")))]
   "WORDS_BIG_ENDIAN
    && (((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
@@ -2538,13 +2538,13 @@
 
 (define_insn "*mov_si<mode>_e500_subreg0_elf_low_le"
   [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r") 0)
-	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "r")
+	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "b")
 		   (match_operand 2 "" "")))]
   "!WORDS_BIG_ENDIAN
    && (((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
 	|| (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))
        && TARGET_ELF && !TARGET_64BIT)"
-  "addic %0,%1,%K2")
+  "addi %0,%1,%K2")
 
 ;; ??? Could use evstwwe for memory stores in some cases, depending on
 ;; the offset.
@@ -2592,17 +2592,17 @@
 
 (define_insn "*mov_si<mode>_e500_subreg4_elf_low_be"
   [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r") 4)
-	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "r")
+	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "b")
 		   (match_operand 2 "" "")))]
   "WORDS_BIG_ENDIAN
-   && (((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
-	|| (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))
-       && TARGET_ELF && !TARGET_64BIT)"
-  "addic %0,%1,%K2")
+   && ((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+       || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))
+   && TARGET_ELF && !TARGET_64BIT"
+  "addi %0,%1,%K2")
 
 (define_insn_and_split "*mov_si<mode>_e500_subreg4_elf_low_le"
   [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r") 4)
-	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "r")
+	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "b")
 		   (match_operand 2 "" "")))]
   "!WORDS_BIG_ENDIAN
    && (((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
