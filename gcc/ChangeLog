@@ -1,6 +1,14 @@
 2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/64180
+	* config/rs6000/rs6000.md (*ctr<mode>_internal1, *ctr<mode>_internal2,
+	*ctr<mode>_internal5, *ctr<mode>_internal6): Change "r" alternatives
+	to "b".  Increase length.
+	(splitters for these): Split to cmp+addi instead of addic.
+
+2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/64180
 	* config/rs6000/darwin.md (macho_low_si): Remove "r" alternative.
 	(macho_low_di): Ditto.
 	* config/rs6000/rs6000.md (*largetoc_low): Ditto.
