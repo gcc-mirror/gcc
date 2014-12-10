@@ -1,6 +1,28 @@
 2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/64180
+	* config/rs6000/predicates.md (adde_operand): New.
+	* config/rs6000/rs6000.md (add<mode>3_carry): New.
+	(*add<mode>3_imm_carry_pos): New.
+	(*add<mode>3_imm_carry_0): New.
+	(*add<mode>3_imm_carry_m1): New.
+	(*add<mode>3_imm_carry_neg): New.
+	(add<mode>3_carry_in): New.
+	(*add<mode>3_carry_in_internal): New.
+	(add<mode>3_carry_in_0): New.
+	(add<mode>3_carry_in_m1): New.
+	(subf<mode>3_carry): New.
+	(*subf<mode>3_imm_carry_0): New.
+	(*subf<mode>3_imm_carry_m1): New.
+	(subf<mode>3_carry_in): New.
+	(*subf<mode>3_carry_in_internal): New.
+	(subf<mode>3_carry_in_0): New.
+	(subf<mode>3_carry_in_m1): New.
+	(subf<mode>3_carry_in_xx): New.
+
+2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/64180
 	* config/rs6000/rs6000.md (*add<mode>3_internal1): Rename to
 	"*add<mode>3".
 	(*add<mode>3_internal2, *add<mode>3_internal3, and (their splitters):

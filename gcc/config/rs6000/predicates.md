@@ -788,6 +788,12 @@
 		 || satisfies_constraint_L (op)")
     (match_operand 0 "gpc_reg_operand")))
 
+;; Return 1 if the operand is either a non-special register, or 0, or -1.
+(define_predicate "adde_operand"
+  (if_then_else (match_code "const_int")
+    (match_test "INTVAL (op) == 0 || INTVAL (op) == -1")
+    (match_operand 0 "gpc_reg_operand")))
+
 ;; Return 1 if OP is a constant but not a valid add_operand.
 (define_predicate "non_add_cint_operand"
   (and (match_code "const_int")
