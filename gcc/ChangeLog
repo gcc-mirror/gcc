@@ -1,6 +1,16 @@
 2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/64180
+	* config/rs6000/rs6000.md (*add<mode>3_internal1): Rename to
+	"*add<mode>3".
+	(*add<mode>3_internal2, *add<mode>3_internal3, and (their splitters):
+	Delete.
+	(*add<mode>3_dot, *add<mode>3_dot2): New.
+	(*add<mode>3_imm_dot, *add<mode>3_imm_dot2): New.
+
+2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/64180
 	* config/rs6000/rs6000.md (*add<mode>3_internal1): Remove addic
 	alternative.
 
