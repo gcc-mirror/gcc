@@ -76,6 +76,23 @@ AC_ARG_ENABLE(vtable-verify,
 [enable_vtable_verify=no])
 AC_SUBST(enable_vtable_verify)
 
+AC_ARG_WITH(aix-soname,
+[AS_HELP_STRING([--with-aix-soname=aix|svr4|both],
+    [shared library versioning (aka "SONAME") variant to provide on AIX])],
+[case "${host}:${enable_shared}" in
+ power*-*-aix[[5-9]]*:yes)
+   AC_MSG_CHECKING([which variant of shared library versioning to provide for shared libgcc])
+   case ${withval} in
+     aix|svr4|both) ;;
+     *) AC_MSG_ERROR([Unknown argument to --with-aix-soname]);;
+   esac
+   AC_MSG_RESULT($withval)
+   ;;
+ *) with_aix_soname=aix ;;
+ esac
+], [with_aix_soname=aix])
+AC_SUBST(with_aix_soname)
+
 GCC_PICFLAG
 AC_SUBST(PICFLAG)
 
@@ -320,8 +337,81 @@ mips*-*-*)
     [libgcc_cv_mips_hard_float=no])])
 esac
 
+# Determine the version of glibc, if any, used on the target.
+AC_MSG_CHECKING([for target glibc version])
+AC_ARG_WITH([glibc-version],
+  [AS_HELP_STRING([--with-glibc-version=M.N],
+    [assume GCC used with glibc version M.N or later])], [
+if [echo "$with_glibc_version" | grep '^[0-9][0-9]*\.[0-9][0-9]*$']; then
+  glibc_version_major=`echo "$with_glibc_version" | sed -e 's/\..*//'`
+  glibc_version_minor=`echo "$with_glibc_version" | sed -e 's/.*\.//'`
+else
+  AC_MSG_ERROR([option --with-glibc-version requires a version number M.N])
+fi], [
+AC_COMPUTE_INT([glibc_version_major], [__GLIBC__],
+				      [#include <features.h>],
+				      [glibc_version_major=0])
+AC_COMPUTE_INT([glibc_version_minor], [__GLIBC_MINOR__],
+				      [#include <features.h>],
+				      [glibc_version_minor=0])])
+AC_MSG_RESULT([$glibc_version_major.$glibc_version_minor])
+
+# Determine floating-point type for powerpc*-*-linux*.
+# Single-precision-only FPRs are not a supported configuration for
+# this target, so are not allowed for in this test.
+case ${host} in
+powerpc*-*-linux*)
+  cat > conftest.c <<EOF
+#ifdef __powerpc64__
+ppc_fp_type=64
+#elif defined _SOFT_FLOAT
+ppc_fp_type=soft
+#elif defined _SOFT_DOUBLE
+ppc_fp_type=e500v1
+#elif defined __NO_FPRS__
+ppc_fp_type=e500v2
+#else
+ppc_fp_type=hard
+#endif
+EOF
+eval `${CC-cc} -E conftest.c | grep ppc_fp_type=`
+rm -f conftest.c
+# glibc 2.19 and later provide all the soft-fp functions, with proper
+# interactions with <fenv.h> exception and rounding mode handling, so
+# make libgcc's versions into compat symbols if a recent enough glibc
+# version is being used.
+ppc_fp_compat=
+case ${ppc_fp_type} in
+soft|e500v1|e500v2)
+  if test $glibc_version_major -gt 2 \
+    || ( test $glibc_version_major -eq 2 \
+        && test $glibc_version_minor -ge 19 ); then
+    ppc_fp_compat="t-softfp-compat"
+  fi
+  ;;
+esac
+;;
+esac
+
 # Collect host-machine-specific information.
 . ${srcdir}/config.host
+
+# Used for constructing correct paths for offload compilers.
+accel_dir_suffix=
+if test x"$enable_as_accelerator_for" != x; then
+  accel_dir_suffix=/accel/${target_noncanonical}
+  case "${target_noncanonical}" in
+    *-intelmicemul-*)
+      # In this case we expect offload compiler to be built as native, so we
+      # need to change install directory for driver to be able to find libgcc.
+      host_noncanonical=${enable_as_accelerator_for} ;;
+  esac
+fi
+AC_SUBST(accel_dir_suffix)
+
+if test x"$enable_offload_targets" != x; then
+  extra_parts="${extra_parts} crtoffloadbegin.o crtoffloadend.o"
+fi
 
 # Check if Solaris/x86 linker supports ZERO terminator unwind entries.
 # This is after config.host so we can augment tmake_file.

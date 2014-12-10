@@ -856,8 +856,8 @@ gfc_conv_intrinsic_lib_function (gfc_se * se, gfc_expr * expr)
 
   if (m->id == GFC_ISYM_NONE)
     {
-      internal_error ("Intrinsic function %s(%d) not recognized",
-		      expr->value.function.name, id);
+      gfc_internal_error ("Intrinsic function %qs (%d) not recognized",
+			  expr->value.function.name, id);
     }
 
   /* Get the decl and generate the call.  */
@@ -901,29 +901,40 @@ gfc_trans_same_strlen_check (const char* intr_name, locus* where,
 }
 
 
-/* The EXPONENT(s) intrinsic function is translated into
+/* The EXPONENT(X) intrinsic function is translated into
        int ret;
-       frexp (s, &ret);
-       return ret;
+       return isfinite(X) ? (frexp (X, &ret) , ret) : huge
+   so that if X is a NaN or infinity, the result is HUGE(0).
  */
 
 static void
 gfc_conv_intrinsic_exponent (gfc_se *se, gfc_expr *expr)
 {
-  tree arg, type, res, tmp, frexp;
+  tree arg, type, res, tmp, frexp, cond, huge;
+  int i;
 
   frexp = gfc_builtin_decl_for_float_kind (BUILT_IN_FREXP,
 				       expr->value.function.actual->expr->ts.kind);
 
   gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+  arg = gfc_evaluate_now (arg, &se->pre);
+
+  i = gfc_validate_kind (BT_INTEGER, gfc_c_int_kind, false);
+  huge = gfc_conv_mpz_to_tree (gfc_integer_kinds[i].huge, gfc_c_int_kind);
+  cond = build_call_expr_loc (input_location,
+			      builtin_decl_explicit (BUILT_IN_ISFINITE),
+			      1, arg);
 
   res = gfc_create_var (integer_type_node, NULL);
   tmp = build_call_expr_loc (input_location, frexp, 2, arg,
 			     gfc_build_addr_expr (NULL_TREE, res));
-  gfc_add_expr_to_block (&se->pre, tmp);
+  tmp = fold_build2_loc (input_location, COMPOUND_EXPR, integer_type_node,
+			 tmp, res);
+  se->expr = fold_build3_loc (input_location, COND_EXPR, integer_type_node,
+			      cond, tmp, huge);
 
   type = gfc_typenode_for_spec (&expr->ts);
-  se->expr = fold_convert (type, res);
+  se->expr = fold_convert (type, se->expr);
 }
 
 
@@ -3718,9 +3729,9 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
      possible value is HUGE in both cases.  */
   if (op == GT_EXPR)
     tmp = fold_build1_loc (input_location, NEGATE_EXPR, TREE_TYPE (tmp), tmp);
-  if (op == GT_EXPR && expr->ts.type == BT_INTEGER)
+  if (op == GT_EXPR && arrayexpr->ts.type == BT_INTEGER)
     tmp = fold_build2_loc (input_location, MINUS_EXPR, TREE_TYPE (tmp), tmp,
-			   build_int_cst (type, 1));
+			   build_int_cst (TREE_TYPE (tmp), 1));
 
   gfc_add_modify (&se->pre, limit, tmp);
 
@@ -4123,11 +4134,7 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
       else
 	tmp = huge_cst;
       if (HONOR_NANS (DECL_MODE (limit)))
-	{
-	  REAL_VALUE_TYPE real;
-	  real_nan (&real, "", 1, DECL_MODE (limit));
-	  nan_cst = build_real (type, real);
-	}
+	nan_cst = gfc_build_nan (type, "");
       break;
 
     case BT_INTEGER:
@@ -5435,21 +5442,31 @@ gfc_conv_intrinsic_mask (gfc_se * se, gfc_expr * expr, int left)
 }
 
 
-/* FRACTION (s) is translated into frexp (s, &dummy_int).  */
+/* FRACTION (s) is translated into:
+     isfinite (s) ? frexp (s, &dummy_int) : NaN  */
 static void
 gfc_conv_intrinsic_fraction (gfc_se * se, gfc_expr * expr)
 {
-  tree arg, type, tmp, frexp;
+  tree arg, type, tmp, res, frexp, cond;
 
   frexp = gfc_builtin_decl_for_float_kind (BUILT_IN_FREXP, expr->ts.kind);
 
   type = gfc_typenode_for_spec (&expr->ts);
   gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+  arg = gfc_evaluate_now (arg, &se->pre);
+
+  cond = build_call_expr_loc (input_location,
+			      builtin_decl_explicit (BUILT_IN_ISFINITE),
+			      1, arg);
+
   tmp = gfc_create_var (integer_type_node, NULL);
-  se->expr = build_call_expr_loc (input_location, frexp, 2,
-				  fold_convert (type, arg),
-				  gfc_build_addr_expr (NULL_TREE, tmp));
-  se->expr = fold_convert (type, se->expr);
+  res = build_call_expr_loc (input_location, frexp, 2,
+			     fold_convert (type, arg),
+			     gfc_build_addr_expr (NULL_TREE, tmp));
+  res = fold_convert (type, res);
+
+  se->expr = fold_build3_loc (input_location, COND_EXPR, type,
+			      cond, res, gfc_build_nan (type, ""));
 }
 
 
@@ -5479,7 +5496,9 @@ gfc_conv_intrinsic_nearest (gfc_se * se, gfc_expr * expr)
 
 /* SPACING (s) is translated into
     int e;
-    if (s == 0)
+    if (!isfinite (s))
+      res = NaN;
+    else if (s == 0)
       res = tiny;
     else
     {
@@ -5498,7 +5517,7 @@ static void
 gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
 {
   tree arg, type, prec, emin, tiny, res, e;
-  tree cond, tmp, frexp, scalbn;
+  tree cond, nan, tmp, frexp, scalbn;
   int k;
   stmtblock_t block;
 
@@ -5533,11 +5552,18 @@ gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
 			 build_real_from_int_cst (type, integer_one_node), e);
   gfc_add_modify (&block, res, tmp);
 
-  /* Finish by building the IF statement.  */
+  /* Finish by building the IF statement for value zero.  */
   cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node, arg,
 			  build_real_from_int_cst (type, integer_zero_node));
   tmp = build3_v (COND_EXPR, cond, build2_v (MODIFY_EXPR, res, tiny),
 		  gfc_finish_block (&block));
+
+  /* And deal with infinities and NaNs.  */
+  cond = build_call_expr_loc (input_location,
+			      builtin_decl_explicit (BUILT_IN_ISFINITE),
+			      1, arg);
+  nan = gfc_build_nan (type, "");
+  tmp = build3_v (COND_EXPR, cond, tmp, build2_v (MODIFY_EXPR, res, nan));
 
   gfc_add_expr_to_block (&se->pre, tmp);
   se->expr = res;
@@ -5548,11 +5574,16 @@ gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
       int e;
       real x;
       x = fabs (s);
-      if (x != 0)
+      if (isfinite (x))
       {
-	frexp (s, &e);
-	x = scalbn (x, precision - e);
+	if (x != 0)
+	{
+	  frexp (s, &e);
+	  x = scalbn (x, precision - e);
+	}
       }
+      else
+        x = NaN;
       return x;
 
  where precision is gfc_real_kinds[k].digits.  */
@@ -5560,7 +5591,7 @@ gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_rrspacing (gfc_se * se, gfc_expr * expr)
 {
-  tree arg, type, e, x, cond, stmt, tmp, frexp, scalbn, fabs;
+  tree arg, type, e, x, cond, nan, stmt, tmp, frexp, scalbn, fabs;
   int prec, k;
   stmtblock_t block;
 
@@ -5592,11 +5623,19 @@ gfc_conv_intrinsic_rrspacing (gfc_se * se, gfc_expr * expr)
   gfc_add_modify (&block, x, tmp);
   stmt = gfc_finish_block (&block);
 
+  /* if (x != 0) */
   cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, x,
 			  build_real_from_int_cst (type, integer_zero_node));
   tmp = build3_v (COND_EXPR, cond, stmt, build_empty_stmt (input_location));
-  gfc_add_expr_to_block (&se->pre, tmp);
 
+  /* And deal with infinities and NaNs.  */
+  cond = build_call_expr_loc (input_location,
+			      builtin_decl_explicit (BUILT_IN_ISFINITE),
+			      1, x);
+  nan = gfc_build_nan (type, "");
+  tmp = build3_v (COND_EXPR, cond, tmp, build2_v (MODIFY_EXPR, x, nan));
+
+  gfc_add_expr_to_block (&se->pre, tmp);
   se->expr = fold_convert (type, x);
 }
 
@@ -5619,25 +5658,35 @@ gfc_conv_intrinsic_scale (gfc_se * se, gfc_expr * expr)
 
 
 /* SET_EXPONENT (s, i) is translated into
-   scalbn (frexp (s, &dummy_int), i).  */
+   isfinite(s) ? scalbn (frexp (s, &dummy_int), i) : NaN  */
 static void
 gfc_conv_intrinsic_set_exponent (gfc_se * se, gfc_expr * expr)
 {
-  tree args[2], type, tmp, frexp, scalbn;
+  tree args[2], type, tmp, frexp, scalbn, cond, nan, res;
 
   frexp = gfc_builtin_decl_for_float_kind (BUILT_IN_FREXP, expr->ts.kind);
   scalbn = gfc_builtin_decl_for_float_kind (BUILT_IN_SCALBN, expr->ts.kind);
 
   type = gfc_typenode_for_spec (&expr->ts);
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
+  args[0] = gfc_evaluate_now (args[0], &se->pre);
 
   tmp = gfc_create_var (integer_type_node, NULL);
   tmp = build_call_expr_loc (input_location, frexp, 2,
 			     fold_convert (type, args[0]),
 			     gfc_build_addr_expr (NULL_TREE, tmp));
-  se->expr = build_call_expr_loc (input_location, scalbn, 2, tmp,
-				  fold_convert (integer_type_node, args[1]));
-  se->expr = fold_convert (type, se->expr);
+  res = build_call_expr_loc (input_location, scalbn, 2, tmp,
+			     fold_convert (integer_type_node, args[1]));
+  res = fold_convert (type, res);
+
+  /* Call to isfinite */
+  cond = build_call_expr_loc (input_location,
+			      builtin_decl_explicit (BUILT_IN_ISFINITE),
+			      1, args[0]);
+  nan = gfc_build_nan (type, "");
+
+  se->expr = fold_build3_loc (input_location, COND_EXPR, type, cond,
+			      res, nan);
 }
 
 
@@ -6097,8 +6146,9 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 	{
 	  tmp = gfc_build_addr_expr (NULL_TREE, argse.expr);
 
-	  if (gfc_option.warn_array_temp)
-	    gfc_warning ("Creating array temporary at %L", &expr->where);
+	  if (warn_array_temporaries)
+	    gfc_warning (OPT_Warray_temporaries,
+			 "Creating array temporary at %L", &expr->where);
 
 	  source = build_call_expr_loc (input_location,
 				    gfor_fndecl_in_pack, 1, tmp);
@@ -8514,15 +8564,31 @@ conv_co_collective (gfc_code *code)
   gfc_se argse;
   stmtblock_t block, post_block;
   tree fndecl, array, strlen, image_index, stat, errmsg, errmsg_len;
+  gfc_expr *image_idx_expr, *stat_expr, *errmsg_expr, *opr_expr;
 
   gfc_start_block (&block);
   gfc_init_block (&post_block);
 
+  if (code->resolved_isym->id == GFC_ISYM_CO_REDUCE)
+    {
+      opr_expr = code->ext.actual->next->expr;
+      image_idx_expr = code->ext.actual->next->next->expr;
+      stat_expr = code->ext.actual->next->next->next->expr;
+      errmsg_expr = code->ext.actual->next->next->next->next->expr;
+    }
+  else
+    {
+      opr_expr = NULL;
+      image_idx_expr = code->ext.actual->next->expr;
+      stat_expr = code->ext.actual->next->next->expr;
+      errmsg_expr = code->ext.actual->next->next->next->expr;
+    }
+
   /* stat.  */
-  if (code->ext.actual->next->next->expr)
+  if (stat_expr)
     {
       gfc_init_se (&argse, NULL);
-      gfc_conv_expr (&argse, code->ext.actual->next->next->expr);
+      gfc_conv_expr (&argse, stat_expr);
       gfc_add_block_to_block (&block, &argse.pre);
       gfc_add_block_to_block (&post_block, &argse.post);
       stat = argse.expr;
@@ -8571,10 +8637,10 @@ conv_co_collective (gfc_code *code)
     strlen = integer_zero_node;
 
   /* image_index.  */
-  if (code->ext.actual->next->expr)
+  if (image_idx_expr)
     {
       gfc_init_se (&argse, NULL);
-      gfc_conv_expr (&argse, code->ext.actual->next->expr);
+      gfc_conv_expr (&argse, image_idx_expr);
       gfc_add_block_to_block (&block, &argse.pre);
       gfc_add_block_to_block (&post_block, &argse.post);
       image_index = fold_convert (integer_type_node, argse.expr);
@@ -8583,10 +8649,10 @@ conv_co_collective (gfc_code *code)
     image_index = integer_zero_node;
 
   /* errmsg.  */
-  if (code->ext.actual->next->next->next->expr)
+  if (errmsg_expr)
     {
       gfc_init_se (&argse, NULL);
-      gfc_conv_expr (&argse, code->ext.actual->next->next->next->expr);
+      gfc_conv_expr (&argse, errmsg_expr);
       gfc_add_block_to_block (&block, &argse.pre);
       gfc_add_block_to_block (&post_block, &argse.post);
       errmsg = argse.expr;
@@ -8610,6 +8676,9 @@ conv_co_collective (gfc_code *code)
     case GFC_ISYM_CO_MIN:
       fndecl = gfor_fndecl_co_min;
       break;
+    case GFC_ISYM_CO_REDUCE:
+      fndecl = gfor_fndecl_co_reduce;
+      break;
     case GFC_ISYM_CO_SUM:
       fndecl = gfor_fndecl_co_sum;
       break;
@@ -8621,9 +8690,44 @@ conv_co_collective (gfc_code *code)
       || code->resolved_isym->id == GFC_ISYM_CO_BROADCAST)
     fndecl = build_call_expr_loc (input_location, fndecl, 5, array,
 				  image_index, stat, errmsg, errmsg_len);
-  else
+  else if (code->resolved_isym->id != GFC_ISYM_CO_REDUCE)
     fndecl = build_call_expr_loc (input_location, fndecl, 6, array, image_index,
 				  stat, errmsg, strlen, errmsg_len);
+  else
+    {
+      tree opr, opr_flags;
+
+      // FIXME: Handle TS29113's bind(C) strings with descriptor.
+      int opr_flag_int;
+      if (gfc_is_proc_ptr_comp (opr_expr))
+	{
+	  gfc_symbol *sym = gfc_get_proc_ptr_comp (opr_expr)->ts.interface;
+	  opr_flag_int = sym->attr.dimension
+			 || (sym->ts.type == BT_CHARACTER
+			     && !sym->attr.is_bind_c)
+			 ? GFC_CAF_BYREF : 0;
+	  opr_flag_int |= opr_expr->ts.type == BT_CHARACTER
+			  && !sym->attr.is_bind_c
+			  ? GFC_CAF_HIDDENLEN : 0;
+	  opr_flag_int |= sym->formal->sym->attr.value ? GFC_CAF_ARG_VALUE : 0;
+	}
+      else
+	{
+	  opr_flag_int = gfc_return_by_reference (opr_expr->symtree->n.sym)
+			 ? GFC_CAF_BYREF : 0;
+	  opr_flag_int |= opr_expr->ts.type == BT_CHARACTER
+			  && !opr_expr->symtree->n.sym->attr.is_bind_c
+			  ? GFC_CAF_HIDDENLEN : 0;
+	  opr_flag_int |= opr_expr->symtree->n.sym->formal->sym->attr.value
+			  ? GFC_CAF_ARG_VALUE : 0;
+	}
+      opr_flags = build_int_cst (integer_type_node, opr_flag_int);
+      gfc_conv_expr (&argse, opr_expr);
+      opr = gfc_build_addr_expr (NULL_TREE, argse.expr);
+      fndecl = build_call_expr_loc (input_location, fndecl, 8, array, opr, opr_flags,
+				    image_index, stat, errmsg, strlen, errmsg_len);
+    }
+
   gfc_add_expr_to_block (&block, fndecl);
   gfc_add_block_to_block (&block, &post_block);
 
@@ -9337,12 +9441,10 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
       res = conv_caf_send (code);
       break;
 
-    case GFC_ISYM_CO_REDUCE:
-      gcc_unreachable ();
-      break;
     case GFC_ISYM_CO_BROADCAST:
     case GFC_ISYM_CO_MIN:
     case GFC_ISYM_CO_MAX:
+    case GFC_ISYM_CO_REDUCE:
     case GFC_ISYM_CO_SUM:
       res = conv_co_collective (code);
       break;

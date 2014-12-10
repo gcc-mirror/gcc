@@ -1,10 +1,11 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512f -O2" } */
-/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]\[^\{\]" 4 } } */
-/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 4 } } */
-/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\{z\}" 2 } } */
-/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\\S*,\[ \\t\]+\{sae\}\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\\S*,\[ \\t\]+\{sae\}\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\](?:\n|\[ \\t\]+#)"  3 } } */
+/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  3 } } */
+/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\\S*,\[ \\t\]+\{sae\}\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\](?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\\S*,\[ \\t\]+\{sae\}\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\\S*,\[ \\t\]+\{sae\}\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 

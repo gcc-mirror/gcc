@@ -47,11 +47,13 @@ proc asan_link_flags { paths } {
     global srcdir
     global ld_library_path
     global shlib_ext
+    global asan_saved_library_path
 
     set gccpath ${paths}
     set flags ""
 
     set shlib_ext [get_shlib_extension]
+    set asan_saved_library_path $ld_library_path
 
     if { $gccpath != "" } {
       if { [file exists "${gccpath}/libsanitizer/asan/.libs/libasan.a"]
@@ -122,6 +124,8 @@ proc asan_finish { args } {
     global TEST_ALWAYS_FLAGS
     global asan_saved_TEST_ALWAYS_FLAGS
     global asan_saved_ALWAYS_CXXFLAGS
+    global asan_saved_library_path
+    global ld_library_path
 
     if [info exists asan_saved_ALWAYS_CXXFLAGS ] {
 	set ALWAYS_CXXFLAGS $asan_saved_ALWAYS_CXXFLAGS
@@ -132,7 +136,8 @@ proc asan_finish { args } {
 	    unset TEST_ALWAYS_FLAGS
 	}
     }
-    restore_ld_library_path_env_vars
+    set ld_library_path $asan_saved_library_path
+    set_ld_library_path_env_vars
 }
 
 # Symbolize lines like

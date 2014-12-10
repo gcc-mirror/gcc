@@ -546,8 +546,9 @@ create_var (gfc_expr * e)
       result->ref->u.ar.where = e->where;
       result->ref->u.ar.as = symbol->ts.type == BT_CLASS
 			     ? CLASS_DATA (symbol)->as : symbol->as;
-      if (gfc_option.warn_array_temp)
-	gfc_warning ("Creating array temporary at %L", &(e->where));
+      if (warn_array_temporaries)
+	gfc_warning (OPT_Warray_temporaries,
+		     "Creating array temporary at %L", &(e->where));
     }
 
   /* Generate the new assignment.  */
@@ -565,15 +566,15 @@ create_var (gfc_expr * e)
 /* Warn about function elimination.  */
 
 static void
-warn_function_elimination (gfc_expr *e)
+do_warn_function_elimination (gfc_expr *e)
 {
   if (e->expr_type != EXPR_FUNCTION)
     return;
   if (e->value.function.esym)
-    gfc_warning ("Removing call to function '%s' at %L",
+    gfc_warning ("Removing call to function %qs at %L",
 		 e->value.function.esym->name, &(e->where));
   else if (e->value.function.isym)
-    gfc_warning ("Removing call to function '%s' at %L",
+    gfc_warning ("Removing call to function %qs at %L",
 		 e->value.function.isym->name, &(e->where));
 }
 /* Callback function for the code walker for doing common function
@@ -618,8 +619,8 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
 	      if (newvar == NULL)
 		newvar = create_var (*ei);
 
-	      if (gfc_option.warn_function_elimination)
-		warn_function_elimination (*ej);
+	      if (warn_function_elimination)
+		do_warn_function_elimination (*ej);
 
 	      free (*ej);
 	      *ej = gfc_copy_expr (newvar);
@@ -1708,17 +1709,19 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 		  && a->expr->symtree->n.sym == do_sym)
 		{
 		  if (f->sym->attr.intent == INTENT_OUT)
-		    gfc_error_now("Variable '%s' at %L set to undefined value "
-				  "inside loop  beginning at %L as INTENT(OUT) "
-				  "argument to subroutine '%s'", do_sym->name,
-				  &a->expr->where, &doloop_list[i]->loc,
-				  co->symtree->n.sym->name);
+		    gfc_error_now_1 ("Variable '%s' at %L set to undefined "
+				     "value inside loop  beginning at %L as "
+				     "INTENT(OUT) argument to subroutine '%s'",
+				     do_sym->name, &a->expr->where,
+				     &doloop_list[i]->loc,
+				     co->symtree->n.sym->name);
 		  else if (f->sym->attr.intent == INTENT_INOUT)
-		    gfc_error_now("Variable '%s' at %L not definable inside loop "
-				  "beginning at %L as INTENT(INOUT) argument to "
-				  "subroutine '%s'", do_sym->name,
-				  &a->expr->where, &doloop_list[i]->loc,
-				  co->symtree->n.sym->name);
+		    gfc_error_now_1 ("Variable '%s' at %L not definable inside "
+				     "loop beginning at %L as INTENT(INOUT) "
+				     "argument to subroutine '%s'",
+				     do_sym->name, &a->expr->where,
+				     &doloop_list[i]->loc,
+				     co->symtree->n.sym->name);
 		}
 	    }
 	  a = a->next;
@@ -1778,17 +1781,17 @@ do_function (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 	      && a->expr->symtree->n.sym == do_sym)
 	    {
 	      if (f->sym->attr.intent == INTENT_OUT)
-		gfc_error_now("Variable '%s' at %L set to undefined value "
-			      "inside loop beginning at %L as INTENT(OUT) "
-			      "argument to function '%s'", do_sym->name,
-			      &a->expr->where, &doloop_list[i]->loc,
-			      expr->symtree->n.sym->name);
+		gfc_error_now_1 ("Variable '%s' at %L set to undefined value "
+				 "inside loop beginning at %L as INTENT(OUT) "
+				 "argument to function '%s'", do_sym->name,
+				 &a->expr->where, &doloop_list[i]->loc,
+				 expr->symtree->n.sym->name);
 	      else if (f->sym->attr.intent == INTENT_INOUT)
-		gfc_error_now("Variable '%s' at %L not definable inside loop "
-			      "beginning at %L as INTENT(INOUT) argument to "
-			      "function '%s'", do_sym->name,
-			      &a->expr->where, &doloop_list[i]->loc,
-			      expr->symtree->n.sym->name);
+		gfc_error_now_1 ("Variable '%s' at %L not definable inside loop"
+				 " beginning at %L as INTENT(INOUT) argument to"
+				 " function '%s'", do_sym->name,
+				 &a->expr->where, &doloop_list[i]->loc,
+				 expr->symtree->n.sym->name);
 	    }
 	}
       a = a->next;

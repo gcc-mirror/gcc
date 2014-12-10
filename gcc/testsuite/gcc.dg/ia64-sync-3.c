@@ -10,6 +10,7 @@ __extension__ typedef __SIZE_TYPE__ size_t;
 
 extern void abort (void);
 extern void *memcpy (void *, const void *, size_t);
+extern int memcmp (const void *, const void *, size_t);
 
 static int AI[4];
 static int init_si[4] = { -30,-30,-50,-50 };

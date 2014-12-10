@@ -1,3 +1,127 @@
+2014-12-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* line-map.c (linemap_position_for_loc_and_offset): Add new
+	linemap_assert_fails.
+
+2014-12-02  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* include/line-map.h (linemap_assert_fails): Declare.
+	* line-map.c (linemap_position_for_loc_and_offset): Use it.
+
+2014-12-02  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+        * line-map.c (linemap_add): Fix typo.
+        (linemap_line_start): Fix whitespace.
+
+2014-11-29  John Schmerge  <jbschmerge@gmail.com>
+
+	PR preprocessor/41698
+	* charset.c (one_utf8_to_utf16): Do not produce surrogate pairs
+	for 0xffff.
+
+2014-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/60436
+	* line-map.c (linemap_line_start): If highest is above 0x60000000
+	and we are still tracking columns or highest is above 0x70000000,
+	force add_map.
+
+2014-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/63966
+	* lex.c [__i386__ || __x86_64__]: Compile special SSE functions
+	only for (__GNUC__ >= 5 || !defined(__PIC__)).
+
+2014-11-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* include/line-map.h: Include EXPR, so that unused variable warnings
+	do not occur.
+
+2014-11-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* include/line-map.h (linemap_position_for_loc_and_offset):
+	Declare.
+	* line-map.c (linemap_position_for_loc_and_offset): New.
+
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+
+2014-11-10  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/cpplib.h (cpp_callbacks): Add has_attribute.
+	* internal.h (lexer_state): Add in__has_attribute__.
+	* directives.c (lex_macro_node): Prevent use of __has_attribute__
+	as a macro.
+	* expr.c (parse_has_attribute): New function; (eval_token): Look for
+	__has_attribute__ and route to parse_has_attribute.
+	* identifiers.c (_cpp_init_hashtable): Initialize n__has_attribute__.
+	* pch.c (cpp_read_state): Initialize n__has_attribute__.
+	* traditional.c (enum ls): Add ls_has_attribute, ls_has_attribute_close;
+	(_cpp_scan_out_logical_line): Attend to __has_attribute__.
+
+2014-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpp-id-data.h (struct cpp_macro): Update comment
+	regarding parameters.
+	* include/cpplib.h (struct cpp_macro_arg, struct cpp_identifier):
+	Add spelling fields.
+	(struct cpp_token): Update comment on macro_arg.
+	* internal.h (_cpp_save_parameter): Add extra argument.
+	(_cpp_spell_ident_ucns): New declaration.
+	* lex.c (lex_identifier): Add SPELLING argument.  Set *SPELLING to
+	original spelling of identifier.
+	(_cpp_lex_direct): Update calls to lex_identifier.
+	(_cpp_spell_ident_ucns): New function, factored out of
+	cpp_spell_token.
+	(cpp_spell_token): Adjust FORSTRING argument semantics to return
+	original spelling of identifiers.  Use _cpp_spell_ident_ucns in
+	!FORSTRING case.
+	(_cpp_equiv_tokens): Check spellings of identifiers and macro
+	arguments are identical.
+	* macro.c (macro_arg_saved_data): New structure.
+	(paste_tokens): Use original spellings of identifiers from
+	cpp_spell_token.
+	(_cpp_save_parameter): Add argument SPELLING.  Save both canonical
+	node and its value.
+	(parse_params): Update calls to _cpp_save_parameter.
+	(lex_expansion_token): Save spelling of macro argument tokens.
+	(_cpp_create_definition): Extract canonical node from saved data.
+	(cpp_macro_definition): Use UCNs in spelling of macro name.  Use
+	original spellings of macro argument tokens and identifiers.
+	* traditional.c (scan_parameters): Update call to
+	_cpp_save_parameter.
+
+2014-11-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/9449
+	* init.c (lang_defaults): Enable extended identifiers for C++ and
+	C99-based standards.
+
+2014-10-22  Alan Modra  <amodra@gmail.com>
+
+	* symtab.c (ht_create): Use obstack_specify_allocation in place of
+	_obstack_begin.
+	* files.c (_cpp_init_files): Likewise.
+	* init.c (cpp_create_reader): Likewise.
+	* identifiers.c (_cpp_init_hashtable): Likewise.
+
+2014-10-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* include/line-map.h (linemap_location_from_macro_expansion_p):
+	const struct line_maps * argument.
+	(linemap_position_for_line_and_column): const struct line_map *
+	argument.
+	* line-map.c (linemap_add_macro_token): Use correct argument name
+	in comment.
+	(linemap_position_for_line_and_column): const struct line_map *
+	argument.
+	(linemap_macro_map_loc_to_def_point): Fix comment. Make static.
+	(linemap_location_from_macro_expansion_p): const struct line_maps *
+	argument.
+	(linemap_resolve_location): Fix argument names in comment.
+
 2014-10-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* lex.c (search_line_fast): Add new version to be used for Power8
@@ -764,7 +888,7 @@
 
 	* lex.c (lex_raw_string): Change C++ style comments into C style
 	comments.
-    	(lex_string): Likewise.
+	(lex_string): Likewise.
 
 2012-04-27   Ollie Wild  <aaw@google.com>
 
@@ -940,15 +1064,15 @@
 
 	PR bootstrap/50760
 	* include/line-map.h (struct linemap_stats): Change the type of
-    	the members from size_t to long.
+	the members from size_t to long.
 	* macro.c (macro_arg_token_iter_init): Unconditionally initialize
-    	iter->location_ptr.
+	iter->location_ptr.
 
 2011-10-17  Dodji Seketeli  <dodji@redhat.com>
 
 	* line-map.c (linemap_macro_map_loc_to_exp_point): Avoid setting a
-    	variable without using it if ENABLE_CHECKING is not defined.  Mark
-    	the LOCATION parameter as being unused.
+	variable without using it if ENABLE_CHECKING is not defined.  Mark
+	the LOCATION parameter as being unused.
 
 2011-10-15  Tom Tromey  <tromey@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
@@ -1063,7 +1187,7 @@
 	member.
 	(MAX_SOURCE_LOCATION): New constant.
 	(struct line_map_ordinary, struct line_map_macro): New structs.
-    	(struct line_map): Turn this into a union of the two above.  Add
+	(struct line_map): Turn this into a union of the two above.  Add
 	comments.
 	(struct maps_info): New struct.
 	(struct line_maps)<info_ordinary, info_macro>: Two new fields.
@@ -1318,7 +1442,7 @@
 	* lex.c [ALTIVEC] (search_line_fast): Require gcc version 4.5.
 
 2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
-            Jakub Jelinek  <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/39213
 	* directives.c (end_directive): Call _cpp_remove_overlay for deferred
@@ -2071,7 +2195,7 @@
 	* directives-only.c (_cpp_preprocess_dir_only): Likewise.
 	* internal.h (CPP_INCREMENT_LINE): Likewise.
 	* lex.c (_cpp_skip_block_comment): Use source_location.
-	
+
 2008-07-14  Ben Elliston  <bje@au.ibm.com>
 
 	* include/cpplib.h (NODE_CONDITIONAL): New.
@@ -2337,7 +2461,7 @@
 
 	PR preprocessor/30363
 	* traditional.c (replace_args_and_push): Add local variable
-	cxtquote, calculate the replacement text size assuming a 
+	cxtquote, calculate the replacement text size assuming a
 	worst case of every input character quoted with backslash,
 	and properly handle output quoting of quote characters in
 	actual arguments used in function-like macros.
@@ -2491,8 +2615,8 @@
 2007-06-09  Vladimir Prus  <vladimir@codesourcery.com>
 
 	* files.c (open_file): Account for the
-        fact that on windows, opening a directory gives
-        EACCES.
+	fact that on windows, opening a directory gives
+	EACCES.
 
 2007-06-05  Joerg Wunsch  <j.gnu@uriah.heep.sax.de>
 
@@ -2544,7 +2668,7 @@
 
 2007-05-14  Janis Johnson  <janis187@us.ibm.com>
 
-        * expr.c (cpp_classify_number): Warn about dfp constant for -pedantic.
+	* expr.c (cpp_classify_number): Warn about dfp constant for -pedantic.
 
 	PR c/31924
 	* expr.c (interpret_float_suffix): Check for invalid suffix.

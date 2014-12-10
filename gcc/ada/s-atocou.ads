@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,8 +37,6 @@
 --    - all x86 platforms
 --    - all x86_64 platforms
 
---  Why isn't this package available to application programs???
-
 package System.Atomic_Counters is
 
    pragma Preelaborate;
@@ -59,20 +57,19 @@ package System.Atomic_Counters is
 
    function Decrement (Item : in out Atomic_Counter) return Boolean;
    pragma Inline_Always (Decrement);
-   --  Decrements value of atomic counter, returns True when value reach zero.
+   --  Decrements value of atomic counter, returns True when value reach zero
 
    function Is_One (Item : Atomic_Counter) return Boolean;
    pragma Inline_Always (Is_One);
-   --  Returns True when value of the atomic counter is one.
+   --  Returns True when value of the atomic counter is one
 
    procedure Initialize (Item : out Atomic_Counter);
    pragma Inline_Always (Initialize);
    --  Initialize counter by setting its value to one. This subprogram is
-   --  intended to be used in special cases when counter object can't be
+   --  intended to be used in special cases when the counter object cannot be
    --  initialized in standard way.
 
 private
-
    type Unsigned_32 is mod 2 ** 32;
 
    type Atomic_Counter is limited record

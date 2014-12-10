@@ -1,3 +1,381 @@
+2014-12-06  Tobias Burnus  <burnus@net-b.de>
+
+	* error.c (gfc_error_check): Use bool not int.
+	* gfortran.h (gfc_error_check): Update prototype.
+	* match.c (gfc_match_if): Update call.
+	* parse.c (decode_statement, decode_omp_directive,
+	decode_gcc_attribute): Ditto.
+
+2014-12-06  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* error.c (gfc_buffer_error, gfc_error_flag_test): Use bool not int.
+	(buffer_flag): Remove static variable.
+	(buffered_p): Add static variable.
+	(gfc_error_init_1): Call gfc_buffer_error.
+	(gfc_warning_1, gfc_warning, gfc_warning_now_1, gfc_error,
+	gfc_error_now_1): Update for static variable change.
+	* gfortran.h (gfc_buffer_error, gfc_error_flag_test): Update
+	prototype.
+	* parse.c (use_modules, decode_specification_statement,
+	next_fixed, next_statement, match_deferred_characteristics):
+	Update calls.
+	* decl.c (gfc_match_data_decl): Ditto.
+	* match.c (gfc_match_name): Ditto.
+
+2014-12-05  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/60414
+	* interface.c (compare_parameter): Remove class argument rank
+	check short circuit.
+
+2014-12-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* error.c (gfc_diagnostic_build_locus_prefix): Use
+	diagnostic_expand_location.
+
+2014-12-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* scanner.c (gfc_next_char_literal): Use gfc_warning_now.
+	(load_file): Use the line length as the column hint for
+	linemap_line_start. Reserve a location for the highest column of
+	the line.
+
+2014-12-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* gfortran.h (gfc_warning): Now returns bool. Add overload that
+	accepts opt.
+	(gfc_warning_1): Declare.
+	* error.c
+	(pp_warning_buffer,warningcount_buffered,werrorcount_buffered):	New.
+	(gfc_buffer_error): Set pp_warning_buffer.flush_p.
+	(gfc_clear_pp_buffer): New.
+	(gfc_warning_1): Renamed from gfc_warning.
+	(gfc_warning): Add three new overloads. One that takes just a
+	format string and ellipsis, another that takes also a warning
+	option, and another that takes also va_list instead of ellipsis.
+	(gfc_clear_warning): Clear pp_warning_buffer.
+	(gfc_warning_check): Flush pp_warning_buffer and update warning
+	and werror counters.
+	(gfc_diagnostics_init): Init pp_warning_buffer.
+
+	* Update all gfc_warning calls that do not use multiple
+	locations to use %qs and OPT_W*, otherwise use gfc_warning_1.
+
+2014-12-02  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* error.c (warnings_not_errors): Use bool.
+	(gfc_clear_error): Update.
+	(gfc_get_errors): Ditto. Use bool argument.
+	* gfortran.h (gfc_get_errors): Update prototype.
+	* resolve.c (resolve_global_procedure): Update call.
+
+2014-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/64137
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Check
+	proper expressions type, use proper type for computing
+	-Huge - 1.
+
+2014-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.c (gfc_omp_finish_clause,
+	gfc_trans_omp_array_reduction_or_udr, gfc_trans_omp_atomic): Remove
+	NULL last argument from create_tmp_var_raw and create_tmp_var calls.
+
+2014-11-29  Tobias Burnus  <burnus@net-b.de>
+
+	* scanner.c (skip_free_comments, gfc_gobble_whitespace): Use
+	gfc_warning_now instead of ..._now_1.
+
+2014-11-29  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* lang.opt (Wtabs): Combine duplicated item into a single
+	one using || for LangEnabledBy.
+
+2014-11-25  Tobias Burnus  <burnus@net-b.de>
+
+	* error.c (gfc_internal_error): Convert to common diagnostics.
+	* interface.c (gfc_find_sym_in_symtree): Use %qs.
+	* intrinsic.c (make_generic, gfc_check_intrinsic_standard,
+	gfc_convert_type_warn): Ditto.
+	* module.c (write_symbol): Ditto.
+	* symbol.c (gfc_get_default_type): Ditto; use fatal instead
+	of internal error.
+	* trans-array.c (gfc_walk_subexpr): Replace internal_error by
+	gfc_internal_error.
+	* trans-decl.c (gfc_get_symbol_decl,
+	(gfc_create_module_variable): Ditto. Use %qs.
+	* trans-intrinsic.c (gfc_conv_intrinsic_lib_function): Ditto.
+	* trans-io.c (transfer_expr): Ditto.
+	* trans-openmp.c (gfc_trans_omp_workshare): Ditto.
+	* trans.c (trans_code): Ditto.
+
+2014-11-25  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_option_t): Remove flags moved as Var to .opt.
+	(gfc_error_now_1): Renamed from gfc_error_now.
+	(gfc_error_now): Renamed from gfc_error_now_2.
+	(gfc_warning_now_1): Renamed from gfc_warning_now.
+	(gfc_warning_now): Renamed from gfc_warning_now_2.
+	* error.c (gfc_error_now_1): Renamed from gfc_error_now.
+	(gfc_error_now): Renamed from gfc_error_now_2.
+	(gfc_warning_now_1): Renamed from gfc_warning_now.
+	(gfc_warning_now): Renamed from gfc_warning_now_2.
+	(gfc_get_errors): Include common diagnostic in count.
+	* lang.opt (Wc-binding-type, Wconversion, Wconversion-extra,
+	Wintrinsics-std): Create a Var for those warnings.
+	* check.c (gfc_check_cmplx): Pass warning flag to
+	diagnostic function.
+	* decl.c (get_proc_name, gfc_verify_c_interop_param, build_sym
+	gfc_set_constant_character_len, verify_bind_c_sym): Ditto; use
+	_1 for old diagnostic, remove _2 for new diagnostic.
+	* expr.c (gfc_check_assign, gfc_check_vardef_context): Ditto.
+	* frontend-passes.c (doloop_code, do_function): Ditto.
+	* intrinsic.c (gfc_is_intrinsic, gfc_convert_type_warn): Ditto.
+	* match.c (gfc_match_common): Ditto.
+	* module.c (use_iso_fortran_env_module, gfc_use_module): Ditto.
+	* parse.c (decode_statement, decode_gcc_attribute, next_free,
+	next_fixed, gfc_check_do_variable): Ditto.
+	* resolve.c (resolve_common_vars, resolve_ordinary_assign):
+	Ditto.
+	* scanner.c (add_path_to_list, skip_free_comments,
+	gfc_next_char_literal, gfc_gobble_whitespace, load_line,
+	preprocessor_line, load_file): Ditto.
+	* symbol.c (gfc_set_default_type, verify_bind_c_derived_type):
+	Ditto.
+	* options.c (gfc_post_options): Ditto.
+	(gfc_init_options, set_Wall, gfc_handle_option): Ditto; remove
+	flags which now have a Var.
+	* invoke.texi (Wconversion-extra): Make clear that the flag
+	does not imply -Wconversion.
+
+2014-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/63938
+	* trans-openmp.c (gfc_trans_omp_atomic): Make sure lhsaddr is
+	simple enough for goa_lhs_expr_p.
+
+2014-11-24  Tobias Burnus  <burnus@net-b.de>
+
+	* error.c (gfc_fatal_error_1): Remove.
+	* gfortran.h (gfc_fatal_error_1): Remove.
+	* check.c (check_co_collective): Change gfc_fatal_error_1 to
+	gfc_fatal_error.
+	* match.c (gfc_match_name): Ditto.
+	* trans-array.c (gfc_conv_array_initializer): Ditto.
+	* trans-stmt.c (gfc_trans_sync): Ditto.
+
+2014-11-23  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* decl.c (gfc_verify_c_interop_param): Use gfc_error_now_2.
+	(gfc_set_constant_character_len): Use gfc_warning_now_2.
+	* resolve.c (resolve_ordinary_assign): Likewise.
+	* gfortran.h (warn_character_truncation): Do not declare here.
+	* error.c (gfc_format_decoder): Handle %L.
+	* lang.opt (Wcharacter-truncation): Add Var and LangEnabledBy.
+	* options.c (gfc_init_options): Do not handle
+	warn_character_truncation explicitly.
+	(set_Wall): Likewise.
+	(gfc_handle_option): Likewise.
+
+2014-11-23  Tobias Burnus  <burnus@net-b.de>
+
+	* invoke.texi (-Wtabs): Swap -Wtabs/-Wno-tabs now that
+	-Wtabs enables the warning.
+
+2014-11-23  Tobias Burnus  <burnus@net-b.de>
+
+	* error.c (gfc_diagnostic_build_prefix): Correct coloring
+	of the colon of the prefix.
+
+2014-11-23  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gfortran.h (gfc_option_t): Remove warn_tabs.
+	* lang.opt (Wpedantic): Add.
+	(Wtabs): Use Var and LangEnabledBy.
+	* options.c (gfc_init_options, gfc_post_options,
+	set_Wall): Remove -Wtabs handling.
+	(gfc_handle_option): Update -std=, remove OPT_Wtabs.
+	* scanner.c (gfc_gobble_whitespace): Update for
+	flag-variable renaming.
+	(load_line): Ditto. Pass warn flag to diagnostic.
+
+2014-11-22  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-expr.c (gfc_caf_get_image_index): Fix image calculation.
+
+2014-11-15  Tobias Burnus  <burnus@net-b.de>
+
+	* error.c (gfc_fatal_error_1): Renamed from gfc_fatal_error.
+	(gfc_fatal_error): Add; uses common diagnostics.
+	* array.c (gfc_match_array_ref, gfc_match_array_spec): Use
+	%< %>.
+	* check.c (check_co_collective, gfc_check_lcobound,
+	gfc_check_image_index, gfc_check_num_images,
+	gfc_check_this_image, gfc_check_ucobound): Ditto.
+	* cpp.c (gfc_cpp_post_options): Ditto.
+	(gfc_cpp_init_0, gfc_cpp_done): Change %s to %qs.
+	* gfc-diagnostic.def (DK_FATAL): Capitalize first letter.
+	* gfortran.h (gfc_fatal_error_1): Add.
+	* match.c (gfc_match_name, gfc_match_critical,
+	lock_unlock_statement, sync_statement): Add %< %>.
+	* module.c (bad_module, gfc_dump_module, gfc_use_module): Change
+	%s to %qs.
+	* options.c (gfc_handle_module_path_options, gfc_handle_fpe_option,
+	gfc_handle_coarray_option, gfc_handle_runtime_check_option,
+	gfc_handle_option): Add %< %>.
+	* simplify.c (gfc_simplify_num_images): Ditto.
+	* trans-stmt.c (gfc_trans_sync): Use gfc_fatal_error_1.
+	* trans-array.c (gfc_conv_array_initializer): Ditto.
+	* trans-types.c (gfc_init_kinds): Use gfc_fatal_error instead
+	of fatal_error; add %< %> quotations.
+
+2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+
+	* Make-lang.in (fortran.install-common): Do not install for the offload
+	compiler.
+
+2014-11-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* gfortran.h (warn_use_without_only): Remove.
+	(gfc_diagnostics_finish): Declare.
+	* error.c: Include tree-diagnostics.h
+	(gfc_format_decoder): New.
+	(gfc_diagnostics_init): Use gfc_format_decoder. Set default caret
+	char.
+	(gfc_diagnostics_finish): Restore tree diagnostics defaults, but
+	keep gfc_diagnostics_starter and finalizer. Restore default caret.
+	* options.c: Remove all uses of warn_use_without_only.
+	* lang.opt (Wuse-without-only): Add Var.
+	* f95-lang.c (gfc_be_parse_file): Call gfc_diagnostics_finish.
+	* module.c (gfc_use_module): Use gfc_warning_now_2.
+	* parse.c (decode_statement): Likewise.
+	(decode_gcc_attribute): Likewise.
+	(next_free): Likewise.
+	(next_fixed): Likewise.
+
+2014-11-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR fortran/63701
+	* trans-expr.c (gfc_get_tree_for_caf_expr): Initialise found to false.
+
+2014-11-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/47007
+	PR libfortran/61847
+	* gfortran.texi: Add note about locale issues to thread-safety
+	section.
+
+2014-11-04  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* f95-lang.c (gfc_init_builtin_functions): Use type index 2 for
+	scalbn, scalbnl and scalbnf.
+	* mathbuiltins.def (JN, YN): Use type index 5.
+
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* trans-types.c, trans-types.h: Remove redundant enum from
+	machine_mode.
+
+2014-10-28  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* gfortran.h (gfc_warning_cmdline): Rename as gfc_warning_now_2.
+	(gfc_error_cmdline): Rename as gfc_error_now_2.
+	* error.c (gfc_diagnostic_build_locus_prefix): Remove trailing space.
+	(gfc_diagnostic_starter): Add space between locus and prefix.
+	(gfc_warning_now_2): Renamed from gfc_warning_cmdline.
+	(gfc_error_now_2): Renamed from gfc_error_cmdline.
+	* scanner.c (add_path_to_list): Use gfc_warning_now_2.
+	(load_line): Likewise.
+	(load_file): Likewise.
+	* options.c (gfc_post_options): Update all renamed functions.
+
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* f95-lang.c: Adjust include files.
+	* trans-decl.c: Ditto.
+
+2014-10-24  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (check_co_collective): Reject coindexed A args.
+	(gfc_check_co_reduce): Add OPERATOR checks.
+	* gfortran.texi (_gfortran_caf_co_broadcast, _gfortran_caf_co_max,
+	_gfortran_caf_co_min, _gfortran_caf_co_sum,
+	_gfortran_caf_co_reduce): Add ABI documentation.
+	* intrinsic.texi (CO_REDUCE): Document intrinsic.
+	(DPROD): Returns double not single precision.
+	* trans-decl.c (gfor_fndecl_co_reduce): New global var.
+	(gfc_build_builtin_function_decls): Init it.
+	* trans.h (gfor_fndecl_co_reduce): Declare it.
+	* trans-intrinsic.c (conv_co_collective,
+	gfc_conv_intrinsic_subroutine): Handle CO_REDUCE.
+
+2014-10-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/48979
+	* trans-const.c (gfc_build_nan): New function.
+	* trans-const.h (gfc_build_nan): New prototype.
+	* trans-intrinsic.c (gfc_conv_intrinsic_exponent): Handle special
+	values.
+	(gfc_conv_intrinsic_minmaxval): Use gfc_build_nan.
+	(gfc_conv_intrinsic_fraction): Handle special values.
+	(gfc_conv_intrinsic_spacing): Likewise.
+	(gfc_conv_intrinsic_rrspacing): Likewise.
+	(gfc_conv_intrinsic_set_exponent): Likewise.
+
+2014-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/63553
+	* resolve.c (resolve_ordinary_assign): Add data component to
+	rvalue expression for class to type assignment.
+
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* f95-lang.c: Adjust include files.
+	* trans-decl.c: Likewise.
+
+2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* trans-decl.c, trans.c, trans.h: Use hash_table instead of hashtab.
+
+2014-10-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/48979
+	* simplify.c (gfc_simplify_atan): Use mpfr_zero_p to check for zeros.
+	(gfc_simplify_log): Likewise.
+	(gfc_simplify_scale): Likewise.
+	(gfc_simplify_exponent): Handle infinities and NaNs.
+	(gfc_simplify_fraction): Handle infinities.
+	(gfc_simplify_rrspacing): Handle signed zeros and NaNs.
+	(gfc_simplify_set_exponent): Handle infinities and NaNs.
+	(gfc_simplify_spacing): Handle zeros, infinities and NaNs.
+
+2014-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/59488
+	* trans-openmp.c (gfc_omp_predetermined_sharing): Return
+	OMP_CLAUSE_DEFAULT_SHARED for parameters or vtables.
+
+2014-10-10  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_set_implicit_none): Update prototype.
+	* symbol.c (gfc_set_implicit_none): Take and
+	use error location. Move diagnostic from here to ...
+	* decl.c (gfc_match_implicit_none): ... here. And
+	update call. Handle empty implicit-none-spec.
+	(gfc_match_implicit): Handle statement-separator ";".
+
 2014-10-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* f95-lang.c (gfc_init_builtin_functions): Add more floating-point

@@ -1277,7 +1277,13 @@ write_float (st_parameter_dt *dtp, const fnode *f, const char *source, \
      trailing null, and finally some extra digits depending on the
      requested precision.  */
   const size_t size = 4932 + 3 + precision;
-  char buffer[size];
+#define BUF_STACK_SZ 5000
+  char buf_stack[BUF_STACK_SZ];
+  char *buffer;
+  if (size > BUF_STACK_SZ)
+     buffer = xmalloc (size);
+  else
+     buffer = buf_stack;
 
   switch (len)
     {
@@ -1306,4 +1312,6 @@ write_float (st_parameter_dt *dtp, const fnode *f, const char *source, \
     default:
       internal_error (NULL, "bad real kind");
     }
+  if (size > BUF_STACK_SZ)
+     free (buffer);
 }

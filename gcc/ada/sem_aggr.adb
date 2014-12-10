@@ -2663,12 +2663,19 @@ package body Sem_Aggr is
 
       function Valid_Limited_Ancestor (Anc : Node_Id) return Boolean is
       begin
-         if Is_Entity_Name (Anc)
-           and then Is_Type (Entity (Anc))
+         if Is_Entity_Name (Anc) and then Is_Type (Entity (Anc)) then
+            return True;
+
+         --  The ancestor must be a call or an aggregate, but a call may
+         --  have been expanded into a temporary, so check original node.
+
+         elsif Nkind_In (Anc, N_Aggregate,
+                              N_Extension_Aggregate,
+                              N_Function_Call)
          then
             return True;
 
-         elsif Nkind_In (Anc, N_Aggregate, N_Function_Call) then
+         elsif Nkind (Original_Node (Anc)) = N_Function_Call then
             return True;
 
          elsif Nkind (Anc) = N_Attribute_Reference

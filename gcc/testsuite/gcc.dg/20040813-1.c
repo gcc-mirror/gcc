@@ -2,7 +2,7 @@
 /* Contributed by Devang Patel  <dpatel@apple.com>  */
 
 /* { dg-do compile } */
-/* { dg-skip-if "No stabs" { aarch64*-*-* mmix-*-* *-*-aix* alpha*-*-* hppa*64*-*-* ia64-*-* tile*-*-* nios2-*-* *-*-vxworks* } { "*" } { "" } } */
+/* { dg-skip-if "No stabs" { aarch64*-*-* mmix-*-* *-*-aix* alpha*-*-* hppa*64*-*-* ia64-*-* tile*-*-* nios2-*-* *-*-vxworks* nvptx-*-* } { "*" } { "" } } */
 /* { dg-options "-gstabs" } */
 
 int

@@ -18,7 +18,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <atomic>  // { dg-excess-errors "In file included from" }
+#include <atomic>
 
 // { dg-error "ISO C.. 2011" "" { target *-*-* } 32 }
 

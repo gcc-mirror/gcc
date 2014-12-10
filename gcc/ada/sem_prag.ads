@@ -172,14 +172,21 @@ package Sem_Prag is
 
    procedure Collect_Subprogram_Inputs_Outputs
      (Subp_Id      : Entity_Id;
+      Synthesize   : Boolean := False;
       Subp_Inputs  : in out Elist_Id;
       Subp_Outputs : in out Elist_Id;
       Global_Seen  : out Boolean);
-   --  Used during the analysis of pragmas Depends, Global, Refined_Depends,
-   --  and Refined_Global. Also used by GNATprove. Gathers all inputs and
-   --  outputs of subprogram Subp_Id in lists Subp_Inputs and Subp_Outputs.
-   --  If subprogram has no inputs and/or outputs, then the returned list
-   --  is No_Elist. Global_Seen is set when the related subprogram has
+   --  Subsidiary to the analysis of pragmas Depends, Global, Refined_Depends
+   --  and Refined_Global. The routine is also used by GNATprove. Collect all
+   --  inputs and outputs of subprogram Subp_Id in lists Subp_Inputs (inputs)
+   --  and Subp_Outputs (outputs). The inputs and outputs are gathered from:
+   --    1) The formal parameters of the subprogram
+   --    2) The items of pragma [Refined_]Global
+   --         or
+   --    3) The items of pragma [Refined_]Depends if there is no pragma
+   --       [Refined_]Global present and flag Synthesize is set to True.
+   --  If the subprogram has no inputs and/or outputs, then the returned list
+   --  is No_Elist. Flag Global_Seen is set when the related subprogram has
    --  pragma [Refined_]Global.
 
    function Delay_Config_Pragma_Analyze (N : Node_Id) return Boolean;

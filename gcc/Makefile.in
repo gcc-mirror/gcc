@@ -59,6 +59,11 @@ host=@host@
 target=@target@
 target_noncanonical:=@target_noncanonical@
 
+# Normally identical to target_noncanonical, except for compilers built
+# as accelerator targets.
+real_target_noncanonical:=@real_target_noncanonical@
+accel_dir_suffix = @accel_dir_suffix@
+
 # Sed command to transform gcc to installed name.
 program_transform_name := @program_transform_name@
 
@@ -204,6 +209,8 @@ gengtype-lex.o-warn = -Wno-error
 libgcov-util.o-warn = -Wno-error
 libgcov-driver-tool.o-warn = -Wno-error
 libgcov-merge-tool.o-warn = -Wno-error
+gimple-match.o-warn = -Wno-unused
+generic-match.o-warn = -Wno-unused
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either
@@ -314,6 +321,11 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) \
 			  $(shell expr $(range) + $(write_entries_to_file_split) - 1), $(1))" \
 	     | tr ' ' '\012' >> $(2)))
 
+# The jit documentation looks better if built with sphinx, but can be
+# built with texinfo if sphinx is not available.
+# configure sets "doc_build_sys" to "sphinx" or "texinfo" accordingly
+doc_build_sys=@doc_build_sys@
+
 # --------
 # UNSORTED
 # --------
@@ -342,10 +354,6 @@ GMPINC = @GMPINC@
 ISLLIBS = @ISLLIBS@
 ISLINC = @ISLINC@
 
-# How to find CLOOG
-CLOOGLIBS = @CLOOGLIBS@
-CLOOGINC = @CLOOGINC@
-
 # Set to 'yes' if the LTO front end is enabled.
 enable_lto = @enable_lto@
 
@@ -359,6 +367,8 @@ PLUGINLIBS = @pluginlibs@
 enable_plugin = @enable_plugin@
 
 enable_host_shared = @enable_host_shared@
+
+enable_as_accelerator = @enable_as_accelerator@
 
 CPPLIB = ../libcpp/libcpp.a
 CPPINC = -I$(srcdir)/../libcpp/include
@@ -571,9 +581,9 @@ libexecdir = @libexecdir@
 # --------
 
 # Directory in which the compiler finds libraries etc.
-libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(version)
+libsubdir = $(libdir)/gcc/$(real_target_noncanonical)/$(version)$(accel_dir_suffix)
 # Directory in which the compiler finds executables
-libexecsubdir = $(libexecdir)/gcc/$(target_noncanonical)/$(version)
+libexecsubdir = $(libexecdir)/gcc/$(real_target_noncanonical)/$(version)$(accel_dir_suffix)
 # Directory in which all plugin resources are installed
 plugin_resourcesdir = $(libsubdir)/plugin
  # Directory in which plugin headers are installed
@@ -581,7 +591,11 @@ plugin_includedir = $(plugin_resourcesdir)/include
 # Directory in which plugin specific executables are installed
 plugin_bindir = $(libexecsubdir)/plugin
 # Used to produce a relative $(gcc_tooldir) in gcc.o
+ifeq ($(enable_as_accelerator),yes)
+unlibsubdir = ../../../../..
+else
 unlibsubdir = ../../..
+endif
 # $(prefix), expressed as a path relative to $(libsubdir).
 #
 # An explanation of the sed strings:
@@ -992,7 +1006,7 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 # and the system's installed libraries.
 LIBS = @LIBS@ libcommon.a $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBBACKTRACE) \
 	$(LIBIBERTY) $(LIBDECNUMBER) $(HOST_LIBS)
-BACKENDLIBS = $(CLOOGLIBS) $(ISLLIBS) $(GMPLIBS) $(PLUGINLIBS) $(HOST_LIBS) \
+BACKENDLIBS = $(ISLLIBS) $(GMPLIBS) $(PLUGINLIBS) $(HOST_LIBS) \
 	$(ZLIB)
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
@@ -1024,7 +1038,7 @@ BUILD_ERRORS = build/errors.o
 INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   -I$(srcdir)/../include @INCINTL@ \
 	   $(CPPINC) $(GMPINC) $(DECNUMINC) $(BACKTRACEINC) \
-	   $(CLOOGINC) $(ISLINC)
+	   $(ISLINC)
 
 COMPILE.base = $(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) -o $@
 ifeq ($(CXXDEPMODE),depmode=gcc3)
@@ -1153,12 +1167,14 @@ OBJS = \
 	alias.o \
 	alloc-pool.o \
 	auto-inc-dec.o \
+	auto-profile.o \
 	bb-reorder.o \
 	bitmap.o \
 	bt-load.o \
 	builtins.o \
 	caller-save.o \
 	calls.o \
+	ccmp.o \
 	cfg.o \
 	cfganal.o \
 	cfgbuild.o \
@@ -1226,6 +1242,8 @@ OBJS = \
 	gimple-iterator.o \
 	gimple-fold.o \
 	gimple-low.o \
+	gimple-match.o \
+	generic-match.o \
 	gimple-pretty-print.o \
 	gimple-ssa-isolate-paths.o \
 	gimple-ssa-strength-reduction.o \
@@ -1239,7 +1257,6 @@ OBJS = \
 	graphds.o \
 	graphite.o \
 	graphite-blocking.o \
-	graphite-clast-to-gimple.o \
 	graphite-isl-ast-to-gimple.o \
 	graphite-dependences.o \
 	graphite-interchange.o \
@@ -1257,6 +1274,7 @@ OBJS = \
 	incpath.o \
 	init-regs.o \
 	internal-fn.o \
+	ipa-chkp.o \
 	ipa-cp.o \
 	ipa-devirt.o \
 	ipa-polymorphic-call.o \
@@ -1269,6 +1287,8 @@ OBJS = \
 	ipa-profile.o \
 	ipa-prop.o \
 	ipa-pure-const.o \
+	ipa-icf.o \
+	ipa-icf-gimple.o \
 	ipa-reference.o \
 	ipa-ref.o \
 	ipa-utils.o \
@@ -1296,6 +1316,7 @@ OBJS = \
 	lra-constraints.o \
 	lra-eliminations.o \
 	lra-lives.o \
+	lra-remat.o \
 	lra-spills.o \
 	lto-cgraph.o \
 	lto-streamer.o \
@@ -1333,6 +1354,7 @@ OBJS = \
 	reload1.o \
 	reorg.o \
 	resource.o \
+	rtl-chkp.o \
 	rtl-error.o \
 	rtl.o \
 	rtlhash.o \
@@ -1369,6 +1391,7 @@ OBJS = \
 	asan.o \
 	tsan.o \
 	ubsan.o \
+	sanopt.o \
 	tree-call-cdce.o \
 	tree-cfg.o \
 	tree-cfgcleanup.o \
@@ -1391,6 +1414,8 @@ OBJS = \
 	tree-outof-ssa.o \
 	tree-parloops.o \
 	tree-phinodes.o \
+	tree-chkp.o \
+	tree-chkp-opt.o \
 	tree-predcom.o \
 	tree-pretty-print.o \
 	tree-profile.o \
@@ -1484,7 +1509,8 @@ ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
 ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
   $(OBJS-libcommon-target) @TREEBROWSER@ main.o c-family/cppspec.o \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS) \
-  $(GCOV_TOOL_OBJS) lto-wrapper.o collect-utils.o
+  $(GCOV_TOOL_OBJS) $(GENGTYPE_OBJS) gcc-ar.o gcc-nm.o gcc-ranlib.o \
+  lto-wrapper.o collect-utils.o
 
 # This lists all host object files, whether they are included in this
 # compilation or not.
@@ -1497,14 +1523,17 @@ BACKEND = libbackend.a main.o @TREEBROWSER@ libcommon-target.a libcommon.a \
 # front-end checking.
 TREECHECKING = @TREECHECKING@
 
+# The full name of the driver on installation
+FULL_DRIVER_NAME=$(target_noncanonical)-gcc-$(version)$(exeext)
+
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attr-common.h insn-attrtab.c insn-dfatab.c \
  insn-latencytab.c insn-opinit.c insn-opinit.h insn-preds.c insn-constants.h \
- tm-preds.h tm-constrs.h checksum-options \
+ tm-preds.h tm-constrs.h checksum-options gimple-match.c generic-match.c \
  tree-check.h min-insn-modes.c insn-modes.c insn-modes.h \
  genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-input.list \
- xgcc$(exeext) cpp$(exeext) \
+ xgcc$(exeext) cpp$(exeext) $(FULL_DRIVER_NAME) \
  $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(SPECS) collect2$(exeext) gcc-ar$(exeext) gcc-nm$(exeext) \
  gcc-ranlib$(exeext) \
@@ -1512,6 +1541,13 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  gcov-tool$(exeect) \
  gengtype$(exeext) *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a \
  libcommon-target.a libcommon.a libgcc.mk
+
+# This symlink makes the full installation name of the driver be available
+# from within the *build* directory, for use when running the JIT library
+# from there (e.g. when running its testsuite).
+$(FULL_DRIVER_NAME): ./xgcc
+	rm -f $@
+	$(LN_S) $< $@
 
 #
 # Language makefile fragments.
@@ -1666,6 +1702,7 @@ aclocal_deps = \
 	$(srcdir)/../config/codeset.m4 \
 	$(srcdir)/../config/extensions.m4 \
 	$(srcdir)/../config/gettext-sister.m4 \
+	$(srcdir)/../config/gcc-plugin.m4 \
 	$(srcdir)/../config/iconv.m4 \
 	$(srcdir)/../config/lcmessage.m4 \
 	$(srcdir)/../config/lib-ld.m4 \
@@ -1934,9 +1971,11 @@ DRIVER_DEFINES = \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc/\" \
   -DSTANDARD_LIBEXEC_PREFIX=\"$(libexecdir)/gcc/\" \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
+  -DDEFAULT_REAL_TARGET_MACHINE=\"$(real_target_noncanonical)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\" \
   -DSTANDARD_BINDIR_PREFIX=\"$(bindir)/\" \
   -DTOOLDIR_BASE_PREFIX=\"$(libsubdir_to_prefix)$(prefix_to_exec_prefix)\" \
+  -DACCEL_DIR_SUFFIX=\"$(accel_dir_suffix)\" \
   @TARGET_SYSTEM_ROOT_DEFINE@ \
   $(VALGRIND_DRIVER_DEFINES) \
   $(if $(SHLIB),$(if $(filter yes,@enable_shared@),-DENABLE_SHARED_LIBGCC)) \
@@ -2018,7 +2057,7 @@ $(common_out_object_file): $(common_out_file)
 .PRECIOUS: insn-config.h insn-flags.h insn-codes.h insn-constants.h \
   insn-emit.c insn-recog.c insn-extract.c insn-output.c insn-peep.c \
   insn-attr.h insn-attr-common.h insn-attrtab.c insn-dfatab.c \
-  insn-latencytab.c insn-preds.c
+  insn-latencytab.c insn-preds.c gimple-match.c generic-match.c
 
 # Dependencies for the md file.  The first time through, we just assume
 # the md file itself and the generated dependency file (in order to get
@@ -2227,6 +2266,20 @@ s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 	  false; \
 	fi
 
+gimple-match.c: s-match gimple-match-head.c ; @true
+generic-match.c: s-match generic-match-head.c ; @true
+
+s-match: build/genmatch$(build_exeext) $(srcdir)/match.pd
+	$(RUN_GEN) build/genmatch$(build_exeext) --gimple $(srcdir)/match.pd \
+	    > tmp-gimple-match.c
+	$(RUN_GEN) build/genmatch$(build_exeext) --generic $(srcdir)/match.pd \
+	    > tmp-generic-match.c
+	$(SHELL) $(srcdir)/../move-if-change tmp-gimple-match.c \
+	    					gimple-match.c
+	$(SHELL) $(srcdir)/../move-if-change tmp-generic-match.c \
+	    					generic-match.c
+	$(STAMP) s-match
+
 GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(host_xm_file_list) \
   $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
@@ -2235,7 +2288,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/function.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
   $(srcdir)/fixed-value.h \
-  $(srcdir)/output.h $(srcdir)/cfgloop.h \
+  $(srcdir)/output.h $(srcdir)/cfgloop.h $(srcdir)/cfg.h \
   $(srcdir)/cselib.h $(srcdir)/basic-block.h  $(srcdir)/ipa-ref.h $(srcdir)/cgraph.h \
   $(srcdir)/reload.h $(srcdir)/caller-save.c $(srcdir)/symtab.c \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \
@@ -2259,6 +2312,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/stringpool.c $(srcdir)/tree.c $(srcdir)/varasm.c \
   $(srcdir)/gimple.h \
   $(srcdir)/gimple-ssa.h \
+  $(srcdir)/tree-chkp.c \
   $(srcdir)/tree-ssanames.c $(srcdir)/tree-eh.c $(srcdir)/tree-ssa-address.c \
   $(srcdir)/tree-cfg.c \
   $(srcdir)/tree-dfa.c \
@@ -2269,6 +2323,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
   $(srcdir)/tree-parloops.c \
   $(srcdir)/omp-low.c \
+  $(srcdir)/omp-low.h \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c $(srcdir)/cgraphunit.c \
   $(srcdir)/cgraphclones.c \
   $(srcdir)/tree-phinodes.c \
@@ -2283,6 +2338,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/asan.c \
   $(srcdir)/ubsan.c \
   $(srcdir)/tsan.c \
+  $(srcdir)/sanopt.c \
   $(srcdir)/ipa-devirt.c \
   $(srcdir)/internal-fn.h \
   @all_gtfiles@
@@ -2375,6 +2431,8 @@ build/rtl.o: rtl.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H)	\
   $(RTL_H) $(GGC_H) errors.h
 build/vec.o : vec.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(VEC_H)	\
    $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H)
+build/hash-table.o : hash-table.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h  \
+   $(HASH_TABLE_H) $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H)
 build/gencondmd.o : build/gencondmd.c $(BCONFIG_H) $(SYSTEM_H)		\
   coretypes.h $(GTM_H) insn-constants.h					\
   $(filter-out insn-flags.h, $(RTL_H) $(TM_P_H) $(FUNCTION_H) $(REGS_H) \
@@ -2428,29 +2486,30 @@ build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
 # on BCONFIG_H.  For the build objects, add -DGENERATOR_FILE manually,
 # the build-%: rule doesn't apply to them.
 
+GENGTYPE_OBJS = gengtype.o gengtype-parse.o gengtype-state.o \
+  gengtype-lex.o errors.o
+
 gengtype-lex.o build/gengtype-lex.o : gengtype-lex.c gengtype.h $(SYSTEM_H)
-gengtype-lex.o: $(CONFIG_H) $(BCONFIG_H)
-CFLAGS-gengtype-lex.o += -DGENERATOR_FILE
+CFLAGS-gengtype-lex.o += -DHOST_GENERATOR_FILE
 build/gengtype-lex.o: $(BCONFIG_H)
 
 gengtype-parse.o build/gengtype-parse.o : gengtype-parse.c gengtype.h \
   $(SYSTEM_H)
-gengtype-parse.o: $(CONFIG_H)
-CFLAGS-gengtype-parse.o += -DGENERATOR_FILE
+CFLAGS-gengtype-parse.o += -DHOST_GENERATOR_FILE
 build/gengtype-parse.o: $(BCONFIG_H)
 
 gengtype-state.o build/gengtype-state.o: gengtype-state.c $(SYSTEM_H) \
   gengtype.h errors.h double-int.h version.h $(HASHTAB_H) $(OBSTACK_H) \
   $(XREGEX_H)
-gengtype-state.o: $(CONFIG_H)
-CFLAGS-gengtype-state.o += -DGENERATOR_FILE
+CFLAGS-gengtype-state.o += -DHOST_GENERATOR_FILE
 build/gengtype-state.o: $(BCONFIG_H)
 gengtype.o build/gengtype.o : gengtype.c $(SYSTEM_H) gengtype.h 	\
   rtl.def insn-notes.def errors.h double-int.h version.h     		\
   $(HASHTAB_H) $(OBSTACK_H) $(XREGEX_H)
-gengtype.o: $(CONFIG_H)
-CFLAGS-gengtype.o += -DGENERATOR_FILE
+CFLAGS-gengtype.o += -DHOST_GENERATOR_FILE
 build/gengtype.o: $(BCONFIG_H)
+
+CFLAGS-errors.o += -DHOST_GENERATOR_FILE
 
 build/genmddeps.o: genmddeps.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
   errors.h $(READ_MD_H)
@@ -2470,6 +2529,8 @@ build/genhooks.o : genhooks.c $(TARGET_DEF) $(C_TARGET_DEF)		\
   $(COMMON_TARGET_DEF) $(BCONFIG_H) $(SYSTEM_H) errors.h
 build/genmddump.o : genmddump.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
+build/genmatch.o : genmatch.c $(BCONFIG_H) $(SYSTEM_H) \
+  coretypes.h errors.h $(HASH_TABLE_H) hash-map.h $(GGC_H)
 
 # Compile the programs that generate insn-* from the machine description.
 # They are compiled with $(COMPILER_FOR_BUILD), and associated libraries,
@@ -2490,10 +2551,24 @@ genprogerr = $(genprogmd) genrtl modes gtype hooks
 $(genprogerr:%=build/gen%$(build_exeext)): $(BUILD_ERRORS)
 
 # Remaining build programs.
-genprog = $(genprogerr) check checksum condmd
+genprog = $(genprogerr) check checksum condmd match
 
 # These programs need libs over and above what they get from the above list.
 build/genautomata$(build_exeext) : BUILD_LIBS += -lm
+
+# For stage1 and when cross-compiling use the build libcpp which is
+# built with NLS disabled.  For stage2+ use the host library and
+# its dependencies.
+ifeq ($(build_objdir),$(build_libobjdir))
+BUILD_CPPLIB = $(build_libobjdir)/libcpp/libcpp.a
+else
+BUILD_CPPLIB = $(CPPLIB) $(LIBIBERTY)
+build/genmatch$(build_exeext): BUILD_LIBDEPS += $(LIBINTL_DEP) $(LIBICONV_DEP)
+build/genmatch$(build_exeext): BUILD_LIBS += $(LIBINTL) $(LIBICONV)
+endif
+
+build/genmatch$(build_exeext) : $(BUILD_CPPLIB) \
+  $(BUILD_ERRORS) build/vec.o build/hash-table.o
 
 # These programs are not linked with the MD reader.
 build/gengtype$(build_exeext) : build/gengtype-lex.o build/gengtype-parse.o \
@@ -2814,9 +2889,7 @@ TEXI_GCC_FILES = gcc.texi gcc-common.texi gcc-vers.texi frontends.texi	\
 	 gcov.texi trouble.texi bugreport.texi service.texi		\
 	 contribute.texi compat.texi funding.texi gnu.texi gpl_v3.texi	\
 	 fdl.texi contrib.texi cppenv.texi cppopts.texi avr-mmcu.texi	\
-	 implement-c.texi implement-cxx.texi arm-neon-intrinsics.texi	\
-	 arm-acle-intrinsics.texi aarch64-acle-intrinsics.texi          \
-	 gcov-tool.texi
+	 implement-c.texi implement-cxx.texi gcov-tool.texi
 
 # we explicitly use $(srcdir)/doc/tm.texi here to avoid confusion with
 # the generated tm.texi; the latter might have a more recent timestamp,
@@ -2829,7 +2902,8 @@ TEXI_GCCINT_FILES = gccint.texi gcc-common.texi gcc-vers.texi		\
 	 configfiles.texi collect2.texi headerdirs.texi funding.texi	\
 	 gnu.texi gpl_v3.texi fdl.texi contrib.texi languages.texi	\
 	 sourcebuild.texi gty.texi libgcc.texi cfg.texi tree-ssa.texi	\
-	 loop.texi generic.texi gimple.texi plugins.texi optinfo.texi
+	 loop.texi generic.texi gimple.texi plugins.texi optinfo.texi   \
+	 match-and-simplify.texi
 
 TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi		\
 	 gcc-common.texi gcc-vers.texi
@@ -3108,12 +3182,14 @@ install-strip: install
 
 # Handle cpp installation.
 install-cpp: installdirs cpp$(exeext)
-	-rm -f $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext)
-	-$(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext)
-	-if [ x$(cpp_install_dir) != x ]; then \
-	  rm -f $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
-	else true; fi
+	-if test "$(enable_as_accelerator)" != "yes" ; then \
+	  rm -f $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext); \
+	  if [ x$(cpp_install_dir) != x ]; then \
+	    rm -f $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
+	  else true; fi; \
+	fi
 
 # Create the installation directories.
 # $(libdir)/gcc/include isn't currently searched by cpp.
@@ -3221,17 +3297,21 @@ install-common: native lang.install-common installdirs
 # otherwise override the specs built into the driver.
 	rm -f $(DESTDIR)$(libsubdir)/specs
 # Install gcov if it was compiled.
-	-if [ -f gcov$(exeext) ]; \
-	then \
+	-if test "$(enable_as_accelerator)" != "yes" ; then \
+	  if [ -f gcov$(exeext) ]; \
+	  then \
 	    rm -f $(DESTDIR)$(bindir)/$(GCOV_INSTALL_NAME)$(exeext); \
 	    $(INSTALL_PROGRAM) gcov$(exeext) $(DESTDIR)$(bindir)/$(GCOV_INSTALL_NAME)$(exeext); \
+	  fi; \
 	fi
 # Install gcov-tool if it was compiled.
-	-if [ -f gcov-tool$(exeext) ]; \
-	then \
+	-if test "$(enable_as_accelerator)" != "yes" ; then \
+	  if [ -f gcov-tool$(exeext) ]; \
+	  then \
 	    rm -f $(DESTDIR)$(bindir)/$(GCOV_TOOL_INSTALL_NAME)$(exeext); \
 	    $(INSTALL_PROGRAM) \
 	    gcov-tool$(exeext) $(DESTDIR)$(bindir)/$(GCOV_TOOL_INSTALL_NAME)$(exeext); \
+	  fi; \
 	fi
 
 # Install the driver program as $(target_noncanonical)-gcc,
@@ -3239,17 +3319,19 @@ install-common: native lang.install-common installdirs
 install-driver: installdirs xgcc$(exeext)
 	-rm -f $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext)
 	-$(INSTALL_PROGRAM) xgcc$(exeext) $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext)
-	-if [ "$(GCC_INSTALL_NAME)" != "$(target_noncanonical)-gcc-$(version)" ]; then \
-	  rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-$(version)$(exeext); \
-	  ( cd $(DESTDIR)$(bindir) && \
-	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-$(version)$(exeext) ); \
-	fi
-	-if [ ! -f gcc-cross$(exeext) ] \
-	    && [ "$(GCC_INSTALL_NAME)" != "$(GCC_TARGET_INSTALL_NAME)" ]; then \
-	  rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-tmp$(exeext); \
-	  ( cd $(DESTDIR)$(bindir) && \
-	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-tmp$(exeext) && \
-	    mv -f $(target_noncanonical)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
+	-if test "$(enable_as_accelerator)" != "yes" ; then \
+	  if [ "$(GCC_INSTALL_NAME)" != "$(target_noncanonical)-gcc-$(version)" ]; then \
+	    rm -f $(DESTDIR)$(bindir)/$(FULL_DRIVER_NAME); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(GCC_INSTALL_NAME)$(exeext) $(FULL_DRIVER_NAME) ); \
+	  fi; \
+	  if [ ! -f gcc-cross$(exeext) ] \
+	      && [ "$(GCC_INSTALL_NAME)" != "$(GCC_TARGET_INSTALL_NAME)" ]; then \
+	    rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-tmp$(exeext); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-tmp$(exeext) && \
+	      mv -f $(target_noncanonical)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
+	  fi; \
 	fi
 
 # Install the info files.
@@ -3446,19 +3528,21 @@ install-lto-wrapper: lto-wrapper$(exeext)
 	$(INSTALL_PROGRAM) lto-wrapper$(exeext) $(DESTDIR)$(libexecsubdir)/lto-wrapper$(exeext)
 
 install-gcc-ar: installdirs gcc-ar$(exeext) gcc-nm$(exeext) gcc-ranlib$(exeext)
-	for i in gcc-ar gcc-nm gcc-ranlib; do \
-	  install_name=`echo $$i|sed '$(program_transform_name)'` ;\
-	  target_install_name=$(target_noncanonical)-`echo $$i|sed '$(program_transform_name)'` ; \
-	  rm -f $(DESTDIR)$(bindir)/$$install_name$(exeext) ; \
-	  $(INSTALL_PROGRAM) $$i$(exeext) $(DESTDIR)$(bindir)/$$install_name$(exeext) ;\
-	  if test -f gcc-cross$(exeext); then \
-	    :; \
-	  else \
-	    rm -f $(DESTDIR)$(bindir)/$$target_install_name$(exeext); \
-	    ( cd $(DESTDIR)$(bindir) && \
-	      $(LN) $$install_name$(exeext) $$target_install_name$(exeext) ) ; \
-	  fi ; \
-	done
+	if test "$(enable_as_accelerator)" != "yes" ; then \
+	  for i in gcc-ar gcc-nm gcc-ranlib; do \
+	    install_name=`echo $$i|sed '$(program_transform_name)'` ;\
+	    target_install_name=$(target_noncanonical)-`echo $$i|sed '$(program_transform_name)'` ; \
+	    rm -f $(DESTDIR)$(bindir)/$$install_name$(exeext) ; \
+	    $(INSTALL_PROGRAM) $$i$(exeext) $(DESTDIR)$(bindir)/$$install_name$(exeext) ;\
+	    if test -f gcc-cross$(exeext); then \
+	      :; \
+	    else \
+	      rm -f $(DESTDIR)$(bindir)/$$target_install_name$(exeext); \
+	      ( cd $(DESTDIR)$(bindir) && \
+		$(LN) $$install_name$(exeext) $$target_install_name$(exeext) ) ; \
+	    fi ; \
+	  done; \
+	fi
 
 # Cancel installation by deleting the installed files.
 uninstall: lang.uninstall
@@ -3632,10 +3716,9 @@ check_p_subdirs=$(wordlist 1,$(check_p_count),$(wordlist 1, \
 		$(check_p_numbers)))
 
 # For parallelized check-% targets, this decides whether parallelization
-# is desirable (if -jN is used and RUNTESTFLAGS doesn't contain anything
-# but optional --target_board or --extra_opts arguments).  If desirable,
-# recursive make is run with check-parallel-$lang{,1,2,3,4,5} etc. goals,
-# which can be executed in parallel, as they are run in separate directories.
+# is desirable (if -jN is used).  If desirable, recursive make is run with
+# check-parallel-$lang{,1,2,3,4,5} etc. goals, which can be executed in
+# parallel, as they are run in separate directories.
 # check-parallel-$lang{,1,2,3,4,5} etc. goals invoke runtest with
 # GCC_RUNTEST_PARALLELIZE_DIR var in the environment and runtest_file_p
 # dejaGNU procedure is overridden to additionally synchronize through
@@ -3777,6 +3860,7 @@ TAGS: lang.tags
 	  fi;						\
 	done;						\
 	etags -o TAGS.sub c-family/*.h c-family/*.c *.h *.c *.cc \
+	      ../include/*.h \
 	      --language=none --regex="/\(char\|unsigned int\|int\|bool\|void\|HOST_WIDE_INT\|enum [A-Za-z_0-9]+\) [*]?\([A-Za-z_0-9]+\)/\2/" common.opt	\
 	      --language=none --regex="/\(DEF_RTL_EXPR\|DEFTREECODE\|DEFGSCODE\).*(\([A-Za-z_0-9]+\)/\2/" rtl.def tree.def gimple.def \
 	      --language=none --regex="/DEFTIMEVAR (\([A-Za-z_0-9]+\)/\1/" timevar.def \

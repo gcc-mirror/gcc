@@ -77,6 +77,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-pass.h"
 #include "calls.h"
@@ -257,6 +268,10 @@ cgraph_externally_visible_p (struct cgraph_node *node,
     return true;
 
   if (MAIN_NAME_P (DECL_NAME (node->decl)))
+    return true;
+
+  if (node->instrumentation_clone
+      && MAIN_NAME_P (DECL_NAME (node->orig_decl)))
     return true;
 
   return false;
@@ -543,6 +558,7 @@ function_and_variable_visibility (bool whole_program)
 	}
 
       if (node->thunk.thunk_p
+	  && !node->thunk.add_pointer_bounds_args
 	  && TREE_PUBLIC (node->decl))
 	{
 	  struct cgraph_node *decl_node = node;

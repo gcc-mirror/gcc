@@ -31,6 +31,8 @@ with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Multiway_Trees is
 
+   pragma Annotate (CodePeer, Skip_Analysis);
+
    --------------------
    --  Root_Iterator --
    --------------------

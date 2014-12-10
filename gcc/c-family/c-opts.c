@@ -178,21 +178,10 @@ c_diagnostic_finalizer (diagnostic_context *context,
   pp_newline_and_flush (context->printer);
 }
 
-/* Common diagnostics initialization.  */
+/* Common default settings for diagnostics.  */
 void
-c_common_initialize_diagnostics (diagnostic_context *context)
+c_common_diagnostics_set_defaults (diagnostic_context *context)
 {
-  /* This is conditionalized only because that is the way the front
-     ends used to do it.  Maybe this should be unconditional?  */
-  if (c_dialect_cxx ())
-    {
-      /* By default wrap lines at 80 characters.  Is getenv
-	 ("COLUMNS") preferable?  */
-      diagnostic_line_cutoff (context) = 80;
-      /* By default, emit location information once for every
-	 diagnostic message.  */
-      diagnostic_prefixing_rule (context) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
-    }
   diagnostic_finalizer (context) = c_diagnostic_finalizer;
   context->opt_permissive = OPT_fpermissive;
 }
@@ -250,6 +239,9 @@ c_common_init_options (unsigned int decoded_options_count,
 
   if (c_language == clk_c)
     {
+      /* The default for C is gnu11.  */
+      set_std_c11 (false /* ISO */);
+
       /* If preprocessing assembly language, accept any of the C-family
 	 front end options since the driver may pass them through.  */
       for (i = 1; i < decoded_options_count; i++)
@@ -861,6 +853,10 @@ c_common_post_options (const char **pfilename)
   if (warn_implicit_function_declaration == -1)
     warn_implicit_function_declaration = flag_isoc99;
 
+  /* -Wimplicit-int is enabled by default for C99.  */
+  if (warn_implicit_int == -1)
+    warn_implicit_int = flag_isoc99;
+
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
     flag_declone_ctor_dtor = optimize_size;
@@ -1454,6 +1450,7 @@ set_std_c89 (int c94, int iso)
   flag_isoc94 = c94;
   flag_isoc99 = 0;
   flag_isoc11 = 0;
+  lang_hooks.name = "GNU C89";
 }
 
 /* Set the C 99 standard (without GNU extensions if ISO).  */
@@ -1467,6 +1464,7 @@ set_std_c99 (int iso)
   flag_isoc11 = 0;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
+  lang_hooks.name = "GNU C99";
 }
 
 /* Set the C 11 standard (without GNU extensions if ISO).  */
@@ -1480,6 +1478,7 @@ set_std_c11 (int iso)
   flag_isoc11 = 1;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
+  lang_hooks.name = "GNU C11";
 }
 
 /* Set the C++ 98 standard (without GNU extensions if ISO).  */
@@ -1491,6 +1490,7 @@ set_std_cxx98 (int iso)
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
   cxx_dialect = cxx98;
+  lang_hooks.name = "GNU C++98";
 }
 
 /* Set the C++ 2011 standard (without GNU extensions if ISO).  */
@@ -1505,6 +1505,7 @@ set_std_cxx11 (int iso)
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   cxx_dialect = cxx11;
+  lang_hooks.name = "GNU C++11";
 }
 
 /* Set the C++ 2014 draft standard (without GNU extensions if ISO).  */
@@ -1519,6 +1520,7 @@ set_std_cxx14 (int iso)
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   cxx_dialect = cxx14;
+  lang_hooks.name = "GNU C++14";
 }
 
 /* Set the C++ 201z draft standard (without GNU extensions if ISO).  */
@@ -1534,6 +1536,7 @@ set_std_cxx1z (int iso)
   flag_isoc99 = 1;
   flag_isoc11 = 1;
   cxx_dialect = cxx1z;
+  lang_hooks.name = "GNU C++14"; /* Pretend C++14 till standarization.  */
 }
 
 /* Args to -d specify what to dump.  Silently ignore

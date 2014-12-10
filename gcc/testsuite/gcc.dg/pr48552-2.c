@@ -49,5 +49,5 @@ f7 (struct S *x)
 void
 f8 (struct S *x)
 {
-  __asm ("" : "=r" (*x));	/* { dg-error "dereferencing pointer to incomplete type" "incomplete" } */
-}				/* { dg-error "invalid lvalue in asm output 0" "invalid lvalue" { target *-*-* } 52 } */
+  __asm ("" : "=r" (*x));	/* { dg-error "invalid lvalue in asm output 0" } */
+}

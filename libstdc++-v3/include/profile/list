@@ -45,29 +45,60 @@ namespace __profile
       { return *static_cast<_List*>(this); }
 
     public:
+      __gnu_profile::__list2slist_info* _M_list2slist_info;
+      __gnu_profile::__list2vector_info* _M_list2vector_info;
+
       _List_profile() _GLIBCXX_NOEXCEPT
+      { _M_profile_construct(); }
+
+      void
+      _M_profile_construct() _GLIBCXX_NOEXCEPT
       {
-	__profcxx_list_construct(&_M_conjure()); 	// list2slist
-	__profcxx_list_construct2(&_M_conjure()); 	// list2vector
+	_M_list2slist_info = __profcxx_list2slist_construct();
+	_M_list2vector_info = __profcxx_list2vector_construct();
+      }
+
+      void
+      _M_profile_destruct() _GLIBCXX_NOEXCEPT
+      {
+	__profcxx_list2vector_destruct(_M_list2vector_info);
+	_M_list2vector_info = 0;
+	__profcxx_list2slist_destruct(_M_list2slist_info);
+	_M_list2slist_info = 0;
+      }
+
+      void
+      _M_swap(_List_profile& __other)
+      {
+	std::swap(_M_list2slist_info, __other._M_list2slist_info);
+	std::swap(_M_list2vector_info, __other._M_list2vector_info);
       }
 
 #if __cplusplus >= 201103L
       _List_profile(const _List_profile&) noexcept
       : _List_profile() { }
-      _List_profile(_List_profile&&) noexcept
-      : _List_profile() { }
+      _List_profile(_List_profile&& __other) noexcept
+      : _List_profile()
+      { _M_swap(__other); }
 
       _List_profile&
-      operator=(const _List_profile&) = default;
+      operator=(const _List_profile&) noexcept
+      {
+	_M_profile_destruct();
+	_M_profile_construct();
+      }
+
       _List_profile&
-      operator=(_List_profile&&) = default;
+      operator=(_List_profile&& __other) noexcept
+      {
+	_M_swap(__other);
+	__other._M_profile_destruct();
+	__other._M_profile_construct();
+      }
 #endif
 
       ~_List_profile()
-      {
-	__profcxx_list_destruct(&_M_conjure());
-	__profcxx_list_destruct2(&_M_conjure());
-      }
+      { _M_profile_destruct(); }
     };
 
   /** @brief List wrapper with performance instrumentation.  */
@@ -152,7 +183,9 @@ namespace __profile
       list&
       operator=(const list& __x)
       {
+	this->_M_profile_destruct();
 	_M_base() = __x;
+	this->_M_profile_construct();
 	return *this;
       }
 #else
@@ -165,7 +198,9 @@ namespace __profile
       list&
       operator=(initializer_list<value_type> __l)
       {
+	this->_M_profile_destruct();
 	_M_base() = __l;
+	this->_M_profile_construct();
 	return *this;
       }
 #endif
@@ -182,28 +217,28 @@ namespace __profile
       iterator
       end() _GLIBCXX_NOEXCEPT
       {
-	__profcxx_list_rewind(this);
+	__profcxx_list2slist_rewind(this->_M_list2slist_info);
 	return iterator(_Base::end(), this);
       }
 
       const_iterator
       end() const _GLIBCXX_NOEXCEPT
       {
-	__profcxx_list_rewind(this);
+	__profcxx_list2slist_rewind(this->_M_list2slist_info);
 	return const_iterator(_Base::end(), this);
       }
 
       reverse_iterator
       rbegin() _GLIBCXX_NOEXCEPT
       {
-	__profcxx_list_rewind(this);
+	__profcxx_list2slist_rewind(this->_M_list2slist_info);
 	return reverse_iterator(end());
       }
 
       const_reverse_iterator
       rbegin() const _GLIBCXX_NOEXCEPT
       {
-	__profcxx_list_rewind(this);
+	__profcxx_list2slist_rewind(this->_M_list2slist_info);
 	return const_reverse_iterator(end());
       }
 
@@ -237,14 +272,14 @@ namespace __profile
       reference
       back() _GLIBCXX_NOEXCEPT
       {
-	__profcxx_list_rewind(this);
+	__profcxx_list2slist_rewind(this->_M_list2slist_info);
 	return _Base::back();
       }
 
       const_reference
       back() const _GLIBCXX_NOEXCEPT
       {
-	__profcxx_list_rewind(this);
+	__profcxx_list2slist_rewind(this->_M_list2slist_info);
 	return _Base::back();
       }
 
@@ -252,15 +287,15 @@ namespace __profile
       void
       push_front(const value_type& __x)
       {
-	__profcxx_list_invalid_operator(this);
-	__profcxx_list_operation(this);
+	__profcxx_list2vector_invalid_operator(this->_M_list2vector_info);
+	__profcxx_list2slist_operation(this->_M_list2slist_info);
 	_Base::push_front(__x);
       }
 
       void
       pop_front() _GLIBCXX_NOEXCEPT
       {
-	__profcxx_list_operation(this);
+	__profcxx_list2slist_operation(this->_M_list2slist_info);
 	_Base::pop_front();
       }
 
@@ -268,7 +303,7 @@ namespace __profile
       pop_back() _GLIBCXX_NOEXCEPT
       {
 	_Base::pop_back();
-	__profcxx_list_rewind(this);
+	__profcxx_list2slist_rewind(this->_M_list2slist_info);
       }
 
 #if __cplusplus >= 201103L
@@ -284,45 +319,45 @@ namespace __profile
 
       iterator
 #if __cplusplus >= 201103L
-      insert(const_iterator __position, const _Tp& __x)
+      insert(const_iterator __pos, const _Tp& __x)
 #else
-      insert(iterator __position, const _Tp& __x)
+      insert(iterator __pos, const _Tp& __x)
 #endif
       {
-	_M_profile_insert(this, __position, this->size());
-	return iterator(_Base::insert(__position.base(), __x), this);
+	_M_profile_insert(__pos, this->size());
+	return iterator(_Base::insert(__pos.base(), __x), this);
       }
 
 #if __cplusplus >= 201103L
       iterator
-      insert(const_iterator __position, _Tp&& __x)
+      insert(const_iterator __pos, _Tp&& __x)
       {
-	_M_profile_insert(this, __position, this->size());
-	return iterator(_Base::emplace(__position.base(), std::move(__x)),
+	_M_profile_insert(__pos, this->size());
+	return iterator(_Base::emplace(__pos.base(), std::move(__x)),
 			this);
       }
 
       iterator
-      insert(const_iterator __position, initializer_list<value_type> __l)
+      insert(const_iterator __pos, initializer_list<value_type> __l)
       {
-	_M_profile_insert(this, __position, this->size());
-	return iterator(_Base::insert(__position.base(), __l), this);
+	_M_profile_insert(__pos, this->size());
+	return iterator(_Base::insert(__pos.base(), __l), this);
       }
 #endif
 
 #if __cplusplus >= 201103L
       iterator
-      insert(const_iterator __position, size_type __n, const _Tp& __x)
+      insert(const_iterator __pos, size_type __n, const _Tp& __x)
       {
-	_M_profile_insert(this, __position, this->size());
-	return iterator(_Base::insert(__position.base(), __n, __x), this);
+	_M_profile_insert(__pos, this->size());
+	return iterator(_Base::insert(__pos.base(), __n, __x), this);
       }
 #else
       void
-      insert(iterator __position, size_type __n, const _Tp& __x)
+      insert(iterator __pos, size_type __n, const _Tp& __x)
       {
-	_M_profile_insert(this, __position, this->size());
-	_Base::insert(__position.base(), __n, __x);
+	_M_profile_insert(__pos, this->size());
+	_Base::insert(__pos.base(), __n, __x);
       }
 #endif
 
@@ -330,42 +365,42 @@ namespace __profile
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 	iterator
-	insert(const_iterator __position, _InputIterator __first,
+	insert(const_iterator __pos, _InputIterator __first,
 	       _InputIterator __last)
 	{
-	  _M_profile_insert(this, __position, this->size());
-	  return iterator(_Base::insert(__position.base(), __first, __last),
+	  _M_profile_insert(__pos, this->size());
+	  return iterator(_Base::insert(__pos.base(), __first, __last),
 			  this);
 	}
 #else
       template<class _InputIterator>
 	void
-	insert(iterator __position, _InputIterator __first,
+	insert(iterator __pos, _InputIterator __first,
 	       _InputIterator __last)
 	{
-	  _M_profile_insert(this, __position, this->size());
-	  _Base::insert(__position.base(), __first, __last);
+	  _M_profile_insert(__pos, this->size());
+	  _Base::insert(__pos.base(), __first, __last);
 	}
 #endif
 
       iterator
 #if __cplusplus >= 201103L
-      erase(const_iterator __position) noexcept
+      erase(const_iterator __pos) noexcept
 #else
-      erase(iterator __position)
+      erase(iterator __pos)
 #endif
-      {	return iterator(_Base::erase(__position.base()), this); }
+      {	return iterator(_Base::erase(__pos.base()), this); }
 
       iterator
 #if __cplusplus >= 201103L
-      erase(const_iterator __position, const_iterator __last) noexcept
+      erase(const_iterator __pos, const_iterator __last) noexcept
 #else
-      erase(iterator __position, iterator __last)
+      erase(iterator __pos, iterator __last)
 #endif
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
-	return iterator(_Base::erase(__position.base(), __last.base()), this);
+	return iterator(_Base::erase(__pos.base(), __last.base()), this);
       }
 
       void
@@ -373,60 +408,71 @@ namespace __profile
 #if __cplusplus >= 201103L
 	noexcept( noexcept(declval<_Base>().swap(__x)) )
 #endif
-      {	_Base::swap(__x); }
+      {
+	_Base::swap(__x);
+	this->_M_swap(__x);
+      }
+
+      void
+      clear() _GLIBCXX_NOEXCEPT
+      {
+	this->_M_profile_destruct();
+	_Base::clear();
+	this->_M_profile_construct();
+      }
 
       // 23.2.2.4 list operations:
       void
 #if __cplusplus >= 201103L
-      splice(const_iterator __position, list&& __x) noexcept
+      splice(const_iterator __pos, list&& __x) noexcept
 #else
-      splice(iterator __position, list& __x)
+      splice(iterator __pos, list& __x)
 #endif
-      { this->splice(__position, _GLIBCXX_MOVE(__x), __x.begin(), __x.end()); }
+      { this->splice(__pos, _GLIBCXX_MOVE(__x), __x.begin(), __x.end()); }
 
 #if __cplusplus >= 201103L
       void
-      splice(const_iterator __position, list& __x) noexcept
-      { this->splice(__position, std::move(__x)); }
+      splice(const_iterator __pos, list& __x) noexcept
+      { this->splice(__pos, std::move(__x)); }
 
       void
-      splice(const_iterator __position, list& __x, const_iterator __i)
-      { this->splice(__position, std::move(__x), __i); }
+      splice(const_iterator __pos, list& __x, const_iterator __i)
+      { this->splice(__pos, std::move(__x), __i); }
 #endif
 
       void
 #if __cplusplus >= 201103L
-      splice(const_iterator __position, list&& __x, const_iterator __i) noexcept
+      splice(const_iterator __pos, list&& __x, const_iterator __i) noexcept
 #else
-      splice(iterator __position, list& __x, iterator __i)
+      splice(iterator __pos, list& __x, iterator __i)
 #endif
       {
 	// We used to perform the splice_alloc check:  not anymore, redundant
 	// after implementing the relevant bits of N1599.
 
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	_Base::splice(__position.base(), _GLIBCXX_MOVE(__x._M_base()),
+	_Base::splice(__pos.base(), _GLIBCXX_MOVE(__x._M_base()),
 		      __i.base());
       }
 
       void
 #if __cplusplus >= 201103L
-      splice(const_iterator __position, list&& __x, const_iterator __first,
+      splice(const_iterator __pos, list&& __x, const_iterator __first,
 	     const_iterator __last) noexcept
 #else
-      splice(iterator __position, list& __x, iterator __first,
+      splice(iterator __pos, list& __x, iterator __first,
 	     iterator __last)
 #endif
       {
-	_Base::splice(__position.base(), _GLIBCXX_MOVE(__x._M_base()),
+	_Base::splice(__pos.base(), _GLIBCXX_MOVE(__x._M_base()),
 		      __first.base(), __last.base());
       }
 
 #if __cplusplus >= 201103L
       void
-      splice(const_iterator __position, list& __x,
+      splice(const_iterator __pos, list& __x,
 	     const_iterator __first, const_iterator __last) noexcept
-      { this->splice(__position, std::move(__x), __first, __last); }
+      { this->splice(__pos, std::move(__x), __first, __last); }
 #endif
 
       void
@@ -447,7 +493,7 @@ namespace __profile
 	{
 	  for (iterator __x = begin(); __x != end(); )
 	    {
-	      __profcxx_list_operation(this);
+	      __profcxx_list2slist_operation(this->_M_list2slist_info);
 	      if (__pred(*__x))
 		__x = erase(__x);
 	      else
@@ -465,7 +511,7 @@ namespace __profile
 	iterator __next = __first;
 	while (++__next != __last)
 	  {
-	    __profcxx_list_operation(this);
+	    __profcxx_list2slist_operation(this->_M_list2slist_info);
 	    if (*__first == *__next)
 	      erase(__next);
 	    else
@@ -485,7 +531,7 @@ namespace __profile
 	  iterator __next = __first;
 	  while (++__next != __last)
 	    {
-	      __profcxx_list_operation(this);
+	      __profcxx_list2slist_operation(this->_M_list2slist_info);
 	      if (__binary_pred(*__first, *__next))
 		erase(__next);
 	      else
@@ -530,28 +576,25 @@ namespace __profile
       const _Base&
       _M_base() const _GLIBCXX_NOEXCEPT	{ return *this; }
 
-      void _M_profile_find() const
-      { }
-
       void _M_profile_iterate(int __rewind = 0) const
       {
-	__profcxx_list_operation(this);
-	__profcxx_list_iterate(this);
+	__profcxx_list2slist_operation(this->_M_list2slist_info);
+	__profcxx_list2vector_iterate(this->_M_list2vector_info, __rewind);
 	if (__rewind)
-	  __profcxx_list_rewind(this);
+	  __profcxx_list2slist_rewind(this->_M_list2slist_info);
       }
 
     private:
       size_type
-      _M_profile_insert(void* obj, const_iterator __pos, size_type __size)
+      _M_profile_insert(const_iterator __pos, size_type __size)
       {
 	size_type __shift = 0;
 	typename _Base::const_iterator __it = __pos.base();
 	for (; __it != _Base::end(); ++__it)
 	  __shift++;
-	__profcxx_list_rewind(this);
-	__profcxx_list_operation(this);
-	__profcxx_list_insert(this, __shift, __size);
+	__profcxx_list2slist_rewind(this->_M_list2slist_info);
+	__profcxx_list2slist_operation(this->_M_list2slist_info);
+	__profcxx_list2vector_insert(this->_M_list2vector_info, __shift, __size);
       }
     };
 

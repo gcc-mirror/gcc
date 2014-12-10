@@ -111,3 +111,7 @@ check_rough_##UINON_TYPE (UINON_TYPE u, const VALUE_TYPE *v,	\
 
 CHECK_ROUGH_EXP (union512, float, "%f")
 CHECK_ROUGH_EXP (union512d, double, "%f")
+CHECK_ROUGH_EXP (union256, float, "%f")
+CHECK_ROUGH_EXP (union256d, double, "%f")
+CHECK_ROUGH_EXP (union128, float, "%f")
+CHECK_ROUGH_EXP (union128d, double, "%f")

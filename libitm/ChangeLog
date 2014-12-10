@@ -1,3 +1,17 @@
+2014-12-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.tgt (x86_64): Tune -m32 multilib to generic.
+
+2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/63784
+	* configure: Regenerated.
+
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/63610
+	* configure: Regenerate.
+
 2014-10-06  Marek Polacek  <polacek@redhat.com>
 
 	* testsuite/libitm.c/memcpy-1.c: Declare getpagesize.

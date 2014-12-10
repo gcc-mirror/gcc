@@ -64,7 +64,7 @@
 #include <bits/c++config.h>
 
 #if __cplusplus >= 201103L
-# include <type_traits>  // For _GLIBCXX_HAS_NESTED_TYPE, is_convertible
+# include <type_traits>  // For __void_t, is_convertible
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -138,15 +138,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  provide tighter, more correct semantics.
   */
 #if __cplusplus >= 201103L
-
-_GLIBCXX_HAS_NESTED_TYPE(iterator_category)
-
-  template<typename _Iterator,
-	   bool = __has_iterator_category<_Iterator>::value>
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2408. SFINAE-friendly common_type/iterator_traits is missing in C++14
+  template<typename _Iterator, typename = __void_t<>>
     struct __iterator_traits { };
 
   template<typename _Iterator>
-    struct __iterator_traits<_Iterator, true>
+    struct __iterator_traits<_Iterator,
+			     __void_t<typename _Iterator::iterator_category,
+				      typename _Iterator::value_type,
+				      typename _Iterator::difference_type,
+				      typename _Iterator::pointer,
+				      typename _Iterator::reference>>
     {
       typedef typename _Iterator::iterator_category iterator_category;
       typedef typename _Iterator::value_type        value_type;

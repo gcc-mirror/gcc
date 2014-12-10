@@ -1433,11 +1433,13 @@ package body Sem is
              --  error messages about missing entities in the run-time even
              --  if we are compiling in -gnatc (no code generation) mode.
              --  Similar processing applies to No_Run_Time_Mode. However,
-             --  don't do this if debug flag -gnatd.Z is set (this is to handle
-             --  a situation where this new processing causes trouble).
+             --  don't do this if debug flag -gnatd.Z is set or when we are
+             --  compiling a separate unit (this is to handle a situation
+             --  where this new processing causes trouble).
 
              or else ((Configurable_Run_Time_Mode or No_Run_Time_Mode)
-                       and not Debug_Flag_Dot_ZZ));
+                       and not Debug_Flag_Dot_ZZ
+                       and Nkind (Unit (Cunit (Main_Unit))) /= N_Subunit));
       end if;
 
       Full_Analysis      := True;

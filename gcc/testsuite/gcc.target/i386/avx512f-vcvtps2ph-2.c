@@ -15,7 +15,11 @@ TEST (void)
   UNION_TYPE (AVX512F_LEN,) val;
   UNION_TYPE (AVX512F_LEN_HALF, i_w) res1,res2,res3;
   MASK_TYPE mask = MASK_VALUE;
+#if AVX512F_LEN == 128
+  short exp[SIZE * 2];
+#else
   short exp[SIZE];
+#endif
   int i;
 
   for (i = 0; i < SIZE; i++)
@@ -55,6 +59,11 @@ TEST (void)
   exp[5] = 0xc000;
   exp[6] = 0xc400;
   exp[7] = 0xc800;
+#else
+  exp[4] = 0;
+  exp[5] = 0;
+  exp[6] = 0;
+  exp[7] = 0;
 #endif
 #if AVX512F_LEN > 256
   exp[8] = 0x3c00;
@@ -67,9 +76,9 @@ TEST (void)
   exp[15] = 0xc800;
 #endif
 
-  res1.x = _mm512_cvtps_ph (val.x, 0);
-  res2.x = _mm512_mask_cvtps_ph (res2.x, mask, val.x, 0);
-  res3.x = _mm512_maskz_cvtps_ph (mask, val.x, 0);
+  res1.x = INTRINSIC (_cvtps_ph (val.x, 0));
+  res2.x = INTRINSIC (_mask_cvtps_ph (res2.x, mask, val.x, 0));
+  res3.x = INTRINSIC (_maskz_cvtps_ph (mask, val.x, 0));
 
   if (UNION_CHECK (AVX512F_LEN_HALF, i_w) (res1, exp))
     abort ();

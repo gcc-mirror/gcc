@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x -fno-rtti" }
+// { dg-options "-std=gnu++11 -fno-rtti" }
 
 // Copyright (C) 2010-2014 Free Software Foundation, Inc.
 //

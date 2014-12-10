@@ -24,6 +24,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "tree-inline.h"
@@ -62,6 +73,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "dbgcnt.h"
 #include "domwalk.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 #include "ipa-prop.h"
 #include "tree-ssa-propagate.h"
 #include "ipa-utils.h"
@@ -423,6 +438,9 @@ typedef struct bb_bitmap_sets
   /* A cache for value_dies_in_block_x.  */
   bitmap expr_dies;
 
+  /* The live virtual operand on successor edges.  */
+  tree vop_on_exit;
+
   /* True if we have visited this block during ANTIC calculation.  */
   unsigned int visited : 1;
 
@@ -440,6 +458,7 @@ typedef struct bb_bitmap_sets
 #define EXPR_DIES(BB)	((bb_value_sets_t) ((BB)->aux))->expr_dies
 #define BB_VISITED(BB)	((bb_value_sets_t) ((BB)->aux))->visited
 #define BB_MAY_NOTRETURN(BB) ((bb_value_sets_t) ((BB)->aux))->contains_may_not_return_call
+#define BB_LIVE_VOP_ON_EXIT(BB) ((bb_value_sets_t) ((BB)->aux))->vop_on_exit
 
 
 /* Basic block list in postorder.  */
@@ -2498,6 +2517,8 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 				   (TREE_CODE (fn) == FUNCTION_DECL
 				    ? build_fold_addr_expr (fn) : fn),
 				   nargs, args);
+	if (currop->with_bounds)
+	  CALL_WITH_BOUNDS_P (folded) = true;
 	free (args);
 	if (sc)
 	  CALL_EXPR_STATIC_CHAIN (folded) = sc;
@@ -2780,7 +2801,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
   gimple_stmt_iterator gsi;
   tree exprtype = type ? type : get_expr_type (expr);
   pre_expr nameexpr;
-  gimple newstmt;
+  gassign *newstmt;
 
   switch (expr->kind)
     {
@@ -2815,12 +2836,15 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	    if (nary->opcode == POINTER_PLUS_EXPR)
 	      {
 		if (i == 0)
-		  genop[i] = fold_convert (nary->type, genop[i]);
+		  genop[i] = gimple_convert (&forced_stmts,
+					     nary->type, genop[i]);
 		else if (i == 1)
-		  genop[i] = convert_to_ptrofftype (genop[i]);
+		  genop[i] = gimple_convert (&forced_stmts,
+					     sizetype, genop[i]);
 	      }
 	    else
-	      genop[i] = fold_convert (TREE_TYPE (nary->op[i]), genop[i]);
+	      genop[i] = gimple_convert (&forced_stmts,
+					 TREE_TYPE (nary->op[i]), genop[i]);
 	  }
 	if (nary->opcode == CONSTRUCTOR)
 	  {
@@ -2862,8 +2886,10 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
      statements.
      We have to call unshare_expr because force_gimple_operand may
      modify the tree we pass to it.  */
-  folded = force_gimple_operand (unshare_expr (folded), &forced_stmts,
+  gimple_seq tem = NULL;
+  folded = force_gimple_operand (unshare_expr (folded), &tem,
 				 false, NULL);
+  gimple_seq_add_seq_without_update (&forced_stmts, tem);
 
   /* If we have any intermediate expressions to the value sets, add them
      to the value sets and chain them in the instruction stream.  */
@@ -2886,12 +2912,17 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	      bitmap_value_replace_in_set (NEW_SETS (block), nameexpr);
 	      bitmap_value_replace_in_set (AVAIL_OUT (block), nameexpr);
 	    }
+
+	  gimple_set_vuse (stmt, BB_LIVE_VOP_ON_EXIT (block));
+	  gimple_set_modified (stmt, true);
 	}
       gimple_seq_add_seq (stmts, forced_stmts);
     }
 
   name = make_temp_ssa_name (exprtype, NULL, "pretmp");
   newstmt = gimple_build_assign (name, folded);
+  gimple_set_vuse (newstmt, BB_LIVE_VOP_ON_EXIT (block));
+  gimple_set_modified (newstmt, true);
   gimple_set_plf (newstmt, NECESSARY, false);
 
   gimple_seq_add_stmt (stmts, newstmt);
@@ -2952,7 +2983,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
   edge_iterator ei;
   tree type = get_expr_type (expr);
   tree temp;
-  gimple phi;
+  gphi *phi;
 
   /* Make sure we aren't creating an induction variable.  */
   if (bb_loop_depth (block) > 0 && EDGE_COUNT (block->preds) == 2)
@@ -3171,7 +3202,7 @@ do_regular_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  vec<pre_expr> avail = vNULL;
+  auto_vec<pre_expr> avail;
   int i;
 
   exprs = sorted_array_from_bitmap_set (ANTIC_IN (block));
@@ -3301,8 +3332,11 @@ do_regular_insertion (basic_block block, basic_block dom)
 
 	      tree temp = make_temp_ssa_name (get_expr_type (expr),
 					      NULL, "pretmp");
-	      gimple assign = gimple_build_assign (temp,
-						   edoubleprime->kind == CONSTANT ? PRE_EXPR_CONSTANT (edoubleprime) : PRE_EXPR_NAME (edoubleprime));
+	      gassign *assign
+		= gimple_build_assign (temp,
+				       edoubleprime->kind == CONSTANT ?
+				       PRE_EXPR_CONSTANT (edoubleprime) :
+				       PRE_EXPR_NAME (edoubleprime));
 	      gimple_stmt_iterator gsi = gsi_after_labels (block);
 	      gsi_insert_before (&gsi, assign, GSI_NEW_STMT);
 
@@ -3593,10 +3627,12 @@ compute_avail (void)
        son = next_dom_son (CDI_DOMINATORS, son))
     worklist[sp++] = son;
 
+  BB_LIVE_VOP_ON_EXIT (ENTRY_BLOCK_PTR_FOR_FN (cfun))
+    = ssa_default_def (cfun, gimple_vop (cfun));
+
   /* Loop until the worklist is empty.  */
   while (sp)
     {
-      gimple_stmt_iterator gsi;
       gimple stmt;
       basic_block dom;
 
@@ -3607,17 +3643,24 @@ compute_avail (void)
 	 its immediate dominator.  */
       dom = get_immediate_dominator (CDI_DOMINATORS, block);
       if (dom)
-	bitmap_set_copy (AVAIL_OUT (block), AVAIL_OUT (dom));
+	{
+	  bitmap_set_copy (AVAIL_OUT (block), AVAIL_OUT (dom));
+	  BB_LIVE_VOP_ON_EXIT (block) = BB_LIVE_VOP_ON_EXIT (dom);
+	}
 
       /* Generate values for PHI nodes.  */
-      for (gsi = gsi_start_phis (block); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gphi_iterator gsi = gsi_start_phis (block); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
-	  tree result = gimple_phi_result (gsi_stmt (gsi));
+	  tree result = gimple_phi_result (gsi.phi ());
 
 	  /* We have no need for virtual phis, as they don't represent
 	     actual computations.  */
 	  if (virtual_operand_p (result))
-	    continue;
+	    {
+	      BB_LIVE_VOP_ON_EXIT (block) = result;
+	      continue;
+	    }
 
 	  pre_expr e = get_or_alloc_expr_for_name (result);
 	  add_to_value (get_expr_value_id (e), e);
@@ -3629,7 +3672,8 @@ compute_avail (void)
 
       /* Now compute value numbers and populate value sets with all
 	 the expressions computed in BLOCK.  */
-      for (gsi = gsi_start_bb (block); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_start_bb (block); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
 	  ssa_op_iter iter;
 	  tree op;
@@ -3661,6 +3705,9 @@ compute_avail (void)
 	      bitmap_value_insert_into_set (AVAIL_OUT (block), e);
 	    }
 
+	  if (gimple_vdef (stmt))
+	    BB_LIVE_VOP_ON_EXIT (block) = gimple_vdef (stmt);
+
 	  if (gimple_has_side_effects (stmt)
 	      || stmt_could_throw_p (stmt)
 	      || is_gimple_debug (stmt))
@@ -3689,7 +3736,7 @@ compute_avail (void)
 		if (gimple_call_internal_p (stmt))
 		  continue;
 
-		vn_reference_lookup_call (stmt, &ref, &ref1);
+		vn_reference_lookup_call (as_a <gcall *> (stmt), &ref, &ref1);
 		if (!ref)
 		  continue;
 
@@ -3863,8 +3910,11 @@ eliminate_push_avail (tree op)
     {
       if (el_avail.length () <= SSA_NAME_VERSION (valnum))
 	el_avail.safe_grow_cleared (SSA_NAME_VERSION (valnum) + 1);
+      tree pushop = op;
+      if (el_avail[SSA_NAME_VERSION (valnum)])
+	pushop = el_avail[SSA_NAME_VERSION (valnum)];
+      el_avail_stack.safe_push (pushop);
       el_avail[SSA_NAME_VERSION (valnum)] = op;
-      el_avail_stack.safe_push (op);
     }
 }
 
@@ -3885,9 +3935,9 @@ eliminate_insert (gimple_stmt_iterator *gsi, tree val)
     return NULL_TREE;
 
   tree res = make_temp_ssa_name (TREE_TYPE (val), NULL, "pretmp");
-  gimple tem = gimple_build_assign (res,
-				    fold_build1 (TREE_CODE (expr),
-						 TREE_TYPE (expr), leader));
+  gassign *tem = gimple_build_assign (res,
+				      fold_build1 (TREE_CODE (expr),
+						   TREE_TYPE (expr), leader));
   gsi_insert_before (gsi, tem, GSI_SAME_STMT);
   VN_INFO_GET (res)->valnum = val;
 
@@ -3921,9 +3971,6 @@ public:
 void
 eliminate_dom_walker::before_dom_children (basic_block b)
 {
-  gimple_stmt_iterator gsi;
-  gimple stmt;
-
   /* Mark new bb.  */
   el_avail_stack.safe_push (NULL_TREE);
 
@@ -3931,9 +3978,9 @@ eliminate_dom_walker::before_dom_children (basic_block b)
      tailmerging.  Eventually we can reduce its reliance on SCCVN now
      that we fully copy/constant-propagate (most) things.  */
 
-  for (gsi = gsi_start_phis (b); !gsi_end_p (gsi);)
+  for (gphi_iterator gsi = gsi_start_phis (b); !gsi_end_p (gsi);)
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       tree res = PHI_RESULT (phi);
 
       if (virtual_operand_p (res))
@@ -3994,10 +4041,12 @@ eliminate_dom_walker::before_dom_children (basic_block b)
       gsi_next (&gsi);
     }
 
-  for (gsi = gsi_start_bb (b); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gimple_stmt_iterator gsi = gsi_start_bb (b);
+       !gsi_end_p (gsi);
+       gsi_next (&gsi))
     {
       tree sprime = NULL_TREE;
-      stmt = gsi_stmt (gsi);
+      gimple stmt = gsi_stmt (gsi);
       tree lhs = gimple_get_lhs (stmt);
       if (lhs && TREE_CODE (lhs) == SSA_NAME
 	  && !gimple_has_volatile_ops (stmt)
@@ -4270,9 +4319,9 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 
       /* Visit indirect calls and turn them into direct calls if
 	 possible using the devirtualization machinery.  */
-      if (is_gimple_call (stmt))
+      if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	{
-	  tree fn = gimple_call_fn (stmt);
+	  tree fn = gimple_call_fn (call_stmt);
 	  if (fn
 	      && flag_devirtualize
 	      && virtual_method_call_p (fn))
@@ -4311,7 +4360,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 				       "function %s\n",
 				       cgraph_node::get (fn)->name ());
 		    }
-		  gimple_call_set_fndecl (stmt, fn);
+		  gimple_call_set_fndecl (call_stmt, fn);
 		  gimple_set_modified (stmt, true);
 		}
 	    }
@@ -4341,10 +4390,12 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	      fold_stmt (&gsi);
 	      stmt = gsi_stmt (gsi);
 	      if ((gimple_code (stmt) == GIMPLE_COND
-		   && (gimple_cond_true_p (stmt)
-		       || gimple_cond_false_p (stmt)))
+		   && (gimple_cond_true_p (as_a <gcond *> (stmt))
+		       || gimple_cond_false_p (as_a <gcond *> (stmt))))
 		  || (gimple_code (stmt) == GIMPLE_SWITCH
-		      && TREE_CODE (gimple_switch_index (stmt)) == INTEGER_CST))
+		      && TREE_CODE (gimple_switch_index (
+				      as_a <gswitch *> (stmt)))
+		         == INTEGER_CST))
 		el_todo |= TODO_cleanup_cfg;
 	    }
 	  /* If we removed EH side-effects from the statement, clean
@@ -4382,9 +4433,11 @@ eliminate_dom_walker::before_dom_children (basic_block b)
   edge e;
   FOR_EACH_EDGE (e, ei, b->succs)
     {
-      for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gphi_iterator gsi = gsi_start_phis (e->dest);
+	   !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  use_operand_p use_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
 	  tree arg = USE_FROM_PTR (use_p);
 	  if (TREE_CODE (arg) != SSA_NAME
@@ -4408,7 +4461,14 @@ eliminate_dom_walker::after_dom_children (basic_block)
 {
   tree entry;
   while ((entry = el_avail_stack.pop ()) != NULL_TREE)
-    el_avail[SSA_NAME_VERSION (VN_INFO (entry)->valnum)] = NULL_TREE;
+    {
+      tree valnum = VN_INFO (entry)->valnum;
+      tree old = el_avail[SSA_NAME_VERSION (valnum)];
+      if (old == entry)
+	el_avail[SSA_NAME_VERSION (valnum)] = NULL_TREE;
+      else
+	el_avail[SSA_NAME_VERSION (valnum)] = entry;
+    }
 }
 
 /* Eliminate fully redundant computations.  */
@@ -4757,6 +4817,10 @@ pass_pre::execute (function *fun)
      we would need to split.  */
   remove_fake_exit_edges ();
   gsi_commit_edge_inserts ();
+
+  /* Eliminate folds statements which might (should not...) end up
+     not keeping virtual operands up-to-date.  */
+  gcc_assert (!need_ssa_update_p (fun));
 
   /* Remove all the redundant expressions.  */
   todo |= eliminate (true);

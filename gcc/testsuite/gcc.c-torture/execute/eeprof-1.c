@@ -1,3 +1,4 @@
+/* { dg-require-effective-target return_address } */
 /* { dg-options "-finstrument-functions" } */
 /* { dg-xfail-if "" { powerpc-ibm-aix* } "*" "" } */
 

@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define hash_map_h
 
 #include <new>
+#include <utility>
 #include "hash-table.h"
 
 /* implement default behavior for traits when types allow it.  */
@@ -168,6 +169,16 @@ class GTY((user)) hash_map
 	{
 	}
 
+    static void
+      pch_nx_helper (unsigned int, gt_pointer_operator, void *)
+	{
+	}
+
+    static void
+      pch_nx_helper (bool, gt_pointer_operator, void *)
+	{
+	}
+
     template<typename T>
       static void
       pch_nx_helper (T *&x, gt_pointer_operator op, void *cookie)
@@ -253,6 +264,41 @@ public:
 	if (!f ((*iter).m_key, &(*iter).m_value, a))
 	  break;
     }
+
+  size_t elements () const { return m_table.elements (); }
+
+  class iterator
+  {
+  public:
+    explicit iterator (const typename hash_table<hash_entry>::iterator &iter) :
+      m_iter (iter) {}
+
+    iterator &operator++ ()
+    {
+      ++m_iter;
+      return *this;
+    }
+
+    std::pair<Key, Value> operator* ()
+    {
+      hash_entry &e = *m_iter;
+      return std::pair<Key, Value> (e.m_key, e.m_value);
+    }
+
+    bool
+    operator != (const iterator &other) const
+    {
+      return m_iter != other.m_iter;
+    }
+
+  private:
+    typename hash_table<hash_entry>::iterator m_iter;
+  };
+
+  /* Standard iterator retrieval methods.  */
+
+  iterator  begin () const { return iterator (m_table.begin ()); }
+  iterator end () const { return iterator (m_table.end ()); }
 
 private:
 

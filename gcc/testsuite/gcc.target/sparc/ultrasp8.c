@@ -9,6 +9,9 @@ struct _reent;
 extern unsigned long __malloc_trim_threshold;
 extern unsigned long __malloc_top_pad;
 
+void __malloc_lock (void *);
+void __malloc_unlock (void *);
+
 int _mallopt_r(struct _reent *reent_ptr, int param_number, int value)
 {
   __malloc_lock(reent_ptr);

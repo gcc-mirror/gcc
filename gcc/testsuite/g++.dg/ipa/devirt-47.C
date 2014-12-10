@@ -24,8 +24,8 @@ m()
 }
 
 /* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target\[^\\n\]*C::_ZTh" 1 "inline"  } } */
-/* { dg-final { scan-ipa-dump-not "OBJ_TYPE_REF" "optimized"  } } */
+/* { dg-final { scan-tree-dump-not "OBJ_TYPE_REF" "optimized"  } } */
 /* FIXME: We ought to inline thunk.  */
-/* { dg-final { scan-ipa-dump "C::_ZThn" "optimized"  } } */
+/* { dg-final { scan-tree-dump "C::_ZThn" "optimized"  } } */
 /* { dg-final { cleanup-ipa-dump "inline" } } */
-/* { dg-final { cleanup-ipa-dump "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

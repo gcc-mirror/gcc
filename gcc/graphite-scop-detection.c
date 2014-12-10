@@ -25,15 +25,22 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/set.h>
 #include <isl/map.h>
 #include <isl/union_map.h>
-#ifdef HAVE_cloog
-#include <cloog/cloog.h>
-#include <cloog/isl/domain.h>
-#endif
 #endif
 
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -1255,7 +1262,7 @@ limit_scops (vec<scop_p> *scops)
    argument.  */
 
 static inline bool
-same_close_phi_node (gimple p1, gimple p2)
+same_close_phi_node (gphi *p1, gphi *p2)
 {
   return operand_equal_p (gimple_phi_arg_def (p1, 0),
 			  gimple_phi_arg_def (p2, 0), 0);
@@ -1265,15 +1272,15 @@ same_close_phi_node (gimple p1, gimple p2)
    of PHI.  */
 
 static void
-remove_duplicate_close_phi (gimple phi, gimple_stmt_iterator *gsi)
+remove_duplicate_close_phi (gphi *phi, gphi_iterator *gsi)
 {
   gimple use_stmt;
   use_operand_p use_p;
   imm_use_iterator imm_iter;
   tree res = gimple_phi_result (phi);
-  tree def = gimple_phi_result (gsi_stmt (*gsi));
+  tree def = gimple_phi_result (gsi->phi ());
 
-  gcc_assert (same_close_phi_node (phi, gsi_stmt (*gsi)));
+  gcc_assert (same_close_phi_node (phi, gsi->phi ()));
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
     {
@@ -1298,12 +1305,12 @@ remove_duplicate_close_phi (gimple phi, gimple_stmt_iterator *gsi)
 static void
 make_close_phi_nodes_unique (basic_block bb)
 {
-  gimple_stmt_iterator psi;
+  gphi_iterator psi;
 
   for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
     {
-      gimple_stmt_iterator gsi = psi;
-      gimple phi = gsi_stmt (psi);
+      gphi_iterator gsi = psi;
+      gphi *phi = psi.phi ();
 
       /* At this point, PHI should be a close phi in normal form.  */
       gcc_assert (gimple_phi_num_args (phi) == 1);
@@ -1311,7 +1318,7 @@ make_close_phi_nodes_unique (basic_block bb)
       /* Iterate over the next phis and remove duplicates.  */
       gsi_next (&gsi);
       while (!gsi_end_p (gsi))
-	if (same_close_phi_node (phi, gsi_stmt (gsi)))
+	if (same_close_phi_node (phi, gsi.phi ()))
 	  remove_duplicate_close_phi (phi, &gsi);
 	else
 	  gsi_next (&gsi);
@@ -1338,14 +1345,14 @@ canonicalize_loop_closed_ssa (loop_p loop)
     }
   else
     {
-      gimple_stmt_iterator psi;
+      gphi_iterator psi;
       basic_block close = split_edge (e);
 
       e = single_succ_edge (close);
 
       for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
 	{
-	  gimple phi = gsi_stmt (psi);
+	  gphi *phi = psi.phi ();
 	  unsigned i;
 
 	  for (i = 0; i < gimple_phi_num_args (phi); i++)
@@ -1353,7 +1360,7 @@ canonicalize_loop_closed_ssa (loop_p loop)
 	      {
 		tree res, arg = gimple_phi_arg_def (phi, i);
 		use_operand_p use_p;
-		gimple close_phi;
+		gphi *close_phi;
 
 		if (TREE_CODE (arg) != SSA_NAME)
 		  continue;

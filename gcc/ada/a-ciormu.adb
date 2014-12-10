@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,8 @@ pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Set_Operations);
 with System; use type System.Address;
 
 package body Ada.Containers.Indefinite_Ordered_Multisets is
+
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    -----------------------------
    -- Node Access Subprograms --

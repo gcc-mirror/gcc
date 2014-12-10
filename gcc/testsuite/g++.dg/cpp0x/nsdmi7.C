@@ -11,6 +11,7 @@ struct A
 
 struct B
 {
+  virtual void g();
   const int d;		// { dg-warning "non-static const member" }
   int &e;		// { dg-warning "non-static reference" }
   int f = 7;

@@ -90,4 +90,8 @@ package Prj.Proc is
       On_New_Tree_Loaded     : Tree_Loaded_Callback := null);
    --  Performs the two phases of the processing
 
+   procedure Set_Default_Runtime_For (Language : Name_Id; Value : String);
+   --  Set the default value for the runtime of Language. To be used for the
+   --  value of 'Runtime(<Language>) when Runtime (<language>) is not declared.
+
 end Prj.Proc;

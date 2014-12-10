@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=k8-sse3" { target x86_64-*-* } } */
+/* { dg-options "-march=k8-sse3" { target i?86-*-* x86_64-*-* } } */
 
 struct alu_bank_swizzle {
     int hw_gpr[3][4];

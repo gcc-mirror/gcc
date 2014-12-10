@@ -17,6 +17,15 @@
 # <http://www.gnu.org/licenses/>.
 #
 
-MULTILIB_OPTIONS = msoft-float mcpu=v8/mcpu=leon3
-MULTILIB_DIRNAMES = soft v8 leon3
+MULTILIB_OPTIONS = msoft-float mcpu=v8/mcpu=leon3/mcpu=leon3v7 muser-mode
+MULTILIB_DIRNAMES = soft v8 leon3 leon3v7 user-mode
 MULTILIB_MATCHES = msoft-float=mno-fpu
+
+MULTILIB_EXCEPTIONS = muser-mode
+MULTILIB_EXCEPTIONS += mcpu=leon3
+MULTILIB_EXCEPTIONS += mcpu=leon3v7
+MULTILIB_EXCEPTIONS += msoft-float/mcpu=leon3
+MULTILIB_EXCEPTIONS += msoft-float/mcpu=leon3v7
+MULTILIB_EXCEPTIONS += msoft-float/muser-mode
+MULTILIB_EXCEPTIONS += msoft-float/mcpu=v8/muser-mode
+MULTILIB_EXCEPTIONS += mcpu=v8/muser-mode

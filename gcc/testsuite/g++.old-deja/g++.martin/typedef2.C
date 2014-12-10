@@ -3,5 +3,5 @@
 // Check implicit conversion from string constants into typedefs
 
 typedef char CHAR;
-void f2(CHAR *s="");		// { dg-warning "deprecated" }
+void f2(CHAR *s="");		// { dg-warning "deprecated|forbids converting a string constant" }
 

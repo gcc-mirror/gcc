@@ -2,7 +2,7 @@
 # Configuration validation subroutine script.
 #   Copyright 1992-2014 Free Software Foundation, Inc.
 
-timestamp='2014-07-28'
+timestamp='2014-09-26'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ timestamp='2014-07-28'
 # of the GNU General Public License, version 3 ("GPLv3").
 
 
-# Please send patches with a ChangeLog entry to config-patches@gnu.org.
+# Please send patches to <config-patches@gnu.org>.
 #
 # Configuration subroutine to validate and canonicalize a configuration type.
 # Supply the specified configuration type as an argument.
@@ -302,6 +302,7 @@ case $basic_machine in
 	| pdp10 | pdp11 | pj | pjl \
 	| powerpc | powerpc64 | powerpc64le | powerpcle \
 	| pyramid \
+	| riscv32 | riscv64 \
 	| rl78 | rx \
 	| score \
 	| sh | sh[1234] | sh[24]a | sh[24]aeb | sh[23]e | sh[34]eb | sheb | shbe | shle | sh[1234]le | sh3ele \
@@ -325,6 +326,9 @@ case $basic_machine in
 		;;
 	c6x)
 		basic_machine=tic6x-unknown
+		;;
+	leon|leon[3-9])
+		basic_machine=sparc-$basic_machine
 		;;
 	m6811 | m68hc11 | m6812 | m68hc12 | m68hcs12x | nvptx | picochip)
 		basic_machine=$basic_machine-unknown
@@ -772,6 +776,9 @@ case $basic_machine in
 	isi68 | isi)
 		basic_machine=m68k-isi
 		os=-sysv
+		;;
+	leon-*|leon[3-9]-*)
+		basic_machine=sparc-`echo $basic_machine | sed 's/-.*//'`
 		;;
 	m68knommu)
 		basic_machine=m68k-unknown

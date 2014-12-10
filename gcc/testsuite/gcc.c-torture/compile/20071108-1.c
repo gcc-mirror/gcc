@@ -1,4 +1,5 @@
 /* PR tree-optimization/33680 */
+/* { dg-require-effective-target alloca } */
 
 int
 f (int dim, int *b, int *c)

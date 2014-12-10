@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fsanitize=signed-integer-overflow -Wno-unused-variable -fno-sanitize-recover" } */
+/* { dg-options "-fsanitize=signed-integer-overflow -Wno-unused-variable -fno-sanitize-recover=signed-integer-overflow" } */
 
 #define SCHAR_MAX __SCHAR_MAX__
 #define SCHAR_MIN (-__SCHAR_MAX__ - 1)

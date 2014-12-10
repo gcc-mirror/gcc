@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 // 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //

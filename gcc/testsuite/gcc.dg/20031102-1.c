@@ -3,7 +3,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-O2" } */
-/* { dg-options "-O2 -march=i686" { target { { i686-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-options "-O2 -march=i686" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 /* Verify that reload_cse_move2add doesn't add unexpected CLOBBERs. */
 

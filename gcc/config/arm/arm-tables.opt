@@ -241,6 +241,15 @@ EnumValue
 Enum(processor_type) String(cortex-m0plus) Value(cortexm0plus)
 
 EnumValue
+Enum(processor_type) String(cortex-m1.small-multiply) Value(cortexm1smallmultiply)
+
+EnumValue
+Enum(processor_type) String(cortex-m0.small-multiply) Value(cortexm0smallmultiply)
+
+EnumValue
+Enum(processor_type) String(cortex-m0plus.small-multiply) Value(cortexm0plussmallmultiply)
+
+EnumValue
 Enum(processor_type) String(generic-armv7-a) Value(genericv7a)
 
 EnumValue
@@ -260,6 +269,9 @@ Enum(processor_type) String(cortex-a12) Value(cortexa12)
 
 EnumValue
 Enum(processor_type) String(cortex-a15) Value(cortexa15)
+
+EnumValue
+Enum(processor_type) String(cortex-a17) Value(cortexa17)
 
 EnumValue
 Enum(processor_type) String(cortex-r4) Value(cortexr4)
@@ -287,6 +299,9 @@ Enum(processor_type) String(marvell-pj4) Value(marvell_pj4)
 
 EnumValue
 Enum(processor_type) String(cortex-a15.cortex-a7) Value(cortexa15cortexa7)
+
+EnumValue
+Enum(processor_type) String(cortex-a17.cortex-a7) Value(cortexa17cortexa7)
 
 EnumValue
 Enum(processor_type) String(cortex-a53) Value(cortexa53)

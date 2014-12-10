@@ -42,16 +42,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "flags.h"
 #include "except.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "libfuncs.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "output.h"
-#include "hashtab.h"
 #include "tm_p.h"
 #include "langhooks.h"
 #include "target.h"
@@ -60,12 +65,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "tree-pass.h"
 #include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "basic-block.h"
 #include "df.h"
 #include "params.h"
 #include "bb-reorder.h"
 #include "shrink-wrap.h"
 #include "toplev.h"
 #include "rtl-iter.h"
+#include "tree-chkp.h"
+#include "rtl-chkp.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -102,28 +116,36 @@ struct machine_function * (*init_machine_status) (void);
 struct function *cfun = 0;
 
 /* These hashes record the prologue and epilogue insns.  */
-static GTY((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
-  htab_t prologue_insn_hash;
-static GTY((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
-  htab_t epilogue_insn_hash;
+
+struct insn_cache_hasher : ggc_cache_hasher<rtx>
+{
+  static hashval_t hash (rtx x) { return htab_hash_pointer (x); }
+  static bool equal (rtx a, rtx b) { return a == b; }
+};
+
+static GTY((cache))
+  hash_table<insn_cache_hasher> *prologue_insn_hash;
+static GTY((cache))
+  hash_table<insn_cache_hasher> *epilogue_insn_hash;
 
 
-htab_t types_used_by_vars_hash = NULL;
+hash_table<used_type_hasher> *types_used_by_vars_hash = NULL;
 vec<tree, va_gc> *types_used_by_cur_var_decl;
 
 /* Forward declarations.  */
 
 static struct temp_slot *find_temp_slot_from_address (rtx);
 static void pad_to_arg_alignment (struct args_size *, int, struct args_size *);
-static void pad_below (struct args_size *, enum machine_mode, tree);
+static void pad_below (struct args_size *, machine_mode, tree);
 static void reorder_blocks_1 (rtx_insn *, tree, vec<tree> *);
 static int all_blocks (tree, tree *);
 static tree *get_block_vector (tree, int *);
 extern tree debug_find_var_in_block_tree (tree, tree);
 /* We always define `record_insns' even if it's not used so that we
    can always export `prologue_epilogue_contains'.  */
-static void record_insns (rtx_insn *, rtx, htab_t *) ATTRIBUTE_UNUSED;
-static bool contains (const_rtx, htab_t);
+static void record_insns (rtx_insn *, rtx, hash_table<insn_cache_hasher> **)
+     ATTRIBUTE_UNUSED;
+static bool contains (const_rtx, hash_table<insn_cache_hasher> *);
 static void prepare_function_start (void);
 static void do_clobber_return_reg (rtx, void *);
 static void do_use_return_reg (rtx, void *);
@@ -230,7 +252,7 @@ frame_offset_overflow (HOST_WIDE_INT offset, tree func)
 /* Return stack slot alignment in bits for TYPE and MODE.  */
 
 static unsigned int
-get_stack_local_alignment (tree type, enum machine_mode mode)
+get_stack_local_alignment (tree type, machine_mode mode)
 {
   unsigned int alignment;
 
@@ -334,7 +356,7 @@ add_frame_space (HOST_WIDE_INT start, HOST_WIDE_INT end)
    We do not round to stack_boundary here.  */
 
 rtx
-assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
+assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
 		      int align, int kind)
 {
   rtx x, addr;
@@ -493,7 +515,7 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
 /* Wrap up assign_stack_local_1 with last parameter as false.  */
 
 rtx
-assign_stack_local (enum machine_mode mode, HOST_WIDE_INT size, int align)
+assign_stack_local (machine_mode mode, HOST_WIDE_INT size, int align)
 {
   return assign_stack_local_1 (mode, size, align, ASLK_RECORD_PAD);
 }
@@ -540,17 +562,23 @@ struct GTY(()) temp_slot {
   HOST_WIDE_INT full_size;
 };
 
-/* A table of addresses that represent a stack slot.  The table is a mapping
-   from address RTXen to a temp slot.  */
-static GTY((param_is(struct temp_slot_address_entry))) htab_t temp_slot_address_table;
-static size_t n_temp_slots_in_use;
-
-/* Entry for the above hash table.  */
-struct GTY(()) temp_slot_address_entry {
+/* Entry for the below hash table.  */
+struct GTY((for_user)) temp_slot_address_entry {
   hashval_t hash;
   rtx address;
   struct temp_slot *temp_slot;
 };
+
+struct temp_address_hasher : ggc_hasher<temp_slot_address_entry *>
+{
+  static hashval_t hash (temp_slot_address_entry *);
+  static bool equal (temp_slot_address_entry *, temp_slot_address_entry *);
+};
+
+/* A table of addresses that represent a stack slot.  The table is a mapping
+   from address RTXen to a temp slot.  */
+static GTY(()) hash_table<temp_address_hasher> *temp_slot_address_table;
+static size_t n_temp_slots_in_use;
 
 /* Removes temporary slot TEMP from LIST.  */
 
@@ -634,21 +662,17 @@ temp_slot_address_compute_hash (struct temp_slot_address_entry *t)
 }
 
 /* Return the hash value for an address -> temp slot mapping.  */
-static hashval_t
-temp_slot_address_hash (const void *p)
+hashval_t
+temp_address_hasher::hash (temp_slot_address_entry *t)
 {
-  const struct temp_slot_address_entry *t;
-  t = (const struct temp_slot_address_entry *) p;
   return t->hash;
 }
 
 /* Compare two address -> temp slot mapping entries.  */
-static int
-temp_slot_address_eq (const void *p1, const void *p2)
+bool
+temp_address_hasher::equal (temp_slot_address_entry *t1,
+			    temp_slot_address_entry *t2)
 {
-  const struct temp_slot_address_entry *t1, *t2;
-  t1 = (const struct temp_slot_address_entry *) p1;
-  t2 = (const struct temp_slot_address_entry *) p2;
   return exp_equiv_p (t1->address, t2->address, 0, true);
 }
 
@@ -656,24 +680,21 @@ temp_slot_address_eq (const void *p1, const void *p2)
 static void
 insert_temp_slot_address (rtx address, struct temp_slot *temp_slot)
 {
-  void **slot;
   struct temp_slot_address_entry *t = ggc_alloc<temp_slot_address_entry> ();
   t->address = address;
   t->temp_slot = temp_slot;
   t->hash = temp_slot_address_compute_hash (t);
-  slot = htab_find_slot_with_hash (temp_slot_address_table, t, t->hash, INSERT);
-  *slot = t;
+  *temp_slot_address_table->find_slot_with_hash (t, t->hash, INSERT) = t;
 }
 
 /* Remove an address -> temp slot mapping entry if the temp slot is
    not in use anymore.  Callback for remove_unused_temp_slot_addresses.  */
-static int
-remove_unused_temp_slot_addresses_1 (void **slot, void *data ATTRIBUTE_UNUSED)
+int
+remove_unused_temp_slot_addresses_1 (temp_slot_address_entry **slot, void *)
 {
-  const struct temp_slot_address_entry *t;
-  t = (const struct temp_slot_address_entry *) *slot;
+  const struct temp_slot_address_entry *t = *slot;
   if (! t->temp_slot->in_use)
-    htab_clear_slot (temp_slot_address_table, slot);
+    temp_slot_address_table->clear_slot (slot);
   return 1;
 }
 
@@ -683,11 +704,10 @@ remove_unused_temp_slot_addresses (void)
 {
   /* Use quicker clearing if there aren't any active temp slots.  */
   if (n_temp_slots_in_use)
-    htab_traverse (temp_slot_address_table,
-		   remove_unused_temp_slot_addresses_1,
-		   NULL);
+    temp_slot_address_table->traverse
+      <void *, remove_unused_temp_slot_addresses_1> (NULL);
   else
-    htab_empty (temp_slot_address_table);
+    temp_slot_address_table->empty ();
 }
 
 /* Find the temp slot corresponding to the object at address X.  */
@@ -703,8 +723,7 @@ find_temp_slot_from_address (rtx x)
   tmp.address = x;
   tmp.temp_slot = NULL;
   tmp.hash = temp_slot_address_compute_hash (&tmp);
-  t = (struct temp_slot_address_entry *)
-    htab_find_with_hash (temp_slot_address_table, &tmp, tmp.hash);
+  t = temp_slot_address_table->find_with_hash (&tmp, tmp.hash);
   if (t)
     return t->temp_slot;
 
@@ -746,7 +765,7 @@ find_temp_slot_from_address (rtx x)
    TYPE is the type that will be used for the stack slot.  */
 
 rtx
-assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
+assign_stack_temp_for_type (machine_mode mode, HOST_WIDE_INT size,
 			    tree type)
 {
   unsigned int align;
@@ -907,7 +926,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
    reuse.  First two arguments are same as in preceding function.  */
 
 rtx
-assign_stack_temp (enum machine_mode mode, HOST_WIDE_INT size)
+assign_stack_temp (machine_mode mode, HOST_WIDE_INT size)
 {
   return assign_stack_temp_for_type (mode, size, NULL_TREE);
 }
@@ -926,7 +945,7 @@ assign_temp (tree type_or_decl, int memory_required,
 	     int dont_promote ATTRIBUTE_UNUSED)
 {
   tree type, decl;
-  enum machine_mode mode;
+  machine_mode mode;
 #ifdef PROMOTE_MODE
   int unsignedp;
 #endif
@@ -1195,12 +1214,9 @@ init_temp_slots (void)
 
   /* Set up the table to map addresses to temp slots.  */
   if (! temp_slot_address_table)
-    temp_slot_address_table = htab_create_ggc (32,
-					       temp_slot_address_hash,
-					       temp_slot_address_eq,
-					       NULL);
+    temp_slot_address_table = hash_table<temp_address_hasher>::create_ggc (32);
   else
-    htab_empty (temp_slot_address_table);
+    temp_slot_address_table->empty ();
 }
 
 /* Functions and data structures to keep track of the values hard regs
@@ -1244,7 +1260,7 @@ get_hard_reg_initial_reg (rtx reg)
    initial value of hard register REGNO.  Return an rtx for such a pseudo.  */
 
 rtx
-get_hard_reg_initial_val (enum machine_mode mode, unsigned int regno)
+get_hard_reg_initial_val (machine_mode mode, unsigned int regno)
 {
   struct initial_value_struct *ivs;
   rtx rv;
@@ -1281,7 +1297,7 @@ get_hard_reg_initial_val (enum machine_mode mode, unsigned int regno)
    the associated pseudo if so, otherwise return NULL.  */
 
 rtx
-has_hard_reg_initial_val (enum machine_mode mode, unsigned int regno)
+has_hard_reg_initial_val (machine_mode mode, unsigned int regno)
 {
   struct initial_value_struct *ivs;
   int i;
@@ -2012,9 +2028,14 @@ aggregate_value_p (const_tree exp, const_tree fntype)
       case CALL_EXPR:
 	{
 	  tree fndecl = get_callee_fndecl (fntype);
-	  fntype = (fndecl
-		    ? TREE_TYPE (fndecl)
-		    : TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (fntype))));
+	  if (fndecl)
+	    fntype = TREE_TYPE (fndecl);
+	  else if (CALL_EXPR_FN (fntype))
+	    fntype = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (fntype)));
+	  else
+	    /* For internal functions, assume nothing needs to be
+	       returned in memory.  */
+	    return 0;
 	}
 	break;
       case FUNCTION_DECL:
@@ -2095,6 +2116,14 @@ use_register_for_decl (const_tree decl)
   if (TREE_ADDRESSABLE (decl))
     return false;
 
+  /* Decl is implicitly addressible by bound stores and loads
+     if it is an aggregate holding bounds.  */
+  if (chkp_function_instrumented_p (current_function_decl)
+      && TREE_TYPE (decl)
+      && !BOUNDED_P (decl)
+      && chkp_type_has_pointer (TREE_TYPE (decl)))
+    return false;
+
   /* Only register-like things go in registers.  */
   if (DECL_MODE (decl) == BLKmode)
     return false;
@@ -2138,7 +2167,7 @@ use_register_for_decl (const_tree decl)
 /* Return true if TYPE should be passed by invisible reference.  */
 
 bool
-pass_by_reference (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+pass_by_reference (CUMULATIVE_ARGS *ca, machine_mode mode,
 		   tree type, bool named_arg)
 {
   if (type)
@@ -2169,7 +2198,7 @@ pass_by_reference (CUMULATIVE_ARGS *ca, enum machine_mode mode,
    copied instead of caller copied.  */
 
 bool
-reference_callee_copied (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+reference_callee_copied (CUMULATIVE_ARGS *ca, machine_mode mode,
 			 tree type, bool named_arg)
 {
   if (type && TREE_ADDRESSABLE (type))
@@ -2204,15 +2233,24 @@ struct assign_parm_data_one
   tree passed_type;
   rtx entry_parm;
   rtx stack_parm;
-  enum machine_mode nominal_mode;
-  enum machine_mode passed_mode;
-  enum machine_mode promoted_mode;
+  machine_mode nominal_mode;
+  machine_mode passed_mode;
+  machine_mode promoted_mode;
   struct locate_and_pad_arg_data locate;
   int partial;
   BOOL_BITFIELD named_arg : 1;
   BOOL_BITFIELD passed_pointer : 1;
   BOOL_BITFIELD on_stack : 1;
   BOOL_BITFIELD loaded_in_reg : 1;
+};
+
+struct bounds_parm_data
+{
+  assign_parm_data_one parm_data;
+  tree bounds_parm;
+  tree ptr_parm;
+  rtx ptr_entry;
+  int bound_no;
 };
 
 /* A subroutine of assign_parms.  Initialize ALL.  */
@@ -2326,6 +2364,23 @@ assign_parms_augmented_arg_list (struct assign_parm_data_all *all)
       fnargs.safe_insert (0, decl);
 
       all->function_result_decl = decl;
+
+      /* If function is instrumented then bounds of the
+	 passed structure address is the second argument.  */
+      if (chkp_function_instrumented_p (fndecl))
+	{
+	  decl = build_decl (DECL_SOURCE_LOCATION (fndecl),
+			     PARM_DECL, get_identifier (".result_bnd"),
+			     pointer_bounds_type_node);
+	  DECL_ARG_TYPE (decl) = pointer_bounds_type_node;
+	  DECL_ARTIFICIAL (decl) = 1;
+	  DECL_NAMELESS (decl) = 1;
+	  TREE_CONSTANT (decl) = 1;
+
+	  DECL_CHAIN (decl) = DECL_CHAIN (all->orig_fnargs);
+	  DECL_CHAIN (all->orig_fnargs) = decl;
+	  fnargs.safe_insert (1, decl);
+	}
     }
 
   /* If the target wants to split complex arguments into scalars, do so.  */
@@ -2344,7 +2399,7 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
 			     struct assign_parm_data_one *data)
 {
   tree nominal_type, passed_type;
-  enum machine_mode nominal_mode, passed_mode, promoted_mode;
+  machine_mode nominal_mode, passed_mode, promoted_mode;
   int unsignedp;
 
   memset (data, 0, sizeof (*data));
@@ -2466,7 +2521,7 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
      it came in a register so that REG_PARM_STACK_SPACE isn't skipped.
      In this case, we call FUNCTION_ARG with NAMED set to 1 instead of 0
      as it was the previous time.  */
-  in_regs = entry_parm != 0;
+  in_regs = (entry_parm != 0) || POINTER_BOUNDS_TYPE_P (data->passed_type);
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
   in_regs = true;
 #endif
@@ -2555,8 +2610,12 @@ static bool
 assign_parm_is_stack_parm (struct assign_parm_data_all *all,
 			   struct assign_parm_data_one *data)
 {
+  /* Bounds are never passed on the stack to keep compatibility
+     with not instrumented code.  */
+  if (POINTER_BOUNDS_TYPE_P (data->passed_type))
+    return false;
   /* Trivially true if we've no incoming register.  */
-  if (data->entry_parm == NULL)
+  else if (data->entry_parm == NULL)
     ;
   /* Also true if we're partially in registers and partially not,
      since we've arranged to drop the entire argument on the stack.  */
@@ -2859,7 +2918,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	 that mode's store operation.  */
       else if (size <= UNITS_PER_WORD)
 	{
-	  enum machine_mode mode
+	  machine_mode mode
 	    = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
 
 	  if (mode != BLKmode
@@ -2940,7 +2999,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 {
   rtx parmreg, validated_mem;
   rtx equiv_stack_parm;
-  enum machine_mode promoted_nominal_mode;
+  machine_mode promoted_nominal_mode;
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (parm));
   bool did_conversion = false;
   bool need_conversion, moved;
@@ -3181,7 +3240,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
       /* Mark complex types separately.  */
       if (GET_CODE (parmreg) == CONCAT)
 	{
-	  enum machine_mode submode
+	  machine_mode submode
 	    = GET_MODE_INNER (GET_MODE (parmreg));
 	  int regnor = REGNO (XEXP (parmreg, 0));
 	  int regnoi = REGNO (XEXP (parmreg, 1));
@@ -3315,7 +3374,7 @@ assign_parms_unsplit_complex (struct assign_parm_data_all *all,
 	  && targetm.calls.split_complex_arg (TREE_TYPE (parm)))
 	{
 	  rtx tmp, real, imag;
-	  enum machine_mode inner = GET_MODE_INNER (DECL_MODE (parm));
+	  machine_mode inner = GET_MODE_INNER (DECL_MODE (parm));
 
 	  real = DECL_RTL (fnargs[i]);
 	  imag = DECL_RTL (fnargs[i + 1]);
@@ -3365,6 +3424,123 @@ assign_parms_unsplit_complex (struct assign_parm_data_all *all,
     }
 }
 
+/* Load bounds of PARM from bounds table.  */
+static void
+assign_parm_load_bounds (struct assign_parm_data_one *data,
+			 tree parm,
+			 rtx entry,
+			 unsigned bound_no)
+{
+  bitmap_iterator bi;
+  unsigned i, offs = 0;
+  int bnd_no = -1;
+  rtx slot = NULL, ptr = NULL;
+
+  if (parm)
+    {
+      bitmap slots;
+      bitmap_obstack_initialize (NULL);
+      slots = BITMAP_ALLOC (NULL);
+      chkp_find_bound_slots (TREE_TYPE (parm), slots);
+      EXECUTE_IF_SET_IN_BITMAP (slots, 0, i, bi)
+	{
+	  if (bound_no)
+	    bound_no--;
+	  else
+	    {
+	      bnd_no = i;
+	      break;
+	    }
+	}
+      BITMAP_FREE (slots);
+      bitmap_obstack_release (NULL);
+    }
+
+  /* We may have bounds not associated with any pointer.  */
+  if (bnd_no != -1)
+    offs = bnd_no * POINTER_SIZE / BITS_PER_UNIT;
+
+  /* Find associated pointer.  */
+  if (bnd_no == -1)
+    {
+      /* If bounds are not associated with any bounds,
+	 then it is passed in a register or special slot.  */
+      gcc_assert (data->entry_parm);
+      ptr = const0_rtx;
+    }
+  else if (MEM_P (entry))
+    slot = adjust_address (entry, Pmode, offs);
+  else if (REG_P (entry))
+    ptr = gen_rtx_REG (Pmode, REGNO (entry) + bnd_no);
+  else if (GET_CODE (entry) == PARALLEL)
+    ptr = chkp_get_value_with_offs (entry, GEN_INT (offs));
+  else
+    gcc_unreachable ();
+  data->entry_parm = targetm.calls.load_bounds_for_arg (slot, ptr,
+							data->entry_parm);
+}
+
+/* Assign RTL expressions to the function's bounds parameters BNDARGS.  */
+
+static void
+assign_bounds (vec<bounds_parm_data> &bndargs,
+	       struct assign_parm_data_all &all)
+{
+  unsigned i, pass, handled = 0;
+  bounds_parm_data *pbdata;
+
+  if (!bndargs.exists ())
+    return;
+
+  /* We make few passes to store input bounds.  Firstly handle bounds
+     passed in registers.  After that we load bounds passed in special
+     slots.  Finally we load bounds from Bounds Table.  */
+  for (pass = 0; pass < 3; pass++)
+    FOR_EACH_VEC_ELT (bndargs, i, pbdata)
+      {
+	/* Pass 0 => regs only.  */
+	if (pass == 0
+	    && (!pbdata->parm_data.entry_parm
+		|| GET_CODE (pbdata->parm_data.entry_parm) != REG))
+	  continue;
+	/* Pass 1 => slots only.  */
+	else if (pass == 1
+		 && (!pbdata->parm_data.entry_parm
+		     || GET_CODE (pbdata->parm_data.entry_parm) == REG))
+	  continue;
+	/* Pass 2 => BT only.  */
+	else if (pass == 2
+		 && pbdata->parm_data.entry_parm)
+	  continue;
+
+	if (!pbdata->parm_data.entry_parm
+	    || GET_CODE (pbdata->parm_data.entry_parm) != REG)
+	  assign_parm_load_bounds (&pbdata->parm_data, pbdata->ptr_parm,
+				   pbdata->ptr_entry, pbdata->bound_no);
+
+	set_decl_incoming_rtl (pbdata->bounds_parm,
+			       pbdata->parm_data.entry_parm, false);
+
+	if (assign_parm_setup_block_p (&pbdata->parm_data))
+	  assign_parm_setup_block (&all, pbdata->bounds_parm,
+				   &pbdata->parm_data);
+	else if (pbdata->parm_data.passed_pointer
+		 || use_register_for_decl (pbdata->bounds_parm))
+	  assign_parm_setup_reg (&all, pbdata->bounds_parm,
+				 &pbdata->parm_data);
+	else
+	  assign_parm_setup_stack (&all, pbdata->bounds_parm,
+				   &pbdata->parm_data);
+
+	/* Count handled bounds to make sure we miss nothing.  */
+	handled++;
+      }
+
+  gcc_assert (handled == bndargs.length ());
+
+  bndargs.release ();
+}
+
 /* Assign RTL expressions to the function's parameters.  This may involve
    copying them into registers and using those registers as the DECL_RTL.  */
 
@@ -3374,7 +3550,11 @@ assign_parms (tree fndecl)
   struct assign_parm_data_all all;
   tree parm;
   vec<tree> fnargs;
-  unsigned i;
+  unsigned i, bound_no = 0;
+  tree last_arg = NULL;
+  rtx last_arg_entry = NULL;
+  vec<bounds_parm_data> bndargs = vNULL;
+  bounds_parm_data bdata;
 
   crtl->args.internal_arg_pointer
     = targetm.calls.internal_arg_pointer ();
@@ -3416,9 +3596,6 @@ assign_parms (tree fndecl)
 	    }
 	}
 
-      if (cfun->stdarg && !DECL_CHAIN (parm))
-	assign_parms_setup_varargs (&all, &data, false);
-
       /* Find out where the parameter arrives in this function.  */
       assign_parm_find_entry_rtl (&all, &data);
 
@@ -3428,7 +3605,15 @@ assign_parms (tree fndecl)
 	  assign_parm_find_stack_rtl (parm, &data);
 	  assign_parm_adjust_entry_rtl (&data);
 	}
-
+      if (!POINTER_BOUNDS_TYPE_P (data.passed_type))
+	{
+	  /* Remember where last non bounds arg was passed in case
+	     we have to load associated bounds for it from Bounds
+	     Table.  */
+	  last_arg = parm;
+	  last_arg_entry = data.entry_parm;
+	  bound_no = 0;
+	}
       /* Record permanently how this parm was passed.  */
       if (data.passed_pointer)
 	{
@@ -3440,19 +3625,62 @@ assign_parms (tree fndecl)
       else
 	set_decl_incoming_rtl (parm, data.entry_parm, false);
 
+      /* Boudns should be loaded in the particular order to
+	 have registers allocated correctly.  Collect info about
+	 input bounds and load them later.  */
+      if (POINTER_BOUNDS_TYPE_P (data.passed_type))
+	{
+	  /* Expect bounds in instrumented functions only.  */
+	  gcc_assert (chkp_function_instrumented_p (fndecl));
+
+	  bdata.parm_data = data;
+	  bdata.bounds_parm = parm;
+	  bdata.ptr_parm = last_arg;
+	  bdata.ptr_entry = last_arg_entry;
+	  bdata.bound_no = bound_no;
+	  bndargs.safe_push (bdata);
+	}
+      else
+	{
+	  assign_parm_adjust_stack_rtl (&data);
+
+	  if (assign_parm_setup_block_p (&data))
+	    assign_parm_setup_block (&all, parm, &data);
+	  else if (data.passed_pointer || use_register_for_decl (parm))
+	    assign_parm_setup_reg (&all, parm, &data);
+	  else
+	    assign_parm_setup_stack (&all, parm, &data);
+	}
+
+      if (cfun->stdarg && !DECL_CHAIN (parm))
+	{
+	  int pretend_bytes = 0;
+
+	  assign_parms_setup_varargs (&all, &data, false);
+
+	  if (chkp_function_instrumented_p (fndecl))
+	    {
+	      /* We expect this is the last parm.  Otherwise it is wrong
+		 to assign bounds right now.  */
+	      gcc_assert (i == (fnargs.length () - 1));
+	      assign_bounds (bndargs, all);
+	      targetm.calls.setup_incoming_vararg_bounds (all.args_so_far,
+							  data.promoted_mode,
+							  data.passed_type,
+							  &pretend_bytes,
+							  false);
+	    }
+	}
+
       /* Update info on where next arg arrives in registers.  */
       targetm.calls.function_arg_advance (all.args_so_far, data.promoted_mode,
 					  data.passed_type, data.named_arg);
 
-      assign_parm_adjust_stack_rtl (&data);
-
-      if (assign_parm_setup_block_p (&data))
-	assign_parm_setup_block (&all, parm, &data);
-      else if (data.passed_pointer || use_register_for_decl (parm))
-	assign_parm_setup_reg (&all, parm, &data);
-      else
-	assign_parm_setup_stack (&all, parm, &data);
+      if (POINTER_BOUNDS_TYPE_P (data.passed_type))
+	bound_no++;
     }
+
+  assign_bounds (bndargs, all);
 
   if (targetm.calls.split_complex_arg)
     assign_parms_unsplit_complex (&all, fnargs);
@@ -3469,7 +3697,7 @@ assign_parms (tree fndecl)
       if (DECL_RESULT (fndecl))
 	{
 	  tree type = TREE_TYPE (DECL_RESULT (fndecl));
-	  enum machine_mode mode = TYPE_MODE (type);
+	  machine_mode mode = TYPE_MODE (type);
 
 	  if (mode != BLKmode
 	      && mode != VOIDmode
@@ -3574,6 +3802,10 @@ assign_parms (tree fndecl)
 
 	  real_decl_rtl = targetm.calls.function_value (TREE_TYPE (decl_result),
 							fndecl, true);
+	  if (chkp_function_instrumented_p (fndecl))
+	    crtl->return_bnd
+	      = targetm.calls.chkp_function_value_bounds (TREE_TYPE (decl_result),
+							  fndecl, true);
 	  REG_FUNCTION_VALUE_P (real_decl_rtl) = 1;
 	  /* The delay slot scheduler assumes that crtl->return_rtx
 	     holds the hard register containing the return value, not a
@@ -3749,7 +3981,7 @@ gimplify_parameters (void)
     INITIAL_OFFSET_PTR.  LOCATE->SIZE is always positive.  */
 
 void
-locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
+locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
 		     int reg_parm_stack_space, int partial,
 		     tree fndecl ATTRIBUTE_UNUSED,
 		     struct args_size *initial_offset_ptr,
@@ -3955,7 +4187,7 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
 }
 
 static void
-pad_below (struct args_size *offset_ptr, enum machine_mode passed_mode, tree sizetree)
+pad_below (struct args_size *offset_ptr, machine_mode passed_mode, tree sizetree)
 {
   if (passed_mode != BLKmode)
     {
@@ -4804,6 +5036,14 @@ expand_function_start (tree subr)
       /* Set DECL_REGISTER flag so that expand_function_end will copy the
 	 result to the real return register(s).  */
       DECL_REGISTER (DECL_RESULT (subr)) = 1;
+
+      if (chkp_function_instrumented_p (current_function_decl))
+	{
+	  tree return_type = TREE_TYPE (DECL_RESULT (subr));
+	  rtx bounds = targetm.calls.chkp_function_value_bounds (return_type,
+								 subr, 1);
+	  SET_DECL_BOUNDS_RTL (DECL_RESULT (subr), bounds);
+	}
     }
 
   /* Initialize rtx for parameters and local variables.
@@ -4907,14 +5147,11 @@ expand_dummy_function_end (void)
   in_dummy_function = false;
 }
 
-/* Call DOIT for each hard register used as a return value from
-   the current function.  */
+/* Helper for diddle_return_value.  */
 
 void
-diddle_return_value (void (*doit) (rtx, void *), void *arg)
+diddle_return_value_1 (void (*doit) (rtx, void *), void *arg, rtx outgoing)
 {
-  rtx outgoing = crtl->return_rtx;
-
   if (! outgoing)
     return;
 
@@ -4932,6 +5169,16 @@ diddle_return_value (void (*doit) (rtx, void *), void *arg)
 	    (*doit) (x, arg);
 	}
     }
+}
+
+/* Call DOIT for each hard register used as a return value from
+   the current function.  */
+
+void
+diddle_return_value (void (*doit) (rtx, void *), void *arg)
+{
+  diddle_return_value_1 (doit, arg, crtl->return_rtx);
+  diddle_return_value_1 (doit, arg, crtl->return_bnd);
 }
 
 static void
@@ -5166,8 +5413,8 @@ expand_function_end (void)
      If returning a structure PCC style,
      the caller also depends on this value.
      And cfun->returns_pcc_struct is not necessarily set.  */
-  if (cfun->returns_struct
-      || cfun->returns_pcc_struct)
+  if ((cfun->returns_struct || cfun->returns_pcc_struct)
+      && !targetm.calls.omit_struct_return_reg)
     {
       rtx value_address = DECL_RTL (DECL_RESULT (current_function_decl));
       tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
@@ -5288,18 +5535,17 @@ get_arg_pointer_save_area (void)
    for the first time.  */
 
 static void
-record_insns (rtx_insn *insns, rtx end, htab_t *hashp)
+record_insns (rtx_insn *insns, rtx end, hash_table<insn_cache_hasher> **hashp)
 {
   rtx_insn *tmp;
-  htab_t hash = *hashp;
+  hash_table<insn_cache_hasher> *hash = *hashp;
 
   if (hash == NULL)
-    *hashp = hash
-      = htab_create_ggc (17, htab_hash_pointer, htab_eq_pointer, NULL);
+    *hashp = hash = hash_table<insn_cache_hasher>::create_ggc (17);
 
   for (tmp = insns; tmp != end; tmp = NEXT_INSN (tmp))
     {
-      void **slot = htab_find_slot (hash, tmp, INSERT);
+      rtx *slot = hash->find_slot (tmp, INSERT);
       gcc_assert (*slot == NULL);
       *slot = tmp;
     }
@@ -5312,18 +5558,18 @@ record_insns (rtx_insn *insns, rtx end, htab_t *hashp)
 void
 maybe_copy_prologue_epilogue_insn (rtx insn, rtx copy)
 {
-  htab_t hash;
-  void **slot;
+  hash_table<insn_cache_hasher> *hash;
+  rtx *slot;
 
   hash = epilogue_insn_hash;
-  if (!hash || !htab_find (hash, insn))
+  if (!hash || !hash->find (insn))
     {
       hash = prologue_insn_hash;
-      if (!hash || !htab_find (hash, insn))
+      if (!hash || !hash->find (insn))
 	return;
     }
 
-  slot = htab_find_slot (hash, copy, INSERT);
+  slot = hash->find_slot (copy, INSERT);
   gcc_assert (*slot == NULL);
   *slot = copy;
 }
@@ -5332,7 +5578,7 @@ maybe_copy_prologue_epilogue_insn (rtx insn, rtx copy)
    we can be running after reorg, SEQUENCE rtl is possible.  */
 
 static bool
-contains (const_rtx insn, htab_t hash)
+contains (const_rtx insn, hash_table<insn_cache_hasher> *hash)
 {
   if (hash == NULL)
     return false;
@@ -5342,12 +5588,12 @@ contains (const_rtx insn, htab_t hash)
       rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
       int i;
       for (i = seq->len () - 1; i >= 0; i--)
-	if (htab_find (hash, seq->element (i)))
+	if (hash->find (seq->element (i)))
 	  return true;
       return false;
     }
 
-  return htab_find (hash, insn) != NULL;
+  return hash->find (const_cast<rtx> (insn)) != NULL;
 }
 
 int
@@ -5610,7 +5856,7 @@ emit_return_for_exit (edge exit_fallthru_edge, bool simple_p)
    in a sibcall omit the sibcall_epilogue if the block is not in
    ANTIC.  */
 
-static void
+void
 thread_prologue_and_epilogue_insns (void)
 {
   bool inserted;
@@ -5959,7 +6205,7 @@ reposition_prologue_and_epilogue_notes (void)
      non-null is a signal that it is non-empty.  */
   if (prologue_insn_hash != NULL)
     {
-      size_t len = htab_elements (prologue_insn_hash);
+      size_t len = prologue_insn_hash->elements ();
       rtx_insn *insn, *last = NULL, *note = NULL;
 
       /* Scan from the beginning until we reach the last prologue insn.  */
@@ -6145,24 +6391,17 @@ hash_types_used_by_vars_entry (const struct types_used_by_vars_entry *entry)
 /* Hash function of the types_used_by_vars_entry hash table.  */
 
 hashval_t
-types_used_by_vars_do_hash (const void *x)
+used_type_hasher::hash (types_used_by_vars_entry *entry)
 {
-  const struct types_used_by_vars_entry *entry =
-    (const struct types_used_by_vars_entry *) x;
-
   return hash_types_used_by_vars_entry (entry);
 }
 
 /*Equality function of the types_used_by_vars_entry hash table.  */
 
-int
-types_used_by_vars_eq (const void *x1, const void *x2)
+bool
+used_type_hasher::equal (types_used_by_vars_entry *e1,
+			 types_used_by_vars_entry *e2)
 {
-  const struct types_used_by_vars_entry *e1 =
-    (const struct types_used_by_vars_entry *) x1;
-  const struct types_used_by_vars_entry *e2 =
-    (const struct types_used_by_vars_entry *)x2;
-
   return (e1->var_decl == e2->var_decl && e1->type == e2->type);
 }
 
@@ -6173,16 +6412,15 @@ types_used_by_var_decl_insert (tree type, tree var_decl)
 {
   if (type != NULL && var_decl != NULL)
     {
-      void **slot;
+      types_used_by_vars_entry **slot;
       struct types_used_by_vars_entry e;
       e.var_decl = var_decl;
       e.type = type;
       if (types_used_by_vars_hash == NULL)
-	types_used_by_vars_hash =
-	  htab_create_ggc (37, types_used_by_vars_do_hash,
-			   types_used_by_vars_eq, NULL);
-      slot = htab_find_slot_with_hash (types_used_by_vars_hash, &e,
-				       hash_types_used_by_vars_entry (&e), INSERT);
+	types_used_by_vars_hash
+	  = hash_table<used_type_hasher>::create_ggc (37);
+
+      slot = types_used_by_vars_hash->find_slot (&e, INSERT);
       if (*slot == NULL)
 	{
 	  struct types_used_by_vars_entry *entry;
@@ -6437,6 +6675,15 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
 
   if (changed)
     df_insn_rescan (insn);
+}
+
+/* Add the decl D to the local_decls list of FUN.  */
+
+void
+add_local_decl (struct function *fun, tree d)
+{
+  gcc_assert (TREE_CODE (d) == VAR_DECL);
+  vec_safe_push (fun->local_decls, d);
 }
 
 namespace {

@@ -7,3 +7,4 @@
       PARAMETER (PLT$B_OPC=0) !  Unreachable as the error above is now fatal
       common /abc$def/ PLT$C_HOUSTPIX, PLT$C_COMMAND !  Unreachable as the error above is now fatal
       end
+! { dg-excess-errors "compilation terminated" }

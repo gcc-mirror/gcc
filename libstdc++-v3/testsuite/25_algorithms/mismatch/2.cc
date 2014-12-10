@@ -17,7 +17,7 @@
 
 // 25.2.10 [mismatch]
 
-// { dg-options " -std=gnu++1y " }
+// { dg-options " -std=gnu++14 " }
 
 #include <algorithm>
 #include <testsuite_hooks.h>

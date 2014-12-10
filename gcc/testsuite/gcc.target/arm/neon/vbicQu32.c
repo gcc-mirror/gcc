@@ -3,16 +3,16 @@
 
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-save-temps -O0" } */
+/* { dg-options "-save-temps -O2" } */
 /* { dg-add-options arm_neon } */
 
 #include "arm_neon.h"
 
+uint32x4_t out_uint32x4_t;
+uint32x4_t arg0_uint32x4_t;
+uint32x4_t arg1_uint32x4_t;
 void test_vbicQu32 (void)
 {
-  uint32x4_t out_uint32x4_t;
-  uint32x4_t arg0_uint32x4_t;
-  uint32x4_t arg1_uint32x4_t;
 
   out_uint32x4_t = vbicq_u32 (arg0_uint32x4_t, arg1_uint32x4_t);
 }

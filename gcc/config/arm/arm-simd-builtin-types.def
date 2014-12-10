@@ -1,0 +1,48 @@
+/* Builtin AdvSIMD types.
+   Copyright (C) 2014 Free Software Foundation, Inc.
+   Contributed by ARM Ltd.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+  ENTRY (Int8x8_t, V8QI, none, 64, int8, 15)
+  ENTRY (Int16x4_t, V4HI, none, 64, int16, 16)
+  ENTRY (Int32x2_t, V2SI, none, 64, int32, 16)
+
+  ENTRY (Int8x16_t, V16QI, none, 128, int8, 16)
+  ENTRY (Int16x8_t, V8HI, none, 128, int16, 17)
+  ENTRY (Int32x4_t, V4SI, none, 128, int32, 17)
+  ENTRY (Int64x2_t, V2DI, none, 128, int64, 17)
+
+  ENTRY (Uint8x8_t, V8QI, unsigned, 64, uint8, 16)
+  ENTRY (Uint16x4_t, V4HI, unsigned, 64, uint16, 17)
+  ENTRY (Uint32x2_t, V2SI, unsigned, 64, uint32, 17)
+
+  ENTRY (Uint8x16_t, V16QI, unsigned, 128, uint8, 17)
+  ENTRY (Uint16x8_t, V8HI, unsigned, 128, uint16, 18)
+  ENTRY (Uint32x4_t, V4SI, unsigned, 128, uint32, 18)
+  ENTRY (Uint64x2_t, V2DI, unsigned, 128, uint64, 18)
+
+  ENTRY (Poly8x8_t, V8QI, poly, 64, poly8, 16)
+  ENTRY (Poly16x4_t, V4HI, poly, 64, poly16, 17)
+
+  ENTRY (Poly8x16_t, V16QI, poly, 128, poly8, 17)
+  ENTRY (Poly16x8_t, V8HI, poly, 128, poly16, 18)
+
+  ENTRY (Float16x4_t, V4HF, none, 64, float16, 18)
+  ENTRY (Float32x2_t, V2SF, none, 64, float32, 18)
+  ENTRY (Float32x4_t, V4SF, none, 128, float32, 19)
+

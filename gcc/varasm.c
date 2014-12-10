@@ -35,13 +35,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "varasm.h"
 #include "flags.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "expr.h"
-#include "hard-reg-set.h"
 #include "regs.h"
 #include "output.h"
 #include "diagnostic-core.h"
-#include "hashtab.h"
 #include "ggc.h"
 #include "langhooks.h"
 #include "tm_p.h"
@@ -49,11 +53,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "common/common-target.h"
 #include "targhooks.h"
-#include "cgraph.h"
-#include "hash-set.h"
-#include "asan.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
+#include "asan.h"
 #include "rtl-iter.h"
+#include "tree-chkp.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -95,11 +106,6 @@ tree last_assemble_variable_decl;
 
 bool first_function_block_is_cold;
 
-/* We give all constants their own alias set.  Perhaps redundant with
-   MEM_READONLY_P, but pre-dates it.  */
-
-static alias_set_type const_alias_set;
-
 /* Whether we saw any functions with no_split_stack.  */
 
 static bool saw_no_split_stack;
@@ -110,8 +116,6 @@ static int contains_pointers_p (tree);
 static bool incorporeal_function_p (tree);
 #endif
 static void decode_addr_const (tree, struct addr_const *);
-static hashval_t const_desc_hash (const void *);
-static int const_desc_eq (const void *, const void *);
 static hashval_t const_hash_1 (const tree);
 static int compare_constant (const tree, const tree);
 static void output_constant_def_contents (rtx);
@@ -175,11 +179,27 @@ static GTY(()) section *unnamed_sections;
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
    && DECL_SECTION_NAME (DECL) != NULL)
 
+struct section_hasher : ggc_hasher<section *>
+{
+  typedef const char *compare_type;
+
+  static hashval_t hash (section *);
+  static bool equal (section *, const char *);
+};
+
 /* Hash table of named sections.  */
-static GTY((param_is (section))) htab_t section_htab;
+static GTY(()) hash_table<section_hasher> *section_htab;
+
+struct object_block_hasher : ggc_hasher<object_block *>
+{
+  typedef const section *compare_type;
+
+  static hashval_t hash (object_block *);
+  static bool equal (object_block *, const section *);
+};
 
 /* A table of object_blocks, indexed by section.  */
-static GTY((param_is (struct object_block))) htab_t object_block_htab;
+static GTY(()) hash_table<object_block_hasher> *object_block_htab;
 
 /* The next number to use for internal anchor labels.  */
 static GTY(()) int anchor_labelno;
@@ -189,19 +209,15 @@ static GTY(()) struct rtx_constant_pool *shared_constant_pool;
 
 /* Helper routines for maintaining section_htab.  */
 
-static int
-section_entry_eq (const void *p1, const void *p2)
+bool
+section_hasher::equal (section *old, const char *new_name)
 {
-  const section *old = (const section *) p1;
-  const char *new_name = (const char *) p2;
-
   return strcmp (old->named.name, new_name) == 0;
 }
 
-static hashval_t
-section_entry_hash (const void *p)
+hashval_t
+section_hasher::hash (section *old)
 {
-  const section *old = (const section *) p;
   return htab_hash_string (old->named.name);
 }
 
@@ -217,19 +233,15 @@ hash_section (section *sect)
 
 /* Helper routines for maintaining object_block_htab.  */
 
-static int
-object_block_entry_eq (const void *p1, const void *p2)
+inline bool
+object_block_hasher::equal (object_block *old, const section *new_section)
 {
-  const struct object_block *old = (const struct object_block *) p1;
-  const section *new_section = (const section *) p2;
-
   return old->sect == new_section;
 }
 
-static hashval_t
-object_block_entry_hash (const void *p)
+hashval_t
+object_block_hasher::hash (object_block *old)
 {
-  const struct object_block *old = (const struct object_block *) p;
   return hash_section (old->sect);
 }
 
@@ -273,9 +285,8 @@ get_section (const char *name, unsigned int flags, tree decl)
 {
   section *sect, **slot;
 
-  slot = (section **)
-    htab_find_slot_with_hash (section_htab, name,
-			      htab_hash_string (name), INSERT);
+  slot = section_htab->find_slot_with_hash (name, htab_hash_string (name),
+					    INSERT);
   flags |= SECTION_NAMED;
   if (*slot == NULL)
     {
@@ -350,14 +361,14 @@ static struct object_block *
 get_block_for_section (section *sect)
 {
   struct object_block *block;
-  void **slot;
 
   if (sect == NULL)
     return NULL;
 
-  slot = htab_find_slot_with_hash (object_block_htab, sect,
-				   hash_section (sect), INSERT);
-  block = (struct object_block *) *slot;
+  object_block **slot
+    = object_block_htab->find_slot_with_hash (sect, hash_section (sect),
+					      INSERT);
+  block = *slot;
   if (block == NULL)
     {
       block = ggc_cleared_alloc<object_block> ();
@@ -765,7 +776,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
       && (len = int_size_in_bytes (TREE_TYPE (decl))) > 0
       && TREE_STRING_LENGTH (decl) >= len)
     {
-      enum machine_mode mode;
+      machine_mode mode;
       unsigned int modesize;
       const char *str;
       HOST_WIDE_INT i;
@@ -809,7 +820,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
 /* Return the section to use for constant merging.  */
 
 section *
-mergeable_constant_section (enum machine_mode mode ATTRIBUTE_UNUSED,
+mergeable_constant_section (machine_mode mode ATTRIBUTE_UNUSED,
 			    unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED,
 			    unsigned int flags ATTRIBUTE_UNUSED)
 {
@@ -1233,6 +1244,30 @@ use_blocks_for_decl_p (tree decl)
   return targetm.use_blocks_for_decl_p (decl);
 }
 
+/* Follow the IDENTIFIER_TRANSPARENT_ALIAS chain starting at *ALIAS
+   until we find an identifier that is not itself a transparent alias.
+   Modify the alias passed to it by reference (and all aliases on the
+   way to the ultimate target), such that they do not have to be
+   followed again, and return the ultimate target of the alias
+   chain.  */
+
+static inline tree
+ultimate_transparent_alias_target (tree *alias)
+{
+  tree target = *alias;
+
+  if (IDENTIFIER_TRANSPARENT_ALIAS (target))
+    {
+      gcc_assert (TREE_CHAIN (target));
+      target = ultimate_transparent_alias_target (&TREE_CHAIN (target));
+      gcc_assert (! IDENTIFIER_TRANSPARENT_ALIAS (target)
+		  && ! TREE_CHAIN (target));
+      *alias = target;
+    }
+
+  return target;
+}
+
 /* Create the DECL_RTL for a VAR_DECL or FUNCTION_DECL.  DECL should
    have static storage duration.  In other words, it should not be an
    automatic variable, including PARM_DECLs.
@@ -1247,6 +1282,7 @@ make_decl_rtl (tree decl)
 {
   const char *name = 0;
   int reg_number;
+  tree id;
   rtx x;
 
   /* Check that we are not being given an automatic variable.  */
@@ -1304,7 +1340,12 @@ make_decl_rtl (tree decl)
       return;
     }
 
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  id = DECL_ASSEMBLER_NAME (decl);
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && cgraph_node::get (decl)
+      && cgraph_node::get (decl)->instrumentation_clone)
+    ultimate_transparent_alias_target (&id);
+  name = IDENTIFIER_POINTER (id);
 
   if (name[0] != '*' && TREE_CODE (decl) != FUNCTION_DECL
       && DECL_REGISTER (decl))
@@ -1314,7 +1355,7 @@ make_decl_rtl (tree decl)
   else if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
     {
       const char *asmspec = name+1;
-      enum machine_mode mode = DECL_MODE (decl);
+      machine_mode mode = DECL_MODE (decl);
       reg_number = decode_reg_name (asmspec);
       /* First detect errors in declaring global registers.  */
       if (reg_number == -1)
@@ -1414,7 +1455,7 @@ make_decl_rtl (tree decl)
     x = create_block_symbol (name, get_block_for_decl (decl), -1);
   else
     {
-      enum machine_mode address_mode = Pmode;
+      machine_mode address_mode = Pmode;
       if (TREE_TYPE (decl) != error_mark_node)
 	{
 	  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
@@ -1632,6 +1673,18 @@ decide_function_section (tree decl)
   in_cold_section_p = first_function_block_is_cold;
 }
 
+/* Get the function's name, as described by its RTL.  This may be
+   different from the DECL_NAME name used in the source file.  */
+const char *
+get_fnname_from_decl (tree decl)
+{
+  rtx x = DECL_RTL (decl);
+  gcc_assert (MEM_P (x));
+  x = XEXP (x, 0);
+  gcc_assert (GET_CODE (x) == SYMBOL_REF);
+  return XSTR (x, 0);
+}
+
 /* Output assembler code for the constant pool of a function and associated
    with defining the name of the function.  DECL describes the function.
    NAME is the function's name.  For the constant pool, we use the current
@@ -1738,7 +1791,10 @@ assemble_start_function (tree decl, const char *fnname)
 
   /* Make function name accessible from other files, if appropriate.  */
 
-  if (TREE_PUBLIC (decl))
+  if (TREE_PUBLIC (decl)
+      || (cgraph_node::get (decl)->instrumentation_clone
+	  && cgraph_node::get (decl)->instrumented_version
+	  && TREE_PUBLIC (cgraph_node::get (decl)->instrumented_version->decl)))
     {
       notice_global_symbol (decl);
 
@@ -1997,7 +2053,17 @@ assemble_variable_contents (tree decl, const char *name,
       else
 	/* Leave space for it.  */
 	assemble_zeros (tree_to_uhwi (DECL_SIZE_UNIT (decl)));
+      targetm.asm_out.decl_end ();
     }
+}
+
+/* Write out assembly for the variable DECL, which is not defined in
+   the current translation unit.  */
+void
+assemble_undefined_decl (tree decl)
+{
+  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  targetm.asm_out.assemble_undefined_decl (asm_out_file, name, decl);
 }
 
 /* Assemble everything that is needed for a variable or function declaration.
@@ -2428,30 +2494,6 @@ mark_decl_referenced (tree decl)
 }
 
 
-/* Follow the IDENTIFIER_TRANSPARENT_ALIAS chain starting at *ALIAS
-   until we find an identifier that is not itself a transparent alias.
-   Modify the alias passed to it by reference (and all aliases on the
-   way to the ultimate target), such that they do not have to be
-   followed again, and return the ultimate target of the alias
-   chain.  */
-
-static inline tree
-ultimate_transparent_alias_target (tree *alias)
-{
-  tree target = *alias;
-
-  if (IDENTIFIER_TRANSPARENT_ALIAS (target))
-    {
-      gcc_assert (TREE_CHAIN (target));
-      target = ultimate_transparent_alias_target (&TREE_CHAIN (target));
-      gcc_assert (! IDENTIFIER_TRANSPARENT_ALIAS (target)
-		  && ! TREE_CHAIN (target));
-      *alias = target;
-    }
-
-  return target;
-}
-
 /* Output to FILE (an assembly file) a reference to NAME.  If NAME
    starts with a *, the rest of NAME is output verbatim.  Otherwise
    NAME is transformed in a target-specific way (usually by the
@@ -2671,7 +2713,7 @@ assemble_integer (rtx x, unsigned int size, unsigned int align, int force)
      it into words it if is multi-word, otherwise split it into bytes.  */
   if (size > 1)
     {
-      enum machine_mode omode, imode;
+      machine_mode omode, imode;
       unsigned int subalign;
       unsigned int subsize, i;
       enum mode_class mclass;
@@ -2706,7 +2748,7 @@ assemble_integer (rtx x, unsigned int size, unsigned int align, int force)
 }
 
 void
-assemble_real (REAL_VALUE_TYPE d, enum machine_mode mode, unsigned int align)
+assemble_real (REAL_VALUE_TYPE d, machine_mode mode, unsigned int align)
 {
   long data[4] = {0, 0, 0, 0};
   int i;
@@ -2824,15 +2866,13 @@ decode_addr_const (tree exp, struct addr_const *value)
   value->offset = offset;
 }
 
-
-static GTY((param_is (struct constant_descriptor_tree)))
-     htab_t const_desc_htab;
+static GTY(()) hash_table<tree_descriptor_hasher> *const_desc_htab;
 
 static void maybe_output_constant_def_contents (struct constant_descriptor_tree *, int);
 
 /* Constant pool accessor function.  */
 
-htab_t
+hash_table<tree_descriptor_hasher> *
 constant_pool_htab (void)
 {
   return const_desc_htab;
@@ -2840,10 +2880,10 @@ constant_pool_htab (void)
 
 /* Compute a hash code for a constant expression.  */
 
-static hashval_t
-const_desc_hash (const void *ptr)
+hashval_t
+tree_descriptor_hasher::hash (constant_descriptor_tree *ptr)
 {
-  return ((const struct constant_descriptor_tree *)ptr)->hash;
+  return ptr->hash;
 }
 
 static hashval_t
@@ -2956,13 +2996,10 @@ const_hash_1 (const tree exp)
 }
 
 /* Wrapper of compare_constant, for the htab interface.  */
-static int
-const_desc_eq (const void *p1, const void *p2)
+bool
+tree_descriptor_hasher::equal (constant_descriptor_tree *c1,
+			       constant_descriptor_tree *c2)
 {
-  const struct constant_descriptor_tree *const c1
-    = (const struct constant_descriptor_tree *) p1;
-  const struct constant_descriptor_tree *const c2
-    = (const struct constant_descriptor_tree *) p2;
   if (c1->hash != c2->hash)
     return 0;
   return compare_constant (c1->value, c2->value);
@@ -3228,7 +3265,6 @@ build_constant_desc (tree exp)
   rtl = gen_const_mem (TYPE_MODE (TREE_TYPE (exp)), symbol);
   set_mem_attributes (rtl, exp, 1);
   set_mem_alias_set (rtl, 0);
-  set_mem_alias_set (rtl, const_alias_set);
 
   /* We cannot share RTX'es in pool entries.
      Mark this piece of RTL as required for unsharing.  */
@@ -3264,15 +3300,15 @@ output_constant_def (tree exp, int defer)
 {
   struct constant_descriptor_tree *desc;
   struct constant_descriptor_tree key;
-  void **loc;
 
   /* Look up EXP in the table of constant descriptors.  If we didn't find
      it, create a new one.  */
   key.value = exp;
   key.hash = const_hash_1 (exp);
-  loc = htab_find_slot_with_hash (const_desc_htab, &key, key.hash, INSERT);
+  constant_descriptor_tree **loc
+    = const_desc_htab->find_slot_with_hash (&key, key.hash, INSERT);
 
-  desc = (struct constant_descriptor_tree *) *loc;
+  desc = *loc;
   if (desc == 0)
     {
       desc = build_constant_desc (exp);
@@ -3333,6 +3369,8 @@ assemble_constant_contents (tree exp, const char *label, unsigned int align)
 
   /* Output the value of EXP.  */
   output_constant (exp, size, align);
+
+  targetm.asm_out.decl_end ();
 }
 
 /* We must output the constant data referred to by SYMBOL; do so.  */
@@ -3387,13 +3425,12 @@ output_constant_def_contents (rtx symbol)
 rtx
 lookup_constant_def (tree exp)
 {
-  struct constant_descriptor_tree *desc;
   struct constant_descriptor_tree key;
 
   key.value = exp;
   key.hash = const_hash_1 (exp);
-  desc = (struct constant_descriptor_tree *)
-    htab_find_with_hash (const_desc_htab, &key, key.hash);
+  constant_descriptor_tree *desc
+    = const_desc_htab->find_with_hash (&key, key.hash);
 
   return (desc ? desc->rtl : NULL_RTX);
 }
@@ -3407,16 +3444,16 @@ tree
 tree_output_constant_def (tree exp)
 {
   struct constant_descriptor_tree *desc, key;
-  void **loc;
   tree decl;
 
   /* Look up EXP in the table of constant descriptors.  If we didn't find
      it, create a new one.  */
   key.value = exp;
   key.hash = const_hash_1 (exp);
-  loc = htab_find_slot_with_hash (const_desc_htab, &key, key.hash, INSERT);
+  constant_descriptor_tree **loc
+    = const_desc_htab->find_slot_with_hash (&key, key.hash, INSERT);
 
-  desc = (struct constant_descriptor_tree *) *loc;
+  desc = *loc;
   if (desc == 0)
     {
       desc = build_constant_desc (exp);
@@ -3429,6 +3466,25 @@ tree_output_constant_def (tree exp)
   return decl;
 }
 
+struct GTY((chain_next ("%h.next"), for_user)) constant_descriptor_rtx {
+  struct constant_descriptor_rtx *next;
+  rtx mem;
+  rtx sym;
+  rtx constant;
+  HOST_WIDE_INT offset;
+  hashval_t hash;
+  machine_mode mode;
+  unsigned int align;
+  int labelno;
+  int mark;
+};
+
+struct const_rtx_desc_hasher : ggc_hasher<constant_descriptor_rtx *>
+{
+  static hashval_t hash (constant_descriptor_rtx *);
+  static bool equal (constant_descriptor_rtx *, constant_descriptor_rtx *);
+};
+
 /* Used in the hash tables to avoid outputting the same constant
    twice.  Unlike 'struct constant_descriptor_tree', RTX constants
    are output once per function, not once per file.  */
@@ -3445,44 +3501,25 @@ struct GTY(()) rtx_constant_pool {
      It is used on RISC machines where immediate integer arguments and
      constant addresses are restricted so that such constants must be stored
      in memory.  */
-  htab_t GTY((param_is (struct constant_descriptor_rtx))) const_rtx_htab;
+  hash_table<const_rtx_desc_hasher> *const_rtx_htab;
 
   /* Current offset in constant pool (does not include any
      machine-specific header).  */
   HOST_WIDE_INT offset;
 };
 
-struct GTY((chain_next ("%h.next"))) constant_descriptor_rtx {
-  struct constant_descriptor_rtx *next;
-  rtx mem;
-  rtx sym;
-  rtx constant;
-  HOST_WIDE_INT offset;
-  hashval_t hash;
-  enum machine_mode mode;
-  unsigned int align;
-  int labelno;
-  int mark;
-};
-
 /* Hash and compare functions for const_rtx_htab.  */
 
-static hashval_t
-const_desc_rtx_hash (const void *ptr)
+hashval_t
+const_rtx_desc_hasher::hash (constant_descriptor_rtx *desc)
 {
-  const struct constant_descriptor_rtx *const desc
-    = (const struct constant_descriptor_rtx *) ptr;
   return desc->hash;
 }
 
-static int
-const_desc_rtx_eq (const void *a, const void *b)
+bool
+const_rtx_desc_hasher::equal (constant_descriptor_rtx *x,
+			      constant_descriptor_rtx *y)
 {
-  const struct constant_descriptor_rtx *const x
-    = (const struct constant_descriptor_rtx *) a;
-  const struct constant_descriptor_rtx *const y
-    = (const struct constant_descriptor_rtx *) b;
-
   if (x->mode != y->mode)
     return 0;
   return rtx_equal_p (x->constant, y->constant);
@@ -3494,7 +3531,7 @@ static hashval_t
 const_rtx_hash_1 (const_rtx x)
 {
   unsigned HOST_WIDE_INT hwi;
-  enum machine_mode mode;
+  machine_mode mode;
   enum rtx_code code;
   hashval_t h;
   int i;
@@ -3585,8 +3622,7 @@ create_constant_pool (void)
   struct rtx_constant_pool *pool;
 
   pool = ggc_alloc<rtx_constant_pool> ();
-  pool->const_rtx_htab = htab_create_ggc (31, const_desc_rtx_hash,
-					  const_desc_rtx_eq, NULL);
+  pool->const_rtx_htab = hash_table<const_rtx_desc_hasher>::create_ggc (31);
   pool->first = NULL;
   pool->last = NULL;
   pool->offset = 0;
@@ -3616,7 +3652,7 @@ simplify_subtraction (rtx x)
    and return a MEM rtx to refer to it in memory.  */
 
 rtx
-force_const_mem (enum machine_mode mode, rtx x)
+force_const_mem (machine_mode mode, rtx x)
 {
   struct constant_descriptor_rtx *desc, tmp;
   struct rtx_constant_pool *pool;
@@ -3624,7 +3660,7 @@ force_const_mem (enum machine_mode mode, rtx x)
   rtx def, symbol;
   hashval_t hash;
   unsigned int align;
-  void **slot;
+  constant_descriptor_rtx **slot;
 
   /* If we're not allowed to drop X into the constant pool, don't.  */
   if (targetm.cannot_force_const_mem (mode, x))
@@ -3642,8 +3678,8 @@ force_const_mem (enum machine_mode mode, rtx x)
   tmp.constant = x;
   tmp.mode = mode;
   hash = const_rtx_hash (x);
-  slot = htab_find_slot_with_hash (pool->const_rtx_htab, &tmp, hash, INSERT);
-  desc = (struct constant_descriptor_rtx *) *slot;
+  slot = pool->const_rtx_htab->find_slot_with_hash (&tmp, hash, INSERT);
+  desc = *slot;
 
   /* If the constant was already present, return its memory.  */
   if (desc)
@@ -3737,7 +3773,7 @@ get_pool_constant_mark (rtx addr, bool *pmarked)
 
 /* Similar, return the mode.  */
 
-enum machine_mode
+machine_mode
 get_pool_mode (const_rtx addr)
 {
   return SYMBOL_REF_CONSTANT (addr)->mode;
@@ -3755,7 +3791,7 @@ get_pool_size (void)
    in MODE with known alignment ALIGN.  */
 
 static void
-output_constant_pool_2 (enum machine_mode mode, rtx x, unsigned int align)
+output_constant_pool_2 (machine_mode mode, rtx x, unsigned int align)
 {
   switch (GET_MODE_CLASS (mode))
     {
@@ -3776,6 +3812,7 @@ output_constant_pool_2 (enum machine_mode mode, rtx x, unsigned int align)
     case MODE_UFRACT:
     case MODE_ACCUM:
     case MODE_UACCUM:
+    case MODE_POINTER_BOUNDS:
       assemble_integer (x, GET_MODE_SIZE (mode), align, 1);
       break;
 
@@ -3787,7 +3824,7 @@ output_constant_pool_2 (enum machine_mode mode, rtx x, unsigned int align)
     case MODE_VECTOR_UACCUM:
       {
 	int i, units;
-        enum machine_mode submode = GET_MODE_INNER (mode);
+        machine_mode submode = GET_MODE_INNER (mode);
 	unsigned int subalign = MIN (align, GET_MODE_BITSIZE (submode));
 
 	gcc_assert (GET_CODE (x) == CONST_VECTOR);
@@ -4675,6 +4712,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
     case REFERENCE_TYPE:
     case OFFSET_TYPE:
     case FIXED_POINT_TYPE:
+    case POINTER_BOUNDS_TYPE:
     case NULLPTR_TYPE:
       if (! assemble_integer (expand_expr (exp, NULL_RTX, VOIDmode,
 					   EXPAND_INITIALIZER),
@@ -4708,7 +4746,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 	  break;
 	case VECTOR_CST:
 	  {
-	    enum machine_mode inner = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
+	    machine_mode inner = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
 	    unsigned int nalign = MIN (align, GET_MODE_ALIGNMENT (inner));
 	    int elt_size = GET_MODE_SIZE (inner);
 	    output_constant (VECTOR_CST_ELT (exp, 0), elt_size, align);
@@ -5508,6 +5546,8 @@ vec<alias_pair, va_gc> *alias_pairs;
 void
 do_assemble_alias (tree decl, tree target)
 {
+  tree id;
+
   /* Emulated TLS had better not get this var.  */
   gcc_assert (!(!targetm.have_tls
 		&& TREE_CODE (decl) == VAR_DECL
@@ -5516,12 +5556,16 @@ do_assemble_alias (tree decl, tree target)
   if (TREE_ASM_WRITTEN (decl))
     return;
 
+  id = DECL_ASSEMBLER_NAME (decl);
+  ultimate_transparent_alias_target (&id);
+
   /* We must force creation of DECL_RTL for debug info generation, even though
      we don't use it here.  */
   make_decl_rtl (decl);
 
   TREE_ASM_WRITTEN (decl) = 1;
   TREE_ASM_WRITTEN (DECL_ASSEMBLER_NAME (decl)) = 1;
+  TREE_ASM_WRITTEN (id) = 1;
 
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
     {
@@ -5532,7 +5576,7 @@ do_assemble_alias (tree decl, tree target)
 
 #ifdef ASM_OUTPUT_WEAKREF
       ASM_OUTPUT_WEAKREF (asm_out_file, decl,
-			  IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+			  IDENTIFIER_POINTER (id),
 			  IDENTIFIER_POINTER (target));
 #else
       if (!TARGET_SUPPORTS_WEAK)
@@ -5546,9 +5590,16 @@ do_assemble_alias (tree decl, tree target)
     }
 
 #ifdef ASM_OUTPUT_DEF
+  tree orig_decl = decl;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && cgraph_node::get (decl)->instrumentation_clone
+      && cgraph_node::get (decl)->instrumented_version)
+    orig_decl = cgraph_node::get (decl)->instrumented_version->decl;
+
   /* Make name accessible from other files, if appropriate.  */
 
-  if (TREE_PUBLIC (decl))
+  if (TREE_PUBLIC (decl) || TREE_PUBLIC (orig_decl))
     {
       globalize_decl (decl);
       maybe_assemble_visibility (decl);
@@ -5558,7 +5609,7 @@ do_assemble_alias (tree decl, tree target)
 #if defined (ASM_OUTPUT_TYPE_DIRECTIVE)
       if (targetm.has_ifunc_p ())
 	ASM_OUTPUT_TYPE_DIRECTIVE
-	  (asm_out_file, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+	  (asm_out_file, IDENTIFIER_POINTER (id),
 	   IFUNC_ASM_TYPE);
       else
 #endif
@@ -5570,7 +5621,7 @@ do_assemble_alias (tree decl, tree target)
   ASM_OUTPUT_DEF_FROM_DECLS (asm_out_file, decl, target);
 # else
   ASM_OUTPUT_DEF (asm_out_file,
-		  IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+		  IDENTIFIER_POINTER (id),
 		  IDENTIFIER_POINTER (target));
 # endif
 #elif defined (ASM_OUTPUT_WEAK_ALIAS) || defined (ASM_WEAKEN_DECL)
@@ -5578,7 +5629,7 @@ do_assemble_alias (tree decl, tree target)
     const char *name;
     tree *p, t;
 
-    name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+    name = IDENTIFIER_POINTER (id);
 # ifdef ASM_WEAKEN_DECL
     ASM_WEAKEN_DECL (asm_out_file, decl, name, IDENTIFIER_POINTER (target));
 # else
@@ -5587,7 +5638,8 @@ do_assemble_alias (tree decl, tree target)
     /* Remove this function from the pending weak list so that
        we do not emit multiple .weak directives for it.  */
     for (p = &weak_decls; (t = *p) ; )
-      if (DECL_ASSEMBLER_NAME (decl) == DECL_ASSEMBLER_NAME (TREE_VALUE (t)))
+      if (DECL_ASSEMBLER_NAME (decl) == DECL_ASSEMBLER_NAME (TREE_VALUE (t))
+	  || id == DECL_ASSEMBLER_NAME (TREE_VALUE (t)))
 	*p = TREE_CHAIN (t);
       else
 	p = &TREE_CHAIN (t);
@@ -5596,8 +5648,7 @@ do_assemble_alias (tree decl, tree target)
        list, for the same reason.  */
     for (p = &weakref_targets; (t = *p) ; )
       {
-	if (DECL_ASSEMBLER_NAME (decl)
-	    == ultimate_transparent_alias_target (&TREE_VALUE (t)))
+	if (id == ultimate_transparent_alias_target (&TREE_VALUE (t)))
 	  *p = TREE_CHAIN (t);
 	else
 	  p = &TREE_CHAIN (t);
@@ -5676,8 +5727,26 @@ assemble_alias (tree decl, tree target)
    to its transaction aware clone.  Note that tm_pure functions are
    considered to be their own clone.  */
 
-static GTY((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
-     htab_t tm_clone_hash;
+struct tm_clone_hasher : ggc_cache_hasher<tree_map *>
+{
+  static hashval_t hash (tree_map *m) { return tree_map_hash (m); }
+  static bool equal (tree_map *a, tree_map *b) { return tree_map_eq (a, b); }
+
+  static void handle_cache_entry (tree_map *&e)
+  {
+    if (e != HTAB_EMPTY_ENTRY || e != HTAB_DELETED_ENTRY)
+      {
+	extern void gt_ggc_mx (tree_map *&);
+	if (ggc_marked_p (e->base.from))
+	  gt_ggc_mx (e);
+	else
+	  e = static_cast<tree_map *> (HTAB_DELETED_ENTRY);
+      }
+  }
+};
+
+static GTY((cache))
+     hash_table<tm_clone_hasher> *tm_clone_hash;
 
 void
 record_tm_clone_pair (tree o, tree n)
@@ -5685,15 +5754,14 @@ record_tm_clone_pair (tree o, tree n)
   struct tree_map **slot, *h;
 
   if (tm_clone_hash == NULL)
-    tm_clone_hash = htab_create_ggc (32, tree_map_hash, tree_map_eq, 0);
+    tm_clone_hash = hash_table<tm_clone_hasher>::create_ggc (32);
 
   h = ggc_alloc<tree_map> ();
   h->hash = htab_hash_pointer (o);
   h->base.from = o;
   h->to = n;
 
-  slot = (struct tree_map **)
-    htab_find_slot_with_hash (tm_clone_hash, h, h->hash, INSERT);
+  slot = tm_clone_hash->find_slot_with_hash (h, h->hash, INSERT);
   *slot = h;
 }
 
@@ -5706,8 +5774,7 @@ get_tm_clone_pair (tree o)
 
       in.base.from = o;
       in.hash = htab_hash_pointer (o);
-      h = (struct tree_map *) htab_find_with_hash (tm_clone_hash,
-						   &in, in.hash);
+      h = tm_clone_hash->find_with_hash (&in, in.hash);
       if (h)
 	return h->to;
     }
@@ -5721,19 +5788,6 @@ typedef struct tm_alias_pair
   tree to;
 } tm_alias_pair;
 
-
-/* Helper function for finish_tm_clone_pairs.  Dump a hash table entry
-   into a VEC in INFO.  */
-
-static int
-dump_tm_clone_to_vec (void **slot, void *info)
-{
-  struct tree_map *map = (struct tree_map *) *slot;
-  vec<tm_alias_pair> *tm_alias_pairs = (vec<tm_alias_pair> *) info;
-  tm_alias_pair p = {DECL_UID (map->base.from), map->base.from, map->to};
-  tm_alias_pairs->safe_push (p);
-  return 1;
-}
 
 /* Dump the actual pairs to the .tm_clone_table section.  */
 
@@ -5815,15 +5869,20 @@ finish_tm_clone_pairs (void)
      to a vector, sort it, and dump the vector.  */
 
   /* Dump the hashtable to a vector.  */
-  htab_traverse_noresize (tm_clone_hash, dump_tm_clone_to_vec,
-			  (void *) &tm_alias_pairs);
+  tree_map *map;
+  hash_table<tm_clone_hasher>::iterator iter;
+  FOR_EACH_HASH_TABLE_ELEMENT (*tm_clone_hash, map, tree_map *, iter)
+    {
+      tm_alias_pair p = {DECL_UID (map->base.from), map->base.from, map->to};
+      tm_alias_pairs.safe_push (p);
+    }
   /* Sort it.  */
   tm_alias_pairs.qsort (tm_alias_pair_cmp);
 
   /* Dump it.  */
   dump_tm_clone_pairs (tm_alias_pairs);
 
-  htab_delete (tm_clone_hash);
+  tm_clone_hash->empty ();
   tm_clone_hash = NULL;
   tm_alias_pairs.release ();
 }
@@ -5862,6 +5921,12 @@ int
 maybe_assemble_visibility (tree decl)
 {
   enum symbol_visibility vis = DECL_VISIBILITY (decl);
+
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && cgraph_node::get (decl)
+      && cgraph_node::get (decl)->instrumentation_clone
+      && cgraph_node::get (decl)->instrumented_version)
+    vis = DECL_VISIBILITY (cgraph_node::get (decl)->instrumented_version->decl);
 
   if (vis != VISIBILITY_DEFAULT)
     {
@@ -5923,14 +5988,10 @@ make_decl_one_only (tree decl, tree comdat_group)
 void
 init_varasm_once (void)
 {
-  section_htab = htab_create_ggc (31, section_entry_hash,
-				  section_entry_eq, NULL);
-  object_block_htab = htab_create_ggc (31, object_block_entry_hash,
-				       object_block_entry_eq, NULL);
-  const_desc_htab = htab_create_ggc (1009, const_desc_hash,
-				     const_desc_eq, NULL);
+  section_htab = hash_table<section_hasher>::create_ggc (31);
+  object_block_htab = hash_table<object_block_hasher>::create_ggc (31);
+  const_desc_htab = hash_table<tree_descriptor_hasher>::create_ggc (1009);
 
-  const_alias_set = new_alias_set ();
   shared_constant_pool = create_constant_pool ();
 
 #ifdef TEXT_SECTION_ASM_OP
@@ -6146,8 +6207,10 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 
   if (!(flags & SECTION_DEBUG))
     *f++ = 'a';
+#if defined (HAVE_GAS_SECTION_EXCLUDE) && HAVE_GAS_SECTION_EXCLUDE == 1
   if (flags & SECTION_EXCLUDE)
     *f++ = 'e';
+#endif
   if (flags & SECTION_WRITE)
     *f++ = 'w';
   if (flags & SECTION_CODE)
@@ -6435,6 +6498,7 @@ default_unique_section (tree decl, int reloc)
   bool one_only = DECL_ONE_ONLY (decl) && !HAVE_COMDAT_GROUP;
   const char *prefix, *name, *linkonce;
   char *string;
+  tree id;
 
   switch (categorize_decl_for_section (decl, reloc))
     {
@@ -6484,7 +6548,9 @@ default_unique_section (tree decl, int reloc)
       gcc_unreachable ();
     }
 
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  id = DECL_ASSEMBLER_NAME (decl);
+  ultimate_transparent_alias_target (&id);
+  name = IDENTIFIER_POINTER (id);
   name = targetm.strip_name_encoding (name);
 
   /* If we're using one_only, then there needs to be a .gnu.linkonce
@@ -6540,7 +6606,7 @@ compute_reloc_for_rtx (const_rtx x)
 }
 
 section *
-default_select_rtx_section (enum machine_mode mode ATTRIBUTE_UNUSED,
+default_select_rtx_section (machine_mode mode ATTRIBUTE_UNUSED,
 			    rtx x,
 			    unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
@@ -6551,7 +6617,7 @@ default_select_rtx_section (enum machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 section *
-default_elf_select_rtx_section (enum machine_mode mode, rtx x,
+default_elf_select_rtx_section (machine_mode mode, rtx x,
 				unsigned HOST_WIDE_INT align)
 {
   int reloc = compute_reloc_for_rtx (x);
@@ -7130,7 +7196,7 @@ get_section_anchor (struct object_block *block, HOST_WIDE_INT offset,
     offset = 0;
   else
     {
-      bias = 1 << (GET_MODE_BITSIZE (ptr_mode) - 1);
+      bias = HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (ptr_mode) - 1);
       if (offset < 0)
 	{
 	  delta = -(unsigned HOST_WIDE_INT) offset + max_offset;
@@ -7255,10 +7321,10 @@ output_object_block (struct object_block *block)
 /* A htab_traverse callback used to call output_object_block for
    each member of object_block_htab.  */
 
-static int
-output_object_block_htab (void **slot, void *data ATTRIBUTE_UNUSED)
+int
+output_object_block_htab (object_block **slot, void *)
 {
-  output_object_block ((struct object_block *) (*slot));
+  output_object_block (*slot);
   return 1;
 }
 
@@ -7267,7 +7333,7 @@ output_object_block_htab (void **slot, void *data ATTRIBUTE_UNUSED)
 void
 output_object_blocks (void)
 {
-  htab_traverse (object_block_htab, output_object_block_htab, NULL);
+  object_block_htab->traverse<void *, output_object_block_htab> (NULL);
 }
 
 /* This function provides a possible implementation of the
@@ -7386,7 +7452,7 @@ rtx
 make_debug_expr_from_rtl (const_rtx exp)
 {
   tree ddecl = make_node (DEBUG_EXPR_DECL), type;
-  enum machine_mode mode = GET_MODE (exp);
+  machine_mode mode = GET_MODE (exp);
   rtx dval;
 
   DECL_ARTIFICIAL (ddecl) = 1;

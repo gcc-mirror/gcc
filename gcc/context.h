@@ -32,6 +32,10 @@ class context
 {
 public:
   context ();
+  ~context ();
+
+  /* The flag shows if there are symbols to be streamed for offloading.  */
+  bool have_offload;
 
   /* Pass-management.  */
 

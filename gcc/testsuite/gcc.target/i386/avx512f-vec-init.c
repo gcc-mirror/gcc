@@ -1,12 +1,17 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -mavx512f" } */
-/* { dg-final { scan-assembler-times "vmovdqa64\[ \\t\]+%zmm" 2 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastd" 1 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastq" 1 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastb" 2 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastw" 2 } } */
-/* { dg-final { scan-assembler-times "vbroadcastss" 1 } } */
-/* { dg-final { scan-assembler-times "vbroadcastsd" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqa64\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)"  0 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  2 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastb\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastw\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  2 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastw\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vbroadcastss\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 0 } } */
+/* { dg-final { scan-assembler-times "vbroadcastsd\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 0 } } */
 
 #include <x86intrin.h>
 

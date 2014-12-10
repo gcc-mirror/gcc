@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *            Copyright (C) 1992-2011, Free Software Foundation, Inc.       *
+ *            Copyright (C) 1992-2014, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -78,6 +78,10 @@ typedef struct {const int *Array; Vector_Template *Bounds; }
 /* Create and return the Uint value from the Int vector.  */
 #define Vector_To_Uint uintp__vector_to_uint
 extern Uint Vector_To_Uint		(Int_Vector, Boolean);
+
+/* Compare integer values for equality.  */
+#define UI_Eq uintp__ui_eq
+extern Boolean UI_Eq			(Uint, Uint);
 
 /* Compare integer values for less than.  */
 #define UI_Lt uintp__ui_lt

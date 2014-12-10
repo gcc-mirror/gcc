@@ -3,16 +3,16 @@
 
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-save-temps -O0" } */
+/* { dg-options "-save-temps -O2" } */
 /* { dg-add-options arm_neon } */
 
 #include "arm_neon.h"
 
+int8x16_t out_int8x16_t;
+int8x16_t arg0_int8x16_t;
+int8x16_t arg1_int8x16_t;
 void test_vornQs8 (void)
 {
-  int8x16_t out_int8x16_t;
-  int8x16_t arg0_int8x16_t;
-  int8x16_t arg1_int8x16_t;
 
   out_int8x16_t = vornq_s8 (arg0_int8x16_t, arg1_int8x16_t);
 }

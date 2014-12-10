@@ -380,7 +380,7 @@ encode_array (tree type, int curtype, int format)
 	 identifier.
       */
       {
-	char *enc = obstack_base (&util_obstack) + curtype;
+	char *enc = (char *) obstack_base (&util_obstack) + curtype;
 	if (memchr (enc, '=',
 		    obstack_object_size (&util_obstack) - curtype) == NULL)
 	  {
@@ -729,7 +729,7 @@ encode_type (tree type, int curtype, int format)
 	 to be rearranged for compatibility with gcc-3.3.  */
       if (code == POINTER_TYPE && obstack_object_size (&util_obstack) >= 3)
 	{
-	  char *enc = obstack_base (&util_obstack) + curtype;
+	  char *enc = (char *) obstack_base (&util_obstack) + curtype;
 
 	  /* Rewrite "in const" from "nr" to "rn".  */
 	  if (curtype >= 1 && !strncmp (enc - 1, "nr", 2))

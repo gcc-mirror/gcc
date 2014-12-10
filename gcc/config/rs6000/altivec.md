@@ -189,8 +189,8 @@
 
 ;; Vector move instructions.
 (define_insn "*altivec_mov<mode>"
-  [(set (match_operand:VM2 0 "nonimmediate_operand" "=Z,v,v,*Y,*r,*r,v,v")
-	(match_operand:VM2 1 "input_operand" "v,Z,v,r,Y,r,j,W"))]
+  [(set (match_operand:VM2 0 "nonimmediate_operand" "=Z,v,v,*Y,*r,*r,v,v,*r")
+	(match_operand:VM2 1 "input_operand" "v,Z,v,r,Y,r,j,W,W"))]
   "VECTOR_MEM_ALTIVEC_P (<MODE>mode)
    && (register_operand (operands[0], <MODE>mode) 
        || register_operand (operands[1], <MODE>mode))"
@@ -205,10 +205,12 @@
     case 5: return "#";
     case 6: return "vxor %0,%0,%0";
     case 7: return output_vec_const_move (operands);
+    case 8: return "#";
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,vecsimple,*")])
+  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,vecsimple,*,*")
+   (set_attr "length" "4,4,4,20,20,20,4,8,32")])
 
 ;; Unlike other altivec moves, allow the GPRs, since a normal use of TImode
 ;; is for unions.  However for plain data movement, slightly favor the vector
@@ -244,7 +246,7 @@
   [(const_int 0)]
 {
   rtx dest = operands[0];
-  enum machine_mode mode = GET_MODE (operands[0]);
+  machine_mode mode = GET_MODE (operands[0]);
   rtvec v;
   int i, num_elements;
 
@@ -273,7 +275,7 @@
 {
   rtx dup = gen_easy_altivec_constant (operands[1]);
   rtx const_vec;
-  enum machine_mode op_mode = <MODE>mode;
+  machine_mode op_mode = <MODE>mode;
 
   /* Divide the operand of the resulting VEC_DUPLICATE, and use
      simplify_rtx to make a CONST_VECTOR.  */

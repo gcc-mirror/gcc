@@ -514,8 +514,7 @@ class Temporary_statement : public Statement
  public:
   Temporary_statement(Type* type, Expression* init, Location location)
     : Statement(STATEMENT_TEMPORARY, location),
-      type_(type), init_(init), bvariable_(NULL), are_hidden_fields_ok_(false),
-      is_address_taken_(false)
+      type_(type), init_(init), bvariable_(NULL), is_address_taken_(false)
   { }
 
   // Return the type of the temporary variable.
@@ -526,11 +525,6 @@ class Temporary_statement : public Statement
   Expression*
   init() const
   { return this->init_; }
-
-  // Note that it is OK for this statement to set hidden fields.
-  void
-  set_hidden_fields_are_ok()
-  { this->are_hidden_fields_ok_ = true; }
 
   // Record that something takes the address of this temporary
   // variable.
@@ -569,9 +563,6 @@ class Temporary_statement : public Statement
   Expression* init_;
   // The backend representation of the temporary variable.
   Bvariable* bvariable_;
-  // True if this statement may set hidden fields when assigning the
-  // value to the temporary.  This is used for generated method stubs.
-  bool are_hidden_fields_ok_;
   // True if something takes the address of this temporary variable.
   bool is_address_taken_;
 };
@@ -619,19 +610,13 @@ class Return_statement : public Statement
  public:
   Return_statement(Expression_list* vals, Location location)
     : Statement(STATEMENT_RETURN, location),
-      vals_(vals), are_hidden_fields_ok_(false), is_lowered_(false)
+      vals_(vals), is_lowered_(false)
   { }
 
   // The list of values being returned.  This may be NULL.
   const Expression_list*
   vals() const
   { return this->vals_; }
-
-  // Note that it is OK for this return statement to set hidden
-  // fields.
-  void
-  set_hidden_fields_are_ok()
-  { this->are_hidden_fields_ok_ = true; }
 
  protected:
   int
@@ -657,9 +642,6 @@ class Return_statement : public Statement
  private:
   // Return values.  This may be NULL.
   Expression_list* vals_;
-  // True if this statement may pass hidden fields in the return
-  // value.  This is used for generated method stubs.
-  bool are_hidden_fields_ok_;
   // True if this statement has been lowered.
   bool is_lowered_;
 };

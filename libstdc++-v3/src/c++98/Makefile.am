@@ -33,8 +33,6 @@ host_sources = \
 	atomicity.cc \
 	codecvt_members.cc \
 	collate_members.cc \
-	ctype_configure_char.cc \
-	ctype_members.cc \
 	messages_members.cc \
 	monetary_members.cc \
 	numeric_members.cc \
@@ -45,12 +43,6 @@ codecvt_members.cc: ${glibcxx_srcdir}/$(CCODECVT_CC)
 
 collate_members.cc: ${glibcxx_srcdir}/$(CCOLLATE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CCOLLATE_CC) . || true
-
-ctype_configure_char.cc: ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char.cc
-	$(LN_S) ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char.cc . || true
-
-ctype_members.cc: ${glibcxx_srcdir}/$(CCTYPE_CC)
-	$(LN_S) ${glibcxx_srcdir}/$(CCTYPE_CC) . || true
 
 messages_members.cc: ${glibcxx_srcdir}/$(CMESSAGES_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CMESSAGES_CC) . || true
@@ -104,7 +96,6 @@ sources = \
 	mt_allocator.cc \
 	codecvt.cc \
 	complex_io.cc \
-	ctype.cc \
 	globals_io.cc \
 	hash_tr1.cc \
 	hashtable_tr1.cc \

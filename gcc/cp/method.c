@@ -35,6 +35,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "common/common-target.h"
 #include "diagnostic.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 
 /* Various flags to control the mangling process.  */
@@ -1911,6 +1922,12 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   DECL_DEFAULTED_FN (fn) = 1;
   if (cxx_dialect >= cxx11)
     {
+      /* "The closure type associated with a lambda-expression has a deleted
+	 default constructor and a deleted copy assignment operator."  */
+      if ((kind == sfk_constructor
+	   || kind == sfk_copy_assignment)
+	  && LAMBDA_TYPE_P (type))
+	deleted_p = true;
       DECL_DELETED_FN (fn) = deleted_p;
       DECL_DECLARED_CONSTEXPR_P (fn) = constexpr_p;
     }
@@ -1973,6 +1990,7 @@ defaulted_late_check (tree fn)
      is explicitly defaulted on its first declaration, (...) it is
      implicitly considered to have the same exception-specification as if
      it had been implicitly declared.  */
+  maybe_instantiate_noexcept (fn);
   tree fn_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
   if (!fn_spec)
     {

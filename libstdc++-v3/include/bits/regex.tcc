@@ -335,7 +335,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{"s", ctype_base::space},
 	{"alnum", ctype_base::alnum},
 	{"alpha", ctype_base::alpha},
-	{"blank", {0, _RegexMask::_S_blank}},
+	{"blank", ctype_base::blank},
 	{"cntrl", ctype_base::cntrl},
 	{"digit", ctype_base::digit},
 	{"graph", ctype_base::graph},
@@ -377,11 +377,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __fctyp.is(__f._M_base, __c)
 	// [[:w:]]
 	|| ((__f._M_extended & _RegexMask::_S_under)
-	    && __c == __fctyp.widen('_'))
-	// [[:blank:]]
-	|| ((__f._M_extended & _RegexMask::_S_blank)
-	    && (__c == __fctyp.widen(' ')
-		|| __c == __fctyp.widen('\t')));
+	    && __c == __fctyp.widen('_'));
     }
 
   template<typename _Ch_type>
@@ -573,7 +569,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				   | regex_constants::match_continuous))
 		    {
 		      _GLIBCXX_DEBUG_ASSERT(_M_match[0].matched);
-		      _M_match.at(_M_match.size()).first = __prefix_first;
+		      auto& __prefix = _M_match.at(_M_match.size());
+		      __prefix.first = __prefix_first;
+		      __prefix.matched = __prefix.first != __prefix.second;
 		      _M_match._M_in_iterator = true;
 		      _M_match._M_begin = _M_begin;
 		      return *this;
@@ -586,7 +584,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (regex_search(__start, _M_end, _M_match, *_M_pregex, _M_flags))
 	    {
 	      _GLIBCXX_DEBUG_ASSERT(_M_match[0].matched);
-	      _M_match.at(_M_match.size()).first = __prefix_first;
+	      auto& __prefix = _M_match.at(_M_match.size());
+	      __prefix.first = __prefix_first;
+	      __prefix.matched = __prefix.first != __prefix.second;
 	      _M_match._M_in_iterator = true;
 	      _M_match._M_begin = _M_begin;
 	    }

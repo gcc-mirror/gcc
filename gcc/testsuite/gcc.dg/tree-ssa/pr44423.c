@@ -1,5 +1,5 @@
-/* { dg-do compile { target x86_64-*-* } } */
-/* { dg-options "-O2 -fdump-tree-esra-details" } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-options "-msse -O2 -fdump-tree-esra-details" } */
 
 #include "xmmintrin.h"
 

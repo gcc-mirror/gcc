@@ -9,6 +9,7 @@
 /* { dg-additional-options "-D_XOPEN_SOURCE=600" { target *-*-solaris2.1[0-9]* } } */
 /* { dg-require-effective-target fenv_exceptions } */
 /* { dg-require-effective-target pthread } */
+/* { dg-timeout-factor 2 } */
 
 #include <fenv.h>
 #include <float.h>
@@ -331,11 +332,11 @@ TEST_FUNCS (complex_double_div_overflow, _Complex double, , /= DBL_MIN, 0,
 TEST_FUNCS (long_double_add_invalid, long double, , += __builtin_infl (), 0,
 	    0, __builtin_isinf, 0,
 	    -__builtin_infl (), FE_INVALID)
+#if LDBL_MANT_DIG != 106
 TEST_FUNCS (long_double_add_overflow, long double, , += LDBL_MAX, 0,
 	    LDBL_MAX, __builtin_isinf, FE_OVERFLOW | FE_INEXACT,
 	    0, 0)
 #define NOT_LDBL_EPSILON_2(X) ((X) != LDBL_EPSILON / 2)
-#if LDBL_MANT_DIG != 106
 TEST_FUNCS (long_double_add_inexact, long double, , += LDBL_EPSILON / 2, 0,
 	    1.0L, NOT_LDBL_EPSILON_2, FE_INEXACT,
 	    0, 0)
@@ -348,18 +349,18 @@ TEST_FUNCS (long_double_preinc_inexact, long double, ++, , 0,
 TEST_FUNCS (long_double_postinc_inexact, long double, , ++, 0,
 	    LDBL_EPSILON / 2, NOT_MINUS_1, FE_INEXACT,
 	    -1, 0)
-#endif
 TEST_FUNCS (complex_long_double_add_overflow, _Complex long double, , += LDBL_MAX, 0,
 	    LDBL_MAX, REAL_ISINF, FE_OVERFLOW | FE_INEXACT,
 	    0, 0)
+#endif
 TEST_FUNCS (long_double_sub_invalid, long double, , -= __builtin_infl (), 0,
 	    0, __builtin_isinf, 0,
 	    __builtin_infl (), FE_INVALID)
+#if LDBL_MANT_DIG != 106
 TEST_FUNCS (long_double_sub_overflow, long double, , -= LDBL_MAX, 0,
 	    -LDBL_MAX, __builtin_isinf, FE_OVERFLOW | FE_INEXACT,
 	    0, 0)
 #define NOT_MINUS_LDBL_EPSILON_2(X) ((X) != -LDBL_EPSILON / 2)
-#if LDBL_MANT_DIG != 106
 TEST_FUNCS (long_double_sub_inexact, long double, , -= LDBL_EPSILON / 2, 0,
 	    -1.0L, NOT_MINUS_LDBL_EPSILON_2, FE_INEXACT,
 	    0, 0)
@@ -372,10 +373,10 @@ TEST_FUNCS (long_double_predec_inexact, long double, --, , 0,
 TEST_FUNCS (long_double_postdec_inexact, long double, , --, 0,
 	    -LDBL_EPSILON / 2, NOT_1, FE_INEXACT,
 	    1, 0)
-#endif
 TEST_FUNCS (complex_long_double_sub_overflow, _Complex long double, , -= LDBL_MAX, 0,
 	    -LDBL_MAX, REAL_ISINF, FE_OVERFLOW | FE_INEXACT,
 	    0, 0)
+#endif
 TEST_FUNCS (long_double_mul_invalid, long double, , *= __builtin_infl (), 0,
 	    __builtin_infl (), __builtin_isinf, 0,
 	    0, FE_INVALID)
@@ -507,23 +508,23 @@ main (void)
   ret |= test_main_int_div_double_inexact ();
   ret |= test_main_complex_double_div_overflow ();
   ret |= test_main_long_double_add_invalid ();
-  ret |= test_main_long_double_add_overflow ();
 #if LDBL_MANT_DIG != 106
+  ret |= test_main_long_double_add_overflow ();
   ret |= test_main_long_double_add_inexact ();
   ret |= test_main_long_double_add_inexact_int ();
   ret |= test_main_long_double_preinc_inexact ();
   ret |= test_main_long_double_postinc_inexact ();
-#endif
   ret |= test_main_complex_long_double_add_overflow ();
+#endif
   ret |= test_main_long_double_sub_invalid ();
-  ret |= test_main_long_double_sub_overflow ();
 #if LDBL_MANT_DIG != 106
+  ret |= test_main_long_double_sub_overflow ();
   ret |= test_main_long_double_sub_inexact ();
   ret |= test_main_long_double_sub_inexact_int ();
   ret |= test_main_long_double_predec_inexact ();
   ret |= test_main_long_double_postdec_inexact ();
-#endif
   ret |= test_main_complex_long_double_sub_overflow ();
+#endif
   ret |= test_main_long_double_mul_invalid ();
   ret |= test_main_long_double_mul_overflow ();
   ret |= test_main_long_double_mul_overflow_float ();

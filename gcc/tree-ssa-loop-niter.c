@@ -25,10 +25,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "expr.h"
 #include "tm_p.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "intl.h"
-#include "hash-set.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
@@ -147,7 +156,7 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
     {
       edge e = loop_preheader_edge (loop);
       signop sgn = TYPE_SIGN (type);
-      gimple_stmt_iterator gsi;
+      gphi_iterator gsi;
 
       /* Either for VAR itself...  */
       rtype = get_range_info (var, &minv, &maxv);
@@ -155,7 +164,7 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 	 PHI argument from the loop preheader edge.  */
       for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  wide_int minc, maxc;
 	  if (PHI_ARG_DEF_FROM_EDGE (phi, e) == var
 	      && (get_range_info (gimple_phi_result (phi), &minc, &maxc)
@@ -1922,7 +1931,8 @@ number_of_iterations_exit (struct loop *loop, edge exit,
 			   struct tree_niter_desc *niter,
 			   bool warn, bool every_iteration)
 {
-  gimple stmt;
+  gimple last;
+  gcond *stmt;
   tree type;
   tree op0, op1;
   enum tree_code code;
@@ -1935,8 +1945,11 @@ number_of_iterations_exit (struct loop *loop, edge exit,
     return false;
 
   niter->assumptions = boolean_false_node;
-  stmt = last_stmt (exit->src);
-  if (!stmt || gimple_code (stmt) != GIMPLE_COND)
+  last = last_stmt (exit->src);
+  if (!last)
+    return false;
+  stmt = dyn_cast <gcond *> (last);
+  if (!stmt)
     return false;
 
   /* We want the condition for staying inside loop.  */
@@ -2155,7 +2168,7 @@ finite_loop_p (struct loop *loop)
    result by a chain of operations such that all but exactly one of their
    operands are constants.  */
 
-static gimple
+static gphi *
 chain_of_csts_start (struct loop *loop, tree x)
 {
   gimple stmt = SSA_NAME_DEF_STMT (x);
@@ -2170,7 +2183,7 @@ chain_of_csts_start (struct loop *loop, tree x)
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
       if (bb == loop->header)
-	return stmt;
+	return as_a <gphi *> (stmt);
 
       return NULL;
     }
@@ -2203,10 +2216,10 @@ chain_of_csts_start (struct loop *loop, tree x)
 
    If such phi node exists, it is returned, otherwise NULL is returned.  */
 
-static gimple
+static gphi *
 get_base_for (struct loop *loop, tree x)
 {
-  gimple phi;
+  gphi *phi;
   tree init, next;
 
   if (is_gimple_min_invariant (x))
@@ -2297,7 +2310,8 @@ loop_niter_by_eval (struct loop *loop, edge exit)
 {
   tree acnd;
   tree op[2], val[2], next[2], aval[2];
-  gimple phi, cond;
+  gphi *phi;
+  gimple cond;
   unsigned i, j;
   enum tree_code cmp;
 
@@ -3280,6 +3294,7 @@ maybe_lower_iteration_bound (struct loop *loop)
   struct nb_iter_bound *elt;
   bool found_exit = false;
   vec<basic_block> queue = vNULL;
+  vec<gimple> problem_stmts = vNULL;
   bitmap visited;
 
   /* Collect all statements with interesting (i.e. lower than
@@ -3325,6 +3340,7 @@ maybe_lower_iteration_bound (struct loop *loop)
 	  if (not_executed_last_iteration->contains (stmt))
 	    {
 	      stmt_found = true;
+	      problem_stmts.safe_push (stmt);
 	      break;
 	    }
 	  if (gimple_has_side_effects (stmt))
@@ -3368,9 +3384,53 @@ maybe_lower_iteration_bound (struct loop *loop)
 		 "undefined statement must be executed at the last iteration.\n");
       record_niter_bound (loop, loop->nb_iterations_upper_bound - 1,
 			  false, true);
+
+      if (warn_aggressive_loop_optimizations)
+	{
+	  bool exit_warned = false;
+	  for (elt = loop->bounds; elt; elt = elt->next)
+	    {
+	      if (elt->is_exit
+		  && wi::gtu_p (elt->bound, loop->nb_iterations_upper_bound))
+		{
+		  basic_block bb = gimple_bb (elt->stmt);
+		  edge exit_edge = EDGE_SUCC (bb, 0);
+		  struct tree_niter_desc niter;
+
+		  if (!loop_exit_edge_p (loop, exit_edge))
+		    exit_edge = EDGE_SUCC (bb, 1);
+
+		  if(number_of_iterations_exit (loop, exit_edge,
+						&niter, false, false)
+		     && integer_onep (niter.assumptions)
+		     && integer_zerop (niter.may_be_zero)
+		     && niter.niter
+		     && TREE_CODE (niter.niter) == INTEGER_CST
+		     && wi::ltu_p (loop->nb_iterations_upper_bound,
+				   wi::to_widest (niter.niter)))
+		   {
+		     if (warning_at (gimple_location (elt->stmt),
+				     OPT_Waggressive_loop_optimizations,
+				     "loop exit may only be reached after undefined behavior"))
+		       exit_warned = true;
+		   }
+		}
+	    }
+
+	  if (exit_warned && !problem_stmts.is_empty ())
+	    {
+	      gimple stmt;
+	      int index;
+	      FOR_EACH_VEC_ELT (problem_stmts, index, stmt)
+		inform (gimple_location (stmt),
+			"possible undefined statement is here");
+	    }
+      }
     }
+
   BITMAP_FREE (visited);
   queue.release ();
+  problem_stmts.release ();
   delete not_executed_last_iteration;
 }
 

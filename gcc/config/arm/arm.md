@@ -125,9 +125,10 @@
 ; This can be "a" for ARM, "t" for either of the Thumbs, "32" for
 ; TARGET_32BIT, "t1" or "t2" to specify a specific Thumb mode.  "v6"
 ; for ARM or Thumb-2 with arm_arch6, and nov6 for ARM without
-; arm_arch6.  This attribute is used to compute attribute "enabled",
-; use type "any" to enable an alternative in all cases.
-(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,neon_for_64bits,avoid_neon_for_64bits,iwmmxt,iwmmxt2,armv6_or_vfpv3"
+; arm_arch6.  "v6t2" for Thumb-2 with arm_arch6.  This attribute is
+; used to compute attribute "enabled", use type "any" to enable an
+; alternative in all cases.
+(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,v6t2,neon_for_64bits,avoid_neon_for_64bits,iwmmxt,iwmmxt2,armv6_or_vfpv3"
   (const_string "any"))
 
 (define_attr "arch_enabled" "no,yes"
@@ -160,6 +161,10 @@
 
 	 (and (eq_attr "arch" "nov6")
 	      (match_test "TARGET_32BIT && !arm_arch6"))
+	 (const_string "yes")
+
+	 (and (eq_attr "arch" "v6t2")
+	      (match_test "TARGET_32BIT && arm_arch6 && arm_arch_thumb2"))
 	 (const_string "yes")
 
 	 (and (eq_attr "arch" "avoid_neon_for_64bits")
@@ -377,7 +382,11 @@
 
 (define_attr "generic_sched" "yes,no"
   (const (if_then_else
-          (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa5,cortexa7,cortexa8,cortexa9,cortexa12,cortexa15,cortexa53,cortexm4,marvell_pj4")
+          (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,\
+                                arm926ejs,arm1020e,arm1026ejs,arm1136js,\
+                                arm1136jfs,cortexa5,cortexa7,cortexa8,\
+                                cortexa9,cortexa12,cortexa15,cortexa17,\
+                                cortexa53,cortexm4,cortexm7,marvell_pj4")
 	       (eq_attr "tune_cortexr4" "yes"))
           (const_string "no")
           (const_string "yes"))))
@@ -385,7 +394,9 @@
 (define_attr "generic_vfp" "yes,no"
   (const (if_then_else
 	  (and (eq_attr "fpu" "vfp")
-	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa5,cortexa7,cortexa8,cortexa9,cortexa53,cortexm4,marvell_pj4")
+	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa5,cortexa7,\
+                                cortexa8,cortexa9,cortexa53,cortexm4,\
+                                cortexm7,marvell_pj4")
 	       (eq_attr "tune_cortexr4" "no"))
 	  (const_string "yes")
 	  (const_string "no"))))
@@ -406,9 +417,11 @@
 (include "cortex-a8.md")
 (include "cortex-a9.md")
 (include "cortex-a15.md")
+(include "cortex-a17.md")
 (include "cortex-a53.md")
 (include "cortex-r4.md")
 (include "cortex-r4f.md")
+(include "cortex-m7.md")
 (include "cortex-m4.md")
 (include "cortex-m4-fpu.md")
 (include "vfp11.md")
@@ -3538,7 +3551,7 @@
               (set (match_dup 0)
                    (match_dup 6)))]
   {
-  enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
+  machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
                                            operands[2], operands[3]);
   enum rtx_code rc = minmax_code (operands[4]);
   operands[4] = gen_rtx_fmt_ee (rc, VOIDmode,
@@ -4223,12 +4236,8 @@
        swap the order in which the loads are emitted.  */
     if (reg_overlap_mentioned_p (operands[0], operands[1]))
       {
-        rtx tmp = operands[1];
-        operands[1] = operands[3];
-        operands[3] = tmp;
-        tmp = operands[0];
-        operands[0] = operands[2];
-        operands[2] = tmp;
+        std::swap (operands[1], operands[3]);
+        std::swap (operands[0], operands[2]);
       }
   }
   [(set_attr "arch" "t2,any")
@@ -4876,7 +4885,7 @@
   [(set (match_dup 0) (match_dup 1))]
 {
   rtx lo_part = gen_lowpart (SImode, operands[0]);
-  enum machine_mode src_mode = GET_MODE (operands[1]);
+  machine_mode src_mode = GET_MODE (operands[1]);
 
   if (REG_P (operands[0])
       && !reg_overlap_mentioned_p (operands[0], operands[1]))
@@ -4902,7 +4911,7 @@
   [(set (match_dup 0) (ashiftrt:SI (match_dup 1) (const_int 31)))]
 {
   rtx lo_part = gen_lowpart (SImode, operands[0]);
-  enum machine_mode src_mode = GET_MODE (operands[1]);
+  machine_mode src_mode = GET_MODE (operands[1]);
 
   if (REG_P (operands[0])
       && !reg_overlap_mentioned_p (operands[0], operands[1]))
@@ -6285,8 +6294,8 @@
 
 ;; Pattern to recognize insn generated default case above
 (define_insn "*movhi_insn_arch4"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,r")
-	(match_operand:HI 1 "general_operand"      "rIk,K,r,mi"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m,r")
+	(match_operand:HI 1 "general_operand"      "rIk,K,n,r,mi"))]
   "TARGET_ARM
    && arm_arch4
    && (register_operand (operands[0], HImode)
@@ -6294,16 +6303,19 @@
   "@
    mov%?\\t%0, %1\\t%@ movhi
    mvn%?\\t%0, #%B1\\t%@ movhi
+   movw%?\\t%0, %L1\\t%@ movhi
    str%(h%)\\t%1, %0\\t%@ movhi
    ldr%(h%)\\t%0, %1\\t%@ movhi"
   [(set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,*,*,256")
-   (set_attr "neg_pool_range" "*,*,*,244")
+   (set_attr "pool_range" "*,*,*,*,256")
+   (set_attr "neg_pool_range" "*,*,*,*,244")
+   (set_attr "arch" "*,*,v6t2,*,*")
    (set_attr_alternative "type"
                          [(if_then_else (match_operand 1 "const_int_operand" "")
                                         (const_string "mov_imm" )
                                         (const_string "mov_reg"))
                           (const_string "mvn_imm")
+                          (const_string "mov_imm")
                           (const_string "store1")
                           (const_string "load1")])]
 )
@@ -7453,7 +7465,7 @@
   [(const_int 0)]
   {
     enum rtx_code rev_code;
-    enum machine_mode mode;
+    machine_mode mode;
     rtx rev_cond;
 
     emit_insn (gen_rtx_COND_EXEC (VOIDmode,
@@ -8261,7 +8273,7 @@
 	  [(match_operand:SI 3 "s_register_operand" "r,r,r")
 	   (match_operand:SI 4 "shift_amount_operand" "M,M,r")])
 	 (match_operand:SI 1 "s_register_operand" "rk,<t2_binop0>,rk")))]
-  "TARGET_32BIT && GET_CODE (operands[3]) != MULT"
+  "TARGET_32BIT && GET_CODE (operands[2]) != MULT"
   "<arith_shift_insn>%?\\t%0, %1, %3%S2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
@@ -8383,7 +8395,7 @@
    (cond_exec (match_dup 4) (set (match_dup 0)
                                  (and:SI (match_dup 3) (const_int 1))))]
   {
-    enum machine_mode mode = GET_MODE (operands[2]);
+    machine_mode mode = GET_MODE (operands[2]);
     enum rtx_code rc = GET_CODE (operands[1]);
 
     /* Note that operands[4] is the same as operands[1],
@@ -8417,7 +8429,7 @@
    (cond_exec (match_dup 4) (set (match_dup 0)
                                  (ior:SI (match_dup 3) (const_int 1))))]
   {
-    enum machine_mode mode = GET_MODE (operands[2]);
+    machine_mode mode = GET_MODE (operands[2]);
     enum rtx_code rc = GET_CODE (operands[1]);
 
     /* Note that operands[4] is the same as operands[1],
@@ -8521,7 +8533,7 @@
    (cond_exec (match_dup 5) (set (match_dup 0) (const_int 1)))]
 {
   rtx tmp1;
-  enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
+  machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
 					   operands[2], operands[3]);
   enum rtx_code rc = GET_CODE (operands[1]);
 
@@ -9325,19 +9337,15 @@
 	      (set (match_dup 0) (match_dup 2)))]
   "
   {
-    enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[5]),
+    machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[5]),
 					     operands[3], operands[4]);
     enum rtx_code rc = GET_CODE (operands[5]);
     operands[6] = gen_rtx_REG (mode, CC_REGNUM);
     gcc_assert (!(mode == CCFPmode || mode == CCFPEmode));
     if (REGNO (operands[2]) != REGNO (operands[0]))
       rc = reverse_condition (rc);
-    else 
-      {
-	rtx tmp = operands[1];
-	operands[1] = operands[2];
-	operands[2] = tmp;
-      }
+    else
+      std::swap (operands[1], operands[2]);
 
     operands[6] = gen_rtx_fmt_ee (rc, VOIDmode, operands[6], const0_rtx);
   }
@@ -10221,7 +10229,7 @@
 	      (set (match_dup 0) (match_dup 4)))]
   "
   {
-    enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
+    machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
 					     operands[2], operands[3]);
     enum rtx_code rc = GET_CODE (operands[1]);
 
@@ -10249,7 +10257,7 @@
 	      (set (match_dup 0) (match_dup 4)))]
   "
   {
-    enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
+    machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
 					     operands[2], operands[3]);
 
     operands[5] = gen_rtx_REG (mode, CC_REGNUM);
@@ -10272,7 +10280,7 @@
 	      (set (match_dup 0) (match_dup 5)))]
   "
   {
-    enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
+    machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
 					     operands[2], operands[3]);
     enum rtx_code rc = GET_CODE (operands[1]);
 
@@ -10304,7 +10312,7 @@
 	      (set (match_dup 0) (not:SI (match_dup 5))))]
   "
   {
-    enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
+    machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
 					     operands[2], operands[3]);
     enum rtx_code rc = GET_CODE (operands[1]);
 
@@ -10587,6 +10595,42 @@
   [(set_attr "type" "no_insn")]
 )
 
+(define_insn "consttable_1"
+  [(unspec_volatile [(match_operand 0 "" "")] VUNSPEC_POOL_1)]
+  "TARGET_EITHER"
+  "*
+  making_const_table = TRUE;
+  assemble_integer (operands[0], 1, BITS_PER_WORD, 1);
+  assemble_zeros (3);
+  return \"\";
+  "
+  [(set_attr "length" "4")
+   (set_attr "type" "no_insn")]
+)
+
+(define_insn "consttable_2"
+  [(unspec_volatile [(match_operand 0 "" "")] VUNSPEC_POOL_2)]
+  "TARGET_EITHER"
+  "*
+  {
+    rtx x = operands[0];
+    making_const_table = TRUE;
+    switch (GET_MODE_CLASS (GET_MODE (x)))
+      {
+      case MODE_FLOAT:
+	arm_emit_fp16_const (x);
+	break;
+      default:
+	assemble_integer (operands[0], 2, BITS_PER_WORD, 1);
+	assemble_zeros (2);
+	break;
+      }
+    return \"\";
+  }"
+  [(set_attr "length" "4")
+   (set_attr "type" "no_insn")]
+)
+
 (define_insn "consttable_4"
   [(unspec_volatile [(match_operand 0 "" "")] VUNSPEC_POOL_4)]
   "TARGET_EITHER"
@@ -10597,15 +10641,12 @@
     switch (GET_MODE_CLASS (GET_MODE (x)))
       {
       case MODE_FLOAT:
- 	if (GET_MODE (x) == HFmode)
- 	  arm_emit_fp16_const (x);
- 	else
- 	  {
- 	    REAL_VALUE_TYPE r;
- 	    REAL_VALUE_FROM_CONST_DOUBLE (r, x);
- 	    assemble_real (r, GET_MODE (x), BITS_PER_WORD);
- 	  }
- 	break;
+	{
+	  REAL_VALUE_TYPE r;
+	  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+	  assemble_real (r, GET_MODE (x), BITS_PER_WORD);
+	  break;
+	}
       default:
 	/* XXX: Sometimes gcc does something really dumb and ends up with
 	   a HIGH in a constant pool entry, usually because it's trying to
@@ -11149,6 +11190,47 @@
   }
   "
   [(set_attr "predicable" "yes")]
+)
+
+(define_expand "copysignsf3"
+  [(match_operand:SF 0 "register_operand")
+   (match_operand:SF 1 "register_operand")
+   (match_operand:SF 2 "register_operand")]
+  "TARGET_SOFT_FLOAT && arm_arch_thumb2"
+  "{
+     emit_move_insn (operands[0], operands[2]);
+     emit_insn (gen_insv_t2 (simplify_gen_subreg (SImode, operands[0], SFmode, 0),
+		GEN_INT (31), GEN_INT (0),
+		simplify_gen_subreg (SImode, operands[1], SFmode, 0)));
+     DONE;
+  }"
+)
+
+(define_expand "copysigndf3"
+  [(match_operand:DF 0 "register_operand")
+   (match_operand:DF 1 "register_operand")
+   (match_operand:DF 2 "register_operand")]
+  "TARGET_SOFT_FLOAT && arm_arch_thumb2"
+  "{
+     rtx op0_low = gen_lowpart (SImode, operands[0]);
+     rtx op0_high = gen_highpart (SImode, operands[0]);
+     rtx op1_low = gen_lowpart (SImode, operands[1]);
+     rtx op1_high = gen_highpart (SImode, operands[1]);
+     rtx op2_high = gen_highpart (SImode, operands[2]);
+
+     rtx scratch1 = gen_reg_rtx (SImode);
+     rtx scratch2 = gen_reg_rtx (SImode);
+     emit_move_insn (scratch1, op2_high);
+     emit_move_insn (scratch2, op1_high);
+
+     emit_insn(gen_rtx_SET(SImode, scratch1,
+			   gen_rtx_LSHIFTRT (SImode, op2_high, GEN_INT(31))));
+     emit_insn(gen_insv_t2(scratch2, GEN_INT(1), GEN_INT(31), scratch1));
+     emit_move_insn (op0_low, op1_low);
+     emit_move_insn (op0_high, scratch2);
+
+     DONE;
+  }"
 )
 
 ;; Vector bits common to IWMMXT and Neon

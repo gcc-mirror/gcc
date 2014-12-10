@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-do compile }
 
 // 2008-09-16  Chris Fairles  <chris.fairles@gmail.com>

@@ -1,3 +1,6 @@
+/* { dg-require-effective-target indirect_jumps } */
+/* { dg-require-effective-target label_values } */
+
 void _IO_vfprintf_internal ( char *f )
 {
   static const void *const step0_jumps[] = { &&do_form_unknown, &&do_flag_plus, &&do_form_float };

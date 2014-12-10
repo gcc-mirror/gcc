@@ -23,6 +23,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -32,6 +42,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
@@ -626,6 +639,19 @@ gsi_for_stmt (gimple stmt)
   return i;
 }
 
+/* Finds iterator for PHI.  */
+
+gphi_iterator
+gsi_for_phi (gphi *phi)
+{
+  gphi_iterator i;
+  basic_block bb = gimple_bb (phi);
+
+  i = gsi_start_phis (bb);
+  i.ptr = phi;
+
+  return i;
+}
 
 /* Move the statement at FROM so it comes right after the statement at TO.  */
 
@@ -886,9 +912,17 @@ gsi_commit_one_edge_insert (edge e, basic_block *new_bb)
 
 /* Returns iterator at the start of the list of phi nodes of BB.  */
 
-gimple_stmt_iterator
+gphi_iterator
 gsi_start_phis (basic_block bb)
 {
   gimple_seq *pseq = phi_nodes_ptr (bb);
-  return gsi_start_1 (pseq);
+
+  /* Adapted from gsi_start_1. */
+  gphi_iterator i;
+
+  i.ptr = gimple_seq_first (*pseq);
+  i.seq = pseq;
+  i.bb = i.ptr ? gimple_bb (i.ptr) : NULL;
+
+  return i;
 }

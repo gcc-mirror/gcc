@@ -118,6 +118,9 @@ struct dump_file_info
   int pstate;                   /* state of pass-specific stream */
   int alt_state;                /* state of the -fopt-info stream */
   int num;                      /* dump file number */
+  bool owns_strings;            /* fields "suffix", "swtch", "glob" can be
+				   const strings, or can be dynamically
+				   allocated, needing free.  */
 };
 
 /* In dumpfile.c */
@@ -164,19 +167,31 @@ class dump_manager
 public:
 
   dump_manager ();
+  ~dump_manager ();
 
+  /* Register a dumpfile.
+
+     TAKE_OWNERSHIP determines whether callee takes ownership of strings
+     SUFFIX, SWTCH, and GLOB. */
   unsigned int
   dump_register (const char *suffix, const char *swtch, const char *glob,
-		 int flags, int optgroup_flags);
+		 int flags, int optgroup_flags,
+		 bool take_ownership);
 
   /* Return the dump_file_info for the given phase.  */
   struct dump_file_info *
   get_dump_file_info (int phase) const;
 
+  struct dump_file_info *
+  get_dump_file_info_by_switch (const char *swtch) const;
+
   /* Return the name of the dump file for the given phase.
      If the dump is not enabled, returns NULL.  */
   char *
   get_dump_file_name (int phase) const;
+
+  char *
+  get_dump_file_name (struct dump_file_info *dfi) const;
 
   int
   dump_switch_p (const char *arg);

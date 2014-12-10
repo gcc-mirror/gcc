@@ -29,6 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Debug; use Debug;
 with Opt;   use Opt;
 with Table;
 with Types; use Types;
@@ -155,7 +156,6 @@ package body Snames is
          when Name_COBOL                 => return Convention_COBOL;
          when Name_CPP                   => return Convention_CPP;
          when Name_Fortran               => return Convention_Fortran;
-         when Name_Ghost                 => return Convention_Ghost;
          when Name_Intrinsic             => return Convention_Intrinsic;
          when Name_Java                  => return Convention_Java;
          when Name_Stdcall               => return Convention_Stdcall;
@@ -193,7 +193,6 @@ package body Snames is
          when Convention_CPP                   => return Name_CPP;
          when Convention_Entry                 => return Name_Entry;
          when Convention_Fortran               => return Name_Fortran;
-         when Convention_Ghost                 => return Name_Ghost;
          when Convention_Intrinsic             => return Name_Intrinsic;
          when Convention_Java                  => return Name_Java;
          when Convention_Protected             => return Name_Protected;
@@ -397,7 +396,11 @@ package body Snames is
         and then (Ada_Version >= Ada_95
                    or else N not in Ada_95_Reserved_Words)
         and then (Ada_Version >= Ada_2005
-                   or else N not in Ada_2005_Reserved_Words)
+                   or else N not in Ada_2005_Reserved_Words
+                   or else (Debug_Flag_Dot_DD and then N = Name_Overriding))
+                   --  Accept 'overriding' keywords if -gnatd.D is used,
+                   --  for compatibility with Ada 95 compilers implementing
+                   --  only this Ada 2005 extension.
         and then (Ada_Version >= Ada_2012
                    or else N not in Ada_2012_Reserved_Words);
    end Is_Keyword_Name;

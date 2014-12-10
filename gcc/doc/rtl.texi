@@ -1040,10 +1040,10 @@ In an RTL dump, this flag is represented as @samp{/v}.
 @section Machine Modes
 @cindex machine modes
 
-@findex enum machine_mode
+@findex machine_mode
 A machine mode describes a size of data object and the representation used
 for it.  In the C code, machine modes are represented by an enumeration
-type, @code{enum machine_mode}, defined in @file{machmode.def}.  Each RTL
+type, @code{machine_mode}, defined in @file{machmode.def}.  Each RTL
 expression has room for a machine mode and so do certain kinds of tree
 expressions (declarations and types, to be precise).
 
@@ -1296,6 +1296,12 @@ These modes stand for a complex number represented as a pair of integer
 values.  The integer values are in @code{QImode}, @code{HImode},
 @code{SImode}, @code{DImode}, @code{TImode}, and @code{OImode},
 respectively.
+
+@findex BND32mode
+@findex BND64mode
+@item BND32mode BND64mode
+These modes stand for bounds for pointer of 32 and 64 bit size respectively.
+Mode size is double pointer mode size.
 @end table
 
 The machine description defines @code{Pmode} as a C macro which expands
@@ -1382,6 +1388,12 @@ Modes representing condition code values.  These are @code{CCmode} plus
 any @code{CC_MODE} modes listed in the @file{@var{machine}-modes.def}.
 @xref{Jump Patterns},
 also see @ref{Condition Code}.
+
+@findex MODE_POINTER_BOUNDS
+@item MODE_POINTER_BOUNDS
+Pointer bounds modes.  Used to represent values of pointer bounds type.
+Operations in these modes may be executed as NOPs depending on hardware
+features and environment setup.
 
 @findex MODE_RANDOM
 @item MODE_RANDOM

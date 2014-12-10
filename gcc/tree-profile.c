@@ -29,7 +29,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "flags.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "diagnostic-core.h"
 #include "coverage.h"
@@ -45,6 +54,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "gimple-ssa.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "stringpool.h"
@@ -294,7 +306,7 @@ void
 gimple_gen_edge_profiler (int edgeno, edge e)
 {
   tree ref, one, gcov_type_tmp_var;
-  gimple stmt1, stmt2, stmt3;
+  gassign *stmt1, *stmt2, *stmt3;
 
   ref = tree_coverage_counter_ref (GCOV_COUNTER_ARCS, edgeno);
   one = build_int_cst (gcov_type_node, 1);
@@ -303,8 +315,8 @@ gimple_gen_edge_profiler (int edgeno, edge e)
   stmt1 = gimple_build_assign (gcov_type_tmp_var, ref);
   gcov_type_tmp_var = make_temp_ssa_name (gcov_type_node,
 					  NULL, "PROF_edge_counter");
-  stmt2 = gimple_build_assign_with_ops (PLUS_EXPR, gcov_type_tmp_var,
-					gimple_assign_lhs (stmt1), one);
+  stmt2 = gimple_build_assign (gcov_type_tmp_var, PLUS_EXPR,
+			       gimple_assign_lhs (stmt1), one);
   stmt3 = gimple_build_assign (unshare_expr (ref), gimple_assign_lhs (stmt2));
   gsi_insert_on_edge (e, stmt1);
   gsi_insert_on_edge (e, stmt2);
@@ -335,7 +347,7 @@ gimple_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base
   gimple stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref = tree_coverage_counter_ref (tag, base), ref_ptr;
-  gimple call;
+  gcall *call;
   tree val;
   tree start = build_int_cst_type (integer_type_node,
 				   value->hdata.intvl.int_start);
@@ -361,7 +373,7 @@ gimple_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
   gimple stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref_ptr = tree_coverage_counter_addr (tag, base);
-  gimple call;
+  gcall *call;
   tree val;
 
   ref_ptr = force_gimple_operand_gsi (&gsi, ref_ptr,
@@ -381,7 +393,7 @@ gimple_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned bas
   gimple stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref_ptr = tree_coverage_counter_addr (tag, base);
-  gimple call;
+  gcall *call;
   tree val;
 
   ref_ptr = force_gimple_operand_gsi (&gsi, ref_ptr,
@@ -402,7 +414,7 @@ void
 gimple_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
 {
   tree tmp1;
-  gimple stmt1, stmt2, stmt3;
+  gassign *stmt1, *stmt2, *stmt3;
   gimple stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref_ptr = tree_coverage_counter_addr (tag, base);
@@ -444,7 +456,8 @@ gimple_gen_ic_func_profiler (void)
 {
   struct cgraph_node * c_node = cgraph_node::get (current_function_decl);
   gimple_stmt_iterator gsi;
-  gimple stmt1, stmt2;
+  gcall *stmt1;
+  gassign *stmt2;
   tree tree_uid, cur_func, void0;
 
   if (c_node->only_called_directly_p ())
@@ -504,7 +517,7 @@ gimple_gen_time_profiler (unsigned tag, unsigned base,
                           gimple_stmt_iterator &gsi)
 {
   tree ref_ptr = tree_coverage_counter_addr (tag, base);
-  gimple call;
+  gcall *call;
 
   ref_ptr = force_gimple_operand_gsi (&gsi, ref_ptr,
 				      true, NULL_TREE, true, GSI_SAME_STMT);
@@ -539,7 +552,7 @@ gimple_gen_average_profiler (histogram_value value, unsigned tag, unsigned base)
   gimple stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref_ptr = tree_coverage_counter_addr (tag, base);
-  gimple call;
+  gcall *call;
   tree val;
 
   ref_ptr = force_gimple_operand_gsi (&gsi, ref_ptr,
@@ -560,7 +573,7 @@ gimple_gen_ior_profiler (histogram_value value, unsigned tag, unsigned base)
   gimple stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref_ptr = tree_coverage_counter_addr (tag, base);
-  gimple call;
+  gcall *call;
   tree val;
 
   ref_ptr = force_gimple_operand_gsi (&gsi, ref_ptr,
@@ -713,8 +726,10 @@ public:
 bool
 pass_ipa_tree_profile::gate (function *)
 {
-  /* When profile instrumentation, use or test coverage shall be performed.  */
-  return (!in_lto_p
+  /* When profile instrumentation, use or test coverage shall be performed.
+     But for AutoFDO, this there is no instrumentation, thus this pass is
+     diabled.  */
+  return (!in_lto_p && !flag_auto_profile
 	  && (flag_branch_probabilities || flag_test_coverage
 	      || profile_arc_flag));
 }

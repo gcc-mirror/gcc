@@ -3,12 +3,7 @@ LIB1ASMFUNCS = \
 	_mulqi3 \
 	_mulhi3 \
 	_mulqihi3 _umulqihi3 \
-	_mulpsi3 _mulsqipsi3 \
-	_mulhisi3 \
-	_umulhisi3 \
-	_usmulhisi3 \
-	_muluhisi3 \
-	_mulshisi3 \
+	_mulpsi3 \
 	_mulsi3 \
 	_udivmodqi4 \
 	_divmodqi4 \
@@ -17,19 +12,10 @@ LIB1ASMFUNCS = \
 	_divmodpsi4 _udivmodpsi4 \
 	_udivmodsi4 \
 	_divmodsi4 \
-	_divdi3 _udivdi3 \
-	_muldi3 _muldi3_6 \
-	_mulsidi3 _umulsidi3 \
-	_udivmod64 \
-	_negsi2 _negdi2 \
-	_prologue \
-	_epilogue \
+	_negsi2 \
 	_exit \
 	_cleanup \
 	_tablejump2 \
-	_load_3 _load_4 \
-	_xload_1 _xload_2 _xload_3 _xload_4 \
-	_movmemx \
 	_copy_data \
 	_clear_bss \
 	_ctors \
@@ -39,24 +25,54 @@ LIB1ASMFUNCS = \
 	_loop_ffsqi2 \
 	_ctzsi2 \
 	_ctzhi2 \
-	_clzdi2 \
 	_clzsi2 \
 	_clzhi2 \
-	_paritydi2 \
 	_paritysi2 \
 	_parityhi2 \
 	_popcounthi2 \
 	_popcountsi2 \
-	_popcountdi2 \
 	_popcountqi2 \
 	_bswapsi2 \
+	_fmul _fmuls _fmulsu
+
+# The below functions either use registers that are not present
+# in tiny core, or use a different register conventions (don't save
+# callee saved regs, for example)
+# _mulhisi3 and variations - clobber R18, R19
+# All *di funcs - use regs < R16 or expect args in regs < R20
+# _prologue and _epilogue save registers < R16
+# _load ad _xload variations - expect lpm and elpm support
+# _movmemx - expects elpm/lpm
+
+ifneq ($(MULTIFLAGS),-mmcu=avrtiny)
+LIB1ASMFUNCS += \
+    _mulsqipsi3 \
+	_mulhisi3 \
+	_umulhisi3 \
+	_usmulhisi3 \
+	_muluhisi3 \
+	_mulshisi3 \
+    _muldi3 _muldi3_6 \
+    _mulsidi3 _umulsidi3 \
+	_divdi3 _udivdi3 \
+	_udivmod64 \
+	_negdi2 \
+	_prologue \
+	_epilogue \
+	_load_3 _load_4 \
+	_xload_1 _xload_2 _xload_3 _xload_4 \
+	_movmemx \
+	_clzdi2 \
+	_paritydi2 \
+	_popcountdi2 \
 	_bswapdi2 \
 	_ashldi3 _ashrdi3 _lshrdi3 _rotldi3 \
 	_adddi3 _adddi3_s8 _subdi3 \
-	_cmpdi2 _cmpdi2_s8 \
-	_fmul _fmuls _fmulsu
+	_cmpdi2 _cmpdi2_s8
+endif
 
 # Fixed point routines in avr/lib1funcs-fixed.S
+ifneq ($(MULTIFLAGS),-mmcu=avrtiny)
 LIB1ASMFUNCS += \
 	_fractqqsf _fractuqqsf \
 	_fracthqsf _fractuhqsf _fracthasf _fractuhasf \
@@ -87,8 +103,8 @@ LIB1ASMFUNCS += \
 	_round_x8 \
 	_rounddq3 _roundudq3 \
 	_roundda3 _rounduda3 \
-	_roundta3 _rounduta3 \
-
+	_roundta3 _rounduta3
+endif
 
 LIB2FUNCS_EXCLUDE = \
 	_moddi3 _umoddi3 \

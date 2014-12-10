@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_eabi_ok } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=8540" } } */
 /* { dg-options "-mcpu=8540 -msoft-float -meabi -msdata=eabi -G 8 -fno-common" } */
 
 extern void f (void);

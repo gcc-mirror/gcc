@@ -34,7 +34,7 @@ void
 add_rtx (const_rtx x, hash &hstate)
 {
   enum rtx_code code;
-  enum machine_mode mode;
+  machine_mode mode;
   int i, j;
   const char *fmt;
 

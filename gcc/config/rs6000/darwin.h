@@ -206,7 +206,11 @@ extern int darwin_emit_branch_islands;
     "vrsave", "vscr",							\
     "spe_acc", "spefscr",                                               \
     "sfp",								\
-    "tfhar", "tfiar", "texasr"						\
+    "tfhar", "tfiar", "texasr",						\
+    "rh0",  "rh1",  "rh2",  "rh3",  "rh4",  "rh5",  "rh6",  "rh7",	\
+    "rh8",  "rh9",  "rh10", "rh11", "rh12", "rh13", "rh14", "rh15",	\
+    "rh16", "rh17", "rh18", "rh19", "rh20", "rh21", "rh22", "rh23",	\
+    "rh24", "rh25", "rh26", "rh27", "rh28", "rh29", "rh30", "rh31"	\
 }
 
 /* This outputs NAME to FILE.  */
@@ -424,3 +428,7 @@ do {									\
 /* So far, there is no rs6000_fold_builtin, if one is introduced, then
    this will need to be modified similar to the x86 case.  */
 #define TARGET_FOLD_BUILTIN SUBTARGET_FOLD_BUILTIN
+
+/* Use standard DWARF numbering for DWARF debugging information.  */
+#define RS6000_USE_DWARF_NUMBERING
+

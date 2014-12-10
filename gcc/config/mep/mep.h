@@ -512,7 +512,6 @@ typedef struct
 /* Profiling is supported.  */
      
 #define FUNCTION_PROFILER(FILE, LABELNO) mep_function_profiler (FILE);
-#undef TARGET_HAS_F_SETLKW
 #define NO_PROFILE_COUNTERS 1
 
 /* Trampolines are built at run-time.  The cache is invalidated at

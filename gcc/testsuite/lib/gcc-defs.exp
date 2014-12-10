@@ -54,12 +54,17 @@ proc ${tool}_check_compile {testcase option objname gcc_output} {
     if { [info proc ${tool}-dg-prune] != "" } {
 	global target_triplet
 	set gcc_output [${tool}-dg-prune $target_triplet $gcc_output]
-    }
-
-    set unsupported_message [${tool}_check_unsupported_p $gcc_output]
-    if { $unsupported_message != "" } {
-	unsupported "$testcase: $unsupported_message"
-	return 0
+	if [string match "*::unsupported::*" $gcc_output] then {
+	    regsub -- "::unsupported::" $gcc_output "" gcc_output
+	    unsupported "$testcase: $gcc_output"
+	    return 0
+	}
+    } else {
+	set unsupported_message [${tool}_check_unsupported_p $gcc_output]
+	if { $unsupported_message != "" } {
+	    unsupported "$testcase: $unsupported_message"
+	    return 0
+	}
     }
 
     # remove any leftover LF/CR to make sure any output is legit

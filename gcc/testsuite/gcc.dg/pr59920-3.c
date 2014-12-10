@@ -1,6 +1,7 @@
 /* PR tree-optimization/59920 */
 /* { dg-do compile } */
 /* { dg-options "-O0" } */
+/* { dg-require-effective-target nonlocal_goto } */
 
 void *bar (void **);
 void *baz (int, void **);

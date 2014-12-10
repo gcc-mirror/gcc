@@ -30,7 +30,7 @@ extern void threadedge_initialize_values (void);
 extern void threadedge_finalize_values (void);
 extern bool potentially_threadable_block (basic_block);
 extern void propagate_threaded_block_debug_into (basic_block, basic_block);
-extern void thread_across_edge (gimple, edge, bool,
+extern void thread_across_edge (gcond *, edge, bool,
 				vec<tree> *, tree (*) (gimple, gimple));
 
 #endif /* GCC_TREE_SSA_THREADEDGE_H */

@@ -856,6 +856,15 @@ package System.OS_Lib is
    --  This function will always return Invalid_Pid under VxWorks, since there
    --  is no notion of executables under this OS.
 
+   function Non_Blocking_Spawn
+     (Program_Name : String;
+      Args         : Argument_List;
+      Stdout_File  : String;
+      Stderr_File  : String) return Process_Id;
+   --  Similar to the procedure above, but saves the standard output of the
+   --  command to a file with the name Stdout_File and the standard output
+   --  of the command to a file with the name Stderr_File.
+
    procedure Wait_Process (Pid : out Process_Id; Success : out Boolean);
    --  Wait for the completion of any of the processes created by previous
    --  calls to Non_Blocking_Spawn. The caller will be suspended until one of

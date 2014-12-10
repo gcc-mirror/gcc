@@ -32,15 +32,25 @@
 --  This function performs exponentiation of a modular type with non-binary
 --  modulus values. Arithmetic is done in Long_Long_Unsigned, with explicit
 --  accounting for the modulus value which is passed as the second argument.
+--  Note that 1 is a binary modulus (2**0), so the compiler should not (and
+--  will not) call this function with Modulus equal to 1.
 
 with System.Unsigned_Types;
 
 package System.Exp_Mod is
    pragma Pure;
+   use type System.Unsigned_Types.Unsigned;
+
+   subtype Power_Of_2 is System.Unsigned_Types.Unsigned with
+     Dynamic_Predicate =>
+        Power_Of_2 /= 0 and then (Power_Of_2 and (Power_Of_2 - 1)) = 0;
 
    function Exp_Modular
      (Left    : System.Unsigned_Types.Unsigned;
       Modulus : System.Unsigned_Types.Unsigned;
-      Right   : Natural) return System.Unsigned_Types.Unsigned;
+      Right   : Natural) return System.Unsigned_Types.Unsigned
+   with
+       Pre  => Modulus /= 0 and then Modulus not in Power_Of_2,
+       Post => Exp_Modular'Result = Left ** Right mod Modulus;
 
 end System.Exp_Mod;

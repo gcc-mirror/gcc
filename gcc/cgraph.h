@@ -21,14 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CGRAPH_H
 #define GCC_CGRAPH_H
 
-#include "hash-map.h"
-#include "is-a.h"
-#include "plugin-api.h"
-#include "vec.h"
-#include "basic-block.h"
-#include "function.h"
-#include "ipa-ref.h"
-#include "dumpfile.h"
 
 /* Symbol table consists of functions and variables.
    TODO: add labels and CONST_DECLs.  */
@@ -42,7 +34,7 @@ enum symtab_type
 /* Section names are stored as reference counted strings in GGC safe hashtable
    (to make them survive through PCH).  */
 
-struct GTY(()) section_hash_entry_d
+struct GTY((for_user)) section_hash_entry_d
 {
   int ref_count;
   char *name;  /* As long as this datastructure stays in GGC, we can not put
@@ -51,6 +43,14 @@ struct GTY(()) section_hash_entry_d
 };
 
 typedef struct section_hash_entry_d section_hash_entry;
+
+struct section_name_hasher : ggc_hasher<section_hash_entry *>
+{
+  typedef const char *compare_type;
+
+  static hashval_t hash (section_hash_entry *);
+  static bool equal (section_hash_entry *, const char *);
+};
 
 enum availability
 {
@@ -172,6 +172,12 @@ public:
   /* Dump referring in list to FILE.  */
   void dump_referring (FILE *);
 
+  /* Get number of references for this node.  */
+  inline unsigned num_references (void)
+  {
+    return ref_list.references ? ref_list.references->length () : 0;
+  }
+
   /* Iterates I-th reference in the list, REF is also set.  */
   ipa_ref *iterate_reference (unsigned i, ipa_ref *&ref);
 
@@ -248,9 +254,9 @@ public:
      body aliases.  */
   void fixup_same_cpp_alias_visibility (symtab_node *target);
 
-  /* Call calback on symtab node and aliases associated to this node.
+  /* Call callback on symtab node and aliases associated to this node.
      When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
-     skipped. */
+     skipped.  */
   bool call_for_symbol_and_aliases (bool (*callback) (symtab_node *, void *),
 				  void *data,
 				  bool include_overwrite);
@@ -325,6 +331,11 @@ public:
 
   /* Return true if symbol is known to be nonzero.  */
   bool nonzero_address ();
+
+  /* Return 0 if symbol is known to have different address than S2,
+     Return 1 if symbol is known to have same address as S2,
+     return 2 otherwise.   */
+  int equal_address_to (symtab_node *s2);
 
   /* Return symbol table node associated with DECL, if any,
      and NULL otherwise.  */
@@ -444,6 +455,13 @@ public:
   /* Set when init priority is set.  */
   unsigned in_init_priority_hash : 1;
 
+  /* Set when symbol needs to be streamed into LTO bytecode for LTO, or in case
+     of offloading, for separate compilation for a different target.  */
+  unsigned need_lto_streaming : 1;
+
+  /* Set when symbol can be streamed into bytecode for offloading.  */
+  unsigned offloadable : 1;
+
 
   /* Ordering of all symtab entries.  */
   int order;
@@ -537,6 +555,7 @@ struct GTY(()) cgraph_thunk_info {
   tree alias;
   bool this_adjusting;
   bool virtual_offset_p;
+  bool add_pointer_bounds_args;
   /* Set to true when alias node is thunk.  */
   bool thunk_p;
 };
@@ -704,7 +723,7 @@ struct GTY(()) cgraph_simd_clone {
 };
 
 /* Function Multiversioning info.  */
-struct GTY(()) cgraph_function_version_info {
+struct GTY((for_user)) cgraph_function_version_info {
   /* The cgraph_node for which the function version info is stored.  */
   cgraph_node *this_node;
   /* Chains all the semantically identical function versions.  The
@@ -743,6 +762,14 @@ enum cgraph_inline_failed_type_t
 
 struct cgraph_edge;
 
+struct cgraph_edge_hasher : ggc_hasher<cgraph_edge *>
+{
+  typedef gimple compare_type;
+
+  static hashval_t hash (cgraph_edge *);
+  static bool equal (cgraph_edge *, gimple);
+};
+
 /* The cgraph data structure.
    Each function decl has assigned cgraph_node listing callees and callers.  */
 
@@ -763,13 +790,20 @@ public:
      When WHOLE_SPECULATIVE_EDGES is true, all three components of
      speculative edge gets updated.  Otherwise we update only direct
      call.  */
-  void set_call_stmt_including_clones (gimple old_stmt, gimple new_stmt,
+  void set_call_stmt_including_clones (gimple old_stmt, gcall *new_stmt,
 				       bool update_speculative = true);
 
   /* Walk the alias chain to return the function cgraph_node is alias of.
      Walk through thunk, too.
      When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
   cgraph_node *function_symbol (enum availability *avail = NULL);
+
+  /* Walk the alias chain to return the function cgraph_node is alias of.
+     Walk through non virtual thunks, too.  Thus we return either a function
+     or a virtual thunk node.
+     When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
+  cgraph_node *function_or_virtual_thunk_symbol
+				(enum availability *avail = NULL);
 
   /* Create node representing clone of N executed COUNT times.  Decrease
      the execution counts from original node too.
@@ -879,6 +913,10 @@ public:
      thunks that are not lowered.  */
   bool expand_thunk (bool output_asm_thunks, bool force_gimple_thunk);
 
+  /*  Call expand_thunk on all callers that are thunks and analyze those
+      nodes that were expanded.  */
+  void expand_all_artificial_thunks ();
+
   /* Assemble thunks and aliases associated to node.  */
   void assemble_thunks_and_aliases (void);
 
@@ -911,6 +949,11 @@ public:
 
   /* When doing LTO, read cgraph_node's body from disk if it is not already
      present.  */
+  bool get_untransformed_body (void);
+
+  /* Prepare function body.  When doing LTO, read cgraph_node's body from disk 
+     if it is not already present.  When some IPA transformations are scheduled,
+     apply them.  */
   bool get_body (void);
 
   /* Release memory used to represent body of function.
@@ -939,13 +982,13 @@ public:
 
   /* Create edge from a given function to CALLEE in the cgraph.  */
   cgraph_edge *create_edge (cgraph_node *callee,
-			    gimple call_stmt, gcov_type count,
+			    gcall *call_stmt, gcov_type count,
 			    int freq);
 
   /* Create an indirect edge with a yet-undetermined callee where the call
      statement destination is a formal parameter of the caller with index
      PARAM_INDEX. */
-  cgraph_edge *create_indirect_edge (gimple call_stmt, int ecf_flags,
+  cgraph_edge *create_indirect_edge (gcall *call_stmt, int ecf_flags,
 				     gcov_type count, int freq,
 				     bool compute_indirect_info = true);
 
@@ -953,7 +996,7 @@ public:
    same function body.  If clones already have edge for OLD_STMT; only
    update the edge same way as cgraph_set_call_stmt_including_clones does.  */
   void create_edge_including_clones (cgraph_node *callee,
-				     gimple old_stmt, gimple stmt,
+				     gimple old_stmt, gcall *stmt,
 				     gcov_type count,
 				     int freq,
 				     cgraph_inline_failed_t reason);
@@ -988,7 +1031,7 @@ public:
      if any to PURE.  */
   void set_pure_flag (bool pure, bool looping);
 
-  /* Call calback on function and aliases associated to the function.
+  /* Call callback on function and aliases associated to the function.
      When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
      skipped. */
 
@@ -996,13 +1039,15 @@ public:
 						      void *),
 				    void *data, bool include_overwritable);
 
-  /* Call calback on cgraph_node, thunks and aliases associated to NODE.
+  /* Call callback on cgraph_node, thunks and aliases associated to NODE.
      When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
+     skipped.  When EXCLUDE_VIRTUAL_THUNKS is true, virtual thunks are
      skipped.  */
   bool call_for_symbol_thunks_and_aliases (bool (*callback) (cgraph_node *node,
-							   void *data),
-					 void *data,
-					 bool include_overwritable);
+							     void *data),
+					   void *data,
+					   bool include_overwritable,
+					   bool exclude_virtual_thunks = false);
 
   /* Likewise indicate that a node is needed, i.e. reachable via some
      external means.  */
@@ -1173,9 +1218,16 @@ public:
   cgraph_node *prev_sibling_clone;
   cgraph_node *clones;
   cgraph_node *clone_of;
+  /* If instrumentation_clone is 1 then instrumented_version points
+     to the original function used to make instrumented version.
+     Otherwise points to instrumented version of the function.  */
+  cgraph_node *instrumented_version;
+  /* If instrumentation_clone is 1 then orig_decl is the original
+     function declaration.  */
+  tree orig_decl;
   /* For functions with many calls sites it holds map from call expression
      to the edge to speed up cgraph_edge function.  */
-  htab_t GTY((param_is (cgraph_edge))) call_site_hash;
+  hash_table<cgraph_edge_hasher> *GTY(()) call_site_hash;
   /* Declaration node used to be clone of. */
   tree former_clone_of;
 
@@ -1233,6 +1285,15 @@ public:
   /* True if this decl calls a COMDAT-local function.  This is set up in
      compute_inline_parameters and inline_call.  */
   unsigned calls_comdat_local : 1;
+  /* True if node has been created by merge operation in IPA-ICF.  */
+  unsigned icf_merged: 1;
+  /* True when function is clone created for Pointer Bounds Checker
+     instrumentation.  */
+  unsigned instrumentation_clone : 1;
+  /* True if call to node can't result in a call to free, munmap or
+     other operation that could make previously non-trapping memory
+     accesses trapping.  */
+  unsigned nonfreeing_fn : 1;
 };
 
 /* A cgraph node set is a collection of cgraph nodes.  A cgraph node
@@ -1318,6 +1379,10 @@ public:
   /* Make context non-speculative.  */
   void clear_speculation ();
 
+  /* Produce context specifying all derrived types of OTR_TYPE.  If OTR_TYPE is
+     NULL, the context is set to dummy "I know nothing" setting.  */
+  void clear_outer_type (tree otr_type = NULL);
+
   /* Walk container types and modify context to point to actual class
      containing OTR_TYPE (if non-NULL) as base class.
      Return true if resulting context is valid.
@@ -1342,12 +1407,16 @@ public:
      If actual type the context is being used in is known, OTR_TYPE should be
      set accordingly. This improves quality of combined result.  */
   bool combine_with (ipa_polymorphic_call_context, tree otr_type = NULL);
+  bool meet_with (ipa_polymorphic_call_context, tree otr_type = NULL);
 
   /* Return TRUE if context is fully useless.  */
   bool useless_p () const;
+  /* Return TRUE if this context conveys the same information as X.  */
+  bool equal_to (const ipa_polymorphic_call_context &x) const;
 
-  /* Dump human readable context to F.  */
-  void dump (FILE *f) const;
+  /* Dump human readable context to F.  If NEWLINE is true, it will be
+     terminated by a newline.  */
+  void dump (FILE *f, bool newline = true) const;
   void DEBUG_FUNCTION debug () const;
 
   /* LTO streaming.  */
@@ -1356,10 +1425,10 @@ public:
 
 private:
   bool combine_speculation_with (tree, HOST_WIDE_INT, bool, tree);
+  bool meet_speculation_with (tree, HOST_WIDE_INT, bool, tree);
   void set_by_decl (tree, HOST_WIDE_INT);
   bool set_by_invariant (tree, tree, HOST_WIDE_INT);
-  void clear_outer_type (tree otr_type = NULL);
-  bool speculation_consistent_p (tree, HOST_WIDE_INT, bool, tree);
+  bool speculation_consistent_p (tree, HOST_WIDE_INT, bool, tree) const;
   void make_speculative (tree otr_type = NULL);
 };
 
@@ -1401,7 +1470,8 @@ struct GTY(()) cgraph_indirect_call_info
   unsigned vptr_changed : 1;
 };
 
-struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgraph_edge {
+struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
+	    for_user)) cgraph_edge {
   friend class cgraph_node;
 
   /* Remove the edge in the cgraph.  */
@@ -1410,11 +1480,17 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
   /* Change field call_stmt of edge to NEW_STMT.
      If UPDATE_SPECULATIVE and E is any component of speculative
      edge, then update all components.  */
-  void set_call_stmt (gimple new_stmt, bool update_speculative = true);
+  void set_call_stmt (gcall *new_stmt, bool update_speculative = true);
 
   /* Redirect callee of the edge to N.  The function does not update underlying
      call expression.  */
   void redirect_callee (cgraph_node *n);
+
+  /* If the edge does not lead to a thunk, simply redirect it to N.  Otherwise
+     create one or more equivalent thunks for N and redirect E to the first in
+     the chain.  Note that it is then necessary to call
+     n->expand_all_artificial_thunks once all callers are redirected.  */
+  void redirect_callee_duplicating_thunks (cgraph_node *n);
 
   /* Make an indirect edge with an unknown callee an ordinary edge leading to
      CALLEE.  DELTA is an integer constant that is to be added to the this
@@ -1443,7 +1519,7 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
 
   /* Create clone of edge in the node N represented
      by CALL_EXPR the callgraph.  */
-  cgraph_edge * clone (cgraph_node *n, gimple call_stmt, unsigned stmt_uid,
+  cgraph_edge * clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 		       gcov_type count_scale, int freq_scale, bool update_original);
 
   /* Return true when call of edge can not lead to return from caller
@@ -1473,7 +1549,7 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
   cgraph_edge *next_caller;
   cgraph_edge *prev_callee;
   cgraph_edge *next_callee;
-  gimple call_stmt;
+  gcall *call_stmt;
   /* Additional information about an indirect call.  Not cleared when an edge
      becomes direct.  */
   cgraph_indirect_call_info *indirect_info;
@@ -1641,6 +1717,10 @@ public:
   /* Set when variable is scheduled to be assembled.  */
   unsigned output : 1;
 
+  /* Set when variable has statically initialized pointer
+     or is a static bounds variable and needs initalization.  */
+  unsigned need_bounds_init : 1;
+
   /* Set if the variable is dynamically initialized, except for
      function local statics.   */
   unsigned dynamically_initialized : 1;
@@ -1733,6 +1813,20 @@ enum symtab_state
   FINISHED
 };
 
+struct asmname_hasher
+{
+  typedef symtab_node *value_type;
+  typedef const_tree compare_type;
+  typedef int store_values_directly;
+
+  static hashval_t hash (symtab_node *n);
+  static bool equal (symtab_node *n, const_tree t);
+  static void ggc_mx (symtab_node *n);
+  static void pch_nx (symtab_node *&);
+  static void pch_nx (symtab_node *&, gt_pointer_operator, void *);
+  static void remove (symtab_node *) {}
+};
+
 class GTY((tag ("SYMTAB"))) symbol_table
 {
 public:
@@ -1741,12 +1835,7 @@ public:
   friend class cgraph_edge;
 
   /* Initialize callgraph dump file.  */
-  inline void
-  initialize (void)
-  {
-    if (!dump_file)
-      dump_file = dump_begin (TDI_cgraph, NULL);
-  }
+  void initialize (void);
 
   /* Register a top-level asm statement ASM_STR.  */
   inline asm_node *finalize_toplevel_asm (tree asm_str);
@@ -1969,10 +2058,10 @@ public:
   bool cpp_implicit_aliases_done;
 
   /* Hash table used to hold sectoons.  */
-  htab_t GTY((param_is (section_hash_entry))) section_hash;
+  hash_table<section_name_hasher> *GTY(()) section_hash;
 
   /* Hash table used to convert assembler names into nodes.  */
-  htab_t GTY((param_is (symtab_node))) assembler_name_hash;
+  hash_table<asmname_hasher> *assembler_name_hash;
 
   /* Hash table used to hold init priorities.  */
   hash_map<symtab_node *, symbol_priority_map> *init_priority_hash;
@@ -1987,7 +2076,7 @@ private:
      parameters of which only CALLEE can be NULL (when creating an indirect call
      edge).  */
   cgraph_edge *create_edge (cgraph_node *caller, cgraph_node *callee,
-			    gimple call_stmt, gcov_type count, int freq,
+			    gcall *call_stmt, gcov_type count, int freq,
 			    bool indir_unknown_callee);
 
   /* Put the edge onto the free list.  */
@@ -2005,11 +2094,7 @@ private:
   /* Compare ASMNAME with the DECL_ASSEMBLER_NAME of DECL.  */
   static bool decl_assembler_name_equal (tree decl, const_tree asmname);
 
-  /* Returns a hash code for P.  */
-  static hashval_t hash_node_by_assembler_name (const void *p);
-
-  /* Returns nonzero if P1 and P2 are equal.  */
-  static int eq_assembler_name (const void *p1, const void *p2);
+  friend struct asmname_hasher;
 
   /* List of hooks triggered when an edge is removed.  */
   cgraph_edge_hook_list * GTY((skip)) m_first_edge_removal_hook;
@@ -2031,7 +2116,43 @@ extern GTY(()) symbol_table *symtab;
 
 extern vec<cgraph_node *> cgraph_new_nodes;
 
+inline hashval_t
+asmname_hasher::hash (symtab_node *n)
+{
+  return symbol_table::decl_assembler_name_hash
+    (DECL_ASSEMBLER_NAME (n->decl));
+}
+
+inline bool
+asmname_hasher::equal (symtab_node *n, const_tree t)
+{
+  return symbol_table::decl_assembler_name_equal (n->decl, t);
+}
+
+extern void gt_ggc_mx (symtab_node *&);
+
+inline void
+asmname_hasher::ggc_mx (symtab_node *n)
+{
+  gt_ggc_mx (n);
+}
+
+extern void gt_pch_nx (symtab_node *&);
+
+inline void
+asmname_hasher::pch_nx (symtab_node *&n)
+{
+  gt_pch_nx (n);
+}
+
+inline void
+asmname_hasher::pch_nx (symtab_node *&n, gt_pointer_operator op, void *cookie)
+{
+  op (&n, cookie);
+}
+
 /* In cgraph.c  */
+void cgraph_c_finalize (void);
 void release_function_body (tree);
 cgraph_indirect_call_info *cgraph_allocate_init_indirect_info (void);
 
@@ -2045,6 +2166,8 @@ bool resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution);
 extern bool gimple_check_call_matching_types (gimple, tree, bool);
 
 /* In cgraphunit.c  */
+void cgraphunit_c_finalize (void);
+
 /*  Initialize datastructures so DECL is a function in lowered gimple form.
     IN_SSA is true if the gimple is in SSA.  */
 basic_block init_lowered_empty_function (tree, bool);
@@ -2121,6 +2244,8 @@ symtab_node::get_alias_target (void)
 {
   ipa_ref *ref = NULL;
   iterate_reference (0, ref);
+  if (ref->use == IPA_REF_CHKP)
+    iterate_reference (1, ref);
   gcc_checking_assert (ref->use == IPA_REF_ALIAS);
   return ref->referred;
 }
@@ -2197,21 +2322,6 @@ symbol_table::unregister (symtab_node *node)
 
   node->next = NULL;
   node->previous = NULL;
-}
-
-/* Allocate new callgraph node and insert it into basic data structures.  */
-
-inline cgraph_node *
-symbol_table::create_empty (void)
-{
-  cgraph_node *node = allocate_cgraph_symbol ();
-
-  node->type = SYMTAB_FUNCTION;
-  node->frequency = NODE_FREQUENCY_NORMAL;
-  node->count_materialization_scale = REG_BR_PROB_BASE;
-  cgraph_count++;
-
-  return node;
 }
 
 /* Release a callgraph NODE with UID and put in to the list of free nodes.  */
@@ -2485,7 +2595,7 @@ tree add_new_static_var (tree type);
    Each constant in memory thus far output is recorded
    in `const_desc_table'.  */
 
-struct GTY(()) constant_descriptor_tree {
+struct GTY((for_user)) constant_descriptor_tree {
   /* A MEM for the constant.  */
   rtx rtl;
 
@@ -2544,8 +2654,14 @@ varpool_node::all_refs_explicit_p ()
 	  && !force_output);
 }
 
+struct tree_descriptor_hasher : ggc_hasher<constant_descriptor_tree *>
+{
+  static hashval_t hash (constant_descriptor_tree *);
+  static bool equal (constant_descriptor_tree *, constant_descriptor_tree *);
+};
+
 /* Constant pool accessor function.  */
-htab_t constant_pool_htab (void);
+hash_table<tree_descriptor_hasher> *constant_pool_htab (void);
 
 /* Return node that alias is aliasing.  */
 
@@ -2623,6 +2739,19 @@ cgraph_node::mark_force_output (void)
   gcc_checking_assert (!global.inlined_to);
 }
 
+/* Return true if function should be optimized for size.  */
+
+inline bool
+cgraph_node::optimize_for_size_p (void)
+{
+  if (opt_for_fn (decl, optimize_size))
+    return true;
+  if (frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
+    return true;
+  else
+    return false;
+}
+
 inline symtab_node * symtab_node::get_create (tree node)
 {
   if (TREE_CODE (node) == VAR_DECL)
@@ -2660,9 +2789,8 @@ ipa_polymorphic_call_context::clear_speculation ()
   speculative_maybe_derived_type = false;
 }
 
-/* Produce context specifying all derrived types of OTR_TYPE.
-   If OTR_TYPE is NULL or type of the OBJ_TYPE_REF, the context is set
-   to dummy "I know nothing" setting.  */
+/* Produce context specifying all derrived types of OTR_TYPE.  If OTR_TYPE is
+   NULL, the context is set to dummy "I know nothing" setting.  */
 
 inline void
 ipa_polymorphic_call_context::clear_outer_type (tree otr_type)
@@ -2692,4 +2820,45 @@ ipa_polymorphic_call_context::useless_p () const
 {
   return (!outer_type && !speculative_outer_type);
 }
+
+/* Return true if NODE is local.  Instrumentation clones are counted as local
+   only when original function is local.  */
+
+static inline bool
+cgraph_local_p (cgraph_node *node)
+{
+  if (!node->instrumentation_clone || !node->instrumented_version)
+    return node->local.local;
+
+  return node->local.local && node->instrumented_version->local.local;
+}
+
+/* When using fprintf (or similar), problems can arise with
+   transient generated strings.  Many string-generation APIs
+   only support one result being alive at once (e.g. by
+   returning a pointer to a statically-allocated buffer).
+
+   If there is more than one generated string within one
+   fprintf call: the first string gets evicted or overwritten
+   by the second, before fprintf is fully evaluated.
+   See e.g. PR/53136.
+
+   This function provides a workaround for this, by providing
+   a simple way to create copies of these transient strings,
+   without the need to have explicit cleanup:
+
+       fprintf (dumpfile, "string 1: %s string 2:%s\n",
+                xstrdup_for_dump (EXPR_1),
+                xstrdup_for_dump (EXPR_2));
+
+   This is actually a simple wrapper around ggc_strdup, but
+   the name documents the intent.  We require that no GC can occur
+   within the fprintf call.  */
+
+static inline const char *
+xstrdup_for_dump (const char *transient_str)
+{
+  return ggc_strdup (transient_str);
+}
+
 #endif  /* GCC_CGRAPH_H  */

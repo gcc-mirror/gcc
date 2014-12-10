@@ -224,8 +224,6 @@ HOST_EXPORTS = \
 	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
 	ISLLIBS="$(HOST_ISLLIBS)"; export ISLLIBS; \
 	ISLINC="$(HOST_ISLINC)"; export ISLINC; \
-	CLOOGLIBS="$(HOST_CLOOGLIBS)"; export CLOOGLIBS; \
-	CLOOGINC="$(HOST_CLOOGINC)"; export CLOOGINC; \
 	LIBELFLIBS="$(HOST_LIBELFLIBS)" ; export LIBELFLIBS; \
 	LIBELFINC="$(HOST_LIBELFINC)" ; export LIBELFINC; \
 @if gcc-bootstrap
@@ -317,10 +315,6 @@ HOST_GMPINC = @gmpinc@
 # Where to find ISL
 HOST_ISLLIBS = @isllibs@
 HOST_ISLINC = @islinc@
-
-# Where to find CLOOG
-HOST_CLOOGLIBS = @clooglibs@
-HOST_CLOOGINC = @clooginc@
 
 # Where to find libelf
 HOST_LIBELFLIBS = @libelflibs@
@@ -866,6 +860,18 @@ mail-report-with-warnings.log: warning.log
 	$(srcdir)/contrib/test_summary -t -i warning.log >$@
 	chmod +x $@
 	echo If you really want to send e-mail, run ./$@ now
+
+# Local Vim config
+
+$(srcdir)/.local.vimrc:
+	$(LN_S) $(srcdir)/contrib/vimrc $@
+
+$(srcdir)/.lvimrc:
+	$(LN_S) $(srcdir)/contrib/vimrc $@
+
+vimrc: $(srcdir)/.local.vimrc $(srcdir)/.lvimrc
+
+.PHONY: vimrc
 
 # Installation targets.
 

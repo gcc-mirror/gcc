@@ -32,8 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cxx-pretty-print.h"
 #include "cp-objcp-common.h"
 
-#include <new>                       // For placement new.
-
 /* Special routine to get the alias set for C++.  */
 
 alias_set_type
@@ -132,22 +130,6 @@ cp_var_mod_type_p (tree type, tree fn)
   return false;
 }
 
-/* Construct a C++-aware pretty-printer for CONTEXT.  It is assumed
-   that CONTEXT->printer is an already constructed basic pretty_printer.  */
-void
-cxx_initialize_diagnostics (diagnostic_context *context)
-{
-  c_common_initialize_diagnostics (context);
-
-  pretty_printer *base = context->printer;
-  cxx_pretty_printer *pp = XNEW (cxx_pretty_printer);
-  context->printer = new (pp) cxx_pretty_printer ();
-
-  /* It is safe to free this object because it was previously XNEW()'d.  */
-  base->~pretty_printer ();
-  XDELETE (base);
-}
-
 /* This compares two types for equivalence ("compatible" in C-based languages).
    This routine should only return 1 if it is sure.  It should not be used
    in contexts where erroneously returning 0 causes problems.  */
@@ -196,8 +178,8 @@ has_c_linkage (const_tree decl)
   return DECL_EXTERN_C_P (decl);
 }
 
-static GTY ((if_marked ("tree_decl_map_marked_p"), param_is (struct tree_decl_map)))
-     htab_t shadowed_var_for_decl;
+static GTY ((cache))
+     hash_table<tree_decl_map_cache_hasher> *shadowed_var_for_decl;
 
 /* Lookup a shadowed var for FROM, and return it if we find one.  */
 
@@ -207,8 +189,7 @@ decl_shadowed_for_var_lookup (tree from)
   struct tree_decl_map *h, in;
   in.base.from = from;
 
-  h = (struct tree_decl_map *)
-      htab_find_with_hash (shadowed_var_for_decl, &in, DECL_UID (from));
+  h = shadowed_var_for_decl->find_with_hash (&in, DECL_UID (from));
   if (h)
     return h->to;
   return NULL_TREE;
@@ -220,21 +201,18 @@ void
 decl_shadowed_for_var_insert (tree from, tree to)
 {
   struct tree_decl_map *h;
-  void **loc;
 
   h = ggc_alloc<tree_decl_map> ();
   h->base.from = from;
   h->to = to;
-  loc = htab_find_slot_with_hash (shadowed_var_for_decl, h, DECL_UID (from),
-				  INSERT);
-  *(struct tree_decl_map **) loc = h;
+  *shadowed_var_for_decl->find_slot_with_hash (h, DECL_UID (from), INSERT) = h;
 }
 
 void
 init_shadowed_var_for_decl (void)
 {
-  shadowed_var_for_decl = htab_create_ggc (512, tree_decl_map_hash,
-					   tree_decl_map_eq, 0);
+  shadowed_var_for_decl
+    = hash_table<tree_decl_map_cache_hasher>::create_ggc (512);
 }
 
 /* Return true if stmt can fall through.  Used by block_may_fallthru

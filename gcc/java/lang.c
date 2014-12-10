@@ -57,8 +57,6 @@ static void put_decl_string (const char *, int);
 static void put_decl_node (tree, int);
 static void java_print_error_function (diagnostic_context *, const char *,
 				       diagnostic_info *);
-static int merge_init_test_initialization (void * *, void *);
-static int inline_init_test_initialization (void * *, void *);
 static bool java_dump_tree (void *, tree);
 static void dump_compound_expr (dump_info_p, tree);
 static bool java_decl_ok_for_sibcall (const_tree);
@@ -491,6 +489,7 @@ java_print_error_function (diagnostic_context *context ATTRIBUTE_UNUSED,
     return;
 
   if (current_function_decl != NULL
+      && DECL_CONTEXT (current_function_decl) != NULL
       && DECL_CONTEXT (current_function_decl) != last_error_function_context)
     {
       if (file)
@@ -713,10 +712,10 @@ decl_constant_value (tree decl)
 /* Create a mapping from a boolean variable in a method being inlined
    to one in the scope of the method being inlined into.  */
 
-static int
-merge_init_test_initialization (void **entry, void *x)
+int
+merge_init_test_initialization (treetreehash_entry **entry, void *x)
 {
-  struct treetreehash_entry *ite = (struct treetreehash_entry *) *entry;
+  struct treetreehash_entry *ite = *entry;
   splay_tree decl_map = (splay_tree)x;
   splay_tree_node n;
   tree *init_test_decl;
@@ -761,9 +760,8 @@ merge_init_test_initialization (void **entry, void *x)
 void
 java_inlining_merge_static_initializers (tree fn, void *decl_map)
 {
-  htab_traverse
-    (DECL_FUNCTION_INIT_TEST_TABLE (fn),
-     merge_init_test_initialization, decl_map);
+    DECL_FUNCTION_INIT_TEST_TABLE (fn)
+      ->traverse<void *, merge_init_test_initialization> (decl_map);
 }
 
 /* Lookup a DECL_FUNCTION_INIT_TEST_TABLE entry in the method we're
@@ -772,10 +770,10 @@ java_inlining_merge_static_initializers (tree fn, void *decl_map)
    from the variable in the inlined class to the corresponding
    pre-existing one.  */
 
-static int
-inline_init_test_initialization (void **entry, void *x)
+int
+inline_init_test_initialization (treetreehash_entry **entry, void *x)
 {
-  struct treetreehash_entry *ite = (struct treetreehash_entry *) *entry;
+  struct treetreehash_entry *ite = *entry;
   splay_tree decl_map = (splay_tree)x;
 
   tree h = java_treetreehash_find
@@ -796,9 +794,8 @@ inline_init_test_initialization (void **entry, void *x)
 void
 java_inlining_map_static_initializers (tree fn, void *decl_map)
 {
-  htab_traverse
-    (DECL_FUNCTION_INIT_TEST_TABLE (fn),
-     inline_init_test_initialization, decl_map);
+  DECL_FUNCTION_INIT_TEST_TABLE (fn)
+    ->traverse<void *, inline_init_test_initialization> (decl_map);
 }
 
 /* Avoid voluminous output for deep recursion of compound exprs.  */

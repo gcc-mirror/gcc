@@ -1204,9 +1204,8 @@ procedure Gnatlink is
                                        if GCC_Index = 0 then
                                           GCC_Index :=
                                             Index (Path (1 .. Path_Last),
-                                                   Directory_Separator &
-                                                   "lib" &
-                                                   Directory_Separator);
+                                                   Directory_Separator & "lib"
+                                                   & Directory_Separator);
                                        end if;
 
                                        --  If we have found a "lib" subdir in

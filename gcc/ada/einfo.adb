@@ -251,6 +251,7 @@ package body Einfo is
    --    Thunk_Entity                    Node31
 
    --    SPARK_Pragma                    Node32
+   --    No_Tagged_Streams_Pragma        Node32
 
    --    Linker_Section_Pragma           Node33
    --    SPARK_Aux_Pragma                Node33
@@ -565,18 +566,15 @@ package body Einfo is
    --    Has_Static_Predicate            Flag269
    --    Stores_Attribute_Old_Prefix     Flag270
 
-   --    (Has_Protected)                 Flag271
-   --    (SSO_Set_Low_By_Default)        Flag272
-   --    (SSO_Set_High_By_Default)       Flag273
-
+   --    Has_Protected                   Flag271
+   --    SSO_Set_Low_By_Default          Flag272
+   --    SSO_Set_High_By_Default         Flag273
    --    Is_Generic_Actual_Subprogram    Flag274
    --    No_Predicate_On_Actual          Flag275
    --    No_Dynamic_Predicate_On_Actual  Flag276
+   --    Is_Checked_Ghost_Entity         Flag277
+   --    Is_Ignored_Ghost_Entity         Flag278
 
-   --    (unused)                        Flag275
-   --    (unused)                        Flag276
-   --    (unused)                        Flag277
-   --    (unused)                        Flag278
    --    (unused)                        Flag279
    --    (unused)                        Flag280
 
@@ -1129,8 +1127,7 @@ package body Einfo is
                        E_Package_Body,
                        E_Subprogram_Body,
                        E_Variable)
-          or else Is_Generic_Subprogram (Id)
-          or else Is_Subprogram (Id));
+          or else Is_Subprogram_Or_Generic_Subprogram (Id));
       return Node34 (Id);
    end Contract;
 
@@ -1926,6 +1923,12 @@ package body Einfo is
       return Flag63 (Id);
    end Is_Character_Type;
 
+   function Is_Checked_Ghost_Entity (Id : E) return B is
+   begin
+      pragma Assert (Nkind (Id) in N_Entity);
+      return Flag277 (Id);
+   end Is_Checked_Ghost_Entity;
+
    function Is_Child_Unit (Id : E) return B is
    begin
       return Flag73 (Id);
@@ -2089,6 +2092,12 @@ package body Einfo is
    begin
       return Flag171 (Id);
    end Is_Hidden_Open_Scope;
+
+   function Is_Ignored_Ghost_Entity (Id : E) return B is
+   begin
+      pragma Assert (Nkind (Id) in N_Entity);
+      return Flag278 (Id);
+   end Is_Ignored_Ghost_Entity;
 
    function Is_Immediately_Visible (Id : E) return B is
    begin
@@ -2595,6 +2604,12 @@ package body Einfo is
       return Flag136 (Base_Type (Id));
    end No_Strict_Aliasing;
 
+   function No_Tagged_Streams_Pragma (Id : E) return N is
+   begin
+      pragma Assert (Is_Tagged_Type (Id));
+      return Node32 (Id);
+   end No_Tagged_Streams_Pragma;
+
    function Non_Binary_Modulus (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
@@ -3091,7 +3106,7 @@ package body Einfo is
 
    function Suppress_Initialization (Id : E) return B is
    begin
-      pragma Assert (Is_Type (Id));
+      pragma Assert (Is_Type (Id) or else Ekind (Id) = E_Variable);
       return Flag105 (Id);
    end Suppress_Initialization;
 
@@ -3405,6 +3420,13 @@ package body Einfo is
       return Ekind (Id) in Subprogram_Kind;
    end Is_Subprogram;
 
+   function Is_Subprogram_Or_Generic_Subprogram (Id : E) return B is
+   begin
+      return Ekind (Id) in Subprogram_Kind
+               or else
+             Ekind (Id) in Generic_Subprogram_Kind;
+   end Is_Subprogram_Or_Generic_Subprogram;
+
    function Is_Task_Type                        (Id : E) return B is
    begin
       return Ekind (Id) in Task_Kind;
@@ -3593,15 +3615,14 @@ package body Einfo is
    begin
       pragma Assert
         (Ekind_In (Id, E_Entry,
-         E_Entry_Family,
-         E_Generic_Package,
-         E_Package,
-         E_Package_Body,
-         E_Subprogram_Body,
-         E_Variable,
-         E_Void)
-         or else Is_Generic_Subprogram (Id)
-         or else Is_Subprogram (Id));
+                         E_Entry_Family,
+                         E_Generic_Package,
+                         E_Package,
+                         E_Package_Body,
+                         E_Subprogram_Body,
+                         E_Variable,
+                         E_Void)
+          or else Is_Subprogram_Or_Generic_Subprogram (Id));
       Set_Node34 (Id, V);
    end Set_Contract;
 
@@ -4717,6 +4738,22 @@ package body Einfo is
       Set_Flag63 (Id, V);
    end Set_Is_Character_Type;
 
+   procedure Set_Is_Checked_Ghost_Entity (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Formal (Id)
+        or else Is_Object (Id)
+        or else Is_Package_Or_Generic_Package (Id)
+        or else Is_Subprogram_Or_Generic_Subprogram (Id)
+        or else Is_Type (Id)
+        or else Ekind (Id) = E_Abstract_State
+        or else Ekind (Id) = E_Component
+        or else Ekind (Id) = E_Discriminant
+        or else Ekind (Id) = E_Exception
+        or else Ekind (Id) = E_Package_Body
+        or else Ekind (Id) = E_Subprogram_Body);
+      Set_Flag277 (Id, V);
+   end Set_Is_Checked_Ghost_Entity;
+
    procedure Set_Is_Child_Unit (Id : E; V : B := True) is
    begin
       Set_Flag73 (Id, V);
@@ -4859,7 +4896,7 @@ package body Einfo is
 
    procedure Set_Is_Generic_Actual_Subprogram (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind (Id) = E_Function or else Ekind (Id) = E_Procedure);
+      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
       Set_Flag274 (Id, V);
    end Set_Is_Generic_Actual_Subprogram;
 
@@ -4895,6 +4932,22 @@ package body Einfo is
    begin
       Set_Flag171 (Id, V);
    end Set_Is_Hidden_Open_Scope;
+
+   procedure Set_Is_Ignored_Ghost_Entity (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Formal (Id)
+        or else Is_Object (Id)
+        or else Is_Package_Or_Generic_Package (Id)
+        or else Is_Subprogram_Or_Generic_Subprogram (Id)
+        or else Is_Type (Id)
+        or else Ekind (Id) = E_Abstract_State
+        or else Ekind (Id) = E_Component
+        or else Ekind (Id) = E_Discriminant
+        or else Ekind (Id) = E_Exception
+        or else Ekind (Id) = E_Package_Body
+        or else Ekind (Id) = E_Subprogram_Body);
+      Set_Flag278 (Id, V);
+   end Set_Is_Ignored_Ghost_Entity;
 
    procedure Set_Is_Immediately_Visible (Id : E; V : B := True) is
    begin
@@ -5413,6 +5466,12 @@ package body Einfo is
       pragma Assert (Is_Access_Type (Id) and then Is_Base_Type (Id));
       Set_Flag136 (Id, V);
    end Set_No_Strict_Aliasing;
+
+   procedure Set_No_Tagged_Streams_Pragma (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Tagged_Type (Id));
+      Set_Node32 (Id, V);
+   end Set_No_Tagged_Streams_Pragma;
 
    procedure Set_Non_Binary_Modulus (Id : E; V : B := True) is
    begin
@@ -5938,7 +5997,7 @@ package body Einfo is
 
    procedure Set_Suppress_Initialization (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Type (Id));
+      pragma Assert (Is_Type (Id) or else Ekind (Id) = E_Variable);
       Set_Flag105 (Id, V);
    end Set_Suppress_Initialization;
 
@@ -6666,31 +6725,32 @@ package body Einfo is
 
    function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id is
       Is_CDG  : constant Boolean :=
-                  Id = Pragma_Abstract_State    or else
-                  Id = Pragma_Async_Readers     or else
-                  Id = Pragma_Async_Writers     or else
-                  Id = Pragma_Depends           or else
-                  Id = Pragma_Effective_Reads   or else
-                  Id = Pragma_Effective_Writes  or else
-                  Id = Pragma_Global            or else
-                  Id = Pragma_Initial_Condition or else
-                  Id = Pragma_Initializes       or else
-                  Id = Pragma_Part_Of           or else
-                  Id = Pragma_Refined_Depends   or else
-                  Id = Pragma_Refined_Global    or else
+                  Id = Pragma_Abstract_State     or else
+                  Id = Pragma_Async_Readers      or else
+                  Id = Pragma_Async_Writers      or else
+                  Id = Pragma_Depends            or else
+                  Id = Pragma_Effective_Reads    or else
+                  Id = Pragma_Effective_Writes   or else
+                  Id = Pragma_Extensions_Visible or else
+                  Id = Pragma_Global             or else
+                  Id = Pragma_Initial_Condition  or else
+                  Id = Pragma_Initializes        or else
+                  Id = Pragma_Part_Of            or else
+                  Id = Pragma_Refined_Depends    or else
+                  Id = Pragma_Refined_Global     or else
                   Id = Pragma_Refined_State;
       Is_CTC : constant Boolean :=
-                  Id = Pragma_Contract_Cases    or else
+                  Id = Pragma_Contract_Cases     or else
                   Id = Pragma_Test_Case;
       Is_PPC : constant Boolean :=
-                  Id = Pragma_Precondition      or else
-                  Id = Pragma_Postcondition     or else
+                  Id = Pragma_Precondition       or else
+                  Id = Pragma_Postcondition      or else
                   Id = Pragma_Refined_Post;
 
       In_Contract : constant Boolean := Is_CDG or Is_CTC or Is_PPC;
 
-      Item   : Node_Id;
-      Items  : Node_Id;
+      Item  : Node_Id;
+      Items : Node_Id;
 
    begin
       --  Handle pragmas that appear in N_Contract nodes. Those have to be
@@ -7136,36 +7196,6 @@ package body Einfo is
    begin
       return Ekind (Id) = E_Procedure and then Chars (Id) = Name_uFinalizer;
    end Is_Finalizer;
-
-   ---------------------
-   -- Is_Ghost_Entity --
-   ---------------------
-
-   --  Note: coding below allows for ghost variables. They are not currently
-   --  implemented, so we will always get False for variables, but that is
-   --  expected to change in the future.
-
-   function Is_Ghost_Entity (Id : E) return B is
-   begin
-      if Present (Id) and then Ekind (Id) = E_Variable then
-         return Convention (Id) = Convention_Ghost;
-      else
-         return Is_Ghost_Subprogram (Id);
-      end if;
-   end Is_Ghost_Entity;
-
-   -------------------------
-   -- Is_Ghost_Subprogram --
-   -------------------------
-
-   function Is_Ghost_Subprogram (Id : E) return B is
-   begin
-      if Present (Id) and then Ekind_In (Id, E_Function, E_Procedure) then
-         return Convention (Id) = Convention_Ghost;
-      else
-         return False;
-      end if;
-   end Is_Ghost_Subprogram;
 
    -------------------
    -- Is_Null_State --
@@ -8460,6 +8490,7 @@ package body Einfo is
       W ("Is_CPP_Class",                    Flag74  (Id));
       W ("Is_Called",                       Flag102 (Id));
       W ("Is_Character_Type",               Flag63  (Id));
+      W ("Is_Checked_Ghost_Entity",         Flag277 (Id));
       W ("Is_Child_Unit",                   Flag73  (Id));
       W ("Is_Class_Wide_Equivalent_Type",   Flag35  (Id));
       W ("Is_Compilation_Unit",             Flag149 (Id));
@@ -8491,6 +8522,7 @@ package body Einfo is
       W ("Is_Hidden",                       Flag57  (Id));
       W ("Is_Hidden_Non_Overridden_Subpgm", Flag2   (Id));
       W ("Is_Hidden_Open_Scope",            Flag171 (Id));
+      W ("Is_Ignored_Ghost_Entity",         Flag278 (Id));
       W ("Is_Immediately_Visible",          Flag7   (Id));
       W ("Is_Implementation_Defined",       Flag254 (Id));
       W ("Is_Imported",                     Flag24  (Id));
@@ -9736,6 +9768,9 @@ package body Einfo is
               E_Procedure                                  |
               E_Subprogram_Body                            =>
             Write_Str ("SPARK_Pragma");
+
+         when Type_Kind                                    =>
+            Write_Str ("No_Tagged_Streams_Pragma");
 
          when others                                       =>
             Write_Str ("Field32??");

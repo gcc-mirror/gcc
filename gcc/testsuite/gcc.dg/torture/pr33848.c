@@ -1,3 +1,4 @@
+/* { dg-require-effective-target label_values } */
 /* &&foo should be hoisted, but on most targets, excess register pressure
    forces it to be rematerialized before "data != &&foo".  On targets that
    have a "branch if registers are equal" instruction, this leads to the

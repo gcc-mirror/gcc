@@ -1,6 +1,6 @@
 // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2170.html
 // { dg-do compile { target c++11 } }
-// { dg-options "-fextended-identifiers" }
+// { dg-options "" }
 
 int main()
 {

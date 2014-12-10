@@ -83,4 +83,7 @@
 // their dtors are called
 #define _GLIBCXX_THREAD_ATEXIT_WIN32 1
 
+// See libstdc++/59807
+#define _GTHREAD_USE_MUTEX_INIT_FUNC 1
+
 #endif

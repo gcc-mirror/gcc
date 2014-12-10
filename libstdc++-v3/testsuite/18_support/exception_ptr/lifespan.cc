@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-require-atomic-builtins "" }
 
 // 2008-05-25  Sebastian Redl  <sebastian.redl@getdesigned.at>

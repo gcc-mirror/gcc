@@ -26,6 +26,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple-pretty-print.h"
 #include "bitmap.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -428,8 +438,8 @@ ter_is_replaceable_p (gimple stmt)
       block1 = LOCATION_BLOCK (locus1);
       locus1 = LOCATION_LOCUS (locus1);
 
-      if (gimple_code (use_stmt) == GIMPLE_PHI)
-	locus2 = gimple_phi_arg_location (use_stmt, 
+      if (gphi *phi = dyn_cast <gphi *> (use_stmt))
+	locus2 = gimple_phi_arg_location (phi,
 					  PHI_ARG_INDEX_FROM_USE (use_p));
       else
 	locus2 = gimple_location (use_stmt);

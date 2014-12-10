@@ -287,7 +287,7 @@ vms_pragma_extern_prefix (cpp_reader * ARG_UNUSED (dummy))
 
 /* #pragma __pointer_size  */
 
-static enum machine_mode saved_pointer_mode;
+static machine_mode saved_pointer_mode;
 
 static void
 handle_pragma_pointer_size (const char *pragma_name)

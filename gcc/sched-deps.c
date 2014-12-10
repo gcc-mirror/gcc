@@ -30,6 +30,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "hard-reg-set.h"
 #include "regs.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "input.h"
 #include "function.h"
 #include "flags.h"
 #include "insn-config.h"
@@ -37,6 +42,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "recog.h"
 #include "emit-rtl.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgbuild.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "sched-int.h"
 #include "params.h"
 #include "cselib.h"
@@ -2309,7 +2319,7 @@ maybe_extend_reg_info_p (void)
    CLOBBER, PRE_DEC, POST_DEC, PRE_INC, POST_INC or USE.  */
 
 static void
-sched_analyze_reg (struct deps_desc *deps, int regno, enum machine_mode mode,
+sched_analyze_reg (struct deps_desc *deps, int regno, machine_mode mode,
 		   enum rtx_code ref, rtx_insn *insn)
 {
   /* We could emit new pseudos in renaming.  Extend the reg structures.  */
@@ -2456,7 +2466,7 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
   if (REG_P (dest))
     {
       int regno = REGNO (dest);
-      enum machine_mode mode = GET_MODE (dest);
+      machine_mode mode = GET_MODE (dest);
 
       sched_analyze_reg (deps, regno, mode, code, insn);
 
@@ -2480,7 +2490,7 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 
       if (sched_deps_info->use_cselib)
 	{
-	  enum machine_mode address_mode = get_address_mode (dest);
+	  machine_mode address_mode = get_address_mode (dest);
 
 	  t = shallow_copy_rtx (dest);
 	  cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1,
@@ -2494,7 +2504,7 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
       /* Pending lists can't get larger with a readonly context.  */
       if (!deps->readonly
           && ((deps->pending_read_list_length + deps->pending_write_list_length)
-              > MAX_PENDING_LIST_LENGTH))
+              >= MAX_PENDING_LIST_LENGTH))
 	{
 	  /* Flush all pending reads and writes to prevent the pending lists
 	     from getting any larger.  Insn scheduling runs too slowly when
@@ -2610,7 +2620,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
     case REG:
       {
 	int regno = REGNO (x);
-	enum machine_mode mode = GET_MODE (x);
+	machine_mode mode = GET_MODE (x);
 
 	sched_analyze_reg (deps, regno, mode, USE, insn);
 
@@ -2641,7 +2651,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 
 	if (sched_deps_info->use_cselib)
 	  {
-	    enum machine_mode address_mode = get_address_mode (t);
+	    machine_mode address_mode = get_address_mode (t);
 
 	    t = shallow_copy_rtx (t);
 	    cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1,
@@ -2712,7 +2722,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	  {
 	    if ((deps->pending_read_list_length
 		 + deps->pending_write_list_length)
-		> MAX_PENDING_LIST_LENGTH
+		>= MAX_PENDING_LIST_LENGTH
 		&& !DEBUG_INSN_P (insn))
 	      flush_pending_lists (deps, insn, true, true);
 	    add_insn_mem_dependence (deps, true, insn, x);
@@ -2867,8 +2877,7 @@ sched_macro_fuse_insns (rtx_insn *insn)
       prev = prev_nonnote_nondebug_insn (insn);
       if (!prev
           || !insn_set
-          || !single_set (prev)
-          || !modified_in_p (SET_DEST (insn_set), prev))
+          || !single_set (prev))
         return;
 
     }
@@ -3217,8 +3226,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
-	      if (reg_last->uses_length > MAX_PENDING_LIST_LENGTH
-		  || reg_last->clobbers_length > MAX_PENDING_LIST_LENGTH)
+	      if (reg_last->uses_length >= MAX_PENDING_LIST_LENGTH
+		  || reg_last->clobbers_length >= MAX_PENDING_LIST_LENGTH)
 		{
 		  add_dependence_list_and_free (deps, insn, &reg_last->sets, 0,
 						REG_DEP_OUTPUT, false);
@@ -3651,7 +3660,7 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
                && sel_insn_is_speculation_check (insn)))
         {
           /* Keep the list a reasonable size.  */
-          if (deps->pending_flush_length++ > MAX_PENDING_LIST_LENGTH)
+          if (deps->pending_flush_length++ >= MAX_PENDING_LIST_LENGTH)
             flush_pending_lists (deps, insn, true, true);
           else
 	    deps->pending_jump_insns

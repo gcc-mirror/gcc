@@ -235,14 +235,16 @@ install-finclude-dir: installdirs
 # Install the driver program as $(target)-gfortran, and also as gfortran
 # if native.
 fortran.install-common: install-finclude-dir installdirs
-	-if [ -f f951$(exeext) ] ; then \
-	  rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) gfortran$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
-	  chmod a+x $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
-	  if [ ! -f gfortran-cross$(exeext) ] ; then \
-	    rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
-	    $(LN) $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
-	  fi ; \
+	-if test "$(enable_as_accelerator)" != "yes" ; then \
+	  if [ -f f951$(exeext) ] ; then \
+	    rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) gfortran$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
+	    chmod a+x $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
+	    if [ ! -f gfortran-cross$(exeext) ] ; then \
+	      rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
+	      $(LN) $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
+	    fi ; \
+	  fi; \
 	fi
 
 fortran.install-plugin:

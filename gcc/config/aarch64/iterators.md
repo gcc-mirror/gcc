@@ -32,17 +32,11 @@
 ;; Iterator for all integer modes (up to 64-bit)
 (define_mode_iterator ALLI [QI HI SI DI])
 
-;; Iterator scalar modes (up to 64-bit)
-(define_mode_iterator SDQ_I [QI HI SI DI])
-
 ;; Iterator for all integer modes that can be extended (up to 64-bit)
 (define_mode_iterator ALLX [QI HI SI])
 
 ;; Iterator for General Purpose Floating-point registers (32- and 64-bit modes)
 (define_mode_iterator GPF [SF DF])
-
-;; Integer vector modes.
-(define_mode_iterator VDQ [V8QI V16QI V4HI V8HI V2SI V4SI V2DI])
 
 ;; Integer vector modes.
 (define_mode_iterator VDQ_I [V8QI V16QI V4HI V8HI V2SI V4SI V2DI])
@@ -71,16 +65,6 @@
 
 ;; Quad vector with only 2 element modes.
 (define_mode_iterator VQ_2E [V2DI V2DF])
-
-;; All vector modes, except double.
-(define_mode_iterator VQ_S [V8QI V16QI V4HI V8HI V2SI V4SI])
-
-;; Vector and scalar, 64 & 128-bit container: all vector integer mode;
-;; 8, 16, 32-bit scalar integer modes
-(define_mode_iterator VSDQ_I_BHSI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI QI HI SI])
-
-;; Vector modes for moves.
-(define_mode_iterator VDQM [V8QI V16QI V4HI V8HI V2SI V4SI])
 
 ;; This mode iterator allows :P to be used for patterns that operate on
 ;; addresses in different modes.  In LP64, only DI will match, while in
@@ -132,9 +116,6 @@
 ;; All quad integer narrow-able modes.
 (define_mode_iterator VQN [V8HI V4SI V2DI])
 
-;; All double integer widen-able modes.
-(define_mode_iterator VDW [V8QI V4HI V2SI])
-
 ;; Vector and scalar 128-bit container: narrowable 16, 32, 64-bit integer modes
 (define_mode_iterator VSQN_HSDI [V8HI V4SI V2DI HI SI DI])
 
@@ -144,14 +125,11 @@
 ;; Double vector modes for combines.
 (define_mode_iterator VDC [V8QI V4HI V2SI V2SF DI DF])
 
-;; Double vector modes for combines.
-(define_mode_iterator VDIC [V8QI V4HI V2SI])
-
-;; Double vector modes inc V1DF
-(define_mode_iterator VD1 [V8QI V4HI V2SI V2SF V1DF])
-
 ;; Vector modes except double int.
 (define_mode_iterator VDQIF [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF V2DF])
+
+;; Vector modes for S type.
+(define_mode_iterator VDQ_SI [V2SI V4SI])
 
 ;; Vector modes for Q and H types.
 (define_mode_iterator VDQQH [V8QI V16QI V4HI V8HI])
@@ -161,9 +139,6 @@
 
 ;; Vector modes for H, S and D types.
 (define_mode_iterator VDQHSD [V4HI V8HI V2SI V4SI V2DI])
-
-;; Vector modes for Q, H and S types.
-(define_mode_iterator VDQQHS [V8QI V16QI V4HI V8HI V2SI V4SI])
 
 ;; Vector and scalar integer modes for H and S
 (define_mode_iterator VSDQ_HSI [V4HI V8HI V2SI V4SI HI SI])
@@ -182,6 +157,9 @@
 
 ;; All byte modes.
 (define_mode_iterator VB [V8QI V16QI])
+
+;; 2 and 4 lane SI modes.
+(define_mode_iterator VS [V2SI V4SI])
 
 (define_mode_iterator TX [TI TF])
 
@@ -213,8 +191,7 @@
     UNSPEC_FMINNMV	; Used in aarch64-simd.md.
     UNSPEC_FMINV	; Used in aarch64-simd.md.
     UNSPEC_FADDV	; Used in aarch64-simd.md.
-    UNSPEC_SADDV	; Used in aarch64-simd.md.
-    UNSPEC_UADDV	; Used in aarch64-simd.md.
+    UNSPEC_ADDV		; Used in aarch64-simd.md.
     UNSPEC_SMAXV	; Used in aarch64-simd.md.
     UNSPEC_SMINV	; Used in aarch64-simd.md.
     UNSPEC_UMAXV	; Used in aarch64-simd.md.
@@ -362,6 +339,9 @@
 ;; Attribute to describe constants acceptable in logical operations
 (define_mode_attr lconst [(SI "K") (DI "L")])
 
+;; Attribute to describe constants acceptable in atomic logical operations
+(define_mode_attr lconst_atomic [(QI "K") (HI "K") (SI "K") (DI "L")])
+
 ;; Map a mode to a specific constraint character.
 (define_mode_attr cmode [(QI "q") (HI "h") (SI "s") (DI "d")])
 
@@ -485,7 +465,7 @@
 
 )
 
-;; Widened mode register suffixes for VDW/VQW.
+;; Widened mode register suffixes for VD_BHSI/VQW.
 (define_mode_attr Vwtype [(V8QI "8h") (V4HI "4s")
 			  (V2SI "2d") (V16QI "8h") 
 			  (V8HI "4s") (V4SI "2d")])
@@ -667,6 +647,9 @@
 		      (V2SI "p") (V4SI  "v")
 		      (V2DI  "p") (V2DF  "p")
 		      (V2SF "p") (V4SF  "v")])
+
+(define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")])
+(define_mode_attr VSI2QI [(V2SI "V8QI") (V4SI "V16QI")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators
@@ -859,8 +842,6 @@
 (define_int_iterator FMAXMINV [UNSPEC_FMAXV UNSPEC_FMINV
 			       UNSPEC_FMAXNMV UNSPEC_FMINNMV])
 
-(define_int_iterator SUADDV [UNSPEC_SADDV UNSPEC_UADDV])
-
 (define_int_iterator HADDSUB [UNSPEC_SHADD UNSPEC_UHADD
 			      UNSPEC_SRHADD UNSPEC_URHADD
 			      UNSPEC_SHSUB UNSPEC_UHSUB
@@ -965,7 +946,6 @@
 		      (UNSPEC_SUBHN2 "") (UNSPEC_RSUBHN2 "r")
 		      (UNSPEC_SQXTN "s") (UNSPEC_UQXTN "u")
 		      (UNSPEC_USQADD "us") (UNSPEC_SUQADD "su")
-		      (UNSPEC_SADDV "s") (UNSPEC_UADDV "u")
 		      (UNSPEC_SSLI  "s") (UNSPEC_USLI  "u")
 		      (UNSPEC_SSRI  "s") (UNSPEC_USRI  "u")
 		      (UNSPEC_USRA  "u") (UNSPEC_SSRA  "s")

@@ -1,3 +1,17 @@
+2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/63784
+	* configure: Regenerated.
+
+2014-11-13  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* configure.tgt: Use config/target-posix.
+
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/63610
+	* configure: Regenerate.
+
 2014-08-01  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* configure.ac: Move pthread affinity test to the place where

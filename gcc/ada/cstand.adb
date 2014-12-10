@@ -735,6 +735,7 @@ package body CStand is
 
       Build_Signed_Integer_Type
         (Standard_Short_Integer, Standard_Short_Integer_Size);
+      Set_Is_Implementation_Defined (Standard_Short_Integer);
 
       Build_Signed_Integer_Type
         (Standard_Integer, Standard_Integer_Size);

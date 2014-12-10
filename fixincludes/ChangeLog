@@ -1,3 +1,8 @@
+2014-10-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* inclhack.def (glibc_c99_inline_4): Add pthread.h to files.
+	* fixincl.x: Regenerate.
+
 2014-08-04  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* inclhack.def (complier_h_tradcpp): Remove.

@@ -28,6 +28,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "c-family/c-common.h"
 #include "tree-iterator.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -35,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
-#include "hashtab.h"
 #include "flags.h"
 #include "splay-tree.h"
 #include "target.h"
@@ -67,6 +74,10 @@ begin_bc_block (enum bc_t bc, location_t location)
   tree label = create_artificial_label (location);
   DECL_CHAIN (label) = bc_label[bc];
   bc_label[bc] = label;
+  if (bc == bc_break)
+    LABEL_DECL_BREAK (label) = true;
+  else
+    LABEL_DECL_CONTINUE (label) = true;
   return label;
 }
 
@@ -201,7 +212,7 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
 		    void *data)
 {
   tree blab, clab;
-  tree entry = NULL, exit = NULL, t;
+  tree exit = NULL;
   tree stmt_list = NULL;
 
   blab = begin_bc_block (bc_break, start_locus);
@@ -215,64 +226,46 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
   cp_walk_tree (&incr, cp_genericize_r, data, NULL);
   *walk_subtrees = 0;
 
-  /* If condition is zero don't generate a loop construct.  */
-  if (cond && integer_zerop (cond))
+  if (cond && TREE_CODE (cond) != INTEGER_CST)
     {
-      if (cond_is_first)
-	{
-	  t = build1_loc (start_locus, GOTO_EXPR, void_type_node,
-			  get_bc_label (bc_break));
-	  append_to_statement_list (t, &stmt_list);
-	}
-    }
-  else
-    {
-      /* Expand to gotos, just like c_finish_loop.  TODO: Use LOOP_EXPR.  */
-      tree top = build1 (LABEL_EXPR, void_type_node,
-			 create_artificial_label (start_locus));
-
-      /* If we have an exit condition, then we build an IF with gotos either
-	 out of the loop, or to the top of it.  If there's no exit condition,
-	 then we just build a jump back to the top.  */
-      exit = build1 (GOTO_EXPR, void_type_node, LABEL_EXPR_LABEL (top));
-
-      if (cond && !integer_nonzerop (cond))
-	{
-	  /* Canonicalize the loop condition to the end.  This means
-	     generating a branch to the loop condition.  Reuse the
-	     continue label, if possible.  */
-	  if (cond_is_first)
-	    {
-	      if (incr)
-		{
-		  entry = build1 (LABEL_EXPR, void_type_node,
-				  create_artificial_label (start_locus));
-		  t = build1_loc (start_locus, GOTO_EXPR, void_type_node,
-				  LABEL_EXPR_LABEL (entry));
-		}
-	      else
-		t = build1_loc (start_locus, GOTO_EXPR, void_type_node,
-				get_bc_label (bc_continue));
-	      append_to_statement_list (t, &stmt_list);
-	    }
-
-	  t = build1 (GOTO_EXPR, void_type_node, get_bc_label (bc_break));
-	  exit = fold_build3_loc (start_locus,
-				  COND_EXPR, void_type_node, cond, exit, t);
-	}
-
-      append_to_statement_list (top, &stmt_list);
+      /* If COND is constant, don't bother building an exit.  If it's false,
+	 we won't build a loop.  If it's true, any exits are in the body.  */
+      location_t cloc = EXPR_LOC_OR_LOC (cond, start_locus);
+      exit = build1_loc (cloc, GOTO_EXPR, void_type_node,
+			 get_bc_label (bc_break));
+      exit = fold_build3_loc (cloc, COND_EXPR, void_type_node, cond,
+			      build_empty_stmt (cloc), exit);
     }
 
+  if (exit && cond_is_first)
+    append_to_statement_list (exit, &stmt_list);
   append_to_statement_list (body, &stmt_list);
   finish_bc_block (&stmt_list, bc_continue, clab);
   append_to_statement_list (incr, &stmt_list);
-  append_to_statement_list (entry, &stmt_list);
-  append_to_statement_list (exit, &stmt_list);
-  finish_bc_block (&stmt_list, bc_break, blab);
+  if (exit && !cond_is_first)
+    append_to_statement_list (exit, &stmt_list);
 
-  if (stmt_list == NULL_TREE)
-    stmt_list = build1 (NOP_EXPR, void_type_node, integer_zero_node);
+  if (!stmt_list)
+    stmt_list = build_empty_stmt (start_locus);
+
+  tree loop;
+  if (cond && integer_zerop (cond))
+    {
+      if (cond_is_first)
+	loop = fold_build3_loc (start_locus, COND_EXPR,
+				void_type_node, cond, stmt_list,
+				build_empty_stmt (start_locus));
+      else
+	loop = stmt_list;
+    }
+  else
+    loop = build1_loc (start_locus, LOOP_EXPR, void_type_node, stmt_list);
+
+  stmt_list = NULL;
+  append_to_statement_list (loop, &stmt_list);
+  finish_bc_block (&stmt_list, bc_break, blab);
+  if (!stmt_list)
+    stmt_list = build_empty_stmt (start_locus);
 
   *stmt_p = stmt_list;
 }
@@ -296,6 +289,8 @@ genericize_for_stmt (tree *stmt_p, int *walk_subtrees, void *data)
   genericize_cp_loop (&loop, EXPR_LOCATION (stmt), FOR_COND (stmt),
 		      FOR_BODY (stmt), FOR_EXPR (stmt), 1, walk_subtrees, data);
   append_to_statement_list (loop, &expr);
+  if (expr == NULL_TREE)
+    expr = loop;
   *stmt_p = expr;
 }
 
@@ -487,6 +482,10 @@ cp_gimplify_init_expr (tree *expr_p)
 	  if (from != sub)
 	    TREE_TYPE (from) = void_type_node;
 	}
+
+      if (cxx_dialect >= cxx14 && TREE_CODE (sub) == CONSTRUCTOR)
+	/* Handle aggregate NSDMI.  */
+	replace_placeholders (sub, to);
 
       if (t == sub)
 	break;
@@ -758,20 +757,18 @@ is_invisiref_parm (const_tree t)
 
 /* Return true if the uid in both int tree maps are equal.  */
 
-int
-cxx_int_tree_map_eq (const void *va, const void *vb)
+bool
+cxx_int_tree_map_hasher::equal (cxx_int_tree_map *a, cxx_int_tree_map *b)
 {
-  const struct cxx_int_tree_map *a = (const struct cxx_int_tree_map *) va;
-  const struct cxx_int_tree_map *b = (const struct cxx_int_tree_map *) vb;
   return (a->uid == b->uid);
 }
 
 /* Hash a UID in a cxx_int_tree_map.  */
 
 unsigned int
-cxx_int_tree_map_hash (const void *item)
+cxx_int_tree_map_hasher::hash (cxx_int_tree_map *item)
 {
-  return ((const struct cxx_int_tree_map *)item)->uid;
+  return item->uid;
 }
 
 /* A stable comparison routine for use with splay trees and DECLs.  */
@@ -911,9 +908,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     {
       struct cxx_int_tree_map *h, in;
       in.uid = DECL_UID (stmt);
-      h = (struct cxx_int_tree_map *)
-	  htab_find_with_hash (cp_function_chain->extern_decl_map,
-			       &in, in.uid);
+      h = cp_function_chain->extern_decl_map->find_with_hash (&in, in.uid);
       if (h)
 	{
 	  *stmt_p = h->to;
@@ -1415,13 +1410,13 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       end1 = TYPE_SIZE_UNIT (TREE_TYPE (arg1));
       end1 = fold_build_pointer_plus (start1, end1);
 
-      p1 = create_tmp_var (TREE_TYPE (start1), NULL);
+      p1 = create_tmp_var (TREE_TYPE (start1));
       t = build2 (MODIFY_EXPR, TREE_TYPE (p1), p1, start1);
       append_to_statement_list (t, &ret);
 
       if (arg2)
 	{
-	  p2 = create_tmp_var (TREE_TYPE (start2), NULL);
+	  p2 = create_tmp_var (TREE_TYPE (start2));
 	  t = build2 (MODIFY_EXPR, TREE_TYPE (p2), p2, start2);
 	  append_to_statement_list (t, &ret);
 	}

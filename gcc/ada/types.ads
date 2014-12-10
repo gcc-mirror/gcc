@@ -659,7 +659,7 @@ package Types is
    type Check_Id is new Nat;
    --  Type used to represent a check id
 
-   No_Check_Id         : constant := 0;
+   No_Check_Id : constant := 0;
    --  Check_Id value used to indicate no check
 
    Access_Check           : constant :=  1;

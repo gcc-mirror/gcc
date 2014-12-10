@@ -1,6 +1,7 @@
 /* PR target/17377
    Bug in code emitted by "return" pattern on CRIS: missing pop of
    forced return address on stack.  */
+/* { dg-require-effective-target return_address } */
 int calls = 0;
 
 void *f (int) __attribute__ ((__noinline__));

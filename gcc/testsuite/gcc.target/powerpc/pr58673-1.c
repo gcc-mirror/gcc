@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-options "-mcpu=power8 -m64 -O1" } */
 
 enum typecode
@@ -65,6 +66,7 @@ deduce_conversion (from, to)
 
 void
 bc_expand_binary_operation (optab, resulttype, arg0, arg1)
+     int resulttype, arg0, arg1;
      struct binary_operator optab[];
 {
   int i, besti, cost, bestcost;

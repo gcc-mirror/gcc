@@ -263,8 +263,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       do_max_length() const throw() = 0;
     };
 
-
-
   /**
    *  @brief  Primary class template codecvt.
    *  @ingroup locales
@@ -340,6 +338,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class codecvt<char, char, mbstate_t>
     : public __codecvt_abstract_base<char, char, mbstate_t>
     {
+      friend class messages<char>;
+
     public:
       // Types:
       typedef char			intern_type;
@@ -398,6 +398,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class codecvt<wchar_t, char, mbstate_t>
     : public __codecvt_abstract_base<wchar_t, char, mbstate_t>
     {
+      friend class messages<wchar_t>;
+
     public:
       // Types:
       typedef wchar_t			intern_type;

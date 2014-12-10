@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x -Wno-deprecated" }
+// { dg-options "-std=gnu++11 -Wno-deprecated" }
 // { dg-do compile }
 
 // Copyright (C) 2008-2014 Free Software Foundation, Inc.

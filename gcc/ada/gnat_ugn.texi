@@ -2960,14 +2960,15 @@ constructors are defined on the C++ side and imported from the Ada
 side, and latter the reverse case.
 
 The root of our derivation will be the @code{Animal} class, with a
-single private attribute (the @code{Age} of the animal) and two public
-primitives to set and get the value of this attribute.
+single private attribute (the @code{Age} of the animal), a constructor,
+and two public primitives to set and get the value of this attribute.
 
 @smallexample
 @b{class} Animal @{
  @b{public}:
    @b{virtual} void Set_Age (int New_Age);
    @b{virtual} int Age ();
+   Animal() @{Age_Count = 0;@};
  @b{private}:
    int Age_Count;
 @};
@@ -3013,19 +3014,19 @@ how to import these C++ declarations from the Ada side:
 @smallexample @c ada
 @b{with} Interfaces.C.Strings; @b{use} Interfaces.C.Strings;
 @b{package} Animals @b{is}
-  @b{type} Carnivore @b{is} interface;
+  @b{type} Carnivore @b{is} @b{limited} interface;
   @b{pragma} Convention (C_Plus_Plus, Carnivore);
   @b{function} Number_Of_Teeth (X : Carnivore)
      @b{return} Natural @b{is} @b{abstract};
 
-  @b{type} Domestic @b{is} interface;
-  @b{pragma} Convention (C_Plus_Plus, Set_Owner);
+  @b{type} Domestic @b{is} @b{limited} interface;
+  @b{pragma} Convention (C_Plus_Plus, Domestic);
   @b{procedure} Set_Owner
     (X    : @b{in} @b{out} Domestic;
      Name : Chars_Ptr) @b{is} @b{abstract};
 
-  @b{type} Animal @b{is} @b{tagged} @b{record}
-    Age : Natural := 0;
+  @b{type} Animal @b{is} @b{tagged} @b{limited} @b{record}
+    Age : Natural;
   @b{end} @b{record};
   @b{pragma} Import (C_Plus_Plus, Animal);
 
@@ -3035,13 +3036,17 @@ how to import these C++ declarations from the Ada side:
   @b{function} Age (X : Animal) @b{return} Integer;
   @b{pragma} Import (C_Plus_Plus, Age);
 
+  @b{function} New_Animal @b{return} Animal;
+  @b{pragma} CPP_Constructor (New_Animal);
+  @b{pragma} Import (CPP, New_Animal, "_ZN6AnimalC1Ev");
+
   @b{type} Dog @b{is} @b{new} Animal @b{and} Carnivore @b{and} Domestic @b{with} @b{record}
     Tooth_Count : Natural;
     Owner       : String (1 .. 30);
   @b{end} @b{record};
   @b{pragma} Import (C_Plus_Plus, Dog);
 
-  @b{function} Number_Of_Teeth (A : Dog) @b{return} Integer;
+  @b{function} Number_Of_Teeth (A : Dog) @b{return} Natural;
   @b{pragma} Import (C_Plus_Plus, Number_Of_Teeth);
 
   @b{procedure} Set_Owner (A : @b{in} @b{out} Dog; Name : Chars_Ptr);
@@ -3100,19 +3105,19 @@ them to C++, using the same hierarchy of our previous example:
 @b{with} Interfaces.C.Strings;
 @b{use} Interfaces.C.Strings;
 @b{package} Animals @b{is}
-  @b{type} Carnivore @b{is} interface;
+  @b{type} Carnivore @b{is} @b{limited} interface;
   @b{pragma} Convention (C_Plus_Plus, Carnivore);
   @b{function} Number_Of_Teeth (X : Carnivore)
      @b{return} Natural @b{is} @b{abstract};
 
-  @b{type} Domestic @b{is} interface;
-  @b{pragma} Convention (C_Plus_Plus, Set_Owner);
+  @b{type} Domestic @b{is} @b{limited} interface;
+  @b{pragma} Convention (C_Plus_Plus, Domestic);
   @b{procedure} Set_Owner
     (X    : @b{in} @b{out} Domestic;
      Name : Chars_Ptr) @b{is} @b{abstract};
 
   @b{type} Animal @b{is} @b{tagged} @b{record}
-    Age : Natural := 0;
+    Age : Natural;
   @b{end} @b{record};
   @b{pragma} Convention (C_Plus_Plus, Animal);
 
@@ -3122,13 +3127,16 @@ them to C++, using the same hierarchy of our previous example:
   @b{function} Age (X : Animal) @b{return} Integer;
   @b{pragma} Export (C_Plus_Plus, Age);
 
+  @b{function} New_Animal @b{return} Animal'Class;
+  @b{pragma} Export (C_Plus_Plus, New_Animal);
+
   @b{type} Dog @b{is} @b{new} Animal @b{and} Carnivore @b{and} Domestic @b{with} @b{record}
     Tooth_Count : Natural;
     Owner       : String (1 .. 30);
   @b{end} @b{record};
   @b{pragma} Convention (C_Plus_Plus, Dog);
 
-  @b{function} Number_Of_Teeth (A : Dog) @b{return} Integer;
+  @b{function} Number_Of_Teeth (A : Dog) @b{return} Natural;
   @b{pragma} Export (C_Plus_Plus, Number_Of_Teeth);
 
   @b{procedure} Set_Owner (A : @b{in} @b{out} Dog; Name : Chars_Ptr);
@@ -3139,7 +3147,8 @@ them to C++, using the same hierarchy of our previous example:
 @b{end} Animals;
 @end smallexample
 
-Compared with our previous example the only difference is the use of
+Compared with our previous example the only differences are the use of
+@code{pragma Convention} (instead of @code{pragma Import}), and the use of
 @code{pragma Export} to indicate to the GNAT compiler that the primitives will
 be available to C++. Thanks to the ABI compatibility, on the C++ side there is
 nothing else to be done; as explained above, the only requirement is that all
@@ -3503,10 +3512,11 @@ defer most optimizations until the link stage. The advantage of this
 approach is that the compiler can do a whole-program analysis and choose
 the best interprocedural optimization strategy based on a complete view
 of the program, instead of a fragmentary view with the usual approach.
-This can also speed up the compilation of huge programs and reduce the
-size of the final executable, compared with a per-unit compilation with
-full inlining across modules enabled with the @option{-gnatn2} switch.
-The drawback of this approach is that it may require much more memory.
+This can also speed up the compilation of big programs and reduce the
+size of the executable, compared with a traditional per-unit compilation
+with inlining across modules enabled by the @option{-gnatn} switch.
+The drawback of this approach is that it may require more memory and that
+the debugging information generated by -g with it might be hardly usable.
 The switch, as well as the accompanying @option{-Ox} switches, must be
 specified both for the compilation and the link phases.
 If the @var{n} parameter is specified, the optimization and final code
@@ -3577,6 +3587,13 @@ Enforce Ada 83 restrictions.
 @item -gnat95
 @cindex @option{-gnat95} (@command{gcc})
 Enforce Ada 95 restrictions.
+
+Note: for compatibility with some Ada 95 compilers which support only
+the @code{overriding} keyword of Ada 2005, the @option{-gnatd.D} switch can
+be used along with @option{-gnat95} to achieve a similar effect with GNAT.
+
+@option{-gnatd.D} instructs GNAT to consider @code{overriding} as a keyword
+and handle its associated semantic checks, even in Ada 95 mode.
 
 @item -gnat05
 @cindex @option{-gnat05} (@command{gcc})
@@ -4793,21 +4810,21 @@ individually controlled.  The warnings that are not turned on by this
 switch are:
 
 @itemize
-@option{-gnatwd} (implicit dereferencing)
-@option{-gnatw.d} (tag warnings with -gnatw switch)
-@option{-gnatwh} (hiding)
-@option{-gnatw.h} (holes in record layouts)
-@option{-gnatw.k} (redefinition of names in standard)
-@option{-gnatwl} (elaboration warnings)
-@option{-gnatw.l} (inherited aspects)
-@option{-gnatw.n} (atomic synchronization)
-@option{-gnatwo} (address clause overlay)
-@option{-gnatw.o} (values set by out parameters ignored)
-@option{-gnatw.s} (overridden size clause)
-@option{-gnatwt} (tracking of deleted conditional code)
-@option{-gnatw.u} (unordered enumeration)
-@option{-gnatw.w} (use of Warnings Off)
-@option{-gnatw.y} (reasons for package needing body)
+@item @option{-gnatwd} (implicit dereferencing)
+@item @option{-gnatw.d} (tag warnings with -gnatw switch)
+@item @option{-gnatwh} (hiding)
+@item @option{-gnatw.h} (holes in record layouts)
+@item @option{-gnatw.k} (redefinition of names in standard)
+@item @option{-gnatwl} (elaboration warnings)
+@item @option{-gnatw.l} (inherited aspects)
+@item @option{-gnatw.n} (atomic synchronization)
+@item @option{-gnatwo} (address clause overlay)
+@item @option{-gnatw.o} (values set by out parameters ignored)
+@item @option{-gnatw.s} (overridden size clause)
+@item @option{-gnatwt} (tracking of deleted conditional code)
+@item @option{-gnatw.u} (unordered enumeration)
+@item @option{-gnatw.w} (use of Warnings Off)
+@item @option{-gnatw.y} (reasons for package needing body)
 @end itemize
 
 All other optional warnings are turned on.
@@ -6444,7 +6461,6 @@ A unary plus or minus may not be followed by a space.
 A vertical bar must be surrounded by spaces.
 @end itemize
 
-@item
 Exactly one blank (and no other white space) must appear between
 a @code{not} token and a following @code{in} token.
 
@@ -8118,7 +8134,7 @@ Generate binder file suitable for CodePeer.
 
 @item -R
 @cindex @option{-R} (@command{gnatbind})
-Output closure source list, which includes all non-time-units that are
+Output closure source list, which includes all non-run-time units that are
 included in the bind.
 
 @item -Ra
@@ -10931,6 +10947,11 @@ to be processed.
 Indicates that external variable @var{name} in the argument project
 has the value @var{value}. Has no effect if no project is specified as
 tool argument.
+
+@item --RTS=@var{rts-path}
+@cindex @option{--RTS} (@command{gnatelim})
+Specifies the default location of the runtime library. Same meaning as the
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
 
 @item -files=@var{filename}
 @cindex @option{-files} (@code{gnatelim})
@@ -13948,6 +13969,12 @@ Same as @code{--decimal-grouping}, but for based literals. For
 example, with @code{--based-grouping=4}, @code{16#0001FFFE#} will be
 changed to @code{16#0001_FFFE#}.
 
+@item --split-line-before-op
+@cindex @option{--split-line-before-op} (@command{gnatpp})
+If it is necessary to split a line at a binary operator, by default
+the line is split after the operator. With this option, it is split
+before the operator.
+
 @item --RM-style-spacing
 @cindex @option{--RM-style-spacing} (@command{gnatpp})
 Do not insert an extra blank before various occurrences of
@@ -13987,9 +14014,6 @@ uses the same switches as the GNAT compiler, with the same effects:
 
 @item -gnatec=@var{path}
 @cindex @option{-gnatec} (@command{gnatpp})
-
-@item --RTS=@var{path}
-@cindex @option{--RTS} (@command{gnatpp})
 
 @end table
 
@@ -14137,6 +14161,11 @@ has no effect.
 Indicates that external variable @var{name} in the argument project
 has the value @var{value}. Has no effect if no project is specified as
 tool argument.
+
+@item --RTS=@var{rts-path}
+@cindex @option{--RTS} (@command{gnatpp})
+Specifies the default location of the runtime library. Same meaning as the
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
 
 @item --incremental
 @cindex @option{--incremental} @command{gnatpp}
@@ -14575,6 +14604,10 @@ options:
 -X@var{name}=@var{value} -- indicates that external variable @var{name} in
       the argument project has the value @var{value}. Has no effect if no
       project is specified as tool argument.
+
+--RTS=@var{rts-path}  -- Specifies the default location of the runtime
+      library. Same meaning as the equivalent @command{gnatmake} flag
+      (@pxref{Switches for gnatmake}).
 
 --incremental -- incremental processing on a per-file basis. Source files are
       only processed if they have been modified, or if files they depend
@@ -15928,6 +15961,11 @@ has no effect.
 Indicates that external variable @var{name} in the argument project
 has the value @var{value}. Has no effect if no project is specified as
 tool argument.
+
+@item --RTS=@var{rts-path}
+@cindex @option{--RTS} (@command{gnatmetric})
+Specifies the default location of the runtime library. Same meaning as the
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
 
 @item --subdirs=@var{dir}
 @cindex @option{--subdirs=@var{dir}} @command{gnatmetric}
@@ -18753,6 +18791,11 @@ Indicates that external variable @var{name} in the argument project
 has the value @var{value}. Has no effect if no project is specified as
 tool argument.
 
+@item --RTS=@var{rts-path}
+@cindex @option{--RTS} (@command{gnatstub})
+Specifies the default location of the runtime library. Same meaning as the
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
+
 @item --subunits
 @cindex @option{--subunits} (@command{gnatstub})
 Generate subunits for body stubs. If this switch is specified,
@@ -18927,6 +18970,18 @@ as well as a test driver infrastructure (harness). @command{gnattest} creates
 a skeleton for each visible subprogram in the packages under consideration when
 they do not exist already.
 
+The user can choose to generate a single test driver
+that will run all individual tests, or separate test drivers for each test. The
+second option allows much greater flexibility in test execution environment,
+allows to benefit from parallel tests execution to increase performance, and
+provides stubbing support.
+
+@command{gnattest} also has a mode of operation where it acts as the test
+aggregator when multiple test executables must be run, in particular when
+the separate test drivers were generated. In this mode it handles individual
+tests execution and upon completion reports the summary results of the test
+run.
+
 In order to process source files from a project, @command{gnattest} has to
 semantically analyze the sources. Therefore, test skeletons can only be
 generated for legal Ada units. If a unit is dependent on other units,
@@ -18940,9 +18995,11 @@ the AUnit manual, deep knowledge of AUnit is not necessary for using gnattest.
 For correct operation of @command{gnattest}, AUnit should be installed and
 aunit.gpr must be on the project path. This happens automatically when Aunit
 is installed at its default location.
+
 @menu
 * Running gnattest::
-* Switches for gnattest::
+* Switches for gnattest in framework generation mode::
+* Switches for gnattest in tests execution mode::
 * Project Attributes for gnattest::
 * Simple Example::
 * Setting Up and Tearing Down the Testing Environment::
@@ -18953,6 +19010,8 @@ is installed at its default location.
 * Tagged Types Substitutability Testing::
 * Testing with Contracts::
 * Additional Tests::
+* Individual Test Drivers::
+* Stubbing::
 * Putting Tests under Version Control::
 * Support for other platforms/run-times::
 * Current Limitations::
@@ -18962,7 +19021,8 @@ is installed at its default location.
 @section Running @command{gnattest}
 
 @noindent
-@command{gnattest} has a command-line interface of the form
+@b{In the framework generation mode}, @command{gnattest} has a command-line
+interface of the form
 
 @smallexample
 @c $ gnattest @var{-Pprojname} @ovar{switches} @ovar{filename} @ovar{directory}
@@ -19032,33 +19092,41 @@ Note that if the project already has both my_unit.ads and my_unit-test_data.ads,
 this will cause a name conflict with the generated test package.
 @end itemize
 
-@node Switches for gnattest
-@section Switches for @command{gnattest}
+
+@noindent
+@b{In the tests execution mode mode}, @command{gnattest} has a command-line
+interface of the form
+
+@smallexample
+@c $ gnattest @var{-Pprojname} @ovar{switches} @ovar{filename} @ovar{directory}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnattest @var{test_drivers.list} @r{[}@var{switches}@r{]}
+@end smallexample
+
+@noindent
+where
+@table @var
+
+@item test_drivers.list
+is the name of the text file containing the list of executables to treat as
+test drivers. This file is automatically generated by gnattest, but can be
+hand-edited to add or remove tests. This switch is required.
+
+@item switches
+is an optional sequence of switches as described below.
+
+@end table
+
+
+@node Switches for gnattest in framework generation mode
+@section Switches for @command{gnattest} in framework generation mode
 
 @table @option
 @c !sort!
 
-@item --harness-only
-@cindex @option{--harness-only} (@command{gnattest})
-When this option is given, @command{gnattest} creates a harness for all
-sources, treating them as test packages.
-
-@item --additional-tests=@var{projname}
-@cindex @option{--additional-tests} (@command{gnattest})
-Sources described in @var{projname} are considered potential additional
-manual tests to be added to the test suite.
-
-@item -r
-@cindex @option{-r} (@command{gnattest})
-Recursively consider all sources from all projects.
-
-@item -X@var{name=value}
-@cindex @option{-X} (@command{gnattest})
-Indicate that external variable @var{name} has the value @var{value}.
-
 @item -q
 @cindex @option{-q} (@command{gnattest})
-Suppresses noncritical output messages.
+Quiet mode: suppresses noncritical output messages.
 
 @item -v
 @cindex @option{-v} (@command{gnattest})
@@ -19066,10 +19134,90 @@ Verbose mode: generates version information if specified by itself on the
 command line.  If specified via GNATtest_Switches, produces output
 about the execution of the tool.
 
+@item -r
+@cindex @option{-r} (@command{gnattest})
+Recursively considers all sources from all projects.
+
+
+@item -X@var{name=value}
+@cindex @option{-X} (@command{gnattest})
+Indicate that external variable @var{name} has the value @var{value}.
+
+@item --RTS=@var{rts-path}
+@cindex @option{--RTS} (@command{gnattest})
+Specifies the default location of the runtime library. Same meaning as the
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
+
+
+@item --additional-tests=@var{projname}
+@cindex @option{--additional-tests} (@command{gnattest})
+Sources described in @var{projname} are considered potential additional
+manual tests to be added to the test suite.
+
+@item --harness-only
+@cindex @option{--harness-only} (@command{gnattest})
+When this option is given, @command{gnattest} creates a harness for all
+sources, treating them as test packages.
+
+@item --separate-drivers
+@cindex @option{--separate-drivers} (@command{gnattest})
+Generates a separate test driver for each test, rather than a single
+executable incorporating all tests.
+
+@item --stub
+@cindex @option{--stub} (@command{gnattest})
+Generates the testing framework that uses subsystem stubbing to isolate the
+code under test.
+
+
+@item --harness-dir=@var{dirname}
+@cindex @option{--harness-dir} (@command{gnattest})
+Specifies the directory that will hold the harness packages and project file
+for the test driver. If the @var{dirname} is a relative path, it is considered
+relative to the object directory of the project file.
+
+@item --tests-dir=@var{dirname}
+@cindex @option{--tests-dir} (@command{gnattest})
+All test packages are placed in the @var{dirname} directory.
+If the @var{dirname} is a relative path, it is considered relative to the object
+directory of the project file. When all sources from all projects are taken
+recursively from all projects, @var{dirname} directories are created for each
+project in their object directories and test packages are placed accordingly.
+
+@item --subdir=@var{dirname}
+@cindex @option{--subdir} (@command{gnattest})
+Test packages are placed in a subdirectory of the corresponding source
+directory, with the name @var{dirname}. Thus, each set of unit tests is located
+in a subdirectory of the code under test.  If the sources are in separate
+directories, each source directory has a test subdirectory named @var{dirname}.
+
+@item --tests-root=@var{dirname}
+@cindex @option{--tests-root} (@command{gnattest})
+The hierarchy of source directories, if any, is recreated in the @var{dirname}
+directory, with test packages placed in directories corresponding to those
+of the sources.
+If the @var{dirname} is a relative path, it is considered relative to the object
+directory of the project file. When projects are considered recursively,
+directory hierarchies of tested sources are
+recreated for each project in their object directories and test packages are
+placed accordingly.
+
+@item --stubs-dir=@var{dirname}
+@cindex @option{--stubs-dir} (@command{gnattest})
+The hierarchy of directories containing stubbed units is recreated in
+the @var{dirname} directory, with stubs placed in directories corresponding to
+projects they are derived from.
+If the @var{dirname} is a relative path, it is considered relative to the object
+directory of the project file. When projects are considered recursively,
+directory hierarchies of stubs are
+recreated for each project in their object directories and test packages are
+placed accordingly.
+
+
 @item --validate-type-extensions
 @cindex @option{--validate-type-extensions} (@command{gnattest})
 Enables substitution check: run all tests from all parents in order
-to check substitutability.
+to check substitutability in accordance with LSP.
 
 @item --skeleton-default=@var{val}
 @cindex @option{--skeleton-default} (@command{gnattest})
@@ -19087,37 +19235,11 @@ Specifies whether or not generated test driver should return failure exit
 status if at least one test fails or crashes. @var{val} can be either
 "on" or "off", "off" being the default.
 
+@item --omit-sloc
+@cindex @option{--omit-sloc} (@command{gnattest})
+Suppresses comment line containing file name and line number of corresponding
+subprograms in test skeletons.
 
-@item --tests-root=@var{dirname}
-@cindex @option{--tests-root} (@command{gnattest})
-The hierarchy of source directories, if any, is recreated in the @var{dirname}
-directory, with test packages placed in directories corresponding to those of the sources.
-If the @var{dirname} is a relative path, it is considered relative to the object
-directory of the project file. When all sources from all projects are taken
-recursively from all projects, directory hierarchies of tested sources are
-recreated for each project in their object directories and test packages are
-placed accordingly.
-
-@item --subdir=@var{dirname}
-@cindex @option{--subdir} (@command{gnattest})
-Test packages are placed in a subdirectory of the corresponding source directory,
-with the name @var{dirname}. Thus, each set of unit tests is located in a subdirectory of the
-code under test.  If the sources are in separate directories, each source directory
-has a test subdirectory named @var{dirname}.
-
-@item --tests-dir=@var{dirname}
-@cindex @option{--tests-dir} (@command{gnattest})
-All test packages are placed in the @var{dirname} directory.
-If the @var{dirname} is a relative path, it is considered relative to the object
-directory of the project file. When all sources from all projects are taken
-recursively from all projects, @var{dirname} directories are created for each
-project in their object directories and test packages are placed accordingly.
-
-@item --harness-dir=@var{dirname}
-@cindex @option{--harness-dir} (@command{gnattest})
-specifies the directory that will hold the harness packages and project file
-for the test driver. If the @var{dirname} is a relative path, it is considered
-relative to the object directory of the project file.
 
 @item --separates
 @cindex @option{--separates} (@command{gnattest})
@@ -19137,11 +19259,6 @@ separates. Note that if separate test routines had any manually added with
 clauses they will be moved to the test package body as is and have to be moved
 by hand.
 
-@item --omit-sloc
-@cindex @option{--omit-sloc} (@command{gnattest})
-Suppresses comment line containing file name and line number of corresponding
-subprograms in test skeletons.
-
 @item --test-duration
 @cindex @option{--test-duration} (@command{gnattest})
 Adds time measurements for each test in generated test driver.
@@ -19150,6 +19267,26 @@ Adds time measurements for each test in generated test driver.
 
 @option{--tests_root}, @option{--subdir} and @option{--tests-dir} switches are
 mutually exclusive.
+
+
+@node Switches for gnattest in tests execution mode
+@section Switches for @command{gnattest} in tests execution mode
+
+@table @option
+@c !sort!
+
+@item --passed-tests=@var{val}
+@cindex @option{--passed-tests} (@command{gnattest})
+Specifies whether or not passed tests should be shown. @var{val} can be either
+"show" or "hide", "show" being the default.
+
+@item --queues=@var{n}, -j@var{n}
+@cindex @option{--queues} (@command{gnattest})
+@cindex @option{-j} (@command{gnattest})
+Runs @var{n} tests in parallel (default is 1).
+
+@end table
+
 
 @node Project Attributes for gnattest
 @section Project Attributes for @command{gnattest}
@@ -19515,6 +19652,68 @@ gnattest -Psimple.gpr --additional-tests=additional/harness/harness.gpr \
 gnatmake -Pmixing/test_driver.gpr
 mixing/test_runner
 @end smallexample
+
+
+@node Individual Test Drivers
+@section Individual Test Drivers
+
+@noindent
+By default, @command{gnattest} generates a monolithic test driver that
+aggregates the individual tests into a single executable. It is also possible
+to generate separate executables for each test, by passing the switch
+@option{--separate-drivers}. This approach scales better for large testing
+campaigns, especially involving target architectures with limited resources
+typical for embedded development. It can also provide a major performance
+benefit on multi-core systems by allowing simultaneous execution of multiple
+tests.
+
+@command{gnattest} can take charge of executing the individual tests; for this,
+instead of passing a project file, a text file containing the list of
+executables can be passed. Such a file is automatically generated by gnattest
+under the name @option{test_drivers.list}, but it can be
+hand-edited to add or remove tests, or replaced. The individual tests can
+also be executed standalone, or from any user-defined scripted framework.
+
+
+@node Stubbing
+@section Stubbing
+
+@noindent
+Depending on the testing campaign, it is sometimes necessary to isolate the
+part of the algorithm under test from its dependencies. This is accomplished
+via @emph{stubbing}, i.e. replacing the subprograms that are called from the
+subprogram under test by stand-in subprograms that match the profiles of the
+original ones, but simply return predetermined values required by the test
+scenario.
+
+This mode of test harness generation is activated by the switch @option{--stub}.
+
+The implementation approach chosen by @command{gnattest} is as follows.
+For each package under consideration all the packages it is directly depending
+on are stubbed, excluding the generic packages and package instantiations.
+The stubs are shared for each package under test. The specs of packages to stub
+remain intact, while their bodies are replaced, and hide the original bodies by
+means of extending projects. Also, for each stubbed
+package, a child package with setter routines for each subprogram declaration
+is created. These setters are meant to be used to set the behaviour of
+stubbed subprograms from within test cases.
+
+Note that subprograms belonging to the same package as the subprogram under
+test are not stubbed. This guarantees that the sources being tested are
+exactly the sources used for production, which is an important property for
+establishing the traceability between the testing campaign and production code.
+
+Due to the nature of stubbing process, this mode implies the switch
+@option{--separate-drivers}, i.e. an individual test driver (with the
+corresponding hierarchy of extending projects) is generated for each test.
+
+@quotation Note
+Developing a stubs-based testing campaign requires
+good understanding of the infrastructure created by @command{gnattest} for
+this purpose. We recommend following the stubbing tutorials provided
+under @file{<install_prefix>/share/examples/gnattest/stubbing*} before
+attempting to use this powerful feature.
+@end quotation
 
 @node Putting Tests under Version Control
 @section Putting Tests under Version Control
@@ -20865,6 +21064,14 @@ that denote descendant nodes and parent node, as well as varied
 semantic information. To study this example in more detail, you might want to
 look at the body of the PN procedure in the stated file.
 
+Another useful application of this capability is to deal with situations of
+complex data which are not handled suitably by GDB. For example, if you specify
+Convention Fortran for a multi-dimensional array, GDB does not know that
+the ordering of array elements has been switched and will not properly
+address the array elements. In such a case, instead of trying to print the
+elements directly from GDB, you can write a callable procedure that prints
+the elements in the desired format.
+
 @node Using the Next Command in a Function
 @section Using the Next Command in a Function
 
@@ -20873,11 +21080,11 @@ When you use the @code{next} command in a function, the current source
 location will advance to the next statement as usual. A special case
 arises in the case of a @code{return} statement.
 
-Part of the code for a return statement is the ``epilog'' of the function.
+Part of the code for a return statement is the ``epilogue'' of the function.
 This is the code that returns to the caller. There is only one copy of
-this epilog code, and it is typically associated with the last return
+this epilogue code, and it is typically associated with the last return
 statement in the function if there is more than one return. In some
-implementations, this epilog is associated with the first statement
+implementations, this epilogue is associated with the first statement
 of the function.
 
 The result is that if you use the @code{next} command from a return
@@ -29265,7 +29472,8 @@ codesign -f -s  "gdb-cert"  <gnat_install_prefix>/bin/gdb
 
 ... where "gdb-cert" should be replaced by the actual certificate
 name chosen above, and <gnat_install_prefix> should be replaced by
-the location where you installed GNAT.
+the location where you installed GNAT.  Also, be sure that users are
+in the Unix group @samp{_developer}.
 
 @c **********************************
 @c * GNU Free Documentation License *

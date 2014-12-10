@@ -42,6 +42,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "calls.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -51,7 +59,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-pass.h"
 #include "splay-tree.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 #include "ipa-utils.h"
+#include "bitmap.h"
 #include "ipa-reference.h"
 #include "flags.h"
 #include "diagnostic.h"
@@ -399,17 +412,17 @@ propagate_bits (ipa_reference_global_vars_info_t x_global, struct cgraph_node *x
     }
 }
 
+static bool ipa_init_p = false;
+
 /* The init routine for analyzing global static variable usage.  See
    comments at top for description.  */
 static void
 ipa_init (void)
 {
-  static bool init_p = false;
-
-  if (init_p)
+  if (ipa_init_p)
     return;
 
-  init_p = true;
+  ipa_init_p = true;
 
   if (dump_file)
     reference_vars_to_consider = splay_tree_new (splay_tree_compare_ints, 0, 0);
@@ -1172,4 +1185,28 @@ ipa_opt_pass_d *
 make_pass_ipa_reference (gcc::context *ctxt)
 {
   return new pass_ipa_reference (ctxt);
+}
+
+/* Reset all state within ipa-reference.c so that we can rerun the compiler
+   within the same process.  For use by toplev::finalize.  */
+
+void
+ipa_reference_c_finalize (void)
+{
+  if (ipa_init_p)
+    {
+      bitmap_obstack_release (&optimization_summary_obstack);
+      ipa_init_p = false;
+    }
+
+  if (node_removal_hook_holder)
+    {
+      symtab->remove_cgraph_removal_hook (node_removal_hook_holder);
+      node_removal_hook_holder = NULL;
+    }
+  if (node_duplication_hook_holder)
+    {
+      symtab->remove_cgraph_duplication_hook (node_duplication_hook_holder);
+      node_duplication_hook_holder = NULL;
+    }
 }

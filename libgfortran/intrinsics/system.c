@@ -34,16 +34,14 @@ iexport_proto(system_sub);
 void
 system_sub (const char *fcmd, GFC_INTEGER_4 *status, gfc_charlen_type cmd_len)
 {
-  char cmd[cmd_len + 1];
+  char *cmd = fc_strdup (fcmd, cmd_len);
   int stat;
 
   /* Flush all I/O units before executing the command.  */
   flush_all_units();
 
-  memcpy (cmd, fcmd, cmd_len);
-  cmd[cmd_len] = '\0';
-
   stat = system (cmd);
+  free (cmd);
   if (status)
     *status = stat;
 }

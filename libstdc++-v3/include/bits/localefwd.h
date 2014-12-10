@@ -107,6 +107,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool
     isgraph(_CharT, const locale&);
 
+#if __cplusplus >= 201103L
+  template<typename _CharT>
+    bool
+    isblank(_CharT, const locale&);
+#endif
+
   template<typename _CharT>
     _CharT
     toupper(_CharT, const locale&);

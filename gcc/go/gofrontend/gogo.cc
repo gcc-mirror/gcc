@@ -587,11 +587,7 @@ Gogo::zero_value(Type *type)
       // We will change the type later, when we know the size.
       Type* byte_type = this->lookup_global("byte")->type_value();
 
-      mpz_t val;
-      mpz_init_set_ui(val, 0);
-      Expression* zero = Expression::make_integer(&val, NULL, bloc);
-      mpz_clear(val);
-
+      Expression* zero = Expression::make_integer_ul(0, NULL, bloc);
       Type* array_type = Type::make_array_type(byte_type, zero);
 
       Variable* var = new Variable(array_type, NULL, true, false, false, bloc);
@@ -738,11 +734,8 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
                                                           "__size", uint_type);
 
   Location builtin_loc = Linemap::predeclared_location();
-  size_t count = var_gc.size();
-  mpz_t lenval;
-  mpz_init_set_ui(lenval, count);
-  Expression* length = Expression::make_integer(&lenval, NULL, builtin_loc);
-  mpz_clear(lenval);
+  Expression* length = Expression::make_integer_ul(var_gc.size(), NULL,
+						   builtin_loc);
 
   Array_type* root_array_type = Type::make_array_type(root_type, length);
   Type* ptdt = Type::make_type_descriptor_ptr_type();
@@ -783,10 +776,7 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
   Expression* nil = Expression::make_nil(builtin_loc);
   null_init->push_back(nil);
 
-  mpz_t zval;
-  mpz_init_set_ui(zval, 0UL);
-  Expression* zero = Expression::make_integer(&zval, NULL, builtin_loc);
-  mpz_clear(zval);
+  Expression *zero = Expression::make_integer_ul(0, NULL, builtin_loc);
   null_init->push_back(zero);
 
   Expression* null_root_ctor =
@@ -953,13 +943,14 @@ Find_var::expression(Expression** pexpr)
 	}
     }
 
-  // We traverse the code of any function we see.  Note that this
-  // means that we will traverse the code of a function whose address
-  // is taken even if it is not called.
+  // We traverse the code of any function or bound method we see.  Note that
+  // this means that we will traverse the code of a function or bound method
+  // whose address is taken even if it is not called.
   Func_expression* fe = e->func_expression();
-  if (fe != NULL)
+  Bound_method_expression* bme = e->bound_method_expression();
+  if (fe != NULL || bme != NULL)
     {
-      const Named_object* f = fe->named_object();
+      const Named_object* f = fe != NULL ? fe->named_object() : bme->function();
       if (f->is_function() && f->package() == NULL)
 	{
 	  std::pair<Seen_objects::iterator, bool> ins =
@@ -1027,11 +1018,11 @@ class Var_init
 {
  public:
   Var_init()
-    : var_(NULL), init_(NULL)
+    : var_(NULL), init_(NULL), dep_count_(0)
   { }
 
   Var_init(Named_object* var, Bstatement* init)
-    : var_(var), init_(init)
+    : var_(var), init_(init), dep_count_(0)
   { }
 
   // Return the variable.
@@ -1044,12 +1035,37 @@ class Var_init
   init() const
   { return this->init_; }
 
+  // Return the number of remaining dependencies.
+  size_t
+  dep_count() const
+  { return this->dep_count_; }
+
+  // Increment the number of dependencies.
+  void
+  add_dependency()
+  { ++this->dep_count_; }
+
+  // Decrement the number of dependencies.
+  void
+  remove_dependency()
+  { --this->dep_count_; }
+
  private:
   // The variable being initialized.
   Named_object* var_;
   // The initialization statement.
   Bstatement* init_;
+  // The number of initializations this is dependent on.  A variable
+  // initialization should not be emitted if any of its dependencies
+  // have not yet been resolved.
+  size_t dep_count_;
 };
+
+// For comparing Var_init keys in a map.
+
+inline bool
+operator<(const Var_init& v1, const Var_init& v2)
+{ return v1.var()->name() < v2.var()->name(); }
 
 typedef std::list<Var_init> Var_inits;
 
@@ -1061,14 +1077,21 @@ typedef std::list<Var_init> Var_inits;
 static void
 sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 {
+  if (var_inits->empty())
+    return;
+
   typedef std::pair<Named_object*, Named_object*> No_no;
   typedef std::map<No_no, bool> Cache;
   Cache cache;
 
-  Var_inits ready;
-  while (!var_inits->empty())
+  // A mapping from a variable initialization to a set of
+  // variable initializations that depend on it.
+  typedef std::map<Var_init, std::set<Var_init*> > Init_deps;
+  Init_deps init_deps;
+  for (Var_inits::iterator p1 = var_inits->begin();
+       p1 != var_inits->end();
+       ++p1)
     {
-      Var_inits::iterator p1 = var_inits->begin();
       Named_object* var = p1->var();
       Expression* init = var->var_value()->init();
       Block* preinit = var->var_value()->preinit();
@@ -1076,11 +1099,13 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 
       // Start walking through the list to see which variables VAR
       // needs to wait for.
-      Var_inits::iterator p2 = p1;
-      ++p2;
-
-      for (; p2 != var_inits->end(); ++p2)
+      for (Var_inits::iterator p2 = var_inits->begin();
+	   p2 != var_inits->end();
+	   ++p2)
 	{
+	  if (var == p2->var())
+	    continue;
+
 	  Named_object* p2var = p2->var();
 	  No_no key(var, p2var);
 	  std::pair<Cache::iterator, bool> ins =
@@ -1089,6 +1114,10 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 	    ins.first->second = expression_requires(init, preinit, dep, p2var);
 	  if (ins.first->second)
 	    {
+	      // VAR depends on P2VAR.
+	      init_deps[*p2].insert(&(*p1));
+	      p1->add_dependency();
+
 	      // Check for cycles.
 	      key = std::make_pair(p2var, var);
 	      ins = cache.insert(std::make_pair(key, false));
@@ -1109,36 +1138,66 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 			 p2var->message_name().c_str());
 		  p2 = var_inits->end();
 		}
-	      else
-		{
-		  // We can't emit P1 until P2 is emitted.  Move P1.
-		  Var_inits::iterator p3 = p2;
-		  ++p3;
-		  var_inits->splice(p3, *var_inits, p1);
-		}
-	      break;
 	    }
-	}
-
-      if (p2 == var_inits->end())
-	{
-	  // VAR does not depends upon any other initialization expressions.
-
-	  // Check for a loop of VAR on itself.  We only do this if
-	  // INIT is not NULL and there is no dependency; when INIT is
-	  // NULL, it means that PREINIT sets VAR, which we will
-	  // interpret as a loop.
-	  if (init != NULL && dep == NULL
-	      && expression_requires(init, preinit, NULL, var))
-	    error_at(var->location(),
-		     "initialization expression for %qs depends upon itself",
-		     var->message_name().c_str());
-	  ready.splice(ready.end(), *var_inits, p1);
 	}
     }
 
-  // Now READY is the list in the desired initialization order.
-  var_inits->swap(ready);
+  // If there are no dependencies then the declaration order is sorted.
+  if (!init_deps.empty())
+    {
+      // Otherwise, sort variable initializations by emitting all variables with
+      // no dependencies in declaration order. VAR_INITS is already in
+      // declaration order.
+      Var_inits ready;
+      while (!var_inits->empty())
+	{
+	  Var_inits::iterator v1;;
+	  for (v1 = var_inits->begin(); v1 != var_inits->end(); ++v1)
+	    {
+	      if (v1->dep_count() == 0)
+		break;
+	    }
+	  go_assert(v1 != var_inits->end());
+
+	  // V1 either has no dependencies or its dependencies have already
+	  // been emitted, add it to READY next.  When V1 is emitted, remove
+	  // a dependency from each V that depends on V1.
+	  ready.splice(ready.end(), *var_inits, v1);
+
+	  Init_deps::iterator p1 = init_deps.find(*v1);
+	  if (p1 != init_deps.end())
+	    {
+	      std::set<Var_init*> resolved = p1->second;
+	      for (std::set<Var_init*>::iterator pv = resolved.begin();
+		   pv != resolved.end();
+		   ++pv)
+		(*pv)->remove_dependency();
+	      init_deps.erase(p1);
+	    }
+	}
+      var_inits->swap(ready);
+      go_assert(init_deps.empty());
+    }
+
+  // VAR_INITS is in the correct order.  For each VAR in VAR_INITS,
+  // check for a loop of VAR on itself.  We only do this if
+  // INIT is not NULL and there is no dependency; when INIT is
+  // NULL, it means that PREINIT sets VAR, which we will
+  // interpret as a loop.
+  for (Var_inits::const_iterator p = var_inits->begin();
+       p != var_inits->end();
+       ++p)
+    {
+      Named_object* var = p->var();
+      Expression* init = var->var_value()->init();
+      Block* preinit = var->var_value()->preinit();
+      Named_object* dep = gogo->var_depends_on(var->var_value());
+      if (init != NULL && dep == NULL
+	  && expression_requires(init, preinit, NULL, var))
+	error_at(var->location(),
+		 "initialization expression for %qs depends upon itself",
+		 var->message_name().c_str());
+    }
 }
 
 // Write out the global definitions.
@@ -1421,7 +1480,7 @@ Gogo::lookup(const std::string& name, Named_object** pfunction) const
       if (ret != NULL)
 	{
 	  if (ret->package() != NULL)
-	    ret->package()->set_used();
+	    ret->package()->note_usage();
 	  return ret;
 	}
     }
@@ -4028,10 +4087,7 @@ Build_recover_thunks::can_recover_arg(Location location)
   Expression* fn = Expression::make_func_reference(builtin_return_address,
 						   NULL, location);
 
-  mpz_t zval;
-  mpz_init_set_ui(zval, 0UL);
-  Expression* zexpr = Expression::make_integer(&zval, NULL, location);
-  mpz_clear(zval);
+  Expression* zexpr = Expression::make_integer_ul(0, NULL, location);
   Expression_list *args = new Expression_list();
   args->push_back(zexpr);
 
@@ -4066,10 +4122,8 @@ Expression*
 Gogo::runtime_error(int code, Location location)
 {
   Type* int32_type = Type::lookup_integer_type("int32");
-  mpz_t val;
-  mpz_init_set_ui(val, code);
-  Expression* code_expr = Expression::make_integer(&val, int32_type, location);
-  mpz_clear(val);
+  Expression* code_expr = Expression::make_integer_ul(code, int32_type,
+						      location);
   return Runtime::make_call(Runtime::RUNTIME_ERROR, location, 1, code_expr);
 }
 
@@ -4195,21 +4249,18 @@ Build_method_tables::type(Type* type)
 Expression*
 Gogo::allocate_memory(Type* type, Location location)
 {
-  Btype* btype = type->get_backend(this);
-  size_t size = this->backend()->type_size(btype);
-  mpz_t size_val;
-  mpz_init_set_ui(size_val, size);
-  Type* uintptr = Type::lookup_integer_type("uintptr");
-  Expression* size_expr =
-    Expression::make_integer(&size_val, uintptr, location);
+  Expression* td = Expression::make_type_descriptor(type, location);
+  Expression* size =
+    Expression::make_type_info(type, Expression::TYPE_INFO_SIZE);
 
-  // If the package imports unsafe, then it may play games with
-  // pointers that look like integers.
+  // If this package imports unsafe, then it may play games with
+  // pointers that look like integers.  We should be able to determine
+  // whether or not to use new pointers in libgo/go-new.c.  FIXME.
   bool use_new_pointers = this->imported_unsafe_ || type->has_pointer();
   return Runtime::make_call((use_new_pointers
 			     ? Runtime::NEW
 			     : Runtime::NEW_NOPOINTERS),
-                            location, 1, size_expr);
+			    location, 2, td, size);
 }
 
 // Traversal class used to check for return statements.
@@ -4382,6 +4433,7 @@ Function::Function(Function_type* type, Function* enclosing, Block* block,
     is_sink_(false), results_are_named_(false), nointerface_(false),
     is_unnamed_type_stub_method_(false), calls_recover_(false),
     is_recover_thunk_(false), has_recover_thunk_(false),
+    calls_defer_retaddr_(false), is_type_specific_function_(false),
     in_unique_section_(false)
 {
 }
@@ -4944,6 +4996,14 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       // recovered, we can't inline it, because that will mess up
       // our return address comparison.
       bool is_inlinable = !(this->calls_recover_ || this->is_recover_thunk_);
+
+      // If a function calls __go_set_defer_retaddr, then mark it as
+      // uninlinable.  This prevents the GCC backend from splitting
+      // the function; splitting the function is a bad idea because we
+      // want the return address label to be in the same function as
+      // the call.
+      if (this->calls_defer_retaddr_)
+	is_inlinable = false;
 
       // If this is a thunk created to call a function which calls
       // the predeclared recover function, we need to disable
@@ -7433,6 +7493,36 @@ Package::set_priority(int priority)
 {
   if (priority > this->priority_)
     this->priority_ = priority;
+}
+
+// Forget a given usage.  If forgetting this usage means this package becomes
+// unused, report that error.
+
+void
+Package::forget_usage(Expression* usage) const
+{
+  if (this->fake_uses_.empty())
+    return;
+
+  std::set<Expression*>::iterator p = this->fake_uses_.find(usage);
+  go_assert(p != this->fake_uses_.end());
+  this->fake_uses_.erase(p);
+
+  if (this->fake_uses_.empty())
+    error_at(this->location(), "imported and not used: %s",
+	     Gogo::message_name(this->package_name()).c_str());
+}
+
+// Clear the used field for the next file.  If the only usages of this package
+// are possibly fake, keep the fake usages for lowering.
+
+void
+Package::clear_used()
+{
+  if (this->used_ > this->fake_uses_.size())
+    this->fake_uses_.clear();
+
+  this->used_ = 0;
 }
 
 // Determine types of constants.  Everything else in a package

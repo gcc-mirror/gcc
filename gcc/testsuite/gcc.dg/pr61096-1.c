@@ -23,7 +23,7 @@ char w1[] = L"foo"; /* { dg-error "13:char-array initialized from wide string" }
 __WCHAR_TYPE__ w2[] = "foo"; /* { dg-error "23:wide character array initialized from non-wide string" } */
 __WCHAR_TYPE__ w3[] = U"foo"; /* { dg-error "23:wide character array initialized from incompatible wide string" } */
 schar a1[] = "foo"; /* { dg-error "14:array of inappropriate type initialized from string constant" } */
-int a2[] = (int[]) { 1 }; /* { dg-error "12:array initialized from non-constant array expression" } */
+int a2[] = (int[]) { 1 }; /* { dg-warning "12:initializer element is not constant" } */
 
 int a3 = e; /* { dg-error "10:initializer element is not constant" } */
 int a4 = (e, 1); /* { dg-error "10:initializer element is not constant" } */

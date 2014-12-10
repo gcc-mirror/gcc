@@ -797,6 +797,8 @@ package body System.OS_Lib is
          return C_Create_File (C_Name (C_Name'First)'Address);
       end Create_New_Output_Text_File;
 
+   --  Start of processing for Create_Temp_File_Internal
+
    begin
       --  Loop until a new temp file can be created
 
@@ -1694,6 +1696,54 @@ package body System.OS_Lib is
 
          return Result;
       end if;
+   end Non_Blocking_Spawn;
+
+   function Non_Blocking_Spawn
+     (Program_Name : String;
+      Args         : Argument_List;
+      Stdout_File  : String;
+      Stderr_File  : String) return Process_Id
+   is
+      Stdout_FD : constant File_Descriptor :=
+                     Create_Output_Text_File (Stdout_File);
+      Stderr_FD : constant File_Descriptor :=
+                     Create_Output_Text_File (Stderr_File);
+
+      Saved_Output : File_Descriptor;
+      Saved_Error  : File_Descriptor;
+
+      Result : Process_Id;
+
+   begin
+      --  Do not attempt to spawn if the output files could not be created
+
+      if Stdout_FD = Invalid_FD or else Stderr_FD = Invalid_FD then
+         return Invalid_Pid;
+      end if;
+
+      --  Set standard output and error to the specified files
+
+      Saved_Output := Dup (Standout);
+      Dup2 (Stdout_FD, Standout);
+
+      Saved_Error  := Dup (Standerr);
+      Dup2 (Stderr_FD, Standerr);
+
+      --  Spawn the program
+
+      Result := Non_Blocking_Spawn (Program_Name, Args);
+
+      --  Restore the standard output and error
+
+      Dup2 (Saved_Output, Standout);
+      Dup2 (Saved_Error, Standerr);
+
+      --  And close the saved standard output and error file descriptors
+
+      Close (Saved_Output);
+      Close (Saved_Error);
+
+      return Result;
    end Non_Blocking_Spawn;
 
    -------------------------

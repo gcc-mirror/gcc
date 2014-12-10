@@ -23,10 +23,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "tm_p.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
+#include "cfgcleanup.h"
 #include "basic-block.h"
 #include "diagnostic-core.h"
 #include "flags.h"
-#include "function.h"
 #include "langhooks.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -49,7 +60,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "except.h"
 #include "cfgloop.h"
-#include "hashtab.h"
 #include "tree-ssa-propagate.h"
 #include "tree-scalar-evolution.h"
 
@@ -113,7 +123,7 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
 	  break;
 
 	case GIMPLE_SWITCH:
-	  val = gimple_switch_index (stmt);
+	  val = gimple_switch_index (as_a <gswitch *> (stmt));
 	  break;
 
 	default:
@@ -309,7 +319,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
       switch (gimple_code (stmt))
 	{
 	case GIMPLE_LABEL:
-	  if (DECL_NONLOCAL (gimple_label_label (stmt)))
+	  if (DECL_NONLOCAL (gimple_label_label (as_a <glabel *> (stmt))))
 	    return false;
 	  if (optimize == 0 && gimple_location (stmt) != locus)
 	    return false;
@@ -367,11 +377,11 @@ phi_alternatives_equal (basic_block dest, edge e1, edge e2)
 {
   int n1 = e1->dest_idx;
   int n2 = e2->dest_idx;
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
 
   for (gsi = gsi_start_phis (dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       tree val1 = gimple_phi_arg_def (phi, n1);
       tree val2 = gimple_phi_arg_def (phi, n2);
 
@@ -406,11 +416,11 @@ remove_forwarder_block (basic_block bb)
   /* If the destination block consists of a nonlocal label or is a
      EH landing pad, do not merge it.  */
   label = first_stmt (dest);
-  if (label
-      && gimple_code (label) == GIMPLE_LABEL
-      && (DECL_NONLOCAL (gimple_label_label (label))
-	  || EH_LANDING_PAD_NR (gimple_label_label (label)) != 0))
-    return false;
+  if (label)
+    if (glabel *label_stmt = dyn_cast <glabel *> (label))
+      if (DECL_NONLOCAL (gimple_label_label (label_stmt))
+	  || EH_LANDING_PAD_NR (gimple_label_label (label_stmt)) != 0)
+	return false;
 
   /* If there is an abnormal edge to basic block BB, but not into
      dest, problems might occur during removal of the phi node at out
@@ -468,11 +478,11 @@ remove_forwarder_block (basic_block bb)
 	{
 	  /* Create arguments for the phi nodes, since the edge was not
 	     here before.  */
-	  for (gsi = gsi_start_phis (dest);
-	       !gsi_end_p (gsi);
-	       gsi_next (&gsi))
+	  for (gphi_iterator psi = gsi_start_phis (dest);
+	       !gsi_end_p (psi);
+	       gsi_next (&psi))
 	    {
-	      gimple phi = gsi_stmt (gsi);
+	      gphi *phi = psi.phi ();
 	      source_location l = gimple_phi_arg_location_from_edge (phi, succ);
 	      tree def = gimple_phi_arg_def (phi, succ->dest_idx);
 	      add_phi_arg (phi, unshare_expr (def), s, l);
@@ -492,7 +502,7 @@ remove_forwarder_block (basic_block bb)
       label = gsi_stmt (gsi);
       if (is_gimple_debug (label))
 	break;
-      decl = gimple_label_label (label);
+      decl = gimple_label_label (as_a <glabel *> (label));
       if (EH_LANDING_PAD_NR (decl) != 0
 	  || DECL_NONLOCAL (decl)
 	  || FORCED_LABEL (decl)
@@ -558,7 +568,6 @@ bool
 fixup_noreturn_call (gimple stmt)
 {
   basic_block bb = gimple_bb (stmt);
-  bool changed = false;
 
   if (gimple_call_builtin_p (stmt, BUILT_IN_RETURN))
     return false;
@@ -580,46 +589,25 @@ fixup_noreturn_call (gimple stmt)
 	split_block (bb, stmt);
     }
 
-  changed |= remove_fallthru_edge (bb->succs);
-
-  /* If there is LHS, remove it.  */
-  if (gimple_call_lhs (stmt))
+  /* If there is an LHS, remove it.  */
+  tree lhs = gimple_call_lhs (stmt);
+  if (lhs)
     {
-      tree op = gimple_call_lhs (stmt);
       gimple_call_set_lhs (stmt, NULL_TREE);
 
-      /* We need to remove SSA name to avoid checking errors.
-	 All uses are dominated by the noreturn and thus will
-	 be removed afterwards.
-	 We proactively remove affected non-PHI statements to avoid
-	 fixup_cfg from trying to update them and crashing.  */
-      if (TREE_CODE (op) == SSA_NAME)
+      /* We need to fix up the SSA name to avoid checking errors.  */
+      if (TREE_CODE (lhs) == SSA_NAME)
 	{
-	  use_operand_p use_p;
-          imm_use_iterator iter;
-	  gimple use_stmt;
-	  bitmap_iterator bi;
-	  unsigned int bb_index;
-
-	  bitmap blocks = BITMAP_ALLOC (NULL);
-
-          FOR_EACH_IMM_USE_STMT (use_stmt, iter, op)
-	    {
-	      if (gimple_code (use_stmt) != GIMPLE_PHI)
-	        bitmap_set_bit (blocks, gimple_bb (use_stmt)->index);
-	      else
-		FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-		  SET_USE (use_p, error_mark_node);
-	    }
-	  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, bb_index, bi)
-	    delete_basic_block (BASIC_BLOCK_FOR_FN (cfun, bb_index));
-	  BITMAP_FREE (blocks);
-	  release_ssa_name (op);
+	  tree new_var = create_tmp_reg (TREE_TYPE (lhs));
+	  SET_SSA_NAME_VAR_OR_IDENTIFIER (lhs, new_var);
+	  SSA_NAME_DEF_STMT (lhs) = gimple_build_nop ();
+	  set_ssa_default_def (cfun, new_var, lhs);
 	}
+
       update_stmt (stmt);
-      changed = true;
     }
-  return changed;
+
+  return remove_fallthru_edge (bb->succs);
 }
 
 
@@ -840,10 +828,10 @@ remove_forwarder_block_with_phi (basic_block bb)
   /* If the destination block consists of a nonlocal label, do not
      merge it.  */
   label = first_stmt (dest);
-  if (label
-      && gimple_code (label) == GIMPLE_LABEL
-      && DECL_NONLOCAL (gimple_label_label (label)))
-    return false;
+  if (label)
+    if (glabel *label_stmt = dyn_cast <glabel *> (label))
+      if (DECL_NONLOCAL (gimple_label_label (label_stmt)))
+	return false;
 
   /* Record BB's single pred in case we need to update the father
      loop's latch information later.  */
@@ -855,7 +843,7 @@ remove_forwarder_block_with_phi (basic_block bb)
   while (EDGE_COUNT (bb->preds) > 0)
     {
       edge e = EDGE_PRED (bb, 0), s;
-      gimple_stmt_iterator gsi;
+      gphi_iterator gsi;
 
       s = find_edge (e->src, dest);
       if (s)
@@ -887,7 +875,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 	   !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  tree def = gimple_phi_arg_def (phi, succ->dest_idx);
 	  source_location locus = gimple_phi_arg_location_from_edge (phi, succ);
 
@@ -1035,7 +1023,7 @@ pass_merge_phi::execute (function *fun)
 	}
       else
 	{
-	  gimple_stmt_iterator gsi;
+	  gphi_iterator gsi;
 	  unsigned int dest_idx = single_succ_edge (bb)->dest_idx;
 
 	  /* BB dominates DEST.  There may be many users of the PHI
@@ -1046,7 +1034,7 @@ pass_merge_phi::execute (function *fun)
 	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 	       gsi_next (&gsi))
 	    {
-	      gimple phi = gsi_stmt (gsi);
+	      gphi *phi = gsi.phi ();
 	      tree result = gimple_phi_result (phi);
 	      use_operand_p imm_use;
 	      gimple use_stmt;

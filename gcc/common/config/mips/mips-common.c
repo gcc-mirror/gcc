@@ -42,6 +42,15 @@ mips_handle_option (struct gcc_options *opts,
       opts->x_mips_cache_flush_func = NULL;
       return true;
 
+    case OPT_mfp32:
+    case OPT_mfp64:
+      opts->x_target_flags &= ~MASK_FLOATXX;
+      return true;
+
+    case OPT_mfpxx:
+      opts->x_target_flags &= ~MASK_FLOAT64;
+      return true;
+
     default:
       return true;
     }

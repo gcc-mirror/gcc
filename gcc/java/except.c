@@ -433,10 +433,10 @@ prepare_eh_table_type (tree type)
   return exp;
 }
 
-static int
-expand_catch_class (void **entry, void *x ATTRIBUTE_UNUSED)
+int
+expand_catch_class (treetreehash_entry **entry, int)
 {
-  struct treetreehash_entry *ite = (struct treetreehash_entry *) *entry;
+  struct treetreehash_entry *ite = *entry;
   tree addr = TREE_VALUE ((tree)ite->value);
   tree decl;
   STRIP_NOPS (addr);
@@ -452,9 +452,7 @@ void
 java_expand_catch_classes (tree this_class)
 {
   if (TYPE_TO_RUNTIME_MAP (this_class))
-    htab_traverse 
-      (TYPE_TO_RUNTIME_MAP (this_class),
-       expand_catch_class, NULL);
+    TYPE_TO_RUNTIME_MAP (this_class)->traverse<int, expand_catch_class> (0);
 }
 
 /* Build and push the variable that will hold the exception object

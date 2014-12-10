@@ -30,10 +30,10 @@ extern bool remove_stmt_from_eh_lp_fn (struct function *, gimple);
 extern bool remove_stmt_from_eh_lp (gimple);
 extern int lookup_stmt_eh_lp_fn (struct function *, gimple);
 extern int lookup_stmt_eh_lp (gimple);
-extern bool make_eh_dispatch_edges (gimple);
+extern bool make_eh_dispatch_edges (geh_dispatch *);
 extern void make_eh_edges (gimple);
 extern edge redirect_eh_edge (edge, basic_block);
-extern void redirect_eh_dispatch_edge (gimple, edge, basic_block);
+extern void redirect_eh_dispatch_edge (geh_dispatch *, edge, basic_block);
 extern bool operation_could_trap_helper_p (enum tree_code, bool, bool, bool,
 					   bool, tree, bool *);
 extern bool operation_could_trap_p (enum tree_code, bool, bool, tree);
@@ -51,6 +51,6 @@ extern bool maybe_duplicate_eh_stmt_fn (struct function *, gimple,
 extern bool maybe_duplicate_eh_stmt (gimple, gimple);
 extern void maybe_remove_unreachable_handlers (void);
 extern bool verify_eh_edges (gimple);
-extern bool verify_eh_dispatch_edge (gimple);
+extern bool verify_eh_dispatch_edge (geh_dispatch *);
 
 #endif /* GCC_TREE_EH_H */

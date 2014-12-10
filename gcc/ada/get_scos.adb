@@ -302,8 +302,8 @@ begin
                      From       => SCO_Table.Last + 1,
                      To         => 0));
 
-                     when others =>
-                        raise Program_Error;
+               when others =>
+                  raise Program_Error;
 
             end case;
 

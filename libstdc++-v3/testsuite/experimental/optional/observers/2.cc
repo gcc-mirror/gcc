@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++1y" }
+// { dg-options "-std=gnu++14" }
 // { dg-do run }
 
 // Copyright (C) 2013-2014 Free Software Foundation, Inc.
@@ -25,6 +25,8 @@ struct value_type
 {
   int i;
 };
+
+void* operator&(const value_type&) = delete;
 
 int main()
 {

@@ -17,10 +17,11 @@
 
        implicit none
 ! gfc_warning:
-1234  complex :: cplx ! { dg-warning "defined but cannot be used" }
+1234  complex :: cplx ! { dg-error "defined but cannot be used" }
       cplx = 20.
 
 ! gfc_warning_now:
- 1 ! { dg-warning "Ignoring statement label in empty statement" }
+ 1 ! { dg-error "Ignoring statement label in empty statement" }
        end
 ! { dg-final { output-exists-not } }
+! { dg-excess-errors "warnings being treated as errors" }

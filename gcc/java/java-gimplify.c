@@ -27,6 +27,15 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree.h"
 #include "java-tree.h"
 #include "dumpfile.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -128,7 +137,7 @@ java_gimplify_block (tree java_block)
 {
   tree decls = BLOCK_VARS (java_block);
   tree body = BLOCK_EXPR_BODY (java_block);
-  gimple outer = gimple_current_bind_expr ();
+  gbind *outer = gimple_current_bind_expr ();
   tree block;
 
   /* Don't bother with empty blocks.  */

@@ -93,7 +93,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__ret = wctype("graph");
 	break;
       default:
-	__ret = __wmask_type();
+	// For some targets ctype_base::blank == ctype_base::space so check
+	// here to avoid a duplicate case error.
+	if (__m == blank)
+	  __ret = wctype("blank");
+	else
+	  __ret = __wmask_type();
       }
     return __ret;
   };
@@ -133,7 +138,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   do_is(mask __m, char_type __c) const
   { 
     bool __ret = false;
-    // Generically, 15 (instead of 10) since we don't know the numerical
+    // Generically, 15 (instead of 11) since we don't know the numerical
     // encoding of the various categories in /usr/include/ctype.h.
     const size_t __bitmasksize = 15; 
     for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
@@ -152,7 +157,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     for (;__lo < __hi; ++__vec, ++__lo)
       {
-	// Generically, 15 (instead of 10) since we don't know the numerical
+	// Generically, 15 (instead of 11) since we don't know the numerical
 	// encoding of the various categories in /usr/include/ctype.h.
 	const size_t __bitmasksize = 15; 
 	mask __m = 0;

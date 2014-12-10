@@ -69,6 +69,8 @@ add_params (const param_info params[], size_t n)
 void
 global_init_params (void)
 {
+  gcc_assert (!params_finished);
+
   add_params (lang_independent_params, LAST_PARAM);
   targetm_common.option_default_params ();
 }
@@ -80,6 +82,18 @@ void
 finish_params (void)
 {
   params_finished = true;
+}
+
+/* Reset all state within params.c so that we can rerun the compiler
+   within the same process.  For use by toplev::finalize.  */
+
+void
+params_c_finalize (void)
+{
+  XDELETEVEC (compiler_params);
+  compiler_params = NULL;
+  num_compiler_params = 0;
+  params_finished = false;
 }
 
 /* Set the value of the parameter given by NUM to VALUE in PARAMS and

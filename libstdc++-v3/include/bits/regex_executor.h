@@ -145,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       bool
-      _M_word_boundary(_State<_TraitsT> __state) const;
+      _M_word_boundary() const;
 
       bool
       _M_lookahead(_State<_TraitsT> __state);
@@ -205,7 +205,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       _ResultsVec                                           _M_cur_results;
       _BiIter                                               _M_current;
-      const _BiIter                                         _M_begin;
+      _BiIter                                               _M_begin;
       const _BiIter                                         _M_end;
       const _RegexT&                                        _M_re;
       const _NFAT&                                          _M_nfa;

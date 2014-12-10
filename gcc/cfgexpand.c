@@ -30,12 +30,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "print-tree.h"
 #include "tm_p.h"
-#include "basic-block.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "input.h"
 #include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "basic-block.h"
+#include "insn-codes.h"
+#include "optabs.h"
 #include "expr.h"
 #include "langhooks.h"
 #include "bitmap.h"
-#include "hash-set.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "tree-eh.h"
@@ -45,6 +58,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "gimple-ssa.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
@@ -74,6 +90,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "output.h"
 #include "builtins.h"
+#include "tree-chkp.h"
+#include "rtl-chkp.h"
 
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
@@ -672,8 +690,8 @@ update_alias_info_with_stack_vars (void)
          as base during alias-oracle queries on RTL for bases that
 	 have been partitioned.  */
       if (var == NULL_TREE)
-	var = create_tmp_var (ptr_type_node, NULL);
-      name = make_ssa_name (var, NULL);
+	var = create_tmp_var (ptr_type_node);
+      name = make_ssa_name (var);
 
       /* Create bitmaps representing partitions.  They will be used for
          points-to sets later, so use GGC alloc.  */
@@ -1131,7 +1149,7 @@ expand_one_register_var (tree var)
 {
   tree decl = SSAVAR (var);
   tree type = TREE_TYPE (decl);
-  enum machine_mode reg_mode = promote_decl_mode (decl, NULL);
+  machine_mode reg_mode = promote_decl_mode (decl, NULL);
   rtx x = gen_reg_rtx (reg_mode);
 
   set_rtl (var, x);
@@ -1151,7 +1169,7 @@ expand_one_register_var (tree var)
 static void
 expand_one_error_var (tree var)
 {
-  enum machine_mode mode = DECL_MODE (var);
+  machine_mode mode = DECL_MODE (var);
   rtx x;
 
   if (mode == BLKmode)
@@ -1704,6 +1722,9 @@ expand_used_vars (void)
 
   init_vars_expansion ();
 
+  if (targetm.use_pseudo_pic_reg ())
+    pic_offset_table_rtx = gen_reg_rtx (Pmode);
+
   hash_map<tree, tree> ssa_name_decls;
   for (i = 0; i < SA.map->num_partitions; i++)
     {
@@ -1717,7 +1738,7 @@ expand_used_vars (void)
 	{
 	  tree *slot = &ssa_name_decls.get_or_insert (TREE_TYPE (var));
 	  if (!*slot)
-	    *slot = create_tmp_reg (TREE_TYPE (var), NULL);
+	    *slot = create_tmp_reg (TREE_TYPE (var));
 	  replace_ssa_name_symbol (var, *slot);
 	}
 
@@ -1983,7 +2004,6 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
 {
   gimple_stmt_iterator gsi;
   tree lab;
-  gimple lab_stmt;
 
   if (bb->flags & BB_RTL)
     return block_label (bb);
@@ -1996,8 +2016,10 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      lab_stmt = gsi_stmt (gsi);
-      if (gimple_code (lab_stmt) != GIMPLE_LABEL)
+      glabel *lab_stmt;
+
+      lab_stmt = dyn_cast <glabel *> (gsi_stmt (gsi));
+      if (!lab_stmt)
 	break;
 
       lab = gimple_label_label (lab_stmt);
@@ -2070,7 +2092,7 @@ maybe_cleanup_end_of_block (edge e, rtx_insn *last)
    block and created a new one.  */
 
 static basic_block
-expand_gimple_cond (basic_block bb, gimple stmt)
+expand_gimple_cond (basic_block bb, gcond *stmt)
 {
   basic_block new_bb, dest;
   edge new_edge;
@@ -2111,9 +2133,10 @@ expand_gimple_cond (basic_block bb, gimple stmt)
 	      op0 = gimple_assign_rhs1 (second);
 	      op1 = gimple_assign_rhs2 (second);
 	    }
-	  /* If jumps are cheap turn some more codes into
-	     jumpy sequences.  */
-	  else if (BRANCH_COST (optimize_insn_for_speed_p (), false) < 4)
+	  /* If jumps are cheap and the target does not support conditional
+	     compare, turn some more codes into jumpy sequences.  */
+	  else if (BRANCH_COST (optimize_insn_for_speed_p (), false) < 4
+		   && targetm.gen_ccmp_first == NULL)
 	    {
 	      if ((code2 == BIT_AND_EXPR
 		   && TYPE_PRECISION (TREE_TYPE (op0)) == 1
@@ -2211,16 +2234,16 @@ static void
 mark_transaction_restart_calls (gimple stmt)
 {
   struct tm_restart_node dummy;
-  void **slot;
+  tm_restart_node **slot;
 
   if (!cfun->gimple_df->tm_restart)
     return;
 
   dummy.stmt = stmt;
-  slot = htab_find_slot (cfun->gimple_df->tm_restart, &dummy, NO_INSERT);
+  slot = cfun->gimple_df->tm_restart->find_slot (&dummy, NO_INSERT);
   if (slot)
     {
-      struct tm_restart_node *n = (struct tm_restart_node *) *slot;
+      struct tm_restart_node *n = *slot;
       tree list = n->label_or_list;
       rtx_insn *insn;
 
@@ -2241,7 +2264,7 @@ mark_transaction_restart_calls (gimple stmt)
    statement STMT.  */
 
 static void
-expand_call_stmt (gimple stmt)
+expand_call_stmt (gcall *stmt)
 {
   tree exp, decl, lhs;
   bool builtin_p;
@@ -2300,6 +2323,7 @@ expand_call_stmt (gimple stmt)
     CALL_FROM_THUNK_P (exp) = gimple_call_from_thunk_p (stmt);
   CALL_EXPR_VA_ARG_PACK (exp) = gimple_call_va_arg_pack_p (stmt);
   SET_EXPR_LOCATION (exp, gimple_location (stmt));
+  CALL_WITH_BOUNDS_P (exp) = gimple_call_with_bounds_p (stmt);
 
   /* Ensure RTL is created for debug args.  */
   if (decl && DECL_HAS_DEBUG_ARGS_P (decl))
@@ -2466,7 +2490,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   rtx *output_rtx = XALLOCAVEC (rtx, noutputs);
   int *inout_opnum = XALLOCAVEC (int, noutputs);
   rtx *real_output_rtx = XALLOCAVEC (rtx, noutputs);
-  enum machine_mode *inout_mode = XALLOCAVEC (enum machine_mode, noutputs);
+  machine_mode *inout_mode = XALLOCAVEC (machine_mode, noutputs);
   const char **constraints = XALLOCAVEC (const char *, noutputs + ninputs);
   int old_generating_concat_p = generating_concat_p;
   rtx_code_label *fallthru_label = NULL;
@@ -2570,7 +2594,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
     }
 
   ninputs += ninout;
-  if (ninputs + noutputs > MAX_RECOG_OPERANDS)
+  if (ninputs + noutputs + nlabels > MAX_RECOG_OPERANDS)
     {
       error ("more than %d operands in %<asm%>", MAX_RECOG_OPERANDS);
       return;
@@ -2927,7 +2951,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 
 
 static void
-expand_asm_stmt (gimple stmt)
+expand_asm_stmt (gasm *stmt)
 {
   int noutputs;
   tree outputs, tail, t;
@@ -3087,8 +3111,8 @@ expand_value_return (rtx val)
       tree funtype = TREE_TYPE (current_function_decl);
       tree type = TREE_TYPE (decl);
       int unsignedp = TYPE_UNSIGNED (type);
-      enum machine_mode old_mode = DECL_MODE (decl);
-      enum machine_mode mode;
+      machine_mode old_mode = DECL_MODE (decl);
+      machine_mode mode;
       if (DECL_BY_REFERENCE (decl))
         mode = promote_function_mode (type, old_mode, &unsignedp, funtype, 2);
       else
@@ -3110,11 +3134,12 @@ expand_value_return (rtx val)
    from the current function.  */
 
 static void
-expand_return (tree retval)
+expand_return (tree retval, tree bounds)
 {
   rtx result_rtl;
   rtx val = 0;
   tree retval_rhs;
+  rtx bounds_rtl;
 
   /* If function wants no value, give it none.  */
   if (TREE_CODE (TREE_TYPE (TREE_TYPE (current_function_decl))) == VOID_TYPE)
@@ -3139,6 +3164,56 @@ expand_return (tree retval)
     retval_rhs = retval;
 
   result_rtl = DECL_RTL (DECL_RESULT (current_function_decl));
+
+  /* Put returned bounds to the right place.  */
+  bounds_rtl = DECL_BOUNDS_RTL (DECL_RESULT (current_function_decl));
+  if (bounds_rtl)
+    {
+      rtx addr, bnd;
+
+      if (bounds)
+	{
+	  bnd = expand_normal (bounds);
+	  targetm.calls.store_returned_bounds (bounds_rtl, bnd);
+	}
+      else if (REG_P (bounds_rtl))
+	{
+	  addr = expand_normal (build_fold_addr_expr (retval_rhs));
+	  addr = gen_rtx_MEM (Pmode, addr);
+	  bnd = targetm.calls.load_bounds_for_arg (addr, NULL, NULL);
+	  targetm.calls.store_returned_bounds (bounds_rtl, bnd);
+	}
+      else
+	{
+	  int n;
+
+	  gcc_assert (GET_CODE (bounds_rtl) == PARALLEL);
+
+	  addr = expand_normal (build_fold_addr_expr (retval_rhs));
+	  addr = gen_rtx_MEM (Pmode, addr);
+
+	  for (n = 0; n < XVECLEN (bounds_rtl, 0); n++)
+	    {
+	      rtx offs = XEXP (XVECEXP (bounds_rtl, 0, n), 1);
+	      rtx slot = XEXP (XVECEXP (bounds_rtl, 0, n), 0);
+	      rtx from = adjust_address (addr, Pmode, INTVAL (offs));
+	      rtx bnd = targetm.calls.load_bounds_for_arg (from, NULL, NULL);
+	      targetm.calls.store_returned_bounds (slot, bnd);
+	    }
+	}
+    }
+  else if (chkp_function_instrumented_p (current_function_decl)
+	   && !BOUNDED_P (retval_rhs)
+	   && chkp_type_has_pointer (TREE_TYPE (retval_rhs))
+	   && TREE_CODE (retval_rhs) != RESULT_DECL)
+    {
+      rtx addr = expand_normal (build_fold_addr_expr (retval_rhs));
+      addr = gen_rtx_MEM (Pmode, addr);
+
+      gcc_assert (MEM_P (result_rtl));
+
+      chkp_copy_bounds_for_stack_parm (result_rtl, addr, TREE_TYPE (retval_rhs));
+    }
 
   /* If we are returning the RESULT_DECL, then the value has already
      been stored into it, so we don't have to do anything special.  */
@@ -3203,23 +3278,23 @@ expand_gimple_stmt_1 (gimple stmt)
 	expand_computed_goto (op0);
       break;
     case GIMPLE_LABEL:
-      expand_label (gimple_label_label (stmt));
+      expand_label (gimple_label_label (as_a <glabel *> (stmt)));
       break;
     case GIMPLE_NOP:
     case GIMPLE_PREDICT:
       break;
     case GIMPLE_SWITCH:
-      expand_case (stmt);
+      expand_case (as_a <gswitch *> (stmt));
       break;
     case GIMPLE_ASM:
-      expand_asm_stmt (stmt);
+      expand_asm_stmt (as_a <gasm *> (stmt));
       break;
     case GIMPLE_CALL:
-      expand_call_stmt (stmt);
+      expand_call_stmt (as_a <gcall *> (stmt));
       break;
 
     case GIMPLE_RETURN:
-      op0 = gimple_return_retval (stmt);
+      op0 = gimple_return_retval (as_a <greturn *> (stmt));
 
       if (op0 && op0 != error_mark_node)
 	{
@@ -3245,12 +3320,13 @@ expand_gimple_stmt_1 (gimple stmt)
       if (!op0)
 	expand_null_return ();
       else
-	expand_return (op0);
+	expand_return (op0, gimple_return_retbnd (stmt));
       break;
 
     case GIMPLE_ASSIGN:
       {
-	tree lhs = gimple_assign_lhs (stmt);
+	gassign *assign_stmt = as_a <gassign *> (stmt);
+	tree lhs = gimple_assign_lhs (assign_stmt);
 
 	/* Tree expand used to fiddle with |= and &= of two bitfield
 	   COMPONENT_REFs here.  This can't happen with gimple, the LHS
@@ -3260,7 +3336,7 @@ expand_gimple_stmt_1 (gimple stmt)
 	    || get_gimple_rhs_class (gimple_expr_code (stmt))
 	       == GIMPLE_SINGLE_RHS)
 	  {
-	    tree rhs = gimple_assign_rhs1 (stmt);
+	    tree rhs = gimple_assign_rhs1 (assign_stmt);
 	    gcc_assert (get_gimple_rhs_class (gimple_expr_code (stmt))
 			== GIMPLE_SINGLE_RHS);
 	    if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (rhs))
@@ -3271,12 +3347,13 @@ expand_gimple_stmt_1 (gimple stmt)
 	      ;
 	    else
 	      expand_assignment (lhs, rhs,
-				 gimple_assign_nontemporal_move_p (stmt));
+				 gimple_assign_nontemporal_move_p (
+				   assign_stmt));
 	  }
 	else
 	  {
 	    rtx target, temp;
-	    bool nontemporal = gimple_assign_nontemporal_move_p (stmt);
+	    bool nontemporal = gimple_assign_nontemporal_move_p (assign_stmt);
 	    struct separate_ops ops;
 	    bool promoted = false;
 
@@ -3284,18 +3361,18 @@ expand_gimple_stmt_1 (gimple stmt)
 	    if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
 	      promoted = true;
 
-	    ops.code = gimple_assign_rhs_code (stmt);
+	    ops.code = gimple_assign_rhs_code (assign_stmt);
 	    ops.type = TREE_TYPE (lhs);
 	    switch (get_gimple_rhs_class (gimple_expr_code (stmt)))
 	      {
 		case GIMPLE_TERNARY_RHS:
-		  ops.op2 = gimple_assign_rhs3 (stmt);
+		  ops.op2 = gimple_assign_rhs3 (assign_stmt);
 		  /* Fallthru */
 		case GIMPLE_BINARY_RHS:
-		  ops.op1 = gimple_assign_rhs2 (stmt);
+		  ops.op1 = gimple_assign_rhs2 (assign_stmt);
 		  /* Fallthru */
 		case GIMPLE_UNARY_RHS:
-		  ops.op0 = gimple_assign_rhs1 (stmt);
+		  ops.op0 = gimple_assign_rhs1 (assign_stmt);
 		  break;
 		default:
 		  gcc_unreachable ();
@@ -3406,7 +3483,7 @@ expand_gimple_stmt (gimple stmt)
    tailcall) and the normal result happens via a sqrt instruction.  */
 
 static basic_block
-expand_gimple_tailcall (basic_block bb, gimple stmt, bool *can_fallthru)
+expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
 {
   rtx_insn *last2, *last;
   edge e;
@@ -3504,7 +3581,7 @@ expand_gimple_tailcall (basic_block bb, gimple stmt, bool *can_fallthru)
 /* Return the difference between the floor and the truncated result of
    a signed division by OP1 with remainder MOD.  */
 static rtx
-floor_sdiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
+floor_sdiv_adjust (machine_mode mode, rtx mod, rtx op1)
 {
   /* (mod != 0 ? (op1 / mod < 0 ? -1 : 0) : 0) */
   return gen_rtx_IF_THEN_ELSE
@@ -3520,7 +3597,7 @@ floor_sdiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
 /* Return the difference between the ceil and the truncated result of
    a signed division by OP1 with remainder MOD.  */
 static rtx
-ceil_sdiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
+ceil_sdiv_adjust (machine_mode mode, rtx mod, rtx op1)
 {
   /* (mod != 0 ? (op1 / mod > 0 ? 1 : 0) : 0) */
   return gen_rtx_IF_THEN_ELSE
@@ -3536,7 +3613,7 @@ ceil_sdiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
 /* Return the difference between the ceil and the truncated result of
    an unsigned division by OP1 with remainder MOD.  */
 static rtx
-ceil_udiv_adjust (enum machine_mode mode, rtx mod, rtx op1 ATTRIBUTE_UNUSED)
+ceil_udiv_adjust (machine_mode mode, rtx mod, rtx op1 ATTRIBUTE_UNUSED)
 {
   /* (mod != 0 ? 1 : 0) */
   return gen_rtx_IF_THEN_ELSE
@@ -3548,7 +3625,7 @@ ceil_udiv_adjust (enum machine_mode mode, rtx mod, rtx op1 ATTRIBUTE_UNUSED)
    of a signed division by OP1 with remainder MOD.  Halfway cases are
    rounded away from zero, rather than to the nearest even number.  */
 static rtx
-round_sdiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
+round_sdiv_adjust (machine_mode mode, rtx mod, rtx op1)
 {
   /* (abs (mod) >= abs (op1) - abs (mod)
       ? (op1 / mod > 0 ? 1 : -1)
@@ -3571,7 +3648,7 @@ round_sdiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
    are rounded away from zero, rather than to the nearest even
    number.  */
 static rtx
-round_udiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
+round_udiv_adjust (machine_mode mode, rtx mod, rtx op1)
 {
   /* (mod >= op1 - mod ? 1 : 0) */
   return gen_rtx_IF_THEN_ELSE
@@ -3584,10 +3661,10 @@ round_udiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
    any rtl.  */
 
 static rtx
-convert_debug_memory_address (enum machine_mode mode, rtx x,
+convert_debug_memory_address (machine_mode mode, rtx x,
 			      addr_space_t as)
 {
-  enum machine_mode xmode = GET_MODE (x);
+  machine_mode xmode = GET_MODE (x);
 
 #ifndef POINTERS_EXTEND_UNSIGNED
   gcc_assert (mode == Pmode
@@ -3717,8 +3794,8 @@ static rtx
 expand_debug_expr (tree exp)
 {
   rtx op0 = NULL_RTX, op1 = NULL_RTX, op2 = NULL_RTX;
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-  enum machine_mode inner_mode = VOIDmode;
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+  machine_mode inner_mode = VOIDmode;
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (exp));
   addr_space_t as;
 
@@ -3868,8 +3945,7 @@ expand_debug_expr (tree exp)
 
     adjust_mode:
     case PAREN_EXPR:
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
       {
 	inner_mode = GET_MODE (op0);
 
@@ -4005,7 +4081,7 @@ expand_debug_expr (tree exp)
     case IMAGPART_EXPR:
     case VIEW_CONVERT_EXPR:
       {
-	enum machine_mode mode1;
+	machine_mode mode1;
 	HOST_WIDE_INT bitsize, bitpos;
 	tree offset;
 	int volatilep = 0;
@@ -4023,7 +4099,7 @@ expand_debug_expr (tree exp)
 
 	if (offset)
 	  {
-	    enum machine_mode addrmode, offmode;
+	    machine_mode addrmode, offmode;
 
 	    if (!MEM_P (op0))
 	      return NULL;
@@ -4093,7 +4169,7 @@ expand_debug_expr (tree exp)
 	if ((bitpos % BITS_PER_UNIT) == 0
 	    && bitsize == GET_MODE_BITSIZE (mode1))
 	  {
-	    enum machine_mode opmode = GET_MODE (op0);
+	    machine_mode opmode = GET_MODE (op0);
 
 	    if (opmode == VOIDmode)
 	      opmode = TYPE_MODE (TREE_TYPE (tem));
@@ -4388,7 +4464,7 @@ expand_debug_expr (tree exp)
 						   GET_MODE_INNER (mode)));
       else
 	{
-	  enum machine_mode imode = GET_MODE_INNER (mode);
+	  machine_mode imode = GET_MODE_INNER (mode);
 	  rtx re, im;
 
 	  if (MEM_P (op0))
@@ -4398,8 +4474,8 @@ expand_debug_expr (tree exp)
 	    }
 	  else
 	    {
-	      enum machine_mode ifmode = int_mode_for_mode (mode);
-	      enum machine_mode ihmode = int_mode_for_mode (imode);
+	      machine_mode ifmode = int_mode_for_mode (mode);
+	      machine_mode ihmode = int_mode_for_mode (imode);
 	      rtx halfsize;
 	      if (ifmode == BLKmode || ihmode == BLKmode)
 		return NULL;
@@ -4587,11 +4663,9 @@ expand_debug_expr (tree exp)
     case REDUC_MIN_EXPR:
     case REDUC_PLUS_EXPR:
     case VEC_COND_EXPR:
-    case VEC_LSHIFT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_TRUNC_EXPR:
-    case VEC_RSHIFT_EXPR:
     case VEC_UNPACK_FLOAT_HI_EXPR:
     case VEC_UNPACK_FLOAT_LO_EXPR:
     case VEC_UNPACK_HI_EXPR:
@@ -4696,7 +4770,7 @@ static rtx
 expand_debug_source_expr (tree exp)
 {
   rtx op0 = NULL_RTX;
-  enum machine_mode mode = VOIDmode, inner_mode;
+  machine_mode mode = VOIDmode, inner_mode;
 
   switch (TREE_CODE (exp))
     {
@@ -4844,7 +4918,7 @@ expand_debug_locations (void)
 	tree value = (tree)INSN_VAR_LOCATION_LOC (insn);
 	rtx val;
 	rtx_insn *prev_insn, *insn2;
-	enum machine_mode mode;
+	machine_mode mode;
 
 	if (value == NULL_TREE)
 	  val = NULL_RTX;
@@ -4914,7 +4988,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   if (!gsi_end_p (gsi)
       && gimple_code (gsi_stmt (gsi)) == GIMPLE_RETURN)
     {
-      gimple ret_stmt = gsi_stmt (gsi);
+      greturn *ret_stmt = as_a <greturn *> (gsi_stmt (gsi));
 
       gcc_assert (single_succ_p (bb));
       gcc_assert (single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun));
@@ -5033,7 +5107,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 		    tree value = gimple_assign_rhs_to_tree (def);
 		    tree vexpr = make_node (DEBUG_EXPR_DECL);
 		    rtx val;
-		    enum machine_mode mode;
+		    machine_mode mode;
 
 		    set_curr_insn_location (gimple_location (def));
 
@@ -5071,7 +5145,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	 fixup the CFG accordingly.  */
       if (gimple_code (stmt) == GIMPLE_COND)
 	{
-	  new_bb = expand_gimple_cond (bb, stmt);
+	  new_bb = expand_gimple_cond (bb, as_a <gcond *> (stmt));
 	  if (new_bb)
 	    return new_bb;
 	}
@@ -5085,7 +5159,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	      tree var = gimple_debug_bind_get_var (stmt);
 	      tree value;
 	      rtx val;
-	      enum machine_mode mode;
+	      machine_mode mode;
 
 	      if (TREE_CODE (var) != DEBUG_EXPR_DECL
 		  && TREE_CODE (var) != LABEL_DECL
@@ -5145,7 +5219,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	  tree var = gimple_debug_source_bind_get_var (stmt);
 	  tree value = gimple_debug_source_bind_get_value (stmt);
 	  rtx val;
-	  enum machine_mode mode;
+	  machine_mode mode;
 
 	  last = get_last_insn ();
 
@@ -5171,15 +5245,16 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	}
       else
 	{
-	  if (is_gimple_call (stmt)
-	      && gimple_call_tail_p (stmt)
+	  gcall *call_stmt = dyn_cast <gcall *> (stmt);
+	  if (call_stmt
+	      && gimple_call_tail_p (call_stmt)
 	      && disable_tail_calls)
-	    gimple_call_set_tail (stmt, false);
+	    gimple_call_set_tail (call_stmt, false);
 
-	  if (is_gimple_call (stmt) && gimple_call_tail_p (stmt))
+	  if (call_stmt && gimple_call_tail_p (call_stmt))
 	    {
 	      bool can_fallthru;
-	      new_bb = expand_gimple_tailcall (bb, stmt, &can_fallthru);
+	      new_bb = expand_gimple_tailcall (bb, call_stmt, &can_fallthru);
 	      if (new_bb)
 		{
 		  if (can_fallthru)
@@ -5640,6 +5715,9 @@ pass_expand::execute (function *fun)
 
   rtl_profile_for_bb (ENTRY_BLOCK_PTR_FOR_FN (fun));
 
+  if (chkp_function_instrumented_p (current_function_decl))
+    chkp_reset_rtl_bounds ();
+
   insn_locations_init ();
   if (!DECL_IS_BUILTIN (current_function_decl))
     {
@@ -5984,10 +6062,7 @@ pass_expand::execute (function *fun)
 
   /* After expanding, the tm_restart map is no longer needed.  */
   if (fun->gimple_df->tm_restart)
-    {
-      htab_delete (fun->gimple_df->tm_restart);
-      fun->gimple_df->tm_restart = NULL;
-    }
+    fun->gimple_df->tm_restart = NULL;
 
   /* Tag the blocks with a depth number so that change_scope can find
      the common parent easily.  */

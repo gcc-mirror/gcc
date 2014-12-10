@@ -1,3 +1,57 @@
+2014-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR java/64004
+	* class.c (build_classdollar_field): Do not set TREE_READONLY.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	Merger of git branch "gimple-classes-v2-option-3".
+	* ChangeLog.gimple-classes: New.
+	* java-gimplify.c (java_gimplify_block): Strengthen local "outer"
+	from gimple to gbind *.
+
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc/ChangeLog.jit: New.
+
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* builtins.c, java-tree.h, typeck.c: Remove redundant enum from
+	machine_mode.
+
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* class.c: Adjust include files.
+	* decl.c: Ditto.
+	* jcf-parse.c: Ditto.
+	* resource.c: Ditto.
+
+2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	* java-gimplify.c: Adjust include files.
+
+2014-10-22  Alan Modra  <amodra@gmail.com>
+
+	* mangle.c (finish_mangling): Cast result of obstack_base to (char *).
+	* typeck.c (build_java_argument_signature): Likewise.
+	(build_java_signature): Likewise.
+
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* class.c: Adjust include files.
+	* resource.c: Likewise.
+
+2014-10-15  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR target/63536
+	* lang.c (java_print_error_function): Add check on NULL function
+	context.
+
+2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* class.c, decl.c, except.c, expr.c, java-tree.h, lang.c: Use
+	hash_table instead of hashtab.
+
 2014-10-07  Marek Polacek  <polacek@redhat.com>
 
 	* jvgenmain.c (main): Provide declarations for JvRunMain{,Name}.

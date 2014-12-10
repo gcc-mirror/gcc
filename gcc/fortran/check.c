@@ -1398,17 +1398,18 @@ gfc_check_cmplx (gfc_expr *x, gfc_expr *y, gfc_expr *kind)
   if (!kind_check (kind, 2, BT_COMPLEX))
     return false;
 
-  if (!kind && gfc_option.gfc_warn_conversion
+  if (!kind && warn_conversion
       && x->ts.type == BT_REAL && x->ts.kind > gfc_default_real_kind)
-    gfc_warning_now ("Conversion from %s to default-kind COMPLEX(%d) at %L "
-		     "might lose precision, consider using the KIND argument",
-		     gfc_typename (&x->ts), gfc_default_real_kind, &x->where);
-  else if (y && !kind && gfc_option.gfc_warn_conversion
+    gfc_warning_now (OPT_Wconversion, "Conversion from %s to default-kind "
+		     "COMPLEX(%d) at %L might lose precision, consider using "
+		     "the KIND argument", gfc_typename (&x->ts),
+		     gfc_default_real_kind, &x->where);
+  else if (y && !kind && warn_conversion
 	   && y->ts.type == BT_REAL && y->ts.kind > gfc_default_real_kind)
-    gfc_warning_now ("Conversion from %s to default-kind COMPLEX(%d) at %L "
-		     "might lose precision, consider using the KIND argument",
-		     gfc_typename (&y->ts), gfc_default_real_kind, &y->where);
-
+    gfc_warning_now (OPT_Wconversion, "Conversion from %s to default-kind "
+		     "COMPLEX(%d) at %L might lose precision, consider using "
+		     "the KIND argument", gfc_typename (&y->ts),
+		     gfc_default_real_kind, &y->where);
   return true;
 }
 
@@ -1430,6 +1431,13 @@ check_co_collective (gfc_expr *a, gfc_expr *image_idx, gfc_expr *stat,
       gfc_error ("Argument 'A' with INTENT(INOUT) at %L of the intrinsic "
 		 "subroutine %s shall not have a vector subscript",
 		 &a->where, gfc_current_intrinsic);
+      return false;
+    }
+
+  if (gfc_is_coindexed (a))
+    {
+      gfc_error ("The A argument at %L to the intrinsic %s shall not be "
+		 "coindexed", &a->where, gfc_current_intrinsic);
       return false;
     }
 
@@ -1475,7 +1483,7 @@ check_co_collective (gfc_expr *a, gfc_expr *image_idx, gfc_expr *stat,
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %L, use -fcoarray= to enable",
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
 		       &a->where);
       return false;
     }
@@ -1490,10 +1498,10 @@ gfc_check_co_broadcast (gfc_expr *a, gfc_expr *source_image, gfc_expr *stat,
 {
   if (a->ts.type == BT_CLASS || gfc_expr_attr (a).alloc_comp)
     {
-       gfc_error ("Support for the A argument at %L which is polymorphic A "
-                  "argument or has allocatable components is not yet "
-		  "implemented", &a->where);
-       return false;
+      gfc_error ("Support for the A argument at %L which is polymorphic A "
+		 "argument or has allocatable components is not yet "
+		 "implemented", &a->where);
+      return false;
     }
   return check_co_collective (a, source_image, stat, errmsg, false);
 }
@@ -1504,38 +1512,164 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 		     gfc_expr *stat, gfc_expr *errmsg)
 {
   symbol_attribute attr;
+  gfc_formal_arglist *formal;
+  gfc_symbol *sym;
 
   if (a->ts.type == BT_CLASS)
     {
-       gfc_error ("The A argument at %L of CO_REDUCE shall not be polymorphic",
-		  &a->where);
-       return false;
+      gfc_error ("The A argument at %L of CO_REDUCE shall not be polymorphic",
+		 &a->where);
+      return false;
     }
 
   if (gfc_expr_attr (a).alloc_comp)
     {
-       gfc_error ("Support for the A argument at %L with allocatable components"
-                  " is not yet implemented", &a->where);
-       return false;
-    }
-
-  attr = gfc_expr_attr (op);
-  if (!attr.pure || !attr.function)
-    {
-       gfc_error ("OPERATOR argument at %L must be a PURE function",
-		  &op->where);
-       return false;
+      gfc_error ("Support for the A argument at %L with allocatable components"
+                 " is not yet implemented", &a->where);
+      return false;
     }
 
   if (!check_co_collective (a, result_image, stat, errmsg, true))
     return false;
 
-  /* FIXME: After J3/WG5 has decided what they actually exactly want, more
-     checks such as same-argument checks have to be added, implemented and
-     intrinsic.texi upated.  */
+  if (!gfc_resolve_expr (op))
+    return false;
 
-  gfc_error("CO_REDUCE at %L is not yet implemented", &a->where);
-  return false;
+  attr = gfc_expr_attr (op);
+  if (!attr.pure || !attr.function)
+    {
+      gfc_error ("OPERATOR argument at %L must be a PURE function",
+		 &op->where);
+      return false;
+    }
+
+  if (attr.intrinsic)
+    {
+      /* None of the intrinsics fulfills the criteria of taking two arguments,
+	 returning the same type and kind as the arguments and being permitted
+	 as actual argument.  */
+      gfc_error ("Intrinsic function %s at %L is not permitted for CO_REDUCE",
+		 op->symtree->n.sym->name, &op->where);
+      return false;
+    }
+
+  if (gfc_is_proc_ptr_comp (op))
+    {
+      gfc_component *comp = gfc_get_proc_ptr_comp (op);
+      sym = comp->ts.interface;
+    }
+  else
+    sym = op->symtree->n.sym;
+
+  formal = sym->formal;
+
+  if (!formal || !formal->next || formal->next->next)
+    {
+      gfc_error ("The function passed as OPERATOR at %L shall have two "
+		 "arguments", &op->where);
+      return false;
+    }
+
+  if (sym->result->ts.type == BT_UNKNOWN)
+    gfc_set_default_type (sym->result, 0, NULL);
+
+  if (!gfc_compare_types (&a->ts, &sym->result->ts))
+    {
+      gfc_error ("A argument at %L has type %s but the function passed as "
+		 "OPERATOR at %L returns %s",
+		 &a->where, gfc_typename (&a->ts), &op->where,
+		 gfc_typename (&sym->result->ts));
+      return false;
+    }
+  if (!gfc_compare_types (&a->ts, &formal->sym->ts)
+      || !gfc_compare_types (&a->ts, &formal->next->sym->ts))
+    {
+      gfc_error ("The function passed as OPERATOR at %L has arguments of type "
+		 "%s and %s but shall have type %s", &op->where,
+		 gfc_typename (&formal->sym->ts),
+		 gfc_typename (&formal->next->sym->ts), gfc_typename (&a->ts));
+      return false;
+    }
+  if (op->rank || attr.allocatable || attr.pointer || formal->sym->as
+      || formal->next->sym->as || formal->sym->attr.allocatable
+      || formal->next->sym->attr.allocatable || formal->sym->attr.pointer
+      || formal->next->sym->attr.pointer)
+    {
+      gfc_error ("The function passed as OPERATOR at %L shall have scalar "
+		 "nonallocatable nonpointer arguments and return a "
+		 "nonallocatable nonpointer scalar", &op->where);
+      return false;
+    }
+
+  if (formal->sym->attr.value != formal->next->sym->attr.value)
+    {
+      gfc_error ("The function passed as OPERATOR at %L shall have the VALUE "
+		 "attribute either for none or both arguments", &op->where);
+      return false;
+    }
+
+  if (formal->sym->attr.target != formal->next->sym->attr.target)
+    {
+      gfc_error ("The function passed as OPERATOR at %L shall have the TARGET "
+		 "attribute either for none or both arguments", &op->where);
+      return false;
+    }
+
+  if (formal->sym->attr.asynchronous != formal->next->sym->attr.asynchronous)
+    {
+      gfc_error ("The function passed as OPERATOR at %L shall have the "
+		 "ASYNCHRONOUS attribute either for none or both arguments",
+		 &op->where);
+      return false;
+    }
+
+  if (formal->sym->attr.optional || formal->next->sym->attr.optional)
+    {
+      gfc_error ("The function passed as OPERATOR at %L shall not have the "
+		 "OPTIONAL attribute for either of the arguments", &op->where);
+      return false;
+    }
+
+  if (a->ts.type == BT_CHARACTER)
+    {
+      gfc_charlen *cl;
+      unsigned long actual_size, formal_size1, formal_size2, result_size;
+
+      cl = a->ts.u.cl;
+      actual_size = cl && cl->length && cl->length->expr_type == EXPR_CONSTANT
+		     ? mpz_get_ui (cl->length->value.integer) : 0;
+
+      cl = formal->sym->ts.u.cl;
+      formal_size1 = cl && cl->length && cl->length->expr_type == EXPR_CONSTANT
+		     ? mpz_get_ui (cl->length->value.integer) : 0;
+
+      cl = formal->next->sym->ts.u.cl;
+      formal_size2 = cl && cl->length && cl->length->expr_type == EXPR_CONSTANT
+		     ? mpz_get_ui (cl->length->value.integer) : 0;
+
+      cl = sym->ts.u.cl;
+      result_size = cl && cl->length && cl->length->expr_type == EXPR_CONSTANT
+		    ? mpz_get_ui (cl->length->value.integer) : 0;
+
+      if (actual_size
+	  && ((formal_size1 && actual_size != formal_size1)
+	       || (formal_size2 && actual_size != formal_size2)))
+	{
+	  gfc_error ("The character length of the A argument at %L and of the "
+		     "arguments of the OPERATOR at %L shall be the same",
+		     &a->where, &op->where);
+	  return false;
+	}
+      if (actual_size && result_size && actual_size != result_size)
+	{
+	  gfc_error ("The character length of the A argument at %L and of the "
+		     "function result of the OPERATOR at %L shall be the same",
+		     &a->where, &op->where);
+	  return false;
+	}
+    }
+
+  return true;
 }
 
 
@@ -2436,7 +2570,7 @@ gfc_check_lcobound (gfc_expr *coarray, gfc_expr *dim, gfc_expr *kind)
 {
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 
@@ -4714,7 +4848,7 @@ gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 
@@ -4752,7 +4886,7 @@ gfc_check_num_images (gfc_expr *distance, gfc_expr *failed)
 {
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 
@@ -4794,7 +4928,7 @@ gfc_check_this_image (gfc_expr *coarray, gfc_expr *dim, gfc_expr *distance)
 {
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 
@@ -4936,7 +5070,7 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
 	return false;
     }
 
-  if (!gfc_option.warn_surprising)
+  if (!warn_surprising)
     return true;
 
   /* If we can't calculate the sizes, we cannot check any more.
@@ -4947,9 +5081,9 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
     return true;
 
   if (source_size < result_size)
-    gfc_warning("Intrinsic TRANSFER at %L has partly undefined result: "
-		"source size %ld < result size %ld", &source->where,
-		(long) source_size, (long) result_size);
+    gfc_warning ("Intrinsic TRANSFER at %L has partly undefined result: "
+		 "source size %ld < result size %ld", &source->where,
+		 (long) source_size, (long) result_size);
 
   return true;
 }
@@ -4993,7 +5127,7 @@ gfc_check_ucobound (gfc_expr *coarray, gfc_expr *dim, gfc_expr *kind)
 {
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 

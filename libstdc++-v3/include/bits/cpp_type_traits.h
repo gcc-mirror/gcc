@@ -141,7 +141,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Thirteen specializations (yes there are eleven standard integer
   // types; <em>long long</em> and <em>unsigned long long</em> are
-  // supported as extensions)
+  // supported as extensions).  Up to four target-specific __int<N>
+  // types are supported as well.
   template<>
     struct __is_integer<bool>
     {
@@ -250,6 +251,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       enum { __value = 1 };
       typedef __true_type __type;
     };
+
+#define __INT_N(TYPE) 			\
+  template<>				\
+    struct __is_integer<TYPE>		\
+    {					\
+      enum { __value = 1 };		\
+      typedef __true_type __type;	\
+    };					\
+  template<>				\
+    struct __is_integer<unsigned TYPE>	\
+    {					\
+      enum { __value = 1 };		\
+      typedef __true_type __type;	\
+    };
+
+#ifdef __GLIBCXX_TYPE_INT_N_0
+__INT_N(__GLIBCXX_TYPE_INT_N_0)
+#endif
+#ifdef __GLIBCXX_TYPE_INT_N_1
+__INT_N(__GLIBCXX_TYPE_INT_N_1)
+#endif
+#ifdef __GLIBCXX_TYPE_INT_N_2
+__INT_N(__GLIBCXX_TYPE_INT_N_2)
+#endif
+#ifdef __GLIBCXX_TYPE_INT_N_3
+__INT_N(__GLIBCXX_TYPE_INT_N_3)
+#endif
+
+#undef __INT_N
 
   //
   // Floating point types

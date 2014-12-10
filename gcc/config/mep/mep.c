@@ -41,7 +41,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "expr.h"
 #include "except.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "input.h"
 #include "function.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "reload.h"
 #include "tm_p.h"
@@ -50,10 +56,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "target-def.h"
 #include "langhooks.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "lcm.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "hash-table.h"
-#include "vec.h"
-#include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
@@ -65,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "dumpfile.h"
 #include "builtins.h"
+#include "rtl-iter.h"
 
 /* Structure of this file:
 
@@ -157,7 +171,7 @@ static void mep_rewrite_mult (rtx_insn *, rtx);
 static void mep_rewrite_mulsi3 (rtx_insn *, rtx, rtx, rtx);
 static void mep_rewrite_maddsi3 (rtx_insn *, rtx, rtx, rtx, rtx);
 static bool mep_reuse_lo_p_1 (rtx, rtx, rtx_insn *, bool);
-static bool move_needs_splitting (rtx, rtx, enum machine_mode);
+static bool move_needs_splitting (rtx, rtx, machine_mode);
 static bool mep_expand_setcc_1 (enum rtx_code, rtx, rtx, rtx);
 static bool mep_nongeneral_reg (rtx);
 static bool mep_general_copro_reg (rtx);
@@ -179,7 +193,7 @@ static void mep_start_function (FILE *, HOST_WIDE_INT);
 static bool mep_function_ok_for_sibcall (tree, tree);
 static int unique_bit_in (HOST_WIDE_INT);
 static int bit_size_for_clip (HOST_WIDE_INT);
-static int bytesize (const_tree, enum machine_mode);
+static int bytesize (const_tree, machine_mode);
 static tree mep_validate_based_tiny (tree *, tree, tree, int, bool *);
 static tree mep_validate_near_far (tree *, tree, tree, int, bool *);
 static tree mep_validate_disinterrupt (tree *, tree, tree, int, bool *);
@@ -213,11 +227,11 @@ static void mep_init_builtins (void);
 static void mep_intrinsic_unavailable (int);
 static bool mep_get_intrinsic_insn (int, const struct cgen_insn **);
 static bool mep_get_move_insn (int, const struct cgen_insn **);
-static rtx mep_convert_arg (enum machine_mode, rtx);
+static rtx mep_convert_arg (machine_mode, rtx);
 static rtx mep_convert_regnum (const struct cgen_regnum_operand *, rtx);
 static rtx mep_legitimize_arg (const struct insn_operand_data *, rtx, int);
 static void mep_incompatible_arg (const struct insn_operand_data *, rtx, int, tree);
-static rtx mep_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+static rtx mep_expand_builtin (tree, rtx, rtx, machine_mode, int);
 static int mep_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
 static int mep_issue_rate (void);
 static rtx_insn *mep_find_ready_insn (rtx_insn **, int, enum attr_slot, int);
@@ -226,16 +240,16 @@ static int mep_sched_reorder (FILE *, int, rtx_insn **, int *, int);
 static rtx_insn *mep_make_bundle (rtx, rtx_insn *);
 static void mep_bundle_insns (rtx_insn *);
 static bool mep_rtx_cost (rtx, int, int, int, int *, bool);
-static int mep_address_cost (rtx, enum machine_mode, addr_space_t, bool);
-static void mep_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
+static int mep_address_cost (rtx, machine_mode, addr_space_t, bool);
+static void mep_setup_incoming_varargs (cumulative_args_t, machine_mode,
 					tree, int *, int);
-static bool mep_pass_by_reference (cumulative_args_t cum, enum machine_mode,
+static bool mep_pass_by_reference (cumulative_args_t cum, machine_mode,
 				   const_tree, bool);
-static rtx mep_function_arg (cumulative_args_t, enum machine_mode,
+static rtx mep_function_arg (cumulative_args_t, machine_mode,
 			     const_tree, bool);
-static void mep_function_arg_advance (cumulative_args_t, enum machine_mode,
+static void mep_function_arg_advance (cumulative_args_t, machine_mode,
 				      const_tree, bool);
-static bool mep_vector_mode_supported_p (enum machine_mode);
+static bool mep_vector_mode_supported_p (machine_mode);
 static rtx  mep_allocate_initial_value (rtx);
 static void mep_asm_init_sections (void);
 static int mep_comp_type_attributes (const_tree, const_tree);
@@ -797,7 +811,7 @@ mep_use_post_modify_for_set_p (rtx set, rtx gpr, rtx offset)
 {
   rtx *reg, *mem;
   unsigned int reg_bytes, mem_bytes;
-  enum machine_mode reg_mode, mem_mode;
+  machine_mode reg_mode, mem_mode;
 
   /* Only simple SETs can be converted.  */
   if (GET_CODE (set) != SET)
@@ -980,7 +994,7 @@ mep_bit_position_p (rtx x, bool looking_for)
 
 static bool
 move_needs_splitting (rtx dest, rtx src,
-		      enum machine_mode mode ATTRIBUTE_UNUSED)
+		      machine_mode mode ATTRIBUTE_UNUSED)
 {
   int s = mep_section_tag (src);
 
@@ -1069,7 +1083,7 @@ mep_multi_slot (rtx_insn *x)
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
 
 static bool
-mep_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+mep_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   /* We can't convert symbol values to gp- or tp-rel values after
      reload, as reload might have used $gp or $tp for other
@@ -1086,7 +1100,7 @@ mep_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
    strict, and another way for not-strict, like REG_OK_FOR_BASE_P.  */
 
 bool
-mep_legitimate_address (enum machine_mode mode, rtx x, int strict)
+mep_legitimate_address (machine_mode mode, rtx x, int strict)
 {
   int the_tag;
 
@@ -1194,7 +1208,7 @@ mep_legitimate_address (enum machine_mode mode, rtx x, int strict)
 }
 
 int
-mep_legitimize_reload_address (rtx *x, enum machine_mode mode, int opnum,
+mep_legitimize_reload_address (rtx *x, machine_mode mode, int opnum,
 			       int type_i,
 			       int ind_levels ATTRIBUTE_UNUSED)
 {
@@ -1301,7 +1315,7 @@ mep_cop_address_length (rtx_insn *insn, int opn)
 
 #define DEBUG_EXPAND_MOV 0
 bool
-mep_expand_mov (rtx *operands, enum machine_mode mode)
+mep_expand_mov (rtx *operands, machine_mode mode)
 {
   int i, t;
   int tag[2];
@@ -1495,7 +1509,7 @@ mep_expand_mov (rtx *operands, enum machine_mode mode)
 /* Cases where the pattern can't be made to use at all.  */
 
 bool
-mep_mov_ok (rtx *operands, enum machine_mode mode ATTRIBUTE_UNUSED)
+mep_mov_ok (rtx *operands, machine_mode mode ATTRIBUTE_UNUSED)
 {
   int i;
 
@@ -1561,7 +1575,7 @@ mep_mov_ok (rtx *operands, enum machine_mode mode ATTRIBUTE_UNUSED)
 
 #define DEBUG_SPLIT_WIDE_MOVE 0
 void
-mep_split_wide_move (rtx *operands, enum machine_mode mode)
+mep_split_wide_move (rtx *operands, machine_mode mode)
 {
   int i;
 
@@ -1929,7 +1943,7 @@ mep_find_base_term (rtx x)
    modes FROM to TO.  */
 
 bool
-mep_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
+mep_cannot_change_mode_class (machine_mode from, machine_mode to,
 			       enum reg_class regclass)
 {
   if (from == to)
@@ -2026,7 +2040,7 @@ mep_secondary_copro_reload_class (enum reg_class rclass, rtx x)
 
 enum reg_class
 mep_secondary_input_reload_class (enum reg_class rclass,
-				  enum machine_mode mode ATTRIBUTE_UNUSED,
+				  machine_mode mode ATTRIBUTE_UNUSED,
 				  rtx x)
 {
   int rv = NO_REGS;
@@ -2052,7 +2066,7 @@ mep_secondary_input_reload_class (enum reg_class rclass,
 
 enum reg_class
 mep_secondary_output_reload_class (enum reg_class rclass,
-				   enum machine_mode mode ATTRIBUTE_UNUSED,
+				   machine_mode mode ATTRIBUTE_UNUSED,
 				   rtx x)
 {
   int rv = NO_REGS;
@@ -2079,7 +2093,7 @@ mep_secondary_output_reload_class (enum reg_class rclass,
 
 bool
 mep_secondary_memory_needed (enum reg_class rclass1, enum reg_class rclass2,
-			     enum machine_mode mode ATTRIBUTE_UNUSED)
+			     machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (!mep_have_core_copro_moves_p)
     {
@@ -2098,7 +2112,7 @@ mep_secondary_memory_needed (enum reg_class rclass1, enum reg_class rclass2,
 }
 
 void
-mep_expand_reload (rtx *operands, enum machine_mode mode)
+mep_expand_reload (rtx *operands, machine_mode mode)
 {
   /* There are three cases for each direction:
      register, farsym
@@ -2185,7 +2199,7 @@ mep_preferred_reload_class (rtx x, enum reg_class rclass)
    that requires a temporary register or temporary stack slot.  */
 
 int
-mep_register_move_cost (enum machine_mode mode, enum reg_class from, enum reg_class to)
+mep_register_move_cost (machine_mode mode, enum reg_class from, enum reg_class to)
 {
   if (mep_have_copro_copro_moves_p
       && reg_class_subset_p (from, CR_REGS)
@@ -2714,7 +2728,7 @@ mep_expand_prologue (void)
       {
 	rtx mem;
 	bool maybe_dead_p;
-	enum machine_mode rmode;
+	machine_mode rmode;
 
 	rss = cfun->machine->reg_save_slot[i];
 
@@ -2954,7 +2968,7 @@ mep_expand_epilogue (void)
   for (i=FIRST_PSEUDO_REGISTER-1; i>=1; i--)
     if (mep_call_saves_register (i))
       {
-	enum machine_mode rmode;
+	machine_mode rmode;
 	int rss = cfun->machine->reg_save_slot[i];
 
 	if (mep_reg_size (i) == 8)
@@ -3388,7 +3402,7 @@ mep_final_prescan_insn (rtx_insn *insn, rtx *operands ATTRIBUTE_UNUSED,
 
 static void
 mep_setup_incoming_varargs (cumulative_args_t cum,
-			    enum machine_mode mode ATTRIBUTE_UNUSED,
+			    machine_mode mode ATTRIBUTE_UNUSED,
 			    tree type ATTRIBUTE_UNUSED, int *pretend_size,
 			    int second_time ATTRIBUTE_UNUSED)
 {
@@ -3400,7 +3414,7 @@ mep_setup_incoming_varargs (cumulative_args_t cum,
 }
 
 static int
-bytesize (const_tree type, enum machine_mode mode)
+bytesize (const_tree type, machine_mode mode)
 {
   if (mode == BLKmode)
     return int_size_in_bytes (type);
@@ -3583,7 +3597,7 @@ mep_gimplify_va_arg_expr (tree valist, tree type,
 
   label_sover = create_artificial_label (UNKNOWN_LOCATION);
   label_selse = create_artificial_label (UNKNOWN_LOCATION);
-  res_addr = create_tmp_var (ptr_type_node, NULL);
+  res_addr = create_tmp_var (ptr_type_node);
 
   tmp = build2 (GE_EXPR, boolean_type_node, next_gp,
 		unshare_expr (next_gp_limit));
@@ -3656,7 +3670,7 @@ mep_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
    first arg.  For varargs, we copy $1..$4 to the stack.  */
 
 static rtx
-mep_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
+mep_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		  const_tree type ATTRIBUTE_UNUSED,
 		  bool named ATTRIBUTE_UNUSED)
 {
@@ -3683,7 +3697,7 @@ mep_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 
 static bool
 mep_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		       enum machine_mode mode,
+		       machine_mode mode,
 		       const_tree        type,
 		       bool              named ATTRIBUTE_UNUSED)
 {
@@ -3706,7 +3720,7 @@ mep_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 
 static void
 mep_function_arg_advance (cumulative_args_t pcum,
-			  enum machine_mode mode ATTRIBUTE_UNUSED,
+			  machine_mode mode ATTRIBUTE_UNUSED,
 			  const_tree type ATTRIBUTE_UNUSED,
 			  bool named ATTRIBUTE_UNUSED)
 {
@@ -3742,7 +3756,7 @@ mep_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED)
 /* Implement LIBCALL_VALUE, using the same rules as mep_function_value.  */
 
 rtx
-mep_libcall_value (enum machine_mode mode)
+mep_libcall_value (machine_mode mode)
 {
   return gen_rtx_REG (mode, RETURN_VALUE_REGNUM);
 }
@@ -4061,69 +4075,53 @@ mep_can_inline_p (tree caller, tree callee)
 struct GTY(()) pragma_entry {
   int used;
   int flag;
-  const char *funcname;
 };
-typedef struct pragma_entry pragma_entry;
+
+struct pragma_traits : default_hashmap_traits
+{
+  static hashval_t hash (const char *s) { return htab_hash_string (s); }
+  static bool
+  equal_keys (const char *a, const char *b)
+  {
+    return strcmp (a, b) == 0;
+  }
+};
 
 /* Hash table of farcall-tagged sections.  */
-static GTY((param_is (pragma_entry))) htab_t pragma_htab;
-
-static int
-pragma_entry_eq (const void *p1, const void *p2)
-{
-  const pragma_entry *old = (const pragma_entry *) p1;
-  const char *new_name = (const char *) p2;
-
-  return strcmp (old->funcname, new_name) == 0;
-}
-
-static hashval_t
-pragma_entry_hash (const void *p)
-{
-  const pragma_entry *old = (const pragma_entry *) p;
-  return htab_hash_string (old->funcname);
-}
+static GTY(()) hash_map<const char *, pragma_entry, pragma_traits> *
+  pragma_htab;
 
 static void
 mep_note_pragma_flag (const char *funcname, int flag)
 {
-  pragma_entry **slot;
-
   if (!pragma_htab)
-    pragma_htab = htab_create_ggc (31, pragma_entry_hash,
-				    pragma_entry_eq, NULL);
+    pragma_htab
+      = hash_map<const char *, pragma_entry, pragma_traits>::create_ggc (31);
 
-  slot = (pragma_entry **)
-    htab_find_slot_with_hash (pragma_htab, funcname,
-			      htab_hash_string (funcname), INSERT);
-
-  if (!*slot)
+  bool existed;
+  const char *name = ggc_strdup (funcname);
+  pragma_entry *slot = &pragma_htab->get_or_insert (name, &existed);
+  if (!existed)
     {
-      *slot = ggc_alloc<pragma_entry> ();
-      (*slot)->flag = 0;
-      (*slot)->used = 0;
-      (*slot)->funcname = ggc_strdup (funcname);
+      slot->flag = 0;
+      slot->used = 0;
     }
-  (*slot)->flag |= flag;
+  slot->flag |= flag;
 }
 
 static bool
 mep_lookup_pragma_flag (const char *funcname, int flag)
 {
-  pragma_entry **slot;
-
   if (!pragma_htab)
     return false;
 
   if (funcname[0] == '@' && funcname[2] == '.')
     funcname += 3;
 
-  slot = (pragma_entry **)
-    htab_find_slot_with_hash (pragma_htab, funcname,
-			      htab_hash_string (funcname), NO_INSERT);
-  if (slot && *slot && ((*slot)->flag & flag))
+  pragma_entry *slot = pragma_htab->get (funcname);
+  if (slot && (slot->flag & flag))
     {
-      (*slot)->used |= flag;
+      slot->used |= flag;
       return true;
     }
   return false;
@@ -4153,14 +4151,13 @@ mep_note_pragma_disinterrupt (const char *funcname)
   mep_note_pragma_flag (funcname, FUNC_DISINTERRUPT);
 }
 
-static int
-note_unused_pragma_disinterrupt (void **slot, void *data ATTRIBUTE_UNUSED)
+bool
+note_unused_pragma_disinterrupt (const char *const &s, const pragma_entry &e,
+				 void *)
 {
-  const pragma_entry *d = (const pragma_entry *)(*slot);
-
-  if ((d->flag & FUNC_DISINTERRUPT)
-      && !(d->used & FUNC_DISINTERRUPT))
-    warning (0, "\"#pragma disinterrupt %s\" not used", d->funcname);
+  if ((e.flag & FUNC_DISINTERRUPT)
+      && !(e.used & FUNC_DISINTERRUPT))
+    warning (0, "\"#pragma disinterrupt %s\" not used", s);
   return 1;
 }
 
@@ -4168,7 +4165,7 @@ void
 mep_file_cleanups (void)
 {
   if (pragma_htab)
-    htab_traverse (pragma_htab, note_unused_pragma_disinterrupt, NULL);
+    pragma_htab->traverse<void *, note_unused_pragma_disinterrupt> (NULL);
 }
 
 /* These three functions provide a bridge between the pramgas that
@@ -6073,7 +6070,7 @@ mep_get_move_insn (int intrinsic, const struct cgen_insn **cgen_insn)
    to MODE using a subreg.  Otherwise return ARG as-is.  */
 
 static rtx
-mep_convert_arg (enum machine_mode mode, rtx arg)
+mep_convert_arg (machine_mode mode, rtx arg)
 {
   if (GET_MODE (arg) != mode
       && register_operand (arg, VOIDmode)
@@ -6194,7 +6191,7 @@ mep_incompatible_arg (const struct insn_operand_data *operand, rtx arg,
 static rtx
 mep_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 		    rtx subtarget ATTRIBUTE_UNUSED,
-		    enum machine_mode mode ATTRIBUTE_UNUSED,
+		    machine_mode mode ATTRIBUTE_UNUSED,
 		    int ignore ATTRIBUTE_UNUSED)
 {
   rtx pat, op[10], arg[10];
@@ -6291,7 +6288,7 @@ mep_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
       if (cgen_insn->regnums[a].reference_p)
 	{
 	  tree pointed_to = TREE_TYPE (TREE_TYPE (value));
-	  enum machine_mode pointed_mode = TYPE_MODE (pointed_to);
+	  machine_mode pointed_mode = TYPE_MODE (pointed_to);
 
 	  arg[a] = gen_rtx_MEM (pointed_mode, arg[a]);
 	}
@@ -6372,7 +6369,7 @@ mep_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 }
 
 static bool
-mep_vector_mode_supported_p (enum machine_mode mode ATTRIBUTE_UNUSED)
+mep_vector_mode_supported_p (machine_mode mode ATTRIBUTE_UNUSED)
 {
   return false;
 }
@@ -6380,14 +6377,10 @@ mep_vector_mode_supported_p (enum machine_mode mode ATTRIBUTE_UNUSED)
 /* A subroutine of global_reg_mentioned_p, returns 1 if *LOC mentions
    a global register.  */
 
-static int
-global_reg_mentioned_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
+static bool
+global_reg_mentioned_p_1 (const_rtx x)
 {
   int regno;
-  rtx x = *loc;
-
-  if (! x)
-    return 0;
 
   switch (GET_CODE (x))
     {
@@ -6396,40 +6389,31 @@ global_reg_mentioned_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
 	{
 	  if (REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
 	      && global_regs[subreg_regno (x)])
-	    return 1;
-	  return 0;
+	    return true;
+	  return false;
 	}
       break;
 
     case REG:
       regno = REGNO (x);
       if (regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
-	return 1;
-      return 0;
-
-    case SCRATCH:
-    case PC:
-    case CC0:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST:
-    case LABEL_REF:
-      return 0;
+	return true;
+      return false;
 
     case CALL:
       /* A non-constant call might use a global register.  */
-      return 1;
+      return true;
 
     default:
       break;
     }
 
-  return 0;
+  return false;
 }
 
 /* Returns nonzero if X mentions a global register.  */
 
-static int
+static bool
 global_reg_mentioned_p (rtx x)
 {
   if (INSN_P (x))
@@ -6437,16 +6421,20 @@ global_reg_mentioned_p (rtx x)
       if (CALL_P (x))
 	{
 	  if (! RTL_CONST_OR_PURE_CALL_P (x))
-	    return 1;
+	    return true;
 	  x = CALL_INSN_FUNCTION_USAGE (x);
 	  if (x == 0)
-	    return 0;
+	    return false;
 	}
       else
 	x = PATTERN (x);
     }
 
-  return for_each_rtx (&x, global_reg_mentioned_p_1, NULL);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    if (global_reg_mentioned_p_1 (*iter))
+      return true;
+  return false;
 }
 /* Scheduling hooks for VLIW mode.
 
@@ -6665,13 +6653,16 @@ mep_sched_reorder (FILE *dump ATTRIBUTE_UNUSED,
   return 2;
 }
 
-/* A for_each_rtx callback.  Return true if *X is a register that is
-   set by insn PREV.  */
+/* Return true if X contains a register that is set by insn PREV.  */
 
-static int
-mep_store_find_set (rtx *x, void *prev)
+static bool
+mep_store_find_set (const_rtx x, const rtx_insn *prev)
 {
-  return REG_P (*x) && reg_set_p (*x, (const_rtx) prev);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    if (REG_P (x) && reg_set_p (x, prev))
+      return true;
+  return false;
 }
 
 /* Like mep_store_bypass_p, but takes a pattern as the second argument,
@@ -6708,7 +6699,7 @@ mep_store_data_bypass_1 (rtx_insn *prev, rtx pat)
 
       src = SET_SRC (pat);
       for (i = 1; i < XVECLEN (src, 0); i++)
-	if (for_each_rtx (&XVECEXP (src, 0, i), mep_store_find_set, prev))
+	if (mep_store_find_set (XVECEXP (src, 0, i), prev))
 	  return false;
 
       return true;
@@ -6716,7 +6707,7 @@ mep_store_data_bypass_1 (rtx_insn *prev, rtx pat)
 
   /* Otherwise just check that PREV doesn't modify any register mentioned
      in the memory destination.  */
-  return !for_each_rtx (&SET_DEST (pat), mep_store_find_set, prev);
+  return !mep_store_find_set (SET_DEST (pat), prev);
 }
 
 /* Return true if INSN is a store instruction and if the store address
@@ -6726,18 +6717,6 @@ bool
 mep_store_data_bypass_p (rtx_insn *prev, rtx_insn *insn)
 {
   return INSN_P (insn) ? mep_store_data_bypass_1 (prev, PATTERN (insn)) : false;
-}
-
-/* A for_each_rtx subroutine of mep_mul_hilo_bypass_p.  Return 1 if *X
-   is a register other than LO or HI and if PREV sets *X.  */
-
-static int
-mep_mul_hilo_bypass_1 (rtx *x, void *prev)
-{
-  return (REG_P (*x)
-	  && REGNO (*x) != LO_REGNO
-	  && REGNO (*x) != HI_REGNO
-	  && reg_set_p (*x, (const_rtx) prev));
 }
 
 /* Return true if, apart from HI/LO, there are no true dependencies
@@ -6751,8 +6730,19 @@ mep_mul_hilo_bypass_p (rtx_insn *prev, rtx_insn *insn)
   pat = PATTERN (insn);
   if (GET_CODE (pat) == PARALLEL)
     pat = XVECEXP (pat, 0, 0);
-  return (GET_CODE (pat) == SET
-	  && !for_each_rtx (&SET_SRC (pat), mep_mul_hilo_bypass_1, prev));
+  if (GET_CODE (pat) != SET)
+    return false;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, SET_SRC (pat), NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x)
+	  && REGNO (x) != LO_REGNO
+	  && REGNO (x) != HI_REGNO
+	  && reg_set_p (x, prev))
+	return false;
+    }
+  return true;
 }
 
 /* Return true if INSN is an ldc instruction that issues to the
@@ -7174,7 +7164,7 @@ mep_rtx_cost (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 
 static int
 mep_address_cost (rtx addr ATTRIBUTE_UNUSED,
-		  enum machine_mode mode ATTRIBUTE_UNUSED,
+		  machine_mode mode ATTRIBUTE_UNUSED,
 		  addr_space_t as ATTRIBUTE_UNUSED,
 		  bool ATTRIBUTE_UNUSED speed_p)
 {

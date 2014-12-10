@@ -28,6 +28,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "flags.h"
 #include "except.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "cselib.h"
 #include "dce.h"
@@ -126,6 +133,10 @@ deletable_insn_p (rtx_insn *insn, bool fast, bitmap arg_stores)
   FOR_EACH_INSN_DEF (def, insn)
     if (HARD_REGISTER_NUM_P (DF_REF_REGNO (def))
 	&& global_regs[DF_REF_REGNO (def)])
+      return false;
+    /* Initialization of pseudo PIC register should never be removed.  */
+    else if (DF_REF_REG (def) == pic_offset_table_rtx
+	     && REGNO (pic_offset_table_rtx) >= FIRST_PSEUDO_REGISTER)
       return false;
 
   body = PATTERN (insn);

@@ -1,3 +1,4 @@
+/* { dg-require-effective-target indirect_jumps } */
 #include <setjmp.h>
 
 extern void abort (void);

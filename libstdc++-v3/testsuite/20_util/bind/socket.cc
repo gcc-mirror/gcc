@@ -21,7 +21,7 @@
 // (this is a GNU extension)
 
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 #include <functional>
 

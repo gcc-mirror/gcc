@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ADDRESSES_H
 
 static inline enum reg_class
-base_reg_class (enum machine_mode mode ATTRIBUTE_UNUSED,
+base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
 		addr_space_t as ATTRIBUTE_UNUSED,
 		enum rtx_code outer_code ATTRIBUTE_UNUSED,
 		enum rtx_code index_code ATTRIBUTE_UNUSED)
@@ -52,7 +52,7 @@ base_reg_class (enum machine_mode mode ATTRIBUTE_UNUSED,
 
 static inline bool
 ok_for_base_p_1 (unsigned regno ATTRIBUTE_UNUSED,
-		 enum machine_mode mode ATTRIBUTE_UNUSED,
+		 machine_mode mode ATTRIBUTE_UNUSED,
 		 addr_space_t as ATTRIBUTE_UNUSED,
 		 enum rtx_code outer_code ATTRIBUTE_UNUSED,
 		 enum rtx_code index_code ATTRIBUTE_UNUSED)
@@ -77,7 +77,7 @@ ok_for_base_p_1 (unsigned regno ATTRIBUTE_UNUSED,
    complete.  Arguments as for the called function.  */
 
 static inline bool
-regno_ok_for_base_p (unsigned regno, enum machine_mode mode, addr_space_t as,
+regno_ok_for_base_p (unsigned regno, machine_mode mode, addr_space_t as,
 		     enum rtx_code outer_code, enum rtx_code index_code)
 {
   if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] >= 0)

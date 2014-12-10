@@ -25,6 +25,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-map.h"
 #include "tree.h"
 #include "tree-pretty-print.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -175,18 +186,19 @@ sese_build_liveouts_use (sese region, bitmap liveouts, basic_block bb,
 static void
 sese_build_liveouts_bb (sese region, bitmap liveouts, basic_block bb)
 {
-  gimple_stmt_iterator bsi;
   edge e;
   edge_iterator ei;
   ssa_op_iter iter;
   use_operand_p use_p;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    for (bsi = gsi_start_phis (e->dest); !gsi_end_p (bsi); gsi_next (&bsi))
+    for (gphi_iterator bsi = gsi_start_phis (e->dest); !gsi_end_p (bsi);
+	 gsi_next (&bsi))
       sese_build_liveouts_use (region, liveouts, bb,
-			       PHI_ARG_DEF_FROM_EDGE (gsi_stmt (bsi), e));
+			       PHI_ARG_DEF_FROM_EDGE (bsi.phi (), e));
 
-  for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+  for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
+       gsi_next (&bsi))
     {
       gimple stmt = gsi_stmt (bsi);
 
@@ -307,7 +319,7 @@ free_sese (sese region)
 static void
 sese_add_exit_phis_edge (basic_block exit, tree use, edge false_e, edge true_e)
 {
-  gimple phi = create_phi_node (NULL_TREE, exit);
+  gphi *phi = create_phi_node (NULL_TREE, exit);
   create_new_def_for (use, phi, gimple_phi_result_ptr (phi));
   add_phi_arg (phi, use, false_e, UNKNOWN_LOCATION);
   add_phi_arg (phi, use, true_e, UNKNOWN_LOCATION);
@@ -618,9 +630,9 @@ if_region_set_false_region (ifsese if_region, sese region)
   edge exit_region = SESE_EXIT (region);
   basic_block before_region = entry_region->src;
   basic_block last_in_region = exit_region->src;
-  void **slot = htab_find_slot_with_hash (current_loops->exits, exit_region,
-					  htab_hash_pointer (exit_region),
-					  NO_INSERT);
+  hashval_t hash = htab_hash_pointer (exit_region);
+  loop_exit **slot
+    = current_loops->exits->find_slot_with_hash (exit_region, hash, NO_INSERT);
 
   entry_region->flags = false_edge->flags;
   false_edge->flags = exit_region->flags;
@@ -644,11 +656,11 @@ if_region_set_false_region (ifsese if_region, sese region)
       struct loop_exit *loop_exit = ggc_cleared_alloc<struct loop_exit> ();
 
       memcpy (loop_exit, *((struct loop_exit **) slot), sizeof (struct loop_exit));
-      htab_clear_slot (current_loops->exits, slot);
+      current_loops->exits->clear_slot (slot);
 
-      slot = htab_find_slot_with_hash (current_loops->exits, false_edge,
-				       htab_hash_pointer (false_edge),
-				       INSERT);
+							hashval_t hash = htab_hash_pointer (false_edge);
+      slot = current_loops->exits->find_slot_with_hash (false_edge, hash,
+							INSERT);
       loop_exit->e = false_edge;
       *slot = loop_exit;
       false_edge->src->loop_father->exits->next = loop_exit;
@@ -726,7 +738,7 @@ set_ifsese_condition (ifsese if_region, tree condition)
   basic_block bb = entry->dest;
   gimple last = last_stmt (bb);
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
-  gimple cond_stmt;
+  gcond *cond_stmt;
 
   gcc_assert (gimple_code (last) == GIMPLE_COND);
 

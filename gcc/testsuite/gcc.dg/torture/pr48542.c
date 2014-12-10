@@ -1,4 +1,6 @@
 /* { dg-do run } */
+/* { dg-require-effective-target indirect_jumps } */
+
 /* The return-address was clobbered.  */
 #include <stdlib.h>
 #include <setjmp.h>

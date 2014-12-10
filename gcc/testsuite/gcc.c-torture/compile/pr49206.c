@@ -1,3 +1,4 @@
+/* { dg-require-effective-target untyped_assembly } */
 struct S1
 {
   short f0;

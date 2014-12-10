@@ -16,7 +16,7 @@ f (int c, int s)
   return x1 + x2;
 }
 
-/* { dg-final { scan-tree-dump-times " \\* y" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times " \\* 2" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " \\* " 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " \\* 2;" 1 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
 

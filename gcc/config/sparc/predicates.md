@@ -124,7 +124,7 @@
 (define_predicate "symbolic_operand"
   (match_code "symbol_ref,label_ref,const")
 {
-  enum machine_mode omode = GET_MODE (op);
+  machine_mode omode = GET_MODE (op);
 
   if (omode != mode && omode != VOIDmode && mode != VOIDmode)
     return false;

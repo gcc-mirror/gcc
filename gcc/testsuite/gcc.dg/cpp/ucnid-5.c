@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "-std=c99 -pedantic -fextended-identifiers" } */
+/* { dg-options "-std=c99 -pedantic" } */
 
 \u00AA
 \u00AB /* { dg-error "not valid in an identifier" } */

@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-shouldfail "ubsan" } */
-/* { dg-options "-fsanitize=undefined -fno-sanitize-recover" } */
+/* { dg-options "-fsanitize=undefined -fno-sanitize-recover=undefined" } */
 
 int q, r;
 void *a, *b, *c = (void *) &q, *d, *e, *f = (void *) &q, *g, *h;

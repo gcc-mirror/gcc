@@ -29,6 +29,8 @@ with Ada.Unchecked_Deallocation;
 
 package body Ada.Containers.Indefinite_Holders is
 
+   pragma Annotate (CodePeer, Skip_Analysis);
+
    procedure Free is
      new Ada.Unchecked_Deallocation (Element_Type, Element_Access);
 

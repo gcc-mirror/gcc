@@ -147,6 +147,9 @@ Abstract containers and iterators are used to access the PHI nodes
 and statements in a basic blocks.  These iterators are called
 @dfn{GIMPLE statement iterators} (GSIs).  Grep for @code{^gsi}
 in the various @file{gimple-*} and @file{tree-*} files.
+There is a @code{gimple_stmt_iterator} type for iterating over
+all kinds of statement, and a @code{gphi_iterator} subclass for
+iterating over PHI nodes.
 The following snippet will pretty-print all PHI nodes the statements
 of the current function in the GIMPLE representation.
 
@@ -155,11 +158,12 @@ basic_block bb;
 
 FOR_EACH_BB (bb)
   @{
+   gphi_iterator pi;
    gimple_stmt_iterator si;
 
-   for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+   for (pi = gsi_start_phis (bb); !gsi_end_p (pi); gsi_next (&pi))
      @{
-       gimple phi = gsi_stmt (si);
+       gphi *phi = pi.phi ();
        print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
      @}
    for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))

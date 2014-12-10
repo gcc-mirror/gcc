@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "flags.h"
 #include "gfortran.h"
 #include "match.h"
 #include "arith.h"
@@ -1177,7 +1178,7 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 
 	case -2:
 	  /* FIXME: Implement a warning for this case.
-	  gfc_warning ("Possible character length mismatch in argument '%s'",
+	  gfc_warning ("Possible character length mismatch in argument %qs",
 		       s1->name);*/
 	  break;
 
@@ -1648,11 +1649,11 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 			 p->sym->name, q->sym->name, interface_name,
 			 &p->where);
 	    else if (!p->sym->attr.use_assoc && q->sym->attr.use_assoc)
-	      gfc_warning ("Ambiguous interfaces '%s' and '%s' in %s at %L",
+	      gfc_warning ("Ambiguous interfaces %qs and %qs in %s at %L",
 			   p->sym->name, q->sym->name, interface_name,
 			   &p->where);
 	    else
-	      gfc_warning ("Although not referenced, '%s' has ambiguous "
+	      gfc_warning ("Although not referenced, %qs has ambiguous "
 			   "interfaces at %L", interface_name, &p->where);
 	    return 1;
 	  }
@@ -2145,19 +2146,15 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		       formal->name);
 	    return 0;
 	}
-      else if (gfc_option.warn_surprising && where
-	       && formal->attr.intent != INTENT_IN)
-	gfc_warning ("Passing coarray at %L to allocatable, noncoarray dummy "
-		     "argument '%s', which is invalid if the allocation status"
+      else if (warn_surprising && where && formal->attr.intent != INTENT_IN)
+	gfc_warning (OPT_Wsurprising,
+		     "Passing coarray at %L to allocatable, noncoarray dummy "
+		     "argument %qs, which is invalid if the allocation status"
 		     " is modified",  &actual->where, formal->name);
     }
 
   /* If the rank is the same or the formal argument has assumed-rank.  */
   if (symbol_rank (formal) == actual->rank || symbol_rank (formal) == -1)
-    return 1;
-
-  if (actual->ts.type == BT_CLASS && CLASS_DATA (actual)->as
-	&& CLASS_DATA (actual)->as->rank == symbol_rank (formal))
     return 1;
 
   rank_check = where != NULL && !is_elemental && formal->as
@@ -2673,13 +2670,13 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	   if (where && (f->sym->attr.pointer || f->sym->attr.allocatable))
 	     gfc_warning ("Character length mismatch (%ld/%ld) between actual "
 			  "argument and pointer or allocatable dummy argument "
-			  "'%s' at %L",
+			  "%qs at %L",
 			  mpz_get_si (a->expr->ts.u.cl->length->value.integer),
 			  mpz_get_si (f->sym->ts.u.cl->length->value.integer),
 			  f->sym->name, &a->expr->where);
 	   else if (where)
 	     gfc_warning ("Character length mismatch (%ld/%ld) between actual "
-			  "argument and assumed-shape dummy argument '%s' "
+			  "argument and assumed-shape dummy argument %qs "
 			  "at %L",
 			  mpz_get_si (a->expr->ts.u.cl->length->value.integer),
 			  mpz_get_si (f->sym->ts.u.cl->length->value.integer),
@@ -2710,12 +2707,12 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	{
 	  if (a->expr->ts.type == BT_CHARACTER && !f->sym->as && where)
 	    gfc_warning ("Character length of actual argument shorter "
-			 "than of dummy argument '%s' (%lu/%lu) at %L",
+			 "than of dummy argument %qs (%lu/%lu) at %L",
 			 f->sym->name, actual_size, formal_size,
 			 &a->expr->where);
           else if (where)
 	    gfc_warning ("Actual argument contains too few "
-			 "elements for dummy argument '%s' (%lu/%lu) at %L",
+			 "elements for dummy argument %qs (%lu/%lu) at %L",
 			 f->sym->name, actual_size, formal_size,
 			 &a->expr->where);
 	  return  0;
@@ -3146,7 +3143,7 @@ check_some_aliasing (gfc_formal_arglist *f, gfc_actual_arglist *a)
 	      || (f1_intent == INTENT_OUT && f2_intent == INTENT_OUT))
 	    {
 	      gfc_warning ("Same actual argument associated with INTENT(%s) "
-			   "argument '%s' and INTENT(%s) argument '%s' at %L",
+			   "argument %qs and INTENT(%s) argument %qs at %L",
 			   gfc_intent_string (f1_intent), p[i].f->sym->name,
 			   gfc_intent_string (f2_intent), p[j].f->sym->name,
 			   &p[i].a->expr->where);
@@ -3260,12 +3257,13 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 		     sym->name, where);
 	  return false;
 	}
-      if (gfc_option.warn_implicit_interface)
-	gfc_warning ("Procedure '%s' called with an implicit interface at %L",
+      if (warn_implicit_interface)
+	gfc_warning (OPT_Wimplicit_interface,
+		     "Procedure %qs called with an implicit interface at %L",
 		     sym->name, where);
-      else if (gfc_option.warn_implicit_procedure
-	       && sym->attr.proc == PROC_UNKNOWN)
-	gfc_warning ("Procedure '%s' called at %L is not explicitly declared",
+      else if (warn_implicit_procedure && sym->attr.proc == PROC_UNKNOWN)
+	gfc_warning (OPT_Wimplicit_procedure,
+		     "Procedure %qs called at %L is not explicitly declared",
 		     sym->name, where);
     }
 
@@ -3357,7 +3355,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
   if (!check_intents (dummy_args, *ap))
     return false;
 
-  if (gfc_option.warn_aliasing)
+  if (warn_aliasing)
     check_some_aliasing (dummy_args, *ap);
 
   return true;
@@ -3374,10 +3372,11 @@ gfc_ppc_use (gfc_component *comp, gfc_actual_arglist **ap, locus *where)
   /* Warn about calls with an implicit interface.  Special case
      for calling a ISO_C_BINDING because c_loc and c_funloc
      are pseudo-unknown.  */
-  if (gfc_option.warn_implicit_interface
+  if (warn_implicit_interface
       && comp->attr.if_source == IFSRC_UNKNOWN
       && !comp->attr.is_iso_c)
-    gfc_warning ("Procedure pointer component '%s' called with an implicit "
+    gfc_warning (OPT_Wimplicit_interface,
+		 "Procedure pointer component %qs called with an implicit "
 		 "interface at %L", comp->name, where);
 
   if (comp->attr.if_source == IFSRC_UNKNOWN)
@@ -3403,7 +3402,7 @@ gfc_ppc_use (gfc_component *comp, gfc_actual_arglist **ap, locus *where)
     return;
 
   check_intents (comp->ts.interface->formal, *ap);
-  if (gfc_option.warn_aliasing)
+  if (warn_aliasing)
     check_some_aliasing (comp->ts.interface->formal, *ap);
 }
 
@@ -3426,7 +3425,7 @@ gfc_arglist_matches_symbol (gfc_actual_arglist** args, gfc_symbol* sym)
   if (compare_actual_formal (args, dummy_args, r, !r, NULL))
     {
       check_intents (dummy_args, *args);
-      if (gfc_option.warn_aliasing)
+      if (warn_aliasing)
 	check_some_aliasing (dummy_args, *args);
       return true;
     }
@@ -3542,7 +3541,7 @@ gfc_find_sym_in_symtree (gfc_symbol *sym)
       if (st)
 	return st;
     }
-  gfc_internal_error ("Unable to find symbol %s", sym->name);
+  gfc_internal_error ("Unable to find symbol %qs", sym->name);
   /* Not reached.  */
 }
 

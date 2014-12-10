@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-optimized" } */
+/* { dg-options "-O3 -fno-ipa-icf -fdump-tree-optimized" } */
 
 #include <tr1/functional>
 #include <algorithm>

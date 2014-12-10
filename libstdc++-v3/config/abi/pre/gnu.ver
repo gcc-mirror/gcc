@@ -85,7 +85,11 @@ GLIBCXX_3.4 {
       std::invalid_argument::i*;
 #     std::invalid_argument::~i*;
 #     std::ios_base::[A-Ha-z]*;
-      std::ios_base::[A-Ha-f]*;
+      std::ios_base::[A-Ha-e]*;
+      std::ios_base::failbit;
+#     std::ios_base::failure*;
+      std::ios_base::fixed;
+      std::ios_base::floatfield;
       std::ios_base::goodbit;
       std::ios_base::[h-z]*;
       std::ios_base::_M_grow_words*;
@@ -124,7 +128,8 @@ GLIBCXX_3.4 {
       std::messages*;
       std::money*;
 #     std::n[^u]*;
-      std::n[^aue]*;
+      std::n[^aueo]*;
+      std::nothrow;
       std::nu[^m]*;
       std::num[^e]*;
       std::ostrstream*;
@@ -499,6 +504,11 @@ GLIBCXX_3.4 {
     _ZNSt8ios_baseD*;
     _ZNSt8ios_base4InitD*;
 
+    # std::ios_base::failure constructors, destructors, virtual function
+    _ZNSt8ios_base7failureC*;
+    _ZNSt8ios_base7failureD*;
+    _ZNKSt8ios_base7failure4whatEv;
+
     # bool std::has_facet
     _ZSt9has_facetIS*;
 
@@ -513,7 +523,7 @@ GLIBCXX_3.4 {
     _ZNSt5ctypeI[cw]*;
 
     # std::ctype_base
-    _ZNSt10ctype_base*;
+    _ZNSt10ctype_base[56][ac-z]*;
 
     # std::ctype_byname
     _ZNSt12ctype_bynameI[cw]*;
@@ -1472,6 +1482,29 @@ GLIBCXX_3.4.21 {
 
     # std::basic_ios::operator bool() const
     _ZNKSt9basic_iosI[cw]St11char_traitsI[cw]EEcvbEv;
+
+    # C++11 version of std::ios_base::failure
+    _ZNKSt8ios_base7failureB5cxx114whatEv;
+    _ZNSt8ios_base7failureB5cxx11C[12]ERKSs;
+    _ZNSt8ios_base7failureB5cxx11C[12]EPKcRKSt10error_code;
+    _ZNSt8ios_base7failureB5cxx11C[12]ERKSsB5cxx11;
+    _ZNSt8ios_base7failureB5cxx11C[12]ERKSsB5cxx11RKSt10error_code;
+    _ZNSt8ios_base7failureB5cxx11D[012]Ev;
+    _ZTINSt8ios_base7failureB5cxx11E;
+    _ZTSNSt8ios_base7failureB5cxx11E;
+    _ZTVNSt8ios_base7failureB5cxx11E;
+    _ZSt17iostream_categoryv;
+
+    # std::ctype_base::blank
+    _ZNSt10ctype_base5blankE;
+
+    # std::_Sp_locker::*
+    _ZNSt10_Sp_locker[CD]*;
+
+    # std::notify_all_at_thread_exit
+    _ZSt25notify_all_at_thread_exitRSt18condition_variableSt11unique_lockISt5mutexE;
+    # std::__future_base::_State_baseV2::_Make_ready::_M_set()
+    _ZNSt13__future_base13_State_baseV211_Make_ready6_M_setEv;
 
 } GLIBCXX_3.4.20;
 

@@ -111,6 +111,11 @@ package body Freeze is
    --  itself is frozen. Check that the expression does not include references
    --  to deferred constants without completion. We report this at the freeze
    --  point of the function, to provide a better error message.
+   --
+   --  In most cases the expression itself is frozen by the time the function
+   --  itself is frozen, because the formals will be frozen by then. However,
+   --  Attribute references to outer types are freeze points for those types;
+   --  this routine generates the required freeze nodes for them.
 
    procedure Check_Strict_Alignment (E : Entity_Id);
    --  E is a base type. If E is tagged or has a component that is aliased
@@ -573,11 +578,13 @@ package body Freeze is
    --------------------------
 
    procedure Check_Address_Clause (E : Entity_Id) is
-      Addr : constant Node_Id    := Address_Clause (E);
-      Expr : Node_Id;
-      Decl : constant Node_Id    := Declaration_Node (E);
-      Loc  : constant Source_Ptr := Sloc (Decl);
-      Typ  : constant Entity_Id  := Etype (E);
+      Addr       : constant Node_Id    := Address_Clause (E);
+      Expr       : Node_Id;
+      Decl       : constant Node_Id    := Declaration_Node (E);
+      Loc        : constant Source_Ptr := Sloc (Decl);
+      Typ        : constant Entity_Id  := Etype (E);
+      Lhs        : Node_Id;
+      Tag_Assign : Node_Id;
 
    begin
       if Present (Addr) then
@@ -631,9 +638,13 @@ package body Freeze is
 
          if Present (Expression (Decl)) then
 
-            --  Capture initialization value at point of declaration
+            --  Capture initialization value at point of declaration,
+            --  and make explicit assignment legal, because object may
+            --  be a constant.
 
             Remove_Side_Effects (Expression (Decl));
+            Lhs := New_Occurrence_Of (E, Loc);
+            Set_Assignment_OK (Lhs);
 
             --  Move initialization to freeze actions (once the object has
             --  been frozen, and the address clause alignment check has been
@@ -641,10 +652,18 @@ package body Freeze is
 
             Append_Freeze_Action (E,
               Make_Assignment_Statement (Loc,
-                Name       => New_Occurrence_Of (E, Loc),
+                Name       => Lhs,
                 Expression => Expression (Decl)));
 
             Set_No_Initialization (Decl);
+
+            --  If the objet is tagged, check whether the tag must be
+            --  reassigned expliitly.
+
+            Tag_Assign := Make_Tag_Assignment (Decl);
+            if Present (Tag_Assign) then
+               Append_Freeze_Action (E, Tag_Assign);
+            end if;
          end if;
       end if;
    end Check_Address_Clause;
@@ -1272,6 +1291,15 @@ package body Freeze is
          then
             Error_Msg_NE
               ("premature use of& in call or instance", N, Entity (Nod));
+
+         elsif Nkind (Nod) = N_Attribute_Reference then
+            Analyze (Prefix (Nod));
+
+            if Is_Entity_Name (Prefix (Nod))
+              and then Is_Type (Entity (Prefix (Nod)))
+            then
+               Freeze_Before (N, Entity (Prefix (Nod)));
+            end if;
          end if;
 
          return OK;
@@ -1703,7 +1731,6 @@ package body Freeze is
       E := From;
       while Present (E) loop
          if Is_Subprogram (E) then
-
             if not Default_Expressions_Processed (E) then
                Process_Default_Expressions (E, After);
             end if;
@@ -1857,6 +1884,12 @@ package body Freeze is
       function Freeze_Generic_Entities (Pack : Entity_Id) return List_Id;
       --  Create Freeze_Generic_Entity nodes for types declared in a generic
       --  package. Recurse on inner generic packages.
+
+      function Freeze_Profile (E : Entity_Id) return Boolean;
+      --  Freeze formals and return type of subprogram. If some type in the
+      --  profile is a limited view, freezing of the entity will take place
+      --  elsewhere, and the function returns False. This routine will be
+      --  modified if and when we can implement AI05-019 efficiently ???
 
       procedure Freeze_Record_Type (Rec : Entity_Id);
       --  Freeze record type, including freezing component types, and freezing
@@ -2551,8 +2584,8 @@ package body Freeze is
                          Attribute_Name => Name_Range_Length);
                      Analyze_And_Resolve (Ilen);
 
-                     --  No attempt is made to check number of elements
-                     --  if not compile time known.
+                     --  No attempt is made to check number of elements if not
+                     --  compile time known.
 
                      if Nkind (Ilen) /= N_Integer_Literal then
                         Elmts := Uint_0;
@@ -2595,9 +2628,9 @@ package body Freeze is
             end if;
          end if;
 
-         --  If any of the index types was an enumeration type with a
-         --  non-standard rep clause, then we indicate that the array type
-         --  is always packed (even if it is not bit packed).
+         --  If any of the index types was an enumeration type with a non-
+         --  standard rep clause, then we indicate that the array type is
+         --  always packed (even if it is not bit packed).
 
          if Non_Standard_Enum then
             Set_Has_Non_Standard_Rep (Base_Type (Arr));
@@ -2616,6 +2649,37 @@ package body Freeze is
          then
             Create_Packed_Array_Impl_Type (Arr);
             Freeze_And_Append (Packed_Array_Impl_Type (Arr), N, Result);
+
+            --  Make sure that we have the necessary routines to implement the
+            --  packing, and complain now if not. Note that we only test this
+            --  for constrained array types.
+
+            if Is_Constrained (Arr)
+              and then Is_Bit_Packed_Array (Arr)
+              and then Present (Packed_Array_Impl_Type (Arr))
+              and then Is_Array_Type (Packed_Array_Impl_Type (Arr))
+            then
+               declare
+                  CS : constant Uint  := Component_Size (Arr);
+                  RE : constant RE_Id := Get_Id (UI_To_Int (CS));
+
+               begin
+                  if RE /= RE_Null
+                    and then not RTE_Available (RE)
+                  then
+                     Error_Msg_CRT
+                       ("packing of " & UI_Image (CS) & "-bit components",
+                        First_Subtype (Etype (Arr)));
+
+                     --  Cancel the packing
+
+                     Set_Is_Packed (Base_Type (Arr), False);
+                     Set_Is_Bit_Packed_Array (Base_Type (Arr), False);
+                     Set_Packed_Array_Impl_Type (Arr, Empty);
+                     goto Skip_Packed;
+                  end if;
+               end;
+            end if;
 
             --  Size information of packed array type is copied to the array
             --  type, since this is really the representation. But do not
@@ -2637,6 +2701,8 @@ package body Freeze is
                Set_Alignment (Arr, Alignment (Packed_Array_Impl_Type (Arr)));
             end if;
          end if;
+
+         <<Skip_Packed>>
 
          --  For non-packed arrays set the alignment of the array to the
          --  alignment of the component type if it is unknown. Skip this
@@ -2681,6 +2747,339 @@ package body Freeze is
 
          return Flist;
       end Freeze_Generic_Entities;
+
+      --------------------
+      -- Freeze_Profile --
+      --------------------
+
+      function Freeze_Profile (E : Entity_Id) return Boolean is
+         F_Type    : Entity_Id;
+         R_Type    : Entity_Id;
+         Warn_Node : Node_Id;
+
+      begin
+         --  Loop through formals
+
+         Formal := First_Formal (E);
+         while Present (Formal) loop
+            F_Type := Etype (Formal);
+
+            --  AI05-0151: incomplete types can appear in a profile. By the
+            --  time the entity is frozen, the full view must be available,
+            --  unless it is a limited view.
+
+            if Is_Incomplete_Type (F_Type)
+              and then Present (Full_View (F_Type))
+              and then not From_Limited_With (F_Type)
+            then
+               F_Type := Full_View (F_Type);
+               Set_Etype (Formal, F_Type);
+            end if;
+
+            Freeze_And_Append (F_Type, N, Result);
+
+            if Is_Private_Type (F_Type)
+              and then Is_Private_Type (Base_Type (F_Type))
+              and then No (Full_View (Base_Type (F_Type)))
+              and then not Is_Generic_Type (F_Type)
+              and then not Is_Derived_Type (F_Type)
+            then
+               --  If the type of a formal is incomplete, subprogram is being
+               --  frozen prematurely. Within an instance (but not within a
+               --  wrapper package) this is an artifact of our need to regard
+               --  the end of an instantiation as a freeze point. Otherwise it
+               --  is a definite error.
+
+               if In_Instance then
+                  Set_Is_Frozen (E, False);
+                  Result := No_List;
+                  return False;
+
+               elsif not After_Last_Declaration
+                 and then not Freezing_Library_Level_Tagged_Type
+               then
+                  Error_Msg_Node_1 := F_Type;
+                  Error_Msg
+                    ("type & must be fully defined before this point", Loc);
+               end if;
+            end if;
+
+            --  Check suspicious parameter for C function. These tests apply
+            --  only to exported/imported subprograms.
+
+            if Warn_On_Export_Import
+              and then Comes_From_Source (E)
+              and then (Convention (E) = Convention_C
+                          or else
+                        Convention (E) = Convention_CPP)
+              and then (Is_Imported (E) or else Is_Exported (E))
+              and then Convention (E) /= Convention (Formal)
+              and then not Has_Warnings_Off (E)
+              and then not Has_Warnings_Off (F_Type)
+              and then not Has_Warnings_Off (Formal)
+            then
+               --  Qualify mention of formals with subprogram name
+
+               Error_Msg_Qual_Level := 1;
+
+               --  Check suspicious use of fat C pointer
+
+               if Is_Access_Type (F_Type)
+                 and then Esize (F_Type) > Ttypes.System_Address_Size
+               then
+                  Error_Msg_N
+                    ("?x?type of & does not correspond to C pointer!", Formal);
+
+               --  Check suspicious return of boolean
+
+               elsif Root_Type (F_Type) = Standard_Boolean
+                 and then Convention (F_Type) = Convention_Ada
+                 and then not Has_Warnings_Off (F_Type)
+                 and then not Has_Size_Clause (F_Type)
+                 and then VM_Target = No_VM
+               then
+                  Error_Msg_N
+                    ("& is an 8-bit Ada Boolean?x?", Formal);
+                  Error_Msg_N
+                    ("\use appropriate corresponding type in C "
+                     & "(e.g. char)?x?", Formal);
+
+               --  Check suspicious tagged type
+
+               elsif (Is_Tagged_Type (F_Type)
+                       or else
+                        (Is_Access_Type (F_Type)
+                          and then Is_Tagged_Type (Designated_Type (F_Type))))
+                 and then Convention (E) = Convention_C
+               then
+                  Error_Msg_N
+                    ("?x?& involves a tagged type which does not "
+                     & "correspond to any C type!", Formal);
+
+               --  Check wrong convention subprogram pointer
+
+               elsif Ekind (F_Type) = E_Access_Subprogram_Type
+                 and then not Has_Foreign_Convention (F_Type)
+               then
+                  Error_Msg_N
+                    ("?x?subprogram pointer & should "
+                     & "have foreign convention!", Formal);
+                  Error_Msg_Sloc := Sloc (F_Type);
+                  Error_Msg_NE
+                    ("\?x?add Convention pragma to declaration of &#",
+                     Formal, F_Type);
+               end if;
+
+               --  Turn off name qualification after message output
+
+               Error_Msg_Qual_Level := 0;
+            end if;
+
+            --  Check for unconstrained array in exported foreign convention
+            --  case.
+
+            if Has_Foreign_Convention (E)
+              and then not Is_Imported (E)
+              and then Is_Array_Type (F_Type)
+              and then not Is_Constrained (F_Type)
+              and then Warn_On_Export_Import
+
+              --  Exclude VM case, since both .NET and JVM can handle
+              --  unconstrained arrays without a problem.
+
+              and then VM_Target = No_VM
+            then
+               Error_Msg_Qual_Level := 1;
+
+               --  If this is an inherited operation, place the warning on
+               --  the derived type declaration, rather than on the original
+               --  subprogram.
+
+               if Nkind (Original_Node (Parent (E))) = N_Full_Type_Declaration
+               then
+                  Warn_Node := Parent (E);
+
+                  if Formal = First_Formal (E) then
+                     Error_Msg_NE ("??in inherited operation&", Warn_Node, E);
+                  end if;
+               else
+                  Warn_Node := Formal;
+               end if;
+
+               Error_Msg_NE ("?x?type of argument& is unconstrained array",
+                  Warn_Node, Formal);
+               Error_Msg_NE ("?x?foreign caller must pass bounds explicitly",
+                  Warn_Node, Formal);
+               Error_Msg_Qual_Level := 0;
+            end if;
+
+            if not From_Limited_With (F_Type) then
+               if Is_Access_Type (F_Type) then
+                  F_Type := Designated_Type (F_Type);
+               end if;
+
+               --  If the formal is an anonymous_access_to_subprogram
+               --  freeze the  subprogram type as well, to prevent
+               --  scope anomalies in gigi, because there is no other
+               --  clear point at which it could be frozen.
+
+               if Is_Itype (Etype (Formal))
+                 and then Ekind (F_Type) = E_Subprogram_Type
+               then
+                  Freeze_And_Append (F_Type, N, Result);
+               end if;
+            end if;
+
+            Next_Formal (Formal);
+         end loop;
+
+         --  Case of function: similar checks on return type
+
+         if Ekind (E) = E_Function then
+
+            --  Check whether function is declared elsewhere.
+
+            Late_Freezing :=
+              Get_Source_Unit (E) /= Get_Source_Unit (N)
+                and then Returns_Limited_View (E)
+                and then not In_Open_Scopes (Scope (E));
+
+            --  Freeze return type
+
+            R_Type := Etype (E);
+
+            --  AI05-0151: the return type may have been incomplete
+            --  at the point of declaration. Replace it with the full
+            --  view, unless the current type is a limited view. In
+            --  that case the full view is in a different unit, and
+            --  gigi finds the non-limited view after the other unit
+            --  is elaborated.
+
+            if Ekind (R_Type) = E_Incomplete_Type
+              and then Present (Full_View (R_Type))
+              and then not From_Limited_With (R_Type)
+            then
+               R_Type := Full_View (R_Type);
+               Set_Etype (E, R_Type);
+
+            --  If the return type is a limited view and the non-
+            --  limited view is still incomplete, the function has
+            --  to be frozen at a later time.
+
+            elsif Ekind (R_Type) = E_Incomplete_Type
+              and then From_Limited_With (R_Type)
+              and then
+                Ekind (Non_Limited_View (R_Type)) = E_Incomplete_Type
+            then
+               Set_Is_Frozen (E, False);
+               Set_Returns_Limited_View (E);
+               return False;
+            end if;
+
+            Freeze_And_Append (R_Type, N, Result);
+
+            --  Check suspicious return type for C function
+
+            if Warn_On_Export_Import
+              and then (Convention (E) = Convention_C
+                          or else
+                        Convention (E) = Convention_CPP)
+              and then (Is_Imported (E) or else Is_Exported (E))
+            then
+               --  Check suspicious return of fat C pointer
+
+               if Is_Access_Type (R_Type)
+                 and then Esize (R_Type) > Ttypes.System_Address_Size
+                 and then not Has_Warnings_Off (E)
+                 and then not Has_Warnings_Off (R_Type)
+               then
+                  Error_Msg_N ("?x?return type of& does not "
+                     & "correspond to C pointer!", E);
+
+               --  Check suspicious return of boolean
+
+               elsif Root_Type (R_Type) = Standard_Boolean
+                 and then Convention (R_Type) = Convention_Ada
+                 and then VM_Target = No_VM
+                 and then not Has_Warnings_Off (E)
+                 and then not Has_Warnings_Off (R_Type)
+                 and then not Has_Size_Clause (R_Type)
+               then
+                  declare
+                     N : constant Node_Id :=
+                           Result_Definition (Declaration_Node (E));
+                  begin
+                     Error_Msg_NE
+                       ("return type of & is an 8-bit Ada Boolean?x?", N, E);
+                     Error_Msg_NE
+                       ("\use appropriate corresponding type in C "
+                        & "(e.g. char)?x?", N, E);
+                  end;
+
+               --  Check suspicious return tagged type
+
+               elsif (Is_Tagged_Type (R_Type)
+                       or else (Is_Access_Type (R_Type)
+                                 and then
+                                   Is_Tagged_Type
+                                     (Designated_Type (R_Type))))
+                 and then Convention (E) = Convention_C
+                 and then not Has_Warnings_Off (E)
+                 and then not Has_Warnings_Off (R_Type)
+               then
+                  Error_Msg_N ("?x?return type of & does not "
+                     & "correspond to C type!", E);
+
+               --  Check return of wrong convention subprogram pointer
+
+               elsif Ekind (R_Type) = E_Access_Subprogram_Type
+                 and then not Has_Foreign_Convention (R_Type)
+                 and then not Has_Warnings_Off (E)
+                 and then not Has_Warnings_Off (R_Type)
+               then
+                  Error_Msg_N ("?x?& should return a foreign "
+                     & "convention subprogram pointer", E);
+                  Error_Msg_Sloc := Sloc (R_Type);
+                  Error_Msg_NE
+                    ("\?x?add Convention pragma to declaration of& #",
+                     E, R_Type);
+               end if;
+            end if;
+
+            --  Give warning for suspicious return of a result of an
+            --  unconstrained array type in a foreign convention function.
+
+            if Has_Foreign_Convention (E)
+
+              --  We are looking for a return of unconstrained array
+
+              and then Is_Array_Type (R_Type)
+              and then not Is_Constrained (R_Type)
+
+              --  Exclude imported routines, the warning does not belong on
+              --  the import, but rather on the routine definition.
+
+              and then not Is_Imported (E)
+
+              --  Exclude VM case, since both .NET and JVM can handle return
+              --  of unconstrained arrays without a problem.
+
+              and then VM_Target = No_VM
+
+              --  Check that general warning is enabled, and that it is not
+              --  suppressed for this particular case.
+
+              and then Warn_On_Export_Import
+              and then not Has_Warnings_Off (E)
+              and then not Has_Warnings_Off (R_Type)
+            then
+               Error_Msg_N ("?x?foreign convention function& should not " &
+                 "return unconstrained array!", E);
+            end if;
+         end if;
+
+         return True;
+      end Freeze_Profile;
 
       ------------------------
       -- Freeze_Record_Type --
@@ -2972,6 +3371,14 @@ package body Freeze is
                      elsif CodePeer_Mode then
                         null;
 
+                     --  Omit check if component has a generic type. This can
+                     --  happen in an instantiation within a generic in ASIS
+                     --  mode, where we force freeze actions without full
+                     --  expansion.
+
+                     elsif Is_Generic_Type (Etype (Comp)) then
+                        null;
+
                      --  Do the check
 
                      elsif not
@@ -3200,10 +3607,14 @@ package body Freeze is
             Next_Entity (Comp);
          end loop;
 
-         SSO_ADC := Get_Attribute_Definition_Clause
-                      (Rec, Attribute_Scalar_Storage_Order);
+         --  Deal with default setting of reverse storage order
+
+         Set_SSO_From_Default (Rec);
 
          --  Check consistent attribute setting on component types
+
+         SSO_ADC := Get_Attribute_Definition_Clause
+                      (Rec, Attribute_Scalar_Storage_Order);
 
          declare
             Comp_ADC_Present : Boolean;
@@ -3219,10 +3630,6 @@ package body Freeze is
                Next_Component (Comp);
             end loop;
          end;
-
-         --  Deal with default setting of reverse storage order
-
-         Set_SSO_From_Default (Rec);
 
          --  Now deal with reverse storage order/bit order issues
 
@@ -3612,6 +4019,47 @@ package body Freeze is
             --  call to the Analyze_Freeze_Entity for the record type.
 
          end Check_Variant_Part;
+
+         --  Check that all the primitives of an interface type are abstract
+         --  or null procedures.
+
+         if Is_Interface (Rec)
+           and then not Error_Posted (Parent (Rec))
+         then
+            declare
+               Elmt : Elmt_Id;
+               Subp : Entity_Id;
+
+            begin
+               Elmt := First_Elmt (Primitive_Operations (Rec));
+               while Present (Elmt) loop
+                  Subp := Node (Elmt);
+
+                  if not Is_Abstract_Subprogram (Subp)
+
+                     --  Avoid reporting the error on inherited primitives
+
+                    and then Comes_From_Source (Subp)
+                  then
+                     Error_Msg_Name_1 := Chars (Subp);
+
+                     if Ekind (Subp) = E_Procedure then
+                        if not Null_Present (Parent (Subp)) then
+                           Error_Msg_N
+                             ("interface procedure % must be abstract or null",
+                              Parent (Subp));
+                        end if;
+                     else
+                        Error_Msg_N
+                          ("interface function % must be abstract",
+                           Parent (Subp));
+                     end if;
+                  end if;
+
+                  Next_Elmt (Elmt);
+               end loop;
+            end;
+         end if;
       end Freeze_Record_Type;
 
       -------------------------------
@@ -4005,347 +4453,17 @@ package body Freeze is
             --  any extra formal parameters are created since we now know
             --  whether the subprogram will use a foreign convention.
 
+            --  In Ada 2012, freezing a subprogram does not always freeze
+            --  the corresponding profile (see AI05-019). An attribute
+            --  reference is not a freezing point of the profile.
+            --  Other constructs that should not freeze ???
+
+            --  This processing doesn't apply to internal entities (see below)
+
             if not Is_Internal (E) then
-               declare
-                  F_Type    : Entity_Id;
-                  R_Type    : Entity_Id;
-                  Warn_Node : Node_Id;
-
-               begin
-                  --  Loop through formals
-
-                  Formal := First_Formal (E);
-                  while Present (Formal) loop
-                     F_Type := Etype (Formal);
-
-                     --  AI05-0151: incomplete types can appear in a profile.
-                     --  By the time the entity is frozen, the full view must
-                     --  be available, unless it is a limited view.
-
-                     if Is_Incomplete_Type (F_Type)
-                       and then Present (Full_View (F_Type))
-                       and then not From_Limited_With (F_Type)
-                     then
-                        F_Type := Full_View (F_Type);
-                        Set_Etype (Formal, F_Type);
-                     end if;
-
-                     Freeze_And_Append (F_Type, N, Result);
-
-                     if Is_Private_Type (F_Type)
-                       and then Is_Private_Type (Base_Type (F_Type))
-                       and then No (Full_View (Base_Type (F_Type)))
-                       and then not Is_Generic_Type (F_Type)
-                       and then not Is_Derived_Type (F_Type)
-                     then
-                        --  If the type of a formal is incomplete, subprogram
-                        --  is being frozen prematurely. Within an instance
-                        --  (but not within a wrapper package) this is an
-                        --  artifact of our need to regard the end of an
-                        --  instantiation as a freeze point. Otherwise it is
-                        --  a definite error.
-
-                        if In_Instance then
-                           Set_Is_Frozen (E, False);
-                           return No_List;
-
-                        elsif not After_Last_Declaration
-                          and then not Freezing_Library_Level_Tagged_Type
-                        then
-                           Error_Msg_Node_1 := F_Type;
-                           Error_Msg
-                             ("type& must be fully defined before this point",
-                               Loc);
-                        end if;
-                     end if;
-
-                     --  Check suspicious parameter for C function. These tests
-                     --  apply only to exported/imported subprograms.
-
-                     if Warn_On_Export_Import
-                       and then Comes_From_Source (E)
-                       and then (Convention (E) = Convention_C
-                                   or else
-                                 Convention (E) = Convention_CPP)
-                       and then (Is_Imported (E) or else Is_Exported (E))
-                       and then Convention (E) /= Convention (Formal)
-                       and then not Has_Warnings_Off (E)
-                       and then not Has_Warnings_Off (F_Type)
-                       and then not Has_Warnings_Off (Formal)
-                     then
-                        --  Qualify mention of formals with subprogram name
-
-                        Error_Msg_Qual_Level := 1;
-
-                        --  Check suspicious use of fat C pointer
-
-                        if Is_Access_Type (F_Type)
-                          and then Esize (F_Type) > Ttypes.System_Address_Size
-                        then
-                           Error_Msg_N
-                             ("?x?type of & does not correspond to C pointer!",
-                              Formal);
-
-                        --  Check suspicious return of boolean
-
-                        elsif Root_Type (F_Type) = Standard_Boolean
-                          and then Convention (F_Type) = Convention_Ada
-                          and then not Has_Warnings_Off (F_Type)
-                          and then not Has_Size_Clause (F_Type)
-                          and then VM_Target = No_VM
-                        then
-                           Error_Msg_N
-                             ("& is an 8-bit Ada Boolean?x?", Formal);
-                           Error_Msg_N
-                             ("\use appropriate corresponding type in C "
-                              & "(e.g. char)?x?", Formal);
-
-                        --  Check suspicious tagged type
-
-                        elsif (Is_Tagged_Type (F_Type)
-                                or else (Is_Access_Type (F_Type)
-                                           and then
-                                             Is_Tagged_Type
-                                               (Designated_Type (F_Type))))
-                          and then Convention (E) = Convention_C
-                        then
-                           Error_Msg_N
-                             ("?x?& involves a tagged type which does not "
-                              & "correspond to any C type!", Formal);
-
-                        --  Check wrong convention subprogram pointer
-
-                        elsif Ekind (F_Type) = E_Access_Subprogram_Type
-                          and then not Has_Foreign_Convention (F_Type)
-                        then
-                           Error_Msg_N
-                             ("?x?subprogram pointer & should "
-                              & "have foreign convention!", Formal);
-                           Error_Msg_Sloc := Sloc (F_Type);
-                           Error_Msg_NE
-                             ("\?x?add Convention pragma to declaration of &#",
-                              Formal, F_Type);
-                        end if;
-
-                        --  Turn off name qualification after message output
-
-                        Error_Msg_Qual_Level := 0;
-                     end if;
-
-                     --  Check for unconstrained array in exported foreign
-                     --  convention case.
-
-                     if Has_Foreign_Convention (E)
-                       and then not Is_Imported (E)
-                       and then Is_Array_Type (F_Type)
-                       and then not Is_Constrained (F_Type)
-                       and then Warn_On_Export_Import
-
-                       --  Exclude VM case, since both .NET and JVM can handle
-                       --  unconstrained arrays without a problem.
-
-                       and then VM_Target = No_VM
-                     then
-                        Error_Msg_Qual_Level := 1;
-
-                        --  If this is an inherited operation, place the
-                        --  warning on the derived type declaration, rather
-                        --  than on the original subprogram.
-
-                        if Nkind (Original_Node (Parent (E))) =
-                          N_Full_Type_Declaration
-                        then
-                           Warn_Node := Parent (E);
-
-                           if Formal = First_Formal (E) then
-                              Error_Msg_NE
-                                ("??in inherited operation&", Warn_Node, E);
-                           end if;
-                        else
-                           Warn_Node := Formal;
-                        end if;
-
-                        Error_Msg_NE
-                          ("?x?type of argument& is unconstrained array",
-                           Warn_Node, Formal);
-                        Error_Msg_NE
-                          ("?x?foreign caller must pass bounds explicitly",
-                           Warn_Node, Formal);
-                        Error_Msg_Qual_Level := 0;
-                     end if;
-
-                     if not From_Limited_With (F_Type) then
-                        if Is_Access_Type (F_Type) then
-                           F_Type := Designated_Type (F_Type);
-                        end if;
-
-                        --  If the formal is an anonymous_access_to_subprogram
-                        --  freeze the  subprogram type as well, to prevent
-                        --  scope anomalies in gigi, because there is no other
-                        --  clear point at which it could be frozen.
-
-                        if Is_Itype (Etype (Formal))
-                          and then Ekind (F_Type) = E_Subprogram_Type
-                        then
-                           Freeze_And_Append (F_Type, N, Result);
-                        end if;
-                     end if;
-
-                     Next_Formal (Formal);
-                  end loop;
-
-                  --  Case of function: similar checks on return type
-
-                  if Ekind (E) = E_Function then
-
-                     --  Check whether function is declared elsewhere.
-
-                     Late_Freezing :=
-                       Get_Source_Unit (E) /= Get_Source_Unit (N)
-                         and then Returns_Limited_View (E)
-                         and then not In_Open_Scopes (Scope (E));
-
-                     --  Freeze return type
-
-                     R_Type := Etype (E);
-
-                     --  AI05-0151: the return type may have been incomplete
-                     --  at the point of declaration. Replace it with the full
-                     --  view, unless the current type is a limited view. In
-                     --  that case the full view is in a different unit, and
-                     --  gigi finds the non-limited view after the other unit
-                     --  is elaborated.
-
-                     if Ekind (R_Type) = E_Incomplete_Type
-                       and then Present (Full_View (R_Type))
-                       and then not From_Limited_With (R_Type)
-                     then
-                        R_Type := Full_View (R_Type);
-                        Set_Etype (E, R_Type);
-
-                     --  If the return type is a limited view and the non-
-                     --  limited view is still incomplete, the function has
-                     --  to be frozen at a later time.
-
-                     elsif Ekind (R_Type) = E_Incomplete_Type
-                       and then From_Limited_With (R_Type)
-                       and then
-                         Ekind (Non_Limited_View (R_Type)) = E_Incomplete_Type
-                     then
-                        Set_Is_Frozen (E, False);
-                        Set_Returns_Limited_View (E);
-                        return Result;
-                     end if;
-
-                     Freeze_And_Append (R_Type, N, Result);
-
-                     --  Check suspicious return type for C function
-
-                     if Warn_On_Export_Import
-                       and then (Convention (E) = Convention_C
-                                   or else
-                                 Convention (E) = Convention_CPP)
-                       and then (Is_Imported (E) or else Is_Exported (E))
-                     then
-                        --  Check suspicious return of fat C pointer
-
-                        if Is_Access_Type (R_Type)
-                          and then Esize (R_Type) > Ttypes.System_Address_Size
-                          and then not Has_Warnings_Off (E)
-                          and then not Has_Warnings_Off (R_Type)
-                        then
-                           Error_Msg_N
-                             ("?x?return type of& does not "
-                              & "correspond to C pointer!", E);
-
-                        --  Check suspicious return of boolean
-
-                        elsif Root_Type (R_Type) = Standard_Boolean
-                          and then Convention (R_Type) = Convention_Ada
-                          and then VM_Target = No_VM
-                          and then not Has_Warnings_Off (E)
-                          and then not Has_Warnings_Off (R_Type)
-                          and then not Has_Size_Clause (R_Type)
-                        then
-                           declare
-                              N : constant Node_Id :=
-                                    Result_Definition (Declaration_Node (E));
-                           begin
-                              Error_Msg_NE
-                                ("return type of & is an 8-bit Ada Boolean?x?",
-                                 N, E);
-                              Error_Msg_NE
-                                ("\use appropriate corresponding type in C "
-                                 & "(e.g. char)?x?", N, E);
-                           end;
-
-                        --  Check suspicious return tagged type
-
-                        elsif (Is_Tagged_Type (R_Type)
-                                or else (Is_Access_Type (R_Type)
-                                          and then
-                                            Is_Tagged_Type
-                                              (Designated_Type (R_Type))))
-                          and then Convention (E) = Convention_C
-                          and then not Has_Warnings_Off (E)
-                          and then not Has_Warnings_Off (R_Type)
-                        then
-                           Error_Msg_N
-                             ("?x?return type of & does not "
-                              & "correspond to C type!", E);
-
-                        --  Check return of wrong convention subprogram pointer
-
-                        elsif Ekind (R_Type) = E_Access_Subprogram_Type
-                          and then not Has_Foreign_Convention (R_Type)
-                          and then not Has_Warnings_Off (E)
-                          and then not Has_Warnings_Off (R_Type)
-                        then
-                           Error_Msg_N
-                             ("?x?& should return a foreign "
-                              & "convention subprogram pointer", E);
-                           Error_Msg_Sloc := Sloc (R_Type);
-                           Error_Msg_NE
-                             ("\?x?add Convention pragma to declaration of& #",
-                              E, R_Type);
-                        end if;
-                     end if;
-
-                     --  Give warning for suspicious return of a result of an
-                     --  unconstrained array type in a foreign convention
-                     --  function.
-
-                     if Has_Foreign_Convention (E)
-
-                       --  We are looking for a return of unconstrained array
-
-                       and then Is_Array_Type (R_Type)
-                       and then not Is_Constrained (R_Type)
-
-                       --  Exclude imported routines, the warning does not
-                       --  belong on the import, but rather on the routine
-                       --  definition.
-
-                       and then not Is_Imported (E)
-
-                       --  Exclude VM case, since both .NET and JVM can handle
-                       --  return of unconstrained arrays without a problem.
-
-                       and then VM_Target = No_VM
-
-                       --  Check that general warning is enabled, and that it
-                       --  is not suppressed for this particular case.
-
-                       and then Warn_On_Export_Import
-                       and then not Has_Warnings_Off (E)
-                       and then not Has_Warnings_Off (R_Type)
-                     then
-                        Error_Msg_N
-                          ("?x?foreign convention function& should not " &
-                           "return unconstrained array!", E);
-                     end if;
-                  end if;
-               end;
+               if not Freeze_Profile (E) then
+                  return Result;
+               end if;
             end if;
 
             --  Must freeze its parent first if it is a derived subprogram
@@ -4416,6 +4534,23 @@ package body Freeze is
               and then Ekind (E) /= E_Generic_Function
             then
                Freeze_And_Append (Etype (E), N, Result);
+
+               --  For an object of an anonymous array type, aspects on the
+               --  object declaration apply to the type itself. This is the
+               --  case for Atomic_Components, Volatile_Components, and
+               --  Independent_Components. In these cases analysis of the
+               --  generated pragma will mark the anonymous types accordingly,
+               --  and the object itself does not require a freeze node.
+
+               if Ekind (E) = E_Variable
+                 and then Is_Itype (Etype (E))
+                 and then Is_Array_Type (Etype (E))
+                 and then Has_Delayed_Aspects (E)
+               then
+                  Set_Has_Delayed_Aspects (E, False);
+                  Set_Has_Delayed_Freeze (E, False);
+                  Set_Freeze_Node (E, Empty);
+               end if;
             end if;
 
             --  Special processing for objects created by object declaration
@@ -4441,7 +4576,12 @@ package body Freeze is
                   if Is_CPP_Class (Etype (E)) then
                      Error_Msg_NE
                        ("\} may need a cpp_constructor",
-                       Object_Definition (Parent (E)), Etype (E));
+                        Object_Definition (Parent (E)), Etype (E));
+
+                  elsif Present (Expression (Parent (E))) then
+                     Error_Msg_N --  CODEFIX
+                       ("\maybe a class-wide type was meant",
+                        Object_Definition (Parent (E)));
                   end if;
                end if;
 
@@ -4456,19 +4596,27 @@ package body Freeze is
 
                Check_Address_Clause (E);
 
-               --  Reset Is_True_Constant for aliased object. We consider that
-               --  the fact that something is aliased may indicate that some
-               --  funny business is going on, e.g. an aliased object is passed
-               --  by reference to a procedure which captures the address of
-               --  the object, which is later used to assign a new value. Such
-               --  code is highly dubious, but we choose to make it "work" for
-               --  aliased objects.
+               --  Reset Is_True_Constant for non-constant aliased object. We
+               --  consider that the fact that a non-constant object is aliased
+               --  may indicate that some funny business is going on, e.g. an
+               --  aliased object is passed by reference to a procedure which
+               --  captures the address of the object, which is later used to
+               --  assign a new value, even though the compiler thinks that
+               --  it is not modified. Such code is highly dubious, but we
+               --  choose to make it "work" for non-constant aliased objects.
+               --  Note that we used to do this for all aliased objects,
+               --  whether or not constant, but this caused anomalies down
+               --  the line because we ended up with static objects that
+               --  were not Is_True_Constant. Not resetting Is_True_Constant
+               --  for (aliased) constant objects ensures that this anomaly
+               --  never occurs.
 
                --  However, we don't do that for internal entities. We figure
                --  that if we deliberately set Is_True_Constant for an internal
                --  entity, e.g. a dispatch table entry, then we mean it.
 
-               if (Is_Aliased (E) or else Is_Aliased (Etype (E)))
+               if Ekind (E) /= E_Constant
+                 and then (Is_Aliased (E) or else Is_Aliased (Etype (E)))
                  and then not Is_Internal_Name (Chars (E))
                then
                   Set_Is_True_Constant (E, False);
@@ -4689,6 +4837,14 @@ package body Freeze is
                  ("\can only be specified for a tagged type", Prag);
             end if;
          end;
+
+         --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(8))
+
+         if Is_Ghost_Entity (E)
+           and then Is_Effectively_Volatile (E)
+         then
+            Error_Msg_N ("ghost type & cannot be volatile", E);
+         end if;
 
          --  Deal with special cases of freezing for subtype
 
@@ -4981,7 +5137,8 @@ package body Freeze is
          --  that later when the full type is frozen).
 
          elsif Ekind_In (E, E_Record_Type, E_Record_Subtype)
-           and then not Is_Generic_Unit (Scope (E))
+           and then not (Present (Scope (E))
+                          and then Is_Generic_Unit (Scope (E)))
          then
             Freeze_Record_Type (E);
 
@@ -5298,8 +5455,13 @@ package body Freeze is
                Check_Suspicious_Modulus (E);
             end if;
 
+         --  The pool applies to named and anonymous access types, but not
+         --  to subprogram and to  internal types generated for 'Access
+         --  references.
+
          elsif Is_Access_Type (E)
            and then not Is_Access_Subprogram_Type (E)
+           and then Ekind (E) /= E_Access_Attribute_Type
          then
             --  If a pragma Default_Storage_Pool applies, and this type has no
             --  Storage_Pool or Storage_Size clause (which must have occurred
@@ -5933,17 +6095,57 @@ package body Freeze is
       --  may reference entities that have to be frozen before the body and
       --  obviously cannot be frozen inside the body.
 
-      function In_Exp_Body (N : Node_Id) return Boolean;
+      function Find_Aggregate_Component_Desig_Type return Entity_Id;
+      --  If the expression is an array aggregate, the type of the component
+      --  expressions is also frozen. If the component type is an access type
+      --  and the expressions include allocators, the designed type is frozen
+      --  as well.
+
+      function In_Expanded_Body (N : Node_Id) return Boolean;
       --  Given an N_Handled_Sequence_Of_Statements node N, determines whether
       --  it is the handled statement sequence of an expander-generated
       --  subprogram (init proc, stream subprogram, or renaming as body).
       --  If so, this is not a freezing context.
 
-      -----------------
-      -- In_Exp_Body --
-      -----------------
+      -----------------------------------------
+      -- Find_Aggregate_Component_Desig_Type --
+      -----------------------------------------
 
-      function In_Exp_Body (N : Node_Id) return Boolean is
+      function Find_Aggregate_Component_Desig_Type return Entity_Id is
+         Assoc : Node_Id;
+         Exp   : Node_Id;
+
+      begin
+         if Present (Expressions (N)) then
+            Exp := First (Expressions (N));
+            while Present (Exp) loop
+               if Nkind (Exp) = N_Allocator then
+                  return Designated_Type (Component_Type (Etype (N)));
+               end if;
+
+               Next (Exp);
+            end loop;
+         end if;
+
+         if Present (Component_Associations (N)) then
+            Assoc := First  (Component_Associations (N));
+            while Present (Assoc) loop
+               if Nkind (Expression (Assoc)) = N_Allocator then
+                  return Designated_Type (Component_Type (Etype (N)));
+               end if;
+
+               Next (Assoc);
+            end loop;
+         end if;
+
+         return Empty;
+      end Find_Aggregate_Component_Desig_Type;
+
+      ----------------------
+      -- In_Expanded_Body --
+      ----------------------
+
+      function In_Expanded_Body (N : Node_Id) return Boolean is
          P  : Node_Id;
          Id : Entity_Id;
 
@@ -5960,7 +6162,8 @@ package body Freeze is
          else
             Id := Defining_Unit_Name (Specification (P));
 
-            --  Following complex conditional could use comments ???
+            --  The following are expander-created bodies, or bodies that
+            --  are not freeze points.
 
             if Nkind (Id) = N_Defining_Identifier
               and then (Is_Init_Proc (Id)
@@ -5977,7 +6180,7 @@ package body Freeze is
                return False;
             end if;
          end if;
-      end In_Exp_Body;
+      end In_Expanded_Body;
 
    --  Start of processing for Freeze_Expression
 
@@ -6079,7 +6282,10 @@ package body Freeze is
             if Is_Array_Type (Etype (N))
               and then Is_Access_Type (Component_Type (Etype (N)))
             then
-               Desig_Typ := Designated_Type (Component_Type (Etype (N)));
+
+               --  Check whether aggregate includes allocators.
+
+               Desig_Typ := Find_Aggregate_Component_Desig_Type;
             end if;
 
          when N_Selected_Component |
@@ -6227,7 +6433,7 @@ package body Freeze is
                --  outside this body, not inside it, and we skip past the
                --  subprogram body that we are inside.
 
-               if In_Exp_Body (Parent_P) then
+               if In_Expanded_Body (Parent_P) then
                   declare
                      Subp : constant Node_Id := Parent (Parent_P);
                      Spec : Entity_Id;
@@ -6271,7 +6477,7 @@ package body Freeze is
                      --  of F (2) would place Hidden's freeze node (1) in the
                      --  wrong place. Avoid explicit freezing and let the usual
                      --  scenarios do the job - for example, reaching the end
-                     --  of the private declarations.
+                     --  of the private declarations, or a call to F.
 
                      if Nkind (Original_Node (Subp)) =
                                                 N_Expression_Function
@@ -7497,12 +7703,18 @@ package body Freeze is
 
    procedure Set_SSO_From_Default (T : Entity_Id) is
    begin
-      if (Is_Record_Type (T) or else Is_Array_Type (T))
-        and then Is_Base_Type (T)
+      --  Set default SSO for an array or record base type, except in case of
+      --  a type extension (which always inherits the SSO of its parent type).
+
+      if Is_Base_Type (T)
+        and then (Is_Array_Type (T)
+                   or else (Is_Record_Type (T)
+                             and then not (Is_Tagged_Type (T)
+                                            and then Is_Derived_Type (T))))
       then
-         if ((Bytes_Big_Endian and then SSO_Set_Low_By_Default (T))
-               or else
-             ((not Bytes_Big_Endian) and then SSO_Set_High_By_Default (T)))
+         if ((Bytes_Big_Endian      and then SSO_Set_Low_By_Default  (T))
+                or else
+            ((not Bytes_Big_Endian) and then SSO_Set_High_By_Default (T)))
 
            --  For a record type, if native bit order is specified explicitly,
            --  then never set reverse SSO from default.

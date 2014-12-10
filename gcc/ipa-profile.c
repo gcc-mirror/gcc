@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
    - Count histogram construction.  This is a histogram analyzing how much
      time is spent executing statements with a given execution count read
-     from profile feedback. This histogram is complette only with LTO,
+     from profile feedback. This histogram is complete only with LTO,
      otherwise it contains information only about the current unit.
 
      Similar histogram is also estimated by coverage runtime.  This histogram
@@ -49,6 +49,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "basic-block.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-pass.h"
 #include "tree-ssa-alias.h"
@@ -67,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "lto-streamer.h"
 #include "data-streamer.h"
+#include "ipa-prop.h"
 #include "ipa-inline.h"
 
 /* Entry in the histogram.  */
@@ -402,7 +418,8 @@ ipa_propagate_frequency (struct cgraph_node *node)
      nor about virtuals.  */
   if (!node->local.local
       || node->alias
-      || (flag_devirtualize && DECL_VIRTUAL_P (node->decl)))
+      || (opt_for_fn (node->decl, flag_devirtualize)
+	  && DECL_VIRTUAL_P (node->decl)))
     return false;
   gcc_assert (node->analyzed);
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -590,8 +607,8 @@ ipa_profile (void)
 		    {
 		      fprintf (dump_file, "Indirect call -> direct call from"
 			       " other module %s/%i => %s/%i, prob %3.2f\n",
-			       xstrdup (n->name ()), n->order,
-			       xstrdup (n2->name ()), n2->order,
+			       xstrdup_for_dump (n->name ()), n->order,
+			       xstrdup_for_dump (n2->name ()), n2->order,
 			       e->indirect_info->common_target_probability
 			       / (float)REG_BR_PROB_BASE);
 		    }
@@ -738,7 +755,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_ipa_profile; }
+  virtual bool gate (function *) { return flag_ipa_profile || in_lto_p; }
   virtual unsigned int execute (function *) { return ipa_profile (); }
 
 }; // class pass_ipa_profile

@@ -80,69 +80,78 @@ namespace __gnu_profile
     ~__reentrance_guard() { __inside() = false; }
   };
 
-#define _GLIBCXX_PROFILE_REENTRANCE_GUARD(__x...)	      	\
-  {                                                             \
-    if (__gnu_profile::__reentrance_guard::__get_in())          \
-    {                                                           \
-      __gnu_profile::__reentrance_guard __get_out; 		\
-      __x;                                                      \
-    }                                                           \
-  }
-
   // Forward declarations of implementation functions.
   // Don't use any __gnu_profile:: in user code.
   // Instead, use the __profcxx... macros, which offer guarded access.
+  class __container_size_info;
+  class __hashfunc_info;
+  class __map2umap_info;
+  class __vector2list_info;
+  class __list2slist_info;
+  class __list2vector_info;
+
   bool __turn_on();
   bool __turn_off();
   bool __is_invalid();
   bool __is_on();
   bool __is_off();
-  void __report(void);
-  void __trace_hashtable_size_resize(const void*, std::size_t, std::size_t);
-  void __trace_hashtable_size_destruct(const void*, std::size_t, std::size_t);
-  void __trace_hashtable_size_construct(const void*, std::size_t);
-  void __trace_vector_size_resize(const void*, std::size_t, std::size_t);
-  void __trace_vector_size_destruct(const void*, std::size_t, std::size_t);
-  void __trace_vector_size_construct(const void*, std::size_t);
-  void __trace_hash_func_destruct(const void*, std::size_t, std::size_t,
-				  std::size_t);
-  void __trace_hash_func_construct(const void*);
-  void __trace_vector_to_list_destruct(const void*);
-  void __trace_vector_to_list_construct(const void*);
-  void __trace_vector_to_list_insert(const void*, std::size_t, std::size_t);
-  void __trace_vector_to_list_iterate(const void*, std::size_t);
-  void __trace_vector_to_list_invalid_operator(const void*);
-  void __trace_vector_to_list_resize(const void*, std::size_t, std::size_t);
-  void __trace_vector_to_list_find(const void*, std::size_t);
+  void __report();
 
-  void __trace_list_to_slist_destruct(const void*);
-  void __trace_list_to_slist_construct(const void*);
-  void __trace_list_to_slist_rewind(const void*);
-  void __trace_list_to_slist_operation(const void*);
+  __container_size_info*
+  __trace_hashtable_size_construct(std::size_t);
+  void __trace_hashtable_size_resize(__container_size_info*,
+				     std::size_t, std::size_t);
+  void __trace_hashtable_size_destruct(__container_size_info*,
+				       std::size_t, std::size_t);
 
-  void __trace_list_to_vector_destruct(const void*);
-  void __trace_list_to_vector_construct(const void*);
-  void __trace_list_to_vector_insert(const void*, std::size_t, std::size_t);
-  void __trace_list_to_vector_iterate(const void*, std::size_t);
-  void __trace_list_to_vector_invalid_operator(const void*);
-  void __trace_list_to_vector_resize(const void*, std::size_t, std::size_t);
+  __hashfunc_info*
+  __trace_hash_func_construct();
+  void __trace_hash_func_destruct(__hashfunc_info*,
+				  std::size_t, std::size_t, std::size_t);
 
-  void __trace_list_to_set_destruct(const void*);
-  void __trace_list_to_set_construct(const void*);
-  void __trace_list_to_set_insert(const void*, std::size_t, std::size_t); 
-  void __trace_list_to_set_iterate(const void*, std::size_t);
-  void __trace_list_to_set_invalid_operator(const void*);
-  void __trace_list_to_set_find(const void*, std::size_t); 
+  __container_size_info*
+  __trace_vector_size_construct(std::size_t);
+  void __trace_vector_size_resize(__container_size_info*,
+				  std::size_t, std::size_t);
+  void __trace_vector_size_destruct(__container_size_info*,
+				    std::size_t, std::size_t);
 
-  void __trace_map_to_unordered_map_construct(const void*);
-  void __trace_map_to_unordered_map_invalidate(const void*);
-  void __trace_map_to_unordered_map_insert(const void*, std::size_t,
+  __vector2list_info*
+  __trace_vector_to_list_construct();
+  void __trace_vector_to_list_insert(__vector2list_info*,
+				     std::size_t, std::size_t);
+  void __trace_vector_to_list_iterate(__vector2list_info*, int);
+  void __trace_vector_to_list_invalid_operator(__vector2list_info*);
+  void __trace_vector_to_list_resize(__vector2list_info*,
+				     std::size_t, std::size_t);
+  void __trace_vector_to_list_destruct(__vector2list_info*);
+
+  __list2slist_info*
+  __trace_list_to_slist_construct();
+  void __trace_list_to_slist_rewind(__list2slist_info*);
+  void __trace_list_to_slist_operation(__list2slist_info*);
+  void __trace_list_to_slist_destruct(__list2slist_info*);
+
+  __list2vector_info*
+  __trace_list_to_vector_construct();
+  void __trace_list_to_vector_insert(__list2vector_info*,
+				     std::size_t, std::size_t);
+  void __trace_list_to_vector_iterate(__list2vector_info*, int);
+  void __trace_list_to_vector_invalid_operator(__list2vector_info*);
+  void __trace_list_to_vector_resize(__list2vector_info*,
+				     std::size_t, std::size_t);
+  void __trace_list_to_vector_destruct(__list2vector_info*);
+
+  __map2umap_info*
+  __trace_map_to_unordered_map_construct();
+  void __trace_map_to_unordered_map_invalidate(__map2umap_info*);
+  void __trace_map_to_unordered_map_insert(__map2umap_info*, std::size_t,
 					   std::size_t);
-  void __trace_map_to_unordered_map_erase(const void*, std::size_t,
+  void __trace_map_to_unordered_map_erase(__map2umap_info*, std::size_t,
 					  std::size_t);
-  void __trace_map_to_unordered_map_iterate(const void*, std::size_t);
-  void __trace_map_to_unordered_map_find(const void*, std::size_t);
-  void __trace_map_to_unordered_map_destruct(const void*);
+  void __trace_map_to_unordered_map_iterate(__map2umap_info*, std::size_t);
+  void __trace_map_to_unordered_map_find(__map2umap_info*, std::size_t);
+  void __trace_map_to_unordered_map_destruct(__map2umap_info*);
 } // namespace __gnu_profile
 
 // Master switch turns on all diagnostics that are not explicitly turned off.
@@ -178,18 +187,12 @@ namespace __gnu_profile
 
 // Expose global management routines to user code.
 #ifdef _GLIBCXX_PROFILE
-#define __profcxx_report() \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD(__gnu_profile::__report())
-#define __profcxx_turn_on() \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD(__gnu_profile::__turn_on())
-#define __profcxx_turn_off() \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD(__gnu_profile::__turn_off())
-#define __profcxx_is_invalid() \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD(__gnu_profile::__is_invalid())
-#define __profcxx_is_on() \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD(__gnu_profile::__is_on())
-#define __profcxx_is_off() \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD(__gnu_profile::__is_off())
+#define __profcxx_report() __gnu_profile::__report()
+#define __profcxx_turn_on() __gnu_profile::__turn_on()
+#define __profcxx_turn_off() __gnu_profile::__turn_off()
+#define __profcxx_is_invalid() __gnu_profile::__is_invalid()
+#define __profcxx_is_on() __gnu_profile::__is_on()
+#define __profcxx_is_off() __gnu_profile::__is_off()
 #else
 #define __profcxx_report()
 #define __profcxx_turn_on()
@@ -202,166 +205,128 @@ namespace __gnu_profile
 // Turn on/off instrumentation for HASHTABLE_TOO_SMALL and HASHTABLE_TOO_LARGE.
 #if (defined(_GLIBCXX_PROFILE_HASHTABLE_TOO_SMALL) \
      || defined(_GLIBCXX_PROFILE_HASHTABLE_TOO_LARGE))
-#define __profcxx_hashtable_resize(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_hashtable_size_resize(__x))
-#define __profcxx_hashtable_destruct(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_hashtable_size_destruct(__x))
-#define __profcxx_hashtable_construct(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_hashtable_size_construct(__x))
+#define __profcxx_hashtable_size_construct(__x...) \
+  __gnu_profile::__trace_hashtable_size_construct(__x)
+#define __profcxx_hashtable_size_resize(__x...) \
+  __gnu_profile::__trace_hashtable_size_resize(__x)
+#define __profcxx_hashtable_size_destruct(__x...) \
+  __gnu_profile::__trace_hashtable_size_destruct(__x)
 #else
-#define __profcxx_hashtable_resize(__x...)  
-#define __profcxx_hashtable_destruct(__x...) 
-#define __profcxx_hashtable_construct(__x...)  
+#define __profcxx_hashtable_size_construct(__x...) 0
+#define __profcxx_hashtable_size_resize(__x...)
+#define __profcxx_hashtable_size_destruct(__x...)
 #endif
 
 // Turn on/off instrumentation for VECTOR_TOO_SMALL and VECTOR_TOO_LARGE.
 #if (defined(_GLIBCXX_PROFILE_VECTOR_TOO_SMALL) \
      || defined(_GLIBCXX_PROFILE_VECTOR_TOO_LARGE))
-#define __profcxx_vector_resize(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_vector_size_resize(__x))
-#define __profcxx_vector_destruct(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_vector_size_destruct(__x))
-#define __profcxx_vector_construct(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_vector_size_construct(__x))
+#define __profcxx_vector_size_construct(__x...) \
+  __gnu_profile::__trace_vector_size_construct(__x)
+#define __profcxx_vector_size_resize(__x...) \
+  __gnu_profile::__trace_vector_size_resize(__x)
+#define __profcxx_vector_size_destruct(__x...) \
+  __gnu_profile::__trace_vector_size_destruct(__x)
 #else
-#define __profcxx_vector_resize(__x...)  
-#define __profcxx_vector_destruct(__x...) 
-#define __profcxx_vector_construct(__x...)  
+#define __profcxx_vector_size_construct(__x...) 0
+#define __profcxx_vector_size_resize(__x...)  
+#define __profcxx_vector_size_destruct(__x...) 
 #endif 
 
 // Turn on/off instrumentation for INEFFICIENT_HASH.
 #if defined(_GLIBCXX_PROFILE_INEFFICIENT_HASH)
-#define __profcxx_inefficient_hash_is_on() \
-  __gnu_profile::__is_on()
-#define __profcxx_hashtable_construct2(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_hash_func_construct(__x))
-#define __profcxx_hashtable_destruct2(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_hash_func_destruct(__x))
+#define __profcxx_hash_func_construct(__x...) \
+  __gnu_profile::__trace_hash_func_construct(__x)
+#define __profcxx_hash_func_destruct(__x...) \
+  __gnu_profile::__trace_hash_func_destruct(__x)
 #else
-#define __profcxx_inefficient_hash_is_on() false
-#define __profcxx_hashtable_destruct2(__x...)
-#define __profcxx_hashtable_construct2(__x...)
+#define __profcxx_hash_func_construct(__x...) 0
+#define __profcxx_hash_func_destruct(__x...)
 #endif
 
 // Turn on/off instrumentation for VECTOR_TO_LIST.
 #if defined(_GLIBCXX_PROFILE_VECTOR_TO_LIST)
-#define __profcxx_vector_construct2(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_vector_to_list_construct(__x))
-#define __profcxx_vector_destruct2(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_vector_to_list_destruct(__x))
-#define __profcxx_vector_insert(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_vector_to_list_insert(__x))
-#define __profcxx_vector_iterate(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_vector_to_list_iterate(__x))
-#define __profcxx_vector_invalid_operator(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_vector_to_list_invalid_operator(__x))
-#define __profcxx_vector_resize2(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_vector_to_list_resize(__x))
-#define __profcxx_vector_find(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_vector_to_list_find(__x))
+#define __profcxx_vector2list_construct(__x...) \
+  __gnu_profile::__trace_vector_to_list_construct(__x)
+#define __profcxx_vector2list_insert(__x...) \
+  __gnu_profile::__trace_vector_to_list_insert(__x)
+#define __profcxx_vector2list_iterate(__x...) \
+  __gnu_profile::__trace_vector_to_list_iterate(__x)
+#define __profcxx_vector2list_invalid_operator(__x...) \
+  __gnu_profile::__trace_vector_to_list_invalid_operator(__x)
+#define __profcxx_vector2list_resize(__x...) \
+  __gnu_profile::__trace_vector_to_list_resize(__x)
+#define __profcxx_vector2list_destruct(__x...) \
+  __gnu_profile::__trace_vector_to_list_destruct(__x)
 #else
-#define __profcxx_vector_destruct2(__x...)
-#define __profcxx_vector_construct2(__x...)
-#define __profcxx_vector_insert(__x...)
-#define __profcxx_vector_iterate(__x...)
-#define __profcxx_vector_invalid_operator(__x...)
-#define __profcxx_vector_resize2(__x...)
-#define __profcxx_vector_find(__x...)
+#define __profcxx_vector2list_construct(__x...) 0
+#define __profcxx_vector2list_insert(__x...)
+#define __profcxx_vector2list_iterate(__x...)
+#define __profcxx_vector2list_invalid_operator(__x...)
+#define __profcxx_vector2list_resize(__x...)
+#define __profcxx_vector2list_destruct(__x...)
 #endif
 
 // Turn on/off instrumentation for LIST_TO_VECTOR. 
 #if defined(_GLIBCXX_PROFILE_LIST_TO_VECTOR)
-#define __profcxx_list_construct2(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_list_to_vector_construct(__x))
-#define __profcxx_list_destruct2(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_list_to_vector_destruct(__x))
-#define __profcxx_list_insert(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_list_to_vector_insert(__x))
-#define __profcxx_list_iterate(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_list_to_vector_iterate(__x))
-#define __profcxx_list_invalid_operator(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_list_to_vector_invalid_operator(__x))
+#define __profcxx_list2vector_construct(__x...) \
+  __gnu_profile::__trace_list_to_vector_construct(__x)
+#define __profcxx_list2vector_insert(__x...) \
+  __gnu_profile::__trace_list_to_vector_insert(__x)
+#define __profcxx_list2vector_iterate(__x...) \
+  __gnu_profile::__trace_list_to_vector_iterate(__x)
+#define __profcxx_list2vector_invalid_operator(__x...) \
+  __gnu_profile::__trace_list_to_vector_invalid_operator(__x)
+#define __profcxx_list2vector_destruct(__x...) \
+  __gnu_profile::__trace_list_to_vector_destruct(__x)
 #else
-#define __profcxx_list_destruct2(__x...)
-#define __profcxx_list_construct2(__x...)
-#define __profcxx_list_insert(__x...)
-#define __profcxx_list_iterate(__x...)
-#define __profcxx_list_invalid_operator(__x...)
+#define __profcxx_list2vector_construct(__x...) 0
+#define __profcxx_list2vector_insert(__x...)
+#define __profcxx_list2vector_iterate(__x...)
+#define __profcxx_list2vector_invalid_operator(__x...)
+#define __profcxx_list2vector_destruct(__x...)
 #endif
 
 // Turn on/off instrumentation for LIST_TO_SLIST.  
 #if defined(_GLIBCXX_PROFILE_LIST_TO_SLIST)
-#define __profcxx_list_rewind(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_list_to_slist_rewind(__x))
-#define __profcxx_list_operation(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_list_to_slist_operation(__x))
-#define __profcxx_list_destruct(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_list_to_slist_destruct(__x))
-#define __profcxx_list_construct(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_list_to_slist_construct(__x))
+#define __profcxx_list2slist_construct(__x...) \
+    __gnu_profile::__trace_list_to_slist_construct(__x)
+#define __profcxx_list2slist_rewind(__x...) \
+  __gnu_profile::__trace_list_to_slist_rewind(__x)
+#define __profcxx_list2slist_operation(__x...) \
+  __gnu_profile::__trace_list_to_slist_operation(__x)
+#define __profcxx_list2slist_destruct(__x...) \
+  __gnu_profile::__trace_list_to_slist_destruct(__x)
 #else
-#define __profcxx_list_rewind(__x...)  
-#define __profcxx_list_operation(__x...)
-#define __profcxx_list_destruct(__x...) 
-#define __profcxx_list_construct(__x...)  
+#define __profcxx_list2slist_construct(__x...) 0
+#define __profcxx_list2slist_rewind(__x...)
+#define __profcxx_list2slist_operation(__x...)
+#define __profcxx_list2slist_destruct(__x...)
 #endif 
 
 // Turn on/off instrumentation for MAP_TO_UNORDERED_MAP.
 #if defined(_GLIBCXX_PROFILE_MAP_TO_UNORDERED_MAP)
-#define __profcxx_map_to_unordered_map_construct(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_map_to_unordered_map_construct(__x))
-#define __profcxx_map_to_unordered_map_destruct(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_map_to_unordered_map_destruct(__x))
-#define __profcxx_map_to_unordered_map_insert(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_map_to_unordered_map_insert(__x))
-#define __profcxx_map_to_unordered_map_erase(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_map_to_unordered_map_erase(__x))
-#define __profcxx_map_to_unordered_map_iterate(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_map_to_unordered_map_iterate(__x))
-#define __profcxx_map_to_unordered_map_invalidate(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_map_to_unordered_map_invalidate(__x))
-#define __profcxx_map_to_unordered_map_find(__x...) \
-  _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
-      __gnu_profile::__trace_map_to_unordered_map_find(__x))
+#define __profcxx_map2umap_construct(__x...) \
+  __gnu_profile::__trace_map_to_unordered_map_construct(__x)
+#define __profcxx_map2umap_insert(__x...) \
+  __gnu_profile::__trace_map_to_unordered_map_insert(__x)
+#define __profcxx_map2umap_erase(__x...) \
+  __gnu_profile::__trace_map_to_unordered_map_erase(__x)
+#define __profcxx_map2umap_iterate(__x...) \
+  __gnu_profile::__trace_map_to_unordered_map_iterate(__x)
+#define __profcxx_map2umap_invalidate(__x...) \
+  __gnu_profile::__trace_map_to_unordered_map_invalidate(__x)
+#define __profcxx_map2umap_find(__x...) \
+  __gnu_profile::__trace_map_to_unordered_map_find(__x)
+#define __profcxx_map2umap_destruct(__x...) \
+  __gnu_profile::__trace_map_to_unordered_map_destruct(__x)
 #else
-#define __profcxx_map_to_unordered_map_construct(__x...) \
-  
-#define __profcxx_map_to_unordered_map_destruct(__x...)
-#define __profcxx_map_to_unordered_map_insert(__x...)
-#define __profcxx_map_to_unordered_map_erase(__x...)
-#define __profcxx_map_to_unordered_map_iterate(__x...)
-#define __profcxx_map_to_unordered_map_invalidate(__x...)
-#define __profcxx_map_to_unordered_map_find(__x...)
+#define __profcxx_map2umap_construct(__x...) 0
+#define __profcxx_map2umap_insert(__x...)
+#define __profcxx_map2umap_erase(__x...)
+#define __profcxx_map2umap_iterate(__x...)
+#define __profcxx_map2umap_invalidate(__x...)
+#define __profcxx_map2umap_find(__x...)
+#define __profcxx_map2umap_destruct(__x...)
 #endif
 
 // Set default values for compile-time customizable variables.

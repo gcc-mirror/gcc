@@ -295,6 +295,15 @@ AC_C_BIGENDIAN
 
 GCC_AS_CFI_PSEUDO_OP
 
+AC_CACHE_CHECK([if compiler supports -Qunused-arguments],
+[libffi_cv_c_unused_arguments],
+[CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -Qunused-arguments"
+AC_COMPILE_IFELSE([[int i;]],
+[libffi_cv_c_unused_arguments=yes],
+[libffi_cv_c_unused_arguments=no])
+CFLAGS=$CFLAGS_hold])
+
 if test x$TARGET = xSPARC; then
     AC_CACHE_CHECK([assembler and linker support unaligned pc related relocs],
 	libffi_cv_as_sparc_ua_pcrel, [
@@ -331,9 +340,14 @@ if test x$TARGET = xX86 || test x$TARGET = xX86_WIN32 || test x$TARGET = xX86_64
 	libffi_cv_as_x86_pcrel, [
 	libffi_cv_as_x86_pcrel=yes
 	echo '.text; foo: nop; .data; .long foo-.; .text' > conftest.s
+	CFLAGS_hold=$CFLAGS
+	if test "$libffi_cv_c_unused_arguments" = yes; then
+	    CFLAGS="$CFLAGS -Qunused-arguments"
+	fi
 	if $CC $CFLAGS -c conftest.s 2>&1 | $EGREP -i 'illegal|warning' > /dev/null; then
 	    libffi_cv_as_x86_pcrel=no
 	fi
+	CFLAGS=$CFLAGS_hold
 	])
     if test "x$libffi_cv_as_x86_pcrel" = xyes; then
 	AC_DEFINE(HAVE_AS_X86_PCREL, 1,
@@ -397,9 +411,14 @@ if test x$TARGET = xX86_64; then
 	libffi_cv_as_x86_64_unwind_section_type, [
 	libffi_cv_as_x86_64_unwind_section_type=yes
 	echo '.section .eh_frame,"a",@unwind' > conftest.s
+	CFLAGS_hold=$CFLAGS
+	if test "$libffi_cv_c_unused_arguments" = yes; then
+	    CFLAGS="$CFLAGS -Qunused-arguments"
+	fi
 	if $CC $CFLAGS -c conftest.s 2>&1 | grep -i warning > /dev/null; then
 	    libffi_cv_as_x86_64_unwind_section_type=no
 	fi
+	CFLAGS=$CFLAGS_hold
 	])
     if test "x$libffi_cv_as_x86_64_unwind_section_type" = xyes; then
 	AC_DEFINE(HAVE_AS_X86_64_UNWIND_SECTION_TYPE, 1,

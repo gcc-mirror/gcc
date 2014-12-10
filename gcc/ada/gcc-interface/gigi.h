@@ -533,7 +533,7 @@ extern tree gnat_type_for_size (unsigned precision, int unsignedp);
 
 /* Return a data type that has machine mode MODE.  UNSIGNEDP selects
    an unsigned type; otherwise a signed type is returned.  */
-extern tree gnat_type_for_mode (enum machine_mode mode, int unsignedp);
+extern tree gnat_type_for_mode (machine_mode mode, int unsignedp);
 
 /* Emit debug info for all global variable declarations.  */
 extern void gnat_write_global_declarations (void);

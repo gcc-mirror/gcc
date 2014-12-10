@@ -259,6 +259,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "expr.h"
 #include "gimple-pretty-print.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -296,7 +307,7 @@ static tree analyze_scalar_evolution_for_address_of (struct loop *loop,
    claiming that below basic block with index INSTANTIATED_BELOW, the
    value of the SSA name can be expressed as CHREC.  */
 
-struct GTY(()) scev_info_str {
+struct GTY((for_user)) scev_info_str {
   unsigned int name_version;
   int instantiated_below;
   tree chrec;
@@ -321,7 +332,13 @@ tree chrec_dont_know;
    happen, then it qualifies it with chrec_known.  */
 tree chrec_known;
 
-static GTY ((param_is (struct scev_info_str))) htab_t scalar_evolution_info;
+struct scev_info_hasher : ggc_hasher<scev_info_str *>
+{
+  static hashval_t hash (scev_info_str *i);
+  static bool equal (const scev_info_str *a, const scev_info_str *b);
+};
+
+static GTY (()) hash_table<scev_info_hasher> *scalar_evolution_info;
 
 
 /* Constructs a new SCEV_INFO_STR structure for VAR and INSTANTIATED_BELOW.  */
@@ -341,33 +358,20 @@ new_scev_info_str (basic_block instantiated_below, tree var)
 
 /* Computes a hash function for database element ELT.  */
 
-static inline hashval_t
-hash_scev_info (const void *elt_)
+hashval_t
+scev_info_hasher::hash (scev_info_str *elt)
 {
-  const struct scev_info_str *elt = (const struct scev_info_str *) elt_;
   return elt->name_version ^ elt->instantiated_below;
 }
 
 /* Compares database elements E1 and E2.  */
 
-static inline int
-eq_scev_info (const void *e1, const void *e2)
+bool
+scev_info_hasher::equal (const scev_info_str *elt1, const scev_info_str *elt2)
 {
-  const struct scev_info_str *elt1 = (const struct scev_info_str *) e1;
-  const struct scev_info_str *elt2 = (const struct scev_info_str *) e2;
-
   return (elt1->name_version == elt2->name_version
 	  && elt1->instantiated_below == elt2->instantiated_below);
 }
-
-/* Deletes database element E.  */
-
-static void
-del_scev_info (void *e)
-{
-  ggc_free (e);
-}
-
 
 /* Get the scalar evolution of VAR for INSTANTIATED_BELOW basic block.
    A first query on VAR returns chrec_not_analyzed_yet.  */
@@ -377,15 +381,14 @@ find_var_scev_info (basic_block instantiated_below, tree var)
 {
   struct scev_info_str *res;
   struct scev_info_str tmp;
-  PTR *slot;
 
   tmp.name_version = SSA_NAME_VERSION (var);
   tmp.instantiated_below = instantiated_below->index;
-  slot = htab_find_slot (scalar_evolution_info, &tmp, INSERT);
+  scev_info_str **slot = scalar_evolution_info->find_slot (&tmp, INSERT);
 
   if (!*slot)
     *slot = new_scev_info_str (instantiated_below, var);
-  res = (struct scev_info_str *) *slot;
+  res = *slot;
 
   return &res->chrec;
 }
@@ -867,10 +870,10 @@ add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
    guards the exit edge.  If the expression is too difficult to
    analyze, then give up.  */
 
-gimple
+gcond *
 get_loop_exit_condition (const struct loop *loop)
 {
-  gimple res = NULL;
+  gcond *res = NULL;
   edge exit_edge = single_exit (loop);
 
   if (dump_file && (dump_flags & TDF_SCEV))
@@ -881,8 +884,8 @@ get_loop_exit_condition (const struct loop *loop)
       gimple stmt;
 
       stmt = last_stmt (exit_edge->src);
-      if (gimple_code (stmt) == GIMPLE_COND)
-	res = stmt;
+      if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
+	res = cond_stmt;
     }
 
   if (dump_file && (dump_flags & TDF_SCEV))
@@ -904,7 +907,8 @@ typedef enum t_bool {
 } t_bool;
 
 
-static t_bool follow_ssa_edge (struct loop *loop, gimple, gimple, tree *, int);
+static t_bool follow_ssa_edge (struct loop *loop, gimple, gphi *,
+			       tree *, int);
 
 /* Follow the ssa edge into the binary expression RHS0 CODE RHS1.
    Return true if the strongly connected component has been found.  */
@@ -912,7 +916,8 @@ static t_bool follow_ssa_edge (struct loop *loop, gimple, gimple, tree *, int);
 static t_bool
 follow_ssa_edge_binary (struct loop *loop, gimple at_stmt,
 			tree type, tree rhs0, enum tree_code code, tree rhs1,
-			gimple halting_phi, tree *evolution_of_loop, int limit)
+			gphi *halting_phi, tree *evolution_of_loop,
+			int limit)
 {
   t_bool res = t_false;
   tree evol;
@@ -1047,7 +1052,8 @@ follow_ssa_edge_binary (struct loop *loop, gimple at_stmt,
 
 static t_bool
 follow_ssa_edge_expr (struct loop *loop, gimple at_stmt, tree expr,
-		      gimple halting_phi, tree *evolution_of_loop, int limit)
+		      gphi *halting_phi, tree *evolution_of_loop,
+		      int limit)
 {
   enum tree_code code = TREE_CODE (expr);
   tree type = TREE_TYPE (expr), rhs0, rhs1;
@@ -1137,7 +1143,8 @@ follow_ssa_edge_expr (struct loop *loop, gimple at_stmt, tree expr,
 
 static t_bool
 follow_ssa_edge_in_rhs (struct loop *loop, gimple stmt,
-			gimple halting_phi, tree *evolution_of_loop, int limit)
+			gphi *halting_phi, tree *evolution_of_loop,
+			int limit)
 {
   enum tree_code code = gimple_assign_rhs_code (stmt);
   tree type = gimple_expr_type (stmt), rhs1, rhs2;
@@ -1177,7 +1184,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, gimple stmt,
 /* Checks whether the I-th argument of a PHI comes from a backedge.  */
 
 static bool
-backedge_phi_arg_p (gimple phi, int i)
+backedge_phi_arg_p (gphi *phi, int i)
 {
   const_edge e = gimple_phi_arg_edge (phi, i);
 
@@ -1197,8 +1204,8 @@ backedge_phi_arg_p (gimple phi, int i)
 static inline t_bool
 follow_ssa_edge_in_condition_phi_branch (int i,
 					 struct loop *loop,
-					 gimple condition_phi,
-					 gimple halting_phi,
+					 gphi *condition_phi,
+					 gphi *halting_phi,
 					 tree *evolution_of_branch,
 					 tree init_cond, int limit)
 {
@@ -1232,8 +1239,8 @@ follow_ssa_edge_in_condition_phi_branch (int i,
 
 static t_bool
 follow_ssa_edge_in_condition_phi (struct loop *loop,
-				  gimple condition_phi,
-				  gimple halting_phi,
+				  gphi *condition_phi,
+				  gphi *halting_phi,
 				  tree *evolution_of_loop, int limit)
 {
   int i, n;
@@ -1279,8 +1286,8 @@ follow_ssa_edge_in_condition_phi (struct loop *loop,
 
 static t_bool
 follow_ssa_edge_inner_loop_phi (struct loop *outer_loop,
-				gimple loop_phi_node,
-				gimple halting_phi,
+				gphi *loop_phi_node,
+				gphi *halting_phi,
 				tree *evolution_of_loop, int limit)
 {
   struct loop *loop = loop_containing_stmt (loop_phi_node);
@@ -1325,7 +1332,7 @@ follow_ssa_edge_inner_loop_phi (struct loop *outer_loop,
    path that is analyzed on the return walk.  */
 
 static t_bool
-follow_ssa_edge (struct loop *loop, gimple def, gimple halting_phi,
+follow_ssa_edge (struct loop *loop, gimple def, gphi *halting_phi,
 		 tree *evolution_of_loop, int limit)
 {
   struct loop *def_loop;
@@ -1348,7 +1355,8 @@ follow_ssa_edge (struct loop *loop, gimple def, gimple halting_phi,
 	   information and set the approximation to the main
 	   variable.  */
 	return follow_ssa_edge_in_condition_phi
-	  (loop, def, halting_phi, evolution_of_loop, limit);
+	  (loop, as_a <gphi *> (def), halting_phi, evolution_of_loop,
+	   limit);
 
       /* When the analyzed phi is the halting_phi, the
 	 depth-first search is over: we have found a path from
@@ -1365,7 +1373,8 @@ follow_ssa_edge (struct loop *loop, gimple def, gimple halting_phi,
       /* Inner loop.  */
       if (flow_loop_nested_p (loop, def_loop))
 	return follow_ssa_edge_inner_loop_phi
-	  (loop, def, halting_phi, evolution_of_loop, limit + 1);
+	  (loop, as_a <gphi *> (def), halting_phi, evolution_of_loop,
+	   limit + 1);
 
       /* Outer loop.  */
       return t_false;
@@ -1446,7 +1455,7 @@ simplify_peeled_chrec (struct loop *loop, tree arg, tree init_cond)
    function from LOOP_PHI_NODE to LOOP_PHI_NODE in the loop.  */
 
 static tree
-analyze_evolution_in_loop (gimple loop_phi_node,
+analyze_evolution_in_loop (gphi *loop_phi_node,
 			   tree init_cond)
 {
   int i, n = gimple_phi_num_args (loop_phi_node);
@@ -1541,7 +1550,7 @@ analyze_evolution_in_loop (gimple loop_phi_node,
    loop, and leaves this task to the on-demand tree reconstructor.  */
 
 static tree
-analyze_initial_condition (gimple loop_phi_node)
+analyze_initial_condition (gphi *loop_phi_node)
 {
   int i, n;
   tree init_cond = chrec_not_analyzed_yet;
@@ -1590,13 +1599,15 @@ analyze_initial_condition (gimple loop_phi_node)
   if (TREE_CODE (init_cond) == SSA_NAME)
     {
       gimple def = SSA_NAME_DEF_STMT (init_cond);
-      tree res;
-      if (gimple_code (def) == GIMPLE_PHI
-	  && (res = degenerate_phi_result (def)) != NULL_TREE
-	  /* Only allow invariants here, otherwise we may break
-	     loop-closed SSA form.  */
-	  && is_gimple_min_invariant (res))
-	init_cond = res;
+      if (gphi *phi = dyn_cast <gphi *> (def))
+	{
+	  tree res = degenerate_phi_result (phi);
+	  if (res != NULL_TREE
+	      /* Only allow invariants here, otherwise we may break
+		 loop-closed SSA form.  */
+	      && is_gimple_min_invariant (res))
+	    init_cond = res;
+	}
     }
 
   if (dump_file && (dump_flags & TDF_SCEV))
@@ -1612,7 +1623,7 @@ analyze_initial_condition (gimple loop_phi_node)
 /* Analyze the scalar evolution for LOOP_PHI_NODE.  */
 
 static tree
-interpret_loop_phi (struct loop *loop, gimple loop_phi_node)
+interpret_loop_phi (struct loop *loop, gphi *loop_phi_node)
 {
   tree res;
   struct loop *phi_loop = loop_containing_stmt (loop_phi_node);
@@ -1661,7 +1672,7 @@ interpret_loop_phi (struct loop *loop, gimple loop_phi_node)
    analyzed.  */
 
 static tree
-interpret_condition_phi (struct loop *loop, gimple condition_phi)
+interpret_condition_phi (struct loop *loop, gphi *condition_phi)
 {
   int i, n = gimple_phi_num_args (condition_phi);
   tree res = chrec_not_analyzed_yet;
@@ -1722,7 +1733,7 @@ interpret_rhs_expr (struct loop *loop, gimple at_stmt,
       if (TREE_CODE (TREE_OPERAND (rhs1, 0)) == MEM_REF
 	  || handled_component_p (TREE_OPERAND (rhs1, 0)))
         {
-	  enum machine_mode mode;
+	  machine_mode mode;
 	  HOST_WIDE_INT bitsize, bitpos;
 	  int unsignedp;
 	  int volatilep = 0;
@@ -1989,9 +2000,9 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
 
     case GIMPLE_PHI:
       if (loop_phi_node_p (def))
-	res = interpret_loop_phi (loop, def);
+	res = interpret_loop_phi (loop, as_a <gphi *> (def));
       else
-	res = interpret_condition_phi (loop, def);
+	res = interpret_condition_phi (loop, as_a <gphi *> (def));
       break;
 
     default:
@@ -2190,7 +2201,7 @@ static inline hashval_t
 hash_idx_scev_info (const void *elt_)
 {
   unsigned idx = ((size_t) elt_) - 2;
-  return hash_scev_info (&global_cache->entries[idx]);
+  return scev_info_hasher::hash (&global_cache->entries[idx]);
 }
 
 /* Compares database elements E1 and E2.  */
@@ -2199,7 +2210,8 @@ static inline int
 eq_idx_scev_info (const void *e1, const void *e2)
 {
   unsigned idx1 = ((size_t) e1) - 2;
-  return eq_scev_info (&global_cache->entries[idx1], e2);
+  return scev_info_hasher::equal (&global_cache->entries[idx1],
+				  (const scev_info_str *) e2);
 }
 
 /* Returns from CACHE the slot number of the cached chrec for NAME.  */
@@ -2218,7 +2230,7 @@ get_instantiated_value_entry (instantiate_cache_type &cache,
   e.name_version = SSA_NAME_VERSION (name);
   e.instantiated_below = instantiate_below->index;
   void **slot = htab_find_slot_with_hash (cache.map, &e,
-					  hash_scev_info (&e), INSERT);
+					  scev_info_hasher::hash (&e), INSERT);
   if (!*slot)
     {
       e.chrec = chrec_not_analyzed_yet;
@@ -2238,8 +2250,8 @@ loop_closed_phi_def (tree var)
 {
   struct loop *loop;
   edge exit;
-  gimple phi;
-  gimple_stmt_iterator psi;
+  gphi *phi;
+  gphi_iterator psi;
 
   if (var == NULL_TREE
       || TREE_CODE (var) != SSA_NAME)
@@ -2252,7 +2264,7 @@ loop_closed_phi_def (tree var)
 
   for (psi = gsi_start_phis (exit->dest); !gsi_end_p (psi); gsi_next (&psi))
     {
-      phi = gsi_stmt (psi);
+      phi = psi.phi ();
       if (PHI_ARG_DEF_FROM_EDGE (phi, exit) == var)
 	return PHI_RESULT (phi);
     }
@@ -3033,7 +3045,7 @@ dump_chrecs_stats (FILE *file, struct chrec_stats *stats)
 	   stats->nb_undetermined);
   fprintf (file, "-----------------------------------------\n");
   fprintf (file, "%d\tchrecs in the scev database\n",
-	   (int) htab_elements (scalar_evolution_info));
+	   (int) scalar_evolution_info->elements ());
   fprintf (file, "%d\tsets in the scev database\n", nb_set_scev);
   fprintf (file, "%d\tgets in the scev database\n", nb_get_scev);
   fprintf (file, "-----------------------------------------\n");
@@ -3099,19 +3111,6 @@ gather_chrec_stats (tree chrec, struct chrec_stats *stats)
     fprintf (dump_file, ")\n");
 }
 
-/* Callback for htab_traverse, gathers information on chrecs in the
-   hashtable.  */
-
-static int
-gather_stats_on_scev_database_1 (void **slot, void *stats)
-{
-  struct scev_info_str *entry = (struct scev_info_str *) *slot;
-
-  gather_chrec_stats (entry->chrec, (struct chrec_stats *) stats);
-
-  return 1;
-}
-
 /* Classify the chrecs of the whole database.  */
 
 void
@@ -3124,8 +3123,11 @@ gather_stats_on_scev_database (void)
 
   reset_chrecs_counters (&stats);
 
-  htab_traverse (scalar_evolution_info, gather_stats_on_scev_database_1,
-		 &stats);
+  hash_table<scev_info_hasher>::iterator iter;
+  scev_info_str *elt;
+  FOR_EACH_HASH_TABLE_ELEMENT (*scalar_evolution_info, elt, scev_info_str *,
+			       iter)
+    gather_chrec_stats (elt->chrec, &stats);
 
   dump_chrecs_stats (dump_file, &stats);
 }
@@ -3155,8 +3157,7 @@ scev_initialize (void)
 {
   struct loop *loop;
 
-  scalar_evolution_info = htab_create_ggc (100, hash_scev_info, eq_scev_info,
-					   del_scev_info);
+  scalar_evolution_info = hash_table<scev_info_hasher>::create_ggc (100);
 
   initialize_scalar_evolutions_analyzer ();
 
@@ -3183,7 +3184,7 @@ scev_reset_htab (void)
   if (!scalar_evolution_info)
     return;
 
-  htab_empty (scalar_evolution_info);
+  scalar_evolution_info->empty ();
 }
 
 /* Cleans up the information cached by the scalar evolutions analysis
@@ -3278,7 +3279,7 @@ scev_finalize (void)
 {
   if (!scalar_evolution_info)
     return;
-  htab_delete (scalar_evolution_info);
+  scalar_evolution_info->empty ();
   scalar_evolution_info = NULL;
 }
 
@@ -3338,11 +3339,12 @@ scev_const_prop (void)
 {
   basic_block bb;
   tree name, type, ev;
-  gimple phi, ass;
+  gphi *phi;
+  gassign *ass;
   struct loop *loop, *ex_loop;
   bitmap ssa_names_to_remove = NULL;
   unsigned i;
-  gimple_stmt_iterator psi;
+  gphi_iterator psi;
 
   if (number_of_loops (cfun) <= 1)
     return 0;
@@ -3353,7 +3355,7 @@ scev_const_prop (void)
 
       for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
 	{
-	  phi = gsi_stmt (psi);
+	  phi = psi.phi ();
 	  name = PHI_RESULT (phi);
 
 	  if (virtual_operand_p (name))
@@ -3391,7 +3393,7 @@ scev_const_prop (void)
 	{
 	  gimple_stmt_iterator psi;
 	  name = ssa_name (i);
-	  phi = SSA_NAME_DEF_STMT (name);
+	  phi = as_a <gphi *> (SSA_NAME_DEF_STMT (name));
 
 	  gcc_assert (gimple_code (phi) == GIMPLE_PHI);
 	  psi = gsi_for_stmt (phi);
@@ -3429,7 +3431,7 @@ scev_const_prop (void)
 
       for (psi = gsi_start_phis (exit->dest); !gsi_end_p (psi); )
 	{
-	  phi = gsi_stmt (psi);
+	  phi = psi.phi ();
 	  rslt = PHI_RESULT (phi);
 	  def = PHI_ARG_DEF_FROM_EDGE (phi, exit);
 	  if (virtual_operand_p (def))

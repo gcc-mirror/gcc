@@ -699,11 +699,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     vector<bool, _Alloc>::
     _M_reallocate(size_type __n)
     {
-      _Bit_type* __q = this->_M_allocate(__n);
-      this->_M_impl._M_finish = _M_copy_aligned(begin(), end(),
-						iterator(__q, 0));
+      _Bit_pointer __q = this->_M_allocate(__n);
+      iterator __start(std::__addressof(*__q), 0);
+      this->_M_impl._M_finish = _M_copy_aligned(begin(), end(), __start);
       this->_M_deallocate();
-      this->_M_impl._M_start = iterator(__q, 0);
+      this->_M_impl._M_start = __start;
       this->_M_impl._M_end_of_storage = __q + _S_nword(__n);
     }
 
@@ -725,15 +725,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{
 	  const size_type __len = 
 	    _M_check_len(__n, "vector<bool>::_M_fill_insert");
-	  _Bit_type * __q = this->_M_allocate(__len);
-	  iterator __i = _M_copy_aligned(begin(), __position,
-					 iterator(__q, 0));
+	  _Bit_pointer __q = this->_M_allocate(__len);
+	  iterator __start(std::__addressof(*__q), 0);
+	  iterator __i = _M_copy_aligned(begin(), __position, __start);
 	  std::fill(__i, __i + difference_type(__n), __x);
 	  this->_M_impl._M_finish = std::copy(__position, end(),
 					      __i + difference_type(__n));
 	  this->_M_deallocate();
 	  this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
-	  this->_M_impl._M_start = iterator(__q, 0);
+	  this->_M_impl._M_start = __start;
 	}
     }
 
@@ -759,14 +759,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      {
 		const size_type __len =
 		  _M_check_len(__n, "vector<bool>::_M_insert_range");
-		_Bit_type * __q = this->_M_allocate(__len);
-		iterator __i = _M_copy_aligned(begin(), __position,
-					       iterator(__q, 0));
+		_Bit_pointer __q = this->_M_allocate(__len);
+		iterator __start(std::__addressof(*__q), 0);
+		iterator __i = _M_copy_aligned(begin(), __position, __start);
 		__i = std::copy(__first, __last, __i);
 		this->_M_impl._M_finish = std::copy(__position, end(), __i);
 		this->_M_deallocate();
 		this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
-		this->_M_impl._M_start = iterator(__q, 0);
+		this->_M_impl._M_start = __start;
 	      }
 	  }
       }
@@ -776,7 +776,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     vector<bool, _Alloc>::
     _M_insert_aux(iterator __position, bool __x)
     {
-      if (this->_M_impl._M_finish._M_p != this->_M_impl._M_end_of_storage)
+      if (this->_M_impl._M_finish._M_p != this->_M_impl._M_end_addr())
 	{
 	  std::copy_backward(__position, this->_M_impl._M_finish, 
 			     this->_M_impl._M_finish + 1);
@@ -787,14 +787,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{
 	  const size_type __len =
 	    _M_check_len(size_type(1), "vector<bool>::_M_insert_aux");
-	  _Bit_type * __q = this->_M_allocate(__len);
-	  iterator __i = _M_copy_aligned(begin(), __position,
-					 iterator(__q, 0));
+	  _Bit_pointer __q = this->_M_allocate(__len);
+	  iterator __start(std::__addressof(*__q), 0);
+	  iterator __i = _M_copy_aligned(begin(), __position, __start);
 	  *__i++ = __x;
 	  this->_M_impl._M_finish = std::copy(__position, end(), __i);
 	  this->_M_deallocate();
 	  this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
-	  this->_M_impl._M_start = iterator(__q, 0);
+	  this->_M_impl._M_start = __start;
 	}
     }
 

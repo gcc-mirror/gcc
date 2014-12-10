@@ -27,6 +27,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "tm_p.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
 #include "basic-block.h"
 #include "tree-pretty-print.h"
 #include "tree-ssa-alias.h"
@@ -110,7 +118,7 @@ static GTY(()) vec<mem_addr_template, va_gc> *mem_addr_template_list;
    to where step is placed to *STEP_P and offset to *OFFSET_P.  */
 
 static void
-gen_addr_rtx (enum machine_mode address_mode,
+gen_addr_rtx (machine_mode address_mode,
 	      rtx symbol, rtx base, rtx index, rtx step, rtx offset,
 	      rtx *addr, rtx **step_p, rtx **offset_p)
 {
@@ -202,8 +210,8 @@ rtx
 addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
 		  bool really_expand)
 {
-  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
-  enum machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
+  machine_mode address_mode = targetm.addr_space.address_mode (as);
+  machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
   rtx address, sym, bse, idx, st, off;
   struct mem_addr_template *templ;
 
@@ -338,7 +346,7 @@ tree_mem_ref_addr (tree type, tree mem_ref)
    ADDR is valid on the current target.  */
 
 static bool
-valid_mem_ref_p (enum machine_mode mode, addr_space_t as,
+valid_mem_ref_p (machine_mode mode, addr_space_t as,
 		 struct mem_address *addr)
 {
   rtx address;
@@ -561,7 +569,7 @@ most_expensive_mult_to_index (tree type, struct mem_address *parts,
 			      aff_tree *addr, bool speed)
 {
   addr_space_t as = TYPE_ADDR_SPACE (type);
-  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
+  machine_mode address_mode = targetm.addr_space.address_mode (as);
   HOST_WIDE_INT coef;
   unsigned best_mult_cost = 0, acost;
   tree mult_elt = NULL_TREE, elt;

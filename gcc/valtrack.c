@@ -24,7 +24,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "valtrack.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "regs.h"
 #include "emit-rtl.h"
@@ -34,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
    instructions.  */
 
 static rtx
-gen_lowpart_for_debug (enum machine_mode mode, rtx x)
+gen_lowpart_for_debug (machine_mode mode, rtx x)
 {
   rtx result = gen_lowpart_if_possible (mode, x);
   if (result)
@@ -51,7 +59,7 @@ gen_lowpart_for_debug (enum machine_mode mode, rtx x)
    the same addresses without modifying the corresponding registers.  */
 
 static rtx
-cleanup_auto_inc_dec (rtx src, enum machine_mode mem_mode ATTRIBUTE_UNUSED)
+cleanup_auto_inc_dec (rtx src, machine_mode mem_mode ATTRIBUTE_UNUSED)
 {
   rtx x = src;
 #ifdef AUTO_INC_DEC
@@ -182,7 +190,7 @@ propagate_for_debug (rtx_insn *insn, rtx_insn *last, rtx dest, rtx src,
 {
   rtx_insn *next, *end = NEXT_INSN (BB_END (this_basic_block));
   rtx loc;
-  rtx (*saved_rtl_hook_no_emit) (enum machine_mode, rtx);
+  rtx (*saved_rtl_hook_no_emit) (machine_mode, rtx);
 
   struct rtx_subst_pair p;
   p.to = src;

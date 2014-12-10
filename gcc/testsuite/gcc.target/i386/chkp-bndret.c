@@ -1,0 +1,15 @@
+/* { dg-do compile } */
+/* { dg-require-effective-target mpx } */
+/* { dg-options "-fcheck-pointer-bounds -mmpx -O2 -fdump-tree-chkp" } */
+/* { dg-final { scan-tree-dump-not "bndret" "chkp" } } */
+/* { dg-final { cleanup-tree-dump "chkp" } } */
+
+#include "string.h"
+
+extern int *test1 (int *p) __attribute__((bnd_legacy));
+
+int *
+test2 (int *p)
+{
+  return test1 (p);
+}

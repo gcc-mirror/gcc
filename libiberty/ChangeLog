@@ -1,3 +1,64 @@
+2014-11-22  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR other/63694
+	* configure.ac: Check for strtol, strtoul, strtoll and strtoull
+	declarations.
+	* configure: Regenerated.
+
+2014-11-12  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* testsuite/test-strtol.c (run_tests): Cast strtol return to
+	unsigned long.
+
+2014-11-11  Anthony Brandon  <anthony.brandon@gmail.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR driver/36312
+	* filename_cmp.c (canonical_filename_eq): New function to check if
+	file names are the same.
+	* functions.texi: Updated with documentation for new function.
+
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+
+2014-11-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* sigsetmask.c (_POSIX_SOURCE): Remove.
+
+2014-10-28  Yury Gribov  <y.gribov@samsung.com>
+
+	* strtoll.c: New file.
+	* strtoull.c: New file.
+	* configure.ac: Add long long checks.  Add harness for strtoll and
+	strtoull.  Check decls for strtol, strtoul, strtoll, strtoull.
+	* Makefile.in (CFILES, CONFIGURED_OFILES): Add strtoll and strtoull.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* functions.texi: Regenerate.
+	* testsuite/Makefile.in (check-strtol): New rule.
+	(test-strtol): Likewise.
+	(mostlyclean): Clean up strtol test.
+	* testsuite/test-strtol.c: New test.
+
+2014-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* choose-temp.c (choose_tmpdir): Remove now-redundant local
+	copy of prototype.
+	* functions.texi: Regenerate.
+	* make-temp-file.c (choose_tmpdir): Convert return type from
+	char * to const char * - given that this returns a pointer to
+	a memoized allocation, the caller must not touch it.
+
+2014-10-14  Joel Brobecker  <brobecker@adacore.com>
+
+	* d-demangle.c: Replace strtold with strtod in global comment.
+	(strtold): Remove declaration.
+	(strtod): New declaration.
+	(dlang_parse_real): Declare value as double instead of long
+	double.  Replace call to strtold by call to strtod.
+	Update format in call to snprintf.
+
 2014-09-26  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (d_substitution): Handle abi tags on abbreviation.

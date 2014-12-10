@@ -4,6 +4,8 @@
 
 #include "avx512f-check.h"
 
+int do_main (void);
+
 static void
 avx512f_test (void)
 {

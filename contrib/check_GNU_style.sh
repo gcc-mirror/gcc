@@ -113,7 +113,7 @@ g 'Sentences should end with a dot.  Dot, space, space, end of the comment.' \
     '[[:alnum:]][[:blank:]]*\*/' $*
 
 vg 'There should be exactly one space between function name and parentheses.' \
-    '\#define' '[[:alnum:]]([^[:blank:]]|[[:blank:]]{2,})\(' $*
+    '\#define' '[[:alnum:]]([[:blank:]]{2,})?\(' $*
 
 g 'There should be no space before closing parentheses.' \
     '[[:graph:]][[:blank:]]+\)' $*

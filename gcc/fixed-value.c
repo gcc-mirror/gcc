@@ -60,7 +60,7 @@ enum fixed_value_range_code {
           FIXED_MAX_EPS, if it is equal to the maximum plus the epsilon.  */
 
 static enum fixed_value_range_code
-check_real_for_fixed_mode (REAL_VALUE_TYPE *real_value, enum machine_mode mode)
+check_real_for_fixed_mode (REAL_VALUE_TYPE *real_value, machine_mode mode)
 {
   REAL_VALUE_TYPE max_value, min_value, epsilon_value;
 
@@ -87,7 +87,7 @@ check_real_for_fixed_mode (REAL_VALUE_TYPE *real_value, enum machine_mode mode)
    The bits in PAYLOAD are sign-extended/zero-extended according to MODE.  */
 
 FIXED_VALUE_TYPE
-fixed_from_double_int (double_int payload, enum machine_mode mode)
+fixed_from_double_int (double_int payload, machine_mode mode)
 {
   FIXED_VALUE_TYPE value;
 
@@ -109,7 +109,7 @@ fixed_from_double_int (double_int payload, enum machine_mode mode)
 /* Initialize from a decimal or hexadecimal string.  */
 
 void
-fixed_from_string (FIXED_VALUE_TYPE *f, const char *str, enum machine_mode mode)
+fixed_from_string (FIXED_VALUE_TYPE *f, const char *str, machine_mode mode)
 {
   REAL_VALUE_TYPE real_value, fixed_value, base_value;
   unsigned int fbit;
@@ -176,7 +176,7 @@ fixed_to_decimal (char *str, const FIXED_VALUE_TYPE *f_orig,
    Return true, if !SAT_P and overflow.  */
 
 static bool
-fixed_saturate1 (enum machine_mode mode, double_int a, double_int *f,
+fixed_saturate1 (machine_mode mode, double_int a, double_int *f,
 		 bool sat_p)
 {
   bool overflow_p = false;
@@ -234,7 +234,7 @@ fixed_saturate1 (enum machine_mode mode, double_int a, double_int *f,
    Return true, if !SAT_P and overflow.  */
 
 static bool
-fixed_saturate2 (enum machine_mode mode, double_int a_high, double_int a_low,
+fixed_saturate2 (machine_mode mode, double_int a_high, double_int a_low,
 		 double_int *f, bool sat_p)
 {
   bool overflow_p = false;
@@ -811,7 +811,7 @@ fixed_compare (int icode, const FIXED_VALUE_TYPE *op0,
    Return true, if !SAT_P and overflow.  */
 
 bool
-fixed_convert (FIXED_VALUE_TYPE *f, enum machine_mode mode,
+fixed_convert (FIXED_VALUE_TYPE *f, machine_mode mode,
                const FIXED_VALUE_TYPE *a, bool sat_p)
 {
   bool overflow_p = false;
@@ -955,7 +955,7 @@ fixed_convert (FIXED_VALUE_TYPE *f, enum machine_mode mode,
    Return true, if !SAT_P and overflow.  */
 
 bool
-fixed_convert_from_int (FIXED_VALUE_TYPE *f, enum machine_mode mode,
+fixed_convert_from_int (FIXED_VALUE_TYPE *f, machine_mode mode,
 			double_int a, bool unsigned_p, bool sat_p)
 {
   bool overflow_p = false;
@@ -1039,7 +1039,7 @@ fixed_convert_from_int (FIXED_VALUE_TYPE *f, enum machine_mode mode,
    Return true, if !SAT_P and overflow.  */
 
 bool
-fixed_convert_from_real (FIXED_VALUE_TYPE *f, enum machine_mode mode,
+fixed_convert_from_real (FIXED_VALUE_TYPE *f, machine_mode mode,
 			 const REAL_VALUE_TYPE *a, bool sat_p)
 {
   bool overflow_p = false;
@@ -1098,7 +1098,7 @@ fixed_convert_from_real (FIXED_VALUE_TYPE *f, enum machine_mode mode,
 /* Convert to a new real mode from a fixed-point.  */
 
 void
-real_convert_from_fixed (REAL_VALUE_TYPE *r, enum machine_mode mode,
+real_convert_from_fixed (REAL_VALUE_TYPE *r, machine_mode mode,
 			 const FIXED_VALUE_TYPE *f)
 {
   REAL_VALUE_TYPE base_value, fixed_value, real_value;

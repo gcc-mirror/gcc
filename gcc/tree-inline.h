@@ -37,6 +37,26 @@ enum copy_body_cge_which
   CB_CGE_MOVE_CLONES
 };
 
+struct dependence_hasher : default_hashmap_traits
+{
+  template<typename T>
+  static void
+  mark_deleted (T &e)
+    { gcc_unreachable (); }
+
+  template<typename T>
+  static void
+  mark_empty (T &e)
+    { e.m_key = 0; }
+
+  template<typename T>
+  static bool
+  is_deleted (T &)
+    { return false; }
+
+  template<typename T> static bool is_empty (T &e) { return e.m_key == 0; }
+};
+
 /* Data required for function body duplication.  */
 
 struct copy_body_data
@@ -63,6 +83,12 @@ struct copy_body_data
   /* The VAR_DECL for the return value.  */
   tree retvar;
 
+  /* The VAR_DECL for the return bounds.  */
+  tree retbnd;
+
+  /* Assign statements that need bounds copy.  */
+  vec<gimple> assign_stmts;
+
   /* The map from local declarations in the inlined function to
      equivalents in the function into which it is being inlined.  */
   hash_map<tree, tree> *decl_map;
@@ -75,7 +101,7 @@ struct copy_body_data
 
   /* GIMPLE_CALL if va arg parameter packs should be expanded or NULL
      is not.  */
-  gimple gimple_call;
+  gimple call_stmt;
 
   /* Exception landing pad the inlined call lies in.  */
   int eh_lp_nr;
@@ -127,7 +153,7 @@ struct copy_body_data
   bitmap blocks_to_copy;
 
   /* Debug statements that need processing.  */
-  vec<gimple> debug_stmts;
+  vec<gdebug *> debug_stmts;
 
   /* A map from local declarations in the inlined function to
      equivalents in the function into which it is being inlined, where
@@ -138,6 +164,10 @@ struct copy_body_data
   /* Cilk keywords currently need to replace some variables that
      ordinary nested functions do not.  */ 
   bool remap_var_for_cilk;
+
+  /* A map from the inlined functions dependence info cliques to
+     equivalents in the function into which it is being inlined.  */
+  hash_map<unsigned short, unsigned short, dependence_hasher> *dependence_map;
 };
 
 /* Weights of constructions for estimate_num_insns.  */
@@ -203,6 +233,7 @@ extern tree remap_decl (tree decl, copy_body_data *id);
 extern tree remap_type (tree type, copy_body_data *id);
 extern gimple_seq copy_gimple_seq_and_replace_locals (gimple_seq seq);
 extern bool debug_find_tree (tree, tree);
+extern tree copy_fn (tree, tree&, tree&);
 
 /* This is in tree-inline.c since the routine uses
    data structures from the inliner.  */

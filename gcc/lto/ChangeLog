@@ -1,3 +1,78 @@
+2014-12-08  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* lto.c (read_cgraph_and_symbols): allocate gimple_canonical_types
+	htab with malloc instead of ggc.
+
+2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* lto.c: Replace htab with hash_table.
+
+2014-11-20  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* lto.c (lto_read_in_decl_state): Adjust.
+	(lto_fixup_state): Likewise.
+
+2014-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_read_decls): Do not rebuild DECL_FUNCTION_SPECIFIC_TARGET.
+
+2014-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (compare_tree_sccs_1): Compare cl_target_option_eq.
+
+2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* lto/lto.c (read_cgraph_and_symbols): Call input_offload_tables.
+
+2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+
+	* lto-object.c (lto_obj_add_section): Use section_name_prefix instead of
+	LTO_SECTION_NAME_PREFIX.
+	* lto-partition.c (lto_promote_cross_file_statics): Call
+	select_what_to_stream.
+	* lto.c (lto_section_with_id): Use section_name_prefix instead of
+	LTO_SECTION_NAME_PREFIX.
+	(read_cgraph_and_symbols): Read OFFLOAD_SECTION_NAME_PREFIX sections, if
+	being built as an offload compiler.
+
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lto-lang.c: Remove redundant enum from machine_mode.
+
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto.c: Adjust include files.
+	* lto-lang.c: Ditto.
+	* lto-object.c: Ditto.
+	* lto-partition.c: Ditto.
+	* lto-symtab.c: Ditto.
+
+2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-lang.c: Adjust include files.
+	* lto-object.c: Ditto.
+	* lto-partition.c: Ditto.
+	* lto-symtab.c: Ditto.
+	* lto.c: Ditto.
+
+2014-10-16  DJ Delorie  <dj@redhat.com>
+
+	* lto-object.c (lto_obj_begin_section): In the event that pointer
+	sizes aren't powers of two, choose a more suitable alignment
+	than (unsigned)(-1).
+
+2014-10-14  DJ Delorie  <dj@redhat.com>
+
+	* lto-lang.c (lto_build_c_type_nodes): Check intN types for
+	size-type as well.
+	(lto_init): Initialize all intN types, not just int128.
+
 2014-10-06  Martin Liska  <mliska@suse.cz>
 
 	* lto.c (stream_out): ARG_UNUSED added for last argument.

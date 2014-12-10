@@ -1,4 +1,5 @@
 /* { dg-do link { target { *-*-linux* && powerpc_fprs } } } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=cell" } } */
 /* { dg-options "-W -Wall -Wno-uninitialized -Wno-unused-but-set-variable -mcpu=cell" } */
 /* Test some PPU intrinsics from <ppu_intrinsics.h>.  */
 

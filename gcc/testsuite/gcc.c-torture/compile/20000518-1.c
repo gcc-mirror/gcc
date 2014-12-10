@@ -1,3 +1,5 @@
+/* { dg-require-effective-target label_values } */
+
 void callit1(void*);
 
 extern __inline__ void test()

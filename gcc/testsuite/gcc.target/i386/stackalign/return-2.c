@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ia32 } */
-/* { dg-options "-mpreferred-stack-boundary=2" } */
+/* { dg-options "-mpreferred-stack-boundary=2 -std=gnu89" } */
 
 /* This compile only test is to detect an assertion failure in stack branch
    development.  */

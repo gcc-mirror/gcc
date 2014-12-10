@@ -1687,7 +1687,8 @@ fix = {
  */
 fix = {
     hackname  = glibc_c99_inline_4;
-    files     = sys/sysmacros.h, '*/sys/sysmacros.h', wchar.h, '*/wchar.h';
+    files     = sys/sysmacros.h, '*/sys/sysmacros.h', wchar.h, '*/wchar.h',
+    pthread.h, '*/pthread.h';
     bypass    = "__extern_inline|__gnu_inline__";
     select    = "(^| )extern __inline";
     c_fix     = format;

@@ -67,14 +67,8 @@ stat_i4_sub_0 (char *name, gfc_array_i4 *sarray, GFC_INTEGER_4 *status,
   if (GFC_DESCRIPTOR_EXTENT(sarray,0) < 13)
     runtime_error ("Array size of SARRAY is too small.");
 
-  /* Trim trailing spaces from name.  */
-  while (name_len > 0 && name[name_len - 1] == ' ')
-    name_len--;
-
   /* Make a null terminated copy of the string.  */
-  str = gfc_alloca (name_len + 1);
-  memcpy (str, name, name_len);
-  str[name_len] = '\0';
+  str = fc_strdup (name, name_len);
 
   /* On platforms that don't provide lstat(), we use stat() instead.  */
 #ifdef HAVE_LSTAT
@@ -83,6 +77,8 @@ stat_i4_sub_0 (char *name, gfc_array_i4 *sarray, GFC_INTEGER_4 *status,
   else
 #endif
     val = stat(str, &sb);
+
+  free (str);
 
   if (val == 0)
     {
@@ -188,14 +184,8 @@ stat_i8_sub_0 (char *name, gfc_array_i8 *sarray, GFC_INTEGER_8 *status,
   if (GFC_DESCRIPTOR_EXTENT(sarray,0) < 13)
     runtime_error ("Array size of SARRAY is too small.");
 
-  /* Trim trailing spaces from name.  */
-  while (name_len > 0 && name[name_len - 1] == ' ')
-    name_len--;
-
   /* Make a null terminated copy of the string.  */
-  str = gfc_alloca (name_len + 1);
-  memcpy (str, name, name_len);
-  str[name_len] = '\0';
+  str = fc_strdup (name, name_len);
 
   /* On platforms that don't provide lstat(), we use stat() instead.  */
 #ifdef HAVE_LSTAT
@@ -204,6 +194,8 @@ stat_i8_sub_0 (char *name, gfc_array_i8 *sarray, GFC_INTEGER_8 *status,
   else
 #endif
     val = stat(str, &sb);
+
+  free (str);
 
   if (val == 0)
     {

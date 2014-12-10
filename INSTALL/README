@@ -1,4 +1,4 @@
-This directory has been obsoleted for GCC snapshots and CVS access.
+This directory has been obsoleted for GCC snapshots and SVN access.
 
 For releases the installation documentation is generated from
 gcc/doc/install.texi and copied into this directory.

@@ -23,7 +23,7 @@
 #include <testsuite_tr1.h>
 
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 int main()
 {

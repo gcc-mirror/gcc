@@ -67,6 +67,10 @@ int *param_values
 Variable
 int flag_generate_lto
 
+; Nonzero if we should write GIMPLE bytecode for offload compilation.
+Variable
+int flag_generate_offload = 0
+
 ; True to warn about any objects definitions whose size is larger
 ; than N bytes.  Also want about function definitions whose returned
 ; values are larger than N bytes, where N is 'larger_than_size'.
@@ -210,6 +214,10 @@ bool flag_opts_finished
 ; What the sanitizer should instrument
 Variable
 unsigned int flag_sanitize
+
+; What sanitizers should recover from errors
+Variable
+unsigned int flag_sanitize_recover = SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT | SANITIZE_KERNEL_ADDRESS
 
 ; Flag whether a prefix has been added to dump_base_name
 Variable
@@ -879,9 +887,17 @@ fsanitize=
 Common Driver Report Joined
 Select what to sanitize
 
-fsanitize-recover
-Common Report Var(flag_sanitize_recover) Init(1)
+fasan-shadow-offset=
+Common Joined RejectNegative Var(common_deferred_options) Defer
+-fasan-shadow-offset=<number>	Use custom shadow memory offset.
+
+fsanitize-recover=
+Common Report Joined
 After diagnosing undefined behavior attempt to continue execution
+
+fsanitize-recover
+Common Report
+This switch is deprecated; use -fsanitize-recover= instead
 
 fsanitize-undefined-trap-on-error
 Common Report Var(flag_sanitize_undefined_trap_on_error) Init(0)
@@ -894,6 +910,16 @@ Generate unwind tables that are exact at each instruction boundary
 fauto-inc-dec
 Common Report Var(flag_auto_inc_dec) Init(1)
 Generate auto-inc/dec instructions
+
+fauto-profile
+Common Report Var(flag_auto_profile) Optimization
+Use sample profile information for call graph node weights. The default
+profile file is fbdata.afdo in 'pwd'.
+
+fauto-profile=
+Common Joined RejectNegative Var(auto_profile_file)
+Use sample profile information for call graph node weights. The profile
+file is specified in the argument.
 
 ; -fcheck-bounds causes gcc to generate array bounds checks.
 ; For C, C++ and ObjC: defaults off.
@@ -1070,7 +1096,7 @@ Common Alias(fdiagnostics-color=,always,never)
 ;
 
 fdiagnostics-color=
-Common Joined RejectNegative Var(flag_diagnostics_show_color) Enum(diagnostic_color_rule) Init(DIAGNOSTICS_COLOR_NO)
+Driver Common Joined RejectNegative Var(flag_diagnostics_show_color) Enum(diagnostic_color_rule) Init(DIAGNOSTICS_COLOR_NO)
 -fdiagnostics-color=[never|always|auto]	Colorize diagnostics
 
 ; Required for these enum values.
@@ -1271,19 +1297,6 @@ Enable in and out of Graphite representation
 fgraphite-identity
 Common Report Var(flag_graphite_identity) Optimization
 Enable Graphite Identity transformation
- 
-fgraphite-code-generator=
-Common Report RejectNegative Joined Optimization Enum(fgraphite_generator) Var(flag_graphite_code_gen) Init(FGRAPHITE_CODE_GEN_ISL)
-Choose code generator of Graphite
-
-Enum
-Name(fgraphite_generator) Type(enum fgraphite_generator) UnknownError(unknown code generator of graphite %qs)
-
-EnumValue
-Enum(fgraphite_generator) String(isl) Value(FGRAPHITE_CODE_GEN_ISL)
-
-EnumValue
-Enum(fgraphite_generator) String(cloog) Value(FGRAPHITE_CODE_GEN_CLOOG)
 
 fhoist-adjacent-loads
 Common Report Var(flag_hoist_adjacent_loads) Optimization
@@ -1306,6 +1319,10 @@ floop-block
 Common Report Var(flag_loop_block) Optimization
 Enable Loop Blocking transformation
 
+floop-unroll-and-jam
+Common Report Var(flag_loop_unroll_jam) Optimization
+Enable Loop Unroll Jam transformation
+ 
 fgnu-tm
 Common Report Var(flag_tm)
 Enable support for GNU transactional memory
@@ -1379,7 +1396,7 @@ Common Report Var(flag_inhibit_size_directive)
 Do not generate .size directives
 
 findirect-inlining
-Common Report Var(flag_indirect_inlining)
+Common Report Var(flag_indirect_inlining) Optimization
 Perform indirect inlining
 
 ; General flag to enable inlining.  Specifying -fno-inline will disable
@@ -1442,6 +1459,18 @@ Perform interprocedural points-to analysis
 fipa-pure-const
 Common Report Var(flag_ipa_pure_const) Init(0) Optimization
 Discover pure and const functions
+
+fipa-icf
+Common Report Var(flag_ipa_icf) Optimization
+Perform Identical Code Folding for functions and read-only variables
+
+fipa-icf-functions
+Common Report Var(flag_ipa_icf_functions) Optimization
+Perform Identical Code Folding for functions
+
+fipa-icf-variables
+Common Report Var(flag_ipa_icf_variables) Optimization
+Perform Identical Code Folding for variables
 
 fipa-reference
 Common Report Var(flag_ipa_reference) Init(0) Optimization
@@ -1529,6 +1558,10 @@ Give external symbols a leading underscore
 floop-optimize
 Common Ignore
 Does nothing.  Preserved for backward compatibility.
+
+flra-remat
+Common Report Var(flag_lra_remat) Optimization
+Do CFG-sensitive rematerialization in LRA
 
 flto
 Common
@@ -1639,6 +1672,23 @@ Enable/Disable the traditional scheduling in loops that already passed modulo sc
 fnon-call-exceptions
 Common Report Var(flag_non_call_exceptions) Optimization
 Support synchronous non-call exceptions
+
+foffload=
+Common Driver Joined MissingArgError(options or targets missing after %qs)
+-foffload=<targets>=<options>  Specify offloading targets and options for them
+
+foffload-abi=
+Common Joined RejectNegative Enum(offload_abi) Var(flag_offload_abi) Init(OFFLOAD_ABI_UNSET)
+-foffload-abi=[lp64|ilp32]     Set the ABI to use in an offload compiler
+
+Enum
+Name(offload_abi) Type(enum offload_abi) UnknownError(unknown offload ABI %qs)
+
+EnumValue
+Enum(offload_abi) String(ilp32) Value(OFFLOAD_ABI_ILP32)
+
+EnumValue
+Enum(offload_abi) String(lp64) Value(OFFLOAD_ABI_LP64)
 
 fomit-frame-pointer
 Common Report Var(flag_omit_frame_pointer) Optimization
@@ -1778,7 +1828,7 @@ Common Var(common_deferred_options) Defer
 
 frandom-seed=
 Common Joined RejectNegative Var(common_deferred_options) Defer
--frandom-seed=<string>	Make compile reproducible using <string>
+-frandom-seed=<number>	Make compile reproducible using <number>
 
 ; This switch causes the command line that was used to create an
 ; object file to be recorded into the object file.  The exact format
@@ -1805,6 +1855,10 @@ Relief of register pressure through live range shrinkage
 frename-registers
 Common Report Var(flag_rename_registers) Init(2) Optimization
 Perform a register renaming optimization pass
+
+fschedule-fusion
+Common Report Var(flag_schedule_fusion) Init(2) Optimization
+Perform a target dependent instruction fusion optimization pass
 
 freorder-blocks
 Common Report Var(flag_reorder_blocks) Optimization
@@ -2772,8 +2826,8 @@ Create a position independent executable
 z
 Driver Joined Separate
 
-fuse-caller-save
-Common Report Var(flag_use_caller_save) Optimization
+fipa-ra
+Common Report Var(flag_ipa_ra) Optimization
 Use caller save register across calls if possible
 
 ; This comment is to ensure we retain the blank line above.

@@ -167,6 +167,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "output.h"
 #include "rtl.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -189,9 +197,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "diagnostic.h"
 #include "params.h"
-#include "fibheap.h"
 #include "intl.h"
-#include "function.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
+#include "alloc-pool.h"
 #include "ipa-prop.h"
 #include "tree-iterator.h"
 #include "tree-pass.h"
@@ -211,6 +222,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-nested.h"
 #include "gimplify.h"
 #include "dbgcnt.h"
+#include "tree-chkp.h"
+#include "lto-section-names.h"
+#include "omp-low.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -329,6 +343,7 @@ symbol_table::process_new_functions (void)
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
 	  pop_cfun ();
+	  call_cgraph_insertion_hooks (node);
 	  break;
 
 	case EXPANSION:
@@ -435,7 +450,7 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
      declared inline and nested functions.  These were optimized out
      in the original implementation and it is unclear whether we want
      to change the behavior here.  */
-  if ((!optimize
+  if ((!opt_for_fn (decl, optimize)
        && !node->cpp_implicit_alias
        && !DECL_DISREGARD_INLINE_LIMITS (decl)
        && !DECL_DECLARED_INLINE_P (decl)
@@ -789,6 +804,9 @@ varpool_node::finalize_decl (tree decl)
       || (!flag_toplevel_reorder
 	&& symtab->state == EXPANSION))
     node->assemble_decl ();
+
+  if (DECL_INITIAL (decl))
+    chkp_register_var_initializer (decl);
 }
 
 /* EDGE is an polymorphic call.  Mark all possible targets as reachable
@@ -862,6 +880,11 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 
 	  edge->make_direct (target);
 	  edge->redirect_call_stmt_to_callee ();
+
+	  /* Call to __builtin_unreachable shouldn't be instrumented.  */
+	  if (!targets.length ())
+	    gimple_call_set_with_bounds (edge->call_stmt, false);
+
 	  if (symtab->dump_file)
 	    {
 	      fprintf (symtab->dump_file,
@@ -877,15 +900,15 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 
 /* Discover all functions and variables that are trivially needed, analyze
    them as well as all functions and variables referred by them  */
+static cgraph_node *first_analyzed;
+static varpool_node *first_analyzed_var;
 
 static void
 analyze_functions (void)
 {
   /* Keep track of already processed nodes when called multiple times for
      intermodule optimization.  */
-  static cgraph_node *first_analyzed;
   cgraph_node *first_handled = first_analyzed;
-  static varpool_node *first_analyzed_var;
   varpool_node *first_handled_var = first_analyzed_var;
   hash_set<void *> reachable_call_targets;
 
@@ -906,8 +929,7 @@ analyze_functions (void)
     FOR_EACH_SYMBOL (node)
       if (node->cpp_implicit_alias)
 	  node->fixup_same_cpp_alias_visibility (node->get_alias_target ());
-  if (optimize && flag_devirtualize)
-    build_type_inheritance_graph ();
+  build_type_inheritance_graph ();
 
   /* Analysis adds static variables that in turn adds references to new functions.
      So we need to iterate the process until it stabilize.  */
@@ -978,7 +1000,8 @@ analyze_functions (void)
 	      for (edge = cnode->callees; edge; edge = edge->next_callee)
 		if (edge->callee->definition)
 		   enqueue_node (edge->callee);
-	      if (optimize && flag_devirtualize)
+	      if (opt_for_fn (cnode->decl, optimize)
+		  && opt_for_fn (cnode->decl, flag_devirtualize))
 		{
 		  cgraph_edge *next;
 
@@ -1023,8 +1046,7 @@ analyze_functions (void)
 	  symtab->process_new_functions ();
 	}
     }
-  if (optimize && flag_devirtualize)
-    update_type_inheritance_graph ();
+  update_type_inheritance_graph ();
 
   /* Collect entry points to the unit.  */
   if (symtab->dump_file)
@@ -1318,7 +1340,7 @@ thunk_adjust (gimple_stmt_iterator * bsi,
 	      tree ptr, bool this_adjusting,
 	      HOST_WIDE_INT fixed_offset, tree virtual_offset)
 {
-  gimple stmt;
+  gassign *stmt;
   tree ret;
 
   if (this_adjusting
@@ -1445,7 +1467,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	}
 
       if (in_lto_p)
-	get_body ();
+	get_untransformed_body ();
       a = DECL_ARGUMENTS (thunk_fndecl);
       
       current_function_decl = thunk_fndecl;
@@ -1494,13 +1516,13 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       tree resdecl;
       tree restmp = NULL;
 
-      gimple call;
-      gimple ret;
+      gcall *call;
+      greturn *ret;
 
       if (in_lto_p)
-	get_body ();
+	get_untransformed_body ();
       a = DECL_ARGUMENTS (thunk_fndecl);
-      
+
       current_function_decl = thunk_fndecl;
 
       /* Ensure thunks are emitted in their correct sections.  */
@@ -1533,11 +1555,21 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       if (!VOID_TYPE_P (restype))
 	{
 	  if (DECL_BY_REFERENCE (resdecl))
-	    restmp = gimple_fold_indirect_ref (resdecl);
+	    {
+	      restmp = gimple_fold_indirect_ref (resdecl);
+	      if (!restmp)
+		restmp = build2 (MEM_REF,
+				 TREE_TYPE (TREE_TYPE (DECL_RESULT (alias))),
+				 resdecl,
+				 build_int_cst (TREE_TYPE
+				   (DECL_RESULT (alias)), 0));
+	    }
 	  else if (!is_gimple_reg_type (restype))
 	    {
 	      restmp = resdecl;
-	      add_local_decl (cfun, restmp);
+
+	      if (TREE_CODE (restmp) == VAR_DECL)
+		add_local_decl (cfun, restmp);
 	      BLOCK_VARS (DECL_INITIAL (current_function_decl)) = restmp;
 	    }
 	  else
@@ -1569,6 +1601,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
       callees->call_stmt = call;
       gimple_call_set_from_thunk (call, true);
+      gimple_call_set_with_bounds (call, instrumentation_clone);
       if (restmp)
 	{
           gimple_call_set_lhs (call, restmp);
@@ -1626,7 +1659,11 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	    gimple_call_set_tail (call, true);
 
 	  /* Build return value.  */
-	  ret = gimple_build_return (restmp);
+	  if (!DECL_BY_REFERENCE (resdecl))
+	    ret = gimple_build_return (restmp);
+	  else
+	    ret = gimple_build_return (resdecl);
+
 	  gsi_insert_after (&bsi, ret, GSI_NEW_STMT);
 	}
       else
@@ -1665,7 +1702,8 @@ cgraph_node::assemble_thunks_and_aliases (void)
   ipa_ref *ref;
 
   for (e = callers; e;)
-    if (e->caller->thunk.thunk_p)
+    if (e->caller->thunk.thunk_p
+	&& !e->caller->thunk.add_pointer_bounds_args)
       {
 	cgraph_node *thunk = e->caller;
 
@@ -1704,7 +1742,7 @@ cgraph_node::expand (void)
   announce_function (decl);
   process = 0;
   gcc_assert (lowered);
-  get_body ();
+  get_untransformed_body ();
 
   /* Generate RTL for the body of DECL.  */
 
@@ -2037,13 +2075,24 @@ ipa_passes (void)
     }
 
   /* Some targets need to handle LTO assembler output specially.  */
-  if (flag_generate_lto)
+  if (flag_generate_lto || flag_generate_offload)
     targetm.asm_out.lto_start ();
 
   if (!in_lto_p)
-    ipa_write_summaries ();
+    {
+      if (g->have_offload)
+	{
+	  section_name_prefix = OFFLOAD_SECTION_NAME_PREFIX;
+	  ipa_write_summaries (true);
+	}
+      if (flag_lto)
+	{
+	  section_name_prefix = LTO_SECTION_NAME_PREFIX;
+	  ipa_write_summaries (false);
+	}
+    }
 
-  if (flag_generate_lto)
+  if (flag_generate_lto || flag_generate_offload)
     targetm.asm_out.lto_end ();
 
   if (!flag_ltrans && (in_lto_p || !flag_lto || flag_fat_lto_objects))
@@ -2072,9 +2121,13 @@ void
 symbol_table::output_weakrefs (void)
 {
   symtab_node *node;
+  cgraph_node *cnode;
   FOR_EACH_SYMBOL (node)
     if (node->alias
         && !TREE_ASM_WRITTEN (node->decl)
+	&& (!(cnode = dyn_cast <cgraph_node *> (node))
+	    || !cnode->instrumented_version
+	    || !TREE_ASM_WRITTEN (cnode->instrumented_version->decl))
 	&& node->weakref)
       {
 	tree target;
@@ -2121,8 +2174,12 @@ symbol_table::compile (void)
     fprintf (stderr, "Performing interprocedural optimizations\n");
   state = IPA;
 
+  /* Offloading requires LTO infrastructure.  */
+  if (!in_lto_p && g->have_offload)
+    flag_generate_offload = 1;
+
   /* If LTO is enabled, initialize the streamer hooks needed by GIMPLE.  */
-  if (flag_lto)
+  if (flag_generate_lto || flag_generate_offload)
     lto_streamer_hooks_init ();
 
   /* Don't run the IPA passes if there was any error or sorry messages.  */
@@ -2285,6 +2342,22 @@ symbol_table::finalize_compilation_unit (void)
   timevar_pop (TV_CGRAPH);
 }
 
+/* Reset all state within cgraphunit.c so that we can rerun the compiler
+   within the same process.  For use by toplev::finalize.  */
+
+void
+cgraphunit_c_finalize (void)
+{
+  gcc_assert (cgraph_new_nodes.length () == 0);
+  cgraph_new_nodes.truncate (0);
+
+  vtable_entry_type = NULL;
+  queued_nodes = &symtab_terminator;
+
+  first_analyzed = NULL;
+  first_analyzed_var = NULL;
+}
+
 /* Creates a wrapper from cgraph_node to TARGET node. Thunk is used for this
    kind of wrapper method.  */
 
@@ -2310,6 +2383,14 @@ cgraph_node::create_wrapper (cgraph_node *target)
     thunk.this_adjusting = false;
 
     cgraph_edge *e = create_edge (target, NULL, 0, CGRAPH_FREQ_BASE);
+
+    tree arguments = DECL_ARGUMENTS (decl);
+
+    while (arguments)
+      {
+	TREE_ADDRESSABLE (arguments) = false;
+	arguments = TREE_CHAIN (arguments);
+      }
 
     expand_thunk (false, true);
     e->call_stmt_cannot_inline_p = true;

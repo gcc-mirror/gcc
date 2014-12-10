@@ -38,6 +38,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "coverage.h"
 #include "ggc.h"
 #include "tree-cfg.h"
+#include "vec.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
+#include "alloc-pool.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "tree-inline.h"
@@ -80,20 +93,28 @@ update_noncloned_frequencies (struct cgraph_node *node,
    copy of function was removed.  */
 
 static bool
-can_remove_node_now_p_1 (struct cgraph_node *node)
+can_remove_node_now_p_1 (struct cgraph_node *node, struct cgraph_edge *e)
 {
+  ipa_ref *ref;
+
+  FOR_EACH_ALIAS (node, ref)
+    {
+      cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
+      if ((alias->callers && alias->callers != e)
+          || !can_remove_node_now_p_1 (alias, e))
+	return false;
+    }
   /* FIXME: When address is taken of DECL_EXTERNAL function we still
      can remove its offline copy, but we would need to keep unanalyzed node in
      the callgraph so references can point to it.  */
   return (!node->address_taken
-	  && !node->has_aliases_p ()
-	  && !node->used_as_abstract_origin
 	  && node->can_remove_if_no_direct_calls_p ()
 	  /* Inlining might enable more devirtualizing, so we want to remove
 	     those only after all devirtualizable virtual calls are processed.
 	     Lacking may edges in callgraph we just preserve them post
 	     inlining.  */
-	  && !DECL_VIRTUAL_P (node->decl)
+	  && (!DECL_VIRTUAL_P (node->decl)
+	      || !opt_for_fn (node->decl, flag_devirtualize))
 	  /* During early inlining some unanalyzed cgraph nodes might be in the
 	     callgraph and they might reffer the function in question.  */
 	  && !cgraph_new_nodes.exists ());
@@ -107,7 +128,7 @@ static bool
 can_remove_node_now_p (struct cgraph_node *node, struct cgraph_edge *e)
 {
   struct cgraph_node *next;
-  if (!can_remove_node_now_p_1 (node))
+  if (!can_remove_node_now_p_1 (node, e))
     return false;
 
   /* When we see same comdat group, we need to be sure that all
@@ -116,12 +137,30 @@ can_remove_node_now_p (struct cgraph_node *node, struct cgraph_edge *e)
     return true;
   for (next = dyn_cast<cgraph_node *> (node->same_comdat_group);
        next != node; next = dyn_cast<cgraph_node *> (next->same_comdat_group))
-    if ((next->callers && next->callers != e)
-	|| !can_remove_node_now_p_1 (next))
-      return false;
+    {
+      if (next->alias)
+	continue;
+      if ((next->callers && next->callers != e)
+	  || !can_remove_node_now_p_1 (next, e))
+        return false;
+    }
   return true;
 }
 
+/* Return true if NODE is a master clone with non-inline clones.  */
+
+static bool
+master_clone_with_noninline_clones_p (struct cgraph_node *node)
+{
+  if (node->clone_of)
+    return false;
+
+  for (struct cgraph_node *n = node->clones; n; n = n->next_sibling_clone)
+    if (n->decl != node->decl)
+      return true;
+
+  return false;
+}
 
 /* E is expected to be an edge being inlined.  Clone destination node of
    the edge and redirect it to the new clone.
@@ -155,7 +194,10 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	  /* Recursive inlining never wants the master clone to
 	     be overwritten.  */
 	  && update_original
-	  && can_remove_node_now_p (e->callee, e))
+	  && can_remove_node_now_p (e->callee, e)
+	  /* We cannot overwrite a master clone with non-inline clones
+	     until after these clones are materialized.  */
+	  && !master_clone_with_noninline_clones_p (e->callee))
 	{
 	  /* TODO: When callee is in a comdat group, we could remove all of it,
 	     including all inline clones inlined into it.  That would however
@@ -188,6 +230,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 				       update_original, vNULL, true,
 				       inlining_into,
 				       NULL);
+	  n->used_as_abstract_origin = e->callee->used_as_abstract_origin;
 	  e->redirect_callee (n);
 	}
     }
@@ -437,6 +480,7 @@ inline_transform (struct cgraph_node *node)
 {
   unsigned int todo = 0;
   struct cgraph_edge *e, *next;
+  bool has_inline = false;
  
   /* FIXME: Currently the pass manager is adding inline transform more than
      once to some clones.  This needs revisiting after WPA cleanups.  */
@@ -450,13 +494,15 @@ inline_transform (struct cgraph_node *node)
 
   for (e = node->callees; e; e = next)
     {
+      if (!e->inline_failed)
+	has_inline = true;
       next = e->next_callee;
       e->redirect_call_stmt_to_callee ();
     }
   node->remove_all_references ();
 
   timevar_push (TV_INTEGRATION);
-  if (node->callees && optimize)
+  if (node->callees && (optimize || has_inline))
     todo = optimize_inline_calls (current_function_decl);
   timevar_pop (TV_INTEGRATION);
 

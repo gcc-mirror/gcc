@@ -29,6 +29,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "output.h" /* for decode_reg_name */
 #include "mep-protos.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "input.h"
 #include "function.h"
 #define MAX_RECOG_OPERANDS 10
 #include "reload.h"

@@ -2,6 +2,8 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_thumb2_ok } */
 
+extern int abs (int);
+
 int
 foo (int v)
 {

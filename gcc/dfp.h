@@ -34,10 +34,10 @@ void encode_decimal128 (const struct real_format *fmt, long *, const REAL_VALUE_
 int  decimal_do_compare (const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *, int);
 void decimal_real_from_string (REAL_VALUE_TYPE *, const char *);
 void decimal_round_for_format (const struct real_format *, REAL_VALUE_TYPE *);
-void decimal_real_convert (REAL_VALUE_TYPE *, enum machine_mode, const REAL_VALUE_TYPE *);
+void decimal_real_convert (REAL_VALUE_TYPE *, machine_mode, const REAL_VALUE_TYPE *);
 void decimal_real_to_decimal (char *, const REAL_VALUE_TYPE *, size_t, size_t, int);
 void decimal_do_fix_trunc (REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
-void decimal_real_maxval (REAL_VALUE_TYPE *, int, enum machine_mode);
+void decimal_real_maxval (REAL_VALUE_TYPE *, int, machine_mode);
 wide_int decimal_real_to_integer (const REAL_VALUE_TYPE *, bool *, int);
 HOST_WIDE_INT decimal_real_to_integer (const REAL_VALUE_TYPE *);
 

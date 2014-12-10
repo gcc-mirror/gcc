@@ -3132,16 +3132,27 @@ get_name:
 
   if (component_flag)
     {
+#define EXT_STACK_SZ 100
+      char ext_stack[EXT_STACK_SZ];
+      char *ext_name;
       size_t var_len = strlen (root_nl->var_name);
       size_t saved_len
 	= dtp->u.p.saved_string ? strlen (dtp->u.p.saved_string) : 0;
-      char ext_name[var_len + saved_len + 1];
+      size_t ext_size = var_len + saved_len + 1;
+
+      if (ext_size > EXT_STACK_SZ)
+	ext_name = xmalloc (ext_size);
+      else
+	ext_name = ext_stack;
 
       memcpy (ext_name, root_nl->var_name, var_len);
       if (dtp->u.p.saved_string)
 	memcpy (ext_name + var_len, dtp->u.p.saved_string, saved_len);
       ext_name[var_len + saved_len] = '\0';
       nl = find_nml_node (dtp, ext_name);
+
+      if (ext_size > EXT_STACK_SZ)
+	free (ext_name);
     }
   else
     nl = find_nml_node (dtp, dtp->u.p.saved_string);

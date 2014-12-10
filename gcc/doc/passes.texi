@@ -911,10 +911,10 @@ Source files are @file{reload.c} and @file{reload1.c}, plus the header
 This pass is a modern replacement of the reload pass.  Source files
 are @file{lra.c}, @file{lra-assign.c}, @file{lra-coalesce.c},
 @file{lra-constraints.c}, @file{lra-eliminations.c},
-@file{lra-equivs.c}, @file{lra-lives.c}, @file{lra-saves.c},
-@file{lra-spills.c}, the header @file{lra-int.h} used for
-communication between them, and the header @file{lra.h} used for
-communication between LRA and the rest of compiler.
+@file{lra-lives.c}, @file{lra-remat.c}, @file{lra-spills.c}, the
+header @file{lra-int.h} used for communication between them, and the
+header @file{lra.h} used for communication between LRA and the rest of
+compiler.
 
 Unlike the reload pass, intermediate LRA decisions are reflected in
 RTL as much as possible.  This reduces the number of target-dependent

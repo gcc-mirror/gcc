@@ -3662,6 +3662,15 @@ package body Exp_Ch7 is
          Set_Etype (Arg, Ftyp);
          return Arg;
 
+      --  Otherwise, introduce a conversion when the designated object
+      --  has a type derived from the formal of the controlled routine.
+
+      elsif Is_Private_Type (Ftyp)
+        and then Present (Atyp)
+        and then Is_Derived_Type (Underlying_Type (Base_Type (Atyp)))
+      then
+         return Unchecked_Convert_To (Ftyp, Arg);
+
       else
          return Arg;
       end if;
@@ -4532,11 +4541,14 @@ package body Exp_Ch7 is
          function Is_Subprogram_Call (N : Node_Id) return Traverse_Result is
          begin
             --  Complex constructs are factored out by the expander and their
-            --  occurrences are replaced with references to temporaries. Due to
-            --  this expansion activity, inspect the original tree to detect
-            --  subprogram calls.
+            --  occurrences are replaced with references to temporaries or
+            --  object renamings. Due to this expansion activity, inspect the
+            --  original tree to detect subprogram calls.
 
-            if Nkind (N) = N_Identifier and then Original_Node (N) /= N then
+            if Nkind_In (N, N_Identifier,
+                            N_Object_Renaming_Declaration)
+              and then Original_Node (N) /= N
+            then
                Detect_Subprogram_Call (Original_Node (N));
 
                --  The original construct contains a subprogram call, there is
@@ -4767,10 +4779,14 @@ package body Exp_Ch7 is
                --  Generate:
                --    [Deep_]Finalize (Obj_Ref);
 
+               --  Set type of dereference, so that proper conversion are
+               --  generated when operation is inherited.
+
                Obj_Ref := New_Occurrence_Of (Obj_Id, Loc);
 
                if Is_Access_Type (Obj_Typ) then
                   Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
+                  Set_Etype (Obj_Ref, Directly_Designated_Type (Obj_Typ));
                end if;
 
                Append_To (Stmts,

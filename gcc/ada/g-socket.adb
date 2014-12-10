@@ -976,11 +976,17 @@ package body GNAT.Sockets is
          Raise_Host_Error (Integer (Err));
       end if;
 
-      return H : constant Host_Entry_Type :=
-                   To_Host_Entry (Res'Unchecked_Access)
-      do
-         Netdb_Unlock;
-      end return;
+      begin
+         return H : constant Host_Entry_Type :=
+                      To_Host_Entry (Res'Unchecked_Access)
+         do
+            Netdb_Unlock;
+         end return;
+      exception
+         when others =>
+            Netdb_Unlock;
+            raise;
+      end;
    end Get_Host_By_Address;
 
    ----------------------
@@ -2420,9 +2426,13 @@ package body GNAT.Sockets is
       Aliases_Count, Addresses_Count : Natural;
 
       --  H_Length is not used because it is currently only ever set to 4, as
-      --  H_Addrtype is always AF_INET.
+      --  we only handle the case of H_Addrtype being AF_INET.
 
    begin
+      if Hostent_H_Addrtype (E) /= SOSC.AF_INET then
+         Raise_Socket_Error (SOSC.EPFNOSUPPORT);
+      end if;
+
       Aliases_Count := 0;
       while Hostent_H_Alias (E, C.int (Aliases_Count)) /= Null_Address loop
          Aliases_Count := Aliases_Count + 1;

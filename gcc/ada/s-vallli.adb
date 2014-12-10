@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,7 @@ package body System.Val_LLI is
       --  Set to True if minus sign is present, otherwise to False
 
       Start : Positive;
-      --  Saves location of first non-blank (not used in this case)
+      --  Saves location of first non-blank
 
    begin
       Scan_Sign (Str, Ptr, Max, Minus, Start);

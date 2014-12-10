@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.	If not see
        generated;
      o Some pseudos might be spilled to assign hard registers to
        new reload pseudos;
+     o Recalculating spilled pseudo values (rematerialization);
      o Changing spilled pseudos to stack memory or their equivalences;
      o Allocation stack memory changes the address displacement and
        new iteration is needed.
@@ -57,19 +58,26 @@ along with GCC; see the file COPYING3.	If not see
  -----------      |              ----------------                   |
                   |                      |                          |
                   |                      V         New              |
-         ----------------    No    ------------  pseudos   -------------------
-        | Spilled pseudo | change |Constraints:| or insns | Inheritance/split |
-        |    to memory   |<-------|    RTL     |--------->|  transformations  |
-        |  substitution  |        | transfor-  |          |    in EBB scope   |
-         ----------------         |  mations   |           -------------------
-                |                   ------------
-                V
-    -------------------------
-   | Hard regs substitution, |
-   |  devirtalization, and   |------> Finish
-   | restoring scratches got |
-   |         memory          |
-    -------------------------
+                  |                 ------------  pseudos   -------------------
+                  |                |Constraints:| or insns | Inheritance/split |
+                  |                |    RTL     |--------->|  transformations  |
+                  |                | transfor-  |          |    in EBB scope   |
+                  | substi-        |  mations   |           -------------------
+                  | tutions         ------------
+                  |                     | No change
+          ----------------              V
+         | Spilled pseudo |      -------------------
+         |    to memory   |<----| Rematerialization |
+         |  substitution  |      -------------------
+          ----------------        
+                  | No susbtitions
+                  V                
+      -------------------------
+     | Hard regs substitution, |
+     |  devirtalization, and   |------> Finish
+     | restoring scratches got |
+     |         memory          |
+      -------------------------
 
    To speed up the process:
      o We process only insns affected by changes on previous
@@ -106,17 +114,55 @@ along with GCC; see the file COPYING3.	If not see
 #include "output.h"
 #include "addresses.h"
 #include "flags.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "input.h"
 #include "function.h"
+#include "tree-core.h"
+#include "optabs.h"
 #include "expr.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfgbuild.h"
 #include "basic-block.h"
 #include "except.h"
 #include "tree-pass.h"
 #include "timevar.h"
 #include "target.h"
-#include "vec.h"
 #include "ira.h"
 #include "lra-int.h"
 #include "df.h"
+
+/* Dump bitmap SET with TITLE and BB INDEX.  */
+void
+lra_dump_bitmap_with_title (const char *title, bitmap set, int index)
+{
+  unsigned int i;
+  int count;
+  bitmap_iterator bi;
+  static const int max_nums_on_line = 10;
+
+  if (bitmap_empty_p (set))
+    return;
+  fprintf (lra_dump_file, "  %s %d:", title, index);
+  fprintf (lra_dump_file, "\n");
+  count = max_nums_on_line + 1;
+  EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
+    {
+      if (count > max_nums_on_line)
+	{
+	  fprintf (lra_dump_file, "\n    ");
+	  count = 0;
+	}
+      fprintf (lra_dump_file, " %4u", i);
+      count++;
+    }
+  fprintf (lra_dump_file, "\n");
+}
 
 /* Hard registers currently not available for allocation.  It can
    changed after some hard  registers become not eliminable.  */
@@ -147,10 +193,10 @@ expand_reg_data (int old)
    attributes of ORIGINAL if it is a register.  The created register
    will have unique held value.  */
 rtx
-lra_create_new_reg_with_unique_value (enum machine_mode md_mode, rtx original,
+lra_create_new_reg_with_unique_value (machine_mode md_mode, rtx original,
 				      enum reg_class rclass, const char *title)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   rtx new_reg;
 
   if (original == NULL_RTX || (mode = GET_MODE (original)) == VOIDmode)
@@ -189,7 +235,7 @@ lra_create_new_reg_with_unique_value (enum machine_mode md_mode, rtx original,
 /* Analogous to the previous function but also inherits value of
    ORIGINAL.  */
 rtx
-lra_create_new_reg (enum machine_mode md_mode, rtx original,
+lra_create_new_reg (machine_mode md_mode, rtx original,
 		    enum reg_class rclass, const char *title)
 {
   rtx new_reg;
@@ -505,7 +551,7 @@ init_insn_regs (void)
    info (NEXT).	 */
 static struct lra_insn_reg *
 new_insn_reg (rtx_insn *insn, int regno, enum op_type type,
-	      enum machine_mode mode,
+	      machine_mode mode,
 	      bool subreg_p, bool early_clobber, struct lra_insn_reg *next)
 {
   struct lra_insn_reg *ir;
@@ -780,7 +826,7 @@ collect_non_operand_hard_regs (rtx *x, lra_insn_recog_data_t data,
 {
   int i, j, regno, last;
   bool subreg_p;
-  enum machine_mode mode;
+  machine_mode mode;
   struct lra_insn_reg *curr;
   rtx op = *x;
   enum rtx_code code = GET_CODE (op);
@@ -811,38 +857,38 @@ collect_non_operand_hard_regs (rtx *x, lra_insn_recog_data_t data,
     {
       if ((regno = REGNO (op)) >= FIRST_PSEUDO_REGISTER)
 	return list;
+      /* Process all regs even unallocatable ones as we need info
+	 about all regs for rematerialization pass.  */
       for (last = regno + hard_regno_nregs[regno][mode];
 	   regno < last;
 	   regno++)
-	if (! TEST_HARD_REG_BIT (lra_no_alloc_regs, regno)
-	    || TEST_HARD_REG_BIT (eliminable_regset, regno))
-	  {
-	    for (curr = list; curr != NULL; curr = curr->next)
-	      if (curr->regno == regno && curr->subreg_p == subreg_p
-		  && curr->biggest_mode == mode)
-		{
-		  if (curr->type != type)
-		    curr->type = OP_INOUT;
-		  if (curr->early_clobber != early_clobber)
-		    curr->early_clobber = true;
-		  break;
-		}
-	    if (curr == NULL)
+	{
+	  for (curr = list; curr != NULL; curr = curr->next)
+	    if (curr->regno == regno && curr->subreg_p == subreg_p
+		&& curr->biggest_mode == mode)
 	      {
-		/* This is a new hard regno or the info can not be
-		   integrated into the found structure.	 */
-#ifdef STACK_REGS
-		early_clobber
-		  = (early_clobber
-		     /* This clobber is to inform popping floating
-			point stack only.  */
-		     && ! (FIRST_STACK_REG <= regno
-			   && regno <= LAST_STACK_REG));
-#endif
-		list = new_insn_reg (data->insn, regno, type, mode, subreg_p,
-				     early_clobber, list);
+		if (curr->type != type)
+		  curr->type = OP_INOUT;
+		if (curr->early_clobber != early_clobber)
+		  curr->early_clobber = true;
+		break;
 	      }
-	  }
+	  if (curr == NULL)
+	    {
+	      /* This is a new hard regno or the info can not be
+		 integrated into the found structure.	 */
+#ifdef STACK_REGS
+	      early_clobber
+		= (early_clobber
+		   /* This clobber is to inform popping floating
+		      point stack only.  */
+		   && ! (FIRST_STACK_REG <= regno
+			 && regno <= LAST_STACK_REG));
+#endif
+	      list = new_insn_reg (data->insn, regno, type, mode, subreg_p,
+				   early_clobber, list);
+	    }
+	}
       return list;
     }
   switch (code)
@@ -917,7 +963,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
       data->insn_static_data = &debug_insn_static_data;
       data->dup_loc = NULL;
       data->arg_hard_regs = NULL;
-      data->enabled_alternatives = ALL_ALTERNATIVES;
+      data->preferred_alternatives = ALL_ALTERNATIVES;
       data->operand_loc = XNEWVEC (rtx *, 1);
       data->operand_loc[0] = &INSN_VAR_LOCATION_LOC (insn);
       return data;
@@ -925,7 +971,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
   if (icode < 0)
     {
       int nop, nalt;
-      enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
+      machine_mode operand_mode[MAX_RECOG_OPERANDS];
       const char *constraints[MAX_RECOG_OPERANDS];
 
       nop = asm_noperands (PATTERN (insn));
@@ -977,7 +1023,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
 	  = (insn_static_data->operand[i].constraint[0] == '=' ? OP_OUT
 	     : insn_static_data->operand[i].constraint[0] == '+' ? OP_INOUT
 	     : OP_IN);
-      data->enabled_alternatives = ALL_ALTERNATIVES;
+      data->preferred_alternatives = ALL_ALTERNATIVES;
       if (nop > 0)
 	{
 	  operand_alternative *op_alt = XCNEWVEC (operand_alternative,
@@ -1011,7 +1057,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
 	  memcpy (locs, recog_data.dup_loc, n * sizeof (rtx *));
 	}
       data->dup_loc = locs;
-      data->enabled_alternatives = get_enabled_alternatives (insn);
+      data->preferred_alternatives = get_preferred_alternatives (insn);
       const operand_alternative *op_alt = preprocess_insn_constraints (icode);
       if (!insn_static_data->operand_alternative)
 	setup_operand_alternative (data, op_alt);
@@ -1156,7 +1202,7 @@ lra_update_insn_recog_data (rtx_insn *insn)
   if (data->icode < 0)
     {
       int nop;
-      enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
+      machine_mode operand_mode[MAX_RECOG_OPERANDS];
       const char *constraints[MAX_RECOG_OPERANDS];
 
       nop = asm_noperands (PATTERN (insn));
@@ -1202,27 +1248,7 @@ lra_update_insn_recog_data (rtx_insn *insn)
       n = insn_static_data->n_dups;
       if (n != 0)
 	memcpy (data->dup_loc, recog_data.dup_loc, n * sizeof (rtx *));
-#if HAVE_ATTR_enabled
-#ifdef ENABLE_CHECKING
-      {
-	int i;
-	alternative_mask enabled;
-
-	n = insn_static_data->n_alternatives;
-	enabled = data->enabled_alternatives;
-	lra_assert (n >= 0);
-	/* Cache the insn to prevent extract_insn call from
-	   get_attr_enabled.  */
-	recog_data.insn = insn;
-	for (i = 0; i < n; i++)
-	  {
-	    which_alternative = i;
-	    lra_assert (TEST_BIT (enabled, i)
-			== (bool) get_attr_enabled (insn));
-	  }
-      }
-#endif
-#endif
+      lra_assert (check_bool_attrs (insn));
     }
   return data;
 }
@@ -1416,7 +1442,7 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x, int uid,
 {
   int i, j, regno;
   bool subreg_p;
-  enum machine_mode mode;
+  machine_mode mode;
   const char *fmt;
   enum rtx_code code;
   struct lra_insn_reg *curr;
@@ -1438,10 +1464,8 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x, int uid,
   if (REG_P (x))
     {
       regno = REGNO (x);
-      if (regno < FIRST_PSEUDO_REGISTER
-	  && TEST_HARD_REG_BIT (lra_no_alloc_regs, regno)
-	  && ! TEST_HARD_REG_BIT (eliminable_regset, regno))
-	return;
+      /* Process all regs even unallocatable ones as we need info about
+	 all regs for rematerialization pass.  */
       expand_reg_info ();
       if (bitmap_set_bit (&lra_reg_info[regno].insn_bitmap, uid))
 	{
@@ -1762,6 +1786,69 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
 
 
 
+/* Replace all references to register OLD_REGNO in *LOC with pseudo
+   register NEW_REG.  Return true if any change was made.  */
+bool
+lra_substitute_pseudo (rtx *loc, int old_regno, rtx new_reg)
+{
+  rtx x = *loc;
+  bool result = false;
+  enum rtx_code code;
+  const char *fmt;
+  int i, j;
+
+  if (x == NULL_RTX)
+    return false;
+
+  code = GET_CODE (x);
+  if (code == REG && (int) REGNO (x) == old_regno)
+    {
+      machine_mode mode = GET_MODE (*loc);
+      machine_mode inner_mode = GET_MODE (new_reg);
+
+      if (mode != inner_mode
+	  && ! (CONST_INT_P (new_reg) && SCALAR_INT_MODE_P (mode)))
+	{
+	  if (GET_MODE_SIZE (mode) >= GET_MODE_SIZE (inner_mode)
+	      || ! SCALAR_INT_MODE_P (inner_mode))
+	    new_reg = gen_rtx_SUBREG (mode, new_reg, 0);
+	  else
+	    new_reg = gen_lowpart_SUBREG (mode, new_reg);
+	}
+      *loc = new_reg;
+      return true;
+    }
+
+  /* Scan all the operand sub-expressions.  */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  if (lra_substitute_pseudo (&XEXP (x, i), old_regno, new_reg))
+	    result = true;
+	}
+      else if (fmt[i] == 'E')
+	{
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    if (lra_substitute_pseudo (&XVECEXP (x, i, j), old_regno, new_reg))
+	      result = true;
+	}
+    }
+  return result;
+}
+
+/* Call lra_substitute_pseudo within an insn.  This won't update the insn ptr,
+   just the contents of the insn.  */
+bool
+lra_substitute_pseudo_within_insn (rtx_insn *insn, int old_regno, rtx new_reg)
+{
+  rtx loc = insn;
+  return lra_substitute_pseudo (&loc, old_regno, new_reg);
+}
+
+
+
 /* This page contains code dealing with scratches (changing them onto
    pseudos and restoring them from the pseudos).
 
@@ -1919,8 +2006,9 @@ check_rtl (bool final_p)
       {
 	if (final_p)
 	  {
-	    extract_insn (insn);
-	    lra_assert (constrain_operands (1));
+#ifdef ENABLED_CHECKING
+	    extract_constrain_insn (insn);
+#endif
 	    continue;
 	  }
 	/* LRA code is based on assumption that all addresses can be
@@ -2071,9 +2159,6 @@ bitmap_head lra_optional_reload_pseudos;
    pass.  */
 bitmap_head lra_subreg_reload_pseudos;
 
-/* First UID of insns generated before a new spill pass.  */
-int lra_constraint_new_insn_uid_start;
-
 /* File used for output of LRA debug information.  */
 FILE *lra_dump_file;
 
@@ -2091,7 +2176,7 @@ setup_reg_spill_flag (void)
     for (cl = 0; cl < (int) LIM_REG_CLASSES; cl++)
       for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
 	if (targetm.spill_class ((enum reg_class) cl,
-				 (enum machine_mode) mode) != NO_REGS)
+				 (machine_mode) mode) != NO_REGS)
 	  {
 	    lra_reg_spill_p = true;
 	    return;
@@ -2135,13 +2220,8 @@ lra (FILE *f)
 
   lra_in_progress = 1;
 
-  /* The enable attributes can change their values as LRA starts
-     although it is a bad practice.  To prevent reuse of the outdated
-     values, clear them.  */
-  recog_init ();
-
-  lra_live_range_iter = lra_coalesce_iter = 0;
-  lra_constraint_iter = lra_constraint_iter_after_spill = 0;
+  lra_live_range_iter = lra_coalesce_iter = lra_constraint_iter = 0;
+  lra_assignment_iter = lra_assignment_iter_after_spill = 0;
   lra_inheritance_iter = lra_undo_inheritance_iter = 0;
 
   setup_reg_spill_flag ();
@@ -2176,7 +2256,6 @@ lra (FILE *f)
   lra_curr_reload_num = 0;
   push_insns (get_last_insn (), NULL);
   /* It is needed for the 1st coalescing.  */
-  lra_constraint_new_insn_uid_start = get_max_uid ();
   bitmap_initialize (&lra_inheritance_pseudos, &reg_obstack);
   bitmap_initialize (&lra_split_regs, &reg_obstack);
   bitmap_initialize (&lra_optional_reload_pseudos, &reg_obstack);
@@ -2211,21 +2290,25 @@ lra (FILE *f)
 	  /* Do inheritance only for regular algorithms.  */
 	  if (! lra_simple_p)
 	    {
-	      if (flag_use_caller_save)
+	      if (flag_ipa_ra)
 		{
 		  if (live_p)
 		    lra_clear_live_ranges ();
 		  /* As a side-effect of lra_create_live_ranges, we calculate
 		     actual_call_used_reg_set,  which is needed during
 		     lra_inheritance.  */
-		  lra_create_live_ranges (true);
+		  lra_create_live_ranges (true, true);
+		  live_p = true;
 		}
 	      lra_inheritance ();
 	    }
 	  if (live_p)
 	    lra_clear_live_ranges ();
-	  /* We need live ranges for lra_assign -- so build them.  */
-	  lra_create_live_ranges (true);
+	  /* We need live ranges for lra_assign -- so build them.  But
+	     don't remove dead insns or change global live info as we
+	     can undo inheritance transformations after inheritance
+	     pseudo assigning.  */
+	  lra_create_live_ranges (true, false);
 	  live_p = true;
 	  /* If we don't spill non-reload and non-inheritance pseudos,
 	     there is no sense to run memory-memory move coalescing.
@@ -2244,7 +2327,7 @@ lra (FILE *f)
 		{
 		  if (! live_p)
 		    {
-		      lra_create_live_ranges (true);
+		      lra_create_live_ranges (true, true);
 		      live_p = true;
 		    }
 		  if (lra_coalesce ())
@@ -2260,22 +2343,33 @@ lra (FILE *f)
       bitmap_clear (&lra_subreg_reload_pseudos);
       bitmap_clear (&lra_inheritance_pseudos);
       bitmap_clear (&lra_split_regs);
-      if (! lra_need_for_spills_p ())
-	break;
       if (! live_p)
 	{
 	  /* We need full live info for spilling pseudos into
 	     registers instead of memory.  */
-	  lra_create_live_ranges (lra_reg_spill_p);
+	  lra_create_live_ranges (lra_reg_spill_p, true);
 	  live_p = true;
+	}
+      /* We should check necessity for spilling here as the above live
+	 range pass can remove spilled pseudos.  */
+      if (! lra_need_for_spills_p ())
+	break;
+      /* Now we know what pseudos should be spilled.  Try to
+	 rematerialize them first.  */
+      if (lra_remat ())
+	{
+	  /* We need full live info -- see the comment above.  */
+	  lra_create_live_ranges (lra_reg_spill_p, true);
+	  live_p = true;
+	  if (! lra_need_for_spills_p ())
+	    break;
 	}
       lra_spill ();
       /* Assignment of stack slots changes elimination offsets for
 	 some eliminations.  So update the offsets here.  */
       lra_eliminate (false, false);
       lra_constraint_new_regno_start = max_reg_num ();
-      lra_constraint_new_insn_uid_start = get_max_uid ();
-      lra_constraint_iter_after_spill = 0;
+      lra_assignment_iter_after_spill = 0;
     }
   restore_scratches ();
   lra_eliminate (true, false);

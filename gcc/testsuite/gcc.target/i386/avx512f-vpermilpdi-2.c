@@ -9,8 +9,12 @@
 #define SIZE (AVX512F_LEN / 64)
 #include "avx512f-mask-type.h"
 
-#ifndef CTRL
-#define CTRL 129
+#if AVX512F_LEN > 256
+  #define CTRL 129
+#elif AVX512F_LEN > 128
+  #define CTRL 5
+#else
+  #define CTRL 1
 #endif
 
 static void
@@ -55,3 +59,5 @@ TEST (void)
   if (UNION_CHECK (AVX512F_LEN, d) (res3, res_ref))
     abort ();
 }
+
+#undef CTRL

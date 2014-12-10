@@ -438,6 +438,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DWARF_FRAME_REGNUM(REG) DBX_REGISTER_NUMBER (REG)
 #endif
 
+/* The mapping from dwarf CFA reg number to internal dwarf reg numbers.  */
+#ifndef DWARF_REG_TO_UNWIND_COLUMN
+#define DWARF_REG_TO_UNWIND_COLUMN(REGNO) (REGNO)
+#endif
+
 /* Map register numbers held in the call frame info that gcc has
    collected using DWARF_FRAME_REGNUM to those that should be output in
    .debug_frame and .eh_frame.  */
@@ -1004,6 +1009,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef MOVE_MAX_PIECES
 #define MOVE_MAX_PIECES   MOVE_MAX
+#endif
+
+/* STORE_MAX_PIECES is the number of bytes at a time that we can
+   store efficiently.  Due to internal GCC limitations, this is
+   MOVE_MAX_PIECES limited by the number of bytes GCC can represent
+   for an immediate constant.  */
+
+#ifndef STORE_MAX_PIECES
+#define STORE_MAX_PIECES  MIN (MOVE_MAX_PIECES, 2 * sizeof (HOST_WIDE_INT))
 #endif
 
 #ifndef MAX_MOVE_MAX

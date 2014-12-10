@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_IPA_INLINE_H
 #define GCC_IPA_INLINE_H
 
-#include "ipa-prop.h"
 
 /* Representation of inline parameters that do depend on context function is
    inlined into (i.e. known constant values of function parameters.
@@ -224,7 +223,8 @@ void initialize_inline_failed (struct cgraph_edge *);
 int estimate_time_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
-					vec<tree>,  vec<tree>,
+					vec<tree>,
+					vec<ipa_polymorphic_call_context>,
 					vec<ipa_agg_jump_function_p>,
 					int *, int *, inline_hints *);
 int do_estimate_growth (struct cgraph_node *);
@@ -238,6 +238,7 @@ void initialize_growth_caches (void);
 void free_growth_caches (void);
 void compute_inline_parameters (struct cgraph_node *, bool);
 bool speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining);
+unsigned int early_inliner (function *fun);
 
 /* In ipa-inline-transform.c  */
 bool inline_call (struct cgraph_edge *, bool, vec<cgraph_edge *> *, int *, bool,

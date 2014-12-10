@@ -198,6 +198,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "ggc.h"
 #include "hashtab.h"
+#include <new>
 
 template<typename, typename, typename> class hash_map;
 template<typename, typename> class hash_set;
@@ -300,6 +301,76 @@ pointer_hash <Type>::equal (const value_type &existing,
 {
   return existing == candidate;
 }
+
+/* Hasher for entry in gc memory.  */
+
+template<typename T>
+struct ggc_hasher
+{
+  typedef T value_type;
+  typedef T compare_type;
+  typedef int store_values_directly;
+
+  static void remove (T) {}
+
+  static void
+  ggc_mx (T p)
+  {
+    extern void gt_ggc_mx (T &);
+    gt_ggc_mx (p);
+  }
+
+  static void
+  pch_nx (T &p)
+  {
+  extern void gt_pch_nx (T &);
+  gt_pch_nx (p);
+  }
+
+  static void
+  pch_nx (T &p, gt_pointer_operator op, void *cookie)
+  {
+    op (&p, cookie);
+  }
+};
+
+/* Hasher for cache entry in gc memory.  */
+
+template<typename T>
+struct ggc_cache_hasher
+{
+  typedef T value_type;
+  typedef T compare_type;
+  typedef int store_values_directly;
+
+  static void remove (T &) {}
+
+  /* Entries are weakly held because this is for caches.  */
+
+  static void ggc_mx (T &) {}
+
+  static void
+  pch_nx (T &p)
+  {
+  extern void gt_pch_nx (T &);
+  gt_pch_nx (p);
+  }
+
+  static void
+  pch_nx (T &p, gt_pointer_operator op, void *cookie)
+  {
+    op (&p, cookie);
+  }
+
+  /* Clear out entries if they are about to be gc'd.  */
+
+  static void
+  handle_cache_entry (T &e)
+  {
+    if (e != HTAB_EMPTY_ENTRY && e != HTAB_DELETED_ENTRY && !ggc_marked_p (e))
+      e = static_cast<T> (HTAB_DELETED_ENTRY);
+  }
+};
 
 
 /* Table of primes and their inversion information.  */
@@ -1004,6 +1075,16 @@ public:
   explicit hash_table (size_t, bool ggc = false);
   ~hash_table ();
 
+  /* Create a hash_table in gc memory.  */
+
+  static hash_table *
+  create_ggc (size_t n)
+  {
+    hash_table *table = ggc_alloc<hash_table> ();
+    new (table) hash_table (n, true);
+    return table;
+  }
+
   /* Current size (in entries) of the hash table.  */
   size_t size () const { return m_size; }
 
@@ -1110,10 +1191,17 @@ public:
 private:
   template<typename T> friend void gt_ggc_mx (hash_table<T> *);
   template<typename T> friend void gt_pch_nx (hash_table<T> *);
-  template<typename T> friend void hashtab_entry_note_pointers (void *, void *, gt_pointer_operator, void *);
-  template<typename T, typename U, typename V> friend void gt_pch_nx (hash_map<T, U, V> *, gt_pointer_operator, void *);
-  template<typename T, typename U> friend void gt_pch_nx (hash_set<T, U> *, gt_pointer_operator, void *);
+  template<typename T> friend void
+    hashtab_entry_note_pointers (void *, void *, gt_pointer_operator, void *);
+  template<typename T, typename U, typename V> friend void
+  gt_pch_nx (hash_map<T, U, V> *, gt_pointer_operator, void *);
+  template<typename T, typename U> friend void gt_pch_nx (hash_set<T, U> *,
+							  gt_pointer_operator,
+							  void *);
+  template<typename T> friend void gt_pch_nx (hash_table<T> *,
+					      gt_pointer_operator, void *);
 
+  value_type *alloc_entries (size_t n) const;
   value_type *find_empty_slot_for_expand (hashval_t);
   void expand ();
   static bool is_deleted (value_type &v)
@@ -1172,12 +1260,7 @@ hash_table<Descriptor, Allocator, true>::hash_table (size_t size, bool ggc) :
   size_prime_index = hash_table_higher_prime_index (size);
   size = prime_tab[size_prime_index].prime;
 
-  if (!m_ggc)
-    m_entries = Allocator <value_type> ::data_alloc (size);
-  else
-    m_entries = ggc_cleared_vec_alloc<value_type> (size);
-
-  gcc_assert (m_entries != NULL);
+  m_entries = alloc_entries (size);
   m_size = size;
   m_size_prime_index = size_prime_index;
 }
@@ -1193,6 +1276,26 @@ hash_table<Descriptor, Allocator, true>::~hash_table ()
     Allocator <value_type> ::data_free (m_entries);
   else
     ggc_free (m_entries);
+}
+
+/* This function returns an array of empty hash table elements.  */
+
+template<typename Descriptor, template<typename Type> class Allocator>
+inline typename hash_table<Descriptor, Allocator, true>::value_type *
+hash_table<Descriptor, Allocator, true>::alloc_entries (size_t n) const
+{
+  value_type *nentries;
+
+  if (!m_ggc)
+    nentries = Allocator <value_type> ::data_alloc (n);
+  else
+    nentries = ::ggc_cleared_vec_alloc<value_type> (n);
+
+  gcc_assert (nentries != NULL);
+  for (size_t i = 0; i < n; i++)
+    mark_empty (nentries[i]);
+
+  return nentries;
 }
 
 /* Similar to find_slot, but without several unwanted side effects:
@@ -1264,13 +1367,7 @@ hash_table<Descriptor, Allocator, true>::expand ()
       nsize = osize;
     }
 
-  value_type *nentries;
-  if (!m_ggc)
-    nentries = Allocator <value_type> ::data_alloc (nsize);
-  else
-    nentries = ggc_cleared_vec_alloc<value_type> (nsize);
-
-  gcc_assert (nentries != NULL);
+  value_type *nentries = alloc_entries (nsize);
   m_entries = nentries;
   m_size = nsize;
   m_size_prime_index = nindex;
@@ -1318,16 +1415,11 @@ hash_table<Descriptor, Allocator, true>::empty ()
       int nsize = prime_tab[nindex].prime;
 
       if (!m_ggc)
-	{
-	  Allocator <value_type> ::data_free (m_entries);
-	  m_entries = Allocator <value_type> ::data_alloc (nsize);
-	}
+	Allocator <value_type> ::data_free (m_entries);
       else
-	{
-	  ggc_free (m_entries);
-	  m_entries = ggc_cleared_vec_alloc<value_type> (nsize);
-	}
+	ggc_free (m_entries);
 
+      m_entries = alloc_entries (nsize);
       m_size = nsize;
       m_size_prime_index = nindex;
     }
@@ -1598,7 +1690,7 @@ template<typename D>
 static void
 gt_pch_nx (hash_table<D> *h)
 {
-  bool success ATTRIBUTE_UNUSED
+  bool success
     = gt_pch_note_object (h->m_entries, h, hashtab_entry_note_pointers<D>);
   gcc_checking_assert (success);
   for (size_t i = 0; i < h->m_size; i++)
@@ -1609,6 +1701,25 @@ gt_pch_nx (hash_table<D> *h)
 
       D::pch_nx (h->m_entries[i]);
     }
+}
+
+template<typename D>
+static inline void
+gt_pch_nx (hash_table<D> *h, gt_pointer_operator op, void *cookie)
+{
+  op (&h->m_entries, cookie);
+}
+
+template<typename H>
+inline void
+gt_cleare_cache (hash_table<H> *h)
+{
+  if (!h)
+    return;
+
+  for (typename hash_table<H>::iterator iter = h->begin (); iter != h->end ();
+       ++iter)
+    H::handle_cache_entry (*iter);
 }
 
 #endif /* TYPED_HASHTAB_H */

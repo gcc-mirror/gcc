@@ -136,6 +136,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -594,7 +605,7 @@ verify_bb_vtables (basic_block bb)
           tree vtbl_var_decl = NULL_TREE;
           struct vtbl_map_node *vtable_map_node;
           tree vtbl_decl = NULL_TREE;
-          gimple call_stmt;
+          gcall *call_stmt;
           const char *vtable_name = "<unknown>";
           tree tmp0;
           bool found;

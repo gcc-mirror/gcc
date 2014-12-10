@@ -23,20 +23,20 @@ struct C
 
 struct D
 {
-    constexpr D() { return;} // { dg-error "does not have empty body" }
+    constexpr D() { return;} // { dg-error "does not have empty body" "" { target c++11_only } }
 };
 
 struct D1
 {
     A a;
-    constexpr D1() { return;} // { dg-error "does not have empty body" }
+    constexpr D1() { return;} // { dg-error "does not have empty body" "" { target c++11_only } }
 };
 
 struct D2
 {
     A a;
     A b;
-    constexpr D2() { return;} // { dg-error "does not have empty body" }
+    constexpr D2() { return;} // { dg-error "does not have empty body" "" { target c++11_only } }
 };
 
 struct D3
@@ -44,5 +44,5 @@ struct D3
     A a;
     A b;
     A c;
-    constexpr D3() { return;} // { dg-error "does not have empty body" }
+    constexpr D3() { return;} // { dg-error "does not have empty body" "" { target c++11_only } }
 };

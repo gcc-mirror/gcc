@@ -33,17 +33,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "c-family/c-objc.h"
 #include "ubsan.h"
+#include "internal-fn.h"
 
 #include <new>                    // For placement-new.
 
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
 #define pp_separate_with_semicolon(PP) pp_cxx_separate_with (PP, ';')
 
-/* The global buffer where we dump everything.  It is there only for
-   transitional purpose.  It is expected, in the near future, to be
-   completely removed.  */
+/* cxx_pp is a C++ front-end-specific pretty printer: this is where we
+   dump C++ ASTs as strings. It is mostly used only by the various
+   tree -> string functions that are occasionally called from the
+   debugger or by the front-end for things like
+   __PRETTY_FUNCTION__.  */
 static cxx_pretty_printer scratch_pretty_printer;
-#define cxx_pp (&scratch_pretty_printer)
+static cxx_pretty_printer * cxx_pp = &scratch_pretty_printer;
 
 /* Translate if being used for diagnostics, but not for dump files or
    __PRETTY_FUNCTION.  */
@@ -104,13 +107,37 @@ static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
 static bool cp_printer (pretty_printer *, text_info *, const char *,
 			int, bool, bool, bool);
 
+/* CONTEXT->printer is a basic pretty printer that was constructed
+   presumably by diagnostic_initialize(), called early in the
+   compiler's initialization process (in general_init) Before the FE
+   is initialized.  This (C++) FE-specific diagnostic initializer is
+   thus replacing the basic pretty printer with one that has C++-aware
+   capacities.  */
+
+void
+cxx_initialize_diagnostics (diagnostic_context *context)
+{
+  pretty_printer *base = context->printer;
+  cxx_pretty_printer *pp = XNEW (cxx_pretty_printer);
+  context->printer = new (pp) cxx_pretty_printer ();
+
+  /* It is safe to free this object because it was previously XNEW()'d.  */
+  base->~pretty_printer ();
+  XDELETE (base);
+
+  c_common_diagnostics_set_defaults (context);
+  diagnostic_starter (context) = cp_diagnostic_starter;
+  /* diagnostic_finalizer is already c_diagnostic_finalizer.  */
+  diagnostic_format_decoder (context) = cp_printer;
+}
+
+/* Initialize the global cxx_pp that is used as the memory store for
+   the string representation of C++ AST.  See the description of
+   cxx_pp above.  */
+
 void
 init_error (void)
 {
-  diagnostic_starter (global_dc) = cp_diagnostic_starter;
-  /* diagnostic_finalizer is already c_diagnostic_finalizer.  */
-  diagnostic_format_decoder (global_dc) = cp_printer;
-
   new (cxx_pp) cxx_pretty_printer ();
 }
 
@@ -1186,7 +1213,9 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 	tree args = TREE_OPERAND (t, 1);
 
 	if (is_overloaded_fn (name))
-	  name = DECL_NAME (get_first_fn (name));
+	  name = get_first_fn (name);
+	if (DECL_P (name))
+	  name = DECL_NAME (name);
 	dump_decl (pp, name, flags);
 	pp_cxx_begin_template_argument_list (pp);
 	if (args == error_mark_node)
@@ -2011,6 +2040,14 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	tree fn = CALL_EXPR_FN (t);
 	bool skipfirst = false;
 
+	/* Deal with internal functions.  */
+	if (fn == NULL_TREE)
+	  {
+	    pp_string (pp, internal_fn_name (CALL_EXPR_IFN (t)));
+	    dump_call_expr_args (pp, t, flags, skipfirst);
+	    break;
+	  }
+
 	if (TREE_CODE (fn) == ADDR_EXPR)
 	  fn = TREE_OPERAND (fn, 0);
 
@@ -2273,7 +2310,13 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 			    TREE_TYPE (ttype)))
 	  {
 	    if (TREE_CODE (ttype) == REFERENCE_TYPE)
-	      dump_unary_op (pp, "*", t, flags);
+	      {
+		STRIP_NOPS (op);
+		if (TREE_CODE (op) == ADDR_EXPR)
+		  dump_expr (pp, TREE_OPERAND (op, 0), flags);
+		else
+		  dump_unary_op (pp, "*", t, flags);
+	      }
 	    else
 	      dump_unary_op (pp, "&", t, flags);
 	  }
@@ -2645,6 +2688,10 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_left_paren (pp);
       dump_expr (pp, TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
       pp_cxx_right_paren (pp);
+      break;
+
+    case PLACEHOLDER_EXPR:
+      pp_string (pp, M_("*this"));
       break;
 
       /*  This list is incomplete, but should suffice for now.

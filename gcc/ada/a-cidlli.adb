@@ -33,6 +33,8 @@ with System; use type System.Address;
 
 package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
+   pragma Annotate (CodePeer, Skip_Analysis);
+
    procedure Free is
      new Ada.Unchecked_Deallocation (Element_Type, Element_Access);
 

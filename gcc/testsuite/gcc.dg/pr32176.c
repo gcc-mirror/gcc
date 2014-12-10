@@ -2,7 +2,9 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -w" } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -march=i686 -msse" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-additional-options "-march=i686 -msse" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+
+extern void _gfortran_abort ();
 
 void foo (void)
 {

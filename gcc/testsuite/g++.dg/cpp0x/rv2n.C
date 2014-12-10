@@ -3,7 +3,7 @@
 // Test overload resolution among reference types
 
 // { dg-do compile { target c++11 } }
-// { dg-options "" }
+// { dg-options "-fno-ipa-icf" }
 
 template <bool> struct sa;
 template <> struct sa<true> {};

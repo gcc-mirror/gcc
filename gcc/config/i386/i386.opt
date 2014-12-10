@@ -653,6 +653,14 @@ mavx512vl
 Target Report Mask(ISA_AVX512VL) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VL built-in functions and code generation
 
+mavx512ifma
+Target Report Mask(ISA_AVX512IFMA) Var(ix86_isa_flags) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation
+
+mavx512vbmi
+Target Report Mask(ISA_AVX512VBMI) Var(ix86_isa_flags) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation
+
 mfma
 Target Report Mask(ISA_FMA) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation
@@ -712,6 +720,14 @@ Support flag-preserving add-carry instructions
 mclflushopt
 Target Report Mask(ISA_CLFLUSHOPT) Var(ix86_isa_flags) Save
 Support CLFLUSHOPT instructions
+
+mclwb
+Target Report Mask(ISA_CLWB) Var(ix86_isa_flags) Save
+Support CLWB instruction
+
+mpcommit
+Target Report Mask(ISA_PCOMMIT) Var(ix86_isa_flags) Save
+Support PCOMMIT instruction
 
 mfxsr
 Target Report Mask(ISA_FXSR) Var(ix86_isa_flags) Save
@@ -813,6 +829,10 @@ Split 32-byte AVX unaligned store
 mrtm
 Target Report Mask(ISA_RTM) Var(ix86_isa_flags) Save
 Support RTM built-in functions and code generation
+
+mmpx
+Target Report Mask(ISA_MPX) Var(ix86_isa_flags) Save
+Support MPX code generation
 
 mstack-protector-guard=
 Target RejectNegative Joined Enum(stack_protector_guard) Var(ix86_stack_protector_guard) Init(SSP_TLS)

@@ -20,6 +20,9 @@ typedef struct record
 
 Rec_Pointer Ptr_Glob;
 
+extern int Proc_7 (int, int, int *);
+
+void
 Proc_1 (Ptr_Val_Par)
     Rec_Pointer Ptr_Val_Par;
 {

@@ -1011,14 +1011,7 @@ GC_API void GC_register_has_static_roots_callback
   * make that too hard.
   */
 #if (defined(sparc) || defined(__sparc)) && defined(sun)
-    /*
-     * If you are planning on putting
-     * the collector in a SunOS 5 dynamic library, you need to call GC_INIT()
-     * from the statically loaded program section.
-     * This circumvents a Solaris 2.X (X<=4) linker bug.
-     */
-#   define GC_INIT() { extern end, etext; \
-		       GC_noop(&end, &etext); }
+#   define GC_INIT()
 #else
 # if defined(__CYGWIN32__) || defined (_AIX)
     /*

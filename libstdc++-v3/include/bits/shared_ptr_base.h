@@ -477,7 +477,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_get_deleter(const std::type_info& __ti) noexcept
       {
 #ifdef __GXX_RTTI
-        return __ti == typeid(_Deleter) ? &_M_impl._M_del() : nullptr;
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 2400. shared_ptr's get_deleter() should use addressof()
+        return __ti == typeid(_Deleter)
+	  ? std::__addressof(_M_impl._M_del())
+	  : nullptr;
 #else
         return nullptr;
 #endif
@@ -721,55 +725,69 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class __weak_count
     {
     public:
-      constexpr __weak_count() noexcept : _M_pi(0)
+      constexpr __weak_count() noexcept : _M_pi(nullptr)
       { }
 
       __weak_count(const __shared_count<_Lp>& __r) noexcept
       : _M_pi(__r._M_pi)
       {
-	if (_M_pi != 0)
+	if (_M_pi != nullptr)
 	  _M_pi->_M_weak_add_ref();
       }
 
-      __weak_count(const __weak_count<_Lp>& __r) noexcept
+      __weak_count(const __weak_count& __r) noexcept
       : _M_pi(__r._M_pi)
       {
-	if (_M_pi != 0)
+	if (_M_pi != nullptr)
 	  _M_pi->_M_weak_add_ref();
       }
+
+      __weak_count(__weak_count&& __r) noexcept
+      : _M_pi(__r._M_pi)
+      { __r._M_pi = nullptr; }
 
       ~__weak_count() noexcept
       {
-	if (_M_pi != 0)
+	if (_M_pi != nullptr)
 	  _M_pi->_M_weak_release();
       }
 
-      __weak_count<_Lp>&
+      __weak_count&
       operator=(const __shared_count<_Lp>& __r) noexcept
       {
 	_Sp_counted_base<_Lp>* __tmp = __r._M_pi;
-	if (__tmp != 0)
+	if (__tmp != nullptr)
 	  __tmp->_M_weak_add_ref();
-	if (_M_pi != 0)
+	if (_M_pi != nullptr)
 	  _M_pi->_M_weak_release();
 	_M_pi = __tmp;
 	return *this;
       }
 
-      __weak_count<_Lp>&
-      operator=(const __weak_count<_Lp>& __r) noexcept
+      __weak_count&
+      operator=(const __weak_count& __r) noexcept
       {
 	_Sp_counted_base<_Lp>* __tmp = __r._M_pi;
-	if (__tmp != 0)
+	if (__tmp != nullptr)
 	  __tmp->_M_weak_add_ref();
-	if (_M_pi != 0)
+	if (_M_pi != nullptr)
 	  _M_pi->_M_weak_release();
 	_M_pi = __tmp;
+	return *this;
+      }
+
+      __weak_count&
+      operator=(__weak_count&& __r) noexcept
+      {
+	if (_M_pi != nullptr)
+	  _M_pi->_M_weak_release();
+	_M_pi = __r._M_pi;
+        __r._M_pi = nullptr;
 	return *this;
       }
 
       void
-      _M_swap(__weak_count<_Lp>& __r) noexcept
+      _M_swap(__weak_count& __r) noexcept
       {
 	_Sp_counted_base<_Lp>* __tmp = __r._M_pi;
 	__r._M_pi = _M_pi;
@@ -778,7 +796,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       long
       _M_get_use_count() const noexcept
-      { return _M_pi != 0 ? _M_pi->_M_get_use_count() : 0; }
+      { return _M_pi != nullptr ? _M_pi->_M_get_use_count() : 0; }
 
       bool
       _M_less(const __weak_count& __rhs) const noexcept
@@ -848,6 +866,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, _Lock_policy _Lp>
     class __shared_ptr
     {
+      template<typename _Ptr>
+	using _Convertible
+	  = typename enable_if<is_convertible<_Ptr, _Tp*>::value>::type;
+
     public:
       typedef _Tp   element_type;
 
@@ -902,8 +924,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __shared_ptr& operator=(const __shared_ptr&) noexcept = default;
       ~__shared_ptr() = default;
 
-      template<typename _Tp1, typename = typename
-	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
+      template<typename _Tp1, typename = _Convertible<_Tp1*>>
 	__shared_ptr(const __shared_ptr<_Tp1, _Lp>& __r) noexcept
 	: _M_ptr(__r._M_ptr), _M_refcount(__r._M_refcount)
 	{ }
@@ -915,8 +936,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__r._M_ptr = 0;
       }
 
-      template<typename _Tp1, typename = typename
-	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
+      template<typename _Tp1, typename = _Convertible<_Tp1*>>
 	__shared_ptr(__shared_ptr<_Tp1, _Lp>&& __r) noexcept
 	: _M_ptr(__r._M_ptr), _M_refcount()
 	{
@@ -936,7 +956,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       // If an exception is thrown this constructor has no effect.
-      template<typename _Tp1, typename _Del>
+      template<typename _Tp1, typename _Del, typename
+	       = _Convertible<typename unique_ptr<_Tp1, _Del>::pointer>>
 	__shared_ptr(std::unique_ptr<_Tp1, _Del>&& __r)
 	: _M_ptr(__r.get()), _M_refcount()
 	{
@@ -1317,15 +1338,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, _Lock_policy _Lp>
     class __weak_ptr
     {
+      template<typename _Ptr>
+	using _Convertible
+	  = typename enable_if<is_convertible<_Ptr, _Tp*>::value>::type;
+
     public:
       typedef _Tp element_type;
 
       constexpr __weak_ptr() noexcept
-      : _M_ptr(0), _M_refcount()
+      : _M_ptr(nullptr), _M_refcount()
       { }
 
       __weak_ptr(const __weak_ptr&) noexcept = default;
-      __weak_ptr& operator=(const __weak_ptr&) noexcept = default;
+
       ~__weak_ptr() = default;
 
       // The "obvious" converting constructor implementation:
@@ -1342,17 +1367,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       //
       // It is not possible to avoid spurious access violations since
       // in multithreaded programs __r._M_ptr may be invalidated at any point.
-      template<typename _Tp1, typename = typename
-	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
+      template<typename _Tp1, typename = _Convertible<_Tp1*>>
 	__weak_ptr(const __weak_ptr<_Tp1, _Lp>& __r) noexcept
 	: _M_refcount(__r._M_refcount)
         { _M_ptr = __r.lock().get(); }
 
-      template<typename _Tp1, typename = typename
-	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
+      template<typename _Tp1, typename = _Convertible<_Tp1*>>
 	__weak_ptr(const __shared_ptr<_Tp1, _Lp>& __r) noexcept
 	: _M_ptr(__r._M_ptr), _M_refcount(__r._M_refcount)
 	{ }
+
+      __weak_ptr(__weak_ptr&& __r) noexcept
+      : _M_ptr(__r._M_ptr), _M_refcount(std::move(__r._M_refcount))
+      { __r._M_ptr = nullptr; }
+
+      template<typename _Tp1, typename = _Convertible<_Tp1*>>
+	__weak_ptr(__weak_ptr<_Tp1, _Lp>&& __r) noexcept
+	: _M_ptr(__r.lock().get()), _M_refcount(std::move(__r._M_refcount))
+        { __r._M_ptr = nullptr; }
+
+      __weak_ptr&
+      operator=(const __weak_ptr& __r) noexcept = default;
 
       template<typename _Tp1>
 	__weak_ptr&
@@ -1369,6 +1404,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  _M_ptr = __r._M_ptr;
 	  _M_refcount = __r._M_refcount;
+	  return *this;
+	}
+
+      __weak_ptr&
+      operator=(__weak_ptr&& __r) noexcept
+      {
+	_M_ptr = __r._M_ptr;
+	_M_refcount = std::move(__r._M_refcount);
+	__r._M_ptr = nullptr;
+	return *this;
+      }
+
+      template<typename _Tp1>
+	__weak_ptr&
+	operator=(__weak_ptr<_Tp1, _Lp>&& __r) noexcept
+	{
+	  _M_ptr = __r.lock().get();
+	  _M_refcount = std::move(__r._M_refcount);
+	  __r._M_ptr = nullptr;
 	  return *this;
 	}
 

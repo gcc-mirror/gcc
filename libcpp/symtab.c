@@ -61,9 +61,7 @@ ht_create (unsigned int order)
   table = XCNEW (cpp_hash_table);
 
   /* Strings need no alignment.  */
-  _obstack_begin (&table->stack, 0, 0,
-		  (void *(*) (long)) xmalloc,
-		  (void (*) (void *)) free);
+  obstack_specify_allocation (&table->stack, 0, 0, xmalloc, free);
 
   obstack_alignment_mask (&table->stack) = 0;
 

@@ -320,6 +320,10 @@ package Atree is
    --  Number of info messages generated. Info messages are neved treated as
    --  errors (whether from use of the pragma, or the compiler switch -gnatwe).
 
+   Check_Messages : Nat := 0;
+   --  Number of check messages generated. Check messages are neither warnings
+   --  nor errors.
+
    Warnings_Treated_As_Errors : Nat := 0;
    --  Number of warnings changed into errors as a result of matching a pattern
    --  given in a Warning_As_Error configuration pragma.

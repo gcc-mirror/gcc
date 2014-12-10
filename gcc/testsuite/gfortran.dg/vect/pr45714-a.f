@@ -1,4 +1,4 @@
-! { dg-do compile { target x86_64-*-* } }
+! { dg-do compile { target i?86-*-* x86_64-*-* } }
 ! { dg-options "-O3 -march=core2 -mavx -ffast-math -mveclibabi=svml" }
 
       integer index(18),i,j,k,l,ipiv(18),info,ichange,neq,lda,ldb,

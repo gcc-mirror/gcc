@@ -5,6 +5,8 @@
 
 /* Make sure that Ultrasparc return insn do not read below the stack.  */
 
+void toto (int *);
+
 int bar (int a, int b, int c, int d, int e, int f, int g, int h)
 {
   int res;

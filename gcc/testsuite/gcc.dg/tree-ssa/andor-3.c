@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fno-ipa-icf -fdump-tree-optimized" } */
 
 int f(int y, int x)
 {

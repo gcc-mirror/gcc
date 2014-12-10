@@ -67,16 +67,18 @@ generic
 
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
-package Ada.Containers.Formal_Hashed_Sets is
+package Ada.Containers.Formal_Hashed_Sets with
+  Pure,
+  SPARK_Mode
+is
    pragma Annotate (GNATprove, External_Axiomatization);
-   pragma Pure;
-   pragma SPARK_Mode (On);
 
    type Set (Capacity : Count_Type; Modulus : Hash_Type) is private with
      Iterable => (First       => First,
                   Next        => Next,
                   Has_Element => Has_Element,
-                  Element     => Element);
+                  Element     => Element),
+     Default_Initial_Condition;
    pragma Preelaborable_Initialization (Set);
 
    type Cursor is private;
@@ -308,6 +310,7 @@ package Ada.Containers.Formal_Hashed_Sets is
    end Generic_Keys;
 
    function Strict_Equal (Left, Right : Set) return Boolean with
+     Ghost,
      Global => null;
    --  Strict_Equal returns True if the containers are physically equal, i.e.
    --  they are structurally equal (function "=" returns True) and that they
@@ -315,10 +318,13 @@ package Ada.Containers.Formal_Hashed_Sets is
 
    function First_To_Previous  (Container : Set; Current : Cursor) return Set
    with
+     Ghost,
      Global => null,
      Pre    => Has_Element (Container, Current) or else Current = No_Element;
+
    function Current_To_Last (Container : Set; Current : Cursor) return Set
    with
+     Ghost,
      Global => null,
      Pre    => Has_Element (Container, Current) or else Current = No_Element;
    --  First_To_Previous returns a container containing all elements preceding
@@ -330,8 +336,9 @@ package Ada.Containers.Formal_Hashed_Sets is
    --  scanned yet.
 
 private
-   pragma Inline (Next);
    pragma SPARK_Mode (Off);
+
+   pragma Inline (Next);
 
    type Node_Type is
       record

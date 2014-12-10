@@ -1,3 +1,4 @@
+/* { dg-require-effective-target alloca } */
 int b;
 int foo (void)
 {

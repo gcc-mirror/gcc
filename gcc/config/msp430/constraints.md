@@ -58,7 +58,7 @@
        (match_code "label_ref" "0")))
 
 
-;; These are memory references that are safe to use with the X suffix,
+;; These are memory references that are safe to use without the X suffix,
 ;; because we know/assume they need not index across the 64k boundary.
 (define_constraint "Ys"
   "Memory reference, stack only."

@@ -35,9 +35,8 @@ void test02()
   const char* dir = LOCALEDIR;
 
   // basic construction
-  locale loc_c = locale::classic();
   locale loc_fr = locale("fr_FR");
-  VERIFY( loc_c != loc_fr );
+  VERIFY( locale::classic() != loc_fr );
 
   // cache the messages facets
   const messages<char>& mssg_fr = use_facet<messages<char> >(loc_fr); 
@@ -47,7 +46,7 @@ void test02()
   // void close(catalog) const;
 
   // Check French (fr_FR) locale.
-  catalog cat_fr = mssg_fr.open("libstdc++", loc_c, dir);
+  catalog cat_fr = mssg_fr.open("libstdc++", loc_fr, dir);
   string s01 = mssg_fr.get(cat_fr, 0, 0, "please");
   string s02 = mssg_fr.get(cat_fr, 0, 0, "thank you");
   VERIFY ( s01 == "s'il vous plaît" );

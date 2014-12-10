@@ -40,14 +40,29 @@
 #include "varasm.h"
 #include "calls.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "except.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "input.h"
 #include "function.h"
 #include "ggc.h"
 #include "target.h"
 #include "target-def.h"
 #include "tm_p.h"
 #include "langhooks.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "lcm.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "builtins.h"
 
@@ -87,7 +102,7 @@ moxie_function_value (const_tree valtype,
    We always return values in register $r0 for moxie.  */
 
 static rtx
-moxie_libcall_value (enum machine_mode mode,
+moxie_libcall_value (machine_mode mode,
                      const_rtx fun ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (mode, MOXIE_R0);
@@ -388,7 +403,7 @@ moxie_initial_elimination_offset (int from, int to)
 
 static void
 moxie_setup_incoming_varargs (cumulative_args_t cum_v,
-			      enum machine_mode mode ATTRIBUTE_UNUSED,
+			      machine_mode mode ATTRIBUTE_UNUSED,
 			      tree type ATTRIBUTE_UNUSED,
 			      int *pretend_size, int no_rtl)
 {
@@ -427,7 +442,7 @@ moxie_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
    NULL_RTX if there's no more space.  */
 
 static rtx
-moxie_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
+moxie_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		    const_tree type ATTRIBUTE_UNUSED,
 		    bool named ATTRIBUTE_UNUSED)
 {
@@ -444,7 +459,7 @@ moxie_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
    : (unsigned) int_size_in_bytes (TYPE))
 
 static void
-moxie_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
+moxie_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			    const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -459,7 +474,7 @@ moxie_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 
 static bool
 moxie_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			 enum machine_mode mode, const_tree type,
+			 machine_mode mode, const_tree type,
 			 bool named ATTRIBUTE_UNUSED)
 {
   unsigned HOST_WIDE_INT size;
@@ -482,7 +497,7 @@ moxie_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 
 static int
 moxie_arg_partial_bytes (cumulative_args_t cum_v,
-			 enum machine_mode mode,
+			 machine_mode mode,
 			 tree type, bool named)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -513,12 +528,9 @@ moxie_arg_partial_bytes (cumulative_args_t cum_v,
 /* Worker function for TARGET_STATIC_CHAIN.  */
 
 static rtx
-moxie_static_chain (const_tree fndecl, bool incoming_p)
+moxie_static_chain (const_tree ARG_UNUSED (fndecl_or_type), bool incoming_p)
 {
   rtx addr, mem;
-
-  if (!DECL_STATIC_CHAIN (fndecl))
-    return NULL;
 
   if (incoming_p)
     addr = plus_constant (Pmode, arg_pointer_rtx, 2 * UNITS_PER_WORD);

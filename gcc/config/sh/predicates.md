@@ -154,7 +154,7 @@
 
       return (regno != T_REG && regno != PR_REG
 	      && ! TARGET_REGISTER_P (regno)
-	      && regno != FPUL_REG
+	      && regno != FPUL_REG && regno != FPSCR_REG
 	      && regno != MACH_REG && regno != MACL_REG);
     }
   /* Allow a no-op sign extension - compare LOAD_EXTEND_OP.
@@ -347,13 +347,27 @@
 
 ;; Returns true if OP is the FPSCR.
 (define_predicate "fpscr_operand"
-  (match_code "reg")
+  (and (match_code "reg")
+       (match_test "REGNO (op) == FPSCR_REG")))
+
+;; Returns true if OP is a valid source operand for a FPSCR move insn.
+(define_predicate "fpscr_movsrc_operand"
+  (match_code "reg,subreg,mem")
 {
-  return (REG_P (op)
-	  && (REGNO (op) == FPSCR_REG
-	      || (REGNO (op) >= FIRST_PSEUDO_REGISTER
-		  && !(reload_in_progress || reload_completed)))
-	  && GET_MODE (op) == PSImode);
+  if (arith_reg_operand (op, mode))
+    return true;
+
+  return MEM_P (op) && GET_CODE (XEXP (op, 0)) == POST_INC;
+})
+
+;; Returns true if OP is a valid destination operand for a FPSCR move insn.
+(define_predicate "fpscr_movdst_operand"
+  (match_code "reg,subreg,mem")
+{
+  if (arith_reg_dest (op, mode))
+    return true;
+
+  return MEM_P (op) && GET_CODE (XEXP (op, 0)) == PRE_DEC;
 })
 
 ;; Returns true if OP is an operand that is either the fpul hard reg or
@@ -451,6 +465,9 @@
   if (t_reg_operand (op, mode))
     return 0;
 
+  if (fpscr_operand (op, mode))
+    return false;
+
   /* Disallow PC relative QImode loads, since these is no insn to do that
      and an imm8 load should be used instead.  */
   if (IS_PC_RELATIVE_LOAD_ADDR_P (op) && GET_MODE (op) == QImode)
@@ -545,6 +562,9 @@
 {
   if (t_reg_operand (op, mode))
     return 0;
+
+  if (fpscr_operand (op, mode))
+    return false;
 
   if (MEM_P (op))
     {
@@ -690,7 +710,7 @@
 ;;(define_special_predicate "int_gpr_dest"
 ;;  (match_code "subreg,reg")
 ;;{
-;;  enum machine_mode op_mode = GET_MODE (op);
+;;  machine_mode op_mode = GET_MODE (op);
 ;;
 ;;  if (GET_MODE_CLASS (op_mode) != MODE_INT
 ;;      || GET_MODE_SIZE (op_mode) >= UNITS_PER_WORD)
@@ -1002,7 +1022,7 @@
 (define_special_predicate "trunc_hi_operand"
   (match_code "subreg,reg,truncate")
 {
-  enum machine_mode op_mode = GET_MODE (op);
+  machine_mode op_mode = GET_MODE (op);
 
   if (op_mode != SImode && op_mode != DImode
       && op_mode != V4HImode && op_mode != V2SImode)
@@ -1074,14 +1094,14 @@
        (and (match_test "satisfies_constraint_I08 (op)")
 	    (match_test "mode != QImode")
 	    (match_test "mode != HImode")
-	    (match_test "TARGET_SH4A_ARCH"))))
+	    (match_test "TARGET_SH4A"))))
 
 (define_predicate "atomic_logical_operand"
   (ior (match_code "subreg,reg")
        (and (match_test "satisfies_constraint_K08 (op)")
 	    (match_test "mode != QImode")
 	    (match_test "mode != HImode")
-	    (match_test "TARGET_SH4A_ARCH"))))
+	    (match_test "TARGET_SH4A"))))
 
 ;; A predicate describing the T bit register in any form.
 (define_predicate "t_reg_operand"

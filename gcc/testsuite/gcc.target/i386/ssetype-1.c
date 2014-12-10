@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* This test checks for absolute memory operands.  */
 /* { dg-require-effective-target nonpic } */
-/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=k8" } } */
+/* { dg-skip-if "" { *-*-* } { "-march=*" } { "-march=k8" } } */
 /* { dg-options "-O2 -msse2 -march=k8" } */
 /* { dg-final { scan-assembler "andpd\[^\\n\]*magic" } } */
 /* { dg-final { scan-assembler "andnpd\[^\\n\]*magic" } } */
@@ -14,7 +14,7 @@
 
 #include <xmmintrin.h>
 
-static __m128d magic_a, magic_b;
+__m128d magic_a, magic_b;
 
 __m128d
 t1(void)

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ia32 } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -std=gnu89" } */
 
 typedef __builtin_va_list __va_list;
 typedef __va_list __gnuc_va_list;

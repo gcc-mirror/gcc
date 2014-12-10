@@ -3,7 +3,7 @@
    i is first extended to 64-bit type).  */
 
 /* { dg-options "-O2 -fdump-tree-optimized" } */
-/* { dg-do compile { target x86_64-*-* } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 
 unsigned bar(void);
 

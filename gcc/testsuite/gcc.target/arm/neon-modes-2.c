@@ -11,6 +11,8 @@
 
 #define MANY(A) A (0), A (1), A (2), A (3), A (4), A (5)
 
+extern void foo (int *, int *);
+
 void
 bar (uint32_t *ptr, int y)
 {

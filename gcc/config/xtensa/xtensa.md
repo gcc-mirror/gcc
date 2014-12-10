@@ -35,6 +35,8 @@
   (UNSPEC_TLS_CALL	9)
   (UNSPEC_TP		10)
   (UNSPEC_MEMW		11)
+  (UNSPEC_LSETUP_START  12)
+  (UNSPEC_LSETUP_END    13)
 
   (UNSPECV_SET_FP	1)
   (UNSPECV_ENTRY	2)
@@ -82,7 +84,7 @@
 ;; Attributes.
 
 (define_attr "type"
-  "unknown,jump,call,load,store,move,arith,multi,nop,farith,fmadd,fdiv,fsqrt,fconv,fload,fstore,mul16,mul32,div32,mac16,rsr,wsr,entry"
+  "unknown,jump,call,load,store,move,arith,multi,nop,farith,fmadd,fconv,fload,fstore,mul16,mul32,div32,mac16,rsr,wsr,entry"
   (const_string "unknown"))
 
 (define_attr "mode"
@@ -360,26 +362,6 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn "divsf3"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(div:SF (match_operand:SF 1 "register_operand" "f")
-		(match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT_DIV"
-  "div.s\t%0, %1, %2"
-  [(set_attr "type"	"fdiv")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3")])
-
-(define_insn "*recipsf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
-		(match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT_RECIP && flag_unsafe_math_optimizations"
-  "recip.s\t%0, %2"
-  [(set_attr "type"	"fdiv")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3")])
-
 
 ;; Remainders.
 
@@ -401,28 +383,6 @@
   "remu\t%0, %1, %2"
   [(set_attr "type"	"div32")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"3")])
-
-
-;; Square roots.
-
-(define_insn "sqrtsf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(sqrt:SF (match_operand:SF 1 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT_SQRT"
-  "sqrt.s\t%0, %1"
-  [(set_attr "type"	"fsqrt")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3")])
-
-(define_insn "*rsqrtsf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
-		(sqrt:SF (match_operand:SF 2 "register_operand" "f"))))]
-  "TARGET_HARD_FLOAT_RSQRT && flag_unsafe_math_optimizations"
-  "rsqrt.s\t%0, %2"
-  [(set_attr "type"	"fsqrt")
-   (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
 
@@ -964,7 +924,7 @@
 			 (match_operand:SI 2 "fpmem_offset_operand" "i"))))
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT && !TARGET_HARD_FLOAT_POSTINC"
 {
   if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
     output_asm_insn ("memw", operands);
@@ -980,11 +940,43 @@
 	(match_operand:SF 2 "register_operand" "f"))
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (match_dup 1)))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT && !TARGET_HARD_FLOAT_POSTINC"
 {
   if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
     output_asm_insn ("memw", operands);
   return "ssiu\t%2, %0, %1";
+}
+  [(set_attr "type"	"fstore")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "*lsip"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(mem:SF (match_operand:SI 1 "register_operand" "+a")))
+   (set (match_dup 1)
+	(plus:SI (match_dup 1)
+		 (match_operand:SI 2 "fpmem_offset_operand" "i")))]
+  "TARGET_HARD_FLOAT && TARGET_HARD_FLOAT_POSTINC"
+{
+  if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
+    output_asm_insn ("memw", operands);
+  return "lsip\t%0, %1, %2";
+}
+  [(set_attr "type"	"fload")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "*ssip"
+  [(set (mem:SF (match_operand:SI 0 "register_operand" "+a"))
+	(match_operand:SF 1 "register_operand" "f"))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0)
+		 (match_operand:SI 2 "fpmem_offset_operand" "i")))]
+  "TARGET_HARD_FLOAT && TARGET_HARD_FLOAT_POSTINC"
+{
+  if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
+    output_asm_insn ("memw", operands);
+  return "ssip\t%1, %0, %2";
 }
   [(set_attr "type"	"fstore")
    (set_attr "mode"	"SF")
@@ -1289,40 +1281,119 @@
    (set_attr "length"	"3")])
 
 
+;; Zero-overhead looping support.
+
 ;; Define the loop insns used by bct optimization to represent the
-;; start and end of a zero-overhead loop (in loop.c).  This start
-;; template generates the loop insn; the end template doesn't generate
-;; any instructions since loop end is handled in hardware.
+;; start and end of a zero-overhead loop.  This start template generates
+;; the loop insn; the end template doesn't generate any instructions since
+;; loop end is handled in hardware.
 
 (define_insn "zero_cost_loop_start"
   [(set (pc)
-	(if_then_else (eq (match_operand:SI 0 "register_operand" "a")
-			  (const_int 0))
-		      (label_ref (match_operand 1 "" ""))
-		      (pc)))
-   (set (reg:SI 19)
-	(plus:SI (match_dup 0) (const_int -1)))]
-  ""
-  "loopnez\t%0, %l1"
+        (if_then_else (ne (match_operand:SI 0 "register_operand" "2")
+                          (const_int 1))
+                      (label_ref (match_operand 1 "" ""))
+                      (pc)))
+   (set (match_operand:SI 2 "register_operand" "=a")
+        (plus (match_dup 0)
+              (const_int -1)))
+   (unspec [(const_int 0)] UNSPEC_LSETUP_START)]
+  "TARGET_LOOPS && optimize"
+  "loop\t%0, %l1_LEND"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
 
 (define_insn "zero_cost_loop_end"
   [(set (pc)
-	(if_then_else (ne (reg:SI 19) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))
-   (set (reg:SI 19)
-	(plus:SI (reg:SI 19) (const_int -1)))]
-  ""
+        (if_then_else (ne (match_operand:SI 0 "nonimmediate_operand" "2,2")
+                          (const_int 1))
+                      (label_ref (match_operand 1 "" ""))
+                      (pc)))
+   (set (match_operand:SI 2 "nonimmediate_operand" "=a,m")
+        (plus (match_dup 0)
+              (const_int -1)))
+   (unspec [(const_int 0)] UNSPEC_LSETUP_END)
+   (clobber (match_scratch:SI 3 "=X,&r"))]
+  "TARGET_LOOPS && optimize"
+  "#"
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"0")])
+
+(define_insn "loop_end"
+  [(set (pc)
+        (if_then_else (ne (match_operand:SI 0 "register_operand" "2")
+                          (const_int 1))
+                      (label_ref (match_operand 1 "" ""))
+                      (pc)))
+   (set (match_operand:SI 2 "register_operand" "=a")
+        (plus (match_dup 0)
+              (const_int -1)))
+   (unspec [(const_int 0)] UNSPEC_LSETUP_END)]
+  "TARGET_LOOPS && optimize"
 {
-    xtensa_emit_loop_end (insn, operands);
-    return "";
+  xtensa_emit_loop_end (insn, operands);
+  return "";
 }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set_attr "length"	"0")])
+
+(define_split
+  [(set (pc)
+        (if_then_else (ne (match_operand:SI 0 "nonimmediate_operand" "")
+                          (const_int 1))
+                      (label_ref (match_operand 1 "" ""))
+                      (pc)))
+   (set (match_operand:SI 2 "nonimmediate_operand" "")
+        (plus:SI (match_dup 0)
+                 (const_int -1)))
+   (unspec [(const_int 0)] UNSPEC_LSETUP_END)
+   (clobber (match_scratch 3))]
+  "TARGET_LOOPS && optimize && reload_completed"
+  [(const_int 0)]
+{
+  if (!REG_P (operands[0]))
+    {
+      rtx test;
+
+      /* Fallback into a normal conditional branch insn.  */
+      emit_move_insn (operands[3], operands[0]);
+      emit_insn (gen_addsi3 (operands[3], operands[3], constm1_rtx));
+      emit_move_insn (operands[0], operands[3]);
+      test = gen_rtx_NE (VOIDmode, operands[3], const0_rtx);
+      emit_jump_insn (gen_cbranchsi4 (test, operands[3],
+                                      const0_rtx, operands[1]));
+    }
+  else
+    {
+      emit_jump_insn (gen_loop_end (operands[0], operands[1], operands[2]));
+    }
+
+  DONE;
+})
+
+; operand 0 is the loop count pseudo register
+; operand 1 is the label to jump to at the top of the loop
+(define_expand "doloop_end"
+  [(parallel [(set (pc) (if_then_else
+                          (ne (match_operand:SI 0 "" "")
+                              (const_int 1))
+                          (label_ref (match_operand 1 "" ""))
+                          (pc)))
+              (set (match_dup 0)
+                   (plus:SI (match_dup 0)
+                            (const_int -1)))
+              (unspec [(const_int 0)] UNSPEC_LSETUP_END)
+              (clobber (match_dup 2))])] ; match_scratch
+  "TARGET_LOOPS && optimize"
+{
+  /* The loop optimizer doesn't check the predicates... */
+  if (GET_MODE (operands[0]) != SImode)
+    FAIL;
+  operands[2] = gen_rtx_SCRATCH (SImode);
+})
 
 
 ;; Setting a register from a comparison.

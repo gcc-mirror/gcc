@@ -15,6 +15,7 @@ struct d_growable_string
 {
   size_t alc;
 };
+void
 d_growable_string_resize (struct d_growable_string *dgs, size_t need)
 {
   size_t newalc;
@@ -22,6 +23,7 @@ d_growable_string_resize (struct d_growable_string *dgs, size_t need)
   while (newalc < need)
     newalc <<= 1;
 }
+void
 d_growable_string_append_buffer (struct d_growable_string *dgs,
                                  const char *s, size_t l)
 {

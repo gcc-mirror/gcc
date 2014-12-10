@@ -77,7 +77,8 @@ package Prj is
       Empty_Value,         --  Empty string or empty string list
       Dot_Value,           --  "." or (".")
       Object_Dir_Value,    --  'Object_Dir
-      Target_Value);       --  'Target (special rules)
+      Target_Value,        --  'Target (special rules)
+      Runtime_Value);      --  'Runtime (special rules)
    --  Describe the default values of attributes that are referenced but not
    --  declared.
 
@@ -1891,6 +1892,11 @@ package Prj is
    --       * user project sets Project.IDE'gnatls attribute to a cross gnatls
    --       * user project also includes a "with" that can only be resolved
    --         once we have found the gnatls
+
+   procedure Set_Ignore_Missing_With
+     (Flags : in out Processing_Flags;
+      Value : Boolean);
+   --  Set the value of component Ignore_Missing_With in Flags to Value
 
    Gprbuild_Flags   : constant Processing_Flags;
    Gprinstall_Flags : constant Processing_Flags;

@@ -25,18 +25,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "flags.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "insn-config.h"
 #include "insn-attr.h"
 /* Include expr.h after insn-config.h so we get HAVE_conditional_move.  */
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "langhooks.h"
 #include "ggc.h"
+#include "predict.h"
 #include "basic-block.h"
 #include "tm_p.h"
 
-static bool prefer_and_bit_test (enum machine_mode, int);
+static bool prefer_and_bit_test (machine_mode, int);
 static void do_jump_by_parts_greater (tree, tree, int, rtx, rtx, int);
 static void do_jump_by_parts_equality (tree, tree, rtx, rtx, int);
 static void do_compare_and_jump	(tree, tree, enum rtx_code, enum rtx_code, rtx,
@@ -163,7 +171,7 @@ static GTY(()) rtx shift_test;
    is preferred.  */
 
 static bool
-prefer_and_bit_test (enum machine_mode mode, int bitnum)
+prefer_and_bit_test (machine_mode mode, int bitnum)
 {
   bool speed_p;
   wide_int mask = wi::set_bit_in_zero (bitnum, GET_MODE_PRECISION (mode));
@@ -203,7 +211,7 @@ void
 do_jump_1 (enum tree_code code, tree op0, tree op1,
 	   rtx if_false_label, rtx if_true_label, int prob)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   rtx_code_label *drop_through_label = 0;
 
   switch (code)
@@ -425,7 +433,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label, int prob)
   rtx temp;
   int i;
   tree type;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx_code_label *drop_through_label = 0;
 
   switch (code)
@@ -659,7 +667,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label, int prob)
    Jump to IF_TRUE_LABEL if OP0 is greater, IF_FALSE_LABEL otherwise.  */
 
 static void
-do_jump_by_parts_greater_rtx (enum machine_mode mode, int unsignedp, rtx op0,
+do_jump_by_parts_greater_rtx (machine_mode mode, int unsignedp, rtx op0,
 			      rtx op1, rtx if_false_label, rtx if_true_label,
 			      int prob)
 {
@@ -740,7 +748,7 @@ do_jump_by_parts_greater (tree treeop0, tree treeop1, int swap,
 {
   rtx op0 = expand_normal (swap ? treeop1 : treeop0);
   rtx op1 = expand_normal (swap ? treeop0 : treeop1);
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (treeop0));
+  machine_mode mode = TYPE_MODE (TREE_TYPE (treeop0));
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (treeop0));
 
   do_jump_by_parts_greater_rtx (mode, unsignedp, op0, op1, if_false_label,
@@ -753,7 +761,7 @@ do_jump_by_parts_greater (tree treeop0, tree treeop1, int swap,
    to indicate drop through.  */
 
 static void
-do_jump_by_parts_zero_rtx (enum machine_mode mode, rtx op0,
+do_jump_by_parts_zero_rtx (machine_mode mode, rtx op0,
 			   rtx if_false_label, rtx if_true_label, int prob)
 {
   int nwords = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
@@ -802,7 +810,7 @@ do_jump_by_parts_zero_rtx (enum machine_mode mode, rtx op0,
    to indicate drop through.  */
 
 static void
-do_jump_by_parts_equality_rtx (enum machine_mode mode, rtx op0, rtx op1,
+do_jump_by_parts_equality_rtx (machine_mode mode, rtx op0, rtx op1,
 			       rtx if_false_label, rtx if_true_label, int prob)
 {
   int nwords = (GET_MODE_SIZE (mode) / UNITS_PER_WORD);
@@ -846,7 +854,7 @@ do_jump_by_parts_equality (tree treeop0, tree treeop1, rtx if_false_label,
 {
   rtx op0 = expand_normal (treeop0);
   rtx op1 = expand_normal (treeop1);
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (treeop0));
+  machine_mode mode = TYPE_MODE (TREE_TYPE (treeop0));
   do_jump_by_parts_equality_rtx (mode, op0, op1, if_false_label,
 				 if_true_label, prob);
 }
@@ -860,7 +868,7 @@ do_jump_by_parts_equality (tree treeop0, tree treeop1, rtx if_false_label,
    the conditions must be ANDed, false if they must be ORed.  */
 
 bool
-split_comparison (enum rtx_code code, enum machine_mode mode,
+split_comparison (enum rtx_code code, machine_mode mode,
 		  enum rtx_code *code1, enum rtx_code *code2)
 {
   switch (code)
@@ -937,7 +945,7 @@ split_comparison (enum rtx_code code, enum machine_mode mode,
 
 void
 do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
-			 enum machine_mode mode, rtx size, rtx if_false_label,
+			 machine_mode mode, rtx size, rtx if_false_label,
 			 rtx if_true_label, int prob)
 {
   rtx tem;
@@ -1158,7 +1166,7 @@ do_compare_and_jump (tree treeop0, tree treeop1, enum rtx_code signed_code,
 {
   rtx op0, op1;
   tree type;
-  enum machine_mode mode;
+  machine_mode mode;
   int unsignedp;
   enum rtx_code code;
 

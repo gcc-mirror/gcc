@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++1y" }
+// { dg-options "-std=gnu++14" }
 // XFAIL pending resolution of PR libstdc++/58777
 // { dg-do compile { xfail *-*-* } }
 // { dg-excess-errors "" }
@@ -21,11 +21,12 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <experimental/optional>
-#include <testsuite_hooks.h>
 
 struct value_type
 {
   int i;
+
+  void* operator&() { return nullptr; } // N.B. non-const
 };
 
 int main()

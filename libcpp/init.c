@@ -95,25 +95,21 @@ struct lang_flags
 static const struct lang_flags lang_defaults[] =
 { /*              c99 c++ xnum xid c11 std digr ulit rlit udlit bincst digsep trig */
   /* GNUC89   */  { 0,  0,  1,  0,  0,  0,  1,   0,   0,   0,    0,     0,     0 },
-  /* GNUC99   */  { 1,  0,  1,  0,  0,  0,  1,   1,   1,   0,    0,     0,     0 },
-  /* GNUC11   */  { 1,  0,  1,  0,  1,  0,  1,   1,   1,   0,    0,     0,     0 },
+  /* GNUC99   */  { 1,  0,  1,  1,  0,  0,  1,   1,   1,   0,    0,     0,     0 },
+  /* GNUC11   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0 },
   /* STDC89   */  { 0,  0,  0,  0,  0,  1,  0,   0,   0,   0,    0,     0,     1 },
   /* STDC94   */  { 0,  0,  0,  0,  0,  1,  1,   0,   0,   0,    0,     0,     1 },
-  /* STDC99   */  { 1,  0,  1,  0,  0,  1,  1,   0,   0,   0,    0,     0,     1 },
-  /* STDC11   */  { 1,  0,  1,  0,  1,  1,  1,   1,   0,   0,    0,     0,     1 },
-  /* GNUCXX   */  { 0,  1,  1,  0,  0,  0,  1,   0,   0,   0,    0,     0,     0 },
-  /* CXX98    */  { 0,  1,  0,  0,  0,  1,  1,   0,   0,   0,    0,     0,     1 },
-  /* GNUCXX11 */  { 1,  1,  1,  0,  1,  0,  1,   1,   1,   1,    0,     0,     0 },
-  /* CXX11    */  { 1,  1,  1,  0,  1,  1,  1,   1,   1,   1,    0,     0,     1 },
-  /* GNUCXX14 */  { 1,  1,  1,  0,  1,  0,  1,   1,   1,   1,    1,     1,     0 },
-  /* CXX14    */  { 1,  1,  1,  0,  1,  1,  1,   1,   1,   1,    1,     1,     1 },
-  /* GNUCXX1Z */  { 1,  1,  1,  0,  1,  0,  1,   1,   1,   1,    1,     1,     0 },
-  /* CXX1Z    */  { 1,  1,  1,  0,  1,  1,  1,   1,   1,   1,    1,     1,     0 },
+  /* STDC99   */  { 1,  0,  1,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1 },
+  /* STDC11   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1 },
+  /* GNUCXX   */  { 0,  1,  1,  1,  0,  0,  1,   0,   0,   0,    0,     0,     0 },
+  /* CXX98    */  { 0,  1,  0,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1 },
+  /* GNUCXX11 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    0,     0,     0 },
+  /* CXX11    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    0,     0,     1 },
+  /* GNUCXX14 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0 },
+  /* CXX14    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     1 },
+  /* GNUCXX1Z */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0 },
+  /* CXX1Z    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0 },
   /* ASM      */  { 0,  0,  1,  0,  0,  0,  0,   0,   0,   0,    0,     0,     0 }
-  /* xid should be 1 for GNUC99, STDC99, GNUCXX, CXX98, GNUCXX11, CXX11,
-     GNUCXX14, and CXX14 when no longer experimental (when all uses of
-     identifiers in the compiler have been audited for correct handling
-     of extended identifiers).  */
 };
 
 /* Sets internal flags correctly for a given language.  */
@@ -262,9 +258,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   _cpp_expand_op_stack (pfile);
 
   /* Initialize the buffer obstack.  */
-  _obstack_begin (&pfile->buffer_ob, 0, 0,
-		  (void *(*) (long)) xmalloc,
-		  (void (*) (void *)) free);
+  obstack_specify_allocation (&pfile->buffer_ob, 0, 0, xmalloc, free);
 
   _cpp_init_files (pfile);
 

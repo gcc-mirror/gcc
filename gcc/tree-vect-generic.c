@@ -24,6 +24,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "tm.h"
 #include "langhooks.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -45,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Need to include rtl.h, expr.h, etc. for optabs.  */
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 
 
@@ -275,7 +286,7 @@ expand_vector_parallel (gimple_stmt_iterator *gsi, elem_op_func f, tree type,
 			enum tree_code code)
 {
   tree result, compute_type;
-  enum machine_mode mode;
+  machine_mode mode;
   int n_words = tree_to_uhwi (TYPE_SIZE_UNIT (type)) / UNITS_PER_WORD;
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
@@ -628,9 +639,9 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 					((unsigned HOST_WIDE_INT) 1
 					 << shifts[i]) - 1);
 	      cst = build_vector (type, vec);
-	      addend = make_ssa_name (type, NULL);
-	      stmt = gimple_build_assign_with_ops (VEC_COND_EXPR, addend,
-						   cond, cst, zero);
+	      addend = make_ssa_name (type);
+	      stmt = gimple_build_assign (addend, VEC_COND_EXPR, cond,
+					  cst, zero);
 	      gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
 	    }
 	}
@@ -835,7 +846,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 static void
 expand_vector_condition (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gassign *stmt = as_a <gassign *> (gsi_stmt (*gsi));
   tree type = gimple_expr_type (stmt);
   tree a = gimple_assign_rhs1 (stmt);
   tree a1 = a;
@@ -898,9 +909,9 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
 
 static tree
 expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type,
-			 gimple assign, enum tree_code code)
+			 gassign *assign, enum tree_code code)
 {
-  enum machine_mode compute_mode = TYPE_MODE (compute_type);
+  machine_mode compute_mode = TYPE_MODE (compute_type);
 
   /* If the compute mode is not a vector mode (hence we are not decomposing
      a BLKmode vector to smaller, hardware-supported vectors), we may want
@@ -1004,7 +1015,7 @@ expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type
 static void
 optimize_vector_constructor (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gassign *stmt = as_a <gassign *> (gsi_stmt (*gsi));
   tree lhs = gimple_assign_lhs (stmt);
   tree rhs = gimple_assign_rhs1 (stmt);
   tree type = TREE_TYPE (rhs);
@@ -1069,10 +1080,10 @@ optimize_vector_constructor (gimple_stmt_iterator *gsi)
     }
   for (i = 0; i < nelts; i++)
     CONSTRUCTOR_ELT (rhs, i)->value = base;
-  g = gimple_build_assign (make_ssa_name (type, NULL), rhs);
+  g = gimple_build_assign (make_ssa_name (type), rhs);
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
-  g = gimple_build_assign_with_ops (PLUS_EXPR, lhs, gimple_assign_lhs (g),
-				    build_vector (type, cst));
+  g = gimple_build_assign (lhs, PLUS_EXPR, gimple_assign_lhs (g),
+			   build_vector (type, cst));
   gsi_replace (gsi, g, false);
 }
 
@@ -1082,8 +1093,8 @@ optimize_vector_constructor (gimple_stmt_iterator *gsi)
 static tree
 type_for_widest_vector_mode (tree type, optab op)
 {
-  enum machine_mode inner_mode = TYPE_MODE (type);
-  enum machine_mode best_mode = VOIDmode, mode;
+  machine_mode inner_mode = TYPE_MODE (type);
+  machine_mode best_mode = VOIDmode, mode;
   int best_nunits = 0;
 
   if (SCALAR_FLOAT_MODE_P (inner_mode))
@@ -1219,7 +1230,7 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
 static void
 lower_vec_perm (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gassign *stmt = as_a <gassign *> (gsi_stmt (*gsi));
   tree mask = gimple_assign_rhs3 (stmt);
   tree vec0 = gimple_assign_rhs1 (stmt);
   tree vec1 = gimple_assign_rhs2 (stmt);
@@ -1361,7 +1372,7 @@ get_compute_type (enum tree_code code, optab op, tree type)
      so skip these checks.  */
   if (compute_type == type)
     {
-      enum machine_mode compute_mode = TYPE_MODE (compute_type);
+      machine_mode compute_mode = TYPE_MODE (compute_type);
       if (VECTOR_MODE_P (compute_mode))
 	{
 	  if (op && optab_handler (op, compute_mode) != CODE_FOR_nothing)
@@ -1392,14 +1403,15 @@ count_type_subparts (tree type)
 static void
 expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
   tree lhs, rhs1, rhs2 = NULL, type, compute_type = NULL_TREE;
   enum tree_code code;
   optab op = unknown_optab;
   enum gimple_rhs_class rhs_class;
   tree new_rhs;
 
-  if (gimple_code (stmt) != GIMPLE_ASSIGN)
+  /* Only consider code == GIMPLE_ASSIGN. */
+  gassign *stmt = dyn_cast <gassign *> (gsi_stmt (*gsi));
+  if (!stmt)
     return;
 
   code = gimple_assign_rhs_code (stmt);
@@ -1439,13 +1451,11 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   if (TREE_CODE (type) != VECTOR_TYPE)
     return;
 
-  if (code == NOP_EXPR
+  if (CONVERT_EXPR_CODE_P (code)
       || code == FLOAT_EXPR
       || code == FIX_TRUNC_EXPR
       || code == VIEW_CONVERT_EXPR)
     return;
-
-  gcc_assert (code != CONVERT_EXPR);
 
   /* The signedness is determined from input argument.  */
   if (code == VEC_UNPACK_FLOAT_HI_EXPR
@@ -1595,7 +1605,6 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   if (compute_type == type)
     return;
 
-  gcc_assert (code != VEC_LSHIFT_EXPR && code != VEC_RSHIFT_EXPR);
   new_rhs = expand_vector_operation (gsi, type, compute_type, stmt, code);
 
   /* Leave expression untouched for later expansion.  */

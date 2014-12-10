@@ -41,6 +41,7 @@ test (const unsigned char *s1, const unsigned char *s2, size_t len, int expected
     __builtin_abort ();
 }
 
+int
 main ()
 {
   size_t off1, off2, len, i;

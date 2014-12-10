@@ -45,7 +45,8 @@ extern void avr_init_cumulative_args (CUMULATIVE_ARGS*, tree, rtx, tree);
 #endif /* TREE_CODE */
 
 #ifdef RTX_CODE
-extern int avr_hard_regno_call_part_clobbered (unsigned, enum machine_mode);
+extern int avr_hard_regno_call_part_clobbered (unsigned, machine_mode);
+extern bool tiny_valid_direct_memory_access_range(rtx, machine_mode);
 extern const char *output_movqi (rtx_insn *insn, rtx operands[], int *l);
 extern const char *output_movhi (rtx_insn *insn, rtx operands[], int *l);
 extern const char *output_movsisf (rtx_insn *insn, rtx operands[], int *l);
@@ -56,6 +57,7 @@ extern const char *avr_out_compare (rtx_insn *, rtx*, int*);
 extern const char *avr_out_compare64 (rtx_insn *, rtx*, int*);
 extern const char *ret_cond_branch (rtx x, int len, int reverse);
 extern const char *avr_out_movpsi (rtx_insn *, rtx*, int*);
+extern const char *avr_out_sign_extend (rtx_insn *, rtx*, int*);
 
 extern const char *ashlqi3_out (rtx_insn *insn, rtx operands[], int *len);
 extern const char *ashlhi3_out (rtx_insn *insn, rtx operands[], int *len);
@@ -109,23 +111,32 @@ extern int avr_jump_mode (rtx x, rtx_insn *insn);
 extern int test_hard_reg_class (enum reg_class rclass, rtx x);
 extern int jump_over_one_insn_p (rtx_insn *insn, rtx dest);
 
-extern int avr_hard_regno_mode_ok (int regno, enum machine_mode mode);
+extern int avr_hard_regno_mode_ok (int regno, machine_mode mode);
 extern void avr_final_prescan_insn (rtx_insn *insn, rtx *operand,
 				    int num_operands);
-extern int avr_simplify_comparison_p (enum machine_mode mode,
+extern int avr_simplify_comparison_p (machine_mode mode,
 				      RTX_CODE op, rtx x);
 extern RTX_CODE avr_normalize_condition (RTX_CODE condition);
 extern void out_shift_with_cnt (const char *templ, rtx_insn *insn,
 				rtx operands[], int *len, int t_len);
-extern enum reg_class avr_mode_code_base_reg_class (enum machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
-extern bool avr_regno_mode_code_ok_for_base_p (int, enum machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
+extern enum reg_class avr_mode_code_base_reg_class (machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
+extern bool avr_regno_mode_code_ok_for_base_p (int, machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
 extern rtx avr_incoming_return_addr_rtx (void);
-extern rtx avr_legitimize_reload_address (rtx*, enum machine_mode, int, int, int, int, rtx (*)(rtx,int));
+extern rtx avr_legitimize_reload_address (rtx*, machine_mode, int, int, int, int, rtx (*)(rtx,int));
 extern bool avr_mem_flash_p (rtx);
 extern bool avr_mem_memx_p (rtx);
 extern bool avr_load_libgcc_p (rtx);
-extern bool avr_xload_libgcc_p (enum machine_mode);
+extern bool avr_xload_libgcc_p (machine_mode);
 extern rtx avr_eval_addr_attrib (rtx x);
+
+static inline unsigned
+regmask (machine_mode mode, unsigned regno)
+{
+  return ((1u << GET_MODE_SIZE (mode)) - 1) << regno;
+}
+
+extern void avr_fix_inputs (rtx*, unsigned, unsigned);
+extern bool avr_emit3_fix_outputs (rtx (*)(rtx,rtx,rtx), rtx*, unsigned, unsigned);
 
 extern rtx lpm_reg_rtx;
 extern rtx lpm_addr_reg_rtx;

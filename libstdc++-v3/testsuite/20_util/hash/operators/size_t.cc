@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // 2007-08-20  <benjamin@redhat.com>
 //
 // Copyright (C) 2007-2014 Free Software Foundation, Inc.

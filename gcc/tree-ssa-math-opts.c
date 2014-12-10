@@ -90,6 +90,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "flags.h"
 #include "tree.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -119,6 +129,7 @@ along with GCC; see the file COPYING3.  If not see
 /* FIXME: RTL headers have to be included here for optabs.  */
 #include "rtl.h"		/* Because optabs.h wants enum rtx_code.  */
 #include "expr.h"		/* Because optabs.h wants sepops.  */
+#include "insn-codes.h"
 #include "optabs.h"
 
 /* This structure represents one basic block that either computes a
@@ -356,7 +367,7 @@ insert_reciprocals (gimple_stmt_iterator *def_gsi, struct occurrence *occ,
 		    tree def, tree recip_def, int threshold)
 {
   tree type;
-  gimple new_stmt;
+  gassign *new_stmt;
   gimple_stmt_iterator gsi;
   struct occurrence *occ_child;
 
@@ -367,8 +378,8 @@ insert_reciprocals (gimple_stmt_iterator *def_gsi, struct occurrence *occ,
       /* Make a variable with the replacement and substitute it.  */
       type = TREE_TYPE (def);
       recip_def = create_tmp_reg (type, "reciptmp");
-      new_stmt = gimple_build_assign_with_ops (RDIV_EXPR, recip_def,
-					       build_one_cst (type), def);
+      new_stmt = gimple_build_assign (recip_def, RDIV_EXPR,
+				      build_one_cst (type), def);
 
       if (occ->bb_has_division)
         {
@@ -566,20 +577,20 @@ pass_cse_reciprocals::execute (function *fun)
 
   FOR_EACH_BB_FN (bb, fun)
     {
-      gimple_stmt_iterator gsi;
-      gimple phi;
       tree def;
 
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
-	  phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  def = PHI_RESULT (phi);
 	  if (! virtual_operand_p (def)
 	      && FLOAT_TYPE_P (TREE_TYPE (def)))
 	    execute_cse_reciprocals_1 (NULL, def);
 	}
 
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_after_labels (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
         {
 	  gimple stmt = gsi_stmt (gsi);
 
@@ -594,7 +605,8 @@ pass_cse_reciprocals::execute (function *fun)
         continue;
 
       /* Scan for a/func(b) and convert it to reciprocal a*rfunc(b).  */
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_after_labels (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
         {
 	  gimple stmt = gsi_stmt (gsi);
 	  tree fndecl;
@@ -728,7 +740,7 @@ execute_cse_sincos_1 (tree name)
   tree fndecl, res, type;
   gimple def_stmt, use_stmt, stmt;
   int seen_cos = 0, seen_sin = 0, seen_cexpi = 0;
-  vec<gimple> stmts = vNULL;
+  auto_vec<gimple> stmts;
   basic_block top_bb = NULL;
   int i;
   bool cfg_changed = false;
@@ -761,10 +773,7 @@ execute_cse_sincos_1 (tree name)
     }
 
   if (seen_cos + seen_sin + seen_cexpi <= 1)
-    {
-      stmts.release ();
-      return false;
-    }
+    return false;
 
   /* Simply insert cexpi at the beginning of top_bb but not earlier than
      the name def statement.  */
@@ -822,8 +831,6 @@ execute_cse_sincos_1 (tree name)
 	if (gimple_purge_dead_eh_edges (gimple_bb (stmt)))
 	  cfg_changed = true;
     }
-
-  stmts.release ();
 
   return cfg_changed;
 }
@@ -972,7 +979,7 @@ powi_as_mults_1 (gimple_stmt_iterator *gsi, location_t loc, tree type,
 {
   tree op0, op1, ssa_target;
   unsigned HOST_WIDE_INT digit;
-  gimple mult_stmt;
+  gassign *mult_stmt;
 
   if (n < POWI_TABLE_SIZE && cache[n])
     return cache[n];
@@ -997,7 +1004,7 @@ powi_as_mults_1 (gimple_stmt_iterator *gsi, location_t loc, tree type,
       op1 = op0;
     }
 
-  mult_stmt = gimple_build_assign_with_ops (MULT_EXPR, ssa_target, op0, op1);
+  mult_stmt = gimple_build_assign (ssa_target, MULT_EXPR, op0, op1);
   gimple_set_location (mult_stmt, loc);
   gsi_insert_before (gsi, mult_stmt, GSI_SAME_STMT);
 
@@ -1012,7 +1019,7 @@ powi_as_mults (gimple_stmt_iterator *gsi, location_t loc,
 	       tree arg0, HOST_WIDE_INT n)
 {
   tree cache[POWI_TABLE_SIZE], result, type = TREE_TYPE (arg0);
-  gimple div_stmt;
+  gassign *div_stmt;
   tree target;
 
   if (n == 0)
@@ -1027,9 +1034,8 @@ powi_as_mults (gimple_stmt_iterator *gsi, location_t loc,
 
   /* If the original exponent was negative, reciprocate the result.  */
   target = make_temp_ssa_name (type, NULL, "powmult");
-  div_stmt = gimple_build_assign_with_ops (RDIV_EXPR, target, 
-					   build_real (type, dconst1),
-					   result);
+  div_stmt = gimple_build_assign (target, RDIV_EXPR,
+				  build_real (type, dconst1), result);
   gimple_set_location (div_stmt, loc);
   gsi_insert_before (gsi, div_stmt, GSI_SAME_STMT);
 
@@ -1065,7 +1071,7 @@ static tree
 build_and_insert_call (gimple_stmt_iterator *gsi, location_t loc,
 		       tree fn, tree arg)
 {
-  gimple call_stmt;
+  gcall *call_stmt;
   tree ssa_target;
 
   call_stmt = gimple_build_call (fn, 1, arg);
@@ -1088,7 +1094,7 @@ build_and_insert_binop (gimple_stmt_iterator *gsi, location_t loc,
 			tree arg0, tree arg1)
 {
   tree result = make_temp_ssa_name (TREE_TYPE (arg0), NULL, name);
-  gimple stmt = gimple_build_assign_with_ops (code, result, arg0, arg1);
+  gassign *stmt = gimple_build_assign (result, code, arg0, arg1);
   gimple_set_location (stmt, loc);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
   return result;
@@ -1117,8 +1123,8 @@ static tree
 build_and_insert_cast (gimple_stmt_iterator *gsi, location_t loc,
 		       tree type, tree val)
 {
-  tree result = make_ssa_name (type, NULL);
-  gimple stmt = gimple_build_assign_with_ops (NOP_EXPR, result, val, NULL_TREE);
+  tree result = make_ssa_name (type);
+  gassign *stmt = gimple_build_assign (result, NOP_EXPR, val);
   gimple_set_location (stmt, loc);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
   return result;
@@ -1137,7 +1143,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   REAL_VALUE_TYPE c2, dconst3;
   HOST_WIDE_INT n;
   tree type, sqrtfn, cbrtfn, sqrt_arg0, sqrt_sqrt, result, cbrt_x, powi_cbrt_x;
-  enum machine_mode mode;
+  machine_mode mode;
   bool hw_sqrt_exists, c_is_int, c2_is_int;
 
   /* If the exponent isn't a constant, there's nothing of interest
@@ -1377,7 +1383,7 @@ gimple_expand_builtin_cabs (gimple_stmt_iterator *gsi, location_t loc, tree arg)
   tree real_part, imag_part, addend1, addend2, sum, result;
   tree type = TREE_TYPE (TREE_TYPE (arg));
   tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
-  enum machine_mode mode = TYPE_MODE (type);
+  machine_mode mode = TYPE_MODE (type);
 
   if (!flag_unsafe_math_optimizations
       || !optimize_bb_for_speed_p (gimple_bb (gsi_stmt (*gsi)))
@@ -1495,7 +1501,7 @@ pass_cse_sincos::execute (function *fun)
 		  if (result)
 		    {
 		      tree lhs = gimple_get_lhs (stmt);
-		      gimple new_stmt = gimple_build_assign (lhs, result);
+		      gassign *new_stmt = gimple_build_assign (lhs, result);
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
@@ -1513,7 +1519,7 @@ pass_cse_sincos::execute (function *fun)
 		  if (real_minus_onep (arg0))
 		    {
                       tree t0, t1, cond, one, minus_one;
-		      gimple stmt;
+		      gassign *stmt;
 
 		      t0 = TREE_TYPE (arg0);
 		      t1 = TREE_TYPE (arg1);
@@ -1521,17 +1527,14 @@ pass_cse_sincos::execute (function *fun)
 		      minus_one = build_real (t0, dconstm1);
 
 		      cond = make_temp_ssa_name (t1, NULL, "powi_cond");
-		      stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, cond,
-							   arg1,
-							   build_int_cst (t1,
-									  1));
+		      stmt = gimple_build_assign (cond, BIT_AND_EXPR,
+						  arg1, build_int_cst (t1, 1));
 		      gimple_set_location (stmt, loc);
 		      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
 
 		      result = make_temp_ssa_name (t0, NULL, "powi");
-		      stmt = gimple_build_assign_with_ops (COND_EXPR, result,
-							   cond,
-							   minus_one, one);
+		      stmt = gimple_build_assign (result, COND_EXPR, cond,
+						  minus_one, one);
 		      gimple_set_location (stmt, loc);
 		      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
 		    }
@@ -1547,7 +1550,7 @@ pass_cse_sincos::execute (function *fun)
 		  if (result)
 		    {
 		      tree lhs = gimple_get_lhs (stmt);
-		      gimple new_stmt = gimple_build_assign (lhs, result);
+		      gassign *new_stmt = gimple_build_assign (lhs, result);
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
@@ -1565,7 +1568,7 @@ pass_cse_sincos::execute (function *fun)
 		  if (result)
 		    {
 		      tree lhs = gimple_get_lhs (stmt);
-		      gimple new_stmt = gimple_build_assign (lhs, result);
+		      gassign *new_stmt = gimple_build_assign (lhs, result);
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
@@ -1755,7 +1758,7 @@ find_bswap_or_nop_load (gimple stmt, tree ref, struct symbolic_number *n)
   /* Leaf node is an array or component ref. Memorize its base and
      offset from base to compare to other such leaf node.  */
   HOST_WIDE_INT bitsize, bitpos;
-  enum machine_mode mode;
+  machine_mode mode;
   int unsignedp, volatilep;
   tree offset, base_addr;
 
@@ -1857,8 +1860,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  && code != RSHIFT_EXPR
 	  && code != LROTATE_EXPR
 	  && code != RROTATE_EXPR
-	  && code != NOP_EXPR
-	  && code != CONVERT_EXPR)
+	  && !CONVERT_EXPR_CODE_P (code))
 	return NULL;
 
       source_stmt1 = find_bswap_or_nop_1 (rhs1_stmt, n, limit - 1);
@@ -1916,7 +1918,8 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	    if (!TYPE_UNSIGNED (n->type) && type_size > old_type_size
 		&& HEAD_MARKER (n->n, old_type_size))
 	      for (i = 0; i < type_size - old_type_size; i++)
-		n->n |= MARKER_BYTE_UNKNOWN << (type_size - 1 - i);
+		n->n |= (uint64_t) MARKER_BYTE_UNKNOWN
+			<< ((type_size - 1 - i) * BITS_PER_MARKER);
 
 	    if (type_size < 64 / BITS_PER_MARKER)
 	      {
@@ -2161,23 +2164,28 @@ public:
 
 }; // class pass_optimize_bswap
 
-/* Perform the bswap optimization: replace the statement CUR_STMT at
-   GSI with a load of type, VUSE and set-alias as described by N if a
-   memory source is involved (N->base_addr is non null), followed by
-   the builtin bswap invocation in FNDECL if BSWAP is true.  SRC_STMT
-   gives where should the replacement be made.  It also gives the
-   source on which CUR_STMT is operating via its rhs's first tree nad
-   N->range gives the size of the expression involved for maintaining
-   some statistics.  */
+/* Perform the bswap optimization: replace the expression computed in the rhs
+   of CUR_STMT by an equivalent bswap, load or load + bswap expression.
+   Which of these alternatives replace the rhs is given by N->base_addr (non
+   null if a load is needed) and BSWAP.  The type, VUSE and set-alias of the
+   load to perform are also given in N while the builtin bswap invoke is given
+   in FNDEL.  Finally, if a load is involved, SRC_STMT refers to one of the
+   load statements involved to construct the rhs in CUR_STMT and N->range gives
+   the size of the rhs expression for maintaining some statistics.
+
+   Note that if the replacement involve a load, CUR_STMT is moved just after
+   SRC_STMT to do the load with the same VUSE which can lead to CUR_STMT
+   changing of basic block.  */
 
 static bool
-bswap_replace (gimple cur_stmt, gimple_stmt_iterator gsi, gimple src_stmt,
-	       tree fndecl, tree bswap_type, tree load_type,
-	       struct symbolic_number *n, bool bswap)
+bswap_replace (gimple cur_stmt, gimple src_stmt, tree fndecl, tree bswap_type,
+	       tree load_type, struct symbolic_number *n, bool bswap)
 {
+  gimple_stmt_iterator gsi;
   tree src, tmp, tgt;
-  gimple call;
+  gimple bswap_stmt;
 
+  gsi = gsi_for_stmt (cur_stmt);
   src = gimple_assign_rhs1 (src_stmt);
   tgt = gimple_assign_lhs (cur_stmt);
 
@@ -2196,6 +2204,9 @@ bswap_replace (gimple cur_stmt, gimple_stmt_iterator gsi, gimple src_stmt,
 	  && SLOW_UNALIGNED_ACCESS (TYPE_MODE (load_type), align))
 	return false;
 
+      /* Move cur_stmt just before  one of the load of the original
+	 to ensure it has the same VUSE.  See PR61517 for what could
+	 go wrong.  */
       gsi_move_before (&gsi, &gsi_ins);
       gsi = gsi_for_stmt (cur_stmt);
 
@@ -2240,13 +2251,11 @@ bswap_replace (gimple cur_stmt, gimple_stmt_iterator gsi, gimple src_stmt,
 	      load_stmt = gimple_build_assign (val_tmp, val_expr);
 	      gimple_set_vuse (load_stmt, n->vuse);
 	      gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
-	      gimple_assign_set_rhs_with_ops_1 (&gsi, NOP_EXPR, val_tmp,
-						NULL_TREE, NULL_TREE);
+	      gimple_assign_set_rhs_with_ops (&gsi, NOP_EXPR, val_tmp);
 	    }
 	  else
 	    {
-	      gimple_assign_set_rhs_with_ops_1 (&gsi, MEM_REF, val_expr,
-						NULL_TREE, NULL_TREE);
+	      gimple_assign_set_rhs_with_ops (&gsi, MEM_REF, val_expr);
 	      gimple_set_vuse (cur_stmt, n->vuse);
 	    }
 	  update_stmt (cur_stmt);
@@ -2282,16 +2291,30 @@ bswap_replace (gimple cur_stmt, gimple_stmt_iterator gsi, gimple src_stmt,
 
   tmp = src;
 
-  /* Convert the src expression if necessary.  */
-  if (!useless_type_conversion_p (TREE_TYPE (tmp), bswap_type))
+  /* Canonical form for 16 bit bswap is a rotate expression.  Only 16bit values
+     are considered as rotation of 2N bit values by N bits is generally not
+     equivalent to a bswap.  Consider for instance 0x01020304 >> 16 which gives
+     0x03040102 while a bswap for that value is 0x04030201.  */
+  if (bswap && n->range == 16)
     {
-      gimple convert_stmt;
-      tmp = make_temp_ssa_name (bswap_type, NULL, "bswapsrc");
-      convert_stmt = gimple_build_assign_with_ops (NOP_EXPR, tmp, src, NULL);
-      gsi_insert_before (&gsi, convert_stmt, GSI_SAME_STMT);
+      tree count = build_int_cst (NULL, BITS_PER_UNIT);
+      bswap_type = TREE_TYPE (src);
+      src = fold_build2 (LROTATE_EXPR, bswap_type, src, count);
+      bswap_stmt = gimple_build_assign (NULL, src);
     }
+  else
+    {
+      /* Convert the src expression if necessary.  */
+      if (!useless_type_conversion_p (TREE_TYPE (tmp), bswap_type))
+	{
+	  gimple convert_stmt;
+	  tmp = make_temp_ssa_name (bswap_type, NULL, "bswapsrc");
+	  convert_stmt = gimple_build_assign (tmp, NOP_EXPR, src);
+	  gsi_insert_before (&gsi, convert_stmt, GSI_SAME_STMT);
+	}
 
-  call = gimple_build_call (fndecl, 1, tmp);
+      bswap_stmt = gimple_build_call (fndecl, 1, tmp);
+    }
 
   tmp = tgt;
 
@@ -2300,11 +2323,11 @@ bswap_replace (gimple cur_stmt, gimple_stmt_iterator gsi, gimple src_stmt,
     {
       gimple convert_stmt;
       tmp = make_temp_ssa_name (bswap_type, NULL, "bswapdst");
-      convert_stmt = gimple_build_assign_with_ops (NOP_EXPR, tgt, tmp, NULL);
+      convert_stmt = gimple_build_assign (tgt, NOP_EXPR, tmp);
       gsi_insert_after (&gsi, convert_stmt, GSI_SAME_STMT);
     }
 
-  gimple_call_set_lhs (call, tmp);
+  gimple_set_lhs (bswap_stmt, tmp);
 
   if (dump_file)
     {
@@ -2313,7 +2336,7 @@ bswap_replace (gimple cur_stmt, gimple_stmt_iterator gsi, gimple src_stmt,
       print_gimple_stmt (dump_file, cur_stmt, 0, 0);
     }
 
-  gsi_insert_after (&gsi, call, GSI_SAME_STMT);
+  gsi_insert_after (&gsi, bswap_stmt, GSI_SAME_STMT);
   gsi_remove (&gsi, true);
   return true;
 }
@@ -2370,19 +2393,43 @@ pass_optimize_bswap::execute (function *fun)
       gimple_stmt_iterator gsi;
 
       /* We do a reverse scan for bswap patterns to make sure we get the
-	 widest match. As bswap pattern matching doesn't handle
-	 previously inserted smaller bswap replacements as sub-
-	 patterns, the wider variant wouldn't be detected.  */
-      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	 widest match. As bswap pattern matching doesn't handle previously
+	 inserted smaller bswap replacements as sub-patterns, the wider
+	 variant wouldn't be detected.  */
+      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
         {
 	  gimple src_stmt, cur_stmt = gsi_stmt (gsi);
 	  tree fndecl = NULL_TREE, bswap_type = NULL_TREE, load_type;
+	  enum tree_code code;
 	  struct symbolic_number n;
 	  bool bswap;
 
-	  if (!is_gimple_assign (cur_stmt)
-	      || gimple_assign_rhs_code (cur_stmt) != BIT_IOR_EXPR)
+	  /* This gsi_prev (&gsi) is not part of the for loop because cur_stmt
+	     might be moved to a different basic block by bswap_replace and gsi
+	     must not points to it if that's the case.  Moving the gsi_prev
+	     there make sure that gsi points to the statement previous to
+	     cur_stmt while still making sure that all statements are
+	     considered in this basic block.  */
+	  gsi_prev (&gsi);
+
+	  if (!is_gimple_assign (cur_stmt))
 	    continue;
+
+	  code = gimple_assign_rhs_code (cur_stmt);
+	  switch (code)
+	    {
+	    case LROTATE_EXPR:
+	    case RROTATE_EXPR:
+	      if (!tree_fits_uhwi_p (gimple_assign_rhs2 (cur_stmt))
+		  || tree_to_uhwi (gimple_assign_rhs2 (cur_stmt))
+		     % BITS_PER_UNIT)
+		continue;
+	      /* Fall through.  */
+	    case BIT_IOR_EXPR:
+	      break;
+	    default:
+	      continue;
+	    }
 
 	  src_stmt = find_bswap_or_nop (cur_stmt, &n, &bswap);
 
@@ -2392,6 +2439,9 @@ pass_optimize_bswap::execute (function *fun)
 	  switch (n.range)
 	    {
 	    case 16:
+	      /* Already in canonical form, nothing to do.  */
+	      if (code == LROTATE_EXPR || code == RROTATE_EXPR)
+		continue;
 	      load_type = uint16_type_node;
 	      if (bswap16_p)
 		{
@@ -2422,8 +2472,8 @@ pass_optimize_bswap::execute (function *fun)
 	  if (bswap && !fndecl)
 	    continue;
 
-	  if (bswap_replace (cur_stmt, gsi, src_stmt, fndecl, bswap_type,
-			     load_type, &n, bswap))
+	  if (bswap_replace (cur_stmt, src_stmt, fndecl, bswap_type, load_type,
+			     &n, bswap))
 	    changed = true;
 	}
     }
@@ -2616,7 +2666,7 @@ convert_mult_to_widen (gimple stmt, gimple_stmt_iterator *gsi)
 {
   tree lhs, rhs1, rhs2, type, type1, type2;
   enum insn_code handler;
-  enum machine_mode to_mode, from_mode, actual_mode;
+  machine_mode to_mode, from_mode, actual_mode;
   optab op;
   int actual_precision;
   location_t loc = gimple_location (stmt);
@@ -2724,7 +2774,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   optab this_optab;
   enum tree_code wmult_code;
   enum insn_code handler;
-  enum machine_mode to_mode, from_mode, actual_mode;
+  machine_mode to_mode, from_mode, actual_mode;
   location_t loc = gimple_location (stmt);
   int actual_precision;
   bool from_unsigned1, from_unsigned2;
@@ -2912,8 +2962,8 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   if (TREE_CODE (mult_rhs2) == INTEGER_CST)
     mult_rhs2 = fold_convert (type2, mult_rhs2);
 
-  gimple_assign_set_rhs_with_ops_1 (gsi, wmult_code, mult_rhs1, mult_rhs2,
-				    add_rhs);
+  gimple_assign_set_rhs_with_ops (gsi, wmult_code, mult_rhs1, mult_rhs2,
+				  add_rhs);
   update_stmt (gsi_stmt (*gsi));
   widen_mul_stats.maccs_inserted++;
   return true;
@@ -2928,7 +2978,8 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 {
   tree mul_result = gimple_get_lhs (mul_stmt);
   tree type = TREE_TYPE (mul_result);
-  gimple use_stmt, neguse_stmt, fma_stmt;
+  gimple use_stmt, neguse_stmt;
+  gassign *fma_stmt;
   use_operand_p use_p;
   imm_use_iterator imm_iter;
 
@@ -3114,10 +3165,8 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 					   true, NULL_TREE, true,
 					   GSI_SAME_STMT);
 
-      fma_stmt = gimple_build_assign_with_ops (FMA_EXPR,
-					       gimple_assign_lhs (use_stmt),
-					       mulop1, op2,
-					       addop);
+      fma_stmt = gimple_build_assign (gimple_assign_lhs (use_stmt),
+				      FMA_EXPR, mulop1, op2, addop);
       gsi_replace (&gsi, fma_stmt, true);
       widen_mul_stats.fmas_inserted++;
     }

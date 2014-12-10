@@ -2,7 +2,7 @@
    discovers calls for, even when nodes being inlined are virtual IPA-CP
    clones.  */
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-early-inlining -fdump-ipa-cp-details -fdump-ipa-inline -fdump-tree-optimized"  } */
+/* { dg-options "-O3 -fno-early-inlining -fdump-ipa-cp-details -fdump-ipa-inline -fdump-tree-optimized -fno-ipa-icf"  } */
 
 
 int global;

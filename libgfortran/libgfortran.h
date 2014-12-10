@@ -573,10 +573,6 @@ iexport_data_proto(line);
 extern char *filename;
 iexport_data_proto(filename);
 
-/* Avoid conflicting prototypes of alloca() in system headers by using 
-   GCC's builtin alloca().  */
-#define gfc_alloca(x)  __builtin_alloca(x)
-
 
 /* The default value of record length for preconnected units is defined
    here. This value can be overriden by an environment variable.
@@ -850,6 +846,9 @@ export_proto(string_len_trim_char4);
 
 extern char *fc_strdup(const char *, gfc_charlen_type);
 internal_proto(fc_strdup);
+
+extern char *fc_strdup_notrim(const char *, gfc_charlen_type);
+internal_proto(fc_strdup_notrim);
 
 /* io/intrinsics.c */
 

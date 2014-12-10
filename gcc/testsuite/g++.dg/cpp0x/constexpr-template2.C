@@ -3,7 +3,7 @@
 template <class T> struct A
 {
   T t;
-  constexpr A() { }		// { dg-error "uninitialized" }
+  constexpr A() { }		// { dg-error "::t" }
 };
 
 int main()

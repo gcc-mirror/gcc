@@ -41,7 +41,7 @@ namespace __gnu_pbds
   namespace test
   {
     prog_bar::
-    prog_bar(size_t max, std::ostream& r_os, bool display/*= true*/) :
+    prog_bar(std::size_t max, std::ostream& r_os, bool display/*= true*/) :
       m_cur(0),
       m_max(max),
       m_cur_disp(0),

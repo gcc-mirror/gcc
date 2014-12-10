@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fgraphite-identity -fgraphite-code-generator=isl" } */
+/* { dg-options "-O2 -fgraphite-identity" } */
 
 #include <stdio.h>
 #include <stdlib.h>

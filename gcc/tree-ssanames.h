@@ -102,7 +102,7 @@ extern void replace_ssa_name_symbol (tree, tree);
    in function cfun.  */
 
 static inline tree
-make_ssa_name (tree var, gimple stmt)
+make_ssa_name (tree var, gimple stmt = NULL)
 {
   return make_ssa_name_fn (cfun, var, stmt);
 }
@@ -111,7 +111,7 @@ make_ssa_name (tree var, gimple stmt)
    statement STMT in function cfun.  */
 
 static inline tree
-copy_ssa_name (tree var, gimple stmt)
+copy_ssa_name (tree var, gimple stmt = NULL)
 {
   return copy_ssa_name_fn (cfun, var, stmt);
 }

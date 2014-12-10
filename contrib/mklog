@@ -29,31 +29,45 @@
 use File::Temp;
 use File::Copy qw(cp mv);
 
-# Change these settings to reflect your profile.
-$username = $ENV{'USER'};
-$name = `finger $username | grep -o 'Name: .*'`;
-@n = split(/: /, $name);
-$name = $n[1]; chop($name);
-$addr = $username . "\@my.domain.org";
 $date = `date +%Y-%m-%d`; chop ($date);
+
+$dot_mklog_format_msg =
+    "The .mklog format is:\n"
+    . "NAME = ...\n"
+    . "EMAIL = ...\n";
+
+# Create a .mklog to reflect your profile, if necessary.
+my $conf = "$ENV{HOME}/.mklog";
+if (-f "$conf") {
+    open (CONF, "$conf")
+	or die "Could not open file '$conf' for reading: $!\n";
+    while (<CONF>) {
+	if (m/^\s*NAME\s*=\s*(.*?)\s*$/) {
+	    $name = $1;
+	} elsif (m/^\s*EMAIL\s*=\s*(.*?)\s*$/) {
+	    $addr = $1;
+	}
+    }
+    if (!($name && $addr)) {
+	die "Could not read .mklog settings.\n"
+	    . $dot_mklog_format_msg;
+    }
+} else {
+    $name = `git config user.name`;
+    chomp($name);
+    $addr = `git config user.email`;
+    chomp($addr);
+
+    if (!($name && $addr)) {
+	die "Could not read git user.name and user.email settings.\n"
+	    . "Please add missing git settings, or create a .mklog file in"
+	    . " $ENV{HOME}.\n"
+	    . $dot_mklog_format_msg;
+    }
+}
 
 $gcc_root = $0;
 $gcc_root =~ s/[^\\\/]+$/../;
-
-# if this is a git tree then take name and email from the git configuration
-if (-d "$gcc_root/.git") {
-  $gitname = `git config user.name`;
-  chomp($gitname);
-  if ($gitname) {
-	  $name = $gitname;
-  }
-
-  $gitaddr = `git config user.email`;
-  chomp($gitaddr);
-  if ($gitaddr) {
-	  $addr = $gitaddr;
-  }
-}
 
 #-----------------------------------------------------------------------------
 # Program starts here. You should not need to edit anything below this
@@ -108,16 +122,39 @@ sub remove_suffixes ($) {
 	return $filename;
 }
 
+sub is_context_hunk_start {
+	return @_[0] =~ /^\*\*\*\*\*\** ([a-zA-Z0-9_].*)/;
+}
+
+sub is_unified_hunk_start {
+	return @_[0] =~ /^@@ .* @@ ([a-zA-Z0-9_].*)/;
+}
+
 # Check if line is a top-level declaration.
 # TODO: ignore preprocessor directives except maybe #define ?
 sub is_top_level {
 	my ($function, $is_context_diff) = (@_);
+	if (is_unified_hunk_start ($function)
+	    || is_context_hunk_start ($function)) {
+	    return 1;
+	}
 	if ($is_context_diff) {
 		$function =~ s/^..//;
 	} else {
 		$function =~ s/^.//;
 	}
-	return $function && $function !~ /^[\s{}]/;
+	return $function && $function !~ /^[\s{]/;
+}
+
+# Read contents of .diff file
+open (DFILE, $diff) or die "Could not open file $diff for reading";
+chomp (my @diff_lines = <DFILE>);
+close (DFILE);
+
+# Array diff_lines is modified by the log generation, so save a copy in
+# orig_diff_lines if needed.
+if ($inline) {
+    @orig_diff_lines = @diff_lines;
 }
 
 # For every file in the .diff print all the function names in ChangeLog
@@ -126,9 +163,6 @@ sub is_top_level {
 $change_msg = undef;
 $look_for_funs = 0;
 $clname = get_clname('');
-open (DFILE, $diff) or die "Could not open file $diff for reading";
-chomp (my @diff_lines = <DFILE>);
-close (DFILE);
 $line_idx = 0;
 foreach (@diff_lines) {
     # Stop processing functions if we found a new file.
@@ -200,14 +234,10 @@ foreach (@diff_lines) {
         $look_for_funs = 0;
     }
 
-    # Mark if we met doubtfully changed function.
-    $doubtfunc = 0;
-    if ($diff_lines[$line_idx] =~ /^@@ .* @@ ([a-zA-Z0-9_].*)/) {
-	    $doubtfunc = 1;
+    if (is_unified_hunk_start ($diff_lines[$line_idx])) {
         $is_context_diff = 0;
     }
-    elsif ($diff_lines[$line_idx] =~ /^\*\*\*\*\*\** ([a-zA-Z0-9_].*)/) {
-	    $doubtfunc = 1;
+    elsif (is_context_hunk_start ($diff_lines[$line_idx])) {
 	    $is_context_diff = 1;
     }
 
@@ -222,7 +252,6 @@ foreach (@diff_lines) {
     #
     # The third pattern looks for the starts of functions or classes
     # within a diff block both for context and unified diff files.
-
     if ($look_for_funs
         && (/^\*\*\*\*\*\** ([a-zA-Z0-9_].*)/
 	|| /^@@ .* @@ ([a-zA-Z0-9_].*)/
@@ -249,19 +278,19 @@ foreach (@diff_lines) {
 	}
 	# Check is function really modified
 	$no_real_change = 0;
-	if ($doubtfunc) {
-		$idx = $line_idx;
+	$idx = $line_idx;
 	# Skip line info in context diffs.
-		while ($is_context_diff && $diff_lines[$idx + 1] =~ /^[-\*]{3} [0-9]/) {
-			++$idx;
-		}
+	while ($idx <= $#diff_lines && $is_context_diff
+               && $diff_lines[$idx + 1] =~ /^[-\*]{3} [0-9]/) {
+		++$idx;
+	}
 	# Check all lines till the first change
 	# for the presence of really changed function
-		do {
-			++$idx;
-			$no_real_change = is_top_level ($diff_lines[$idx], $is_context_diff);
-		} while (!$no_real_change && ($diff_lines[$idx] !~ /^[-+!]/))
-	}
+	do {
+		++$idx;
+		$no_real_change = $idx > $#diff_lines
+				  || is_top_level ($diff_lines[$idx], $is_context_diff);
+	} while (!$no_real_change && ($diff_lines[$idx] !~ /^[-+!]/));
 	if ($fn && !$seen_names{$fn} && !$no_real_change) {
 	    # If this is the first function in the file, we display it next
 	    # to the filename, so we need an extra space before the opening
@@ -306,7 +335,7 @@ foreach my $clname (keys %cl_entries) {
 
 if ($inline) {
 	# Append the patch to the log
-	foreach (@diff_lines) {
+	foreach (@orig_diff_lines) {
 		print OUTPUTFILE "$_\n";
 	}
 }

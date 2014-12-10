@@ -144,11 +144,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // DR 387. std::complex over-encapsulated.
       _GLIBCXX_ABI_TAG_CXX11
       constexpr _Tp 
-      real() { return _M_real; }
+      real() const { return _M_real; }
 
       _GLIBCXX_ABI_TAG_CXX11
       constexpr _Tp 
-      imag() { return _M_imag; }
+      imag() const { return _M_imag; }
 #else
       ///  Return real part of complex number.
       _Tp& 

@@ -2572,11 +2572,12 @@ package body Prj.Nmsc is
 
          if Data.Flags.Compiler_Driver_Mandatory
            and then Lang_Index.Config.Compiler_Driver = No_File
+           and then not Project.Externally_Built
          then
             Error_Msg_Name_1 := Lang_Index.Display_Name;
             Error_Msg
               (Data.Flags,
-               "?no compiler specified for language %%" &
+               "?\no compiler specified for language %%" &
                  ", ignoring all its sources",
                No_Location, Project);
 
@@ -2603,7 +2604,7 @@ package body Prj.Nmsc is
             if Lang_Index.Config.Naming_Data.Spec_Suffix = No_File then
                Error_Msg
                  (Data.Flags,
-                  "Spec_Suffix not specified for " &
+                  "\Spec_Suffix not specified for " &
                   Get_Name_String (Lang_Index.Name),
                   No_Location, Project);
             end if;
@@ -2611,7 +2612,7 @@ package body Prj.Nmsc is
             if Lang_Index.Config.Naming_Data.Body_Suffix = No_File then
                Error_Msg
                  (Data.Flags,
-                  "Body_Suffix not specified for " &
+                  "\Body_Suffix not specified for " &
                   Get_Name_String (Lang_Index.Name),
                   No_Location, Project);
             end if;
@@ -2629,7 +2630,7 @@ package body Prj.Nmsc is
                Error_Msg_Name_1 := Lang_Index.Display_Name;
                Error_Msg
                  (Data.Flags,
-                  "no suffixes specified for %%",
+                  "\no suffixes specified for %%",
                   No_Location, Project);
             end if;
          end if;
@@ -3769,7 +3770,7 @@ package body Prj.Nmsc is
                if Switches /= No_Array_Element then
                   Error_Msg
                     (Data.Flags,
-                     "?Linker switches not taken into account in library " &
+                     "?\Linker switches not taken into account in library " &
                      "projects",
                      No_Location, Project);
                end if;
@@ -4711,7 +4712,7 @@ package body Prj.Nmsc is
          then
             Error_Msg
               (Data.Flags,
-               "Library_Standalone valid only if Library_Interface is set",
+               "Library_Standalone valid only if library has Ada interfaces",
                Lib_Standalone.Location, Project);
          end if;
 
@@ -5031,9 +5032,7 @@ package body Prj.Nmsc is
 
                if OK then
                   for J in 1 .. Name_Len loop
-                     if Name_Buffer (J) = '/'
-                       or else Name_Buffer (J) = Directory_Separator
-                     then
+                     if Is_Directory_Separator (Name_Buffer (J)) then
                         OK := False;
                         exit;
                      end if;
@@ -5335,9 +5334,7 @@ package body Prj.Nmsc is
    function Compute_Directory_Last (Dir : String) return Natural is
    begin
       if Dir'Length > 1
-        and then (Dir (Dir'Last - 1) = Directory_Separator
-                    or else
-                  Dir (Dir'Last - 1) = '/')
+        and then Is_Directory_Separator (Dir (Dir'Last - 1))
       then
          return Dir'Last - 1;
       else
@@ -5498,13 +5495,16 @@ package body Prj.Nmsc is
       Dir_Exists : Boolean;
 
       No_Sources : constant Boolean :=
-                     ((not Source_Files.Default
-                        and then Source_Files.Values = Nil_String)
-                       or else (not Source_Dirs.Default
-                                 and then Source_Dirs.Values = Nil_String)
-                       or else (not Languages.Default
-                                 and then Languages.Values = Nil_String))
-                     and then Project.Extends = No_Project;
+        Project.Qualifier = Abstract_Project
+          or else (((not Source_Files.Default
+                      and then Source_Files.Values = Nil_String)
+                    or else
+                    (not Source_Dirs.Default
+                      and then Source_Dirs.Values  = Nil_String)
+                    or else
+                     (not Languages.Default
+                      and then Languages.Values    = Nil_String))
+                   and then Project.Extends = No_Project);
 
    --  Start of processing for Get_Directories
 
@@ -5854,7 +5854,7 @@ package body Prj.Nmsc is
                --  Check that there is no directory information
 
                for J in 1 .. Last loop
-                  if Line (J) = '/' or else Line (J) = Directory_Separator then
+                  if Is_Directory_Separator (Line (J)) then
                      Error_Msg_File_1 := Source_Name;
                      Error_Msg
                        (Data.Flags,
@@ -6303,7 +6303,7 @@ package body Prj.Nmsc is
 
          Dir_Exists := Is_Directory (Full_Path_Name.all);
 
-         if not Must_Exist or else Dir_Exists then
+         if not Must_Exist or Dir_Exists then
             declare
                Normed : constant String :=
                           Normalize_Pathname
@@ -6481,14 +6481,12 @@ package body Prj.Nmsc is
                         --  Check that there is no directory information
 
                         for J in 1 .. Last loop
-                           if Line (J) = '/'
-                             or else Line (J) = Directory_Separator
-                           then
+                           if Is_Directory_Separator (Line (J)) then
                               Error_Msg_File_1 := Name;
                               Error_Msg
                                 (Data.Flags,
-                                 "file name cannot include " &
-                                 "directory information ({)",
+                                 "file name cannot include "
+                                 & "directory information ({)",
                                  Location, Project.Project);
                               exit;
                            end if;
@@ -6595,9 +6593,7 @@ package body Prj.Nmsc is
                --  Check that there is no directory information
 
                for J in 1 .. Name_Len loop
-                  if Name_Buffer (J) = '/'
-                    or else Name_Buffer (J) = Directory_Separator
-                  then
+                  if Is_Directory_Separator (Name_Buffer (J)) then
                      Error_Msg_File_1 := Name;
                      Error_Msg
                        (Data.Flags,
@@ -6797,7 +6793,7 @@ package body Prj.Nmsc is
                         Error_Msg_Name_2 := Source.Unit.Name;
                         Error_Or_Warning
                           (Data.Flags, Data.Flags.Missing_Source_Files,
-                           "source file %% for unit %% not found",
+                           "\source file %% for unit %% not found",
                            No_Location, Project.Project);
                      end if;
                   end if;
@@ -7388,11 +7384,11 @@ package body Prj.Nmsc is
             if Name (1 .. Last) /= "." and then Name (1 .. Last) /= ".." then
                declare
                   Path_Name : constant String :=
-                    Normalize_Pathname
-                      (Name           => Name (1 .. Last),
-                       Directory      => Path_Str,
-                       Resolve_Links  => Resolve_Links)
-                    & Directory_Separator;
+                                Normalize_Pathname
+                                  (Name           => Name (1 .. Last),
+                                   Directory      => Path_Str,
+                                   Resolve_Links  => Resolve_Links)
+                                & Directory_Separator;
 
                   Path2 : Path_Information;
                   OK    : Boolean := True;
@@ -7469,8 +7465,7 @@ package body Prj.Nmsc is
 
          if Search_For = Search_Files then
             while Pattern_End >= Pattern'First
-              and then Pattern (Pattern_End) /= '/'
-              and then Pattern (Pattern_End) /= Directory_Separator
+              and then not Is_Directory_Separator (Pattern (Pattern_End))
             loop
                Pattern_End := Pattern_End - 1;
             end loop;
@@ -7506,9 +7501,9 @@ package body Prj.Nmsc is
          Recursive :=
            Pattern_End - 1 >= Pattern'First
            and then Pattern (Pattern_End - 1 .. Pattern_End) = "**"
-           and then (Pattern_End - 1 = Pattern'First
-                      or else Pattern (Pattern_End - 2) = '/'
-                      or else Pattern (Pattern_End - 2) = Directory_Separator);
+           and then
+             (Pattern_End - 1 = Pattern'First
+               or else Is_Directory_Separator (Pattern (Pattern_End - 2)));
 
          if Recursive then
             Pattern_End := Pattern_End - 2;
@@ -7625,7 +7620,7 @@ package body Prj.Nmsc is
                declare
                   Source_Directory : constant String :=
                                        Get_Name_String (Element.Value)
-                                         & Directory_Separator;
+                                       & Directory_Separator;
 
                   Dir_Last : constant Natural :=
                                Compute_Directory_Last (Source_Directory);
@@ -7794,7 +7789,7 @@ package body Prj.Nmsc is
             Error_Msg_File_1 := Source.File;
             Error_Msg
               (Data.Flags,
-               "{ cannot be both excluded and an exception file name",
+               "\{ cannot be both excluded and an exception file name",
                No_Location, Project.Project);
          end if;
 
@@ -7941,13 +7936,15 @@ package body Prj.Nmsc is
          if Source /= No_Source
            and then Source.Replaced_By = No_Source
            and then Source.Path /= Src.Path
+           and then Source.Index = 0
+           and then Src.Index = 0
            and then Is_Extending (Src.Project, Source.Project)
          then
             Error_Msg_File_1 := Src.File;
             Error_Msg_File_2 := Source.File;
             Error_Msg
               (Data.Flags,
-               "{ and { have the same object file name",
+               "\{ and { have the same object file name",
                No_Location, Project.Project);
 
          else

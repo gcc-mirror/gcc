@@ -153,6 +153,9 @@ GLIBCXX_ENABLE_THREADS
 GLIBCXX_ENABLE_ATOMIC_BUILTINS
 GLIBCXX_ENABLE_DECIMAL_FLOAT
 GLIBCXX_ENABLE_INT128_FLOAT128
+if test "$enable_float128" = yes; then
+  port_specific_symbol_files="$port_specific_symbol_files \$(top_srcdir)/config/abi/pre/float128.ver"
+fi
 
 # Checks for compiler support that doesn't require linking.
 GLIBCXX_CHECK_COMPILER_FEATURES
@@ -364,6 +367,8 @@ GLIBCXX_ENABLE_SYMVERS([yes])
 AC_SUBST(libtool_VERSION)
 
 GLIBCXX_ENABLE_LIBSTDCXX_VISIBILITY([yes])
+
+GLIBCXX_ENABLE_LIBSTDCXX_CXX11_ABI([yes])
 
 ac_ldbl_compat=no
 case "$target" in

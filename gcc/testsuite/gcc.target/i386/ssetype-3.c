@@ -13,7 +13,7 @@
 
 #include <xmmintrin.h>
 
-static __m128 magic_a, magic_b;
+__m128 magic_a, magic_b;
 __m128
 t1(void)
 {

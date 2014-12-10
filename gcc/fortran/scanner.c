@@ -324,16 +324,16 @@ add_path_to_list (gfc_directorylist **list, const char *path,
   if (stat (q, &st))
     {
       if (errno != ENOENT)
-	gfc_warning_cmdline ("Include directory %qs: %s", path,
-			     xstrerror(errno));
+	gfc_warning_now ("Include directory %qs: %s", path,
+			 xstrerror(errno));
       else if (warn)
-	gfc_warning_cmdline (OPT_Wmissing_include_dirs,
-			     "Nonexistent include directory %qs", path);
+	gfc_warning_now (OPT_Wmissing_include_dirs,
+			 "Nonexistent include directory %qs", path);
       return;
     }
   else if (!S_ISDIR (st.st_mode))
     {
-      gfc_warning_cmdline ("%qs is not a directory", path);
+      gfc_warning_now ("%qs is not a directory", path);
       return;
     }
 
@@ -1048,7 +1048,7 @@ restart:
 	}
 
       /* Check to see if the continuation line was truncated.  */
-      if (gfc_option.warn_line_truncation && gfc_current_locus.lb != NULL
+      if (warn_line_truncation && gfc_current_locus.lb != NULL
 	  && gfc_current_locus.lb->truncated)
 	{
 	  int maxlen = gfc_option.free_line_length;
@@ -1056,7 +1056,8 @@ restart:
 
 	  gfc_current_locus.lb->truncated = 0;
 	  gfc_current_locus.nextc =  gfc_current_locus.lb->line + maxlen;
-	  gfc_warning_now ("Line truncated at %L", &gfc_current_locus);
+	  gfc_warning_now (OPT_Wline_truncation,
+			   "Line truncated at %L", &gfc_current_locus);
 	  gfc_current_locus.nextc = current_nextc;
 	}
 
@@ -1154,8 +1155,9 @@ restart:
 	  if (in_string)
 	    {
 	      gfc_current_locus.nextc--;
-	      if (gfc_option.warn_ampersand && in_string == INSTRING_WARN)
-		gfc_warning ("Missing '&' in continued character "
+	      if (warn_ampersand && in_string == INSTRING_WARN)
+		gfc_warning (OPT_Wampersand, 
+			     "Missing %<&%> in continued character "
 			     "constant at %C");
 	    }
 	  /* Both !$omp and !$ -fopenmp continuation lines have & on the
@@ -1190,11 +1192,12 @@ restart:
 	goto done;
 
       /* Check to see if the continuation line was truncated.  */
-      if (gfc_option.warn_line_truncation && gfc_current_locus.lb != NULL
+      if (warn_line_truncation && gfc_current_locus.lb != NULL
 	  && gfc_current_locus.lb->truncated)
 	{
 	  gfc_current_locus.lb->truncated = 0;
-	  gfc_warning_now ("Line truncated at %L", &gfc_current_locus);
+	  gfc_warning_now (OPT_Wline_truncation,
+			   "Line truncated at %L", &gfc_current_locus);
 	}
 
       prev_openmp_flag = openmp_flag;
@@ -1382,13 +1385,13 @@ gfc_gobble_whitespace (void)
       /* Issue a warning for nonconforming tabs.  We keep track of the line
 	 number because the Fortran matchers will often back up and the same
 	 line will be scanned multiple times.  */
-      if (!gfc_option.warn_tabs && c == '\t')
+      if (warn_tabs && c == '\t')
 	{
 	  int cur_linenum = LOCATION_LINE (gfc_current_locus.lb->location);
 	  if (cur_linenum != linenum)
 	    {
 	      linenum = cur_linenum;
-	      gfc_warning_now ("Nonconforming tab character at %C");
+	      gfc_warning_now (OPT_Wtabs, "Nonconforming tab character at %C");
 	    }
 	}
     }
@@ -1476,10 +1479,10 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	      && !seen_printable && seen_ampersand)
 	    {
 	      if (pedantic)
-		gfc_error_now ("'&' not allowed by itself in line %d",
+		gfc_error_now ("%<&%> not allowed by itself in line %d",
 			       current_line);
 	      else
-		gfc_warning_now ("'&' not allowed by itself in line %d",
+		gfc_warning_now ("%<&%> not allowed by itself in line %d",
 				 current_line);
 	    }
 	  break;
@@ -1534,11 +1537,11 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	{
 	  found_tab = true;
 
-	  if (!gfc_option.warn_tabs && seen_comment == 0
-	      && current_line != linenum)
+	  if (warn_tabs && seen_comment == 0 && current_line != linenum)
 	    {
 	      linenum = current_line;
-	      gfc_warning_now ("Nonconforming tab character in column %d "
+	      gfc_warning_now (OPT_Wtabs,
+			       "Nonconforming tab character in column %d "
 			       "of line %d", i+1, linenum);
 	    }
 
@@ -1763,9 +1766,9 @@ preprocessor_line (gfc_char_t *c)
       if (!current_file->up
 	  || filename_cmp (current_file->up->filename, filename) != 0)
 	{
-	  gfc_warning_now ("%s:%d: file %s left but not entered",
-			   current_file->filename, current_file->line,
-			   filename);
+	  gfc_warning_now_1 ("%s:%d: file %s left but not entered",
+			     current_file->filename, current_file->line,
+			     filename);
 	  if (unescape)
 	    free (wide_filename);
 	  free (filename);
@@ -1797,7 +1800,7 @@ preprocessor_line (gfc_char_t *c)
   return;
 
  bad_cpp_line:
-  gfc_warning_now ("%s:%d: Illegal preprocessor directive",
+  gfc_warning_now_1 ("%s:%d: Illegal preprocessor directive",
 		   current_file->filename, current_file->line);
   current_file->line++;
 }
@@ -1922,7 +1925,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	input = gfc_open_file (realfilename);
       if (input == NULL)
 	{
-	  gfc_error_cmdline ("Can't open file %qs", filename);
+	  gfc_error_now ("Can't open file %qs", filename);
 	  return false;
 	}
     }
@@ -2043,7 +2046,13 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 		    + (len + 1) * sizeof (gfc_char_t));
 
       b->location
-	= linemap_line_start (line_table, current_file->line++, 120);
+	= linemap_line_start (line_table, current_file->line++, len);
+      /* ??? We add the location for the maximum column possible here,
+	 because otherwise if the next call creates a new line-map, it
+	 will not reserve space for any offset.  */
+      if (len > 0)
+	linemap_position_for_column (line_table, len);
+
       b->file = current_file;
       b->truncated = trunc;
       wide_strcpy (b->line, line);

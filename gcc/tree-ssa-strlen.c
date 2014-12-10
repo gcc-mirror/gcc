@@ -26,6 +26,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "hash-map.h"
 #include "bitmap.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -51,6 +62,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "params.h"
 #include "expr.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
+#include "ipa-chkp.h"
 
 /* A vector indexed by SSA_NAME_VERSION.  0 means unknown, positive value
    is an index into strinfo vector, negative value stands for
@@ -406,6 +421,7 @@ get_string_length (strinfo si)
   if (si->stmt)
     {
       gimple stmt = si->stmt, lenstmt;
+      bool with_bounds = gimple_call_with_bounds_p (stmt);
       tree callee, lhs, fn, tem;
       location_t loc;
       gimple_stmt_iterator gsi;
@@ -414,7 +430,6 @@ get_string_length (strinfo si)
       callee = gimple_call_fndecl (stmt);
       gcc_assert (callee && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL);
       lhs = gimple_call_lhs (stmt);
-      gcc_assert (builtin_decl_implicit_p (BUILT_IN_STPCPY));
       /* unshare_strinfo is intentionally not called here.  The (delayed)
 	 transformation of strcpy or strcat into stpcpy is done at the place
 	 of the former strcpy/strcat call and so can affect all the strinfos
@@ -425,11 +440,20 @@ get_string_length (strinfo si)
 	{
 	case BUILT_IN_STRCAT:
 	case BUILT_IN_STRCAT_CHK:
+	case BUILT_IN_STRCAT_CHKP:
+	case BUILT_IN_STRCAT_CHK_CHKP:
 	  gsi = gsi_for_stmt (stmt);
 	  fn = builtin_decl_implicit (BUILT_IN_STRLEN);
 	  gcc_assert (lhs == NULL_TREE);
 	  tem = unshare_expr (gimple_call_arg (stmt, 0));
-	  lenstmt = gimple_build_call (fn, 1, tem);
+	  if (with_bounds)
+	    {
+	      lenstmt = gimple_build_call (chkp_maybe_create_clone (fn)->decl,
+					   2, tem, gimple_call_arg (stmt, 1));
+	      gimple_call_set_with_bounds (lenstmt, true);
+	    }
+	  else
+	    lenstmt = gimple_build_call (fn, 1, tem);
 	  lhs = make_ssa_name (TREE_TYPE (TREE_TYPE (fn)), lenstmt);
 	  gimple_call_set_lhs (lenstmt, lhs);
 	  gimple_set_vuse (lenstmt, gimple_vuse (stmt));
@@ -441,21 +465,24 @@ get_string_length (strinfo si)
               lhs = force_gimple_operand_gsi (&gsi, lhs, true, NULL_TREE,
                                               true, GSI_SAME_STMT);
             }
-	  lenstmt
-	    = gimple_build_assign_with_ops
-	        (POINTER_PLUS_EXPR,
-		 make_ssa_name (TREE_TYPE (gimple_call_arg (stmt, 0)), NULL),
-		 tem, lhs);
+	  lenstmt = gimple_build_assign
+			(make_ssa_name (TREE_TYPE (gimple_call_arg (stmt, 0))),
+			 POINTER_PLUS_EXPR,tem, lhs);
 	  gsi_insert_before (&gsi, lenstmt, GSI_SAME_STMT);
 	  gimple_call_set_arg (stmt, 0, gimple_assign_lhs (lenstmt));
 	  lhs = NULL_TREE;
 	  /* FALLTHRU */
 	case BUILT_IN_STRCPY:
 	case BUILT_IN_STRCPY_CHK:
-	  if (gimple_call_num_args (stmt) == 2)
+	case BUILT_IN_STRCPY_CHKP:
+	case BUILT_IN_STRCPY_CHK_CHKP:
+	  gcc_assert (builtin_decl_implicit_p (BUILT_IN_STPCPY));
+	  if (gimple_call_num_args (stmt) == (with_bounds ? 4 : 2))
 	    fn = builtin_decl_implicit (BUILT_IN_STPCPY);
 	  else
 	    fn = builtin_decl_explicit (BUILT_IN_STPCPY_CHK);
+	  if (with_bounds)
+	    fn = chkp_maybe_create_clone (fn)->decl;
 	  gcc_assert (lhs == NULL_TREE);
 	  if (dump_file && (dump_flags & TDF_DETAILS) != 0)
 	    {
@@ -474,6 +501,8 @@ get_string_length (strinfo si)
 	  /* FALLTHRU */
 	case BUILT_IN_STPCPY:
 	case BUILT_IN_STPCPY_CHK:
+	case BUILT_IN_STPCPY_CHKP:
+	case BUILT_IN_STPCPY_CHK_CHKP:
 	  gcc_assert (lhs != NULL_TREE);
 	  loc = gimple_location (stmt);
 	  si->endptr = lhs;
@@ -764,6 +793,7 @@ adjust_last_stmt (strinfo si, gimple stmt, bool is_strcat)
   tree vuse, callee, len;
   struct laststmt_struct last = laststmt;
   strinfo lastsi, firstsi;
+  unsigned len_arg_no = 2;
 
   laststmt.stmt = NULL;
   laststmt.len = NULL_TREE;
@@ -835,11 +865,15 @@ adjust_last_stmt (strinfo si, gimple stmt, bool is_strcat)
     case BUILT_IN_MEMCPY:
     case BUILT_IN_MEMCPY_CHK:
       break;
+    case BUILT_IN_MEMCPY_CHKP:
+    case BUILT_IN_MEMCPY_CHK_CHKP:
+      len_arg_no = 4;
+      break;
     default:
       return;
     }
 
-  len = gimple_call_arg (last.stmt, 2);
+  len = gimple_call_arg (last.stmt, len_arg_no);
   if (tree_fits_uhwi_p (len))
     {
       if (!tree_fits_uhwi_p (last.len)
@@ -863,7 +897,7 @@ adjust_last_stmt (strinfo si, gimple stmt, bool is_strcat)
   else
     return;
 
-  gimple_call_set_arg (last.stmt, 2, last.len);
+  gimple_call_set_arg (last.stmt, len_arg_no, last.len);
   update_stmt (last.stmt);
 }
 
@@ -954,11 +988,12 @@ handle_builtin_strchr (gimple_stmt_iterator *gsi)
   tree src;
   gimple stmt = gsi_stmt (*gsi);
   tree lhs = gimple_call_lhs (stmt);
+  bool with_bounds = gimple_call_with_bounds_p (stmt);
 
   if (lhs == NULL_TREE)
     return;
 
-  if (!integer_zerop (gimple_call_arg (stmt, 1)))
+  if (!integer_zerop (gimple_call_arg (stmt, with_bounds ? 2 : 1)))
     return;
 
   src = gimple_call_arg (stmt, 0);
@@ -1065,8 +1100,9 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
   gimple stmt = gsi_stmt (*gsi);
   strinfo si, dsi, olddsi, zsi;
   location_t loc;
+  bool with_bounds = gimple_call_with_bounds_p (stmt);
 
-  src = gimple_call_arg (stmt, 1);
+  src = gimple_call_arg (stmt, with_bounds ? 2 : 1);
   dst = gimple_call_arg (stmt, 0);
   lhs = gimple_call_lhs (stmt);
   idx = get_stridx (src);
@@ -1097,11 +1133,15 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
       {
       case BUILT_IN_STRCPY:
       case BUILT_IN_STRCPY_CHK:
+      case BUILT_IN_STRCPY_CHKP:
+      case BUILT_IN_STRCPY_CHK_CHKP:
 	if (lhs != NULL_TREE || !builtin_decl_implicit_p (BUILT_IN_STPCPY))
 	  return;
 	break;
       case BUILT_IN_STPCPY:
       case BUILT_IN_STPCPY_CHK:
+      case BUILT_IN_STPCPY_CHKP:
+      case BUILT_IN_STPCPY_CHK_CHKP:
 	if (lhs == NULL_TREE)
 	  return;
 	else
@@ -1200,16 +1240,19 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
   switch (bcode)
     {
     case BUILT_IN_STRCPY:
+    case BUILT_IN_STRCPY_CHKP:
       fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
       if (lhs)
 	ssa_ver_to_stridx[SSA_NAME_VERSION (lhs)] = didx;
       break;
     case BUILT_IN_STRCPY_CHK:
+    case BUILT_IN_STRCPY_CHK_CHKP:
       fn = builtin_decl_explicit (BUILT_IN_MEMCPY_CHK);
       if (lhs)
 	ssa_ver_to_stridx[SSA_NAME_VERSION (lhs)] = didx;
       break;
     case BUILT_IN_STPCPY:
+    case BUILT_IN_STPCPY_CHKP:
       /* This would need adjustment of the lhs (subtract one),
 	 or detection that the trailing '\0' doesn't need to be
 	 written, if it will be immediately overwritten.
@@ -1221,6 +1264,7 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 	}
       break;
     case BUILT_IN_STPCPY_CHK:
+    case BUILT_IN_STPCPY_CHK_CHKP:
       /* This would need adjustment of the lhs (subtract one),
 	 or detection that the trailing '\0' doesn't need to be
 	 written, if it will be immediately overwritten.
@@ -1252,14 +1296,33 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
       fprintf (dump_file, "Optimizing: ");
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
-  if (gimple_call_num_args (stmt) == 2)
-    success = update_gimple_call (gsi, fn, 3, dst, src, len);
+  if (with_bounds)
+    {
+      fn = chkp_maybe_create_clone (fn)->decl;
+      if (gimple_call_num_args (stmt) == 4)
+	success = update_gimple_call (gsi, fn, 5, dst,
+				      gimple_call_arg (stmt, 1),
+				      src,
+				      gimple_call_arg (stmt, 3),
+				      len);
+      else
+	success = update_gimple_call (gsi, fn, 6, dst,
+				      gimple_call_arg (stmt, 1),
+				      src,
+				      gimple_call_arg (stmt, 3),
+				      len,
+				      gimple_call_arg (stmt, 4));
+    }
   else
-    success = update_gimple_call (gsi, fn, 4, dst, src, len,
-				  gimple_call_arg (stmt, 2));
+    if (gimple_call_num_args (stmt) == 2)
+      success = update_gimple_call (gsi, fn, 3, dst, src, len);
+    else
+      success = update_gimple_call (gsi, fn, 4, dst, src, len,
+				    gimple_call_arg (stmt, 2));
   if (success)
     {
       stmt = gsi_stmt (*gsi);
+      gimple_call_set_with_bounds (stmt, with_bounds);
       update_stmt (stmt);
       if (dump_file && (dump_flags & TDF_DETAILS) != 0)
 	{
@@ -1287,9 +1350,10 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
   tree src, dst, len, lhs, oldlen, newlen;
   gimple stmt = gsi_stmt (*gsi);
   strinfo si, dsi, olddsi;
+  bool with_bounds = gimple_call_with_bounds_p (stmt);
 
-  len = gimple_call_arg (stmt, 2);
-  src = gimple_call_arg (stmt, 1);
+  len = gimple_call_arg (stmt, with_bounds ? 4 : 2);
+  src = gimple_call_arg (stmt, with_bounds ? 2 : 1);
   dst = gimple_call_arg (stmt, 0);
   idx = get_stridx (src);
   if (idx == 0)
@@ -1396,6 +1460,8 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
     {
     case BUILT_IN_MEMCPY:
     case BUILT_IN_MEMCPY_CHK:
+    case BUILT_IN_MEMCPY_CHKP:
+    case BUILT_IN_MEMCPY_CHK_CHKP:
       /* Allow adjust_last_stmt to decrease this memcpy's size.  */
       laststmt.stmt = stmt;
       laststmt.len = dsi->length;
@@ -1405,6 +1471,8 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
       break;
     case BUILT_IN_MEMPCPY:
     case BUILT_IN_MEMPCPY_CHK:
+    case BUILT_IN_MEMPCPY_CHKP:
+    case BUILT_IN_MEMPCPY_CHK_CHKP:
       break;
     default:
       gcc_unreachable ();
@@ -1426,8 +1494,9 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
   gimple stmt = gsi_stmt (*gsi);
   strinfo si, dsi;
   location_t loc;
+  bool with_bounds = gimple_call_with_bounds_p (stmt);
 
-  src = gimple_call_arg (stmt, 1);
+  src = gimple_call_arg (stmt, with_bounds ? 2 : 1);
   dst = gimple_call_arg (stmt, 0);
   lhs = gimple_call_lhs (stmt);
 
@@ -1523,17 +1592,19 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
   switch (bcode)
     {
     case BUILT_IN_STRCAT:
+    case BUILT_IN_STRCAT_CHKP:
       if (srclen != NULL_TREE)
 	fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
       else
 	fn = builtin_decl_implicit (BUILT_IN_STRCPY);
       break;
     case BUILT_IN_STRCAT_CHK:
+    case BUILT_IN_STRCAT_CHK_CHKP:
       if (srclen != NULL_TREE)
 	fn = builtin_decl_explicit (BUILT_IN_MEMCPY_CHK);
       else
 	fn = builtin_decl_explicit (BUILT_IN_STRCPY_CHK);
-      objsz = gimple_call_arg (stmt, 2);
+      objsz = gimple_call_arg (stmt, with_bounds ? 4 : 2);
       break;
     default:
       gcc_unreachable ();
@@ -1568,15 +1639,35 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
       fprintf (dump_file, "Optimizing: ");
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
-  if (srclen != NULL_TREE)
-    success = update_gimple_call (gsi, fn, 3 + (objsz != NULL_TREE),
-				  dst, src, len, objsz);
+  if (with_bounds)
+    {
+      fn = chkp_maybe_create_clone (fn)->decl;
+      if (srclen != NULL_TREE)
+	success = update_gimple_call (gsi, fn, 5 + (objsz != NULL_TREE),
+				      dst,
+				      gimple_call_arg (stmt, 1),
+				      src,
+				      gimple_call_arg (stmt, 3),
+				      len, objsz);
+      else
+	success = update_gimple_call (gsi, fn, 4 + (objsz != NULL_TREE),
+				      dst,
+				      gimple_call_arg (stmt, 1),
+				      src,
+				      gimple_call_arg (stmt, 3),
+				      objsz);
+    }
   else
-    success = update_gimple_call (gsi, fn, 2 + (objsz != NULL_TREE),
-				  dst, src, objsz);
+    if (srclen != NULL_TREE)
+      success = update_gimple_call (gsi, fn, 3 + (objsz != NULL_TREE),
+				    dst, src, len, objsz);
+    else
+      success = update_gimple_call (gsi, fn, 2 + (objsz != NULL_TREE),
+				    dst, src, objsz);
   if (success)
     {
       stmt = gsi_stmt (*gsi);
+      gimple_call_set_with_bounds (stmt, with_bounds);
       update_stmt (stmt);
       if (dump_file && (dump_flags & TDF_DETAILS) != 0)
 	{
@@ -1723,7 +1814,7 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
       enum tree_code rhs_code
 	= useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (si->endptr))
 	  ? SSA_NAME : NOP_EXPR;
-      gimple_assign_set_rhs_with_ops (gsi, rhs_code, si->endptr, NULL_TREE);
+      gimple_assign_set_rhs_with_ops (gsi, rhs_code, si->endptr);
       gcc_assert (gsi_stmt (*gsi) == stmt);
       update_stmt (stmt);
     }
@@ -1890,25 +1981,37 @@ strlen_optimize_stmt (gimple_stmt_iterator *gsi)
 	switch (DECL_FUNCTION_CODE (callee))
 	  {
 	  case BUILT_IN_STRLEN:
+	  case BUILT_IN_STRLEN_CHKP:
 	    handle_builtin_strlen (gsi);
 	    break;
 	  case BUILT_IN_STRCHR:
+	  case BUILT_IN_STRCHR_CHKP:
 	    handle_builtin_strchr (gsi);
 	    break;
 	  case BUILT_IN_STRCPY:
 	  case BUILT_IN_STRCPY_CHK:
 	  case BUILT_IN_STPCPY:
 	  case BUILT_IN_STPCPY_CHK:
+	  case BUILT_IN_STRCPY_CHKP:
+	  case BUILT_IN_STRCPY_CHK_CHKP:
+	  case BUILT_IN_STPCPY_CHKP:
+	  case BUILT_IN_STPCPY_CHK_CHKP:
 	    handle_builtin_strcpy (DECL_FUNCTION_CODE (callee), gsi);
 	    break;
 	  case BUILT_IN_MEMCPY:
 	  case BUILT_IN_MEMCPY_CHK:
 	  case BUILT_IN_MEMPCPY:
 	  case BUILT_IN_MEMPCPY_CHK:
+	  case BUILT_IN_MEMCPY_CHKP:
+	  case BUILT_IN_MEMCPY_CHK_CHKP:
+	  case BUILT_IN_MEMPCPY_CHKP:
+	  case BUILT_IN_MEMPCPY_CHK_CHKP:
 	    handle_builtin_memcpy (DECL_FUNCTION_CODE (callee), gsi);
 	    break;
 	  case BUILT_IN_STRCAT:
 	  case BUILT_IN_STRCAT_CHK:
+	  case BUILT_IN_STRCAT_CHKP:
+	  case BUILT_IN_STRCAT_CHK_CHKP:
 	    handle_builtin_strcat (DECL_FUNCTION_CODE (callee), gsi);
 	    break;
 	  case BUILT_IN_MALLOC:
@@ -1923,7 +2026,7 @@ strlen_optimize_stmt (gimple_stmt_iterator *gsi)
 	    break;
 	  }
     }
-  else if (is_gimple_assign (stmt))
+  else if (is_gimple_assign (stmt) && !gimple_clobber_p (stmt))
     {
       tree lhs = gimple_assign_lhs (stmt);
 
@@ -2025,7 +2128,6 @@ public:
 void
 strlen_dom_walker::before_dom_children (basic_block bb)
 {
-  gimple_stmt_iterator gsi;
   basic_block dombb = get_immediate_dominator (CDI_DOMINATORS, bb);
 
   if (dombb == NULL)
@@ -2035,9 +2137,10 @@ strlen_dom_walker::before_dom_children (basic_block bb)
       stridx_to_strinfo = ((vec<strinfo, va_heap, vl_embed> *) dombb->aux);
       if (stridx_to_strinfo)
 	{
-	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	       gsi_next (&gsi))
 	    {
-	      gimple phi = gsi_stmt (gsi);
+	      gphi *phi = gsi.phi ();
 	      if (virtual_operand_p (gimple_phi_result (phi)))
 		{
 		  bitmap visited = BITMAP_ALLOC (NULL);
@@ -2074,9 +2177,10 @@ strlen_dom_walker::before_dom_children (basic_block bb)
 
   /* If all PHI arguments have the same string index, the PHI result
      has it as well.  */
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       tree result = gimple_phi_result (phi);
       if (!virtual_operand_p (result) && POINTER_TYPE_P (TREE_TYPE (result)))
 	{
@@ -2094,7 +2198,7 @@ strlen_dom_walker::before_dom_children (basic_block bb)
     }
 
   /* Attempt to optimize individual statements.  */
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
     if (strlen_optimize_stmt (&gsi))
       gsi_next (&gsi);
 

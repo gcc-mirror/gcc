@@ -209,6 +209,7 @@ Implementation Defined Pragmas
 * Pragma No_Return::
 * Pragma No_Run_Time::
 * Pragma No_Strict_Aliasing ::
+* Pragma No_Tagged_Streams::
 * Pragma Normalize_Scalars::
 * Pragma Obsolescent::
 * Pragma Optimize_Alignment::
@@ -227,6 +228,7 @@ Implementation Defined Pragmas
 * Pragma Precondition::
 * Pragma Predicate::
 * Pragma Preelaborable_Initialization::
+* Pragma Prefix_Exception_Messages::
 * Pragma Pre_Class::
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
@@ -312,6 +314,7 @@ Implementation Defined Aspects
 * Aspect Iterable::
 * Aspect Linker_Section::
 * Aspect No_Elaboration_Code_All::
+* Aspect No_Tagged_Streams::
 * Aspect Object_Size::
 * Aspect Obsolescent::
 * Aspect Part_Of::
@@ -329,6 +332,7 @@ Implementation Defined Aspects
 * Aspect Simple_Storage_Pool_Type::
 * Aspect SPARK_Mode::
 * Aspect Suppress_Debug_Info::
+* Aspect Suppress_Initialization::
 * Aspect Test_Case::
 * Aspect Thread_Local_Storage::
 * Aspect Universal_Aliasing::
@@ -538,6 +542,8 @@ The GNAT Library
 * Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)::
 * Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)::
 * Ada.Containers.Formal_Vectors (a-cofove.ads)::
+* Ada.Containers.Formal_Indefinite_Vectors (a-cfinve.ads)::
+* Ada.Containers.Bounded_Holders (a-coboho.ads)::
 * Ada.Command_Line.Environment (a-colien.ads)::
 * Ada.Command_Line.Remove (a-colire.ads)::
 * Ada.Command_Line.Response_File (a-clrefi.ads)::
@@ -660,6 +666,7 @@ The GNAT Library
 * Interfaces.VxWorks.IO (i-vxwoio.ads)::
 * System.Address_Image (s-addima.ads)::
 * System.Assertions (s-assert.ads)::
+* System.Atomic_Counters (s-atocou.ads)::
 * System.Memory (s-memory.ads)::
 * System.Multiprocessors (s-multip.ads)::
 * System.Multiprocessors.Dispatching_Domains (s-mudido.ads)::
@@ -1078,6 +1085,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma No_Return::
 * Pragma No_Run_Time::
 * Pragma No_Strict_Aliasing::
+* Pragma No_Tagged_Streams::
 * Pragma Normalize_Scalars::
 * Pragma Obsolescent::
 * Pragma Optimize_Alignment::
@@ -1096,6 +1104,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Precondition::
 * Pragma Predicate::
 * Pragma Preelaborable_Initialization::
+* Pragma Prefix_Exception_Messages::
 * Pragma Pre_Class::
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
@@ -1371,7 +1380,7 @@ in the two situations.
 @noindent
 Syntax:
 @smallexample @c ada
-pragma Annotate (IDENTIFIER [,IDENTIFIER @{, ARG@}] [entity => local_NAME]);
+pragma Annotate (IDENTIFIER [, IDENTIFIER @{, ARG@}] [, entity => local_NAME]);
 
 ARG ::= NAME | EXPRESSION
 @end smallexample
@@ -2543,17 +2552,19 @@ pragma Default_Scalar_Storage_Order (High_Order_First | Low_Order_First);
 
 @noindent
 Normally if no explicit @code{Scalar_Storage_Order} is given for a record
-type or array type, then the scalar storage order defaults to the ordinary
-default for the target. But this default may be overridden using this pragma.
-The pragma may appear as a configuration pragma, or locally within a package
-spec or declarative part. In the latter case, it applies to all subsequent
+type or array type, then the scalar storage order defaults to the native
+order for the target. However, this default may be overridden using
+this pragma (except for derived tagged types, which always default to
+inheriting the scalar storage order of their parent). The pragma may
+appear as a configuration pragma, or locally within a package spec or
+declarative part.  In the latter case, it applies to all subsequent
 types declared within that package spec or declarative part.
 
 If this pragma is used as a configuration pragma which appears within a
 configuration pragma file (as opposed to appearing explicitly at the start
 of a single unit), then the binder will require that all units in a partition
-be compiled in a similar manner, including all units in the run-time that
-are included in the partition.
+be compiled in a similar manner, other than run-time units, which are not
+affected by this pragma.
 
 The following example shows the use of this pragma:
 
@@ -4690,6 +4701,7 @@ the current unit and any extended main source units (body and subunits.
 It also has has the effect of enforcing a transitive application of this
 aspect, so that if any unit is implicitly or explicitly WITH'ed by the
 current unit, it must also have the No_Elaboration_Code_All aspect set.
+It may be applied to package or subprogram specs or their generic versions.
 
 @node Pragma No_Inline
 @unnumberedsec Pragma No_Inline
@@ -4748,11 +4760,9 @@ pragma No_Run_Time;
 
 @noindent
 This is an obsolete configuration pragma that historically was used to
-setup what is now called the "zero footprint" library. It causes any
-library units outside this basic library to be ignored. The use of
-this pragma has been superseded by the general configurable run-time
-capability of @code{GNAT} where the compiler takes into account whatever
-units happen to be accessible in the library.
+set up a runtime library with no object code. It is now used only for
+internal testing. The pragma has been superseded by the reconfigurable
+runtime capability of @code{GNAT}.
 
 @node Pragma No_Strict_Aliasing
 @unnumberedsec Pragma No_Strict_Aliasing
@@ -4775,6 +4785,41 @@ in which it must be suppressed, see @ref{Optimization and Strict
 Aliasing,,, gnat_ugn, @value{EDITION} User's Guide}.
 
 This pragma currently has no effects on access to unconstrained array types.
+
+@node Pragma No_Tagged_Streams
+@unnumberedsec Pragma No_Tagged_Streams
+@findex No_Tagged_Streams
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma No_Tagged_Streams;
+pragma No_Tagged_Streams [([Entity =>] tagged_type_LOCAL_NAME)];
+@end smallexample
+
+@noindent
+Normally when a tagged type is introduced using a full type declaration,
+part of the processing includes generating stream access routines to be
+used by stream attributes referencing the type (or one of its subtypes
+or derived types). This can involve the generation of significant amounts
+of code which is wasted space if stream routines are not needed for the
+type in question.
+
+The @code{No_Tagged_Streams} pragma causes the generation of these stream
+routines to be skipped, and any attempt to use stream operations on
+types subject to this pragma will be statically rejected as illegal.
+
+There are two forms of the pragma. The form with no arguments must appear
+in a declarative sequence or in the declarations of a package spec. This
+pragma affects all subsequent root tagged types declared in the declaration
+sequence, and specifies that no stream routines be generated. The form with
+an argument (for which there is also a corresponding aspect) specifies a
+single root tagged type for which stream routines are not to be generated.
+
+Once the pragma has been given for a particular root tagged type, all subtypes
+and derived types of this type inherit the pragma automatically, so the effect
+applies to a complete hierarchy (this is necessary to deal with the class-wide
+dispatching versions of the stream routines).
 
 @node Pragma Normalize_Scalars
 @unnumberedsec Pragma Normalize_Scalars
@@ -5124,6 +5169,10 @@ requests warnings for inappropriate uses (comparisons and explicit
 subranges) for unordered types. If this switch is used, then any
 enumeration type not marked with pragma @code{Ordered} will be considered
 as unordered, and will generate warnings for inappropriate uses.
+
+Note that generic types are not considered ordered or unordered (since the
+template can be instantiated for both cases), so we never generate warnings
+for the case of generic enumerated types.
 
 For additional information please refer to the description of the
 @option{-gnatw.u} switch in the @value{EDITION} User's Guide.
@@ -5694,6 +5743,34 @@ This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
 
+@node Pragma Prefix_Exception_Messages
+@unnumberedsec Pragma Prefix_Exception_Messages
+@cindex Prefix_Exception_Messages
+@cindex exception
+@cindex Exception_Message
+@findex Exceptions
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Prefix_Exception_Messages;
+@end smallexample
+
+@noindent
+This is an implementation-defined configuration pragma that affects the
+behavior of raise statements with a message given as a static string
+constant (typically a string literal). In such cases, the string will
+be automatically prefixed by the name of the enclosing entity (giving
+the package and subprogram containing the raise statement). This helps
+to identify where messages are coming from, and this mode is automatic
+for the run-time library.
+
+The pragma has no effect if the message is computed with an expression other
+than a static string constant, since the assumption in this case is that
+the program computes exactly the string it wants. If you still want the
+prefixing in this case, you can always call
+@code{GNAT.Source_Info.Enclosing_Entity} and prepend the string manually.
+
 @node Pragma Pre_Class
 @unnumberedsec Pragma Pre_Class
 @cindex Pre_Class
@@ -6201,7 +6278,7 @@ any other use of implementation pragmas:
 
 @smallexample @c ada
 pragma Restriction_Warnings (No_Implementation_Pragmas);
-pragma Warnings (Off, "violation of*No_Implementation_Pragmas*");
+7 (Off, "violation of*No_Implementation_Pragmas*");
 pragma Ada_95;
 pragma Style_Checks ("2bfhkM160");
 pragma Warnings (On, "violation of*No_Implementation_Pragmas*");
@@ -7000,13 +7077,16 @@ with this pragma and others compiled in normal mode without it.
 Syntax:
 
 @smallexample @c ada
-pragma Suppress_Initialization ([Entity =>] subtype_Name);
+pragma Suppress_Initialization ([Entity =>] variable_or_subtype_Name);
 @end smallexample
 
 @noindent
-Here subtype_Name is the name introduced by a type declaration
-or subtype declaration.
-This pragma suppresses any implicit or explicit initialization
+Here variable_or_subtype_Name is the name introduced by a type declaration
+or subtype declaration or the name of a variable introduced by an
+object declaration.
+
+In the case of a type or subtype
+this pragma suppresses any implicit or explicit initialization
 for all variables of the given type or subtype,
 including initialization resulting from the use of pragmas
 Normalize_Scalars or Initialize_Scalars.
@@ -7025,6 +7105,10 @@ for discriminated types, and tags for tagged types. In these cases,
 you will have to use some non-portable mechanism (e.g. address
 overlays or unchecked conversion) to achieve required initialization
 of these fields before accessing any object of the corresponding type.
+
+For the variable case, implicit initialization for the named variable
+is suppressed, just as though its subtype had been given in a pragma
+Suppress_Initialization, as described above.
 
 @node Pragma Task_Name
 @unnumberedsec Pragma Task_Name
@@ -7800,6 +7884,9 @@ pragma Warnings (static_string_EXPRESSION [,REASON]);
 pragma Warnings (On | Off, static_string_EXPRESSION [,REASON]);
 
 REASON ::= Reason => STRING_LITERAL @{& STRING_LITERAL@}
+
+Note: in Ada 83 mode, a string literal may be used in place of
+a static string expression (which does not exist in Ada 83).
 @end smallexample
 
 @noindent
@@ -7827,7 +7914,9 @@ it occurs till the end of the extended scope of the variable (similar to
 the scope of @code{Suppress}). This form cannot be used as a configuration
 pragma.
 
-The form with a single static_string_EXPRESSION argument (and possible
+In the case where the first argument is other than @code{ON} or
+@code{OFF},
+the third form with a single static_string_EXPRESSION argument (and possible
 reason) provides more precise
 control over which warnings are active. The string is a list of letters
 specifying which warnings are to be activated and which deactivated. The
@@ -7894,14 +7983,16 @@ pragma Warnings (On, Pattern);
 @end smallexample
 
 @noindent
-In this usage, the pattern string must match in the Off and On pragmas,
-and at least one matching warning must be suppressed.
+In this usage, the pattern string must match in the Off and On
+pragmas, and (if @option{-gnatw.w} is given) at least one matching
+warning must be suppressed.
 
 Note: to write a string that will match any warning, use the string
-@code{"***"}. It will not work to use a single asterisk or two asterisks
-since this looks like an operator name. This form with three asterisks
-is similar in effect to specifying @code{pragma Warnings (Off)} except that a
-matching @code{pragma Warnings (On, "***")} will be required. This can be
+@code{"***"}. It will not work to use a single asterisk or two
+asterisks since this looks like an operator name. This form with three
+asterisks is similar in effect to specifying @code{pragma Warnings
+(Off)} except (if @option{-gnatw.w} is given) that a matching
+@code{pragma Warnings (On, "***")} will be required. This can be
 helpful in avoiding forgetting to turn warnings back on.
 
 Note: the debug flag -gnatd.i (@code{/NOWARNINGS_PRAGMAS} in VMS) can be
@@ -8043,8 +8134,8 @@ pragma Shared (R);
 
 @noindent
 In the documentation below, such cases are simply marked
-as being equivalent to the corresponding pragma or attribute definition
-clause.
+as being boolean aspects equivalent to the corresponding pragma
+or attribute definition clause.
 
 @menu
 * Aspect Abstract_State::
@@ -8068,6 +8159,7 @@ clause.
 * Aspect Linker_Section::
 * Aspect Lock_Free::
 * Aspect No_Elaboration_Code_All::
+* Aspect No_Tagged_Streams::
 * Aspect Object_Size::
 * Aspect Obsolescent::
 * Aspect Part_Of::
@@ -8085,6 +8177,7 @@ clause.
 * Aspect Simple_Storage_Pool_Type::
 * Aspect SPARK_Mode::
 * Aspect Suppress_Debug_Info::
+* Aspect Suppress_Initialization::
 * Aspect Test_Case::
 * Aspect Thread_Local_Storage::
 * Aspect Universal_Aliasing::
@@ -8124,13 +8217,13 @@ Equivalent to @code{pragma Annotate (ID, ID @{, ARG@}, Entity => Name);}
 @unnumberedsec Aspect Async_Readers
 @findex Async_Readers
 @noindent
-This aspect is equivalent to pragma @code{Async_Readers}.
+This boolean aspect is equivalent to pragma @code{Async_Readers}.
 
 @node Aspect Async_Writers
 @unnumberedsec Aspect Async_Writers
 @findex Async_Writers
 @noindent
-This aspect is equivalent to pragma @code{Async_Writers}.
+This boolean aspect is equivalent to pragma @code{Async_Writers}.
 
 @node Aspect Contract_Cases
 @unnumberedsec Aspect Contract_Cases
@@ -8255,7 +8348,7 @@ This aspect is equivalent to pragma @code{Effective_Writes}.
 @unnumberedsec Aspect Favor_Top_Level
 @findex Favor_Top_Level
 @noindent
-This aspect is equivalent to pragma @code{Favor_Top_Level}.
+This boolean aspect is equivalent to pragma @code{Favor_Top_Level}.
 
 @node Aspect Global
 @unnumberedsec Aspect Global
@@ -8279,7 +8372,7 @@ This aspect is equivalent to pragma @code{Initializes}.
 @unnumberedsec Aspect Inline_Always
 @findex Inline_Always
 @noindent
-This aspect is equivalent to pragma @code{Inline_Always}.
+This boolean aspect is equivalent to pragma @code{Inline_Always}.
 
 @node Aspect Invariant
 @unnumberedsec Aspect Invariant
@@ -8336,7 +8429,7 @@ This aspect is equivalent to an @code{Linker_Section} pragma.
 @unnumberedsec Aspect Lock_Free
 @findex Lock_Free
 @noindent
-This aspect is equivalent to pragma @code{Lock_Free}.
+This boolean aspect is equivalent to pragma @code{Lock_Free}.
 
 @node Aspect No_Elaboration_Code_All
 @unnumberedsec Aspect No_Elaboration_Code_All
@@ -8344,6 +8437,14 @@ This aspect is equivalent to pragma @code{Lock_Free}.
 @noindent
 This aspect is equivalent to a @code{pragma No_Elaboration_Code_All}
 statement for a program unit.
+
+@node Aspect No_Tagged_Streams
+@unnumberedsec Aspect No_Tagged_Streams
+@findex No_Tagged_Streams
+@noindent
+This aspect is equivalent to a @code{pragma No_Tagged_Streams} with an
+argument specifying a root tagged type (thus this aspect can only be
+applied to such a type).
 
 @node Aspect Object_Size
 @unnumberedsec Aspect Object_Size
@@ -8370,7 +8471,7 @@ This aspect is equivalent to pragma @code{Part_Of}.
 @unnumberedsec Aspect Persistent_BSS
 @findex Persistent_BSS
 @noindent
-This aspect is equivalent to pragma @code{Persistent_BSS}.
+This boolean aspect is equivalent to pragma @code{Persistent_BSS}.
 
 @node Aspect Predicate
 @unnumberedsec Aspect Predicate
@@ -8387,7 +8488,7 @@ expression. It is also separately controllable using pragma
 @unnumberedsec Aspect Pure_Function
 @findex Pure_Function
 @noindent
-This aspect is equivalent to pragma @code{Pure_Function}.
+This boolean aspect is equivalent to pragma @code{Pure_Function}.
 
 @node Aspect Refined_Depends
 @unnumberedsec Aspect Refined_Depends
@@ -8430,8 +8531,8 @@ attribute definition clause.
 @unnumberedsec Aspect Shared
 @findex Shared
 @noindent
-This aspect is equivalent to pragma @code{Shared}, and is thus a synonym
-for aspect @code{Atomic}.
+This booleanaspect is equivalent to pragma @code{Shared},
+and is thus a synonym for aspect @code{Atomic}.
 
 @node Aspect Simple_Storage_Pool
 @unnumberedsec Aspect Simple_Storage_Pool
@@ -8444,7 +8545,7 @@ attribute definition clause.
 @unnumberedsec Aspect Simple_Storage_Pool_Type
 @findex Simple_Storage_Pool_Type
 @noindent
-This aspect is equivalent to pragma @code{Simple_Storage_Pool_Type}.
+This boolean aspect is equivalent to pragma @code{Simple_Storage_Pool_Type}.
 
 @node Aspect SPARK_Mode
 @unnumberedsec Aspect SPARK_Mode
@@ -8458,7 +8559,13 @@ of a subprogram or package.
 @unnumberedsec Aspect Suppress_Debug_Info
 @findex Suppress_Debug_Info
 @noindent
-This aspect is equivalent to pragma @code{Suppress_Debug_Info}.
+This boolean aspect is equivalent to pragma @code{Suppress_Debug_Info}.
+
+@node Aspect Suppress_Initialization
+@unnumberedsec Aspect Suppress_Initialization
+@findex Suppress_Initialization
+@noindent
+This boolean aspect is equivalent to pragma @code{Suppress_Initialization}.
 
 @node Aspect Test_Case
 @unnumberedsec Aspect Test_Case
@@ -8470,13 +8577,13 @@ This aspect is equivalent to pragma @code{Test_Case}.
 @unnumberedsec Aspect Thread_Local_Storage
 @findex Thread_Local_Storage
 @noindent
-This aspect is equivalent to pragma @code{Thread_Local_Storage}.
+This boolean aspect is equivalent to pragma @code{Thread_Local_Storage}.
 
 @node Aspect Universal_Aliasing
 @unnumberedsec Aspect Universal_Aliasing
 @findex Universal_Aliasing
 @noindent
-This aspect is equivalent to pragma @code{Universal_Aliasing}.
+This boolean aspect is equivalent to pragma @code{Universal_Aliasing}.
 
 @node Aspect Universal_Data
 @unnumberedsec Aspect Universal_Data
@@ -8488,19 +8595,21 @@ This aspect is equivalent to pragma @code{Universal_Data}.
 @unnumberedsec Aspect Unmodified
 @findex Unmodified
 @noindent
-This aspect is equivalent to pragma @code{Unmodified}.
+This boolean aspect is equivalent to pragma @code{Unmodified}.
 
 @node Aspect Unreferenced
 @unnumberedsec Aspect Unreferenced
 @findex Unreferenced
 @noindent
-This aspect is equivalent to pragma @code{Unreferenced}.
+This boolean aspect is equivalent to pragma @code{Unreferenced}. Note that
+in the case of formal parameters, it is not permitted to have aspects for
+a formal parameter, so in this case the pragma form must be used.
 
 @node Aspect Unreferenced_Objects
 @unnumberedsec Aspect Unreferenced_Objects
 @findex Unreferenced_Objects
 @noindent
-This aspect is equivalent to pragma @code{Unreferenced_Objects}.
+This boolean aspect is equivalent to pragma @code{Unreferenced_Objects}.
 
 @node Aspect Value_Size
 @unnumberedsec Aspect Value_Size
@@ -9885,17 +9994,17 @@ called after P2 returns, it would be an erroneous use of a dangling
 pointer.
 
 For objects, it is possible to use @code{Unrestricted_Access} for any
-type, but care must be exercised if it is used to create pointers to
-unconstrained array objects.  In this case, the resulting pointer has
-the same scope as the context of the attribute, and may not be
-returned to some enclosing scope.  For instance, a function cannot use
-@code{Unrestricted_Access} to create a pointer to unconstrained and
-then return that value to the caller.  In addition, it is only valid
-to create pointers to unconstrained arrays using this attribute if the
-pointer has the normal default ``fat'' representation where a pointer
-has two components, one points to the array and one points to the
-bounds.  If a size clause is used to force ``thin'' representation for
-a pointer to unconstrained where there is only space for a single
+type. However, if the result is of an access-to-unconstrained array
+subtype, then the resulting pointer has the same scope as the context
+of the attribute, and must not be returned to some enclosing scope.
+For instance, if a function uses @code{Unrestricted_Access} to create
+an access-to-unconstrained-array and returns that value to the caller,
+the result will involve dangling pointers. In addition, it is only
+valid to create pointers to unconstrained arrays using this attribute
+if the pointer has the normal default ``fat'' representation where a
+pointer has two components, one points to the array and one points to
+the bounds. If a size clause is used to force ``thin'' representation
+for a pointer to unconstrained where there is only space for a single
 pointer, then the resulting pointer is not usable.
 
 In the simple case where a direct use of Unrestricted_Access attempts
@@ -10037,12 +10146,14 @@ INDEX_EXPRESSION_LIST                        ::= ( EXPRESSION @{, EXPRESSION @} 
 @end smallexample
 
 @noindent
-where @code{PREFIX} is the name of an array or record object, and
-the association list in parentheses does not contain an @code{others}
-choice. The effect is to yield a copy of the array or record value which
-is unchanged apart from the components mentioned in the association list, which
-are changed to the indicated value. The original value of the array or
-record value is not affected. For example:
+where @code{PREFIX} is the name of an array or record object, the
+association list in parentheses does not contain an @code{others}
+choice and the box symbol @code{<>} may not appear in any
+expression. The effect is to yield a copy of the array or record value
+which is unchanged apart from the components mentioned in the
+association list, which are changed to the indicated value. The
+original value of the array or record value is not affected. For
+example:
 
 @smallexample @c ada
 type Arr is Array (1 .. 5) of Integer;
@@ -18922,6 +19033,8 @@ of GNAT, and will generate a warning message.
 * Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)::
 * Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)::
 * Ada.Containers.Formal_Vectors (a-cofove.ads)::
+* Ada.Containers.Formal_Indefinite_Vectors (a-cfinve.ads)::
+* Ada.Containers.Bounded_Holders (a-coboho.ads)::
 * Ada.Command_Line.Environment (a-colien.ads)::
 * Ada.Command_Line.Remove (a-colire.ads)::
 * Ada.Command_Line.Response_File (a-clrefi.ads)::
@@ -19044,6 +19157,7 @@ of GNAT, and will generate a warning message.
 * Interfaces.VxWorks.IO (i-vxwoio.ads)::
 * System.Address_Image (s-addima.ads)::
 * System.Assertions (s-assert.ads)::
+* System.Atomic_Counters (s-atocou.ads)::
 * System.Memory (s-memory.ads)::
 * System.Multiprocessors (s-multip.ads)::
 * System.Multiprocessors.Dispatching_Domains (s-mudido.ads)::
@@ -19223,6 +19337,31 @@ Note that although this container was designed with formal verification
 in mind, it may well be generally useful in that it is a simplified more
 efficient version than the one defined in the standard. In particular it
 does not have the complex overhead required to detect cursor tampering.
+
+@node Ada.Containers.Formal_Indefinite_Vectors (a-cfinve.ads)
+@section @code{Ada.Containers.Formal_Indefinite_Vectors} (@file{a-cfinve.ads})
+@cindex @code{Ada.Containers.Formal_Indefinite_Vectors} (@file{a-cfinve.ads})
+@cindex Formal container for vectors
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the
+Ada 2005 container for vectors of indefinite elements, meant to
+facilitate formal verification of code using such containers. The
+specification of this unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
+
+@node Ada.Containers.Bounded_Holders (a-coboho.ads)
+@section @code{Ada.Containers.Bounded_Holders} (@file{a-coboho.ads})
+@cindex @code{Ada.Containers.Bounded_Holders} (@file{a-coboho.ads})
+@cindex Formal container for vectors
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of
+Indefinite_Holders that avoids heap allocation.
 
 @node Ada.Command_Line.Environment (a-colien.ads)
 @section @code{Ada.Command_Line.Environment} (@file{a-colien.ads})
@@ -20554,6 +20693,18 @@ string which identifies an address.
 This package provides the declaration of the exception raised
 by an run-time assertion failure, as well as the routine that
 is used internally to raise this assertion.
+
+@node System.Atomic_Counters (s-atocou.ads)
+@section @code{System.Atomic_Counters} (@file{s-atocou.ads})
+@cindex @code{System.Atomic_Counters} (@file{s-atocou.ads})
+
+@noindent
+This package provides the declaration of an atomic counter type,
+together with efficient routines (using hardware
+synchronization primitives) for incrementing, decrementing,
+and testing of these counters. This package is implemented
+on most targets, including all Alpha, ia64, PowerPC, SPARC V9,
+x86, and x86_64 platforms.
 
 @node System.Memory (s-memory.ads)
 @section @code{System.Memory} (@file{s-memory.ads})

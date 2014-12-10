@@ -23,18 +23,18 @@ constexpr int area = squarei(side); // { dg-error "side|argument" }
 int next(constexpr int x) // { dg-error "parameter" }
 { return x + 1; }
 
-constexpr void f(int x)       // { dg-error "return type .void" }
+constexpr void f(int x)       // { dg-error "return type .void" "" { target c++11_only } }
 { /* ... */ }
 
 constexpr int prev(int x)
-{ return --x; }               // { dg-error "--" }
+{ return --x; }               // { dg-error "--" "" { target c++11_only } }
 
 constexpr int g(int x, int n) // error: body not just ‘‘return expr’’
 {
    int r = 1;
    while (--n > 0) r *= x;
    return r;
-} // { dg-error "not a return-statement" }
+} // { dg-error "not a return-statement" "" { target c++11_only } }
 
 constexpr int
 bar(int x, int y) { return x + y + x * y; } // { dg-message "previously" }

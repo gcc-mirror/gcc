@@ -1,0 +1,66 @@
+# Copyright (C) 2005-2014 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Run GCC with the input file also specified as output file. Check that the
+# compiler prints an error message and does not overwrite the input file.
+
+load_lib gcc-defs.exp
+load_lib target-supports.exp
+
+# These tests don't run runtest_file_p consistently if it
+# doesn't return the same values, so disable parallelization
+# of this *.exp file.  The first parallel runtest to reach
+# this will run all the tests serially.
+if ![gcc_parallel_test_run_p output] {
+    return
+}
+
+# I'm not sure if this is needed here. It was in options.exp.
+gcc_parallel_test_enable 0
+
+proc check_gcc_overwrite_input {} {
+    set filename test-[pid]
+    set fd [open $filename.c w]
+    puts $fd "int main (void) \{ return 0; \}"
+    close $fd
+    remote_download host $filename.c
+    set test "input overwrite test"
+    set compiler cc1
+    set gcc_output [gcc_target_compile $filename.c $filename.c executable ""]
+    
+    # Is this right, or do I need to use something like remote_upload?
+    set fd [open $filename.c r]
+    set file_data [read $fd]
+    close $fd
+    remote_file build delete $filename.c
+
+    # check if the contents of the input file has changed
+    if {!($file_data eq "int main (void) \{ return 0; \}\n")} {
+	fail "$test (input overwritten)"
+	return
+    }
+    
+    # check if the error message was printed
+    if {![regexp -- "same as output" $gcc_output]} {
+	fail "$test (no error printed)"
+	return
+    }
+    pass $test
+}
+
+check_gcc_overwrite_input
+
+gcc_parallel_test_enable 1

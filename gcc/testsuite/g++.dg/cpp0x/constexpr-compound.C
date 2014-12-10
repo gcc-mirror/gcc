@@ -2,8 +2,8 @@
 
 constexpr int f()
 {
-  {				// { dg-error "" }
+  {				// { dg-error "compound-statement" "" { target { c++11_only } } }
     return 1;
   }
-  { }				// { dg-error "" }
+  { }				// { dg-error "compound-statement" "" { target { c++11_only } } }
 }

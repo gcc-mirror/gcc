@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fsanitize=undefined -fno-sanitize-recover" } */
+/* { dg-options "-fsanitize=undefined -fno-sanitize-recover=undefined" } */
 
 struct S { int a; char b; long long c; short d[10]; };
 struct T { char a; long long b; };

@@ -30,9 +30,17 @@ gcc::context *g;
 
 gcc::context::context ()
 {
+  have_offload = false;
+
   /* The pass manager's constructor uses the dump manager (to set up
      dumps for the various passes), so the dump manager must be set up
      before the pass manager.  */
   m_dumps = new gcc::dump_manager ();
   m_passes = new gcc::pass_manager (this);
+}
+
+gcc::context::~context ()
+{
+  delete m_passes;
+  delete m_dumps;
 }

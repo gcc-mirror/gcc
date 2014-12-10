@@ -5,7 +5,7 @@
 
 
 extern double sqrt (double __x);
-calc_freq (int *dest)
+void calc_freq (int *dest)
 {
   float tmp_out[257];
   int i;

@@ -557,9 +557,10 @@ match_real_constant (gfc_expr **result, int signflag)
       if (!gfc_notify_std (GFC_STD_GNU, "exponent-letter 'q' in "
 			   "real-literal-constant at %C"))
 	return MATCH_ERROR;
-      else if (gfc_option.warn_real_q_constant)
-	gfc_warning("Extension: exponent-letter 'q' in real-literal-constant "
-		    "at %C");
+      else if (warn_real_q_constant)
+	gfc_warning (OPT_Wreal_q_constant,
+		     "Extension: exponent-letter %<q%> in real-literal-constant "
+		     "at %C");
     }
 
   /* Scan exponent.  */
@@ -726,8 +727,8 @@ done:
       goto cleanup;
 
     case ARITH_UNDERFLOW:
-      if (gfc_option.warn_underflow)
-	gfc_warning ("Real constant underflows its kind at %C");
+      if (warn_underflow)
+	gfc_warning (OPT_Wunderflow, "Real constant underflows its kind at %C");
       mpfr_set_ui (e->value.real, 0, GFC_RND_MODE);
       break;
 
@@ -951,7 +952,7 @@ static match
 match_string_constant (gfc_expr **result)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1], peek;
-  int i, kind, length, warn_ampersand, ret;
+  int i, kind, length, save_warn_ampersand, ret;
   locus old_locus, start_locus;
   gfc_symbol *sym;
   gfc_expr *e;
@@ -1071,8 +1072,8 @@ got_delim:
 
   /* We disable the warning for the following loop as the warning has already
      been printed in the loop above.  */
-  warn_ampersand = gfc_option.warn_ampersand;
-  gfc_option.warn_ampersand = 0;
+  save_warn_ampersand = warn_ampersand;
+  warn_ampersand = false;
 
   p = e->value.character.string;
   for (i = 0; i < length; i++)
@@ -1091,7 +1092,7 @@ got_delim:
     }
 
   *p = '\0';	/* TODO: C-style string is for development/debug purposes.  */
-  gfc_option.warn_ampersand = warn_ampersand;
+  warn_ampersand = save_warn_ampersand;
 
   next_string_char (delimiter, &ret);
   if (ret != -1)

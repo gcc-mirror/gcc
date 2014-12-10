@@ -1,7 +1,9 @@
+/* { dg-require-effective-target indirect_jumps } */
+/* { dg-require-effective-target label_values } */
+
 extern void abort (void);
 extern void exit (int);
 
-#ifndef NO_LABEL_VALUES
 f ()
 {
   __label__ l;
@@ -15,6 +17,3 @@ f ()
  l:
   exit (0);
 }
-#else
-int x;
-#endif

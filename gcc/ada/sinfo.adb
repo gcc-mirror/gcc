@@ -1041,15 +1041,6 @@ package body Sinfo is
       return Flag4 (N);
    end Elaborate_Present;
 
-   function Elaboration_Boolean
-      (N : Node_Id) return Node_Id is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Function_Specification
-        or else NT (N).Nkind = N_Procedure_Specification);
-      return Node2 (N);
-   end Elaboration_Boolean;
-
    function Else_Actions
       (N : Node_Id) return List_Id is
    begin
@@ -1897,6 +1888,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Selected_Component);
       return Flag11 (N);
    end Is_In_Discriminant_Check;
+
+   function Is_Inherited
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      return Flag4 (N);
+   end Is_Inherited;
 
    function Is_Machine_Number
       (N : Node_Id) return Boolean is
@@ -4248,15 +4247,6 @@ package body Sinfo is
       Set_Flag4 (N, Val);
    end Set_Elaborate_Present;
 
-   procedure Set_Elaboration_Boolean
-      (N : Node_Id; Val : Node_Id) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Function_Specification
-        or else NT (N).Nkind = N_Procedure_Specification);
-      Set_Node2 (N, Val);
-   end Set_Elaboration_Boolean;
-
    procedure Set_Else_Actions
       (N : Node_Id; Val : List_Id) is
    begin
@@ -5095,6 +5085,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Selected_Component);
       Set_Flag11 (N, Val);
    end Set_Is_In_Discriminant_Check;
+
+   procedure Set_Is_Inherited
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag4 (N, Val);
+   end Set_Is_Inherited;
 
    procedure Set_Is_Machine_Number
       (N : Node_Id; Val : Boolean := True) is

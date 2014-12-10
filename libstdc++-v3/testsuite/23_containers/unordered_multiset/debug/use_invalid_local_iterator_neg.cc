@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 // { dg-require-debug-mode "" }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-do run { xfail *-*-* } }
 
 #include <unordered_set>

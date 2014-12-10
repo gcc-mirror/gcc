@@ -53,6 +53,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static const mask cntrl	= _C;
     static const mask punct	= _P;
     static const mask alnum	= _U | _L | _N;
+#if __cplusplus >= 201103L
+    static const mask blank	= space;
+#endif
   };
 
 _GLIBCXX_END_NAMESPACE_VERSION

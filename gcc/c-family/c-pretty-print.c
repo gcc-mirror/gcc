@@ -416,7 +416,9 @@ c_pretty_printer::simple_type_specifier (tree t)
     case UNION_TYPE:
     case RECORD_TYPE:
     case ENUMERAL_TYPE:
-      if (code == UNION_TYPE)
+      if (TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
+	/* Don't decorate the type if this is a typedef name.  */;
+      else if (code == UNION_TYPE)
 	pp_c_ws_string (this, "union");
       else if (code == RECORD_TYPE)
 	pp_c_ws_string (this, "struct");
@@ -920,6 +922,8 @@ pp_c_void_constant (c_pretty_printer *pp)
 static void
 pp_c_integer_constant (c_pretty_printer *pp, tree i)
 {
+  int idx;
+
   /* We are going to compare the type of I to other types using
      pointer comparison so we need to use its canonical type.  */
   tree type =
@@ -950,9 +954,17 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
   else if (type == long_long_integer_type_node
 	   || type == long_long_unsigned_type_node)
     pp_string (pp, "ll");
-  else if (type == int128_integer_type_node
-           || type == int128_unsigned_type_node)
-    pp_string (pp, "I128");
+  else for (idx = 0; idx < NUM_INT_N_ENTS; idx ++)
+    if (int_n_enabled_p[idx])
+      {
+	char buf[2+20];
+	if (type == int_n_trees[idx].signed_type
+	    || type == int_n_trees[idx].unsigned_type)
+	  {
+	    sprintf (buf, "I%d", int_n_data[idx].bitsize);
+	    pp_string (pp, buf);
+	  }
+      }
 }
 
 /* Print out a CHARACTER literal.  */

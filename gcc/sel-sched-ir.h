@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 /* For state_t.  */
 #include "insn-attr.h"
 #include "regset.h"
-#include "basic-block.h"
 /* For reg_note.  */
 #include "rtl.h"
 #include "ggc.h"
@@ -1602,7 +1601,7 @@ extern int tick_check_p (expr_t, deps_t, fence_t);
 /* Functions to work with insns.  */
 extern bool lhs_of_insn_equals_to_dest_p (insn_t, rtx);
 extern bool insn_eligible_for_subst_p (insn_t);
-extern void get_dest_and_mode (rtx, rtx *, enum machine_mode *);
+extern void get_dest_and_mode (rtx, rtx *, machine_mode *);
 
 extern bool bookkeeping_can_be_created_if_moved_through_p (insn_t);
 extern bool sel_remove_insn (insn_t, bool, bool);

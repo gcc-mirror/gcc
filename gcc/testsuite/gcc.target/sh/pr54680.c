@@ -6,7 +6,7 @@
 /* { dg-skip-if "" { "sh*-*-*" } { "-m1" "-m2*" "-m3*" "-m4al" "*nofpu" "-m4-340*" "-m4-400*" "-m4-500*" "-m5*" } { "" } }  */
 /* { dg-final { scan-assembler-times "fsca" 7 } } */
 /* { dg-final { scan-assembler-times "shad" 1 } } */
-/* { dg-final { scan-assembler-times "lds\t" 6 } } */
+/* { dg-final { scan-assembler-times "lds\tr\[0-9\],fpul" 6 } } */
 /* { dg-final { scan-assembler-times "fmul" 2 } } */
 /* { dg-final { scan-assembler-times "ftrc" 1 } } */
 

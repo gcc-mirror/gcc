@@ -1,5 +1,5 @@
 /* { dg-do compile { target { nonpic } } } */
-/* { dg-options "-fipa-pta -fdump-ipa-pta" } */
+/* { dg-options "-fipa-pta -fdump-ipa-pta -fno-ipa-icf" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-fno-fat-lto-objects" } { "" } } */
 
 struct X { char x; char y; };

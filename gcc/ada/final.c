@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -40,10 +40,28 @@ extern void __gnat_finalize (void);
    at all, the intention is that this be replaced by system specific code
    where finalization is required.  */
 
+#if defined (__MINGW32__)
+#include "mingw32.h"
+#include <windows.h>
+
+extern CRITICAL_SECTION ProcListCS;
+extern HANDLE ProcListEvt;
+
+void
+__gnat_finalize (void)
+{
+  /* delete critical section and event handle used for the
+     processes chain list */
+  DeleteCriticalSection(&ProcListCS);
+  CloseHandle (ProcListEvt);
+}
+
+#else
 void
 __gnat_finalize (void)
 {
 }
+#endif
 
 #ifdef __cplusplus
 }

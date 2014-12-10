@@ -1,0 +1,114 @@
+Client Code   . Generated .            libgccjit.so
+              . code      .
+              .           . JIT API  . JIT "Frontend". (libbackend.a)
+....................................................................................
+   │          .           .          .               .
+    ──────────────────────────>      .               .
+              .           .    │     .               .
+              .           .    V     .               .
+              .           .    ──> libgccjit.c       .
+              .           .        │ (error-checking).
+              .           .        │                 .
+              .           .        ──> jit-recording.c
+              .           .              (record API calls)
+              .           .    <───────              .
+              .           .    │     .               .
+   <───────────────────────────      .               .
+   │          .           .          .               .
+   │          .           .          .               .
+   V          .           .  gcc_jit_context_compile .
+    ──────────────────────────>      .               .
+              .           .    │ start of recording::context::compile ()
+              .           .    │     .               .
+              .           .    │ start of playback::context::compile ()
+              .           .    │   (create tempdir)  .
+              .           .    │     .               .
+              .           .    │ ACQUIRE MUTEX       .
+              .           .    │     .               .
+              .           .    V───────────────────────> toplev::main (for now)
+              .           .          .               .       │
+              .           .          .               .   (various code)
+              .           .          .               .       │
+              .           .          .               .       V
+              .           .          .    <───────────────── langhook:parse_file
+              .           .          .    │          .
+              .           .          .    │ (jit_langhook_parse_file)
+              .           .          .    │          .
+..........................................│..................VVVVVVVVVVVVV...
+              .           .          .    │          .       No GC in here
+              .           .          .    │ jit-playback.c
+              .           .          .    │   (playback of API calls)
+              .           .          .    ───────────────> creation of functions,
+              .           .          .               .     types, expression trees
+              .           .          .    <──────────────── etc
+              .           .          .    │(handle_locations: add locations to
+              .           .          .    │ linemap and associate them with trees)
+              .           .          .    │          .
+              .           .          .    │          .       No GC in here
+..........................................│..................AAAAAAAAAAAAA...
+              .           .          .    │ for each function
+              .           .          .    ──> postprocess
+              .           .          .        │      .
+              .           .          .        ────────────> cgraph_finalize_function
+              .           .          .        <────────────
+              .           .          .     <──       .
+              .           .          .    │          .
+              .           .          .    ──────────────────> (end of
+              .           .          .               .       │ langhook_parse_file)
+              .           .          .               .       │
+              .           .          .               .   (various code)
+              .           .          .               .       │
+              .           .          .               .       ↓
+              .           .          .    <───────────────── langhook:write_globals
+              .           .          .    │          .
+              .           .          .    │ (jit_langhook_write_globals)
+              .           .          .    │          .
+              .           .          .    │          .
+              .           .          .    ──────────────────> finalize_compilation_unit
+              .           .          .               .       │
+              .           .          .               .   (the middle─end and backend)
+              .           .          .               .       ↓
+              .           .    <───────────────────────────── end of toplev::main
+              .           .    │     .               .
+              .           .    V───────────────────────> toplev::finalize
+              .           .          .               . │   (purge internal state)
+              .           .    <──────────────────────── end of toplev::finalize
+              .           .    │     .               .
+              .           .    │ Convert assembler to DSO ("fake.so")
+              .           .    │     .               .
+              .           .    │ Load DSO (dlopen "fake.so")
+              .           .    │     .               .
+              .           .    │ RELEASE MUTEX       .
+              .           .    │     .               .
+              .           .    │ end of playback::context::compile ()
+              .           .    │     .               .
+              .           .    │ playback::context dtor
+              .           .     ──>  .               .
+              .           .       │ Cleanup tempdir  .
+              .           .       │   ("fake.so" is unlinked from the
+              .           .       │    filesystem at this point)
+              .           .    <──   .               .
+              .           .    │     .               .
+              .           .    │ end of recording::context::compile ()
+   <───────────────────────────      .               .
+   │          .           .          .               .
+   V          .           .  gcc_jit_result_get_code .
+    ──────────────────────────>      .               .
+              .           .    │ dlsym () within loaded DSO
+   <───────────────────────────      .               .
+   Get (void*).           .          .               .
+   │          .           .          .               .
+   │ Call it  .           .          .               .
+   ───────────────>       .          .               .
+              .    │      .          .               .
+              .    │      .          .               .
+   <───────────────       .          .               .
+   │          .           .          .               .
+etc│          .           .          .               .
+   │          .           .          .               .
+   V          .           .  gcc_jit_result_release  .
+    ──────────────────────────>      .               .
+              .           .    │ dlclose () the loaded DSO
+              .           .    │    (code becomes uncallable)
+   <───────────────────────────      .               .
+   │          .           .          .               .

@@ -9,6 +9,7 @@
 
 #include <gmp.h>
 #include <mpfr.h>
+#include <mpc.h>
 
 #include "operator.h"
 
@@ -277,9 +278,9 @@ class Backend
   virtual Bexpression*
   float_constant_expression(Btype* btype, mpfr_t val) = 0;
 
-  // Return an expression for the complex value REAL/IMAG in BTYPE.
+  // Return an expression for the complex value VAL in BTYPE.
   virtual Bexpression*
-  complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag) = 0;
+  complex_constant_expression(Btype* btype, mpc_t val) = 0;
 
   // Return an expression for the string value VAL.
   virtual Bexpression*

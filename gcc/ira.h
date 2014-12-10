@@ -64,7 +64,7 @@ struct target_ira
      class.  */
   enum reg_class x_ira_pressure_class_translate[N_REG_CLASSES];
 
-  /* Bigest pressure register class containing stack registers.
+  /* Biggest pressure register class containing stack registers.
      NO_REGS if there are no stack registers.  */
   enum reg_class x_ira_stack_reg_pressure_class;
 
@@ -181,7 +181,7 @@ extern struct ira_reg_equiv_s *ira_reg_equiv;
 extern void ira_init_once (void);
 extern void ira_init (void);
 extern void ira_setup_eliminable_regset (void);
-extern rtx ira_eliminate_regs (rtx, enum machine_mode);
+extern rtx ira_eliminate_regs (rtx, machine_mode);
 extern void ira_set_pseudo_classes (bool, FILE *);
 extern void ira_implicitly_set_insn_hard_regs (HARD_REG_SET *);
 extern void ira_expand_reg_equiv (void);
@@ -198,5 +198,8 @@ extern bool ira_better_spill_reload_regno_p (int *, int *, rtx, rtx, rtx);
 extern bool ira_bad_reload_regno (int, rtx, rtx);
 
 extern void ira_adjust_equiv_reg_cost (unsigned, int);
+
+/* ira-costs.c */
+extern void ira_costs_c_finalize (void);
 
 #endif /* GCC_IRA_H */

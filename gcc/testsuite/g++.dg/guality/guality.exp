@@ -28,7 +28,7 @@ proc check_guality {args} {
       set ret [string match "*1 PASS, 0 FAIL, 0 UNRESOLVED*" $execout]
     }
     remote_file build delete $output
-    array get test_counts [array get saved_test_counts]
+    array set test_counts [array get saved_test_counts]
     return $ret
 }
 

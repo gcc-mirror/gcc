@@ -1890,7 +1890,7 @@ trans_code (gfc_code * code, tree cond)
 	  break;
 
 	default:
-	  internal_error ("gfc_trans_code(): Bad statement code");
+	  gfc_internal_error ("gfc_trans_code(): Bad statement code");
 	}
 
       gfc_set_backend_locus (&code->loc);
@@ -1963,7 +1963,7 @@ gfc_generate_module_code (gfc_namespace * ns)
   entry = gfc_find_module (ns->proc_name->name);
   if (entry->namespace_decl)
     /* Buggy sourcecode, using a module before defining it?  */
-    htab_empty (entry->decls);
+    entry->decls->empty ();
   entry->namespace_decl = ns->proc_name->backend_decl;
 
   gfc_generate_module_vars (ns);

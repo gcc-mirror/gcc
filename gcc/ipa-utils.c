@@ -23,6 +23,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -33,12 +43,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "langhooks.h"
 #include "splay-tree.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 #include "ipa-utils.h"
+#include "bitmap.h"
 #include "ipa-reference.h"
 #include "flags.h"
 #include "diagnostic.h"
 #include "langhooks.h"
 #include "lto-streamer.h"
+#include "alloc-pool.h"
+#include "ipa-prop.h"
 #include "ipa-inline.h"
 
 /* Debugging function for postorder and inorder code. NOTE is a string
@@ -410,8 +427,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "Merging profiles of %s/%i to %s/%i\n",
-	       xstrdup (src->name ()), src->order,
-	       xstrdup (dst->name ()), dst->order);
+	       xstrdup_for_dump (src->name ()), src->order,
+	       xstrdup_for_dump (dst->name ()), dst->order);
     }
   dst->count += src->count;
 
@@ -421,17 +438,17 @@ ipa_merge_profiles (struct cgraph_node *dst,
      temporarily inconsistent.  */
   if (src->decl == dst->decl)
     {
-      void **slot;
       struct lto_in_decl_state temp;
       struct lto_in_decl_state *state;
 
       /* We are going to move the decl, we want to remove its file decl data.
 	 and link these with the new decl. */
       temp.fn_decl = src->decl;
-      slot = htab_find_slot (src->lto_file_data->function_decl_states,
-			     &temp, NO_INSERT);
-      state = (lto_in_decl_state *)*slot;
-      htab_clear_slot (src->lto_file_data->function_decl_states, slot);
+      lto_in_decl_state **slot
+	= src->lto_file_data->function_decl_states->find_slot (&temp,
+							       NO_INSERT);
+      state = *slot;
+      src->lto_file_data->function_decl_states->clear_slot (slot);
       gcc_assert (state);
 
       /* Duplicate the decl and be sure it does not link into body of DST.  */
@@ -444,8 +461,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
       /* Associate the decl state with new declaration, so LTO streamer
  	 can look it up.  */
       state->fn_decl = src->decl;
-      slot = htab_find_slot (src->lto_file_data->function_decl_states,
-			     state, INSERT);
+      slot
+	= src->lto_file_data->function_decl_states->find_slot (state, INSERT);
       gcc_assert (!*slot);
       *slot = state;
     }

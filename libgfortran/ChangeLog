@@ -1,3 +1,160 @@
+2014-11-28  Bernd Schmidt  <bernds@codesourcery.com>
+
+        * Makefile.am (AM_CFLAGS): Add -DLIBGFOR_MINIMAL if LIBGFOR_MINIMAL.
+        (gfor_io_src, gfor_heper_src, gfor_src): Split into minimal and
+        always included sources.
+        * Makefile.in: Regenerate.
+        * configure.ac (LIBGFOR_MINIMAL): New AM_CONDITIONAL.
+        * configure: Regenerate.
+        * caf/single.c (caf_runtime_error): Don't print messages if
+        LIBGFOR_MINIMAL.
+        * runtime/compile_options.c (fatal_error_in_progress,
+        show_signal, backtrace_handler, maybe_find_addr2line): Guard with
+        !defined LIBGFOR_MINIMAL.
+        (set_options): Likewise for the backtrace code.
+        * runtime/minimal.c: New file.
+
+2014-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* intrinsics/env.c (getenv): Remove unused variable res_len.
+
+2014-11-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure.ac: Guard include of <ieeefp.h>.
+	* configure: Rebuilt.
+
+2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/63784
+	* configure: Regenerated.
+
+2014-11-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/60324
+	* intrinsics/random.c (kiss_size): Rename to KISS_SIZE, make it a
+	macro instead of a variable.
+	(random_seed_i4): Make seed correct size, remove assert, KISS_SIZE
+	related changes.
+	(random_seed_i8): KISS_SIZE related changes.
+
+2014-11-13  Marek Polacek  <polacek@redhat.com>
+
+	* intrinsics/access.c: Include <stdlib.h>.
+	* intrinsics/chdir.c: Likewise.
+	* intrinsics/chmod.c: Likewise.
+	* intrinsics/link.c: Likewise.
+	* intrinsics/perror.c: Likewise.
+	* intrinsics/rename.c: Likewise.
+	* intrinsics/symlnk.c: Likewise.
+	* intrinsics/unlink.c: Likewise.
+
+2014-11-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/60324
+	* configure: Regenerated.
+	* configure.ac (AM_CFLAGS): Add Werror=vla.
+	* libgfortran.h (gfc_alloca): Remove macro.
+	(fc_strdup_notrim): New prototype.
+	* intrinsics/access.c (access_func): Use fc_strdup rather than
+	stack allocation.
+	* intrinsics/chdir.c (chdir_i4_sub): Likewise.
+	(chdir_i8_sub): Likewise.
+	* intrinsics/chmod.c (chmod_internal): New function, move logic
+	here.
+	(chmod_func): Call chmod_internal.
+	* intrinsics/env.c (getenv): Use fc_strdup rather than stack
+	allocation.
+	(get_environment_variable_i4): Likewise.
+	* intrinsics/execute_command_line.c (execute_command_line):
+	Likewise.
+	* intrinsics/hostnm.c (hostnm_0): New function, use static buffer
+	rather than VLA.
+	(hostnm_i4_sub): Call hostnm_0.
+	(hostnm_i8_sub): Likewise.
+	(hostnm): Likewise.
+	* intrinsics/link.c (link_internal): New function, use fc_strdup
+	rather than stack allocation.
+	(link_i4_sub): Call link_internal.
+	(link_i8_sub): Likewise.
+	(link_i4): Likewise.
+	(link_i8): Likewise.
+	* intrinsics/perror.c (perror_sub): Use fc_strdup rather than
+	stack allocation.
+	* intrinsics/random.c (random_seed_i4): Use static buffer rather
+	than VLA, use _Static_assert to make sure it's big enough.
+	* intrinsics/rename.c (rename_internal): New function, use
+	fc_strdup rather than stack allocation.
+	(rename_i4_sub): Call rename_internal.
+	(rename_i8_sub): Likewise.
+	(rename_i4): Likewise.
+	(rename_i8): Likewise.
+	* intrinsics/stat.c (stat_i4_sub_0): Use fc_strdup rather than
+	stack allocation.
+	(stat_i8_sub_0): Likewise.
+	* intrinsics/symlink.c (symlnk_internal): New function, use
+	fc_strdup rather than stack allocation.
+	(symlnk_i4_sub): Call symlnk_internal.
+	(symlnk_i8_sub): Likewise.
+	(symlnk_i4): Likewise.
+	(symlnk_i8): Likewise.
+	* intrinsics/system.c (system_sub): Use fc_strdup rather than
+	stack allocation.
+	* intrinsics/unlink.c (unlink_i4_sub): Likewise.
+	* io/file_pos.c (READ_CHUNK): Make it a macro rather than variable.
+	* io/list_read.c (nml_get_obj_data): Use fixed stack buffer, fall
+	back to xmalloc/free for large sizes.
+	* io/read.c (read_f): Likewise.
+	* io/transfer.c (MAX_READ): Make it a macro rather than variable.
+	(WRITE_CHUNK): Likewise.
+	* io/write_float.def (write_float): Use fixed stack buffer, fall
+	back to xmalloc/free for large sizes.
+	* runtime/string.c (fc_strdup_notrim): New function.
+
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/63610
+	* configure: Regenerate.
+
+2014-11-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/47007
+	PR libfortran/61847
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac (AC_CHECK_HEADERS_ONCE): Check for xlocale.h.
+	(AC_CHECK_FUNCS_ONCE): Check for newlocale, freelocale, uselocale,
+	strerror_l.
+	* io/io.h (locale.h): Include.
+	(xlocale.h): Include if present.
+	(c_locale): New variable.
+	(old_locale): New variable.
+	(old_locale_ctr): New variable.
+	(old_locale_lock): New variable.
+	(st_parameter_dt): Add old_locale member.
+	* io/transfer.c (data_transfer_init): Set locale to "C" if doing
+	formatted transfer.
+	(finalize_transfer): Reset locale to previous.
+	* io/unit.c (c_locale): New variable.
+	(old_locale): New variable.
+	(old_locale_ctr): New variable.
+	(old_locale_lock): New variable.
+	(init_units): Init c_locale, init old_locale_lock.
+	(close_units): Free c_locale.
+	* runtime/error.c (locale.h): Include.
+	(xlocale.h): Include if present.
+	(gf_strerror): Use strerror_l if available. Reset locale to
+	LC_GLOBAL_LOCALE for strerror_r branch.
+
+2014-10-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/63589
+	* configure.ac: Check for strtok_r.
+	* runtime/main.c (gfstrtok_r): Fallback implementation of
+	strtok_r.
+	(find_addr2line): Use strtok_r to split PATH.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
 2014-10-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* ieee/ieee_helper.c (ieee_is_finite_*, ieee_is_nan_*,

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-pre" } */
+/* { dg-options "-O2 -ftree-tail-merge -fno-tree-dominator-opts -fdump-tree-pre" } */
 
 int bar (int i);
 

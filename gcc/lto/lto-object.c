@@ -22,6 +22,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -30,7 +39,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "diagnostic-core.h"
 #include "lto.h"
-#include "tm.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 #include "lto-streamer.h"
 #include "lto-section-names.h"
 #include "simple-object.h"
@@ -230,8 +242,7 @@ lto_obj_add_section (void *data, const char *name, off_t offset,
   void **slot;
   struct lto_section_list *list = loasd->list;
 
-  if (strncmp (name, LTO_SECTION_NAME_PREFIX,
-	       strlen (LTO_SECTION_NAME_PREFIX)) != 0)
+  if (strncmp (name, section_name_prefix, strlen (section_name_prefix)))
     return 1;
 
   new_name = xstrdup (name);
@@ -338,7 +349,7 @@ lto_obj_begin_section (const char *name)
 	      && lo->sobj_w != NULL
 	      && lo->section == NULL);
 
-  align = exact_log2 (POINTER_SIZE / BITS_PER_UNIT);
+  align = ceil_log2 (POINTER_SIZE_UNITS);
   lo->section = simple_object_write_create_section (lo->sobj_w, name, align,
 						    &errmsg, &err);
   if (lo->section == NULL)

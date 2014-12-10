@@ -58,8 +58,8 @@ DEF_TUNE (X86_TUNE_PARTIAL_REG_DEPENDENCY, "partial_reg_dependency",
    SPECfp regression, while enabling it on K8 brings roughly 2.4% regression
    that can be partly masked by careful scheduling of moves.  */
 DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY, "sse_partial_reg_dependency",
-          m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT
-	  | m_INTEL | m_AMDFAM10 | m_BDVER | m_GENERIC)
+          m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_AMDFAM10
+	  | m_BDVER | m_GENERIC)
 
 /* X86_TUNE_SSE_SPLIT_REGS: Set for machines where the type and dependencies
    are resolved on SSE register parts instead of whole registers, so we may
@@ -394,6 +394,10 @@ DEF_TUNE (X86_TUNE_SLOW_PSHUFB, "slow_pshufb",
    execute 2 or more vector instructions in parallel.  */
 DEF_TUNE (X86_TUNE_VECTOR_PARALLEL_EXECUTION, "vec_parallel",
           m_NEHALEM | m_SANDYBRIDGE | m_HASWELL)
+
+/* X86_TUNE_AVOID_4BYTE_PREFIXES: Avoid instructions requiring 4+ bytes of prefixes.  */
+DEF_TUNE (X86_TUNE_AVOID_4BYTE_PREFIXES, "avoid_4byte_prefixes",
+          m_SILVERMONT | m_INTEL)
 
 /*****************************************************************************/
 /* AVX instruction selection tuning (some of SSE flags affects AVX, too)     */

@@ -325,6 +325,9 @@ support, improved leaf function register allocation, and his direction
 via the steering committee.
 
 @item
+Jonny Grant for improvements to @code{collect2's} @option{--help} documentation.
+
+@item
 Anthony Green for his @option{-Os} contributions, the moxie port, and
 Java front end work.
 
@@ -419,6 +422,9 @@ Kamil Iskra for general m68k hacking.
 
 @item
 Lee Iverson for random fixes and MIPS testing.
+
+@item
+Balaji V. Iyer for Cilk+ development and merging.
 
 @item
 Andreas Jaeger for testing and benchmarking of GCC and various bug fixes.

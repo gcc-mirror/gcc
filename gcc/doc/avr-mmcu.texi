@@ -68,6 +68,10 @@
 ``XMEGA'' devices with more than 128@tie{}KiB of program memory and more than 64@tie{}KiB of RAM.
 @*@var{mcu}@tie{}= @code{atxmega128a1}, @code{atxmega128a1u}, @code{atxmega128a4u}.
 
+@item avrtiny
+``TINY'' Tiny core devices with 512@tie{}B up to 4@tie{}KiB of program memory.
+@*@var{mcu}@tie{}= @code{attiny10}, @code{attiny20}, @code{attiny4}, @code{attiny40}, @code{attiny5}, @code{attiny9}.
+
 @item avr1
 This ISA is implemented by the minimal AVR core and supported for assembler only.
 @*@var{mcu}@tie{}= @code{attiny11}, @code{attiny12}, @code{attiny15}, @code{attiny28}, @code{at90s1200}.

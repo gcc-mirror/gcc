@@ -32,6 +32,13 @@
 #                    e.g. sfdf
 # hardfp_truncations: a list of truncations between hardware floating-point
 #                     modes, e.g. dfsf
+#
+# If some functions that would otherwise be defined should not be
+# defined by this file (typically because the target would compile
+# certain operations into a call to the libgcc function, which thus
+# needs to be defined elsewhere to use software floating point), also
+# define hardfp_exclusions to be a list of those functions,
+# e.g. unorddf2.
 
 # Functions parameterized by a floating-point mode M.
 hardfp_func_bases := addM3 subM3 negM2 mulM3 divM3
@@ -49,6 +56,8 @@ hardfp_func_list += $(foreach pair, $(hardfp_extensions), \
 		    	      $(subst M,$(pair),extendM2))
 hardfp_func_list += $(foreach pair, $(hardfp_truncations), \
 		    	      $(subst M,$(pair),truncM2))
+
+hardfp_func_list := $(filter-out $(hardfp_exclusions),$(hardfp_func_list))
 
 # Regexp for matching a floating-point mode.
 hardfp_mode_regexp := $(shell echo $(hardfp_float_modes) | sed 's/ /\\|/g')

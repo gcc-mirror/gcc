@@ -34,14 +34,29 @@
 #include "output.h"
 #include "insn-attr.h"
 #include "flags.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "input.h"
 #include "function.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "libfuncs.h"
 #include "recog.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
 #include "reload.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "lcm.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "ggc.h"
 #include "tm_p.h"
@@ -103,6 +118,9 @@ struct GTY(()) machine_function
   int virt_insns_ok;
   /* Set if the current function needs to clean up any trampolines.  */
   int trampolines_used;
+  /* True if the ES register is used and hence
+     needs to be saved inside interrupt handlers.  */
+  bool uses_es;
 };
 
 /* This is our init_machine_status, as set in
@@ -121,38 +139,36 @@ rl78_init_machine_status (void)
 /* This pass converts virtual instructions using virtual registers, to
    real instructions using real registers.  Rather than run it as
    reorg, we reschedule it before vartrack to help with debugging.  */
-namespace {
-
-const pass_data pass_data_rl78_devirt =
+namespace
 {
-  RTL_PASS, /* type */
-  "devirt", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_MACH_DEP, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
+  const pass_data pass_data_rl78_devirt =
+    {
+      RTL_PASS, /* type */
+      "devirt", /* name */
+      OPTGROUP_NONE, /* optinfo_flags */
+      TV_MACH_DEP, /* tv_id */
+      0, /* properties_required */
+      0, /* properties_provided */
+      0, /* properties_destroyed */
+      0, /* todo_flags_start */
+      0, /* todo_flags_finish */
+    };
 
-class pass_rl78_devirt : public rtl_opt_pass
-{
-public:
-  pass_rl78_devirt(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rl78_devirt, ctxt)
+  class pass_rl78_devirt : public rtl_opt_pass
   {
-  }
+  public:
+    pass_rl78_devirt (gcc::context *ctxt)
+      : rtl_opt_pass (pass_data_rl78_devirt, ctxt)
+      {
+      }
 
-  /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+    /* opt_pass methods: */
+    virtual unsigned int execute (function *)
     {
       rl78_reorg ();
       return 0;
     }
-
-};
-
+  };
 } // anon namespace
 
 rtl_opt_pass *
@@ -188,8 +204,7 @@ move_elim_pass (void)
 	 can eliminate the second SET.  */
       if (prev
 	  && rtx_equal_p (SET_DEST (prev), SET_SRC (set))
-	  && rtx_equal_p (SET_DEST (set), SET_SRC (prev))
-	  )	  
+	  && rtx_equal_p (SET_DEST (set), SET_SRC (prev)))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, " Delete insn %d because it is redundant\n",
@@ -201,40 +216,39 @@ move_elim_pass (void)
       else
 	prev = set;
     }
-  
+
   if (dump_file)
     print_rtl_with_bb (dump_file, get_insns (), 0);
 
   return 0;
 }
 
-namespace {
-
-const pass_data pass_data_rl78_move_elim =
+namespace
 {
-  RTL_PASS, /* type */
-  "move_elim", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_MACH_DEP, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
+  const pass_data pass_data_rl78_move_elim =
+    {
+      RTL_PASS, /* type */
+      "move_elim", /* name */
+      OPTGROUP_NONE, /* optinfo_flags */
+      TV_MACH_DEP, /* tv_id */
+      0, /* properties_required */
+      0, /* properties_provided */
+      0, /* properties_destroyed */
+      0, /* todo_flags_start */
+      0, /* todo_flags_finish */
+    };
 
-class pass_rl78_move_elim : public rtl_opt_pass
-{
-public:
-  pass_rl78_move_elim(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rl78_move_elim, ctxt)
+  class pass_rl78_move_elim : public rtl_opt_pass
   {
-  }
+  public:
+    pass_rl78_move_elim (gcc::context *ctxt)
+      : rtl_opt_pass (pass_data_rl78_move_elim, ctxt)
+      {
+      }
 
-  /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return move_elim_pass (); }
-};
-
+    /* opt_pass methods: */
+    virtual unsigned int execute (function *) { return move_elim_pass (); }
+  };
 } // anon namespace
 
 rtl_opt_pass *
@@ -269,7 +283,7 @@ rl78_asm_file_start (void)
     }
 
   opt_pass *rl78_devirt_pass = make_pass_rl78_devirt (g);
-  static struct register_pass_info rl78_devirt_info =
+  struct register_pass_info rl78_devirt_info =
     {
       rl78_devirt_pass,
       "pro_and_epilogue",
@@ -278,7 +292,7 @@ rl78_asm_file_start (void)
     };
 
   opt_pass *rl78_move_elim_pass = make_pass_rl78_move_elim (g);
-  static struct register_pass_info rl78_move_elim_info =
+  struct register_pass_info rl78_move_elim_info =
     {
       rl78_move_elim_pass,
       "bbro",
@@ -350,7 +364,7 @@ rl78_real_insns_ok (void)
 
 /* Implements HARD_REGNO_NREGS.  */
 int
-rl78_hard_regno_nregs (int regno, enum machine_mode mode)
+rl78_hard_regno_nregs (int regno, machine_mode mode)
 {
   int rs = register_sizes[regno];
   if (rs < 1)
@@ -360,7 +374,7 @@ rl78_hard_regno_nregs (int regno, enum machine_mode mode)
 
 /* Implements HARD_REGNO_MODE_OK.  */
 int
-rl78_hard_regno_mode_ok (int regno, enum machine_mode mode)
+rl78_hard_regno_mode_ok (int regno, machine_mode mode)
 {
   int s = GET_MODE_SIZE (mode);
 
@@ -392,7 +406,7 @@ rl78_hard_regno_mode_ok (int regno, enum machine_mode mode)
    need it to below, so we use this function for when we must get a
    valid subreg in a "natural" state.  */
 static rtx
-rl78_subreg (enum machine_mode mode, rtx r, enum machine_mode omode, int byte)
+rl78_subreg (machine_mode mode, rtx r, machine_mode omode, int byte)
 {
   if (GET_CODE (r) == MEM)
     return adjust_address (r, mode, byte);
@@ -817,7 +831,8 @@ rl78_far_p (rtx x)
 /* Return the appropriate mode for a named address pointer.  */
 #undef  TARGET_ADDR_SPACE_POINTER_MODE
 #define TARGET_ADDR_SPACE_POINTER_MODE rl78_addr_space_pointer_mode
-static enum machine_mode
+
+static machine_mode
 rl78_addr_space_pointer_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -834,8 +849,9 @@ rl78_addr_space_pointer_mode (addr_space_t addrspace)
 /* Returns TRUE for valid addresses.  */
 #undef  TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE rl78_valid_pointer_mode
+
 static bool
-rl78_valid_pointer_mode (enum machine_mode m)
+rl78_valid_pointer_mode (machine_mode m)
 {
   return (m == HImode || m == SImode);
 }
@@ -843,7 +859,8 @@ rl78_valid_pointer_mode (enum machine_mode m)
 /* Return the appropriate mode for a named address address.  */
 #undef  TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE rl78_addr_space_address_mode
-static enum machine_mode
+
+static machine_mode
 rl78_addr_space_address_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -861,7 +878,7 @@ rl78_addr_space_address_mode (addr_space_t addrspace)
 #define TARGET_LEGITIMATE_CONSTANT_P		rl78_is_legitimate_constant
 
 static bool
-rl78_is_legitimate_constant (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED)
+rl78_is_legitimate_constant (machine_mode mode ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED)
 {
   return true;
 }
@@ -870,7 +887,7 @@ rl78_is_legitimate_constant (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x ATTR
 #define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P	rl78_as_legitimate_address
 
 bool
-rl78_as_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x,
+rl78_as_legitimate_address (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
 			    bool strict ATTRIBUTE_UNUSED, addr_space_t as ATTRIBUTE_UNUSED)
 {
   rtx base, index, addend;
@@ -921,6 +938,7 @@ rl78_as_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x,
 /* Determine if one named address space is a subset of another.  */
 #undef  TARGET_ADDR_SPACE_SUBSET_P
 #define TARGET_ADDR_SPACE_SUBSET_P rl78_addr_space_subset_p
+
 static bool
 rl78_addr_space_subset_p (addr_space_t subset, addr_space_t superset)
 {
@@ -936,6 +954,7 @@ rl78_addr_space_subset_p (addr_space_t subset, addr_space_t superset)
 
 #undef  TARGET_ADDR_SPACE_CONVERT
 #define TARGET_ADDR_SPACE_CONVERT rl78_addr_space_convert
+
 /* Convert from one address space to another.  */
 static rtx
 rl78_addr_space_convert (rtx op, tree from_type, tree to_type)
@@ -970,7 +989,7 @@ rl78_addr_space_convert (rtx op, tree from_type, tree to_type)
 
 /* Implements REGNO_MODE_CODE_OK_FOR_BASE_P.  */
 bool
-rl78_regno_mode_code_ok_for_base_p (int regno, enum machine_mode mode ATTRIBUTE_UNUSED,
+rl78_regno_mode_code_ok_for_base_p (int regno, machine_mode mode ATTRIBUTE_UNUSED,
 				    addr_space_t address_space ATTRIBUTE_UNUSED,
 				    int outer_code ATTRIBUTE_UNUSED, int index_code)
 {
@@ -985,13 +1004,41 @@ rl78_regno_mode_code_ok_for_base_p (int regno, enum machine_mode mode ATTRIBUTE_
 
 /* Implements MODE_CODE_BASE_REG_CLASS.  */
 enum reg_class
-rl78_mode_code_base_reg_class (enum machine_mode mode ATTRIBUTE_UNUSED,
+rl78_mode_code_base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
 			       addr_space_t address_space ATTRIBUTE_UNUSED,
 			       int outer_code ATTRIBUTE_UNUSED,
 			       int index_code ATTRIBUTE_UNUSED)
 {
   return V_REGS;
 }
+
+/* Typical stack layout should looks like this after the function's prologue:
+
+                            |    |
+                              --                       ^
+                            |    | \                   |
+                            |    |   arguments saved   | Increasing
+                            |    |   on the stack      |  addresses
+    PARENT   arg pointer -> |    | /
+  -------------------------- ---- -------------------
+    CHILD                   |ret |   return address
+                              --
+                            |    | \
+                            |    |   call saved
+                            |    |   registers
+	frame pointer ->    |    | /
+                              --
+                            |    | \
+                            |    |   local
+                            |    |   variables
+                            |    | /
+                              --
+                            |    | \
+                            |    |   outgoing          | Decreasing
+                            |    |   arguments         |  addresses
+   current stack pointer -> |    | /                   |
+  -------------------------- ---- ------------------   V
+                            |    |                 */
 
 /* Implements INITIAL_ELIMINATION_OFFSET.  The frame layout is
    described in the machine_Function struct definition, above.  */
@@ -1067,7 +1114,8 @@ rl78_expand_prologue (void)
       {
 	if (TARGET_G10)
 	  {
-	    emit_move_insn (gen_rtx_REG (HImode, 0), gen_rtx_REG (HImode, i*2));
+	    if (i != 0)
+	      emit_move_insn (gen_rtx_REG (HImode, 0), gen_rtx_REG (HImode, i * 2));
 	    F (emit_insn (gen_push (gen_rtx_REG (HImode, 0))));
 	  }
 	else
@@ -1085,6 +1133,13 @@ rl78_expand_prologue (void)
 
   if (rb != 0)
     emit_insn (gen_sel_rb (GEN_INT (0)));
+
+  /* Save ES register inside interrupt functions if it is used.  */
+  if (is_interrupt_func (cfun->decl) && cfun->machine->uses_es)
+    {
+      emit_insn (gen_movqi_from_es (gen_rtx_REG (QImode, A_REG)));
+      F (emit_insn (gen_push (gen_rtx_REG (HImode, AX_REG))));
+    }
 
   if (frame_pointer_needed)
     {
@@ -1131,6 +1186,12 @@ rl78_expand_epilogue (void)
 	  emit_insn (gen_addhi3 (sp, sp, GEN_INT (fs_byte)));
 	  fs -= fs_byte;
 	}
+    }
+
+  if (is_interrupt_func (cfun->decl) && cfun->machine->uses_es)
+    {
+      emit_insn (gen_pop (gen_rtx_REG (HImode, AX_REG)));
+      emit_insn (gen_movqi_es (gen_rtx_REG (QImode, A_REG)));
     }
 
   for (i = 15; i >= 0; i--)
@@ -1219,6 +1280,9 @@ rl78_start_function (FILE *file, HOST_WIDE_INT hwi_local ATTRIBUTE_UNUSED)
   if (cfun->machine->framesize_outgoing)
     fprintf (file, "\t; outgoing: %d byte%s\n", cfun->machine->framesize_outgoing,
 	     cfun->machine->framesize_outgoing == 1 ? "" : "s");
+
+  if (cfun->machine->uses_es)
+    fprintf (file, "\t; uses ES register\n");
 }
 
 /* Return an RTL describing where a function return value of type RET_TYPE
@@ -1232,7 +1296,7 @@ rl78_function_value (const_tree ret_type,
 		     const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
 		     bool       outgoing ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode = TYPE_MODE (ret_type);
+  machine_mode mode = TYPE_MODE (ret_type);
 
   return gen_rtx_REG (mode, 8);
 }
@@ -1240,9 +1304,9 @@ rl78_function_value (const_tree ret_type,
 #undef  TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE rl78_promote_function_mode
 
-static enum machine_mode
+static machine_mode
 rl78_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
-			    enum machine_mode mode,
+			    machine_mode mode,
 			    int *punsignedp ATTRIBUTE_UNUSED,
 			    const_tree funtype ATTRIBUTE_UNUSED, int for_return ATTRIBUTE_UNUSED)
 {
@@ -1261,7 +1325,7 @@ rl78_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 
 static rtx
 rl78_function_arg (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-		   enum machine_mode mode ATTRIBUTE_UNUSED,
+		   machine_mode mode ATTRIBUTE_UNUSED,
 		   const_tree type ATTRIBUTE_UNUSED,
 		   bool named ATTRIBUTE_UNUSED)
 {
@@ -1272,7 +1336,7 @@ rl78_function_arg (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
 #define TARGET_FUNCTION_ARG_ADVANCE     rl78_function_arg_advance
 
 static void
-rl78_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode, const_tree type,
+rl78_function_arg_advance (cumulative_args_t cum_v, machine_mode mode, const_tree type,
 			   bool named ATTRIBUTE_UNUSED)
 {
   int rounded_size;
@@ -1289,7 +1353,7 @@ rl78_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode, cons
 #define	TARGET_FUNCTION_ARG_BOUNDARY rl78_function_arg_boundary
 
 static unsigned int
-rl78_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
+rl78_function_arg_boundary (machine_mode mode ATTRIBUTE_UNUSED,
 			    const_tree type ATTRIBUTE_UNUSED)
 {
   return 16;
@@ -1919,7 +1983,7 @@ static unsigned char content_memory [32 + NUM_STACK_LOCS];
 
 static unsigned char saved_update_index = NOT_KNOWN;
 static unsigned char saved_update_value;
-static enum machine_mode saved_update_mode;
+static machine_mode saved_update_mode;
 
 
 static inline void
@@ -1937,7 +2001,7 @@ clear_content_memory (void)
 static unsigned char
 get_content_index (rtx loc)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (loc == NULL_RTX)
     return NOT_KNOWN;
@@ -1972,7 +2036,7 @@ get_content_index (rtx loc)
 /* Return a string describing content INDEX in mode MODE.
    WARNING: Can return a pointer to a static buffer.  */
 static const char *
-get_content_name (unsigned char index, enum machine_mode mode)
+get_content_name (unsigned char index, machine_mode mode)
 {
   static char buffer [128];
 
@@ -2009,7 +2073,7 @@ display_content_memory (FILE * file)
 #endif
 
 static void
-update_content (unsigned char index, unsigned char val, enum machine_mode mode)
+update_content (unsigned char index, unsigned char val, machine_mode mode)
 {
   unsigned int i;
 
@@ -2074,7 +2138,7 @@ update_content (unsigned char index, unsigned char val, enum machine_mode mode)
 static void
 record_content (rtx loc, rtx value)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   unsigned char index;
   unsigned char val;
 
@@ -2155,7 +2219,7 @@ rl78_es_base (rtx addr)
    carefully to ensure that all the constraint information is accurate
    for the newly matched insn.  */
 static bool
-insn_ok_now (rtx_insn *insn)
+insn_ok_now (rtx_insn * insn)
 {
   rtx pattern = PATTERN (insn);
   int i;
@@ -2165,7 +2229,7 @@ insn_ok_now (rtx_insn *insn)
   if (recog (pattern, insn, 0) > -1)
     {
       extract_insn (insn);
-      if (constrain_operands (1))
+      if (constrain_operands (1, get_preferred_alternatives (insn)))
 	{
 #if DEBUG_ALLOC
 	  fprintf (stderr, "\033[32m");
@@ -2194,7 +2258,7 @@ insn_ok_now (rtx_insn *insn)
       if (recog (pattern, insn, 0) > -1)
 	{
 	  extract_insn (insn);
-	  if (constrain_operands (0))
+	  if (constrain_operands (0, get_preferred_alternatives (insn)))
 	    {
 	      cfun->machine->virt_insns_ok = 0;
 	      return false;
@@ -2219,7 +2283,7 @@ insn_ok_now (rtx_insn *insn)
 #if DEBUG_ALLOC
 #define WORKED      fprintf (stderr, "\033[48;5;22m Worked at line %d \033[0m\n", __LINE__)
 #define FAILEDSOFAR fprintf (stderr, "\033[48;5;52m FAILED at line %d \033[0m\n", __LINE__)
-#define FAILED      fprintf (stderr, "\033[48;5;52m FAILED at line %d \033[0m\n", __LINE__), gcc_unreachable()
+#define FAILED      fprintf (stderr, "\033[48;5;52m FAILED at line %d \033[0m\n", __LINE__), gcc_unreachable ()
 #define MAYBE_OK(insn) if (insn_ok_now (insn)) { WORKED; return; } else { FAILEDSOFAR; }
 #define MUST_BE_OK(insn) if (insn_ok_now (insn)) { WORKED; return; } FAILED
 #else
@@ -2293,6 +2357,7 @@ rl78_lo16 (rtx addr)
     r = rl78_subreg (HImode, addr, SImode, 0);
 
   r = gen_es_addr (r);
+  cfun->machine->uses_es = true;
 
   return r;
 }
@@ -2342,7 +2407,7 @@ process_postponed_content_update (void)
 static rtx
 gen_and_emit_move (rtx to, rtx from, rtx where, bool before)
 {
-  enum machine_mode mode = GET_MODE (to);
+  machine_mode mode = GET_MODE (to);
 
   if (optimize && before && already_contains (to, from))
     {
@@ -2481,7 +2546,10 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
   debug_rtx (m);
 #endif
   if (need_es)
-    m = change_address (m, GET_MODE (m), gen_es_addr (base));
+    {
+      m = change_address (m, GET_MODE (m), gen_es_addr (base));
+      cfun->machine->uses_es = true;
+    }
   else
     m = change_address (m, GET_MODE (m), base);
 #if DEBUG_ALLOC
@@ -2497,7 +2565,7 @@ static rtx
 move_to_acc (int opno, rtx before)
 {
   rtx src = OP (opno);
-  enum machine_mode mode = GET_MODE (src);
+  machine_mode mode = GET_MODE (src);
 
   if (REG_P (src) && REGNO (src) < 2)
     return src;
@@ -2511,7 +2579,7 @@ move_to_acc (int opno, rtx before)
 static void
 force_into_acc (rtx src, rtx before)
 {
-  enum machine_mode mode = GET_MODE (src);
+  machine_mode mode = GET_MODE (src);
   rtx move;
 
   if (REG_P (src) && REGNO (src) < 2)
@@ -2531,7 +2599,7 @@ static rtx
 move_from_acc (unsigned int opno, rtx after)
 {
   rtx dest = OP (opno);
-  enum machine_mode mode = GET_MODE (dest);
+  machine_mode mode = GET_MODE (dest);
 
   if (REG_P (dest) && REGNO (dest) < 2)
     return dest;
@@ -2544,7 +2612,7 @@ move_from_acc (unsigned int opno, rtx after)
 static rtx
 move_acc_to_reg (rtx acc, int regno, rtx before)
 {
-  enum machine_mode mode = GET_MODE (acc);
+  machine_mode mode = GET_MODE (acc);
   rtx reg;
 
   reg = gen_rtx_REG (mode, regno);
@@ -2558,7 +2626,7 @@ static rtx
 move_to_x (int opno, rtx before)
 {
   rtx src = OP (opno);
-  enum machine_mode mode = GET_MODE (src);
+  machine_mode mode = GET_MODE (src);
   rtx reg;
 
   if (mode == VOIDmode)
@@ -2581,7 +2649,7 @@ static rtx
 move_to_hl (int opno, rtx before)
 {
   rtx src = OP (opno);
-  enum machine_mode mode = GET_MODE (src);
+  machine_mode mode = GET_MODE (src);
   rtx reg;
 
   if (mode == VOIDmode)
@@ -2604,7 +2672,7 @@ static rtx
 move_to_de (int opno, rtx before)
 {
   rtx src = OP (opno);
-  enum machine_mode mode = GET_MODE (src);
+  machine_mode mode = GET_MODE (src);
   rtx reg;
 
   if (mode == VOIDmode)
@@ -2627,7 +2695,7 @@ move_to_de (int opno, rtx before)
 
 /* Devirtualize an insn of the form (SET (op) (unop (op))).  */
 static void
-rl78_alloc_physical_registers_op1 (rtx_insn *insn)
+rl78_alloc_physical_registers_op1 (rtx_insn * insn)
 {
   /* op[0] = func op[1] */
 
@@ -2706,7 +2774,7 @@ has_constraint (unsigned int opnum, enum constraint_num constraint)
 
 /* Devirtualize an insn of the form (SET (op) (binop (op) (op))).  */
 static void
-rl78_alloc_physical_registers_op2 (rtx_insn *insn)
+rl78_alloc_physical_registers_op2 (rtx_insn * insn)
 {
   rtx prev;
   rtx first;
@@ -2860,7 +2928,7 @@ rl78_alloc_physical_registers_op2 (rtx_insn *insn)
 
 /* Devirtualize an insn of the form SET (PC) (MEM/REG).  */
 static void
-rl78_alloc_physical_registers_ro1 (rtx_insn *insn)
+rl78_alloc_physical_registers_ro1 (rtx_insn * insn)
 {
   OP (0) = transcode_memory_rtx (OP (0), BC, insn);
 
@@ -2873,7 +2941,7 @@ rl78_alloc_physical_registers_ro1 (rtx_insn *insn)
 
 /* Devirtualize a compare insn.  */
 static void
-rl78_alloc_physical_registers_cmp (rtx_insn *insn)
+rl78_alloc_physical_registers_cmp (rtx_insn * insn)
 {
   int tmp_id;
   rtx saved_op1;
@@ -2966,7 +3034,7 @@ rl78_alloc_physical_registers_cmp (rtx_insn *insn)
 
 /* Like op2, but AX = A * X.  */
 static void
-rl78_alloc_physical_registers_umul (rtx_insn *insn)
+rl78_alloc_physical_registers_umul (rtx_insn * insn)
 {
   rtx prev = prev_nonnote_nondebug_insn (insn);
   rtx first;
@@ -3030,7 +3098,7 @@ rl78_alloc_physical_registers_umul (rtx_insn *insn)
 }
 
 static void
-rl78_alloc_address_registers_macax (rtx_insn *insn)
+rl78_alloc_address_registers_macax (rtx_insn * insn)
 {
   int which, op;
   bool replace_in_op0 = false;
@@ -3732,7 +3800,7 @@ static bool rl78_rtx_costs (rtx   x,
 #undef  TARGET_UNWIND_WORD_MODE
 #define TARGET_UNWIND_WORD_MODE rl78_unwind_word_mode
 
-static enum machine_mode
+static machine_mode
 rl78_unwind_word_mode (void)
 {
   return HImode;

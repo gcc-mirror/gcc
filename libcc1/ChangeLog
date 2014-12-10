@@ -1,0 +1,71 @@
+2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/63784
+	* configure: Regenerated.
+
+2014-11-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (libcc1_cv_lib_sockets): Check for -lsocket -lnsl.
+	* configure: Regenerate.
+	* connection.cc: Include <string.h>.
+        * libcc1.cc (libcc1_compile): Use AF_UNIX instead of AF_LOCAL.
+
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/63610
+	* configure: Regenerate.
+
+2014-11-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR bootstrap/63699
+	PR bootstrap/63750
+	* plugin.cc: Don't include <string>.
+
+2014-10-29  Jakub Jelinek  <jakub@redhat.com>
+	    Phil Muldoon  <pmuldoon@redhat.com>
+
+	* configure.ac: Remove -Werror addition to WARN_FLAGS.  Add
+	ACX_PROG_CC_WARNINGS_ARE_ERRORS and AC_ARG_VAR for GMPINC.
+	* Makefile.am (AM_CPPFLAGS): Add $(GMPINC).
+	(WERROR_FLAG): Remove.
+	(AM_CXXFLAGS): Use $(WERROR) instead of $(WERROR_FLAG).
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2014-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (CXXFLAGS, LDFLAGS): Filter out -fsanitize=address.
+	(libiberty_normal, libiberty_noasan, libiberty_pic, libiberty_dep):
+	New variables.
+	(libiberty): Set to -Wc, followed by the first existing noasan/,
+	pic/ or . libiberty.a.
+	(libcc1plugin_la_DEPENDENCIES, libcc1plugin_la_LINK,
+	libcc1_la_DEPENDENCIES, libcc1_la_LINK, LTLDFLAGS): New variables.
+	* Makefile.in: Regenerated.
+
+2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
+	    Jan Kratochvil  <jan.kratochvil@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* aclocal.m4: New file.
+	* callbacks.cc: New file.
+	* callbacks.hh: New file.
+	* cc1plugin-config.h.in: New file.
+	* configure: New file.
+	* configure.ac: New file.
+	* connection.cc: New file.
+	* connection.hh: New file.
+	* findcomp.cc: New file.
+	* findcomp.hh: New file.
+	* libcc1.cc: New file.
+	* libcc1plugin.sym: New file.
+	* libcc1.sym: New file.
+	* Makefile.am: New file.
+	* Makefile.in: New file.
+	* marshall.cc: New file.
+	* marshall.hh: New file.
+	* names.cc: New file.
+	* names.hh: New file.
+	* plugin.cc: New file.
+	* rpc.hh: New file.
+	* status.hh: New file.

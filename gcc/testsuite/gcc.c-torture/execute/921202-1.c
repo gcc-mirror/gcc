@@ -1,3 +1,4 @@
+/* { dg-require-effective-target untyped_assembly } */
 #ifndef STACK_SIZE
 #define	VLEN	2055
 #else

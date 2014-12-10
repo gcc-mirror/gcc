@@ -4,7 +4,7 @@
    popcntintrin.h  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse -mno-sse4.1 -mno-sse4.2 -mno-popcnt" } */
+/* { dg-options "-O2 -msse -mno-sse4.1 -mno-sse4.2 -mno-popcnt -std=gnu89" } */
 
 #include <popcntintrin.h>
 

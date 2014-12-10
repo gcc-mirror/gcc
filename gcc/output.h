@@ -178,6 +178,9 @@ extern void default_assemble_visibility (tree, int);
    for an `asm' keyword used between functions.  */
 extern void assemble_asm (tree);
 
+/* Get the function's name from a decl, as described by its RTL.  */
+extern const char *get_fnname_from_decl (tree);
+
 /* Output assembler code for the constant pool of a function and associated
    with defining the name of the function.  DECL describes the function.
    NAME is the function's name.  For the constant pool, we use the current
@@ -202,6 +205,10 @@ extern void assemble_variable (tree, int, int, int);
 /* Put the vtable verification constructor initialization function
    into the preinit array.  */
 extern void assemble_vtv_preinit_initializer (tree);
+
+/* Assemble everything that is needed for a variable declaration that has
+   no definition in the current translation unit.  */
+extern void assemble_undefined_decl (tree);
 
 /* Compute the alignment of variable specified by DECL.
    DONT_OUTPUT_DATA is from assemble_variable.  */
@@ -273,7 +280,7 @@ extern section *get_named_text_section (tree, const char *, const char *);
 
 #ifdef REAL_VALUE_TYPE_SIZE
 /* Assemble the floating-point constant D into an object of size MODE.  */
-extern void assemble_real (REAL_VALUE_TYPE, enum machine_mode, unsigned);
+extern void assemble_real (REAL_VALUE_TYPE, machine_mode, unsigned);
 #endif
 
 /* Write the address of the entity given by SYMBOL to SEC.  */
@@ -486,7 +493,7 @@ struct GTY(()) noswitch_section {
 };
 
 /* Information about a section, which may be named or unnamed.  */
-union GTY ((desc ("SECTION_STYLE (&(%h))"))) section {
+union GTY ((desc ("SECTION_STYLE (&(%h))"), for_user)) section {
   struct section_common GTY ((skip)) common;
   struct named_section GTY ((tag ("SECTION_NAMED"))) named;
   struct unnamed_section GTY ((tag ("SECTION_UNNAMED"))) unnamed;
@@ -525,7 +532,7 @@ extern section *get_variable_section (tree, bool);
 extern void place_block_symbol (rtx);
 extern rtx get_section_anchor (struct object_block *, HOST_WIDE_INT,
 			       enum tls_model);
-extern section *mergeable_constant_section (enum machine_mode,
+extern section *mergeable_constant_section (machine_mode,
 					    unsigned HOST_WIDE_INT,
 					    unsigned int);
 extern section *function_section (tree);
@@ -569,9 +576,9 @@ extern void default_unique_section (tree, int);
 extern section *default_function_rodata_section (tree);
 extern section *default_no_function_rodata_section (tree);
 extern section *default_clone_table_section (void);
-extern section *default_select_rtx_section (enum machine_mode, rtx,
+extern section *default_select_rtx_section (machine_mode, rtx,
 					    unsigned HOST_WIDE_INT);
-extern section *default_elf_select_rtx_section (enum machine_mode, rtx,
+extern section *default_elf_select_rtx_section (machine_mode, rtx,
 						unsigned HOST_WIDE_INT);
 extern void default_encode_section_info (tree, rtx, int);
 extern const char *default_strip_name_encoding (const char *);
@@ -602,7 +609,7 @@ extern void default_elf_init_array_asm_out_constructor (rtx, int);
 extern void default_elf_fini_array_asm_out_destructor (rtx, int);
 extern int maybe_assemble_visibility (tree);
 
-extern int default_address_cost (rtx, enum machine_mode, addr_space_t, bool);
+extern int default_address_cost (rtx, machine_mode, addr_space_t, bool);
 
 /* Output stack usage information.  */
 extern void output_stack_usage (void);

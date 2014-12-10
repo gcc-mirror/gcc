@@ -27,6 +27,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "flags.h"
 #include "tree.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -35,6 +43,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "bitmap.h"
 #include "diagnostic-core.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 #include "tree-streamer.h"
 #include "lto-streamer.h"
 #include "lto-section-names.h"
@@ -48,6 +60,7 @@ struct lto_stats_d lto_stats;
 static bitmap_obstack lto_obstack;
 static bool lto_obstack_initialized;
 
+const char *section_name_prefix = LTO_SECTION_NAME_PREFIX;
 
 /* Return a string representing LTO tag TAG.  */
 
@@ -177,7 +190,7 @@ lto_get_section_name (int section_type, const char *name, struct lto_file_decl_d
     sprintf (post, "." HOST_WIDE_INT_PRINT_HEX_PURE, f->id);
   else
     sprintf (post, "." HOST_WIDE_INT_PRINT_HEX_PURE, get_random_seed (false)); 
-  return concat (LTO_SECTION_NAME_PREFIX, sep, add, post, NULL);
+  return concat (section_name_prefix, sep, add, post, NULL);
 }
 
 
@@ -315,7 +328,7 @@ lto_streamer_init (void)
 bool
 gate_lto_out (void)
 {
-  return ((flag_generate_lto || in_lto_p)
+  return ((flag_generate_lto || flag_generate_offload || in_lto_p)
 	  /* Don't bother doing anything if the program has errors.  */
 	  && !seen_error ());
 }

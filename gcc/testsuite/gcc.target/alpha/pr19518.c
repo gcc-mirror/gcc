@@ -9,6 +9,10 @@ typedef struct _Picture *PicturePtr;
 typedef int FbStride;
 typedef unsigned long __m64;
 extern __m64 load8888 (__m64);
+static __inline __m64 _mm_setzero_si64(void)
+{
+  return (__m64)0L;
+}
 static __inline __m64 _mm_adds_pu8(__m64 __m1, __m64 __m2)
 {
     return __m1 + __builtin_alpha_minsb8(__m2, ~__m1);

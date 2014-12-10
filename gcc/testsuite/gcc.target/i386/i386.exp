@@ -24,6 +24,7 @@ if { ![istarget i?86*-*-*] && ![istarget x86_64-*-*] } then {
 # Load support procs.
 load_lib gcc-dg.exp
 load_lib clearcap.exp
+load_lib mpx-dg.exp
 
 # Return 1 if attribute ms_hook_prologue is supported.
 proc check_effective_target_ms_hook_prologue { } {
@@ -266,6 +267,19 @@ proc check_effective_target_avx512f { } {
     } "-mavx512f" ]
 }
 
+# Return 1 if avx512vl instructions can be compiled.
+proc check_effective_target_avx512vl { } {
+    return [check_no_compiler_messages avx512vl object {
+	typedef long long __v4di __attribute__ ((__vector_size__ (32)));
+	__v4di
+	mm256_and_epi64  (__v4di __X, __v4di __Y)
+	{
+            __v4di __W;
+            return __builtin_ia32_pandq256_mask (__X, __Y, __W, -1);
+	}
+    } "-mavx512vl" ]
+}
+
 # Return 1 if avx512cd instructions can be compiled.
 proc check_effective_target_avx512cd { } {
     return [check_no_compiler_messages avx512cd_trans object {
@@ -274,8 +288,8 @@ proc check_effective_target_avx512cd { } {
 	_mm512_conflict_epi64 (__v8di __W, __v8di __A)
 	{
 	  return (__v8di) __builtin_ia32_vpconflictdi_512_mask ((__v8di) __A,
-		  						 (__v8di) __W,
-			  					 -1);
+								 (__v8di) __W,
+								 -1);
 	}
    } "-Wno-psabi -mavx512cd" ]
 }
@@ -306,6 +320,66 @@ proc check_effective_target_sha { } {
     } "-O2 -msha" ]
 }
 
+# Return 1 if avx512dq instructions can be compiled.
+proc check_effective_target_avx512dq { } {
+    return [check_no_compiler_messages avx512dq object {
+	typedef long long __v8di __attribute__ ((__vector_size__ (64)));
+	__v8di
+	_mm512_mask_mullo_epi64 (__v8di __W, __v8di __A, __v8di __B)
+	{
+	    return (__v8di) __builtin_ia32_pmullq512_mask ((__v8di) __A,
+							    (__v8di) __B,
+							    (__v8di) __W,
+							    -1);
+	}
+    } "-mavx512dq" ]
+}
+
+# Return 1 if avx512bw instructions can be compiled.
+proc check_effective_target_avx512bw { } {
+    return [check_no_compiler_messages avx512bw object {
+	typedef short __v32hi __attribute__ ((__vector_size__ (64)));
+	__v32hi
+	_mm512_mask_mulhrs_epi16 (__v32hi __W, __v32hi __A, __v32hi __B)
+	{
+	    return (__v32hi) __builtin_ia32_pmulhrsw512_mask ((__v32hi) __A,
+							    (__v32hi) __B,
+							    (__v32hi) __W,
+							    -1);
+	}
+    } "-mavx512bw" ]
+}
+
+# Return 1 if avx512ifma instructions can be compiled.
+proc check_effective_target_avx512ifma { } {
+    return [check_no_compiler_messages avx512ifma object {
+	typedef long long __v8di __attribute__ ((__vector_size__ (64)));
+	__v8di
+	_mm512_madd52lo_epu64 (__v8di __X, __v8di __Y, __v8di __Z)
+	{
+	  return (__v8di) __builtin_ia32_vpmadd52luq512_mask ((__v8di) __X,
+							       (__v8di) __Y,
+						               (__v8di) __Z,
+						               -1);
+	}
+    } "-mavx512ifma" ]
+}
+
+# Return 1 if avx512vbmi instructions can be compiled.
+proc check_effective_target_avx512vbmi { } {
+    return [check_no_compiler_messages avx512vbmi object {
+	typedef char __v64qi __attribute__ ((__vector_size__ (64)));
+	__v64qi
+	_mm512_multishift_epi64_epi8 (__v64qi __X, __v64qi __Y)
+	{
+	  return (__v64qi) __builtin_ia32_vpmultishiftqb512_mask ((__v64qi) __X,
+								 (__v64qi) __Y,
+								 (__v64qi) __Y,
+								 -1);
+	}
+    } "-mavx512vbmi" ]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
@@ -318,9 +392,9 @@ clearcap-init
 
 global runtests
 # Special case compilation of vect-args.c so we don't have to
-# replicate it 10 times.
+# replicate it 16 times.
 if [runtest_file_p $runtests $srcdir/$subdir/vect-args.c] {
-  foreach type { "" -mmmx -m3dnow -msse -msse2 } {
+  foreach type { "" -mmmx -m3dnow -msse -msse2 -mavx -mavx2 -mavx512f } {
     foreach level { "" -O } {
       set flags "$type $level"
       verbose -log "Testing vect-args, $flags" 1

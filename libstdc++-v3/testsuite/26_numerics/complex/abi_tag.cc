@@ -1,6 +1,6 @@
 // Test that the C++11 variants of real/imag have an ABI tag
 // { dg-do compile }
-// { dg-options -std=c++11 }
+// { dg-options -std=gnu++11 }
 
 #include <complex>
 

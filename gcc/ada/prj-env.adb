@@ -1425,35 +1425,10 @@ package body Prj.Env is
      (Self : Project_Search_Path;
       Name : String) return String_Access
    is
-      function Is_Base_Name (Path : String) return Boolean;
-      --  Returns True if Path has no directory separator
-
-      ------------------
-      -- Is_Base_Name --
-      ------------------
-
-      function Is_Base_Name (Path : String) return Boolean is
-      begin
-         for J in Path'Range loop
-            if Path (J) = Directory_Separator or else Path (J) = '/' then
-               return False;
-            end if;
-         end loop;
-
-         return True;
-      end Is_Base_Name;
-
-      function Find_Rts_In_Path is new Prj.Env.Find_Name_In_Path
-        (Check_Filename => Is_Directory);
-
-      --  Start of processing for Get_Runtime_Path
-
+      function Find_Rts_In_Path is
+        new Prj.Env.Find_Name_In_Path (Check_Filename => Is_Directory);
    begin
-      if not Is_Base_Name (Name) then
-         return Find_Rts_In_Path (Self, Name);
-      else
-         return null;
-      end if;
+      return Find_Rts_In_Path (Self, Name);
    end Get_Runtime_Path;
 
    ----------------
@@ -1901,7 +1876,7 @@ package body Prj.Env is
      (Self        : in out Project_Search_Path;
       Target_Name : String)
    is
-      Add_Default_Dir : Boolean := True;
+      Add_Default_Dir : Boolean := Target_Name /= "-";
       First           : Positive;
       Last            : Positive;
 
@@ -2131,14 +2106,14 @@ package body Prj.Env is
                --  $prefix/share/gpr
 
                Add_Str_To_Name_Buffer
-                 (Path_Separator & Prefix.all &
-                  "share" & Directory_Separator & "gpr");
+                 (Path_Separator & Prefix.all & "share"
+                  & Directory_Separator & "gpr");
 
                --  $prefix/lib/gnat
 
                Add_Str_To_Name_Buffer
-                 (Path_Separator & Prefix.all &
-                  "lib" & Directory_Separator & "gnat");
+                 (Path_Separator & Prefix.all & "lib"
+                  & Directory_Separator & "gnat");
             end if;
 
             Free (Prefix);
@@ -2293,8 +2268,7 @@ package body Prj.Env is
             exit Check_Dot;
          end if;
 
-         exit Check_Dot when File (K) = Directory_Separator
-           or else File (K) = '/';
+         exit Check_Dot when Is_Directory_Separator (File (K));
       end loop Check_Dot;
 
       if not Is_Absolute_Path (File) then

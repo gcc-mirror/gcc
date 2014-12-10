@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x -fno-rtti" }
+// { dg-options "-std=gnu++11 -fno-rtti" }
 // Copyright (C) 2009-2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free

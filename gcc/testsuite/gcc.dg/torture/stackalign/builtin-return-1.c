@@ -1,6 +1,7 @@
 /* PR middle-end/11151 */
 /* Originator: Andrew Church <gcczilla@achurch.org> */
 /* { dg-do run } */
+/* { dg-require-effective-target untyped_assembly } */
 
 /* This used to fail on SPARC because the (undefined) return
    value of 'bar' was overwriting that of 'foo'.  */

@@ -28,7 +28,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "highlev-plugin-common.h"
+#include "tm.h"
 #include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "lcm.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 
 /* Event names.  */
 enum plugin_event
@@ -131,8 +150,8 @@ extern int get_event_last (void);
 int get_named_event_id (const char *name, enum insert_option insert);
 
 /* This is also called without a callback routine for the
-   PLUGIN_PASS_MANAGER_SETUP, PLUGIN_INFO, PLUGIN_REGISTER_GGC_ROOTS and
-   PLUGIN_REGISTER_GGC_CACHES pseudo-events, with a specific user_data.
+   PLUGIN_PASS_MANAGER_SETUP, PLUGIN_INFO and PLUGIN_REGISTER_GGC_ROOTS
+   pseudo-events, with a specific user_data.
   */
 
 extern void register_callback (const char *plugin_name,

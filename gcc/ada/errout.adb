@@ -308,11 +308,13 @@ package body Errout is
       end if;
 
       --  If we already have messages, and we are trying to place a message at
-      --  No_Location or in package Standard, then just ignore the attempt
-      --  since we assume that what is happening is some cascaded junk. Note
-      --  that this is safe in the sense that proceeding will surely bomb.
+      --  No_Location, then just ignore the attempt since we assume that what
+      --  is happening is some cascaded junk. Note that this is safe in the
+      --  sense that proceeding will surely bomb. We will also bomb if the flag
+      --  location is No_Location and we don't have any messages so far, but
+      --  that is a real bug and a legitimate bomb, so we go ahead.
 
-      if Flag_Location < First_Source_Ptr
+      if Flag_Location = No_Location
         and then Total_Errors_Detected > 0
       then
          return;
@@ -982,6 +984,7 @@ package body Errout is
           Col      => Get_Column_Number (Sptr),
           Warn     => Is_Warning_Msg,
           Info     => Is_Info_Msg,
+          Check    => Is_Check_Msg,
           Warn_Err => False, -- reset below
           Warn_Chr => Warning_Msg_Char,
           Style    => Is_Style_Msg,
@@ -1139,6 +1142,9 @@ package body Errout is
          if Errors.Table (Cur_Msg).Info then
             Info_Messages := Info_Messages + 1;
          end if;
+
+      elsif Errors.Table (Cur_Msg).Check then
+         Check_Messages := Check_Messages + 1;
 
       else
          Total_Errors_Detected := Total_Errors_Detected + 1;
@@ -2318,6 +2324,67 @@ package body Errout is
       end if;
    end Remove_Warning_Messages;
 
+   ----------------------
+   -- Adjust_Name_Case --
+   ----------------------
+
+   procedure Adjust_Name_Case (Loc : Source_Ptr) is
+   begin
+      --  We have an all lower case name from Namet, and now we want to set
+      --  the appropriate case. If possible we copy the actual casing from
+      --  the source. If not we use standard identifier casing.
+
+      declare
+         Src_Ind : constant Source_File_Index := Get_Source_File_Index (Loc);
+         Sbuffer : Source_Buffer_Ptr;
+         Ref_Ptr : Integer;
+         Src_Ptr : Source_Ptr;
+
+      begin
+         Ref_Ptr := 1;
+         Src_Ptr := Loc;
+
+         --  For standard locations, always use mixed case
+
+         if Loc <= No_Location then
+            Set_Casing (Mixed_Case);
+
+         else
+            --  Determine if the reference we are dealing with corresponds to
+            --  text at the point of the error reference. This will often be
+            --  the case for simple identifier references, and is the case
+            --  where we can copy the casing from the source.
+
+            Sbuffer := Source_Text (Src_Ind);
+
+            while Ref_Ptr <= Name_Len loop
+               exit when
+                 Fold_Lower (Sbuffer (Src_Ptr)) /=
+                   Fold_Lower (Name_Buffer (Ref_Ptr));
+               Ref_Ptr := Ref_Ptr + 1;
+               Src_Ptr := Src_Ptr + 1;
+            end loop;
+
+            --  If we get through the loop without a mismatch, then output the
+            --  name the way it is cased in the source program
+
+            if Ref_Ptr > Name_Len then
+               Src_Ptr := Loc;
+
+               for J in 1 .. Name_Len loop
+                  Name_Buffer (J) := Sbuffer (Src_Ptr);
+                  Src_Ptr := Src_Ptr + 1;
+               end loop;
+
+            --  Otherwise set the casing using the default identifier casing
+
+            else
+               Set_Casing (Identifier_Casing (Src_Ind), Mixed_Case);
+            end if;
+         end if;
+      end;
+   end Adjust_Name_Case;
+
    ---------------------------
    -- Set_Identifier_Casing --
    ---------------------------
@@ -2660,6 +2727,7 @@ package body Errout is
    ------------------
 
    procedure Set_Msg_Node (Node : Node_Id) is
+      Loc : Source_Ptr;
       Ent : Entity_Id;
       Nam : Name_Id;
 
@@ -2692,6 +2760,7 @@ package body Errout is
 
       if Nkind (Node) = N_Pragma then
          Nam := Pragma_Name (Node);
+         Loc := Sloc (Node);
 
       --  The other cases have Chars fields, and we want to test for possible
       --  internal names, which generally represent something gone wrong. An
@@ -2712,6 +2781,8 @@ package body Errout is
             Ent := Node;
          end if;
 
+         Loc := Sloc (Ent);
+
          --  If the type is the designated type of an access_to_subprogram,
          --  then there is no name to provide in the call.
 
@@ -2729,6 +2800,7 @@ package body Errout is
 
       else
          Nam := Chars (Node);
+         Loc := Sloc (Node);
       end if;
 
       --  At this stage, the name to output is in Nam
@@ -2736,7 +2808,7 @@ package body Errout is
       Get_Unqualified_Decoded_Name_String (Nam);
 
       --  Remove trailing upper case letters from the name (useful for
-      --  dealing with some cases of internal names.
+      --  dealing with some cases of internal names).
 
       while Name_Len > 1 and then Name_Buffer (Name_Len) in 'A' .. 'Z' loop
          Name_Len := Name_Len  - 1;
@@ -2752,63 +2824,9 @@ package body Errout is
          Kill_Message := True;
       end if;
 
-      --  Now we have to set the proper case. If we have a source location
-      --  then do a check to see if the name in the source is the same name
-      --  as the name in the Names table, except for possible differences
-      --  in case, which is the case when we can copy from the source.
+      --  Remaining step is to adjust casing and possibly add 'Class
 
-      declare
-         Src_Loc : constant Source_Ptr := Sloc (Node);
-         Sbuffer : Source_Buffer_Ptr;
-         Ref_Ptr : Integer;
-         Src_Ptr : Source_Ptr;
-
-      begin
-         Ref_Ptr := 1;
-         Src_Ptr := Src_Loc;
-
-         --  For standard locations, always use mixed case
-
-         if Src_Loc <= No_Location
-           or else Sloc (Node) <= No_Location
-         then
-            Set_Casing (Mixed_Case);
-
-         else
-            --  Determine if the reference we are dealing with corresponds to
-            --  text at the point of the error reference. This will often be
-            --  the case for simple identifier references, and is the case
-            --  where we can copy the spelling from the source.
-
-            Sbuffer := Source_Text (Get_Source_File_Index (Src_Loc));
-
-            while Ref_Ptr <= Name_Len loop
-               exit when
-                 Fold_Lower (Sbuffer (Src_Ptr)) /=
-                 Fold_Lower (Name_Buffer (Ref_Ptr));
-               Ref_Ptr := Ref_Ptr + 1;
-               Src_Ptr := Src_Ptr + 1;
-            end loop;
-
-            --  If we get through the loop without a mismatch, then output the
-            --  name the way it is spelled in the source program
-
-            if Ref_Ptr > Name_Len then
-               Src_Ptr := Src_Loc;
-
-               for J in 1 .. Name_Len loop
-                  Name_Buffer (J) := Sbuffer (Src_Ptr);
-                  Src_Ptr := Src_Ptr + 1;
-               end loop;
-
-            --  Otherwise set the casing using the default identifier casing
-
-            else
-               Set_Casing (Identifier_Casing (Flag_Source), Mixed_Case);
-            end if;
-         end if;
-      end;
-
+      Adjust_Name_Case (Loc);
       Set_Msg_Name_Buffer;
       Add_Class;
    end Set_Msg_Node;
@@ -3138,7 +3156,7 @@ package body Errout is
 
    procedure SPARK_Msg_N (Msg : String; N : Node_Or_Entity_Id) is
    begin
-      if SPARK_Mode = On then
+      if SPARK_Mode /= Off then
          Error_Msg_N (Msg, N);
       end if;
    end SPARK_Msg_N;
@@ -3153,7 +3171,7 @@ package body Errout is
       E   : Node_Or_Entity_Id)
    is
    begin
-      if SPARK_Mode = On then
+      if SPARK_Mode /= Off then
          Error_Msg_NE (Msg, N, E);
       end if;
    end SPARK_Msg_NE;

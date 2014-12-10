@@ -34,6 +34,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "vmsdbg.h"
 #include "debug.h"
 #include "langhooks.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "target.h"
 
@@ -1454,9 +1460,9 @@ vmsdbgout_init (const char *filename)
 
   lookup_filename (primary_filename);
 
-  if (!strcmp (language_string, "GNU C"))
+  if (lang_GNU_C ())
     module_language = DST_K_C;
-  else if (!strcmp (language_string, "GNU C++"))
+  else if (lang_GNU_CXX ())
     module_language = DST_K_CXX;
   else if (!strcmp (language_string, "GNU Ada"))
     module_language = DST_K_ADA;

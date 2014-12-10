@@ -29,11 +29,11 @@
 
 ;; Use a double reservation to work around the load pipeline hazard on UT699.
 (define_insn_reservation "leon3_load" 1
-  (and (eq_attr "cpu" "leon3") (eq_attr "type" "load,sload"))
+  (and (eq_attr "cpu" "leon3,leon3v7") (eq_attr "type" "load,sload"))
   "leon_memory*2")
 
 (define_insn_reservation "leon_store" 2
-  (and (eq_attr "cpu" "leon,leon3") (eq_attr "type" "store"))
+  (and (eq_attr "cpu" "leon,leon3,leon3v7") (eq_attr "type" "store"))
   "leon_memory*2")
 
 ;; This describes Gaisler Research's FPU
@@ -44,21 +44,21 @@
 (define_cpu_unit "grfpu_ds" "grfpu")
 
 (define_insn_reservation "leon_fp_alu" 4
-  (and (eq_attr "cpu" "leon,leon3") (eq_attr "type" "fp,fpcmp,fpmul"))
+  (and (eq_attr "cpu" "leon,leon3,leon3v7") (eq_attr "type" "fp,fpcmp,fpmul"))
   "grfpu_alu, nothing*3")
 
 (define_insn_reservation "leon_fp_divs" 16
-  (and (eq_attr "cpu" "leon,leon3") (eq_attr "type" "fpdivs"))
+  (and (eq_attr "cpu" "leon,leon3,leon3v7") (eq_attr "type" "fpdivs"))
   "grfpu_ds*14, nothing*2")
 
 (define_insn_reservation "leon_fp_divd" 17
-  (and (eq_attr "cpu" "leon,leon3") (eq_attr "type" "fpdivd"))
+  (and (eq_attr "cpu" "leon,leon3,leon3v7") (eq_attr "type" "fpdivd"))
   "grfpu_ds*15, nothing*2")
 
 (define_insn_reservation "leon_fp_sqrts" 24
-  (and (eq_attr "cpu" "leon,leon3") (eq_attr "type" "fpsqrts"))
+  (and (eq_attr "cpu" "leon,leon3,leon3v7") (eq_attr "type" "fpsqrts"))
   "grfpu_ds*22, nothing*2")
 
 (define_insn_reservation "leon_fp_sqrtd" 25
-  (and (eq_attr "cpu" "leon,leon3") (eq_attr "type" "fpsqrtd"))
+  (and (eq_attr "cpu" "leon,leon3,leon3v7") (eq_attr "type" "fpsqrtd"))
   "grfpu_ds*23, nothing*2")

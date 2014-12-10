@@ -21,9 +21,9 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OPTIONS = march=avr2/march=avr25/march=avr3/march=avr31/march=avr35/march=avr4/march=avr5/march=avr51/march=avr6/march=avrxmega2/march=avrxmega4/march=avrxmega5/march=avrxmega6/march=avrxmega7 msp8
+MULTILIB_OPTIONS = march=avr2/march=avr25/march=avr3/march=avr31/march=avr35/march=avr4/march=avr5/march=avr51/march=avr6/march=avrxmega2/march=avrxmega4/march=avrxmega5/march=avrxmega6/march=avrxmega7/march=avrtiny msp8
 
-MULTILIB_DIRNAMES =  avr2 avr25 avr3 avr31 avr35 avr4 avr5 avr51 avr6 avrxmega2 avrxmega4 avrxmega5 avrxmega6 avrxmega7 tiny-stack avr25/tiny-stack
+MULTILIB_DIRNAMES =  avr2 avr25 avr3 avr31 avr35 avr4 avr5 avr51 avr6 avrxmega2 avrxmega4 avrxmega5 avrxmega6 avrxmega7 avrtiny tiny-stack avr25/tiny-stack
 
 MULTILIB_EXCEPTIONS = \
 	march=avr3/msp8 \
@@ -37,4 +37,5 @@ MULTILIB_EXCEPTIONS = \
 	march=avrxmega4/msp8 \
 	march=avrxmega5/msp8 \
 	march=avrxmega6/msp8 \
-	march=avrxmega7/msp8
+	march=avrxmega7/msp8 \
+	march=avrtiny/msp8

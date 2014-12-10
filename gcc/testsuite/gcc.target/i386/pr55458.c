@@ -2,10 +2,12 @@
 /* { dg-require-effective-target ia32 } */
 /* { dg-options "-fPIC" } */
 
+/* Test verifies that %ebx is no longer fixed when generating PIC code on i686.  */
+
 int a, b, c;
 
 void
 foo (void)
 {
-  asm volatile ("":"+m" (a), "+m" (b), "+m" (c)); /* { dg-error "operand has impossible constraints" } */
+  asm volatile ("":"+m" (a), "+m" (b), "+m" (c));
 }

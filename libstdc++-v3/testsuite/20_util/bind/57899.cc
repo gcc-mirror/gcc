@@ -19,7 +19,7 @@
 
 // PR c++/57899
 // { dg-do compile }
-// { dg-options -std=c++11 }
+// { dg-options -std=gnu++11 }
 
 #include <functional>
 using std::bind;

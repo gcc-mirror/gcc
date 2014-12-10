@@ -62,8 +62,8 @@ Target Report Mask(GAS)
 Assume code will be assembled by GAS
 
 mjump-in-delay
-Target Report Mask(JUMP_IN_DELAY)
-Put jumps in call delay slots
+Target Ignore
+Does nothing.  Preserved for backward compatibility.
 
 ;; Not used by gcc
 mlinker-opt

@@ -22,12 +22,15 @@ if ![info exists TEST_ALWAYS_FLAGS] {
 set TEST_ALWAYS_FLAGS "-fno-diagnostics-show-caret -fdiagnostics-color=never $TEST_ALWAYS_FLAGS"
 
 proc prune_gcc_output { text } {
+    global srcdir
+
     #send_user "Before:$text\n"
 
     regsub -all "(^|\n)(\[^\n\]*: )?In ((static member |lambda )?function|member|method|(copy )?constructor|destructor|instantiation|substitution|program|subroutine|block-data)\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*(: )?At (top level|global scope):\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   (recursively )?required \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   . skipping \[0-9\]* instantiation contexts \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*:   in constexpr expansion \[^\n\]*" $text "" text
     regsub -all "(^|\n)    inlined from \[^\n\]*" $text "" text
     regsub -all "(^|\n)collect2: error: ld returned \[^\n\]*" $text "" text
     regsub -all "(^|\n)collect: re(compiling|linking)\[^\n\]*" $text "" text
@@ -66,6 +69,17 @@ proc prune_gcc_output { text } {
     regsub -all "(^|\n)\[^\n\]*ld: warning: could not create compact unwind for\[^\n\]*" $text "" text
 
     #send_user "After:$text\n"
+
+    return $text
+}
+
+proc prune_file_path { text } {
+    global srcdir
+
+    # Truncate absolute file path into relative path.
+    set topdir "[file dirname [file dirname [file dirname $srcdir]]]"
+    regsub -all "$srcdir\/" $text "" text
+    regsub -all "$topdir\/" $text "" text
 
     return $text
 }

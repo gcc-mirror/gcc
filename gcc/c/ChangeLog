@@ -1,3 +1,170 @@
+2014-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (convert_lvalue_to_rvalue, build_atomic_assign,
+	c_finish_stmt_expr): Remove NULL last argument from
+	create_tmp_var_raw and create_tmp_var calls.
+	* c-array-notation.c (fix_builtin_array_notation_fn,
+	build_array_notation_expr, fix_conditional_array_notations_1,
+	fix_array_notation_expr, fix_array_notation_call_expr): Likewise.
+
+2014-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63862
+	* c-typeck.c (build_binary_op) <RSHIFT_EXPR, LSHIFT_EXPR>: Don't
+	convert the right operand to integer type.
+
+2014-11-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63877
+	* c-decl.c (start_function): Disable -Wmissing-declarations warning
+	for inline functions.
+
+2014-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/63764
+	* c-typeck.c (build_array_ref): Adjust
+	convert_vector_to_pointer_for_subscript caller.  If it returns true,
+	call non_lvalue_loc on the result.
+
+2014-11-11  Richard Biener  <rguenther@suse.de>
+
+	* c-decl.c (c_init_decl_processing): Do not set pedantic_lvalues
+	to true.
+
+2014-11-10  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/60804
+	* c-parser.c (c_parser_statement_after_labels): Call
+	check_no_cilk.
+	(c_parser_if_statement): Dito.
+	(c_parser_switch_statement): Dito.
+	(c_parser_while_statement): Dito.
+	(c_parser_do_statement): Dito.
+	(c_parser_for_statement): Dito.
+	* c-typeck.c (c_finish_loop): Dito.
+
+2014-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-typeck.c (build_binary_op): Use OPT_Wshift_count_negative and
+	OPT_Wshift_count_overflow in the warnings.
+
+2014-10-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-objc-common.c (c_tree_printer) <case 'T'>: For a typedef name,
+	print the stripped version as well, if they're not the same.
+
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-decl.c, c-tree.h, c-typeck.c: Remove redundant enum from
+	machine_mode.
+
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-decl.c: Adjust include files.
+	* c-parser.c: Ditto.
+
+2014-10-27  Phil Muldoon  <pmuldoon@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* c-tree.h (enum c_oracle_request): New.
+	(c_binding_oracle_function): New typedef.
+	(c_binding_oracle, c_pushtag, c_bind): Declare.
+	* c-decl.c (c_binding_oracle): New global.
+	(I_SYMBOL_CHECKED): New macro.
+	(i_symbol_binding): New function.
+	(I_SYMBOL_BINDING, I_SYMBOL_DECL): Redefine.
+	(I_TAG_CHECKED): New macro.
+	(i_tag_binding): New function.
+	(I_TAG_BINDING, I_TAG_DECL): Redefine.
+	(I_LABEL_CHECKED): New macro.
+	(i_label_binding): New function.
+	(I_LABEL_BINDING, I_LABEL_DECL): Redefine.
+	(c_print_identifier): Save and restore c_binding_oracle.
+	(c_pushtag, c_bind): New functions.
+
+2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-typeck.c: Adjust include files.
+
+2014-10-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/53061
+	* c-objc-common.c (c_objc_common_init): Do not do diagnostics
+	initialization here...
+	(c_initialize_diagnostics): ... but here. Set defaults after
+	building pretty-printer.
+
+2014-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63626
+	* c-decl.c (pop_scope): Don't print warning in external_scope.
+
+2014-10-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63567
+	* c-typeck.c (output_init_element): Allow initializing objects with
+	static storage duration with compound literals even in C99 and add
+	pedwarn for it.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63567
+	* c-typeck.c (digest_init): Allow initializing objects with static
+	storage duration with compound literals even in C99 and add pedwarn
+	for it.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63543
+	* c-tree.h (C_TYPE_ERROR_REPORTED): Define.
+	* c-typeck.c (build_indirect_ref): Don't print the "dereferencing..."
+	error multiple times.  Print the type.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63549
+	* c-typeck.c (build_array_ref): Bail if the index in an incomplete
+	type.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c (grokdeclarator): Use OPT_Wimplicit_int unconditionally.
+	(start_function): Use OPT_Wimplicit_int instead of 0.
+	(store_parm_decls_oldstyle): Likewise.
+
+2014-10-17  Alan Modra  <amodra@gmail.com>
+
+	PR middle-end/61848
+	* c-decl.c (merge_decls): Don't merge section name or tls model
+	to newdecl symtab node, instead merge to olddecl.  Override
+	existing olddecl section name.  Set tls_model for all thread-local
+	vars, not just OMP thread-private ones.  Remove incorrect comment.
+
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-decl.c: Adjust include files.
+
+2014-10-14  DJ Delorie  <dj@redhat.com>
+
+	* c-parser.c (c_parse_init): Add RID entries for each __intN.
+	(c_token_starts_typename): Check all __intN, not just __int128.
+	(c_token_starts_declspecs): Likewise.
+	(c_parser_declspecs): Likewise.
+	(c_parser_attribute_any_word): Likewise.
+	(c_parser_objc_selector): Likewise.
+	* c-tree.h (c_typespec_keyword): cts_int128 -> cts_int_n.
+	(struct c_declspecs): Add int_n_idx field to record *which* __intN
+	is specified.
+	* c-decl.c (declspecs_add_type): Check for all __intN, not just
+	__int128.
+	(finish_declspecs): Likewise.
+
+2014-10-13  Anthony Brandon  <anthony.brandon@gmail.com>
+
+        * c-parser.c (c_parser_all_labels): New function to replace
+	the duplicate code.
+        (c_parser_statement): Call the new function.
+
 2014-10-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63480

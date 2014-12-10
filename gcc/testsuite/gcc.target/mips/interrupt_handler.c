@@ -3,6 +3,7 @@
 /* { dg-options "-mips32r2 -msoft-float" } */
 
 void f () { }
+extern void t (void);
 
 NOMIPS16 void __attribute__ ((interrupt)) v0 () { }
 NOMIPS16 void __attribute__ ((interrupt, use_shadow_register_set)) v1 () { }

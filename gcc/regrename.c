@@ -27,10 +27,19 @@
 #include "regs.h"
 #include "addresses.h"
 #include "hard-reg-set.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "reload.h"
 #include "output.h"
-#include "function.h"
 #include "recog.h"
 #include "flags.h"
 #include "obstack.h"
@@ -306,7 +315,7 @@ static bool
 check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 		 struct du_head *this_head, HARD_REG_SET this_unavailable)
 {
-  enum machine_mode mode = GET_MODE (*this_head->first->loc);
+  machine_mode mode = GET_MODE (*this_head->first->loc);
   int nregs = hard_regno_nregs[new_reg][mode];
   int i;
   struct du_chain *tmp;
@@ -348,11 +357,13 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 /* For the chain THIS_HEAD, compute and return the best register to
    rename to.  SUPER_CLASS is the superunion of register classes in
    the chain.  UNAVAILABLE is a set of registers that cannot be used.
-   OLD_REG is the register currently used for the chain.  */
+   OLD_REG is the register currently used for the chain.  BEST_RENAME
+   controls whether the register chosen must be better than the
+   current one or just respect the given constraint.  */
 
 int
-find_best_rename_reg (du_head_p this_head, enum reg_class super_class,
-		      HARD_REG_SET *unavailable, int old_reg)
+find_rename_reg (du_head_p this_head, enum reg_class super_class,
+		 HARD_REG_SET *unavailable, int old_reg, bool best_rename)
 {
   bool has_preferred_class;
   enum reg_class preferred_class;
@@ -391,15 +402,19 @@ find_best_rename_reg (du_head_p this_head, enum reg_class super_class,
 				    new_reg))
 	    continue;
 
+	  if (!check_new_reg_p (old_reg, new_reg, this_head, *unavailable))
+	    continue;
+
+	  if (!best_rename)
+	    return new_reg;
+
 	  /* In the first pass, we force the renaming of registers that
 	     don't belong to PREFERRED_CLASS to registers that do, even
 	     though the latters were used not very long ago.  */
-	  if (check_new_reg_p (old_reg, new_reg, this_head,
-			       *unavailable)
-	      && ((pass == 0
-		   && !TEST_HARD_REG_BIT (reg_class_contents[preferred_class],
-					  best_new_reg))
-		  || tick[best_new_reg] > tick[new_reg]))
+	  if ((pass == 0
+	      && !TEST_HARD_REG_BIT (reg_class_contents[preferred_class],
+				     best_new_reg))
+	      || tick[best_new_reg] > tick[new_reg])
 	    best_new_reg = new_reg;
 	}
       if (pass == 0 && best_new_reg != old_reg)
@@ -471,8 +486,8 @@ rename_chains (void)
       if (n_uses < 2)
 	continue;
 
-      best_new_reg = find_best_rename_reg (this_head, super_class,
-					   &this_unavailable, reg);
+      best_new_reg = find_rename_reg (this_head, super_class,
+				      &this_unavailable, reg, true);
 
       if (dump_file)
 	{
@@ -926,7 +941,7 @@ regrename_do_replace (struct du_head *head, int reg)
 {
   struct du_chain *chain;
   unsigned int base_regno = head->regno;
-  enum machine_mode mode;
+  machine_mode mode;
 
   for (chain = head->first; chain; chain = chain->next_use)
     {
@@ -1025,7 +1040,7 @@ scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions act
 {
   struct du_head **p;
   rtx x = *loc;
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   unsigned this_regno = REGNO (x);
   int this_nregs = hard_regno_nregs[this_regno][mode];
 
@@ -1176,7 +1191,7 @@ scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions act
 
 static void
 scan_rtx_address (rtx_insn *insn, rtx *loc, enum reg_class cl,
-		  enum scan_actions action, enum machine_mode mode,
+		  enum scan_actions action, machine_mode mode,
 		  addr_space_t as)
 {
   rtx x = *loc;
@@ -1564,9 +1579,7 @@ build_def_use (basic_block bb)
 	     to be marked unrenamable or even cause us to abort the entire
 	     basic block.  */
 
-	  extract_insn (insn);
-	  if (! constrain_operands (1))
-	    fatal_insn_not_found (insn);
+	  extract_constrain_insn (insn);
 	  preprocess_constraints (insn);
 	  const operand_alternative *op_alt = which_op_alt ();
 	  n_ops = recog_data.n_operands;
@@ -1616,7 +1629,7 @@ build_def_use (basic_block bb)
 		  && REG_P (op)
 		  && !verify_reg_tracked (op))
 		{
-		  enum machine_mode mode = GET_MODE (op);
+		  machine_mode mode = GET_MODE (op);
 		  unsigned this_regno = REGNO (op);
 		  unsigned this_nregs = hard_regno_nregs[this_regno][mode];
 		  create_new_chain (this_regno, this_nregs, NULL, NULL,

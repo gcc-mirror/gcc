@@ -168,6 +168,14 @@ enum built_in_class {
 enum built_in_function {
 #include "builtins.def"
 
+  BEGIN_CHKP_BUILTINS,
+
+#undef DEF_BUILTIN
+#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) ENUM##_CHKP,
+#include "builtins.def"
+
+  END_CHKP_BUILTINS,
+
   /* Complex division routines in libgcc.  These are done via builtins
      because emit_library_call_value can't handle complex values.  */
   BUILT_IN_COMPLEX_MUL_MIN,
@@ -464,6 +472,8 @@ enum tree_index {
   TI_FILEPTR_TYPE,
   TI_POINTER_SIZED_TYPE,
 
+  TI_POINTER_BOUNDS_TYPE,
+
   TI_DFLOAT32_TYPE,
   TI_DFLOAT64_TYPE,
   TI_DFLOAT128_TYPE,
@@ -570,8 +580,16 @@ enum integer_type_kind {
   itk_unsigned_long,
   itk_long_long,
   itk_unsigned_long_long,
-  itk_int128,
-  itk_unsigned_int128,
+
+  itk_intN_0,
+  itk_unsigned_intN_0,
+  itk_intN_1,
+  itk_unsigned_intN_1,
+  itk_intN_2,
+  itk_unsigned_intN_2,
+  itk_intN_3,
+  itk_unsigned_intN_3,
+
   itk_none
 };
 
@@ -802,6 +820,16 @@ struct GTY(()) tree_base {
 
     /* Internal function code.  */
     enum internal_fn ifn;
+
+    /* The following two fields are used for MEM_REF and TARGET_MEM_REF
+       expression trees and specify known data non-dependences.  For
+       two memory references in a function they are known to not
+       alias if dependence_info.clique are equal and dependence_info.base
+       are distinct.  */
+    struct {
+      unsigned short clique;
+      unsigned short base;
+    } dependence_info;
   } GTY((skip(""))) u;
 };
 
@@ -1165,7 +1193,7 @@ enum omp_clause_map_kind
   OMP_CLAUSE_MAP_TOFROM,
   /* The following kind is an internal only map kind, used for pointer based
      array sections.  OMP_CLAUSE_SIZE for these is not the pointer size,
-     which is implicitly POINTER_SIZE / BITS_PER_UNIT, but the bias.  */
+     which is implicitly POINTER_SIZE_UNITS, but the bias.  */
   OMP_CLAUSE_MAP_POINTER,
   /* Also internal, behaves like OMP_CLAUS_MAP_TO, but additionally any
      OMP_CLAUSE_MAP_POINTER records consecutive after it which have addresses
@@ -1490,7 +1518,9 @@ struct GTY(()) tree_decl_with_vis {
  unsigned cxx_destructor : 1;
  /* Belong to FUNCTION_DECL exclusively.  */
  unsigned final : 1;
- /* 15 unused bits. */
+ /* Belong to FUNCTION_DECL exclusively.  */
+ unsigned regdecl_flag : 1;
+ /* 14 unused bits. */
 };
 
 struct GTY(()) tree_var_decl {
@@ -1531,20 +1561,19 @@ struct GTY(()) tree_function_decl {
      DECL_FUNCTION_CODE.  Otherwise unused.
      ???  The bitfield needs to be able to hold all target function
 	  codes as well.  */
-  ENUM_BITFIELD(built_in_function) function_code : 11;
+  ENUM_BITFIELD(built_in_function) function_code : 12;
   ENUM_BITFIELD(built_in_class) built_in_class : 2;
 
   unsigned static_ctor_flag : 1;
   unsigned static_dtor_flag : 1;
-  unsigned uninlinable : 1;
 
+  unsigned uninlinable : 1;
   unsigned possibly_inlined : 1;
   unsigned novops_flag : 1;
   unsigned returns_twice_flag : 1;
   unsigned malloc_flag : 1;
   unsigned operator_new_flag : 1;
   unsigned declared_inline_flag : 1;
-  unsigned regdecl_flag : 1;
   unsigned no_inline_warning_flag : 1;
 
   unsigned no_instrument_function_entry_exit : 1;
@@ -1759,26 +1788,26 @@ struct GTY(()) tree_map_base {
 
 /* Map from a tree to another tree.  */
 
-struct GTY(()) tree_map {
+struct GTY((for_user)) tree_map {
   struct tree_map_base base;
   unsigned int hash;
   tree to;
 };
 
 /* Map from a decl tree to another tree.  */
-struct GTY(()) tree_decl_map {
+struct GTY((for_user)) tree_decl_map {
   struct tree_map_base base;
   tree to;
 };
 
 /* Map from a tree to an int.  */
-struct GTY(()) tree_int_map {
+struct GTY((for_user)) tree_int_map {
   struct tree_map_base base;
   unsigned int to;
 };
 
 /* Map from a decl tree to a tree vector.  */
-struct GTY(()) tree_vec_map {
+struct GTY((for_user)) tree_vec_map {
   struct tree_map_base base;
   vec<tree, va_gc> *to;
 };
@@ -1865,10 +1894,6 @@ extern GTY(()) builtin_info_type builtin_info;
 
 /* If nonzero, an upper limit on alignment of structure fields, in bits,  */
 extern unsigned int maximum_field_alignment;
-
-/* Nonzero means lvalues are limited to those valid in pedantic ANSI C.
-   Zero means allow extended lvalues.  */
-extern int pedantic_lvalues;
 
 /* Points to the FUNCTION_DECL of the function whose body we are reading.  */
 extern GTY(()) tree current_function_decl;

@@ -48,13 +48,14 @@ caf_static_t *caf_static_list = NULL;
 static void
 caf_runtime_error (const char *message, ...)
 {
+#ifndef LIBGFOR_MINIMAL
   va_list ap;
   fprintf (stderr, "Fortran runtime error: ");
   va_start (ap, message);
   vfprintf (stderr, message, ap);
   va_end (ap);
   fprintf (stderr, "\n");
-
+#endif
   /* FIXME: Shutdown the Fortran RTL to flush the buffer.  PR 43849.  */
   exit (EXIT_FAILURE);
 }

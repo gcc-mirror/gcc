@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -938,7 +938,7 @@ package body Ch6 is
          Aspects := Get_Aspect_Specifications (Semicolon => False);
 
          --  Aspects may be present on a subprogram body. The source parsed
-         --  so far is that of its specification, go parse the body and attach
+         --  so far is that of its specification. Go parse the body and attach
          --  the collected aspects, if any, to the body.
 
          if Token = Tok_Is then
@@ -959,7 +959,14 @@ package body Ch6 is
          --  Semicolon Used in Place of IS" in body of Parser package)
          --  Note that SIS_Missing_Semicolon_Message is already set properly.
 
-         if Pf_Flags.Pbod then
+         if Pf_Flags.Pbod
+
+           --  Disconnnect this processing if we have scanned a null procedure
+           --  because in this case the spec is complete anyway with no body.
+
+           and then (Nkind (Specification_Node) /= N_Procedure_Specification
+                      or else not Null_Present (Specification_Node))
+         then
             SIS_Labl := Scope.Table (Scope.Last).Labl;
             SIS_Sloc := Scope.Table (Scope.Last).Sloc;
             SIS_Ecol := Scope.Table (Scope.Last).Ecol;

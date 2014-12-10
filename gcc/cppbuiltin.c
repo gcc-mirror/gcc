@@ -102,11 +102,16 @@ define_builtin_macros_for_compilation_flags (cpp_reader *pfile)
     cpp_define (pfile, "__FAST_MATH__");
   if (flag_signaling_nans)
     cpp_define (pfile, "__SUPPORT_SNAN__");
+  if (!flag_errno_math)
+    cpp_define (pfile, "__NO_MATH_ERRNO__");
 
   cpp_define_formatted (pfile, "__FINITE_MATH_ONLY__=%d",
 			flag_finite_math_only);
   if (flag_cilkplus)
     cpp_define (pfile, "__cilk=200");
+
+  if (flag_check_pointer_bounds)
+    cpp_define (pfile, "__CHKP__");
 }
 
 

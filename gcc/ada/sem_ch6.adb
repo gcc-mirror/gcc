@@ -223,6 +223,13 @@ package body Sem_Ch6 is
 
       Set_Categorization_From_Scope (Designator, Scop);
 
+      --  An abstract subprogram declared within a Ghost scope is automatically
+      --  Ghost (SPARK RM 6.9(2)).
+
+      if Comes_From_Source (Designator) and then Within_Ghost_Scope then
+         Set_Is_Ghost_Entity (Designator);
+      end if;
+
       if Ekind (Scope (Designator)) = E_Protected_Type then
          Error_Msg_N
            ("abstract subprogram not allowed in protected type", N);
@@ -312,10 +319,25 @@ package body Sem_Ch6 is
 
       --  If there are previous overloadable entities with the same name,
       --  check whether any of them is completed by the expression function.
+      --  In a generic context a formal subprogram has no completion.
 
-      if Present (Prev) and then Is_Overloadable (Prev) then
+      if Present (Prev) and then Is_Overloadable (Prev)
+        and then not Is_Formal_Subprogram (Prev)
+      then
          Def_Id := Analyze_Subprogram_Specification (Spec);
          Prev   := Find_Corresponding_Spec (N);
+
+         --  The previous entity may be an expression function as well, in
+         --  which case the redeclaration is illegal.
+
+         if Present (Prev)
+           and then Nkind (Original_Node (Unit_Declaration_Node (Prev))) =
+                                                        N_Expression_Function
+         then
+            Error_Msg_Sloc := Sloc (Prev);
+            Error_Msg_N ("& conflicts with declaration#", Def_Id);
+            return;
+         end if;
       end if;
 
       Ret := Make_Simple_Return_Statement (LocX, Expression (N));
@@ -358,7 +380,9 @@ package body Sem_Ch6 is
       --  scope. The entity itself may be internally created if within a body
       --  to be inlined.
 
-      elsif Present (Prev) and then Comes_From_Source (Parent (Prev)) then
+      elsif Present (Prev) and then Comes_From_Source (Parent (Prev))
+        and then not Is_Formal_Subprogram (Prev)
+      then
          Set_Has_Completion (Prev, False);
 
          --  An expression function that is a completion freezes the
@@ -448,6 +472,24 @@ package body Sem_Ch6 is
          end if;
 
          Analyze (N);
+
+         --  Within a generic pre-analyze the original expression for name
+         --  capture. The body is also generated but plays no role in
+         --  this because it is not part of the original source.
+
+         if Inside_A_Generic then
+            declare
+               Id : constant Entity_Id := Defining_Entity (N);
+
+            begin
+               Set_Has_Completion (Id);
+               Push_Scope (Id);
+               Install_Formals (Id);
+               Preanalyze_Spec_Expression (Expr, Etype (Id));
+               End_Scope;
+            end;
+         end if;
+
          Set_Is_Inlined (Defining_Entity (N));
 
          --  Establish the linkages between the spec and the body. These are
@@ -871,7 +913,34 @@ package body Sem_Ch6 is
                return;
             end if;
 
-            Analyze_And_Resolve (Expr, R_Type);
+            Analyze (Expr);
+
+            --  Ada 2005 (AI-251): If the type of the returned object is
+            --  an access to an interface type then we add an implicit type
+            --  conversion to force the displacement of the "this" pointer to
+            --  reference the secondary dispatch table. We cannot delay the
+            --  generation of this implicit conversion until the expansion
+            --  because in this case the type resolution changes the decoration
+            --  of the expression node to match R_Type; by contrast, if the
+            --  returned object is a class-wide interface type then it is too
+            --  early to generate here the implicit conversion since the return
+            --  statement may be rewritten by the expander into an extended
+            --  return statement whose expansion takes care of adding the
+            --  implicit type conversion to displace the pointer to the object.
+
+            if Expander_Active
+              and then Serious_Errors_Detected = 0
+              and then Is_Access_Type (R_Type)
+              and then Nkind (Expr) /= N_Null
+              and then Is_Interface (Designated_Type (R_Type))
+              and then Is_Progenitor (Designated_Type (R_Type),
+                                      Designated_Type (Etype (Expr)))
+            then
+               Rewrite (Expr, Convert_To (R_Type, Relocate_Node (Expr)));
+               Analyze (Expr);
+            end if;
+
+            Resolve (Expr, R_Type);
             Check_Limited_Return (Expr);
          end if;
 
@@ -1181,6 +1250,20 @@ package body Sem_Ch6 is
          Set_Convention     (Body_Id, Convention (Gen_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Gen_Id));
          Set_Scope          (Body_Id, Scope (Gen_Id));
+
+         --  Inherit the "ghostness" of the generic spec. Note that this
+         --  property is not directly inherited as the body may be subject
+         --  to a different Ghost assertion policy.
+
+         if Is_Ghost_Entity (Gen_Id) or else Within_Ghost_Scope then
+            Set_Is_Ghost_Entity (Body_Id);
+
+            --  The Ghost policy in effect at the point of declaration and at
+            --  the point of completion must match (SPARK RM 6.9(15)).
+
+            Check_Ghost_Completion (Gen_Id, Body_Id);
+         end if;
+
          Check_Fully_Conformant (Body_Id, Gen_Id, Body_Id);
 
          if Nkind (N) = N_Subprogram_Body_Stub then
@@ -1408,6 +1491,11 @@ package body Sem_Ch6 is
          --  this as a null body (even if expansion is not active), because
          --  there are various error checks that are applied on this body
          --  when it is analyzed (e.g. correct aspect placement).
+
+         if Has_Completion (Prev) then
+            Error_Msg_Sloc := Sloc (Prev);
+            Error_Msg_NE ("duplicate body for & declared#", N, Prev);
+         end if;
 
          Is_Completion := True;
          Rewrite (N, Null_Body);
@@ -2463,6 +2551,13 @@ package body Sem_Ch6 is
          if Ekind (Scop) = E_Function
            and then Ekind (Etype (Scop)) = E_Anonymous_Access_Type
            and then not Is_Thunk (Scop)
+
+            --  Skip internally built functions which handle the case of
+            --  a null access (see Expand_Interface_Conversion)
+
+           and then not (Is_Interface (Designated_Type (Etype (Scop)))
+                           and then not Comes_From_Source (Parent (Scop)))
+
            and then (Has_Task (Designated_Type (Etype (Scop)))
                       or else
                        (Is_Class_Wide_Type (Designated_Type (Etype (Scop)))
@@ -3286,6 +3381,19 @@ package body Sem_Ch6 is
             Set_Convention (Body_Id, Convention (Spec_Id));
             Set_Has_Completion (Spec_Id);
 
+            --  Inherit the "ghostness" of the subprogram spec. Note that this
+            --  property is not directly inherited as the body may be subject
+            --  to a different Ghost assertion policy.
+
+            if Is_Ghost_Entity (Spec_Id) or else Within_Ghost_Scope then
+               Set_Is_Ghost_Entity (Body_Id);
+
+               --  The Ghost policy in effect at the point of declaration and
+               --  at the point of completion must match (SPARK RM 6.9(15)).
+
+               Check_Ghost_Completion (Spec_Id, Body_Id);
+            end if;
+
             if Is_Protected_Type (Scope (Spec_Id)) then
                Prot_Typ := Scope (Spec_Id);
             end if;
@@ -3572,8 +3680,7 @@ package body Sem_Ch6 is
                Build_Body_To_Inline (N, Spec_Id);
             end if;
 
-         --  New implementation (relying on backend inlining). Enabled by
-         --  debug flag gnatd.z for testing
+         --  New implementation (relying on backend inlining)
 
          else
             if Has_Pragma_Inline_Always (Spec_Id)
@@ -3584,6 +3691,11 @@ package body Sem_Ch6 is
                if Comes_From_Source (Body_Id)
                  and then Ekind (Spec_Id) = E_Function
                  and then Returns_Unconstrained_Type (Spec_Id)
+
+                 --  If function builds in place, i.e. returns a limited type,
+                 --  inlining cannot be done.
+
+                 and then not Is_Limited_Type (Etype (Spec_Id))
                then
                   Check_And_Split_Unconstrained_Function (N, Spec_Id, Body_Id);
 
@@ -4051,8 +4163,12 @@ package body Sem_Ch6 is
 
             if Nam = Name_Depends then
                Depends := Prag;
-            else pragma Assert (Nam = Name_Global);
+
+            elsif Nam = Name_Global then
                Global := Prag;
+
+            --  Note that pragma Extensions_Visible has already been analyzed
+
             end if;
 
             Prag := Next_Pragma (Prag);
@@ -4168,6 +4284,13 @@ package body Sem_Ch6 is
 
       Set_SPARK_Pragma (Designator, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (Designator, True);
+
+      --  A subprogram declared within a Ghost scope is automatically Ghost
+      --  (SPARK RM 6.9(2)).
+
+      if Comes_From_Source (Designator) and then Within_Ghost_Scope then
+         Set_Is_Ghost_Entity (Designator);
+      end if;
 
       if Debug_Flag_C then
          Write_Str ("==> subprogram spec ");
@@ -4612,9 +4735,9 @@ package body Sem_Ch6 is
       --  If both are functions/operators, check return types conform
 
       if Old_Type /= Standard_Void_Type
-        and then New_Type /= Standard_Void_Type
+           and then
+         New_Type /= Standard_Void_Type
       then
-
          --  If we are checking interface conformance we omit controlling
          --  arguments and result, because we are only checking the conformance
          --  of the remaining parameters.
@@ -4692,6 +4815,18 @@ package body Sem_Ch6 is
            or else Is_Formal_Subprogram (New_Id)
          then
             Conformance_Error ("\formal subprograms not allowed!");
+            return;
+
+         --  Pragma Ghost behaves as a convention in the context of subtype
+         --  conformance (SPARK RM 6.9(5)). Do not check internally generated
+         --  subprograms as their spec may reside in a Ghost region and their
+         --  body not, or vice versa.
+
+         elsif Comes_From_Source (Old_Id)
+           and then Comes_From_Source (New_Id)
+           and then Is_Ghost_Entity (Old_Id) /= Is_Ghost_Entity (New_Id)
+         then
+            Conformance_Error ("\ghost modes do not match!");
             return;
          end if;
       end if;
@@ -5117,33 +5252,11 @@ package body Sem_Ch6 is
       ----------------------
 
       procedure Check_Convention (Op : Entity_Id) is
-         function Convention_Of (Id : Entity_Id) return Convention_Id;
-         --  Given an entity, return its convention. The function treats Ghost
-         --  as convention Ada because the two have the same dynamic semantics.
-
-         -------------------
-         -- Convention_Of --
-         -------------------
-
-         function Convention_Of (Id : Entity_Id) return Convention_Id is
-            Conv : constant Convention_Id := Convention (Id);
-         begin
-            if Conv = Convention_Ghost then
-               return Convention_Ada;
-            else
-               return Conv;
-            end if;
-         end Convention_Of;
-
-         --  Local variables
-
-         Op_Conv         : constant Convention_Id := Convention_Of (Op);
+         Op_Conv         : constant Convention_Id := Convention (Op);
          Iface_Conv      : Convention_Id;
          Iface_Elmt      : Elmt_Id;
          Iface_Prim_Elmt : Elmt_Id;
          Iface_Prim      : Entity_Id;
-
-      --  Start of processing for Check_Convention
 
       begin
          Iface_Elmt := First_Elmt (Ifaces_List);
@@ -5152,7 +5265,7 @@ package body Sem_Ch6 is
               First_Elmt (Primitive_Operations (Node (Iface_Elmt)));
             while Present (Iface_Prim_Elmt) loop
                Iface_Prim := Node (Iface_Prim_Elmt);
-               Iface_Conv := Convention_Of (Iface_Prim);
+               Iface_Conv := Convention (Iface_Prim);
 
                if Is_Interface_Conformant (Typ, Iface_Prim, Op)
                  and then Iface_Conv /= Op_Conv
@@ -5673,10 +5786,12 @@ package body Sem_Ch6 is
                  and then Present (Alias (Overridden_Subp))
                  and then Comes_From_Source (Alias (Overridden_Subp))
                then
-                  Set_Overridden_Operation (Subp, Alias (Overridden_Subp));
+                  Set_Overridden_Operation    (Subp, Alias (Overridden_Subp));
+                  Inherit_Subprogram_Contract (Subp, Alias (Overridden_Subp));
 
                else
-                  Set_Overridden_Operation (Subp, Overridden_Subp);
+                  Set_Overridden_Operation    (Subp, Overridden_Subp);
+                  Inherit_Subprogram_Contract (Subp, Overridden_Subp);
                end if;
             end if;
          end if;
@@ -7351,7 +7466,15 @@ package body Sem_Ch6 is
                --  spec to match a body, full conformance is expected.
 
                if In_Instance then
+
+                  --  Inherit the convention and "ghostness" of the matching
+                  --  spec to ensure proper full and subtype conformance.
+
                   Set_Convention (Designator, Convention (E));
+
+                  if Is_Ghost_Entity (E) then
+                     Set_Is_Ghost_Entity (Designator);
+                  end if;
 
                   --  Skip past subprogram bodies and subprogram renamings that
                   --  may appear to have a matching spec, but that aren't fully
@@ -8406,7 +8529,7 @@ package body Sem_Ch6 is
    procedure List_Inherited_Pre_Post_Aspects (E : Entity_Id) is
    begin
       if Opt.List_Inherited_Aspects
-        and then (Is_Subprogram (E) or else Is_Generic_Subprogram (E))
+        and then Is_Subprogram_Or_Generic_Subprogram (E)
       then
          declare
             Inherited : constant Subprogram_List := Inherited_Subprograms (E);
@@ -9434,9 +9557,12 @@ package body Sem_Ch6 is
                   --  E overrides the operation from which S is inherited.
 
                   if Present (Alias (S)) then
-                     Set_Overridden_Operation (E, Alias (S));
+                     Set_Overridden_Operation    (E, Alias (S));
+                     Inherit_Subprogram_Contract (E, Alias (S));
+
                   else
-                     Set_Overridden_Operation (E, S);
+                     Set_Overridden_Operation    (E, S);
+                     Inherit_Subprogram_Contract (E, S);
                   end if;
 
                   if Comes_From_Source (E) then
@@ -9602,7 +9728,8 @@ package body Sem_Ch6 is
                        and then Present (Alias (E))
                        and then Comes_From_Source (Alias (E))
                      then
-                        Set_Overridden_Operation (S, Alias (E));
+                        Set_Overridden_Operation    (S, Alias (E));
+                        Inherit_Subprogram_Contract (S, Alias (E));
 
                      --  Normal case of setting entity as overridden
 
@@ -9614,7 +9741,8 @@ package body Sem_Ch6 is
                      --  must check whether the target is an init_proc.
 
                      elsif not Is_Init_Proc (S) then
-                        Set_Overridden_Operation (S, E);
+                        Set_Overridden_Operation    (S, E);
+                        Inherit_Subprogram_Contract (S, E);
                      end if;
 
                      Check_Overriding_Indicator (S, E, Is_Primitive => True);
@@ -9637,7 +9765,8 @@ package body Sem_Ch6 is
                              Is_Predefined_Dispatching_Operation (Alias (E)))
                      then
                         if Present (Alias (E)) then
-                           Set_Overridden_Operation (S, Alias (E));
+                           Set_Overridden_Operation    (S, Alias (E));
+                           Inherit_Subprogram_Contract (S, Alias (E));
                         end if;
                      end if;
 
@@ -9919,7 +10048,9 @@ package body Sem_Ch6 is
                         --  (Note that the same is done for controlling access
                         --  parameter cases in function Access_Definition.)
 
-                        Set_Has_Delayed_Freeze (Current_Scope);
+                        if not Is_Thunk (Current_Scope) then
+                           Set_Has_Delayed_Freeze (Current_Scope);
+                        end if;
                      end if;
                   end if;
 

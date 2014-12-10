@@ -51,11 +51,8 @@
 namespace __tsan {
 
 #ifndef TSAN_GO
-const uptr kAllocatorSpace = 0x7d0000000000ULL;
-const uptr kAllocatorSize  =  0x10000000000ULL;  // 1T.
-
 struct MapUnmapCallback;
-typedef SizeClassAllocator64<kAllocatorSpace, kAllocatorSize, 0,
+typedef SizeClassAllocator64<kHeapMemBeg, kHeapMemEnd - kHeapMemBeg, 0,
     DefaultSizeClassMap, MapUnmapCallback> PrimaryAllocator;
 typedef SizeClassAllocatorLocalCache<PrimaryAllocator> AllocatorCache;
 typedef LargeMmapAllocator<MapUnmapCallback> SecondaryAllocator;
@@ -499,9 +496,9 @@ class ScopedReport {
   explicit ScopedReport(ReportType typ);
   ~ScopedReport();
 
-  void AddMemoryAccess(uptr addr, Shadow s, const StackTrace *stack,
+  void AddMemoryAccess(uptr addr, Shadow s, StackTrace stack,
                        const MutexSet *mset);
-  void AddStack(const StackTrace *stack, bool suppressable = false);
+  void AddStack(StackTrace stack, bool suppressable = false);
   void AddThread(const ThreadContext *tctx, bool suppressable = false);
   void AddThread(int unique_tid, bool suppressable = false);
   void AddUniqueTid(int unique_tid);
@@ -525,7 +522,20 @@ class ScopedReport {
   void operator = (const ScopedReport&);
 };
 
-void RestoreStack(int tid, const u64 epoch, StackTrace *stk, MutexSet *mset);
+void RestoreStack(int tid, const u64 epoch, VarSizeStackTrace *stk,
+                  MutexSet *mset);
+
+template<typename StackTraceTy>
+void ObtainCurrentStack(ThreadState *thr, uptr toppc, StackTraceTy *stack) {
+  uptr size = thr->shadow_stack_pos - thr->shadow_stack;
+  uptr start = 0;
+  if (size + !!toppc > kStackTraceMax) {
+    start = size + !!toppc - kStackTraceMax;
+    size = kStackTraceMax - !!toppc;
+  }
+  stack->Init(&thr->shadow_stack[start], size, toppc);
+}
+
 
 void StatAggregate(u64 *dst, u64 *src);
 void StatOutput(u64 *stat);
@@ -552,9 +562,8 @@ void ForkChildAfter(ThreadState *thr, uptr pc);
 
 void ReportRace(ThreadState *thr);
 bool OutputReport(ThreadState *thr, const ScopedReport &srep);
-bool IsFiredSuppression(Context *ctx,
-                        const ScopedReport &srep,
-                        const StackTrace &trace);
+bool IsFiredSuppression(Context *ctx, const ScopedReport &srep,
+                        StackTrace trace);
 bool IsExpectedReport(uptr addr, uptr size);
 void PrintMatchedBenignRaces();
 bool FrameIsInternal(const ReportStack *frame);
@@ -575,7 +584,7 @@ ReportStack *SkipTsanInternalFrames(ReportStack *ent);
 u32 CurrentStackId(ThreadState *thr, uptr pc);
 ReportStack *SymbolizeStackId(u32 stack_id);
 void PrintCurrentStack(ThreadState *thr, uptr pc);
-void PrintCurrentStackSlow();  // uses libunwind
+void PrintCurrentStackSlow(uptr pc);  // uses libunwind
 
 void Initialize(ThreadState *thr);
 int Finalize(ThreadState *thr);

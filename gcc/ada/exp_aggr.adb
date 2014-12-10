@@ -856,8 +856,8 @@ package body Exp_Aggr is
          if not Is_Enumeration_Type (Index_Base) then
             Expr :=
               Make_Op_Add (Loc,
-                           Left_Opnd  => Duplicate_Subexpr (To),
-                           Right_Opnd => Make_Integer_Literal (Loc, U_Val));
+                Left_Opnd  => Duplicate_Subexpr (To),
+                Right_Opnd => Make_Integer_Literal (Loc, U_Val));
 
          --  If we are dealing with enumeration return
          --    Index_Base'Val (Index_Base'Pos (To) + Val)
@@ -872,8 +872,8 @@ package body Exp_Aggr is
 
             Expr_Pos :=
               Make_Op_Add (Loc,
-                           Left_Opnd  => To_Pos,
-                           Right_Opnd => Make_Integer_Literal (Loc, U_Val));
+                Left_Opnd  => To_Pos,
+                Right_Opnd => Make_Integer_Literal (Loc, U_Val));
 
             Expr :=
               Make_Attribute_Reference
@@ -2108,21 +2108,27 @@ package body Exp_Aggr is
       -------------------------------
 
       procedure Init_Hidden_Discriminants (Typ : Entity_Id; List : List_Id) is
-         Btype       : Entity_Id;
-         Parent_Type : Entity_Id;
-         Disc        : Entity_Id;
-         Discr_Val   : Elmt_Id;
+         Btype        : Entity_Id;
+         Parent_Type  : Entity_Id;
+         Disc         : Entity_Id;
+         Discr_Val    : Elmt_Id;
+         In_Aggr_Type : Boolean;
 
       begin
          --  The constraints on the hidden discriminants, if present, are kept
          --  in the Stored_Constraint list of the type itself, or in that of
-         --  the base type.
+         --  the base type. If not in the constraints of the aggregate itself,
+         --  we examine ancestors to find discriminants that are not renamed
+         --  by other discriminants but constrained explicitly.
+
+         In_Aggr_Type := True;
 
          Btype := Base_Type (Typ);
          while Is_Derived_Type (Btype)
-           and then (Present (Stored_Constraint (Btype))
-                       or else
-                     Present (Stored_Constraint (Typ)))
+           and then
+             (Present (Stored_Constraint (Btype))
+               or else
+                 (In_Aggr_Type and then Present (Stored_Constraint (Typ))))
          loop
             Parent_Type := Etype (Btype);
 
@@ -2149,7 +2155,7 @@ package body Exp_Aggr is
                Discr_Val := First_Elmt (Stored_Constraint (Typ));
             end if;
 
-            while Present (Discr_Val) loop
+            while Present (Discr_Val) and then Present (Disc) loop
 
                --  Only those discriminants of the parent that are not
                --  renamed by discriminants of the derived type need to
@@ -2176,6 +2182,7 @@ package body Exp_Aggr is
                Next_Elmt (Discr_Val);
             end loop;
 
+            In_Aggr_Type := False;
             Btype := Base_Type (Parent_Type);
          end loop;
       end Init_Hidden_Discriminants;
@@ -3396,7 +3403,7 @@ package body Exp_Aggr is
          --  that any finalization chain will be associated with that scope.
          --  For extended returns, we delay expansion to avoid the creation
          --  of an unwanted transient scope that could result in premature
-         --  finalization of the return object (which is built in in place
+         --  finalization of the return object (which is built in place
          --  within the caller's scope).
 
          or else
@@ -3409,7 +3416,14 @@ package body Exp_Aggr is
          return;
       end if;
 
-      if Requires_Transient_Scope (Typ) then
+      --  Otherwise, if a transient scope is required, create it now. If we
+      --  are within an initialization procedure do not create such, because
+      --  the target of the assignment must not be declared within a local
+      --  block, and because cleanup will take place on return from the
+      --  initialization procedure.
+      --  Should the condition be more restrictive ???
+
+      if Requires_Transient_Scope (Typ) and then not Inside_Init_Proc then
          Establish_Transient_Scope (N, Sec_Stack => Needs_Finalization (Typ));
       end if;
 

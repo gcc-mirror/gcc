@@ -24,6 +24,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "stor-layout.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "bitmap.h"
@@ -275,7 +287,7 @@ static void
 insert_value_copy_on_edge (edge e, int dest, tree src, source_location locus)
 {
   rtx dest_rtx, seq, x;
-  enum machine_mode dest_mode, src_mode;
+  machine_mode dest_mode, src_mode;
   int unsignedp;
   tree var;
 
@@ -581,13 +593,13 @@ eliminate_build (elim_graph g)
 {
   tree Ti;
   int p0, pi;
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
 
   clear_elim_graph (g);
 
   for (gsi = gsi_start_phis (g->e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       source_location locus;
 
       p0 = var_to_partition (g->map, gimple_phi_result (phi));
@@ -685,7 +697,7 @@ get_temp_reg (tree name)
   tree var = TREE_CODE (name) == SSA_NAME ? SSA_NAME_VAR (name) : name;
   tree type = TREE_TYPE (var);
   int unsignedp;
-  enum machine_mode reg_mode = promote_decl_mode (var, &unsignedp);
+  machine_mode reg_mode = promote_decl_mode (var, &unsignedp);
   rtx x = gen_reg_rtx (reg_mode);
   if (POINTER_TYPE_P (type))
     mark_reg_pointer (x, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (var))));
@@ -788,7 +800,7 @@ eliminate_phi (edge e, elim_graph g)
    check to see if this allows another PHI node to be removed.  */
 
 static void
-remove_gimple_phi_args (gimple phi)
+remove_gimple_phi_args (gphi *phi)
 {
   use_operand_p arg_p;
   ssa_op_iter iter;
@@ -816,7 +828,7 @@ remove_gimple_phi_args (gimple phi)
 	      /* Also remove the def if it is a PHI node.  */
 	      if (gimple_code (stmt) == GIMPLE_PHI)
 		{
-		  remove_gimple_phi_args (stmt);
+		  remove_gimple_phi_args (as_a <gphi *> (stmt));
 		  gsi = gsi_for_stmt (stmt);
 		  remove_phi_node (&gsi, true);
 		}
@@ -832,14 +844,14 @@ static void
 eliminate_useless_phis (void)
 {
   basic_block bb;
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
   tree result;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); )
         {
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  result = gimple_phi_result (phi);
 	  if (virtual_operand_p (result))
 	    {
@@ -895,10 +907,10 @@ rewrite_trees (var_map map ATTRIBUTE_UNUSED)
      create incorrect code.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple_stmt_iterator gsi;
+      gphi_iterator gsi;
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  tree T0 = var_to_partition_to_var (map, gimple_phi_result (phi));
 	  if (T0 == NULL_TREE)
 	    {
@@ -1097,7 +1109,7 @@ static void
 insert_backedge_copies (void)
 {
   basic_block bb;
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
 
   mark_dfs_back_edges ();
 
@@ -1108,7 +1120,7 @@ insert_backedge_copies (void)
 
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  tree result = gimple_phi_result (phi);
 	  size_t i;
 
@@ -1130,7 +1142,8 @@ insert_backedge_copies (void)
 		      || trivially_conflicts_p (bb, result, arg)))
 		{
 		  tree name;
-		  gimple stmt, last = NULL;
+		  gassign *stmt;
+		  gimple last = NULL;
 		  gimple_stmt_iterator gsi2;
 
 		  gsi2 = gsi_last_bb (gimple_phi_arg_edge (phi, i)->src);
@@ -1156,7 +1169,7 @@ insert_backedge_copies (void)
 
 		  /* Create a new instance of the underlying variable of the
 		     PHI result.  */
-		  name = copy_ssa_name (result, NULL);
+		  name = copy_ssa_name (result);
 		  stmt = gimple_build_assign (name,
 					      gimple_phi_arg_def (phi, i));
 

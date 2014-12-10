@@ -23,6 +23,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -31,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "flags.h"
-#include "function.h"
 #include "tree-pretty-print.h"
 #include "bitmap.h"
 #include "gimple-ssa.h"
@@ -40,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "tree-dfa.h"
 #include "tree-inline.h"
-#include "hashtab.h"
 #include "tree-ssa-live.h"
 #include "tree-pass.h"
 #include "langhooks.h"
@@ -339,9 +347,8 @@ pass_rename_ssa_copies::execute (function *fun)
 {
   var_map map;
   basic_block bb;
-  gimple_stmt_iterator gsi;
   tree var, part_var;
-  gimple stmt, phi;
+  gimple stmt;
   unsigned x;
   FILE *debug;
 
@@ -357,7 +364,8 @@ pass_rename_ssa_copies::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     {
       /* Scan for real copies.  */
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
 	  stmt = gsi_stmt (gsi);
 	  if (gimple_assign_ssa_name_copy_p (stmt))
@@ -373,12 +381,12 @@ pass_rename_ssa_copies::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     {
       /* Treat PHI nodes as copies between the result and each argument.  */
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
         {
           size_t i;
 	  tree res;
-
-	  phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  res = gimple_phi_result (phi);
 
 	  /* Do not process virtual SSA_NAMES.  */

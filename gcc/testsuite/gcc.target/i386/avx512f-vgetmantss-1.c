@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512f" } */
-/* { dg-final { scan-assembler-times "vgetmantss\[ \\t\]+\[^\n\]*%xmm\[0-9\]\[\\n\]" 2 } } */
-/* { dg-final { scan-assembler-times "vgetmantss\[ \\t\]+\[^\n\]*\{sae\}\[^\n\]*%xmm\[0-9\]\[\\n\]" 1 } } */
+/* { dg-final { scan-assembler-times "vgetmantss\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vgetmantss\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 

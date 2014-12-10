@@ -30,7 +30,11 @@ void test01()
   bool test __attribute__((unused)) = true;
   const std::string xxx(10000, 'x');
   test_type t(xxx);
+#if _GLIBCXX_USE_CXX11_ABI
+  VERIFY( std::strstr(t.what(), xxx.c_str()) != NULL );
+#else
   VERIFY( std::strcmp(t.what(), xxx.c_str()) == 0 );
+#endif
 }
 
 int main(void)

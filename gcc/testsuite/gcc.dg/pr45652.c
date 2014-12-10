@@ -1,4 +1,4 @@
-/* { dg-do run { target powerpc*-*-* ia64-*-* x86_64-*-* } } */
+/* { dg-do run { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -fselective-scheduling2" } */
 
 struct S {

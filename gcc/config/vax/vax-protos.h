@@ -22,18 +22,18 @@ extern void vax_expand_prologue (void);
 
 #ifdef RTX_CODE
 extern const char *cond_name (rtx);
-extern bool adjacent_operands_p (rtx, rtx, enum machine_mode);
+extern bool adjacent_operands_p (rtx, rtx, machine_mode);
 extern const char *rev_cond_name (rtx);
 extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void vax_notice_update_cc (rtx, rtx);
 extern void vax_expand_addsub_di_operands (rtx *, enum rtx_code);
-extern const char * vax_output_int_move (rtx, rtx *, enum machine_mode);
-extern const char * vax_output_int_add (rtx, rtx *, enum machine_mode);
-extern const char * vax_output_int_subtract (rtx, rtx *, enum machine_mode);
+extern const char * vax_output_int_move (rtx, rtx *, machine_mode);
+extern const char * vax_output_int_add (rtx, rtx *, machine_mode);
+extern const char * vax_output_int_subtract (rtx, rtx *, machine_mode);
 extern const char * vax_output_movmemsi (rtx, rtx *);
 #endif /* RTX_CODE */
 
 #ifdef REAL_VALUE_TYPE
-extern int check_float_value (enum machine_mode, REAL_VALUE_TYPE *, int);
+extern int check_float_value (machine_mode, REAL_VALUE_TYPE *, int);
 #endif /* REAL_VALUE_TYPE */

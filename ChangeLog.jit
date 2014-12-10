@@ -1,0 +1,23 @@
+2014-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* MAINTAINERS: Update jit entry to match formatting change on
+	trunk: "Put all email addresses between '<' and '>'."
+
+2014-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: Add copyright footer.
+
+2014-09-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* MAINTAINERS (Various Maintainers): Add myself as jit maintainer.
+
+2013-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* configure.ac: Add --enable-host-shared
+	* configure: Regenerate.
+
+Copyright (C) 2013-2014 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

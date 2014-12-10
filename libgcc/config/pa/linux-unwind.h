@@ -32,6 +32,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <signal.h>
 #include <sys/ucontext.h>
 
+/* Return TRUE if read access to *P is allowed.  */
+
+static inline long
+pa32_read_access_ok (void *p)
+{
+  long ret;
+
+  __asm__ ("proberi (%1),3,%0" : "=r" (ret) : "r" (p) :);
+  return ret;
+}
+
 /* Unfortunately, because of various bugs and changes to the kernel,
    we have several cases to deal with.
 
@@ -48,7 +59,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    tell us how to locate the sigcontext structure.
 
    Note that with a 2.4 64-bit kernel, the signal context is not properly
-   passed back to userspace so the unwind will not work correctly.  */
+   passed back to userspace so the unwind will not work correctly.
+
+   There is also a bug in various glibc versions.  The (CONTEXT)->ra
+   for the outermost frame is not marked as undefined, so we need to
+   check whether read access is allowed for all the accesses used in
+   searching for the signal trampoline.  */
 
 #define MD_FALLBACK_FRAME_STATE_FOR pa32_fallback_frame_state
 
@@ -73,14 +89,17 @@ pa32_fallback_frame_state (struct _Unwind_Context *context,
      e4008200 be,l 0x100(%sr2, %r0), %sr0, %r31
      08000240 nop  */
 
-  if (pc[0] == 0x34190000 || pc[0] == 0x34190002)
+  if (pa32_read_access_ok (pc)
+      && (pc[0] == 0x34190000 || pc[0] == 0x34190002))
     off = 4*4;
-  else if (pc[4] == 0x34190000 || pc[4] == 0x34190002)
+  else if (pa32_read_access_ok (&pc[4])
+	   && (pc[4] == 0x34190000 || pc[4] == 0x34190002))
     {
       pc += 4;
       off = 10 * 4;
     }
-  else if (pc[5] == 0x34190000 || pc[5] == 0x34190002)
+  else if (pa32_read_access_ok (&pc[5])
+	   && (pc[5] == 0x34190000 || pc[5] == 0x34190002))
     {
       pc += 5;
       off = 10 * 4;
@@ -96,13 +115,16 @@ pa32_fallback_frame_state (struct _Unwind_Context *context,
 	 word boundary and we can then determine the frame offset.  */
       sp = (unsigned long)context->ra;
       pc = (unsigned int *)sp;
-      if ((pc[0] == 0x34190000 || pc[0] == 0x34190002) && (sp & 4))
+      if ((sp & 4)
+	  && pa32_read_access_ok (pc)
+	  && (pc[0] == 0x34190000 || pc[0] == 0x34190002))
 	off = 5 * 4;
       else
 	return _URC_END_OF_STACK;
     }
 
-  if (pc[1] != 0x3414015a
+  if (!pa32_read_access_ok (&pc[3])
+      || pc[1] != 0x3414015a
       || pc[2] != 0xe4008200
       || pc[3] != 0x08000240)
     return _URC_END_OF_STACK;

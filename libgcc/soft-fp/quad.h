@@ -95,21 +95,21 @@ union _FP_UNION_Q
 
 
 # define FP_DECL_Q(X)		_FP_DECL (4, X)
-# define FP_UNPACK_RAW_Q(X, val)	_FP_UNPACK_RAW_4 (Q, X, val)
-# define FP_UNPACK_RAW_QP(X, val)	_FP_UNPACK_RAW_4_P (Q, X, val)
-# define FP_PACK_RAW_Q(val, X)	_FP_PACK_RAW_4 (Q, val, X)
+# define FP_UNPACK_RAW_Q(X, val)	_FP_UNPACK_RAW_4 (Q, X, (val))
+# define FP_UNPACK_RAW_QP(X, val)	_FP_UNPACK_RAW_4_P (Q, X, (val))
+# define FP_PACK_RAW_Q(val, X)	_FP_PACK_RAW_4 (Q, (val), X)
 # define FP_PACK_RAW_QP(val, X)			\
   do						\
     {						\
       if (!FP_INHIBIT_RESULTS)			\
-	_FP_PACK_RAW_4_P (Q, val, X);		\
+	_FP_PACK_RAW_4_P (Q, (val), X);		\
     }						\
   while (0)
 
 # define FP_UNPACK_Q(X, val)			\
   do						\
     {						\
-      _FP_UNPACK_RAW_4 (Q, X, val);		\
+      _FP_UNPACK_RAW_4 (Q, X, (val));		\
       _FP_UNPACK_CANONICAL (Q, 4, X);		\
     }						\
   while (0)
@@ -117,7 +117,7 @@ union _FP_UNION_Q
 # define FP_UNPACK_QP(X, val)			\
   do						\
     {						\
-      _FP_UNPACK_RAW_4_P (Q, X, val);		\
+      _FP_UNPACK_RAW_4_P (Q, X, (val));		\
       _FP_UNPACK_CANONICAL (Q, 4, X);		\
     }						\
   while (0)
@@ -125,7 +125,7 @@ union _FP_UNION_Q
 # define FP_UNPACK_SEMIRAW_Q(X, val)		\
   do						\
     {						\
-      _FP_UNPACK_RAW_4 (Q, X, val);		\
+      _FP_UNPACK_RAW_4 (Q, X, (val));		\
       _FP_UNPACK_SEMIRAW (Q, 4, X);		\
     }						\
   while (0)
@@ -133,7 +133,7 @@ union _FP_UNION_Q
 # define FP_UNPACK_SEMIRAW_QP(X, val)		\
   do						\
     {						\
-      _FP_UNPACK_RAW_4_P (Q, X, val);		\
+      _FP_UNPACK_RAW_4_P (Q, X, (val));		\
       _FP_UNPACK_SEMIRAW (Q, 4, X);		\
     }						\
   while (0)
@@ -142,7 +142,7 @@ union _FP_UNION_Q
   do						\
     {						\
       _FP_PACK_CANONICAL (Q, 4, X);		\
-      _FP_PACK_RAW_4 (Q, val, X);		\
+      _FP_PACK_RAW_4 (Q, (val), X);		\
     }						\
   while (0)
 
@@ -151,7 +151,7 @@ union _FP_UNION_Q
     {						\
       _FP_PACK_CANONICAL (Q, 4, X);		\
       if (!FP_INHIBIT_RESULTS)			\
-	_FP_PACK_RAW_4_P (Q, val, X);		\
+	_FP_PACK_RAW_4_P (Q, (val), X);		\
     }						\
   while (0)
 
@@ -159,7 +159,7 @@ union _FP_UNION_Q
   do						\
     {						\
       _FP_PACK_SEMIRAW (Q, 4, X);		\
-      _FP_PACK_RAW_4 (Q, val, X);		\
+      _FP_PACK_RAW_4 (Q, (val), X);		\
     }						\
   while (0)
 
@@ -168,7 +168,7 @@ union _FP_UNION_Q
     {						\
       _FP_PACK_SEMIRAW (Q, 4, X);		\
       if (!FP_INHIBIT_RESULTS)			\
-	_FP_PACK_RAW_4_P (Q, val, X);		\
+	_FP_PACK_RAW_4_P (Q, (val), X);		\
     }						\
   while (0)
 
@@ -179,15 +179,15 @@ union _FP_UNION_Q
 # define FP_MUL_Q(R, X, Y)		_FP_MUL (Q, 4, R, X, Y)
 # define FP_DIV_Q(R, X, Y)		_FP_DIV (Q, 4, R, X, Y)
 # define FP_SQRT_Q(R, X)		_FP_SQRT (Q, 4, R, X)
-# define _FP_SQRT_MEAT_Q(R, S, T, X, Q)	_FP_SQRT_MEAT_4 (R, S, T, X, Q)
+# define _FP_SQRT_MEAT_Q(R, S, T, X, Q)	_FP_SQRT_MEAT_4 (R, S, T, X, (Q))
 # define FP_FMA_Q(R, X, Y, Z)		_FP_FMA (Q, 4, 8, R, X, Y, Z)
 
-# define FP_CMP_Q(r, X, Y, un)		_FP_CMP (Q, 4, r, X, Y, un)
-# define FP_CMP_EQ_Q(r, X, Y)		_FP_CMP_EQ (Q, 4, r, X, Y)
-# define FP_CMP_UNORD_Q(r, X, Y)	_FP_CMP_UNORD (Q, 4, r, X, Y)
+# define FP_CMP_Q(r, X, Y, un, ex)	_FP_CMP (Q, 4, (r), X, Y, (un), (ex))
+# define FP_CMP_EQ_Q(r, X, Y, ex)	_FP_CMP_EQ (Q, 4, (r), X, Y, (ex))
+# define FP_CMP_UNORD_Q(r, X, Y, ex)	_FP_CMP_UNORD (Q, 4, (r), X, Y, (ex))
 
-# define FP_TO_INT_Q(r, X, rsz, rsg)	_FP_TO_INT (Q, 4, r, X, rsz, rsg)
-# define FP_FROM_INT_Q(X, r, rs, rt)	_FP_FROM_INT (Q, 4, X, r, rs, rt)
+# define FP_TO_INT_Q(r, X, rsz, rsg)	_FP_TO_INT (Q, 4, (r), X, (rsz), (rsg))
+# define FP_FROM_INT_Q(X, r, rs, rt)	_FP_FROM_INT (Q, 4, X, (r), (rs), rt)
 
 # define _FP_FRAC_HIGH_Q(X)	_FP_FRAC_HIGH_4 (X)
 # define _FP_FRAC_HIGH_RAW_Q(X)	_FP_FRAC_HIGH_4 (X)
@@ -219,21 +219,21 @@ union _FP_UNION_Q
 };
 
 # define FP_DECL_Q(X)		_FP_DECL (2, X)
-# define FP_UNPACK_RAW_Q(X, val)	_FP_UNPACK_RAW_2 (Q, X, val)
-# define FP_UNPACK_RAW_QP(X, val)	_FP_UNPACK_RAW_2_P (Q, X, val)
-# define FP_PACK_RAW_Q(val, X)	_FP_PACK_RAW_2 (Q, val, X)
+# define FP_UNPACK_RAW_Q(X, val)	_FP_UNPACK_RAW_2 (Q, X, (val))
+# define FP_UNPACK_RAW_QP(X, val)	_FP_UNPACK_RAW_2_P (Q, X, (val))
+# define FP_PACK_RAW_Q(val, X)	_FP_PACK_RAW_2 (Q, (val), X)
 # define FP_PACK_RAW_QP(val, X)			\
   do						\
     {						\
       if (!FP_INHIBIT_RESULTS)			\
-	_FP_PACK_RAW_2_P (Q, val, X);		\
+	_FP_PACK_RAW_2_P (Q, (val), X);		\
     }						\
   while (0)
 
 # define FP_UNPACK_Q(X, val)			\
   do						\
     {						\
-      _FP_UNPACK_RAW_2 (Q, X, val);		\
+      _FP_UNPACK_RAW_2 (Q, X, (val));		\
       _FP_UNPACK_CANONICAL (Q, 2, X);		\
     }						\
   while (0)
@@ -241,7 +241,7 @@ union _FP_UNION_Q
 # define FP_UNPACK_QP(X, val)			\
   do						\
     {						\
-      _FP_UNPACK_RAW_2_P (Q, X, val);		\
+      _FP_UNPACK_RAW_2_P (Q, X, (val));		\
       _FP_UNPACK_CANONICAL (Q, 2, X);		\
     }						\
   while (0)
@@ -249,7 +249,7 @@ union _FP_UNION_Q
 # define FP_UNPACK_SEMIRAW_Q(X, val)		\
   do						\
     {						\
-      _FP_UNPACK_RAW_2 (Q, X, val);		\
+      _FP_UNPACK_RAW_2 (Q, X, (val));		\
       _FP_UNPACK_SEMIRAW (Q, 2, X);		\
     }						\
   while (0)
@@ -257,7 +257,7 @@ union _FP_UNION_Q
 # define FP_UNPACK_SEMIRAW_QP(X, val)		\
   do						\
     {						\
-      _FP_UNPACK_RAW_2_P (Q, X, val);		\
+      _FP_UNPACK_RAW_2_P (Q, X, (val));		\
       _FP_UNPACK_SEMIRAW (Q, 2, X);		\
     }						\
   while (0)
@@ -266,7 +266,7 @@ union _FP_UNION_Q
   do						\
     {						\
       _FP_PACK_CANONICAL (Q, 2, X);		\
-      _FP_PACK_RAW_2 (Q, val, X);		\
+      _FP_PACK_RAW_2 (Q, (val), X);		\
     }						\
   while (0)
 
@@ -275,7 +275,7 @@ union _FP_UNION_Q
     {						\
       _FP_PACK_CANONICAL (Q, 2, X);		\
       if (!FP_INHIBIT_RESULTS)			\
-	_FP_PACK_RAW_2_P (Q, val, X);		\
+	_FP_PACK_RAW_2_P (Q, (val), X);		\
     }						\
   while (0)
 
@@ -283,7 +283,7 @@ union _FP_UNION_Q
   do						\
     {						\
       _FP_PACK_SEMIRAW (Q, 2, X);		\
-      _FP_PACK_RAW_2 (Q, val, X);		\
+      _FP_PACK_RAW_2 (Q, (val), X);		\
     }						\
   while (0)
 
@@ -292,7 +292,7 @@ union _FP_UNION_Q
     {						\
       _FP_PACK_SEMIRAW (Q, 2, X);		\
       if (!FP_INHIBIT_RESULTS)			\
-	_FP_PACK_RAW_2_P (Q, val, X);		\
+	_FP_PACK_RAW_2_P (Q, (val), X);		\
     }						\
   while (0)
 
@@ -303,15 +303,15 @@ union _FP_UNION_Q
 # define FP_MUL_Q(R, X, Y)		_FP_MUL (Q, 2, R, X, Y)
 # define FP_DIV_Q(R, X, Y)		_FP_DIV (Q, 2, R, X, Y)
 # define FP_SQRT_Q(R, X)		_FP_SQRT (Q, 2, R, X)
-# define _FP_SQRT_MEAT_Q(R, S, T, X, Q)	_FP_SQRT_MEAT_2 (R, S, T, X, Q)
+# define _FP_SQRT_MEAT_Q(R, S, T, X, Q)	_FP_SQRT_MEAT_2 (R, S, T, X, (Q))
 # define FP_FMA_Q(R, X, Y, Z)		_FP_FMA (Q, 2, 4, R, X, Y, Z)
 
-# define FP_CMP_Q(r, X, Y, un)		_FP_CMP (Q, 2, r, X, Y, un)
-# define FP_CMP_EQ_Q(r, X, Y)		_FP_CMP_EQ (Q, 2, r, X, Y)
-# define FP_CMP_UNORD_Q(r, X, Y)	_FP_CMP_UNORD (Q, 2, r, X, Y)
+# define FP_CMP_Q(r, X, Y, un, ex)	_FP_CMP (Q, 2, (r), X, Y, (un), (ex))
+# define FP_CMP_EQ_Q(r, X, Y, ex)	_FP_CMP_EQ (Q, 2, (r), X, Y, (ex))
+# define FP_CMP_UNORD_Q(r, X, Y, ex)	_FP_CMP_UNORD (Q, 2, (r), X, Y, (ex))
 
-# define FP_TO_INT_Q(r, X, rsz, rsg)	_FP_TO_INT (Q, 2, r, X, rsz, rsg)
-# define FP_FROM_INT_Q(X, r, rs, rt)	_FP_FROM_INT (Q, 2, X, r, rs, rt)
+# define FP_TO_INT_Q(r, X, rsz, rsg)	_FP_TO_INT (Q, 2, (r), X, (rsz), (rsg))
+# define FP_FROM_INT_Q(X, r, rs, rt)	_FP_FROM_INT (Q, 2, X, (r), (rs), rt)
 
 # define _FP_FRAC_HIGH_Q(X)	_FP_FRAC_HIGH_2 (X)
 # define _FP_FRAC_HIGH_RAW_Q(X)	_FP_FRAC_HIGH_2 (X)

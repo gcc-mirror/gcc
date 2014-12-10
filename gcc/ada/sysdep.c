@@ -866,7 +866,7 @@ __gnat_localtime_tzoff (const time_t *timer ATTRIBUTE_UNUSED,
 
     tz_start = index (tz_str, ':') + 2;
     tz_end = index (tz_start, ':');
-    tz_end = '\0';
+    *tz_end = '\0';
 
     /* The Ada layer expects an offset in seconds. Note that we must reverse
        the sign of the result since west is positive and east is negative on

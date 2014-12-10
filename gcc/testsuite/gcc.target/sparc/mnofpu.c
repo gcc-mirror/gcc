@@ -69,6 +69,7 @@ static inline __attribute__((always_inline)) u32 __er32(struct e1000_hw *hw, uns
 {
  return __readl(hw->hw_addr + reg);
 }
+int e1e_rphy(struct e1000_hw *, int, u16 *);
 void e1000e_update_stats(struct e1000_adapter *adapter)
 {
  struct e1000_hw *hw = &adapter->hw;

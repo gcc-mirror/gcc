@@ -256,6 +256,16 @@ gfc_build_inf_or_huge (tree type, int kind)
     }
 }
 
+/* Returns a floating-point NaN of a given type.  */
+
+tree
+gfc_build_nan (tree type, const char *str)
+{
+  REAL_VALUE_TYPE real;
+  real_nan (&real, str, 1, TYPE_MODE (type));
+  return build_real (type, real);
+}
+
 /* Converts a backend tree into a real constant.  */
 
 void

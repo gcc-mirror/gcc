@@ -2,9 +2,9 @@
 // { dg-options "-pedantic" }
 
 int main() {
-  goto label;   // { dg-error "" }
+  goto label;   // { dg-message "" }
   
-  int temp = 1; // { dg-error "" } 
+  int temp = 1; // { dg-message "" } 
   
   label:        // { dg-error "" } 
     return 1;

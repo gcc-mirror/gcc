@@ -1,3 +1,237 @@
+2014-12-09  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
+
+	* Makefile.in (with_aix_soname): Define.
+	* config/rs6000/t-slibgcc-aix: Act upon --with-aix-soname option.
+	* configure.ac: Accept --with-aix-soname=aix|svr4|both option.
+	* configure: Recreate.
+
+2014-12-05  Olivier Hainque  <hainque@adacore.com>
+
+	* unwind-dw2.c (DWARF_REG_TO_UNWIND_COLUMN): Remove default def,
+	now provided by defaults.h.
+
+2014-11-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55351
+	* config/sh/lib1funcs.S: Check value of __SHMEDIA__ instead of checking
+	whether it's defined.
+
+2014-11-27  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/cpuinfo.c (processor_features): Add FEATURE_AVX512F.
+	* config/i386/cpuinfo.c (get_available_features): Detect it.
+
+2014-11-27  Tony Wang  <tony.wang@arm.com>
+
+	* config/arm/lib1funcs.S (FUNC_START): Add conditional section
+	redefine for macro L_arm_muldivsf3 and L_arm_muldivdf3.
+	(SYM_END, ARM_SYM_START): Add macros used to expose function Symbols.
+
+2014-11-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* crtstuff.c (__do_glbal_ctors_1): Add missing semicolon.
+
+2014-11-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (ABORT_INSTRUCTION): Use __builtin_trap()
+	instead.
+
+2014-11-21  Guy Martin  <gmsoft@tuxicoman.be>
+	    John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (__kernel_cmpxchg2): New.
+	(FETCH_AND_OP_2): New.  Use for subword and double word operations.
+	(OP_AND_FETCH_2): Likewise.
+	(COMPARE_AND_SWAP_2): Likewise.
+	(SYNC_LOCK_TEST_AND_SET_2): Likewise.
+	(SYNC_LOCK_RELEASE_2): Likewise.
+	(SUBWORD_SYNC_OP): Remove.
+	(SUBWORD_VAL_CAS): Likewise.
+	(SUBWORD_BOOL_CAS): Likewise.
+	(FETCH_AND_OP_WORD): Update.
+	Consistently use signed types.
+	
+2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+
+	* Makefile.in (crtoffloadbegin$(objext)): New rule.
+	(crtoffloadend$(objext)): Likewise.
+	* configure: Regenerate.
+	* configure.ac (accel_dir_suffix): Compute new variable.
+	(extra_parts): Add crtoffloadbegin.o and crtoffloadend.o
+	if enable_offload_targets is not empty.
+	* offloadstuff.c: New file.
+
+2014-11-13  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/divmodhi.S: Add support for the G10 architecture.
+	Use START_FUNC and END_FUNC macros to enable linker garbage
+	collection.
+	* config/rl78/divmodqi.S: Likewise.
+	* config/rl78/divmodsi.S: Likewise.
+	* config/rl78/mulsi3.S: Likewise.
+	* config/rl78/lib2div.c: Remove G10 functions.
+	* config/rl78/lib2muls.c: Likewise.
+	* config/rl78/t-rl8 (HOST_LIBGCC2_CFLAGS): Define.
+	* config/rl78/vregs.h (START_FUNC): New macro.
+	(END_FUNC): New macro.
+
+2014-11-12  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips16.S: Set .module when supported.  Update O32
+	FP64 calling convention and use for FPXX when possible.  Add FPXX
+	calling convention fallback case.
+
+2014-11-06  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config.host: Handle nvptx-*-*.
+	* shared-object.mk (as-flags-$o): Define.
+	($(base)$(objext), $(base)_s$(objext)): Use it instead of
+	-xassembler-with-cpp.
+	* static-object.mk: Identical changes.
+	* config/nvptx/t-nvptx: New file.
+	* config/nvptx/crt0.s: New file.
+	* config/nvptx/free.asm: New file.
+	* config/nvptx/malloc.asm: New file.
+	* config/nvptx/realloc.c: New file.
+
+2014-10-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (libgcc.map.in): New target.
+	(libgcc.map): Use libgcc.map.in.
+	* config/t-softfp (softfp_compat): New variable to be set by
+	users.
+	[$(softfp_compat) = y] (softfp_map_dep, softfp_set_symver): New
+	variables.
+	[$(softfp_compat) = y] (softfp_file_list): Use files in the build
+	directory.
+	[$(softfp_compat) = y] ($(softfp_file_list)): Generate wrappers
+	that use compat symbols and disable all code unless [SHARED].
+	* config/t-softfp-compat: New file.
+	* find-symver.awk: New file.
+	* configure.ac (--with-glibc-version): New configure option.
+	(ppc_fp_compat): New variable set for powerpc*-*-linux*.
+	* configure: Regenerate.
+	* config.host (powerpc*-*-linux*): Use ${ppc_fp_compat} for
+	soft-float and e500.
+
+2014-10-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/t-hardfp (hardfp_exclusions): Document new variable for
+	user to define.
+	(hardfp_func_list): Exclude functions from $(hardfp_exclusions).
+	* config/t-softfp (softfp_extras): Document new variable for user
+	to define.
+	(softfp_func_list): Add functions from $(softfp_extras).
+	* config/rs6000/t-e500v1-fp, config/rs6000/t-e500v2-fp: New files.
+	* config.host (powerpc*-*-linux*): For e500v1, use
+	rs6000/t-e500v1-fp and t-hardfp; do not use t-softfp-sfdf and
+	t-softfp-excl.  For e500v2, use t-hardfp-sfdf, rs6000/t-e500v2-fp
+	and t-hardfp; do not use t-softfp-sfdf and t-softfp-excl.
+
+2014-10-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-unwind.h (pa32_read_access_ok): New function.
+	(pa32_fallback_frame_state): Use pa32_read_access_ok to check if
+	memory read accesses are ok.
+
+2014-10-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (ppc_fp_type): Set variable on powerpc*-*-linux*.
+	* configure: Regenerate.
+	* config.host (powerpc*-*-linux*): Use $ppc_fp_type to determine
+	additions to tmake_file.  Use t-hardfp-sfdf and t-hardfp instead
+	of soft-fp for 32-bit classic hard float.  Do not use
+	t-softfp-excl for soft float.
+
+2014-10-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.host (powerpc*-*-linux*): Only use soft-fp for 32-bit
+	configurations.
+	* config/rs6000/t-ppc64-fp (softfp_wrap_start, softfp_wrap_end):
+	Remove variables.
+
+2014-10-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/lib1funcs.S (__do_global_dtors): Fix wrong code
+	introduced with 2014-10-21 trunk r216525.
+
+2014-10-21  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Vidya Praveen <vidya.praveen@atmel.com>
+	    Praveen Kumar Kaushik <Praveen_Kumar.Kaushik@atmel.com>
+	    Senthil Kumar Selvaraj <Senthil_Kumar.Selvaraj@atmel.com>
+	    Pitchumani Sivanupandi <Pitchumani.S@atmel.com>
+
+	* config/avr/lib1funcs.S (__do_global_dtors): Go back to descending
+	order.
+
+	Updated library functions for AVRTINY arch.
+	* config/avr/lib1funcs.S: Updated zero/tmp regs for AVRTINY.
+	Replaced occurrences of r0/r1 with tmp/zero reg macros.
+	Added wsubi/ wadi macros that expands conditionally as sbiw/ adiw
+	or AVRTINY equivalent. Replaced occurrences of sbiw/adiw with
+	wsubi/wadi macors.
+	(__mulsi3_helper): Update stack, preserve callee saved regs and
+	argument from stack. Restore callee save registers.
+	(__mulpsi3): Likewise.
+	(__muldi3, __udivmodsi4, __divmodsi4, __negsi2, __umoddi3, __udivmod64,
+	__moddi3, __adddi3, __adddi3_s8, __subdi3, __cmpdi2, __cmpdi2_s8,
+	__negdi2, __prologue_saves__, __epilogue_restores__): Excluded for
+	AVRTINY.
+	(__tablejump2__): Added lpm equivalent instructions for AVRTINY.
+	(__do_copy_data): Added new definition for AVRTINY.
+	(__do_clear_bss): Replace r17 by r18 to preserve zero reg for AVRTINY.
+	(__load_3, __load_4, __xload_1, __xload_2, __xload_3,
+	__xload_4, __movmemx_qi, __movmemx_hi): Excluded for AVRTINY.
+	* config/avr/lib1funcs-fixed.S: Replaced occurrences of r0/r1 with
+	tmp/zero reg macros. Replaced occurrences of sbiw/adiw with wsubi/wadi
+	macors.
+	* config/avr/t-avr (LIB1ASMFUNCS): Remove unsupported functions for
+	AVRTINY.
+
+	Fix broken long multiplication on tiny arch.
+
+2014-10-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* soft-fp/double.h: Update from glibc.
+	* soft-fp/eqdf2.c: Likewise.
+	* soft-fp/eqsf2.c: Likewise.
+	* soft-fp/eqtf2.c: Likewise.
+	* soft-fp/extenddftf2.c: Likewise.
+	* soft-fp/extended.h: Likewise.
+	* soft-fp/extendsfdf2.c: Likewise.
+	* soft-fp/extendsftf2.c: Likewise.
+	* soft-fp/extendxftf2.c: Likewise.
+	* soft-fp/gedf2.c: Likewise.
+	* soft-fp/gesf2.c: Likewise.
+	* soft-fp/getf2.c: Likewise.
+	* soft-fp/ledf2.c: Likewise.
+	* soft-fp/lesf2.c: Likewise.
+	* soft-fp/letf2.c: Likewise.
+	* soft-fp/op-1.h: Likewise.
+	* soft-fp/op-2.h: Likewise.
+	* soft-fp/op-4.h: Likewise.
+	* soft-fp/op-8.h: Likewise.
+	* soft-fp/op-common.h: Likewise.
+	* soft-fp/quad.h: Likewise.
+	* soft-fp/single.h: Likewise.
+	* soft-fp/soft-fp.h: Likewise.
+	* soft-fp/unorddf2.c: Likewise.
+	* soft-fp/unordsf2.c: Likewise.
+	* soft-fp/unordtf2.c: Likewise.
+	* config/c6x/eqd.c (__c6xabi_eqd): Update call to FP_CMP_EQ_D.
+	* config/c6x/eqf.c (__c6xabi_eqf): Update call to FP_CMP_EQ_S.
+	* config/c6x/ged.c (__c6xabi_ged): Update call to FP_CMP_D.
+	* config/c6x/gef.c (__c6xabi_gef): Update call to FP_CMP_S.
+	* config/c6x/gtd.c (__c6xabi_gtd): Update call to FP_CMP_D.
+	* config/c6x/gtf.c (__c6xabi_gtf): Update call to FP_CMP_S.
+	* config/c6x/led.c (__c6xabi_led): Update call to FP_CMP_D.
+	* config/c6x/lef.c (__c6xabi_lef): Update call to FP_CMP_S.
+	* config/c6x/ltd.c (__c6xabi_ltd): Update call to FP_CMP_D.
+	* config/c6x/ltf.c (__c6xabi_ltf): Update call to FP_CMP_S.
+
 2014-10-08  Rong Xu  <xur@google.com>
 
 	* libgcov-util.c (read_gcda_file): Fix format.

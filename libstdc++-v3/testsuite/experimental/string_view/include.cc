@@ -19,7 +19,7 @@
 
 // NB: This issue affected only debug-mode.
 
-// { dg-options "-std=gnu++1y -fno-rtti" }
+// { dg-options "-std=gnu++14 -fno-rtti" }
 // { dg-do compile }
 
 #include <experimental/string_view>

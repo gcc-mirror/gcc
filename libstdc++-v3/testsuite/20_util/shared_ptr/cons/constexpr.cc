@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x -fno-inline -save-temps -g0" }
+// { dg-options "-std=gnu++11 -fno-inline -save-temps -g0" }
 // { dg-final { scan-assembler-not "_ZNSt10shared_ptrIiEC2Ev" } }
 // { dg-final { scan-assembler-not "_ZNSt10shared_ptrIiEC2EDn" } }
 

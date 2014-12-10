@@ -523,7 +523,7 @@ int linemap_location_in_system_header_p (struct line_maps *,
 /* Return TRUE if LOCATION is a source code location of a token coming
    from a macro replacement-list at a macro expansion point, FALSE
    otherwise.  */
-bool linemap_location_from_macro_expansion_p (struct line_maps *,
+bool linemap_location_from_macro_expansion_p (const struct line_maps *,
 					      source_location);
 
 /* source_location values from 0 to RESERVED_LOCATION_COUNT-1 will
@@ -579,6 +579,16 @@ bool linemap_location_from_macro_expansion_p (struct line_maps *,
     if (! (EXPR))				\
       abort ();					\
   } while (0)
+ 
+/* Assert that becomes a conditional expression when checking is disabled at
+   compilation time.  Use this for conditions that should not happen but if
+   they happen, it is better to handle them gracefully rather than crash
+   randomly later. 
+   Usage:
+
+   if (linemap_assert_fails(EXPR)) handle_error(); */
+#define linemap_assert_fails(EXPR) __extension__ \
+  ({linemap_assert (EXPR); false;}) 
 
 /* Assert that MAP encodes locations of tokens that are not part of
    the replacement-list of a macro expansion.  */
@@ -586,7 +596,9 @@ bool linemap_location_from_macro_expansion_p (struct line_maps *,
   ({linemap_assert (!linemap_macro_expansion_map_p (LINE_MAP)); \
     (LINE_MAP);})
 #else
-#define linemap_assert(EXPR)
+/* Include EXPR, so that unused variable warnings do not occur.  */
+#define linemap_assert(EXPR) ((void)(0 && (EXPR)))
+#define linemap_assert_fails(EXPR) (! (EXPR))
 #define linemap_check_ordinary(LINE_MAP) (LINE_MAP)
 #endif
 
@@ -599,9 +611,18 @@ linemap_position_for_column (struct line_maps *, unsigned int);
 
 /* Encode and return a source location from a given line and
    column.  */
-source_location linemap_position_for_line_and_column (struct line_map *,
-						      linenum_type,
-						      unsigned int);
+source_location
+linemap_position_for_line_and_column (const struct line_map *,
+				      linenum_type, unsigned int);
+
+/* Encode and return a source_location starting from location LOC and
+   shifting it by OFFSET columns.  This function does not support
+   virtual locations.  */
+source_location
+linemap_position_for_loc_and_offset (struct line_maps *set,
+				     source_location loc,
+				     unsigned int offset);
+
 /* Return the file this map is for.  */
 #define LINEMAP_FILE(MAP)					\
   (linemap_check_ordinary (MAP)->d.ordinary.to_file)

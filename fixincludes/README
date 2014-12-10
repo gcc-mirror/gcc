@@ -162,7 +162,9 @@ MAKING CHANGES TO INCLHACK.DEF
 4.  There are currently four methods of fixing a file:
 
     1.  a series of sed expressions.  Each will be an individual
-        "-e" argument to a single invocation of sed.
+        "-e" argument to a single invocation of sed.  Unless you
+        need to use multiple or complex sed expressions, please
+        use the "replacement text" method instead.
 
     2.  a shell script.  These scripts are _required_ to read all
         of stdin in order to avoid pipe stalls.  They may choose to

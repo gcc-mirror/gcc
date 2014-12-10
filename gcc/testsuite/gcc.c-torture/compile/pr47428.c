@@ -1,4 +1,5 @@
 /* PR tree-optimization/47428 */
+/* { dg-require-effective-target untyped_assembly } */
 
 struct S
 {

@@ -3,10 +3,11 @@
 void f()
 try
   {
-    goto l2;       // { dg-error "from here" }
+    goto l2;       // { dg-message "from here" }
   l1: ;            // { dg-error "jump to label 'l1'" }
   } catch (...)
   {
-  l2: ;            // { dg-error "jump to label 'l2'|enters catch block" }
-    goto l1;       // { dg-error "from here|enters try block" }
+  l2: ;            // { dg-error "jump to label 'l2'" }
+                   // { dg-message "enters catch block" "" { target *-*-*} 10 }
+    goto l1;       // { dg-message "from here|enters try block" }
   }

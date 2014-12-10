@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "flags.h"
 #include "gfortran.h"
 #include "arith.h"
 #include "match.h"
@@ -3170,9 +3171,10 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
     }
 
   /* This is possibly a typo: x = f() instead of x => f().  */
-  if (gfc_option.warn_surprising
+  if (warn_surprising
       && rvalue->expr_type == EXPR_FUNCTION && gfc_expr_attr (rvalue).pointer)
-    gfc_warning ("POINTER-valued function appears on right-hand side of "
+    gfc_warning (OPT_Wsurprising,
+		 "POINTER-valued function appears on right-hand side of "
 		 "assignment at %L", &rvalue->where);
 
   /* Check size of array assignments.  */
@@ -3196,10 +3198,11 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
   if (rvalue->is_boz && lvalue->ts.type != BT_INTEGER)
     {
       int rc;
-      if (gfc_option.warn_surprising)
-        gfc_warning ("BOZ literal at %L is bitwise transferred "
-                     "non-integer symbol '%s'", &rvalue->where,
-                     lvalue->symtree->n.sym->name);
+      if (warn_surprising)
+	gfc_warning (OPT_Wsurprising,
+		     "BOZ literal at %L is bitwise transferred "
+		     "non-integer symbol %qs", &rvalue->where,
+		     lvalue->symtree->n.sym->name);
       if (!gfc_convert_boz (rvalue, &lvalue->ts))
 	return false;
       if ((rc = gfc_range_check (rvalue)) != ARITH_OK)
@@ -3227,7 +3230,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
   if (rvalue->expr_type == EXPR_CONSTANT && lvalue->ts.type == rvalue->ts.type
       && (lvalue->ts.type == BT_REAL || lvalue->ts.type == BT_COMPLEX))
     {
-      if (lvalue->ts.kind < rvalue->ts.kind && gfc_option.gfc_warn_conversion)
+      if (lvalue->ts.kind < rvalue->ts.kind && warn_conversion)
 	{
 	  /* As a special bonus, don't warn about REAL rvalues which are not
 	     changed by the conversion if -Wconversion is specified.  */
@@ -3245,23 +3248,25 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 	      mpfr_sub (diff, rv, rvalue->value.real, GFC_RND_MODE);
 
 	      if (!mpfr_zero_p (diff))
-		gfc_warning ("Change of value in conversion from "
-			     " %s to %s at %L", gfc_typename (&rvalue->ts),
+		gfc_warning (OPT_Wconversion, 
+			     "Change of value in conversion from "
+			     " %qs to %qs at %L", gfc_typename (&rvalue->ts),
 			     gfc_typename (&lvalue->ts), &rvalue->where);
 
 	      mpfr_clear (rv);
 	      mpfr_clear (diff);
 	    }
 	  else
-	    gfc_warning ("Possible change of value in conversion from %s "
-			 "to %s at %L",gfc_typename (&rvalue->ts),
+	    gfc_warning (OPT_Wconversion,
+			 "Possible change of value in conversion from %qs "
+			 "to %qs at %L", gfc_typename (&rvalue->ts),
 			 gfc_typename (&lvalue->ts), &rvalue->where);
 
 	}
-      else if (gfc_option.warn_conversion_extra
-	       && lvalue->ts.kind > rvalue->ts.kind)
+      else if (warn_conversion_extra && lvalue->ts.kind > rvalue->ts.kind)
 	{
-	  gfc_warning ("Conversion from %s to %s at %L",
+	  gfc_warning (OPT_Wconversion_extra,
+		       "Conversion from %qs to %qs at %L",
 		       gfc_typename (&rvalue->ts),
 		       gfc_typename (&lvalue->ts), &rvalue->where);
 	}
@@ -3750,7 +3755,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
     }
 
   /* Warn if it is the LHS pointer may lives longer than the RHS target.  */
-  if (gfc_option.warn_target_lifetime
+  if (warn_target_lifetime
       && rvalue->expr_type == EXPR_VARIABLE
       && !rvalue->symtree->n.sym->attr.save
       && !attr.pointer && !rvalue->symtree->n.sym->attr.host_assoc
@@ -3783,7 +3788,8 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  }
 
       if (warn)
-	gfc_warning ("Pointer at %L in pointer assignment might outlive the "
+	gfc_warning (OPT_Wtarget_lifetime,
+		     "Pointer at %L in pointer assignment might outlive the "
 		     "pointer target", &lvalue->where);
     }
 
@@ -4971,11 +4977,12 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 			  if (gfc_dep_compare_expr (ec, en) == 0)
 			    {
 			      if (context)
-				gfc_error_now ("Elements with the same value at %L"
-					       " and %L in vector subscript"
-					       " in a variable definition"
-					       " context (%s)", &(ec->where),
-					     &(en->where), context);
+				gfc_error_now_1 ("Elements with the same value "
+						 "at %L and %L in vector "
+						 "subscript in a variable "
+						 "definition context (%s)",
+						 &(ec->where), &(en->where),
+						 context);
 			      return false;
 			    }
 			}

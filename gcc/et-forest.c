@@ -32,7 +32,15 @@ License along with libiberty; see the file COPYING3.  If not see
 #undef DEBUG_ET
 
 #ifdef DEBUG_ET
-#include "basic-block.h" /* To access index in record_path_before_1.  */
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "basic-block.h"
 #endif
 
 /* The occurrence of a node in the et tree.  */

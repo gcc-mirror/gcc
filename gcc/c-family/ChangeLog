@@ -1,3 +1,240 @@
+2014-12-06  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/64183
+	* c-gimplify.c (c_gimplify_expr): Don't convert the RHS of a
+	shift-expression if it is integer_type_node.  Use types_compatible_p.
+
+2014-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (convert_vector_to_pointer_for_subscript): Remove NULL
+	last argument from create_tmp_var_raw and create_tmp_var calls.
+	* cilk.c (gimplify_cilk_spawn): Likewise.
+	* c-omp.c (c_finish_omp_atomic): Likewise.
+
+2014-11-28  Marek Polacek  <polacek@redhat.com>
+
+	* c-ubsan.c (ubsan_instrument_shift): Use op1_utype for MINUS_EXPR
+	instead of unsigned_type_node.
+
+2014-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c/63862
+	* c-ubsan.c (ubsan_instrument_shift): Change the type of a MINUS_EXPR
+	to op1_utype.
+	* c-gimplify.c (c_gimplify_expr): Convert right operand of a shift
+	expression to unsigned_type_node.
+
+2014-11-20  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/38757
+	* c-opts.c (set_std_c89): Set lang_hooks.name.
+	(set_std_c99): Likewise.
+	(set_std_c11): Likewise.
+	(set_std_cxx98): Likewise.
+	(set_std_cxx11): Likewise.
+	(set_std_cxx14): Likewise.
+	(set_std_cxx1z): Likewise.
+
+2014-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/63764
+	* c-common.h (convert_vector_to_pointer_for_subscript): Change
+	return type to bool.
+	* c-common.c: Include gimple-expr.h.
+	(convert_vector_to_pointer_for_subscript): Change return type to
+	bool.  If *vecp is not lvalue_p and has VECTOR_TYPE, return true
+	and copy it into a TARGET_EXPR and use that instead of *vecp
+	directly.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	Merger of git branch "gimple-classes-v2-option-3".
+	* ChangeLog.gimple-classes: New.
+	* c-gimplify.c (add_block_to_enclosing): Strengthen local "stack"
+	from being just a vec<gimple> to a vec<gbind *>.
+
+2014-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63813
+	* c-ubsan.c (ubsan_maybe_instrument_reference_or_call): Change type
+	argument to ptype, set type to TREE_TYPE (ptype).  Don't call
+	get_pointer_alignment for non-pointers.  Use ptype, or if it is
+	reference type, corresponding pointer type, as type of kind
+	argument.
+	(ubsan_maybe_instrument_reference,
+	ubsan_maybe_instrument_member_call): Adjust callers.
+
+2014-11-15  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/63884
+	* array-notation-common.c (is_sec_implicit_index_fn): Return false
+	for NULL fndecl.
+	(extract_array_notation_exprs): Return for NULL node.
+
+2014-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): Define and
+	undefine __NO_MATH_ERRNO__ based on changes to -fmath-errno state.
+
+2014-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59708
+	* c-common.c (check_builtin_function_arguments): Handle
+	BUILT_IN_{ADD,SUB,MUL}_OVERFLOW.
+
+2014-11-10  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/60804
+	* c-common.h (check_no_cilk): Declare.
+	* cilk.c (get_error_location): New function.
+	(check_no_cilk): Dito.
+
+2014-11-10  Andi Kleen  <ak@linux.intel.com>
+
+	* cilk.c (recognize_spawn): Use expression location
+	for error message.
+
+2014-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c.opt ([Wshift-count-negative, Wshift-count-overflow]): Add.
+
+2014-11-10  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* c-cppbuiltin.c (__has_attribute, __has_cpp_attribute): New macros;
+	(__cpp_rtti, __cpp_exceptions): New macros for C++98;
+	(__cpp_range_based_for, __cpp_initializer_lists,
+	__cpp_delegating_constructors, __cpp_nsdmi,
+	__cpp_inheriting_constructors, __cpp_ref_qualifiers): New macros
+	for C++11; (__cpp_attribute_deprecated): Remove in favor of
+	__has_cpp_attribute.
+	* c-lex.c (cb_has_attribute): New callback CPP function;
+	(init_c_lex): Set has_attribute callback.
+
+2014-11-04  Richard Biener  <rguenther@suse.de>
+
+	* c-common.c (shorten_compare): Do not shorten mixed
+	DFP and non-DFP compares.
+
+2014-11-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp1y/feat-cxx11.C: Commentary and rearrangement of tests.
+	* g++.dg/cpp1y/feat-cxx11-neg.C: Add aggregate NSDMI test.
+	Commentary and rearrangement of tests.
+	* g++.dg/cpp1y/feat-cxx14.C: Enable aggregate NSDMI test.
+	Commentary and rearrangement of tests.
+	* g++.dg/cpp1y/feat-cxx98-neg.C: Ditto
+	* g++.dg/cpp1y/feat-cxx98.C: Commentary.
+
+2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.c, c-common.h, c-cppbuiltin.c, c-lex.c: Remove redundant
+	enum from machine_mode.
+
+2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-family/c-common.c: Adjust include files.
+	* c-family/c-gimplify.c: Ditto.
+	* c-family/cilk.c: Ditto.
+	* c-family/c-pragma.c: Ditto.
+	* c-family/c-ubsan.c: Ditto.
+
+2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-gimplify.c: Adjust include files.
+
+2014-10-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/53061
+	* c-opts.c (c_common_diagnostics_set_defaults): Renamed from
+	c_common_initialize_diagnostics.
+	* c-common.h: Likewise.
+
+2014-10-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/56980
+	* c-pretty-print.c (c_pretty_printer::simple_type_specifier): Don't
+	print "struct"/"union"/"enum" for typedefed names.
+
+2014-10-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-ubsan.c (ubsan_instrument_shift): Perform the MINUS_EXPR
+	in unsigned type.
+
+2014-10-22  Jakub Jelinek  <jakub@redhat.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	* c-ubsan.c (ubsan_instrument_division, ubsan_instrument_shift,
+	ubsan_instrument_vla): Check bits in flag_sanitize_recover bitmask
+	instead of flag_sanitize_recover as bool flag.
+
+2014-10-21  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* cilk.c: Revert previous change.
+
+2014-10-20  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR c/63307
+	* cilk.c: Include vec.h.
+	(struct cilk_decls): New structure.
+	(wrapper_parm_cb): Split this function to...
+	(fill_decls_vec): ...this...
+	(create_parm_list): ...and this.
+	(compare_decls): New function.
+	(for_local_cb): Remove.
+	(wrapper_local_cb): Ditto.
+	(build_wrapper_type): For now first traverse and fill vector of
+	declarations then sort it and then deal with sorted vector.
+	(cilk_outline): Ditto.
+	(declare_one_free_variable): Ditto.
+
+2014-10-17  Marek Polacek  <polacek@redhat.com>
+
+	* c-opts.c (c_common_post_options): Set warn_implicit_int.
+	* c.opt (Wimplicit-int): Initialize to -1.
+
+2014-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-pragma.c: Adjust include files.
+	* c-semantics.c: Likewise.
+
+2014-10-16  DJ Delorie  <dj@redhat.com>
+
+	* c-cppbuiltin.c (cpp_atomic_builtins): Don't assume pointers are
+	multiples of bytes.
+
+2014-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63455
+	* c-common.h (CPP_PREPARSED_EXPR): New.
+	(N_CP_TTYPES): Adjust.
+
+2014-10-15  Marek Polacek  <polacek@redhat.com>
+
+	* c-opts.c (c_common_init_options): Make -std=gnu11 the default for C.
+
+2014-10-14  DJ Delorie  <dj@redhat.com>
+
+	* c-pretty-print.c (pp_c_integer_constant): Check for all __intN
+	types, not just __int128.
+	* c-cppbuiltin.c (c_cpp_builtins): Add builtins for all __intN
+	types, not just __int128.
+	(cpp_atomic_builtins): Round pointer sizes up.
+	(type_suffix): Use type precision, not specific types.
+	* c-common.c (c_common_reswords): Remove __int128 special case.
+	(c_common_type_for_size): Check for all __intN types, not just
+	__int128.
+	(c_common_type_for_mode): Likewise.
+	(c_common_signed_or_unsigned_type): Likewise.
+	(c_build_bitfield_integer_type): Likewise.
+	(c_common_nodes_and_builtins): Likewise.
+	(keyword_begins_type_specifier): Likewise.
+	* c-common.h (rid): Remove RID_INT128 and add RID_INT_N_* for all
+	__intN variants.
+
+2014-10-12  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* c-common.c: Use hash_table instead of hashtab.
+
 2014-10-06  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* c-family/c-cppbuiltin.c: Move __cpp_attribute_deprecated to the

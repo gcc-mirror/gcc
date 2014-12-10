@@ -8,6 +8,15 @@
 
 #define SIZE (AVX512F_LEN / 64)
 #include "avx512f-mask-type.h"
+
+#if AVX512F_LEN > 256
+  #define IMM_VAR 120
+#elif AVX512F_LEN > 128
+  #define IMM_VAR 5
+#else
+  #define IMM_VAR 1
+#endif
+
 void static
 CALC (double *e, UNION_TYPE (AVX512F_LEN, d) s1,
       UNION_TYPE (AVX512F_LEN, d) s2, int imm)
@@ -43,10 +52,10 @@ TEST (void)
       u3.a[i] = DEFAULT_VALUE;
     }
 
-  u1.x = INTRINSIC (_shuffle_pd) (s1.x, s2.x, 120);
-  u2.x = INTRINSIC (_mask_shuffle_pd) (u2.x, mask, s1.x, s2.x, 120);
-  u3.x = INTRINSIC (_maskz_shuffle_pd) (mask, s1.x, s2.x, 120);
-  CALC (e, s1, s2, 120);
+  u1.x = INTRINSIC (_shuffle_pd) (s1.x, s2.x, IMM_VAR);
+  u2.x = INTRINSIC (_mask_shuffle_pd) (u2.x, mask, s1.x, s2.x, IMM_VAR);
+  u3.x = INTRINSIC (_maskz_shuffle_pd) (mask, s1.x, s2.x, IMM_VAR);
+  CALC (e, s1, s2, IMM_VAR);
 
   if (UNION_CHECK (AVX512F_LEN, d) (u1, e))
     abort ();
@@ -59,3 +68,5 @@ TEST (void)
   if (UNION_CHECK (AVX512F_LEN, d) (u3, e))
     abort ();
 }
+
+#undef IMM_VAR

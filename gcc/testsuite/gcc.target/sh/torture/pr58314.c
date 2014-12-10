@@ -52,6 +52,8 @@ typedef struct xfs_attr_leafblock {
  xfs_attr_leaf_entry_t entries[1];
 } xfs_attr_leafblock_t;
 
+int xfs_attr_leaf_entsize (xfs_attr_leafblock_t*, int);
+
 int
 xfs_attr_leaf_remove(xfs_attr_leafblock_t *leaf, xfs_da_args_t *args)
 {

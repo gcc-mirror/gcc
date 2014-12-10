@@ -63,6 +63,15 @@ package body Prj.Proc is
       Equal      => "=");
    --  This hash table contains all processed projects
 
+   package Runtime_Defaults is new GNAT.HTable.Simple_HTable
+     (Header_Num => Prj.Header_Num,
+      Element    => Name_Id,
+      No_Element => No_Name,
+      Key        => Name_Id,
+      Hash       => Prj.Hash,
+      Equal      => "=");
+   --  Stores the default values of 'Runtime names for the various languages
+
    procedure Add (To_Exp : in out Name_Id; Str : Name_Id);
    --  Concatenate two strings and returns another string if both
    --  arguments are not null string.
@@ -889,16 +898,27 @@ package body Prj.Proc is
 
                   --  Check the defaults
 
-                  if Current_Term_Kind = N_Attribute_Reference
-                    and then The_Variable.Default
-                  then
+                  if Current_Term_Kind = N_Attribute_Reference then
                      declare
                         The_Default : constant Attribute_Default_Value :=
                           Default_Of
                             (The_Current_Term, From_Project_Node_Tree);
 
                      begin
-                        case The_Variable.Kind is
+                        --  Check the special value for 'Target when specified
+
+                        if The_Default = Target_Value
+                          and then Opt.Target_Origin = Specified
+                        then
+                           Name_Len := 0;
+                           Add_Str_To_Name_Buffer (Opt.Target_Value.all);
+                           The_Variable.Value := Name_Find;
+
+                        --  Check the defaults
+
+                        elsif The_Variable.Default then
+                           case The_Variable.Kind is
+
                            when Undefined =>
                               null;
 
@@ -923,25 +943,46 @@ package body Prj.Proc is
                                     goto Object_Dir_Restart;
 
                                  when Target_Value =>
-                                    null;
+                                    if Opt.Target_Value = null then
+                                       The_Variable.Value := Empty_String;
+
+                                    else
+                                       Name_Len := 0;
+                                       Add_Str_To_Name_Buffer
+                                         (Opt.Target_Value.all);
+                                       The_Variable.Value := Name_Find;
+                                    end if;
+
+                                 when Runtime_Value =>
+                                    Get_Name_String (Index);
+                                    To_Lower (Name_Buffer (1 .. Name_Len));
+                                    The_Variable.Value :=
+                                      Runtime_Defaults.Get (Name_Find);
+                                    if The_Variable.Value = No_Name then
+                                       The_Variable.Value := Empty_String;
+                                    end if;
+
                               end case;
 
                            when List =>
                               case The_Default is
-                                 when Read_Only_Value =>
+                                 when Read_Only_Value  =>
                                     null;
 
-                                 when Empty_Value =>
+                                 when Empty_Value      =>
                                     The_Variable.Values := Nil_String;
 
-                                 when Dot_Value =>
+                                 when Dot_Value        =>
                                     The_Variable.Values :=
                                       Shared.Dot_String_List;
 
-                                 when Object_Dir_Value | Target_Value =>
+                                 when Object_Dir_Value |
+                                      Target_Value     |
+                                      Runtime_Value    =>
                                     null;
                               end case;
-                        end case;
+                           end case;
+                        end if;
                      end;
                   end if;
 
@@ -2267,7 +2308,9 @@ package body Prj.Proc is
                  Name_Of
                    (Project_Node_Of (Variable_Node, Node_Tree), Node_Tree);
                The_Project :=
-                 Imported_Or_Extended_Project_From (Project, Name);
+                 Imported_Or_Extended_Project_From
+                   (Project, Name, No_Extending => True);
+               The_Package := No_Package;
             end if;
 
             --  If a package was specified for the case variable, get its id
@@ -2722,6 +2765,10 @@ package body Prj.Proc is
             Success := not Prj.Tree.No (Loaded_Project);
 
             if Success then
+               if Node_Tree.Incomplete_With then
+                  From_Project_Node_Tree.Incomplete_With := True;
+               end if;
+
                List.Tree := new Project_Tree_Data (Is_Root_Tree => False);
                Prj.Initialize (List.Tree);
                List.Tree.Shared := In_Tree.Shared;
@@ -2885,9 +2932,9 @@ package body Prj.Proc is
             Name : constant Name_Id :=
                      Name_Of (From_Project_Node, From_Project_Node_Tree);
 
-            Name_Node : constant Tree_Private_Part.Project_Name_And_Node :=
-                          Tree_Private_Part.Projects_Htable.Get
-                            (From_Project_Node_Tree.Projects_HT, Name);
+            Display_Name : constant Name_Id :=
+                             Display_Name_Of
+                               (From_Project_Node, From_Project_Node_Tree);
 
          begin
             Project := Processed_Projects.Get (Name);
@@ -2951,7 +2998,8 @@ package body Prj.Proc is
             Processed_Projects.Set (Name, Project);
 
             Project.Name := Name;
-            Project.Display_Name := Name_Node.Display_Name;
+            Project.Display_Name := Display_Name;
+
             Get_Name_String (Name);
 
             --  If name starts with the virtual prefix, flag the project as
@@ -3106,4 +3154,14 @@ package body Prj.Proc is
       end if;
    end Recursive_Process;
 
+   -----------------------------
+   -- Set_Default_Runtime_For --
+   -----------------------------
+
+   procedure Set_Default_Runtime_For (Language : Name_Id; Value : String) is
+   begin
+      Name_Len := Value'Length;
+      Name_Buffer (1 .. Name_Len) := Value;
+      Runtime_Defaults.Set (Language, Name_Find);
+   end Set_Default_Runtime_For;
 end Prj.Proc;

@@ -469,7 +469,7 @@
   [(set (match_dup 2) (match_dup 3))]
 {
   unsigned HOST_WIDE_INT mask, val;
-  enum machine_mode inner_mode = GET_MODE_INNER (<MODE>mode);
+  machine_mode inner_mode = GET_MODE_INNER (<MODE>mode);
   int i;
 
   val = 0;
@@ -505,7 +505,7 @@
   unsigned HOST_WIDE_INT mask;
   unsigned HOST_WIDE_INT val[2];
   rtx lo_half, hi_half;
-  enum machine_mode inner_mode = GET_MODE_INNER (<MODE>mode);
+  machine_mode inner_mode = GET_MODE_INNER (<MODE>mode);
   int i, j;
 
   split_di (operands, 1, &lo_half, &hi_half);

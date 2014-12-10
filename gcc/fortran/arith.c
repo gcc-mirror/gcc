@@ -544,8 +544,8 @@ check_result (arith rc, gfc_expr *x, gfc_expr *r, gfc_expr **rp)
 
   if (val == ARITH_UNDERFLOW)
     {
-      if (gfc_option.warn_underflow)
-	gfc_warning (gfc_arith_error (val), &x->where);
+      if (warn_underflow)
+	gfc_warning (OPT_Wunderflow, gfc_arith_error (val), &x->where);
       val = ARITH_OK;
     }
 
@@ -2077,8 +2077,8 @@ gfc_real2real (gfc_expr *src, int kind)
 
   if (rc == ARITH_UNDERFLOW)
     {
-      if (gfc_option.warn_underflow)
-	gfc_warning (gfc_arith_error (rc), &src->where);
+      if (warn_underflow)
+	gfc_warning (OPT_Woverflow, gfc_arith_error (rc), &src->where);
       mpfr_set_ui (result->value.real, 0, GFC_RND_MODE);
     }
   else if (rc != ARITH_OK)
@@ -2108,8 +2108,8 @@ gfc_real2complex (gfc_expr *src, int kind)
 
   if (rc == ARITH_UNDERFLOW)
     {
-      if (gfc_option.warn_underflow)
-	gfc_warning (gfc_arith_error (rc), &src->where);
+      if (warn_underflow)
+	gfc_warning (OPT_Woverflow, gfc_arith_error (rc), &src->where);
       mpfr_set_ui (mpc_realref (result->value.complex), 0, GFC_RND_MODE);
     }
   else if (rc != ARITH_OK)
@@ -2163,8 +2163,8 @@ gfc_complex2real (gfc_expr *src, int kind)
 
   if (rc == ARITH_UNDERFLOW)
     {
-      if (gfc_option.warn_underflow)
-	gfc_warning (gfc_arith_error (rc), &src->where);
+      if (warn_underflow)
+	gfc_warning (OPT_Woverflow, gfc_arith_error (rc), &src->where);
       mpfr_set_ui (result->value.real, 0, GFC_RND_MODE);
     }
   if (rc != ARITH_OK)
@@ -2194,8 +2194,8 @@ gfc_complex2complex (gfc_expr *src, int kind)
 
   if (rc == ARITH_UNDERFLOW)
     {
-      if (gfc_option.warn_underflow)
-	gfc_warning (gfc_arith_error (rc), &src->where);
+      if (warn_underflow)
+	gfc_warning (OPT_Woverflow, gfc_arith_error (rc), &src->where);
       mpfr_set_ui (mpc_realref (result->value.complex), 0, GFC_RND_MODE);
     }
   else if (rc != ARITH_OK)
@@ -2209,8 +2209,8 @@ gfc_complex2complex (gfc_expr *src, int kind)
 
   if (rc == ARITH_UNDERFLOW)
     {
-      if (gfc_option.warn_underflow)
-	gfc_warning (gfc_arith_error (rc), &src->where);
+      if (warn_underflow)
+	gfc_warning (OPT_Woverflow, gfc_arith_error (rc), &src->where);
       mpfr_set_ui (mpc_imagref (result->value.complex), 0, GFC_RND_MODE);
     }
   else if (rc != ARITH_OK)
@@ -2280,7 +2280,7 @@ hollerith2representation (gfc_expr *result, gfc_expr *src)
 
   if (src_len > result_len)
     {
-      gfc_warning ("The Hollerith constant at %L is too long to convert to %s",
+      gfc_warning ("The Hollerith constant at %L is too long to convert to %qs",
 		   &src->where, gfc_typename(&result->ts));
     }
 

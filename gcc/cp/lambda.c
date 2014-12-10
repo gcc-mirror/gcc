@@ -26,11 +26,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "stringpool.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-iterator.h"
 #include "cp-tree.h"
 #include "toplev.h"
-#include "vec.h"
 
 /* Constructor for a lambda expression.  */
 
@@ -775,6 +786,17 @@ maybe_resolve_dummy (tree object, bool add_capture_p)
     }
 
   return object;
+}
+
+/* Returns the innermost non-lambda function.  */
+
+tree
+current_nonlambda_function (void)
+{
+  tree fn = current_function_decl;
+  while (fn && LAMBDA_FUNCTION_P (fn))
+    fn = decl_function_context (fn);
+  return fn;
 }
 
 /* Returns the method basetype of the innermost non-lambda function, or

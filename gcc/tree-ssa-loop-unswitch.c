@@ -23,6 +23,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "tm_p.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -138,15 +148,17 @@ tree_ssa_unswitch_loops (void)
 static tree
 tree_may_unswitch_on (basic_block bb, struct loop *loop)
 {
-  gimple stmt, def;
+  gimple last, def;
+  gcond *stmt;
   tree cond, use;
   basic_block def_bb;
   ssa_op_iter iter;
 
   /* BB must end in a simple conditional jump.  */
-  stmt = last_stmt (bb);
-  if (!stmt || gimple_code (stmt) != GIMPLE_COND)
+  last = last_stmt (bb);
+  if (!last || gimple_code (last) != GIMPLE_COND)
     return NULL_TREE;
+  stmt = as_a <gcond *> (last);
 
   /* To keep the things simple, we do not directly remove the conditions,
      but just replace tests with 0 != 0 resp. 1 != 0.  Prevent the infinite
@@ -248,13 +260,15 @@ tree_unswitch_single_loop (struct loop *loop, int num)
       if (integer_nonzerop (cond))
 	{
 	  /* Remove false path.  */
-	  gimple_cond_set_condition_from_tree (stmt, boolean_true_node);
+	  gimple_cond_set_condition_from_tree (as_a <gcond *> (stmt),
+					       boolean_true_node);
 	  changed = true;
 	}
       else if (integer_zerop (cond))
 	{
 	  /* Remove true path.  */
-	  gimple_cond_set_condition_from_tree (stmt, boolean_false_node);
+	  gimple_cond_set_condition_from_tree (as_a <gcond *> (stmt),
+					       boolean_false_node);
 	  changed = true;
 	}
       /* Do not unswitch too much.  */
@@ -316,9 +330,10 @@ tree_unswitch_single_loop (struct loop *loop, int num)
 	      if (stmt
 		  && gimple_code (stmt) == GIMPLE_COND)
 		{
-		  if (gimple_cond_true_p (stmt))
+		  gcond *cond_stmt = as_a <gcond *> (stmt);
+		  if (gimple_cond_true_p (cond_stmt))
 		    flags = EDGE_FALSE_VALUE;
-		  else if (gimple_cond_false_p (stmt))
+		  else if (gimple_cond_false_p (cond_stmt))
 		    flags = EDGE_TRUE_VALUE;
 		}
 	    }

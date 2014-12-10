@@ -24,6 +24,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "obstack.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "expr.h"
@@ -300,26 +309,6 @@ get_loop_level (const struct loop *loop)
 	mx = l + 1;
     }
   return mx;
-}
-
-/* Returns estimate on cost of computing SEQ.  */
-
-static unsigned
-seq_cost (const rtx_insn *seq, bool speed)
-{
-  unsigned cost = 0;
-  rtx set;
-
-  for (; seq; seq = NEXT_INSN (seq))
-    {
-      set = single_set (seq);
-      if (set)
-	cost += set_rtx_cost (set, speed);
-      else
-	cost++;
-    }
-
-  return cost;
 }
 
 /* Initialize the constants for computing set costs.  */

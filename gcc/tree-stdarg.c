@@ -23,11 +23,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "langhooks.h"
 #include "gimple-pretty-print.h"
 #include "target.h"
 #include "bitmap.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -538,14 +547,13 @@ check_all_va_list_escapes (struct stdarg_info *si)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple_stmt_iterator i;
-
-      for (i = gsi_start_phis (bb); !gsi_end_p (i); gsi_next (&i))
+      for (gphi_iterator i = gsi_start_phis (bb); !gsi_end_p (i);
+	   gsi_next (&i))
 	{
 	  tree lhs;
 	  use_operand_p uop;
 	  ssa_op_iter soi;
-	  gimple phi = gsi_stmt (i);
+	  gphi *phi = i.phi ();
 
 	  lhs = PHI_RESULT (phi);
 	  if (virtual_operand_p (lhs)
@@ -571,7 +579,8 @@ check_all_va_list_escapes (struct stdarg_info *si)
 	    }
 	}
 
-      for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
+      for (gimple_stmt_iterator i = gsi_start_bb (bb); !gsi_end_p (i);
+	   gsi_next (&i))
 	{
 	  gimple stmt = gsi_stmt (i);
 	  tree use;
@@ -835,8 +844,6 @@ pass_stdarg::execute (function *fun)
 
   FOR_EACH_BB_FN (bb, fun)
     {
-      gimple_stmt_iterator i;
-
       si.compute_sizes = -1;
       si.bb = bb;
 
@@ -850,9 +857,10 @@ pass_stdarg::execute (function *fun)
 	  use_operand_p uop;
 	  ssa_op_iter soi;
 
-	  for (i = gsi_start_phis (bb); !gsi_end_p (i); gsi_next (&i))
+	  for (gphi_iterator i = gsi_start_phis (bb); !gsi_end_p (i);
+	       gsi_next (&i))
 	    {
-	      gimple phi = gsi_stmt (i);
+	      gphi *phi = i.phi ();
 	      lhs = PHI_RESULT (phi);
 
 	      if (virtual_operand_p (lhs))
@@ -882,7 +890,7 @@ pass_stdarg::execute (function *fun)
 	    }
 	}
 
-      for (i = gsi_start_bb (bb);
+      for (gimple_stmt_iterator i = gsi_start_bb (bb);
 	   !gsi_end_p (i) && !va_list_escapes;
 	   gsi_next (&i))
 	{

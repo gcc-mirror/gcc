@@ -31,7 +31,7 @@ union {
   long long l;
 } x = { l: 0x7ff8000000000000LL }, y;
 
-main ()
+int main ()
 {
   unsigned int fsr = 0;
   __asm __volatile ("ld %0, %%fsr" : : "m" (fsr));

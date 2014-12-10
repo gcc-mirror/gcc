@@ -225,20 +225,33 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "regs.h"
 #include "hard-reg-set.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
 #include "basic-block.h"
 #include "insn-config.h"
-#include "function.h"
 #include "expr.h"
 #include "insn-attr.h"
 #include "recog.h"
 #include "diagnostic-core.h"
 #include "target.h"
-#include "optabs.h"
 #include "insn-codes.h"
+#include "optabs.h"
 #include "rtlhooks-def.h"
 #include "params.h"
 #include "tree-pass.h"
 #include "df.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 
 /* This structure represents a candidate for elimination.  */
@@ -252,7 +265,7 @@ typedef struct ext_cand
   enum rtx_code code;
 
   /* The destination mode.  */
-  enum machine_mode mode;
+  machine_mode mode;
 
   /* The instruction where it lives.  */
   rtx_insn *insn;
@@ -260,6 +273,50 @@ typedef struct ext_cand
 
 
 static int max_insn_uid;
+
+/* Update or remove REG_EQUAL or REG_EQUIV notes for INSN.  */
+
+static bool
+update_reg_equal_equiv_notes (rtx_insn *insn, machine_mode new_mode,
+			      machine_mode old_mode, enum rtx_code code)
+{
+  rtx *loc = &REG_NOTES (insn);
+  while (*loc)
+    {
+      enum reg_note kind = REG_NOTE_KIND (*loc);
+      if (kind == REG_EQUAL || kind == REG_EQUIV)
+	{
+	  rtx orig_src = XEXP (*loc, 0);
+	  /* Update equivalency constants.  Recall that RTL constants are
+	     sign-extended.  */
+	  if (GET_CODE (orig_src) == CONST_INT
+	      && HOST_BITS_PER_WIDE_INT >= GET_MODE_BITSIZE (new_mode))
+	    {
+	      if (INTVAL (orig_src) >= 0 || code == SIGN_EXTEND)
+		/* Nothing needed.  */;
+	      else
+		{
+		  /* Zero-extend the negative constant by masking out the
+		     bits outside the source mode.  */
+		  rtx new_const_int
+		    = gen_int_mode (INTVAL (orig_src)
+				    & GET_MODE_MASK (old_mode),
+				    new_mode);
+		  if (!validate_change (insn, &XEXP (*loc, 0),
+					new_const_int, true))
+		    return false;
+		}
+	      loc = &XEXP (*loc, 1);
+	    }
+	  /* Drop all other notes, they assume a wrong mode.  */
+	  else if (!validate_change (insn, loc, XEXP (*loc, 1), true))
+	    return false;
+	}
+      else
+	loc = &XEXP (*loc, 1);
+    }
+  return true;
+}
 
 /* Given a insn (CURR_INSN), an extension candidate for removal (CAND)
    and a pointer to the SET rtx (ORIG_SET) that needs to be modified,
@@ -282,6 +339,7 @@ static bool
 combine_set_extension (ext_cand *cand, rtx_insn *curr_insn, rtx *orig_set)
 {
   rtx orig_src = SET_SRC (*orig_set);
+  machine_mode orig_mode = GET_MODE (SET_DEST (*orig_set));
   rtx new_set;
   rtx cand_pat = PATTERN (cand->insn);
 
@@ -318,9 +376,8 @@ combine_set_extension (ext_cand *cand, rtx_insn *curr_insn, rtx *orig_set)
 	{
 	  /* Zero-extend the negative constant by masking out the bits outside
 	     the source mode.  */
-	  enum machine_mode src_mode = GET_MODE (SET_DEST (*orig_set));
 	  rtx new_const_int
-	    = gen_int_mode (INTVAL (orig_src) & GET_MODE_MASK (src_mode),
+	    = gen_int_mode (INTVAL (orig_src) & GET_MODE_MASK (orig_mode),
 			    GET_MODE (new_reg));
 	  new_set = gen_rtx_SET (VOIDmode, new_reg, new_const_int);
 	}
@@ -359,7 +416,9 @@ combine_set_extension (ext_cand *cand, rtx_insn *curr_insn, rtx *orig_set)
 
   /* This change is a part of a group of changes.  Hence,
      validate_change will not try to commit the change.  */
-  if (validate_change (curr_insn, orig_set, new_set, true))
+  if (validate_change (curr_insn, orig_set, new_set, true)
+      && update_reg_equal_equiv_notes (curr_insn, cand->mode, orig_mode,
+				       cand->code))
     {
       if (dump_file)
         {
@@ -409,7 +468,9 @@ transform_ifelse (ext_cand *cand, rtx_insn *def_insn)
   ifexpr = gen_rtx_IF_THEN_ELSE (cand->mode, cond, map_srcreg, map_srcreg2);
   new_set = gen_rtx_SET (VOIDmode, map_dstreg, ifexpr);
 
-  if (validate_change (def_insn, &PATTERN (def_insn), new_set, true))
+  if (validate_change (def_insn, &PATTERN (def_insn), new_set, true)
+      && update_reg_equal_equiv_notes (def_insn, cand->mode, GET_MODE (dstreg),
+				       cand->code))
     {
       if (dump_file)
         {
@@ -634,7 +695,7 @@ get_sub_rtx (rtx_insn *def_insn)
 static bool
 merge_def_and_ext (ext_cand *cand, rtx_insn *def_insn, ext_state *state)
 {
-  enum machine_mode ext_src_mode;
+  machine_mode ext_src_mode;
   rtx *sub_rtx;
 
   ext_src_mode = GET_MODE (XEXP (SET_SRC (cand->expr), 0));
@@ -743,7 +804,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
       if (!SCALAR_INT_MODE_P (GET_MODE (SET_DEST (PATTERN (cand->insn)))))
 	return false;
 
-      enum machine_mode dst_mode = GET_MODE (SET_DEST (PATTERN (cand->insn)));
+      machine_mode dst_mode = GET_MODE (SET_DEST (PATTERN (cand->insn)));
       rtx src_reg = get_extended_src_reg (SET_SRC (PATTERN (cand->insn)));
 
       /* Ensure the number of hard registers of the copy match.  */
@@ -762,7 +823,8 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 	 This is merely to keep the test for safety and updating the insn
 	 stream simple.  Also ensure that within the block the candidate
 	 follows the defining insn.  */
-      if (BLOCK_FOR_INSN (cand->insn) != BLOCK_FOR_INSN (def_insn)
+      basic_block bb = BLOCK_FOR_INSN (cand->insn);
+      if (bb != BLOCK_FOR_INSN (def_insn)
 	  || DF_INSN_LUID (def_insn) > DF_INSN_LUID (cand->insn))
 	return false;
 
@@ -812,7 +874,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
       if (recog_memoized (insn) == -1)
 	return false;
       extract_insn (insn);
-      if (!constrain_operands (1))
+      if (!constrain_operands (1, get_preferred_alternatives (insn, bb)))
 	return false;
     }
 
@@ -821,7 +883,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
      mode if possible, or punt.  */
   if (state->modified[INSN_UID (cand->insn)].kind != EXT_MODIFIED_NONE)
     {
-      enum machine_mode mode;
+      machine_mode mode;
       rtx set;
 
       if (state->modified[INSN_UID (cand->insn)].kind
@@ -922,7 +984,7 @@ add_removable_extension (const_rtx expr, rtx_insn *insn,
 			 unsigned *def_map)
 {
   enum rtx_code code;
-  enum machine_mode mode;
+  machine_mode mode;
   unsigned int idx;
   rtx src, dest;
 

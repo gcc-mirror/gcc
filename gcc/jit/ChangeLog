@@ -1,0 +1,469 @@
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/examples/tut04-toyvm/toyvm.c (toyvm_function_compile): Move
+	logic for determine "funcname" to new function...
+	(get_function_name): ...here, adding logic to skip any leading
+	path from the filename.
+	(toyvm_function_parse): Use the filename for fn_filename, rather
+	than "name", so that the debugger can locate the source .toy
+	file.
+	(toyvm_function_parse): Don't fclose a NULL FILE *.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
+	* docs/internals/index.rst (Running under valgrind): New
+	subsection.
+	(docs/_build/texinfo/libgccjit.texi): Regenerate.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+        PR jit/64206
+	* Make-lang.in (jit_OBJS): Add jit/jit-tempdir.o.
+	* jit-common.h (gcc::jit::tempdir): New forward decl.
+	* jit-playback.c: Include jit-tempdir.h.
+	(gcc::jit::playback::context::context): Initialize m_tempdir.
+	(gcc::jit::playback::context::~context): Move tempdir
+	cleanup to new file jit-tempdir.c
+	(make_tempdir_path_template): Move to new file jit-tempdir.c.
+	(gcc::jit::playback::context::compile): Move tempdir creation
+	to new tempdir object in new file jit-tempdir.c.
+	(gcc::jit::playback::context::make_fake_args): Get path from
+	tempdir object rather than from member data.
+	(gcc::jit::playback::context::convert_to_dso): Likewise.
+	(gcc::jit::playback::context::dlopen_built_dso): Likewise.
+	(gcc::jit::playback::context::dump_generated_code): Likewise.
+	(gcc::jit::playback::context::get_path_c_file): New function.
+	(gcc::jit::playback::context::get_path_s_file): New function.
+	(gcc::jit::playback::context::get_path_so_file): New function.
+	* jit-playback.h (gcc::jit::playback::context::get_path_c_file):
+	New function.
+	(gcc::jit::playback::context::get_path_s_file): New function.
+	(gcc::jit::playback::context::get_path_so_file): New function.
+	(gcc::jit::playback::context): Move fields "m_path_template",
+	"m_path_tempdir", "m_path_c_file", "m_path_s_file",
+	"m_path_so_file" to new jit::tempdir class; add field "m_tempdir".
+	* jit-tempdir.c: New file.
+	* jit-tempdir.h: New file.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (gcc::jit::playback::context::compile): Acquire the
+	mutex here, immediately before using toplev, and release it here, on
+	each exit path after acquisition.
+	(jit_mutex): Move this variable here, from jit-recording.c.
+	(gcc::jit::playback::context::acquire_mutex): New function, based on
+	code in jit-recording.c.
+	(gcc::jit::playback::context::release_mutex): Likewise.
+	* jit-playback.h (gcc::jit::playback::context::acquire_mutex): New
+	function.
+	(gcc::jit::playback::context::release_mutex): New function.
+	* jit-recording.c (jit_mutex): Move this variable to jit-playback.c.
+	(gcc::jit::recording::context::compile): Move mutex-handling from
+	here into jit-playback.c's gcc::jit::playback::context::compile.
+	* notes.txt: Update to show the new locations of ACQUIRE_MUTEX
+	and RELEASE_MUTEX.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (gcc::jit::playback::context::compile): Move the
+	dlopen code into...
+	(gcc::jit::playback::context::dlopen_built_dso): ...this new
+	function.
+	* jit-playback.h (gcc::jit::playback::context::dlopen_built_dso):
+	New function.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64166
+	* docs/topics/contexts.rst (Debugging): Add description of
+	gcc_jit_context_enable_dump.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c: Include context.h.
+	(class auto_argvec): New class.
+	(auto_argvec::~auto_argvec): New function.
+	(gcc::jit::playback::context::compile): Convert fake_args to be
+	an auto_argvec, so that it can contain dynamically-allocated
+	strings.   Construct a vec of all requested dumps, and pass it to
+	make_fake_args.  Extract requested dumps between the calls to
+	toplev::main and toplev::finalize.
+	(gcc::jit::playback::context::make_fake_args): Convert param
+	"argvec" to be a vec <char *>, and gain a "requested_dumps"
+	param.  Convert to dynamically-allocated arg strings by converting
+	ADD_ARG to take a copy of the arg, and add ADD_ARG_TAKE_OWNERSHIP
+	for args that are already a copy.  Add args for all requested dumps.
+	(gcc::jit::playback::context::extract_any_requested_dumps): New
+	function.
+	(gcc::jit::playback::context::read_dump_file): New function.
+	* jit-playback.h (gcc::jit::playback::context::make_fake_args):
+	Convert param "argvec" to be a vec <char *>, and gain a
+	"requested_dumps" param.
+	(gcc::jit::playback::context::extract_any_requested_dumps): New
+	function.
+	(gcc::jit::playback::context::read_dump_file): New function.
+	* jit-recording.c (gcc::jit::recording::context::enable_dump): New
+	function.
+	(gcc::jit::recording::context::get_all_requested_dumps): New
+	function.
+	* jit-recording.h (gcc::jit::recording::requested_dump): New
+	struct.
+	(gcc::jit::recording::context::enable_dump): New function.
+	(gcc::jit::recording::context::get_all_requested_dumps): New
+	function.
+	(gcc::jit::recording::context::m_requested_dumps): New field.
+	* libgccjit.c (gcc_jit_context_enable_dump): New API entrypoint.
+	* libgccjit.h (gcc_jit_context_enable_dump): New API entrypoint.
+	* libgccjit.map (gcc_jit_context_enable_dump): New API entrypoint.
+
+2014-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h: Indent the forward declarations of the classes to
+	show the inheritance hierarchy.
+
+2014-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* notes.txt: Show the beginning and ending of
+	recording::context::compile vs playback::context::compile.  Show
+	the creation and unlinking of the tempdir.  Show toplev::finalize.
+	Move "RELEASE MUTEX" to the correct location.  Show
+	gcc_jit_result_release, and indicate where the
+	dlopen/dlsym/dlclose occur.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/examples/tut02-square.c (main): Release the context
+	earlier, to show that this is possible.  Update error-handling
+	to avoid a double-release of the context, and to avoid
+	releasing a NULL result.
+	* docs/intro/tutorial02.rst: Discuss gcc_jit_context_release.
+	* docs/topics/functions.rst (GCC_JIT_FUNCTION_EXPORTED): Emphasize
+	* docs/topics/results.rst (gcc_jit_result): Mention that this
+	controls the lifetimes of machine code functions.
+	(gcc_jit_result_get_code): Spell out the requirements for this
+	to succeed, and the lifetime of the result.
+	(gcc_jit_result_release): Mention that this invalidates any code
+	that was obtained from the result.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64018
+	* docs/intro/tutorial02.rst: Spell out lifetime of generated code.
+	Add description of error-handling, taken in part from...
+	* docs/topics/contexts.rst (Error-handling): Expand, and move some
+	content to tutorial02.rst.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64020
+	* docs/topics/types.rst (Standard types) Add new enum values to
+	the table of enum gcc_jit_types: GCC_JIT_TYPE_COMPLEX_FLOAT,
+	GCC_JIT_TYPE_COMPLEX_DOUBLE, GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE.
+	Widen the left-hand column so that
+	GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE will fit.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+	* jit-builtins.c: Include stringpool.h and jit-playback.h.
+	Move everything out of the gcc::jit::recording namespace into
+	just gcc::jit.
+	(struct builtin_data): Add fields "fnclass", "attr", and
+	"implicit_p".
+	(DEF_BUILTIN): Update macro so populate the new fields.
+	(builtins_manager::builtins_manager): Update for move out of
+	recording namespace.  Initialize the m_attributes array.
+	(builtins_manager::get_builtin_function): Likewise.
+	(builtins_manager::get_builtin_function_by_id): New function.
+	(builtins_manager::make_builtin_function): Update for move out of
+	recording namespace.  Add fix for PR jit/64020 by detecting
+	specific builtin ids and having them ensure that builtins for
+	other ids are created as necessary.
+	(builtins_manager::get_type): Update for move out of recording
+	namespace.
+	(builtins_manager::make_type): Likewise.  Add some missing
+	#undefs.
+	(builtins_manager::make_primitive_type): Update for move out of
+	recording namespace.  Implement the three BT_COMPLEX_ cases and
+	BT_DOUBLE_PTR.
+	(builtins_manager::make_fn_type): Update for move out of recording
+	namespace.
+	(builtins_manager::make_ptr_type): Likewise.
+	(builtins_manager::finish_playback): New function.
+	(builtins_manager::get_class): New function.
+	(builtins_manager::implicit_p): New function.
+	(builtins_manager::get_attrs_tree): Two new functions.
+	(builtins_manager::make_attrs_tree): New function.
+
+	* jit-builtins.h: Move everything out of the gcc::jit::recording
+	namespace into just gcc::jit.
+	(enum built_in_attribute): New.
+	(builtins_manager::builtins_manager): Update decl for namespace
+	change.
+	(builtins_manager::get_builtin_function): Likewise.
+	(builtins_manager::get_class): New.
+	(builtins_manager::implicit_p): New.
+	(builtins_manager::get_attrs_tree): Two new functions.
+	(builtins_manager::make_attrs_tree): New function.
+	(builtins_manager::finish_playback): New.
+	(builtins_manager::get_builtin_function_by_id): New.
+	(builtins_manager::make_builtin_function): Update decl for
+	namespace change.
+	(builtins_manager::get_type): Likewise.
+	(builtins_manager::make_type): Likewise.
+	(builtins_manager::make_primitive_type): Likewise.
+	(builtins_manager::make_fn_type): Likewise.
+	(builtins_manager::make_ptr_type): Likewise.
+	(builtins_manager): Likewise for fields.  Add new field
+	"m_attributes".
+
+	* jit-common.h (NUM_GCC_JIT_TYPES): Update.
+	(builtins_manager): Update forward decl to reflect namespace
+	change.
+
+	* jit-playback.c: Include attribs.h and jit-builtins.h.
+	(gcc::jit::playback::context::get_tree_node_for_type): Add cases
+	for the new COMPLEX_ types.
+	(gcc::jit::playback::context::new_function): If creating a
+	builtin, set the DECL_BUILT_IN_CLASS and attributes on the fndecl,
+	and call set_builtin_decl.
+	(gcc::jit::playback::context::replay): If we have a
+	builtins_manager, call its finish_playback method when we're done.
+
+	* jit-playback.h:
+	(gcc::jit::playback::context::get_builtins_manager): New function.
+
+	* jit-recording.c
+	(gcc::jit::recording::context::get_builtins_manager): New function.
+	(gcc::jit::recording::get_builtin_function): Use
+	get_builtins_manager, in case we're a child context.
+	(gcc::jit::recording::memento_of_get_type::dereference): Add the
+	COMPLEX_ types.
+	(gcc::jit::recording::memento_of_get_type::is_int): Likewise.
+	(gcc::jit::recording::memento_of_get_type::is_float): Likewise.
+	(gcc::jit::recording::memento_of_get_type::is_bool): Likewise.
+	(get_type_strings): Likewise.
+
+	* jit-recording.h
+	(gcc::jit::recording::context::get_builtins_manager): New.
+
+	* libgccjit.h (enum gcc_jit_types): Add
+	GCC_JIT_TYPE_COMPLEX_FLOAT, GCC_JIT_TYPE_COMPLEX_DOUBLE,
+	GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-builtins.c
+	(gcc::jit::recording::builtins_manager::get_builtin_function):
+	Check for NULL return from make_builtin_function.
+	(gcc::jit::recording::builtins_manager::make_builtin_function):
+	Check for NULL return from get_type.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (gcc::jit::playback::context::compile): Move DSO
+	creation code into...
+	(gcc::jit::playback::context::convert_to_dso): New function.
+	* jit-playback.h (gcc::jit::playback::context::convert_to_dso):
+	New function.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (gcc::jit::playback::context::compile): Use an
+	auto_vec<const char *> rather than a const char *[20] for the
+	top-level argv, and move the logic to build it to...
+	(gcc::jit::playback::context::make_fake_args): New function.
+	* jit-playback.h (gcc::jit::playback::context::make_fake_args):
+	New function.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (jit_OBJS): Add jit/jit-result.o.
+	* jit-playback.c: Include new header jit-result.h.
+	(gcc::jit::result::result): Move to new file jit-result.c.
+	(gcc::jit::result::~result): Likewise.
+	(gcc::jit::playback::result): Likewise.
+	* jit-recording.h (class gcc::jit::result): Move to new
+	header jit-result.h.
+	* jit-result.c: New file, to contain...
+	(gcc::jit::result::result): Move here from jit-playback.c,
+	removing erroneous "playback" namespace from comment.
+	(gcc::jit::result::~result): Likewise.
+	(gcc::jit::playback::result): Likewise.
+	* jit-result.h: New file, to contain...
+	(class gcc::jit::result): Move from jit-recording.h.
+	* libgccjit.c: Include jit-result.h.
+	(gcc_jit_result_get_code): Update comment to reflect move
+	of implementation.
+	(gcc_jit_result_release): Likewise.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
+	* docs/examples/tut04-toyvm/toyvm.c
+	(toyvm_compiled_function): New typedef.
+	(toyvm_compiled_func) Rename to...
+	(toyvm_compiled_code) ...this.
+	(struct toyvm_compiled_function): New struct.
+	(toyvm_function_compile): Return a toyvm_compiled_function *
+	rather than a toyvm_compiled_func, so that the caller can fully
+	clean things up.  Free "funcname".
+	(test_script): Update for change to toyvm_function_compile.
+	Clean up the toyvm_compiled_function.
+	(main): Likewise.
+	(docs/intro/tutorial04.rst): Update to reflect the above changes,
+	and to better spell out the lifetime of the compiled code.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
+	* jit-builtins.c
+	(gcc::jit::recording::builtins_manager::make_fn_type): Call the
+	context's new_function_type method, rather than directly creating
+	a function_type instance.
+	* jit-recording.c
+	(gcc::jit::recording::context::new_function_type): New method,
+	adapted from part of...
+	(gcc::jit::recording::context::new_function_ptr_type): ...this.
+	Update to call new_function_type.
+	* jit-recording.h
+	(gcc::jit::recording::context::new_function_type): New method.
+
+2014-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63969
+	* jit-playback.c: Ensure that ctxt_progname is non-NULL.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
+	* jit-playback.c (gcc::jit::playback::compound_type::set_fields):
+	Convert param from const vec<playback::field *> & to
+	const auto_vec<playback::field *> *.
+	(gcc::jit::playback::context::new_function_type): Convert param
+	"param_types" from vec<type *> * to const auto_vec<type *> *.
+	(gcc::jit::playback::context::new_function): Convert param
+	"params" from vec<param *> * to const auto_vec<param *> *.
+	(gcc::jit::playback::context::build_call): Convert param "args"
+	from vec<rvalue *> to const auto_vec<rvalue *> *.
+	(gcc::jit::playback::context::new_call): Likewise.
+	(gcc::jit::playback::context::new_call_through_ptr): Likewise.
+	(wrapper_finalizer): New function.
+	(gcc::jit::playback::wrapper::operator new): Call the finalizer
+	variant of ggc_internal_cleared_alloc, supplying
+	wrapper_finalizer.
+	(gcc::jit::playback::function::finalizer): New.
+	(gcc::jit::playback::block::finalizer): New.
+	(gcc::jit::playback::source_file::finalizer): New.
+	(gcc::jit::playback::source_line::finalizer): New.
+
+	* jit-playback.h
+	(gcc::jit::playback::context::new_function_type): Convert param
+	"param_types" from vec<type *> * to const auto_vec<type *> *.
+	(gcc::jit::playback::context::new_function): Convert param
+	"params" from vec<param *> * to const auto_vec<param *> *.
+	(gcc::jit::playback::context::new_call): Convert param
+	"args" from vec<rvalue *> to const auto_vec<rvalue *> *.
+	(gcc::jit::playback::context::new_call_through_ptr): Likewise.
+	(gcc::jit::playback::context::build_call): Likewise.
+	(gcc::jit::playback::context): Convert fields "m_functions",
+	"m_source_files", "m_cached_locations" from vec to auto_vec.
+	(gcc::jit::playback::wrapper::finalizer): New virtual function.
+	(gcc::jit::playback::compound_type::set_fields): Convert param fro
+	const vec<playback::field *> & to
+	const auto_vec<playback::field *> *.
+	(gcc::jit::playback::function::finalizer): New.
+	(gcc::jit::playback::block::finalizer): New.
+	(gcc::jit::playback::source_file::finalizer): New.
+	(gcc::jit::playback::source_line::finalizer): New.
+
+	* jit-recording.c
+	(gcc::jit::recording::function_type::replay_into): Convert local
+	from a vec into an auto_vec.
+	(gcc::jit::recording::fields::replay_into): Likewise.
+	(gcc::jit::recording::function::replay_into): Likewise.
+	(gcc::jit::recording::call::replay_into): Likewise.
+	(gcc::jit::recording::call_through_ptr::replay_into): Likewise.
+
+	* jit-recording.h (gcc::jit::recording::context): Convert fields
+	"m_mementos", "m_compound_types", "m_functions" from vec<> to
+	auto_vec <>.
+	(gcc::jit::recording::function_type::get_param_types): Convert
+	return type from vec<type *> to const vec<type *> &.
+	(gcc::jit::recording::function_type): Convert field
+	"m_param_types" from a vec<> to an auto_vec<>.
+	(gcc::jit::recording::fields): Likewise for field "m_fields".
+	(gcc::jit::recording::function::get_params): Convert return type
+	from vec <param *> to const vec<param *> &.
+	(gcc::jit::recording::function): Convert fields "m_params",
+	"m_locals", "m_blocks" from vec<> to auto_vec<>.
+	(gcc::jit::recording::block): Likewise for field "m_statements".
+	vec<> to auto_vec<>.
+	(gcc::jit::recording::call): Likewise for field "m_args".
+	(gcc::jit::recording::call_through_ptr): Likewise.
+
+2014-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
+	* jit-recording.c (recording::function::validate): Convert
+	"worklist" from vec<> to autovec<> to fix a leak.
+
+2014-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog.jit: New.
+	* ChangeLog: New.
+	* Make-lang.in: New.
+	* TODO.rst: New.
+	* config-lang.in: New.
+	* docs/Makefile: New.
+	* docs/_build/texinfo/Makefile: New.
+	* docs/_build/texinfo/factorial.png: New.
+	* docs/_build/texinfo/libgccjit.texi: New.
+	* docs/_build/texinfo/sum-of-squares.png: New.
+	* docs/conf.py: New.
+	* docs/examples/tut01-hello-world.c: New.
+	* docs/examples/tut02-square.c: New.
+	* docs/examples/tut03-sum-of-squares.c: New.
+	* docs/examples/tut04-toyvm/Makefile: New.
+	* docs/examples/tut04-toyvm/factorial.toy: New.
+	* docs/examples/tut04-toyvm/fibonacci.toy: New.
+	* docs/examples/tut04-toyvm/toyvm.c: New.
+	* docs/index.rst: New.
+	* docs/internals/index.rst: New.
+	* docs/intro/factorial.png: New.
+	* docs/intro/index.rst: New.
+	* docs/intro/sum-of-squares.png: New.
+	* docs/intro/tutorial01.rst: New.
+	* docs/intro/tutorial02.rst: New.
+	* docs/intro/tutorial03.rst: New.
+	* docs/intro/tutorial04.rst: New.
+	* docs/topics/contexts.rst: New.
+	* docs/topics/expressions.rst: New.
+	* docs/topics/functions.rst: New.
+	* docs/topics/index.rst: New.
+	* docs/topics/locations.rst: New.
+	* docs/topics/objects.rst: New.
+	* docs/topics/results.rst: New.
+	* docs/topics/types.rst: New.
+	* dummy-frontend.c: New.
+	* jit-builtins.c: New.
+	* jit-builtins.h: New.
+	* jit-common.h: New.
+	* jit-playback.c: New.
+	* jit-playback.h: New.
+	* jit-recording.c: New.
+	* jit-recording.h: New.
+	* libgccjit++.h: New.
+	* libgccjit.c: New.
+	* libgccjit.h: New.
+	* libgccjit.map: New.
+	* notes.txt: New.
+
+2013-07-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* Initial creation
+
+Copyright (C) 2013-2014 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

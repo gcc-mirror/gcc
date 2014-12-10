@@ -370,7 +370,7 @@ package body Set_Targ is
          AddC (ASCII.LF);
 
          if Buflen /= Write (Fdesc, Buffer'Address, Buflen) then
-            Delete_File (Target_Dependent_Info_Write_Name'Address, OK);
+            Delete_File (Target_Dependent_Info_Write_Name.all, OK);
             Fail ("disk full writing file "
                   & Target_Dependent_Info_Write_Name.all);
          end if;
@@ -382,7 +382,7 @@ package body Set_Targ is
 
    begin
       Fdesc :=
-        Create_File (Target_Dependent_Info_Write_Name.all'Address, Text);
+        Create_File (Target_Dependent_Info_Write_Name.all, Text);
 
       if Fdesc = Invalid_FD then
          Fail ("cannot create file " & Target_Dependent_Info_Write_Name.all);

@@ -1,5 +1,5 @@
 C PR rtl-optimization/42294
-C { dg-do compile { target powerpc*-*-* ia64-*-* x86_64-*-* } }
+C { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } }
 C { dg-options "-O2 -fselective-scheduling2 -fsel-sched-pipelining -funroll-all-loops" }
 
       SUBROUTINE ORIEN(IW,NATOT,NTOTORB,NATORB,P,T)

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ia32 } */
-/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=pentiumpro" } } */
+/* { dg-skip-if "" { *-*-* } { "-march=*" } { "-march=pentiumpro" } } */
 /* { dg-options "-O2 -march=pentiumpro" } */
 /* { dg-final { scan-assembler "leal" } } */
 typedef struct {

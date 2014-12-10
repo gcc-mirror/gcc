@@ -273,8 +273,12 @@ package body Sem_Ch5 is
    begin
       Mark_Coextensions (N, Rhs);
 
-      Analyze (Rhs);
+      --  Analyze the target of the assignment first in case the expression
+      --  contains references to Ghost entities. The checks that verify the
+      --  proper use of a Ghost entity need to know the enclosing context.
+
       Analyze (Lhs);
+      Analyze (Rhs);
 
       --  Ensure that we never do an assignment on a variable marked as
       --  as Safe_To_Reevaluate.
@@ -1838,6 +1842,17 @@ package body Sem_Ch5 is
 
             else
                Typ := Etype (Iter_Name);
+
+               --  Verify that the expression produces an iterator
+
+               if not Of_Present (N) and then not Is_Iterator (Typ)
+                 and then not Is_Array_Type (Typ)
+                 and then No (Find_Aspect (Typ, Aspect_Iterable))
+               then
+                  Error_Msg_N
+                    ("expect object that implements iterator interface",
+                     Iter_Name);
+               end if;
             end if;
 
             --  Protect against malformed iterator
@@ -1997,11 +2012,11 @@ package body Sem_Ch5 is
                   else
                      Set_Etype (Def_Id, Entity (Element));
 
-                     --  If subtype indication was given, verify that it
-                     --  matches element type of container.
+                     --  If subtype indication was given, verify that it covers
+                     --  the element type of the container.
 
                      if Present (Subt)
-                       and then Bas /= Base_Type (Etype (Def_Id))
+                       and then not Covers (Bas, Etype (Def_Id))
                      then
                         Error_Msg_N
                           ("subtype indication does not match element type",
@@ -2048,6 +2063,10 @@ package body Sem_Ch5 is
                   Error_Msg_NE
                     ("\to iterate directly over the elements of a container, "
                      & "write `of &`", Name (N), Original_Node (Name (N)));
+
+                  --  No point in continuing analysis of iterator spec
+
+                  return;
                end if;
             end if;
 
@@ -2855,7 +2874,10 @@ package body Sem_Ch5 is
       --  container iteration.
 
       function Is_Wrapped_In_Block (N : Node_Id) return Boolean;
-      --  Determine whether node N is the sole statement of a block
+      --  Determine whether loop statement N has been wrapped in a block to
+      --  capture finalization actions that may be generated for container
+      --  iterators. Prevents infinite recursion when block is analyzed.
+      --  Routine is a noop if loop is single statement within source block.
 
       ---------------------------
       -- Is_Container_Iterator --
@@ -2919,14 +2941,32 @@ package body Sem_Ch5 is
       -------------------------
 
       function Is_Wrapped_In_Block (N : Node_Id) return Boolean is
-         HSS : constant Node_Id := Parent (N);
+         HSS  : Node_Id;
+         Stat : Node_Id;
 
       begin
-         return
-           Nkind (HSS) = N_Handled_Sequence_Of_Statements
-             and then Nkind (Parent (HSS)) = N_Block_Statement
-             and then First (Statements (HSS)) = N
-             and then No (Next (First (Statements (HSS))));
+
+         --  Check if current scope is a block that is not a transient block.
+
+         if Ekind (Current_Scope) /= E_Block
+           or else No (Block_Node (Current_Scope))
+         then
+            return False;
+
+         else
+            HSS  :=
+              Handled_Statement_Sequence (Parent (Block_Node (Current_Scope)));
+
+            --  Skip leading pragmas that may be introduced for invariant and
+            --  predicate checks.
+
+            Stat := First (Statements (HSS));
+            while Present (Stat) and then Nkind (Stat) = N_Pragma loop
+               Stat := Next (Stat);
+            end loop;
+
+            return Stat = N and then No (Next (Stat));
+         end if;
       end Is_Wrapped_In_Block;
 
       --  Local declarations

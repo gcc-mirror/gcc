@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-require-cstdint "" }
 //
 // 2009-08-14  Edward M. Smith-Rowland <3dw4rd@verizon.net>

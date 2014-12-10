@@ -62,15 +62,7 @@ c_objc_common_init (void)
 {
   c_init_decl_processing ();
 
-  if (c_common_init () == false)
-    return false;
-
-  /* These were not defined in the Objective-C front end, but I'm
-     putting them here anyway.  The diagnostic format decoder might
-     want an enhanced ObjC implementation.  */
-  diagnostic_format_decoder (global_dc) = &c_tree_printer;
-
-  return true;
+  return c_common_init ();
 }
 
 /* Called during diagnostic message formatting process to print a
@@ -135,23 +127,48 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       break;
 
     case 'T':
-      gcc_assert (TYPE_P (t));
-      name = TYPE_NAME (t);
+      {
+	gcc_assert (TYPE_P (t));
+	struct obstack *ob = pp_buffer (cpp)->obstack;
+	char *p = (char *) obstack_base (ob);
+	/* Remember the end of the initial dump.  */
+	int len = obstack_object_size (ob);
 
-      if (name && TREE_CODE (name) == TYPE_DECL)
-	{
-	  if (DECL_NAME (name))
-	    pp_identifier (cpp, lang_hooks.decl_printable_name (name, 2));
-	  else
-	    cpp->type_id (t);
-	  return true;
-	}
-      else
-	{
+	name = TYPE_NAME (t);
+	if (name && TREE_CODE (name) == TYPE_DECL && DECL_NAME (name))
+	  pp_identifier (cpp, lang_hooks.decl_printable_name (name, 2));
+	else
 	  cpp->type_id (t);
-	  return true;
-	}
-      break;
+
+	/* If we're printing a type that involves typedefs, also print the
+	   stripped version.  But sometimes the stripped version looks
+	   exactly the same, so we don't want it after all.  To avoid
+	   printing it in that case, we play ugly obstack games.  */
+	if (TYPE_CANONICAL (t) && t != TYPE_CANONICAL (t))
+	  {
+	    c_pretty_printer cpp2;
+	    /* Print the stripped version into a temporary printer.  */
+	    cpp2.type_id (TYPE_CANONICAL (t));
+	    struct obstack *ob2 = cpp2.buffer->obstack;
+	    /* Get the stripped version from the temporary printer.  */
+	    const char *aka = (char *) obstack_base (ob2);
+	    int aka_len = obstack_object_size (ob2);
+	    int type1_len = obstack_object_size (ob) - len;
+
+	    /* If they are identical, bail out.  */
+	    if (aka_len == type1_len && memcmp (p + len, aka, aka_len) == 0)
+	      return true;
+
+	    /* They're not, print the stripped version now.  */
+	    pp_c_whitespace (cpp);
+	    pp_left_brace (cpp);
+	    pp_c_ws_string (cpp, _("aka"));
+	    pp_c_whitespace (cpp);
+	    cpp->type_id (TYPE_CANONICAL (t));
+	    pp_right_brace (cpp);
+	  }
+	return true;
+      }
 
     case 'E':
       if (TREE_CODE (t) == IDENTIFIER_NODE)
@@ -186,8 +203,6 @@ has_c_linkage (const_tree decl ATTRIBUTE_UNUSED)
 void
 c_initialize_diagnostics (diagnostic_context *context)
 {
-  c_common_initialize_diagnostics (context);
-
   pretty_printer *base = context->printer;
   c_pretty_printer *pp = XNEW (c_pretty_printer);
   context->printer = new (pp) c_pretty_printer ();
@@ -195,6 +210,9 @@ c_initialize_diagnostics (diagnostic_context *context)
   /* It is safe to free this object because it was previously XNEW()'d.  */
   base->~pretty_printer ();
   XDELETE (base);
+
+  c_common_diagnostics_set_defaults (context);
+  diagnostic_format_decoder (context) = &c_tree_printer;
 }
 
 int

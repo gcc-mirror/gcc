@@ -11,15 +11,13 @@
 #define SIZE_HALF (AVX512F_LEN_HALF / 32)
 #include <limits.h>
 
-static void
-CALC (unsigned int *r, unsigned long long *s)
+void
+CALC (unsigned int *r, unsigned long long *s, int mem)
 {
   int i;
-  for (i = 0; i < SIZE_HALF; i++)
-    {
-      r[i] = (s[i] > UINT_MAX) ? UINT_MAX : s[i];
-      r[i] = (i < SIZE) ? r[i] : 0;
-    }
+  int len = mem ? SIZE : SIZE_HALF;
+  for (i = 0; i < len; i++)
+    r[i] = (i < SIZE) ? ((s[i] > UINT_MAX) ? UINT_MAX : s[i]) : 0;
 }
 
 void
@@ -31,6 +29,7 @@ TEST (void)
   UNION_TYPE (AVX512F_LEN, i_uq) src;
   MASK_TYPE mask = MASK_VALUE;
   unsigned int res_ref[SIZE_HALF];
+  unsigned int res_ref2[SIZE_HALF];
 
   for (i = 0; i < SIZE; i++)
     {
@@ -39,12 +38,17 @@ TEST (void)
       res4[i] = DEFAULT_VALUE;
     }
 
+  for (i = SIZE; i < SIZE_HALF; i++)
+    {
+      res_ref2[i] = DEFAULT_VALUE * 2;
+      res4[i] = DEFAULT_VALUE * 2;
+    }
+
   res1.x = INTRINSIC (_cvtusepi64_epi32) (src.x);
   res2.x = INTRINSIC (_mask_cvtusepi64_epi32) (res2.x, mask, src.x);
   res3.x = INTRINSIC (_maskz_cvtusepi64_epi32) (mask, src.x);
-  INTRINSIC (_mask_cvtusepi64_storeu_epi32) (res4, mask, src.x);
 
-  CALC (res_ref, src.a);
+  CALC (res_ref, src.a, 0);
 
   if (UNION_CHECK (AVX512F_LEN_HALF, i_ud) (res1, res_ref))
     abort ();
@@ -53,10 +57,14 @@ TEST (void)
   if (UNION_CHECK (AVX512F_LEN_HALF, i_ud) (res2, res_ref))
     abort ();
 
-  if (checkVui (res4, res_ref, SIZE_HALF))
-    abort ();
-
   MASK_ZERO (i_ud) (res_ref, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN_HALF, i_ud) (res3, res_ref))
+    abort ();
+
+  CALC (res_ref2, src.a, 1);
+  INTRINSIC (_mask_cvtusepi64_storeu_epi32) (res4, mask, src.x);
+
+  MASK_MERGE (i_d) (res_ref2, mask, SIZE);
+  if (checkVi (res4, res_ref2, SIZE_HALF))
     abort ();
 }

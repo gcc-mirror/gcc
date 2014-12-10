@@ -14,6 +14,7 @@ struct ia64_args
   UINT64 gp_regs[8];
 };
 
+void
 ffi_call(long i, long gpcount, long fpcount, void **avalue)
 {
   struct ia64_args *stack;

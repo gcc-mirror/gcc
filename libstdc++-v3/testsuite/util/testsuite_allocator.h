@@ -209,7 +209,7 @@ namespace __gnu_test
     {
       const Alloc1& alloc1 = lhs;
       const Alloc2& alloc2 = rhs;
-      return lhs == rhs;
+      return alloc1 == alloc2;
     }
 
   template<class T1, class Alloc1, class T2, class Alloc2>

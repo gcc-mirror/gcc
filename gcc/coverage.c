@@ -36,7 +36,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "regs.h"
 #include "expr.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "toplev.h"
 #include "tm_p.h"
@@ -48,6 +57,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "tree-pass.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "dumpfile.h"
 #include "diagnostic-core.h"
@@ -55,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "filenames.h"
 #include "target.h"
 #include "params.h"
+#include "auto-profile.h"
 
 #include "gcov-io.h"
 #include "gcov-io.c"
@@ -152,7 +166,7 @@ static void coverage_obj_finish (vec<constructor_elt, va_gc> *);
 tree
 get_gcov_type (void)
 {
-  enum machine_mode mode = smallest_mode_for_size (GCOV_TYPE_SIZE, MODE_INT);
+  machine_mode mode = smallest_mode_for_size (GCOV_TYPE_SIZE, MODE_INT);
   return lang_hooks.types.type_for_mode (mode, false);
 }
 
@@ -161,7 +175,7 @@ get_gcov_type (void)
 static tree
 get_gcov_unsigned_t (void)
 {
-  enum machine_mode mode = smallest_mode_for_size (32, MODE_INT);
+  machine_mode mode = smallest_mode_for_size (32, MODE_INT);
   return lang_hooks.types.type_for_mode (mode, true);
 }
 
@@ -1208,7 +1222,9 @@ coverage_init (const char *filename)
 
   bbg_file_stamp = local_tick;
   
-  if (flag_branch_probabilities)
+  if (flag_auto_profile)
+    read_autofdo_file ();
+  else if (flag_branch_probabilities)
     read_counts_file ();
 
   /* Name of bbg file.  */

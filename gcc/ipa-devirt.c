@@ -112,10 +112,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "print-tree.h"
 #include "calls.h"
+#include "predict.h"
+#include "basic-block.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "expr.h"
 #include "tree-pass.h"
-#include "hash-set.h"
 #include "target.h"
 #include "hash-table.h"
 #include "inchash.h"
@@ -126,6 +138,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "gimple-expr.h"
 #include "gimple.h"
+#include "alloc-pool.h"
+#include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "diagnostic.h"
 #include "tree-dfa.h"
@@ -134,7 +148,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "stor-layout.h"
 #include "intl.h"
-#include "hash-map.h"
 
 /* Hash based set of pairs of types.  */
 typedef struct
@@ -1836,7 +1849,7 @@ possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
 {
   tree binfo = TYPE_BINFO (type->type);
   unsigned int i;
-  vec <tree> type_binfos = vNULL;
+  auto_vec <tree, 8> type_binfos;
   bool possibly_instantiated = type_possibly_instantiated_p (type->type);
 
   /* We may need to consider types w/o instances because of possible derived
@@ -1855,7 +1868,6 @@ possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
 				inserted, matched_vtables,
 				type->anonymous_namespace, completep);
     }
-  type_binfos.release ();
   for (i = 0; i < type->derived_types.length (); i++)
     possible_polymorphic_call_targets_1 (nodes, inserted, 
 					 matched_vtables,
@@ -2213,7 +2225,7 @@ possible_polymorphic_call_targets (tree otr_type,
 {
   static struct cgraph_node_hook_list *node_removal_hook_holder;
   vec <cgraph_node *> nodes = vNULL;
-  vec <tree> bases_to_consider = vNULL;
+  auto_vec <tree, 8> bases_to_consider;
   odr_type type, outer_type;
   polymorphic_call_target_d key;
   polymorphic_call_target_d **slot;
@@ -2268,10 +2280,7 @@ possible_polymorphic_call_targets (tree otr_type,
   /* Without outer type, we have no use for offset.  Just do the
      basic search from innter type  */
   if (!context.outer_type)
-    {
-      context.outer_type = otr_type;
-      context.offset = 0;
-    }
+    context.clear_outer_type (otr_type);
   /* We need to update our hiearchy if the type does not exist.  */
   outer_type = get_odr_type (context.outer_type, true);
   /* If the type is complete, there are no derivations.  */
@@ -2511,7 +2520,6 @@ possible_polymorphic_call_targets (tree otr_type,
 	}
     }
 
-  bases_to_consider.release();
   (*slot)->targets = nodes;
   (*slot)->complete = complete;
   if (completep)
@@ -2808,6 +2816,8 @@ ipa_devirt (void)
   FOR_EACH_DEFINED_FUNCTION (n)
     {	
       bool update = false;
+      if (!opt_for_fn (n->decl, flag_devirtualize))
+	continue;
       if (dump_file && n->indirect_calls)
 	fprintf (dump_file, "\n\nProcesing function %s/%i\n",
 		 n->name (), n->order);
@@ -2836,7 +2846,7 @@ ipa_devirt (void)
 
 	    npolymorphic++;
 
-	    if (!flag_devirtualize_speculatively)
+	    if (!opt_for_fn (n->decl, flag_devirtualize_speculatively))
 	      continue;
 
 	    if (!e->maybe_hot_p ())
@@ -3106,6 +3116,10 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
+      /* In LTO, always run the IPA passes and decide on function basis if the
+	 pass is enabled.  */
+      if (in_lto_p)
+	return true;
       return (flag_devirtualize
 	      && (flag_devirtualize_speculatively
 		  || (warn_suggest_final_methods

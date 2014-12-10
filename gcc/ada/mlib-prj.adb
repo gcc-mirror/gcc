@@ -1515,8 +1515,7 @@ package body MLib.Prj is
                                           ALIs.Append (new String'(ALI_Path));
 
                                           --  Find out if for this ALI file,
-                                          --  libgnarl or libdecgnat is
-                                          --  necessary.
+                                          --  libgnarl is necessary.
 
                                           Check_Libs (ALI_Path, True);
                                        end if;
@@ -2392,29 +2391,27 @@ package body MLib.Prj is
             --  Ignore -static and -shared, since -shared will be used
             --  in any case.
 
-            --  Ignore -lgnat, -lgnarl and -ldecgnat as they will be added
-            --  later, because they are also needed for non Stand-Alone shared
+            --  Ignore -lgnat and -lgnarl as they will be added later,
+            --  because they are also needed for non Stand-Alone shared
             --  libraries.
 
-            --  Also ignore the shared libraries which are :
+            --  Also ignore the shared libraries which are:
 
             --  -lgnat-<version>  (7 + version'length chars)
             --  -lgnarl-<version> (8 + version'length chars)
 
             if Next_Line (1 .. Nlast) /= "-static" and then
                Next_Line (1 .. Nlast) /= "-shared" and then
-               Next_Line (1 .. Nlast) /= "-ldecgnat" and then
                Next_Line (1 .. Nlast) /= "-lgnarl" and then
-               Next_Line (1 .. Nlast) /= "-lgnat" and then
-               Next_Line
-                 (1 .. Natural'Min (Nlast, 10 + Library_Version'Length)) /=
-                   Shared_Lib ("decgnat") and then
-               Next_Line
-                 (1 .. Natural'Min (Nlast, 8 + Library_Version'Length)) /=
-                   Shared_Lib ("gnarl") and then
-               Next_Line
-                 (1 .. Natural'Min (Nlast, 7 + Library_Version'Length)) /=
-                   Shared_Lib ("gnat")
+               Next_Line (1 .. Nlast) /= "-lgnat"
+              and then
+                Next_Line
+                  (1 .. Natural'Min (Nlast, 8 + Library_Version'Length)) /=
+                    Shared_Lib ("gnarl")
+              and then
+                Next_Line
+                  (1 .. Natural'Min (Nlast, 7 + Library_Version'Length)) /=
+                    Shared_Lib ("gnat")
             then
                if Next_Line (1) /= '-' then
 

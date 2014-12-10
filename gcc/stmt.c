@@ -35,19 +35,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "flags.h"
 #include "except.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "input.h"
 #include "function.h"
 #include "insn-config.h"
 #include "expr.h"
 #include "libfuncs.h"
 #include "recog.h"
-#include "machmode.h"
 #include "diagnostic-core.h"
 #include "output.h"
 #include "langhooks.h"
 #include "predict.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "target.h"
-#include "hash-set.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -710,7 +715,7 @@ expand_naked_return (void)
 /* Generate code to jump to LABEL if OP0 and OP1 are equal in mode MODE. PROB
    is the probability of jumping to LABEL.  */
 static void
-do_jump_if_equal (enum machine_mode mode, rtx op0, rtx op1, rtx label,
+do_jump_if_equal (machine_mode mode, rtx op0, rtx op1, rtx label,
 		  int unsignedp, int prob)
 {
   gcc_assert (prob <= REG_BR_PROB_BASE);
@@ -881,7 +886,7 @@ emit_case_decision_tree (tree index_expr, tree index_type,
       && ! have_insn_for (COMPARE, GET_MODE (index)))
     {
       int unsignedp = TYPE_UNSIGNED (index_type);
-      enum machine_mode wider_mode;
+      machine_mode wider_mode;
       for (wider_mode = GET_MODE (index); wider_mode != VOIDmode;
 	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
 	if (have_insn_for (COMPARE, wider_mode))
@@ -1106,7 +1111,7 @@ reset_out_edges_aux (basic_block bb)
    STMT. Record this information in the aux field of the edge.  */
 
 static inline void
-compute_cases_per_edge (gimple stmt)
+compute_cases_per_edge (gswitch *stmt)
 {
   basic_block bb = gimple_bb (stmt);
   reset_out_edges_aux (bb);
@@ -1128,7 +1133,7 @@ compute_cases_per_edge (gimple stmt)
    Generate the code to test it and jump to the right place.  */
 
 void
-expand_case (gimple stmt)
+expand_case (gswitch *stmt)
 {
   tree minval = NULL_TREE, maxval = NULL_TREE, range = NULL_TREE;
   rtx default_label = NULL_RTX;
@@ -1278,7 +1283,7 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
 			    vec<tree> dispatch_table)
 {
   tree index_type = integer_type_node;
-  enum machine_mode index_mode = TYPE_MODE (index_type);
+  machine_mode index_mode = TYPE_MODE (index_type);
 
   int ncases = dispatch_table.length ();
 
@@ -1589,8 +1594,8 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
   int unsignedp = TYPE_UNSIGNED (index_type);
   int probability;
   int prob = node->prob, subtree_prob = node->subtree_prob;
-  enum machine_mode mode = GET_MODE (index);
-  enum machine_mode imode = TYPE_MODE (index_type);
+  machine_mode mode = GET_MODE (index);
+  machine_mode imode = TYPE_MODE (index_type);
 
   /* Handle indices detected as constant during RTL expansion.  */
   if (mode == VOIDmode)

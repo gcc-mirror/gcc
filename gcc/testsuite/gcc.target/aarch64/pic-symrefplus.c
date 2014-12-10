@@ -34,12 +34,16 @@ struct locale_data
   values [];
 };
 extern const struct locale_data _nl_C_LC_TIME __attribute__ ((visibility ("hidden")));
+extern void *memset (void *s, int c, size_t n);
+extern size_t strlen (const char *s);
+extern int __strncasecmp_l (const char *s1, const char *s2, size_t n, __locale_t locale);
 char *
 __strptime_internal (rp, fmt, tmp, statep , locale)
      const char *rp;
      const char *fmt;
      __locale_t locale;
      void *statep;
+     int tmp;
 {
   struct locale_data *const current = locale->__locales[__LC_TIME];
   const char *rp_backup;
@@ -124,5 +128,9 @@ __strptime_internal (rp, fmt, tmp, statep , locale)
 }
 char *
 __strptime_l (buf, format, tm , locale)
+     int buf;
+     int format;
+     int tm;
+     int locale;
 {
 }

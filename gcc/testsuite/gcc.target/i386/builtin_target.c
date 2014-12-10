@@ -145,6 +145,8 @@ check_features (unsigned int ecx, unsigned int edx,
       __cpuid_count (7, 0, eax, ebx, ecx, edx);
       if (ebx & bit_AVX2)
 	assert (__builtin_cpu_supports ("avx2"));
+      if (ebx & bit_AVX512F)
+	assert (__builtin_cpu_supports ("avx512f"));
     }
 }
 
@@ -240,6 +242,8 @@ quick_check ()
   assert (__builtin_cpu_supports ("avx") >= 0);
 
   assert (__builtin_cpu_supports ("avx2") >= 0);
+
+  assert (__builtin_cpu_supports ("avx512f") >= 0);
 
   /* Check CPU type.  */
   assert (__builtin_cpu_is ("amd") >= 0);

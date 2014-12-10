@@ -33,6 +33,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "c-family/c-common.h"
 #include "toplev.h" 
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "diagnostic.h"
 #include "cilk.h"
@@ -235,7 +247,7 @@ recognize_spawn (tree exp, tree *exp0)
     }
   /* _Cilk_spawn can't be wrapped in expression such as PLUS_EXPR.  */
   else if (contains_cilk_spawn_stmt (exp))
-    error ("invalid use of %<_Cilk_spawn%>");
+    error_at (EXPR_LOCATION (exp), "invalid use of %<_Cilk_spawn%>");
   return spawn_found;
 }
 
@@ -780,7 +792,7 @@ gimplify_cilk_spawn (tree *spawn_p)
   tree frame_ptr = build1 (ADDR_EXPR, f_ptr_type, cfun->cilk_frame_decl);
   tree save_fp = build_call_expr (cilk_save_fp_fndecl, 1, frame_ptr);
   append_to_statement_list (save_fp, spawn_p);		  
-  setjmp_value = create_tmp_var (TREE_TYPE (call1), NULL);
+  setjmp_value = create_tmp_var (TREE_TYPE (call1));
   setjmp_expr = fold_build2 (MODIFY_EXPR, void_type_node, setjmp_value, call1);
 
   append_to_statement_list_force (setjmp_expr, spawn_p);
@@ -1311,4 +1323,43 @@ contains_cilk_spawn_stmt (tree expr)
 {
   return walk_tree (&expr, contains_cilk_spawn_stmt_walker, NULL, NULL)
 	 != NULL_TREE;
+}
+
+/* Return a error location for EXPR if LOC is not set.  */
+
+static location_t
+get_error_location (tree expr, location_t loc)
+{
+  if (loc == UNKNOWN_LOCATION)
+    {
+      if (TREE_CODE (expr) == MODIFY_EXPR)
+        expr = TREE_OPERAND (expr, 0);
+      loc = EXPR_LOCATION (expr);
+    }
+  return loc;
+}
+
+/* Check that no array notation or spawn statement is in EXPR.
+   If not true generate an error at LOC for ARRAY_GMSGID or
+   SPAWN_MSGID.  */
+
+bool
+check_no_cilk (tree expr, const char *array_msgid, const char *spawn_msgid,
+	      location_t loc)
+{
+  if (!flag_cilkplus)
+    return false;
+  if (contains_array_notation_expr (expr))
+    {
+      loc = get_error_location (expr, loc);
+      error_at (loc, array_msgid);
+      return true;
+    }
+  if (walk_tree (&expr, contains_cilk_spawn_stmt_walker, NULL, NULL))
+    {
+      loc = get_error_location (expr, loc);
+      error_at (loc, spawn_msgid);
+      return true;
+    }
+  return false;
 }

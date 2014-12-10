@@ -1,4 +1,4 @@
-/* { dg-do compile { target alpha*-*-* ia64*-*-* x86_64-*-* s390x-*-* } } */
+/* { dg-do compile { target alpha*-*-* ia64*-*-* i?86-*-* x86_64-*-* s390x-*-* } } */
 /* { dg-options "-O2" } */
 /* { dg-require-effective-target lp64 } */
 

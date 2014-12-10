@@ -157,6 +157,11 @@ static const char *const spec_version = DEFAULT_TARGET_VERSION;
 /* The target machine.  */
 
 static const char *spec_machine = DEFAULT_TARGET_MACHINE;
+static const char *spec_host_machine = DEFAULT_REAL_TARGET_MACHINE;
+
+/* List of offload targets.  */
+
+static char *offload_targets = NULL;
 
 /* Nonzero if cross-compiling.
    When -b is used, the value comes from the `specs' file.  */
@@ -789,7 +794,7 @@ proper position among the other output files.  */
 %{!nostdlib:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_SPEC "\
     %{static:%ecannot specify -static with -fsanitize=address}}\
     %{%:sanitize(thread):" LIBTSAN_SPEC "\
-    %{!pie:%{!shared:%e-fsanitize=thread linking must be done with -pie or -shared}}}\
+    %{static:%ecannot specify -static with -fsanitize=thread}}\
     %{%:sanitize(undefined):" LIBUBSAN_SPEC "}\
     %{%:sanitize(leak):" LIBLSAN_SPEC "}}}"
 #endif
@@ -819,7 +824,7 @@ proper position among the other output files.  */
     %(linker) " \
     LINK_PLUGIN_SPEC \
    "%{flto|flto=*:%<fcompare-debug*} \
-    %{flto} %{flto=*} %l " LINK_PIE_SPEC \
+    %{flto} %{fno-lto} %{flto=*} %l " LINK_PIE_SPEC \
    "%{fuse-ld=*:-fuse-ld=%*} " LINK_COMPRESS_DEBUG_SPEC \
    "%X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}} " VTABLE_VERIFICATION_SPEC " \
@@ -1296,6 +1301,9 @@ static const char *const standard_startfile_prefix_2
    relative to the driver.  */
 static const char *const tooldir_base_prefix = TOOLDIR_BASE_PREFIX;
 
+/* A prefix to be used when this is an accelerator compiler.  */
+static const char *const accel_dir_suffix = ACCEL_DIR_SUFFIX;
+
 /* Subdirectory to use for locating libraries.  Set by
    set_multilib_dir based on the compilation options.  */
 
@@ -1702,16 +1710,14 @@ typedef const char *const_char_p; /* For DEF_VEC_P.  */
 
 static vec<const_char_p> argbuf;
 
-/* Position in the argbuf vector containing the name of the output file
-   (the value associated with the "-o" flag).  */
-
-static int have_o_argbuf_index = 0;
-
 /* Were the options -c, -S or -E passed.  */
 static int have_c = 0;
 
 /* Was the option -o passed.  */
 static int have_o = 0;
+
+/* Pointer to output file name passed in with -o. */
+static const char *output_file = 0;
 
 /* This is the list of suffixes and codes (%g/%u/%U/%j) and the associated
    temp file.  If the HOST_BIT_BUCKET is used for %j, no entry is made for
@@ -1762,8 +1768,6 @@ store_arg (const char *arg, int delete_always, int delete_failure)
 {
   argbuf.safe_push (arg);
 
-  if (strcmp (arg, "-o") == 0)
-    have_o_argbuf_index = argbuf.length ();
   if (delete_always || delete_failure)
     {
       const char *p;
@@ -3358,6 +3362,102 @@ driver_wrong_lang_callback (const struct cl_decoded_option *decoded,
 static const char *spec_lang = 0;
 static int last_language_n_infiles;
 
+/* Parse -foffload option argument.  */
+
+static void
+handle_foffload_option (const char *arg)
+{
+  const char *c, *cur, *n, *next, *end;
+  char *target;
+
+  /* If option argument starts with '-' then no target is specified and we
+     do not need to parse it.  */
+  if (arg[0] == '-')
+    return;
+
+  end = strchr (arg, '=');
+  if (end == NULL)
+    end = strchr (arg, '\0');
+  cur = arg;
+
+  while (cur < end)
+    {
+      next = strchr (cur, ',');
+      if (next == NULL)
+	next = end;
+      next = (next > end) ? end : next;
+
+      target = XNEWVEC (char, next - cur + 1);
+      memcpy (target, cur, next - cur);
+      target[next - cur] = '\0';
+
+      /* If 'disable' is passed to the option, stop parsing the option and clean
+         the list of offload targets.  */
+      if (strcmp (target, "disable") == 0)
+	{
+	  free (offload_targets);
+	  offload_targets = xstrdup ("");
+	  break;
+	}
+
+      /* Check that GCC is configured to support the offload target.  */
+      c = OFFLOAD_TARGETS;
+      while (c)
+	{
+	  n = strchr (c, ',');
+	  if (n == NULL)
+	    n = strchr (c, '\0');
+
+	  if (next - cur == n - c && strncmp (target, c, n - c) == 0)
+	    break;
+
+	  c = *n ? n + 1 : NULL;
+	}
+
+      if (!c)
+	fatal_error ("GCC is not configured to support %s as offload target",
+		     target);
+
+      if (!offload_targets)
+	{
+	  offload_targets = target;
+	  target = NULL;
+	}
+      else
+	{
+	  /* Check that the target hasn't already presented in the list.  */
+	  c = offload_targets;
+	  do
+	    {
+	      n = strchr (c, ':');
+	      if (n == NULL)
+		n = strchr (c, '\0');
+
+	      if (next - cur == n - c && strncmp (c, target, n - c) == 0)
+		break;
+
+	      c = n + 1;
+	    }
+	  while (*n);
+
+	  /* If duplicate is not found, append the target to the list.  */
+	  if (c > n)
+	    {
+	      size_t offload_targets_len = strlen (offload_targets);
+	      offload_targets
+		= XRESIZEVEC (char, offload_targets,
+			      offload_targets_len + next - cur + 2);
+	      if (offload_targets_len)
+		offload_targets[offload_targets_len++] = ':';
+	      memcpy (offload_targets + offload_targets_len, target, next - cur);
+	    }
+	}
+
+      cur = next + 1;
+      XDELETEVEC (target);
+    }
+}
+
 /* Handle a driver option; arguments and return value as for
    handle_option.  */
 
@@ -3507,6 +3607,10 @@ driver_handle_option (struct gcc_options *opts,
 	compare_debug_opt = arg;
       save_switch (compare_debug_replacement_opt, 0, NULL, validated, true);
       return true;
+
+    case OPT_fdiagnostics_color_:
+      diagnostic_color_init (dc, value);
+      break;
 
     case OPT_Wa_:
       {
@@ -3713,6 +3817,7 @@ driver_handle_option (struct gcc_options *opts,
 #if defined(HAVE_TARGET_EXECUTABLE_SUFFIX) || defined(HAVE_TARGET_OBJECT_SUFFIX)
       arg = convert_filename (arg, ! have_c, 0);
 #endif
+      output_file = arg;
       /* Save the output name in case -save-temps=obj was used.  */
       save_temps_prefix = xstrdup (arg);
       /* On some systems, ld cannot handle "-o" without a space.  So
@@ -3732,6 +3837,10 @@ driver_handle_option (struct gcc_options *opts,
 
     case OPT_fwpa:
       flag_wpa = "";
+      break;
+
+    case OPT_foffload_:
+      handle_foffload_option (arg);
       break;
 
     default:
@@ -4052,6 +4161,18 @@ process_command (unsigned int decoded_options_count,
 			   CL_DRIVER, &handlers, global_dc);
     }
 
+  if (output_file
+      && strcmp (output_file, "-") != 0
+      && strcmp (output_file, HOST_BIT_BUCKET) != 0)
+    {
+      int i;
+      for (i = 0; i < n_infiles; i++)
+	if ((!infiles[i].language || infiles[i].language[0] != '*')
+	    && canonical_filename_eq (infiles[i].name, output_file))
+	  fatal_error ("input file %qs is the same as output file",
+		       output_file);
+    }
+
   /* If -save-temps=obj and -o name, create the prefix to use for %b.
      Otherwise just make -save-temps=obj the same as -save-temps=cwd.  */
   if (save_temps_flag == SAVE_TEMPS_OBJ && save_temps_prefix != NULL)
@@ -4122,15 +4243,15 @@ process_command (unsigned int decoded_options_count,
     }
 
   gcc_assert (!IS_ABSOLUTE_PATH (tooldir_base_prefix));
-  tooldir_prefix2 = concat (tooldir_base_prefix, spec_machine,
+  tooldir_prefix2 = concat (tooldir_base_prefix, spec_host_machine,
 			    dir_separator_str, NULL);
 
   /* Look for tools relative to the location from which the driver is
      running, or, if that is not available, the configured prefix.  */
   tooldir_prefix
     = concat (gcc_exec_prefix ? gcc_exec_prefix : standard_exec_prefix,
-	      spec_machine, dir_separator_str,
-	      spec_version, dir_separator_str, tooldir_prefix2, NULL);
+	      spec_host_machine, dir_separator_str, spec_version,
+	      accel_dir_suffix, dir_separator_str, tooldir_prefix2, NULL);
   free (tooldir_prefix2);
 
   add_prefix (&exec_prefixes,
@@ -6742,6 +6863,7 @@ class driver
   void set_up_specs () const;
   void putenv_COLLECT_GCC (const char *argv0) const;
   void maybe_putenv_COLLECT_LTO_WRAPPER () const;
+  void maybe_putenv_OFFLOAD_TARGETS () const;
   void handle_unrecognized_options () const;
   int maybe_print_and_exit () const;
   bool prepare_infiles ();
@@ -6784,6 +6906,7 @@ driver::main (int argc, char **argv)
   set_up_specs ();
   putenv_COLLECT_GCC (argv[0]);
   maybe_putenv_COLLECT_LTO_WRAPPER ();
+  maybe_putenv_OFFLOAD_TARGETS ();
   handle_unrecognized_options ();
 
   if (!maybe_print_and_exit ())
@@ -6856,6 +6979,7 @@ driver::global_initializations ()
   gcc_init_libintl ();
 
   diagnostic_initialize (global_dc, 0);
+  diagnostic_color_init (global_dc);
 
 #ifdef GCC_DRIVER_HOST_INITIALIZATION
   /* Perform host dependent initialization when needed.  */
@@ -6953,6 +7077,7 @@ driver::build_multilib_strings () const
 void
 driver::set_up_specs () const
 {
+  const char *spec_machine_suffix;
   char *specs_file;
   size_t i;
 
@@ -6976,8 +7101,8 @@ driver::set_up_specs () const
 
   /* Read specs from a file if there is one.  */
 
-  machine_suffix = concat (spec_machine, dir_separator_str,
-			   spec_version, dir_separator_str, NULL);
+  machine_suffix = concat (spec_host_machine, dir_separator_str, spec_version,
+			   accel_dir_suffix, dir_separator_str, NULL);
   just_machine_suffix = concat (spec_machine, dir_separator_str, NULL);
 
   specs_file = find_a_file (&startfile_prefixes, "specs", R_OK, true);
@@ -6987,13 +7112,18 @@ driver::set_up_specs () const
   else
     init_spec ();
 
-  /* We need to check standard_exec_prefix/just_machine_suffix/specs
+#ifdef ACCEL_COMPILER
+  spec_machine_suffix = machine_suffix;
+#else
+  spec_machine_suffix = just_machine_suffix;
+#endif
+
+  /* We need to check standard_exec_prefix/spec_machine_suffix/specs
      for any override of as, ld and libraries.  */
   specs_file = (char *) alloca (strlen (standard_exec_prefix)
-		       + strlen (just_machine_suffix) + sizeof ("specs"));
-
+		       + strlen (spec_machine_suffix) + sizeof ("specs"));
   strcpy (specs_file, standard_exec_prefix);
-  strcat (specs_file, just_machine_suffix);
+  strcat (specs_file, spec_machine_suffix);
   strcat (specs_file, "specs");
   if (access (specs_file, R_OK) == 0)
     read_specs (specs_file, true, false);
@@ -7175,8 +7305,9 @@ driver::set_up_specs () const
 
   /* If we have a GCC_EXEC_PREFIX envvar, modify it for cpp's sake.  */
   if (gcc_exec_prefix)
-    gcc_exec_prefix = concat (gcc_exec_prefix, spec_machine, dir_separator_str,
-			      spec_version, dir_separator_str, NULL);
+    gcc_exec_prefix = concat (gcc_exec_prefix, spec_host_machine,
+			      dir_separator_str, spec_version,
+			      accel_dir_suffix, dir_separator_str, NULL);
 
   /* Now we have the specs.
      Set the `valid' bits for switches that match anything in any spec.  */
@@ -7225,6 +7356,29 @@ driver::maybe_putenv_COLLECT_LTO_WRAPPER () const
       xputenv (XOBFINISH (&collect_obstack, char *));
     }
 
+}
+
+/* Set up to remember the names of offload targets.  */
+
+void
+driver::maybe_putenv_OFFLOAD_TARGETS () const
+{
+  const char *targets = offload_targets;
+
+  /* If no targets specified by -foffload, use all available targets.  */
+  if (!targets)
+    targets = OFFLOAD_TARGETS;
+
+  if (strlen (targets) > 0)
+    {
+      obstack_grow (&collect_obstack, "OFFLOAD_TARGET_NAMES=",
+		    sizeof ("OFFLOAD_TARGET_NAMES=") - 1);
+      obstack_grow (&collect_obstack, targets,
+		    strlen (targets) + 1);
+      xputenv (XOBFINISH (&collect_obstack, char *));
+    }
+
+  free (offload_targets);
 }
 
 /* Reject switches that no pass was interested in.  */

@@ -130,6 +130,14 @@ typedef enum
   GFC_CAF_ATOMIC_XOR
 } libcaf_atomic_codes;
 
+
+/* For CO_REDUCE.  */
+#define GFC_CAF_BYREF      (1<<0)
+#define GFC_CAF_HIDDENLEN  (1<<1)
+#define GFC_CAF_ARG_VALUE  (1<<2)
+#define GFC_CAF_ARG_DESC   (1<<3)
+
+
 /* Default unit number for preconnected standard input and output.  */
 #define GFC_STDIN_UNIT_NUMBER 5
 #define GFC_STDOUT_UNIT_NUMBER 6

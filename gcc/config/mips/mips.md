@@ -41,6 +41,7 @@
   m4k
   octeon
   octeon2
+  octeon3
   r3900
   r6000
   r4000
@@ -428,15 +429,21 @@
 		(const_string "yes")
 		(const_string "no")))
 
-(define_attr "compression" "none,all,micromips"
+(define_attr "compression" "none,all,micromips32,micromips"
   (const_string "none"))
 
 (define_attr "enabled" "no,yes"
-  (if_then_else (ior (eq_attr "compression" "all,none")
-		     (and (eq_attr "compression" "micromips")
-	                  (match_test "TARGET_MICROMIPS")))
-	        (const_string "yes")
-	        (const_string "no")))
+  (cond [;; The o32 FPXX and FP64A ABI extensions prohibit direct moves between
+	 ;; GR_REG and FR_REG for 64-bit values.
+	 (and (eq_attr "move_type" "mtc,mfc")
+	      (match_test "(TARGET_FLOATXX && !ISA_HAS_MXHC1)
+			   || TARGET_O32_FP64A_ABI")
+	      (eq_attr "dword_mode" "yes"))
+	 (const_string "no")
+	 (and (eq_attr "compression" "micromips32,micromips")
+	      (match_test "!TARGET_MICROMIPS"))
+	 (const_string "no")]
+	(const_string "yes")))
 
 ;; The number of individual instructions that a non-branch pattern generates,
 ;; using units of BASE_INSN_LENGTH.
@@ -519,7 +526,9 @@
 ;; but there are special cases for branches (which must be handled here)
 ;; and for compressed single instructions.
 (define_attr "length" ""
-   (cond [(and (eq_attr "compression" "micromips,all")
+   (cond [(and (ior (eq_attr "compression" "micromips,all")
+		    (and (eq_attr "compression" "micromips32")
+			 (eq_attr "mode" "SI,SF")))
 	       (eq_attr "dword_mode" "no")
 	       (match_test "TARGET_MICROMIPS"))
 	  (const_int 2)
@@ -972,8 +981,8 @@
 				  (xor "xori")
 				  (and "andi")])
 
-(define_code_attr shift_compression [(ashift "micromips")
-				     (lshiftrt "micromips")
+(define_code_attr shift_compression [(ashift "micromips32")
+				     (lshiftrt "micromips32")
 				     (ashiftrt "none")])
 
 ;; <fcond> is the c.cond.fmt condition associated with a particular code.
@@ -1156,7 +1165,7 @@
     return "<d>addiu\t%0,%1,%2";
 }
   [(set_attr "alu_type" "add")
-   (set_attr "compression" "micromips,*,micromips,micromips,micromips,micromips,*")
+   (set_attr "compression" "micromips32,*,micromips32,micromips32,micromips32,micromips32,*")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*add<mode>3_mips16"
@@ -1374,7 +1383,7 @@
   ""
   "<d>subu\t%0,%1,%2"
   [(set_attr "alu_type" "sub")
-   (set_attr "compression" "micromips,*")
+   (set_attr "compression" "micromips32,*")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*subsi3_extended"
@@ -4996,7 +5005,7 @@
       rtx low = mips_subword (operands[1], 0);
       rtx high = mips_subword (operands[1], 1);
       emit_insn (gen_load_low<mode> (operands[0], low));
-      if (TARGET_FLOAT64 && !TARGET_64BIT)
+      if (ISA_HAS_MXHC1 && !TARGET_64BIT)
       	emit_insn (gen_mthc1<mode> (operands[0], high, operands[0]));
       else
 	emit_insn (gen_load_high<mode> (operands[0], high, operands[0]));
@@ -5006,7 +5015,7 @@
       rtx low = mips_subword (operands[0], 0);
       rtx high = mips_subword (operands[0], 1);
       emit_insn (gen_store_word<mode> (low, operands[1], const0_rtx));
-      if (TARGET_FLOAT64 && !TARGET_64BIT)
+      if (ISA_HAS_MXHC1 && !TARGET_64BIT)
 	emit_insn (gen_mfhc1<mode> (high, operands[1]));
       else
 	emit_insn (gen_store_word<mode> (high, operands[1], const1_rtx));
@@ -5948,14 +5957,12 @@
 	(label_ref (match_operand 0)))]
   "!TARGET_MIPS16 && TARGET_ABSOLUTE_JUMPS"
 {
-  /* Use a branch for microMIPS.  The assembler will choose
-     a 16-bit branch, a 32-bit branch, or a 32-bit jump.  */
-  if (TARGET_MICROMIPS && !TARGET_ABICALLS_PIC2)
+  if (get_attr_length (insn) <= 8)
     return "%*b\t%l0%/";
   else
     return MIPS_ABSOLUTE_JUMP ("%*j\t%l0%/");
 }
-  [(set_attr "type" "jump")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*jump_pic"
   [(set (pc)

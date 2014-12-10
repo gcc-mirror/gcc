@@ -367,6 +367,7 @@ package body Impunit is
    --------------------------------------
 
     ("s-addima", F),  -- System.Address_Image
+    ("s-atocou", F),  -- System.Atomic_Counters
     ("s-assert", F),  -- System.Assertions
     ("s-diflio", F),  -- System.Dim.Float_IO
     ("s-diinio", F),  -- System.Dim.Integer_IO
@@ -580,6 +581,8 @@ package body Impunit is
    -- GNAT Defined Additions to Ada 2012 --
    ----------------------------------------
 
+    ("a-cfinve", F),  -- Ada.Containers.Formal_Indefinite_Vectors
+    ("a-coboho", F),  -- Ada.Containers.Bounded_Holders
     ("a-cofove", F),  -- Ada.Containers.Formal_Vectors
     ("a-cfdlli", F),  -- Ada.Containers.Formal_Doubly_Linked_Lists
     ("a-cforse", F),  -- Ada.Containers.Formal_Ordered_Sets

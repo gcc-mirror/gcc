@@ -17,7 +17,7 @@
 
 // libstdc++/55320
 
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 #include <functional>
 #include <testsuite_hooks.h>

@@ -924,7 +924,7 @@ resolve_common_vars (gfc_symbol *sym, bool named_common)
 	}
 
       if (UNLIMITED_POLY (csym))
-	gfc_error_now ("'%s' in cannot appear in COMMON at %L "
+	gfc_error_now ("%qs in cannot appear in COMMON at %L "
 		       "[F2008:C5100]", csym->name, &csym->declared_at);
 
       if (csym->ts.type != BT_DERIVED)
@@ -932,15 +932,15 @@ resolve_common_vars (gfc_symbol *sym, bool named_common)
 
       if (!(csym->ts.u.derived->attr.sequence
 	    || csym->ts.u.derived->attr.is_bind_c))
-	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
+	gfc_error_now ("Derived type variable %qs in COMMON at %L "
 		       "has neither the SEQUENCE nor the BIND(C) "
 		       "attribute", csym->name, &csym->declared_at);
       if (csym->ts.u.derived->attr.alloc_comp)
-	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
+	gfc_error_now ("Derived type variable %qs in COMMON at %L "
 		       "has an ultimate component that is "
 		       "allocatable", csym->name, &csym->declared_at);
       if (gfc_has_default_initializer (csym->ts.u.derived))
-	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
+	gfc_error_now ("Derived type variable %qs in COMMON at %L "
 		       "may not have default initializer", csym->name,
 		       &csym->declared_at);
 
@@ -1643,9 +1643,10 @@ gfc_resolve_intrinsic (gfc_symbol *sym, locus *loc)
 
   if (isym && !sym->attr.subroutine)
     {
-      if (sym->ts.type != BT_UNKNOWN && gfc_option.warn_surprising
+      if (sym->ts.type != BT_UNKNOWN && warn_surprising
 	  && !sym->attr.implicit_type)
-	gfc_warning ("Type specified for intrinsic function '%s' at %L is"
+	gfc_warning (OPT_Wsurprising,
+		     "Type specified for intrinsic function %qs at %L is"
 		      " ignored", sym->name, &sym->declared_at);
 
       if (!sym->attr.function &&
@@ -1718,9 +1719,9 @@ resolve_procedure_expression (gfc_expr* expr)
   /* A non-RECURSIVE procedure that is used as procedure expression within its
      own body is in danger of being called recursively.  */
   if (is_illegal_recursion (sym, gfc_current_ns))
-    gfc_warning ("Non-RECURSIVE procedure '%s' at %L is possibly calling"
+    gfc_warning ("Non-RECURSIVE procedure %qs at %L is possibly calling"
 		 " itself recursively.  Declare it RECURSIVE or use"
-		 " -frecursive", sym->name, &expr->where);
+		 " %<-frecursive%>", sym->name, &expr->where);
 
   return true;
 }
@@ -1815,7 +1816,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	      && sym->ns->proc_name->attr.flavor != FL_MODULE)
 	    {
 	      if (!gfc_notify_std (GFC_STD_F2008, "Internal procedure '%s' is"
-				   " used as actual argument at %L", 
+				   " used as actual argument at %L",
 				   sym->name, &e->where))
 		goto cleanup;
 	    }
@@ -2101,7 +2102,7 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
 	  && (set_by_optional || arg->expr->rank != rank)
 	  && !(isym && isym->id == GFC_ISYM_CONVERSION))
 	{
-	  gfc_warning ("'%s' at %L is an array and OPTIONAL; IF IT IS "
+	  gfc_warning ("%qs at %L is an array and OPTIONAL; IF IT IS "
 		       "MISSING, it cannot be the actual argument of an "
 		       "ELEMENTAL procedure unless there is a non-optional "
 		       "argument with the same rank (12.4.1.5)",
@@ -2431,11 +2432,11 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 
       if (!pedantic && (gfc_option.allow_std & GFC_STD_GNU))
 	/* Turn erros into warnings with -std=gnu and -std=legacy.  */
-	gfc_errors_to_warnings (1);
+	gfc_errors_to_warnings (true);
 
       if (!gfc_compare_interfaces (sym, def_sym, sym->name, 0, 1,
 				   reason, sizeof(reason), NULL, NULL))
-	{	
+	{
 	  gfc_error ("Interface mismatch in global procedure '%s' at %L: %s ",
 		    sym->name, &sym->declared_at, reason);
 	  goto done;
@@ -2444,14 +2445,14 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
       if (!pedantic
 	  || ((gfc_option.warn_std & GFC_STD_LEGACY)
 	      && !(gfc_option.warn_std & GFC_STD_GNU)))
-	gfc_errors_to_warnings (1);
+	gfc_errors_to_warnings (true);
 
       if (sym->attr.if_source != IFSRC_IFBODY)
 	gfc_procedure_use (def_sym, actual, where);
     }
-    
+
 done:
-  gfc_errors_to_warnings (0);
+  gfc_errors_to_warnings (false);
 
   if (gsym->type == GSYM_UNKNOWN)
     {
@@ -2551,7 +2552,7 @@ generic:
 
   if (intr)
     {
-      if (!gfc_convert_to_structure_constructor (expr, intr->sym, NULL, 
+      if (!gfc_convert_to_structure_constructor (expr, intr->sym, NULL,
 						 NULL, false))
 	return false;
       return resolve_structure_cons (expr, 0);
@@ -2853,7 +2854,7 @@ resolve_function (gfc_expr *expr)
   no_formal_args = sym && is_external_proc (sym)
   		       && gfc_sym_get_dummy_args (sym) == NULL;
 
-  if (!resolve_actual_arglist (expr->value.function.actual, 
+  if (!resolve_actual_arglist (expr->value.function.actual,
 			       p, no_formal_args))
     {
       inquiry_argument = false;
@@ -3571,7 +3572,7 @@ resolve_operator (gfc_expr *e)
 	  e->ts.type = BT_LOGICAL;
 	  e->ts.kind = gfc_default_logical_kind;
 
-	  if (gfc_option.warn_compare_reals)
+	  if (warn_compare_reals)
 	    {
 	      gfc_intrinsic_op op = e->value.op.op;
 
@@ -4124,7 +4125,7 @@ gfc_resolve_index_1 (gfc_expr *index, int check_scalar,
     }
 
   if (index->ts.type == BT_REAL)
-    if (!gfc_notify_std (GFC_STD_LEGACY, "REAL array index at %L", 
+    if (!gfc_notify_std (GFC_STD_LEGACY, "REAL array index at %L",
 			 &index->where))
       return false;
 
@@ -5830,7 +5831,7 @@ resolve_typebound_function (gfc_expr* e)
 
   /* Get the CLASS declared type.  */
   declared = get_declared_from_expr (&class_ref, &new_ref, e, true);
-  
+
   if (!resolve_fl_derived (declared))
     return false;
 
@@ -6030,8 +6031,8 @@ resolve_ppc_call (gfc_code* c)
 
   c->ext.actual = c->expr1->value.compcall.actual;
 
-  if (!resolve_actual_arglist (c->ext.actual, comp->attr.proc, 
-			       !(comp->ts.interface 
+  if (!resolve_actual_arglist (c->ext.actual, comp->attr.proc,
+			       !(comp->ts.interface
 				 && comp->ts.interface->formal)))
     return false;
 
@@ -6065,8 +6066,8 @@ resolve_expr_ppc (gfc_expr* e)
   if (!resolve_ref (e))
     return false;
 
-  if (!resolve_actual_arglist (e->value.function.actual, comp->attr.proc, 
-			       !(comp->ts.interface 
+  if (!resolve_actual_arglist (e->value.function.actual, comp->attr.proc,
+			       !(comp->ts.interface
 				 && comp->ts.interface->formal)))
     return false;
 
@@ -6274,19 +6275,19 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok, bool own_scope)
   if (!gfc_resolve_iterator_expr (iter->var, real_ok, "Loop variable"))
     return false;
 
-  if (!gfc_check_vardef_context (iter->var, false, false, own_scope, 
+  if (!gfc_check_vardef_context (iter->var, false, false, own_scope,
 				 _("iterator variable")))
     return false;
 
-  if (!gfc_resolve_iterator_expr (iter->start, real_ok, 
+  if (!gfc_resolve_iterator_expr (iter->start, real_ok,
 				  "Start expression in DO loop"))
     return false;
 
-  if (!gfc_resolve_iterator_expr (iter->end, real_ok, 
+  if (!gfc_resolve_iterator_expr (iter->end, real_ok,
 				  "End expression in DO loop"))
     return false;
 
-  if (!gfc_resolve_iterator_expr (iter->step, real_ok, 
+  if (!gfc_resolve_iterator_expr (iter->step, real_ok,
 				  "Step expression in DO loop"))
     return false;
 
@@ -6331,10 +6332,9 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok, bool own_scope)
 	  sgn = mpfr_sgn (iter->step->value.real);
 	  cmp = mpfr_cmp (iter->end->value.real, iter->start->value.real);
 	}
-      if (gfc_option.warn_zerotrip &&
-	  ((sgn > 0 && cmp < 0) || (sgn < 0 && cmp > 0)))
-	gfc_warning ("DO loop at %L will be executed zero times"
-		     " (use -Wno-zerotrip to suppress)",
+      if (warn_zerotrip && ((sgn > 0 && cmp < 0) || (sgn < 0 && cmp > 0)))
+	gfc_warning (OPT_Wzerotrip,
+		     "DO loop at %L will be executed zero times",
 		     &iter->step->where);
     }
 
@@ -6544,10 +6544,10 @@ resolve_deallocate_expr (gfc_expr *e)
     }
 
   if (pointer
-      && !gfc_check_vardef_context (e, true, true, false, 
+      && !gfc_check_vardef_context (e, true, true, false,
 				    _("DEALLOCATE object")))
     return false;
-  if (!gfc_check_vardef_context (e, false, true, false, 
+  if (!gfc_check_vardef_context (e, false, true, false,
 				 _("DEALLOCATE object")))
     return false;
 
@@ -6897,10 +6897,10 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   e2 = remove_last_array_ref (e);
   t = true;
   if (t && pointer)
-    t = gfc_check_vardef_context (e2, true, true, false, 
+    t = gfc_check_vardef_context (e2, true, true, false,
 				  _("ALLOCATE object"));
   if (t)
-    t = gfc_check_vardef_context (e2, false, true, false, 
+    t = gfc_check_vardef_context (e2, false, true, false,
 				  _("ALLOCATE object"));
   gfc_free_expr (e2);
   if (!t)
@@ -7099,7 +7099,7 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
   /* Check the stat variable.  */
   if (stat)
     {
-      gfc_check_vardef_context (stat, false, false, false, 
+      gfc_check_vardef_context (stat, false, false, false,
 				_("STAT variable"));
 
       if ((stat->ts.type != BT_INTEGER
@@ -7709,9 +7709,10 @@ resolve_select (gfc_code *code, bool select_type)
 	      && cp->low != cp->high
 	      && gfc_compare_expr (cp->low, cp->high, INTRINSIC_GT) > 0)
 	    {
-	      if (gfc_option.warn_surprising)
-		gfc_warning ("Range specification at %L can never "
-			     "be matched", &cp->where);
+	      if (warn_surprising)
+		gfc_warning (OPT_Wsurprising,
+			     "Range specification at %L can never be matched",
+			     &cp->where);
 
 	      cp->unreachable = 1;
 	      seen_unreachable = 1;
@@ -7811,9 +7812,9 @@ resolve_select (gfc_code *code, bool select_type)
 
   /* More than two cases is legal but insane for logical selects.
      Issue a warning for it.  */
-  if (gfc_option.warn_surprising && type == BT_LOGICAL
-      && ncases > 2)
-    gfc_warning ("Logical SELECT CASE block at %L has more that two cases",
+  if (warn_surprising && type == BT_LOGICAL && ncases > 2)
+    gfc_warning (OPT_Wsurprising,
+		 "Logical SELECT CASE block at %L has more that two cases",
 		 &code->loc);
 }
 
@@ -8309,7 +8310,7 @@ resolve_transfer (gfc_code *code)
      code->ext.dt may be NULL if the TRANSFER is related to
      an INQUIRE statement -- but in this case, we are not reading, either.  */
   if (code->ext.dt && code->ext.dt->dt_io_kind->value.iokind == M_READ
-      && !gfc_check_vardef_context (exp, false, false, false, 
+      && !gfc_check_vardef_context (exp, false, false, false,
 				    _("item in READ")))
     return;
 
@@ -8444,7 +8445,7 @@ resolve_lock_unlock (gfc_code *code)
 	       &code->expr2->where);
 
   if (code->expr2
-      && !gfc_check_vardef_context (code->expr2, false, false, false, 
+      && !gfc_check_vardef_context (code->expr2, false, false, false,
 				    _("STAT variable")))
     return;
 
@@ -8456,7 +8457,7 @@ resolve_lock_unlock (gfc_code *code)
 	       &code->expr3->where);
 
   if (code->expr3
-      && !gfc_check_vardef_context (code->expr3, false, false, false, 
+      && !gfc_check_vardef_context (code->expr3, false, false, false,
 				    _("ERRMSG variable")))
     return;
 
@@ -8468,7 +8469,7 @@ resolve_lock_unlock (gfc_code *code)
 	       "variable", &code->expr4->where);
 
   if (code->expr4
-      && !gfc_check_vardef_context (code->expr4, false, false, false, 
+      && !gfc_check_vardef_context (code->expr4, false, false, false,
 				    _("ACQUIRED_LOCK variable")))
     return;
 }
@@ -8801,7 +8802,7 @@ gfc_resolve_assign_in_forall (gfc_code *code, int nvar, gfc_expr **var_expr)
 	     assignment.  Emit a warning rather than an error because the
 	     mask could be resolving this problem.  */
 	  if (!find_forall_index (code->expr1, forall_index, 0))
-	    gfc_warning ("The FORALL with index '%s' is not used on the "
+	    gfc_warning ("The FORALL with index %qs is not used on the "
 			 "left side of the assignment at %L and so might "
 			 "cause multiple assignment to this object",
 			 var_expr[n]->symtree->name, &code->expr1->where);
@@ -9174,7 +9175,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   if (rhs->is_boz
       && !gfc_notify_std (GFC_STD_GNU, "BOZ literal at %L outside "
-			  "a DATA statement and outside INT/REAL/DBLE/CMPLX", 
+			  "a DATA statement and outside INT/REAL/DBLE/CMPLX",
 			  &code->loc))
     return false;
 
@@ -9182,9 +9183,10 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   if (rhs->is_boz && lhs->ts.type != BT_INTEGER)
     {
       int rc;
-      if (gfc_option.warn_surprising)
-	gfc_warning ("BOZ literal at %L is bitwise transferred "
-		     "non-integer symbol '%s'", &code->loc,
+      if (warn_surprising)
+	gfc_warning (OPT_Wsurprising,
+		     "BOZ literal at %L is bitwise transferred "
+		     "non-integer symbol %qs", &code->loc,
 		     lhs->symtree->n.sym->name);
 
       if (!gfc_convert_boz (rhs, &lhs->ts))
@@ -9208,7 +9210,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
     }
 
   if (lhs->ts.type == BT_CHARACTER
-	&& gfc_option.warn_character_truncation)
+	&& warn_character_truncation)
     {
       if (lhs->ts.u.cl != NULL
 	    && lhs->ts.u.cl->length != NULL
@@ -9224,7 +9226,8 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	rlen = mpz_get_si (rhs->ts.u.cl->length->value.integer);
 
       if (rlen && llen && rlen > llen)
-	gfc_warning_now ("CHARACTER expression will be truncated "
+	gfc_warning_now (OPT_Wcharacter_truncation,
+			 "CHARACTER expression will be truncated "
 			 "in assignment (%d/%d) at %L",
 			 llen, rlen, &code->loc);
     }
@@ -9340,6 +9343,11 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
     }
 
   gfc_check_assign (lhs, rhs, 1);
+
+  /* Assign the 'data' of a class object to a derived type.  */
+  if (lhs->ts.type == BT_DERIVED
+      && rhs->ts.type == BT_CLASS)
+    gfc_add_data_component (rhs);
 
   /* Insert a GFC_ISYM_CAF_SEND intrinsic, when the LHS is a coindexed variable.
      Additionally, insert this code when the RHS is a CAF as we then use the
@@ -10023,7 +10031,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	      && code->expr1->value.function.isym->id == GFC_ISYM_CAF_GET)
 	    remove_caf_get_intrinsic (code->expr1);
 
-	  if (!gfc_check_vardef_context (code->expr1, false, false, false, 
+	  if (!gfc_check_vardef_context (code->expr1, false, false, false,
 					 _("assignment")))
 	    break;
 
@@ -10477,8 +10485,9 @@ resolve_charlen (gfc_charlen *cl)
      value, the length of character entities declared is zero."  */
   if (cl->length && !gfc_extract_int (cl->length, &i) && i < 0)
     {
-      if (gfc_option.warn_surprising)
-	gfc_warning_now ("CHARACTER variable at %L has negative length %d,"
+      if (warn_surprising)
+	gfc_warning_now (OPT_Wsurprising,
+			 "CHARACTER variable at %L has negative length %d,"
 			 " the length has been set to zero",
 			 &cl->length->where, i);
       gfc_replace_expr (cl->length,
@@ -10832,7 +10841,7 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 	      return false;
 	    }
 	  else if (!gfc_notify_std (GFC_STD_F2003, "Scalar object "
-				    "'%s' at %L may not be ALLOCATABLE", 
+				    "'%s' at %L may not be ALLOCATABLE",
 				    sym->name, &sym->declared_at))
 	    return false;
 	}
@@ -11163,8 +11172,8 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	      && !gfc_check_symbol_access (arg->sym->ts.u.derived)
 	      && !gfc_notify_std (GFC_STD_F2003, "'%s' is of a PRIVATE type "
 				  "and cannot be a dummy argument"
-				  " of '%s', which is PUBLIC at %L", 
-				  arg->sym->name, sym->name, 
+				  " of '%s', which is PUBLIC at %L",
+				  arg->sym->name, sym->name,
 				  &sym->declared_at))
 	    {
 	      /* Stop this message from recurring.  */
@@ -11186,8 +11195,8 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		  && !gfc_notify_std (GFC_STD_F2003, "Procedure '%s' in "
 				      "PUBLIC interface '%s' at %L "
 				      "takes dummy arguments of '%s' which "
-				      "is PRIVATE", iface->sym->name, 
-				      sym->name, &iface->sym->declared_at, 
+				      "is PRIVATE", iface->sym->name,
+				      sym->name, &iface->sym->declared_at,
 				      gfc_typename(&arg->sym->ts)))
 		{
 		  /* Stop this message from recurring.  */
@@ -11298,7 +11307,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       gfc_formal_arglist *curr_arg;
       int has_non_interop_arg = 0;
 
-      if (!verify_bind_c_sym (sym, &(sym->ts), sym->attr.in_common, 
+      if (!verify_bind_c_sym (sym, &(sym->ts), sym->attr.in_common,
 			      sym->common_block))
         {
           /* Clear these to prevent looking at them again if there was an
@@ -11493,9 +11502,10 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
 	}
 
       /* Warn if the procedure is non-scalar and not assumed shape.  */
-      if (gfc_option.warn_surprising && arg->as && arg->as->rank != 0
+      if (warn_surprising && arg->as && arg->as->rank != 0
 	  && arg->as->type != AS_ASSUMED_SHAPE)
-	gfc_warning ("Non-scalar FINAL procedure at %L should have assumed"
+	gfc_warning (OPT_Wsurprising,
+		     "Non-scalar FINAL procedure at %L should have assumed"
 		     " shape argument", &arg->declared_at);
 
       /* Check that it does not match in kind and rank with a FINAL procedure
@@ -11552,8 +11562,9 @@ error:
   /* Warn if we haven't seen a scalar finalizer procedure (but we know there
      were nodes in the list, must have been for arrays.  It is surely a good
      idea to have a scalar version there if there's something to finalize.  */
-  if (gfc_option.warn_surprising && result && !seen_scalar)
-    gfc_warning ("Only array FINAL procedures declared for derived type '%s'"
+  if (warn_surprising && result && !seen_scalar)
+    gfc_warning (OPT_Wsurprising,
+		 "Only array FINAL procedures declared for derived type %qs"
 		 " defined at %L, suggest also scalar one",
 		 derived->name, &derived->declared_at);
 
@@ -12145,7 +12156,7 @@ resolve_typebound_procedures (gfc_symbol* derived)
   for (op = 0; op != GFC_INTRINSIC_OPS; ++op)
     {
       gfc_typebound_proc* p = derived->f2k_derived->tb_op[op];
-      if (p && !resolve_typebound_intrinsic_op (derived, 
+      if (p && !resolve_typebound_intrinsic_op (derived,
 						(gfc_intrinsic_op)op, p))
 	resolve_bindings_result = false;
     }
@@ -12597,7 +12608,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	  && !gfc_check_symbol_access (c->ts.u.derived)
 	  && !gfc_notify_std (GFC_STD_F2003, "the component '%s' is a "
 			      "PRIVATE type and cannot be a component of "
-			      "'%s', which is PUBLIC at %L", c->name, 
+			      "'%s', which is PUBLIC at %L", c->name,
 			      sym->name, &sym->declared_at))
 	return false;
 
@@ -12671,8 +12682,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	    && sym != c->ts.u.derived)
 	add_dt_to_dt_list (c->ts.u.derived);
 
-      if (!gfc_resolve_array_spec (c->as, 
-				   !(c->attr.pointer || c->attr.proc_pointer 
+      if (!gfc_resolve_array_spec (c->as,
+				   !(c->attr.pointer || c->attr.proc_pointer
 				     || c->attr.allocatable)))
 	return false;
 
@@ -12721,13 +12732,13 @@ resolve_fl_derived (gfc_symbol *sym)
 	  || gen_dt->generic->sym->module != gen_dt->generic->next->sym->module)
       && !gfc_notify_std (GFC_STD_F2003, "Generic name '%s' of function "
 			  "'%s' at %L being the same name as derived "
-			  "type at %L", sym->name, 
-			  gen_dt->generic->sym == sym 
-			  ? gen_dt->generic->next->sym->name 
-			  : gen_dt->generic->sym->name, 
-			  gen_dt->generic->sym == sym 
-			  ? &gen_dt->generic->next->sym->declared_at 
-			  : &gen_dt->generic->sym->declared_at, 
+			  "type at %L", sym->name,
+			  gen_dt->generic->sym == sym
+			  ? gen_dt->generic->next->sym->name
+			  : gen_dt->generic->sym->name,
+			  gen_dt->generic->sym == sym
+			  ? &gen_dt->generic->next->sym->declared_at
+			  : &gen_dt->generic->sym->declared_at,
 			  &sym->declared_at))
     return false;
 
@@ -12782,13 +12793,13 @@ resolve_fl_namelist (gfc_symbol *sym)
 
       if (nl->sym->as && nl->sym->as->type == AS_ASSUMED_SHAPE
 	  && !gfc_notify_std (GFC_STD_F2003, "NAMELIST array object '%s' "
-			      "with assumed shape in namelist '%s' at %L", 
+			      "with assumed shape in namelist '%s' at %L",
 			      nl->sym->name, sym->name, &sym->declared_at))
 	return false;
 
       if (is_non_constant_shape_array (nl->sym)
 	  && !gfc_notify_std (GFC_STD_F2003, "NAMELIST array object '%s' "
-			      "with nonconstant shape in namelist '%s' at %L", 
+			      "with nonconstant shape in namelist '%s' at %L",
 			      nl->sym->name, sym->name, &sym->declared_at))
 	return false;
 
@@ -12797,7 +12808,7 @@ resolve_fl_namelist (gfc_symbol *sym)
 	      || !gfc_is_constant_expr (nl->sym->ts.u.cl->length))
 	  && !gfc_notify_std (GFC_STD_F2003, "NAMELIST object '%s' with "
 			      "nonconstant character length in "
-			      "namelist '%s' at %L", nl->sym->name, 
+			      "namelist '%s' at %L", nl->sym->name,
 			      sym->name, &sym->declared_at))
 	return false;
 
@@ -12817,7 +12828,7 @@ resolve_fl_namelist (gfc_symbol *sym)
 	{
 	  if (!gfc_notify_std (GFC_STD_F2003, "NAMELIST object '%s' in "
 			       "namelist '%s' at %L with ALLOCATABLE "
-			       "or POINTER components", nl->sym->name, 
+			       "or POINTER components", nl->sym->name,
 			       sym->name, &sym->declared_at))
 	    return false;
 
@@ -13387,10 +13398,10 @@ resolve_symbol (gfc_symbol *sym)
       && gfc_check_symbol_access (sym)
       && !gfc_check_symbol_access (sym->ts.u.derived)
       && !gfc_notify_std (GFC_STD_F2003, "PUBLIC %s '%s' at %L of PRIVATE "
-			  "derived type '%s'", 
-			  (sym->attr.flavor == FL_PARAMETER) 
-			  ? "parameter" : "variable", 
-			  sym->name, &sym->declared_at, 
+			  "derived type '%s'",
+			  (sym->attr.flavor == FL_PARAMETER)
+			  ? "parameter" : "variable",
+			  sym->name, &sym->declared_at,
 			  sym->ts.u.derived->name))
     return;
 
@@ -13533,15 +13544,15 @@ resolve_symbol (gfc_symbol *sym)
       if (!gfc_logical_kinds[i].c_bool && sym->attr.dummy
 	  && !gfc_notify_std (GFC_STD_GNU, "LOGICAL dummy argument '%s' at "
 			      "%L with non-C_Bool kind in BIND(C) procedure "
-			      "'%s'", sym->name, &sym->declared_at, 
+			      "'%s'", sym->name, &sym->declared_at,
 			      sym->ns->proc_name->name))
 	return;
       else if (!gfc_logical_kinds[i].c_bool
 	       && !gfc_notify_std (GFC_STD_GNU, "LOGICAL result variable "
 				   "'%s' at %L with non-C_Bool kind in "
-				   "BIND(C) procedure '%s'", sym->name, 
-				   &sym->declared_at, 
-				   sym->attr.function ? sym->name 
+				   "BIND(C) procedure '%s'", sym->name,
+				   &sym->declared_at,
+				   sym->attr.function ? sym->name
 				   : sym->ns->proc_name->name))
 	return;
     }
@@ -14744,7 +14755,7 @@ resolve_types (gfc_namespace *ns)
       unsigned letter;
       for (letter = 0; letter != GFC_LETTERS; ++letter)
 	if (ns->set_flag[letter]
-	    && !resolve_typespec_used (&ns->default_type[letter], 
+	    && !resolve_typespec_used (&ns->default_type[letter],
 				       &ns->implicit_loc[letter], NULL))
 	  return;
     }

@@ -23,6 +23,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "tm_p.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "hash-map.h"
@@ -622,7 +633,7 @@ mem_ref_in_stmt (gimple stmt)
    else return false.  */
 
 static bool
-extract_true_false_args_from_phi (basic_block dom, gimple phi,
+extract_true_false_args_from_phi (basic_block dom, gphi *phi,
 				  tree *true_arg_p, tree *false_arg_p)
 {
   basic_block bb = gimple_bb (phi);
@@ -705,7 +716,7 @@ determine_max_movement (gimple stmt, bool must_preserve_exec)
     level = superloop_at_depth (loop, 1);
   lim_data->max_loop = level;
 
-  if (gimple_code (stmt) == GIMPLE_PHI)
+  if (gphi *phi = dyn_cast <gphi *> (stmt))
     {
       use_operand_p use_p;
       unsigned min_cost = UINT_MAX;
@@ -716,7 +727,7 @@ determine_max_movement (gimple stmt, bool must_preserve_exec)
 	 evaluated.  For this reason the PHI cost (and thus the
 	 cost we remove from the loop by doing the invariant motion)
 	 is that of the cheapest PHI argument dependency chain.  */
-      FOR_EACH_PHI_ARG (use_p, stmt, iter, SSA_OP_USE)
+      FOR_EACH_PHI_ARG (use_p, phi, iter, SSA_OP_USE)
 	{
 	  val = USE_FROM_PTR (use_p);
 
@@ -746,7 +757,7 @@ determine_max_movement (gimple stmt, bool must_preserve_exec)
       min_cost = MIN (min_cost, total_cost);
       lim_data->cost += min_cost;
 
-      if (gimple_phi_num_args (stmt) > 1)
+      if (gimple_phi_num_args (phi) > 1)
 	{
 	  basic_block dom = get_immediate_dominator (CDI_DOMINATORS, bb);
 	  gimple cond;
@@ -758,7 +769,7 @@ determine_max_movement (gimple stmt, bool must_preserve_exec)
 	  /* Verify that this is an extended form of a diamond and
 	     the PHI arguments are completely controlled by the
 	     predicate in DOM.  */
-	  if (!extract_true_false_args_from_phi (dom, stmt, NULL, NULL))
+	  if (!extract_true_false_args_from_phi (dom, phi, NULL, NULL))
 	    return false;
 
 	  /* Fold in dependencies and cost of the condition.  */
@@ -875,23 +886,22 @@ nonpure_call_p (gimple stmt)
 static gimple
 rewrite_reciprocal (gimple_stmt_iterator *bsi)
 {
-  gimple stmt, stmt1, stmt2;
+  gassign *stmt, *stmt1, *stmt2;
   tree name, lhs, type;
   tree real_one;
   gimple_stmt_iterator gsi;
 
-  stmt = gsi_stmt (*bsi);
+  stmt = as_a <gassign *> (gsi_stmt (*bsi));
   lhs = gimple_assign_lhs (stmt);
   type = TREE_TYPE (lhs);
 
   real_one = build_one_cst (type);
 
   name = make_temp_ssa_name (type, NULL, "reciptmp");
-  stmt1 = gimple_build_assign_with_ops (RDIV_EXPR, name, real_one,
-					gimple_assign_rhs2 (stmt));
-
-  stmt2 = gimple_build_assign_with_ops (MULT_EXPR, lhs, name,
-					gimple_assign_rhs1 (stmt));
+  stmt1 = gimple_build_assign (name, RDIV_EXPR, real_one,
+			       gimple_assign_rhs2 (stmt));
+  stmt2 = gimple_build_assign (lhs, MULT_EXPR, name,
+			       gimple_assign_rhs1 (stmt));
 
   /* Replace division stmt with reciprocal and multiply stmts.
      The multiply stmt is not invariant, so update iterator
@@ -910,22 +920,28 @@ rewrite_reciprocal (gimple_stmt_iterator *bsi)
 static gimple
 rewrite_bittest (gimple_stmt_iterator *bsi)
 {
-  gimple stmt, use_stmt, stmt1, stmt2;
+  gassign *stmt;
+  gimple stmt1;
+  gassign *stmt2;
+  gimple use_stmt;
+  gcond *cond_stmt;
   tree lhs, name, t, a, b;
   use_operand_p use;
 
-  stmt = gsi_stmt (*bsi);
+  stmt = as_a <gassign *> (gsi_stmt (*bsi));
   lhs = gimple_assign_lhs (stmt);
 
   /* Verify that the single use of lhs is a comparison against zero.  */
   if (TREE_CODE (lhs) != SSA_NAME
-      || !single_imm_use (lhs, &use, &use_stmt)
-      || gimple_code (use_stmt) != GIMPLE_COND)
+      || !single_imm_use (lhs, &use, &use_stmt))
     return stmt;
-  if (gimple_cond_lhs (use_stmt) != lhs
-      || (gimple_cond_code (use_stmt) != NE_EXPR
-	  && gimple_cond_code (use_stmt) != EQ_EXPR)
-      || !integer_zerop (gimple_cond_rhs (use_stmt)))
+  cond_stmt = dyn_cast <gcond *> (use_stmt);
+  if (!cond_stmt)
+    return stmt;
+  if (gimple_cond_lhs (cond_stmt) != lhs
+      || (gimple_cond_code (cond_stmt) != NE_EXPR
+	  && gimple_cond_code (cond_stmt) != EQ_EXPR)
+      || !integer_zerop (gimple_cond_rhs (cond_stmt)))
     return stmt;
 
   /* Get at the operands of the shift.  The rhs is TMP1 & 1.  */
@@ -973,7 +989,9 @@ rewrite_bittest (gimple_stmt_iterator *bsi)
       /* Replace the SSA_NAME we compare against zero.  Adjust
 	 the type of zero accordingly.  */
       SET_USE (use, name);
-      gimple_cond_set_rhs (use_stmt, build_int_cst_type (TREE_TYPE (name), 0));
+      gimple_cond_set_rhs (cond_stmt,
+			   build_int_cst_type (TREE_TYPE (name),
+					       0));
 
       /* Don't use gsi_replace here, none of the new assignments sets
 	 the variable originally set in stmt.  Move bsi to stmt1, and
@@ -1157,18 +1175,16 @@ void
 move_computations_dom_walker::before_dom_children (basic_block bb)
 {
   struct loop *level;
-  gimple_stmt_iterator bsi;
-  gimple stmt;
   unsigned cost = 0;
   struct lim_aux_data *lim_data;
 
   if (!loop_outer (bb->loop_father))
     return;
 
-  for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); )
+  for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi); )
     {
-      gimple new_stmt;
-      stmt = gsi_stmt (bsi);
+      gassign *new_stmt;
+      gphi *stmt = bsi.phi ();
 
       lim_data = get_lim_data (stmt);
       if (lim_data == NULL)
@@ -1198,9 +1214,8 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
       if (gimple_phi_num_args (stmt) == 1)
 	{
 	  tree arg = PHI_ARG_DEF (stmt, 0);
-	  new_stmt = gimple_build_assign_with_ops (TREE_CODE (arg),
-						   gimple_phi_result (stmt),
-						   arg, NULL_TREE);
+	  new_stmt = gimple_build_assign (gimple_phi_result (stmt),
+					  TREE_CODE (arg), arg);
 	}
       else
 	{
@@ -1213,20 +1228,19 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
 	  gcc_assert (arg0 && arg1);
 	  t = build2 (gimple_cond_code (cond), boolean_type_node,
 		      gimple_cond_lhs (cond), gimple_cond_rhs (cond));
-	  new_stmt = gimple_build_assign_with_ops (COND_EXPR,
-						   gimple_phi_result (stmt),
-						   t, arg0, arg1);
+	  new_stmt = gimple_build_assign (gimple_phi_result (stmt),
+					  COND_EXPR, t, arg0, arg1);
 	  todo_ |= TODO_cleanup_cfg;
 	}
       gsi_insert_on_edge (loop_preheader_edge (level), new_stmt);
       remove_phi_node (&bsi, false);
     }
 
-  for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); )
+  for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi); )
     {
       edge e;
 
-      stmt = gsi_stmt (bsi);
+      gimple stmt = gsi_stmt (bsi);
 
       lim_data = get_lim_data (stmt);
       if (lim_data == NULL)
@@ -1264,11 +1278,11 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
 	{
 	  /* The new VUSE is the one from the virtual PHI in the loop
 	     header or the one already present.  */
-	  gimple_stmt_iterator gsi2;
+	  gphi_iterator gsi2;
 	  for (gsi2 = gsi_start_phis (e->dest);
 	       !gsi_end_p (gsi2); gsi_next (&gsi2))
 	    {
-	      gimple phi = gsi_stmt (gsi2);
+	      gphi *phi = gsi2.phi ();
 	      if (virtual_operand_p (gimple_phi_result (phi)))
 		{
 		  gimple_set_vuse (stmt, PHI_ARG_DEF_FROM_EDGE (phi, e));
@@ -1875,9 +1889,10 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
   }
 
   if (!loop_has_only_one_exit)
-    for (gsi = gsi_start_phis (old_dest); !gsi_end_p (gsi); gsi_next (&gsi))
+    for (gphi_iterator gpi = gsi_start_phis (old_dest);
+	 !gsi_end_p (gpi); gsi_next (&gpi))
       {
-	gimple phi = gsi_stmt (gsi);
+	gphi *phi = gpi.phi ();
 	unsigned i;
 
 	for (i = 0; i < gimple_phi_num_args (phi); i++)
@@ -1939,7 +1954,7 @@ execute_sm (struct loop *loop, vec<edge> exits, mem_ref_p ref)
 {
   tree tmp_var, store_flag = NULL_TREE;
   unsigned i;
-  gimple load;
+  gassign *load;
   struct fmt_data fmt_data;
   edge ex;
   struct lim_aux_data *lim_data;
@@ -1996,7 +2011,7 @@ execute_sm (struct loop *loop, vec<edge> exits, mem_ref_p ref)
   FOR_EACH_VEC_ELT (exits, i, ex)
     if (!multi_threaded_model_p)
       {
-	gimple store;
+	gassign *store;
 	store = gimple_build_assign (unshare_expr (ref->mem.ref), tmp_var);
 	gsi_insert_on_edge (ex, store);
       }

@@ -3831,6 +3831,25 @@ AC_DEFUN([GLIBCXX_CHECK_SDT_H], [
   AC_MSG_RESULT($glibcxx_cv_sys_sdt_h)
 ])
 
+dnl
+dnl Check if the user wants the new C++11-conforming ABI.
+dnl
+dnl --disable-libstdcxx-cxx11-abi will use old ABI for all types.
+dnl
+dnl Defines:
+dnl  _GLIBCXX_USE_ABI_TAG (always defined, either to 1 or 0)
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_CXX11_ABI], [
+  AC_ARG_ENABLE([libstdcxx-cxx11-abi],
+    AC_HELP_STRING([--disable-libstdcxx-cxx11-abi],
+		   [disable the C++11-conforming ABI]),,
+		   [enable_libstdcxx_cxx11_abi=yes])
+  if test x"$enable_libstdcxx_cxx11_abi" != xyes; then
+    AC_MSG_NOTICE([C++11-conforming ABI is disabled])
+  fi
+  GLIBCXX_CONDITIONAL(ENABLE_CXX11_ABI, test $enable_libstdcxx_cxx11_abi = yes)
+])
+
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])
 m4_include([../config/tls.m4])

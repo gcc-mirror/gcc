@@ -398,22 +398,19 @@ pop_type (tree type)
 
 /* Return true if two type assertions are equal.  */
 
-static int
-type_assertion_eq (const void * k1_p, const void * k2_p)
+bool
+type_assertion_hasher::equal (type_assertion *k1, type_assertion *k2)
 {
-  const type_assertion k1 = *(const type_assertion *)k1_p;
-  const type_assertion k2 = *(const type_assertion *)k2_p;
-  return (k1.assertion_code == k2.assertion_code
-          && k1.op1 == k2.op1
-	  && k1.op2 == k2.op2);
+  return (k1->assertion_code == k2->assertion_code
+          && k1->op1 == k2->op1
+	  && k1->op2 == k2->op2);
 }
 
 /* Hash a type assertion.  */
 
-static hashval_t
-type_assertion_hash (const void *p)
+hashval_t
+type_assertion_hasher::hash (type_assertion *k_p)
 {
-  const type_assertion *k_p = (const type_assertion *) p;
   hashval_t hash = iterative_hash (&k_p->assertion_code, sizeof
 				   k_p->assertion_code, 0);
 
@@ -449,15 +446,14 @@ type_assertion_hash (const void *p)
 void
 add_type_assertion (tree klass, int assertion_code, tree op1, tree op2)
 {
-  htab_t assertions_htab;
+  hash_table<type_assertion_hasher> *assertions_htab;
   type_assertion as;
-  void **as_pp;
+  type_assertion **as_pp;
 
   assertions_htab = TYPE_ASSERTIONS (klass);
   if (assertions_htab == NULL)
     {
-      assertions_htab = htab_create_ggc (7, type_assertion_hash, 
-					 type_assertion_eq, NULL);
+      assertions_htab = hash_table<type_assertion_hasher>::create_ggc (7);
       TYPE_ASSERTIONS (current_class) = assertions_htab;
     }
 
@@ -465,14 +461,14 @@ add_type_assertion (tree klass, int assertion_code, tree op1, tree op2)
   as.op1 = op1;
   as.op2 = op2;
 
-  as_pp = htab_find_slot (assertions_htab, &as, INSERT);
+  as_pp = assertions_htab->find_slot (&as, INSERT);
 
   /* Don't add the same assertion twice.  */
   if (*as_pp)
     return;
 
   *as_pp = ggc_alloc<type_assertion> ();
-  **(type_assertion **)as_pp = as;
+  **as_pp = as;
 }
 
 
@@ -1946,10 +1942,9 @@ pop_arguments (tree method_type)
 /* Attach to PTR (a block) the declaration found in ENTRY. */
 
 int
-attach_init_test_initialization_flags (void **entry, void *ptr)
+attach_init_test_initialization_flags (treetreehash_entry **slot, tree block)
 {
-  tree block = (tree)ptr;
-  struct treetreehash_entry *ite = (struct treetreehash_entry *) *entry;
+  treetreehash_entry *ite = *slot;
 
   if (block != error_mark_node)
     {

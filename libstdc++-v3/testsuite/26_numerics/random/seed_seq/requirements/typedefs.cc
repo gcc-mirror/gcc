@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-require-cstdint "" }
 //
 // 2008-12-05  Edward M. Smith-Rowland <3dw4rd@verizon.net>

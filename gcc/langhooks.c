@@ -37,6 +37,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks-def.h"
 #include "diagnostic.h"
 #include "tree-diagnostic.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "timevar.h"
 #include "output.h"
@@ -660,7 +671,7 @@ lhd_begin_section (const char *name)
     saved_section = text_section;
 
   /* Create a new section and switch to it.  */
-  section = get_section (name, SECTION_DEBUG, NULL);
+  section = get_section (name, SECTION_DEBUG | SECTION_EXCLUDE, NULL);
   switch_to_section (section);
 }
 
@@ -697,4 +708,21 @@ lhd_enum_underlying_base_type (const_tree enum_type)
 {
   return lang_hooks.types.type_for_size (TYPE_PRECISION (enum_type),
 					 TYPE_UNSIGNED (enum_type));
+}
+
+/* Returns true if the current lang_hooks represents the GNU C frontend.  */
+
+bool
+lang_GNU_C (void)
+{
+  return (strncmp (lang_hooks.name, "GNU C", 5) == 0
+	  && (lang_hooks.name[5] == '\0' || ISDIGIT (lang_hooks.name[5])));
+}
+
+/* Returns true if the current lang_hooks represents the GNU C++ frontend.  */
+
+bool
+lang_GNU_CXX (void)
+{
+  return strncmp (lang_hooks.name, "GNU C++", 7) == 0;
 }

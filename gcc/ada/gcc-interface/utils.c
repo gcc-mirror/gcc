@@ -42,6 +42,17 @@
 #include "target.h"
 #include "common/common-target.h"
 #include "langhooks.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "diagnostic.h"
 #include "timevar.h"
@@ -222,25 +233,28 @@ static GTY(()) vec<tree, va_gc> *global_renaming_pointers;
 /* A chain of unused BLOCK nodes. */
 static GTY((deletable)) tree free_block_chain;
 
-static int pad_type_hash_marked_p (const void *p);
-static hashval_t pad_type_hash_hash (const void *p);
-static int pad_type_hash_eq (const void *p1, const void *p2);
-
 /* A hash table of padded types.  It is modelled on the generic type
    hash table in tree.c, which must thus be used as a reference.  */
-struct GTY(()) pad_type_hash {
+
+struct GTY((for_user)) pad_type_hash {
   unsigned long hash;
   tree type;
 };
 
-static GTY ((if_marked ("pad_type_hash_marked_p"),
-	     param_is (struct pad_type_hash)))
-  htab_t pad_type_hash_table;
+struct pad_type_hasher : ggc_cache_hasher<pad_type_hash *>
+{
+  static inline hashval_t hash (pad_type_hash *t) { return t->hash; }
+  static bool equal (pad_type_hash *a, pad_type_hash *b);
+  static void handle_cache_entry (pad_type_hash *&);
+};
+
+static GTY ((cache))
+  hash_table<pad_type_hasher> *pad_type_hash_table;
 
 static tree merge_sizes (tree, tree, tree, bool, bool);
 static tree compute_related_constant (tree, tree);
 static tree split_plus (tree, tree *);
-static tree float_type_for_precision (int, enum machine_mode);
+static tree float_type_for_precision (int, machine_mode);
 static tree convert_to_fat_pointer (tree, tree);
 static unsigned int scale_by_factor_of (tree, unsigned int);
 static bool potential_alignment_gap (tree, tree, tree);
@@ -283,8 +297,7 @@ init_gnat_utils (void)
   dummy_node_table = ggc_cleared_vec_alloc<tree> (max_gnat_nodes);
 
   /* Initialize the hash table of padded types.  */
-  pad_type_hash_table
-    = htab_create_ggc (512, pad_type_hash_hash, pad_type_hash_eq, 0);
+  pad_type_hash_table = hash_table<pad_type_hasher>::create_ggc (512);
 }
 
 /* Destroy data structures of the utils.c module.  */
@@ -301,7 +314,7 @@ destroy_gnat_utils (void)
   dummy_node_table = NULL;
 
   /* Destroy the hash table of padded types.  */
-  htab_delete (pad_type_hash_table);
+  pad_type_hash_table->empty ();
   pad_type_hash_table = NULL;
 
   /* Invalidate the global renaming pointers.   */
@@ -1117,7 +1130,7 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 	 may need to return the thin pointer.  */
       if (TYPE_FAT_POINTER_P (type) && size < POINTER_SIZE * 2)
 	{
-	  enum machine_mode p_mode = mode_for_size (size, MODE_INT, 0);
+	  machine_mode p_mode = mode_for_size (size, MODE_INT, 0);
 	  if (!targetm.valid_pointer_mode (p_mode))
 	    p_mode = ptr_mode;
 	  return
@@ -1144,29 +1157,23 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 
 /* See if the data pointed to by the hash table slot is marked.  */
 
-static int
-pad_type_hash_marked_p (const void *p)
+void
+pad_type_hasher::handle_cache_entry (pad_type_hash *&t)
 {
-  const_tree const type = ((const struct pad_type_hash *) p)->type;
-
-  return ggc_marked_p (type);
+  extern void gt_ggc_mx (pad_type_hash *&);
+  if (t == HTAB_EMPTY_ENTRY || t == HTAB_DELETED_ENTRY)
+    return;
+  else if (ggc_marked_p (t->type))
+    gt_ggc_mx (t);
+  else
+    t = static_cast<pad_type_hash *> (HTAB_DELETED_ENTRY);
 }
 
-/* Return the cached hash value.  */
+/* Return true iff the padded types are equivalent.  */
 
-static hashval_t
-pad_type_hash_hash (const void *p)
+bool
+pad_type_hasher::equal (pad_type_hash *t1, pad_type_hash *t2)
 {
-  return ((const struct pad_type_hash *) p)->hash;
-}
-
-/* Return 1 iff the padded types are equivalent.  */
-
-static int
-pad_type_hash_eq (const void *p1, const void *p2)
-{
-  const struct pad_type_hash *const t1 = (const struct pad_type_hash *) p1;
-  const struct pad_type_hash *const t2 = (const struct pad_type_hash *) p2;
   tree type1, type2;
 
   if (t1->hash != t2->hash)
@@ -1193,7 +1200,6 @@ lookup_and_insert_pad_type (tree type)
 {
   hashval_t hashcode;
   struct pad_type_hash in, *h;
-  void **loc;
 
   hashcode
     = iterative_hash_object (TYPE_HASH (TREE_TYPE (TYPE_FIELDS (type))), 0);
@@ -1203,16 +1209,14 @@ lookup_and_insert_pad_type (tree type)
 
   in.hash = hashcode;
   in.type = type;
-  h = (struct pad_type_hash *)
-	htab_find_with_hash (pad_type_hash_table, &in, hashcode);
+  h = pad_type_hash_table->find_with_hash (&in, hashcode);
   if (h)
     return h->type;
 
   h = ggc_alloc<pad_type_hash> ();
   h->hash = hashcode;
   h->type = type;
-  loc = htab_find_slot_with_hash (pad_type_hash_table, h, hashcode, INSERT);
-  *loc = (void *)h;
+  *pad_type_hash_table->find_slot_with_hash (h, hashcode, INSERT) = h;
   return NULL_TREE;
 }
 
@@ -2309,25 +2313,30 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
 		   bool static_flag, bool const_decl_allowed_p,
 		   struct attrib *attr_list, Node_Id gnat_node)
 {
-  /* Whether the initializer is a constant initializer.  At the global level
-     or for an external object or an object to be allocated in static memory,
-     we check that it is a valid constant expression for use in initializing
-     a static variable; otherwise, we only check that it is constant.  */
-  bool init_const
-    = (var_init != 0
+  /* Whether the object has static storage duration, either explicitly or by
+     virtue of being declared at the global level.  */
+  const bool static_storage = static_flag || global_bindings_p ();
+
+  /* Whether the initializer is constant: for an external object or an object
+     with static storage duration, we check that the initializer is a valid
+     constant expression for initializing a static variable; otherwise, we
+     only check that it is constant.  */
+  const bool init_const
+    = (var_init
        && gnat_types_compatible_p (type, TREE_TYPE (var_init))
-       && (global_bindings_p () || extern_flag || static_flag
-	   ? initializer_constant_valid_p (var_init, TREE_TYPE (var_init)) != 0
+       && (extern_flag || static_storage
+	   ? initializer_constant_valid_p (var_init, TREE_TYPE (var_init))
+	     != NULL_TREE
 	   : TREE_CONSTANT (var_init)));
 
   /* Whether we will make TREE_CONSTANT the DECL we produce here, in which
-     case the initializer may be used in-lieu of the DECL node (as done in
+     case the initializer may be used in lieu of the DECL node (as done in
      Identifier_to_gnu).  This is useful to prevent the need of elaboration
-     code when an identifier for which such a decl is made is in turn used as
-     an initializer.  We used to rely on CONST vs VAR_DECL for this purpose,
-     but extra constraints apply to this choice (see below) and are not
-     relevant to the distinction we wish to make. */
-  bool constant_p = const_flag && init_const;
+     code when an identifier for which such a DECL is made is in turn used
+     as an initializer.  We used to rely on CONST_DECL vs VAR_DECL for this,
+     but extra constraints apply to this choice (see below) and they are not
+     relevant to the distinction we wish to make.  */
+  const bool constant_p = const_flag && init_const;
 
   /* The actual DECL node.  CONST_DECL was initially intended for enumerals
      and may be used for scalars in general but not for aggregates.  */
@@ -2347,19 +2356,24 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
       || (type_annotate_only && var_init && !TREE_CONSTANT (var_init)))
     var_init = NULL_TREE;
 
-  /* At the global level, an initializer requiring code to be generated
-     produces elaboration statements.  Check that such statements are allowed,
-     that is, not violating a No_Elaboration_Code restriction.  */
-  if (global_bindings_p () && var_init != 0 && !init_const)
+  /* At the global level, a non-constant initializer generates elaboration
+     statements.  Check that such statements are allowed, that is to say,
+     not violating a No_Elaboration_Code restriction.  */
+  if (var_init && !init_const && global_bindings_p ())
     Check_Elaboration_Code_Allowed (gnat_node);
 
   DECL_INITIAL  (var_decl) = var_init;
   TREE_READONLY (var_decl) = const_flag;
   DECL_EXTERNAL (var_decl) = extern_flag;
-  TREE_PUBLIC   (var_decl) = public_flag || extern_flag;
   TREE_CONSTANT (var_decl) = constant_p;
-  TREE_THIS_VOLATILE (var_decl) = TREE_SIDE_EFFECTS (var_decl)
-    = TYPE_VOLATILE (type);
+
+  /* We need to allocate static storage for an object with static storage
+     duration if it isn't external.  */
+  TREE_STATIC (var_decl) = !extern_flag && static_storage;
+
+  /* The object is public if it is external or if it is declared public
+     and has static storage duration.  */
+  TREE_PUBLIC (var_decl) = extern_flag || (public_flag && static_storage);
 
   /* Ada doesn't feature Fortran-like COMMON variables so we shouldn't
      try to fiddle with DECL_COMMON.  However, on platforms that don't
@@ -2371,12 +2385,6 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
       && !have_global_bss_p ())
     DECL_COMMON (var_decl) = 1;
 
-  /* At the global binding level, we need to allocate static storage for the
-     variable if it isn't external.  Otherwise, we allocate automatic storage
-     unless requested not to.  */
-  TREE_STATIC (var_decl)
-    = !extern_flag && (static_flag || global_bindings_p ());
-
   /* For an external constant whose initializer is not absolute, do not emit
      debug info.  In DWARF this would mean a global relocation in a read-only
      section which runs afoul of the PE-COFF run-time relocation mechanism.  */
@@ -2384,8 +2392,11 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
       && constant_p
       && var_init
       && initializer_constant_valid_p (var_init, TREE_TYPE (var_init))
-	   != null_pointer_node)
+	 != null_pointer_node)
     DECL_IGNORED_P (var_decl) = 1;
+
+  if (TYPE_VOLATILE (type))
+    TREE_SIDE_EFFECTS (var_decl) = TREE_THIS_VOLATILE (var_decl) = 1;
 
   if (TREE_SIDE_EFFECTS (var_decl))
     TREE_ADDRESSABLE (var_decl) = 1;
@@ -3009,18 +3020,6 @@ create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
 				 TREE_TYPE (subprog_type));
   DECL_ARGUMENTS (subprog_decl) = param_decl_list;
 
-  /* If this is a non-inline function nested inside an inlined external
-     function, we cannot honor both requests without cloning the nested
-     function in the current unit since it is private to the other unit.
-     We could inline the nested function as well but it's probably better
-     to err on the side of too little inlining.  */
-  if (inline_status != is_enabled
-      && !public_flag
-      && current_function_decl
-      && DECL_DECLARED_INLINE_P (current_function_decl)
-      && DECL_EXTERNAL (current_function_decl))
-    DECL_DECLARED_INLINE_P (current_function_decl) = 0;
-
   DECL_ARTIFICIAL (subprog_decl) = artificial_flag;
   DECL_EXTERNAL (subprog_decl) = extern_flag;
 
@@ -3204,7 +3203,7 @@ gnat_type_for_size (unsigned precision, int unsignedp)
 /* Likewise for floating-point types.  */
 
 static tree
-float_type_for_precision (int precision, enum machine_mode mode)
+float_type_for_precision (int precision, machine_mode mode)
 {
   tree t;
   char type_name[20];
@@ -3230,7 +3229,7 @@ float_type_for_precision (int precision, enum machine_mode mode)
    an unsigned type; otherwise a signed type is returned.  */
 
 tree
-gnat_type_for_mode (enum machine_mode mode, int unsignedp)
+gnat_type_for_mode (machine_mode mode, int unsignedp)
 {
   if (mode == BLKmode)
     return NULL_TREE;
@@ -3249,7 +3248,7 @@ gnat_type_for_mode (enum machine_mode mode, int unsignedp)
 
   if (VECTOR_MODE_P (mode))
     {
-      enum machine_mode inner_mode = GET_MODE_INNER (mode);
+      machine_mode inner_mode = GET_MODE_INNER (mode);
       tree inner_type = gnat_type_for_mode (inner_mode, unsignedp);
       if (inner_type)
 	return build_vector_type_for_mode (inner_type, mode);
@@ -3562,7 +3561,7 @@ build_template (tree template_type, tree array_type, tree expr)
 static bool
 type_for_vector_element_p (tree type)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (!INTEGRAL_TYPE_P (type)
       && !SCALAR_FLOAT_TYPE_P (type)
@@ -3861,8 +3860,7 @@ convert_to_fat_pointer (tree type, tree expr)
 	{
 	  /* The template type can still be dummy at this point so we build an
 	     empty constructor.  The middle-end will fill it in with zeros.  */
-	  t = build_constructor (template_type,
-				 NULL);
+	  t = build_constructor (template_type, NULL);
 	  TREE_CONSTANT (t) = TREE_STATIC (t) = 1;
 	  null_bounds = build_unary_op (ADDR_EXPR, NULL_TREE, t);
 	  SET_TYPE_NULL_BOUNDS (ptr_template_type, null_bounds);

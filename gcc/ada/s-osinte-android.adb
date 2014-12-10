@@ -39,7 +39,7 @@ pragma Polling (Off);
 --  that are needed by children of System.
 
 with Interfaces.C;            use Interfaces.C;
-with Interfaces.C.Extentions; use Interfaces.C.Extentions;
+with Interfaces.C.Extensions; use Interfaces.C.Extensions;
 
 package body System.OS_Interface is
 

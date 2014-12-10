@@ -15,7 +15,6 @@ be the value @code{1}).
 
 */
 
-#define _POSIX_SOURCE
 #include <ansidecl.h>
 /* Including <sys/types.h> seems to be needed by ISC. */
 #include <sys/types.h>

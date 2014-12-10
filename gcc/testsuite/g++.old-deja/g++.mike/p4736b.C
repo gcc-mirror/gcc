@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-options "-O2" }
 // prms-id: 4736
 
 class Rep {

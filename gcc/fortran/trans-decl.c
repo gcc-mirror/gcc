@@ -36,11 +36,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"	/* For internal_error.  */
 #include "toplev.h"	/* For announce_function.  */
 #include "target.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "flags.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "debug.h"
-#include "hash-set.h"
 #include "constructor.h"
 #include "trans.h"
 #include "trans-types.h"
@@ -148,6 +157,7 @@ tree gfor_fndecl_caf_unlock;
 tree gfor_fndecl_co_broadcast;
 tree gfor_fndecl_co_max;
 tree gfor_fndecl_co_min;
+tree gfor_fndecl_co_reduce;
 tree gfor_fndecl_co_sum;
 
 
@@ -1425,7 +1435,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     }
 
   if (sym->attr.intrinsic)
-    internal_error ("intrinsic variable which isn't a procedure");
+    gfc_internal_error ("intrinsic variable which isn't a procedure");
 
   /* Create string length decl first so that they can be used in the
      type declaration.  */
@@ -3440,6 +3450,14 @@ gfc_build_builtin_function_decls (void)
 	void_type_node, 6, pvoid_type_node, integer_type_node,
 	pint_type, pchar_type_node, integer_type_node, integer_type_node);
 
+      gfor_fndecl_co_reduce = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_co_reduce")), "W.R.WW",
+	void_type_node, 8, pvoid_type_node,
+        build_pointer_type (build_varargs_function_type_list (void_type_node,
+							      NULL_TREE)),
+	integer_type_node, integer_type_node, pint_type, pchar_type_node,
+	integer_type_node, integer_type_node);
+
       gfor_fndecl_co_sum = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_co_sum")), "W.WW",
 	void_type_node, 5, pvoid_type_node, integer_type_node,
@@ -3777,7 +3795,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	    }
 	  /* TODO: move to the appropriate place in resolve.c.  */
 	  if (warn_return_type && el == NULL)
-	    gfc_warning ("Return value of function '%s' at %L not set",
+	    gfc_warning (OPT_Wreturn_type,
+			 "Return value of function %qs at %L not set",
 			 proc_sym->name, &proc_sym->declared_at);
 	}
       else if (proc_sym->as)
@@ -4228,72 +4247,62 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
   gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock), NULL_TREE);
 }
 
-static GTY ((param_is (struct module_htab_entry))) htab_t module_htab;
-
-/* Hash and equality functions for module_htab.  */
-
-static hashval_t
-module_htab_do_hash (const void *x)
+struct module_hasher : ggc_hasher<module_htab_entry *>
 {
-  return htab_hash_string (((const struct module_htab_entry *)x)->name);
-}
+  typedef const char *compare_type;
 
-static int
-module_htab_eq (const void *x1, const void *x2)
-{
-  return strcmp ((((const struct module_htab_entry *)x1)->name),
-		 (const char *)x2) == 0;
-}
+  static hashval_t hash (module_htab_entry *s) { return htab_hash_string (s); }
+  static bool
+  equal (module_htab_entry *a, const char *b)
+  {
+    return !strcmp (a->name, b);
+  }
+};
+
+static GTY (()) hash_table<module_hasher> *module_htab;
 
 /* Hash and equality functions for module_htab's decls.  */
 
-static hashval_t
-module_htab_decls_hash (const void *x)
+hashval_t
+module_decl_hasher::hash (tree t)
 {
-  const_tree t = (const_tree) x;
   const_tree n = DECL_NAME (t);
   if (n == NULL_TREE)
     n = TYPE_NAME (TREE_TYPE (t));
   return htab_hash_string (IDENTIFIER_POINTER (n));
 }
 
-static int
-module_htab_decls_eq (const void *x1, const void *x2)
+bool
+module_decl_hasher::equal (tree t1, const char *x2)
 {
-  const_tree t1 = (const_tree) x1;
   const_tree n1 = DECL_NAME (t1);
   if (n1 == NULL_TREE)
     n1 = TYPE_NAME (TREE_TYPE (t1));
-  return strcmp (IDENTIFIER_POINTER (n1), (const char *) x2) == 0;
+  return strcmp (IDENTIFIER_POINTER (n1), x2) == 0;
 }
 
 struct module_htab_entry *
 gfc_find_module (const char *name)
 {
-  void **slot;
-
   if (! module_htab)
-    module_htab = htab_create_ggc (10, module_htab_do_hash,
-				   module_htab_eq, NULL);
+    module_htab = hash_table<module_hasher>::create_ggc (10);
 
-  slot = htab_find_slot_with_hash (module_htab, name,
-				   htab_hash_string (name), INSERT);
+  module_htab_entry **slot
+    = module_htab->find_slot_with_hash (name, htab_hash_string (name), INSERT);
   if (*slot == NULL)
     {
       module_htab_entry *entry = ggc_cleared_alloc<module_htab_entry> ();
 
       entry->name = gfc_get_string (name);
-      entry->decls = htab_create_ggc (10, module_htab_decls_hash,
-				      module_htab_decls_eq, NULL);
-      *slot = (void *) entry;
+      entry->decls = hash_table<module_decl_hasher>::create_ggc (10);
+      *slot = entry;
     }
-  return (struct module_htab_entry *) *slot;
+  return *slot;
 }
 
 void
 gfc_module_add_decl (struct module_htab_entry *entry, tree decl)
 {
-  void **slot;
   const char *name;
 
   if (DECL_NAME (decl))
@@ -4303,10 +4312,11 @@ gfc_module_add_decl (struct module_htab_entry *entry, tree decl)
       gcc_assert (TREE_CODE (decl) == TYPE_DECL);
       name = IDENTIFIER_POINTER (TYPE_NAME (TREE_TYPE (decl)));
     }
-  slot = htab_find_slot_with_hash (entry->decls, name,
-				   htab_hash_string (name), INSERT);
+  tree *slot
+    = entry->decls->find_slot_with_hash (name, htab_hash_string (name),
+					 INSERT);
   if (*slot == NULL)
-    *slot = (void *) decl;
+    *slot = decl;
 }
 
 static struct module_htab_entry *cur_module;
@@ -4409,8 +4419,8 @@ gfc_create_module_variable (gfc_symbol * sym)
     return;
 
   if (sym->backend_decl && !sym->attr.vtab && !sym->attr.target)
-    internal_error ("backend decl for module variable %s already exists",
-		    sym->name);
+    gfc_internal_error ("backend decl for module variable %qs already exists",
+			sym->name);
 
   if (sym->module && !sym->attr.result && !sym->attr.dummy
       && (sym->attr.access == ACCESS_UNKNOWN
@@ -4421,7 +4431,8 @@ gfc_create_module_variable (gfc_symbol * sym)
 
   if (warn_unused_variable && !sym->attr.referenced
       && sym->attr.access == ACCESS_PRIVATE)
-    gfc_warning ("Unused PRIVATE module variable '%s' declared at %L",
+    gfc_warning (OPT_Wunused_value,
+		 "Unused PRIVATE module variable %qs declared at %L",
 		 sym->name, &sym->declared_at);
 
   /* We always want module variables to be created.  */
@@ -4485,14 +4496,13 @@ gfc_trans_use_stmts (gfc_namespace * ns)
       for (rent = use_stmt->rename; rent; rent = rent->next)
 	{
 	  tree decl, local_name;
-	  void **slot;
 
 	  if (rent->op != INTRINSIC_NONE)
 	    continue;
 
-	  slot = htab_find_slot_with_hash (entry->decls, rent->use_name,
-					   htab_hash_string (rent->use_name),
-					   INSERT);
+						 hashval_t hash = htab_hash_string (rent->use_name);
+	  tree *slot = entry->decls->find_slot_with_hash (rent->use_name, hash,
+							  INSERT);
 	  if (*slot == NULL)
 	    {
 	      gfc_symtree *st;
@@ -4547,7 +4557,7 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 	      else
 		{
 		  *slot = error_mark_node;
-		  htab_clear_slot (entry->decls, slot);
+		  entry->decls->clear_slot (slot);
 		  continue;
 		}
 	      *slot = decl;
@@ -4981,26 +4991,28 @@ generate_local_decl (gfc_symbol * sym)
       else if (sym->attr.dummy && !sym->attr.in_namelist)
 	{
 	  /* INTENT(out) dummy arguments are likely meant to be set.  */
-	  if (gfc_option.warn_unused_dummy_argument
-	      && sym->attr.intent == INTENT_OUT)
+	  if (warn_unused_dummy_argument && sym->attr.intent == INTENT_OUT)
 	    {
 	      if (sym->ts.type != BT_DERIVED)
-		gfc_warning ("Dummy argument '%s' at %L was declared "
+		gfc_warning (OPT_Wunused_dummy_argument,
+			     "Dummy argument %qs at %L was declared "
 			     "INTENT(OUT) but was not set",  sym->name,
 			     &sym->declared_at);
 	      else if (!gfc_has_default_initializer (sym->ts.u.derived)
 		       && !sym->ts.u.derived->attr.zero_comp)
-		gfc_warning ("Derived-type dummy argument '%s' at %L was "
+		gfc_warning (OPT_Wunused_dummy_argument,
+			     "Derived-type dummy argument %qs at %L was "
 			     "declared INTENT(OUT) but was not set and "
 			     "does not have a default initializer",
 			     sym->name, &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
 		TREE_NO_WARNING(sym->backend_decl) = 1;
 	    }
-	  else if (gfc_option.warn_unused_dummy_argument)
+	  else if (warn_unused_dummy_argument)
 	    {
-	      gfc_warning ("Unused dummy argument '%s' at %L", sym->name,
-			 &sym->declared_at);
+	      gfc_warning (OPT_Wunused_dummy_argument,
+			   "Unused dummy argument %qs at %L", sym->name,
+			   &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
 		TREE_NO_WARNING(sym->backend_decl) = 1;
 	    }
@@ -5013,7 +5025,8 @@ generate_local_decl (gfc_symbol * sym)
 	{
 	  if (sym->attr.use_only)
 	    {
-	      gfc_warning ("Unused module variable '%s' which has been "
+	      gfc_warning (OPT_Wunused_variable,
+			   "Unused module variable %qs which has been "
 			   "explicitly imported at %L", sym->name,
 			   &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
@@ -5021,7 +5034,8 @@ generate_local_decl (gfc_symbol * sym)
 	    }
 	  else if (!sym->attr.use_assoc)
 	    {
-	      gfc_warning ("Unused variable '%s' declared at %L",
+	      gfc_warning (OPT_Wunused_variable,
+			   "Unused variable %qs declared at %L",
 			   sym->name, &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
 		TREE_NO_WARNING(sym->backend_decl) = 1;
@@ -5069,10 +5083,12 @@ generate_local_decl (gfc_symbol * sym)
            && !sym->attr.referenced)
 	{
            if (!sym->attr.use_assoc)
-	     gfc_warning ("Unused parameter '%s' declared at %L", sym->name,
+	     gfc_warning (OPT_Wunused_parameter,
+			  "Unused parameter %qs declared at %L", sym->name,
 			  &sym->declared_at);
 	   else if (sym->attr.use_only)
-	     gfc_warning ("Unused parameter '%s' which has been explicitly "
+	     gfc_warning (OPT_Wunused_parameter,
+			  "Unused parameter %qs which has been explicitly "
 			  "imported at %L", sym->name, &sym->declared_at);
 	}
     }
@@ -5087,7 +5103,8 @@ generate_local_decl (gfc_symbol * sym)
 	  && !sym->attr.use_assoc
 	  && sym->attr.if_source != IFSRC_IFBODY)
 	{
-	  gfc_warning ("Return value '%s' of function '%s' declared at "
+	  gfc_warning (OPT_Wreturn_type,
+		       "Return value %qs of function %qs declared at "
 		       "%L not set", sym->result->name, sym->name,
 		        &sym->result->declared_at);
 
@@ -5113,8 +5130,9 @@ generate_local_decl (gfc_symbol * sym)
 	{
 	  if (!sym->attr.referenced)
 	    {
-	      if (gfc_option.warn_unused_dummy_argument)
-		gfc_warning ("Unused dummy argument '%s' at %L", sym->name,
+	      if (warn_unused_dummy_argument)
+		gfc_warning (OPT_Wunused_dummy_argument,
+			     "Unused dummy argument %qs at %L", sym->name,
 			     &sym->declared_at);
 	    }
 
@@ -5794,7 +5812,8 @@ gfc_generate_function_code (gfc_namespace * ns)
 	{
 	  /* TODO: move to the appropriate place in resolve.c.  */
 	  if (warn_return_type && sym == sym->result)
-	    gfc_warning ("Return value of function '%s' at %L not set",
+	    gfc_warning (OPT_Wreturn_type,
+			 "Return value of function %qs at %L not set",
 			 sym->name, &sym->declared_at);
 	  if (warn_return_type)
 	    TREE_NO_WARNING(sym->backend_decl) = 1;

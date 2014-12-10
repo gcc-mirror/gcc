@@ -990,7 +990,27 @@ powerpc-*-rtems*)
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	;;
 powerpc*-*-linux*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff rs6000/t-linux t-softfp-sfdf t-softfp-excl t-dfprules rs6000/t-ppc64-fp t-softfp t-slibgcc-libgcc"
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff rs6000/t-linux t-dfprules rs6000/t-ppc64-fp t-slibgcc-libgcc"
+	case $ppc_fp_type in
+	64)
+		;;
+	hard)
+		tmake_file="${tmake_file} t-hardfp-sfdf t-hardfp"
+		;;
+	soft)
+		tmake_file="${tmake_file} t-softfp-sfdf ${ppc_fp_compat} t-softfp"
+		;;
+	e500v1)
+		tmake_file="${tmake_file} rs6000/t-e500v1-fp ${ppc_fp_compat} t-softfp t-hardfp"
+		;;
+	e500v2)
+		tmake_file="${tmake_file} t-hardfp-sfdf rs6000/t-e500v2-fp ${ppc_fp_compat} t-softfp t-hardfp"
+		;;
+	*)
+		echo "Unknown ppc_fp_type $ppc_fp_type" 1>&2
+		exit 1
+		;;
+	esac
 	extra_parts="$extra_parts ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
@@ -1235,6 +1255,10 @@ m32c-*-elf*|m32c-*-rtems*)
 mep*-*-*)
 	tmake_file="mep/t-mep t-fdpbit"
 	extra_parts="crtbegin.o crtend.o"
+	;;
+nvptx-*)
+	tmake_file="$tmake_file nvptx/t-nvptx"
+	extra_parts="crt0.o"
 	;;
 *)
 	echo "*** Configuration ${host} not supported" 1>&2

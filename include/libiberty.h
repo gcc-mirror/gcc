@@ -227,6 +227,11 @@ extern char *make_relative_prefix (const char *, const char *,
 extern char *make_relative_prefix_ignore_links (const char *, const char *,
 						const char *) ATTRIBUTE_MALLOC;
 
+/* Returns a pointer to a directory path suitable for creating temporary
+   files in.  */
+
+extern const char *choose_tmpdir (void) ATTRIBUTE_RETURNS_NONNULL;
+
 /* Choose a temporary directory to use for scratch files.  */
 
 extern char *choose_temp_base (void) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
@@ -643,6 +648,33 @@ extern int vsnprintf (char *, size_t, const char *, va_list) ATTRIBUTE_PRINTF(3,
 
 #if defined (HAVE_DECL_STRNLEN) && !HAVE_DECL_STRNLEN
 extern size_t strnlen (const char *, size_t);
+#endif
+
+#if defined(HAVE_DECL_STRVERSCMP) && !HAVE_DECL_STRVERSCMP
+/* Compare version strings.  */
+extern int strverscmp (const char *, const char *);
+#endif
+
+#if defined(HAVE_DECL_STRTOL) && !HAVE_DECL_STRTOL
+extern long int strtol (const char *nptr,
+                        char **endptr, int base);
+#endif
+
+#if defined(HAVE_DECL_STRTOUL) && !HAVE_DECL_STRTOUL
+extern unsigned long int strtoul (const char *nptr,
+                                  char **endptr, int base);
+#endif
+
+#if defined(HAVE_LONG_LONG) && defined(HAVE_DECL_STRTOLL) && !HAVE_DECL_STRTOLL
+__extension__
+extern long long int strtoll (const char *nptr,
+                              char **endptr, int base);
+#endif
+
+#if defined(HAVE_LONG_LONG) && defined(HAVE_DECL_STRTOULL) && !HAVE_DECL_STRTOULL
+__extension__
+extern unsigned long long int strtoull (const char *nptr,
+                                        char **endptr, int base);
 #endif
 
 #if defined(HAVE_DECL_STRVERSCMP) && !HAVE_DECL_STRVERSCMP

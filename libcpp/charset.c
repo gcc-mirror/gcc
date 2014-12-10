@@ -353,7 +353,7 @@ one_utf8_to_utf16 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
       return EILSEQ;
     }
 
-  if (s < 0xFFFF)
+  if (s <= 0xFFFF)
     {
       if (*outbytesleftp < 2)
 	{

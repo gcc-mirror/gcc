@@ -615,9 +615,7 @@ package body Sem_Cat is
 
       E := Current_Scope;
       loop
-         if Is_Subprogram (E)
-              or else
-            Is_Generic_Subprogram (E)
+         if Is_Subprogram_Or_Generic_Subprogram (E)
               or else
             Is_Concurrent_Type (E)
          then
@@ -636,7 +634,9 @@ package body Sem_Cat is
    -------------------------------
 
    function Is_Non_Remote_Access_Type (E : Entity_Id) return Boolean is
-      U_E : constant Entity_Id := Underlying_Type (E);
+      U_E : constant Entity_Id := Underlying_Type (Base_Type (E));
+      --  Use full view of base type to handle subtypes properly.
+
    begin
       if No (U_E) then
 
@@ -1934,7 +1934,7 @@ package body Sem_Cat is
 
       Typ := First_Entity (Name_U);
       while Present (Typ) and then Typ /= First_Priv_Ent loop
-         U_Typ := Underlying_Type (Typ);
+         U_Typ := Underlying_Type (Base_Type (Typ));
 
          if No (U_Typ) then
             U_Typ := Typ;

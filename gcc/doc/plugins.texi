@@ -185,7 +185,6 @@ enum plugin_event
   PLUGIN_GGC_MARKING,           /* Extend the GGC marking. */
   PLUGIN_GGC_END,               /* Called at end of GGC. */
   PLUGIN_REGISTER_GGC_ROOTS,    /* Register an extra GGC root table. */
-  PLUGIN_REGISTER_GGC_CACHES,   /* Register an extra GGC cache table. */
   PLUGIN_ATTRIBUTES,            /* Called during attribute registration */
   PLUGIN_START_UNIT,            /* Called before processing a translation unit.  */
   PLUGIN_PRAGMAS,               /* Called during pragma registration. */
@@ -233,10 +232,9 @@ the arguments:
 @item @code{void *user_data}: Pointer to plugin-specific data.
 @end itemize
 
-For the @i{PLUGIN_PASS_MANAGER_SETUP}, @i{PLUGIN_INFO},
-@i{PLUGIN_REGISTER_GGC_ROOTS} and @i{PLUGIN_REGISTER_GGC_CACHES}
-pseudo-events the @code{callback} should be null, and the
-@code{user_data} is specific.
+For the @i{PLUGIN_PASS_MANAGER_SETUP}, @i{PLUGIN_INFO}, and
+@i{PLUGIN_REGISTER_GGC_ROOTS} pseudo-events the @code{callback} should be null,
+and the @code{user_data} is specific.
 
 When the @i{PLUGIN_PRAGMAS} event is triggered (with a null pointer as
 data from GCC), plugins may register their own pragmas.  Notice that
@@ -321,21 +319,22 @@ done by registering a callback (called with a null @code{gcc_data})
 for the @code{PLUGIN_GGC_MARKING} event. Such callbacks can call the
 @code{ggc_set_mark} routine, preferably through the @code{ggc_mark} macro
 (and conversely, these routines should usually not be used in plugins
-outside of the @code{PLUGIN_GGC_MARKING} event).
+outside of the @code{PLUGIN_GGC_MARKING} event).  Plugins that wish to hold
+weak references to gc data may also use this event to drop weak references when
+the object is about to be collected.  The @code{ggc_marked_p} function can be
+used to tell if an object is marked, or is about to  be collected.  The
+@code{gt_clear_cache} overloads which some types define may also be of use in
+managing weak references.
 
 Some plugins may need to add extra GGC root tables, e.g. to handle their own
 @code{GTY}-ed data. This can be done with the @code{PLUGIN_REGISTER_GGC_ROOTS}
 pseudo-event with a null callback and the extra root table (of type @code{struct
-ggc_root_tab*}) as @code{user_data}.  Plugins that want to use the
-@code{if_marked} hash table option can add the extra GGC cache tables generated
-by @code{gengtype} using the @code{PLUGIN_REGISTER_GGC_CACHES} pseudo-event with
-a null callback and the extra cache table (of type @code{struct ggc_cache_tab*})
-as @code{user_data}.  Running the @code{gengtype -p @var{source-dir}
-@var{file-list} @var{plugin*.c} ...} utility generates these extra root tables.
+ggc_root_tab*}) as @code{user_data}.  Running the
+ @code{gengtype -p @var{source-dir} @var{file-list} @var{plugin*.c} ...}
+utility generates these extra root tables.
 
 You should understand the details of memory management inside GCC
-before using @code{PLUGIN_GGC_MARKING}, @code{PLUGIN_REGISTER_GGC_ROOTS}
-or @code{PLUGIN_REGISTER_GGC_CACHES}.
+before using @code{PLUGIN_GGC_MARKING} or @code{PLUGIN_REGISTER_GGC_ROOTS}.
 
 
 @node Plugins description

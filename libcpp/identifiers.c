@@ -54,9 +54,7 @@ _cpp_init_hashtable (cpp_reader *pfile, cpp_hash_table *table)
       table = ht_create (13);	/* 8K (=2^13) entries.  */
       table->alloc_node = alloc_node;
 
-      _obstack_begin (&pfile->hash_ob, 0, 0,
-		      (void *(*) (long)) xmalloc,
-		      (void (*) (void *)) free);
+      obstack_specify_allocation (&pfile->hash_ob, 0, 0, xmalloc, free);
     }
 
   table->pfile = pfile;
@@ -74,6 +72,7 @@ _cpp_init_hashtable (cpp_reader *pfile, cpp_hash_table *table)
   s->n__VA_ARGS__->flags |= NODE_DIAGNOSTIC;
   s->n__has_include__   = cpp_lookup (pfile, DSC("__has_include__"));
   s->n__has_include_next__ = cpp_lookup (pfile, DSC("__has_include_next__"));
+  s->n__has_attribute__   = cpp_lookup (pfile, DSC("__has_attribute__"));
 }
 
 /* Tear down the identifier hash table.  */

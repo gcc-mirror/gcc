@@ -45,11 +45,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tm_p.h"
 #include "target.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "input.h"
 #include "function.h" /* For inline functions in emit-rtl.h they need crtl.  */
 #include "emit-rtl.h"
 #include "tree-pass.h"
 #include "cfgloop.h"
 #include "expr.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "df.h"
 #include "dce.h"
 #include "dbgcnt.h"
@@ -867,7 +880,7 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
 /* Removes the memory attributes of MEM expression
    if they are not equal.  */
 
-void
+static void
 merge_memattrs (rtx x, rtx y)
 {
   int i;

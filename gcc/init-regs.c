@@ -26,6 +26,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "expr.h"
 #include "tree-pass.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "flags.h"
 #include "df.h"
@@ -78,6 +88,11 @@ initialize_uninitialized_regs (void)
 
 	      /* Only do this for the pseudos.  */
 	      if (regno < FIRST_PSEUDO_REGISTER)
+		continue;
+
+	      /* Ignore pseudo PIC register.  */
+	      if (pic_offset_table_rtx
+		  && regno == REGNO (pic_offset_table_rtx))
 		continue;
 
 	      /* Do not generate multiple moves for the same regno.

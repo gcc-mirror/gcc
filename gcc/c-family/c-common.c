@@ -46,10 +46,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "hashtab.h"
 #include "opts.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "target-def.h"
 #include "gimplify.h"
 #include "wide-int-print.h"
+#include "gimple-expr.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -61,12 +72,10 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 	tree short_integer_type_node;
 	tree long_integer_type_node;
 	tree long_long_integer_type_node;
-	tree int128_integer_type_node;
 
 	tree short_unsigned_type_node;
 	tree long_unsigned_type_node;
 	tree long_long_unsigned_type_node;
-	tree int128_unsigned_type_node;
 
 	tree truthvalue_type_node;
 	tree truthvalue_false_node;
@@ -383,6 +392,9 @@ static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int,
 static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_designated_init_attribute (tree *, tree, tree, int, bool *);
+static tree handle_bnd_variable_size_attribute (tree *, tree, tree, int, bool *);
+static tree handle_bnd_legacy (tree *, tree, tree, int, bool *);
+static tree handle_bnd_instrument (tree *, tree, tree, int, bool *);
 
 static void check_function_nonnull (tree, int, tree *);
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
@@ -442,6 +454,8 @@ const struct c_common_resword c_common_reswords[] =
   { "__attribute__",	RID_ATTRIBUTE,	0 },
   { "__auto_type",	RID_AUTO_TYPE,	D_CONLY },
   { "__bases",          RID_BASES, D_CXXONLY },
+  { "__builtin_call_with_static_chain",
+    RID_BUILTIN_CALL_WITH_STATIC_CHAIN, D_CONLY },
   { "__builtin_choose_expr", RID_CHOOSE_EXPR, D_CONLY },
   { "__builtin_complex", RID_BUILTIN_COMPLEX, D_CONLY },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
@@ -468,7 +482,6 @@ const struct c_common_resword c_common_reswords[] =
   { "__imag__",		RID_IMAGPART,	0 },
   { "__inline",		RID_INLINE,	0 },
   { "__inline__",	RID_INLINE,	0 },
-  { "__int128",		RID_INT128,	0 },
   { "__is_abstract",	RID_IS_ABSTRACT, D_CXXONLY },
   { "__is_base_of",	RID_IS_BASE_OF, D_CXXONLY },
   { "__is_class",	RID_IS_CLASS,	D_CXXONLY },
@@ -616,7 +629,12 @@ const struct c_common_resword c_common_reswords[] =
 const unsigned int num_c_common_reswords =
   sizeof c_common_reswords / sizeof (struct c_common_resword);
 
-/* Table of machine-independent attributes common to all C-like languages.  */
+/* Table of machine-independent attributes common to all C-like languages.
+
+   All attributes referencing arguments should be additionally processed
+   in chkp_copy_function_type_adding_bounds for correct instrumentation
+   by Pointer Bounds Checker.
+   Current list of processed common attributes: nonnull.  */
 const struct attribute_spec c_common_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
@@ -783,12 +801,22 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_assume_aligned_attribute, false },
   { "designated_init",        0, 0, false, true, false,
 			      handle_designated_init_attribute, false },
+  { "bnd_variable_size",      0, 0, true,  false, false,
+			      handle_bnd_variable_size_attribute, false },
+  { "bnd_legacy",             0, 0, true, false, false,
+			      handle_bnd_legacy, false },
+  { "bnd_instrument",         0, 0, true, false, false,
+			      handle_bnd_instrument, false },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
 /* Give the specifications for the format attributes, used by C and all
-   descendants.  */
+   descendants.
 
+   All attributes referencing arguments should be additionally processed
+   in chkp_copy_function_type_adding_bounds for correct instrumentation
+   by Pointer Bounds Checker.
+   Current list of processed format attributes: format, format_arg.  */
 const struct attribute_spec c_common_format_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
@@ -3449,6 +3477,8 @@ check_case_bounds (location_t loc, tree type, tree orig_type,
 tree
 c_common_type_for_size (unsigned int bits, int unsignedp)
 {
+  int i;
+
   if (bits == TYPE_PRECISION (integer_type_node))
     return unsignedp ? unsigned_type_node : integer_type_node;
 
@@ -3465,10 +3495,11 @@ c_common_type_for_size (unsigned int bits, int unsignedp)
     return (unsignedp ? long_long_unsigned_type_node
 	    : long_long_integer_type_node);
 
-  if (int128_integer_type_node
-      && bits == TYPE_PRECISION (int128_integer_type_node))
-    return (unsignedp ? int128_unsigned_type_node
-	    : int128_integer_type_node);
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& bits == int_n_data[i].bitsize)
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
 
   if (bits == TYPE_PRECISION (widest_integer_literal_type_node))
     return (unsignedp ? widest_unsigned_literal_type_node
@@ -3497,7 +3528,7 @@ tree
 c_common_fixed_point_type_for_size (unsigned int ibit, unsigned int fbit,
 				    int unsignedp, int satp)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   if (ibit == 0)
     mode = unsignedp ? UQQmode : QQmode;
   else
@@ -3529,9 +3560,10 @@ tree registered_builtin_types;
    then UNSIGNEDP selects between saturating and nonsaturating types.  */
 
 tree
-c_common_type_for_mode (enum machine_mode mode, int unsignedp)
+c_common_type_for_mode (machine_mode mode, int unsignedp)
 {
   tree t;
+  int i;
 
   if (mode == TYPE_MODE (integer_type_node))
     return unsignedp ? unsigned_type_node : integer_type_node;
@@ -3548,9 +3580,11 @@ c_common_type_for_mode (enum machine_mode mode, int unsignedp)
   if (mode == TYPE_MODE (long_long_integer_type_node))
     return unsignedp ? long_long_unsigned_type_node : long_long_integer_type_node;
 
-  if (int128_integer_type_node
-      && mode == TYPE_MODE (int128_integer_type_node))
-    return unsignedp ? int128_unsigned_type_node : int128_integer_type_node;
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& mode == int_n_data[i].m)
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
 
   if (mode == TYPE_MODE (widest_integer_literal_type_node))
     return unsignedp ? widest_unsigned_literal_type_node
@@ -3597,7 +3631,7 @@ c_common_type_for_mode (enum machine_mode mode, int unsignedp)
 
   if (COMPLEX_MODE_P (mode))
     {
-      enum machine_mode inner_mode;
+      machine_mode inner_mode;
       tree inner_type;
 
       if (mode == TYPE_MODE (complex_float_type_node))
@@ -3617,7 +3651,7 @@ c_common_type_for_mode (enum machine_mode mode, int unsignedp)
     }
   else if (VECTOR_MODE_P (mode))
     {
-      enum machine_mode inner_mode = GET_MODE_INNER (mode);
+      machine_mode inner_mode = GET_MODE_INNER (mode);
       tree inner_type = c_common_type_for_mode (inner_mode, unsignedp);
       if (inner_type != NULL_TREE)
 	return build_vector_type_for_mode (inner_type, mode);
@@ -3748,6 +3782,7 @@ tree
 c_common_signed_or_unsigned_type (int unsignedp, tree type)
 {
   tree type1;
+  int i;
 
   /* This block of code emulates the behavior of the old
      c_common_unsigned_type. In particular, it returns
@@ -3766,10 +3801,14 @@ c_common_signed_or_unsigned_type (int unsignedp, tree type)
     return unsignedp ? long_unsigned_type_node : long_integer_type_node;
   if (type1 == long_long_integer_type_node || type1 == long_long_unsigned_type_node)
     return unsignedp ? long_long_unsigned_type_node : long_long_integer_type_node;
-  if (int128_integer_type_node
-      && (type1 == int128_integer_type_node
-	  || type1 == int128_unsigned_type_node))
-    return unsignedp ? int128_unsigned_type_node : int128_integer_type_node;
+
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& (type1 == int_n_trees[i].unsigned_type
+	    || type1 == int_n_trees[i].signed_type))
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
+
   if (type1 == widest_integer_literal_type_node || type1 == widest_unsigned_literal_type_node)
     return unsignedp ? widest_unsigned_literal_type_node : widest_integer_literal_type_node;
 #if HOST_BITS_PER_WIDE_INT >= 64
@@ -3884,9 +3923,14 @@ c_common_signed_or_unsigned_type (int unsignedp, tree type)
   if (TYPE_OK (long_long_integer_type_node))
     return (unsignedp ? long_long_unsigned_type_node
 	    : long_long_integer_type_node);
-  if (int128_integer_type_node && TYPE_OK (int128_integer_type_node))
-    return (unsignedp ? int128_unsigned_type_node
-	    : int128_integer_type_node);
+
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& TYPE_MODE (type) == int_n_data[i].m
+	&& TYPE_PRECISION (type) == int_n_data[i].bitsize)
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
+
   if (TYPE_OK (widest_integer_literal_type_node))
     return (unsignedp ? widest_unsigned_literal_type_node
 	    : widest_integer_literal_type_node);
@@ -3913,6 +3957,8 @@ c_common_signed_or_unsigned_type (int unsignedp, tree type)
 tree
 c_build_bitfield_integer_type (unsigned HOST_WIDE_INT width, int unsignedp)
 {
+  int i;
+
   /* Extended integer types of the same width as a standard type have
      lesser rank, so those of the same width as int promote to int or
      unsigned int and are valid for printf formats expecting int or
@@ -3930,10 +3976,11 @@ c_build_bitfield_integer_type (unsigned HOST_WIDE_INT width, int unsignedp)
   if (width == TYPE_PRECISION (long_long_integer_type_node))
     return (unsignedp ? long_long_unsigned_type_node
 	    : long_long_integer_type_node);
-  if (int128_integer_type_node
-      && width == TYPE_PRECISION (int128_integer_type_node))
-    return (unsignedp ? int128_unsigned_type_node
-	    : int128_integer_type_node);
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& width == int_n_data[i].bitsize)
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
   return build_nonstandard_integer_type (width, unsignedp);
 }
 
@@ -4288,9 +4335,15 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
   /* If either arg is decimal float and the other is float, find the
      proper common type to use for comparison.  */
   else if (real1 && real2
+	   && DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop0)))
+	   && DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop1))))
+    type = common_type (TREE_TYPE (primop0), TREE_TYPE (primop1));
+
+  /* If either arg is decimal float and the other is float, fail.  */
+  else if (real1 && real2
 	   && (DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop0)))
 	       || DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop1)))))
-    type = common_type (TREE_TYPE (primop0), TREE_TYPE (primop1));
+    return 0;
 
   else if (real1 && real2
 	   && (TYPE_PRECISION (TREE_TYPE (primop0))
@@ -4803,23 +4856,28 @@ c_apply_type_quals_to_decl (int type_quals, tree decl)
     }
 }
 
+struct c_type_hasher : ggc_hasher<tree>
+{
+  static hashval_t hash (tree);
+  static bool equal (tree, tree);
+};
+
 /* Hash function for the problem of multiple type definitions in
    different files.  This must hash all types that will compare
    equal via comptypes to the same value.  In practice it hashes
    on some of the simple stuff and leaves the details to comptypes.  */
 
-static hashval_t
-c_type_hash (const void *p)
+hashval_t
+c_type_hasher::hash (tree t)
 {
   int n_elements;
   int shift, size;
-  const_tree const t = (const_tree) p;
   tree t2;
   switch (TREE_CODE (t))
     {
     /* For pointers, hash on pointee type plus some swizzling.  */
     case POINTER_TYPE:
-      return c_type_hash (TREE_TYPE (t)) ^ 0x3003003;
+      return hash (TREE_TYPE (t)) ^ 0x3003003;
     /* Hash on number of elements and total size.  */
     case ENUMERAL_TYPE:
       shift = 3;
@@ -4851,7 +4909,13 @@ c_type_hash (const void *p)
   return ((size << 24) | (n_elements << shift));
 }
 
-static GTY((param_is (union tree_node))) htab_t type_hash_table;
+bool
+c_type_hasher::equal (tree t1, tree t2)
+{
+  return lang_hooks.types_compatible_p (t1, t2);
+}
+
+static GTY(()) hash_table<c_type_hasher> *type_hash_table;
 
 /* Return the typed-based alias set for T, which may be an expression
    or a type.  Return -1 if we don't do anything special.  */
@@ -4860,7 +4924,6 @@ alias_set_type
 c_common_get_alias_set (tree t)
 {
   tree u;
-  PTR *slot;
 
   /* For VLAs, use the alias set of the element type rather than the
      default of alias set 0 for types compared structurally.  */
@@ -4953,10 +5016,8 @@ c_common_get_alias_set (tree t)
   /* Look up t in hash table.  Only one of the compatible types within each
      alias set is recorded in the table.  */
   if (!type_hash_table)
-    type_hash_table = htab_create_ggc (1021, c_type_hash,
-	    (htab_eq) lang_hooks.types_compatible_p,
-	    NULL);
-  slot = htab_find_slot (type_hash_table, t, INSERT);
+    type_hash_table = hash_table<c_type_hasher>::create_ggc (1021);
+  tree *slot = type_hash_table->find_slot (t, INSERT);
   if (*slot != NULL)
     {
       TYPE_ALIAS_SET (t) = TYPE_ALIAS_SET ((tree)*slot);
@@ -5330,6 +5391,7 @@ c_common_nodes_and_builtins (void)
   tree array_domain_type;
   tree va_list_ref_type_node;
   tree va_list_arg_type_node;
+  int i;
 
   build_common_tree_nodes (flag_signed_char, flag_short_double);
 
@@ -5346,13 +5408,19 @@ c_common_nodes_and_builtins (void)
   record_builtin_type (RID_UNSIGNED, "unsigned int", unsigned_type_node);
   record_builtin_type (RID_MAX, "long unsigned int",
 		       long_unsigned_type_node);
-  if (int128_integer_type_node != NULL_TREE)
+
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
     {
-      record_builtin_type (RID_INT128, "__int128",
-			   int128_integer_type_node);
-      record_builtin_type (RID_MAX, "__int128 unsigned",
-			   int128_unsigned_type_node);
+      char name[25];
+
+      sprintf (name, "__int%d", int_n_data[i].bitsize);
+      record_builtin_type ((enum rid)(RID_FIRST_INT_N + i), xstrdup (name),
+			   int_n_trees[i].signed_type);
+      sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
+      record_builtin_type (RID_MAX, xstrdup (name),
+			   int_n_trees[i].unsigned_type);
     }
+
   if (c_dialect_cxx ())
     record_builtin_type (RID_MAX, "unsigned long", long_unsigned_type_node);
   record_builtin_type (RID_MAX, "long long int",
@@ -5388,6 +5456,8 @@ c_common_nodes_and_builtins (void)
 					 TYPE_DECL, NULL_TREE,
 					 intDI_type_node));
 #if HOST_BITS_PER_WIDE_INT >= 64
+  /* Note that this is different than the __int128 type that's part of
+     the generic __intN support.  */
   if (targetm.scalar_mode_supported_p (TImode))
     lang_hooks.decls.pushdecl (build_decl (UNKNOWN_LOCATION,
 					   TYPE_DECL,
@@ -7200,10 +7270,10 @@ handle_destructor_attribute (tree *node, tree name, tree args,
    vector mode, but we can emulate with narrower modes.  */
 
 static int
-vector_mode_valid_p (enum machine_mode mode)
+vector_mode_valid_p (machine_mode mode)
 {
   enum mode_class mclass = GET_MODE_CLASS (mode);
-  enum machine_mode innermode;
+  machine_mode innermode;
 
   /* Doh!  What's going on?  */
   if (mclass != MODE_VECTOR_INT
@@ -7248,7 +7318,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
       int j;
       const char *p = IDENTIFIER_POINTER (ident);
       int len = strlen (p);
-      enum machine_mode mode = VOIDmode;
+      machine_mode mode = VOIDmode;
       tree typefm;
       bool valid_mode;
 
@@ -7280,7 +7350,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	for (j = 0; j < NUM_MACHINE_MODES; j++)
 	  if (!strcmp (p, GET_MODE_NAME (j)))
 	    {
-	      mode = (enum machine_mode) j;
+	      mode = (machine_mode) j;
 	      break;
 	    }
 
@@ -7334,7 +7404,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
       if (POINTER_TYPE_P (type))
 	{
 	  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (type));
-	  tree (*fn)(tree, enum machine_mode, bool);
+	  tree (*fn)(tree, machine_mode, bool);
 
 	  if (!targetm.addr_space.valid_pointer_mode (mode, as))
 	    {
@@ -7711,7 +7781,12 @@ handle_weak_attribute (tree *node, tree name,
     }
   else if (TREE_CODE (*node) == FUNCTION_DECL
 	   || TREE_CODE (*node) == VAR_DECL)
-    declare_weak (*node);
+    {
+      struct symtab_node *n = symtab_node::get (*node);
+      if (n && n->refuse_visibility_changes)
+	error ("%+D declared weak after being used", *node);
+      declare_weak (*node);
+    }
   else
     warning (OPT_Wattributes, "%qE attribute ignored", name);
 
@@ -8209,6 +8284,54 @@ handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
   return NULL_TREE;
 }
 
+/* Handle a "bnd_variable_size" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_bnd_variable_size_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+				    int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FIELD_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "bnd_legacy" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_bnd_legacy (tree *node, tree name, tree ARG_UNUSED (args),
+		   int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "bnd_instrument" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_bnd_instrument (tree *node, tree name, tree ARG_UNUSED (args),
+		       int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* Handle a "warn_unused" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -8620,7 +8743,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 			      bool *no_add_attrs)
 {
   unsigned HOST_WIDE_INT vecsize, nunits;
-  enum machine_mode orig_mode;
+  machine_mode orig_mode;
   tree type = *node, new_type, size;
 
   *no_add_attrs = true;
@@ -9528,6 +9651,30 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
 	  if (nargs >= 3 && TREE_CODE (TREE_TYPE (args[2])) != INTEGER_TYPE)
 	    {
 	      error ("non-integer argument 3 in call to function %qE", fndecl);
+	      return false;
+	    }
+	  return true;
+	}
+      return false;
+
+    case BUILT_IN_ADD_OVERFLOW:
+    case BUILT_IN_SUB_OVERFLOW:
+    case BUILT_IN_MUL_OVERFLOW:
+      if (builtin_function_validate_nargs (fndecl, nargs, 3))
+	{
+	  unsigned i;
+	  for (i = 0; i < 2; i++)
+	    if (!INTEGRAL_TYPE_P (TREE_TYPE (args[i])))
+	      {
+		error ("argument %u in call to function %qE does not have "
+		       "integral type", i + 1, fndecl);
+		return false;
+	      }
+	  if (TREE_CODE (TREE_TYPE (args[2])) != POINTER_TYPE
+	      || TREE_CODE (TREE_TYPE (TREE_TYPE (args[2]))) != INTEGER_TYPE)
+	    {
+	      error ("argument 3 in call to function %qE does not have "
+		     "pointer to integer type", fndecl);
 	      return false;
 	    }
 	  return true;
@@ -11754,7 +11901,6 @@ keyword_begins_type_specifier (enum rid keyword)
     case RID_FLOAT:
     case RID_DOUBLE:
     case RID_VOID:
-    case RID_INT128:
     case RID_UNSIGNED:
     case RID_LONG:
     case RID_SHORT:
@@ -11777,6 +11923,10 @@ keyword_begins_type_specifier (enum rid keyword)
     case RID_ENUM:
       return true;
     default:
+      if (keyword >= RID_FIRST_INT_N
+	  && keyword < RID_FIRST_INT_N + NUM_INT_N_ENTS
+	  && int_n_enabled_p[keyword-RID_FIRST_INT_N])
+	return true;
       return false;
     }
 }
@@ -11886,22 +12036,47 @@ build_userdef_literal (tree suffix_id, tree value,
 }
 
 /* For vector[index], convert the vector to a
-   pointer of the underlying type.  */
-void
+   pointer of the underlying type.  Return true if the resulting
+   ARRAY_REF should not be an lvalue.  */
+
+bool
 convert_vector_to_pointer_for_subscript (location_t loc,
-					 tree* vecp, tree index)
+					 tree *vecp, tree index)
 {
+  bool ret = false;
   if (TREE_CODE (TREE_TYPE (*vecp)) == VECTOR_TYPE)
     {
       tree type = TREE_TYPE (*vecp);
       tree type1;
 
+      ret = !lvalue_p (*vecp);
       if (TREE_CODE (index) == INTEGER_CST)
         if (!tree_fits_uhwi_p (index)
             || tree_to_uhwi (index) >= TYPE_VECTOR_SUBPARTS (type))
           warning_at (loc, OPT_Warray_bounds, "index value is out of bound");
 
-      c_common_mark_addressable_vec (*vecp);
+      if (ret)
+	{
+	  tree tmp = create_tmp_var_raw (type);
+	  DECL_SOURCE_LOCATION (tmp) = loc;
+	  *vecp = c_save_expr (*vecp);
+	  if (TREE_CODE (*vecp) == C_MAYBE_CONST_EXPR)
+	    {
+	      bool non_const = C_MAYBE_CONST_EXPR_NON_CONST (*vecp);
+	      *vecp = C_MAYBE_CONST_EXPR_EXPR (*vecp);
+	      *vecp
+		= c_wrap_maybe_const (build4 (TARGET_EXPR, type, tmp,
+					      *vecp, NULL_TREE, NULL_TREE),
+				      non_const);
+	    }
+	  else
+	    *vecp = build4 (TARGET_EXPR, type, tmp, *vecp,
+			    NULL_TREE, NULL_TREE);
+	  SET_EXPR_LOCATION (*vecp, loc);
+	  c_common_mark_addressable_vec (tmp);
+	}
+      else
+	c_common_mark_addressable_vec (*vecp);
       type = build_qualified_type (TREE_TYPE (type), TYPE_QUALS (type));
       type1 = build_pointer_type (TREE_TYPE (*vecp));
       bool ref_all = TYPE_REF_CAN_ALIAS_ALL (type1);
@@ -11921,6 +12096,7 @@ convert_vector_to_pointer_for_subscript (location_t loc,
       *vecp = build1 (ADDR_EXPR, type1, *vecp);
       *vecp = convert (type, *vecp);
     }
+  return ret;
 }
 
 /* Determine which of the operands, if any, is a scalar that needs to be

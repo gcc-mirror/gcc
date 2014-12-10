@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 	if (c_dialect_cxx ())						\
 	  {								\
 	    builtin_define ("_HPUX_SOURCE");				\
+	    builtin_define ("_REENTRANT");				\
 	    builtin_define ("_INCLUDE_LONGLONG");			\
 	    builtin_define ("__STDCPP__");				\
 	  }								\
@@ -48,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 	    if (!flag_iso)						\
 	      {								\
 		builtin_define ("_HPUX_SOURCE");			\
+		builtin_define ("_REENTRANT");				\
 		if (preprocessing_trad_p ())				\
 		  {							\
 		    builtin_define ("hp9000s800");			\

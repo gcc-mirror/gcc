@@ -4,7 +4,7 @@
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m3*" "-m4*" } }  */
-/* { dg-final { scan-assembler-not "nop" } } */
+/* { dg-final { scan-assembler-not "rte\n\tnop" } } */
 
 int test00 (int a, int b);
 

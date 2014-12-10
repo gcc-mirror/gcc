@@ -23,6 +23,38 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Only basic-block.h includes this.  */
 
+/* Structure to gather statistic about profile consistency, per pass.
+   An array of this structure, indexed by pass static number, is allocated
+   in passes.c.  The structure is defined here so that different CFG modes
+   can do their book-keeping via CFG hooks.
+
+   For every field[2], field[0] is the count before the pass runs, and
+   field[1] is the post-pass count.  This allows us to monitor the effect
+   of each individual pass on the profile consistency.
+   
+   This structure is not supposed to be used by anything other than passes.c
+   and one CFG hook per CFG mode.  */
+struct profile_record
+{
+  /* The number of basic blocks where sum(freq) of the block's predecessors
+     doesn't match reasonably well with the incoming frequency.  */
+  int num_mismatched_freq_in[2];
+  /* Likewise for a basic block's successors.  */
+  int num_mismatched_freq_out[2];
+  /* The number of basic blocks where sum(count) of the block's predecessors
+     doesn't match reasonably well with the incoming frequency.  */
+  int num_mismatched_count_in[2];
+  /* Likewise for a basic block's successors.  */
+  int num_mismatched_count_out[2];
+  /* A weighted cost of the run-time of the function body.  */
+  gcov_type time[2];
+  /* A weighted cost of the size of the function body.  */
+  int size[2];
+  /* True iff this pass actually was run.  */
+  bool run;
+};
+
+
 struct cfg_hooks
 {
   /* Name of the corresponding ir.  */
@@ -156,9 +188,11 @@ struct cfg_hooks
 extern void verify_flow_info (void);
 extern void dump_bb (FILE *, basic_block, int, int);
 extern void dump_bb_for_graph (pretty_printer *, basic_block);
+extern void dump_flow_info (FILE *, int);
 
 extern edge redirect_edge_and_branch (edge, basic_block);
 extern basic_block redirect_edge_and_branch_force (edge, basic_block);
+extern edge redirect_edge_succ_nodup (edge, basic_block);
 extern bool can_remove_branch_p (const_edge);
 extern void remove_branch (edge);
 extern void remove_edge (edge);
@@ -207,9 +241,6 @@ extern void copy_bbs (basic_block *, unsigned, basic_block *,
 		      basic_block, bool);
 
 void account_profile_record (struct profile_record *, int);
-
-extern void cfg_layout_initialize (unsigned int);
-extern void cfg_layout_finalize (void);
 
 /* Hooks containers.  */
 extern struct cfg_hooks gimple_cfg_hooks;

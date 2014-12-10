@@ -32,6 +32,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "input.h"
 #include "hashtab.h"
+#include "predict.h"
+#include "vec.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -46,10 +54,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "tree-pass.h"
-#include "function.h"
 #include "diagnostic.h"
 #include "except.h"
 #include "debug.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 #include "ipa-utils.h"
 #include "data-streamer.h"
 #include "gimple-streamer.h"
@@ -788,7 +799,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts,
     {
       if (gimple_stmt_max_uid (fn) < cedge->lto_stmt_uid)
         fatal_error ("Cgraph edge statement index out of range");
-      cedge->call_stmt = stmts[cedge->lto_stmt_uid - 1];
+      cedge->call_stmt = as_a <gcall *> (stmts[cedge->lto_stmt_uid - 1]);
       if (!cedge->call_stmt)
         fatal_error ("Cgraph edge statement index not found");
     }
@@ -796,7 +807,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts,
     {
       if (gimple_stmt_max_uid (fn) < cedge->lto_stmt_uid)
         fatal_error ("Cgraph edge statement index out of range");
-      cedge->call_stmt = stmts[cedge->lto_stmt_uid - 1];
+      cedge->call_stmt = as_a <gcall *> (stmts[cedge->lto_stmt_uid - 1]);
       if (!cedge->call_stmt)
         fatal_error ("Cgraph edge statement index not found");
     }
@@ -892,6 +903,7 @@ input_struct_function_base (struct function *fn, struct data_in *data_in,
   fn->has_simduid_loops = bp_unpack_value (&bp, 1);
   fn->va_list_fpr_size = bp_unpack_value (&bp, 8);
   fn->va_list_gpr_size = bp_unpack_value (&bp, 8);
+  fn->last_clique = bp_unpack_value (&bp, sizeof (short) * 8);
 
   /* Input the function start and end loci.  */
   fn->function_start_locus = stream_input_location (&bp, data_in);

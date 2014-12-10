@@ -123,6 +123,7 @@ Additional tutorial information is linked to from
 * Plugins::         Extending the compiler with plugins.
 * LTO::             Using Link-Time Optimization.
 
+* Match and Simplify:: How to write expression simplification patterns for GIMPLE and GENERIC
 * Funding::         How to help assure funding for free software.
 * GNU Project::     The GNU Project and GNU/Linux.
 
@@ -158,6 +159,7 @@ Additional tutorial information is linked to from
 @include gty.texi
 @include plugins.texi
 @include lto.texi
+@include match-and-simplify.texi
 
 @include funding.texi
 @include gnu.texi

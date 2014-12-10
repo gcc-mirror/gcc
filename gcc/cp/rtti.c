@@ -608,10 +608,6 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	  errstr = _("source is of incomplete class type");
 	  goto fail;
 	}
-
-      /* Apply trivial conversion T -> T& for dereferenced ptrs.  */
-      expr = convert_to_reference (exprtype, expr, CONV_IMPLICIT,
-				   LOOKUP_NORMAL, NULL_TREE, complain);
     }
 
   /* The dynamic_cast operator shall not cast away constness.  */
@@ -630,6 +626,11 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
     if (binfo)
       return build_static_cast (type, expr, complain);
   }
+
+  /* Apply trivial conversion T -> T& for dereferenced ptrs.  */
+  if (tc == REFERENCE_TYPE)
+    expr = convert_to_reference (exprtype, expr, CONV_IMPLICIT,
+				 LOOKUP_NORMAL, NULL_TREE, complain);
 
   /* Otherwise *exprtype must be a polymorphic class (have a vtbl).  */
   if (TYPE_POLYMORPHIC_P (TREE_TYPE (exprtype)))
@@ -1519,7 +1520,6 @@ emit_support_tinfos (void)
     &integer_type_node, &unsigned_type_node,
     &long_integer_type_node, &long_unsigned_type_node,
     &long_long_integer_type_node, &long_long_unsigned_type_node,
-    &int128_integer_type_node, &int128_unsigned_type_node,
     &float_type_node, &double_type_node, &long_double_type_node,
     &dfloat32_type_node, &dfloat64_type_node, &dfloat128_type_node,
     &nullptr_type_node,
@@ -1541,6 +1541,14 @@ emit_support_tinfos (void)
   doing_runtime = 1;
   for (ix = 0; fundamentals[ix]; ix++)
     emit_support_tinfo_1 (*fundamentals[ix]);
+  for (ix = 0; ix < NUM_INT_N_ENTS; ix ++)
+    if (int_n_enabled_p[ix])
+      {
+	emit_support_tinfo_1 (int_n_trees[ix].signed_type);
+	emit_support_tinfo_1 (int_n_trees[ix].unsigned_type);
+      }
+  for (tree t = registered_builtin_types; t; t = TREE_CHAIN (t))
+    emit_support_tinfo_1 (TREE_VALUE (t));
 }
 
 /* Finish a type info decl. DECL_PTR is a pointer to an unemitted

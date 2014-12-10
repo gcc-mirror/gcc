@@ -1,9 +1,9 @@
 /* { dg-do compile } */
-/* { dg-options "-fuse-caller-save (-mmicromips) addressing=absolute" } */
+/* { dg-options "-fipa-ra (-mmicromips) addressing=absolute" } */
 /* At -O0 and -O1, the register allocator behaves more conservatively, and
-   the fuse-caller-save optimization doesnt' trigger.  */
+   the fipa-ra optimization doesnt' trigger.  */
 /* { dg-skip-if "" { *-*-* }  { "-O0" "-O1" } } */
-/* Testing -fuse-caller-save optimization option.  */
+/* Testing -fipa-ra optimization option.  */
 
 #define ATTRIBUTE MICROMIPS
 #include "fuse-caller-save.h"

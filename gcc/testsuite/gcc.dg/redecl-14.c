@@ -18,5 +18,5 @@ f (void)
   }
   extern IAP a[];
   extern IAP a[5];
-  sizeof (*a[0]); /* { dg-error "invalid application of 'sizeof' to incomplete type 'IA'" } */
+  sizeof (*a[0]); /* { dg-error "invalid application of 'sizeof' to incomplete type 'IA {aka int\\\[\\\]}'" } */
 }

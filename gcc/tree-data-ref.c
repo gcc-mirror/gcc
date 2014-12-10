@@ -79,6 +79,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "expr.h"
 #include "gimple-pretty-print.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -614,7 +625,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
       {
 	tree base, poffset;
 	HOST_WIDE_INT pbitsize, pbitpos;
-	enum machine_mode pmode;
+	machine_mode pmode;
 	int punsignedp, pvolatilep;
 
 	op0 = TREE_OPERAND (op0, 0);
@@ -663,6 +674,9 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 
     case SSA_NAME:
       {
+	if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0))
+	  return false;
+
 	gimple def_stmt = SSA_NAME_DEF_STMT (op0);
 	enum tree_code subcode;
 
@@ -759,7 +773,7 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
   tree ref = DR_REF (dr);
   HOST_WIDE_INT pbitsize, pbitpos;
   tree base, poffset;
-  enum machine_mode pmode;
+  machine_mode pmode;
   int punsignedp, pvolatilep;
   affine_iv base_iv, offset_iv;
   tree init, dinit, step;
@@ -980,9 +994,12 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 	     guaranteed.
 	     As a band-aid, mark the access so we can special-case
 	     it in dr_may_alias_p.  */
+	  tree old = ref;
 	  ref = fold_build2_loc (EXPR_LOCATION (ref),
 				 MEM_REF, TREE_TYPE (ref),
 				 base, memoff);
+	  MR_DEPENDENCE_CLIQUE (ref) = MR_DEPENDENCE_CLIQUE (old);
+	  MR_DEPENDENCE_BASE (ref) = MR_DEPENDENCE_BASE (old);
 	  access_fns.safe_push (access_fn);
 	}
     }
@@ -1388,6 +1405,12 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
       if (aff_comb_cannot_overlap_p (&off2, size1, size2))
 	return false;
     }
+
+  if ((TREE_CODE (addr_a) == MEM_REF || TREE_CODE (addr_a) == TARGET_MEM_REF)
+      && (TREE_CODE (addr_b) == MEM_REF || TREE_CODE (addr_b) == TARGET_MEM_REF)
+      && MR_DEPENDENCE_CLIQUE (addr_a) == MR_DEPENDENCE_CLIQUE (addr_b)
+      && MR_DEPENDENCE_BASE (addr_a) != MR_DEPENDENCE_BASE (addr_b))
+    return false;
 
   /* If we had an evolution in a pointer-based MEM_REF BASE_OBJECT we
      do not know the size of the base-object.  So we cannot do any
@@ -2089,7 +2112,7 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
 	return chrec_fold_op (TREE_CODE (chrec), chrec_type (chrec), op0, op1);
       }
 
-    case NOP_EXPR:
+    CASE_CONVERT:
       {
 	tree op = initialize_matrix_A (A, TREE_OPERAND (chrec, 0), index, mult);
 	return chrec_convert (chrec_type (chrec), op, NULL);
@@ -4388,7 +4411,8 @@ get_references_in_stmt (gimple stmt, vec<data_ref_loc, va_heap> *references)
 	clobbers_memory = true;
     }
   else if (stmt_code == GIMPLE_ASM
-	   && (gimple_asm_volatile_p (stmt) || gimple_vuse (stmt)))
+	   && (gimple_asm_volatile_p (as_a <gasm *> (stmt))
+	       || gimple_vuse (stmt)))
     clobbers_memory = true;
 
   if (!gimple_vuse (stmt))

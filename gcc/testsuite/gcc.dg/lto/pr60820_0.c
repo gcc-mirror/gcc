@@ -1,5 +1,6 @@
 /* { dg-lto-do link } */
 /* { dg-lto-options {{-flto -r -nostdlib -O2}} } */
+/* { dg-skip-if "no alias" { *-*-darwin* } } */
 #include <stdio.h>
 struct in6_addr {int bah;};
 extern const struct in6_addr in6addr_any;

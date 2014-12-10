@@ -24,6 +24,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "tm_p.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-pretty-print.h"
 #include "tree-ssa-alias.h"
@@ -43,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-pass.h"
 #include "insn-config.h"
-#include "hashtab.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 #include "diagnostic-core.h"
@@ -56,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 /* FIXME: Needed for optabs, but this should all be moved to a TBD interface
    between the GIMPLE and RTL worlds.  */
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "recog.h"
 
@@ -1127,7 +1137,7 @@ issue_prefetch_ref (struct mem_ref *ref, unsigned unroll_factor, unsigned ahead)
 {
   HOST_WIDE_INT delta;
   tree addr, addr_base, write_p, local, forward;
-  gimple prefetch;
+  gcall *prefetch;
   gimple_stmt_iterator bsi;
   unsigned n_prefetches, ap;
   bool nontemporal = ref->reuse_distance >= L2_CACHE_SIZE_BYTES;
@@ -1198,7 +1208,7 @@ issue_prefetches (struct mem_ref_group *groups,
 static bool
 nontemporal_store_p (struct mem_ref *ref)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   enum insn_code code;
 
   /* REF must be a write that is not reused.  We require it to be independent
@@ -1244,7 +1254,7 @@ emit_mfence_after_loop (struct loop *loop)
 {
   vec<edge> exits = get_loop_exit_edges (loop);
   edge exit;
-  gimple call;
+  gcall *call;
   gimple_stmt_iterator bsi;
   unsigned i;
 

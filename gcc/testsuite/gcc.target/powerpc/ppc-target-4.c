@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power5" } } */
 /* { dg-options "-O2 -ffast-math -mcpu=power5 -mno-altivec -mabi=altivec -fno-unroll-loops" } */
 /* { dg-final { scan-assembler-times "vaddfp" 1 } } */
 /* { dg-final { scan-assembler-times "xvaddsp" 1 } } */

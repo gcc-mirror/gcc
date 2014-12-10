@@ -26,12 +26,14 @@ along with GCC; see the file COPYING3.  If not see
 
 int main (int argc, char **argv);
 
-/* We define main() to call toplev_main(), which is defined in toplev.c.
+/* We define main() to call toplev::main(), which is defined in toplev.c.
    We do this in a separate file in order to allow the language front-end
    to define a different main(), if it so desires.  */
 
 int
 main (int argc, char **argv)
 {
-  return toplev_main (argc, argv);
+  toplev toplev (true);
+
+  return toplev.main (argc, argv);
 }

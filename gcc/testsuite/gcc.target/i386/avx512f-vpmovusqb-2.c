@@ -14,12 +14,9 @@ static void
 CALC (unsigned char *r, unsigned long long *s, int mem)
 {
   int i;
-  int len = mem ? 8 : 16;
+  int len = mem ? SIZE : 16;
   for (i = 0; i < len; i++)
-    {
-      r[i] = (s[i] > UCHAR_MAX) ? UCHAR_MAX : s[i];
-      r[i] = (i < SIZE) ? r[i] : 0;
-    }
+    r[i] = (i < SIZE) ? ((s[i] > UCHAR_MAX) ? UCHAR_MAX : s[i]) : 0;
 }
 
 void

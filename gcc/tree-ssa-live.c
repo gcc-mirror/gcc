@@ -27,6 +27,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "bitmap.h"
 #include "sbitmap.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -47,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "debug.h"
 #include "flags.h"
+#include "tree-ssa.h"
 
 #ifdef ENABLE_CHECKING
 static void  verify_live_on_entry (tree_live_info_p);
@@ -605,7 +616,7 @@ remove_unused_scope_block_p (tree scope)
      ;
    /* When not generating debug info we can eliminate info on unused
       variables.  */
-   else if (debug_info_level == DINFO_LEVEL_NONE)
+   else if (!flag_auto_profile && debug_info_level == DINFO_LEVEL_NONE)
      {
        /* Even for -g0 don't prune outer scopes from artificial
 	  functions, otherwise diagnostics using tree_nonartificial_location
@@ -819,12 +830,14 @@ remove_unused_locals (void)
 	    mark_all_vars_used (gimple_op_ptr (gsi_stmt (gsi), i));
 	}
 
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gphi_iterator gpi = gsi_start_phis (bb);
+	   !gsi_end_p (gpi);
+	   gsi_next (&gpi))
         {
           use_operand_p arg_p;
           ssa_op_iter i;
 	  tree def;
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gpi.phi ();
 
 	  if (virtual_operand_p (gimple_phi_result (phi)))
 	    continue;
@@ -1093,6 +1106,10 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
   else
     def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
+  /* An undefined local variable does not need to be very alive.  */
+  if (ssa_undefined_value_p (ssa_name, false))
+    return;
+
   /* Visit each use of SSA_NAME and if it isn't in the same block as the def,
      add it to the list of live on entry blocks.  */
   FOR_EACH_IMM_USE_FAST (use, imm_iter, ssa_name)
@@ -1106,7 +1123,7 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
 	     as this is where a copy would be inserted.  Check to see if it is
 	     defined in that block, or whether its live on entry.  */
 	  int index = PHI_ARG_INDEX_FROM_USE (use);
-	  edge e = gimple_phi_arg_edge (use_stmt, index);
+	  edge e = gimple_phi_arg_edge (as_a <gphi *> (use_stmt), index);
 	  if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	    {
 	      if (e->src != def_bb)
@@ -1154,13 +1171,13 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
   /* Set all the live-on-exit bits for uses in PHIs.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple_stmt_iterator gsi;
+      gphi_iterator gsi;
       size_t i;
 
       /* Mark the PHI arguments which are live on exit to the pred block.  */
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  for (i = 0; i < gimple_phi_num_args (phi); i++)
 	    {
 	      tree t = PHI_ARG_DEF (phi, i);
@@ -1429,16 +1446,21 @@ verify_live_on_entry (tree_live_info_p live)
 	  else
 	    if (d == var)
 	      {
+		/* An undefined local variable does not need to be very
+		   alive.  */
+		if (ssa_undefined_value_p (var, false))
+		  continue;
+
 		/* The only way this var shouldn't be marked live on entry is
 		   if it occurs in a PHI argument of the block.  */
 		size_t z;
 		bool ok = false;
-		gimple_stmt_iterator gsi;
+		gphi_iterator gsi;
 		for (gsi = gsi_start_phis (e->dest);
 		     !gsi_end_p (gsi) && !ok;
 		     gsi_next (&gsi))
 		  {
-		    gimple phi = gsi_stmt (gsi);
+		    gphi *phi = gsi.phi ();
 		    for (z = 0; z < gimple_phi_num_args (phi); z++)
 		      if (var == gimple_phi_arg_def (phi, z))
 			{

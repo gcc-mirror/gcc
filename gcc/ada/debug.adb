@@ -98,7 +98,7 @@ package body Debug is
    --  d.e  Enable atomic synchronization
    --  d.f  Inhibit folding of static expressions
    --  d.g  Enable conversion of raise into goto
-   --  d.h
+   --  d.h  Minimize the creation of public internal symbols for concatenation
    --  d.i  Ignore Warnings pragmas
    --  d.j  Generate listing of frontend inlined calls
    --  d.k
@@ -121,7 +121,7 @@ package body Debug is
    --  d.A  Read/write Aspect_Specifications hash table to tree
    --  d.B
    --  d.C  Generate concatenation call, do not generate inline code
-   --  d.D
+   --  d.D  Disable errors on use of overriding keyword in Ada 95 mode
    --  d.E  Turn selected errors into warnings
    --  d.F  Debug mode for GNATprove
    --  d.G  Ignore calls through generic formal parameters for elaboration
@@ -249,7 +249,7 @@ package body Debug is
    --       output (dt) or recreated source output (dg,do,ds) includes only
    --       the main unit. If df is set, then the output in either case
    --       includes all compiled units (see also dg,do,ds,dt). Note that to
-   --       be effective, this swich must be used in combination with one or
+   --       be effective, this switch must be used in combination with one or
    --       more of dt, dg, do or ds.
 
    --  dg   Print the source recreated from the generated tree. In the case
@@ -525,6 +525,11 @@ package body Debug is
    --       this if this debug flag is set. Later we will enable this more
    --       generally by default.
 
+   --  d.h  Minimize the creation of public internal symbols for concatenation
+   --       by enforcing a secondary stack-like handling of the final result.
+   --       The target of the concatenation is thus constrained in place and
+   --       initialized with the result instead of acting as its alias.
+
    --  d.i  Ignore all occurrences of pragma Warnings in the sources. This can
    --       be used in particular to disable Warnings (Off) to check if any of
    --       these statements are inappropriate.
@@ -596,6 +601,10 @@ package body Debug is
 
    --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
    --       where we would normally generate inline concatenation code.
+
+   --  d.D  For compatibility with some Ada 95 compilers implementing only
+   --       one feature of Ada 2005 (overriding keyword), disable errors on use
+   --       of overriding keyword in Ada 95 mode.
 
    --  d.E  Turn selected errors into warnings. This debug switch causes a
    --       specific set of error messages into warnings. Setting this switch

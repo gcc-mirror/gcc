@@ -1050,11 +1050,10 @@ gfc_is_intrinsic (gfc_symbol* sym, int subroutine_flag, locus loc)
   if (!gfc_check_intrinsic_standard (isym, &symstd, false, loc)
       && !sym->attr.artificial)
     {
-      if (sym->attr.proc == PROC_UNKNOWN
-	  && gfc_option.warn_intrinsics_std)
-	gfc_warning_now ("The intrinsic '%s' at %L is not included in the"
-			 " selected standard but %s and '%s' will be"
-			 " treated as if declared EXTERNAL.  Use an"
+      if (sym->attr.proc == PROC_UNKNOWN && warn_intrinsics_std)
+	gfc_warning_now (OPT_Wintrinsics_std, "The intrinsic %qs at %L is not "
+			 "included in the selected standard but %s and %qs will"
+			 " be treated as if declared EXTERNAL.  Use an"
 			 " appropriate -std=* option or define"
 			 " -fall-intrinsics to allow this intrinsic.",
 			 sym->name, &loc, symstd, sym->name);
@@ -1087,7 +1086,7 @@ make_generic (const char *name, gfc_isym_id id, int standard ATTRIBUTE_UNUSED)
 
   g = gfc_find_function (name);
   if (g == NULL)
-    gfc_internal_error ("make_generic(): Can't find generic symbol '%s'",
+    gfc_internal_error ("make_generic(): Can't find generic symbol %qs",
 			name);
 
   gcc_assert (g->id == id);
@@ -4308,7 +4307,7 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
       break;
 
     default:
-      gfc_internal_error ("Invalid standard code on intrinsic '%s' (%d)",
+      gfc_internal_error ("Invalid standard code on intrinsic %qs (%d)",
 			  isym->name, isym->standard);
     }
 
@@ -4317,7 +4316,7 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
     {
       /* Do only print a warning if not a GNU extension.  */
       if (!silent && isym->standard != GFC_STD_GNU)
-	gfc_warning ("Intrinsic '%s' (is %s) is used at %L",
+	gfc_warning ("Intrinsic %qs (is %s) is used at %L",
 		     isym->name, _(symstd_msg), &where);
 
       return true;
@@ -4652,14 +4651,14 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	  /* Larger kinds can hold values of smaller kinds without problems.
 	     Hence, only warn if target kind is smaller than the source
 	     kind - or if -Wconversion-extra is specified.  */
-	  if (gfc_option.warn_conversion_extra)
-	    gfc_warning_now ("Conversion from %s to %s at %L",
+	  if (warn_conversion && from_ts.kind > ts->kind)
+	    gfc_warning_now (OPT_Wconversion, "Possible change of value in "
+			     "conversion from %s to %s at %L",
 			     gfc_typename (&from_ts), gfc_typename (ts),
 			     &expr->where);
-	  else if (gfc_option.gfc_warn_conversion
-		   && from_ts.kind > ts->kind)
-	    gfc_warning_now ("Possible change of value in conversion "
-			     "from %s to %s at %L", gfc_typename (&from_ts),
+	  else if (warn_conversion_extra)
+	    gfc_warning_now (OPT_Wconversion_extra, "Conversion from %s to %s "
+			     "at %L", gfc_typename (&from_ts),
 			     gfc_typename (ts), &expr->where);
 	}
       else if ((from_ts.type == BT_REAL && ts->type == BT_INTEGER)
@@ -4668,18 +4667,17 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	{
 	  /* Conversion from REAL/COMPLEX to INTEGER or COMPLEX to REAL
 	     usually comes with a loss of information, regardless of kinds.  */
-	  if (gfc_option.warn_conversion_extra
-	      || gfc_option.gfc_warn_conversion)
-	    gfc_warning_now ("Possible change of value in conversion "
-			     "from %s to %s at %L", gfc_typename (&from_ts),
-			     gfc_typename (ts), &expr->where);
+	  if (warn_conversion)
+	    gfc_warning_now (OPT_Wconversion, "Possible change of value in "
+			     "conversion from %s to %s at %L",
+			     gfc_typename (&from_ts), gfc_typename (ts),
+			     &expr->where);
 	}
       else if (from_ts.type == BT_HOLLERITH || ts->type == BT_HOLLERITH)
 	{
 	  /* If HOLLERITH is involved, all bets are off.  */
-	  if (gfc_option.warn_conversion_extra
-	      || gfc_option.gfc_warn_conversion)
-	    gfc_warning_now ("Conversion from %s to %s at %L",
+	  if (warn_conversion)
+	    gfc_warning_now (OPT_Wconversion, "Conversion from %s to %s at %L",
 			     gfc_typename (&from_ts), gfc_typename (ts),
 			     &expr->where);
 	}
@@ -4737,7 +4735,7 @@ bad:
       return false;
     }
 
-  gfc_internal_error ("Can't convert %s to %s at %L",
+  gfc_internal_error ("Can't convert %qs to %qs at %L",
 		      gfc_typename (&from_ts), gfc_typename (ts),
 		      &expr->where);
   /* Not reached */
@@ -4809,7 +4807,7 @@ gfc_warn_intrinsic_shadow (const gfc_symbol* sym, bool in_module, bool func)
   gfc_intrinsic_sym* isym;
 
   /* If the warning is disabled, do nothing at all.  */
-  if (!gfc_option.warn_intrinsic_shadow)
+  if (!warn_intrinsic_shadow)
     return;
 
   /* Try to find an intrinsic of the same name.  */
@@ -4826,12 +4824,14 @@ gfc_warn_intrinsic_shadow (const gfc_symbol* sym, bool in_module, bool func)
 
   /* Emit the warning.  */
   if (in_module || sym->ns->proc_name)
-    gfc_warning ("'%s' declared at %L may shadow the intrinsic of the same"
+    gfc_warning (OPT_Wintrinsic_shadow,
+		 "%qs declared at %L may shadow the intrinsic of the same"
 		 " name.  In order to call the intrinsic, explicit INTRINSIC"
 		 " declarations may be required.",
 		 sym->name, &sym->declared_at);
   else
-    gfc_warning ("'%s' declared at %L is also the name of an intrinsic.  It can"
+    gfc_warning (OPT_Wintrinsic_shadow,
+		 "%qs declared at %L is also the name of an intrinsic.  It can"
 		 " only be called via an explicit interface or if declared"
 		 " EXTERNAL.", sym->name, &sym->declared_at);
 }

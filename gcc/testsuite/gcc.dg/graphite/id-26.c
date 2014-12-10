@@ -1,3 +1,4 @@
+int abs (int);
 int find_sad_16x16(int *intra_mode)
 {
   int current_intra_sad_2,best_intra_sad2;

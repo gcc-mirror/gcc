@@ -44,6 +44,7 @@ pack_d ()
   x = dst.bits.fraction;
 }
 
+int
 main ()
 {
   pack_d ();

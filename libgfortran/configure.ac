@@ -142,7 +142,7 @@ if test "x$GCC" = "xyes"; then
   ## We like to use C11 and C99 routines when available.  This makes
   ## sure that
   ## __STDC_VERSION__ is set such that libc includes make them available.
-  AM_CFLAGS="-std=gnu11 -Wall -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wextra -Wwrite-strings -Werror=implicit-function-declaration"
+  AM_CFLAGS="-std=gnu11 -Wall -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wextra -Wwrite-strings -Werror=implicit-function-declaration -Werror=vla"
   ## Compile the following tests with the same system header contents
   ## that we'll encounter when compiling our own source files.
   CFLAGS="-std=gnu11 $CFLAGS"
@@ -188,6 +188,18 @@ AC_MSG_RESULT($gfortran_use_symver)
 AM_CONDITIONAL(LIBGFOR_USE_SYMVER, [test "x$gfortran_use_symver" != xno])
 AM_CONDITIONAL(LIBGFOR_USE_SYMVER_GNU, [test "x$gfortran_use_symver" = xgnu])
 AM_CONDITIONAL(LIBGFOR_USE_SYMVER_SUN, [test "x$gfortran_use_symver" = xsun])
+
+# For GPU offloading, not everything in libfortran can be supported.
+# Currently, the only target that has this problem is nvptx.  The
+# following is a (partial) list of features that are unsupportable on
+# this particular target:
+# * Constructors
+# * alloca
+# * C library support for I/O, with printf as the one notable exception
+# * C library support for other features such as signal, environment
+#   variables, time functions
+
+AM_CONDITIONAL(LIBGFOR_MINIMAL, [test "x${target_cpu}" = xnvptx])
 
 # Figure out whether the compiler supports "-ffunction-sections -fdata-sections",
 # similarly to how libstdc++ does it
@@ -255,7 +267,7 @@ AC_CHECK_TYPES([ptrdiff_t])
 # check header files (we assume C89 is available, so don't check for that)
 AC_CHECK_HEADERS_ONCE(unistd.h sys/time.h sys/times.h sys/resource.h \
 sys/types.h sys/stat.h sys/wait.h floatingpoint.h ieeefp.h fenv.h fptrap.h \
-fpxcp.h pwd.h complex.h) 
+fpxcp.h pwd.h complex.h xlocale.h)
 
 GCC_HEADER_STDINT(gstdint.h)
 
@@ -275,6 +287,7 @@ if test "x${with_newlib}" = "xyes"; then
    AC_DEFINE(HAVE_GMTIME_R, 1, [Define if you have gmtime_r.])
    AC_DEFINE(HAVE_STRNLEN, 1, [Define if you have strnlen.])
    AC_DEFINE(HAVE_STRNDUP, 1, [Define if you have strndup.])
+   AC_DEFINE(HAVE_STRTOK_R, 1, [Define if you have strtok_r.])
 
    # At some point, we should differentiate between architectures
    # like x86, which have long double versions, and alpha/powerpc/etc.,
@@ -289,7 +302,8 @@ else
    strcasestr getrlimit gettimeofday stat fstat lstat getpwuid vsnprintf dup \
    getcwd localtime_r gmtime_r getpwuid_r ttyname_r clock_gettime \
    readlink getgid getpid getppid getuid geteuid umask getegid \
-   secure_getenv __secure_getenv mkostemp strnlen strndup)
+   secure_getenv __secure_getenv mkostemp strnlen strndup strtok_r newlocale \
+   freelocale uselocale strerror_l)
 fi
 
 # Check strerror_r, cannot be above as versions with two and three arguments exist
@@ -522,11 +536,15 @@ fi
 # Check for SysV fpsetmask
 LIBGFOR_CHECK_FPSETMASK
 AC_CHECK_TYPES([fp_except,fp_except_t], [], [], [[
+#ifdef HAVE_IEEEFP_H
 #include <ieeefp.h>
+#endif
 #include <math.h>
 ]])
 AC_CHECK_TYPES([fp_rnd,fp_rnd_t], [], [], [[
+#ifdef HAVE_IEEEFP_H
 #include <ieeefp.h>
+#endif
 #include <math.h>
 ]])
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,8 @@ with Einfo;    use Einfo;
 with Exp_Util; use Exp_Util;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
@@ -2214,13 +2216,41 @@ package body Exp_Fixd is
    ---------------------------------------------------
 
    procedure Expand_Multiply_Fixed_By_Fixed_Giving_Integer (N : Node_Id) is
-      Left  : constant Node_Id := Left_Opnd (N);
-      Right : constant Node_Id := Right_Opnd (N);
+      Loc   : constant Source_Ptr := Sloc (N);
+      Left  : constant Node_Id    := Left_Opnd (N);
+      Right : constant Node_Id    := Right_Opnd (N);
+
    begin
       if Etype (Left) = Universal_Real then
          Do_Multiply_Fixed_Universal (N, Left => Right, Right => Left);
+
       elsif Etype (Right) = Universal_Real then
          Do_Multiply_Fixed_Universal (N, Left, Right);
+
+      --  If both types are equal and we need to avoid floating point
+      --  instructions, it's worth introducing a temporary with the
+      --  common type, because it may be evaluated more simply without
+      --  the need for run-time use of floating point.
+
+      elsif Etype (Right) = Etype (Left)
+        and then Restriction_Active (No_Floating_Point)
+      then
+         declare
+            Temp : constant Entity_Id := Make_Temporary (Loc, 'F');
+            Mult : constant Node_Id   := Make_Op_Multiply (Loc, Left, Right);
+            Decl : constant Node_Id   :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp,
+                Object_Definition   => New_Occurrence_Of (Etype (Right), Loc),
+                Expression          => Mult);
+
+         begin
+            Insert_Action (N, Decl);
+            Rewrite (N,
+              OK_Convert_To (Etype (N), New_Occurrence_Of (Temp, Loc)));
+            Analyze_And_Resolve (N, Standard_Integer);
+         end;
+
       else
          Do_Multiply_Fixed_Fixed (N);
       end if;

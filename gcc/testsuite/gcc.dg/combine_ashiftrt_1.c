@@ -1,4 +1,5 @@
-/* { dg-do compile {target sparc64*-*-* aarch64*-*-* x86_64-*-* powerpc64*-*-*} } */
+/* { dg-do compile {target sparc64*-*-* aarch64*-*-* i?86-*-* x86_64-*-* powerpc64*-*-*} } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-O2 -fdump-rtl-combine-all" } */
 
 typedef long long int int64_t;

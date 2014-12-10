@@ -1,4 +1,4 @@
-! { dg-do compile { target x86_64-*-* } }
+! { dg-do compile { target i?86-*-* x86_64-*-* } }
 ! Fortran should default to -fno-math-errno
 ! and thus no call to sqrt in asm
 subroutine mysqrt(a)

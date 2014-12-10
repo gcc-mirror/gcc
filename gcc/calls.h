@@ -25,7 +25,7 @@ extern int call_expr_flags (const_tree);
 extern int setjmp_call_p (const_tree);
 extern bool gimple_alloca_call_p (const_gimple);
 extern bool alloca_call_p (const_tree);
-extern bool must_pass_in_stack_var_size (enum machine_mode, const_tree);
-extern bool must_pass_in_stack_var_size_or_pad (enum machine_mode, const_tree);
+extern bool must_pass_in_stack_var_size (machine_mode, const_tree);
+extern bool must_pass_in_stack_var_size_or_pad (machine_mode, const_tree);
 
 #endif // GCC_CALLS_H

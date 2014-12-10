@@ -86,13 +86,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "ggc.h"
 #include "debug.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "target.h"
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "obstack.h"
 #include "expr.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
+#include "stringpool.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -936,10 +947,9 @@ static unsigned int ATTRIBUTE_UNUSED
 get_lang_number (void)
 {
   const char *language_string = lang_hooks.name;
-
-  if (strcmp (language_string, "GNU C") == 0)
+  if (lang_GNU_C ())
     return N_SO_C;
-  else if (strcmp (language_string, "GNU C++") == 0)
+  else if (lang_GNU_CXX ())
     return N_SO_CC;
   else if (strcmp (language_string, "GNU F77") == 0)
     return N_SO_FORTRAN;
@@ -2157,7 +2167,7 @@ dbxout_type (tree type, int full)
 				   access == access_protected_node
 				   ? '1' :'0');
 		    if (BINFO_VIRTUAL_P (child)
-			&& (strcmp (lang_hooks.name, "GNU C++") == 0
+			&& (lang_GNU_CXX ()
 			    || strcmp (lang_hooks.name, "GNU Objective-C++") == 0))
 		      /* For a virtual base, print the (negative)
 		     	 offset within the vtable where we must look
@@ -2315,7 +2325,22 @@ dbxout_type (tree type, int full)
       dbxout_type (TREE_TYPE (type), 0);
       break;
 
+    case POINTER_BOUNDS_TYPE:
+      /* No debug info for pointer bounds type supported yet.  */
+      break;
+
     default:
+      /* A C++ function with deduced return type can have a TEMPLATE_TYPE_PARM
+	 named 'auto' in its type.
+	 No debug info for TEMPLATE_TYPE_PARM type supported yet.  */
+      if (lang_GNU_CXX ())
+	{
+	  tree name = TYPE_IDENTIFIER (type);
+	  if (name == get_identifier ("auto")
+	      || name == get_identifier ("decltype(auto)"))
+	    break;
+	}
+
       gcc_unreachable ();
     }
 }
@@ -2452,7 +2477,7 @@ dbxout_expand_expr (tree expr)
     case ARRAY_RANGE_REF:
     case BIT_FIELD_REF:
       {
-	enum machine_mode mode;
+	machine_mode mode;
 	HOST_WIDE_INT bitsize, bitpos;
 	tree offset, tem;
 	int volatilep = 0, unsignedp = 0;
@@ -2887,7 +2912,8 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
       if (!decl_rtl)
 	DBXOUT_DECR_NESTING_AND_RETURN (0);
 
-      decl_rtl = eliminate_regs (decl_rtl, VOIDmode, NULL_RTX);
+      if (!is_global_var (decl))
+	decl_rtl = eliminate_regs (decl_rtl, VOIDmode, NULL_RTX);
 #ifdef LEAF_REG_REMAP
       if (crtl->uses_only_leaf_regs)
 	leaf_renumber_regs_insn (decl_rtl);
@@ -3013,7 +3039,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 	     we rely on the fact that error_mark_node initializers always
 	     end up in bss for C++ and never end up in bss for C.  */
 	  if (DECL_INITIAL (decl) == 0
-	      || (!strcmp (lang_hooks.name, "GNU C++")
+	      || (lang_GNU_CXX ()
 		  && DECL_INITIAL (decl) == error_mark_node))
 	    {
 	      int offs;

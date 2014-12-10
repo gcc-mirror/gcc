@@ -133,6 +133,11 @@ package body Exp_Dbug is
    --  Determine whether the bounds of E match the size of the type. This is
    --  used to determine whether encoding is required for a discrete type.
 
+   function Is_Handled_Scale_Factor (U : Ureal) return Boolean;
+   --  The argument U is the Small_Value of a fixed-point type. This function
+   --  determines whether the back-end can handle this scale factor. When it
+   --  cannot, we have to output a GNAT encoding for the corresponding type.
+
    procedure Output_Homonym_Numbers_Suffix;
    --  If homonym numbers are stored, then output them into Name_Buffer
 
@@ -535,6 +540,27 @@ package body Exp_Dbug is
          return Make_Null_Statement (Loc);
    end Debug_Renaming_Declaration;
 
+   -----------------------------
+   -- Is_Handled_Scale_Factor --
+   -----------------------------
+
+   function Is_Handled_Scale_Factor (U : Ureal) return Boolean is
+   begin
+      --  Keep in sync with gigi (see E_*_Fixed_Point_Type handling in
+      --  decl.c:gnat_to_gnu_entity).
+
+      if UI_Eq (Numerator (U), Uint_1) then
+         if Rbase (U) = 2 or else Rbase (U) = 10 then
+            return True;
+         end if;
+      end if;
+
+      return
+        (UI_Is_In_Int_Range (Norm_Num (U))
+           and then
+         UI_Is_In_Int_Range (Norm_Den (U)));
+   end Is_Handled_Scale_Factor;
+
    ----------------------
    -- Get_Encoded_Name --
    ----------------------
@@ -593,9 +619,13 @@ package body Exp_Dbug is
 
       Has_Suffix := True;
 
-      --  Fixed-point case
+      --  Fixed-point case: generate GNAT encodings when asked to or when we
+      --  know the back-end will not be able to handle the scale factor.
 
-      if Is_Fixed_Point_Type (E) then
+      if Is_Fixed_Point_Type (E)
+        and then (GNAT_Encodings /= DWARF_GNAT_Encodings_Minimal
+                   or else not Is_Handled_Scale_Factor (Small_Value (E)))
+      then
          Get_External_Name (E, True, "XF_");
          Add_Real_To_Buffer (Delta_Value (E));
 
@@ -604,10 +634,15 @@ package body Exp_Dbug is
             Add_Real_To_Buffer (Small_Value (E));
          end if;
 
-      --  Discrete case where bounds do not match size
+      --  Discrete case where bounds do not match size. Match only biased
+      --  types when asked to output as little encodings as possible.
 
-      elsif Is_Discrete_Type (E)
-        and then not Bounds_Match_Size (E)
+      elsif ((GNAT_Encodings /= DWARF_GNAT_Encodings_Minimal
+               and then Is_Discrete_Type (E))
+             or else
+             (GNAT_Encodings = DWARF_GNAT_Encodings_Minimal
+               and then Has_Biased_Representation (E)))
+            and then not Bounds_Match_Size (E)
       then
          declare
             Lo : constant Node_Id := Type_Low_Bound (E);
@@ -618,13 +653,11 @@ package body Exp_Dbug is
 
             Lo_Discr : constant Boolean :=
                          Nkind (Lo) = N_Identifier
-                           and then
-                         Ekind (Entity (Lo)) = E_Discriminant;
+                          and then Ekind (Entity (Lo)) = E_Discriminant;
 
             Hi_Discr : constant Boolean :=
                          Nkind (Hi) = N_Identifier
-                           and then
-                         Ekind (Entity (Hi)) = E_Discriminant;
+                          and then Ekind (Entity (Hi)) = E_Discriminant;
 
             Lo_Encode : constant Boolean := Lo_Con or Lo_Discr;
             Hi_Encode : constant Boolean := Hi_Con or Hi_Discr;

@@ -128,8 +128,35 @@ typedef struct variant_desc_d {
 
 
 /* A hash table used to cache the result of annotate_value.  */
-static GTY ((if_marked ("tree_int_map_marked_p"),
-	     param_is (struct tree_int_map))) htab_t annotate_value_cache;
+
+struct value_annotation_hasher : ggc_cache_hasher<tree_int_map *>
+{
+  static inline hashval_t
+  hash (tree_int_map *m)
+  {
+    return htab_hash_pointer (m->base.from);
+  }
+
+  static inline bool
+  equal (tree_int_map *a, tree_int_map *b)
+  {
+    return a->base.from == b->base.from;
+  }
+
+  static void
+  handle_cache_entry (tree_int_map *&m)
+  {
+    extern void gt_ggc_mx (tree_int_map *&);
+    if (m == HTAB_EMPTY_ENTRY || m == HTAB_DELETED_ENTRY)
+      return;
+    else if (ggc_marked_p (m->base.from))
+      gt_ggc_mx (m);
+    else
+      m = static_cast<tree_int_map *> (HTAB_DELETED_ENTRY);
+  }
+};
+
+static GTY ((cache)) hash_table<value_annotation_hasher> *annotate_value_cache;
 
 static bool allocatable_size_p (tree, bool);
 static void prepend_one_attribute (struct attrib **,
@@ -2127,11 +2154,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		tree gnu_max
 		  = convert (sizetype, TYPE_MAX_VALUE (gnu_index_type));
 		tree gnu_this_max
-		  = size_binop (MAX_EXPR,
-				size_binop (PLUS_EXPR, size_one_node,
-					    size_binop (MINUS_EXPR,
-							gnu_max, gnu_min)),
-				size_zero_node);
+		  = size_binop (PLUS_EXPR, size_one_node,
+				size_binop (MINUS_EXPR, gnu_max, gnu_min));
 
 		if (TREE_CODE (gnu_this_max) == INTEGER_CST
 		    && TREE_OVERFLOW (gnu_this_max))
@@ -2464,35 +2488,39 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    gnu_max_size = NULL_TREE;
 		  else
 		    {
-		      tree gnu_this_max
-			= size_binop (MAX_EXPR,
-				      size_binop (PLUS_EXPR, size_one_node,
-						  size_binop (MINUS_EXPR,
-							      gnu_base_max,
-							      gnu_base_min)),
-				      size_zero_node);
+		      tree gnu_this_max;
 
-		      if (TREE_CODE (gnu_this_max) == INTEGER_CST
-			  && TREE_OVERFLOW (gnu_this_max))
-			gnu_max_size = NULL_TREE;
+		      /* Use int_const_binop if the bounds are constant to
+			 avoid any unwanted overflow.  */
+		      if (TREE_CODE (gnu_base_min) == INTEGER_CST
+			  && TREE_CODE (gnu_base_max) == INTEGER_CST)
+			gnu_this_max
+			  = int_const_binop (PLUS_EXPR, size_one_node,
+					     int_const_binop (MINUS_EXPR,
+							      gnu_base_max,
+							      gnu_base_min));
 		      else
-			gnu_max_size
-			  = size_binop (MULT_EXPR, gnu_max_size, gnu_this_max);
+			gnu_this_max
+			  = size_binop (PLUS_EXPR, size_one_node,
+					size_binop (MINUS_EXPR,
+						    gnu_base_max,
+						    gnu_base_min));
+
+		      gnu_max_size
+			= size_binop (MULT_EXPR, gnu_max_size, gnu_this_max);
 		    }
 		}
 
 	      /* We need special types for debugging information to point to
 		 the index types if they have variable bounds, are not integer
-		 types, are biased or are wider than sizetype.  */
-	      if (!integer_onep (gnu_orig_min)
+		 types or are biased.  */
+	      if (TREE_CODE (gnu_orig_min) != INTEGER_CST
 		  || TREE_CODE (gnu_orig_max) != INTEGER_CST
 		  || TREE_CODE (gnu_index_type) != INTEGER_TYPE
 		  || (TREE_TYPE (gnu_index_type)
 		      && TREE_CODE (TREE_TYPE (gnu_index_type))
 			 != INTEGER_TYPE)
-		  || TYPE_BIASED_REPRESENTATION_P (gnu_index_type)
-		  || compare_tree_int (rm_size (gnu_index_type),
-				       TYPE_PRECISION (sizetype)) > 0)
+		  || TYPE_BIASED_REPRESENTATION_P (gnu_index_type))
 		need_index_type_struct = true;
 	    }
 
@@ -3055,7 +3083,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		     gnat_field = Next_Stored_Discriminant (gnat_field))
 		  if (Present (Corresponding_Discriminant (gnat_field)))
 		    {
-		      Entity_Id field = Empty;
+		      Entity_Id field;
 		      for (field = First_Stored_Discriminant (gnat_parent);
 			   Present (field);
 			   field = Next_Stored_Discriminant (field))
@@ -3137,8 +3165,30 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		&& Ekind (Entity (Node (gnat_constr))) == E_Discriminant)
 	      {
 		Entity_Id gnat_discr = Entity (Node (gnat_constr));
-		tree gnu_discr_type = gnat_to_gnu_type (Etype (gnat_discr));
-		tree gnu_ref
+		tree gnu_discr_type, gnu_ref;
+
+		/* If the scope of the discriminant is not the record type,
+		   this means that we're processing the implicit full view
+		   of a type derived from a private discriminated type: in
+		   this case, the Stored_Constraint list is simply copied
+		   from the partial view, see Build_Derived_Private_Type.
+		   So we need to retrieve the corresponding discriminant
+		   of the implicit full view, otherwise we will abort.  */
+		if (Scope (gnat_discr) != gnat_entity)
+		  {
+		    Entity_Id field;
+		    for (field = First_Entity (gnat_entity);
+			 Present (field);
+			 field = Next_Entity (field))
+		      if (Ekind (field) == E_Discriminant
+			  && same_discriminant_p (gnat_discr, field))
+			break;
+		    gcc_assert (Present (field));
+		    gnat_discr = field;
+		  }
+
+		gnu_discr_type = gnat_to_gnu_type (Etype (gnat_discr));
+		gnu_ref
 		  = gnat_to_gnu_entity (Original_Record_Component (gnat_discr),
 					NULL_TREE, 0);
 
@@ -3735,7 +3785,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* True if we make a dummy type here.  */
 	bool made_dummy = false;
 	/* The mode to be used for the pointer type.  */
-	enum machine_mode p_mode = mode_for_size (esize, MODE_INT, 0);
+	machine_mode p_mode = mode_for_size (esize, MODE_INT, 0);
 	/* The GCC type used for the designated type.  */
 	tree gnu_desig_type = NULL_TREE;
 
@@ -4467,7 +4517,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    unsigned int size
 		      = TREE_INT_CST_LOW (TYPE_SIZE (gnu_return_type));
 		    unsigned int i = BITS_PER_UNIT;
-		    enum machine_mode mode;
+		    machine_mode mode;
 
 		    while (i < size)
 		      i <<= 1;
@@ -5080,8 +5130,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       if (Is_Derived_Type (gnat_entity) && !type_annotate_only)
 	{
 	  Entity_Id gnat_parent_type = Underlying_Type (Etype (gnat_entity));
-	  /* For packed array subtypes, the implementation type is used.  */
+	  /* For constrained packed array subtypes, the implementation type is
+	     used instead of the nominal type.  */
 	  if (kind == E_Array_Subtype
+	      && Is_Constrained (gnat_entity)
 	      && Present (Packed_Array_Impl_Type (gnat_parent_type)))
 	    gnat_parent_type = Packed_Array_Impl_Type (gnat_parent_type);
 	  relate_alias_sets (gnu_type, gnat_to_gnu_type (gnat_parent_type),
@@ -6152,7 +6204,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 	{
 	  HOST_WIDE_INT bitsize, bitpos;
 	  tree offset;
-	  enum machine_mode mode;
+	  machine_mode mode;
 	  int unsignedp, volatilep;
 
 	  inner = get_inner_reference (inner, &bitsize, &bitpos, &offset,
@@ -7337,7 +7389,7 @@ annotate_value (tree gnu_size)
       struct tree_int_map *e;
 
       in.base.from = gnu_size;
-      e = (struct tree_int_map *) htab_find (annotate_value_cache, &in);
+      e = annotate_value_cache->find (&in);
 
       if (e)
 	return (Node_Ref_Or_Val) e->to;
@@ -7466,8 +7518,7 @@ annotate_value (tree gnu_size)
 	 look up, so we have to search again.  Allocating and inserting an
 	 entry at that point would be an alternative, but then we'd better
 	 discard the entry if we decided not to cache it.  */
-      h = (struct tree_int_map **)
-	    htab_find_slot (annotate_value_cache, &in, INSERT);
+      h = annotate_value_cache->find_slot (&in, INSERT);
       gcc_assert (!*h);
       *h = ggc_alloc<tree_int_map> ();
       (*h)->base.from = gnu_size;
@@ -7836,7 +7887,7 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
      by the smallest integral mode that's valid for pointers.  */
   if (TREE_CODE (gnu_type) == POINTER_TYPE || TYPE_IS_FAT_POINTER_P (gnu_type))
     {
-      enum machine_mode p_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+      machine_mode p_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
       while (!targetm.valid_pointer_mode (p_mode))
 	p_mode = GET_MODE_WIDER_MODE (p_mode);
       type_size = bitsize_int (GET_MODE_BITSIZE (p_mode));
@@ -8046,7 +8097,7 @@ check_ok_for_atomic (tree object, Entity_Id gnat_entity, bool comp_p)
 {
   Node_Id gnat_error_point = gnat_entity;
   Node_Id gnat_node;
-  enum machine_mode mode;
+  machine_mode mode;
   unsigned int align;
   tree size;
 
@@ -8815,8 +8866,7 @@ void
 init_gnat_decl (void)
 {
   /* Initialize the cache of annotated values.  */
-  annotate_value_cache
-    = htab_create_ggc (512, tree_int_map_hash, tree_int_map_eq, 0);
+  annotate_value_cache = hash_table<value_annotation_hasher>::create_ggc (512);
 }
 
 /* Destroy data structures of the decl.c module.  */
@@ -8825,7 +8875,7 @@ void
 destroy_gnat_decl (void)
 {
   /* Destroy the cache of annotated values.  */
-  htab_delete (annotate_value_cache);
+  annotate_value_cache->empty ();
   annotate_value_cache = NULL;
 }
 

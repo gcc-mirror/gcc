@@ -38,14 +38,14 @@ extern char * construct_restore_jr          (rtx);
 #ifdef HAVE_MACHINE_MODES
 extern char * construct_dispose_instruction (rtx);
 extern char * construct_prepare_instruction (rtx);
-extern int    ep_memory_operand             (rtx, enum machine_mode, int);
+extern int    ep_memory_operand             (rtx, machine_mode, int);
 extern int    v850_adjust_insn_length       (rtx_insn *, int);
 extern const char * v850_gen_movdi          (rtx *);
-extern rtx    v850_gen_compare              (enum rtx_code, enum machine_mode,
+extern rtx    v850_gen_compare              (enum rtx_code, machine_mode,
 					     rtx, rtx);
-extern enum machine_mode  v850_gen_float_compare (enum rtx_code,
-						  enum machine_mode, rtx, rtx);
-extern enum machine_mode  v850_select_cc_mode (RTX_CODE, rtx, rtx);
+extern machine_mode  v850_gen_float_compare (enum rtx_code,
+						  machine_mode, rtx, rtx);
+extern machine_mode  v850_select_cc_mode (RTX_CODE, rtx, rtx);
 #endif
 #endif /* RTX_CODE */
 

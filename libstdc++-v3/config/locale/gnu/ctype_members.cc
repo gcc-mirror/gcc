@@ -94,6 +94,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       case graph:
 	__ret = __wctype_l("graph", _M_c_locale_ctype);
 	break;
+      case blank:
+	__ret = __wctype_l("blank", _M_c_locale_ctype);
+	break;
       default:
 	__ret = __wmask_type();
       }
@@ -144,8 +147,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ret = __iswctype_l(__c, _M_wmask[5], _M_c_locale_ctype);
     else
       {
-	// Highest bitmask in ctype_base == 10, but extra in "C"
-	// library for blank.
+	// Highest bitmask in ctype_base == 11
 	const size_t __bitmasksize = 11;
 	for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
 	  if (__m & _M_bit[__bitcur])
@@ -168,8 +170,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     for (; __lo < __hi; ++__vec, ++__lo)
       {
-	// Highest bitmask in ctype_base == 10, but extra in "C"
-	// library for blank.
+	// Highest bitmask in ctype_base == 11
 	const size_t __bitmasksize = 11; 
 	mask __m = 0;
 	for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)

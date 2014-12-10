@@ -25,13 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "machmode.h"
 
 #ifdef HAVE_simple_return
-/* In function.c.  */
-extern void emit_return_into_block (bool simple_p, basic_block bb);
-extern bool active_insn_between (rtx_insn *head, rtx_insn *tail);
-extern vec<edge> convert_jumps_to_returns (basic_block last_bb, bool simple_p,
-					   vec<edge> unconverted);
-extern basic_block emit_return_for_exit (edge exit_fallthru_edge,
-					 bool simple_p);
+
+#include "function.h"
 
 /* In shrink-wrap.c.  */
 extern bool requires_stack_frame_p (rtx_insn *, HARD_REG_SET, HARD_REG_SET);

@@ -25,7 +25,7 @@
 /* The various cores that implement AArch64.  */
 enum aarch64_processor
 {
-#define AARCH64_CORE(NAME, INTERNAL_IDENT, IDENT, ARCH, FLAGS, COSTS) \
+#define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS) \
   INTERNAL_IDENT,
 #include "aarch64-cores.def"
 #undef AARCH64_CORE

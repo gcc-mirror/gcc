@@ -66,4 +66,6 @@ extern bool initializer_constant_valid_for_bitfield_p (tree);
    evaluate the property while walking a constructor for other purposes.  */
 extern bool constructor_static_from_elts_p (const_tree);
 
+extern void init_varasm_status (void);
+
 #endif  // GCC_VARASM_H

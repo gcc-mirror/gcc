@@ -1,5 +1,5 @@
 // { dg-do link }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-require-cstdint "" }
 //
 // 2009-09-29  Paolo Carlini <paolo.carlini@oracle.com>

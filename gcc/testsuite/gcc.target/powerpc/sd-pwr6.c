@@ -2,6 +2,7 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* powerpc-ibm-aix* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-require-effective-target dfp } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
 /* { dg-options "-O2 -mcpu=power6 -mhard-dfp" } */
 /* { dg-final { scan-assembler-not   "lfiwzx"   } } */
 /* { dg-final { scan-assembler-times "lfd"    2 } } */

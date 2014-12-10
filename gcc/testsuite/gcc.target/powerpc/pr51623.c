@@ -16,6 +16,7 @@ struct mtd_info {
 };
 
 extern int strcmp(const char *,const char *);
+extern int strncmp(const char *,const char *,size_t);
 extern char * strchr(const char *,int);
 
 struct cmd_tbl_s {
@@ -24,12 +25,16 @@ struct cmd_tbl_s {
 
 
 int printf(const char *fmt, ...) __attribute__ ((format (__printf__, 1, 2)));
+int putc (int);
 void* malloc(size_t);
 void free(void*);
 
+extern unsigned long simple_strtoul(const char *,char **,unsigned int);
 
 extern int nand_curr_device;
 extern struct mtd_info nand_info[];
+
+extern void cmd_usage(struct cmd_tbl_s *);
 
 static int nand_dump(struct mtd_info *nand, unsigned long off, int only_oob)
 {

@@ -71,6 +71,7 @@ Specify the name of the target architecture.
 
 Enum
 Name(nds32_arch_type) Type(enum nds32_arch_type)
+Known arch types (for use with the -march= option):
 
 EnumValue
 Enum(nds32_arch_type) String(v2) Value(ARCH_V2)

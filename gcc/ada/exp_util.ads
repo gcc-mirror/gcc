@@ -311,6 +311,11 @@ package Exp_Util is
    --  it is harmless, so it is easier to do it in all cases, rather than
    --  conditionalize it in GNAT 5 or beyond.
 
+   function Containing_Package_With_Ext_Axioms
+     (E : Entity_Id) return Entity_Id;
+   --  Returns the package entity with an external axiomatization containing E,
+   --  if any, or Empty if none.
+
    procedure Convert_To_Actual_Subtype (Exp : Node_Id);
    --  The Etype of an expression is the nominal type of the expression,
    --  not the actual subtype. Often these are the same, but not always.
@@ -367,14 +372,24 @@ package Exp_Util is
    --  following functions allow this behavior to be modified.
 
    function Duplicate_Subexpr_No_Checks
-     (Exp          : Node_Id;
-      Name_Req     : Boolean := False;
-      Renaming_Req : Boolean := False) return Node_Id;
-   --  Identical in effect to Duplicate_Subexpr, except that Remove_Checks
-   --  is called on the result, so that the duplicated expression does not
-   --  include checks. This is appropriate for use when Exp, the original
-   --  expression is unconditionally elaborated before the duplicated
-   --  expression, so that there is no need to repeat any checks.
+     (Exp           : Node_Id;
+      Name_Req      : Boolean   := False;
+      Renaming_Req  : Boolean   := False;
+      Related_Id    : Entity_Id := Empty;
+      Is_Low_Bound  : Boolean   := False;
+      Is_High_Bound : Boolean   := False) return Node_Id;
+   --  Identical in effect to Duplicate_Subexpr, except that Remove_Checks is
+   --  called on the result, so that the duplicated expression does not include
+   --  checks. This is appropriate for use when Exp, the original expression is
+   --  unconditionally elaborated before the duplicated expression, so that
+   --  there is no need to repeat any checks.
+   --
+   --  Related_Id denotes the entity of the context where Expr appears. Flags
+   --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
+   --  is the low or the high bound of a range. These three optional arguments
+   --  signal Remove_Side_Effects to create an external symbol of the form
+   --  Chars (Related_Id)_FIRST/_LAST. For suggested use of these parameters
+   --  see the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
 
    function Duplicate_Subexpr_Move_Checks
      (Exp          : Node_Id;
@@ -487,6 +502,19 @@ package Exp_Util is
    --  be evaluated, for example if N is the right operand of a short circuit
    --  operator.
 
+   function Following_Address_Clause (D : Node_Id) return Node_Id;
+   --  D is the node for an object declaration. This function searches the
+   --  current declarative part to look for an address clause for the object
+   --  being declared, and returns the clause if one is found, returns
+   --  Empty otherwise.
+   --
+   --  Note: this function can be costly and must be invoked with special care.
+   --  Possibly we could introduce a flag at parse time indicating the presence
+   --  of an address clause to speed this up???
+   --
+   --  Note: currently this function does not scan the private part, that seems
+   --  like a potential bug ???
+
    procedure Force_Evaluation
      (Exp      : Node_Id;
       Name_Req : Boolean := False);
@@ -542,11 +570,6 @@ package Exp_Util is
    --  N_Op_Eq), or to determine the result of some other test in other cases
    --  (e.g. no access check required if N_Op_Ne Null).
 
-   function Get_First_Parent_With_Ext_Axioms_For_Entity
-     (E : Entity_Id) return Entity_Id;
-   --  Returns the package entity with an external axiomatization containing E,
-   --  if any, or Empty if none.
-
    function Get_Stream_Size (E : Entity_Id) return Uint;
    --  Return the stream size value of the subtype E
 
@@ -558,11 +581,6 @@ package Exp_Util is
    --  Returns whether E is a package entity, for which the initial list of
    --  pragmas at the start of the package declaration contains
    --    pragma Annotate (GNATprove, External_Axiomatization);
-
-   function Has_Following_Address_Clause (D : Node_Id) return Boolean;
-   --  D is the node for an object declaration. This function searches the
-   --  current declarative part to look for an address clause for the object
-   --  being declared, and returns True if one is found.
 
    function Homonym_Number (Subp : Entity_Id) return Nat;
    --  Here subp is the entity for a subprogram. This routine returns the
@@ -823,10 +841,13 @@ package Exp_Util is
    --  associated with Var, and if found, remove and return that call node.
 
    procedure Remove_Side_Effects
-     (Exp          : Node_Id;
-      Name_Req     : Boolean := False;
-      Renaming_Req : Boolean := False;
-      Variable_Ref : Boolean := False);
+     (Exp           : Node_Id;
+      Name_Req      : Boolean   := False;
+      Renaming_Req  : Boolean   := False;
+      Variable_Ref  : Boolean   := False;
+      Related_Id    : Entity_Id := Empty;
+      Is_Low_Bound  : Boolean   := False;
+      Is_High_Bound : Boolean   := False);
    --  Given the node for a subexpression, this function replaces the node if
    --  necessary by an equivalent subexpression that is guaranteed to be side
    --  effect free. This is done by extracting any actions that could cause
@@ -840,6 +861,14 @@ package Exp_Util is
    --  side effect (used in implementing Force_Evaluation). Note: after call to
    --  Remove_Side_Effects, it is safe to call New_Copy_Tree to obtain a copy
    --  of the resulting expression.
+   --
+   --  Related_Id denotes the entity of the context where Expr appears. Flags
+   --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
+   --  is the low or the high bound of a range. These three optional arguments
+   --  signal Remove_Side_Effects to create an external symbol of the form
+   --  Chars (Related_Id)_FIRST/_LAST. If Related_Id is set, the exactly one
+   --  of the Is_xxx_Bound flags must be set. For use of these parameters see
+   --  the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
 
    function Represented_As_Scalar (T : Entity_Id) return Boolean;
    --  Returns True iff the implementation of this type in code generation

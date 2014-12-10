@@ -1,4 +1,4 @@
-/* { dg-do run { target { { x86_64-*-* ia64-*-* } && { ! { ia32 } } } } } */
+/* { dg-do run { target { { { i?86-*-* x86_64-*-* } && { ! { ia32 } } || { ia64-*-* } } } } } */
 /* { dg-options "-fsanitize=float-cast-overflow" } */
 
 #include <limits.h>

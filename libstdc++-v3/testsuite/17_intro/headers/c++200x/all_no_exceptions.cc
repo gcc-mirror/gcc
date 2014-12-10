@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x -fno-exceptions" }
+// { dg-options "-std=gnu++11 -fno-exceptions" }
 
 // Copyright (C) 2007-2014 Free Software Foundation, Inc.
 //

@@ -304,6 +304,7 @@ aarch64*-*-*)
 	cpu_type=aarch64
 	extra_headers="arm_neon.h arm_acle.h"
 	extra_objs="aarch64-builtins.o aarch-common.o"
+	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.c"
 	target_has_targetm_common=yes
 	;;
 alpha*-*-*)
@@ -318,12 +319,13 @@ arc*-*-*)
 	;;
 arm*-*-*)
 	cpu_type=arm
-	extra_objs="aarch-common.o"
+	extra_objs="arm-builtins.o aarch-common.o"
 	extra_headers="mmintrin.h arm_neon.h arm_acle.h"
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
 	extra_options="${extra_options} arm/arm-tables.opt"
+	target_gtfiles="\$(srcdir)/config/arm/arm-builtins.c"
 	;;
 avr-*-*)
 	cpu_type=avr
@@ -364,7 +366,10 @@ i[34567]86-*-*)
 		       adxintrin.h fxsrintrin.h xsaveintrin.h xsaveoptintrin.h
 		       avx512cdintrin.h avx512erintrin.h avx512pfintrin.h
 		       shaintrin.h clflushoptintrin.h xsavecintrin.h
-		       xsavesintrin.h"
+		       xsavesintrin.h avx512dqintrin.h avx512bwintrin.h
+		       avx512vlintrin.h avx512vlbwintrin.h avx512vldqintrin.h
+		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
+		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -382,7 +387,10 @@ x86_64-*-*)
 		       adxintrin.h fxsrintrin.h xsaveintrin.h xsaveoptintrin.h
 		       avx512cdintrin.h avx512erintrin.h avx512pfintrin.h
 		       shaintrin.h clflushoptintrin.h xsavecintrin.h
-		       xsavesintrin.h"
+		       xsavesintrin.h avx512dqintrin.h avx512bwintrin.h
+		       avx512vlintrin.h avx512vlbwintrin.h avx512vldqintrin.h
+		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
+		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -419,6 +427,9 @@ nds32*)
 nios2-*-*)
 	cpu_type=nios2
 	extra_options="${extra_options} g.opt"
+	;;
+nvptx-*-*)
+	cpu_type=nvptx
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
@@ -1398,8 +1409,14 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 	i[34567]86-*-linux*)
 		tm_file="${tm_file} linux.h linux-android.h"
 		extra_options="${extra_options} linux-android.opt"
-		# Assume modern glibc
-		default_gnu_indirect_function=yes
+		# Assume modern glibc if not targeting Android nor uclibc.
+		case ${target} in
+		*-*-*android*|*-*-*uclibc*)
+		  ;;
+		*)
+		  default_gnu_indirect_function=yes
+		  ;;
+		esac
 		if test x$enable_targets = xall; then
 			tm_file="${tm_file} i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h i386/linux-common.h i386/linux64.h"
 			tm_defines="${tm_defines} TARGET_BI_ARCH=1"
@@ -1461,8 +1478,14 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	x86_64-*-linux*)
 		tm_file="${tm_file} linux.h linux-android.h i386/linux-common.h i386/linux64.h"
 		extra_options="${extra_options} linux-android.opt"
-		# Assume modern glibc
-		default_gnu_indirect_function=yes
+		# Assume modern glibc if not targeting Android nor uclibc.
+		case ${target} in
+		*-*-*android*|*-*-*uclibc*)
+		  ;;
+		*)
+		  default_gnu_indirect_function=yes
+		  ;;
+		esac
 	  	;;
 	x86_64-*-kfreebsd*-gnu)
 		tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu64.h"
@@ -1945,41 +1968,44 @@ mips*-mti-linux*)
 	gnu_ld=yes
 	gas=yes
 	;;
-mips64*-*-linux* | mipsisa64*-*-linux*)
+mips*-*-linux*)				# Linux MIPS, either endian.
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h mips/linux-common.h"
 	extra_options="${extra_options} linux-android.opt"
-	tmake_file="${tmake_file} mips/t-linux64"
-	tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
 	case ${target} in
+		mipsisa32r2*)
+			default_mips_arch=mips32r2
+			;;
+		mipsisa32*)
+			default_mips_arch=mips32
+			;;
 		mips64el-st-linux-gnu)
+			default_mips_abi=n32
 			tm_file="${tm_file} mips/st.h"
 			tmake_file="${tmake_file} mips/t-st"
+			enable_mips_multilibs="yes"
 			;;
 		mips64octeon*-*-linux*)
+			default_mips_abi=n32
 			tm_defines="${tm_defines} MIPS_CPU_STRING_DEFAULT=\\\"octeon\\\""
 			target_cpu_default=MASK_SOFT_FLOAT_ABI
+			enable_mips_multilibs="yes"
 			;;
 		mipsisa64r2*-*-linux*)
-			tm_defines="${tm_defines} MIPS_ISA_DEFAULT=65"
+			default_mips_abi=n32
+			default_mips_arch=mips64r2
+			enable_mips_multilibs="yes"
+			;;
+		mips64*-*-linux* | mipsisa64*-*-linux*)
+			default_mips_abi=n32
+			enable_mips_multilibs="yes"
 			;;
 	esac
-	gnu_ld=yes
-	gas=yes
-	;;
-mips*-*-linux*)				# Linux MIPS, either endian.
-	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h"
-	extra_options="${extra_options} linux-android.opt"
 	if test x$enable_targets = xall; then
+		enable_mips_multilibs="yes"
+	fi
+	if test x$enable_mips_multilibs = xyes; then
 		tmake_file="${tmake_file} mips/t-linux64"
 	fi
-	tm_file="${tm_file} mips/linux-common.h"
-	case ${target} in
-        mipsisa32r2*)
-		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33"
-                ;;
-        mipsisa32*)
-		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
-        esac
 	;;
 mips*-mti-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h mips/mti-elf.h"
@@ -2147,6 +2173,10 @@ nios2-*-*)
 		tmake_file="${tmake_file} t-rtems nios2/t-rtems"
 		;;
         esac
+	;;
+nvptx-*)
+	tm_file="${tm_file} newlib-stdint.h"
+	tmake_file="nvptx/t-nvptx"
 	;;
 pdp11-*-*)
 	tm_file="${tm_file} newlib-stdint.h"
@@ -2637,7 +2667,7 @@ sparc-*-elf*)
 	;;
 sparc-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h sparc/sp-elf.h sparc/rtemself.h rtems.h newlib-stdint.h"
-	tmake_file="${tmake_file} sparc/t-sparc sparc/t-elf sparc/t-rtems"
+	tmake_file="${tmake_file} sparc/t-sparc sparc/t-rtems"
 	;;
 sparc-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/tso.h"
@@ -2869,6 +2899,13 @@ i[34567]86-*-* | x86_64-*-*)
 	;;
 powerpc*-*-* | rs6000-*-*)
 	tm_file="${tm_file} rs6000/option-defaults.h"
+esac
+
+# Build mkoffload tool
+case ${target} in
+*-intelmic-* | *-intelmicemul-*)
+	tmake_file="${tmake_file} i386/t-intelmic"
+	;;
 esac
 
 if [ "$target_has_targetcm" = "no" ]; then
@@ -3179,6 +3216,9 @@ if test x$with_cpu = x ; then
 	  ;;
 	*-leon[3-9]*)
 	  with_cpu=leon3
+	  ;;
+	*-leon[3-9]v7*)
+	  with_cpu=leon3v7
 	  ;;
 	*)
 	  with_cpu="`echo ${target} | sed 's/-.*$//'`"
@@ -3738,7 +3778,7 @@ case "${target}" in
 		;;
 
 	mips*-*-*)
-		supported_defaults="abi arch arch_32 arch_64 float fpu nan tune tune_32 tune_64 divide llsc mips-plt synci"
+		supported_defaults="abi arch arch_32 arch_64 float fpu nan fp_32 odd_spreg_32 tune tune_32 tune_64 divide llsc mips-plt synci"
 
 		case ${with_float} in
 		"" | soft | hard)
@@ -3766,6 +3806,32 @@ case "${target}" in
 			;;
 		*)
 			echo "Unknown NaN encoding used in --with-nan=$with_nan" 1>&2
+			exit 1
+			;;
+		esac
+
+		case ${with_fp_32} in
+		"" | 32 | xx | 64)
+			# OK
+			;;
+		*)
+			echo "Unknown FP mode used in --with-fp-32=$with_fp_32" 1>&2
+			exit 1
+			;;
+		esac
+
+		case ${with_odd_spreg_32} in
+		yes)
+			with_odd_spreg_32="odd-spreg"
+			;;
+		no)
+			with_odd_spreg_32="no-odd-spreg"
+			;;
+		"")
+			# OK
+			;;
+		*)
+			echo "Unknown odd-spreg-32 type used in --with-odd-spreg-32=$with_odd_spreg_32" 1>&2
 			exit 1
 			;;
 		esac
@@ -3974,7 +4040,7 @@ case "${target}" in
 			case ${val} in
 			"" | sparc | sparcv9 | sparc64 \
 			| v7 | cypress \
-			| v8 | supersparc | hypersparc | leon | leon3 \
+			| v8 | supersparc | hypersparc | leon | leon3 | leon3v7 \
 			| sparclite | f930 | f934 | sparclite86x \
 			| sparclet | tsc701 \
 			| v9 | ultrasparc | ultrasparc3 | niagara | niagara2 \
@@ -4066,7 +4132,7 @@ case ${target} in
 	hppa*-*-*)
 		if test x$gas = xyes
 		then
-			target_cpu_default2="MASK_GAS|MASK_JUMP_IN_DELAY"
+			target_cpu_default2="MASK_GAS"
 		fi
 		;;
 
@@ -4111,6 +4177,29 @@ case ${target} in
 			mips*el-*-*)
 				tm_defines="TARGET_ENDIAN_DEFAULT=0 $tm_defines"
 				;;
+		esac
+		if test x$with_arch != x; then
+			default_mips_arch=$with_arch
+		fi
+		if test x$with_abi != x; then
+			default_mips_abi=$with_abi
+		fi
+		case ${default_mips_arch} in
+		    mips1)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=1" ;;
+		    mips2)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=2" ;;
+		    mips3)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=3" ;;
+		    mips4)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=4" ;;
+		    mips32)   tm_defines="$tm_defines MIPS_ISA_DEFAULT=32" ;;
+		    mips32r2) tm_defines="$tm_defines MIPS_ISA_DEFAULT=33" ;;
+		    mips64)   tm_defines="$tm_defines MIPS_ISA_DEFAULT=64" ;;
+		    mips64r2) tm_defines="$tm_defines MIPS_ISA_DEFAULT=65" ;;
+		esac
+		case ${default_mips_abi} in
+		    32)   tm_defines="$tm_defines MIPS_ABI_DEFAULT=ABI_32" ;;
+		    o64)  tm_defines="$tm_defines MIPS_ABI_DEFAULT=ABI_O64" ;;
+		    n32)  tm_defines="$tm_defines MIPS_ABI_DEFAULT=ABI_N32" ;;
+		    64)   tm_defines="$tm_defines MIPS_ABI_DEFAULT=ABI_64" ;;
+		    eabi) tm_defines="$tm_defines MIPS_ABI_DEFAULT=ABI_EABI" ;;
 		esac
 		tmake_file="mips/t-mips $tmake_file"
 		;;
@@ -4174,7 +4263,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan divide llsc mips-plt synci tls"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls"
 for option in $all_defaults
 do
 	eval "val=\$with_"`echo $option | sed s/-/_/g`
@@ -4214,3 +4303,11 @@ then
 		target_cpu_default=$target_cpu_default2
 	fi
 fi
+
+case ${target} in
+i[34567]86-*-* | x86_64-*-*)
+	if test x$enable_as_accelerator = xyes; then
+		extra_programs="mkoffload\$(exeext)"
+	fi
+	;;
+esac

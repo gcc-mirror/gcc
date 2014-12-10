@@ -1,6 +1,6 @@
 /* { dg-do run { target { i?86-*-linux* x86_64-*-linux* } } } */
 /* { dg-skip-if "" { ! run_expensive_tests } { "*" } { "-O2" } } */
-/* { dg-options "-fsanitize=float-cast-overflow -fsanitize-recover -DUSE_FLOAT80 -DUSE_FLOAT128" } */
+/* { dg-options "-fsanitize=float-cast-overflow -fsanitize-recover=float-cast-overflow -DUSE_FLOAT80 -DUSE_FLOAT128" } */
 /* { dg-additional-options "-DUSE_INT128" { target int128 } } */
 
 #include "float-cast-overflow-8.c"

@@ -30,8 +30,8 @@ extern void nds32_init_expanders (void);
 
 /* -- How Values Fit in Registers.  */
 
-extern int nds32_hard_regno_nregs (int, enum machine_mode);
-extern int nds32_hard_regno_mode_ok (int, enum machine_mode);
+extern int nds32_hard_regno_nregs (int, machine_mode);
+extern int nds32_hard_regno_mode_ok (int, machine_mode);
 
 
 /* Register Classes.  */
@@ -66,7 +66,7 @@ extern void nds32_expand_epilogue_v3pop (void);
 
 /* Auxiliary functions for auxiliary macros in nds32.h.  */
 
-extern bool nds32_ls_333_p (rtx, rtx, rtx, enum machine_mode);
+extern bool nds32_ls_333_p (rtx, rtx, rtx, machine_mode);
 
 /* Auxiliary functions for expanding rtl used in nds32-multiple.md.  */
 
@@ -128,7 +128,7 @@ extern int nds32_target_alignment (rtx);
 
 extern void nds32_init_builtins_impl (void);
 extern rtx nds32_expand_builtin_impl (tree, rtx, rtx,
-				      enum machine_mode, int);
+				      machine_mode, int);
 
 /* Auxiliary functions for ISR implementation.  */
 
@@ -141,6 +141,6 @@ extern bool nds32_isr_function_p (tree);
 /* Auxiliary functions for cost calculation.  */
 
 extern bool nds32_rtx_costs_impl (rtx, int, int, int, int *, bool);
-extern int nds32_address_cost_impl (rtx, enum machine_mode, addr_space_t, bool);
+extern int nds32_address_cost_impl (rtx, machine_mode, addr_space_t, bool);
 
 /* ------------------------------------------------------------------------ */

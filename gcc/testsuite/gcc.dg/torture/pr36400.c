@@ -14,4 +14,4 @@ void baz()
   barptr->some_string = "Everything OK";
 }
 
-/* { dg-final { scan-assembler "Everything OK" } } */
+/* { dg-final { scan-assembler "Everything OK" { xfail nvptx-*-* } } } */

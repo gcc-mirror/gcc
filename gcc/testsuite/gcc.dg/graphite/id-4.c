@@ -1,4 +1,5 @@
-extern a[];
+extern int a[];
+void
 g ()
 {
   int i, b;

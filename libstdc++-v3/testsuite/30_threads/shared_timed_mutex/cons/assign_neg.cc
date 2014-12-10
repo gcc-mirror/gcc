@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++1y" }
+// { dg-options "-std=gnu++14" }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 

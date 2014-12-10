@@ -68,6 +68,10 @@ package Erroutc is
    --  "info: " and is to be treated as an information message. This string
    --  will be prepended to the message and all its continuations.
 
+   Is_Check_Msg : Boolean := False;
+   --  Set True to indicate that the current message starts with one of
+   --  "high: ", "medium: ", "low: " and is to be treated as a check message.
+
    Warning_Msg_Char : Character;
    --  Warning character, valid only if Is_Warning_Msg is True
    --    ' '      -- ?   or <   appeared on its own in message
@@ -207,6 +211,9 @@ package Erroutc is
 
       Info : Boolean;
       --  True if info message
+
+      Check : Boolean;
+      --  True if check message
 
       Warn_Err : Boolean;
       --  True if this is a warning message which is to be treated as an error

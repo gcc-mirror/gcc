@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "tree-hasher.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "tm_p.h"
@@ -56,6 +57,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "flags.h"
 #include "target.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "wide-int.h"
 
@@ -153,8 +165,8 @@ integer_type_codes[itk_none] =
   'm',  /* itk_unsigned_long */
   'x',  /* itk_long_long */
   'y',  /* itk_unsigned_long_long */
-  'n',  /* itk_int128 */
-  'o',  /* itk_unsigned_int128  */
+  /* __intN types are handled separately */
+  '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'
 };
 
 static int decl_is_template_id (const tree, tree* const);
@@ -597,7 +609,7 @@ find_substitution (tree node)
     }
 
   tree tags = NULL_TREE;
-  if (OVERLOAD_TYPE_P (node))
+  if (OVERLOAD_TYPE_P (node) || DECL_CLASS_TEMPLATE_P (node))
     tags = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (type));
   /* Now check the list of available substitutions for this mangling
      operation.  */
@@ -752,8 +764,7 @@ decl_mangling_context (tree decl)
       if (extra)
 	return extra;
     }
-    else if (TREE_CODE (decl) == TYPE_DECL
-	     && TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TYPE_PARM)
+  else if (template_type_parameter_p (decl))
      /* template type parms have no mangling context.  */
       return NULL_TREE;
   return CP_DECL_CONTEXT (decl);
@@ -2214,6 +2225,7 @@ write_builtin_type (tree type)
 	iagain:
 	  for (itk = 0; itk < itk_none; ++itk)
 	    if (integer_types[itk] != NULL_TREE
+		&& integer_type_codes[itk] != '\0'
 		&& type == integer_types[itk])
 	      {
 		/* Print the corresponding single-letter code.  */
@@ -3073,6 +3085,8 @@ write_template_arg (tree node)
 	}
     }
 
+  if (REFERENCE_REF_P (node))
+    node = TREE_OPERAND (node, 0);
   if (TREE_CODE (node) == NOP_EXPR
       && TREE_CODE (TREE_TYPE (node)) == REFERENCE_TYPE)
     {
@@ -3414,6 +3428,28 @@ get_mangled_id (tree decl)
   return targetm.mangle_decl_assembler_name (decl, id);
 }
 
+/* If DECL is a mangling alias, remove it from the symbol table and return
+   true; otherwise return false.  */
+
+bool
+maybe_remove_implicit_alias (tree decl)
+{
+  if (DECL_P (decl) && DECL_ARTIFICIAL (decl)
+      && DECL_IGNORED_P (decl)
+      && (TREE_CODE (decl) == FUNCTION_DECL
+	  || (TREE_CODE (decl) == VAR_DECL
+	      && TREE_STATIC (decl))))
+    {
+      symtab_node *n = symtab_node::get (decl);
+      if (n && n->cpp_implicit_alias)
+	{
+	  n->remove();
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* Create an identifier for the external mangled name of DECL.  */
 
 void
@@ -3477,8 +3513,15 @@ mangle_decl (const tree decl)
 	}
 
 #ifdef ASM_OUTPUT_DEF
-      if (flag_abi_compat_version != 0
-	  && IDENTIFIER_GLOBAL_VALUE (id2))
+      /* If there's a declaration already using this mangled name,
+	 don't create a compatibility alias that conflicts.  */
+      if (IDENTIFIER_GLOBAL_VALUE (id2))
+	return;
+
+      struct cgraph_node *n = NULL;
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && !(n = cgraph_node::get (decl)))
+	/* Don't create an alias to an unreferenced function.  */
 	return;
 
       tree alias = make_alias_for (decl, id2);
@@ -3489,11 +3532,7 @@ mangle_decl (const tree decl)
       if (vague_linkage_p (decl))
 	DECL_WEAK (alias) = 1;
       if (TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  /* Don't create an alias to an unreferenced function.  */
-	  if (struct cgraph_node *n = cgraph_node::get (decl))
-	    n->create_same_body_alias (alias, decl);
-	}
+	n->create_same_body_alias (alias, decl);
       else
 	varpool_node::create_extra_name_alias (alias, decl);
 #endif
@@ -3690,26 +3729,32 @@ mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,
   return result;
 }
 
+struct conv_type_hasher : ggc_hasher<tree>
+{
+  static hashval_t hash (tree);
+  static bool equal (tree, tree);
+};
+
 /* This hash table maps TYPEs to the IDENTIFIER for a conversion
    operator to TYPE.  The nodes are IDENTIFIERs whose TREE_TYPE is the
    TYPE.  */
 
-static GTY ((param_is (union tree_node))) htab_t conv_type_names;
+static GTY (()) hash_table<conv_type_hasher> *conv_type_names;
 
 /* Hash a node (VAL1) in the table.  */
 
-static hashval_t
-hash_type (const void *val)
+hashval_t
+conv_type_hasher::hash (tree val)
 {
-  return (hashval_t) TYPE_UID (TREE_TYPE ((const_tree) val));
+  return (hashval_t) TYPE_UID (TREE_TYPE (val));
 }
 
 /* Compare VAL1 (a node in the table) with VAL2 (a TYPE).  */
 
-static int
-compare_type (const void *val1, const void *val2)
+bool
+conv_type_hasher::equal (tree val1, tree val2)
 {
-  return TREE_TYPE ((const_tree) val1) == (const_tree) val2;
+  return TREE_TYPE (val1) == val2;
 }
 
 /* Return an identifier for the mangled unqualified name for a
@@ -3719,25 +3764,26 @@ compare_type (const void *val1, const void *val2)
 tree
 mangle_conv_op_name_for_type (const tree type)
 {
-  void **slot;
+  tree *slot;
   tree identifier;
 
   if (type == error_mark_node)
     return error_mark_node;
 
   if (conv_type_names == NULL)
-    conv_type_names = htab_create_ggc (31, &hash_type, &compare_type, NULL);
+    conv_type_names = hash_table<conv_type_hasher>::create_ggc (31);
 
-  slot = htab_find_slot_with_hash (conv_type_names, type,
-				   (hashval_t) TYPE_UID (type), INSERT);
-  identifier = (tree)*slot;
+  slot = conv_type_names->find_slot_with_hash (type,
+					       (hashval_t) TYPE_UID (type),
+					       INSERT);
+  identifier = *slot;
   if (!identifier)
     {
       char buffer[64];
 
        /* Create a unique name corresponding to TYPE.  */
       sprintf (buffer, "operator %lu",
-	       (unsigned long) htab_elements (conv_type_names));
+	       (unsigned long) conv_type_names->elements ());
       identifier = get_identifier (buffer);
       *slot = identifier;
 

@@ -191,6 +191,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tm_p.h"
 #include "cfgloop.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -1112,14 +1122,15 @@ valid_initializer_p (struct data_reference *ref,
    iteration), returns the phi node.  Otherwise, NULL_TREE is returned.  ROOT
    is the root of the current chain.  */
 
-static gimple
+static gphi *
 find_looparound_phi (struct loop *loop, dref ref, dref root)
 {
   tree name, init, init_ref;
-  gimple phi = NULL, init_stmt;
+  gphi *phi = NULL;
+  gimple init_stmt;
   edge latch = loop_latch_edge (loop);
   struct data_reference init_dr;
-  gimple_stmt_iterator psi;
+  gphi_iterator psi;
 
   if (is_gimple_assign (ref->stmt))
     {
@@ -1135,7 +1146,7 @@ find_looparound_phi (struct loop *loop, dref ref, dref root)
 
   for (psi = gsi_start_phis (loop->header); !gsi_end_p (psi); gsi_next (&psi))
     {
-      phi = gsi_stmt (psi);
+      phi = psi.phi ();
       if (PHI_ARG_DEF_FROM_EDGE (phi, latch) == name)
 	break;
     }
@@ -1173,7 +1184,7 @@ find_looparound_phi (struct loop *loop, dref ref, dref root)
 /* Adds a reference for the looparound copy of REF in PHI to CHAIN.  */
 
 static void
-insert_looparound_copy (chain_p chain, dref ref, gimple phi)
+insert_looparound_copy (chain_p chain, dref ref, gphi *phi)
 {
   dref nw = XCNEW (struct dref_d), aref;
   unsigned i;
@@ -1204,7 +1215,7 @@ add_looparound_copies (struct loop *loop, chain_p chain)
 {
   unsigned i;
   dref ref, root = get_chain_root (chain);
-  gimple phi;
+  gphi *phi;
 
   FOR_EACH_VEC_ELT (chain->refs, i, ref)
     {
@@ -1292,7 +1303,7 @@ static void
 replace_ref_with (gimple stmt, tree new_tree, bool set, bool in_lhs)
 {
   tree val;
-  gimple new_stmt;
+  gassign *new_stmt;
   gimple_stmt_iterator bsi, psi;
 
   if (gimple_code (stmt) == GIMPLE_PHI)
@@ -1391,8 +1402,8 @@ ref_at_iteration (data_reference_p dr, int iter, gimple_seq *stmts)
     off = size_binop (PLUS_EXPR, off,
 		      size_binop (MULT_EXPR, DR_STEP (dr), ssize_int (iter)));
   tree addr = fold_build_pointer_plus (DR_BASE_ADDRESS (dr), off);
-  addr = force_gimple_operand_1 (addr, stmts, is_gimple_mem_ref_addr,
-				 NULL_TREE);
+  addr = force_gimple_operand_1 (unshare_expr (addr), stmts,
+				 is_gimple_mem_ref_addr, NULL_TREE);
   tree alias_ptr = fold_convert (reference_alias_ptr_type (DR_REF (dr)), coff);
   /* While data-ref analysis punts on bit offsets it still handles
      bitfield accesses at byte boundaries.  Cope with that.  Note that
@@ -1456,7 +1467,7 @@ initialize_root_vars (struct loop *loop, chain_p chain, bitmap tmp_vars)
   dref root = get_chain_root (chain);
   bool reuse_first = !chain->has_max_use_after;
   tree ref, init, var, next;
-  gimple phi;
+  gphi *phi;
   gimple_seq stmts;
   edge entry = loop_preheader_edge (loop), latch = loop_latch_edge (loop);
 
@@ -1480,7 +1491,7 @@ initialize_root_vars (struct loop *loop, chain_p chain, bitmap tmp_vars)
     chain->vars.quick_push (chain->vars[0]);
 
   FOR_EACH_VEC_ELT (chain->vars, i, var)
-    chain->vars[i] = make_ssa_name (var, NULL);
+    chain->vars[i] = make_ssa_name (var);
 
   for (i = 0; i < n; i++)
     {
@@ -1530,7 +1541,7 @@ initialize_root_vars_lm (struct loop *loop, dref root, bool written,
   unsigned i;
   tree ref = DR_REF (root->ref), init, var, next;
   gimple_seq stmts;
-  gimple phi;
+  gphi *phi;
   edge entry = loop_preheader_edge (loop), latch = loop_latch_edge (loop);
 
   /* Find the initializer for the variable, and check that it cannot
@@ -1544,7 +1555,7 @@ initialize_root_vars_lm (struct loop *loop, dref root, bool written,
     vars->quick_push ((*vars)[0]);
 
   FOR_EACH_VEC_ELT (*vars, i, var)
-    (*vars)[i] = make_ssa_name (var, NULL);
+    (*vars)[i] = make_ssa_name (var);
 
   var = (*vars)[0];
 
@@ -1561,7 +1572,7 @@ initialize_root_vars_lm (struct loop *loop, dref root, bool written,
     }
   else
     {
-      gimple init_stmt = gimple_build_assign (var, init);
+      gassign *init_stmt = gimple_build_assign (var, init);
       gsi_insert_on_edge_immediate (entry, init_stmt);
     }
 }
@@ -1602,7 +1613,7 @@ execute_load_motion (struct loop *loop, chain_p chain, bitmap tmp_vars)
 	  if (n_writes)
 	    {
 	      var = vars[0];
-	      var = make_ssa_name (SSA_NAME_VAR (var), NULL);
+	      var = make_ssa_name (SSA_NAME_VAR (var));
 	      vars[0] = var;
 	    }
 	  else
@@ -1887,14 +1898,15 @@ static void
 eliminate_temp_copies (struct loop *loop, bitmap tmp_vars)
 {
   edge e;
-  gimple phi, stmt;
+  gphi *phi;
+  gimple stmt;
   tree name, use, var;
-  gimple_stmt_iterator psi;
+  gphi_iterator psi;
 
   e = loop_latch_edge (loop);
   for (psi = gsi_start_phis (loop->header); !gsi_end_p (psi); gsi_next (&psi))
     {
-      phi = gsi_stmt (psi);
+      phi = psi.phi ();
       name = PHI_RESULT (phi);
       var = SSA_NAME_VAR (name);
       if (!var || !bitmap_bit_p (tmp_vars, DECL_UID (var)))
@@ -2127,7 +2139,7 @@ static gimple
 reassociate_to_the_same_stmt (tree name1, tree name2)
 {
   gimple stmt1, stmt2, root1, root2, s1, s2;
-  gimple new_stmt, tmp_stmt;
+  gassign *new_stmt, *tmp_stmt;
   tree new_name, tmp_name, var, r1, r2;
   unsigned dist1, dist2;
   enum tree_code code;
@@ -2179,19 +2191,18 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
   /* Insert the new statement combining NAME1 and NAME2 before S1, and
      combine it with the rhs of S1.  */
   var = create_tmp_reg (type, "predreastmp");
-  new_name = make_ssa_name (var, NULL);
-  new_stmt = gimple_build_assign_with_ops (code, new_name, name1, name2);
+  new_name = make_ssa_name (var);
+  new_stmt = gimple_build_assign (new_name, code, name1, name2);
 
   var = create_tmp_reg (type, "predreastmp");
-  tmp_name = make_ssa_name (var, NULL);
+  tmp_name = make_ssa_name (var);
 
   /* Rhs of S1 may now be either a binary expression with operation
      CODE, or gimple_val (in case that stmt1 == s1 or stmt2 == s1,
      so that name1 or name2 was removed from it).  */
-  tmp_stmt = gimple_build_assign_with_ops (gimple_assign_rhs_code (s1),
-					   tmp_name,
-					   gimple_assign_rhs1 (s1),
-					   gimple_assign_rhs2 (s1));
+  tmp_stmt = gimple_build_assign (tmp_name, gimple_assign_rhs_code (s1),
+				  gimple_assign_rhs1 (s1),
+				  gimple_assign_rhs2 (s1));
 
   bsi = gsi_for_stmt (s1);
   gimple_assign_set_rhs_with_ops (&bsi, code, new_name, tmp_name);
@@ -2342,7 +2353,6 @@ prepare_initializers_chain (struct loop *loop, chain_p chain)
   unsigned i, n = (chain->type == CT_INVARIANT) ? 1 : chain->length;
   struct data_reference *dr = get_chain_root (chain)->ref;
   tree init;
-  gimple_seq stmts;
   dref laref;
   edge entry = loop_preheader_edge (loop);
 
@@ -2366,12 +2376,17 @@ prepare_initializers_chain (struct loop *loop, chain_p chain)
 
   for (i = 0; i < n; i++)
     {
+      gimple_seq stmts = NULL;
+
       if (chain->inits[i] != NULL_TREE)
 	continue;
 
       init = ref_at_iteration (dr, (int) i - n, &stmts);
       if (!chain->all_always_accessed && tree_could_trap_p (init))
-	return false;
+	{
+	  gimple_seq_discard (stmts);
+	  return false;
+	}
 
       if (stmts)
 	gsi_insert_seq_on_edge_immediate (entry, stmts);

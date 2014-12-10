@@ -181,7 +181,7 @@ There are four ways of doing the incremental scanning:
    next call to df_analyze or df_process_deferred_rescans.
 
    This mode is also used by a few passes that still rely on note_uses,
-   note_stores and for_each_rtx instead of using the DF data.  This
+   note_stores and rtx iterators instead of using the DF data.  This
    can be said to fall under case 1c.
 
    To enable this mode, call df_set_flags (DF_DEFER_INSN_RESCAN).
@@ -382,11 +382,20 @@ are write-only operations.
 #include "tm_p.h"
 #include "insn-config.h"
 #include "recog.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "regs.h"
 #include "alloc-pool.h"
 #include "flags.h"
-#include "hard-reg-set.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "sbitmap.h"
 #include "bitmap.h"

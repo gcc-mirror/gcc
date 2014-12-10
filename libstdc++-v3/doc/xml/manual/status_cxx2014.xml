@@ -283,18 +283,6 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3783.pdf">
-	  N3783
-	</link>
-      </entry>
-      <entry>Network byte order conversion</entry>
-      <entry>N</entry>
-      <entry>Library Fundamentals TS</entry>
-    </row>
-
-    <row>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3793.html">
 	  N3793
@@ -319,18 +307,6 @@ not in any particular release.
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2014/n3843.pdf">
-	  N3843
-	</link>
-      </entry>
-      <entry>A SFINAE-Friendly std::common_type (option 2 was approved)</entry>
-      <entry>N</entry>
-      <entry>Library Fundamentals TS</entry>
-    </row>
-
-    <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2014/n3866.html">
 	  N3866
 	</link>
@@ -341,14 +317,13 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="">
 	  N3905
 	</link>
       </entry>
       <entry>Faster string searching (Boyer-Moore et al.)</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry>Library Fundamentals TS</entry>
     </row>
 
@@ -399,26 +374,24 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3925.pdf">
 	  N3925
 	</link>
       </entry>
       <entry>A sample proposal</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry>Library Fundamentals TS</entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3932.htm">
 	  N3932
 	</link>
       </entry>
       <entry>Variable Templates For Type Traits</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry>Library Fundamentals TS</entry>
     </row>
 

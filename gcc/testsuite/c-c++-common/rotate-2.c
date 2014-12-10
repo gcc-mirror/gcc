@@ -1,6 +1,6 @@
 /* Check rotate pattern detection.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fno-ipa-icf -fdump-tree-optimized" } */
 /* Rotates should be recognized only in functions with | instead of + or ^,
    or in functions that have constant shift counts (unused attribute on y).  */
 /* { dg-final { scan-tree-dump-times "r\[<>]\[<>]" 48 "optimized" } } */

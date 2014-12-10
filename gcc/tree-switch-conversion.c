@@ -32,6 +32,17 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree.h"
 #include "varasm.h"
 #include "stor-layout.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfganal.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -42,6 +53,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "gimple-ssa.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
@@ -57,6 +71,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 /* Need to include expr.h and optabs.h for lshift_cheap_p.  */
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 
 /* Maximum number of case bit tests.
@@ -85,7 +100,7 @@ hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 			       bool update_dominators)
 {
   tree tmp;
-  gimple cond_stmt;
+  gcond *cond_stmt;
   edge e_false;
   basic_block new_bb, split_bb = gsi_bb (*gsip);
   bool dominated_e_true = false;
@@ -124,35 +139,6 @@ hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
   return new_bb;
 }
 
-
-/* Determine whether "1 << x" is relatively cheap in word_mode.  */
-/* FIXME: This is the function that we need rtl.h and optabs.h for.
-   This function (and similar RTL-related cost code in e.g. IVOPTS) should
-   be moved to some kind of interface file for GIMPLE/RTL interactions.  */
-static bool
-lshift_cheap_p (bool speed_p)
-{
-  /* FIXME: This should be made target dependent via this "this_target"
-     mechanism, similar to e.g. can_copy_init_p in gcse.c.  */
-  static bool init[2] = {false, false};
-  static bool cheap[2] = {true, true};
-
-  /* If the targer has no lshift in word_mode, the operation will most
-     probably not be cheap.  ??? Does GCC even work for such targets?  */
-  if (optab_handler (ashl_optab, word_mode) == CODE_FOR_nothing)
-    return false;
-
-  if (!init[speed_p])
-    {
-      rtx reg = gen_raw_REG (word_mode, 10000);
-      int cost = set_src_cost (gen_rtx_ASHIFT (word_mode, const1_rtx, reg),
-			       speed_p);
-      cheap[speed_p] = cost < COSTS_N_INSNS (MAX_CASE_BIT_TESTS);
-      init[speed_p] = true;
-    }
-
-  return cheap[speed_p];
-}
 
 /* Return true if a switch should be expanded as a bit test.
    RANGE is the difference between highest and lowest case.
@@ -246,8 +232,7 @@ This transformation was contributed by Roger Sayle, see this e-mail:
 
 struct case_bit_test
 {
-  HOST_WIDE_INT hi;
-  HOST_WIDE_INT lo;
+  wide_int mask;
   edge target_edge;
   tree label;
   int bits;
@@ -294,13 +279,14 @@ case_bit_test_cmp (const void *p1, const void *p2)
     are not guaranteed to be of the same type as INDEX_EXPR
     (the gimplifier doesn't change the type of case label values,
     and MINVAL and RANGE are derived from those values).
+    MAXVAL is MINVAL + RANGE.
 
     There *MUST* be MAX_CASE_BIT_TESTS or less unique case
     node targets.  */
 
 static void
-emit_case_bit_tests (gimple swtch, tree index_expr,
-		     tree minval, tree range)
+emit_case_bit_tests (gswitch *swtch, tree index_expr,
+		     tree minval, tree range, tree maxval)
 {
   struct case_bit_test test[MAX_CASE_BIT_TESTS];
   unsigned int i, j, k;
@@ -318,12 +304,14 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
   unsigned int branch_num = gimple_switch_num_labels (swtch);
 
   gimple_stmt_iterator gsi;
-  gimple shift_stmt;
+  gassign *shift_stmt;
 
   tree idx, tmp, csui;
   tree word_type_node = lang_hooks.types.type_for_mode (word_mode, 1);
   tree word_mode_zero = fold_convert (word_type_node, integer_zero_node);
   tree word_mode_one = fold_convert (word_type_node, integer_one_node);
+  int prec = TYPE_PRECISION (word_type_node);
+  wide_int wone = wi::one (prec);
 
   memset (&test, 0, sizeof (test));
 
@@ -348,8 +336,7 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
       if (k == count)
 	{
 	  gcc_checking_assert (count < MAX_CASE_BIT_TESTS);
-	  test[k].hi = 0;
-	  test[k].lo = 0;
+	  test[k].mask = wi::zero (prec);
 	  test[k].target_edge = e;
 	  test[k].label = label;
 	  test[k].bits = 1;
@@ -367,13 +354,38 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
 					    CASE_HIGH (cs), minval));
 
       for (j = lo; j <= hi; j++)
-        if (j >= HOST_BITS_PER_WIDE_INT)
-	  test[k].hi |= (HOST_WIDE_INT) 1 << (j - HOST_BITS_PER_INT);
-	else
-	  test[k].lo |= (HOST_WIDE_INT) 1 << j;
+	test[k].mask |= wi::lshift (wone, j);
     }
 
   qsort (test, count, sizeof (*test), case_bit_test_cmp);
+
+  /* If all values are in the 0 .. BITS_PER_WORD-1 range, we can get rid of
+     the minval subtractions, but it might make the mask constants more
+     expensive.  So, compare the costs.  */
+  if (compare_tree_int (minval, 0) > 0
+      && compare_tree_int (maxval, GET_MODE_BITSIZE (word_mode)) < 0)
+    {
+      int cost_diff;
+      HOST_WIDE_INT m = tree_to_uhwi (minval);
+      rtx reg = gen_raw_REG (word_mode, 10000);
+      bool speed_p = optimize_bb_for_speed_p (gimple_bb (swtch));
+      cost_diff = set_rtx_cost (gen_rtx_PLUS (word_mode, reg,
+					      GEN_INT (-m)), speed_p);
+      for (i = 0; i < count; i++)
+	{
+	  rtx r = immed_wide_int_const (test[i].mask, word_mode);
+	  cost_diff += set_src_cost (gen_rtx_AND (word_mode, reg, r), speed_p);
+	  r = immed_wide_int_const (wi::lshift (test[i].mask, m), word_mode);
+	  cost_diff -= set_src_cost (gen_rtx_AND (word_mode, reg, r), speed_p);
+	}
+      if (cost_diff > 0)
+	{
+	  for (i = 0; i < count; i++)
+	    test[i].mask = wi::lshift (test[i].mask, m);
+	  minval = build_zero_cst (TREE_TYPE (minval));
+	  range = maxval;
+	}
+    }
 
   /* We generate two jumps to the default case label.
      Split the default edge, so that we don't have to do any PHI node
@@ -432,7 +444,7 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
     }
 
   /* csui = (1 << (word_mode) idx) */
-  csui = make_ssa_name (word_type_node, NULL);
+  csui = make_ssa_name (word_type_node);
   tmp = fold_build2 (LSHIFT_EXPR, word_type_node, word_mode_one,
 		     fold_convert (word_type_node, idx));
   tmp = force_gimple_operand_gsi (&gsi, tmp,
@@ -446,13 +458,7 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
         if (const & csui) goto target  */
   for (k = 0; k < count; k++)
     {
-      HOST_WIDE_INT a[2];
-
-      a[0] = test[k].lo;
-      a[1] = test[k].hi;
-      tmp = wide_int_to_tree (word_type_node,
-			      wide_int::from_array (a, 2,
-						    TYPE_PRECISION (word_type_node)));
+      tmp = wide_int_to_tree (word_type_node, test[k].mask);
       tmp = fold_build2 (BIT_AND_EXPR, word_type_node, csui, tmp);
       tmp = force_gimple_operand_gsi (&gsi, tmp,
 				      /*simple=*/true, NULL_TREE,
@@ -615,7 +621,7 @@ struct switch_conv_info
 /* Collect information about GIMPLE_SWITCH statement SWTCH into INFO.  */
 
 static void
-collect_switch_conv_info (gimple swtch, struct switch_conv_info *info)
+collect_switch_conv_info (gswitch *swtch, struct switch_conv_info *info)
 {
   unsigned int branch_num = gimple_switch_num_labels (swtch);
   tree min_case, max_case;
@@ -753,12 +759,12 @@ check_all_empty_except_final (struct switch_conv_info *info)
 static bool
 check_final_bb (struct switch_conv_info *info)
 {
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
 
   info->phi_count = 0;
   for (gsi = gsi_start_phis (info->final_bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       unsigned int i;
 
       info->phi_count++;
@@ -834,7 +840,7 @@ free_temp_arrays (struct switch_conv_info *info)
 static void
 gather_default_values (tree default_case, struct switch_conv_info *info)
 {
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
   basic_block bb = label_to_block (CASE_LABEL (default_case));
   edge e;
   int i = 0;
@@ -848,7 +854,7 @@ gather_default_values (tree default_case, struct switch_conv_info *info)
 
   for (gsi = gsi_start_phis (info->final_bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       tree val = PHI_ARG_DEF_FROM_EDGE (phi, e);
       gcc_assert (val);
       info->default_values[i++] = val;
@@ -860,7 +866,7 @@ gather_default_values (tree default_case, struct switch_conv_info *info)
    order of phi nodes.  SWTCH is the switch statement being converted.  */
 
 static void
-build_constructors (gimple swtch, struct switch_conv_info *info)
+build_constructors (gswitch *swtch, struct switch_conv_info *info)
 {
   unsigned i, branch_num = gimple_switch_num_labels (swtch);
   tree pos = info->range_min;
@@ -871,7 +877,7 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
       basic_block bb = label_to_block (CASE_LABEL (cs));
       edge e;
       tree high;
-      gimple_stmt_iterator gsi;
+      gphi_iterator gsi;
       int j;
 
       if (bb == info->final_bb)
@@ -906,7 +912,7 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
       for (gsi = gsi_start_phis (info->final_bb);
 	   !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gphi *phi = gsi.phi ();
 	  tree val = PHI_ARG_DEF_FROM_EDGE (phi, e);
 	  tree low = CASE_LOW (cs);
 	  pos = CASE_LOW (cs);
@@ -954,12 +960,12 @@ constructor_contains_same_values_p (vec<constructor_elt, va_gc> *vec)
    all the constants.  */
 
 static tree
-array_value_type (gimple swtch, tree type, int num,
+array_value_type (gswitch *swtch, tree type, int num,
 		  struct switch_conv_info *info)
 {
   unsigned int i, len = vec_safe_length (info->constructors[num]);
   constructor_elt *elt;
-  enum machine_mode mode;
+  machine_mode mode;
   int sign = 0;
   tree smaller_type;
 
@@ -1031,8 +1037,8 @@ array_value_type (gimple swtch, tree type, int num,
    new array.  */
 
 static void
-build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
-		 tree tidx, struct switch_conv_info *info)
+build_one_array (gswitch *swtch, int num, tree arr_index_type,
+		 gphi *phi, tree tidx, struct switch_conv_info *info)
 {
   tree name, cst;
   gimple load;
@@ -1041,7 +1047,7 @@ build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
 
   gcc_assert (info->default_values[num]);
 
-  name = copy_ssa_name (PHI_RESULT (phi), NULL);
+  name = copy_ssa_name (PHI_RESULT (phi));
   info->target_inbound_names[num] = name;
 
   cst = constructor_contains_same_values_p (info->constructors[num]);
@@ -1097,12 +1103,13 @@ build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
    them.  */
 
 static void
-build_arrays (gimple swtch, struct switch_conv_info *info)
+build_arrays (gswitch *swtch, struct switch_conv_info *info)
 {
   tree arr_index_type;
   tree tidx, sub, utype;
   gimple stmt;
   gimple_stmt_iterator gsi;
+  gphi_iterator gpi;
   int i;
   location_t loc = gimple_location (swtch);
 
@@ -1116,7 +1123,7 @@ build_arrays (gimple swtch, struct switch_conv_info *info)
     utype = lang_hooks.types.type_for_mode (TYPE_MODE (utype), 1);
 
   arr_index_type = build_index_type (info->range_size);
-  tidx = make_ssa_name (utype, NULL);
+  tidx = make_ssa_name (utype);
   sub = fold_build2_loc (loc, MINUS_EXPR, utype,
 			 fold_convert_loc (loc, utype, info->index_expr),
 			 fold_convert_loc (loc, utype, info->range_min));
@@ -1128,23 +1135,23 @@ build_arrays (gimple swtch, struct switch_conv_info *info)
   update_stmt (stmt);
   info->arr_ref_first = stmt;
 
-  for (gsi = gsi_start_phis (info->final_bb), i = 0;
-       !gsi_end_p (gsi); gsi_next (&gsi), i++)
-    build_one_array (swtch, i, arr_index_type, gsi_stmt (gsi), tidx, info);
+  for (gpi = gsi_start_phis (info->final_bb), i = 0;
+       !gsi_end_p (gpi); gsi_next (&gpi), i++)
+    build_one_array (swtch, i, arr_index_type, gpi.phi (), tidx, info);
 }
 
 /* Generates and appropriately inserts loads of default values at the position
    given by BSI.  Returns the last inserted statement.  */
 
-static gimple
+static gassign *
 gen_def_assigns (gimple_stmt_iterator *gsi, struct switch_conv_info *info)
 {
   int i;
-  gimple assign = NULL;
+  gassign *assign = NULL;
 
   for (i = 0; i < info->phi_count; i++)
     {
-      tree name = copy_ssa_name (info->target_inbound_names[i], NULL);
+      tree name = copy_ssa_name (info->target_inbound_names[i]);
       info->target_outbound_names[i] = name;
       assign = gimple_build_assign (name, info->default_values[i]);
       gsi_insert_before (gsi, assign, GSI_SAME_STMT);
@@ -1184,13 +1191,13 @@ static void
 fix_phi_nodes (edge e1f, edge e2f, basic_block bbf,
 	       struct switch_conv_info *info)
 {
-  gimple_stmt_iterator gsi;
+  gphi_iterator gsi;
   int i;
 
   for (gsi = gsi_start_phis (bbf), i = 0;
        !gsi_end_p (gsi); gsi_next (&gsi), i++)
     {
-      gimple phi = gsi_stmt (gsi);
+      gphi *phi = gsi.phi ();
       add_phi_arg (phi, info->target_inbound_names[i], e1f, UNKNOWN_LOCATION);
       add_phi_arg (phi, info->target_outbound_names[i], e2f, UNKNOWN_LOCATION);
     }
@@ -1218,18 +1225,18 @@ fix_phi_nodes (edge e1f, edge e2f, basic_block bbf,
 */
 
 static void
-gen_inbound_check (gimple swtch, struct switch_conv_info *info)
+gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
 {
   tree label_decl1 = create_artificial_label (UNKNOWN_LOCATION);
   tree label_decl2 = create_artificial_label (UNKNOWN_LOCATION);
   tree label_decl3 = create_artificial_label (UNKNOWN_LOCATION);
-  gimple label1, label2, label3;
+  glabel *label1, *label2, *label3;
   tree utype, tidx;
   tree bound;
 
-  gimple cond_stmt;
+  gcond *cond_stmt;
 
-  gimple last_assign;
+  gassign *last_assign;
   gimple_stmt_iterator gsi;
   basic_block bb0, bb1, bb2, bbf, bbd;
   edge e01, e02, e21, e1d, e1f, e2f;
@@ -1338,7 +1345,7 @@ gen_inbound_check (gimple swtch, struct switch_conv_info *info)
    conversion failed.  */
 
 static const char *
-process_switch (gimple swtch)
+process_switch (gswitch *swtch)
 {
   struct switch_conv_info info;
 
@@ -1369,8 +1376,8 @@ process_switch (gimple swtch)
 	{
 	  if (dump_file)
 	    fputs ("  expanding as bit test is preferable\n", dump_file);
-	  emit_case_bit_tests (swtch, info.index_expr,
-			       info.range_min, info.range_size);
+	  emit_case_bit_tests (swtch, info.index_expr, info.range_min,
+			       info.range_size, info.range_max);
 	  loops_state_set (LOOPS_NEED_FIXUP);
 	  return NULL;
 	}
@@ -1472,7 +1479,7 @@ pass_convert_switch::execute (function *fun)
 	    putc ('\n', dump_file);
 	  }
 
-	failure_reason = process_switch (stmt);
+	failure_reason = process_switch (as_a <gswitch *> (stmt));
 	if (! failure_reason)
 	  {
 	    if (dump_file)

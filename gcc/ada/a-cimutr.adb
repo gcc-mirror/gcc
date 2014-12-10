@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,8 @@ with Ada.Unchecked_Deallocation;
 with System; use type System.Address;
 
 package body Ada.Containers.Indefinite_Multiway_Trees is
+
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    --------------------
    --  Root_Iterator --
@@ -1217,6 +1219,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Position  : out Cursor;
       Count     : Count_Type := 1)
    is
+      First   : Tree_Node_Access;
       Last    : Tree_Node_Access;
       Element : Element_Access;
 
@@ -1249,8 +1252,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
            with "attempt to tamper with cursors (tree is busy)";
       end if;
 
-      Position.Container := Parent.Container;
-
       declare
          --  The element allocator may need an accessibility check in the case
          --  the actual type is class-wide or has access discriminants (see
@@ -1264,16 +1265,16 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          Element := new Element_Type'(New_Item);
       end;
 
-      Position.Node := new Tree_Node_Type'(Parent  => Parent.Node,
-                                           Element => Element,
-                                           others  => <>);
+      First := new Tree_Node_Type'(Parent  => Parent.Node,
+                                   Element => Element,
+                                   others  => <>);
 
-      Last := Position.Node;
-
+      Last := First;
       for J in Count_Type'(2) .. Count loop
+
          --  Reclaim other nodes if Storage_Error.  ???
 
-         Element := new Element_Type'(New_Item);
+         Element   := new Element_Type'(New_Item);
          Last.Next := new Tree_Node_Type'(Parent  => Parent.Node,
                                           Prev    => Last,
                                           Element => Element,
@@ -1283,7 +1284,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       end loop;
 
       Insert_Subtree_List
-        (First  => Position.Node,
+        (First  => First,
          Last   => Last,
          Parent => Parent.Node,
          Before => Before.Node);
@@ -1293,6 +1294,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       --  nodes we just inserted.
 
       Container.Count := Container.Count + Count;
+
+      Position := Cursor'(Parent.Container, First);
    end Insert_Child;
 
    -------------------------

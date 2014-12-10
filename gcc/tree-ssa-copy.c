@@ -24,8 +24,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "flags.h"
 #include "tm_p.h"
-#include "basic-block.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -331,7 +340,7 @@ copy_prop_visit_stmt (gimple stmt, edge *taken_edge_p, tree *result_p)
    set it to be the value of the LHS of PHI.  */
 
 static enum ssa_prop_result
-copy_prop_visit_phi_node (gimple phi)
+copy_prop_visit_phi_node (gphi *phi)
 {
   enum ssa_prop_result retval;
   unsigned i;
@@ -452,9 +461,8 @@ init_copy_prop (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple_stmt_iterator si;
-
-      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+      for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
+	   gsi_next (&si))
 	{
 	  gimple stmt = gsi_stmt (si);
 	  ssa_op_iter iter;
@@ -478,9 +486,10 @@ init_copy_prop (void)
 	      set_copy_of_val (def, def);
 	}
 
-      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+      for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
+	   gsi_next (&si))
 	{
-          gimple phi = gsi_stmt (si);
+          gphi *phi = si.phi ();
           tree def;
 
 	  def = gimple_phi_result (phi);

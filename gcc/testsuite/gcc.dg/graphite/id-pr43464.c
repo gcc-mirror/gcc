@@ -13,6 +13,9 @@ typedef struct cop
 extern const unsigned char PL_utf8skip[];
 extern char PL_dowarn;
 extern COP *volatile PL_curcop;
+int S_reginclass (regnode *);
+int S_regtry (regexp *, char *);
+unsigned long Perl_utf8n_to_uvuni (char *, int, long unsigned int *, int);
 char *
 S_find_byclass (regexp * prog, regnode * c, char *s, char *strend,
 		char *startpos, int norun)
@@ -49,15 +52,18 @@ S_find_byclass (regexp * prog, regnode * c, char *s, char *strend,
 got_it:
   return s;
 }
+void
 Perl_re_intuit_start (regexp * prog)
 {
   S_find_byclass (prog, 0, 0, 0, 0, 1);
 }
+void
 Perl_regexec_flags (register regexp * prog,
 		    register char *strend)
 {
   S_find_byclass (prog, 0, 0, strend, 0, 0);
 }
+int
 S_regtry (regexp * prog, char *startpos)
 {
 }

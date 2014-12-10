@@ -51,20 +51,13 @@ namespace __profile
       _Vector_profile_pre(_Vector_profile_pre&&) = default;
 
       _Vector_profile_pre&
-      operator=(const _Vector_profile_pre&) = default;
+      operator=(const _Vector_profile_pre&)
+      { _M_conjure()._M_profile_destruct(); }
 
       _Vector_profile_pre&
       operator=(_Vector_profile_pre&&) noexcept
-      { _M_profile_destruct(); }
+      { _M_conjure()._M_profile_destruct(); }
 #endif
-
-      void
-      _M_profile_destruct()
-      {
-	__profcxx_vector_destruct2(&_M_conjure());
-	__profcxx_vector_destruct(&_M_conjure(),
-				  _M_conjure().capacity(), _M_conjure().size());
-      }
     };
 
   template<typename _Vector>
@@ -75,26 +68,60 @@ namespace __profile
       { return *static_cast<_Vector*>(this); }
 
     protected:
+      __gnu_profile::__container_size_info* _M_size_info;
+      __gnu_profile::__vector2list_info* _M_vect2list_info;
+
       _Vector_profile_post() _GLIBCXX_NOEXCEPT
-      {
-	__profcxx_vector_construct(&_M_conjure(), _M_conjure().capacity());
-	__profcxx_vector_construct2(&_M_conjure());	
-      }
+      { _M_profile_construct(); }
 
 #if __cplusplus >= 201103L
       _Vector_profile_post(const _Vector_profile_post&) noexcept
       : _Vector_profile_post() { }
-      _Vector_profile_post(_Vector_profile_post&&) noexcept
-      : _Vector_profile_post() { }
+      _Vector_profile_post(_Vector_profile_post&& __other) noexcept
+      : _Vector_profile_post()
+      { _M_swap(__other); }
 
       _Vector_profile_post&
-      operator=(const _Vector_profile_post&) = default;
+      operator=(const _Vector_profile_post&) noexcept
+      { _M_profile_construct(); }
+
       _Vector_profile_post&
-      operator=(_Vector_profile_post&&) = default;
+      operator=(_Vector_profile_post&& __other) noexcept
+      {
+	_M_swap(__other);
+	__other._M_profile_construct();
+      }
 #endif
 
       ~_Vector_profile_post()
       { _M_conjure()._M_profile_destruct(); }
+
+    public:
+      void
+      _M_profile_construct() _GLIBCXX_NOEXCEPT
+      {
+	_M_size_info =
+	  __profcxx_vector_size_construct(_M_conjure().capacity());
+	_M_vect2list_info = __profcxx_vector2list_construct();	
+      }
+
+      void
+      _M_profile_destruct() _GLIBCXX_NOEXCEPT
+      {
+	__profcxx_vector2list_destruct(_M_vect2list_info);
+	_M_vect2list_info = 0;
+	__profcxx_vector_size_destruct(_M_size_info,
+				       _M_conjure().capacity(),
+				       _M_conjure().size());
+	_M_size_info = 0;
+      }
+
+      void
+      _M_swap(_Vector_profile_post& __other) _GLIBCXX_NOEXCEPT
+      {
+	std::swap(_M_size_info, __other._M_size_info);
+	std::swap(_M_vect2list_info, __other._M_vect2list_info);
+      }
     };
 
   template<typename _Tp,
@@ -197,7 +224,9 @@ namespace __profile
       vector&
       operator=(const vector& __x)
       {
+	this->_M_profile_destruct();
 	_M_base() = __x;
+	this->_M_profile_construct();
 	return *this;
       }
 #else
@@ -210,7 +239,9 @@ namespace __profile
       vector&
       operator=(initializer_list<value_type> __l)
       {
+	this->_M_profile_destruct();
 	_M_base() = __l;
+	this->_M_profile_construct();
 	return *this;
       }
 #endif
@@ -272,7 +303,7 @@ namespace __profile
       void
       resize(size_type __sz)
       {
-	__profcxx_vector_invalid_operator(this);
+	__profcxx_vector2list_invalid_operator(this->_M_vect2list_info);
 	_M_profile_resize(this->capacity(), __sz);
 	_Base::resize(__sz);
       }
@@ -280,7 +311,7 @@ namespace __profile
       void
       resize(size_type __sz, const _Tp& __c)
       {
-	__profcxx_vector_invalid_operator(this);
+	__profcxx_vector2list_invalid_operator(this->_M_vect2list_info);
 	_M_profile_resize(this->capacity(), __sz);
 	_Base::resize(__sz, __c);
       }
@@ -288,7 +319,7 @@ namespace __profile
       void
       resize(size_type __sz, _Tp __c = _Tp())
       {
-	__profcxx_vector_invalid_operator(this);
+	__profcxx_vector2list_invalid_operator(this->_M_vect2list_info);
 	_M_profile_resize(this->capacity(), __sz);
 	_Base::resize(__sz, __c);
       }
@@ -298,13 +329,13 @@ namespace __profile
       reference
       operator[](size_type __n) _GLIBCXX_NOEXCEPT
       {
-	__profcxx_vector_invalid_operator(this);
+	__profcxx_vector2list_invalid_operator(this->_M_vect2list_info);
 	return _M_base()[__n];
       }
       const_reference
       operator[](size_type __n) const _GLIBCXX_NOEXCEPT
       {
-	__profcxx_vector_invalid_operator(this);
+	__profcxx_vector2list_invalid_operator(this->_M_vect2list_info);
 	return _M_base()[__n];
       }
 
@@ -335,8 +366,9 @@ namespace __profile
       insert(iterator __pos, const _Tp& __x)
 #endif
       {
-	__profcxx_vector_insert(this, __pos.base() - _Base::begin(),
-				this->size());
+	__profcxx_vector2list_insert(this->_M_vect2list_info,
+				     __pos.base() - _Base::begin(),
+				     this->size());
 	size_type __old_size = this->capacity();
 	_Base_iterator __res = _Base::insert(__pos.base(), __x);
 	_M_profile_resize(__old_size, this->capacity());
@@ -347,8 +379,9 @@ namespace __profile
       iterator
       insert(const_iterator __pos, _Tp&& __x)
       {
-	__profcxx_vector_insert(this, __pos.base() - _Base::cbegin(),
-				this->size());
+	__profcxx_vector2list_insert(this->_M_vect2list_info,
+				     __pos.base() - _Base::cbegin(),
+				     this->size());
 	size_type __old_size = this->capacity();
 	_Base_iterator __res = _Base::insert(__pos.base(), __x);
 	_M_profile_resize(__old_size, this->capacity());
@@ -374,14 +407,18 @@ namespace __profile
 #if __cplusplus >= 201103L
 	noexcept( noexcept(declval<_Base>().swap(__x)) )
 #endif
-      { _Base::swap(__x); }
+      {
+	_Base::swap(__x);
+	this->_M_swap(__x);
+      }
 
 #if __cplusplus >= 201103L
       iterator
       insert(const_iterator __pos, size_type __n, const _Tp& __x)
       {
-	__profcxx_vector_insert(this, __pos.base() - _Base::cbegin(),
-				this->size());
+	__profcxx_vector2list_insert(this->_M_vect2list_info,
+				     __pos.base() - _Base::cbegin(),
+				     this->size());
 	size_type __old_size = this->capacity();
 	_Base_iterator __res = _Base::insert(__pos, __n, __x);
 	_M_profile_resize(__old_size, this->capacity());
@@ -391,8 +428,9 @@ namespace __profile
       void
       insert(iterator __pos, size_type __n, const _Tp& __x)
       {
-	__profcxx_vector_insert(this, __pos.base() - _Base::begin(),
-				this->size());
+	__profcxx_vector2list_insert(this->_M_vect2list_info,
+				     __pos.base() - _Base::begin(),
+				     this->size());
 	size_type __old_size = this->capacity();
 	_Base::insert(__pos, __n, __x);
 	_M_profile_resize(__old_size, this->capacity());
@@ -406,8 +444,9 @@ namespace __profile
 	insert(const_iterator __pos,
 	       _InputIterator __first, _InputIterator __last)
 	{
-	  __profcxx_vector_insert(this, __pos.base() - _Base::cbegin(),
-				  this->size());
+	  __profcxx_vector2list_insert(this->_M_vect2list_info,
+				       __pos.base() - _Base::cbegin(),
+				       this->size());
 	  size_type __old_size = this->capacity();
 	  _Base_iterator __res = _Base::insert(__pos, __first, __last);
 	  _M_profile_resize(__old_size, this->capacity());
@@ -419,8 +458,9 @@ namespace __profile
 	insert(iterator __pos,
 	       _InputIterator __first, _InputIterator __last)
 	{
-	  __profcxx_vector_insert(this, __pos.base() - _Base::begin(),
-				  this->size());
+	  __profcxx_vector2list_insert(this->_M_vect2list_info,
+				       __pos.base() - _Base::begin(),
+				       this->size());
 	  size_type __old_size = this->capacity();
 	  _Base::insert(__pos, __first, __last);
 	  _M_profile_resize(__old_size, this->capacity());
@@ -448,21 +488,22 @@ namespace __profile
       {
 	this->_M_profile_destruct();
 	_Base::clear();
+	this->_M_profile_construct();
       }
 
-      inline void _M_profile_find() const
-      { __profcxx_vector_find(this, this->size()); }
-
-      inline void _M_profile_iterate(int __rewind = 0) const
-      { __profcxx_vector_iterate(this); }
+      inline void
+      _M_profile_iterate(int __rewind = 0) const
+      { __profcxx_vector2list_iterate(this->_M_vect2list_info, __rewind); }
 
     private:
       void _M_profile_resize(size_type __old_size, size_type __new_size)
       {
 	if (__old_size < __new_size)
 	  {
-	    __profcxx_vector_resize(this, this->size(), __new_size);
-	    __profcxx_vector_resize2(this, this->size(), __new_size);
+	    __profcxx_vector_size_resize(this->_M_size_info,
+					 this->size(), __new_size);
+	    __profcxx_vector2list_resize(this->_M_vect2list_info,
+					 this->size(), __new_size);
 	  }
       }
     };
@@ -531,8 +572,9 @@ namespace __profile
     {
       size_t
       operator()(const __profile::vector<bool, _Alloc>& __b) const noexcept
-      { return std::hash<_GLIBCXX_STD_C::vector<bool, _Alloc>>()
-	  (__b._M_base()); }
+      {
+	return std::hash<_GLIBCXX_STD_C::vector<bool, _Alloc>>()(__b._M_base());
+      }
     };
 #endif
 

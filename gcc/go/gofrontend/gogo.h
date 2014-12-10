@@ -1065,6 +1065,24 @@ class Function
   set_has_recover_thunk()
   { this->has_recover_thunk_ = true; }
 
+  // Record that this function is a thunk created for a defer
+  // statement that calls the __go_set_defer_retaddr runtime function.
+  void
+  set_calls_defer_retaddr()
+  { this->calls_defer_retaddr_ = true; }
+
+  // Whether this is a type hash or equality function created by the
+  // compiler.
+  bool
+  is_type_specific_function()
+  { return this->is_type_specific_function_; }
+
+  // Record that this function is a type hash or equality function
+  // created by the compiler.
+  void
+  set_is_type_specific_function()
+  { this->is_type_specific_function_ = true; }
+
   // Mark the function as going into a unique section.
   void
   set_in_unique_section()
@@ -1190,6 +1208,12 @@ class Function
   bool is_recover_thunk_ : 1;
   // True if this function already has a recover thunk.
   bool has_recover_thunk_ : 1;
+  // True if this is a thunk built for a defer statement that calls
+  // the __go_set_defer_retaddr runtime function.
+  bool calls_defer_retaddr_ : 1;
+  // True if this is a function built by the compiler to as a hash or
+  // equality function for some type.
+  bool is_type_specific_function_ : 1;
   // True if this function should be put in a unique section.  This is
   // turned on for field tracking.
   bool in_unique_section_ : 1;
@@ -2636,17 +2660,25 @@ class Package
   // Whether some symbol from the package was used.
   bool
   used() const
-  { return this->used_; }
+  { return this->used_ > 0; }
 
   // Note that some symbol from this package was used.
   void
-  set_used() const
-  { this->used_ = true; }
+  note_usage() const
+  { this->used_++; }
+
+  // Note that USAGE might be a fake usage of this package.
+  void
+  note_fake_usage(Expression* usage) const
+  { this->fake_uses_.insert(usage); }
+
+  // Forget a given USAGE of this package.
+  void
+  forget_usage(Expression* usage) const;
 
   // Clear the used field for the next file.
   void
-  clear_used()
-  { this->used_ = false; }
+  clear_used();
 
   // Whether this package was imported in the current file.
   bool
@@ -2740,10 +2772,12 @@ class Package
   int priority_;
   // The location of the import statement.
   Location location_;
-  // True if some name from this package was used.  This is mutable
-  // because we can use a package even if we have a const pointer to
-  // it.
-  mutable bool used_;
+  // The amount of times some name from this package was used.  This is mutable
+  // because we can use a package even if we have a const pointer to it.
+  mutable size_t used_;
+  // A set of possibly fake uses of this package.  This is mutable because we
+  // can track fake uses of a package even if we have a const pointer to it.
+  mutable std::set<Expression*> fake_uses_;
   // True if this package was imported in the current file.
   bool is_imported_;
   // True if this package was imported with a name of "_".

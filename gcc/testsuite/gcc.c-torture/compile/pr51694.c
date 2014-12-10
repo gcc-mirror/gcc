@@ -1,3 +1,4 @@
+/* { dg-require-effective-target untyped_assembly } */
 void
 foo (x, fn)
   void (*fn) ();

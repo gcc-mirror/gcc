@@ -1,6 +1,7 @@
 /* { dg-do run { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_fprs } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power5" } } */
 /* { dg-options "-O2 -mcpu=power5 -std=c99" } */
 
 #ifndef __FP_FAST_FMA

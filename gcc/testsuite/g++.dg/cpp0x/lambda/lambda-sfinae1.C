@@ -8,9 +8,9 @@ struct AddRvalueReferenceImpl { typedef T type; };
 
 template <typename T>
 struct AddRvalueReferenceImpl<T, typename BoolSink<false &&
-      [] {
+      [] {			// { dg-error "lambda" }
          extern T &&tref;
-      }>::type> {		// { dg-error "lambda" }
+      }>::type> {
    typedef T &&type;
 };
 
@@ -27,9 +27,9 @@ struct IsConstructibleImpl { enum { value = 0 }; };
 
 template <typename T, typename ...Args>
 struct IsConstructibleImpl<T, typename BoolSink<false &&
-      [] {
+      [] {			// { dg-error "lambda" }
          T t( ::ImplHelpers::create<Args>() ...);
-      }>::type, Args ...> {	// { dg-error "lambda" }
+      }>::type, Args ...> {
    enum { value = 1 };
 };
 
@@ -53,3 +53,4 @@ static_assert(+IsConstructible<int &&, int &&>::value, "error");
 // { dg-prune-output "expected" }
 // { dg-prune-output "does not name a class" }
 // { dg-prune-output "static assertion" }
+// { dg-prune-output "template argument . is invalid" }

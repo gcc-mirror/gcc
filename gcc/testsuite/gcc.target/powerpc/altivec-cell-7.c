@@ -1,5 +1,6 @@
 /* { dg-do compile  } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=cell" } } */
 /* { dg-options "-O2 -maltivec -mabi=altivec -mcpu=cell" } */
 /* { dg-final { scan-assembler-times "vor" 2 } } */
 #include <altivec.h>

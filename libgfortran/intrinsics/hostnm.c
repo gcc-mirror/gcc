@@ -2,7 +2,7 @@
    Copyright (C) 2005-2014 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -30,6 +30,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h> 
+#endif
+
+#include <limits.h>
+
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX 255
 #endif
 
 
@@ -79,19 +85,17 @@ w32_gethostname (char *name, size_t len)
    INTEGER, INTENT(OUT), OPTIONAL :: STATUS  */
 
 #ifdef HAVE_GETHOSTNAME
-extern void hostnm_i4_sub (char *, GFC_INTEGER_4 *, gfc_charlen_type);
-iexport_proto(hostnm_i4_sub);
-
-void
-hostnm_i4_sub (char *name, GFC_INTEGER_4 *status, gfc_charlen_type name_len)
+static int
+hostnm_0 (char *name, gfc_charlen_type name_len)
 {
   int val, i;
-  char *p;
+  char p[HOST_NAME_MAX + 1];
 
   memset (name, ' ', name_len);
-  p = gfc_alloca (name_len + 1);
 
-  val = gethostname (p, name_len);
+  size_t reqlen = sizeof (p) > (size_t) name_len + 1
+    ? (size_t) name_len + 1: sizeof (p);
+  val = gethostname (p, reqlen);
 
   if (val == 0)
   {
@@ -100,8 +104,18 @@ hostnm_i4_sub (char *name, GFC_INTEGER_4 *status, gfc_charlen_type name_len)
       name[i] = p[i];
   }
 
+  return ((val == 0) ? 0 : errno);
+}
+
+extern void hostnm_i4_sub (char *, GFC_INTEGER_4 *, gfc_charlen_type);
+iexport_proto(hostnm_i4_sub);
+
+void
+hostnm_i4_sub (char *name, GFC_INTEGER_4 *status, gfc_charlen_type name_len)
+{
+  int val = hostnm_0 (name, name_len);
   if (status != NULL) 
-    *status = (val == 0) ? 0 : errno;
+    *status = val;
 }
 iexport(hostnm_i4_sub);
 
@@ -111,23 +125,9 @@ iexport_proto(hostnm_i8_sub);
 void
 hostnm_i8_sub (char *name, GFC_INTEGER_8 *status, gfc_charlen_type name_len)
 {
-  int val, i;
-  char *p;
-
-  memset (name, ' ', name_len);
-  p = gfc_alloca (name_len + 1);
-
-  val = gethostname (p, name_len);
-
-  if (val == 0)
-  {
-    i = -1;
-    while (i < name_len && p[++i] != '\0')
-      name[i] = p[i];
-  }
-
+  int val = hostnm_0 (name, name_len);
   if (status != NULL) 
-    *status = (val == 0) ? 0 : errno;
+    *status = val;
 }
 iexport(hostnm_i8_sub);
 
@@ -137,8 +137,6 @@ export_proto(hostnm);
 GFC_INTEGER_4
 hostnm (char *name, gfc_charlen_type name_len)
 {
-  GFC_INTEGER_4 val;
-  hostnm_i4_sub (name, &val, name_len);
-  return val;
+  return hostnm_0 (name, name_len);
 }
 #endif

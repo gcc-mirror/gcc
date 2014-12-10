@@ -45,6 +45,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "c-family/c-common.h"
 #include "c-family/c-objc.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-inline.h"
 #include "c-family/c-pragma.h"
@@ -478,7 +489,7 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
   /* Deleting ptr to void is undefined behavior [expr.delete/3].  */
   if (VOID_TYPE_P (TREE_TYPE (type)))
     {
-      warning (0, "deleting %qT is undefined", type);
+      warning (OPT_Wdelete_incomplete, "deleting %qT is undefined", type);
       doing_vec = 0;
     }
 
@@ -1193,9 +1204,9 @@ is_late_template_attribute (tree attr, tree decl)
       /* Also defer most attributes on dependent types.  This is not
 	 necessary in all cases, but is the better default.  */
       else if (dependent_type_p (type)
-	       /* But attributes abi_tag and visibility specifically apply
-		  to templates.  */
+	       /* But some attributes specifically apply to templates.  */
 	       && !is_attribute_p ("abi_tag", name)
+	       && !is_attribute_p ("deprecated", name)
 	       && !is_attribute_p ("visibility", name))
 	return true;
       else
@@ -1463,7 +1474,7 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
     {
       attributes
 	= decl_attributes (decl, attributes, flags | ATTR_FLAG_FUNCTION_NEXT);
-      decl_attributes (&TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (*decl)),
+      decl_attributes (&TYPE_PTRMEMFUNC_FN_TYPE_RAW (TREE_TYPE (*decl)),
 		       attributes, flags);
     }
   else
@@ -1471,6 +1482,17 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 
   if (TREE_CODE (*decl) == TYPE_DECL)
     SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (*decl), TREE_TYPE (*decl));
+
+  /* Propagate deprecation out to the template.  */
+  if (TREE_DEPRECATED (*decl))
+    if (tree ti = get_template_info (*decl))
+      {
+	tree tmpl = TI_TEMPLATE (ti);
+	tree pattern = (TYPE_P (*decl) ? TREE_TYPE (tmpl)
+			: DECL_TEMPLATE_RESULT (tmpl));
+	if (*decl == pattern)
+	  TREE_DEPRECATED (tmpl) = true;
+      }
 }
 
 /* Walks through the namespace- or function-scope anonymous union
@@ -4880,6 +4902,10 @@ mark_used (tree decl, tsubst_flags_t complain)
       return false;
     }
 
+  if (TREE_DEPRECATED (decl) && (complain & tf_warning)
+      && deprecated_state != DEPRECATED_SUPPRESS)
+    warn_deprecated_use (decl, NULL_TREE);
+
   /* We can only check DECL_ODR_USED on variables or functions with
      DECL_LANG_SPECIFIC set, and these are also the only decls that we
      might need special handling for.  */
@@ -4940,7 +4966,7 @@ mark_used (tree decl, tsubst_flags_t complain)
   if (processing_template_decl)
     return true;
 
-  /* Check this too in case we're within fold_non_dependent_expr.  */
+  /* Check this too in case we're within instantiate_non_dependent_expr.  */
   if (DECL_TEMPLATE_INFO (decl)
       && uses_template_parms (DECL_TI_ARGS (decl)))
     return true;

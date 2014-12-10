@@ -64,6 +64,13 @@ package body Sem_Ch11 is
       Set_Is_Statically_Allocated (Id);
       Set_Is_Pure                 (Id, PF);
 
+      --  An exception declared within a Ghost scope is automatically Ghost
+      --  (SPARK RM 6.9(2)).
+
+      if Within_Ghost_Scope then
+         Set_Is_Ghost_Entity (Id);
+      end if;
+
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;

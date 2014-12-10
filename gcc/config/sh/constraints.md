@@ -210,12 +210,12 @@
 (define_constraint "G"
   "Double constant 0."
   (and (match_code "const_double")
-       (match_test "fp_zero_operand (op) && fldi_ok ()")))
+       (match_test "fp_zero_operand (op)")))
 
 (define_constraint "H"
   "Double constant 1."
   (and (match_code "const_double")
-       (match_test "fp_one_operand (op) && fldi_ok ()")))
+       (match_test "fp_one_operand (op)")))
 
 ;; Extra constraints
 (define_constraint "Q"

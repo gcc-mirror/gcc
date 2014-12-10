@@ -71,8 +71,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "stringpool.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
 #include "function.h"
 #include "emit-rtl.h"
+#include "predict.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -91,7 +98,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "params.h"
 #include "intl.h"
-#include "function.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
+#include "alloc-pool.h"
 #include "ipa-prop.h"
 #include "tree-iterator.h"
 #include "tree-dump.h"
@@ -106,7 +117,7 @@ along with GCC; see the file COPYING3.  If not see
    the callgraph.  */
 
 cgraph_edge *
-cgraph_edge::clone (cgraph_node *n, gimple call_stmt, unsigned stmt_uid,
+cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 		    gcov_type count_scale, int freq_scale, bool update_original)
 {
   cgraph_edge *new_edge;
@@ -295,6 +306,9 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   if (thunk_of->thunk.thunk_p)
     node = duplicate_thunk_for_node (thunk_of, node);
 
+  if (!DECL_ARGUMENTS (thunk->decl))
+    thunk->get_untransformed_body ();
+
   cgraph_edge *cs;
   for (cs = node->callers; cs; cs = cs->next_caller)
     if (cs->caller->thunk.thunk_p
@@ -356,28 +370,47 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
 						  CGRAPH_FREQ_BASE);
   e->call_stmt_cannot_inline_p = true;
   symtab->call_edge_duplication_hooks (thunk->callees, e);
-  if (new_thunk->expand_thunk (false, false))
-    {
-      new_thunk->thunk.thunk_p = false;
-      new_thunk->analyze ();
-    }
-
   symtab->call_cgraph_duplication_hooks (thunk, new_thunk);
   return new_thunk;
 }
 
 /* If E does not lead to a thunk, simply redirect it to N.  Otherwise create
    one or more equivalent thunks for N and redirect E to the first in the
-   chain.  */
+   chain.  Note that it is then necessary to call
+   n->expand_all_artificial_thunks once all callers are redirected.  */
 
 void
-redirect_edge_duplicating_thunks (cgraph_edge *e, cgraph_node *n)
+cgraph_edge::redirect_callee_duplicating_thunks (cgraph_node *n)
 {
-  cgraph_node *orig_to = e->callee->ultimate_alias_target ();
+  cgraph_node *orig_to = callee->ultimate_alias_target ();
   if (orig_to->thunk.thunk_p)
     n = duplicate_thunk_for_node (orig_to, n);
 
-  e->redirect_callee (n);
+  redirect_callee (n);
+}
+
+/* Call expand_thunk on all callers that are thunks and if analyze those nodes
+   that were expanded.  */
+
+void
+cgraph_node::expand_all_artificial_thunks ()
+{
+  cgraph_edge *e;
+  for (e = callers; e;)
+    if (e->caller->thunk.thunk_p)
+      {
+	cgraph_node *thunk = e->caller;
+
+	e = e->next_caller;
+	if (thunk->expand_thunk (false, false))
+	  {
+	    thunk->thunk.thunk_p = false;
+	    thunk->analyze ();
+	  }
+	thunk->expand_all_artificial_thunks ();
+      }
+    else
+      e = e->next_caller;
 }
 
 /* Create node representing clone of N executed COUNT times.  Decrease
@@ -469,8 +502,9 @@ cgraph_node::create_clone (tree decl, gcov_type gcov_count, int freq,
       if (!e->callee
 	  || DECL_BUILT_IN_CLASS (e->callee->decl) != BUILT_IN_NORMAL
 	  || DECL_FUNCTION_CODE (e->callee->decl) != BUILT_IN_UNREACHABLE)
-        redirect_edge_duplicating_thunks (e, new_node);
+        e->redirect_callee_duplicating_thunks (new_node);
     }
+  new_node->expand_all_artificial_thunks ();
 
   for (e = callees;e; e=e->next_callee)
     e->clone (new_node, e->call_stmt, e->lto_stmt_uid, count_scale,
@@ -688,7 +722,8 @@ cgraph_node::find_replacement (void)
    call.  */
 
 void
-cgraph_node::set_call_stmt_including_clones (gimple old_stmt, gimple new_stmt,
+cgraph_node::set_call_stmt_including_clones (gimple old_stmt,
+					     gcall *new_stmt,
 					     bool update_speculative)
 {
   cgraph_node *node;
@@ -743,7 +778,7 @@ cgraph_node::set_call_stmt_including_clones (gimple old_stmt, gimple new_stmt,
 
 void
 cgraph_node::create_edge_including_clones (cgraph_node *callee,
-					   gimple old_stmt, gimple stmt,
+					   gimple old_stmt, gcall *stmt,
 					   gcov_type count,
 					   int freq,
 					   cgraph_inline_failed_t reason)
@@ -1053,14 +1088,14 @@ symbol_table::materialize_all_clones (void)
 	      && !gimple_has_body_p (node->decl))
 	    {
 	      if (!node->clone_of->clone_of)
-		node->clone_of->get_body ();
+		node->clone_of->get_untransformed_body ();
 	      if (gimple_has_body_p (node->clone_of->decl))
 	        {
 		  if (symtab->dump_file)
 		    {
 		      fprintf (symtab->dump_file, "cloning %s to %s\n",
-			       xstrdup (node->clone_of->name ()),
-			       xstrdup (node->name ()));
+			       xstrdup_for_dump (node->clone_of->name ()),
+			       xstrdup_for_dump (node->name ()));
 		      if (node->clone.tree_map)
 		        {
 			  unsigned int i;

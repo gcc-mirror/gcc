@@ -57,6 +57,6 @@ internal_fn_fnspec (enum internal_fn fn)
   return internal_fn_fnspec_array[(int) fn];
 }
 
-extern void expand_internal_call (gimple);
+extern void expand_internal_call (gcall *);
 
 #endif

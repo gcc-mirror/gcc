@@ -26,6 +26,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "stringpool.h"
+#include "predict.h"
+#include "vec.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -35,15 +43,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "flags.h"
 #include "params.h"
-#include "input.h"
-#include "hashtab.h"
-#include "hash-set.h"
 #include "langhooks.h"
 #include "bitmap.h"
-#include "function.h"
 #include "diagnostic-core.h"
 #include "except.h"
 #include "timevar.h"
+#include "hash-map.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 #include "lto-streamer.h"
 #include "data-streamer.h"
 #include "tree-streamer.h"
@@ -53,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "ipa-utils.h"
+#include "omp-low.h"
 
 /* True when asm nodes has been output.  */
 bool asm_nodes_output = false;
@@ -322,6 +331,11 @@ referenced_from_other_partition_p (symtab_node *node, lto_symtab_encoder_t encod
 
   for (i = 0; node->iterate_referring (i, ref); i++)
     {
+      /* Ignore references from non-offloadable nodes while streaming NODE into
+	 offload LTO section.  */
+      if (!ref->referring->need_lto_streaming)
+	continue;
+
       if (ref->referring->in_other_partition
           || !lto_symtab_encoder_in_partition_p (encoder, ref->referring))
 	return true;
@@ -340,9 +354,16 @@ reachable_from_other_partition_p (struct cgraph_node *node, lto_symtab_encoder_t
   if (node->global.inlined_to)
     return false;
   for (e = node->callers; e; e = e->next_caller)
-    if (e->caller->in_other_partition
-	|| !lto_symtab_encoder_in_partition_p (encoder, e->caller))
-      return true;
+    {
+      /* Ignore references from non-offloadable nodes while streaming NODE into
+	 offload LTO section.  */
+      if (!e->caller->need_lto_streaming)
+	continue;
+
+      if (e->caller->in_other_partition
+	  || !lto_symtab_encoder_in_partition_p (encoder, e->caller))
+	return true;
+    }
   return false;
 }
 
@@ -540,9 +561,12 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->only_called_at_exit, 1);
   bp_pack_value (&bp, node->tm_clone, 1);
   bp_pack_value (&bp, node->calls_comdat_local, 1);
+  bp_pack_value (&bp, node->icf_merged, 1);
+  bp_pack_value (&bp, node->nonfreeing_fn, 1);
   bp_pack_value (&bp, node->thunk.thunk_p && !boundary_p, 1);
   bp_pack_enum (&bp, ld_plugin_symbol_resolution,
 	        LDPR_NUM_KNOWN, node->resolution);
+  bp_pack_value (&bp, node->instrumentation_clone, 1);
   streamer_write_bitpack (&bp);
   streamer_write_data_stream (ob->main_stream, section, strlen (section) + 1);
 
@@ -551,7 +575,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
       streamer_write_uhwi_stream
 	 (ob->main_stream,
 	  1 + (node->thunk.this_adjusting != 0) * 2
-	  + (node->thunk.virtual_offset_p != 0) * 4);
+	  + (node->thunk.virtual_offset_p != 0) * 4
+	  + (node->thunk.add_pointer_bounds_args != 0) * 8);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.fixed_offset);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.virtual_value);
     }
@@ -560,6 +585,9 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
     streamer_write_hwi_stream (ob->main_stream, node->get_init_priority ());
   if (DECL_STATIC_DESTRUCTOR (node->decl))
     streamer_write_hwi_stream (ob->main_stream, node->get_fini_priority ());
+
+  if (node->instrumentation_clone)
+    lto_output_fn_decl_index (ob->decl_state, ob->main_stream, node->orig_decl);
 }
 
 /* Output the varpool NODE to OB. 
@@ -614,6 +642,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
     }
   bp_pack_value (&bp, node->tls_model, 3);
   bp_pack_value (&bp, node->used_by_single_function, 1);
+  bp_pack_value (&bp, node->need_bounds_init, 1);
   streamer_write_bitpack (&bp);
 
   group = node->get_comdat_group ();
@@ -658,7 +687,7 @@ lto_output_ref (struct lto_simple_output_block *ob, struct ipa_ref *ref,
   struct cgraph_node *node;
 
   bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, ref->use, 2);
+  bp_pack_value (&bp, ref->use, 3);
   bp_pack_value (&bp, ref->speculative, 1);
   streamer_write_bitpack (&bp);
   nref = lto_symtab_encoder_lookup (encoder, ref->referred);
@@ -803,6 +832,16 @@ create_references (lto_symtab_encoder_t encoder, symtab_node *node)
       lto_symtab_encoder_encode (encoder, ref->referred);
 }
 
+/* Select what needs to be streamed out.  In regular lto mode stream everything.
+   In offload lto mode stream only nodes marked as offloadable.  */
+void
+select_what_to_stream (bool offload_lto_mode)
+{
+  struct symtab_node *snode;
+  FOR_EACH_SYMBOL (snode)
+    snode->need_lto_streaming = !offload_lto_mode || snode->offloadable;
+}
+
 /* Find all symbols we want to stream into given partition and insert them
    to encoders.
 
@@ -829,6 +868,8 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
        !lsei_end_p (lsei); lsei_next_function_in_partition (&lsei))
     {
       struct cgraph_node *node = lsei_cgraph_node (lsei);
+      if (!node->need_lto_streaming)
+	continue;
       add_node_to (encoder, node, true);
       lto_set_symtab_encoder_in_partition (encoder, node);
       create_references (encoder, node);
@@ -836,7 +877,8 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       if (DECL_ABSTRACT_ORIGIN (node->decl))
 	{
 	  struct cgraph_node *origin_node
-	  = cgraph_node::get (DECL_ABSTRACT_ORIGIN (node->decl));
+	  = cgraph_node::get_create (DECL_ABSTRACT_ORIGIN (node->decl));
+	  origin_node->used_as_abstract_origin = true;
 	  add_node_to (encoder, origin_node, true);
 	}
     }
@@ -845,6 +887,8 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
     {
       varpool_node *vnode = lsei_varpool_node (lsei);
 
+      if (!vnode->need_lto_streaming)
+	continue;
       lto_set_symtab_encoder_in_partition (encoder, vnode);
       lto_set_symtab_encoder_encode_initializer (encoder, vnode);
       create_references (encoder, vnode);
@@ -866,7 +910,8 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	{
 	  if (!lto_symtab_encoder_encode_initializer_p (encoder,
 							vnode)
-	      && vnode->ctor_useable_for_folding_p ())
+	      && (vnode->ctor_useable_for_folding_p ()
+		  || POINTER_BOUNDS_P (vnode->decl)))
 	    {
 	      lto_set_symtab_encoder_encode_initializer (encoder, vnode);
 	      create_references (encoder, vnode);
@@ -1026,6 +1071,50 @@ read_string (struct lto_input_block *ib)
   return str;
 }
 
+/* Output function/variable tables that will allow libgomp to look up offload
+   target code.
+   OFFLOAD_FUNCS is filled in expand_omp_target, OFFLOAD_VARS is filled in
+   varpool_node::get_create.  In WHOPR (partitioned) mode during the WPA stage
+   both OFFLOAD_FUNCS and OFFLOAD_VARS are filled by input_offload_tables.  */
+
+void
+output_offload_tables (void)
+{
+  if (vec_safe_is_empty (offload_funcs) && vec_safe_is_empty (offload_vars))
+    return;
+
+  struct lto_simple_output_block *ob
+    = lto_create_simple_output_block (LTO_section_offload_table);
+
+  for (unsigned i = 0; i < vec_safe_length (offload_funcs); i++)
+    {
+      streamer_write_enum (ob->main_stream, LTO_symtab_tags,
+			   LTO_symtab_last_tag, LTO_symtab_unavail_node);
+      lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
+				(*offload_funcs)[i]);
+    }
+
+  for (unsigned i = 0; i < vec_safe_length (offload_vars); i++)
+    {
+      streamer_write_enum (ob->main_stream, LTO_symtab_tags,
+			   LTO_symtab_last_tag, LTO_symtab_variable);
+      lto_output_var_decl_index (ob->decl_state, ob->main_stream,
+				 (*offload_vars)[i]);
+    }
+
+  streamer_write_uhwi_stream (ob->main_stream, 0);
+  lto_destroy_simple_output_block (ob);
+
+  /* In WHOPR mode during the WPA stage the joint offload tables need to be
+     streamed to one partition only.  That's why we free offload_funcs and
+     offload_vars after the first call of output_offload_tables.  */
+  if (flag_wpa)
+    {
+      vec_free (offload_funcs);
+      vec_free (offload_vars);
+    }
+}
+
 /* Overwrite the information in NODE based on FILE_DATA, TAG, FLAGS,
    STACK_SIZE, SELF_TIME and SELF_SIZE.  This is called either to initialize
    NODE or to replace the values in it, for instance because the first
@@ -1080,9 +1169,12 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->only_called_at_exit = bp_unpack_value (bp, 1);
   node->tm_clone = bp_unpack_value (bp, 1);
   node->calls_comdat_local = bp_unpack_value (bp, 1);
+  node->icf_merged = bp_unpack_value (bp, 1);
+  node->nonfreeing_fn = bp_unpack_value (bp, 1);
   node->thunk.thunk_p = bp_unpack_value (bp, 1);
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
 				     LDPR_NUM_KNOWN);
+  node->instrumentation_clone = bp_unpack_value (bp, 1);
   gcc_assert (flag_ltrans
 	      || (!node->in_other_partition
 		  && !node->used_from_other_partition));
@@ -1205,6 +1297,7 @@ input_node (struct lto_file_decl_data *file_data,
       node->thunk.this_adjusting = (type & 2);
       node->thunk.virtual_value = virtual_value;
       node->thunk.virtual_offset_p = (type & 4);
+      node->thunk.add_pointer_bounds_args = (type & 8);
     }
   if (node->alias && !node->analyzed && node->weakref)
     node->alias_target = get_alias_symbol (node->decl);
@@ -1213,6 +1306,14 @@ input_node (struct lto_file_decl_data *file_data,
     node->set_init_priority (streamer_read_hwi (ib));
   if (DECL_STATIC_DESTRUCTOR (node->decl))
     node->set_fini_priority (streamer_read_hwi (ib));
+
+  if (node->instrumentation_clone)
+    {
+      decl_index = streamer_read_uhwi (ib);
+      fn_decl = lto_file_decl_data_get_fn_decl (file_data, decl_index);
+      node->orig_decl = fn_decl;
+    }
+
   return node;
 }
 
@@ -1272,6 +1373,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
     node->alias_target = get_alias_symbol (node->decl);
   node->tls_model = (enum tls_model)bp_unpack_value (&bp, 3);
   node->used_by_single_function = (enum tls_model)bp_unpack_value (&bp, 1);
+  node->need_bounds_init = bp_unpack_value (&bp, 1);
   group = read_identifier (ib);
   if (group)
     {
@@ -1309,7 +1411,7 @@ input_ref (struct lto_input_block *ib,
   struct ipa_ref *ref;
 
   bp = streamer_read_bitpack (ib);
-  use = (enum ipa_ref_use) bp_unpack_value (&bp, 2);
+  use = (enum ipa_ref_use) bp_unpack_value (&bp, 3);
   speculative = (enum ipa_ref_use) bp_unpack_value (&bp, 1);
   node = nodes[streamer_read_hwi (ib)];
   ref = referring_node->create_reference (node, use);
@@ -1452,6 +1554,33 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 	      = dyn_cast<cgraph_node *> (nodes[ref]);
 	  else
 	    cnode->global.inlined_to = NULL;
+
+	  /* Compute instrumented_version.  */
+	  if (cnode->instrumentation_clone)
+	    {
+	      gcc_assert (cnode->orig_decl);
+
+	      cnode->instrumented_version = cgraph_node::get (cnode->orig_decl);
+	      if (cnode->instrumented_version)
+		{
+		  /* We may have multiple nodes for a single function which
+		     will be merged later.  To have a proper merge we need
+		     to keep instrumentation_version reference between nodes
+		     consistent: each instrumented_version reference should
+		     have proper reverse reference.  Thus don't break existing
+		     instrumented_version reference if it already exists.  */
+		  if (cnode->instrumented_version->instrumented_version)
+		    cnode->instrumented_version = NULL;
+		  else
+		    cnode->instrumented_version->instrumented_version = cnode;
+		}
+
+	      /* Restore decl names reference.  */
+	      if (IDENTIFIER_TRANSPARENT_ALIAS (DECL_ASSEMBLER_NAME (cnode->decl))
+		  && !TREE_CHAIN (DECL_ASSEMBLER_NAME (cnode->decl)))
+		TREE_CHAIN (DECL_ASSEMBLER_NAME (cnode->decl))
+		  = DECL_ASSEMBLER_NAME (cnode->orig_decl);
+	    }
 	}
 
       ref = (int) (intptr_t) node->same_comdat_group;
@@ -1721,6 +1850,55 @@ input_symtab (void)
 	 context of the nested function.  */
       if (node->lto_file_data)
 	node->aux = NULL;
+    }
+}
+
+/* Input function/variable tables that will allow libgomp to look up offload
+   target code, and store them into OFFLOAD_FUNCS and OFFLOAD_VARS.  */
+
+void
+input_offload_tables (void)
+{
+  struct lto_file_decl_data **file_data_vec = lto_get_file_decl_data ();
+  struct lto_file_decl_data *file_data;
+  unsigned int j = 0;
+
+  while ((file_data = file_data_vec[j++]))
+    {
+      const char *data;
+      size_t len;
+      struct lto_input_block *ib
+	= lto_create_simple_input_block (file_data, LTO_section_offload_table,
+					 &data, &len);
+      if (!ib)
+	continue;
+
+      enum LTO_symtab_tags tag
+	= streamer_read_enum (ib, LTO_symtab_tags, LTO_symtab_last_tag);
+      while (tag)
+	{
+	  if (tag == LTO_symtab_unavail_node)
+	    {
+	      int decl_index = streamer_read_uhwi (ib);
+	      tree fn_decl
+		= lto_file_decl_data_get_fn_decl (file_data, decl_index);
+	      vec_safe_push (offload_funcs, fn_decl);
+	    }
+	  else if (tag == LTO_symtab_variable)
+	    {
+	      int decl_index = streamer_read_uhwi (ib);
+	      tree var_decl
+		= lto_file_decl_data_get_var_decl (file_data, decl_index);
+	      vec_safe_push (offload_vars, var_decl);
+	    }
+	  else
+	    fatal_error ("invalid offload table in %s", file_data->file_name);
+
+	  tag = streamer_read_enum (ib, LTO_symtab_tags, LTO_symtab_last_tag);
+	}
+
+      lto_destroy_simple_input_block (file_data, LTO_section_offload_table,
+				      ib, data, len);
     }
 }
 

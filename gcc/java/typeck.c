@@ -157,7 +157,7 @@ convert (tree type, tree expr)
    then UNSIGNEDP selects between signed and unsigned types.  */
 
 tree
-java_type_for_mode (enum machine_mode mode, int unsignedp)
+java_type_for_mode (machine_mode mode, int unsignedp)
 {
   if (mode == TYPE_MODE (int_type_node))
     return unsignedp ? unsigned_int_type_node : int_type_node;
@@ -477,7 +477,7 @@ build_java_argument_signature (tree type)
 	}
       obstack_1grow (&temporary_obstack, '\0');
 
-      sig = get_identifier (obstack_base (&temporary_obstack));
+      sig = get_identifier ((char *) obstack_base (&temporary_obstack));
       TYPE_ARGUMENT_SIGNATURE (type) = sig;
       obstack_free (&temporary_obstack, obstack_base (&temporary_obstack));
     }
@@ -554,7 +554,7 @@ build_java_signature (tree type)
 	    obstack_grow0 (&temporary_obstack,
 			   IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
 
-	    sig = get_identifier (obstack_base (&temporary_obstack));
+	    sig = get_identifier ((char *) obstack_base (&temporary_obstack));
 	    obstack_free (&temporary_obstack,
 			  obstack_base (&temporary_obstack));
 	  }

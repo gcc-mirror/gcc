@@ -34,9 +34,9 @@ lra_get_allocno_class (int regno)
   return reg_allocno_class (regno);
 }
 
-extern rtx lra_create_new_reg (enum machine_mode, rtx, enum reg_class,
+extern rtx lra_create_new_reg (machine_mode, rtx, enum reg_class,
 			       const char *);
-extern rtx lra_eliminate_regs (rtx, enum machine_mode, rtx);
+extern rtx lra_eliminate_regs (rtx, machine_mode, rtx);
 extern void lra (FILE *);
 extern void lra_init_once (void);
 extern void lra_finish_once (void);

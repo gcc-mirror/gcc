@@ -216,8 +216,6 @@ along with GCC; see the file COPYING3.  If not see
    the same result as X + X; the precision of the shift amount Y
    can be arbitrarily different from X.  */
 
-
-#include <utility>
 #include "system.h"
 #include "hwint.h"
 #include "signop.h"
@@ -2129,7 +2127,7 @@ template <typename T1, typename T2>
 inline WI_BINARY_RESULT (T1, T2)
 wi::smin (const T1 &x, const T2 &y)
 {
-  return min (x, y, SIGNED);
+  return wi::min (x, y, SIGNED);
 }
 
 /* Return the minimum of X and Y, treating both as unsigned values.  */
@@ -2137,7 +2135,7 @@ template <typename T1, typename T2>
 inline WI_BINARY_RESULT (T1, T2)
 wi::umin (const T1 &x, const T2 &y)
 {
-  return min (x, y, UNSIGNED);
+  return wi::min (x, y, UNSIGNED);
 }
 
 /* Return the maxinum of X and Y, treating them both as having
@@ -2160,7 +2158,7 @@ template <typename T1, typename T2>
 inline WI_BINARY_RESULT (T1, T2)
 wi::smax (const T1 &x, const T2 &y)
 {
-  return max (x, y, SIGNED);
+  return wi::max (x, y, SIGNED);
 }
 
 /* Return the maximum of X and Y, treating both as unsigned values.  */
@@ -2168,7 +2166,7 @@ template <typename T1, typename T2>
 inline WI_BINARY_RESULT (T1, T2)
 wi::umax (const T1 &x, const T2 &y)
 {
-  return max (x, y, UNSIGNED);
+  return wi::max (x, y, UNSIGNED);
 }
 
 /* Return X & Y.  */

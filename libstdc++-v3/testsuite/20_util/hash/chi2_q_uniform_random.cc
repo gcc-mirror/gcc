@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // Use smaller statistics when running on simulators, so it takes less time.
 // For powerpc-eabi, SAMPLES=30000 fails.
-// { dg-options "-std=gnu++0x -DSAMPLES=35000" { target simulator } }
+// { dg-options "-std=gnu++11 -DSAMPLES=35000" { target simulator } }
 
 // Copyright (C) 2010-2014 Free Software Foundation, Inc.
 //

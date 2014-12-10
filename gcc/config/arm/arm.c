@@ -40,11 +40,30 @@
 #include "insn-attr.h"
 #include "flags.h"
 #include "reload.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "input.h"
 #include "function.h"
 #include "expr.h"
+#include "insn-codes.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
 #include "recog.h"
+#include "predict.h"
+#include "dominance.h"
+#include "cfg.h"
+#include "cfgrtl.h"
+#include "cfganal.h"
+#include "lcm.h"
+#include "cfgbuild.h"
+#include "cfgcleanup.h"
+#include "basic-block.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "ggc.h"
 #include "except.h"
@@ -63,6 +82,7 @@
 #include "gimple-expr.h"
 #include "builtins.h"
 #include "tm-constrs.h"
+#include "rtl-iter.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;
@@ -78,26 +98,25 @@ struct four_ints
 /* Forward function declarations.  */
 static bool arm_const_not_ok_for_debug_p (rtx);
 static bool arm_lra_p (void);
-static bool arm_needs_doubleword_align (enum machine_mode, const_tree);
+static bool arm_needs_doubleword_align (machine_mode, const_tree);
 static int arm_compute_static_chain_stack_bytes (void);
 static arm_stack_offsets *arm_get_frame_offsets (void);
 static void arm_add_gc_roots (void);
-static int arm_gen_constant (enum rtx_code, enum machine_mode, rtx,
+static int arm_gen_constant (enum rtx_code, machine_mode, rtx,
 			     HOST_WIDE_INT, rtx, rtx, int, int);
 static unsigned bit_count (unsigned long);
 static int arm_address_register_rtx_p (rtx, int);
-static int arm_legitimate_index_p (enum machine_mode, rtx, RTX_CODE, int);
-static int thumb2_legitimate_index_p (enum machine_mode, rtx, int);
-static int thumb1_base_register_rtx_p (rtx, enum machine_mode, int);
-static rtx arm_legitimize_address (rtx, rtx, enum machine_mode);
+static int arm_legitimate_index_p (machine_mode, rtx, RTX_CODE, int);
+static int thumb2_legitimate_index_p (machine_mode, rtx, int);
+static int thumb1_base_register_rtx_p (rtx, machine_mode, int);
+static rtx arm_legitimize_address (rtx, rtx, machine_mode);
 static reg_class_t arm_preferred_reload_class (rtx, reg_class_t);
-static rtx thumb_legitimize_address (rtx, rtx, enum machine_mode);
+static rtx thumb_legitimize_address (rtx, rtx, machine_mode);
 inline static int thumb1_index_register_rtx_p (rtx, int);
 static int thumb_far_jump_used_p (void);
 static bool thumb_force_lr_save (void);
 static unsigned arm_size_return_regs (void);
 static bool arm_assemble_integer (rtx, unsigned int, int);
-static void arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update);
 static void arm_print_operand (FILE *, rtx, int);
 static void arm_print_operand_address (FILE *, rtx);
 static bool arm_print_operand_punct_valid_p (unsigned char code);
@@ -121,7 +140,7 @@ static int arm_barrier_cost (rtx);
 static Mfix *create_fix_barrier (Mfix *, HOST_WIDE_INT);
 static void push_minipool_barrier (rtx_insn *, HOST_WIDE_INT);
 static void push_minipool_fix (rtx_insn *, HOST_WIDE_INT, rtx *,
-			       enum machine_mode, rtx);
+			       machine_mode, rtx);
 static void arm_reorg (void);
 static void note_invalid_constants (rtx_insn *, HOST_WIDE_INT, int);
 static unsigned long arm_compute_save_reg0_reg12_mask (void);
@@ -149,20 +168,20 @@ static int optimal_immediate_sequence_1 (enum rtx_code code,
 					 int i);
 static int arm_get_strip_length (int);
 static bool arm_function_ok_for_sibcall (tree, tree);
-static enum machine_mode arm_promote_function_mode (const_tree,
-						    enum machine_mode, int *,
+static machine_mode arm_promote_function_mode (const_tree,
+						    machine_mode, int *,
 						    const_tree, int);
 static bool arm_return_in_memory (const_tree, const_tree);
 static rtx arm_function_value (const_tree, const_tree, bool);
-static rtx arm_libcall_value_1 (enum machine_mode);
-static rtx arm_libcall_value (enum machine_mode, const_rtx);
+static rtx arm_libcall_value_1 (machine_mode);
+static rtx arm_libcall_value (machine_mode, const_rtx);
 static bool arm_function_value_regno_p (const unsigned int);
 static void arm_internal_label (FILE *, const char *, unsigned long);
 static void arm_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
 				 tree);
 static bool arm_have_conditional_execution (void);
-static bool arm_cannot_force_const_mem (enum machine_mode, rtx);
-static bool arm_legitimate_constant_p (enum machine_mode, rtx);
+static bool arm_cannot_force_const_mem (machine_mode, rtx);
+static bool arm_legitimate_constant_p (machine_mode, rtx);
 static bool arm_rtx_costs_1 (rtx, enum rtx_code, int*, bool);
 static bool arm_size_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *);
 static bool arm_slowmul_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
@@ -170,29 +189,22 @@ static bool arm_fastmul_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, boo
 static bool arm_xscale_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
 static bool arm_9e_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
 static bool arm_rtx_costs (rtx, int, int, int, int *, bool);
-static int arm_address_cost (rtx, enum machine_mode, addr_space_t, bool);
-static int arm_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
-static int arm_memory_move_cost (enum machine_mode, reg_class_t, bool);
-static void arm_init_builtins (void);
-static void arm_init_iwmmxt_builtins (void);
-static rtx safe_vector_operand (rtx, enum machine_mode);
-static rtx arm_expand_binop_builtin (enum insn_code, tree, rtx);
-static rtx arm_expand_unop_builtin (enum insn_code, tree, rtx, int);
-static rtx arm_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-static tree arm_builtin_decl (unsigned, bool);
+static int arm_address_cost (rtx, machine_mode, addr_space_t, bool);
+static int arm_register_move_cost (machine_mode, reg_class_t, reg_class_t);
+static int arm_memory_move_cost (machine_mode, reg_class_t, bool);
 static void emit_constant_insn (rtx cond, rtx pattern);
 static rtx_insn *emit_set_insn (rtx, rtx);
 static rtx emit_multi_reg_push (unsigned long, unsigned long);
-static int arm_arg_partial_bytes (cumulative_args_t, enum machine_mode,
+static int arm_arg_partial_bytes (cumulative_args_t, machine_mode,
 				  tree, bool);
-static rtx arm_function_arg (cumulative_args_t, enum machine_mode,
+static rtx arm_function_arg (cumulative_args_t, machine_mode,
 			     const_tree, bool);
-static void arm_function_arg_advance (cumulative_args_t, enum machine_mode,
+static void arm_function_arg_advance (cumulative_args_t, machine_mode,
 				      const_tree, bool);
-static unsigned int arm_function_arg_boundary (enum machine_mode, const_tree);
-static rtx aapcs_allocate_return_reg (enum machine_mode, const_tree,
+static unsigned int arm_function_arg_boundary (machine_mode, const_tree);
+static rtx aapcs_allocate_return_reg (machine_mode, const_tree,
 				      const_tree);
-static rtx aapcs_libcall_value (enum machine_mode);
+static rtx aapcs_libcall_value (machine_mode);
 static int aapcs_select_return_coproc (const_tree, const_tree);
 
 #ifdef OBJECT_FORMAT_ELF
@@ -206,15 +218,15 @@ static void arm_encode_section_info (tree, rtx, int);
 static void arm_file_end (void);
 static void arm_file_start (void);
 
-static void arm_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
+static void arm_setup_incoming_varargs (cumulative_args_t, machine_mode,
 					tree, int *, int);
 static bool arm_pass_by_reference (cumulative_args_t,
-				   enum machine_mode, const_tree, bool);
+				   machine_mode, const_tree, bool);
 static bool arm_promote_prototypes (const_tree);
 static bool arm_default_short_enums (void);
 static bool arm_align_anon_bitfield (void);
 static bool arm_return_in_msb (const_tree);
-static bool arm_must_pass_in_stack (enum machine_mode, const_tree);
+static bool arm_must_pass_in_stack (machine_mode, const_tree);
 static bool arm_return_in_memory (const_tree, const_tree);
 #if ARM_UNWIND_INFO
 static void arm_unwind_emit (FILE *, rtx_insn *);
@@ -238,7 +250,7 @@ static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
-static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
+static unsigned HOST_WIDE_INT arm_shift_truncation_mask (machine_mode);
 static bool arm_cannot_copy_insn_p (rtx_insn *);
 static int arm_issue_rate (void);
 static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
@@ -249,7 +261,7 @@ static const char *arm_invalid_parameter_type (const_tree t);
 static const char *arm_invalid_return_type (const_tree t);
 static tree arm_promoted_type (const_tree t);
 static tree arm_convert_to_type (tree type, tree expr);
-static bool arm_scalar_mode_supported_p (enum machine_mode);
+static bool arm_scalar_mode_supported_p (machine_mode);
 static bool arm_frame_pointer_required (void);
 static bool arm_can_eliminate (const int, const int);
 static void arm_asm_trampoline_template (FILE *);
@@ -259,13 +271,13 @@ static rtx arm_pic_static_addr (rtx orig, rtx reg);
 static bool cortex_a9_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int *);
 static bool xscale_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int *);
 static bool fa726te_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int *);
-static bool arm_array_mode_supported_p (enum machine_mode,
+static bool arm_array_mode_supported_p (machine_mode,
 					unsigned HOST_WIDE_INT);
-static enum machine_mode arm_preferred_simd_mode (enum machine_mode);
+static machine_mode arm_preferred_simd_mode (machine_mode);
 static bool arm_class_likely_spilled_p (reg_class_t);
 static HOST_WIDE_INT arm_vector_alignment (const_tree type);
 static bool arm_vector_alignment_reachable (const_tree type, bool is_packed);
-static bool arm_builtin_support_vector_misalignment (enum machine_mode mode,
+static bool arm_builtin_support_vector_misalignment (machine_mode mode,
 						     const_tree type,
 						     int misalignment,
 						     bool is_packed);
@@ -276,7 +288,7 @@ static int arm_default_branch_cost (bool, bool);
 static int arm_cortex_a5_branch_cost (bool, bool);
 static int arm_cortex_m_branch_cost (bool, bool);
 
-static bool arm_vectorize_vec_perm_const_ok (enum machine_mode vmode,
+static bool arm_vectorize_vec_perm_const_ok (machine_mode vmode,
 					     const unsigned char *sel);
 
 static int arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
@@ -291,6 +303,8 @@ static unsigned arm_add_stmt_cost (void *data, int count,
 static void arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 					 bool op0_preserve_value);
 static unsigned HOST_WIDE_INT arm_asan_shadow_offset (void);
+
+static void arm_sched_fusion_priority (rtx_insn *, int, int *, int*);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -688,6 +702,9 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
 #define TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS true
 
+#undef TARGET_SCHED_FUSION_PRIORITY
+#define TARGET_SCHED_FUSION_PRIORITY arm_sched_fusion_priority
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Obstack for minipool constant handling.  */
@@ -719,77 +736,13 @@ const struct arm_fpu_desc *arm_fpu_desc;
 rtx thumb_call_via_label[14];
 static int thumb_call_reg_needed;
 
-/* Bit values used to identify processor capabilities.  */
-#define FL_CO_PROC    (1 << 0)        /* Has external co-processor bus */
-#define FL_ARCH3M     (1 << 1)        /* Extended multiply */
-#define FL_MODE26     (1 << 2)        /* 26-bit mode support */
-#define FL_MODE32     (1 << 3)        /* 32-bit mode support */
-#define FL_ARCH4      (1 << 4)        /* Architecture rel 4 */
-#define FL_ARCH5      (1 << 5)        /* Architecture rel 5 */
-#define FL_THUMB      (1 << 6)        /* Thumb aware */
-#define FL_LDSCHED    (1 << 7)	      /* Load scheduling necessary */
-#define FL_STRONG     (1 << 8)	      /* StrongARM */
-#define FL_ARCH5E     (1 << 9)        /* DSP extensions to v5 */
-#define FL_XSCALE     (1 << 10)	      /* XScale */
-/* spare	      (1 << 11)	*/
-#define FL_ARCH6      (1 << 12)       /* Architecture rel 6.  Adds
-					 media instructions.  */
-#define FL_VFPV2      (1 << 13)       /* Vector Floating Point V2.  */
-#define FL_WBUF	      (1 << 14)	      /* Schedule for write buffer ops.
-					 Note: ARM6 & 7 derivatives only.  */
-#define FL_ARCH6K     (1 << 15)       /* Architecture rel 6 K extensions.  */
-#define FL_THUMB2     (1 << 16)	      /* Thumb-2.  */
-#define FL_NOTM	      (1 << 17)	      /* Instructions not present in the 'M'
-					 profile.  */
-#define FL_THUMB_DIV  (1 << 18)	      /* Hardware divide (Thumb mode).  */
-#define FL_VFPV3      (1 << 19)       /* Vector Floating Point V3.  */
-#define FL_NEON       (1 << 20)       /* Neon instructions.  */
-#define FL_ARCH7EM    (1 << 21)	      /* Instructions present in the ARMv7E-M
-					 architecture.  */
-#define FL_ARCH7      (1 << 22)       /* Architecture 7.  */
-#define FL_ARM_DIV    (1 << 23)	      /* Hardware divide (ARM mode).  */
-#define FL_ARCH8      (1 << 24)       /* Architecture 8.  */
-#define FL_CRC32      (1 << 25)	      /* ARMv8 CRC32 instructions.  */
-
-#define FL_IWMMXT     (1 << 29)	      /* XScale v2 or "Intel Wireless MMX technology".  */
-#define FL_IWMMXT2    (1 << 30)       /* "Intel Wireless MMX2 technology".  */
-
-/* Flags that only effect tuning, not available instructions.  */
-#define FL_TUNE		(FL_WBUF | FL_VFPV2 | FL_STRONG | FL_LDSCHED \
-			 | FL_CO_PROC)
-
-#define FL_FOR_ARCH2	FL_NOTM
-#define FL_FOR_ARCH3	(FL_FOR_ARCH2 | FL_MODE32)
-#define FL_FOR_ARCH3M	(FL_FOR_ARCH3 | FL_ARCH3M)
-#define FL_FOR_ARCH4	(FL_FOR_ARCH3M | FL_ARCH4)
-#define FL_FOR_ARCH4T	(FL_FOR_ARCH4 | FL_THUMB)
-#define FL_FOR_ARCH5	(FL_FOR_ARCH4 | FL_ARCH5)
-#define FL_FOR_ARCH5T	(FL_FOR_ARCH5 | FL_THUMB)
-#define FL_FOR_ARCH5E	(FL_FOR_ARCH5 | FL_ARCH5E)
-#define FL_FOR_ARCH5TE	(FL_FOR_ARCH5E | FL_THUMB)
-#define FL_FOR_ARCH5TEJ	FL_FOR_ARCH5TE
-#define FL_FOR_ARCH6	(FL_FOR_ARCH5TE | FL_ARCH6)
-#define FL_FOR_ARCH6J	FL_FOR_ARCH6
-#define FL_FOR_ARCH6K	(FL_FOR_ARCH6 | FL_ARCH6K)
-#define FL_FOR_ARCH6Z	FL_FOR_ARCH6
-#define FL_FOR_ARCH6ZK	FL_FOR_ARCH6K
-#define FL_FOR_ARCH6T2	(FL_FOR_ARCH6 | FL_THUMB2)
-#define FL_FOR_ARCH6M	(FL_FOR_ARCH6 & ~FL_NOTM)
-#define FL_FOR_ARCH7	((FL_FOR_ARCH6T2 & ~FL_NOTM) | FL_ARCH7)
-#define FL_FOR_ARCH7A	(FL_FOR_ARCH7 | FL_NOTM | FL_ARCH6K)
-#define FL_FOR_ARCH7VE	(FL_FOR_ARCH7A | FL_THUMB_DIV | FL_ARM_DIV)
-#define FL_FOR_ARCH7R	(FL_FOR_ARCH7A | FL_THUMB_DIV)
-#define FL_FOR_ARCH7M	(FL_FOR_ARCH7 | FL_THUMB_DIV)
-#define FL_FOR_ARCH7EM  (FL_FOR_ARCH7M | FL_ARCH7EM)
-#define FL_FOR_ARCH8A	(FL_FOR_ARCH7VE | FL_ARCH8)
-
 /* The bits in this mask specify which
    instructions we are allowed to generate.  */
-static unsigned long insn_flags = 0;
+unsigned long insn_flags = 0;
 
 /* The bits in this mask specify which instruction scheduling options should
    be used.  */
-static unsigned long tune_flags = 0;
+unsigned long tune_flags = 0;
 
 /* The highest ARM architecture version supported by the
    target.  */
@@ -889,7 +842,7 @@ bool arm_disable_literal_pool = false;
 /* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference,
    we must report the mode of the memory reference from
    TARGET_PRINT_OPERAND to TARGET_PRINT_OPERAND_ADDRESS.  */
-enum machine_mode output_memory_reference_mode;
+machine_mode output_memory_reference_mode;
 
 /* The register number to be used for the PIC offset register.  */
 unsigned arm_pic_register = INVALID_REGNUM;
@@ -913,6 +866,9 @@ int arm_condexec_masklen = 0;
 
 /* Nonzero if chip supports the ARMv8 CRC instructions.  */
 int arm_arch_crc = 0;
+
+/* Nonzero if the core has a very small, high-latency, multiply unit.  */
+int arm_m_profile_small_mul = 0;
 
 /* The condition codes of the ARM, and the inverse function.  */
 static const char * const arm_condition_codes[] =
@@ -2003,6 +1959,27 @@ const struct tune_params arm_v7m_tune =
   8						/* Maximum insns to inline memset.  */
 };
 
+/* Cortex-M7 tuning.  */
+
+const struct tune_params arm_cortex_m7_tune =
+{
+  arm_9e_rtx_costs,
+  &v7m_extra_costs,
+  NULL,						/* Sched adj cost.  */
+  0,						/* Constant limit.  */
+  0,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true,						/* Prefer constant pool.  */
+  arm_cortex_m_branch_cost,
+  false,					/* Prefer LDRD/STRD.  */
+  {true, true},					/* Prefer non short circuit.  */
+  &arm_default_vec_cost,                        /* Vectorizer costs.  */
+  false,                                        /* Prefer Neon for 64-bits bitops.  */
+  false, false,                                 /* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8						/* Maximum insns to inline memset.  */
+};
+
 /* The arm_v6m_tune is duplicated from arm_cortex_tune, rather than
    arm_v6t2_tune. It is used for cortex-m0, cortex-m1 and cortex-m0plus.  */
 const struct tune_params arm_v6m_tune =
@@ -2135,14 +2112,14 @@ bit_count (unsigned long value)
 
 typedef struct
 {
-  enum machine_mode mode;
+  machine_mode mode;
   const char *name;
 } arm_fixed_mode_set;
 
 /* A small helper for setting fixed-point library libfuncs.  */
 
 static void
-arm_set_fixed_optab_libfunc (optab optable, enum machine_mode mode,
+arm_set_fixed_optab_libfunc (optab optable, machine_mode mode,
 			     const char *funcname, const char *modename,
 			     int num_suffix)
 {
@@ -2157,8 +2134,8 @@ arm_set_fixed_optab_libfunc (optab optable, enum machine_mode mode,
 }
 
 static void
-arm_set_fixed_conv_libfunc (convert_optab optable, enum machine_mode to,
-			    enum machine_mode from, const char *funcname,
+arm_set_fixed_conv_libfunc (convert_optab optable, machine_mode to,
+			    machine_mode from, const char *funcname,
 			    const char *toname, const char *fromname)
 {
   char buffer[50];
@@ -2784,6 +2761,7 @@ arm_option_override (void)
   arm_arch_arm_hwdiv = (insn_flags & FL_ARM_DIV) != 0;
   arm_tune_cortex_a9 = (arm_tune == cortexa9) != 0;
   arm_arch_crc = (insn_flags & FL_CRC32) != 0;
+  arm_m_profile_small_mul = (insn_flags & FL_SMALLMUL) != 0;
   if (arm_restrict_it == 2)
     arm_restrict_it = arm_arch8 && TARGET_THUMB2;
 
@@ -2845,9 +2823,6 @@ arm_option_override (void)
     }
 
   arm_fpu_desc = &all_fpus[arm_fpu_index];
-
-  if (TARGET_NEON && !arm_arch7)
-    error ("target CPU does not support NEON");
 
   switch (arm_fpu_desc->model)
     {
@@ -3115,6 +3090,28 @@ arm_option_override (void)
   /* Currently, for slow flash data, we just disable literal pools.  */
   if (target_slow_flash_data)
     arm_disable_literal_pool = true;
+
+  /* Thumb2 inline assembly code should always use unified syntax.
+     This will apply to ARM and Thumb1 eventually.  */
+  if (TARGET_THUMB2)
+    inline_asm_unified = 1;
+
+  /* Disable scheduling fusion by default if it's not armv7 processor
+     or doesn't prefer ldrd/strd.  */
+  if (flag_schedule_fusion == 2
+      && (!arm_arch7 || !current_tune->prefer_ldrd_strd))
+    flag_schedule_fusion = 0;
+
+  /* In Thumb1 mode, we emit the epilogue in RTL, but the last insn
+     - epilogue_insns - does not accurately model the corresponding insns
+     emitted in the asm file.  In particular, see the comment in thumb_exit
+     'Find out how many of the (return) argument registers we can corrupt'.
+     As a consequence, the epilogue may clobber registers without fipa-ra
+     finding out about it.  Therefore, disable fipa-ra in Thumb1 mode.
+     TODO: Accurately model clobbers for epilogue_insns and reenable
+     fipa-ra.  */
+  if (TARGET_THUMB1)
+    flag_ipa_ra = 0;
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
@@ -3640,7 +3637,7 @@ const_ok_for_dimode_op (HOST_WIDE_INT i, enum rtx_code code)
 
 /* ??? Tweak this for thumb2.  */
 int
-arm_split_constant (enum rtx_code code, enum machine_mode mode, rtx insn,
+arm_split_constant (enum rtx_code code, machine_mode mode, rtx insn,
 		    HOST_WIDE_INT val, rtx target, rtx source, int subtargets)
 {
   rtx cond;
@@ -3940,7 +3937,7 @@ emit_constant_insn (rtx cond, rtx pattern)
    RTL generation.  */
 
 static int
-arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
+arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
 		  HOST_WIDE_INT val, rtx target, rtx source, int subtargets,
 		  int generate)
 {
@@ -4602,7 +4599,7 @@ static void
 arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 			     bool op0_preserve_value)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   unsigned HOST_WIDE_INT i, maxval;
 
   mode = GET_MODE (*op0);
@@ -4617,7 +4614,6 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
      for GTU/LEU in Thumb mode.  */
   if (mode == DImode)
     {
-      rtx tem;
 
       if (*code == GT || *code == LE
 	  || (!TARGET_ARM && (*code == GTU || *code == LEU)))
@@ -4657,9 +4653,7 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 	  /* If that did not work, reverse the condition.  */
 	  if (!op0_preserve_value)
 	    {
-	      tem = *op0;
-	      *op0 = *op1;
-	      *op1 = tem;
+	      std::swap (*op0, *op1);
 	      *code = (int)swap_condition ((enum rtx_code)*code);
 	    }
 	}
@@ -4750,7 +4744,7 @@ static rtx
 arm_function_value(const_tree type, const_tree func,
 		   bool outgoing ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   int unsignedp ATTRIBUTE_UNUSED;
   rtx r ATTRIBUTE_UNUSED;
 
@@ -4882,7 +4876,7 @@ arm_libcall_uses_aapcs_base (const_rtx libcall)
 }
 
 static rtx
-arm_libcall_value_1 (enum machine_mode mode)
+arm_libcall_value_1 (machine_mode mode)
 {
   if (TARGET_AAPCS_BASED)
     return aapcs_libcall_value (mode);
@@ -4897,7 +4891,7 @@ arm_libcall_value_1 (enum machine_mode mode)
    assuming the value has mode MODE.  */
 
 static rtx
-arm_libcall_value (enum machine_mode mode, const_rtx libcall)
+arm_libcall_value (machine_mode mode, const_rtx libcall)
 {
   if (TARGET_AAPCS_BASED && arm_pcs_default != ARM_PCS_AAPCS
       && GET_MODE_CLASS (mode) == MODE_FLOAT)
@@ -5205,9 +5199,9 @@ aapcs_vfp_cum_init (CUMULATIVE_ARGS *pcum  ATTRIBUTE_UNUSED,
    type that doesn't match a non-VOIDmode *MODEP is found, then return -1,
    otherwise return the count in the sub-tree.  */
 static int
-aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
+aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   HOST_WIDE_INT size;
 
   switch (TREE_CODE (type))
@@ -5398,10 +5392,10 @@ use_vfp_abi (enum arm_pcs pcs_variant, bool is_double)
    *COUNT to hold the number of such elements.  */
 static bool
 aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
-				       enum machine_mode mode, const_tree type,
-				       enum machine_mode *base_mode, int *count)
+				       machine_mode mode, const_tree type,
+				       machine_mode *base_mode, int *count)
 {
-  enum machine_mode new_mode = VOIDmode;
+  machine_mode new_mode = VOIDmode;
 
   /* If we have the type information, prefer that to working things
      out from the mode.  */
@@ -5439,10 +5433,10 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
 
 static bool
 aapcs_vfp_is_return_candidate (enum arm_pcs pcs_variant,
-			       enum machine_mode mode, const_tree type)
+			       machine_mode mode, const_tree type)
 {
   int count ATTRIBUTE_UNUSED;
-  enum machine_mode ag_mode ATTRIBUTE_UNUSED;
+  machine_mode ag_mode ATTRIBUTE_UNUSED;
 
   if (!use_vfp_abi (pcs_variant, false))
     return false;
@@ -5451,7 +5445,7 @@ aapcs_vfp_is_return_candidate (enum arm_pcs pcs_variant,
 }
 
 static bool
-aapcs_vfp_is_call_candidate (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
+aapcs_vfp_is_call_candidate (CUMULATIVE_ARGS *pcum, machine_mode mode,
 			     const_tree type)
 {
   if (!use_vfp_abi (pcum->pcs_variant, false))
@@ -5463,7 +5457,7 @@ aapcs_vfp_is_call_candidate (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
 }
 
 static bool
-aapcs_vfp_allocate (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
+aapcs_vfp_allocate (CUMULATIVE_ARGS *pcum, machine_mode mode,
 		    const_tree type  ATTRIBUTE_UNUSED)
 {
   int shift = GET_MODE_SIZE (pcum->aapcs_vfp_rmode) / GET_MODE_SIZE (SFmode);
@@ -5481,7 +5475,7 @@ aapcs_vfp_allocate (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
 	    int i;
 	    int rcount = pcum->aapcs_vfp_rcount;
 	    int rshift = shift;
-	    enum machine_mode rmode = pcum->aapcs_vfp_rmode;
+	    machine_mode rmode = pcum->aapcs_vfp_rmode;
 	    rtx par;
 	    if (!TARGET_NEON)
 	      {
@@ -5517,7 +5511,7 @@ aapcs_vfp_allocate (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
 
 static rtx
 aapcs_vfp_allocate_return_reg (enum arm_pcs pcs_variant ATTRIBUTE_UNUSED,
-			       enum machine_mode mode,
+			       machine_mode mode,
 			       const_tree type ATTRIBUTE_UNUSED)
 {
   if (!use_vfp_abi (pcs_variant, false))
@@ -5526,7 +5520,7 @@ aapcs_vfp_allocate_return_reg (enum arm_pcs pcs_variant ATTRIBUTE_UNUSED,
   if (mode == BLKmode || (mode == TImode && !TARGET_NEON))
     {
       int count;
-      enum machine_mode ag_mode;
+      machine_mode ag_mode;
       int i;
       rtx par;
       int shift;
@@ -5562,7 +5556,7 @@ aapcs_vfp_allocate_return_reg (enum arm_pcs pcs_variant ATTRIBUTE_UNUSED,
 
 static void
 aapcs_vfp_advance (CUMULATIVE_ARGS *pcum  ATTRIBUTE_UNUSED,
-		   enum machine_mode mode  ATTRIBUTE_UNUSED,
+		   machine_mode mode  ATTRIBUTE_UNUSED,
 		   const_tree type  ATTRIBUTE_UNUSED)
 {
   pcum->aapcs_vfp_regs_free &= ~pcum->aapcs_vfp_reg_alloc;
@@ -5595,25 +5589,25 @@ static struct
      BLKmode) is a candidate for this co-processor's registers; this
      function should ignore any position-dependent state in
      CUMULATIVE_ARGS and only use call-type dependent information.  */
-  bool (*is_call_candidate) (CUMULATIVE_ARGS *, enum machine_mode, const_tree);
+  bool (*is_call_candidate) (CUMULATIVE_ARGS *, machine_mode, const_tree);
 
   /* Return true if the argument does get a co-processor register; it
      should set aapcs_reg to an RTX of the register allocated as is
      required for a return from FUNCTION_ARG.  */
-  bool (*allocate) (CUMULATIVE_ARGS *, enum machine_mode, const_tree);
+  bool (*allocate) (CUMULATIVE_ARGS *, machine_mode, const_tree);
 
   /* Return true if a result of mode MODE (or type TYPE if MODE is
      BLKmode) is can be returned in this co-processor's registers.  */
-  bool (*is_return_candidate) (enum arm_pcs, enum machine_mode, const_tree);
+  bool (*is_return_candidate) (enum arm_pcs, machine_mode, const_tree);
 
   /* Allocate and return an RTX element to hold the return type of a
      call, this routine must not fail and will only be called if
      is_return_candidate returned true with the same parameters.  */
-  rtx (*allocate_return_reg) (enum arm_pcs, enum machine_mode, const_tree);
+  rtx (*allocate_return_reg) (enum arm_pcs, machine_mode, const_tree);
 
   /* Finish processing this argument and prepare to start processing
      the next one.  */
-  void (*advance) (CUMULATIVE_ARGS *, enum machine_mode, const_tree);
+  void (*advance) (CUMULATIVE_ARGS *, machine_mode, const_tree);
 } aapcs_cp_arg_layout[ARM_NUM_COPROC_SLOTS] =
   {
     AAPCS_CP(vfp)
@@ -5622,7 +5616,7 @@ static struct
 #undef AAPCS_CP
 
 static int
-aapcs_select_call_coproc (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
+aapcs_select_call_coproc (CUMULATIVE_ARGS *pcum, machine_mode mode,
 			  const_tree type)
 {
   int i;
@@ -5671,7 +5665,7 @@ aapcs_select_return_coproc (const_tree type, const_tree fntype)
 }
 
 static rtx
-aapcs_allocate_return_reg (enum machine_mode mode, const_tree type,
+aapcs_allocate_return_reg (machine_mode mode, const_tree type,
 			   const_tree fntype)
 {
   /* We aren't passed a decl, so we can't check that a call is local.
@@ -5726,7 +5720,7 @@ aapcs_allocate_return_reg (enum machine_mode mode, const_tree type,
 }
 
 static rtx
-aapcs_libcall_value (enum machine_mode mode)
+aapcs_libcall_value (machine_mode mode)
 {
   if (BYTES_BIG_ENDIAN && ALL_FIXED_POINT_MODE_P (mode)
       && GET_MODE_SIZE (mode) <= 4)
@@ -5738,7 +5732,7 @@ aapcs_libcall_value (enum machine_mode mode)
 /* Lay out a function argument using the AAPCS rules.  The rule
    numbers referred to here are those in the AAPCS.  */
 static void
-aapcs_layout_arg (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
+aapcs_layout_arg (CUMULATIVE_ARGS *pcum, machine_mode mode,
 		  const_tree type, bool named)
 {
   int nregs, nregs2;
@@ -5910,7 +5904,7 @@ arm_lra_p (void)
 
 /* Return true if mode/type need doubleword alignment.  */
 static bool
-arm_needs_doubleword_align (enum machine_mode mode, const_tree type)
+arm_needs_doubleword_align (machine_mode mode, const_tree type)
 {
   return (GET_MODE_ALIGNMENT (mode) > PARM_BOUNDARY
 	  || (type && TYPE_ALIGN (type) > PARM_BOUNDARY));
@@ -5937,7 +5931,7 @@ arm_needs_doubleword_align (enum machine_mode mode, const_tree type)
    indeed make it pass in the stack if necessary).  */
 
 static rtx
-arm_function_arg (cumulative_args_t pcum_v, enum machine_mode mode,
+arm_function_arg (cumulative_args_t pcum_v, machine_mode mode,
 		  const_tree type, bool named)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
@@ -5990,7 +5984,7 @@ arm_function_arg (cumulative_args_t pcum_v, enum machine_mode mode,
 }
 
 static unsigned int
-arm_function_arg_boundary (enum machine_mode mode, const_tree type)
+arm_function_arg_boundary (machine_mode mode, const_tree type)
 {
   return (ARM_DOUBLEWORD_ALIGN && arm_needs_doubleword_align (mode, type)
 	  ? DOUBLEWORD_ALIGNMENT
@@ -5998,7 +5992,7 @@ arm_function_arg_boundary (enum machine_mode mode, const_tree type)
 }
 
 static int
-arm_arg_partial_bytes (cumulative_args_t pcum_v, enum machine_mode mode,
+arm_arg_partial_bytes (cumulative_args_t pcum_v, machine_mode mode,
 		       tree type, bool named)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
@@ -6026,7 +6020,7 @@ arm_arg_partial_bytes (cumulative_args_t pcum_v, enum machine_mode mode,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-arm_function_arg_advance (cumulative_args_t pcum_v, enum machine_mode mode,
+arm_function_arg_advance (cumulative_args_t pcum_v, machine_mode mode,
 			  const_tree type, bool named)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
@@ -6065,7 +6059,7 @@ arm_function_arg_advance (cumulative_args_t pcum_v, enum machine_mode mode,
 
 static bool
 arm_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		       enum machine_mode mode ATTRIBUTE_UNUSED,
+		       machine_mode mode ATTRIBUTE_UNUSED,
 		       const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
@@ -6495,7 +6489,7 @@ require_pic_register (void)
 }
 
 rtx
-legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
+legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 {
   if (GET_CODE (orig) == SYMBOL_REF
       || GET_CODE (orig) == LABEL_REF)
@@ -6820,7 +6814,7 @@ will_be_in_index_register (const_rtx x)
 
 /* Return nonzero if X is a valid ARM state address operand.  */
 int
-arm_legitimate_address_outer_p (enum machine_mode mode, rtx x, RTX_CODE outer,
+arm_legitimate_address_outer_p (machine_mode mode, rtx x, RTX_CODE outer,
 			        int strict_p)
 {
   bool use_ldrd;
@@ -6907,7 +6901,7 @@ arm_legitimate_address_outer_p (enum machine_mode mode, rtx x, RTX_CODE outer,
 
 /* Return nonzero if X is a valid Thumb-2 address operand.  */
 static int
-thumb2_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
+thumb2_legitimate_address_p (machine_mode mode, rtx x, int strict_p)
 {
   bool use_ldrd;
   enum rtx_code code = GET_CODE (x);
@@ -7002,7 +6996,7 @@ thumb2_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
 /* Return nonzero if INDEX is valid for an address index operand in
    ARM state.  */
 static int
-arm_legitimate_index_p (enum machine_mode mode, rtx index, RTX_CODE outer,
+arm_legitimate_index_p (machine_mode mode, rtx index, RTX_CODE outer,
 			int strict_p)
 {
   HOST_WIDE_INT range;
@@ -7123,7 +7117,7 @@ thumb2_index_mul_operand (rtx op)
 
 /* Return nonzero if INDEX is a valid Thumb-2 address index operand.  */
 static int
-thumb2_legitimate_index_p (enum machine_mode mode, rtx index, int strict_p)
+thumb2_legitimate_index_p (machine_mode mode, rtx index, int strict_p)
 {
   enum rtx_code code = GET_CODE (index);
 
@@ -7216,7 +7210,7 @@ thumb2_legitimate_index_p (enum machine_mode mode, rtx index, int strict_p)
 
 /* Return nonzero if X is valid as a 16-bit Thumb state base register.  */
 static int
-thumb1_base_register_rtx_p (rtx x, enum machine_mode mode, int strict_p)
+thumb1_base_register_rtx_p (rtx x, machine_mode mode, int strict_p)
 {
   int regno;
 
@@ -7264,7 +7258,7 @@ thumb1_index_register_rtx_p (rtx x, int strict_p)
    reload pass starts.  This is so that eliminating such addresses
    into stack based ones won't produce impossible code.  */
 int
-thumb1_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
+thumb1_legitimate_address_p (machine_mode mode, rtx x, int strict_p)
 {
   /* ??? Not clear if this is right.  Experiment.  */
   if (GET_MODE_SIZE (mode) < 4
@@ -7363,7 +7357,7 @@ thumb1_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
 /* Return nonzero if VAL can be used as an offset in a Thumb-state address
    instruction of mode MODE.  */
 int
-thumb_legitimate_offset_p (enum machine_mode mode, HOST_WIDE_INT val)
+thumb_legitimate_offset_p (machine_mode mode, HOST_WIDE_INT val)
 {
   switch (GET_MODE_SIZE (mode))
     {
@@ -7381,7 +7375,7 @@ thumb_legitimate_offset_p (enum machine_mode mode, HOST_WIDE_INT val)
 }
 
 bool
-arm_legitimate_address_p (enum machine_mode mode, rtx x, bool strict_p)
+arm_legitimate_address_p (machine_mode mode, rtx x, bool strict_p)
 {
   if (TARGET_ARM)
     return arm_legitimate_address_outer_p (mode, x, SET, strict_p);
@@ -7619,7 +7613,7 @@ legitimize_tls_address (rtx x, rtx reg)
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.  */
 rtx
-arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
+arm_legitimize_address (rtx x, rtx orig_x, machine_mode mode)
 {
   if (arm_tls_referenced_p (x))
     {
@@ -7765,7 +7759,7 @@ arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
 /* Try machine-dependent ways of modifying an illegitimate Thumb address
    to be legitimate.  If we find one, return the new, valid address.  */
 rtx
-thumb_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
+thumb_legitimize_address (rtx x, rtx orig_x, machine_mode mode)
 {
   if (GET_CODE (x) == PLUS
       && CONST_INT_P (XEXP (x, 1))
@@ -7831,7 +7825,7 @@ thumb_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
 
 bool
 arm_legitimize_reload_address (rtx *p,
-			       enum machine_mode mode,
+			       machine_mode mode,
 			       int opnum, int type,
 			       int ind_levels ATTRIBUTE_UNUSED)
 {
@@ -8018,7 +8012,7 @@ arm_legitimize_reload_address (rtx *p,
 
 rtx
 thumb_legitimize_reload_address (rtx *x_p,
-				 enum machine_mode mode,
+				 machine_mode mode,
 				 int opnum, int type,
 				 int ind_levels ATTRIBUTE_UNUSED)
 {
@@ -8059,25 +8053,6 @@ thumb_legitimize_reload_address (rtx *x_p,
   return NULL;
 }
 
-/* Test for various thread-local symbols.  */
-
-/* Helper for arm_tls_referenced_p.  */
-
-static int
-arm_tls_operand_p_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (*x) == SYMBOL_REF)
-    return SYMBOL_REF_TLS_MODEL (*x) != 0;
-
-  /* Don't recurse into UNSPEC_TLS looking for TLS symbols; these are
-     TLS offsets, not real symbol references.  */
-  if (GET_CODE (*x) == UNSPEC
-      && XINT (*x, 1) == UNSPEC_TLS)
-    return -1;
-
-  return 0;
-}
-
 /* Return TRUE if X contains any TLS symbol references.  */
 
 bool
@@ -8086,7 +8061,19 @@ arm_tls_referenced_p (rtx x)
   if (! TARGET_HAVE_TLS)
     return false;
 
-  return for_each_rtx (&x, arm_tls_operand_p_1, NULL);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    {
+      const_rtx x = *iter;
+      if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (x) != 0)
+	return true;
+
+      /* Don't recurse into UNSPEC_TLS looking for TLS symbols; these are
+	 TLS offsets, not real symbol references.  */
+      if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_TLS)
+	iter.skip_subrtxes ();
+    }
+  return false;
 }
 
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.
@@ -8098,7 +8085,7 @@ arm_tls_referenced_p (rtx x)
    When generating pic allow anything.  */
 
 static bool
-arm_legitimate_constant_p_1 (enum machine_mode mode, rtx x)
+arm_legitimate_constant_p_1 (machine_mode mode, rtx x)
 {
   /* At present, we have no support for Neon structure constants, so forbid
      them here.  It might be possible to handle simple cases like 0 and -1
@@ -8110,7 +8097,7 @@ arm_legitimate_constant_p_1 (enum machine_mode mode, rtx x)
 }
 
 static bool
-thumb_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+thumb_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   return (CONST_INT_P (x)
 	  || CONST_DOUBLE_P (x)
@@ -8119,7 +8106,7 @@ thumb_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 }
 
 static bool
-arm_legitimate_constant_p (enum machine_mode mode, rtx x)
+arm_legitimate_constant_p (machine_mode mode, rtx x)
 {
   return (!arm_cannot_force_const_mem (mode, x)
 	  && (TARGET_32BIT
@@ -8130,7 +8117,7 @@ arm_legitimate_constant_p (enum machine_mode mode, rtx x)
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
 
 static bool
-arm_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+arm_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   rtx base, offset;
 
@@ -8154,7 +8141,7 @@ arm_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 static inline int
 thumb1_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   int total, words;
 
   switch (code)
@@ -8282,7 +8269,7 @@ thumb1_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
 static inline bool
 arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   enum rtx_code subcode;
   rtx operand;
   enum rtx_code code = GET_CODE (x);
@@ -8744,7 +8731,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       if (GET_MODE_CLASS (mode) == MODE_INT)
 	{
 	  rtx op = XEXP (x, 0);
-	  enum machine_mode opmode = GET_MODE (op);
+	  machine_mode opmode = GET_MODE (op);
 
 	  if (mode == DImode)
 	    *total += COSTS_N_INSNS (1);
@@ -8887,7 +8874,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 static inline int
 thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   int words;
 
   switch (code)
@@ -8920,7 +8907,13 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
           /* Thumb1 mul instruction can't operate on const. We must Load it
              into a register first.  */
           int const_size = thumb1_size_rtx_costs (XEXP (x, 1), CONST_INT, SET);
-          return COSTS_N_INSNS (1) + const_size;
+	  /* For the targets which have a very small and high-latency multiply
+	     unit, we prefer to synthesize the mult with up to 5 instructions,
+	     giving a good balance between size and performance.  */
+	  if (arm_arch6m && arm_m_profile_small_mul)
+	    return COSTS_N_INSNS (5);
+	  else
+	    return COSTS_N_INSNS (1) + const_size;
         }
       return COSTS_N_INSNS (1);
 
@@ -9029,7 +9022,7 @@ static bool
 arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 		    int *total)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   if (TARGET_THUMB1)
     {
       *total = thumb1_size_rtx_costs (x, code, outer_code);
@@ -9384,7 +9377,7 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 		   const struct cpu_cost_table *extra_cost,
 		   int *cost, bool speed_p)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
 
   if (TARGET_THUMB1)
     {
@@ -9760,6 +9753,8 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	      *cost += rtx_cost (XEXP (x, 1), code, 1, speed_p);
 	      return true;
 	    }
+	  else if (speed_p)
+	    *cost += extra_cost->alu.arith;
 
 	  return false;
 	}
@@ -9995,6 +9990,9 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	      *cost += rtx_cost (XEXP (x, 0), PLUS, 0, speed_p);
 	      return true;
 	    }
+	  else if (speed_p)
+	    *cost += extra_cost->alu.arith;
+
 	  return false;
 	}
 
@@ -10380,7 +10378,7 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	*cost = 0;
       else
 	{
-	  enum machine_mode op0mode;
+	  machine_mode op0mode;
 	  /* We'll mostly assume that the cost of a compare is the cost of the
 	     LHS.  However, there are some notable exceptions.  */
 
@@ -11104,7 +11102,7 @@ static bool
 arm_slowmul_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 		       int *total, bool speed)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
 
   if (TARGET_THUMB)
     {
@@ -11158,7 +11156,7 @@ static bool
 arm_fastmul_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 		       int *total, bool speed)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
 
   if (TARGET_THUMB1)
     {
@@ -11242,7 +11240,7 @@ static bool
 arm_xscale_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 		      int *total, bool speed)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
 
   if (TARGET_THUMB)
     {
@@ -11331,14 +11329,18 @@ static bool
 arm_9e_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 		  int *total, bool speed)
 {
-  enum machine_mode mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
 
   if (TARGET_THUMB1)
     {
       switch (code)
 	{
 	case MULT:
-	  *total = COSTS_N_INSNS (3);
+	  /* Small multiply: 32 cycles for an integer multiply inst.  */
+	  if (arm_arch6m && arm_m_profile_small_mul)
+	    *total = COSTS_N_INSNS (32);
+	  else
+	    *total = COSTS_N_INSNS (3);
 	  return true;
 
 	default:
@@ -11436,7 +11438,7 @@ arm_thumb_address_cost (rtx x)
 }
 
 static int
-arm_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+arm_address_cost (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
 		  addr_space_t as ATTRIBUTE_UNUSED, bool speed ATTRIBUTE_UNUSED)
 {
   return TARGET_32BIT ? arm_arm_address_cost (x) : arm_thumb_address_cost (x);
@@ -11614,7 +11616,7 @@ fa726te_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost)
    point to integer conversion does not go through memory.  */
 
 int
-arm_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+arm_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			reg_class_t from, reg_class_t to)
 {
   if (TARGET_32BIT)
@@ -11642,7 +11644,7 @@ arm_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 /* Implement TARGET_MEMORY_MOVE_COST.  */
 
 int
-arm_memory_move_cost (enum machine_mode mode, reg_class_t rclass,
+arm_memory_move_cost (machine_mode mode, reg_class_t rclass,
 		      bool in ATTRIBUTE_UNUSED)
 {
   if (TARGET_32BIT)
@@ -12201,7 +12203,7 @@ vfp3_const_double_rtx (rtx x)
    -1 if the given value doesn't match any of the listed patterns.
 */
 static int
-neon_valid_immediate (rtx op, enum machine_mode mode, int inverse,
+neon_valid_immediate (rtx op, machine_mode mode, int inverse,
 		      rtx *modconst, int *elementwidth)
 {
 #define CHECK(STRIDE, ELSIZE, CLASS, TEST)	\
@@ -12406,7 +12408,7 @@ neon_valid_immediate (rtx op, enum machine_mode mode, int inverse,
    VMOV) in *MODCONST.  */
 
 int
-neon_immediate_valid_for_move (rtx op, enum machine_mode mode,
+neon_immediate_valid_for_move (rtx op, machine_mode mode,
 			       rtx *modconst, int *elementwidth)
 {
   rtx tmpconst;
@@ -12431,7 +12433,7 @@ neon_immediate_valid_for_move (rtx op, enum machine_mode mode,
    *ELEMENTWIDTH. See neon_valid_immediate for description of INVERSE.  */
 
 int
-neon_immediate_valid_for_logic (rtx op, enum machine_mode mode, int inverse,
+neon_immediate_valid_for_logic (rtx op, machine_mode mode, int inverse,
 				rtx *modconst, int *elementwidth)
 {
   rtx tmpconst;
@@ -12457,7 +12459,7 @@ neon_immediate_valid_for_logic (rtx op, enum machine_mode mode, int inverse,
    because they have different limitations.  */
 
 int
-neon_immediate_valid_for_shift (rtx op, enum machine_mode mode,
+neon_immediate_valid_for_shift (rtx op, machine_mode mode,
 				rtx *modconst, int *elementwidth,
 				bool isleftshift)
 {
@@ -12514,7 +12516,7 @@ neon_immediate_valid_for_shift (rtx op, enum machine_mode mode,
    MNEM.  */
 
 char *
-neon_output_logic_immediate (const char *mnem, rtx *op2, enum machine_mode mode,
+neon_output_logic_immediate (const char *mnem, rtx *op2, machine_mode mode,
 			     int inverse, int quad)
 {
   int width, is_valid;
@@ -12537,7 +12539,7 @@ neon_output_logic_immediate (const char *mnem, rtx *op2, enum machine_mode mode,
 
 char *
 neon_output_shift_immediate (const char *mnem, char sign, rtx *op2,
-			     enum machine_mode mode, int quad,
+			     machine_mode mode, int quad,
 			     bool isleftshift)
 {
   int width, is_valid;
@@ -12565,10 +12567,10 @@ neon_output_shift_immediate (const char *mnem, char sign, rtx *op2,
    for no particular gain.  */
 
 void
-neon_pairwise_reduce (rtx op0, rtx op1, enum machine_mode mode,
+neon_pairwise_reduce (rtx op0, rtx op1, machine_mode mode,
 		      rtx (*reduc) (rtx, rtx, rtx))
 {
-  enum machine_mode inner = GET_MODE_INNER (mode);
+  machine_mode inner = GET_MODE_INNER (mode);
   unsigned int i, parts = GET_MODE_SIZE (mode) / GET_MODE_SIZE (inner);
   rtx tmpsum = op1;
 
@@ -12587,8 +12589,8 @@ neon_pairwise_reduce (rtx op0, rtx op1, enum machine_mode mode,
 static rtx
 neon_vdup_constant (rtx vals)
 {
-  enum machine_mode mode = GET_MODE (vals);
-  enum machine_mode inner_mode = GET_MODE_INNER (mode);
+  machine_mode mode = GET_MODE (vals);
+  machine_mode inner_mode = GET_MODE_INNER (mode);
   int n_elts = GET_MODE_NUNITS (mode);
   bool all_same = true;
   rtx x;
@@ -12627,7 +12629,7 @@ neon_vdup_constant (rtx vals)
 rtx
 neon_make_constant (rtx vals)
 {
-  enum machine_mode mode = GET_MODE (vals);
+  machine_mode mode = GET_MODE (vals);
   rtx target;
   rtx const_vec = NULL_RTX;
   int n_elts = GET_MODE_NUNITS (mode);
@@ -12679,8 +12681,8 @@ neon_make_constant (rtx vals)
 void
 neon_expand_vector_init (rtx target, rtx vals)
 {
-  enum machine_mode mode = GET_MODE (target);
-  enum machine_mode inner_mode = GET_MODE_INNER (mode);
+  machine_mode mode = GET_MODE (target);
+  machine_mode inner_mode = GET_MODE_INNER (mode);
   int n_elts = GET_MODE_NUNITS (mode);
   int n_var = 0, one_var = -1;
   bool all_same = true;
@@ -12810,7 +12812,7 @@ neon_const_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
 }
 
 HOST_WIDE_INT
-neon_element_bits (enum machine_mode mode)
+neon_element_bits (machine_mode mode)
 {
   if (mode == DImode)
     return GET_MODE_BITSIZE (mode);
@@ -13019,7 +13021,7 @@ arm_eliminable_register (rtx x)
    coprocessor registers.  Otherwise return NO_REGS.  */
 
 enum reg_class
-coproc_secondary_reload_class (enum machine_mode mode, rtx x, bool wb)
+coproc_secondary_reload_class (machine_mode mode, rtx x, bool wb)
 {
   if (mode == HFmode)
     {
@@ -13144,16 +13146,6 @@ tls_mentioned_p (rtx x)
 
 /* Must not copy any rtx that uses a pc-relative address.  */
 
-static int
-arm_note_pic_base (rtx *x, void *date ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (*x) == UNSPEC
-      && (XINT (*x, 1) == UNSPEC_PIC_BASE
-	  || XINT (*x, 1) == UNSPEC_PIC_UNIFIED))
-    return 1;
-  return 0;
-}
-
 static bool
 arm_cannot_copy_insn_p (rtx_insn *insn)
 {
@@ -13162,7 +13154,16 @@ arm_cannot_copy_insn_p (rtx_insn *insn)
   if (recog_memoized (insn) == CODE_FOR_tlscall)
     return true;
 
-  return for_each_rtx (&PATTERN (insn), arm_note_pic_base, NULL);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
+    {
+      const_rtx x = *iter;
+      if (GET_CODE (x) == UNSPEC
+	  && (XINT (x, 1) == UNSPEC_PIC_BASE
+	      || XINT (x, 1) == UNSPEC_PIC_UNIFIED))
+	return true;
+    }
+  return false;
 }
 
 enum rtx_code
@@ -13304,7 +13305,7 @@ adjacent_mem_locations (rtx a, rtx b)
          REGNO (R_dk) = REGNO (R_d0) + k.
    The pattern for store is similar.  */
 bool
-ldm_stm_operation_p (rtx op, bool load, enum machine_mode mode,
+ldm_stm_operation_p (rtx op, bool load, machine_mode mode,
                      bool consecutive, bool return_pc)
 {
   HOST_WIDE_INT count = XVECLEN (op, 0);
@@ -14762,7 +14763,7 @@ by mode size.  */
 inline static rtx
 next_consecutive_mem (rtx mem)
 {
-  enum machine_mode mode = GET_MODE (mem);
+  machine_mode mode = GET_MODE (mem);
   HOST_WIDE_INT offset = GET_MODE_SIZE (mode);
   rtx addr = plus_constant (Pmode, XEXP (mem, 0), offset);
 
@@ -14902,7 +14903,7 @@ gen_movmem_ldrd_strd (rtx *operands)
    here.  If we are unable to support a dominance comparison we return
    CC mode.  This will then fail to match for the RTL expressions that
    generate this call.  */
-enum machine_mode
+machine_mode
 arm_select_dominance_cc_mode (rtx x, rtx y, HOST_WIDE_INT cond_or)
 {
   enum rtx_code cond1, cond2;
@@ -14931,11 +14932,7 @@ arm_select_dominance_cc_mode (rtx x, rtx y, HOST_WIDE_INT cond_or)
     return CCmode;
 
   if (swapped)
-    {
-      enum rtx_code temp = cond1;
-      cond1 = cond2;
-      cond2 = temp;
-    }
+    std::swap (cond1, cond2);
 
   switch (cond1)
     {
@@ -15044,7 +15041,7 @@ arm_select_dominance_cc_mode (rtx x, rtx y, HOST_WIDE_INT cond_or)
     }
 }
 
-enum machine_mode
+machine_mode
 arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 {
   /* All floating point compares return CCFP if it is an equality
@@ -15227,7 +15224,7 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 rtx
 arm_gen_compare_reg (enum rtx_code code, rtx x, rtx y, rtx scratch)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   rtx cc_reg;
   int dimode_comparison = GET_MODE (x) == DImode || GET_MODE (y) == DImode;
 
@@ -15444,11 +15441,7 @@ arm_reload_out_hi (rtx *operands)
 	  /* Updating base_plus might destroy outval, see if we can
 	     swap the scratch and base_plus.  */
 	  if (!reg_overlap_mentioned_p (scratch, outval))
-	    {
-	      rtx tmp = scratch;
-	      scratch = base_plus;
-	      base_plus = tmp;
-	    }
+	    std::swap (scratch, base_plus);
 	  else
 	    {
 	      rtx scratch_hi = gen_rtx_REG (HImode, REGNO (operands[2]));
@@ -15503,11 +15496,7 @@ arm_reload_out_hi (rtx *operands)
 	      /* Updating base_plus might destroy outval, see if we
 		 can swap the scratch and base_plus.  */
 	      if (!reg_overlap_mentioned_p (scratch, outval))
-		{
-		  rtx tmp = scratch;
-		  scratch = base_plus;
-		  base_plus = tmp;
-		}
+	        std::swap (scratch, base_plus);
 	      else
 		{
 		  rtx scratch_hi = gen_rtx_REG (HImode, REGNO (operands[2]));
@@ -15563,7 +15552,7 @@ arm_reload_out_hi (rtx *operands)
    (padded to the size of a word) should be passed in a register.  */
 
 static bool
-arm_must_pass_in_stack (enum machine_mode mode, const_tree type)
+arm_must_pass_in_stack (machine_mode mode, const_tree type)
 {
   if (TARGET_AAPCS_BASED)
     return must_pass_in_stack_var_size (mode, type);
@@ -15579,7 +15568,7 @@ arm_must_pass_in_stack (enum machine_mode mode, const_tree type)
    aggregate types are placed in the lowest memory address.  */
 
 bool
-arm_pad_arg_upward (enum machine_mode mode ATTRIBUTE_UNUSED, const_tree type)
+arm_pad_arg_upward (machine_mode mode ATTRIBUTE_UNUSED, const_tree type)
 {
   if (!TARGET_AAPCS_BASED)
     return DEFAULT_FUNCTION_ARG_PADDING(mode, type) == upward;
@@ -15597,7 +15586,7 @@ arm_pad_arg_upward (enum machine_mode mode ATTRIBUTE_UNUSED, const_tree type)
    significant byte does.  */
 
 bool
-arm_pad_reg_upward (enum machine_mode mode,
+arm_pad_reg_upward (machine_mode mode,
                     tree type, int first ATTRIBUTE_UNUSED)
 {
   if (TARGET_AAPCS_BASED && BYTES_BIG_ENDIAN)
@@ -15740,8 +15729,6 @@ mem_ok_for_ldrd_strd (rtx mem, rtx *base, rtx *offset)
   return false;
 }
 
-#define SWAP_RTX(x,y) do { rtx tmp = x; x = y; y = tmp; } while (0)
-
 /* Called from a peephole2 to replace two word-size accesses with a
    single LDRD/STRD instruction.  Returns true iff we can generate a
    new instruction sequence.  That is, both accesses use the same base
@@ -15881,10 +15868,10 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
       offset = offsets[1];
 
       /* Swap the instructions such that lower memory is accessed first.  */
-      SWAP_RTX (operands[0], operands[1]);
-      SWAP_RTX (operands[2], operands[3]);
+      std::swap (operands[0], operands[1]);
+      std::swap (operands[2], operands[3]);
       if (const_store)
-        SWAP_RTX (operands[4], operands[5]);
+        std::swap (operands[4], operands[5]);
     }
   else
     {
@@ -15909,7 +15896,7 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
   if (load && commute)
     {
       /* Try reordering registers.  */
-      SWAP_RTX (operands[0], operands[1]);
+      std::swap (operands[0], operands[1]);
       if (operands_ok_ldrd_strd (operands[0], operands[1], base, offset,
                                  false, load))
         return true;
@@ -15938,7 +15925,7 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
       if (operands_ok_ldrd_strd (operands[1], operands[0], base, offset,
                                   false, false))
         {
-          SWAP_RTX (operands[0], operands[1]);
+          std::swap (operands[0], operands[1]);
           return true;
         }
 
@@ -15969,7 +15956,6 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
 
   return false;
 }
-#undef SWAP_RTX
 
 
 
@@ -16122,7 +16108,7 @@ struct minipool_node
   /* The value in table.  */
   rtx value;
   /* The mode of value.  */
-  enum machine_mode mode;
+  machine_mode mode;
   /* The size of the value.  With iWMMXt enabled
      sizes > 4 also imply an alignment of 8-bytes.  */
   int fix_size;
@@ -16134,7 +16120,7 @@ struct minipool_fixup
   rtx_insn *        insn;
   HOST_WIDE_INT     address;
   rtx *             loc;
-  enum machine_mode mode;
+  machine_mode mode;
   int               fix_size;
   rtx               value;
   Mnode *           minipool;
@@ -16648,7 +16634,7 @@ dump_minipool (rtx_insn *scan)
 	      fputc ('\n', dump_file);
 	    }
 
-	  switch (mp->fix_size)
+	  switch (GET_MODE_SIZE (mp->mode))
 	    {
 #ifdef HAVE_consttable_1
 	    case 1:
@@ -16855,7 +16841,7 @@ push_minipool_barrier (rtx_insn *insn, HOST_WIDE_INT address)
    MODE.  */
 static void
 push_minipool_fix (rtx_insn *insn, HOST_WIDE_INT address, rtx *loc,
-		   enum machine_mode mode, rtx value)
+		   machine_mode mode, rtx value)
 {
   Mfix * fix = (Mfix *) obstack_alloc (&minipool_obstack, sizeof (* fix));
 
@@ -16922,7 +16908,7 @@ int
 arm_const_double_inline_cost (rtx val)
 {
   rtx lowpart, highpart;
-  enum machine_mode mode;
+  machine_mode mode;
 
   mode = GET_MODE (val);
 
@@ -16958,7 +16944,7 @@ arm_const_inline_cost (enum rtx_code code, rtx val)
 bool
 arm_const_double_by_parts (rtx val)
 {
-  enum machine_mode mode = GET_MODE (val);
+  machine_mode mode = GET_MODE (val);
   rtx part;
 
   if (optimize_size || arm_ld_sched)
@@ -16991,7 +16977,7 @@ arm_const_double_by_parts (rtx val)
 bool
 arm_const_double_by_immediates (rtx val)
 {
-  enum machine_mode mode = GET_MODE (val);
+  machine_mode mode = GET_MODE (val);
   rtx part;
 
   if (mode == VOIDmode)
@@ -17022,10 +17008,7 @@ note_invalid_constants (rtx_insn *insn, HOST_WIDE_INT address, int do_pushes)
 {
   int opno;
 
-  extract_insn (insn);
-
-  if (!constrain_operands (1))
-    fatal_insn_not_found (insn);
+  extract_constrain_insn (insn);
 
   if (recog_data.n_alternatives == 0)
     return;
@@ -18118,12 +18101,9 @@ output_move_double (rtx *operands, bool emit, int *count)
 		      if (reg_overlap_mentioned_p (operands[0],
 						   otherops[2]))
 			{
-			  rtx tmp;
 			  /* Swap base and index registers over to
 			     avoid a conflict.  */
-			  tmp = otherops[1];
-			  otherops[1] = otherops[2];
-			  otherops[2] = tmp;
+			  std::swap (otherops[1], otherops[2]);
 			}
 		      /* If both registers conflict, it will usually
 			 have been fixed by a splitter.  */
@@ -18446,7 +18426,7 @@ output_move_vfp (rtx *operands)
   int integer_p = GET_MODE_CLASS (GET_MODE (operands[0])) == MODE_INT;
   const char *templ;
   char buff[50];
-  enum machine_mode mode;
+  machine_mode mode;
 
   reg = operands[!load];
   mem = operands[load];
@@ -18542,7 +18522,7 @@ output_move_neon (rtx *operands)
   int regno, nregs, load = REG_P (operands[0]);
   const char *templ;
   char buff[50];
-  enum machine_mode mode;
+  machine_mode mode;
 
   reg = operands[!load];
   mem = operands[load];
@@ -18657,7 +18637,7 @@ arm_attr_length_move_neon (rtx_insn *insn)
 {
   rtx reg, mem, addr;
   int load;
-  enum machine_mode mode;
+  machine_mode mode;
 
   extract_insn_cached (insn);
 
@@ -20609,7 +20589,7 @@ arm_emit_ldrd_pop (unsigned long saved_regs_mask)
 static unsigned
 arm_size_return_regs (void)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (crtl->return_rtx != 0)
     mode = GET_MODE (crtl->return_rtx);
@@ -21703,7 +21683,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
     case 'R':
       if (CONST_INT_P (x) || CONST_DOUBLE_P (x))
 	{
-	  enum machine_mode mode = GET_MODE (x);
+	  machine_mode mode = GET_MODE (x);
 	  rtx part;
 
 	  if (mode == VOIDmode)
@@ -21864,7 +21844,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
        register.  */
     case 'p':
       {
-        enum machine_mode mode = GET_MODE (x);
+        machine_mode mode = GET_MODE (x);
         int regno;
 
         if (GET_MODE_SIZE (mode) != 8 || !REG_P (x))
@@ -21888,7 +21868,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
     case 'P':
     case 'q':
       {
-	enum machine_mode mode = GET_MODE (x);
+	machine_mode mode = GET_MODE (x);
 	int is_quad = (code == 'q');
 	int regno;
 
@@ -21924,7 +21904,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
     case 'e':
     case 'f':
       {
-        enum machine_mode mode = GET_MODE (x);
+        machine_mode mode = GET_MODE (x);
         int regno;
 
         if ((GET_MODE_SIZE (mode) != 16
@@ -22065,7 +22045,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
     /* Translate an S register number into a D register number and element index.  */
     case 'y':
       {
-        enum machine_mode mode = GET_MODE (x);
+        machine_mode mode = GET_MODE (x);
         int regno;
 
         if (GET_MODE_SIZE (mode) != 4 || !REG_P (x))
@@ -22099,7 +22079,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
        number into a D register number and element index.  */
     case 'z':
       {
-        enum machine_mode mode = GET_MODE (x);
+        machine_mode mode = GET_MODE (x);
         int regno;
 
         if (GET_MODE_SIZE (mode) != 2 || !REG_P (x))
@@ -22183,9 +22163,7 @@ arm_print_operand_address (FILE *stream, rtx x)
 	      /* Ensure that BASE is a register.  */
 	      /* (one of them must be).  */
 	      /* Also ensure the SP is not used as in index register.  */
-	      rtx temp = base;
-	      base = index;
-	      index = temp;
+	      std::swap (base, index);
 	    }
 	  switch (GET_CODE (index))
 	    {
@@ -22224,7 +22202,7 @@ arm_print_operand_address (FILE *stream, rtx x)
       else if (GET_CODE (x) == PRE_INC || GET_CODE (x) == POST_INC
 	       || GET_CODE (x) == PRE_DEC || GET_CODE (x) == POST_DEC)
 	{
-	  extern enum machine_mode output_memory_reference_mode;
+	  extern machine_mode output_memory_reference_mode;
 
 	  gcc_assert (REG_P (XEXP (x, 0)));
 
@@ -22301,7 +22279,7 @@ arm_print_operand_punct_valid_p (unsigned char code)
 static bool
 arm_assemble_integer (rtx x, unsigned int size, int aligned_p)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (size == UNITS_PER_WORD && aligned_p)
     {
@@ -22457,7 +22435,7 @@ arm_elf_asm_destructor (rtx symbol, int priority)
 enum arm_cond_code
 maybe_get_arm_condition_code (rtx comparison)
 {
-  enum machine_mode mode = GET_MODE (XEXP (comparison, 0));
+  machine_mode mode = GET_MODE (XEXP (comparison, 0));
   enum arm_cond_code code;
   enum rtx_code comp_code = GET_CODE (comparison);
 
@@ -23006,7 +22984,7 @@ thumb2_asm_output_opcode (FILE * stream)
 /* Returns true if REGNO is a valid register
    for holding a quantity of type MODE.  */
 int
-arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
+arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (GET_MODE_CLASS (mode) == MODE_CC)
     return (regno == CC_REGNUM
@@ -23086,7 +23064,7 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 /* Implement MODES_TIEABLE_P.  */
 
 bool
-arm_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
+arm_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))
     return true;
@@ -23240,1767 +23218,6 @@ arm_debugger_arg_offset (int value, rtx addr)
   return value;
 }
 
-typedef enum {
-  T_V8QI,
-  T_V4HI,
-  T_V4HF,
-  T_V2SI,
-  T_V2SF,
-  T_DI,
-  T_V16QI,
-  T_V8HI,
-  T_V4SI,
-  T_V4SF,
-  T_V2DI,
-  T_TI,
-  T_EI,
-  T_OI,
-  T_MAX		/* Size of enum.  Keep last.  */
-} neon_builtin_type_mode;
-
-#define TYPE_MODE_BIT(X) (1 << (X))
-
-#define TB_DREG (TYPE_MODE_BIT (T_V8QI) | TYPE_MODE_BIT (T_V4HI)	\
-		 | TYPE_MODE_BIT (T_V4HF) | TYPE_MODE_BIT (T_V2SI)	\
-		 | TYPE_MODE_BIT (T_V2SF) | TYPE_MODE_BIT (T_DI))
-#define TB_QREG (TYPE_MODE_BIT (T_V16QI) | TYPE_MODE_BIT (T_V8HI)	\
-		 | TYPE_MODE_BIT (T_V4SI) | TYPE_MODE_BIT (T_V4SF)	\
-		 | TYPE_MODE_BIT (T_V2DI) | TYPE_MODE_BIT (T_TI))
-
-#define v8qi_UP  T_V8QI
-#define v4hi_UP  T_V4HI
-#define v4hf_UP  T_V4HF
-#define v2si_UP  T_V2SI
-#define v2sf_UP  T_V2SF
-#define di_UP    T_DI
-#define v16qi_UP T_V16QI
-#define v8hi_UP  T_V8HI
-#define v4si_UP  T_V4SI
-#define v4sf_UP  T_V4SF
-#define v2di_UP  T_V2DI
-#define ti_UP	 T_TI
-#define ei_UP	 T_EI
-#define oi_UP	 T_OI
-
-#define UP(X) X##_UP
-
-typedef enum {
-  NEON_BINOP,
-  NEON_TERNOP,
-  NEON_UNOP,
-  NEON_BSWAP,
-  NEON_GETLANE,
-  NEON_SETLANE,
-  NEON_CREATE,
-  NEON_RINT,
-  NEON_COPYSIGNF,
-  NEON_DUP,
-  NEON_DUPLANE,
-  NEON_COMBINE,
-  NEON_SPLIT,
-  NEON_LANEMUL,
-  NEON_LANEMULL,
-  NEON_LANEMULH,
-  NEON_LANEMAC,
-  NEON_SCALARMUL,
-  NEON_SCALARMULL,
-  NEON_SCALARMULH,
-  NEON_SCALARMAC,
-  NEON_CONVERT,
-  NEON_FLOAT_WIDEN,
-  NEON_FLOAT_NARROW,
-  NEON_FIXCONV,
-  NEON_SELECT,
-  NEON_REINTERP,
-  NEON_VTBL,
-  NEON_VTBX,
-  NEON_LOAD1,
-  NEON_LOAD1LANE,
-  NEON_STORE1,
-  NEON_STORE1LANE,
-  NEON_LOADSTRUCT,
-  NEON_LOADSTRUCTLANE,
-  NEON_STORESTRUCT,
-  NEON_STORESTRUCTLANE,
-  NEON_LOGICBINOP,
-  NEON_SHIFTINSERT,
-  NEON_SHIFTIMM,
-  NEON_SHIFTACC
-} neon_itype;
-
-typedef struct {
-  const char *name;
-  const neon_itype itype;
-  const neon_builtin_type_mode mode;
-  const enum insn_code code;
-  unsigned int fcode;
-} neon_builtin_datum;
-
-#define CF(N,X) CODE_FOR_neon_##N##X
-
-#define VAR1(T, N, A) \
-  {#N, NEON_##T, UP (A), CF (N, A), 0}
-#define VAR2(T, N, A, B) \
-  VAR1 (T, N, A), \
-  {#N, NEON_##T, UP (B), CF (N, B), 0}
-#define VAR3(T, N, A, B, C) \
-  VAR2 (T, N, A, B), \
-  {#N, NEON_##T, UP (C), CF (N, C), 0}
-#define VAR4(T, N, A, B, C, D) \
-  VAR3 (T, N, A, B, C), \
-  {#N, NEON_##T, UP (D), CF (N, D), 0}
-#define VAR5(T, N, A, B, C, D, E) \
-  VAR4 (T, N, A, B, C, D), \
-  {#N, NEON_##T, UP (E), CF (N, E), 0}
-#define VAR6(T, N, A, B, C, D, E, F) \
-  VAR5 (T, N, A, B, C, D, E), \
-  {#N, NEON_##T, UP (F), CF (N, F), 0}
-#define VAR7(T, N, A, B, C, D, E, F, G) \
-  VAR6 (T, N, A, B, C, D, E, F), \
-  {#N, NEON_##T, UP (G), CF (N, G), 0}
-#define VAR8(T, N, A, B, C, D, E, F, G, H) \
-  VAR7 (T, N, A, B, C, D, E, F, G), \
-  {#N, NEON_##T, UP (H), CF (N, H), 0}
-#define VAR9(T, N, A, B, C, D, E, F, G, H, I) \
-  VAR8 (T, N, A, B, C, D, E, F, G, H), \
-  {#N, NEON_##T, UP (I), CF (N, I), 0}
-#define VAR10(T, N, A, B, C, D, E, F, G, H, I, J) \
-  VAR9 (T, N, A, B, C, D, E, F, G, H, I), \
-  {#N, NEON_##T, UP (J), CF (N, J), 0}
-
-/* The NEON builtin data can be found in arm_neon_builtins.def.
-   The mode entries in the following table correspond to the "key" type of the
-   instruction variant, i.e. equivalent to that which would be specified after
-   the assembler mnemonic, which usually refers to the last vector operand.
-   (Signed/unsigned/polynomial types are not differentiated between though, and
-   are all mapped onto the same mode for a given element size.) The modes
-   listed per instruction should be the same as those defined for that
-   instruction's pattern in neon.md.  */
-
-static neon_builtin_datum neon_builtin_data[] =
-{
-#include "arm_neon_builtins.def"
-};
-
-#undef CF
-#undef VAR1
-#undef VAR2
-#undef VAR3
-#undef VAR4
-#undef VAR5
-#undef VAR6
-#undef VAR7
-#undef VAR8
-#undef VAR9
-#undef VAR10
-
-#define CF(N,X) ARM_BUILTIN_NEON_##N##X
-#define VAR1(T, N, A) \
-  CF (N, A)
-#define VAR2(T, N, A, B) \
-  VAR1 (T, N, A), \
-  CF (N, B)
-#define VAR3(T, N, A, B, C) \
-  VAR2 (T, N, A, B), \
-  CF (N, C)
-#define VAR4(T, N, A, B, C, D) \
-  VAR3 (T, N, A, B, C), \
-  CF (N, D)
-#define VAR5(T, N, A, B, C, D, E) \
-  VAR4 (T, N, A, B, C, D), \
-  CF (N, E)
-#define VAR6(T, N, A, B, C, D, E, F) \
-  VAR5 (T, N, A, B, C, D, E), \
-  CF (N, F)
-#define VAR7(T, N, A, B, C, D, E, F, G) \
-  VAR6 (T, N, A, B, C, D, E, F), \
-  CF (N, G)
-#define VAR8(T, N, A, B, C, D, E, F, G, H) \
-  VAR7 (T, N, A, B, C, D, E, F, G), \
-  CF (N, H)
-#define VAR9(T, N, A, B, C, D, E, F, G, H, I) \
-  VAR8 (T, N, A, B, C, D, E, F, G, H), \
-  CF (N, I)
-#define VAR10(T, N, A, B, C, D, E, F, G, H, I, J) \
-  VAR9 (T, N, A, B, C, D, E, F, G, H, I), \
-  CF (N, J)
-enum arm_builtins
-{
-  ARM_BUILTIN_GETWCGR0,
-  ARM_BUILTIN_GETWCGR1,
-  ARM_BUILTIN_GETWCGR2,
-  ARM_BUILTIN_GETWCGR3,
-
-  ARM_BUILTIN_SETWCGR0,
-  ARM_BUILTIN_SETWCGR1,
-  ARM_BUILTIN_SETWCGR2,
-  ARM_BUILTIN_SETWCGR3,
-
-  ARM_BUILTIN_WZERO,
-
-  ARM_BUILTIN_WAVG2BR,
-  ARM_BUILTIN_WAVG2HR,
-  ARM_BUILTIN_WAVG2B,
-  ARM_BUILTIN_WAVG2H,
-
-  ARM_BUILTIN_WACCB,
-  ARM_BUILTIN_WACCH,
-  ARM_BUILTIN_WACCW,
-
-  ARM_BUILTIN_WMACS,
-  ARM_BUILTIN_WMACSZ,
-  ARM_BUILTIN_WMACU,
-  ARM_BUILTIN_WMACUZ,
-
-  ARM_BUILTIN_WSADB,
-  ARM_BUILTIN_WSADBZ,
-  ARM_BUILTIN_WSADH,
-  ARM_BUILTIN_WSADHZ,
-
-  ARM_BUILTIN_WALIGNI,
-  ARM_BUILTIN_WALIGNR0,
-  ARM_BUILTIN_WALIGNR1,
-  ARM_BUILTIN_WALIGNR2,
-  ARM_BUILTIN_WALIGNR3,
-
-  ARM_BUILTIN_TMIA,
-  ARM_BUILTIN_TMIAPH,
-  ARM_BUILTIN_TMIABB,
-  ARM_BUILTIN_TMIABT,
-  ARM_BUILTIN_TMIATB,
-  ARM_BUILTIN_TMIATT,
-
-  ARM_BUILTIN_TMOVMSKB,
-  ARM_BUILTIN_TMOVMSKH,
-  ARM_BUILTIN_TMOVMSKW,
-
-  ARM_BUILTIN_TBCSTB,
-  ARM_BUILTIN_TBCSTH,
-  ARM_BUILTIN_TBCSTW,
-
-  ARM_BUILTIN_WMADDS,
-  ARM_BUILTIN_WMADDU,
-
-  ARM_BUILTIN_WPACKHSS,
-  ARM_BUILTIN_WPACKWSS,
-  ARM_BUILTIN_WPACKDSS,
-  ARM_BUILTIN_WPACKHUS,
-  ARM_BUILTIN_WPACKWUS,
-  ARM_BUILTIN_WPACKDUS,
-
-  ARM_BUILTIN_WADDB,
-  ARM_BUILTIN_WADDH,
-  ARM_BUILTIN_WADDW,
-  ARM_BUILTIN_WADDSSB,
-  ARM_BUILTIN_WADDSSH,
-  ARM_BUILTIN_WADDSSW,
-  ARM_BUILTIN_WADDUSB,
-  ARM_BUILTIN_WADDUSH,
-  ARM_BUILTIN_WADDUSW,
-  ARM_BUILTIN_WSUBB,
-  ARM_BUILTIN_WSUBH,
-  ARM_BUILTIN_WSUBW,
-  ARM_BUILTIN_WSUBSSB,
-  ARM_BUILTIN_WSUBSSH,
-  ARM_BUILTIN_WSUBSSW,
-  ARM_BUILTIN_WSUBUSB,
-  ARM_BUILTIN_WSUBUSH,
-  ARM_BUILTIN_WSUBUSW,
-
-  ARM_BUILTIN_WAND,
-  ARM_BUILTIN_WANDN,
-  ARM_BUILTIN_WOR,
-  ARM_BUILTIN_WXOR,
-
-  ARM_BUILTIN_WCMPEQB,
-  ARM_BUILTIN_WCMPEQH,
-  ARM_BUILTIN_WCMPEQW,
-  ARM_BUILTIN_WCMPGTUB,
-  ARM_BUILTIN_WCMPGTUH,
-  ARM_BUILTIN_WCMPGTUW,
-  ARM_BUILTIN_WCMPGTSB,
-  ARM_BUILTIN_WCMPGTSH,
-  ARM_BUILTIN_WCMPGTSW,
-
-  ARM_BUILTIN_TEXTRMSB,
-  ARM_BUILTIN_TEXTRMSH,
-  ARM_BUILTIN_TEXTRMSW,
-  ARM_BUILTIN_TEXTRMUB,
-  ARM_BUILTIN_TEXTRMUH,
-  ARM_BUILTIN_TEXTRMUW,
-  ARM_BUILTIN_TINSRB,
-  ARM_BUILTIN_TINSRH,
-  ARM_BUILTIN_TINSRW,
-
-  ARM_BUILTIN_WMAXSW,
-  ARM_BUILTIN_WMAXSH,
-  ARM_BUILTIN_WMAXSB,
-  ARM_BUILTIN_WMAXUW,
-  ARM_BUILTIN_WMAXUH,
-  ARM_BUILTIN_WMAXUB,
-  ARM_BUILTIN_WMINSW,
-  ARM_BUILTIN_WMINSH,
-  ARM_BUILTIN_WMINSB,
-  ARM_BUILTIN_WMINUW,
-  ARM_BUILTIN_WMINUH,
-  ARM_BUILTIN_WMINUB,
-
-  ARM_BUILTIN_WMULUM,
-  ARM_BUILTIN_WMULSM,
-  ARM_BUILTIN_WMULUL,
-
-  ARM_BUILTIN_PSADBH,
-  ARM_BUILTIN_WSHUFH,
-
-  ARM_BUILTIN_WSLLH,
-  ARM_BUILTIN_WSLLW,
-  ARM_BUILTIN_WSLLD,
-  ARM_BUILTIN_WSRAH,
-  ARM_BUILTIN_WSRAW,
-  ARM_BUILTIN_WSRAD,
-  ARM_BUILTIN_WSRLH,
-  ARM_BUILTIN_WSRLW,
-  ARM_BUILTIN_WSRLD,
-  ARM_BUILTIN_WRORH,
-  ARM_BUILTIN_WRORW,
-  ARM_BUILTIN_WRORD,
-  ARM_BUILTIN_WSLLHI,
-  ARM_BUILTIN_WSLLWI,
-  ARM_BUILTIN_WSLLDI,
-  ARM_BUILTIN_WSRAHI,
-  ARM_BUILTIN_WSRAWI,
-  ARM_BUILTIN_WSRADI,
-  ARM_BUILTIN_WSRLHI,
-  ARM_BUILTIN_WSRLWI,
-  ARM_BUILTIN_WSRLDI,
-  ARM_BUILTIN_WRORHI,
-  ARM_BUILTIN_WRORWI,
-  ARM_BUILTIN_WRORDI,
-
-  ARM_BUILTIN_WUNPCKIHB,
-  ARM_BUILTIN_WUNPCKIHH,
-  ARM_BUILTIN_WUNPCKIHW,
-  ARM_BUILTIN_WUNPCKILB,
-  ARM_BUILTIN_WUNPCKILH,
-  ARM_BUILTIN_WUNPCKILW,
-
-  ARM_BUILTIN_WUNPCKEHSB,
-  ARM_BUILTIN_WUNPCKEHSH,
-  ARM_BUILTIN_WUNPCKEHSW,
-  ARM_BUILTIN_WUNPCKEHUB,
-  ARM_BUILTIN_WUNPCKEHUH,
-  ARM_BUILTIN_WUNPCKEHUW,
-  ARM_BUILTIN_WUNPCKELSB,
-  ARM_BUILTIN_WUNPCKELSH,
-  ARM_BUILTIN_WUNPCKELSW,
-  ARM_BUILTIN_WUNPCKELUB,
-  ARM_BUILTIN_WUNPCKELUH,
-  ARM_BUILTIN_WUNPCKELUW,
-
-  ARM_BUILTIN_WABSB,
-  ARM_BUILTIN_WABSH,
-  ARM_BUILTIN_WABSW,
-
-  ARM_BUILTIN_WADDSUBHX,
-  ARM_BUILTIN_WSUBADDHX,
-
-  ARM_BUILTIN_WABSDIFFB,
-  ARM_BUILTIN_WABSDIFFH,
-  ARM_BUILTIN_WABSDIFFW,
-
-  ARM_BUILTIN_WADDCH,
-  ARM_BUILTIN_WADDCW,
-
-  ARM_BUILTIN_WAVG4,
-  ARM_BUILTIN_WAVG4R,
-
-  ARM_BUILTIN_WMADDSX,
-  ARM_BUILTIN_WMADDUX,
-
-  ARM_BUILTIN_WMADDSN,
-  ARM_BUILTIN_WMADDUN,
-
-  ARM_BUILTIN_WMULWSM,
-  ARM_BUILTIN_WMULWUM,
-
-  ARM_BUILTIN_WMULWSMR,
-  ARM_BUILTIN_WMULWUMR,
-
-  ARM_BUILTIN_WMULWL,
-
-  ARM_BUILTIN_WMULSMR,
-  ARM_BUILTIN_WMULUMR,
-
-  ARM_BUILTIN_WQMULM,
-  ARM_BUILTIN_WQMULMR,
-
-  ARM_BUILTIN_WQMULWM,
-  ARM_BUILTIN_WQMULWMR,
-
-  ARM_BUILTIN_WADDBHUSM,
-  ARM_BUILTIN_WADDBHUSL,
-
-  ARM_BUILTIN_WQMIABB,
-  ARM_BUILTIN_WQMIABT,
-  ARM_BUILTIN_WQMIATB,
-  ARM_BUILTIN_WQMIATT,
-
-  ARM_BUILTIN_WQMIABBN,
-  ARM_BUILTIN_WQMIABTN,
-  ARM_BUILTIN_WQMIATBN,
-  ARM_BUILTIN_WQMIATTN,
-
-  ARM_BUILTIN_WMIABB,
-  ARM_BUILTIN_WMIABT,
-  ARM_BUILTIN_WMIATB,
-  ARM_BUILTIN_WMIATT,
-
-  ARM_BUILTIN_WMIABBN,
-  ARM_BUILTIN_WMIABTN,
-  ARM_BUILTIN_WMIATBN,
-  ARM_BUILTIN_WMIATTN,
-
-  ARM_BUILTIN_WMIAWBB,
-  ARM_BUILTIN_WMIAWBT,
-  ARM_BUILTIN_WMIAWTB,
-  ARM_BUILTIN_WMIAWTT,
-
-  ARM_BUILTIN_WMIAWBBN,
-  ARM_BUILTIN_WMIAWBTN,
-  ARM_BUILTIN_WMIAWTBN,
-  ARM_BUILTIN_WMIAWTTN,
-
-  ARM_BUILTIN_WMERGE,
-
-  ARM_BUILTIN_CRC32B,
-  ARM_BUILTIN_CRC32H,
-  ARM_BUILTIN_CRC32W,
-  ARM_BUILTIN_CRC32CB,
-  ARM_BUILTIN_CRC32CH,
-  ARM_BUILTIN_CRC32CW,
-
-  ARM_BUILTIN_GET_FPSCR,
-  ARM_BUILTIN_SET_FPSCR,
-
-#undef CRYPTO1
-#undef CRYPTO2
-#undef CRYPTO3
-
-#define CRYPTO1(L, U, M1, M2) \
-  ARM_BUILTIN_CRYPTO_##U,
-#define CRYPTO2(L, U, M1, M2, M3) \
-  ARM_BUILTIN_CRYPTO_##U,
-#define CRYPTO3(L, U, M1, M2, M3, M4) \
-  ARM_BUILTIN_CRYPTO_##U,
-
-#include "crypto.def"
-
-#undef CRYPTO1
-#undef CRYPTO2
-#undef CRYPTO3
-
-#include "arm_neon_builtins.def"
-
-  ,ARM_BUILTIN_MAX
-};
-
-#define ARM_BUILTIN_NEON_BASE (ARM_BUILTIN_MAX - ARRAY_SIZE (neon_builtin_data))
-
-#undef CF
-#undef VAR1
-#undef VAR2
-#undef VAR3
-#undef VAR4
-#undef VAR5
-#undef VAR6
-#undef VAR7
-#undef VAR8
-#undef VAR9
-#undef VAR10
-
-static GTY(()) tree arm_builtin_decls[ARM_BUILTIN_MAX];
-
-#define NUM_DREG_TYPES 5
-#define NUM_QREG_TYPES 6
-
-static void
-arm_init_neon_builtins (void)
-{
-  unsigned int i, fcode;
-  tree decl;
-
-  tree neon_intQI_type_node;
-  tree neon_intHI_type_node;
-  tree neon_floatHF_type_node;
-  tree neon_polyQI_type_node;
-  tree neon_polyHI_type_node;
-  tree neon_intSI_type_node;
-  tree neon_intDI_type_node;
-  tree neon_intUTI_type_node;
-  tree neon_float_type_node;
-
-  tree intQI_pointer_node;
-  tree intHI_pointer_node;
-  tree intSI_pointer_node;
-  tree intDI_pointer_node;
-  tree float_pointer_node;
-
-  tree const_intQI_node;
-  tree const_intHI_node;
-  tree const_intSI_node;
-  tree const_intDI_node;
-  tree const_float_node;
-
-  tree const_intQI_pointer_node;
-  tree const_intHI_pointer_node;
-  tree const_intSI_pointer_node;
-  tree const_intDI_pointer_node;
-  tree const_float_pointer_node;
-
-  tree V8QI_type_node;
-  tree V4HI_type_node;
-  tree V4UHI_type_node;
-  tree V4HF_type_node;
-  tree V2SI_type_node;
-  tree V2USI_type_node;
-  tree V2SF_type_node;
-  tree V16QI_type_node;
-  tree V8HI_type_node;
-  tree V8UHI_type_node;
-  tree V4SI_type_node;
-  tree V4USI_type_node;
-  tree V4SF_type_node;
-  tree V2DI_type_node;
-  tree V2UDI_type_node;
-
-  tree intUQI_type_node;
-  tree intUHI_type_node;
-  tree intUSI_type_node;
-  tree intUDI_type_node;
-
-  tree intEI_type_node;
-  tree intOI_type_node;
-  tree intCI_type_node;
-  tree intXI_type_node;
-
-  tree reinterp_ftype_dreg[NUM_DREG_TYPES][NUM_DREG_TYPES];
-  tree reinterp_ftype_qreg[NUM_QREG_TYPES][NUM_QREG_TYPES];
-  tree dreg_types[NUM_DREG_TYPES], qreg_types[NUM_QREG_TYPES];
-
-  /* Create distinguished type nodes for NEON vector element types,
-     and pointers to values of such types, so we can detect them later.  */
-  neon_intQI_type_node = make_signed_type (GET_MODE_PRECISION (QImode));
-  neon_intHI_type_node = make_signed_type (GET_MODE_PRECISION (HImode));
-  neon_polyQI_type_node = make_signed_type (GET_MODE_PRECISION (QImode));
-  neon_polyHI_type_node = make_signed_type (GET_MODE_PRECISION (HImode));
-  neon_intSI_type_node = make_signed_type (GET_MODE_PRECISION (SImode));
-  neon_intDI_type_node = make_signed_type (GET_MODE_PRECISION (DImode));
-  neon_float_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (neon_float_type_node) = FLOAT_TYPE_SIZE;
-  layout_type (neon_float_type_node);
-  neon_floatHF_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (neon_floatHF_type_node) = GET_MODE_PRECISION (HFmode);
-  layout_type (neon_floatHF_type_node);
-
-  /* Define typedefs which exactly correspond to the modes we are basing vector
-     types on.  If you change these names you'll need to change
-     the table used by arm_mangle_type too.  */
-  (*lang_hooks.types.register_builtin_type) (neon_intQI_type_node,
-					     "__builtin_neon_qi");
-  (*lang_hooks.types.register_builtin_type) (neon_intHI_type_node,
-					     "__builtin_neon_hi");
-  (*lang_hooks.types.register_builtin_type) (neon_floatHF_type_node,
-					     "__builtin_neon_hf");
-  (*lang_hooks.types.register_builtin_type) (neon_intSI_type_node,
-					     "__builtin_neon_si");
-  (*lang_hooks.types.register_builtin_type) (neon_float_type_node,
-					     "__builtin_neon_sf");
-  (*lang_hooks.types.register_builtin_type) (neon_intDI_type_node,
-					     "__builtin_neon_di");
-  (*lang_hooks.types.register_builtin_type) (neon_polyQI_type_node,
-					     "__builtin_neon_poly8");
-  (*lang_hooks.types.register_builtin_type) (neon_polyHI_type_node,
-					     "__builtin_neon_poly16");
-
-  intQI_pointer_node = build_pointer_type (neon_intQI_type_node);
-  intHI_pointer_node = build_pointer_type (neon_intHI_type_node);
-  intSI_pointer_node = build_pointer_type (neon_intSI_type_node);
-  intDI_pointer_node = build_pointer_type (neon_intDI_type_node);
-  float_pointer_node = build_pointer_type (neon_float_type_node);
-
-  /* Next create constant-qualified versions of the above types.  */
-  const_intQI_node = build_qualified_type (neon_intQI_type_node,
-					   TYPE_QUAL_CONST);
-  const_intHI_node = build_qualified_type (neon_intHI_type_node,
-					   TYPE_QUAL_CONST);
-  const_intSI_node = build_qualified_type (neon_intSI_type_node,
-					   TYPE_QUAL_CONST);
-  const_intDI_node = build_qualified_type (neon_intDI_type_node,
-					   TYPE_QUAL_CONST);
-  const_float_node = build_qualified_type (neon_float_type_node,
-					   TYPE_QUAL_CONST);
-
-  const_intQI_pointer_node = build_pointer_type (const_intQI_node);
-  const_intHI_pointer_node = build_pointer_type (const_intHI_node);
-  const_intSI_pointer_node = build_pointer_type (const_intSI_node);
-  const_intDI_pointer_node = build_pointer_type (const_intDI_node);
-  const_float_pointer_node = build_pointer_type (const_float_node);
-
-  /* Unsigned integer types for various mode sizes.  */
-  intUQI_type_node = make_unsigned_type (GET_MODE_PRECISION (QImode));
-  intUHI_type_node = make_unsigned_type (GET_MODE_PRECISION (HImode));
-  intUSI_type_node = make_unsigned_type (GET_MODE_PRECISION (SImode));
-  intUDI_type_node = make_unsigned_type (GET_MODE_PRECISION (DImode));
-  neon_intUTI_type_node = make_unsigned_type (GET_MODE_PRECISION (TImode));
-  /* Now create vector types based on our NEON element types.  */
-  /* 64-bit vectors.  */
-  V8QI_type_node =
-    build_vector_type_for_mode (neon_intQI_type_node, V8QImode);
-  V4HI_type_node =
-    build_vector_type_for_mode (neon_intHI_type_node, V4HImode);
-  V4UHI_type_node =
-    build_vector_type_for_mode (intUHI_type_node, V4HImode);
-  V4HF_type_node =
-    build_vector_type_for_mode (neon_floatHF_type_node, V4HFmode);
-  V2SI_type_node =
-    build_vector_type_for_mode (neon_intSI_type_node, V2SImode);
-  V2USI_type_node =
-    build_vector_type_for_mode (intUSI_type_node, V2SImode);
-  V2SF_type_node =
-    build_vector_type_for_mode (neon_float_type_node, V2SFmode);
-  /* 128-bit vectors.  */
-  V16QI_type_node =
-    build_vector_type_for_mode (neon_intQI_type_node, V16QImode);
-  V8HI_type_node =
-    build_vector_type_for_mode (neon_intHI_type_node, V8HImode);
-  V8UHI_type_node =
-    build_vector_type_for_mode (intUHI_type_node, V8HImode);
-  V4SI_type_node =
-    build_vector_type_for_mode (neon_intSI_type_node, V4SImode);
-  V4USI_type_node =
-    build_vector_type_for_mode (intUSI_type_node, V4SImode);
-  V4SF_type_node =
-    build_vector_type_for_mode (neon_float_type_node, V4SFmode);
-  V2DI_type_node =
-    build_vector_type_for_mode (neon_intDI_type_node, V2DImode);
-  V2UDI_type_node =
-    build_vector_type_for_mode (intUDI_type_node, V2DImode);
-
-
-  (*lang_hooks.types.register_builtin_type) (intUQI_type_node,
-					     "__builtin_neon_uqi");
-  (*lang_hooks.types.register_builtin_type) (intUHI_type_node,
-					     "__builtin_neon_uhi");
-  (*lang_hooks.types.register_builtin_type) (intUSI_type_node,
-					     "__builtin_neon_usi");
-  (*lang_hooks.types.register_builtin_type) (intUDI_type_node,
-					     "__builtin_neon_udi");
-  (*lang_hooks.types.register_builtin_type) (intUDI_type_node,
-					     "__builtin_neon_poly64");
-  (*lang_hooks.types.register_builtin_type) (neon_intUTI_type_node,
-					     "__builtin_neon_poly128");
-
-  /* Opaque integer types for structures of vectors.  */
-  intEI_type_node = make_signed_type (GET_MODE_PRECISION (EImode));
-  intOI_type_node = make_signed_type (GET_MODE_PRECISION (OImode));
-  intCI_type_node = make_signed_type (GET_MODE_PRECISION (CImode));
-  intXI_type_node = make_signed_type (GET_MODE_PRECISION (XImode));
-
-  (*lang_hooks.types.register_builtin_type) (intTI_type_node,
-					     "__builtin_neon_ti");
-  (*lang_hooks.types.register_builtin_type) (intEI_type_node,
-					     "__builtin_neon_ei");
-  (*lang_hooks.types.register_builtin_type) (intOI_type_node,
-					     "__builtin_neon_oi");
-  (*lang_hooks.types.register_builtin_type) (intCI_type_node,
-					     "__builtin_neon_ci");
-  (*lang_hooks.types.register_builtin_type) (intXI_type_node,
-					     "__builtin_neon_xi");
-
-  if (TARGET_CRYPTO && TARGET_HARD_FLOAT)
-  {
-
-    tree V16UQI_type_node =
-      build_vector_type_for_mode (intUQI_type_node, V16QImode);
-
-    tree v16uqi_ftype_v16uqi
-      = build_function_type_list (V16UQI_type_node, V16UQI_type_node, NULL_TREE);
-
-    tree v16uqi_ftype_v16uqi_v16uqi
-      = build_function_type_list (V16UQI_type_node, V16UQI_type_node,
-                                  V16UQI_type_node, NULL_TREE);
-
-    tree v4usi_ftype_v4usi
-      = build_function_type_list (V4USI_type_node, V4USI_type_node, NULL_TREE);
-
-    tree v4usi_ftype_v4usi_v4usi
-      = build_function_type_list (V4USI_type_node, V4USI_type_node,
-                                  V4USI_type_node, NULL_TREE);
-
-    tree v4usi_ftype_v4usi_v4usi_v4usi
-      = build_function_type_list (V4USI_type_node, V4USI_type_node,
-                                  V4USI_type_node, V4USI_type_node, NULL_TREE);
-
-    tree uti_ftype_udi_udi
-      = build_function_type_list (neon_intUTI_type_node, intUDI_type_node,
-                                  intUDI_type_node, NULL_TREE);
-
-    #undef CRYPTO1
-    #undef CRYPTO2
-    #undef CRYPTO3
-    #undef C
-    #undef N
-    #undef CF
-    #undef FT1
-    #undef FT2
-    #undef FT3
-
-    #define C(U) \
-      ARM_BUILTIN_CRYPTO_##U
-    #define N(L) \
-      "__builtin_arm_crypto_"#L
-    #define FT1(R, A) \
-      R##_ftype_##A
-    #define FT2(R, A1, A2) \
-      R##_ftype_##A1##_##A2
-    #define FT3(R, A1, A2, A3) \
-      R##_ftype_##A1##_##A2##_##A3
-    #define CRYPTO1(L, U, R, A) \
-      arm_builtin_decls[C (U)] = add_builtin_function (N (L), FT1 (R, A), \
-                                                       C (U), BUILT_IN_MD, \
-                                                       NULL, NULL_TREE);
-    #define CRYPTO2(L, U, R, A1, A2) \
-      arm_builtin_decls[C (U)] = add_builtin_function (N (L), FT2 (R, A1, A2), \
-                                                       C (U), BUILT_IN_MD, \
-                                                       NULL, NULL_TREE);
-
-    #define CRYPTO3(L, U, R, A1, A2, A3) \
-      arm_builtin_decls[C (U)] = add_builtin_function (N (L), FT3 (R, A1, A2, A3), \
-                                                       C (U), BUILT_IN_MD, \
-                                                       NULL, NULL_TREE);
-    #include "crypto.def"
-
-    #undef CRYPTO1
-    #undef CRYPTO2
-    #undef CRYPTO3
-    #undef C
-    #undef N
-    #undef FT1
-    #undef FT2
-    #undef FT3
-  }
-  dreg_types[0] = V8QI_type_node;
-  dreg_types[1] = V4HI_type_node;
-  dreg_types[2] = V2SI_type_node;
-  dreg_types[3] = V2SF_type_node;
-  dreg_types[4] = neon_intDI_type_node;
-
-  qreg_types[0] = V16QI_type_node;
-  qreg_types[1] = V8HI_type_node;
-  qreg_types[2] = V4SI_type_node;
-  qreg_types[3] = V4SF_type_node;
-  qreg_types[4] = V2DI_type_node;
-  qreg_types[5] = neon_intUTI_type_node;
-
-  for (i = 0; i < NUM_QREG_TYPES; i++)
-    {
-      int j;
-      for (j = 0; j < NUM_QREG_TYPES; j++)
-        {
-          if (i < NUM_DREG_TYPES && j < NUM_DREG_TYPES)
-            reinterp_ftype_dreg[i][j]
-              = build_function_type_list (dreg_types[i], dreg_types[j], NULL);
-
-          reinterp_ftype_qreg[i][j]
-            = build_function_type_list (qreg_types[i], qreg_types[j], NULL);
-        }
-    }
-
-  for (i = 0, fcode = ARM_BUILTIN_NEON_BASE;
-       i < ARRAY_SIZE (neon_builtin_data);
-       i++, fcode++)
-    {
-      neon_builtin_datum *d = &neon_builtin_data[i];
-
-      const char* const modenames[] = {
-	"v8qi", "v4hi", "v4hf", "v2si", "v2sf", "di",
-	"v16qi", "v8hi", "v4si", "v4sf", "v2di",
-	"ti", "ei", "oi"
-      };
-      char namebuf[60];
-      tree ftype = NULL;
-      int is_load = 0, is_store = 0;
-
-      gcc_assert (ARRAY_SIZE (modenames) == T_MAX);
-
-      d->fcode = fcode;
-
-      switch (d->itype)
-	{
-	case NEON_LOAD1:
-	case NEON_LOAD1LANE:
-	case NEON_LOADSTRUCT:
-	case NEON_LOADSTRUCTLANE:
-	  is_load = 1;
-	  /* Fall through.  */
-	case NEON_STORE1:
-	case NEON_STORE1LANE:
-	case NEON_STORESTRUCT:
-	case NEON_STORESTRUCTLANE:
-	  if (!is_load)
-	    is_store = 1;
-	  /* Fall through.  */
-	case NEON_UNOP:
-	case NEON_RINT:
-	case NEON_BINOP:
-	case NEON_LOGICBINOP:
-	case NEON_SHIFTINSERT:
-	case NEON_TERNOP:
-	case NEON_GETLANE:
-	case NEON_SETLANE:
-	case NEON_CREATE:
-	case NEON_DUP:
-	case NEON_DUPLANE:
-	case NEON_SHIFTIMM:
-	case NEON_SHIFTACC:
-	case NEON_COMBINE:
-	case NEON_SPLIT:
-	case NEON_CONVERT:
-	case NEON_FIXCONV:
-	case NEON_LANEMUL:
-	case NEON_LANEMULL:
-	case NEON_LANEMULH:
-	case NEON_LANEMAC:
-	case NEON_SCALARMUL:
-	case NEON_SCALARMULL:
-	case NEON_SCALARMULH:
-	case NEON_SCALARMAC:
-	case NEON_SELECT:
-	case NEON_VTBL:
-	case NEON_VTBX:
-	  {
-	    int k;
-	    tree return_type = void_type_node, args = void_list_node;
-
-	    /* Build a function type directly from the insn_data for
-	       this builtin.  The build_function_type() function takes
-	       care of removing duplicates for us.  */
-	    for (k = insn_data[d->code].n_generator_args - 1; k >= 0; k--)
-	      {
-		tree eltype;
-
-		if (is_load && k == 1)
-		  {
-		    /* Neon load patterns always have the memory
-		       operand in the operand 1 position.  */
-		    gcc_assert (insn_data[d->code].operand[k].predicate
-				== neon_struct_operand);
-
-		    switch (d->mode)
-		      {
-		      case T_V8QI:
-		      case T_V16QI:
-			eltype = const_intQI_pointer_node;
-			break;
-
-		      case T_V4HI:
-		      case T_V8HI:
-			eltype = const_intHI_pointer_node;
-			break;
-
-		      case T_V2SI:
-		      case T_V4SI:
-			eltype = const_intSI_pointer_node;
-			break;
-
-		      case T_V2SF:
-		      case T_V4SF:
-			eltype = const_float_pointer_node;
-			break;
-
-		      case T_DI:
-		      case T_V2DI:
-			eltype = const_intDI_pointer_node;
-			break;
-
-		      default: gcc_unreachable ();
-		      }
-		  }
-		else if (is_store && k == 0)
-		  {
-		    /* Similarly, Neon store patterns use operand 0 as
-		       the memory location to store to.  */
-		    gcc_assert (insn_data[d->code].operand[k].predicate
-				== neon_struct_operand);
-
-		    switch (d->mode)
-		      {
-		      case T_V8QI:
-		      case T_V16QI:
-			eltype = intQI_pointer_node;
-			break;
-
-		      case T_V4HI:
-		      case T_V8HI:
-			eltype = intHI_pointer_node;
-			break;
-
-		      case T_V2SI:
-		      case T_V4SI:
-			eltype = intSI_pointer_node;
-			break;
-
-		      case T_V2SF:
-		      case T_V4SF:
-			eltype = float_pointer_node;
-			break;
-
-		      case T_DI:
-		      case T_V2DI:
-			eltype = intDI_pointer_node;
-			break;
-
-		      default: gcc_unreachable ();
-		      }
-		  }
-		else
-		  {
-		    switch (insn_data[d->code].operand[k].mode)
-		      {
-		      case VOIDmode: eltype = void_type_node; break;
-			/* Scalars.  */
-		      case QImode: eltype = neon_intQI_type_node; break;
-		      case HImode: eltype = neon_intHI_type_node; break;
-		      case SImode: eltype = neon_intSI_type_node; break;
-		      case SFmode: eltype = neon_float_type_node; break;
-		      case DImode: eltype = neon_intDI_type_node; break;
-		      case TImode: eltype = intTI_type_node; break;
-		      case EImode: eltype = intEI_type_node; break;
-		      case OImode: eltype = intOI_type_node; break;
-		      case CImode: eltype = intCI_type_node; break;
-		      case XImode: eltype = intXI_type_node; break;
-			/* 64-bit vectors.  */
-		      case V8QImode: eltype = V8QI_type_node; break;
-		      case V4HImode: eltype = V4HI_type_node; break;
-		      case V2SImode: eltype = V2SI_type_node; break;
-		      case V2SFmode: eltype = V2SF_type_node; break;
-			/* 128-bit vectors.  */
-		      case V16QImode: eltype = V16QI_type_node; break;
-		      case V8HImode: eltype = V8HI_type_node; break;
-		      case V4SImode: eltype = V4SI_type_node; break;
-		      case V4SFmode: eltype = V4SF_type_node; break;
-		      case V2DImode: eltype = V2DI_type_node; break;
-		      default: gcc_unreachable ();
-		      }
-		  }
-
-		if (k == 0 && !is_store)
-		  return_type = eltype;
-		else
-		  args = tree_cons (NULL_TREE, eltype, args);
-	      }
-
-	    ftype = build_function_type (return_type, args);
-	  }
-	  break;
-
-	case NEON_REINTERP:
-	  {
-	    /* We iterate over NUM_DREG_TYPES doubleword types,
-	       then NUM_QREG_TYPES quadword  types.
-	       V4HF is not a type used in reinterpret, so we translate
-	       d->mode to the correct index in reinterp_ftype_dreg.  */
-	    bool qreg_p
-	      = GET_MODE_SIZE (insn_data[d->code].operand[0].mode) > 8;
-	    int rhs = (d->mode - ((!qreg_p && (d->mode > T_V4HF)) ? 1 : 0))
-	              % NUM_QREG_TYPES;
-	    switch (insn_data[d->code].operand[0].mode)
-	      {
-	      case V8QImode: ftype = reinterp_ftype_dreg[0][rhs]; break;
-	      case V4HImode: ftype = reinterp_ftype_dreg[1][rhs]; break;
-	      case V2SImode: ftype = reinterp_ftype_dreg[2][rhs]; break;
-	      case V2SFmode: ftype = reinterp_ftype_dreg[3][rhs]; break;
-	      case DImode: ftype = reinterp_ftype_dreg[4][rhs]; break;
-	      case V16QImode: ftype = reinterp_ftype_qreg[0][rhs]; break;
-	      case V8HImode: ftype = reinterp_ftype_qreg[1][rhs]; break;
-	      case V4SImode: ftype = reinterp_ftype_qreg[2][rhs]; break;
-	      case V4SFmode: ftype = reinterp_ftype_qreg[3][rhs]; break;
-	      case V2DImode: ftype = reinterp_ftype_qreg[4][rhs]; break;
-	      case TImode: ftype = reinterp_ftype_qreg[5][rhs]; break;
-	      default: gcc_unreachable ();
-	      }
-	  }
-	  break;
-	case NEON_FLOAT_WIDEN:
-	  {
-	    tree eltype = NULL_TREE;
-	    tree return_type = NULL_TREE;
-
-	    switch (insn_data[d->code].operand[1].mode)
-	    {
-	      case V4HFmode:
-	        eltype = V4HF_type_node;
-	        return_type = V4SF_type_node;
-	        break;
-	      default: gcc_unreachable ();
-	    }
-	    ftype = build_function_type_list (return_type, eltype, NULL);
-	    break;
-	  }
-	case NEON_FLOAT_NARROW:
-	  {
-	    tree eltype = NULL_TREE;
-	    tree return_type = NULL_TREE;
-
-	    switch (insn_data[d->code].operand[1].mode)
-	    {
-	      case V4SFmode:
-	        eltype = V4SF_type_node;
-	        return_type = V4HF_type_node;
-	        break;
-	      default: gcc_unreachable ();
-	    }
-	    ftype = build_function_type_list (return_type, eltype, NULL);
-	    break;
-	  }
-	case NEON_BSWAP:
-	{
-	    tree eltype = NULL_TREE;
-	    switch (insn_data[d->code].operand[1].mode)
-	    {
-	      case V4HImode:
-	        eltype = V4UHI_type_node;
-	        break;
-	      case V8HImode:
-	        eltype = V8UHI_type_node;
-	        break;
-	      case V2SImode:
-	        eltype = V2USI_type_node;
-	        break;
-	      case V4SImode:
-	        eltype = V4USI_type_node;
-	        break;
-	      case V2DImode:
-	        eltype = V2UDI_type_node;
-	        break;
-	      default: gcc_unreachable ();
-	    }
-	    ftype = build_function_type_list (eltype, eltype, NULL);
-	    break;
-	}
-	case NEON_COPYSIGNF:
-	  {
-	    tree eltype = NULL_TREE;
-	    switch (insn_data[d->code].operand[1].mode)
-	      {
-	      case V2SFmode:
-		eltype = V2SF_type_node;
-		break;
-	      case V4SFmode:
-		eltype = V4SF_type_node;
-		break;
-	      default: gcc_unreachable ();
-	      }
-	    ftype = build_function_type_list (eltype, eltype, NULL);
-	    break;
-	  }
-	default:
-	  gcc_unreachable ();
-	}
-
-      gcc_assert (ftype != NULL);
-
-      sprintf (namebuf, "__builtin_neon_%s%s", d->name, modenames[d->mode]);
-
-      decl = add_builtin_function (namebuf, ftype, fcode, BUILT_IN_MD, NULL,
-				   NULL_TREE);
-      arm_builtin_decls[fcode] = decl;
-    }
-}
-
-#undef NUM_DREG_TYPES
-#undef NUM_QREG_TYPES
-
-#define def_mbuiltin(MASK, NAME, TYPE, CODE)				\
-  do									\
-    {									\
-      if ((MASK) & insn_flags)						\
-	{								\
-	  tree bdecl;							\
-	  bdecl = add_builtin_function ((NAME), (TYPE), (CODE),		\
-					BUILT_IN_MD, NULL, NULL_TREE);	\
-	  arm_builtin_decls[CODE] = bdecl;				\
-	}								\
-    }									\
-  while (0)
-
-struct builtin_description
-{
-  const unsigned int       mask;
-  const enum insn_code     icode;
-  const char * const       name;
-  const enum arm_builtins  code;
-  const enum rtx_code      comparison;
-  const unsigned int       flag;
-};
-
-static const struct builtin_description bdesc_2arg[] =
-{
-#define IWMMXT_BUILTIN(code, string, builtin) \
-  { FL_IWMMXT, CODE_FOR_##code, "__builtin_arm_" string, \
-    ARM_BUILTIN_##builtin, UNKNOWN, 0 },
-
-#define IWMMXT2_BUILTIN(code, string, builtin) \
-  { FL_IWMMXT2, CODE_FOR_##code, "__builtin_arm_" string, \
-    ARM_BUILTIN_##builtin, UNKNOWN, 0 },
-
-  IWMMXT_BUILTIN (addv8qi3, "waddb", WADDB)
-  IWMMXT_BUILTIN (addv4hi3, "waddh", WADDH)
-  IWMMXT_BUILTIN (addv2si3, "waddw", WADDW)
-  IWMMXT_BUILTIN (subv8qi3, "wsubb", WSUBB)
-  IWMMXT_BUILTIN (subv4hi3, "wsubh", WSUBH)
-  IWMMXT_BUILTIN (subv2si3, "wsubw", WSUBW)
-  IWMMXT_BUILTIN (ssaddv8qi3, "waddbss", WADDSSB)
-  IWMMXT_BUILTIN (ssaddv4hi3, "waddhss", WADDSSH)
-  IWMMXT_BUILTIN (ssaddv2si3, "waddwss", WADDSSW)
-  IWMMXT_BUILTIN (sssubv8qi3, "wsubbss", WSUBSSB)
-  IWMMXT_BUILTIN (sssubv4hi3, "wsubhss", WSUBSSH)
-  IWMMXT_BUILTIN (sssubv2si3, "wsubwss", WSUBSSW)
-  IWMMXT_BUILTIN (usaddv8qi3, "waddbus", WADDUSB)
-  IWMMXT_BUILTIN (usaddv4hi3, "waddhus", WADDUSH)
-  IWMMXT_BUILTIN (usaddv2si3, "waddwus", WADDUSW)
-  IWMMXT_BUILTIN (ussubv8qi3, "wsubbus", WSUBUSB)
-  IWMMXT_BUILTIN (ussubv4hi3, "wsubhus", WSUBUSH)
-  IWMMXT_BUILTIN (ussubv2si3, "wsubwus", WSUBUSW)
-  IWMMXT_BUILTIN (mulv4hi3, "wmulul", WMULUL)
-  IWMMXT_BUILTIN (smulv4hi3_highpart, "wmulsm", WMULSM)
-  IWMMXT_BUILTIN (umulv4hi3_highpart, "wmulum", WMULUM)
-  IWMMXT_BUILTIN (eqv8qi3, "wcmpeqb", WCMPEQB)
-  IWMMXT_BUILTIN (eqv4hi3, "wcmpeqh", WCMPEQH)
-  IWMMXT_BUILTIN (eqv2si3, "wcmpeqw", WCMPEQW)
-  IWMMXT_BUILTIN (gtuv8qi3, "wcmpgtub", WCMPGTUB)
-  IWMMXT_BUILTIN (gtuv4hi3, "wcmpgtuh", WCMPGTUH)
-  IWMMXT_BUILTIN (gtuv2si3, "wcmpgtuw", WCMPGTUW)
-  IWMMXT_BUILTIN (gtv8qi3, "wcmpgtsb", WCMPGTSB)
-  IWMMXT_BUILTIN (gtv4hi3, "wcmpgtsh", WCMPGTSH)
-  IWMMXT_BUILTIN (gtv2si3, "wcmpgtsw", WCMPGTSW)
-  IWMMXT_BUILTIN (umaxv8qi3, "wmaxub", WMAXUB)
-  IWMMXT_BUILTIN (smaxv8qi3, "wmaxsb", WMAXSB)
-  IWMMXT_BUILTIN (umaxv4hi3, "wmaxuh", WMAXUH)
-  IWMMXT_BUILTIN (smaxv4hi3, "wmaxsh", WMAXSH)
-  IWMMXT_BUILTIN (umaxv2si3, "wmaxuw", WMAXUW)
-  IWMMXT_BUILTIN (smaxv2si3, "wmaxsw", WMAXSW)
-  IWMMXT_BUILTIN (uminv8qi3, "wminub", WMINUB)
-  IWMMXT_BUILTIN (sminv8qi3, "wminsb", WMINSB)
-  IWMMXT_BUILTIN (uminv4hi3, "wminuh", WMINUH)
-  IWMMXT_BUILTIN (sminv4hi3, "wminsh", WMINSH)
-  IWMMXT_BUILTIN (uminv2si3, "wminuw", WMINUW)
-  IWMMXT_BUILTIN (sminv2si3, "wminsw", WMINSW)
-  IWMMXT_BUILTIN (iwmmxt_anddi3, "wand", WAND)
-  IWMMXT_BUILTIN (iwmmxt_nanddi3, "wandn", WANDN)
-  IWMMXT_BUILTIN (iwmmxt_iordi3, "wor", WOR)
-  IWMMXT_BUILTIN (iwmmxt_xordi3, "wxor", WXOR)
-  IWMMXT_BUILTIN (iwmmxt_uavgv8qi3, "wavg2b", WAVG2B)
-  IWMMXT_BUILTIN (iwmmxt_uavgv4hi3, "wavg2h", WAVG2H)
-  IWMMXT_BUILTIN (iwmmxt_uavgrndv8qi3, "wavg2br", WAVG2BR)
-  IWMMXT_BUILTIN (iwmmxt_uavgrndv4hi3, "wavg2hr", WAVG2HR)
-  IWMMXT_BUILTIN (iwmmxt_wunpckilb, "wunpckilb", WUNPCKILB)
-  IWMMXT_BUILTIN (iwmmxt_wunpckilh, "wunpckilh", WUNPCKILH)
-  IWMMXT_BUILTIN (iwmmxt_wunpckilw, "wunpckilw", WUNPCKILW)
-  IWMMXT_BUILTIN (iwmmxt_wunpckihb, "wunpckihb", WUNPCKIHB)
-  IWMMXT_BUILTIN (iwmmxt_wunpckihh, "wunpckihh", WUNPCKIHH)
-  IWMMXT_BUILTIN (iwmmxt_wunpckihw, "wunpckihw", WUNPCKIHW)
-  IWMMXT2_BUILTIN (iwmmxt_waddsubhx, "waddsubhx", WADDSUBHX)
-  IWMMXT2_BUILTIN (iwmmxt_wsubaddhx, "wsubaddhx", WSUBADDHX)
-  IWMMXT2_BUILTIN (iwmmxt_wabsdiffb, "wabsdiffb", WABSDIFFB)
-  IWMMXT2_BUILTIN (iwmmxt_wabsdiffh, "wabsdiffh", WABSDIFFH)
-  IWMMXT2_BUILTIN (iwmmxt_wabsdiffw, "wabsdiffw", WABSDIFFW)
-  IWMMXT2_BUILTIN (iwmmxt_avg4, "wavg4", WAVG4)
-  IWMMXT2_BUILTIN (iwmmxt_avg4r, "wavg4r", WAVG4R)
-  IWMMXT2_BUILTIN (iwmmxt_wmulwsm, "wmulwsm", WMULWSM)
-  IWMMXT2_BUILTIN (iwmmxt_wmulwum, "wmulwum", WMULWUM)
-  IWMMXT2_BUILTIN (iwmmxt_wmulwsmr, "wmulwsmr", WMULWSMR)
-  IWMMXT2_BUILTIN (iwmmxt_wmulwumr, "wmulwumr", WMULWUMR)
-  IWMMXT2_BUILTIN (iwmmxt_wmulwl, "wmulwl", WMULWL)
-  IWMMXT2_BUILTIN (iwmmxt_wmulsmr, "wmulsmr", WMULSMR)
-  IWMMXT2_BUILTIN (iwmmxt_wmulumr, "wmulumr", WMULUMR)
-  IWMMXT2_BUILTIN (iwmmxt_wqmulm, "wqmulm", WQMULM)
-  IWMMXT2_BUILTIN (iwmmxt_wqmulmr, "wqmulmr", WQMULMR)
-  IWMMXT2_BUILTIN (iwmmxt_wqmulwm, "wqmulwm", WQMULWM)
-  IWMMXT2_BUILTIN (iwmmxt_wqmulwmr, "wqmulwmr", WQMULWMR)
-  IWMMXT_BUILTIN (iwmmxt_walignr0, "walignr0", WALIGNR0)
-  IWMMXT_BUILTIN (iwmmxt_walignr1, "walignr1", WALIGNR1)
-  IWMMXT_BUILTIN (iwmmxt_walignr2, "walignr2", WALIGNR2)
-  IWMMXT_BUILTIN (iwmmxt_walignr3, "walignr3", WALIGNR3)
-
-#define IWMMXT_BUILTIN2(code, builtin) \
-  { FL_IWMMXT, CODE_FOR_##code, NULL, ARM_BUILTIN_##builtin, UNKNOWN, 0 },
-
-#define IWMMXT2_BUILTIN2(code, builtin) \
-  { FL_IWMMXT2, CODE_FOR_##code, NULL, ARM_BUILTIN_##builtin, UNKNOWN, 0 },
-
-  IWMMXT2_BUILTIN2 (iwmmxt_waddbhusm, WADDBHUSM)
-  IWMMXT2_BUILTIN2 (iwmmxt_waddbhusl, WADDBHUSL)
-  IWMMXT_BUILTIN2 (iwmmxt_wpackhss, WPACKHSS)
-  IWMMXT_BUILTIN2 (iwmmxt_wpackwss, WPACKWSS)
-  IWMMXT_BUILTIN2 (iwmmxt_wpackdss, WPACKDSS)
-  IWMMXT_BUILTIN2 (iwmmxt_wpackhus, WPACKHUS)
-  IWMMXT_BUILTIN2 (iwmmxt_wpackwus, WPACKWUS)
-  IWMMXT_BUILTIN2 (iwmmxt_wpackdus, WPACKDUS)
-  IWMMXT_BUILTIN2 (iwmmxt_wmacuz, WMACUZ)
-  IWMMXT_BUILTIN2 (iwmmxt_wmacsz, WMACSZ)
-
-
-#define FP_BUILTIN(L, U) \
-  {0, CODE_FOR_##L, "__builtin_arm_"#L, ARM_BUILTIN_##U, \
-   UNKNOWN, 0},
-
-  FP_BUILTIN (get_fpscr, GET_FPSCR)
-  FP_BUILTIN (set_fpscr, SET_FPSCR)
-#undef FP_BUILTIN
-
-#define CRC32_BUILTIN(L, U) \
-  {0, CODE_FOR_##L, "__builtin_arm_"#L, ARM_BUILTIN_##U, \
-   UNKNOWN, 0},
-   CRC32_BUILTIN (crc32b, CRC32B)
-   CRC32_BUILTIN (crc32h, CRC32H)
-   CRC32_BUILTIN (crc32w, CRC32W)
-   CRC32_BUILTIN (crc32cb, CRC32CB)
-   CRC32_BUILTIN (crc32ch, CRC32CH)
-   CRC32_BUILTIN (crc32cw, CRC32CW)
-#undef CRC32_BUILTIN
-
-
-#define CRYPTO_BUILTIN(L, U) \
-  {0, CODE_FOR_crypto_##L, "__builtin_arm_crypto_"#L, ARM_BUILTIN_CRYPTO_##U, \
-   UNKNOWN, 0},
-#undef CRYPTO1
-#undef CRYPTO2
-#undef CRYPTO3
-#define CRYPTO2(L, U, R, A1, A2) CRYPTO_BUILTIN (L, U)
-#define CRYPTO1(L, U, R, A)
-#define CRYPTO3(L, U, R, A1, A2, A3)
-#include "crypto.def"
-#undef CRYPTO1
-#undef CRYPTO2
-#undef CRYPTO3
-
-};
-
-static const struct builtin_description bdesc_1arg[] =
-{
-  IWMMXT_BUILTIN (iwmmxt_tmovmskb, "tmovmskb", TMOVMSKB)
-  IWMMXT_BUILTIN (iwmmxt_tmovmskh, "tmovmskh", TMOVMSKH)
-  IWMMXT_BUILTIN (iwmmxt_tmovmskw, "tmovmskw", TMOVMSKW)
-  IWMMXT_BUILTIN (iwmmxt_waccb, "waccb", WACCB)
-  IWMMXT_BUILTIN (iwmmxt_wacch, "wacch", WACCH)
-  IWMMXT_BUILTIN (iwmmxt_waccw, "waccw", WACCW)
-  IWMMXT_BUILTIN (iwmmxt_wunpckehub, "wunpckehub", WUNPCKEHUB)
-  IWMMXT_BUILTIN (iwmmxt_wunpckehuh, "wunpckehuh", WUNPCKEHUH)
-  IWMMXT_BUILTIN (iwmmxt_wunpckehuw, "wunpckehuw", WUNPCKEHUW)
-  IWMMXT_BUILTIN (iwmmxt_wunpckehsb, "wunpckehsb", WUNPCKEHSB)
-  IWMMXT_BUILTIN (iwmmxt_wunpckehsh, "wunpckehsh", WUNPCKEHSH)
-  IWMMXT_BUILTIN (iwmmxt_wunpckehsw, "wunpckehsw", WUNPCKEHSW)
-  IWMMXT_BUILTIN (iwmmxt_wunpckelub, "wunpckelub", WUNPCKELUB)
-  IWMMXT_BUILTIN (iwmmxt_wunpckeluh, "wunpckeluh", WUNPCKELUH)
-  IWMMXT_BUILTIN (iwmmxt_wunpckeluw, "wunpckeluw", WUNPCKELUW)
-  IWMMXT_BUILTIN (iwmmxt_wunpckelsb, "wunpckelsb", WUNPCKELSB)
-  IWMMXT_BUILTIN (iwmmxt_wunpckelsh, "wunpckelsh", WUNPCKELSH)
-  IWMMXT_BUILTIN (iwmmxt_wunpckelsw, "wunpckelsw", WUNPCKELSW)
-  IWMMXT2_BUILTIN (iwmmxt_wabsv8qi3, "wabsb", WABSB)
-  IWMMXT2_BUILTIN (iwmmxt_wabsv4hi3, "wabsh", WABSH)
-  IWMMXT2_BUILTIN (iwmmxt_wabsv2si3, "wabsw", WABSW)
-  IWMMXT_BUILTIN (tbcstv8qi, "tbcstb", TBCSTB)
-  IWMMXT_BUILTIN (tbcstv4hi, "tbcsth", TBCSTH)
-  IWMMXT_BUILTIN (tbcstv2si, "tbcstw", TBCSTW)
-
-#define CRYPTO1(L, U, R, A) CRYPTO_BUILTIN (L, U)
-#define CRYPTO2(L, U, R, A1, A2)
-#define CRYPTO3(L, U, R, A1, A2, A3)
-#include "crypto.def"
-#undef CRYPTO1
-#undef CRYPTO2
-#undef CRYPTO3
-};
-
-static const struct builtin_description bdesc_3arg[] =
-{
-#define CRYPTO3(L, U, R, A1, A2, A3) CRYPTO_BUILTIN (L, U)
-#define CRYPTO1(L, U, R, A)
-#define CRYPTO2(L, U, R, A1, A2)
-#include "crypto.def"
-#undef CRYPTO1
-#undef CRYPTO2
-#undef CRYPTO3
- };
-#undef CRYPTO_BUILTIN
-
-/* Set up all the iWMMXt builtins.  This is not called if
-   TARGET_IWMMXT is zero.  */
-
-static void
-arm_init_iwmmxt_builtins (void)
-{
-  const struct builtin_description * d;
-  size_t i;
-
-  tree V2SI_type_node = build_vector_type_for_mode (intSI_type_node, V2SImode);
-  tree V4HI_type_node = build_vector_type_for_mode (intHI_type_node, V4HImode);
-  tree V8QI_type_node = build_vector_type_for_mode (intQI_type_node, V8QImode);
-
-  tree v8qi_ftype_v8qi_v8qi_int
-    = build_function_type_list (V8QI_type_node,
-				V8QI_type_node, V8QI_type_node,
-				integer_type_node, NULL_TREE);
-  tree v4hi_ftype_v4hi_int
-    = build_function_type_list (V4HI_type_node,
-				V4HI_type_node, integer_type_node, NULL_TREE);
-  tree v2si_ftype_v2si_int
-    = build_function_type_list (V2SI_type_node,
-				V2SI_type_node, integer_type_node, NULL_TREE);
-  tree v2si_ftype_di_di
-    = build_function_type_list (V2SI_type_node,
-				long_long_integer_type_node,
-				long_long_integer_type_node,
-				NULL_TREE);
-  tree di_ftype_di_int
-    = build_function_type_list (long_long_integer_type_node,
-				long_long_integer_type_node,
-				integer_type_node, NULL_TREE);
-  tree di_ftype_di_int_int
-    = build_function_type_list (long_long_integer_type_node,
-				long_long_integer_type_node,
-				integer_type_node,
-				integer_type_node, NULL_TREE);
-  tree int_ftype_v8qi
-    = build_function_type_list (integer_type_node,
-				V8QI_type_node, NULL_TREE);
-  tree int_ftype_v4hi
-    = build_function_type_list (integer_type_node,
-				V4HI_type_node, NULL_TREE);
-  tree int_ftype_v2si
-    = build_function_type_list (integer_type_node,
-				V2SI_type_node, NULL_TREE);
-  tree int_ftype_v8qi_int
-    = build_function_type_list (integer_type_node,
-				V8QI_type_node, integer_type_node, NULL_TREE);
-  tree int_ftype_v4hi_int
-    = build_function_type_list (integer_type_node,
-				V4HI_type_node, integer_type_node, NULL_TREE);
-  tree int_ftype_v2si_int
-    = build_function_type_list (integer_type_node,
-				V2SI_type_node, integer_type_node, NULL_TREE);
-  tree v8qi_ftype_v8qi_int_int
-    = build_function_type_list (V8QI_type_node,
-				V8QI_type_node, integer_type_node,
-				integer_type_node, NULL_TREE);
-  tree v4hi_ftype_v4hi_int_int
-    = build_function_type_list (V4HI_type_node,
-				V4HI_type_node, integer_type_node,
-				integer_type_node, NULL_TREE);
-  tree v2si_ftype_v2si_int_int
-    = build_function_type_list (V2SI_type_node,
-				V2SI_type_node, integer_type_node,
-				integer_type_node, NULL_TREE);
-  /* Miscellaneous.  */
-  tree v8qi_ftype_v4hi_v4hi
-    = build_function_type_list (V8QI_type_node,
-				V4HI_type_node, V4HI_type_node, NULL_TREE);
-  tree v4hi_ftype_v2si_v2si
-    = build_function_type_list (V4HI_type_node,
-				V2SI_type_node, V2SI_type_node, NULL_TREE);
-  tree v8qi_ftype_v4hi_v8qi
-    = build_function_type_list (V8QI_type_node,
-	                        V4HI_type_node, V8QI_type_node, NULL_TREE);
-  tree v2si_ftype_v4hi_v4hi
-    = build_function_type_list (V2SI_type_node,
-				V4HI_type_node, V4HI_type_node, NULL_TREE);
-  tree v2si_ftype_v8qi_v8qi
-    = build_function_type_list (V2SI_type_node,
-				V8QI_type_node, V8QI_type_node, NULL_TREE);
-  tree v4hi_ftype_v4hi_di
-    = build_function_type_list (V4HI_type_node,
-				V4HI_type_node, long_long_integer_type_node,
-				NULL_TREE);
-  tree v2si_ftype_v2si_di
-    = build_function_type_list (V2SI_type_node,
-				V2SI_type_node, long_long_integer_type_node,
-				NULL_TREE);
-  tree di_ftype_void
-    = build_function_type_list (long_long_unsigned_type_node, NULL_TREE);
-  tree int_ftype_void
-    = build_function_type_list (integer_type_node, NULL_TREE);
-  tree di_ftype_v8qi
-    = build_function_type_list (long_long_integer_type_node,
-				V8QI_type_node, NULL_TREE);
-  tree di_ftype_v4hi
-    = build_function_type_list (long_long_integer_type_node,
-				V4HI_type_node, NULL_TREE);
-  tree di_ftype_v2si
-    = build_function_type_list (long_long_integer_type_node,
-				V2SI_type_node, NULL_TREE);
-  tree v2si_ftype_v4hi
-    = build_function_type_list (V2SI_type_node,
-				V4HI_type_node, NULL_TREE);
-  tree v4hi_ftype_v8qi
-    = build_function_type_list (V4HI_type_node,
-				V8QI_type_node, NULL_TREE);
-  tree v8qi_ftype_v8qi
-    = build_function_type_list (V8QI_type_node,
-	                        V8QI_type_node, NULL_TREE);
-  tree v4hi_ftype_v4hi
-    = build_function_type_list (V4HI_type_node,
-	                        V4HI_type_node, NULL_TREE);
-  tree v2si_ftype_v2si
-    = build_function_type_list (V2SI_type_node,
-	                        V2SI_type_node, NULL_TREE);
-
-  tree di_ftype_di_v4hi_v4hi
-    = build_function_type_list (long_long_unsigned_type_node,
-				long_long_unsigned_type_node,
-				V4HI_type_node, V4HI_type_node,
-				NULL_TREE);
-
-  tree di_ftype_v4hi_v4hi
-    = build_function_type_list (long_long_unsigned_type_node,
-				V4HI_type_node,V4HI_type_node,
-				NULL_TREE);
-
-  tree v2si_ftype_v2si_v4hi_v4hi
-    = build_function_type_list (V2SI_type_node,
-                                V2SI_type_node, V4HI_type_node,
-                                V4HI_type_node, NULL_TREE);
-
-  tree v2si_ftype_v2si_v8qi_v8qi
-    = build_function_type_list (V2SI_type_node,
-                                V2SI_type_node, V8QI_type_node,
-                                V8QI_type_node, NULL_TREE);
-
-  tree di_ftype_di_v2si_v2si
-     = build_function_type_list (long_long_unsigned_type_node,
-                                 long_long_unsigned_type_node,
-                                 V2SI_type_node, V2SI_type_node,
-                                 NULL_TREE);
-
-   tree di_ftype_di_di_int
-     = build_function_type_list (long_long_unsigned_type_node,
-                                 long_long_unsigned_type_node,
-                                 long_long_unsigned_type_node,
-                                 integer_type_node, NULL_TREE);
-
-   tree void_ftype_int
-     = build_function_type_list (void_type_node,
-                                 integer_type_node, NULL_TREE);
-
-   tree v8qi_ftype_char
-     = build_function_type_list (V8QI_type_node,
-                                 signed_char_type_node, NULL_TREE);
-
-   tree v4hi_ftype_short
-     = build_function_type_list (V4HI_type_node,
-                                 short_integer_type_node, NULL_TREE);
-
-   tree v2si_ftype_int
-     = build_function_type_list (V2SI_type_node,
-                                 integer_type_node, NULL_TREE);
-
-  /* Normal vector binops.  */
-  tree v8qi_ftype_v8qi_v8qi
-    = build_function_type_list (V8QI_type_node,
-				V8QI_type_node, V8QI_type_node, NULL_TREE);
-  tree v4hi_ftype_v4hi_v4hi
-    = build_function_type_list (V4HI_type_node,
-				V4HI_type_node,V4HI_type_node, NULL_TREE);
-  tree v2si_ftype_v2si_v2si
-    = build_function_type_list (V2SI_type_node,
-				V2SI_type_node, V2SI_type_node, NULL_TREE);
-  tree di_ftype_di_di
-    = build_function_type_list (long_long_unsigned_type_node,
-				long_long_unsigned_type_node,
-				long_long_unsigned_type_node,
-				NULL_TREE);
-
-  /* Add all builtins that are more or less simple operations on two
-     operands.  */
-  for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
-    {
-      /* Use one of the operands; the target can have a different mode for
-	 mask-generating compares.  */
-      enum machine_mode mode;
-      tree type;
-
-      if (d->name == 0 || !(d->mask == FL_IWMMXT || d->mask == FL_IWMMXT2))
-	continue;
-
-      mode = insn_data[d->icode].operand[1].mode;
-
-      switch (mode)
-	{
-	case V8QImode:
-	  type = v8qi_ftype_v8qi_v8qi;
-	  break;
-	case V4HImode:
-	  type = v4hi_ftype_v4hi_v4hi;
-	  break;
-	case V2SImode:
-	  type = v2si_ftype_v2si_v2si;
-	  break;
-	case DImode:
-	  type = di_ftype_di_di;
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-
-      def_mbuiltin (d->mask, d->name, type, d->code);
-    }
-
-  /* Add the remaining MMX insns with somewhat more complicated types.  */
-#define iwmmx_mbuiltin(NAME, TYPE, CODE)			\
-  def_mbuiltin (FL_IWMMXT, "__builtin_arm_" NAME, (TYPE),	\
-		ARM_BUILTIN_ ## CODE)
-
-#define iwmmx2_mbuiltin(NAME, TYPE, CODE)                      \
-  def_mbuiltin (FL_IWMMXT2, "__builtin_arm_" NAME, (TYPE),     \
-               ARM_BUILTIN_ ## CODE)
-
-  iwmmx_mbuiltin ("wzero", di_ftype_void, WZERO);
-  iwmmx_mbuiltin ("setwcgr0", void_ftype_int, SETWCGR0);
-  iwmmx_mbuiltin ("setwcgr1", void_ftype_int, SETWCGR1);
-  iwmmx_mbuiltin ("setwcgr2", void_ftype_int, SETWCGR2);
-  iwmmx_mbuiltin ("setwcgr3", void_ftype_int, SETWCGR3);
-  iwmmx_mbuiltin ("getwcgr0", int_ftype_void, GETWCGR0);
-  iwmmx_mbuiltin ("getwcgr1", int_ftype_void, GETWCGR1);
-  iwmmx_mbuiltin ("getwcgr2", int_ftype_void, GETWCGR2);
-  iwmmx_mbuiltin ("getwcgr3", int_ftype_void, GETWCGR3);
-
-  iwmmx_mbuiltin ("wsllh", v4hi_ftype_v4hi_di, WSLLH);
-  iwmmx_mbuiltin ("wsllw", v2si_ftype_v2si_di, WSLLW);
-  iwmmx_mbuiltin ("wslld", di_ftype_di_di, WSLLD);
-  iwmmx_mbuiltin ("wsllhi", v4hi_ftype_v4hi_int, WSLLHI);
-  iwmmx_mbuiltin ("wsllwi", v2si_ftype_v2si_int, WSLLWI);
-  iwmmx_mbuiltin ("wslldi", di_ftype_di_int, WSLLDI);
-
-  iwmmx_mbuiltin ("wsrlh", v4hi_ftype_v4hi_di, WSRLH);
-  iwmmx_mbuiltin ("wsrlw", v2si_ftype_v2si_di, WSRLW);
-  iwmmx_mbuiltin ("wsrld", di_ftype_di_di, WSRLD);
-  iwmmx_mbuiltin ("wsrlhi", v4hi_ftype_v4hi_int, WSRLHI);
-  iwmmx_mbuiltin ("wsrlwi", v2si_ftype_v2si_int, WSRLWI);
-  iwmmx_mbuiltin ("wsrldi", di_ftype_di_int, WSRLDI);
-
-  iwmmx_mbuiltin ("wsrah", v4hi_ftype_v4hi_di, WSRAH);
-  iwmmx_mbuiltin ("wsraw", v2si_ftype_v2si_di, WSRAW);
-  iwmmx_mbuiltin ("wsrad", di_ftype_di_di, WSRAD);
-  iwmmx_mbuiltin ("wsrahi", v4hi_ftype_v4hi_int, WSRAHI);
-  iwmmx_mbuiltin ("wsrawi", v2si_ftype_v2si_int, WSRAWI);
-  iwmmx_mbuiltin ("wsradi", di_ftype_di_int, WSRADI);
-
-  iwmmx_mbuiltin ("wrorh", v4hi_ftype_v4hi_di, WRORH);
-  iwmmx_mbuiltin ("wrorw", v2si_ftype_v2si_di, WRORW);
-  iwmmx_mbuiltin ("wrord", di_ftype_di_di, WRORD);
-  iwmmx_mbuiltin ("wrorhi", v4hi_ftype_v4hi_int, WRORHI);
-  iwmmx_mbuiltin ("wrorwi", v2si_ftype_v2si_int, WRORWI);
-  iwmmx_mbuiltin ("wrordi", di_ftype_di_int, WRORDI);
-
-  iwmmx_mbuiltin ("wshufh", v4hi_ftype_v4hi_int, WSHUFH);
-
-  iwmmx_mbuiltin ("wsadb", v2si_ftype_v2si_v8qi_v8qi, WSADB);
-  iwmmx_mbuiltin ("wsadh", v2si_ftype_v2si_v4hi_v4hi, WSADH);
-  iwmmx_mbuiltin ("wmadds", v2si_ftype_v4hi_v4hi, WMADDS);
-  iwmmx2_mbuiltin ("wmaddsx", v2si_ftype_v4hi_v4hi, WMADDSX);
-  iwmmx2_mbuiltin ("wmaddsn", v2si_ftype_v4hi_v4hi, WMADDSN);
-  iwmmx_mbuiltin ("wmaddu", v2si_ftype_v4hi_v4hi, WMADDU);
-  iwmmx2_mbuiltin ("wmaddux", v2si_ftype_v4hi_v4hi, WMADDUX);
-  iwmmx2_mbuiltin ("wmaddun", v2si_ftype_v4hi_v4hi, WMADDUN);
-  iwmmx_mbuiltin ("wsadbz", v2si_ftype_v8qi_v8qi, WSADBZ);
-  iwmmx_mbuiltin ("wsadhz", v2si_ftype_v4hi_v4hi, WSADHZ);
-
-  iwmmx_mbuiltin ("textrmsb", int_ftype_v8qi_int, TEXTRMSB);
-  iwmmx_mbuiltin ("textrmsh", int_ftype_v4hi_int, TEXTRMSH);
-  iwmmx_mbuiltin ("textrmsw", int_ftype_v2si_int, TEXTRMSW);
-  iwmmx_mbuiltin ("textrmub", int_ftype_v8qi_int, TEXTRMUB);
-  iwmmx_mbuiltin ("textrmuh", int_ftype_v4hi_int, TEXTRMUH);
-  iwmmx_mbuiltin ("textrmuw", int_ftype_v2si_int, TEXTRMUW);
-  iwmmx_mbuiltin ("tinsrb", v8qi_ftype_v8qi_int_int, TINSRB);
-  iwmmx_mbuiltin ("tinsrh", v4hi_ftype_v4hi_int_int, TINSRH);
-  iwmmx_mbuiltin ("tinsrw", v2si_ftype_v2si_int_int, TINSRW);
-
-  iwmmx_mbuiltin ("waccb", di_ftype_v8qi, WACCB);
-  iwmmx_mbuiltin ("wacch", di_ftype_v4hi, WACCH);
-  iwmmx_mbuiltin ("waccw", di_ftype_v2si, WACCW);
-
-  iwmmx_mbuiltin ("tmovmskb", int_ftype_v8qi, TMOVMSKB);
-  iwmmx_mbuiltin ("tmovmskh", int_ftype_v4hi, TMOVMSKH);
-  iwmmx_mbuiltin ("tmovmskw", int_ftype_v2si, TMOVMSKW);
-
-  iwmmx2_mbuiltin ("waddbhusm", v8qi_ftype_v4hi_v8qi, WADDBHUSM);
-  iwmmx2_mbuiltin ("waddbhusl", v8qi_ftype_v4hi_v8qi, WADDBHUSL);
-
-  iwmmx_mbuiltin ("wpackhss", v8qi_ftype_v4hi_v4hi, WPACKHSS);
-  iwmmx_mbuiltin ("wpackhus", v8qi_ftype_v4hi_v4hi, WPACKHUS);
-  iwmmx_mbuiltin ("wpackwus", v4hi_ftype_v2si_v2si, WPACKWUS);
-  iwmmx_mbuiltin ("wpackwss", v4hi_ftype_v2si_v2si, WPACKWSS);
-  iwmmx_mbuiltin ("wpackdus", v2si_ftype_di_di, WPACKDUS);
-  iwmmx_mbuiltin ("wpackdss", v2si_ftype_di_di, WPACKDSS);
-
-  iwmmx_mbuiltin ("wunpckehub", v4hi_ftype_v8qi, WUNPCKEHUB);
-  iwmmx_mbuiltin ("wunpckehuh", v2si_ftype_v4hi, WUNPCKEHUH);
-  iwmmx_mbuiltin ("wunpckehuw", di_ftype_v2si, WUNPCKEHUW);
-  iwmmx_mbuiltin ("wunpckehsb", v4hi_ftype_v8qi, WUNPCKEHSB);
-  iwmmx_mbuiltin ("wunpckehsh", v2si_ftype_v4hi, WUNPCKEHSH);
-  iwmmx_mbuiltin ("wunpckehsw", di_ftype_v2si, WUNPCKEHSW);
-  iwmmx_mbuiltin ("wunpckelub", v4hi_ftype_v8qi, WUNPCKELUB);
-  iwmmx_mbuiltin ("wunpckeluh", v2si_ftype_v4hi, WUNPCKELUH);
-  iwmmx_mbuiltin ("wunpckeluw", di_ftype_v2si, WUNPCKELUW);
-  iwmmx_mbuiltin ("wunpckelsb", v4hi_ftype_v8qi, WUNPCKELSB);
-  iwmmx_mbuiltin ("wunpckelsh", v2si_ftype_v4hi, WUNPCKELSH);
-  iwmmx_mbuiltin ("wunpckelsw", di_ftype_v2si, WUNPCKELSW);
-
-  iwmmx_mbuiltin ("wmacs", di_ftype_di_v4hi_v4hi, WMACS);
-  iwmmx_mbuiltin ("wmacsz", di_ftype_v4hi_v4hi, WMACSZ);
-  iwmmx_mbuiltin ("wmacu", di_ftype_di_v4hi_v4hi, WMACU);
-  iwmmx_mbuiltin ("wmacuz", di_ftype_v4hi_v4hi, WMACUZ);
-
-  iwmmx_mbuiltin ("walign", v8qi_ftype_v8qi_v8qi_int, WALIGNI);
-  iwmmx_mbuiltin ("tmia", di_ftype_di_int_int, TMIA);
-  iwmmx_mbuiltin ("tmiaph", di_ftype_di_int_int, TMIAPH);
-  iwmmx_mbuiltin ("tmiabb", di_ftype_di_int_int, TMIABB);
-  iwmmx_mbuiltin ("tmiabt", di_ftype_di_int_int, TMIABT);
-  iwmmx_mbuiltin ("tmiatb", di_ftype_di_int_int, TMIATB);
-  iwmmx_mbuiltin ("tmiatt", di_ftype_di_int_int, TMIATT);
-
-  iwmmx2_mbuiltin ("wabsb", v8qi_ftype_v8qi, WABSB);
-  iwmmx2_mbuiltin ("wabsh", v4hi_ftype_v4hi, WABSH);
-  iwmmx2_mbuiltin ("wabsw", v2si_ftype_v2si, WABSW);
-
-  iwmmx2_mbuiltin ("wqmiabb", v2si_ftype_v2si_v4hi_v4hi, WQMIABB);
-  iwmmx2_mbuiltin ("wqmiabt", v2si_ftype_v2si_v4hi_v4hi, WQMIABT);
-  iwmmx2_mbuiltin ("wqmiatb", v2si_ftype_v2si_v4hi_v4hi, WQMIATB);
-  iwmmx2_mbuiltin ("wqmiatt", v2si_ftype_v2si_v4hi_v4hi, WQMIATT);
-
-  iwmmx2_mbuiltin ("wqmiabbn", v2si_ftype_v2si_v4hi_v4hi, WQMIABBN);
-  iwmmx2_mbuiltin ("wqmiabtn", v2si_ftype_v2si_v4hi_v4hi, WQMIABTN);
-  iwmmx2_mbuiltin ("wqmiatbn", v2si_ftype_v2si_v4hi_v4hi, WQMIATBN);
-  iwmmx2_mbuiltin ("wqmiattn", v2si_ftype_v2si_v4hi_v4hi, WQMIATTN);
-
-  iwmmx2_mbuiltin ("wmiabb", di_ftype_di_v4hi_v4hi, WMIABB);
-  iwmmx2_mbuiltin ("wmiabt", di_ftype_di_v4hi_v4hi, WMIABT);
-  iwmmx2_mbuiltin ("wmiatb", di_ftype_di_v4hi_v4hi, WMIATB);
-  iwmmx2_mbuiltin ("wmiatt", di_ftype_di_v4hi_v4hi, WMIATT);
-
-  iwmmx2_mbuiltin ("wmiabbn", di_ftype_di_v4hi_v4hi, WMIABBN);
-  iwmmx2_mbuiltin ("wmiabtn", di_ftype_di_v4hi_v4hi, WMIABTN);
-  iwmmx2_mbuiltin ("wmiatbn", di_ftype_di_v4hi_v4hi, WMIATBN);
-  iwmmx2_mbuiltin ("wmiattn", di_ftype_di_v4hi_v4hi, WMIATTN);
-
-  iwmmx2_mbuiltin ("wmiawbb", di_ftype_di_v2si_v2si, WMIAWBB);
-  iwmmx2_mbuiltin ("wmiawbt", di_ftype_di_v2si_v2si, WMIAWBT);
-  iwmmx2_mbuiltin ("wmiawtb", di_ftype_di_v2si_v2si, WMIAWTB);
-  iwmmx2_mbuiltin ("wmiawtt", di_ftype_di_v2si_v2si, WMIAWTT);
-
-  iwmmx2_mbuiltin ("wmiawbbn", di_ftype_di_v2si_v2si, WMIAWBBN);
-  iwmmx2_mbuiltin ("wmiawbtn", di_ftype_di_v2si_v2si, WMIAWBTN);
-  iwmmx2_mbuiltin ("wmiawtbn", di_ftype_di_v2si_v2si, WMIAWTBN);
-  iwmmx2_mbuiltin ("wmiawttn", di_ftype_di_v2si_v2si, WMIAWTTN);
-
-  iwmmx2_mbuiltin ("wmerge", di_ftype_di_di_int, WMERGE);
-
-  iwmmx_mbuiltin ("tbcstb", v8qi_ftype_char, TBCSTB);
-  iwmmx_mbuiltin ("tbcsth", v4hi_ftype_short, TBCSTH);
-  iwmmx_mbuiltin ("tbcstw", v2si_ftype_int, TBCSTW);
-
-#undef iwmmx_mbuiltin
-#undef iwmmx2_mbuiltin
-}
-
-static void
-arm_init_fp16_builtins (void)
-{
-  tree fp16_type = make_node (REAL_TYPE);
-  TYPE_PRECISION (fp16_type) = 16;
-  layout_type (fp16_type);
-  (*lang_hooks.types.register_builtin_type) (fp16_type, "__fp16");
-}
-
-static void
-arm_init_crc32_builtins ()
-{
-  tree si_ftype_si_qi
-    = build_function_type_list (unsigned_intSI_type_node,
-                                unsigned_intSI_type_node,
-                                unsigned_intQI_type_node, NULL_TREE);
-  tree si_ftype_si_hi
-    = build_function_type_list (unsigned_intSI_type_node,
-                                unsigned_intSI_type_node,
-                                unsigned_intHI_type_node, NULL_TREE);
-  tree si_ftype_si_si
-    = build_function_type_list (unsigned_intSI_type_node,
-                                unsigned_intSI_type_node,
-                                unsigned_intSI_type_node, NULL_TREE);
-
-  arm_builtin_decls[ARM_BUILTIN_CRC32B]
-    = add_builtin_function ("__builtin_arm_crc32b", si_ftype_si_qi,
-                            ARM_BUILTIN_CRC32B, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32H]
-    = add_builtin_function ("__builtin_arm_crc32h", si_ftype_si_hi,
-                            ARM_BUILTIN_CRC32H, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32W]
-    = add_builtin_function ("__builtin_arm_crc32w", si_ftype_si_si,
-                            ARM_BUILTIN_CRC32W, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32CB]
-    = add_builtin_function ("__builtin_arm_crc32cb", si_ftype_si_qi,
-                            ARM_BUILTIN_CRC32CB, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32CH]
-    = add_builtin_function ("__builtin_arm_crc32ch", si_ftype_si_hi,
-                            ARM_BUILTIN_CRC32CH, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32CW]
-    = add_builtin_function ("__builtin_arm_crc32cw", si_ftype_si_si,
-                            ARM_BUILTIN_CRC32CW, BUILT_IN_MD, NULL, NULL_TREE);
-}
-
-static void
-arm_init_builtins (void)
-{
-  if (TARGET_REALLY_IWMMXT)
-    arm_init_iwmmxt_builtins ();
-
-  if (TARGET_NEON)
-    arm_init_neon_builtins ();
-
-  if (arm_fp16_format)
-    arm_init_fp16_builtins ();
-
-  if (TARGET_CRC32)
-    arm_init_crc32_builtins ();
-
-  if (TARGET_VFP && TARGET_HARD_FLOAT)
-    {
-      tree ftype_set_fpscr
-	= build_function_type_list (void_type_node, unsigned_type_node, NULL);
-      tree ftype_get_fpscr
-	= build_function_type_list (unsigned_type_node, NULL);
-
-      arm_builtin_decls[ARM_BUILTIN_GET_FPSCR]
-	= add_builtin_function ("__builtin_arm_ldfscr", ftype_get_fpscr,
-				ARM_BUILTIN_GET_FPSCR, BUILT_IN_MD, NULL, NULL_TREE);
-      arm_builtin_decls[ARM_BUILTIN_SET_FPSCR]
-	= add_builtin_function ("__builtin_arm_stfscr", ftype_set_fpscr,
-				ARM_BUILTIN_SET_FPSCR, BUILT_IN_MD, NULL, NULL_TREE);
-    }
-}
-
-/* Return the ARM builtin for CODE.  */
-
-static tree
-arm_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
-{
-  if (code >= ARM_BUILTIN_MAX)
-    return error_mark_node;
-
-  return arm_builtin_decls[code];
-}
-
 /* Implement TARGET_INVALID_PARAMETER_TYPE.  */
 
 static const char *
@@ -25055,7 +23272,7 @@ arm_convert_to_type (tree type, tree expr)
    special-cased in the default hook.  */
 
 static bool
-arm_scalar_mode_supported_p (enum machine_mode mode)
+arm_scalar_mode_supported_p (machine_mode mode)
 {
   if (mode == HFmode)
     return (arm_fp16_format != ARM_FP16_FORMAT_NONE);
@@ -25063,508 +23280,6 @@ arm_scalar_mode_supported_p (enum machine_mode mode)
     return true;
   else
     return default_scalar_mode_supported_p (mode);
-}
-
-/* Errors in the source file can cause expand_expr to return const0_rtx
-   where we expect a vector.  To avoid crashing, use one of the vector
-   clear instructions.  */
-
-static rtx
-safe_vector_operand (rtx x, enum machine_mode mode)
-{
-  if (x != const0_rtx)
-    return x;
-  x = gen_reg_rtx (mode);
-
-  emit_insn (gen_iwmmxt_clrdi (mode == DImode ? x
-			       : gen_rtx_SUBREG (DImode, x, 0)));
-  return x;
-}
-
-/* Function to expand ternary builtins.  */
-static rtx
-arm_expand_ternop_builtin (enum insn_code icode,
-                           tree exp, rtx target)
-{
-  rtx pat;
-  tree arg0 = CALL_EXPR_ARG (exp, 0);
-  tree arg1 = CALL_EXPR_ARG (exp, 1);
-  tree arg2 = CALL_EXPR_ARG (exp, 2);
-
-  rtx op0 = expand_normal (arg0);
-  rtx op1 = expand_normal (arg1);
-  rtx op2 = expand_normal (arg2);
-  rtx op3 = NULL_RTX;
-
-  /* The sha1c, sha1p, sha1m crypto builtins require a different vec_select
-     lane operand depending on endianness.  */
-  bool builtin_sha1cpm_p = false;
-
-  if (insn_data[icode].n_operands == 5)
-    {
-      gcc_assert (icode == CODE_FOR_crypto_sha1c
-                  || icode == CODE_FOR_crypto_sha1p
-                  || icode == CODE_FOR_crypto_sha1m);
-      builtin_sha1cpm_p = true;
-    }
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
-  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
-  enum machine_mode mode2 = insn_data[icode].operand[3].mode;
-
-
-  if (VECTOR_MODE_P (mode0))
-    op0 = safe_vector_operand (op0, mode0);
-  if (VECTOR_MODE_P (mode1))
-    op1 = safe_vector_operand (op1, mode1);
-  if (VECTOR_MODE_P (mode2))
-    op2 = safe_vector_operand (op2, mode2);
-
-  if (! target
-      || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-    target = gen_reg_rtx (tmode);
-
-  gcc_assert ((GET_MODE (op0) == mode0 || GET_MODE (op0) == VOIDmode)
-	      && (GET_MODE (op1) == mode1 || GET_MODE (op1) == VOIDmode)
-	      && (GET_MODE (op2) == mode2 || GET_MODE (op2) == VOIDmode));
-
-  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-    op0 = copy_to_mode_reg (mode0, op0);
-  if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
-    op1 = copy_to_mode_reg (mode1, op1);
-  if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
-    op2 = copy_to_mode_reg (mode2, op2);
-  if (builtin_sha1cpm_p)
-    op3 = GEN_INT (TARGET_BIG_END ? 1 : 0);
-
-  if (builtin_sha1cpm_p)
-    pat = GEN_FCN (icode) (target, op0, op1, op2, op3);
-  else
-    pat = GEN_FCN (icode) (target, op0, op1, op2);
-  if (! pat)
-    return 0;
-  emit_insn (pat);
-  return target;
-}
-
-/* Subroutine of arm_expand_builtin to take care of binop insns.  */
-
-static rtx
-arm_expand_binop_builtin (enum insn_code icode,
-			  tree exp, rtx target)
-{
-  rtx pat;
-  tree arg0 = CALL_EXPR_ARG (exp, 0);
-  tree arg1 = CALL_EXPR_ARG (exp, 1);
-  rtx op0 = expand_normal (arg0);
-  rtx op1 = expand_normal (arg1);
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
-  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
-
-  if (VECTOR_MODE_P (mode0))
-    op0 = safe_vector_operand (op0, mode0);
-  if (VECTOR_MODE_P (mode1))
-    op1 = safe_vector_operand (op1, mode1);
-
-  if (! target
-      || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-    target = gen_reg_rtx (tmode);
-
-  gcc_assert ((GET_MODE (op0) == mode0 || GET_MODE (op0) == VOIDmode)
-	      && (GET_MODE (op1) == mode1 || GET_MODE (op1) == VOIDmode));
-
-  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-    op0 = copy_to_mode_reg (mode0, op0);
-  if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
-    op1 = copy_to_mode_reg (mode1, op1);
-
-  pat = GEN_FCN (icode) (target, op0, op1);
-  if (! pat)
-    return 0;
-  emit_insn (pat);
-  return target;
-}
-
-/* Subroutine of arm_expand_builtin to take care of unop insns.  */
-
-static rtx
-arm_expand_unop_builtin (enum insn_code icode,
-			 tree exp, rtx target, int do_load)
-{
-  rtx pat;
-  tree arg0 = CALL_EXPR_ARG (exp, 0);
-  rtx op0 = expand_normal (arg0);
-  rtx op1 = NULL_RTX;
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
-  bool builtin_sha1h_p = false;
-
-  if (insn_data[icode].n_operands == 3)
-    {
-      gcc_assert (icode == CODE_FOR_crypto_sha1h);
-      builtin_sha1h_p = true;
-    }
-
-  if (! target
-      || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-    target = gen_reg_rtx (tmode);
-  if (do_load)
-    op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-  else
-    {
-      if (VECTOR_MODE_P (mode0))
-	op0 = safe_vector_operand (op0, mode0);
-
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = copy_to_mode_reg (mode0, op0);
-    }
-  if (builtin_sha1h_p)
-    op1 = GEN_INT (TARGET_BIG_END ? 1 : 0);
-
-  if (builtin_sha1h_p)
-    pat = GEN_FCN (icode) (target, op0, op1);
-  else
-    pat = GEN_FCN (icode) (target, op0);
-  if (! pat)
-    return 0;
-  emit_insn (pat);
-  return target;
-}
-
-typedef enum {
-  NEON_ARG_COPY_TO_REG,
-  NEON_ARG_CONSTANT,
-  NEON_ARG_MEMORY,
-  NEON_ARG_STOP
-} builtin_arg;
-
-#define NEON_MAX_BUILTIN_ARGS 5
-
-/* EXP is a pointer argument to a Neon load or store intrinsic.  Derive
-   and return an expression for the accessed memory.
-
-   The intrinsic function operates on a block of registers that has
-   mode REG_MODE.  This block contains vectors of type TYPE_MODE.  The
-   function references the memory at EXP of type TYPE and in mode
-   MEM_MODE; this mode may be BLKmode if no more suitable mode is
-   available.  */
-
-static tree
-neon_dereference_pointer (tree exp, tree type, enum machine_mode mem_mode,
-			  enum machine_mode reg_mode,
-			  neon_builtin_type_mode type_mode)
-{
-  HOST_WIDE_INT reg_size, vector_size, nvectors, nelems;
-  tree elem_type, upper_bound, array_type;
-
-  /* Work out the size of the register block in bytes.  */
-  reg_size = GET_MODE_SIZE (reg_mode);
-
-  /* Work out the size of each vector in bytes.  */
-  gcc_assert (TYPE_MODE_BIT (type_mode) & (TB_DREG | TB_QREG));
-  vector_size = (TYPE_MODE_BIT (type_mode) & TB_QREG ? 16 : 8);
-
-  /* Work out how many vectors there are.  */
-  gcc_assert (reg_size % vector_size == 0);
-  nvectors = reg_size / vector_size;
-
-  /* Work out the type of each element.  */
-  gcc_assert (POINTER_TYPE_P (type));
-  elem_type = TREE_TYPE (type);
-
-  /* Work out how many elements are being loaded or stored.
-     MEM_MODE == REG_MODE implies a one-to-one mapping between register
-     and memory elements; anything else implies a lane load or store.  */
-  if (mem_mode == reg_mode)
-    nelems = vector_size * nvectors / int_size_in_bytes (elem_type);
-  else
-    nelems = nvectors;
-
-  /* Create a type that describes the full access.  */
-  upper_bound = build_int_cst (size_type_node, nelems - 1);
-  array_type = build_array_type (elem_type, build_index_type (upper_bound));
-
-  /* Dereference EXP using that type.  */
-  return fold_build2 (MEM_REF, array_type, exp,
-		      build_int_cst (build_pointer_type (array_type), 0));
-}
-
-/* Expand a Neon builtin.  */
-static rtx
-arm_expand_neon_args (rtx target, int icode, int have_retval,
-		      neon_builtin_type_mode type_mode,
-		      tree exp, int fcode, ...)
-{
-  va_list ap;
-  rtx pat;
-  tree arg[NEON_MAX_BUILTIN_ARGS];
-  rtx op[NEON_MAX_BUILTIN_ARGS];
-  tree arg_type;
-  tree formals;
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode[NEON_MAX_BUILTIN_ARGS];
-  enum machine_mode other_mode;
-  int argc = 0;
-  int opno;
-
-  if (have_retval
-      && (!target
-	  || GET_MODE (target) != tmode
-	  || !(*insn_data[icode].operand[0].predicate) (target, tmode)))
-    target = gen_reg_rtx (tmode);
-
-  va_start (ap, fcode);
-
-  formals = TYPE_ARG_TYPES (TREE_TYPE (arm_builtin_decls[fcode]));
-
-  for (;;)
-    {
-      builtin_arg thisarg = (builtin_arg) va_arg (ap, int);
-
-      if (thisarg == NEON_ARG_STOP)
-        break;
-      else
-        {
-          opno = argc + have_retval;
-          mode[argc] = insn_data[icode].operand[opno].mode;
-          arg[argc] = CALL_EXPR_ARG (exp, argc);
-	  arg_type = TREE_VALUE (formals);
-          if (thisarg == NEON_ARG_MEMORY)
-            {
-              other_mode = insn_data[icode].operand[1 - opno].mode;
-              arg[argc] = neon_dereference_pointer (arg[argc], arg_type,
-						    mode[argc], other_mode,
-						    type_mode);
-            }
-
-	  /* Use EXPAND_MEMORY for NEON_ARG_MEMORY to ensure a MEM_P
-	     be returned.  */
-	  op[argc] = expand_expr (arg[argc], NULL_RTX, VOIDmode,
-				  (thisarg == NEON_ARG_MEMORY
-				   ? EXPAND_MEMORY : EXPAND_NORMAL));
-
-          switch (thisarg)
-            {
-            case NEON_ARG_COPY_TO_REG:
-              /*gcc_assert (GET_MODE (op[argc]) == mode[argc]);*/
-              if (!(*insn_data[icode].operand[opno].predicate)
-                     (op[argc], mode[argc]))
-                op[argc] = copy_to_mode_reg (mode[argc], op[argc]);
-              break;
-
-            case NEON_ARG_CONSTANT:
-              /* FIXME: This error message is somewhat unhelpful.  */
-              if (!(*insn_data[icode].operand[opno].predicate)
-                    (op[argc], mode[argc]))
-		error ("argument must be a constant");
-              break;
-
-            case NEON_ARG_MEMORY:
-	      /* Check if expand failed.  */
-	      if (op[argc] == const0_rtx)
-		return 0;
-	      gcc_assert (MEM_P (op[argc]));
-	      PUT_MODE (op[argc], mode[argc]);
-	      /* ??? arm_neon.h uses the same built-in functions for signed
-		 and unsigned accesses, casting where necessary.  This isn't
-		 alias safe.  */
-	      set_mem_alias_set (op[argc], 0);
-	      if (!(*insn_data[icode].operand[opno].predicate)
-                    (op[argc], mode[argc]))
-		op[argc] = (replace_equiv_address
-			    (op[argc], force_reg (Pmode, XEXP (op[argc], 0))));
-              break;
-
-            case NEON_ARG_STOP:
-              gcc_unreachable ();
-            }
-
-          argc++;
-	  formals = TREE_CHAIN (formals);
-        }
-    }
-
-  va_end (ap);
-
-  if (have_retval)
-    switch (argc)
-      {
-      case 1:
-	pat = GEN_FCN (icode) (target, op[0]);
-	break;
-
-      case 2:
-	pat = GEN_FCN (icode) (target, op[0], op[1]);
-	break;
-
-      case 3:
-	pat = GEN_FCN (icode) (target, op[0], op[1], op[2]);
-	break;
-
-      case 4:
-	pat = GEN_FCN (icode) (target, op[0], op[1], op[2], op[3]);
-	break;
-
-      case 5:
-	pat = GEN_FCN (icode) (target, op[0], op[1], op[2], op[3], op[4]);
-	break;
-
-      default:
-	gcc_unreachable ();
-      }
-  else
-    switch (argc)
-      {
-      case 1:
-	pat = GEN_FCN (icode) (op[0]);
-	break;
-
-      case 2:
-	pat = GEN_FCN (icode) (op[0], op[1]);
-	break;
-
-      case 3:
-	pat = GEN_FCN (icode) (op[0], op[1], op[2]);
-	break;
-
-      case 4:
-	pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3]);
-	break;
-
-      case 5:
-	pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4]);
-        break;
-
-      default:
-	gcc_unreachable ();
-      }
-
-  if (!pat)
-    return 0;
-
-  emit_insn (pat);
-
-  return target;
-}
-
-/* Expand a Neon builtin. These are "special" because they don't have symbolic
-   constants defined per-instruction or per instruction-variant. Instead, the
-   required info is looked up in the table neon_builtin_data.  */
-static rtx
-arm_expand_neon_builtin (int fcode, tree exp, rtx target)
-{
-  neon_builtin_datum *d = &neon_builtin_data[fcode - ARM_BUILTIN_NEON_BASE];
-  neon_itype itype = d->itype;
-  enum insn_code icode = d->code;
-  neon_builtin_type_mode type_mode = d->mode;
-
-  switch (itype)
-    {
-    case NEON_UNOP:
-    case NEON_CONVERT:
-    case NEON_DUPLANE:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT, NEON_ARG_STOP);
-
-    case NEON_BINOP:
-    case NEON_SETLANE:
-    case NEON_SCALARMUL:
-    case NEON_SCALARMULL:
-    case NEON_SCALARMULH:
-    case NEON_SHIFTINSERT:
-    case NEON_LOGICBINOP:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
-        NEON_ARG_STOP);
-
-    case NEON_TERNOP:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
-        NEON_ARG_CONSTANT, NEON_ARG_STOP);
-
-    case NEON_GETLANE:
-    case NEON_FIXCONV:
-    case NEON_SHIFTIMM:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT, NEON_ARG_CONSTANT,
-        NEON_ARG_STOP);
-
-    case NEON_CREATE:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
-
-    case NEON_DUP:
-    case NEON_RINT:
-    case NEON_SPLIT:
-    case NEON_FLOAT_WIDEN:
-    case NEON_FLOAT_NARROW:
-    case NEON_BSWAP:
-    case NEON_REINTERP:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
-
-    case NEON_COPYSIGNF:
-    case NEON_COMBINE:
-    case NEON_VTBL:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
-
-    case NEON_LANEMUL:
-    case NEON_LANEMULL:
-    case NEON_LANEMULH:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
-        NEON_ARG_CONSTANT, NEON_ARG_STOP);
-
-    case NEON_LANEMAC:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
-        NEON_ARG_CONSTANT, NEON_ARG_CONSTANT, NEON_ARG_STOP);
-
-    case NEON_SHIFTACC:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
-        NEON_ARG_CONSTANT, NEON_ARG_STOP);
-
-    case NEON_SCALARMAC:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
-        NEON_ARG_CONSTANT, NEON_ARG_STOP);
-
-    case NEON_SELECT:
-    case NEON_VTBX:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
-        NEON_ARG_STOP);
-
-    case NEON_LOAD1:
-    case NEON_LOADSTRUCT:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-	NEON_ARG_MEMORY, NEON_ARG_STOP);
-
-    case NEON_LOAD1LANE:
-    case NEON_LOADSTRUCTLANE:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
-	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
-	NEON_ARG_STOP);
-
-    case NEON_STORE1:
-    case NEON_STORESTRUCT:
-      return arm_expand_neon_args (target, icode, 0, type_mode, exp, fcode,
-	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
-
-    case NEON_STORE1LANE:
-    case NEON_STORESTRUCTLANE:
-      return arm_expand_neon_args (target, icode, 0, type_mode, exp, fcode,
-	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
-	NEON_ARG_STOP);
-    }
-
-  gcc_unreachable ();
 }
 
 /* Emit code to reinterpret one Neon type as another, without altering bits.  */
@@ -25612,7 +23327,7 @@ neon_split_vcombine (rtx operands[3])
   unsigned int dest = REGNO (operands[0]);
   unsigned int src1 = REGNO (operands[1]);
   unsigned int src2 = REGNO (operands[2]);
-  enum machine_mode halfmode = GET_MODE (operands[1]);
+  machine_mode halfmode = GET_MODE (operands[1]);
   unsigned int halfregs = HARD_REGNO_NREGS (src1, halfmode);
   rtx destlo, desthi;
 
@@ -25653,550 +23368,6 @@ neon_split_vcombine (rtx operands[3])
       if (src1 != dest)
 	emit_move_insn (destlo, operands[1]);
     }
-}
-
-/* Expand an expression EXP that calls a built-in function,
-   with result going to TARGET if that's convenient
-   (and in mode MODE if that's convenient).
-   SUBTARGET may be used as the target for computing one of EXP's operands.
-   IGNORE is nonzero if the value is to be ignored.  */
-
-static rtx
-arm_expand_builtin (tree exp,
-		    rtx target,
-		    rtx subtarget ATTRIBUTE_UNUSED,
-		    enum machine_mode mode ATTRIBUTE_UNUSED,
-		    int ignore ATTRIBUTE_UNUSED)
-{
-  const struct builtin_description * d;
-  enum insn_code    icode;
-  tree              fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  tree              arg0;
-  tree              arg1;
-  tree              arg2;
-  rtx               op0;
-  rtx               op1;
-  rtx               op2;
-  rtx               pat;
-  unsigned int      fcode = DECL_FUNCTION_CODE (fndecl);
-  size_t            i;
-  enum machine_mode tmode;
-  enum machine_mode mode0;
-  enum machine_mode mode1;
-  enum machine_mode mode2;
-  int opint;
-  int selector;
-  int mask;
-  int imm;
-
-  if (fcode >= ARM_BUILTIN_NEON_BASE)
-    return arm_expand_neon_builtin (fcode, exp, target);
-
-  switch (fcode)
-    {
-    case ARM_BUILTIN_GET_FPSCR:
-    case ARM_BUILTIN_SET_FPSCR:
-      if (fcode == ARM_BUILTIN_GET_FPSCR)
-	{
-	  icode = CODE_FOR_get_fpscr;
-	  target = gen_reg_rtx (SImode);
-	  pat = GEN_FCN (icode) (target);
-	}
-      else
-	{
-	  target = NULL_RTX;
-	  icode = CODE_FOR_set_fpscr;
-	  arg0 = CALL_EXPR_ARG (exp, 0);
-	  op0 = expand_normal (arg0);
-	  pat = GEN_FCN (icode) (op0);
-	}
-      emit_insn (pat);
-      return target;
-
-    case ARM_BUILTIN_TEXTRMSB:
-    case ARM_BUILTIN_TEXTRMUB:
-    case ARM_BUILTIN_TEXTRMSH:
-    case ARM_BUILTIN_TEXTRMUH:
-    case ARM_BUILTIN_TEXTRMSW:
-    case ARM_BUILTIN_TEXTRMUW:
-      icode = (fcode == ARM_BUILTIN_TEXTRMSB ? CODE_FOR_iwmmxt_textrmsb
-	       : fcode == ARM_BUILTIN_TEXTRMUB ? CODE_FOR_iwmmxt_textrmub
-	       : fcode == ARM_BUILTIN_TEXTRMSH ? CODE_FOR_iwmmxt_textrmsh
-	       : fcode == ARM_BUILTIN_TEXTRMUH ? CODE_FOR_iwmmxt_textrmuh
-	       : CODE_FOR_iwmmxt_textrmw);
-
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      arg1 = CALL_EXPR_ARG (exp, 1);
-      op0 = expand_normal (arg0);
-      op1 = expand_normal (arg1);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-      mode1 = insn_data[icode].operand[2].mode;
-
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = copy_to_mode_reg (mode0, op0);
-      if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
-	{
-	  /* @@@ better error message */
-	  error ("selector must be an immediate");
-	  return gen_reg_rtx (tmode);
-	}
-
-      opint = INTVAL (op1);
-      if (fcode == ARM_BUILTIN_TEXTRMSB || fcode == ARM_BUILTIN_TEXTRMUB)
-	{
-	  if (opint > 7 || opint < 0)
-	    error ("the range of selector should be in 0 to 7");
-	}
-      else if (fcode == ARM_BUILTIN_TEXTRMSH || fcode == ARM_BUILTIN_TEXTRMUH)
-	{
-	  if (opint > 3 || opint < 0)
-	    error ("the range of selector should be in 0 to 3");
-	}
-      else /* ARM_BUILTIN_TEXTRMSW || ARM_BUILTIN_TEXTRMUW.  */
-	{
-	  if (opint > 1 || opint < 0)
-	    error ("the range of selector should be in 0 to 1");
-	}
-
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, op0, op1);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
-      return target;
-
-    case ARM_BUILTIN_WALIGNI:
-      /* If op2 is immediate, call walighi, else call walighr.  */
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      arg1 = CALL_EXPR_ARG (exp, 1);
-      arg2 = CALL_EXPR_ARG (exp, 2);
-      op0 = expand_normal (arg0);
-      op1 = expand_normal (arg1);
-      op2 = expand_normal (arg2);
-      if (CONST_INT_P (op2))
-        {
-	  icode = CODE_FOR_iwmmxt_waligni;
-          tmode = insn_data[icode].operand[0].mode;
-	  mode0 = insn_data[icode].operand[1].mode;
-	  mode1 = insn_data[icode].operand[2].mode;
-	  mode2 = insn_data[icode].operand[3].mode;
-          if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
-	    op0 = copy_to_mode_reg (mode0, op0);
-          if (!(*insn_data[icode].operand[2].predicate) (op1, mode1))
-	    op1 = copy_to_mode_reg (mode1, op1);
-          gcc_assert ((*insn_data[icode].operand[3].predicate) (op2, mode2));
-	  selector = INTVAL (op2);
-	  if (selector > 7 || selector < 0)
-	    error ("the range of selector should be in 0 to 7");
-	}
-      else
-        {
-	  icode = CODE_FOR_iwmmxt_walignr;
-          tmode = insn_data[icode].operand[0].mode;
-	  mode0 = insn_data[icode].operand[1].mode;
-	  mode1 = insn_data[icode].operand[2].mode;
-	  mode2 = insn_data[icode].operand[3].mode;
-          if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
-	    op0 = copy_to_mode_reg (mode0, op0);
-          if (!(*insn_data[icode].operand[2].predicate) (op1, mode1))
-	    op1 = copy_to_mode_reg (mode1, op1);
-          if (!(*insn_data[icode].operand[3].predicate) (op2, mode2))
-	    op2 = copy_to_mode_reg (mode2, op2);
-	}
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || !(*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, op0, op1, op2);
-      if (!pat)
-	return 0;
-      emit_insn (pat);
-      return target;
-
-    case ARM_BUILTIN_TINSRB:
-    case ARM_BUILTIN_TINSRH:
-    case ARM_BUILTIN_TINSRW:
-    case ARM_BUILTIN_WMERGE:
-      icode = (fcode == ARM_BUILTIN_TINSRB ? CODE_FOR_iwmmxt_tinsrb
-	       : fcode == ARM_BUILTIN_TINSRH ? CODE_FOR_iwmmxt_tinsrh
-	       : fcode == ARM_BUILTIN_WMERGE ? CODE_FOR_iwmmxt_wmerge
-	       : CODE_FOR_iwmmxt_tinsrw);
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      arg1 = CALL_EXPR_ARG (exp, 1);
-      arg2 = CALL_EXPR_ARG (exp, 2);
-      op0 = expand_normal (arg0);
-      op1 = expand_normal (arg1);
-      op2 = expand_normal (arg2);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-      mode1 = insn_data[icode].operand[2].mode;
-      mode2 = insn_data[icode].operand[3].mode;
-
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = copy_to_mode_reg (mode0, op0);
-      if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
-	op1 = copy_to_mode_reg (mode1, op1);
-      if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
-	{
-	  error ("selector must be an immediate");
-	  return const0_rtx;
-	}
-      if (icode == CODE_FOR_iwmmxt_wmerge)
-	{
-	  selector = INTVAL (op2);
-	  if (selector > 7 || selector < 0)
-	    error ("the range of selector should be in 0 to 7");
-	}
-      if ((icode == CODE_FOR_iwmmxt_tinsrb)
-	  || (icode == CODE_FOR_iwmmxt_tinsrh)
-	  || (icode == CODE_FOR_iwmmxt_tinsrw))
-        {
-	  mask = 0x01;
-	  selector= INTVAL (op2);
-	  if (icode == CODE_FOR_iwmmxt_tinsrb && (selector < 0 || selector > 7))
-	    error ("the range of selector should be in 0 to 7");
-	  else if (icode == CODE_FOR_iwmmxt_tinsrh && (selector < 0 ||selector > 3))
-	    error ("the range of selector should be in 0 to 3");
-	  else if (icode == CODE_FOR_iwmmxt_tinsrw && (selector < 0 ||selector > 1))
-	    error ("the range of selector should be in 0 to 1");
-	  mask <<= selector;
-	  op2 = GEN_INT (mask);
-	}
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, op0, op1, op2);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
-      return target;
-
-    case ARM_BUILTIN_SETWCGR0:
-    case ARM_BUILTIN_SETWCGR1:
-    case ARM_BUILTIN_SETWCGR2:
-    case ARM_BUILTIN_SETWCGR3:
-      icode = (fcode == ARM_BUILTIN_SETWCGR0 ? CODE_FOR_iwmmxt_setwcgr0
-	       : fcode == ARM_BUILTIN_SETWCGR1 ? CODE_FOR_iwmmxt_setwcgr1
-	       : fcode == ARM_BUILTIN_SETWCGR2 ? CODE_FOR_iwmmxt_setwcgr2
-	       : CODE_FOR_iwmmxt_setwcgr3);
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      op0 = expand_normal (arg0);
-      mode0 = insn_data[icode].operand[0].mode;
-      if (!(*insn_data[icode].operand[0].predicate) (op0, mode0))
-        op0 = copy_to_mode_reg (mode0, op0);
-      pat = GEN_FCN (icode) (op0);
-      if (!pat)
-	return 0;
-      emit_insn (pat);
-      return 0;
-
-    case ARM_BUILTIN_GETWCGR0:
-    case ARM_BUILTIN_GETWCGR1:
-    case ARM_BUILTIN_GETWCGR2:
-    case ARM_BUILTIN_GETWCGR3:
-      icode = (fcode == ARM_BUILTIN_GETWCGR0 ? CODE_FOR_iwmmxt_getwcgr0
-	       : fcode == ARM_BUILTIN_GETWCGR1 ? CODE_FOR_iwmmxt_getwcgr1
-	       : fcode == ARM_BUILTIN_GETWCGR2 ? CODE_FOR_iwmmxt_getwcgr2
-	       : CODE_FOR_iwmmxt_getwcgr3);
-      tmode = insn_data[icode].operand[0].mode;
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || !(*insn_data[icode].operand[0].predicate) (target, tmode))
-        target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target);
-      if (!pat)
-        return 0;
-      emit_insn (pat);
-      return target;
-
-    case ARM_BUILTIN_WSHUFH:
-      icode = CODE_FOR_iwmmxt_wshufh;
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      arg1 = CALL_EXPR_ARG (exp, 1);
-      op0 = expand_normal (arg0);
-      op1 = expand_normal (arg1);
-      tmode = insn_data[icode].operand[0].mode;
-      mode1 = insn_data[icode].operand[1].mode;
-      mode2 = insn_data[icode].operand[2].mode;
-
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
-	op0 = copy_to_mode_reg (mode1, op0);
-      if (! (*insn_data[icode].operand[2].predicate) (op1, mode2))
-	{
-	  error ("mask must be an immediate");
-	  return const0_rtx;
-	}
-      selector = INTVAL (op1);
-      if (selector < 0 || selector > 255)
-	error ("the range of mask should be in 0 to 255");
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, op0, op1);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
-      return target;
-
-    case ARM_BUILTIN_WMADDS:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wmadds, exp, target);
-    case ARM_BUILTIN_WMADDSX:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wmaddsx, exp, target);
-    case ARM_BUILTIN_WMADDSN:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wmaddsn, exp, target);
-    case ARM_BUILTIN_WMADDU:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wmaddu, exp, target);
-    case ARM_BUILTIN_WMADDUX:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wmaddux, exp, target);
-    case ARM_BUILTIN_WMADDUN:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wmaddun, exp, target);
-    case ARM_BUILTIN_WSADBZ:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadbz, exp, target);
-    case ARM_BUILTIN_WSADHZ:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadhz, exp, target);
-
-      /* Several three-argument builtins.  */
-    case ARM_BUILTIN_WMACS:
-    case ARM_BUILTIN_WMACU:
-    case ARM_BUILTIN_TMIA:
-    case ARM_BUILTIN_TMIAPH:
-    case ARM_BUILTIN_TMIATT:
-    case ARM_BUILTIN_TMIATB:
-    case ARM_BUILTIN_TMIABT:
-    case ARM_BUILTIN_TMIABB:
-    case ARM_BUILTIN_WQMIABB:
-    case ARM_BUILTIN_WQMIABT:
-    case ARM_BUILTIN_WQMIATB:
-    case ARM_BUILTIN_WQMIATT:
-    case ARM_BUILTIN_WQMIABBN:
-    case ARM_BUILTIN_WQMIABTN:
-    case ARM_BUILTIN_WQMIATBN:
-    case ARM_BUILTIN_WQMIATTN:
-    case ARM_BUILTIN_WMIABB:
-    case ARM_BUILTIN_WMIABT:
-    case ARM_BUILTIN_WMIATB:
-    case ARM_BUILTIN_WMIATT:
-    case ARM_BUILTIN_WMIABBN:
-    case ARM_BUILTIN_WMIABTN:
-    case ARM_BUILTIN_WMIATBN:
-    case ARM_BUILTIN_WMIATTN:
-    case ARM_BUILTIN_WMIAWBB:
-    case ARM_BUILTIN_WMIAWBT:
-    case ARM_BUILTIN_WMIAWTB:
-    case ARM_BUILTIN_WMIAWTT:
-    case ARM_BUILTIN_WMIAWBBN:
-    case ARM_BUILTIN_WMIAWBTN:
-    case ARM_BUILTIN_WMIAWTBN:
-    case ARM_BUILTIN_WMIAWTTN:
-    case ARM_BUILTIN_WSADB:
-    case ARM_BUILTIN_WSADH:
-      icode = (fcode == ARM_BUILTIN_WMACS ? CODE_FOR_iwmmxt_wmacs
-	       : fcode == ARM_BUILTIN_WMACU ? CODE_FOR_iwmmxt_wmacu
-	       : fcode == ARM_BUILTIN_TMIA ? CODE_FOR_iwmmxt_tmia
-	       : fcode == ARM_BUILTIN_TMIAPH ? CODE_FOR_iwmmxt_tmiaph
-	       : fcode == ARM_BUILTIN_TMIABB ? CODE_FOR_iwmmxt_tmiabb
-	       : fcode == ARM_BUILTIN_TMIABT ? CODE_FOR_iwmmxt_tmiabt
-	       : fcode == ARM_BUILTIN_TMIATB ? CODE_FOR_iwmmxt_tmiatb
-	       : fcode == ARM_BUILTIN_TMIATT ? CODE_FOR_iwmmxt_tmiatt
-	       : fcode == ARM_BUILTIN_WQMIABB ? CODE_FOR_iwmmxt_wqmiabb
-	       : fcode == ARM_BUILTIN_WQMIABT ? CODE_FOR_iwmmxt_wqmiabt
-	       : fcode == ARM_BUILTIN_WQMIATB ? CODE_FOR_iwmmxt_wqmiatb
-	       : fcode == ARM_BUILTIN_WQMIATT ? CODE_FOR_iwmmxt_wqmiatt
-	       : fcode == ARM_BUILTIN_WQMIABBN ? CODE_FOR_iwmmxt_wqmiabbn
-	       : fcode == ARM_BUILTIN_WQMIABTN ? CODE_FOR_iwmmxt_wqmiabtn
-	       : fcode == ARM_BUILTIN_WQMIATBN ? CODE_FOR_iwmmxt_wqmiatbn
-	       : fcode == ARM_BUILTIN_WQMIATTN ? CODE_FOR_iwmmxt_wqmiattn
-	       : fcode == ARM_BUILTIN_WMIABB ? CODE_FOR_iwmmxt_wmiabb
-	       : fcode == ARM_BUILTIN_WMIABT ? CODE_FOR_iwmmxt_wmiabt
-	       : fcode == ARM_BUILTIN_WMIATB ? CODE_FOR_iwmmxt_wmiatb
-	       : fcode == ARM_BUILTIN_WMIATT ? CODE_FOR_iwmmxt_wmiatt
-	       : fcode == ARM_BUILTIN_WMIABBN ? CODE_FOR_iwmmxt_wmiabbn
-	       : fcode == ARM_BUILTIN_WMIABTN ? CODE_FOR_iwmmxt_wmiabtn
-	       : fcode == ARM_BUILTIN_WMIATBN ? CODE_FOR_iwmmxt_wmiatbn
-	       : fcode == ARM_BUILTIN_WMIATTN ? CODE_FOR_iwmmxt_wmiattn
-	       : fcode == ARM_BUILTIN_WMIAWBB ? CODE_FOR_iwmmxt_wmiawbb
-	       : fcode == ARM_BUILTIN_WMIAWBT ? CODE_FOR_iwmmxt_wmiawbt
-	       : fcode == ARM_BUILTIN_WMIAWTB ? CODE_FOR_iwmmxt_wmiawtb
-	       : fcode == ARM_BUILTIN_WMIAWTT ? CODE_FOR_iwmmxt_wmiawtt
-	       : fcode == ARM_BUILTIN_WMIAWBBN ? CODE_FOR_iwmmxt_wmiawbbn
-	       : fcode == ARM_BUILTIN_WMIAWBTN ? CODE_FOR_iwmmxt_wmiawbtn
-	       : fcode == ARM_BUILTIN_WMIAWTBN ? CODE_FOR_iwmmxt_wmiawtbn
-	       : fcode == ARM_BUILTIN_WMIAWTTN ? CODE_FOR_iwmmxt_wmiawttn
-	       : fcode == ARM_BUILTIN_WSADB ? CODE_FOR_iwmmxt_wsadb
-	       : CODE_FOR_iwmmxt_wsadh);
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      arg1 = CALL_EXPR_ARG (exp, 1);
-      arg2 = CALL_EXPR_ARG (exp, 2);
-      op0 = expand_normal (arg0);
-      op1 = expand_normal (arg1);
-      op2 = expand_normal (arg2);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-      mode1 = insn_data[icode].operand[2].mode;
-      mode2 = insn_data[icode].operand[3].mode;
-
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = copy_to_mode_reg (mode0, op0);
-      if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
-	op1 = copy_to_mode_reg (mode1, op1);
-      if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
-	op2 = copy_to_mode_reg (mode2, op2);
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, op0, op1, op2);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
-      return target;
-
-    case ARM_BUILTIN_WZERO:
-      target = gen_reg_rtx (DImode);
-      emit_insn (gen_iwmmxt_clrdi (target));
-      return target;
-
-    case ARM_BUILTIN_WSRLHI:
-    case ARM_BUILTIN_WSRLWI:
-    case ARM_BUILTIN_WSRLDI:
-    case ARM_BUILTIN_WSLLHI:
-    case ARM_BUILTIN_WSLLWI:
-    case ARM_BUILTIN_WSLLDI:
-    case ARM_BUILTIN_WSRAHI:
-    case ARM_BUILTIN_WSRAWI:
-    case ARM_BUILTIN_WSRADI:
-    case ARM_BUILTIN_WRORHI:
-    case ARM_BUILTIN_WRORWI:
-    case ARM_BUILTIN_WRORDI:
-    case ARM_BUILTIN_WSRLH:
-    case ARM_BUILTIN_WSRLW:
-    case ARM_BUILTIN_WSRLD:
-    case ARM_BUILTIN_WSLLH:
-    case ARM_BUILTIN_WSLLW:
-    case ARM_BUILTIN_WSLLD:
-    case ARM_BUILTIN_WSRAH:
-    case ARM_BUILTIN_WSRAW:
-    case ARM_BUILTIN_WSRAD:
-    case ARM_BUILTIN_WRORH:
-    case ARM_BUILTIN_WRORW:
-    case ARM_BUILTIN_WRORD:
-      icode = (fcode == ARM_BUILTIN_WSRLHI ? CODE_FOR_lshrv4hi3_iwmmxt
-	       : fcode == ARM_BUILTIN_WSRLWI ? CODE_FOR_lshrv2si3_iwmmxt
-	       : fcode == ARM_BUILTIN_WSRLDI ? CODE_FOR_lshrdi3_iwmmxt
-	       : fcode == ARM_BUILTIN_WSLLHI ? CODE_FOR_ashlv4hi3_iwmmxt
-	       : fcode == ARM_BUILTIN_WSLLWI ? CODE_FOR_ashlv2si3_iwmmxt
-	       : fcode == ARM_BUILTIN_WSLLDI ? CODE_FOR_ashldi3_iwmmxt
-	       : fcode == ARM_BUILTIN_WSRAHI ? CODE_FOR_ashrv4hi3_iwmmxt
-	       : fcode == ARM_BUILTIN_WSRAWI ? CODE_FOR_ashrv2si3_iwmmxt
-	       : fcode == ARM_BUILTIN_WSRADI ? CODE_FOR_ashrdi3_iwmmxt
-	       : fcode == ARM_BUILTIN_WRORHI ? CODE_FOR_rorv4hi3
-	       : fcode == ARM_BUILTIN_WRORWI ? CODE_FOR_rorv2si3
-	       : fcode == ARM_BUILTIN_WRORDI ? CODE_FOR_rordi3
-	       : fcode == ARM_BUILTIN_WSRLH  ? CODE_FOR_lshrv4hi3_di
-	       : fcode == ARM_BUILTIN_WSRLW  ? CODE_FOR_lshrv2si3_di
-	       : fcode == ARM_BUILTIN_WSRLD  ? CODE_FOR_lshrdi3_di
-	       : fcode == ARM_BUILTIN_WSLLH  ? CODE_FOR_ashlv4hi3_di
-	       : fcode == ARM_BUILTIN_WSLLW  ? CODE_FOR_ashlv2si3_di
-	       : fcode == ARM_BUILTIN_WSLLD  ? CODE_FOR_ashldi3_di
-	       : fcode == ARM_BUILTIN_WSRAH  ? CODE_FOR_ashrv4hi3_di
-	       : fcode == ARM_BUILTIN_WSRAW  ? CODE_FOR_ashrv2si3_di
-	       : fcode == ARM_BUILTIN_WSRAD  ? CODE_FOR_ashrdi3_di
-	       : fcode == ARM_BUILTIN_WRORH  ? CODE_FOR_rorv4hi3_di
-	       : fcode == ARM_BUILTIN_WRORW  ? CODE_FOR_rorv2si3_di
-	       : fcode == ARM_BUILTIN_WRORD  ? CODE_FOR_rordi3_di
-	       : CODE_FOR_nothing);
-      arg1 = CALL_EXPR_ARG (exp, 1);
-      op1 = expand_normal (arg1);
-      if (GET_MODE (op1) == VOIDmode)
-	{
-	  imm = INTVAL (op1);
-	  if ((fcode == ARM_BUILTIN_WRORHI || fcode == ARM_BUILTIN_WRORWI
-	       || fcode == ARM_BUILTIN_WRORH || fcode == ARM_BUILTIN_WRORW)
-	      && (imm < 0 || imm > 32))
-	    {
-	      if (fcode == ARM_BUILTIN_WRORHI)
-		error ("the range of count should be in 0 to 32.  please check the intrinsic _mm_rori_pi16 in code.");
-	      else if (fcode == ARM_BUILTIN_WRORWI)
-		error ("the range of count should be in 0 to 32.  please check the intrinsic _mm_rori_pi32 in code.");
-	      else if (fcode == ARM_BUILTIN_WRORH)
-		error ("the range of count should be in 0 to 32.  please check the intrinsic _mm_ror_pi16 in code.");
-	      else
-		error ("the range of count should be in 0 to 32.  please check the intrinsic _mm_ror_pi32 in code.");
-	    }
-	  else if ((fcode == ARM_BUILTIN_WRORDI || fcode == ARM_BUILTIN_WRORD)
-		   && (imm < 0 || imm > 64))
-	    {
-	      if (fcode == ARM_BUILTIN_WRORDI)
-		error ("the range of count should be in 0 to 64.  please check the intrinsic _mm_rori_si64 in code.");
-	      else
-		error ("the range of count should be in 0 to 64.  please check the intrinsic _mm_ror_si64 in code.");
-	    }
-	  else if (imm < 0)
-	    {
-	      if (fcode == ARM_BUILTIN_WSRLHI)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_srli_pi16 in code.");
-	      else if (fcode == ARM_BUILTIN_WSRLWI)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_srli_pi32 in code.");
-	      else if (fcode == ARM_BUILTIN_WSRLDI)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_srli_si64 in code.");
-	      else if (fcode == ARM_BUILTIN_WSLLHI)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_slli_pi16 in code.");
-	      else if (fcode == ARM_BUILTIN_WSLLWI)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_slli_pi32 in code.");
-	      else if (fcode == ARM_BUILTIN_WSLLDI)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_slli_si64 in code.");
-	      else if (fcode == ARM_BUILTIN_WSRAHI)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_srai_pi16 in code.");
-	      else if (fcode == ARM_BUILTIN_WSRAWI)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_srai_pi32 in code.");
-	      else if (fcode == ARM_BUILTIN_WSRADI)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_srai_si64 in code.");
-	      else if (fcode == ARM_BUILTIN_WSRLH)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_srl_pi16 in code.");
-	      else if (fcode == ARM_BUILTIN_WSRLW)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_srl_pi32 in code.");
-	      else if (fcode == ARM_BUILTIN_WSRLD)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_srl_si64 in code.");
-	      else if (fcode == ARM_BUILTIN_WSLLH)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_sll_pi16 in code.");
-	      else if (fcode == ARM_BUILTIN_WSLLW)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_sll_pi32 in code.");
-	      else if (fcode == ARM_BUILTIN_WSLLD)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_sll_si64 in code.");
-	      else if (fcode == ARM_BUILTIN_WSRAH)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_sra_pi16 in code.");
-	      else if (fcode == ARM_BUILTIN_WSRAW)
-		error ("the count should be no less than 0.  please check the intrinsic _mm_sra_pi32 in code.");
-	      else
-		error ("the count should be no less than 0.  please check the intrinsic _mm_sra_si64 in code.");
-	    }
-	}
-      return arm_expand_binop_builtin (icode, exp, target);
-
-    default:
-      break;
-    }
-
-  for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
-    if (d->code == (const enum arm_builtins) fcode)
-      return arm_expand_binop_builtin (d->icode, exp, target);
-
-  for (i = 0, d = bdesc_1arg; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
-    if (d->code == (const enum arm_builtins) fcode)
-      return arm_expand_unop_builtin (d->icode, exp, target, 0);
-
-  for (i = 0, d = bdesc_3arg; i < ARRAY_SIZE (bdesc_3arg); i++, d++)
-    if (d->code == (const enum arm_builtins) fcode)
-      return arm_expand_ternop_builtin (d->icode, exp, target);
-
-  /* @@@ Should really do something sensible here.  */
-  return NULL_RTX;
 }
 
 /* Return the number (counting from 0) of
@@ -26347,7 +23518,7 @@ thumb_exit (FILE *f, int reg_containing_return_addr)
   int pops_needed;
   unsigned available;
   unsigned required;
-  enum machine_mode mode;
+  machine_mode mode;
   int size;
   int restore_a4 = FALSE;
 
@@ -28165,23 +25336,11 @@ thumb_output_move_mem_multiple (int n, rtx *operands)
 
     case 3:
       if (REGNO (operands[4]) > REGNO (operands[5]))
-	{
-	  tmp = operands[4];
-	  operands[4] = operands[5];
-	  operands[5] = tmp;
-	}
+        std::swap (operands[4], operands[5]);
       if (REGNO (operands[5]) > REGNO (operands[6]))
-	{
-	  tmp = operands[5];
-	  operands[5] = operands[6];
-	  operands[6] = tmp;
-	}
+        std::swap (operands[5], operands[6]);
       if (REGNO (operands[4]) > REGNO (operands[5]))
-	{
-	  tmp = operands[4];
-	  operands[4] = operands[5];
-	  operands[5] = tmp;
-	}
+        std::swap (operands[4], operands[5]);
 
       output_asm_insn ("ldmia\t%1!, {%4, %5, %6}", operands);
       output_asm_insn ("stmia\t%0!, {%4, %5, %6}", operands);
@@ -28605,12 +25764,14 @@ arm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	  fputs ("\tldr\tr3, ", file);
 	  assemble_name (file, label);
 	  fputs ("+4\n", file);
-	  asm_fprintf (file, "\t%s\t%r, %r, r3\n",
+	  asm_fprintf (file, "\t%ss\t%r, %r, r3\n",
 		       mi_op, this_regno, this_regno);
 	}
       else if (mi_delta != 0)
 	{
-	  asm_fprintf (file, "\t%s\t%r, %r, #%d\n",
+	  /* Thumb1 unified syntax requires s suffix in instruction name when
+	     one of the operands is immediate.  */
+	  asm_fprintf (file, "\t%ss\t%r, %r, #%d\n",
 		       mi_op, this_regno, this_regno,
 		       mi_delta);
 	}
@@ -28758,7 +25919,7 @@ arm_output_load_gr (rtx *operands)
 
 static void
 arm_setup_incoming_varargs (cumulative_args_t pcum_v,
-			    enum machine_mode mode,
+			    machine_mode mode,
 			    tree type,
 			    int *pretend_size,
 			    int second_time ATTRIBUTE_UNUSED)
@@ -28789,9 +25950,9 @@ arm_promote_prototypes (const_tree t ATTRIBUTE_UNUSED)
     return !TARGET_AAPCS_BASED;
 }
 
-static enum machine_mode
+static machine_mode
 arm_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
-                           enum machine_mode mode,
+                           machine_mode mode,
                            int *punsignedp ATTRIBUTE_UNUSED,
                            const_tree fntype ATTRIBUTE_UNUSED,
                            int for_return ATTRIBUTE_UNUSED)
@@ -28952,7 +26113,11 @@ arm_set_return_address (rtx source, rtx scratch)
 
 	  addr = plus_constant (Pmode, addr, delta);
 	}
-      emit_move_insn (gen_frame_mem (Pmode, addr), source);
+      /* The store needs to be marked as frame related in order to prevent
+	 DSE from deleting it as dead if it is based on fp.  */
+      rtx insn = emit_move_insn (gen_frame_mem (Pmode, addr), source);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (Pmode, LR_REGNUM));
     }
 }
 
@@ -29004,7 +26169,11 @@ thumb_set_return_address (rtx source, rtx scratch)
       else
 	addr = plus_constant (Pmode, addr, delta);
 
-      emit_move_insn (gen_frame_mem (Pmode, addr), source);
+      /* The store needs to be marked as frame related in order to prevent
+	 DSE from deleting it as dead if it is based on fp.  */
+      rtx insn = emit_move_insn (gen_frame_mem (Pmode, addr), source);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (Pmode, LR_REGNUM));
     }
   else
     emit_move_insn (gen_rtx_REG (Pmode, LR_REGNUM), source);
@@ -29012,7 +26181,7 @@ thumb_set_return_address (rtx source, rtx scratch)
 
 /* Implements target hook vector_mode_supported_p.  */
 bool
-arm_vector_mode_supported_p (enum machine_mode mode)
+arm_vector_mode_supported_p (machine_mode mode)
 {
   /* Neon also supports V2SImode, etc. listed in the clause below.  */
   if (TARGET_NEON && (mode == V2SFmode || mode == V4SImode || mode == V8HImode
@@ -29036,7 +26205,7 @@ arm_vector_mode_supported_p (enum machine_mode mode)
 /* Implements target hook array_mode_supported_p.  */
 
 static bool
-arm_array_mode_supported_p (enum machine_mode mode,
+arm_array_mode_supported_p (machine_mode mode,
 			    unsigned HOST_WIDE_INT nelems)
 {
   if (TARGET_NEON
@@ -29051,8 +26220,8 @@ arm_array_mode_supported_p (enum machine_mode mode,
    registers when autovectorizing for Neon, at least until multiple vector
    widths are supported properly by the middle-end.  */
 
-static enum machine_mode
-arm_preferred_simd_mode (enum machine_mode mode)
+static machine_mode
+arm_preferred_simd_mode (machine_mode mode)
 {
   if (TARGET_NEON)
     switch (mode)
@@ -29109,7 +26278,7 @@ arm_class_likely_spilled_p (reg_class_t rclass)
 
 /* Implements target hook small_register_classes_for_mode_p.  */
 bool
-arm_small_register_classes_for_mode_p (enum machine_mode mode ATTRIBUTE_UNUSED)
+arm_small_register_classes_for_mode_p (machine_mode mode ATTRIBUTE_UNUSED)
 {
   return TARGET_THUMB1;
 }
@@ -29120,7 +26289,7 @@ arm_small_register_classes_for_mode_p (enum machine_mode mode ATTRIBUTE_UNUSED)
    guarantee no particular behavior for out-of-range counts.  */
 
 static unsigned HOST_WIDE_INT
-arm_shift_truncation_mask (enum machine_mode mode)
+arm_shift_truncation_mask (machine_mode mode)
 {
   return mode == SImode ? 255 : 0;
 }
@@ -29158,7 +26327,7 @@ arm_dbx_register_number (unsigned int regno)
 static rtx
 arm_dwarf_register_span (rtx rtl)
 {
-  enum machine_mode mode;
+  machine_mode mode;
   unsigned regno;
   rtx parts[16];
   int nregs;
@@ -29713,7 +26882,7 @@ arm_output_iwmmxt_shift_immediate (const char *insn_name, rtx *operands, bool wr
 {
   int shift = INTVAL (operands[2]);
   char templ[50];
-  enum machine_mode opmode = GET_MODE (operands[0]);
+  machine_mode opmode = GET_MODE (operands[0]);
 
   gcc_assert (shift >= 0);
 
@@ -29864,6 +27033,7 @@ arm_issue_rate (void)
     case cortexa57:
       return 3;
 
+    case cortexm7:
     case cortexr4:
     case cortexr4f:
     case cortexr5:
@@ -29873,6 +27043,7 @@ arm_issue_rate (void)
     case cortexa8:
     case cortexa9:
     case cortexa12:
+    case cortexa17:
     case cortexa53:
     case fa726te:
     case marvell_pj4:
@@ -29883,50 +27054,9 @@ arm_issue_rate (void)
     }
 }
 
-/* A table and a function to perform ARM-specific name mangling for
-   NEON vector types in order to conform to the AAPCS (see "Procedure
-   Call Standard for the ARM Architecture", Appendix A).  To qualify
-   for emission with the mangled names defined in that document, a
-   vector type must not only be of the correct mode but also be
-   composed of NEON vector element types (e.g. __builtin_neon_qi).  */
-typedef struct
-{
-  enum machine_mode mode;
-  const char *element_type_name;
-  const char *aapcs_name;
-} arm_mangle_map_entry;
-
-static arm_mangle_map_entry arm_mangle_map[] = {
-  /* 64-bit containerized types.  */
-  { V8QImode,  "__builtin_neon_qi",     "15__simd64_int8_t" },
-  { V8QImode,  "__builtin_neon_uqi",    "16__simd64_uint8_t" },
-  { V4HImode,  "__builtin_neon_hi",     "16__simd64_int16_t" },
-  { V4HImode,  "__builtin_neon_uhi",    "17__simd64_uint16_t" },
-  { V4HFmode,  "__builtin_neon_hf",     "18__simd64_float16_t" },
-  { V2SImode,  "__builtin_neon_si",     "16__simd64_int32_t" },
-  { V2SImode,  "__builtin_neon_usi",    "17__simd64_uint32_t" },
-  { V2SFmode,  "__builtin_neon_sf",     "18__simd64_float32_t" },
-  { V8QImode,  "__builtin_neon_poly8",  "16__simd64_poly8_t" },
-  { V4HImode,  "__builtin_neon_poly16", "17__simd64_poly16_t" },
-
-  /* 128-bit containerized types.  */
-  { V16QImode, "__builtin_neon_qi",     "16__simd128_int8_t" },
-  { V16QImode, "__builtin_neon_uqi",    "17__simd128_uint8_t" },
-  { V8HImode,  "__builtin_neon_hi",     "17__simd128_int16_t" },
-  { V8HImode,  "__builtin_neon_uhi",    "18__simd128_uint16_t" },
-  { V4SImode,  "__builtin_neon_si",     "17__simd128_int32_t" },
-  { V4SImode,  "__builtin_neon_usi",    "18__simd128_uint32_t" },
-  { V4SFmode,  "__builtin_neon_sf",     "19__simd128_float32_t" },
-  { V16QImode, "__builtin_neon_poly8",  "17__simd128_poly8_t" },
-  { V8HImode,  "__builtin_neon_poly16", "18__simd128_poly16_t" },
-  { VOIDmode, NULL, NULL }
-};
-
 const char *
 arm_mangle_type (const_tree type)
 {
-  arm_mangle_map_entry *pos = arm_mangle_map;
-
   /* The ARM ABI documents (10th October 2008) say that "__va_list"
      has to be managled as if it is in the "std" namespace.  */
   if (TARGET_AAPCS_BASED
@@ -29937,26 +27067,12 @@ arm_mangle_type (const_tree type)
   if (TREE_CODE (type) == REAL_TYPE && TYPE_PRECISION (type) == 16)
     return "Dh";
 
-  if (TREE_CODE (type) != VECTOR_TYPE)
-    return NULL;
+  /* Try mangling as a Neon type, TYPE_NAME is non-NULL if this is a
+     builtin type.  */
+  if (TYPE_NAME (type) != NULL)
+    return arm_mangle_builtin_type (type);
 
-  /* Check the mode of the vector type, and the name of the vector
-     element type, against the table.  */
-  while (pos->mode != VOIDmode)
-    {
-      tree elt_type = TREE_TYPE (type);
-
-      if (pos->mode == TYPE_MODE (type)
-	  && TREE_CODE (TYPE_NAME (elt_type)) == TYPE_DECL
-	  && !strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (elt_type))),
-		      pos->element_type_name))
-        return pos->aapcs_name;
-
-      pos++;
-    }
-
-  /* Use the default mangling for unrecognized (possibly user-defined)
-     vector types.  */
+  /* Use the default mangling.  */
   return NULL;
 }
 
@@ -30002,130 +27118,6 @@ arm_have_conditional_execution (void)
   return !TARGET_THUMB1;
 }
 
-tree
-arm_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
-{
-  enum machine_mode in_mode, out_mode;
-  int in_n, out_n;
-  bool out_unsigned_p = TYPE_UNSIGNED (type_out);
-
-  if (TREE_CODE (type_out) != VECTOR_TYPE
-      || TREE_CODE (type_in) != VECTOR_TYPE)
-    return NULL_TREE;
-
-  out_mode = TYPE_MODE (TREE_TYPE (type_out));
-  out_n = TYPE_VECTOR_SUBPARTS (type_out);
-  in_mode = TYPE_MODE (TREE_TYPE (type_in));
-  in_n = TYPE_VECTOR_SUBPARTS (type_in);
-
-/* ARM_CHECK_BUILTIN_MODE and ARM_FIND_VRINT_VARIANT are used to find the
-   decl of the vectorized builtin for the appropriate vector mode.
-   NULL_TREE is returned if no such builtin is available.  */
-#undef ARM_CHECK_BUILTIN_MODE
-#define ARM_CHECK_BUILTIN_MODE(C)    \
-  (TARGET_NEON && TARGET_FPU_ARMV8   \
-   && flag_unsafe_math_optimizations \
-   && ARM_CHECK_BUILTIN_MODE_1 (C))
-
-#undef ARM_CHECK_BUILTIN_MODE_1
-#define ARM_CHECK_BUILTIN_MODE_1(C) \
-  (out_mode == SFmode && out_n == C \
-   && in_mode == SFmode && in_n == C)
-
-#undef ARM_FIND_VRINT_VARIANT
-#define ARM_FIND_VRINT_VARIANT(N) \
-  (ARM_CHECK_BUILTIN_MODE (2) \
-    ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##v2sf, false) \
-    : (ARM_CHECK_BUILTIN_MODE (4) \
-      ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##v4sf, false) \
-      : NULL_TREE))
-
-  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
-    {
-      enum built_in_function fn = DECL_FUNCTION_CODE (fndecl);
-      switch (fn)
-        {
-          case BUILT_IN_FLOORF:
-            return ARM_FIND_VRINT_VARIANT (vrintm);
-          case BUILT_IN_CEILF:
-            return ARM_FIND_VRINT_VARIANT (vrintp);
-          case BUILT_IN_TRUNCF:
-            return ARM_FIND_VRINT_VARIANT (vrintz);
-          case BUILT_IN_ROUNDF:
-            return ARM_FIND_VRINT_VARIANT (vrinta);
-#undef ARM_CHECK_BUILTIN_MODE_1
-#define ARM_CHECK_BUILTIN_MODE_1(C) \
-  (out_mode == SImode && out_n == C \
-   && in_mode == SFmode && in_n == C)
-
-#define ARM_FIND_VCVT_VARIANT(N) \
-  (ARM_CHECK_BUILTIN_MODE (2) \
-   ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##v2sfv2si, false) \
-   : (ARM_CHECK_BUILTIN_MODE (4) \
-     ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##v4sfv4si, false) \
-     : NULL_TREE))
-
-#define ARM_FIND_VCVTU_VARIANT(N) \
-  (ARM_CHECK_BUILTIN_MODE (2) \
-   ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##uv2sfv2si, false) \
-   : (ARM_CHECK_BUILTIN_MODE (4) \
-     ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##uv4sfv4si, false) \
-     : NULL_TREE))
-          case BUILT_IN_LROUNDF:
-            return out_unsigned_p
-                     ? ARM_FIND_VCVTU_VARIANT (vcvta)
-                     : ARM_FIND_VCVT_VARIANT (vcvta);
-          case BUILT_IN_LCEILF:
-            return out_unsigned_p
-                     ? ARM_FIND_VCVTU_VARIANT (vcvtp)
-                     : ARM_FIND_VCVT_VARIANT (vcvtp);
-          case BUILT_IN_LFLOORF:
-            return out_unsigned_p
-                     ? ARM_FIND_VCVTU_VARIANT (vcvtm)
-                     : ARM_FIND_VCVT_VARIANT (vcvtm);
-#undef ARM_CHECK_BUILTIN_MODE
-#define ARM_CHECK_BUILTIN_MODE(C, N) \
-  (out_mode == N##mode && out_n == C \
-   && in_mode == N##mode && in_n == C)
-          case BUILT_IN_BSWAP16:
-            if (ARM_CHECK_BUILTIN_MODE (4, HI))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv4hi, false);
-            else if (ARM_CHECK_BUILTIN_MODE (8, HI))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv8hi, false);
-            else
-              return NULL_TREE;
-          case BUILT_IN_BSWAP32:
-            if (ARM_CHECK_BUILTIN_MODE (2, SI))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv2si, false);
-            else if (ARM_CHECK_BUILTIN_MODE (4, SI))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv4si, false);
-            else
-              return NULL_TREE;
-          case BUILT_IN_BSWAP64:
-            if (ARM_CHECK_BUILTIN_MODE (2, DI))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv2di, false);
-            else
-              return NULL_TREE;
-	  case BUILT_IN_COPYSIGNF:
-	    if (ARM_CHECK_BUILTIN_MODE (2, SF))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_copysignfv2sf, false);
-	    else if (ARM_CHECK_BUILTIN_MODE (4, SF))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_copysignfv4sf, false);
-	    else
-	      return NULL_TREE;
-
-          default:
-            return NULL_TREE;
-        }
-    }
-  return NULL_TREE;
-}
-#undef ARM_FIND_VCVT_VARIANT
-#undef ARM_FIND_VCVTU_VARIANT
-#undef ARM_CHECK_BUILTIN_MODE
-#undef ARM_FIND_VRINT_VARIANT
-
-
 /* The AAPCS sets the maximum alignment of a vector to 64 bits.  */
 static HOST_WIDE_INT
 arm_vector_alignment (const_tree type)
@@ -30156,7 +27148,7 @@ arm_vector_alignment_reachable (const_tree type, bool is_packed)
 }
 
 static bool
-arm_builtin_support_vector_misalignment (enum machine_mode mode,
+arm_builtin_support_vector_misalignment (machine_mode mode,
 					 const_tree type, int misalignment,
 					 bool is_packed)
 {
@@ -30380,7 +27372,7 @@ arm_post_atomic_barrier (enum memmodel model)
    Use acquire and release versions if necessary.  */
 
 static void
-arm_emit_load_exclusive (enum machine_mode mode, rtx rval, rtx mem, bool acq)
+arm_emit_load_exclusive (machine_mode mode, rtx rval, rtx mem, bool acq)
 {
   rtx (*gen) (rtx, rtx);
 
@@ -30413,7 +27405,7 @@ arm_emit_load_exclusive (enum machine_mode mode, rtx rval, rtx mem, bool acq)
 }
 
 static void
-arm_emit_store_exclusive (enum machine_mode mode, rtx bval, rtx rval,
+arm_emit_store_exclusive (machine_mode mode, rtx bval, rtx rval,
                           rtx mem, bool rel)
 {
   rtx (*gen) (rtx, rtx, rtx);
@@ -30463,7 +27455,7 @@ void
 arm_expand_compare_and_swap (rtx operands[])
 {
   rtx bval, rval, mem, oldval, newval, is_weak, mod_s, mod_f, x;
-  enum machine_mode mode;
+  machine_mode mode;
   rtx (*gen) (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
 
   bval = operands[0];
@@ -30544,7 +27536,7 @@ void
 arm_split_compare_and_swap (rtx operands[])
 {
   rtx rval, mem, oldval, newval, scratch;
-  enum machine_mode mode;
+  machine_mode mode;
   enum memmodel mod_s, mod_f;
   bool is_weak;
   rtx_code_label *label1, *label2;
@@ -30622,8 +27614,8 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 		     rtx value, rtx model_rtx, rtx cond)
 {
   enum memmodel model = (enum memmodel) INTVAL (model_rtx);
-  enum machine_mode mode = GET_MODE (mem);
-  enum machine_mode wmode = (mode == DImode ? DImode : SImode);
+  machine_mode mode = GET_MODE (mem);
+  machine_mode wmode = (mode == DImode ? DImode : SImode);
   rtx_code_label *label;
   rtx x;
 
@@ -30717,7 +27709,7 @@ struct expand_vec_perm_d
 {
   rtx target, op0, op1;
   unsigned char perm[MAX_VECT_LEN];
-  enum machine_mode vmode;
+  machine_mode vmode;
   unsigned char nelt;
   bool one_vector_p;
   bool testing_p;
@@ -30728,7 +27720,7 @@ struct expand_vec_perm_d
 static void
 arm_expand_vec_perm_1 (rtx target, rtx op0, rtx op1, rtx sel)
 {
-  enum machine_mode vmode = GET_MODE (target);
+  machine_mode vmode = GET_MODE (target);
   bool one_vector_p = rtx_equal_p (op0, op1);
 
   gcc_checking_assert (vmode == V8QImode || vmode == V16QImode);
@@ -30767,7 +27759,7 @@ arm_expand_vec_perm_1 (rtx target, rtx op0, rtx op1, rtx sel)
 void
 arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
 {
-  enum machine_mode vmode = GET_MODE (target);
+  machine_mode vmode = GET_MODE (target);
   unsigned int i, nelt = GET_MODE_NUNITS (vmode);
   bool one_vector_p = rtx_equal_p (op0, op1);
   rtx rmask[MAX_VECT_LEN], mask;
@@ -30925,7 +27917,7 @@ static bool
 arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
 {
   unsigned int i, j, diff, nelt = d->nelt;
-  rtx (*gen)(rtx, rtx, rtx);
+  rtx (*gen)(rtx, rtx);
 
   if (!d->one_vector_p)
     return false;
@@ -30989,9 +27981,7 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  /* ??? The third operand is an artifact of the builtin infrastructure
-     and is ignored by the actual instruction.  */
-  emit_insn (gen (d->target, d->op0, const0_rtx));
+  emit_insn (gen (d->target, d->op0));
   return true;
 }
 
@@ -31135,7 +28125,7 @@ static bool
 arm_evpc_neon_vtbl (struct expand_vec_perm_d *d)
 {
   rtx rperm[MAX_VECT_LEN], sel;
-  enum machine_mode vmode = d->vmode;
+  machine_mode vmode = d->vmode;
   unsigned int i, nelt = d->nelt;
 
   /* TODO: ARM's VTBL indexing is little-endian.  In order to handle GCC's
@@ -31260,7 +28250,7 @@ arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST_OK.  */
 
 static bool
-arm_vectorize_vec_perm_const_ok (enum machine_mode vmode,
+arm_vectorize_vec_perm_const_ok (machine_mode vmode,
 				 const unsigned char *sel)
 {
   struct expand_vec_perm_d d;
@@ -31301,7 +28291,7 @@ arm_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 }
 
 bool
-arm_autoinc_modes_ok_p (enum machine_mode mode, enum arm_auto_incmodes code)
+arm_autoinc_modes_ok_p (machine_mode mode, enum arm_auto_incmodes code)
 {
   /* If we are soft float and we do not have ldrd
      then all auto increment forms are ok.  */
@@ -31605,7 +28595,7 @@ arm_validize_comparison (rtx *comparison, rtx * op1, rtx * op2)
 {
   enum rtx_code code = GET_CODE (*comparison);
   int code_int;
-  enum machine_mode mode = (GET_MODE (*op1) == VOIDmode) 
+  machine_mode mode = (GET_MODE (*op1) == VOIDmode) 
     ? GET_MODE (*op2) : GET_MODE (*op1);
 
   gcc_assert (GET_MODE (*op1) != VOIDmode || GET_MODE (*op2) != VOIDmode);
@@ -31707,7 +28697,7 @@ arm_block_set_non_vect_profit_p (rtx val,
 static bool
 arm_block_set_vect_profit_p (unsigned HOST_WIDE_INT length,
 			     unsigned HOST_WIDE_INT align,
-			     enum machine_mode mode)
+			     machine_mode mode)
 {
   int num;
   bool unaligned_p = ((align & 3) != 0);
@@ -31745,7 +28735,7 @@ arm_block_set_unaligned_vect (rtx dstbase,
   rtx val_elt, val_vec, reg;
   rtx rval[MAX_VECT_LEN];
   rtx (*gen_func) (rtx, rtx);
-  enum machine_mode mode;
+  machine_mode mode;
   unsigned HOST_WIDE_INT v = value;
 
   gcc_assert ((align & 0x3) != 0);
@@ -31836,7 +28826,7 @@ arm_block_set_aligned_vect (rtx dstbase,
   rtx dst, addr, mem;
   rtx val_elt, val_vec, reg;
   rtx rval[MAX_VECT_LEN];
-  enum machine_mode mode;
+  machine_mode mode;
   unsigned HOST_WIDE_INT v = value;
 
   gcc_assert ((align & 0x3) == 0);
@@ -31947,7 +28937,7 @@ arm_block_set_unaligned_non_vect (rtx dstbase,
   unsigned int i;
   rtx dst, addr, mem;
   rtx val_exp, val_reg, reg;
-  enum machine_mode mode;
+  machine_mode mode;
   HOST_WIDE_INT v = value;
 
   gcc_assert (align == 1 || align == 2);
@@ -32211,75 +29201,6 @@ arm_const_not_ok_for_debug_p (rtx p)
   return false;
 }
 
-static void
-arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
-{
-  const unsigned ARM_FE_INVALID = 1;
-  const unsigned ARM_FE_DIVBYZERO = 2;
-  const unsigned ARM_FE_OVERFLOW = 4;
-  const unsigned ARM_FE_UNDERFLOW = 8;
-  const unsigned ARM_FE_INEXACT = 16;
-  const unsigned HOST_WIDE_INT ARM_FE_ALL_EXCEPT = (ARM_FE_INVALID
-						    | ARM_FE_DIVBYZERO
-						    | ARM_FE_OVERFLOW
-						    | ARM_FE_UNDERFLOW
-						    | ARM_FE_INEXACT);
-  const unsigned HOST_WIDE_INT ARM_FE_EXCEPT_SHIFT = 8;
-  tree fenv_var, get_fpscr, set_fpscr, mask, ld_fenv, masked_fenv;
-  tree new_fenv_var, reload_fenv, restore_fnenv;
-  tree update_call, atomic_feraiseexcept, hold_fnclex;
-
-  if (!TARGET_VFP || !TARGET_HARD_FLOAT)
-    return;
-
-  /* Generate the equivalent of :
-       unsigned int fenv_var;
-       fenv_var = __builtin_arm_get_fpscr ();
-
-       unsigned int masked_fenv;
-       masked_fenv = fenv_var & mask;
-
-       __builtin_arm_set_fpscr (masked_fenv);  */
-
-  fenv_var = create_tmp_var (unsigned_type_node, NULL);
-  get_fpscr = arm_builtin_decls[ARM_BUILTIN_GET_FPSCR];
-  set_fpscr = arm_builtin_decls[ARM_BUILTIN_SET_FPSCR];
-  mask = build_int_cst (unsigned_type_node,
-			~((ARM_FE_ALL_EXCEPT << ARM_FE_EXCEPT_SHIFT)
-			  | ARM_FE_ALL_EXCEPT));
-  ld_fenv = build2 (MODIFY_EXPR, unsigned_type_node,
-		    fenv_var, build_call_expr (get_fpscr, 0));
-  masked_fenv = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var, mask);
-  hold_fnclex = build_call_expr (set_fpscr, 1, masked_fenv);
-  *hold = build2 (COMPOUND_EXPR, void_type_node,
-		  build2 (COMPOUND_EXPR, void_type_node, masked_fenv, ld_fenv),
-		  hold_fnclex);
-
-  /* Store the value of masked_fenv to clear the exceptions:
-     __builtin_arm_set_fpscr (masked_fenv);  */
-
-  *clear = build_call_expr (set_fpscr, 1, masked_fenv);
-
-  /* Generate the equivalent of :
-       unsigned int new_fenv_var;
-       new_fenv_var = __builtin_arm_get_fpscr ();
-
-       __builtin_arm_set_fpscr (fenv_var);
-
-       __atomic_feraiseexcept (new_fenv_var);  */
-
-  new_fenv_var = create_tmp_var (unsigned_type_node, NULL);
-  reload_fenv = build2 (MODIFY_EXPR, unsigned_type_node, new_fenv_var,
-			build_call_expr (get_fpscr, 0));
-  restore_fnenv = build_call_expr (set_fpscr, 1, fenv_var);
-  atomic_feraiseexcept = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
-  update_call = build_call_expr (atomic_feraiseexcept, 1,
-				 fold_convert (integer_type_node, new_fenv_var));
-  *update = build2 (COMPOUND_EXPR, void_type_node,
-		    build2 (COMPOUND_EXPR, void_type_node,
-			    reload_fenv, restore_fnenv), update_call);
-}
-
 /* return TRUE if x is a reference to a value in a constant pool */
 extern bool
 arm_is_constant_pool_ref (rtx x)
@@ -32289,4 +29210,124 @@ arm_is_constant_pool_ref (rtx x)
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)));
 }
 
+/* If MEM is in the form of [base+offset], extract the two parts
+   of address and set to BASE and OFFSET, otherwise return false
+   after clearing BASE and OFFSET.  */
+
+static bool
+extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
+{
+  rtx addr;
+
+  gcc_assert (MEM_P (mem));
+
+  addr = XEXP (mem, 0);
+
+  /* Strip off const from addresses like (const (addr)).  */
+  if (GET_CODE (addr) == CONST)
+    addr = XEXP (addr, 0);
+
+  if (GET_CODE (addr) == REG)
+    {
+      *base = addr;
+      *offset = const0_rtx;
+      return true;
+    }
+
+  if (GET_CODE (addr) == PLUS
+      && GET_CODE (XEXP (addr, 0)) == REG
+      && CONST_INT_P (XEXP (addr, 1)))
+    {
+      *base = XEXP (addr, 0);
+      *offset = XEXP (addr, 1);
+      return true;
+    }
+
+  *base = NULL_RTX;
+  *offset = NULL_RTX;
+
+  return false;
+}
+
+/* If INSN is a load or store of address in the form of [base+offset],
+   extract the two parts and set to BASE and OFFSET.  IS_LOAD is set
+   to TRUE if it's a load.  Return TRUE if INSN is such an instruction,
+   otherwise return FALSE.  */
+
+static bool
+fusion_load_store (rtx_insn *insn, rtx *base, rtx *offset, bool *is_load)
+{
+  rtx x, dest, src;
+
+  gcc_assert (INSN_P (insn));
+  x = PATTERN (insn);
+  if (GET_CODE (x) != SET)
+    return false;
+
+  src = SET_SRC (x);
+  dest = SET_DEST (x);
+  if (GET_CODE (src) == REG && GET_CODE (dest) == MEM)
+    {
+      *is_load = false;
+      extract_base_offset_in_addr (dest, base, offset);
+    }
+  else if (GET_CODE (src) == MEM && GET_CODE (dest) == REG)
+    {
+      *is_load = true;
+      extract_base_offset_in_addr (src, base, offset);
+    }
+  else
+    return false;
+
+  return (*base != NULL_RTX && *offset != NULL_RTX);
+}
+
+/* Implement the TARGET_SCHED_FUSION_PRIORITY hook.
+
+   Currently we only support to fuse ldr or str instructions, so FUSION_PRI
+   and PRI are only calculated for these instructions.  For other instruction,
+   FUSION_PRI and PRI are simply set to MAX_PRI.  In the future, other kind
+   instruction fusion can be supported by returning different priorities.
+
+   It's important that irrelevant instructions get the largest FUSION_PRI.  */
+
+static void
+arm_sched_fusion_priority (rtx_insn *insn, int max_pri,
+			   int *fusion_pri, int *pri)
+{
+  int tmp, off_val;
+  bool is_load;
+  rtx base, offset;
+
+  gcc_assert (INSN_P (insn));
+
+  tmp = max_pri - 1;
+  if (!fusion_load_store (insn, &base, &offset, &is_load))
+    {
+      *pri = tmp;
+      *fusion_pri = tmp;
+      return;
+    }
+
+  /* Load goes first.  */
+  if (is_load)
+    *fusion_pri = tmp - 1;
+  else
+    *fusion_pri = tmp - 2;
+
+  tmp /= 2;
+
+  /* INSN with smaller base register goes first.  */
+  tmp -= ((REGNO (base) & 0xff) << 20);
+
+  /* INSN with smaller offset goes first.  */
+  off_val = (int)(INTVAL (offset));
+  if (off_val >= 0)
+    tmp -= (off_val & 0xfffff);
+  else
+    tmp += ((- off_val) & 0xfffff);
+
+  *pri = tmp;
+  return;
+}
 #include "gt-arm.h"

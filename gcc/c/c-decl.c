@@ -38,6 +38,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "tree-inline.h"
 #include "flags.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
 #include "function.h"
 #include "c-tree.h"
 #include "toplev.h"
@@ -56,10 +61,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "diagnostic-core.h"
 #include "dumpfile.h"
+#include "hash-map.h"
+#include "is-a.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
 #include "cgraph.h"
 #include "hash-table.h"
 #include "langhooks-def.h"
-#include "hash-set.h"
 #include "plugin.h"
 #include "c-family/c-ada-spec.h"
 #include "cilk.h"
@@ -153,7 +161,7 @@ static bool undef_nested_function;
 
 /* Mode used to build pointers (VOIDmode means ptr_mode).  */
 
-enum machine_mode c_default_pointer_mode = VOIDmode;
+machine_mode c_default_pointer_mode = VOIDmode;
 
 /* If non-zero, implicit "omp declare target" attribute is added into the
    attribute lists.  */
@@ -216,21 +224,6 @@ struct GTY((chain_next ("%h.prev"))) c_binding {
 #define B_IN_FILE_SCOPE(b) ((b)->depth == 1 /*file_scope->depth*/)
 #define B_IN_EXTERNAL_SCOPE(b) ((b)->depth == 0 /*external_scope->depth*/)
 
-#define I_SYMBOL_BINDING(node) \
-  (((struct lang_identifier *) IDENTIFIER_NODE_CHECK(node))->symbol_binding)
-#define I_SYMBOL_DECL(node) \
- (I_SYMBOL_BINDING(node) ? I_SYMBOL_BINDING(node)->decl : 0)
-
-#define I_TAG_BINDING(node) \
-  (((struct lang_identifier *) IDENTIFIER_NODE_CHECK(node))->tag_binding)
-#define I_TAG_DECL(node) \
- (I_TAG_BINDING(node) ? I_TAG_BINDING(node)->decl : 0)
-
-#define I_LABEL_BINDING(node) \
-  (((struct lang_identifier *) IDENTIFIER_NODE_CHECK(node))->label_binding)
-#define I_LABEL_DECL(node) \
- (I_LABEL_BINDING(node) ? I_LABEL_BINDING(node)->decl : 0)
-
 /* Each C symbol points to three linked lists of c_binding structures.
    These describe the values of the identifier in the three different
    namespaces defined by the language.  */
@@ -245,6 +238,96 @@ struct GTY(()) lang_identifier {
 /* Validate c-lang.c's assumptions.  */
 extern char C_SIZEOF_STRUCT_LANG_IDENTIFIER_isnt_accurate
 [(sizeof(struct lang_identifier) == C_SIZEOF_STRUCT_LANG_IDENTIFIER) ? 1 : -1];
+
+/* The binding oracle; see c-tree.h.  */
+void (*c_binding_oracle) (enum c_oracle_request, tree identifier);
+
+/* This flag is set on an identifier if we have previously asked the
+   binding oracle for this identifier's symbol binding.  */
+#define I_SYMBOL_CHECKED(node) \
+  (TREE_LANG_FLAG_4 (IDENTIFIER_NODE_CHECK (node)))
+
+static inline struct c_binding* *
+i_symbol_binding (tree node)
+{
+  struct lang_identifier *lid
+    = (struct lang_identifier *) IDENTIFIER_NODE_CHECK (node);
+
+  if (lid->symbol_binding == NULL
+      && c_binding_oracle != NULL
+      && !I_SYMBOL_CHECKED (node))
+    {
+      /* Set the "checked" flag first, to avoid infinite recursion
+	 when the binding oracle calls back into gcc.  */
+      I_SYMBOL_CHECKED (node) = 1;
+      c_binding_oracle (C_ORACLE_SYMBOL, node);
+    }
+
+  return &lid->symbol_binding;
+}
+
+#define I_SYMBOL_BINDING(node) (*i_symbol_binding (node))
+
+#define I_SYMBOL_DECL(node) \
+ (I_SYMBOL_BINDING(node) ? I_SYMBOL_BINDING(node)->decl : 0)
+
+/* This flag is set on an identifier if we have previously asked the
+   binding oracle for this identifier's tag binding.  */
+#define I_TAG_CHECKED(node) \
+  (TREE_LANG_FLAG_5 (IDENTIFIER_NODE_CHECK (node)))
+
+static inline struct c_binding **
+i_tag_binding (tree node)
+{
+  struct lang_identifier *lid
+    = (struct lang_identifier *) IDENTIFIER_NODE_CHECK (node);
+
+  if (lid->tag_binding == NULL
+      && c_binding_oracle != NULL
+      && !I_TAG_CHECKED (node))
+    {
+      /* Set the "checked" flag first, to avoid infinite recursion
+	 when the binding oracle calls back into gcc.  */
+      I_TAG_CHECKED (node) = 1;
+      c_binding_oracle (C_ORACLE_TAG, node);
+    }
+
+  return &lid->tag_binding;
+}
+
+#define I_TAG_BINDING(node) (*i_tag_binding (node))
+
+#define I_TAG_DECL(node) \
+ (I_TAG_BINDING(node) ? I_TAG_BINDING(node)->decl : 0)
+
+/* This flag is set on an identifier if we have previously asked the
+   binding oracle for this identifier's label binding.  */
+#define I_LABEL_CHECKED(node) \
+  (TREE_LANG_FLAG_6 (IDENTIFIER_NODE_CHECK (node)))
+
+static inline struct c_binding **
+i_label_binding (tree node)
+{
+  struct lang_identifier *lid
+    = (struct lang_identifier *) IDENTIFIER_NODE_CHECK (node);
+
+  if (lid->label_binding == NULL
+      && c_binding_oracle != NULL
+      && !I_LABEL_CHECKED (node))
+    {
+      /* Set the "checked" flag first, to avoid infinite recursion
+	 when the binding oracle calls back into gcc.  */
+      I_LABEL_CHECKED (node) = 1;
+      c_binding_oracle (C_ORACLE_LABEL, node);
+    }
+
+  return &lid->label_binding;
+}
+
+#define I_LABEL_BINDING(node) (*i_label_binding (node))
+
+#define I_LABEL_DECL(node) \
+ (I_LABEL_BINDING(node) ? I_LABEL_BINDING(node)->decl : 0)
 
 /* The resulting tree type.  */
 
@@ -575,7 +658,7 @@ c_build_pointer_type (tree to_type)
 {
   addr_space_t as = to_type == error_mark_node? ADDR_SPACE_GENERIC
 					      : TYPE_ADDR_SPACE (to_type);
-  enum machine_mode pointer_mode;
+  machine_mode pointer_mode;
 
   if (as != ADDR_SPACE_GENERIC || c_default_pointer_mode == VOIDmode)
     pointer_mode = targetm.addr_space.pointer_mode (as);
@@ -614,6 +697,15 @@ decl_jump_unsafe (tree decl)
 void
 c_print_identifier (FILE *file, tree node, int indent)
 {
+  void (*save) (enum c_oracle_request, tree identifier);
+
+  /* Temporarily hide any binding oracle.  Without this, calls to
+     debug_tree from the debugger will end up calling into the oracle,
+     making for a confusing debug session.  As the oracle isn't needed
+     here for normal operation, it's simplest to suppress it.  */
+  save = c_binding_oracle;
+  c_binding_oracle = NULL;
+
   print_node (file, "symbol", I_SYMBOL_DECL (node), indent + 4);
   print_node (file, "tag", I_TAG_DECL (node), indent + 4);
   print_node (file, "label", I_LABEL_DECL (node), indent + 4);
@@ -624,6 +716,8 @@ c_print_identifier (FILE *file, tree node, int indent)
       fprintf (file, "rid " HOST_PTR_PRINTF " \"%s\"",
 	       (void *) rid, IDENTIFIER_POINTER (rid));
     }
+
+  c_binding_oracle = save;
 }
 
 /* Establish a binding between NAME, an IDENTIFIER_NODE, and DECL,
@@ -1178,7 +1272,8 @@ pop_scope (void)
 		 with an inline function specifier ... shall also be defined
 		 in the same translation unit."  */
 	      if (!flag_gnu89_inline
-		  && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (p)))
+		  && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (p))
+		  && scope != external_scope)
 		pedwarn (input_location, 0,
 			 "inline function %q+D declared but never defined", p);
 	      DECL_EXTERNAL (p) = 1;
@@ -1488,6 +1583,54 @@ pushtag (location_t loc, tree name, tree type)
 	    inform (b->locus, "originally defined here");
 	}
     }
+}
+
+/* An exported interface to pushtag.  This is used by the gdb plugin's
+   binding oracle to introduce a new tag binding.  */
+
+void
+c_pushtag (location_t loc, tree name, tree type)
+{
+  pushtag (loc, name, type);
+}
+
+/* An exported interface to bind a declaration.  LOC is the location
+   to use.  DECL is the declaration to bind.  The decl's name is used
+   to determine how it is bound.  If DECL is a VAR_DECL, then
+   IS_GLOBAL determines whether the decl is put into the global (file
+   and external) scope or the current function's scope; if DECL is not
+   a VAR_DECL then it is always put into the file scope.  */
+
+void
+c_bind (location_t loc, tree decl, bool is_global)
+{
+  struct c_scope *scope;
+  bool nested = false;
+
+  if (TREE_CODE (decl) != VAR_DECL || current_function_scope == NULL)
+    {
+      /* Types and functions are always considered to be global.  */
+      scope = file_scope;
+      DECL_EXTERNAL (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+    }
+  else if (is_global)
+    {
+      /* Also bind it into the external scope.  */
+      bind (DECL_NAME (decl), decl, external_scope, true, false, loc);
+      nested = true;
+      scope = file_scope;
+      DECL_EXTERNAL (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+    }
+  else
+    {
+      DECL_CONTEXT (decl) = current_function_decl;
+      TREE_PUBLIC (decl) = 0;
+      scope = current_function_scope;
+    }
+
+  bind (DECL_NAME (decl), decl, scope, false, nested, loc);
 }
 
 /* Subroutine of compare_decls.  Allow harmless mismatches in return
@@ -2293,22 +2436,10 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 
   /* Merge the threadprivate attribute.  */
   if (TREE_CODE (olddecl) == VAR_DECL && C_DECL_THREADPRIVATE_P (olddecl))
-    {
-      set_decl_tls_model (newdecl, DECL_TLS_MODEL (olddecl));
-      C_DECL_THREADPRIVATE_P (newdecl) = 1;
-    }
+    C_DECL_THREADPRIVATE_P (newdecl) = 1;
 
   if (CODE_CONTAINS_STRUCT (TREE_CODE (olddecl), TS_DECL_WITH_VIS))
     {
-      /* Merge the section attribute.
-	 We want to issue an error if the sections conflict but that
-	 must be done later in decl_attributes since we are called
-	 before attributes are assigned.  */
-      if ((DECL_EXTERNAL (olddecl) || TREE_PUBLIC (olddecl) || TREE_STATIC (olddecl))
-	  && DECL_SECTION_NAME (newdecl) == NULL
-	  && DECL_SECTION_NAME (olddecl))
-	set_decl_section_name (newdecl, DECL_SECTION_NAME (olddecl));
-
       /* Copy the assembler name.
 	 Currently, it can only be defined in the prototype.  */
       COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
@@ -2518,6 +2649,20 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 		  (char *) newdecl + sizeof (struct tree_decl_common),
 		  tree_code_size (TREE_CODE (olddecl)) - sizeof (struct tree_decl_common));
 	  olddecl->decl_with_vis.symtab_node = snode;
+
+	  if ((DECL_EXTERNAL (olddecl)
+	       || TREE_PUBLIC (olddecl)
+	       || TREE_STATIC (olddecl))
+	      && DECL_SECTION_NAME (newdecl) != NULL)
+	    set_decl_section_name (olddecl, DECL_SECTION_NAME (newdecl));
+
+	  /* This isn't quite correct for something like
+		int __thread x attribute ((tls_model ("local-exec")));
+		extern int __thread x;
+	     as we'll lose the "local-exec" model.  */
+	  if (TREE_CODE (olddecl) == VAR_DECL
+	      && DECL_THREAD_LOCAL_P (newdecl))
+	    set_decl_tls_model (olddecl, DECL_TLS_MODEL (newdecl));
 	  break;
 	}
 
@@ -3801,8 +3946,6 @@ c_init_decl_processing (void)
 			boolean_type_node));
 
   input_location = save_loc;
-
-  pedantic_lvalues = true;
 
   make_fname_decl = c_make_fname_decl;
   start_fname_decls ();
@@ -5324,11 +5467,11 @@ grokdeclarator (const struct c_declarator *declarator,
       else
 	{
 	  if (name)
-	    warn_defaults_to (loc, flag_isoc99 ? 0 : OPT_Wimplicit_int,
+	    warn_defaults_to (loc, OPT_Wimplicit_int,
 			      "type defaults to %<int%> in declaration "
 			      "of %qE", name);
 	  else
-	    warn_defaults_to (loc, flag_isoc99 ? 0 : OPT_Wimplicit_int,
+	    warn_defaults_to (loc, OPT_Wimplicit_int,
 			      "type defaults to %<int%> in type name");
 	}
     }
@@ -8114,7 +8257,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
     }
 
   if (warn_about_return_type)
-    warn_defaults_to (loc, flag_isoc99 ? 0
+    warn_defaults_to (loc, flag_isoc99 ? OPT_Wimplicit_int
 			   : (warn_return_type ? OPT_Wreturn_type
 			      : OPT_Wimplicit_int),
 		      "return type defaults to %<int%>");
@@ -8210,7 +8353,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   else if (warn_missing_declarations
 	   && TREE_PUBLIC (decl1)
 	   && old_decl == 0
-	   && !MAIN_NAME_P (DECL_NAME (decl1)))
+	   && !MAIN_NAME_P (DECL_NAME (decl1))
+	   && !DECL_DECLARED_INLINE_P (decl1))
     warning_at (loc, OPT_Wmissing_declarations,
 		"no previous declaration for %qD",
 		decl1);
@@ -8423,7 +8567,8 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 
 	  if (flag_isoc99)
 	    pedwarn (DECL_SOURCE_LOCATION (decl),
-		     0, "type of %qD defaults to %<int%>", decl);
+		     OPT_Wimplicit_int, "type of %qD defaults to %<int%>",
+		     decl);
 	  else
 	    warning_at (DECL_SOURCE_LOCATION (decl),
 			OPT_Wmissing_parameter_type,
@@ -9369,10 +9514,11 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<long%> and %<void%> in "
 			   "declaration specifiers"));
-	      else if (specs->typespec_word == cts_int128)
+	      else if (specs->typespec_word == cts_int_n)
 		  error_at (loc,
-			    ("both %<long%> and %<__int128%> in "
-			     "declaration specifiers"));
+			    ("both %<long%> and %<__int%d%> in "
+			     "declaration specifiers"),
+			    int_n_data[specs->int_n_idx].bitsize);
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
 			  ("both %<long%> and %<_Bool%> in "
@@ -9417,10 +9563,11 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<short%> and %<void%> in "
 			   "declaration specifiers"));
-	      else if (specs->typespec_word == cts_int128)
+	      else if (specs->typespec_word == cts_int_n)
 		error_at (loc,
-			  ("both %<short%> and %<__int128%> in "
-			   "declaration specifiers"));
+			  ("both %<short%> and %<__int%d%> in "
+			   "declaration specifiers"),
+			  int_n_data[specs->int_n_idx].bitsize);
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
 			  ("both %<short%> and %<_Bool%> in "
@@ -9594,11 +9741,12 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      dupe = specs->saturating_p;
 	      pedwarn (loc, OPT_Wpedantic,
 		       "ISO C does not support saturating types");
-	      if (specs->typespec_word == cts_int128)
+	      if (specs->typespec_word == cts_int_n)
 	        {
 		  error_at (loc,
-			    ("both %<_Sat%> and %<__int128%> in "
-			     "declaration specifiers"));
+			    ("both %<_Sat%> and %<__int%d%> in "
+			     "declaration specifiers"),
+			    int_n_data[specs->int_n_idx].bitsize);
 	        }
 	      else if (specs->typespec_word == cts_auto_type)
 		error_at (loc,
@@ -9662,7 +9810,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
       else
 	{
 	  /* "void", "_Bool", "char", "int", "float", "double", "_Decimal32",
-	     "__int128", "_Decimal64", "_Decimal128", "_Fract", "_Accum" or
+	     "__intN", "_Decimal64", "_Decimal128", "_Fract", "_Accum" or
 	     "__auto_type".  */
 	  if (specs->typespec_word != cts_none)
 	    {
@@ -9703,31 +9851,38 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		  specs->locations[cdw_typespec] = loc;
 		}
 	      return specs;
-	    case RID_INT128:
-	      if (int128_integer_type_node == NULL_TREE)
-		{
-		  error_at (loc, "%<__int128%> is not supported for this target");
-		  return specs;
-		}
+	    case RID_INT_N_0:
+	    case RID_INT_N_1:
+	    case RID_INT_N_2:
+	    case RID_INT_N_3:
+	      specs->int_n_idx = i - RID_INT_N_0;
 	      if (!in_system_header_at (input_location))
 		pedwarn (loc, OPT_Wpedantic,
-			 "ISO C does not support %<__int128%> type");
+			 "ISO C does not support %<__int%d%> types",
+			 int_n_data[specs->int_n_idx].bitsize);
 
 	      if (specs->long_p)
 		error_at (loc,
-			  ("both %<__int128%> and %<long%> in "
-			   "declaration specifiers"));
+			  ("both %<__int%d%> and %<long%> in "
+			   "declaration specifiers"),
+			  int_n_data[specs->int_n_idx].bitsize);
 	      else if (specs->saturating_p)
 		error_at (loc,
-			  ("both %<_Sat%> and %<__int128%> in "
-			   "declaration specifiers"));
+			  ("both %<_Sat%> and %<__int%d%> in "
+			   "declaration specifiers"),
+			  int_n_data[specs->int_n_idx].bitsize);
 	      else if (specs->short_p)
 		error_at (loc,
-			  ("both %<__int128%> and %<short%> in "
-			   "declaration specifiers"));
+			  ("both %<__int%d%> and %<short%> in "
+			   "declaration specifiers"),
+			  int_n_data[specs->int_n_idx].bitsize);
+	      else if (! int_n_enabled_p [specs->int_n_idx])
+		error_at (loc,
+			  "%<__int%d%> is not supported on this target",
+			  int_n_data[specs->int_n_idx].bitsize);
 	      else
 		{
-		  specs->typespec_word = cts_int128;
+		  specs->typespec_word = cts_int_n;
 		  specs->locations[cdw_typespec] = loc;
 		}
 	      return specs;
@@ -10295,12 +10450,12 @@ finish_declspecs (struct c_declspecs *specs)
 	  specs->type = build_complex_type (specs->type);
 	}
       break;
-    case cts_int128:
+    case cts_int_n:
       gcc_assert (!specs->long_p && !specs->short_p && !specs->long_long_p);
       gcc_assert (!(specs->signed_p && specs->unsigned_p));
       specs->type = (specs->unsigned_p
-		     ? int128_unsigned_type_node
-		     : int128_integer_type_node);
+		     ? int_n_trees[specs->int_n_idx].unsigned_type
+		     : int_n_trees[specs->int_n_idx].signed_type);
       if (specs->complex_p)
 	{
 	  pedwarn (specs->locations[cdw_complex], OPT_Wpedantic,

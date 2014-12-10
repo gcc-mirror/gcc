@@ -1,3 +1,6 @@
+/* { dg-require-effective-target indirect_jumps } */
+/* { dg-require-effective-target label_values } */
+
 typedef unsigned long Eterm;
 process_main (void)
 {

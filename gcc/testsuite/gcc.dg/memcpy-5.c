@@ -24,5 +24,5 @@ TEST (d32d, double __attribute__((vector_size (32))));
 TEST (d64d, double __attribute__((vector_size (64))));
 TEST (d128d, double __attribute__((vector_size (128))));
 
-/* { dg-final { scan-tree-dump-not "memcpy" "optimized" { target x86_64-*-* } } } */
+/* { dg-final { scan-tree-dump-not "memcpy" "optimized" { target i?86-*-* x86_64-*-* } } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

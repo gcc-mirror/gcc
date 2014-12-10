@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "-fno-ipa-icf" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"

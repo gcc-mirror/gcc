@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=atom" } } */
+/* { dg-skip-if "" { *-*-* } { "-march=*" } { "-march=atom" } } */
 /* { dg-options "-O2 -fomit-frame-pointer -march=atom" } */
 /* { dg-final { scan-assembler-not "nop" } } */
 /* { dg-final { scan-assembler-not "rep" } } */

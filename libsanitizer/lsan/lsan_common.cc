@@ -353,9 +353,7 @@ static void ClassifyAllChunks(SuspendedThreadsList const &suspended_threads) {
 
 static void PrintStackTraceById(u32 stack_trace_id) {
   CHECK(stack_trace_id);
-  uptr size = 0;
-  const uptr *trace = StackDepotGet(stack_trace_id, &size);
-  StackTrace::PrintStack(trace, size);
+  StackDepotGet(stack_trace_id).Print();
 }
 
 // ForEachChunk callback. Aggregates information about unreachable chunks into
@@ -370,10 +368,9 @@ static void CollectLeaksCb(uptr chunk, void *arg) {
     uptr resolution = flags()->resolution;
     u32 stack_trace_id = 0;
     if (resolution > 0) {
-      uptr size = 0;
-      const uptr *trace = StackDepotGet(m.stack_trace_id(), &size);
-      size = Min(size, resolution);
-      stack_trace_id = StackDepotPut(trace, size);
+      StackTrace stack = StackDepotGet(m.stack_trace_id());
+      stack.size = Min(stack.size, resolution);
+      stack_trace_id = StackDepotPut(stack);
     } else {
       stack_trace_id = m.stack_trace_id();
     }
@@ -449,8 +446,11 @@ void DoLeakCheck() {
     PrintMatchedSuppressions();
   if (unsuppressed_count > 0) {
     param.leak_report.PrintSummary();
-    if (flags()->exitcode)
+    if (flags()->exitcode) {
+      if (common_flags()->coverage)
+        __sanitizer_cov_dump();
       internal__exit(flags()->exitcode);
+    }
   }
 }
 
@@ -482,11 +482,10 @@ static Suppression *GetSuppressionForAddr(uptr addr) {
 }
 
 static Suppression *GetSuppressionForStack(u32 stack_trace_id) {
-  uptr size = 0;
-  const uptr *trace = StackDepotGet(stack_trace_id, &size);
-  for (uptr i = 0; i < size; i++) {
-    Suppression *s =
-        GetSuppressionForAddr(StackTrace::GetPreviousInstructionPc(trace[i]));
+  StackTrace stack = StackDepotGet(stack_trace_id);
+  for (uptr i = 0; i < stack.size; i++) {
+    Suppression *s = GetSuppressionForAddr(
+        StackTrace::GetPreviousInstructionPc(stack.trace[i]));
     if (s) return s;
   }
   return 0;

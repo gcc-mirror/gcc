@@ -1,3 +1,22 @@
+2014-11-17  Bob Dunlop  <bob.dunlop@xyzzy.org.uk>
+
+	* mt-ospace (CFLAGS_FOR_TARGET): Append -g -Os rather than
+	overwriting.
+	(CXXFLAGS_FOR_TARGET): Similarly.
+
+2014-11-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/63888
+	* bootstrap-asan.mk (ASAN_OPTIONS): Export "detect_leaks=0".
+
+2014-11-13  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* target-posix: New file.
+
+2014-10-27  Tom Tromey  <tromey@redhat.com>
+
+	* gcc-plugin.m4: New file.
+
 2014-09-01  Andi Kleen  <ak@linux.intel.com>
 
 	* bootstrap-lto.mk: Implement slim bootstrap.
@@ -7,10 +26,21 @@
 	* isl.m4 (ISL_CHECK_VERSION): Check link of isl library
 	for cross_compiling.
 
+2014-08-19  Alan Modra  <amodra@gmail.com>
+
+	* plugins.m4 (AC_PLUGINS): If plugins are enabled, add -ldl to
+	LIBS via AC_SEARCH_LIBS.
+
 2014-08-18 Roman Gareev  <gareevroman@gmail.com>
 
 	* cloog.m4: Remove the path to isllibs from clooglibs.
 	* isl.m4: Add paths to islinc, isllibs.
+
+2014-08-14  Alan Modra  <amodra@gmail.com>
+
+	* plugins.m4: Test for dlfcn.h or windows.h here to set default
+	for --enable-plugins.  Report error if someone tries to enable
+	plugins on a host we don't support.
 
 2014-07-26  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -25,6 +55,10 @@
 
 	PR target/43538
 	* mt-gnu: Don't reset CXXFLAGS_FOR_TARGET.
+
+2013-12-07  Mike Frysinger  <vapier@gentoo.org>
+
+	* acinclude.m4: Remove +x file mode.
 
 2013-11-29  Marek Polacek  <polacek@redhat.com>
 

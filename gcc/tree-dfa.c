@@ -26,10 +26,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "tm_p.h"
+#include "predict.h"
+#include "vec.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "hard-reg-set.h"
+#include "input.h"
+#include "function.h"
+#include "dominance.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "langhooks.h"
 #include "flags.h"
-#include "function.h"
 #include "tree-pretty-print.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -233,7 +241,7 @@ dump_dfa_stats (FILE *file)
   fprintf (file, fmt_str_1, "VDEF operands", dfa_stats.num_vdefs,
 	   SCALE (size), LABEL (size));
 
-  size = dfa_stats.num_phis * sizeof (struct gimple_statement_phi);
+  size = dfa_stats.num_phis * sizeof (struct gphi);
   total += size;
   fprintf (file, fmt_str_1, "PHI nodes", dfa_stats.num_phis,
 	   SCALE (size), LABEL (size));
@@ -282,18 +290,18 @@ collect_dfa_stats (struct dfa_stats_d *dfa_stats_p ATTRIBUTE_UNUSED)
   /* Walk all the statements in the function counting references.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple_stmt_iterator si;
-
-      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+      for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
+	   gsi_next (&si))
 	{
-	  gimple phi = gsi_stmt (si);
+	  gphi *phi = si.phi ();
 	  dfa_stats_p->num_phis++;
 	  dfa_stats_p->num_phi_args += gimple_phi_num_args (phi);
 	  if (gimple_phi_num_args (phi) > dfa_stats_p->max_num_phi_args)
 	    dfa_stats_p->max_num_phi_args = gimple_phi_num_args (phi);
 	}
 
-      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+      for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
+	   gsi_next (&si))
 	{
 	  gimple stmt = gsi_stmt (si);
 	  dfa_stats_p->num_defs += NUM_SSA_OPERANDS (stmt, SSA_OP_DEF);
@@ -322,7 +330,7 @@ ssa_default_def (struct function *fn, tree var)
 	      || TREE_CODE (var) == RESULT_DECL);
   in.var = (tree)&ind;
   ind.uid = DECL_UID (var);
-  return (tree) htab_find_with_hash (DEFAULT_DEFS (fn), &in, DECL_UID (var));
+  return DEFAULT_DEFS (fn)->find_with_hash ((tree)&in, DECL_UID (var));
 }
 
 /* Insert the pair VAR's UID, DEF into the default_defs hashtable
@@ -333,7 +341,6 @@ set_ssa_default_def (struct function *fn, tree var, tree def)
 {
   struct tree_decl_minimal ind;
   struct tree_ssa_name in;
-  void **loc;
 
   gcc_assert (TREE_CODE (var) == VAR_DECL
 	      || TREE_CODE (var) == PARM_DECL
@@ -342,25 +349,26 @@ set_ssa_default_def (struct function *fn, tree var, tree def)
   ind.uid = DECL_UID (var);
   if (!def)
     {
-      loc = htab_find_slot_with_hash (DEFAULT_DEFS (fn), &in,
-				      DECL_UID (var), NO_INSERT);
+      tree *loc = DEFAULT_DEFS (fn)->find_slot_with_hash ((tree)&in,
+							  DECL_UID (var),
+							  NO_INSERT);
       if (loc)
 	{
 	  SSA_NAME_IS_DEFAULT_DEF (*(tree *)loc) = false;
-	  htab_clear_slot (DEFAULT_DEFS (fn), loc);
+	  DEFAULT_DEFS (fn)->clear_slot (loc);
 	}
       return;
     }
   gcc_assert (TREE_CODE (def) == SSA_NAME && SSA_NAME_VAR (def) == var);
-  loc = htab_find_slot_with_hash (DEFAULT_DEFS (fn), &in,
-                                  DECL_UID (var), INSERT);
+  tree *loc = DEFAULT_DEFS (fn)->find_slot_with_hash ((tree)&in,
+						      DECL_UID (var), INSERT);
 
   /* Default definition might be changed by tail call optimization.  */
   if (*loc)
-    SSA_NAME_IS_DEFAULT_DEF (*(tree *) loc) = false;
+    SSA_NAME_IS_DEFAULT_DEF (*loc) = false;
 
    /* Mark DEF as the default definition for VAR.  */
-  *(tree *) loc = def;
+  *loc = def;
   SSA_NAME_IS_DEFAULT_DEF (def) = true;
 }
 
@@ -403,7 +411,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
     size_tree = TREE_OPERAND (exp, 1);
   else if (!VOID_TYPE_P (TREE_TYPE (exp)))
     {
-      enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+      machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
       if (mode == BLKmode)
 	size_tree = TYPE_SIZE (TREE_TYPE (exp));
       else

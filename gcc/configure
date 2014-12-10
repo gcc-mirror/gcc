@@ -604,8 +604,6 @@ PICFLAG
 enable_host_shared
 enable_plugin
 pluginlibs
-CLOOGINC
-CLOOGLIBS
 ISLINC
 ISLLIBS
 GMPINC
@@ -743,6 +741,7 @@ CXXDEPMODE
 DEPDIR
 am__leading_dot
 CXXCPP
+doc_build_sys
 AR
 NM
 BISON
@@ -761,6 +760,9 @@ LN
 LN_S
 AWK
 SET_MAKE
+accel_dir_suffix
+real_target_noncanonical
+enable_as_accelerator
 REPORT_BUGS_TEXI
 REPORT_BUGS_TO
 PKGVERSION
@@ -920,6 +922,7 @@ with_plugin_ld
 enable_gnu_indirect_function
 enable_initfini_array
 enable_comdat
+enable_fix_cortex_a53_835769
 with_glibc_version
 enable_gnu_unique_object
 enable_linker_build_id
@@ -933,6 +936,7 @@ enable_plugin
 enable_host_shared
 enable_libquadmath_support
 with_linker_hash_style
+with_diagnostics_color
 '
       ac_precious_vars='build_alias
 host_alias
@@ -950,9 +954,7 @@ CXXCPP
 GMPLIBS
 GMPINC
 ISLLIBS
-ISLINC
-CLOOGLIBS
-CLOOGINC'
+ISLINC'
 
 
 # Initialize some variables set by options.
@@ -1638,6 +1640,14 @@ Optional Features:
                           glibc systems
   --enable-initfini-array	use .init_array/.fini_array sections
   --enable-comdat         enable COMDAT group support
+
+  --enable-fix-cortex-a53-835769
+                          enable workaround for AArch64 Cortex-A53 erratum
+                          835769 by default
+  --disable-fix-cortex-a53-835769
+                          disable workaround for AArch64 Cortex-A53 erratum
+                          835769 by default
+
   --enable-gnu-unique-object
                           enable the use of the @gnu_unique_object ELF
                           extension on glibc systems
@@ -1699,6 +1709,11 @@ Optional Packages:
   --with-system-zlib      use installed libz
   --with-linker-hash-style={sysv,gnu,both}
                           specify the linker hash style
+  --with-diagnostics-color={never,auto,auto-if-env,always}
+                          specify the default of -fdiagnostics-color option
+                          auto-if-env stands for -fdiagnostics-color=auto if
+                          GCC_COLOR environment variable is present and
+                          -fdiagnostics-color=never otherwise
 
 Some influential environment variables:
   CC          C compiler command
@@ -1716,8 +1731,6 @@ Some influential environment variables:
   GMPINC      How to find GMP include files
   ISLLIBS     How to link ISL
   ISLINC      How to find ISL include files
-  CLOOGLIBS   How to link CLOOG
-  CLOOGINC    How to find CLOOG include files
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -3193,6 +3206,10 @@ esac
 
 
 
+
+# Used for constructing correct paths for offload compilers.
+real_target_noncanonical=${target_noncanonical}
+accel_dir_suffix=
 
 # Determine the target- and build-specific subdirectories
 
@@ -7391,6 +7408,45 @@ else
 fi
 
 
+if test x"$enable_as_accelerator_for" != x; then
+
+$as_echo "#define ACCEL_COMPILER 1" >>confdefs.h
+
+  enable_as_accelerator=yes
+  case "${target}" in
+    *-intelmicemul-*)
+      # In this case we expect offload compiler to be built as native, so we
+      # need to rename the driver to avoid clashes with host's drivers.
+      program_transform_name="s&^&${target}-&" ;;
+  esac
+  sedscript="s#${target_noncanonical}#${enable_as_accelerator_for}-accel-${target_noncanonical}#"
+  program_transform_name=`echo $program_transform_name | sed $sedscript`
+  accel_dir_suffix=/accel/${target_noncanonical}
+  real_target_noncanonical=${enable_as_accelerator_for}
+fi
+
+
+
+
+for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
+  tgt=`echo $tgt | sed 's/=.*//'`
+  if test x"$offload_targets" = x; then
+    offload_targets=$tgt
+  else
+    offload_targets="$offload_targets:$tgt"
+  fi
+done
+
+cat >>confdefs.h <<_ACEOF
+#define OFFLOAD_TARGETS "$offload_targets"
+_ACEOF
+
+if test x"$offload_targets" != x; then
+
+$as_echo "#define ENABLE_OFFLOADING 1" >>confdefs.h
+
+fi
+
 
 # Check whether --with-multilib-list was given.
 if test "${with_multilib_list+set}" = set; then :
@@ -8059,6 +8115,47 @@ fi
 
 
 fi
+
+# The jit documentation looks better if built with sphinx, but can be
+# built with texinfo if sphinx is not available.
+# Set "doc_build_sys" to "sphinx" or "texinfo" accordingly.
+# Extract the first word of "sphinx-build", so it can be a program name with args.
+set dummy sphinx-build; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_doc_build_sys+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$doc_build_sys"; then
+  ac_cv_prog_doc_build_sys="$doc_build_sys" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_doc_build_sys="sphinx"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_doc_build_sys" && ac_cv_prog_doc_build_sys="texinfo"
+fi
+fi
+doc_build_sys=$ac_cv_prog_doc_build_sys
+if test -n "$doc_build_sys"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $doc_build_sys" >&5
+$as_echo "$doc_build_sys" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
 
 
 # --------------------
@@ -10526,6 +10623,7 @@ saved_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$CXXFLAGS -I${srcdir} -I${srcdir}/../include $GMPINC"
 for ac_func in getenv atol asprintf sbrk abort atof getcwd getwd \
 	stpcpy strnlen strsignal strstr strverscmp \
+	strtol strtoul strtoll strtoull \
 	errno snprintf vsnprintf vasprintf malloc realloc calloc \
 	free basename getopt clock getpagesize ffs clearerr_unlocked feof_unlocked   ferror_unlocked fflush_unlocked fgetc_unlocked fgets_unlocked   fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked   putchar_unlocked putc_unlocked
 do
@@ -14537,7 +14635,7 @@ $as_echo "$lt_cv_ld_force_load" >&6; }
       case ${MACOSX_DEPLOYMENT_TARGET-10.0},$host in
 	10.0,*86*-darwin8*|10.0,*-darwin[91]*)
 	  _lt_dar_allow_undefined='${wl}-undefined ${wl}dynamic_lookup' ;;
-	10.[012]*)
+	10.[012][,.]*)
 	  _lt_dar_allow_undefined='${wl}-flat_namespace ${wl}-undefined ${wl}suppress' ;;
 	10.*)
 	  _lt_dar_allow_undefined='${wl}-undefined ${wl}dynamic_lookup' ;;
@@ -15839,7 +15937,7 @@ _LT_EOF
       if $LD --help 2>&1 | $EGREP ': supported targets:.* elf' > /dev/null \
 	 && test "$tmp_diet" = no
       then
-	tmp_addflag=
+	tmp_addflag=' $pic_flag'
 	tmp_sharedflag='-shared'
 	case $cc_basename,$host_cpu in
         pgcc*)				# Portland Group C compiler
@@ -18049,7 +18147,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18052 "configure"
+#line 18150 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18155,7 +18253,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18158 "configure"
+#line 18256 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18750,8 +18848,8 @@ with_gnu_ld=$lt_cv_prog_gnu_ld
       # Check if GNU C++ uses GNU ld as the underlying linker, since the
       # archiving commands below assume that GNU ld is being used.
       if test "$with_gnu_ld" = yes; then
-        archive_cmds_CXX='$CC -shared -nostdlib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-soname $wl$soname -o $lib'
-        archive_expsym_cmds_CXX='$CC -shared -nostdlib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-soname $wl$soname ${wl}-retain-symbols-file $wl$export_symbols -o $lib'
+        archive_cmds_CXX='$CC $pic_flag -shared -nostdlib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-soname $wl$soname -o $lib'
+        archive_expsym_cmds_CXX='$CC $pic_flag -shared -nostdlib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-soname $wl$soname ${wl}-retain-symbols-file $wl$export_symbols -o $lib'
 
         hardcode_libdir_flag_spec_CXX='${wl}-rpath ${wl}$libdir'
         export_dynamic_flag_spec_CXX='${wl}--export-dynamic'
@@ -23979,6 +24077,25 @@ $as_echo "#define HAVE_AS_MABI_OPTION 1" >>confdefs.h
         done
       fi
     fi
+    # Enable default workaround for AArch64 Cortex-A53 erratum 835769.
+    # Check whether --enable-fix-cortex-a53-835769 was given.
+if test "${enable_fix_cortex_a53_835769+set}" = set; then :
+  enableval=$enable_fix_cortex_a53_835769;
+        case $enableval in
+          yes)
+            tm_defines="${tm_defines} TARGET_FIX_ERR_A53_835769_DEFAULT=1"
+            ;;
+          no)
+            ;;
+          *)
+            as_fn_error "'$enableval' is an invalid value for --enable-fix-cortex-a53-835769.\
+  Valid choices are 'yes' and 'no'." "$LINENO" 5
+            ;;
+
+        esac
+
+fi
+
     ;;
 
   # All TARGET_ABI_OSF targets.
@@ -24648,9 +24765,12 @@ $as_echo "$as_me: WARNING: LTO for $target requires binutils >= 2.20.1, but vers
 	      ;;
 	  esac
 	fi
-	# Test if the assembler supports the section flag 'e' for specifying
-	# an excluded section.
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .section with e" >&5
+	;;
+    esac
+
+    # Test if the assembler supports the section flag 'e' for specifying
+    # an excluded section.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .section with e" >&5
 $as_echo_n "checking assembler for .section with e... " >&6; }
 if test "${gcc_cv_as_section_has_e+set}" = set; then :
   $as_echo_n "(cached) " >&6
@@ -24663,7 +24783,7 @@ fi
   elif test x$gcc_cv_as != x; then
     $as_echo '.section foo1,"e"
 .byte 0,0,0,0' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -24686,8 +24806,6 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_GAS_SECTION_EXCLUDE `if test $gcc_cv_as_section_has_e = yes; then echo 1; else echo 0; fi`
 _ACEOF
 
-	;;
-    esac
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for filds and fists mnemonics" >&5
 $as_echo_n "checking assembler for filds and fists mnemonics... " >&6; }
@@ -26087,6 +26205,42 @@ $as_echo "#define HAVE_AS_GNU_ATTRIBUTE 1" >>confdefs.h
 
 fi
 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .module support" >&5
+$as_echo_n "checking assembler for .module support... " >&6; }
+if test "${gcc_cv_as_mips_dot_module+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_mips_dot_module=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.module mips2
+       .module fp=xx' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -32 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_mips_dot_module=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_mips_dot_module" >&5
+$as_echo "$gcc_cv_as_mips_dot_module" >&6; }
+if test $gcc_cv_as_mips_dot_module = yes; then
+
+$as_echo "#define HAVE_AS_DOT_MODULE 1" >>confdefs.h
+
+fi
+    if test x$gcc_cv_as_mips_dot_module = xno \
+       && test x$with_fp_32 != x; then
+      as_fn_error "Requesting --with-fp-32= requires assembler support for .module." "$LINENO" 5
+    fi
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .micromips support" >&5
 $as_echo_n "checking assembler for .micromips support... " >&6; }
 if test "${gcc_cv_as_micromips_support+set}" = set; then :
@@ -26671,6 +26825,16 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibc_version_major.$glibc_version_minor" >&5
 $as_echo "$glibc_version_major.$glibc_version_minor" >&6; }
 
+cat >>confdefs.h <<_ACEOF
+#define TARGET_GLIBC_MAJOR $glibc_version_major
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define TARGET_GLIBC_MINOR $glibc_version_minor
+_ACEOF
+
+
 # Check whether --enable-gnu-unique-object was given.
 if test "${enable_gnu_unique_object+set}" = set; then :
   enableval=$enable_gnu_unique_object; case $enable_gnu_unique_object in
@@ -26860,6 +27024,53 @@ $as_echo "#define HAVE_LD_PIE 1" >>confdefs.h
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_pie" >&5
 $as_echo "$gcc_cv_ld_pie" >&6; }
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking linker PIE support with copy reloc" >&5
+$as_echo_n "checking linker PIE support with copy reloc... " >&6; }
+gcc_cv_ld_pie_copyreloc=no
+if test $gcc_cv_ld_pie = yes ; then
+  if test $in_tree_ld = yes ; then
+    if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 25 -o "$gcc_cv_gld_major_version" -gt 2; then
+      gcc_cv_ld_pie_copyreloc=yes
+    fi
+  elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x ; then
+    # Check if linker supports -pie option with copy reloc
+    case "$target" in
+    i?86-*-linux* | x86_64-*-linux*)
+      cat > conftest1.s <<EOF
+	.globl	a_glob
+	.data
+	.type	a_glob, @object
+	.size	a_glob, 4
+a_glob:
+	.long	2
+EOF
+      cat > conftest2.s <<EOF
+	.text
+	.globl	main
+	.type	main, @function
+main:
+	movl	%eax, a_glob(%rip)
+	.size	main, .-main
+EOF
+      if $gcc_cv_as --64 -o conftest1.o conftest1.s > /dev/null 2>&1 \
+         && $gcc_cv_ld -shared -melf_x86_64 -o conftest1.so conftest1.o > /dev/null 2>&1 \
+         && $gcc_cv_as --64 -o conftest2.o conftest2.s > /dev/null 2>&1 \
+         && $gcc_cv_ld -pie -melf_x86_64 -o conftest conftest2.o conftest1.so > /dev/null 2>&1; then
+        gcc_cv_ld_pie_copyreloc=yes
+      fi
+      rm -f conftest conftest1.so conftest1.o conftest2.o conftest1.s conftest2.s
+      ;;
+    esac
+  fi
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LD_PIE_COPYRELOC `if test x"$gcc_cv_ld_pie_copyreloc" = xyes; then echo 1; else echo 0; fi`
+_ACEOF
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_pie_copyreloc" >&5
+$as_echo "$gcc_cv_ld_pie_copyreloc" >&6; }
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker EH-compatible garbage collection of sections" >&5
 $as_echo_n "checking linker EH-compatible garbage collection of sections... " >&6; }
@@ -27893,16 +28104,49 @@ $as_echo "#define HAVE_isl 1" >>confdefs.h
 
 fi
 
+# Check whether isl_schedule_constraints_compute_schedule is available;
+# it's new in ISL-0.13.
+if test "x${ISLLIBS}" != "x" ; then
+  saved_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS $ISLINC"
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS $ISLLIBS $GMPLIBS"
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking Checking for isl_schedule_constraints_compute_schedule" >&5
+$as_echo_n "checking Checking for isl_schedule_constraints_compute_schedule... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <isl/schedule.h>
+int
+main ()
+{
+isl_schedule_constraints_compute_schedule (NULL);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_has_isl_schedule_constraints_compute_schedule=yes
+else
+  ac_has_isl_schedule_constraints_compute_schedule=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_isl_schedule_constraints_compute_schedule" >&5
+$as_echo "$ac_has_isl_schedule_constraints_compute_schedule" >&6; }
 
-if test "x${CLOOGLIBS}" != "x" ; then
+  LIBS="$saved_LIBS"
+  CFLAGS="$saved_CFLAGS"
 
-$as_echo "#define HAVE_cloog 1" >>confdefs.h
+  if test x"$ac_has_isl_schedule_constraints_compute_schedule" = x"yes"; then
 
+$as_echo "#define HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE 1" >>confdefs.h
+
+  fi
 fi
 
 # Check for plugin support
-# Check whether --enable-plugin was given.
+   # Check whether --enable-plugin was given.
 if test "${enable_plugin+set}" = set; then :
   enableval=$enable_plugin; enable_plugin=$enableval
 else
@@ -27910,64 +28154,64 @@ else
 fi
 
 
-pluginlibs=
+   pluginlibs=
 
-case "${host}" in
-  *-*-darwin*)
-    if test x$build = x$host; then
-      export_sym_check="nm${exeext} -g"
-    elif test x$host = x$target; then
-      export_sym_check="$gcc_cv_nm -g"
-    else
-      export_sym_check=
-    fi
-  ;;
-  *)
-    if test x$build = x$host; then
-      export_sym_check="objdump${exeext} -T"
-    elif test x$host = x$target; then
-      export_sym_check="$gcc_cv_objdump -T"
-    else
-      export_sym_check=
-    fi
-  ;;
-esac
+   case "${host}" in
+     *-*-darwin*)
+       if test x$build = x$host; then
+	 export_sym_check="nm${exeext} -g"
+       elif test x$host = x$target; then
+	 export_sym_check="$gcc_cv_nm -g"
+       else
+	 export_sym_check=
+       fi
+     ;;
+     *)
+       if test x$build = x$host; then
+	 export_sym_check="objdump${exeext} -T"
+       elif test x$host = x$target; then
+	 export_sym_check="$gcc_cv_objdump -T"
+       else
+	 export_sym_check=
+       fi
+     ;;
+   esac
 
-if test x"$enable_plugin" = x"yes"; then
+   if test x"$enable_plugin" = x"yes"; then
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for exported symbols" >&5
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for exported symbols" >&5
 $as_echo_n "checking for exported symbols... " >&6; }
-  if test "x$export_sym_check" != x; then
-    echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
-    ${CC} ${CFLAGS} ${LDFLAGS} conftest.c -o conftest$ac_exeext > /dev/null 2>&1
-    if $export_sym_check conftest$ac_exeext | grep -q foobar > /dev/null; then
-      : # No need to use a flag
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+     if test "x$export_sym_check" != x; then
+       echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
+       ${CC} ${CFLAGS} ${LDFLAGS} conftest.c -o conftest$ac_exeext > /dev/null 2>&1
+       if $export_sym_check conftest$ac_exeext | grep -q foobar > /dev/null; then
+	 : # No need to use a flag
+	 { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-    else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+       else
+	 { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -rdynamic" >&5
+	 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -rdynamic" >&5
 $as_echo_n "checking for -rdynamic... " >&6; }
-      ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c -o conftest$ac_exeext > /dev/null 2>&1
-      if $export_sym_check conftest$ac_exeext | grep -q foobar > /dev/null; then
-        plugin_rdynamic=yes
-        pluginlibs="-rdynamic"
-      else
-        plugin_rdynamic=no
-        enable_plugin=no
-      fi
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $plugin_rdynamic" >&5
+	 ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c -o conftest$ac_exeext > /dev/null 2>&1
+	 if $export_sym_check conftest$ac_exeext | grep -q foobar > /dev/null; then
+	   plugin_rdynamic=yes
+	   pluginlibs="-rdynamic"
+	 else
+	   plugin_rdynamic=no
+	   enable_plugin=no
+	 fi
+	 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $plugin_rdynamic" >&5
 $as_echo "$plugin_rdynamic" >&6; }
-    fi
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: unable to check" >&5
+       fi
+     else
+       { $as_echo "$as_me:${as_lineno-$LINENO}: result: unable to check" >&5
 $as_echo "unable to check" >&6; }
-  fi
+     fi
 
-  # Check -ldl
-  saved_LIBS="$LIBS"
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing dlopen" >&5
+     # Check -ldl
+     saved_LIBS="$LIBS"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing dlopen" >&5
 $as_echo_n "checking for library containing dlopen... " >&6; }
 if test "${ac_cv_search_dlopen+set}" = set; then :
   $as_echo_n "(cached) " >&6
@@ -28023,28 +28267,28 @@ if test "$ac_res" != no; then :
 
 fi
 
-  if test x"$ac_cv_search_dlopen" = x"-ldl"; then
-    pluginlibs="$pluginlibs -ldl"
-  fi
-  LIBS="$saved_LIBS"
+     if test x"$ac_cv_search_dlopen" = x"-ldl"; then
+       pluginlibs="$pluginlibs -ldl"
+     fi
+     LIBS="$saved_LIBS"
 
-  # Check that we can build shared objects with -fPIC -shared
-  saved_LDFLAGS="$LDFLAGS"
-  saved_CFLAGS="$CFLAGS"
-  case "${host}" in
-    *-*-darwin*)
-      CFLAGS=`echo $CFLAGS | sed s/-mdynamic-no-pic//g`
-      CFLAGS="$CFLAGS -fPIC"
-      LDFLAGS="$LDFLAGS -shared -undefined dynamic_lookup"
-    ;;
-    *)
-      CFLAGS="$CFLAGS -fPIC"
-      LDFLAGS="$LDFLAGS -fPIC -shared"
-    ;;
-  esac
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -fPIC -shared" >&5
+     # Check that we can build shared objects with -fPIC -shared
+     saved_LDFLAGS="$LDFLAGS"
+     saved_CFLAGS="$CFLAGS"
+     case "${host}" in
+       *-*-darwin*)
+	 CFLAGS=`echo $CFLAGS | sed s/-mdynamic-no-pic//g`
+	 CFLAGS="$CFLAGS -fPIC"
+	 LDFLAGS="$LDFLAGS -shared -undefined dynamic_lookup"
+       ;;
+       *)
+	 CFLAGS="$CFLAGS -fPIC"
+	 LDFLAGS="$LDFLAGS -fPIC -shared"
+       ;;
+     esac
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -fPIC -shared" >&5
 $as_echo_n "checking for -fPIC -shared... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 extern int X;
 int
@@ -28064,22 +28308,22 @@ $as_echo "no" >&6; }; have_pic_shared=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-  if test x"$have_pic_shared" != x"yes" -o x"$ac_cv_search_dlopen" = x"no"; then
-    pluginlibs=
-    enable_plugin=no
-  fi
-  LDFLAGS="$saved_LDFLAGS"
-  CFLAGS="$saved_CFLAGS"
+     if test x"$have_pic_shared" != x"yes" -o x"$ac_cv_search_dlopen" = x"no"; then
+       pluginlibs=
+       enable_plugin=no
+     fi
+     LDFLAGS="$saved_LDFLAGS"
+     CFLAGS="$saved_CFLAGS"
 
-  # If plugin support had been requested but not available, fail.
-  if test x"$enable_plugin" = x"no" ; then
-    if test x"$default_plugin" != x"yes"; then
-      as_fn_error "
-Building GCC with plugin support requires a host that supports
--fPIC, -shared, -ldl and -rdynamic." "$LINENO" 5
-    fi
-  fi
-fi
+     # If plugin support had been requested but not available, fail.
+     if test x"$enable_plugin" = x"no" ; then
+       if test x"$default_plugin" != x"yes"; then
+	 as_fn_error "
+   Building GCC with plugin support requires a host that supports
+   -fPIC, -shared, -ldl and -rdynamic." "$LINENO" 5
+       fi
+     fi
+   fi
 
 
 
@@ -28145,6 +28389,43 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 fi
+
+# Specify what should be the default of -fdiagnostics-color option.
+
+# Check whether --with-diagnostics-color was given.
+if test "${with_diagnostics_color+set}" = set; then :
+  withval=$with_diagnostics_color; case x"$withval" in
+   xnever)
+     DIAGNOSTICS_COLOR_DEFAULT=DIAGNOSTICS_COLOR_NO
+     ;;
+   xauto)
+     DIAGNOSTICS_COLOR_DEFAULT=DIAGNOSTICS_COLOR_AUTO
+     ;;
+   xauto-if-env)
+     DIAGNOSTICS_COLOR_DEFAULT=-1
+     ;;
+   xalways)
+     DIAGNOSTICS_COLOR_DEFAULT=DIAGNOSTICS_COLOR_YES
+     ;;
+   *)
+     as_fn_error "$withval is an invalid option to --with-diagnostics-color" "$LINENO" 5
+     ;;
+ esac
+else
+  DIAGNOSTICS_COLOR_DEFAULT=DIAGNOSTICS_COLOR_AUTO
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define DIAGNOSTICS_COLOR_DEFAULT $DIAGNOSTICS_COLOR_DEFAULT
+_ACEOF
+
+
+# Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
+# of jit/jit-playback.c.
+cat > gcc-driver-name.h <<EOF
+#define GCC_DRIVER_NAME "${target_noncanonical}-gcc-${gcc_BASEVER}${exeext}"
+EOF
 
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)

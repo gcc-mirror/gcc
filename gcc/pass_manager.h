@@ -29,6 +29,7 @@ struct register_pass_info;
   DEF_PASS_LIST (all_lowering_passes) \
   DEF_PASS_LIST (all_small_ipa_passes) \
   DEF_PASS_LIST (all_regular_ipa_passes) \
+  DEF_PASS_LIST (all_late_ipa_passes) \
   DEF_PASS_LIST (all_passes)
 
 #define DEF_PASS_LIST(LIST) PASS_LIST_NO_##LIST,
@@ -47,8 +48,10 @@ class pass_manager
 {
 public:
   void *operator new (size_t sz);
+  void operator delete (void *ptr);
 
   pass_manager (context *ctxt);
+  ~pass_manager ();
 
   void register_pass (struct register_pass_info *pass_info);
   void register_one_dump_file (opt_pass *pass);
