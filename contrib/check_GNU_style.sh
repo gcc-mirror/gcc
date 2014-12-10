@@ -86,8 +86,7 @@ col (){
     shift 1
     grep -nH '^+' $* \
 	| grep -v ':+++' \
-	| cut -f 2 -d '+' \
-	| awk '{ if (length ($0) > 80) print $0 }' \
+	| awk -F':\\+' '{ if (length($2) > 80) print $0}' \
 	> $tmp
     if [ -s $tmp ]; then
 	printf "\n$msg\n"
