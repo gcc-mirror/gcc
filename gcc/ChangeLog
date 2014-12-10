@@ -1,3 +1,8 @@
+2014-12-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53513
+	* doc/extend.texi (__builtin_sh_set_fpscr): Fix typo.
+
 2014-12-10  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/61686
