@@ -1311,7 +1311,7 @@ recursive_inlining (struct cgraph_edge *edge,
 		    vec<cgraph_edge *> *new_edges)
 {
   int limit = PARAM_VALUE (PARAM_MAX_INLINE_INSNS_RECURSIVE_AUTO);
-  edge_heap_t heap (LONG_MIN);
+  edge_heap_t heap (sreal::min ());
   struct cgraph_node *node;
   struct cgraph_edge *e;
   struct cgraph_node *master_clone = NULL, *next;

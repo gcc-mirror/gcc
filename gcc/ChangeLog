@@ -1,5 +1,23 @@
 2014-12-10  Martin Liska  <mliska@suse.cz>
 
+	* sreal.c (sreal::shift_right): New implementation
+	for int64_t as m_sig.
+	(sreal::normalize): Likewise.
+	(sreal::to_int): Likewise.
+	(sreal::operator+): Likewise.
+	(sreal::operator-): Likewise.
+	(sreal::operator*): Likewise.
+	(sreal::operator/): Likewise.
+	(sreal::signedless_minus): Removed.
+	(sreal::signedless_plus): Removed.
+	(sreal::debug): const keyword is added.
+	* sreal.h (sreal::operator<): New implementation
+	for int64_t as m_sig.
+	* ipa-inline.c (recursive_inlining): LONG_MIN is replaced
+	with sreal::min ().
+
+2014-12-10  Martin Liska  <mliska@suse.cz>
+
 	* gimple-iterator.h (gsi_start_bb_nondebug): New function.
 	* ipa-icf-gimple.c (func_checker::compare_bb): Correct iteration
 	replaces loop based on precomputed number of non-debug statements.
