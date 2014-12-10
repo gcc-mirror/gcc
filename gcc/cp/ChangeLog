@@ -1,5 +1,9 @@
 2014-12-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64129
+	* decl.c (grokdeclarator): Recover from variable template
+	specialization declared as function.
+
 	PR c++/64222
 	* parser.c (cp_parser_unqualified_id): Don't declare fname while
 	parsing function parms.
