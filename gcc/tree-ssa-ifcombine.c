@@ -519,12 +519,12 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       /* Invert comparisons if necessary (and possible).  */
       if (inner_inv)
 	inner_cond_code = invert_tree_comparison (inner_cond_code,
-	  HONOR_NANS (TYPE_MODE (TREE_TYPE (gimple_cond_lhs (inner_cond)))));
+	  HONOR_NANS (gimple_cond_lhs (inner_cond)));
       if (inner_cond_code == ERROR_MARK)
 	return false;
       if (outer_inv)
 	outer_cond_code = invert_tree_comparison (outer_cond_code,
-	  HONOR_NANS (TYPE_MODE (TREE_TYPE (gimple_cond_lhs (outer_cond)))));
+	  HONOR_NANS (gimple_cond_lhs (outer_cond)));
       if (outer_cond_code == ERROR_MARK)
 	return false;
       /* Don't return false so fast, try maybe_fold_or_comparisons?  */

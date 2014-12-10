@@ -200,8 +200,9 @@ extern const struct real_format *
    x * 0 into 0, are not correct for NaN operands, and are normally
    disabled for modes with NaNs.  The user can ask for them to be
    done anyway using the -funsafe-math-optimizations switch.  */
-#define HONOR_NANS(MODE) \
-  (MODE_HAS_NANS (MODE) && !flag_finite_math_only)
+extern bool HONOR_NANS (machine_mode);
+extern bool HONOR_NANS (const_tree);
+extern bool HONOR_NANS (const_rtx);
 
 /* Like HONOR_NANs, but true if we honor signaling NaNs (or sNaNs).  */
 #define HONOR_SNANS(MODE) (flag_signaling_nans && HONOR_NANS (MODE))

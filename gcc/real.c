@@ -30,6 +30,8 @@
 #include "tm_p.h"
 #include "dfp.h"
 #include "wide-int.h"
+#include "rtl.h"
+#include "options.h"
 
 /* The floating point model used internally is not exactly IEEE 754
    compliant, and close to the description in the ISO C99 standard,
@@ -4982,3 +4984,25 @@ get_max_float (const struct real_format *fmt, char *buf, size_t len)
 
   gcc_assert (strlen (buf) < len);
 }
+
+/* True if mode M has a NaN representation and
+   the treatment of NaN operands is important.  */
+
+bool
+HONOR_NANS (machine_mode m)
+{
+  return MODE_HAS_NANS (m) && !flag_finite_math_only;
+}
+
+bool
+HONOR_NANS (const_tree t)
+{
+  return HONOR_NANS (element_mode (t));
+}
+
+bool
+HONOR_NANS (const_rtx x)
+{
+    return HONOR_NANS (GET_MODE (x));
+}
+

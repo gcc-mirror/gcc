@@ -458,13 +458,13 @@ valid_lattice_transition (ccp_prop_value_t old_val, ccp_prop_value_t new_val)
      to non-NaN.  */
   tree type = TREE_TYPE (new_val.value);
   if (SCALAR_FLOAT_TYPE_P (type)
-      && !HONOR_NANS (TYPE_MODE (type)))
+      && !HONOR_NANS (type))
     {
       if (REAL_VALUE_ISNAN (TREE_REAL_CST (old_val.value)))
 	return true;
     }
   else if (VECTOR_FLOAT_TYPE_P (type)
-	   && !HONOR_NANS (TYPE_MODE (TREE_TYPE (type))))
+	   && !HONOR_NANS (type))
     {
       for (unsigned i = 0; i < VECTOR_CST_NELTS (old_val.value); ++i)
 	if (!REAL_VALUE_ISNAN
@@ -475,7 +475,7 @@ valid_lattice_transition (ccp_prop_value_t old_val, ccp_prop_value_t new_val)
       return true;
     }
   else if (COMPLEX_FLOAT_TYPE_P (type)
-	   && !HONOR_NANS (TYPE_MODE (TREE_TYPE (type))))
+	   && !HONOR_NANS (type))
     {
       if (!REAL_VALUE_ISNAN (TREE_REAL_CST (TREE_REALPART (old_val.value)))
 	  && !operand_equal_p (TREE_REALPART (old_val.value),

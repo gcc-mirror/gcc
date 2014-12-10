@@ -73,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
    is volatile.  */
 (simplify
  (minus @0 @0)
- (if (!FLOAT_TYPE_P (type) || !HONOR_NANS (element_mode (type)))
+ (if (!FLOAT_TYPE_P (type) || !HONOR_NANS (type))
   { build_zero_cst (type); }))
 
 (simplify
@@ -86,8 +86,7 @@ along with GCC; see the file COPYING3.  If not see
    negative value by 0 gives -0, not +0.  */
 (simplify
  (mult @0 real_zerop@1)
- (if (!HONOR_NANS (element_mode (type))
-      && !HONOR_SIGNED_ZEROS (element_mode (type)))
+ (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (element_mode (type)))
   @1))
 
 /* In IEEE floating point, x*1 is not equivalent to x for snans.
@@ -150,7 +149,7 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
  (rdiv @0 @0)
  (if (FLOAT_TYPE_P (type)
-      && ! HONOR_NANS (element_mode (type))
+      && ! HONOR_NANS (type)
       && ! HONOR_INFINITIES (element_mode (type)))
   { build_one_cst (type); }))
 
@@ -159,7 +158,7 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
  (rdiv:c @0 (negate @0))
  (if (FLOAT_TYPE_P (type)
-      && ! HONOR_NANS (element_mode (type))
+      && ! HONOR_NANS (type)
       && ! HONOR_INFINITIES (element_mode (type)))
   { build_minus_one_cst (type); }))
 
@@ -905,7 +904,7 @@ along with GCC; see the file COPYING3.  If not see
       a computed operator in the replacement tree thus we have
       to play the trick below.  */
    (with { enum tree_code ic = invert_tree_comparison
-             (cmp, HONOR_NANS (element_mode (@0))); }
+             (cmp, HONOR_NANS (@0)); }
     (if (ic == icmp)
      (icmp @0 @1))
     (if (ic == ncmp)
@@ -913,7 +912,7 @@ along with GCC; see the file COPYING3.  If not see
  (simplify
   (bit_xor (cmp @0 @1) integer_truep)
   (with { enum tree_code ic = invert_tree_comparison
-            (cmp, HONOR_NANS (element_mode (@0))); }
+            (cmp, HONOR_NANS (@0)); }
    (if (ic == icmp)
     (icmp @0 @1))
    (if (ic == ncmp)

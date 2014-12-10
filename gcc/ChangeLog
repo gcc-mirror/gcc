@@ -1,3 +1,26 @@
+2014-12-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	* real.h (HONOR_NANS): Replace macro with 3 overloaded declarations.
+	* real.c: Include rtl.h and options.h.
+	(HONOR_NANS): Define three overloads.
+	* builtins.c (fold_builtin_classify, fold_builtin_unordered_cmp):
+	Simplify argument of HONOR_NANS.
+	* fold-const.c (combine_comparisons, fold_truth_not_expr,
+	fold_cond_expr_with_comparison, merge_truthop_with_opposite_arm,
+	fold_comparison, fold_binary_loc): Likewise.
+	* ifcvt.c (noce_try_move, noce_try_minmax): Likewise.
+	* ipa-inline-analysis.c (add_clause,
+	set_cond_stmt_execution_predicate): Likewise.
+	* match.pd: Likewise.
+	* rtlanal.c (may_trap_p_1): Likewise.
+	* simplify-rtx.c (simplify_const_relational_operation): Likewise.
+	* tree-if-conv.c (parse_predicate): Likewise.
+	* tree-ssa-ccp.c (valid_lattice_transition): Likewise.
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): Likewise.
+	* tree-ssa-phiopt.c (minmax_replacement, neg_replacement): Likewise.
+	* tree-ssa-reassoc.c (eliminate_using_constants): Likewise.
+	* tree-ssa-tail-merge.c (gimple_equal_p): Likewise.
+
 2014-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/62021
