@@ -1,3 +1,8 @@
+2014-12-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/60718
+	* gfortran.dg/class_alias.f90: New.
+
 2014-12-10  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/forwprop-29.c: Add -fno-ipa-icf.
