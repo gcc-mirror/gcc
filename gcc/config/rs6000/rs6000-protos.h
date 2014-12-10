@@ -109,6 +109,7 @@ extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
 extern enum rtx_code rs6000_reverse_condition (machine_mode,
 					       enum rtx_code);
+extern rtx rs6000_emit_eqne (machine_mode, rtx, rtx, rtx);
 extern void rs6000_emit_sISEL (machine_mode, rtx[]);
 extern void rs6000_emit_sCOND (machine_mode, rtx[]);
 extern void rs6000_emit_cbranch (machine_mode, rtx[]);

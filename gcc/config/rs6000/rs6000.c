@@ -19422,6 +19422,27 @@ rs6000_emit_sISEL (machine_mode mode ATTRIBUTE_UNUSED, rtx operands[])
   rs6000_emit_int_cmove (operands[0], operands[1], const1_rtx, const0_rtx);
 }
 
+/* Emit RTL that sets a register to zero if OP1 and OP2 are equal.  SCRATCH
+   can be used as that dest register.  Return the dest register.  */
+
+rtx
+rs6000_emit_eqne (machine_mode mode, rtx op1, rtx op2, rtx scratch)
+{
+  if (op2 == const0_rtx)
+    return op1;
+
+  if (GET_CODE (scratch) == SCRATCH)
+    scratch = gen_reg_rtx (mode);
+
+  if (logical_operand (op2, mode))
+    emit_insn (gen_rtx_SET (VOIDmode, scratch, gen_rtx_XOR (mode, op1, op2)));
+  else
+    emit_insn (gen_rtx_SET (VOIDmode, scratch,
+			    gen_rtx_PLUS (mode, op1, negate_rtx (mode, op2))));
+
+  return scratch;
+}
+
 void
 rs6000_emit_sCOND (machine_mode mode, rtx operands[])
 {
@@ -19429,12 +19450,6 @@ rs6000_emit_sCOND (machine_mode mode, rtx operands[])
   machine_mode op_mode;
   enum rtx_code cond_code;
   rtx result = operands[0];
-
-  if (TARGET_ISEL && (mode == SImode || mode == DImode))
-    {
-      rs6000_emit_sISEL (mode, operands);
-      return;
-    }
 
   condition_rtx = rs6000_generate_compare (operands[1], mode);
   cond_code = GET_CODE (condition_rtx);

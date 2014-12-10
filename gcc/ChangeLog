@@ -1,6 +1,44 @@
 2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/64180
+	* config/rs6000/predicates.md (unsigned_comparison_operator): New.
+	(signed_comparison_operator): New.
+	* config/rs6000/rs6000-protos.h (rs6000_emit_eqne): Declare.
+	* config/rs6000/rs6000.c (rs6000_emit_eqne): New function.
+	(rs6000_emit_sCOND): Remove ISEL test (move it to the expander).
+	* config/rs6000/rs6000.md (add<mode>3 for SDI): Expand DImode
+	add to addc,adde directly, if !TARGET_POWERPC64.
+	(sub<mode>3 for SDI): Expand DImode sub to subfc,subfe directly,
+	if !TARGET_POWERPC64.
+	(neg<mode>2): Delete expander.
+	(*neg<mode>2): Rename to "neg<mode>2".
+	(addti3, subti3): Delete.
+	(addti3, subti3): New expanders.
+	(*adddi3_noppc64, *subdi3_noppc64, *negdi2_noppc64): Delete.
+	(cstore<mode>4_unsigned): New expander.
+	(cstore<mode>4): Allow GPR as output (not just SI).  Rewrite.
+	(cstore<mode>4 for FP): Remove superfluous quotes.
+	(*eq<mode>, *eq<mode>_compare, *plus_eqsi and splitter,
+	*compare_plus_eqsi and splitter, *plus_eqsi_compare and splitter,
+	*neg_eq0<mode>, *neg_eq<mode>, *ne0_<mode>, plus_ne0_<mode>,
+	compare_plus_ne0_<mode> and splitter, *compare_plus_ne0_<mode>_1 and
+	splitter, *plus_ne0_<mode>_compare and splitter, *leu<mode>,
+	*leu<mode>_compare and splitter, *plus_leu<mode>, *neg_leu<mode>,
+	*and_neg_leu<mode>, *ltu<mode>, *ltu<mode>_compare, *plus_ltu<mode>,
+	*plus_ltu<mode>_1, *plus_ltu<mode>compare, *neg_ltu<mode>, *geu<mode>,
+	*geu<mode>_compare and splitter, *plus_geu<mode>, *neg_geu<mode>,
+	*and_neg_geu<mode>, *plus_gt0<mode>, *gtu<mode>, *gtu<mode>_compare,
+	*plus_gtu<mode>, *plus_gtu<mode>_1, *plus_gtu<mode>_compare,
+	*neg_gtu<mode>, 12 anonymous insns, and 12 anonymous splitters):
+	Delete.
+	(eq<mode>3, ne<mode>3): New.
+	(*neg_eq_<mode>, *neg_ne_<mode>): New.
+	(*plus_eq_<mode>, *plus_ne_<mode>): New.
+	(*minus_eq_<mode>, *minus_ne_<mode>): New.
+
+2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/64180
 	* config/rs6000/predicates.md (adde_operand): New.
 	* config/rs6000/rs6000.md (add<mode>3_carry): New.
 	(*add<mode>3_imm_carry_pos): New.
