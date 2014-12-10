@@ -1,3 +1,8 @@
+2014-12-10  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/64100
+	* g++.dg/template/pr64100.C: New file.
+
 2014-12-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64191
