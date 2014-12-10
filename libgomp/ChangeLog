@@ -1,3 +1,7 @@
+2014-12-10  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* testsuite/libgomp.c/target-9.c: New test.
+
 2014-12-09  Varvara Rainchik  <varvara.rainchik@intel.com>
 
 	* config.h.in: Regenerate.
