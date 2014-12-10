@@ -1,5 +1,10 @@
 2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (*anddi3_2rld_dot, *anddi3_rld_dot2):
+	Change type from "compare" to "two".
+
+2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR target/64180
 	* config/rs6000/predicates.md (unsigned_comparison_operator): New.
 	(signed_comparison_operator): New.
