@@ -1,3 +1,13 @@
+2014-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_facets.tcc (numpunct::_M_cache): Avoid calling
+	virtual functions twice. Only update _M_allocated after all
+	allocations have succeeded.
+	* include/bits/locale_facets_nonio.tcc (moneypunct::_M_cache):
+	Likewise.
+	* include/bits/locale_facets_nonio.h (__timepunct::_M_cache): Remove
+	unused declaration.
+
 2014-12-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64203
