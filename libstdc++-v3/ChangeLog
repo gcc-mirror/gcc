@@ -11,6 +11,17 @@
 	* include/std/future (__future_base::_Setter::operator(),
 	__future_base::_Task_setter::operator()): Make call operators const.
 
+	* include/bits/regex.h (regex_match, regex_search): LWG DR 2329,
+	add deleted overloads for rvalue strings.
+	(regex_iterator, regex_token_iterator): LWG DR 2332, add deleted
+	constructors for rvalue regexes.
+	* testsuite/28_regex/algorithms/regex_match/dr2329_neg.cc: New.
+	* testsuite/28_regex/algorithms/regex_search/dr2329_neg.cc: New.
+	* testsuite/28_regex/iterators/regex_iterator/ctors/char/dr2332_neg.cc:
+	New.
+	* testsuite/28_regex/iterators/regex_token_iterator/ctors/char/
+	dr2332_neg.cc: New.
+
 2014-12-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64203
