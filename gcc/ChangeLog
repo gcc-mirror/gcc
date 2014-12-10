@@ -1,3 +1,9 @@
+2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/64180
+	* config/rs6000/rs6000.c (TARGET_MD_ASM_CLOBBERS): Define.
+	(rs6000_md_asm_clobbers): New function.
+
 2014-12-10  Felix Yang  <felix.yang@huawei.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_function_profiler): Remove
