@@ -138,9 +138,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       ~__timepunct_cache();
 
-      void
-      _M_cache(const locale& __loc);
-
     private:
       __timepunct_cache&
       operator=(const __timepunct_cache&);
