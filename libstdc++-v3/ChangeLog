@@ -8,6 +8,9 @@
 	* include/bits/locale_facets_nonio.h (__timepunct::_M_cache): Remove
 	unused declaration.
 
+	* include/std/future (__future_base::_Setter::operator(),
+	__future_base::_Task_setter::operator()): Make call operators const.
+
 2014-12-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64203
