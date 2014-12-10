@@ -1,3 +1,8 @@
+2014-12-10  Felix Yang  <felix.yang@huawei.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_function_profiler): Remove
+	declaration of removed function.
+
 2014-12-10  Richard Biener  <rguenther@suse.de>
 
 	 * tree-ssa-loop-im.c
