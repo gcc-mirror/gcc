@@ -2040,6 +2040,7 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_HASWELL)
 #define m_BONNELL (1<<PROCESSOR_BONNELL)
 #define m_SILVERMONT (1<<PROCESSOR_SILVERMONT)
+#define m_KNL (1<<PROCESSOR_KNL)
 #define m_INTEL (1<<PROCESSOR_INTEL)
 
 #define m_GEODE (1<<PROCESSOR_GEODE)
@@ -2505,6 +2506,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"haswell", &core_cost, 16, 10, 16, 10, 16},
   {"bonnell", &atom_cost, 16, 15, 16, 7, 16},
   {"silvermont", &slm_cost, 16, 15, 16, 7, 16},
+  {"knl", &slm_cost, 16, 15, 16, 7, 16},
   {"intel", &intel_cost, 16, 15, 16, 7, 16},
   {"geode", &geode_cost, 0, 0, 0, 0, 0},
   {"k6", &k6_cost, 32, 7, 32, 7, 32},
@@ -3178,6 +3180,8 @@ ix86_option_override_internal (bool main_args_p,
    | PTA_FMA | PTA_MOVBE | PTA_HLE)
 #define PTA_BROADWELL \
   (PTA_HASWELL | PTA_ADX | PTA_PRFCHW | PTA_RDSEED)
+#define PTA_KNL \
+  (PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER | PTA_AVX512F | PTA_AVX512CD)
 #define PTA_BONNELL \
   (PTA_CORE2 | PTA_MOVBE)
 #define PTA_SILVERMONT \
@@ -3241,6 +3245,7 @@ ix86_option_override_internal (bool main_args_p,
       {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
       {"slm", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
+      {"knl", PROCESSOR_KNL, CPU_KNL, PTA_KNL},
       {"intel", PROCESSOR_INTEL, CPU_SLM, PTA_NEHALEM},
       {"geode", PROCESSOR_GEODE, CPU_GEODE,
 	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_PREFETCH_SSE | PTA_PRFCHW},
@@ -25934,6 +25939,7 @@ ix86_issue_rate (void)
     case PROCESSOR_PENTIUM:
     case PROCESSOR_BONNELL:
     case PROCESSOR_SILVERMONT:
+    case PROCESSOR_KNL:
     case PROCESSOR_INTEL:
     case PROCESSOR_K6:
     case PROCESSOR_BTVER2:
@@ -26276,6 +26282,7 @@ ix86_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
       break;
 
     case PROCESSOR_SILVERMONT:
+    case PROCESSOR_KNL:
     case PROCESSOR_INTEL:
       if (!reload_completed)
 	return cost;
@@ -26345,6 +26352,7 @@ ia32_multipass_dfa_lookahead (void)
     case PROCESSOR_HASWELL:
     case PROCESSOR_BONNELL:
     case PROCESSOR_SILVERMONT:
+    case PROCESSOR_KNL:
     case PROCESSOR_INTEL:
       /* Generally, we want haifa-sched:max_issue() to look ahead as far
 	 as many instructions can be executed on a cycle, i.e.,
@@ -34240,7 +34248,8 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
     P_PROC_FMA,
     P_AVX2,
     P_PROC_AVX2,
-    P_AVX512F
+    P_AVX512F,
+    P_PROC_AVX512F
   };
 
  enum feature_priority priority = P_ZERO;
@@ -34343,6 +34352,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	    case PROCESSOR_BONNELL:
 	      arg_str = "bonnell";
 	      priority = P_PROC_SSSE3;
+	      break;
+	    case PROCESSOR_KNL:
+	      arg_str = "knl";
+	      priority = P_PROC_AVX512F;
 	      break;
 	    case PROCESSOR_SILVERMONT:
 	      arg_str = "silvermont";
@@ -35262,6 +35275,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_AMDFAM10H,
     M_AMDFAM15H,
     M_INTEL_SILVERMONT,
+    M_INTEL_KNL,
     M_AMD_BTVER1,
     M_AMD_BTVER2,    
     M_CPU_SUBTYPE_START,
@@ -35299,6 +35313,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"haswell", M_INTEL_COREI7_HASWELL},
       {"bonnell", M_INTEL_BONNELL},
       {"silvermont", M_INTEL_SILVERMONT},
+      {"knl", M_INTEL_KNL},
       {"amdfam10h", M_AMDFAM10H},
       {"barcelona", M_AMDFAM10H_BARCELONA},
       {"shanghai", M_AMDFAM10H_SHANGHAI},

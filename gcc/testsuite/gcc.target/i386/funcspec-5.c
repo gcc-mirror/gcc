@@ -24,6 +24,7 @@ extern void test_ssse3 (void)			__attribute__((__target__("ssse3")));
 extern void test_tbm (void)			__attribute__((__target__("tbm")));
 extern void test_avx (void)			__attribute__((__target__("avx")));
 extern void test_avx2 (void)			__attribute__((__target__("avx2")));
+extern void test_avx512 (void)			__attribute__((__target__("avx512")));
 
 extern void test_no_abm (void)			__attribute__((__target__("no-abm")));
 extern void test_no_aes (void)			__attribute__((__target__("no-aes")));
@@ -46,6 +47,7 @@ extern void test_no_ssse3 (void)		__attribute__((__target__("no-ssse3")));
 extern void test_no_tbm (void)			__attribute__((__target__("no-tbm")));
 extern void test_no_avx (void)			__attribute__((__target__("no-avx")));
 extern void test_no_avx2 (void)   		__attribute__((__target__("no-avx2")));
+extern void test_no_avx512 (void)   		__attribute__((__target__("no-avx512")));
 
 extern void test_arch_i386 (void)		__attribute__((__target__("arch=i386")));
 extern void test_arch_i486 (void)		__attribute__((__target__("arch=i486")));
@@ -70,6 +72,7 @@ extern void test_arch_core2 (void)		__attribute__((__target__("arch=core2")));
 extern void test_arch_corei7 (void)		__attribute__((__target__("arch=corei7")));
 extern void test_arch_corei7_avx (void)		__attribute__((__target__("arch=corei7-avx")));
 extern void test_arch_core_avx2 (void)		__attribute__((__target__("arch=core-avx2")));
+extern void test_arch_knl (void)		__attribute__((__target__("arch=knl")));
 extern void test_arch_geode (void)		__attribute__((__target__("arch=geode")));
 extern void test_arch_k6 (void)			__attribute__((__target__("arch=k6")));
 extern void test_arch_k6_2 (void)		__attribute__((__target__("arch=k6-2")));
