@@ -1,6 +1,12 @@
 2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/64180
+	* config/rs6000/rs6000.md (*add<mode>3_internal1): Remove addic
+	alternative.
+
+2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/64180
 	* config/rs6000/rs6000.md (*ctr<mode>_internal1, *ctr<mode>_internal2,
 	*ctr<mode>_internal5, *ctr<mode>_internal6): Change "r" alternatives
 	to "b".  Increase length.
