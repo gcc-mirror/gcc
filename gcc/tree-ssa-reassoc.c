@@ -2069,7 +2069,7 @@ range_entry_cmp (const void *a, const void *b)
 	      else
 		return -1;
 	    }
-	  else if (p->high != NULL_TREE)
+	  else if (q->high != NULL_TREE)
 	    return 1;
 	  /* If both ranges are the same, sort below by ascending idx.  */
 	}
