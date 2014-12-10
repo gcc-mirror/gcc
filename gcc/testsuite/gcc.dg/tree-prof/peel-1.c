@@ -20,7 +20,7 @@ main()
     t();
   return 0;
 }
-/* { dg-final-use { scan-rtl-dump "Considering simply peeling loop" "loop2_unroll" } } */
+/* { dg-final-use { scan-tree-dump "Peeled loop ., 2 times" "cunroll" } } */
 /* In fact one peeling is enough; we however mispredict number of iterations of the loop
    at least until loop_ch is schedule ahead of profiling pass.  */
-/* { dg-final-use { cleanup-rtl-dump "loop2_unroll" } } */
+/* { dg-final-use { cleanup-tree-dump "cunroll" } } */
