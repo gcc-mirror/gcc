@@ -175,6 +175,7 @@ varpool_node::get_create (tree decl)
       g->have_offload = true;
       if (!in_lto_p)
 	vec_safe_push (offload_vars, decl);
+      node->force_output = 1;
 #endif
     }
 

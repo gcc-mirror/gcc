@@ -1,3 +1,8 @@
+2014-12-10  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* varpool.c (varpool_node::get_create): Force output of vars with
+	"omp declare target" attribute.
+
 2014-12-10  Marc Glisse  <marc.glisse@inria.fr>
 
 	* real.h (HONOR_NANS): Replace macro with 3 overloaded declarations.
