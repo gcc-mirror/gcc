@@ -1,3 +1,24 @@
+2014-12-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2014-09-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/builtins-1.c: Add tests for vec_ctf,
+	vec_cts, and vec_ctu.
+	* gcc.target/powerpc/builtins-2.c: Likewise.
+
+	Backport from mainline
+	2014-08-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/builtins-1.c: Add tests for vec_xl, vec_xst,
+	vec_round, vec_splat, vec_div, and vec_mul.
+	* gcc.target/powerpc/builtins-2.c: New test.
+
+	Backport from mainline
+	2014-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* testsuite/gcc.target/powerpc/builtins-1.c: New test.
+
 2014-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/62021
