@@ -1,3 +1,10 @@
+2014-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64191
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Do not
+	mark clobbers as necessary.
+	(eliminate_unnecessary_stmts): Keep clobbers live if we can.
+
 2014-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/63594
