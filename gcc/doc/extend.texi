@@ -16902,6 +16902,15 @@ int get_tcb_value (void)
 @end smallexample
 @end deftypefn
 
+@deftypefn {Built-in Function} {unsigned int} __builtin_sh_get_fpscr (void)
+Returns the value that is currently set in the @samp{FPSCR} register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {void} __builtin_sh_get_fpscr (unsigned int @var{val})
+Sets the @samp{FPSCR} register to the specified value @var{val}, while
+preserving the current values of the FR, SZ and PR bits.
+@end deftypefn
+
 @node SPARC VIS Built-in Functions
 @subsection SPARC VIS Built-in Functions
 
