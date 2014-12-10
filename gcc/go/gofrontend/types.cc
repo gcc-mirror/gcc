@@ -1805,6 +1805,7 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
 
   Named_object* hash_fn = gogo->start_function(hash_name, hash_fntype, false,
 					       bloc);
+  hash_fn->func_value()->set_is_type_specific_function();
   gogo->start_block(bloc);
 
   if (name != NULL && name->real_type()->named_type() != NULL)
@@ -1825,6 +1826,7 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
 
   Named_object *equal_fn = gogo->start_function(equal_name, equal_fntype,
 						false, bloc);
+  equal_fn->func_value()->set_is_type_specific_function();
   gogo->start_block(bloc);
 
   if (name != NULL && name->real_type()->named_type() != NULL)
