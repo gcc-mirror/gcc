@@ -257,9 +257,8 @@
   "iq_power4")
 
 (define_insn_reservation "power4-compare" 2
-  (and (ior (eq_attr "type" "compare")
-	    (and (eq_attr "type" "shift,exts")
-		 (eq_attr "dot" "yes")))
+  (and (eq_attr "type" "shift,exts")
+       (eq_attr "dot" "yes")
        (eq_attr "cpu" "power4"))
   "(du1_power4+du2_power4|du2_power4+du3_power4|du3_power4+du4_power4),\
    ((iu1_power4,iu2_power4)\

@@ -203,9 +203,8 @@
   "DU_power7,FXU_power7")
 
 (define_insn_reservation "power7-compare" 2
-  (and (ior (eq_attr "type" "compare")
-	    (and (eq_attr "type" "shift,exts")
-		 (eq_attr "dot" "yes")))
+  (and (eq_attr "type" "shift,exts")
+       (eq_attr "dot" "yes")
        (eq_attr "cpu" "power7"))
   "DU2F_power7,FXU_power7,FXU_power7")
 

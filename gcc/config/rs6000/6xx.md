@@ -147,7 +147,7 @@
   "mciu_6xx*36")
 
 (define_insn_reservation "ppc604-compare" 3
-  (and (ior (eq_attr "type" "cmp,compare")
+  (and (ior (eq_attr "type" "cmp")
 	    (and (eq_attr "type" "add,logical,shift,exts")
 		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))

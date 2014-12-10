@@ -1,5 +1,38 @@
 2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/40x.md (ppc403-compare): Remove "compare".
+	config/rs6000/440.md (ppc440-compare): Remove "compare".
+	config/rs6000/476.md (ppc476-compare): Remove "compare".
+	config/rs6000/601.md (ppc601-compare): Remove "compare".
+	config/rs6000/603.md (ppc603-compare): Remove "compare".
+	config/rs6000/6xx.md (ppc604-compare): Remove "compare".
+	config/rs6000/7450.md (ppc7450-compare): Remove "compare".
+	config/rs6000/7xx.md (ppc750-compare): Remove "compare".
+	config/rs6000/8540.md (ppc8540_su): Remove "compare".
+	config/rs6000/cell.md (cell-fast-cmp, cell-cmp-microcoded): Remove
+	"compare".
+	config/rs6000/e300c2c3.md (ppce300c3_cmp): Remove "compare".
+	config/rs6000/e500mc.md (e500mc_su): Remove "compare".
+	config/rs6000/e500mc64.md (e500mc64_su2): Remove "compare".
+	config/rs6000/e5500.md (e5500_sfx2): Remove "compare".
+	config/rs6000/e6500.md (e6500_sfx2): Remove "compare".
+	config/rs6000/mpc.md (mpccore-compare): Remove "compare".
+	config/rs6000/power4.md (power4-compare): Remove "compare".
+	config/rs6000/power5.md (power5-compare): Remove "compare".
+	config/rs6000/power6.md (power6-compare): Remove "compare".
+	config/rs6000/power7.md (power7-compare): Remove "compare".
+	config/rs6000/power8.md (power8-compare): Remove "compare".  Update
+	comment.
+	config/rs6000/rs6000.c (rs6000_adjust_cost) <TYPE_COMPARE>: Remove
+	(three times).
+	(is_cracked_insn): Remove TYPE_COMPARE case.
+	(insn_must_be_first_in_group) <TYPE_COMPARE>: Remove (twice).
+	config/rs6000/rs6000.md (type): Remove "compare".
+	(cell_micro): Remove "compare".
+	config/rs6000/rs64.md (rs64a-compare): Remove "compare".
+
+2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (*anddi3_2rld_dot, *anddi3_rld_dot2):
 	Change type from "compare" to "two".
 
