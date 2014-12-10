@@ -2536,6 +2536,12 @@ lookup_destructor (tree object, tree scope, tree dtor_name,
   expr = lookup_member (dtor_type, complete_dtor_identifier,
 			/*protect=*/1, /*want_type=*/false,
 			tf_warning_or_error);
+  if (!expr)
+    {
+      if (complain & tf_error)
+	cxx_incomplete_type_error (dtor_name, dtor_type);
+      return error_mark_node;
+    }
   expr = (adjust_result_of_qualified_name_lookup
 	  (expr, dtor_type, object_type));
   if (scope == NULL_TREE)
