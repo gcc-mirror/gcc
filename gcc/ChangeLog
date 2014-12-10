@@ -1,5 +1,30 @@
 2014-12-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/63594
+	* config/i386/sse.md (vec_dupv4sf): Move after
+	<mask_codefor><avx512>_vec_dup_gpr<mode><mask_name> pattern.
+	(*vec_dupv4si, *vec_dupv2di): Likewise.
+	(<mask_codefor><avx512>_vec_dup_mem<mode><mask_name>): Merge into ...
+	(<mask_codefor><avx512>_vec_dup_gpr<mode><mask_name>): ... this
+	pattern.
+	(*vec_dup<mode> AVX2_VEC_DUP_MODE splitter): Disable for
+	TARGET_AVX512VL (for QI/HI scalar modes only if TARGET_AVX512BW
+	is set too).
+	* config/i386/i386.c (enum ix86_builtins): Remove
+	IX86_BUILTIN_PBROADCASTQ256_MEM_MASK,
+	IX86_BUILTIN_PBROADCASTQ128_MEM_MASK and
+	IX86_BUILTIN_PBROADCASTQ512_MEM.
+	(bdesc_args): Use __builtin_ia32_pbroadcastq512_gpr_mask,
+	__builtin_ia32_pbroadcastq256_gpr_mask and
+	__builtin_ia32_pbroadcastq128_gpr_mask instead of *_mem_mask
+	regardless of OPTION_MASK_ISA_64BIT.
+	* config/i386/avx512fintrin.h (_mm512_set1_epi64,
+	_mm512_mask_set1_epi64, _mm512_maskz_set1_epi64): Use *_gpr_mask
+	builtins regardless of whether TARGET_64BIT is defined or not.
+	* config/i386/avx512vlintrin.h (_mm256_mask_set1_epi64,
+	_mm256_maskz_set1_epi64, _mm_mask_set1_epi64, _mm_maskz_set1_epi64):
+	Likewise.
+
 	* config/i386/sse.md (*mov<mode>_internal, *avx512f_gatherdi<mode>_2):
 	Use <MODE_SIZE> instead of GET_MODE_SIZE (<MODE>mode).
 
