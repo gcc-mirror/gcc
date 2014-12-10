@@ -1,3 +1,8 @@
+2014-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (*mov<mode>_internal, *avx512f_gatherdi<mode>_2):
+	Use <MODE_SIZE> instead of GET_MODE_SIZE (<MODE>mode).
+
 2014-12-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53513
