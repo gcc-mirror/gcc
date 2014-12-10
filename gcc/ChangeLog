@@ -1,3 +1,9 @@
+2014-12-10  Richard Biener  <rguenther@suse.de>
+
+	 * tree-ssa-loop-im.c
+	 (move_computations_dom_walker::before_dom_children): Clear
+	 SSA_NAME_RANGE_INFO on moved stmts.
+
 2014-12-10  Martin Liska  <mliska@suse.cz>
 
 	* sreal.c (sreal::shift_right): New implementation
