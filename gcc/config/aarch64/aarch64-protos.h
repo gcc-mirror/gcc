@@ -250,7 +250,6 @@ void aarch64_expand_epilogue (bool);
 void aarch64_expand_mov_immediate (rtx, rtx);
 void aarch64_expand_prologue (void);
 void aarch64_expand_vector_init (rtx, rtx);
-void aarch64_function_profiler (FILE *, int);
 void aarch64_init_cumulative_args (CUMULATIVE_ARGS *, const_tree, rtx,
 				   const_tree, unsigned);
 void aarch64_init_expanders (void);
