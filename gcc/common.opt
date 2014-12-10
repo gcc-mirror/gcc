@@ -1062,6 +1062,10 @@ fdelete-null-pointer-checks
 Common Report Var(flag_delete_null_pointer_checks) Init(1) Optimization
 Delete useless null pointer checks
 
+fdevirtualize-at-ltrans
+Common Report Var(flag_ltrans_devirtualize)
+Perofrm extra streaming to support more agressive devirtualization at LTO ltrans stage.
+
 fdevirtualize-speculatively
 Common Report Var(flag_devirtualize_speculatively) Optimization
 Perform speculative devirtualization
