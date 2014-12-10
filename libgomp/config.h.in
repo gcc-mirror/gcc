@@ -79,6 +79,9 @@
 /* Define to 1 if the target supports thread-local storage. */
 #undef HAVE_TLS
 
+/* Define to 1 if the target use emutls for thread-local storage. */
+#undef USE_EMUTLS
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 

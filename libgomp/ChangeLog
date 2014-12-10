@@ -1,3 +1,12 @@
+2014-12-09  Varvara Rainchik  <varvara.rainchik@intel.com>
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add GCC_CHECK_EMUTLS.
+	* libgomp.h: Add check for USE_EMUTLS: this case
+	is equal to HAVE_TLS.
+	* team.c: Likewise.
+
 2014-12-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.tgt (x86_64-*-linux*): Tune -m32 multilib to generic.
