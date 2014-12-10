@@ -811,7 +811,7 @@
       /* There is no evex-encoded vmov* for sizes smaller than 64-bytes
 	 in avx512f, so we need to use workarounds, to access sse registers
 	 16-31, which are evex-only. In avx512vl we don't need workarounds.  */
-      if (TARGET_AVX512F && GET_MODE_SIZE (<MODE>mode) < 64 && !TARGET_AVX512VL
+      if (TARGET_AVX512F && <MODE_SIZE> < 64 && !TARGET_AVX512VL
 	  && ((REG_P (operands[0]) && EXT_REX_SSE_REGNO_P (REGNO (operands[0])))
 	      || (REG_P (operands[1]) && EXT_REX_SSE_REGNO_P (REGNO (operands[1])))))
 	{
@@ -18208,7 +18208,7 @@
 {
   if (<MODE>mode != <VEC_GATHER_SRCDI>mode)
     {
-      if (GET_MODE_SIZE (<MODE>mode) != 64)
+      if (<MODE_SIZE> != 64)
 	return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %x0%{%1%}|%t0%{%1%}, %g5}";
       else
 	return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %t0%{%1%}|%t0%{%1%}, %g5}";
