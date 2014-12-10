@@ -1,3 +1,10 @@
+2014-12-10  Jakub Jelinek  <jakub@redhat.com>
+	    Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR target/64252
+	* config/i386/i386.c (expand_vec_perm_pblendv): If not testing_p,
+	set dcopy.target to a new pseudo.
+
 2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (*add<mode>3): Remove condition.

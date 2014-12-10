@@ -47554,6 +47554,8 @@ expand_vec_perm_pblendv (struct expand_vec_perm_d *d)
     dcopy.op0 = dcopy.op1 = d->op1;
   else
     dcopy.op0 = dcopy.op1 = d->op0;
+  if (!d->testing_p)
+    dcopy.target = gen_reg_rtx (vmode);
   dcopy.one_operand_p = true;
 
   for (i = 0; i < nelt; ++i)
