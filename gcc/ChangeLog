@@ -1,3 +1,22 @@
+2014-12-10  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config.gcc: Support "knl".
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect "knl".
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	PROCESSOR_KNL.
+	* config/i386/i386.c (m_KNL): Define.
+	(processor_target_table): Add "knl".
+	(PTA_KNL): Define.
+	(ix86_issue_rate): Add PROCESSOR_KNL.
+	(ix86_adjust_cost): Ditto.
+	(ia32_multipass_dfa_lookahead): Ditto.
+	(get_builtin_code_for_version): Handle "knl".
+	(fold_builtin_cpu): Ditto.
+	* config/i386/i386.h (TARGET_KNL): Define.
+	(processor_type): Add PROCESSOR_KNL.
+	* config/i386/i386.md (attr "cpu"): Add knl.
+	* config/i386/x86-tune.def: Add m_KNL.
+
 2014-12-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* doc/invoke.texi: (-devirtualize-at-ltrans): Document.

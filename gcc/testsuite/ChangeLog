@@ -1,3 +1,7 @@
+2014-12-10  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/funcspec-5.c: Test avx512f and knl.
+
 2014-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/62021
