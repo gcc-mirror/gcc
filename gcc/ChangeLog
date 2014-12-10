@@ -1,6 +1,19 @@
 2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/64180
+	* config/rs6000/darwin.md (macho_low_si): Remove "r" alternative.
+	(macho_low_di): Ditto.
+	* config/rs6000/rs6000.md (*largetoc_low): Ditto.
+	(tocref<mode>): Ditto.
+	(elf_low): Ditto.
+	* config/rs6000/spe.md (mov_si<mode>_e500_subreg0_elf_low_be): Ditto.
+	(mov_si<mode>_e500_subreg0_elf_low_le): Ditto.
+	(mov_si<mode>_e500_subreg4_elf_low_be): Ditto.  Reformat condition.
+	(mov_si<mode>_e500_subreg4_elf_low_le): Ditto.
+
+2014-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/64180
 	* config/rs6000/rs6000.c (TARGET_MD_ASM_CLOBBERS): Define.
 	(rs6000_md_asm_clobbers): New function.
 
