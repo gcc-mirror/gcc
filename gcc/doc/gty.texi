@@ -245,54 +245,6 @@ The @code{desc} and @code{tag} options can also be used for inheritance
 to denote which subclass an instance is.  See @ref{Inheritance and GTY}
 for more information.
 
-@findex param_is
-@findex use_param
-@item param_is (@var{type})
-@itemx use_param
-
-Sometimes it's convenient to define some data structure to work on
-generic pointers (that is, @code{PTR}) and then use it with a specific
-type.  @code{param_is} specifies the real type pointed to, and
-@code{use_param} says where in the generic data structure that type
-should be put.
-
-For instance, to have a @code{htab_t} that points to trees, one would
-write the definition of @code{htab_t} like this:
-@smallexample
-typedef struct GTY(()) @{
-  @dots{}
-  void ** GTY ((use_param, @dots{})) entries;
-  @dots{}
-@} htab_t;
-@end smallexample
-and then declare variables like this:
-@smallexample
-  static htab_t GTY ((param_is (union tree_node))) ict;
-@end smallexample
-
-@findex param@var{n}_is
-@findex use_param@var{n}
-@item param@var{n}_is (@var{type})
-@itemx use_param@var{n}
-
-In more complicated cases, the data structure might need to work on
-several different types, which might not necessarily all be pointers.
-For this, @code{param1_is} through @code{param9_is} may be used to
-specify the real type of a field identified by @code{use_param1} through
-@code{use_param9}.
-
-@findex use_params
-@item use_params
-
-When a structure contains another structure that is parameterized,
-there's no need to do anything special, the inner structure inherits the
-parameters of the outer one.  When a structure contains a pointer to a
-parameterized structure, the type machinery won't automatically detect
-this (it could, it just doesn't yet), so it's necessary to tell it that
-the pointed-to structure should use the same parameters as the outer
-structure.  This is done by marking the pointer with the
-@code{use_params} option.
-
 @findex cache
 @item cache
 
@@ -308,23 +260,6 @@ clear pointers in the variable.
 garbage collection runs, there's no need to mark anything pointed to
 by this variable, it can just be set to @code{NULL} instead.  This is used
 to keep a list of free structures around for re-use.
-
-@findex if_marked
-@item if_marked ("@var{expression}")
-
-Suppose you want some kinds of object to be unique, and so you put them
-in a hash table.  If garbage collection marks the hash table, these
-objects will never be freed, even if the last other reference to them
-goes away.  GGC has special handling to deal with this: if you use the
-@code{if_marked} option on a global hash table, GGC will call the
-routine whose name is the parameter to the option on each hash table
-entry.  If the routine returns nonzero, the hash table entry will
-be marked as usual.  If the routine returns zero, the hash table entry
-will be deleted.
-
-The routine @code{ggc_marked_p} can be used to determine if an element
-has been marked already; in fact, the usual case is to use
-@code{if_marked ("ggc_marked_p")}.
 
 @findex mark_hook
 @item mark_hook ("@var{hook-routine-name}")

@@ -45,29 +45,12 @@ static ggc_statistics *ggc_stats;
 
 struct traversal_state;
 
-static int ggc_htab_delete (void **, void *);
 static int compare_ptr_data (const void *, const void *);
 static void relocate_ptrs (void *, void *);
 static void write_pch_globals (const struct ggc_root_tab * const *tab,
 			       struct traversal_state *state);
 
 /* Maintain global roots that are preserved during GC.  */
-
-/* Process a slot of an htab by deleting it if it has not been marked.  */
-
-static int
-ggc_htab_delete (void **slot, void *info)
-{
-  const struct ggc_cache_tab *r = (const struct ggc_cache_tab *) info;
-
-  if (! (*r->marked_p) (*slot))
-    htab_clear_slot (*r->base, slot);
-  else
-    (*r->cb) (*slot);
-
-  return 1;
-}
-
 
 /* This extra vector of dynamically registered root_tab-s is used by
    ggc_mark_roots and gives the ability to dynamically add new GGC root
@@ -84,41 +67,6 @@ ggc_register_root_tab (const struct ggc_root_tab* rt)
 {
   if (rt)
     extra_root_vec.safe_push (rt);
-}
-
-/* This extra vector of dynamically registered cache_tab-s is used by
-   ggc_mark_roots and gives the ability to dynamically add new GGC cache
-   tables, for instance from some plugins; this vector is on the heap
-   since it is used by GGC internally.  */
-typedef const struct ggc_cache_tab *const_ggc_cache_tab_t;
-static vec<const_ggc_cache_tab_t> extra_cache_vec;
-
-/* Dynamically register a new GGC cache table CT. This is useful for
-   plugins. */
-
-void
-ggc_register_cache_tab (const struct ggc_cache_tab* ct)
-{
-  if (ct)
-    extra_cache_vec.safe_push (ct);
-}
-
-/* Scan a hash table that has objects which are to be deleted if they are not
-   already marked.  */
-
-static void
-ggc_scan_cache_tab (const_ggc_cache_tab_t ctp)
-{
-  const struct ggc_cache_tab *cti;
-
-  for (cti = ctp; cti->base != NULL; cti++)
-    if (*cti->base)
-      {
-        ggc_set_mark (*cti->base);
-        htab_traverse_noresize (*cti->base, ggc_htab_delete,
-                                CONST_CAST (void *, (const void *)cti));
-        ggc_set_mark ((*cti->base)->entries);
-      }
 }
 
 /* Mark all the roots in the table RT.  */
@@ -140,8 +88,6 @@ ggc_mark_roots (void)
 {
   const struct ggc_root_tab *const *rt;
   const_ggc_root_tab_t rtp, rti;
-  const struct ggc_cache_tab *const *ct;
-  const_ggc_cache_tab_t ctp;
   size_t i;
 
   for (rt = gt_ggc_deletable_rtab; *rt; rt++)
@@ -157,15 +103,7 @@ ggc_mark_roots (void)
   if (ggc_protect_identifiers)
     ggc_mark_stringpool ();
 
-  /* Now scan all hash tables that have objects which are to be deleted if
-     they are not already marked.  */
-  for (ct = gt_ggc_cache_rtab; *ct; ct++)
-    ggc_scan_cache_tab (*ct);
-
   gt_clear_caches ();
-
-  FOR_EACH_VEC_ELT (extra_cache_vec, i, ctp)
-    ggc_scan_cache_tab (ctp);
 
   if (! ggc_protect_identifiers)
     ggc_purge_stringpool ();
@@ -503,11 +441,6 @@ gt_pch_save (FILE *f)
       for (i = 0; i < rti->nelt; i++)
 	(*rti->pchw)(*(void **)((char *)rti->base + rti->stride * i));
 
-  for (rt = gt_pch_cache_rtab; *rt; rt++)
-    for (rti = *rt; rti->base != NULL; rti++)
-      for (i = 0; i < rti->nelt; i++)
-	(*rti->pchw)(*(void **)((char *)rti->base + rti->stride * i));
-
   /* Prepare the objects for writing, determine addresses and such.  */
   state.f = f;
   state.d = init_ggc_pch ();
@@ -543,7 +476,6 @@ gt_pch_save (FILE *f)
 
   /* Write out all the global pointers, after translation.  */
   write_pch_globals (gt_ggc_rtab, &state);
-  write_pch_globals (gt_pch_cache_rtab, &state);
 
   /* Pad the PCH file so that the mmapped area starts on an allocation
      granularity (usually page) boundary.  */
@@ -687,13 +619,6 @@ gt_pch_restore (FILE *f)
 
   /* Read in all the global pointers, in 6 easy loops.  */
   for (rt = gt_ggc_rtab; *rt; rt++)
-    for (rti = *rt; rti->base != NULL; rti++)
-      for (i = 0; i < rti->nelt; i++)
-	if (fread ((char *)rti->base + rti->stride * i,
-		   sizeof (void *), 1, f) != 1)
-	  fatal_error ("can%'t read PCH file: %m");
-
-  for (rt = gt_pch_cache_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       for (i = 0; i < rti->nelt; i++)
 	if (fread ((char *)rti->base + rti->stride * i,

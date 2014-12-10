@@ -150,8 +150,8 @@ extern int get_event_last (void);
 int get_named_event_id (const char *name, enum insert_option insert);
 
 /* This is also called without a callback routine for the
-   PLUGIN_PASS_MANAGER_SETUP, PLUGIN_INFO, PLUGIN_REGISTER_GGC_ROOTS and
-   PLUGIN_REGISTER_GGC_CACHES pseudo-events, with a specific user_data.
+   PLUGIN_PASS_MANAGER_SETUP, PLUGIN_INFO and PLUGIN_REGISTER_GGC_ROOTS
+   pseudo-events, with a specific user_data.
   */
 
 extern void register_callback (const char *plugin_name,
