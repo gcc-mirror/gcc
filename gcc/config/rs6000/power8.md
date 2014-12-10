@@ -212,12 +212,10 @@
        (eq_attr "cpu" "power8"))
   "DU_any_power8,FXU_power8")
 
-; compare : rldicl./exts./etc
-; shift with dot : rlwinm./slwi./rlwnm./slw./etc
+; exts/shift with dot : rldicl./exts./rlwinm./slwi./rlwnm./slw./etc
 (define_insn_reservation "power8-compare" 2
-  (and (ior (eq_attr "type" "compare")
-	    (and (eq_attr "type" "shift,exts")
-		 (eq_attr "dot" "yes")))
+  (and (eq_attr "type" "shift,exts")
+       (eq_attr "dot" "yes")
        (eq_attr "cpu" "power8"))
   "DU_cracked_power8,FXU_power8,FXU_power8")
 

@@ -26690,7 +26690,6 @@ rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
               switch (get_attr_type (dep_insn))
                 {
                 case TYPE_CMP:
-                case TYPE_COMPARE:
                 case TYPE_FPCOMPARE:
                 case TYPE_CR_LOGICAL:
                 case TYPE_DELAYED_CR:
@@ -26747,7 +26746,6 @@ rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
                   case TYPE_INTEGER:
                   case TYPE_ADD:
                   case TYPE_LOGICAL:
-                  case TYPE_COMPARE:
                   case TYPE_EXTS:
                   case TYPE_INSERT:
                     {
@@ -26811,7 +26809,6 @@ rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
                   case TYPE_INTEGER:
                   case TYPE_ADD:
                   case TYPE_LOGICAL:
-                  case TYPE_COMPARE:
                   case TYPE_EXTS:
                   case TYPE_INSERT:
                     {
@@ -26987,7 +26984,6 @@ is_cracked_insn (rtx_insn *insn)
 	  || ((type == TYPE_FPLOAD || type == TYPE_FPSTORE)
 	      && get_attr_update (insn) == UPDATE_YES)
 	  || type == TYPE_DELAYED_CR
-	  || type == TYPE_COMPARE
 	  || (type == TYPE_EXTS
 	      && get_attr_dot (insn) == DOT_YES)
 	  || (type == TYPE_SHIFT
@@ -27865,7 +27861,6 @@ insn_must_be_first_in_group (rtx_insn *insn)
         case TYPE_MFCRF:
         case TYPE_MTCR:
         case TYPE_DIV:
-        case TYPE_COMPARE:
         case TYPE_ISYNC:
         case TYPE_LOAD_L:
         case TYPE_STORE_C:
@@ -27906,7 +27901,6 @@ insn_must_be_first_in_group (rtx_insn *insn)
         case TYPE_MFCR:
         case TYPE_MFCRF:
         case TYPE_MTCR:
-        case TYPE_COMPARE:
         case TYPE_SYNC:
         case TYPE_ISYNC:
         case TYPE_LOAD_L:
