@@ -1,4 +1,12 @@
 2014-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/62021
+	* omp-low.c (simd_clone_adjust_return_type): Use
+	vector of pointer_sized_int_node types instead vector of pointer
+	types.
+	(simd_clone_adjust_argument_types): Likewise.
+
+2014-12-10  Jakub Jelinek  <jakub@redhat.com>
 	    Evgeny Stupachenko  <evstupac@gmail.com>
 
 	PR target/64252
