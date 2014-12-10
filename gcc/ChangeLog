@@ -1,3 +1,8 @@
+2014-12-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gdbhooks.py (class DWDieRefPrinter): New class.
+	(build_pretty_printer): Register dw_die_ref's.
+
 2014-12-10  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config.gcc: Support "knl".
