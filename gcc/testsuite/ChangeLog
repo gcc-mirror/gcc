@@ -1,4 +1,9 @@
 2014-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/62021
+	* gcc.dg/vect/pr62021.c: New test.
+
+2014-12-10  Jakub Jelinek  <jakub@redhat.com>
 	    Evgeny Stupachenko  <evstupac@gmail.com>
 
 	PR target/64252
