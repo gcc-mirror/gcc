@@ -1,3 +1,9 @@
+2014-12-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64222
+	* parser.c (cp_parser_unqualified_id): Don't declare fname while
+	parsing function parms.
+
 2014-12-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/64029
