@@ -1,3 +1,7 @@
+2014-12-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/pr63909.c: New test.
+
 2014-12-10  Kai Tietz  <ktietz@redhat.com>
 
 	PR c++/64127

@@ -1,3 +1,9 @@
+2014-12-10  Martin Liska  <mliska@suse.cz>
+
+	* gimple-iterator.h (gsi_start_bb_nondebug): New function.
+	* ipa-icf-gimple.c (func_checker::compare_bb): Correct iteration
+	replaces loop based on precomputed number of non-debug statements.
+
 2014-12-08  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* config/linux.c (linux_has_ifunc_p): Remove.
