@@ -102,7 +102,7 @@ main (int argc, char **argv)
 
   typedef int (*fn_type) (int);
   fn_type square = (fn_type)fn_ptr;
-  printf ("result: %d", square (5));
+  printf ("result: %d\n", square (5));
 
  error:
   if (ctxt)

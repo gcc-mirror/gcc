@@ -89,7 +89,7 @@ cleanup of such objects is done for you when the context is released.
 
 Thread-safety
 -------------
-Instances of :c:type:`gcc_jit_object *` created via
+Instances of :c:type:`gcc_jit_context *` created via
 :c:func:`gcc_jit_context_acquire` are independent from each other:
 only one thread may use a given context at once, but multiple threads
 could each have their own contexts without needing locks.

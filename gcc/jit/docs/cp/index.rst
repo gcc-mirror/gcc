@@ -15,22 +15,22 @@
    along with this program.  If not, see
    <http://www.gnu.org/licenses/>.
 
-libgccjit
-=========
+C++ bindings for libgccjit
+==========================
 
-This document describes `libgccjit <http://gcc.gnu.org/wiki/JIT>`_, an API
-for embedding GCC inside programs and libraries.
+This document describes the C++ bindings to
+`libgccjit <http://gcc.gnu.org/wiki/JIT>`_, an API for embedding GCC
+inside programs and libraries.
+
+The C++ bindings consist of a single header file ``libgccjit++.h``.
+
+This is a collection of "thin" wrapper classes around the C API.
+Everything is an inline function, implemented in terms of the C API,
+so there is nothing extra to link against.
 
 Note that libgccjit is currently of "Alpha" quality;
 the APIs are not yet set in stone, and they shouldn't be used in
 production yet.
-
-There are actually two APIs for the library:
-
-* a pure C API: ``libgccjit.h``
-
-* a C++ wrapper API: ``libgccjit++.h``.  This is a collection of "thin"
-  wrapper classes around the C API, to save typing.
 
 Contents:
 
@@ -39,20 +39,3 @@ Contents:
 
    intro/index.rst
    topics/index.rst
-   cp/index.rst
-   internals/index.rst
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-.. Some notes:
-
-   The Sphinx C domain appears to lack explicit support for enum values,
-   so I've been using :c:macro: for them.
-
-   See http://sphinx-doc.org/domains.html#the-c-domain
