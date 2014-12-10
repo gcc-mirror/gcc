@@ -51,9 +51,6 @@ DEFEVENT (PLUGIN_GGC_END)
 /* Register an extra GGC root table. */
 DEFEVENT (PLUGIN_REGISTER_GGC_ROOTS)
 
-/* Register an extra GGC cache table. */
-DEFEVENT (PLUGIN_REGISTER_GGC_CACHES)
-
 /* Called during attribute registration.  */
 DEFEVENT (PLUGIN_ATTRIBUTES)
 

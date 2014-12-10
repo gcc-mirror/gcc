@@ -1,3 +1,7 @@
+2014-12-09  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* hashtab.h, splay-tree.h: Remove GTY markers.
+
 2014-12-08  Mark Wielaard  <mjw@redhat.com>
 
 	PR debug/60782

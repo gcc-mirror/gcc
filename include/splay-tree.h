@@ -44,10 +44,6 @@ extern "C" {
 #include <inttypes.h>
 #endif
 
-#ifndef GTY
-#define GTY(X)
-#endif
-
 /* Use typedefs for the key and data types to facilitate changing
    these types, if necessary.  These types should be sufficiently wide
    that any pointer or scalar can be cast to these types, and then
@@ -86,22 +82,22 @@ typedef void *(*splay_tree_allocate_fn) (int, void *);
 typedef void (*splay_tree_deallocate_fn) (void *, void *);
 
 /* The nodes in the splay tree.  */
-struct GTY(()) splay_tree_node_s {
+struct splay_tree_node_s {
   /* The key.  */
-  splay_tree_key GTY ((use_param1)) key;
+  splay_tree_key key;
 
   /* The value.  */
-  splay_tree_value GTY ((use_param2)) value;
+  splay_tree_value value;
 
   /* The left and right children, respectively.  */
-  splay_tree_node GTY ((use_params)) left;
-  splay_tree_node GTY ((use_params)) right;
+  splay_tree_node left;
+  splay_tree_node right;
 };
 
 /* The splay tree itself.  */
-struct GTY(()) splay_tree_s {
+struct splay_tree_s {
   /* The root of the tree.  */
-  splay_tree_node GTY ((use_params)) root;
+  splay_tree_node root;
 
   /* The comparision function.  */
   splay_tree_compare_fn comp;
@@ -119,7 +115,7 @@ struct GTY(()) splay_tree_s {
   splay_tree_deallocate_fn deallocate;
 
   /* Parameter for allocate/free functions.  */
-  void * GTY((skip)) allocate_data;
+  void *allocate_data;
 };
 
 typedef struct splay_tree_s *splay_tree;

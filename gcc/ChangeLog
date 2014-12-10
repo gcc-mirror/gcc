@@ -1,3 +1,10 @@
+2014-12-09  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* plugin.c, plugin.def, ggc.h, ggc-common.c, gengtype.h, gengtype.c,
+	gengtype-state.c, gengtype-parse.c, gentype-lex.l, gcc-plugin.h,
+	doc/plugins.texi, doc/gty.texi: Remove support for if_marked and
+	param_is.
+
 2014-12-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53513
