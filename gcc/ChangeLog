@@ -1,3 +1,8 @@
+2014-12-10  Kito Cheng  <kito@0xlab.org>
+
+	* doc/libgcc.texi: Update text to match implementation in
+	libgcc/libgcc2.c
+
 2014-12-09  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* plugin.c, plugin.def, ggc.h, ggc-common.c, gengtype.h, gengtype.c,
