@@ -1,5 +1,9 @@
 2014-12-10  Kai Tietz  <ktietz@redhat.com>
 
+	PR c++/64127
+	* parser.c (cp_parser_diagnose_invalid_type_name): Check id
+	for being an identifier before accessing it.
+
 	PR c++/64100
 	* typeck.c (lookup_destructor): Handle incomplete type.
 

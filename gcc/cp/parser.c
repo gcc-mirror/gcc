@@ -2977,6 +2977,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	inform (location, "C++11 %<noexcept%> only available with "
 		"-std=c++11 or -std=gnu++11");
       else if (cxx_dialect < cxx11
+	       && TREE_CODE (id) == IDENTIFIER_NODE
 	       && !strcmp (IDENTIFIER_POINTER (id), "thread_local"))
 	inform (location, "C++11 %<thread_local%> only available with "
 		"-std=c++11 or -std=gnu++11");
