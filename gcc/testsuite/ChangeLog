@@ -1,3 +1,11 @@
+2014-12-10  Jakub Jelinek  <jakub@redhat.com>
+	    Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR target/64252
+	* gcc.dg/vect/pr64252.c: New test.
+	* gcc.dg/pr64252.c: New test.
+	* gcc.target/i386/avx2-pr64252.c: New test.
+
 2014-12-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* gcc.dg/lto/chkp-privatize_0.c: Remove unneeded selector
