@@ -1,3 +1,8 @@
+2014-12-08  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* config/linux.c (linux_has_ifunc_p): Remove.
+	* config/linux.h (TARGET_HAS_IFUNC_P): Use default version.
+
 2014-12-10  Mantas Mikaitis  <mantas.mikaitis@arm.com>
 
 	* contrib/check_GNU_style.sh (col): Got rid of cut operation
