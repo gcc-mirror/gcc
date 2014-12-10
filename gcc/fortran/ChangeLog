@@ -1,3 +1,10 @@
+2014-12-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/60718
+	* trans-expr.c (gfc_conv_procedure_call): Fix a strict aliasing
+	violation when passing a class object to a formal parameter which has
+	different pointer or allocatable attributes.
+
 2014-12-06  Tobias Burnus  <burnus@net-b.de>
 
 	* error.c (gfc_error_check): Use bool not int.
