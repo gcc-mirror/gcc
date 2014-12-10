@@ -1,5 +1,8 @@
 2014-12-10  Kai Tietz  <ktietz@redhat.com>
 
+	PR c++/64127
+	* g++.dg/cpp/pr64127.C: New file.
+
 	PR c++/64100
 	* g++.dg/template/pr64100.C: New file.
 
