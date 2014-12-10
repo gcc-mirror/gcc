@@ -1,3 +1,9 @@
+2014-12-10  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/61686
+	* tree-ssa-reassoc.c (range_entry_cmp): Use q->high instead of
+	p->high.
+
 2014-12-10  Kito Cheng  <kito@0xlab.org>
 
 	* doc/libgcc.texi: Update text to match implementation in
