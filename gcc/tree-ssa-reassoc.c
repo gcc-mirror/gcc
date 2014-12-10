@@ -966,7 +966,7 @@ eliminate_using_constants (enum tree_code opcode,
 	case MULT_EXPR:
 	  if (integer_zerop (oelast->op)
 	      || (FLOAT_TYPE_P (type)
-		  && !HONOR_NANS (TYPE_MODE (type))
+		  && !HONOR_NANS (type)
 		  && !HONOR_SIGNED_ZEROS (TYPE_MODE (type))
 		  && real_zerop (oelast->op)))
 	    {

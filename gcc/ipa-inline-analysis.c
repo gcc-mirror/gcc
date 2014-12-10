@@ -379,9 +379,8 @@ add_clause (conditions conditions, struct predicate *p, clause_t clause)
 		&& cc1->val == cc2->val
 		&& cc2->code != IS_NOT_CONSTANT
 		&& cc2->code != CHANGED
-		&& cc1->code == invert_tree_comparison
-				(cc2->code,
-				 HONOR_NANS (TYPE_MODE (TREE_TYPE (cc1->val)))))
+		&& cc1->code == invert_tree_comparison (cc2->code,
+							HONOR_NANS (cc1->val)))
 	      return;
 	  }
     }
@@ -1762,9 +1761,7 @@ set_cond_stmt_execution_predicate (struct ipa_node_params *info,
   if (unmodified_parm_or_parm_agg_item (info, last, op, &index, &aggpos))
     {
       code = gimple_cond_code (last);
-      inverted_code
-	= invert_tree_comparison (code,
-				  HONOR_NANS (TYPE_MODE (TREE_TYPE (op))));
+      inverted_code = invert_tree_comparison (code, HONOR_NANS (op));
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{

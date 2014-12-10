@@ -9607,7 +9607,7 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
       }
 
     case BUILT_IN_ISFINITE:
-      if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg)))
+      if (!HONOR_NANS (arg)
 	  && !HONOR_INFINITIES (TYPE_MODE (TREE_TYPE (arg))))
 	return omit_one_operand_loc (loc, type, integer_one_node, arg);
 
@@ -9620,7 +9620,7 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
       return NULL_TREE;
 
     case BUILT_IN_ISNAN:
-      if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg))))
+      if (!HONOR_NANS (arg))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
 
       if (TREE_CODE (arg) == REAL_CST)
@@ -9748,13 +9748,12 @@ fold_builtin_unordered_cmp (location_t loc, tree fndecl, tree arg0, tree arg1,
 
   if (unordered_code == UNORDERED_EXPR)
     {
-      if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0))))
+      if (!HONOR_NANS (arg0))
 	return omit_two_operands_loc (loc, type, integer_zero_node, arg0, arg1);
       return fold_build2_loc (loc, UNORDERED_EXPR, type, arg0, arg1);
     }
 
-  code = HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0))) ? unordered_code
-						   : ordered_code;
+  code = HONOR_NANS (arg0) ? unordered_code : ordered_code;
   return fold_build1_loc (loc, TRUTH_NOT_EXPR, type,
 		      fold_build2_loc (loc, code, type, arg0, arg1));
 }

@@ -2592,7 +2592,7 @@ combine_comparisons (location_t loc,
 		     enum tree_code rcode, tree truth_type,
 		     tree ll_arg, tree lr_arg)
 {
-  bool honor_nans = HONOR_NANS (element_mode (ll_arg));
+  bool honor_nans = HONOR_NANS (ll_arg);
   enum comparison_code lcompcode = comparison_to_compcode (lcode);
   enum comparison_code rcompcode = comparison_to_compcode (rcode);
   int compcode;
@@ -3376,7 +3376,7 @@ fold_truth_not_expr (location_t loc, tree arg)
 	  && code != NE_EXPR && code != EQ_EXPR)
 	return NULL_TREE;
 
-      code = invert_tree_comparison (code, HONOR_NANS (TYPE_MODE (op_type)));
+      code = invert_tree_comparison (code, HONOR_NANS (op_type));
       if (code == ERROR_MARK)
 	return NULL_TREE;
 
@@ -4988,7 +4988,7 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
 	     operand which will be used if they are equal first
 	     so that we can convert this back to the
 	     corresponding COND_EXPR.  */
-	  if (!HONOR_NANS (element_mode (arg1)))
+	  if (!HONOR_NANS (arg1))
 	    {
 	      comp_op0 = fold_convert_loc (loc, comp_type, comp_op0);
 	      comp_op1 = fold_convert_loc (loc, comp_type, comp_op1);
@@ -5004,7 +5004,7 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
 	case GT_EXPR:
 	case UNGE_EXPR:
 	case UNGT_EXPR:
-	  if (!HONOR_NANS (element_mode (arg1)))
+	  if (!HONOR_NANS (arg1))
 	    {
 	      comp_op0 = fold_convert_loc (loc, comp_type, comp_op0);
 	      comp_op1 = fold_convert_loc (loc, comp_type, comp_op1);
@@ -5017,12 +5017,12 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
 	    }
 	  break;
 	case UNEQ_EXPR:
-	  if (!HONOR_NANS (element_mode (arg1)))
+	  if (!HONOR_NANS (arg1))
 	    return pedantic_non_lvalue_loc (loc,
 					fold_convert_loc (loc, type, arg2));
 	  break;
 	case LTGT_EXPR:
-	  if (!HONOR_NANS (element_mode (arg1)))
+	  if (!HONOR_NANS (arg1))
 	    return pedantic_non_lvalue_loc (loc,
 					fold_convert_loc (loc, type, arg1));
 	  break;
@@ -5317,7 +5317,7 @@ merge_truthop_with_opposite_arm (location_t loc, tree op, tree cmpop,
 	}
     }
 
-  inv_code = invert_tree_comparison (code, HONOR_NANS (TYPE_MODE (type)));
+  inv_code = invert_tree_comparison (code, HONOR_NANS (type));
   if (inv_code == rhs_code
       && operand_equal_p (TREE_OPERAND (rhs, 0), TREE_OPERAND (cmpop, 0), 0)
       && operand_equal_p (TREE_OPERAND (rhs, 1), TREE_OPERAND (cmpop, 1), 0))
@@ -9254,14 +9254,14 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	{
 	case EQ_EXPR:
 	  if (! FLOAT_TYPE_P (TREE_TYPE (arg0))
-	      || ! HONOR_NANS (element_mode (arg0)))
+	      || ! HONOR_NANS (arg0))
 	    return constant_boolean_node (1, type);
 	  break;
 
 	case GE_EXPR:
 	case LE_EXPR:
 	  if (! FLOAT_TYPE_P (TREE_TYPE (arg0))
-	      || ! HONOR_NANS (element_mode (arg0)))
+	      || ! HONOR_NANS (arg0))
 	    return constant_boolean_node (1, type);
 	  return fold_build2_loc (loc, EQ_EXPR, type, arg0, arg1);
 
@@ -9269,7 +9269,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  /* For NE, we can only do this simplification if integer
 	     or we don't honor IEEE floating point NaNs.  */
 	  if (FLOAT_TYPE_P (TREE_TYPE (arg0))
-	      && HONOR_NANS (element_mode (arg0)))
+	      && HONOR_NANS (arg0))
 	    break;
 	  /* ... fall through ...  */
 	case GT_EXPR:
@@ -10748,7 +10748,7 @@ fold_binary_loc (location_t loc,
 	  /* Fold z * +-I to __complex__ (-+__imag z, +-__real z).
 	     This is not the same for NaNs or if signed zeros are
 	     involved.  */
-	  if (!HONOR_NANS (element_mode (arg0))
+	  if (!HONOR_NANS (arg0)
               && !HONOR_SIGNED_ZEROS (element_mode (arg0))
 	      && COMPLEX_FLOAT_TYPE_P (TREE_TYPE (arg0))
 	      && TREE_CODE (arg1) == COMPLEX_CST
@@ -11680,7 +11680,7 @@ fold_binary_loc (location_t loc,
 	      tree arg00 = CALL_EXPR_ARG (arg0, 0);
 	      tree arg01 = CALL_EXPR_ARG (arg1, 0);
 
-	      if (! HONOR_NANS (element_mode (arg00))
+	      if (! HONOR_NANS (arg00)
 		  && ! HONOR_INFINITIES (element_mode (arg00))
 		  && operand_equal_p (arg00, arg01, 0))
 		{
@@ -11700,7 +11700,7 @@ fold_binary_loc (location_t loc,
 	      tree arg00 = CALL_EXPR_ARG (arg0, 0);
 	      tree arg01 = CALL_EXPR_ARG (arg1, 0);
 
-	      if (! HONOR_NANS (element_mode (arg00))
+	      if (! HONOR_NANS (arg00)
 		  && ! HONOR_INFINITIES (element_mode (arg00))
 		  && operand_equal_p (arg00, arg01, 0))
 		{
@@ -12842,7 +12842,7 @@ fold_binary_loc (location_t loc,
 	    }
 
 	  /* Convert (X - c) <= X to true.  */
-	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg1)))
+	  if (!HONOR_NANS (arg1)
 	      && code == LE_EXPR
 	      && ((code0 == MINUS_EXPR && is_positive >= 0)
 		  || (code0 == PLUS_EXPR && is_positive <= 0)))
@@ -12857,7 +12857,7 @@ fold_binary_loc (location_t loc,
 	    }
 
 	  /* Convert (X + c) >= X to true.  */
-	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg1)))
+	  if (!HONOR_NANS (arg1)
 	      && code == GE_EXPR
 	      && ((code0 == PLUS_EXPR && is_positive >= 0)
 		  || (code0 == MINUS_EXPR && is_positive <= 0)))
@@ -13064,7 +13064,7 @@ fold_binary_loc (location_t loc,
       strict_overflow_p = false;
       if (code == GE_EXPR
 	  && (integer_zerop (arg1)
-	      || (! HONOR_NANS (element_mode (arg0))
+	      || (! HONOR_NANS (arg0)
 		  && real_zerop (arg1)))
 	  && tree_expr_nonnegative_warnv_p (arg0, &strict_overflow_p))
 	{
