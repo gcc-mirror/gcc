@@ -65,6 +65,7 @@ extern void altivec_expand_stvx_be (rtx, rtx, enum machine_mode, unsigned);
 extern void altivec_expand_stvex_be (rtx, rtx, enum machine_mode, unsigned);
 extern void rs6000_expand_extract_even (rtx, rtx, rtx);
 extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
+extern void rs6000_scale_v2df (rtx, rtx, int);
 extern void build_mask64_2_operands (rtx, rtx *);
 extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);

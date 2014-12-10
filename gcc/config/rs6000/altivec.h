@@ -124,6 +124,7 @@
 #define vec_vcfux __builtin_vec_vcfux
 #define vec_cts __builtin_vec_cts
 #define vec_ctu __builtin_vec_ctu
+#define vec_cpsgn __builtin_vec_copysign
 #define vec_expte __builtin_vec_expte
 #define vec_floor __builtin_vec_floor
 #define vec_loge __builtin_vec_loge
@@ -214,8 +215,10 @@
 #define vec_lvsl __builtin_vec_lvsl
 #define vec_lvsr __builtin_vec_lvsr
 #define vec_max __builtin_vec_max
+#define vec_mergee __builtin_vec_vmrgew
 #define vec_mergeh __builtin_vec_mergeh
 #define vec_mergel __builtin_vec_mergel
+#define vec_mergeo __builtin_vec_vmrgow
 #define vec_min __builtin_vec_min
 #define vec_mladd __builtin_vec_mladd
 #define vec_msum __builtin_vec_msum
@@ -319,6 +322,8 @@
 #define vec_sqrt __builtin_vec_sqrt
 #define vec_vsx_ld __builtin_vec_vsx_ld
 #define vec_vsx_st __builtin_vec_vsx_st
+#define vec_xl __builtin_vec_vsx_ld
+#define vec_xst __builtin_vec_vsx_st
 
 /* Note, xxsldi and xxpermdi were added as __builtin_vsx_<xxx> functions
    instead of __builtin_vec_<xxx>  */
@@ -336,6 +341,7 @@
 #define vec_vadduqm __builtin_vec_vadduqm
 #define vec_vbpermq __builtin_vec_vbpermq
 #define vec_vclz __builtin_vec_vclz
+#define vec_cntlz __builtin_vec_vclz
 #define vec_vclzb __builtin_vec_vclzb
 #define vec_vclzd __builtin_vec_vclzd
 #define vec_vclzh __builtin_vec_vclzh

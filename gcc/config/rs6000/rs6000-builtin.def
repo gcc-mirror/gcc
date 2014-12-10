@@ -1258,6 +1258,16 @@ BU_VSX_2 (VEC_MERGEL_V2DF,    "mergel_2df",	CONST,	vsx_mergel_v2df)
 BU_VSX_2 (VEC_MERGEL_V2DI,    "mergel_2di",	CONST,	vsx_mergel_v2di)
 BU_VSX_2 (VEC_MERGEH_V2DF,    "mergeh_2df",	CONST,	vsx_mergeh_v2df)
 BU_VSX_2 (VEC_MERGEH_V2DI,    "mergeh_2di",	CONST,	vsx_mergeh_v2di)
+BU_VSX_2 (XXSPLTD_V2DF,       "xxspltd_2df",    CONST,  vsx_xxspltd_v2df)
+BU_VSX_2 (XXSPLTD_V2DI,       "xxspltd_2di",    CONST,  vsx_xxspltd_v2di)
+BU_VSX_2 (DIV_V2DI,           "div_2di",        CONST,  vsx_div_v2di)
+BU_VSX_2 (UDIV_V2DI,          "udiv_2di",       CONST,  vsx_udiv_v2di)
+BU_VSX_2 (MUL_V2DI,           "mul_2di",        CONST,  vsx_mul_v2di)
+
+BU_VSX_2 (XVCVSXDDP_SCALE,    "xvcvsxddp_scale", CONST, vsx_xvcvsxddp_scale)
+BU_VSX_2 (XVCVUXDDP_SCALE,    "xvcvuxddp_scale", CONST, vsx_xvcvuxddp_scale)
+BU_VSX_2 (XVCVDPSXDS_SCALE,   "xvcvdpsxds_scale", CONST, vsx_xvcvdpsxds_scale)
+BU_VSX_2 (XVCVDPUXDS_SCALE,   "xvcvdpuxds_scale", CONST, vsx_xvcvdpuxds_scale)
 
 /* VSX abs builtin functions.  */
 BU_VSX_A (XVABSDP,	      "xvabsdp",	CONST,	absv2df2)

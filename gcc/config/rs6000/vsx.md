@@ -260,6 +260,14 @@
    UNSPEC_VSX_ROUND_IC
    UNSPEC_VSX_SLDWI
    UNSPEC_VSX_XXSPLTW
+   UNSPEC_VSX_XXSPLTD
+   UNSPEC_VSX_DIVSD
+   UNSPEC_VSX_DIVUD
+   UNSPEC_VSX_MULSD
+   UNSPEC_VSX_XVCVSXDDP
+   UNSPEC_VSX_XVCVUXDDP
+   UNSPEC_VSX_XVCVDPSXDS
+   UNSPEC_VSX_XVCVDPUXDS
   ])
 
 ;; VSX moves
@@ -746,6 +754,34 @@
   [(set_attr "type" "<VStype_simple>")
    (set_attr "fp_type" "<VSfptype_mul>")])
 
+; Emulate vector with scalar for vec_mul in V2DImode
+(define_insn_and_split "vsx_mul_v2di"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
+        (unspec:V2DI [(match_operand:V2DI 1 "vsx_register_operand" "wa")
+                      (match_operand:V2DI 2 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_MULSD))]
+  "VECTOR_MEM_VSX_P (V2DImode)"
+  "#"
+  "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed && !reload_in_progress"
+  [(const_int 0)]
+  "
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
+  rtx op3 = gen_reg_rtx (DImode);
+  rtx op4 = gen_reg_rtx (DImode);
+  rtx op5 = gen_reg_rtx (DImode);
+  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
+  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
+  emit_insn (gen_muldi3 (op5, op3, op4));
+  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
+  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
+  emit_insn (gen_muldi3 (op3, op3, op4));
+  emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
+}"
+  [(set_attr "type" "vecdouble")])
+
 (define_insn "*vsx_div<mode>3"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
         (div:VSX_F (match_operand:VSX_F 1 "vsx_register_operand" "<VSr>,<VSa>")
@@ -754,6 +790,61 @@
   "xvdiv<VSs> %x0,%x1,%x2"
   [(set_attr "type" "<VStype_div>")
    (set_attr "fp_type" "<VSfptype_div>")])
+
+; Emulate vector with scalar for vec_div in V2DImode
+(define_insn_and_split "vsx_div_v2di"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
+        (unspec:V2DI [(match_operand:V2DI 1 "vsx_register_operand" "wa")
+                      (match_operand:V2DI 2 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_DIVSD))]
+  "VECTOR_MEM_VSX_P (V2DImode)"
+  "#"
+  "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed && !reload_in_progress"
+  [(const_int 0)]
+  "
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
+  rtx op3 = gen_reg_rtx (DImode);
+  rtx op4 = gen_reg_rtx (DImode);
+  rtx op5 = gen_reg_rtx (DImode);
+  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
+  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
+  emit_insn (gen_divdi3 (op5, op3, op4));
+  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
+  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
+  emit_insn (gen_divdi3 (op3, op3, op4));
+  emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
+}"
+  [(set_attr "type" "vecdiv")])
+
+(define_insn_and_split "vsx_udiv_v2di"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
+        (unspec:V2DI [(match_operand:V2DI 1 "vsx_register_operand" "wa")
+                      (match_operand:V2DI 2 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_DIVUD))]
+  "VECTOR_MEM_VSX_P (V2DImode)"
+  "#"
+  "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed && !reload_in_progress"
+  [(const_int 0)]
+  "
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
+  rtx op3 = gen_reg_rtx (DImode);
+  rtx op4 = gen_reg_rtx (DImode);
+  rtx op5 = gen_reg_rtx (DImode);
+  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
+  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
+  emit_insn (gen_udivdi3 (op5, op3, op4));
+  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
+  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
+  emit_insn (gen_udivdi3 (op3, op3, op4));
+  emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
+}"
+  [(set_attr "type" "vecdiv")])
 
 ;; *tdiv* instruction returning the FG flag
 (define_expand "vsx_tdiv<mode>3_fg"
@@ -1267,6 +1358,102 @@
   "TARGET_XSCVSPDPN"
   "xscvspdpn %x0,%x1"
   [(set_attr "type" "fp")])
+
+;; Convert and scale (used by vec_ctf, vec_cts, vec_ctu for double/long long)
+
+(define_expand "vsx_xvcvsxddp_scale"
+  [(match_operand:V2DF 0 "vsx_register_operand" "")
+   (match_operand:V2DI 1 "vsx_register_operand" "")
+   (match_operand:QI 2 "immediate_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  int scale = INTVAL(operands[2]);
+  emit_insn (gen_vsx_xvcvsxddp (op0, op1));
+  if (scale != 0)
+    rs6000_scale_v2df (op0, op0, -scale);
+  DONE;
+})
+
+(define_insn "vsx_xvcvsxddp"
+  [(set (match_operand:V2DF 0 "vsx_register_operand" "=wa")
+        (unspec:V2DF [(match_operand:V2DI 1 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_XVCVSXDDP))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "xvcvsxddp %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
+(define_expand "vsx_xvcvuxddp_scale"
+  [(match_operand:V2DF 0 "vsx_register_operand" "")
+   (match_operand:V2DI 1 "vsx_register_operand" "")
+   (match_operand:QI 2 "immediate_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  int scale = INTVAL(operands[2]);
+  emit_insn (gen_vsx_xvcvuxddp (op0, op1));
+  if (scale != 0)
+    rs6000_scale_v2df (op0, op0, -scale);
+  DONE;
+})
+
+(define_insn "vsx_xvcvuxddp"
+  [(set (match_operand:V2DF 0 "vsx_register_operand" "=wa")
+        (unspec:V2DF [(match_operand:V2DI 1 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_XVCVUXDDP))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "xvcvuxddp %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
+(define_expand "vsx_xvcvdpsxds_scale"
+  [(match_operand:V2DI 0 "vsx_register_operand" "")
+   (match_operand:V2DF 1 "vsx_register_operand" "")
+   (match_operand:QI 2 "immediate_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx tmp = gen_reg_rtx (V2DFmode);
+  int scale = INTVAL(operands[2]);
+  if (scale != 0)
+    rs6000_scale_v2df (tmp, op1, scale);
+  emit_insn (gen_vsx_xvcvdpsxds (op0, tmp));
+  DONE;
+})
+
+(define_insn "vsx_xvcvdpsxds"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
+        (unspec:V2DI [(match_operand:V2DF 1 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_XVCVDPSXDS))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "xvcvdpsxds %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
+(define_expand "vsx_xvcvdpuxds_scale"
+  [(match_operand:V2DI 0 "vsx_register_operand" "")
+   (match_operand:V2DF 1 "vsx_register_operand" "")
+   (match_operand:QI 2 "immediate_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx tmp = gen_reg_rtx (V2DFmode);
+  int scale = INTVAL(operands[2]);
+  if (scale != 0)
+    rs6000_scale_v2df (tmp, op1, scale);
+  emit_insn (gen_vsx_xvcvdpuxds (op0, tmp));
+  DONE;
+})
+
+(define_insn "vsx_xvcvdpuxds"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
+        (unspec:V2DI [(match_operand:V2DF 1 "vsx_register_operand" "wa")]
+                     UNSPEC_VSX_XVCVDPUXDS))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "xvcvdpuxds %x0,%x1"
+  [(set_attr "type" "vecdouble")])
 
 ;; Convert from 64-bit to 32-bit types
 ;; Note, favor the Altivec registers since the usual use of these instructions
@@ -1842,6 +2029,22 @@
                       UNSPEC_VSX_XXSPLTW))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "xxspltw %x0,%x1,%2"
+  [(set_attr "type" "vecperm")])
+
+;; V2DF/V2DI splat for use by vec_splat builtin
+(define_insn "vsx_xxspltd_<mode>"
+  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=wa")
+        (unspec:VSX_D [(match_operand:VSX_D 1 "vsx_register_operand" "wa")
+	               (match_operand:QI 2 "u5bit_cint_operand" "i")]
+                      UNSPEC_VSX_XXSPLTD))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+{
+  if ((VECTOR_ELT_ORDER_BIG && INTVAL (operands[2]) == 0)
+      || (!VECTOR_ELT_ORDER_BIG && INTVAL (operands[2]) == 1))
+    return "xxpermdi %x0,%x1,%x1,0";
+  else
+    return "xxpermdi %x0,%x1,%x1,3";
+}
   [(set_attr "type" "vecperm")])
 
 ;; V4SF/V4SI interleave

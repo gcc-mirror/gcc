@@ -67,7 +67,7 @@
    UNSPEC_VCTSXS
    UNSPEC_VLOGEFP
    UNSPEC_VEXPTEFP
-   UNSPEC_VLSDOI
+   UNSPEC_VSLDOI
    UNSPEC_VUNPACK_HI_SIGN
    UNSPEC_VUNPACK_LO_SIGN
    UNSPEC_VUNPACK_HI_SIGN_DIRECT
@@ -2077,7 +2077,7 @@
         (unspec:VM [(match_operand:VM 1 "register_operand" "v")
 		    (match_operand:VM 2 "register_operand" "v")
 		    (match_operand:QI 3 "immediate_operand" "i")]
-		  UNSPEC_VLSDOI))]
+		  UNSPEC_VSLDOI))]
   "TARGET_ALTIVEC"
   "vsldoi %0,%1,%2,%3"
   [(set_attr "type" "vecperm")])
