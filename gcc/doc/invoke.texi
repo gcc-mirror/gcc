@@ -3188,7 +3188,10 @@ option is known to the diagnostic machinery).  Specifying the
 @opindex fdiagnostics-show-caret
 By default, each diagnostic emitted includes the original source line
 and a caret '^' indicating the column.  This option suppresses this
-information.
+information.  The source line is truncated to @var{n} characters, if
+the @option{-fmessage-length=n} is given.  When the output is done
+to the terminal, the width is limited to the width given by the
+@env{COLUMNS} environment variable or, if not set, to the terminal width.
 
 @end table
 

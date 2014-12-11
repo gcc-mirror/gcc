@@ -33,6 +33,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostic-color.h"
 
+#ifdef HAVE_TERMIOS_H
+# include <termios.h>
+#endif
+
+#ifdef GWINSZ_IN_SYS_IOCTL
+# include <sys/ioctl.h>
+#endif
+
 #include <new>                     // For placement new.
 
 #define pedantic_warning_kind(DC)			\
@@ -83,9 +91,10 @@ file_name_as_prefix (diagnostic_context *context, const char *f)
 
 
 /* Return the value of the getenv("COLUMNS") as an integer. If the
-   value is not set to a positive integer, then return INT_MAX.  */
-static int
-getenv_columns (void)
+   value is not set to a positive integer, use ioctl to get the
+   terminal width. If it fails, return INT_MAX.  */
+int
+get_terminal_width (void)
 {
   const char * s = getenv ("COLUMNS");
   if (s != NULL) {
@@ -93,6 +102,14 @@ getenv_columns (void)
     if (n > 0)
       return n;
   }
+
+#ifdef TIOCGWINSZ
+  struct winsize w;
+  w.ws_col = 0;
+  if (ioctl (0, TIOCGWINSZ, &w) == 0 && w.ws_col > 0)
+    return w.ws_col;
+#endif
+
   return INT_MAX;
 }
 
@@ -103,7 +120,7 @@ diagnostic_set_caret_max_width (diagnostic_context *context, int value)
   /* One minus to account for the leading empty space.  */
   value = value ? value - 1 
     : (isatty (fileno (pp_buffer (context->printer)->stream))
-       ? getenv_columns () - 1: INT_MAX);
+       ? get_terminal_width () - 1: INT_MAX);
   
   if (value <= 0) 
     value = INT_MAX;

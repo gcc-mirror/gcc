@@ -30,14 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "gfortran.h"
 
-#ifdef HAVE_TERMIOS_H
-# include <termios.h>
-#endif
-
-#ifdef GWINSZ_IN_SYS_IOCTL
-# include <sys/ioctl.h>
-#endif
-
 #include "diagnostic.h"
 #include "diagnostic-color.h"
 #include "tree-diagnostic.h" /* tree_diagnostics_defaults */
@@ -83,33 +75,9 @@ gfc_pop_suppress_errors (void)
 /* Determine terminal width (for trimming source lines in output).  */
 
 static int
-get_terminal_width (void)
+gfc_get_terminal_width (void)
 {
-  /* Only limit the width if we're outputting to a terminal.  */
-#ifdef HAVE_UNISTD_H
-  if (!isatty (STDERR_FILENO))
-    return INT_MAX;
-#endif
-  
-  /* Method #1: Use ioctl (not available on all systems).  */
-#ifdef TIOCGWINSZ
-  struct winsize w;
-  w.ws_col = 0;
-  if (ioctl (0, TIOCGWINSZ, &w) == 0 && w.ws_col > 0)
-    return w.ws_col;
-#endif
-
-  /* Method #2: Query environment variable $COLUMNS.  */
-  const char *p = getenv ("COLUMNS");
-  if (p)
-    {
-      int value = atoi (p);
-      if (value > 0)
-	return value;
-    }
-
-  /* If both fail, use reasonable default.  */
-  return 80;
+  return isatty (STDERR_FILENO) ? get_terminal_width () : INT_MAX;
 }
 
 
@@ -118,7 +86,7 @@ get_terminal_width (void)
 void
 gfc_error_init_1 (void)
 {
-  terminal_width = get_terminal_width ();
+  terminal_width = gfc_get_terminal_width ();
   errors = 0;
   warnings = 0;
   gfc_buffer_error (false);
