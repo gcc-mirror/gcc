@@ -1,3 +1,10 @@
+2014-12-11  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Change all AARCH64_FL_FPSIMD to
+	AARCH64_FL_FOR_ARCH8.
+	* config/aarch64/aarch64.c (all_cores): Use FLAGS from
+	aarch64-cores.def file only.
+
 2014-12-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054
