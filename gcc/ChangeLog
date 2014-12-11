@@ -1,3 +1,7 @@
+2014-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/md.texi (Insn Lengths): Fix description of (pc).
+
 2014-12-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61324
