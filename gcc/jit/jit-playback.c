@@ -454,8 +454,8 @@ new_function (location *loc,
 playback::lvalue *
 playback::context::
 new_global (location *loc,
-            type *type,
-            const char *name)
+	    type *type,
+	    const char *name)
 {
   gcc_assert (type);
   gcc_assert (name);
@@ -943,7 +943,7 @@ new_array_access (location *loc,
       tree t_result = build4 (ARRAY_REF, t_type_star_ptr, t_ptr, t_index,
 			      NULL_TREE, NULL_TREE);
       if (loc)
-        set_tree_location (t_result, loc);
+	set_tree_location (t_result, loc);
       return new lvalue (this, t_result);
     }
   else
@@ -958,12 +958,12 @@ new_array_access (location *loc,
 
       tree t_indirection = build1 (INDIRECT_REF, t_type_star_ptr, t_address);
       if (loc)
-        {
-          set_tree_location (t_sizeof, loc);
-          set_tree_location (t_offset, loc);
-          set_tree_location (t_address, loc);
-          set_tree_location (t_indirection, loc);
-        }
+	{
+	  set_tree_location (t_sizeof, loc);
+	  set_tree_location (t_offset, loc);
+	  set_tree_location (t_address, loc);
+	  set_tree_location (t_indirection, loc);
+	}
 
       return new lvalue (this, t_indirection);
     }
@@ -1331,8 +1331,8 @@ add_assignment (location *loc,
   if (TREE_TYPE (t_rvalue) != TREE_TYPE (t_lvalue))
     {
       t_rvalue = build1 (CONVERT_EXPR,
-		         TREE_TYPE (t_lvalue),
-		         t_rvalue);
+			 TREE_TYPE (t_lvalue),
+			 t_rvalue);
       if (loc)
 	set_tree_location (t_rvalue, loc);
     }
@@ -1818,18 +1818,19 @@ convert_to_dso (const char *ctxt_progname)
      TV_ASSEMBLE.  */
   auto_timevar assemble_timevar (TV_ASSEMBLE);
   const char *errmsg;
-  const char *argv[7];
+  auto_vec <const char *> argvec;
+#define ADD_ARG(arg) argvec.safe_push (arg)
   int exit_status = 0;
   int err = 0;
   const char *gcc_driver_name = GCC_DRIVER_NAME;
 
-  argv[0] = gcc_driver_name;
-  argv[1] = "-shared";
+  ADD_ARG (gcc_driver_name);
+  ADD_ARG ("-shared");
   /* The input: assembler.  */
-  argv[2] = m_tempdir->get_path_s_file ();
+  ADD_ARG (m_tempdir->get_path_s_file ());
   /* The output: shared library.  */
-  argv[3] = "-o";
-  argv[4] = m_tempdir->get_path_so_file ();
+  ADD_ARG ("-o");
+  ADD_ARG (m_tempdir->get_path_so_file ());
 
   /* Don't use the linker plugin.
      If running with just a "make" and not a "make install", then we'd
@@ -1838,17 +1839,17 @@ convert_to_dso (const char *ctxt_progname)
      libto_plugin is a .la at build time, with it becoming installed with
      ".so" suffix: i.e. it doesn't exist with a .so suffix until install
      time.  */
-  argv[5] = "-fno-use-linker-plugin";
+  ADD_ARG ("-fno-use-linker-plugin");
 
   /* pex argv arrays are NULL-terminated.  */
-  argv[6] = NULL;
+  ADD_ARG (NULL);
 
   /* pex_one's error-handling requires pname to be non-NULL.  */
   gcc_assert (ctxt_progname);
 
   errmsg = pex_one (PEX_SEARCH, /* int flags, */
 		    gcc_driver_name,
-		    const_cast<char * const *> (argv),
+		    const_cast <char *const *> (argvec.address ()),
 		    ctxt_progname, /* const char *pname */
 		    NULL, /* const char *outname */
 		    NULL, /* const char *errname */
@@ -1875,6 +1876,7 @@ convert_to_dso (const char *ctxt_progname)
 		 getenv ("PATH"));
       return;
     }
+#undef ADD_ARG
 }
 
 /* Dynamically-link the built DSO file into this process, using dlopen.

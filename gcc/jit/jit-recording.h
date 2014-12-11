@@ -260,7 +260,7 @@ private:
   char *m_first_error_str;
   bool m_owns_first_error_str;
 
-  const char *m_str_options[GCC_JIT_NUM_STR_OPTIONS];
+  char *m_str_options[GCC_JIT_NUM_STR_OPTIONS];
   int m_int_options[GCC_JIT_NUM_INT_OPTIONS];
   bool m_bool_options[GCC_JIT_NUM_BOOL_OPTIONS];
 
@@ -1601,4 +1601,3 @@ private:
 } // namespace gcc
 
 #endif /* JIT_RECORDING_H */
-
