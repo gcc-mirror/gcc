@@ -1,3 +1,11 @@
+2014-12-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* dwarf2out.c (gen_lexical_block_die): Remove unused `depth'
+	parameter.
+	(gen_inlined_subroutine_die): Same.
+	(gen_block_die): Same.
+	(decls_for_scope): Same.
+
 2014-12-11  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64-cores.def: Change all AARCH64_FL_FPSIMD to
