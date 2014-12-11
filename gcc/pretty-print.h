@@ -107,6 +107,38 @@ struct output_buffer
   bool flush_p;
 };
 
+/* Finishes constructing a NULL-terminated character string representing
+   the buffered text.  */
+static inline const char *
+output_buffer_formatted_text (output_buffer *buff)
+{
+  obstack_1grow (buff->obstack, '\0');
+  return (const char *) obstack_base (buff->obstack);
+}
+
+/* Append to the output buffer a string specified by its
+   STARTing character and LENGTH.  */
+static inline void
+output_buffer_append_r (output_buffer *buff, const char *start, int length)
+{
+  obstack_grow (buff->obstack, start, length);
+  buff->line_length += length;
+}
+
+/*  Return a pointer to the last character emitted in the
+    output_buffer.  A NULL pointer means no character available.  */
+static inline const char *
+output_buffer_last_position_in_text (const output_buffer *buff)
+{
+  const char *p = NULL;
+  struct obstack *text = buff->obstack;
+
+  if (obstack_base (text) != obstack_next_free (text))
+    p = ((const char *) obstack_next_free (text)) - 1;
+  return p;
+}
+
+
 /* The type of pretty-printer flags passed to clients.  */
 typedef unsigned int pp_flags;
 

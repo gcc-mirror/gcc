@@ -1,3 +1,36 @@
+2014-12-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* error.c (pp_error_buffer): New static variable.
+	(pp_warning_buffer): Make it a pointer.
+	(gfc_output_buffer_empty_p): New.
+	(gfc_error_init_1): Call gfc_buffer_error.
+	(gfc_buffer_error): Do not use pp_warning_buffer.flush_p as the
+	buffered_p flag.
+	(gfc_clear_warning): Likewise.
+	(gfc_warning_check): Call gfc_clear_warning. Only check the new
+	pp_warning_buffer if the old warning_buffer was empty. Call
+	diagnostic_action_after_output.
+	(gfc_error_1): Renamed from gfc_error.
+	(gfc_error): New.
+	(gfc_clear_error): Clear also pp_error_buffer.
+	(gfc_error_flag_test): Check also pp_error_buffer.
+	(gfc_error_check): Likewise. Only check the new pp_error_buffer
+	if the old error_buffer was empty.
+	(gfc_move_output_buffer_from_to): New.
+	(gfc_push_error): Use it here. Take also an output_buffer as argument.
+	(gfc_pop_error): Likewise.
+	(gfc_free_error): Likewise.
+	(gfc_diagnostics_init): Use XNEW and placement-new to init
+	pp_error_buffer and pp_warning_buffer. Set flush_p to false for
+	both pp_warning_buffer and pp_error_buffer.
+
+	* Update gfc_push_error, gfc_pop_error and gfc_free_error calls
+	according to the above changes.
+	* Use gfc_error_1 for all gfc_error calls that use multiple
+	locations.
+	* Use %qs instead of '%s' for many gfc_error calls.
+
 2014-12-11  Tobias Burnus  <burnus@net-b.de>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 

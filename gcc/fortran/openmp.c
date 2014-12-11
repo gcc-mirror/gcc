@@ -2326,31 +2326,31 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 	      {
 		bool bad = false;
 		if (n->sym->attr.threadprivate)
-		  gfc_error ("THREADPRIVATE object '%s' in %s clause at %L",
+		  gfc_error ("THREADPRIVATE object %qs in %s clause at %L",
 			     n->sym->name, name, where);
 		if (n->sym->attr.cray_pointee)
-		  gfc_error ("Cray pointee '%s' in %s clause at %L",
+		  gfc_error ("Cray pointee %qs in %s clause at %L",
 			    n->sym->name, name, where);
 		if (n->sym->attr.associate_var)
-		  gfc_error ("ASSOCIATE name '%s' in %s clause at %L",
+		  gfc_error ("ASSOCIATE name %qs in %s clause at %L",
 			     n->sym->name, name, where);
 		if (list != OMP_LIST_PRIVATE)
 		  {
 		    if (n->sym->attr.proc_pointer && list == OMP_LIST_REDUCTION)
-		      gfc_error ("Procedure pointer '%s' in %s clause at %L",
+		      gfc_error ("Procedure pointer %qs in %s clause at %L",
 				 n->sym->name, name, where);
 		    if (n->sym->attr.pointer && list == OMP_LIST_REDUCTION)
-		      gfc_error ("POINTER object '%s' in %s clause at %L",
+		      gfc_error ("POINTER object %qs in %s clause at %L",
 				 n->sym->name, name, where);
 		    if (n->sym->attr.cray_pointer && list == OMP_LIST_REDUCTION)
-		      gfc_error ("Cray pointer '%s' in %s clause at %L",
+		      gfc_error ("Cray pointer %qs in %s clause at %L",
 				 n->sym->name, name, where);
 		  }
 		if (n->sym->as && n->sym->as->type == AS_ASSUMED_SIZE)
-		  gfc_error ("Assumed size array '%s' in %s clause at %L",
+		  gfc_error ("Assumed size array %qs in %s clause at %L",
 			     n->sym->name, name, where);
 		if (n->sym->attr.in_namelist && list != OMP_LIST_REDUCTION)
-		  gfc_error ("Variable '%s' in %s clause is used in "
+		  gfc_error ("Variable %qs in %s clause is used in "
 			     "NAMELIST statement at %L",
 			     n->sym->name, name, where);
 		if (n->sym->attr.pointer && n->sym->attr.intent == INTENT_IN)
@@ -2360,7 +2360,7 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 		    case OMP_LIST_LASTPRIVATE:
 		    case OMP_LIST_LINEAR:
 		    /* case OMP_LIST_REDUCTION: */
-		      gfc_error ("INTENT(IN) POINTER '%s' in %s clause at %L",
+		      gfc_error ("INTENT(IN) POINTER %qs in %s clause at %L",
 				 n->sym->name, name, where);
 		      break;
 		    default:
@@ -2475,10 +2475,10 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 		    break;
 		  case OMP_LIST_LINEAR:
 		    if (n->sym->ts.type != BT_INTEGER)
-		      gfc_error ("LINEAR variable '%s' must be INTEGER "
+		      gfc_error ("LINEAR variable %qs must be INTEGER "
 				 "at %L", n->sym->name, where);
 		    else if (!code && !n->sym->attr.value)
-		      gfc_error ("LINEAR dummy argument '%s' must have VALUE "
+		      gfc_error ("LINEAR dummy argument %qs must have VALUE "
 				 "attribute at %L", n->sym->name, where);
 		    else if (n->expr)
 		      {
@@ -2486,11 +2486,11 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 			if (!gfc_resolve_expr (expr)
 			    || expr->ts.type != BT_INTEGER
 			    || expr->rank != 0)
-			  gfc_error ("'%s' in LINEAR clause at %L requires "
+			  gfc_error ("%qs in LINEAR clause at %L requires "
 				     "a scalar integer linear-step expression",
 				     n->sym->name, where);
 			else if (!code && expr->expr_type != EXPR_CONSTANT)
-			  gfc_error ("'%s' in LINEAR clause at %L requires "
+			  gfc_error ("%qs in LINEAR clause at %L requires "
 				     "a constant integer linear-step expression",
 				     n->sym->name, where);
 		      }
@@ -2931,7 +2931,7 @@ resolve_omp_atomic (gfc_code *code)
 	  else if (expr_references_sym (arg->expr, var, NULL))
 	    {
 	      gfc_error ("!$OMP ATOMIC intrinsic arguments except one must "
-			 "not reference '%s' at %L",
+			 "not reference %qs at %L",
 			 var->name, &arg->expr->where);
 	      return;
 	    }
@@ -2946,7 +2946,7 @@ resolve_omp_atomic (gfc_code *code)
       if (var_arg == NULL)
 	{
 	  gfc_error ("First or last !$OMP ATOMIC intrinsic argument must "
-		     "be '%s' at %L", var->name, &expr2->where);
+		     "be %qs at %L", var->name, &expr2->where);
 	  return;
 	}
 
@@ -3414,7 +3414,7 @@ gfc_resolve_omp_declare_simd (gfc_namespace *ns)
     {
       if (ods->proc_name != ns->proc_name)
 	gfc_error ("!$OMP DECLARE SIMD should refer to containing procedure "
-		   "'%s' at %L", ns->proc_name->name, &ods->where);
+		   "%qs at %L", ns->proc_name->name, &ods->where);
       if (ods->clauses)
 	resolve_omp_clauses (NULL, &ods->where, ods->clauses, ns);
     }

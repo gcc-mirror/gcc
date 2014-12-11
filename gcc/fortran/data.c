@@ -253,9 +253,9 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 
 	  if (init && expr->expr_type != EXPR_ARRAY)
 	    {
-	      gfc_error ("'%s' at %L already is initialized at %L",
-			 lvalue->symtree->n.sym->name, &lvalue->where,
-			 &init->where);
+	      gfc_error_1 ("'%s' at %L already is initialized at %L",
+			   lvalue->symtree->n.sym->name, &lvalue->where,
+			   &init->where);
 	      goto abort;
 	    }
 

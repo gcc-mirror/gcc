@@ -43,7 +43,7 @@ scalar_check (gfc_expr *e, int n)
   if (e->rank == 0)
     return true;
 
-  gfc_error ("'%s' argument of '%s' intrinsic at %L must be a scalar",
+  gfc_error ("%qs argument of %qs intrinsic at %L must be a scalar",
 	     gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
 	     &e->where);
 
@@ -59,7 +59,7 @@ type_check (gfc_expr *e, int n, bt type)
   if (e->ts.type == type)
     return true;
 
-  gfc_error ("'%s' argument of '%s' intrinsic at %L must be %s",
+  gfc_error ("%qs argument of %qs intrinsic at %L must be %s",
 	     gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
 	     &e->where, gfc_basic_typename (type));
 
@@ -86,7 +86,7 @@ numeric_check (gfc_expr *e, int n)
       return true;
     }
 
-  gfc_error ("'%s' argument of '%s' intrinsic at %L must be a numeric type",
+  gfc_error ("%qs argument of %qs intrinsic at %L must be a numeric type",
 	     gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
 	     &e->where);
 
@@ -101,7 +101,7 @@ int_or_real_check (gfc_expr *e, int n)
 {
   if (e->ts.type != BT_INTEGER && e->ts.type != BT_REAL)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be INTEGER "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
 		 "or REAL", gfc_current_intrinsic_arg[n]->name,
 		 gfc_current_intrinsic, &e->where);
       return false;
@@ -118,7 +118,7 @@ real_or_complex_check (gfc_expr *e, int n)
 {
   if (e->ts.type != BT_REAL && e->ts.type != BT_COMPLEX)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be REAL "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be REAL "
 		 "or COMPLEX", gfc_current_intrinsic_arg[n]->name,
 		 gfc_current_intrinsic, &e->where);
       return false;
@@ -135,7 +135,7 @@ int_or_proc_check (gfc_expr *e, int n)
 {
   if (e->ts.type != BT_INTEGER && e->ts.type != BT_PROCEDURE)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be INTEGER "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
 		 "or PROCEDURE", gfc_current_intrinsic_arg[n]->name,
 		 gfc_current_intrinsic, &e->where);
       return false;
@@ -164,7 +164,7 @@ kind_check (gfc_expr *k, int n, bt type)
 
   if (!gfc_check_init_expr (k))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a constant",
+      gfc_error ("%qs argument of %qs intrinsic at %L must be a constant",
 		 gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
 		 &k->where);
       return false;
@@ -192,7 +192,7 @@ double_check (gfc_expr *d, int n)
 
   if (d->ts.kind != gfc_default_double_kind)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be double "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be double "
 		 "precision", gfc_current_intrinsic_arg[n]->name,
 		 gfc_current_intrinsic, &d->where);
       return false;
@@ -215,7 +215,7 @@ coarray_check (gfc_expr *e, int n)
 
   if (!gfc_is_coarray (e))
     {
-      gfc_error ("Expected coarray variable as '%s' argument to the %s "
+      gfc_error ("Expected coarray variable as %qs argument to the %s "
                  "intrinsic at %L", gfc_current_intrinsic_arg[n]->name,
 		 gfc_current_intrinsic, &e->where);
       return false;
@@ -232,7 +232,7 @@ logical_array_check (gfc_expr *array, int n)
 {
   if (array->ts.type != BT_LOGICAL || array->rank == 0)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a logical "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be a logical "
 		 "array", gfc_current_intrinsic_arg[n]->name,
 		 gfc_current_intrinsic, &array->where);
       return false;
@@ -258,7 +258,7 @@ array_check (gfc_expr *e, int n)
   if (e->rank != 0 && e->ts.type != BT_PROCEDURE)
     return true;
 
-  gfc_error ("'%s' argument of '%s' intrinsic at %L must be an array",
+  gfc_error ("%qs argument of %qs intrinsic at %L must be an array",
 	     gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
 	     &e->where);
 
@@ -279,7 +279,7 @@ nonnegative_check (const char *arg, gfc_expr *expr)
       gfc_extract_int (expr, &i);
       if (i < 0)
 	{
-	  gfc_error ("'%s' at %L must be nonnegative", arg, &expr->where);
+	  gfc_error ("%qs at %L must be nonnegative", arg, &expr->where);
 	  return false;
 	}
     }
@@ -311,7 +311,7 @@ less_than_bitsize1 (const char *arg1, gfc_expr *expr1, const char *arg2,
 	  if (i2 > gfc_integer_kinds[i3].bit_size)
 	    {
 	      gfc_error ("The absolute value of SHIFT at %L must be less "
-			 "than or equal to BIT_SIZE('%s')",
+			 "than or equal to BIT_SIZE(%qs)",
 			 &expr2->where, arg1);
 	      return false;
 	    }
@@ -321,8 +321,8 @@ less_than_bitsize1 (const char *arg1, gfc_expr *expr1, const char *arg2,
 	{
 	  if (i2 > gfc_integer_kinds[i3].bit_size)
 	    {
-	      gfc_error ("'%s' at %L must be less than "
-			 "or equal to BIT_SIZE('%s')",
+	      gfc_error ("%qs at %L must be less than "
+			 "or equal to BIT_SIZE(%qs)",
 			 arg2, &expr2->where, arg1);
 	      return false;
 	    }
@@ -331,7 +331,7 @@ less_than_bitsize1 (const char *arg1, gfc_expr *expr1, const char *arg2,
 	{
 	  if (i2 >= gfc_integer_kinds[i3].bit_size)
 	    {
-	      gfc_error ("'%s' at %L must be less than BIT_SIZE('%s')",
+	      gfc_error ("%qs at %L must be less than BIT_SIZE(%qs)",
 			 arg2, &expr2->where, arg1);
 	      return false;
 	    }
@@ -358,7 +358,7 @@ less_than_bitsizekind (const char *arg, gfc_expr *expr, int k)
 
   if (val > gfc_integer_kinds[i].bit_size)
     {
-      gfc_error ("'%s' at %L must be less than or equal to the BIT_SIZE of "
+      gfc_error ("%qs at %L must be less than or equal to the BIT_SIZE of "
 		 "INTEGER(KIND=%d)", arg, &expr->where, k);
       return false;
     }
@@ -385,7 +385,7 @@ less_than_bitsize2 (const char *arg1, gfc_expr *expr1, const char *arg2,
       if (i2 > gfc_integer_kinds[i3].bit_size)
 	{
 	  gfc_error ("'%s + %s' at %L must be less than or equal "
-		     "to BIT_SIZE('%s')",
+		     "to BIT_SIZE(%qs)",
 		     arg2, arg3, &expr2->where, arg1);
 	  return false;
 	}
@@ -402,8 +402,8 @@ same_type_check (gfc_expr *e, int n, gfc_expr *f, int m)
   if (gfc_compare_types (&e->ts, &f->ts))
     return true;
 
-  gfc_error ("'%s' argument of '%s' intrinsic at %L must be the same type "
-	     "and kind as '%s'", gfc_current_intrinsic_arg[m]->name,
+  gfc_error ("%qs argument of %qs intrinsic at %L must be the same type "
+	     "and kind as %qs", gfc_current_intrinsic_arg[m]->name,
 	     gfc_current_intrinsic, &f->where,
 	     gfc_current_intrinsic_arg[n]->name);
 
@@ -419,7 +419,7 @@ rank_check (gfc_expr *e, int n, int rank)
   if (e->rank == rank)
     return true;
 
-  gfc_error ("'%s' argument of '%s' intrinsic at %L must be of rank %d",
+  gfc_error ("%qs argument of %qs intrinsic at %L must be of rank %d",
 	     gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
 	     &e->where, rank);
 
@@ -434,7 +434,7 @@ nonoptional_check (gfc_expr *e, int n)
 {
   if (e->expr_type == EXPR_VARIABLE && e->symtree->n.sym->attr.optional)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must not be OPTIONAL",
+      gfc_error ("%qs argument of %qs intrinsic at %L must not be OPTIONAL",
 		 gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
 		 &e->where);
     }
@@ -455,7 +455,7 @@ allocatable_check (gfc_expr *e, int n)
   attr = gfc_variable_attr (e, NULL);
   if (!attr.allocatable || attr.associate_var)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be ALLOCATABLE",
+      gfc_error ("%qs argument of %qs intrinsic at %L must be ALLOCATABLE",
 		 gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
 		 &e->where);
       return false;
@@ -473,7 +473,7 @@ kind_value_check (gfc_expr *e, int n, int k)
   if (e->ts.kind == k)
     return true;
 
-  gfc_error ("'%s' argument of '%s' intrinsic at %L must be of kind %d",
+  gfc_error ("%qs argument of %qs intrinsic at %L must be of kind %d",
 	     gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
 	     &e->where, k);
 
@@ -511,7 +511,7 @@ variable_check (gfc_expr *e, int n, bool allow_proc)
 
       if (!ref)
 	{
-	  gfc_error ("'%s' argument of '%s' intrinsic at %L cannot be "
+	  gfc_error ("%qs argument of %qs intrinsic at %L cannot be "
 		     "INTENT(IN)", gfc_current_intrinsic_arg[n]->name,
 		     gfc_current_intrinsic, &e->where);
 	  return false;
@@ -532,7 +532,7 @@ variable_check (gfc_expr *e, int n, bool allow_proc)
 	  return true;
     }
 
-  gfc_error ("'%s' argument of '%s' intrinsic at %L must be a variable",
+  gfc_error ("%qs argument of %qs intrinsic at %L must be a variable",
 	     gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic, &e->where);
 
   return false;
@@ -581,7 +581,7 @@ dim_corank_check (gfc_expr *dim, gfc_expr *array)
   if (mpz_cmp_ui (dim->value.integer, 1) < 0
       || mpz_cmp_ui (dim->value.integer, corank) > 0)
     {
-      gfc_error ("'dim' argument of '%s' intrinsic at %L is not a valid "
+      gfc_error ("'dim' argument of %qs intrinsic at %L is not a valid "
 		 "codimension index", gfc_current_intrinsic, &dim->where);
 
       return false;
@@ -631,7 +631,7 @@ dim_rank_check (gfc_expr *dim, gfc_expr *array, int allow_assumed)
   if (mpz_cmp_ui (dim->value.integer, 1) < 0
       || mpz_cmp_ui (dim->value.integer, rank) > 0)
     {
-      gfc_error ("'dim' argument of '%s' intrinsic at %L is not a valid "
+      gfc_error ("'dim' argument of %qs intrinsic at %L is not a valid "
 		 "dimension index", gfc_current_intrinsic, &dim->where);
 
       return false;
@@ -856,7 +856,7 @@ gfc_check_a_p (gfc_expr *a, gfc_expr *p)
 
   if (a->ts.type != p->ts.type)
     {
-      gfc_error ("'%s' and '%s' arguments of '%s' intrinsic at %L must "
+      gfc_error ("%qs and %qs arguments of %qs intrinsic at %L must "
 		 "have the same type", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		 &p->where);
@@ -901,7 +901,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
 
   if (!attr1.pointer && !attr1.proc_pointer)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a POINTER",
+      gfc_error ("%qs argument of %qs intrinsic at %L must be a POINTER",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &pointer->where);
       return false;
@@ -910,7 +910,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
   /* F2008, C1242.  */
   if (attr1.pointer && gfc_is_coindexed (pointer))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be "
+      gfc_error ("%qs argument of %qs intrinsic at %L shall not be "
 		 "coindexed", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &pointer->where);
       return false;
@@ -928,7 +928,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
     attr2 = gfc_expr_attr (target);
   else
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a pointer "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be a pointer "
 		 "or target VARIABLE or FUNCTION",
 		 gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		 &target->where);
@@ -937,7 +937,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
 
   if (attr1.pointer && !attr2.pointer && !attr2.target)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a POINTER "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be a POINTER "
 		 "or a TARGET", gfc_current_intrinsic_arg[1]->name,
 		 gfc_current_intrinsic, &target->where);
       return false;
@@ -946,7 +946,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
   /* F2008, C1242.  */
   if (attr1.pointer && gfc_is_coindexed (target))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be "
+      gfc_error ("%qs argument of %qs intrinsic at %L shall not be "
 		 "coindexed", gfc_current_intrinsic_arg[1]->name,
 		 gfc_current_intrinsic, &target->where);
       return false;
@@ -974,7 +974,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
 null_arg:
 
   gfc_error ("NULL pointer at %L is not permitted as actual argument "
-	     "of '%s' intrinsic function", where, gfc_current_intrinsic);
+	     "of %qs intrinsic function", where, gfc_current_intrinsic);
   return false;
 
 }
@@ -1031,7 +1031,7 @@ gfc_check_atomic (gfc_expr *atom, int atom_no, gfc_expr *value, int val_no,
 
   if (atom->ts.type != value->ts.type)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L shall have the same "
+      gfc_error_1 ("'%s' argument of '%s' intrinsic at %L shall have the same "
 		 "type as '%s' at %L", gfc_current_intrinsic_arg[val_no]->name,
 		 gfc_current_intrinsic, &value->where,
 		 gfc_current_intrinsic_arg[atom_no]->name, &atom->where);
@@ -1377,7 +1377,7 @@ gfc_check_cmplx (gfc_expr *x, gfc_expr *y, gfc_expr *kind)
 
       if (x->ts.type == BT_COMPLEX)
 	{
-	  gfc_error ("'%s' argument of '%s' intrinsic at %L must not be "
+	  gfc_error ("%qs argument of %qs intrinsic at %L must not be "
 		     "present if 'x' is COMPLEX",
 		     gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		     &y->where);
@@ -1386,7 +1386,7 @@ gfc_check_cmplx (gfc_expr *x, gfc_expr *y, gfc_expr *kind)
 
       if (y->ts.type == BT_COMPLEX)
 	{
-	  gfc_error ("'%s' argument of '%s' intrinsic at %L must have a type "
+	  gfc_error ("%qs argument of %qs intrinsic at %L must have a type "
 		     "of either REAL or INTEGER",
 		     gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		     &y->where);
@@ -1575,7 +1575,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 
   if (!gfc_compare_types (&a->ts, &sym->result->ts))
     {
-      gfc_error ("A argument at %L has type %s but the function passed as "
+      gfc_error_1 ("A argument at %L has type %s but the function passed as "
 		 "OPERATOR at %L returns %s",
 		 &a->where, gfc_typename (&a->ts), &op->where,
 		 gfc_typename (&sym->result->ts));
@@ -1655,16 +1655,16 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 	  && ((formal_size1 && actual_size != formal_size1)
 	       || (formal_size2 && actual_size != formal_size2)))
 	{
-	  gfc_error ("The character length of the A argument at %L and of the "
-		     "arguments of the OPERATOR at %L shall be the same",
+	  gfc_error_1 ("The character length of the A argument at %L and of the "
+		       "arguments of the OPERATOR at %L shall be the same",
 		     &a->where, &op->where);
 	  return false;
 	}
       if (actual_size && result_size && actual_size != result_size)
 	{
-	  gfc_error ("The character length of the A argument at %L and of the "
-		     "function result of the OPERATOR at %L shall be the same",
-		     &a->where, &op->where);
+	  gfc_error_1 ("The character length of the A argument at %L and of the "
+		       "function result of the OPERATOR at %L shall be the same",
+		       &a->where, &op->where);
 	  return false;
 	}
     }
@@ -1680,10 +1680,10 @@ gfc_check_co_minmax (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
   if (a->ts.type != BT_INTEGER && a->ts.type != BT_REAL
       && a->ts.type != BT_CHARACTER)
     {
-       gfc_error ("'%s' argument of '%s' intrinsic at %L shall be of type "
-		  "integer, real or character",
-		  gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
-		  &a->where);
+       gfc_error_1 ("'%s' argument of '%s' intrinsic at %L shall be of type "
+		    "integer, real or character",
+		    gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		    &a->where);
        return false;
     }
   return check_co_collective (a, result_image, stat, errmsg, false);
@@ -1775,7 +1775,7 @@ gfc_check_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
 	      {
 		if (!identical_dimen_shape (array, i, shift, j))
 		  {
-		    gfc_error ("'%s' argument of '%s' intrinsic at %L has "
+		    gfc_error ("%qs argument of %qs intrinsic at %L has "
 			       "invalid shape in dimension %d (%ld/%ld)",
 			       gfc_current_intrinsic_arg[1]->name,
 			       gfc_current_intrinsic, &shift->where, i + 1,
@@ -1790,7 +1790,7 @@ gfc_check_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
     }
   else
     {
-      gfc_error ("'%s' argument of intrinsic '%s' at %L of must have rank "
+      gfc_error ("%qs argument of intrinsic %qs at %L of must have rank "
 		 "%d or be a scalar", gfc_current_intrinsic_arg[1]->name,
 		 gfc_current_intrinsic, &shift->where, array->rank - 1);
       return false;
@@ -1834,7 +1834,7 @@ gfc_check_dcmplx (gfc_expr *x, gfc_expr *y)
 
       if (x->ts.type == BT_COMPLEX)
 	{
-	  gfc_error ("'%s' argument of '%s' intrinsic at %L must not be "
+	  gfc_error ("%qs argument of %qs intrinsic at %L must not be "
 		     "present if 'x' is COMPLEX",
 		     gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		     &y->where);
@@ -1843,7 +1843,7 @@ gfc_check_dcmplx (gfc_expr *x, gfc_expr *y)
 
       if (y->ts.type == BT_COMPLEX)
 	{
-	  gfc_error ("'%s' argument of '%s' intrinsic at %L must have a type "
+	  gfc_error ("%qs argument of %qs intrinsic at %L must have a type "
 		     "of either REAL or INTEGER",
 		     gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		     &y->where);
@@ -1893,7 +1893,7 @@ gfc_check_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
       break;
 
     default:
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be numeric "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be numeric "
 		 "or LOGICAL", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &vector_a->where);
       return false;
@@ -1907,7 +1907,7 @@ gfc_check_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
 
   if (! identical_dimen_shape (vector_a, 0, vector_b, 0))
     {
-      gfc_error ("Different shape for arguments '%s' and '%s' at %L for "
+      gfc_error ("Different shape for arguments %qs and %qs at %L for "
 		 "intrinsic 'dot_product'", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic_arg[1]->name, &vector_a->where);
       return false;
@@ -1926,7 +1926,7 @@ gfc_check_dprod (gfc_expr *x, gfc_expr *y)
 
   if (x->ts.kind != gfc_default_real_kind)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be default "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be default "
 		 "real", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &x->where);
       return false;
@@ -1934,7 +1934,7 @@ gfc_check_dprod (gfc_expr *x, gfc_expr *y)
 
   if (y->ts.kind != gfc_default_real_kind)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be default "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be default "
 		 "real", gfc_current_intrinsic_arg[1]->name,
 		 gfc_current_intrinsic, &y->where);
       return false;
@@ -1955,8 +1955,8 @@ gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
 
   if (i->is_boz && j->is_boz)
     {
-      gfc_error ("'I' at %L and 'J' at %L cannot both be BOZ literal "
-		 "constants", &i->where, &j->where);
+      gfc_error_1 ("'I' at %L and 'J' at %L cannot both be BOZ literal "
+		   "constants", &i->where, &j->where);
       return false;
     }
 
@@ -2025,7 +2025,7 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 	      {
 		if (!identical_dimen_shape (array, i, shift, j))
 		  {
-		    gfc_error ("'%s' argument of '%s' intrinsic at %L has "
+		    gfc_error ("%qs argument of %qs intrinsic at %L has "
 			       "invalid shape in dimension %d (%ld/%ld)",
 			       gfc_current_intrinsic_arg[1]->name,
 			       gfc_current_intrinsic, &shift->where, i + 1,
@@ -2040,7 +2040,7 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
     }
   else
     {
-      gfc_error ("'%s' argument of intrinsic '%s' at %L of must have rank "
+      gfc_error ("%qs argument of intrinsic %qs at %L of must have rank "
 		 "%d or be a scalar", gfc_current_intrinsic_arg[1]->name,
 		 gfc_current_intrinsic, &shift->where, array->rank - 1);
       return false;
@@ -2068,7 +2068,7 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 	}
       else
 	{
-	  gfc_error ("'%s' argument of intrinsic '%s' at %L of must have "
+	  gfc_error ("%qs argument of intrinsic %qs at %L of must have "
 		     "rank %d or be a scalar",
 		     gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		     &shift->where, array->rank - 1);
@@ -2369,8 +2369,8 @@ gfc_check_index (gfc_expr *string, gfc_expr *substring, gfc_expr *back,
 
   if (string->ts.kind != substring->ts.kind)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be the same "
-		 "kind as '%s'", gfc_current_intrinsic_arg[1]->name,
+      gfc_error ("%qs argument of %qs intrinsic at %L must be the same "
+		 "kind as %qs", gfc_current_intrinsic_arg[1]->name,
 		 gfc_current_intrinsic, &substring->where,
 		 gfc_current_intrinsic_arg[0]->name);
       return false;
@@ -2471,9 +2471,9 @@ gfc_check_ishftc (gfc_expr *i, gfc_expr *shift, gfc_expr *size)
 
 	      if (i2 > i3)
 		{
-		  gfc_error ("The absolute value of SHIFT at %L must be less "
-			     "than or equal to SIZE at %L", &shift->where,
-			     &size->where);
+		  gfc_error_1 ("The absolute value of SHIFT at %L must be less "
+			       "than or equal to SIZE at %L", &shift->where,
+			       &size->where);
 		  return false;
 		}
 	     }
@@ -2532,7 +2532,7 @@ gfc_check_kind (gfc_expr *x)
 {
   if (x->ts.type == BT_DERIVED)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be a "
 		 "non-derived type", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &x->where);
       return false;
@@ -2743,7 +2743,7 @@ min_max_args (gfc_actual_arglist *args)
 
   if (args == NULL || args->next == NULL)
     {
-      gfc_error ("Intrinsic '%s' at %L must have at least two arguments",
+      gfc_error ("Intrinsic %qs at %L must have at least two arguments",
 		 gfc_current_intrinsic, gfc_current_intrinsic_where);
       return false;
     }
@@ -2791,7 +2791,7 @@ min_max_args (gfc_actual_arglist *args)
 
   if (!a1 || !a2)
     {
-      gfc_error ("Missing '%s' argument to the %s intrinsic at %L",
+      gfc_error ("Missing %qs argument to the %s intrinsic at %L",
 	         !a1 ? "a1" : "a2", gfc_current_intrinsic,
 		 gfc_current_intrinsic_where);
       return false;
@@ -2806,12 +2806,12 @@ min_max_args (gfc_actual_arglist *args)
   return true;
 
 duplicate:
-  gfc_error ("Duplicate argument '%s' at %L to intrinsic %s", arg->name,
+  gfc_error ("Duplicate argument %qs at %L to intrinsic %s", arg->name,
 	     &arg->expr->where, gfc_current_intrinsic);
   return false;
 
 unknown:
-  gfc_error ("Unknown argument '%s' at %L to intrinsic %s", arg->name,
+  gfc_error ("Unknown argument %qs at %L to intrinsic %s", arg->name,
 	     &arg->expr->where, gfc_current_intrinsic);
   return false;
 }
@@ -2840,7 +2840,7 @@ check_rest (bt type, int kind, gfc_actual_arglist *arglist)
 	    }
 	  else
 	    {
-	      gfc_error ("'a%d' argument of '%s' intrinsic at %L must be "
+	      gfc_error ("'a%d' argument of %qs intrinsic at %L must be "
 			 "%s(%d)", n, gfc_current_intrinsic, &x->where,
 			 gfc_basic_typename (type), kind);
 	      return false;
@@ -2878,7 +2878,7 @@ gfc_check_min_max (gfc_actual_arglist *arg)
     }
   else if (x->ts.type != BT_INTEGER && x->ts.type != BT_REAL)
     {
-      gfc_error ("'a1' argument of '%s' intrinsic at %L must be INTEGER, "
+      gfc_error ("'a1' argument of %qs intrinsic at %L must be INTEGER, "
 		 "REAL or CHARACTER", gfc_current_intrinsic, &x->where);
       return false;
     }
@@ -2928,7 +2928,7 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
 {
   if ((matrix_a->ts.type != BT_LOGICAL) && !gfc_numeric_ts (&matrix_a->ts))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be numeric "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be numeric "
 		 "or LOGICAL", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &matrix_a->where);
       return false;
@@ -2936,7 +2936,7 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
 
   if ((matrix_b->ts.type != BT_LOGICAL) && !gfc_numeric_ts (&matrix_b->ts))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be numeric "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be numeric "
 		 "or LOGICAL", gfc_current_intrinsic_arg[1]->name,
 		 gfc_current_intrinsic, &matrix_b->where);
       return false;
@@ -2945,7 +2945,7 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
   if ((matrix_a->ts.type == BT_LOGICAL && gfc_numeric_ts (&matrix_b->ts))
       || (gfc_numeric_ts (&matrix_a->ts) && matrix_b->ts.type == BT_LOGICAL))
     {
-      gfc_error ("Argument types of '%s' intrinsic at %L must match (%s/%s)",
+      gfc_error ("Argument types of %qs intrinsic at %L must match (%s/%s)",
 		 gfc_current_intrinsic, &matrix_a->where,
 		 gfc_typename(&matrix_a->ts), gfc_typename(&matrix_b->ts));
        return false;
@@ -2959,8 +2959,8 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
       /* Check for case matrix_a has shape(m), matrix_b has shape (m, k).  */
       if (!identical_dimen_shape (matrix_a, 0, matrix_b, 0))
 	{
-	  gfc_error ("Different shape on dimension 1 for arguments '%s' "
-		     "and '%s' at %L for intrinsic matmul",
+	  gfc_error ("Different shape on dimension 1 for arguments %qs "
+		     "and %qs at %L for intrinsic matmul",
 		     gfc_current_intrinsic_arg[0]->name,
 		     gfc_current_intrinsic_arg[1]->name, &matrix_a->where);
 	  return false;
@@ -2978,8 +2978,8 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
 	 - matrix_a has shape (n,m) and matrix_b has shape (m).  */
       if (!identical_dimen_shape (matrix_a, 1, matrix_b, 0))
 	{
-	  gfc_error ("Different shape on dimension 2 for argument '%s' and "
-		     "dimension 1 for argument '%s' at %L for intrinsic "
+	  gfc_error ("Different shape on dimension 2 for argument %qs and "
+		     "dimension 1 for argument %qs at %L for intrinsic "
 		     "matmul", gfc_current_intrinsic_arg[0]->name,
 		     gfc_current_intrinsic_arg[1]->name, &matrix_a->where);
 	  return false;
@@ -2987,7 +2987,7 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
       break;
 
     default:
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be of rank "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be of rank "
 		 "1 or 2", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &matrix_a->where);
       return false;
@@ -3162,7 +3162,7 @@ gfc_check_transf_bit_intrins (gfc_actual_arglist *ap)
 {
   if (ap->expr->ts.type != BT_INTEGER)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be INTEGER",
+      gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER",
                  gfc_current_intrinsic_arg[0]->name,
                  gfc_current_intrinsic, &ap->expr->where);
       return false;
@@ -3337,7 +3337,7 @@ gfc_check_null (gfc_expr *mold)
 
   if (!attr.pointer && !attr.proc_pointer && !attr.allocatable)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a POINTER, "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be a POINTER, "
 		 "ALLOCATABLE or procedure pointer",
 		 gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &mold->where);
@@ -3352,7 +3352,7 @@ gfc_check_null (gfc_expr *mold)
   /* F2008, C1242.  */
   if (gfc_is_coindexed (mold))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be "
+      gfc_error ("%qs argument of %qs intrinsic at %L shall not be "
 		 "coindexed", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &mold->where);
       return false;
@@ -3424,9 +3424,9 @@ gfc_check_pack (gfc_expr *array, gfc_expr *mask, gfc_expr *vector)
 
 	  if (mpz_get_si (vector_size) < mask_true_values)
 	    {
-	      gfc_error ("'%s' argument of '%s' intrinsic at %L must "
+	      gfc_error ("%qs argument of %qs intrinsic at %L must "
 			 "provide at least as many elements as there "
-			 "are .TRUE. values in '%s' (%ld/%d)",
+			 "are .TRUE. values in %qs (%ld/%d)",
 			 gfc_current_intrinsic_arg[2]->name,
 			 gfc_current_intrinsic, &vector->where,
 			 gfc_current_intrinsic_arg[1]->name,
@@ -3482,7 +3482,7 @@ gfc_check_present (gfc_expr *a)
   sym = a->symtree->n.sym;
   if (!sym->attr.dummy)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be of a "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be of a "
 		 "dummy variable", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &a->where);
       return false;
@@ -3490,7 +3490,7 @@ gfc_check_present (gfc_expr *a)
 
   if (!sym->attr.optional)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be of "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be of "
 		 "an OPTIONAL dummy variable",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &a->where);
@@ -3509,8 +3509,8 @@ gfc_check_present (gfc_expr *a)
 	       || (a->ref->u.ar.type == AR_ELEMENT
 		   && a->ref->u.ar.as->rank == 0))))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must not be a "
-		 "subobject of '%s'", gfc_current_intrinsic_arg[0]->name,
+      gfc_error ("%qs argument of %qs intrinsic at %L must not be a "
+		 "subobject of %qs", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &a->where, sym->name);
       return false;
     }
@@ -3671,7 +3671,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 
   if (shape_size <= 0)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L is empty",
+      gfc_error ("%qs argument of %qs intrinsic at %L is empty",
 		 gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		 &shape->where);
       return false;
@@ -3695,7 +3695,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 	  gfc_extract_int (e, &extent);
 	  if (extent < 0)
 	    {
-	      gfc_error ("'%s' argument of '%s' intrinsic at %L has "
+	      gfc_error ("%qs argument of %qs intrinsic at %L has "
 			 "negative element (%d)",
 			 gfc_current_intrinsic_arg[1]->name,
 			 gfc_current_intrinsic, &e->where, extent);
@@ -3735,7 +3735,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 
 	  if (order_size != shape_size)
 	    {
-	      gfc_error ("'%s' argument of '%s' intrinsic at %L "
+	      gfc_error ("%qs argument of %qs intrinsic at %L "
 			 "has wrong number of elements (%d/%d)",
 			 gfc_current_intrinsic_arg[3]->name,
 			 gfc_current_intrinsic, &order->where,
@@ -3753,7 +3753,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 
 	      if (dim < 1 || dim > order_size)
 		{
-		  gfc_error ("'%s' argument of '%s' intrinsic at %L "
+		  gfc_error ("%qs argument of %qs intrinsic at %L "
 			     "has out-of-range dimension (%d)",
 			     gfc_current_intrinsic_arg[3]->name,
 			     gfc_current_intrinsic, &e->where, dim);
@@ -3762,7 +3762,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 
 	      if (perm[dim-1] != 0)
 		{
-		  gfc_error ("'%s' argument of '%s' intrinsic at %L has "
+		  gfc_error ("%qs argument of %qs intrinsic at %L has "
 			     "invalid permutation of dimensions (dimension "
 			     "'%d' duplicated)",
 			     gfc_current_intrinsic_arg[3]->name,
@@ -3815,7 +3815,7 @@ gfc_check_same_type_as (gfc_expr *a, gfc_expr *b)
 {
   if (a->ts.type != BT_DERIVED && a->ts.type != BT_CLASS)
     {
-        gfc_error ("'%s' argument of '%s' intrinsic at %L "
+        gfc_error ("%qs argument of %qs intrinsic at %L "
 		   "cannot be of type %s",
 		   gfc_current_intrinsic_arg[0]->name,
 		   gfc_current_intrinsic,
@@ -3825,7 +3825,7 @@ gfc_check_same_type_as (gfc_expr *a, gfc_expr *b)
 
   if (!(gfc_type_is_extensible (a->ts.u.derived) || UNLIMITED_POLY (a)))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L "
+      gfc_error ("%qs argument of %qs intrinsic at %L "
 		 "must be of an extensible type",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &a->where);
@@ -3834,7 +3834,7 @@ gfc_check_same_type_as (gfc_expr *a, gfc_expr *b)
 
   if (b->ts.type != BT_DERIVED && b->ts.type != BT_CLASS)
     {
-        gfc_error ("'%s' argument of '%s' intrinsic at %L "
+        gfc_error ("%qs argument of %qs intrinsic at %L "
 		   "cannot be of type %s",
 		   gfc_current_intrinsic_arg[0]->name,
 		   gfc_current_intrinsic,
@@ -3844,7 +3844,7 @@ gfc_check_same_type_as (gfc_expr *a, gfc_expr *b)
 
   if (!(gfc_type_is_extensible (b->ts.u.derived) || UNLIMITED_POLY (b)))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L "
+      gfc_error ("%qs argument of %qs intrinsic at %L "
 		 "must be of an extensible type",
 		 gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		 &b->where);
@@ -4086,7 +4086,7 @@ gfc_check_sizeof (gfc_expr *arg)
 {
   if (arg->ts.type == BT_PROCEDURE)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be a procedure",
+      gfc_error ("%qs argument of %qs intrinsic at %L shall not be a procedure",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &arg->where);
       return false;
@@ -4099,7 +4099,7 @@ gfc_check_sizeof (gfc_expr *arg)
 	      && arg->symtree->n.sym->as->type != AS_DEFERRED
 	      && arg->symtree->n.sym->as->type != AS_ASSUMED_RANK)))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be TYPE(*)",
+      gfc_error ("%qs argument of %qs intrinsic at %L shall not be TYPE(*)",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &arg->where);
       return false;
@@ -4110,7 +4110,7 @@ gfc_check_sizeof (gfc_expr *arg)
       && arg->symtree->n.sym->as->type == AS_ASSUMED_SIZE && arg->ref
       && arg->ref->type == REF_ARRAY && arg->ref->u.ar.type == AR_FULL)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be an "
+      gfc_error ("%qs argument of %qs intrinsic at %L shall not be an "
 		 "assumed-size array", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &arg->where);
       return false;
@@ -4229,7 +4229,7 @@ gfc_check_c_sizeof (gfc_expr *arg)
 
   if (!is_c_interoperable (arg, &msg, false, false))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be an "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be an "
 		 "interoperable data entity: %s",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &arg->where, msg);
@@ -4238,7 +4238,7 @@ gfc_check_c_sizeof (gfc_expr *arg)
 
   if (arg->ts.type == BT_ASSUMED)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be "
+      gfc_error ("%qs argument of %qs intrinsic at %L shall not be "
 		 "TYPE(*)",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &arg->where);
@@ -4250,7 +4250,7 @@ gfc_check_c_sizeof (gfc_expr *arg)
       && arg->symtree->n.sym->as->type == AS_ASSUMED_SIZE && arg->ref
       && arg->ref->type == REF_ARRAY && arg->ref->u.ar.type == AR_FULL)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be an "
+      gfc_error ("%qs argument of %qs intrinsic at %L shall not be an "
 		 "assumed-size array", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &arg->where);
       return false;
@@ -4449,7 +4449,7 @@ gfc_check_c_funloc (gfc_expr *x)
       for (ns = gfc_current_ns; ns; ns = ns->parent)
 	if (x->symtree->n.sym == ns->proc_name)
 	  {
-	    gfc_error ("Function result '%s' at %L is invalid as X argument "
+	    gfc_error ("Function result %qs at %L is invalid as X argument "
 		       "to C_FUNLOC", x->symtree->n.sym->name, &x->where);
 	    return false;
 	  }
@@ -4575,7 +4575,7 @@ gfc_check_spread (gfc_expr *source, gfc_expr *dim, gfc_expr *ncopies)
 {
   if (source->rank >= GFC_MAX_DIMENSIONS)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be less "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be less "
 		 "than rank %d", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &source->where, GFC_MAX_DIMENSIONS);
 
@@ -4594,7 +4594,7 @@ gfc_check_spread (gfc_expr *source, gfc_expr *dim, gfc_expr *ncopies)
       && (mpz_cmp_ui (dim->value.integer, 1) < 0
 	  || mpz_cmp_ui (dim->value.integer, source->rank + 1) > 0))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L is not a valid "
+      gfc_error ("%qs argument of %qs intrinsic at %L is not a valid "
 		 "dimension index", gfc_current_intrinsic_arg[1]->name,
 		 gfc_current_intrinsic, &dim->where);
       return false;
@@ -5189,9 +5189,9 @@ gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
 
       if (mpz_get_si (vector_size) < mask_true_count)
 	{
-	  gfc_error ("'%s' argument of '%s' intrinsic at %L must "
+	  gfc_error ("%qs argument of %qs intrinsic at %L must "
 		     "provide at least as many elements as there "
-		     "are .TRUE. values in '%s' (%ld/%d)",
+		     "are .TRUE. values in %qs (%ld/%d)",
 		     gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		     &vector->where, gfc_current_intrinsic_arg[1]->name,
 		     mpz_get_si (vector_size), mask_true_count);
@@ -5203,8 +5203,8 @@ gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
 
   if (mask->rank != field->rank && field->rank != 0)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must have "
-		 "the same rank as '%s' or be a scalar",
+      gfc_error ("%qs argument of %qs intrinsic at %L must have "
+		 "the same rank as %qs or be a scalar",
 		 gfc_current_intrinsic_arg[2]->name, gfc_current_intrinsic,
 		 &field->where, gfc_current_intrinsic_arg[1]->name);
       return false;
@@ -5216,7 +5216,7 @@ gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
       for (i = 0; i < field->rank; i++)
 	if (! identical_dimen_shape (mask, i, field, i))
 	{
-	  gfc_error ("'%s' and '%s' arguments of '%s' intrinsic at %L "
+	  gfc_error ("%qs and %qs arguments of %qs intrinsic at %L "
 		     "must have identical shape.",
 		     gfc_current_intrinsic_arg[2]->name,
 		     gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
@@ -5474,7 +5474,7 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 
       if (gfc_array_size (put, &put_size)
 	  && mpz_get_ui (put_size) < kiss_size)
-	gfc_error ("Size of '%s' argument of '%s' intrinsic at %L "
+	gfc_error ("Size of %qs argument of %qs intrinsic at %L "
 		   "too small (%i/%i)",
 		   gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		   where, (int) mpz_get_ui (put_size), kiss_size);
@@ -5506,7 +5506,7 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 
        if (gfc_array_size (get, &get_size)
  	  && mpz_get_ui (get_size) < kiss_size)
-	gfc_error ("Size of '%s' argument of '%s' intrinsic at %L "
+	gfc_error ("Size of %qs argument of %qs intrinsic at %L "
 		   "too small (%i/%i)",
 		   gfc_current_intrinsic_arg[2]->name, gfc_current_intrinsic,
 		   where, (int) mpz_get_ui (get_size), kiss_size);
@@ -5817,7 +5817,7 @@ gfc_check_getarg (gfc_expr *pos, gfc_expr *value)
 
   if (pos->ts.kind > gfc_default_integer_kind)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be of a kind "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be of a kind "
 		 "not wider than the default kind (%d)",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &pos->where, gfc_default_integer_kind);
@@ -6169,7 +6169,7 @@ gfc_check_and (gfc_expr *i, gfc_expr *j)
 {
   if (i->ts.type != BT_INTEGER && i->ts.type != BT_LOGICAL)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be INTEGER "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
 		 "or LOGICAL", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &i->where);
       return false;
@@ -6177,7 +6177,7 @@ gfc_check_and (gfc_expr *i, gfc_expr *j)
 
   if (j->ts.type != BT_INTEGER && j->ts.type != BT_LOGICAL)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be INTEGER "
+      gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
 		 "or LOGICAL", gfc_current_intrinsic_arg[1]->name,
 		 gfc_current_intrinsic, &j->where);
       return false;
@@ -6185,7 +6185,7 @@ gfc_check_and (gfc_expr *i, gfc_expr *j)
 
   if (i->ts.type != j->ts.type)
     {
-      gfc_error ("'%s' and '%s' arguments of '%s' intrinsic at %L must "
+      gfc_error ("%qs and %qs arguments of %qs intrinsic at %L must "
 		 "have the same type", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		 &j->where);
@@ -6207,7 +6207,7 @@ gfc_check_storage_size (gfc_expr *a, gfc_expr *kind)
 {
   if (a->ts.type == BT_ASSUMED)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be TYPE(*)",
+      gfc_error ("%qs argument of %qs intrinsic at %L shall not be TYPE(*)",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &a->where);
       return false;
@@ -6215,7 +6215,7 @@ gfc_check_storage_size (gfc_expr *a, gfc_expr *kind)
 
   if (a->ts.type == BT_PROCEDURE)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be a "
+      gfc_error ("%qs argument of %qs intrinsic at %L shall not be a "
 		 "procedure", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &a->where);
       return false;
@@ -6232,7 +6232,7 @@ gfc_check_storage_size (gfc_expr *a, gfc_expr *kind)
 
   if (kind->expr_type != EXPR_CONSTANT)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a constant",
+      gfc_error ("%qs argument of %qs intrinsic at %L must be a constant",
 		 gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		 &kind->where);
       return false;

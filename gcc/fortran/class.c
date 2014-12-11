@@ -666,7 +666,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 	 up to 255 extension levels.  */
       if (ts->u.derived->attr.extension == 255)
 	{
-	  gfc_error ("Maximum extension level reached with type '%s' at %L",
+	  gfc_error ("Maximum extension level reached with type %qs at %L",
 		     ts->u.derived->name, &ts->u.derived->declared_at);
 	return false;
 	}
@@ -2686,7 +2686,7 @@ find_typebound_proc_uop (gfc_symbol* derived, bool* t,
 	  && res->n.tb->access == ACCESS_PRIVATE)
 	{
 	  if (where)
-	    gfc_error ("'%s' of '%s' is PRIVATE at %L",
+	    gfc_error ("%qs of %qs is PRIVATE at %L",
 		       name, derived->name, where);
 	  if (t)
 	    *t = false;
@@ -2760,7 +2760,7 @@ gfc_find_typebound_intrinsic_op (gfc_symbol* derived, bool* t,
 	  && res->access == ACCESS_PRIVATE)
 	{
 	  if (where)
-	    gfc_error ("'%s' of '%s' is PRIVATE at %L",
+	    gfc_error ("%qs of %qs is PRIVATE at %L",
 		       gfc_op2string (op), derived->name, where);
 	  if (t)
 	    *t = false;

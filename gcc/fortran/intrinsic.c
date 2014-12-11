@@ -3815,7 +3815,7 @@ sort_actual (const char *name, gfc_actual_arglist **ap,
   if (a == NULL)
     goto do_sort;
 
-  gfc_error ("Too many arguments in call to '%s' at %L", name, where);
+  gfc_error ("Too many arguments in call to %qs at %L", name, where);
   return false;
 
 keywords:
@@ -3833,14 +3833,14 @@ keywords:
 	    gfc_error ("The argument list functions %%VAL, %%LOC or %%REF "
 		       "are not allowed in this context at %L", where);
 	  else
-	    gfc_error ("Can't find keyword named '%s' in call to '%s' at %L",
+	    gfc_error ("Can't find keyword named %qs in call to %qs at %L",
 		       a->name, name, where);
 	  return false;
 	}
 
       if (f->actual != NULL)
 	{
-	  gfc_error ("Argument '%s' appears twice in call to '%s' at %L",
+	  gfc_error ("Argument %qs appears twice in call to %qs at %L",
 		     f->name, name, where);
 	  return false;
 	}
@@ -3854,7 +3854,7 @@ optional:
     {
       if (f->actual == NULL && f->optional == 0)
 	{
-	  gfc_error ("Missing actual argument '%s' in call to '%s' at %L",
+	  gfc_error ("Missing actual argument %qs in call to %qs at %L",
 		     f->name, name, where);
 	  return false;
 	}
@@ -3926,7 +3926,7 @@ check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
       if (!gfc_compare_types (&ts, &actual->expr->ts))
 	{
 	  if (error_flag)
-	    gfc_error ("Type of argument '%s' in call to '%s' at %L should "
+	    gfc_error ("Type of argument %qs in call to %qs at %L should "
 		       "be %s, not %s", gfc_current_intrinsic_arg[i]->name,
 		       gfc_current_intrinsic, &actual->expr->where,
 		       gfc_typename (&formal->ts),
@@ -4534,14 +4534,14 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
 
   if (gfc_do_concurrent_flag && !isym->pure)
     {
-      gfc_error ("Subroutine call to intrinsic '%s' in DO CONCURRENT "
+      gfc_error ("Subroutine call to intrinsic %qs in DO CONCURRENT "
 		 "block at %L is not PURE", name, &c->loc);
       return MATCH_ERROR;
     }
 
   if (!isym->pure && gfc_pure (NULL))
     {
-      gfc_error ("Subroutine call to intrinsic '%s' at %L is not PURE", name,
+      gfc_error ("Subroutine call to intrinsic %qs at %L is not PURE", name,
 		 &c->loc);
       return MATCH_ERROR;
     }

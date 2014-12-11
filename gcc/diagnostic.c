@@ -51,8 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Prototypes.  */
 static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
 
-static void diagnostic_action_after_output (diagnostic_context *,
-					    diagnostic_info *);
 static void real_abort (void) ATTRIBUTE_NORETURN;
 
 /* Name of program invoked, sans directories.  */
@@ -483,11 +481,11 @@ bt_err_callback (void *data ATTRIBUTE_UNUSED, const char *msg, int errnum)
 
 /* Take any action which is expected to happen after the diagnostic
    is written out.  This function does not always return.  */
-static void
+void
 diagnostic_action_after_output (diagnostic_context *context,
-				diagnostic_info *diagnostic)
+				diagnostic_t diag_kind)
 {
-  switch (diagnostic->kind)
+  switch (diag_kind)
     {
     case DK_DEBUG:
     case DK_NOTE:
@@ -507,7 +505,8 @@ diagnostic_action_after_output (diagnostic_context *context,
 	}
       if (context->max_errors != 0
 	  && ((unsigned) (diagnostic_kind_count (context, DK_ERROR)
-			  + diagnostic_kind_count (context, DK_SORRY))
+			  + diagnostic_kind_count (context, DK_SORRY)
+			  + diagnostic_kind_count (context, DK_WERROR))
 	      >= context->max_errors))
 	{
 	  fnotice (stderr,
@@ -864,7 +863,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   (*diagnostic_starter (context)) (context, diagnostic);
   pp_output_formatted_text (context->printer);
   (*diagnostic_finalizer (context)) (context, diagnostic);
-  diagnostic_action_after_output (context, diagnostic);
+  diagnostic_action_after_output (context, diagnostic->kind);
   diagnostic->message.format_spec = saved_format_spec;
   diagnostic->x_data = NULL;
 
@@ -1264,8 +1263,6 @@ fnotice (FILE *file, const char *cmsgid, ...)
 static void
 error_recursion (diagnostic_context *context)
 {
-  diagnostic_info diagnostic;
-
   if (context->lock < 3)
     pp_newline_and_flush (context->printer);
 
@@ -1273,9 +1270,8 @@ error_recursion (diagnostic_context *context)
 	   "Internal compiler error: Error reporting routines re-entered.\n");
 
   /* Call diagnostic_action_after_output to get the "please submit a bug
-     report" message.  It only looks at the kind field of diagnostic_info.  */
-  diagnostic.kind = DK_ICE;
-  diagnostic_action_after_output (context, &diagnostic);
+     report" message.  */
+  diagnostic_action_after_output (context, DK_ICE);
 
   /* Do not use gcc_unreachable here; that goes through internal_error
      and therefore would cause infinite recursion.  */

@@ -2682,6 +2682,7 @@ bool gfc_warning_now (int opt, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 void gfc_clear_warning (void);
 void gfc_warning_check (void);
 
+void gfc_error_1 (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_error (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_error_now_1 (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_error_now (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
@@ -2698,9 +2699,10 @@ bool gfc_notify_std (int, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 #define gfc_syntax_error(ST)	\
   gfc_error ("Syntax error in %s statement at %C", gfc_ascii_statement (ST));
 
-void gfc_push_error (gfc_error_buf *);
-void gfc_pop_error (gfc_error_buf *);
-void gfc_free_error (gfc_error_buf *);
+#include "pretty-print.h" /* For output_buffer.  */
+void gfc_push_error (output_buffer *, gfc_error_buf *);
+void gfc_pop_error (output_buffer *, gfc_error_buf *);
+void gfc_free_error (output_buffer *, gfc_error_buf *);
 
 void gfc_get_errors (int *, int *);
 void gfc_errors_to_warnings (bool);

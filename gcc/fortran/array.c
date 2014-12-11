@@ -100,7 +100,7 @@ match_subscript (gfc_array_ref *ar, int init, bool match_star)
 
   if (star)
     {
-      gfc_error ("Unexpected '*' in coarray subscript at %C");
+      gfc_error ("Unexpected %<*%> in coarray subscript at %C");
       return MATCH_ERROR;
     }
 
@@ -246,7 +246,7 @@ coarray:
       if (gfc_match_char (',') != MATCH_YES)
 	{
 	  if (gfc_match_char ('*') == MATCH_YES)
-	    gfc_error ("Unexpected '*' for codimension %d of %d at %C",
+	    gfc_error ("Unexpected %<*%> for codimension %d of %d at %C",
 		       ar->codimen + 1, corank);
 	  else
 	    gfc_error ("Invalid form of coarray reference at %C");
@@ -254,7 +254,7 @@ coarray:
 	}
       else if (ar->dimen_type[ar->codimen + ar->dimen] == DIMEN_STAR)
 	{
-	  gfc_error ("Unexpected '*' for codimension %d of %d at %C",
+	  gfc_error ("Unexpected %<*%> for codimension %d of %d at %C",
 		     ar->codimen + 1, corank);
 	  return MATCH_ERROR;
 	}
@@ -313,7 +313,7 @@ resolve_array_bound (gfc_expr *e, int check_constant)
   if (check_constant && !gfc_is_constant_expr (e))
     {
       if (e->expr_type == EXPR_VARIABLE)
-	gfc_error ("Variable '%s' at %L in this context must be constant",
+	gfc_error ("Variable %qs at %L in this context must be constant",
 		   e->symtree->n.sym->name, &e->where);
       else
 	gfc_error ("Expression at %L in this context must be constant",
@@ -752,7 +752,7 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
   if ((sym->as->type == AS_ASSUMED_RANK && as->corank)
       || (as->type == AS_ASSUMED_RANK && sym->as->corank))
     {
-      gfc_error ("The assumed-rank array '%s' at %L shall not have a "
+      gfc_error ("The assumed-rank array %qs at %L shall not have a "
 		 "codimension", sym->name, error_loc);
       return false;
     }
@@ -912,7 +912,7 @@ check_duplicate_iterator (gfc_constructor_base base, gfc_symbol *master)
 
       if (c->iterator->var->symtree->n.sym == master)
 	{
-	  gfc_error ("DO-iterator '%s' at %L is inside iterator of the "
+	  gfc_error ("DO-iterator %qs at %L is inside iterator of the "
 		     "same name", master->name, &c->where);
 
 	  return 1;
@@ -1662,7 +1662,7 @@ gfc_expand_constructor (gfc_expr *e, bool fatal)
 	{
 	  gfc_error ("The number of elements in the array constructor "
 		     "at %L requires an increase of the allowed %d "
-		     "upper limit.   See -fmax-array-constructor "
+		     "upper limit.   See %<-fmax-array-constructor%> "
 		     "option", &e->where,
 		     gfc_option.flag_max_array_constructor);
 	  return false;
