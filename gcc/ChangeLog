@@ -1,3 +1,8 @@
+2014-12-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine.c (try_combine): Do not allow combining a PARALLEL I2
+	with a register move I3 if that I2 is an asm.
+
 2014-12-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm_neon.h (vrndqn_f32): Rename to...

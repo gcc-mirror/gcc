@@ -2716,6 +2716,13 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 					SET_DEST (XVECEXP (p2, 0, i))))
 	  break;
 
+      /* Make sure this PARALLEL is not an asm.  We do not allow combining
+	 that usually (see can_combine_p), so do not here either.  */
+      for (i = 0; i < XVECLEN (p2, 0); i++)
+	if (GET_CODE (XVECEXP (p2, 0, i)) == SET
+	    && GET_CODE (SET_SRC (XVECEXP (p2, 0, i))) == ASM_OPERANDS)
+	  break;
+
       if (i == XVECLEN (p2, 0))
 	for (i = 0; i < XVECLEN (p2, 0); i++)
 	  if (GET_CODE (XVECEXP (p2, 0, i)) == SET
