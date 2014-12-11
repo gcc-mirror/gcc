@@ -1,11 +1,15 @@
+2014-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/builtin-arith-overflow-1.c (fn2): Take signed char.
+	(fn3): Likewise.
+
 2014-12-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61324
-	* testsuite/g++.dg/pr61324.C: New testcase by Trevor Saunders.
-	* testsuite/g++.dg/tm/pr51411-2.C: Update se the extern function is
+	* g++.dg/pr61324.C: New testcase by Trevor Saunders.
+	* g++.dg/tm/pr51411-2.C: Update se the extern function is
 	not eliminated early.
-	* testsuite/gcc.target/i386/pr57756.c: Turn extern inline into static
-	inline.
+	* gcc.target/i386/pr57756.c: Turn extern inline into static inline.
 
 2014-12-11  Richard Biener  <rguenther@suse.de>
 
