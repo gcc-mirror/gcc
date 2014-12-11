@@ -1,3 +1,9 @@
+2014-12-11  Uros Bizjak  <ubizjak@gmail.com>
+            Ben Elliston  <bje@au.ibm.com>
+            Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* libiberty.h (xvasprintf): Declare.
+
 2014-12-09  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* hashtab.h, splay-tree.h: Remove GTY markers.
