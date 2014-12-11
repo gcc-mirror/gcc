@@ -219,7 +219,7 @@ gfc_match_interface (void)
 
       if (sym->attr.dummy)
 	{
-	  gfc_error ("Dummy procedure '%s' at %C cannot have a "
+	  gfc_error ("Dummy procedure %qs at %C cannot have a "
 		     "generic interface", sym->name);
 	  return MATCH_ERROR;
 	}
@@ -1561,10 +1561,10 @@ check_interface0 (gfc_interface *p, const char *interface_name)
 	  && p->sym->attr.flavor != FL_DERIVED)
 	{
 	  if (p->sym->attr.external)
-	    gfc_error ("Procedure '%s' in %s at %L has no explicit interface",
+	    gfc_error ("Procedure %qs in %s at %L has no explicit interface",
 		       p->sym->name, interface_name, &p->sym->declared_at);
 	  else
-	    gfc_error ("Procedure '%s' in %s at %L is neither function nor "
+	    gfc_error ("Procedure %qs in %s at %L is neither function nor "
 		       "subroutine", p->sym->name, interface_name,
 		      &p->sym->declared_at);
 	  return 1;
@@ -1645,7 +1645,7 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 				       generic_flag, 0, NULL, 0, NULL, NULL))
 	  {
 	    if (referenced)
-	      gfc_error ("Ambiguous interfaces '%s' and '%s' in %s at %L",
+	      gfc_error ("Ambiguous interfaces %qs and %qs in %s at %L",
 			 p->sym->name, q->sym->name, interface_name,
 			 &p->where);
 	    else if (!p->sym->attr.use_assoc && q->sym->attr.use_assoc)
@@ -1687,7 +1687,7 @@ check_sym_interfaces (gfc_symbol *sym)
 	      && (p->sym->attr.if_source != IFSRC_DECL
 		  || p->sym->attr.procedure))
 	    {
-	      gfc_error ("'%s' at %L is not a module procedure",
+	      gfc_error ("%qs at %L is not a module procedure",
 			 p->sym->name, &p->where);
 	      return;
 	    }
@@ -1892,21 +1892,21 @@ argument_rank_mismatch (const char *name, locus *where,
   if (rank2 == -1)
     {
       gfc_error ("The assumed-rank array at %L requires that the dummy argument"
-		 " '%s' has assumed-rank", where, name);
+		 " %qs has assumed-rank", where, name);
     }
   else if (rank1 == 0)
     {
-      gfc_error ("Rank mismatch in argument '%s' at %L "
+      gfc_error ("Rank mismatch in argument %qs at %L "
 		 "(scalar and rank-%d)", name, where, rank2);
     }
   else if (rank2 == 0)
     {
-      gfc_error ("Rank mismatch in argument '%s' at %L "
+      gfc_error ("Rank mismatch in argument %qs at %L "
 		 "(rank-%d and scalar)", name, where, rank1);
     }
   else
     {
-      gfc_error ("Rank mismatch in argument '%s' at %L "
+      gfc_error ("Rank mismatch in argument %qs at %L "
 		 "(rank-%d and rank-%d)", name, where, rank1, rank2);
     }
 }
@@ -1956,7 +1956,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 				   sizeof(err), NULL, NULL))
 	{
 	  if (where)
-	    gfc_error ("Interface mismatch in dummy procedure '%s' at %L: %s",
+	    gfc_error ("Interface mismatch in dummy procedure %qs at %L: %s",
 		       formal->name, &actual->where, err);
 	  return 0;
 	}
@@ -1981,7 +1981,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       && !gfc_is_simply_contiguous (actual, true))
     {
       if (where)
-	gfc_error ("Actual argument to contiguous pointer dummy '%s' at %L "
+	gfc_error ("Actual argument to contiguous pointer dummy %qs at %L "
 		   "must be simply contiguous", formal->name, &actual->where);
       return 0;
     }
@@ -1996,7 +1996,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 					 CLASS_DATA (actual)->ts.u.derived)))
     {
       if (where)
-	gfc_error ("Type mismatch in argument '%s' at %L; passed %s to %s",
+	gfc_error ("Type mismatch in argument %qs at %L; passed %s to %s",
 		   formal->name, &actual->where, gfc_typename (&actual->ts),
 		   gfc_typename (&formal->ts));
       return 0;
@@ -2006,7 +2006,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     {
       if (where)
 	gfc_error ("Assumed-type actual argument at %L requires that dummy "
-		   "argument '%s' is of assumed type", &actual->where,
+		   "argument %qs is of assumed type", &actual->where,
 		   formal->name);
       return 0;
     }
@@ -2021,7 +2021,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       if (actual->ts.type != BT_CLASS)
 	{
 	  if (where)
-	    gfc_error ("Actual argument to '%s' at %L must be polymorphic",
+	    gfc_error ("Actual argument to %qs at %L must be polymorphic",
 			formal->name, &actual->where);
 	  return 0;
 	}
@@ -2034,7 +2034,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 					 CLASS_DATA (formal)->ts.u.derived))
 	{
 	  if (where)
-	    gfc_error ("Actual argument to '%s' at %L must have the same "
+	    gfc_error ("Actual argument to %qs at %L must have the same "
 		       "declared type", formal->name, &actual->where);
 	  return 0;
 	}
@@ -2049,7 +2049,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	  ||CLASS_DATA (formal)->attr.class_pointer))
     {
       if (where)
-	gfc_error ("Actual argument to '%s' at %L must be unlimited "
+	gfc_error ("Actual argument to %qs at %L must be unlimited "
 		   "polymorphic since the formal argument is a "
 		   "pointer or allocatable unlimited polymorphic "
 		   "entity [F2008: 12.5.2.5]", formal->name,
@@ -2060,7 +2060,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (formal->attr.codimension && !gfc_is_coarray (actual))
     {
       if (where)
-	gfc_error ("Actual argument to '%s' at %L must be a coarray",
+	gfc_error ("Actual argument to %qs at %L must be a coarray",
 		       formal->name, &actual->where);
       return 0;
     }
@@ -2079,7 +2079,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	      && actual->symtree->n.sym->as->corank != formal->as->corank))
 	{
 	  if (where)
-	    gfc_error ("Corank mismatch in argument '%s' at %L (%d and %d)",
+	    gfc_error ("Corank mismatch in argument %qs at %L (%d and %d)",
 		   formal->name, &actual->where, formal->as->corank,
 		   last ? last->u.c.component->as->corank
 			: actual->symtree->n.sym->as->corank);
@@ -2096,7 +2096,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	  && !gfc_is_simply_contiguous (actual, true))
 	{
 	  if (where)
-	    gfc_error ("Actual argument to '%s' at %L must be simply "
+	    gfc_error ("Actual argument to %qs at %L must be simply "
 		       "contiguous", formal->name, &actual->where);
 	  return 0;
 	}
@@ -2110,7 +2110,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
     	{
 	  if (where)
-	    gfc_error ("Actual argument to non-INTENT(INOUT) dummy '%s' at %L, "
+	    gfc_error ("Actual argument to non-INTENT(INOUT) dummy %qs at %L, "
 		       "which is LOCK_TYPE or has a LOCK_TYPE component",
 		       formal->name, &actual->where);
 	  return 0;
@@ -2128,7 +2128,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	  || formal->attr.contiguous))
     {
       if (where)
-	gfc_error ("Dummy argument '%s' has to be a pointer, assumed-shape or "
+	gfc_error ("Dummy argument %qs has to be a pointer, assumed-shape or "
 		   "assumed-rank array without CONTIGUOUS attribute - as actual"
 		   " argument at %L is not simply contiguous and both are "
 		   "ASYNCHRONOUS or VOLATILE", formal->name, &actual->where);
@@ -2142,7 +2142,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	{
 	  if (where)
 	    gfc_error ("Passing coarray at %L to allocatable, noncoarray, "
-		       "INTENT(OUT) dummy argument '%s'", &actual->where,
+		       "INTENT(OUT) dummy argument %qs", &actual->where,
 		       formal->name);
 	    return 0;
 	}
@@ -2211,7 +2211,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (actual->ts.type == BT_CLASS && actual->expr_type != EXPR_NULL)
     {
       if (where)
-	gfc_error ("Polymorphic scalar passed to array dummy argument '%s' "
+	gfc_error ("Polymorphic scalar passed to array dummy argument %qs "
 		   "at %L", formal->name, &actual->where);
       return 0;
     }
@@ -2221,7 +2221,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     {
       if (where)
 	gfc_error ("Element of assumed-shaped or pointer "
-		   "array passed to array dummy argument '%s' at %L",
+		   "array passed to array dummy argument %qs at %L",
 		   formal->name, &actual->where);
       return 0;
     }
@@ -2234,14 +2234,14 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	  if (where)
 	    gfc_error ("Extension: Scalar non-default-kind, non-C_CHAR-kind "
 		       "CHARACTER actual argument with array dummy argument "
-		       "'%s' at %L", formal->name, &actual->where);
+		       "%qs at %L", formal->name, &actual->where);
 	  return 0;
 	}
 
       if (where && (gfc_option.allow_std & GFC_STD_F2003) == 0)
 	{
 	  gfc_error ("Fortran 2003: Scalar CHARACTER actual argument with "
-		     "array dummy argument '%s' at %L",
+		     "array dummy argument %qs at %L",
 		     formal->name, &actual->where);
 	  return 0;
 	}
@@ -2555,7 +2555,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (f == NULL)
 	    {
 	      if (where)
-		gfc_error ("Keyword argument '%s' at %L is not in "
+		gfc_error ("Keyword argument %qs at %L is not in "
 			   "the procedure", a->name, &a->expr->where);
 	      return 0;
 	    }
@@ -2563,7 +2563,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (new_arg[i] != NULL)
 	    {
 	      if (where)
-		gfc_error ("Keyword argument '%s' at %L is already associated "
+		gfc_error ("Keyword argument %qs at %L is already associated "
 			   "with another actual argument", a->name,
 			   &a->expr->where);
 	      return 0;
@@ -2620,11 +2620,11 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		  || (f->sym->ts.type != BT_CLASS && f->sym->attr.allocatable)
 		  || (f->sym->ts.type == BT_CLASS
 			 && CLASS_DATA (f->sym)->attr.allocatable)))
-	    gfc_error ("Unexpected NULL() intrinsic at %L to dummy '%s'",
+	    gfc_error ("Unexpected NULL() intrinsic at %L to dummy %qs",
 		       where, f->sym->name);
 	  else if (where)
 	    gfc_error ("Fortran 2008: Null pointer at %L to non-pointer "
-		       "dummy '%s'", where, f->sym->name);
+		       "dummy %qs", where, f->sym->name);
 
 	  return 0;
 	}
@@ -2690,7 +2690,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	{
 	  if (where)
 	    gfc_error ("Actual argument at %L to allocatable or "
-		       "pointer dummy argument '%s' must have a deferred "
+		       "pointer dummy argument %qs must have a deferred "
 		       "length type parameter if and only if the dummy has one",
 		       &a->expr->where, f->sym->name);
 	  return 0;
@@ -2730,7 +2730,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	       || gfc_is_proc_ptr_comp (a->expr)))
 	{
 	  if (where)
-	    gfc_error ("Expected a procedure pointer for argument '%s' at %L",
+	    gfc_error ("Expected a procedure pointer for argument %qs at %L",
 		       f->sym->name, &a->expr->where);
 	  return 0;
 	}
@@ -2741,7 +2741,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  && gfc_expr_attr (a->expr).flavor != FL_PROCEDURE)
 	{
 	  if (where)
-	    gfc_error ("Expected a procedure for argument '%s' at %L",
+	    gfc_error ("Expected a procedure for argument %qs at %L",
 		       f->sym->name, &a->expr->where);
 	  return 0;
 	}
@@ -2755,7 +2755,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		  && a->expr->ref->u.ar.type == AR_FULL)))
 	{
 	  if (where)
-	    gfc_error ("Actual argument for '%s' cannot be an assumed-size"
+	    gfc_error ("Actual argument for %qs cannot be an assumed-size"
 		       " array at %L", f->sym->name, where);
 	  return 0;
 	}
@@ -2764,7 +2764,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  && compare_pointer (f->sym, a->expr) == 0)
 	{
 	  if (where)
-	    gfc_error ("Actual argument for '%s' must be a pointer at %L",
+	    gfc_error ("Actual argument for %qs must be a pointer at %L",
 		       f->sym->name, &a->expr->where);
 	  return 0;
 	}
@@ -2775,7 +2775,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	{
 	  if (where)
 	    gfc_error ("Fortran 2008: Non-pointer actual argument at %L to "
-		       "pointer dummy '%s'", &a->expr->where,f->sym->name);
+		       "pointer dummy %qs", &a->expr->where,f->sym->name);
 	  return 0;
 	}
 
@@ -2785,7 +2785,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	{
 	  if (where)
 	    gfc_error ("Coindexed actual argument at %L to pointer "
-		       "dummy '%s'",
+		       "dummy %qs",
 		       &a->expr->where, f->sym->name);
 	  return 0;
 	}
@@ -2798,7 +2798,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	{
 	  if (where)
 	    gfc_error ("Coindexed actual argument at %L to allocatable "
-		       "dummy '%s' requires INTENT(IN)",
+		       "dummy %qs requires INTENT(IN)",
 		       &a->expr->where, f->sym->name);
 	  return 0;
 	}
@@ -2812,7 +2812,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	{
 	  if (where)
 	    gfc_error ("Coindexed ASYNCHRONOUS or VOLATILE actual argument at "
-		       "%L requires that dummy '%s' has neither "
+		       "%L requires that dummy %qs has neither "
 		       "ASYNCHRONOUS nor VOLATILE", &a->expr->where,
 		       f->sym->name);
 	  return 0;
@@ -2826,7 +2826,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	{
 	  if (where)
 	    gfc_error ("Coindexed actual argument at %L with allocatable "
-		       "ultimate component to dummy '%s' requires either VALUE "
+		       "ultimate component to dummy %qs requires either VALUE "
 		       "or INTENT(IN)", &a->expr->where, f->sym->name);
 	  return 0;
 	}
@@ -2837,7 +2837,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	   && !full_array)
 	{
 	  if (where)
-	    gfc_error ("Actual CLASS array argument for '%s' must be a full "
+	    gfc_error ("Actual CLASS array argument for %qs must be a full "
 		       "array at %L", f->sym->name, &a->expr->where);
 	  return 0;
 	}
@@ -2847,7 +2847,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  && compare_allocatable (f->sym, a->expr) == 0)
 	{
 	  if (where)
-	    gfc_error ("Actual argument for '%s' must be ALLOCATABLE at %L",
+	    gfc_error ("Actual argument for %qs must be ALLOCATABLE at %L",
 		       f->sym->name, &a->expr->where);
 	  return 0;
 	}
@@ -2879,7 +2879,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	    gfc_error ("Array-section actual argument with vector "
 		       "subscripts at %L is incompatible with INTENT(OUT), "
 		       "INTENT(INOUT), VOLATILE or ASYNCHRONOUS attribute "
-		       "of the dummy argument '%s'",
+		       "of the dummy argument %qs",
 		       &a->expr->where, f->sym->name);
 	  return 0;
 	}
@@ -2896,7 +2896,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (where)
 	    gfc_error ("Assumed-shape actual argument at %L is "
 		       "incompatible with the non-assumed-shape "
-		       "dummy argument '%s' due to VOLATILE attribute",
+		       "dummy argument %qs due to VOLATILE attribute",
 		       &a->expr->where,f->sym->name);
 	  return 0;
 	}
@@ -2908,7 +2908,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (where)
 	    gfc_error ("Array-section actual argument at %L is "
 		       "incompatible with the non-assumed-shape "
-		       "dummy argument '%s' due to VOLATILE attribute",
+		       "dummy argument %qs due to VOLATILE attribute",
 		       &a->expr->where,f->sym->name);
 	  return 0;
 	}
@@ -2927,7 +2927,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (where)
 	    gfc_error ("Pointer-array actual argument at %L requires "
 		       "an assumed-shape or pointer-array dummy "
-		       "argument '%s' due to VOLATILE attribute",
+		       "argument %qs due to VOLATILE attribute",
 		       &a->expr->where,f->sym->name);
 	  return 0;
 	}
@@ -2955,7 +2955,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
       if (!f->sym->attr.optional)
 	{
 	  if (where)
-	    gfc_error ("Missing actual argument for argument '%s' at %L",
+	    gfc_error ("Missing actual argument for argument %qs at %L",
 		       f->sym->name, where);
 	  return 0;
 	}
@@ -3226,7 +3226,7 @@ check_intents (gfc_formal_arglist *f, gfc_actual_arglist *a)
 	   && gfc_is_coindexed (expr))
 	 {
 	   gfc_error ("Coindexed polymorphic actual argument at %L is passed "
-		      "polymorphic dummy argument '%s'",
+		      "polymorphic dummy argument %qs",
 			 &expr->where, f->sym->name);
 	   return false;
 	 }
@@ -3253,7 +3253,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
     {
       if (sym->ns->has_implicit_none_export && sym->attr.proc == PROC_UNKNOWN)
 	{
-	  gfc_error ("Procedure '%s' called at %L is not explicitly declared",
+	  gfc_error ("Procedure %qs called at %L is not explicitly declared",
 		     sym->name, where);
 	  return false;
 	}
@@ -3273,24 +3273,24 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 
       if (sym->attr.pointer)
 	{
-	  gfc_error("The pointer object '%s' at %L must have an explicit "
-		    "function interface or be declared as array",
-		    sym->name, where);
+	  gfc_error ("The pointer object %qs at %L must have an explicit "
+		     "function interface or be declared as array",
+		     sym->name, where);
 	  return false;
 	}
 
       if (sym->attr.allocatable && !sym->attr.external)
 	{
-	  gfc_error("The allocatable object '%s' at %L must have an explicit "
-		    "function interface or be declared as array",
-		    sym->name, where);
+	  gfc_error ("The allocatable object %qs at %L must have an explicit "
+		     "function interface or be declared as array",
+		     sym->name, where);
 	  return false;
 	}
 
       if (sym->attr.allocatable)
 	{
-	  gfc_error("Allocatable function '%s' at %L must have an explicit "
-		    "function interface", sym->name, where);
+	  gfc_error ("Allocatable function %qs at %L must have an explicit "
+		     "function interface", sym->name, where);
 	  return false;
 	}
 
@@ -3299,8 +3299,8 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	  /* Skip g77 keyword extensions like %VAL, %REF, %LOC.  */
 	  if (a->name != NULL && a->name[0] != '%')
 	    {
-	      gfc_error("Keyword argument requires explicit interface "
-			"for procedure '%s' at %L", sym->name, &a->expr->where);
+	      gfc_error ("Keyword argument requires explicit interface "
+			 "for procedure %qs at %L", sym->name, &a->expr->where);
 	      break;
 	    }
 
@@ -3321,9 +3321,9 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 		   && a->expr->ts.u.derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE)
 		  || gfc_expr_attr (a->expr).lock_comp))
 	    {
-	      gfc_error("Actual argument of LOCK_TYPE or with LOCK_TYPE "
-			"component at %L requires an explicit interface for "
-			"procedure '%s'", &a->expr->where, sym->name);
+	      gfc_error ("Actual argument of LOCK_TYPE or with LOCK_TYPE "
+			 "component at %L requires an explicit interface for "
+			 "procedure %qs", &a->expr->where, sym->name);
 	      break;
 	    }
 
@@ -3387,9 +3387,9 @@ gfc_ppc_use (gfc_component *comp, gfc_actual_arglist **ap, locus *where)
 	  /* Skip g77 keyword extensions like %VAL, %REF, %LOC.  */
 	  if (a->name != NULL && a->name[0] != '%')
 	    {
-	      gfc_error("Keyword argument requires explicit interface "
-			"for procedure pointer component '%s' at %L",
-			comp->name, &a->expr->where);
+	      gfc_error ("Keyword argument requires explicit interface "
+			 "for procedure pointer component %qs at %L",
+			 comp->name, &a->expr->where);
 	      break;
 	    }
 	}
@@ -3913,7 +3913,7 @@ gfc_check_new_interface (gfc_interface *base, gfc_symbol *new_sym, locus loc)
     {
       if (ip->sym == new_sym)
 	{
-	  gfc_error ("Entity '%s' at %L is already present in the interface",
+	  gfc_error ("Entity %qs at %L is already present in the interface",
 		     new_sym->name, &loc);
 	  return false;
 	}
@@ -4124,7 +4124,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
   /* If the overwritten procedure is GENERIC, this is an error.  */
   if (old->n.tb->is_generic)
     {
-      gfc_error ("Can't overwrite GENERIC '%s' at %L",
+      gfc_error ("Can't overwrite GENERIC %qs at %L",
 		 old->name, &proc->n.tb->where);
       return false;
     }
@@ -4136,7 +4136,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
   /* Check that overridden binding is not NON_OVERRIDABLE.  */
   if (old->n.tb->non_overridable)
     {
-      gfc_error ("'%s' at %L overrides a procedure binding declared"
+      gfc_error ("%qs at %L overrides a procedure binding declared"
 		 " NON_OVERRIDABLE", proc->name, &where);
       return false;
     }
@@ -4144,7 +4144,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
   /* It's an error to override a non-DEFERRED procedure with a DEFERRED one.  */
   if (!old->n.tb->deferred && proc->n.tb->deferred)
     {
-      gfc_error ("'%s' at %L must not be DEFERRED as it overrides a"
+      gfc_error ("%qs at %L must not be DEFERRED as it overrides a"
 		 " non-DEFERRED binding", proc->name, &where);
       return false;
     }
@@ -4152,7 +4152,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
   /* If the overridden binding is PURE, the overriding must be, too.  */
   if (old_target->attr.pure && !proc_target->attr.pure)
     {
-      gfc_error ("'%s' at %L overrides a PURE procedure and must also be PURE",
+      gfc_error ("%qs at %L overrides a PURE procedure and must also be PURE",
 		 proc->name, &where);
       return false;
     }
@@ -4161,13 +4161,13 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
      is not, the overriding must not be either.  */
   if (old_target->attr.elemental && !proc_target->attr.elemental)
     {
-      gfc_error ("'%s' at %L overrides an ELEMENTAL procedure and must also be"
+      gfc_error ("%qs at %L overrides an ELEMENTAL procedure and must also be"
 		 " ELEMENTAL", proc->name, &where);
       return false;
     }
   if (!old_target->attr.elemental && proc_target->attr.elemental)
     {
-      gfc_error ("'%s' at %L overrides a non-ELEMENTAL procedure and must not"
+      gfc_error ("%qs at %L overrides a non-ELEMENTAL procedure and must not"
 		 " be ELEMENTAL, either", proc->name, &where);
       return false;
     }
@@ -4176,7 +4176,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
      SUBROUTINE.  */
   if (old_target->attr.subroutine && !proc_target->attr.subroutine)
     {
-      gfc_error ("'%s' at %L overrides a SUBROUTINE and must also be a"
+      gfc_error ("%qs at %L overrides a SUBROUTINE and must also be a"
 		 " SUBROUTINE", proc->name, &where);
       return false;
     }
@@ -4187,7 +4187,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
     {
       if (!proc_target->attr.function)
 	{
-	  gfc_error ("'%s' at %L overrides a FUNCTION and must also be a"
+	  gfc_error ("%qs at %L overrides a FUNCTION and must also be a"
 		     " FUNCTION", proc->name, &where);
 	  return false;
 	}
@@ -4196,7 +4196,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
 					 sizeof(err)))
 	{
 	  gfc_error ("Result mismatch for the overriding procedure "
-		     "'%s' at %L: %s", proc->name, &where, err);
+		     "%qs at %L: %s", proc->name, &where, err);
 	  return false;
 	}
     }
@@ -4206,7 +4206,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
   if (old->n.tb->access == ACCESS_PUBLIC
       && proc->n.tb->access == ACCESS_PRIVATE)
     {
-      gfc_error ("'%s' at %L overrides a PUBLIC procedure and must not be"
+      gfc_error ("%qs at %L overrides a PUBLIC procedure and must not be"
 		 " PRIVATE", proc->name, &where);
       return false;
     }
@@ -4236,7 +4236,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
       /* Check that the names correspond.  */
       if (strcmp (proc_formal->sym->name, old_formal->sym->name))
 	{
-	  gfc_error ("Dummy argument '%s' of '%s' at %L should be named '%s' as"
+	  gfc_error ("Dummy argument %qs of %qs at %L should be named %qs as"
 		     " to match the corresponding argument of the overridden"
 		     " procedure", proc_formal->sym->name, proc->name, &where,
 		     old_formal->sym->name);
@@ -4248,7 +4248,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
 					check_type, err, sizeof(err)))
 	{
 	  gfc_error ("Argument mismatch for the overriding procedure "
-		     "'%s' at %L: %s", proc->name, &where, err);
+		     "%qs at %L: %s", proc->name, &where, err);
 	  return false;
 	}
 
@@ -4256,7 +4256,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
     }
   if (proc_formal || old_formal)
     {
-      gfc_error ("'%s' at %L must have the same number of formal arguments as"
+      gfc_error ("%qs at %L must have the same number of formal arguments as"
 		 " the overridden procedure", proc->name, &where);
       return false;
     }
@@ -4265,7 +4265,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
      NOPASS.  */
   if (old->n.tb->nopass && !proc->n.tb->nopass)
     {
-      gfc_error ("'%s' at %L overrides a NOPASS binding and must also be"
+      gfc_error ("%qs at %L overrides a NOPASS binding and must also be"
 		 " NOPASS", proc->name, &where);
       return false;
     }
@@ -4276,14 +4276,14 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
     {
       if (proc->n.tb->nopass)
 	{
-	  gfc_error ("'%s' at %L overrides a binding with PASS and must also be"
+	  gfc_error ("%qs at %L overrides a binding with PASS and must also be"
 		     " PASS", proc->name, &where);
 	  return false;
 	}
 
       if (proc_pass_arg != old_pass_arg)
 	{
-	  gfc_error ("Passed-object dummy argument of '%s' at %L must be at"
+	  gfc_error ("Passed-object dummy argument of %qs at %L must be at"
 		     " the same position as the passed-object dummy argument of"
 		     " the overridden procedure", proc->name, &where);
 	  return false;

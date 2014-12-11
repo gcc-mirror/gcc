@@ -1,3 +1,20 @@
+2014-12-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* diagnostic.c (diagnostic_action_after_output): Make it extern.
+	Take diagnostic_t argument instead of diagnostic_info. Count also
+	DK_WERROR towards max_errors.
+	(diagnostic_report_diagnostic): Update call according to the above.
+	(error_recursion): Likewise.
+	* diagnostic.h (diagnostic_action_after_output): Declare.
+	* pretty-print.c (pp_formatted_text_data): Delete.
+	(pp_append_r): Call output_buffer_append_r.
+	(pp_formatted_text): Call output_buffer_formatted_text.
+	(pp_last_position_in_text): Call output_buffer_last_position_in_text.
+	* pretty-print.h (output_buffer_formatted_text): New.
+	(output_buffer_append_r): New.
+	(output_buffer_last_position_in_text): New.
+
 2014-12-11  Kyrylo Tkachov  kyrylo.tkachov@arm.com
 
 	* config/aarch64/aarch64.c (aarch64_parse_extension): Update error

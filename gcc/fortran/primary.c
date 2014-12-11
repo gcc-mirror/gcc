@@ -1274,7 +1274,8 @@ static match
 match_complex_constant (gfc_expr **result)
 {
   gfc_expr *e, *real, *imag;
-  gfc_error_buf old_error;
+  gfc_error_buf old_error_1;
+  output_buffer old_error;
   gfc_typespec target;
   locus old_loc;
   int kind;
@@ -1287,18 +1288,18 @@ match_complex_constant (gfc_expr **result)
   if (m != MATCH_YES)
     return m;
 
-  gfc_push_error (&old_error);
+  gfc_push_error (&old_error, &old_error_1);
 
   m = match_complex_part (&real);
   if (m == MATCH_NO)
     {
-      gfc_free_error (&old_error);
+      gfc_free_error (&old_error, &old_error_1);
       goto cleanup;
     }
 
   if (gfc_match_char (',') == MATCH_NO)
     {
-      gfc_pop_error (&old_error);
+      gfc_pop_error (&old_error, &old_error_1);
       m = MATCH_NO;
       goto cleanup;
     }
@@ -1310,10 +1311,10 @@ match_complex_constant (gfc_expr **result)
 
   if (m == MATCH_ERROR)
     {
-      gfc_free_error (&old_error);
+      gfc_free_error (&old_error, &old_error_1);
       goto cleanup;
     }
-  gfc_pop_error (&old_error);
+  gfc_pop_error (&old_error, &old_error_1);
 
   m = match_complex_part (&imag);
   if (m == MATCH_NO)
@@ -2493,7 +2494,7 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	  gcc_assert (comp_iter);
 	  if (!strcmp (comp_iter->name, comp_tail->name))
 	    {
-	      gfc_error ("Component '%s' is initialized twice in the structure"
+	      gfc_error ("Component %qs is initialized twice in the structure"
 			 " constructor at %L!", comp_tail->name,
 			 comp_tail->val ? &comp_tail->where
 					: &gfc_current_locus);
