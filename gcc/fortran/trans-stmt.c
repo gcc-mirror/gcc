@@ -1645,15 +1645,15 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
      This code is executed before we enter the loop body. We generate:
      if (step > 0)
        {
+	 countm1 = (to - from) / step;
 	 if (to < from)
 	   goto exit_label;
-	 countm1 = (to - from) / step;
        }
      else
        {
+	 countm1 = (from - to) / -step;
 	 if (to > from)
 	   goto exit_label;
-	 countm1 = (from - to) / -step;
        }
    */
 
@@ -1675,11 +1675,12 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
 			      fold_build2_loc (loc, MINUS_EXPR, utype,
 					       tou, fromu),
 			      stepu);
-      pos = fold_build3_loc (loc, COND_EXPR, void_type_node, tmp,
-			     fold_build1_loc (loc, GOTO_EXPR, void_type_node,
-					      exit_label),
-			     fold_build2 (MODIFY_EXPR, void_type_node,
-					  countm1, tmp2));
+      pos = build2 (COMPOUND_EXPR, void_type_node,
+		    fold_build2 (MODIFY_EXPR, void_type_node,
+				 countm1, tmp2),
+		    build3_loc (loc, COND_EXPR, void_type_node, tmp,
+				build1_loc (loc, GOTO_EXPR, void_type_node,
+					    exit_label), NULL_TREE));
 
       /* For a negative step, when to > from, exit, otherwise compute
          countm1 = ((unsigned)from - (unsigned)to) / -(unsigned)step  */
@@ -1688,11 +1689,12 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
 			      fold_build2_loc (loc, MINUS_EXPR, utype,
 					       fromu, tou),
 			      fold_build1_loc (loc, NEGATE_EXPR, utype, stepu));
-      neg = fold_build3_loc (loc, COND_EXPR, void_type_node, tmp,
-			     fold_build1_loc (loc, GOTO_EXPR, void_type_node,
-					      exit_label),
-			     fold_build2 (MODIFY_EXPR, void_type_node,
-					  countm1, tmp2));
+      neg = build2 (COMPOUND_EXPR, void_type_node,
+		    fold_build2 (MODIFY_EXPR, void_type_node,
+				 countm1, tmp2),
+		    build3_loc (loc, COND_EXPR, void_type_node, tmp,
+				build1_loc (loc, GOTO_EXPR, void_type_node,
+					    exit_label), NULL_TREE));
 
       tmp = fold_build2_loc (loc, LT_EXPR, boolean_type_node, step,
 			     build_int_cst (TREE_TYPE (step), 0));

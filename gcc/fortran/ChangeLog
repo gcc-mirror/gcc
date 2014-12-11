@@ -1,3 +1,9 @@
+2014-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/42108
+	* trans-stmt.c (gfc_trans_do): Execute the division computing
+	countm1 before the loop entry check.
+
 2014-12-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054
