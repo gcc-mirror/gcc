@@ -1,3 +1,8 @@
+2014-12-11  Kyrylo Tkachov  kyrylo.tkachov@arm.com
+
+	* config/aarch64/aarch64.c (aarch64_parse_extension): Update error
+	message to say +no only when removing extension.
+
 2014-12-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	* config/tilepro/gen-mul-tables.cc: Add insn-codes.h to include list
