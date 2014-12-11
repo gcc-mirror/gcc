@@ -1,3 +1,15 @@
+2014-12-11  Kyrylo Tkachov  kyrylo.tkachov@arm.com
+
+	* lib/target-utils.exp: New file.
+	* lib/gcc-defs.exp (${tool}_check_unsupported_p): Delete.
+	Include target-utils.exp.
+	* lib/objc.exp: Likewise.
+	* lib/mike-gcc.exp: Load target-utils.exp.
+	* lib/mike-g++.exp: Likewise.
+	* lib/go-torture.exp: Likewise.
+	* lib/fortran-torture.exp: Likewise.
+	* lib/c-torture.exp: Likewise.
+
 2014-12-10  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* gcc.target/i386/funcspec-5.c: Test avx512f and knl.

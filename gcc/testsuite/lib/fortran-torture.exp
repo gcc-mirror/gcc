@@ -22,6 +22,7 @@
 
 load_lib target-supports.exp
 load_lib fortran-modules.exp
+load_lib target-utils.exp
 
 # Return the list of options to use for fortran torture tests.
 # The default option list can be overridden by
