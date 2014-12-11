@@ -6363,12 +6363,6 @@ maybe_warn_about_useless_cast (tree type, tree expr, tsubst_flags_t complain)
   if (warn_useless_cast
       && complain & tf_warning)
     {
-      /* In C++14 mode, this interacts badly with force_paren_expr.  And it
-	 isn't necessary in any mode, because the code below handles
-	 glvalues properly.  For 4.9, just skip it in C++14 mode.  */
-      if (cxx_dialect < cxx14 && REFERENCE_REF_P (expr))
-	expr = TREE_OPERAND (expr, 0);
-
       if ((TREE_CODE (type) == REFERENCE_TYPE
 	   && (TYPE_REF_IS_RVALUE (type)
 	       ? xvalue_p (expr) : real_lvalue_p (expr))
