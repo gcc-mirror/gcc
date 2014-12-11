@@ -1731,9 +1731,9 @@ inline_small_functions (void)
 		   " to be inlined into %s/%i in %s:%i\n"
 		   " Estimated badness is %"PRId64", frequency %.2f.\n",
 		   edge->caller->name (), edge->caller->order,
-		   flag_wpa ? "unknown"
+		   edge->call_stmt ? "unknown"
 		   : gimple_filename ((const_gimple) edge->call_stmt),
-		   flag_wpa ? -1
+		   edge->call_stmt ? -1
 		   : gimple_lineno ((const_gimple) edge->call_stmt),
 		   badness.to_int (),
 		   edge->frequency / (double)CGRAPH_FREQ_BASE);
@@ -2188,9 +2188,12 @@ ipa_inline (void)
 
   inline_small_functions ();
 
-  /* Do first after-inlining removal.  We want to remove all "stale" extern inline
-     functions and virtual functions so we really know what is called once.  */
-  symtab->remove_unreachable_nodes (false, dump_file);
+  gcc_assert (symtab->state == IPA_SSA);
+  symtab->state = IPA_SSA_AFTER_INLINING;
+  /* Do first after-inlining removal.  We want to remove all "stale" extern
+     inline functions and virtual functions so we really know what is called
+     once.  */
+  symtab->remove_unreachable_nodes (dump_file);
   free (order);
 
   /* Inline functions with a property that after inlining into all callers the
@@ -2199,7 +2202,8 @@ ipa_inline (void)
      are met.  */
   if (dump_file)
     fprintf (dump_file,
-	     "\nDeciding on functions to be inlined into all callers and removing useless speculations:\n");
+	     "\nDeciding on functions to be inlined into all callers and "
+	     "removing useless speculations:\n");
 
   /* Inlining one function called once has good chance of preventing
      inlining other function into the same callee.  Ideally we should
@@ -2247,10 +2251,11 @@ ipa_inline (void)
 	      int num_calls = 0;
 	      node->call_for_symbol_thunks_and_aliases (sum_callers, &num_calls,
 						      true);
-	      while (node->call_for_symbol_thunks_and_aliases (inline_to_all_callers,
-							     &num_calls, true))
+	      while (node->call_for_symbol_thunks_and_aliases
+		       (inline_to_all_callers, &num_calls, true))
 		;
-	      remove_functions = true;
+	      if (num_calls)
+	        remove_functions = true;
 	    }
 	}
     }

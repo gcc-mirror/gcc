@@ -26,6 +26,7 @@ public:
     bool compare(const basic_string& __str) const {
         return 0;
     }
+    void key ();
 };
 
 typedef basic_string<char> string;
@@ -35,7 +36,7 @@ inline bool operator<(const basic_string<_CharT, _Traits>& __lhs, const basic_st
     return __lhs.compare(__rhs);
 }
 
-extern template class basic_string<char>;
+template class basic_string<char>;
 
 }
 
