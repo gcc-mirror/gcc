@@ -1,3 +1,8 @@
+2014-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/condition_variable/members/3.cc: Only use
+	a thread_local when __cxa_thread_atexit_impl is available.
+
 2014-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/locale_facets.tcc (numpunct::_M_cache): Avoid calling
