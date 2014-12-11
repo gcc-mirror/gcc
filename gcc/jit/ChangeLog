@@ -4,6 +4,24 @@
 	Document new function.
 	* docs/_build/texinfo/libgccjit.texi: Regenerate.
 
+2014-12-10  Ulrich Drepper  <drepper@gmail.com>
+
+	Minor interface cleanups of libgccjit
+	* jit-playback.c (convert_to_dso): Use auto_vec instead
+	of automatic array to build up command line.
+	* jit-recording.c (recording::context::set_str_option):
+	Make copy of the string.
+	(recording::context::~context): Free string options.
+	* jit-recording.h (recording::context): Adjust type
+	of m_str_options member.
+	* libgccjit.h: Adjust comment about
+	gcc_jit_context_set_str_option parameter being used after
+	the call.
+	Update comment now that all interfaces are copy strings
+	if necessary.
+	* libgccjit++.h (gccjit::context): Add set_str_option
+	member function.
+
 2014-12-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/index.rst: New file.
