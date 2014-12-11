@@ -1,3 +1,13 @@
+2014-12-11  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-protos.h (tune_params): Add align field.
+	* config/aarch64/aarch64.c (generic_tunings): Specify align.
+	(cortexa53_tunings): Likewise.
+	(cortexa57_tunings): Likewise.
+	(thunderx_tunings): Likewise.
+	(aarch64_override_options): Set align_loops, align_jumps,
+	align_functions based on what the tuning struct.
+
 2014-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/md.texi (Insn Lengths): Fix description of (pc).
