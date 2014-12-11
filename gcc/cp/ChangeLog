@@ -1,3 +1,8 @@
+2014-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (maybe_warn_about_useless_cast): Remove unnecessary
+	conditional.
+
 2014-12-10  Kai Tietz  <ktietz@redhat.com>
 
 	PR c++/64127
