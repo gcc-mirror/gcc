@@ -1,3 +1,7 @@
+2014-12-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* directives.c (cpp_define_formatted): Use xvasprintf.
+
 2014-12-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* line-map.c (linemap_position_for_loc_and_offset): Add new

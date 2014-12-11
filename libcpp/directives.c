@@ -2404,11 +2404,11 @@ cpp_define (cpp_reader *pfile, const char *str)
 void
 cpp_define_formatted (cpp_reader *pfile, const char *fmt, ...)
 {
-  char *ptr = NULL;
+  char *ptr;
 
   va_list ap;
   va_start (ap, fmt);
-  vasprintf (&ptr, fmt, ap);
+  ptr = xvasprintf (fmt, ap);
   va_end (ap);
 
   cpp_define (pfile, ptr);

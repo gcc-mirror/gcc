@@ -1,3 +1,17 @@
+2014-12-11  Uros Bizjak  <ubizjak@gmail.com>
+            Ben Elliston  <bje@au.ibm.com>
+            Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* xvasprintf.c: New file.
+	* vprintf-support.h: Likewise.
+	* vprintf-support.c: Likewise.
+	* Makefile.in (CFILES): Add vprintf-support.c, xvasprintf.c.
+	(REQUIRED_OFILES): Add vprintf-support.$(objext), xvasprintf.$(objext).
+	(vprintf-support.$(objext), xvasprintf.$(objext)): New targets.
+	(vasprintf.$(objext)): Depend on $(srcdir)/vprintf-support.h.
+	* functions.texi: Regenerate.
+	* vasprintf.c (int_vasprintf): Use libiberty_vprintf_buffer_size.
+
 2014-11-22  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR other/63694
