@@ -1249,10 +1249,14 @@ main ()
   printf ("   along with GCC; see the file COPYING3.  If not see\n");
   printf ("   <http://www.gnu.org/licenses/>.  */\n");
   printf ("\n");
+  printf ("/* Note this file is auto-generated from gen-mul-tables.cc.\n");
+  printf ("   Make any required changes there.  */\n");
+  printf ("\n");
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
   printf ("#include \"coretypes.h\"\n");
   printf ("#include \"expr.h\"\n");
+  printf ("#include \"insn-codes.h\"\n");
   printf ("#include \"optabs.h\"\n");
   printf ("#include \"%s-multiply.h\"\n\n", ARCH);
   create_insn_code_compression_table ();

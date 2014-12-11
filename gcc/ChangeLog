@@ -1,3 +1,10 @@
+2014-12-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* config/tilepro/gen-mul-tables.cc: Add insn-codes.h to include list
+	for generator file.  Add comment indicating it is a generated file.
+	* config/tilepro/mul-tables.c: Update generated file.
+	* config/tilegx/mul-tables.c: Likewise.
+
 2014-12-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c (try_combine): Do not allow combining a PARALLEL I2
