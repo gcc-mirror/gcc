@@ -323,6 +323,7 @@ static const struct tune_params generic_tunings =
   &generic_vector_cost,
   NAMED_PARAM (memmov_cost, 4),
   NAMED_PARAM (issue_rate, 2),
+  NAMED_PARAM (align, 4),
   NAMED_PARAM (fuseable_ops, AARCH64_FUSE_NOTHING),
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
@@ -337,6 +338,7 @@ static const struct tune_params cortexa53_tunings =
   &generic_vector_cost,
   NAMED_PARAM (memmov_cost, 4),
   NAMED_PARAM (issue_rate, 2),
+  NAMED_PARAM (align, 8),
   NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
                              | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR)),
   2,	/* int_reassoc_width.  */
@@ -352,6 +354,7 @@ static const struct tune_params cortexa57_tunings =
   &cortexa57_vector_cost,
   NAMED_PARAM (memmov_cost, 4),
   NAMED_PARAM (issue_rate, 3),
+  NAMED_PARAM (align, 8),
   NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD | AARCH64_FUSE_MOVK_MOVK)),
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
@@ -366,6 +369,7 @@ static const struct tune_params thunderx_tunings =
   &generic_vector_cost,
   NAMED_PARAM (memmov_cost, 6),
   NAMED_PARAM (issue_rate, 2),
+  NAMED_PARAM (align, 8),
   NAMED_PARAM (fuseable_ops, AARCH64_FUSE_CMP_BRANCH),
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
@@ -6760,6 +6764,18 @@ aarch64_override_options (void)
 #else
       aarch64_fix_a53_err835769 = 0;
 #endif
+    }
+
+  /* If not opzimizing for size, set the default
+     alignment to what the target wants */
+  if (!optimize_size)
+    {
+      if (align_loops <= 0)
+	align_loops = aarch64_tune_params->align;
+      if (align_jumps <= 0)
+	align_jumps = aarch64_tune_params->align;
+      if (align_functions <= 0)
+	align_functions = aarch64_tune_params->align;
     }
 
   aarch64_override_options_after_change ();
