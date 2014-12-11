@@ -1,3 +1,32 @@
+2014-12-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61324
+	* passes.c (execute_todo): Update call of remove_unreachable_nodes.
+	* ipa-chkp.c (chkp_produce_thunks): Use TODO_remove_functions.
+	* cgraphunit.c (symbol_table::process_new_functions): Add
+	IPA_SSA_AFTER_INLINING.
+	(ipa_passes): Update call of remove_unreachable_nodes.
+	(symbol_table::compile): Remove call of remove_unreachable_nodes.
+	* ipa-inline.c (inline_small_functions): Do not ICE with
+	-flto-partition=none
+	(ipa_inline): Update symtab->state; fix formatting
+	update call of remove_unreachable_nodes.
+	* passes.c (execute_todo): Update call of remove_unreachable_nodes.
+	* cgraphclones.c (symbol_table::materialize_all_clones): Likewise.
+	* cgraph.h (enum symtab_state): Add IPA_SSA_AFTER_INLINING.
+	(remove_unreachable_nodes): Update.
+	* ipa.c (process_references): Keep external references only
+	when optimizing.
+	(walk_polymorphic_call_targets): Keep possible polymorphic call
+	target only when devirtualizing.
+	(symbol_table::remove_unreachable_nodes): Remove BEFORE_INLINING_P
+	parameter.
+	(ipa_single_use): Update comment.
+	* ipa-pure-const.c (cdtor_p): New function.
+	(propagate_pure_const): Track if some cdtor was turned pure/const.
+	(execute): Return TODO_remove_functions if needed.
+	* ipa-comdats.c (ipa_comdats): Update comment.
+
 2014-12-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	* dwarf2out.c (gen_lexical_block_die): Remove unused `depth'

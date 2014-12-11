@@ -1801,12 +1801,15 @@ enum symtab_state
   PARSING,
   /* Callgraph is being constructed.  It is safe to add new functions.  */
   CONSTRUCTION,
-  /* Callgraph is being at LTO time.  */
+  /* Callgraph is being streamed-in at LTO time.  */
   LTO_STREAMING,
-  /* Callgraph is built and IPA passes are being run.  */
+  /* Callgraph is built and early IPA passes are being run.  */
   IPA,
   /* Callgraph is built and all functions are transformed to SSA form.  */
   IPA_SSA,
+  /* All inline decisions are done; it is now possible to remove extern inline
+     functions and virtual call targets.  */
+  IPA_SSA_AFTER_INLINING,
   /* Functions are now ordered and being passed to RTL expanders.  */
   EXPANSION,
   /* All cgraph expansion is done.  */
@@ -1876,7 +1879,7 @@ public:
   }
 
   /* Perform reachability analysis and reclaim all unreachable nodes.  */
-  bool remove_unreachable_nodes (bool before_inlining_p, FILE *file);
+  bool remove_unreachable_nodes (FILE *file);
 
   /* Optimization of function bodies might've rendered some variables as
      unnecessary so we want to avoid these from being compiled.  Re-do

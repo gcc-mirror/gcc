@@ -327,6 +327,7 @@ symbol_table::process_new_functions (void)
 
 	case IPA:
 	case IPA_SSA:
+	case IPA_SSA_AFTER_INLINING:
 	  /* When IPA optimization already started, do all essential
 	     transformations that has been already performed on the whole
 	     cgraph but not on this function.  */
@@ -335,7 +336,7 @@ symbol_table::process_new_functions (void)
 	  if (!node->analyzed)
 	    node->analyze ();
 	  push_cfun (DECL_STRUCT_FUNCTION (fndecl));
-	  if (state == IPA_SSA
+	  if ((state == IPA_SSA || state == IPA_SSA_AFTER_INLINING)
 	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
 	    g->get_passes ()->execute_early_local_passes ();
 	  else if (inline_summary_vec != NULL)
@@ -507,6 +508,7 @@ cgraph_node::add_new_function (tree fndecl, bool lowered)
 
       case IPA:
       case IPA_SSA:
+      case IPA_SSA_AFTER_INLINING:
       case EXPANSION:
 	/* Bring the function into finalized state and enqueue for later
 	   analyzing and compilation.  */
@@ -2053,7 +2055,7 @@ ipa_passes (void)
 
   /* This extra symtab_remove_unreachable_nodes pass tends to catch some
      devirtualization and other changes where removal iterate.  */
-  symtab->remove_unreachable_nodes (true, symtab->dump_file);
+  symtab->remove_unreachable_nodes (symtab->dump_file);
 
   /* If pass_all_early_optimizations was not scheduled, the state of
      the cgraph will not be properly updated.  Update it now.  */
@@ -2194,10 +2196,6 @@ symbol_table::compile (void)
       return;
     }
 
-  /* This pass remove bodies of extern inline functions we never inlined.
-     Do this later so other IPA passes see what is really going on.
-     FIXME: This should be run just after inlining by pasmanager.  */
-  remove_unreachable_nodes (false, dump_file);
   global_info_ready = true;
   if (dump_file)
     {
