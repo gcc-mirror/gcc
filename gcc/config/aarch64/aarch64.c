@@ -6532,7 +6532,8 @@ aarch64_parse_extension (char *str)
 
       if (len == 0)
 	{
-	  error ("missing feature modifier after %qs", "+no");
+	  error ("missing feature modifier after %qs", adding_ext ? "+"
+	                                                          : "+no");
 	  return;
 	}
 
