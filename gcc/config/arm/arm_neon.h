@@ -1471,7 +1471,7 @@ vrndn_f32 (float32x2_t __a)
 #endif
 #if __ARM_ARCH >= 8
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vrndqn_f32 (float32x4_t __a)
+vrndnq_f32 (float32x4_t __a)
 {
   return (float32x4_t)__builtin_neon_vrintnv4sf (__a);
 }
@@ -1487,7 +1487,7 @@ vrnda_f32 (float32x2_t __a)
 #endif
 #if __ARM_ARCH >= 8
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vrndqa_f32 (float32x4_t __a)
+vrndaq_f32 (float32x4_t __a)
 {
   return (float32x4_t)__builtin_neon_vrintav4sf (__a);
 }
@@ -1503,7 +1503,7 @@ vrndp_f32 (float32x2_t __a)
 #endif
 #if __ARM_ARCH >= 8
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vrndqp_f32 (float32x4_t __a)
+vrndpq_f32 (float32x4_t __a)
 {
   return (float32x4_t)__builtin_neon_vrintpv4sf (__a);
 }
@@ -1519,12 +1519,31 @@ vrndm_f32 (float32x2_t __a)
 #endif
 #if __ARM_ARCH >= 8
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vrndqm_f32 (float32x4_t __a)
+vrndmq_f32 (float32x4_t __a)
 {
   return (float32x4_t)__builtin_neon_vrintmv4sf (__a);
 }
 
 #endif
+
+#if __ARM_ARCH >= 8
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vrndx_f32 (float32x2_t __a)
+{
+  return (float32x2_t)__builtin_neon_vrintxv2sf (__a);
+}
+
+#endif
+
+#if __ARM_ARCH >= 8
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vrndxq_f32 (float32x4_t __a)
+{
+  return (float32x4_t)__builtin_neon_vrintxv4sf (__a);
+}
+
+#endif
+
 #if __ARM_ARCH >= 8
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vrnd_f32 (float32x2_t __a)
