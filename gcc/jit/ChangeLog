@@ -1,3 +1,9 @@
+2014-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/contexts.rst (gccjit::context::set_str_option):
+	Document new function.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2014-12-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/index.rst: New file.

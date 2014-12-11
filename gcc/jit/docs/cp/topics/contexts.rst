@@ -148,9 +148,18 @@ Debugging
 Options
 -------
 
-..
-  FIXME: gccjit::context::set_str_option doesn't seem to exist yet in the
-  C++ API
+String Options
+**************
+
+.. function:: void \
+              gccjit::context::set_str_option (enum gcc_jit_str_option, \
+                                               const char *value)
+
+   Set a string option of the context.
+
+   This is a thin wrapper around the C API
+   :c:func:`gcc_jit_context_set_str_option`; the options have the same
+   meaning.
 
 Boolean options
 ***************
