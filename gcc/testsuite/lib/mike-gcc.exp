@@ -16,6 +16,8 @@
 
 # This file was derived from mike-g++.exp written by Mike Stump <mrs@cygnus.com>
 
+load_lib target-utils.exp
+
 #
 # mike_cleanup -- remove any files that are created by the testcase
 #

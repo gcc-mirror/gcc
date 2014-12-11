@@ -29,6 +29,7 @@ load_lib prune.exp
 load_lib gcc-defs.exp
 load_lib timeout.exp
 load_lib target-libpath.exp
+load_lib target-utils.exp
 
 #
 # OBJC_UNDER_TEST is the compiler under test.
@@ -341,27 +342,6 @@ if { [info procs prune_warnings] == "" } then {
     proc prune_warnings { text } {
 	return $text
     }
-}
-
-# Utility used by mike-gcc.exp and c-torture.exp.
-# Check the compiler(/assembler/linker) output for text indicating that
-# the testcase should be marked as "unsupported".
-#
-# When dealing with a large number of tests, it's difficult to weed out the
-# ones that are too big for a particular cpu (eg: 16 bit with a small amount
-# of memory).  There are various ways to deal with this.  Here's one.
-# Fortunately, all of the cases where this is likely to happen will be using
-# gld so we can tell what the error text will look like.
-
-proc ${tool}_check_unsupported_p { output } {
-    if [regexp "(^|\n)\[^\n\]*: region \[^\n\]* is full" $output] {
-	return "memory full"
-    }
-    if { [regexp "(^|\n)\[^\n\]*: relocation truncated to fit" $output]
-          && [check_effective_target_tiny] } {
-        return "memory full"
-    }
-    return ""
 }
 
 # Prune messages from objc that aren't useful.
