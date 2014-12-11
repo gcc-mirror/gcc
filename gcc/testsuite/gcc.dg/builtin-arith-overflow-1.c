@@ -17,7 +17,7 @@ fn1 (int x, unsigned int y)
 /* MUL_OVERFLOW should be folded into unsigned multiplication,
    because ovf is never used.  */
 __attribute__((noinline, noclone)) int
-fn2 (char x, long int y)
+fn2 (signed char x, long int y)
 {
   short int res;
   int ovf = __builtin_mul_overflow (x, y, &res);
@@ -31,7 +31,7 @@ fn2 (char x, long int y)
 /* ADD_OVERFLOW should be folded into unsigned addition,
    because it never overflows.  */
 __attribute__((noinline, noclone)) int
-fn3 (char x, unsigned short y, int *ovf)
+fn3 (signed char x, unsigned short y, int *ovf)
 {
   int res;
   *ovf = __builtin_add_overflow (x, y, &res);
