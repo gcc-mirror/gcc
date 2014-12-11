@@ -297,6 +297,8 @@ void diagnostic_set_caret_max_width (diagnostic_context *context, int value);
 
 void diagnostic_file_cache_fini (void);
 
+int get_terminal_width (void);
+
 /* Expand the location of this diagnostic. Use this function for consistency. */
 
 static inline expanded_location

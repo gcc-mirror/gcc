@@ -1,3 +1,10 @@
+2014-12-11  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* error.c (gfc_get_terminal_width): Renamed from
+	get_terminal_width and use same-named common function.
+	(gfc_error_init_1): Update call.
+
 2014-12-10  Ulrich Drepper  <drepper@gmail.com>
 
 	Minor interface cleanups of libgccjit
