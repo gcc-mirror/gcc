@@ -1487,8 +1487,8 @@ legal_cast_p_1 (tree lhs, tree rhs)
   rhs_type = TREE_TYPE (rhs);
   lhs_size = TYPE_PRECISION (lhs_type);
   rhs_size = TYPE_PRECISION (rhs_type);
-  lhs_wraps = TYPE_OVERFLOW_WRAPS (lhs_type);
-  rhs_wraps = TYPE_OVERFLOW_WRAPS (rhs_type);
+  lhs_wraps = ANY_INTEGRAL_TYPE_P (lhs_type) && TYPE_OVERFLOW_WRAPS (lhs_type);
+  rhs_wraps = ANY_INTEGRAL_TYPE_P (rhs_type) && TYPE_OVERFLOW_WRAPS (rhs_type);
 
   if (lhs_size < rhs_size
       || (rhs_wraps && !lhs_wraps)
