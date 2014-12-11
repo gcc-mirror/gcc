@@ -926,14 +926,14 @@ expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type
       {
       case PLUS_EXPR:
       case MINUS_EXPR:
-        if (!TYPE_OVERFLOW_TRAPS (type))
+        if (ANY_INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_TRAPS (type))
 	  return expand_vector_addition (gsi, do_binop, do_plus_minus, type,
 					 gimple_assign_rhs1 (assign),
 					 gimple_assign_rhs2 (assign), code);
 	break;
 
       case NEGATE_EXPR:
-        if (!TYPE_OVERFLOW_TRAPS (type))
+        if (ANY_INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_TRAPS (type))
           return expand_vector_addition (gsi, do_unop, do_negate, type,
 		      		         gimple_assign_rhs1 (assign),
 					 NULL_TREE, code);

@@ -1,3 +1,22 @@
+2014-12-11  Marek Polacek  <polacek@redhat.com>
+
+	* fold-const.c (fold_negate_expr): Add ANY_INTEGRAL_TYPE_P check.
+	(extract_muldiv_1): Likewise.
+	(maybe_canonicalize_comparison_1): Likewise.
+	(fold_comparison): Likewise.
+	(tree_binary_nonnegative_warnv_p): Likewise.
+	(tree_binary_nonzero_warnv_p): Likewise.
+	* gimple-ssa-strength-reduction.c (legal_cast_p_1): Likewise.
+	* tree-scalar-evolution.c (simple_iv): Likewise.
+	(scev_const_prop): Likewise.
+	* tree-ssa-loop-niter.c (expand_simple_operations): Likewise.
+	* tree-vect-generic.c (expand_vector_operation): Likewise.
+	* tree.h (ANY_INTEGRAL_TYPE_CHECK): Define.
+	(ANY_INTEGRAL_TYPE_P): Define.
+	(TYPE_OVERFLOW_WRAPS, TYPE_OVERFLOW_UNDEFINED, TYPE_OVERFLOW_TRAPS):
+	Add ANY_INTEGRAL_TYPE_CHECK.
+	(any_integral_type_check): New function.
+
 2014-12-11  Tobias Burnus  <burnus@net-b.de>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 

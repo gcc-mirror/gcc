@@ -558,7 +558,8 @@ fold_negate_expr (location_t loc, tree t)
     case INTEGER_CST:
       tem = fold_negate_const (t, type);
       if (TREE_OVERFLOW (tem) == TREE_OVERFLOW (t)
-	  || (!TYPE_OVERFLOW_TRAPS (type)
+	  || (ANY_INTEGRAL_TYPE_P (type)
+	      && !TYPE_OVERFLOW_TRAPS (type)
 	      && TYPE_OVERFLOW_WRAPS (type))
 	  || (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0)
 	return tem;
@@ -5951,7 +5952,8 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	   || EXPRESSION_CLASS_P (op0))
 	  /* ... and has wrapping overflow, and its type is smaller
 	     than ctype, then we cannot pass through as widening.  */
-	  && ((TYPE_OVERFLOW_WRAPS (TREE_TYPE (op0))
+	  && (((ANY_INTEGRAL_TYPE_P (TREE_TYPE (op0))
+		&& TYPE_OVERFLOW_WRAPS (TREE_TYPE (op0)))
 	       && (TYPE_PRECISION (ctype)
 	           > TYPE_PRECISION (TREE_TYPE (op0))))
 	      /* ... or this is a truncation (t is narrower than op0),
@@ -5966,7 +5968,8 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	      /* ... or has undefined overflow while the converted to
 		 type has not, we cannot do the operation in the inner type
 		 as that would introduce undefined overflow.  */
-	      || (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (op0))
+	      || ((ANY_INTEGRAL_TYPE_P (TREE_TYPE (op0))
+		   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (op0)))
 		  && !TYPE_OVERFLOW_UNDEFINED (type))))
 	break;
 
@@ -8497,7 +8500,8 @@ maybe_canonicalize_comparison_1 (location_t loc, enum tree_code code, tree type,
 
   /* Match A +- CST code arg1 and CST code arg1.  We can change the
      first form only if overflow is undefined.  */
-  if (!((TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
+  if (!(((ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+	  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0)))
 	 /* In principle pointers also have undefined overflow behavior,
 	    but that causes problems elsewhere.  */
 	 && !POINTER_TYPE_P (TREE_TYPE (arg0))
@@ -8712,7 +8716,9 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 
   /* Transform comparisons of the form X +- C1 CMP C2 to X CMP C2 -+ C1.  */
   if ((TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
-      && (equality_code || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0)))
+      && (equality_code
+	  || (ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+	      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))))
       && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
       && !TREE_OVERFLOW (TREE_OPERAND (arg0, 1))
       && TREE_CODE (arg1) == INTEGER_CST
@@ -9031,7 +9037,8 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
      X CMP Y +- C2 +- C1 for signed X, Y.  This is valid if
      the resulting offset is smaller in absolute value than the
      original one and has the same sign.  */
-  if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
+  if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
       && (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
       && (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 	  && !TREE_OVERFLOW (TREE_OPERAND (arg0, 1)))
@@ -9085,7 +9092,8 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
      signed arithmetic case.  That form is created by the compiler
      often enough for folding it to be of value.  One example is in
      computing loop trip counts after Operator Strength Reduction.  */
-  if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
+  if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
       && TREE_CODE (arg0) == MULT_EXPR
       && (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
           && !TREE_OVERFLOW (TREE_OPERAND (arg0, 1)))
@@ -14733,7 +14741,8 @@ tree_binary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
 	      || (tree_expr_nonnegative_warnv_p (op0, strict_overflow_p)
 		  && tree_expr_nonnegative_warnv_p (op1, strict_overflow_p)))
 	    {
-	      if (TYPE_OVERFLOW_UNDEFINED (type))
+	      if (ANY_INTEGRAL_TYPE_P (type)
+		  && TYPE_OVERFLOW_UNDEFINED (type))
 		*strict_overflow_p = true;
 	      return true;
 	    }
@@ -15205,7 +15214,7 @@ tree_binary_nonzero_warnv_p (enum tree_code code,
     {
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
-      if (TYPE_OVERFLOW_UNDEFINED (type))
+      if (ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_UNDEFINED (type))
 	{
 	  /* With the presence of negative values it is hard
 	     to say something.  */

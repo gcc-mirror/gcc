@@ -283,6 +283,10 @@ along with GCC; see the file COPYING3.  If not see
 #define NON_TYPE_CHECK(T) \
 (non_type_check ((T), __FILE__, __LINE__, __FUNCTION__))
 
+/* These checks have to be special cased.  */
+#define ANY_INTEGRAL_TYPE_CHECK(T) \
+(any_integral_type_check ((T), __FILE__, __LINE__, __FUNCTION__))
+
 #define TREE_INT_CST_ELT_CHECK(T, I) \
 (*tree_int_cst_elt_check ((T), (I), __FILE__, __LINE__, __FUNCTION__))
 
@@ -388,6 +392,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define OMP_CLAUSE_ELT_CHECK(T, i)	        ((T)->omp_clause.ops[i])
 #define OMP_CLAUSE_RANGE_CHECK(T, CODE1, CODE2)	(T)
 #define OMP_CLAUSE_SUBCODE_CHECK(T, CODE)	(T)
+#define ANY_INTEGRAL_TYPE_CHECK(T)		(T)
 
 #define TREE_CHAIN(NODE) ((NODE)->common.chain)
 #define TREE_TYPE(NODE) ((NODE)->typed.type)
@@ -481,6 +486,15 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (TREE_CODE (TYPE) == ENUMERAL_TYPE  \
    || TREE_CODE (TYPE) == BOOLEAN_TYPE \
    || TREE_CODE (TYPE) == INTEGER_TYPE)
+
+/* Nonzero if TYPE represents an integral type, including complex
+   and vector integer types.  */
+
+#define ANY_INTEGRAL_TYPE_P(TYPE)		\
+  (INTEGRAL_TYPE_P (TYPE)			\
+   || ((TREE_CODE (TYPE) == COMPLEX_TYPE 	\
+        || VECTOR_TYPE_P (TYPE))		\
+       && INTEGRAL_TYPE_P (TREE_TYPE (TYPE))))
 
 /* Nonzero if TYPE represents a non-saturating fixed-point type.  */
 
@@ -771,7 +785,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* True if overflow wraps around for the given integral type.  That
    is, TYPE_MAX + 1 == TYPE_MIN.  */
 #define TYPE_OVERFLOW_WRAPS(TYPE) \
-  (TYPE_UNSIGNED (TYPE) || flag_wrapv)
+  (ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag || flag_wrapv)
 
 /* True if overflow is undefined for the given integral type.  We may
    optimize on the assumption that values in the type never overflow.
@@ -781,13 +795,14 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    it will be appropriate to issue the warning immediately, and in
    other cases it will be appropriate to simply set a flag and let the
    caller decide whether a warning is appropriate or not.  */
-#define TYPE_OVERFLOW_UNDEFINED(TYPE) \
-  (!TYPE_UNSIGNED (TYPE) && !flag_wrapv && !flag_trapv && flag_strict_overflow)
+#define TYPE_OVERFLOW_UNDEFINED(TYPE)				\
+  (!ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag	\
+   && !flag_wrapv && !flag_trapv && flag_strict_overflow)
 
 /* True if overflow for the given integral type should issue a
    trap.  */
 #define TYPE_OVERFLOW_TRAPS(TYPE) \
-  (!TYPE_UNSIGNED (TYPE) && flag_trapv)
+  (!ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag && flag_trapv)
 
 /* True if an overflow is to be preserved for sanitization.  */
 #define TYPE_OVERFLOW_SANITIZED(TYPE)			\
@@ -2990,6 +3005,17 @@ omp_clause_elt_check (tree __t, int __i,
   return &__t->omp_clause.ops[__i];
 }
 
+/* These checks have to be special cased.  */
+
+inline tree
+any_integral_type_check (tree __t, const char *__f, int __l, const char *__g)
+{
+  if (!ANY_INTEGRAL_TYPE_P (__t))
+    tree_check_failed (__t, __f, __l, __g, BOOLEAN_TYPE, ENUMERAL_TYPE,
+		       INTEGER_TYPE, 0);
+  return __t;
+}
+
 inline const_tree
 tree_check (const_tree __t, const char *__f, int __l, const char *__g,
 	    tree_code __c)
@@ -3195,6 +3221,16 @@ omp_clause_elt_check (const_tree __t, int __i,
   if (__i < 0 || __i >= omp_clause_num_ops [__t->omp_clause.code])
     omp_clause_operand_check_failed (__i, __t, __f, __l, __g);
   return CONST_CAST (const_tree *, &__t->omp_clause.ops[__i]);
+}
+
+inline const_tree
+any_integral_type_check (const_tree __t, const char *__f, int __l,
+			 const char *__g)
+{
+  if (!ANY_INTEGRAL_TYPE_P (__t))
+    tree_check_failed (__t, __f, __l, __g, BOOLEAN_TYPE, ENUMERAL_TYPE,
+		       INTEGER_TYPE, 0);
+  return __t;
 }
 
 #endif
