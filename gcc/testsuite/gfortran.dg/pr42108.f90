@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O2 -fdump-tree-fre1" }
+! { dg-options "-O2 -fdump-tree-fre1 -fdump-tree-pre-details" }
 
 subroutine  eval(foo1,foo2,foo3,foo4,x,n,nnd)
   implicit real*8 (a-h,o-z)
@@ -21,7 +21,9 @@ subroutine  eval(foo1,foo2,foo3,foo4,x,n,nnd)
   end do
 end subroutine eval
 
+! We should have hoisted the division
+! { dg-final { scan-tree-dump "in all uses of countm1\[^\n\]* / " "pre" } }
 ! There should be only one load from n left
-
 ! { dg-final { scan-tree-dump-times "\\*n_" 1 "fre1" } }
 ! { dg-final { cleanup-tree-dump "fre1" } }
+! { dg-final { cleanup-tree-dump "pre" } }

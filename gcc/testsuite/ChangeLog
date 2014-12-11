@@ -1,3 +1,8 @@
+2014-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/42108
+	* gfortran.dg/pr42108.f90: Amend.
+
 2014-12-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
         * gfortran.dg/do_iterator.f90: Remove bogus dg-warning.
