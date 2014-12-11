@@ -50,15 +50,15 @@ typedef struct gcc_jit_result gcc_jit_result;
    The class hierarchy looks like this:
 
      +- gcc_jit_object
-         +- gcc_jit_location
-         +- gcc_jit_type
+	 +- gcc_jit_location
+	 +- gcc_jit_type
 	    +- gcc_jit_struct
-         +- gcc_jit_field
-         +- gcc_jit_function
-         +- gcc_jit_block
-         +- gcc_jit_rvalue
-             +- gcc_jit_lvalue
-                 +- gcc_jit_param
+	 +- gcc_jit_field
+	 +- gcc_jit_function
+	 +- gcc_jit_block
+	 +- gcc_jit_rvalue
+	     +- gcc_jit_lvalue
+		 +- gcc_jit_param
 */
 typedef struct gcc_jit_object gcc_jit_object;
 
@@ -213,8 +213,9 @@ enum gcc_jit_bool_option
 
 /* Set a string option on the given context.
 
-   The context directly stores the (const char *), so the passed string
-   must outlive the context.  */
+   The context takes a copy of the string, so the
+   (const char *) buffer is not needed anymore after the call
+   returns.  */
 extern void
 gcc_jit_context_set_str_option (gcc_jit_context *ctxt,
 				enum gcc_jit_str_option opt,
@@ -288,8 +289,7 @@ gcc_jit_result_release (gcc_jit_result *result);
  released their context.
 
  All (const char *) string arguments passed to these functions are
- copied, so you don't need to keep them around.  Note that this *isn't*
- the case for other parts of the API.
+ copied, so you don't need to keep them around.
 
  You create code by adding a sequence of statements to blocks.
 **********************************************************************/
