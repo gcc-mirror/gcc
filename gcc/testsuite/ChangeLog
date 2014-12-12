@@ -1,3 +1,8 @@
+2014-12-12  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/63996
+	* g++.dg/cpp1y/pr63996.C: New file.
+
 2014-12-12  Richard Sandiford  <richard.sandiford@arm.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
