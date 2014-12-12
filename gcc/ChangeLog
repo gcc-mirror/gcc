@@ -1,3 +1,10 @@
+2014-12-12  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	PR rtl-optimization/63917
+	* ifcvt.c (cc_in_cond): New function.
+	(end_ifcvt_sequence): Make sure new generated insns do not clobber CC.
+	(noce_process_if_block, check_cond_move_block): Check CC references.
+
 2014-12-11  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64-protos.h (tune_params): Add align field.
