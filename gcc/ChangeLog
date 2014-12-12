@@ -1,3 +1,9 @@
+2014-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64269
+	* tree-ssa-forwprop.c (simplify_builtin_call): Bail out if
+	len2 or diff are too large.
+
 2014-12-12  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64280
