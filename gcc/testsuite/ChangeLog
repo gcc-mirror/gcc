@@ -1,3 +1,8 @@
+2014-12-12  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_2.c: Make test less vulnerable.
+	* gcc.target/aarch64/ldp_stp_3.c: Ditto.
+
 2014-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/builtin-arith-overflow-1.c (fn2): Take signed char.
