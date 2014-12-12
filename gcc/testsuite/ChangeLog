@@ -1,3 +1,12 @@
+2014-12-12  Richard Sandiford  <richard.sandiford@arm.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/64182
+	* gcc.dg/plugin/wide-int-test-1.c,
+	gcc.dg/plugin/wide-int_plugin.c: New test.
+	* gcc.dg/plugin/plugin.exp: Register it.
+	* gnat.dg/round_div.adb: New test.
+
 2014-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/64269
