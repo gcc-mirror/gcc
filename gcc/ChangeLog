@@ -1,3 +1,10 @@
+2014-12-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/64110
+	* lra-constraints.c (process_alt_operands): Refuse alternative
+	when reload pseudo of given class can not hold value of given
+	mode.
+
 2014-12-12  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gimple-walk.c (walk_gimple_op) <GIMPLE_OMP_FOR>: Also check
