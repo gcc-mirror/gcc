@@ -1,3 +1,8 @@
+2014-12-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64280
+	* tree-cfg.c (replace_uses_by): Guard assert properly.
+
 2014-12-12  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.md: Add use of zex instruction.
