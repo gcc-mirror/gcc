@@ -1,5 +1,6 @@
 // PR c++/57402
-// { dg-do compile { target c++14 } }
+// { dg-do run }
+// { dg-options "" }
 
 int i = 2;
 

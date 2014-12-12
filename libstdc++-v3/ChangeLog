@@ -1,3 +1,10 @@
+2014-12-11  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/new (bad_array_length): Move...
+	* bad_array_length.cc: ...here.
+	* cxxabi.h, eh_aux_runtime.cc (__cxa_throw_bad_array_new_length): Also
+	move to bad_array_length.cc.
+
 2014-12-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/30_threads/condition_variable/members/3.cc: Only use

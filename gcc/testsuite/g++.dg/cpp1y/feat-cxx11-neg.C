@@ -1,5 +1,4 @@
 // { dg-do compile { target c++11_only } }
-// { dg-options "-pedantic-errors" }
 
 // C++14 features:
 
