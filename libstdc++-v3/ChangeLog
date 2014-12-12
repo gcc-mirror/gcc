@@ -1,3 +1,9 @@
+2014-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* testsuite/lib/libstdc++.exp: Include target-utils.exp.
+	(v3_target_compile): Check if test is unsupported.
+	(v3_target_compile_as_c): Likewise.
+
 2014-12-11  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/new (bad_array_length): Move...
