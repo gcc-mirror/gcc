@@ -1,3 +1,8 @@
+2014-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61924
+	* g++.dg/cpp0x/pr61924.C: New.
+
 2014-12-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/64110
