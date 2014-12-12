@@ -22117,7 +22117,21 @@ do_auto_deduction (tree type, tree init, tree auto_node)
      initializer is a braced-init-list (8.5.4), with
      std::initializer_list<U>.  */
   if (BRACE_ENCLOSED_INITIALIZER_P (init))
-    type = listify_autos (type, auto_node);
+    {
+      if (!DIRECT_LIST_INIT_P (init))
+	type = listify_autos (type, auto_node);
+      else if (CONSTRUCTOR_NELTS (init) == 1)
+	init = CONSTRUCTOR_ELT (init, 0)->value;
+      else
+	{
+	  if (permerror (input_location, "direct-list-initialization of "
+			 "%<auto%> requires exactly one element"))
+	    inform (input_location,
+		    "for deduction to %<std::initializer_list%>, use copy-"
+		    "list-initialization (i.e. add %<=%> before the %<{%>)");
+	  type = listify_autos (type, auto_node);
+	}
+    }
 
   init = resolve_nondeduced_context (init);
 

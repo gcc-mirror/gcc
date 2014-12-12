@@ -1,5 +1,9 @@
 2014-12-12  Jason Merrill  <jason@redhat.com>
 
+	N3922
+	* pt.c (do_auto_deduction): In direct-init context, { x } deduces
+	from x.
+
 	* cp-tree.h (NAMESPACE_ABI_TAG): New.
 	* name-lookup.c (handle_namespace_attrs): Set it.
 	* class.c (check_tag): Split out from find_abi_tags_r.

@@ -6,5 +6,5 @@
 int main()
 {
   if ([x(42)]{ return x; }() != 42) __builtin_abort();
-  if ([x{1,2}]{ return x.begin()[0]; }() != 1) __builtin_abort();
+  if ([x{24}]{ return x; }() != 24) __builtin_abort();
 }
