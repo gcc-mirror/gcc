@@ -967,7 +967,7 @@ eliminate_using_constants (enum tree_code opcode,
 	  if (integer_zerop (oelast->op)
 	      || (FLOAT_TYPE_P (type)
 		  && !HONOR_NANS (type)
-		  && !HONOR_SIGNED_ZEROS (TYPE_MODE (type))
+		  && !HONOR_SIGNED_ZEROS (type)
 		  && real_zerop (oelast->op)))
 	    {
 	      if (ops->length () != 1)
@@ -983,7 +983,7 @@ eliminate_using_constants (enum tree_code opcode,
 	    }
 	  else if (integer_onep (oelast->op)
 		   || (FLOAT_TYPE_P (type)
-		       && !HONOR_SNANS (TYPE_MODE (type))
+		       && !HONOR_SNANS (type)
 		       && real_onep (oelast->op)))
 	    {
 	      if (ops->length () != 1)

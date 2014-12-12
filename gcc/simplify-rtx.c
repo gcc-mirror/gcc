@@ -4757,7 +4757,7 @@ simplify_const_relational_operation (enum rtx_code code,
   if ((! HONOR_NANS (trueop0)
        || code == UNEQ || code == UNLE || code == UNGE
        || ((code == LT || code == GT || code == LTGT)
-	   && ! HONOR_SNANS (GET_MODE (trueop0))))
+	   && ! HONOR_SNANS (trueop0)))
       && rtx_equal_p (trueop0, trueop1)
       && ! side_effects_p (trueop0))
     return comparison_result (code, CMP_EQ);

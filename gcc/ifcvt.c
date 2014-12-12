@@ -1078,7 +1078,7 @@ noce_try_move (struct noce_if_info *if_info)
   /* This optimization isn't valid if either A or B could be a NaN
      or a signed zero.  */
   if (HONOR_NANS (if_info->x)
-      || HONOR_SIGNED_ZEROS (GET_MODE (if_info->x)))
+      || HONOR_SIGNED_ZEROS (if_info->x))
     return FALSE;
 
   /* Check whether the operands of the comparison are A and in
@@ -1969,7 +1969,7 @@ noce_try_minmax (struct noce_if_info *if_info)
   /* ??? Reject modes with NaNs or signed zeros since we don't know how
      they will be resolved with an SMIN/SMAX.  It wouldn't be too hard
      to get the target to tell us...  */
-  if (HONOR_SIGNED_ZEROS (GET_MODE (if_info->x))
+  if (HONOR_SIGNED_ZEROS (if_info->x)
       || HONOR_NANS (if_info->x))
     return FALSE;
 
@@ -2063,7 +2063,7 @@ noce_try_abs (struct noce_if_info *if_info)
   bool one_cmpl = false;
 
   /* Reject modes with signed zeros.  */
-  if (HONOR_SIGNED_ZEROS (GET_MODE (if_info->x)))
+  if (HONOR_SIGNED_ZEROS (if_info->x))
     return FALSE;
 
   /* Recognize A and B as constituting an ABS or NABS.  The canonical

@@ -1659,7 +1659,7 @@ record_equality (tree x, tree y)
      variable compared against zero.  If we're honoring signed zeros,
      then we cannot record this value unless we know that the value is
      nonzero.  */
-  if (HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (x)))
+  if (HONOR_SIGNED_ZEROS (x)
       && (TREE_CODE (y) != REAL_CST
 	  || REAL_VALUES_EQUAL (dconst0, TREE_REAL_CST (y))))
     return;
@@ -1900,7 +1900,7 @@ record_edge_info (basic_block bb)
               tree cond = build2 (code, boolean_type_node, op0, op1);
               tree inverted = invert_truthvalue_loc (loc, cond);
               bool can_infer_simple_equiv
-                = !(HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (op0)))
+                = !(HONOR_SIGNED_ZEROS (op0)
                     && real_zerop (op0));
               struct edge_info *edge_info;
 
@@ -1930,7 +1930,7 @@ record_edge_info (basic_block bb)
               tree cond = build2 (code, boolean_type_node, op0, op1);
               tree inverted = invert_truthvalue_loc (loc, cond);
               bool can_infer_simple_equiv
-                = !(HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (op1)))
+                = !(HONOR_SIGNED_ZEROS (op1)
                     && (TREE_CODE (op1) == SSA_NAME || real_zerop (op1)));
               struct edge_info *edge_info;
 

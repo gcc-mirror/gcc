@@ -749,7 +749,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* If the type says honor signed zeros we cannot do this
      optimization.  */
-  if (HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
+  if (HONOR_SIGNED_ZEROS (arg1))
     return 0;
 
   /* If there is a statement in MIDDLE_BB that defines one of the PHI
@@ -1182,7 +1182,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* If the type says honor signed zeros we cannot do this
      optimization.  */
-  if (HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
+  if (HONOR_SIGNED_ZEROS (arg1))
     return false;
 
   /* OTHER_BLOCK must have only one executable statement which must have the

@@ -7678,7 +7678,7 @@ fold_builtin_cproj (location_t loc, tree arg, tree type)
     return NULL_TREE;
 
   /* If there are no infinities, return arg.  */
-  if (! HONOR_INFINITIES (TYPE_MODE (TREE_TYPE (type))))
+  if (! HONOR_INFINITIES (type))
     return non_lvalue_loc (loc, arg);
 
   /* Calculate the result when the argument is a constant.  */
@@ -8949,7 +8949,7 @@ fold_builtin_signbit (location_t loc, tree arg, tree type)
     return omit_one_operand_loc (loc, type, integer_zero_node, arg);
 
   /* If ARG's format doesn't have signed zeros, return "arg < 0.0".  */
-  if (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg))))
+  if (!HONOR_SIGNED_ZEROS (arg))
     return fold_convert (type,
 			 fold_build2_loc (loc, LT_EXPR, boolean_type_node, arg,
 			build_real (TREE_TYPE (arg), dconst0)));
@@ -9143,12 +9143,12 @@ fold_builtin_fmin_fmax (location_t loc, tree arg0, tree arg1,
 	 omit_one_operand() ensures we create a non-lvalue.  */
       if (TREE_CODE (arg0) == REAL_CST
 	  && real_isnan (&TREE_REAL_CST (arg0))
-	  && (! HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
+	  && (! HONOR_SNANS (arg0)
 	      || ! TREE_REAL_CST (arg0).signalling))
 	return omit_one_operand_loc (loc, type, arg1, arg0);
       if (TREE_CODE (arg1) == REAL_CST
 	  && real_isnan (&TREE_REAL_CST (arg1))
-	  && (! HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg1)))
+	  && (! HONOR_SNANS (arg1)
 	      || ! TREE_REAL_CST (arg1).signalling))
 	return omit_one_operand_loc (loc, type, arg0, arg1);
 
@@ -9559,7 +9559,7 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
   switch (builtin_index)
     {
     case BUILT_IN_ISINF:
-      if (!HONOR_INFINITIES (TYPE_MODE (TREE_TYPE (arg))))
+      if (!HONOR_INFINITIES (arg))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
 
       if (TREE_CODE (arg) == REAL_CST)
@@ -9608,7 +9608,7 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
 
     case BUILT_IN_ISFINITE:
       if (!HONOR_NANS (arg)
-	  && !HONOR_INFINITIES (TYPE_MODE (TREE_TYPE (arg))))
+	  && !HONOR_INFINITIES (arg))
 	return omit_one_operand_loc (loc, type, integer_one_node, arg);
 
       if (TREE_CODE (arg) == REAL_CST)

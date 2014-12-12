@@ -2800,7 +2800,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  return 1;
 
 
-	if (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg0))))
+	if (!HONOR_SIGNED_ZEROS (arg0))
 	  {
 	    /* If we do not distinguish between signed and unsigned zero,
 	       consider them equal.  */
@@ -9165,7 +9165,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 
 	  /* x != NaN is always true, other ops are always false.  */
 	  if (REAL_VALUE_ISNAN (cst)
-	      && ! HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg1))))
+	      && ! HONOR_SNANS (arg1))
 	    {
 	      tem = (code == NE_EXPR) ? integer_one_node : integer_zero_node;
 	      return omit_one_operand_loc (loc, type, tem, arg0);
@@ -12808,7 +12808,7 @@ fold_binary_loc (location_t loc,
       if ((TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
 	  && ((TREE_CODE (TREE_OPERAND (arg0, 1)) == REAL_CST
-	       && !HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0))))
+	       && !HONOR_SNANS (arg0))
 	      || (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 		  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg1)))))
 	{
