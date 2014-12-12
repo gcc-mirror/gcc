@@ -1,5 +1,10 @@
 2014-12-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64248
+	Revert:
+	* parser.c (cp_parser_unqualified_id): Handle __func__ here.
+	(cp_parser_primary_expression): Not here.
+
 	PR c++/57510
 	* typeck2.c (split_nonconstant_init_1): Handle arrays here.
 	(store_init_value): Not here.
