@@ -3610,10 +3610,8 @@ current_decl_namespace (void)
   return result;
 }
 
-/* Process any ATTRIBUTES on a namespace definition.  Currently only
-   attribute visibility is meaningful, which is a property of the syntactic
-   block rather than the namespace as a whole, so we don't touch the
-   NAMESPACE_DECL at all.  Returns true if attribute visibility is seen.  */
+/* Process any ATTRIBUTES on a namespace definition.  Returns true if
+   attribute visibility is seen.  */
 
 bool
 handle_namespace_attrs (tree ns, tree attributes)
@@ -3628,6 +3626,9 @@ handle_namespace_attrs (tree ns, tree attributes)
 
       if (is_attribute_p ("visibility", name))
 	{
+	  /* attribute visibility is a property of the syntactic block
+	     rather than the namespace as a whole, so we don't touch the
+	     NAMESPACE_DECL at all.  */
 	  tree x = args ? TREE_VALUE (args) : NULL_TREE;
 	  if (x == NULL_TREE || TREE_CODE (x) != STRING_CST || TREE_CHAIN (args))
 	    {
@@ -3644,6 +3645,10 @@ handle_namespace_attrs (tree ns, tree attributes)
 
 	  push_visibility (TREE_STRING_POINTER (x), 1);
 	  saw_vis = true;
+	}
+      else if (is_attribute_p ("abi_tag", name))
+	{
+	  NAMESPACE_ABI_TAG (ns) = true;
 	}
       else
 	{

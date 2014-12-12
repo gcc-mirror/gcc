@@ -1,3 +1,11 @@
+2014-12-12  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (NAMESPACE_ABI_TAG): New.
+	* name-lookup.c (handle_namespace_attrs): Set it.
+	* class.c (check_tag): Split out from find_abi_tags_r.
+	(find_abi_tags_r): Also check namespace tags.
+	(mark_type_abi_tags): Also mark namespace tags.
+
 2014-12-12  Kai Tietz  <ktietz@redhat.com>
 
 	PR c++/63996

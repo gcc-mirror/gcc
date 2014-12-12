@@ -151,6 +151,7 @@ c-common.h, not after.
       DECL_MUTABLE_P (in FIELD_DECL)
       DECL_DEPENDENT_P (in USING_DECL)
       LABEL_DECL_BREAK (in LABEL_DECL)
+      NAMESPACE_ABI_TAG (in NAMESPACE_DECL)
    1: C_TYPEDEF_EXPLICITLY_SIGNED (in TYPE_DECL).
       DECL_TEMPLATE_INSTANTIATED (in a VAR_DECL or a FUNCTION_DECL)
       DECL_MEMBER_TEMPLATE_P (in TEMPLATE_DECL)
@@ -2641,6 +2642,11 @@ struct GTY(()) lang_decl {
 /* 1 iff NODE is function-local, but for types.  */
 #define LOCAL_CLASS_P(NODE)				\
   (decl_function_context (TYPE_MAIN_DECL (NODE)) != NULL_TREE)
+
+/* 1 iff this NAMESPACE_DECL should also be treated as an ABI tag for
+   -Wabi-tag.  */
+#define NAMESPACE_ABI_TAG(NODE)				\
+  DECL_LANG_FLAG_0 (NAMESPACE_DECL_CHECK (NODE))
 
 /* For a NAMESPACE_DECL: the list of using namespace directives
    The PURPOSE is the used namespace, the value is the namespace
