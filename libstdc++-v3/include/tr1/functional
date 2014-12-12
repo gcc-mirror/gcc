@@ -1659,7 +1659,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  switch (__op)
 	    {
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	    case __get_type_info:
 	      __dest._M_access<const type_info*>() = &typeid(_Functor);
 	      break;
@@ -1725,7 +1725,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  switch (__op)
 	    {
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	    case __get_type_info:
 	      __dest._M_access<const type_info*>() = &typeid(_Functor);
 	      break;
@@ -1859,7 +1859,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
         switch (__op)
 	  {
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	  case __get_type_info:
 	    __dest._M_access<const type_info*>() = &typeid(_Functor);
 	    break;
@@ -2066,7 +2066,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       _Res operator()(_ArgTypes... __args) const;
 
-#ifdef __GXX_RTTI
+#if __cpp_rtti
       // [3.7.2.5] function target access
       /**
        *  @brief Determine the type of the target of this function object
@@ -2146,7 +2146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _M_invoker(_M_functor, __args...);
     }
 
-#ifdef __GXX_RTTI
+#if __cpp_rtti
   template<typename _Res, typename... _ArgTypes>
     const type_info&
     function<_Res(_ArgTypes...)>::

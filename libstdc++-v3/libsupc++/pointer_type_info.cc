@@ -40,7 +40,7 @@ __pointer_catch (const __pbase_type_info *thrown_type,
                  void **thr_obj,
                  unsigned outer) const
 {
-#ifdef __GXX_RTTI
+#if __cpp_rtti
   if (outer < 2 && *__pointee == typeid (void))
     {
       // conversion to void

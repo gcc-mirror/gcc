@@ -218,7 +218,7 @@ namespace __gnu_debug
         {
 	  _M_variant._M_iterator._M_name = __name;
 	  _M_variant._M_iterator._M_address = &__it;
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	  _M_variant._M_iterator._M_type = &typeid(__it);
 #else
 	  _M_variant._M_iterator._M_type = 0;
@@ -228,7 +228,7 @@ namespace __gnu_debug
 	                    typename _Sequence::iterator>::
 	      __value ? __mutable_iterator : __const_iterator;
 	  _M_variant._M_iterator._M_sequence = __it._M_get_sequence();
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	  _M_variant._M_iterator._M_seq_type = &typeid(_Sequence);
 #else
 	  _M_variant._M_iterator._M_seq_type = 0;
@@ -256,7 +256,7 @@ namespace __gnu_debug
 	{
 	  _M_variant._M_iterator._M_name = __name;
 	  _M_variant._M_iterator._M_address = &__it;
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	  _M_variant._M_iterator._M_type = &typeid(__it);
 #else
 	  _M_variant._M_iterator._M_type = 0;
@@ -266,7 +266,7 @@ namespace __gnu_debug
 	                    typename _Sequence::local_iterator>::
 	      __value ? __mutable_iterator : __const_iterator;
 	  _M_variant._M_iterator._M_sequence = __it._M_get_sequence();
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	  _M_variant._M_iterator._M_seq_type = &typeid(_Sequence);
 #else
 	  _M_variant._M_iterator._M_seq_type = 0;
@@ -291,7 +291,7 @@ namespace __gnu_debug
         {
 	  _M_variant._M_iterator._M_name = __name;
 	  _M_variant._M_iterator._M_address = &__it;
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	  _M_variant._M_iterator._M_type = &typeid(__it);
 #else
 	  _M_variant._M_iterator._M_type = 0;
@@ -308,7 +308,7 @@ namespace __gnu_debug
         {
 	  _M_variant._M_iterator._M_name = __name;
 	  _M_variant._M_iterator._M_address = &__it;
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	  _M_variant._M_iterator._M_type = &typeid(__it);
 #else
 	  _M_variant._M_iterator._M_type = 0;
@@ -325,7 +325,7 @@ namespace __gnu_debug
         {
 	  _M_variant._M_iterator._M_name = __name;
 	  _M_variant._M_iterator._M_address = &__it;
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	  _M_variant._M_iterator._M_type = &typeid(__it);
 #else
 	  _M_variant._M_iterator._M_type = 0;
@@ -345,7 +345,7 @@ namespace __gnu_debug
 	  _M_variant._M_sequence._M_name = __name;
 	  _M_variant._M_sequence._M_address =
 	    static_cast<const _Sequence*>(&__seq);
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	  _M_variant._M_sequence._M_type = &typeid(_Sequence);
 #else
 	  _M_variant._M_sequence._M_type = 0;
@@ -358,7 +358,7 @@ namespace __gnu_debug
         {
 	  _M_variant._M_sequence._M_name = __name;
 	  _M_variant._M_sequence._M_address = &__seq;
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	  _M_variant._M_sequence._M_type = &typeid(_Sequence);
 #else
 	  _M_variant._M_sequence._M_type = 0;

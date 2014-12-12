@@ -168,7 +168,7 @@ namespace std
     exception_ptr 
     make_exception_ptr(_Ex __ex) _GLIBCXX_USE_NOEXCEPT
     {
-#ifdef __EXCEPTIONS
+#if __cpp_exceptions
       try
 	{
 	  throw __ex;

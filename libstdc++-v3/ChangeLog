@@ -5,6 +5,33 @@
 	disabled.
 	* testsuite/18_support/exception_ptr/64241.cc: New.
 
+	PR libstdc++/64276
+	* doc/doxygen/user.cfg.in: Define __cpp_exceptions and __cpp_rtti.
+	* doc/html/manual/using_exceptions.html: Regenerate.
+	* doc/xml/manual/using_exceptions.xml: Use SD-6 feature-testing
+	macros, __cpp_exceptions and __cpp_rtti, instead of __EXCEPTIONS and
+	__GXX_RTTI.
+	* include/bits/c++config: Likewise.
+	* include/bits/locale_classes.tcc: Likewise.
+	* include/bits/shared_ptr.h: Likewise.
+	* include/bits/shared_ptr_base.h: Likewise.
+	* include/debug/formatter.h: Likewise.
+	* include/experimental/any: Likewise.
+	* include/ext/rope: Likewise.
+	* include/ext/ropeimpl.h: Likewise.
+	* include/std/functional: Likewise.
+	* include/tr1/functional: Likewise.
+	* include/tr1/shared_ptr.h: Likewise.
+	* libsupc++/eh_call.cc: Likewise.
+	* libsupc++/eh_personality.cc: Likewise.
+	* libsupc++/exception_defines.h: Likewise.
+	* libsupc++/exception_ptr.h: Likewise.
+	* libsupc++/guard.cc: Likewise.
+	* libsupc++/pbase_type_info.cc: Likewise.
+	* libsupc++/pointer_type_info.cc: Likewise.
+	* libsupc++/vterminate.cc: Likewise.
+	* src/c++11/thread.cc: Likewise.
+
 2014-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_iterator.h (make_reverse_iterator): LWG DR 2285.
