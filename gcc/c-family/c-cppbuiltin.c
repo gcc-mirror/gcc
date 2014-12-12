@@ -845,7 +845,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_unicode_literals=200710");
 	  cpp_define (pfile, "__cpp_user_defined_literals=200809");
 	  cpp_define (pfile, "__cpp_lambdas=200907");
-	  cpp_define (pfile, "__cpp_constexpr=200704");
+	  if (cxx_dialect == cxx11)
+	    cpp_define (pfile, "__cpp_constexpr=200704");
 	  cpp_define (pfile, "__cpp_range_based_for=200907");
 	  cpp_define (pfile, "__cpp_static_assert=200410");
 	  cpp_define (pfile, "__cpp_decltype=200707");
@@ -865,8 +866,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_return_type_deduction=201304");
 	  cpp_define (pfile, "__cpp_init_captures=201304");
 	  cpp_define (pfile, "__cpp_generic_lambdas=201304");
-	  //cpp_undef (pfile, "__cpp_constexpr");
-	  //cpp_define (pfile, "__cpp_constexpr=201304");
+	  cpp_define (pfile, "__cpp_constexpr=201304");
 	  cpp_define (pfile, "__cpp_decltype_auto=201304");
 	  cpp_define (pfile, "__cpp_aggregate_nsdmi=201304");
 	  cpp_define (pfile, "__cpp_variable_templates=201304");
