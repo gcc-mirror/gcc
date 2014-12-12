@@ -37,8 +37,17 @@ public:
 };
 
 template<typename T>
-struct MyAlloc : std::allocator<Private>
+struct MyAlloc : std::allocator<T>
 {
+  template<typename U>
+    struct rebind { typedef MyAlloc<U> other; };
+
+  MyAlloc() = default;
+  MyAlloc(const MyAlloc&) = default;
+
+  template<typename U>
+    MyAlloc(const MyAlloc<U>&) { }
+
   void construct(T* p) { ::new((void*)p) T(); }
   void destroy(T* p) { p->~T(); }
 };
@@ -49,4 +58,3 @@ int main()
   auto p = std::allocate_shared<Private>(a);
   return p->get();
 }
-

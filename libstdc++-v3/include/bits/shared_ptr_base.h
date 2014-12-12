@@ -1120,7 +1120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_ptr(), _M_refcount()
 	{
 	  typedef typename allocator_traits<_Alloc>::template
-	    rebind_traits<_Tp> __traits;
+	    rebind_traits<typename std::remove_cv<_Tp>::type> __traits;
 	  _Deleter<typename __traits::allocator_type> __del = { __a };
 	  auto __guard = std::__allocate_guarded(__del._M_alloc);
 	  _M_ptr = __guard.get();

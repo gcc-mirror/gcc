@@ -32,6 +32,12 @@
 	* libsupc++/vterminate.cc: Likewise.
 	* src/c++11/thread.cc: Likewise.
 
+	PR libstdc++/58594
+	* include/bits/shared_ptr_base.h: Cast away cv-quals.
+	* testsuite/20_util/shared_ptr/creation/58594-no-rtti.cc: New.
+	* testsuite/20_util/shared_ptr/creation/private.cc: Make allocator
+	rebindable so test passes with -fno-rtti.
+
 2014-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_iterator.h (make_reverse_iterator): LWG DR 2285.
