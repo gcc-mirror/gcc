@@ -2693,6 +2693,7 @@ bool gfc_error_check (void);
 bool gfc_error_flag_test (void);
 
 notification gfc_notification_std (int);
+bool gfc_notify_std_1 (int, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 bool gfc_notify_std (int, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 
 /* A general purpose syntax error.  */

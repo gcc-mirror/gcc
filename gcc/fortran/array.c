@@ -684,7 +684,7 @@ coarray:
 
   if (current_type == AS_EXPLICIT)
     {
-      gfc_error ("Upper bound of last coarray dimension must be '*' at %C");
+      gfc_error ("Upper bound of last coarray dimension must be %<*%> at %C");
       goto cleanup;
     }
 

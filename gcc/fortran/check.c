@@ -384,7 +384,7 @@ less_than_bitsize2 (const char *arg1, gfc_expr *expr1, const char *arg2,
       i3 = gfc_validate_kind (BT_INTEGER, expr1->ts.kind, false);
       if (i2 > gfc_integer_kinds[i3].bit_size)
 	{
-	  gfc_error ("'%s + %s' at %L must be less than or equal "
+	  gfc_error ("%<%s + %s%> at %L must be less than or equal "
 		     "to BIT_SIZE(%qs)",
 		     arg2, arg3, &expr2->where, arg1);
 	  return false;
@@ -581,7 +581,7 @@ dim_corank_check (gfc_expr *dim, gfc_expr *array)
   if (mpz_cmp_ui (dim->value.integer, 1) < 0
       || mpz_cmp_ui (dim->value.integer, corank) > 0)
     {
-      gfc_error ("'dim' argument of %qs intrinsic at %L is not a valid "
+      gfc_error ("%<dim%> argument of %qs intrinsic at %L is not a valid "
 		 "codimension index", gfc_current_intrinsic, &dim->where);
 
       return false;
@@ -631,7 +631,7 @@ dim_rank_check (gfc_expr *dim, gfc_expr *array, int allow_assumed)
   if (mpz_cmp_ui (dim->value.integer, 1) < 0
       || mpz_cmp_ui (dim->value.integer, rank) > 0)
     {
-      gfc_error ("'dim' argument of %qs intrinsic at %L is not a valid "
+      gfc_error ("%<dim%> argument of %qs intrinsic at %L is not a valid "
 		 "dimension index", gfc_current_intrinsic, &dim->where);
 
       return false;
@@ -1378,7 +1378,7 @@ gfc_check_cmplx (gfc_expr *x, gfc_expr *y, gfc_expr *kind)
       if (x->ts.type == BT_COMPLEX)
 	{
 	  gfc_error ("%qs argument of %qs intrinsic at %L must not be "
-		     "present if 'x' is COMPLEX",
+		     "present if %<x%> is COMPLEX",
 		     gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		     &y->where);
 	  return false;
@@ -1428,7 +1428,7 @@ check_co_collective (gfc_expr *a, gfc_expr *image_idx, gfc_expr *stat,
   /* Fortran 2008, 12.5.2.4, paragraph 18.  */
   if (gfc_has_vector_subscript (a))
     {
-      gfc_error ("Argument 'A' with INTENT(INOUT) at %L of the intrinsic "
+      gfc_error ("Argument %<A%> with INTENT(INOUT) at %L of the intrinsic "
 		 "subroutine %s shall not have a vector subscript",
 		 &a->where, gfc_current_intrinsic);
       return false;
@@ -1728,7 +1728,7 @@ gfc_check_count (gfc_expr *mask, gfc_expr *dim, gfc_expr *kind)
     return false;
   if (!kind_check (kind, 2, BT_INTEGER))
     return false;
-  if (kind && !gfc_notify_std (GFC_STD_F2003, "'%s' intrinsic "
+  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
 			       "with KIND argument at %L", 
 			       gfc_current_intrinsic, &kind->where))
     return false;
@@ -1835,7 +1835,7 @@ gfc_check_dcmplx (gfc_expr *x, gfc_expr *y)
       if (x->ts.type == BT_COMPLEX)
 	{
 	  gfc_error ("%qs argument of %qs intrinsic at %L must not be "
-		     "present if 'x' is COMPLEX",
+		     "present if %<x%> is COMPLEX",
 		     gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		     &y->where);
 	  return false;
@@ -1908,7 +1908,8 @@ gfc_check_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
   if (! identical_dimen_shape (vector_a, 0, vector_b, 0))
     {
       gfc_error ("Different shape for arguments %qs and %qs at %L for "
-		 "intrinsic 'dot_product'", gfc_current_intrinsic_arg[0]->name,
+		 "intrinsic %<dot_product%>",
+		 gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic_arg[1]->name, &vector_a->where);
       return false;
     }
@@ -2146,9 +2147,9 @@ gfc_check_fn_rc2008 (gfc_expr *a)
     return false;
 
   if (a->ts.type == BT_COMPLEX
-      && !gfc_notify_std (GFC_STD_F2008, "COMPLEX argument '%s' "
-			  "of '%s' intrinsic at %L", 
-			  gfc_current_intrinsic_arg[0]->name, 
+      && !gfc_notify_std (GFC_STD_F2008, "COMPLEX argument %qs "
+			  "of %qs intrinsic at %L",
+			  gfc_current_intrinsic_arg[0]->name,
 			  gfc_current_intrinsic, &a->where))
     return false;
 
@@ -2259,7 +2260,7 @@ gfc_check_ichar_iachar (gfc_expr *c, gfc_expr *kind)
   if (!kind_check (kind, 1, BT_INTEGER))
     return false;
 
-  if (kind && !gfc_notify_std (GFC_STD_F2003, "'%s' intrinsic "
+  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
 			       "with KIND argument at %L", 
 			       gfc_current_intrinsic, &kind->where))
     return false;
@@ -2362,7 +2363,7 @@ gfc_check_index (gfc_expr *string, gfc_expr *substring, gfc_expr *back,
 
   if (!kind_check (kind, 3, BT_INTEGER))
     return false;
-  if (kind && !gfc_notify_std (GFC_STD_F2003, "'%s' intrinsic "
+  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
 			       "with KIND argument at %L", 
 			       gfc_current_intrinsic, &kind->where))
     return false;
@@ -2556,7 +2557,7 @@ gfc_check_lbound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 
   if (!kind_check (kind, 2, BT_INTEGER))
     return false;
-  if (kind && !gfc_notify_std (GFC_STD_F2003, "'%s' intrinsic "
+  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
 			       "with KIND argument at %L", 
 			       gfc_current_intrinsic, &kind->where))
     return false;
@@ -2601,7 +2602,7 @@ gfc_check_len_lentrim (gfc_expr *s, gfc_expr *kind)
 
   if (!kind_check (kind, 1, BT_INTEGER))
     return false;
-  if (kind && !gfc_notify_std (GFC_STD_F2003, "'%s' intrinsic "
+  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
 			       "with KIND argument at %L", 
 			       gfc_current_intrinsic, &kind->where))
     return false;
@@ -2840,7 +2841,7 @@ check_rest (bt type, int kind, gfc_actual_arglist *arglist)
 	    }
 	  else
 	    {
-	      gfc_error ("'a%d' argument of %qs intrinsic at %L must be "
+	      gfc_error ("%<a%d%> argument of %qs intrinsic at %L must be "
 			 "%s(%d)", n, gfc_current_intrinsic, &x->where,
 			 gfc_basic_typename (type), kind);
 	      return false;
@@ -2848,9 +2849,9 @@ check_rest (bt type, int kind, gfc_actual_arglist *arglist)
 	}
 
       for (tmp = arglist, m=1; tmp != arg; tmp = tmp->next, m++)
-	if (!gfc_check_conformance (tmp->expr, x, 
+	if (!gfc_check_conformance (tmp->expr, x,
 				    "arguments 'a%d' and 'a%d' for "
-				    "intrinsic '%s'", m, n, 
+				    "intrinsic '%s'", m, n,
 				    gfc_current_intrinsic))
 	    return false;
     }
@@ -2871,14 +2872,14 @@ gfc_check_min_max (gfc_actual_arglist *arg)
 
   if (x->ts.type == BT_CHARACTER)
     {
-      if (!gfc_notify_std (GFC_STD_F2003, "'%s' intrinsic "
+      if (!gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
 			   "with CHARACTER argument at %L", 
 			   gfc_current_intrinsic, &x->where))
 	return false;
     }
   else if (x->ts.type != BT_INTEGER && x->ts.type != BT_REAL)
     {
-      gfc_error ("'a1' argument of %qs intrinsic at %L must be INTEGER, "
+      gfc_error ("%<a1%> argument of %qs intrinsic at %L must be INTEGER, "
 		 "REAL or CHARACTER", gfc_current_intrinsic, &x->where);
       return false;
     }
@@ -3287,7 +3288,7 @@ gfc_check_nearest (gfc_expr *x, gfc_expr *s)
     {
       if (mpfr_sgn (s->value.real) == 0)
 	{
-	  gfc_error ("Argument 'S' of NEAREST at %L shall not be zero",
+	  gfc_error ("Argument %<S%> of NEAREST at %L shall not be zero",
 		     &s->where);
 	  return false;
 	}
@@ -3661,7 +3662,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 
   if (!gfc_array_size (shape, &size))
     {
-      gfc_error ("'shape' argument of 'reshape' intrinsic at %L must be an "
+      gfc_error ("%<shape%> argument of %<reshape%> intrinsic at %L must be an "
 		 "array of constant size", &shape->where);
       return false;
     }
@@ -3678,7 +3679,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
     }
   else if (shape_size > GFC_MAX_DIMENSIONS)
     {
-      gfc_error ("'shape' argument of 'reshape' intrinsic at %L has more "
+      gfc_error ("%<shape%> argument of %<reshape%> intrinsic at %L has more "
 		 "than %d elements", &shape->where, GFC_MAX_DIMENSIONS);
       return false;
     }
@@ -3764,7 +3765,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 		{
 		  gfc_error ("%qs argument of %qs intrinsic at %L has "
 			     "invalid permutation of dimensions (dimension "
-			     "'%d' duplicated)",
+			     "%<%d%> duplicated)",
 			     gfc_current_intrinsic_arg[3]->name,
 			     gfc_current_intrinsic, &e->where, dim);
 		  return false;
@@ -3882,7 +3883,7 @@ gfc_check_scan (gfc_expr *x, gfc_expr *y, gfc_expr *z, gfc_expr *kind)
 
   if (!kind_check (kind, 3, BT_INTEGER))
     return false;
-  if (kind && !gfc_notify_std (GFC_STD_F2003, "'%s' intrinsic "
+  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
 			       "with KIND argument at %L", 
 			       gfc_current_intrinsic, &kind->where))
     return false;
@@ -3944,7 +3945,7 @@ gfc_check_selected_real_kind (gfc_expr *p, gfc_expr *r, gfc_expr *radix)
 {
   if (p == NULL && r == NULL
       && !gfc_notify_std (GFC_STD_F2008, "SELECTED_REAL_KIND with"
-			  " neither 'P' nor 'R' argument at %L", 
+			  " neither %<P%> nor %<R%> argument at %L", 
 			  gfc_current_intrinsic_where))
     return false;
 
@@ -3974,7 +3975,7 @@ gfc_check_selected_real_kind (gfc_expr *p, gfc_expr *r, gfc_expr *radix)
       if (!scalar_check (radix, 1))
 	return false;
 
-      if (!gfc_notify_std (GFC_STD_F2008, "'%s' intrinsic with "
+      if (!gfc_notify_std (GFC_STD_F2008, "%qs intrinsic with "
 			   "RADIX argument at %L", gfc_current_intrinsic, 
 			   &radix->where))
 	return false;
@@ -4009,14 +4010,14 @@ gfc_check_shape (gfc_expr *source, gfc_expr *kind)
 
   if (ar->as && ar->as->type == AS_ASSUMED_SIZE && ar->type == AR_FULL)
     {
-      gfc_error ("'source' argument of 'shape' intrinsic at %L must not be "
+      gfc_error ("%<source%> argument of %<shape%> intrinsic at %L must not be "
 		 "an assumed size array", &source->where);
       return false;
     }
 
   if (!kind_check (kind, 1, BT_INTEGER))
     return false;
-  if (kind && !gfc_notify_std (GFC_STD_F2003, "'%s' intrinsic "
+  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
 			       "with KIND argument at %L", 
 			       gfc_current_intrinsic, &kind->where))
     return false;
@@ -4071,7 +4072,7 @@ gfc_check_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 
   if (!kind_check (kind, 2, BT_INTEGER))
     return false;
-  if (kind && !gfc_notify_std (GFC_STD_F2003, "'%s' intrinsic "
+  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
 			       "with KIND argument at %L", 
 			       gfc_current_intrinsic, &kind->where))
     return false;
@@ -5053,8 +5054,8 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
 
   if (mold->ts.type == BT_HOLLERITH)
     {
-      gfc_error ("'MOLD' argument of 'TRANSFER' intrinsic at %L must not be %s",
-		 &mold->where, gfc_basic_typename (BT_HOLLERITH));
+      gfc_error ("%<MOLD%> argument of %<TRANSFER%> intrinsic at %L must not be"
+                 " %s", &mold->where, gfc_basic_typename (BT_HOLLERITH));
       return false;
     }
 
@@ -5113,7 +5114,7 @@ gfc_check_ubound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 
   if (!kind_check (kind, 2, BT_INTEGER))
     return false;
-  if (kind && !gfc_notify_std (GFC_STD_F2003, "'%s' intrinsic "
+  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
 			       "with KIND argument at %L", 
 			       gfc_current_intrinsic, &kind->where))
     return false;
@@ -5242,7 +5243,7 @@ gfc_check_verify (gfc_expr *x, gfc_expr *y, gfc_expr *z, gfc_expr *kind)
 
   if (!kind_check (kind, 3, BT_INTEGER))
     return false;
-  if (kind && !gfc_notify_std (GFC_STD_F2003, "'%s' intrinsic "
+  if (kind && !gfc_notify_std (GFC_STD_F2003, "%qs intrinsic "
 			       "with KIND argument at %L", 
 			       gfc_current_intrinsic, &kind->where))
     return false;

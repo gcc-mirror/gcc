@@ -550,8 +550,8 @@ check_format (bool is_input)
 {
   const char *posint_required	  = _("Positive width required");
   const char *nonneg_required	  = _("Nonnegative width required");
-  const char *unexpected_element  = _("Unexpected element '%c' in format string"
-				      " at %L");
+  const char *unexpected_element  = _("Unexpected element %<%c%> in format "
+				      "string at %L");
   const char *unexpected_end	  = _("Unexpected end of format string");
   const char *zero_width	  = _("Zero width in format descriptor");
 
@@ -602,7 +602,7 @@ format_item_1:
 	  level++;
 	  goto format_item;
 	}
-      error = _("Left parenthesis required after '*'");
+      error = _("Left parenthesis required after %<*%>");
       goto syntax;
 
     case FMT_POSINT:
@@ -823,7 +823,7 @@ data_desc:
 	      error = zero_width;
 	      goto syntax;
 	    }
-	  if (!gfc_notify_std (GFC_STD_F2008, "'G0' in format at %L", 
+	  if (!gfc_notify_std (GFC_STD_F2008, "%<G0%> in format at %L", 
 			       &format_locus))
 	    return false;
 	  u = format_lex ();
@@ -1408,14 +1408,14 @@ resolve_tag_format (const gfc_expr *e)
 	    return false;
 	  if (e->symtree->n.sym->attr.assign != 1)
 	    {
-	      gfc_error ("Variable '%s' at %L has not been assigned a "
+	      gfc_error ("Variable %qs at %L has not been assigned a "
 			 "format label", e->symtree->n.sym->name, &e->where);
 	      return false;
 	    }
 	}
       else if (e->ts.type == BT_INTEGER)
 	{
-	  gfc_error ("Scalar '%s' in FORMAT tag at %L is not an ASSIGNED "
+	  gfc_error ("Scalar %qs in FORMAT tag at %L is not an ASSIGNED "
 		     "variable", gfc_basic_typename (e->ts.type), &e->where);
 	  return false;
 	}
@@ -1729,7 +1729,7 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
 	  if (n == ERROR)
 	    {
 	      gfc_notify_std (GFC_STD_F2003, "%s specifier in "
-			      "%s statement at %C has value '%s'", specifier,
+			      "%s statement at %C has value %qs", specifier,
 			      statement, allowed_f2003[i]);
 	      return 0;
 	    }
@@ -1756,7 +1756,7 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
 	  if (n == ERROR)
 	    {
 	      gfc_notify_std (GFC_STD_GNU, "%s specifier in "
-			      "%s statement at %C has value '%s'", specifier,
+			      "%s statement at %C has value %qs", specifier,
 			      statement, allowed_gnu[i]);
 	      return 0;
 	    }
@@ -1768,7 +1768,7 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
   if (warn)
     {
       char *s = gfc_widechar_to_char (value, -1);
-      gfc_warning ("%s specifier in %s statement at %C has invalid value '%s'",
+      gfc_warning ("%s specifier in %s statement at %C has invalid value %qs",
 		   specifier, statement, s);
       free (s);
       return 1;
@@ -1776,7 +1776,7 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
   else
     {
       char *s = gfc_widechar_to_char (value, -1);
-      gfc_error ("%s specifier in %s statement at %C has invalid value '%s'",
+      gfc_error ("%s specifier in %s statement at %C has invalid value %qs",
 		 specifier, statement, s);
       free (s);
       return 0;
@@ -2085,7 +2085,7 @@ gfc_match_open (void)
 	  char *s = gfc_widechar_to_char (open->status->value.character.string,
 					  -1);
 	  warn_or_error ("The STATUS specified in OPEN statement at %C is "
-			 "'%s' and no FILE specifier is present", s);
+			 "%qs and no FILE specifier is present", s);
 	  free (s);
 	}
 
@@ -2618,7 +2618,7 @@ check_namelist (gfc_symbol *sym)
   for (p = sym->namelist; p; p = p->next)
     if (p->sym->attr.intent == INTENT_IN)
       {
-	gfc_error ("Symbol '%s' in namelist '%s' is INTENT(IN) at %C",
+	gfc_error ("Symbol %qs in namelist %qs is INTENT(IN) at %C",
 		   p->sym->name, sym->name);
 	return 1;
       }
@@ -2663,7 +2663,7 @@ match_dt_element (io_kind k, gfc_dt *dt)
 
       if (sym == NULL || sym->attr.flavor != FL_NAMELIST)
 	{
-	  gfc_error ("Symbol '%s' at %C must be a NAMELIST group name",
+	  gfc_error ("Symbol %qs at %C must be a NAMELIST group name",
 		     sym != NULL ? sym->name : name);
 	  return MATCH_ERROR;
 	}
@@ -2892,8 +2892,8 @@ gfc_resolve_dt (gfc_dt *dt, locus *loc)
 
 	  if (!t)
 	    {
-	      gfc_error ("NAMELIST '%s' in READ statement at %L contains"
-			 " the symbol '%s' which may not appear in a"
+	      gfc_error ("NAMELIST %qs in READ statement at %L contains"
+			 " the symbol %qs which may not appear in a"
 			 " variable definition context",
 			 dt->namelist->name, loc, n->sym->name);
 	      return false;
@@ -3533,11 +3533,11 @@ if (condition) \
 		     "YES or NO.", &expr->where);
 
       io_constraint (dt->size && not_no && k == M_READ,
-		     "SIZE tag at %L requires an ADVANCE = 'NO'",
+		     "SIZE tag at %L requires an ADVANCE = %<NO%>",
 		     &dt->size->where);
 
       io_constraint (dt->eor && not_no && k == M_READ,
-		     "EOR tag at %L requires an ADVANCE = 'NO'",
+		     "EOR tag at %L requires an ADVANCE = %<NO%>",
 		     &dt->eor_where);      
     }
 

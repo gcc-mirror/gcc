@@ -145,7 +145,8 @@ gfc_get_constant_expr (bt type, int kind, locus *where)
   gfc_expr *e;
 
   if (!where)
-    gfc_internal_error ("gfc_get_constant_expr(): locus 'where' cannot be NULL");
+    gfc_internal_error ("gfc_get_constant_expr(): locus %<where%> cannot be "
+			"NULL");
 
   e = gfc_get_expr ();
 
@@ -3185,7 +3186,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
   if (rvalue->is_boz && lvalue->ts.type != BT_INTEGER
       && lvalue->symtree->n.sym->attr.data
       && !gfc_notify_std (GFC_STD_GNU, "BOZ literal at %L used to "
-			  "initialize non-integer variable '%s'", 
+			  "initialize non-integer variable %qs", 
 			  &rvalue->where, lvalue->symtree->n.sym->name))
     return false;
   else if (rvalue->is_boz && !lvalue->symtree->n.sym->attr.data
@@ -3210,15 +3211,15 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 	  if (rc == ARITH_UNDERFLOW)
 	    gfc_error ("Arithmetic underflow of bit-wise transferred BOZ at %L"
 		       ". This check can be disabled with the option "
-		       "-fno-range-check", &rvalue->where);
+		       "%<-fno-range-check%>", &rvalue->where);
 	  else if (rc == ARITH_OVERFLOW)
 	    gfc_error ("Arithmetic overflow of bit-wise transferred BOZ at %L"
 		       ". This check can be disabled with the option "
-		       "-fno-range-check", &rvalue->where);
+		       "%<-fno-range-check%>", &rvalue->where);
 	  else if (rc == ARITH_NAN)
 	    gfc_error ("Arithmetic NaN of bit-wise transferred BOZ at %L"
 		       ". This check can be disabled with the option "
-		       "-fno-range-check", &rvalue->where);
+		       "%<-fno-range-check%>", &rvalue->where);
 	  return false;
 	}
     }
@@ -3360,7 +3361,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	    }
 
 	  if (!gfc_notify_std (GFC_STD_F2003, "Bounds specification "
-			       "for '%s' in pointer assignment at %L", 
+			       "for %qs in pointer assignment at %L", 
 			       lvalue->symtree->n.sym->name, &lvalue->where))
 	    return false;
 
@@ -3486,7 +3487,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	      return false;
 	    }
 	  if (attr.proc == PROC_INTERNAL &&
-	      !gfc_notify_std(GFC_STD_F2008, "Internal procedure '%s' "
+	      !gfc_notify_std(GFC_STD_F2008, "Internal procedure %qs "
 			      "is invalid in procedure pointer assignment "
 			      "at %L", rvalue->symtree->name, &rvalue->where))
 	    return false;

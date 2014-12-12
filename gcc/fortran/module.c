@@ -670,7 +670,7 @@ gfc_match_use (void)
 	  if (strcmp (new_use->use_name, use_list->module_name) == 0
 	      || strcmp (new_use->local_name, use_list->module_name) == 0)
 	    {
-	      gfc_error ("The name '%s' at %C has already been used as "
+	      gfc_error ("The name %qs at %C has already been used as "
 			 "an external module name.", use_list->module_name);
 	      goto cleanup;
 	    }
@@ -4855,7 +4855,7 @@ check_for_ambiguous (gfc_symbol *st_sym, pointer_info *info)
 
   if (gfc_current_ns->proc_name && st_sym->name == gfc_current_ns->proc_name->name)
     {
-      gfc_error ("'%s' of module '%s', imported at %C, is also the name of the "
+      gfc_error ("%qs of module %qs, imported at %C, is also the name of the "
 		 "current program unit", st_sym->name, module_name);
       return true;
     }
@@ -5206,20 +5206,20 @@ read_module (void)
 
       if (u->op == INTRINSIC_NONE)
 	{
-	  gfc_error ("Symbol '%s' referenced at %L not found in module '%s'",
+	  gfc_error ("Symbol %qs referenced at %L not found in module %qs",
 		     u->use_name, &u->where, module_name);
 	  continue;
 	}
 
       if (u->op == INTRINSIC_USER)
 	{
-	  gfc_error ("User operator '%s' referenced at %L not found "
-		     "in module '%s'", u->use_name, &u->where, module_name);
+	  gfc_error ("User operator %qs referenced at %L not found "
+		     "in module %qs", u->use_name, &u->where, module_name);
 	  continue;
 	}
 
-      gfc_error ("Intrinsic operator '%s' referenced at %L not found "
-		 "in module '%s'", gfc_op2string (u->op), &u->where,
+      gfc_error ("Intrinsic operator %qs referenced at %L not found "
+		 "in module %qs", gfc_op2string (u->op), &u->where,
 		 module_name);
     }
 
@@ -6050,7 +6050,7 @@ gfc_dump_module (const char *name, int dump_flag)
   else
     {
       if (remove (filename_tmp))
-	gfc_fatal_error ("Can't delete temporary module file '%s': %s",
+	gfc_fatal_error ("Can't delete temporary module file %qs: %s",
 			 filename_tmp, xstrerror (errno));
     }
 }
@@ -6070,7 +6070,7 @@ create_intrinsic_function (const char *name, int id,
     {
       if (strcmp (modname, tmp_symtree->n.sym->module) == 0)
         return;
-      gfc_error ("Symbol '%s' already declared", name);
+      gfc_error ("Symbol %qs already declared", name);
     }
 
   gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree, false);
@@ -6248,7 +6248,7 @@ import_iso_c_binding_module (void)
 
 	    if (not_in_std)
 	      {
-		gfc_error ("The symbol '%s', referenced at %L, is not "
+		gfc_error ("The symbol %qs, referenced at %L, is not "
 			   "in the selected standard", name, &u->where);
 		continue;
 	      }
@@ -6376,7 +6376,7 @@ import_iso_c_binding_module (void)
       if (u->found)
 	continue;
 
-      gfc_error ("Symbol '%s' referenced at %L not found in intrinsic "
+      gfc_error ("Symbol %qs referenced at %L not found in intrinsic "
 		 "module ISO_C_BINDING", u->use_name, &u->where);
      }
 }
@@ -6397,7 +6397,7 @@ create_int_parameter (const char *name, int value, const char *modname,
       if (strcmp (modname, tmp_symtree->n.sym->module) == 0)
 	return;
       else
-	gfc_error ("Symbol '%s' already declared", name);
+	gfc_error ("Symbol %qs already declared", name);
     }
 
   gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree, false);
@@ -6430,7 +6430,7 @@ create_int_parameter_array (const char *name, int size, gfc_expr *value,
       if (strcmp (modname, tmp_symtree->n.sym->module) == 0)
 	return;
       else
-	gfc_error ("Symbol '%s' already declared", name);
+	gfc_error ("Symbol %qs already declared", name);
     }
 
   gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree, false);
@@ -6472,7 +6472,7 @@ create_derived_type (const char *name, const char *modname,
       if (strcmp (modname, tmp_symtree->n.sym->module) == 0)
 	return;
       else
-	gfc_error ("Symbol '%s' already declared", name);
+	gfc_error ("Symbol %qs already declared", name);
     }
 
   gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree, false);
@@ -6577,7 +6577,7 @@ use_iso_fortran_env_module (void)
     }
   else
     if (!mod_symtree->n.sym->attr.intrinsic)
-      gfc_error ("Use of intrinsic module '%s' at %C conflicts with "
+      gfc_error ("Use of intrinsic module %qs at %C conflicts with "
 		 "non-intrinsic module name used previously", mod);
 
   /* Generate the symbols for the module integer named constants.  */
@@ -6592,7 +6592,7 @@ use_iso_fortran_env_module (void)
 	      found = true;
 	      u->found = 1;
 
-	      if (!gfc_notify_std (symbol[i].standard, "The symbol '%s', "
+	      if (!gfc_notify_std (symbol[i].standard, "The symbol %qs, "
 				   "referenced at %L, is not in the selected "
 				   "standard", symbol[i].name, &u->where))
 	        continue;
@@ -6720,7 +6720,7 @@ use_iso_fortran_env_module (void)
       if (u->found)
 	continue;
 
-      gfc_error ("Symbol '%s' referenced at %L not found in intrinsic "
+      gfc_error ("Symbol %qs referenced at %L not found in intrinsic "
 		     "module ISO_FORTRAN_ENV", u->use_name, &u->where);
     }
 }
@@ -6822,7 +6822,7 @@ gfc_use_module (gfc_use_list *module)
 
   mod_symtree = gfc_find_symtree (gfc_current_ns->sym_root, module_name);
   if (mod_symtree && mod_symtree->n.sym->attr.intrinsic)
-    gfc_error ("Use of non-intrinsic module '%s' at %C conflicts with "
+    gfc_error ("Use of non-intrinsic module %qs at %C conflicts with "
 	       "intrinsic module name used previously", module_name);
 
   iomode = IO_INPUT;
