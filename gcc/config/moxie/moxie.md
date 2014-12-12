@@ -241,10 +241,10 @@
 
 (define_insn_and_split "zero_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "0,W,A,B")))]
+	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,W,A,B")))]
   ""
   "@
-   ;
+   zex.b  %0, %1
    ld.b   %0, %1
    lda.b  %0, %1
    ldo.b  %0, %1"
@@ -254,14 +254,14 @@
 {
   operands[2] = gen_lowpart (QImode, operands[0]);
 }
-  [(set_attr "length" "0,2,6,6")])
+  [(set_attr "length" "2,2,6,6")])
 
 (define_insn_and_split "zero_extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "0,W,A,B")))]
+	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,W,A,B")))]
   ""
   "@
-   ;
+   zex.s  %0, %1
    ld.s   %0, %1
    lda.s  %0, %1
    ldo.s  %0, %1"
@@ -271,7 +271,7 @@
 {
   operands[2] = gen_lowpart (HImode, operands[0]);
 }
-  [(set_attr "length" "0,2,6,6")])
+  [(set_attr "length" "2,2,6,6")])
 
 (define_insn "extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
