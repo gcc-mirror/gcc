@@ -1,5 +1,10 @@
 2014-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/59240
+	* g++.dg/torture/pr59240.C: New.
+
+2014-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/59628
 	* g++.dg/gomp/pr59628.C: New.
 
