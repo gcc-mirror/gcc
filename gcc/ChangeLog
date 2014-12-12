@@ -1,3 +1,11 @@
+2014-12-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/64182
+	* wide-int.h (wi::div_round, wi::mod_round): Fix rounding of tied
+	cases.
+	* double-int.c (div_and_round_double): Fix handling of unsigned
+	cases.  Use same rounding approach as wide-int.h.
+
 2014-12-12  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/64274

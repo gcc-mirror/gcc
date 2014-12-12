@@ -569,24 +569,23 @@ div_and_round_double (unsigned code, int uns,
       {
 	unsigned HOST_WIDE_INT labs_rem = *lrem;
 	HOST_WIDE_INT habs_rem = *hrem;
-	unsigned HOST_WIDE_INT labs_den = lden, ltwice;
-	HOST_WIDE_INT habs_den = hden, htwice;
+	unsigned HOST_WIDE_INT labs_den = lden, lnegabs_rem, ldiff;
+	HOST_WIDE_INT habs_den = hden, hnegabs_rem, hdiff;
 
 	/* Get absolute values.  */
-	if (*hrem < 0)
+	if (!uns && *hrem < 0)
 	  neg_double (*lrem, *hrem, &labs_rem, &habs_rem);
-	if (hden < 0)
+	if (!uns && hden < 0)
 	  neg_double (lden, hden, &labs_den, &habs_den);
 
-	/* If (2 * abs (lrem) >= abs (lden)), adjust the quotient.  */
-	mul_double ((HOST_WIDE_INT) 2, (HOST_WIDE_INT) 0,
-		    labs_rem, habs_rem, &ltwice, &htwice);
+	/* If abs(rem) >= abs(den) - abs(rem), adjust the quotient.  */
+	neg_double (labs_rem, habs_rem, &lnegabs_rem, &hnegabs_rem);
+	add_double (labs_den, habs_den, lnegabs_rem, hnegabs_rem,
+		    &ldiff, &hdiff);
 
-	if (((unsigned HOST_WIDE_INT) habs_den
-	     < (unsigned HOST_WIDE_INT) htwice)
-	    || (((unsigned HOST_WIDE_INT) habs_den
-		 == (unsigned HOST_WIDE_INT) htwice)
-		&& (labs_den <= ltwice)))
+	if (((unsigned HOST_WIDE_INT) habs_rem
+	     > (unsigned HOST_WIDE_INT) hdiff)
+	    || (habs_rem == hdiff && labs_rem >= ldiff))
 	  {
 	    if (quo_neg)
 	      /* quo = quo - 1;  */
