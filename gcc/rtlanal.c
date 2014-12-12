@@ -2526,7 +2526,7 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case MOD:
     case UDIV:
     case UMOD:
-      if (HONOR_SNANS (GET_MODE (x)))
+      if (HONOR_SNANS (x))
 	return 1;
       if (SCALAR_FLOAT_MODE_P (GET_MODE (x)))
 	return flag_trapping_math;
@@ -2563,11 +2563,11 @@ may_trap_p_1 (const_rtx x, unsigned flags)
 
     case EQ:
     case NE:
-      if (HONOR_SNANS (GET_MODE (x)))
+      if (HONOR_SNANS (x))
 	return 1;
       /* Often comparison is CC mode, so check operand modes.  */
-      if (HONOR_SNANS (GET_MODE (XEXP (x, 0)))
-	  || HONOR_SNANS (GET_MODE (XEXP (x, 1))))
+      if (HONOR_SNANS (XEXP (x, 0))
+	  || HONOR_SNANS (XEXP (x, 1)))
 	return 1;
       break;
 

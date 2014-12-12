@@ -5003,6 +5003,88 @@ HONOR_NANS (const_tree t)
 bool
 HONOR_NANS (const_rtx x)
 {
-    return HONOR_NANS (GET_MODE (x));
+  return HONOR_NANS (GET_MODE (x));
 }
 
+/* Like HONOR_NANs, but true if we honor signaling NaNs (or sNaNs).  */
+
+bool
+HONOR_SNANS (machine_mode m)
+{
+  return flag_signaling_nans && HONOR_NANS (m);
+}
+
+bool
+HONOR_SNANS (const_tree t)
+{
+  return HONOR_SNANS (element_mode (t));
+}
+
+bool
+HONOR_SNANS (const_rtx x)
+{
+  return HONOR_SNANS (GET_MODE (x));
+}
+
+/* As for HONOR_NANS, but true if the mode can represent infinity and
+   the treatment of infinite values is important.  */
+
+bool
+HONOR_INFINITIES (machine_mode m)
+{
+  return MODE_HAS_INFINITIES (m) && !flag_finite_math_only;
+}
+
+bool
+HONOR_INFINITIES (const_tree t)
+{
+  return HONOR_INFINITIES (element_mode (t));
+}
+
+bool
+HONOR_INFINITIES (const_rtx x)
+{
+  return HONOR_INFINITIES (GET_MODE (x));
+}
+
+/* Like HONOR_NANS, but true if the given mode distinguishes between
+   positive and negative zero, and the sign of zero is important.  */
+
+bool
+HONOR_SIGNED_ZEROS (machine_mode m)
+{
+  return MODE_HAS_SIGNED_ZEROS (m) && flag_signed_zeros;
+}
+
+bool
+HONOR_SIGNED_ZEROS (const_tree t)
+{
+  return HONOR_SIGNED_ZEROS (element_mode (t));
+}
+
+bool
+HONOR_SIGNED_ZEROS (const_rtx x)
+{
+  return HONOR_SIGNED_ZEROS (GET_MODE (x));
+}
+
+/* Like HONOR_NANS, but true if given mode supports sign-dependent rounding,
+   and the rounding mode is important.  */
+
+bool
+HONOR_SIGN_DEPENDENT_ROUNDING (machine_mode m)
+{
+  return MODE_HAS_SIGN_DEPENDENT_ROUNDING (m) && flag_rounding_math;
+}
+
+bool
+HONOR_SIGN_DEPENDENT_ROUNDING (const_tree t)
+{
+  return HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (t));
+}
+
+bool
+HONOR_SIGN_DEPENDENT_ROUNDING (const_rtx x)
+{
+  return HONOR_SIGN_DEPENDENT_ROUNDING (GET_MODE (x));
+}

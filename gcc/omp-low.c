@@ -3039,7 +3039,7 @@ omp_reduction_init (tree clause, tree type)
       if (SCALAR_FLOAT_TYPE_P (type))
 	{
 	  REAL_VALUE_TYPE max, min;
-	  if (HONOR_INFINITIES (TYPE_MODE (type)))
+	  if (HONOR_INFINITIES (type))
 	    {
 	      real_inf (&max);
 	      real_arithmetic (&min, NEGATE_EXPR, &max, NULL);
@@ -3058,7 +3058,7 @@ omp_reduction_init (tree clause, tree type)
       if (SCALAR_FLOAT_TYPE_P (type))
 	{
 	  REAL_VALUE_TYPE max;
-	  if (HONOR_INFINITIES (TYPE_MODE (type)))
+	  if (HONOR_INFINITIES (type))
 	    real_inf (&max);
 	  else
 	    real_maxval (&max, 0, TYPE_MODE (type));

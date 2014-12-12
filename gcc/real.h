@@ -195,6 +195,8 @@ extern const struct real_format *
   (FLOAT_MODE_P (MODE) \
    && FLOAT_MODE_FORMAT (MODE)->has_sign_dependent_rounding)
 
+/* Declare functions in real.c.  */
+
 /* True if the given mode has a NaN representation and the treatment of
    NaN operands is important.  Certain optimizations, such as folding
    x * 0 into 0, are not correct for NaN operands, and are normally
@@ -205,24 +207,27 @@ extern bool HONOR_NANS (const_tree);
 extern bool HONOR_NANS (const_rtx);
 
 /* Like HONOR_NANs, but true if we honor signaling NaNs (or sNaNs).  */
-#define HONOR_SNANS(MODE) (flag_signaling_nans && HONOR_NANS (MODE))
+extern bool HONOR_SNANS (machine_mode);
+extern bool HONOR_SNANS (const_tree);
+extern bool HONOR_SNANS (const_rtx);
 
 /* As for HONOR_NANS, but true if the mode can represent infinity and
    the treatment of infinite values is important.  */
-#define HONOR_INFINITIES(MODE) \
-  (MODE_HAS_INFINITIES (MODE) && !flag_finite_math_only)
+extern bool HONOR_INFINITIES (machine_mode);
+extern bool HONOR_INFINITIES (const_tree);
+extern bool HONOR_INFINITIES (const_rtx);
 
 /* Like HONOR_NANS, but true if the given mode distinguishes between
    positive and negative zero, and the sign of zero is important.  */
-#define HONOR_SIGNED_ZEROS(MODE) \
-  (MODE_HAS_SIGNED_ZEROS (MODE) && flag_signed_zeros)
+extern bool HONOR_SIGNED_ZEROS (machine_mode);
+extern bool HONOR_SIGNED_ZEROS (const_tree);
+extern bool HONOR_SIGNED_ZEROS (const_rtx);
 
 /* Like HONOR_NANS, but true if given mode supports sign-dependent rounding,
    and the rounding mode is important.  */
-#define HONOR_SIGN_DEPENDENT_ROUNDING(MODE) \
-  (MODE_HAS_SIGN_DEPENDENT_ROUNDING (MODE) && flag_rounding_math)
-
-/* Declare functions in real.c.  */
+extern bool HONOR_SIGN_DEPENDENT_ROUNDING (machine_mode);
+extern bool HONOR_SIGN_DEPENDENT_ROUNDING (const_tree);
+extern bool HONOR_SIGN_DEPENDENT_ROUNDING (const_rtx);
 
 /* Binary or unary arithmetic on tree_code.  */
 extern bool real_arithmetic (REAL_VALUE_TYPE *, int, const REAL_VALUE_TYPE *,
