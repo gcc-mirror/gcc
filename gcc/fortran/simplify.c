@@ -6928,7 +6928,7 @@ gfc_convert_char_constant (gfc_expr *e, bt type ATTRIBUTE_UNUSED, int kind)
 	if (!gfc_check_character_range (result->value.character.string[i],
 					kind))
 	  {
-	    gfc_error ("Character '%s' in string at %L cannot be converted "
+	    gfc_error ("Character %qs in string at %L cannot be converted "
 		       "into character kind %d",
 		       gfc_print_wide_char (result->value.character.string[i]),
 		       &e->where, kind);

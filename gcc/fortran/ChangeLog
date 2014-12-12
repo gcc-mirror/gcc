@@ -1,3 +1,29 @@
+2014-12-13  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* error.c (gfc_error): Add variant which takes a va_list.
+	(gfc_notify_std): Convert to common diagnostic.
+	* array.c: Use %qs, %<...%> in more gfc_error calls and
+	for gfc_notify_std.
+	* check.c: Ditto.
+	* data.c: Ditto.
+	* decl.c: Ditto.
+	* expr.c: Ditto.
+	* interface.c: Ditto.
+	* intrinsic.c: Ditto.
+	* io.c: Ditto.
+	* match.c: Ditto.
+	* matchexp.c: Ditto.
+	* module.c: Ditto.
+	* openmp.c: Ditto.
+	* parse.c: Ditto.
+	* primary.c: Ditto.
+	* resolve.c: Ditto.
+	* simplify.c: Ditto.
+	* symbol.c: Ditto.
+	* trans-common.c: Ditto.
+	* trans-intrinsic.c: Ditto.
+
 2014-12-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/42108

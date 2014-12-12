@@ -316,7 +316,7 @@ gfc_match_end_interface (void)
 	  if (current_interface.op == INTRINSIC_ASSIGN)
 	    {
 	      m = MATCH_ERROR;
-	      gfc_error ("Expected 'END INTERFACE ASSIGNMENT (=)' at %C");
+	      gfc_error ("Expected %<END INTERFACE ASSIGNMENT (=)%> at %C");
 	    }
 	  else
 	    {
@@ -346,7 +346,7 @@ gfc_match_end_interface (void)
 		break;
 
 	      m = MATCH_ERROR;
-	      gfc_error ("Expecting 'END INTERFACE OPERATOR (%s)' at %C, "
+	      gfc_error ("Expecting %<END INTERFACE OPERATOR (%s)%> at %C, "
 			 "but got %s", s1, s2);
 	    }
 
@@ -360,7 +360,7 @@ gfc_match_end_interface (void)
       if (type != current_interface.type
 	  || strcmp (current_interface.uop->name, name) != 0)
 	{
-	  gfc_error ("Expecting 'END INTERFACE OPERATOR (.%s.)' at %C",
+	  gfc_error ("Expecting %<END INTERFACE OPERATOR (.%s.)%> at %C",
 		     current_interface.uop->name);
 	  m = MATCH_ERROR;
 	}
@@ -371,7 +371,7 @@ gfc_match_end_interface (void)
       if (type != current_interface.type
 	  || strcmp (current_interface.sym->name, name) != 0)
 	{
-	  gfc_error ("Expecting 'END INTERFACE %s' at %C",
+	  gfc_error ("Expecting %<END INTERFACE %s%> at %C",
 		     current_interface.sym->name);
 	  m = MATCH_ERROR;
 	}
@@ -1226,7 +1226,7 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 
 	      case -2:
 		/* FIXME: Implement a warning for this case.
-		gfc_warning ("Possible shape mismatch in argument '%s'",
+		gfc_warning ("Possible shape mismatch in argument %qs",
 			    s1->name);*/
 		break;
 
@@ -1589,7 +1589,7 @@ check_interface0 (gfc_interface *p, const char *interface_name)
       /* F2003, C1207. F2008, C1207.  */
       if (p->sym->attr.proc == PROC_INTERNAL
 	  && !gfc_notify_std (GFC_STD_F2008, "Internal procedure "
-			      "'%s' in %s at %L", p->sym->name, 
+			      "%qs in %s at %L", p->sym->name,
 			      interface_name, &p->sym->declared_at))
 	return 1;
     }

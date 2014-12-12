@@ -1,3 +1,9 @@
+2014-12-13  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/realloc_on_assign_21.f90: Update dg-error.
+	* gfortran.dg/warnings_are_errors_1.f: Ditto.
+	* gfortran.dg/warnings_are_errors_1.f90: Ditto.
+
 2014-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59240

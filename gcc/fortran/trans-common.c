@@ -1041,7 +1041,7 @@ align_segment (unsigned HOST_WIDE_INT *palign)
 	  if (this_offset & (max_align - 1))
 	    {
 	      /* Aligning this field would misalign a previous field.  */
-	      gfc_error ("The equivalence set for variable '%s' "
+	      gfc_error ("The equivalence set for variable %qs "
 			 "declared at %L violates alignment requirements",
 			 s->sym->name, &s->sym->declared_at);
 	    }
@@ -1106,8 +1106,8 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 	  /* Verify that it ended up where we expect it.  */
 	  if (s->offset != current_offset)
 	    {
-	      gfc_error ("Equivalence for '%s' does not match ordering of "
-			 "COMMON '%s' at %L", sym->name,
+	      gfc_error ("Equivalence for %qs does not match ordering of "
+			 "COMMON %qs at %L", sym->name,
 			 common->name, &common->where);
 	    }
 	}
@@ -1121,8 +1121,8 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 	  add_equivalences (&saw_equiv);
 
 	  if (current_segment->offset < 0)
-	    gfc_error ("The equivalence set for '%s' cause an invalid "
-		       "extension to COMMON '%s' at %L", sym->name,
+	    gfc_error ("The equivalence set for %qs cause an invalid "
+		       "extension to COMMON %qs at %L", sym->name,
 		       common->name, &common->where);
 
 	  if (gfc_option.flag_align_commons)

@@ -162,12 +162,12 @@ gfc_match_parens (void)
 
   if (count > 0)
     {
-      gfc_error ("Missing ')' in statement at or before %L", &where);
+      gfc_error ("Missing %<)%> in statement at or before %L", &where);
       return MATCH_ERROR;
     }
   if (count < 0)
     {
-      gfc_error ("Missing '(' in statement at or before %L", &where);
+      gfc_error ("Missing %<(%> in statement at or before %L", &where);
       return MATCH_ERROR;
     }
 
@@ -496,13 +496,13 @@ gfc_match_label (void)
 
   if (gfc_get_symbol (name, NULL, &gfc_new_block))
     {
-      gfc_error ("Label name '%s' at %C is ambiguous", name);
+      gfc_error ("Label name %qs at %C is ambiguous", name);
       return MATCH_ERROR;
     }
 
   if (gfc_new_block->attr.flavor == FL_LABEL)
     {
-      gfc_error ("Duplicate construct label '%s' at %C", name);
+      gfc_error ("Duplicate construct label %qs at %C", name);
       return MATCH_ERROR;
     }
 
@@ -1554,7 +1554,7 @@ gfc_match_else (void)
 
   if (strcmp (name, gfc_current_block ()->name) != 0)
     {
-      gfc_error ("Label '%s' at %C doesn't match IF label '%s'",
+      gfc_error ("Label %qs at %C doesn't match IF label %qs",
 		 name, gfc_current_block ()->name);
       return MATCH_ERROR;
     }
@@ -1589,7 +1589,7 @@ gfc_match_elseif (void)
 
   if (strcmp (name, gfc_current_block ()->name) != 0)
     {
-      gfc_error ("Label '%s' at %C doesn't match IF label '%s'",
+      gfc_error ("Label %qs at %C doesn't match IF label %qs",
 		 name, gfc_current_block ()->name);
       goto cleanup;
     }
@@ -1746,7 +1746,7 @@ gfc_match_associate (void)
       for (a = new_st.ext.block.assoc; a; a = a->next)
 	if (!strcmp (a->name, newAssoc->name))
 	  {
-	    gfc_error ("Duplicate name '%s' in association at %C",
+	    gfc_error ("Duplicate name %qs in association at %C",
 		       newAssoc->name);
 	    goto assocListError;
 	  }
@@ -1772,7 +1772,7 @@ gfc_match_associate (void)
 	break;
       if (gfc_match_char (',') != MATCH_YES)
 	{
-	  gfc_error ("Expected ')' or ',' at %C");
+	  gfc_error ("Expected %<)%> or %<,%> at %C");
 	  return MATCH_ERROR;
 	}
 
@@ -1859,7 +1859,7 @@ gfc_match_type_spec (gfc_typespec *ts)
       /* Enforce F03:C401.  */
       if (ts->u.derived->attr.abstract)
 	{
-	  gfc_error ("Derived type '%s' at %L may not be ABSTRACT",
+	  gfc_error ("Derived type %qs at %L may not be ABSTRACT",
 		     ts->u.derived->name, &old_locus);
 	  return MATCH_ERROR;
 	}
@@ -2406,7 +2406,7 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
       stree = gfc_find_symtree_in_proc (name, gfc_current_ns);
       if (!stree)
 	{
-	  gfc_error ("Name '%s' in %s statement at %C is unknown",
+	  gfc_error ("Name %qs in %s statement at %C is unknown",
 		     name, gfc_ascii_statement (st));
 	  return MATCH_ERROR;
 	}
@@ -2414,7 +2414,7 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
       sym = stree->n.sym;
       if (sym->attr.flavor != FL_LABEL)
 	{
-	  gfc_error ("Name '%s' in %s statement at %C is not a construct name",
+	  gfc_error ("Name %qs in %s statement at %C is not a construct name",
 		     name, gfc_ascii_statement (st));
 	  return MATCH_ERROR;
 	}
@@ -2449,7 +2449,7 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 	gfc_error ("%s statement at %C is not within a construct",
 		   gfc_ascii_statement (st));
       else
-	gfc_error ("%s statement at %C is not within construct '%s'",
+	gfc_error ("%s statement at %C is not within construct %qs",
 		   gfc_ascii_statement (st), sym->name);
 
       return MATCH_ERROR;
@@ -2475,7 +2475,7 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
       if (op == EXEC_CYCLE)
 	{
 	  gfc_error ("CYCLE statement at %C is not applicable to non-loop"
-		     " construct '%s'", sym->name);
+		     " construct %qs", sym->name);
 	  return MATCH_ERROR;
 	}
       gcc_assert (op == EXEC_EXIT);
@@ -2485,7 +2485,7 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
       break;
 
     default:
-      gfc_error ("%s statement at %C is not applicable to construct '%s'",
+      gfc_error ("%s statement at %C is not applicable to construct %qs",
 		 gfc_ascii_statement (st), sym->name);
       return MATCH_ERROR;
     }
@@ -4323,7 +4323,7 @@ gfc_match_common (void)
 	  if (((sym->value != NULL && sym->value->expr_type != EXPR_NULL)
 	       || sym->attr.data) && gfc_current_state () != COMP_BLOCK_DATA)
 	    {
-	      if (!gfc_notify_std (GFC_STD_GNU, "Initialized symbol '%s' at "
+	      if (!gfc_notify_std (GFC_STD_GNU, "Initialized symbol %qs at "
 				   "%C can only be COMMON in BLOCK DATA", 
 				   sym->name))
 		goto cleanup;
@@ -4349,7 +4349,7 @@ gfc_match_common (void)
 	    {
 	      if (as->type != AS_EXPLICIT)
 		{
-		  gfc_error ("Array specification for symbol '%s' in COMMON "
+		  gfc_error ("Array specification for symbol %qs in COMMON "
 			     "at %C must be explicit", sym->name);
 		  goto cleanup;
 		}
@@ -4359,7 +4359,7 @@ gfc_match_common (void)
 
 	      if (sym->attr.pointer)
 		{
-		  gfc_error ("Symbol '%s' in COMMON at %C cannot be a "
+		  gfc_error ("Symbol %qs in COMMON at %C cannot be a "
 			     "POINTER array", sym->name);
 		  goto cleanup;
 		}
@@ -4391,9 +4391,9 @@ gfc_match_common (void)
 		      if (other->common_head
 			  && other->common_head != sym->common_head)
 			{
-			  gfc_error ("Symbol '%s', in COMMON block '%s' at "
+			  gfc_error ("Symbol %qs, in COMMON block %qs at "
 				     "%C is being indirectly equivalenced to "
-				     "another COMMON block '%s'",
+				     "another COMMON block %qs",
 				     sym->name, sym->common_head->name,
 				     other->common_head->name);
 			    goto cleanup;
@@ -4519,7 +4519,7 @@ gfc_match_namelist (void)
     {
       if (group_name->ts.type != BT_UNKNOWN)
 	{
-	  gfc_error ("Namelist group name '%s' at %C already has a basic "
+	  gfc_error ("Namelist group name %qs at %C already has a basic "
 		     "type of %s", group_name->name,
 		     gfc_typename (&group_name->ts));
 	  return MATCH_ERROR;
@@ -4527,7 +4527,7 @@ gfc_match_namelist (void)
 
       if (group_name->attr.flavor == FL_NAMELIST
 	  && group_name->attr.use_assoc
-	  && !gfc_notify_std (GFC_STD_GNU, "Namelist group name '%s' "
+	  && !gfc_notify_std (GFC_STD_GNU, "Namelist group name %qs "
 			      "at %C already is USE associated and can"
 			      "not be respecified.", group_name->name))
 	return MATCH_ERROR;
@@ -4553,7 +4553,7 @@ gfc_match_namelist (void)
 	     these are the only errors for the next two lines.  */
 	  if (sym->as && sym->as->type == AS_ASSUMED_SIZE)
 	    {
-	      gfc_error ("Assumed size array '%s' in namelist '%s' at "
+	      gfc_error ("Assumed size array %qs in namelist %qs at "
 			 "%C is not allowed", sym->name, group_name->name);
 	      gfc_error_check ();
 	    }
@@ -4991,7 +4991,7 @@ match_case_eos (void)
 
   if (strcmp (name, gfc_current_block ()->name) != 0)
     {
-      gfc_error ("Expected block name '%s' of SELECT construct at %C",
+      gfc_error ("Expected block name %qs of SELECT construct at %C",
 		 gfc_current_block ()->name);
       return MATCH_ERROR;
     }
@@ -5669,7 +5669,7 @@ gfc_match_elsewhere (void)
 
       if (strcmp (name, gfc_current_block ()->name) != 0)
 	{
-	  gfc_error ("Label '%s' at %C doesn't match WHERE label '%s'",
+	  gfc_error ("Label %qs at %C doesn't match WHERE label %qs",
 		     name, gfc_current_block ()->name);
 	  goto cleanup;
 	}

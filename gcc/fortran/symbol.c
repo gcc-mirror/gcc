@@ -165,7 +165,7 @@ gfc_add_new_implicit_range (int c1, int c2)
     {
       if (new_flag[i])
 	{
-	  gfc_error ("Letter '%c' already set in IMPLICIT statement at %C",
+	  gfc_error ("Letter %<%c%> already set in IMPLICIT statement at %C",
 		     i + 'A');
 	  return false;
 	}
@@ -253,7 +253,7 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
     {
       if (error_flag && !sym->attr.untyped)
 	{
-	  gfc_error ("Symbol '%s' at %L has no IMPLICIT type",
+	  gfc_error ("Symbol %qs at %L has no IMPLICIT type",
 		     sym->name, &sym->declared_at);
 	  sym->attr.untyped = 1; /* Ensure we only give an error once.  */
 	}
@@ -330,7 +330,7 @@ gfc_check_function_type (gfc_namespace *ns)
 	}
       else if (!proc->result->attr.proc_pointer)
 	{
-	  gfc_error ("Function result '%s' at %L has no IMPLICIT type",
+	  gfc_error ("Function result %qs at %L has no IMPLICIT type",
 		     proc->result->name, &proc->result->declared_at);
 	  proc->result->attr.untyped = 1;
 	}
@@ -772,7 +772,7 @@ conflict:
     gfc_error ("%s attribute conflicts with %s attribute at %L",
 	       a1, a2, where);
   else
-    gfc_error ("%s attribute conflicts with %s attribute in '%s' at %L",
+    gfc_error ("%s attribute conflicts with %s attribute in %qs at %L",
 	       a1, a2, name, where);
 
   return false;
@@ -787,7 +787,7 @@ conflict_std:
   else
     {
       return gfc_notify_std (standard, "%s attribute "
-			     "with %s attribute in '%s' at %L",
+			     "with %s attribute in %qs at %L",
                              a1, a2, name, where);
     }
 }
@@ -917,7 +917,7 @@ gfc_add_codimension (symbol_attribute *attr, const char *name, locus *where)
   if (attr->flavor == FL_PROCEDURE && attr->if_source == IFSRC_IFBODY
       && !gfc_find_state (COMP_INTERFACE))
     {
-      gfc_error ("CODIMENSION specified for '%s' outside its INTERFACE body "
+      gfc_error ("CODIMENSION specified for %qs outside its INTERFACE body "
 		 "at %L", name, where);
       return false;
     }
@@ -943,7 +943,7 @@ gfc_add_dimension (symbol_attribute *attr, const char *name, locus *where)
   if (attr->flavor == FL_PROCEDURE && attr->if_source == IFSRC_IFBODY
       && !gfc_find_state (COMP_INTERFACE))
     {
-      gfc_error ("DIMENSION specified for '%s' outside its INTERFACE body "
+      gfc_error ("DIMENSION specified for %qs outside its INTERFACE body "
 		 "at %L", name, where);
       return false;
     }
@@ -1502,7 +1502,7 @@ gfc_add_flavor (symbol_attribute *attr, sym_flavor f, const char *name,
 	where = &gfc_current_locus;
 
       if (name)
-        gfc_error ("%s attribute of '%s' conflicts with %s attribute at %L",
+        gfc_error ("%s attribute of %qs conflicts with %s attribute at %L",
 		   gfc_code2string (flavors, attr->flavor), name,
 		   gfc_code2string (flavors, f), where);
       else
@@ -1660,14 +1660,14 @@ gfc_add_explicit_interface (gfc_symbol *sym, ifsrc source,
   if (sym->attr.if_source != IFSRC_UNKNOWN
       && sym->attr.if_source != IFSRC_DECL)
     {
-      gfc_error ("Symbol '%s' at %L already has an explicit interface",
+      gfc_error ("Symbol %qs at %L already has an explicit interface",
 		 sym->name, where);
       return false;
     }
 
   if (source == IFSRC_IFBODY && (sym->attr.dimension || sym->attr.allocatable))
     {
-      gfc_error ("'%s' at %L has attributes specified outside its INTERFACE "
+      gfc_error ("%qs at %L has attributes specified outside its INTERFACE "
 		 "body", sym->name, where);
       return false;
     }
@@ -1724,7 +1724,7 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
       || (flavor == FL_PROCEDURE && sym->attr.subroutine)
       || flavor == FL_DERIVED || flavor == FL_NAMELIST)
     {
-      gfc_error ("Symbol '%s' at %L cannot have a type", sym->name, where);
+      gfc_error ("Symbol %qs at %L cannot have a type", sym->name, where);
       return false;
     }
 
@@ -1991,7 +1991,7 @@ gfc_use_derived (gfc_symbol *sym)
 
   if (gfc_find_symbol (sym->name, sym->ns->parent, 1, &s))
     {
-      gfc_error ("Symbol '%s' at %C is ambiguous", sym->name);
+      gfc_error ("Symbol %qs at %C is ambiguous", sym->name);
       return NULL;
     }
 
@@ -2023,7 +2023,7 @@ gfc_use_derived (gfc_symbol *sym)
   return s;
 
 bad:
-  gfc_error ("Derived type '%s' at %C is being used before it is defined",
+  gfc_error ("Derived type %qs at %C is being used before it is defined",
 	     sym->name);
   return NULL;
 }
@@ -3979,7 +3979,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
   /* Make sure we don't have conflicts with the attributes.  */
   if (derived_sym->attr.access == ACCESS_PRIVATE)
     {
-      gfc_error ("Derived type '%s' at %L cannot be declared with both "
+      gfc_error ("Derived type %qs at %L cannot be declared with both "
                  "PRIVATE and BIND(C) attributes", derived_sym->name,
                  &(derived_sym->declared_at));
       retval = false;
@@ -3987,7 +3987,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
 
   if (derived_sym->attr.sequence != 0)
     {
-      gfc_error ("Derived type '%s' at %L cannot have the SEQUENCE "
+      gfc_error ("Derived type %qs at %L cannot have the SEQUENCE "
                  "attribute because it is BIND(C)", derived_sym->name,
                  &(derived_sym->declared_at));
       retval = false;
@@ -4467,12 +4467,12 @@ gfc_check_symbol_typed (gfc_symbol* sym, gfc_namespace* ns,
     {
       if (strict)
 	{
-	  gfc_error ("Symbol '%s' is used before it is typed at %L",
+	  gfc_error ("Symbol %qs is used before it is typed at %L",
 		     sym->name, &where);
 	  return false;
 	}
 
-      if (!gfc_notify_std (GFC_STD_GNU, "Symbol '%s' is used before"
+      if (!gfc_notify_std (GFC_STD_GNU, "Symbol %qs is used before"
 			   " it is typed at %L", sym->name, &where))
 	return false;
     }

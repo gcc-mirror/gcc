@@ -68,6 +68,12 @@ gfc_push_suppress_errors (void)
   ++suppress_errors;
 }
 
+static void
+gfc_error (const char *gmsgid, va_list ap)  ATTRIBUTE_GCC_GFC(1,0);
+
+static bool
+gfc_warning (int opt, const char *gmsgid, va_list ap) ATTRIBUTE_GCC_GFC(2,0);
+
 
 /* Leave one level of error suppressing.  */
 
@@ -836,9 +842,6 @@ gfc_warning_1 (const char *gmsgid, ...)
    gfc_warning.  */
 
 static bool
-gfc_warning (int opt, const char *gmsgid, va_list ap) ATTRIBUTE_GCC_GFC(2,0);
-
-static bool
 gfc_warning (int opt, const char *gmsgid, va_list ap)
 {
   va_list argp;
@@ -935,7 +938,7 @@ gfc_notification_std (int std)
    an error is generated.  */
 
 bool
-gfc_notify_std (int std, const char *gmsgid, ...)
+gfc_notify_std_1 (int std, const char *gmsgid, ...)
 {
   va_list argp;
   bool warning;
@@ -1007,6 +1010,68 @@ gfc_notify_std (int std, const char *gmsgid, ...)
 	gfc_increment_error_count();
       cur_error_buffer->flag = 0;
     }
+
+  return (warning && !warnings_are_errors) ? true : false;
+}
+
+
+bool
+gfc_notify_std (int std, const char *gmsgid, ...)
+{
+  va_list argp;
+  bool warning;
+  const char *msg, *msg2;
+  char *buffer;
+
+  warning = ((gfc_option.warn_std & std) != 0) && !inhibit_warnings;
+  if ((gfc_option.allow_std & std) != 0 && !warning)
+    return true;
+
+  if (suppress_errors)
+    return warning ? true : false;
+
+  switch (std)
+  {
+    case GFC_STD_F2008_TS:
+      msg = "TS 29113/TS 18508:";
+      break;
+    case GFC_STD_F2008_OBS:
+      msg = _("Fortran 2008 obsolescent feature:");
+      break;
+    case GFC_STD_F2008:
+      msg = "Fortran 2008:";
+      break;
+    case GFC_STD_F2003:
+      msg = "Fortran 2003:";
+      break;
+    case GFC_STD_GNU:
+      msg = _("GNU Extension:");
+      break;
+    case GFC_STD_LEGACY:
+      msg = _("Legacy Extension:");
+      break;
+    case GFC_STD_F95_OBS:
+      msg = _("Obsolescent feature:");
+      break;
+    case GFC_STD_F95_DEL:
+      msg = _("Deleted feature:");
+      break;
+    default:
+      gcc_unreachable ();
+  }
+
+  msg2 = _(gmsgid);
+  buffer = (char *) alloca (strlen (msg) + strlen (msg2) + 2);
+  strcpy (buffer, msg);
+  strcat (buffer, " ");
+  strcat (buffer, msg2);
+
+  va_start (argp, gmsgid);
+  if (warning)
+    gfc_warning (0, buffer, argp);
+  else
+    gfc_error (buffer, argp);
+  va_end (argp);
 
   return (warning && !warnings_are_errors) ? true : false;
 }
@@ -1349,11 +1414,11 @@ warning:
    two locations; when being used in scanner.c, ensure that the location
    is properly setup. Otherwise, use gfc_error_1.   */
 
-void
-gfc_error (const char *gmsgid, ...)
+static void
+gfc_error (const char *gmsgid, va_list ap)
 {
   va_list argp;
-  va_start (argp, gmsgid);
+  va_copy (argp, ap);
 
   if (warnings_not_errors)
     {
@@ -1380,8 +1445,8 @@ gfc_error (const char *gmsgid, ...)
       pp->buffer = pp_error_buffer;
       global_dc->fatal_errors = false;
       /* To prevent -fmax-errors= triggering, we decrease it before
-	 report_diagnostic increases it.  */
-      --errorcount; 
+     report_diagnostic increases it.  */
+      --errorcount;
     }
 
   diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION, DK_ERROR);
@@ -1392,10 +1457,19 @@ gfc_error (const char *gmsgid, ...)
       pp->buffer = tmp_buffer;
       global_dc->fatal_errors = fatal_errors;
     }
-  
+
   va_end (argp);
 }
 
+
+void
+gfc_error (const char *gmsgid, ...)
+{
+  va_list argp;
+  va_start (argp, gmsgid);
+  gfc_error (gmsgid, argp);
+  va_end (argp);
+}
 
 
 /* Immediate error.  */
