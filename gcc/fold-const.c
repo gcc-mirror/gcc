@@ -10082,7 +10082,8 @@ fold_binary_loc (location_t loc,
 	  /* Reassociate (plus (plus (mult) (foo)) (mult)) as
 	     (plus (plus (mult) (mult)) (foo)) so that we can
 	     take advantage of the factoring cases below.  */
-	  if (TYPE_OVERFLOW_WRAPS (type)
+	  if (ANY_INTEGRAL_TYPE_P (type)
+	      && TYPE_OVERFLOW_WRAPS (type)
 	      && (((TREE_CODE (arg0) == PLUS_EXPR
 		    || TREE_CODE (arg0) == MINUS_EXPR)
 		   && TREE_CODE (arg1) == MULT_EXPR)
