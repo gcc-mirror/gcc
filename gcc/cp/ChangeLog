@@ -1,3 +1,9 @@
+2014-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59628
+	* semantics.c (finish_omp_reduction_clause): Early return true
+	if DECL_SAVED_TREE (id) is NULL_TREE.
+
 2014-12-12  Jason Merrill  <jason@redhat.com>
 
 	N3922
