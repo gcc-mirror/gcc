@@ -1,5 +1,10 @@
 2014-12-12  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline.c (ipa_inline): Fix condition on when
+	TODO_remove_unreachable_functions is needed.
+
+2014-12-12  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-devirt.c (possible_polymorphic_call_targets): Return early
 	if otr_type has no BINFO.
 
