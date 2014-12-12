@@ -74,7 +74,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   [[gnu::noreturn]] inline void __throw_bad_any_cast()
   {
-#ifdef __EXCEPTIONS
+#if __cpp_exceptions
     throw bad_any_cast{};
 #else
     __builtin_abort();
@@ -111,7 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				     _Manager_internal<_Tp>,
 				     _Manager_external<_Tp>>;
 
-#ifdef __GXX_RTTI
+#if __cpp_rtti
     // When RTTI is disabled __any_caster assumes the manager is either
     // _Manager_internal or _Manager_external, so this type must not be used.
     template<typename _Tp, typename _Alloc>
@@ -169,7 +169,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template <typename _Allocator>
       any(allocator_arg_t, const _Allocator&) noexcept : any() { }
 
-#ifdef __GXX_RTTI
+#if __cpp_rtti
     /// Construct with a copy of @p __value as the contained object.
     template <typename _Allocator, typename _ValueType,
 	      typename _Tp = _Decay<_ValueType>,
@@ -249,7 +249,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Reports whether there is a contained object or not.
     bool empty() const noexcept { return _M_manager == nullptr; }
 
-#ifdef __GXX_RTTI
+#if __cpp_rtti
     /// The @c typeid of the contained object, or @c typeid(void) if empty.
     const type_info& type() const noexcept
     {
@@ -281,7 +281,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp>
       friend void* __any_caster(const any* __any)
       {
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	if (__any->type() != typeid(_Tp))
 	  return nullptr;
 #else
@@ -335,7 +335,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       };
 
-#ifdef __GXX_RTTI
+#if __cpp_rtti
     // Manage external contained object using an allocator
     template<typename _Tp, typename _Alloc>
       struct _Manager_alloc
@@ -446,7 +446,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
   // @}
 
-#ifdef __GXX_RTTI
+#if __cpp_rtti
   template<typename _Tp, typename _Alloc>
     struct any::_Manager_alloc<_Tp, _Alloc>::_Data
     {
@@ -524,7 +524,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__arg->_M_obj = const_cast<_Tp*>(__ptr);
 	break;
       case _Op_get_type_info:
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	__arg->_M_typeinfo = &typeid(_Tp);
 #endif
 	break;
@@ -550,7 +550,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__arg->_M_obj = const_cast<_Tp*>(__ptr);
 	break;
       case _Op_get_type_info:
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	__arg->_M_typeinfo = &typeid(_Tp);
 #endif
 	break;
@@ -563,7 +563,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     }
 
-#ifdef __GXX_RTTI
+#if __cpp_rtti
   template<typename _Tp, typename _Alloc>
     void
     any::_Manager_alloc<_Tp, _Alloc>::

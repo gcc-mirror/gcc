@@ -251,7 +251,7 @@ exception neutrality and exception safety.
   </para>
 
 <programlisting>
-#ifdef __EXCEPTIONS
+#if __cpp_exceptions
 # define __try      try
 # define __catch(X) catch(X)
 # define __throw_exception_again throw
@@ -269,7 +269,7 @@ exception neutrality and exception safety.
 </para>
 
 <programlisting>
-#ifdef __EXCEPTIONS
+#if __cpp_exceptions
   void __throw_bad_exception(void)
   { throw bad_exception(); }
 #else

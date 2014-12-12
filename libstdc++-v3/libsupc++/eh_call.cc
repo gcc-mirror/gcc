@@ -149,7 +149,7 @@ __cxa_call_unexpected(void* exc_obj_in)
 	}
 
       // If the exception spec allows std::bad_exception, throw that.
-#ifdef __EXCEPTIONS
+#if __cpp_exceptions
       if (bad_exception_allowed)
 	throw std::bad_exception();
 #endif

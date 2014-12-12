@@ -37,7 +37,7 @@ __do_catch (const type_info *thr_type,
   if (*this == *thr_type)
     return true;      // same type
 
-#ifdef __GXX_RTTI
+#if __cpp_rtti
   if (typeid (*this) != typeid (*thr_type))
     return false;     // not both same kind of pointers
 #endif

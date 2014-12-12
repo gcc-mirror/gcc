@@ -130,7 +130,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   thread::_M_start_thread(__shared_base_type __b)
   {
     if (!__gthread_active_p())
-#if __EXCEPTIONS
+#if __cpp_exceptions
       throw system_error(make_error_code(errc::operation_not_permitted),
 			 "Enable multithreading to use std::thread");
 #else

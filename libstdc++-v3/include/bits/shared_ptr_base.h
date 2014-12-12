@@ -476,7 +476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void*
       _M_get_deleter(const std::type_info& __ti) noexcept
       {
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 2400. shared_ptr's get_deleter() should use addressof()
         return __ti == typeid(_Deleter)
@@ -544,7 +544,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void*
       _M_get_deleter(const std::type_info& __ti) noexcept
       {
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	if (__ti == typeid(_Sp_make_shared_tag))
 	  return const_cast<typename remove_cv<_Tp>::type*>(_M_ptr());
 #endif
@@ -1087,7 +1087,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	owner_before(__weak_ptr<_Tp1, _Lp> const& __rhs) const
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
 
-#ifdef __GXX_RTTI
+#if __cpp_rtti
     protected:
       // This constructor is non-standard, it is used by allocate_shared.
       template<typename _Alloc, typename... _Args>

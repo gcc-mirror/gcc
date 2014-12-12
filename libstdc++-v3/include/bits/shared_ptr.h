@@ -75,7 +75,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _Del*
     get_deleter(const __shared_ptr<_Tp, _Lp>& __p) noexcept
     {
-#ifdef __GXX_RTTI
+#if __cpp_rtti
       return static_cast<_Del*>(__p._M_get_deleter(typeid(_Del)));
 #else
       return 0;
