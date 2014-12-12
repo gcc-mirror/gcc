@@ -1,3 +1,8 @@
+2014-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* testsuite/lib/libgomp.exp: Load target-utils.exp.
+	Move load of target-supportes.exp earlier.
+
 2014-12-10  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* testsuite/libgomp.c/target-9.c: New test.
