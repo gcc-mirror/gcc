@@ -1,5 +1,6 @@
 // Test for range-based for with VLAs.
-// { dg-do run { target c++14 } }
+// { dg-do run { target c++11 } }
+// { dg-options "-Wno-vla" }
 
 #include <new>
 

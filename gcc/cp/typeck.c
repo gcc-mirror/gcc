@@ -1578,16 +1578,6 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
       return value;
     }
 
-  if (cxx_dialect >= cxx14 && array_of_runtime_bound_p (type)
-      && (flag_iso || warn_vla > 0))
-    {
-      if (complain)
-	pedwarn (input_location, OPT_Wvla,
-		 "taking sizeof array of runtime bound");
-      else
-	return error_mark_node;
-    }
-
   return c_sizeof_or_alignof_type (input_location, complete_type (type),
 				   op == SIZEOF_EXPR, false,
 				   complain);
@@ -5540,18 +5530,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
     }
 
   if (argtype != error_mark_node)
-    {
-      if (cxx_dialect >= cxx14 && array_of_runtime_bound_p (argtype)
-	  && (flag_iso || warn_vla > 0))
-	{
-	  if (complain & tf_warning_or_error)
-	    pedwarn (input_location, OPT_Wvla,
-		     "taking address of array of runtime bound");
-	  else
-	    return error_mark_node;
-	}
-      argtype = build_pointer_type (argtype);
-    }
+    argtype = build_pointer_type (argtype);
 
   /* In a template, we are processing a non-dependent expression
      so we can just form an ADDR_EXPR with the correct type.  */

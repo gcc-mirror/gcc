@@ -1,5 +1,16 @@
 2014-12-11  Jason Merrill  <jason@redhat.com>
 
+	Remove N3639 "array of runtime length" from -std=c++14.
+	* decl.c (compute_array_index_type): VLAs are not part of C++14.
+	(create_array_type_for_decl, grokdeclarator): Likewise.
+	* lambda.c (add_capture): Likewise.
+	* pt.c (tsubst): Likewise.
+	* rtti.c (get_tinfo_decl): Likewise.
+	* semantics.c (finish_decltype_type): Likewise.
+	* typeck.c (cxx_sizeof_or_alignof_type): Likewise.
+	(cp_build_addr_expr_1): Likewise.
+	* init.c (build_vec_init): Don't throw bad_array_length.
+
 	PR c++/64248
 	Revert:
 	* parser.c (cp_parser_unqualified_id): Handle __func__ here.

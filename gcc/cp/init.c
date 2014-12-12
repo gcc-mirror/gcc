@@ -3591,10 +3591,7 @@ build_vec_init (tree base, tree maxindex, tree init,
       if (length_check)
 	{
 	  tree throw_call;
-	  if (array_of_runtime_bound_p (atype))
-	    throw_call = throw_bad_array_length ();
-	  else
-	    throw_call = throw_bad_array_new_length ();
+	  throw_call = throw_bad_array_new_length ();
 	  length_check = build3 (COND_EXPR, void_type_node, length_check,
 				 throw_call, void_node);
 	  finish_expr_stmt (length_check);

@@ -1,5 +1,4 @@
 // { dg-do compile { target c++98_only } }
-// { dg-options "-ansi" }
 
 //  C++11 features:
 

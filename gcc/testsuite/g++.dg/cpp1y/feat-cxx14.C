@@ -187,12 +187,12 @@
 #  error "__cpp_sized_deallocation"
 #endif
 
-//  Array TS features:
+//  GNU VLA support:
 
 #ifndef __cpp_runtime_arrays
 #  error "__cpp_runtime_arrays"
-#elif __cpp_runtime_arrays != 201304
-#  error "__cpp_runtime_arrays != 201304"
+#elif __cpp_runtime_arrays != 198712
+#  error "__cpp_runtime_arrays != 198712"
 #endif
 
 //  C++11 attributes:

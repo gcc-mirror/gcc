@@ -828,6 +828,15 @@ c_cpp_builtins (cpp_reader *pfile)
 	 and were standardized for C++14.  */
       if (!pedantic || cxx_dialect > cxx11)
 	cpp_define (pfile, "__cpp_binary_literals=201304");
+
+      /* Arrays of runtime bound were removed from C++14, but we still
+	 support GNU VLAs.  Let's define this macro to a low number
+	 (corresponding to the initial test release of GNU C++) if we won't
+	 complain about use of VLAs.  */
+      if (c_dialect_cxx ()
+	  && (pedantic ? warn_vla == 0 : warn_vla <= 0))
+	cpp_define (pfile, "__cpp_runtime_arrays=198712");
+
       if (cxx_dialect >= cxx11)
 	{
 	  /* Set feature test macros for C++11  */
@@ -863,9 +872,6 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_variable_templates=201304");
 	  cpp_define (pfile, "__cpp_digit_separators=201309");
 	  //cpp_define (pfile, "__cpp_sized_deallocation=201309");
-	  /* We'll have to see where runtime arrays wind up.
-	     Let's put it in C++14 for now.  */
-	  cpp_define (pfile, "__cpp_runtime_arrays=201304");
 	}
     }
   /* Note that we define this for C as well, so that we know if
