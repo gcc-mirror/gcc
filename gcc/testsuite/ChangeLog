@@ -1,3 +1,11 @@
+2014-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/64255
+	* gcc.c-torture/execute/pr64255.c: New test.
+
+	PR rtl-optimization/64260
+	* gcc.c-torture/execute/pr64260.c: New test.
+
 2014-12-12  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* gcc.dg/pr64007.c: New test.
