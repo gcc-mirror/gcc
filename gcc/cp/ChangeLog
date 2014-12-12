@@ -1,3 +1,12 @@
+2014-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57510
+	* typeck2.c (split_nonconstant_init_1): Handle arrays here.
+	(store_init_value): Not here.
+	(split_nonconstant_init): Look through TARGET_EXPR.  No longer static.
+	* cp-tree.h: Declare split_nonconstant_init.
+	* call.c (set_up_extended_ref_temp): Use split_nonconstant_init.
+
 2014-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (maybe_warn_about_useless_cast): Remove unnecessary
