@@ -47,12 +47,6 @@
 #  error "__cpp_lambdas != 200907"
 #endif
 
-#ifndef __cpp_constexpr
-#  error "__cpp_constexpr"
-#elif __cpp_constexpr != 200704
-#  error "__cpp_constexpr != 200704"
-#endif
-
 #ifndef __cpp_range_based_for
 #  error "__cpp_range_based_for"
 #elif __cpp_range_based_for != 200907
@@ -145,11 +139,10 @@
 #  error "__cpp_generic_lambdas != 201304"
 #endif
 
-//  TODO: Change 200704 to 201304 when C++14 constexpr goes in.
 #ifndef __cpp_constexpr
 #  error "__cpp_constexpr"
-#elif __cpp_constexpr != 200704
-#  error "__cpp_constexpr != 200704"
+#elif __cpp_constexpr != 201304
+#  error "__cpp_constexpr != 201304"
 #endif
 
 #ifndef __cpp_decltype_auto
