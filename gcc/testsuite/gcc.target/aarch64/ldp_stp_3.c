@@ -7,10 +7,8 @@ unsigned long long
 foo ()
 {
   unsigned long long ll = 0;
-  ll += arr[0][1];
   ll += arr[1][0];
   ll += arr[1][1];
-  ll += arr[2][0];
   return ll;
 }
 
