@@ -2254,8 +2254,7 @@ ipa_inline (void)
 	      while (node->call_for_symbol_thunks_and_aliases
 		       (inline_to_all_callers, &num_calls, true))
 		;
-	      if (num_calls)
-	        remove_functions = true;
+	      remove_functions = true;
 	    }
 	}
     }
