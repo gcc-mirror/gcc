@@ -1,3 +1,8 @@
+2014-12-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (possible_polymorphic_call_targets): Return early
+	if otr_type has no BINFO.
+
 2014-12-12  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	PR rtl-optimization/63917
