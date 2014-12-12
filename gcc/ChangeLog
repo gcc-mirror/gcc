@@ -1,3 +1,7 @@
+2014-12-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.h (ASM_OUTPUT_ALIGN): Define as a C statment.
+
 2014-12-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/64110
