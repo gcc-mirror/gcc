@@ -1,3 +1,7 @@
+2014-12-12  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.md: Add use of zex instruction.
+
 2014-12-12  Marc Glisse  <marc.glisse@inria.fr>
 
 	* real.h (HONOR_SNANS, HONOR_INFINITIES, HONOR_SIGNED_ZEROS,
