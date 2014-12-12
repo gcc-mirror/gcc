@@ -1,3 +1,9 @@
+2014-12-12  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/63996
+	* constexpr.c (cxx_eval_loop_expr): Don't loop
+	endless on none-constant expression.
+
 2014-12-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61402

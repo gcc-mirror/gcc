@@ -2841,7 +2841,7 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
     {
       cxx_eval_statement_list (ctx, body,
 			       non_constant_p, overflow_p, jump_target);
-      if (returns (jump_target) || breaks (jump_target))
+      if (returns (jump_target) || breaks (jump_target) || *non_constant_p)
 	break;
     }
   if (breaks (jump_target))
