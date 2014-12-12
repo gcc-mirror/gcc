@@ -388,6 +388,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __y.base() - __x.base(); }
   //@}
 
+#if __cplusplus > 201103L
+#define __cpp_lib_make_reverse_iterator 201402
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // DR 2285. make_reverse_iterator
+  /// Generator function for reverse_iterator.
+  template<typename _Iterator>
+    inline reverse_iterator<_Iterator>
+    make_reverse_iterator(_Iterator __i)
+    { return reverse_iterator<_Iterator>(__i); }
+#endif
+
   // 24.4.2.2.1 back_insert_iterator
   /**
    *  @brief  Turns assignment into insertion.
