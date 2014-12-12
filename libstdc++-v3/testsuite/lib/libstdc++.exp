@@ -57,6 +57,7 @@ load_gcc_lib target-libpath.exp
 load_gcc_lib timeout.exp
 load_gcc_lib timeout-dg.exp
 load_gcc_lib wrapper.exp
+load_gcc_lib target-utils.exp
 
 # Useful for debugging.  Pass the name of a variable and the verbosity
 # threshold (number of -v's on the command line).
@@ -455,6 +456,7 @@ proc v3_target_compile { source dest type options } {
     global cxxldflags
     global includes
     global STATIC_LIBCXXFLAGS
+    global tool
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
         lappend options "libs=${gluefile}"
@@ -483,7 +485,14 @@ proc v3_target_compile { source dest type options } {
     lappend options "compiler=$cxx_final"
     lappend options "timeout=[timeout_value]"
 
-    return [target_compile $source $dest $type $options]
+    set comp_output [target_compile $source $dest $type $options]
+    set unsupported_message [${tool}_check_unsupported_p $comp_output]
+
+    if { $unsupported_message != "" } {
+      unsupported "$dest: $unsupported_message"
+      return ""
+    }
+    return $comp_output
 }
 
 
@@ -498,6 +507,7 @@ proc v3_target_compile_as_c { source dest type options } {
     global cc
     global cxxflags
     global STATIC_LIBCXXFLAGS
+    global tool
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
         lappend options "libs=${gluefile}"
@@ -551,7 +561,14 @@ proc v3_target_compile_as_c { source dest type options } {
     lappend options "compiler=$cc_final"
     lappend options "timeout=[timeout_value]"
 
-    return [target_compile $source $dest $type $options]
+    set comp_output [target_compile $source $dest $type $options]
+    set unsupported_message [${tool}_check_unsupported_p $comp_output]
+
+    if { $unsupported_message != "" } {
+      unsupported "$dest: $unsupported_message"
+      return ""
+    }
+    return $comp_output
 }
 
 # Build the support objects linked in with the libstdc++ tests.  In
