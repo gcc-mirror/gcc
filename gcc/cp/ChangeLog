@@ -1,3 +1,9 @@
+2014-12-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61402
+	* lambda.c (add_capture): Don't pass a dependent type to
+	variably_modified_type_p.
+
 2014-12-11  Jason Merrill  <jason@redhat.com>
 
 	Remove N3639 "array of runtime length" from -std=c++14.
