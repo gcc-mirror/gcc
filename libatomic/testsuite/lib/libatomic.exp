@@ -25,6 +25,7 @@ proc load_gcc_lib { filename } {
 load_lib dg.exp
 load_gcc_lib file-format.exp
 load_gcc_lib target-supports.exp
+load_gcc_lib target-utils.exp
 load_gcc_lib target-supports-dg.exp
 load_gcc_lib scanasm.exp
 load_gcc_lib scandump.exp
