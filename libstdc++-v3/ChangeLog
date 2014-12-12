@@ -1,3 +1,9 @@
+2014-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (make_reverse_iterator): LWG DR 2285.
+	* include/std/tuple: Add feature-test macro.
+	* testsuite/24_iterators/reverse_iterator/make.cc: New.
+
 2014-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* testsuite/lib/libstdc++.exp: Include target-utils.exp.
