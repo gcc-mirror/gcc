@@ -1,3 +1,8 @@
+2014-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/58594
+	* include/bits/shared_ptr_base.h: Real fix for cv-qualified types.
+
 2014-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64241
