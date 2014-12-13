@@ -1,3 +1,16 @@
+2014-12-13  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/64239
+	* include/bits/regex.h (match_results<>::match_results,
+	match_results<>::operator=, match_results<>::position,
+	match_results<>::swap): Remove match_results::_M_in_iterator.
+	Fix ctor/assign/swap.
+	* include/bits/regex.tcc: (__regex_algo_impl<>,
+	regex_iterator<>::operator++): Set match_results::_M_begin as
+	"start position".
+	* testsuite/28_regex/iterators/regex_iterator/char/
+	string_position_01.cc: Test cases.
+
 2014-12-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/any (any): Remove allocator support and update
