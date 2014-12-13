@@ -61,7 +61,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     constexpr int is_placeholder_v = std::is_placeholder<_Tp>::value;
 
-#define __cpp_lib_experimental_boyer_moore_searching 201402
+#define __cpp_lib_experimental_boyer_moore_searching 201411
 
   // Searchers
 

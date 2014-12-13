@@ -1,5 +1,21 @@
 2014-12-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/any (any): Remove allocator support and update
+	feature-testing macro.
+	* include/experimental/functional: Update feature-testing macro.
+	* include/experimental/optional (optional::_M_get()): Add constexpr.
+	(optional::operator*(), optional::value()): Overload and add
+	ref-qualifiers. Update feature-testing macro.
+	* include/experimental/string_view (basic_string_view::clear): Remove
+	and update feature-testing macro.
+	* testsuite/experimental/any/cons/3.cc: Remove.
+	* testsuite/experimental/any/cons/4.cc: Remove.
+	* testsuite/experimental/any/misc/any_cast.cc: Remove allocator tests.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
+	* testsuite/experimental/string_view/capacity/1.cc: Don't test clear().
+
+2014-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/58594
 	* include/bits/shared_ptr_base.h: Real fix for cv-qualified types.
 

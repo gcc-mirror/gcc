@@ -133,7 +133,7 @@ test01()
   size_type_o sz03;
   size_type_o sz04;
 
-  // non-POD types: size, length, max_size, clear(), empty()
+  // non-POD types: size, length, max_size, empty()
   bool b01 = str02.empty();  
   VERIFY( b01 == true );
   sz03 = str02.size();
@@ -148,7 +148,7 @@ test01()
   VERIFY( sz03 >= sz04 );
 
   sz03 = str02.size();
-  str02.clear();  
+  str02 = {};
   b01 = str02.empty(); 
   VERIFY( b01 == true );
   sz04 = str02.size();  
