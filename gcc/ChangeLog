@@ -1,3 +1,12 @@
+2014-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64269
+	* tree-ssa-forwprop.c (simplify_builtin_call): Bail out if
+	len2 or diff are too large.
+
 2014-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/md.texi (Insn Lengths): Fix description of (pc).
