@@ -677,7 +677,8 @@ Move_subexpressions::expression(Expression** pexpr)
 {
   if (this->skip_ > 0)
     --this->skip_;
-  else if ((*pexpr)->temporary_reference_expression() == NULL)
+  else if ((*pexpr)->temporary_reference_expression() == NULL
+	   && !(*pexpr)->is_nil_expression())
     {
       Location loc = (*pexpr)->location();
       Temporary_statement* temp = Statement::make_temporary(NULL, *pexpr, loc);
