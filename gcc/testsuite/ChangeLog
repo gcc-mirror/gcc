@@ -1,3 +1,8 @@
+2014-12-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/sh/sp-switch.c: Match zero or more underscores in
+	alt_stack symbol.
+
 2014-12-13  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/realloc_on_assign_21.f90: Update dg-error.
