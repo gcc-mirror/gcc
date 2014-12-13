@@ -77,32 +77,8 @@ void test02()
   }
 }
 
-void test03()
-{
-  using std::experimental::bad_any_cast;
-  any x(std::allocator_arg, std::allocator<double>{}, 1);
-  auto p = any_cast<double>(&x);
-  VERIFY(p == nullptr);
-
-  x = any(std::allocator_arg, std::allocator<int>{}, 1.0);
-  p = any_cast<double>(&x);
-  VERIFY(p != nullptr);
-
-  x = any(std::allocator_arg, std::allocator<char>{});
-  p = any_cast<double>(&x);
-  VERIFY(p == nullptr);
-
-  try {
-    any_cast<double>(x);
-    VERIFY(false);
-  } catch (const bad_any_cast&) {
-  }
-}
-
-
 int main()
 {
   test01();
   test02();
-  test03();
 }

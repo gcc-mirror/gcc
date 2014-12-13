@@ -50,7 +50,7 @@ inline namespace fundamentals_v1
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#define __cpp_lib_experimental_string_view 201402
+#define __cpp_lib_experimental_string_view 201411
 
   /**
    *  @class basic_string_view <experimental/string_view>
@@ -217,13 +217,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->_M_str; }
 
       // [string.view.modifiers], modifiers:
-
-      void
-      clear() noexcept
-      {
-	this->_M_len = 0;
-	this->_M_str = nullptr;
-      }
 
       void
       remove_prefix(size_type __n)
