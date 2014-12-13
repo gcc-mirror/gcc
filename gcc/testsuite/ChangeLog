@@ -1,5 +1,16 @@
 2014-12-13  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/53513
+	* gcc.target/sh/attr-isr-nosave_low_regs.c: Fix matching of expected
+	register push/pop sequences.
+	* gcc.target/sh/attr-isr.c: Likewise.
+	* gcc.target/sh/attr-isr-trapa.c: Likewise.
+	* gcc.target/sh/pragma-isr-nosave_low_regs.c: Likewise.
+	* gcc.target/sh/pragma-isr-trapa.c: Likewise.
+	* gcc.target/sh/pragma-isr-trapa2.c: Likewise.
+
+2014-12-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* gcc.target/sh/sp-switch.c: Match zero or more underscores in
 	alt_stack symbol.
 
