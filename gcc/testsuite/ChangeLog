@@ -1,3 +1,8 @@
+2014-12-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/64037
+	* g++.dg/pr64037.C: New test.
+
 2014-12-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/63674
