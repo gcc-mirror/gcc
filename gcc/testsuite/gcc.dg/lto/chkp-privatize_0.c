@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-require-effective-target mpx { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-require-effective-target mpx } */
 /* { dg-lto-options { { -fPIC -flto -flto-partition=max -fcheck-pointer-bounds -mmpx } } } */
 
 static int

@@ -483,9 +483,10 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 					  NULL_TREE, array_type_nelts (type));
       type = vla_capture_type (type);
     }
-  else if (variably_modified_type_p (type, NULL_TREE))
+  else if (!dependent_type_p (type)
+	   && variably_modified_type_p (type, NULL_TREE))
     {
-      error ("capture of variable-size type %qT that is not a C++14 array "
+      error ("capture of variable-size type %qT that is not an N3639 array "
 	     "of runtime bound", type);
       if (TREE_CODE (type) == ARRAY_TYPE
 	  && variably_modified_type_p (TREE_TYPE (type), NULL_TREE))

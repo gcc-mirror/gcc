@@ -177,39 +177,39 @@ that is @code{@var{a} - @var{b}}.
 
 @subsection Bit operations
 
-@deftypefn {Runtime Function} int __clzsi2 (int @var{a})
-@deftypefnx {Runtime Function} int __clzdi2 (long @var{a})
-@deftypefnx {Runtime Function} int __clzti2 (long long @var{a})
+@deftypefn {Runtime Function} int __clzsi2 (unsigned int @var{a})
+@deftypefnx {Runtime Function} int __clzdi2 (unsigned long @var{a})
+@deftypefnx {Runtime Function} int __clzti2 (unsigned long long @var{a})
 These functions return the number of leading 0-bits in @var{a}, starting
 at the most significant bit position.  If @var{a} is zero, the result is
 undefined.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __ctzsi2 (int @var{a})
-@deftypefnx {Runtime Function} int __ctzdi2 (long @var{a})
-@deftypefnx {Runtime Function} int __ctzti2 (long long @var{a})
+@deftypefn {Runtime Function} int __ctzsi2 (unsigned int @var{a})
+@deftypefnx {Runtime Function} int __ctzdi2 (unsigned long @var{a})
+@deftypefnx {Runtime Function} int __ctzti2 (unsigned long long @var{a})
 These functions return the number of trailing 0-bits in @var{a}, starting
 at the least significant bit position.  If @var{a} is zero, the result is
 undefined.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __ffsdi2 (long @var{a})
-@deftypefnx {Runtime Function} int __ffsti2 (long long @var{a})
+@deftypefn {Runtime Function} int __ffsdi2 (unsigned long @var{a})
+@deftypefnx {Runtime Function} int __ffsti2 (unsigned long long @var{a})
 These functions return the index of the least significant 1-bit in @var{a},
 or the value zero if @var{a} is zero.  The least significant bit is index
 one.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __paritysi2 (int @var{a})
-@deftypefnx {Runtime Function} int __paritydi2 (long @var{a})
-@deftypefnx {Runtime Function} int __parityti2 (long long @var{a})
+@deftypefn {Runtime Function} int __paritysi2 (unsigned int @var{a})
+@deftypefnx {Runtime Function} int __paritydi2 (unsigned long @var{a})
+@deftypefnx {Runtime Function} int __parityti2 (unsigned long long @var{a})
 These functions return the value zero if the number of bits set in
 @var{a} is even, and the value one otherwise.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __popcountsi2 (int @var{a})
-@deftypefnx {Runtime Function} int __popcountdi2 (long @var{a})
-@deftypefnx {Runtime Function} int __popcountti2 (long long @var{a})
+@deftypefn {Runtime Function} int __popcountsi2 (unsigned int @var{a})
+@deftypefnx {Runtime Function} int __popcountdi2 (unsigned long @var{a})
+@deftypefnx {Runtime Function} int __popcountti2 (unsigned long long @var{a})
 These functions return the number of bits set in @var{a}.
 @end deftypefn
 

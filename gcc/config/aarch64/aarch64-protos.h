@@ -170,6 +170,7 @@ struct tune_params
   const struct cpu_vector_cost *const vec_costs;
   const int memmov_cost;
   const int issue_rate;
+  const int align;
   const unsigned int fuseable_ops;
   const int int_reassoc_width;
   const int fp_reassoc_width;
@@ -250,7 +251,6 @@ void aarch64_expand_epilogue (bool);
 void aarch64_expand_mov_immediate (rtx, rtx);
 void aarch64_expand_prologue (void);
 void aarch64_expand_vector_init (rtx, rtx);
-void aarch64_function_profiler (FILE *, int);
 void aarch64_init_cumulative_args (CUMULATIVE_ARGS *, const_tree, rtx,
 				   const_tree, unsigned);
 void aarch64_init_expanders (void);

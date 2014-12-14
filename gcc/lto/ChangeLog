@@ -1,3 +1,11 @@
+2014-12-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61324
+	* lto.c (read_cgraph_and_symbols): Update call of
+	remove_unreachable_nodes.
+	(do_whole_program_analysis): Remove call of
+	symtab->remove_unreachable_nodes
+
 2014-12-08  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* lto.c (read_cgraph_and_symbols): allocate gimple_canonical_types

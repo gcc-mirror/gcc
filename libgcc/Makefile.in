@@ -42,6 +42,7 @@ decimal_float = @decimal_float@
 enable_vtable_verify = @enable_vtable_verify@
 enable_decimal_float = @enable_decimal_float@
 fixed_point = @fixed_point@
+with_aix_soname = @with_aix_soname@
 
 host_noncanonical = @host_noncanonical@
 target_noncanonical = @target_noncanonical@

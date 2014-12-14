@@ -3267,7 +3267,8 @@ simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
   if (tree_contains_chrecs (iv->base, NULL))
     return false;
 
-  iv->no_overflow = !folded_casts && TYPE_OVERFLOW_UNDEFINED (type);
+  iv->no_overflow = (!folded_casts && ANY_INTEGRAL_TYPE_P (type)
+		     && TYPE_OVERFLOW_UNDEFINED (type));
 
   return true;
 }
@@ -3490,7 +3491,8 @@ scev_const_prop (void)
 	  /* If def's type has undefined overflow and there were folded
 	     casts, rewrite all stmts added for def into arithmetics
 	     with defined overflow behavior.  */
-	  if (folded_casts && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (def)))
+	  if (folded_casts && ANY_INTEGRAL_TYPE_P (TREE_TYPE (def))
+	      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (def)))
 	    {
 	      gimple_seq stmts;
 	      gimple_stmt_iterator gsi2;

@@ -2022,4 +2022,13 @@ always NUL terminated.
 
 @end deftypefn
 
+@c xvasprintf.c:38
+@deftypefn Replacement char* xvasprintf (const char *@var{format}, va_list @var{args})
+
+Print to allocated string without fail.  If @code{xvasprintf} fails,
+this will print a message to @code{stderr} (using the name set by
+@code{xmalloc_set_program_name}, if any) and then call @code{xexit}.
+
+@end deftypefn
+
 

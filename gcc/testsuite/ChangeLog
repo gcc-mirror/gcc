@@ -1,3 +1,196 @@
+2014-12-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53513
+	* gcc.target/sh/attr-isr-nosave_low_regs.c: Fix matching of expected
+	register push/pop sequences.
+	* gcc.target/sh/attr-isr.c: Likewise.
+	* gcc.target/sh/attr-isr-trapa.c: Likewise.
+	* gcc.target/sh/pragma-isr-nosave_low_regs.c: Likewise.
+	* gcc.target/sh/pragma-isr-trapa.c: Likewise.
+	* gcc.target/sh/pragma-isr-trapa2.c: Likewise.
+
+2014-12-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/sh/sp-switch.c: Match zero or more underscores in
+	alt_stack symbol.
+
+2014-12-13  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/realloc_on_assign_21.f90: Update dg-error.
+	* gfortran.dg/warnings_are_errors_1.f: Ditto.
+	* gfortran.dg/warnings_are_errors_1.f90: Ditto.
+
+2014-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59240
+	* g++.dg/torture/pr59240.C: New.
+
+2014-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59628
+	* g++.dg/gomp/pr59628.C: New.
+
+2014-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61924
+	* g++.dg/cpp0x/pr61924.C: New.
+
+2014-12-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/64110
+	* gcc.target/i386/pr64110.c: New.
+
+2014-12-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/gomp/nesting-1.c: New file.
+	* c-c++-common/gomp/nesting-warn-1.c: Likewise.
+
+2014-12-12  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/63996
+	* g++.dg/cpp1y/pr63996.C: New file.
+
+2014-12-12  Richard Sandiford  <richard.sandiford@arm.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/64182
+	* gcc.dg/plugin/wide-int-test-1.c,
+	gcc.dg/plugin/wide-int_plugin.c: New test.
+	* gcc.dg/plugin/plugin.exp: Register it.
+	* gnat.dg/round_div.adb: New test.
+
+2014-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64269
+	* gcc.c-torture/compile/pr64269.c: New test.
+
+2014-12-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64280
+	* g++.dg/torture/pr64280.C: New testcase.
+
+2014-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/64255
+	* gcc.c-torture/execute/pr64255.c: New test.
+
+	PR rtl-optimization/64260
+	* gcc.c-torture/execute/pr64260.c: New test.
+
+2014-12-12  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.dg/pr64007.c: New test.
+
+2014-12-12  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_2.c: Make test less vulnerable.
+	* gcc.target/aarch64/ldp_stp_3.c: Ditto.
+
+2014-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/builtin-arith-overflow-1.c (fn2): Take signed char.
+	(fn3): Likewise.
+
+2014-12-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61324
+	* g++.dg/pr61324.C: New testcase by Trevor Saunders.
+	* g++.dg/tm/pr51411-2.C: Update se the extern function is
+	not eliminated early.
+	* gcc.target/i386/pr57756.c: Turn extern inline into static inline.
+
+2014-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/42108
+	* gfortran.dg/pr42108.f90: Amend.
+
+2014-12-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+        * gfortran.dg/do_iterator.f90: Remove bogus dg-warning.
+
+2014-12-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm_neon.h (vrndqn_f32): Rename to...
+	(vrndnq_f32): ... this.
+	(vrndqa_f32): Rename to...
+	(vrndaq_f32): ... this.
+	(vrndqp_f32): Rename to...
+	(vrndpq_f32): ... this.
+	(vrndqm_f32): Rename to...
+	(vrndmq_f32): ... this.
+	(vrndx_f32): New intrinsic.
+	(vrndxq_f32): Likewise.
+
+2014-12-11  Kyrylo Tkachov  kyrylo.tkachov@arm.com
+
+	* lib/target-utils.exp: New file.
+	* lib/gcc-defs.exp (${tool}_check_unsupported_p): Delete.
+	Include target-utils.exp.
+	* lib/objc.exp: Likewise.
+	* lib/mike-gcc.exp: Load target-utils.exp.
+	* lib/mike-g++.exp: Likewise.
+	* lib/go-torture.exp: Likewise.
+	* lib/fortran-torture.exp: Likewise.
+	* lib/c-torture.exp: Likewise.
+
+2014-12-10  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/funcspec-5.c: Test avx512f and knl.
+
+2014-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/62021
+	* gcc.dg/vect/pr62021.c: New test.
+
+2014-12-10  Jakub Jelinek  <jakub@redhat.com>
+	    Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR target/64252
+	* gcc.dg/vect/pr64252.c: New test.
+	* gcc.dg/pr64252.c: New test.
+	* gcc.target/i386/avx2-pr64252.c: New test.
+
+2014-12-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.dg/lto/chkp-privatize_0.c: Remove unneeded selector
+	from target check.
+
+2014-12-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp/pr64127.C: Fix.
+
+2014-12-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/60718
+	* gfortran.dg/class_alias.f90: New.
+
+2014-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/64048
+	* gcc.dg/tree-prof/peel-1.c: Update dump scanning.
+
+2014-12-10  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/forwprop-29.c: Add -fno-ipa-icf.
+
+2014-12-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/pr63909.c: New test.
+
+2014-12-10  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/64127
+	* g++.dg/cpp/pr64127.C: New file.
+
+	PR c++/64100
+	* g++.dg/template/pr64100.C: New file.
+
+2014-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64191
+	* g++.dg/pr64191.C: Make sure we can DCE empty loops with
+	indirect clobbers.
+
 2014-12-09  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/63870

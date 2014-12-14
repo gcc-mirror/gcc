@@ -67,7 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-#define __cpp_lib_experimental_optional 201406
+#define __cpp_lib_experimental_optional 201411
 
   // All subsequent [X.Y.n] references are against n3793.
 
@@ -290,7 +290,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->_M_engaged; }
 
       // The _M_get operations have _M_engaged as a precondition.
-      _Tp&
+      constexpr _Tp&
       _M_get() noexcept
       { return _M_payload; }
 
@@ -574,18 +574,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::__addressof(this->_M_get()); }
 
       constexpr const _Tp&
-      operator*() const
+      operator*() const&
       { return this->_M_get(); }
 
-      _Tp&
-      operator*()
+      constexpr _Tp&
+      operator*()&
       { return this->_M_get(); }
+
+      constexpr _Tp&&
+      operator*()&&
+      { return std::move(this->_M_get()); }
+
+      constexpr const _Tp&&
+      operator*() const&&
+      { return std::move(this->_M_get()); }
 
       constexpr explicit operator bool() const noexcept
       { return this->_M_is_engaged(); }
 
       constexpr const _Tp&
-      value() const
+      value() const&
       {
 	return this->_M_is_engaged()
 	  ?  this->_M_get()
@@ -594,14 +602,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     this->_M_get());
       }
 
-      _Tp&
-      value()
+      constexpr _Tp&
+      value()&
       {
-        if (this->_M_is_engaged())
-          return this->_M_get();
+	return this->_M_is_engaged()
+	  ?  this->_M_get()
+	  : (__throw_bad_optional_access("Attempt to access value of a "
+		                         "disengaged optional object"),
+	     this->_M_get());
+      }
 
-        __throw_bad_optional_access("Attempt to access value of a "
-				    "disengaged optional object");
+      constexpr _Tp&&
+      value()&&
+      {
+	return this->_M_is_engaged()
+	  ?  std::move(this->_M_get())
+	  : (__throw_bad_optional_access("Attempt to access value of a "
+		                         "disengaged optional object"),
+	     std::move(this->_M_get()));
+      }
+
+      constexpr const _Tp&&
+      value() const&&
+      {
+	return this->_M_is_engaged()
+	  ?  std::move(this->_M_get())
+	  : (__throw_bad_optional_access("Attempt to access value of a "
+		                         "disengaged optional object"),
+	     std::move(this->_M_get()));
       }
 
       template<typename _Up>

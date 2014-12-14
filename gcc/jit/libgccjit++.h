@@ -102,6 +102,9 @@ namespace gccjit
     void dump_to_file (const std::string &path,
 		       bool update_locations);
 
+    void set_str_option (enum gcc_jit_str_option opt,
+			 const char *value);
+
     void set_int_option (enum gcc_jit_int_option opt,
 			 int value);
 
@@ -535,6 +538,14 @@ context::dump_to_file (const std::string &path,
   gcc_jit_context_dump_to_file (m_inner_ctxt,
 				path.c_str (),
 				update_locations);
+}
+
+inline void
+context::set_str_option (enum gcc_jit_str_option opt,
+			 const char *value)
+{
+  gcc_jit_context_set_str_option (m_inner_ctxt, opt, value);
+
 }
 
 inline void

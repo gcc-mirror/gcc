@@ -203,7 +203,7 @@ namespace __cxxabiv1
   static inline void
   throw_recursive_init_exception()
   {
-#ifdef __EXCEPTIONS
+#if __cpp_exceptions
 	throw __gnu_cxx::recursive_init_error();
 #else
 	// Use __builtin_trap so we don't require abort().

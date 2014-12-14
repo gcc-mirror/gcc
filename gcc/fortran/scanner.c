@@ -2045,6 +2045,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
       b = XCNEWVAR (gfc_linebuf, gfc_linebuf_header_size
 		    + (len + 1) * sizeof (gfc_char_t));
 
+
       b->location
 	= linemap_line_start (line_table, current_file->line++, len);
       /* ??? We add the location for the maximum column possible here,

@@ -117,10 +117,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #else /* !uClinux, i.e., normal Linux */
 
-/* IFUNCs are supported by glibc, but not by uClibc or Bionic.  */
-# undef TARGET_HAS_IFUNC_P
-# define TARGET_HAS_IFUNC_P linux_has_ifunc_p
-
 /* Determine what functions are present at the runtime;
    this includes full c99 runtime and sincos.  */
 # undef TARGET_LIBC_HAS_FUNCTION

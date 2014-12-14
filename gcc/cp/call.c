@@ -9574,7 +9574,7 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
   else
     /* Create the INIT_EXPR that will initialize the temporary
        variable.  */
-    init = build2 (INIT_EXPR, type, var, expr);
+    init = split_nonconstant_init (var, expr);
   if (at_function_scope_p ())
     {
       add_decl_expr (var);

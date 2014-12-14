@@ -1223,7 +1223,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 		__result = _S_concat(__forest[__i], __result);
 		__forest[__i]->_M_unref_nonnil();
-#if !defined(__GC) && defined(__EXCEPTIONS)
+#if !defined(__GC) && __cpp_exceptions
 		__forest[__i] = 0;
 #endif
 	      }

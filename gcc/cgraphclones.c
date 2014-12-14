@@ -1146,7 +1146,7 @@ symbol_table::materialize_all_clones (void)
 #ifdef ENABLE_CHECKING
   cgraph_node::verify_cgraph_nodes ();
 #endif
-  symtab->remove_unreachable_nodes (false, symtab->dump_file);
+  symtab->remove_unreachable_nodes (symtab->dump_file);
 }
 
 #include "gt-cgraphclones.h"

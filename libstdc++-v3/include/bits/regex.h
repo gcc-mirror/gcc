@@ -1563,42 +1563,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       explicit
       match_results(const _Alloc& __a = _Alloc())
-      : _Base_type(__a), _M_in_iterator(false)
+      : _Base_type(__a)
       { }
 
       /**
        * @brief Copy constructs a %match_results.
        */
-      match_results(const match_results& __rhs)
-      : _Base_type(__rhs), _M_in_iterator(false)
-      { }
+      match_results(const match_results& __rhs) = default;
 
       /**
        * @brief Move constructs a %match_results.
        */
-      match_results(match_results&& __rhs) noexcept
-      : _Base_type(std::move(__rhs)), _M_in_iterator(false)
-      { }
+      match_results(match_results&& __rhs) noexcept = default;
 
       /**
        * @brief Assigns rhs to *this.
        */
       match_results&
-      operator=(const match_results& __rhs)
-      {
-	match_results(__rhs).swap(*this);
-	return *this;
-      }
+      operator=(const match_results& __rhs) = default;
 
       /**
        * @brief Move-assigns rhs to *this.
        */
       match_results&
-      operator=(match_results&& __rhs)
-      {
-	match_results(std::move(__rhs)).swap(*this);
-	return *this;
-      }
+      operator=(match_results&& __rhs) = default;
 
       /**
        * @brief Destroys a %match_results object.
@@ -1685,13 +1673,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       difference_type
       position(size_type __sub = 0) const
       {
-	// [28.12.1.4.5]
-	if (_M_in_iterator)
-	  return __sub < size() ? std::distance(_M_begin,
-						(*this)[__sub].first) : -1;
-	else
-	  return __sub < size() ? std::distance(this->prefix().first,
-						(*this)[__sub].first) : -1;
+	return __sub < size() ? std::distance(_M_begin,
+					      (*this)[__sub].first) : -1;
       }
 
       /**
@@ -1876,7 +1859,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       void
       swap(match_results& __that)
-      { _Base_type::swap(__that); }
+      {
+	_Base_type::swap(__that);
+	swap(_M_begin, __that._M_begin);
+      }
       //@}
 
     private:
@@ -1894,7 +1880,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				    regex_constants::match_flag_type);
 
       _Bi_iter _M_begin;
-      bool     _M_in_iterator;
     };
 
   typedef match_results<const char*>             cmatch;

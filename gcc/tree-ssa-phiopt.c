@@ -749,7 +749,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* If the type says honor signed zeros we cannot do this
      optimization.  */
-  if (HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
+  if (HONOR_SIGNED_ZEROS (arg1))
     return 0;
 
   /* If there is a statement in MIDDLE_BB that defines one of the PHI
@@ -932,7 +932,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
   type = TREE_TYPE (PHI_RESULT (phi));
 
   /* The optimization may be unsafe due to NaNs.  */
-  if (HONOR_NANS (TYPE_MODE (type)))
+  if (HONOR_NANS (type))
     return false;
 
   cond = as_a <gcond *> (last_stmt (cond_bb));
@@ -1182,7 +1182,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* If the type says honor signed zeros we cannot do this
      optimization.  */
-  if (HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
+  if (HONOR_SIGNED_ZEROS (arg1))
     return false;
 
   /* OTHER_BLOCK must have only one executable statement which must have the
@@ -1355,8 +1355,7 @@ neg_replacement (basic_block cond_bb, basic_block middle_bb,
      that's cheapest.  */
   if (invert)
     {
-      bool honor_nans
-	= HONOR_NANS (TYPE_MODE (TREE_TYPE (gimple_cond_lhs (cond))));
+      bool honor_nans = HONOR_NANS (gimple_cond_lhs (cond));
       enum tree_code new_code = invert_tree_comparison (cond_code, honor_nans);
 
       /* If invert_tree_comparison was successful, then use its return

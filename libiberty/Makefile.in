@@ -155,10 +155,11 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	 strtoll.c strtoul.c strtoull.c strndup.c strnlen.c             \
 	 strverscmp.c timeval-utils.c tmpnam.c				\
 	unlink-if-ordinary.c						\
-	vasprintf.c vfork.c vfprintf.c vprintf.c vsnprintf.c vsprintf.c	\
+	vasprintf.c vfork.c vfprintf.c vprintf.c vprintf-support.c	\
+	 vsnprintf.c vsprintf.c						\
 	waitpid.c							\
 	xatexit.c xexit.c xmalloc.c xmemdup.c xstrdup.c xstrerror.c	\
-	 xstrndup.c
+	 xstrndup.c xvasprintf.c
 
 # These are always included in the library.  The first four are listed
 # first and by compile time to optimize parallel builds.
@@ -180,7 +181,7 @@ REQUIRED_OFILES =							\
 	./obstack.$(objext)						\
 	./partition.$(objext) ./pexecute.$(objext) ./physmem.$(objext)	\
 	./pex-common.$(objext) ./pex-one.$(objext)			\
-	./@pexecute@.$(objext)						\
+	./@pexecute@.$(objext) ./vprintf-support.$(objext)		\
 	./safe-ctype.$(objext)						\
 	./simple-object.$(objext) ./simple-object-coff.$(objext)	\
 	./simple-object-elf.$(objext) ./simple-object-mach-o.$(objext)	\
@@ -191,7 +192,7 @@ REQUIRED_OFILES =							\
 	./timeval-utils.$(objext) ./unlink-if-ordinary.$(objext)	\
 	./xatexit.$(objext) ./xexit.$(objext) ./xmalloc.$(objext)	\
 	./xmemdup.$(objext) ./xstrdup.$(objext) ./xstrerror.$(objext)	\
-	./xstrndup.$(objext)
+	./xstrndup.$(objext) ./xvasprintf.$(objext)
 
 # These are all the objects that configure may add to the library via
 # $funcs or EXTRA_OFILES.  This list exists here only for "make
@@ -1543,7 +1544,7 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	$(COMPILE.c) $(srcdir)/unlink-if-ordinary.c $(OUTPUT_OPTION)
 
 ./vasprintf.$(objext): $(srcdir)/vasprintf.c config.h $(INCDIR)/ansidecl.h \
-	$(INCDIR)/libiberty.h
+	$(INCDIR)/libiberty.h $(srcdir)/vprintf-support.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/vasprintf.c -o pic/$@; \
 	else true; fi
@@ -1569,6 +1570,16 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/vfprintf.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/vfprintf.c $(OUTPUT_OPTION)
+
+./vprintf-support.$(objext): $(srcdir)/vprintf-support.c config.h \
+	$(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/vprintf-support.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/vprintf-support.c -o noasan/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/vprintf-support.c $(OUTPUT_OPTION)
 
 ./vprintf.$(objext): $(srcdir)/vprintf.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
@@ -1677,3 +1688,12 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/xstrndup.c $(OUTPUT_OPTION)
 
+./xvasprintf.$(objext): $(srcdir)/xvasprintf.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/libiberty.h $(srcdir)/vprintf-support.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/xvasprintf.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/xvasprintf.c -o noasan/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/xvasprintf.c $(OUTPUT_OPTION)

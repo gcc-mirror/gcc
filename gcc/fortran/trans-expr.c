@@ -4430,6 +4430,55 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				     fsym->attr.optional
 				     && e->expr_type == EXPR_VARIABLE);
 		    }
+		  else if (e->ts.type == BT_CLASS && fsym
+			   && fsym->ts.type == BT_CLASS
+			   && !CLASS_DATA (fsym)->as
+			   && !CLASS_DATA (e)->as
+			   && (CLASS_DATA (fsym)->attr.class_pointer
+			       != CLASS_DATA (e)->attr.class_pointer
+			       || CLASS_DATA (fsym)->attr.allocatable
+				  != CLASS_DATA (e)->attr.allocatable))
+		    {
+		      type = gfc_typenode_for_spec (&fsym->ts);
+		      var = gfc_create_var (type, fsym->name);
+		      gfc_conv_expr (&parmse, e);
+		      if (fsym->attr.optional
+			  && e->expr_type == EXPR_VARIABLE
+			  && e->symtree->n.sym->attr.optional)
+			{
+			  stmtblock_t block;
+			  tree cond;
+			  tmp = gfc_build_addr_expr (NULL_TREE, parmse.expr);
+			  cond = fold_build2_loc (input_location, NE_EXPR,
+						  boolean_type_node, tmp,
+						  fold_convert (TREE_TYPE (tmp),
+							    null_pointer_node));
+			  gfc_start_block (&block);
+			  gfc_add_modify (&block, var,
+					  fold_build1_loc (input_location,
+							   VIEW_CONVERT_EXPR,
+							   type, parmse.expr));
+			  gfc_add_expr_to_block (&parmse.pre,
+				 fold_build3_loc (input_location,
+					 COND_EXPR, void_type_node,
+					 cond, gfc_finish_block (&block),
+					 build_empty_stmt (input_location)));
+			  parmse.expr = gfc_build_addr_expr (NULL_TREE, var);
+			  parmse.expr = build3_loc (input_location, COND_EXPR,
+					 TREE_TYPE (parmse.expr),
+					 cond, parmse.expr,
+					 fold_convert (TREE_TYPE (parmse.expr),
+						       null_pointer_node));
+			}
+		      else
+			{
+			  gfc_add_modify (&parmse.pre, var,
+					  fold_build1_loc (input_location,
+							   VIEW_CONVERT_EXPR,
+							   type, parmse.expr));
+			  parmse.expr = gfc_build_addr_expr (NULL_TREE, var);
+			}
+		    }
 		  else
 		    gfc_conv_expr_reference (&parmse, e);
 

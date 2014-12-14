@@ -1,3 +1,72 @@
+2014-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59628
+	* semantics.c (finish_omp_reduction_clause): Early return true
+	if DECL_SAVED_TREE (id) is NULL_TREE.
+
+2014-12-12  Jason Merrill  <jason@redhat.com>
+
+	N3922
+	* pt.c (do_auto_deduction): In direct-init context, { x } deduces
+	from x.
+
+	* cp-tree.h (NAMESPACE_ABI_TAG): New.
+	* name-lookup.c (handle_namespace_attrs): Set it.
+	* class.c (check_tag): Split out from find_abi_tags_r.
+	(find_abi_tags_r): Also check namespace tags.
+	(mark_type_abi_tags): Also mark namespace tags.
+
+2014-12-12  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/63996
+	* constexpr.c (cxx_eval_loop_expr): Don't loop
+	endless on none-constant expression.
+
+2014-12-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61402
+	* lambda.c (add_capture): Don't pass a dependent type to
+	variably_modified_type_p.
+
+2014-12-11  Jason Merrill  <jason@redhat.com>
+
+	Remove N3639 "array of runtime length" from -std=c++14.
+	* decl.c (compute_array_index_type): VLAs are not part of C++14.
+	(create_array_type_for_decl, grokdeclarator): Likewise.
+	* lambda.c (add_capture): Likewise.
+	* pt.c (tsubst): Likewise.
+	* rtti.c (get_tinfo_decl): Likewise.
+	* semantics.c (finish_decltype_type): Likewise.
+	* typeck.c (cxx_sizeof_or_alignof_type): Likewise.
+	(cp_build_addr_expr_1): Likewise.
+	* init.c (build_vec_init): Don't throw bad_array_length.
+
+	PR c++/64248
+	Revert:
+	* parser.c (cp_parser_unqualified_id): Handle __func__ here.
+	(cp_parser_primary_expression): Not here.
+
+	PR c++/57510
+	* typeck2.c (split_nonconstant_init_1): Handle arrays here.
+	(store_init_value): Not here.
+	(split_nonconstant_init): Look through TARGET_EXPR.  No longer static.
+	* cp-tree.h: Declare split_nonconstant_init.
+	* call.c (set_up_extended_ref_temp): Use split_nonconstant_init.
+
+2014-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (maybe_warn_about_useless_cast): Remove unnecessary
+	conditional.
+
+2014-12-10  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/64127
+	* parser.c (cp_parser_diagnose_invalid_type_name): Check id
+	for being an identifier before accessing it.
+
+	PR c++/64100
+	* typeck.c (lookup_destructor): Handle incomplete type.
+
 2014-12-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/64129

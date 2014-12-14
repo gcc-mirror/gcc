@@ -253,6 +253,26 @@ class CGraphNodePrinter:
         return result
 
 ######################################################################
+# Dwarf DIE pretty-printers
+######################################################################
+
+class DWDieRefPrinter:
+    def __init__(self, gdbval):
+        self.gdbval = gdbval
+
+    def to_string (self):
+        if long(self.gdbval) == 0:
+            return '<dw_die_ref 0x0>'
+        result = '<dw_die_ref 0x%x' % long(self.gdbval)
+        result += ' %s' % self.gdbval['die_tag']
+        if long(self.gdbval['die_parent']) != 0:
+            result += ' <parent=0x%x %s>' % (long(self.gdbval['die_parent']),
+                                             self.gdbval['die_parent']['die_tag'])
+                                             
+        result += '>'
+        return result
+
+######################################################################
 
 class GimplePrinter:
     def __init__(self, gdbval):
@@ -455,6 +475,8 @@ def build_pretty_printer():
                              'tree', TreePrinter)
     pp.add_printer_for_types(['cgraph_node *'],
                              'cgraph_node', CGraphNodePrinter)
+    pp.add_printer_for_types(['dw_die_ref'],
+                             'dw_die_ref', DWDieRefPrinter)
     pp.add_printer_for_types(['gimple', 'gimple_statement_base *',
 
                               # Keep this in the same order as gimple.def:

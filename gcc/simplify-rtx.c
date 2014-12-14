@@ -4754,10 +4754,10 @@ simplify_const_relational_operation (enum rtx_code code,
      result except if they have side-effects.  Even with NaNs we know
      the result of unordered comparisons and, if signaling NaNs are
      irrelevant, also the result of LT/GT/LTGT.  */
-  if ((! HONOR_NANS (GET_MODE (trueop0))
+  if ((! HONOR_NANS (trueop0)
        || code == UNEQ || code == UNLE || code == UNGE
        || ((code == LT || code == GT || code == LTGT)
-	   && ! HONOR_SNANS (GET_MODE (trueop0))))
+	   && ! HONOR_SNANS (trueop0)))
       && rtx_equal_p (trueop0, trueop1)
       && ! side_effects_p (trueop0))
     return comparison_result (code, CMP_EQ);

@@ -259,7 +259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void*
       _M_get_deleter(const std::type_info& __ti)
       {
-#ifdef __GXX_RTTI
+#if __cpp_rtti
         return __ti == typeid(_Deleter) ? &_M_del : 0;
 #else
         return 0;
@@ -788,7 +788,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _Del*
     get_deleter(const __shared_ptr<_Tp, _Lp>& __p)
     {
-#ifdef __GXX_RTTI
+#if __cpp_rtti
       return static_cast<_Del*>(__p._M_get_deleter(typeid(_Del)));
 #else
       return 0;

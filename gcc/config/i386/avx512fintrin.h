@@ -3603,47 +3603,28 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_set1_epi64 (long long __A)
 {
-#ifdef TARGET_64BIT
   return (__m512i) __builtin_ia32_pbroadcastq512_gpr_mask (__A,
 							   (__v8di)
 							   _mm512_undefined_si512 (),
 							   (__mmask8)(-1));
-#else
-  return (__m512i) __builtin_ia32_pbroadcastq512_mem_mask (__A,
-							   (__v8di)
-							   _mm512_undefined_si512 (),
-							   (__mmask8)(-1));
-#endif
 }
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_set1_epi64 (__m512i __O, __mmask8 __M, long long __A)
 {
-#ifdef TARGET_64BIT
   return (__m512i) __builtin_ia32_pbroadcastq512_gpr_mask (__A, (__v8di) __O,
 							   __M);
-#else
-  return (__m512i) __builtin_ia32_pbroadcastq512_mem_mask (__A, (__v8di) __O,
-							   __M);
-#endif
 }
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_maskz_set1_epi64 (__mmask8 __M, long long __A)
 {
-#ifdef TARGET_64BIT
   return (__m512i)
 	 __builtin_ia32_pbroadcastq512_gpr_mask (__A,
 						 (__v8di) _mm512_setzero_si512 (),
 						 __M);
-#else
-  return (__m512i)
-	 __builtin_ia32_pbroadcastq512_mem_mask (__A,
-						 (__v8di) _mm512_setzero_si512 (),
-						 __M);
-#endif
 }
 
 extern __inline __m512

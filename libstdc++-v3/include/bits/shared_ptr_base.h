@@ -476,7 +476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void*
       _M_get_deleter(const std::type_info& __ti) noexcept
       {
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 2400. shared_ptr's get_deleter() should use addressof()
         return __ti == typeid(_Deleter)
@@ -544,7 +544,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void*
       _M_get_deleter(const std::type_info& __ti) noexcept
       {
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	if (__ti == typeid(_Sp_make_shared_tag))
 	  return const_cast<typename remove_cv<_Tp>::type*>(_M_ptr());
 #endif
@@ -1087,7 +1087,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	owner_before(__weak_ptr<_Tp1, _Lp> const& __rhs) const
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
 
-#ifdef __GXX_RTTI
+#if __cpp_rtti
     protected:
       // This constructor is non-standard, it is used by allocate_shared.
       template<typename _Alloc, typename... _Args>
@@ -1106,7 +1106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc>
         struct _Deleter
         {
-          void operator()(_Tp* __ptr)
+          void operator()(typename _Alloc::value_type* __ptr)
           {
 	    __allocated_ptr<_Alloc> __guard{ _M_alloc, __ptr };
 	    allocator_traits<_Alloc>::destroy(_M_alloc, __guard.get());
@@ -1120,17 +1120,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_ptr(), _M_refcount()
 	{
 	  typedef typename allocator_traits<_Alloc>::template
-	    rebind_traits<_Tp> __traits;
+	    rebind_traits<typename std::remove_cv<_Tp>::type> __traits;
 	  _Deleter<typename __traits::allocator_type> __del = { __a };
 	  auto __guard = std::__allocate_guarded(__del._M_alloc);
-	  _M_ptr = __guard.get();
+	  auto __ptr = __guard.get();
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 2070. allocate_shared should use allocator_traits<A>::construct
-	  __traits::construct(__del._M_alloc, _M_ptr,
+	  __traits::construct(__del._M_alloc, __ptr,
 			      std::forward<_Args>(__args)...);
 	  __guard = nullptr;
-	  __shared_count<_Lp> __count(_M_ptr, __del, __del._M_alloc);
+	  __shared_count<_Lp> __count(__ptr, __del, __del._M_alloc);
 	  _M_refcount._M_swap(__count);
+	  _M_ptr = __ptr;
 	  __enable_shared_from_this_helper(_M_refcount, _M_ptr, _M_ptr);
 	}
 #endif

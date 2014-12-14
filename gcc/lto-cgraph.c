@@ -615,7 +615,8 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   bp_pack_value (&bp, node->force_output, 1);
   bp_pack_value (&bp, node->forced_by_abi, 1);
   bp_pack_value (&bp, node->unique_name, 1);
-  bp_pack_value (&bp, node->body_removed, 1);
+  bp_pack_value (&bp, node->body_removed
+		 || !lto_symtab_encoder_encode_initializer_p (encoder, node), 1);
   bp_pack_value (&bp, node->implicit_section, 1);
   bp_pack_value (&bp, node->writeonly, 1);
   bp_pack_value (&bp, node->definition, 1);
@@ -910,8 +911,11 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	{
 	  if (!lto_symtab_encoder_encode_initializer_p (encoder,
 							vnode)
-	      && (vnode->ctor_useable_for_folding_p ()
-		  || POINTER_BOUNDS_P (vnode->decl)))
+	      && (((vnode->ctor_useable_for_folding_p ()
+		   && (!DECL_VIRTUAL_P (vnode->decl)
+		       || !flag_wpa
+		       || flag_ltrans_devirtualize))
+		  || POINTER_BOUNDS_P (vnode->decl))))
 	    {
 	      lto_set_symtab_encoder_encode_initializer (encoder, vnode);
 	      create_references (encoder, vnode);
@@ -936,7 +940,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	    }
 	}
       /* Add all possible targets for late devirtualization.  */
-      if (flag_devirtualize)
+      if (flag_ltrans_devirtualize || !flag_wpa)
 	for (edge = node->indirect_calls; edge; edge = edge->next_callee)
 	  if (edge->indirect_info->polymorphic)
 	    {

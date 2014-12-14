@@ -62,6 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return false;
 
       typename match_results<_BiIter, _Alloc>::_Base_type& __res = __m;
+      __m._M_begin = __s;
       __res.resize(__re._M_automaton->_M_sub_count() + 2);
       for (auto& __it : __res)
 	__it.matched = false;
@@ -572,7 +573,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      auto& __prefix = _M_match.at(_M_match.size());
 		      __prefix.first = __prefix_first;
 		      __prefix.matched = __prefix.first != __prefix.second;
-		      _M_match._M_in_iterator = true;
+		      // [28.12.1.4.5]
 		      _M_match._M_begin = _M_begin;
 		      return *this;
 		    }
@@ -587,7 +588,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      auto& __prefix = _M_match.at(_M_match.size());
 	      __prefix.first = __prefix_first;
 	      __prefix.matched = __prefix.first != __prefix.second;
-	      _M_match._M_in_iterator = true;
+	      // [28.12.1.4.5]
 	      _M_match._M_begin = _M_begin;
 	    }
 	  else

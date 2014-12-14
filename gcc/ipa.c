@@ -123,21 +123,33 @@ process_references (symtab_node *snode,
   for (i = 0; snode->iterate_reference (i, ref); i++)
     {
       symtab_node *node = ref->referred;
+      symtab_node *body = node->ultimate_alias_target ();
 
       if (node->definition && !node->in_other_partition
 	  && ((!DECL_EXTERNAL (node->decl) || node->alias)
 	      || (((before_inlining_p
-		    && (symtab->state < IPA_SSA
-		        || !lookup_attribute ("always_inline",
-					      DECL_ATTRIBUTES (node->decl)))))
-		  /* We use variable constructors during late complation for
+		    && (TREE_CODE (node->decl) != FUNCTION_DECL
+			|| opt_for_fn (body->decl, optimize)
+		        || (symtab->state < IPA_SSA
+		            && lookup_attribute
+				 ("always_inline",
+			          DECL_ATTRIBUTES (body->decl))))))
+		  /* We use variable constructors during late compilation for
 		     constant folding.  Keep references alive so partitioning
 		     knows about potential references.  */
 		  || (TREE_CODE (node->decl) == VAR_DECL
 		      && flag_wpa
 		      && ctor_for_folding (node->decl)
 		         != error_mark_node))))
-	reachable->add (node);
+	{
+	  /* Be sure that we will not optimize out alias target
+	     body.  */
+	  if (DECL_EXTERNAL (node->decl)
+	      && node->alias
+	      && before_inlining_p)
+	    reachable->add (body);
+	  reachable->add (node);
+	}
       enqueue_node (node, first, reachable);
     }
 }
@@ -178,15 +190,23 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 		    (method_class_type (TREE_TYPE (n->decl))))
 	    continue;
 
+	   symtab_node *body = n->function_symbol ();
+
 	  /* Prior inlining, keep alive bodies of possible targets for
 	     devirtualization.  */
 	   if (n->definition
 	       && (before_inlining_p
-		   && (symtab->state < IPA_SSA
-		       || !lookup_attribute ("always_inline",
-					     DECL_ATTRIBUTES (n->decl)))))
-	     reachable->add (n);
-
+		   && opt_for_fn (body->decl, optimize)
+		   && opt_for_fn (body->decl, flag_devirtualize)))
+	      {
+		 /* Be sure that we will not optimize out alias target
+		    body.  */
+		 if (DECL_EXTERNAL (n->decl)
+		     && n->alias
+		     && before_inlining_p)
+		   reachable->add (body);
+		reachable->add (n);
+	      }
 	  /* Even after inlining we want to keep the possible targets in the
 	     boundary, so late passes can still produce direct call even if
 	     the chance for inlining is lost.  */
@@ -246,8 +266,6 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
      After inlining we release their bodies and turn them into unanalyzed
      nodes even when they are reachable.
 
-     BEFORE_INLINING_P specify whether we are before or after inlining.
-
    - virtual functions are kept in callgraph even if they seem unreachable in
      hope calls to them will be devirtualized. 
 
@@ -293,7 +311,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
    we set AUX pointer of processed symbols in the boundary to constant 2.  */
 
 bool
-symbol_table::remove_unreachable_nodes (bool before_inlining_p, FILE *file)
+symbol_table::remove_unreachable_nodes (FILE *file)
 {
   symtab_node *first = (symtab_node *) (void *) 1;
   struct cgraph_node *node, *next;
@@ -302,6 +320,8 @@ symbol_table::remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   hash_set<symtab_node *> reachable;
   hash_set<tree> body_needed_for_clonning;
   hash_set<void *> reachable_call_targets;
+  bool before_inlining_p = symtab->state < (!optimize ? IPA_SSA
+					    : IPA_SSA_AFTER_INLINING);
 
   timevar_push (TV_IPA_UNREACHABLE);
   build_type_inheritance_graph ();
@@ -414,19 +434,25 @@ symbol_table::remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		}
 	      for (e = cnode->callees; e; e = e->next_callee)
 		{
+	          symtab_node *body = e->callee->function_symbol ();
 		  if (e->callee->definition
 		      && !e->callee->in_other_partition
 		      && (!e->inline_failed
 			  || !DECL_EXTERNAL (e->callee->decl)
 			  || e->callee->alias
-			  || before_inlining_p))
+			  || (before_inlining_p
+			      && (opt_for_fn (body->decl, optimize)
+		                  || (symtab->state < IPA_SSA
+		                      && lookup_attribute
+				          ("always_inline",
+				           DECL_ATTRIBUTES (body->decl)))))))
 		    {
 		      /* Be sure that we will not optimize out alias target
 			 body.  */
 		      if (DECL_EXTERNAL (e->callee->decl)
 			  && e->callee->alias
 			  && before_inlining_p)
-			reachable.add (e->callee->function_symbol ());
+			reachable.add (body);
 		      reachable.add (e->callee);
 		    }
 		  enqueue_node (e->callee, &first, &reachable);
@@ -1219,14 +1245,15 @@ propagate_single_user (varpool_node *vnode, cgraph_node *function,
 	    function = BOTTOM;
 	}
       else
-        function = meet (function, dyn_cast <varpool_node *> (ref->referring), single_user_map);
+	function = meet (function, dyn_cast <varpool_node *> (ref->referring),
+			 single_user_map);
     }
   return function;
 }
 
 /* Pass setting used_by_single_function flag.
-   This flag is set on variable when there is only one function that may possibly
-   referr to it.  */
+   This flag is set on variable when there is only one function that may
+   possibly referr to it.  */
 
 static unsigned int
 ipa_single_use (void)
@@ -1304,7 +1331,10 @@ ipa_single_use (void)
       if (var->aux != BOTTOM)
 	{
 #ifdef ENABLE_CHECKING
-	  if (!single_user_map.get (var))
+	  /* Not having the single user known means that the VAR is
+	     unreachable.  Either someone forgot to remove unreachable
+	     variables or the reachability here is wrong.  */
+
           gcc_assert (single_user_map.get (var));
 #endif
 	  if (dump_file)

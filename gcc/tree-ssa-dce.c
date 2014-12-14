@@ -292,8 +292,7 @@ mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
       break;
 
     case GIMPLE_ASSIGN:
-      if (TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
-	  && TREE_CLOBBER_P (gimple_assign_rhs1 (stmt)))
+      if (gimple_clobber_p (stmt))
 	return;
       break;
 
@@ -1362,6 +1361,25 @@ eliminate_unnecessary_stmts (void)
 	  /* If GSI is not necessary then remove it.  */
 	  if (!gimple_plf (stmt, STMT_NECESSARY))
 	    {
+	      /* Keep clobbers that we can keep live live.  */
+	      if (gimple_clobber_p (stmt))
+		{
+		  ssa_op_iter iter;
+		  use_operand_p use_p;
+		  bool dead = false;
+		  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+		    {
+		      tree name = USE_FROM_PTR (use_p);
+		      if (!SSA_NAME_IS_DEFAULT_DEF (name)
+			  && !bitmap_bit_p (processed, SSA_NAME_VERSION (name)))
+			{
+			  dead = true;
+			  break;
+			}
+		    }
+		  if (!dead)
+		    continue;
+		}
 	      if (!is_gimple_debug (stmt))
 		something_changed = true;
 	      remove_dead_stmt (&gsi, bb);

@@ -966,8 +966,8 @@ eliminate_using_constants (enum tree_code opcode,
 	case MULT_EXPR:
 	  if (integer_zerop (oelast->op)
 	      || (FLOAT_TYPE_P (type)
-		  && !HONOR_NANS (TYPE_MODE (type))
-		  && !HONOR_SIGNED_ZEROS (TYPE_MODE (type))
+		  && !HONOR_NANS (type)
+		  && !HONOR_SIGNED_ZEROS (type)
 		  && real_zerop (oelast->op)))
 	    {
 	      if (ops->length () != 1)
@@ -983,7 +983,7 @@ eliminate_using_constants (enum tree_code opcode,
 	    }
 	  else if (integer_onep (oelast->op)
 		   || (FLOAT_TYPE_P (type)
-		       && !HONOR_SNANS (TYPE_MODE (type))
+		       && !HONOR_SNANS (type)
 		       && real_onep (oelast->op)))
 	    {
 	      if (ops->length () != 1)
@@ -2069,7 +2069,7 @@ range_entry_cmp (const void *a, const void *b)
 	      else
 		return -1;
 	    }
-	  else if (p->high != NULL_TREE)
+	  else if (q->high != NULL_TREE)
 	    return 1;
 	  /* If both ranges are the same, sort below by ascending idx.  */
 	}

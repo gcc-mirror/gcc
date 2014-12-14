@@ -1,4 +1,4 @@
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fno-ipa-icf" } */
 
 void runtime_error (void) __attribute__ ((noreturn));
 void compiletime_error (void) __attribute__ ((noreturn, error ("")));

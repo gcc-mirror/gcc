@@ -160,7 +160,7 @@ associate_equivalences_with_edges (void)
 		     the sign of a variable compared against zero.  If
 		     we're honoring signed zeros, then we cannot record
 		     this value unless we know that the value is nonzero.  */
-		  if (HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (op0)))
+		  if (HONOR_SIGNED_ZEROS (op0)
 		      && (TREE_CODE (op1) != REAL_CST
 			  || REAL_VALUES_EQUAL (dconst0, TREE_REAL_CST (op1))))
 		    continue;

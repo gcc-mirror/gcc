@@ -182,16 +182,16 @@ recording::context::context (context *parent_ctxt)
   if (parent_ctxt)
     {
       /* Inherit options from parent.
-         Note that the first memcpy means copying pointers to strings.  */
+	 Note that the first memcpy means copying pointers to strings.  */
       memcpy (m_str_options,
-              parent_ctxt->m_str_options,
-              sizeof (m_str_options));
+	      parent_ctxt->m_str_options,
+	      sizeof (m_str_options));
       memcpy (m_int_options,
-              parent_ctxt->m_int_options,
-              sizeof (m_int_options));
+	      parent_ctxt->m_int_options,
+	      sizeof (m_int_options));
       memcpy (m_bool_options,
-              parent_ctxt->m_bool_options,
-              sizeof (m_bool_options));
+	      parent_ctxt->m_bool_options,
+	      sizeof (m_bool_options));
     }
   else
     {
@@ -214,6 +214,9 @@ recording::context::~context ()
     {
       delete m;
     }
+
+  for (i = 0; i < GCC_JIT_NUM_STR_OPTIONS; ++i)
+    free (m_str_options[i]);
 
   if (m_builtins_manager)
     delete m_builtins_manager;
@@ -827,7 +830,8 @@ recording::context::set_str_option (enum gcc_jit_str_option opt,
 		 "unrecognized (enum gcc_jit_str_option) value: %i", opt);
       return;
     }
-  m_str_options[opt] = value;
+  free (m_str_options[opt]);
+  m_str_options[opt] = xstrdup (value);
 }
 
 /* Set the given integer option for this context, or add an error if
@@ -1950,10 +1954,10 @@ recording::fields::replay_into (replayer *)
    declaration of this form:
 
       struct/union NAME {
-        TYPE_1 NAME_1;
-        TYPE_2 NAME_2;
+	TYPE_1 NAME_1;
+	TYPE_2 NAME_2;
 	....
-        TYPE_N NAME_N;
+	TYPE_N NAME_N;
       };
 
     to the dump.  */

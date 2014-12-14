@@ -168,16 +168,18 @@ namespace std
     exception_ptr 
     make_exception_ptr(_Ex __ex) _GLIBCXX_USE_NOEXCEPT
     {
-      __try
+#if __cpp_exceptions
+      try
 	{
-#ifdef __EXCEPTIONS
 	  throw __ex;
-#endif
 	}
-      __catch(...)
+      catch(...)
 	{
 	  return current_exception();
 	}
+#else
+      return exception_ptr();
+#endif
     }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS

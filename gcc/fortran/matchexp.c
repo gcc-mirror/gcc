@@ -69,7 +69,7 @@ gfc_match_defined_op_name (char *result, int error_flag)
   for (i = 0; name[i]; i++)
     if (!ISALPHA (name[i]))
       {
-	gfc_error ("Bad character '%c' in OPERATOR name at %C", name[i]);
+	gfc_error ("Bad character %<%c%> in OPERATOR name at %C", name[i]);
 	return MATCH_ERROR;
       }
 
@@ -77,7 +77,7 @@ gfc_match_defined_op_name (char *result, int error_flag)
   return MATCH_YES;
 
 error:
-  gfc_error ("The name '%s' cannot be used as a defined operator at %C",
+  gfc_error ("The name %qs cannot be used as a defined operator at %C",
 	     name);
 
   gfc_current_locus = old_loc;

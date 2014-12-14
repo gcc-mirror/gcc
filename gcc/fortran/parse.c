@@ -107,13 +107,14 @@ match_word_omp_simd (const char *str, match (*subr) (void), locus *old_locus,
 static void
 use_modules (void)
 {
-  gfc_error_buf old_error;
+  gfc_error_buf old_error_1;
+  output_buffer old_error;
 
-  gfc_push_error (&old_error);
+  gfc_push_error (&old_error, &old_error_1);
   gfc_buffer_error (false);
   gfc_use_modules ();
   gfc_buffer_error (true);
-  gfc_pop_error (&old_error);
+  gfc_pop_error (&old_error, &old_error_1);
   gfc_commit_symbols ();
   gfc_warning_check ();
   gfc_current_ns->old_cl_list = gfc_current_ns->cl_list;
@@ -2202,7 +2203,7 @@ verify_st_order (st_state *p, gfc_statement st, bool silent)
 
 order:
   if (!silent)
-    gfc_error ("%s statement at %C cannot follow %s statement at %L",
+    gfc_error_1 ("%s statement at %C cannot follow %s statement at %L",
 	       gfc_ascii_statement (st),
 	       gfc_ascii_statement (p->last_statement), &p->where);
 
@@ -2219,7 +2220,7 @@ unexpected_eof (void)
 {
   gfc_state_data *p;
 
-  gfc_error ("Unexpected end of file in '%s'", gfc_source_file);
+  gfc_error ("Unexpected end of file in %qs", gfc_source_file);
 
   /* Memory cleanup.  Move to "second to last".  */
   for (p = gfc_state_stack; p && p->previous && p->previous->previous;
@@ -2251,10 +2252,10 @@ parse_derived_contains (void)
   /* Derived-types with SEQUENCE and/or BIND(C) must not have a CONTAINS
      section.  */
   if (gfc_current_block ()->attr.sequence)
-    gfc_error ("Derived-type '%s' with SEQUENCE must not have a CONTAINS"
+    gfc_error ("Derived-type %qs with SEQUENCE must not have a CONTAINS"
 	       " section at %C", gfc_current_block ()->name);
   if (gfc_current_block ()->attr.is_bind_c)
-    gfc_error ("Derived-type '%s' with BIND(C) must not have a CONTAINS"
+    gfc_error ("Derived-type %qs with BIND(C) must not have a CONTAINS"
 	       " section at %C", gfc_current_block ()->name);
 
   accept_statement (ST_CONTAINS);
@@ -2579,7 +2580,7 @@ endType:
 		   "subcomponent exists)", c->name, &c->loc, sym->name);
 
       if (sym->attr.lock_comp && coarray && !lock_type)
-	gfc_error ("Noncoarray component %s at %L of type LOCK_TYPE or with "
+	gfc_error_1 ("Noncoarray component %s at %L of type LOCK_TYPE or with "
 		   "subcomponent of type LOCK_TYPE must have a codimension or "
 		   "be a subcomponent of a coarray. (Variables of type %s may "
 		   "not have a codimension as %s at %L has a codimension or a "
@@ -2738,7 +2739,7 @@ loop:
     {
       gfc_add_abstract (&gfc_new_block->attr, &gfc_current_locus);
       if (gfc_is_intrinsic_typename (gfc_new_block->name))
-	gfc_error ("Name '%s' of ABSTRACT INTERFACE at %C "
+	gfc_error ("Name %qs of ABSTRACT INTERFACE at %C "
 		   "cannot be the same as an intrinsic type",
 		   gfc_new_block->name);
     }
@@ -2789,7 +2790,7 @@ decl:
 	&& current_interface.ns->proc_name
 	&& strcmp (current_interface.ns->proc_name->name,
 		   prog_unit->name) == 0)
-    gfc_error ("INTERFACE procedure '%s' at %L has the same name as the "
+    gfc_error ("INTERFACE procedure %qs at %L has the same name as the "
 	       "enclosing procedure", prog_unit->name,
 	       &current_interface.ns->proc_name->declared_at);
 
@@ -3087,11 +3088,11 @@ declSt:
     {
       ts = &gfc_current_block ()->result->ts;
       if (ts->type != BT_DERIVED)
-	gfc_error ("Bad kind expression for function '%s' at %L",
+	gfc_error ("Bad kind expression for function %qs at %L",
 		   gfc_current_block ()->name,
 		   &gfc_current_block ()->declared_at);
       else
-	gfc_error ("The type for function '%s' at %L is not accessible",
+	gfc_error ("The type for function %qs at %L is not accessible",
 		   gfc_current_block ()->name,
 		   &gfc_current_block ()->declared_at);
 
@@ -3281,7 +3282,7 @@ parse_if_block (void)
 	case ST_ELSEIF:
 	  if (seen_else)
 	    {
-	      gfc_error ("ELSE IF statement at %C cannot follow ELSE "
+	      gfc_error_1 ("ELSE IF statement at %C cannot follow ELSE "
 			 "statement at %L", &else_locus);
 
 	      reject_statement ();
@@ -4466,7 +4467,7 @@ parse_contained (int module)
 	  if (!module)
 	    {
 	      if (gfc_get_symbol (gfc_new_block->name, parent_ns, &sym))
-		gfc_error ("Contained procedure '%s' at %C is already "
+		gfc_error ("Contained procedure %qs at %C is already "
 			   "ambiguous", gfc_new_block->name);
 	      else
 		{
@@ -4674,10 +4675,10 @@ gfc_global_used (gfc_gsymbol *sym, locus *where)
     }
 
   if (sym->binding_label)
-    gfc_error ("Global binding name '%s' at %L is already being used as a %s "
+    gfc_error_1 ("Global binding name '%s' at %L is already being used as a %s "
 	       "at %L", sym->binding_label, where, name, &sym->where);
   else
-    gfc_error ("Global name '%s' at %L is already being used as a %s at %L",
+    gfc_error_1 ("Global name '%s' at %L is already being used as a %s at %L",
 	       sym->name, where, name, &sym->where);
 }
 

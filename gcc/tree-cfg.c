@@ -1781,7 +1781,8 @@ replace_uses_by (tree name, tree val)
 	    {
 	      e = gimple_phi_arg_edge (as_a <gphi *> (stmt),
 				       PHI_ARG_INDEX_FROM_USE (use));
-	      if (e->flags & EDGE_ABNORMAL)
+	      if (e->flags & EDGE_ABNORMAL
+		  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val))
 		{
 		  /* This can only occur for virtual operands, since
 		     for the real ones SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))

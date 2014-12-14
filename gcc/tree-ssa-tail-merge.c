@@ -1197,8 +1197,7 @@ gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
 		  != bitmap_bit_p (same_succ->inverse, bb2->index));
       if (inv_cond)
 	{
-	  bool honor_nans
-	    = HONOR_NANS (TYPE_MODE (TREE_TYPE (gimple_cond_lhs (s1))));
+	  bool honor_nans = HONOR_NANS (t1);
 	  code2 = invert_tree_comparison (code2, honor_nans);
 	}
       return code1 == code2;

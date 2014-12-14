@@ -471,7 +471,7 @@ enum gomp_cancel_kind
 
 /* ... and here is that TLS data.  */
 
-#ifdef HAVE_TLS
+#if defined HAVE_TLS || defined USE_EMUTLS
 extern __thread struct gomp_thread gomp_tls_data;
 static inline struct gomp_thread *gomp_thread (void)
 {

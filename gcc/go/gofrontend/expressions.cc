@@ -8525,6 +8525,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
               || fntype->is_builtin()))
 	{
 	  Call_expression* call = this->args_->front()->call_expression();
+	  call->set_is_multi_value_arg();
 	  Expression_list* args = new Expression_list;
 	  for (size_t i = 0; i < rc; ++i)
 	    args->push_back(Expression::make_call_result(call, i));
@@ -13656,6 +13657,9 @@ class Type_descriptor_expression : public Expression
   { }
 
  protected:
+  int
+  do_traverse(Traverse*);
+
   Type*
   do_type()
   { return Type::make_type_descriptor_ptr_type(); }
@@ -13686,6 +13690,14 @@ class Type_descriptor_expression : public Expression
   // The type for which this is the descriptor.
   Type* type_;
 };
+
+int
+Type_descriptor_expression::do_traverse(Traverse* traverse)
+{
+  if (Type::traverse(this->type_, traverse) == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
+  return TRAVERSE_CONTINUE;
+}
 
 // Dump ast representation for a type descriptor expression.
 

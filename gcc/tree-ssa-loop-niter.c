@@ -1642,7 +1642,8 @@ expand_simple_operations (tree expr)
 
     case PLUS_EXPR:
     case MINUS_EXPR:
-      if (TYPE_OVERFLOW_TRAPS (TREE_TYPE (expr)))
+      if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (expr))
+	  && TYPE_OVERFLOW_TRAPS (TREE_TYPE (expr)))
 	return expr;
       /* Fallthru.  */
     case POINTER_PLUS_EXPR:

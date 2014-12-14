@@ -19,9 +19,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see http://www.gnu.org/licenses/.
 
-# If you want to build GCC with the Graphite loop optimizations,
-# set GRAPHITE_LOOP_OPT=yes to download optional prerequisties
-# ISL Library and CLooG.
+# If you want to disable Graphite loop optimizations while building GCC,
+# DO NOT set GRAPHITE_LOOP_OPT as yes so that the ISL package will not
+# be downloaded.
 GRAPHITE_LOOP_OPT=yes
 
 # Necessary to build GCC.
