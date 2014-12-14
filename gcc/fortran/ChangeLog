@@ -1,3 +1,16 @@
+2014-12-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/63674
+	* resolve.c (pure_function): Treat procedure-pointer components.
+	(check_pure_function): New function.
+	(resolve_function): Use it.
+	(pure_subroutine): Return a bool to indicate success and modify
+	arguments.
+	(resolve_generic_s0,resolve_specific_s0,resolve_unknown_s): Use return
+	value of 'pure_subroutine'.
+	(resolve_ppc_call): Call 'pure_subroutine'.
+	(resolve_expr_ppc): Call 'check_pure_function'.
+
 2014-12-13  Tobias Burnus  <burnus@net-b.de>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 

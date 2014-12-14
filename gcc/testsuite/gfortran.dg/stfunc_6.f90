@@ -22,7 +22,7 @@
 contains
   pure integer function u (x)
     integer,intent(in) :: x
-    st2 (i) = i * v(i) ! { dg-error "non-PURE procedure" }
+    st2 (i) = i * v(i) ! { dg-error "non-PURE function" }
     u = st2(x)
   end function
   integer function v (x)

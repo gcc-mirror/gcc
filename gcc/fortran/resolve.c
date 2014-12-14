@@ -2746,6 +2746,7 @@ static int
 pure_function (gfc_expr *e, const char **name)
 {
   int pure;
+  gfc_component *comp;
 
   *name = NULL;
 
@@ -2754,7 +2755,13 @@ pure_function (gfc_expr *e, const char **name)
         && e->symtree->n.sym->attr.proc == PROC_ST_FUNCTION)
     return pure_stmt_function (e, e->symtree->n.sym);
 
-  if (e->value.function.esym)
+  comp = gfc_get_proc_ptr_comp (e);
+  if (comp)
+    {
+      pure = gfc_pure (comp->ts.interface);
+      *name = comp->name;
+    }
+  else if (e->value.function.esym)
     {
       pure = gfc_pure (e->value.function.esym);
       *name = e->value.function.esym->name;
@@ -2801,6 +2808,39 @@ pure_stmt_function (gfc_expr *e, gfc_symbol *sym)
 }
 
 
+/* Check if a non-pure function function is allowed in the current context. */
+
+static bool check_pure_function (gfc_expr *e)
+{
+  const char *name = NULL;
+  if (!pure_function (e, &name) && name)
+    {
+      if (forall_flag)
+	{
+	  gfc_error ("Reference to non-PURE function %qs at %L inside a "
+		     "FORALL %s", name, &e->where,
+		     forall_flag == 2 ? "mask" : "block");
+	  return false;
+	}
+      else if (gfc_do_concurrent_flag)
+	{
+	  gfc_error ("Reference to non-PURE function %qs at %L inside a "
+		     "DO CONCURRENT %s", name, &e->where,
+		     gfc_do_concurrent_flag == 2 ? "mask" : "block");
+	  return false;
+	}
+      else if (gfc_pure (NULL))
+	{
+	  gfc_error ("Reference to non-PURE function %qs at %L "
+		     "within a PURE procedure", name, &e->where);
+	  return false;
+	}
+      gfc_unset_implicit_pure (NULL);
+    }
+  return true;
+}
+
+
 /* Resolve a function call, which means resolving the arguments, then figuring
    out which entity the name refers to.  */
 
@@ -2809,7 +2849,6 @@ resolve_function (gfc_expr *expr)
 {
   gfc_actual_arglist *arg;
   gfc_symbol *sym;
-  const char *name;
   bool t;
   int temp;
   procedure_type p = PROC_INTRINSIC;
@@ -2982,33 +3021,9 @@ resolve_function (gfc_expr *expr)
 #undef GENERIC_ID
 
   need_full_assumed_size = temp;
-  name = NULL;
 
-  if (!pure_function (expr, &name) && name)
-    {
-      if (forall_flag)
-	{
-	  gfc_error ("Reference to non-PURE function %qs at %L inside a "
-		     "FORALL %s", name, &expr->where,
-		     forall_flag == 2 ? "mask" : "block");
-	  t = false;
-	}
-      else if (gfc_do_concurrent_flag)
-	{
-	  gfc_error ("Reference to non-PURE function %qs at %L inside a "
-		     "DO CONCURRENT %s", name, &expr->where,
-		     gfc_do_concurrent_flag == 2 ? "mask" : "block");
-	  t = false;
-	}
-      else if (gfc_pure (NULL))
-	{
-	  gfc_error ("Function reference to %qs at %L is to a non-PURE "
-		     "procedure within a PURE procedure", name, &expr->where);
-	  t = false;
-	}
-
-      gfc_unset_implicit_pure (NULL);
-    }
+  if (!check_pure_function(expr))
+    t = false;
 
   /* Functions without the RECURSIVE attribution are not allowed to
    * call themselves.  */
@@ -3056,23 +3071,32 @@ resolve_function (gfc_expr *expr)
 
 /************* Subroutine resolution *************/
 
-static void
-pure_subroutine (gfc_code *c, gfc_symbol *sym)
+static bool
+pure_subroutine (gfc_symbol *sym, const char *name, locus *loc)
 {
   if (gfc_pure (sym))
-    return;
+    return true;
 
   if (forall_flag)
-    gfc_error ("Subroutine call to %qs in FORALL block at %L is not PURE",
-	       sym->name, &c->loc);
+    {
+      gfc_error ("Subroutine call to %qs in FORALL block at %L is not PURE",
+		 name, loc);
+      return false;
+    }
   else if (gfc_do_concurrent_flag)
-    gfc_error ("Subroutine call to %qs in DO CONCURRENT block at %L is not "
-	       "PURE", sym->name, &c->loc);
+    {
+      gfc_error ("Subroutine call to %qs in DO CONCURRENT block at %L is not "
+		 "PURE", name, loc);
+      return false;
+    }
   else if (gfc_pure (NULL))
-    gfc_error ("Subroutine call to %qs at %L is not PURE", sym->name,
-	       &c->loc);
+    {
+      gfc_error ("Subroutine call to %qs at %L is not PURE", name, loc);
+      return false;
+    }
 
   gfc_unset_implicit_pure (NULL);
+  return true;
 }
 
 
@@ -3087,7 +3111,8 @@ resolve_generic_s0 (gfc_code *c, gfc_symbol *sym)
       if (s != NULL)
 	{
 	  c->resolved_sym = s;
-	  pure_subroutine (c, s);
+	  if (!pure_subroutine (s, s->name, &c->loc))
+	    return MATCH_ERROR;
 	  return MATCH_YES;
 	}
 
@@ -3190,7 +3215,8 @@ found:
   gfc_procedure_use (sym, &c->ext.actual, &c->loc);
 
   c->resolved_sym = sym;
-  pure_subroutine (c, sym);
+  if (!pure_subroutine (sym, sym->name, &c->loc))
+    return MATCH_ERROR;
 
   return MATCH_YES;
 }
@@ -3260,9 +3286,7 @@ found:
 
   c->resolved_sym = sym;
 
-  pure_subroutine (c, sym);
-
-  return true;
+  return pure_subroutine (sym, sym->name, &c->loc);
 }
 
 
@@ -6036,6 +6060,9 @@ resolve_ppc_call (gfc_code* c)
 				 && comp->ts.interface->formal)))
     return false;
 
+  if (!pure_subroutine (comp->ts.interface, comp->name, &c->expr1->where))
+    return false;
+
   gfc_ppc_use (comp, &c->expr1->value.compcall.actual, &c->expr1->where);
 
   return true;
@@ -6072,6 +6099,9 @@ resolve_expr_ppc (gfc_expr* e)
     return false;
 
   if (!update_ppc_arglist (e))
+    return false;
+
+  if (!check_pure_function(e))
     return false;
 
   gfc_ppc_use (comp, &e->value.compcall.actual, &e->where);
