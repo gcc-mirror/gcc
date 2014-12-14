@@ -13657,6 +13657,9 @@ class Type_descriptor_expression : public Expression
   { }
 
  protected:
+  int
+  do_traverse(Traverse*);
+
   Type*
   do_type()
   { return Type::make_type_descriptor_ptr_type(); }
@@ -13687,6 +13690,14 @@ class Type_descriptor_expression : public Expression
   // The type for which this is the descriptor.
   Type* type_;
 };
+
+int
+Type_descriptor_expression::do_traverse(Traverse* traverse)
+{
+  if (Type::traverse(this->type_, traverse) == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
+  return TRAVERSE_CONTINUE;
+}
 
 // Dump ast representation for a type descriptor expression.
 
