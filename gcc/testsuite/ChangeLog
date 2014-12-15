@@ -1,4 +1,9 @@
-2014-12-14  Jan HUbicka  <hubicka@ucw.cz>
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>	
+	
+	PR ipa/61558
+	* g++.dg/torture/pr61558.C: New testcase.
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/64043
 	* g++.dg/lto/pr64043_0.C: New testcase.
