@@ -186,7 +186,7 @@ along with GCC; see the file COPYING3.  If not see
    (if (flag_reciprocal_math
 	&& !real_zerop (@1))
     (with
-     { tree tem = fold_binary (RDIV_EXPR, type, build_one_cst (type), @1); }
+     { tree tem = const_binop (RDIV_EXPR, type, build_one_cst (type), @1); }
      (if (tem)
       (mult @0 { tem; } ))))
    (if (cst != COMPLEX_CST)
