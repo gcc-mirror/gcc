@@ -1,3 +1,9 @@
+2014-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58882
+	* g++.dg/ext/desig8.C: New.
+	* g++.dg/cpp0x/desig1.C: Likewise.
+
 2014-12-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/63727
@@ -23,8 +29,9 @@
 	instead of %e in regexps trying to match 32-bit GPR.
 	* gcc.target/i386/avx512f-vpbroadcastd-1.c: Likewise.
 	* gcc.target/i386/avx512vl-vpbroadcastd-1.c: Likewise.
-	* gcc.target/i386/avx512vl-vmovdqa64-1.c: Restrict some scan-assembler-times
-	lines to nonpic targets only.  Fix up \[^\n^x^y\] to \[^\nxy\].
+	* gcc.target/i386/avx512vl-vmovdqa64-1.c: Restrict some
+	scan-assembler-times lines to nonpic targets only.
+	Fix up \[^\n^x^y\] to \[^\nxy\].
 
 2014-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
