@@ -1,3 +1,12 @@
+2014-12-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/63674
+	* gfortran.dg/forall_5.f90: Modified error message.
+	* gfortran.dg/proc_ptr_comp_39.f90: Ditto.
+	* gfortran.dg/pure_dummy_length_1.f90: Ditto.
+	* gfortran.dg/stfunc_6.f90: Ditto.
+	* gfortran.dg/typebound_operator_4.f90: Ditto.
+
 2014-12-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64284

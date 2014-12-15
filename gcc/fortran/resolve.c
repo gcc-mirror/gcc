@@ -2808,7 +2808,7 @@ pure_stmt_function (gfc_expr *e, gfc_symbol *sym)
 }
 
 
-/* Check if a non-pure function function is allowed in the current context. */
+/* Check if an impure function is allowed in the current context. */
 
 static bool check_pure_function (gfc_expr *e)
 {
@@ -2817,21 +2817,21 @@ static bool check_pure_function (gfc_expr *e)
     {
       if (forall_flag)
 	{
-	  gfc_error ("Reference to non-PURE function %qs at %L inside a "
+	  gfc_error ("Reference to impure function %qs at %L inside a "
 		     "FORALL %s", name, &e->where,
 		     forall_flag == 2 ? "mask" : "block");
 	  return false;
 	}
       else if (gfc_do_concurrent_flag)
 	{
-	  gfc_error ("Reference to non-PURE function %qs at %L inside a "
+	  gfc_error ("Reference to impure function %qs at %L inside a "
 		     "DO CONCURRENT %s", name, &e->where,
 		     gfc_do_concurrent_flag == 2 ? "mask" : "block");
 	  return false;
 	}
       else if (gfc_pure (NULL))
 	{
-	  gfc_error ("Reference to non-PURE function %qs at %L "
+	  gfc_error ("Reference to impure function %qs at %L "
 		     "within a PURE procedure", name, &e->where);
 	  return false;
 	}

@@ -25,7 +25,7 @@ contains
   pure integer function eval(a)
     type(t), intent(in) :: a
     eval = a%pf()
-    eval = a%nf()   ! { dg-error "Reference to non-PURE function" }
+    eval = a%nf()   ! { dg-error "Reference to impure function" }
     call a%ps()
     call a%ns()     ! { dg-error "is not PURE" }
   end function
