@@ -159,10 +159,6 @@ static void expand_static_init (tree, tree);
 
 	tree abort_fndecl;
 
-   The FUNCTION_DECL for the default `::operator delete'.
-
-	tree global_delete_fndecl;
-
    Used by RTTI
 	tree type_info_type_node, tinfo_decl_id, tinfo_decl_type;
 	tree tinfo_var_id;  */
@@ -3954,8 +3950,22 @@ cxx_init_decl_processing (void)
     opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
     DECL_IS_MALLOC (opnew) = 1;
     DECL_IS_OPERATOR_NEW (opnew) = 1;
-    global_delete_fndecl = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
+    push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
     push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+    if (flag_sized_deallocation)
+      {
+	/* Also push the sized deallocation variants:
+	     void operator delete(void*, std::size_t) throw();
+	     void operator delete[](void*, std::size_t) throw();  */
+	tree void_ftype_ptr_size
+	  = build_function_type_list (void_type_node, ptr_type_node,
+				      size_type_node, NULL_TREE);
+	deltype = cp_build_type_attribute_variant (void_ftype_ptr_size,
+						   extvisattr);
+	deltype = build_exception_variant (deltype, empty_except_spec);
+	push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
+	push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+      }
 
     nullptr_type_node = make_node (NULLPTR_TYPE);
     TYPE_SIZE (nullptr_type_node) = bitsize_int (GET_MODE_BITSIZE (ptr_mode));
@@ -11744,6 +11754,16 @@ grok_op_properties (tree decl, bool complain)
 	    {
 	      error ("%qD may not be declared as static", decl);
 	      return false;
+	    }
+	  if (!flag_sized_deallocation && warn_cxx14_compat)
+	    {
+	      tree parm = FUNCTION_ARG_CHAIN (decl);
+	      if (parm && same_type_p (TREE_VALUE (parm), size_type_node)
+		  && TREE_CHAIN (parm) == void_list_node)
+		warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc__14_compat,
+			    "%qD is a usual (non-placement) deallocation "
+			    "function in C++14 (or with -fsized-deallocation)",
+			    decl);
 	    }
 	}
     }

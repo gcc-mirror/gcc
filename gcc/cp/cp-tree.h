@@ -891,7 +891,6 @@ enum cp_tree_index
     CPTI_CONST_TYPE_INFO_TYPE,
     CPTI_TYPE_INFO_PTR_TYPE,
     CPTI_ABORT_FNDECL,
-    CPTI_GLOBAL_DELETE_FNDECL,
     CPTI_AGGR_TAG,
 
     CPTI_CTOR_IDENTIFIER,
@@ -962,7 +961,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define const_type_info_type_node	cp_global_trees[CPTI_CONST_TYPE_INFO_TYPE]
 #define type_info_ptr_type		cp_global_trees[CPTI_TYPE_INFO_PTR_TYPE]
 #define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
-#define global_delete_fndecl		cp_global_trees[CPTI_GLOBAL_DELETE_FNDECL]
 #define current_aggr			cp_global_trees[CPTI_AGGR_TAG]
 #define nullptr_node			cp_global_trees[CPTI_NULLPTR]
 #define nullptr_type_node		cp_global_trees[CPTI_NULLPTR_TYPE]
@@ -5185,6 +5183,7 @@ extern tree build_new_op			(location_t, enum tree_code,
 						 tsubst_flags_t);
 extern tree build_op_call			(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
+extern bool non_placement_deallocation_fn_p	(tree);
 extern tree build_op_delete_call		(enum tree_code, tree, tree,
 						 bool, tree, tree,
 						 tsubst_flags_t);

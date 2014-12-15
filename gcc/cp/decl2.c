@@ -4308,6 +4308,47 @@ dump_tu (void)
     }
 }
 
+/* Check the deallocation functions for CODE to see if we want to warn that
+   only one was defined.  */
+
+static void
+maybe_warn_sized_delete (enum tree_code code)
+{
+  tree sized = NULL_TREE;
+  tree unsized = NULL_TREE;
+
+  for (tree ovl = IDENTIFIER_GLOBAL_VALUE (ansi_opname (code));
+       ovl; ovl = OVL_NEXT (ovl))
+    {
+      tree fn = OVL_CURRENT (ovl);
+      /* We're only interested in usual deallocation functions.  */
+      if (!non_placement_deallocation_fn_p (fn))
+	continue;
+      if (FUNCTION_ARG_CHAIN (fn) == void_list_node)
+	unsized = fn;
+      else
+	sized = fn;
+    }
+  if (DECL_INITIAL (unsized) && !DECL_INITIAL (sized))
+    warning_at (DECL_SOURCE_LOCATION (unsized), OPT_Wsized_deallocation,
+		"the program should also define %qD", sized);
+  else if (!DECL_INITIAL (unsized) && DECL_INITIAL (sized))
+    warning_at (DECL_SOURCE_LOCATION (sized), OPT_Wsized_deallocation,
+		"the program should also define %qD", unsized);
+}
+
+/* Check the global deallocation functions to see if we want to warn about
+   defining unsized without sized (or vice versa).  */
+
+static void
+maybe_warn_sized_delete ()
+{
+  if (!flag_sized_deallocation || !warn_sized_deallocation)
+    return;
+  maybe_warn_sized_delete (DELETE_EXPR);
+  maybe_warn_sized_delete (VEC_DELETE_EXPR);
+}
+
 /* This routine is called at the end of compilation.
    Its job is to create all the code needed to initialize and
    destroy the global aggregates.  We do the destruction
@@ -4637,6 +4678,8 @@ cp_write_global_declarations (void)
   /* So must decls that use a type with no linkage.  */
   FOR_EACH_VEC_SAFE_ELT (no_linkage_decls, i, decl)
     no_linkage_error (decl);
+
+  maybe_warn_sized_delete ();
 
   /* Then, do the Objective-C stuff.  This is where all the
      Objective-C module stuff gets generated (symtab,
