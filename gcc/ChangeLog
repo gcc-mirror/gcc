@@ -1,5 +1,11 @@
 2014-12-15  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/64295
+	* match.pd (X / CST -> X * (1 / CST): Use const_binop instead of
+	fold_binary to compute the constant to multiply with.
+
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/64246
 	* cfgloop.c (mark_loop_for_removal): Make safe against multiple
 	invocations on the same loop.

@@ -1,5 +1,10 @@
 2014-12-15  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/64295
+	* gcc.dg/pr64295.c: New testcase.
+
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/64246
 	* gnat.dg/opt46.adb: New testcase.
 	* gnat.dg/opt46.ads: Likewise.
