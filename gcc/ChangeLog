@@ -1,3 +1,9 @@
+2014-12-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/64043
+	* tree-streamer.c (preload_common_nodes): Skip preloading
+	of main_identifier_node, pid_type and optimization/option nodes.
+
 2014-12-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/63397
@@ -91,6 +97,16 @@
 	PR tree-optimization/64284
 	* tree-ssa-threadupdate.c (duplicate_seme_region): Mark
 	the loop for removal if we copied the loop header.
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61602
+	* cgraph.h (ipa_discover_readonly_nonaddressable_vars): Return bool.
+	* ipa.c (set_writeonly_bit): Track if reference was removed.
+	(ipa_discover_readonly_nonaddressable_vars): Return true if any
+	references was removed.
+	* ipa-reference.c (propagate): Return TODO_remove_functions if
+	reference was removed.
 
 2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
 
