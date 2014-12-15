@@ -1,5 +1,12 @@
 2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/61558
+	* symtab.c (symbol_table::insert_to_assembler_name_hash
+	symbol_table::unlink_from_assembler_name_hash): Do not ICE when	
+	DECL_ASSEMBLER_NAME is NULL.
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraphunit.c (analyze_functions): Always analyze targets of aliases.
 
 2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
