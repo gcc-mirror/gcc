@@ -225,6 +225,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chkp.h"
 #include "lto-section-names.h"
 #include "omp-low.h"
+#include "print-tree.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -263,7 +264,7 @@ symtab_node::needed_p (void)
   if (forced_by_abi && TREE_PUBLIC (decl))
     return true;
 
- /* Keep constructors, destructors and virtual functions.  */
+  /* Keep constructors, destructors and virtual functions.  */
    if (TREE_CODE (decl) == FUNCTION_DECL
        && (DECL_STATIC_CONSTRUCTOR (decl) || DECL_STATIC_DESTRUCTOR (decl)))
     return true;
@@ -1000,7 +1001,20 @@ analyze_functions (void)
 		cnode->analyze ();
 
 	      for (edge = cnode->callees; edge; edge = edge->next_callee)
-		if (edge->callee->definition)
+		if (edge->callee->definition
+		    && (!DECL_EXTERNAL (edge->callee->decl)
+			/* When not optimizing, do not try to analyze extern
+			   inline functions.  Doing so is pointless.  */
+			|| opt_for_fn (edge->callee->decl, optimize)
+			/* Weakrefs needs to be preserved.  */
+			|| edge->callee->alias
+			/* always_inline functions are inlined aven at -O0.  */
+		        || lookup_attribute
+				 ("always_inline",
+			          DECL_ATTRIBUTES (edge->callee->decl))
+			/* Multiversioned functions needs the dispatcher to
+			   be produced locally even for extern functions.  */
+			|| edge->callee->function_version ()))
 		   enqueue_node (edge->callee);
 	      if (opt_for_fn (cnode->decl, optimize)
 		  && opt_for_fn (cnode->decl, flag_devirtualize))
@@ -1040,10 +1054,17 @@ analyze_functions (void)
 	      for (next = node->same_comdat_group;
 		   next != node;
 		   next = next->same_comdat_group)
-		enqueue_node (next);
+		if (!next->comdat_local_p ())
+		  enqueue_node (next);
 	    }
 	  for (i = 0; node->iterate_reference (i, ref); i++)
-	    if (ref->referred->definition)
+	    if (ref->referred->definition
+		&& (!DECL_EXTERNAL (ref->referred->decl)
+		    || ((TREE_CODE (ref->referred->decl) != FUNCTION_DECL
+			 && optimize)
+			|| (TREE_CODE (ref->referred->decl) == FUNCTION_DECL
+			    && opt_for_fn (ref->referred->decl, optimize))
+		    || ref->referred->alias)))
 	      enqueue_node (ref->referred);
 	  symtab->process_new_functions ();
 	}
