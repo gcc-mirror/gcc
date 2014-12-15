@@ -714,14 +714,18 @@ set_readonly_bit (varpool_node *vnode, void *data ATTRIBUTE_UNUSED)
 /* Set writeonly bit and clear the initalizer, since it will not be needed.  */
 
 bool
-set_writeonly_bit (varpool_node *vnode, void *data ATTRIBUTE_UNUSED)
+set_writeonly_bit (varpool_node *vnode, void *data)
 {
   vnode->writeonly = true;
   if (optimize)
     {
       DECL_INITIAL (vnode->decl) = NULL;
       if (!vnode->alias)
-	vnode->remove_all_references ();
+	{
+	  if (vnode->num_references ())
+	    *(bool *)data = true;
+	  vnode->remove_all_references ();
+	}
     }
   return false;
 }
@@ -739,15 +743,18 @@ clear_addressable_bit (varpool_node *vnode, void *data ATTRIBUTE_UNUSED)
 /* Discover variables that have no longer address taken or that are read only
    and update their flags.
 
+   Return true when unreachable symbol removan should be done.
+
    FIXME: This can not be done in between gimplify and omp_expand since
    readonly flag plays role on what is shared and what is not.  Currently we do
    this transformation as part of whole program visibility and re-do at
    ipa-reference pass (to take into account clonning), but it would
    make sense to do it before early optimizations.  */
 
-void
+bool
 ipa_discover_readonly_nonaddressable_vars (void)
 {
+  bool remove_p = false;
   varpool_node *vnode;
   if (dump_file)
     fprintf (dump_file, "Clearing variable flags:");
@@ -762,14 +769,16 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	bool read = false;
 	bool explicit_refs = true;
 
-	process_references (vnode, &written, &address_taken, &read, &explicit_refs);
+	process_references (vnode, &written, &address_taken, &read,
+			    &explicit_refs);
 	if (!explicit_refs)
 	  continue;
 	if (!address_taken)
 	  {
 	    if (TREE_ADDRESSABLE (vnode->decl) && dump_file)
 	      fprintf (dump_file, " %s (non-addressable)", vnode->name ());
-	    vnode->call_for_node_and_aliases (clear_addressable_bit, NULL, true);
+	    vnode->call_for_node_and_aliases (clear_addressable_bit, NULL,
+					      true);
 	  }
 	if (!address_taken && !written
 	    /* Making variable in explicit section readonly can cause section
@@ -785,11 +794,13 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, " %s (write-only)", vnode->name ());
-	    vnode->call_for_node_and_aliases (set_writeonly_bit, NULL, true);
+	    vnode->call_for_node_and_aliases (set_writeonly_bit, &remove_p, 
+					     true);
 	  }
       }
   if (dump_file)
     fprintf (dump_file, "\n");
+  return remove_p;
 }
 
 /* Free inline summary.  */
