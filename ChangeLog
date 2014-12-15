@@ -1,3 +1,9 @@
+2014-12-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure.ac (--enable-as-accelerator-for): Don't set
+	ENABLE_AS_ACCELERATOR_FOR.  Update all users.
+	* configure: Regenerate.
+
 2014-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/64023
