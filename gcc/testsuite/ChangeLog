@@ -1,5 +1,8 @@
 2014-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/64316
+	* gcc.dg/pr64316.c: New test.
+
 	PR rtl-optimization/63804
 	* gcc.dg/pr63804.c: New test.
 

@@ -4561,7 +4561,8 @@ simplify_relational_operation_1 (enum rtx_code code, machine_mode mode,
       rtx not_y = simplify_gen_unary (NOT, cmp_mode, XEXP (op0, 1), cmp_mode);
       rtx lhs = simplify_gen_binary (AND, cmp_mode, not_y, XEXP (op0, 0));
 
-      return simplify_gen_relational (code, mode, cmp_mode, lhs, const0_rtx);
+      return simplify_gen_relational (code, mode, cmp_mode, lhs,
+				      CONST0_RTX (cmp_mode));
     }
 
   /* Likewise for (eq/ne (and x y) y).  */
@@ -4573,7 +4574,8 @@ simplify_relational_operation_1 (enum rtx_code code, machine_mode mode,
       rtx not_x = simplify_gen_unary (NOT, cmp_mode, XEXP (op0, 0), cmp_mode);
       rtx lhs = simplify_gen_binary (AND, cmp_mode, not_x, XEXP (op0, 1));
 
-      return simplify_gen_relational (code, mode, cmp_mode, lhs, const0_rtx);
+      return simplify_gen_relational (code, mode, cmp_mode, lhs,
+				      CONST0_RTX (cmp_mode));
     }
 
   /* (eq/ne (bswap x) C1) simplifies to (eq/ne x C2) with C2 swapped.  */
