@@ -1740,6 +1740,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
   gfc_symbol *sym;
   gfc_symtree *parent_st;
   gfc_expr *e;
+  gfc_component *comp;
   int save_need_full_assumed_size;
   bool return_value = false;
   bool actual_arg_sav = actual_arg, first_actual_arg_sav = first_actual_arg;
@@ -1965,6 +1966,14 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 		  goto cleanup;
 		}
 	    }
+	}
+
+      comp = gfc_get_proc_ptr_comp(e);
+      if (comp && comp->attr.elemental)
+	{
+	    gfc_error ("ELEMENTAL procedure pointer component %qs is not "
+		       "allowed as an actual argument at %L", comp->name,
+		       &e->where);
 	}
 
       /* Fortran 2008, C1237.  */

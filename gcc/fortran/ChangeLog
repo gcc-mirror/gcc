@@ -1,5 +1,11 @@
 2014-12-15  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/63727
+	* resolve.c (resolve_actual_arglist): Check for elemental procedure
+	pointer components.
+
+2014-12-15  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/63674
 	* resolve.c (check_pure_function): Rewording in error message.
 

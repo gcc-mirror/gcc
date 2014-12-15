@@ -1,3 +1,8 @@
+2014-12-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/63727
+	* gfortran.dg/coarray_collectives_14.f90: Address FIXME item.
+
 2014-12-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64295
