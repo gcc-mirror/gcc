@@ -431,9 +431,9 @@ struct ira_spilled_reg_stack_slot *ira_spilled_reg_stack_slots;
    the allocnos assigned to memory, cost of loads, stores and register
    move insns generated for pseudo-register live range splitting (see
    ira-emit.c).  */
-int ira_overall_cost, overall_cost_before;
-int ira_reg_cost, ira_mem_cost;
-int ira_load_cost, ira_store_cost, ira_shuffle_cost;
+int64_t ira_overall_cost, overall_cost_before;
+int64_t ira_reg_cost, ira_mem_cost;
+int64_t ira_load_cost, ira_store_cost, ira_shuffle_cost;
 int ira_move_loops_num, ira_additional_jumps_num;
 
 /* All registers that can be eliminated.  */
@@ -2489,10 +2489,15 @@ calculate_allocation_cost (void)
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
     {
       fprintf (ira_dump_file,
-	       "+++Costs: overall %d, reg %d, mem %d, ld %d, st %d, move %d\n",
+	       "+++Costs: overall %"PRId64
+	       ", reg %"PRId64
+	       ", mem %"PRId64
+	       ", ld %"PRId64
+	       ", st %"PRId64
+	       ", move %"PRId64,
 	       ira_overall_cost, ira_reg_cost, ira_mem_cost,
 	       ira_load_cost, ira_store_cost, ira_shuffle_cost);
-      fprintf (ira_dump_file, "+++       move loops %d, new jumps %d\n",
+      fprintf (ira_dump_file, "\n+++       move loops %d, new jumps %d\n",
 	       ira_move_loops_num, ira_additional_jumps_num);
     }
 
@@ -5422,7 +5427,8 @@ do_reload (void)
 
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL
       && overall_cost_before != ira_overall_cost)
-    fprintf (ira_dump_file, "+++Overall after reload %d\n", ira_overall_cost);
+    fprintf (ira_dump_file, "+++Overall after reload %"PRId64 "\n",
+	     ira_overall_cost);
 
   flag_ira_share_spill_slots = saved_flag_ira_share_spill_slots;
 
