@@ -2893,9 +2893,7 @@ esac
 
 # Check whether --enable-as-accelerator-for was given.
 if test "${enable_as_accelerator_for+set}" = set; then :
-  enableval=$enable_as_accelerator_for; ENABLE_AS_ACCELERATOR_FOR=$enableval
-else
-  ENABLE_AS_ACCELERATOR_FOR=no
+  enableval=$enable_as_accelerator_for;
 fi
 
 
@@ -3094,7 +3092,7 @@ if test "${enable_liboffloadmic+set}" = set; then :
     as_fn_error "--enable-liboffloadmic=no/host/target" "$LINENO" 5 ;;
 esac
 else
-  if test "${ENABLE_AS_ACCELERATOR_FOR}" != "no"; then
+  if test x"$enable_as_accelerator_for" != x; then
   case "${target}" in
     *-intelmic-* | *-intelmicemul-*)
       enable_liboffloadmic=target
