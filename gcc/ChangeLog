@@ -1,3 +1,10 @@
+2014-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64265
+	* tsan.c (instrument_func_entry): Insert __tsan_func_entry
+	call on edge from entry block to single succ instead
+	of after labels of single succ of entry block.
+
 2014-12-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64284
