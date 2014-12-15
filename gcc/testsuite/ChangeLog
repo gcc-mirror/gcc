@@ -1,3 +1,8 @@
+2014-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/63804
+	* gcc.dg/pr63804.c: New test.
+
 2014-12-15  Steven Bosscher  <steven@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 
