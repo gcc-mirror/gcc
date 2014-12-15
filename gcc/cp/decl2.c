@@ -1996,19 +1996,30 @@ decl_needed_p (tree decl)
      COMDAT until that point.  */
   gcc_assert (at_eof);
 
-  /* All entities with external linkage that are not COMDAT should be
+  /* All entities with external linkage that are not COMDAT/EXTERN should be
      emitted; they may be referred to from other object files.  */
-  if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl))
+  if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_REALLY_EXTERN (decl))
     return true;
-  /* If this entity was used, let the back end see it; it will decide
-     whether or not to emit it into the object file.  */
-  if (TREE_USED (decl))
-      return true;
   /* Functions marked "dllexport" must be emitted so that they are
      visible to other DLLs.  */
   if (flag_keep_inline_dllexport
       && lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)))
     return true;
+
+  /* When not optimizing, do not bother to produce definitions for extern
+     symbols.  */
+  if (DECL_REALLY_EXTERN (decl)
+      && ((TREE_CODE (decl) != FUNCTION_DECL
+	   && !optimize)
+	  || (TREE_CODE (decl) == FUNCTION_DECL
+	      && !opt_for_fn (decl, optimize)))
+      && !lookup_attribute ("always_inline", decl))
+    return false;
+
+  /* If this entity was used, let the back end see it; it will decide
+     whether or not to emit it into the object file.  */
+  if (TREE_USED (decl))
+      return true;
   /* Virtual functions might be needed for devirtualization.  */
   if (flag_devirtualize
       && TREE_CODE (decl) == FUNCTION_DECL
