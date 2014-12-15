@@ -1,3 +1,11 @@
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64246
+	* gnat.dg/opt46.adb: New testcase.
+	* gnat.dg/opt46.ads: Likewise.
+	* gnat.dg/opt46_pkg.adb: Likewise.
+	* gnat.dg/opt46_pkg.ads: Likewise.
+
 2014-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/64210
