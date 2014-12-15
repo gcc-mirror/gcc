@@ -1928,9 +1928,10 @@ bb_loop_depth (const_basic_block bb)
 void
 mark_loop_for_removal (loop_p loop)
 {
+  if (loop->header == NULL)
+    return;
   loop->former_header = loop->header;
   loop->header = NULL;
   loop->latch = NULL;
   loops_state_set (LOOPS_NEED_FIXUP);
 }
-

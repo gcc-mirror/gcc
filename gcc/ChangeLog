@@ -1,3 +1,9 @@
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64246
+	* cfgloop.c (mark_loop_for_removal): Make safe against multiple
+	invocations on the same loop.
+
 2014-12-15  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/64292
