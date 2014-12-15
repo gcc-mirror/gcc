@@ -110,6 +110,11 @@ struct target_ira
   /* Function specific hard registers can not be used for the register
      allocation.  */
   HARD_REG_SET x_ira_no_alloc_regs;
+
+  /* Array whose values are hard regset of hard registers available for
+     the allocation of given register class whose HARD_REGNO_MODE_OK
+     values for given mode are zero.  */
+  HARD_REG_SET x_ira_prohibited_class_mode_regs[N_REG_CLASSES][NUM_MACHINE_MODES];
 };
 
 extern struct target_ira default_target_ira;
@@ -155,6 +160,8 @@ extern struct target_ira *this_target_ira;
   (this_target_ira->x_ira_class_singleton)
 #define ira_no_alloc_regs \
   (this_target_ira->x_ira_no_alloc_regs)
+#define ira_prohibited_class_mode_regs \
+  (this_target_ira->x_ira_prohibited_class_mode_regs)
 
 /* Major structure describing equivalence info for a pseudo.  */
 struct ira_reg_equiv_s
