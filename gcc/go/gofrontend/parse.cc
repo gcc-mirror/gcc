@@ -5031,6 +5031,16 @@ Parse::send_or_recv_stmt(bool* is_send, Expression** channel, Expression** val,
       e = Expression::make_receive(*channel, (*channel)->location());
     }
 
+  if (!saw_comma && this->peek_token()->is_op(OPERATOR_COMMA))
+    {
+      this->advance_token();
+      // case v, e = <-c:
+      if (!e->is_sink_expression())
+	*val = e;
+      e = this->expression(PRECEDENCE_NORMAL, true, true, NULL, NULL);
+      saw_comma = true;
+    }
+
   if (this->peek_token()->is_op(OPERATOR_EQ))
     {
       if (!this->advance_token()->is_op(OPERATOR_CHANOP))
