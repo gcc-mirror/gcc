@@ -1,3 +1,9 @@
+2014-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63551
+	* gcc.dg/ipa/pr63551.c (fn2): Use 4294967286U instead of
+	4294967286 to avoid warnings.
+
 2014-12-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/63674
