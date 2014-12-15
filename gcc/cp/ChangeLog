@@ -1,5 +1,8 @@
 2014-12-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64297
+	* typeck.c (apply_memfn_quals): Correct wrong TYPE_CANONICAL.
+
 	N3778: Sized Deallocation
 	* call.c (non_placement_deallocation_fn_p): A global sized
 	operator delete is not a usual deallocation function until C++14.
