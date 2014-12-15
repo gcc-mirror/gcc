@@ -1,3 +1,10 @@
+2014-12-15  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (-fsized-deallocation, -Wc++14-compat): New.
+	(-Wsized-deallocation): New.
+	* c-opts.c (c_common_post_options): -fsized-deallocation defaults
+	to on in C++14 and up.
+
 2014-12-11  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Enable C++14 __cpp_constexpr.

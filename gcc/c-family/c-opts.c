@@ -889,6 +889,10 @@ c_common_post_options (const char **pfilename)
   else if (warn_narrowing == -1)
     warn_narrowing = 0;
 
+  /* Global sized deallocation is new in C++14.  */
+  if (flag_sized_deallocation == -1)
+    flag_sized_deallocation = (cxx_dialect >= cxx14);
+
   if (flag_extern_tls_init)
     {
 #if !defined (ASM_OUTPUT_DEF) || !SUPPORTS_WEAK

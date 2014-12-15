@@ -187,7 +187,8 @@ in the following sections.
 -fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -fno-pretty-templates @gol
--frepo  -fno-rtti  -fstats  -ftemplate-backtrace-limit=@var{n} @gol
+-frepo  -fno-rtti -fsized-deallocation @gol
+-fstats  -ftemplate-backtrace-limit=@var{n} @gol
 -ftemplate-depth=@var{n} @gol
 -fno-threadsafe-statics  -fuse-cxa-atexit @gol
 -fno-weak  -nostdinc++ @gol
@@ -243,7 +244,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wbool-compare @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
 -Wc90-c99-compat -Wc99-c11-compat @gol
--Wc++-compat -Wc++11-compat -Wcast-align  -Wcast-qual  @gol
+-Wc++-compat -Wc++11-compat -Wc++14-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment -Wconditionally-supported  @gol
 -Wconversion -Wcoverage-mismatch -Wdate-time -Wdelete-incomplete -Wno-cpp  @gol
 -Wno-deprecated -Wno-deprecated-declarations -Wno-designated-init @gol
@@ -2304,6 +2305,19 @@ needed. The @samp{dynamic_cast} operator can still be used for casts that
 do not require run-time type information, i.e.@: casts to @code{void *} or to
 unambiguous base classes.
 
+@item -fsized-deallocation
+@opindex fsized-deallocation
+Enable the built-in global declarations
+@smallexample
+void operator delete (void *, std::size_t) noexcept;
+void operator delete[] (void *, std::size_t) noexcept;
+@end smallexample
+as introduced in C++14.  This is useful for user-defined replacement
+deallocation functions that, for example, use the size of the object
+to make deallocation faster.  Enabled by default under
+@samp{-std=c++14} and above.  The flag @option{-Wsized-deallocation} will
+warn about places that might want to add a definition.
+
 @item -fstats
 @opindex fstats
 Emit statistics about front-end processing at the end of the compilation.
@@ -3356,7 +3370,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 
 @gccoptlist{-Waddress   @gol
 -Warray-bounds @r{(only with} @option{-O2}@r{)}  @gol
--Wc++11-compat  @gol
+-Wc++11-compat  -Wc++14-compat@gol
 -Wchar-subscripts  @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
 -Wimplicit-int @r{(C and Objective-C only)} @gol
@@ -4608,6 +4622,10 @@ and ISO C++ 2011, e.g., identifiers in ISO C++ 1998 that are keywords
 in ISO C++ 2011.  This warning turns on @option{-Wnarrowing} and is
 enabled by @option{-Wall}.
 
+@item -Wc++14-compat @r{(C++ and Objective-C++ only)}
+Warn about C++ constructs whose meaning differs between ISO C++ 2011
+and ISO C++ 2014.  This warning is enabled by @option{-Wall}.
+
 @item -Wcast-qual
 @opindex Wcast-qual
 @opindex Wno-cast-qual
@@ -4766,6 +4784,22 @@ Warn for implicit conversions that reduce the precision of a real value.
 This includes conversions from real to integer, and from higher precision
 real to lower precision real values.  This option is also enabled by
 @option{-Wconversion}.
+
+@item -Wsized-deallocation @r{(C++ and Objective-C++ only)}
+@opindex Wsized-deallocation
+@opindex -Wno-sized-deallocation
+Warn about a definition of an unsized deallocation function
+@smallexample
+void operator delete (void *) noexcept;
+void operator delete[] (void *) noexcept;
+@end smallexample
+without a definition of the corresponding sized deallocation function
+@smallexample
+void operator delete (void *, std::size_t) noexcept;
+void operator delete[] (void *, std::size_t) noexcept;
+@end smallexample
+or vice versa.  Enabled by @option{-Wextra} along with
+@option{-fsized-deallocation}.
 
 @item -Wsizeof-pointer-memaccess
 @opindex Wsizeof-pointer-memaccess

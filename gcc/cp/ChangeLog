@@ -1,3 +1,20 @@
+2014-12-15  Jason Merrill  <jason@redhat.com>
+
+	N3778: Sized Deallocation
+	* call.c (non_placement_deallocation_fn_p): A global sized
+	operator delete is not a usual deallocation function until C++14.
+	(build_op_delete_call): Choose the global sized op delete if we
+	know the size.
+	* cp-tree.h: Declare non_placement_deallocation_fn_p.
+	(enum cp_tree_index): Remove CPTI_GLOBAL_DELETE_FNDECL.
+	(global_delete_fndecl): Remove.
+	* decl.c (cxx_init_decl_processing): Also declare sized op deletes.
+	(grok_op_properties): Warn about sized dealloc without the flag.
+	* init.c (build_builtin_delete_call): Remove.
+	(build_vec_delete_1, build_delete): Don't call it.
+	* decl2.c (maybe_warn_sized_delete): New.
+	(cp_write_global_declarations): Call it.
+
 2014-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58882
