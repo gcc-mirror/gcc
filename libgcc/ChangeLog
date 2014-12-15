@@ -1,3 +1,10 @@
+2014-12-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libgcc/63832
+	* crtstuff.c (__do_global_dtors_aux) [HIDDEN_DTOR_LIST_END]: Use
+	func_ptr *dtor_list temporary variable to avoid "array subscript
+	is above array bounds" warnings.
+
 2014-12-09  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in (with_aix_soname): Define.
@@ -809,7 +816,7 @@
 
 	PR libgcc/60472
 	* crtstuff.c (frame_dummy): Use void **jcr_list temporary
-	variable to avoid array subscript is above array bounds warnings.
+	variable to avoid "array subscript is above array bounds" warnings.
 	Use __builtin_expect when checking *jcr_list for NULL.
 
 2014-03-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>

@@ -393,13 +393,11 @@ __do_global_dtors_aux (void)
     extern func_ptr __DTOR_END__[] __attribute__((visibility ("hidden")));
     static size_t dtor_idx;
     const size_t max_idx = __DTOR_END__ - __DTOR_LIST__ - 1;
-    func_ptr f;
+    func_ptr *dtor_list;
 
+    __asm ("" : "=g" (dtor_list) : "0" (__DTOR_LIST__));
     while (dtor_idx < max_idx)
-      {
-	f = __DTOR_LIST__[++dtor_idx];
-	f ();
-      }
+      dtor_list[++dtor_idx] ();
   }
 #else /* !defined (FINI_ARRAY_SECTION_ASM_OP) */
   {
