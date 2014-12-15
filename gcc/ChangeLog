@@ -1,3 +1,8 @@
+2014-12-14  Jan HUbicka  <hubicka@ucw.cz>
+
+	* cgraphunit.c (analyze_functions): Do not analyze extern inline
+	funtions when not optimizing; skip comdat locals.
+
 2014-12-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/64037
