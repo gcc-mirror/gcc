@@ -1,3 +1,8 @@
+2014-12-15  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.h (CLZ_DEFINED_VALUE_AT_ZERO): Return 2.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Update to support more modes.
+
 2014-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/64265
