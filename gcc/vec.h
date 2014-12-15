@@ -1574,7 +1574,10 @@ vec<T, va_heap, vl_ptr>::safe_grow (unsigned len MEM_STAT_DECL)
   unsigned oldlen = length ();
   gcc_checking_assert (oldlen <= len);
   reserve_exact (len - oldlen PASS_MEM_STAT);
-  m_vec->quick_grow (len);
+  if (m_vec)
+    m_vec->quick_grow (len);
+  else
+    gcc_checking_assert (len == 0);
 }
 
 

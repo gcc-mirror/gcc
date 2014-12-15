@@ -1,5 +1,9 @@
 2014-12-15  Richard Biener  <rguenther@suse.de>
 
+	* vec.h (vec::safe_grow): Guard against a grow to zero size.
+
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/64295
 	* match.pd (X / CST -> X * (1 / CST): Use const_binop instead of
 	fold_binary to compute the constant to multiply with.
