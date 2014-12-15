@@ -1,4 +1,14 @@
-2014-12-14  Jan HUbicka  <hubicka@ucw.cz>
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphunit.c (analyze_functions): Always analyze targets of aliases.
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/64043
+	* tree.c (virtual_method_call_p): Return false when OTR type has
+	no BINFO.
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraphunit.c (analyze_functions): Do not analyze extern inline
 	funtions when not optimizing; skip comdat locals.

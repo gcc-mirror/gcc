@@ -11864,12 +11864,17 @@ virtual_method_call_p (tree target)
 {
   if (TREE_CODE (target) != OBJ_TYPE_REF)
     return false;
-  target = TREE_TYPE (target);
-  gcc_checking_assert (TREE_CODE (target) == POINTER_TYPE);
-  target = TREE_TYPE (target);
-  if (TREE_CODE (target) == FUNCTION_TYPE)
+  tree t = TREE_TYPE (target);
+  gcc_checking_assert (TREE_CODE (t) == POINTER_TYPE);
+  t = TREE_TYPE (t);
+  if (TREE_CODE (t) == FUNCTION_TYPE)
     return false;
-  gcc_checking_assert (TREE_CODE (target) == METHOD_TYPE);
+  gcc_checking_assert (TREE_CODE (t) == METHOD_TYPE);
+  /* If we do not have BINFO associated, it means that type was built
+     without devirtualization enabled.  Do not consider this a virtual
+     call.  */
+  if (!TYPE_BINFO (obj_type_ref_class (target)))
+    return false;
   return true;
 }
 
