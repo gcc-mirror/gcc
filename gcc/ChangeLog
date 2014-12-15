@@ -1,9 +1,14 @@
 2014-12-15  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR target/62642
+	* ira.c (rtx_moveable_p): Prevent UNSPEC_VOLATILE moves.
+
+2014-12-15  Vladimir Makarov  <vmakarov@redhat.com>
+
 	* ira-int.h (ira_prohibited_class_mode_regs): Remove.
 	(struct target_ira_int): Move x_ira_prohibited_class_mode_regs to
 	...
-	* ira.h (struct target_ira_int): ... here.
+	* ira.h (struct target_ira): ... here.
 	(ira_prohibited_class_mode_regs): Define.
 	* lra-constraints.c (process_alt_operands): Add one more condition
 	to refuse alternative when reload pseudo of given class can not
