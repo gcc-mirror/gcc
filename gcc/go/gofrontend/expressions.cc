@@ -6627,6 +6627,8 @@ class Builtin_call_expression : public Call_expression
   // Used to stop endless loops when the length of an array uses len
   // or cap of the array itself.
   mutable bool seen_;
+  // Whether the argument is set for calls to BUILTIN_RECOVER.
+  bool recover_arg_is_set_;
 };
 
 Builtin_call_expression::Builtin_call_expression(Gogo* gogo,
@@ -6635,7 +6637,8 @@ Builtin_call_expression::Builtin_call_expression(Gogo* gogo,
 						 bool is_varargs,
 						 Location location)
   : Call_expression(fn, args, is_varargs, location),
-    gogo_(gogo), code_(BUILTIN_INVALID), seen_(false)
+    gogo_(gogo), code_(BUILTIN_INVALID), seen_(false),
+    recover_arg_is_set_(false)
 {
   Func_expression* fnexp = this->fn()->func_expression();
   go_assert(fnexp != NULL);
@@ -6701,6 +6704,7 @@ Builtin_call_expression::do_set_recover_arg(Expression* arg)
   Expression_list* new_args = new Expression_list();
   new_args->push_back(arg);
   this->set_args(new_args);
+  this->recover_arg_is_set_ = true;
 }
 
 // Lower a builtin call expression.  This turns new and make into
@@ -7841,7 +7845,9 @@ Builtin_call_expression::do_check_types(Gogo*)
       break;
 
     case BUILTIN_RECOVER:
-      if (this->args() != NULL && !this->args()->empty())
+      if (this->args() != NULL
+	  && !this->args()->empty()
+	  && !this->recover_arg_is_set_)
 	this->report_error(_("too many arguments"));
       break;
 
