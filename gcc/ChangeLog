@@ -1,3 +1,10 @@
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64312
+	* tree-ssa-sccvn.c (vn_reference_lookup_pieces): Use
+	vuse_ssa_val as callback to walk_non_aliased_vuses.
+	(vn_reference_lookup): Likewise.
+
 2014-12-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc/config/rs6000/rs6000.md (*add>mode>3_imm_dot,
