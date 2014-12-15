@@ -1,3 +1,8 @@
+2014-12-15  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/64292
+	* fold-const.c (negate_expr_p): Add INTEGRAL_TYPE_P check.
+
 2014-12-15  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.h (CLZ_DEFINED_VALUE_AT_ZERO): Return 2.
