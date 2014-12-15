@@ -620,9 +620,9 @@ extern struct ira_spilled_reg_stack_slot *ira_spilled_reg_stack_slots;
    allocnos assigned to hard-registers, cost of the allocnos assigned
    to memory, cost of loads, stores and register move insns generated
    for pseudo-register live range splitting (see ira-emit.c).  */
-extern int ira_overall_cost;
-extern int ira_reg_cost, ira_mem_cost;
-extern int ira_load_cost, ira_store_cost, ira_shuffle_cost;
+extern int64_t ira_overall_cost;
+extern int64_t ira_reg_cost, ira_mem_cost;
+extern int64_t ira_load_cost, ira_store_cost, ira_shuffle_cost;
 extern int ira_move_loops_num, ira_additional_jumps_num;
 
 
