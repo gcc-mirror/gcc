@@ -1,3 +1,7 @@
+2014-12-15  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.h: Remove SHORT_IMMEDIATES_SIGN_EXTEND.
+
 2014-12-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/64043
