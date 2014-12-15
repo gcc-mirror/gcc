@@ -644,25 +644,24 @@ instrument_memory_accesses (void)
 static void
 instrument_func_entry (void)
 {
-  basic_block succ_bb;
-  gimple_stmt_iterator gsi;
   tree ret_addr, builtin_decl;
   gimple g;
-
-  succ_bb = single_succ (ENTRY_BLOCK_PTR);
-  gsi = gsi_after_labels (succ_bb);
+  gimple_seq seq = NULL;
 
   builtin_decl = builtin_decl_implicit (BUILT_IN_RETURN_ADDRESS);
   g = gimple_build_call (builtin_decl, 1, integer_zero_node);
   ret_addr = make_ssa_name (ptr_type_node, NULL);
   gimple_call_set_lhs (g, ret_addr);
   gimple_set_location (g, cfun->function_start_locus);
-  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  gimple_seq_add_stmt_without_update (&seq, g);
 
-  builtin_decl =  builtin_decl_implicit (BUILT_IN_TSAN_FUNC_ENTRY);
+  builtin_decl = builtin_decl_implicit (BUILT_IN_TSAN_FUNC_ENTRY);
   g = gimple_build_call (builtin_decl, 1, ret_addr);
   gimple_set_location (g, cfun->function_start_locus);
-  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  gimple_seq_add_stmt_without_update (&seq, g);
+
+  edge e = single_succ_edge (ENTRY_BLOCK_PTR);
+  gsi_insert_seq_on_edge_immediate (e, seq);
 }
 
 /* Instruments function exits.  */
