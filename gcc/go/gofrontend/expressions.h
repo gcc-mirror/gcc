@@ -1683,6 +1683,11 @@ class Call_expression : public Expression
   is_varargs() const
   { return this->is_varargs_; }
 
+  // Return whether varargs have already been lowered.
+  bool
+  varargs_are_lowered() const
+  { return this->varargs_are_lowered_; }
+
   // Note that varargs have already been lowered.
   void
   set_varargs_are_lowered()
@@ -1738,14 +1743,7 @@ class Call_expression : public Expression
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    return Expression::make_call(this->fn_->copy(),
-				 (this->args_ == NULL
-				  ? NULL
-				  : this->args_->copy()),
-				 this->is_varargs_, this->location());
-  }
+  do_copy();
 
   bool
   do_must_eval_in_order() const;

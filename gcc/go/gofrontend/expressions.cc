@@ -6552,13 +6552,7 @@ class Builtin_call_expression : public Call_expression
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    return new Builtin_call_expression(this->gogo_, this->fn()->copy(),
-				       this->args()->copy(),
-				       this->is_varargs(),
-				       this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -7986,6 +7980,20 @@ Builtin_call_expression::do_check_types(Gogo*)
     }
 }
 
+Expression*
+Builtin_call_expression::do_copy()
+{
+  Call_expression* bce =
+    new Builtin_call_expression(this->gogo_, this->fn()->copy(),
+				this->args()->copy(),
+				this->is_varargs(),
+				this->location());
+
+  if (this->varargs_are_lowered())
+    bce->set_varargs_are_lowered();
+  return bce;
+}
+
 // Return the backend representation for a builtin function.
 
 Bexpression*
@@ -9124,6 +9132,21 @@ Call_expression::do_check_types(Gogo*)
       if (pa != this->args_->end())
 	this->report_error(_("too many arguments"));
     }
+}
+
+Expression*
+Call_expression::do_copy()
+{
+  Call_expression* call =
+    Expression::make_call(this->fn_->copy(),
+			  (this->args_ == NULL
+			   ? NULL
+			   : this->args_->copy()),
+			  this->is_varargs_, this->location());
+
+  if (this->varargs_are_lowered_)
+    call->set_varargs_are_lowered();
+  return call;
 }
 
 // Return whether we have to use a temporary variable to ensure that
