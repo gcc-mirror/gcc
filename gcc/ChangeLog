@@ -1,3 +1,9 @@
+2014-12-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc/config/rs6000/rs6000.md (*add>mode>3_imm_dot,
+	*add<mode>3_imm_dot2): Change the constraint for the second
+	alternative for operand 1 from "r" to "b".
+
 2014-12-15  Richard Biener  <rguenther@suse.de>
 
 	* vec.h (vec::safe_grow): Guard against a grow to zero size.
