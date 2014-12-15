@@ -1,3 +1,10 @@
+2014-12-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* sreal.h (to_double): New method.
+	(shift): Do not ICE on 0.
+	* sreal.c: Include math.h
+	(sreal::to_double): New.
+
 2014-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/64316

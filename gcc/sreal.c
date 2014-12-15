@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 	sig == 0 && exp == -SREAL_MAX_EXP
 */
 
+#include <math.h>
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -169,6 +170,18 @@ sreal::to_int () const
   if (m_exp < 0)
     return m_sig >> -m_exp;
   return m_sig;
+}
+
+/* Return value of *this as double.
+   This should be used for debug output only.  */
+
+double
+sreal::to_double () const
+{
+  double val = m_sig;
+  if (m_exp)
+    val *= exp2 (m_exp);
+  return val;
 }
 
 /* Return *this + other.  */

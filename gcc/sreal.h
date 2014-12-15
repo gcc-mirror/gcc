@@ -46,6 +46,7 @@ public:
 
   void dump (FILE *) const;
   int64_t to_int () const;
+  double to_double () const;
   sreal operator+ (const sreal &other) const;
   sreal operator- (const sreal &other) const;
   sreal operator* (const sreal &other) const;
@@ -83,12 +84,14 @@ public:
 
   sreal shift (int s) const
   {
+    /* Zero needs no shifting.  */
+    if (!m_sig)
+      return *this;
     gcc_checking_assert (s <= SREAL_BITS);
     gcc_checking_assert (s >= -SREAL_BITS);
 
-    /* Exponent should never be so large because shift_right is used only by
-     sreal_add and sreal_sub ant thus the number cannot be shifted out from
-     exponent range.  */
+    /* Overflows/drop to 0 could be handled gracefully, but hopefully we do not
+       need to do so.  */
     gcc_checking_assert (m_exp + s <= SREAL_MAX_EXP);
     gcc_checking_assert (m_exp + s >= -SREAL_MAX_EXP);
 
