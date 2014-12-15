@@ -21,7 +21,7 @@ void
 fn2 ()
 {
   d = 0;
-  union U b = { 4294967286 };
+  union U b = { 4294967286U };
   fn1 (b);
 }
 
