@@ -18,14 +18,14 @@ end module foo
   logical :: s(n)
 
   a = 0
-  forall (i=1:n, foot (i)) a(i) = i  ! { dg-error "non-PURE" }
+  forall (i=1:n, foot (i)) a(i) = i  ! { dg-error "impure" }
   if (any (a .ne. (/0,2,3,0/))) call abort ()
 
-  forall (i=1:n, s (i) .or. t(i)) a(i) = i  ! { dg-error "non-PURE|LOGICAL" }
+  forall (i=1:n, s (i) .or. t(i)) a(i) = i  ! { dg-error "impure|LOGICAL" }
   if (any (a .ne. (/0,3,2,1/))) call abort ()
 
   a = 0
-  forall (i=1:n, mod (i, 2) == 0) a(i) = w (i)  ! { dg-error "non-PURE" }
+  forall (i=1:n, mod (i, 2) == 0) a(i) = w (i)  ! { dg-error "impure" }
   if (any (a .ne. (/0,2,0,4/))) call abort ()
 
 contains

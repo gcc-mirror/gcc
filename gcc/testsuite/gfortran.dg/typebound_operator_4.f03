@@ -63,8 +63,8 @@ CONTAINS
     TYPE(myint) :: x
 
     x = 0 ! { dg-bogus "is not PURE" }
-    x = x + 42 ! { dg-bogus "to a non-PURE procedure" }
-    x = x .PLUS. 5 ! { dg-bogus "to a non-PURE procedure" }
+    x = x + 42 ! { dg-bogus "to a impure procedure" }
+    x = x .PLUS. 5 ! { dg-bogus "to a impure procedure" }
   END SUBROUTINE iampure
 
 END MODULE m
@@ -75,8 +75,8 @@ PURE SUBROUTINE iampure2 ()
   TYPE(myreal) :: x
 
   x = 0.0 ! { dg-error "is not PURE" }
-  x = x + 42.0 ! { dg-error "non-PURE function" }
-  x = x .PLUS. 5.0 ! { dg-error "non-PURE function" }
+  x = x + 42.0 ! { dg-error "impure function" }
+  x = x .PLUS. 5.0 ! { dg-error "impure function" }
 END SUBROUTINE iampure2
 
 PROGRAM main
