@@ -192,7 +192,8 @@ server_setup (void)
 
   fputs ("trap : 1\n", server_pair.pf_write);
   fflush (server_pair.pf_write);
-  getcwd (buff, MAXPATHLEN + 1);
+  if (getcwd (buff, MAXPATHLEN + 1) == NULL)
+    buff[0] = 0;
   p_cur_dir = xstrdup (buff);
 }
 
