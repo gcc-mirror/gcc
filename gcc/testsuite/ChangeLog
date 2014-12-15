@@ -1,3 +1,8 @@
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64284
+	* gcc.dg/torture/pr64284.c: New testcase.
+
 2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61602

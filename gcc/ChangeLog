@@ -1,3 +1,9 @@
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64284
+	* tree-ssa-threadupdate.c (duplicate_seme_region): Mark
+	the loop for removal if we copied the loop header.
+
 2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa.c (process_references): Fix conditoinal on flag_optimize
