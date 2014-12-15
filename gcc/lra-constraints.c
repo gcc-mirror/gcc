@@ -2269,17 +2269,25 @@ process_alt_operands (int only_alternative)
 
 	      /* Alternative loses if it required class pseudo can not
 		 hold value of required mode.  Such insns can be
-		 described by insn definitions with mode iterators.
-		 Don't use ira_prohibited_class_mode_regs here as it
-		 is common practice for constraints to use a class
-		 which does not have actually enough regs to hold the
-		 value (e.g. x86 AREG for mode requiring more one
-		 general reg).  */
+		 described by insn definitions with mode iterators.  */
 	      if (GET_MODE (*curr_id->operand_loc[nop]) != VOIDmode
 		  && ! hard_reg_set_empty_p (this_alternative_set)
+		  /* It is common practice for constraints to use a
+		     class which does not have actually enough regs to
+		     hold the value (e.g. x86 AREG for mode requiring
+		     more one general reg).  Therefore we have 2
+		     conditions to check that the reload pseudo can
+		     not hold the mode value.  */
 		  && ! HARD_REGNO_MODE_OK (ira_class_hard_regs
 					   [this_alternative][0],
-					   GET_MODE (*curr_id->operand_loc[nop])))
+					   GET_MODE (*curr_id->operand_loc[nop]))
+		  /* The above condition is not enough as the first
+		     reg in ira_class_hard_regs can be not aligned for
+		     multi-words mode values.  */
+		  && hard_reg_set_subset_p (this_alternative_set,
+					    ira_prohibited_class_mode_regs
+					    [this_alternative]
+					    [GET_MODE (*curr_id->operand_loc[nop])]))
 		{
 		  if (lra_dump_file != NULL)
 		    fprintf
