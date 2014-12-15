@@ -1064,6 +1064,7 @@ analyze_functions (void)
 			 && optimize)
 			|| (TREE_CODE (ref->referred->decl) == FUNCTION_DECL
 			    && opt_for_fn (ref->referred->decl, optimize))
+		    || node->alias
 		    || ref->referred->alias)))
 	      enqueue_node (ref->referred);
 	  symtab->process_new_functions ();
