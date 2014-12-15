@@ -1,3 +1,12 @@
+2014-12-15  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR fortran/61669
+	* gfortran.h (struct gfc_namespace): Add OLD_DATA field.
+	* decl.c (gfc_reject_data): New function.
+	* parse.c *use_modules): Record roll-back point.
+	(next_statement): Likewise.
+	(reject_statement): Roll back to last accepted DATA.
+
 2014-12-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/63727
