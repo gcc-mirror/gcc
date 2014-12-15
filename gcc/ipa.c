@@ -128,8 +128,10 @@ process_references (symtab_node *snode,
       if (node->definition && !node->in_other_partition
 	  && ((!DECL_EXTERNAL (node->decl) || node->alias)
 	      || (((before_inlining_p
-		    && (TREE_CODE (node->decl) != FUNCTION_DECL
-			|| opt_for_fn (body->decl, optimize)
+		    && ((TREE_CODE (node->decl) != FUNCTION_DECL
+			 && optimize)
+			|| (TREE_CODE (node->decl) == FUNCTION_DECL
+			    && opt_for_fn (body->decl, optimize))
 		        || (symtab->state < IPA_SSA
 		            && lookup_attribute
 				 ("always_inline",

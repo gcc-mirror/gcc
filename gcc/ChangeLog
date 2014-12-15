@@ -1,5 +1,9 @@
 2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa.c (process_references): Fix conditoinal on flag_optimize
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/61558
 	* symtab.c (symbol_table::insert_to_assembler_name_hash
 	symbol_table::unlink_from_assembler_name_hash): Do not ICE when	
