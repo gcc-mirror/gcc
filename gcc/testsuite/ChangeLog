@@ -1,3 +1,9 @@
+2014-12-15  Steven Bosscher  <steven@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/61669
+	* gfortran.dg/pr61669.f90: New test.
+
 2014-12-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64312
