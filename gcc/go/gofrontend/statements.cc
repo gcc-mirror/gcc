@@ -1884,6 +1884,8 @@ Statement::make_dec_statement(Expression* expr)
 // Class Thunk_statement.  This is the base class for go and defer
 // statements.
 
+Unordered_set(const Struct_type*) Thunk_statement::thunk_types;
+
 // Constructor.
 
 Thunk_statement::Thunk_statement(Statement_classification classification,
@@ -2265,7 +2267,20 @@ Thunk_statement::build_struct(Function_type* fntype)
 	}
     }
 
-  return Type::make_struct_type(fields, location);
+  Struct_type *st = Type::make_struct_type(fields, location);
+
+  Thunk_statement::thunk_types.insert(st);
+
+  return st;
+}
+
+// Return whether ST is a type created to hold thunk parameters.
+
+bool
+Thunk_statement::is_thunk_struct(const Struct_type* st)
+{
+  return (Thunk_statement::thunk_types.find(st)
+	  != Thunk_statement::thunk_types.end());
 }
 
 // Build the thunk we are going to call.  This is a brand new, albeit
