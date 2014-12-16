@@ -2178,7 +2178,7 @@ create_template:
 					     (const_int 4))
 				    (label_ref (match_operand 1 "" "")))))
 	      (use (label_ref (match_dup 1)))
-	      (clobber (match_operand:SI 2 "register_operand" ""))
+	      (clobber (match_operand:SI 2 "register_operand" "=r"))
 	      (clobber (reg:SI TA_REGNUM))])]
   ""
 {

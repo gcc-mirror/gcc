@@ -1,3 +1,9 @@
+2014-12-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	PR target/64217
+	* config/nds32/nds32.md (casesi_internal): Add '=r' for clobber
+	register constraint.
+
 2014-12-15  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78.h: Remove SHORT_IMMEDIATES_SIGN_EXTEND.
