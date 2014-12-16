@@ -519,6 +519,9 @@ func (f *File) applyRelocations(dst []byte, rels []byte) error {
 	if f.Class == ELFCLASS64 && f.Machine == EM_X86_64 {
 		return f.applyRelocationsAMD64(dst, rels)
 	}
+	if f.Class == ELFCLASS64 && f.Machine == EM_PPC64 {
+		return f.applyRelocationsPPC64(dst, rels)
+	}
 	if f.Class == ELFCLASS64 && f.Machine == EM_AARCH64 {
 		return f.applyRelocationsARM64(dst, rels)
 	}
@@ -609,6 +612,47 @@ func (f *File) applyRelocationsARM64(dst []byte, rels []byte) error {
 				continue
 			}
 			f.ByteOrder.PutUint32(dst[rela.Off:rela.Off+4], uint32(rela.Addend))
+		}
+	}
+
+	return nil
+}
+
+func (f *File) applyRelocationsPPC64(dst []byte, rels []byte) error {
+	// 24 is the size of Rela64.
+	if len(rels)%24 != 0 {
+		return errors.New("length of relocation section is not a multiple of Sym64Size")
+	}
+
+	symbols, _, err := f.getSymbols(SHT_SYMTAB)
+	if err != nil {
+		return err
+	}
+
+	b := bytes.NewBuffer(rels)
+	var rela Rela64
+
+	for b.Len() > 0 {
+		binary.Read(b, f.ByteOrder, &rela)
+		symNo := rela.Info >> 32
+		t := R_PPC64(rela.Info & 0xffff)
+
+		if symNo == 0 || symNo > uint64(len(symbols)) {
+			continue
+		}
+		sym := &symbols[symNo-1]
+
+	switch t {
+		case R_PPC64_ADDR64:
+			if rela.Off+8 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			f.ByteOrder.PutUint64(dst[rela.Off:rela.Off+8], uint64(rela.Addend) + uint64(sym.Value))
+		case R_PPC64_ADDR32:
+			if rela.Off+4 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			f.ByteOrder.PutUint32(dst[rela.Off:rela.Off+4], uint32(rela.Addend) + uint32(sym.Value))
 		}
 	}
 

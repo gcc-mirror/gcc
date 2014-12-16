@@ -261,6 +261,12 @@ var relocationTests = []relocationTest{
 		},
 	},
 	{
+		"testdata/go-relocation-test-gcc447-ppc64.obj",
+		[]relocationTestEntry{
+			{0, &dwarf.Entry{Offset: 0xb, Tag: dwarf.TagCompileUnit, Children: true, Field: []dwarf.Field{dwarf.Field{Attr: dwarf.AttrProducer, Val: "GNU C 4.4.7 20120313 (Red Hat 4.4.7-4)"}, dwarf.Field{Attr: dwarf.AttrLanguage, Val: int64(1)}, dwarf.Field{Attr: dwarf.AttrName, Val: "t.c"}, dwarf.Field{Attr: dwarf.AttrCompDir, Val: "/tmp"}, dwarf.Field{Attr: dwarf.AttrLowpc, Val: uint64(0x0)}, dwarf.Field{Attr: dwarf.AttrHighpc, Val: uint64(0x24)}, dwarf.Field{Attr: dwarf.AttrStmtList, Val: int64(0)}}}},
+		},
+	},
+	{
 		"testdata/gcc-amd64-openbsd-debug-with-rela.obj",
 		[]relocationTestEntry{
 			{203, &dwarf.Entry{Offset: 0xc62, Tag: dwarf.TagMember, Children: false, Field: []dwarf.Field{{Attr: dwarf.AttrName, Val: "it_interval"}, {Attr: dwarf.AttrDeclFile, Val: int64(7)}, {Attr: dwarf.AttrDeclLine, Val: int64(236)}, {Attr: dwarf.AttrType, Val: dwarf.Offset(0xb7f)}, {Attr: dwarf.AttrDataMemberLoc, Val: []byte{0x23, 0x0}}}}},
