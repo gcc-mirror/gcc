@@ -1,3 +1,8 @@
+2014-12-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64244
+	* gfortran.dg/typebound_call_26.f90: New.
+
 2014-12-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/64043
