@@ -3857,7 +3857,11 @@ Switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
   Expression* val = this->val_;
   if (val == NULL)
     val = Expression::make_boolean(true, loc);
-  Temporary_statement* val_temp = Statement::make_temporary(NULL, val, loc);
+
+  Type* type = val->type();
+  if (type->is_abstract())
+    type = type->make_non_abstract_type();
+  Temporary_statement* val_temp = Statement::make_temporary(type, val, loc);
   b->add_statement(val_temp);
 
   this->clauses_->lower(b, val_temp, this->break_label());
