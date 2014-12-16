@@ -1,3 +1,9 @@
+2014-12-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58650
+	* parser.c (cp_parser_member_declaration): Fix error recovery for
+	initialized non-static data member declared friend.
+
 2014-12-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* decl2.c (decl_needed_p): When not optimizing, do not consider external
