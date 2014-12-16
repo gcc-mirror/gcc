@@ -1,3 +1,7 @@
+2014-12-16  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2014-12-15  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure.ac (--enable-as-accelerator-for): Don't set
