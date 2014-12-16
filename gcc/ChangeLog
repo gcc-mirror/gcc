@@ -1,3 +1,8 @@
+2014-12-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/64278
+	* sreal.c (sreal::operator*): Replace std::abs with absu_hwi.
+
 2014-12-16  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	* config/i386/i386.c (ix86_address_cost): Add explicit restriction
