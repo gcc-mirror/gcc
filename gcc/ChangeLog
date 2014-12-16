@@ -1,3 +1,9 @@
+2014-12-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/gnu-user.h (TARGET_CAN_SPLIT_STACK): Move from here ...
+	* config/i386/gnu-user64.h (TARGET_CAN_SPLIT_STACK): ... and here ...
+	* config/i386/gnu-user-common.h (TARGET_CAN_SPLIT_STACK): ... to here.
+
 2014-12-16  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	PR target/64217
@@ -126,7 +132,7 @@
 
 	PR ipa/61558
 	* symtab.c (symbol_table::insert_to_assembler_name_hash
-	symbol_table::unlink_from_assembler_name_hash): Do not ICE when	
+	symbol_table::unlink_from_assembler_name_hash): Do not ICE when
 	DECL_ASSEMBLER_NAME is NULL.
 
 2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
@@ -595,9 +601,9 @@
 
 2014-12-10  Richard Biener  <rguenther@suse.de>
 
-	 * tree-ssa-loop-im.c
-	 (move_computations_dom_walker::before_dom_children): Clear
-	 SSA_NAME_RANGE_INFO on moved stmts.
+	* tree-ssa-loop-im.c
+	(move_computations_dom_walker::before_dom_children): Clear
+	SSA_NAME_RANGE_INFO on moved stmts.
 
 2014-12-10  Martin Liska  <mliska@suse.cz>
 
@@ -856,8 +862,8 @@
 	(cortexa57_tunings): Likewise.
 	(thunderx_tunings): Likewise.
 
-2014-12-09  Andrew Pinski  apinski@cavium.com
-            Kyrylo Tkachov  kyrylo.tkachov@arm.com
+2014-12-09  Andrew Pinski  <apinski@cavium.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (AARCH64_FUSE_CMP_BRANCH): New define.
 	(thunderx_tunings): Add AARCH64_FUSE_CMP_BRANCH to fuseable_ops.
@@ -961,7 +967,7 @@
 
 2014-11-15  David Wohlferd <dw@LimeGreenSocks.com>
 
-        PR target/61692
+	PR target/61692
 	* cfgexpand.c (expand_asm_operands): Count all inline asm params.
 
 2014-12-08  David Malcolm  <dmalcolm@redhat.com>
@@ -1263,7 +1269,8 @@
 2014-12-05  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/64056
-	* doc/sourcebuild.texi: Add mempcpy and stpcpy for Effective-Target Keywords.
+	* doc/sourcebuild.texi: Add mempcpy and stpcpy for Effective-Target
+	Keywords.
 
 2014-12-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
@@ -1675,7 +1682,7 @@
 	(aarch64_simd_vec_set<mode>,vashr<mode>3, vlshr<mode>3, vec_set<mode>,
 	aarch64_mla<mode>, aarch64_mls<mode>, <su><maxmin><mode>3,
 	aarch64_<sur>h<addsub><mode>): Change VQ_S to VDQ_BHSI.
-	
+
 	(*aarch64_<su>mlal<mode>, *aarch64_<su>mlsl<mode>,
 	aarch64_<ANY_EXTEND:su><ADDSUB:optab>l<mode>,
 	aarch64_<ANY_EXTEND:su><ADDSUB:optab>w<mode>, aarch64_<sur>shll_n<mode>):
@@ -3172,9 +3179,9 @@
 
 2014-11-21  Andrew Bennett  <andrew.bennett@imgtec.com>
 
-	* config/mips/mips.c (mips_process_sync_loop): Place a 
+	* config/mips/mips.c (mips_process_sync_loop): Place a
 	nop in the delay slot of the branch likely instruction.
-	(mips_output_sync_loop): Ensure mips_branch_likely is 
+	(mips_output_sync_loop): Ensure mips_branch_likely is
 	set before calling mips_output_sync_loop.
 	(mips_sync_loop_insns): Likewise.
 
@@ -3317,7 +3324,7 @@
 	* config/rs6000/predicates.md: Likewise.
 	* config/rs6000/rs6000.c (num_insns_constant_wide): Likewise.
 	(includes_rldic_lshift_p): Likewise.
-	(includes_rldicr_lshift_p): Likewise. 
+	(includes_rldicr_lshift_p): Likewise.
 	* emit-rtl.c (const_wide_int_htab_hash): Likewise.
 	* loop-iv.c (determine_max_iter): Likewise.
 	(iv_number_of_iterations): Likewise.
@@ -3491,10 +3498,10 @@
 2014-11-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR bootstrap/63963
-	* tree-streamer-out.c (write_ts_function_decl_tree_pointers): Stream out
-	DECL_FUNCTION_SPECIFIC_TARGET
-	* tree-streamer-in.c (lto_input_ts_function_decl_tree_pointers): Stream in
-	DECL_FUNCTION_SPECIFIC_TARGET.
+	* tree-streamer-out.c (write_ts_function_decl_tree_pointers): Stream
+	out DECL_FUNCTION_SPECIFIC_TARGET
+	* tree-streamer-in.c (lto_input_ts_function_decl_tree_pointers): Stream
+	in DECL_FUNCTION_SPECIFIC_TARGET.
 
 2014-11-19  David Malcolm  <dmalcolm@redhat.com>
 
@@ -4478,8 +4485,9 @@
 
 2014-11-19  Renlin Li  <renlin.li@arm.com>
 
-    * config/aarch64/aarch64.h (TARGET_CPU_CPP_BUILTINS): Define __ARM_FP_FAST,
-	__ARM_FEATURE_FMA, __ARM_FP, __ARM_FEATURE_NUMERIC_MAXMIN, __ARM_NEON_FP.
+	* config/aarch64/aarch64.h (TARGET_CPU_CPP_BUILTINS): Define
+	__ARM_FP_FAST, __ARM_FEATURE_FMA, __ARM_FP,
+	__ARM_FEATURE_NUMERIC_MAXMIN, __ARM_NEON_FP.
 
 2014-11-19  Marek Polacek  <polacek@redhat.com>
 
@@ -6199,8 +6207,8 @@
 
 2014-11-18  Marat Zakirov  <m.zakirov@samsung.com>
 
-	* opts.c (finish_options): Disable aggressive opts for sanitizer.  
-	(common_handle_option): Move code to finish_options.  
+	* opts.c (finish_options): Disable aggressive opts for sanitizer.
+	(common_handle_option): Move code to finish_options.
 
 2014-11-18  Yury Gribov  <y.gribov@samsung.com>
 
@@ -6341,8 +6349,8 @@
 
 2014-11-17  Jan Hubicka  <hubicka@ucw.cz>
 
-	* tree.c (free_lang_data_in_decl): Set DECL_FUNCTION_SPECIFIC_OPTIMIZATION
-	to optimization_default_node.
+	* tree.c (free_lang_data_in_decl): Set
+	DECL_FUNCTION_SPECIFIC_OPTIMIZATION to optimization_default_node.
 
 2014-11-17  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -6553,15 +6561,15 @@
 	* ipa-polymorphic-call.c
 	(ipa_polymorphic_call_context::speculation_consistent_p): Constify.
 	(ipa_polymorphic_call_context::meet_speculation_with): New function.
-	(ipa_polymorphic_call_context::combine_with): Handle types in construction
-	better.
+	(ipa_polymorphic_call_context::combine_with): Handle types in
+	construction better.
 	(ipa_polymorphic_call_context::equal_to): Do not bother about useless
 	speculation.
 	(ipa_polymorphic_call_context::meet_with): New function.
 	* cgraph.h (class ipa_polymorphic_call_context): Add
 	meet_width, meet_speculation_with; constify speculation_consistent_p.
-	* ipa-cp.c (ipa_context_from_jfunc): Handle speculation; combine with incomming
-	context.
+	* ipa-cp.c (ipa_context_from_jfunc): Handle speculation; combine
+	with incomming context.
 	(propagate_context_accross_jump_function): Likewise; be more cureful.
 	about set_contains_variable.
 	(ipa_get_indirect_edge_target_1): Fix handling of dynamic type changes.
@@ -6576,7 +6584,8 @@
 	(expand_thunk): Use get_untransformed_body.
 	(cgraph_node::expand): Likewise.
 	* tree-ssa-structalias.c (ipa_pta_execute): Skip inline clones.
-	* cgraph.c (release_function_body): Do not push cfun when CFG is not there.
+	* cgraph.c (release_function_body): Do not push cfun when CFG
+	is not there.
 	(cgraph_node::get_untransformed_body): Break out from ...
 	(cgraph_node::get_body): ... here; add code to apply all transforms.
 	* cgraph.h (cgraph_node): Add get_untransformed_body.
@@ -6663,8 +6672,10 @@
 2014-11-15  Jan Hubicka <hubicka@ucw.cz>
 
 	* lto-streamer-out.c (hash_tree): Use cl_optimization_hash.
-	* lto-streamer.h (cl_optimization_stream_out, cl_optimization_stream_in): Declare.
-	* optc-save-gen.awk: Generate cl_optimization LTO streaming and hashing routines.
+	* lto-streamer.h (cl_optimization_stream_out,
+	cl_optimization_stream_in): Declare.
+	* optc-save-gen.awk: Generate cl_optimization LTO streaming
+	and hashing routines.
 	* opth-gen.awk: Add prototype of cl_optimization_hash.
 	* tree-streamer-in.c (unpack_ts_optimization): Remove.
 	(streamer_unpack_tree_bitfields): Use cl_optimization_stream_in.
@@ -8537,7 +8548,7 @@
 	* config/pa/pa.md (trap): New insn.  Add "trap" to attribute type.
 	Don't allow trap insn in in_branch_delay, in_nullified_branch_delay
 	or in_call_delay.
-	
+
 2014-11-06  Steve Ellcey  <sellcey@imgtec.com>
 
 	* config.gcc (mips*-mti-linux*): Remove gnu_ld and gas assignments.
@@ -9327,7 +9338,7 @@
 	* sanopt.c: ...here.  New file.
 
 2014-11-04  Jiong Wang  <jiong.wang@arm.com>
-2014-11-04  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+	    Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	PR target/63293
 	* config/aarch64/aarch64.c (aarch64_expand_epiloue): Add barriers before
@@ -9820,8 +9831,9 @@
 2014-10-31  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	PR ipa/63696
-	* ipa-icf.c (sem_function::~sem_function): Change free to delete to avoid
-	alloc-dealloc mismatch with new, called in ipa_icf::sem_function::init.
+	* ipa-icf.c (sem_function::~sem_function): Change free to delete
+	to avoid alloc-dealloc mismatch with new, called in
+	ipa_icf::sem_function::init.
 
 2014-10-30  Felix Yang  <felix.yang@huawei.com>
 
@@ -11937,8 +11949,9 @@
 	(enum asan_check_flags): Remove ASAN_CHECK_START_INSTRUMENTED and
 	ASAN_CHECK_END_INSTRUMENTED.  Change ASAN_CHECK_LAST.
 	(asan_expand_check_ifn): Remove start_instrumented and end_instrumented.
-	* builtins.c (expand_builtin): Include asan.h.  Don't expand string/memory
-	builtin functions that have interceptors if ASan is enabled.
+	* builtins.c (expand_builtin): Include asan.h.  Don't expand
+	string/memory builtin functions that have interceptors if ASan is
+	enabled.
 
 2014-10-28  Richard Biener  <rguenther@suse.de>
 
@@ -13588,7 +13601,6 @@
 	(lds_fpscr, sts_fpscr): New insns.
 	(toggle_sz, toggle_pr): Use SImode for FPSCR_REG instead of PSImode.
 
->>>>>>> .r217525
 2014-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-inline-transform.c (master_clone_with_noninline_clones_p): New.
@@ -13718,8 +13730,8 @@
 2014-10-17  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/61605
-	* regcprop.c (copyprop_hardreg_forward_1): Add copy_p and noop_p.  Don't
-	notice stores for noops.  Don't regard noops as copies.
+	* regcprop.c (copyprop_hardreg_forward_1): Add copy_p and noop_p.
+	Don't notice stores for noops.  Don't regard noops as copies.
 
 2014-10-17  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -14171,8 +14183,8 @@
 	PR lto/62026
 	* cgraphclones.c (duplicate_thunk_for_node): Get body to have args
 	to duplicate.
-	* lto-streamer-out.c (lto_output): Handle correctly thunks that was born
-	at WPA time.
+	* lto-streamer-out.c (lto_output): Handle correctly thunks that was
+	born at WPA time.
 
 2014-10-15  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -14303,7 +14315,7 @@
 
 2014-10-14  Jan Hubicka  <hubicka@ucw.cz>
 
-	* loop-unroll.c: (decide_unrolling_and_peeling): Rename to
+	* loop-unroll.c (decide_unrolling_and_peeling): Rename to
 	(decide_unrolling): ... this one.
 	(peel_loops_completely): Remove.
 	(decide_peel_simple): Remove.
@@ -14313,13 +14325,12 @@
 	(peel_loop_completely): Remove.
 	(unroll_and_peel_loops): Rename to ...
 	(unroll_loops): ... this one; handle only unrolling.
-	* cfgloop.h (lpt_dec): Remove LPT_PEEL_COMPLETELY and
-	LPT_PEEL_SIMPLE.
+	* cfgloop.h (lpt_dec): Remove LPT_PEEL_COMPLETELY and LPT_PEEL_SIMPLE.
 	(UAP_PEEL): Remove.
 	(unroll_and_peel_loops): Remove.
 	(unroll_loops): New.
-	* passes.def: Replace
-	pass_rtl_unroll_and_peel_loops by pass_rtl_unroll_loops.
+	* passes.def: Replace pass_rtl_unroll_and_peel_loops
+	by pass_rtl_unroll_loops.
 	* loop-init.c (gate_rtl_unroll_and_peel_loops,
 	rtl_unroll_and_peel_loops): Rename to ...
 	(gate_rtl_unroll_loops, rtl_unroll_loops): ... these; update.
@@ -14327,7 +14338,8 @@
 	(pass_rtl_unroll_loops): ... this one.
 	* tree-pass.h (make_pass_rtl_unroll_and_peel_loops): Remove.
 	(make_pass_rtl_unroll_loops): New.
-	* tree-ssa-loop-ivcanon.c: (estimated_peeled_sequence_size, try_peel_loop): New.
+	* tree-ssa-loop-ivcanon.c (estimated_peeled_sequence_size,
+	try_peel_loop): New.
 	(canonicalize_loop_induction_variables): Update.
 
 2014-10-14  Max Filippov  <jcmvbkbc@gmail.com>
@@ -14363,7 +14375,8 @@
 
 	* config/msp430/msp430-modes.def (PSI): Add.
 
-	* config/msp430/msp430-protos.h (msp430_hard_regno_nregs_has_padding): New.
+	* config/msp430/msp430-protos.h (msp430_hard_regno_nregs_has_padding):
+	New.
 	(msp430_hard_regno_nregs_with_padding): New.
 	* config/msp430/msp430.c (msp430_scalar_mode_supported_p): New.
 	(msp430_hard_regno_nregs_has_padding): New.
@@ -14402,8 +14415,7 @@
 	(int_n_data): New.
 	* tree.c (int_n_enabled_p): New.
 	(int_n_trees): New.
-	(make_or_reuse_type): Check for all __intN types, not just
-	__int128.
+	(make_or_reuse_type): Check for all __intN types, not just __int128.
 	(build_common_tree_nodes): Likewise.  Also fill in integer_typs[]
 	entries.
 	* tree.h (int128_integer_type_node): Remove.
@@ -14412,8 +14424,7 @@
 	(int_n_enabled_p): New.
 	(int_n_trees): New.
 	* toplev.c (standard_type_bitsize): New.
-	(do_compile): Check which __intN types are enabled for the current
-	run.
+	(do_compile): Check which __intN types are enabled for the current run.
 	* builtin-types.def (BT_INT128): Remove.
 	(BT_UINT128): Remove.
 	* machmode.def: Add macro to create __int128 for all targets.
@@ -14424,8 +14435,7 @@
 	(blank_mode): Likewise.
 	(INT_N): New.
 	(make_int_n): New.
-	(emit_insn_modes_h): Count __intN entries and define
-	NUM_INT_N_ENTS.
+	(emit_insn_modes_h): Count __intN entries and define NUM_INT_N_ENTS.
 	(emit_mode_int_n): New.
 	(emit_insn_modes_c): Call it.
 	* gimple.c (gimple_signed_or_unsigned_type): Check for all __intN
@@ -15871,13 +15881,15 @@
 2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60665
-	* ipa-devirt.c (possible_polymorphic_call_targets): Silence clang warning.
+	* ipa-devirt.c (possible_polymorphic_call_targets): Silence
+	clang warning.
 
 2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/62121
-	* ipa-polymorphic-call.c (ipa_polymorphic_call_context::restrict_to_inner_class):
-	fix pasto in checking array size.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::restrict_to_inner_class): Fix pasto
+	in checking array size.
 
 2014-09-26  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -15902,9 +15914,12 @@
 	* cgraph.c (cgraph_node::release_body): New argument keep_arguments
 	introduced.
 	* cgraph.h: Likewise.
-	* cgraphunit.c (cgraph_node::create_wrapper): Usage of new argument introduced.
-	* ipa-utils.h (polymorphic_type_binfo_p): Safe check for binfos created by Java.
-	* tree-ssa-alias.c (ao_ref_base_alias_set): Static function transformed to global.
+	* cgraphunit.c (cgraph_node::create_wrapper): Usage of new
+	argument introduced.
+	* ipa-utils.h (polymorphic_type_binfo_p): Safe check for binfos
+	created by Java.
+	* tree-ssa-alias.c (ao_ref_base_alias_set): Static function
+	transformed to global.
 	* tree-ssa-alias.h: Likewise.
 
 2014-09-26  Jakub Jelinek  <jakub@redhat.com>
@@ -15941,9 +15956,9 @@
 
 2014-09-25  Jan Hubicka  <hubicka@ucw.cz>
 
-	* ipa-utils.h (subbinfo_with_vtable_at_offset, type_all_derivations_known_p,
-	type_known_to_have_no_deriavations_p, types_must_be_same_for_odr,
-	types_odr_comparable): Declare.
+	* ipa-utils.h (subbinfo_with_vtable_at_offset,
+	type_all_derivations_known_p, type_known_to_have_no_deriavations_p,
+	types_must_be_same_for_odr, types_odr_comparable): Declare.
 	(polymorphic_type_binfo_p): Move here from ipa-devirt.c
 	* ipa-polymorphic-call.c: New file.
 	(contains_polymorphic_type_p, possible_placement_new,
@@ -15992,8 +16007,8 @@
 	speculative and non-speculative answers, do just one at a time.
 	Replace NONSPECULATIVE_TARGETSP parameter with SPECULATIVE flag.
 	(dump_targets): Break out from ...
-	(dump_possible_polymorphic_call_targets): ... here; dump both speculative
-	and non-speculative lists.
+	(dump_possible_polymorphic_call_targets): ... here; dump both
+	speculative and non-speculative lists.
 	(ipa_devirt): Update for new possible_polymorphic_call_targets API.
 	* ipa-utils.h (possible_polymorphic_call_targets): Update.
 
@@ -16230,8 +16245,9 @@
 	(ipa_polymorphic_call_context::set_by_decl): Cleanup comment.
 	(ipa_polymorphic_call_context::set_by_invariant): Simplify.
 	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Simplify.
-	(possible_polymorphic_call_targets): Trust context.restrict_to_inner_class
-	to suceed on all valid cases; remove confused sanity check.
+	(possible_polymorphic_call_targets): Trust
+	context.restrict_to_inner_class to suceed on all valid cases;
+	remove confused sanity check.
 	(dump_possible_polymorphic_call_targets): Simplify.
 
 2014-09-24  Aldy Hernandez  <aldyh@redhat.com>
@@ -16471,8 +16487,8 @@
 
 2014-09-23  Jiong Wang  <jiong.wang@arm.com>
 
-	* shrink-wrap.c (try_shrink_wrapping): Check PIC_OFFSET_TABLE_REGNUM not
-	be INVALID_REGNUM.
+	* shrink-wrap.c (try_shrink_wrapping): Check PIC_OFFSET_TABLE_REGNUM
+	not be INVALID_REGNUM.
 
 2014-09-23  Thomas Schwinge  <thomas@codesourcery.com>
 
@@ -16877,9 +16893,12 @@
 
 2014-09-19  Jan Hubicka  <hubicka@ucw.cz>
 
-	* ipa-utils.h (ipa_polymorphic_call_context): Turn into class; add ctors.
-	(possible_polymorphic_call_targets, dump_possible_polymorphic_call_targets,
-	possible_polymorphic_call_target_p, possible_polymorphic_call_target_p): Simplify.
+	* ipa-utils.h (ipa_polymorphic_call_context): Turn into class;
+	add ctors.
+	(possible_polymorphic_call_targets,
+	dump_possible_polymorphic_call_targets,
+	possible_polymorphic_call_target_p,
+	possible_polymorphic_call_target_p): Simplify.
 	(get_dynamic_type): Remove.
 	* ipa-devirt.c (ipa_dummy_polymorphic_call_context): Remove.
 	(clear_speculation): Bring to ipa-deivrt.h
@@ -16920,8 +16939,7 @@
 	field refuse_visibility_changes.
 	(symtab_node::get_create): New method.
 	* fold-const.c (tree_single_nonzero_warnv_p): Use get_create.
-	* varasm.c (mark_weak): Verify that visibility change is
-	possible.
+	* varasm.c (mark_weak): Verify that visibility change is possible.
 
 2014-09-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
@@ -17366,8 +17384,7 @@
 	Strengthen param "insn" from rtx to rtx_insn *.
 	* config/nds32/nds32.c (nds32_target_alignment): Likewise for
 	local "insn".
-	* config/pa/pa-protos.h (pa_insn_refs_are_delayed): Likewise for
-	param.
+	* config/pa/pa-protos.h (pa_insn_refs_are_delayed): Likewise for param.
 	* config/pa/pa.c (pa_output_function_epilogue): Likewise for local
 	"insn".  Use method of rtx_sequence for typesafety.
 	(branch_to_delay_slot_p): Strengthen param "insn" from rtx to
@@ -17493,8 +17510,7 @@
 	(loop_align_max_skip): Likewise.
 	(label_align_max_skip): Likewise.
 	(jump_align_max_skip): Likewise.
-	* targhooks.h (default_label_align_after_barrier_max_skip):
-	Likewise.
+	* targhooks.h (default_label_align_after_barrier_max_skip): Likewise.
 	(default_loop_align_max_skip): Likewise.
 	(default_label_align_max_skip): Likewise.
 	(default_jump_align_max_skip): Likewise.
@@ -17651,8 +17667,7 @@
 	* config/ia64/vms.h (IA64_NO_LIBGCC_XFMODE)
 	(IA64_NO_LIBGCC_TFMODE): Define.
 	* config/msp430/msp430.h (LIBGCC2_HAS_DF_MODE): Remove.
-	* config/pdp11/pdp11.c (TARGET_SCALAR_MODE_SUPPORTED_P): New
-	macro.
+	* config/pdp11/pdp11.c (TARGET_SCALAR_MODE_SUPPORTED_P): New macro.
 	(pdp11_scalar_mode_supported_p): New function.
 	* config/rl78/rl78.h (LIBGCC2_HAS_DF_MODE): Remove.
 	* config/rx/rx.h (LIBGCC2_HAS_DF_MODE): Remove.
@@ -18779,7 +18794,8 @@
 	(arm_init_neon_builtins): Support NEON_COPYSIGNF.
 	(arm_builtin_vectorized_function): Likewise.
 	* config/arm/arm_neon_builtins.def: New macro for copysignf.
-	* config/arm/neon.md (neon_copysignf<mode>): New pattern for vector copysignf.
+	* config/arm/neon.md (neon_copysignf<mode>): New pattern for
+	vector copysignf.
 
 2014-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
@@ -19816,28 +19832,28 @@
 	* hash-map.h (hash_map::hash_entry::ggc_mx): Likewise.
 	(hash_map::hash_entry::pch_nx): Likewise.
 	(hash_map::hash_entry::pch_nx_helper): Likewise.
-(hash_map::hash_map): Adjust.
-(hash_map::create_ggc): New function.
-(gt_ggc_mx): Likewise.
-(gt_pch_nx): Likewise.
+	(hash_map::hash_map): Adjust.
+	(hash_map::create_ggc): New function.
+	(gt_ggc_mx): Likewise.
+	(gt_pch_nx): Likewise.
 	* hash-set.h (default_hashset_traits::ggc_mx): Likewise.
-(default_hashset_traits::pch_nx): Likewise.
-(hash_set::hash_entry::ggc_mx): Likewise.
-(hash_set::hash_entry::pch_nx): Likewise.
-(hash_set::hash_entry::pch_nx_helper): Likewise.
-(hash_set::hash_set): Adjust.
-(hash_set::create_ggc): New function.
-(hash_set::elements): Likewise.
-(gt_ggc_mx): Likewise.
-(gt_pch_nx): Likewise.
+	(default_hashset_traits::pch_nx): Likewise.
+	(hash_set::hash_entry::ggc_mx): Likewise.
+	(hash_set::hash_entry::pch_nx): Likewise.
+	(hash_set::hash_entry::pch_nx_helper): Likewise.
+	(hash_set::hash_set): Adjust.
+	(hash_set::create_ggc): New function.
+	(hash_set::elements): Likewise.
+	(gt_ggc_mx): Likewise.
+	(gt_pch_nx): Likewise.
 	* hash-table.h (hash_table::hash_table): Adjust.
-(hash_table::m_ggc): New member.
+	(hash_table::m_ggc): New member.
 	(hash_table::~hash_table): Adjust.
 	(hash_table::expand): Likewise.
 	(hash_table::empty): Likewise.
-(gt_ggc_mx): New function.
+	(gt_ggc_mx): New function.
 	(hashtab_entry_note_pointers): Likewise.
-(gt_pch_nx): Likewise.
+	(gt_pch_nx): Likewise.
 
 2014-09-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
@@ -21312,7 +21328,8 @@
 	(define_insn "vec_interleave_lowv4si<mask_name>"): Ditto.
 	(define_insn "vec_interleave_highv16qi<mask_name>"): New.
 	(define_insn "avx512bw_interleave_highv32hi<mask_name>"): Ditto.
-	(define_insn "<mask_codefor>avx512bw_interleave_lowv32hi<mask_name>"): Ditto.
+	(define_insn "<mask_codefor>avx512bw_interleave_lowv32hi<mask_name>"):
+	Ditto.
 
 2014-08-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
@@ -24511,13 +24528,18 @@
 	* cgraph.h (symtab_node):
 	(bool needed_p (void)): created from decide_is_symbol_needed
 	(bool referred_to_p (void)): created from referred_to_p
-	(static cgraph_node *get_for_asmname (tree asmname)): created from symtab_node_for_asm
+	(static cgraph_node *get_for_asmname (tree asmname)):
+	created from symtab_node_for_asm
 	* cgraph.h (cgraph_node):
-	(void assemble_thunks_and_aliases (void)): created from assemble_thunks_and_aliases
+	(void assemble_thunks_and_aliases (void)):
+	created from assemble_thunks_and_aliases
 	(void expand (void)): created from expand_function
-	(static void finalize_function (tree, bool)): created from cgraph_finalize_function
-	(static cgraph_local_info *local_info (tree decl)): created from cgraph_local_info
-	(static cgraph_global_info *global_info (tree)): created from cgraph_global_info
+	(static void finalize_function (tree, bool)):
+	created from cgraph_finalize_function
+	(static cgraph_local_info *local_info (tree decl)):
+	created from cgraph_local_info
+	(static cgraph_global_info *global_info (tree)):
+	created from cgraph_global_info
 	(static cgraph_rtl_info *rtl_info (tree)): created from cgraph_rtl_info
 	* cgraph.h (varpool_node):
 	(static void add (tree decl): created from varpool_add_new_variable
@@ -24526,21 +24548,30 @@
 	(void remove_caller (void)): created from cgraph_edge_remove_caller
 	(void remove_callee (void)): created from cgraph_edge_remove_callee
 	(void set_call_stmt (gimple new_stmt, bool update_speculative = true)):
-	  created from cgraph_set_call_stmt
-	(void redirect_callee (cgraph_node *n)): created from cgraph_redirect_edge_callee
-	(cgraph_edge *make_direct (cgraph_node *callee)): created from cgraph_make_edge_direct
+	created from cgraph_set_call_stmt
+	(void redirect_callee (cgraph_node *n)): created from
+	cgraph_redirect_edge_callee
+	(cgraph_edge *make_direct (cgraph_node *callee)): created from
+	cgraph_make_edge_direct
 	(cgraph_edge *make_speculative (cgraph_node *n2, gcov_type direct_count,
-	  gimple redirect_call_stmt_to_callee (void)): created from cgraph_turn_edge_to_speculative
-	(void speculative_call_info (cgraph_edge *&direct, cgraph_edge *&indirect, ipa_ref *&reference)):
-	  created from cgraph_speculative_call_info
-	(cgraph_edge * clone (cgraph_node *n, gimple call_stmt, unsigned stmt_uid, gcov_type count_scale,
-	  int freq_scale, bool update_original)): created from cgraph_clone_edge
-	(cgraph_edge *resolve_speculation (tree callee_decl)): created from cgraph_resolve_speculation
-	(bool cannot_lead_to_return_p (void)): created from cannot_lead_to_return_p
+	gimple redirect_call_stmt_to_callee (void)): created from
+	cgraph_turn_edge_to_speculative
+	(void speculative_call_info (cgraph_edge *&direct,
+	cgraph_edge *&indirect, ipa_ref *&reference)): created from
+	cgraph_speculative_call_info
+	(cgraph_edge * clone (cgraph_node *n, gimple call_stmt,
+	unsigned stmt_uid, gcov_type count_scale,
+	int freq_scale, bool update_original)): created from cgraph_clone_edge
+	(cgraph_edge *resolve_speculation (tree callee_decl)):
+	created from cgraph_resolve_speculation
+	(bool cannot_lead_to_return_p (void)): created from
+	cannot_lead_to_return_p
 	(bool recursive_p (void)): created from cgraph_edge_recursive_p
 	(bool maybe_hot_p (void)): created from cgraph_maybe_hot_edge_p
-	(static unsigned int rebuild_edges (void)): created from rebuild_cgraph_edges
-	(static void rebuild_references (void)): created from cgraph_rebuild_references
+	(static unsigned int rebuild_edges (void)): created from
+	rebuild_cgraph_edges
+	(static void rebuild_references (void)): created from
+	cgraph_rebuild_references
 	* cgraph.h (symbol_table):
 	(create_reference): renamed from add_reference
 	(maybe_create_reference): renamed from maybe_add_reference
@@ -24556,7 +24587,8 @@
 	(varpool_node *first_variable (void)):new function
 	(varpool_node *next_variable (varpool_node *node)):new function
 	(varpool_node *first_static_initializer (void)):new function
-	(varpool_node *next_static_initializer (varpool_node *node)):new function
+	(varpool_node *next_static_initializer (varpool_node *node)):new
+	function
 	(varpool_node *first_defined_variable (void)):new function
 	(varpool_node *next_defined_variable (varpool_node *node)):new function
 	(cgraph_node *first_defined_function (void)):new function
@@ -24564,82 +24596,91 @@
 	(cgraph_node *first_function (void)):new function
 	(cgraph_node *next_function (cgraph_node *node)):new function
 	(cgraph_node *first_function_with_gimple_body (void)):new function
-	(asm_node *finalize_toplevel_asm (tree asm_str)): created from add_asm_node
+	(asm_node *finalize_toplevel_asm (tree asm_str)): created from
+	add_asm_node
 	(bool remove_unreachable_nodes (bool before_inlining_p, FILE *file)):
-	  created from symtab_remove_unreachable_nodes
-	(void remove_unreferenced_decls (void)): created from varpool_remove_unreferenced_decls
-	(void process_new_functions (void)): created from cgraph_process_new_functions
-	(void process_same_body_aliases (void)): created from cgraph_process_same_body_aliases
-	(bool output_variables (void)): created from varpool_node::output_variables
+	created from symtab_remove_unreachable_nodes
+	(void remove_unreferenced_decls (void)): created from
+	varpool_remove_unreferenced_decls
+	(void process_new_functions (void)): created from
+	cgraph_process_new_functions
+	(void process_same_body_aliases (void)): created from
+	cgraph_process_same_body_aliases
+	(bool output_variables (void)): created from
+	varpool_node::output_variables
 	(void output_asm_statements (void)): created from output_asm_statements
-	(void finalize_compilation_unit (void)): created from finalize_compilation_unit
+	(void finalize_compilation_unit (void)): created from
+	finalize_compilation_unit
 	(void compile (void)): created from compile
 	(void output_weakrefs (void)): created from output_weakrefs
-	(cgraph_node *create_empty (void)): created from cgraph_node::create_empty
-	(cgraph_edge *create_edge (cgraph_node *caller, cgraph_node *callee, gimple call_stmt,
-	  gcov_type count, int freq, bool indir_unknown_callee)): created from cgraph_node::create_edge
+	(cgraph_node *create_empty (void)): created from
+	cgraph_node::create_empty
+	(cgraph_edge *create_edge (cgraph_node *caller, cgraph_node *callee,
+	gimple call_stmt, gcov_type count, int freq,
+	bool indir_unknown_callee)): created from cgraph_node::create_edge
 	(void free_edge (cgraph_edge *e)): created from cgraph_free_edge
 	(cgraph_node *next_function_with_gimple_body (cgraph_node *node)):
-	  created from cgraph_next_function_with_gimple_body
+	created from cgraph_next_function_with_gimple_body
 	(void remove_edge_removal_hook (cgraph_edge_hook_list *)):
-	  created from cgraph_remove_edge_removal_hook
-	(cgraph_node_hook_list *add_cgraph_removal_hook (cgraph_node_hook, void *)):
-	  created from cgraph_add_node_removal_hook
+	created from cgraph_remove_edge_removal_hook
+	(cgraph_node_hook_list *add_cgraph_removal_hook (cgraph_node_hook,
+	void *)): created from cgraph_add_node_removal_hook
 	(void remove_cgraph_removal_hook (cgraph_node_hook_list *)):
-	  created from cgraph_remove_node_removal_hook
-	(varpool_node_hook_list *add_varpool_removal_hook (varpool_node_hook, void *)):
-	  created from varpool_add_node_removal_hook
+	created from cgraph_remove_node_removal_hook
+	(varpool_node_hook_list *add_varpool_removal_hook (varpool_node_hook,
+	void *)): created from varpool_add_node_removal_hook
 	(void remove_varpool_removal_hook (varpool_node_hook_list *)):
-	  created from varpool_remove_node_removal_hook
-	(cgraph_node_hook_list *add_cgraph_insertion_hook (cgraph_node_hook, void *)):
-	  created from cgraph_add_function_insertion_hook
+	created from varpool_remove_node_removal_hook
+	(cgraph_node_hook_list *add_cgraph_insertion_hook (cgraph_node_hook,
+	void *)): created from cgraph_add_function_insertion_hook
 	(void remove_cgraph_insertion_hook (cgraph_node_hook_list *)):
-	  created from cgraph_remove_function_insertion_hook
-	(varpool_node_hook_list *add_varpool_insertion_hook (varpool_node_hook, void *)):
-	  created from varpool_add_variable_insertion_hook
+	created from cgraph_remove_function_insertion_hook
+	(varpool_node_hook_list *add_varpool_insertion_hook (varpool_node_hook,
+	void *)): created from varpool_add_variable_insertion_hook
 	(void remove_varpool_insertion_hook (varpool_node_hook_list *)):
 	  created from varpool_remove_variable_insertion_hook
-	(cgraph_2edge_hook_list *add_edge_duplication_hook (cgraph_2edge_hook, void *)):
-	  created from cgraph_add_edge_duplication_hook
+	(cgraph_2edge_hook_list *add_edge_duplication_hook (cgraph_2edge_hook,
+	void *)): created from cgraph_add_edge_duplication_hook
 	(void remove_edge_duplication_hook (cgraph_2edge_hook_list *)):
-	  created from cgraph_remove_edge_duplication_hook
-	(cgraph_2node_hook_list *add_cgraph_duplication_hook (cgraph_2node_hook, void *)):
-	  created from cgraph_add_node_duplication_hook
+	created from cgraph_remove_edge_duplication_hook
+	(cgraph_2node_hook_list *add_cgraph_duplication_hook (cgraph_2node_hook,
+	void *)): created from cgraph_add_node_duplication_hook
 	(void remove_cgraph_duplication_hook (cgraph_2node_hook_list *)):
-	  created from cgraph_remove_node_duplication_hook
+	created from cgraph_remove_node_duplication_hook
 	(void call_edge_removal_hooks (cgraph_edge *e)):
-	  created from cgraph_call_edge_removal_hooks
+	created from cgraph_call_edge_removal_hooks
 	(void call_cgraph_insertion_hooks (cgraph_node *node)):
-	  created from call_function_insertion_hooks
+	created from call_function_insertion_hooks
 	(void call_cgraph_removal_hooks (cgraph_node *node)):
-	  created from cgraph_call_node_removal_hooks
-	(void call_cgraph_duplication_hooks (cgraph_node *node, cgraph_node *node2)):
-	  created from cgraph_node::call_duplication_hooks
+	created from cgraph_call_node_removal_hooks
+	(void call_cgraph_duplication_hooks (cgraph_node *node,
+	cgraph_node *node2)): created from cgraph_node::call_duplication_hooks
 	(void call_edge_duplication_hooks (cgraph_edge *cs1, cgraph_edge *cs2)):
-	  created from cgraph_call_edge_duplication_hooks
+	created from cgraph_call_edge_duplication_hooks
 	(void call_varpool_removal_hooks (varpool_node *node)):
-	  created from varpool_call_node_removal_hooks
+	created from varpool_call_node_removal_hooks
 	(void call_varpool_insertion_hooks (varpool_node *node)):
-	  created from varpool_call_variable_insertion_hooks
-	(void insert_to_assembler_name_hash (symtab_node *node, bool with_clones)):
-	  created from insert_to_assembler_name_hash
-	(void unlink_from_assembler_name_hash (symtab_node *node, bool with_clones)):
-	  created from unlink_from_assembler_name_hash
+	created from varpool_call_variable_insertion_hooks
+	(void insert_to_assembler_name_hash (symtab_node *node,
+	bool with_clones)): created from insert_to_assembler_name_hash
+	(void unlink_from_assembler_name_hash (symtab_node *node,
+	bool with_clones)): created from unlink_from_assembler_name_hash
 	(void symtab_prevail_in_asm_name_hash (symtab_node *node)):
-	  created from symtab_prevail_in_asm_name_hash
+	created from symtab_prevail_in_asm_name_hash
 	(void symtab_initialize_asm_name_hash (void)):
-	  created from symtab_initialize_asm_name_hash
+	created from symtab_initialize_asm_name_hash
 	(void change_decl_assembler_name (tree decl, tree name)):
-	  created from change_decl_assembler_name
-	(void materialize_all_clones (void)): created from cgraph_materialize_all_clones
+	created from change_decl_assembler_name
+	(void materialize_all_clones (void)): created from
+	cgraph_materialize_all_clones
 	(static hashval_t decl_assembler_name_hash (const_tree asmname)):
-	  created from decl_assembler_name_hash
+	created from decl_assembler_name_hash
 	(static bool decl_assembler_name_equal (tree decl, const_tree asmname)):
-	  created from decl_assembler_name_equal
+	created from decl_assembler_name_equal
 	(static hashval_t hash_node_by_assembler_name (const void *p)):
-	  created from hash_node_by_assembler_name
+	created from hash_node_by_assembler_name
 	(static int eq_assembler_name (const void *p1, const void *p2)):
-	  created from eq_assembler_name
+	created from eq_assembler_name
 
 2014-08-25  Marek Polacek  <polacek@redhat.com>
 
@@ -27724,8 +27765,8 @@
 
 2014-08-18  Jan Hubicka  <hubicka@ucw.cz>
 
-	* ipa-visibility.c (update_visibility_by_resolution_info): Do no turn UNDEF
-	comdats as extern.
+	* ipa-visibility.c (update_visibility_by_resolution_info): Do no
+	turn UNDEF comdats as extern.
 
 2014-08-18  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -27855,15 +27896,16 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-	* config/i386/i386.c: Rename ufloatv8siv8df_mask to ufloatv8siv8df2_mask.
+	* config/i386/i386.c: Rename ufloatv8siv8df_mask to
+	ufloatv8siv8df2_mask.
 	* config/i386/i386.md
 	(define_code_iterator any_float): New.
 	(define_code_attr floatsuffix): New.
 	* config/i386/sse.md
 	(define_mode_iterator VF1_128_256VL): New.
 	(define_mode_iterator VF2_512_256VL): New.
-	(define_insn "float<si2dfmodelower><mode>2<mask_name>"): Remove unnecessary
-	TARGET check.
+	(define_insn "float<si2dfmodelower><mode>2<mask_name>"): Remove
+	unnecessary TARGET check.
 	(define_insn "ufloatv8siv8df<mask_name>"): Delete.
 	(define_insn "<floatsuffix>float<sseintvecmodelower><mode>2<mask_name><round_name>"):
 	New.
@@ -29417,10 +29459,10 @@
 	* config/i386/i386.c (ix86_macro_fusion_pair_p): Reject 2nd
 	arguments that are not conditional jumps.
 
-2014-08-04 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+2014-08-04  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
-	* config/i386/driver-i386.c (host_detect_local_cpu): Handle AMD's extended
-	family information. Handle BTVER2 cpu with cpuid family value.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Handle AMD's
+	extended family information. Handle BTVER2 cpu with cpuid family value.
 
 2014-08-04  Tom de Vries  <tom@codesourcery.com>
 
@@ -29807,8 +29849,8 @@
 
 2014-07-29  Jan Hubicka  <hubicka@ucw.cz>
 
-	* ipa-devirt.c (polymorphic_call_target_d): Rename nonconstruction_targets
-	to speculative_targets
+	* ipa-devirt.c (polymorphic_call_target_d): Rename
+	nonconstruction_targets to speculative_targets
 	(get_class_context): Fix handling of contextes without outer type;
 	avoid matching non-polymorphic types in LTO.
 	(possible_polymorphic_call_targets): Trun nonconstruction_targetsp
