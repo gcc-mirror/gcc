@@ -12831,12 +12831,14 @@ ix86_address_cost (rtx x, machine_mode, addr_space_t, bool)
      Therefore only "pic_offset_table_rtx" could be hoisted out, which is not
      profitable for x86.  */
   if (parts.base
-      && (!pic_offset_table_rtx
-	  || REGNO (pic_offset_table_rtx) != REGNO(parts.base))
+      && (current_pass->type == GIMPLE_PASS
+	  || (!pic_offset_table_rtx
+	      || REGNO (pic_offset_table_rtx) != REGNO(parts.base)))
       && (!REG_P (parts.base) || REGNO (parts.base) >= FIRST_PSEUDO_REGISTER)
       && parts.index
-      && (!pic_offset_table_rtx
-	  || REGNO (pic_offset_table_rtx) != REGNO(parts.index))
+      && (current_pass->type == GIMPLE_PASS
+	  || (!pic_offset_table_rtx
+	      || REGNO (pic_offset_table_rtx) != REGNO(parts.index)))
       && (!REG_P (parts.index) || REGNO (parts.index) >= FIRST_PSEUDO_REGISTER)
       && parts.base != parts.index)
     cost++;
