@@ -1,5 +1,8 @@
 2014-12-16  Jason Merrill  <jason@redhat.com>
 
+	* config/abi/pre/gnu-versioned-namespace.ver: And other size_t
+	manglings.
+
 	* config/abi/pre/gnu-versioned-namespace.ver: Export _ZdlPvm and
 	_ZdaPvm.
 
