@@ -1,5 +1,11 @@
 2014-12-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline-analysis.c (will_be_nonconstant_predicate): Consider
+	return values of const calls as constants.
+	(estimate_function_body_sizes): Expect calls to have false predicates.
+
+2014-12-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* hwint.c (abs_hwi, absu_hwi): Move to ...
 	* hwint.h (abs_hwi, absu_hwi): ... here; make inline.
 
