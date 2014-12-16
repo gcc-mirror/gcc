@@ -33,7 +33,7 @@ class LibbacktraceSymbolizer {
   uptr SymbolizeCode(uptr addr, AddressInfo *frames, uptr max_frames,
                      const char *module_name, uptr module_offset);
 
-  bool SymbolizeData(DataInfo *info);
+  bool SymbolizeData(uptr addr, DataInfo *info);
 
   // May return NULL if demangling failed.
   static char *Demangle(const char *name, bool always_alloc = false);
