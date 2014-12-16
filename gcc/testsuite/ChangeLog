@@ -1,3 +1,8 @@
+2014-12-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58650
+	* g++.dg/parse/friend12.C: New.
+
 2014-12-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089

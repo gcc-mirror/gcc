@@ -21069,7 +21069,10 @@ cp_parser_member_declaration (cp_parser* parser)
 	  if (decl)
 	    {
 	      /* Add DECL to the list of members.  */
-	      if (!friend_p)
+	      if (!friend_p
+		  /* Explicitly include, eg, NSDMIs, for better error
+		     recovery (c++/58650).  */
+		  || !DECL_DECLARES_FUNCTION_P (decl))
 		finish_member_declaration (decl);
 
 	      if (TREE_CODE (decl) == FUNCTION_DECL)
