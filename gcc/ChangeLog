@@ -1,3 +1,8 @@
+2014-12-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* hwint.c (abs_hwi, absu_hwi): Move to ...
+	* hwint.h (abs_hwi, absu_hwi): ... here; make inline.
+
 2014-12-16  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/64309

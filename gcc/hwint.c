@@ -124,22 +124,6 @@ popcount_hwi (unsigned HOST_WIDE_INT x)
 
 #endif /* GCC_VERSION < 3004 */
 
-/* Compute the absolute value of X.  */
-
-HOST_WIDE_INT
-abs_hwi (HOST_WIDE_INT x)
-{
-  gcc_checking_assert (x != HOST_WIDE_INT_MIN);
-  return x >= 0 ? x : -x;
-}
-
-/* Compute the absolute value of X as an unsigned type.  */
-
-unsigned HOST_WIDE_INT
-absu_hwi (HOST_WIDE_INT x)
-{
-  return x >= 0 ? (unsigned HOST_WIDE_INT)x : -(unsigned HOST_WIDE_INT)x;
-}
 
 /* Compute the greatest common divisor of two numbers A and B using
    Euclid's algorithm.  */
