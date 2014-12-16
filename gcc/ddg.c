@@ -77,7 +77,7 @@ mark_mem_use (rtx *x, void *)
 {
   subrtx_iterator::array_type array;
   FOR_EACH_SUBRTX (iter, array, *x, NONCONST)
-    if (MEM_P (*x))
+    if (MEM_P (*iter))
       {
 	mem_ref_p = true;
 	break;
