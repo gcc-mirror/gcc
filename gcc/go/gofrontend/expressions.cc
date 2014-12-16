@@ -11588,7 +11588,10 @@ class Struct_construction_expression : public Expression
   do_copy()
   {
     Struct_construction_expression* ret =
-      new Struct_construction_expression(this->type_, this->vals_->copy(),
+      new Struct_construction_expression(this->type_,
+					 (this->vals_ == NULL
+					  ? NULL
+					  : this->vals_->copy()),
 					 this->location());
     if (this->traverse_order_ != NULL)
       ret->set_traverse_order(this->traverse_order_);
@@ -12353,7 +12356,10 @@ class Map_construction_expression : public Expression
   Expression*
   do_copy()
   {
-    return new Map_construction_expression(this->type_, this->vals_->copy(),
+    return new Map_construction_expression(this->type_,
+					   (this->vals_ == NULL
+					    ? NULL
+					    : this->vals_->copy()),
 					   this->location());
   }
 
