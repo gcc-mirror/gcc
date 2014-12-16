@@ -1,5 +1,9 @@
 2014-12-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* fibonacci_heap.h (min): Return m_data instead of non-existing data.
+
+2014-12-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline-analysis.c (will_be_nonconstant_predicate): Consider
 	return values of const calls as constants.
 	(estimate_function_body_sizes): Expect calls to have false predicates.
