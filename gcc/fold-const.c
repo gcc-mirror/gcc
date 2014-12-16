@@ -400,7 +400,7 @@ negate_expr_p (tree t)
   switch (TREE_CODE (t))
     {
     case INTEGER_CST:
-      if (TYPE_OVERFLOW_WRAPS (type))
+      if (INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type))
 	return true;
 
       /* Check that -CST will not overflow type.  */

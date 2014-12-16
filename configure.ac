@@ -289,9 +289,7 @@ esac
 AC_ARG_ENABLE(as-accelerator-for,
 [AS_HELP_STRING([--enable-as-accelerator-for=ARG],
 		[build as offload target compiler.
-		Specify offload host triple by ARG])],
-ENABLE_AS_ACCELERATOR_FOR=$enableval,
-ENABLE_AS_ACCELERATOR_FOR=no)
+		Specify offload host triple by ARG])])
 
 AC_ARG_ENABLE(offload-targets,
 [AS_HELP_STRING([--enable-offload-targets=LIST],
@@ -470,7 +468,7 @@ AC_HELP_STRING([[--enable-liboffloadmic[=ARG]]],
   *)
     AC_MSG_ERROR([--enable-liboffloadmic=no/host/target]) ;;
 esac],
-[if test "${ENABLE_AS_ACCELERATOR_FOR}" != "no"; then
+[if test x"$enable_as_accelerator_for" != x; then
   case "${target}" in
     *-intelmic-* | *-intelmicemul-*)
       enable_liboffloadmic=target

@@ -119,6 +119,7 @@ use_modules (void)
   gfc_warning_check ();
   gfc_current_ns->old_cl_list = gfc_current_ns->cl_list;
   gfc_current_ns->old_equiv = gfc_current_ns->equiv;
+  gfc_current_ns->old_data = gfc_current_ns->data;
   last_was_use_stmt = false;
 }
 
@@ -1098,6 +1099,7 @@ next_statement (void)
 
   gfc_current_ns->old_cl_list = gfc_current_ns->cl_list;
   gfc_current_ns->old_equiv = gfc_current_ns->equiv;
+  gfc_current_ns->old_data = gfc_current_ns->data;
   for (;;)
     {
       gfc_statement_label = NULL;
@@ -2042,6 +2044,8 @@ reject_statement (void)
 
   gfc_free_equiv_until (gfc_current_ns->equiv, gfc_current_ns->old_equiv);
   gfc_current_ns->equiv = gfc_current_ns->old_equiv;
+
+  gfc_reject_data (gfc_current_ns);
 
   gfc_new_block = NULL;
   gfc_undo_symbols ();

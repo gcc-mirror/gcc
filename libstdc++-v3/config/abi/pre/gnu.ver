@@ -1733,6 +1733,11 @@ CXXABI_1.3.9 {
     _ZTSP[no];
     _ZTSPK[no];
 
+    # operator delete(void*, std::size_t)
+    _ZdlPvm;
+    # operator delete[](void*, std::size_t)
+    _ZdaPvm;
+
 } CXXABI_1.3.8;
 
 # Symbols in the support library (libsupc++) supporting transactional memory.

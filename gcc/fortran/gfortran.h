@@ -1627,7 +1627,7 @@ typedef struct gfc_namespace
   gfc_st_label *st_labels;
   /* This list holds information about all the data initializers in
      this namespace.  */
-  struct gfc_data *data;
+  struct gfc_data *data, *old_data;
 
   gfc_charlen *cl_list, *old_cl_list;
 
@@ -2929,6 +2929,7 @@ void gfc_free_omp_namelist (gfc_omp_namelist *);
 void gfc_free_equiv (gfc_equiv *);
 void gfc_free_equiv_until (gfc_equiv *, gfc_equiv *);
 void gfc_free_data (gfc_data *);
+void gfc_reject_data (gfc_namespace *);
 void gfc_free_case_list (gfc_case *);
 
 /* matchexp.c -- FIXME too?  */

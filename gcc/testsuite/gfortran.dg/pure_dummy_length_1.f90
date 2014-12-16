@@ -24,6 +24,6 @@
          character(*), intent(in) :: string
          integer(4), intent(in) :: ignore_case
          integer i
-         if (end > impure (self)) & ! { dg-error "non-PURE procedure" }
+         if (end > impure (self)) & ! { dg-error "impure function" }
            return
    end function

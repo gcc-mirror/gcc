@@ -5733,7 +5733,7 @@ build_new_op (location_t loc, enum tree_code code, int flags,
 /* Returns true iff T, an element of an OVERLOAD chain, is a usual
    deallocation function (3.7.4.2 [basic.stc.dynamic.deallocation]).  */
 
-static bool
+bool
 non_placement_deallocation_fn_p (tree t)
 {
   /* A template instance is never a usual deallocation function,
@@ -5749,9 +5749,11 @@ non_placement_deallocation_fn_p (tree t)
      function named operator delete with exactly two parameters, the second
      of which has type std::size_t (18.2), then this function is a usual
      deallocation function.  */
+  bool global = DECL_NAMESPACE_SCOPE_P (t);
   t = FUNCTION_ARG_CHAIN (t);
   if (t == void_list_node
       || (t && same_type_p (TREE_VALUE (t), size_type_node)
+	  && (!global || flag_sized_deallocation)
 	  && TREE_CHAIN (t) == void_list_node))
     return true;
   return false;
@@ -5883,9 +5885,39 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	       which has type std::size_t (18.2), then this function is a
 	       usual deallocation function."
 
-	       So (void*) beats (void*, size_t).  */
-	    if (FUNCTION_ARG_CHAIN (fn) == void_list_node)
-	      break;
+	       So in a class (void*) beats (void*, size_t).  */
+	    if (DECL_CLASS_SCOPE_P (fn))
+	      {
+		if (FUNCTION_ARG_CHAIN (fn) == void_list_node)
+		  break;
+	      }
+	    /* At global scope (in C++14 and above) the rules are different:
+
+	       If deallocation function lookup finds both a usual
+	       deallocation function with only a pointer parameter and a
+	       usual deallocation function with both a pointer parameter
+	       and a size parameter, the function to be called is selected
+	       as follows:
+
+	       * If the type is complete and if, for the second alternative
+	       (delete array) only, the operand is a pointer to a class
+	       type with a non-trivial destructor or a (possibly
+	       multi-dimensional) array thereof, the function with two
+	       parameters is selected.
+
+	       * Otherwise, it is unspecified which of the two deallocation
+	       functions is selected. */
+	    else
+	      {
+		bool want_size = COMPLETE_TYPE_P (type);
+		if (code == VEC_DELETE_EXPR
+		    && !TYPE_VEC_NEW_USES_COOKIE (type))
+		  /* We need a cookie to determine the array size.  */
+		  want_size = false;
+		bool have_size = (FUNCTION_ARG_CHAIN (fn) != void_list_node);
+		if (want_size == have_size)
+		  break;
+	      }
 	  }
       }
 

@@ -178,6 +178,20 @@ gfc_free_data_all (gfc_namespace *ns)
     }
 }
 
+/* Reject data parsed since the last restore point was marked.  */
+
+void
+gfc_reject_data (gfc_namespace *ns)
+{
+  gfc_data *d;
+
+  while (ns->data && ns->data != ns->old_data)
+    {
+      d = ns->data->next;
+      free (ns->data);
+      ns->data = d;
+    }
+}
 
 static match var_element (gfc_data_variable *);
 

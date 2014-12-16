@@ -1,3 +1,110 @@
+2014-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/64316
+	* simplify-rtx.c (simplify_relational_operation_1): For
+	(eq/ne (and x y) x) and (eq/ne (and x y) y) optimizations use
+	CONST0_RTX instead of const0_rtx.
+
+2014-12-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/62642
+	* ira.c (rtx_moveable_p): Prevent UNSPEC_VOLATILE moves.
+
+2014-12-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-int.h (ira_prohibited_class_mode_regs): Remove.
+	(struct target_ira_int): Move x_ira_prohibited_class_mode_regs to
+	...
+	* ira.h (struct target_ira): ... here.
+	(ira_prohibited_class_mode_regs): Define.
+	* lra-constraints.c (process_alt_operands): Add one more condition
+	to refuse alternative when reload pseudo of given class can not
+	hold value of given mode.
+
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64312
+	* tree-ssa-sccvn.c (vn_reference_lookup_pieces): Use
+	vuse_ssa_val as callback to walk_non_aliased_vuses.
+	(vn_reference_lookup): Likewise.
+
+2014-12-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc/config/rs6000/rs6000.md (*add>mode>3_imm_dot,
+	*add<mode>3_imm_dot2): Change the constraint for the second
+	alternative for operand 1 from "r" to "b".
+
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	* vec.h (vec::safe_grow): Guard against a grow to zero size.
+
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64295
+	* match.pd (X / CST -> X * (1 / CST): Use const_binop instead of
+	fold_binary to compute the constant to multiply with.
+
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64246
+	* cfgloop.c (mark_loop_for_removal): Make safe against multiple
+	invocations on the same loop.
+
+2014-12-15  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/64292
+	* fold-const.c (negate_expr_p): Add INTEGRAL_TYPE_P check.
+
+2014-12-15  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.h (CLZ_DEFINED_VALUE_AT_ZERO): Return 2.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Update to support more modes.
+
+2014-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64265
+	* tsan.c (instrument_func_entry): Insert __tsan_func_entry
+	call on edge from entry block to single succ instead
+	of after labels of single succ of entry block.
+
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64284
+	* tree-ssa-threadupdate.c (duplicate_seme_region): Mark
+	the loop for removal if we copied the loop header.
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa.c (process_references): Fix conditoinal on flag_optimize
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61558
+	* symtab.c (symbol_table::insert_to_assembler_name_hash
+	symbol_table::unlink_from_assembler_name_hash): Do not ICE when	
+	DECL_ASSEMBLER_NAME is NULL.
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphunit.c (analyze_functions): Always analyze targets of aliases.
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/64043
+	* tree.c (virtual_method_call_p): Return false when OTR type has
+	no BINFO.
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphunit.c (analyze_functions): Do not analyze extern inline
+	funtions when not optimizing; skip comdat locals.
+
+2014-12-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/64037
+	* combine.c (setup_incoming_promotions): Pass the argument
+	before any promotions happen to promote_function_mode.
+
 2014-12-12  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/nvptx/nvptx.h (ASM_OUTPUT_ALIGN): Define as a C statment.

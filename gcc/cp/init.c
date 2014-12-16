@@ -39,7 +39,6 @@ static void construct_virtual_base (tree, tree);
 static void expand_aggr_init_1 (tree, tree, tree, tree, int, tsubst_flags_t);
 static void expand_default_init (tree, tree, tree, tree, int, tsubst_flags_t);
 static void perform_member_init (tree, tree);
-static tree build_builtin_delete_call (tree);
 static int member_init_ok_or_else (tree, tree, tree);
 static void expand_virtual_init (tree, tree);
 static tree sort_mem_initializers (tree, tree);
@@ -2094,15 +2093,6 @@ decl_constant_value (tree decl)
 }
 
 /* Common subroutines of build_new and build_vec_delete.  */
-
-/* Call the global __builtin_delete to delete ADDR.  */
-
-static tree
-build_builtin_delete_call (tree addr)
-{
-  mark_used (global_delete_fndecl);
-  return build_call_n (global_delete_fndecl, 1, addr);
-}
 
 /* Build and return a NEW_EXPR.  If NELTS is non-NULL, TYPE[NELTS] is
    the type of the object being allocated; otherwise, it's just TYPE.
@@ -3211,7 +3201,9 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
                  "class-specific operator delete [] will be called, "
                  "even if they are declared when the class is defined");
        }
-      return build_builtin_delete_call (base);
+      /* This size won't actually be used.  */
+      size_exp = size_one_node;
+      goto no_destructor;
     } 
 
   size_exp = size_in_bytes (type);
@@ -3967,8 +3959,6 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 
   if (TYPE_PTR_P (otype))
     {
-      bool complete_p = true;
-
       addr = mark_rvalue_use (addr);
 
       /* We don't want to warn about delete of void*, only other
@@ -3993,7 +3983,6 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 			  "operator delete will be called, even if they are "
 			  "declared when the class is defined");
 		}
-	      complete_p = false;
 	    }
 	  else if (auto_delete == sfk_deleting_destructor && warn_delnonvdtor
 	           && MAYBE_CLASS_TYPE_P (type) && !CLASSTYPE_FINAL (type)
@@ -4016,9 +4005,6 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 		}
 	    }
 	}
-      if (VOID_TYPE_P (type) || !complete_p || !MAYBE_CLASS_TYPE_P (type))
-	/* Call the builtin operator delete.  */
-	return build_builtin_delete_call (addr);
       if (TREE_SIDE_EFFECTS (addr))
 	addr = save_expr (addr);
 
@@ -4079,7 +4065,13 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 	  addr = save_expr (addr);
 	  head = get_target_expr (build_headof (addr));
 	  /* Delete the object.  */
-	  do_delete = build_builtin_delete_call (head);
+	  do_delete = build_op_delete_call (DELETE_EXPR,
+					    head,
+					    cxx_sizeof_nowarn (type),
+					    /*global_p=*/true,
+					    /*placement=*/NULL_TREE,
+					    /*alloc_fn=*/NULL_TREE,
+					    complain);
 	  /* Otherwise, treat this like a complete object destructor
 	     call.  */
 	  auto_delete = sfk_complete_destructor;

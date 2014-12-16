@@ -1,3 +1,109 @@
+2014-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/64316
+	* gcc.dg/pr64316.c: New test.
+
+	PR rtl-optimization/63804
+	* gcc.dg/pr63804.c: New test.
+
+2014-12-15  Steven Bosscher  <steven@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/61669
+	* gfortran.dg/pr61669.f90: New test.
+
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64312
+	* g++.dg/torture/pr64312.C: New testcase.
+
+2014-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58882
+	* g++.dg/ext/desig8.C: New.
+	* g++.dg/cpp0x/desig1.C: Likewise.
+
+2014-12-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/63727
+	* gfortran.dg/coarray_collectives_14.f90: Address FIXME item.
+
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64295
+	* gcc.dg/pr64295.c: New testcase.
+
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64246
+	* gnat.dg/opt46.adb: New testcase.
+	* gnat.dg/opt46.ads: Likewise.
+	* gnat.dg/opt46_pkg.adb: Likewise.
+	* gnat.dg/opt46_pkg.ads: Likewise.
+
+2014-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/64210
+	* gcc.target/i386/avx512f-broadcast-gpr-1.c: Use %(?:e|r\[0-9\]+d)
+	instead of %e in regexps trying to match 32-bit GPR.
+	* gcc.target/i386/avx512f-vpbroadcastd-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vpbroadcastd-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vmovdqa64-1.c: Restrict some
+	scan-assembler-times lines to nonpic targets only.
+	Fix up \[^\n^x^y\] to \[^\nxy\].
+
+2014-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1y/pr63996.C: Fix.
+
+2014-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63551
+	* gcc.dg/ipa/pr63551.c (fn2): Use 4294967286U instead of
+	4294967286 to avoid warnings.
+
+2014-12-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/63674
+	* gfortran.dg/forall_5.f90: Modified error message.
+	* gfortran.dg/proc_ptr_comp_39.f90: Ditto.
+	* gfortran.dg/pure_dummy_length_1.f90: Ditto.
+	* gfortran.dg/stfunc_6.f90: Ditto.
+	* gfortran.dg/typebound_operator_4.f90: Ditto.
+
+2014-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64284
+	* gcc.dg/torture/pr64284.c: New testcase.
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61602
+	* gcc.dg/torture/pr61602.c: New testcase.
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61558
+	* g++.dg/torture/pr61558.C: New testcase.
+
+2014-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/64043
+	* g++.dg/lto/pr64043_0.C: New testcase.
+
+2014-12-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/64037
+	* g++.dg/pr64037.C: New test.
+
+2014-12-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/63674
+	* gfortran.dg/proc_ptr_comp_39.f90: New.
+	* gfortran.dg/pure_dummy_length_1.f90: Modified error message.
+	* gfortran.dg/stfunc_6.f90: Ditto.
+	* gfortran.dg/typebound_operator_4.f90: Ditto.
+
 2014-12-13  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53513

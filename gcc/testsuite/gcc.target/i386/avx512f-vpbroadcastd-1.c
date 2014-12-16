@@ -3,9 +3,9 @@
 /* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 2 } } */
 /* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 2 } } */
 /* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 2 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+%e\[^\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+%e\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+%e\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+%(?:e|r\[0-9\]+d)\[^\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+%(?:e|r\[0-9\]+d)\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[ \\t\]+%(?:e|r\[0-9\]+d)\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 
