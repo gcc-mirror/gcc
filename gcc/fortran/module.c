@@ -5249,7 +5249,7 @@ check_access (gfc_access specific_access, gfc_access default_access)
   if (specific_access == ACCESS_PRIVATE)
     return FALSE;
 
-  if (gfc_option.flag_module_private)
+  if (flag_module_private)
     return default_access == ACCESS_PUBLIC;
   else
     return default_access != ACCESS_PRIVATE;

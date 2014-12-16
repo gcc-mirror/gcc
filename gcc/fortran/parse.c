@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include <setjmp.h>
 #include "coretypes.h"
+#include "flags.h"
 #include "gfortran.h"
 #include "match.h"
 #include "parse.h"
@@ -574,7 +575,7 @@ decode_statement (void)
 /* Like match, but don't match anything if not -fopenmp.  */
 #define matcho(keyword, subr, st)				\
     do {							\
-      if (!gfc_option.gfc_flag_openmp)				\
+      if (!flag_openmp)						\
 	;							\
       else if (match_word (keyword, subr, &old_locus)		\
 	       == MATCH_YES)					\
@@ -769,7 +770,7 @@ decode_omp_directive (void)
      not -fopenmp and simd_matched is false, i.e. if a directive other
      than one marked with match has been seen.  */
 
-  if (gfc_option.gfc_flag_openmp || simd_matched)
+  if (flag_openmp || simd_matched)
     {
       if (!gfc_error_check ())
 	gfc_error_now ("Unclassifiable OpenMP directive at %C");
@@ -896,9 +897,7 @@ next_free (void)
 	  return decode_gcc_attribute ();
 
 	}
-      else if (c == '$'
-	       && (gfc_option.gfc_flag_openmp
-		   || gfc_option.gfc_flag_openmp_simd))
+      else if (c == '$' && (flag_openmp || flag_openmp_simd))
 	{
 	  int i;
 
@@ -988,8 +987,7 @@ next_fixed (void)
 	      return decode_gcc_attribute ();
 	    }
 	  else if (c == '$'
-		   && (gfc_option.gfc_flag_openmp
-		       || gfc_option.gfc_flag_openmp_simd))
+		   && (flag_openmp || flag_openmp_simd))
 	    {
 	      for (i = 0; i < 4; i++, c = gfc_next_char_literal (NONSTRING))
 		gcc_assert ((char) gfc_wide_tolower (c) == "$omp"[i]);
@@ -5085,7 +5083,7 @@ loop:
   gfc_resolve (gfc_current_ns);
 
   /* Dump the parse tree if requested.  */
-  if (gfc_option.dump_fortran_original)
+  if (flag_dump_fortran_original)
     gfc_dump_parse_tree (gfc_current_ns, stdout);
 
   gfc_get_errors (NULL, &errors);
@@ -5132,7 +5130,7 @@ prog_units:
 
   /* Do the parse tree dump.  */ 
   gfc_current_ns
-	= gfc_option.dump_fortran_original ? gfc_global_ns_list : NULL;
+	= flag_dump_fortran_original ? gfc_global_ns_list : NULL;
 
   for (; gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
     if (!gfc_current_ns->proc_name

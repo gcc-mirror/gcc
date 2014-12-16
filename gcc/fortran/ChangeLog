@@ -1,5 +1,48 @@
 2014-12-16  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/54687
+	* gfortran.h (gfc_option_t): Remove flags which now
+	have a Var().
+	* lang.opt (flag-aggressive_function_elimination,
+	flag-align_commons, flag-all_intrinsics,
+	flag-allow_leading_underscore, flag-automatic, flag-backslash,
+	flag-backtrace, flag-blas_matmul_limit, flag-cray_pointer,
+	flag-dollar_ok, flag-dump_fortran_original,
+	flag-dump_fortran_optimized, flag-external_blas, flag-f2c,
+	flag-implicit_none, flag-max_array_constructor,
+	flag-module_private, flag-pack_derived, flag-range_check,
+	flag-recursive, flag-repack_arrays, flag-sign_zero,
+	flag-underscoring): Add Var() and, where applicable, Enum().
+	* options.c (gfc_init_options, gfc_post_options,
+	gfc_handle_option): Update for *.opt changes.
+	* arith.c: Update for flag-variable name changes.
+	* array.c: Ditto.
+	* cpp.c: Ditto.
+	* decl.c: Ditto.
+	* expr.c: Ditto.
+	* f95-lang.c: Ditto.
+	* frontend-passes.c: Ditto.
+	* intrinsic.c: Ditto.
+	* io.c: Ditto.
+	* match.c: Ditto.
+	* module.c: Ditto.
+	* parse.c: Ditto.
+	* primary.c: Ditto.
+	* resolve.c: Ditto.
+	* scanner.c: Ditto.
+	* simplify.c: Ditto.
+	* symbol.c: Ditto.
+	* trans-array.c: Ditto.
+	* trans-common.c: Ditto.
+	* trans-decl.c: Ditto.
+	* trans-expr.c: Ditto.
+	* trans-intrinsic.c: Ditto.
+	* trans-openmp.c: Ditto.
+	* trans-types.c: Ditto.
+
+2014-12-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54687
 	* lang.opt (fsecond-underscore, frecord-marker=8, frecord-marker=4,
 	frealloc-lhs, freal-8-real-16, freal-8-real-10, freal-8-real-4,
 	freal-4-real-16, freal-4-real-10, freal-4-real-8, fprotect-parens,

@@ -346,35 +346,35 @@ Fortran Joined
 ; Documented in common.opt
 
 faggressive-function-elimination
-Fortran
+Fortran Var(flag_aggressive_function_elimination)
 Eliminate multiple function invokations also for impure functions
 
 falign-commons
-Fortran
+Fortran Var(flag_align_commons) Init(1)
 Enable alignment of COMMON blocks
 
 fall-intrinsics
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_all_intrinsics)
 All intrinsics procedures are available regardless of selected standard
 
 fallow-leading-underscore
-Fortran Undocumented
+Fortran Undocumented Var(flag_allow_leading_underscore)
 ; For internal use only: allow the first character of symbol names to be an underscore
 
 fautomatic
-Fortran
+Fortran Var(flag_automatic) Init(1)
 Do not treat local variables and COMMON blocks as if they were named in SAVE statements
 
 fbackslash
-Fortran
+Fortran Var(flag_backslash)
 Specify that backslash in string introduces an escape character
 
 fbacktrace
-Fortran
+Fortran Var(flag_backtrace) Init(1)
 Produce a backtrace when a runtime error is encountered
 
 fblas-matmul-limit=
-Fortran RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger Var(flag_blas_matmul_limit) Init(30)
 -fblas-matmul-limit=<n>	Size of the smallest matrix for which matmul will use BLAS
 
 fcheck-array-temporaries
@@ -398,7 +398,7 @@ Fortran RejectNegative
 Swap endianness for unformatted files
 
 fcray-pointer
-Fortran
+Fortran Var(flag_cray_pointer)
 Use the Cray Pointer extension
 
 fd-lines-as-code
@@ -422,7 +422,7 @@ Fortran Var(flag_default_real)
 Set the default real kind to an 8 byte wide type
 
 fdollar-ok
-Fortran
+Fortran Var(flag_dollar_ok)
 Allow dollar signs in entity names
 
 fdump-core
@@ -430,23 +430,23 @@ Fortran Ignore
 Does nothing. Preserved for backward compatibility.
 
 fdump-fortran-original
-Fortran
+Fortran Var(flag_dump_fortran_original)
 Display the code tree after parsing
 
 fdump-fortran-optimized
-Fortran
+Fortran Var(flag_dump_fortran_optimized)
 Display the code tree after front end optimization
 
 fdump-parse-tree
-Fortran
+Fortran Alias(fdump-fortran-original)
 Display the code tree after parsing; deprecated option
 
 fexternal-blas
-Fortran
+Fortran Var(flag_external_blas)
 Specify that an external BLAS library should be used for matmul calls on large-size arrays
 
 ff2c
-Fortran
+Fortran Var(flag_f2c)
 Use f2c calling convention
 
 ffixed-form
@@ -498,7 +498,7 @@ Fortran Var(flag_frontend_optimize) Init(-1)
 Enable front end optimization
 
 fimplicit-none
-Fortran
+Fortran Var(flag_implicit_none)
 Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements
 
 finit-character=
@@ -522,7 +522,7 @@ Fortran RejectNegative Joined
 -finit-real=<zero|nan|inf|-inf>	Initialize local real variables
 
 fmax-array-constructor=
-Fortran RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger Var(flag_max_array_constructor) Init(65535)
 -fmax-array-constructor=<n>	Maximum number of objects in an array constructor
 
 fmax-identifier-length=
@@ -542,7 +542,7 @@ Fortran Var(flag_stack_arrays) Init(-1)
 Put all local arrays on stack.
 
 fmodule-private
-Fortran
+Fortran Var(flag_module_private)
 Set default accessibility of module entities to PRIVATE.
 
 fopenmp
@@ -554,7 +554,7 @@ Fortran
 ; Documented in C
 
 fpack-derived
-Fortran
+Fortran Var(flag_pack_derived)
 Try to lay out derived types as compactly as possible
 
 fpreprocessed
@@ -566,7 +566,7 @@ Fortran Var(flag_protect_parens) Init(-1)
 Protect parentheses in expressions
 
 frange-check
-Fortran
+Fortran Var(flag_range_check) Init(1)
 Enable range checking during compilation
 
 freal-4-real-8
@@ -606,11 +606,11 @@ Fortran RejectNegative Var(flag_record_marker,8)
 Use an 8-byte record marker for unformatted files
 
 frecursive
-Fortran
+Fortran Var(flag_recursive)
 Allocate local variables on the stack to allow indirect recursion
 
 frepack-arrays
-Fortran
+Fortran Var(flag_repack_arrays)
 Copy array sections into a contiguous block on procedure entry
 
 fcoarray=
@@ -630,11 +630,11 @@ Fortran Var(flag_short_enums)
 ; Documented in C
 
 fsign-zero
-Fortran
+Fortran Var(flag_sign_zero) Init(1)
 Apply negative sign to zero values
 
 funderscoring
-Fortran
+Fortran Var(flag_underscoring) Init(1)
 Append underscores to externally visible names
 
 fwhole-file

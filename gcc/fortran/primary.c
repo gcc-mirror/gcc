@@ -857,7 +857,7 @@ next_string_char (gfc_char_t delimiter, int *ret)
       return 0;
     }
 
-  if (gfc_option.flag_backslash && c == '\\')
+  if (flag_backslash && c == '\\')
     {
       old_locus = gfc_current_locus;
 
@@ -929,7 +929,7 @@ match_charkind_name (char *name)
 
       if (!ISALNUM (c)
 	  && c != '_'
-	  && (c != '$' || !gfc_option.flag_dollar_ok))
+	  && (c != '$' || !flag_dollar_ok))
 	break;
 
       *name++ = c;

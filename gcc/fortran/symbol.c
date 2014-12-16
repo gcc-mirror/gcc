@@ -220,7 +220,7 @@ gfc_get_default_type (const char *name, gfc_namespace *ns)
 
   letter = name[0];
 
-  if (gfc_option.flag_allow_leading_underscore && letter == '_')
+  if (flag_allow_leading_underscore && letter == '_')
     gfc_fatal_error ("Option %<-fallow-leading-underscore%> is for use only by "
 		     "gfortran developers, and should not be used for "
 		     "implicitly typed variables");
@@ -2372,7 +2372,7 @@ gfc_get_namespace (gfc_namespace *parent, int parent_types)
 	  continue;
 	}
 
-      if (gfc_option.flag_implicit_none != 0)
+      if (flag_implicit_none != 0)
 	{
 	  gfc_clear_ts (ts);
 	  continue;

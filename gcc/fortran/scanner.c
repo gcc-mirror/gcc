@@ -749,8 +749,7 @@ skip_free_comments (void)
 	     2) handle OpenMP conditional compilation, where
 		!$ should be treated as 2 spaces (for initial lines
 		only if followed by space).  */
-	  if ((gfc_option.gfc_flag_openmp
-	       || gfc_option.gfc_flag_openmp_simd) && at_bol)
+	  if ((flag_openmp || flag_openmp_simd) && at_bol)
 	    {
 	      locus old_loc = gfc_current_locus;
 	      if (next_char () == '$')
@@ -876,7 +875,7 @@ skip_fixed_comments (void)
 	      && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
 	    continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
 
-	  if (gfc_option.gfc_flag_openmp || gfc_option.gfc_flag_openmp_simd)
+	  if (flag_openmp || flag_openmp_simd)
 	    {
 	      if (next_char () == '$')
 		{
@@ -1822,7 +1821,7 @@ include_line (gfc_char_t *line)
 
   c = line;
 
-  if (gfc_option.gfc_flag_openmp || gfc_option.gfc_flag_openmp_simd)
+  if (flag_openmp || flag_openmp_simd)
     {
       if (gfc_current_form == FORM_FREE)
 	{

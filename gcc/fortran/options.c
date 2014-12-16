@@ -84,43 +84,17 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.max_continue_fixed = 255;
   gfc_option.max_continue_free = 255;
   gfc_option.max_identifier_length = GFC_MAX_SYMBOL_LEN;
-  gfc_option.flag_max_array_constructor = 65535;
   gfc_option.convert = GFC_CONVERT_NATIVE;
-  gfc_option.dump_fortran_original = 0;
-  gfc_option.dump_fortran_optimized = 0;
-
   gfc_option.max_errors = 25;
 
-  gfc_option.flag_all_intrinsics = 0;
-  gfc_option.flag_dollar_ok = 0;
-  gfc_option.flag_underscoring = 1;
-  gfc_option.flag_f2c = 0;
-  gfc_option.flag_implicit_none = 0;
-
-  gfc_option.flag_range_check = 1;
-  gfc_option.flag_pack_derived = 0;
-  gfc_option.flag_repack_arrays = 0;
   gfc_option.flag_preprocessed = 0;
-  gfc_option.flag_automatic = 1;
-  gfc_option.flag_backslash = 0;
-  gfc_option.flag_module_private = 0;
-  gfc_option.flag_backtrace = 1;
-  gfc_option.flag_allow_leading_underscore = 0;
-  gfc_option.flag_external_blas = 0;
-  gfc_option.blas_matmul_limit = 30;
-  gfc_option.flag_cray_pointer = 0;
   gfc_option.flag_d_lines = -1;
-  gfc_option.gfc_flag_openmp = 0;
-  gfc_option.flag_sign_zero = 1;
-  gfc_option.flag_recursive = 0;
   gfc_option.flag_init_integer = GFC_INIT_INTEGER_OFF;
   gfc_option.flag_init_integer_value = 0;
   gfc_option.flag_init_real = GFC_INIT_REAL_OFF;
   gfc_option.flag_init_logical = GFC_INIT_LOGICAL_OFF;
   gfc_option.flag_init_character = GFC_INIT_CHARACTER_OFF;
   gfc_option.flag_init_character_value = (char)0;
-  gfc_option.flag_align_commons = 1;
-  gfc_option.flag_aggressive_function_elimination = 0;
   
   gfc_option.fpe = 0;
   /* All except GFC_FPE_INEXACT.  */
@@ -262,7 +236,7 @@ gfc_post_options (const char **pfilename)
     gfc_option.rtcheck |= GFC_RTCHECK_BOUNDS;
 
   if (flag_compare_debug)
-    gfc_option.dump_fortran_original = 0;
+    flag_dump_fortran_original = 0;
 
   /* Make -fmax-errors visible to gfortran's diagnostic machinery.  */
   if (global_options_set.x_flag_max_errors)
@@ -347,33 +321,32 @@ gfc_post_options (const char **pfilename)
      use it if we're trying to be compatible with f2c, and not
      otherwise.  */
   if (flag_second_underscore == -1)
-    flag_second_underscore = gfc_option.flag_f2c;
+    flag_second_underscore = flag_f2c;
 
-  if (!gfc_option.flag_automatic && flag_max_stack_var_size != -2
+  if (!flag_automatic && flag_max_stack_var_size != -2
       && flag_max_stack_var_size != 0)
     gfc_warning_now ("Flag %<-fno-automatic%> overwrites %<-fmax-stack-var-size=%d%>",
 		     flag_max_stack_var_size);
-  else if (!gfc_option.flag_automatic && gfc_option.flag_recursive)
+  else if (!flag_automatic && flag_recursive)
     gfc_warning_now ("Flag %<-fno-automatic%> overwrites %<-frecursive%>");
-  else if (!gfc_option.flag_automatic && gfc_option.gfc_flag_openmp)
+  else if (!flag_automatic && flag_openmp)
     gfc_warning_now ("Flag %<-fno-automatic%> overwrites %<-frecursive%> implied by "
 		     "%<-fopenmp%>");
-  else if (flag_max_stack_var_size != -2 && gfc_option.flag_recursive)
+  else if (flag_max_stack_var_size != -2 && flag_recursive)
     gfc_warning_now ("Flag %<-frecursive%> overwrites %<-fmax-stack-var-size=%d%>",
 		     flag_max_stack_var_size);
-  else if (flag_max_stack_var_size != -2 && gfc_option.gfc_flag_openmp)
+  else if (flag_max_stack_var_size != -2 && flag_openmp)
     gfc_warning_now ("Flag %<-fmax-stack-var-size=%d%> overwrites %<-frecursive%> "
 		     "implied by %<-fopenmp%>", flag_max_stack_var_size);
 
   /* Implement -frecursive as -fmax-stack-var-size=-1.  */
-  if (gfc_option.flag_recursive)
+  if (flag_recursive)
     flag_max_stack_var_size = -1;
 
   /* Implied -frecursive; implemented as -fmax-stack-var-size=-1.  */
-  if (flag_max_stack_var_size == -2 && gfc_option.gfc_flag_openmp
-      && gfc_option.flag_automatic)
+  if (flag_max_stack_var_size == -2 && flag_openmp && flag_automatic)
     {
-      gfc_option.flag_recursive = 1;
+      flag_recursive = 1;
       flag_max_stack_var_size = -1;
     }
 
@@ -382,7 +355,7 @@ gfc_post_options (const char **pfilename)
     flag_max_stack_var_size = 32768;
 
   /* Implement -fno-automatic as -fmax-stack-var-size=0.  */
-  if (!gfc_option.flag_automatic)
+  if (!flag_automatic)
     flag_max_stack_var_size = 0;
   
   /* Optimization implies front end optimization, unless the user
@@ -390,6 +363,9 @@ gfc_post_options (const char **pfilename)
 
   if (flag_frontend_optimize == -1)
     flag_frontend_optimize = optimize;
+
+  if (flag_max_array_constructor < 65535)
+    flag_max_array_constructor = 65535;
 
   if (flag_fixed_line_length != 0 && flag_fixed_line_length < 7)
     gfc_fatal_error ("Fixed line length must be at least seven");
@@ -567,65 +543,16 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       result = false;
       break;
 
-    case OPT_fall_intrinsics:
-      gfc_option.flag_all_intrinsics = 1;
-      break;
-
-    case OPT_fautomatic:
-      gfc_option.flag_automatic = value;
-      break;
-
-    case OPT_fallow_leading_underscore:
-      gfc_option.flag_allow_leading_underscore = value;
-      break;
-      
-    case OPT_fbackslash:
-      gfc_option.flag_backslash = value;
-      break;
-      
-    case OPT_fbacktrace:
-      gfc_option.flag_backtrace = value;
-      break;
-      
     case OPT_fcheck_array_temporaries:
       gfc_option.rtcheck |= GFC_RTCHECK_ARRAY_TEMPS;
       break;
       
-    case OPT_fcray_pointer:
-      gfc_option.flag_cray_pointer = value;
-      break;
-
-    case OPT_ff2c:
-      gfc_option.flag_f2c = value;
-      break;
-
-    case OPT_fdollar_ok:
-      gfc_option.flag_dollar_ok = value;
-      break;
-
-    case OPT_fexternal_blas:
-      gfc_option.flag_external_blas = value;
-      break;
-
-    case OPT_fblas_matmul_limit_:
-      gfc_option.blas_matmul_limit = value;
-      break;
-
     case OPT_fd_lines_as_code:
       gfc_option.flag_d_lines = 1;
       break;
 
     case OPT_fd_lines_as_comments:
       gfc_option.flag_d_lines = 0;
-      break;
-
-    case OPT_fdump_fortran_original:
-    case OPT_fdump_parse_tree:
-      gfc_option.dump_fortran_original = value;
-      break;
-
-    case OPT_fdump_fortran_optimized:
-      gfc_option.dump_fortran_optimized = value;
       break;
 
     case OPT_ffixed_form:
@@ -636,27 +563,11 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_option.source_form = FORM_FREE;
       break;
 
-    case OPT_fopenmp:
-      gfc_option.gfc_flag_openmp = value;
-      break;
-
-    case OPT_fopenmp_simd:
-      gfc_option.gfc_flag_openmp_simd = value;
-      break;
-
-    case OPT_funderscoring:
-      gfc_option.flag_underscoring = value;
-      break;
-
     case OPT_static_libgfortran:
 #ifndef HAVE_LD_STATIC_DYNAMIC
       gfc_fatal_error ("%<-static-libgfortran%> is not supported in this "
 		       "configuration");
 #endif
-      break;
-
-    case OPT_fimplicit_none:
-      gfc_option.flag_implicit_none = value;
       break;
 
     case OPT_fintrinsic_modules_path:
@@ -669,26 +580,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_add_include_path (arg, false, false, false);
 
       gfc_add_intrinsic_modules_path (arg);
-      break;
-
-    case OPT_fmax_array_constructor_:
-      gfc_option.flag_max_array_constructor = value > 65535 ? value : 65535;
-      break;
-
-    case OPT_fmodule_private:
-      gfc_option.flag_module_private = value;
-      break;
-      
-    case OPT_frange_check:
-      gfc_option.flag_range_check = value;
-      break;
-
-    case OPT_fpack_derived:
-      gfc_option.flag_pack_derived = value;
-      break;
-
-    case OPT_frepack_arrays:
-      gfc_option.flag_repack_arrays = value;
       break;
 
     case OPT_fpreprocessed:
@@ -759,10 +650,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_J:
       gfc_handle_module_path_options (arg);
-      break;
-
-    case OPT_fsign_zero:
-      gfc_option.flag_sign_zero = value;
       break;
 
     case OPT_ffpe_trap_:
@@ -839,18 +726,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fconvert_swap:
       gfc_option.convert = GFC_CONVERT_SWAP;
-      break;
-
-    case OPT_frecursive:
-      gfc_option.flag_recursive = value;
-      break;
-
-    case OPT_falign_commons:
-      gfc_option.flag_align_commons = value;
-      break;
-
-    case  OPT_faggressive_function_elimination:
-      gfc_option.flag_aggressive_function_elimination = value;
       break;
 
     case OPT_fcheck_:

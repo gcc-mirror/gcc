@@ -2429,42 +2429,17 @@ typedef struct
   int max_continue_fixed;
   int max_continue_free;
   int max_identifier_length;
-  int dump_fortran_original;
-  int dump_fortran_optimized;
 
   int max_errors;
 
-  int flag_all_intrinsics;
-  int flag_dollar_ok;
-  int flag_underscoring;
-  int flag_implicit_none;
-  int flag_max_array_constructor;
-  int flag_range_check;
-  int flag_pack_derived;
-  int flag_repack_arrays;
   int flag_preprocessed;
-  int flag_f2c;
-  int flag_automatic;
-  int flag_backslash;
-  int flag_backtrace;
-  int flag_allow_leading_underscore;
-  int flag_external_blas;
-  int blas_matmul_limit;
-  int flag_cray_pointer;
   int flag_d_lines;
-  int gfc_flag_openmp;
-  int gfc_flag_openmp_simd;
-  int flag_sign_zero;
-  int flag_module_private;
-  int flag_recursive;
   int flag_init_integer;
   int flag_init_integer_value;
   int flag_init_real;
   int flag_init_logical;
   int flag_init_character;
   char flag_init_character_value;
-  int flag_align_commons;
-  int flag_aggressive_function_elimination;
 
   int fpe;
   int fpe_summary;

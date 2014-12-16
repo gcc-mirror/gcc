@@ -170,7 +170,7 @@ cpp_define_builtins (cpp_reader *pfile)
   cpp_define (pfile, "__GFORTRAN__=1");
   cpp_define (pfile, "_LANGUAGE_FORTRAN=1");
 
-  if (gfc_option.gfc_flag_openmp)
+  if (flag_openmp)
     cpp_define (pfile, "_OPENMP=201307");
 
   /* The defines below are necessary for the TARGET_* macros.
@@ -470,7 +470,7 @@ gfc_cpp_post_options (void)
 
   cpp_option->cpp_pedantic = pedantic;
 
-  cpp_option->dollars_in_ident = gfc_option.flag_dollar_ok;
+  cpp_option->dollars_in_ident = flag_dollar_ok;
   cpp_option->discard_comments = gfc_cpp_option.discard_comments;
   cpp_option->discard_comments_in_macro_exp = gfc_cpp_option.discard_comments_in_macro_exp;
   cpp_option->print_include_names = gfc_cpp_option.print_include_names;

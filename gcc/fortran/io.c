@@ -157,7 +157,7 @@ next_char (gfc_instring in_string)
 	c = '\0';
     }
 
-  if (gfc_option.flag_backslash && c == '\\')
+  if (flag_backslash && c == '\\')
     {
       locus old_locus = gfc_current_locus;
 

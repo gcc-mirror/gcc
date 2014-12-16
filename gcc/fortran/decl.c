@@ -1852,7 +1852,7 @@ variable_decl (int elem)
       goto cleanup;
     }
 
-  if (gfc_option.flag_cray_pointer)
+  if (flag_cray_pointer)
     cp_as = gfc_copy_array_spec (as);
 
   /* At this point, we know for sure if the symbol is PARAMETER and can thus
@@ -1921,7 +1921,7 @@ variable_decl (int elem)
   /*  If this symbol has already shown up in a Cray Pointer declaration,
       and this is not a component declaration,
       then we want to set the type & bail out.  */
-  if (gfc_option.flag_cray_pointer && gfc_current_state () != COMP_DERIVED)
+  if (flag_cray_pointer && gfc_current_state () != COMP_DERIVED)
     {
       gfc_find_symbol (name, gfc_current_ns, 1, &sym);
       if (sym != NULL && sym->attr.cray_pointee)
@@ -6769,7 +6769,7 @@ gfc_match_pointer (void)
   gfc_gobble_whitespace ();
   if (gfc_peek_ascii_char () == '(')
     {
-      if (!gfc_option.flag_cray_pointer)
+      if (!flag_cray_pointer)
 	{
 	  gfc_error ("Cray pointer declaration at %C requires -fcray-pointer "
 		     "flag");

@@ -1558,7 +1558,7 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
     proc_sym = sym;
 
   /* If sym is RECURSIVE, all is well of course.  */
-  if (proc_sym->attr.recursive || gfc_option.flag_recursive)
+  if (proc_sym->attr.recursive || flag_recursive)
     return false;
 
   /* Find the context procedure's "real" symbol if it has entries.

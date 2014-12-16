@@ -393,7 +393,7 @@ gfc_sym_mangled_function_id (gfc_symbol * sym)
       if (sym->attr.proc == PROC_INTRINSIC)
 	return get_identifier (sym->name);
 
-      if (gfc_option.flag_underscoring)
+      if (flag_underscoring)
 	{
 	  has_underscore = strchr (sym->name, '_') != 0;
 	  if (flag_second_underscore && has_underscore)
@@ -1013,7 +1013,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
 
       /* Even when -frepack-arrays is used, symbols with TARGET attribute
 	 are not repacked.  */
-      if (!gfc_option.flag_repack_arrays || sym->attr.target)
+      if (!flag_repack_arrays || sym->attr.target)
 	{
 	  if (as->type == AS_ASSUMED_SIZE)
 	    packed = PACKED_FULL;
@@ -1838,7 +1838,7 @@ module_sym:
 	    }
 	}
 
-      if (gfc_option.flag_f2c
+      if (flag_f2c
 	  && ((e.ts.type == BT_REAL && e.ts.kind == gfc_default_real_kind)
 	      || e.ts.type == BT_COMPLEX))
 	{
@@ -1958,7 +1958,7 @@ build_function_decl (gfc_symbol * sym, bool global)
   if (sym->attr.access == ACCESS_UNKNOWN && sym->module
       && (sym->ns->default_access == ACCESS_PRIVATE
 	  || (sym->ns->default_access == ACCESS_UNKNOWN
-	      && gfc_option.flag_module_private)))
+	      && flag_module_private)))
     sym->attr.access = ACCESS_PRIVATE;
 
   if (!current_function_decl
@@ -3158,32 +3158,28 @@ gfc_build_intrinsic_function_decls (void)
 
     gfor_fndecl_sgemm = gfc_build_library_function_decl
 			  (get_identifier
-			     (gfc_option.flag_underscoring ? "sgemm_"
-							   : "sgemm"),
+			     (flag_underscoring ? "sgemm_" : "sgemm"),
 			   void_type_node, 15, pchar_type_node,
 			   pchar_type_node, pint, pint, pint, ps, ps, pint,
 			   ps, pint, ps, ps, pint, integer_type_node,
 			   integer_type_node);
     gfor_fndecl_dgemm = gfc_build_library_function_decl
 			  (get_identifier
-			     (gfc_option.flag_underscoring ? "dgemm_"
-							   : "dgemm"),
+			     (flag_underscoring ? "dgemm_" : "dgemm"),
 			   void_type_node, 15, pchar_type_node,
 			   pchar_type_node, pint, pint, pint, pd, pd, pint,
 			   pd, pint, pd, pd, pint, integer_type_node,
 			   integer_type_node);
     gfor_fndecl_cgemm = gfc_build_library_function_decl
 			  (get_identifier
-			     (gfc_option.flag_underscoring ? "cgemm_"
-							   : "cgemm"),
+			     (flag_underscoring ? "cgemm_" : "cgemm"),
 			   void_type_node, 15, pchar_type_node,
 			   pchar_type_node, pint, pint, pint, pc, pc, pint,
 			   pc, pint, pc, pc, pint, integer_type_node,
 			   integer_type_node);
     gfor_fndecl_zgemm = gfc_build_library_function_decl
 			  (get_identifier
-			     (gfc_option.flag_underscoring ? "zgemm_"
-							   : "zgemm"),
+			     (flag_underscoring ? "zgemm_" : "zgemm"),
 			   void_type_node, 15, pchar_type_node,
 			   pchar_type_node, pint, pint, pint, pz, pz, pint,
 			   pz, pint, pz, pz, pint, integer_type_node,
@@ -3845,8 +3841,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	    gfc_trans_dummy_character (proc_sym, proc_sym->ts.u.cl, block);
 	}
       else
-	gcc_assert (gfc_option.flag_f2c
-		    && proc_sym->ts.type == BT_COMPLEX);
+	gcc_assert (flag_f2c && proc_sym->ts.type == BT_COMPLEX);
     }
 
   /* Initialize the INTENT(OUT) derived type dummy arguments.  This
@@ -4426,7 +4421,7 @@ gfc_create_module_variable (gfc_symbol * sym)
       && (sym->attr.access == ACCESS_UNKNOWN
 	  && (sym->ns->default_access == ACCESS_PRIVATE
 	      || (sym->ns->default_access == ACCESS_UNKNOWN
-		  && gfc_option.flag_module_private))))
+		  && flag_module_private))))
     sym->attr.access = ACCESS_PRIVATE;
 
   if (warn_unused_variable && !sym->attr.referenced
@@ -5425,11 +5420,9 @@ create_main_function (tree fndecl)
                             build_int_cst (integer_type_node,
                                            0));
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
-                            build_int_cst (integer_type_node,
-                                           gfc_option.flag_backtrace));
+                            build_int_cst (integer_type_node, flag_backtrace));
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
-                            build_int_cst (integer_type_node,
-                                           gfc_option.flag_sign_zero));
+                            build_int_cst (integer_type_node, flag_sign_zero));
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
                             build_int_cst (integer_type_node,
                                            (gfc_option.rtcheck
@@ -5727,8 +5720,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 		 || (sym->attr.entry_master
 		     && sym->ns->entries->sym->attr.recursive);
   if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION)
-	&& !is_recursive
-	&& !gfc_option.flag_recursive)
+      && !is_recursive && !flag_recursive)
     {
       char * msg;
 
@@ -5826,9 +5818,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 
   /* Reset recursion-check variable.  */
   if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION)
-	 && !is_recursive
-	 && !gfc_option.gfc_flag_openmp
-	 && recurcheckvar != NULL_TREE)
+      && !is_recursive && !flag_openmp && recurcheckvar != NULL_TREE)
     {
       gfc_add_modify (&cleanup, recurcheckvar, boolean_false_node);
       recurcheckvar = NULL;

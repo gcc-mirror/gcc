@@ -5430,8 +5430,7 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 			       "constructor at %L requires an increase of "
 			       "the allowed %d upper limit. See "
 			       "%<-fmax-array-constructor%> option",
-			       &expr->where,
-			       gfc_option.flag_max_array_constructor);
+			       &expr->where, flag_max_array_constructor);
 	      return NULL_TREE;
 	    }
           if (mpz_cmp_si (c->offset, 0) != 0)

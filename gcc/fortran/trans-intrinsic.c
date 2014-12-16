@@ -2470,7 +2470,7 @@ gfc_conv_intrinsic_sign (gfc_se * se, gfc_expr * expr)
 
       /* We explicitly have to ignore the minus sign. We do so by using
 	 result = (arg1 == 0) ? abs(arg0) : copysign(arg0, arg1).  */
-      if (!gfc_option.flag_sign_zero
+      if (!flag_sign_zero
 	  && MODE_HAS_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (args[1]))))
 	{
 	  tree cond, zero;
@@ -2978,7 +2978,7 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
     {
       tree cint = gfc_get_int_type (gfc_c_int_kind);
 
-      if (gfc_option.flag_external_blas
+      if (flag_external_blas
 	  && (sym->ts.type == BT_REAL || sym->ts.type == BT_COMPLEX)
 	  && (sym->ts.kind == 4 || sym->ts.kind == 8))
 	{
@@ -3002,7 +3002,7 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 	  vec_alloc (append_args, 3);
 	  append_args->quick_push (build_int_cst (cint, 1));
 	  append_args->quick_push (build_int_cst (cint,
-		                                 gfc_option.blas_matmul_limit));
+						  flag_blas_matmul_limit));
 	  append_args->quick_push (gfc_build_addr_expr (NULL_TREE,
 							gemm_fndecl));
 	}

@@ -530,7 +530,7 @@ gfc_match_name (char *buffer)
   gfc_gobble_whitespace ();
 
   c = gfc_next_ascii_char ();
-  if (!(ISALPHA (c) || (c == '_' && gfc_option.flag_allow_leading_underscore)))
+  if (!(ISALPHA (c) || (c == '_' && flag_allow_leading_underscore)))
     {
       if (!gfc_error_flag_test () && c != '(')
 	gfc_error ("Invalid character in name at %C");
@@ -553,9 +553,9 @@ gfc_match_name (char *buffer)
       old_loc = gfc_current_locus;
       c = gfc_next_ascii_char ();
     }
-  while (ISALNUM (c) || c == '_' || (gfc_option.flag_dollar_ok && c == '$'));
+  while (ISALNUM (c) || c == '_' || (flag_dollar_ok && c == '$'));
 
-  if (c == '$' && !gfc_option.flag_dollar_ok)
+  if (c == '$' && !flag_dollar_ok)
     {
       gfc_fatal_error ("Invalid character %<$%> at %L. Use %<-fdollar-ok%> to "
 		       "allow it as an extension", &old_loc);
