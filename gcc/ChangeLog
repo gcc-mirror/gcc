@@ -1,3 +1,9 @@
+2014-12-16  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/64309
+	* match.pd: Add ((1 << A) & 1) != 0 -> A == 0 and
+	((1 << A) & 1) == 0 -> A != 0.
+
 2014-12-16  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (parser::parser): Initialize capture_ids.

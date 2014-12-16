@@ -1,3 +1,8 @@
+2014-12-16  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/64309
+	* gcc.dg/pr64309.c: New test.
+
 2014-12-16  Felix Yang  <felix.yang@huawei.com>
 
 	PR rtl-optimization/64240

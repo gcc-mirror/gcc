@@ -599,6 +599,13 @@ along with GCC; see the file COPYING3.  If not see
 			    build_int_cst (TREE_TYPE (@1),
 					   element_precision (type)), @1); }))
 
+/* ((1 << A) & 1) != 0 -> A == 0
+   ((1 << A) & 1) == 0 -> A != 0 */
+(for cmp (ne eq)
+     icmp (eq ne)
+ (simplify
+  (cmp (bit_and (lshift integer_onep @0) integer_onep) integer_zerop)
+  (icmp @0 { build_zero_cst (TREE_TYPE (@0)); })))
 
 /* Simplifications of conversions.  */
 
