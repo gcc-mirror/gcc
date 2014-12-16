@@ -2140,28 +2140,28 @@ gfc_match_old_kind_spec (gfc_typespec *ts)
 
     }
 
-  if (ts->type == BT_INTEGER && ts->kind == 4 && gfc_option.flag_integer4_kind == 8)
+  if (ts->type == BT_INTEGER && ts->kind == 4 && flag_integer4_kind == 8)
     ts->kind = 8;
 
   if (ts->type == BT_REAL || ts->type == BT_COMPLEX)
     {
       if (ts->kind == 4)
 	{
-	  if (gfc_option.flag_real4_kind == 8)
+	  if (flag_real4_kind == 8)
 	    ts->kind =  8;
-	  if (gfc_option.flag_real4_kind == 10)
+	  if (flag_real4_kind == 10)
 	    ts->kind = 10;
-	  if (gfc_option.flag_real4_kind == 16)
+	  if (flag_real4_kind == 16)
 	    ts->kind = 16;
 	}
 
       if (ts->kind == 8)
 	{
-	  if (gfc_option.flag_real8_kind == 4)
+	  if (flag_real8_kind == 4)
 	    ts->kind = 4;
-	  if (gfc_option.flag_real8_kind == 10)
+	  if (flag_real8_kind == 10)
 	    ts->kind = 10;
-	  if (gfc_option.flag_real8_kind == 16)
+	  if (flag_real8_kind == 16)
 	    ts->kind = 16;
 	}
     }
@@ -2311,28 +2311,28 @@ kind_expr:
   if(m == MATCH_ERROR)
      gfc_current_locus = where;
 
-  if (ts->type == BT_INTEGER && ts->kind == 4 && gfc_option.flag_integer4_kind == 8)
+  if (ts->type == BT_INTEGER && ts->kind == 4 && flag_integer4_kind == 8)
     ts->kind =  8;
 
   if (ts->type == BT_REAL || ts->type == BT_COMPLEX)
     {
       if (ts->kind == 4)
 	{
-	  if (gfc_option.flag_real4_kind == 8)
+	  if (flag_real4_kind == 8)
 	    ts->kind =  8;
-	  if (gfc_option.flag_real4_kind == 10)
+	  if (flag_real4_kind == 10)
 	    ts->kind = 10;
-	  if (gfc_option.flag_real4_kind == 16)
+	  if (flag_real4_kind == 16)
 	    ts->kind = 16;
 	}
 
       if (ts->kind == 8)
 	{
-	  if (gfc_option.flag_real8_kind == 4)
+	  if (flag_real8_kind == 4)
 	    ts->kind = 4;
-	  if (gfc_option.flag_real8_kind == 10)
+	  if (flag_real8_kind == 10)
 	    ts->kind = 10;
-	  if (gfc_option.flag_real8_kind == 16)
+	  if (flag_real8_kind == 16)
 	    ts->kind = 16;
 	}
     }

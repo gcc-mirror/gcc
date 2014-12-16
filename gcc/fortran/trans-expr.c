@@ -2653,9 +2653,8 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
   switch (expr->value.op.op)
     {
     case INTRINSIC_PARENTHESES:
-      if ((expr->ts.type == BT_REAL
-	   || expr->ts.type == BT_COMPLEX)
-	  && gfc_option.flag_protect_parens)
+      if ((expr->ts.type == BT_REAL || expr->ts.type == BT_COMPLEX)
+	  && flag_protect_parens)
 	{
 	  gfc_conv_unary_op (PAREN_EXPR, se, expr);
 	  gcc_assert (FLOAT_TYPE_P (TREE_TYPE (se->expr)));
@@ -5176,7 +5175,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  /* If the lhs of an assignment x = f(..) is allocatable and
 	     f2003 is allowed, we must do the automatic reallocation.
 	     TODO - deal with intrinsics, without using a temporary.  */
-	  if (gfc_option.flag_realloc_lhs
+	  if (flag_realloc_lhs
 		&& se->ss && se->ss->loop_chain
 		&& se->ss->loop_chain->is_alloc_lhs
 		&& !expr->value.function.isym
@@ -5214,8 +5213,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	     f2003 is allowed, we must not generate the function call
 	     here but should just send back the results of the mapping.
 	     This is signalled by the function ss being flagged.  */
-	  if (gfc_option.flag_realloc_lhs
-		&& se->ss && se->ss->is_alloc_lhs)
+	  if (flag_realloc_lhs && se->ss && se->ss->is_alloc_lhs)
 	    {
 	      gfc_free_interface_mapping (&mapping);
 	      return has_alternate_specifier;
@@ -5250,8 +5248,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	     f2003 is allowed, we must not generate the function call
 	     here but should just send back the results of the mapping.
 	     This is signalled by the function ss being flagged.  */
-	  if (gfc_option.flag_realloc_lhs
-		&& se->ss && se->ss->is_alloc_lhs)
+	  if (flag_realloc_lhs && se->ss && se->ss->is_alloc_lhs)
 	    {
 	      gfc_free_interface_mapping (&mapping);
 	      return has_alternate_specifier;
@@ -7409,9 +7406,7 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
      need a temporary except in the particular case that reallocation
      on assignment is active and the lhs is allocatable and a target.  */
   if (expr2->value.function.isym)
-    return (gfc_option.flag_realloc_lhs
-	      && sym->attr.allocatable
-	      && sym->attr.target);
+    return (flag_realloc_lhs && sym->attr.allocatable && sym->attr.target);
 
   /* If the LHS is a dummy, we need a temporary if it is not
      INTENT(OUT).  */
@@ -7652,7 +7647,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
      calls, the array data is freed and the library takes care of allocation.
      TODO: Add logic of trans-array.c: gfc_alloc_allocatable_for_assignment
      to the library.  */
-  if (gfc_option.flag_realloc_lhs
+  if (flag_realloc_lhs
 	&& gfc_is_reallocatable_lhs (expr1)
 	&& !gfc_expr_attr (expr1).codimension
 	&& !gfc_is_coindexed (expr1)
@@ -8312,8 +8307,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
      otherwise the character length of the result is not known.
      NOTE: This relies on having the exact dependence of the length type
      parameter available to the caller; gfortran saves it in the .mod files.  */
-  if (gfc_option.flag_realloc_lhs && expr2->ts.type == BT_CHARACTER
-      && expr1->ts.deferred)
+  if (flag_realloc_lhs && expr2->ts.type == BT_CHARACTER && expr1->ts.deferred)
     gfc_add_block_to_block (&block, &rse.pre);
 
   tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
@@ -8325,8 +8319,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   if (lss == gfc_ss_terminator)
     {
       /* F2003: Add the code for reallocation on assignment.  */
-      if (gfc_option.flag_realloc_lhs
-	  && is_scalar_reallocatable_lhs (expr1))
+      if (flag_realloc_lhs && is_scalar_reallocatable_lhs (expr1))
 	alloc_scalar_allocatable_for_assignment (&block, rse.string_length,
 						 expr1, expr2);
 
@@ -8366,7 +8359,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	}
 
       /* F2003: Allocate or reallocate lhs of allocatable array.  */
-      if (gfc_option.flag_realloc_lhs
+      if (flag_realloc_lhs
 	    && gfc_is_reallocatable_lhs (expr1)
 	    && !gfc_expr_attr (expr1).codimension
 	    && !gfc_is_coindexed (expr1)

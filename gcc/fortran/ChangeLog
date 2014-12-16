@@ -1,3 +1,34 @@
+2014-12-16  Tobias Burnus  <burnus@net-b.de>
+
+	* lang.opt (fsecond-underscore, frecord-marker=8, frecord-marker=4,
+	frealloc-lhs, freal-8-real-16, freal-8-real-10, freal-8-real-4,
+	freal-4-real-16, freal-4-real-10, freal-4-real-8, fprotect-parens,
+	fstack-arrays, fmax-stack-var-size=, fmax-subrecord-length=,
+	ffrontend-optimize, ffree-line-length-, ffixed-line-length-,
+	finteger-4-integer-8, fdefault-real-8, fdefault-integer-8,
+	fdefault-double-8): Add Var() and Init().
+	* gfortran.h (gfc_option_t): Remove moved flags.
+	* options.c (gfc_init_options, gfc_handle_option): Ditto.
+	(gfc_post_options): Update for name change.
+	* decl.c (gfc_match_old_kind_spec, gfc_match_kind_spec): Handle
+	flag-name change.
+	* frontend-passes.c (gfc_run_passes): Ditto.
+	* module.c (use_iso_fortran_env_module): Ditto.
+	* primary.c (match_integer_constant, match_real_constant): Ditto.
+	* resolve.c (resolve_ordinary_assign): Ditto.
+	* scanner.c (gfc_next_char_literal, load_line): Ditto.
+	* trans-array.c (gfc_trans_allocate_array_storage,
+	gfc_conv_resolve_dependencies, gfc_trans_auto_array_allocation,
+	gfc_conv_ss_startstride): Ditto.
+	* trans-common.c (gfc_sym_mangled_common_id): Ditto.
+	* trans-decl.c (gfc_sym_mangled_function_id,
+	create_main_function): Ditto.
+	* trans-expr.c (gfc_conv_expr_op, gfc_conv_procedure_call,
+	arrayfunc_assign_needs_temporary, gfc_trans_arrayfunc_assign,
+	gfc_trans_assignment_1): Ditto.
+	* trans-stmt.c (gfc_trans_allocate): Ditto.
+	* trans-types.c (gfc_init_kinds): Ditto.
+
 2014-12-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/64244

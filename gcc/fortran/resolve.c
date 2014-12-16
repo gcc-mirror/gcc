@@ -9356,7 +9356,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       if (!gfc_notify_std (GFC_STD_F2008, "Assignment to an allocatable "
 			   "polymorphic variable at %L", &lhs->where))
 	return false;
-      if (!gfc_option.flag_realloc_lhs)
+      if (!flag_realloc_lhs)
 	{
 	  gfc_error ("Assignment to an allocatable polymorphic variable at %L "
 		     "requires %<-frealloc-lhs%>", &lhs->where);
@@ -10781,7 +10781,7 @@ build_default_init_expr (gfc_symbol *sym)
 	  init_expr = NULL;
 	}
       if (!init_expr && gfc_option.flag_init_character == GFC_INIT_CHARACTER_ON
-	  && sym->ts.u.cl->length && gfc_option.flag_max_stack_var_size != 0)
+	  && sym->ts.u.cl->length && flag_max_stack_var_size != 0)
 	{
 	  gfc_actual_arglist *arg;
 	  init_expr = gfc_get_expr ();
@@ -10831,7 +10831,7 @@ apply_default_init_local (gfc_symbol *sym)
      are stack allocated even with -fno-automatic; we have also to exclude
      result variable, which are also nonstatic.  */
   if (sym->attr.save || sym->ns->save_all
-      || (gfc_option.flag_max_stack_var_size == 0 && !sym->attr.result
+      || (flag_max_stack_var_size == 0 && !sym->attr.result
 	  && !sym->ns->proc_name->attr.recursive
 	  && (!sym->attr.dimension || !is_non_constant_shape_array (sym))))
     {

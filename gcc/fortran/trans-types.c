@@ -493,7 +493,7 @@ gfc_init_kinds (void)
 
   gfc_numeric_storage_size = 4 * 8;
 
-  if (gfc_option.flag_default_integer)
+  if (flag_default_integer)
     {
       if (!saw_i8)
 	gfc_fatal_error ("INTEGER(KIND=8) is not available for "
@@ -502,7 +502,7 @@ gfc_init_kinds (void)
       gfc_default_integer_kind = 8;
 
     }
-  else if (gfc_option.flag_integer4_kind == 8)
+  else if (flag_integer4_kind == 8)
     {
       if (!saw_i8)
 	gfc_fatal_error ("INTEGER(KIND=8) is not available for "
@@ -521,7 +521,7 @@ gfc_init_kinds (void)
     }
 
   /* Choose the default real kind.  Again, we choose 4 when possible.  */
-  if (gfc_option.flag_default_real)
+  if (flag_default_real)
     {
       if (!saw_r8)
 	gfc_fatal_error ("REAL(KIND=8) is not available for "
@@ -529,7 +529,7 @@ gfc_init_kinds (void)
 
       gfc_default_real_kind = 8;
     }
-  else if (gfc_option.flag_real4_kind == 8)
+  else if (flag_real4_kind == 8)
   {
     if (!saw_r8)
       gfc_fatal_error ("REAL(KIND=8) is not available for %<-freal-4-real-8%> "
@@ -537,7 +537,7 @@ gfc_init_kinds (void)
 
     gfc_default_real_kind = 8;
   }
-  else if (gfc_option.flag_real4_kind == 10)
+  else if (flag_real4_kind == 10)
   {
     if (!saw_r10)
       gfc_fatal_error ("REAL(KIND=10) is not available for "
@@ -545,7 +545,7 @@ gfc_init_kinds (void)
 
     gfc_default_real_kind = 10;
   }
-  else if (gfc_option.flag_real4_kind == 16)
+  else if (flag_real4_kind == 16)
   {
     if (!saw_r16)
       gfc_fatal_error ("REAL(KIND=16) is not available for "
@@ -562,15 +562,15 @@ gfc_init_kinds (void)
      are specified, we use kind=8, if it's available.  If -fdefault-real is
      specified without -fdefault-double, we use kind=16, if it's available.
      Otherwise we do not change anything.  */
-  if (gfc_option.flag_default_double && !gfc_option.flag_default_real)
+  if (flag_default_double && !flag_default_real)
     gfc_fatal_error ("Use of %<-fdefault-double-8%> requires "
 		     "%<-fdefault-real-8%>");
 
-  if (gfc_option.flag_default_real && gfc_option.flag_default_double && saw_r8)
+  if (flag_default_real && flag_default_double && saw_r8)
     gfc_default_double_kind = 8;
-  else if (gfc_option.flag_default_real && saw_r16)
+  else if (flag_default_real && saw_r16)
     gfc_default_double_kind = 16;
-  else if (gfc_option.flag_real8_kind == 4)
+  else if (flag_real8_kind == 4)
     {
       if (!saw_r4)
 	gfc_fatal_error ("REAL(KIND=4) is not available for "
@@ -578,7 +578,7 @@ gfc_init_kinds (void)
 
 	gfc_default_double_kind = 4;
     }
-  else if (gfc_option.flag_real8_kind == 10 )
+  else if (flag_real8_kind == 10 )
     {
       if (!saw_r10)
 	gfc_fatal_error ("REAL(KIND=10) is not available for "
@@ -586,7 +586,7 @@ gfc_init_kinds (void)
 
 	gfc_default_double_kind = 10;
     }
-  else if (gfc_option.flag_real8_kind == 16 )
+  else if (flag_real8_kind == 16 )
     {
       if (!saw_r16)
 	gfc_fatal_error ("REAL(KIND=10) is not available for "

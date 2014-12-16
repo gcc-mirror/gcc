@@ -5328,11 +5328,11 @@ gfc_trans_allocate (gfc_code * code)
 	    {
 	      /* Switch off automatic reallocation since we have just done
 		 the ALLOCATE.  */
-	      int realloc_lhs = gfc_option.flag_realloc_lhs;
-	      gfc_option.flag_realloc_lhs = 0;
+	      int realloc_lhs = flag_realloc_lhs;
+	      flag_realloc_lhs = 0;
 	      tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr),
 					  rhs, false, false);
-	      gfc_option.flag_realloc_lhs = realloc_lhs;
+	      flag_realloc_lhs = realloc_lhs;
 	    }
 	  gfc_free_expr (rhs);
 	  gfc_add_expr_to_block (&block, tmp);
