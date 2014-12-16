@@ -2036,12 +2036,12 @@ will_be_nonconstant_predicate (struct ipa_node_params *info,
   struct agg_position_info aggpos;
 
   /* What statments might be optimized away
-     when their arguments are constant
-     TODO: also trivial builtins.
-     builtin_constant_p is already handled later.  */
+     when their arguments are constant.  */
   if (gimple_code (stmt) != GIMPLE_ASSIGN
       && gimple_code (stmt) != GIMPLE_COND
-      && gimple_code (stmt) != GIMPLE_SWITCH)
+      && gimple_code (stmt) != GIMPLE_SWITCH
+      && (gimple_code (stmt) != GIMPLE_CALL
+	  || !(gimple_call_flags (stmt) & ECF_CONST)))
     return p;
 
   /* Stores will stay anyway.  */
@@ -2101,9 +2101,10 @@ will_be_nonconstant_predicate (struct ipa_node_params *info,
 	p = nonconstant_names[SSA_NAME_VERSION (use)];
       op_non_const = or_predicates (summary->conds, &p, &op_non_const);
     }
-  if (gimple_code (stmt) == GIMPLE_ASSIGN
-      && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME)
-    nonconstant_names[SSA_NAME_VERSION (gimple_assign_lhs (stmt))]
+  if ((gimple_code (stmt) == GIMPLE_ASSIGN || gimple_code (stmt) == GIMPLE_CALL)
+      && gimple_op (stmt, 0)
+      && TREE_CODE (gimple_op (stmt, 0)) == SSA_NAME)
+    nonconstant_names[SSA_NAME_VERSION (gimple_op (stmt, 0))]
       = op_non_const;
   return op_non_const;
 }
@@ -2683,7 +2684,9 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	      else
 		p = true_predicate ();
 
-	      if (!false_predicate_p (&p))
+	      if (!false_predicate_p (&p)
+		  || (is_gimple_call (stmt)
+		      && !false_predicate_p (&bb_predicate)))
 		{
 		  time += this_time;
 		  size += this_size;
