@@ -1,5 +1,10 @@
 2014-12-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/54089
+	* gcc.target/sh/pr54089-1.c: Change optimization level from -O1 to -O2.
+
+2014-12-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/53513
 	* gcc.target/sh/fpchg.c: Rename to ...
 	* gcc.target/sh/pr53513-1.c: ... this.  Adjust test case to work for
