@@ -153,7 +153,7 @@ convert_mpz_to_unsigned (mpz_t x, int bitsize)
     {
       /* Confirm that no bits above the signed range are unset if we
 	 are doing range checking.  */
-      if (gfc_option.flag_range_check != 0)
+      if (flag_range_check != 0)
 	gcc_assert (mpz_scan0 (x, bitsize-1) == ULONG_MAX);
 
       mpz_init_set_ui (mask, 1);
@@ -184,7 +184,7 @@ gfc_convert_mpz_to_signed (mpz_t x, int bitsize)
 
   /* Confirm that no bits above the unsigned range are set if we are
      doing range checking.  */
-  if (gfc_option.flag_range_check != 0)
+  if (flag_range_check != 0)
     gcc_assert (mpz_scan1 (x, bitsize) == ULONG_MAX);
 
   if (mpz_tstbit (x, bitsize - 1) == 1)
@@ -1261,7 +1261,7 @@ gfc_simplify_bessel_n2 (gfc_expr *order1, gfc_expr *order2, gfc_expr *x,
 
   if (mpfr_cmp_ui (x->value.real, 0.0) == 0)
     {
-      if (!jn && gfc_option.flag_range_check)
+      if (!jn && flag_range_check)
 	{
 	  gfc_error ("Result of BESSEL_YN is -INF at %L", &result->where);
  	  gfc_free_expr (result);
@@ -1367,7 +1367,7 @@ gfc_simplify_bessel_n2 (gfc_expr *order1, gfc_expr *order2, gfc_expr *x,
 
       /* Special case: For YN, if the previous N gave -INF, set
 	 also N+1 to -INF.  */
-      if (!jn && !gfc_option.flag_range_check && mpfr_inf_p (last2))
+      if (!jn && !flag_range_check && mpfr_inf_p (last2))
 	{
 	  mpfr_set_inf (e->value.real, -1);
 	  gfc_constructor_append_expr (&result->value.constructor, e,
@@ -4475,7 +4475,7 @@ gfc_simplify_nearest (gfc_expr *x, gfc_expr *s)
 
   /* Only NaN can occur. Do not use range check as it gives an
      error for denormal numbers.  */
-  if (mpfr_nan_p (result->value.real) && gfc_option.flag_range_check)
+  if (mpfr_nan_p (result->value.real) && flag_range_check)
     {
       gfc_error ("Result of NEAREST is NaN at %L", &result->where);
       gfc_free_expr (result);
@@ -5920,7 +5920,7 @@ gfc_simplify_sign (gfc_expr *x, gfc_expr *y)
 	break;
 
       case BT_REAL:
-	if (gfc_option.flag_sign_zero)
+	if (flag_sign_zero)
 	  mpfr_copysign (result->value.real, x->value.real, y->value.real,
 			GFC_RND_MODE);
 	else
@@ -6090,7 +6090,7 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
   else
     mpz_init_set_ui (size, 1);
 
-  if (mpz_get_si (size)*ncopies > gfc_option.flag_max_array_constructor)
+  if (mpz_get_si (size)*ncopies > flag_max_array_constructor)
     return NULL;
 
   if (source->expr_type == EXPR_CONSTANT)

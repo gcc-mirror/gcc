@@ -2056,7 +2056,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 						se->expr);
 
           /* Dereference scalar hidden result.  */
-	  if (gfc_option.flag_f2c && sym->ts.type == BT_COMPLEX
+	  if (flag_f2c && sym->ts.type == BT_COMPLEX
 	      && (sym->attr.function || sym->attr.result)
 	      && !sym->attr.dimension && !sym->attr.pointer
 	      && !sym->attr.always_explicit)
@@ -5301,7 +5301,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	}
       else
 	{
-	  gcc_assert (gfc_option.flag_f2c && ts.type == BT_COMPLEX);
+	  gcc_assert (flag_f2c && ts.type == BT_COMPLEX);
 
 	  type = gfc_get_complex_type (ts.kind);
 	  var = gfc_build_addr_expr (NULL_TREE, gfc_create_var (type, "cmplx"));
@@ -5382,7 +5382,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
      return a double precision result.  Convert this back to default
      real.  We only care about the cases that can happen in Fortran 77.
   */
-  if (gfc_option.flag_f2c && sym->ts.type == BT_REAL
+  if (flag_f2c && sym->ts.type == BT_REAL
       && sym->ts.kind == gfc_default_real_kind
       && !sym->attr.always_explicit)
     se->expr = fold_convert (gfc_get_real_type (sym->ts.kind), se->expr);
@@ -5433,7 +5433,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    }
 	  else
 	    {
-	      gcc_assert (ts.type == BT_COMPLEX && gfc_option.flag_f2c);
+	      gcc_assert (ts.type == BT_COMPLEX && flag_f2c);
 	      se->expr = build_fold_indirect_ref_loc (input_location, var);
 	    }
 	}

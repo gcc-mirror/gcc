@@ -2447,7 +2447,7 @@ gfc_get_derived_type (gfc_symbol * derived)
       /* We see this derived type first time, so build the type node.  */
       typenode = make_node (RECORD_TYPE);
       TYPE_NAME (typenode) = get_identifier (derived->name);
-      TYPE_PACKED (typenode) = gfc_option.flag_pack_derived;
+      TYPE_PACKED (typenode) = flag_pack_derived;
       derived->backend_decl = typenode;
     }
 
@@ -2630,8 +2630,7 @@ gfc_return_by_reference (gfc_symbol * sym)
      -fno-f2c calling convention), nor for calls to functions which always
      require an explicit interface, as no compatibility problems can
      arise there.  */
-  if (gfc_option.flag_f2c
-      && sym->ts.type == BT_COMPLEX
+  if (flag_f2c && sym->ts.type == BT_COMPLEX
       && !sym->attr.intrinsic && !sym->attr.always_explicit)
     return 1;
 
@@ -2865,8 +2864,7 @@ arg_type_list_done:
     type = void_type_node;
   else if (sym->attr.mixed_entry_master)
     type = gfc_get_mixed_entry_union (sym->ns);
-  else if (gfc_option.flag_f2c
-	   && sym->ts.type == BT_REAL
+  else if (flag_f2c && sym->ts.type == BT_REAL
 	   && sym->ts.kind == gfc_default_real_kind
 	   && !sym->attr.always_explicit)
     {

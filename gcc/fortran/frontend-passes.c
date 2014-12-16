@@ -108,7 +108,7 @@ gfc_run_passes (gfc_namespace *ns)
     {
       optimize_namespace (ns);
       optimize_reduction (ns);
-      if (gfc_option.dump_fortran_optimized)
+      if (flag_dump_fortran_optimized)
 	gfc_dump_parse_tree (ns, stdout);
 
       expr_array.release ();
@@ -389,7 +389,7 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 
       /* Only eliminate potentially impure functions if the
 	 user specifically requested it.  */
-      if (!gfc_option.flag_aggressive_function_elimination
+      if (!flag_aggressive_function_elimination
 	  && !(*e)->value.function.esym->attr.pure
 	  && !(*e)->value.function.esym->attr.implicit_pure)
 	return 0;
