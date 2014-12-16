@@ -1051,7 +1051,7 @@ restart:
       if (warn_line_truncation && gfc_current_locus.lb != NULL
 	  && gfc_current_locus.lb->truncated)
 	{
-	  int maxlen = gfc_option.free_line_length;
+	  int maxlen = flag_free_line_length;
 	  gfc_char_t *current_nextc = gfc_current_locus.nextc;
 
 	  gfc_current_locus.lb->truncated = 0;
@@ -1434,9 +1434,9 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 
   /* Determine the maximum allowed line length.  */
   if (gfc_current_form == FORM_FREE)
-    maxlen = gfc_option.free_line_length;
+    maxlen = flag_free_line_length;
   else if (gfc_current_form == FORM_FIXED)
-    maxlen = gfc_option.fixed_line_length;
+    maxlen = flag_fixed_line_length;
   else
     maxlen = 72;
 
@@ -1610,7 +1610,7 @@ next_char:
 
   /* Pad lines to the selected line length in fixed form.  */
   if (gfc_current_form == FORM_FIXED
-      && gfc_option.fixed_line_length != 0
+      && flag_fixed_line_length != 0
       && !preprocessor_flag
       && c != EOF)
     {

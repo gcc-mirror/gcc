@@ -104,7 +104,7 @@ gfc_run_passes (gfc_namespace *ns)
   doloop_warn (ns);
   doloop_list.release ();
 
-  if (gfc_option.flag_frontend_optimize)
+  if (flag_frontend_optimize)
     {
       optimize_namespace (ns);
       optimize_reduction (ns);
@@ -376,7 +376,7 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
      temporary variable to hold the intermediate result, but only if
      allocation on assignment is active.  */
 
-  if ((*e)->rank > 0 && (*e)->shape == NULL && !gfc_option.flag_realloc_lhs)
+  if ((*e)->rank > 0 && (*e)->shape == NULL && !flag_realloc_lhs)
     return 0;
   
   /* Skip the test for pure functions if -faggressive-function-elimination

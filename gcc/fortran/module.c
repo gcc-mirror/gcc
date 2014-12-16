@@ -6597,13 +6597,13 @@ use_iso_fortran_env_module (void)
 				   "standard", symbol[i].name, &u->where))
 	        continue;
 
-	      if ((gfc_option.flag_default_integer || gfc_option.flag_default_real)
+	      if ((flag_default_integer || flag_default_real)
 		  && symbol[i].id == ISOFORTRANENV_NUMERIC_STORAGE_SIZE)
 		gfc_warning_now ("Use of the NUMERIC_STORAGE_SIZE named "
 				 "constant from intrinsic module "
 				 "ISO_FORTRAN_ENV at %L is incompatible with "
 				 "option %qs", &u->where,
-				 gfc_option.flag_default_integer
+				 flag_default_integer
 				   ? "-fdefault-integer-8"
 				   : "-fdefault-real-8");
 	      switch (symbol[i].id)
@@ -6664,12 +6664,12 @@ use_iso_fortran_env_module (void)
 	  if ((gfc_option.allow_std & symbol[i].standard) == 0)
 	    continue;
 
-	  if ((gfc_option.flag_default_integer || gfc_option.flag_default_real)
+	  if ((flag_default_integer || flag_default_real)
 	      && symbol[i].id == ISOFORTRANENV_NUMERIC_STORAGE_SIZE)
 	    gfc_warning_now ("Use of the NUMERIC_STORAGE_SIZE named constant "
 			     "from intrinsic module ISO_FORTRAN_ENV at %C is "
 			     "incompatible with option %s",
-			     gfc_option.flag_default_integer
+			     flag_default_integer
 				? "-fdefault-integer-8" : "-fdefault-real-8");
 
 	  switch (symbol[i].id)

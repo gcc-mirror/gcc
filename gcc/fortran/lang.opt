@@ -410,15 +410,15 @@ Fortran RejectNegative
 Treat lines with 'D' in column one as comments
 
 fdefault-double-8
-Fortran
+Fortran Var(flag_default_double)
 Set the default double precision kind to an 8 byte wide type
 
 fdefault-integer-8
-Fortran
+Fortran Var(flag_default_integer)
 Set the default integer kind to an 8 byte wide type
 
 fdefault-real-8
-Fortran
+Fortran Var(flag_default_real)
 Set the default real kind to an 8 byte wide type
 
 fdollar-ok
@@ -454,7 +454,7 @@ Fortran RejectNegative
 Assume that the source file is fixed form
 
 finteger-4-integer-8
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_integer4_kind,8)
 Interpret any INTEGER(4) as an INTEGER(8)
 
 fintrinsic-modules-path
@@ -466,11 +466,11 @@ Fortran RejectNegative Joined
 Specify where to find the compiled intrinsic modules
 
 ffixed-line-length-none
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_fixed_line_length,0)
 Allow arbitrary character line width in fixed mode
 
 ffixed-line-length-
-Fortran RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger Var(flag_fixed_line_length) Init(72)
 -ffixed-line-length-<n>	Use n as character line width in fixed mode
 
 ffpe-trap=
@@ -486,15 +486,15 @@ Fortran RejectNegative
 Assume that the source file is free form
 
 ffree-line-length-none
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_free_line_length,0)
 Allow arbitrary character line width in free mode
 
 ffree-line-length-
-Fortran RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger Var(flag_free_line_length) Init(132)
 -ffree-line-length-<n>	Use n as character line width in free mode
 
 ffrontend-optimize
-Fortran
+Fortran Var(flag_frontend_optimize) Init(-1)
 Enable front end optimization
 
 fimplicit-none
@@ -530,15 +530,15 @@ Fortran RejectNegative Joined UInteger
 -fmax-identifier-length=<n>	Maximum identifier length
 
 fmax-subrecord-length=
-Fortran RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger Var(flag_max_subrecord_length)
 -fmax-subrecord-length=<n>	Maximum length for subrecords
 
 fmax-stack-var-size=
-Fortran RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger Var(flag_max_stack_var_size) Init(-2)
 -fmax-stack-var-size=<n>	Size in bytes of the largest array that will be put on the stack
 
 fstack-arrays
-Fortran
+Fortran Var(flag_stack_arrays) Init(-1)
 Put all local arrays on stack.
 
 fmodule-private
@@ -562,7 +562,7 @@ Fortran
 ; Documented in C
 
 fprotect-parens
-Fortran
+Fortran Var(flag_protect_parens) Init(-1)
 Protect parentheses in expressions
 
 frange-check
@@ -570,39 +570,39 @@ Fortran
 Enable range checking during compilation
 
 freal-4-real-8
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_real4_kind,8)
 Interpret any REAL(4) as a REAL(8)
 
 freal-4-real-10
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_real4_kind,10)
 Interpret any REAL(4) as a REAL(10)
 
 freal-4-real-16
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_real4_kind,16)
 Interpret any REAL(4) as a REAL(16)
 
 freal-8-real-4
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_real8_kind,4)
 Interpret any REAL(8) as a REAL(4)
 
 freal-8-real-10
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_real8_kind,10)
 Interpret any REAL(8) as a REAL(10)
 
 freal-8-real-16
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_real8_kind,16)
 Interpret any REAL(8) as a REAL(16)
 
 frealloc-lhs
-Fortran
+Fortran Var(flag_realloc_lhs) Init(-1)
 Reallocate the LHS in assignments
 
 frecord-marker=4
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_record_marker,4)
 Use a 4-byte record marker for unformatted files
 
 frecord-marker=8
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_record_marker,8)
 Use an 8-byte record marker for unformatted files
 
 frecursive
@@ -622,7 +622,7 @@ Fortran RejectNegative JoinedOrMissing
 -fcheck=[...]	Specify which runtime checks are to be performed
 
 fsecond-underscore
-Fortran
+Fortran Var(flag_second_underscore) Init(-1)
 Append a second underscore if the name already contains an underscore
 
 fshort-enums

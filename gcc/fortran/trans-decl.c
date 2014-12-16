@@ -396,7 +396,7 @@ gfc_sym_mangled_function_id (gfc_symbol * sym)
       if (gfc_option.flag_underscoring)
 	{
 	  has_underscore = strchr (sym->name, '_') != 0;
-	  if (gfc_option.flag_second_underscore && has_underscore)
+	  if (flag_second_underscore && has_underscore)
 	    snprintf (name, sizeof name, "%s__", sym->name);
 	  else
 	    snprintf (name, sizeof name, "%s_", sym->name);
@@ -431,14 +431,14 @@ gfc_can_put_var_on_stack (tree size)
   if (!INTEGER_CST_P (size))
     return 0;
 
-  if (gfc_option.flag_max_stack_var_size < 0)
+  if (flag_max_stack_var_size < 0)
     return 1;
 
   if (!tree_fits_uhwi_p (size))
     return 0;
 
   low = TREE_INT_CST_LOW (size);
-  if (low > (unsigned HOST_WIDE_INT) gfc_option.flag_max_stack_var_size)
+  if (low > (unsigned HOST_WIDE_INT) flag_max_stack_var_size)
     return 0;
 
 /* TODO: Set a per-function stack size limit.  */
@@ -1148,7 +1148,7 @@ gfc_create_string_length (gfc_symbol * sym)
 	 it is an automatic variable.  */
       bool static_length = sym->attr.save
 			   || sym->ns->proc_name->attr.flavor == FL_MODULE
-			   || (gfc_option.flag_max_stack_var_size == 0
+			   || (flag_max_stack_var_size == 0
 			       && sym->ts.deferred && !sym->attr.dummy
 			       && !sym->attr.result && !sym->attr.function);
 
@@ -1546,7 +1546,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (TREE_STATIC (decl)
       && !(sym->attr.use_assoc && !intrinsic_array_parameter)
       && (sym->attr.save || sym->ns->proc_name->attr.is_main_program
-	  || gfc_option.flag_max_stack_var_size == 0
+	  || flag_max_stack_var_size == 0
 	  || sym->attr.data || sym->ns->proc_name->attr.flavor == FL_MODULE)
       && (gfc_option.coarray != GFC_FCOARRAY_LIB
 	  || !sym->attr.codimension || sym->attr.allocatable))
@@ -3878,7 +3878,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	}
 
       if (sym->ts.type == BT_CLASS
-	  && (sym->attr.save || gfc_option.flag_max_stack_var_size == 0)
+	  && (sym->attr.save || flag_max_stack_var_size == 0)
 	  && CLASS_DATA (sym)->attr.allocatable)
 	{
 	  tree vptr;
@@ -4007,7 +4007,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		    || (sym->ts.type == BT_CLASS
 			&& CLASS_DATA (sym)->attr.allocatable)))
 	{
-	  if (!sym->attr.save && gfc_option.flag_max_stack_var_size != 0)
+	  if (!sym->attr.save && flag_max_stack_var_size != 0)
 	    {
 	      tree descriptor = NULL_TREE;
 
@@ -5495,21 +5495,21 @@ create_main_function (tree fndecl)
   /* If this is the main program and an -frecord-marker option was provided,
      add a call to set_record_marker.  */
 
-  if (gfc_option.record_marker != 0)
+  if (flag_record_marker != 0)
     {
       tmp = build_call_expr_loc (input_location,
 			     gfor_fndecl_set_record_marker, 1,
 			     build_int_cst (integer_type_node,
-					    gfc_option.record_marker));
+					    flag_record_marker));
       gfc_add_expr_to_block (&body, tmp);
     }
 
-  if (gfc_option.max_subrecord_length != 0)
+  if (flag_max_subrecord_length != 0)
     {
       tmp = build_call_expr_loc (input_location,
 			     gfor_fndecl_set_max_subrecord_length, 1,
 			     build_int_cst (integer_type_node,
-					    gfc_option.max_subrecord_length));
+					    flag_max_subrecord_length));
       gfc_add_expr_to_block (&body, tmp);
     }
 

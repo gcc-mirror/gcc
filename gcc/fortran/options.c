@@ -81,36 +81,21 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_source_file = NULL;
   gfc_option.module_dir = NULL;
   gfc_option.source_form = FORM_UNKNOWN;
-  gfc_option.fixed_line_length = 72;
-  gfc_option.free_line_length = 132;
   gfc_option.max_continue_fixed = 255;
   gfc_option.max_continue_free = 255;
   gfc_option.max_identifier_length = GFC_MAX_SYMBOL_LEN;
-  gfc_option.max_subrecord_length = 0;
   gfc_option.flag_max_array_constructor = 65535;
   gfc_option.convert = GFC_CONVERT_NATIVE;
-  gfc_option.record_marker = 0;
   gfc_option.dump_fortran_original = 0;
   gfc_option.dump_fortran_optimized = 0;
 
   gfc_option.max_errors = 25;
 
   gfc_option.flag_all_intrinsics = 0;
-  gfc_option.flag_default_double = 0;
-  gfc_option.flag_default_integer = 0;
-  gfc_option.flag_default_real = 0;
-  gfc_option.flag_integer4_kind = 0;
-  gfc_option.flag_real4_kind = 0;
-  gfc_option.flag_real8_kind = 0;
   gfc_option.flag_dollar_ok = 0;
   gfc_option.flag_underscoring = 1;
   gfc_option.flag_f2c = 0;
-  gfc_option.flag_second_underscore = -1;
   gfc_option.flag_implicit_none = 0;
-
-  /* Default value of flag_max_stack_var_size is set in gfc_post_options.  */
-  gfc_option.flag_max_stack_var_size = -2;
-  gfc_option.flag_stack_arrays = -1;
 
   gfc_option.flag_range_check = 1;
   gfc_option.flag_pack_derived = 0;
@@ -135,10 +120,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_init_character = GFC_INIT_CHARACTER_OFF;
   gfc_option.flag_init_character_value = (char)0;
   gfc_option.flag_align_commons = 1;
-  gfc_option.flag_protect_parens = -1;
-  gfc_option.flag_realloc_lhs = -1;
   gfc_option.flag_aggressive_function_elimination = 0;
-  gfc_option.flag_frontend_optimize = -1;
   
   gfc_option.fpe = 0;
   /* All except GFC_FPE_INEXACT.  */
@@ -259,20 +241,20 @@ gfc_post_options (const char **pfilename)
   if (flag_associative_math == -1)
     flag_associative_math = (!flag_trapping_math && !flag_signed_zeros);
 
-  if (gfc_option.flag_protect_parens == -1)
-    gfc_option.flag_protect_parens = !optimize_fast;
+  if (flag_protect_parens == -1)
+    flag_protect_parens = !optimize_fast;
 
-  if (gfc_option.flag_stack_arrays == -1)
-    gfc_option.flag_stack_arrays = optimize_fast;
+  if (flag_stack_arrays == -1)
+    flag_stack_arrays = optimize_fast;
 
   /* By default, disable (re)allocation during assignment for -std=f95,
      and enable it for F2003/F2008/GNU/Legacy.  */
-  if (gfc_option.flag_realloc_lhs == -1)
+  if (flag_realloc_lhs == -1)
     {
       if (gfc_option.allow_std & GFC_STD_F2003)
-	gfc_option.flag_realloc_lhs = 1;
+	flag_realloc_lhs = 1;
       else
-	gfc_option.flag_realloc_lhs = 0;
+	flag_realloc_lhs = 0;
     }
 
   /* -fbounds-check is equivalent to -fcheck=bounds */
@@ -364,53 +346,60 @@ gfc_post_options (const char **pfilename)
   /* If the user didn't explicitly specify -f(no)-second-underscore we
      use it if we're trying to be compatible with f2c, and not
      otherwise.  */
-  if (gfc_option.flag_second_underscore == -1)
-    gfc_option.flag_second_underscore = gfc_option.flag_f2c;
+  if (flag_second_underscore == -1)
+    flag_second_underscore = gfc_option.flag_f2c;
 
-  if (!gfc_option.flag_automatic && gfc_option.flag_max_stack_var_size != -2
-      && gfc_option.flag_max_stack_var_size != 0)
+  if (!gfc_option.flag_automatic && flag_max_stack_var_size != -2
+      && flag_max_stack_var_size != 0)
     gfc_warning_now ("Flag %<-fno-automatic%> overwrites %<-fmax-stack-var-size=%d%>",
-		       gfc_option.flag_max_stack_var_size);
+		     flag_max_stack_var_size);
   else if (!gfc_option.flag_automatic && gfc_option.flag_recursive)
     gfc_warning_now ("Flag %<-fno-automatic%> overwrites %<-frecursive%>");
   else if (!gfc_option.flag_automatic && gfc_option.gfc_flag_openmp)
     gfc_warning_now ("Flag %<-fno-automatic%> overwrites %<-frecursive%> implied by "
-		       "%<-fopenmp%>");
-  else if (gfc_option.flag_max_stack_var_size != -2
-	   && gfc_option.flag_recursive)
+		     "%<-fopenmp%>");
+  else if (flag_max_stack_var_size != -2 && gfc_option.flag_recursive)
     gfc_warning_now ("Flag %<-frecursive%> overwrites %<-fmax-stack-var-size=%d%>",
-		       gfc_option.flag_max_stack_var_size);
-  else if (gfc_option.flag_max_stack_var_size != -2
-	   && gfc_option.gfc_flag_openmp)
+		     flag_max_stack_var_size);
+  else if (flag_max_stack_var_size != -2 && gfc_option.gfc_flag_openmp)
     gfc_warning_now ("Flag %<-fmax-stack-var-size=%d%> overwrites %<-frecursive%> "
-		       "implied by %<-fopenmp%>", 
-		     gfc_option.flag_max_stack_var_size);
+		     "implied by %<-fopenmp%>", flag_max_stack_var_size);
 
   /* Implement -frecursive as -fmax-stack-var-size=-1.  */
   if (gfc_option.flag_recursive)
-    gfc_option.flag_max_stack_var_size = -1;
+    flag_max_stack_var_size = -1;
 
   /* Implied -frecursive; implemented as -fmax-stack-var-size=-1.  */
-  if (gfc_option.flag_max_stack_var_size == -2 && gfc_option.gfc_flag_openmp
+  if (flag_max_stack_var_size == -2 && gfc_option.gfc_flag_openmp
       && gfc_option.flag_automatic)
     {
       gfc_option.flag_recursive = 1;
-      gfc_option.flag_max_stack_var_size = -1;
+      flag_max_stack_var_size = -1;
     }
 
   /* Set default.  */
-  if (gfc_option.flag_max_stack_var_size == -2)
-    gfc_option.flag_max_stack_var_size = 32768;
+  if (flag_max_stack_var_size == -2)
+    flag_max_stack_var_size = 32768;
 
   /* Implement -fno-automatic as -fmax-stack-var-size=0.  */
   if (!gfc_option.flag_automatic)
-    gfc_option.flag_max_stack_var_size = 0;
+    flag_max_stack_var_size = 0;
   
   /* Optimization implies front end optimization, unless the user
      specified it directly.  */
 
-  if (gfc_option.flag_frontend_optimize == -1)
-    gfc_option.flag_frontend_optimize = optimize;
+  if (flag_frontend_optimize == -1)
+    flag_frontend_optimize = optimize;
+
+  if (flag_fixed_line_length != 0 && flag_fixed_line_length < 7)
+    gfc_fatal_error ("Fixed line length must be at least seven");
+
+  if (flag_free_line_length != 0 && flag_free_line_length < 4)
+    gfc_fatal_error ("Free line length must be at least three");
+
+  if (flag_max_subrecord_length > MAX_SUBRECORD_LENGTH)
+    gfc_fatal_error ("Maximum subrecord length cannot exceed %d",
+		     MAX_SUBRECORD_LENGTH);
 
   gfc_cpp_post_options ();
 
@@ -643,16 +632,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_option.source_form = FORM_FIXED;
       break;
 
-    case OPT_ffixed_line_length_none:
-      gfc_option.fixed_line_length = 0;
-      break;
-
-    case OPT_ffixed_line_length_:
-      if (value != 0 && value < 7)
-	gfc_fatal_error ("Fixed line length must be at least seven");
-      gfc_option.fixed_line_length = value;
-      break;
-
     case OPT_ffree_form:
       gfc_option.source_form = FORM_FREE;
       break;
@@ -665,22 +644,8 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_option.gfc_flag_openmp_simd = value;
       break;
 
-    case OPT_ffree_line_length_none:
-      gfc_option.free_line_length = 0;
-      break;
-
-    case OPT_ffree_line_length_:
-      if (value != 0 && value < 4)
-	gfc_fatal_error ("Free line length must be at least three");
-      gfc_option.free_line_length = value;
-      break;
-
     case OPT_funderscoring:
       gfc_option.flag_underscoring = value;
-      break;
-
-    case OPT_fsecond_underscore:
-      gfc_option.flag_second_underscore = value;
       break;
 
     case OPT_static_libgfortran:
@@ -710,14 +675,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_option.flag_max_array_constructor = value > 65535 ? value : 65535;
       break;
 
-    case OPT_fmax_stack_var_size_:
-      gfc_option.flag_max_stack_var_size = value;
-      break;
-
-    case OPT_fstack_arrays:
-      gfc_option.flag_stack_arrays = value;
-      break;
-
     case OPT_fmodule_private:
       gfc_option.flag_module_private = value;
       break;
@@ -743,46 +700,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 	gfc_fatal_error ("Maximum supported identifier length is %d",
 			 GFC_MAX_SYMBOL_LEN);
       gfc_option.max_identifier_length = value;
-      break;
-
-    case OPT_fdefault_integer_8:
-      gfc_option.flag_default_integer = value;
-      break;
-
-    case OPT_fdefault_real_8:
-      gfc_option.flag_default_real = value;
-      break;
-
-    case OPT_fdefault_double_8:
-      gfc_option.flag_default_double = value;
-      break;
-
-    case OPT_finteger_4_integer_8:
-      gfc_option.flag_integer4_kind = 8;
-      break;
-
-    case OPT_freal_4_real_8:
-      gfc_option.flag_real4_kind = 8;
-      break;
-
-    case OPT_freal_4_real_10:
-      gfc_option.flag_real4_kind = 10;
-      break;
-
-    case OPT_freal_4_real_16:
-      gfc_option.flag_real4_kind = 16;
-      break;
-
-    case OPT_freal_8_real_4:
-      gfc_option.flag_real8_kind = 4;
-      break;
-
-    case OPT_freal_8_real_10:
-      gfc_option.flag_real8_kind = 10;
-      break;
-
-    case OPT_freal_8_real_16:
-      gfc_option.flag_real8_kind = 16;
       break;
 
     case OPT_finit_local_zero:
@@ -924,22 +841,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_option.convert = GFC_CONVERT_SWAP;
       break;
 
-    case OPT_frecord_marker_4:
-      gfc_option.record_marker = 4;
-      break;
-
-    case OPT_frecord_marker_8:
-      gfc_option.record_marker = 8;
-      break;
-
-    case OPT_fmax_subrecord_length_:
-      if (value > MAX_SUBRECORD_LENGTH)
-	gfc_fatal_error ("Maximum subrecord length cannot exceed %d",
-			 MAX_SUBRECORD_LENGTH);
-
-      gfc_option.max_subrecord_length = value;
-      break;
-
     case OPT_frecursive:
       gfc_option.flag_recursive = value;
       break;
@@ -950,18 +851,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case  OPT_faggressive_function_elimination:
       gfc_option.flag_aggressive_function_elimination = value;
-      break;
-
-    case OPT_ffrontend_optimize:
-      gfc_option.flag_frontend_optimize = value;
-      break;
-
-    case OPT_fprotect_parens:
-      gfc_option.flag_protect_parens = value;
-      break;
-
-    case OPT_frealloc_lhs:
-      gfc_option.flag_realloc_lhs = value;
       break;
 
     case OPT_fcheck_:

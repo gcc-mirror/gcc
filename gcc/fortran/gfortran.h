@@ -2426,16 +2426,6 @@ typedef struct
 {
   char *module_dir;
   gfc_source_form source_form;
-  /* Maximum line lengths in fixed- and free-form source, respectively.
-     When fixed_line_length or free_line_length are 0, the whole line is used,
-     regardless of length.
-
-     If the user requests a fixed_line_length <7 then gfc_init_options()
-     emits a fatal error.  */
-  int fixed_line_length;
-  int free_line_length;
-  /* Maximum number of continuation lines in fixed- and free-form source,
-     respectively.  */
   int max_continue_fixed;
   int max_continue_free;
   int max_identifier_length;
@@ -2445,17 +2435,9 @@ typedef struct
   int max_errors;
 
   int flag_all_intrinsics;
-  int flag_default_double;
-  int flag_default_integer;
-  int flag_default_real;
-  int flag_integer4_kind;
-  int flag_real4_kind;
-  int flag_real8_kind;
   int flag_dollar_ok;
   int flag_underscoring;
-  int flag_second_underscore;
   int flag_implicit_none;
-  int flag_max_stack_var_size;
   int flag_max_array_constructor;
   int flag_range_check;
   int flag_pack_derived;
@@ -2473,10 +2455,8 @@ typedef struct
   int gfc_flag_openmp;
   int gfc_flag_openmp_simd;
   int flag_sign_zero;
-  int flag_stack_arrays;
   int flag_module_private;
   int flag_recursive;
-  int flag_init_local_zero;
   int flag_init_integer;
   int flag_init_integer_value;
   int flag_init_real;
@@ -2484,10 +2464,7 @@ typedef struct
   int flag_init_character;
   char flag_init_character_value;
   int flag_align_commons;
-  int flag_protect_parens;
-  int flag_realloc_lhs;
   int flag_aggressive_function_elimination;
-  int flag_frontend_optimize;
 
   int fpe;
   int fpe_summary;
@@ -2497,8 +2474,6 @@ typedef struct
   int warn_std;
   int allow_std;
   int convert;
-  int record_marker;
-  int max_subrecord_length;
 }
 gfc_option_t;
 
