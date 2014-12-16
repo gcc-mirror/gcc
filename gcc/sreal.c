@@ -47,9 +47,9 @@ along with GCC; see the file COPYING3.  If not see
 	sig == 0 && exp == -SREAL_MAX_EXP
 */
 
-#include <math.h>
 #include "config.h"
 #include "system.h"
+#include <math.h>
 #include "coretypes.h"
 #include "sreal.h"
 

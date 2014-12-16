@@ -1,3 +1,8 @@
+2014-12-16  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
+
+	Both config.h and system.h define ABI/API macros for system headers.
+	* sreal.c: Include math.h later.
+
 2014-12-16  Felix Yang  <felix.yang@huawei.com>
 
 	PR rtl-optimization/64240
