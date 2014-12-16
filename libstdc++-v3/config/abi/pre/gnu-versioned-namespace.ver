@@ -338,6 +338,10 @@ CXXABI_2.0 {
     _ZTVN10__cxxabiv120__si_class_type_infoE;
     _ZTVN10__cxxabiv121__vmi_class_type_infoE;
 
+    # operator delete(void*, std::size_t)
+    _ZdlPvm;
+    # operator delete[](void*, std::size_t)
+    _ZdaPvm;
 };
 
 # Symbols in the support library (libsupc++) supporting trans-mem.

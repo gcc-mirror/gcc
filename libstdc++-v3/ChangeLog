@@ -1,3 +1,8 @@
+2014-12-16  Jason Merrill  <jason@redhat.com>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Export _ZdlPvm and
+	_ZdaPvm.
+
 2014-12-15  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/del_ops.cc: New.
