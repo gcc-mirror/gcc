@@ -1,3 +1,8 @@
+2014-12-16  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* config/i386/i386.c (ix86_address_cost): Add explicit restriction
+	to RTL level for the check for PIC register.
+
 2014-12-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/gnu-user.h (TARGET_CAN_SPLIT_STACK): Move from here ...
