@@ -1734,9 +1734,9 @@ CXXABI_1.3.9 {
     _ZTSPK[no];
 
     # operator delete(void*, std::size_t)
-    _ZdlPvm;
+    _ZdlPv[jmy];
     # operator delete[](void*, std::size_t)
-    _ZdaPvm;
+    _ZdaPv[jmy];
 
 } CXXABI_1.3.8;
 
