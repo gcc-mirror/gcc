@@ -3044,6 +3044,7 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
 
   memset (info, '\0', sizeof (*info));
   info->ndimensions = rank;
+  info->ordering = array_descr_ordering_column_major;
   info->element_type = etype;
   ptype = build_pointer_type (gfc_array_index_type);
   base_decl = GFC_TYPE_ARRAY_BASE_DECL (type, indirect);

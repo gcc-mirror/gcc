@@ -17460,18 +17460,25 @@ static void
 gen_descr_array_type_die (tree type, struct array_descr_info *info,
 			  dw_die_ref context_die)
 {
-  dw_die_ref scope_die = scope_die_for (type, context_die);
-  dw_die_ref array_die;
+  const dw_die_ref scope_die = scope_die_for (type, context_die);
+  const dw_die_ref array_die = new_die (DW_TAG_array_type, scope_die, type);
   int dim;
 
-  array_die = new_die (DW_TAG_array_type, scope_die, type);
   add_name_attribute (array_die, type_tag (type));
   equate_type_number_to_die (type, array_die);
 
-  /* For Fortran multidimensional arrays use DW_ORD_col_major ordering.  */
-  if (is_fortran ()
-      && info->ndimensions >= 2)
-    add_AT_unsigned (array_die, DW_AT_ordering, DW_ORD_col_major);
+  if (info->ndimensions > 1)
+    switch (info->ordering)
+      {
+      case array_descr_ordering_row_major:
+	add_AT_unsigned (array_die, DW_AT_ordering, DW_ORD_row_major);
+	break;
+      case array_descr_ordering_column_major:
+	add_AT_unsigned (array_die, DW_AT_ordering, DW_ORD_col_major);
+	break;
+      default:
+	break;
+      }
 
   if (info->data_location)
     add_descr_info_field (array_die, DW_AT_data_location, info->data_location,
@@ -17483,11 +17490,17 @@ gen_descr_array_type_die (tree type, struct array_descr_info *info,
     add_descr_info_field (array_die, DW_AT_allocated, info->allocated,
 			  info->base_decl);
 
+  add_gnat_descriptive_type_attribute (array_die, type, context_die);
+
   for (dim = 0; dim < info->ndimensions; dim++)
     {
       dw_die_ref subrange_die
 	= new_die (DW_TAG_subrange_type, array_die, NULL);
 
+      if (info->dimen[dim].bounds_type)
+	add_type_attribute (subrange_die,
+			    info->dimen[dim].bounds_type, 0,
+			    context_die);
       if (info->dimen[dim].lower_bound)
 	{
 	  /* If it is the default value, omit it.  */
@@ -20097,17 +20110,6 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
       return;
     }
 
-  /* If this is an array type with hidden descriptor, handle it first.  */
-  if (!TREE_ASM_WRITTEN (type)
-      && lang_hooks.types.get_array_descr_info
-      && lang_hooks.types.get_array_descr_info (type, &info)
-      && (dwarf_version >= 3 || !dwarf_strict))
-    {
-      gen_descr_array_type_die (type, &info, context_die);
-      TREE_ASM_WRITTEN (type) = 1;
-      return;
-    }
-
   /* We are going to output a DIE to represent the unqualified version
      of this type (i.e. without any const or volatile qualifiers) so
      get the main variant (i.e. the unqualified version) of this type
@@ -20115,6 +20117,20 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
      cloned type itself).  */
   if (TREE_CODE (type) != VECTOR_TYPE)
     type = type_main_variant (type);
+
+  /* If this is an array type with hidden descriptor, handle it first.  */
+  if (!TREE_ASM_WRITTEN (type)
+      && lang_hooks.types.get_array_descr_info
+      && (dwarf_version >= 3 || !dwarf_strict))
+    {
+      memset (&info, 0, sizeof (info));
+      if (lang_hooks.types.get_array_descr_info (type, &info))
+	{
+	  gen_descr_array_type_die (type, &info, context_die);
+	  TREE_ASM_WRITTEN (type) = 1;
+	  return;
+	}
+    }
 
   if (TREE_ASM_WRITTEN (type))
     return;
