@@ -2280,22 +2280,28 @@ process_alt_operands (int only_alternative)
 		     not hold the mode value.  */
 		  && ! HARD_REGNO_MODE_OK (ira_class_hard_regs
 					   [this_alternative][0],
-					   GET_MODE (*curr_id->operand_loc[nop]))
+					   GET_MODE (*curr_id->operand_loc[nop])))
+		{
+		  HARD_REG_SET temp;
+		  
+		  COPY_HARD_REG_SET (temp, this_alternative_set);
+		  AND_COMPL_HARD_REG_SET (temp, lra_no_alloc_regs);
 		  /* The above condition is not enough as the first
 		     reg in ira_class_hard_regs can be not aligned for
 		     multi-words mode values.  */
-		  && hard_reg_set_subset_p (this_alternative_set,
-					    ira_prohibited_class_mode_regs
-					    [this_alternative]
-					    [GET_MODE (*curr_id->operand_loc[nop])]))
-		{
-		  if (lra_dump_file != NULL)
-		    fprintf
-		      (lra_dump_file,
-		       "            alt=%d: reload pseudo for op %d "
-		       " can not hold the mode value -- refuse\n",
-		       nalt, nop);
-		  goto fail;
+		  if (hard_reg_set_subset_p (temp,
+					     ira_prohibited_class_mode_regs
+					     [this_alternative]
+					     [GET_MODE (*curr_id->operand_loc[nop])]))
+		    {
+		      if (lra_dump_file != NULL)
+			fprintf
+			  (lra_dump_file,
+			   "            alt=%d: reload pseudo for op %d "
+			   " can not hold the mode value -- refuse\n",
+			   nalt, nop);
+		      goto fail;
+		    }
 		}
 
 	      /* Check strong discouragement of reload of non-constant
