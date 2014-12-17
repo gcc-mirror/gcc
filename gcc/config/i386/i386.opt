@@ -221,6 +221,23 @@ malign-stringops
 Target RejectNegative Report InverseMask(NO_ALIGN_STRINGOPS, ALIGN_STRINGOPS) Save
 Align destination of the string operations
 
+malign-data=
+Target RejectNegative Joined Var(ix86_align_data_type) Enum(ix86_align_data) Init(ix86_align_data_type_compat)
+Use the given data alignment
+
+Enum
+Name(ix86_align_data) Type(enum ix86_align_data)
+Known data alignment choices (for use with the -malign-data= option):
+
+EnumValue
+Enum(ix86_align_data) String(compat) Value(ix86_align_data_type_compat)
+
+EnumValue
+Enum(ix86_align_data) String(abi) Value(ix86_align_data_type_abi)
+
+EnumValue
+Enum(ix86_align_data) String(cacheline) Value(ix86_align_data_type_cacheline)
+
 march=
 Target RejectNegative Joined Var(ix86_arch_string)
 Generate code for given CPU

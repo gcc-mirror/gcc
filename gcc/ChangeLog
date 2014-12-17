@@ -1,3 +1,16 @@
+2014-12-17  H.J. Lu  <hongjiu.lu@intel.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61296
+	* config/i386/i386-opts.h (ix86_align_data): New enum.
+	* config/i386/i386.c (ix86_data_alignment): Return the ABI
+	alignment value for -malign-data=abi, the cachine line size
+	for -malign-data=cachineline and the older GCC compatible
+	alignment value for for -malign-data=compat.
+	* config/i386/i386.opt (malign-data=): New.
+	* doc/invoke.texi: Document -malign-data=.
+
 2014-12-17  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/63568
