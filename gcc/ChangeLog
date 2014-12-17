@@ -1,6 +1,21 @@
 2014-12-17  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244
+	* config/sh/sh_treg_combine.cc (is_conditional_insn): New function.
+	(cbranch_trace): Add member rtx* condition_rtx_in_insn, initialize it
+	accordingly in constructor.
+	(cbranch_trace::branch_condition_rtx_ref): New function.
+	(cbranch_trace::branch_condition_rtx): Use branch_condition_rtx_ref.
+	(sh_treg_combine::try_invert_branch_condition): Invert condition rtx
+	in insn using reversed_comparison_code and validate_change instead of
+	invert_jump_1.
+	(sh_treg_combine::execute): Look for conditional insns in basic blocks
+	in addition to conditional branches.
+	* config/sh/sh.md (*movsicc_div0s): Remove combine patterns.
+
+2014-12-17  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
 	* config/sh/sh_treg_combine.cc (sh_treg_combine::try_optimize_cbranch):
 	Combine ccreg inversion and cbranch into inverted cbranch.
 

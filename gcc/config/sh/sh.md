@@ -1086,47 +1086,6 @@
 		      (label_ref (match_dup 2))
 		      (pc)))])
 
-;; Conditional move combine pattern for div0s comparisons.
-;; This is used when TARGET_PRETEND_CMOVE is in effect.
-(define_insn_and_split "*movsicc_div0s"
-  [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(if_then_else:SI (ge (xor:SI (match_operand:SI 1 "arith_reg_operand" "")
-				     (match_operand:SI 2 "arith_reg_operand" ""))
-			     (const_int 0))
-			 (match_operand:SI 3 "arith_reg_operand" "")
-			 (match_operand:SI 4 "general_movsrc_operand" "")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_PRETEND_CMOVE"
-  "#"
-  "&& 1"
-  [(set (reg:SI T_REG) (lt:SI (xor:SI (match_dup 1) (match_dup 2))
-			      (const_int 0)))
-   (set (match_dup 0)
-	(if_then_else (ne (reg:SI T_REG) (const_int 0))
-		      (match_dup 4)
-		      (match_dup 3)))])
-
-(define_insn_and_split "*movsicc_div0s"
-  [(set (match_operand:SI 0 "arith_reg_dest")
-	(if_then_else:SI (eq (lshiftrt:SI
-				(match_operand:SI 1 "arith_reg_operand")
-				(const_int 31))
-			     (lshiftrt:SI
-				(match_operand:SI 2 "arith_reg_operand")
-				(const_int 31)))
-			 (match_operand:SI 3 "arith_reg_operand")
-			 (match_operand:SI 4 "general_movsrc_operand")))
-   (clobber (reg:SI T_REG))]
-   "TARGET_PRETEND_CMOVE"
-   "#"
-   "&& 1"
-  [(set (reg:SI T_REG) (lt:SI (xor:SI (match_dup 1) (match_dup 2))
-			      (const_int 0)))
-   (set (match_dup 0)
-	(if_then_else (ne (reg:SI T_REG) (const_int 0))
-		      (match_dup 4)
-		      (match_dup 3)))])
-
 ;; -------------------------------------------------------------------------
 ;; SImode unsigned integer comparisons
 ;; -------------------------------------------------------------------------
