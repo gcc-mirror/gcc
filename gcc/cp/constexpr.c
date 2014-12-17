@@ -1050,7 +1050,8 @@ adjust_temp_type (tree type, tree temp)
 static void
 cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
                              constexpr_call *new_call,
-			     bool *non_constant_p, bool *overflow_p)
+			     bool *non_constant_p, bool *overflow_p,
+			     bool *non_constant_args)
 {
   const int nargs = call_expr_nargs (t);
   tree fun = new_call->fundef->decl;
@@ -1099,6 +1100,8 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
       /* Make sure the binding has the same type as the parm.  */
       if (TREE_CODE (type) != REFERENCE_TYPE)
 	arg = adjust_temp_type (type, arg);
+      if (!TREE_CONSTANT (arg))
+	*non_constant_args = true;
       *p = build_tree_list (parms, arg);
       p = &TREE_CHAIN (*p);
     next:
@@ -1155,10 +1158,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 {
   location_t loc = EXPR_LOC_OR_LOC (t, input_location);
   tree fun = get_function_named_in_call (t);
-  tree result;
   constexpr_call new_call = { NULL, NULL, NULL, 0 };
-  constexpr_call **slot;
-  constexpr_call *entry;
   bool depth_ok;
 
   if (fun == NULL_TREE)
@@ -1264,36 +1264,45 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       ctx = &new_ctx;
     }
 
+  bool non_constant_args = false;
   cxx_bind_parameters_in_call (ctx, t, &new_call,
-			       non_constant_p, overflow_p);
+			       non_constant_p, overflow_p, &non_constant_args);
   if (*non_constant_p)
     return t;
 
   depth_ok = push_cx_call_context (t);
 
-  new_call.hash
-    = iterative_hash_template_arg (new_call.bindings,
-				   constexpr_fundef_hasher::hash (new_call.fundef));
+  tree result = NULL_TREE;
 
-  /* If we have seen this call before, we are done.  */
-  maybe_initialize_constexpr_call_table ();
-  slot = constexpr_call_table->find_slot (&new_call, INSERT);
-  entry = *slot;
-  if (entry == NULL)
+  constexpr_call *entry = NULL;
+  if (!non_constant_args)
     {
-      /* We need to keep a pointer to the entry, not just the slot, as the
-	 slot can move in the call to cxx_eval_builtin_function_call.  */
-      *slot = entry = ggc_alloc<constexpr_call> ();
-      *entry = new_call;
-    }
-  /* Calls which are in progress have their result set to NULL
-     so that we can detect circular dependencies.  */
-  else if (entry->result == NULL)
-    {
-      if (!ctx->quiet)
-	error ("call has circular dependency");
-      *non_constant_p = true;
-      entry->result = result = error_mark_node;
+      new_call.hash = iterative_hash_template_arg
+	(new_call.bindings, constexpr_fundef_hasher::hash (new_call.fundef));
+
+      /* If we have seen this call before, we are done.  */
+      maybe_initialize_constexpr_call_table ();
+      constexpr_call **slot
+	= constexpr_call_table->find_slot (&new_call, INSERT);
+      entry = *slot;
+      if (entry == NULL)
+	{
+	  /* We need to keep a pointer to the entry, not just the slot, as the
+	     slot can move in the call to cxx_eval_builtin_function_call.  */
+	  *slot = entry = ggc_alloc<constexpr_call> ();
+	  *entry = new_call;
+	}
+      /* Calls which are in progress have their result set to NULL
+	 so that we can detect circular dependencies.  */
+      else if (entry->result == NULL)
+	{
+	  if (!ctx->quiet)
+	    error ("call has circular dependency");
+	  *non_constant_p = true;
+	  entry->result = result = error_mark_node;
+	}
+      else
+	result = entry->result;
     }
 
   if (!depth_ok)
@@ -1303,11 +1312,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	       "-fconstexpr-depth= to increase the maximum)",
 	       max_constexpr_depth);
       *non_constant_p = true;
-      entry->result = result = error_mark_node;
+      result = error_mark_node;
     }
   else
     {
-      result = entry->result;
       if (!result || result == error_mark_node)
 	{
 	  if (!use_new_call)
@@ -1395,7 +1403,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       if (result == error_mark_node)
 	*non_constant_p = true;
       if (*non_constant_p)
-	entry->result = result = error_mark_node;
+	result = error_mark_node;
       else if (result)
 	{
 	  /* If this was a call to initialize an object, set the type of
@@ -1409,10 +1417,11 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      result = adjust_temp_type (TREE_TYPE (TREE_TYPE (ob_arg)),
 					 result);
 	    }
-	  entry->result = result;
 	}
       else
 	result = void_node;
+      if (entry)
+	entry->result = result;
     }
 
   pop_cx_call_context ();
@@ -1558,13 +1567,13 @@ cxx_eval_check_shift_p (location_t loc, const constexpr_ctx *ctx,
 
 static tree
 cxx_eval_unary_expression (const constexpr_ctx *ctx, tree t,
-			   bool lval,
+			   bool /*lval*/,
 			   bool *non_constant_p, bool *overflow_p)
 {
   tree r;
   tree orig_arg = TREE_OPERAND (t, 0);
-  tree arg = cxx_eval_constant_expression (ctx, orig_arg,
-					   lval, non_constant_p, overflow_p);
+  tree arg = cxx_eval_constant_expression (ctx, orig_arg, /*lval*/false,
+					   non_constant_p, overflow_p);
   VERIFY_CONSTANT (arg);
   location_t loc = EXPR_LOCATION (t);
   enum tree_code code = TREE_CODE (t);
@@ -1586,19 +1595,17 @@ cxx_eval_unary_expression (const constexpr_ctx *ctx, tree t,
 
 static tree
 cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
-			    bool lval,
+			    bool /*lval*/,
 			    bool *non_constant_p, bool *overflow_p)
 {
   tree r;
   tree orig_lhs = TREE_OPERAND (t, 0);
   tree orig_rhs = TREE_OPERAND (t, 1);
   tree lhs, rhs;
-  lhs = cxx_eval_constant_expression (ctx, orig_lhs,
-				      lval,
+  lhs = cxx_eval_constant_expression (ctx, orig_lhs, /*lval*/false,
 				      non_constant_p, overflow_p);
   VERIFY_CONSTANT (lhs);
-  rhs = cxx_eval_constant_expression (ctx, orig_rhs,
-				      lval,
+  rhs = cxx_eval_constant_expression (ctx, orig_rhs, /*lval*/false,
 				      non_constant_p, overflow_p);
   VERIFY_CONSTANT (rhs);
 
@@ -1630,7 +1637,7 @@ cxx_eval_conditional_expression (const constexpr_ctx *ctx, tree t,
 				 tree *jump_target)
 {
   tree val = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0),
-					   lval,
+					   /*lval*/false,
 					   non_constant_p, overflow_p);
   VERIFY_CONSTANT (val);
   /* Don't VERIFY_CONSTANT the other operands.  */
@@ -3085,7 +3092,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	r = *p;
       else
 	{
-	  r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0), addr,
+	  r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0), false,
 					    non_constant_p, overflow_p);
 	  ctx->values->put (t, r);
 	}
@@ -3174,7 +3181,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  {
 	    /* Check that the LHS is constant and then discard it.  */
 	    cxx_eval_constant_expression (ctx, op0,
-					  false, non_constant_p, overflow_p,
+					  true, non_constant_p, overflow_p,
 					  jump_target);
 	    op1 = TREE_OPERAND (t, 1);
 	    r = cxx_eval_constant_expression (ctx, op1,
