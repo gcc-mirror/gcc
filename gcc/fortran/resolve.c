@@ -5091,7 +5091,7 @@ resolve_procedure:
   if (t)
     expression_rank (e);
 
-  if (t && gfc_option.coarray == GFC_FCOARRAY_LIB && gfc_is_coindexed (e))
+  if (t && flag_coarray == GFC_FCOARRAY_LIB && gfc_is_coindexed (e))
     add_caf_get_intrinsic (e);
 
   return t;
@@ -8526,7 +8526,7 @@ resolve_critical (gfc_code *code)
   char name[GFC_MAX_SYMBOL_LEN];
   static int serial = 0;
 
-  if (gfc_option.coarray != GFC_FCOARRAY_LIB)
+  if (flag_coarray != GFC_FCOARRAY_LIB)
     return;
 
   symtree = gfc_find_symtree (gfc_current_ns->sym_root,
@@ -9398,7 +9398,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
      the LHS is (re)allocatable or has a vector subscript.  If the LHS is a
      noncoindexed array and the RHS is a coindexed scalar, use the normal code
      path.  */
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB
+  if (flag_coarray == GFC_FCOARRAY_LIB
       && (lhs_coindexed
 	  || (code->expr2->expr_type == EXPR_FUNCTION
 	      && code->expr2->value.function.isym
@@ -10689,7 +10689,7 @@ build_default_init_expr (gfc_symbol *sym)
       break;
 
     case BT_REAL:
-      switch (gfc_option.flag_init_real)
+      switch (flag_init_real)
 	{
 	case GFC_INIT_REAL_SNAN:
 	  init_expr->is_snan = 1;
@@ -10718,7 +10718,7 @@ build_default_init_expr (gfc_symbol *sym)
       break;
 
     case BT_COMPLEX:
-      switch (gfc_option.flag_init_real)
+      switch (flag_init_real)
 	{
 	case GFC_INIT_REAL_SNAN:
 	  init_expr->is_snan = 1;

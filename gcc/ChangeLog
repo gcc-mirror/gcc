@@ -1,3 +1,9 @@
+2014-12-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54687
+	* flag-types.h (gfc_init_local_real, gfc_fcoarray,
+	gfc_convert): New enums; moved from fortran/.
+
 2014-12-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* fibonacci_heap.h (min): Return m_data instead of non-existing data.

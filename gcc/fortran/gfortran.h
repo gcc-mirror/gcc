@@ -599,18 +599,6 @@ enum gfc_isym_id
 };
 typedef enum gfc_isym_id gfc_isym_id;
 
-
-typedef enum
-{
-  GFC_INIT_REAL_OFF = 0,
-  GFC_INIT_REAL_ZERO,
-  GFC_INIT_REAL_NAN,
-  GFC_INIT_REAL_SNAN,
-  GFC_INIT_REAL_INF,
-  GFC_INIT_REAL_NEG_INF
-}
-init_local_real;
-
 typedef enum
 {
   GFC_INIT_LOGICAL_OFF = 0,
@@ -632,14 +620,6 @@ typedef enum
   GFC_INIT_INTEGER_ON
 }
 init_local_integer;
-
-typedef enum
-{
-  GFC_FCOARRAY_NONE = 0,
-  GFC_FCOARRAY_SINGLE,
-  GFC_FCOARRAY_LIB
-}
-gfc_fcoarray;
 
 typedef enum
 {
@@ -2436,7 +2416,6 @@ typedef struct
   int flag_d_lines;
   int flag_init_integer;
   int flag_init_integer_value;
-  int flag_init_real;
   int flag_init_logical;
   int flag_init_character;
   char flag_init_character_value;
@@ -2444,11 +2423,9 @@ typedef struct
   int fpe;
   int fpe_summary;
   int rtcheck;
-  gfc_fcoarray coarray;
 
   int warn_std;
   int allow_std;
-  int convert;
 }
 gfc_option_t;
 

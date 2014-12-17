@@ -263,4 +263,38 @@ enum lto_partition_model {
   LTO_PARTITION_MAX = 4
 };
 
+
+/* gfortran -finit-real= values.  */
+
+enum gfc_init_local_real
+{
+  GFC_INIT_REAL_OFF = 0,
+  GFC_INIT_REAL_ZERO,
+  GFC_INIT_REAL_NAN,
+  GFC_INIT_REAL_SNAN,
+  GFC_INIT_REAL_INF,
+  GFC_INIT_REAL_NEG_INF
+};
+
+/* gfortran -fcoarray= values.  */
+
+enum gfc_fcoarray
+{
+  GFC_FCOARRAY_NONE = 0,
+  GFC_FCOARRAY_SINGLE,
+  GFC_FCOARRAY_LIB
+};
+
+
+/* gfortran -fconvert= values; used for unformatted I/O.
+   Keep in sync with GFC_CONVERT_* in gcc/fortran/libgfortran.h.   */
+enum gfc_convert
+{
+  GFC_FLAG_CONVERT_NATIVE = 0,
+  GFC_FLAG_CONVERT_SWAP,
+  GFC_FLAG_CONVERT_BIG,
+  GFC_FLAG_CONVERT_LITTLE
+};
+
+
 #endif /* ! GCC_FLAG_TYPES_H */

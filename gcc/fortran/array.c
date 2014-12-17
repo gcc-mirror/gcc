@@ -208,7 +208,7 @@ coarray:
 	return MATCH_ERROR;
     }
 
-  if (gfc_option.coarray == GFC_FCOARRAY_NONE)
+  if (flag_coarray == GFC_FCOARRAY_NONE)
     {
       gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return MATCH_ERROR;
@@ -591,7 +591,7 @@ coarray:
   if (!gfc_notify_std (GFC_STD_F2008, "Coarray declaration at %C"))
     goto cleanup;
 
-  if (gfc_option.coarray == GFC_FCOARRAY_NONE)
+  if (flag_coarray == GFC_FCOARRAY_NONE)
     {
       gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       goto cleanup;

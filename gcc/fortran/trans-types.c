@@ -1648,7 +1648,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
 
   if (as->rank == 0)
     {
-      if (packed != PACKED_STATIC  || gfc_option.coarray == GFC_FCOARRAY_LIB)
+      if (packed != PACKED_STATIC  || flag_coarray == GFC_FCOARRAY_LIB)
 	{
 	  type = build_pointer_type (type);
 
@@ -1702,7 +1702,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
     }
 
   if (packed != PACKED_STATIC || !known_stride
-      || (as->corank && gfc_option.coarray == GFC_FCOARRAY_LIB))
+      || (as->corank && flag_coarray == GFC_FCOARRAY_LIB))
     {
       /* For dummy arrays and automatic (heap allocated) arrays we
 	 want a pointer to the array.  */
@@ -1734,7 +1734,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted,
 
   gcc_assert (codimen + dimen >= 0 && codimen + dimen <= GFC_MAX_DIMENSIONS);
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB && codimen)
+  if (flag_coarray == GFC_FCOARRAY_LIB && codimen)
     {
       if (gfc_array_descriptor_base_caf[idx])
 	return gfc_array_descriptor_base_caf[idx];
@@ -1782,7 +1782,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted,
       TREE_NO_WARNING (decl) = 1;
     }
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB && codimen
+  if (flag_coarray == GFC_FCOARRAY_LIB && codimen
       && akind == GFC_ARRAY_ALLOCATABLE)
     {
       decl = gfc_add_field_to_struct_1 (fat_type,
@@ -1795,7 +1795,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted,
   gfc_finish_type (fat_type);
   TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (fat_type)) = 1;
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB && codimen
+  if (flag_coarray == GFC_FCOARRAY_LIB && codimen
       && akind == GFC_ARRAY_ALLOCATABLE)
     gfc_array_descriptor_base_caf[idx] = fat_type;
   else

@@ -4999,7 +4999,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
       /* For descriptorless coarrays and assumed-shape coarray dummies, we
 	 pass the token and the offset as additional arguments.  */
-      if (fsym && e == NULL && gfc_option.coarray == GFC_FCOARRAY_LIB
+      if (fsym && e == NULL && flag_coarray == GFC_FCOARRAY_LIB
 	  && ((fsym->ts.type != BT_CLASS && fsym->attr.codimension
 	       && !fsym->attr.allocatable)
 	      || (fsym->ts.type == BT_CLASS
@@ -5011,7 +5011,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  vec_safe_push (stringargs, build_int_cst (gfc_array_index_type, 0));
 	  gcc_assert (fsym->attr.optional);
 	}
-      else if (fsym && gfc_option.coarray == GFC_FCOARRAY_LIB
+      else if (fsym && flag_coarray == GFC_FCOARRAY_LIB
 	       && ((fsym->ts.type != BT_CLASS && fsym->attr.codimension
 		    && !fsym->attr.allocatable)
 		   || (fsym->ts.type == BT_CLASS
