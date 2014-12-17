@@ -5370,6 +5370,173 @@ print_signature (FILE *outfile, char *sig)
     fprintf (outfile, "%02x", sig[i] & 0xff);
 }
 
+static void print_loc_descr (dw_loc_descr_ref, FILE *);
+
+/* Print the value associated to the VAL DWARF value node to OUTFILE.  If
+   RECURSE, output location descriptor operations.  */
+
+static void
+print_dw_val (dw_val_node *val, bool recurse, FILE *outfile)
+{
+  switch (val->val_class)
+    {
+    case dw_val_class_addr:
+      fprintf (outfile, "address");
+      break;
+    case dw_val_class_offset:
+      fprintf (outfile, "offset");
+      break;
+    case dw_val_class_loc:
+      fprintf (outfile, "location descriptor");
+      if (val->v.val_loc == NULL)
+	fprintf (outfile, " -> <null>\n");
+      else if (recurse)
+	{
+	  fprintf (outfile, ":\n");
+	  print_indent += 4;
+	  print_loc_descr (val->v.val_loc, outfile);
+	  print_indent -= 4;
+	}
+      else
+	fprintf (outfile, " (%p)\n", (void *) val->v.val_loc);
+      break;
+    case dw_val_class_loc_list:
+      fprintf (outfile, "location list -> label:%s",
+	       val->v.val_loc_list->ll_symbol);
+      break;
+    case dw_val_class_range_list:
+      fprintf (outfile, "range list");
+      break;
+    case dw_val_class_const:
+      fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, val->v.val_int);
+      break;
+    case dw_val_class_unsigned_const:
+      fprintf (outfile, HOST_WIDE_INT_PRINT_UNSIGNED, val->v.val_unsigned);
+      break;
+    case dw_val_class_const_double:
+      fprintf (outfile, "constant ("HOST_WIDE_INT_PRINT_DEC","\
+			HOST_WIDE_INT_PRINT_UNSIGNED")",
+	       val->v.val_double.high,
+	       val->v.val_double.low);
+      break;
+    case dw_val_class_wide_int:
+      {
+	int i = val->v.val_wide->get_len ();
+	fprintf (outfile, "constant (");
+	gcc_assert (i > 0);
+	if (val->v.val_wide->elt (i - 1) == 0)
+	  fprintf (outfile, "0x");
+	fprintf (outfile, HOST_WIDE_INT_PRINT_HEX,
+		 val->v.val_wide->elt (--i));
+	while (--i >= 0)
+	  fprintf (outfile, HOST_WIDE_INT_PRINT_PADDED_HEX,
+		   val->v.val_wide->elt (i));
+	fprintf (outfile, ")");
+	break;
+      }
+    case dw_val_class_vec:
+      fprintf (outfile, "floating-point or vector constant");
+      break;
+    case dw_val_class_flag:
+      fprintf (outfile, "%u", val->v.val_flag);
+      break;
+    case dw_val_class_die_ref:
+      if (val->v.val_die_ref.die != NULL)
+	{
+	  dw_die_ref die = val->v.val_die_ref.die;
+
+	  if (die->comdat_type_p)
+	    {
+	      fprintf (outfile, "die -> signature: ");
+	      print_signature (outfile,
+			       die->die_id.die_type_node->signature);
+	    }
+	  else if (die->die_id.die_symbol)
+	    fprintf (outfile, "die -> label: %s", die->die_id.die_symbol);
+	  else
+	    fprintf (outfile, "die -> %ld", die->die_offset);
+	  fprintf (outfile, " (%p)", (void *) die);
+	}
+      else
+	fprintf (outfile, "die -> <null>");
+      break;
+    case dw_val_class_vms_delta:
+      fprintf (outfile, "delta: @slotcount(%s-%s)",
+	       val->v.val_vms_delta.lbl2, val->v.val_vms_delta.lbl1);
+      break;
+    case dw_val_class_lbl_id:
+    case dw_val_class_lineptr:
+    case dw_val_class_macptr:
+    case dw_val_class_high_pc:
+      fprintf (outfile, "label: %s", val->v.val_lbl_id);
+      break;
+    case dw_val_class_str:
+      if (val->v.val_str->str != NULL)
+	fprintf (outfile, "\"%s\"", val->v.val_str->str);
+      else
+	fprintf (outfile, "<null>");
+      break;
+    case dw_val_class_file:
+      fprintf (outfile, "\"%s\" (%d)", val->v.val_file->filename,
+	       val->v.val_file->emitted_number);
+      break;
+    case dw_val_class_data8:
+      {
+	int i;
+
+	for (i = 0; i < 8; i++)
+	  fprintf (outfile, "%02x", val->v.val_data8[i]);
+	break;
+      }
+    default:
+      break;
+    }
+}
+
+/* Likewise, for a DIE attribute.  */
+
+static void
+print_attribute (dw_attr_ref a, bool recurse, FILE *outfile)
+{
+  print_dw_val (&a->dw_attr_val, recurse, outfile);
+}
+
+
+/* Print the list of operands in the LOC location description to OUTFILE.  This
+   routine is a debugging aid only.  */
+
+static void
+print_loc_descr (dw_loc_descr_ref loc, FILE *outfile)
+{
+  dw_loc_descr_ref l = loc;
+
+  if (loc == NULL)
+    {
+      print_spaces (outfile);
+      fprintf (outfile, "<null>\n");
+      return;
+    }
+
+  for (l = loc; l != NULL; l = l->dw_loc_next)
+    {
+      print_spaces (outfile);
+      fprintf (outfile, "(%p) %s",
+	       (void *) l,
+	       dwarf_stack_op_name (l->dw_loc_opc));
+      if (l->dw_loc_oprnd1.val_class != dw_val_class_none)
+	{
+	  fprintf (outfile, " ");
+	  print_dw_val (&l->dw_loc_oprnd1, false, outfile);
+	}
+      if (l->dw_loc_oprnd2.val_class != dw_val_class_none)
+	{
+	  fprintf (outfile, ", ");
+	  print_dw_val (&l->dw_loc_oprnd2, false, outfile);
+	}
+      fprintf (outfile, "\n");
+    }
+}
+
 /* Print the information associated with a given DIE, and its children.
    This routine is a debugging aid only.  */
 
@@ -5402,108 +5569,7 @@ print_die (dw_die_ref die, FILE *outfile)
       print_spaces (outfile);
       fprintf (outfile, "  %s: ", dwarf_attr_name (a->dw_attr));
 
-      switch (AT_class (a))
-	{
-	case dw_val_class_addr:
-	  fprintf (outfile, "address");
-	  break;
-	case dw_val_class_offset:
-	  fprintf (outfile, "offset");
-	  break;
-	case dw_val_class_loc:
-	  fprintf (outfile, "location descriptor");
-	  break;
-	case dw_val_class_loc_list:
-	  fprintf (outfile, "location list -> label:%s",
-		   AT_loc_list (a)->ll_symbol);
-	  break;
-	case dw_val_class_range_list:
-	  fprintf (outfile, "range list");
-	  break;
-	case dw_val_class_const:
-	  fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, AT_int (a));
-	  break;
-	case dw_val_class_unsigned_const:
-	  fprintf (outfile, HOST_WIDE_INT_PRINT_UNSIGNED, AT_unsigned (a));
-	  break;
-	case dw_val_class_const_double:
-	  fprintf (outfile, "constant ("HOST_WIDE_INT_PRINT_DEC","\
-			    HOST_WIDE_INT_PRINT_UNSIGNED")",
-		   a->dw_attr_val.v.val_double.high,
-		   a->dw_attr_val.v.val_double.low);
-	  break;
-	case dw_val_class_wide_int:
-	  {
-	    int i = a->dw_attr_val.v.val_wide->get_len ();
-	    fprintf (outfile, "constant (");
-	    gcc_assert (i > 0);
-	    if (a->dw_attr_val.v.val_wide->elt (i - 1) == 0)
-	      fprintf (outfile, "0x");
-	    fprintf (outfile, HOST_WIDE_INT_PRINT_HEX,
-		     a->dw_attr_val.v.val_wide->elt (--i));
-	    while (--i >= 0)
-	      fprintf (outfile, HOST_WIDE_INT_PRINT_PADDED_HEX,
-		       a->dw_attr_val.v.val_wide->elt (i));
-	    fprintf (outfile, ")");
-	    break;
-	  }
-	case dw_val_class_vec:
-	  fprintf (outfile, "floating-point or vector constant");
-	  break;
-	case dw_val_class_flag:
-	  fprintf (outfile, "%u", AT_flag (a));
-	  break;
-	case dw_val_class_die_ref:
-	  if (AT_ref (a) != NULL)
-	    {
-	      if (AT_ref (a)->comdat_type_p)
-	        {
-		  fprintf (outfile, "die -> signature: ");
-		  print_signature (outfile,
-		  		   AT_ref (a)->die_id.die_type_node->signature);
-                }
-	      else if (AT_ref (a)->die_id.die_symbol)
-		fprintf (outfile, "die -> label: %s",
-		         AT_ref (a)->die_id.die_symbol);
-	      else
-		fprintf (outfile, "die -> %ld", AT_ref (a)->die_offset);
-	      fprintf (outfile, " (%p)", (void *) AT_ref (a));
-	    }
-	  else
-	    fprintf (outfile, "die -> <null>");
-	  break;
-	case dw_val_class_vms_delta:
-	  fprintf (outfile, "delta: @slotcount(%s-%s)",
-		   AT_vms_delta2 (a), AT_vms_delta1 (a));
-	  break;
-	case dw_val_class_lbl_id:
-	case dw_val_class_lineptr:
-	case dw_val_class_macptr:
-	case dw_val_class_high_pc:
-	  fprintf (outfile, "label: %s", AT_lbl (a));
-	  break;
-	case dw_val_class_str:
-	  if (AT_string (a) != NULL)
-	    fprintf (outfile, "\"%s\"", AT_string (a));
-	  else
-	    fprintf (outfile, "<null>");
-	  break;
-	case dw_val_class_file:
-	  fprintf (outfile, "\"%s\" (%d)", AT_file (a)->filename,
-		   AT_file (a)->emitted_number);
-	  break;
-	case dw_val_class_data8:
-	  {
-	    int i;
-
-            for (i = 0; i < 8; i++)
-              fprintf (outfile, "%02x", a->dw_attr_val.v.val_data8[i]);
-	    break;
-          }
-	default:
-	  break;
-	}
-
+      print_attribute (a, true, outfile);
       fprintf (outfile, "\n");
     }
 
@@ -5515,6 +5581,14 @@ print_die (dw_die_ref die, FILE *outfile)
     }
   if (print_indent == 0)
     fprintf (outfile, "\n");
+}
+
+/* Print the list of operations in the LOC location description.  */
+
+DEBUG_FUNCTION void
+debug_dwarf_loc_descr (dw_loc_descr_ref loc)
+{
+  print_loc_descr (loc, stderr);
 }
 
 /* Print the information collected for a given DIE.  */
