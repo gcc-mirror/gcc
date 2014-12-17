@@ -1,6 +1,5 @@
-/* Perform the semantic phase of constexpr parsing, i.e., the process of
-   building tree structure, checking semantic consistency, and
-   building RTL.  These routines are used both during actual parsing
+/* Perform -*- C++ -*- constant expression evaluation, including calls to
+   constexpr functions.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
    Copyright (C) 1998-2014 Free Software Foundation, Inc.
@@ -866,11 +865,20 @@ struct constexpr_call_hasher : ggc_hasher<constexpr_call *>
    is a map of values of variables initialized within the expression.  */
 
 struct constexpr_ctx {
+  /* The innermost call we're evaluating.  */
   constexpr_call *call;
+  /* Values for any temporaries or local variables within the
+     constant-expression. */
   hash_map<tree,tree> *values;
+  /* The CONSTRUCTOR we're currently building up for an aggregate
+     initializer.  */
   tree ctor;
+  /* The object we're building the CONSTRUCTOR for.  */
   tree object;
+  /* Whether we should error on a non-constant expression or fail quietly.  */
   bool quiet;
+  /* Whether we are strictly conforming to constant expression rules or
+     trying harder to get a constant value.  */
   bool strict;
 };
 
@@ -3428,9 +3436,8 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 {
   bool non_constant_p = false;
   bool overflow_p = false;
-  constexpr_ctx ctx = { NULL, NULL, NULL, NULL, allow_non_constant, strict };
   hash_map<tree,tree> map;
-  ctx.values = &map;
+  constexpr_ctx ctx = { NULL, &map, NULL, NULL, allow_non_constant, strict };
   tree type = initialized_type (t);
   tree r = t;
   if (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type))
@@ -3537,9 +3544,8 @@ is_sub_constant_expr (tree t)
 {
   bool non_constant_p = false;
   bool overflow_p = false;
-  constexpr_ctx ctx = { NULL, NULL, NULL, NULL, true, true };
   hash_map <tree, tree> map;
-  ctx.values = &map;
+  constexpr_ctx ctx = { NULL, &map, NULL, NULL, true, true };
   cxx_eval_constant_expression (&ctx, t, false, &non_constant_p,
 				&overflow_p);
   return !non_constant_p && !overflow_p;
