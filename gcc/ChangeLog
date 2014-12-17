@@ -1,5 +1,13 @@
 2014-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* dwarf2out.c (gen_type_die_with_usage): Enable the array lang-hook
+	even when (dwarf_version < 3 && dwarf_strict).
+	(gen_descr_array_die): Do not output DW_AT_data_locationn,
+	DW_AT_associated, DW_AT_allocated and DW_AT_byte_stride DWARF
+	attributes when (dwarf_version < 3 && dwarf_strict).
+
+2014-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* dwarf2out.h (enum array_descr_ordering): New.
 	(array_descr_dimen): Add a bounds_type structure field.
 	(struct array_descr_info): Add a field to hold index type information
