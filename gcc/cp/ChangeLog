@@ -1,5 +1,12 @@
 2014-12-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64333
+	* constexpr.c (cxx_bind_parameters_in_call): non_constant_args parm.
+	(cxx_eval_call_expression): Don't cache calls with non-constant args.
+	(cxx_eval_constant_expression) [COMPOUND_EXPR]: Pass true for lval.
+	(cxx_eval_unary_expression, cxx_eval_binary_expression)
+	(cxx_eval_conditional_expression): Pass	false for lval.
+
 	* constexpr.c: Change "addr" parm names to "lval".
 
 	* constexpr.c: Tweak comments and formatting.
