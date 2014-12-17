@@ -1,3 +1,10 @@
+2014-12-17  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/crt.h: New.
+	* config/sh/crti.S: Use GLOBAL macro from crt.h for _init and _fini
+	symbols.
+	* config/sh/crt1.S: Likewise.
+
 2014-12-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR libgcc/63832
