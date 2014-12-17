@@ -188,14 +188,6 @@
 ;; Processor types.
 (include "aarch64-tune.md")
 
-;; True if the generic scheduling description should be used.
-
-(define_attr "generic_sched" "yes,no"
-  (const (if_then_else
-          (eq_attr "tune" "cortexa53,cortexa15,thunderx")
-          (const_string "no")
-          (const_string "yes"))))
-
 ;; Scheduling
 (include "../arm/cortex-a53.md")
 (include "../arm/cortex-a15.md")
