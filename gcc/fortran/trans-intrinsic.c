@@ -1106,7 +1106,7 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
   tree caf_decl, token, offset, image_index, tmp;
   tree res_var, dst_var, type, kind, vec;
 
-  gcc_assert (gfc_option.coarray == GFC_FCOARRAY_LIB);
+  gcc_assert (flag_coarray == GFC_FCOARRAY_LIB);
 
   if (se->ss && se->ss->info->useflags)
     {
@@ -1236,7 +1236,7 @@ conv_caf_send (gfc_code *code) {
   tree lhs_type = NULL_TREE;
   tree vec = null_pointer_node, rhs_vec = null_pointer_node;
 
-  gcc_assert (gfc_option.coarray == GFC_FCOARRAY_LIB);
+  gcc_assert (flag_coarray == GFC_FCOARRAY_LIB);
 
   lhs_expr = code->ext.actual->expr;
   rhs_expr = code->ext.actual->next->expr;
@@ -1404,7 +1404,7 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
     distance = expr->value.function.actual->expr;
 
   /* The case -fcoarray=single is handled elsewhere.  */
-  gcc_assert (gfc_option.coarray != GFC_FCOARRAY_SINGLE);
+  gcc_assert (flag_coarray != GFC_FCOARRAY_SINGLE);
 
   /* Argument-free version: THIS_IMAGE().  */
   if (distance || expr->value.function.actual->expr == NULL)
@@ -1716,7 +1716,7 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 
   /* Return 0 if "coindex" exceeds num_images().  */
 
-  if (gfc_option.coarray == GFC_FCOARRAY_SINGLE)
+  if (flag_coarray == GFC_FCOARRAY_SINGLE)
     num_images = build_int_cst (type, 1);
   else
     {
@@ -2098,7 +2098,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
          where size is the product of the extent of all but the last
 	 codimension.  */
 
-      if (gfc_option.coarray != GFC_FCOARRAY_SINGLE && corank > 1)
+      if (flag_coarray != GFC_FCOARRAY_SINGLE && corank > 1)
 	{
           tree cosize;
 
@@ -2116,7 +2116,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 	  resbound = fold_build2_loc (input_location, PLUS_EXPR,
 				      gfc_array_index_type, resbound, tmp);
 	}
-      else if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
+      else if (flag_coarray != GFC_FCOARRAY_SINGLE)
 	{
 	  /* ubound = lbound + num_images() - 1.  */
 	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images,
@@ -8137,7 +8137,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_THIS_IMAGE:
       /* For num_images() == 1, handle as LCOBOUND.  */
       if (expr->value.function.actual->expr
-	  && gfc_option.coarray == GFC_FCOARRAY_SINGLE)
+	  && flag_coarray == GFC_FCOARRAY_SINGLE)
 	conv_intrinsic_cobound (se, expr);
       else
 	trans_this_image (se, expr);
@@ -8592,16 +8592,16 @@ conv_co_collective (gfc_code *code)
       gfc_add_block_to_block (&block, &argse.pre);
       gfc_add_block_to_block (&post_block, &argse.post);
       stat = argse.expr;
-      if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
+      if (flag_coarray != GFC_FCOARRAY_SINGLE)
 	stat = gfc_build_addr_expr (NULL_TREE, stat);
     }
-  else if (gfc_option.coarray == GFC_FCOARRAY_SINGLE)
+  else if (flag_coarray == GFC_FCOARRAY_SINGLE)
     stat = NULL_TREE;
   else
     stat = null_pointer_node;
 
   /* Early exit for GFC_FCOARRAY_SINGLE.  */
-  if (gfc_option.coarray == GFC_FCOARRAY_SINGLE)
+  if (flag_coarray == GFC_FCOARRAY_SINGLE)
     {
       if (stat != NULL_TREE)
 	gfc_add_modify (&block, stat,
@@ -8761,7 +8761,7 @@ conv_intrinsic_atomic_op (gfc_code *code)
   atom = argse.expr;
 
   gfc_init_se (&argse, NULL);
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB
+  if (flag_coarray == GFC_FCOARRAY_LIB
       && code->ext.actual->next->expr->ts.kind == atom_expr->ts.kind)
     argse.want_pointer = 1;
   gfc_conv_expr (&argse, code->ext.actual->next->expr);
@@ -8777,12 +8777,12 @@ conv_intrinsic_atomic_op (gfc_code *code)
     case GFC_ISYM_ATOMIC_OR:
     case GFC_ISYM_ATOMIC_XOR:
       stat_expr = code->ext.actual->next->next->expr;
-      if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+      if (flag_coarray == GFC_FCOARRAY_LIB)
 	old = null_pointer_node;
       break;
     default:
       gfc_init_se (&argse, NULL);
-      if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+      if (flag_coarray == GFC_FCOARRAY_LIB)
 	argse.want_pointer = 1;
       gfc_conv_expr (&argse, code->ext.actual->next->next->expr);
       gfc_add_block_to_block (&block, &argse.pre);
@@ -8796,17 +8796,17 @@ conv_intrinsic_atomic_op (gfc_code *code)
     {
       gcc_assert (stat_expr->expr_type == EXPR_VARIABLE);
       gfc_init_se (&argse, NULL);
-      if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+      if (flag_coarray == GFC_FCOARRAY_LIB)
 	argse.want_pointer = 1;
       gfc_conv_expr_val (&argse, stat_expr);
       gfc_add_block_to_block (&block, &argse.pre);
       gfc_add_block_to_block (&post_block, &argse.post);
       stat = argse.expr;
     }
-  else if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+  else if (flag_coarray == GFC_FCOARRAY_LIB)
     stat = null_pointer_node;
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+  if (flag_coarray == GFC_FCOARRAY_LIB)
     {
       tree image_index, caf_decl, offset, token;
       int op;
@@ -8960,7 +8960,7 @@ conv_intrinsic_atomic_ref (gfc_code *code)
   atom = argse.expr;
 
   gfc_init_se (&argse, NULL);
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB
+  if (flag_coarray == GFC_FCOARRAY_LIB
       && code->ext.actual->expr->ts.kind == atom_expr->ts.kind)
     argse.want_pointer = 1;
   gfc_conv_expr (&argse, code->ext.actual->expr);
@@ -8974,17 +8974,17 @@ conv_intrinsic_atomic_ref (gfc_code *code)
       gcc_assert (code->ext.actual->next->next->expr->expr_type
 		  == EXPR_VARIABLE);
       gfc_init_se (&argse, NULL);
-      if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+      if (flag_coarray == GFC_FCOARRAY_LIB)
 	argse.want_pointer = 1;
       gfc_conv_expr_val (&argse, code->ext.actual->next->next->expr);
       gfc_add_block_to_block (&block, &argse.pre);
       gfc_add_block_to_block (&post_block, &argse.post);
       stat = argse.expr;
     }
-  else if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+  else if (flag_coarray == GFC_FCOARRAY_LIB)
     stat = null_pointer_node;
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+  if (flag_coarray == GFC_FCOARRAY_LIB)
     {
       tree image_index, caf_decl, offset, token;
       tree orig_value = NULL_TREE, vardecl = NULL_TREE;
@@ -9061,7 +9061,7 @@ conv_intrinsic_atomic_cas (gfc_code *code)
   atom = argse.expr;
 
   gfc_init_se (&argse, NULL);
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+  if (flag_coarray == GFC_FCOARRAY_LIB)
     argse.want_pointer = 1;
   gfc_conv_expr (&argse, code->ext.actual->next->expr);
   gfc_add_block_to_block (&block, &argse.pre);
@@ -9069,7 +9069,7 @@ conv_intrinsic_atomic_cas (gfc_code *code)
   old = argse.expr;
 
   gfc_init_se (&argse, NULL);
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+  if (flag_coarray == GFC_FCOARRAY_LIB)
     argse.want_pointer = 1;
   gfc_conv_expr (&argse, code->ext.actual->next->next->expr);
   gfc_add_block_to_block (&block, &argse.pre);
@@ -9077,7 +9077,7 @@ conv_intrinsic_atomic_cas (gfc_code *code)
   comp = argse.expr;
 
   gfc_init_se (&argse, NULL);
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB
+  if (flag_coarray == GFC_FCOARRAY_LIB
       && code->ext.actual->next->next->next->expr->ts.kind
 	 == atom_expr->ts.kind)
     argse.want_pointer = 1;
@@ -9092,7 +9092,7 @@ conv_intrinsic_atomic_cas (gfc_code *code)
       gcc_assert (code->ext.actual->next->next->next->next->expr->expr_type
 		  == EXPR_VARIABLE);
       gfc_init_se (&argse, NULL);
-      if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+      if (flag_coarray == GFC_FCOARRAY_LIB)
 	argse.want_pointer = 1;
       gfc_conv_expr_val (&argse,
 			 code->ext.actual->next->next->next->next->expr);
@@ -9100,10 +9100,10 @@ conv_intrinsic_atomic_cas (gfc_code *code)
       gfc_add_block_to_block (&post_block, &argse.post);
       stat = argse.expr;
     }
-  else if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+  else if (flag_coarray == GFC_FCOARRAY_LIB)
     stat = null_pointer_node;
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+  if (flag_coarray == GFC_FCOARRAY_LIB)
     {
       tree image_index, caf_decl, offset, token;
 
@@ -9357,7 +9357,7 @@ conv_intrinsic_move_alloc (gfc_code *code)
 
   /* For coarrays, call SYNC ALL if TO is already deallocated as MOVE_ALLOC
      is an image control "statement", cf. IR F08/0040 in 12-006A.  */
-  if (coarray && gfc_option.coarray == GFC_FCOARRAY_LIB)
+  if (coarray && flag_coarray == GFC_FCOARRAY_LIB)
     {
       tree cond;
 

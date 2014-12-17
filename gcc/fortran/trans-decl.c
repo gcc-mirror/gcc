@@ -626,7 +626,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   if (!sym->attr.use_assoc
 	&& (sym->attr.save != SAVE_NONE || sym->attr.data
 	    || (sym->value && sym->ns->proc_name->attr.is_main_program)
-	    || (gfc_option.coarray == GFC_FCOARRAY_LIB
+	    || (flag_coarray == GFC_FCOARRAY_LIB
 		&& sym->attr.codimension && !sym->attr.allocatable)))
     TREE_STATIC (decl) = 1;
 
@@ -814,7 +814,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
   nest = (procns->proc_name->backend_decl != current_function_decl)
 	 && !sym->attr.contained;
 
-  if (sym->attr.codimension && gfc_option.coarray == GFC_FCOARRAY_LIB
+  if (sym->attr.codimension && flag_coarray == GFC_FCOARRAY_LIB
       && sym->as->type != AS_ASSUMED_SHAPE
       && GFC_TYPE_ARRAY_CAF_TOKEN (type) == NULL_TREE)
     {
@@ -1548,7 +1548,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       && (sym->attr.save || sym->ns->proc_name->attr.is_main_program
 	  || flag_max_stack_var_size == 0
 	  || sym->attr.data || sym->ns->proc_name->attr.flavor == FL_MODULE)
-      && (gfc_option.coarray != GFC_FCOARRAY_LIB
+      && (flag_coarray != GFC_FCOARRAY_LIB
 	  || !sym->attr.codimension || sym->attr.allocatable))
     {
       /* Add static initializer. For procedures, it is only needed if
@@ -2301,7 +2301,7 @@ create_function_arglist (gfc_symbol * sym)
 
       /* Coarrays which are descriptorless or assumed-shape pass with
 	 -fcoarray=lib the token and the offset as hidden arguments.  */
-      if (gfc_option.coarray == GFC_FCOARRAY_LIB
+      if (flag_coarray == GFC_FCOARRAY_LIB
 	  && ((f->sym->ts.type != BT_CLASS && f->sym->attr.codimension
 	       && !f->sym->attr.allocatable)
 	      || (f->sym->ts.type == BT_CLASS
@@ -3327,7 +3327,7 @@ gfc_build_builtin_function_decls (void)
   TREE_NOTHROW (gfor_fndecl_associated) = 1;
 
   /* Coarray library calls.  */
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+  if (flag_coarray == GFC_FCOARRAY_LIB)
     {
       tree pint_type, pppchar_type;
 
@@ -3890,7 +3890,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
 	  if (CLASS_DATA (sym)->attr.dimension
 	      || (CLASS_DATA (sym)->attr.codimension
-		  && gfc_option.coarray != GFC_FCOARRAY_LIB))
+		  && flag_coarray != GFC_FCOARRAY_LIB))
 	    {
 	      tmp = gfc_class_data_get (sym->backend_decl);
 	      tmp = gfc_build_null_descriptor (TREE_TYPE (tmp));
@@ -4683,7 +4683,7 @@ gfc_emit_parameter_debug_info (gfc_symbol *sym)
 				   sym->attr.dimension, false))
     return;
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB && sym->attr.codimension)
+  if (flag_coarray == GFC_FCOARRAY_LIB && sym->attr.codimension)
     return;
 
   /* Create the decl for the variable or constant.  */
@@ -4873,7 +4873,7 @@ gfc_generate_module_vars (gfc_namespace * ns)
   gfc_traverse_ns (ns, gfc_create_module_variable);
   gfc_traverse_ns (ns, create_module_nml_decl);
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB && has_coarray_vars)
+  if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars)
     generate_coarray_init (ns);
 
   cur_module = NULL;
@@ -5372,7 +5372,7 @@ create_main_function (tree fndecl)
   /* Call some libgfortran initialization routines, call then MAIN__().  */
 
   /* Call _gfortran_caf_init (*argc, ***argv).  */
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+  if (flag_coarray == GFC_FCOARRAY_LIB)
     {
       tree pint_type, pppchar_type;
       pint_type = build_pointer_type (integer_type_node);
@@ -5476,12 +5476,11 @@ create_main_function (tree fndecl)
   /* If this is the main program and an -fconvert option was provided,
      add a call to set_convert.  */
 
-  if (gfc_option.convert != GFC_CONVERT_NATIVE)
+  if (flag_convert != GFC_FLAG_CONVERT_NATIVE)
     {
       tmp = build_call_expr_loc (input_location,
 			     gfor_fndecl_set_convert, 1,
-			     build_int_cst (integer_type_node,
-					    gfc_option.convert));
+			     build_int_cst (integer_type_node, flag_convert));
       gfc_add_expr_to_block (&body, tmp);
     }
 
@@ -5515,7 +5514,7 @@ create_main_function (tree fndecl)
   TREE_USED (fndecl) = 1;
 
   /* Coarray: Call _gfortran_caf_finalize(void).  */
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+  if (flag_coarray == GFC_FCOARRAY_LIB)
     {
       /* Per F2008, 8.5.1 END of the main program implies a
 	 SYNC MEMORY.  */
@@ -5705,7 +5704,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   has_coarray_vars = false;
   generate_local_vars (ns);
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB && has_coarray_vars)
+  if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars)
     generate_coarray_init (ns);
 
   /* Keep the parent fake result declaration in module functions
@@ -5895,7 +5894,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 	 If there are static coarrays in this function, the nested _caf_init
 	 function has already called cgraph_create_node, which also created
 	 the cgraph node for this function.  */
-      if (!has_coarray_vars || gfc_option.coarray != GFC_FCOARRAY_LIB)
+      if (!has_coarray_vars || flag_coarray != GFC_FCOARRAY_LIB)
 	(void) cgraph_node::create (fndecl);
     }
   else
@@ -6026,7 +6025,7 @@ gfc_process_block_locals (gfc_namespace* ns)
 
   generate_local_vars (ns);
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB && has_coarray_vars)
+  if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars)
     generate_coarray_init (ns);
 
   decl = saved_local_decls;

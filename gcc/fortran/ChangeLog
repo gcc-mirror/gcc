@@ -1,3 +1,28 @@
+2014-12-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54687
+	* gfortran.h (gfc_option_t): Remove flags which now
+	have a Var().
+	(init_local_real, gfc_fcoarray): Moved to ../flag-types.h.
+	* libgfortran.h (unit_convert): Add comment.
+	* lang.opt (flag-convert, flag-init_real, flag-coarray):
+	Add Var() and Enum().
+	* options.c (gfc_handle_coarray_option): Remove.
+	(gfc_init_options, gfc_post_options, gfc_handle_option):
+	Update for *.opt changes.
+	* array.c: Update for flag-variable name changes.
+	* check.c: Ditto.
+	* match.c: Ditto.
+	* resolve.c: Ditto.
+	* simplify.c: Ditto.
+	* trans-array.c: Ditto.
+	* trans-decl.c: Ditto.
+	* trans-expr.c: Ditto.
+	* trans-intrinsic.c: Ditto.
+	* trans-stmt.c: Ditto.
+	* trans-types.c: Ditto.
+	* trans.c: Ditto.
+
 2014-12-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54687

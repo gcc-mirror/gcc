@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Possible values for the CONVERT I/O specifier.  */
+/* Keep in sync with GFC_FLAG_CONVERT_* in gcc/flags.h.  */
 typedef enum
 {
   GFC_CONVERT_NONE = -1,

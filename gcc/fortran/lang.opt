@@ -381,21 +381,24 @@ fcheck-array-temporaries
 Fortran
 Produce a warning at runtime if a array temporary has been created for a procedure argument
 
-fconvert=big-endian
-Fortran RejectNegative
-Use big-endian format for unformatted files
+fconvert=
+Fortran RejectNegative Joined Enum(gfc_convert) Var(flag_convert) Init(GFC_FLAG_CONVERT_NATIVE)
+-fconvert=<big-endian|little-endian|native|swap> The endianness used for unformatted files.
 
-fconvert=little-endian
-Fortran RejectNegative
-Use little-endian format for unformatted files
+Enum
+Name(gfc_convert) Type(enum gfc_convert) UnknownError(Unrecognized option to endianess value: %qs)
 
-fconvert=native
-Fortran RejectNegative
-Use native format for unformatted files
+EnumValue
+Enum(gfc_convert) String(big-endian) Value(GFC_FLAG_CONVERT_BIG)
 
-fconvert=swap
-Fortran RejectNegative
-Swap endianness for unformatted files
+EnumValue
+Enum(gfc_convert) String(little-endian) Value(GFC_FLAG_CONVERT_LITTLE)
+
+EnumValue
+Enum(gfc_convert) String(native) Value(GFC_FLAG_CONVERT_NATIVE)
+
+EnumValue
+Enum(gfc_convert) String(swap) Value(GFC_FLAG_CONVERT_SWAP)
 
 fcray-pointer
 Fortran Var(flag_cray_pointer)
@@ -518,8 +521,26 @@ Fortran RejectNegative Joined
 -finit-logical=<true|false>	Initialize local logical variables
 
 finit-real=
-Fortran RejectNegative Joined
--finit-real=<zero|nan|inf|-inf>	Initialize local real variables
+Fortran RejectNegative ToLower Joined Enum(gfc_init_local_real) Var(flag_init_real) Init(GFC_INIT_REAL_OFF)
+-finit-real=<zero|snan|nan|inf|-inf>	Initialize local real variables
+
+Enum
+Name(gfc_init_local_real) Type(enum gfc_init_local_real) UnknownError(Unrecognized option to floating-point init value: %qs)
+
+EnumValue
+Enum(gfc_init_local_real) String(zero) Value(GFC_INIT_REAL_ZERO)
+
+EnumValue
+Enum(gfc_init_local_real) String(snan) Value(GFC_INIT_REAL_SNAN)
+
+EnumValue
+Enum(gfc_init_local_real) String(nan) Value(GFC_INIT_REAL_NAN)
+
+EnumValue
+Enum(gfc_init_local_real) String(inf) Value(GFC_INIT_REAL_INF)
+
+EnumValue
+Enum(gfc_init_local_real) String(-inf) Value(GFC_INIT_REAL_NEG_INF)
 
 fmax-array-constructor=
 Fortran RejectNegative Joined UInteger Var(flag_max_array_constructor) Init(65535)
@@ -614,8 +635,20 @@ Fortran Var(flag_repack_arrays)
 Copy array sections into a contiguous block on procedure entry
 
 fcoarray=
-Fortran RejectNegative JoinedOrMissing
--fcoarray=[...]	Specify which coarray parallelization should be used
+Fortran RejectNegative Joined Enum(gfc_fcoarray) Var(flag_coarray) Init(GFC_FCOARRAY_NONE)
+-fcoarray=<none|single|lib>	Specify which coarray parallelization should be used
+
+Enum
+Name(gfc_fcoarray) Type(enum gfc_fcoarray) UnknownError(Unrecognized option: %qs)
+
+EnumValue
+Enum(gfc_fcoarray) String(none) Value(GFC_FCOARRAY_NONE)
+
+EnumValue
+Enum(gfc_fcoarray) String(single) Value(GFC_FCOARRAY_SINGLE)
+
+EnumValue
+Enum(gfc_fcoarray) String(lib) Value(GFC_FCOARRAY_LIB)
 
 fcheck=
 Fortran RejectNegative JoinedOrMissing

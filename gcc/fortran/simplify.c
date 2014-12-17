@@ -3324,7 +3324,7 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
   /* The last dimension of an assumed-size array is special.  */
   if ((!coarray && d == as->rank && as->type == AS_ASSUMED_SIZE && !upper)
       || (coarray && d == as->rank + as->corank
-	  && (!upper || gfc_option.coarray == GFC_FCOARRAY_SINGLE)))
+	  && (!upper || flag_coarray == GFC_FCOARRAY_SINGLE)))
     {
       if (as->lower[d-1]->expr_type == EXPR_CONSTANT)
 	{
@@ -4633,13 +4633,13 @@ gfc_simplify_num_images (gfc_expr *distance ATTRIBUTE_UNUSED, gfc_expr *failed)
 {
   gfc_expr *result;
 
-  if (gfc_option.coarray == GFC_FCOARRAY_NONE)
+  if (flag_coarray == GFC_FCOARRAY_NONE)
     {
       gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return &gfc_bad_expr;
     }
 
-  if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
+  if (flag_coarray != GFC_FCOARRAY_SINGLE)
     return NULL;
 
   if (failed && failed->expr_type != EXPR_CONSTANT)
@@ -6525,7 +6525,7 @@ gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
 
   gcc_assert (sub_cons == NULL);
 
-  if (gfc_option.coarray != GFC_FCOARRAY_SINGLE && !first_image)
+  if (flag_coarray != GFC_FCOARRAY_SINGLE && !first_image)
     return NULL;
 
   result = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
@@ -6543,7 +6543,7 @@ gfc_expr *
 gfc_simplify_this_image (gfc_expr *coarray, gfc_expr *dim,
 			 gfc_expr *distance ATTRIBUTE_UNUSED)
 {
-  if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
+  if (flag_coarray != GFC_FCOARRAY_SINGLE)
     return NULL;
 
   /* If no coarray argument has been passed or when the first argument

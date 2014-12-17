@@ -84,14 +84,12 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.max_continue_fixed = 255;
   gfc_option.max_continue_free = 255;
   gfc_option.max_identifier_length = GFC_MAX_SYMBOL_LEN;
-  gfc_option.convert = GFC_CONVERT_NATIVE;
   gfc_option.max_errors = 25;
 
   gfc_option.flag_preprocessed = 0;
   gfc_option.flag_d_lines = -1;
   gfc_option.flag_init_integer = GFC_INIT_INTEGER_OFF;
   gfc_option.flag_init_integer_value = 0;
-  gfc_option.flag_init_real = GFC_INIT_REAL_OFF;
   gfc_option.flag_init_logical = GFC_INIT_LOGICAL_OFF;
   gfc_option.flag_init_character = GFC_INIT_CHARACTER_OFF;
   gfc_option.flag_init_character_value = (char)0;
@@ -102,7 +100,6 @@ gfc_init_options (unsigned int decoded_options_count,
 			   | GFC_FPE_ZERO | GFC_FPE_OVERFLOW
 			   | GFC_FPE_UNDERFLOW;
   gfc_option.rtcheck = 0;
-  gfc_option.coarray = GFC_FCOARRAY_NONE;
 
   /* ??? Wmissing-include-dirs is disabled by default in C/C++ but
      enabled by default in Fortran.  Ideally, we should express this
@@ -469,20 +466,6 @@ gfc_handle_fpe_option (const char *arg, bool trap)
 
 
 static void
-gfc_handle_coarray_option (const char *arg)
-{
-  if (strcmp (arg, "none") == 0)
-    gfc_option.coarray = GFC_FCOARRAY_NONE;
-  else if (strcmp (arg, "single") == 0)
-    gfc_option.coarray = GFC_FCOARRAY_SINGLE;
-  else if (strcmp (arg, "lib") == 0)
-    gfc_option.coarray = GFC_FCOARRAY_LIB;
-  else
-    gfc_fatal_error ("Argument to %<-fcoarray%> is not valid: %s", arg);
-}
-
-
-static void
 gfc_handle_runtime_check_option (const char *arg)
 {
   int result, pos = 0, n;
@@ -596,7 +579,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
     case OPT_finit_local_zero:
       gfc_option.flag_init_integer = GFC_INIT_INTEGER_ON;
       gfc_option.flag_init_integer_value = 0;
-      gfc_option.flag_init_real = GFC_INIT_REAL_ZERO;
+      flag_init_real = GFC_INIT_REAL_ZERO;
       gfc_option.flag_init_logical = GFC_INIT_LOGICAL_FALSE;
       gfc_option.flag_init_character = GFC_INIT_CHARACTER_ON;
       gfc_option.flag_init_character_value = (char)0;
@@ -609,22 +592,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 	gfc_option.flag_init_logical = GFC_INIT_LOGICAL_TRUE;
       else
 	gfc_fatal_error ("Unrecognized option to %<-finit-logical%>: %s",
-			 arg);
-      break;
-
-    case OPT_finit_real_:
-      if (!strcasecmp (arg, "zero"))
-	gfc_option.flag_init_real = GFC_INIT_REAL_ZERO;
-      else if (!strcasecmp (arg, "nan"))
-	gfc_option.flag_init_real = GFC_INIT_REAL_NAN;
-      else if (!strcasecmp (arg, "snan"))
-	gfc_option.flag_init_real = GFC_INIT_REAL_SNAN;
-      else if (!strcasecmp (arg, "inf"))
-	gfc_option.flag_init_real = GFC_INIT_REAL_INF;
-      else if (!strcasecmp (arg, "-inf"))
-	gfc_option.flag_init_real = GFC_INIT_REAL_NEG_INF;
-      else
-	gfc_fatal_error ("Unrecognized option to %<-finit-real%>: %s",
 			 arg);
       break;
 
@@ -712,28 +679,8 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       /* Handled in language-independent code.  */
       break;
 
-    case OPT_fconvert_little_endian:
-      gfc_option.convert = GFC_CONVERT_LITTLE;
-      break;
-
-    case OPT_fconvert_big_endian:
-      gfc_option.convert = GFC_CONVERT_BIG;
-      break;
-
-    case OPT_fconvert_native:
-      gfc_option.convert = GFC_CONVERT_NATIVE;
-      break;
-
-    case OPT_fconvert_swap:
-      gfc_option.convert = GFC_CONVERT_SWAP;
-      break;
-
     case OPT_fcheck_:
       gfc_handle_runtime_check_option (arg);
-      break;
-
-    case OPT_fcoarray_:
-      gfc_handle_coarray_option (arg);
       break;
     }
 
