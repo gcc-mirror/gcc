@@ -1,3 +1,14 @@
+2014-12-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/61296
+	* gcc.target/i386/pr61296-2.c: New.
+	* gcc.target/i386/pr61296-2.c: Likewise.
+	* gcc.target/i386/pr61296-3.c: Likewise.
+	* gcc.target/i386/pr61296-4.c: Likewise.
+	* gcc.target/i386/pr61296-5.c: Likewise.
+	* gcc.target/i386/pr61296-6.c: Likewise.
+	* gcc.target/i386/pr61296-7.c: Likewise.
+
 2014-12-17  Tejas Belagod  <tejas.belagod@arm.com>
 
 	PR testsuite/64328

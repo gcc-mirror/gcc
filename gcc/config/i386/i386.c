@@ -27191,8 +27191,7 @@ ix86_data_alignment (tree type, int align, bool opt)
      those compilers, ensure we don't decrease alignment from what we
      used to assume.  */
 
-  int max_align_compat
-    = optimize_size ? BITS_PER_WORD : MIN (256, MAX_OFILE_ALIGNMENT);
+  int max_align_compat = MIN (256, MAX_OFILE_ALIGNMENT);
 
   /* A data structure, equal or greater than the size of a cache line
      (64 bytes in the Pentium 4 and other recent Intel processors, including
@@ -27204,6 +27203,13 @@ ix86_data_alignment (tree type, int align, bool opt)
 
   if (max_align < BITS_PER_WORD)
     max_align = BITS_PER_WORD;
+
+  switch (ix86_align_data_type)
+    {
+    case ix86_align_data_type_abi: opt = false; break;
+    case ix86_align_data_type_compat: max_align = BITS_PER_WORD; break;
+    case ix86_align_data_type_cacheline: break;
+    }
 
   if (opt
       && AGGREGATE_TYPE_P (type)
