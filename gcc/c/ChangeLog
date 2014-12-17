@@ -1,3 +1,11 @@
+2014-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64289
+	* c-convert.c: Include ubsan.h.
+	(convert): For real -> integral casts and
+	-fsanitize=float-cast-overflow don't call convert_to_integer, but
+	instead instrument the float cast directly.
+
 2014-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (convert_lvalue_to_rvalue, build_atomic_assign,
