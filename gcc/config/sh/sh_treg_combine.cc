@@ -1339,8 +1339,16 @@ sh_treg_combine::try_optimize_cbranch (rtx_insn *insn)
   // for now we limit the search to the current basic block.
   trace.setcc = find_set_of_reg_bb (m_ccreg, prev_nonnote_insn_bb (insn));
 
-  if (!is_cmp_eq_zero (trace.setcc.set_src ()))
+  if (trace.setcc.set_src () == NULL_RTX)
     log_return_void ("could not find set of ccreg in current BB\n");
+
+  if (!is_cmp_eq_zero (trace.setcc.set_src ())
+      && !is_inverted_ccreg (trace.setcc.set_src ()))
+    {
+      log_msg ("unsupported set of ccreg in current BB: ");
+      log_rtx (trace.setcc.set_src ());
+      log_return_void ("\n");
+    }
 
   rtx trace_reg = XEXP (trace.setcc.set_src (), 0);
 
@@ -1356,6 +1364,19 @@ sh_treg_combine::try_optimize_cbranch (rtx_insn *insn)
       log_msg ("can't remove insn\n");
       log_insn (trace.setcc.insn);
       log_return_void ("\nbecause it's volatile\n");
+    }
+
+  // If the ccreg is inverted before cbranch try inverting the branch
+  // condition.
+  if (is_inverted_ccreg (trace.setcc.set_src ()))
+    {
+      if (!trace.can_invert_condition ())
+	log_return_void ("branch condition can't be inverted - aborting\n");
+
+      if (try_invert_branch_condition (trace))
+	delete_insn (trace.setcc.insn);
+
+      return;
     }
 
   // Now that we have an insn which tests some reg and sets the condition
