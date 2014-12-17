@@ -1,3 +1,10 @@
+2014-12-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* sreal.h (sreal::normalize): Implement inline.
+	(sreal::normalize_up): New function.
+	(sreal::normalize_down): New function.
+	* sreal.c (sreal::normalize): Remove.
+
 2014-12-17  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.md (generic_sched): Delete it.
