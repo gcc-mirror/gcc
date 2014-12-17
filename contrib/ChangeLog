@@ -1,3 +1,8 @@
+2014-12-17  Sergio Durigan Junior  <sergiodj@redhat.com>
+
+	* dg-extract-results.sh: Use --text with grep to avoid issues with
+	binary files.  Fall back to cat -v, if that doesn't work.
+
 2014-12-12  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* download_prerequisites: Modify the comment for GRAPHITE_LOOP_OPT.

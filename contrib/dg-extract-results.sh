@@ -127,13 +127,28 @@ do
 done
 test $ERROR -eq 0 || exit 1
 
+# Test if grep supports the '--text' option
+
+GREP=grep
+
+if echo -e '\x00foo\x00' | $GREP --text foo > /dev/null 2>&1 ; then
+  GREP="grep --text"
+else
+  # Our grep does not recognize the '--text' option.  We have to
+  # treat our files in order to remove any non-printable character.
+  for file in $SUM_FILES ; do
+    mv $file ${file}.orig
+    cat -v ${file}.orig > $file
+  done
+fi
+
 if [ -z "$TOOL" ]; then
   # If no tool was specified, all specified summary files must be for
   # the same tool.
 
-  CNT=`grep '=== .* tests ===' $SUM_FILES | $AWK '{ print $3 }' | sort -u | wc -l`
+  CNT=`$GREP '=== .* tests ===' $SUM_FILES | $AWK '{ print $3 }' | sort -u | wc -l`
   if [ $CNT -eq 1 ]; then
-    TOOL=`grep '=== .* tests ===' $FIRST_SUM | $AWK '{ print $2 }'`
+    TOOL=`$GREP '=== .* tests ===' $FIRST_SUM | $AWK '{ print $2 }'`
   else
     msg "${PROGNAME}: sum files are for multiple tools, specify a tool"
     msg ""
@@ -144,7 +159,7 @@ else
   # Ignore the specified summary files that are not for this tool.  This
   # should keep the relevant files in the same order.
 
-  SUM_FILES=`grep -l "=== $TOOL" $SUM_FILES`
+  SUM_FILES=`$GREP -l "=== $TOOL" $SUM_FILES`
   if test -z "$SUM_FILES" ; then
     msg "${PROGNAME}: none of the specified files are results for $TOOL"
     exit 1
@@ -233,7 +248,7 @@ else
   VARIANTS=""
   for VAR in $VARS
   do
-    grep "Running target $VAR" $SUM_FILES > /dev/null && VARIANTS="$VARIANTS $VAR"
+    $GREP "Running target $VAR" $SUM_FILES > /dev/null && VARIANTS="$VARIANTS $VAR"
   done
 fi
 
@@ -435,6 +450,6 @@ cat ${TMP}/var-* | $AWK -f $TOTAL_AWK
 # This is ugly, but if there's version output from the compiler under test
 # at the end of the file, we want it.  The other thing that might be there
 # is the final summary counts.
-tail -2 $FIRST_SUM | grep '^#' > /dev/null || tail -2 $FIRST_SUM
+tail -2 $FIRST_SUM | $GREP '^#' > /dev/null || tail -2 $FIRST_SUM
 
 exit 0
