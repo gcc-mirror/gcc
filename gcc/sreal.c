@@ -96,64 +96,6 @@ sreal::shift_right (int s)
   m_sig >>= s;
 }
 
-/* Normalize *this.  */
-
-void
-sreal::normalize ()
-{
-  int64_t s = m_sig < 0 ? -1 : 1;
-  unsigned HOST_WIDE_INT sig = absu_hwi (m_sig);
-
-  if (sig == 0)
-    {
-      m_exp = -SREAL_MAX_EXP;
-    }
-  else if (sig < SREAL_MIN_SIG)
-    {
-      do
-	{
-	  sig <<= 1;
-	  m_exp--;
-	}
-      while (sig < SREAL_MIN_SIG);
-
-      /* Check underflow.  */
-      if (m_exp < -SREAL_MAX_EXP)
-	{
-	  m_exp = -SREAL_MAX_EXP;
-	  sig = 0;
-	}
-    }
-  else if (sig > SREAL_MAX_SIG)
-    {
-      int last_bit;
-      do
-	{
-	  last_bit = sig & 1;
-	  sig >>= 1;
-	  m_exp++;
-	}
-      while (sig > SREAL_MAX_SIG);
-
-      /* Round the number.  */
-      sig += last_bit;
-      if (sig > SREAL_MAX_SIG)
-	{
-	  sig >>= 1;
-	  m_exp++;
-	}
-
-      /* Check overflow.  */
-      if (m_exp > SREAL_MAX_EXP)
-	{
-	  m_exp = SREAL_MAX_EXP;
-	  sig = SREAL_MAX_SIG;
-	}
-    }
-
-  m_sig = s * sig;
-}
-
 /* Return integer value of *this.  */
 
 int64_t
