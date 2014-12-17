@@ -1,5 +1,15 @@
 2014-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* dwarf2out.c (print_loc_descr): New.
+	(print_dw_val): New.
+	(print_attribute): New.
+	(print_loc_descr): New.
+	(print_die): Use print_dw_val.
+	(debug_dwarf_loc_descr): New.
+	* dwarf2out.h (debug_dwarf_loc_descr): New declaration.
+
+2014-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* dwarf2out.c (gen_type_die_with_usage): Enable the array lang-hook
 	even when (dwarf_version < 3 && dwarf_strict).
 	(gen_descr_array_die): Do not output DW_AT_data_locationn,
