@@ -1,3 +1,9 @@
+2014-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64322
+	* tree-vrp.c (extract_range_from_binary_expr_1): Attempt to derive
+	range for RSHIFT_EXPR even if vr0 range is not VR_RANGE or is symbolic.
+
 2014-12-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54687

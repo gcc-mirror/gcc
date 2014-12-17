@@ -1,5 +1,8 @@
 2014-12-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/64322
+	* gcc.dg/tree-ssa/vrp95.c: New test.
+
 	PR sanitizer/64289
 	* c-c++-common/ubsan/pr64289.c: New test.
 
