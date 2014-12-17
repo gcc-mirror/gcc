@@ -6878,7 +6878,11 @@ Builtin_call_expression::do_flatten(Gogo*, Named_object*,
            ++pa)
         {
           if ((*pa)->is_nil_expression())
-            *pa = Expression::make_slice_composite_literal(at, NULL, loc);
+	    {
+	      Expression* nil = Expression::make_nil(loc);
+	      Expression* zero = Expression::make_integer_ul(0, NULL, loc);
+	      *pa = Expression::make_slice_value(at, nil, zero, zero, loc);
+	    }
           if (!(*pa)->is_variable())
             {
               Temporary_statement* temp =
@@ -14087,7 +14091,8 @@ class Slice_value_expression : public Expression
 int
 Slice_value_expression::do_traverse(Traverse* traverse)
 {
-  if (Expression::traverse(&this->valptr_, traverse) == TRAVERSE_EXIT
+  if (Type::traverse(this->type_, traverse) == TRAVERSE_EXIT
+      || Expression::traverse(&this->valptr_, traverse) == TRAVERSE_EXIT
       || Expression::traverse(&this->len_, traverse) == TRAVERSE_EXIT
       || Expression::traverse(&this->cap_, traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
