@@ -607,11 +607,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_position = __rhs._M_position;
       _M_subs = __rhs._M_subs;
       _M_n = __rhs._M_n;
-      _M_result = __rhs._M_result;
       _M_suffix = __rhs._M_suffix;
       _M_has_m1 = __rhs._M_has_m1;
-      if (__rhs._M_result == &__rhs._M_suffix)
-	_M_result = &_M_suffix;
+      _M_normalize_result();
       return *this;
     }
 
