@@ -1,5 +1,29 @@
 2014-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* dwarf2out.h (struct array_descr_info): Remove the base_decl field.
+	* dwarf2out.c (enum dw_scalar_form): New.
+	(struct loc_descr_context): New.
+	(add_scalar_info): New.
+	(add_bound_info): Add a context parameter.  Use add_scalar_info.
+	(loc_list_from_tree): Add a context parameter.  Handle PLACEHOLDER_EXPR
+	nodes for type-related expressions.  Likewise for base declarations.
+	(loc_descriptor_from_tree): Add a context parameter.
+	(subrange_type_die): Update calls to add_bound_info.
+	(tls_mem_loc_descriptor): Likewise.
+	(loc_list_for_address_of_addr_expr_of_indirect_ref): Add a context
+	parameter.  Update calls to loc_list_from_tree.
+	(add_subscript_info): Update calls to add_bound_info.
+	(gen_array_type_die): Update calls to loc_list_from_tree and to
+	add_bound_info.
+	(descr_info_loc): Remove.
+	(add_descr_info_field): Remove.
+	(gen_descr_array_type_die): Switch add_descr_info_field calls into
+	add_scalar_info/add_bound_info ones.
+	(gen_subprogram_die): Update calls to loc_list_from_tree.
+	(gen_variable_die): Likewise.
+
+2014-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* dwarf2out.c (print_loc_descr): New.
 	(print_dw_val): New.
 	(print_attribute): New.
