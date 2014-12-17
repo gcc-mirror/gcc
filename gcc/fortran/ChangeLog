@@ -1,3 +1,9 @@
+2014-12-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64173
+	* trans-array.c (structure_alloc_comps): Do not nullify procedure
+	pointer components.
+
 2014-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* trans-types.c (gfc_get_array_descr_info): Describe all Fortran arrays

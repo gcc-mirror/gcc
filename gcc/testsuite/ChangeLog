@@ -1,3 +1,8 @@
+2014-12-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64173
+	* gfortran.dg/proc_ptr_comp_40.f90: New.
+
 2014-12-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/61296
