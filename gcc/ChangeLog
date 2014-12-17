@@ -1,7 +1,8 @@
 2014-12-17  Vladimir Makarov  <vmakarov@redhat.com>
 
-	* lra-constrints.c (process_alt_operands): Remove non allocatable
-	hard regs when considering ira_prohibited_class_mode_regs.
+	* lra-constraints.c (process_alt_operands): Remove non
+	allocatable hard regs when considering
+	ira_prohibited_class_mode_regs.
 
 2014-12-17  Jan Hubicka  <hubicka@ucw.cz>
 
