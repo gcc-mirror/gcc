@@ -6,7 +6,7 @@
 	* config/i386/i386-opts.h (ix86_align_data): New enum.
 	* config/i386/i386.c (ix86_data_alignment): Return the ABI
 	alignment value for -malign-data=abi, the cachine line size
-	for -malign-data=cachineline and the older GCC compatible
+	for -malign-data=cacheline and the older GCC compatible
 	alignment value for for -malign-data=compat.
 	* config/i386/i386.opt (malign-data=): New.
 	* doc/invoke.texi: Document -malign-data=.
