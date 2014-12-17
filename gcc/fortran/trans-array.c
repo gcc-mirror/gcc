@@ -7774,7 +7774,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	  break;
 
 	case NULLIFY_ALLOC_COMP:
-	  if (c->attr.pointer)
+	  if (c->attr.pointer || c->attr.proc_pointer)
 	    continue;
 	  else if (c->attr.allocatable
 		   && (c->attr.dimension|| c->attr.codimension))
