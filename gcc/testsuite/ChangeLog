@@ -1,3 +1,8 @@
+2014-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/63568
+	* gcc.dg/pr63568.c: New test.
+
 2014-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/64322
