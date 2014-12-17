@@ -1,3 +1,8 @@
+2014-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* trans-types.c (gfc_get_array_descr_info): Describe all Fortran arrays
+	with column major ordering.
+
 2014-12-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54687

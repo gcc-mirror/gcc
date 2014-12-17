@@ -1,3 +1,17 @@
+2014-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.h (enum array_descr_ordering): New.
+	(array_descr_dimen): Add a bounds_type structure field.
+	(struct array_descr_info): Add a field to hold index type information
+	and another one to hold ordering information.
+	* dwarf2out.c (gen_type_die_with_usage): Get the main variant before
+	invoking the array descriptor language hook.  Initialize the
+	array_descr_info structure before calling the lang-hook.
+	(gen_descr_array_type_die): Use gen_type_die if not processing the main
+	type variant.  Replace Fortran-specific code with generic one using
+	this new field.  Add a GNAT descriptive type, if any.  Output type
+	information for the array bound subrange, if any.
+
 2014-12-17  H.J. Lu  <hongjiu.lu@intel.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>

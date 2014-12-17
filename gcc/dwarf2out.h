@@ -261,9 +261,17 @@ extern void dwarf2out_set_demangle_name_func (const char *(*) (const char *));
 extern void dwarf2out_vms_debug_main_pointer (void);
 #endif
 
+enum array_descr_ordering
+{
+  array_descr_ordering_default,
+  array_descr_ordering_row_major,
+  array_descr_ordering_column_major
+};
+
 struct array_descr_info
 {
   int ndimensions;
+  enum array_descr_ordering ordering;
   tree element_type;
   tree base_decl;
   tree data_location;
@@ -271,6 +279,10 @@ struct array_descr_info
   tree associated;
   struct array_descr_dimen
     {
+      /* GCC uses sizetype for array indices, so lower_bound and upper_bound
+	 will likely be "sizetype" values. However, bounds may have another
+	 type in the original source code.  */
+      tree bounds_type;
       tree lower_bound;
       tree upper_bound;
       tree stride;
