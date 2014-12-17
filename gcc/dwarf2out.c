@@ -17480,15 +17480,19 @@ gen_descr_array_type_die (tree type, struct array_descr_info *info,
 	break;
       }
 
-  if (info->data_location)
-    add_descr_info_field (array_die, DW_AT_data_location, info->data_location,
-			  info->base_decl);
-  if (info->associated)
-    add_descr_info_field (array_die, DW_AT_associated, info->associated,
-			  info->base_decl);
-  if (info->allocated)
-    add_descr_info_field (array_die, DW_AT_allocated, info->allocated,
-			  info->base_decl);
+  if (dwarf_version >= 3 || !dwarf_strict)
+    {
+      if (info->data_location)
+	add_descr_info_field (array_die, DW_AT_data_location,
+			      info->data_location,
+			      info->base_decl);
+      if (info->associated)
+	add_descr_info_field (array_die, DW_AT_associated, info->associated,
+			      info->base_decl);
+      if (info->allocated)
+	add_descr_info_field (array_die, DW_AT_allocated, info->allocated,
+			      info->base_decl);
+    }
 
   add_gnat_descriptive_type_attribute (array_die, type, context_die);
 
@@ -17519,10 +17523,13 @@ gen_descr_array_type_die (tree type, struct array_descr_info *info,
 	add_descr_info_field (subrange_die, DW_AT_upper_bound,
 			      info->dimen[dim].upper_bound,
 			      info->base_decl);
-      if (info->dimen[dim].stride)
-	add_descr_info_field (subrange_die, DW_AT_byte_stride,
-			      info->dimen[dim].stride,
-			      info->base_decl);
+      if (dwarf_version >= 3 || !dwarf_strict)
+	{
+	  if (info->dimen[dim].stride)
+	    add_descr_info_field (subrange_die, DW_AT_byte_stride,
+				  info->dimen[dim].stride,
+				  info->base_decl);
+	}
     }
 
   gen_type_die (info->element_type, context_die);
@@ -20120,8 +20127,7 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 
   /* If this is an array type with hidden descriptor, handle it first.  */
   if (!TREE_ASM_WRITTEN (type)
-      && lang_hooks.types.get_array_descr_info
-      && (dwarf_version >= 3 || !dwarf_strict))
+      && lang_hooks.types.get_array_descr_info)
     {
       memset (&info, 0, sizeof (info));
       if (lang_hooks.types.get_array_descr_info (type, &info))
