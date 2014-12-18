@@ -1660,6 +1660,9 @@ force_paren_expr (tree expr)
 	  tree type = unlowered_expr_type (expr);
 	  bool rval = !!(kind & clk_rvalueref);
 	  type = cp_build_reference_type (type, rval);
+	  /* This inhibits warnings in, eg, cxx_mark_addressable
+	     (c++/60955).  */
+	  warning_sentinel s (extra_warnings);
 	  expr = build_static_cast (type, expr, tf_error);
 	  if (expr != error_mark_node)
 	    REF_PARENTHESIZED_P (expr) = true;
