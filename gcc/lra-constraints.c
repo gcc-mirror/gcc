@@ -3197,7 +3197,7 @@ simple_move_p (void)
 	  && (sclass = get_op_class (src)) != NO_REGS
 	  /* The backend guarantees that register moves of cost 2
 	     never need reloads.  */
-	  && targetm.register_move_cost (GET_MODE (src), dclass, sclass) == 2);
+	  && targetm.register_move_cost (GET_MODE (src), sclass, dclass) == 2);
  }
 
 /* Swap operands NOP and NOP + 1. */
