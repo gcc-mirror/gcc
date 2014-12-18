@@ -14862,23 +14862,26 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       maybe_warn_cpp0x (CPP0X_AUTO);
       if (parser->auto_is_implicit_function_template_parm_p)
 	{
-	  type = synthesize_implicit_template_parm (parser);
+	  if (cxx_dialect >= cxx14)
+	    type = synthesize_implicit_template_parm (parser);
+	  else
+	    type = error_mark_node;
 
 	  if (current_class_type && LAMBDA_TYPE_P (current_class_type))
 	    {
 	      if (cxx_dialect < cxx14)
-		pedwarn (location_of (type), 0,
+		error_at (token->location,
 			 "use of %<auto%> in lambda parameter declaration "
 			 "only available with "
 			 "-std=c++14 or -std=gnu++14");
 	    }
 	  else if (cxx_dialect < cxx14)
-	    pedwarn (location_of (type), 0,
+	    error_at (token->location,
 		     "use of %<auto%> in parameter declaration "
 		     "only available with "
 		     "-std=c++14 or -std=gnu++14");
 	  else
-	    pedwarn (location_of (type), OPT_Wpedantic,
+	    pedwarn (token->location, OPT_Wpedantic,
 		     "ISO C++ forbids use of %<auto%> in parameter "
 		     "declaration");
 	}
@@ -14970,6 +14973,9 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
       /* Consume the token.  */
       cp_lexer_consume_token (parser->lexer);
+
+      if (type == error_mark_node)
+	return error_mark_node;
 
       /* There is no valid C++ program where a non-template type is
 	 followed by a "<".  That usually indicates that the user thought

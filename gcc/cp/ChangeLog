@@ -1,5 +1,9 @@
 2014-12-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64105
+	* parser.c (cp_parser_simple_type_specifier): Make auto parameter
+	before -std=c++14 an error.
+
 	PR c++/64352
 	* pt.c (tsubst_copy_and_build): Pass complain to mark_used.
 
