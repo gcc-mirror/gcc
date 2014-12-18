@@ -1,3 +1,9 @@
+2014-12-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/amd64-abi-7.c: New tests.
+	* gcc.target/i386/amd64-abi-8.c: Likwise.
+	* gcc.target/i386/amd64-abi-9.c: Likwise.
+
 2014-12-18  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/ushr64_1.c: Remove scan-assembler "ushr...64".
