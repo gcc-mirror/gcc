@@ -25461,7 +25461,12 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	}
     }
 
-  if (TARGET_64BIT && INTVAL (callarg2) >= 0)
+  /* Skip setting up RAX register for -mskip-rax-setup when there are no
+     parameters passed in vector registers.  */
+  if (TARGET_64BIT
+      && (INTVAL (callarg2) > 0
+	  || (INTVAL (callarg2) == 0
+	      && (TARGET_SSE || !flag_skip_rax_setup))))
     {
       rtx al = gen_rtx_REG (QImode, AX_REG);
       emit_move_insn (al, callarg2);

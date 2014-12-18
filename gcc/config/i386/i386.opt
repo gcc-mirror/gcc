@@ -831,6 +831,10 @@ Target Report Var(flag_nop_mcount) Init(0)
 Generate mcount/__fentry__ calls as nops. To activate they need to be
 patched in.
 
+mskip-rax-setup
+Target Report Var(flag_skip_rax_setup) Init(0)
+Skip setting up RAX register when passing variable arguments.
+
 m8bit-idiv
 Target Report Mask(USE_8BIT_IDIV) Save
 Expand 32bit/64bit integer divide into 8bit unsigned integer divide with run-time check

@@ -1,3 +1,11 @@
+2014-12-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_call): Skip setting up RAX
+	register for -mskip-rax-setup when there are no parameters
+	passed in vector registers.
+	* config/i386/i386.opt (mskip-rax-setup): New option.
+	* doc/invoke.texi: Document -mskip-rax-setup.
+
 2014-12-18  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_lshr_simddi): Handle shift

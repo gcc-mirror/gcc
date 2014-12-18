@@ -16256,6 +16256,19 @@ the profiling functions as nops. This is useful when they
 should be patched in later dynamically. This is likely only
 useful together with @option{-mrecord-mcount}.
 
+@item -mskip-rax-setup
+@itemx -mno-skip-rax-setup
+@opindex mskip-rax-setup
+When generating code for the x86-64 architecture with SSE extensions
+disabled, @option{-skip-rax-setup} can be used to skip setting up RAX
+register when there are no variable arguments passed in vector registers.
+
+@strong{Warning:} Since RAX register is used to avoid unnecessarily
+saving vector registers on stack when passing variable arguments, the
+impacts of this option are callees may waste some stack space,
+misbehave or jump to a random location.  GCC 4.4 or newer don't have
+those issues, regardless the RAX register value.
+
 @item -m8bit-idiv
 @itemx -mno-8bit-idiv
 @opindex 8bit-idiv
