@@ -1,3 +1,9 @@
+2014-12-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/64146
+	* ipa-icf.c (sem_function::merge): Check for
+	decl_binds_to_current_def_p is newly added to merge operation.
+
 2014-12-18  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/62178

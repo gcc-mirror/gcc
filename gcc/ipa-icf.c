@@ -101,6 +101,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <list>
 #include "ipa-icf-gimple.h"
 #include "ipa-icf.h"
+#include "varasm.h"
 
 using namespace ipa_icf_gimple;
 
@@ -623,6 +624,13 @@ sem_function::merge (sem_item *alias_item)
 
 	return false;
       }
+
+  if (!decl_binds_to_current_def_p (alias->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Declaration does not bind to currect definition.\n\n");
+      return false;
+    }
 
   if (redirect_callers)
     {
