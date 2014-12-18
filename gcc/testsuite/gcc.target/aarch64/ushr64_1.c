@@ -42,7 +42,6 @@ test_vshrd_n_u64_0 (uint64_t passed, uint64_t expected)
   return vshrd_n_u64 (passed, 0) != expected;
 }
 
-/* { dg-final { scan-assembler-times "ushr\\td\[0-9\]+, d\[0-9\]+, 64" 2 } } */
 /* { dg-final { (scan-assembler-times "ushr\\td\[0-9\]+, d\[0-9\]+, 4" 2)  || \
    (scan-assembler-times "lsr\\tx\[0-9\]+, x\[0-9\]+, 4" 2) } } */
 /* { dg-final { scan-assembler-not "ushr\\td\[0-9\]+, d\[0-9\]+, 0" } } */
