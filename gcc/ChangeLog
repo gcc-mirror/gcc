@@ -1,3 +1,9 @@
+2014-12-17  Dehao Chen  <dehao@google.com>
+
+	* auto-profile.c (afdo_annotate_cfg): Invoke update_ssa in the right
+	place.
+	(auto_profile): Recompute inline summary after processing cgraph node.
+
 2014-12-17  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244
