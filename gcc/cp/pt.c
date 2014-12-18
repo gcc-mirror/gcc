@@ -14438,16 +14438,6 @@ tsubst_non_call_postfix_expression (tree t, tree args,
   return t;
 }
 
-/* Sentinel to disable certain warnings during template substitution.  */
-
-struct warning_sentinel {
-  int &flag;
-  int val;
-  warning_sentinel(int& flag, bool suppress=true)
-    : flag(flag), val(flag) { if (suppress) flag = 0; }
-  ~warning_sentinel() { flag = val; }
-};
-
 /* Like tsubst but deals with expressions and performs semantic
    analysis.  FUNCTION_P is true if T is the "F" in "F (ARGS)".  */
 
