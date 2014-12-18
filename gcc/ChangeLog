@@ -1,3 +1,9 @@
+2014-12-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/63573
+	* tree-inline.c (remap_gimple_stmt): Handle gimple_call_from_thunk_p
+	predicate.
+
 2014-12-18  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/64146
