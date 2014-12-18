@@ -1,3 +1,12 @@
+2014-12-18  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/62178
+	* tree-ssa-loop-ivopts.c (cheaper_cost_with_cand): New function.
+	(iv_ca_replace): New function.
+	(try_improve_iv_set): New parameter try_replace_p.
+	Break local optimal fixed-point by calling iv_ca_replace.
+	(find_optimal_iv_set_1): Pass new argument to try_improve_iv_set.
+
 2014-12-17  Dehao Chen  <dehao@google.com>
 
 	* auto-profile.c (afdo_annotate_cfg): Invoke update_ssa in the right
