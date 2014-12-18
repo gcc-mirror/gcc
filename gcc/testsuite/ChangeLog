@@ -1,3 +1,7 @@
+2014-12-18  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ipa/pr64146.C: New test.
+
 2014-12-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/mpx-dg.exp (check_effective_target_mpx): Change into link test.
