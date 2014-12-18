@@ -1,3 +1,7 @@
+2014-12-18  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/ushr64_1.c: Remove scan-assembler "ushr...64".
+
 2014-12-18  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/ipa/pr64146.C: New test.

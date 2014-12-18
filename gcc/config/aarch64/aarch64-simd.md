@@ -756,22 +756,11 @@
   "TARGET_SIMD"
   {
     if (INTVAL (operands[2]) == 64)
-      emit_insn (gen_aarch64_ushr_simddi (operands[0], operands[1]));
+      emit_move_insn (operands[0], const0_rtx);
     else
       emit_insn (gen_lshrdi3 (operands[0], operands[1], operands[2]));
     DONE;
   }
-)
-
-;; SIMD shift by 64.  This pattern is a special case as standard pattern does
-;; not handle NEON shifts by 64.
-(define_insn "aarch64_ushr_simddi"
-  [(set (match_operand:DI 0 "register_operand" "=w")
-        (unspec:DI
-          [(match_operand:DI 1 "register_operand" "w")] UNSPEC_USHR64))]
-  "TARGET_SIMD"
-  "ushr\t%d0, %d1, 64"
-  [(set_attr "type" "neon_shift_imm")]
 )
 
 (define_expand "vec_set<mode>"

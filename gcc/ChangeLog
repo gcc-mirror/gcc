@@ -1,5 +1,13 @@
 2014-12-18  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-simd.md (aarch64_lshr_simddi): Handle shift
+	by 64 by moving const0_rtx.
+	(aarch64_ushr_simddi): Delete.
+
+	* config/aarch64/aarch64.md (enum unspec): Delete UNSPEC_USHR64.
+
+2014-12-18  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64.md (enum "unspec"): Remove UNSPEC_SSHR64.
 
 	* config/aarch64/aarch64-simd.md (aarch64_ashr_simddi): Change shift
