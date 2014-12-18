@@ -29,8 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <sys/sysctl.h>
 #include "xregex.h"
 
-static bool
-darwin_find_version_from_kernel (char *new_flag)
+static char *
+darwin_find_version_from_kernel (void)
 {
   char osversion[32];
   size_t osversion_len = sizeof (osversion) - 1;
@@ -39,6 +39,7 @@ darwin_find_version_from_kernel (char *new_flag)
   char minor_vers[6];
   char * version_p;
   char * version_pend;
+  char * new_flag;
 
   /* Determine the version of the running OS.  If we can't, warn user,
      and do nothing.  */
@@ -46,7 +47,7 @@ darwin_find_version_from_kernel (char *new_flag)
 	      &osversion_len, NULL, 0) == -1)
     {
       warning (0, "sysctl for kern.osversion failed: %m");
-      return false;
+      return NULL;
     }
 
   /* Try to parse the first two parts of the OS version number.  Warn
@@ -57,8 +58,6 @@ darwin_find_version_from_kernel (char *new_flag)
   version_p = osversion + 1;
   if (ISDIGIT (*version_p))
     major_vers = major_vers * 10 + (*version_p++ - '0');
-  if (major_vers > 4 + 9)
-    goto parse_failed;
   if (*version_p++ != '.')
     goto parse_failed;
   version_pend = strchr(version_p, '.');
@@ -74,17 +73,16 @@ darwin_find_version_from_kernel (char *new_flag)
   if (major_vers - 4 <= 4)
     /* On 10.4 and earlier, the old linker is used which does not
        support three-component system versions.  */
-    sprintf (new_flag, "10.%d", major_vers - 4);
+    asprintf (&new_flag, "10.%d", major_vers - 4);
   else
-    sprintf (new_flag, "10.%d.%s", major_vers - 4,
-	     minor_vers);
+    asprintf (&new_flag, "10.%d.%s", major_vers - 4, minor_vers);
 
-  return true;
+  return new_flag;
 
  parse_failed:
   warning (0, "couldn%'t understand kern.osversion %q.*s",
 	   (int) osversion_len, osversion);
-  return false;
+  return NULL;
 }
 
 #endif
@@ -105,7 +103,7 @@ darwin_default_min_version (unsigned int *decoded_options_count,
   const unsigned int argc = *decoded_options_count;
   struct cl_decoded_option *const argv = *decoded_options;
   unsigned int i;
-  static char new_flag[sizeof ("10.0.0") + 6];
+  const char *new_flag;
 
   /* If the command-line is empty, just return.  */
   if (argc <= 1)
@@ -142,16 +140,16 @@ darwin_default_min_version (unsigned int *decoded_options_count,
 
 #ifndef CROSS_DIRECTORY_STRUCTURE
 
- /* Try to find the version from the kernel, if we fail - we print a message 
-    and give up.  */
- if (!darwin_find_version_from_kernel (new_flag))
-   return;
+  /* Try to find the version from the kernel, if we fail - we print a message 
+     and give up.  */
+  new_flag = darwin_find_version_from_kernel ();
+  if (!new_flag)
+    return;
 
 #else
 
- /* For cross-compilers, default to the target OS version. */
-
- strncpy (new_flag, DEF_MIN_OSX_VERSION, sizeof (new_flag));
+  /* For cross-compilers, default to the target OS version. */
+  new_flag = DEF_MIN_OSX_VERSION;
 
 #endif /* CROSS_DIRECTORY_STRUCTURE */
 
@@ -165,7 +163,6 @@ darwin_default_min_version (unsigned int *decoded_options_count,
   memcpy (*decoded_options + 2, argv + 1,
 	  (argc - 1) * sizeof (struct cl_decoded_option));
   return;
-  
 }
 
 /* Translate -filelist and -framework options in *DECODED_OPTIONS
