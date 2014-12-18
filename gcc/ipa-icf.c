@@ -1139,10 +1139,14 @@ sem_variable::parse (varpool_node *node, bitmap_obstack *stack)
   tree decl = node->decl;
 
   bool readonly = TYPE_P (decl) ? TYPE_READONLY (decl) : TREE_READONLY (decl);
-  bool can_handle = readonly && (DECL_VIRTUAL_P (decl)
-				 || !TREE_ADDRESSABLE (decl));
+  if (!readonly)
+    return NULL;
 
-  if (!can_handle)
+  bool can_handle = DECL_VIRTUAL_P (decl)
+		    || flag_merge_constants >= 2
+		    || (!TREE_ADDRESSABLE (decl) && !node->externally_visible);
+
+  if (!can_handle || DECL_EXTERNAL (decl))
     return NULL;
 
   tree ctor = ctor_for_folding (decl);

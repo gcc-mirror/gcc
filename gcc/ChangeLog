@@ -1,3 +1,10 @@
+2014-12-18  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/64330
+	* ipa-icf.c (sem_variable::parse): Add checking
+	for externally visible symbols and do not introduce
+	an alias for an external declaration.
+
 2014-12-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR bootstrap/63573
