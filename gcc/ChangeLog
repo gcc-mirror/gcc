@@ -1,3 +1,10 @@
+2014-12-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/64291
+	* lra-remat.c (bad_for_rematerialization_p): Add UNPSEC_VLOATILE.
+	(create_cands): Process only output reload insn with potential
+	cands.
+
 2014-12-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_expand_call): Skip setting up RAX
