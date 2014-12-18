@@ -1,5 +1,10 @@
 2014-12-18  Vladimir Makarov  <vmakarov@redhat.com>
 
+	* lra-constraints.c (lra-constraints.c): Exchange places of sclass
+	and dclass.
+
+2014-12-18  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR rtl-optimization/64291
 	* lra-remat.c (bad_for_rematerialization_p): Add UNPSEC_VLOATILE.
 	(create_cands): Process only output reload insn with potential
