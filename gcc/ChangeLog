@@ -1,5 +1,15 @@
 2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* lra-constraints.c (get_equiv): Don't return memory equivalence
+	when targetm.cannot_substitute_mem_equiv_p is true.
+	* target.def (cannot_substitute_mem_equiv_p): New hook.
+	* config/sh/sh.c (sh_cannot_substitute_mem_equiv_p): New function.
+	(TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P): Define.
+	* doc/tm.texi.in (TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P): New hook.
+	* doc/tm.texi: Regenerate.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* lra-constraints.c (process_address_1): Swap base_term and
 	index_term if INDEX_REG_CLASS is assigned to base_term already
 	when INDEX_REG_CLASS is a single register class.

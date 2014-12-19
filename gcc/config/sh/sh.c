@@ -291,6 +291,7 @@ static reg_class_t sh_secondary_reload (bool, rtx, reg_class_t,
 static bool sh_legitimate_address_p (machine_mode, rtx, bool);
 static rtx sh_legitimize_address (rtx, rtx, machine_mode);
 static rtx sh_delegitimize_address (rtx);
+static bool sh_cannot_substitute_mem_equiv_p (rtx);
 static int shmedia_target_regs_stack_space (HARD_REG_SET *);
 static int shmedia_reserve_space_for_target_registers_p (int, HARD_REG_SET *);
 static int shmedia_target_regs_stack_adjust (HARD_REG_SET *);
@@ -629,6 +630,9 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	sh_legitimate_address_p
+
+#undef TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P
+#define TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P sh_cannot_substitute_mem_equiv_p
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT		sh_trampoline_init
@@ -13212,6 +13216,24 @@ sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
     return R0_REGS;
 
   return NO_REGS;
+}
+
+/* Return true if SUBST can't safely replace its equivalent during RA.  */
+static bool
+sh_cannot_substitute_mem_equiv_p (rtx)
+{
+  if (TARGET_SHMEDIA)
+    return false;
+
+  /* If SUBST is mem[base+index] or QI/HImode mem[base+disp], the insn
+     uses R0 and may cause spill failure when R0 is already used.
+     We have to return true for that case at least.
+     Moreover SH has strong R0 parity and also have not enough numbers of
+     the hard registers to make the equiv substitution win in the size
+     and the speed on average working sets.  The pseudos produced to
+     hold the equiv values can't get good hard registers for bad cases
+     and end up memory save/restore insns which make the code worse.  */
+  return true;
 }
 
 static void
