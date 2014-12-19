@@ -1,3 +1,11 @@
+2014-12-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backported from mainline
+	2014-12-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/64037
+	* g++.dg/pr64037.C: New test.
+
 2014-12-19  Release Manager
 
 	* GCC 4.8.4 released.

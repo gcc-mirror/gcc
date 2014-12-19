@@ -1527,8 +1527,8 @@ setup_incoming_promotions (rtx first)
       uns3 = TYPE_UNSIGNED (DECL_ARG_TYPE (arg));
 
       /* The mode and signedness of the argument as it is actually passed,
-         after any TARGET_PROMOTE_FUNCTION_ARGS-driven ABI promotions.  */
-      mode3 = promote_function_mode (DECL_ARG_TYPE (arg), mode2, &uns3,
+         see assign_parm_setup_reg in function.c.  */
+      mode3 = promote_function_mode (TREE_TYPE (arg), mode1, &uns3,
 				     TREE_TYPE (cfun->decl), 0);
 
       /* The mode of the register in which the argument is being passed.  */
