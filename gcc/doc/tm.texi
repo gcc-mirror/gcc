@@ -2847,6 +2847,16 @@ A target hook which returns true if we need register usage leveling.  That means
 A target hook which returns true if an address with the same structure  can have different maximal legitimate displacement.  For example, the  displacement can depend on memory mode or on operand combinations in  the insn.    The default version of this target hook returns always false.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P (rtx @var{subst})
+A target hook which returns @code{true} if @var{subst} can't
+substitute safely pseudos with equivalent memory values during
+register allocation.
+The default version of this target hook returns @code{false}.
+On most machines, this default should be used.  For generally
+machines with non orthogonal register usage for addressing, such
+as SH, this hook can be used to avoid excessive spilling.
+@end deftypefn
+
 @deftypefn {Target Hook} reg_class_t TARGET_SPILL_CLASS (reg_class_t, @var{machine_mode})
 This hook defines a class of registers which could be used for spilling  pseudos of the given mode and class, or @code{NO_REGS} if only memory  should be used.  Not defining this hook is equivalent to returning  @code{NO_REGS} for all inputs.
 @end deftypefn
