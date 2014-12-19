@@ -1,4 +1,8 @@
 2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/pr37362.c: Skip for mips-img-elf.
+
+2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
 	    Steve Ellcey  <sellcey@imgtec.com>
 
 	* gcc.dg/torture/mips-hilo-2.c: Unconditionally pass for R6 onwards.
