@@ -29,6 +29,7 @@
 // explicitly instantiate the initial set of symbols; compiling this file
 // with -fimplicit-templates will take care of the rest for us.
 
+#define _GLIBCXX_USE_CXX11_ABI 0
 #include <bits/concept_check.h>
 
 #ifdef _GLIBCXX_CONCEPT_CHECKS

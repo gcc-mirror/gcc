@@ -26,9 +26,11 @@ namespace std {
   template <> struct char_traits<char>;
   template <> struct char_traits<wchar_t>;
 
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
   //  lib.basic.string, basic_string:
   template<class charT, class traits, class Allocator >
   class basic_string;
+_GLIBCXX_END_NAMESPACE_CXX11
 
   template<class charT, class traits, class Allocator>
   basic_string<charT,traits,Allocator>

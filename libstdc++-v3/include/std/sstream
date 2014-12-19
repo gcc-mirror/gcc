@@ -41,6 +41,7 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   // [27.7.1] template class basic_stringbuf
   /**
@@ -63,6 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits, typename _Alloc>
     class basic_stringbuf : public basic_streambuf<_CharT, _Traits>
     {
+      struct __xfer_bufptrs;
     public:
       // Types:
       typedef _CharT 					char_type;
@@ -117,9 +119,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       basic_stringbuf(const basic_stringbuf&) = delete;
 
       basic_stringbuf(basic_stringbuf&& __rhs)
-      : __streambuf_type(static_cast<const __streambuf_type&>(__rhs)),
-      _M_mode(__rhs._M_mode), _M_string(std::move(__rhs._M_string))
-      { __rhs._M_stringbuf_init(__rhs._M_mode); }
+      : basic_stringbuf(std::move(__rhs), __xfer_bufptrs(__rhs, this))
+      { __rhs._M_sync(const_cast<char_type*>(__rhs._M_string.data()), 0, 0); }
 
       // 27.8.2.2 Assign and swap:
 
@@ -129,18 +130,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       basic_stringbuf&
       operator=(basic_stringbuf&& __rhs)
       {
+	__xfer_bufptrs __st{__rhs, this};
 	const __streambuf_type& __base = __rhs;
 	__streambuf_type::operator=(__base);
 	this->pubimbue(__rhs.getloc());
 	_M_mode = __rhs._M_mode;
 	_M_string = std::move(__rhs._M_string);
-	__rhs._M_stringbuf_init(__rhs._M_mode);
+	__rhs._M_sync(const_cast<char_type*>(__rhs._M_string.data()), 0, 0);
 	return *this;
       }
 
       void
       swap(basic_stringbuf& __rhs)
       {
+	__xfer_bufptrs __l_st{*this, std::__addressof(__rhs)};
+	__xfer_bufptrs __r_st{__rhs, this};
 	__streambuf_type& __base = __rhs;
 	__streambuf_type::swap(__base);
 	__rhs.pubimbue(this->pubimbue(__rhs.getloc()));
@@ -185,7 +189,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       str(const __string_type& __s)
       {
-	// Cannot use _M_string = __s, since v3 strings are COW.
+	// Cannot use _M_string = __s, since v3 strings are COW
+	// (not always true now but assign() always works).
 	_M_string.assign(__s.data(), __s.size());
 	_M_stringbuf_init(_M_mode);
       }
@@ -286,6 +291,60 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // interface of basic_streambuf, taking just an int.
       void
       _M_pbump(char_type* __pbeg, char_type* __pend, off_type __off);
+
+    private:
+#if __cplusplus >= 201103L
+#if _GLIBCXX_USE_CXX11_ABI
+      // This type captures the state of the gptr / pptr pointers as offsets
+      // so they can be restored in another object after moving the string.
+      struct __xfer_bufptrs
+      {
+	__xfer_bufptrs(const basic_stringbuf& __from, basic_stringbuf* __to)
+	: _M_to{__to}, _M_goff{-1, -1, -1}, _M_poff{-1, -1, -1}
+	{
+	  const _CharT* __str = __from._M_string.data();
+	  if (__from.eback())
+	    {
+	    _M_goff[0] = __from.eback() - __str;
+	    _M_goff[1] = __from.gptr() - __str;
+	    _M_goff[2] = __from.egptr() - __str;
+	    }
+	  if (__from.pbase())
+	    {
+	      _M_poff[0] = __from.pbase() - __str;
+	      _M_poff[1] = __from.pptr() - __from.pbase();
+	      _M_poff[2] = __from.epptr() - __str;
+	    }
+	}
+
+	~__xfer_bufptrs()
+	{
+	  char_type* __str = const_cast<char_type*>(_M_to->_M_string.data());
+	  if (_M_goff[0] != -1)
+	    _M_to->setg(__str+_M_goff[0], __str+_M_goff[1], __str+_M_goff[2]);
+	  if (_M_poff[0] != -1)
+	    _M_to->_M_pbump(__str+_M_poff[0], __str+_M_poff[2], _M_poff[1]);
+	}
+
+	basic_stringbuf* _M_to;
+	off_type _M_goff[3];
+	off_type _M_poff[3];
+      };
+#else
+      // This type does nothing when using Copy-On-Write strings.
+      struct __xfer_bufptrs
+      {
+	__xfer_bufptrs(const basic_stringbuf&, basic_stringbuf*) { }
+      };
+#endif
+
+      // The move constructor initializes an __xfer_bufptrs temporary then
+      // delegates to this constructor to performs moves during its lifetime.
+      basic_stringbuf(basic_stringbuf&& __rhs, __xfer_bufptrs&&)
+      : __streambuf_type(static_cast<const __streambuf_type&>(__rhs)),
+      _M_mode(__rhs._M_mode), _M_string(std::move(__rhs._M_string))
+      { }
+#endif
     };
 
 
@@ -747,6 +806,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { __x.swap(__y); }
 #endif
 
+_GLIBCXX_END_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

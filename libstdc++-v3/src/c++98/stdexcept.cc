@@ -26,6 +26,8 @@
 // ISO C++ 14882: 19.1  Exception classes
 //
 
+// All exception classes still use the classic COW std::string.
+#define _GLIBCXX_USE_CXX11_ABI 0
 #include <string>
 #include <stdexcept>
 

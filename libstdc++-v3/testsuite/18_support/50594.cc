@@ -59,7 +59,7 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   {
-    std::string s = "Hello World.";
+    std::string s = "Hello World, this is not a small string.";
   }
 
   VERIFY( user_new_called );

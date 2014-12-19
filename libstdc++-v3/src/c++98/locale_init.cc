@@ -20,6 +20,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#define _GLIBCXX_USE_CXX11_ABI 1
 #include <clocale>
 #include <cstring>
 #include <cstdlib>     // For getenv, free.
@@ -28,8 +29,37 @@
 #include <locale>
 #include <ext/concurrence.h>
 
+#if _GLIBCXX_USE_DUAL_ABI
+// This file is compiled with the new std::string ABI so std::numpunct<char>
+// refers to std::__cxx11::numpunct<char>. These declarations let us refer
+// to the other facets instantiated with the old ABI.
+# define _GLIBCXX_LOC_ID(mangled) extern std::locale::id mangled
+_GLIBCXX_LOC_ID(_ZNSt8numpunctIcE2idE);
+_GLIBCXX_LOC_ID(_ZNSt7collateIcE2idE);
+_GLIBCXX_LOC_ID(_ZNSt8time_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE2idE);
+_GLIBCXX_LOC_ID(_ZNSt9money_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE2idE);
+_GLIBCXX_LOC_ID(_ZNSt9money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE2idE);
+_GLIBCXX_LOC_ID(_ZNSt10moneypunctIcLb0EE2idE);
+_GLIBCXX_LOC_ID(_ZNSt10moneypunctIcLb1EE2idE);
+_GLIBCXX_LOC_ID(_ZNSt8messagesIcE2idE);
+# ifdef _GLIBCXX_USE_WCHAR_T
+_GLIBCXX_LOC_ID(_ZNSt8numpunctIwE2idE);
+_GLIBCXX_LOC_ID(_ZNSt7collateIwE2idE);
+_GLIBCXX_LOC_ID(_ZNSt8time_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEE2idE);
+_GLIBCXX_LOC_ID(_ZNSt9money_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEE2idE);
+_GLIBCXX_LOC_ID(_ZNSt9money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE2idE);
+_GLIBCXX_LOC_ID(_ZNSt10moneypunctIwLb0EE2idE);
+_GLIBCXX_LOC_ID(_ZNSt10moneypunctIwLb1EE2idE);
+_GLIBCXX_LOC_ID(_ZNSt8messagesIwE2idE);
+# endif
+#endif
+
+
 namespace 
 {
+  const int num_facets = _GLIBCXX_NUM_FACETS
+    + (_GLIBCXX_USE_DUAL_ABI ? _GLIBCXX_NUM_CXX11_FACETS : 0);
+
   __gnu_cxx::__mutex&
   get_locale_mutex()
   {
@@ -57,11 +87,11 @@ namespace
 
   typedef char fake_facet_vec[sizeof(locale::facet*)]
   __attribute__ ((aligned(__alignof__(locale::facet*))));
-  fake_facet_vec facet_vec[_GLIBCXX_NUM_FACETS];
+  fake_facet_vec facet_vec[num_facets];
 
   typedef char fake_cache_vec[sizeof(locale::facet*)]
   __attribute__ ((aligned(__alignof__(locale::facet*))));
-  fake_cache_vec cache_vec[_GLIBCXX_NUM_FACETS];
+  fake_cache_vec cache_vec[num_facets];
 
   typedef char fake_ctype_c[sizeof(std::ctype<char>)]
   __attribute__ ((aligned(__alignof__(std::ctype<char>))));
@@ -355,7 +385,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     0
   };
-  
+
   const locale::id* const* const
   locale::_Impl::_S_facet_categories[] =
   {
@@ -369,10 +399,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     0
   };
 
+#if _GLIBCXX_USE_DUAL_ABI
+  // Facets that are instantiated for both the COW and SSO std::string ABIs.
+  // The COW ABI version must come first, followed by its SSO twin.
+  const locale::id* const locale::_S_twinned_facets[] = {
+    &::_ZNSt8numpunctIcE2idE,
+    &numpunct<char>::id,
+    &::_ZNSt7collateIcE2idE,
+    &std::collate<char>::id,
+    &::_ZNSt8time_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE2idE,
+    &time_get<char>::id,
+    &::_ZNSt9money_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE2idE,
+    &money_get<char>::id,
+    &::_ZNSt9money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE2idE,
+    &money_put<char>::id,
+    &::_ZNSt10moneypunctIcLb0EE2idE,
+    &moneypunct<char, false>::id,
+    &::_ZNSt10moneypunctIcLb1EE2idE,
+    &moneypunct<char, true >::id,
+    &::_ZNSt8messagesIcE2idE,
+    &std::messages<char>::id,
+# ifdef _GLIBCXX_USE_WCHAR_T
+    &::_ZNSt8numpunctIwE2idE,
+    &numpunct<wchar_t>::id,
+    &::_ZNSt7collateIwE2idE,
+    &std::collate<wchar_t>::id,
+    &::_ZNSt8time_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEE2idE,
+    &time_get<wchar_t>::id,
+    &::_ZNSt9money_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEE2idE,
+    &money_get<wchar_t>::id,
+    &::_ZNSt9money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE2idE,
+    &money_put<wchar_t>::id,
+    &::_ZNSt10moneypunctIwLb0EE2idE,
+    &moneypunct<wchar_t, false>::id,
+    &::_ZNSt10moneypunctIwLb1EE2idE,
+    &moneypunct<wchar_t, true >::id,
+    &::_ZNSt8messagesIwE2idE,
+    &std::messages<wchar_t>::id,
+# endif
+    0, 0
+  };
+#endif
+
   // Construct "C" _Impl.
   locale::_Impl::
   _Impl(size_t __refs) throw() 
-  : _M_refcount(__refs), _M_facets(0), _M_facets_size(_GLIBCXX_NUM_FACETS),
+  : _M_refcount(__refs), _M_facets(0), _M_facets_size(num_facets),
   _M_caches(0), _M_names(0)    
   {
     _M_facets = new (&facet_vec) const facet*[_M_facets_size]();
@@ -448,8 +520,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_init_facet(new (&time_get_w) time_get<wchar_t>(1));
     _M_init_facet(new (&time_put_w) time_put<wchar_t>(1));
     _M_init_facet(new (&messages_w) std::messages<wchar_t>(1));
-#endif 
-     
+#endif
+
+#if _GLIBCXX_USE_DUAL_ABI
+    facet* extra[] = { __npc, __mpcf, __mpct
+# ifdef  _GLIBCXX_USE_WCHAR_T
+        , __npw, __mpwf, __mpwt
+# endif
+    };
+
+    _M_init_extra(extra);
+#endif
+
     // This locale is safe to pre-cache, after all the facets have
     // been created and installed.
     _M_caches[numpunct<char>::id._M_id()] = __npc;

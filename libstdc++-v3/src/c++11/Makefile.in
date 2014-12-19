@@ -67,20 +67,28 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__11convenience_la_LIBADD =
-@ENABLE_CXX11_ABI_TRUE@am__objects_1 = cxx11-ios_failure.lo
+@ENABLE_DUAL_ABI_TRUE@am__objects_1 = cow-locale_init.lo \
+@ENABLE_DUAL_ABI_TRUE@	cow-shim_facets.lo cxx11-hash_tr1.lo \
+@ENABLE_DUAL_ABI_TRUE@	cxx11-ios_failure.lo \
+@ENABLE_DUAL_ABI_TRUE@	cxx11-shim_facets.lo cxx11-stdexcept.lo
 am__objects_2 = ctype_configure_char.lo ctype_members.lo
-am__objects_3 = chrono.lo condition_variable.lo ctype.lo debug.lo \
-	functexcept.lo functional.lo future.lo hash_c++0x.lo \
-	hashtable_c++0x.lo ios.lo limits.lo mutex.lo placeholders.lo \
-	random.lo regex.lo shared_ptr.lo snprintf_lite.lo \
-	system_error.lo thread.lo $(am__objects_1) $(am__objects_2)
-@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_4 = ext11-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	fstream-inst.lo ios-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	iostream-inst.lo istream-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	ostream-inst.lo sstream-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.lo string-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.lo
-am_libc__11convenience_la_OBJECTS = $(am__objects_3) $(am__objects_4)
+am__objects_3 = chrono.lo condition_variable.lo cow-stdexcept.lo \
+	ctype.lo debug.lo functexcept.lo functional.lo future.lo \
+	hash_c++0x.lo hashtable_c++0x.lo ios.lo limits.lo mutex.lo \
+	placeholders.lo random.lo regex.lo shared_ptr.lo \
+	snprintf_lite.lo system_error.lo thread.lo $(am__objects_1) \
+	$(am__objects_2)
+@ENABLE_DUAL_ABI_TRUE@am__objects_4 = cow-fstream-inst.lo \
+@ENABLE_DUAL_ABI_TRUE@	cow-sstream-inst.lo cow-string-inst.lo \
+@ENABLE_DUAL_ABI_TRUE@	cow-wstring-inst.lo cxx11-locale-inst.lo \
+@ENABLE_DUAL_ABI_TRUE@	cxx11-wlocale-inst.lo
+@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_5 = $(am__objects_4) \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	ext11-inst.lo fstream-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	ios-inst.lo iostream-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	istream-inst.lo ostream-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.lo streambuf-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.lo wstring-inst.lo
+am_libc__11convenience_la_OBJECTS = $(am__objects_3) $(am__objects_5)
 libc__11convenience_la_OBJECTS = $(am_libc__11convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp =
@@ -240,6 +248,7 @@ glibcxx_POFILES = @glibcxx_POFILES@
 glibcxx_builddir = @glibcxx_builddir@
 glibcxx_compiler_pic_flag = @glibcxx_compiler_pic_flag@
 glibcxx_compiler_shared_flag = @glibcxx_compiler_shared_flag@
+glibcxx_cxx98_abi = @glibcxx_cxx98_abi@
 glibcxx_localedir = @glibcxx_localedir@
 glibcxx_lt_pic_flag = @glibcxx_lt_pic_flag@
 glibcxx_prefixdir = @glibcxx_prefixdir@
@@ -323,13 +332,19 @@ host_sources = \
 	ctype_configure_char.cc \
 	ctype_members.cc
 
-@ENABLE_CXX11_ABI_FALSE@cxx11_abi_sources = 
-@ENABLE_CXX11_ABI_TRUE@cxx11_abi_sources = \
-@ENABLE_CXX11_ABI_TRUE@	cxx11-ios_failure.cc
+@ENABLE_DUAL_ABI_FALSE@cxx11_abi_sources = 
+@ENABLE_DUAL_ABI_TRUE@cxx11_abi_sources = \
+@ENABLE_DUAL_ABI_TRUE@	cow-locale_init.cc \
+@ENABLE_DUAL_ABI_TRUE@	cow-shim_facets.cc \
+@ENABLE_DUAL_ABI_TRUE@	cxx11-hash_tr1.cc \
+@ENABLE_DUAL_ABI_TRUE@	cxx11-ios_failure.cc \
+@ENABLE_DUAL_ABI_TRUE@	cxx11-shim_facets.cc \
+@ENABLE_DUAL_ABI_TRUE@	cxx11-stdexcept.cc
 
 sources = \
 	chrono.cc \
 	condition_variable.cc \
+	cow-stdexcept.cc \
 	ctype.cc \
 	debug.cc \
 	functexcept.cc \
@@ -350,11 +365,21 @@ sources = \
 	${cxx11_abi_sources} \
 	${host_sources}
 
+@ENABLE_DUAL_ABI_FALSE@extra_string_inst_sources = 
+@ENABLE_DUAL_ABI_TRUE@extra_string_inst_sources = \
+@ENABLE_DUAL_ABI_TRUE@	cow-fstream-inst.cc \
+@ENABLE_DUAL_ABI_TRUE@	cow-sstream-inst.cc \
+@ENABLE_DUAL_ABI_TRUE@	cow-string-inst.cc \
+@ENABLE_DUAL_ABI_TRUE@	cow-wstring-inst.cc \
+@ENABLE_DUAL_ABI_TRUE@	cxx11-locale-inst.cc \
+@ENABLE_DUAL_ABI_TRUE@	cxx11-wlocale-inst.cc
+
 # XTEMPLATE_FLAGS =
 @ENABLE_EXTERN_TEMPLATE_FALSE@inst_sources = 
 
 # XTEMPLATE_FLAGS = -fno-implicit-templates
 @ENABLE_EXTERN_TEMPLATE_TRUE@inst_sources = \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	$(extra_string_inst_sources) \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ext11-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	fstream-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ios-inst.cc \

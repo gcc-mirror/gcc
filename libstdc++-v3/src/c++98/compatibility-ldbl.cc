@@ -22,6 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#define _GLIBCXX_USE_CXX11_ABI 0
 #include <locale>
 #include <cmath>
 #include <tr1/functional>
