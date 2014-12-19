@@ -1,5 +1,15 @@
 2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* config/sh/sh-protos.h (sh_movsf_ie_ra_split_p): Declare.
+	* config/sh/sh.c (sh_movsf_ie_ra_split_p): New function.
+	* config/sh/sh.md (movsi_ie): Use "mr" constraint for the 8-th
+	altarnative of operand 0.
+	(movesf_ie): Use "X" constraint instead of "Bsc".
+	(movsf_ie_ra): New insn_and_split.
+	(movsf): Use movsfie_ra when lra_in_progress is true.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* config/sh/predicates.md (general_movsrc_operand): Allow only
 	valid plus address expressions.
 	(general_movdst_operand): Likewise.
