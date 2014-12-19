@@ -1,5 +1,11 @@
 2014-12-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit-playback.c (gcc::jit::playback::context::build_cast): In
+	case BOOLEAN_TYPE, don't assume that the source expression is
+	of type "int".
+
+2014-12-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit-recording.c (gcc::jit::recording::context::context): When
 	copying string options from a parent context, take a copy of the
 	underlying buffers, rather than simply copying the pointer.
