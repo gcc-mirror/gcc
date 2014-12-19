@@ -1,4 +1,4 @@
-2014-12-19  Xingxing Pan <xxingpan@marvell.com>
+2014-12-19  Xingxing Pan  <xxingpan@marvell.com>
 
 	* config/arm/cortex-a9-neon.md (cortex_a9_neon_vmov): Change
 	reservation to cortex_a9_neon_dp.
