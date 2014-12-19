@@ -1,5 +1,11 @@
 2014-12-19  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64.md (<optab><mode>3, one_cmpl<mode>2):
+	Add SIMD-register variant.
+	* config/aarch64/iterators.md (Vbtype): Add value for SI.
+
+2014-12-19  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64.md (subdi3, adddi3_aarch64): Don't penalize
 	SIMD reg variant.
 

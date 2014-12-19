@@ -387,7 +387,8 @@
 			  (V2SI "8b") (V4SI  "16b")
 			  (V2DI "16b") (V2SF  "8b")
 			  (V4SF "16b") (V2DF  "16b")
-			  (DI   "8b")  (DF    "8b")])
+			  (DI   "8b")  (DF    "8b")
+			  (SI   "8b")])
 
 ;; Define element mode for each vector mode.
 (define_mode_attr VEL [(V8QI "QI") (V16QI "QI")
