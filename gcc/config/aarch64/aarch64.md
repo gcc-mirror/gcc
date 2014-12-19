@@ -1434,10 +1434,10 @@
 
 (define_insn "*adddi3_aarch64"
   [(set
-    (match_operand:DI 0 "register_operand" "=rk,rk,rk,!w")
+    (match_operand:DI 0 "register_operand" "=rk,rk,rk,w")
     (plus:DI
-     (match_operand:DI 1 "register_operand" "%rk,rk,rk,!w")
-     (match_operand:DI 2 "aarch64_plus_operand" "I,r,J,!w")))]
+     (match_operand:DI 1 "register_operand" "%rk,rk,rk,w")
+     (match_operand:DI 2 "aarch64_plus_operand" "I,r,J,w")))]
   ""
   "@
   add\\t%x0, %x1, %2
@@ -1908,9 +1908,9 @@
 )
 
 (define_insn "subdi3"
-  [(set (match_operand:DI 0 "register_operand" "=rk,!w")
-	(minus:DI (match_operand:DI 1 "register_operand" "r,!w")
-		   (match_operand:DI 2 "register_operand" "r,!w")))]
+  [(set (match_operand:DI 0 "register_operand" "=rk,w")
+	(minus:DI (match_operand:DI 1 "register_operand" "r,w")
+		   (match_operand:DI 2 "register_operand" "r,w")))]
   ""
   "@
    sub\\t%x0, %x1, %x2
