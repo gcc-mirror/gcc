@@ -1,5 +1,10 @@
 2014-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/63723
+	* g++.dg/cpp0x/sfinae54.C: New.
+
+2014-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/59204
 	* g++.dg/cpp0x/sfinae53.C: New.
 
