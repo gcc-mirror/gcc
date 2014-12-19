@@ -665,6 +665,9 @@
 ;; Code iterator for logical operations
 (define_code_iterator LOGICAL [and ior xor])
 
+;; Code iterator for logical operations whose :nlogical works on SIMD registers.
+(define_code_iterator NLOGICAL [and ior])
+
 ;; Code iterator for sign/zero extension
 (define_code_iterator ANY_EXTEND [sign_extend zero_extend])
 

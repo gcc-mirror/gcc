@@ -1,3 +1,7 @@
+2014-12-19  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/eon_1.c: New test.
+
 2014-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60493
