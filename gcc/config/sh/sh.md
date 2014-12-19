@@ -2020,11 +2020,16 @@
 (define_expand "addsi3"
   [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(plus:SI (match_operand:SI 1 "arith_operand" "")
-		 (match_operand:SI 2 "arith_operand" "")))]
+		 (match_operand:SI 2 "arith_or_int_operand" "")))]
   ""
 {
   if (TARGET_SHMEDIA)
     operands[1] = force_reg (SImode, operands[1]);
+  else if (! arith_operand (operands[2], SImode))
+    {
+      if (reg_overlap_mentioned_p (operands[0], operands[1]))
+	FAIL;
+    }
 })
 
 (define_insn "addsi3_media"
@@ -2051,12 +2056,22 @@
   [(set_attr "type" "arith_media")
    (set_attr "highpart" "ignore")])
 
-(define_insn "*addsi3_compact"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(plus:SI (match_operand:SI 1 "arith_operand" "%0")
-		 (match_operand:SI 2 "arith_operand" "rI08")))]
-  "TARGET_SH1"
-  "add	%2,%0"
+(define_insn_and_split "*addsi3_compact"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,&r")
+	(plus:SI (match_operand:SI 1 "arith_operand" "%0,r")
+		 (match_operand:SI 2 "arith_or_int_operand" "rI08,rn")))]
+  "TARGET_SH1
+   && (rtx_equal_p (operands[0], operands[1])
+       && arith_operand (operands[2], SImode))
+      || ! reg_overlap_mentioned_p (operands[0], operands[1])"
+  "@
+	add	%2,%0
+	#"
+  "reload_completed
+   && ! reg_overlap_mentioned_p (operands[0], operands[1])"
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 1)))]
+  ""
   [(set_attr "type" "arith")])
 
 ;; -------------------------------------------------------------------------
