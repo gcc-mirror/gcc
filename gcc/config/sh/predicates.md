@@ -182,6 +182,19 @@
   return 0;
 })
 
+;; Likewise arith_operand but always permits const_int.
+(define_predicate "arith_or_int_operand"
+  (match_code "subreg,reg,const_int,const_vector")
+{
+  if (arith_operand (op, mode))
+    return 1;
+
+  if (CONST_INT_P (op))
+    return 1;
+
+  return 0;
+})
+
 ;; Returns 1 if OP is a valid source operand for a compare insn.
 (define_predicate "arith_reg_or_0_operand"
   (match_code "subreg,reg,const_int,const_vector")

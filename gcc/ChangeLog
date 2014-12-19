@@ -1,5 +1,14 @@
 2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* config/sh/predicates.md (arith_or_int_operand): New predicate.
+	* config/sh/sh.md (addsi3): Use arith_or_int_operand for operand 2.
+	Return fail if operands[0] and operands[1] are overlap when
+	operands[2] is integer constant.
+	(*addsi3_compact): Make it define_insn_and_split which splits
+	reg0 := reg1 + constant to reg0 = constant and reg0 := reg0 + reg1.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* config/sh/sh-protos.h (sh_movsf_ie_ra_split_p): Declare.
 	* config/sh/sh.c (sh_movsf_ie_ra_split_p): New function.
 	* config/sh/sh.md (movsi_ie): Use "mr" constraint for the 8-th
