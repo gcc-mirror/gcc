@@ -301,7 +301,7 @@ gfc_check_integer_range (mpz_t p, int kind)
     }
 
 
-  if (gfc_option.flag_range_check == 0)
+  if (flag_range_check == 0)
     return result;
 
   if (mpz_cmp (p, gfc_integer_kinds[i].min_int) < 0
@@ -333,12 +333,12 @@ gfc_check_real_range (mpfr_t p, int kind)
 
   if (mpfr_inf_p (p))
     {
-      if (gfc_option.flag_range_check != 0)
+      if (flag_range_check != 0)
 	retval = ARITH_OVERFLOW;
     }
   else if (mpfr_nan_p (p))
     {
-      if (gfc_option.flag_range_check != 0)
+      if (flag_range_check != 0)
 	retval = ARITH_NAN;
     }
   else if (mpfr_sgn (q) == 0)
@@ -348,14 +348,14 @@ gfc_check_real_range (mpfr_t p, int kind)
     }
   else if (mpfr_cmp (q, gfc_real_kinds[i].huge) > 0)
     {
-      if (gfc_option.flag_range_check == 0)
+      if (flag_range_check == 0)
 	mpfr_set_inf (p, mpfr_sgn (p));
       else
 	retval = ARITH_OVERFLOW;
     }
   else if (mpfr_cmp (q, gfc_real_kinds[i].subnormal) < 0)
     {
-      if (gfc_option.flag_range_check == 0)
+      if (flag_range_check == 0)
 	{
 	  if (mpfr_sgn (p) < 0)
 	    {
@@ -736,7 +736,7 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
       break;
 
     case BT_REAL:
-      if (mpfr_sgn (op2->value.real) == 0 && gfc_option.flag_range_check == 1)
+      if (mpfr_sgn (op2->value.real) == 0 && flag_range_check == 1)
 	{
 	  rc = ARITH_DIV0;
 	  break;
@@ -748,7 +748,7 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
     case BT_COMPLEX:
       if (mpc_cmp_si_si (op2->value.complex, 0, 0) == 0
-	  && gfc_option.flag_range_check == 1)
+	  && flag_range_check == 1)
 	{
 	  rc = ARITH_DIV0;
 	  break;
@@ -863,7 +863,7 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 		    int i;
 		    i = gfc_validate_kind (BT_INTEGER, result->ts.kind, false);
 
-		    if (gfc_option.flag_range_check)
+		    if (flag_range_check)
 		      rc = ARITH_OVERFLOW;
 
 		    /* Still, we want to give the same value as the
@@ -1978,7 +1978,7 @@ gfc_int2int (gfc_expr *src, int kind)
 
   /*  If we do not trap numeric overflow, we need to convert the number to
       signed, throwing away high-order bits if necessary.  */
-  if (gfc_option.flag_range_check == 0)
+  if (flag_range_check == 0)
     {
       int k;
 

@@ -5862,6 +5862,108 @@ iv_ca_prune (struct ivopts_data *data, struct iv_ca *ivs,
   return best_cost;
 }
 
+/* Check if CAND_IDX is a candidate other than OLD_CAND and has
+   cheaper local cost for USE than BEST_CP.  Return pointer to
+   the corresponding cost_pair, otherwise just return BEST_CP.  */
+
+static struct cost_pair*
+cheaper_cost_with_cand (struct ivopts_data *data, struct iv_use *use,
+			unsigned int cand_idx, struct iv_cand *old_cand,
+			struct cost_pair *best_cp)
+{
+  struct iv_cand *cand;
+  struct cost_pair *cp;
+
+  gcc_assert (old_cand != NULL && best_cp != NULL);
+  if (cand_idx == old_cand->id)
+    return best_cp;
+
+  cand = iv_cand (data, cand_idx);
+  cp = get_use_iv_cost (data, use, cand);
+  if (cp != NULL && cheaper_cost_pair (cp, best_cp))
+    return cp;
+
+  return best_cp;
+}
+
+/* Try breaking local optimal fixed-point for IVS by replacing candidates
+   which are used by more than one iv uses.  For each of those candidates,
+   this function tries to represent iv uses under that candidate using
+   other ones with lower local cost, then tries to prune the new set.
+   If the new set has lower cost, It returns the new cost after recording
+   candidate replacement in list DELTA.  */
+
+static comp_cost
+iv_ca_replace (struct ivopts_data *data, struct iv_ca *ivs,
+	       struct iv_ca_delta **delta)
+{
+  bitmap_iterator bi, bj;
+  unsigned int i, j, k;
+  struct iv_use *use;
+  struct iv_cand *cand;
+  comp_cost orig_cost, acost;
+  struct iv_ca_delta *act_delta, *tmp_delta;
+  struct cost_pair *old_cp, *best_cp = NULL;
+
+  *delta = NULL;
+  orig_cost = iv_ca_cost (ivs);
+
+  EXECUTE_IF_SET_IN_BITMAP (ivs->cands, 0, i, bi)
+    {
+      if (ivs->n_cand_uses[i] == 1
+	  || ivs->n_cand_uses[i] > ALWAYS_PRUNE_CAND_SET_BOUND)
+	continue;
+
+      cand = iv_cand (data, i);
+  
+      act_delta = NULL;
+      /*  Represent uses under current candidate using other ones with
+	  lower local cost.  */
+      for (j = 0; j < ivs->upto; j++)
+	{
+	  use = iv_use (data, j);
+	  old_cp = iv_ca_cand_for_use (ivs, use);
+
+	  if (old_cp->cand != cand)
+	    continue;
+
+	  best_cp = old_cp;
+	  if (data->consider_all_candidates)
+	    for (k = 0; k < n_iv_cands (data); k++)
+	      best_cp = cheaper_cost_with_cand (data, use, k,
+						old_cp->cand, best_cp);
+	  else
+	    EXECUTE_IF_SET_IN_BITMAP (use->related_cands, 0, k, bj)
+	      best_cp = cheaper_cost_with_cand (data, use, k,
+						old_cp->cand, best_cp);
+
+	  if (best_cp == old_cp)
+	    continue;
+
+	  act_delta = iv_ca_delta_add (use, old_cp, best_cp, act_delta);
+	}
+      /* No need for further prune.  */
+      if (!act_delta)
+	continue;
+
+      /* Prune the new candidate set.  */
+      iv_ca_delta_commit (data, ivs, act_delta, true);
+      acost = iv_ca_prune (data, ivs, NULL, &tmp_delta);
+      iv_ca_delta_commit (data, ivs, act_delta, false);
+      act_delta = iv_ca_delta_join (act_delta, tmp_delta);
+
+      if (compare_costs (acost, orig_cost) < 0)
+	{
+	  *delta = act_delta;
+	  return acost;
+	}
+      else
+	iv_ca_delta_free (&act_delta);
+    }
+
+  return orig_cost;
+}
+
 /* Tries to extend the sets IVS in the best possible way in order
    to express the USE.  If ORIGINALP is true, prefer candidates from
    the original set of IVs, otherwise favor important candidates not
@@ -5995,10 +6097,13 @@ get_initial_solution (struct ivopts_data *data, bool originalp)
   return ivs;
 }
 
-/* Tries to improve set of induction variables IVS.  */
+/* Tries to improve set of induction variables IVS.  TRY_REPLACE_P
+   points to a bool variable, this function tries to break local
+   optimal fixed-point by replacing candidates in IVS if it's true.  */
 
 static bool
-try_improve_iv_set (struct ivopts_data *data, struct iv_ca *ivs)
+try_improve_iv_set (struct ivopts_data *data,
+		    struct iv_ca *ivs, bool *try_replace_p)
 {
   unsigned i, n_ivs;
   comp_cost acost, best_cost = iv_ca_cost (ivs);
@@ -6042,7 +6147,20 @@ try_improve_iv_set (struct ivopts_data *data, struct iv_ca *ivs)
       /* Try removing the candidates from the set instead.  */
       best_cost = iv_ca_prune (data, ivs, NULL, &best_delta);
 
-      /* Nothing more we can do.  */
+      if (!best_delta && *try_replace_p)
+	{
+	  *try_replace_p = false;
+	  /* So far candidate selecting algorithm tends to choose fewer IVs
+	     so that it can handle cases in which loops have many variables
+	     but the best choice is often to use only one general biv.  One
+	     weakness is it can't handle opposite cases, in which different
+	     candidates should be chosen with respect to each use.  To solve
+	     the problem, we replace candidates in a manner described by the
+	     comments of iv_ca_replace, thus give general algorithm a chance
+	     to break local optimal fixed-point in these cases.  */
+	  best_cost = iv_ca_replace (data, ivs, &best_delta);
+	}
+
       if (!best_delta)
 	return false;
     }
@@ -6061,6 +6179,7 @@ static struct iv_ca *
 find_optimal_iv_set_1 (struct ivopts_data *data, bool originalp)
 {
   struct iv_ca *set;
+  bool try_replace_p = true;
 
   /* Get the initial solution.  */
   set = get_initial_solution (data, originalp);
@@ -6077,7 +6196,7 @@ find_optimal_iv_set_1 (struct ivopts_data *data, bool originalp)
       iv_ca_dump (data, dump_file, set);
     }
 
-  while (try_improve_iv_set (data, set))
+  while (try_improve_iv_set (data, set, &try_replace_p))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{

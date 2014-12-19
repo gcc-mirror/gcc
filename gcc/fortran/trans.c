@@ -772,7 +772,7 @@ gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size, tree token,
      gfc_allocate_using_lib.  */
   gfc_start_block (&alloc_block);
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB
+  if (flag_coarray == GFC_FCOARRAY_LIB
       && gfc_expr_attr (expr).codimension)
     {
       tree cond;
@@ -1263,7 +1263,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
   /* When POINTER is not NULL, we free it.  */
   gfc_start_block (&non_null);
   gfc_add_finalizer_call (&non_null, expr);
-  if (!coarray || gfc_option.coarray != GFC_FCOARRAY_LIB)
+  if (!coarray || flag_coarray != GFC_FCOARRAY_LIB)
     {
       tmp = build_call_expr_loc (input_location,
 				 builtin_decl_explicit (BUILT_IN_FREE), 1,

@@ -101,6 +101,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <list>
 #include "ipa-icf-gimple.h"
 #include "ipa-icf.h"
+#include "varasm.h"
 
 using namespace ipa_icf_gimple;
 
@@ -624,6 +625,13 @@ sem_function::merge (sem_item *alias_item)
 	return false;
       }
 
+  if (!decl_binds_to_current_def_p (alias->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Declaration does not bind to currect definition.\n\n");
+      return false;
+    }
+
   if (redirect_callers)
     {
       /* If alias is non-overwritable then
@@ -1131,10 +1139,14 @@ sem_variable::parse (varpool_node *node, bitmap_obstack *stack)
   tree decl = node->decl;
 
   bool readonly = TYPE_P (decl) ? TYPE_READONLY (decl) : TREE_READONLY (decl);
-  bool can_handle = readonly && (DECL_VIRTUAL_P (decl)
-				 || !TREE_ADDRESSABLE (decl));
+  if (!readonly)
+    return NULL;
 
-  if (!can_handle)
+  bool can_handle = DECL_VIRTUAL_P (decl)
+		    || flag_merge_constants >= 2
+		    || (!TREE_ADDRESSABLE (decl) && !node->externally_visible);
+
+  if (!can_handle || DECL_EXTERNAL (decl))
     return NULL;
 
   tree ctor = ctor_for_folding (decl);

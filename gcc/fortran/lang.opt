@@ -346,59 +346,62 @@ Fortran Joined
 ; Documented in common.opt
 
 faggressive-function-elimination
-Fortran
+Fortran Var(flag_aggressive_function_elimination)
 Eliminate multiple function invokations also for impure functions
 
 falign-commons
-Fortran
+Fortran Var(flag_align_commons) Init(1)
 Enable alignment of COMMON blocks
 
 fall-intrinsics
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_all_intrinsics)
 All intrinsics procedures are available regardless of selected standard
 
 fallow-leading-underscore
-Fortran Undocumented
+Fortran Undocumented Var(flag_allow_leading_underscore)
 ; For internal use only: allow the first character of symbol names to be an underscore
 
 fautomatic
-Fortran
+Fortran Var(flag_automatic) Init(1)
 Do not treat local variables and COMMON blocks as if they were named in SAVE statements
 
 fbackslash
-Fortran
+Fortran Var(flag_backslash)
 Specify that backslash in string introduces an escape character
 
 fbacktrace
-Fortran
+Fortran Var(flag_backtrace) Init(1)
 Produce a backtrace when a runtime error is encountered
 
 fblas-matmul-limit=
-Fortran RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger Var(flag_blas_matmul_limit) Init(30)
 -fblas-matmul-limit=<n>	Size of the smallest matrix for which matmul will use BLAS
 
 fcheck-array-temporaries
 Fortran
 Produce a warning at runtime if a array temporary has been created for a procedure argument
 
-fconvert=big-endian
-Fortran RejectNegative
-Use big-endian format for unformatted files
+fconvert=
+Fortran RejectNegative Joined Enum(gfc_convert) Var(flag_convert) Init(GFC_FLAG_CONVERT_NATIVE)
+-fconvert=<big-endian|little-endian|native|swap> The endianness used for unformatted files.
 
-fconvert=little-endian
-Fortran RejectNegative
-Use little-endian format for unformatted files
+Enum
+Name(gfc_convert) Type(enum gfc_convert) UnknownError(Unrecognized option to endianess value: %qs)
 
-fconvert=native
-Fortran RejectNegative
-Use native format for unformatted files
+EnumValue
+Enum(gfc_convert) String(big-endian) Value(GFC_FLAG_CONVERT_BIG)
 
-fconvert=swap
-Fortran RejectNegative
-Swap endianness for unformatted files
+EnumValue
+Enum(gfc_convert) String(little-endian) Value(GFC_FLAG_CONVERT_LITTLE)
+
+EnumValue
+Enum(gfc_convert) String(native) Value(GFC_FLAG_CONVERT_NATIVE)
+
+EnumValue
+Enum(gfc_convert) String(swap) Value(GFC_FLAG_CONVERT_SWAP)
 
 fcray-pointer
-Fortran
+Fortran Var(flag_cray_pointer)
 Use the Cray Pointer extension
 
 fd-lines-as-code
@@ -410,19 +413,19 @@ Fortran RejectNegative
 Treat lines with 'D' in column one as comments
 
 fdefault-double-8
-Fortran
+Fortran Var(flag_default_double)
 Set the default double precision kind to an 8 byte wide type
 
 fdefault-integer-8
-Fortran
+Fortran Var(flag_default_integer)
 Set the default integer kind to an 8 byte wide type
 
 fdefault-real-8
-Fortran
+Fortran Var(flag_default_real)
 Set the default real kind to an 8 byte wide type
 
 fdollar-ok
-Fortran
+Fortran Var(flag_dollar_ok)
 Allow dollar signs in entity names
 
 fdump-core
@@ -430,23 +433,23 @@ Fortran Ignore
 Does nothing. Preserved for backward compatibility.
 
 fdump-fortran-original
-Fortran
+Fortran Var(flag_dump_fortran_original)
 Display the code tree after parsing
 
 fdump-fortran-optimized
-Fortran
+Fortran Var(flag_dump_fortran_optimized)
 Display the code tree after front end optimization
 
 fdump-parse-tree
-Fortran
+Fortran Alias(fdump-fortran-original)
 Display the code tree after parsing; deprecated option
 
 fexternal-blas
-Fortran
+Fortran Var(flag_external_blas)
 Specify that an external BLAS library should be used for matmul calls on large-size arrays
 
 ff2c
-Fortran
+Fortran Var(flag_f2c)
 Use f2c calling convention
 
 ffixed-form
@@ -454,7 +457,7 @@ Fortran RejectNegative
 Assume that the source file is fixed form
 
 finteger-4-integer-8
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_integer4_kind,8)
 Interpret any INTEGER(4) as an INTEGER(8)
 
 fintrinsic-modules-path
@@ -466,11 +469,11 @@ Fortran RejectNegative Joined
 Specify where to find the compiled intrinsic modules
 
 ffixed-line-length-none
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_fixed_line_length,0)
 Allow arbitrary character line width in fixed mode
 
 ffixed-line-length-
-Fortran RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger Var(flag_fixed_line_length) Init(72)
 -ffixed-line-length-<n>	Use n as character line width in fixed mode
 
 ffpe-trap=
@@ -486,19 +489,19 @@ Fortran RejectNegative
 Assume that the source file is free form
 
 ffree-line-length-none
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_free_line_length,0)
 Allow arbitrary character line width in free mode
 
 ffree-line-length-
-Fortran RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger Var(flag_free_line_length) Init(132)
 -ffree-line-length-<n>	Use n as character line width in free mode
 
 ffrontend-optimize
-Fortran
+Fortran Var(flag_frontend_optimize) Init(-1)
 Enable front end optimization
 
 fimplicit-none
-Fortran
+Fortran Var(flag_implicit_none)
 Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements
 
 finit-character=
@@ -518,11 +521,29 @@ Fortran RejectNegative Joined
 -finit-logical=<true|false>	Initialize local logical variables
 
 finit-real=
-Fortran RejectNegative Joined
--finit-real=<zero|nan|inf|-inf>	Initialize local real variables
+Fortran RejectNegative ToLower Joined Enum(gfc_init_local_real) Var(flag_init_real) Init(GFC_INIT_REAL_OFF)
+-finit-real=<zero|snan|nan|inf|-inf>	Initialize local real variables
+
+Enum
+Name(gfc_init_local_real) Type(enum gfc_init_local_real) UnknownError(Unrecognized option to floating-point init value: %qs)
+
+EnumValue
+Enum(gfc_init_local_real) String(zero) Value(GFC_INIT_REAL_ZERO)
+
+EnumValue
+Enum(gfc_init_local_real) String(snan) Value(GFC_INIT_REAL_SNAN)
+
+EnumValue
+Enum(gfc_init_local_real) String(nan) Value(GFC_INIT_REAL_NAN)
+
+EnumValue
+Enum(gfc_init_local_real) String(inf) Value(GFC_INIT_REAL_INF)
+
+EnumValue
+Enum(gfc_init_local_real) String(-inf) Value(GFC_INIT_REAL_NEG_INF)
 
 fmax-array-constructor=
-Fortran RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger Var(flag_max_array_constructor) Init(65535)
 -fmax-array-constructor=<n>	Maximum number of objects in an array constructor
 
 fmax-identifier-length=
@@ -530,19 +551,19 @@ Fortran RejectNegative Joined UInteger
 -fmax-identifier-length=<n>	Maximum identifier length
 
 fmax-subrecord-length=
-Fortran RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger Var(flag_max_subrecord_length)
 -fmax-subrecord-length=<n>	Maximum length for subrecords
 
 fmax-stack-var-size=
-Fortran RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger Var(flag_max_stack_var_size) Init(-2)
 -fmax-stack-var-size=<n>	Size in bytes of the largest array that will be put on the stack
 
 fstack-arrays
-Fortran
+Fortran Var(flag_stack_arrays) Init(-1)
 Put all local arrays on stack.
 
 fmodule-private
-Fortran
+Fortran Var(flag_module_private)
 Set default accessibility of module entities to PRIVATE.
 
 fopenmp
@@ -554,7 +575,7 @@ Fortran
 ; Documented in C
 
 fpack-derived
-Fortran
+Fortran Var(flag_pack_derived)
 Try to lay out derived types as compactly as possible
 
 fpreprocessed
@@ -562,67 +583,79 @@ Fortran
 ; Documented in C
 
 fprotect-parens
-Fortran
+Fortran Var(flag_protect_parens) Init(-1)
 Protect parentheses in expressions
 
 frange-check
-Fortran
+Fortran Var(flag_range_check) Init(1)
 Enable range checking during compilation
 
 freal-4-real-8
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_real4_kind,8)
 Interpret any REAL(4) as a REAL(8)
 
 freal-4-real-10
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_real4_kind,10)
 Interpret any REAL(4) as a REAL(10)
 
 freal-4-real-16
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_real4_kind,16)
 Interpret any REAL(4) as a REAL(16)
 
 freal-8-real-4
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_real8_kind,4)
 Interpret any REAL(8) as a REAL(4)
 
 freal-8-real-10
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_real8_kind,10)
 Interpret any REAL(8) as a REAL(10)
 
 freal-8-real-16
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_real8_kind,16)
 Interpret any REAL(8) as a REAL(16)
 
 frealloc-lhs
-Fortran
+Fortran Var(flag_realloc_lhs) Init(-1)
 Reallocate the LHS in assignments
 
 frecord-marker=4
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_record_marker,4)
 Use a 4-byte record marker for unformatted files
 
 frecord-marker=8
-Fortran RejectNegative
+Fortran RejectNegative Var(flag_record_marker,8)
 Use an 8-byte record marker for unformatted files
 
 frecursive
-Fortran
+Fortran Var(flag_recursive)
 Allocate local variables on the stack to allow indirect recursion
 
 frepack-arrays
-Fortran
+Fortran Var(flag_repack_arrays)
 Copy array sections into a contiguous block on procedure entry
 
 fcoarray=
-Fortran RejectNegative JoinedOrMissing
--fcoarray=[...]	Specify which coarray parallelization should be used
+Fortran RejectNegative Joined Enum(gfc_fcoarray) Var(flag_coarray) Init(GFC_FCOARRAY_NONE)
+-fcoarray=<none|single|lib>	Specify which coarray parallelization should be used
+
+Enum
+Name(gfc_fcoarray) Type(enum gfc_fcoarray) UnknownError(Unrecognized option: %qs)
+
+EnumValue
+Enum(gfc_fcoarray) String(none) Value(GFC_FCOARRAY_NONE)
+
+EnumValue
+Enum(gfc_fcoarray) String(single) Value(GFC_FCOARRAY_SINGLE)
+
+EnumValue
+Enum(gfc_fcoarray) String(lib) Value(GFC_FCOARRAY_LIB)
 
 fcheck=
 Fortran RejectNegative JoinedOrMissing
 -fcheck=[...]	Specify which runtime checks are to be performed
 
 fsecond-underscore
-Fortran
+Fortran Var(flag_second_underscore) Init(-1)
 Append a second underscore if the name already contains an underscore
 
 fshort-enums
@@ -630,11 +663,11 @@ Fortran Var(flag_short_enums)
 ; Documented in C
 
 fsign-zero
-Fortran
+Fortran Var(flag_sign_zero) Init(1)
 Apply negative sign to zero values
 
 funderscoring
-Fortran
+Fortran Var(flag_underscoring) Init(1)
 Append underscores to externally visible names
 
 fwhole-file

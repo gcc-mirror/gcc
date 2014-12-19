@@ -1,3 +1,118 @@
+2014-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63723
+	* g++.dg/cpp0x/sfinae54.C: New.
+
+2014-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59204
+	* g++.dg/cpp0x/sfinae53.C: New.
+
+2014-12-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/64291
+	* testsuite/gcc.target/i386/pr64291-[12].c: New tests.
+
+2014-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60955
+	* g++.dg/warn/register-parm-1.C: New.
+
+2014-12-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/amd64-abi-7.c: New tests.
+	* gcc.target/i386/amd64-abi-8.c: Likwise.
+	* gcc.target/i386/amd64-abi-9.c: Likwise.
+
+2014-12-18  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/ushr64_1.c: Remove scan-assembler "ushr...64".
+
+2014-12-18  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ipa/pr64146.C: New test.
+
+2014-12-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/mpx-dg.exp (check_effective_target_mpx): Change into link test.
+	Add main.
+
+2014-12-18  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/62178
+	* gcc.target/aarch64/pr62178.c: New test.
+
+2014-12-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64173
+	* gfortran.dg/proc_ptr_comp_40.f90: New.
+
+2014-12-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/61296
+	* gcc.target/i386/pr61296-2.c: New.
+	* gcc.target/i386/pr61296-2.c: Likewise.
+	* gcc.target/i386/pr61296-3.c: Likewise.
+	* gcc.target/i386/pr61296-4.c: Likewise.
+	* gcc.target/i386/pr61296-5.c: Likewise.
+	* gcc.target/i386/pr61296-6.c: Likewise.
+	* gcc.target/i386/pr61296-7.c: Likewise.
+
+2014-12-17  Tejas Belagod  <tejas.belagod@arm.com>
+
+	PR testsuite/64328
+	* gcc.dg/addr_equal-1.c: Not supported for -fPIC.
+
+2014-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/63568
+	* gcc.dg/pr63568.c: New test.
+
+2014-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64322
+	* gcc.dg/tree-ssa/vrp95.c: New test.
+
+	PR sanitizer/64289
+	* c-c++-common/ubsan/pr64289.c: New test.
+
+2014-12-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58650
+	* g++.dg/parse/friend12.C: New.
+
+2014-12-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* gcc.target/sh/pr54089-1.c: Change optimization level from -O1 to -O2.
+
+2014-12-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53513
+	* gcc.target/sh/fpchg.c: Rename to ...
+	* gcc.target/sh/pr53513-1.c: ... this.  Adjust test case to work for
+	-m4a and -m4a-single.
+
+2014-12-16  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/64309
+	* gcc.dg/pr64309.c: New test.
+
+2014-12-16  Felix Yang  <felix.yang@huawei.com>
+
+	PR rtl-optimization/64240
+	* gcc.dg/sms-12.c: New test.
+
+2014-12-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64244
+	* gfortran.dg/typebound_call_26.f90: New.
+
+2014-12-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/64043
+	* gcc.dg/lto/20110201-1_0.c: New testcase.
+
 2014-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/64316

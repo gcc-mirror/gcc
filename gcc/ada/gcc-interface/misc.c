@@ -49,6 +49,7 @@
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"	/* For pass_by_reference.  */
+#include "dwarf2out.h"
 
 #include "ada.h"
 #include "adadecode.h"
@@ -634,6 +635,65 @@ gnat_type_max_size (const_tree gnu_type)
   return max_unitsize;
 }
 
+/* Provide information in INFO for debug output about the TYPE array type.
+   Return whether TYPE is handled.  */
+
+static bool
+gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
+{
+  bool convention_fortran_p;
+  tree index_type;
+
+  const_tree dimen = NULL_TREE;
+  const_tree last_dimen = NULL_TREE;
+  int i;
+
+  if (TREE_CODE (type) != ARRAY_TYPE
+      || !TYPE_DOMAIN (type)
+      || !TYPE_INDEX_TYPE (TYPE_DOMAIN (type)))
+    return false;
+
+  /* Count how many dimentions this array has.  */
+  for (i = 0, dimen = type; ; ++i, dimen = TREE_TYPE (dimen))
+    if (i > 0
+	&& (TREE_CODE (dimen) != ARRAY_TYPE
+	    || !TYPE_MULTI_ARRAY_P (dimen)))
+      break;
+  info->ndimensions = i;
+  convention_fortran_p = TYPE_CONVENTION_FORTRAN_P (type);
+
+  /* TODO??? For row major ordering, we probably want to emit nothing and
+     instead specify it as the default in Dw_TAG_compile_unit.  */
+  info->ordering = (convention_fortran_p
+		    ? array_descr_ordering_column_major
+		    : array_descr_ordering_row_major);
+  info->base_decl = NULL_TREE;
+  info->data_location = NULL_TREE;
+  info->allocated = NULL_TREE;
+  info->associated = NULL_TREE;
+
+  for (i = (convention_fortran_p ? info->ndimensions - 1 : 0),
+       dimen = type;
+
+       0 <= i && i < info->ndimensions;
+
+       i += (convention_fortran_p ? -1 : 1),
+       dimen = TREE_TYPE (dimen))
+    {
+      /* We are interested in the stored bounds for the debug info.  */
+      index_type = TYPE_INDEX_TYPE (TYPE_DOMAIN (dimen));
+
+      info->dimen[i].bounds_type = index_type;
+      info->dimen[i].lower_bound = TYPE_MIN_VALUE (index_type);
+      info->dimen[i].upper_bound = TYPE_MAX_VALUE (index_type);
+      last_dimen = dimen;
+    }
+
+  info->element_type = TREE_TYPE (last_dimen);
+
+  return true;
+}
+
 /* GNU_TYPE is a subtype of an integral type.  Set LOWVAL to the low bound
    and HIGHVAL to the high bound, respectively.  */
 
@@ -924,6 +984,8 @@ gnat_init_ts (void)
 #define LANG_HOOKS_TYPE_FOR_SIZE	gnat_type_for_size
 #undef  LANG_HOOKS_TYPES_COMPATIBLE_P
 #define LANG_HOOKS_TYPES_COMPATIBLE_P	gnat_types_compatible_p
+#undef  LANG_HOOKS_GET_ARRAY_DESCR_INFO
+#define LANG_HOOKS_GET_ARRAY_DESCR_INFO	gnat_get_array_descr_info
 #undef  LANG_HOOKS_GET_SUBRANGE_BOUNDS
 #define LANG_HOOKS_GET_SUBRANGE_BOUNDS  gnat_get_subrange_bounds
 #undef  LANG_HOOKS_DESCRIPTIVE_TYPE

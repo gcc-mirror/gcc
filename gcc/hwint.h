@@ -264,4 +264,21 @@ zext_hwi (unsigned HOST_WIDE_INT src, unsigned int prec)
     }
 }
 
+/* Compute the absolute value of X.  */
+
+inline HOST_WIDE_INT
+abs_hwi (HOST_WIDE_INT x)
+{
+  gcc_checking_assert (x != HOST_WIDE_INT_MIN);
+  return x >= 0 ? x : -x;
+}
+
+/* Compute the absolute value of X as an unsigned type.  */
+
+inline unsigned HOST_WIDE_INT
+absu_hwi (HOST_WIDE_INT x)
+{
+  return x >= 0 ? (unsigned HOST_WIDE_INT)x : -(unsigned HOST_WIDE_INT)x;
+}
+
 #endif /* ! GCC_HWINT_H */

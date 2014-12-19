@@ -1852,7 +1852,7 @@ variable_decl (int elem)
       goto cleanup;
     }
 
-  if (gfc_option.flag_cray_pointer)
+  if (flag_cray_pointer)
     cp_as = gfc_copy_array_spec (as);
 
   /* At this point, we know for sure if the symbol is PARAMETER and can thus
@@ -1921,7 +1921,7 @@ variable_decl (int elem)
   /*  If this symbol has already shown up in a Cray Pointer declaration,
       and this is not a component declaration,
       then we want to set the type & bail out.  */
-  if (gfc_option.flag_cray_pointer && gfc_current_state () != COMP_DERIVED)
+  if (flag_cray_pointer && gfc_current_state () != COMP_DERIVED)
     {
       gfc_find_symbol (name, gfc_current_ns, 1, &sym);
       if (sym != NULL && sym->attr.cray_pointee)
@@ -2140,28 +2140,28 @@ gfc_match_old_kind_spec (gfc_typespec *ts)
 
     }
 
-  if (ts->type == BT_INTEGER && ts->kind == 4 && gfc_option.flag_integer4_kind == 8)
+  if (ts->type == BT_INTEGER && ts->kind == 4 && flag_integer4_kind == 8)
     ts->kind = 8;
 
   if (ts->type == BT_REAL || ts->type == BT_COMPLEX)
     {
       if (ts->kind == 4)
 	{
-	  if (gfc_option.flag_real4_kind == 8)
+	  if (flag_real4_kind == 8)
 	    ts->kind =  8;
-	  if (gfc_option.flag_real4_kind == 10)
+	  if (flag_real4_kind == 10)
 	    ts->kind = 10;
-	  if (gfc_option.flag_real4_kind == 16)
+	  if (flag_real4_kind == 16)
 	    ts->kind = 16;
 	}
 
       if (ts->kind == 8)
 	{
-	  if (gfc_option.flag_real8_kind == 4)
+	  if (flag_real8_kind == 4)
 	    ts->kind = 4;
-	  if (gfc_option.flag_real8_kind == 10)
+	  if (flag_real8_kind == 10)
 	    ts->kind = 10;
-	  if (gfc_option.flag_real8_kind == 16)
+	  if (flag_real8_kind == 16)
 	    ts->kind = 16;
 	}
     }
@@ -2311,28 +2311,28 @@ kind_expr:
   if(m == MATCH_ERROR)
      gfc_current_locus = where;
 
-  if (ts->type == BT_INTEGER && ts->kind == 4 && gfc_option.flag_integer4_kind == 8)
+  if (ts->type == BT_INTEGER && ts->kind == 4 && flag_integer4_kind == 8)
     ts->kind =  8;
 
   if (ts->type == BT_REAL || ts->type == BT_COMPLEX)
     {
       if (ts->kind == 4)
 	{
-	  if (gfc_option.flag_real4_kind == 8)
+	  if (flag_real4_kind == 8)
 	    ts->kind =  8;
-	  if (gfc_option.flag_real4_kind == 10)
+	  if (flag_real4_kind == 10)
 	    ts->kind = 10;
-	  if (gfc_option.flag_real4_kind == 16)
+	  if (flag_real4_kind == 16)
 	    ts->kind = 16;
 	}
 
       if (ts->kind == 8)
 	{
-	  if (gfc_option.flag_real8_kind == 4)
+	  if (flag_real8_kind == 4)
 	    ts->kind = 4;
-	  if (gfc_option.flag_real8_kind == 10)
+	  if (flag_real8_kind == 10)
 	    ts->kind = 10;
-	  if (gfc_option.flag_real8_kind == 16)
+	  if (flag_real8_kind == 16)
 	    ts->kind = 16;
 	}
     }
@@ -6769,7 +6769,7 @@ gfc_match_pointer (void)
   gfc_gobble_whitespace ();
   if (gfc_peek_ascii_char () == '(')
     {
-      if (!gfc_option.flag_cray_pointer)
+      if (!flag_cray_pointer)
 	{
 	  gfc_error ("Cray pointer declaration at %C requires -fcray-pointer "
 		     "flag");

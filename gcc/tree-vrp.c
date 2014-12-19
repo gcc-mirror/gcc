@@ -2434,6 +2434,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
       && code != MAX_EXPR
       && code != PLUS_EXPR
       && code != MINUS_EXPR
+      && code != RSHIFT_EXPR
       && (vr0.type == VR_VARYING
 	  || vr1.type == VR_VARYING
 	  || vr0.type != vr1.type
@@ -2948,6 +2949,15 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	{
 	  if (code == RSHIFT_EXPR)
 	    {
+	      /* Even if vr0 is VARYING or otherwise not usable, we can derive
+		 useful ranges just from the shift count.  E.g.
+		 x >> 63 for signed 64-bit x is always [-1, 0].  */
+	      if (vr0.type != VR_RANGE || symbolic_range_p (&vr0))
+		{
+		  vr0.type = type = VR_RANGE;
+		  vr0.min = vrp_val_min (expr_type);
+		  vr0.max = vrp_val_max (expr_type);
+		}
 	      extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
 	      return;
 	    }

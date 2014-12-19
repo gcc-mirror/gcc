@@ -1,3 +1,28 @@
+2014-12-17  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/64302
+	PR libstdc++/64303
+	* include/bits/regex.h (match_results::cbegin, match_results::cend,
+	regex_token_iterator::regex_token_iterator,
+	regex_token_iterator::_M_normalize_result): Fix match_results cbegin
+	and cend and regex_token_iterator::_M_result invariant.
+	* include/bits/regex.tcc: Fix regex_token_iterator::_M_result invariant.
+	* testsuite/28_regex/iterators/regex_token_iterator/64303.cc: Testcase.
+
+2014-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/pre/gnu.ver (CXXABI_1.3.9): Export not just
+	_Zd[la]Pvm, but also _Zd[la]Pv[jy] to cover other std::size_t
+	manglings.
+
+2014-12-16  Jason Merrill  <jason@redhat.com>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: And other size_t
+	manglings.
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Export _ZdlPvm and
+	_ZdaPvm.
+
 2014-12-15  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/del_ops.cc: New.

@@ -701,7 +701,7 @@ Objective-C and Objective-C++ Dialects}.
 -m32 -m64 -mx32 -m16 -mlarge-data-threshold=@var{num} @gol
 -msse2avx -mfentry -mrecord-mcount -mnop-mcount -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
--mstack-protector-guard=@var{guard}}
+-malign-data=@var{type} -mstack-protector-guard=@var{guard}}
 
 @emph{i386 and x86-64 Windows Options}
 @gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll @gol
@@ -15682,6 +15682,14 @@ as well as modifying the function calling convention for functions taking
 @code{long double}.  Hence they are not binary-compatible
 with code compiled without that switch.
 
+@item -malign-data=@var{type}
+@opindex malign-data
+Control how GCC aligns variables.  Supported values for @var{type} are
+@samp{compat} uses increased alignment value compatible uses GCC 4.8
+and earlier, @samp{abi} uses alignment value as specified by the
+psABI, and @samp{cacheline} uses increased alignment value to match
+the cache line size.  @samp{compat} is the default.
+
 @item -mlarge-data-threshold=@var{threshold}
 @opindex mlarge-data-threshold
 When @option{-mcmodel=medium} is specified, data objects larger than
@@ -16247,6 +16255,19 @@ If profiling is active (@option{-pg}), generate the calls to
 the profiling functions as nops. This is useful when they
 should be patched in later dynamically. This is likely only
 useful together with @option{-mrecord-mcount}.
+
+@item -mskip-rax-setup
+@itemx -mno-skip-rax-setup
+@opindex mskip-rax-setup
+When generating code for the x86-64 architecture with SSE extensions
+disabled, @option{-skip-rax-setup} can be used to skip setting up RAX
+register when there are no variable arguments passed in vector registers.
+
+@strong{Warning:} Since RAX register is used to avoid unnecessarily
+saving vector registers on stack when passing variable arguments, the
+impacts of this option are callees may waste some stack space,
+misbehave or jump to a random location.  GCC 4.4 or newer don't have
+those issues, regardless the RAX register value.
 
 @item -m8bit-idiv
 @itemx -mno-8bit-idiv

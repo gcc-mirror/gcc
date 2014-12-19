@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-tree.h"
 #include "langhooks.h"
 #include "target.h"
+#include "ubsan.h"
 
 /* Change of width--truncation and extension of integers or reals--
    is represented with NOP_EXPR.  Proper functioning of many things
@@ -109,6 +110,20 @@ convert (tree type, tree expr)
 
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
+      if (flag_sanitize & SANITIZE_FLOAT_CAST
+	  && TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
+	  && COMPLETE_TYPE_P (type)
+	  && current_function_decl != NULL_TREE
+	  && !lookup_attribute ("no_sanitize_undefined",
+				DECL_ATTRIBUTES (current_function_decl)))
+	{
+	  expr = c_save_expr (expr);
+	  tree check = ubsan_instrument_float_cast (loc, type, expr);
+	  expr = fold_build1 (FIX_TRUNC_EXPR, type, expr);
+	  if (check == NULL)
+	    return expr;
+	  return fold_build2 (COMPOUND_EXPR, TREE_TYPE (expr), check, expr);
+	}
       ret = convert_to_integer (type, e);
       goto maybe_fold;
 

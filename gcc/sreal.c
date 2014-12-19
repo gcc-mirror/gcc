@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include <math.h>
 #include "coretypes.h"
 #include "sreal.h"
 
@@ -95,64 +96,6 @@ sreal::shift_right (int s)
   m_sig >>= s;
 }
 
-/* Normalize *this.  */
-
-void
-sreal::normalize ()
-{
-  int64_t s = m_sig < 0 ? -1 : 1;
-  unsigned HOST_WIDE_INT sig = absu_hwi (m_sig);
-
-  if (sig == 0)
-    {
-      m_exp = -SREAL_MAX_EXP;
-    }
-  else if (sig < SREAL_MIN_SIG)
-    {
-      do
-	{
-	  sig <<= 1;
-	  m_exp--;
-	}
-      while (sig < SREAL_MIN_SIG);
-
-      /* Check underflow.  */
-      if (m_exp < -SREAL_MAX_EXP)
-	{
-	  m_exp = -SREAL_MAX_EXP;
-	  sig = 0;
-	}
-    }
-  else if (sig > SREAL_MAX_SIG)
-    {
-      int last_bit;
-      do
-	{
-	  last_bit = sig & 1;
-	  sig >>= 1;
-	  m_exp++;
-	}
-      while (sig > SREAL_MAX_SIG);
-
-      /* Round the number.  */
-      sig += last_bit;
-      if (sig > SREAL_MAX_SIG)
-	{
-	  sig >>= 1;
-	  m_exp++;
-	}
-
-      /* Check overflow.  */
-      if (m_exp > SREAL_MAX_EXP)
-	{
-	  m_exp = SREAL_MAX_EXP;
-	  sig = SREAL_MAX_SIG;
-	}
-    }
-
-  m_sig = s * sig;
-}
-
 /* Return integer value of *this.  */
 
 int64_t
@@ -169,6 +112,18 @@ sreal::to_int () const
   if (m_exp < 0)
     return m_sig >> -m_exp;
   return m_sig;
+}
+
+/* Return value of *this as double.
+   This should be used for debug output only.  */
+
+double
+sreal::to_double () const
+{
+  double val = m_sig;
+  if (m_exp)
+    val *= exp2 (m_exp);
+  return val;
 }
 
 /* Return *this + other.  */
@@ -251,7 +206,7 @@ sreal
 sreal::operator* (const sreal &other) const
 {
   sreal r;
-  if (std::abs (m_sig) < SREAL_MIN_SIG || std::abs (other.m_sig) < SREAL_MIN_SIG)
+  if (absu_hwi (m_sig) < SREAL_MIN_SIG || absu_hwi (other.m_sig) < SREAL_MIN_SIG)
     {
       r.m_sig = 0;
       r.m_exp = -SREAL_MAX_EXP;

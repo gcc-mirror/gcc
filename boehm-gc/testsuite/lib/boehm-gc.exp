@@ -27,6 +27,7 @@ load_gcc_lib wrapper.exp
 load_gcc_lib target-supports.exp
 # For dg-skip-if.
 load_gcc_lib target-supports-dg.exp
+load_gcc_lib target-utils.exp
 # For ${tool}_exit.
 load_gcc_lib gcc-defs.exp
 # For prune_gcc_output.

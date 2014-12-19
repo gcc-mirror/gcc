@@ -1,3 +1,10 @@
+2014-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer_common/sanitizer_symbolizer_libbacktrace.cc,
+	sanitizer_common/sanitizer_symbolizer_libbacktrace.h,
+	sanitizer_common/sanitizer_symbolizer_posix_libcdep.cc: Cherry pick
+	upstream r224308.
+
 2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/63784

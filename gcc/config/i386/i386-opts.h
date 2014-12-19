@@ -77,6 +77,12 @@ enum pmode {
   PMODE_DI 	/* Pmode == DImode. */
 };
 
+enum ix86_align_data {
+  ix86_align_data_type_compat,
+  ix86_align_data_type_abi,
+  ix86_align_data_type_cacheline
+};
+
 enum asm_dialect {
   ASM_ATT,
   ASM_INTEL

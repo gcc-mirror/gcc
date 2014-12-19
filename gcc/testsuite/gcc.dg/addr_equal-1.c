@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target nonpic } */
 /* { dg-require-weak "" } */
 /* { dg-require-alias "" } */
 /* { dg-options "-O2" } */

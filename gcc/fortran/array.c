@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "flags.h"
 #include "gfortran.h"
 #include "match.h"
 #include "constructor.h"
@@ -207,7 +208,7 @@ coarray:
 	return MATCH_ERROR;
     }
 
-  if (gfc_option.coarray == GFC_FCOARRAY_NONE)
+  if (flag_coarray == GFC_FCOARRAY_NONE)
     {
       gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return MATCH_ERROR;
@@ -590,7 +591,7 @@ coarray:
   if (!gfc_notify_std (GFC_STD_F2008, "Coarray declaration at %C"))
     goto cleanup;
 
-  if (gfc_option.coarray == GFC_FCOARRAY_NONE)
+  if (flag_coarray == GFC_FCOARRAY_NONE)
     {
       gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       goto cleanup;
@@ -1654,7 +1655,7 @@ gfc_expand_constructor (gfc_expr *e, bool fatal)
 
   /* If we can successfully get an array element at the max array size then
      the array is too big to expand, so we just return.  */
-  f = gfc_get_array_element (e, gfc_option.flag_max_array_constructor);
+  f = gfc_get_array_element (e, flag_max_array_constructor);
   if (f != NULL)
     {
       gfc_free_expr (f);
@@ -1663,8 +1664,7 @@ gfc_expand_constructor (gfc_expr *e, bool fatal)
 	  gfc_error ("The number of elements in the array constructor "
 		     "at %L requires an increase of the allowed %d "
 		     "upper limit.   See %<-fmax-array-constructor%> "
-		     "option", &e->where,
-		     gfc_option.flag_max_array_constructor);
+		     "option", &e->where, flag_max_array_constructor);
 	  return false;
 	}
       return true;

@@ -3819,7 +3819,7 @@ Parse::simple_stat(bool may_be_composite_lit, bool* return_exp,
   token = this->peek_token();
   if (token->is_op(OPERATOR_CHANOP))
     {
-      this->send_stmt(this->verify_not_sink(exp));
+      this->send_stmt(this->verify_not_sink(exp), may_be_composite_lit);
       if (return_exp != NULL)
 	*return_exp = true;
     }
@@ -3913,13 +3913,13 @@ Parse::expression_stat(Expression* exp)
 // Channel  = Expression .
 
 void
-Parse::send_stmt(Expression* channel)
+Parse::send_stmt(Expression* channel, bool may_be_composite_lit)
 {
   go_assert(this->peek_token()->is_op(OPERATOR_CHANOP));
   Location loc = this->location();
   this->advance_token();
-  Expression* val = this->expression(PRECEDENCE_NORMAL, false, true, NULL,
-				     NULL);
+  Expression* val = this->expression(PRECEDENCE_NORMAL, false,
+				     may_be_composite_lit, NULL, NULL);
   Statement* s = Statement::make_send_statement(channel, val, loc);
   this->gogo_->add_statement(s);
 }

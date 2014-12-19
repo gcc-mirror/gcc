@@ -521,6 +521,9 @@ class Assignment_statement : public Statement
   void
   do_check_types(Gogo*);
 
+  Statement*
+  do_flatten(Gogo*, Named_object*, Block*, Statement_inserter*);
+
   Bstatement*
   do_get_backend(Translate_context*);
 
@@ -604,6 +607,28 @@ Assignment_statement::do_check_types(Gogo*)
 
   if (lhs_type->is_error() || rhs_type->is_error())
     this->set_is_error();
+}
+
+// Flatten an assignment statement.  We may need a temporary for
+// interface conversion.
+
+Statement*
+Assignment_statement::do_flatten(Gogo*, Named_object*, Block*,
+				 Statement_inserter* inserter)
+{
+  if (!this->lhs_->is_sink_expression()
+      && !Type::are_identical(this->lhs_->type(), this->rhs_->type(),
+			      false, NULL)
+      && this->rhs_->type()->interface_type() != NULL
+      && !this->rhs_->is_variable())
+    {
+      Temporary_statement* temp =
+	Statement::make_temporary(NULL, this->rhs_, this->location());
+      inserter->insert(temp);
+      this->rhs_ = Expression::make_temporary_reference(temp,
+							this->location());
+    }
+  return this;
 }
 
 // Convert an assignment statement to the backend representation.
@@ -1884,6 +1909,8 @@ Statement::make_dec_statement(Expression* expr)
 // Class Thunk_statement.  This is the base class for go and defer
 // statements.
 
+Unordered_set(const Struct_type*) Thunk_statement::thunk_types;
+
 // Constructor.
 
 Thunk_statement::Thunk_statement(Statement_classification classification,
@@ -2265,7 +2292,20 @@ Thunk_statement::build_struct(Function_type* fntype)
 	}
     }
 
-  return Type::make_struct_type(fields, location);
+  Struct_type *st = Type::make_struct_type(fields, location);
+
+  Thunk_statement::thunk_types.insert(st);
+
+  return st;
+}
+
+// Return whether ST is a type created to hold thunk parameters.
+
+bool
+Thunk_statement::is_thunk_struct(const Struct_type* st)
+{
+  return (Thunk_statement::thunk_types.find(st)
+	  != Thunk_statement::thunk_types.end());
 }
 
 // Build the thunk we are going to call.  This is a brand new, albeit
@@ -2465,11 +2505,12 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
   gogo->add_block(b, location);
 
   gogo->lower_block(function, b);
-  gogo->flatten_block(function, b);
 
   // We already ran the determine_types pass, so we need to run it
   // just for the call statement now.  The other types are known.
   call_statement->determine_types();
+
+  gogo->flatten_block(function, b);
 
   if (may_call_recover || recover_arg != NULL)
     {
@@ -3857,7 +3898,11 @@ Switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
   Expression* val = this->val_;
   if (val == NULL)
     val = Expression::make_boolean(true, loc);
-  Temporary_statement* val_temp = Statement::make_temporary(NULL, val, loc);
+
+  Type* type = val->type();
+  if (type->is_abstract())
+    type = type->make_non_abstract_type();
+  Temporary_statement* val_temp = Statement::make_temporary(type, val, loc);
   b->add_statement(val_temp);
 
   this->clauses_->lower(b, val_temp, this->break_label());
@@ -4393,6 +4438,27 @@ Send_statement::do_check_types(Gogo*)
     }
 }
 
+// Flatten a send statement.  We may need a temporary for interface
+// conversion.
+
+Statement*
+Send_statement::do_flatten(Gogo*, Named_object*, Block*,
+			   Statement_inserter* inserter)
+{
+  Type* element_type = this->channel_->type()->channel_type()->element_type();
+  if (!Type::are_identical(element_type, this->val_->type(), false, NULL)
+      && this->val_->type()->interface_type() != NULL
+      && !this->val_->is_variable())
+    {
+      Temporary_statement* temp =
+	Statement::make_temporary(NULL, this->val_, this->location());
+      inserter->insert(temp);
+      this->val_ = Expression::make_temporary_reference(temp,
+							this->location());
+    }
+  return this;
+}
+
 // Convert a send statement to the backend representation.
 
 Bstatement*
@@ -4402,7 +4468,9 @@ Send_statement::do_get_backend(Translate_context* context)
 
   Channel_type* channel_type = this->channel_->type()->channel_type();
   Type* element_type = channel_type->element_type();
-  Expression* val = Expression::make_cast(element_type, this->val_, loc);
+  Expression* val = Expression::convert_for_assignment(context->gogo(),
+						       element_type,
+						       this->val_, loc);
 
   bool is_small;
   bool can_take_address;

@@ -46,6 +46,7 @@ public:
 
   void dump (FILE *) const;
   int64_t to_int () const;
+  double to_double () const;
   sreal operator+ (const sreal &other) const;
   sreal operator- (const sreal &other) const;
   sreal operator* (const sreal &other) const;
@@ -83,12 +84,14 @@ public:
 
   sreal shift (int s) const
   {
+    /* Zero needs no shifting.  */
+    if (!m_sig)
+      return *this;
     gcc_checking_assert (s <= SREAL_BITS);
     gcc_checking_assert (s >= -SREAL_BITS);
 
-    /* Exponent should never be so large because shift_right is used only by
-     sreal_add and sreal_sub ant thus the number cannot be shifted out from
-     exponent range.  */
+    /* Overflows/drop to 0 could be handled gracefully, but hopefully we do not
+       need to do so.  */
     gcc_checking_assert (m_exp + s <= SREAL_MAX_EXP);
     gcc_checking_assert (m_exp + s >= -SREAL_MAX_EXP);
 
@@ -113,7 +116,9 @@ public:
   }
 
 private:
-  void normalize ();
+  inline void normalize ();
+  inline void normalize_up ();
+  inline void normalize_down ();
   void shift_right (int amount);
   static sreal signedless_plus (const sreal &a, const sreal &b, bool negative);
   static sreal signedless_minus (const sreal &a, const sreal &b, bool negative);
@@ -173,6 +178,87 @@ inline sreal operator<< (const sreal &a, int exp)
 inline sreal operator>> (const sreal &a, int exp)
 {
   return a.shift (-exp);
+}
+
+/* Make significant to be >= SREAL_MIN_SIG.
+
+   Make this separate method so inliner can handle hot path better.  */
+
+inline void
+sreal::normalize_up ()
+{
+  int64_t s = m_sig < 0 ? -1 : 1;
+  unsigned HOST_WIDE_INT sig = absu_hwi (m_sig);
+  int shift = SREAL_PART_BITS - 2 - floor_log2 (sig);
+
+  gcc_checking_assert (shift > 0);
+  sig <<= shift;
+  m_exp -= shift;
+  gcc_checking_assert (sig <= SREAL_MAX_SIG && sig >= SREAL_MIN_SIG);
+
+  /* Check underflow.  */
+  if (m_exp < -SREAL_MAX_EXP)
+    {
+      m_exp = -SREAL_MAX_EXP;
+      sig = 0;
+    }
+  if (s == -1)
+    m_sig = -sig;
+  else
+    m_sig = sig;
+}
+
+/* Make significant to be <= SREAL_MAX_SIG.
+
+   Make this separate method so inliner can handle hot path better.  */
+
+inline void
+sreal::normalize_down ()
+{
+  int64_t s = m_sig < 0 ? -1 : 1;
+  int last_bit;
+  unsigned HOST_WIDE_INT sig = absu_hwi (m_sig);
+  int shift = floor_log2 (sig) - SREAL_PART_BITS + 2;
+
+  gcc_checking_assert (shift > 0);
+  last_bit = (sig >> (shift-1)) & 1;
+  sig >>= shift;
+  m_exp += shift;
+  gcc_checking_assert (sig <= SREAL_MAX_SIG && sig >= SREAL_MIN_SIG);
+
+  /* Round the number.  */
+  sig += last_bit;
+  if (sig > SREAL_MAX_SIG)
+    {
+      sig >>= 1;
+      m_exp++;
+    }
+
+  /* Check overflow.  */
+  if (m_exp > SREAL_MAX_EXP)
+    {
+      m_exp = SREAL_MAX_EXP;
+      sig = SREAL_MAX_SIG;
+    }
+  if (s == -1)
+    m_sig = -sig;
+  else
+    m_sig = sig;
+}
+
+/* Normalize *this; the hot path.  */
+
+inline void
+sreal::normalize ()
+{
+  unsigned HOST_WIDE_INT sig = absu_hwi (m_sig);
+
+  if (sig == 0)
+    m_exp = -SREAL_MAX_EXP;
+  else if (sig > SREAL_MAX_SIG)
+    normalize_down ();
+  else if (sig < SREAL_MIN_SIG)
+    normalize_up ();
 }
 
 #endif

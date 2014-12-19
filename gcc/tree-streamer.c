@@ -324,7 +324,18 @@ preload_common_nodes (struct streamer_tree_cache_d *cache)
     /* Skip boolean type and constants, they are frontend dependent.  */
     if (i != TI_BOOLEAN_TYPE
 	&& i != TI_BOOLEAN_FALSE
-	&& i != TI_BOOLEAN_TRUE)
+	&& i != TI_BOOLEAN_TRUE
+	/* MAIN_IDENTIFIER is not always initialized by Fortran FE.  */
+	&& i != TI_MAIN_IDENTIFIER
+	/* PID_TYPE is initialized only by C family front-ends.  */
+	&& i != TI_PID_TYPE
+	/* Skip optimization and target option nodes; they depend on flags.  */
+	&& i != TI_OPTIMIZATION_DEFAULT
+	&& i != TI_OPTIMIZATION_CURRENT
+	&& i != TI_TARGET_OPTION_DEFAULT
+	&& i != TI_TARGET_OPTION_CURRENT
+	&& i != TI_CURRENT_TARGET_PRAGMA
+	&& i != TI_CURRENT_OPTIMIZE_PRAGMA)
       record_common_node (cache, global_trees[i]);
 }
 

@@ -224,7 +224,7 @@ match_integer_constant (gfc_expr **result, int signflag)
   if (kind == -1)
     return MATCH_ERROR;
 
-  if (kind == 4 && gfc_option.flag_integer4_kind == 8)
+  if (kind == 4 && flag_integer4_kind == 8)
     kind = 8;
 
   if (gfc_validate_kind (BT_INTEGER, kind, true) < 0)
@@ -639,21 +639,21 @@ done:
 
       if (kind == 4)
 	{
-	  if (gfc_option.flag_real4_kind == 8)
+	  if (flag_real4_kind == 8)
 	    kind = 8;
-	  if (gfc_option.flag_real4_kind == 10)
+	  if (flag_real4_kind == 10)
 	    kind = 10;
-	  if (gfc_option.flag_real4_kind == 16)
+	  if (flag_real4_kind == 16)
 	    kind = 16;
 	}
 
       if (kind == 8)
 	{
-	  if (gfc_option.flag_real8_kind == 4)
+	  if (flag_real8_kind == 4)
 	    kind = 4;
-	  if (gfc_option.flag_real8_kind == 10)
+	  if (flag_real8_kind == 10)
 	    kind = 10;
-	  if (gfc_option.flag_real8_kind == 16)
+	  if (flag_real8_kind == 16)
 	    kind = 16;
 	}
       break;
@@ -688,21 +688,21 @@ done:
 
       if (kind == 4)
 	{
-	  if (gfc_option.flag_real4_kind == 8)
+	  if (flag_real4_kind == 8)
 	    kind = 8;
-	  if (gfc_option.flag_real4_kind == 10)
+	  if (flag_real4_kind == 10)
 	    kind = 10;
-	  if (gfc_option.flag_real4_kind == 16)
+	  if (flag_real4_kind == 16)
 	    kind = 16;
 	}
 
       if (kind == 8)
 	{
-	  if (gfc_option.flag_real8_kind == 4)
+	  if (flag_real8_kind == 4)
 	    kind = 4;
-	  if (gfc_option.flag_real8_kind == 10)
+	  if (flag_real8_kind == 10)
 	    kind = 10;
-	  if (gfc_option.flag_real8_kind == 16)
+	  if (flag_real8_kind == 16)
 	    kind = 16;
 	}
 
@@ -857,7 +857,7 @@ next_string_char (gfc_char_t delimiter, int *ret)
       return 0;
     }
 
-  if (gfc_option.flag_backslash && c == '\\')
+  if (flag_backslash && c == '\\')
     {
       old_locus = gfc_current_locus;
 
@@ -929,7 +929,7 @@ match_charkind_name (char *name)
 
       if (!ISALNUM (c)
 	  && c != '_'
-	  && (c != '$' || !gfc_option.flag_dollar_ok))
+	  && (c != '$' || !flag_dollar_ok))
 	break;
 
       *name++ = c;

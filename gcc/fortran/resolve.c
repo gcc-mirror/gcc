@@ -1558,7 +1558,7 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
     proc_sym = sym;
 
   /* If sym is RECURSIVE, all is well of course.  */
-  if (proc_sym->attr.recursive || gfc_option.flag_recursive)
+  if (proc_sym->attr.recursive || flag_recursive)
     return false;
 
   /* Find the context procedure's "real" symbol if it has entries.
@@ -5091,7 +5091,7 @@ resolve_procedure:
   if (t)
     expression_rank (e);
 
-  if (t && gfc_option.coarray == GFC_FCOARRAY_LIB && gfc_is_coindexed (e))
+  if (t && flag_coarray == GFC_FCOARRAY_LIB && gfc_is_coindexed (e))
     add_caf_get_intrinsic (e);
 
   return t;
@@ -5676,7 +5676,7 @@ success:
 /* Resolve a call to a type-bound subroutine.  */
 
 static bool
-resolve_typebound_call (gfc_code* c, const char **name)
+resolve_typebound_call (gfc_code* c, const char **name, bool *overridable)
 {
   gfc_actual_arglist* newactual;
   gfc_symtree* target;
@@ -5699,6 +5699,10 @@ resolve_typebound_call (gfc_code* c, const char **name)
 
   if (!resolve_typebound_generic_call (c->expr1, name))
     return false;
+
+  /* Pass along the NON_OVERRIDABLE attribute of the specific TBP. */
+  if (overridable)
+    *overridable = !c->expr1->value.compcall.tbp->non_overridable;
 
   /* Transform into an ordinary EXEC_CALL for now.  */
 
@@ -5959,7 +5963,7 @@ resolve_typebound_subroutine (gfc_code *code)
       if (c->ts.u.derived == NULL)
 	c->ts.u.derived = gfc_find_derived_vtab (declared);
 
-      if (!resolve_typebound_call (code, &name))
+      if (!resolve_typebound_call (code, &name, NULL))
 	return false;
 
       /* Use the generic name if it is there.  */
@@ -5991,7 +5995,7 @@ resolve_typebound_subroutine (gfc_code *code)
     }
 
   if (st == NULL)
-    return resolve_typebound_call (code, NULL);
+    return resolve_typebound_call (code, NULL, NULL);
 
   if (!resolve_ref (code->expr1))
     return false;
@@ -6004,10 +6008,10 @@ resolve_typebound_subroutine (gfc_code *code)
 	 || (!class_ref && st->n.sym->ts.type != BT_CLASS))
     {
       gfc_free_ref_list (new_ref);
-      return resolve_typebound_call (code, NULL);
+      return resolve_typebound_call (code, NULL, NULL);
     }
 
-  if (!resolve_typebound_call (code, &name))
+  if (!resolve_typebound_call (code, &name, &overridable))
     {
       gfc_free_ref_list (new_ref);
       return false;
@@ -8522,7 +8526,7 @@ resolve_critical (gfc_code *code)
   char name[GFC_MAX_SYMBOL_LEN];
   static int serial = 0;
 
-  if (gfc_option.coarray != GFC_FCOARRAY_LIB)
+  if (flag_coarray != GFC_FCOARRAY_LIB)
     return;
 
   symtree = gfc_find_symtree (gfc_current_ns->sym_root,
@@ -9352,7 +9356,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       if (!gfc_notify_std (GFC_STD_F2008, "Assignment to an allocatable "
 			   "polymorphic variable at %L", &lhs->where))
 	return false;
-      if (!gfc_option.flag_realloc_lhs)
+      if (!flag_realloc_lhs)
 	{
 	  gfc_error ("Assignment to an allocatable polymorphic variable at %L "
 		     "requires %<-frealloc-lhs%>", &lhs->where);
@@ -9394,7 +9398,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
      the LHS is (re)allocatable or has a vector subscript.  If the LHS is a
      noncoindexed array and the RHS is a coindexed scalar, use the normal code
      path.  */
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB
+  if (flag_coarray == GFC_FCOARRAY_LIB
       && (lhs_coindexed
 	  || (code->expr2->expr_type == EXPR_FUNCTION
 	      && code->expr2->value.function.isym
@@ -10685,7 +10689,7 @@ build_default_init_expr (gfc_symbol *sym)
       break;
 
     case BT_REAL:
-      switch (gfc_option.flag_init_real)
+      switch (flag_init_real)
 	{
 	case GFC_INIT_REAL_SNAN:
 	  init_expr->is_snan = 1;
@@ -10714,7 +10718,7 @@ build_default_init_expr (gfc_symbol *sym)
       break;
 
     case BT_COMPLEX:
-      switch (gfc_option.flag_init_real)
+      switch (flag_init_real)
 	{
 	case GFC_INIT_REAL_SNAN:
 	  init_expr->is_snan = 1;
@@ -10777,7 +10781,7 @@ build_default_init_expr (gfc_symbol *sym)
 	  init_expr = NULL;
 	}
       if (!init_expr && gfc_option.flag_init_character == GFC_INIT_CHARACTER_ON
-	  && sym->ts.u.cl->length && gfc_option.flag_max_stack_var_size != 0)
+	  && sym->ts.u.cl->length && flag_max_stack_var_size != 0)
 	{
 	  gfc_actual_arglist *arg;
 	  init_expr = gfc_get_expr ();
@@ -10827,7 +10831,7 @@ apply_default_init_local (gfc_symbol *sym)
      are stack allocated even with -fno-automatic; we have also to exclude
      result variable, which are also nonstatic.  */
   if (sym->attr.save || sym->ns->save_all
-      || (gfc_option.flag_max_stack_var_size == 0 && !sym->attr.result
+      || (flag_max_stack_var_size == 0 && !sym->attr.result
 	  && !sym->ns->proc_name->attr.recursive
 	  && (!sym->attr.dimension || !is_non_constant_shape_array (sym))))
     {

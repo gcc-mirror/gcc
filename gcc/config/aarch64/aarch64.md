@@ -107,7 +107,6 @@
     UNSPEC_SISD_SSHL
     UNSPEC_SISD_USHL
     UNSPEC_SSHL_2S
-    UNSPEC_SSHR64
     UNSPEC_ST1
     UNSPEC_ST2
     UNSPEC_ST3
@@ -118,7 +117,6 @@
     UNSPEC_TLS
     UNSPEC_TLSDESC
     UNSPEC_USHL_2S
-    UNSPEC_USHR64
     UNSPEC_VSTRUCTDUMMY
     UNSPEC_SP_SET
     UNSPEC_SP_TEST
@@ -187,14 +185,6 @@
 
 ;; Processor types.
 (include "aarch64-tune.md")
-
-;; True if the generic scheduling description should be used.
-
-(define_attr "generic_sched" "yes,no"
-  (const (if_then_else
-          (eq_attr "tune" "cortexa53,cortexa15,thunderx")
-          (const_string "no")
-          (const_string "yes"))))
 
 ;; Scheduling
 (include "../arm/cortex-a53.md")
