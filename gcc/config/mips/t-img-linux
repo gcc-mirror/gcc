@@ -1,0 +1,30 @@
+# Copyright (C) 2014 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# The default build is mips32r6, hard-float big-endian.  Add mips64r6,
+# 64-bit ABI and little-endian variations.
+
+MULTILIB_OPTIONS = mips64r6 mabi=64 EL
+MULTILIB_DIRNAMES = mips64r6 64 el
+MULTILIB_MATCHES = EL=mel EB=meb
+
+# The 64 bit ABI is not supported on the mips32r6 architecture.
+# Because mips32r6 is the default we can't use that flag to trigger
+# the exception so we check for mabi=64 with no specific mips
+# architecture flag instead.
+MULTILIB_EXCEPTIONS += mabi=64*

@@ -1,5 +1,12 @@
 2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
 
+	* config.gcc: Support mips*-img-linux* and mips*-img-elf*.
+	* config/mips/mti-linux.h: Support mips32r6 as being the default arch.
+	* config/mips/t-img-elf: New.
+	* config/mips/t-img-linux: New.
+
+2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
+
 	* config.gcc: Add mipsisa64r6 and mipsisa32r6 cpu support.
 	* config/mips/constraints.md (ZD): Add r6 restrictions.
 	* config/mips/gnu-user.h (DRIVER_SELF_SPECS): Add MIPS_ISA_LEVEL_SPEC.

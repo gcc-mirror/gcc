@@ -1,0 +1,38 @@
+# Copyright (C) 2014 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# The default build is mips32r6, hard-float big-endian.
+# A multilib for mips32r6+LE
+# A multilib for mips64r6
+# A multilib for mips64r6+LE
+# A multilib for mips32r6+LE+singlefloat+shortdouble
+
+MULTILIB_OPTIONS = mips64r6 mabi=64 EL msoft-float/msingle-float fshort-double
+MULTILIB_DIRNAMES = mips64r6 64 el sof sgl short
+MULTILIB_MATCHES = EL=mel EB=meb
+
+# Don't build 64r6 with single-float
+MULTILIB_EXCEPTIONS += mips64r6/*msingle-float*
+MULTILIB_EXCEPTIONS += mips64r6/*fshort-double*
+
+MULTILIB_EXCEPTIONS += mabi=64*
+MULTILIB_EXCEPTIONS += msingle-float*
+MULTILIB_EXCEPTIONS += *msingle-float
+MULTILIB_EXCEPTIONS += fshort-double
+MULTILIB_EXCEPTIONS += EL/fshort-double
+MULTILIB_EXCEPTIONS += *msoft-float/fshort-double
