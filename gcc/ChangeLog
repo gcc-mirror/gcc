@@ -1,5 +1,10 @@
 2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* config/sh/sh.c (prepare_move_operands): Split HI/QImode load/store
+	to two move insns via r0.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* config/sh/predicates.md (arith_or_int_operand): New predicate.
 	* config/sh/sh.md (addsi3): Use arith_or_int_operand for operand 2.
 	Return fail if operands[0] and operands[1] are overlap when
