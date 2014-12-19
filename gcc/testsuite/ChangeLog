@@ -1,3 +1,8 @@
+2014-12-19  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63569
+	* gcc.dg/ipa/pr63569.c: New test.
+
 2014-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/63831
