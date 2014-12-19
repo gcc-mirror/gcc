@@ -393,6 +393,10 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 	    "__COUNTER__ expanded inside directive with -fdirectives-only");
       number = pfile->counter++;
       break;
+
+    case BT_HAS_ATTRIBUTE:
+      number = pfile->cb.has_attribute (pfile);
+      break;
     }
 
   if (result == NULL)

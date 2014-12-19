@@ -1,3 +1,23 @@
+2014-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/63831
+	* directives.c (lex_macro_node): Remove __has_attribute__ handling.
+	* internal.h (struct spec_node): Remove n__has_attribute__ field.
+	(struct lexer_state): Remove in__has_attribute__ field.
+	* macro.c (_cpp_builtin_macro_text): Handle BT_HAS_ATTRIBUTE.
+	* identifiers.c (_cpp_init_hashtable): Remove __has_attribute__
+	handling.
+	* init.c (builtin_array): Add __has_attribute and __has_cpp_attribute.
+	(cpp_init_special_builtins): Don't initialize __has_attribute
+	or __has_cpp_attribute if CLK_ASM or pfile->cb.has_attribute is NULL.
+	* traditional.c (enum ls): Remove ls_has_attribute,
+	ls_has_attribute_close.
+	(_cpp_scan_out_logical_line): Remove __has_attribute__ handling.
+	* include/cpplib.h (enum cpp_builtin_type): Add BT_HAS_ATTRIBUTE.
+	* pch.c (cpp_read_state): Remove __has_attribute__ handling.
+	* expr.c (eval_token): Likewise.
+	(parse_has_attribute): Removed.
+
 2014-12-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* directives.c (cpp_define_formatted): Use xvasprintf.
