@@ -1,5 +1,5 @@
-// { dg-do compile }
-// PR/61198
+// PR c++/61198
+// { dg-do compile { target c++11 } }
 
 template<int herp, typename derp_t>
 struct broken
