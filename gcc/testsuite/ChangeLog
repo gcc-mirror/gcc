@@ -1,3 +1,8 @@
+2014-12-19  Kai Tietz  <ktietz@redhat.com>
+
+	* g++.dg/template/using30.C: Move ...
+	* g++.dg/cpp0x/alias-decl-45.C: ... here.
+
 2014-12-19  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/eon_1.c: New test.
