@@ -12712,8 +12712,7 @@ Replaced by @samp{-mmultcost}.
 @subsection ARM Options
 @cindex ARM options
 
-These @samp{-m} options are defined for Advanced RISC Machines (ARM)
-architectures:
+These @samp{-m} options are defined for the ARM port:
 
 @table @gcctabopt
 @item -mabi=@var{name}
