@@ -1,3 +1,9 @@
+2014-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/64268
+	* combine.c (try_combine): Immediately return if any of I0,I1,I2
+	are the same insn.
+
 2014-12-19  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64.c (<LOGICAL:optab>_one_cmpl<mode>3):

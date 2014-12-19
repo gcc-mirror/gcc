@@ -2588,6 +2588,11 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   rtx new_other_notes;
   int i;
 
+  /* Immediately return if any of I0,I1,I2 are the same insn (I3 can
+     never be).  */
+  if (i1 == i2 || i0 == i2 || (i0 && i0 == i1))
+    return 0;
+
   /* Only try four-insn combinations when there's high likelihood of
      success.  Look for simple insns, such as loads of constants or
      binary operations involving a constant.  */
