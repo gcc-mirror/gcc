@@ -1,3 +1,17 @@
+2014-12-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* hash-table.h (struct pointer_hash): Fix formating.
+	(hash_table_higher_prime_index): Declare pure.
+	(hash_table_mod2, hash_table_mod1, mul_mod): Move inline;
+	assume that uint64_t always exists.
+	(hash_table<Descriptor, Allocator, false>): Use gcc_checking_assert.
+	(hash_table<Descriptor, Allocator, false>::expand ()): Fix formating.
+	(hash_table<Descriptor, Allocator, false>::clear_slot (value_type **slot)):
+	Use checking assert.
+	* hash-table.c: Remove #if 0 code.
+	(hash_table_higher_prime_index): Use gcc_assert.
+	(mul_mod, hash-table_mod1, hash_table_mod2): move to hash-table.h
+
 2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config.gcc: Support mips*-img-linux* and mips*-img-elf*.

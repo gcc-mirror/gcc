@@ -41,39 +41,6 @@ along with GCC; see the file COPYING3.  If not see
    For the record, here's the function that computed the table; it's a 
    vastly simplified version of the function of the same name from gcc.  */
 
-#if 0
-unsigned int
-ceil_log2 (unsigned int x)
-{
-  int i;
-  for (i = 31; i >= 0 ; --i)
-    if (x > (1u << i))
-      return i+1;
-  abort ();
-}
-
-unsigned int
-choose_multiplier (unsigned int d, unsigned int *mlp, unsigned char *shiftp)
-{
-  unsigned long long mhigh;
-  double nx;
-  int lgup, post_shift;
-  int pow, pow2;
-  int n = 32, precision = 32;
-
-  lgup = ceil_log2 (d);
-  pow = n + lgup;
-  pow2 = n + lgup - precision;
-
-  nx = ldexp (1.0, pow) + ldexp (1.0, pow2);
-  mhigh = nx / d;
-
-  *shiftp = lgup - 1;
-  *mlp = mhigh;
-  return mhigh >> 32;
-}
-#endif
-
 struct prime_ent const prime_tab[] = {
   {          7, 0x24924925, 0x9999999b, 2 },
   {         13, 0x3b13b13c, 0x745d1747, 3 },
@@ -127,67 +94,8 @@ hash_table_higher_prime_index (unsigned long n)
     }
 
   /* If we've run out of primes, abort.  */
-  if (n > prime_tab[low].prime)
-    {
-      fprintf (stderr, "Cannot find prime bigger than %lu\n", n);
-      abort ();
-    }
+  gcc_assert (n <= prime_tab[low].prime);
 
   return low;
 }
 
-/* Return X % Y using multiplicative inverse values INV and SHIFT.
-
-   The multiplicative inverses computed above are for 32-bit types,
-   and requires that we be able to compute a highpart multiply.
-
-   FIX: I am not at all convinced that
-     3 loads, 2 multiplications, 3 shifts, and 3 additions
-   will be faster than
-     1 load and 1 modulus
-   on modern systems running a compiler.  */
-
-#ifdef UNSIGNED_64BIT_TYPE
-static inline hashval_t
-mul_mod (hashval_t x, hashval_t y, hashval_t inv, int shift)
-{
-  __extension__ typedef UNSIGNED_64BIT_TYPE ull;
-   hashval_t t1, t2, t3, t4, q, r;
-
-   t1 = ((ull)x * inv) >> 32;
-   t2 = x - t1;
-   t3 = t2 >> 1;
-   t4 = t1 + t3;
-   q  = t4 >> shift;
-   r  = x - (q * y);
-
-   return r;
-}
-#endif
-
-/* Compute the primary table index for HASH given current prime index.  */
-
-hashval_t
-hash_table_mod1 (hashval_t hash, unsigned int index)
-{
-  const struct prime_ent *p = &prime_tab[index];
-#ifdef UNSIGNED_64BIT_TYPE
-  if (sizeof (hashval_t) * CHAR_BIT <= 32)
-    return mul_mod (hash, p->prime, p->inv, p->shift);
-#endif
-  return hash % p->prime;
-}
-
-
-/* Compute the secondary table index for HASH given current prime index.  */
-
-hashval_t
-hash_table_mod2 (hashval_t hash, unsigned int index)
-{
-  const struct prime_ent *p = &prime_tab[index];
-#ifdef UNSIGNED_64BIT_TYPE
-  if (sizeof (hashval_t) * CHAR_BIT <= 32)
-    return 1 + mul_mod (hash, p->prime - 2, p->inv_m2, p->shift);
-#endif
-  return 1 + hash % (p->prime - 2);
-}
