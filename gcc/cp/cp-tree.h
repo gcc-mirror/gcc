@@ -1098,6 +1098,18 @@ struct GTY(()) saved_scope {
 #define processing_specialization scope_chain->x_processing_specialization
 #define processing_explicit_instantiation scope_chain->x_processing_explicit_instantiation
 
+/* RAII sentinel to disable certain warnings during template substitution
+   and elsewhere.  */
+
+struct warning_sentinel
+{
+  int &flag;
+  int val;
+  warning_sentinel(int& flag, bool suppress=true)
+    : flag(flag), val(flag) { if (suppress) flag = 0; }
+  ~warning_sentinel() { flag = val; }
+};
+
 /* The cached class binding level, from the most recently exited
    class, or NULL if none.  */
 
