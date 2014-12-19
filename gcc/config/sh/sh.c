@@ -12186,6 +12186,26 @@ sh_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return true;
 }
 
+/* Specify the modes required to caller save a given hard regno.
+   choose_hard_reg_mode chooses mode based on HARD_REGNO_MODE_OK
+   and returns ?Imode for float regs when sh_hard_regno_mode_ok
+   permits integer modes on them.  That makes LRA's split process
+   unhappy.  See PR55212.
+ */
+machine_mode
+sh_hard_regno_caller_save_mode (unsigned int regno, unsigned int nregs,
+				machine_mode mode)
+{
+  if (FP_REGISTER_P (regno)
+      && (mode == SFmode
+	  || mode == SCmode
+	  || ((mode == DFmode || mode == DCmode)
+	      && ((regno - FIRST_FP_REG) & 1) == 0)))
+    return mode;
+
+  return choose_hard_reg_mode (regno, nregs, false);
+}
+
 /* Return the class of registers for which a mode change from FROM to TO
    is invalid.  */
 bool
@@ -13183,7 +13203,7 @@ sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
     {
       if (rclass == FPUL_REGS)
 	return GENERAL_REGS;
-      return FPUL_REGS;
+      return NO_REGS;  // LRA wants NO_REGS here, it used to be FPUL_REGS;
     }
   if ((rclass == TARGET_REGS
        || (TARGET_SHMEDIA && rclass == SIBCALL_REGS))

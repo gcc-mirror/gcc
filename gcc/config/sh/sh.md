@@ -10055,6 +10055,18 @@ label:
 	      (match_operand 2 "" "")])]
   "(TARGET_SH2E || TARGET_SH2A) || TARGET_SHMEDIA"
 {
+  if (! TARGET_SHMEDIA)
+    {
+      /* RA does not know that the call sets the function value registers.
+	 We avoid problems by claiming that those registers are clobbered
+	 at this point.  */
+      for (int i = 0; i < XVECLEN (operands[2], 0); i++)
+	{
+	  rtx set = XVECEXP (operands[2], 0, i);
+	  emit_clobber (SET_SRC (set));
+	}
+    }
+
   emit_call_insn (gen_call (operands[0], const0_rtx, const0_rtx));
 
   for (int i = 0; i < XVECLEN (operands[2], 0); i++)

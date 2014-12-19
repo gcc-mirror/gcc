@@ -262,5 +262,7 @@ extern int sh2a_get_function_vector_number (rtx);
 extern bool sh2a_is_function_vector_call (rtx);
 extern void sh_fix_range (const char *);
 extern bool sh_hard_regno_mode_ok (unsigned int, machine_mode);
+extern machine_mode sh_hard_regno_caller_save_mode (unsigned int, unsigned int,
+						    machine_mode);
 extern bool sh_can_use_simple_return_p (void);
 #endif /* ! GCC_SH_PROTOS_H */

@@ -510,7 +510,25 @@
 	  && GET_CODE (x) == PLUS && REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1)))
 	return false;
 
-      if ((mode == QImode || mode == HImode)
+      if (GET_CODE (x) == PLUS)
+	{
+	  rtx y = XEXP (x, 0);
+
+	  if (! REG_P (y)
+	      && ! (GET_CODE (y) == SUBREG && REG_P (SUBREG_REG (y))))
+	    return false;
+	  y = XEXP (x, 1);
+	  if (! REG_P (y)
+	      && ! (GET_CODE (y) == SUBREG && REG_P (SUBREG_REG (y)))
+	      && ! CONST_INT_P (y))
+	    return false;
+	}
+
+      /* LRA will try to satisfy the constraints for the memory displacements
+	 and thus we must not reject invalid displacements in the predicate,
+	 or else LRA will bail out.
+	 FIXME: maybe remove this check completely?  */
+      if (!lra_in_progress && (mode == QImode || mode == HImode)
 	  && GET_CODE (x) == PLUS
 	  && REG_P (XEXP (x, 0))
 	  && CONST_INT_P (XEXP (x, 1)))
@@ -595,7 +613,25 @@
 	  && GET_CODE (x) == PLUS && REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1)))
 	return false;
 
-      if ((mode == QImode || mode == HImode)
+      if (GET_CODE (x) == PLUS)
+	{
+	  rtx y = XEXP (x, 0);
+
+	  if (! REG_P (y)
+	      && ! (GET_CODE (y) == SUBREG && REG_P (SUBREG_REG (y))))
+	    return false;
+	  y = XEXP (x, 1);
+	  if (! REG_P (y)
+	      && ! (GET_CODE (y) == SUBREG && REG_P (SUBREG_REG (y)))
+	      && ! CONST_INT_P (y))
+	    return false;
+	}
+
+      /* LRA will try to satisfy the constraints for the memory displacements
+	 and thus we must not reject invalid displacements in the predicate,
+	 or else LRA will bail out.
+	 FIXME: maybe remove this check completely?  */
+      if (!lra_in_progress && (mode == QImode || mode == HImode)
 	  && GET_CODE (x) == PLUS
 	  && REG_P (XEXP (x, 0))
 	  && CONST_INT_P (XEXP (x, 1)))
@@ -1117,6 +1153,8 @@
 
       case ZERO_EXTEND:
       case SIGN_EXTEND:
+        if (REG_P (XEXP (op, 0)) && REGNO (XEXP (op, 0)) == T_REG)
+	  return true;
 	return GET_CODE (XEXP (op, 0)) == SUBREG
 	       && REG_P (SUBREG_REG (XEXP (op, 0)))
 	       && REGNO (SUBREG_REG (XEXP (op, 0))) == T_REG;
