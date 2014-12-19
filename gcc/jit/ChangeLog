@@ -1,3 +1,8 @@
+2014-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c (gcc::jit::recording::context::set_str_option):
+	Handle NULL.
+
 2014-12-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/topics/contexts.rst (gccjit::context::set_str_option):

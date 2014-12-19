@@ -831,7 +831,7 @@ recording::context::set_str_option (enum gcc_jit_str_option opt,
       return;
     }
   free (m_str_options[opt]);
-  m_str_options[opt] = xstrdup (value);
+  m_str_options[opt] = value ? xstrdup (value) : NULL;
 }
 
 /* Set the given integer option for this context, or add an error if
