@@ -1,3 +1,126 @@
+2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config.gcc: Add mipsisa64r6 and mipsisa32r6 cpu support.
+	* config/mips/constraints.md (ZD): Add r6 restrictions.
+	* config/mips/gnu-user.h (DRIVER_SELF_SPECS): Add MIPS_ISA_LEVEL_SPEC.
+	* config/mips/loongson.md
+	(<u>div<mode>3, <u>mod<mode>3): Move to mips.md.
+	* config/mips/mips-cpus.def (mips32r6, mips64r6): Define.
+	* config/mips/mips-modes.def (CCF): New mode.
+	* config/mips/mips-protos.h
+	(mips_9bit_offset_address_p): New prototype.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips.c (MIPS_JR): Use JALR $, <reg> for R6.
+	(mips_rtx_cost_data): Add pseudo-processors W32 and W64.
+	(mips_9bit_offset_address_p): New function.
+	(mips_rtx_costs): Account for R6 multiply and FMA instructions.
+	(mips_emit_compare): Implement R6 FPU comparisons.
+	(mips_expand_conditional_move): Implement R6 selects.
+	(mips_expand_conditional_trap): Account for removed trap immediate.
+	(mips_expand_block_move): Disable inline move when LWL/LWR are removed.
+	(mips_print_float_branch_condition): Update for R6 FPU branches.
+	(mips_print_operand): Handle CCF mode compares.
+	(mips_interrupt_extra_call_saved_reg_p): Do not attempt to callee-save
+	MD_REGS for R6.
+	(mips_hard_regno_mode_ok_p): Support CCF mode.
+	(mips_mode_ok_for_mov_fmt_p): Likewise.
+	(mips_secondary_reload_class): CCFmode can be loaded directly.
+	(mips_set_fast_mult_zero_zero_p): Account for R6 multiply instructions.
+	(mips_option_override): Ensure R6 is used with fp64.  Set default
+	mips_nan modes.  Check for mips_nan support.  Prevent DSP with R6.
+	(mips_conditional_register_usage): Disable MD_REGS for R6. Disable
+	FPSW for R6.
+	(mips_mulsidi3_gen_fn): Support R6 multiply instructions.
+	* config/mips/mips.h (ISA_MIPS32R6, ISA_MIPS64R6): Define.
+	(TARGET_CPU_CPP_BUILTINS): Rework for mips32/mips64.
+	(ISA_HAS_JR): New macro.
+	(ISA_HAS_HILO): New macro.
+	(ISA_HAS_R6MUL): Likewise.
+	(ISA_HAS_R6DMUL): Likewise.
+	(ISA_HAS_R6DIV): Likewise.
+	(ISA_HAS_R6DDIV): Likewise.
+	(ISA_HAS_CCF): Likewise.
+	(ISA_HAS_SEL): Likewise.
+	(ISA_HAS_COND_TRAPI): Likewise.
+	(ISA_HAS_FP_MADDF_MSUBF): Likewise.
+	(ISA_HAS_LWL_LWR): Likewise.
+	(ISA_HAS_IEEE_754_LEGACY): Likewise.
+	(ISA_HAS_IEEE_754_2008): Likewise.
+	(ISA_HAS_PREFETCH_9BIT): Likewise.
+	(MIPSR6_9BIT_OFFSET_P): New macro.
+	(BASE_DRIVER_SELF_SPECS): Use MIPS_ISA_DRIVER_SELF_SPECS.
+	(DRIVER_SELF_SPECS): Use MIPS_ISA_LEVEL_SPEC.
+	(MULTILIB_ISA_DEFAULT): Handle mips32r6 and mips64r6.
+	(MIPS_ISA_LEVEL_SPEC): Likewise.
+	(MIPS_ISA_SYNCI_SPEC): Likewise.
+	(ISA_HAS_64BIT_REGS): Likewise.
+	(ISA_HAS_BRANCHLIKELY): Likewise.
+	(ISA_HAS_MUL3): Likewise.
+	(ISA_HAS_DMULT): Likewise.
+	(ISA_HAS_DDIV): Likewise.
+	(ISA_HAS_DIV): Likewise.
+	(ISA_HAS_MULT): Likewise.
+	(ISA_HAS_FP_CONDMOVE): Likewise.
+	(ISA_HAS_8CC): Likewise.
+	(ISA_HAS_FP4): Likewise.
+	(ISA_HAS_PAIRED_SINGLE): Likewise.
+	(ISA_HAS_MADD_MSUB): Likewise.
+	(ISA_HAS_FP_RECIP_RSQRT): Likewise.
+	* config/mips/mips.md (processor): Add w32 and w64.
+	(FPCC): New mode iterator.
+	(reg): Add CCF mode.
+	(fpcmp): New mode attribute.
+	(fcond): Add ordered, ltgt and ne codes.
+	(fcond): Update code attribute.
+	(sel): New code attribute.
+	(selinv): Likewise.
+	(ctrap<mode>4): Update condition.
+	(*conditional_trap_reg<mode>): New define_insn.
+	(*conditional_trap<mode>): Update condition.
+	(mul<mode>3): Expand R6 multiply instructions.
+	(<su>mulsi3_highpart): Likewise.
+	(<su>muldi3_highpart): Likewise.
+	(mul<mode>3_mul3_loongson): Rename...
+	(mul<mode>3_mul3_hilo): To this.  Add R6 mul instruction.
+	(<u>mulsidi3_32bit_r6): New expander.
+	(<u>mulsidi3_32bit): Restrict to pre-r6 multiplies.
+	(<u>mulsidi3_32bit_r4000): Likewise.
+	(<u>mulsidi3_64bit): Likewise.
+	(<su>mulsi3_highpart_internal): Likewise.
+	(mulsidi3_64bit_r6dmul): New instruction.
+	(<su>mulsi3_highpart_r6): Likewise.
+	(<su>muldi3_highpart_r6): Likewise.
+	(fma<mode>4): Likewise.
+	(movccf): Likewise.
+	(*sel<code><GPR:mode>_using_<GPR2:mode>): Likewise.
+	(*sel<mode>): Likewise.
+	(<u>div<mode>3): Moved from loongson.md.  Add R6 instructions.
+	(<u>mod<mode>3): Likewise.
+	(extvmisalign<mode>): Require ISA_HAS_LWL_LWR.
+	(extzvmisalign<mode>): Likewise.
+	(insvmisalign<mode>): Likewise.
+	(mips_cache): Account for R6 displacement field sizes.
+	(*branch_fp): Rename...
+	(*branch_fp_<mode>): To this.  Add CCFmode support.
+	(*branch_fp_inverted): Rename...
+	(*branch_fp_inverted_<mode>): To this.  Add CCFmode support.
+	(s<code>_<mode>): Rename...
+	(s<code>_<SCALARF:mode>_using_<FPCC:mode>): To this.  Add FCCmode
+	condition support.
+	(s<code>_<mode> swapped): Rename...
+	(s<code>_<SCALARF:mode>_using_<FPCC:mode> swapped): To this. Add
+	CCFmode condition support.
+	(mov<mode>cc GPR): Expand R6 selects.
+	(mov<mode>cc FPR): Expand R6 selects.
+	(*tls_get_tp_<mode>_split): Do not .set push for >= mips32r2.
+	* config/mips/netbsd.h (TARGET_CPU_CPP_BUILTINS): Update similarly to
+	mips.h.
+	(ASM_SPEC): Add mips32r6, mips64r6.
+	* config/mips/t-isa3264 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES): Update
+	for mips32r6/mips64r6.
+	* doc/invoke.texi: Document -mips32r6,-mips64r6.
+	* doc/md.texi: Update comment for ZD constraint.
+
 2014-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/64268

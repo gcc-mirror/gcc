@@ -247,6 +247,12 @@ set mips_option_groups {
     small-data "-G[0-9]+"
     warnings "-w"
     dump "-fdump-.*"
+    ins "HAS_INS"
+    dmul "NOT_HAS_DMUL"
+    ldc "HAS_LDC"
+    movn "HAS_MOVN"
+    madd "HAS_MADD"
+    maddps "HAS_MADDPS"
 }
 
 for { set option 0 } { $option < 32 } { incr option } {
@@ -1063,6 +1069,9 @@ proc mips-dg-options { args } {
 	     && (($gp_size == 32 && [mips_have_test_option_p options "-mfp64"])
 		 || [mips_have_test_option_p options "-msynci"]
 		 || [mips_have_test_option_p options "-mdsp"]
+		 || [mips_have_test_option_p options "HAS_INS"]
+		 || [mips_have_test_option_p options "HAS_MADD"]
+		 || [mips_have_test_option_p options "HAS_MADDPS"]
 		 || [mips_have_test_option_p options "-mdspr2"]) } {
 	    if { $gp_size == 32 } {
 		mips_make_test_option options "-mips32r2"
@@ -1084,6 +1093,12 @@ proc mips-dg-options { args } {
 	    } else {
 		mips_make_test_option options "-mips64"
 	    }
+        # We need MIPS IV or higher for:
+	#
+	#
+	} elseif { $isa < 3
+		   && [mips_have_test_option_p options "HAS_MOVN"] } {
+	    mips_make_test_option options "-mips4"
         # We need MIPS III or higher for:
 	#
 	#   - the "cache" instruction
@@ -1102,8 +1117,38 @@ proc mips-dg-options { args } {
 		   && ([mips_have_test_option_p options "-mbranch-likely"]
 		       || [mips_have_test_option_p options "-mfix-r10000"]
 		       || ($gp_size == 32
-			   && [mips_have_test_option_p options "-mfpxx"])) } {
+			   && ([mips_have_test_option_p options "-mfpxx"]
+			       || [mips_have_test_option_p options "HAS_LDC"]))) } {
 	    mips_make_test_option options "-mips2"
+	# We need to use octeon's base ISA if a test must not run with an
+	# architecture that supports dmul.
+	} elseif { [regexp -- "^-march=octeon.*\$" $arch]
+		   && [mips_have_test_option_p options "NOT_HAS_DMUL"] } {
+	    mips_make_test_option options "-mips${isa}r${isa_rev}"
+	# Check whether we need to switch from mips*r6 down to mips*r5 due
+	# to options that are incompatible with mips*r6.  If we do, use
+	# -mnan=2008 because r6 is nan2008 by default and without this flag
+	# tests that include stdlib.h will fail due to not finding
+	# stubs-o32_hard.h  (r6 compilers only have stubs-o32_hard_2008.h)
+	} elseif { $isa_rev > 5
+		   && ([mips_have_test_option_p options "-mdsp"]
+		       || [mips_have_test_option_p options "-mdspr2"]
+		       || [mips_have_test_option_p options "-mips16"]
+		       || [mips_have_test_option_p options "-mmicromips"]
+		       || [mips_have_test_option_p options "-mfp32"]
+		       || [mips_have_test_option_p options "-mfix-r10000"]
+		       || [mips_have_test_option_p options "NOT_HAS_DMUL"]
+		       || [mips_have_test_option_p options "HAS_MOVN"]
+		       || [mips_have_test_option_p options "HAS_MADD"]
+		       || [mips_have_test_option_p options "-mpaired-single"]
+		       || [mips_have_test_option_p options "-mnan=legacy"]
+		       || [mips_have_test_option_p options "-mabs=legacy"]) } {
+	    if { $gp_size == 32 } {
+		mips_make_test_option options "-mips32r5"
+	    } else {
+		mips_make_test_option options "-mips64r5"
+	    }
+	    mips_make_test_option options "-mnan=2008"
 	# Check whether we need to switch from a 32-bit processor to the
 	# "nearest" 64-bit processor.
 	} elseif { $gp_size == 64 && [mips_32bit_arch_p $arch] } {
@@ -1127,6 +1172,10 @@ proc mips-dg-options { args } {
 	unset isa
 	unset isa_rev
     }
+
+    # Re-calculate the isa_rev for use in the abi handling code below
+    set arch [mips_option options arch]
+    set isa_rev [mips_arch_info $arch isa_rev]
 
     # Set an appropriate ABI, handling dependencies between the pre-abi
     # options and the abi options.  This should mirror the abi and post-abi
@@ -1192,8 +1241,8 @@ proc mips-dg-options { args } {
     if { $abi_test_option_p } {
 	if { $eabi_p } {
 	    mips_make_test_option options "-mno-abicalls"
-	    if { $gp_size == 32 } {
-		mips_make_test_option options "-mfp32"
+	    if { $isa_rev < 6 && $gp_size == 32 } {
+		    mips_make_test_option options "-mfp32"
 	    }
 	}
 	if { [mips_using_mips16_p options]
@@ -1237,6 +1286,17 @@ proc mips-dg-options { args } {
 	    }
 	    mips_make_test_option options "-mno-dsp"
 	    mips_make_test_option options "-mno-synci"
+	}
+        if { $isa_rev > 5 } {
+	    mips_make_test_option options "-mno-dsp"
+	    mips_make_test_option options "-mno-mips16"
+	    if { [mips_have_test_option_p options "-mdsp"] } {
+		mips_make_test_option options "-mfp64"
+	    }
+	    mips_make_test_option options "-mno-fix-r10000"
+	    mips_make_test_option options "-mno-paired-single"
+	    mips_make_test_option options "-mnan=2008"
+	    mips_make_test_option options "-mabs=2008"
 	}
 	unset arch
 	unset isa

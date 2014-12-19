@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* This test requires widening_mul */
-/* { dg-options "isa_rev>=1 -mgp32 -fexpensive-optimizations" } */
+/* { dg-options "(HAS_MADD) -mgp32 -fexpensive-optimizations" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-times "\tmsubu\t" 2 } } */
 

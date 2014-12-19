@@ -1973,6 +1973,9 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h mips/linux-common.h"
 	extra_options="${extra_options} linux-android.opt"
 	case ${target} in
+		mipsisa32r6*)
+			default_mips_arch=mips32r6
+			;;
 		mipsisa32r2*)
 			default_mips_arch=mips32r2
 			;;
@@ -1989,6 +1992,11 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 			default_mips_abi=n32
 			tm_defines="${tm_defines} MIPS_CPU_STRING_DEFAULT=\\\"octeon\\\""
 			target_cpu_default=MASK_SOFT_FLOAT_ABI
+			enable_mips_multilibs="yes"
+			;;
+		mipsisa64r6*-*-linux*)
+			default_mips_abi=n32
+			default_mips_arch=mips64r6
 			enable_mips_multilibs="yes"
 			;;
 		mipsisa64r2*-*-linux*)
@@ -2033,11 +2041,17 @@ mips*-sde-elf*)
 	    ;;
 	esac
 	case ${target} in
+	  mipsisa32r6*)
+	    tm_defines="MIPS_ISA_DEFAULT=37 MIPS_ABI_DEFAULT=ABI_32"
+	    ;;
 	  mipsisa32r2*)
 	    tm_defines="MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"
 	    ;;
 	  mipsisa32*)
 	    tm_defines="MIPS_ISA_DEFAULT=32 MIPS_ABI_DEFAULT=ABI_32"
+	    ;;
+	  mipsisa64r6*)
+	    tm_defines="MIPS_ISA_DEFAULT=69 MIPS_ABI_DEFAULT=ABI_N32"
 	    ;;
 	  mipsisa64r2*)
 	    tm_defines="MIPS_ISA_DEFAULT=65 MIPS_ABI_DEFAULT=ABI_N32"
@@ -2049,16 +2063,24 @@ mips*-sde-elf*)
 	;;
 mipsisa32-*-elf* | mipsisa32el-*-elf* | \
 mipsisa32r2-*-elf* | mipsisa32r2el-*-elf* | \
+mipsisa32r6-*-elf* | mipsisa32r6el-*-elf* | \
 mipsisa64-*-elf* | mipsisa64el-*-elf* | \
-mipsisa64r2-*-elf* | mipsisa64r2el-*-elf*)
+mipsisa64r2-*-elf* | mipsisa64r2el-*-elf* | \
+mipsisa64r6-*-elf* | mipsisa64r6el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
 	tmake_file="mips/t-isa3264"
 	case ${target} in
+	  mipsisa32r6*)
+	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=37"
+	    ;;
 	  mipsisa32r2*)
 	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33"
 	    ;;
 	  mipsisa32*)
 	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
+	    ;;
+	  mipsisa64r6*)
+	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=69"
 	    ;;
 	  mipsisa64r2*)
 	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=65"
@@ -4192,8 +4214,10 @@ case ${target} in
 		    mips4)    tm_defines="$tm_defines MIPS_ISA_DEFAULT=4" ;;
 		    mips32)   tm_defines="$tm_defines MIPS_ISA_DEFAULT=32" ;;
 		    mips32r2) tm_defines="$tm_defines MIPS_ISA_DEFAULT=33" ;;
+		    mips32r6) tm_defines="$tm_defines MIPS_ISA_DEFAULT=37" ;;
 		    mips64)   tm_defines="$tm_defines MIPS_ISA_DEFAULT=64" ;;
 		    mips64r2) tm_defines="$tm_defines MIPS_ISA_DEFAULT=65" ;;
+		    mips64r6) tm_defines="$tm_defines MIPS_ISA_DEFAULT=69" ;;
 		esac
 		case ${default_mips_abi} in
 		    32)   tm_defines="$tm_defines MIPS_ABI_DEFAULT=ABI_32" ;;

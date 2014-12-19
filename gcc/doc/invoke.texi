@@ -785,7 +785,7 @@ Objective-C and Objective-C++ Dialects}.
 @emph{MIPS Options}
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
 -mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2  -mips32r3  -mips32r5 @gol
--mips64  -mips64r2  -mips64r3  -mips64r5 @gol
+-mips32r6  -mips64  -mips64r2  -mips64r3  -mips64r5  -mips64r6 @gol
 -mips16  -mno-mips16  -mflip-mips16 @gol
 -minterlink-compressed -mno-interlink-compressed @gol
 -minterlink-mips16  -mno-interlink-mips16 @gol
@@ -17671,8 +17671,9 @@ Generate code that runs on @var{arch}, which can be the name of a
 generic MIPS ISA, or the name of a particular processor.
 The ISA names are:
 @samp{mips1}, @samp{mips2}, @samp{mips3}, @samp{mips4},
-@samp{mips32}, @samp{mips32r2}, @samp{mips32r3}, @samp{mips32r5}, 
-@samp{mips64}, @samp{mips64r2}, @samp{mips64r3} and @samp{mips64r5}.
+@samp{mips32}, @samp{mips32r2}, @samp{mips32r3}, @samp{mips32r5},
+@samp{mips32r6}, @samp{mips64}, @samp{mips64r2}, @samp{mips64r3},
+@samp{mips64r5} and @samp{mips64r6}.
 The processor names are:
 @samp{4kc}, @samp{4km}, @samp{4kp}, @samp{4ksc},
 @samp{4kec}, @samp{4kem}, @samp{4kep}, @samp{4ksd},
@@ -17779,6 +17780,10 @@ Equivalent to @option{-march=mips32r3}.
 @opindex mips32r5
 Equivalent to @option{-march=mips32r5}.
 
+@item -mips32r6
+@opindex mips32r6
+Equivalent to @option{-march=mips32r6}.
+
 @item -mips64
 @opindex mips64
 Equivalent to @option{-march=mips64}.
@@ -17794,6 +17799,10 @@ Equivalent to @option{-march=mips64r3}.
 @item -mips64r5
 @opindex mips64r5
 Equivalent to @option{-march=mips64r5}.
+
+@item -mips64r6
+@opindex mips64r6
+Equivalent to @option{-march=mips64r6}.
 
 @item -mips16
 @itemx -mno-mips16

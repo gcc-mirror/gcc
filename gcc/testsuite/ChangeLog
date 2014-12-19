@@ -1,3 +1,31 @@
+2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
+	    Steve Ellcey  <sellcey@imgtec.com>
+
+	* gcc.dg/torture/mips-hilo-2.c: Unconditionally pass for R6 onwards.
+	* gcc.dg/torture/pr19683-1.c: Likewise.
+	* gcc.target/mips/branch-cost-2.c: Require MOVN.
+	* gcc.target/mips/movcc-1.c: Likewise.
+	* gcc.target/mips/movcc-2.c: Likewise.
+	* gcc.target/mips/movcc-3.c: Likewise.
+	* gcc.target/mips/call-saved-4.c: Require LDC.
+	* gcc.target/mips/dmult-1.c: Require R5 or earlier.
+	* gcc.target/mips/fpcmp-1.c: Likewise.
+	* gcc.target/mips/fpcmp-2.c: Likewise.
+	* gcc.target/mips/neg-abs-2.c: Likewise.
+	* gcc.target/mips/timode-1.c: Likewise.
+	* gcc.target/mips/unaligned-1.c: Likewise.
+	* gcc.target/mips/madd-3.c: Require MADD.
+	* gcc.target/mips/madd-9.c: Likewise.
+	* gcc.target/mips/maddu-3.c: Likewise.
+	* gcc.target/mips/msub-3.c: Likewise.
+	* gcc.target/mips/msubu-3.c: Likewise.
+	* gcc.target/mips/mult-1.c: Require INS and not DMUL.
+	* gcc.target/mips/mips-ps-type-2.c: Require MADD.PS.
+	* gcc.target/mips/mips.exp (mips_option_groups): Add ins, dmul, ldc,
+	movn, madd, maddps.
+	(mips-dg-options): INS available from R2.  LDC available from MIPS II,
+	DMUL is present in octeon.  Describe all features removed from R6.
+
 2014-12-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/64209

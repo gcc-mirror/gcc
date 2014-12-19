@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "isa_rev>=1 -mgp32" } */
+/* { dg-options "(HAS_MADD) -mgp32" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-times "\tmadd\t" 3 } } */
 
