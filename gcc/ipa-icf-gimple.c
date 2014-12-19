@@ -230,6 +230,9 @@ func_checker::compare_operand (tree t1, tree t2)
   tree tt1 = TREE_TYPE (t1);
   tree tt2 = TREE_TYPE (t2);
 
+  if (TREE_THIS_VOLATILE (t1) != TREE_THIS_VOLATILE (t2))
+    return return_false_with_msg ("different operand volatility");
+
   if (!func_checker::compatible_types_p (tt1, tt2))
     return false;
 

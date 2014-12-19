@@ -151,6 +151,8 @@ init_pp_output (FILE *out_stream)
       cb->used_undef = cb_used_undef;
     }
 
+  cb->has_attribute = c_common_has_attribute;
+
   /* Initialize the print structure.  */
   print.src_line = 1;
   print.printed = 0;

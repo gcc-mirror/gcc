@@ -167,6 +167,14 @@ default_legitimize_address (rtx x, rtx orig_x ATTRIBUTE_UNUSED,
   return x;
 }
 
+bool
+default_legitimize_address_displacement (rtx *disp ATTRIBUTE_UNUSED,
+					 rtx *offset ATTRIBUTE_UNUSED,
+					 machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
 rtx
 default_expand_builtin_saveregs (void)
 {

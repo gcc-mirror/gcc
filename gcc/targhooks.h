@@ -24,6 +24,8 @@ extern bool default_legitimate_address_p (machine_mode, rtx, bool);
 
 extern void default_external_libcall (rtx);
 extern rtx default_legitimize_address (rtx, rtx, machine_mode);
+extern bool default_legitimize_address_displacement (rtx *, rtx *,
+						     machine_mode);
 
 extern int default_unspec_may_trap_p (const_rtx, unsigned);
 extern machine_mode default_promote_function_mode (const_tree, machine_mode,

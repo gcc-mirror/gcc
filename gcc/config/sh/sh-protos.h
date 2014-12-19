@@ -159,6 +159,7 @@ extern rtx sh_find_equiv_gbr_addr (rtx_insn* cur_insn, rtx mem);
 extern int sh_eval_treg_value (rtx op);
 extern HOST_WIDE_INT sh_disp_addr_displacement (rtx mem_op);
 extern int sh_max_mov_insn_displacement (machine_mode mode, bool consider_sh2a);
+extern bool sh_movsf_ie_ra_split_p (rtx, rtx, rtx);
 
 /* Result value of sh_find_set_of_reg.  */
 struct set_of_reg
@@ -262,5 +263,7 @@ extern int sh2a_get_function_vector_number (rtx);
 extern bool sh2a_is_function_vector_call (rtx);
 extern void sh_fix_range (const char *);
 extern bool sh_hard_regno_mode_ok (unsigned int, machine_mode);
+extern machine_mode sh_hard_regno_caller_save_mode (unsigned int, unsigned int,
+						    machine_mode);
 extern bool sh_can_use_simple_return_p (void);
 #endif /* ! GCC_SH_PROTOS_H */

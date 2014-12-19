@@ -376,7 +376,7 @@
 (define_insn_reservation "cortex_a9_neon_vmov" 3
   (and (eq_attr "tune" "cortexa9")
        (eq_attr "cortex_a9_neon_type" "neon_vmov"))
-  "cortex_a8_neon_dp")
+  "cortex_a9_neon_dp")
 
 ;; Instructions using this reservation read their (D|Q)n operands at N2,
 ;; their (D|Q)m operands at N1, their (D|Q)d operands at N3, and

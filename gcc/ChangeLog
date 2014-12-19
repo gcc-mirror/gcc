@@ -1,3 +1,92 @@
+2014-12-19  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63569
+	* ipa-icf-gimple.c (func_checker::compare_operand): Add missing
+	comparison for volatile flag.
+
+2014-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/invoke.texi (ARM options): Remove mention of Advanced RISC
+	Machines.
+
+2014-12-19  Xingxing Pan  <xxingpan@marvell.com>
+
+	* config/arm/cortex-a9-neon.md (cortex_a9_neon_vmov): Change
+	reservation to cortex_a9_neon_dp.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (prepare_move_operands): Split HI/QImode load/store
+	to two move insns via r0.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/predicates.md (arith_or_int_operand): New predicate.
+	* config/sh/sh.md (addsi3): Use arith_or_int_operand for operand 2.
+	Return fail if operands[0] and operands[1] are overlap when
+	operands[2] is integer constant.
+	(*addsi3_compact): Make it define_insn_and_split which splits
+	reg0 := reg1 + constant to reg0 = constant and reg0 := reg0 + reg1.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh-protos.h (sh_movsf_ie_ra_split_p): Declare.
+	* config/sh/sh.c (sh_movsf_ie_ra_split_p): New function.
+	* config/sh/sh.md (movsi_ie): Use "mr" constraint for the 8-th
+	altarnative of operand 0.
+	(movesf_ie): Use "X" constraint instead of "Bsc".
+	(movsf_ie_ra): New insn_and_split.
+	(movsf): Use movsfie_ra when lra_in_progress is true.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/predicates.md (general_movsrc_operand): Allow only
+	valid plus address expressions.
+	(general_movdst_operand): Likewise.
+	(t_reg_operand): Allow (zero_extend (reg t)).
+	* config/sh/sh-protos.h (sh_hard_regno_caller_save_mode): Declare.
+	* config/sh/sh.c (sh_hard_regno_caller_save_mode): New function.
+	(sh_secondary_reload): Return NO_REGS instead of FPUL_REGS in one
+	case.
+	* config/sh/sh.h (HARD_REGNO_CALLER_SAVE_MODE): Define.
+	* config/sh/sh.md (untyped_call): Clobber function value
+	registers before call.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_lra_p): New function.
+	(TARGET_LRA_P): Define.
+	(sh_legitimize_reload_address): Return false if sh_lra_p is true.
+	* config/sh/sh.opt (mlra): New option.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* lra-constraints.c (process_address_1): Try if target can split
+	displacement with targetm.legitimize_address_displacement.
+	* target.def (legitimize_address_displacement): New hook.
+	* targhooks.c (default_legitimize_address_displacement): New function.
+	* targhooks.h (default_legitimize_address_displacement): Declare.
+	* config/sh/sh.c (sh_legitimize_address_displacement): New function.
+	(TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT): Define.
+	* doc/tm.texi.in (TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT): New hook.
+	* doc/tm.texi: Regenerate.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* lra-constraints.c (get_equiv): Don't return memory equivalence
+	when targetm.cannot_substitute_mem_equiv_p is true.
+	* target.def (cannot_substitute_mem_equiv_p): New hook.
+	* config/sh/sh.c (sh_cannot_substitute_mem_equiv_p): New function.
+	(TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P): Define.
+	* doc/tm.texi.in (TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P): New hook.
+	* doc/tm.texi: Regenerate.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* lra-constraints.c (process_address_1): Swap base_term and
+	index_term if INDEX_REG_CLASS is assigned to base_term already
+	when INDEX_REG_CLASS is a single register class.
+
 2014-12-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-constraints.c (lra-constraints.c): Exchange places of sclass
