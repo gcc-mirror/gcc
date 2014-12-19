@@ -1778,6 +1778,38 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	       && GET_CODE (XEXP (operands[0], 0)) == PLUS
 	       && REG_P (XEXP (XEXP (operands[0], 0), 1)))
 	operands[1] = copy_to_mode_reg (mode, operands[1]);
+
+      /* When the displacement addressing is used, RA will assign r0 to
+	 the pseudo register operand for the QI/HImode load/store.
+	 This tends to make a long live range for R0 and might cause
+	 anomalous register spills in some case with LRA.  See PR
+	 target/55212.
+	 We split possible load/store to two move insns via r0 so as to
+	 shorten R0 live range.  It will make some codes worse but will
+	 win on avarage for LRA.  */
+      else if (sh_lra_p ()
+	       && TARGET_SH1 && ! TARGET_SH2A
+	       && (mode == QImode || mode == HImode)
+	       && ((REG_P (operands[0]) && MEM_P (operands[1]))
+		   || (REG_P (operands[1]) && MEM_P (operands[0]))))
+	{
+	  bool load_p = REG_P (operands[0]);
+	  rtx reg = operands[load_p ? 0 : 1];
+	  rtx adr = XEXP (operands[load_p ? 1 : 0], 0);
+
+	  if (REGNO (reg) >= FIRST_PSEUDO_REGISTER
+	      && GET_CODE (adr) == PLUS
+	      && REG_P (XEXP (adr, 0))
+	      && (REGNO (XEXP (adr, 0)) >= FIRST_PSEUDO_REGISTER)
+	      && CONST_INT_P (XEXP (adr, 1))
+	      && INTVAL (XEXP (adr, 1)) != 0
+	      && sh_legitimate_index_p (mode, XEXP (adr, 1), false, true))
+	    {
+	      rtx r0_rtx = gen_rtx_REG (mode, R0_REG);
+	      emit_move_insn (r0_rtx, operands[1]);
+	      operands[1] = r0_rtx;
+	    }
+	}
     }
 
   if (mode == Pmode || mode == ptr_mode)
