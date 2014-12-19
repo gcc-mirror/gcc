@@ -1632,7 +1632,8 @@ class Call_expression : public Expression
       fn_(fn), args_(args), type_(NULL), results_(NULL), call_(NULL),
       call_temp_(NULL), expected_result_count_(0), is_varargs_(is_varargs),
       varargs_are_lowered_(false), types_are_determined_(false),
-      is_deferred_(false), issued_error_(false), is_multi_value_arg_(false)
+      is_deferred_(false), issued_error_(false), is_multi_value_arg_(false),
+      is_flattened_(false)
   { }
 
   // The function to call.
@@ -1817,6 +1818,8 @@ class Call_expression : public Expression
   bool issued_error_;
   // True if this call is used as an argument that returns multiple results.
   bool is_multi_value_arg_;
+  // True if this expression has already been flattened.
+  bool is_flattened_;
 };
 
 // An expression which represents a pointer to a function.
