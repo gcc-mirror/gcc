@@ -1,3 +1,8 @@
+2014-12-19  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.md (subdi3, adddi3_aarch64): Don't penalize
+	SIMD reg variant.
+
 2014-12-19  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/63569
