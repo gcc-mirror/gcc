@@ -1,5 +1,14 @@
 2014-12-19  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64.c (<LOGICAL:optab>_one_cmpl<mode>3):
+	Reparameterize to...
+	(<NLOGICAL:optab>_one_cmpl<mode>3): with extra SIMD-register variant.
+	(xor_one_cmpl<mode>3): New define_insn_and_split.
+
+	* config/aarch64/iterators.md (NLOGICAL): New define_code_iterator.
+
+2014-12-19  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64.md (<optab><mode>3, one_cmpl<mode>2):
 	Add SIMD-register variant.
 	* config/aarch64/iterators.md (Vbtype): Add value for SI.

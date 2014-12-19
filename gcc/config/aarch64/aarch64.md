@@ -3015,14 +3015,36 @@
   [(set_attr "type" "logic_shift_imm")]
 )
 
-(define_insn "*<LOGICAL:optab>_one_cmpl<mode>3"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(LOGICAL:GPI (not:GPI
-		      (match_operand:GPI 1 "register_operand" "r"))
-		     (match_operand:GPI 2 "register_operand" "r")))]
+;; Binary logical operators negating one operand, i.e. (a & !b), (a | !b).
+
+(define_insn "*<NLOGICAL:optab>_one_cmpl<mode>3"
+  [(set (match_operand:GPI 0 "register_operand" "=r,w")
+	(NLOGICAL:GPI (not:GPI (match_operand:GPI 1 "register_operand" "r,w"))
+		     (match_operand:GPI 2 "register_operand" "r,w")))]
   ""
-  "<LOGICAL:nlogical>\\t%<w>0, %<w>2, %<w>1"
-  [(set_attr "type" "logic_reg")]
+  "@
+  <NLOGICAL:nlogical>\\t%<w>0, %<w>2, %<w>1
+  <NLOGICAL:nlogical>\\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>"
+  [(set_attr "type" "logic_reg,neon_logic")
+   (set_attr "simd" "*,yes")]
+)
+
+;; (xor (not a) b) is simplify_rtx-ed down to (not (xor a b)).
+;; eon does not operate on SIMD registers so the vector variant must be split.
+(define_insn_and_split "*xor_one_cmpl<mode>3"
+  [(set (match_operand:GPI 0 "register_operand" "=r,w")
+        (not:GPI (xor:GPI (match_operand:GPI 1 "register_operand" "r,?w")
+                          (match_operand:GPI 2 "register_operand" "r,w"))))]
+  ""
+  "eon\\t%<w>0, %<w>1, %<w>2" ;; For GPR registers (only).
+  "reload_completed && (which_alternative == 1)" ;; For SIMD registers.
+  [(set (match_operand:GPI 0 "register_operand" "=w")
+        (xor:GPI (match_operand:GPI 1 "register_operand" "w")
+                 (match_operand:GPI 2 "register_operand" "w")))
+   (set (match_dup 0) (not:GPI (match_dup 0)))]
+  ""
+  [(set_attr "type" "logic_reg,multiple")
+   (set_attr "simd" "*,yes")]
 )
 
 (define_insn "*and_one_cmpl<mode>3_compare0"
