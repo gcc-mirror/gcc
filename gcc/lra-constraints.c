@@ -3015,6 +3015,32 @@ process_address_1 (int nop, bool check_only_p,
 	      delete_insns_since (PREV_INSN (last_insn));
 	    }
 	}
+      /* Try if target can split displacement into legitimite new disp
+	 and offset.  If it's the case, we replace the last insn with
+	 insns for base + offset => new_reg and set new_reg + new disp
+	 to *ad.inner.  */
+      last_insn = get_last_insn ();
+      if ((set = single_set (last_insn)) != NULL_RTX
+	  && GET_CODE (SET_SRC (set)) == PLUS
+	  && REG_P (XEXP (SET_SRC (set), 0))
+	  && REGNO (XEXP (SET_SRC (set), 0)) < FIRST_PSEUDO_REGISTER
+	  && CONST_INT_P (XEXP (SET_SRC (set), 1)))
+	{
+	  rtx addend, disp = XEXP (SET_SRC (set), 1);
+	  if (targetm.legitimize_address_displacement (&disp, &addend,
+						       ad.mode))
+	    {
+	      rtx_insn *new_insns;
+	      start_sequence ();
+	      lra_emit_add (new_reg, XEXP (SET_SRC (set), 0), addend);
+	      new_insns = get_insns ();
+	      end_sequence ();
+	      new_reg = gen_rtx_PLUS (Pmode, new_reg, disp);
+	      delete_insns_since (PREV_INSN (last_insn));
+	      add_insn (new_insns);
+	      insns = get_insns ();
+	    }
+	}
       end_sequence ();
       emit_insn (insns);
       *ad.inner = new_reg;

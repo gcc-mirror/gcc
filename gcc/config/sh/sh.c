@@ -292,6 +292,7 @@ static bool sh_legitimate_address_p (machine_mode, rtx, bool);
 static rtx sh_legitimize_address (rtx, rtx, machine_mode);
 static rtx sh_delegitimize_address (rtx);
 static bool sh_cannot_substitute_mem_equiv_p (rtx);
+static bool sh_legitimize_address_displacement (rtx *, rtx *, machine_mode);
 static int shmedia_target_regs_stack_space (HARD_REG_SET *);
 static int shmedia_reserve_space_for_target_registers_p (int, HARD_REG_SET *);
 static int shmedia_target_regs_stack_adjust (HARD_REG_SET *);
@@ -633,6 +634,10 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P
 #define TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P sh_cannot_substitute_mem_equiv_p
+
+#undef TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT
+#define TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT \
+  sh_legitimize_address_displacement
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT		sh_trampoline_init
@@ -13234,6 +13239,29 @@ sh_cannot_substitute_mem_equiv_p (rtx)
      hold the equiv values can't get good hard registers for bad cases
      and end up memory save/restore insns which make the code worse.  */
   return true;
+}
+
+/* Return true if DISP can be legitimized.  */
+static bool
+sh_legitimize_address_displacement (rtx *disp, rtx *offs,
+				    machine_mode mode)
+{
+  if (TARGET_SHMEDIA)
+    return false;
+
+  if (((TARGET_SH4 || TARGET_SH2A_DOUBLE) && mode == DFmode)
+      || (TARGET_SH2E && mode == SFmode))
+    return false;
+
+  struct disp_adjust adj = sh_find_mov_disp_adjust (mode, INTVAL (*disp));
+  if (adj.offset_adjust != NULL_RTX && adj.mov_disp != NULL_RTX)
+    {
+      *disp = adj.mov_disp;
+      *offs = adj.offset_adjust;
+      return true;
+    }
+ 
+  return false;
 }
 
 static void
