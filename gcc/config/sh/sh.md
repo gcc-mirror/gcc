@@ -6665,7 +6665,7 @@ label:
 ;; TARGET_FMOVD is in effect, and mode switching is done before reload.
 (define_insn "movsi_ie"
   [(set (match_operand:SI 0 "general_movdst_operand"
-	    "=r,r,r,r,r,r,r,r,m,<,<,x,l,x,l,y,<,r,y,r,*f,y,*f,y")
+	    "=r,r,r,r,r,r,r,r,mr,<,<,x,l,x,l,y,<,r,y,r,*f,y,*f,y")
 	(match_operand:SI 1 "general_movsrc_operand"
 	 "Q,r,I08,I20,I28,mr,x,l,r,x,l,r,r,>,>,>,y,i,r,y,y,*f,*f,y"))]
   "(TARGET_SH2E || TARGET_SH2A)
@@ -8329,7 +8329,7 @@ label:
 	(match_operand:SF 1 "general_movsrc_operand"
 	  "f,r,G,H,FQ,mf,f,FQ,mr,r,y,f,>,fr,y,r,y,>,y"))
    (use (reg:SI FPSCR_MODES_REG))
-   (clobber (match_scratch:SI 2 "=X,X,Bsc,Bsc,&z,X,X,X,X,X,X,X,X,y,X,X,X,X,X"))]
+   (clobber (match_scratch:SI 2 "=X,X,X,X,&z,X,X,X,X,X,X,X,X,y,X,X,X,X,X"))]
   "TARGET_SH2E
    && (arith_reg_operand (operands[0], SFmode) || fpul_operand (operands[0], SFmode)
        || arith_reg_operand (operands[1], SFmode) || fpul_operand (operands[1], SFmode)
@@ -8354,6 +8354,104 @@ label:
 	sts.l	%1,%0
 	lds.l	%1,%0
 	! move optimized away"
+  [(set_attr "type" "fmove,move,fmove,fmove,pcfload,fload,fstore,pcload,load,
+		     store,fmove,fmove,load,*,fpul_gp,gp_fpul,fstore,load,nil")
+   (set_attr "late_fp_use" "*,*,*,*,*,*,yes,*,*,*,*,*,*,*,yes,*,yes,*,*")
+   (set_attr_alternative "length"
+     [(const_int 2)
+      (const_int 2)
+      (const_int 2)
+      (const_int 2)
+      (const_int 4)
+      (if_then_else
+	(match_test "TARGET_SH2A")
+	(const_int 4) (const_int 2))
+      (if_then_else
+	(match_test "TARGET_SH2A")
+	(const_int 4) (const_int 2))
+      (const_int 2)
+      (if_then_else
+	(match_test "TARGET_SH2A")
+	(const_int 4) (const_int 2))
+      (if_then_else
+	(match_test "TARGET_SH2A")
+	(const_int 4) (const_int 2))
+      (const_int 2)
+      (const_int 2)
+      (const_int 2)
+      (const_int 4)
+      (const_int 2)
+      (const_int 2)
+      (const_int 2)
+      (const_int 2)
+      (const_int 0)])
+  (set_attr_alternative "fp_mode"
+     [(if_then_else (eq_attr "fmovd" "yes")
+		    (const_string "single") (const_string "none"))
+      (const_string "none")
+      (const_string "single")
+      (const_string "single")
+      (const_string "none")
+      (if_then_else (eq_attr "fmovd" "yes")
+		    (const_string "single") (const_string "none"))
+      (if_then_else (eq_attr "fmovd" "yes")
+		    (const_string "single") (const_string "none"))
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")])])
+
+(define_insn_and_split "movsf_ie_ra"
+  [(set (match_operand:SF 0 "general_movdst_operand"
+	 "=f,r,f,f,fy,f,m,r,r,m,f,y,y,rf,r,y,<,y,y")
+	(match_operand:SF 1 "general_movsrc_operand"
+	  "f,r,G,H,FQ,m,f,FQ,m,r,y,f,>,fr,y,r,y,>,y"))
+   (use (reg:SI FPSCR_MODES_REG))
+   (clobber (match_scratch:SF 2 "=r,r,X,X,&z,r,r,X,r,r,r,r,r,y,r,r,r,r,r"))
+   (const_int 0)]
+  "TARGET_SH2E
+   && (arith_reg_operand (operands[0], SFmode)
+       || fpul_operand (operands[0], SFmode)
+       || arith_reg_operand (operands[1], SFmode)
+       || fpul_operand (operands[1], SFmode))"
+  "@
+	fmov	%1,%0
+	mov	%1,%0
+	fldi0	%0
+	fldi1	%0
+	#
+	fmov.s	%1,%0
+	fmov.s	%1,%0
+	mov.l	%1,%0
+	mov.l	%1,%0
+	mov.l	%1,%0
+	fsts	fpul,%0
+	flds	%1,fpul
+	lds.l	%1,%0
+	#
+	sts	%1,%0
+	lds	%1,%0
+	sts.l	%1,%0
+	lds.l	%1,%0
+	! move optimized away"
+  "reload_completed
+   && sh_movsf_ie_ra_split_p (operands[0], operands[1], operands[2])"
+  [(const_int 0)]
+{
+  if (! rtx_equal_p (operands[0], operands[1]))
+    {
+      emit_insn (gen_movsf_ie (operands[2], operands[1]));
+      emit_insn (gen_movsf_ie (operands[0], operands[2]));
+    }
+}
   [(set_attr "type" "fmove,move,fmove,fmove,pcfload,fload,fstore,pcload,load,
 		     store,fmove,fmove,load,*,fpul_gp,gp_fpul,fstore,load,nil")
    (set_attr "late_fp_use" "*,*,*,*,*,*,yes,*,*,*,*,*,*,*,yes,*,yes,*,*")
@@ -8439,6 +8537,14 @@ label:
     }
   if (TARGET_SH2E)
     {
+      if (lra_in_progress)
+	{
+	  if (GET_CODE (operands[0]) == SCRATCH)
+	    DONE;
+	  emit_insn (gen_movsf_ie_ra (operands[0], operands[1]));
+	  DONE;
+	}
+
       emit_insn (gen_movsf_ie (operands[0], operands[1]));
       DONE;
     }
