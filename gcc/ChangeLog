@@ -1,5 +1,19 @@
 2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* config/sh/predicates.md (general_movsrc_operand): Allow only
+	valid plus address expressions.
+	(general_movdst_operand): Likewise.
+	(t_reg_operand): Allow (zero_extend (reg t)).
+	* config/sh/sh-protos.h (sh_hard_regno_caller_save_mode): Declare.
+	* config/sh/sh.c (sh_hard_regno_caller_save_mode): New function.
+	(sh_secondary_reload): Return NO_REGS instead of FPUL_REGS in one
+	case.
+	* config/sh/sh.h (HARD_REGNO_CALLER_SAVE_MODE): Define.
+	* config/sh/sh.md (untyped_call): Clobber function value
+	registers before call.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* config/sh/sh.c (sh_lra_p): New function.
 	(TARGET_LRA_P): Define.
 	(sh_legitimize_reload_address): Return false if sh_lra_p is true.
