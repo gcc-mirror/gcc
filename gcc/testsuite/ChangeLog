@@ -1,3 +1,8 @@
+2014-12-19  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/61198
+	* g++.dg/template/using30.C: New file.
+
 2014-12-19  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/63569
