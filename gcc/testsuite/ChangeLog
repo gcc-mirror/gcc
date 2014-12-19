@@ -1,3 +1,9 @@
+2014-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/63831
+	* c-c++-common/cpp/pr63831-1.c: New test.
+	* c-c++-common/cpp/pr63831-2.c: New test.
+
 2014-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63723

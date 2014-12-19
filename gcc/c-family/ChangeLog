@@ -1,3 +1,20 @@
+2014-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/63831
+	* c-cppbuiltin.c (c_cpp_builtins): Don't define __has_attribute
+	and __has_cpp_attribute here.
+	* c-ppoutput.c (init_pp_output): Set cb->has_attribute to
+	c_common_has_attribute.
+	* c-common.h (c_common_has_attribute): New prototype.
+	* c-lex.c (init_c_lex): Set cb->has_attribute to
+	c_common_has_attribute instead of cb_has_attribute.
+	(get_token_no_padding): New function.
+	(cb_has_attribute): Renamed to ...
+	(c_common_has_attribute): ... this.  No longer static.  Use
+	get_token_no_padding, require ()s, don't build TREE_LIST
+	unnecessarily, fix up formatting, adjust diagnostics, call
+	init_attributes.
+
 2014-12-15  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (-fsized-deallocation, -Wc++14-compat): New.

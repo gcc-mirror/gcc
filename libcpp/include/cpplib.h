@@ -676,6 +676,7 @@ enum cpp_builtin_type
   BT_PRAGMA,			/* `_Pragma' operator */
   BT_TIMESTAMP,			/* `__TIMESTAMP__' */
   BT_COUNTER,			/* `__COUNTER__' */
+  BT_HAS_ATTRIBUTE,		/* `__has_attribute__(x)' */
   BT_FIRST_USER,		/* User defined builtin macros.  */
   BT_LAST_USER = BT_FIRST_USER + 31
 };
