@@ -1,3 +1,8 @@
+2014-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/invoke.texi (ARM options): Remove mention of Advanced RISC
+	Machines.
+
 2014-12-19  Xingxing Pan  <xxingpan@marvell.com>
 
 	* config/arm/cortex-a9-neon.md (cortex_a9_neon_vmov): Change
