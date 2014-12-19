@@ -1,5 +1,17 @@
 2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* lra-constraints.c (process_address_1): Try if target can split
+	displacement with targetm.legitimize_address_displacement.
+	* target.def (legitimize_address_displacement): New hook.
+	* targhooks.c (default_legitimize_address_displacement): New function.
+	* targhooks.h (default_legitimize_address_displacement): Declare.
+	* config/sh/sh.c (sh_legitimize_address_displacement): New function.
+	(TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT): Define.
+	* doc/tm.texi.in (TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT): New hook.
+	* doc/tm.texi: Regenerate.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* lra-constraints.c (get_equiv): Don't return memory equivalence
 	when targetm.cannot_substitute_mem_equiv_p is true.
 	* target.def (cannot_substitute_mem_equiv_p): New hook.

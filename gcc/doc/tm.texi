@@ -2857,6 +2857,15 @@ machines with non orthogonal register usage for addressing, such
 as SH, this hook can be used to avoid excessive spilling.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT (rtx *@var{disp}, rtx *@var{offset}, machine_mode @var{mode})
+A target hook which returns @code{true} if *@var{disp} is
+legitimezed to valid address displacement with subtracting *@var{offset}
+at memory mode @var{mode}.
+The default version of this target hook returns @code{false}.
+This hook will benefit machines with limited base plus displacement
+addressing.
+@end deftypefn
+
 @deftypefn {Target Hook} reg_class_t TARGET_SPILL_CLASS (reg_class_t, @var{machine_mode})
 This hook defines a class of registers which could be used for spilling  pseudos of the given mode and class, or @code{NO_REGS} if only memory  should be used.  Not defining this hook is equivalent to returning  @code{NO_REGS} for all inputs.
 @end deftypefn
