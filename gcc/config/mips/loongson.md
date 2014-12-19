@@ -907,33 +907,3 @@
   mips_expand_vec_reduc (operands[0], operands[1], gen_umin<mode>3);
   DONE;
 })
-
-;; Integer division and modulus.  For integer multiplication, see mips.md.
-
-(define_insn "<u>div<mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=&d")
-	(any_div:GPR (match_operand:GPR 1 "register_operand" "d")
-		     (match_operand:GPR 2 "register_operand" "d")))]
-  "TARGET_LOONGSON_2EF || TARGET_LOONGSON_3A"
-  {
-    if (TARGET_LOONGSON_2EF)
-      return mips_output_division ("<d>div<u>.g\t%0,%1,%2", operands);
-    else
-      return mips_output_division ("gs<d>div<u>\t%0,%1,%2", operands);
-  }
-  [(set_attr "type" "idiv3")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "<u>mod<mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=&d")
-	(any_mod:GPR (match_operand:GPR 1 "register_operand" "d")
-		     (match_operand:GPR 2 "register_operand" "d")))]
-  "TARGET_LOONGSON_2EF || TARGET_LOONGSON_3A"
-  {
-    if (TARGET_LOONGSON_2EF)
-      return mips_output_division ("<d>mod<u>.g\t%0,%1,%2", operands);
-    else
-      return mips_output_division ("gs<d>mod<u>\t%0,%1,%2", operands);
-  }
-  [(set_attr "type" "idiv3")
-   (set_attr "mode" "<MODE>")])

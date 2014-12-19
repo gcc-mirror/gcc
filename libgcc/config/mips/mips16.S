@@ -23,12 +23,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "auto-host.h"
 
-#if defined(__mips_micromips) || defined(__mips_soft_float)
+#if defined(__mips_micromips) || defined(__mips_soft_float) \
+    || __mips_isa_rev >= 6
   /* Do nothing because this code is only needed when linking
      against mips16 hard-float objects.  Neither micromips code
-     nor soft-float code can be linked against mips16 hard-float
-     objects so we do not need these routines when building libgcc
-     for those cases.  */
+     nor soft-float nor MIPS R6 code can be linked against mips16
+     hard-float objects so we do not need these routines when
+     building libgcc for those cases.  */
 #else
 
 #if defined(HAVE_AS_MODULE)

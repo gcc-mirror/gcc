@@ -2994,10 +2994,8 @@ operands can be used for microMIPS instructions such as @code{ll} and
 equivalent to @code{R}.
 
 @item ZD
-When compiling microMIPS code, this constraint matches an address operand
-that is formed from a base register and a 12-bit offset.  These operands
-can be used for microMIPS instructions such as @code{prefetch}.  When
-not compiling for microMIPS code, @code{ZD} is equivalent to @code{p}.
+An address suitable for a @code{prefetch} instruction, or for any other
+instruction with the same addressing mode as @code{prefetch}.
 @end table
 
 @item Motorola 680x0---@file{config/m68k/constraints.md}

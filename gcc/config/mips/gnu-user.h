@@ -132,6 +132,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS \
+  MIPS_ISA_LEVEL_SPEC,    \
   BASE_DRIVER_SELF_SPECS, \
   LINUX_DRIVER_SELF_SPECS
 

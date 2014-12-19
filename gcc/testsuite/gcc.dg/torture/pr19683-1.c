@@ -14,6 +14,7 @@ extern void exit (int);
 #define IN(X) unsigned int x##X = ptr[0]
 #define OUT(X) ptr[0] = x##X
 
+#if __mips_isa_rev <= 5
 union u { unsigned long long ll; unsigned int i[2]; };
 
 unsigned int __attribute__ ((nomips16))
@@ -28,15 +29,18 @@ foo (volatile unsigned int *ptr)
   asm ("#" : "=l" (result) : "l" (u.i[1]));
   return result;
 }
+#endif
 
 int __attribute__ ((nomips16))
 main (void)
 {
+#if __mips_isa_rev <= 5
   unsigned int array[] = { 1000 * 1000 * 1000 };
   union u u;
 
   u.ll = (unsigned long long) array[0] * array[0];
   if (foo (array) != u.i[1])
     abort ();
+#endif
   exit (0);
 }

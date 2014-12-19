@@ -46,3 +46,6 @@ ADJUST_ALIGNMENT (CCV4, 16);
 
 /* For MIPS DSP control registers.  */
 CC_MODE (CCDSP);
+
+/* For floating point conditions in FP registers.  */
+CC_MODE (CCF);
