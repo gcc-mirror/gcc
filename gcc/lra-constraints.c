@@ -2834,6 +2834,20 @@ process_address_1 (int nop, bool check_only_p,
     decompose_mem_address (&ad, SUBREG_REG (op));
   else
     return false;
+  /* If INDEX_REG_CLASS is assigned to base_term already and isn't to
+     index_term, swap them so to avoid assigning INDEX_REG_CLASS to both
+     when INDEX_REG_CLASS is a single register class.  */
+  if (ad.base_term != NULL
+      && ad.index_term != NULL
+      && ira_class_hard_regs_num[INDEX_REG_CLASS] == 1
+      && REG_P (*ad.base_term)
+      && REG_P (*ad.index_term)
+      && in_class_p (*ad.base_term, INDEX_REG_CLASS, NULL)
+      && ! in_class_p (*ad.index_term, INDEX_REG_CLASS, NULL))
+    {
+      std::swap (ad.base, ad.index);
+      std::swap (ad.base_term, ad.index_term);
+    }
   if (! check_only_p)
     change_p = equiv_address_substitution (&ad);
   if (ad.base_term != NULL

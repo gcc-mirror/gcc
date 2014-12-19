@@ -1,3 +1,9 @@
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* lra-constraints.c (process_address_1): Swap base_term and
+	index_term if INDEX_REG_CLASS is assigned to base_term already
+	when INDEX_REG_CLASS is a single register class.
+
 2014-12-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-constraints.c (lra-constraints.c): Exchange places of sclass
