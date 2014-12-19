@@ -875,7 +875,8 @@ playback::context::build_cast (playback::location *loc,
 	 c_common_truthvalue_conversion. */
       /* For now, convert to: (t_expr != 0)  */
       t_ret = build2 (NE_EXPR, t_dst_type,
-		      t_expr, integer_zero_node);
+		      t_expr,
+		      build_int_cst (TREE_TYPE (t_expr), 0));
       goto maybe_fold;
 
     case REAL_TYPE:

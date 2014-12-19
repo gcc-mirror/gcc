@@ -1,3 +1,9 @@
+2014-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-expressions.c (make_tests_of_casts): Add tests of
+	casting between "long" and "bool".
+	(verify_casts): Verify these new test cases.
+
 2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* gcc.target/mips/pr37362.c: Skip for mips-img-elf.
