@@ -67,25 +67,31 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__98convenience_la_LIBADD =
-am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
-	messages_members.lo monetary_members.lo numeric_members.lo \
-	time_members.lo
-@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = allocator-inst.lo \
+@ENABLE_DUAL_ABI_TRUE@am__objects_1 = cow-istream-string.lo
+@ENABLE_DUAL_ABI_TRUE@am__objects_2 = collate_members_cow.lo \
+@ENABLE_DUAL_ABI_TRUE@	messages_members_cow.lo \
+@ENABLE_DUAL_ABI_TRUE@	monetary_members_cow.lo \
+@ENABLE_DUAL_ABI_TRUE@	numeric_members_cow.lo
+am__objects_3 = $(am__objects_2) atomicity.lo codecvt_members.lo \
+	collate_members.lo messages_members.lo monetary_members.lo \
+	numeric_members.lo time_members.lo
+@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_4 = allocator-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	concept-inst.lo ext-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	locale-inst.lo misc-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.lo
-am__objects_3 = parallel_settings.lo
-am__objects_4 = basic_file.lo c++locale.lo $(am__objects_2) \
-	$(am__objects_3)
-am__objects_5 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
+am__objects_5 = parallel_settings.lo
+am__objects_6 = basic_file.lo c++locale.lo $(am__objects_4) \
+	$(am__objects_5)
+am__objects_7 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
 	codecvt.lo complex_io.lo globals_io.lo hash_tr1.lo \
 	hashtable_tr1.lo ios_failure.lo ios_init.lo ios_locale.lo \
 	list.lo list-aux.lo list-aux-2.lo list_associated.lo \
 	list_associated-2.lo locale.lo locale_init.lo locale_facets.lo \
 	localename.lo math_stubs_float.lo math_stubs_long_double.lo \
-	stdexcept.lo strstream.lo tree.lo istream.lo streambuf.lo \
-	valarray.lo $(am__objects_1) $(am__objects_4)
-am_libc__98convenience_la_OBJECTS = $(am__objects_5)
+	stdexcept.lo strstream.lo tree.lo istream.lo istream-string.lo \
+	streambuf.lo valarray.lo $(am__objects_1) $(am__objects_3) \
+	$(am__objects_6)
+am_libc__98convenience_la_OBJECTS = $(am__objects_7)
 libc__98convenience_la_OBJECTS = $(am_libc__98convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp =
@@ -245,6 +251,7 @@ glibcxx_POFILES = @glibcxx_POFILES@
 glibcxx_builddir = @glibcxx_builddir@
 glibcxx_compiler_pic_flag = @glibcxx_compiler_pic_flag@
 glibcxx_compiler_shared_flag = @glibcxx_compiler_shared_flag@
+glibcxx_cxx98_abi = @glibcxx_cxx98_abi@
 glibcxx_localedir = @glibcxx_localedir@
 glibcxx_lt_pic_flag = @glibcxx_lt_pic_flag@
 glibcxx_prefixdir = @glibcxx_prefixdir@
@@ -321,10 +328,17 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 # Convenience library for C++98 runtime.
 noinst_LTLIBRARIES = libc++98convenience.la 
 headers = 
+@ENABLE_DUAL_ABI_TRUE@cow_string_host_sources = \
+@ENABLE_DUAL_ABI_TRUE@	collate_members_cow.cc \
+@ENABLE_DUAL_ABI_TRUE@	messages_members_cow.cc \
+@ENABLE_DUAL_ABI_TRUE@	monetary_members_cow.cc \
+@ENABLE_DUAL_ABI_TRUE@	numeric_members_cow.cc
+
 
 # Source files linked in via configuration/make substitution for a
 # particular host.
 host_sources = \
+	$(cow_string_host_sources) \
 	atomicity.cc \
 	codecvt_members.cc \
 	collate_members.cc \
@@ -340,6 +354,10 @@ atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
 host_sources_extra = \
 	basic_file.cc c++locale.cc \
 	${inst_sources} ${parallel_sources}
+
+@ENABLE_DUAL_ABI_FALSE@cxx11_abi_sources = 
+@ENABLE_DUAL_ABI_TRUE@cxx11_abi_sources = \
+@ENABLE_DUAL_ABI_TRUE@	cow-istream-string.cc
 
 # XTEMPLATE_FLAGS =
 @ENABLE_EXTERN_TEMPLATE_FALSE@inst_sources = 
@@ -383,12 +401,15 @@ sources = \
 	strstream.cc \
 	tree.cc \
 	istream.cc \
+	istream-string.cc \
 	streambuf.cc \
 	valarray.cc \
+	${cxx11_abi_sources} \
 	${host_sources} \
 	${host_sources_extra}
 
 libc__98convenience_la_SOURCES = $(sources)
+@ENABLE_DUAL_ABI_TRUE@GLIBCXX_ABI_FLAGS = -D_GLIBCXX_USE_CXX11_ABI=@glibcxx_cxx98_abi@
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.
@@ -710,6 +731,18 @@ time_members.cc: ${glibcxx_srcdir}/$(CTIME_CC)
 atomicity.cc: ${atomicity_file}
 	$(LN_S) ${atomicity_file} ./atomicity.cc || true
 
+@ENABLE_DUAL_ABI_TRUE@collate_members_cow.cc: ${glibcxx_srcdir}/$(CCOLLATE_CC)
+@ENABLE_DUAL_ABI_TRUE@	$(LN_S) ${glibcxx_srcdir}/$(CCOLLATE_CC) ./$@ || true
+
+@ENABLE_DUAL_ABI_TRUE@messages_members_cow.cc: ${glibcxx_srcdir}/$(CMESSAGES_CC)
+@ENABLE_DUAL_ABI_TRUE@	$(LN_S) ${glibcxx_srcdir}/$(CMESSAGES_CC) ./$@ || true
+
+@ENABLE_DUAL_ABI_TRUE@monetary_members_cow.cc: ${glibcxx_srcdir}/$(CMONEY_CC)
+@ENABLE_DUAL_ABI_TRUE@	$(LN_S) ${glibcxx_srcdir}/$(CMONEY_CC) ./$@ || true
+
+@ENABLE_DUAL_ABI_TRUE@numeric_members_cow.cc: ${glibcxx_srcdir}/$(CNUMERIC_CC)
+@ENABLE_DUAL_ABI_TRUE@	$(LN_S) ${glibcxx_srcdir}/$(CNUMERIC_CC) ./$@ || true
+
 c++locale.cc: ${glibcxx_srcdir}/$(CLOCALE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CLOCALE_CC) ./$@ || true
 
@@ -717,6 +750,23 @@ basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_CC) ./$@ || true
 
 vpath % $(top_srcdir)/src/c++98
+# Use special rules to compile with the non-default string ABI.
+@ENABLE_DUAL_ABI_TRUE@collate_members_cow.lo: collate_members_cow.cc
+@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+@ENABLE_DUAL_ABI_TRUE@collate_members_cow.o: collate_members_cow.cc
+@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+@ENABLE_DUAL_ABI_TRUE@messages_members_cow.lo: messages_members_cow.cc
+@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+@ENABLE_DUAL_ABI_TRUE@messages_members_cow.o: messages_members_cow.cc
+@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+@ENABLE_DUAL_ABI_TRUE@monetary_members_cow.lo: monetary_members_cow.cc
+@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+@ENABLE_DUAL_ABI_TRUE@monetary_members_cow.o: monetary_members_cow.cc
+@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+@ENABLE_DUAL_ABI_TRUE@numeric_members_cow.lo: numeric_members_cow.cc
+@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+@ENABLE_DUAL_ABI_TRUE@numeric_members_cow.o: numeric_members_cow.cc
+@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
 strstream.lo: strstream.cc
 	$(LTCXXCOMPILE) -I$(GLIBCXX_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 strstream.o: strstream.cc

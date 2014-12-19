@@ -20,6 +20,7 @@
 #include <ios>
 #include <testsuite_hooks.h>
 
+#if _GLIBCXX_USE_CXX11_ABI
 using test_type = std::ios_base::failure;
 
 static_assert( std::is_base_of<std::system_error, test_type>::value, "base" );
@@ -50,3 +51,6 @@ main()
   test01();
   test02();
 }
+#else
+int main() { }
+#endif

@@ -26,6 +26,15 @@
 // ISO C++ 14882: 22.1  Locales
 //
 
+#ifndef _GLIBCXX_USE_CXX11_ABI
+// Instantiations in this file use the old COW std::string ABI unless included
+// by another file which defines _GLIBCXX_USE_CXX11_ABI=1. Some instantiations
+// are guarded by a check for !_GLIBCXX_USE_CXX11_ABI so that they are only
+// instantiated once, because they are not tagged with abi_tag so should not
+// be instantiated twice.
+# define _GLIBCXX_USE_CXX11_ABI 0
+#endif
+
 #include <locale>
 
 // Instantiation configuration.
@@ -39,13 +48,17 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // moneypunct, money_get, and money_put
-  template class moneypunct<C, false>;
-  template class moneypunct<C, true>;
+#if ! _GLIBCXX_USE_CXX11_ABI
   template struct __moneypunct_cache<C, false>;
   template struct __moneypunct_cache<C, true>;
+#endif
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
+  template class moneypunct<C, false>;
+  template class moneypunct<C, true>;
   template class moneypunct_byname<C, false>;
   template class moneypunct_byname<C, true>;
-_GLIBCXX_BEGIN_NAMESPACE_LDBL
+_GLIBCXX_END_NAMESPACE_CXX11
+_GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
   template class money_get<C, istreambuf_iterator<C> >;
   template class money_put<C, ostreambuf_iterator<C> >;
   template
@@ -71,15 +84,21 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
     money_put<C, ostreambuf_iterator<C> >::
     _M_insert<false>(ostreambuf_iterator<C>, ios_base&, C, 
 		     const string_type&) const;
-_GLIBCXX_END_NAMESPACE_LDBL
+_GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 
   // numpunct, numpunct_byname, num_get, and num_put
-  template class numpunct<C>;
+#if ! _GLIBCXX_USE_CXX11_ABI
   template struct __numpunct_cache<C>;
+#endif
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
+  template class numpunct<C>;
   template class numpunct_byname<C>;
+_GLIBCXX_END_NAMESPACE_CXX11
 _GLIBCXX_BEGIN_NAMESPACE_LDBL
+#if ! _GLIBCXX_USE_CXX11_ABI
   template class num_get<C, istreambuf_iterator<C> >;
-  template class num_put<C, ostreambuf_iterator<C> >; 
+#endif
+
   template
     istreambuf_iterator<C>
     num_get<C, istreambuf_iterator<C> >::
@@ -124,6 +143,9 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 		   unsigned long long&) const;
 #endif
 
+#if ! _GLIBCXX_USE_CXX11_ABI
+  template class num_put<C, ostreambuf_iterator<C> >;
+
   template
     ostreambuf_iterator<C>
     num_put<C, ostreambuf_iterator<C> >::
@@ -161,33 +183,47 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
     num_put<C, ostreambuf_iterator<C> >::
     _M_insert_float(ostreambuf_iterator<C>, ios_base&, C, char, 
 		    long double) const;
+#endif
 _GLIBCXX_END_NAMESPACE_LDBL
 
   // time_get and time_put
+#if ! _GLIBCXX_USE_CXX11_ABI
   template class __timepunct<C>;
   template struct __timepunct_cache<C>;
   template class time_put<C, ostreambuf_iterator<C> >;
   template class time_put_byname<C, ostreambuf_iterator<C> >;
+#endif
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
   template class time_get<C, istreambuf_iterator<C> >;
   template class time_get_byname<C, istreambuf_iterator<C> >;
+_GLIBCXX_END_NAMESPACE_CXX11
 
   // messages
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
   template class messages<C>;
   template class messages_byname<C>;
+_GLIBCXX_END_NAMESPACE_CXX11
   
   // ctype
+#if ! _GLIBCXX_USE_CXX11_ABI
   inline template class __ctype_abstract_base<C>;
   template class ctype_byname<C>;
+#endif
   
   // codecvt
+#if ! _GLIBCXX_USE_CXX11_ABI
   inline template class __codecvt_abstract_base<C, char, mbstate_t>;
   template class codecvt_byname<C, char, mbstate_t>;
+#endif
 
   // collate
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
   template class collate<C>;
   template class collate_byname<C>;
+_GLIBCXX_END_NAMESPACE_CXX11
     
   // use_facet
+#if ! _GLIBCXX_USE_CXX11_ABI
   template
     const ctype<C>& 
     use_facet<ctype<C> >(const locale&);
@@ -195,6 +231,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
   template
     const codecvt<C, char, mbstate_t>& 
     use_facet<codecvt<C, char, mbstate_t> >(const locale&);
+#endif
 
   template
     const collate<C>& 
@@ -204,6 +241,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
     const numpunct<C>& 
     use_facet<numpunct<C> >(const locale&);
 
+#if ! _GLIBCXX_USE_CXX11_ABI
   template 
     const num_put<C>& 
     use_facet<num_put<C> >(const locale&);
@@ -211,6 +249,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
   template 
     const num_get<C>& 
     use_facet<num_get<C> >(const locale&);
+#endif
 
   template
     const moneypunct<C, true>& 
@@ -228,6 +267,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
     const money_get<C>& 
     use_facet<money_get<C> >(const locale&);
 
+#if ! _GLIBCXX_USE_CXX11_ABI
   template
     const __timepunct<C>& 
     use_facet<__timepunct<C> >(const locale&);
@@ -235,6 +275,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
   template 
     const time_put<C>& 
     use_facet<time_put<C> >(const locale&);
+#endif
 
   template 
     const time_get<C>& 
@@ -245,6 +286,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
     use_facet<messages<C> >(const locale&);
 
   // has_facet
+#if ! _GLIBCXX_USE_CXX11_ABI
   template 
     bool
     has_facet<ctype<C> >(const locale&);
@@ -252,6 +294,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
   template 
     bool
     has_facet<codecvt<C, char, mbstate_t> >(const locale&);
+#endif
 
   template 
     bool
@@ -261,6 +304,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
     bool
     has_facet<numpunct<C> >(const locale&);
 
+#if ! _GLIBCXX_USE_CXX11_ABI
   template 
     bool
     has_facet<num_put<C> >(const locale&);
@@ -268,6 +312,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
   template 
     bool
     has_facet<num_get<C> >(const locale&);
+#endif
 
   template 
     bool
@@ -281,6 +326,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
     bool
     has_facet<money_get<C> >(const locale&);
 
+#if ! _GLIBCXX_USE_CXX11_ABI
   template 
     bool
     has_facet<__timepunct<C> >(const locale&);
@@ -288,6 +334,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
   template 
     bool
     has_facet<time_put<C> >(const locale&);
+#endif
 
   template 
     bool
@@ -322,7 +369,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 // XXX GLIBCXX_ABI Deprecated
-#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined C_is_char
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined C_is_char \
+      && _GLIBCXX_USE_CXX11_ABI == 0
 
 #define _GLIBCXX_LDBL_COMPAT(dbl, ldbl) \
   extern "C" void ldbl (void) __attribute__ ((alias (#dbl), weak))

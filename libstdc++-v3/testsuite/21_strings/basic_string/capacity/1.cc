@@ -140,7 +140,11 @@ void test01()
   VERIFY( sz04 >= 100 );
   str02.reserve();
   sz03 = str02.capacity();
+#if _GLIBCXX_USE_CXX11_ABI
+  VERIFY( sz03 < 100);
+#else
   VERIFY( sz03 == 0 );
+#endif
 
   sz03 = str02.size() + 5;
   str02.resize(sz03);

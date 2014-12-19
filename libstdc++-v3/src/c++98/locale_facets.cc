@@ -20,6 +20,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#define _GLIBCXX_USE_CXX11_ABI 0
 #include <locale>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -97,11 +98,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     *__fptr = '\0';
   }
 
-  bool
-  __verify_grouping(const char* __grouping, size_t __grouping_size,
-		    const string& __grouping_tmp) throw()
+  // This function is not exported but is needed internally, by the versions
+  // of __verify_grouping below and in src/c++11/cxx11-locale-inst.cc
+  extern bool
+  __verify_grouping_impl(const char* __grouping, size_t __grouping_size,
+                         const char* __grouping_tmp, size_t __grouping_tmp_size)
   {
-    const size_t __n = __grouping_tmp.size() - 1;
+    const size_t __n = __grouping_tmp_size - 1;
     const size_t __min = std::min(__n, size_t(__grouping_size - 1));
     size_t __i = __n;
     bool __test = true;
@@ -120,6 +123,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	&& __grouping[__min] != __gnu_cxx::__numeric_traits<char>::__max)
       __test &= __grouping_tmp[0] <= __grouping[__min];
     return __test;
+  }
+
+  bool
+  __verify_grouping(const char* __grouping, size_t __grouping_size,
+		    const string& __grouping_tmp) throw()
+  {
+    return __verify_grouping_impl(__grouping, __grouping_size,
+                                  __grouping_tmp.c_str(),
+                                  __grouping_tmp.size());
   }
 
 _GLIBCXX_END_NAMESPACE_VERSION

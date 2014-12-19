@@ -1,3 +1,187 @@
+2014-12-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_CXX11_ABI): Remove.
+	(GLIBCXX_ENABLE_LIBSTDCXX_DUAL_ABI, GLIBCXX_DEFAULT_ABI): Add.
+	* configure.ac: Use new macros.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* include/Makefile.am: Set _GLIBCXX_USE_DUAL_ABI.
+	* include/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Export symbols related to new std::string.
+	Tighten old patterns to not match new symbols.
+	* config/locale/generic/monetary_members.cc: Guard some definitions
+	to not compile with new ABI.
+	* config/locale/gnu/monetary_members.cc: Likewise.
+	* config/locale/gnu/numeric_members.cc: Prevent double-free.
+	* config/os/gnu-linux/ldbl-extra.ver: Add new __gnu_cxx_ldbl128
+	exports. Tighten old patterns.
+	* doc/xml/manual/configure.xml: Document new configure options.
+	* doc/html/*: Regenerate.
+	* include/bits/basic_string.h (__cxx11::basic_string): Define new
+	non-reference-counted implementation in inline namespace __cxx11.
+	(stoi, stol, stoll, stof, stod, stold, to_string): Conditionally use
+	inline namespace.
+	(literals::string_literals::operator"): Conditionally use abi-tag.
+	* include/bits/basic_string.tcc (__cxx11::basic_string): Define.
+	* include/bits/c++config: Define _GLIBCXX_USE_DUAL_ABI and
+	LDBL_CXX11_ABI namespace macros.
+	* include/bits/locale_classes.h (locale::name()): Use abi_tag when
+	new ABI is in use.
+	(locale::_S_twinned_facets): New static member.
+	(locale::facet::__shim): Declare new type.
+	(locale::_facet::_M_sso_shim, locale::_facet::_M_cow_shim): New
+	functions for creating shims.
+	(locale::_Impl::_M_facet_unchecked): New member function for use
+	during construction.
+	(locale::_Impl::_M_init_extra): New member functions to create second
+	version of some facets.
+	(collate, collate_byname): Use abi_tag when new ABI is in use.
+	* include/bits/locale_facets.h: Add _GLIBCXX_NUM_CXX11_FACETS macro.
+	(numpunct, numpunct_byname): Use __cxx11 namespace.
+	(num_get::_M_extract_float, num_get::_M_extract_int): Use abi_tag
+	when new ABI is in use.
+	(num_get::__do_get, num_put::__do_put): Do not declare long double
+	compat functions for new ABI.
+	* include/bits/locale_facets.tcc (num_get, num_put): Use abi_tag on
+	definitions.
+	(numpunct, numpunct_byname): Qualify explicit instantiations.
+	* include/bits/locale_facets_nonio.h (time_get, time_get_byname,
+	moneypunct, moneypunct_byname, money_get, money_put, messages,
+	messages_byname): Use new inline namespace macros.
+	(money_get::__do_get, money_put::__do_put): Do not declare long
+	double compat functions for new ABI.
+	* include/bits/locale_facets_nonio.tcc (money_get, money_put): Use
+	new namespace macros.
+	(money_get::__do_get, money_put::__do_put): Do not define for new ABI.
+	* include/bits/localefwd.h (numpunct, numpunct_byname, collate,
+	collate_byname, time_get, time_get_byname, moneypunct,
+	moneypunct_byname, money_get, money_put, messages, messages_byname):
+	Use new namespace macros.
+	* include/bits/regex.h: Use inline namespace macros.
+	* include/bits/stl_list.h (_List_base, list): Use inline namespace
+	instead of abi-tag.
+	* include/bits/stringfwd.h (basic_string): Use namespace macros.
+	* include/std/iosfwd (basic_stringbuf, basic_istringstream,
+	basic_ostringstream, basic_stringstream): Likewise.
+	* include/std/sstream: Likewise.
+	(basic_stringbuf::__xfer_bufptrs): Update streambuf pointers on move.
+	* include/std/stdexcept (__cow_string, __sso_string): New types for
+	indirectly using std::string with either ABI.
+	(logic_error, runtime_error): Replace std::string member with
+	__cow_string when new ABI is in use. Declare non-inline copy
+	constructor and assignment operator. Declare const char* constructors.
+	(domain_error, invalid_argument, length_error, out_of_range,
+	range_error, overflow_error, underflow_error): Declare const char*
+	constructors.
+	* include/std/system_error (error_category): Replace with new
+	definition in inline namespace _V2.
+	(error_code::message, error_condition::message): Use abi_tag on
+	functions returning std::string.
+	* python/libstdcxx/v6/printers.py (StdStringPrinter): Handle new ABI.
+	* src/c++11/Makefile.am: Add new files.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/compatibility-c++0x.cc: Compile with old std::string ABI.
+	Define old error_category symbols.
+	* src/c++11/cow-fstream-inst.cc: New. Instantiate fstream members
+	using old std::string ABI.
+	* src/c++11/cow-locale_init.cc (locale::_Impl::_M_init_extra): Define.
+	* src/c++11/cow-shim_facets.cc: Define shim facets using old ABI.
+	* src/c++11/cow-sstream-inst.cc: Instantiate stringstreams using old
+	std::string ABI.
+	* src/c++11/cow-stdexcept.cc: Define new constructors and assignment
+	operators.
+	(__cow_string, error_category::_M_message): Define.
+	* src/c++11/cow-string-inst.cc: Explicit instantiations using old
+	std::string. Include src/c++98/istream-string.cc.
+	* src/c++11/cow-wstring-inst.cc: Explicit instantiations using old
+	std::wstring.
+	* src/c++11/cxx11-hash_tr1.cc: Explicit instantiations using new
+	string.
+	* src/c++11/cxx11-ios_failure.cc: Add sanity check.
+	* src/c++11/cxx11-locale-inst.cc: Instantiate facets using new
+	std::string.
+	* src/c++11/cxx11-shim_facets.cc: Define shim facets using new ABI.
+	* src/c++11/cxx11-stdexcept.cc: Define constructors taking new
+	std::string.
+	* src/c++11/cxx11-wlocale-inst.cc: Instantiate facets using
+	new std::wstring.
+	* src/c++11/fstream-inst.cc: Compile with new ABI.
+	* src/c++11/functexcept.cc: Compile with old ABI.
+	* src/c++11/random.cc: Compile with new ABI.
+	* src/c++11/sstream-inst.cc: Compile with new ABI.
+	* src/c++11/string-inst.cc: Explicit instantiations for new string.
+	* src/c++11/system_error.cc (__sso_string, error_category::_M_message):
+	Define.
+	* src/c++11/wstring-inst.cc: Compile with new ABI.
+	* src/c++98/Makefile.am: Compile some host files twice for old and
+	new std::string. Add new files.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/compatibility-ldbl.cc: Compile with old ABI.
+	* src/c++98/compatibility.cc: Likewise.
+	* src/c++98/concept-inst.cc: Likewise.
+	* src/c++98/hash_tr1.cc: Likewise.
+	* src/c++98/istream-string.cc: New file defining functions that
+	work with istream and std::string moved from ...
+	* src/c++98/istream.cc: ... here.
+	* src/c++98/cow-istream-string.cc: Recompile istream-string.cc with
+	old ABI.
+	* src/c++98/locale-inst.cc: Adjust facet instantiations to work for
+	either ABI.
+	* src/c++98/locale.cc (locale::_M_install_facet,
+	locale::_M_install_cache): Handle twinned facets.
+	* src/c++98/locale-facets.cc: Compile with old std::string ABI.
+	(__verify_grouping): Define new overload and old std::string version.
+	* src/c++98/locale_init.cc: Initialize twinned facets.
+	* src/c++98/localename.cc: Likewise.
+	* src/c++98/misc-inst.cc: Instantiate C++98-only std::string members.
+	(__verify_grouping): Define new std::string version.
+	* src/c++98/stdexcept.cc: Compile with old std::string ABI.
+	* src/c++98/wlocale-inst.cc: Likewise.
+	* testsuite/18_support/50594.cc: Adjust to work with SSO strings.
+	* testsuite/21_strings/basic_string/capacity/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/18654.cc: Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/2.cc: Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/18654.cc:
+	Likewise.
+	* testsuite/21_strings/headers/string/synopsis.cc: Use inline
+	namespace macros.
+	* testsuite/23_containers/headers/list/synopsis.cc: Likewise.
+	* testsuite/27_io/basic_ios/copyfmt/char/1.cc: Set dg-options so
+	correct exception type can be caught.
+	* testsuite/27_io/basic_ios/exceptions/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/char/12297.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/wchar_t/12297.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/2.cc: Likewise.
+	* testsuite/27_io/ios_base/failure/cxx11.cc: Disable for old ABI.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Use old ABI.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/whatis.cc: Likewise.
+	* testsuite/util/exception/safety.h: Adjust member function types
+	for new std::string.
+	* testsuite/util/testsuite_abi.cc: Add new version and ignore
+	__float128 symbols in __cxx11 namespace.
+
 2014-12-17  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/64302

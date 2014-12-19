@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// The library still throws the original definition of std::ios::failure
+// { dg-options "-D_GLIBCXX_USE_CXX11_ABI=0" }
 
 #include <istream>
 #include <ostream>

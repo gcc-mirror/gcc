@@ -26,7 +26,12 @@
 // ISO C++ 14882:2011: 27.5.3.1.1  Class ios_base::failure
 //
 
+#define _GLIBCXX_USE_CXX11_ABI 1
 #include <ios>
+
+#if ! _GLIBCXX_USE_DUAL_ABI
+# error This file should not be compiled for this configuration.
+#endif
 
 namespace
 {

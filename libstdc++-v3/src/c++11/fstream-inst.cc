@@ -26,6 +26,7 @@
 // ISO C++ 14882:
 //
 
+#define _GLIBCXX_USE_CXX11_ABI 1
 #include <fstream>
 
 namespace std _GLIBCXX_VISIBILITY(default)

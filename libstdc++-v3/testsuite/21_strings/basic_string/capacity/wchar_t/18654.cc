@@ -36,10 +36,13 @@ void test01()
 
   typedef wstring::size_type size_type;
 
-  // Our current implementation provides exact shrink-to-size
-  // and shrink-to-fit (in the future, maybe this will change
-  // for short strings).
+#if _GLIBCXX_USE_CXX11_ABI
+  // Can't shrink below small string size.
+  const size_type minsize = 2 << 1;
+#else
+  // Exact shrink-to-size and shrink-to-fit
   const size_type minsize = 2 << 0;
+#endif
   const size_type maxsize = 2 << MAX_SIZE;
   for (size_type i = minsize; i <= maxsize; i *= 2)
     {
