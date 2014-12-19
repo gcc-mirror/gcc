@@ -1,5 +1,12 @@
 2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* config/sh/sh.c (sh_lra_p): New function.
+	(TARGET_LRA_P): Define.
+	(sh_legitimize_reload_address): Return false if sh_lra_p is true.
+	* config/sh/sh.opt (mlra): New option.
+
+2014-12-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* lra-constraints.c (process_address_1): Try if target can split
 	displacement with targetm.legitimize_address_displacement.
 	* target.def (legitimize_address_displacement): New hook.

@@ -222,6 +222,7 @@ static int sh_mode_after (int, int, rtx_insn *);
 static int sh_mode_entry (int);
 static int sh_mode_exit (int);
 static int sh_mode_priority (int entity, int n);
+static bool sh_lra_p (void);
 
 static rtx mark_constant_pool_use (rtx);
 static tree sh_handle_interrupt_handler_attribute (tree *, tree, tree,
@@ -619,6 +620,9 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO	sh_encode_section_info
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P sh_lra_p
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD sh_secondary_reload
@@ -10484,6 +10488,9 @@ sh_legitimize_reload_address (rtx *p, machine_mode mode, int opnum,
   enum reload_type type = (enum reload_type) itype;
   const int mode_sz = GET_MODE_SIZE (mode);
 
+  if (sh_lra_p ())
+    return false;
+
   if (! ALLOW_INDEXED_ADDRESS
       && GET_CODE (*p) == PLUS
       && REG_P (XEXP (*p, 0)) && REG_P (XEXP (*p, 1)))
@@ -13772,6 +13779,13 @@ static int
 sh_mode_priority (int entity ATTRIBUTE_UNUSED, int n)
 {
   return ((TARGET_FPU_SINGLE != 0) ^ (n) ? FP_MODE_SINGLE : FP_MODE_DOUBLE);
+}
+
+/* Return true if we use LRA instead of reload pass.  */
+static bool
+sh_lra_p (void)
+{
+  return sh_lra_flag;
 }
 
 /* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
