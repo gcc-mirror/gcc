@@ -5142,6 +5142,9 @@ Expression*
 Binary_expression::do_flatten(Gogo* gogo, Named_object*,
                               Statement_inserter* inserter)
 {
+  if (this->classification() == EXPRESSION_ERROR)
+    return this;
+
   Location loc = this->location();
   Temporary_statement* temp;
   if (this->left_->type()->is_string_type()
@@ -6877,30 +6880,53 @@ Expression*
 Builtin_call_expression::do_flatten(Gogo*, Named_object*,
                                     Statement_inserter* inserter)
 {
-  if (this->code_ == BUILTIN_APPEND
-      || this->code_ == BUILTIN_COPY)
+  Location loc = this->location();
+
+  switch (this->code_)
     {
-      Location loc = this->location();
-      Type* at = this->args()->front()->type();
-      for (Expression_list::iterator pa = this->args()->begin();
-           pa != this->args()->end();
-           ++pa)
-        {
-          if ((*pa)->is_nil_expression())
-	    {
-	      Expression* nil = Expression::make_nil(loc);
-	      Expression* zero = Expression::make_integer_ul(0, NULL, loc);
-	      *pa = Expression::make_slice_value(at, nil, zero, zero, loc);
-	    }
-          if (!(*pa)->is_variable())
-            {
-              Temporary_statement* temp =
+    default:
+      break;
+
+    case BUILTIN_APPEND:
+    case BUILTIN_COPY:
+      {
+	Type* at = this->args()->front()->type();
+	for (Expression_list::iterator pa = this->args()->begin();
+	     pa != this->args()->end();
+	     ++pa)
+	  {
+	    if ((*pa)->is_nil_expression())
+	      {
+		Expression* nil = Expression::make_nil(loc);
+		Expression* zero = Expression::make_integer_ul(0, NULL, loc);
+		*pa = Expression::make_slice_value(at, nil, zero, zero, loc);
+	      }
+	    if (!(*pa)->is_variable())
+	      {
+		Temporary_statement* temp =
                   Statement::make_temporary(NULL, *pa, loc);
-              inserter->insert(temp);
-              *pa = Expression::make_temporary_reference(temp, loc);
-            }
-        }
+		inserter->insert(temp);
+		*pa = Expression::make_temporary_reference(temp, loc);
+	      }
+	  }
+      }
+      break;
+
+    case BUILTIN_PANIC:
+      for (Expression_list::iterator pa = this->args()->begin();
+	   pa != this->args()->end();
+	   ++pa)
+	{
+	  if (!(*pa)->is_variable() && (*pa)->type()->interface_type() != NULL)
+	    {
+	      Temporary_statement* temp =
+		Statement::make_temporary(NULL, *pa, loc);
+	      inserter->insert(temp);
+	      *pa = Expression::make_temporary_reference(temp, loc);
+	    }
+	}
     }
+
   return this;
 }
 

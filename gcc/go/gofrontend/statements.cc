@@ -421,6 +421,28 @@ Temporary_statement::do_check_types(Gogo*)
     }
 }
 
+// Flatten a temporary statement: add another temporary when it might
+// be needed for interface conversion.
+
+Statement*
+Temporary_statement::do_flatten(Gogo*, Named_object*, Block*,
+				Statement_inserter* inserter)
+{
+  if (this->type_ != NULL
+      && this->init_ != NULL
+      && !Type::are_identical(this->type_, this->init_->type(), false, NULL)
+      && this->init_->type()->interface_type() != NULL
+      && !this->init_->is_variable())
+    {
+      Temporary_statement *temp =
+	Statement::make_temporary(NULL, this->init_, this->location());
+      inserter->insert(temp);
+      this->init_ = Expression::make_temporary_reference(temp,
+							 this->location());
+    }
+  return this;
+}
+
 // Convert to backend representation.
 
 Bstatement*
@@ -440,9 +462,10 @@ Temporary_statement::do_get_backend(Translate_context* context)
     binit = this->init_->get_backend(context);
   else
     {
-      Expression* init = Expression::make_cast(this->type_, this->init_,
-					       this->location());
-      context->gogo()->lower_expression(context->function(), NULL, &init);
+      Expression* init = Expression::convert_for_assignment(context->gogo(),
+							    this->type_,
+							    this->init_,
+							    this->location());
       binit = init->get_backend(context);
     }
 
