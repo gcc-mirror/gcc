@@ -1,5 +1,11 @@
 2014-12-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit-recording.c (gcc::jit::recording::context::context): When
+	copying string options from a parent context, take a copy of the
+	underlying buffers, rather than simply copying the pointer.
+
+2014-12-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit-recording.c (gcc::jit::recording::context::set_str_option):
 	Handle NULL.
 
