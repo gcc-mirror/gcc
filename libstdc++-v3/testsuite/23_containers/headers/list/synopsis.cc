@@ -21,7 +21,9 @@
 #include <list>
 
 namespace std {
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
   template <class T, class Allocator> class list;
+_GLIBCXX_END_NAMESPACE_CXX11
 
   template <class T, class Allocator>
   bool operator==(const list<T,Allocator>& x, const list<T,Allocator>&);

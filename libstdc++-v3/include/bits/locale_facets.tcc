@@ -143,6 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_LDBL
 
   template<typename _CharT, typename _InIter>
+    _GLIBCXX_DEFAULT_ABI_TAG
     _InIter
     num_get<_CharT, _InIter>::
     _M_extract_float(_InIter __beg, _InIter __end, ios_base& __io,
@@ -368,6 +369,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 
   template<typename _CharT, typename _InIter>
     template<typename _ValueT>
+      _GLIBCXX_DEFAULT_ABI_TAG
       _InIter
       num_get<_CharT, _InIter>::
       _M_extract_int(_InIter __beg, _InIter __end, ios_base& __io,
@@ -1290,8 +1292,8 @@ _GLIBCXX_END_NAMESPACE_LDBL
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
 #if _GLIBCXX_EXTERN_TEMPLATE
-  extern template class numpunct<char>;
-  extern template class numpunct_byname<char>;
+  extern template class _GLIBCXX_NAMESPACE_CXX11 numpunct<char>;
+  extern template class _GLIBCXX_NAMESPACE_CXX11 numpunct_byname<char>;
   extern template class _GLIBCXX_NAMESPACE_LDBL num_get<char>;
   extern template class _GLIBCXX_NAMESPACE_LDBL num_put<char>;
   extern template class ctype_byname<char>;
@@ -1329,8 +1331,8 @@ _GLIBCXX_END_NAMESPACE_LDBL
     has_facet<num_get<char> >(const locale&);
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  extern template class numpunct<wchar_t>;
-  extern template class numpunct_byname<wchar_t>;
+  extern template class _GLIBCXX_NAMESPACE_CXX11 numpunct<wchar_t>;
+  extern template class _GLIBCXX_NAMESPACE_CXX11 numpunct_byname<wchar_t>;
   extern template class _GLIBCXX_NAMESPACE_LDBL num_get<wchar_t>;
   extern template class _GLIBCXX_NAMESPACE_LDBL num_put<wchar_t>;
   extern template class ctype_byname<wchar_t>;

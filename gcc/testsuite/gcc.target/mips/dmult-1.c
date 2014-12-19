@@ -1,4 +1,4 @@
-/* { dg-options "forbid_cpu=octeon.* -mgp64" } */
+/* { dg-options "isa_rev<=5 forbid_cpu=octeon.* -mgp64" } */
 /* { dg-final { scan-assembler "\tdmult\t" } } */
 /* { dg-final { scan-assembler "\tmflo\t" } } */
 /* { dg-final { scan-assembler-not "\tdmul\t" } } */

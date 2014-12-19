@@ -128,7 +128,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-_GLIBCXX_BEGIN_NAMESPACE_LDBL
+_GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 
   template<typename _CharT, typename _InIter>
     template<bool _Intl>
@@ -348,7 +348,8 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 	return __beg;
       }
 
-#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
+      && _GLIBCXX_USE_CXX11_ABI == 0
   template<typename _CharT, typename _InIter>
     _InIter
     money_get<_CharT, _InIter>::
@@ -559,7 +560,8 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 	return __s;    
       }
 
-#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
+      && _GLIBCXX_USE_CXX11_ABI == 0
   template<typename _CharT, typename _OutIter>
     _OutIter
     money_put<_CharT, _OutIter>::
@@ -614,7 +616,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
     { return __intl ? _M_insert<true>(__s, __io, __fill, __digits)
 	            : _M_insert<false>(__s, __io, __fill, __digits); }
 
-_GLIBCXX_END_NAMESPACE_LDBL
+_GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 
   // NB: Not especially useful. Without an ios_base object or some
   // kind of locale reference, we are left clawing at the air where
@@ -1222,8 +1224,8 @@ _GLIBCXX_END_NAMESPACE_LDBL
   extern template class moneypunct<char, true>;
   extern template class moneypunct_byname<char, false>;
   extern template class moneypunct_byname<char, true>;
-  extern template class _GLIBCXX_NAMESPACE_LDBL money_get<char>;
-  extern template class _GLIBCXX_NAMESPACE_LDBL money_put<char>;
+  extern template class _GLIBCXX_NAMESPACE_LDBL_OR_CXX11 money_get<char>;
+  extern template class _GLIBCXX_NAMESPACE_LDBL_OR_CXX11 money_put<char>;
   extern template class __timepunct<char>;
   extern template class time_put<char>;
   extern template class time_put_byname<char>;
@@ -1297,8 +1299,8 @@ _GLIBCXX_END_NAMESPACE_LDBL
   extern template class moneypunct<wchar_t, true>;
   extern template class moneypunct_byname<wchar_t, false>;
   extern template class moneypunct_byname<wchar_t, true>;
-  extern template class _GLIBCXX_NAMESPACE_LDBL money_get<wchar_t>;
-  extern template class _GLIBCXX_NAMESPACE_LDBL money_put<wchar_t>;
+  extern template class _GLIBCXX_NAMESPACE_LDBL_OR_CXX11 money_get<wchar_t>;
+  extern template class _GLIBCXX_NAMESPACE_LDBL_OR_CXX11 money_put<wchar_t>;
   extern template class __timepunct<wchar_t>;
   extern template class time_put<wchar_t>;
   extern template class time_put_byname<wchar_t>;

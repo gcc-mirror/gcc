@@ -1434,10 +1434,10 @@
 
 (define_insn "*adddi3_aarch64"
   [(set
-    (match_operand:DI 0 "register_operand" "=rk,rk,rk,!w")
+    (match_operand:DI 0 "register_operand" "=rk,rk,rk,w")
     (plus:DI
-     (match_operand:DI 1 "register_operand" "%rk,rk,rk,!w")
-     (match_operand:DI 2 "aarch64_plus_operand" "I,r,J,!w")))]
+     (match_operand:DI 1 "register_operand" "%rk,rk,rk,w")
+     (match_operand:DI 2 "aarch64_plus_operand" "I,r,J,w")))]
   ""
   "@
   add\\t%x0, %x1, %2
@@ -1908,9 +1908,9 @@
 )
 
 (define_insn "subdi3"
-  [(set (match_operand:DI 0 "register_operand" "=rk,!w")
-	(minus:DI (match_operand:DI 1 "register_operand" "r,!w")
-		   (match_operand:DI 2 "register_operand" "r,!w")))]
+  [(set (match_operand:DI 0 "register_operand" "=rk,w")
+	(minus:DI (match_operand:DI 1 "register_operand" "r,w")
+		   (match_operand:DI 2 "register_operand" "r,w")))]
   ""
   "@
    sub\\t%x0, %x1, %x2
@@ -2866,12 +2866,16 @@
 ;; -------------------------------------------------------------------
 
 (define_insn "<optab><mode>3"
-  [(set (match_operand:GPI 0 "register_operand" "=r,rk")
-	(LOGICAL:GPI (match_operand:GPI 1 "register_operand" "%r,r")
-		     (match_operand:GPI 2 "aarch64_logical_operand" "r,<lconst>")))]
+  [(set (match_operand:GPI 0 "register_operand" "=r,rk,w")
+	(LOGICAL:GPI (match_operand:GPI 1 "register_operand" "%r,r,w")
+		     (match_operand:GPI 2 "aarch64_logical_operand" "r,<lconst>,w")))]
   ""
-  "<logical>\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "type" "logic_reg,logic_imm")]
+  "@
+  <logical>\\t%<w>0, %<w>1, %<w>2
+  <logical>\\t%<w>0, %<w>1, %<w>2
+  <logical>\\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>"
+  [(set_attr "type" "logic_reg,logic_imm,neon_logic")
+   (set_attr "simd" "*,*,yes")]
 )
 
 ;; zero_extend version of above
@@ -2992,11 +2996,14 @@
 )
 
 (define_insn "one_cmpl<mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(not:GPI (match_operand:GPI 1 "register_operand" "r")))]
+  [(set (match_operand:GPI 0 "register_operand" "=r,w")
+	(not:GPI (match_operand:GPI 1 "register_operand" "r,w")))]
   ""
-  "mvn\\t%<w>0, %<w>1"
-  [(set_attr "type" "logic_reg")]
+  "@
+  mvn\\t%<w>0, %<w>1
+  mvn\\t%0.8b, %1.8b"
+  [(set_attr "type" "logic_reg,neon_logic")
+   (set_attr "simd" "*,yes")]
 )
 
 (define_insn "*one_cmpl_<optab><mode>2"
@@ -3008,14 +3015,36 @@
   [(set_attr "type" "logic_shift_imm")]
 )
 
-(define_insn "*<LOGICAL:optab>_one_cmpl<mode>3"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(LOGICAL:GPI (not:GPI
-		      (match_operand:GPI 1 "register_operand" "r"))
-		     (match_operand:GPI 2 "register_operand" "r")))]
+;; Binary logical operators negating one operand, i.e. (a & !b), (a | !b).
+
+(define_insn "*<NLOGICAL:optab>_one_cmpl<mode>3"
+  [(set (match_operand:GPI 0 "register_operand" "=r,w")
+	(NLOGICAL:GPI (not:GPI (match_operand:GPI 1 "register_operand" "r,w"))
+		     (match_operand:GPI 2 "register_operand" "r,w")))]
   ""
-  "<LOGICAL:nlogical>\\t%<w>0, %<w>2, %<w>1"
-  [(set_attr "type" "logic_reg")]
+  "@
+  <NLOGICAL:nlogical>\\t%<w>0, %<w>2, %<w>1
+  <NLOGICAL:nlogical>\\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>"
+  [(set_attr "type" "logic_reg,neon_logic")
+   (set_attr "simd" "*,yes")]
+)
+
+;; (xor (not a) b) is simplify_rtx-ed down to (not (xor a b)).
+;; eon does not operate on SIMD registers so the vector variant must be split.
+(define_insn_and_split "*xor_one_cmpl<mode>3"
+  [(set (match_operand:GPI 0 "register_operand" "=r,w")
+        (not:GPI (xor:GPI (match_operand:GPI 1 "register_operand" "r,?w")
+                          (match_operand:GPI 2 "register_operand" "r,w"))))]
+  ""
+  "eon\\t%<w>0, %<w>1, %<w>2" ;; For GPR registers (only).
+  "reload_completed && (which_alternative == 1)" ;; For SIMD registers.
+  [(set (match_operand:GPI 0 "register_operand" "=w")
+        (xor:GPI (match_operand:GPI 1 "register_operand" "w")
+                 (match_operand:GPI 2 "register_operand" "w")))
+   (set (match_dup 0) (not:GPI (match_dup 0)))]
+  ""
+  [(set_attr "type" "logic_reg,multiple")
+   (set_attr "simd" "*,yes")]
 )
 
 (define_insn "*and_one_cmpl<mode>3_compare0"

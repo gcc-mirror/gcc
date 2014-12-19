@@ -42,6 +42,64 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if _GLIBCXX_USE_DUAL_ABI
+#if _GLIBCXX_USE_CXX11_ABI
+  // Emulates an old COW string when the new std::string is in use.
+  struct __cow_string
+  {
+    union {
+      const char* _M_p;
+      char _M_bytes[sizeof(_M_p)];
+    };
+
+    __cow_string();
+    __cow_string(const std::string&);
+    __cow_string(const char*, size_t);
+    __cow_string(const __cow_string&) _GLIBCXX_USE_NOEXCEPT;
+    __cow_string& operator=(const __cow_string&) _GLIBCXX_USE_NOEXCEPT;
+    ~__cow_string();
+#if __cplusplus >= 201103L
+    __cow_string(__cow_string&&) noexcept;
+    __cow_string& operator=(__cow_string&&) noexcept;
+#endif
+  };
+
+  typedef basic_string<char> __sso_string;
+#else // _GLIBCXX_USE_CXX11_ABI
+  typedef basic_string<char> __cow_string;
+
+  // Emulates a new SSO string when the old std::string is in use.
+  struct __sso_string
+  {
+    struct __str
+    {
+      const char* _M_p;
+      size_t _M_string_length;
+      char _M_local_buf[16];
+    };
+
+    union {
+      __str _M_s;
+      char _M_bytes[sizeof(_M_s)];
+    };
+
+    __sso_string() _GLIBCXX_USE_NOEXCEPT;
+    __sso_string(const std::string&);
+    __sso_string(const char*, size_t);
+    __sso_string(const __sso_string&);
+    __sso_string& operator=(const __sso_string&);
+    ~__sso_string();
+#if __cplusplus >= 201103L
+    __sso_string(__sso_string&&) noexcept;
+    __sso_string& operator=(__sso_string&&) noexcept;
+#endif
+  };
+#endif // _GLIBCXX_USE_CXX11_ABI
+#else  // _GLIBCXX_USE_DUAL_ABI
+  typedef basic_string<char> __sso_string;
+  typedef basic_string<char> __cow_string;
+#endif
+
   /**
    * @addtogroup exceptions
    * @{
@@ -54,12 +112,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   class logic_error : public exception 
   {
-    string _M_msg;
+    __cow_string _M_msg;
 
   public:
     /** Takes a character string describing the error.  */
     explicit 
     logic_error(const string& __arg);
+
+#if __cplusplus >= 201103L
+    explicit
+    logic_error(const char*);
+#endif
+
+#if _GLIBCXX_USE_CXX11_ABI || _GLIBCXX_DEFINE_STDEXCEPT_COPY_OPS
+    logic_error(const logic_error&) _GLIBCXX_USE_NOEXCEPT;
+    logic_error& operator=(const logic_error&) _GLIBCXX_USE_NOEXCEPT;
+#endif
 
     virtual ~logic_error() _GLIBCXX_USE_NOEXCEPT;
 
@@ -75,6 +143,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit domain_error(const string& __arg);
+#if __cplusplus >= 201103L
+    explicit domain_error(const char*);
+#endif
     virtual ~domain_error() _GLIBCXX_USE_NOEXCEPT;
   };
 
@@ -83,6 +154,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit invalid_argument(const string& __arg);
+#if __cplusplus >= 201103L
+    explicit invalid_argument(const char*);
+#endif
     virtual ~invalid_argument() _GLIBCXX_USE_NOEXCEPT;
   };
 
@@ -92,6 +166,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit length_error(const string& __arg);
+#if __cplusplus >= 201103L
+    explicit length_error(const char*);
+#endif
     virtual ~length_error() _GLIBCXX_USE_NOEXCEPT;
   };
 
@@ -101,6 +178,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit out_of_range(const string& __arg);
+#if __cplusplus >= 201103L
+    explicit out_of_range(const char*);
+#endif
     virtual ~out_of_range() _GLIBCXX_USE_NOEXCEPT;
   };
 
@@ -111,12 +191,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   class runtime_error : public exception 
   {
-    string _M_msg;
+    __cow_string _M_msg;
 
   public:
     /** Takes a character string describing the error.  */
     explicit 
     runtime_error(const string& __arg);
+
+#if __cplusplus >= 201103L
+    explicit
+    runtime_error(const char*);
+#endif
+
+#if _GLIBCXX_USE_CXX11_ABI || _GLIBCXX_DEFINE_STDEXCEPT_COPY_OPS
+    runtime_error(const runtime_error&) _GLIBCXX_USE_NOEXCEPT;
+    runtime_error& operator=(const runtime_error&) _GLIBCXX_USE_NOEXCEPT;
+#endif
 
     virtual ~runtime_error() _GLIBCXX_USE_NOEXCEPT;
 
@@ -131,6 +221,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit range_error(const string& __arg);
+#if __cplusplus >= 201103L
+    explicit range_error(const char*);
+#endif
     virtual ~range_error() _GLIBCXX_USE_NOEXCEPT;
   };
 
@@ -139,6 +232,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit overflow_error(const string& __arg);
+#if __cplusplus >= 201103L
+    explicit overflow_error(const char*);
+#endif
     virtual ~overflow_error() _GLIBCXX_USE_NOEXCEPT;
   };
 
@@ -147,6 +243,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit underflow_error(const string& __arg);
+#if __cplusplus >= 201103L
+    explicit underflow_error(const char*);
+#endif
     virtual ~underflow_error() _GLIBCXX_USE_NOEXCEPT;
   };
 

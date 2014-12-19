@@ -932,6 +932,21 @@ gfc_trans_class_array_init_assign (gfc_expr *rhs, gfc_expr *lhs, gfc_expr *obj)
      of arrays in gfc_trans_call.  */
   res = gfc_trans_call (ppc_code, false, NULL, NULL, false);
   gfc_free_statements (ppc_code);
+
+  if (UNLIMITED_POLY(obj))
+    {
+      /* Check if rhs is non-NULL. */
+      gfc_se src;
+      gfc_init_se (&src, NULL);
+      gfc_conv_expr (&src, rhs);
+      src.expr = gfc_build_addr_expr (NULL_TREE, src.expr);
+      tree cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+				   src.expr, fold_convert (TREE_TYPE (src.expr),
+							   null_pointer_node));
+      res = build3_loc (input_location, COND_EXPR, TREE_TYPE (res), cond, res,
+			build_empty_stmt (input_location));
+    }
+
   return res;
 }
 
@@ -980,6 +995,17 @@ gfc_trans_class_init_assign (gfc_code *code)
       src.expr = gfc_build_addr_expr (NULL_TREE, src.expr);
 
       tmp = gfc_build_memcpy_call (dst.expr, src.expr, memsz.expr);
+
+      if (UNLIMITED_POLY(code->expr1))
+	{
+	  /* Check if _def_init is non-NULL. */
+	  tree cond = fold_build2_loc (input_location, NE_EXPR,
+				       boolean_type_node, src.expr,
+				       fold_convert (TREE_TYPE (src.expr),
+						     null_pointer_node));
+	  tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp), cond,
+			    tmp, build_empty_stmt (input_location));
+	}
     }
 
   if (code->expr1->symtree->n.sym->attr.optional

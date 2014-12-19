@@ -31,12 +31,14 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename, typename>
     class basic_regex;
 
   template<typename, typename>
     class match_results;
 
+_GLIBCXX_END_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_VERSION
 
 namespace __detail
@@ -71,6 +73,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 }
 
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   /**
    * @addtogroup regex
@@ -1939,6 +1942,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 match_results<_Bi_iter, _Alloc>& __rhs)
     { __lhs.swap(__rhs); }
 
+_GLIBCXX_END_NAMESPACE_CXX11
+
   // [7.11.2] Function template regex_match
   /**
    * @name Matching, Searching, and Replacing
@@ -2407,6 +2412,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   //@}
 
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
+
   // std [28.12] Class template regex_iterator
   /**
    * An iterator adaptor that will provide repeated calls of regex_search over
@@ -2770,6 +2777,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   //@} // group regex
+
+_GLIBCXX_END_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

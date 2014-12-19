@@ -8786,6 +8786,10 @@ Call_expression::do_flatten(Gogo* gogo, Named_object*,
   if (this->classification() == EXPRESSION_ERROR)
     return this;
 
+  if (this->is_flattened_)
+    return this;
+  this->is_flattened_ = true;
+
   // Add temporary variables for all arguments that require type
   // conversion.
   Function_type* fntype = this->get_function_type();
@@ -10590,21 +10594,31 @@ Map_index_expression::do_traverse(Traverse* traverse)
 // recomputation.
 
 Expression*
-Map_index_expression::do_flatten(Gogo*, Named_object*,
+Map_index_expression::do_flatten(Gogo* gogo, Named_object*,
 				 Statement_inserter* inserter)
 {
+  Location loc = this->location();
   Map_type* mt = this->get_map_type();
-  if (this->index_->type() != mt->key_type())
-    this->index_ = Expression::make_cast(mt->key_type(), this->index_,
-                                         this->location());
+  if (!Type::are_identical(mt->key_type(), this->index_->type(), false, NULL))
+    {
+      if (this->index_->type()->interface_type() != NULL
+	  && !this->index_->is_variable())
+	{
+	  Temporary_statement* temp =
+	    Statement::make_temporary(NULL, this->index_, loc);
+	  inserter->insert(temp);
+	  this->index_ = Expression::make_temporary_reference(temp, loc);
+	}
+      this->index_ = Expression::convert_for_assignment(gogo, mt->key_type(),
+							this->index_, loc);
+    }
 
   if (!this->index_->is_variable())
     {
       Temporary_statement* temp = Statement::make_temporary(NULL, this->index_,
-                                                            this->location());
+                                                            loc);
       inserter->insert(temp);
-      this->index_ = Expression::make_temporary_reference(temp,
-                                                          this->location());
+      this->index_ = Expression::make_temporary_reference(temp, loc);
     }
 
   if (this->value_pointer_ == NULL)
@@ -10612,11 +10626,9 @@ Map_index_expression::do_flatten(Gogo*, Named_object*,
   if (!this->value_pointer_->is_variable())
     {
       Temporary_statement* temp =
-          Statement::make_temporary(NULL, this->value_pointer_,
-                                    this->location());
+	Statement::make_temporary(NULL, this->value_pointer_, loc);
       inserter->insert(temp);
-      this->value_pointer_ =
-          Expression::make_temporary_reference(temp, this->location());
+      this->value_pointer_ = Expression::make_temporary_reference(temp, loc);
     }
 
   return this;
@@ -12540,12 +12552,26 @@ Map_construction_expression::do_flatten(Gogo* gogo, Named_object*,
            ++pv, ++i)
         {
           Expression_list* key_value_pair = new Expression_list();
-          Expression* key =
-              Expression::convert_for_assignment(gogo, key_type, *pv, loc);
+          Expression* key = *pv;
+	  if (key->type()->interface_type() != NULL && !key->is_variable())
+	    {
+	      Temporary_statement* temp =
+		Statement::make_temporary(NULL, key, loc);
+	      inserter->insert(temp);
+	      key = Expression::make_temporary_reference(temp, loc);
+	    }
+	  key = Expression::convert_for_assignment(gogo, key_type, key, loc);
 
           ++pv;
-          Expression* val =
-              Expression::convert_for_assignment(gogo, val_type, *pv, loc);
+          Expression* val = *pv;
+	  if (val->type()->interface_type() != NULL && !val->is_variable())
+	    {
+	      Temporary_statement* temp =
+		Statement::make_temporary(NULL, val, loc);
+	      inserter->insert(temp);
+	      val = Expression::make_temporary_reference(temp, loc);
+	    }
+	  val = Expression::convert_for_assignment(gogo, val_type, val, loc);
 
           key_value_pair->push_back(key);
           key_value_pair->push_back(val);

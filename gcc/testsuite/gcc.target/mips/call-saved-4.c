@@ -1,5 +1,5 @@
 /* Check that we save the correct call-saved GPRs and FPRs.  */
-/* { dg-options "isa>=2 -mabi=32 -mfp32" } */
+/* { dg-options "(HAS_LDC) -mabi=32 -mfp32" } */
 
 void bar (void);
 

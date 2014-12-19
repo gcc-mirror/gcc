@@ -1,3 +1,8 @@
+2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config.host: Support mipsisa32r6 and mipsisa64r6.
+	* config/mips/mips16.S: Do not build for R6.
+
 2014-12-17  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/crt.h: New.

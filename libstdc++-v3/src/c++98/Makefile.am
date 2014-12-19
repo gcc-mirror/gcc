@@ -27,9 +27,18 @@ noinst_LTLIBRARIES = libc++98convenience.la
 
 headers =
 
+if ENABLE_DUAL_ABI
+cow_string_host_sources = \
+	collate_members_cow.cc \
+	messages_members_cow.cc \
+	monetary_members_cow.cc \
+	numeric_members_cow.cc
+endif
+
 # Source files linked in via configuration/make substitution for a
 # particular host.
 host_sources = \
+	$(cow_string_host_sources) \
 	atomicity.cc \
 	codecvt_members.cc \
 	collate_members.cc \
@@ -60,6 +69,20 @@ atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
 atomicity.cc: ${atomicity_file}
 	$(LN_S) ${atomicity_file} ./atomicity.cc || true
 
+if ENABLE_DUAL_ABI
+collate_members_cow.cc: ${glibcxx_srcdir}/$(CCOLLATE_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CCOLLATE_CC) ./$@ || true
+
+messages_members_cow.cc: ${glibcxx_srcdir}/$(CMESSAGES_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CMESSAGES_CC) ./$@ || true
+
+monetary_members_cow.cc: ${glibcxx_srcdir}/$(CMONEY_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CMONEY_CC) ./$@ || true
+
+numeric_members_cow.cc: ${glibcxx_srcdir}/$(CNUMERIC_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CNUMERIC_CC) ./$@ || true
+endif
+
 # Source files linked in via configuration/make substitution for a
 # particular host, but with ad hoc naming rules.
 host_sources_extra = \
@@ -72,6 +95,12 @@ c++locale.cc: ${glibcxx_srcdir}/$(CLOCALE_CC)
 basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_CC) ./$@ || true
 
+if ENABLE_DUAL_ABI
+cxx11_abi_sources = \
+	cow-istream-string.cc
+else
+cxx11_abi_sources =
+endif
 
 if ENABLE_EXTERN_TEMPLATE
 # XTEMPLATE_FLAGS = -fno-implicit-templates
@@ -117,14 +146,37 @@ sources = \
 	strstream.cc \
 	tree.cc \
 	istream.cc \
+	istream-string.cc \
 	streambuf.cc \
 	valarray.cc \
+	${cxx11_abi_sources} \
 	${host_sources} \
 	${host_sources_extra}
 
 vpath % $(top_srcdir)/src/c++98
 
 libc__98convenience_la_SOURCES = $(sources)
+
+if ENABLE_DUAL_ABI
+GLIBCXX_ABI_FLAGS = -D_GLIBCXX_USE_CXX11_ABI=@glibcxx_cxx98_abi@
+# Use special rules to compile with the non-default string ABI.
+collate_members_cow.lo: collate_members_cow.cc
+	$(LTCXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+collate_members_cow.o: collate_members_cow.cc
+	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+messages_members_cow.lo: messages_members_cow.cc
+	$(LTCXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+messages_members_cow.o: messages_members_cow.cc
+	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+monetary_members_cow.lo: monetary_members_cow.cc
+	$(LTCXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+monetary_members_cow.o: monetary_members_cow.cc
+	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+numeric_members_cow.lo: numeric_members_cow.cc
+	$(LTCXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+numeric_members_cow.o: numeric_members_cow.cc
+	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+endif
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.

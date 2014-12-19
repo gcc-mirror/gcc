@@ -1,3 +1,65 @@
+2014-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-expressions.c (make_tests_of_casts): Add tests of
+	casting between "long" and "bool".
+	(verify_casts): Verify these new test cases.
+
+2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/pr37362.c: Skip for mips-img-elf.
+
+2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
+	    Steve Ellcey  <sellcey@imgtec.com>
+
+	* gcc.dg/torture/mips-hilo-2.c: Unconditionally pass for R6 onwards.
+	* gcc.dg/torture/pr19683-1.c: Likewise.
+	* gcc.target/mips/branch-cost-2.c: Require MOVN.
+	* gcc.target/mips/movcc-1.c: Likewise.
+	* gcc.target/mips/movcc-2.c: Likewise.
+	* gcc.target/mips/movcc-3.c: Likewise.
+	* gcc.target/mips/call-saved-4.c: Require LDC.
+	* gcc.target/mips/dmult-1.c: Require R5 or earlier.
+	* gcc.target/mips/fpcmp-1.c: Likewise.
+	* gcc.target/mips/fpcmp-2.c: Likewise.
+	* gcc.target/mips/neg-abs-2.c: Likewise.
+	* gcc.target/mips/timode-1.c: Likewise.
+	* gcc.target/mips/unaligned-1.c: Likewise.
+	* gcc.target/mips/madd-3.c: Require MADD.
+	* gcc.target/mips/madd-9.c: Likewise.
+	* gcc.target/mips/maddu-3.c: Likewise.
+	* gcc.target/mips/msub-3.c: Likewise.
+	* gcc.target/mips/msubu-3.c: Likewise.
+	* gcc.target/mips/mult-1.c: Require INS and not DMUL.
+	* gcc.target/mips/mips-ps-type-2.c: Require MADD.PS.
+	* gcc.target/mips/mips.exp (mips_option_groups): Add ins, dmul, ldc,
+	movn, madd, maddps.
+	(mips-dg-options): INS available from R2.  LDC available from MIPS II,
+	DMUL is present in octeon.  Describe all features removed from R6.
+
+2014-12-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64209
+	* gfortran.dg/unlimited_polymorphic_19.f90: New.
+
+2014-12-19  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/eon_1.c: New test.
+
+2014-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/template/using30.C: Move...
+	* g++.dg/cpp0x/alias-decl-45.C: ... here.
+
+2014-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60493
+	* g++.dg/template/crash120.C: New.
+
+2014-12-19  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/61198
+	* g++.dg/template/using30.C: New file.
+
 2014-12-19  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/63569

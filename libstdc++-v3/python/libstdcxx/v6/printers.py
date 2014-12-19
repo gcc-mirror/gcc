@@ -660,6 +660,7 @@ class StdStringPrinter:
 
     def __init__(self, typename, val):
         self.val = val
+        self.new_string = typename.find("::__cxx11::basic_string") != -1
 
     def to_string(self):
         # Make sure &string works, too.
@@ -671,13 +672,18 @@ class StdStringPrinter:
         # the string according to length, not according to first null
         # encountered.
         ptr = self.val ['_M_dataplus']['_M_p']
-        realtype = type.unqualified ().strip_typedefs ()
-        reptype = gdb.lookup_type (str (realtype) + '::_Rep').pointer ()
-        header = ptr.cast(reptype) - 1
-        len = header.dereference ()['_M_length']
+        if self.new_string:
+            length = self.val['_M_string_length']
+            # https://sourceware.org/bugzilla/show_bug.cgi?id=17728
+            ptr = ptr.cast(ptr.type.strip_typedefs())
+        else:
+            realtype = type.unqualified ().strip_typedefs ()
+            reptype = gdb.lookup_type (str (realtype) + '::_Rep').pointer ()
+            header = ptr.cast(reptype) - 1
+            length = header.dereference ()['_M_length']
         if hasattr(ptr, "lazy_string"):
-            return ptr.lazy_string (length = len)
-        return ptr.string (length = len)
+            return ptr.lazy_string (length = length)
+        return ptr.string (length = length)
 
     def display_hint (self):
         return 'string'
@@ -1266,6 +1272,7 @@ def build_libstdcxx_dictionary ():
     # In order from:
     # http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01847.html
     libstdcxx_printer.add_version('std::', 'basic_string', StdStringPrinter)
+    libstdcxx_printer.add_version('std::', '__cxx11::basic_string', StdStringPrinter)
     libstdcxx_printer.add_container('std::', 'bitset', StdBitsetPrinter)
     libstdcxx_printer.add_container('std::', 'deque', StdDequePrinter)
     libstdcxx_printer.add_container('std::', 'list', StdListPrinter)

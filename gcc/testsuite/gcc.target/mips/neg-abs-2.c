@@ -1,7 +1,7 @@
 /* Make sure that we avoid abs.fmt and neg.fmt when the signs of NaNs
    matter.  */
 /* { dg-do compile } */
-/* { dg-options "-mhard-float -fno-finite-math-only" } */
+/* { dg-options "isa_rev<=5 -mhard-float -fno-finite-math-only -mabs=legacy" } */
 /* { dg-final { scan-assembler-not "\tneg.s\t" } } */
 /* { dg-final { scan-assembler-not "\tneg.d\t" } } */
 /* { dg-final { scan-assembler-not "\tabs.s\t" } } */

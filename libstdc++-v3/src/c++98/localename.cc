@@ -20,6 +20,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#define _GLIBCXX_USE_CXX11_ABI 1
 #include <clocale>
 #include <cstring>
 #include <cstdlib>
@@ -170,10 +171,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
   }
 
+const int num_facets = _GLIBCXX_NUM_FACETS
+  + (_GLIBCXX_USE_DUAL_ABI ? _GLIBCXX_NUM_CXX11_FACETS : 0);
+
   // Construct named _Impl.
   locale::_Impl::
   _Impl(const char* __s, size_t __refs)
-  : _M_refcount(__refs), _M_facets(0), _M_facets_size(_GLIBCXX_NUM_FACETS),
+  : _M_refcount(__refs), _M_facets(0), _M_facets_size(num_facets),
     _M_caches(0), _M_names(0)
   {
     // Initialize the underlying locale model, which also checks to
@@ -264,6 +268,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_init_facet(new time_put<wchar_t>);
 	_M_init_facet(new std::messages<wchar_t>(__cloc, __s));
 #endif	  
+
+#if _GLIBCXX_USE_DUAL_ABI
+        _M_init_extra(&__cloc, &__clocm, __s, __smon);
+#endif
+
 	locale::facet::_S_destroy_c_locale(__cloc);
 	if (__clocm != __cloc)
 	  locale::facet::_S_destroy_c_locale(__clocm);

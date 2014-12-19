@@ -1,4 +1,4 @@
-/* { dg-options "-mgp64" } */
+/* { dg-options "isa_rev<=5 -mgp64" } */
 /* { dg-skip-if "we deliberately use calls when optimizing for size" { *-*-* } { "-Os" } { "" } } */
 typedef int int128_t __attribute__((mode(TI)));
 typedef unsigned int uint128_t __attribute__((mode(TI)));

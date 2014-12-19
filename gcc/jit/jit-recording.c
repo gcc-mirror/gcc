@@ -181,11 +181,14 @@ recording::context::context (context *parent_ctxt)
 {
   if (parent_ctxt)
     {
-      /* Inherit options from parent.
-	 Note that the first memcpy means copying pointers to strings.  */
-      memcpy (m_str_options,
-	      parent_ctxt->m_str_options,
-	      sizeof (m_str_options));
+      /* Inherit options from parent.  */
+      for (unsigned i = 0;
+	   i < sizeof (m_str_options) / sizeof (m_str_options[0]);
+	   i++)
+	{
+	  const char *parent_opt = parent_ctxt->m_str_options[i];
+	  m_str_options[i] = parent_opt ? xstrdup (parent_opt) : NULL;
+	}
       memcpy (m_int_options,
 	      parent_ctxt->m_int_options,
 	      sizeof (m_int_options));
@@ -831,7 +834,7 @@ recording::context::set_str_option (enum gcc_jit_str_option opt,
       return;
     }
   free (m_str_options[opt]);
-  m_str_options[opt] = xstrdup (value);
+  m_str_options[opt] = value ? xstrdup (value) : NULL;
 }
 
 /* Set the given integer option for this context, or add an error if

@@ -1,3 +1,10 @@
+2014-12-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64209
+	* trans-expr.c (gfc_trans_class_array_init_assign): Check if _def_init
+	component is non-NULL.
+	(gfc_trans_class_init_assign): Ditto.
+
 2014-12-17  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/64173

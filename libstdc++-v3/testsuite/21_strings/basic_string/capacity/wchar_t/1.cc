@@ -36,7 +36,11 @@ void test01()
   VERIFY( sz02 >= 100 );
   str01.reserve();
   sz01 = str01.capacity();
+#if _GLIBCXX_USE_CXX11_ABI
+  VERIFY( sz01 < 100);
+#else
   VERIFY( sz01 == 0 );
+#endif
 
   sz01 = str01.size() + 5;
   str01.resize(sz01);

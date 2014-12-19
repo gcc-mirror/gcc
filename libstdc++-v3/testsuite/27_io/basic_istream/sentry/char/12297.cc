@@ -18,6 +18,9 @@
 
 // 27.6.1.1.2 class basic_istream::sentry
 
+// The library still throws the original definition of std::ios::failure
+// { dg-options "-D_GLIBCXX_USE_CXX11_ABI=0" }
+
 #include <sstream>
 #include <testsuite_hooks.h>
 

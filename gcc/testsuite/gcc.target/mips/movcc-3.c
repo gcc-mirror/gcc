@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "isa>=4 -mhard-float" } */
+/* { dg-options "(HAS_MOVN) -mhard-float" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "\tmovt\t" } } */
 /* { dg-final { scan-assembler "\tmovf\t" } } */
