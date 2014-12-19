@@ -302,6 +302,9 @@ Expression::convert_interface_to_interface(Type *lhs_type, Expression* rhs,
                                            bool for_type_guard,
                                            Location location)
 {
+  if (Type::are_identical(lhs_type, rhs->type(), false, NULL))
+    return rhs;
+
   Interface_type* lhs_interface_type = lhs_type->interface_type();
   bool lhs_is_empty = lhs_interface_type->is_empty();
 
@@ -312,6 +315,9 @@ Expression::convert_interface_to_interface(Type *lhs_type, Expression* rhs,
   // also appear in the left hand side interface, then we don't need
   // to do a runtime check, although we still need to build a new
   // method table.
+
+  // We are going to evaluate RHS multiple times.
+  go_assert(rhs->is_variable());
 
   // Get the type descriptor for the right hand side.  This will be
   // NULL for a nil interface.
@@ -355,6 +361,9 @@ Expression*
 Expression::convert_interface_to_type(Type *lhs_type, Expression* rhs,
                                       Location location)
 {
+  // We are going to evaluate RHS multiple times.
+  go_assert(rhs->is_variable());
+
   // Call a function to check that the type is valid.  The function
   // will panic with an appropriate runtime type error if the type is
   // not valid.
@@ -3155,8 +3164,7 @@ Type_conversion_expression::do_flatten(Gogo*, Named_object*,
 {
   if (((this->type()->is_string_type()
         && this->expr_->type()->is_slice_type())
-       || (this->type()->interface_type() != NULL
-           && this->expr_->type()->interface_type() != NULL))
+       || this->expr_->type()->interface_type() != NULL)
       && !this->expr_->is_variable())
     {
       Temporary_statement* temp =
@@ -3551,7 +3559,8 @@ Unsafe_type_conversion_expression::do_get_backend(Translate_context* context)
               || et->function_type() != NULL
               || et->points_to() != NULL
               || et->map_type() != NULL
-              || et->channel_type() != NULL);
+              || et->channel_type() != NULL
+	      || et->is_nil_type());
   else
     go_unreachable();
 
@@ -8782,12 +8791,17 @@ Call_expression::do_flatten(Gogo* gogo, Named_object*,
 	  else
 	    {
 	      Location loc = (*pa)->location();
-	      Expression* arg =
-		Expression::convert_for_assignment(gogo, pp->type(), *pa, loc);
-	      Temporary_statement* temp =
-		Statement::make_temporary(pp->type(), arg, loc);
-	      inserter->insert(temp);
-	      args->push_back(Expression::make_temporary_reference(temp, loc));
+	      Expression* arg = *pa;
+	      if (!arg->is_variable())
+		{
+		  Temporary_statement *temp =
+		    Statement::make_temporary(NULL, arg, loc);
+		  inserter->insert(temp);
+		  arg = Expression::make_temporary_reference(temp, loc);
+		}
+	      arg = Expression::convert_for_assignment(gogo, pp->type(), arg,
+						       loc);
+	      args->push_back(arg);
 	    }
 	}
       delete this->args_;
@@ -11602,6 +11616,9 @@ class Struct_construction_expression : public Expression
     return ret;
   }
 
+  Expression*
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
+
   Bexpression*
   do_get_backend(Translate_context*);
 
@@ -11776,6 +11793,39 @@ Struct_construction_expression::do_check_types(Gogo*)
   go_assert(pv == this->vals_->end());
 }
 
+// Flatten a struct construction expression.  Store the values into
+// temporaries in case they need interface conversion.
+
+Expression*
+Struct_construction_expression::do_flatten(Gogo*, Named_object*,
+					   Statement_inserter* inserter)
+{
+  if (this->vals_ == NULL)
+    return this;
+
+  // If this is a constant struct, we don't need temporaries.
+  if (this->is_constant_struct())
+    return this;
+
+  Location loc = this->location();
+  for (Expression_list::iterator pv = this->vals_->begin();
+       pv != this->vals_->end();
+       ++pv)
+    {
+      if (*pv != NULL)
+	{
+	  if (!(*pv)->is_variable())
+	    {
+	      Temporary_statement* temp =
+		Statement::make_temporary(NULL, *pv, loc);
+	      inserter->insert(temp);
+	      *pv = Expression::make_temporary_reference(temp, loc);
+	    }
+	}
+    }
+  return this;
+}
+
 // Return the backend representation for constructing a struct.
 
 Bexpression*
@@ -11909,6 +11959,9 @@ protected:
   vals()
   { return this->vals_; }
 
+  Expression*
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
+
   // Get the backend constructor for the array values.
   Bexpression*
   get_constructor(Translate_context* context, Btype* btype);
@@ -12022,6 +12075,39 @@ Array_construction_expression::do_check_types(Gogo*)
 	  this->set_is_error();
 	}
     }
+}
+
+// Flatten an array construction expression.  Store the values into
+// temporaries in case they need interface conversion.
+
+Expression*
+Array_construction_expression::do_flatten(Gogo*, Named_object*,
+					   Statement_inserter* inserter)
+{
+  if (this->vals_ == NULL)
+    return this;
+
+  // If this is a constant array, we don't need temporaries.
+  if (this->is_constant_array())
+    return this;
+
+  Location loc = this->location();
+  for (Expression_list::iterator pv = this->vals_->begin();
+       pv != this->vals_->end();
+       ++pv)
+    {
+      if (*pv != NULL)
+	{
+	  if (!(*pv)->is_variable())
+	    {
+	      Temporary_statement* temp =
+		Statement::make_temporary(NULL, *pv, loc);
+	      inserter->insert(temp);
+	      *pv = Expression::make_temporary_reference(temp, loc);
+	    }
+	}
+    }
+  return this;
 }
 
 // Get a constructor expression for the array values.

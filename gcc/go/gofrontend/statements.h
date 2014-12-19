@@ -704,6 +704,9 @@ class Send_statement : public Statement
   void
   do_check_types(Gogo*);
 
+  Statement*
+  do_flatten(Gogo*, Named_object*, Block*, Statement_inserter*);
+
   Bstatement*
   do_get_backend(Translate_context*);
 
