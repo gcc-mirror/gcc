@@ -1,3 +1,8 @@
+2014-12-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64209
+	* gfortran.dg/unlimited_polymorphic_19.f90: New.
+
 2014-12-19  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/eon_1.c: New test.
