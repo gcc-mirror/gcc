@@ -1,3 +1,8 @@
+2014-12-20  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* c-cppbuiltin.c (__cpp_sized_deallocation): Uncomment and move macro.
+	Control macro with flag_sized_deallocation.
+
 2014-12-20  Martin Uecker <uecker@eecs.berkeley.edu>
 
 	* c.opt (Wdiscarded-array-qualifiers): New option.

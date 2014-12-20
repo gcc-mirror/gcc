@@ -1,3 +1,12 @@
+2014-12-19  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp1y/feat-cxx98-neg.C: Enable __cpp_sized_deallocation test.
+	* g++.dg/cpp1y/feat-cxx14.C: Ditto.
+	* g++.dg/cpp1y/feat-cxx11-neg.C: Ditto and move tests for consistent
+	order.
+	* g++.dg/cpp1y/feat-sized-dealloc-neg.C: New.
+	* g++.dg/cpp1y/feat-sized-dealloc.C: New.
+
 2014-12-20  Martin Uecker <uecker@eecs.berkeley.edu>
 
 	* gcc.dg/Wwrite-strings-1.c: Change dg-warning.
