@@ -669,7 +669,6 @@ namespace __debug
       {
 	_Base::clear();
 	this->_M_invalidate_all();
-	this->_M_guaranteed_capacity = 0;
       }
 
       _Base&
