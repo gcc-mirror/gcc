@@ -387,6 +387,10 @@ Wdesignated-init
 C ObjC Var(warn_designated_init) Init(1) Warning
 Warn about positional initialization of structs requiring designated initializers
 
+Wdiscarded-array-qualifiers
+C ObjC Var(warn_discarded_array_qualifiers) Init(1) Warning
+Warn if qualifiers on arrays which are pointer targets are discarded
+
 Wdiscarded-qualifiers
 C ObjC Var(warn_discarded_qualifiers) Init(1) Warning
 Warn if type qualifiers on pointers are discarded

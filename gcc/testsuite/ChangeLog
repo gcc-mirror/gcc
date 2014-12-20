@@ -1,3 +1,13 @@
+2014-12-20  Martin Uecker <uecker@eecs.berkeley.edu>
+
+	* gcc.dg/Wwrite-strings-1.c: Change dg-warning.
+	* gcc.dg/array-quals-1.c: Use -Wno-discarded-array-qualifiers.
+	* gcc.dg/array-quals-2.c: Change dg-options, dg-warning.
+	* gcc.dg/pointer-array-atomic.c: New test.
+	* gcc.dg/pointer-array-quals-1.c: New test.
+	* gcc.dg/pointer-array-quals-2.c: New test (-pedantic-errors).
+	* gcc.dg/qual-component-1.c: Change dg-options, dg-warnings.
+
 2014-12-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/test-expressions.c (make_tests_of_casts): Add tests of

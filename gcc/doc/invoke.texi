@@ -248,7 +248,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wchar-subscripts -Wclobbered  -Wcomment -Wconditionally-supported  @gol
 -Wconversion -Wcoverage-mismatch -Wdate-time -Wdelete-incomplete -Wno-cpp  @gol
 -Wno-deprecated -Wno-deprecated-declarations -Wno-designated-init @gol
--Wdisabled-optimization -Wno-discarded-qualifiers @gol
+-Wdisabled-optimization @gol
+-Wno-discarded-qualifiers -Wno-discarded-array-qualifiers @gol
 -Wno-div-by-zero -Wdouble-promotion -Wempty-body  -Wenum-compare @gol
 -Wno-endif-labels -Werror  -Werror=* @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
@@ -4300,8 +4301,17 @@ This warning is enabled by @option{-Wall}.
 @opindex Wdiscarded-qualifiers
 Do not warn if type qualifiers on pointers are being discarded.
 Typically, the compiler will warn if a @code{const char *} variable is
-passed to a function that takes @code{char *} parameter.  This option
+passed to a function that takes a @code{char *} parameter.  This option
 can be used to suppress such a warning.
+
+@item -Wno-discarded-array-qualifiers @r{(C and Objective-C only)}
+@opindex Wno-discarded-array-qualifiers
+@opindex Wdiscarded-array-qualifiers
+Do not warn if type qualifiers on arrays which are pointer targets
+are being discarded. Typically, the compiler will warn if a
+@code{const int (*)[]} variable is passed to a function that
+takes a @code{int (*)[]} parameter.  This option can be used to
+suppress such a warning.
 
 @item -Wno-incompatible-pointer-types @r{(C and Objective-C only)}
 @opindex Wno-incompatible-pointer-types
