@@ -277,9 +277,13 @@ namespace std
   // Non-inline namespace for components replaced by alternates in active mode.
   namespace __cxx1998
   {
-#if _GLIBCXX_INLINE_VERSION
- inline namespace __7 { }
-#endif
+# if _GLIBCXX_INLINE_VERSION
+  inline namespace __7 { }
+# endif
+
+# if _GLIBCXX_USE_CXX11_ABI
+  inline namespace __cxx11 __attribute__((abi_tag)) { }
+# endif
   }
 
   // Inline namespace for debug mode.
