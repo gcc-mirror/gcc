@@ -1,5 +1,7 @@
 2014-12-20  François Dumont  <fdumont@gcc.gnu.org>
 
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error.
+
 	* include/bits/c++config: inline __cxx11 namespace within namespace
 	__cxx1998.
 
