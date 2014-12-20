@@ -1,3 +1,8 @@
+2014-12-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/locale-inst.cc (__add_grouping, __pad, __int_to_char):
+	Only compile for old ABI.
+
 2014-12-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_CXX11_ABI): Remove.

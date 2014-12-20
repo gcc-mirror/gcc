@@ -345,6 +345,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     has_facet<messages<C> >(const locale&);
 
 
+#if ! _GLIBCXX_USE_CXX11_ABI
   // locale functions.
   template
     C*
@@ -363,6 +364,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     int
     __int_to_char(C*, unsigned long long, const C*, 
 		  ios_base::fmtflags, bool);
+#endif
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
