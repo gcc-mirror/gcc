@@ -1,5 +1,11 @@
 2014-12-20  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/debug/vector (std::__debug::vector<>::clear()): Do not reset
+	guaranteed capacity.
+	* testsuite/23_containers/vector/bool/allocator/swap.cc: Move
+	propagating_allocator equality and inequality operators to __gnu_test
+	namespace.
+
 	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error.
 
 	* include/bits/c++config: inline __cxx11 namespace within namespace
