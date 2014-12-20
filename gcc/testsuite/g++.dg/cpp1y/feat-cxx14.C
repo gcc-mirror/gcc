@@ -175,9 +175,10 @@
 #  error "__cpp_digit_separators != 201309"
 #endif
 
-//  Sized deallocation not in yet.
-#ifdef __cpp_sized_deallocation
+#ifndef __cpp_sized_deallocation
 #  error "__cpp_sized_deallocation"
+#elif __cpp_sized_deallocation != 201309
+#  error "__cpp_sized_deallocation != 201309"
 #endif
 
 //  GNU VLA support:
