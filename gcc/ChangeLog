@@ -1,3 +1,13 @@
+2014-12-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/64358
+	* config/rs6000/rs6000.c (rs6000_split_logical_inner): Swap the
+	input operands if only the second is inverted.
+	* config/rs6000/rs6000.md (*boolc<mode>3_internal1 for BOOL_128):
+	Swap BOOL_REGS_OP1 and BOOL_REGS_OP2.  Correct arguments to
+	rs6000_split_logical.
+	(*boolc<mode>3_internal2 for TI2): Swap operands[1] and operands[2].
+
 2014-12-20  Martin Uecker <uecker@eecs.berkeley.edu>
 
 	* doc/invoke.texi: Document -Wdiscarded-array-qualifiers.
