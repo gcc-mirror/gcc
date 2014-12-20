@@ -1,3 +1,7 @@
+2014-12-20  Martin Uecker <uecker@eecs.berkeley.edu>
+
+	* c.opt (Wdiscarded-array-qualifiers): New option.
+
 2014-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/63831

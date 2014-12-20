@@ -1,3 +1,14 @@
+2014-12-20  Martin Uecker <uecker@eecs.berkeley.edu>
+
+	* c-typeck.c: New behavious for pointers to arrays with qualifiers
+        (common-pointer-type): For pointers to arrays take qualifiers from
+	element type.
+        (build_conditional_expr): Add warnings for lost qualifiers.
+	(comp-target-types): Allow pointers to arrays with different qualifiers.
+        (convert-for-assignment): Adapt warnings for discarded qualifiers. Add
+	WARNING_FOR_QUALIFIERS macro and rename WARN_FOR_QUALIFIERS
+        to PEDWARN_FOR_QUALIFIERS.
+
 2014-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/64289

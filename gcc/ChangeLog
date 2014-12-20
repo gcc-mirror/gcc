@@ -1,3 +1,9 @@
+2014-12-20  Martin Uecker <uecker@eecs.berkeley.edu>
+
+	* doc/invoke.texi: Document -Wdiscarded-array-qualifiers.
+	* doc/extend.texi: Document new behavior for pointers to arrays
+	with qualifiers.
+
 2014-12-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	* hash-table.h (struct pointer_hash): Fix formating.
