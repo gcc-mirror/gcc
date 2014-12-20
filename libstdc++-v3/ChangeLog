@@ -1,3 +1,8 @@
+2014-12-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/c++config: inline __cxx11 namespace within namespace
+	__cxx1998.
+
 2014-12-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++98/locale-inst.cc (__add_grouping, __pad, __int_to_char):
