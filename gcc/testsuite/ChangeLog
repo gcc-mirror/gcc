@@ -1,3 +1,8 @@
+2014-12-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/17280
+	* gcc.target/sh/torture/pr17280.c: New.
+
 2014-12-19  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* g++.dg/cpp1y/feat-cxx98-neg.C: Enable __cpp_sized_deallocation test.
