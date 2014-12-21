@@ -1,3 +1,9 @@
+2014-12-17  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55212
+	* config/sh/sh.md (*addsi3_compact): Add parentheses around &&
+	condition.  Add comments.
+
 2014-12-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/64358
