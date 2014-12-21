@@ -1,3 +1,12 @@
+2014-12-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64359
+	* pt.c (iterative_hash_template_arg): Hash alias specializations
+	differently from their TYPE_CANONICAL.
+	(alias_template_specialization_p): Optimize.
+	(template_args_equal): Optimize alias handling.
+	(dependent_alias_template_spec_p): Only check innermost args.
+
 2014-12-19  Kai Tietz  <ktietz@redhat.com>
 
 	PR c++/61198
