@@ -2056,14 +2056,20 @@
   [(set_attr "type" "arith_media")
    (set_attr "highpart" "ignore")])
 
+;; The *addsi3_compact is made an insn_and_split and accepts actually
+;; impossible constraints to make LRA's register elimination work well on SH.
+;; The problem is that LRA expects something like
+;;    (set rA (plus rB (const_int N)))
+;; to work.  We can do that, but we have to split out an additional reg-reg
+;; copy before the actual add insn.
 (define_insn_and_split "*addsi3_compact"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,&r")
 	(plus:SI (match_operand:SI 1 "arith_operand" "%0,r")
 		 (match_operand:SI 2 "arith_or_int_operand" "rI08,rn")))]
   "TARGET_SH1
-   && (rtx_equal_p (operands[0], operands[1])
-       && arith_operand (operands[2], SImode))
-      || ! reg_overlap_mentioned_p (operands[0], operands[1])"
+   && ((rtx_equal_p (operands[0], operands[1])
+        && arith_operand (operands[2], SImode))
+       || ! reg_overlap_mentioned_p (operands[0], operands[1]))"
   "@
 	add	%2,%0
 	#"
