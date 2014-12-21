@@ -49,7 +49,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     union {
       const char* _M_p;
-      char _M_bytes[sizeof(_M_p)];
+      char _M_bytes[sizeof(const char*)];
     };
 
     __cow_string();
