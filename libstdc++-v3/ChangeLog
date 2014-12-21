@@ -1,3 +1,8 @@
+2014-12-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64367
+	* include/std/stdexcept: Don't use non-static member in sizeof.
+
 2014-12-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/vector (std::__debug::vector<>::clear()): Do not reset
