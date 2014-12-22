@@ -1,3 +1,7 @@
+2014-12-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* lib/ubsan-dg.exp: Add library path for libstdc++.
+
 2014-12-22  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/58314
