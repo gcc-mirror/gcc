@@ -1,5 +1,13 @@
 2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_{Min,Max}>: If the
+	type is a floating-point type, implement the semantics of the C99
+	f{min,max} routines with regard to NaNs.
+	(gnat_to_gnu): Call builtin_decl_implicit.
+	* gcc-interface/utils2.c (compare_arrays): Adjust comments.
+
+2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_field): Post the error message
 	for parent overlapping on the position instead of on the first bit.
 	For a field that needs strict alignment, issue the error for the

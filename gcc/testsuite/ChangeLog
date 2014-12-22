@@ -1,5 +1,9 @@
 2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/nan_max.adb: New test.
+
+2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/specs/volatile1.ads: New test.
 	* gnat.dg/specs/clause_on_volatile.ads: Adjust.
 	* gnat.dg/specs/size_clause3.ads: Likewise.
