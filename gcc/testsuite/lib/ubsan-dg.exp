@@ -47,6 +47,7 @@ proc ubsan_link_flags { paths } {
 	  append flags " -B${gccpath}/libsanitizer/ubsan/ "
 	  append flags " -L${gccpath}/libsanitizer/ubsan/.libs"
 	  append ld_library_path ":${gccpath}/libsanitizer/ubsan/.libs"
+	  append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
       }
     } else {
       global tool_root_dir
