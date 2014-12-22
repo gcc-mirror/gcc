@@ -6414,12 +6414,14 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   tree gnu_field_type = gnat_to_gnu_type (gnat_field_type);
   tree gnu_field_id = get_entity_name (gnat_field);
   tree gnu_field, gnu_size, gnu_pos;
+  bool is_aliased
+    = Is_Aliased (gnat_field);
+  bool is_atomic
+    = (Is_Atomic (gnat_field) || Is_Atomic (gnat_field_type));
   bool is_volatile
     = (Treat_As_Volatile (gnat_field) || Treat_As_Volatile (gnat_field_type));
   bool needs_strict_alignment
-    = (is_volatile
-       || Is_Aliased (gnat_field)
-       || Strict_Alignment (gnat_field_type));
+    = (is_aliased || is_volatile || Strict_Alignment (gnat_field_type));
 
   /* If this field requires strict alignment, we cannot pack it because
      it would very likely be under-aligned in the record.  */
@@ -6488,6 +6490,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 
   if (Present (Component_Clause (gnat_field)))
     {
+      Node_Id gnat_clause = Component_Clause (gnat_field);
       Entity_Id gnat_parent
 	= Parent_Subtype (Underlying_Type (Scope (gnat_field)));
 
@@ -6506,91 +6509,95 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 
 	  if (TREE_CODE (TYPE_SIZE (gnu_parent)) == INTEGER_CST
 	      && tree_int_cst_lt (gnu_pos, TYPE_SIZE (gnu_parent)))
-	    {
-	      post_error_ne_tree
-		("offset of& must be beyond parent{, minimum allowed is ^}",
-		 First_Bit (Component_Clause (gnat_field)), gnat_field,
-		 TYPE_SIZE_UNIT (gnu_parent));
-	    }
+	    post_error_ne_tree
+	      ("offset of& must be beyond parent{, minimum allowed is ^}",
+	       Position (gnat_clause), gnat_field, TYPE_SIZE_UNIT (gnu_parent));
 	}
 
-      /* If this field needs strict alignment, check that the record is
-	 sufficiently aligned and that position and size are consistent with
-	 the alignment.  But don't do it if we are just annotating types and
+      /* If this field needs strict alignment, make sure that the record is
+	 sufficiently aligned and that the position and size are consistent
+	 with the type.  But don't do it if we are just annotating types and
 	 the field's type is tagged, since tagged types aren't fully laid out
 	 in this mode.  Also, note that atomic implies volatile so the inner
 	 test sequences ordering is significant here.  */
       if (needs_strict_alignment
 	  && !(type_annotate_only && Is_Tagged_Type (gnat_field_type)))
 	{
-	  TYPE_ALIGN (gnu_record_type)
-	    = MAX (TYPE_ALIGN (gnu_record_type), TYPE_ALIGN (gnu_field_type));
+	  const unsigned int type_align = TYPE_ALIGN (gnu_field_type);
 
-	  if (gnu_size
-	      && !operand_equal_p (gnu_size, TYPE_SIZE (gnu_field_type), 0))
+	  if (TYPE_ALIGN (gnu_record_type) < type_align)
+	    TYPE_ALIGN (gnu_record_type) = type_align;
+
+	  /* If the position is not a multiple of the alignment of the type,
+	     then error out and reset the position.  */
+	  if (!integer_zerop (size_binop (TRUNC_MOD_EXPR, gnu_pos,
+					  bitsize_int (type_align))))
 	    {
-	      if (Is_Atomic (gnat_field) || Is_Atomic (gnat_field_type))
-		post_error_ne_tree
-		  ("atomic field& must be natural size of type{ (^)}",
-		   Last_Bit (Component_Clause (gnat_field)), gnat_field,
-		   TYPE_SIZE (gnu_field_type));
+	      const char *s;
 
+	      if (is_atomic)
+		s = "position of atomic field& must be multiple of ^ bits";
+	      else if (is_aliased)
+		s = "position of aliased field& must be multiple of ^ bits";
 	      else if (is_volatile)
-		post_error_ne_tree
-		  ("volatile field& must be natural size of type{ (^)}",
-		   Last_Bit (Component_Clause (gnat_field)), gnat_field,
-		   TYPE_SIZE (gnu_field_type));
-
-	      else if (Is_Aliased (gnat_field))
-		post_error_ne_tree
-		  ("size of aliased field& must be ^ bits",
-		   Last_Bit (Component_Clause (gnat_field)), gnat_field,
-		   TYPE_SIZE (gnu_field_type));
-
+		s = "position of volatile field& must be multiple of ^ bits";
 	      else if (Strict_Alignment (gnat_field_type))
-		post_error_ne_tree
-		  ("size of & with aliased or tagged components not ^ bits",
-		   Last_Bit (Component_Clause (gnat_field)), gnat_field,
-		   TYPE_SIZE (gnu_field_type));
-
-              else
-		gcc_unreachable ();
-
-	      gnu_size = NULL_TREE;
-	    }
-
-	  if (!integer_zerop (size_binop
-			      (TRUNC_MOD_EXPR, gnu_pos,
-			       bitsize_int (TYPE_ALIGN (gnu_field_type)))))
-	    {
-	      if (Is_Atomic (gnat_field) || Is_Atomic (gnat_field_type))
-		post_error_ne_num
-		  ("position of atomic field& must be multiple of ^ bits",
-		   First_Bit (Component_Clause (gnat_field)), gnat_field,
-		   TYPE_ALIGN (gnu_field_type));
-
-              else if (is_volatile)
-		post_error_ne_num
-		  ("position of volatile field& must be multiple of ^ bits",
-		   First_Bit (Component_Clause (gnat_field)), gnat_field,
-		   TYPE_ALIGN (gnu_field_type));
-
-	      else if (Is_Aliased (gnat_field))
-		post_error_ne_num
-		  ("position of aliased field& must be multiple of ^ bits",
-		   First_Bit (Component_Clause (gnat_field)), gnat_field,
-		   TYPE_ALIGN (gnu_field_type));
-
-	      else if (Strict_Alignment (gnat_field_type))
-		post_error_ne
-		  ("position of & is not compatible with alignment required "
-		   "by its components",
-		    First_Bit (Component_Clause (gnat_field)), gnat_field);
-
+		s = "position of & with aliased or tagged part must be"
+		    " multiple of ^ bits";
 	      else
 		gcc_unreachable ();
 
+	      post_error_ne_num (s, First_Bit (gnat_clause), gnat_field,
+				 type_align);
 	      gnu_pos = NULL_TREE;
+	    }
+
+	  if (gnu_size)
+	    {
+	      tree gnu_type_size = TYPE_SIZE (gnu_field_type);
+	      const int cmp = tree_int_cst_compare (gnu_size, gnu_type_size);
+
+	      /* If the size is lower than that of the type, or greater for
+		 atomic and aliased, then error out and reset the size.  */
+	      if (cmp < 0 || (cmp > 0 && (is_atomic || is_aliased)))
+		{
+		  const char *s;
+
+		  if (is_atomic)
+		    s = "size of atomic field& must be ^ bits";
+		  else if (is_aliased)
+		    s = "size of aliased field& must be ^ bits";
+		  else if (is_volatile)
+		    s = "size of volatile field& must be at least ^ bits";
+		  else if (Strict_Alignment (gnat_field_type))
+		    s = "size of & with aliased or tagged part must be"
+			" at least ^ bits";
+		  else
+		    gcc_unreachable ();
+
+		  post_error_ne_tree (s, Last_Bit (gnat_clause), gnat_field,
+				      gnu_type_size);
+		  gnu_size = NULL_TREE;
+		}
+
+	      /* Likewise if the size is not a multiple of a byte,  */
+	      else if (!integer_zerop (size_binop (TRUNC_MOD_EXPR, gnu_size,
+						   bitsize_unit_node)))
+		{
+		  const char *s;
+
+		  if (is_volatile)
+		    s = "size of volatile field& must be multiple of"
+			" Storage_Unit";
+		  else if (Strict_Alignment (gnat_field_type))
+		    s = "size of & with aliased or tagged part must be"
+			" multiple of Storage_Unit";
+		  else
+		    gcc_unreachable ();
+
+		  post_error_ne (s, Last_Bit (gnat_clause), gnat_field);
+		  gnu_size = NULL_TREE;
+		}
 	    }
 	}
     }

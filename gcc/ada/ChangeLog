@@ -1,5 +1,15 @@
 2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_field): Post the error message
+	for parent overlapping on the position instead of on the first bit.
+	For a field that needs strict alignment, issue the error for the
+	position first and, for the size, issue an error if it is too large
+	only for the atomic and aliased cases.  Issue a specific error if
+	the size is not a multiple of a byte in the volatile and the stric
+	alignment cases.
+
+2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (check_ok_for_atomic): Rename into...
 	(check_ok_for_atomic_type): ...this.  When checking the mode, also
 	check that the type is sufficient aligned.  Remove useless code and

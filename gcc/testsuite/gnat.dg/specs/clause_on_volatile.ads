@@ -21,7 +21,7 @@ package Clause_On_Volatile is
      W : Word;
   end record;
   for R1 use record
-     W at 0 range 0 .. 15; -- OK, packing regular
+     W at 0 range 0 .. 15; -- OK
   end record;
 
   type A1 is record
@@ -29,7 +29,7 @@ package Clause_On_Volatile is
   end record;
   For A1'Alignment use 4;
   for A1 use record
-     AW at 0 range 0 .. 15; -- { dg-error "must be natural size" }
+     AW at 0 range 0 .. 15; -- { dg-error "must be \[0-9\]*" }
   end record;
 
   type A2 is record
@@ -49,17 +49,15 @@ package Clause_On_Volatile is
   For A3'Alignment use 4;
   for A3 use record
      B at 0 range 0 .. 7;
-     AW at 1 range 0 .. 15; -- { dg-error "must be (multiple|natural size)" }
+     AW at 1 range 0 .. 15; -- { dg-error "must be (multiple||\[0-9\]*)" }
   end record;
-
-  --
 
   type V1 is record
      VW : Vword;
   end record;
   For V1'Alignment use 4;
   for V1 use record
-     VW at 0 range 0 .. 15; -- { dg-error "must be natural size" }
+     VW at 0 range 0 .. 15; -- { dg-error "must be at least" }
   end record;
 
   type V2 is record
@@ -79,7 +77,7 @@ package Clause_On_Volatile is
   For V3'Alignment use 4;
   for V3 use record
      B at 0 range 0 .. 7;
-     VW at 1 range 0 .. 15; -- { dg-error "must be (multiple|natural size)" }
+     VW at 1 range 0 .. 15; -- { dg-error "must be (multiple|at least)" }
   end record;
 
 end Clause_On_Volatile;
