@@ -1,5 +1,48 @@
 2014-12-22  Martin Liska  <mliska@suse.cz>
 
+	* auto-profile.c: Include of symbol-summary.h is added.
+	* cgraph.c: Likewise.
+	* cgraphbuild.c: Likewise.
+	* cgraphclones.c: Likewise.
+	* cgraphunit.c: Likewise.
+	* ipa-cp.c: Likewise.
+	* ipa-devirt.c: Likewise.
+	* ipa-icf.c: Likewise.
+	* ipa-inline-analysis.c (evaluate_properties_for_edge): New
+	ipa_node_params_sum data structure is used.
+	(inline_node_duplication_hook): Likewise.
+	(estimate_function_body_sizes): Likewise.
+	(remap_edge_change_prob): Likewise.
+	(inline_merge_summary): Likewise.
+	* ipa-inline-transform.c: Include of symbol-summary.h is added.
+	* ipa-inline.c (early_inliner): New ipa_node_params_sum data structure
+	is used.
+	* ipa-polymorphic-call.c: Include of symbol-summary.h is added.
+	* ipa-profile.c: Include of symbol-summary.h is added.
+	* ipa-prop.c (ipa_propagate_indirect_call_infos): New ipa_node_params_sum
+	data structure is used.
+	(ipa_node_params::~ipa_node_params): New function.
+	(ipa_free_all_node_params): Destruction is simplified.
+	(ipa_node_removal_hook): Removed.
+	(ipa_add_new_function): Renamed from ipa_node_duplication_hook.
+	(ipa_node_params_t::duplicate): New function.
+	(ipa_register_cgraph_hooks): Few hooks are removed.
+	(ipa_unregister_cgraph_hooks): Likewise.
+	(ipa_prop_write_jump_functions): New ipa_node_params_sum is used.
+	* ipa-prop.h (struct ipa_node_params): Destructor introduced for
+	the structure.
+	(ipa_check_create_node_params): Vector for ipa_node_params is replaced
+	with function_summary.
+	* ipa-split.c: Include of symbol-summary.h is added.
+	* ipa-utils.c: Include of symbol-summary.h is added.
+	* ipa.c: Include of symbol-summary.h is added.
+	* omp-low.c: Include of symbol-summary.h is added.
+	* tree-inline.c: Include of symbol-summary.h is added.
+	* tree-sra.c: Include of symbol-summary.h is added.
+	* tree-ssa-pre.c: Include of symbol-summary.h is added.
+
+2014-12-22  Martin Liska  <mliska@suse.cz>
+
 	* cgraph.h (symbol_table::allocate_cgraph_symbol): Summary UID
 	is filled up.
 	* symbol-summary.h: New file.

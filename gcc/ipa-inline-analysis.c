@@ -110,6 +110,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "lto-streamer.h"
 #include "data-streamer.h"
@@ -920,7 +921,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
   if (known_contexts_ptr)
     known_contexts_ptr->create (0);
 
-  if (ipa_node_params_vector.exists ()
+  if (ipa_node_params_sum
       && !e->call_stmt_cannot_inline_p
       && ((clause_ptr && info->conds) || known_vals_ptr || known_contexts_ptr))
     {
@@ -1142,7 +1143,7 @@ inline_node_duplication_hook (struct cgraph_node *src,
 
   /* When there are any replacements in the function body, see if we can figure
      out that something was optimized out.  */
-  if (ipa_node_params_vector.exists () && dst->clone.tree_map)
+  if (ipa_node_params_sum && dst->clone.tree_map)
     {
       vec<size_time_entry, va_gc> *entry = info->entry;
       /* Use SRC parm info since it may not be copied yet.  */
@@ -2487,7 +2488,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
       calculate_dominance_info (CDI_DOMINATORS);
       loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
 
-      if (ipa_node_params_vector.exists ())
+      if (ipa_node_params_sum)
 	{
 	  parms_info = IPA_NODE_REF (node);
 	  nonconstant_names.safe_grow_cleared
@@ -2637,7 +2638,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		  nonconstant_names[SSA_NAME_VERSION (gimple_call_lhs (stmt))]
 		    = false_p;
 		}
-	      if (ipa_node_params_vector.exists ())
+	      if (ipa_node_params_sum)
 		{
 		  int count = gimple_call_num_args (stmt);
 		  int i;
@@ -3384,7 +3385,7 @@ static void
 remap_edge_change_prob (struct cgraph_edge *inlined_edge,
 			struct cgraph_edge *edge)
 {
-  if (ipa_node_params_vector.exists ())
+  if (ipa_node_params_sum)
     {
       int i;
       struct ipa_edge_args *args = IPA_EDGE_REF (edge);
@@ -3540,7 +3541,7 @@ inline_merge_summary (struct cgraph_edge *edge)
   else
     toplev_predicate = true_predicate ();
 
-  if (ipa_node_params_vector.exists () && callee_info->conds)
+  if (ipa_node_params_sum && callee_info->conds)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (edge);
       int count = ipa_get_cs_argument_count (args);
