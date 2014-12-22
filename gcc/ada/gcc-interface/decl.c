@@ -191,7 +191,7 @@ static vec<variant_desc> build_variant_list (tree,
 static tree validate_size (Uint, tree, Entity_Id, enum tree_code, bool, bool);
 static void set_rm_size (Uint, tree, Entity_Id);
 static unsigned int validate_alignment (Uint, Entity_Id, unsigned int);
-static void check_ok_for_atomic (tree, Entity_Id, bool);
+static void check_ok_for_atomic_type (tree, Entity_Id, bool);
 static tree create_field_decl_from (tree, tree, tree, tree, tree,
 				    vec<subst_pair> );
 static tree create_rep_part (tree, tree, tree);
@@ -870,7 +870,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		   && TYPE_MULTI_ARRAY_P (gnu_inner))
 	      gnu_inner = TREE_TYPE (gnu_inner);
 
-	    check_ok_for_atomic (gnu_inner, gnat_entity, true);
+	    check_ok_for_atomic_type (gnu_inner, gnat_entity, true);
 	  }
 
 	/* Now check if the type of the object allows atomic access.  Note
@@ -880,7 +880,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   always copying via an intermediate value, but it's not clear it's
 	   worth the effort.  */
 	if (Is_Atomic (gnat_entity))
-	  check_ok_for_atomic (gnu_type, gnat_entity, false);
+	  check_ok_for_atomic_type (gnu_type, gnat_entity, false);
 
 	/* If this is an aliased object with an unconstrained nominal subtype,
 	   make a type that includes the template.  */
@@ -5035,7 +5035,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    }
 
       if (Is_Atomic (gnat_entity))
-	check_ok_for_atomic (gnu_type, gnat_entity, false);
+	check_ok_for_atomic_type (gnu_type, gnat_entity, false);
 
       /* If this is not an unconstrained array type, set some flags.  */
       if (TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE)
@@ -5548,7 +5548,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
     gnu_type = make_packable_type (gnu_type, false);
 
   if (Has_Atomic_Components (gnat_array))
-    check_ok_for_atomic (gnu_type, gnat_array, true);
+    check_ok_for_atomic_type (gnu_type, gnat_array, true);
 
   /* Get and validate any specified Component_Size.  */
   gnu_comp_size
@@ -6484,7 +6484,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     }
 
   if (Is_Atomic (gnat_field))
-    check_ok_for_atomic (gnu_field_type, gnat_field, false);
+    check_ok_for_atomic_type (gnu_field_type, gnat_field, false);
 
   if (Present (Component_Clause (gnat_field)))
     {
@@ -8088,78 +8088,63 @@ validate_alignment (Uint alignment, Entity_Id gnat_entity, unsigned int align)
   return align;
 }
 
-/* Verify that OBJECT, a type or decl, is something we can implement
-   atomically.  If not, give an error for GNAT_ENTITY.  COMP_P is true
-   if we require atomic components.  */
+/* Verify that TYPE is something we can implement atomically.  If not, issue
+   an error for GNAT_ENTITY.  COMPONENT_P is true if we are being called to
+   process a component type.  */
 
 static void
-check_ok_for_atomic (tree object, Entity_Id gnat_entity, bool comp_p)
+check_ok_for_atomic_type (tree type, Entity_Id gnat_entity, bool component_p)
 {
   Node_Id gnat_error_point = gnat_entity;
   Node_Id gnat_node;
   machine_mode mode;
+  enum mode_class mclass;
   unsigned int align;
   tree size;
 
-  /* There are three case of what OBJECT can be.  It can be a type, in which
-     case we take the size, alignment and mode from the type.  It can be a
-     declaration that was indirect, in which case the relevant values are
-     that of the type being pointed to, or it can be a normal declaration,
-     in which case the values are of the decl.  The code below assumes that
-     OBJECT is either a type or a decl.  */
-  if (TYPE_P (object))
-    {
-      /* If this is an anonymous base type, nothing to check.  Error will be
-	 reported on the source type.  */
-      if (!Comes_From_Source (gnat_entity))
-	return;
-
-      mode = TYPE_MODE (object);
-      align = TYPE_ALIGN (object);
-      size = TYPE_SIZE (object);
-    }
-  else if (DECL_BY_REF_P (object))
-    {
-      mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (object)));
-      align = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (object)));
-      size = TYPE_SIZE (TREE_TYPE (TREE_TYPE (object)));
-    }
-  else
-    {
-      mode = DECL_MODE (object);
-      align = DECL_ALIGN (object);
-      size = DECL_SIZE (object);
-    }
-
-  /* Consider all floating-point types atomic and any types that that are
-     represented by integers no wider than a machine word.  */
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT
-      || ((GET_MODE_CLASS (mode) == MODE_INT
-	   || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
-	  && GET_MODE_BITSIZE (mode) <= BITS_PER_WORD))
+  /* If this is an anonymous base type, nothing to check, the error will be
+     reported on the source type if need be.  */
+  if (!Comes_From_Source (gnat_entity))
     return;
 
-  /* For the moment, also allow anything that has an alignment equal
-     to its size and which is smaller than a word.  */
-  if (size && TREE_CODE (size) == INTEGER_CST
+  mode = TYPE_MODE (type);
+  mclass = GET_MODE_CLASS (mode);
+  align = TYPE_ALIGN (type);
+  size = TYPE_SIZE (type);
+
+  /* Consider all aligned floating-point types atomic and any aligned types
+     that are represented by integers no wider than a machine word.  */
+  if ((mclass == MODE_FLOAT
+       || ((mclass == MODE_INT || mclass == MODE_PARTIAL_INT)
+	   && GET_MODE_BITSIZE (mode) <= BITS_PER_WORD))
+      && align >= GET_MODE_ALIGNMENT (mode))
+    return;
+
+  /* For the moment, also allow anything that has an alignment equal to its
+     size and which is smaller than a word.  */
+  if (size
+      && TREE_CODE (size) == INTEGER_CST
       && compare_tree_int (size, align) == 0
       && align <= BITS_PER_WORD)
     return;
 
-  for (gnat_node = First_Rep_Item (gnat_entity); Present (gnat_node);
+  for (gnat_node = First_Rep_Item (gnat_entity);
+       Present (gnat_node);
        gnat_node = Next_Rep_Item (gnat_node))
-    {
-      if (!comp_p && Nkind (gnat_node) == N_Pragma
-	  && (Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node)))
-              == Pragma_Atomic))
-	gnat_error_point = First (Pragma_Argument_Associations (gnat_node));
-      else if (comp_p && Nkind (gnat_node) == N_Pragma
-	       && (Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node)))
-		   == Pragma_Atomic_Components))
-	gnat_error_point = First (Pragma_Argument_Associations (gnat_node));
-    }
+    if (Nkind (gnat_node) == N_Pragma)
+      {
+	unsigned char pragma_id
+	  = Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node)));
 
-  if (comp_p)
+	if ((pragma_id == Pragma_Atomic && !component_p)
+	    || (pragma_id == Pragma_Atomic_Components && component_p))
+	  {
+	    gnat_error_point = First (Pragma_Argument_Associations (gnat_node));
+	    break;
+	  }
+      }
+
+  if (component_p)
     post_error_ne ("atomic access to component of & cannot be guaranteed",
 		   gnat_error_point, gnat_entity);
   else
