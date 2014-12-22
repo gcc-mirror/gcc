@@ -115,6 +115,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin-api.h"
 #include "ipa-ref.h"
 #include "cgraph.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "statistics.h"
 #include "params.h"

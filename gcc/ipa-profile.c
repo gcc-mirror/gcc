@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "lto-streamer.h"
 #include "data-streamer.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 

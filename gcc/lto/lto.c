@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "inchash.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "common.h"
 #include "debug.h"
