@@ -1,3 +1,7 @@
+2014-12-22  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pr55023.c: New file.
+
 2014-12-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* lib/ubsan-dg.exp: Add library path for libstdc++.
