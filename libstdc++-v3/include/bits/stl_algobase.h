@@ -190,6 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  preprocessor macro.
   */
   template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
     inline const _Tp&
     min(const _Tp& __a, const _Tp& __b)
     {
@@ -213,6 +214,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  preprocessor macro.
   */
   template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
     inline const _Tp&
     max(const _Tp& __a, const _Tp& __b)
     {
@@ -236,6 +238,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  once, unlike a preprocessor macro.
   */
   template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     inline const _Tp&
     min(const _Tp& __a, const _Tp& __b, _Compare __comp)
     {
@@ -257,6 +260,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  once, unlike a preprocessor macro.
   */
   template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     inline const _Tp&
     max(const _Tp& __a, const _Tp& __b, _Compare __comp)
     {

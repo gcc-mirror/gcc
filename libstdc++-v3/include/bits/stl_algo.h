@@ -3271,6 +3271,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  __b) otherwise.
   */
   template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
     inline pair<const _Tp&, const _Tp&>
     minmax(const _Tp& __a, const _Tp& __b)
     {
@@ -3291,6 +3292,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  __b) otherwise.
   */
   template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     inline pair<const _Tp&, const _Tp&>
     minmax(const _Tp& __a, const _Tp& __b, _Compare __comp)
     {
@@ -3299,6 +3301,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _ForwardIterator, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     pair<_ForwardIterator, _ForwardIterator>
     __minmax_element(_ForwardIterator __first, _ForwardIterator __last,
 		     _Compare __comp)
@@ -3308,7 +3311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  || ++__next == __last)
 	return std::make_pair(__first, __first);
 
-      _ForwardIterator __min, __max;
+      _ForwardIterator __min{}, __max{};
       if (__comp(__next, __first))
 	{
 	  __min = __next;
@@ -3369,6 +3372,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *           such that no other element in the range is larger.
   */
   template<typename _ForwardIterator>
+    _GLIBCXX14_CONSTEXPR
     inline pair<_ForwardIterator, _ForwardIterator>
     minmax_element(_ForwardIterator __first, _ForwardIterator __last)
     {
@@ -3395,6 +3399,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *           such that no other element in the range is larger.
   */
   template<typename _ForwardIterator, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     inline pair<_ForwardIterator, _ForwardIterator>
     minmax_element(_ForwardIterator __first, _ForwardIterator __last,
 		   _Compare __comp)
@@ -3412,26 +3417,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // N2722 + DR 915.
   template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
     inline _Tp
     min(initializer_list<_Tp> __l)
     { return *std::min_element(__l.begin(), __l.end()); }
 
   template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     inline _Tp
     min(initializer_list<_Tp> __l, _Compare __comp)
     { return *std::min_element(__l.begin(), __l.end(), __comp); }
 
   template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
     inline _Tp
     max(initializer_list<_Tp> __l)
     { return *std::max_element(__l.begin(), __l.end()); }
 
   template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     inline _Tp
     max(initializer_list<_Tp> __l, _Compare __comp)
     { return *std::max_element(__l.begin(), __l.end(), __comp); }
 
   template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
     inline pair<_Tp, _Tp>
     minmax(initializer_list<_Tp> __l)
     {
@@ -3441,6 +3451,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     inline pair<_Tp, _Tp>
     minmax(initializer_list<_Tp> __l, _Compare __comp)
     {
@@ -5381,6 +5392,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     }
 
   template<typename _ForwardIterator, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     _ForwardIterator
     __min_element(_ForwardIterator __first, _ForwardIterator __last,
 		  _Compare __comp)
@@ -5402,6 +5414,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @return  Iterator referencing the first instance of the smallest value.
   */
   template<typename _ForwardIterator>
+    _GLIBCXX14_CONSTEXPR
     _ForwardIterator
     inline min_element(_ForwardIterator __first, _ForwardIterator __last)
     {
@@ -5425,6 +5438,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  according to __comp.
   */
   template<typename _ForwardIterator, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     inline _ForwardIterator
     min_element(_ForwardIterator __first, _ForwardIterator __last,
 		_Compare __comp)
@@ -5441,6 +5455,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     }
 
   template<typename _ForwardIterator, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     _ForwardIterator
     __max_element(_ForwardIterator __first, _ForwardIterator __last,
 		  _Compare __comp)
@@ -5461,6 +5476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @return  Iterator referencing the first instance of the largest value.
   */
   template<typename _ForwardIterator>
+    _GLIBCXX14_CONSTEXPR
     inline _ForwardIterator
     max_element(_ForwardIterator __first, _ForwardIterator __last)
     {
@@ -5484,6 +5500,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  according to __comp.
   */
   template<typename _ForwardIterator, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     inline _ForwardIterator
     max_element(_ForwardIterator __first, _ForwardIterator __last,
 		_Compare __comp)

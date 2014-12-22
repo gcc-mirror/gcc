@@ -1,3 +1,31 @@
+2014-12-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/60271
+	C++14 constexpr min, max, minmax, min_element, max_element
+	and minmax_element. Also constexpr for 20.9.5-20.9.9,
+	aka various library functors.
+	* include/bits/c++config: Add _GLIBCXX14_CONSTEXPR.
+	* include/bits/algorithmfwd.h (min, max, minmax, min_element,
+	max_element): Use it.
+	* include/bits/predefined_ops.h (_Iter_less_iter, __iter_less_iter,
+	_Iter_comp_iter, __iter_comp_iter): Likewise.
+	* include/bits/stl_algo.h (minmax, __minmax_element, minmax_element,
+	min, max, __min_element, min_element, __max_element, max_element)
+	Likewise.
+	* include/bits/stl_algobase.h (min, max): Likewise.
+	* include/bits/stl_function.h (plus, minus, multiplies, divides,
+	modulus, negate, equal_to, not_equal_to, greater, less, greater_equal,
+	less_equal, logical_and, logical_or, logical_not, bit_and, bit_or,
+	bit_xor, bit_not, unary_negate, not1, binary_negate, not2): Likewise.
+	* testsuite/20_util/function_objects/constexpr.cc: New.
+	* testsuite/25_algorithms/max/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/max_element/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/min/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/min_element/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/minmax/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/minmax_element/constexpr.cc: Likewise.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error.
+
 2014-12-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Update.
