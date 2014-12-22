@@ -5832,7 +5832,7 @@ gimple_val_nonnegative_real_p (tree val)
 	    CASE_FLT_FN (BUILT_IN_SQRT):
 	      /* sqrt(-0.0) is -0.0, and sqrt is not defined over other
 		 nonnegative inputs.  */
-	      if (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (val))))
+	      if (!HONOR_SIGNED_ZEROS (val))
 		return true;
 
 	      break;

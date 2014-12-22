@@ -118,6 +118,51 @@ and once a test has been compiled, you can debug it directly:
              gdb --args \
                testsuite/jit/test-factorial.exe
 
+Running under valgrind
+**********************
+
+The jit testsuite detects if RUN_UNDER_VALGRIND is present in the
+environment (with any value).  If it is present, it runs the test client
+code under `valgrind <http://valgrind.org>`_,
+specifcally, the default
+`memcheck <http://valgrind.org/docs/manual/mc-manual.html>`_
+tool with
+`--leak-check=full
+<http://valgrind.org/docs/manual/mc-manual.html#opt.leak-check>`_.
+
+It automatically parses the output from valgrind, injecting XFAIL results if
+any issues are found, or PASS results if the output is clean.  The output
+is saved to ``TESTNAME.exe.valgrind.txt``.
+
+For example, the following invocation verbosely runs the testcase
+``test-sum-of-squares.c`` under valgrind, showing an issue:
+
+.. code-block:: console
+
+  $ RUN_UNDER_VALGRIND= \
+      make check-jit \
+        RUNTESTFLAGS="-v -v -v jit.exp=test-sum-of-squares.c"
+
+  (...verbose log contains detailed valgrind errors, if any...)
+
+                  === jit Summary ===
+
+  # of expected passes            28
+  # of expected failures          2
+
+  $ less testsuite/jit/jit.sum
+  (...other results...)
+  XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.exe.valgrind.txt: definitely lost: 8 bytes in 1 blocks
+  XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.exe.valgrind.txt: unsuppressed errors: 1
+  (...other results...)
+
+  $ less testsuite/jit/test-sum-of-squares.exe.valgrind.txt
+  (...shows full valgrind report for this test case...)
+
+When running under valgrind, it's best to have configured gcc with
+:option:`--enable-valgrind-annotations`, which automatically suppresses
+various known false positives.
+
 Environment variables
 ---------------------
 When running client code against a locally-built libgccjit, three

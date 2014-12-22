@@ -5,7 +5,7 @@
 ! free-form tests
 
 ! gfc_notify_std:
-       function char_ (ch) ! { dg-warning "Obsolescent feature" }
+       function char_ (ch) ! { dg-error "Obsolescent feature" }
        character(*) :: char_, ch
         char_ = ch
        end function char_

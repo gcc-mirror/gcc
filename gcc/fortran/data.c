@@ -253,9 +253,9 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 
 	  if (init && expr->expr_type != EXPR_ARRAY)
 	    {
-	      gfc_error ("'%s' at %L already is initialized at %L",
-			 lvalue->symtree->n.sym->name, &lvalue->where,
-			 &init->where);
+	      gfc_error_1 ("'%s' at %L already is initialized at %L",
+			   lvalue->symtree->n.sym->name, &lvalue->where,
+			   &init->where);
 	      goto abort;
 	    }
 
@@ -324,7 +324,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 			   > LOCATION_LINE (rvalue->where.lb->location))
 			  ? con->expr : rvalue;
 		  if (gfc_notify_std (GFC_STD_GNU,
-				      "re-initialization of '%s' at %L",
+				      "re-initialization of %qs at %L",
 				      symbol->name, &exprd->where) == false)
 		    return false;
 		}
@@ -490,7 +490,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 		  > LOCATION_LINE (rvalue->where.lb->location))
 	       ? init : rvalue;
 	  if (gfc_notify_std (GFC_STD_GNU,
-			      "re-initialization of '%s' at %L",
+			      "re-initialization of %qs at %L",
 			      symbol->name, &expr->where) == false)
 	    return false;
 	}

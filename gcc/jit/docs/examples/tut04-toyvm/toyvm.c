@@ -121,6 +121,25 @@ add_unary_op (toyvm_function *fn, enum opcode opcode,
   add_op (fn, opcode, operand, linenum);
 }
 
+static char *
+get_function_name (const char *filename)
+{
+  /* Skip any path separators.  */
+  const char *pathsep = strrchr (filename, '/');
+  if (pathsep)
+    filename = pathsep + 1;
+
+  /* Copy filename to funcname.  */
+  char *funcname = (char *)malloc (strlen (filename) + 1);
+
+  strcpy (funcname, filename);
+
+  /* Convert "." to NIL terminator.  */
+  *(strchr (funcname, '.')) = '\0';
+
+  return funcname;
+}
+
 static toyvm_function *
 toyvm_function_parse (const char *filename, const char *name)
 {
@@ -149,7 +168,7 @@ toyvm_function_parse (const char *filename, const char *name)
       fprintf (stderr, "out of memory allocating toyvm_function\n");
       goto error;
     }
-  fn->fn_filename = name;
+  fn->fn_filename = filename;
 
   /* Read the lines of the file.  */
   while ((linelen = getline (&line, &bufsize, f)) != -1)
@@ -208,7 +227,8 @@ toyvm_function_parse (const char *filename, const char *name)
 
  error:
   free (line);
-  fclose (f);
+  if (f)
+    fclose (f);
   free (fn);
   return NULL;
 }
@@ -460,12 +480,7 @@ toyvm_function_compile (toyvm_function *fn)
 
   memset (&state, 0, sizeof (state));
 
-  /* Copy filename to funcname.  */
-  funcname = (char *)malloc (strlen (fn->fn_filename) + 1);
-  strcpy (funcname, fn->fn_filename);
-
-  /* Convert "." to NIL terminator.  */
-  *(strchr (funcname, '.')) = '\0';
+  funcname = get_function_name (fn->fn_filename);
 
   state.ctxt = gcc_jit_context_acquire ();
 

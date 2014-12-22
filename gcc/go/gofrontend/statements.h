@@ -550,6 +550,9 @@ class Temporary_statement : public Statement
   void
   do_check_types(Gogo*);
 
+  Statement*
+  do_flatten(Gogo*, Named_object*, Block*, Statement_inserter*);
+
   Bstatement*
   do_get_backend(Translate_context*);
 
@@ -703,6 +706,9 @@ class Send_statement : public Statement
 
   void
   do_check_types(Gogo*);
+
+  Statement*
+  do_flatten(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   Bstatement*
   do_get_backend(Translate_context*);
@@ -985,6 +991,10 @@ class Thunk_statement : public Statement
   bool
   simplify_statement(Gogo*, Named_object*, Block*);
 
+  // Return whether ST is a type created to hold thunk parameters.
+  static bool
+  is_thunk_struct(const Struct_type *st);
+
  protected:
   int
   do_traverse(Traverse* traverse);
@@ -1022,6 +1032,9 @@ class Thunk_statement : public Statement
   // Set the name to use for thunk field N.
   void
   thunk_field_param(int n, char* buf, size_t buflen);
+
+  // A list of all the struct types created for thunk statements.
+  static Unordered_set(const Struct_type*) thunk_types;
 
   // The function call to be executed in a separate thread (go) or
   // later (defer).

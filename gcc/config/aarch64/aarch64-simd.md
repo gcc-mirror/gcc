@@ -726,23 +726,14 @@
    (match_operand:SI 2 "aarch64_shift_imm64_di" "")]
   "TARGET_SIMD"
   {
+    /* An arithmetic shift right by 64 fills the result with copies of the sign
+       bit, just like asr by 63 - however the standard pattern does not handle
+       a shift by 64.  */
     if (INTVAL (operands[2]) == 64)
-      emit_insn (gen_aarch64_sshr_simddi (operands[0], operands[1]));
-    else
-      emit_insn (gen_ashrdi3 (operands[0], operands[1], operands[2]));
+      operands[2] = GEN_INT (63);
+    emit_insn (gen_ashrdi3 (operands[0], operands[1], operands[2]));
     DONE;
   }
-)
-
-;; SIMD shift by 64.  This pattern is a special case as standard pattern does
-;; not handle NEON shifts by 64.
-(define_insn "aarch64_sshr_simddi"
-  [(set (match_operand:DI 0 "register_operand" "=w")
-        (unspec:DI
-          [(match_operand:DI 1 "register_operand" "w")] UNSPEC_SSHR64))]
-  "TARGET_SIMD"
-  "sshr\t%d0, %d1, 64"
-  [(set_attr "type" "neon_shift_imm")]
 )
 
 (define_expand "vlshr<mode>3"
@@ -765,22 +756,11 @@
   "TARGET_SIMD"
   {
     if (INTVAL (operands[2]) == 64)
-      emit_insn (gen_aarch64_ushr_simddi (operands[0], operands[1]));
+      emit_move_insn (operands[0], const0_rtx);
     else
       emit_insn (gen_lshrdi3 (operands[0], operands[1], operands[2]));
     DONE;
   }
-)
-
-;; SIMD shift by 64.  This pattern is a special case as standard pattern does
-;; not handle NEON shifts by 64.
-(define_insn "aarch64_ushr_simddi"
-  [(set (match_operand:DI 0 "register_operand" "=w")
-        (unspec:DI
-          [(match_operand:DI 1 "register_operand" "w")] UNSPEC_USHR64))]
-  "TARGET_SIMD"
-  "ushr\t%d0, %d1, 64"
-  [(set_attr "type" "neon_shift_imm")]
 )
 
 (define_expand "vec_set<mode>"
@@ -2438,22 +2418,9 @@
   [(set_attr "type" "neon_to_gp<q>")]
 )
 
-(define_expand "aarch64_be_checked_get_lane<mode>"
-  [(match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand")
-   (match_operand:VALL 1 "register_operand")
-   (match_operand:SI 2 "immediate_operand")]
-  "TARGET_SIMD"
-  {
-    operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
-    emit_insn (gen_aarch64_get_lane<mode> (operands[0],
-					   operands[1],
-					   operands[2]));
-    DONE;
-  }
-)
-
 ;; Lane extraction of a value, neither sign nor zero extension
 ;; is guaranteed so upper bits should be considered undefined.
+;; RTL uses GCC vector extension indices throughout so flip only for assembly.
 (define_insn "aarch64_get_lane<mode>"
   [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=r, w, Utv")
 	(vec_select:<VEL>
@@ -2476,17 +2443,6 @@
   }
   [(set_attr "type" "neon_to_gp<q>, neon_dup<q>, neon_store1_one_lane<q>")]
 )
-
-(define_expand "aarch64_get_lanedi"
-  [(match_operand:DI 0 "register_operand")
-   (match_operand:DI 1 "register_operand")
-   (match_operand:SI 2 "immediate_operand")]
-  "TARGET_SIMD"
-{
-  aarch64_simd_lane_bounds (operands[2], 0, 1, NULL);
-  emit_move_insn (operands[0], operands[1]);
-  DONE;
-})
 
 ;; In this insn, operand 1 should be low, and operand 2 the high part of the
 ;; dest vector.
@@ -4596,19 +4552,6 @@
   [(set_attr "type" "neon_ext<q>")]
 )
 
-;; This exists solely to check the arguments to the corresponding __builtin.
-;; Used where we want an error for out-of-range indices which would otherwise
-;; be silently wrapped (e.g. the mask to a __builtin_shuffle).
-(define_expand "aarch64_im_lane_boundsi"
-  [(match_operand:SI 0 "immediate_operand" "i")
-   (match_operand:SI 1 "immediate_operand" "i")]
-  "TARGET_SIMD"
-{
-  aarch64_simd_lane_bounds (operands[0], 0, INTVAL (operands[1]), NULL);
-  DONE;
-}
-)
-
 (define_insn "aarch64_rev<REVERSE:rev_op><mode>"
   [(set (match_operand:VALL 0 "register_operand" "=w")
 	(unspec:VALL [(match_operand:VALL 1 "register_operand" "w")]
@@ -4839,6 +4782,14 @@
   "frecps\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "type" "neon_fp_recps_<Vetype><q>")]
 )
+
+(define_insn "aarch64_urecpe<mode>"
+  [(set (match_operand:VDQ_SI 0 "register_operand" "=w")
+        (unspec:VDQ_SI [(match_operand:VDQ_SI 1 "register_operand" "w")]
+                UNSPEC_URECPE))]
+ "TARGET_SIMD"
+ "urecpe\\t%0.<Vtype>, %1.<Vtype>"
+  [(set_attr "type" "neon_fp_recpe_<Vetype><q>")])
 
 ;; Standard pattern name vec_extract<mode>.
 

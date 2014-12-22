@@ -5037,6 +5037,33 @@ DEFHOOK
  reg_class_t, (reg_class_t rclass),
  default_preferred_rename_class)
 
+/* This target hook allows the backend to avoid unsafe substitution
+   during register allocation.  */
+DEFHOOK
+(cannot_substitute_mem_equiv_p,
+ "A target hook which returns @code{true} if @var{subst} can't\n\
+substitute safely pseudos with equivalent memory values during\n\
+register allocation.\n\
+The default version of this target hook returns @code{false}.\n\
+On most machines, this default should be used.  For generally\n\
+machines with non orthogonal register usage for addressing, such\n\
+as SH, this hook can be used to avoid excessive spilling.",
+ bool, (rtx subst),
+ hook_bool_rtx_false)
+
+/* This target hook allows the backend to legitimize base plus
+   displacement addressing.  */
+DEFHOOK
+(legitimize_address_displacement,
+ "A target hook which returns @code{true} if *@var{disp} is\n\
+legitimezed to valid address displacement with subtracting *@var{offset}\n\
+at memory mode @var{mode}.\n\
+The default version of this target hook returns @code{false}.\n\
+This hook will benefit machines with limited base plus displacement\n\
+addressing.",
+ bool, (rtx *disp, rtx *offset, machine_mode mode),
+ default_legitimize_address_displacement)
+
 /* This target hook allows the backend to perform additional
    processing while initializing for variable expansion.  */
 DEFHOOK

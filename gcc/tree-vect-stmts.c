@@ -340,7 +340,8 @@ vect_stmt_relevant_p (gimple stmt, loop_vec_info loop_vinfo,
 
   /* changing memory.  */
   if (gimple_code (stmt) != GIMPLE_PHI)
-    if (gimple_vdef (stmt))
+    if (gimple_vdef (stmt)
+	&& !gimple_clobber_p (stmt))
       {
 	if (dump_enabled_p ())
 	  dump_printf_loc (MSG_NOTE, vect_location,

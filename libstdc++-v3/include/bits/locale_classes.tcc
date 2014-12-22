@@ -106,7 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const size_t __i = _Facet::id._M_id();
       const locale::facet** __facets = __loc._M_impl->_M_facets;
       return (__i < __loc._M_impl->_M_facets_size
-#ifdef __GXX_RTTI
+#if __cpp_rtti
 	      && dynamic_cast<const _Facet*>(__facets[__i]));
 #else
               && static_cast<const _Facet*>(__facets[__i]));
@@ -135,7 +135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const locale::facet** __facets = __loc._M_impl->_M_facets;
       if (__i >= __loc._M_impl->_M_facets_size || !__facets[__i])
         __throw_bad_cast();
-#ifdef __GXX_RTTI
+#if __cpp_rtti
       return dynamic_cast<const _Facet&>(*__facets[__i]);
 #else
       return static_cast<const _Facet&>(*__facets[__i]);

@@ -420,10 +420,6 @@ register_callback (const char *plugin_name,
 	gcc_assert (!callback);
         ggc_register_root_tab ((const struct ggc_root_tab*) user_data);
 	break;
-      case PLUGIN_REGISTER_GGC_CACHES:
-	gcc_assert (!callback);
-        ggc_register_cache_tab ((const struct ggc_cache_tab*) user_data);
-	break;
       case PLUGIN_EVENT_FIRST_DYNAMIC:
       default:
 	if (event < PLUGIN_EVENT_FIRST_DYNAMIC || event >= event_last)
@@ -546,7 +542,6 @@ invoke_plugin_callbacks_full (int event, void *gcc_data)
 
       case PLUGIN_PASS_MANAGER_SETUP:
       case PLUGIN_REGISTER_GGC_ROOTS:
-      case PLUGIN_REGISTER_GGC_CACHES:
         gcc_assert (false);
     }
 

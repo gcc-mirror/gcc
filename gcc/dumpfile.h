@@ -182,10 +182,16 @@ public:
   struct dump_file_info *
   get_dump_file_info (int phase) const;
 
+  struct dump_file_info *
+  get_dump_file_info_by_switch (const char *swtch) const;
+
   /* Return the name of the dump file for the given phase.
      If the dump is not enabled, returns NULL.  */
   char *
   get_dump_file_name (int phase) const;
+
+  char *
+  get_dump_file_name (struct dump_file_info *dfi) const;
 
   int
   dump_switch_p (const char *arg);

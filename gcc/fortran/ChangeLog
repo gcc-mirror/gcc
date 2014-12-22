@@ -1,3 +1,244 @@
+2014-12-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64209
+	* trans-expr.c (gfc_trans_class_array_init_assign): Check if _def_init
+	component is non-NULL.
+	(gfc_trans_class_init_assign): Ditto.
+
+2014-12-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64173
+	* trans-array.c (structure_alloc_comps): Do not nullify procedure
+	pointer components.
+
+2014-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* trans-types.c (gfc_get_array_descr_info): Describe all Fortran arrays
+	with column major ordering.
+
+2014-12-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54687
+	* gfortran.h (gfc_option_t): Remove flags which now
+	have a Var().
+	(init_local_real, gfc_fcoarray): Moved to ../flag-types.h.
+	* libgfortran.h (unit_convert): Add comment.
+	* lang.opt (flag-convert, flag-init_real, flag-coarray):
+	Add Var() and Enum().
+	* options.c (gfc_handle_coarray_option): Remove.
+	(gfc_init_options, gfc_post_options, gfc_handle_option):
+	Update for *.opt changes.
+	* array.c: Update for flag-variable name changes.
+	* check.c: Ditto.
+	* match.c: Ditto.
+	* resolve.c: Ditto.
+	* simplify.c: Ditto.
+	* trans-array.c: Ditto.
+	* trans-decl.c: Ditto.
+	* trans-expr.c: Ditto.
+	* trans-intrinsic.c: Ditto.
+	* trans-stmt.c: Ditto.
+	* trans-types.c: Ditto.
+	* trans.c: Ditto.
+
+2014-12-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54687
+	* gfortran.h (gfc_option_t): Remove flags which now
+	have a Var().
+	* lang.opt (flag-aggressive_function_elimination,
+	flag-align_commons, flag-all_intrinsics,
+	flag-allow_leading_underscore, flag-automatic, flag-backslash,
+	flag-backtrace, flag-blas_matmul_limit, flag-cray_pointer,
+	flag-dollar_ok, flag-dump_fortran_original,
+	flag-dump_fortran_optimized, flag-external_blas, flag-f2c,
+	flag-implicit_none, flag-max_array_constructor,
+	flag-module_private, flag-pack_derived, flag-range_check,
+	flag-recursive, flag-repack_arrays, flag-sign_zero,
+	flag-underscoring): Add Var() and, where applicable, Enum().
+	* options.c (gfc_init_options, gfc_post_options,
+	gfc_handle_option): Update for *.opt changes.
+	* arith.c: Update for flag-variable name changes.
+	* array.c: Ditto.
+	* cpp.c: Ditto.
+	* decl.c: Ditto.
+	* expr.c: Ditto.
+	* f95-lang.c: Ditto.
+	* frontend-passes.c: Ditto.
+	* intrinsic.c: Ditto.
+	* io.c: Ditto.
+	* match.c: Ditto.
+	* module.c: Ditto.
+	* parse.c: Ditto.
+	* primary.c: Ditto.
+	* resolve.c: Ditto.
+	* scanner.c: Ditto.
+	* simplify.c: Ditto.
+	* symbol.c: Ditto.
+	* trans-array.c: Ditto.
+	* trans-common.c: Ditto.
+	* trans-decl.c: Ditto.
+	* trans-expr.c: Ditto.
+	* trans-intrinsic.c: Ditto.
+	* trans-openmp.c: Ditto.
+	* trans-types.c: Ditto.
+
+2014-12-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54687
+	* lang.opt (fsecond-underscore, frecord-marker=8, frecord-marker=4,
+	frealloc-lhs, freal-8-real-16, freal-8-real-10, freal-8-real-4,
+	freal-4-real-16, freal-4-real-10, freal-4-real-8, fprotect-parens,
+	fstack-arrays, fmax-stack-var-size=, fmax-subrecord-length=,
+	ffrontend-optimize, ffree-line-length-, ffixed-line-length-,
+	finteger-4-integer-8, fdefault-real-8, fdefault-integer-8,
+	fdefault-double-8): Add Var() and Init().
+	* gfortran.h (gfc_option_t): Remove moved flags.
+	* options.c (gfc_init_options, gfc_handle_option): Ditto.
+	(gfc_post_options): Update for name change.
+	* decl.c (gfc_match_old_kind_spec, gfc_match_kind_spec): Handle
+	flag-name change.
+	* frontend-passes.c (gfc_run_passes): Ditto.
+	* module.c (use_iso_fortran_env_module): Ditto.
+	* primary.c (match_integer_constant, match_real_constant): Ditto.
+	* resolve.c (resolve_ordinary_assign): Ditto.
+	* scanner.c (gfc_next_char_literal, load_line): Ditto.
+	* trans-array.c (gfc_trans_allocate_array_storage,
+	gfc_conv_resolve_dependencies, gfc_trans_auto_array_allocation,
+	gfc_conv_ss_startstride): Ditto.
+	* trans-common.c (gfc_sym_mangled_common_id): Ditto.
+	* trans-decl.c (gfc_sym_mangled_function_id,
+	create_main_function): Ditto.
+	* trans-expr.c (gfc_conv_expr_op, gfc_conv_procedure_call,
+	arrayfunc_assign_needs_temporary, gfc_trans_arrayfunc_assign,
+	gfc_trans_assignment_1): Ditto.
+	* trans-stmt.c (gfc_trans_allocate): Ditto.
+	* trans-types.c (gfc_init_kinds): Ditto.
+
+2014-12-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64244
+	* resolve.c (resolve_typebound_call): New argument to pass out the
+	non-overridable attribute of the specific procedure.
+	(resolve_typebound_subroutine): Get overridable flag from
+	resolve_typebound_call.
+
+2014-12-15  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR fortran/61669
+	* gfortran.h (struct gfc_namespace): Add OLD_DATA field.
+	* decl.c (gfc_reject_data): New function.
+	* parse.c *use_modules): Record roll-back point.
+	(next_statement): Likewise.
+	(reject_statement): Roll back to last accepted DATA.
+
+2014-12-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/63727
+	* resolve.c (resolve_actual_arglist): Check for elemental procedure
+	pointer components.
+
+2014-12-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/63674
+	* resolve.c (check_pure_function): Rewording in error message.
+
+2014-12-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/63674
+	* resolve.c (pure_function): Treat procedure-pointer components.
+	(check_pure_function): New function.
+	(resolve_function): Use it.
+	(pure_subroutine): Return a bool to indicate success and modify
+	arguments.
+	(resolve_generic_s0,resolve_specific_s0,resolve_unknown_s): Use return
+	value of 'pure_subroutine'.
+	(resolve_ppc_call): Call 'pure_subroutine'.
+	(resolve_expr_ppc): Call 'check_pure_function'.
+
+2014-12-13  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* error.c (gfc_error): Add variant which takes a va_list.
+	(gfc_notify_std): Convert to common diagnostic.
+	* array.c: Use %qs, %<...%> in more gfc_error calls and
+	for gfc_notify_std.
+	* check.c: Ditto.
+	* data.c: Ditto.
+	* decl.c: Ditto.
+	* expr.c: Ditto.
+	* interface.c: Ditto.
+	* intrinsic.c: Ditto.
+	* io.c: Ditto.
+	* match.c: Ditto.
+	* matchexp.c: Ditto.
+	* module.c: Ditto.
+	* openmp.c: Ditto.
+	* parse.c: Ditto.
+	* primary.c: Ditto.
+	* resolve.c: Ditto.
+	* simplify.c: Ditto.
+	* symbol.c: Ditto.
+	* trans-common.c: Ditto.
+	* trans-intrinsic.c: Ditto.
+
+2014-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/42108
+	* trans-stmt.c (gfc_trans_do): Execute the division computing
+	countm1 before the loop entry check.
+
+2014-12-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* error.c (pp_error_buffer): New static variable.
+	(pp_warning_buffer): Make it a pointer.
+	(gfc_output_buffer_empty_p): New.
+	(gfc_error_init_1): Call gfc_buffer_error.
+	(gfc_buffer_error): Do not use pp_warning_buffer.flush_p as the
+	buffered_p flag.
+	(gfc_clear_warning): Likewise.
+	(gfc_warning_check): Call gfc_clear_warning. Only check the new
+	pp_warning_buffer if the old warning_buffer was empty. Call
+	diagnostic_action_after_output.
+	(gfc_error_1): Renamed from gfc_error.
+	(gfc_error): New.
+	(gfc_clear_error): Clear also pp_error_buffer.
+	(gfc_error_flag_test): Check also pp_error_buffer.
+	(gfc_error_check): Likewise. Only check the new pp_error_buffer
+	if the old error_buffer was empty.
+	(gfc_move_output_buffer_from_to): New.
+	(gfc_push_error): Use it here. Take also an output_buffer as argument.
+	(gfc_pop_error): Likewise.
+	(gfc_free_error): Likewise.
+	(gfc_diagnostics_init): Use XNEW and placement-new to init
+	pp_error_buffer and pp_warning_buffer. Set flush_p to false for
+	both pp_warning_buffer and pp_error_buffer.
+
+	* Update gfc_push_error, gfc_pop_error and gfc_free_error calls
+	according to the above changes.
+	* Use gfc_error_1 for all gfc_error calls that use multiple
+	locations.
+	* Use %qs instead of '%s' for many gfc_error calls.
+
+2014-12-11  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* diagnostic.c (get_terminal_width): Renamed from getenv_columns,
+	removed static, and additionally use ioctl to get width.
+	(diagnostic_set_caret_max_width): Update call.
+	* diagnostic.h (get_terminal_width): Add prototype.
+	* opts.c (print_specific_help): Use it for x_help_columns.
+	* doc/invoke.texi (fdiagnostics-show-caret): Document how the
+	width is set.
+
+2014-12-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/60718
+	* trans-expr.c (gfc_conv_procedure_call): Fix a strict aliasing
+	violation when passing a class object to a formal parameter which has
+	different pointer or allocatable attributes.
+
 2014-12-06  Tobias Burnus  <burnus@net-b.de>
 
 	* error.c (gfc_error_check): Use bool not int.

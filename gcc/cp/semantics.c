@@ -1660,6 +1660,9 @@ force_paren_expr (tree expr)
 	  tree type = unlowered_expr_type (expr);
 	  bool rval = !!(kind & clk_rvalueref);
 	  type = cp_build_reference_type (type, rval);
+	  /* This inhibits warnings in, eg, cxx_mark_addressable
+	     (c++/60955).  */
+	  warning_sentinel s (extra_warnings);
 	  expr = build_static_cast (type, expr, tf_error);
 	  if (expr != error_mark_node)
 	    REF_PARENTHESIZED_P (expr) = true;
@@ -5138,6 +5141,8 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
       id = OVL_CURRENT (id);
       mark_used (id);
       tree body = DECL_SAVED_TREE (id);
+      if (!body)
+	return true;
       if (TREE_CODE (body) == STATEMENT_LIST)
 	{
 	  tree_stmt_iterator tsi;
@@ -7237,16 +7242,6 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	  if (clk != clk_none && !(clk & clk_class))
 	    type = cp_build_reference_type (type, (clk & clk_rvalueref));
 	}
-    }
-
-  if (cxx_dialect >= cxx14 && array_of_runtime_bound_p (type)
-      && (flag_iso || warn_vla > 0))
-    {
-      if (complain & tf_warning_or_error)
-	pedwarn (input_location, OPT_Wvla,
-		 "taking decltype of array of runtime bound");
-      else
-	return error_mark_node;
     }
 
   return type;

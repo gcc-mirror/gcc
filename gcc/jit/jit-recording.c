@@ -181,17 +181,20 @@ recording::context::context (context *parent_ctxt)
 {
   if (parent_ctxt)
     {
-      /* Inherit options from parent.
-         Note that the first memcpy means copying pointers to strings.  */
-      memcpy (m_str_options,
-              parent_ctxt->m_str_options,
-              sizeof (m_str_options));
+      /* Inherit options from parent.  */
+      for (unsigned i = 0;
+	   i < sizeof (m_str_options) / sizeof (m_str_options[0]);
+	   i++)
+	{
+	  const char *parent_opt = parent_ctxt->m_str_options[i];
+	  m_str_options[i] = parent_opt ? xstrdup (parent_opt) : NULL;
+	}
       memcpy (m_int_options,
-              parent_ctxt->m_int_options,
-              sizeof (m_int_options));
+	      parent_ctxt->m_int_options,
+	      sizeof (m_int_options));
       memcpy (m_bool_options,
-              parent_ctxt->m_bool_options,
-              sizeof (m_bool_options));
+	      parent_ctxt->m_bool_options,
+	      sizeof (m_bool_options));
     }
   else
     {
@@ -214,6 +217,9 @@ recording::context::~context ()
     {
       delete m;
     }
+
+  for (i = 0; i < GCC_JIT_NUM_STR_OPTIONS; ++i)
+    free (m_str_options[i]);
 
   if (m_builtins_manager)
     delete m_builtins_manager;
@@ -827,7 +833,8 @@ recording::context::set_str_option (enum gcc_jit_str_option opt,
 		 "unrecognized (enum gcc_jit_str_option) value: %i", opt);
       return;
     }
-  m_str_options[opt] = value;
+  free (m_str_options[opt]);
+  m_str_options[opt] = value ? xstrdup (value) : NULL;
 }
 
 /* Set the given integer option for this context, or add an error if
@@ -868,10 +875,25 @@ recording::context::set_bool_option (enum gcc_jit_bool_option opt,
   m_bool_options[opt] = value ? true : false;
 }
 
-/* This mutex guards gcc::jit::recording::context::compile, so that only
-   one thread can be accessing the bulk of GCC's state at once.  */
+/* Add the given dumpname/out_ptr pair to this context's list of requested
+   dumps.
 
-static pthread_mutex_t jit_mutex = PTHREAD_MUTEX_INITIALIZER;
+   Implements the post-error-checking part of
+   gcc_jit_context_enable_dump.  */
+
+void
+recording::context::enable_dump (const char *dumpname,
+				 char **out_ptr)
+{
+  requested_dump d;
+  gcc_assert (dumpname);
+  gcc_assert (out_ptr);
+
+  d.m_dumpname = dumpname;
+  d.m_out_ptr = out_ptr;
+  *out_ptr = NULL;
+  m_requested_dumps.safe_push (d);
+}
 
 /* Validate this context, and if it passes, compile it within a
    mutex.
@@ -887,19 +909,11 @@ recording::context::compile ()
   if (errors_occurred ())
     return NULL;
 
-  /* Acquire the big GCC mutex. */
-  pthread_mutex_lock (&jit_mutex);
-  gcc_assert (NULL == ::gcc::jit::active_playback_ctxt);
-
   /* Set up a playback context.  */
   ::gcc::jit::playback::context replayer (this);
-  ::gcc::jit::active_playback_ctxt = &replayer;
 
+  /* Use it.  */
   result *result_obj = replayer.compile ();
-
-  /* Release the big GCC mutex. */
-  ::gcc::jit::active_playback_ctxt = NULL;
-  pthread_mutex_unlock (&jit_mutex);
 
   return result_obj;
 }
@@ -1024,6 +1038,19 @@ recording::context::dump_to_file (const char *path, bool update_locations)
     {
       fn->write_to_dump (d);
     }
+}
+
+/* Copy the requested dumps within this context and all ancestors into
+   OUT. */
+
+void
+recording::context::get_all_requested_dumps (vec <recording::requested_dump> *out)
+{
+  if (m_parent_ctxt)
+    m_parent_ctxt->get_all_requested_dumps (out);
+
+  out->reserve (m_requested_dumps.length ());
+  out->splice (m_requested_dumps);
 }
 
 /* This is a pre-compilation check for the context (and any parents).
@@ -1930,10 +1957,10 @@ recording::fields::replay_into (replayer *)
    declaration of this form:
 
       struct/union NAME {
-        TYPE_1 NAME_1;
-        TYPE_2 NAME_2;
+	TYPE_1 NAME_1;
+	TYPE_2 NAME_2;
 	....
-        TYPE_N NAME_N;
+	TYPE_N NAME_N;
       };
 
     to the dump.  */

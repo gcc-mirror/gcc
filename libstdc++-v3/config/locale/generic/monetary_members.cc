@@ -34,11 +34,16 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+// This file might be compiled twice, but we only want to define the members
+// of money_base once.
+#if ! _GLIBCXX_USE_CXX11_ABI
+
   // Construct and return valid pattern consisting of some combination of:
   // space none symbol sign value
   money_base::pattern
   money_base::_S_construct_pattern(char, char, char) throw()
   { return _S_default_pattern; }
+#endif
 
   template<>
     void

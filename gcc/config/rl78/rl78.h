@@ -144,7 +144,6 @@
 
 #define STORE_FLAG_VALUE		1
 #define LOAD_EXTEND_OP(MODE)		ZERO_EXTEND
-#define SHORT_IMMEDIATES_SIGN_EXTEND	0
 
 
 /* The RL78 has four register banks.  Normal operation uses RB0 as

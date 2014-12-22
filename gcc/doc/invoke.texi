@@ -187,7 +187,8 @@ in the following sections.
 -fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -fno-pretty-templates @gol
--frepo  -fno-rtti  -fstats  -ftemplate-backtrace-limit=@var{n} @gol
+-frepo  -fno-rtti -fsized-deallocation @gol
+-fstats  -ftemplate-backtrace-limit=@var{n} @gol
 -ftemplate-depth=@var{n} @gol
 -fno-threadsafe-statics  -fuse-cxa-atexit @gol
 -fno-weak  -nostdinc++ @gol
@@ -243,11 +244,12 @@ Objective-C and Objective-C++ Dialects}.
 -Wbool-compare @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
 -Wc90-c99-compat -Wc99-c11-compat @gol
--Wc++-compat -Wc++11-compat -Wcast-align  -Wcast-qual  @gol
+-Wc++-compat -Wc++11-compat -Wc++14-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment -Wconditionally-supported  @gol
 -Wconversion -Wcoverage-mismatch -Wdate-time -Wdelete-incomplete -Wno-cpp  @gol
 -Wno-deprecated -Wno-deprecated-declarations -Wno-designated-init @gol
--Wdisabled-optimization -Wno-discarded-qualifiers @gol
+-Wdisabled-optimization @gol
+-Wno-discarded-qualifiers -Wno-discarded-array-qualifiers @gol
 -Wno-div-by-zero -Wdouble-promotion -Wempty-body  -Wenum-compare @gol
 -Wno-endif-labels -Werror  -Werror=* @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
@@ -375,7 +377,8 @@ Objective-C and Objective-C++ Dialects}.
 -fcse-follow-jumps -fcse-skip-blocks -fcx-fortran-rules @gol
 -fcx-limited-range @gol
 -fdata-sections -fdce -fdelayed-branch @gol
--fdelete-null-pointer-checks -fdevirtualize -fdevirtualize-speculatively -fdse @gol
+-fdelete-null-pointer-checks -fdevirtualize -fdevirtualize-speculatively @gol
+-devirtualize-at-ltrans -fdse @gol
 -fearly-inlining -fipa-sra -fexpensive-optimizations -ffat-lto-objects @gol
 -ffast-math -ffinite-math-only -ffloat-store -fexcess-precision=@var{style} @gol
 -fforward-propagate -ffp-contract=@var{style} -ffunction-sections @gol
@@ -699,7 +702,7 @@ Objective-C and Objective-C++ Dialects}.
 -m32 -m64 -mx32 -m16 -mlarge-data-threshold=@var{num} @gol
 -msse2avx -mfentry -mrecord-mcount -mnop-mcount -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
--mstack-protector-guard=@var{guard}}
+-malign-data=@var{type} -mstack-protector-guard=@var{guard}}
 
 @emph{i386 and x86-64 Windows Options}
 @gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll @gol
@@ -783,7 +786,7 @@ Objective-C and Objective-C++ Dialects}.
 @emph{MIPS Options}
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
 -mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2  -mips32r3  -mips32r5 @gol
--mips64  -mips64r2  -mips64r3  -mips64r5 @gol
+-mips32r6  -mips64  -mips64r2  -mips64r3  -mips64r5  -mips64r6 @gol
 -mips16  -mno-mips16  -mflip-mips16 @gol
 -minterlink-compressed -mno-interlink-compressed @gol
 -minterlink-mips16  -mno-interlink-mips16 @gol
@@ -2303,6 +2306,19 @@ needed. The @samp{dynamic_cast} operator can still be used for casts that
 do not require run-time type information, i.e.@: casts to @code{void *} or to
 unambiguous base classes.
 
+@item -fsized-deallocation
+@opindex fsized-deallocation
+Enable the built-in global declarations
+@smallexample
+void operator delete (void *, std::size_t) noexcept;
+void operator delete[] (void *, std::size_t) noexcept;
+@end smallexample
+as introduced in C++14.  This is useful for user-defined replacement
+deallocation functions that, for example, use the size of the object
+to make deallocation faster.  Enabled by default under
+@samp{-std=c++14} and above.  The flag @option{-Wsized-deallocation} will
+warn about places that might want to add a definition.
+
 @item -fstats
 @opindex fstats
 Emit statistics about front-end processing at the end of the compilation.
@@ -3187,7 +3203,10 @@ option is known to the diagnostic machinery).  Specifying the
 @opindex fdiagnostics-show-caret
 By default, each diagnostic emitted includes the original source line
 and a caret '^' indicating the column.  This option suppresses this
-information.
+information.  The source line is truncated to @var{n} characters, if
+the @option{-fmessage-length=n} is given.  When the output is done
+to the terminal, the width is limited to the width given by the
+@env{COLUMNS} environment variable or, if not set, to the terminal width.
 
 @end table
 
@@ -3352,7 +3371,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 
 @gccoptlist{-Waddress   @gol
 -Warray-bounds @r{(only with} @option{-O2}@r{)}  @gol
--Wc++11-compat  @gol
+-Wc++11-compat  -Wc++14-compat@gol
 -Wchar-subscripts  @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
 -Wimplicit-int @r{(C and Objective-C only)} @gol
@@ -4282,8 +4301,17 @@ This warning is enabled by @option{-Wall}.
 @opindex Wdiscarded-qualifiers
 Do not warn if type qualifiers on pointers are being discarded.
 Typically, the compiler will warn if a @code{const char *} variable is
-passed to a function that takes @code{char *} parameter.  This option
+passed to a function that takes a @code{char *} parameter.  This option
 can be used to suppress such a warning.
+
+@item -Wno-discarded-array-qualifiers @r{(C and Objective-C only)}
+@opindex Wno-discarded-array-qualifiers
+@opindex Wdiscarded-array-qualifiers
+Do not warn if type qualifiers on arrays which are pointer targets
+are being discarded. Typically, the compiler will warn if a
+@code{const int (*)[]} variable is passed to a function that
+takes a @code{int (*)[]} parameter.  This option can be used to
+suppress such a warning.
 
 @item -Wno-incompatible-pointer-types @r{(C and Objective-C only)}
 @opindex Wno-incompatible-pointer-types
@@ -4604,6 +4632,10 @@ and ISO C++ 2011, e.g., identifiers in ISO C++ 1998 that are keywords
 in ISO C++ 2011.  This warning turns on @option{-Wnarrowing} and is
 enabled by @option{-Wall}.
 
+@item -Wc++14-compat @r{(C++ and Objective-C++ only)}
+Warn about C++ constructs whose meaning differs between ISO C++ 2011
+and ISO C++ 2014.  This warning is enabled by @option{-Wall}.
+
 @item -Wcast-qual
 @opindex Wcast-qual
 @opindex Wno-cast-qual
@@ -4762,6 +4794,22 @@ Warn for implicit conversions that reduce the precision of a real value.
 This includes conversions from real to integer, and from higher precision
 real to lower precision real values.  This option is also enabled by
 @option{-Wconversion}.
+
+@item -Wsized-deallocation @r{(C++ and Objective-C++ only)}
+@opindex Wsized-deallocation
+@opindex -Wno-sized-deallocation
+Warn about a definition of an unsized deallocation function
+@smallexample
+void operator delete (void *) noexcept;
+void operator delete[] (void *) noexcept;
+@end smallexample
+without a definition of the corresponding sized deallocation function
+@smallexample
+void operator delete (void *, std::size_t) noexcept;
+void operator delete[] (void *, std::size_t) noexcept;
+@end smallexample
+or vice versa.  Enabled by @option{-Wextra} along with
+@option{-fsized-deallocation}.
 
 @item -Wsizeof-pointer-memaccess
 @opindex Wsizeof-pointer-memaccess
@@ -7729,6 +7777,13 @@ the set of likely targets. If the set is small, preferably of size 1, change
 the call into an conditional deciding on direct and indirect call.  The
 speculative calls enable more optimizations, such as inlining.  When they seem
 useless after further optimization, they are converted back into original form.
+
+@item -fdevirtualize-at-ltrans
+@opindex fdevirtualize-at-ltrans
+Perform extra streaming needed for agressive devirtualization during LTO local
+transformation stage. This option enables more devirtualization but
+significantly increases the size of streamed data. For this reason it is
+disabled by default.
 
 @item -fexpensive-optimizations
 @opindex fexpensive-optimizations
@@ -12667,8 +12722,7 @@ Replaced by @samp{-mmultcost}.
 @subsection ARM Options
 @cindex ARM options
 
-These @samp{-m} options are defined for Advanced RISC Machines (ARM)
-architectures:
+These @samp{-m} options are defined for the ARM port:
 
 @table @gcctabopt
 @item -mabi=@var{name}
@@ -15637,6 +15691,14 @@ as well as modifying the function calling convention for functions taking
 @code{long double}.  Hence they are not binary-compatible
 with code compiled without that switch.
 
+@item -malign-data=@var{type}
+@opindex malign-data
+Control how GCC aligns variables.  Supported values for @var{type} are
+@samp{compat} uses increased alignment value compatible uses GCC 4.8
+and earlier, @samp{abi} uses alignment value as specified by the
+psABI, and @samp{cacheline} uses increased alignment value to match
+the cache line size.  @samp{compat} is the default.
+
 @item -mlarge-data-threshold=@var{threshold}
 @opindex mlarge-data-threshold
 When @option{-mcmodel=medium} is specified, data objects larger than
@@ -16202,6 +16264,19 @@ If profiling is active (@option{-pg}), generate the calls to
 the profiling functions as nops. This is useful when they
 should be patched in later dynamically. This is likely only
 useful together with @option{-mrecord-mcount}.
+
+@item -mskip-rax-setup
+@itemx -mno-skip-rax-setup
+@opindex mskip-rax-setup
+When generating code for the x86-64 architecture with SSE extensions
+disabled, @option{-skip-rax-setup} can be used to skip setting up RAX
+register when there are no variable arguments passed in vector registers.
+
+@strong{Warning:} Since RAX register is used to avoid unnecessarily
+saving vector registers on stack when passing variable arguments, the
+impacts of this option are callees may waste some stack space,
+misbehave or jump to a random location.  GCC 4.4 or newer don't have
+those issues, regardless the RAX register value.
 
 @item -m8bit-idiv
 @itemx -mno-8bit-idiv
@@ -17606,8 +17681,9 @@ Generate code that runs on @var{arch}, which can be the name of a
 generic MIPS ISA, or the name of a particular processor.
 The ISA names are:
 @samp{mips1}, @samp{mips2}, @samp{mips3}, @samp{mips4},
-@samp{mips32}, @samp{mips32r2}, @samp{mips32r3}, @samp{mips32r5}, 
-@samp{mips64}, @samp{mips64r2}, @samp{mips64r3} and @samp{mips64r5}.
+@samp{mips32}, @samp{mips32r2}, @samp{mips32r3}, @samp{mips32r5},
+@samp{mips32r6}, @samp{mips64}, @samp{mips64r2}, @samp{mips64r3},
+@samp{mips64r5} and @samp{mips64r6}.
 The processor names are:
 @samp{4kc}, @samp{4km}, @samp{4kp}, @samp{4ksc},
 @samp{4kec}, @samp{4kem}, @samp{4kep}, @samp{4ksd},
@@ -17714,6 +17790,10 @@ Equivalent to @option{-march=mips32r3}.
 @opindex mips32r5
 Equivalent to @option{-march=mips32r5}.
 
+@item -mips32r6
+@opindex mips32r6
+Equivalent to @option{-march=mips32r6}.
+
 @item -mips64
 @opindex mips64
 Equivalent to @option{-march=mips64}.
@@ -17729,6 +17809,10 @@ Equivalent to @option{-march=mips64r3}.
 @item -mips64r5
 @opindex mips64r5
 Equivalent to @option{-march=mips64r5}.
+
+@item -mips64r6
+@opindex mips64r6
+Equivalent to @option{-march=mips64r6}.
 
 @item -mips16
 @itemx -mno-mips16

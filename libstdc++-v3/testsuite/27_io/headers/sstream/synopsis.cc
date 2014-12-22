@@ -20,6 +20,7 @@
 #include <sstream>
 
 namespace std {
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
   template <class charT, class traits, class Allocator>
     class basic_stringbuf;
   typedef basic_stringbuf<char>     stringbuf;
@@ -39,4 +40,5 @@ namespace std {
     class basic_stringstream;
   typedef basic_stringstream<char>     stringstream;
   typedef basic_stringstream<wchar_t> wstringstream;
+_GLIBCXX_END_NAMESPACE_CXX11
 }

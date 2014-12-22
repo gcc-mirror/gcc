@@ -217,21 +217,54 @@ get_dump_file_info (int phase) const
     return m_extra_dump_files + (phase - TDI_end);
 }
 
+/* Locate the dump_file_info with swtch equal to SWTCH,
+   or return NULL if no such dump_file_info exists.  */
+
+struct dump_file_info *
+gcc::dump_manager::
+get_dump_file_info_by_switch (const char *swtch) const
+{
+  for (unsigned i = 0; i < m_extra_dump_files_in_use; i++)
+    if (0 == strcmp (m_extra_dump_files[i].swtch, swtch))
+      return &m_extra_dump_files[i];
+
+  /* Not found.  */
+  return NULL;
+}
+
 
 /* Return the name of the dump file for the given phase.
+   The caller is responsible for calling free on the returned
+   buffer.
    If the dump is not enabled, returns NULL.  */
 
 char *
 gcc::dump_manager::
 get_dump_file_name (int phase) const
 {
-  char dump_id[10];
   struct dump_file_info *dfi;
 
   if (phase == TDI_none)
     return NULL;
 
   dfi = get_dump_file_info (phase);
+
+  return get_dump_file_name (dfi);
+}
+
+/* Return the name of the dump file for the given dump_file_info.
+   The caller is responsible for calling free on the returned
+   buffer.
+   If the dump is not enabled, returns NULL.  */
+
+char *
+gcc::dump_manager::
+get_dump_file_name (struct dump_file_info *dfi) const
+{
+  char dump_id[10];
+
+  gcc_assert (dfi);
+
   if (dfi->pstate == 0)
     return NULL;
 

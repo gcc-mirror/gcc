@@ -138,9 +138,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       ~__timepunct_cache();
 
-      void
-      _M_cache(const locale& __loc);
-
     private:
       __timepunct_cache&
       operator=(const __timepunct_cache&);
@@ -349,6 +346,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   /**
    *  @brief  Primary class template time_get.
@@ -697,6 +696,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~time_get_byname() { }
     };
 
+_GLIBCXX_END_NAMESPACE_CXX11
+
   /**
    *  @brief  Primary class template time_put.
    *  @ingroup locales
@@ -920,6 +921,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  delete [] _M_negative_sign;
 	}
     }
+
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   /**
    *  @brief  Primary class template moneypunct.
@@ -1349,7 +1352,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, bool _Intl>
     const bool moneypunct_byname<_CharT, _Intl>::intl;
 
-_GLIBCXX_BEGIN_NAMESPACE_LDBL
+_GLIBCXX_END_NAMESPACE_CXX11
+
+_GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 
   /**
    *  @brief  Primary class template money_get.
@@ -1465,7 +1470,8 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
        *  value returned.  @see get() for details.
        */
       // XXX GLIBCXX_ABI Deprecated
-#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
+      && _GLIBCXX_USE_CXX11_ABI == 0
       virtual iter_type
       __do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
 	       ios_base::iostate& __err, double& __units) const;
@@ -1487,7 +1493,8 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 	     ios_base::iostate& __err, string_type& __digits) const;
 
       // XXX GLIBCXX_ABI Deprecated
-#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
+      && _GLIBCXX_USE_CXX11_ABI == 0
       virtual iter_type
       do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
 	     ios_base::iostate& __err, long double& __units) const;
@@ -1608,7 +1615,8 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
        *  @return  Iterator after writing.
        */
       // XXX GLIBCXX_ABI Deprecated
-#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
+      && _GLIBCXX_USE_CXX11_ABI == 0
       virtual iter_type
       __do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
 	       double __units) const;
@@ -1642,7 +1650,8 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 	     const string_type& __digits) const;
 
       // XXX GLIBCXX_ABI Deprecated
-#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
+      && _GLIBCXX_USE_CXX11_ABI == 0
       virtual iter_type
       do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
 	     long double __units) const;
@@ -1657,7 +1666,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
   template<typename _CharT, typename _OutIter>
     locale::id money_put<_CharT, _OutIter>::id;
 
-_GLIBCXX_END_NAMESPACE_LDBL
+_GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 
   /**
    *  @brief  Messages facet base class providing catalog typedef.
@@ -1667,6 +1676,8 @@ _GLIBCXX_END_NAMESPACE_LDBL
   {
     typedef int catalog;
   };
+
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   /**
    *  @brief  Primary class template messages.
@@ -1888,6 +1899,8 @@ _GLIBCXX_END_NAMESPACE_LDBL
       ~messages_byname()
       { }
     };
+
+_GLIBCXX_END_NAMESPACE_CXX11
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

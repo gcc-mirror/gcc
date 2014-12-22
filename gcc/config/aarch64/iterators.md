@@ -128,6 +128,9 @@
 ;; Vector modes except double int.
 (define_mode_iterator VDQIF [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF V2DF])
 
+;; Vector modes for S type.
+(define_mode_iterator VDQ_SI [V2SI V4SI])
+
 ;; Vector modes for Q and H types.
 (define_mode_iterator VDQQH [V8QI V16QI V4HI V8HI])
 
@@ -384,7 +387,8 @@
 			  (V2SI "8b") (V4SI  "16b")
 			  (V2DI "16b") (V2SF  "8b")
 			  (V4SF "16b") (V2DF  "16b")
-			  (DI   "8b")  (DF    "8b")])
+			  (DI   "8b")  (DF    "8b")
+			  (SI   "8b")])
 
 ;; Define element mode for each vector mode.
 (define_mode_attr VEL [(V8QI "QI") (V16QI "QI")
@@ -660,6 +664,9 @@
 
 ;; Code iterator for logical operations
 (define_code_iterator LOGICAL [and ior xor])
+
+;; Code iterator for logical operations whose :nlogical works on SIMD registers.
+(define_code_iterator NLOGICAL [and ior])
 
 ;; Code iterator for sign/zero extension
 (define_code_iterator ANY_EXTEND [sign_extend zero_extend])

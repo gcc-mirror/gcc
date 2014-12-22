@@ -55,9 +55,6 @@ output_buffer::~output_buffer ()
   obstack_free (&formatted_obstack, NULL);
 }
 
-/* A pointer to the formatted diagnostic message.  */
-#define pp_formatted_text_data(PP) \
-   ((const char *) obstack_base (pp_buffer (PP)->obstack))
 
 /* Format an integer given by va_arg (ARG, type-specifier T) where
    type-specifier is a precision modifier as indicated by PREC.  F is
@@ -225,8 +222,7 @@ pp_maybe_wrap_text (pretty_printer *pp, const char *start, const char *end)
 static inline void
 pp_append_r (pretty_printer *pp, const char *start, int length)
 {
-  obstack_grow (pp_buffer (pp)->obstack, start, length);
-  pp_buffer (pp)->line_length += length;
+  output_buffer_append_r (pp_buffer (pp), start, length);
 }
 
 /* Insert enough spaces into the output area of PRETTY-PRINTER to bring
@@ -826,8 +822,7 @@ pp_append_text (pretty_printer *pp, const char *start, const char *end)
 const char *
 pp_formatted_text (pretty_printer *pp)
 {
-  obstack_1grow (pp_buffer (pp)->obstack, '\0');
-  return pp_formatted_text_data (pp);
+  return output_buffer_formatted_text (pp_buffer (pp));
 }
 
 /*  Return a pointer to the last character emitted in PRETTY-PRINTER's
@@ -835,12 +830,7 @@ pp_formatted_text (pretty_printer *pp)
 const char *
 pp_last_position_in_text (const pretty_printer *pp)
 {
-  const char *p = NULL;
-  struct obstack *text = pp_buffer (pp)->obstack;
-
-  if (obstack_base (text) != obstack_next_free (text))
-    p = ((const char *) obstack_next_free (text)) - 1;
-  return p;
+  return output_buffer_last_position_in_text (pp_buffer (pp));
 }
 
 /* Return the amount of characters PRETTY-PRINTER can accept to

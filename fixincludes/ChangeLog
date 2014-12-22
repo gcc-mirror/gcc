@@ -1,3 +1,8 @@
+2014-12-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* server.c (server_setup): Check return value of
+	getcwd and in case of error set buff[0] to 0.
+
 2014-10-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* inclhack.def (glibc_c99_inline_4): Add pthread.h to files.

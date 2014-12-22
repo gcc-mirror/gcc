@@ -455,7 +455,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
               "Invalid specialisation");
 
 	  // Used by std::promise to copy construct the result.
-          typename promise<_Res>::_Ptr_type operator()()
+          typename promise<_Res>::_Ptr_type operator()() const
           {
             _State_baseV2::_S_check(_M_promise->_M_future);
             _M_promise->_M_storage->_M_set(*_M_arg);
@@ -470,7 +470,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         struct _Setter<_Res, _Res&&>
         {
 	  // Used by std::promise to move construct the result.
-          typename promise<_Res>::_Ptr_type operator()()
+          typename promise<_Res>::_Ptr_type operator()() const
           {
             _State_baseV2::_S_check(_M_promise->_M_future);
             _M_promise->_M_storage->_M_set(std::move(*_M_arg));
@@ -487,7 +487,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         struct _Setter<_Res, __exception_ptr_tag>
         {
 	  // Used by std::promise to store an exception as the result.
-          typename promise<_Res>::_Ptr_type operator()()
+          typename promise<_Res>::_Ptr_type operator()() const
           {
             _State_baseV2::_S_check(_M_promise->_M_future);
             _M_promise->_M_storage->_M_error = *_M_ex;
@@ -1286,7 +1286,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __future_base::_State_base::_Setter<void, void>
     {
-      promise<void>::_Ptr_type operator()()
+      promise<void>::_Ptr_type operator()() const
       {
         _State_base::_S_check(_M_promise->_M_future);
         return std::move(_M_promise->_M_storage);
@@ -1310,7 +1310,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __future_base::_Task_setter
     {
       // Invoke the function and provide the result to the caller.
-      _Ptr_type operator()()
+      _Ptr_type operator()() const
       {
 	__try
 	  {
@@ -1333,7 +1333,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Ptr_type, typename _Fn>
     struct __future_base::_Task_setter<_Ptr_type, _Fn, void>
     {
-      _Ptr_type operator()()
+      _Ptr_type operator()() const
       {
 	__try
 	  {

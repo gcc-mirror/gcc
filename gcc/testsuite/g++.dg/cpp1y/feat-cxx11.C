@@ -133,6 +133,14 @@
 #  error "__cpp_binary_literals != 201304"
 #endif
 
+//  GNU VLA support:
+
+#ifndef __cpp_runtime_arrays
+#  error "__cpp_runtime_arrays"
+#elif __cpp_runtime_arrays != 198712
+#  error "__cpp_runtime_arrays != 198712"
+#endif
+
 //  C++11 attributes:
 
 #ifdef __has_cpp_attribute

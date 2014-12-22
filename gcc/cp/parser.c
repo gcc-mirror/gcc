@@ -2977,6 +2977,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	inform (location, "C++11 %<noexcept%> only available with "
 		"-std=c++11 or -std=gnu++11");
       else if (cxx_dialect < cxx11
+	       && TREE_CODE (id) == IDENTIFIER_NODE
 	       && !strcmp (IDENTIFIER_POINTER (id), "thread_local"))
 	inform (location, "C++11 %<thread_local%> only available with "
 		"-std=c++11 or -std=gnu++11");
@@ -4502,9 +4503,39 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_FUNCTION_NAME:
 	case RID_PRETTY_FUNCTION_NAME:
 	case RID_C99_FUNCTION_NAME:
+	  {
+	    non_integral_constant name;
+
 	    /* The symbols __FUNCTION__, __PRETTY_FUNCTION__, and
-	       __func__ are the names of variables.  */
-	  goto id_expression;
+	       __func__ are the names of variables -- but they are
+	       treated specially.  Therefore, they are handled here,
+	       rather than relying on the generic id-expression logic
+	       below.  Grammatically, these names are id-expressions.
+
+	       Consume the token.  */
+	    token = cp_lexer_consume_token (parser->lexer);
+
+	    switch (token->keyword)
+	      {
+	      case RID_FUNCTION_NAME:
+		name = NIC_FUNC_NAME;
+		break;
+	      case RID_PRETTY_FUNCTION_NAME:
+		name = NIC_PRETTY_FUNC;
+		break;
+	      case RID_C99_FUNCTION_NAME:
+		name = NIC_C99_FUNC;
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
+
+	    if (cp_parser_non_integral_constant_expression (parser, name))
+	      return error_mark_node;
+
+	    /* Look up the name.  */
+	    return finish_fname (token->u.value);
+	  }
 
 	case RID_VA_ARG:
 	  {
@@ -4925,7 +4956,6 @@ cp_parser_unqualified_id (cp_parser* parser,
 			  bool optional_p)
 {
   cp_token *token;
-  tree id;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -4934,6 +4964,8 @@ cp_parser_unqualified_id (cp_parser* parser,
     {
     case CPP_NAME:
       {
+	tree id;
+
 	/* We don't know yet whether or not this will be a
 	   template-id.  */
 	cp_parser_parse_tentatively (parser);
@@ -5170,9 +5202,10 @@ cp_parser_unqualified_id (cp_parser* parser,
       }
 
     case CPP_KEYWORD:
-      switch (token->keyword)
+      if (token->keyword == RID_OPERATOR)
 	{
-	case RID_OPERATOR:
+	  tree id;
+
 	  /* This could be a template-id, so we try that first.  */
 	  cp_parser_parse_tentatively (parser);
 	  /* Try a template-id.  */
@@ -5202,16 +5235,6 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    }
 
 	  return id;
-
-	case RID_FUNCTION_NAME:
-	case RID_PRETTY_FUNCTION_NAME:
-	case RID_C99_FUNCTION_NAME:
-	  cp_lexer_consume_token (parser->lexer);
-	  finish_fname (token->u.value);
-	  return token->u.value;
-
-	default:
-	  break;
 	}
       /* Fall through.  */
 
@@ -14839,23 +14862,26 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       maybe_warn_cpp0x (CPP0X_AUTO);
       if (parser->auto_is_implicit_function_template_parm_p)
 	{
-	  type = synthesize_implicit_template_parm (parser);
+	  if (cxx_dialect >= cxx14)
+	    type = synthesize_implicit_template_parm (parser);
+	  else
+	    type = error_mark_node;
 
 	  if (current_class_type && LAMBDA_TYPE_P (current_class_type))
 	    {
 	      if (cxx_dialect < cxx14)
-		pedwarn (location_of (type), 0,
+		error_at (token->location,
 			 "use of %<auto%> in lambda parameter declaration "
 			 "only available with "
 			 "-std=c++14 or -std=gnu++14");
 	    }
 	  else if (cxx_dialect < cxx14)
-	    pedwarn (location_of (type), 0,
+	    error_at (token->location,
 		     "use of %<auto%> in parameter declaration "
 		     "only available with "
 		     "-std=c++14 or -std=gnu++14");
 	  else
-	    pedwarn (location_of (type), OPT_Wpedantic,
+	    pedwarn (token->location, OPT_Wpedantic,
 		     "ISO C++ forbids use of %<auto%> in parameter "
 		     "declaration");
 	}
@@ -14947,6 +14973,9 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
       /* Consume the token.  */
       cp_lexer_consume_token (parser->lexer);
+
+      if (type == error_mark_node)
+	return error_mark_node;
 
       /* There is no valid C++ program where a non-template type is
 	 followed by a "<".  That usually indicates that the user thought
@@ -21046,7 +21075,10 @@ cp_parser_member_declaration (cp_parser* parser)
 	  if (decl)
 	    {
 	      /* Add DECL to the list of members.  */
-	      if (!friend_p)
+	      if (!friend_p
+		  /* Explicitly include, eg, NSDMIs, for better error
+		     recovery (c++/58650).  */
+		  || !DECL_DECLARES_FUNCTION_P (decl))
 		finish_member_declaration (decl);
 
 	      if (TREE_CODE (decl) == FUNCTION_DECL)

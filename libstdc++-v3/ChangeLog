@@ -1,3 +1,371 @@
+2014-12-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64367
+	* include/std/stdexcept: Don't use non-static member in sizeof.
+
+2014-12-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/vector (std::__debug::vector<>::clear()): Do not reset
+	guaranteed capacity.
+	* testsuite/23_containers/vector/bool/allocator/swap.cc: Move
+	propagating_allocator equality and inequality operators to __gnu_test
+	namespace.
+
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error.
+
+	* include/bits/c++config: inline __cxx11 namespace within namespace
+	__cxx1998.
+
+2014-12-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/locale-inst.cc (__add_grouping, __pad, __int_to_char):
+	Only compile for old ABI.
+
+2014-12-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_CXX11_ABI): Remove.
+	(GLIBCXX_ENABLE_LIBSTDCXX_DUAL_ABI, GLIBCXX_DEFAULT_ABI): Add.
+	* configure.ac: Use new macros.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* include/Makefile.am: Set _GLIBCXX_USE_DUAL_ABI.
+	* include/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Export symbols related to new std::string.
+	Tighten old patterns to not match new symbols.
+	* config/locale/generic/monetary_members.cc: Guard some definitions
+	to not compile with new ABI.
+	* config/locale/gnu/monetary_members.cc: Likewise.
+	* config/locale/gnu/numeric_members.cc: Prevent double-free.
+	* config/os/gnu-linux/ldbl-extra.ver: Add new __gnu_cxx_ldbl128
+	exports. Tighten old patterns.
+	* doc/xml/manual/configure.xml: Document new configure options.
+	* doc/html/*: Regenerate.
+	* include/bits/basic_string.h (__cxx11::basic_string): Define new
+	non-reference-counted implementation in inline namespace __cxx11.
+	(stoi, stol, stoll, stof, stod, stold, to_string): Conditionally use
+	inline namespace.
+	(literals::string_literals::operator"): Conditionally use abi-tag.
+	* include/bits/basic_string.tcc (__cxx11::basic_string): Define.
+	* include/bits/c++config: Define _GLIBCXX_USE_DUAL_ABI and
+	LDBL_CXX11_ABI namespace macros.
+	* include/bits/locale_classes.h (locale::name()): Use abi_tag when
+	new ABI is in use.
+	(locale::_S_twinned_facets): New static member.
+	(locale::facet::__shim): Declare new type.
+	(locale::_facet::_M_sso_shim, locale::_facet::_M_cow_shim): New
+	functions for creating shims.
+	(locale::_Impl::_M_facet_unchecked): New member function for use
+	during construction.
+	(locale::_Impl::_M_init_extra): New member functions to create second
+	version of some facets.
+	(collate, collate_byname): Use abi_tag when new ABI is in use.
+	* include/bits/locale_facets.h: Add _GLIBCXX_NUM_CXX11_FACETS macro.
+	(numpunct, numpunct_byname): Use __cxx11 namespace.
+	(num_get::_M_extract_float, num_get::_M_extract_int): Use abi_tag
+	when new ABI is in use.
+	(num_get::__do_get, num_put::__do_put): Do not declare long double
+	compat functions for new ABI.
+	* include/bits/locale_facets.tcc (num_get, num_put): Use abi_tag on
+	definitions.
+	(numpunct, numpunct_byname): Qualify explicit instantiations.
+	* include/bits/locale_facets_nonio.h (time_get, time_get_byname,
+	moneypunct, moneypunct_byname, money_get, money_put, messages,
+	messages_byname): Use new inline namespace macros.
+	(money_get::__do_get, money_put::__do_put): Do not declare long
+	double compat functions for new ABI.
+	* include/bits/locale_facets_nonio.tcc (money_get, money_put): Use
+	new namespace macros.
+	(money_get::__do_get, money_put::__do_put): Do not define for new ABI.
+	* include/bits/localefwd.h (numpunct, numpunct_byname, collate,
+	collate_byname, time_get, time_get_byname, moneypunct,
+	moneypunct_byname, money_get, money_put, messages, messages_byname):
+	Use new namespace macros.
+	* include/bits/regex.h: Use inline namespace macros.
+	* include/bits/stl_list.h (_List_base, list): Use inline namespace
+	instead of abi-tag.
+	* include/bits/stringfwd.h (basic_string): Use namespace macros.
+	* include/std/iosfwd (basic_stringbuf, basic_istringstream,
+	basic_ostringstream, basic_stringstream): Likewise.
+	* include/std/sstream: Likewise.
+	(basic_stringbuf::__xfer_bufptrs): Update streambuf pointers on move.
+	* include/std/stdexcept (__cow_string, __sso_string): New types for
+	indirectly using std::string with either ABI.
+	(logic_error, runtime_error): Replace std::string member with
+	__cow_string when new ABI is in use. Declare non-inline copy
+	constructor and assignment operator. Declare const char* constructors.
+	(domain_error, invalid_argument, length_error, out_of_range,
+	range_error, overflow_error, underflow_error): Declare const char*
+	constructors.
+	* include/std/system_error (error_category): Replace with new
+	definition in inline namespace _V2.
+	(error_code::message, error_condition::message): Use abi_tag on
+	functions returning std::string.
+	* python/libstdcxx/v6/printers.py (StdStringPrinter): Handle new ABI.
+	* src/c++11/Makefile.am: Add new files.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/compatibility-c++0x.cc: Compile with old std::string ABI.
+	Define old error_category symbols.
+	* src/c++11/cow-fstream-inst.cc: New. Instantiate fstream members
+	using old std::string ABI.
+	* src/c++11/cow-locale_init.cc (locale::_Impl::_M_init_extra): Define.
+	* src/c++11/cow-shim_facets.cc: Define shim facets using old ABI.
+	* src/c++11/cow-sstream-inst.cc: Instantiate stringstreams using old
+	std::string ABI.
+	* src/c++11/cow-stdexcept.cc: Define new constructors and assignment
+	operators.
+	(__cow_string, error_category::_M_message): Define.
+	* src/c++11/cow-string-inst.cc: Explicit instantiations using old
+	std::string. Include src/c++98/istream-string.cc.
+	* src/c++11/cow-wstring-inst.cc: Explicit instantiations using old
+	std::wstring.
+	* src/c++11/cxx11-hash_tr1.cc: Explicit instantiations using new
+	string.
+	* src/c++11/cxx11-ios_failure.cc: Add sanity check.
+	* src/c++11/cxx11-locale-inst.cc: Instantiate facets using new
+	std::string.
+	* src/c++11/cxx11-shim_facets.cc: Define shim facets using new ABI.
+	* src/c++11/cxx11-stdexcept.cc: Define constructors taking new
+	std::string.
+	* src/c++11/cxx11-wlocale-inst.cc: Instantiate facets using
+	new std::wstring.
+	* src/c++11/fstream-inst.cc: Compile with new ABI.
+	* src/c++11/functexcept.cc: Compile with old ABI.
+	* src/c++11/random.cc: Compile with new ABI.
+	* src/c++11/sstream-inst.cc: Compile with new ABI.
+	* src/c++11/string-inst.cc: Explicit instantiations for new string.
+	* src/c++11/system_error.cc (__sso_string, error_category::_M_message):
+	Define.
+	* src/c++11/wstring-inst.cc: Compile with new ABI.
+	* src/c++98/Makefile.am: Compile some host files twice for old and
+	new std::string. Add new files.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/compatibility-ldbl.cc: Compile with old ABI.
+	* src/c++98/compatibility.cc: Likewise.
+	* src/c++98/concept-inst.cc: Likewise.
+	* src/c++98/hash_tr1.cc: Likewise.
+	* src/c++98/istream-string.cc: New file defining functions that
+	work with istream and std::string moved from ...
+	* src/c++98/istream.cc: ... here.
+	* src/c++98/cow-istream-string.cc: Recompile istream-string.cc with
+	old ABI.
+	* src/c++98/locale-inst.cc: Adjust facet instantiations to work for
+	either ABI.
+	* src/c++98/locale.cc (locale::_M_install_facet,
+	locale::_M_install_cache): Handle twinned facets.
+	* src/c++98/locale-facets.cc: Compile with old std::string ABI.
+	(__verify_grouping): Define new overload and old std::string version.
+	* src/c++98/locale_init.cc: Initialize twinned facets.
+	* src/c++98/localename.cc: Likewise.
+	* src/c++98/misc-inst.cc: Instantiate C++98-only std::string members.
+	(__verify_grouping): Define new std::string version.
+	* src/c++98/stdexcept.cc: Compile with old std::string ABI.
+	* src/c++98/wlocale-inst.cc: Likewise.
+	* testsuite/18_support/50594.cc: Adjust to work with SSO strings.
+	* testsuite/21_strings/basic_string/capacity/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/18654.cc: Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/2.cc: Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/18654.cc:
+	Likewise.
+	* testsuite/21_strings/headers/string/synopsis.cc: Use inline
+	namespace macros.
+	* testsuite/23_containers/headers/list/synopsis.cc: Likewise.
+	* testsuite/27_io/basic_ios/copyfmt/char/1.cc: Set dg-options so
+	correct exception type can be caught.
+	* testsuite/27_io/basic_ios/exceptions/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/char/12297.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/wchar_t/12297.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/2.cc: Likewise.
+	* testsuite/27_io/ios_base/failure/cxx11.cc: Disable for old ABI.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Use old ABI.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/whatis.cc: Likewise.
+	* testsuite/util/exception/safety.h: Adjust member function types
+	for new std::string.
+	* testsuite/util/testsuite_abi.cc: Add new version and ignore
+	__float128 symbols in __cxx11 namespace.
+
+2014-12-17  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/64302
+	PR libstdc++/64303
+	* include/bits/regex.h (match_results::cbegin, match_results::cend,
+	regex_token_iterator::regex_token_iterator,
+	regex_token_iterator::_M_normalize_result): Fix match_results cbegin
+	and cend and regex_token_iterator::_M_result invariant.
+	* include/bits/regex.tcc: Fix regex_token_iterator::_M_result invariant.
+	* testsuite/28_regex/iterators/regex_token_iterator/64303.cc: Testcase.
+
+2014-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/pre/gnu.ver (CXXABI_1.3.9): Export not just
+	_Zd[la]Pvm, but also _Zd[la]Pv[jy] to cover other std::size_t
+	manglings.
+
+2014-12-16  Jason Merrill  <jason@redhat.com>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: And other size_t
+	manglings.
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Export _ZdlPvm and
+	_ZdaPvm.
+
+2014-12-15  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/del_ops.cc: New.
+	* libsupc++/del_opvs.cc: New.
+	* libsupc++/Makefile.am: Add them.
+	* libsupc++/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Export _ZdlPvm and _ZdaPvm.
+
+2014-12-13  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/64239
+	* include/bits/regex.h (match_results<>::match_results,
+	match_results<>::operator=, match_results<>::position,
+	match_results<>::swap): Remove match_results::_M_in_iterator.
+	Fix ctor/assign/swap.
+	* include/bits/regex.tcc: (__regex_algo_impl<>,
+	regex_iterator<>::operator++): Set match_results::_M_begin as
+	"start position".
+	* testsuite/28_regex/iterators/regex_iterator/char/
+	string_position_01.cc: Test cases.
+
+2014-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/any (any): Remove allocator support and update
+	feature-testing macro.
+	* include/experimental/functional: Update feature-testing macro.
+	* include/experimental/optional (optional::_M_get()): Add constexpr.
+	(optional::operator*(), optional::value()): Overload and add
+	ref-qualifiers. Update feature-testing macro.
+	* include/experimental/string_view (basic_string_view::clear): Remove
+	and update feature-testing macro.
+	* testsuite/experimental/any/cons/3.cc: Remove.
+	* testsuite/experimental/any/cons/4.cc: Remove.
+	* testsuite/experimental/any/misc/any_cast.cc: Remove allocator tests.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
+	* testsuite/experimental/string_view/capacity/1.cc: Don't test clear().
+
+2014-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/58594
+	* include/bits/shared_ptr_base.h: Real fix for cv-qualified types.
+
+2014-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64241
+	* libsupc++/exception_ptr.h: Return empty object when exceptions are
+	disabled.
+	* testsuite/18_support/exception_ptr/64241.cc: New.
+
+	PR libstdc++/64276
+	* doc/doxygen/user.cfg.in: Define __cpp_exceptions and __cpp_rtti.
+	* doc/html/manual/using_exceptions.html: Regenerate.
+	* doc/xml/manual/using_exceptions.xml: Use SD-6 feature-testing
+	macros, __cpp_exceptions and __cpp_rtti, instead of __EXCEPTIONS and
+	__GXX_RTTI.
+	* include/bits/c++config: Likewise.
+	* include/bits/locale_classes.tcc: Likewise.
+	* include/bits/shared_ptr.h: Likewise.
+	* include/bits/shared_ptr_base.h: Likewise.
+	* include/debug/formatter.h: Likewise.
+	* include/experimental/any: Likewise.
+	* include/ext/rope: Likewise.
+	* include/ext/ropeimpl.h: Likewise.
+	* include/std/functional: Likewise.
+	* include/tr1/functional: Likewise.
+	* include/tr1/shared_ptr.h: Likewise.
+	* libsupc++/eh_call.cc: Likewise.
+	* libsupc++/eh_personality.cc: Likewise.
+	* libsupc++/exception_defines.h: Likewise.
+	* libsupc++/exception_ptr.h: Likewise.
+	* libsupc++/guard.cc: Likewise.
+	* libsupc++/pbase_type_info.cc: Likewise.
+	* libsupc++/pointer_type_info.cc: Likewise.
+	* libsupc++/vterminate.cc: Likewise.
+	* src/c++11/thread.cc: Likewise.
+
+	PR libstdc++/58594
+	* include/bits/shared_ptr_base.h: Cast away cv-quals.
+	* testsuite/20_util/shared_ptr/creation/58594-no-rtti.cc: New.
+	* testsuite/20_util/shared_ptr/creation/private.cc: Make allocator
+	rebindable so test passes with -fno-rtti.
+
+2014-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (make_reverse_iterator): LWG DR 2285.
+	* include/std/tuple: Add feature-test macro.
+	* testsuite/24_iterators/reverse_iterator/make.cc: New.
+
+2014-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* testsuite/lib/libstdc++.exp: Include target-utils.exp.
+	(v3_target_compile): Check if test is unsupported.
+	(v3_target_compile_as_c): Likewise.
+
+2014-12-11  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/new (bad_array_length): Move...
+	* bad_array_length.cc: ...here.
+	* cxxabi.h, eh_aux_runtime.cc (__cxa_throw_bad_array_new_length): Also
+	move to bad_array_length.cc.
+
+2014-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/condition_variable/members/3.cc: Only use
+	a thread_local when __cxa_thread_atexit_impl is available.
+
+2014-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_facets.tcc (numpunct::_M_cache): Avoid calling
+	virtual functions twice. Only update _M_allocated after all
+	allocations have succeeded.
+	* include/bits/locale_facets_nonio.tcc (moneypunct::_M_cache):
+	Likewise.
+	* include/bits/locale_facets_nonio.h (__timepunct::_M_cache): Remove
+	unused declaration.
+
+	* include/std/future (__future_base::_Setter::operator(),
+	__future_base::_Task_setter::operator()): Make call operators const.
+
+	* include/bits/regex.h (regex_match, regex_search): LWG DR 2329,
+	add deleted overloads for rvalue strings.
+	(regex_iterator, regex_token_iterator): LWG DR 2332, add deleted
+	constructors for rvalue regexes.
+	* testsuite/28_regex/algorithms/regex_match/dr2329_neg.cc: New.
+	* testsuite/28_regex/algorithms/regex_search/dr2329_neg.cc: New.
+	* testsuite/28_regex/iterators/regex_iterator/ctors/char/dr2332_neg.cc:
+	New.
+	* testsuite/28_regex/iterators/regex_token_iterator/ctors/char/
+	dr2332_neg.cc: New.
+
+2014-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64203
+	* include/std/shared_mutex: Fix preprocessor conditions.
+	* testsuite/experimental/feat-cxx14.cc: Check conditions.
+
 2014-12-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/hashtable_policy.h (_Map_base::operator[],

@@ -20,6 +20,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#define _GLIBCXX_USE_CXX11_ABI 1
 #include <clocale>
 #include <cstring>
 #include <cstdlib>     // For getenv
@@ -118,6 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return *this;
   }
 
+  _GLIBCXX_DEFAULT_ABI_TAG
   string
   locale::name() const
   {
@@ -357,6 +359,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const facet*& __fpr = _M_facets[__index];
 	if (__fpr)
 	  {
+#if _GLIBCXX_USE_DUAL_ABI
+            // If this is a twinned facet replace its twin with a shim.
+            for (const id* const* p = _S_twinned_facets; *p != 0; p += 2)
+              {
+                if (p[0]->_M_id() == __index)
+                  {
+                    // replacing the old ABI facet, also replace new ABI twin
+                    const facet*& __fpr2 = _M_facets[p[1]->_M_id()];
+                    if (__fpr2)
+                      {
+                        const facet* __fp2 = __fp->_M_sso_shim(p[1]);
+                        __fp2->_M_add_reference();
+                        __fpr2->_M_remove_reference();
+                        __fpr2 = __fp2;
+                      }
+                    break;
+                  }
+                else if (p[1]->_M_id() == __index)
+                  {
+                    // replacing the new ABI facet, also replace old ABI twin
+                    const facet*& __fpr2 = _M_facets[p[0]->_M_id()];
+                    if (__fpr2)
+                      {
+                        const facet* __fp2 = __fp->_M_cow_shim(p[0]);
+                        __fp2->_M_add_reference();
+                        __fpr2->_M_remove_reference();
+                        __fpr2 = __fp2;
+                      }
+                    break;
+                  }
+              }
+#endif
 	    // Replacing an existing facet. Order matters.
 	    __fpr->_M_remove_reference();
 	    __fpr = __fp;
@@ -391,6 +425,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _M_install_cache(const facet* __cache, size_t __index)
   {
     __gnu_cxx::__scoped_lock sentry(get_locale_cache_mutex());
+#if _GLIBCXX_USE_DUAL_ABI
+    // If this cache is for one of the facets that is instantiated twice,
+    // for old and new std::string ABI, install it in both slots.
+    size_t __index2 = -1;
+    for (const id* const* p = _S_twinned_facets; *p != 0; p += 2)
+      {
+        if (p[0]->_M_id() == __index)
+          {
+            __index2 = p[1]->_M_id();
+            break;
+          }
+        else if (p[1]->_M_id() == __index)
+          {
+            __index2 = __index;
+            __index = p[0]->_M_id();
+            break;
+          }
+      }
+#endif
     if (_M_caches[__index] != 0)
       {
 	// Some other thread got in first.
@@ -400,6 +453,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	__cache->_M_add_reference();
 	_M_caches[__index] = __cache;
+#if _GLIBCXX_USE_DUAL_ABI
+        if (__index2 != size_t(-1))
+          {
+            __cache->_M_add_reference();
+            _M_caches[__index2] = __cache;
+          }
+#endif
       }
   }
 

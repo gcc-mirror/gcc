@@ -1632,7 +1632,8 @@ class Call_expression : public Expression
       fn_(fn), args_(args), type_(NULL), results_(NULL), call_(NULL),
       call_temp_(NULL), expected_result_count_(0), is_varargs_(is_varargs),
       varargs_are_lowered_(false), types_are_determined_(false),
-      is_deferred_(false), issued_error_(false)
+      is_deferred_(false), issued_error_(false), is_multi_value_arg_(false),
+      is_flattened_(false)
   { }
 
   // The function to call.
@@ -1683,6 +1684,11 @@ class Call_expression : public Expression
   is_varargs() const
   { return this->is_varargs_; }
 
+  // Return whether varargs have already been lowered.
+  bool
+  varargs_are_lowered() const
+  { return this->varargs_are_lowered_; }
+
   // Note that varargs have already been lowered.
   void
   set_varargs_are_lowered()
@@ -1702,6 +1708,17 @@ class Call_expression : public Expression
   // we should report it.
   bool
   issue_error();
+
+  // Whether this call returns multiple results that are used as an
+  // multi-valued argument.
+  bool
+  is_multi_value_arg() const
+  { return this->is_multi_value_arg_; }
+
+  // Note this call is used as a multi-valued argument.
+  void
+  set_is_multi_value_arg()
+  { this->is_multi_value_arg_ = true; }
 
  protected:
   int
@@ -1727,14 +1744,7 @@ class Call_expression : public Expression
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    return Expression::make_call(this->fn_->copy(),
-				 (this->args_ == NULL
-				  ? NULL
-				  : this->args_->copy()),
-				 this->is_varargs_, this->location());
-  }
+  do_copy();
 
   bool
   do_must_eval_in_order() const;
@@ -1806,6 +1816,10 @@ class Call_expression : public Expression
   // results and uses.  This is to avoid producing multiple errors
   // when there are multiple Call_result_expressions.
   bool issued_error_;
+  // True if this call is used as an argument that returns multiple results.
+  bool is_multi_value_arg_;
+  // True if this expression has already been flattened.
+  bool is_flattened_;
 };
 
 // An expression which represents a pointer to a function.

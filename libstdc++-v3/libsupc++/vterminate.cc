@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// If the exception is derived from std::exception, we can
 	// give more information.
 	__try { __throw_exception_again; }
-#ifdef __EXCEPTIONS
+#if __cpp_exceptions
 	__catch(const exception& exc)
 	  {
 	    char const *w = exc.what();

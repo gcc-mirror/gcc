@@ -2082,6 +2082,38 @@ chkp_get_nonpointer_load_bounds (void)
   return chkp_get_zero_bounds ();
 }
 
+/* Return 1 if may use bndret call to get bounds for pointer
+   returned by CALL.  */
+static bool
+chkp_call_returns_bounds_p (gcall *call)
+{
+  if (gimple_call_internal_p (call))
+    return false;
+
+  tree fndecl = gimple_call_fndecl (call);
+
+  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
+    return false;
+
+  if (fndecl
+      && lookup_attribute ("bnd_legacy", DECL_ATTRIBUTES (fndecl)))
+    return false;
+
+  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    {
+      if (chkp_instrument_normal_builtin (fndecl))
+	return true;
+
+      if (!lookup_attribute ("always_inline", DECL_ATTRIBUTES (fndecl)))
+	return false;
+
+      struct cgraph_node *clone = chkp_maybe_create_clone (fndecl);
+      return (clone && gimple_has_body_p (clone->decl));
+    }
+
+  return true;
+}
+
 /* Build bounds returned by CALL.  */
 static tree
 chkp_build_returned_bound (gcall *call)
@@ -2133,8 +2165,7 @@ chkp_build_returned_bound (gcall *call)
     }
   /* Do not use retbnd when returned bounds are equal to some
      of passed bounds.  */
-  else if ((gimple_call_return_flags (call) & ERF_RETURNS_ARG)
-	   || gimple_call_builtin_p (call, BUILT_IN_STRCHR))
+  else if (gimple_call_return_flags (call) & ERF_RETURNS_ARG)
     {
       gimple_stmt_iterator iter = gsi_for_stmt (call);
       unsigned int retarg = 0, argno;
@@ -2156,7 +2187,7 @@ chkp_build_returned_bound (gcall *call)
 
       bounds = chkp_find_bounds (gimple_call_arg (call, argno), &iter);
     }
-  else
+  else if (chkp_call_returns_bounds_p (call))
     {
       gcc_assert (TREE_CODE (gimple_call_lhs (call)) == SSA_NAME);
 
@@ -2174,6 +2205,8 @@ chkp_build_returned_bound (gcall *call)
 
       update_stmt (stmt);
     }
+  else
+    bounds = chkp_get_zero_bounds ();
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2727,9 +2760,23 @@ chkp_make_static_bounds (tree obj)
   /* First check if we already have required var.  */
   if (chkp_static_var_bounds)
     {
-      slot = chkp_static_var_bounds->get (obj);
-      if (slot)
-	return *slot;
+      /* For vars we use assembler name as a key in
+	 chkp_static_var_bounds map.  It allows to
+	 avoid duplicating bound vars for decls
+	 sharing assembler name.  */
+      if (TREE_CODE (obj) == VAR_DECL)
+	{
+	  tree name = DECL_ASSEMBLER_NAME (obj);
+	  slot = chkp_static_var_bounds->get (name);
+	  if (slot)
+	    return *slot;
+	}
+      else
+	{
+	  slot = chkp_static_var_bounds->get (obj);
+	  if (slot)
+	    return *slot;
+	}
     }
 
   /* Build decl for bounds var.  */
@@ -2793,7 +2840,13 @@ chkp_make_static_bounds (tree obj)
   if (!chkp_static_var_bounds)
     chkp_static_var_bounds = new hash_map<tree, tree>;
 
-  chkp_static_var_bounds->put (obj, bnd_var);
+  if (TREE_CODE (obj) == VAR_DECL)
+    {
+      tree name = DECL_ASSEMBLER_NAME (obj);
+      chkp_static_var_bounds->put (name, bnd_var);
+    }
+  else
+    chkp_static_var_bounds->put (obj, bnd_var);
 
   return bnd_var;
 }

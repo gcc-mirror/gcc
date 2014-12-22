@@ -16,24 +16,74 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Build a shared libgcc library.
-SHLIB_EXT = .a
-SHLIB_LINK = $(CC) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
-	-Wl,-bE:@shlib_map_file@ -o @multilib_dir@/shr.o \
-	@multilib_flags@ @shlib_objs@ -lc \
-	`case @multilib_dir@ in \
-	*pthread*) echo -L$(TARGET_SYSTEM_ROOT)/usr/lib/threads -lpthreads -lc_r $(TARGET_SYSTEM_ROOT)/usr/lib/libc.a ;; \
-	*) echo -lc ;; esac` ; \
-	rm -f @multilib_dir@/tmp-@shlib_base_name@.a ; \
-	$(AR_CREATE_FOR_TARGET) @multilib_dir@/tmp-@shlib_base_name@.a \
-	@multilib_dir@/shr.o ; \
-	mv @multilib_dir@/tmp-@shlib_base_name@.a \
-	   @multilib_dir@/@shlib_base_name@.a ; \
-	rm -f @multilib_dir@/shr.o
+# Build a shared libgcc library according to --with-aix-soname selection:
+# aix-soname=aix:
+#       libgcc_s.a(shr.o)                # traditional (-bnortl)
+#
+# aix-soname=both:
+#       libgcc_s.a(shr.o)                # traditional (-bnortl)
+#       libgcc_s.so.1(shrXX.o,shrXX.imp) # the SONAME (-G)
+#       libgcc_s.so -> libgcc_s.so.1     # the symlink
+#
+# aix-soname=svr4:
+#       libgcc_s.so.1(shrXX.o,shrXX.imp) # the SONAME (-G)
+#       libgcc_s.so -> libgcc_s.so.1     # the symlink
+SHLIB_EXT_aix = .a
+SHLIB_EXT_both = .so
+SHLIB_EXT_svr4 = .so
+SHLIB_EXT = $(SHLIB_EXT_$(with_aix_soname))
+SHLIB_SOVERSION = 1
+SHLIB_SONAME = @shlib_base_name@.so.$(SHLIB_SOVERSION)
+SHLIB_LINK = \
+	if test svr4 != $(with_aix_soname) ; then \
+	  $(CC) $(LIBGCC2_CFLAGS) -shared -Wl,-bnortl -nodefaultlibs \
+	  -Wl,-bE:@shlib_map_file@ -o @multilib_dir@/shr.o \
+	  @multilib_flags@ @shlib_objs@ -lc \
+	  `case @multilib_dir@ in \
+	  *pthread*) echo -L$(TARGET_SYSTEM_ROOT)/usr/lib/threads -lpthreads -lc_r $(TARGET_SYSTEM_ROOT)/usr/lib/libc.a ;; \
+	  *) echo -lc ;; esac` ; \
+	  rm -f @multilib_dir@/tmp-@shlib_base_name@.a ; \
+	  $(AR_CREATE_FOR_TARGET) @multilib_dir@/tmp-@shlib_base_name@.a \
+	    @multilib_dir@/shr.o ; \
+	  mv @multilib_dir@/tmp-@shlib_base_name@.a \
+	     @multilib_dir@/@shlib_base_name@.a ; \
+	  rm -f @multilib_dir@/shr.o ; \
+	fi ; \
+	if test aix != $(with_aix_soname) ; then \
+	  case @multilib_dir@ in *64*) shr='shr_64' ;; *) shr='shr' ;; esac ; \
+	  $(CC) $(LIBGCC2_CFLAGS) -shared -Wl,-G -nodefaultlibs \
+	  -Wl,-bE:@shlib_map_file@ -o @multilib_dir@/$$shr.o \
+	  @multilib_flags@ @shlib_objs@ -lc \
+	  `case @multilib_dir@ in \
+	  *pthread*) echo -L$(TARGET_SYSTEM_ROOT)/usr/lib/threads -lpthreads -lc_r $(TARGET_SYSTEM_ROOT)/usr/lib/libc.a ;; \
+	  *) echo -lc ;; esac` ; \
+	  $(STRIP_FOR_TARGET) -X32_64 -e @multilib_dir@/$$shr.o ; \
+	  { echo "\#! $(SHLIB_SONAME)($$shr.o)" ; \
+	    case @multilib_dir@ in *64*) echo '\# 64' ;; *) echo '\# 32' ;; esac ; \
+	    cat @shlib_map_file@ ; \
+	  } > @multilib_dir@/$$shr.imp ; \
+	  rm -f @multilib_dir@/tmp-$(SHLIB_SONAME) ; \
+	  $(AR_CREATE_FOR_TARGET) @multilib_dir@/tmp-$(SHLIB_SONAME) \
+	    @multilib_dir@/$$shr.imp @multilib_dir@/$$shr.o ; \
+	  mv @multilib_dir@/tmp-$(SHLIB_SONAME) \
+	     @multilib_dir@/$(SHLIB_SONAME) ; \
+	  rm -f @multilib_dir@/@shlib_base_name@.so ; \
+	  $(LN_S) $(SHLIB_SONAME) @multilib_dir@/@shlib_base_name@.so ; \
+	  rm -f @multilib_dir@/$$shr.imp @multilib_dir@/$$shr.o ; \
+	fi
 SHLIB_INSTALL = \
 	$(mkinstalldirs) $(DESTDIR)$(slibdir)@shlib_slibdir_qual@; \
-	$(INSTALL_DATA) @multilib_dir@/@shlib_base_name@.a \
-		$(DESTDIR)$(slibdir)@shlib_slibdir_qual@/
+	if test svr4 != $(with_aix_soname) ; then \
+	  $(INSTALL_DATA) @multilib_dir@/@shlib_base_name@.a \
+		  $(DESTDIR)$(slibdir)@shlib_slibdir_qual@/ ; \
+	fi ; \
+	if test aix != $(with_aix_soname) ; then \
+	  $(INSTALL_DATA) @multilib_dir@/$(SHLIB_SONAME) \
+		  $(DESTDIR)$(slibdir)@shlib_slibdir_qual@/ ; \
+	  rm -f $(DESTDIR)$(slibdir)@shlib_slibdir_qual@/@shlib_base_name@.so ; \
+	  $(LN_S) $(SHLIB_SONAME) \
+		  $(DESTDIR)$(slibdir)@shlib_slibdir_qual@/@shlib_base_name@.so ; \
+	fi
 SHLIB_LIBS = -lc `case @multilib_dir@ in *pthread*) echo -lpthread ;; esac`
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
 SHLIB_MAPFILES = libgcc-std.ver

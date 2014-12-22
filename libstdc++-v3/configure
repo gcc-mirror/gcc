@@ -645,6 +645,9 @@ GLIBCXX_LDBL_COMPAT_FALSE
 GLIBCXX_LDBL_COMPAT_TRUE
 ENABLE_CXX11_ABI_FALSE
 ENABLE_CXX11_ABI_TRUE
+glibcxx_cxx98_abi
+ENABLE_DUAL_ABI_FALSE
+ENABLE_DUAL_ABI_TRUE
 ENABLE_VISIBILITY_FALSE
 ENABLE_VISIBILITY_TRUE
 libtool_VERSION
@@ -882,7 +885,8 @@ with_system_libunwind
 enable_linux_futex
 enable_symvers
 enable_libstdcxx_visibility
-enable_libstdcxx_cxx11_abi
+enable_libstdcxx_dual_abi
+with_default_libstdcxx_abi
 enable_libstdcxx_threads
 with_gxx_include_dir
 enable_version_specific_runtime_libs
@@ -1578,8 +1582,8 @@ Optional Features:
                           [default=yes]
   --enable-libstdcxx-visibility
                           enables visibility safe usage [default=yes]
-  --disable-libstdcxx-cxx11-abi
-                          disable the C++11-conforming ABI
+  --enable-libstdcxx-dual-abi
+                          support two versions of std::string [default=yes]
   --enable-libstdcxx-threads
                           enable C++11 threads support [default=auto]
   --enable-version-specific-runtime-libs
@@ -1602,6 +1606,8 @@ Optional Packages:
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
   --with-system-libunwind use installed libunwind
+  --with-default-libstdcxx-abi
+                          set the std::string ABI to use by default
   --with-gxx-include-dir=DIR
                           installation directory for include files
 
@@ -11531,7 +11537,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11534 "configure"
+#line 11540 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11637,7 +11643,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11640 "configure"
+#line 11646 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15057,7 +15063,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 15060 "configure"
+#line 15066 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15409,7 +15415,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15412 "configure"
+#line 15418 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15444,7 +15450,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15447 "configure"
+#line 15453 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15479,7 +15485,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15482 "configure"
+#line 15488 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15515,7 +15521,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15518 "configure"
+#line 15524 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15594,7 +15600,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15597 "configure"
+#line 15603 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15636,7 +15642,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15639 "configure"
+#line 15645 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15670,7 +15676,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15673 "configure"
+#line 15679 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -78166,17 +78172,53 @@ $as_echo "$as_me: visibility supported: $enable_libstdcxx_visibility" >&6;}
 
 
 
-  # Check whether --enable-libstdcxx-cxx11-abi was given.
-if test "${enable_libstdcxx_cxx11_abi+set}" = set; then :
-  enableval=$enable_libstdcxx_cxx11_abi;
+   # Check whether --enable-libstdcxx-dual-abi was given.
+if test "${enable_libstdcxx_dual_abi+set}" = set; then :
+  enableval=$enable_libstdcxx_dual_abi;
+      case "$enableval" in
+       yes|no) ;;
+       *) as_fn_error "Argument to enable/disable libstdcxx-dual-abi must be yes or no" "$LINENO" 5 ;;
+      esac
+
 else
-  enable_libstdcxx_cxx11_abi=yes
+  enable_libstdcxx_dual_abi=yes
 fi
 
-  if test x"$enable_libstdcxx_cxx11_abi" != xyes; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: C++11-conforming ABI is disabled" >&5
-$as_echo "$as_me: C++11-conforming ABI is disabled" >&6;}
+
+  if test x"$enable_libstdcxx_dual_abi" != xyes; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: dual ABI is disabled" >&5
+$as_echo "$as_me: dual ABI is disabled" >&6;}
+    default_libstdcxx_abi="c++98"
   fi
+
+
+
+  if test x$enable_libstdcxx_dual_abi = xyes; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for default std::string ABI to use" >&5
+$as_echo_n "checking for default std::string ABI to use... " >&6; }
+
+# Check whether --with-default-libstdcxx-abi was given.
+if test "${with_default_libstdcxx_abi+set}" = set; then :
+  withval=$with_default_libstdcxx_abi; case "$withval" in
+      c++98|gnu++98|c++03|gnu++03)  default_libstdcxx_abi="c++98" ;;
+      c++1?|gnu++1?)  default_libstdcxx_abi="c++11" ;;
+      *)  as_fn_error "Invalid argument for --with-default-libstdcxx-abi" "$LINENO" 5 ;;
+     esac
+else
+  default_libstdcxx_abi="c++11"
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${default_libstdcxx_abi}" >&5
+$as_echo "${default_libstdcxx_abi}" >&6; }
+  fi
+  if test $default_libstdcxx_abi = "c++11"; then
+    glibcxx_cxx11_abi=1
+    glibcxx_cxx98_abi=0
+  else
+    glibcxx_cxx11_abi=0
+    glibcxx_cxx98_abi=1
+  fi
+
 
 
 
@@ -79332,7 +79374,16 @@ else
 fi
 
 
-    if test $enable_libstdcxx_cxx11_abi = yes; then
+    if test $enable_libstdcxx_dual_abi = yes; then
+  ENABLE_DUAL_ABI_TRUE=
+  ENABLE_DUAL_ABI_FALSE='#'
+else
+  ENABLE_DUAL_ABI_TRUE='#'
+  ENABLE_DUAL_ABI_FALSE=
+fi
+
+
+    if test $glibcxx_cxx11_abi = 1; then
   ENABLE_CXX11_ABI_TRUE=
   ENABLE_CXX11_ABI_FALSE='#'
 else
@@ -79756,6 +79807,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_VISIBILITY_TRUE}" && test -z "${ENABLE_VISIBILITY_FALSE}"; then
   as_fn_error "conditional \"ENABLE_VISIBILITY\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_DUAL_ABI_TRUE}" && test -z "${ENABLE_DUAL_ABI_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_DUAL_ABI\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_CXX11_ABI_TRUE}" && test -z "${ENABLE_CXX11_ABI_FALSE}"; then

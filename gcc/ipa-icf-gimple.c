@@ -230,6 +230,9 @@ func_checker::compare_operand (tree t1, tree t2)
   tree tt1 = TREE_TYPE (t1);
   tree tt2 = TREE_TYPE (t2);
 
+  if (TREE_THIS_VOLATILE (t1) != TREE_THIS_VOLATILE (t2))
+    return return_false_with_msg ("different operand volatility");
+
   if (!func_checker::compatible_types_p (tt1, tt2))
     return false;
 
@@ -559,24 +562,16 @@ func_checker::parse_labels (sem_bb *bb)
 bool
 func_checker::compare_bb (sem_bb *bb1, sem_bb *bb2)
 {
-  unsigned i;
   gimple_stmt_iterator gsi1, gsi2;
   gimple s1, s2;
 
-  if (bb1->nondbg_stmt_count != bb2->nondbg_stmt_count
-      || bb1->edge_count != bb2->edge_count)
-    return return_false ();
+  gsi1 = gsi_start_bb_nondebug (bb1->bb);
+  gsi2 = gsi_start_bb_nondebug (bb2->bb);
 
-  gsi1 = gsi_start_bb (bb1->bb);
-  gsi2 = gsi_start_bb (bb2->bb);
-
-  for (i = 0; i < bb1->nondbg_stmt_count; i++)
+  while (!gsi_end_p (gsi1))
     {
-      if (is_gimple_debug (gsi_stmt (gsi1)))
-	gsi_next_nondebug (&gsi1);
-
-      if (is_gimple_debug (gsi_stmt (gsi2)))
-	gsi_next_nondebug (&gsi2);
+      if (gsi_end_p (gsi2))
+	return return_false ();
 
       s1 = gsi_stmt (gsi1);
       s2 = gsi_stmt (gsi2);
@@ -646,9 +641,12 @@ func_checker::compare_bb (sem_bb *bb1, sem_bb *bb2)
 	  return return_false_with_msg ("Unknown GIMPLE code reached");
 	}
 
-      gsi_next (&gsi1);
-      gsi_next (&gsi2);
+      gsi_next_nondebug (&gsi1);
+      gsi_next_nondebug (&gsi2);
     }
+
+  if (!gsi_end_p (gsi2))
+    return return_false ();
 
   return true;
 }

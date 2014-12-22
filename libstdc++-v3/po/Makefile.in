@@ -216,6 +216,7 @@ glibcxx_POFILES = @glibcxx_POFILES@
 glibcxx_builddir = @glibcxx_builddir@
 glibcxx_compiler_pic_flag = @glibcxx_compiler_pic_flag@
 glibcxx_compiler_shared_flag = @glibcxx_compiler_shared_flag@
+glibcxx_cxx98_abi = @glibcxx_cxx98_abi@
 glibcxx_localedir = @glibcxx_localedir@
 glibcxx_lt_pic_flag = @glibcxx_lt_pic_flag@
 glibcxx_prefixdir = @glibcxx_prefixdir@

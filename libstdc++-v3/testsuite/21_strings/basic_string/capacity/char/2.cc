@@ -32,7 +32,7 @@ void test02()
   // str01 becomes shared
   std::string str02 = str01;
   str01.reserve(1);
-  VERIFY( str01.capacity() == 12 );
+  VERIFY( str01.capacity() >= 12 );
 }
 
 int main()

@@ -1,0 +1,44 @@
+# Copyright (C) 2014 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+#
+# ${tool}_check_unsupported_p -- Check the compiler(/assembler/linker) output
+# for text indicating that the testcase should be marked as "unsupported"
+#
+# When dealing with a large number of tests, it's difficult to weed out the
+# ones that are too big for a particular cpu (eg: 16 bit with a small amount
+# of memory).  There are various ways to deal with this.  Here's one.
+# Fortunately, all of the cases where this is likely to happen will be using
+# gld so we can tell what the error text will look like.
+#
+
+load_lib target-supports.exp
+
+proc ${tool}_check_unsupported_p { output } {
+    if [regexp "(^|\n)\[^\n\]*: region \[^\n\]* is full" $output] {
+	return "memory full"
+    }
+    if { [regexp "(^|\n)\[^\n\]*: relocation truncated to fit" $output]
+          && [check_effective_target_tiny] } {
+        return "memory full"
+     }
+
+    if { [istarget spu-*-*] && \
+	     [string match "*exceeds local store*" $output] } {
+	return "memory full"
+    }
+    return ""
+}

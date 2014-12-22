@@ -360,3 +360,6 @@ mfsrra
 Target Var(TARGET_FSRRA)
 Enable the use of the fsrra instruction
 
+mlra
+Target Report Var(sh_lra_flag) Init(0) Save
+Use LRA instead of reload (transitional)

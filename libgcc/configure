@@ -610,6 +610,7 @@ build_os
 build_vendor
 build_cpu
 build
+with_aix_soname
 enable_vtable_verify
 enable_shared
 libgcc_topdir
@@ -659,6 +660,7 @@ with_cross_host
 with_ld
 enable_shared
 enable_vtable_verify
+with_aix_soname
 enable_version_specific_runtime_libs
 with_slibdir
 enable_maintainer_mode
@@ -1317,6 +1319,9 @@ Optional Packages:
   --with-target-subdir=SUBDIR      Configuring in a subdirectory for target
   --with-cross-host=HOST           Configuring with a cross compiler
   --with-ld               arrange to use the specified ld (full pathname)
+  --with-aix-soname=aix|svr4|both
+                          shared library versioning (aka "SONAME") variant to
+                          provide on AIX
   --with-slibdir=DIR      shared libraries in DIR LIBDIR
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
   --with-system-libunwind use installed libunwind
@@ -2162,6 +2167,29 @@ if test "${enable_vtable_verify+set}" = set; then :
  esac
 else
   enable_vtable_verify=no
+fi
+
+
+
+
+# Check whether --with-aix-soname was given.
+if test "${with_aix_soname+set}" = set; then :
+  withval=$with_aix_soname; case "${host}:${enable_shared}" in
+ power*-*-aix[5-9]*:yes)
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking which variant of shared library versioning to provide for shared libgcc" >&5
+$as_echo_n "checking which variant of shared library versioning to provide for shared libgcc... " >&6; }
+   case ${withval} in
+     aix|svr4|both) ;;
+     *) as_fn_error "Unknown argument to --with-aix-soname" "$LINENO" 5;;
+   esac
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
+$as_echo "$withval" >&6; }
+   ;;
+ *) with_aix_soname=aix ;;
+ esac
+
+else
+  with_aix_soname=aix
 fi
 
 

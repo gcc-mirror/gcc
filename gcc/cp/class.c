@@ -1352,17 +1352,72 @@ handle_using_decl (tree using_decl, tree t)
     alter_access (t, decl, access);
 }
 
-/* walk_tree callback for check_abi_tags: if the type at *TP involves any
-   types with abi tags, add the corresponding identifiers to the VEC in
-   *DATA and set IDENTIFIER_MARKED.  */
+/* Data structure for find_abi_tags_r, below.  */
 
 struct abi_tag_data
 {
-  tree t;
-  tree subob;
-  // error_mark_node to get diagnostics; otherwise collect missing tags here
-  tree tags;
+  tree t;		// The type that we're checking for missing tags.
+  tree subob;		// The subobject of T that we're getting tags from.
+  tree tags; // error_mark_node for diagnostics, or a list of missing tags.
 };
+
+/* Subroutine of find_abi_tags_r. Handle a single TAG found on the class TP
+   in the context of P.  TAG can be either an identifier (the DECL_NAME of
+   a tag NAMESPACE_DECL) or a STRING_CST (a tag attribute).  */
+
+static void
+check_tag (tree tag, tree *tp, abi_tag_data *p)
+{
+  tree id;
+
+  if (TREE_CODE (tag) == STRING_CST)
+    id = get_identifier (TREE_STRING_POINTER (tag));
+  else
+    {
+      id = tag;
+      tag = NULL_TREE;
+    }
+
+  if (!IDENTIFIER_MARKED (id))
+    {
+      if (!tag)
+	tag = build_string (IDENTIFIER_LENGTH (id) + 1,
+			    IDENTIFIER_POINTER (id));
+      if (p->tags != error_mark_node)
+	{
+	  /* We're collecting tags from template arguments.  */
+	  p->tags = tree_cons (NULL_TREE, tag, p->tags);
+	  ABI_TAG_IMPLICIT (p->tags) = true;
+
+	  /* Don't inherit this tag multiple times.  */
+	  IDENTIFIER_MARKED (id) = true;
+	}
+
+      /* Otherwise we're diagnosing missing tags.  */
+      else if (TYPE_P (p->subob))
+	{
+	  if (warning (OPT_Wabi_tag, "%qT does not have the %E abi tag "
+		       "that base %qT has", p->t, tag, p->subob))
+	    inform (location_of (p->subob), "%qT declared here",
+		    p->subob);
+	}
+      else
+	{
+	  if (warning (OPT_Wabi_tag, "%qT does not have the %E abi tag "
+		       "that %qT (used in the type of %qD) has",
+		       p->t, tag, *tp, p->subob))
+	    {
+	      inform (location_of (p->subob), "%qD declared here",
+		      p->subob);
+	      inform (location_of (*tp), "%qT declared here", *tp);
+	    }
+	}
+    }
+}
+
+/* walk_tree callback for check_abi_tags: if the type at *TP involves any
+   types with abi tags, add the corresponding identifiers to the VEC in
+   *DATA and set IDENTIFIER_MARKED.  */
 
 static tree
 find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
@@ -1374,48 +1429,21 @@ find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
      anyway, but let's make sure of it.  */
   *walk_subtrees = false;
 
+  abi_tag_data *p = static_cast<struct abi_tag_data*>(data);
+
+  for (tree ns = decl_namespace_context (*tp);
+       ns != global_namespace;
+       ns = CP_DECL_CONTEXT (ns))
+    if (NAMESPACE_ABI_TAG (ns))
+      check_tag (DECL_NAME (ns), tp, p);
+
   if (tree attributes = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (*tp)))
     {
-      struct abi_tag_data *p = static_cast<struct abi_tag_data*>(data);
       for (tree list = TREE_VALUE (attributes); list;
 	   list = TREE_CHAIN (list))
 	{
 	  tree tag = TREE_VALUE (list);
-	  tree id = get_identifier (TREE_STRING_POINTER (tag));
-	  if (!IDENTIFIER_MARKED (id))
-	    {
-	      if (p->tags != error_mark_node)
-		{
-		  /* We're collecting tags from template arguments.  */
-		  tree str = build_string (IDENTIFIER_LENGTH (id),
-					   IDENTIFIER_POINTER (id));
-		  p->tags = tree_cons (NULL_TREE, str, p->tags);
-		  ABI_TAG_IMPLICIT (p->tags) = true;
-
-		  /* Don't inherit this tag multiple times.  */
-		  IDENTIFIER_MARKED (id) = true;
-		}
-
-	      /* Otherwise we're diagnosing missing tags.  */
-	      else if (TYPE_P (p->subob))
-		{
-		  if (warning (OPT_Wabi_tag, "%qT does not have the %E abi tag "
-			       "that base %qT has", p->t, tag, p->subob))
-		    inform (location_of (p->subob), "%qT declared here",
-			    p->subob);
-		}
-	      else
-		{
-		  if (warning (OPT_Wabi_tag, "%qT does not have the %E abi tag "
-			       "that %qT (used in the type of %qD) has",
-			       p->t, tag, *tp, p->subob))
-		    {
-		      inform (location_of (p->subob), "%qD declared here",
-			      p->subob);
-		      inform (location_of (*tp), "%qT declared here", *tp);
-		    }
-		}
-	    }
+	  check_tag (tag, tp, p);
 	}
     }
   return NULL_TREE;
@@ -1427,6 +1455,12 @@ find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 static void
 mark_type_abi_tags (tree t, bool val)
 {
+  for (tree ns = decl_namespace_context (t);
+       ns != global_namespace;
+       ns = CP_DECL_CONTEXT (ns))
+    if (NAMESPACE_ABI_TAG (ns))
+      IDENTIFIER_MARKED (DECL_NAME (ns)) = val;
+
   tree attributes = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (t));
   if (attributes)
     {

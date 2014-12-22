@@ -1,4 +1,4 @@
-/* { dg-options "-mbranch-cost=10 isa>=4" } */
+/* { dg-options "-mbranch-cost=10 (HAS_MOVN)" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 NOMIPS16 int
 foo (int x, int y, int z, int k)

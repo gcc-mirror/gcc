@@ -1231,18 +1231,8 @@ print_specific_help (unsigned int include_flags,
      the desired maximum width of the output.  */
   if (opts->x_help_columns == 0)
     {
-      const char *p;
-
-      p = getenv ("COLUMNS");
-      if (p != NULL)
-	{
-	  int value = atoi (p);
-
-	  if (value > 0)
-	    opts->x_help_columns = value;
-	}
-
-      if (opts->x_help_columns == 0)
+      opts->x_help_columns = get_terminal_width ();
+      if (opts->x_help_columns == INT_MAX)
 	/* Use a reasonable default.  */
 	opts->x_help_columns = 80;
     }

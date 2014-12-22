@@ -124,7 +124,6 @@ extern struct fileloc lexer_line;
    gengtype.c & in gengtype-state.c files.  */
 extern pair_p typedefs;
 extern type_p structures;
-extern type_p param_structs;
 extern pair_p variables;
 
 /* An enum for distinguishing GGC vs PCH.  */
@@ -153,11 +152,6 @@ enum typekind {
   TYPE_LANG_STRUCT,     /* GCC front-end language specific structs.
                            Various languages may have homonymous but
                            different structs.  */
-  TYPE_PARAM_STRUCT,    /* Type for parametrized structs, e.g. hash_t
-                           hash-tables, ...  See (param_is, use_param,
-                           param1_is, param2_is,... use_param1,
-                           use_param_2,... use_params) GTY
-                           options.  */
   TYPE_USER_STRUCT	/* User defined type.  Walkers and markers for
 			   this type are assumed to be provided by the
 			   user.  */
@@ -246,20 +240,16 @@ enum gc_used_enum {
   GC_POINTED_TO
 };
 
-/* We can have at most ten type parameters in parameterized structures.  */
-#define NUM_PARAM 10
-
 /* Our type structure describes all types handled by gengtype.  */
 struct type {
   /* Discriminating kind, cannot be TYPE_NONE.  */
   enum typekind kind;
 
   /* For top-level structs or unions, the 'next' field links the
-     global list 'structures' or 'param_structs'; for lang_structs,
-     their homonymous structs are linked using this 'next' field.  The
-     homonymous list starts at the s.lang_struct field of the
-     lang_struct.  See the new_structure function for details.  This is
-     tricky!  */
+     global list 'structures'; for lang_structs, their homonymous structs are
+     linked using this 'next' field.  The homonymous list starts at the
+     s.lang_struct field of the lang_struct.  See the new_structure function
+     for details.  This is tricky!  */
   type_p next;
 
   /* State number used when writing & reading the persistent state.  A
@@ -325,14 +315,6 @@ struct type {
       const char *len;          /* The string if any giving its length.  */
     } a;
 
-    /* When TYPE_PARAM_STRUCT for (param_is, use_param, param1_is,
-       param2_is, ... use_param1, use_param_2, ... use_params) GTY
-       options.  */
-    struct {
-      type_p stru;              /* The generic GTY-ed type.  */
-      type_p param[NUM_PARAM];  /* The actual parameter types.  */
-      struct fileloc line;      /* The source location.  */
-    } param_struct;
   } u;
 };
 
@@ -376,8 +358,6 @@ type_fileloc (type_p t)
     return NULL;
   if (union_or_struct_p (t))
     return &t->u.s.line;
-  if  (t->kind == TYPE_PARAM_STRUCT)
-    return &t->u.param_struct.line;
   return NULL;
 }
 
@@ -488,7 +468,6 @@ enum gty_token
   PTR_ALIAS,
   NESTED_PTR,
   USER_GTY,
-  PARAM_IS,
   NUM,
   SCALAR,
   ID,
@@ -499,7 +478,7 @@ enum gty_token
 
   /* print_token assumes that any token >= FIRST_TOKEN_WITH_VALUE may have
      a meaningful value to be printed.  */
-  FIRST_TOKEN_WITH_VALUE = PARAM_IS
+  FIRST_TOKEN_WITH_VALUE = USER_GTY
 };
 
 

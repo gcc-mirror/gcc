@@ -137,6 +137,7 @@ netbsd			Krister Walfridsson	<krister.walfridsson@gmail.com>
 sh-linux-gnu		Kaz Kojima		<kkojima@gcc.gnu.org>
 RTEMS Ports		Joel Sherrill		<joel@oarcorp.com>
 RTEMS Ports		Ralf Corsepius		<ralf.corsepius@rtems.org>
+RTEMS Ports		Sebastian Huber		<sebastian.huber@embedded-brains.de>
 VMS			Douglas Rupp		<douglas.b.rupp@gmail.com>
 VMS			Tristan Gingold		<tgingold@free.fr>
 VxWorks ports		Nathan Sidwell		<nathan@codesourcery.com>
@@ -341,6 +342,7 @@ Eric Blake					<ericb@gcc.gnu.org>
 Phil Blundell					<pb@futuretv.com>
 Hans Boehm					<hboehm@gcc.gnu.org>
 Segher Boessenkool				<segher@kernel.crashing.org>
+Lynn Boger					<laboger@linux.vnet.ibm.com>
 Ian Bolton					<ian.bolton@arm.com>
 Andrea Bona					<andrea.bona@st.com>
 Paolo Bonzini					<bonzini@gnu.org>
@@ -411,6 +413,7 @@ Wei Guozhi					<carrot@google.com>
 Mostafa Hagog					<hagog@gcc.gnu.org>
 Olivier Hainque					<hainque@act-europe.fr>
 Stuart Hastings					<stuart@apple.com>
+Michael Haubenwallner				<michael.haubenwallner@ssi-schaefer.com>
 Pat Haugen					<pthaugen@us.ibm.com>
 Mark Heffernan					<meheff@google.com>
 George Helffrich				<george@gcc.gnu.org>
@@ -447,6 +450,7 @@ Jeff Knaggs					<jknaggs@redhat.com>
 Michael Koch					<konqueror@gmx.de>
 Matt Kraai					<kraai@ftbfs.org>
 Jan Kratochvil					<jan.kratochvil@redhat.com>
+Prathamesh Kulkarni				<prathamesh.kulkarni@linaro.org>
 Venkataramanan Kumar				<venkataramanan.kumar@amd.com>
 Maxim Kuvyrkov					<maxim.kuvyrkov@linaro.org>
 Doug Kwan					<dougkwan@google.com>
@@ -524,6 +528,7 @@ Rolf Rasmussen					<rolfwr@gcc.gnu.org>
 Volker Reichelt					<v.reichelt@netcologne.de>
 Bernhard Reutner-Fischer			<rep.dot.nop@gmail.com>
 Tom Rix						<trix@redhat.com>
+Pierre-Marie de Rodat				<derodat@adacore.com>
 Craig Rodrigues					<rodrigc@gcc.gnu.org>
 Erven Rohou					<erven.rohou@inria.fr>
 Ira Rosen					<irar@il.ibm.com>

@@ -1,3 +1,204 @@
+2014-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (gcc::jit::playback::context::build_cast): In
+	case BOOLEAN_TYPE, don't assume that the source expression is
+	of type "int".
+
+2014-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c (gcc::jit::recording::context::context): When
+	copying string options from a parent context, take a copy of the
+	underlying buffers, rather than simply copying the pointer.
+
+2014-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c (gcc::jit::recording::context::set_str_option):
+	Handle NULL.
+
+2014-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/contexts.rst (gccjit::context::set_str_option):
+	Document new function.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2014-12-10  Ulrich Drepper  <drepper@gmail.com>
+
+	Minor interface cleanups of libgccjit
+	* jit-playback.c (convert_to_dso): Use auto_vec instead
+	of automatic array to build up command line.
+	* jit-recording.c (recording::context::set_str_option):
+	Make copy of the string.
+	(recording::context::~context): Free string options.
+	* jit-recording.h (recording::context): Adjust type
+	of m_str_options member.
+	* libgccjit.h: Adjust comment about
+	gcc_jit_context_set_str_option parameter being used after
+	the call.
+	Update comment now that all interfaces are copy strings
+	if necessary.
+	* libgccjit++.h (gccjit::context): Add set_str_option
+	member function.
+
+2014-12-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/index.rst: New file.
+	* docs/cp/intro/index.rst: New file.
+	* docs/cp/intro/tutorial01.rst: New file.
+	* docs/cp/intro/tutorial02.rst: New file.
+	* docs/cp/intro/tutorial03.rst: New file.
+	* docs/cp/intro/tutorial04.rst: New file.
+	* docs/cp/topics/contexts.rst: New file.
+	* docs/cp/topics/expressions.rst: New file.
+	* docs/cp/topics/functions.rst: New file.
+	* docs/cp/topics/index.rst: New file.
+	* docs/cp/topics/locations.rst: New file.
+	* docs/cp/topics/objects.rst: New file.
+	* docs/cp/topics/results.rst: New file.
+	* docs/cp/topics/types.rst: New file.
+	* docs/examples/tut01-hello-world.cc: New file.
+	* docs/examples/tut02-square.c: Fix missing newline in output.
+	* docs/examples/tut02-square.cc: New file.
+	* docs/examples/tut03-sum-of-squares.cc: New file.
+	* docs/examples/tut04-toyvm/toyvm.cc: New file.
+	* docs/index.rst: Move summary to above the table of contents.
+	Add text about the C vs C++ APIs.
+	* docs/topics/contexts.rst: Fix a typo.
+
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/_build/texinfo/factorial1.png: New file.
+	* docs/_build/texinfo/sum-of-squares1.png: New file.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/examples/tut04-toyvm/toyvm.c (toyvm_function_compile): Move
+	logic for determine "funcname" to new function...
+	(get_function_name): ...here, adding logic to skip any leading
+	path from the filename.
+	(toyvm_function_parse): Use the filename for fn_filename, rather
+	than "name", so that the debugger can locate the source .toy
+	file.
+	(toyvm_function_parse): Don't fclose a NULL FILE *.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/63854
+	* docs/internals/index.rst (Running under valgrind): New
+	subsection.
+	(docs/_build/texinfo/libgccjit.texi): Regenerate.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+        PR jit/64206
+	* Make-lang.in (jit_OBJS): Add jit/jit-tempdir.o.
+	* jit-common.h (gcc::jit::tempdir): New forward decl.
+	* jit-playback.c: Include jit-tempdir.h.
+	(gcc::jit::playback::context::context): Initialize m_tempdir.
+	(gcc::jit::playback::context::~context): Move tempdir
+	cleanup to new file jit-tempdir.c
+	(make_tempdir_path_template): Move to new file jit-tempdir.c.
+	(gcc::jit::playback::context::compile): Move tempdir creation
+	to new tempdir object in new file jit-tempdir.c.
+	(gcc::jit::playback::context::make_fake_args): Get path from
+	tempdir object rather than from member data.
+	(gcc::jit::playback::context::convert_to_dso): Likewise.
+	(gcc::jit::playback::context::dlopen_built_dso): Likewise.
+	(gcc::jit::playback::context::dump_generated_code): Likewise.
+	(gcc::jit::playback::context::get_path_c_file): New function.
+	(gcc::jit::playback::context::get_path_s_file): New function.
+	(gcc::jit::playback::context::get_path_so_file): New function.
+	* jit-playback.h (gcc::jit::playback::context::get_path_c_file):
+	New function.
+	(gcc::jit::playback::context::get_path_s_file): New function.
+	(gcc::jit::playback::context::get_path_so_file): New function.
+	(gcc::jit::playback::context): Move fields "m_path_template",
+	"m_path_tempdir", "m_path_c_file", "m_path_s_file",
+	"m_path_so_file" to new jit::tempdir class; add field "m_tempdir".
+	* jit-tempdir.c: New file.
+	* jit-tempdir.h: New file.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (gcc::jit::playback::context::compile): Acquire the
+	mutex here, immediately before using toplev, and release it here, on
+	each exit path after acquisition.
+	(jit_mutex): Move this variable here, from jit-recording.c.
+	(gcc::jit::playback::context::acquire_mutex): New function, based on
+	code in jit-recording.c.
+	(gcc::jit::playback::context::release_mutex): Likewise.
+	* jit-playback.h (gcc::jit::playback::context::acquire_mutex): New
+	function.
+	(gcc::jit::playback::context::release_mutex): New function.
+	* jit-recording.c (jit_mutex): Move this variable to jit-playback.c.
+	(gcc::jit::recording::context::compile): Move mutex-handling from
+	here into jit-playback.c's gcc::jit::playback::context::compile.
+	* notes.txt: Update to show the new locations of ACQUIRE_MUTEX
+	and RELEASE_MUTEX.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (gcc::jit::playback::context::compile): Move the
+	dlopen code into...
+	(gcc::jit::playback::context::dlopen_built_dso): ...this new
+	function.
+	* jit-playback.h (gcc::jit::playback::context::dlopen_built_dso):
+	New function.
+
+2014-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64166
+	* docs/topics/contexts.rst (Debugging): Add description of
+	gcc_jit_context_enable_dump.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c: Include context.h.
+	(class auto_argvec): New class.
+	(auto_argvec::~auto_argvec): New function.
+	(gcc::jit::playback::context::compile): Convert fake_args to be
+	an auto_argvec, so that it can contain dynamically-allocated
+	strings.   Construct a vec of all requested dumps, and pass it to
+	make_fake_args.  Extract requested dumps between the calls to
+	toplev::main and toplev::finalize.
+	(gcc::jit::playback::context::make_fake_args): Convert param
+	"argvec" to be a vec <char *>, and gain a "requested_dumps"
+	param.  Convert to dynamically-allocated arg strings by converting
+	ADD_ARG to take a copy of the arg, and add ADD_ARG_TAKE_OWNERSHIP
+	for args that are already a copy.  Add args for all requested dumps.
+	(gcc::jit::playback::context::extract_any_requested_dumps): New
+	function.
+	(gcc::jit::playback::context::read_dump_file): New function.
+	* jit-playback.h (gcc::jit::playback::context::make_fake_args):
+	Convert param "argvec" to be a vec <char *>, and gain a
+	"requested_dumps" param.
+	(gcc::jit::playback::context::extract_any_requested_dumps): New
+	function.
+	(gcc::jit::playback::context::read_dump_file): New function.
+	* jit-recording.c (gcc::jit::recording::context::enable_dump): New
+	function.
+	(gcc::jit::recording::context::get_all_requested_dumps): New
+	function.
+	* jit-recording.h (gcc::jit::recording::requested_dump): New
+	struct.
+	(gcc::jit::recording::context::enable_dump): New function.
+	(gcc::jit::recording::context::get_all_requested_dumps): New
+	function.
+	(gcc::jit::recording::context::m_requested_dumps): New field.
+	* libgccjit.c (gcc_jit_context_enable_dump): New API entrypoint.
+	* libgccjit.h (gcc_jit_context_enable_dump): New API entrypoint.
+	* libgccjit.map (gcc_jit_context_enable_dump): New API entrypoint.
+
+2014-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit++.h: Indent the forward declarations of the classes to
+	show the inheritance hierarchy.
+
+2014-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* notes.txt: Show the beginning and ending of
+	recording::context::compile vs playback::context::compile.  Show
+	the creation and unlinking of the tempdir.  Show toplev::finalize.
+	Move "RELEASE MUTEX" to the correct location.  Show
+	gcc_jit_result_release, and indicate where the
+	dlopen/dlsym/dlclose occur.
+
 2014-12-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/examples/tut02-square.c (main): Release the context

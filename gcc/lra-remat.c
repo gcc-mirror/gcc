@@ -350,12 +350,12 @@ finish_cand_table (void)
 
 
 
-/* Return true if X contains memory or UNSPEC.  We can not just check
-   insn operands as memory or unspec might be not an operand itself
-   but contain an operand.  Insn with memory access is not profitable
-   for rematerialization.  Rematerialization of UNSPEC might result in
-   wrong code generation as the UNPEC effect is unknown
-   (e.g. generating a label).  */
+/* Return true if X contains memory or some UNSPEC.  We can not just
+   check insn operands as memory or unspec might be not an operand
+   itself but contain an operand.  Insn with memory access is not
+   profitable for rematerialization.  Rematerialization of UNSPEC
+   might result in wrong code generation as the UNPEC effect is
+   unknown (e.g. generating a label).  */
 static bool
 bad_for_rematerialization_p (rtx x)
 {
@@ -363,7 +363,7 @@ bad_for_rematerialization_p (rtx x)
   const char *fmt;
   enum rtx_code code;
 
-  if (MEM_P (x) || GET_CODE (x) == UNSPEC)
+  if (MEM_P (x) || GET_CODE (x) == UNSPEC || GET_CODE (x) == UNSPEC_VOLATILE)
     return true;
   code = GET_CODE (x);
   fmt = GET_RTX_FORMAT (code);
@@ -406,7 +406,7 @@ operand_to_remat (rtx_insn *insn)
     if (reg->regno == STACK_POINTER_REGNUM && frame_pointer_needed)
       return -1;
     else if (reg->type == OP_OUT && ! reg->subreg_p
-	&& find_regno_note (insn, REG_UNUSED, reg->regno) == NULL)
+	     && find_regno_note (insn, REG_UNUSED, reg->regno) == NULL)
       {
 	/* We permits only one spilled reg.  */
 	if (found_reg != NULL)
@@ -508,11 +508,14 @@ create_cands (void)
 
 	if ((set = single_set (insn)) != NULL
 	    && REG_P (SET_SRC (set)) && REG_P (SET_DEST (set))
-	    && (src_regno = REGNO (SET_SRC (set))) >= FIRST_PSEUDO_REGISTER
+	    && ((src_regno = REGNO (SET_SRC (set)))
+		>= lra_constraint_new_regno_start)
 	    && (dst_regno = REGNO (SET_DEST (set))) >= FIRST_PSEUDO_REGISTER
 	    && reg_renumber[dst_regno] < 0
 	    && (insn2 = regno_potential_cand[src_regno].insn) != NULL
 	    && BLOCK_FOR_INSN (insn2) == BLOCK_FOR_INSN (insn))
+	  /* It is an output reload insn after insn can be
+	     rematerialized (potential candidate).  */
 	  create_cand (insn2, regno_potential_cand[src_regno].nop, dst_regno);
 	if (nop < 0)
 	  goto fail;

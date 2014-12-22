@@ -109,6 +109,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "gimple-ssa.h"
 #include "tree-cfg.h"
@@ -1677,7 +1678,7 @@ execute_split_functions (void)
   /* This can be relaxed; function might become inlinable after splitting
      away the uninlinable part.  */
   if (inline_edge_summary_vec.exists ()
-      && !inline_summary (node)->inlinable)
+      && !inline_summaries->get (node)->inlinable)
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: not inlinable.\n");

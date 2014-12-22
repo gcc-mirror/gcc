@@ -811,7 +811,7 @@
       /* There is no evex-encoded vmov* for sizes smaller than 64-bytes
 	 in avx512f, so we need to use workarounds, to access sse registers
 	 16-31, which are evex-only. In avx512vl we don't need workarounds.  */
-      if (TARGET_AVX512F && GET_MODE_SIZE (<MODE>mode) < 64 && !TARGET_AVX512VL
+      if (TARGET_AVX512F && <MODE_SIZE> < 64 && !TARGET_AVX512VL
 	  && ((REG_P (operands[0]) && EXT_REX_SSE_REGNO_P (REGNO (operands[0])))
 	      || (REG_P (operands[1]) && EXT_REX_SSE_REGNO_P (REGNO (operands[1])))))
 	{
@@ -6319,22 +6319,6 @@
     (set_attr "prefix" "evex")
     (set_attr "mode" "<MODE>")])
 
-(define_insn "vec_dupv4sf"
-  [(set (match_operand:V4SF 0 "register_operand" "=x,x,x")
-	(vec_duplicate:V4SF
-	  (match_operand:SF 1 "nonimmediate_operand" "x,m,0")))]
-  "TARGET_SSE"
-  "@
-   vshufps\t{$0, %1, %1, %0|%0, %1, %1, 0}
-   vbroadcastss\t{%1, %0|%0, %1}
-   shufps\t{$0, %0, %0|%0, %0, 0}"
-  [(set_attr "isa" "avx,avx,noavx")
-   (set_attr "type" "sseshuf1,ssemov,sseshuf1")
-   (set_attr "length_immediate" "1,0,1")
-   (set_attr "prefix_extra" "0,1,*")
-   (set_attr "prefix" "vex,vex,orig")
-   (set_attr "mode" "V4SF")])
-
 ;; Although insertps takes register source, we prefer
 ;; unpcklps with register source since it is shorter.
 (define_insn "*vec_concatv2sf_sse4_1"
@@ -10691,7 +10675,7 @@
    (V8SF "TARGET_AVX2") (V4DF "TARGET_AVX2")
    (V16SF "TARGET_AVX512F") (V8DF "TARGET_AVX512F")
    (V16SI "TARGET_AVX512F") (V8DI "TARGET_AVX512F")
-   (V32HI "TARGET_AVX512BW")])
+   (V32HI "TARGET_AVX512BW") (V64QI "TARGET_AVX512VBMI")])
 
 (define_expand "vec_perm<mode>"
   [(match_operand:VEC_PERM_AVX2 0 "register_operand")
@@ -10713,7 +10697,7 @@
    (V32QI "TARGET_AVX2") (V16HI "TARGET_AVX2")
    (V16SI "TARGET_AVX512F") (V8DI "TARGET_AVX512F")
    (V16SF "TARGET_AVX512F") (V8DF "TARGET_AVX512F")
-   (V32HI "TARGET_AVX512BW")])
+   (V32HI "TARGET_AVX512BW") (V64QI "TARGET_AVX512BW")])
 
 (define_expand "vec_perm_const<mode>"
   [(match_operand:VEC_PERM_CONST 0 "register_operand")
@@ -12820,37 +12804,6 @@
 
   operands[1] = adjust_address (operands[1], <ssescalarmode>mode, offs);
 })
-
-(define_insn "*vec_dupv4si"
-  [(set (match_operand:V4SI 0 "register_operand"     "=x,x,x")
-	(vec_duplicate:V4SI
-	  (match_operand:SI 1 "nonimmediate_operand" " x,m,0")))]
-  "TARGET_SSE"
-  "@
-   %vpshufd\t{$0, %1, %0|%0, %1, 0}
-   vbroadcastss\t{%1, %0|%0, %1}
-   shufps\t{$0, %0, %0|%0, %0, 0}"
-  [(set_attr "isa" "sse2,avx,noavx")
-   (set_attr "type" "sselog1,ssemov,sselog1")
-   (set_attr "length_immediate" "1,0,1")
-   (set_attr "prefix_extra" "0,1,*")
-   (set_attr "prefix" "maybe_vex,vex,orig")
-   (set_attr "mode" "TI,V4SF,V4SF")])
-
-(define_insn "*vec_dupv2di"
-  [(set (match_operand:V2DI 0 "register_operand"     "=x,x,x,x")
-	(vec_duplicate:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand" " 0,x,m,0")))]
-  "TARGET_SSE"
-  "@
-   punpcklqdq\t%0, %0
-   vpunpcklqdq\t{%d1, %0|%0, %d1}
-   %vmovddup\t{%1, %0|%0, %1}
-   movlhps\t%0, %0"
-  [(set_attr "isa" "sse2_noavx,avx,sse3,noavx")
-   (set_attr "type" "sselog1,sselog1,sselog1,ssemov")
-   (set_attr "prefix" "orig,vex,maybe_vex,orig")
-   (set_attr "mode" "TI,TI,DF,V4SF")])
 
 (define_insn "*vec_concatv2si_sse4_1"
   [(set (match_operand:V2SI 0 "register_operand"     "=Yr,*x,x, Yr,*x,x, x, *y,*y")
@@ -16665,46 +16618,78 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<mask_codefor><avx512>_vec_dup_gpr<mode><mask_name>"
-  [(set (match_operand:VI12_AVX512VL 0 "register_operand" "=v")
+  [(set (match_operand:VI12_AVX512VL 0 "register_operand" "=v,v")
 	(vec_duplicate:VI12_AVX512VL
-	  (match_operand:<ssescalarmode> 1 "register_operand" "r")))]
+	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "vm,r")))]
   "TARGET_AVX512BW"
-  "vpbroadcast<bcstscalarsuff>\t{%k1, %0<mask_operand2>|%0<mask_operand2>, %k1}"
+  "@
+   vpbroadcast<bcstscalarsuff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}
+   vpbroadcast<bcstscalarsuff>\t{%k1, %0<mask_operand2>|%0<mask_operand2>, %k1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<mask_codefor><avx512>_vec_dup_gpr<mode><mask_name>"
-  [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
-	(vec_duplicate:VI48_AVX512VL
-	  (match_operand:<ssescalarmode> 1 "register_operand" "r")))]
-  "TARGET_AVX512F && (<ssescalarmode>mode != DImode || TARGET_64BIT)"
-{
-  return "vpbroadcast<bcstscalarsuff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}";
-}
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "<mask_codefor><avx512>_vec_dup_mem<mode><mask_name>"
-  [(set (match_operand:V48_AVX512VL 0 "register_operand" "=v")
+  [(set (match_operand:V48_AVX512VL 0 "register_operand" "=v,v")
 	(vec_duplicate:V48_AVX512VL
-	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "vm")))]
+	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "vm,r")))]
   "TARGET_AVX512F"
   "v<sseintprefix>broadcast<bcstscalarsuff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
-   (set_attr "mode" "<sseinsnmode>")])
+   (set_attr "mode" "<sseinsnmode>")
+   (set (attr "enabled")
+     (if_then_else (eq_attr "alternative" "1")
+	(symbol_ref "GET_MODE_CLASS (<ssescalarmode>mode) == MODE_INT
+		     && (<ssescalarmode>mode != DImode || TARGET_64BIT)")
+	(const_int 1)))])
 
-(define_insn "<mask_codefor><avx512>_vec_dup_mem<mode><mask_name>"
-  [(set (match_operand:VI12_AVX512VL 0 "register_operand" "=v")
-	(vec_duplicate:VI12_AVX512VL
-	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "vm")))]
-  "TARGET_AVX512BW"
-  "vpbroadcast<bcstscalarsuff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "<sseinsnmode>")])
+(define_insn "vec_dupv4sf"
+  [(set (match_operand:V4SF 0 "register_operand" "=x,x,x")
+	(vec_duplicate:V4SF
+	  (match_operand:SF 1 "nonimmediate_operand" "x,m,0")))]
+  "TARGET_SSE"
+  "@
+   vshufps\t{$0, %1, %1, %0|%0, %1, %1, 0}
+   vbroadcastss\t{%1, %0|%0, %1}
+   shufps\t{$0, %0, %0|%0, %0, 0}"
+  [(set_attr "isa" "avx,avx,noavx")
+   (set_attr "type" "sseshuf1,ssemov,sseshuf1")
+   (set_attr "length_immediate" "1,0,1")
+   (set_attr "prefix_extra" "0,1,*")
+   (set_attr "prefix" "vex,vex,orig")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "*vec_dupv4si"
+  [(set (match_operand:V4SI 0 "register_operand"     "=x,x,x")
+	(vec_duplicate:V4SI
+	  (match_operand:SI 1 "nonimmediate_operand" " x,m,0")))]
+  "TARGET_SSE"
+  "@
+   %vpshufd\t{$0, %1, %0|%0, %1, 0}
+   vbroadcastss\t{%1, %0|%0, %1}
+   shufps\t{$0, %0, %0|%0, %0, 0}"
+  [(set_attr "isa" "sse2,avx,noavx")
+   (set_attr "type" "sselog1,ssemov,sselog1")
+   (set_attr "length_immediate" "1,0,1")
+   (set_attr "prefix_extra" "0,1,*")
+   (set_attr "prefix" "maybe_vex,vex,orig")
+   (set_attr "mode" "TI,V4SF,V4SF")])
+
+(define_insn "*vec_dupv2di"
+  [(set (match_operand:V2DI 0 "register_operand"     "=x,x,x,x")
+	(vec_duplicate:V2DI
+	  (match_operand:DI 1 "nonimmediate_operand" " 0,x,m,0")))]
+  "TARGET_SSE"
+  "@
+   punpcklqdq\t%0, %0
+   vpunpcklqdq\t{%d1, %0|%0, %d1}
+   %vmovddup\t{%1, %0|%0, %1}
+   movlhps\t%0, %0"
+  [(set_attr "isa" "sse2_noavx,avx,sse3,noavx")
+   (set_attr "type" "sselog1,sselog1,sselog1,ssemov")
+   (set_attr "prefix" "orig,vex,maybe_vex,orig")
+   (set_attr "mode" "TI,TI,DF,V4SF")])
 
 (define_insn "avx2_vbroadcasti128_<mode>"
   [(set (match_operand:VI_256 0 "register_operand" "=x")
@@ -16759,7 +16744,14 @@
   [(set (match_operand:AVX2_VEC_DUP_MODE 0 "register_operand")
 	(vec_duplicate:AVX2_VEC_DUP_MODE
 	  (match_operand:<ssescalarmode> 1 "register_operand")))]
-  "TARGET_AVX2 && reload_completed && GENERAL_REG_P (operands[1])"
+  "TARGET_AVX2
+   /* Disable this splitter if avx512vl_vec_dup_gprv*[qhs]i insn is
+      available, because then we can broadcast from GPRs directly.
+      For V*[QH]I modes it requires both -mavx512vl and -mavx512bw,
+      for V*SI mode it requires just -mavx512vl.  */
+   && !(TARGET_AVX512VL
+	&& (TARGET_AVX512BW || <ssescalarmode>mode == SImode))
+   && reload_completed && GENERAL_REG_P (operands[1])"
   [(const_int 0)]
 {
   emit_insn (gen_vec_setv4si_0 (gen_lowpart (V4SImode, operands[0]),
@@ -18208,7 +18200,7 @@
 {
   if (<MODE>mode != <VEC_GATHER_SRCDI>mode)
     {
-      if (GET_MODE_SIZE (<MODE>mode) != 64)
+      if (<MODE_SIZE> != 64)
 	return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %x0%{%1%}|%t0%{%1%}, %g5}";
       else
 	return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %t0%{%1%}|%t0%{%1%}, %g5}";

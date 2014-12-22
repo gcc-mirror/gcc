@@ -9,7 +9,17 @@ GLIBCXX_LDBL_3.4 {
   _ZSt14__convert_to_vIgEvPKcRT_RSt12_Ios_IostateRKP*;
   _ZStlsIg[cw]St11char_traitsI[cw]EERSt13basic_ostreamIT0_T1_ES6_RKSt7complexIT_E;
   _ZStrsIg[cw]St11char_traitsI[cw]EERSt13basic_istreamIT0_T1_ES6_RSt7complexIT_E;
-  *__gnu_cxx_ldbl128*;
+  *__gnu_cxx_ldbl128[1-6]*;
+  *St9has_facetINSt17__gnu_cxx_ldbl1287*;
+  *St9use_facetINSt17__gnu_cxx_ldbl1287*;
+  *__gnu_cxx_ldbl1287num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[CD][0-2]E?;
+  *__gnu_cxx_ldbl1287num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE2idE;
+  *__gnu_cxx_ldbl1287num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEEE;
+  *__gnu_cxx_ldbl1287num_getI[cw]*getE*;
+  *__gnu_cxx_ldbl1287num_getI[cw]*14_M_extract_intI*;
+  *__gnu_cxx_ldbl1287num_getI[cw]*16_M_extract_floatE*;
+  *__gnu_cxx_ldbl1287num_putI[cw]*;
+  *__gnu_cxx_ldbl128[8-9]*;
 };
 
 # Corresponding to exports in GLIBCXX_3.4.9, not GLIBCXX_3.4.7
@@ -24,6 +34,11 @@ GLIBCXX_LDBL_3.4.10 {
   _ZNKSt3tr14hashIgEclEg;
   _ZNKSt4hashIgEclEg;
 } GLIBCXX_LDBL_3.4.7;
+
+GLIBCXX_LDBL_3.4.21 {
+  __gnu_cxx_ldbl1287num_getI[cw]*14_M_extract_intB5cxx11*;
+  __gnu_cxx_ldbl1287num_getI[cw]*16_M_extract_floatB5cxx11*;
+} GLIBCXX_LDBL_3.4.10;
 
 CXXABI_LDBL_1.3 {
   _ZT[IS]g;

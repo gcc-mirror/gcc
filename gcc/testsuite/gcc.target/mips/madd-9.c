@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "isa_rev>=1 -mgp32 -mtune=4kc" } */
+/* { dg-options "(HAS_MADD) -mgp32 -mtune=4kc" } */
 /* References to X within the loop need to have a higher frequency than
    references to X outside the loop, otherwise there is no reason
    to prefer multiply/accumulator registers over GPRs.  */

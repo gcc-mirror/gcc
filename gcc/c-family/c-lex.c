@@ -64,7 +64,6 @@ static void cb_ident (cpp_reader *, unsigned int, const cpp_string *);
 static void cb_def_pragma (cpp_reader *, unsigned int);
 static void cb_define (cpp_reader *, unsigned int, cpp_hashnode *);
 static void cb_undef (cpp_reader *, unsigned int, cpp_hashnode *);
-static int cb_has_attribute (cpp_reader *);
 
 void
 init_c_lex (void)
@@ -89,7 +88,7 @@ init_c_lex (void)
   cb->def_pragma = cb_def_pragma;
   cb->valid_pch = c_common_valid_pch;
   cb->read_pch = c_common_read_pch;
-  cb->has_attribute = cb_has_attribute;
+  cb->has_attribute = c_common_has_attribute;
 
   /* Set the debug callbacks if we can use them.  */
   if ((debug_info_level == DINFO_LEVEL_VERBOSE
@@ -288,57 +287,80 @@ cb_undef (cpp_reader * ARG_UNUSED (pfile), source_location loc,
 			 (const char *) NODE_NAME (node));
 }
 
+/* Wrapper around cpp_get_token to skip CPP_PADDING tokens
+   and not consume CPP_EOF.  */
+static const cpp_token *
+get_token_no_padding (cpp_reader *pfile)
+{
+  for (;;)
+    {
+      const cpp_token *ret = cpp_peek_token (pfile, 0);
+      if (ret->type == CPP_EOF)
+	return ret;
+      ret = cpp_get_token (pfile);
+      if (ret->type != CPP_PADDING)
+	return ret;
+    }
+}
+
 /* Callback for has_attribute.  */
-static int
-cb_has_attribute (cpp_reader *pfile)
+int
+c_common_has_attribute (cpp_reader *pfile)
 {
   int result = 0;
-  bool paren = false;
-  tree attr_ns = NULL_TREE, attr_id = NULL_TREE, attr_name = NULL_TREE;
+  tree attr_name = NULL_TREE;
   const cpp_token *token;
 
-  token = cpp_get_token (pfile);
-  if (token->type == CPP_OPEN_PAREN)
+  token = get_token_no_padding (pfile);
+  if (token->type != CPP_OPEN_PAREN)
     {
-      paren = true;
-      token = cpp_get_token (pfile);
+      cpp_error (pfile, CPP_DL_ERROR,
+		 "missing '(' after \"__has_attribute\"");
+      return 0;
     }
-
+  token = get_token_no_padding (pfile);
   if (token->type == CPP_NAME)
     {
-      //node = token->val.node.node;
-      const cpp_token *nxt_token = cpp_peek_token (pfile, 0);
-      if (c_dialect_cxx() && nxt_token->type == CPP_SCOPE)
+      attr_name = get_identifier ((const char *)
+				  cpp_token_as_text (pfile, token));
+      if (c_dialect_cxx ())
 	{
-	  nxt_token = cpp_get_token (pfile); // Eat scope.
-	  nxt_token = cpp_get_token (pfile);
-	  if (nxt_token->type == CPP_NAME)
+	  int idx = 0;
+	  const cpp_token *nxt_token;
+	  do
+	    nxt_token = cpp_peek_token (pfile, idx++);
+	  while (nxt_token->type == CPP_PADDING);
+	  if (nxt_token->type == CPP_SCOPE)
 	    {
-	      attr_ns = get_identifier (
-			(const char *) cpp_token_as_text (pfile, token));
-	      attr_id = get_identifier (
-			(const char *) cpp_token_as_text (pfile, nxt_token));
-	      attr_name = build_tree_list (attr_ns, attr_id);
+	      get_token_no_padding (pfile); // Eat scope.
+	      nxt_token = get_token_no_padding (pfile);
+	      if (nxt_token->type == CPP_NAME)
+		{
+		  tree attr_ns = attr_name;
+		  tree attr_id
+		    = get_identifier ((const char *)
+				      cpp_token_as_text (pfile, nxt_token));
+		  attr_name = build_tree_list (attr_ns, attr_id);
+		}
+	      else
+		{
+		  cpp_error (pfile, CPP_DL_ERROR,
+			     "attribute identifier required after scope");
+		  attr_name = NULL_TREE;
+		}
 	    }
-	  else
-	    cpp_error (pfile, CPP_DL_ERROR,
-		       "attribute identifier required after scope");
-	}
-      else
-	{
-	  attr_ns = get_identifier ("gnu");
-	  attr_id = get_identifier (
-		    (const char *) cpp_token_as_text (pfile, token));
-	  attr_name = build_tree_list (attr_ns, attr_id);
 	}
       if (attr_name)
 	{
+	  init_attributes ();
 	  const struct attribute_spec *attr = lookup_attribute_spec (attr_name);
 	  if (attr)
 	    {
-	      if (is_attribute_p ("noreturn", TREE_VALUE (attr_name)))
+	      if (TREE_CODE (attr_name) == TREE_LIST)
+		attr_name = TREE_VALUE (attr_name);
+	      if (is_attribute_p ("noreturn", attr_name))
 		result = 200809;
-	      else if (is_attribute_p ("deprecated", TREE_VALUE (attr_name)))
+	      else if (is_attribute_p ("deprecated", attr_name))
 		result = 201309;
 	      else
 		result = 1;
@@ -346,16 +368,18 @@ cb_has_attribute (cpp_reader *pfile)
 	}
     }
   else
-    cpp_error (pfile, CPP_DL_ERROR,
-	       "operator \"__has_attribute__\" requires an identifier");
+    {
+      cpp_error (pfile, CPP_DL_ERROR,
+		 "macro \"__has_attribute\" requires an identifier");
+      return 0;
+    }
 
-  if (paren && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
+  if (get_token_no_padding (pfile)->type != CPP_CLOSE_PAREN)
     cpp_error (pfile, CPP_DL_ERROR,
-	       "missing ')' after \"__has_attribute__\"");
+	       "missing ')' after \"__has_attribute\"");
 
   return result;
 }
-
 
 /* Read a token and return its type.  Fill *VALUE with its value, if
    applicable.  Fill *CPP_FLAGS with the token's flags, if it is

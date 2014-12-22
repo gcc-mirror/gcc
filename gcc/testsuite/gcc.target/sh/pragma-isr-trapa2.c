@@ -6,13 +6,12 @@
 /* { dg-skip-if "" { "sh*-*-*" } { "-m1" "-m2" "-m3" "-m4al" "*nofpu" "-m4-340*" "-m4-400*" "-m4-500*" "-m5*" } { "" } }  */
 /* { dg-options "-O" }  */
 /* { dg-final { scan-assembler-times "rte" 1 } }  */
-/* { dg-final { scan-assembler-times "r\[0-7\]\n" 3 } }  */
-/* { dg-final { scan-assembler-not "r\[8-9\]" } }  */
-/* { dg-final { scan-assembler-not "r1\[,0-3\]" } }  */
+/* { dg-final { scan-assembler-not "mov.l\tr\[0-9\],@-r15" } }  */
+/* { dg-final { scan-assembler-not "mov.l\tr1\[0-4\],@-r15" } }  */
 /* { dg-final { scan-assembler-not "macl" } }  */
 
 /* Expect that fpscr needs to be saved, loaded and restored.  */
-/* { dg-final { scan-assembler-times "\[^_\]fpscr" 3 } }  */
+/* { dg-final { scan-assembler-times "\[^_\]fpscr" 4 } }  */
 
 extern void foo (void);
 

@@ -4433,6 +4433,7 @@ Function::Function(Function_type* type, Function* enclosing, Block* block,
     is_sink_(false), results_are_named_(false), nointerface_(false),
     is_unnamed_type_stub_method_(false), calls_recover_(false),
     is_recover_thunk_(false), has_recover_thunk_(false),
+    calls_defer_retaddr_(false), is_type_specific_function_(false),
     in_unique_section_(false)
 {
 }
@@ -5828,6 +5829,21 @@ Variable::flatten_init_expression(Gogo* gogo, Named_object* function,
 	}
 
       gogo->flatten_expression(function, inserter, &this->init_);
+
+      // If an interface conversion is needed, we need a temporary
+      // variable.
+      if (this->type_ != NULL
+	  && !Type::are_identical(this->type_, this->init_->type(), false,
+				  NULL)
+	  && this->init_->type()->interface_type() != NULL
+	  && !this->init_->is_variable())
+	{
+	  Temporary_statement* temp =
+	    Statement::make_temporary(NULL, this->init_, this->location_);
+	  inserter->insert(temp);
+	  this->init_ = Expression::make_temporary_reference(temp,
+							     this->location_);
+	}
 
       this->seen_ = false;
       this->init_is_flattened_ = true;

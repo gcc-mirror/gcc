@@ -210,9 +210,8 @@
   "iq_power5")
 
 (define_insn_reservation "power5-compare" 2
-  (and (ior (eq_attr "type" "compare")
-	    (and (eq_attr "type" "shift,exts")
-		 (eq_attr "dot" "yes")))
+  (and (eq_attr "type" "shift,exts")
+       (eq_attr "dot" "yes")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,iu1_power5,iu2_power5")
 

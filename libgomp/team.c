@@ -37,7 +37,7 @@ pthread_key_t gomp_thread_destructor;
 
 
 /* This is the libgomp per-thread data structure.  */
-#ifdef HAVE_TLS
+#if defined HAVE_TLS || defined USE_EMUTLS
 __thread struct gomp_thread gomp_tls_data;
 #else
 pthread_key_t gomp_tls_key;
@@ -70,7 +70,7 @@ gomp_thread_start (void *xdata)
   void (*local_fn) (void *);
   void *local_data;
 
-#ifdef HAVE_TLS
+#if defined HAVE_TLS || defined USE_EMUTLS
   thr = &gomp_tls_data;
 #else
   struct gomp_thread local_thr;
@@ -916,7 +916,7 @@ gomp_team_end (void)
 static void __attribute__((constructor))
 initialize_team (void)
 {
-#ifndef HAVE_TLS
+#if !defined HAVE_TLS && !defined USE_EMUTLS
   static struct gomp_thread initial_thread_tls_data;
 
   pthread_key_create (&gomp_tls_key, NULL);

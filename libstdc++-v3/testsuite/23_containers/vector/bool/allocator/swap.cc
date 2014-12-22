@@ -23,24 +23,27 @@
 
 using T = bool;
 
+namespace __gnu_test
+{
+  // It is undefined behaviour to swap() containers with unequal allocators
+  // if the allocator doesn't propagate, so ensure the allocators compare
+  // equal, while still being able to test propagation via get_personality().
+  bool
+  operator==(const propagating_allocator<T, false>&,
+	     const propagating_allocator<T, false>&)
+  {
+    return true;
+  }
+
+  bool
+  operator!=(const propagating_allocator<T, false>&,
+	     const propagating_allocator<T, false>&)
+  {
+    return false;
+  }
+}
+
 using __gnu_test::propagating_allocator;
-
-// It is undefined behaviour to swap() containers wth unequal allocators
-// if the allocator doesn't propagate, so ensure the allocators compare
-// equal, while still being able to test propagation via get_personality().
-bool
-operator==(const propagating_allocator<T, false>&,
-           const propagating_allocator<T, false>&)
-{
-  return true;
-}
-
-bool
-operator!=(const propagating_allocator<T, false>&,
-           const propagating_allocator<T, false>&)
-{
-  return false;
-}
 
 void test01()
 {

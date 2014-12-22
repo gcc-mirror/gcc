@@ -1674,6 +1674,18 @@ iterative_hash_template_arg (tree arg, hashval_t val)
   switch (tclass)
     {
     case tcc_type:
+      if (alias_template_specialization_p (arg))
+	{
+	  // We want an alias specialization that survived strip_typedefs
+	  // to hash differently from its TYPE_CANONICAL, to avoid hash
+	  // collisions that compare as different in template_args_equal.
+	  // These could be dependent specializations that strip_typedefs
+	  // left alone, or untouched specializations because
+	  // coerce_template_parms returns the unconverted template
+	  // arguments if it sees incomplete argument packs.
+	  tree ti = TYPE_TEMPLATE_INFO (arg);
+	  return hash_tmpl_and_args (TI_TEMPLATE (ti), TI_ARGS (ti));
+	}
       if (TYPE_CANONICAL (arg))
 	return iterative_hash_object (TYPE_HASH (TYPE_CANONICAL (arg)),
 				      val);
@@ -5314,13 +5326,19 @@ alias_type_or_template_p (tree t)
 bool
 alias_template_specialization_p (const_tree t)
 {
-  if (t == NULL_TREE)
-    return false;
-  
-  return (TYPE_P (t)
-	  && TYPE_TEMPLATE_INFO (t)
-	  && PRIMARY_TEMPLATE_P (TYPE_TI_TEMPLATE (t))
-	  && DECL_ALIAS_TEMPLATE_P (TYPE_TI_TEMPLATE (t)));
+  /* It's an alias template specialization if it's an alias and its
+     TYPE_NAME is a specialization of a primary template.  */
+  if (TYPE_ALIAS_P (t))
+    {
+      tree name = TYPE_NAME (t);
+      if (DECL_LANG_SPECIFIC (name))
+	if (tree ti = DECL_TEMPLATE_INFO (name))
+	  {
+	    tree tmpl = TI_TEMPLATE (ti);
+	    return PRIMARY_TEMPLATE_P (tmpl);
+	  }
+    }
+  return false;
 }
 
 /* Return TRUE iff T is a specialization of an alias template with
@@ -5330,7 +5348,8 @@ bool
 dependent_alias_template_spec_p (const_tree t)
 {
   return (alias_template_specialization_p (t)
-	  && any_dependent_template_arguments_p (TYPE_TI_ARGS (t)));
+	  && (any_dependent_template_arguments_p
+	      (INNERMOST_TEMPLATE_ARGS (TYPE_TI_ARGS (t)))));
 }
 
 /* Return the number of innermost template parameters in TMPL.  */
@@ -7283,16 +7302,12 @@ template_args_equal (tree ot, tree nt)
 	return false;
       /* Don't treat an alias template specialization with dependent
 	 arguments as equivalent to its underlying type when used as a
-	 template argument; we need them to hash differently.  */
-      bool ndep = dependent_alias_template_spec_p (nt);
-      ++processing_template_decl;
-      bool odep = dependent_alias_template_spec_p (ot);
-      --processing_template_decl;
-      if (ndep != odep)
+	 template argument; we need them to be distinct so that we
+	 substitute into the specialization arguments at instantiation
+	 time.  And aliases can't be equivalent without being ==, so
+	 we don't need to look any deeper.  */
+      if (TYPE_ALIAS_P (nt) || TYPE_ALIAS_P (ot))
 	return false;
-      else if (ndep)
-	return (TYPE_TI_TEMPLATE (nt) == TYPE_TI_TEMPLATE (ot)
-		&& template_args_equal (TYPE_TI_ARGS (nt), TYPE_TI_ARGS (ot)));
       else
 	return same_type_p (ot, nt);
     }
@@ -12241,21 +12256,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  r = cp_build_reference_type (type, TYPE_REF_IS_RVALUE (t));
 	r = cp_build_qualified_type_real (r, cp_type_quals (t), complain);
 
-	if (cxx_dialect >= cxx14
-	    && !(TREE_CODE (t) == REFERENCE_TYPE && REFERENCE_VLA_OK (t))
-	    && array_of_runtime_bound_p (type)
-	    && (flag_iso || warn_vla > 0))
-	  {
-	    if (complain & tf_warning_or_error)
-	      pedwarn
-		(input_location, OPT_Wvla,
-		 code == REFERENCE_TYPE
-		 ? G_("cannot declare reference to array of runtime bound")
-		 : G_("cannot declare pointer to array of runtime bound"));
-	    else
-	      r = error_mark_node;
-	  }
-
 	if (r != error_mark_node)
 	  /* Will this ever be needed for TYPE_..._TO values?  */
 	  layout_type (r);
@@ -14453,16 +14453,6 @@ tsubst_non_call_postfix_expression (tree t, tree args,
   return t;
 }
 
-/* Sentinel to disable certain warnings during template substitution.  */
-
-struct warning_sentinel {
-  int &flag;
-  int val;
-  warning_sentinel(int& flag, bool suppress=true)
-    : flag(flag), val(flag) { if (suppress) flag = 0; }
-  ~warning_sentinel() { flag = val; }
-};
-
 /* Like tsubst but deals with expressions and performs semantic
    analysis.  FUNCTION_P is true if T is the "F" in "F (ARGS)".  */
 
@@ -15140,7 +15130,7 @@ tsubst_copy_and_build (tree t,
 
 	/* Remember that there was a reference to this entity.  */
 	if (DECL_P (function))
-	  mark_used (function);
+	  mark_used (function, complain);
 
 	/* Put back tf_decltype for the actual call.  */
 	complain |= decltype_flag;
@@ -19232,6 +19222,7 @@ most_general_template (tree decl)
 	break;
 
       if (CLASS_TYPE_P (TREE_TYPE (decl))
+	  && !TYPE_DECL_ALIAS_P (TYPE_NAME (TREE_TYPE (decl)))
 	  && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
 	break;
 
@@ -22132,7 +22123,21 @@ do_auto_deduction (tree type, tree init, tree auto_node)
      initializer is a braced-init-list (8.5.4), with
      std::initializer_list<U>.  */
   if (BRACE_ENCLOSED_INITIALIZER_P (init))
-    type = listify_autos (type, auto_node);
+    {
+      if (!DIRECT_LIST_INIT_P (init))
+	type = listify_autos (type, auto_node);
+      else if (CONSTRUCTOR_NELTS (init) == 1)
+	init = CONSTRUCTOR_ELT (init, 0)->value;
+      else
+	{
+	  if (permerror (input_location, "direct-list-initialization of "
+			 "%<auto%> requires exactly one element"))
+	    inform (input_location,
+		    "for deduction to %<std::initializer_list%>, use copy-"
+		    "list-initialization (i.e. add %<=%> before the %<{%>)");
+	  type = listify_autos (type, auto_node);
+	}
+    }
 
   init = resolve_nondeduced_context (init);
 

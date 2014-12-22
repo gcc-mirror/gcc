@@ -26,6 +26,7 @@
 // ISO C++ 14882: 21  Strings library
 //
 
+#define _GLIBCXX_USE_CXX11_ABI 1
 #include <bits/c++config.h>
 
 #ifdef _GLIBCXX_USE_WCHAR_T

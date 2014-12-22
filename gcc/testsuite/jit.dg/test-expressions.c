@@ -543,6 +543,8 @@ make_tests_of_casts (gcc_jit_context *ctxt)
 {
   gcc_jit_type *int_type =
     gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT);
+  gcc_jit_type *long_type =
+    gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_LONG);
   gcc_jit_type *float_type =
     gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_FLOAT);
   gcc_jit_type *bool_type =
@@ -580,6 +582,20 @@ make_tests_of_casts (gcc_jit_context *ctxt)
 		       int_type,
 		       bool_type,
 		       "test_cast_from_int_to_bool"),
+    "(bool)a");
+
+  /* bool/long conversions */
+  CHECK_STRING_VALUE (
+    make_test_of_cast (ctxt,
+		       bool_type,
+		       long_type,
+		       "test_cast_from_bool_to_long"),
+    "(long)a");
+  CHECK_STRING_VALUE (
+    make_test_of_cast (ctxt,
+		       long_type,
+		       bool_type,
+		       "test_cast_from_long_to_bool"),
     "(bool)a");
 
   /* array/ptr conversions */
@@ -699,6 +715,28 @@ verify_casts (gcc_jit_result *result)
     CHECK_NON_NULL (test_cast_from_int_to_bool);
     CHECK_VALUE (test_cast_from_int_to_bool (0), 0);
     CHECK_VALUE (test_cast_from_int_to_bool (1), 1);
+  }
+
+  /* bool to long */
+  {
+    typedef long (*fn_type) (bool);
+    fn_type test_cast_from_bool_to_long =
+      (fn_type)gcc_jit_result_get_code (result,
+					"test_cast_from_bool_to_long");
+    CHECK_NON_NULL (test_cast_from_bool_to_long);
+    CHECK_VALUE (test_cast_from_bool_to_long (0), 0);
+    CHECK_VALUE (test_cast_from_bool_to_long (1), 1);
+  }
+
+  /* long to bool */
+  {
+    typedef bool (*fn_type) (long);
+    fn_type test_cast_from_long_to_bool =
+      (fn_type)gcc_jit_result_get_code (result,
+					"test_cast_from_long_to_bool");
+    CHECK_NON_NULL (test_cast_from_long_to_bool);
+    CHECK_VALUE (test_cast_from_long_to_bool (0), 0);
+    CHECK_VALUE (test_cast_from_long_to_bool (1), 1);
   }
 
   /* array to ptr */

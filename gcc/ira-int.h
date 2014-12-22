@@ -620,9 +620,9 @@ extern struct ira_spilled_reg_stack_slot *ira_spilled_reg_stack_slots;
    allocnos assigned to hard-registers, cost of the allocnos assigned
    to memory, cost of loads, stores and register move insns generated
    for pseudo-register live range splitting (see ira-emit.c).  */
-extern int ira_overall_cost;
-extern int ira_reg_cost, ira_mem_cost;
-extern int ira_load_cost, ira_store_cost, ira_shuffle_cost;
+extern int64_t ira_overall_cost;
+extern int64_t ira_reg_cost, ira_mem_cost;
+extern int64_t ira_load_cost, ira_store_cost, ira_shuffle_cost;
 extern int ira_move_loops_num, ira_additional_jumps_num;
 
 
@@ -843,11 +843,6 @@ struct target_ira_int {
      unavailable for the allocation.  */
   short x_ira_class_hard_reg_index[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
 
-  /* Array whose values are hard regset of hard registers available for
-     the allocation of given register class whose HARD_REGNO_MODE_OK
-     values for given mode are zero.  */
-  HARD_REG_SET x_ira_prohibited_class_mode_regs[N_REG_CLASSES][NUM_MACHINE_MODES];
-
   /* Index [CL][M] contains R if R appears somewhere in a register of the form:
 
          (reg:M R'), R' not in x_ira_prohibited_class_mode_regs[CL][M]
@@ -939,8 +934,6 @@ extern struct target_ira_int *this_target_ira_int;
   (this_target_ira_int->x_ira_non_ordered_class_hard_regs)
 #define ira_class_hard_reg_index \
   (this_target_ira_int->x_ira_class_hard_reg_index)
-#define ira_prohibited_class_mode_regs \
-  (this_target_ira_int->x_ira_prohibited_class_mode_regs)
 #define ira_useful_class_mode_regs \
   (this_target_ira_int->x_ira_useful_class_mode_regs)
 #define ira_important_classes_num \

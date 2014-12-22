@@ -923,7 +923,7 @@ protected:
 
       ~_Rope_self_destruct_ptr()
       { _Rope_RopeRep<_CharT, _Alloc>::_S_unref(_M_ptr); }
-#ifdef __EXCEPTIONS
+#if __cpp_exceptions
       _Rope_self_destruct_ptr() : _M_ptr(0) { };
 #else
       _Rope_self_destruct_ptr() { };

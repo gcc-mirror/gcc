@@ -3435,7 +3435,7 @@ gfc_trans_omp_do_simd (gfc_code *code, stmtblock_t *pblock,
       clausesa = clausesa_buf;
       gfc_split_omp_clauses (code, clausesa);
     }
-  if (gfc_option.gfc_flag_openmp)
+  if (flag_openmp)
     omp_do_clauses
       = gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_DO], code->loc);
   body = gfc_trans_omp_do (code, EXEC_OMP_SIMD, pblock ? pblock : &block,
@@ -3449,7 +3449,7 @@ gfc_trans_omp_do_simd (gfc_code *code, stmtblock_t *pblock,
     }
   else if (TREE_CODE (body) != BIND_EXPR)
     body = build3_v (BIND_EXPR, NULL, body, NULL_TREE);
-  if (gfc_option.gfc_flag_openmp)
+  if (flag_openmp)
     {
       stmt = make_node (OMP_FOR);
       TREE_TYPE (stmt) = void_type_node;
@@ -3527,7 +3527,7 @@ gfc_trans_omp_parallel_do_simd (gfc_code *code, stmtblock_t *pblock,
       clausesa = clausesa_buf;
       gfc_split_omp_clauses (code, clausesa);
     }
-  if (gfc_option.gfc_flag_openmp)
+  if (flag_openmp)
     omp_clauses
       = gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_PARALLEL],
 			       code->loc);
@@ -3543,7 +3543,7 @@ gfc_trans_omp_parallel_do_simd (gfc_code *code, stmtblock_t *pblock,
     }
   else if (TREE_CODE (stmt) != BIND_EXPR)
     stmt = build3_v (BIND_EXPR, NULL, stmt, NULL_TREE);
-  if (gfc_option.gfc_flag_openmp)
+  if (flag_openmp)
     {
       stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
 			 omp_clauses);
@@ -3698,7 +3698,7 @@ gfc_trans_omp_distribute (gfc_code *code, gfc_omp_clauses *clausesa)
       clausesa = clausesa_buf;
       gfc_split_omp_clauses (code, clausesa);
     }
-  if (gfc_option.gfc_flag_openmp)
+  if (flag_openmp)
     omp_clauses
       = gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_DISTRIBUTE],
 			       code->loc);
@@ -3741,7 +3741,7 @@ gfc_trans_omp_distribute (gfc_code *code, gfc_omp_clauses *clausesa)
     default:
       gcc_unreachable ();
     }
-  if (gfc_option.gfc_flag_openmp)
+  if (flag_openmp)
     {
       tree distribute = make_node (OMP_DISTRIBUTE);
       TREE_TYPE (distribute) = void_type_node;
@@ -3766,7 +3766,7 @@ gfc_trans_omp_teams (gfc_code *code, gfc_omp_clauses *clausesa)
       clausesa = clausesa_buf;
       gfc_split_omp_clauses (code, clausesa);
     }
-  if (gfc_option.gfc_flag_openmp)
+  if (flag_openmp)
     omp_clauses
       = gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_TEAMS],
 			       code->loc);
@@ -3801,7 +3801,7 @@ gfc_trans_omp_target (gfc_code *code)
 
   gfc_start_block (&block);
   gfc_split_omp_clauses (code, clausesa);
-  if (gfc_option.gfc_flag_openmp)
+  if (flag_openmp)
     omp_clauses
       = gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_TARGET],
 			       code->loc);
@@ -3811,7 +3811,7 @@ gfc_trans_omp_target (gfc_code *code)
     stmt = gfc_trans_omp_teams (code, clausesa);
   if (TREE_CODE (stmt) != BIND_EXPR)
     stmt = build3_v (BIND_EXPR, NULL, stmt, NULL_TREE);
-  if (gfc_option.gfc_flag_openmp)
+  if (flag_openmp)
     stmt = build2_loc (input_location, OMP_TARGET, void_type_node, stmt,
 		       omp_clauses);
   gfc_add_expr_to_block (&block, stmt);

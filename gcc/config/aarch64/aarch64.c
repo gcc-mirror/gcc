@@ -310,6 +310,7 @@ static const struct cpu_vector_cost cortexa57_vector_cost =
 #define AARCH64_FUSE_ADRP_ADD	(1 << 1)
 #define AARCH64_FUSE_MOVK_MOVK	(1 << 2)
 #define AARCH64_FUSE_ADRP_LDR	(1 << 3)
+#define AARCH64_FUSE_CMP_BRANCH	(1 << 4)
 
 #if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
 __extension__
@@ -322,7 +323,13 @@ static const struct tune_params generic_tunings =
   &generic_vector_cost,
   NAMED_PARAM (memmov_cost, 4),
   NAMED_PARAM (issue_rate, 2),
-  NAMED_PARAM (fuseable_ops, AARCH64_FUSE_NOTHING)
+  NAMED_PARAM (fuseable_ops, AARCH64_FUSE_NOTHING),
+  8,	/* function_align.  */
+  8,	/* jump_align.  */
+  4,	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  1	/* vec_reassoc_width.  */
 };
 
 static const struct tune_params cortexa53_tunings =
@@ -334,7 +341,13 @@ static const struct tune_params cortexa53_tunings =
   NAMED_PARAM (memmov_cost, 4),
   NAMED_PARAM (issue_rate, 2),
   NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
-                             | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR))
+                             | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR)),
+  8,	/* function_align.  */
+  8,	/* jump_align.  */
+  4,	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  1	/* vec_reassoc_width.  */
 };
 
 static const struct tune_params cortexa57_tunings =
@@ -345,7 +358,13 @@ static const struct tune_params cortexa57_tunings =
   &cortexa57_vector_cost,
   NAMED_PARAM (memmov_cost, 4),
   NAMED_PARAM (issue_rate, 3),
-  NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD | AARCH64_FUSE_MOVK_MOVK))
+  NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD | AARCH64_FUSE_MOVK_MOVK)),
+  16,	/* function_align.  */
+  8,	/* jump_align.  */
+  4,	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  1	/* vec_reassoc_width.  */
 };
 
 static const struct tune_params thunderx_tunings =
@@ -356,7 +375,13 @@ static const struct tune_params thunderx_tunings =
   &generic_vector_cost,
   NAMED_PARAM (memmov_cost, 6),
   NAMED_PARAM (issue_rate, 2),
-  NAMED_PARAM (fuseable_ops, AARCH64_FUSE_NOTHING)
+  NAMED_PARAM (fuseable_ops, AARCH64_FUSE_CMP_BRANCH),
+  8,	/* function_align.  */
+  8,	/* jump_align.  */
+  8,	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  1	/* vec_reassoc_width.  */
 };
 
 /* A processor implementing AArch64.  */
@@ -374,12 +399,10 @@ struct processor
 static const struct processor all_cores[] =
 {
 #define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, FLAGS, COSTS) \
-  {NAME, SCHED, #ARCH, ARCH,\
-    FLAGS | AARCH64_FL_FOR_ARCH##ARCH, &COSTS##_tunings},
+  {NAME, SCHED, #ARCH, ARCH, FLAGS, &COSTS##_tunings},
 #include "aarch64-cores.def"
 #undef AARCH64_CORE
-  {"generic", cortexa53, "8", 8,\
-    AARCH64_FL_FPSIMD | AARCH64_FL_FOR_ARCH8, &generic_tunings},
+  {"generic", cortexa53, "8", 8, AARCH64_FL_FOR_ARCH8, &generic_tunings},
   {NULL, aarch64_none, NULL, 0, 0, NULL}
 };
 
@@ -448,6 +471,25 @@ static const char * const aarch64_condition_codes[] =
   "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc",
   "hi", "ls", "ge", "lt", "gt", "le", "al", "nv"
 };
+
+static unsigned int
+aarch64_min_divisions_for_recip_mul (enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return 2;
+}
+
+static int
+aarch64_reassociation_width (unsigned opc ATTRIBUTE_UNUSED,
+			     enum machine_mode mode)
+{
+  if (VECTOR_MODE_P (mode))
+    return aarch64_tune_params->vec_reassoc_width;
+  if (INTEGRAL_MODE_P (mode))
+    return aarch64_tune_params->int_reassoc_width;
+  if (FLOAT_MODE_P (mode))
+    return aarch64_tune_params->fp_reassoc_width;
+  return 1;
+}
 
 /* Provide a mapping from gcc register numbers to dwarf register numbers.  */
 unsigned
@@ -6506,7 +6548,8 @@ aarch64_parse_extension (char *str)
 
       if (len == 0)
 	{
-	  error ("missing feature modifier after %qs", "+no");
+	  error ("missing feature modifier after %qs", adding_ext ? "+"
+	                                                          : "+no");
 	  return;
 	}
 
@@ -6735,6 +6778,18 @@ aarch64_override_options (void)
 #else
       aarch64_fix_a53_err835769 = 0;
 #endif
+    }
+
+  /* If not opzimizing for size, set the default
+     alignment to what the target wants */
+  if (!optimize_size)
+    {
+      if (align_loops <= 0)
+	align_loops = aarch64_tune_params->loop_align;
+      if (align_jumps <= 0)
+	align_jumps = aarch64_tune_params->jump_align;
+      if (align_functions <= 0)
+	align_functions = aarch64_tune_params->function_align;
     }
 
   aarch64_override_options_after_change ();
@@ -10379,6 +10434,20 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
         }
     }
 
+  if ((aarch64_tune_params->fuseable_ops & AARCH64_FUSE_CMP_BRANCH)
+      && any_condjump_p (curr))
+    {
+      enum attr_type prev_type = get_attr_type (prev);
+
+      /* FIXME: this misses some which is considered simple arthematic
+         instructions for ThunderX.  Simple shifts are missed here.  */
+      if (prev_type == TYPE_ALUS_SREG
+          || prev_type == TYPE_ALUS_IMM
+          || prev_type == TYPE_LOGICS_REG
+          || prev_type == TYPE_LOGICS_IMM)
+        return true;
+    }
+
   return false;
 }
 
@@ -10986,6 +11055,9 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 #undef TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST aarch64_memory_move_cost
 
+#undef TARGET_MIN_DIVISIONS_FOR_RECIP_MUL
+#define TARGET_MIN_DIVISIONS_FOR_RECIP_MUL aarch64_min_divisions_for_recip_mul
+
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
 
@@ -11007,6 +11079,9 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS aarch64_preferred_reload_class
+
+#undef TARGET_SCHED_REASSOCIATION_WIDTH
+#define TARGET_SCHED_REASSOCIATION_WIDTH aarch64_reassociation_width
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD aarch64_secondary_reload

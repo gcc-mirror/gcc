@@ -54,8 +54,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // NB: Don't instantiate required wchar_t facets if no wchar_t support.
 #ifdef _GLIBCXX_USE_WCHAR_T
 # define  _GLIBCXX_NUM_FACETS 28
+# define  _GLIBCXX_NUM_CXX11_FACETS 16
 #else
 # define  _GLIBCXX_NUM_FACETS 14
+# define  _GLIBCXX_NUM_CXX11_FACETS 8
 #endif
 
   // Convert string to numeric value of type _Tp and store results.
@@ -1623,6 +1625,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
+
   /**
    *  @brief  Primary class template numpunct.
    *  @ingroup locales
@@ -1896,6 +1900,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~numpunct_byname() { }
     };
 
+_GLIBCXX_END_NAMESPACE_CXX11
+
 _GLIBCXX_BEGIN_NAMESPACE_LDBL
 
   /**
@@ -2107,11 +2113,13 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       /// Destructor.
       virtual ~num_get() { }
 
+      _GLIBCXX_DEFAULT_ABI_TAG
       iter_type
       _M_extract_float(iter_type, iter_type, ios_base&, ios_base::iostate&,
 		       string&) const;
 
       template<typename _ValueT>
+	_GLIBCXX_DEFAULT_ABI_TAG
 	iter_type
 	_M_extract_int(iter_type, iter_type, ios_base&, ios_base::iostate&,
 		       _ValueT&) const;

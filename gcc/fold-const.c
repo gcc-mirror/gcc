@@ -400,7 +400,7 @@ negate_expr_p (tree t)
   switch (TREE_CODE (t))
     {
     case INTEGER_CST:
-      if (TYPE_OVERFLOW_WRAPS (type))
+      if (INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type))
 	return true;
 
       /* Check that -CST will not overflow type.  */
@@ -558,7 +558,8 @@ fold_negate_expr (location_t loc, tree t)
     case INTEGER_CST:
       tem = fold_negate_const (t, type);
       if (TREE_OVERFLOW (tem) == TREE_OVERFLOW (t)
-	  || (!TYPE_OVERFLOW_TRAPS (type)
+	  || (ANY_INTEGRAL_TYPE_P (type)
+	      && !TYPE_OVERFLOW_TRAPS (type)
 	      && TYPE_OVERFLOW_WRAPS (type))
 	  || (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0)
 	return tem;
@@ -2592,7 +2593,7 @@ combine_comparisons (location_t loc,
 		     enum tree_code rcode, tree truth_type,
 		     tree ll_arg, tree lr_arg)
 {
-  bool honor_nans = HONOR_NANS (element_mode (ll_arg));
+  bool honor_nans = HONOR_NANS (ll_arg);
   enum comparison_code lcompcode = comparison_to_compcode (lcode);
   enum comparison_code rcompcode = comparison_to_compcode (rcode);
   int compcode;
@@ -2799,7 +2800,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  return 1;
 
 
-	if (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg0))))
+	if (!HONOR_SIGNED_ZEROS (arg0))
 	  {
 	    /* If we do not distinguish between signed and unsigned zero,
 	       consider them equal.  */
@@ -3376,7 +3377,7 @@ fold_truth_not_expr (location_t loc, tree arg)
 	  && code != NE_EXPR && code != EQ_EXPR)
 	return NULL_TREE;
 
-      code = invert_tree_comparison (code, HONOR_NANS (TYPE_MODE (op_type)));
+      code = invert_tree_comparison (code, HONOR_NANS (op_type));
       if (code == ERROR_MARK)
 	return NULL_TREE;
 
@@ -4988,7 +4989,7 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
 	     operand which will be used if they are equal first
 	     so that we can convert this back to the
 	     corresponding COND_EXPR.  */
-	  if (!HONOR_NANS (element_mode (arg1)))
+	  if (!HONOR_NANS (arg1))
 	    {
 	      comp_op0 = fold_convert_loc (loc, comp_type, comp_op0);
 	      comp_op1 = fold_convert_loc (loc, comp_type, comp_op1);
@@ -5004,7 +5005,7 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
 	case GT_EXPR:
 	case UNGE_EXPR:
 	case UNGT_EXPR:
-	  if (!HONOR_NANS (element_mode (arg1)))
+	  if (!HONOR_NANS (arg1))
 	    {
 	      comp_op0 = fold_convert_loc (loc, comp_type, comp_op0);
 	      comp_op1 = fold_convert_loc (loc, comp_type, comp_op1);
@@ -5017,12 +5018,12 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
 	    }
 	  break;
 	case UNEQ_EXPR:
-	  if (!HONOR_NANS (element_mode (arg1)))
+	  if (!HONOR_NANS (arg1))
 	    return pedantic_non_lvalue_loc (loc,
 					fold_convert_loc (loc, type, arg2));
 	  break;
 	case LTGT_EXPR:
-	  if (!HONOR_NANS (element_mode (arg1)))
+	  if (!HONOR_NANS (arg1))
 	    return pedantic_non_lvalue_loc (loc,
 					fold_convert_loc (loc, type, arg1));
 	  break;
@@ -5317,7 +5318,7 @@ merge_truthop_with_opposite_arm (location_t loc, tree op, tree cmpop,
 	}
     }
 
-  inv_code = invert_tree_comparison (code, HONOR_NANS (TYPE_MODE (type)));
+  inv_code = invert_tree_comparison (code, HONOR_NANS (type));
   if (inv_code == rhs_code
       && operand_equal_p (TREE_OPERAND (rhs, 0), TREE_OPERAND (cmpop, 0), 0)
       && operand_equal_p (TREE_OPERAND (rhs, 1), TREE_OPERAND (cmpop, 1), 0))
@@ -5951,7 +5952,8 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	   || EXPRESSION_CLASS_P (op0))
 	  /* ... and has wrapping overflow, and its type is smaller
 	     than ctype, then we cannot pass through as widening.  */
-	  && ((TYPE_OVERFLOW_WRAPS (TREE_TYPE (op0))
+	  && (((ANY_INTEGRAL_TYPE_P (TREE_TYPE (op0))
+		&& TYPE_OVERFLOW_WRAPS (TREE_TYPE (op0)))
 	       && (TYPE_PRECISION (ctype)
 	           > TYPE_PRECISION (TREE_TYPE (op0))))
 	      /* ... or this is a truncation (t is narrower than op0),
@@ -5966,7 +5968,8 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	      /* ... or has undefined overflow while the converted to
 		 type has not, we cannot do the operation in the inner type
 		 as that would introduce undefined overflow.  */
-	      || (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (op0))
+	      || ((ANY_INTEGRAL_TYPE_P (TREE_TYPE (op0))
+		   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (op0)))
 		  && !TYPE_OVERFLOW_UNDEFINED (type))))
 	break;
 
@@ -8500,7 +8503,8 @@ maybe_canonicalize_comparison_1 (location_t loc, enum tree_code code, tree type,
 
   /* Match A +- CST code arg1 and CST code arg1.  We can change the
      first form only if overflow is undefined.  */
-  if (!((TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
+  if (!(((ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+	  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0)))
 	 /* In principle pointers also have undefined overflow behavior,
 	    but that causes problems elsewhere.  */
 	 && !POINTER_TYPE_P (TREE_TYPE (arg0))
@@ -8715,7 +8719,9 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 
   /* Transform comparisons of the form X +- C1 CMP C2 to X CMP C2 -+ C1.  */
   if ((TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
-      && (equality_code || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0)))
+      && (equality_code
+	  || (ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+	      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))))
       && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
       && !TREE_OVERFLOW (TREE_OPERAND (arg0, 1))
       && TREE_CODE (arg1) == INTEGER_CST
@@ -9034,7 +9040,8 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
      X CMP Y +- C2 +- C1 for signed X, Y.  This is valid if
      the resulting offset is smaller in absolute value than the
      original one and has the same sign.  */
-  if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
+  if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
       && (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
       && (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 	  && !TREE_OVERFLOW (TREE_OPERAND (arg0, 1)))
@@ -9088,7 +9095,8 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
      signed arithmetic case.  That form is created by the compiler
      often enough for folding it to be of value.  One example is in
      computing loop trip counts after Operator Strength Reduction.  */
-  if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
+  if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
       && TREE_CODE (arg0) == MULT_EXPR
       && (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
           && !TREE_OVERFLOW (TREE_OPERAND (arg0, 1)))
@@ -9160,7 +9168,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 
 	  /* x != NaN is always true, other ops are always false.  */
 	  if (REAL_VALUE_ISNAN (cst)
-	      && ! HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg1))))
+	      && ! HONOR_SNANS (arg1))
 	    {
 	      tem = (code == NE_EXPR) ? integer_one_node : integer_zero_node;
 	      return omit_one_operand_loc (loc, type, tem, arg0);
@@ -9257,14 +9265,14 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	{
 	case EQ_EXPR:
 	  if (! FLOAT_TYPE_P (TREE_TYPE (arg0))
-	      || ! HONOR_NANS (element_mode (arg0)))
+	      || ! HONOR_NANS (arg0))
 	    return constant_boolean_node (1, type);
 	  break;
 
 	case GE_EXPR:
 	case LE_EXPR:
 	  if (! FLOAT_TYPE_P (TREE_TYPE (arg0))
-	      || ! HONOR_NANS (element_mode (arg0)))
+	      || ! HONOR_NANS (arg0))
 	    return constant_boolean_node (1, type);
 	  return fold_build2_loc (loc, EQ_EXPR, type, arg0, arg1);
 
@@ -9272,7 +9280,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  /* For NE, we can only do this simplification if integer
 	     or we don't honor IEEE floating point NaNs.  */
 	  if (FLOAT_TYPE_P (TREE_TYPE (arg0))
-	      && HONOR_NANS (element_mode (arg0)))
+	      && HONOR_NANS (arg0))
 	    break;
 	  /* ... fall through ...  */
 	case GT_EXPR:
@@ -10085,7 +10093,8 @@ fold_binary_loc (location_t loc,
 	  /* Reassociate (plus (plus (mult) (foo)) (mult)) as
 	     (plus (plus (mult) (mult)) (foo)) so that we can
 	     take advantage of the factoring cases below.  */
-	  if (TYPE_OVERFLOW_WRAPS (type)
+	  if (ANY_INTEGRAL_TYPE_P (type)
+	      && TYPE_OVERFLOW_WRAPS (type)
 	      && (((TREE_CODE (arg0) == PLUS_EXPR
 		    || TREE_CODE (arg0) == MINUS_EXPR)
 		   && TREE_CODE (arg1) == MULT_EXPR)
@@ -10409,8 +10418,8 @@ fold_binary_loc (location_t loc,
 
 	      /* Don't introduce overflows through reassociation.  */
 	      if (!any_overflows
-		  && ((lit0 && TREE_OVERFLOW (lit0))
-		      || (minus_lit0 && TREE_OVERFLOW (minus_lit0))))
+		  && ((lit0 && TREE_OVERFLOW_P (lit0))
+		      || (minus_lit0 && TREE_OVERFLOW_P (minus_lit0))))
 		return NULL_TREE;
 
 	      if (minus_lit0)
@@ -10769,7 +10778,7 @@ fold_binary_loc (location_t loc,
 	  /* Fold z * +-I to __complex__ (-+__imag z, +-__real z).
 	     This is not the same for NaNs or if signed zeros are
 	     involved.  */
-	  if (!HONOR_NANS (element_mode (arg0))
+	  if (!HONOR_NANS (arg0)
               && !HONOR_SIGNED_ZEROS (element_mode (arg0))
 	      && COMPLEX_FLOAT_TYPE_P (TREE_TYPE (arg0))
 	      && TREE_CODE (arg1) == COMPLEX_CST
@@ -11701,7 +11710,7 @@ fold_binary_loc (location_t loc,
 	      tree arg00 = CALL_EXPR_ARG (arg0, 0);
 	      tree arg01 = CALL_EXPR_ARG (arg1, 0);
 
-	      if (! HONOR_NANS (element_mode (arg00))
+	      if (! HONOR_NANS (arg00)
 		  && ! HONOR_INFINITIES (element_mode (arg00))
 		  && operand_equal_p (arg00, arg01, 0))
 		{
@@ -11721,7 +11730,7 @@ fold_binary_loc (location_t loc,
 	      tree arg00 = CALL_EXPR_ARG (arg0, 0);
 	      tree arg01 = CALL_EXPR_ARG (arg1, 0);
 
-	      if (! HONOR_NANS (element_mode (arg00))
+	      if (! HONOR_NANS (arg00)
 		  && ! HONOR_INFINITIES (element_mode (arg00))
 		  && operand_equal_p (arg00, arg01, 0))
 		{
@@ -12821,7 +12830,7 @@ fold_binary_loc (location_t loc,
       if ((TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
 	  && ((TREE_CODE (TREE_OPERAND (arg0, 1)) == REAL_CST
-	       && !HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0))))
+	       && !HONOR_SNANS (arg0))
 	      || (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 		  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg1)))))
 	{
@@ -12863,7 +12872,7 @@ fold_binary_loc (location_t loc,
 	    }
 
 	  /* Convert (X - c) <= X to true.  */
-	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg1)))
+	  if (!HONOR_NANS (arg1)
 	      && code == LE_EXPR
 	      && ((code0 == MINUS_EXPR && is_positive >= 0)
 		  || (code0 == PLUS_EXPR && is_positive <= 0)))
@@ -12878,7 +12887,7 @@ fold_binary_loc (location_t loc,
 	    }
 
 	  /* Convert (X + c) >= X to true.  */
-	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg1)))
+	  if (!HONOR_NANS (arg1)
 	      && code == GE_EXPR
 	      && ((code0 == PLUS_EXPR && is_positive >= 0)
 		  || (code0 == MINUS_EXPR && is_positive <= 0)))
@@ -13085,7 +13094,7 @@ fold_binary_loc (location_t loc,
       strict_overflow_p = false;
       if (code == GE_EXPR
 	  && (integer_zerop (arg1)
-	      || (! HONOR_NANS (element_mode (arg0))
+	      || (! HONOR_NANS (arg0)
 		  && real_zerop (arg1)))
 	  && tree_expr_nonnegative_warnv_p (arg0, &strict_overflow_p))
 	{
@@ -14754,7 +14763,8 @@ tree_binary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
 	      || (tree_expr_nonnegative_warnv_p (op0, strict_overflow_p)
 		  && tree_expr_nonnegative_warnv_p (op1, strict_overflow_p)))
 	    {
-	      if (TYPE_OVERFLOW_UNDEFINED (type))
+	      if (ANY_INTEGRAL_TYPE_P (type)
+		  && TYPE_OVERFLOW_UNDEFINED (type))
 		*strict_overflow_p = true;
 	      return true;
 	    }
@@ -15226,7 +15236,7 @@ tree_binary_nonzero_warnv_p (enum tree_code code,
     {
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
-      if (TYPE_OVERFLOW_UNDEFINED (type))
+      if (ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_UNDEFINED (type))
 	{
 	  /* With the presence of negative values it is hard
 	     to say something.  */

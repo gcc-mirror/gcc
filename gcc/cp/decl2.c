@@ -1996,19 +1996,30 @@ decl_needed_p (tree decl)
      COMDAT until that point.  */
   gcc_assert (at_eof);
 
-  /* All entities with external linkage that are not COMDAT should be
+  /* All entities with external linkage that are not COMDAT/EXTERN should be
      emitted; they may be referred to from other object files.  */
-  if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl))
+  if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_REALLY_EXTERN (decl))
     return true;
-  /* If this entity was used, let the back end see it; it will decide
-     whether or not to emit it into the object file.  */
-  if (TREE_USED (decl))
-      return true;
   /* Functions marked "dllexport" must be emitted so that they are
      visible to other DLLs.  */
   if (flag_keep_inline_dllexport
       && lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)))
     return true;
+
+  /* When not optimizing, do not bother to produce definitions for extern
+     symbols.  */
+  if (DECL_REALLY_EXTERN (decl)
+      && ((TREE_CODE (decl) != FUNCTION_DECL
+	   && !optimize)
+	  || (TREE_CODE (decl) == FUNCTION_DECL
+	      && !opt_for_fn (decl, optimize)))
+      && !lookup_attribute ("always_inline", decl))
+    return false;
+
+  /* If this entity was used, let the back end see it; it will decide
+     whether or not to emit it into the object file.  */
+  if (TREE_USED (decl))
+      return true;
   /* Virtual functions might be needed for devirtualization.  */
   if (flag_devirtualize
       && TREE_CODE (decl) == FUNCTION_DECL
@@ -4308,6 +4319,47 @@ dump_tu (void)
     }
 }
 
+/* Check the deallocation functions for CODE to see if we want to warn that
+   only one was defined.  */
+
+static void
+maybe_warn_sized_delete (enum tree_code code)
+{
+  tree sized = NULL_TREE;
+  tree unsized = NULL_TREE;
+
+  for (tree ovl = IDENTIFIER_GLOBAL_VALUE (ansi_opname (code));
+       ovl; ovl = OVL_NEXT (ovl))
+    {
+      tree fn = OVL_CURRENT (ovl);
+      /* We're only interested in usual deallocation functions.  */
+      if (!non_placement_deallocation_fn_p (fn))
+	continue;
+      if (FUNCTION_ARG_CHAIN (fn) == void_list_node)
+	unsized = fn;
+      else
+	sized = fn;
+    }
+  if (DECL_INITIAL (unsized) && !DECL_INITIAL (sized))
+    warning_at (DECL_SOURCE_LOCATION (unsized), OPT_Wsized_deallocation,
+		"the program should also define %qD", sized);
+  else if (!DECL_INITIAL (unsized) && DECL_INITIAL (sized))
+    warning_at (DECL_SOURCE_LOCATION (sized), OPT_Wsized_deallocation,
+		"the program should also define %qD", unsized);
+}
+
+/* Check the global deallocation functions to see if we want to warn about
+   defining unsized without sized (or vice versa).  */
+
+static void
+maybe_warn_sized_delete ()
+{
+  if (!flag_sized_deallocation || !warn_sized_deallocation)
+    return;
+  maybe_warn_sized_delete (DELETE_EXPR);
+  maybe_warn_sized_delete (VEC_DELETE_EXPR);
+}
+
 /* This routine is called at the end of compilation.
    Its job is to create all the code needed to initialize and
    destroy the global aggregates.  We do the destruction
@@ -4638,6 +4690,8 @@ cp_write_global_declarations (void)
   FOR_EACH_VEC_SAFE_ELT (no_linkage_decls, i, decl)
     no_linkage_error (decl);
 
+  maybe_warn_sized_delete ();
+
   /* Then, do the Objective-C stuff.  This is where all the
      Objective-C module stuff gets generated (symtab,
      class/protocol/selector lists etc).  This must be done after C++
@@ -4963,7 +5017,7 @@ mark_used (tree decl, tsubst_flags_t complain)
       --function_depth;
     }
 
-  if (processing_template_decl)
+  if (processing_template_decl || in_template_function ())
     return true;
 
   /* Check this too in case we're within instantiate_non_dependent_expr.  */

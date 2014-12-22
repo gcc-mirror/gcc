@@ -599,18 +599,6 @@ enum gfc_isym_id
 };
 typedef enum gfc_isym_id gfc_isym_id;
 
-
-typedef enum
-{
-  GFC_INIT_REAL_OFF = 0,
-  GFC_INIT_REAL_ZERO,
-  GFC_INIT_REAL_NAN,
-  GFC_INIT_REAL_SNAN,
-  GFC_INIT_REAL_INF,
-  GFC_INIT_REAL_NEG_INF
-}
-init_local_real;
-
 typedef enum
 {
   GFC_INIT_LOGICAL_OFF = 0,
@@ -632,14 +620,6 @@ typedef enum
   GFC_INIT_INTEGER_ON
 }
 init_local_integer;
-
-typedef enum
-{
-  GFC_FCOARRAY_NONE = 0,
-  GFC_FCOARRAY_SINGLE,
-  GFC_FCOARRAY_LIB
-}
-gfc_fcoarray;
 
 typedef enum
 {
@@ -1627,7 +1607,7 @@ typedef struct gfc_namespace
   gfc_st_label *st_labels;
   /* This list holds information about all the data initializers in
      this namespace.  */
-  struct gfc_data *data;
+  struct gfc_data *data, *old_data;
 
   gfc_charlen *cl_list, *old_cl_list;
 
@@ -2426,79 +2406,26 @@ typedef struct
 {
   char *module_dir;
   gfc_source_form source_form;
-  /* Maximum line lengths in fixed- and free-form source, respectively.
-     When fixed_line_length or free_line_length are 0, the whole line is used,
-     regardless of length.
-
-     If the user requests a fixed_line_length <7 then gfc_init_options()
-     emits a fatal error.  */
-  int fixed_line_length;
-  int free_line_length;
-  /* Maximum number of continuation lines in fixed- and free-form source,
-     respectively.  */
   int max_continue_fixed;
   int max_continue_free;
   int max_identifier_length;
-  int dump_fortran_original;
-  int dump_fortran_optimized;
 
   int max_errors;
 
-  int flag_all_intrinsics;
-  int flag_default_double;
-  int flag_default_integer;
-  int flag_default_real;
-  int flag_integer4_kind;
-  int flag_real4_kind;
-  int flag_real8_kind;
-  int flag_dollar_ok;
-  int flag_underscoring;
-  int flag_second_underscore;
-  int flag_implicit_none;
-  int flag_max_stack_var_size;
-  int flag_max_array_constructor;
-  int flag_range_check;
-  int flag_pack_derived;
-  int flag_repack_arrays;
   int flag_preprocessed;
-  int flag_f2c;
-  int flag_automatic;
-  int flag_backslash;
-  int flag_backtrace;
-  int flag_allow_leading_underscore;
-  int flag_external_blas;
-  int blas_matmul_limit;
-  int flag_cray_pointer;
   int flag_d_lines;
-  int gfc_flag_openmp;
-  int gfc_flag_openmp_simd;
-  int flag_sign_zero;
-  int flag_stack_arrays;
-  int flag_module_private;
-  int flag_recursive;
-  int flag_init_local_zero;
   int flag_init_integer;
   int flag_init_integer_value;
-  int flag_init_real;
   int flag_init_logical;
   int flag_init_character;
   char flag_init_character_value;
-  int flag_align_commons;
-  int flag_protect_parens;
-  int flag_realloc_lhs;
-  int flag_aggressive_function_elimination;
-  int flag_frontend_optimize;
 
   int fpe;
   int fpe_summary;
   int rtcheck;
-  gfc_fcoarray coarray;
 
   int warn_std;
   int allow_std;
-  int convert;
-  int record_marker;
-  int max_subrecord_length;
 }
 gfc_option_t;
 
@@ -2682,6 +2609,7 @@ bool gfc_warning_now (int opt, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 void gfc_clear_warning (void);
 void gfc_warning_check (void);
 
+void gfc_error_1 (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_error (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_error_now_1 (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_error_now (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
@@ -2692,15 +2620,17 @@ bool gfc_error_check (void);
 bool gfc_error_flag_test (void);
 
 notification gfc_notification_std (int);
+bool gfc_notify_std_1 (int, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 bool gfc_notify_std (int, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 
 /* A general purpose syntax error.  */
 #define gfc_syntax_error(ST)	\
   gfc_error ("Syntax error in %s statement at %C", gfc_ascii_statement (ST));
 
-void gfc_push_error (gfc_error_buf *);
-void gfc_pop_error (gfc_error_buf *);
-void gfc_free_error (gfc_error_buf *);
+#include "pretty-print.h" /* For output_buffer.  */
+void gfc_push_error (output_buffer *, gfc_error_buf *);
+void gfc_pop_error (output_buffer *, gfc_error_buf *);
+void gfc_free_error (output_buffer *, gfc_error_buf *);
 
 void gfc_get_errors (int *, int *);
 void gfc_errors_to_warnings (bool);
@@ -2926,6 +2856,7 @@ void gfc_free_omp_namelist (gfc_omp_namelist *);
 void gfc_free_equiv (gfc_equiv *);
 void gfc_free_equiv_until (gfc_equiv *, gfc_equiv *);
 void gfc_free_data (gfc_data *);
+void gfc_reject_data (gfc_namespace *);
 void gfc_free_case_list (gfc_case *);
 
 /* matchexp.c -- FIXME too?  */

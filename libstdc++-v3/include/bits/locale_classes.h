@@ -212,6 +212,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  @brief  Return locale name.
      *  @return  Locale name or "*" if unnamed.
     */
+    _GLIBCXX_DEFAULT_ABI_TAG
     string
     name() const;
 
@@ -321,6 +322,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     void
     _M_coalesce(const locale& __base, const locale& __add, category __cat);
+
+#if _GLIBCXX_USE_CXX11_ABI
+    static const id* const _S_twinned_facets[];
+#endif
   };
 
 
@@ -419,6 +424,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     facet&
     operator=(const facet&);  // Not defined.
+
+    class __shim;
+
+    const facet* _M_sso_shim(const id*) const;
+    const facet* _M_cow_shim(const id*) const;
   };
 
 
@@ -563,8 +573,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_init_facet(_Facet* __facet)
       { _M_install_facet(&_Facet::id, __facet); }
 
+    template<typename _Facet>
+      void
+      _M_init_facet_unchecked(_Facet* __facet)
+      {
+	__facet->_M_add_reference();
+	_M_facets[_Facet::id._M_id()] = __facet;
+      }
+
     void
     _M_install_cache(const facet*, size_t);
+
+    void _M_init_extra(facet**);
+    void _M_init_extra(void*, void*, const char*, const char*);
   };
 
 
@@ -581,7 +602,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  collate facet.
   */
   template<typename _CharT>
-    class collate : public locale::facet
+    class _GLIBCXX_NAMESPACE_CXX11 collate : public locale::facet
     {
     public:
       // Types:
@@ -755,7 +776,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// class collate_byname [22.2.4.2].
   template<typename _CharT>
-    class collate_byname : public collate<_CharT>
+    class _GLIBCXX_NAMESPACE_CXX11 collate_byname : public collate<_CharT>
     {
     public:
       //@{

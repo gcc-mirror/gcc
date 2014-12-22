@@ -676,11 +676,12 @@ propagate (void)
     XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
   int order_pos;
   int i;
+  bool remove_p;
 
   if (dump_file)
     cgraph_node::dump_cgraph (dump_file);
 
-  ipa_discover_readonly_nonaddressable_vars ();
+  remove_p = ipa_discover_readonly_nonaddressable_vars ();
   generate_summary ();
 
   /* Propagate the local information through the call graph to produce
@@ -867,7 +868,7 @@ propagate (void)
   if (dump_file)
     splay_tree_delete (reference_vars_to_consider);
   reference_vars_to_consider = NULL;
-  return 0;
+  return remove_p ? TODO_remove_functions : 0;
 }
 
 /* Return true if we need to write summary of NODE. */

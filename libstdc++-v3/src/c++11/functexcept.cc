@@ -20,6 +20,9 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+// We don't want to change the type thrown by __throw_ios_failure (yet?)
+#define _GLIBCXX_USE_CXX11_ABI 0
+
 #include <bits/functexcept.h>
 #include <cstdlib>
 #include <exception>

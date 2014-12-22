@@ -74,6 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "value-prof.h"
 #include "tree-pass.h"
@@ -1617,8 +1618,12 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
 
       /* Clear flags that need revisiting.  */
       if (gcall *call_stmt = dyn_cast <gcall *> (copy))
-	if (gimple_call_tail_p (call_stmt))
-	  gimple_call_set_tail (call_stmt, false);
+        {
+	  if (gimple_call_tail_p (call_stmt))
+	    gimple_call_set_tail (call_stmt, false);
+	  if (gimple_call_from_thunk_p (call_stmt))
+	    gimple_call_set_from_thunk (call_stmt, false);
+	}
 
       /* Remap the region numbers for __builtin_eh_{pointer,filter},
 	 RESX and EH_DISPATCH.  */

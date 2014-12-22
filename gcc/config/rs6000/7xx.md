@@ -101,7 +101,7 @@
   "ppc750_du,iu1_7xx*19")
 
 (define_insn_reservation "ppc750-compare" 2
-  (and (ior (eq_attr "type" "cmp,compare")
+  (and (ior (eq_attr "type" "cmp")
 	    (and (eq_attr "type" "add,logical,shift,exts")
 		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "ppc750,ppc7400"))

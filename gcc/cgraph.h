@@ -1255,6 +1255,8 @@ public:
   int count_materialization_scale;
   /* Unique id of the node.  */
   int uid;
+  /* Summary unique id of the node.  */
+  int summary_uid;
   /* ID assigned by the profiling.  */
   unsigned int profile_id;
   /* Time profiler: first run of function.  */
@@ -1801,12 +1803,15 @@ enum symtab_state
   PARSING,
   /* Callgraph is being constructed.  It is safe to add new functions.  */
   CONSTRUCTION,
-  /* Callgraph is being at LTO time.  */
+  /* Callgraph is being streamed-in at LTO time.  */
   LTO_STREAMING,
-  /* Callgraph is built and IPA passes are being run.  */
+  /* Callgraph is built and early IPA passes are being run.  */
   IPA,
   /* Callgraph is built and all functions are transformed to SSA form.  */
   IPA_SSA,
+  /* All inline decisions are done; it is now possible to remove extern inline
+     functions and virtual call targets.  */
+  IPA_SSA_AFTER_INLINING,
   /* Functions are now ordered and being passed to RTL expanders.  */
   EXPANSION,
   /* All cgraph expansion is done.  */
@@ -1833,6 +1838,10 @@ public:
   friend class symtab_node;
   friend class cgraph_node;
   friend class cgraph_edge;
+
+  symbol_table (): cgraph_max_summary_uid (1)
+  {
+  }
 
   /* Initialize callgraph dump file.  */
   void initialize (void);
@@ -1876,7 +1885,7 @@ public:
   }
 
   /* Perform reachability analysis and reclaim all unreachable nodes.  */
-  bool remove_unreachable_nodes (bool before_inlining_p, FILE *file);
+  bool remove_unreachable_nodes (FILE *file);
 
   /* Optimization of function bodies might've rendered some variables as
      unnecessary so we want to avoid these from being compiled.  Re-do
@@ -2030,6 +2039,7 @@ public:
 
   int cgraph_count;
   int cgraph_max_uid;
+  int cgraph_max_summary_uid;
 
   int edges_count;
   int edges_max_uid;
@@ -2185,7 +2195,7 @@ void record_references_in_initializer (tree, bool);
 
 /* In ipa.c  */
 void cgraph_build_static_cdtor (char which, tree body, int priority);
-void ipa_discover_readonly_nonaddressable_vars (void);
+bool ipa_discover_readonly_nonaddressable_vars (void);
 
 /* In varpool.c  */
 tree ctor_for_folding (tree);
@@ -2358,6 +2368,7 @@ symbol_table::allocate_cgraph_symbol (void)
       node->uid = cgraph_max_uid++;
     }
 
+  node->summary_uid = cgraph_max_summary_uid++;
   return node;
 }
 
@@ -2831,6 +2842,34 @@ cgraph_local_p (cgraph_node *node)
     return node->local.local;
 
   return node->local.local && node->instrumented_version->local.local;
+}
+
+/* When using fprintf (or similar), problems can arise with
+   transient generated strings.  Many string-generation APIs
+   only support one result being alive at once (e.g. by
+   returning a pointer to a statically-allocated buffer).
+
+   If there is more than one generated string within one
+   fprintf call: the first string gets evicted or overwritten
+   by the second, before fprintf is fully evaluated.
+   See e.g. PR/53136.
+
+   This function provides a workaround for this, by providing
+   a simple way to create copies of these transient strings,
+   without the need to have explicit cleanup:
+
+       fprintf (dumpfile, "string 1: %s string 2:%s\n",
+                xstrdup_for_dump (EXPR_1),
+                xstrdup_for_dump (EXPR_2));
+
+   This is actually a simple wrapper around ggc_strdup, but
+   the name documents the intent.  We require that no GC can occur
+   within the fprintf call.  */
+
+static inline const char *
+xstrdup_for_dump (const char *transient_str)
+{
+  return ggc_strdup (transient_str);
 }
 
 #endif  /* GCC_CGRAPH_H  */

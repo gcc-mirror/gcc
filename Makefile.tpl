@@ -650,7 +650,9 @@ EXTRA_TARGET_FLAGS = \
 	'AS=$(COMPILER_AS_FOR_TARGET)' \
 	'CC=$$(CC_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
 	'CFLAGS=$$(CFLAGS_FOR_TARGET)' \
-	'CXX=$$(CXX_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
+	'CXX=$$(CXX_FOR_TARGET) -B$$r/$$(TARGET_SUBDIR)/libstdc++-v3/src/.libs \
+	 -B$$r/$$(TARGET_SUBDIR)/libstdc++-v3/libsupc++/.libs \
+	 $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
 	'CXXFLAGS=$$(CXXFLAGS_FOR_TARGET)' \
 	'DLLTOOL=$$(DLLTOOL_FOR_TARGET)' \
 	'GCJ=$$(GCJ_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
@@ -670,6 +672,8 @@ EXTRA_TARGET_FLAGS = \
 	'WINDRES=$$(WINDRES_FOR_TARGET)' \
 	'WINDMC=$$(WINDMC_FOR_TARGET)' \
 	'XGCC_FLAGS_FOR_TARGET=$(XGCC_FLAGS_FOR_TARGET)' \
+	'STAGE1_LDFLAGS=$$(POSTSTAGE1_LDFLAGS)' \
+	'STAGE1_LIBS=$$(POSTSTAGE1_LIBS)' \
 	"TFLAGS=$$TFLAGS"
 
 TARGET_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)
@@ -871,6 +875,18 @@ mail-report-with-warnings.log: warning.log
 	$(srcdir)/contrib/test_summary -t -i warning.log >$@
 	chmod +x $@
 	echo If you really want to send e-mail, run ./$@ now
+
+# Local Vim config
+
+$(srcdir)/.local.vimrc:
+	$(LN_S) $(srcdir)/contrib/vimrc $@
+
+$(srcdir)/.lvimrc:
+	$(LN_S) $(srcdir)/contrib/vimrc $@
+
+vimrc: $(srcdir)/.local.vimrc $(srcdir)/.lvimrc
+
+.PHONY: vimrc
 
 # Installation targets.
 

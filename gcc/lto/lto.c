@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "inchash.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "common.h"
 #include "debug.h"
@@ -2926,8 +2927,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   symtab->state = LTO_STREAMING;
 
   canonical_type_hash_cache = new hash_map<const_tree, hashval_t> (251);
-  gimple_canonical_types = htab_create_ggc (16381, gimple_canonical_type_hash,
-					    gimple_canonical_type_eq, 0);
+  gimple_canonical_types = htab_create (16381, gimple_canonical_type_hash,
+					gimple_canonical_type_eq, NULL);
   gcc_obstack_init (&tree_scc_hash_obstack);
   tree_scc_hash = new hash_table<tree_scc_hasher> (4096);
 
@@ -3098,7 +3099,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* Removal of unreachable symbols is needed to make verify_symtab to pass;
      we are still having duplicated comdat groups containing local statics.
      We could also just remove them while merging.  */
-  symtab->remove_unreachable_nodes (true, dump_file);
+  symtab->remove_unreachable_nodes (dump_file);
   ggc_collect ();
   symtab->state = IPA_SSA;
 
@@ -3255,7 +3256,6 @@ do_whole_program_analysis (void)
   symtab->state = IPA_SSA;
 
   execute_ipa_pass_list (g->get_passes ()->all_regular_ipa_passes);
-  symtab->remove_unreachable_nodes (false, dump_file);
 
   if (symtab->dump_file)
     {

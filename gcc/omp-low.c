@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "pretty-print.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "tree-nested.h"
 #include "tree-eh.h"
@@ -3039,7 +3040,7 @@ omp_reduction_init (tree clause, tree type)
       if (SCALAR_FLOAT_TYPE_P (type))
 	{
 	  REAL_VALUE_TYPE max, min;
-	  if (HONOR_INFINITIES (TYPE_MODE (type)))
+	  if (HONOR_INFINITIES (type))
 	    {
 	      real_inf (&max);
 	      real_arithmetic (&min, NEGATE_EXPR, &max, NULL);
@@ -3058,7 +3059,7 @@ omp_reduction_init (tree clause, tree type)
       if (SCALAR_FLOAT_TYPE_P (type))
 	{
 	  REAL_VALUE_TYPE max;
-	  if (HONOR_INFINITIES (TYPE_MODE (type)))
+	  if (HONOR_INFINITIES (type))
 	    real_inf (&max);
 	  else
 	    real_maxval (&max, 0, TYPE_MODE (type));
@@ -11590,24 +11591,24 @@ simd_clone_adjust_return_type (struct cgraph_node *node)
   if (orig_rettype == void_type_node)
     return NULL_TREE;
   TREE_TYPE (fndecl) = build_distinct_type_copy (TREE_TYPE (fndecl));
-  if (INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl)))
-      || POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl))))
+  t = TREE_TYPE (TREE_TYPE (fndecl));
+  if (INTEGRAL_TYPE_P (t) || POINTER_TYPE_P (t))
     veclen = node->simdclone->vecsize_int;
   else
     veclen = node->simdclone->vecsize_float;
-  veclen /= GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl))));
+  veclen /= GET_MODE_BITSIZE (TYPE_MODE (t));
   if (veclen > node->simdclone->simdlen)
     veclen = node->simdclone->simdlen;
+  if (POINTER_TYPE_P (t))
+    t = pointer_sized_int_node;
   if (veclen == node->simdclone->simdlen)
-    TREE_TYPE (TREE_TYPE (fndecl))
-      = build_vector_type (TREE_TYPE (TREE_TYPE (fndecl)),
-			   node->simdclone->simdlen);
+    t = build_vector_type (t, node->simdclone->simdlen);
   else
     {
-      t = build_vector_type (TREE_TYPE (TREE_TYPE (fndecl)), veclen);
+      t = build_vector_type (t, veclen);
       t = build_array_type_nelts (t, node->simdclone->simdlen / veclen);
-      TREE_TYPE (TREE_TYPE (fndecl)) = t;
     }
+  TREE_TYPE (TREE_TYPE (fndecl)) = t;
   if (!node->definition)
     return NULL_TREE;
 
@@ -11696,7 +11697,10 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	  if (veclen > node->simdclone->simdlen)
 	    veclen = node->simdclone->simdlen;
 	  adj.arg_prefix = "simd";
-	  adj.type = build_vector_type (parm_type, veclen);
+	  if (POINTER_TYPE_P (parm_type))
+	    adj.type = build_vector_type (pointer_sized_int_node, veclen);
+	  else
+	    adj.type = build_vector_type (parm_type, veclen);
 	  node->simdclone->args[i].vector_type = adj.type;
 	  for (j = veclen; j < node->simdclone->simdlen; j += veclen)
 	    {
@@ -11737,7 +11741,10 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
       veclen /= GET_MODE_BITSIZE (TYPE_MODE (base_type));
       if (veclen > node->simdclone->simdlen)
 	veclen = node->simdclone->simdlen;
-      adj.type = build_vector_type (base_type, veclen);
+      if (POINTER_TYPE_P (base_type))
+	adj.type = build_vector_type (pointer_sized_int_node, veclen);
+      else
+	adj.type = build_vector_type (base_type, veclen);
       adjustments.safe_push (adj);
 
       for (j = veclen; j < node->simdclone->simdlen; j += veclen)

@@ -62,7 +62,7 @@ program test
   call co_reduce(caf, arg3) ! { dg-error "shall have two arguments" }
   call co_reduce(caf, dt%arg3) ! { dg-error "shall have two arguments" }
   call co_reduce(caf, elem) ! { dg-error "ELEMENTAL non-INTRINSIC procedure 'elem' is not allowed as an actual argument" }
-  call co_reduce(caf, dt%elem) ! { FIXME: "ELEMENTAL non-INTRINSIC procedure 'elem' is not allowed as an actual argument" }
+  call co_reduce(caf, dt%elem) ! { dg-error "ELEMENTAL procedure pointer component 'elem' is not allowed as an actual argument" }
   call co_reduce(caf, realo) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATOR at .2. returns REAL.4." }
   call co_reduce(caf, dt%realo) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATOR at .2. returns REAL.4." }
   call co_reduce(caf, int8) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATOR at .2. returns INTEGER.8." }

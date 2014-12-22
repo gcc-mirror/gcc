@@ -32,6 +32,9 @@ POTFILES
 TAGS
 TAGS.sub
 
+.local.vimrc
+.lvimrc
+
 .gdbinit
 .gdb_history
 

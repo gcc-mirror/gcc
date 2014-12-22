@@ -73,22 +73,7 @@ struct ggc_root_tab {
 /* Pointers to arrays of ggc_root_tab, terminated by NULL.  */
 extern const struct ggc_root_tab * const gt_ggc_rtab[];
 extern const struct ggc_root_tab * const gt_ggc_deletable_rtab[];
-extern const struct ggc_root_tab * const gt_pch_cache_rtab[];
 extern const struct ggc_root_tab * const gt_pch_scalar_rtab[];
-
-/* Structure for hash table cache marking.  */
-struct htab;
-struct ggc_cache_tab {
-  struct htab * *base;
-  size_t nelt;
-  size_t stride;
-  gt_pointer_walker cb;
-  gt_pointer_walker pchw;
-  int (*marked_p) (const void *);
-};
-#define LAST_GGC_CACHE_TAB { NULL, 0, 0, NULL, NULL, NULL }
-/* Pointers to arrays of ggc_cache_tab, terminated by NULL.  */
-extern const struct ggc_cache_tab * const gt_ggc_cache_rtab[];
 
 /* If EXPR is not NULL and previously unmarked, mark it and evaluate
    to true.  Otherwise evaluate to false.  */
@@ -251,27 +236,6 @@ ggc_alloc_atomic (size_t s CXX_MEM_STAT_INFO)
     return ggc_internal_alloc (s PASS_MEM_STAT);
 }
 
-extern void *ggc_cleared_alloc_htab_ignore_args (size_t, size_t)
-  ATTRIBUTE_MALLOC;
-
-extern void *ggc_cleared_alloc_ptr_array_two_args (size_t, size_t)
-  ATTRIBUTE_MALLOC;
-
-#define htab_create_ggc(SIZE, HASH, EQ, DEL) \
-  htab_create_typed_alloc (SIZE, HASH, EQ, DEL,	\
-			   ggc_cleared_alloc_htab_ignore_args,		\
-			   ggc_cleared_alloc_ptr_array_two_args,	\
-			   ggc_free)
-
-#define splay_tree_new_ggc(COMPARE, ALLOC_TREE, ALLOC_NODE)		     \
-  splay_tree_new_typed_alloc (COMPARE, NULL, NULL, &ALLOC_TREE, &ALLOC_NODE, \
-			      &ggc_splay_dont_free, NULL)
-
-extern void *ggc_splay_alloc (int, void *)
-  ATTRIBUTE_MALLOC;
-
-extern void ggc_splay_dont_free (void *, void *);
-
 /* Allocate a gc-able string, and fill it with LENGTH bytes from CONTENTS.
    If LENGTH is -1, then CONTENTS is assumed to be a
    null-terminated string and the memory sized accordingly.  */
@@ -291,10 +255,6 @@ extern void ggc_grow (void);
 /* Register an additional root table.  This can be useful for some
    plugins.  Does nothing if the passed pointer is NULL. */
 extern void ggc_register_root_tab (const struct ggc_root_tab *);
-
-/* Register an additional cache table.  This can be useful for some
-   plugins.  Does nothing if the passed pointer is NULL. */
-extern void ggc_register_cache_tab (const struct ggc_cache_tab *);
 
 /* Read objects previously saved with gt_pch_save from F.  */
 extern void gt_pch_restore (FILE *f);

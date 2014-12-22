@@ -647,9 +647,7 @@ chkp_produce_thunks (void)
 	chkp_function_mark_instrumented (node->decl);
     }
 
-  symtab->remove_unreachable_nodes (true, dump_file);
-
-  return 0;
+  return TODO_remove_functions;
 }
 
 const pass_data pass_data_ipa_chkp_versioning =

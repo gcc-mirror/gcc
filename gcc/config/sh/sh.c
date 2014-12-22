@@ -222,6 +222,7 @@ static int sh_mode_after (int, int, rtx_insn *);
 static int sh_mode_entry (int);
 static int sh_mode_exit (int);
 static int sh_mode_priority (int entity, int n);
+static bool sh_lra_p (void);
 
 static rtx mark_constant_pool_use (rtx);
 static tree sh_handle_interrupt_handler_attribute (tree *, tree, tree,
@@ -291,6 +292,8 @@ static reg_class_t sh_secondary_reload (bool, rtx, reg_class_t,
 static bool sh_legitimate_address_p (machine_mode, rtx, bool);
 static rtx sh_legitimize_address (rtx, rtx, machine_mode);
 static rtx sh_delegitimize_address (rtx);
+static bool sh_cannot_substitute_mem_equiv_p (rtx);
+static bool sh_legitimize_address_displacement (rtx *, rtx *, machine_mode);
 static int shmedia_target_regs_stack_space (HARD_REG_SET *);
 static int shmedia_reserve_space_for_target_registers_p (int, HARD_REG_SET *);
 static int shmedia_target_regs_stack_adjust (HARD_REG_SET *);
@@ -618,6 +621,9 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO	sh_encode_section_info
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P sh_lra_p
+
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD sh_secondary_reload
 
@@ -629,6 +635,13 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	sh_legitimate_address_p
+
+#undef TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P
+#define TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P sh_cannot_substitute_mem_equiv_p
+
+#undef TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT
+#define TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT \
+  sh_legitimize_address_displacement
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT		sh_trampoline_init
@@ -1765,6 +1778,38 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	       && GET_CODE (XEXP (operands[0], 0)) == PLUS
 	       && REG_P (XEXP (XEXP (operands[0], 0), 1)))
 	operands[1] = copy_to_mode_reg (mode, operands[1]);
+
+      /* When the displacement addressing is used, RA will assign r0 to
+	 the pseudo register operand for the QI/HImode load/store.
+	 This tends to make a long live range for R0 and might cause
+	 anomalous register spills in some case with LRA.  See PR
+	 target/55212.
+	 We split possible load/store to two move insns via r0 so as to
+	 shorten R0 live range.  It will make some codes worse but will
+	 win on avarage for LRA.  */
+      else if (sh_lra_p ()
+	       && TARGET_SH1 && ! TARGET_SH2A
+	       && (mode == QImode || mode == HImode)
+	       && ((REG_P (operands[0]) && MEM_P (operands[1]))
+		   || (REG_P (operands[1]) && MEM_P (operands[0]))))
+	{
+	  bool load_p = REG_P (operands[0]);
+	  rtx reg = operands[load_p ? 0 : 1];
+	  rtx adr = XEXP (operands[load_p ? 1 : 0], 0);
+
+	  if (REGNO (reg) >= FIRST_PSEUDO_REGISTER
+	      && GET_CODE (adr) == PLUS
+	      && REG_P (XEXP (adr, 0))
+	      && (REGNO (XEXP (adr, 0)) >= FIRST_PSEUDO_REGISTER)
+	      && CONST_INT_P (XEXP (adr, 1))
+	      && INTVAL (XEXP (adr, 1)) != 0
+	      && sh_legitimate_index_p (mode, XEXP (adr, 1), false, true))
+	    {
+	      rtx r0_rtx = gen_rtx_REG (mode, R0_REG);
+	      emit_move_insn (r0_rtx, operands[1]);
+	      operands[1] = r0_rtx;
+	    }
+	}
     }
 
   if (mode == Pmode || mode == ptr_mode)
@@ -10475,6 +10520,9 @@ sh_legitimize_reload_address (rtx *p, machine_mode mode, int opnum,
   enum reload_type type = (enum reload_type) itype;
   const int mode_sz = GET_MODE_SIZE (mode);
 
+  if (sh_lra_p ())
+    return false;
+
   if (! ALLOW_INDEXED_ADDRESS
       && GET_CODE (*p) == PLUS
       && REG_P (XEXP (*p, 0)) && REG_P (XEXP (*p, 1)))
@@ -12170,6 +12218,26 @@ sh_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return true;
 }
 
+/* Specify the modes required to caller save a given hard regno.
+   choose_hard_reg_mode chooses mode based on HARD_REGNO_MODE_OK
+   and returns ?Imode for float regs when sh_hard_regno_mode_ok
+   permits integer modes on them.  That makes LRA's split process
+   unhappy.  See PR55212.
+ */
+machine_mode
+sh_hard_regno_caller_save_mode (unsigned int regno, unsigned int nregs,
+				machine_mode mode)
+{
+  if (FP_REGISTER_P (regno)
+      && (mode == SFmode
+	  || mode == SCmode
+	  || ((mode == DFmode || mode == DCmode)
+	      && ((regno - FIRST_FP_REG) & 1) == 0)))
+    return mode;
+
+  return choose_hard_reg_mode (regno, nregs, false);
+}
+
 /* Return the class of registers for which a mode change from FROM to TO
    is invalid.  */
 bool
@@ -13167,7 +13235,7 @@ sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
     {
       if (rclass == FPUL_REGS)
 	return GENERAL_REGS;
-      return FPUL_REGS;
+      return NO_REGS;  // LRA wants NO_REGS here, it used to be FPUL_REGS;
     }
   if ((rclass == TARGET_REGS
        || (TARGET_SHMEDIA && rclass == SIBCALL_REGS))
@@ -13212,6 +13280,76 @@ sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
     return R0_REGS;
 
   return NO_REGS;
+}
+
+/* Return true if SUBST can't safely replace its equivalent during RA.  */
+static bool
+sh_cannot_substitute_mem_equiv_p (rtx)
+{
+  if (TARGET_SHMEDIA)
+    return false;
+
+  /* If SUBST is mem[base+index] or QI/HImode mem[base+disp], the insn
+     uses R0 and may cause spill failure when R0 is already used.
+     We have to return true for that case at least.
+     Moreover SH has strong R0 parity and also have not enough numbers of
+     the hard registers to make the equiv substitution win in the size
+     and the speed on average working sets.  The pseudos produced to
+     hold the equiv values can't get good hard registers for bad cases
+     and end up memory save/restore insns which make the code worse.  */
+  return true;
+}
+
+/* Return true if DISP can be legitimized.  */
+static bool
+sh_legitimize_address_displacement (rtx *disp, rtx *offs,
+				    machine_mode mode)
+{
+  if (TARGET_SHMEDIA)
+    return false;
+
+  if (((TARGET_SH4 || TARGET_SH2A_DOUBLE) && mode == DFmode)
+      || (TARGET_SH2E && mode == SFmode))
+    return false;
+
+  struct disp_adjust adj = sh_find_mov_disp_adjust (mode, INTVAL (*disp));
+  if (adj.offset_adjust != NULL_RTX && adj.mov_disp != NULL_RTX)
+    {
+      *disp = adj.mov_disp;
+      *offs = adj.offset_adjust;
+      return true;
+    }
+ 
+  return false;
+}
+
+/* Return true if movsf insn should be splited with an additional
+   register.  */
+bool
+sh_movsf_ie_ra_split_p (rtx op0, rtx op1, rtx op2)
+{
+  /* op0 == op1 */
+  if (rtx_equal_p (op0, op1))
+    return true;
+  /* fy, FQ, reg */
+  if (GET_CODE (op1) == CONST_DOUBLE
+      && ! satisfies_constraint_G (op1)
+      && ! satisfies_constraint_H (op1)
+      && REG_P (op0)
+      && REG_P (op2))
+    return true;
+  /* f, r, y */
+  if (REG_P (op0) && FP_REGISTER_P (REGNO (op0))
+      && REG_P (op1) && GENERAL_REGISTER_P (REGNO (op1))
+      && REG_P (op2) && (REGNO (op2) == FPUL_REG))
+    return true;
+  /* r, f, y */
+  if (REG_P (op1) && FP_REGISTER_P (REGNO (op1))
+      && REG_P (op0) && GENERAL_REGISTER_P (REGNO (op0))
+      && REG_P (op2) && (REGNO (op2) == FPUL_REG))
+    return true;
+
+  return false;
 }
 
 static void
@@ -13722,6 +13860,13 @@ static int
 sh_mode_priority (int entity ATTRIBUTE_UNUSED, int n)
 {
   return ((TARGET_FPU_SINGLE != 0) ^ (n) ? FP_MODE_SINGLE : FP_MODE_DOUBLE);
+}
+
+/* Return true if we use LRA instead of reload pass.  */
+static bool
+sh_lra_p (void)
+{
+  return sh_lra_flag;
 }
 
 /* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */

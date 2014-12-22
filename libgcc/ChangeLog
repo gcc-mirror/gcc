@@ -1,3 +1,29 @@
+2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config.host: Support mipsisa32r6 and mipsisa64r6.
+	* config/mips/mips16.S: Do not build for R6.
+
+2014-12-17  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/crt.h: New.
+	* config/sh/crti.S: Use GLOBAL macro from crt.h for _init and _fini
+	symbols.
+	* config/sh/crt1.S: Likewise.
+
+2014-12-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libgcc/63832
+	* crtstuff.c (__do_global_dtors_aux) [HIDDEN_DTOR_LIST_END]: Use
+	func_ptr *dtor_list temporary variable to avoid "array subscript
+	is above array bounds" warnings.
+
+2014-12-09  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
+
+	* Makefile.in (with_aix_soname): Define.
+	* config/rs6000/t-slibgcc-aix: Act upon --with-aix-soname option.
+	* configure.ac: Accept --with-aix-soname=aix|svr4|both option.
+	* configure: Recreate.
+
 2014-12-05  Olivier Hainque  <hainque@adacore.com>
 
 	* unwind-dw2.c (DWARF_REG_TO_UNWIND_COLUMN): Remove default def,
@@ -5,6 +31,7 @@
 
 2014-11-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/55351
 	* config/sh/lib1funcs.S: Check value of __SHMEDIA__ instead of checking
 	whether it's defined.
 
@@ -801,7 +828,7 @@
 
 	PR libgcc/60472
 	* crtstuff.c (frame_dummy): Use void **jcr_list temporary
-	variable to avoid array subscript is above array bounds warnings.
+	variable to avoid "array subscript is above array bounds" warnings.
 	Use __builtin_expect when checking *jcr_list for NULL.
 
 2014-03-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>

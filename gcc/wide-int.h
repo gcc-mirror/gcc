@@ -2616,8 +2616,8 @@ wi::div_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
     {
       if (sgn == SIGNED)
 	{
-	  if (wi::ges_p (wi::abs (remainder),
-			 wi::lrshift (wi::abs (y), 1)))
+	  WI_BINARY_RESULT (T1, T2) abs_remainder = wi::abs (remainder);
+	  if (wi::geu_p (abs_remainder, wi::sub (wi::abs (y), abs_remainder)))
 	    {
 	      if (wi::neg_p (x, sgn) != wi::neg_p (y, sgn))
 		return quotient - 1;
@@ -2627,7 +2627,7 @@ wi::div_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 	}
       else
 	{
-	  if (wi::geu_p (remainder, wi::lrshift (y, 1)))
+	  if (wi::geu_p (remainder, wi::sub (y, remainder)))
 	    return quotient + 1;
 	}
     }
@@ -2784,8 +2784,8 @@ wi::mod_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
     {
       if (sgn == SIGNED)
 	{
-	  if (wi::ges_p (wi::abs (remainder),
-			 wi::lrshift (wi::abs (y), 1)))
+	  WI_BINARY_RESULT (T1, T2) abs_remainder = wi::abs (remainder);
+	  if (wi::geu_p (abs_remainder, wi::sub (wi::abs (y), abs_remainder)))
 	    {
 	      if (wi::neg_p (x, sgn) != wi::neg_p (y, sgn))
 		return remainder + y;
@@ -2795,7 +2795,7 @@ wi::mod_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 	}
       else
 	{
-	  if (wi::geu_p (remainder, wi::lrshift (y, 1)))
+	  if (wi::geu_p (remainder, wi::sub (y, remainder)))
 	    return remainder - y;
 	}
     }

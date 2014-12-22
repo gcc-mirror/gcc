@@ -5,4 +5,4 @@
 /* { dg-do compile } */
 /* { dg-options "-Wwrite-strings" } */
 typedef char T[1];
-T *p = &""; /* { dg-warning "initialization from incompatible pointer type" } */
+T *p = &""; /* { dg-warning "initialization discards 'const' qualifier from pointer target type" } */

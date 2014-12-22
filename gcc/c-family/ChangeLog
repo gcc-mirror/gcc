@@ -1,3 +1,43 @@
+2014-12-20  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* c-cppbuiltin.c (__cpp_sized_deallocation): Uncomment and move macro.
+	Control macro with flag_sized_deallocation.
+
+2014-12-20  Martin Uecker <uecker@eecs.berkeley.edu>
+
+	* c.opt (Wdiscarded-array-qualifiers): New option.
+
+2014-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/63831
+	* c-cppbuiltin.c (c_cpp_builtins): Don't define __has_attribute
+	and __has_cpp_attribute here.
+	* c-ppoutput.c (init_pp_output): Set cb->has_attribute to
+	c_common_has_attribute.
+	* c-common.h (c_common_has_attribute): New prototype.
+	* c-lex.c (init_c_lex): Set cb->has_attribute to
+	c_common_has_attribute instead of cb_has_attribute.
+	(get_token_no_padding): New function.
+	(cb_has_attribute): Renamed to ...
+	(c_common_has_attribute): ... this.  No longer static.  Use
+	get_token_no_padding, require ()s, don't build TREE_LIST
+	unnecessarily, fix up formatting, adjust diagnostics, call
+	init_attributes.
+
+2014-12-15  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (-fsized-deallocation, -Wc++14-compat): New.
+	(-Wsized-deallocation): New.
+	* c-opts.c (c_common_post_options): -fsized-deallocation defaults
+	to on in C++14 and up.
+
+2014-12-11  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Enable C++14 __cpp_constexpr.
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_runtime_arrays if
+	we aren't complaining about VLAs.
+
 2014-12-06  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/64183
@@ -40,7 +80,7 @@
 	PR target/63764
 	* c-common.h (convert_vector_to_pointer_for_subscript): Change
 	return type to bool.
-	* c-common.c: Include gimple-expr.c.
+	* c-common.c: Include gimple-expr.h.
 	(convert_vector_to_pointer_for_subscript): Change return type to
 	bool.  If *vecp is not lvalue_p and has VECTOR_TYPE, return true
 	and copy it into a TARGET_EXPR and use that instead of *vecp

@@ -18,6 +18,8 @@ load_lib target-libpath.exp
 
 load_lib wrapper.exp
 
+load_lib target-utils.exp
+
 #
 # ${tool}_check_compile -- Reports and returns pass/fail for a compilation
 #
@@ -144,34 +146,6 @@ proc ${tool}_exit { } {
 	file_on_build delete $gluefile
 	unset gluefile
     }
-}
-    
-#
-# ${tool}_check_unsupported_p -- Check the compiler(/assembler/linker) output 
-#	for text indicating that the testcase should be marked as "unsupported"
-#
-# Utility used by mike-gcc.exp and c-torture.exp.
-# When dealing with a large number of tests, it's difficult to weed out the
-# ones that are too big for a particular cpu (eg: 16 bit with a small amount
-# of memory).  There are various ways to deal with this.  Here's one.
-# Fortunately, all of the cases where this is likely to happen will be using
-# gld so we can tell what the error text will look like.
-#
-
-proc ${tool}_check_unsupported_p { output } {
-    if [regexp "(^|\n)\[^\n\]*: region \[^\n\]* is full" $output] {
-	return "memory full"
-    }
-    if { [regexp "(^|\n)\[^\n\]*: relocation truncated to fit" $output]
-          && [check_effective_target_tiny] } {
-        return "memory full"
-     }
-
-    if { [istarget spu-*-*] && \
-	     [string match "*exceeds local store*" $output] } {
-	return "memory full"
-    }
-    return ""
 }
 
 #

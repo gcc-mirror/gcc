@@ -19,8 +19,15 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This target is a multilib target, specify the sysroot paths.  */
 #undef SYSROOT_SUFFIX_SPEC
+#if MIPS_ISA_DEFAULT == 33 /* mips32r2 is the default */
 #define SYSROOT_SUFFIX_SPEC \
-    "%{mips32:/mips32}%{mips64:/mips64}%{mips64r2:/mips64r2}%{mips16:/mips16}%{mmicromips:/micromips}%{mabi=64:/64}%{mel|EL:/el}%{msoft-float:/sof}%{mnan=2008:/nan2008}"
+    "%{mips32:/mips32}%{mips64:/mips64}%{mips64r2:/mips64r2}%{mips32r6:/mips32r6}%{mips64r6:/mips64r6}%{mips16:/mips16}%{mmicromips:/micromips}%{mabi=64:/64}%{mel|EL:/el}%{msoft-float:/sof}%{!mips32r6:%{!mips64r6:%{mnan=2008:/nan2008}}}"
+#elif MIPS_ISA_DEFAULT == 37 /* mips32r6 is the default */
+#define SYSROOT_SUFFIX_SPEC \
+    "%{mips32:/mips32}%{mips64:/mips64}%{mips32r2:/mips32r2}%{mips64r2:/mips64r2}%{mips64r6:/mips64r6}%{mips16:/mips16}%{mmicromips:/micromips}%{mabi=64:/64}%{mel|EL:/el}%{msoft-float:/sof}%{!mips32r6:%{!mips64r6:%{mnan=2008:/nan2008}}}"
+#else /* Unexpected default ISA.  */
+#error No SYSROOT_SUFFIX_SPEC exists for this default ISA
+#endif
 
 #undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS						\

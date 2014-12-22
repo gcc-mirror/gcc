@@ -18,6 +18,20 @@
 libgccjit
 =========
 
+This document describes `libgccjit <http://gcc.gnu.org/wiki/JIT>`_, an API
+for embedding GCC inside programs and libraries.
+
+Note that libgccjit is currently of "Alpha" quality;
+the APIs are not yet set in stone, and they shouldn't be used in
+production yet.
+
+There are actually two APIs for the library:
+
+* a pure C API: ``libgccjit.h``
+
+* a C++ wrapper API: ``libgccjit++.h``.  This is a collection of "thin"
+  wrapper classes around the C API, to save typing.
+
 Contents:
 
 .. toctree::
@@ -25,14 +39,8 @@ Contents:
 
    intro/index.rst
    topics/index.rst
+   cp/index.rst
    internals/index.rst
-
-This document describes `libgccjit <http://gcc.gnu.org/wiki/JIT>`_, an API
-for embedding GCC inside programs and libraries.
-
-Note that libgccjit is currently of "Alpha" quality;
-the APIs are not yet set in stone, and they shouldn't be used in
-production yet.
 
 
 Indices and tables

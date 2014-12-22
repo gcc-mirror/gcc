@@ -254,10 +254,10 @@ gfc_sym_mangled_common_id (gfc_common_head *com)
   if (strcmp (name, BLANK_COMMON_NAME) == 0)
     return get_identifier (name);
 
-  if (gfc_option.flag_underscoring)
+  if (flag_underscoring)
     {
       has_underscore = strchr (name, '_') != 0;
-      if (gfc_option.flag_second_underscore && has_underscore)
+      if (flag_second_underscore && has_underscore)
         snprintf (mangled_name, sizeof mangled_name, "%s__", name);
       else
         snprintf (mangled_name, sizeof mangled_name, "%s_", name);
@@ -908,7 +908,7 @@ confirm_condition (segment_info *s1, gfc_equiv *eq1, segment_info *s2,
   offset2 = calculate_offset (eq2->expr);
 
   if (s1->offset + offset1 != s2->offset + offset2)
-    gfc_error ("Inconsistent equivalence rules involving '%s' at %L and "
+    gfc_error_1 ("Inconsistent equivalence rules involving '%s' at %L and "
 	       "'%s' at %L", s1->sym->name, &s1->sym->declared_at,
 	       s2->sym->name, &s2->sym->declared_at);
 }
@@ -1041,7 +1041,7 @@ align_segment (unsigned HOST_WIDE_INT *palign)
 	  if (this_offset & (max_align - 1))
 	    {
 	      /* Aligning this field would misalign a previous field.  */
-	      gfc_error ("The equivalence set for variable '%s' "
+	      gfc_error ("The equivalence set for variable %qs "
 			 "declared at %L violates alignment requirements",
 			 s->sym->name, &s->sym->declared_at);
 	    }
@@ -1106,8 +1106,8 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 	  /* Verify that it ended up where we expect it.  */
 	  if (s->offset != current_offset)
 	    {
-	      gfc_error ("Equivalence for '%s' does not match ordering of "
-			 "COMMON '%s' at %L", sym->name,
+	      gfc_error ("Equivalence for %qs does not match ordering of "
+			 "COMMON %qs at %L", sym->name,
 			 common->name, &common->where);
 	    }
 	}
@@ -1121,11 +1121,11 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 	  add_equivalences (&saw_equiv);
 
 	  if (current_segment->offset < 0)
-	    gfc_error ("The equivalence set for '%s' cause an invalid "
-		       "extension to COMMON '%s' at %L", sym->name,
+	    gfc_error ("The equivalence set for %qs cause an invalid "
+		       "extension to COMMON %qs at %L", sym->name,
 		       common->name, &common->where);
 
-	  if (gfc_option.flag_align_commons)
+	  if (flag_align_commons)
 	    offset = align_segment (&align);
 
 	  if (offset)

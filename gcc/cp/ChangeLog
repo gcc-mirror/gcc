@@ -1,3 +1,166 @@
+2014-12-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64359
+	* pt.c (iterative_hash_template_arg): Hash alias specializations
+	differently from their TYPE_CANONICAL.
+	(alias_template_specialization_p): Optimize.
+	(template_args_equal): Optimize alias handling.
+	(dependent_alias_template_spec_p): Only check innermost args.
+
+2014-12-19  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/61198
+	* pt.c (most_general_template): Don't break for template-alias.
+
+2014-12-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64105
+	* parser.c (cp_parser_simple_type_specifier): Make auto parameter
+	before -std=c++14 an error.
+
+	PR c++/64352
+	* pt.c (tsubst_copy_and_build): Pass complain to mark_used.
+
+	PR c++/64251
+	* decl2.c (mark_used): Don't mark if in_template_function.
+
+2014-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60955
+	* pt.c (struct warning_sentinel): Move it...
+	* cp-tree.h: ... here.
+	* semantics.c (force_paren_expr): Use it.
+
+2014-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64333
+	* constexpr.c (cxx_bind_parameters_in_call): non_constant_args parm.
+	(cxx_eval_call_expression): Don't cache calls with non-constant args.
+	(cxx_eval_constant_expression) [COMPOUND_EXPR]: Pass true for lval.
+	(cxx_eval_unary_expression, cxx_eval_binary_expression)
+	(cxx_eval_conditional_expression): Pass	false for lval.
+
+	* constexpr.c: Change "addr" parm names to "lval".
+
+	* constexpr.c: Tweak comments and formatting.
+
+2014-12-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58650
+	* parser.c (cp_parser_member_declaration): Fix error recovery for
+	initialized non-static data member declared friend.
+
+2014-12-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* decl2.c (decl_needed_p): When not optimizing, do not consider external
+	decls as needed.
+
+2014-12-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64297
+	* typeck.c (apply_memfn_quals): Correct wrong TYPE_CANONICAL.
+
+	N3778: Sized Deallocation
+	* call.c (non_placement_deallocation_fn_p): A global sized
+	operator delete is not a usual deallocation function until C++14.
+	(build_op_delete_call): Choose the global sized op delete if we
+	know the size.
+	* cp-tree.h: Declare non_placement_deallocation_fn_p.
+	(enum cp_tree_index): Remove CPTI_GLOBAL_DELETE_FNDECL.
+	(global_delete_fndecl): Remove.
+	* decl.c (cxx_init_decl_processing): Also declare sized op deletes.
+	(grok_op_properties): Warn about sized dealloc without the flag.
+	* init.c (build_builtin_delete_call): Remove.
+	(build_vec_delete_1, build_delete): Don't call it.
+	* decl2.c (maybe_warn_sized_delete): New.
+	(cp_write_global_declarations): Call it.
+
+2014-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58882
+	* decl.c (check_array_designated_initializer): Diagnose gracefully
+	C99 designators which aren't integral constant-expressions; allow
+	constexpr user-defined type conversion operators.
+
+2014-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59628
+	* semantics.c (finish_omp_reduction_clause): Early return true
+	if DECL_SAVED_TREE (id) is NULL_TREE.
+
+2014-12-12  Jason Merrill  <jason@redhat.com>
+
+	N3922
+	* pt.c (do_auto_deduction): In direct-init context, { x } deduces
+	from x.
+
+	* cp-tree.h (NAMESPACE_ABI_TAG): New.
+	* name-lookup.c (handle_namespace_attrs): Set it.
+	* class.c (check_tag): Split out from find_abi_tags_r.
+	(find_abi_tags_r): Also check namespace tags.
+	(mark_type_abi_tags): Also mark namespace tags.
+
+2014-12-12  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/63996
+	* constexpr.c (cxx_eval_loop_expr): Don't loop
+	endless on none-constant expression.
+
+2014-12-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61402
+	* lambda.c (add_capture): Don't pass a dependent type to
+	variably_modified_type_p.
+
+2014-12-11  Jason Merrill  <jason@redhat.com>
+
+	Remove N3639 "array of runtime length" from -std=c++14.
+	* decl.c (compute_array_index_type): VLAs are not part of C++14.
+	(create_array_type_for_decl, grokdeclarator): Likewise.
+	* lambda.c (add_capture): Likewise.
+	* pt.c (tsubst): Likewise.
+	* rtti.c (get_tinfo_decl): Likewise.
+	* semantics.c (finish_decltype_type): Likewise.
+	* typeck.c (cxx_sizeof_or_alignof_type): Likewise.
+	(cp_build_addr_expr_1): Likewise.
+	* init.c (build_vec_init): Don't throw bad_array_length.
+
+	PR c++/64248
+	Revert:
+	* parser.c (cp_parser_unqualified_id): Handle __func__ here.
+	(cp_parser_primary_expression): Not here.
+
+	PR c++/57510
+	* typeck2.c (split_nonconstant_init_1): Handle arrays here.
+	(store_init_value): Not here.
+	(split_nonconstant_init): Look through TARGET_EXPR.  No longer static.
+	* cp-tree.h: Declare split_nonconstant_init.
+	* call.c (set_up_extended_ref_temp): Use split_nonconstant_init.
+
+2014-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (maybe_warn_about_useless_cast): Remove unnecessary
+	conditional.
+
+2014-12-10  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/64127
+	* parser.c (cp_parser_diagnose_invalid_type_name): Check id
+	for being an identifier before accessing it.
+
+	PR c++/64100
+	* typeck.c (lookup_destructor): Handle incomplete type.
+
+2014-12-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64129
+	* decl.c (grokdeclarator): Recover from variable template
+	specialization declared as function.
+
+	PR c++/64222
+	* parser.c (cp_parser_unqualified_id): Don't declare fname while
+	parsing function parms.
+
 2014-12-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/64029

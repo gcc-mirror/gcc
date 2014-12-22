@@ -17,12 +17,12 @@
   FORALL(i=1:4) a(i) = u (a(i)) - a(i)** 2 
   if (any (a .ne. 0)) call abort ()
   if (i .ne. 99) call abort ()
-  FORALL (i=1:4) a(i) = st3 (i) ! { dg-error "non-PURE function" "non-PURE reference in FORALL" { xfail *-*-*} }
-  FORALL (i=1:4) a(i) = v(i) ! { dg-error "non-PURE function" }
+  FORALL (i=1:4) a(i) = st3 (i) ! { dg-error "impure function" "impure reference in FORALL" { xfail *-*-*} }
+  FORALL (i=1:4) a(i) = v(i) ! { dg-error "impure function" }
 contains
   pure integer function u (x)
     integer,intent(in) :: x
-    st2 (i) = i * v(i) ! { dg-error "non-PURE procedure" }
+    st2 (i) = i * v(i) ! { dg-error "impure function" }
     u = st2(x)
   end function
   integer function v (x)

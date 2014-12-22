@@ -5,6 +5,8 @@
 
 inline void* operator new(__SIZE_TYPE__ n){ return __builtin_malloc(n); }
 inline void operator delete(void *p) { __builtin_free(p); }
+// C++14 sized deallocation function
+inline void operator delete(void *p, __SIZE_TYPE__) { __builtin_free(p); }
 struct O {
     double num;
     int count;

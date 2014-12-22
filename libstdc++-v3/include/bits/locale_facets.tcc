@@ -77,8 +77,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     __numpunct_cache<_CharT>::_M_cache(const locale& __loc)
     {
-      _M_allocated = true;
-
       const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
 
       char* __grouping = 0;
@@ -86,24 +84,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _CharT* __falsename = 0;
       __try
 	{
-	  _M_grouping_size = __np.grouping().size();
+	  const string& __g = __np.grouping();
+	  _M_grouping_size = __g.size();
 	  __grouping = new char[_M_grouping_size];
-	  __np.grouping().copy(__grouping, _M_grouping_size);
-	  _M_grouping = __grouping;
+	  __g.copy(__grouping, _M_grouping_size);
 	  _M_use_grouping = (_M_grouping_size
-			     && static_cast<signed char>(_M_grouping[0]) > 0
-			     && (_M_grouping[0]
+			     && static_cast<signed char>(__grouping[0]) > 0
+			     && (__grouping[0]
 				 != __gnu_cxx::__numeric_traits<char>::__max));
 
-	  _M_truename_size = __np.truename().size();
+	  const basic_string<_CharT>& __tn = __np.truename();
+	  _M_truename_size = __tn.size();
 	  __truename = new _CharT[_M_truename_size];
-	  __np.truename().copy(__truename, _M_truename_size);
-	  _M_truename = __truename;
+	  __tn.copy(__truename, _M_truename_size);
 
-	  _M_falsename_size = __np.falsename().size();
+	  const basic_string<_CharT>& __fn = __np.falsename();
+	  _M_falsename_size = __fn.size();
 	  __falsename = new _CharT[_M_falsename_size];
-	  __np.falsename().copy(__falsename, _M_falsename_size);
-	  _M_falsename = __falsename;
+	  __fn.copy(__falsename, _M_falsename_size);
 
 	  _M_decimal_point = __np.decimal_point();
 	  _M_thousands_sep = __np.thousands_sep();
@@ -115,6 +113,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __ct.widen(__num_base::_S_atoms_in,
 		     __num_base::_S_atoms_in
 		     + __num_base::_S_iend, _M_atoms_in);
+
+	  _M_grouping = __grouping;
+	  _M_truename = __truename;
+	  _M_falsename = __falsename;
+	  _M_allocated = true;
 	}
       __catch(...)
 	{
@@ -140,6 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_LDBL
 
   template<typename _CharT, typename _InIter>
+    _GLIBCXX_DEFAULT_ABI_TAG
     _InIter
     num_get<_CharT, _InIter>::
     _M_extract_float(_InIter __beg, _InIter __end, ios_base& __io,
@@ -365,6 +369,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 
   template<typename _CharT, typename _InIter>
     template<typename _ValueT>
+      _GLIBCXX_DEFAULT_ABI_TAG
       _InIter
       num_get<_CharT, _InIter>::
       _M_extract_int(_InIter __beg, _InIter __end, ios_base& __io,
@@ -1287,8 +1292,8 @@ _GLIBCXX_END_NAMESPACE_LDBL
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
 #if _GLIBCXX_EXTERN_TEMPLATE
-  extern template class numpunct<char>;
-  extern template class numpunct_byname<char>;
+  extern template class _GLIBCXX_NAMESPACE_CXX11 numpunct<char>;
+  extern template class _GLIBCXX_NAMESPACE_CXX11 numpunct_byname<char>;
   extern template class _GLIBCXX_NAMESPACE_LDBL num_get<char>;
   extern template class _GLIBCXX_NAMESPACE_LDBL num_put<char>;
   extern template class ctype_byname<char>;
@@ -1326,8 +1331,8 @@ _GLIBCXX_END_NAMESPACE_LDBL
     has_facet<num_get<char> >(const locale&);
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  extern template class numpunct<wchar_t>;
-  extern template class numpunct_byname<wchar_t>;
+  extern template class _GLIBCXX_NAMESPACE_CXX11 numpunct<wchar_t>;
+  extern template class _GLIBCXX_NAMESPACE_CXX11 numpunct_byname<wchar_t>;
   extern template class _GLIBCXX_NAMESPACE_LDBL num_get<wchar_t>;
   extern template class _GLIBCXX_NAMESPACE_LDBL num_put<wchar_t>;
   extern template class ctype_byname<wchar_t>;

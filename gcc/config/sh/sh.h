@@ -905,6 +905,10 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 			      && (GET_MODE_SIZE (MODE2) <= 4)) \
 			  : ((MODE1) != SFmode && (MODE2) != SFmode))))
 
+/* Specify the modes required to caller save a given hard regno.  */
+#define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE)	\
+  sh_hard_regno_caller_save_mode ((REGNO), (NREGS), (MODE))
+
 /* A C expression that is nonzero if hard register NEW_REG can be
    considered for use as a rename register for OLD_REG register */
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \

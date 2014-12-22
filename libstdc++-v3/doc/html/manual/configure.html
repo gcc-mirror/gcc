@@ -227,6 +227,15 @@
      facilities, which might be undesirable in a low-memory environment or
      when standard error is not available.  This option disables those
      messages.  This option does not change the library ABI.
+   </p></dd><dt><span class="term"><code class="code">--disable-libstdcxx-dual-abi</code></span></dt><dd><p>
+     Disable support for the new, C++11-conforming <code class="code">std::string</code>
+     implementation.  This option changes the library ABI.
+   </p></dd><dt><span class="term"><code class="code">--with-default-libstdcxx-abi</code></span></dt><dd><p>
+     By default, the new <code class="code">std::string</code> implementation will be
+     declared and a macro must be defined to declare the old implementation
+     instead. That default can be reversed by configuring the library with
+     <code class="code">--with-default-libstdcxx-abi=c++98</code>.
+     This option does not change the library ABI.
    </p></dd><dt><span class="term"><code class="code">--enable-vtable-verify</code>[default]</span></dt><dd><p>Use <code class="code">-fvtable-verify=std</code> to compile the C++
     runtime with instrumentation for vtable verification. All virtual
     functions in the standard library will be verified at runtime.

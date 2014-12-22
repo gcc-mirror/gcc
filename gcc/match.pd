@@ -73,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
    is volatile.  */
 (simplify
  (minus @0 @0)
- (if (!FLOAT_TYPE_P (type) || !HONOR_NANS (element_mode (type)))
+ (if (!FLOAT_TYPE_P (type) || !HONOR_NANS (type))
   { build_zero_cst (type); }))
 
 (simplify
@@ -86,8 +86,7 @@ along with GCC; see the file COPYING3.  If not see
    negative value by 0 gives -0, not +0.  */
 (simplify
  (mult @0 real_zerop@1)
- (if (!HONOR_NANS (element_mode (type))
-      && !HONOR_SIGNED_ZEROS (element_mode (type)))
+ (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (element_mode (type)))
   @1))
 
 /* In IEEE floating point, x*1 is not equivalent to x for snans.
@@ -150,7 +149,7 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
  (rdiv @0 @0)
  (if (FLOAT_TYPE_P (type)
-      && ! HONOR_NANS (element_mode (type))
+      && ! HONOR_NANS (type)
       && ! HONOR_INFINITIES (element_mode (type)))
   { build_one_cst (type); }))
 
@@ -159,7 +158,7 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
  (rdiv:c @0 (negate @0))
  (if (FLOAT_TYPE_P (type)
-      && ! HONOR_NANS (element_mode (type))
+      && ! HONOR_NANS (type)
       && ! HONOR_INFINITIES (element_mode (type)))
   { build_minus_one_cst (type); }))
 
@@ -187,7 +186,7 @@ along with GCC; see the file COPYING3.  If not see
    (if (flag_reciprocal_math
 	&& !real_zerop (@1))
     (with
-     { tree tem = fold_binary (RDIV_EXPR, type, build_one_cst (type), @1); }
+     { tree tem = const_binop (RDIV_EXPR, type, build_one_cst (type), @1); }
      (if (tem)
       (mult @0 { tem; } ))))
    (if (cst != COMPLEX_CST)
@@ -382,6 +381,13 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
   (bit_not (bit_not @0))
   @0)
+
+/* (x & ~m) | (y & m) -> ((x ^ y) & m) ^ x */
+(simplify
+  (bit_ior:c (bit_and:c@3 @0 (bit_not @2)) (bit_and:c@4 @1 @2))
+  (if ((TREE_CODE (@3) != SSA_NAME || has_single_use (@3))
+	&& (TREE_CODE (@4) != SSA_NAME || has_single_use (@4)))
+   (bit_xor (bit_and (bit_xor @0 @1) @2) @0)))
 
 
 /* Associate (p +p off1) +p off2 as (p +p (off1 + off2)).  */
@@ -601,6 +607,13 @@ along with GCC; see the file COPYING3.  If not see
 			    build_int_cst (TREE_TYPE (@1),
 					   element_precision (type)), @1); }))
 
+/* ((1 << A) & 1) != 0 -> A == 0
+   ((1 << A) & 1) == 0 -> A != 0 */
+(for cmp (ne eq)
+     icmp (eq ne)
+ (simplify
+  (cmp (bit_and (lshift integer_onep @0) integer_onep) integer_zerop)
+  (icmp @0 { build_zero_cst (TREE_TYPE (@0)); })))
 
 /* Simplifications of conversions.  */
 
@@ -933,7 +946,7 @@ along with GCC; see the file COPYING3.  If not see
       a computed operator in the replacement tree thus we have
       to play the trick below.  */
    (with { enum tree_code ic = invert_tree_comparison
-             (cmp, HONOR_NANS (element_mode (@0))); }
+             (cmp, HONOR_NANS (@0)); }
     (if (ic == icmp)
      (icmp @0 @1))
     (if (ic == ncmp)
@@ -941,7 +954,7 @@ along with GCC; see the file COPYING3.  If not see
  (simplify
   (bit_xor (cmp @0 @1) integer_truep)
   (with { enum tree_code ic = invert_tree_comparison
-            (cmp, HONOR_NANS (element_mode (@0))); }
+            (cmp, HONOR_NANS (@0)); }
    (if (ic == icmp)
     (icmp @0 @1))
    (if (ic == ncmp)

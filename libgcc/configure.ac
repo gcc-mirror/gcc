@@ -76,6 +76,23 @@ AC_ARG_ENABLE(vtable-verify,
 [enable_vtable_verify=no])
 AC_SUBST(enable_vtable_verify)
 
+AC_ARG_WITH(aix-soname,
+[AS_HELP_STRING([--with-aix-soname=aix|svr4|both],
+    [shared library versioning (aka "SONAME") variant to provide on AIX])],
+[case "${host}:${enable_shared}" in
+ power*-*-aix[[5-9]]*:yes)
+   AC_MSG_CHECKING([which variant of shared library versioning to provide for shared libgcc])
+   case ${withval} in
+     aix|svr4|both) ;;
+     *) AC_MSG_ERROR([Unknown argument to --with-aix-soname]);;
+   esac
+   AC_MSG_RESULT($withval)
+   ;;
+ *) with_aix_soname=aix ;;
+ esac
+], [with_aix_soname=aix])
+AC_SUBST(with_aix_soname)
+
 GCC_PICFLAG
 AC_SUBST(PICFLAG)
 

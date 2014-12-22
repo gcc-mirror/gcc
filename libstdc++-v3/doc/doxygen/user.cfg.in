@@ -2142,8 +2142,8 @@ PREDEFINED             = __cplusplus=201103L \
                          _GLIBCXX_USE_C99_STDINT_TR1 \
                          _GLIBCXX_USE_SCHED_YIELD \
                          _GLIBCXX_USE_NANOSLEEP \
-                         __EXCEPTIONS \
-                         __GXX_RTTI \
+                         __cpp_exceptions \
+                         __cpp_rtti \
                          ATOMIC_INT_LOCK_FREE \
                          PB_DS_DATA_TRUE_INDICATOR \
                          PB_DS_STATIC_ASSERT=// \

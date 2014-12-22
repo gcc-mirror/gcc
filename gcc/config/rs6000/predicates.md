@@ -788,6 +788,12 @@
 		 || satisfies_constraint_L (op)")
     (match_operand 0 "gpc_reg_operand")))
 
+;; Return 1 if the operand is either a non-special register, or 0, or -1.
+(define_predicate "adde_operand"
+  (if_then_else (match_code "const_int")
+    (match_test "INTVAL (op) == 0 || INTVAL (op) == -1")
+    (match_operand 0 "gpc_reg_operand")))
+
 ;; Return 1 if OP is a constant but not a valid add_operand.
 (define_predicate "non_add_cint_operand"
   (and (match_code "const_int")
@@ -1233,6 +1239,14 @@
 			      (ior (match_operand 0 "ordered_comparison_operator")
 				   (match_code ("unlt,unle,ungt,unge"))))
 		(match_operand 0 "comparison_operator")))
+
+;; Return 1 if OP is an unsigned comparison operator.
+(define_predicate "unsigned_comparison_operator"
+  (match_code "ltu,gtu,leu,geu"))
+
+;; Return 1 if OP is a signed comparison operator.
+(define_predicate "signed_comparison_operator"
+  (match_code "lt,gt,le,ge"))
 
 ;; Return 1 if OP is a comparison operation that is valid for an SCC insn --
 ;; it must be a positive comparison.

@@ -488,7 +488,11 @@ get_equiv (rtx x)
       || lra_get_regno_hard_regno (regno) >= 0)
     return x;
   if ((res = ira_reg_equiv[regno].memory) != NULL_RTX)
-    return res;
+    {
+      if (targetm.cannot_substitute_mem_equiv_p (res))
+	return x;
+      return res;
+    }
   if ((res = ira_reg_equiv[regno].constant) != NULL_RTX)
     return res;
   if ((res = ira_reg_equiv[regno].invariant) != NULL_RTX)
@@ -2267,6 +2271,43 @@ process_alt_operands (int only_alternative)
 		  goto fail;
 		}
 
+	      /* Alternative loses if it required class pseudo can not
+		 hold value of required mode.  Such insns can be
+		 described by insn definitions with mode iterators.  */
+	      if (GET_MODE (*curr_id->operand_loc[nop]) != VOIDmode
+		  && ! hard_reg_set_empty_p (this_alternative_set)
+		  /* It is common practice for constraints to use a
+		     class which does not have actually enough regs to
+		     hold the value (e.g. x86 AREG for mode requiring
+		     more one general reg).  Therefore we have 2
+		     conditions to check that the reload pseudo can
+		     not hold the mode value.  */
+		  && ! HARD_REGNO_MODE_OK (ira_class_hard_regs
+					   [this_alternative][0],
+					   GET_MODE (*curr_id->operand_loc[nop])))
+		{
+		  HARD_REG_SET temp;
+		  
+		  COPY_HARD_REG_SET (temp, this_alternative_set);
+		  AND_COMPL_HARD_REG_SET (temp, lra_no_alloc_regs);
+		  /* The above condition is not enough as the first
+		     reg in ira_class_hard_regs can be not aligned for
+		     multi-words mode values.  */
+		  if (hard_reg_set_subset_p (temp,
+					     ira_prohibited_class_mode_regs
+					     [this_alternative]
+					     [GET_MODE (*curr_id->operand_loc[nop])]))
+		    {
+		      if (lra_dump_file != NULL)
+			fprintf
+			  (lra_dump_file,
+			   "            alt=%d: reload pseudo for op %d "
+			   " can not hold the mode value -- refuse\n",
+			   nalt, nop);
+		      goto fail;
+		    }
+		}
+
 	      /* Check strong discouragement of reload of non-constant
 		 into class THIS_ALTERNATIVE.  */
 	      if (! CONSTANT_P (op) && ! no_regs_p
@@ -2797,6 +2838,20 @@ process_address_1 (int nop, bool check_only_p,
     decompose_mem_address (&ad, SUBREG_REG (op));
   else
     return false;
+  /* If INDEX_REG_CLASS is assigned to base_term already and isn't to
+     index_term, swap them so to avoid assigning INDEX_REG_CLASS to both
+     when INDEX_REG_CLASS is a single register class.  */
+  if (ad.base_term != NULL
+      && ad.index_term != NULL
+      && ira_class_hard_regs_num[INDEX_REG_CLASS] == 1
+      && REG_P (*ad.base_term)
+      && REG_P (*ad.index_term)
+      && in_class_p (*ad.base_term, INDEX_REG_CLASS, NULL)
+      && ! in_class_p (*ad.index_term, INDEX_REG_CLASS, NULL))
+    {
+      std::swap (ad.base, ad.index);
+      std::swap (ad.base_term, ad.index_term);
+    }
   if (! check_only_p)
     change_p = equiv_address_substitution (&ad);
   if (ad.base_term != NULL
@@ -2958,6 +3013,32 @@ process_address_1 (int nop, bool check_only_p,
 		lra_change_class (regno, cl, "      Change to", true);
 	      new_reg = SET_SRC (set);
 	      delete_insns_since (PREV_INSN (last_insn));
+	    }
+	}
+      /* Try if target can split displacement into legitimite new disp
+	 and offset.  If it's the case, we replace the last insn with
+	 insns for base + offset => new_reg and set new_reg + new disp
+	 to *ad.inner.  */
+      last_insn = get_last_insn ();
+      if ((set = single_set (last_insn)) != NULL_RTX
+	  && GET_CODE (SET_SRC (set)) == PLUS
+	  && REG_P (XEXP (SET_SRC (set), 0))
+	  && REGNO (XEXP (SET_SRC (set), 0)) < FIRST_PSEUDO_REGISTER
+	  && CONST_INT_P (XEXP (SET_SRC (set), 1)))
+	{
+	  rtx addend, disp = XEXP (SET_SRC (set), 1);
+	  if (targetm.legitimize_address_displacement (&disp, &addend,
+						       ad.mode))
+	    {
+	      rtx_insn *new_insns;
+	      start_sequence ();
+	      lra_emit_add (new_reg, XEXP (SET_SRC (set), 0), addend);
+	      new_insns = get_insns ();
+	      end_sequence ();
+	      new_reg = gen_rtx_PLUS (Pmode, new_reg, disp);
+	      delete_insns_since (PREV_INSN (last_insn));
+	      add_insn (new_insns);
+	      insns = get_insns ();
 	    }
 	}
       end_sequence ();
@@ -3160,7 +3241,7 @@ simple_move_p (void)
 	  && (sclass = get_op_class (src)) != NO_REGS
 	  /* The backend guarantees that register moves of cost 2
 	     never need reloads.  */
-	  && targetm.register_move_cost (GET_MODE (src), dclass, sclass) == 2);
+	  && targetm.register_move_cost (GET_MODE (src), sclass, dclass) == 2);
  }
 
 /* Swap operands NOP and NOP + 1. */

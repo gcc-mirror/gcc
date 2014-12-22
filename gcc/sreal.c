@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include <math.h>
 #include "coretypes.h"
 #include "sreal.h"
 
@@ -61,13 +62,13 @@ sreal::dump (FILE *file) const
 }
 
 DEBUG_FUNCTION void
-debug (sreal &ref)
+debug (const sreal &ref)
 {
   ref.dump (stderr);
 }
 
 DEBUG_FUNCTION void
-debug (sreal *ptr)
+debug (const sreal *ptr)
 {
   if (ptr)
     debug (*ptr);
@@ -91,62 +92,8 @@ sreal::shift_right (int s)
 
   m_exp += s;
 
-  m_sig += (uint64_t) 1 << (s - 1);
+  m_sig += (int64_t) 1 << (s - 1);
   m_sig >>= s;
-}
-
-/* Normalize *this.  */
-
-void
-sreal::normalize ()
-{
-  if (m_sig == 0)
-    {
-      m_negative = 0;
-      m_exp = -SREAL_MAX_EXP;
-    }
-  else if (m_sig < SREAL_MIN_SIG)
-    {
-      do
-	{
-	  m_sig <<= 1;
-	  m_exp--;
-	}
-      while (m_sig < SREAL_MIN_SIG);
-
-      /* Check underflow.  */
-      if (m_exp < -SREAL_MAX_EXP)
-	{
-	  m_exp = -SREAL_MAX_EXP;
-	  m_sig = 0;
-	}
-    }
-  else if (m_sig > SREAL_MAX_SIG)
-    {
-      int last_bit;
-      do
-	{
-	  last_bit = m_sig & 1;
-	  m_sig >>= 1;
-	  m_exp++;
-	}
-      while (m_sig > SREAL_MAX_SIG);
-
-      /* Round the number.  */
-      m_sig += last_bit;
-      if (m_sig > SREAL_MAX_SIG)
-	{
-	  m_sig >>= 1;
-	  m_exp++;
-	}
-
-      /* Check overflow.  */
-      if (m_exp > SREAL_MAX_EXP)
-	{
-	  m_exp = SREAL_MAX_EXP;
-	  m_sig = SREAL_MAX_SIG;
-	}
-    }
 }
 
 /* Return integer value of *this.  */
@@ -154,17 +101,29 @@ sreal::normalize ()
 int64_t
 sreal::to_int () const
 {
-  int64_t sign = m_negative ? -1 : 1;
+  int64_t sign = m_sig < 0 ? -1 : 1;
 
   if (m_exp <= -SREAL_BITS)
     return 0;
   if (m_exp >= SREAL_PART_BITS)
     return sign * INTTYPE_MAXIMUM (int64_t);
   if (m_exp > 0)
-    return sign * (m_sig << m_exp);
+    return m_sig << m_exp;
   if (m_exp < 0)
-    return sign * (m_sig >> -m_exp);
-  return sign * m_sig;
+    return m_sig >> -m_exp;
+  return m_sig;
+}
+
+/* Return value of *this as double.
+   This should be used for debug output only.  */
+
+double
+sreal::to_double () const
+{
+  double val = m_sig;
+  if (m_exp)
+    val *= exp2 (m_exp);
+  return val;
 }
 
 /* Return *this + other.  */
@@ -172,36 +131,10 @@ sreal::to_int () const
 sreal
 sreal::operator+ (const sreal &other) const
 {
-  const sreal *a_p = this, *b_p = &other;
-
-  if (a_p->m_negative && !b_p->m_negative)
-    std::swap (a_p, b_p);
-
-  /* a + -b => a - b.  */
-  if (!a_p->m_negative && b_p->m_negative)
-    {
-      sreal tmp = -(*b_p);
-      if (*a_p < tmp)
-	return signedless_minus (tmp, *a_p, true);
-      else
-	return signedless_minus (*a_p, tmp, false);
-    }
-
-  gcc_checking_assert (a_p->m_negative == b_p->m_negative);
-
-  sreal r = signedless_plus (*a_p, *b_p, a_p->m_negative);
-
-  return r;
-}
-
-sreal
-sreal::signedless_plus (const sreal &a, const sreal &b, bool negative)
-{
-  const sreal *bb;
-  sreal r, tmp;
   int dexp;
-  const sreal *a_p = &a;
-  const sreal *b_p = &b;
+  sreal tmp, r;
+
+  const sreal *a_p = this, *b_p = &other, *bb;
 
   if (a_p->m_exp < b_p->m_exp)
     std::swap (a_p, b_p);
@@ -211,7 +144,6 @@ sreal::signedless_plus (const sreal &a, const sreal &b, bool negative)
   if (dexp > SREAL_BITS)
     {
       r.m_sig = a_p->m_sig;
-      r.m_negative = negative;
       return r;
     }
 
@@ -226,56 +158,32 @@ sreal::signedless_plus (const sreal &a, const sreal &b, bool negative)
 
   r.m_sig = a_p->m_sig + bb->m_sig;
   r.normalize ();
-
-  r.m_negative = negative;
   return r;
 }
+
 
 /* Return *this - other.  */
 
 sreal
 sreal::operator- (const sreal &other) const
 {
-  /* -a - b => -a + (-b).  */
-  if (m_negative && !other.m_negative)
-    return signedless_plus (*this, -other, true);
-
-  /* a - (-b) => a + b.  */
-  if (!m_negative && other.m_negative)
-    return signedless_plus (*this, -other, false);
-
-  gcc_checking_assert (m_negative == other.m_negative);
-
-  /* We want to substract a smaller number from bigger
-    for nonegative numbers.  */
-  if (!m_negative && *this < other)
-    return signedless_minus (other, *this, true);
-
-  /* Example: -2 - (-3) => 3 - 2 */
-  if (m_negative && *this > other)
-    return signedless_minus (-other, -(*this), false);
-
-  sreal r = signedless_minus (*this, other, m_negative);
-
-  return r;
-}
-
-sreal
-sreal::signedless_minus (const sreal &a, const sreal &b, bool negative)
-{
   int dexp;
   sreal tmp, r;
   const sreal *bb;
-  const sreal *a_p = &a;
-  const sreal *b_p = &b;
+  const sreal *a_p = this, *b_p = &other;
+
+  int64_t sign = 1;
+  if (a_p->m_exp < b_p->m_exp)
+    {
+      sign = -1;
+      std::swap (a_p, b_p);
+    }
 
   dexp = a_p->m_exp - b_p->m_exp;
-
   r.m_exp = a_p->m_exp;
   if (dexp > SREAL_BITS)
     {
-      r.m_sig = a_p->m_sig;
-      r.m_negative = negative;
+      r.m_sig = sign * a_p->m_sig;
       return r;
     }
   if (dexp == 0)
@@ -287,10 +195,8 @@ sreal::signedless_minus (const sreal &a, const sreal &b, bool negative)
       bb = &tmp;
     }
 
-  r.m_sig = a_p->m_sig - bb->m_sig;
+  r.m_sig = sign * (a_p->m_sig - bb->m_sig);
   r.normalize ();
-
-  r.m_negative = negative;
   return r;
 }
 
@@ -300,7 +206,7 @@ sreal
 sreal::operator* (const sreal &other) const
 {
   sreal r;
-  if (m_sig < SREAL_MIN_SIG || other.m_sig < SREAL_MIN_SIG)
+  if (absu_hwi (m_sig) < SREAL_MIN_SIG || absu_hwi (other.m_sig) < SREAL_MIN_SIG)
     {
       r.m_sig = 0;
       r.m_exp = -SREAL_MAX_EXP;
@@ -312,7 +218,6 @@ sreal::operator* (const sreal &other) const
       r.normalize ();
     }
 
-  r.m_negative = m_negative ^ other.m_negative;
   return r;
 }
 
@@ -325,7 +230,6 @@ sreal::operator/ (const sreal &other) const
   sreal r;
   r.m_sig = (m_sig << SREAL_PART_BITS) / other.m_sig;
   r.m_exp = m_exp - other.m_exp - SREAL_PART_BITS;
-  r.m_negative = m_negative ^ other.m_negative;
   r.normalize ();
   return r;
 }

@@ -9,5 +9,5 @@ type t
 end type t
 class(t), allocatable :: var
 
-var = t() ! { dg-error "Assignment to an allocatable polymorphic variable at .1. requires -frealloc-lhs" }
+var = t() ! { dg-error "Assignment to an allocatable polymorphic variable at .1. requires '-frealloc-lhs'" }
 end

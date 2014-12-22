@@ -976,7 +976,7 @@ msp430_asm_integer (rtx x, unsigned int size, int aligned_p)
 #undef  TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA msp430_asm_output_addr_const_extra
 static bool
-msp430_asm_output_addr_const_extra (FILE *file, rtx x)
+msp430_asm_output_addr_const_extra (FILE *file ATTRIBUTE_UNUSED, rtx x)
 {
   debug_rtx(x);
   return false;

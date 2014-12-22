@@ -493,7 +493,7 @@ gfc_init_kinds (void)
 
   gfc_numeric_storage_size = 4 * 8;
 
-  if (gfc_option.flag_default_integer)
+  if (flag_default_integer)
     {
       if (!saw_i8)
 	gfc_fatal_error ("INTEGER(KIND=8) is not available for "
@@ -502,7 +502,7 @@ gfc_init_kinds (void)
       gfc_default_integer_kind = 8;
 
     }
-  else if (gfc_option.flag_integer4_kind == 8)
+  else if (flag_integer4_kind == 8)
     {
       if (!saw_i8)
 	gfc_fatal_error ("INTEGER(KIND=8) is not available for "
@@ -521,7 +521,7 @@ gfc_init_kinds (void)
     }
 
   /* Choose the default real kind.  Again, we choose 4 when possible.  */
-  if (gfc_option.flag_default_real)
+  if (flag_default_real)
     {
       if (!saw_r8)
 	gfc_fatal_error ("REAL(KIND=8) is not available for "
@@ -529,7 +529,7 @@ gfc_init_kinds (void)
 
       gfc_default_real_kind = 8;
     }
-  else if (gfc_option.flag_real4_kind == 8)
+  else if (flag_real4_kind == 8)
   {
     if (!saw_r8)
       gfc_fatal_error ("REAL(KIND=8) is not available for %<-freal-4-real-8%> "
@@ -537,7 +537,7 @@ gfc_init_kinds (void)
 
     gfc_default_real_kind = 8;
   }
-  else if (gfc_option.flag_real4_kind == 10)
+  else if (flag_real4_kind == 10)
   {
     if (!saw_r10)
       gfc_fatal_error ("REAL(KIND=10) is not available for "
@@ -545,7 +545,7 @@ gfc_init_kinds (void)
 
     gfc_default_real_kind = 10;
   }
-  else if (gfc_option.flag_real4_kind == 16)
+  else if (flag_real4_kind == 16)
   {
     if (!saw_r16)
       gfc_fatal_error ("REAL(KIND=16) is not available for "
@@ -562,15 +562,15 @@ gfc_init_kinds (void)
      are specified, we use kind=8, if it's available.  If -fdefault-real is
      specified without -fdefault-double, we use kind=16, if it's available.
      Otherwise we do not change anything.  */
-  if (gfc_option.flag_default_double && !gfc_option.flag_default_real)
+  if (flag_default_double && !flag_default_real)
     gfc_fatal_error ("Use of %<-fdefault-double-8%> requires "
 		     "%<-fdefault-real-8%>");
 
-  if (gfc_option.flag_default_real && gfc_option.flag_default_double && saw_r8)
+  if (flag_default_real && flag_default_double && saw_r8)
     gfc_default_double_kind = 8;
-  else if (gfc_option.flag_default_real && saw_r16)
+  else if (flag_default_real && saw_r16)
     gfc_default_double_kind = 16;
-  else if (gfc_option.flag_real8_kind == 4)
+  else if (flag_real8_kind == 4)
     {
       if (!saw_r4)
 	gfc_fatal_error ("REAL(KIND=4) is not available for "
@@ -578,7 +578,7 @@ gfc_init_kinds (void)
 
 	gfc_default_double_kind = 4;
     }
-  else if (gfc_option.flag_real8_kind == 10 )
+  else if (flag_real8_kind == 10 )
     {
       if (!saw_r10)
 	gfc_fatal_error ("REAL(KIND=10) is not available for "
@@ -586,7 +586,7 @@ gfc_init_kinds (void)
 
 	gfc_default_double_kind = 10;
     }
-  else if (gfc_option.flag_real8_kind == 16 )
+  else if (flag_real8_kind == 16 )
     {
       if (!saw_r16)
 	gfc_fatal_error ("REAL(KIND=10) is not available for "
@@ -1648,7 +1648,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
 
   if (as->rank == 0)
     {
-      if (packed != PACKED_STATIC  || gfc_option.coarray == GFC_FCOARRAY_LIB)
+      if (packed != PACKED_STATIC  || flag_coarray == GFC_FCOARRAY_LIB)
 	{
 	  type = build_pointer_type (type);
 
@@ -1702,7 +1702,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
     }
 
   if (packed != PACKED_STATIC || !known_stride
-      || (as->corank && gfc_option.coarray == GFC_FCOARRAY_LIB))
+      || (as->corank && flag_coarray == GFC_FCOARRAY_LIB))
     {
       /* For dummy arrays and automatic (heap allocated) arrays we
 	 want a pointer to the array.  */
@@ -1734,7 +1734,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted,
 
   gcc_assert (codimen + dimen >= 0 && codimen + dimen <= GFC_MAX_DIMENSIONS);
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB && codimen)
+  if (flag_coarray == GFC_FCOARRAY_LIB && codimen)
     {
       if (gfc_array_descriptor_base_caf[idx])
 	return gfc_array_descriptor_base_caf[idx];
@@ -1782,7 +1782,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted,
       TREE_NO_WARNING (decl) = 1;
     }
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB && codimen
+  if (flag_coarray == GFC_FCOARRAY_LIB && codimen
       && akind == GFC_ARRAY_ALLOCATABLE)
     {
       decl = gfc_add_field_to_struct_1 (fat_type,
@@ -1795,7 +1795,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted,
   gfc_finish_type (fat_type);
   TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (fat_type)) = 1;
 
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB && codimen
+  if (flag_coarray == GFC_FCOARRAY_LIB && codimen
       && akind == GFC_ARRAY_ALLOCATABLE)
     gfc_array_descriptor_base_caf[idx] = fat_type;
   else
@@ -2447,7 +2447,7 @@ gfc_get_derived_type (gfc_symbol * derived)
       /* We see this derived type first time, so build the type node.  */
       typenode = make_node (RECORD_TYPE);
       TYPE_NAME (typenode) = get_identifier (derived->name);
-      TYPE_PACKED (typenode) = gfc_option.flag_pack_derived;
+      TYPE_PACKED (typenode) = flag_pack_derived;
       derived->backend_decl = typenode;
     }
 
@@ -2630,8 +2630,7 @@ gfc_return_by_reference (gfc_symbol * sym)
      -fno-f2c calling convention), nor for calls to functions which always
      require an explicit interface, as no compatibility problems can
      arise there.  */
-  if (gfc_option.flag_f2c
-      && sym->ts.type == BT_COMPLEX
+  if (flag_f2c && sym->ts.type == BT_COMPLEX
       && !sym->attr.intrinsic && !sym->attr.always_explicit)
     return 1;
 
@@ -2865,8 +2864,7 @@ arg_type_list_done:
     type = void_type_node;
   else if (sym->attr.mixed_entry_master)
     type = gfc_get_mixed_entry_union (sym->ns);
-  else if (gfc_option.flag_f2c
-	   && sym->ts.type == BT_REAL
+  else if (flag_f2c && sym->ts.type == BT_REAL
 	   && sym->ts.kind == gfc_default_real_kind
 	   && !sym->attr.always_explicit)
     {
@@ -3046,6 +3044,7 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
 
   memset (info, '\0', sizeof (*info));
   info->ndimensions = rank;
+  info->ordering = array_descr_ordering_column_major;
   info->element_type = etype;
   ptype = build_pointer_type (gfc_array_index_type);
   base_decl = GFC_TYPE_ARRAY_BASE_DECL (type, indirect);

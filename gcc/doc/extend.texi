@@ -46,6 +46,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Escaped Newlines::    Slightly looser rules for escaped newlines.
 * Subscripting::        Any array can be subscripted, even if not an lvalue.
 * Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
+* Pointers to Arrays::  Pointers to arrays with qualifiers work as expected.
 * Initializers::        Non-constant initializers.
 * Compound Literals::   Compound literals give structures, unions
                         or arrays as values.
@@ -1783,6 +1784,27 @@ and on function types, and returns 1.
 @opindex Wpointer-arith
 The option @option{-Wpointer-arith} requests a warning if these extensions
 are used.
+
+@node Pointers to Arrays
+@section Pointers to arrays with qualifiers work as expected
+@cindex pointers to arrays
+@cindex const qualifier
+
+In GNU C, pointers to arrays with qualifiers work similar to pointers
+to other qualified types. For example, a value of type @code{int (*)[5]}
+can be used to initialize a variable of type @code{const int (*)[5]}.
+These types are incompatible in ISO C because the @code{const} qualifier
+is formally attached to the element type of the array and not the
+array itself.
+
+@smallexample
+extern void
+transpose (int N, int M, double out[M][N], const double in[N][M]);
+double x[3][2];
+double y[2][3];
+@r{@dots{}}
+transpose(3, 2, y, x);
+@end smallexample
 
 @node Initializers
 @section Non-Constant Initializers
@@ -16900,6 +16922,15 @@ int get_tcb_value (void)
 @}
 
 @end smallexample
+@end deftypefn
+
+@deftypefn {Built-in Function} {unsigned int} __builtin_sh_get_fpscr (void)
+Returns the value that is currently set in the @samp{FPSCR} register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {void} __builtin_sh_set_fpscr (unsigned int @var{val})
+Sets the @samp{FPSCR} register to the specified value @var{val}, while
+preserving the current values of the FR, SZ and PR bits.
 @end deftypefn
 
 @node SPARC VIS Built-in Functions

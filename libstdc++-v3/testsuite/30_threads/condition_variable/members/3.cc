@@ -41,7 +41,12 @@ void func()
 {
   std::unique_lock<std::mutex> lock{mx};
   std::notify_all_at_thread_exit(cv, std::move(lock));
+#if _GLIBCXX_HAVE___CXA_THREAD_ATEXIT_IMPL
+  // Correct order of thread_local destruction needs __cxa_thread_atexit_impl
   static thread_local Inc inc;
+#else
+  Inc inc;
+#endif
 }
 
 int main()

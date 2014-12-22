@@ -24,12 +24,33 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "tree-upc.h"
+#include "hashtab.h"
+
+struct tree_map_hasher : ggc_cache_hasher<tree_map *>
+{
+  static inline hashval_t hash (tree_map *m) { return m->hash; }
+  static inline bool
+  equal (tree_map *a, tree_map *b)
+  {
+    return a->base.from == b->base.from;
+  }
+
+  static void
+  handle_cache_entry (tree_map *&m)
+  {
+    extern void gt_ggc_mx (tree_map *&);
+    if (m == HTAB_EMPTY_ENTRY || m == HTAB_DELETED_ENTRY)
+      return;
+    else if (ggc_marked_p (m->base.from))
+      gt_ggc_mx (m);
+    else
+      m = static_cast<tree_map *> (HTAB_DELETED_ENTRY);
+  }
+};
 
 /* Hash table for UPC block factor lookups when the block factor
    is not 0 (the indefinite block factor) or 1 (the default).  */
-static GTY ((if_marked ("tree_map_marked_p"),
-           param_is (struct tree_map)))
-     htab_t upc_block_factor_for_type;
+static GTY((cache)) hash_table<tree_map_hasher> *upc_block_factor_htab;
 
 /* Return the blocking factor of the UPC shared type, TYPE.
    If the blocking factor is NULL, then return the default blocking
@@ -85,7 +106,7 @@ build_upc_unshared_type (tree type)
 tree
 upc_block_factor_lookup (const_tree type)
 {
-  struct tree_map *h, in;
+  struct tree_map in;
   union
     {
       const_tree ct;
@@ -94,9 +115,11 @@ upc_block_factor_lookup (const_tree type)
   ct_to_t.ct = type;
   /* Drop the const qualifier, avoid the warning.  */
   in.base.from = ct_to_t.t;
-
-  h = (struct tree_map *)
-      htab_find_with_hash (upc_block_factor_for_type, &in, TYPE_HASH (type));
+  in.hash = TYPE_HASH (in.base.from);
+  struct tree_map **loc = upc_block_factor_htab->
+                            find_slot_with_hash (&in, in.hash, NO_INSERT);
+  gcc_assert (loc != NULL);
+  struct tree_map *h = *loc;
   if (h)
     return h->to;
   return NULL_TREE;
@@ -106,27 +129,25 @@ upc_block_factor_lookup (const_tree type)
 
 void
 upc_block_factor_insert (tree type,
-                     tree block_factor)
+                         tree block_factor)
 {
-  struct tree_map *h;
-  void **loc;
 
   gcc_assert (type && TYPE_P (type));
   gcc_assert (block_factor && INTEGRAL_TYPE_P (TREE_TYPE (block_factor)));
   gcc_assert (!(integer_zerop (block_factor) || integer_onep (block_factor)));
-  h = ggc_alloc<tree_map> ();
+  tree_map *h = ggc_alloc<tree_map> ();
   h->base.from = type;
-  h->to = (tree) block_factor;
-  loc = htab_find_slot_with_hash (upc_block_factor_for_type,
-                                  h, TYPE_HASH (type), INSERT);
-  *(struct tree_map **) loc = h;
+  h->hash = TYPE_HASH (type);
+  h->to = block_factor;
+  tree_map **loc = upc_block_factor_htab->
+                     find_slot_with_hash (h, h->hash, INSERT);
+  *loc = h;
 }
 
 void
 upc_block_factor_lookup_init (void)
 {
-  upc_block_factor_for_type = htab_create_ggc (512, tree_map_hash,
-                                               tree_map_eq, 0);
+  upc_block_factor_htab = hash_table<tree_map_hasher>::create_ggc (17);
 }
 
 #include "gt-tree-upc.h"

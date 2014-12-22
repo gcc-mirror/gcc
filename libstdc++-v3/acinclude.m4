@@ -3832,23 +3832,56 @@ AC_DEFUN([GLIBCXX_CHECK_SDT_H], [
 ])
 
 dnl
-dnl Check if the user wants the new C++11-conforming ABI.
+dnl Control whether the library should define symbols for old and new ABIs.
+dnl This affects definitions of strings, stringstreams and locale facets.
 dnl
-dnl --disable-libstdcxx-cxx11-abi will use old ABI for all types.
+dnl --disable-libstdcxx-dual-abi will use old ABI for all types.
 dnl
 dnl Defines:
-dnl  _GLIBCXX_USE_ABI_TAG (always defined, either to 1 or 0)
+dnl  _GLIBCXX_USE_DUAL_ABI (always defined, either to 1 or 0)
 dnl
-AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_CXX11_ABI], [
-  AC_ARG_ENABLE([libstdcxx-cxx11-abi],
-    AC_HELP_STRING([--disable-libstdcxx-cxx11-abi],
-		   [disable the C++11-conforming ABI]),,
-		   [enable_libstdcxx_cxx11_abi=yes])
-  if test x"$enable_libstdcxx_cxx11_abi" != xyes; then
-    AC_MSG_NOTICE([C++11-conforming ABI is disabled])
+AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_DUAL_ABI], [
+  GLIBCXX_ENABLE(libstdcxx-dual-abi,$1,,[support two versions of std::string])
+  if test x"$enable_libstdcxx_dual_abi" != xyes; then
+    AC_MSG_NOTICE([dual ABI is disabled])
+    default_libstdcxx_abi="c++98"
   fi
-  GLIBCXX_CONDITIONAL(ENABLE_CXX11_ABI, test $enable_libstdcxx_cxx11_abi = yes)
+  GLIBCXX_CONDITIONAL(ENABLE_DUAL_ABI, test $enable_libstdcxx_dual_abi = yes)
 ])
+
+dnl
+dnl Check to see which ABI should be enabled by default.
+dnl
+dnl --with-default-libstdcxx-abi={c++98,c++11}
+dnl
+dnl Defines:
+dnl  _GLIBCXX_USE_CXX11_ABI (always defined, either to 1 or 0)
+dnl
+AC_DEFUN([GLIBCXX_DEFAULT_ABI], [
+  if test x$enable_libstdcxx_dual_abi = xyes; then
+  AC_MSG_CHECKING([for default std::string ABI to use])
+  AC_ARG_WITH([default-libstdcxx-abi],
+    AS_HELP_STRING([--with-default-libstdcxx-abi],
+                   [set the std::string ABI to use by default]),
+    [case "$withval" in
+      c++98|gnu++98|c++03|gnu++03)  default_libstdcxx_abi="c++98" ;;
+      c++1?|gnu++1?)  default_libstdcxx_abi="c++11" ;;
+      *)  AC_MSG_ERROR([Invalid argument for --with-default-libstdcxx-abi]) ;;
+     esac],
+    [default_libstdcxx_abi="c++11"])
+  AC_MSG_RESULT(${default_libstdcxx_abi})
+  fi
+  if test $default_libstdcxx_abi = "c++11"; then
+    glibcxx_cxx11_abi=1
+    glibcxx_cxx98_abi=0
+  else
+    glibcxx_cxx11_abi=0
+    glibcxx_cxx98_abi=1
+  fi
+  AC_SUBST(glibcxx_cxx98_abi)
+  GLIBCXX_CONDITIONAL(ENABLE_CXX11_ABI, test $glibcxx_cxx11_abi = 1)
+])
+
 
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])

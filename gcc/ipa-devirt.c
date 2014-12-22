@@ -139,6 +139,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "gimple.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "diagnostic.h"
@@ -2239,7 +2240,7 @@ possible_polymorphic_call_targets (tree otr_type,
 
   /* If ODR is not initialized or the constext is invalid, return empty
      incomplete list.  */
-  if (!odr_hash || context.invalid)
+  if (!odr_hash || context.invalid || !TYPE_BINFO (otr_type))
     {
       if (completep)
 	*completep = context.invalid;

@@ -103,6 +103,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "tree-iterator.h"
 #include "tree-dump.h"
@@ -1094,8 +1095,8 @@ symbol_table::materialize_all_clones (void)
 		  if (symtab->dump_file)
 		    {
 		      fprintf (symtab->dump_file, "cloning %s to %s\n",
-			       xstrdup (node->clone_of->name ()),
-			       xstrdup (node->name ()));
+			       xstrdup_for_dump (node->clone_of->name ()),
+			       xstrdup_for_dump (node->name ()));
 		      if (node->clone.tree_map)
 		        {
 			  unsigned int i;
@@ -1146,7 +1147,7 @@ symbol_table::materialize_all_clones (void)
 #ifdef ENABLE_CHECKING
   cgraph_node::verify_cgraph_nodes ();
 #endif
-  symtab->remove_unreachable_nodes (false, symtab->dump_file);
+  symtab->remove_unreachable_nodes (symtab->dump_file);
 }
 
 #include "gt-cgraphclones.h"

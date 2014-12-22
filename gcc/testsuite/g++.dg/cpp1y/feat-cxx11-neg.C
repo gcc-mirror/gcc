@@ -1,5 +1,4 @@
 // { dg-do compile { target c++11_only } }
-// { dg-options "-pedantic-errors" }
 
 // C++14 features:
 
@@ -23,6 +22,10 @@
 #  error "__cpp_return_type_deduction" // { dg-error "error" }
 #endif
 
+#ifndef __cpp_aggregate_nsdmi
+#  error "__cpp_aggregate_nsdmi" // { dg-error "error" }
+#endif
+
 #ifndef __cpp_variable_templates
 #  error "__cpp_variable_templates" // { dg-error "error" }
 #endif
@@ -31,8 +34,8 @@
 #  error "__cpp_digit_separators" // { dg-error "error" }
 #endif
 
-#ifndef __cpp_aggregate_nsdmi
-#  error "__cpp_aggregate_nsdmi" // { dg-error "error" }
+#ifndef __cpp_sized_deallocation
+#  error "__cpp_sized_deallocation" // { dg-error "error" }
 #endif
 
 //  Array TS features:

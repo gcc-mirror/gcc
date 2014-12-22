@@ -604,6 +604,17 @@ split_nonconstant_init_1 (tree dest, tree init)
     case ARRAY_TYPE:
       inner_type = TREE_TYPE (type);
       array_type_p = true;
+      if ((TREE_SIDE_EFFECTS (init)
+	   && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+	  || array_of_runtime_bound_p (type))
+	{
+	  /* For an array, we only need/want a single cleanup region rather
+	     than one per element.  */
+	  tree code = build_vec_init (dest, NULL_TREE, init, false, 1,
+				      tf_warning_or_error);
+	  add_stmt (code);
+	  return true;
+	}
       /* FALLTHRU */
 
     case RECORD_TYPE:
@@ -721,11 +732,13 @@ split_nonconstant_init_1 (tree dest, tree init)
    perform the non-constant part of the initialization to DEST.
    Returns the code for the runtime init.  */
 
-static tree
+tree
 split_nonconstant_init (tree dest, tree init)
 {
   tree code;
 
+  if (TREE_CODE (init) == TARGET_EXPR)
+    init = TARGET_EXPR_INITIAL (init);
   if (TREE_CODE (init) == CONSTRUCTOR)
     {
       code = push_stmt_list ();
@@ -830,17 +843,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       && (TREE_SIDE_EFFECTS (value)
 	  || array_of_runtime_bound_p (type)
 	  || ! reduced_constant_expression_p (value)))
-    {
-      if (TREE_CODE (type) == ARRAY_TYPE
-	  && (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (type))
-	      || array_of_runtime_bound_p (type)))
-	/* For an array, we only need/want a single cleanup region rather
-	   than one per element.  */
-	return build_vec_init (decl, NULL_TREE, value, false, 1,
-			       tf_warning_or_error);
-      else
-	return split_nonconstant_init (decl, value);
-    }
+    return split_nonconstant_init (decl, value);
   /* If the value is a constant, just put it in DECL_INITIAL.  If DECL
      is an automatic variable, the middle end will turn this into a
      dynamic initialization later.  */

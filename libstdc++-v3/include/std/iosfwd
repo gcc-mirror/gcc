@@ -88,6 +88,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
     class basic_iostream;
 
+
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
+
   template<typename _CharT, typename _Traits = char_traits<_CharT>,
 	    typename _Alloc = allocator<_CharT> >
     class basic_stringbuf;
@@ -103,6 +106,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits = char_traits<_CharT>,
 	   typename _Alloc = allocator<_CharT> >
     class basic_stringstream;
+
+_GLIBCXX_END_NAMESPACE_CXX11
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
     class basic_filebuf;

@@ -932,6 +932,21 @@ gfc_trans_class_array_init_assign (gfc_expr *rhs, gfc_expr *lhs, gfc_expr *obj)
      of arrays in gfc_trans_call.  */
   res = gfc_trans_call (ppc_code, false, NULL, NULL, false);
   gfc_free_statements (ppc_code);
+
+  if (UNLIMITED_POLY(obj))
+    {
+      /* Check if rhs is non-NULL. */
+      gfc_se src;
+      gfc_init_se (&src, NULL);
+      gfc_conv_expr (&src, rhs);
+      src.expr = gfc_build_addr_expr (NULL_TREE, src.expr);
+      tree cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+				   src.expr, fold_convert (TREE_TYPE (src.expr),
+							   null_pointer_node));
+      res = build3_loc (input_location, COND_EXPR, TREE_TYPE (res), cond, res,
+			build_empty_stmt (input_location));
+    }
+
   return res;
 }
 
@@ -980,6 +995,17 @@ gfc_trans_class_init_assign (gfc_code *code)
       src.expr = gfc_build_addr_expr (NULL_TREE, src.expr);
 
       tmp = gfc_build_memcpy_call (dst.expr, src.expr, memsz.expr);
+
+      if (UNLIMITED_POLY(code->expr1))
+	{
+	  /* Check if _def_init is non-NULL. */
+	  tree cond = fold_build2_loc (input_location, NE_EXPR,
+				       boolean_type_node, src.expr,
+				       fold_convert (TREE_TYPE (src.expr),
+						     null_pointer_node));
+	  tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp), cond,
+			    tmp, build_empty_stmt (input_location));
+	}
     }
 
   if (code->expr1->symtree->n.sym->attr.optional
@@ -2056,7 +2082,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 						se->expr);
 
           /* Dereference scalar hidden result.  */
-	  if (gfc_option.flag_f2c && sym->ts.type == BT_COMPLEX
+	  if (flag_f2c && sym->ts.type == BT_COMPLEX
 	      && (sym->attr.function || sym->attr.result)
 	      && !sym->attr.dimension && !sym->attr.pointer
 	      && !sym->attr.always_explicit)
@@ -2653,9 +2679,8 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
   switch (expr->value.op.op)
     {
     case INTRINSIC_PARENTHESES:
-      if ((expr->ts.type == BT_REAL
-	   || expr->ts.type == BT_COMPLEX)
-	  && gfc_option.flag_protect_parens)
+      if ((expr->ts.type == BT_REAL || expr->ts.type == BT_COMPLEX)
+	  && flag_protect_parens)
 	{
 	  gfc_conv_unary_op (PAREN_EXPR, se, expr);
 	  gcc_assert (FLOAT_TYPE_P (TREE_TYPE (se->expr)));
@@ -4430,6 +4455,55 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				     fsym->attr.optional
 				     && e->expr_type == EXPR_VARIABLE);
 		    }
+		  else if (e->ts.type == BT_CLASS && fsym
+			   && fsym->ts.type == BT_CLASS
+			   && !CLASS_DATA (fsym)->as
+			   && !CLASS_DATA (e)->as
+			   && (CLASS_DATA (fsym)->attr.class_pointer
+			       != CLASS_DATA (e)->attr.class_pointer
+			       || CLASS_DATA (fsym)->attr.allocatable
+				  != CLASS_DATA (e)->attr.allocatable))
+		    {
+		      type = gfc_typenode_for_spec (&fsym->ts);
+		      var = gfc_create_var (type, fsym->name);
+		      gfc_conv_expr (&parmse, e);
+		      if (fsym->attr.optional
+			  && e->expr_type == EXPR_VARIABLE
+			  && e->symtree->n.sym->attr.optional)
+			{
+			  stmtblock_t block;
+			  tree cond;
+			  tmp = gfc_build_addr_expr (NULL_TREE, parmse.expr);
+			  cond = fold_build2_loc (input_location, NE_EXPR,
+						  boolean_type_node, tmp,
+						  fold_convert (TREE_TYPE (tmp),
+							    null_pointer_node));
+			  gfc_start_block (&block);
+			  gfc_add_modify (&block, var,
+					  fold_build1_loc (input_location,
+							   VIEW_CONVERT_EXPR,
+							   type, parmse.expr));
+			  gfc_add_expr_to_block (&parmse.pre,
+				 fold_build3_loc (input_location,
+					 COND_EXPR, void_type_node,
+					 cond, gfc_finish_block (&block),
+					 build_empty_stmt (input_location)));
+			  parmse.expr = gfc_build_addr_expr (NULL_TREE, var);
+			  parmse.expr = build3_loc (input_location, COND_EXPR,
+					 TREE_TYPE (parmse.expr),
+					 cond, parmse.expr,
+					 fold_convert (TREE_TYPE (parmse.expr),
+						       null_pointer_node));
+			}
+		      else
+			{
+			  gfc_add_modify (&parmse.pre, var,
+					  fold_build1_loc (input_location,
+							   VIEW_CONVERT_EXPR,
+							   type, parmse.expr));
+			  parmse.expr = gfc_build_addr_expr (NULL_TREE, var);
+			}
+		    }
 		  else
 		    gfc_conv_expr_reference (&parmse, e);
 
@@ -4951,7 +5025,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
       /* For descriptorless coarrays and assumed-shape coarray dummies, we
 	 pass the token and the offset as additional arguments.  */
-      if (fsym && e == NULL && gfc_option.coarray == GFC_FCOARRAY_LIB
+      if (fsym && e == NULL && flag_coarray == GFC_FCOARRAY_LIB
 	  && ((fsym->ts.type != BT_CLASS && fsym->attr.codimension
 	       && !fsym->attr.allocatable)
 	      || (fsym->ts.type == BT_CLASS
@@ -4963,7 +5037,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  vec_safe_push (stringargs, build_int_cst (gfc_array_index_type, 0));
 	  gcc_assert (fsym->attr.optional);
 	}
-      else if (fsym && gfc_option.coarray == GFC_FCOARRAY_LIB
+      else if (fsym && flag_coarray == GFC_FCOARRAY_LIB
 	       && ((fsym->ts.type != BT_CLASS && fsym->attr.codimension
 		    && !fsym->attr.allocatable)
 		   || (fsym->ts.type == BT_CLASS
@@ -5127,7 +5201,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  /* If the lhs of an assignment x = f(..) is allocatable and
 	     f2003 is allowed, we must do the automatic reallocation.
 	     TODO - deal with intrinsics, without using a temporary.  */
-	  if (gfc_option.flag_realloc_lhs
+	  if (flag_realloc_lhs
 		&& se->ss && se->ss->loop_chain
 		&& se->ss->loop_chain->is_alloc_lhs
 		&& !expr->value.function.isym
@@ -5165,8 +5239,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	     f2003 is allowed, we must not generate the function call
 	     here but should just send back the results of the mapping.
 	     This is signalled by the function ss being flagged.  */
-	  if (gfc_option.flag_realloc_lhs
-		&& se->ss && se->ss->is_alloc_lhs)
+	  if (flag_realloc_lhs && se->ss && se->ss->is_alloc_lhs)
 	    {
 	      gfc_free_interface_mapping (&mapping);
 	      return has_alternate_specifier;
@@ -5201,8 +5274,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	     f2003 is allowed, we must not generate the function call
 	     here but should just send back the results of the mapping.
 	     This is signalled by the function ss being flagged.  */
-	  if (gfc_option.flag_realloc_lhs
-		&& se->ss && se->ss->is_alloc_lhs)
+	  if (flag_realloc_lhs && se->ss && se->ss->is_alloc_lhs)
 	    {
 	      gfc_free_interface_mapping (&mapping);
 	      return has_alternate_specifier;
@@ -5255,7 +5327,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	}
       else
 	{
-	  gcc_assert (gfc_option.flag_f2c && ts.type == BT_COMPLEX);
+	  gcc_assert (flag_f2c && ts.type == BT_COMPLEX);
 
 	  type = gfc_get_complex_type (ts.kind);
 	  var = gfc_build_addr_expr (NULL_TREE, gfc_create_var (type, "cmplx"));
@@ -5336,7 +5408,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
      return a double precision result.  Convert this back to default
      real.  We only care about the cases that can happen in Fortran 77.
   */
-  if (gfc_option.flag_f2c && sym->ts.type == BT_REAL
+  if (flag_f2c && sym->ts.type == BT_REAL
       && sym->ts.kind == gfc_default_real_kind
       && !sym->attr.always_explicit)
     se->expr = fold_convert (gfc_get_real_type (sym->ts.kind), se->expr);
@@ -5387,7 +5459,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    }
 	  else
 	    {
-	      gcc_assert (ts.type == BT_COMPLEX && gfc_option.flag_f2c);
+	      gcc_assert (ts.type == BT_COMPLEX && flag_f2c);
 	      se->expr = build_fold_indirect_ref_loc (input_location, var);
 	    }
 	}
@@ -7360,9 +7432,7 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
      need a temporary except in the particular case that reallocation
      on assignment is active and the lhs is allocatable and a target.  */
   if (expr2->value.function.isym)
-    return (gfc_option.flag_realloc_lhs
-	      && sym->attr.allocatable
-	      && sym->attr.target);
+    return (flag_realloc_lhs && sym->attr.allocatable && sym->attr.target);
 
   /* If the LHS is a dummy, we need a temporary if it is not
      INTENT(OUT).  */
@@ -7603,7 +7673,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
      calls, the array data is freed and the library takes care of allocation.
      TODO: Add logic of trans-array.c: gfc_alloc_allocatable_for_assignment
      to the library.  */
-  if (gfc_option.flag_realloc_lhs
+  if (flag_realloc_lhs
 	&& gfc_is_reallocatable_lhs (expr1)
 	&& !gfc_expr_attr (expr1).codimension
 	&& !gfc_is_coindexed (expr1)
@@ -8263,8 +8333,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
      otherwise the character length of the result is not known.
      NOTE: This relies on having the exact dependence of the length type
      parameter available to the caller; gfortran saves it in the .mod files.  */
-  if (gfc_option.flag_realloc_lhs && expr2->ts.type == BT_CHARACTER
-      && expr1->ts.deferred)
+  if (flag_realloc_lhs && expr2->ts.type == BT_CHARACTER && expr1->ts.deferred)
     gfc_add_block_to_block (&block, &rse.pre);
 
   tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
@@ -8276,8 +8345,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   if (lss == gfc_ss_terminator)
     {
       /* F2003: Add the code for reallocation on assignment.  */
-      if (gfc_option.flag_realloc_lhs
-	  && is_scalar_reallocatable_lhs (expr1))
+      if (flag_realloc_lhs && is_scalar_reallocatable_lhs (expr1))
 	alloc_scalar_allocatable_for_assignment (&block, rse.string_length,
 						 expr1, expr2);
 
@@ -8317,7 +8385,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	}
 
       /* F2003: Allocate or reallocate lhs of allocatable array.  */
-      if (gfc_option.flag_realloc_lhs
+      if (flag_realloc_lhs
 	    && gfc_is_reallocatable_lhs (expr1)
 	    && !gfc_expr_attr (expr1).codimension
 	    && !gfc_is_coindexed (expr1)

@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "lto-streamer.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 
@@ -427,8 +428,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "Merging profiles of %s/%i to %s/%i\n",
-	       xstrdup (src->name ()), src->order,
-	       xstrdup (dst->name ()), dst->order);
+	       xstrdup_for_dump (src->name ()), src->order,
+	       xstrdup_for_dump (dst->name ()), dst->order);
     }
   dst->count += src->count;
 

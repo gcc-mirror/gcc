@@ -571,10 +571,6 @@ lex_macro_node (cpp_reader *pfile, bool is_def_or_undef)
 	     || node == pfile->spec_nodes.n__has_include_next__))
 	cpp_error (pfile, CPP_DL_ERROR,
 		   "\"__has_include__\" cannot be used as a macro name");
-      else if (is_def_or_undef
-	    && node == pfile->spec_nodes.n__has_attribute__)
-	cpp_error (pfile, CPP_DL_ERROR,
-		   "\"__has_attribute__\" cannot be used as a macro name");
       else if (! (node->flags & NODE_POISONED))
 	return node;
     }
@@ -2404,11 +2400,11 @@ cpp_define (cpp_reader *pfile, const char *str)
 void
 cpp_define_formatted (cpp_reader *pfile, const char *fmt, ...)
 {
-  char *ptr = NULL;
+  char *ptr;
 
   va_list ap;
   va_start (ap, fmt);
-  vasprintf (&ptr, fmt, ap);
+  ptr = xvasprintf (fmt, ap);
   va_end (ap);
 
   cpp_define (pfile, ptr);

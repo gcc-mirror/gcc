@@ -1688,16 +1688,20 @@ Gcc_backend::constructor_expression(Btype* btype,
 Bexpression*
 Gcc_backend::array_constructor_expression(
     Btype* array_btype, const std::vector<unsigned long>& indexes,
-    const std::vector<Bexpression*>& vals, Location)
+    const std::vector<Bexpression*>& vals, Location location)
 {
   tree type_tree = array_btype->get_tree();
   if (type_tree == error_mark_node)
     return this->error_expression();
 
   gcc_assert(indexes.size() == vals.size());
-  vec<constructor_elt, va_gc> *init;
-  vec_alloc(init, vals.size());
 
+  tree element_type = TREE_TYPE(type_tree);
+  HOST_WIDE_INT element_size = int_size_in_bytes(element_type);
+  vec<constructor_elt, va_gc> *init;
+  vec_alloc(init, element_size == 0 ? 0 : vals.size());
+
+  tree sink = NULL_TREE;
   bool is_constant = true;
   for (size_t i = 0; i < vals.size(); ++i)
     {
@@ -1707,6 +1711,16 @@ Gcc_backend::array_constructor_expression(
       if (index == error_mark_node
           || val == error_mark_node)
         return this->error_expression();
+
+      if (element_size == 0)
+       {
+         // GIMPLE cannot represent arrays of zero-sized types so trying
+         // to construct an array of zero-sized values might lead to errors.
+         // Instead, we evaluate each expression that would have been added as
+         // an array value for its side-effects and construct an empty array.
+	 append_to_statement_list(val, &sink);
+         continue;
+       }
 
       if (!TREE_CONSTANT(val))
         is_constant = false;
@@ -1720,6 +1734,9 @@ Gcc_backend::array_constructor_expression(
   tree ret = build_constructor(type_tree, init);
   if (is_constant)
     TREE_CONSTANT(ret) = 1;
+  if (sink != NULL_TREE)
+    ret = fold_build2_loc(location.gcc_location(), COMPOUND_EXPR,
+                         type_tree, sink, ret);
   return this->make_expression(ret);
 }
 

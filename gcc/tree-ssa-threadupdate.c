@@ -2364,7 +2364,7 @@ duplicate_seme_region (edge entry, edge exit,
 		       basic_block *region_copy)
 {
   unsigned i;
-  bool free_region_copy = false, copying_header = false;
+  bool free_region_copy = false;
   struct loop *loop = entry->dest->loop_father;
   edge exit_copy;
   edge redirected;
@@ -2388,10 +2388,7 @@ duplicate_seme_region (edge entry, edge exit,
 
   initialize_original_copy_tables ();
 
-  if (copying_header)
-    set_loop_copy (loop, loop_outer (loop));
-  else
-    set_loop_copy (loop, loop);
+  set_loop_copy (loop, loop);
 
   if (!region_copy)
     {
@@ -2453,6 +2450,8 @@ duplicate_seme_region (edge entry, edge exit,
   }
 
   /* Redirect the entry and add the phi node arguments.  */
+  if (entry->dest == loop->header)
+    mark_loop_for_removal (loop);
   redirected = redirect_edge_and_branch (entry, get_bb_copy (entry->dest));
   gcc_assert (redirected != NULL);
   flush_pending_stmts (entry);

@@ -1578,16 +1578,6 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
       return value;
     }
 
-  if (cxx_dialect >= cxx14 && array_of_runtime_bound_p (type)
-      && (flag_iso || warn_vla > 0))
-    {
-      if (complain)
-	pedwarn (input_location, OPT_Wvla,
-		 "taking sizeof array of runtime bound");
-      else
-	return error_mark_node;
-    }
-
   return c_sizeof_or_alignof_type (input_location, complete_type (type),
 				   op == SIZEOF_EXPR, false,
 				   complain);
@@ -2536,6 +2526,12 @@ lookup_destructor (tree object, tree scope, tree dtor_name,
   expr = lookup_member (dtor_type, complete_dtor_identifier,
 			/*protect=*/1, /*want_type=*/false,
 			tf_warning_or_error);
+  if (!expr)
+    {
+      if (complain & tf_error)
+	cxx_incomplete_type_error (dtor_name, dtor_type);
+      return error_mark_node;
+    }
   expr = (adjust_result_of_qualified_name_lookup
 	  (expr, dtor_type, object_type));
   if (scope == NULL_TREE)
@@ -5534,18 +5530,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
     }
 
   if (argtype != error_mark_node)
-    {
-      if (cxx_dialect >= cxx14 && array_of_runtime_bound_p (argtype)
-	  && (flag_iso || warn_vla > 0))
-	{
-	  if (complain & tf_warning_or_error)
-	    pedwarn (input_location, OPT_Wvla,
-		     "taking address of array of runtime bound");
-	  else
-	    return error_mark_node;
-	}
-      argtype = build_pointer_type (argtype);
-    }
+    argtype = build_pointer_type (argtype);
 
   /* In a template, we are processing a non-dependent expression
      so we can just form an ADDR_EXPR with the correct type.  */
@@ -6357,12 +6342,6 @@ maybe_warn_about_useless_cast (tree type, tree expr, tsubst_flags_t complain)
   if (warn_useless_cast
       && complain & tf_warning)
     {
-      /* In C++14 mode, this interacts badly with force_paren_expr.  And it
-	 isn't necessary in any mode, because the code below handles
-	 glvalues properly.  For 4.9, just skip it in C++14 mode.  */
-      if (cxx_dialect < cxx14 && REFERENCE_REF_P (expr))
-	expr = TREE_OPERAND (expr, 0);
-
       if ((TREE_CODE (type) == REFERENCE_TYPE
 	   && (TYPE_REF_IS_RVALUE (type)
 	       ? xvalue_p (expr) : real_lvalue_p (expr))
@@ -8966,6 +8945,12 @@ apply_memfn_quals (tree type, cp_cv_quals memfn_quals, cp_ref_qualifier rqual)
   /* This should really have a different TYPE_MAIN_VARIANT, but that gets
      complex.  */
   tree result = build_qualified_type (type, memfn_quals);
+  if (tree canon = TYPE_CANONICAL (result))
+    if (canon != result)
+      /* check_qualified_type doesn't check the ref-qualifier, so make sure
+	 TYPE_CANONICAL is correct.  */
+      TYPE_CANONICAL (result)
+	= build_ref_qualified_type (canon, type_memfn_rqual (result));
   result = build_exception_variant (result, TYPE_RAISES_EXCEPTIONS (type));
   return build_ref_qualified_type (result, rqual);
 }

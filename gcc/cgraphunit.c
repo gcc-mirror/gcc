@@ -203,6 +203,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "tree-iterator.h"
 #include "tree-pass.h"
@@ -225,6 +226,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chkp.h"
 #include "lto-section-names.h"
 #include "omp-low.h"
+#include "print-tree.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -263,7 +265,7 @@ symtab_node::needed_p (void)
   if (forced_by_abi && TREE_PUBLIC (decl))
     return true;
 
- /* Keep constructors, destructors and virtual functions.  */
+  /* Keep constructors, destructors and virtual functions.  */
    if (TREE_CODE (decl) == FUNCTION_DECL
        && (DECL_STATIC_CONSTRUCTOR (decl) || DECL_STATIC_DESTRUCTOR (decl)))
     return true;
@@ -327,6 +329,7 @@ symbol_table::process_new_functions (void)
 
 	case IPA:
 	case IPA_SSA:
+	case IPA_SSA_AFTER_INLINING:
 	  /* When IPA optimization already started, do all essential
 	     transformations that has been already performed on the whole
 	     cgraph but not on this function.  */
@@ -335,10 +338,10 @@ symbol_table::process_new_functions (void)
 	  if (!node->analyzed)
 	    node->analyze ();
 	  push_cfun (DECL_STRUCT_FUNCTION (fndecl));
-	  if (state == IPA_SSA
+	  if ((state == IPA_SSA || state == IPA_SSA_AFTER_INLINING)
 	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
 	    g->get_passes ()->execute_early_local_passes ();
-	  else if (inline_summary_vec != NULL)
+	  else if (inline_summaries != NULL)
 	    compute_inline_parameters (node, true);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
@@ -507,6 +510,7 @@ cgraph_node::add_new_function (tree fndecl, bool lowered)
 
       case IPA:
       case IPA_SSA:
+      case IPA_SSA_AFTER_INLINING:
       case EXPANSION:
 	/* Bring the function into finalized state and enqueue for later
 	   analyzing and compilation.  */
@@ -998,7 +1002,20 @@ analyze_functions (void)
 		cnode->analyze ();
 
 	      for (edge = cnode->callees; edge; edge = edge->next_callee)
-		if (edge->callee->definition)
+		if (edge->callee->definition
+		    && (!DECL_EXTERNAL (edge->callee->decl)
+			/* When not optimizing, do not try to analyze extern
+			   inline functions.  Doing so is pointless.  */
+			|| opt_for_fn (edge->callee->decl, optimize)
+			/* Weakrefs needs to be preserved.  */
+			|| edge->callee->alias
+			/* always_inline functions are inlined aven at -O0.  */
+		        || lookup_attribute
+				 ("always_inline",
+			          DECL_ATTRIBUTES (edge->callee->decl))
+			/* Multiversioned functions needs the dispatcher to
+			   be produced locally even for extern functions.  */
+			|| edge->callee->function_version ()))
 		   enqueue_node (edge->callee);
 	      if (opt_for_fn (cnode->decl, optimize)
 		  && opt_for_fn (cnode->decl, flag_devirtualize))
@@ -1038,10 +1055,18 @@ analyze_functions (void)
 	      for (next = node->same_comdat_group;
 		   next != node;
 		   next = next->same_comdat_group)
-		enqueue_node (next);
+		if (!next->comdat_local_p ())
+		  enqueue_node (next);
 	    }
 	  for (i = 0; node->iterate_reference (i, ref); i++)
-	    if (ref->referred->definition)
+	    if (ref->referred->definition
+		&& (!DECL_EXTERNAL (ref->referred->decl)
+		    || ((TREE_CODE (ref->referred->decl) != FUNCTION_DECL
+			 && optimize)
+			|| (TREE_CODE (ref->referred->decl) == FUNCTION_DECL
+			    && opt_for_fn (ref->referred->decl, optimize))
+		    || node->alias
+		    || ref->referred->alias)))
 	      enqueue_node (ref->referred);
 	  symtab->process_new_functions ();
 	}
@@ -2053,7 +2078,7 @@ ipa_passes (void)
 
   /* This extra symtab_remove_unreachable_nodes pass tends to catch some
      devirtualization and other changes where removal iterate.  */
-  symtab->remove_unreachable_nodes (true, symtab->dump_file);
+  symtab->remove_unreachable_nodes (symtab->dump_file);
 
   /* If pass_all_early_optimizations was not scheduled, the state of
      the cgraph will not be properly updated.  Update it now.  */
@@ -2194,10 +2219,6 @@ symbol_table::compile (void)
       return;
     }
 
-  /* This pass remove bodies of extern inline functions we never inlined.
-     Do this later so other IPA passes see what is really going on.
-     FIXME: This should be run just after inlining by pasmanager.  */
-  remove_unreachable_nodes (false, dump_file);
   global_info_ready = true;
   if (dump_file)
     {

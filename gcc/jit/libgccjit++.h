@@ -32,16 +32,19 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace gccjit
 {
+  /* Indentation indicates inheritance.  */
   class context;
-  class location;
-  class field;
-  class type;
-  class struct_;
-  class param;
-  class function;
-  class block;
-  class rvalue;
-  class lvalue;
+  class error;
+  class object;
+    class location;
+    class field;
+    class type;
+      class struct_;
+    class function;
+    class block;
+    class rvalue;
+     class lvalue;
+       class param;
 
   /* Errors within the API become C++ exceptions of this class.  */
   class error
@@ -98,6 +101,9 @@ namespace gccjit
 
     void dump_to_file (const std::string &path,
 		       bool update_locations);
+
+    void set_str_option (enum gcc_jit_str_option opt,
+			 const char *value);
 
     void set_int_option (enum gcc_jit_int_option opt,
 			 int value);
@@ -532,6 +538,14 @@ context::dump_to_file (const std::string &path,
   gcc_jit_context_dump_to_file (m_inner_ctxt,
 				path.c_str (),
 				update_locations);
+}
+
+inline void
+context::set_str_option (enum gcc_jit_str_option opt,
+			 const char *value)
+{
+  gcc_jit_context_set_str_option (m_inner_ctxt, opt, value);
+
 }
 
 inline void

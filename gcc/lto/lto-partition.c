@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "params.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "ipa-utils.h"
@@ -164,7 +165,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
     {
       struct cgraph_edge *e;
       if (!node->alias)
-        part->insns += inline_summary (cnode)->self_size;
+        part->insns += inline_summaries->get (cnode)->self_size;
 
       /* Add all inline clones and callees that are duplicated.  */
       for (e = cnode->callees; e; e = e->next_callee)
@@ -273,7 +274,7 @@ undo_partition (ltrans_partition partition, unsigned int n_nodes)
       partition->initializers_visited = NULL;
 
       if (!node->alias && (cnode = dyn_cast <cgraph_node *> (node)))
-        partition->insns -= inline_summary (cnode)->self_size;
+        partition->insns -= inline_summaries->get (cnode)->self_size;
       lto_symtab_encoder_delete_node (partition->encoder, node);
       node->aux = (void *)((size_t)node->aux - 1);
     }
@@ -476,7 +477,7 @@ lto_balanced_map (int n_lto_partitions)
 	else
 	  order[n_nodes++] = node;
 	if (!node->alias)
-	  total_size += inline_summary (node)->size;
+	  total_size += inline_summaries->get (node)->size;
       }
 
   /* Streaming works best when the source units do not cross partition
@@ -533,14 +534,14 @@ lto_balanced_map (int n_lto_partitions)
 	     && noreorder[noreorder_pos]->order < current_order)
 	{
 	  if (!noreorder[noreorder_pos]->alias)
-	    total_size -= inline_summary (noreorder[noreorder_pos])->size;
+	    total_size -= inline_summaries->get (noreorder[noreorder_pos])->size;
 	  next_nodes.safe_push (noreorder[noreorder_pos++]);
 	}
       add_sorted_nodes (next_nodes, partition);
 
       add_symbol_to_partition (partition, order[i]);
       if (!order[i]->alias)
-        total_size -= inline_summary (order[i])->size;
+        total_size -= inline_summaries->get (order[i])->size;
 	  
 
       /* Once we added a new node to the partition, we also want to add
@@ -787,8 +788,16 @@ static bool
 privatize_symbol_name (symtab_node *node)
 {
   tree decl = node->decl;
-  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  cgraph_node *cnode;
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+  const char *name;
+
+  /* If we want to privatize instrumentation clone
+     then we need to change original function name
+     which is used via transparent alias chain.  */
+  if (cnode && cnode->instrumentation_clone)
+    decl = cnode->orig_decl;
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
   /* Our renaming machinery do not handle more than one change of assembler name.
      We should not need more than one anyway.  */
@@ -821,15 +830,20 @@ privatize_symbol_name (symtab_node *node)
 			     (DECL_ASSEMBLER_NAME (decl)));
   /* We could change name which is a target of transparent alias
      chain of instrumented function name.  Fix alias chain if so  .*/
-  if ((cnode = dyn_cast <cgraph_node *> (node))
-      && !cnode->instrumentation_clone
-      && cnode->instrumented_version
-      && cnode->instrumented_version->orig_decl == decl)
+  if (cnode)
     {
-      tree iname = DECL_ASSEMBLER_NAME (cnode->instrumented_version->decl);
+      tree iname = NULL_TREE;
+      if (cnode->instrumentation_clone)
+	iname = DECL_ASSEMBLER_NAME (cnode->decl);
+      else if (cnode->instrumented_version
+	       && cnode->instrumented_version->orig_decl == decl)
+	iname = DECL_ASSEMBLER_NAME (cnode->instrumented_version->decl);
 
-      gcc_assert (IDENTIFIER_TRANSPARENT_ALIAS (iname));
-      TREE_CHAIN (iname) = DECL_ASSEMBLER_NAME (decl);
+      if (iname)
+	{
+	  gcc_assert (IDENTIFIER_TRANSPARENT_ALIAS (iname));
+	  TREE_CHAIN (iname) = DECL_ASSEMBLER_NAME (decl);
+	}
     }
   if (symtab->dump_file)
     fprintf (symtab->dump_file,

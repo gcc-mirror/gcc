@@ -211,7 +211,7 @@ public:
     if (m_min == NULL)
       return NULL;
 
-    return m_min->data;
+    return m_min->m_data;
   }
 
   /* Replace data associated with NODE and replace it with DATA.  */

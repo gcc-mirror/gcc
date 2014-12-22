@@ -1,5 +1,6 @@
 // PR c++/57408
-// { dg-do compile { target c++14 } }
+// { dg-do compile { target c++11 } }
+// { dg-options "-Wno-vla" }
 
 template<typename Callable>
   struct Impl
@@ -19,7 +20,7 @@ extern "C" int printf(const char*, ...);
 
 int main(){
     int y = 2;
-    float fa[2][y];	    // { dg-error "array of array of runtime bound" }
+    float fa[2][y];
     fa[0][0]=0.8;
     fa[0][1]=1.8;
     auto fx=[&](){

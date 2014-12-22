@@ -72,6 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "lto-streamer.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "cfgloop.h"
@@ -537,11 +538,11 @@ cgraph_node::get_create (tree decl)
       if (dump_file)
 	fprintf (dump_file, "Introduced new external node "
 		 "(%s/%i) and turned into root of the clone tree.\n",
-		 xstrdup (node->name ()), node->order);
+		 xstrdup_for_dump (node->name ()), node->order);
     }
   else if (dump_file)
     fprintf (dump_file, "Introduced new external node "
-	     "(%s/%i).\n", xstrdup (node->name ()),
+	     "(%s/%i).\n", xstrdup_for_dump (node->name ()),
 	     node->order);
   return node;
 }
@@ -1070,8 +1071,8 @@ cgraph_edge::make_speculative (cgraph_node *n2, gcov_type direct_count,
     {
       fprintf (dump_file, "Indirect call -> speculative call"
 	       " %s/%i => %s/%i\n",
-	       xstrdup (n->name ()), n->order,
-	       xstrdup (n2->name ()), n2->order);
+	       xstrdup_for_dump (n->name ()), n->order,
+	       xstrdup_for_dump (n2->name ()), n2->order);
     }
   speculative = true;
   e2 = n->create_edge (n2, call_stmt, direct_count, direct_frequency);
@@ -1190,16 +1191,20 @@ cgraph_edge::resolve_speculation (tree callee_decl)
 	    {
 	      fprintf (dump_file, "Speculative indirect call %s/%i => %s/%i has "
 		       "turned out to have contradicting known target ",
-		       xstrdup (edge->caller->name ()), edge->caller->order,
-		       xstrdup (e2->callee->name ()), e2->callee->order);
+		       xstrdup_for_dump (edge->caller->name ()),
+		       edge->caller->order,
+		       xstrdup_for_dump (e2->callee->name ()),
+		       e2->callee->order);
 	      print_generic_expr (dump_file, callee_decl, 0);
 	      fprintf (dump_file, "\n");
 	    }
 	  else
 	    {
 	      fprintf (dump_file, "Removing speculative call %s/%i => %s/%i\n",
-		       xstrdup (edge->caller->name ()), edge->caller->order,
-		       xstrdup (e2->callee->name ()), e2->callee->order);
+		       xstrdup_for_dump (edge->caller->name ()),
+		       edge->caller->order,
+		       xstrdup_for_dump (e2->callee->name ()),
+		       e2->callee->order);
 	    }
 	}
     }
@@ -1319,9 +1324,9 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	  if (dump_file)
 	    fprintf (dump_file, "Not expanding speculative call of %s/%i -> %s/%i\n"
 		     "Type mismatch.\n",
-		     xstrdup (e->caller->name ()),
+		     xstrdup_for_dump (e->caller->name ()),
 		     e->caller->order,
-		     xstrdup (e->callee->name ()),
+		     xstrdup_for_dump (e->callee->name ()),
 		     e->callee->order);
 	  e = e->resolve_speculation ();
 	  /* We are producing the final function body and will throw away the
@@ -1338,9 +1343,9 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	    fprintf (dump_file,
 		     "Expanding speculative call of %s/%i -> %s/%i count:"
 		     "%"PRId64"\n",
-		     xstrdup (e->caller->name ()),
+		     xstrdup_for_dump (e->caller->name ()),
 		     e->caller->order,
-		     xstrdup (e->callee->name ()),
+		     xstrdup_for_dump (e->callee->name ()),
 		     e->callee->order,
 		     (int64_t)e->count);
 	  gcc_assert (e2->speculative);
@@ -1415,8 +1420,8 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "updating call of %s/%i -> %s/%i: ",
-	       xstrdup (e->caller->name ()), e->caller->order,
-	       xstrdup (e->callee->name ()), e->callee->order);
+	       xstrdup_for_dump (e->caller->name ()), e->caller->order,
+	       xstrdup_for_dump (e->callee->name ()), e->callee->order);
       print_gimple_stmt (symtab->dump_file, e->call_stmt, 0, dump_flags);
       if (e->callee->clone.combined_args_to_skip)
 	{
@@ -1965,9 +1970,9 @@ cgraph_node::dump (FILE *f)
 
   if (global.inlined_to)
     fprintf (f, "  Function %s/%i is inline copy in %s/%i\n",
-	     xstrdup (name ()),
+	     xstrdup_for_dump (name ()),
 	     order,
-	     xstrdup (global.inlined_to->name ()),
+	     xstrdup_for_dump (global.inlined_to->name ()),
 	     global.inlined_to->order);
   if (clone_of)
     fprintf (f, "  Clone of %s/%i\n",

@@ -1,7 +1,7 @@
 /* For SI->DI widening multiplication we should use DINS to combine the two
    halves.  For Octeon use DMUL with explicit widening.  */
 /* This test requires widening_mul */
-/* { dg-options "-mgp64 isa_rev>=2 forbid_cpu=octeon.* -fexpensive-optimizations" } */
+/* { dg-options "-mgp64 (HAS_INS) (NOT_HAS_DMUL) -fexpensive-optimizations" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "\tdins\t" } } */
 /* { dg-final { scan-assembler-not "\tdsll\t" } } */

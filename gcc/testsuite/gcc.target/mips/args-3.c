@@ -24,7 +24,7 @@ int foo (float inf, int64 in64, int32 in32)
     abort ();
 #endif
 
-#if (__mips == 4 || __mips == 32 || __mips == 64) && !defined (__mips16)
+#if (__mips == 4 || ((__mips == 32 || __mips == 64) && __mips_isa_rev < 6)) && !defined (__mips16)
   __asm__ ("move %0,%.\n\tmovn %0,%1,%2"
 	   : "=&r" (res32) : "r" (in32), "r" (in64 != 0));
   if (res32 != 60)

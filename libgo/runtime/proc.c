@@ -1150,6 +1150,7 @@ runtime_needm(void)
 	__splitstack_getcontext(&g->stack_context[0]);
 #else
 	g->gcinitial_sp = &mp;
+	g->gcstack = nil;
 	g->gcstack_size = 0;
 	g->gcnext_sp = &mp;
 #endif
@@ -1251,6 +1252,8 @@ runtime_dropm(void)
 	runtime_setmg(nil, nil);
 
 	mp->curg->status = Gdead;
+	mp->curg->gcstack = nil;
+	mp->curg->gcnext_sp = nil;
 
 	mnext = lockextra(true);
 	mp->schedlink = mnext;

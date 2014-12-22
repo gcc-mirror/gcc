@@ -31,7 +31,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-pragma.h"
 #include "langhooks.h"
 #include "function.h"
+#include "hashtab.h"
 #include "hash-map.h"
+#include "tree-hasher.h"
 #include "is-a.h"
 #include "plugin-api.h"
 #include "ipa-ref.h"
@@ -70,16 +72,8 @@ static void upc_write_init_func (void);
    the "shared" qualifier removed from its type.  This
    "shadow variable" is used to generate conventional
    address constants when referring to a shared variable.  */
+static int_tree_htab_type *unshared_vars_map;
 
-struct GTY (()) uid_tree_map
-{
-  unsigned int uid;
-  tree to;
-};
-static GTY ((param_is (struct uid_tree_map))) htab_t unshared_vars;
-
-static hashval_t uid_tree_map_hash (const void *);
-static int uid_tree_map_eq (const void *, const void *);
 static tree create_unshared_var (location_t, const tree);
 static tree lookup_unshared_var (const tree);
 static void map_unshared_var (const tree, const tree);
@@ -468,30 +462,6 @@ create_unshared_var (location_t loc, const tree var)
   return u;
 }
 
-/* Return a hash value given the argument P, which
-   is a pointer to a uid_tree_map.  The pointer
-   value is used directly to yield a hash value.  */
-
-static hashval_t
-uid_tree_map_hash (const void *p)
-{
-  const struct uid_tree_map *const map = (const struct uid_tree_map *) p;
-  return map->uid;
-}
-
-/* Return TRUE if the UID fields of two uid_tree_map
-   structures are equal.  This function is called by
-   the `htab_find_with_hash function' to match entries
-   in the `unshared_vars' hash table.  */
-
-static int
-uid_tree_map_eq (const void *va, const void *vb)
-{
-  const struct uid_tree_map *const a = (const struct uid_tree_map *) va;
-  const struct uid_tree_map *const b = (const struct uid_tree_map *) vb;
-  return a->uid == b->uid;
-}
-
 /* Return the "shadow variable" created for VAR that
    has the same type as VAR, but with the UPC shared
    qualifiers removed.  */
@@ -499,15 +469,13 @@ uid_tree_map_eq (const void *va, const void *vb)
 static tree
 lookup_unshared_var (const tree var)
 {
-  const struct uid_tree_map *h;
-  struct uid_tree_map in;
+  struct int_tree_map in;
   unsigned int uid;
   gcc_assert (var && TREE_CODE (var) == VAR_DECL);
   uid = DECL_UID (var);
   in.uid = uid;
   in.to = NULL_TREE;
-  h = (struct uid_tree_map *) htab_find_with_hash (unshared_vars, &in, uid);
-  return h ? h->to : NULL_TREE;
+  return unshared_vars_map->find_with_hash (in, uid).to;
 }
 
 #define UNSHARE_PREFIX "_u_"
@@ -538,17 +506,16 @@ unshared_var_name (const tree var)
 static void
 map_unshared_var (const tree var, const tree u_var)
 {
-  struct uid_tree_map *h;
+  int_tree_map h;
   unsigned int uid;
-  void **loc;
+  int_tree_map *loc;
   gcc_assert (var && TREE_CODE (var) == VAR_DECL);
   gcc_assert (u_var && TREE_CODE (u_var) == VAR_DECL);
   uid = DECL_UID (var);
-  h = ggc_alloc<uid_tree_map> ();
-  h->uid = uid;
-  h->to = u_var;
-  loc = htab_find_slot_with_hash (unshared_vars, h, uid, INSERT);
-  *(struct uid_tree_map **) loc = h;
+  h.uid = uid;
+  loc = unshared_vars_map->find_slot_with_hash (h, uid, INSERT);
+  loc->uid = uid;
+  loc->to = u_var;
 }
 
 /* Return a tree node that evaluates to the address that the
@@ -588,10 +555,10 @@ unshared_var_addr (location_t loc, const tree var)
 static void
 upc_free_unshared_var_table (void)
 {
-  if (unshared_vars)
+  if (unshared_vars_map)
     {
-      htab_delete (unshared_vars);
-      unshared_vars = NULL;
+      delete unshared_vars_map;
+      unshared_vars_map = NULL;
     }
 }
 
@@ -1495,8 +1462,7 @@ upc_genericize_finish (void)
 void
 upc_genericize_init (void)
 {
-  unshared_vars = htab_create_ggc (101, uid_tree_map_hash,
-                                   uid_tree_map_eq, NULL);
+  unshared_vars_map = new int_tree_htab_type (10);
   upc_init_stmt_list = NULL;
 }
 
