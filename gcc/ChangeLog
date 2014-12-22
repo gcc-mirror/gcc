@@ -1,3 +1,8 @@
+2014-12-22  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/55023
+	* dse.c (scan_insn): Treat sibling call as though it does a wild read.
+
 2014-12-22  Bin Cheng  <bin.cheng@arm.com>
 
 	PR rtl-optimization/62151
