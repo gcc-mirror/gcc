@@ -471,7 +471,7 @@ ipa_get_ith_polymorhic_call_context (struct ipa_edge_args *args, int i)
   return &(*args->polymorphic_call_contexts)[i];
 }
 
-/* Callgraph summary for ipa_node_params.  */
+/* Function summary for ipa_node_params.  */
 class ipa_node_params_t: public function_summary <ipa_node_params *>
 {
 public:
