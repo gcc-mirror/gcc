@@ -1,3 +1,30 @@
+2014-12-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/37522
+	* include/bits/basic_string.h (stod, stof, stoi, stol, stold, stoll,
+	stoul, stoull, to_string): Only use _GLIBCXX_HAVE_BROKEN_VSWPRINTF
+	to guard definition of to_wstring.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/dr1261.cc:
+	Do not use dg-require-string-conversions.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stod.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stof.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoi.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stol.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stold.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoll.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoul.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/
+	stoull.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/
+	to_string.cc: Likewise.
+
 2014-12-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/60271

@@ -5240,8 +5240,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#if ((__cplusplus >= 201103L) && defined(_GLIBCXX_USE_C99) \
-     && !defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF))
+#if __cplusplus >= 201103L && defined(_GLIBCXX_USE_C99)
 
 #include <ext/string_conversions.h>
 
@@ -5392,6 +5391,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   stold(const wstring& __str, size_t* __idx = 0)
   { return __gnu_cxx::__stoa(&std::wcstold, "stold", __str.c_str(), __idx); }
 
+#ifndef _GLIBCXX_HAVE_BROKEN_VSWPRINTF
   // DR 1261.
   inline wstring
   to_wstring(int __val)
@@ -5453,6 +5453,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf, __n,
 					    L"%Lf", __val);
   }
+#endif // _GLIBCXX_HAVE_BROKEN_VSWPRINTF
 #endif
 
 _GLIBCXX_END_NAMESPACE_CXX11
