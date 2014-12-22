@@ -662,7 +662,7 @@ gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
   info->ndimensions = i;
   convention_fortran_p = TYPE_CONVENTION_FORTRAN_P (type);
 
-  /* TODO??? For row major ordering, we probably want to emit nothing and
+  /* TODO: For row major ordering, we probably want to emit nothing and
      instead specify it as the default in Dw_TAG_compile_unit.  */
   info->ordering = (convention_fortran_p
 		    ? array_descr_ordering_column_major
