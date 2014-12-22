@@ -1,4 +1,15 @@
 2014-12-22  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
+
+	PR libstdc++/54354
+	* include/std/iomanip (_Get_time): New struct.
+	(get_time): New manipulator.
+	(operator<<): New overloaded function.
+	* testsuite/27_io/manipulators/extended/get_time/char/1.cc: New.
+	* testsuite/27_io/manipulators/extended/get_time/char/2.cc: New.
+	* testsuite/27_io/manipulators/extended/get_time/wchar_t/1.cc: New.
+	* testsuite/27_io/manipulators/extended/get_time/wchar_t/2.cc: New.
+
+2014-12-22  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60396

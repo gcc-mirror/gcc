@@ -392,6 +392,60 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __os;
     }
 
+  template<typename _CharT>
+    struct _Get_time
+    {
+      std::tm*	    _M_tmb;
+      const _CharT* _M_fmt;
+    };
+
+  /**
+   *  @brief  Extended manipulator for extracting time.
+   *
+   *  This manipulator uses time_get::get to extract time.
+   *  [ext.manip]
+   *
+   *  @param __tmb  struct to extract the time data to.
+   *  @param __fmt  format string.
+   */
+  template<typename _CharT>
+    inline _Get_time<_CharT>
+    get_time(std::tm* __tmb, const _CharT* __fmt)
+    { return { __tmb, __fmt }; }
+
+  template<typename _CharT, typename _Traits>
+    basic_istream<_CharT, _Traits>&
+    operator>>(basic_istream<_CharT, _Traits>& __is, _Get_time<_CharT> __f)
+    {
+      typename basic_istream<_CharT, _Traits>::sentry __cerb(__is, false);
+      if (__cerb)
+        {
+          ios_base::iostate __err = ios_base::goodbit;
+          __try
+            {
+              typedef istreambuf_iterator<_CharT, _Traits>   _Iter;
+              typedef time_get<_CharT, _Iter>                _TimeGet;
+
+              const _CharT* const __fmt_end = __f._M_fmt +
+                _Traits::length(__f._M_fmt);
+
+              const _TimeGet& __mg = use_facet<_TimeGet>(__is.getloc());
+              __mg.get(_Iter(__is.rdbuf()), _Iter(), __is,
+                       __err, __f._M_tmb, __f._M_fmt, __fmt_end);
+            }
+          __catch(__cxxabiv1::__forced_unwind&)
+            {
+              __is._M_setstate(ios_base::badbit);
+              __throw_exception_again;
+            }
+          __catch(...)
+            { __is._M_setstate(ios_base::badbit); }
+          if (__err)
+            __is.setstate(__err);
+        }
+      return __is;
+    }
+
 #if __cplusplus > 201103L
 
 #define __cpp_lib_quoted_string_io 201304
