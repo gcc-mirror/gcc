@@ -1,3 +1,9 @@
+2014-12-22  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/58314
+	* gcc.target/sh/torture/pr58314-2.c: New.
+	* gcc.target/sh/torture/pr58314.c: Don't set -Os option.
+
 2014-12-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/63363
@@ -6551,7 +6557,6 @@
 	* gcc.dg/attr-isr.c: Move SH specific test to ...
 	* gcc.target/sh/attr-isr.c: ... here.
 
->>>>>>> .r217525
 2014-10-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63567
