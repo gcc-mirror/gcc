@@ -537,6 +537,54 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	       ios_base::iostate& __err, tm* __tm) const
       { return this->do_get_year(__beg, __end, __io, __err, __tm); }
 
+#if __cplusplus >= 201103L
+      /**
+       *  @brief  Parse input string according to format.
+       *
+       *  This function calls time_get::do_get with the provided
+       *  parameters.  @see do_get() and get().
+       *
+       *  @param __s        Start of string to parse.
+       *  @param __end      End of string to parse.
+       *  @param __io       Source of the locale.
+       *  @param __err      Error flags to set.
+       *  @param __tm       Pointer to struct tm to fill in.
+       *  @param __format   Format specifier.
+       *  @param __modifier Format modifier.
+       *  @return  Iterator to first char not parsed.
+       */
+      inline
+      iter_type get(iter_type __s, iter_type __end, ios_base& __io,
+                    ios_base::iostate& __err, tm* __tm, char __format,
+                    char __modifier = 0) const
+      {
+        return this->do_get(__s, __end, __io, __err, __tm, __format,
+                            __modifier);
+      }
+
+      /**
+       *  @brief  Parse input string according to format.
+       *
+       *  This function parses the input string according to a
+       *  provided format string.  It does the inverse of
+       *  time_put::put.  The format string follows the format
+       *  specified for strftime(3)/strptime(3).  The actual parsing
+       *  is done by time_get::do_get.
+       *
+       *  @param __s        Start of string to parse.
+       *  @param __end      End of string to parse.
+       *  @param __io       Source of the locale.
+       *  @param __err      Error flags to set.
+       *  @param __tm       Pointer to struct tm to fill in.
+       *  @param __fmt      Start of the format string.
+       *  @param __fmtend   End of the format string.
+       *  @return  Iterator to first char not parsed.
+       */
+      iter_type get(iter_type __s, iter_type __end, ios_base& __io,
+                    ios_base::iostate& __err, tm* __tm, const char_type* __fmt,
+                    const char_type* __fmtend) const;
+#endif // __cplusplus >= 201103L
+
     protected:
       /// Destructor.
       virtual
@@ -649,6 +697,33 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       virtual iter_type
       do_get_year(iter_type __beg, iter_type __end, ios_base& __io,
 		  ios_base::iostate& __err, tm* __tm) const;
+
+#if __cplusplus >= 201103L
+      /**
+       *  @brief  Parse input string according to format.
+       *
+       *  This function parses the string according to the provided
+       *  format and optional modifier.  This function is a hook for
+       *  derived classes to change the value returned.  @see get()
+       *  for more details.
+       *
+       *  @param __s        Start of string to parse.
+       *  @param __end      End of string to parse.
+       *  @param __io       Source of the locale.
+       *  @param __err      Error flags to set.
+       *  @param __tm       Pointer to struct tm to fill in.
+       *  @param __format   Format specifier.
+       *  @param __modifier Format modifier.
+       *  @return  Iterator to first char not parsed.
+       */
+#if _GLIBCXX_USE_CXX11_ABI
+      virtual
+#endif
+      iter_type
+      do_get(iter_type __s, iter_type __end, ios_base& __f,
+             ios_base::iostate& __err, tm* __tm,
+             char __format, char __modifier) const;
+#endif // __cplusplus >= 201103L
 
       // Extract numeric component of length __len.
       iter_type
