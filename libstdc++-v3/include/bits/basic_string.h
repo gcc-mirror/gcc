@@ -114,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _Alloc_hider	_M_dataplus;
       size_type		_M_string_length;
 
-      enum { _S_local_capacity = 16 / sizeof(_CharT) - 1 };
+      enum { _S_local_capacity = 15 / sizeof(_CharT) };
 
       union
       {

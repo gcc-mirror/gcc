@@ -1,3 +1,8 @@
+2014-12-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/basic_string.h: Fix _S_local_capacity for
+	large sizeof(_CharT).
+
 2014-12-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/37522
