@@ -1,3 +1,8 @@
+2014-12-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/63363
+	* check.c (gfc_check_kind): Reject polymorphic and non-data arguments.
+
 2014-12-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/64209
