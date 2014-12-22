@@ -1,5 +1,62 @@
 2014-12-22  Martin Liska  <mliska@suse.cz>
 
+	* cgraphunit.c (symbol_table::process_new_functions): New inline_summaries
+	is used.
+	* ipa-cp.c (ipcp_cloning_candidate_p): Likewise.
+	(devirtualization_time_bonus): Likewise.
+	(estimate_local_effects): Likewise.
+	(ipcp_propagate_stage): Likewise.
+	* ipa-inline-analysis.c (evaluate_conditions_for_known_args): Likewise.
+	(evaluate_properties_for_edge): Likewise.
+	(inline_summary_alloc): Likewise.
+	(reset_inline_summary): New inline_summary argument is introduced.
+	(inline_summary_t::remove): New function.
+	(inline_summary_t::duplicate): Likewise.
+	(dump_inline_edge_summary): New inline_summaries is used.
+	(dump_inline_summary): Likewise.
+	(estimate_function_body_sizes): Likewise.
+	(compute_inline_parameters): Likewise.
+	(estimate_edge_devirt_benefit): Likewise.
+	(estimate_node_size_and_time): Likewise.
+	(inline_update_callee_summaries): Likewise.
+	(inline_merge_summary): Likewise.
+	(inline_update_overall_summary): Likewise.
+	(simple_edge_hints): Likewise.
+	(do_estimate_edge_time): Likewise.
+	(estimate_time_after_inlining): Likewise.
+	(estimate_size_after_inlining): Likewise.
+	(do_estimate_growth): Likewise.
+	(growth_likely_positive): Likewise.
+	(inline_generate_summary): Likewise.
+	(inline_read_section): Likewise.
+	(inline_read_summary): Likewise.
+	(inline_write_summary): Likewise.
+	(inline_free_summary): Likewise.
+	* ipa-inline-transform.c (clone_inlined_nodes): Likewise.
+	(inline_call): Likewise.
+	* ipa-inline.c (caller_growth_limits): Likewise.
+	(can_inline_edge_p): Likewise.
+	(want_early_inline_function_p): Likewise.
+	(compute_uninlined_call_time): Likewise.
+	(compute_inlined_call_time): Likewise.
+	(big_speedup_p): Likewise.
+	(want_inline_small_function_p): Likewise.
+	(edge_badness): Likewise.
+	(update_caller_keys): Likewise.
+	(update_callee_keys): Likewise.
+	(recursive_inlining): Likewise.
+	(inline_small_functions): Likewise.
+	(inline_to_all_callers): Likewise.
+	(dump_overall_stats): Likewise.
+	(early_inline_small_functions): Likewise.
+	* ipa-inline.h: New class inline_summary_t replaces
+	vec<inline_summary_t>.
+	* ipa-split.c (execute_split_functions): New inline_summaries is used.
+	* ipa.c (walk_polymorphic_call_targets): Likewise.
+	* tree-sra.c (ipa_sra_preliminary_function_checks): Likewise.
+
+2014-12-22  Martin Liska  <mliska@suse.cz>
+
 	* auto-profile.c: Include of symbol-summary.h is added.
 	* cgraph.c: Likewise.
 	* cgraphbuild.c: Likewise.

@@ -1,5 +1,12 @@
 2014-12-22  Martin Liska  <mliska@suse.cz>
 
+	* lto-partition.c (add_symbol_to_partition_1): New inline_summaries
+	is used.
+	(undo_partition): Likewise.
+	(lto_balanced_map): Likewise.
+
+2014-12-22  Martin Liska  <mliska@suse.cz>
+
 	* lto-partition.c: Include of symbol-summary.h is added.
 	* lto-symtab.c: Likewise.
 	* lto.c: Likewise.

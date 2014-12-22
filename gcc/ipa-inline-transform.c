@@ -212,7 +212,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	  if (e->callee->definition && !DECL_EXTERNAL (e->callee->decl))
 	    {
 	      if (overall_size)
-	        *overall_size -= inline_summary (e->callee)->size;
+	        *overall_size -= inline_summaries->get (e->callee)->size;
 	      nfunctions_inlined++;
 	    }
 	  duplicate = false;
@@ -322,13 +322,13 @@ inline_call (struct cgraph_edge *e, bool update_original,
 
   gcc_assert (curr->callee->global.inlined_to == to);
 
-  old_size = inline_summary (to)->size;
+  old_size = inline_summaries->get (to)->size;
   inline_merge_summary (e);
   if (optimize)
     new_edges_found = ipa_propagate_indirect_call_infos (curr, new_edges);
   if (update_overall_summary)
    inline_update_overall_summary (to);
-  new_size = inline_summary (to)->size;
+  new_size = inline_summaries->get (to)->size;
 
   if (callee->calls_comdat_local)
     to->calls_comdat_local = true;

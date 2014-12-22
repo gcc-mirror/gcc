@@ -341,7 +341,7 @@ symbol_table::process_new_functions (void)
 	  if ((state == IPA_SSA || state == IPA_SSA_AFTER_INLINING)
 	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
 	    g->get_passes ()->execute_early_local_passes ();
-	  else if (inline_summary_vec != NULL)
+	  else if (inline_summaries != NULL)
 	    compute_inline_parameters (node, true);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
