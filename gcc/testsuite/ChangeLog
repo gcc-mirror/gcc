@@ -1,3 +1,8 @@
+2014-12-22  Bin Cheng  <bin.cheng@arm.com>
+
+	PR rtl-optimization/62151
+	* gcc.c-torture/execute/pr62151.c: New test.
+
 2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/atomic2.ads: New test.
