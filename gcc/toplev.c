@@ -92,6 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2out.h"
 #include "bitmap.h"
 #include "ipa-reference.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "gcse.h"
 #include "insn-codes.h"
@@ -1212,7 +1213,7 @@ general_init (const char *argv0)
   /* Create the singleton holder for global state.
      Doing so also creates the pass manager and with it the passes.  */
   g = new gcc::context ();
-  symtab = ggc_cleared_alloc <symbol_table> ();
+  symtab = new (ggc_cleared_alloc <symbol_table> ()) symbol_table ();
 
   statistics_early_init ();
   finish_params ();
