@@ -1,3 +1,11 @@
+2014-12-22  Bin Cheng  <bin.cheng@arm.com>
+
+	PR rtl-optimization/62151
+	* combine.c (try_combine): New local variables local_elim_i1
+	and local_elim_i0.  Set elim_i1 and elim_i0 using the local
+	version variables.  Distribute notes from i0notes or i1notes
+	using the local variables.
+
 2014-12-22  Martin Liska  <mliska@suse.cz>
 
 	* cgraphunit.c (symbol_table::process_new_functions): New inline_summaries

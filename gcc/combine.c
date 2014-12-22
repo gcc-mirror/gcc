@@ -4124,19 +4124,46 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
     rtx midnotes = 0;
     int from_luid;
     /* Compute which registers we expect to eliminate.  newi2pat may be setting
-       either i3dest or i2dest, so we must check it.  Also, i1dest may be the
-       same as i3dest, in which case newi2pat may be setting i1dest.  */
+       either i3dest or i2dest, so we must check it.  */
     rtx elim_i2 = ((newi2pat && reg_set_p (i2dest, newi2pat))
 		   || i2dest_in_i2src || i2dest_in_i1src || i2dest_in_i0src
 		   || !i2dest_killed
 		   ? 0 : i2dest);
-    rtx elim_i1 = (i1 == 0 || i1dest_in_i1src || i1dest_in_i0src
+    /* For i1, we need to compute both local elimination and global
+       elimination information with respect to newi2pat because i1dest
+       may be the same as i3dest, in which case newi2pat may be setting
+       i1dest.  Global information is used when distributing REG_DEAD
+       note for i2 and i3, in which case it does matter if newi2pat sets
+       i1dest or not.
+
+       Local information is used when distributing REG_DEAD note for i1,
+       in which case it doesn't matter if newi2pat sets i1dest or not.
+       See PR62151, if we have four insns combination:
+	   i0: r0 <- i0src
+	   i1: r1 <- i1src (using r0)
+		     REG_DEAD (r0)
+	   i2: r0 <- i2src (using r1)
+	   i3: r3 <- i3src (using r0)
+	   ix: using r0
+       From i1's point of view, r0 is eliminated, no matter if it is set
+       by newi2pat or not.  In other words, REG_DEAD info for r0 in i1
+       should be discarded.
+
+       Note local information only affects cases in forms like "I1->I2->I3",
+       "I0->I1->I2->I3" or "I0&I1->I2, I2->I3".  For other cases like
+       "I0->I1, I1&I2->I3" or "I1&I2->I3", newi2pat won't set i1dest or
+       i0dest anyway.  */
+    rtx local_elim_i1 = (i1 == 0 || i1dest_in_i1src || i1dest_in_i0src
+			 || !i1dest_killed
+			 ? 0 : i1dest);
+    rtx elim_i1 = (local_elim_i1 == 0
 		   || (newi2pat && reg_set_p (i1dest, newi2pat))
-		   || !i1dest_killed
 		   ? 0 : i1dest);
-    rtx elim_i0 = (i0 == 0 || i0dest_in_i0src
+    /* Same case as i1.  */
+    rtx local_elim_i0 = (i0 == 0 || i0dest_in_i0src || !i0dest_killed
+			 ? 0 : i0dest);
+    rtx elim_i0 = (local_elim_i0 == 0
 		   || (newi2pat && reg_set_p (i0dest, newi2pat))
-		   || !i0dest_killed
 		   ? 0 : i0dest);
 
     /* Get the old REG_NOTES and LOG_LINKS from all our insns and
@@ -4305,10 +4332,10 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 			elim_i2, elim_i1, elim_i0);
     if (i1notes)
       distribute_notes (i1notes, i1, i3, newi2pat ? i2 : NULL,
-			elim_i2, elim_i1, elim_i0);
+			elim_i2, local_elim_i1, local_elim_i0);
     if (i0notes)
       distribute_notes (i0notes, i0, i3, newi2pat ? i2 : NULL,
-			elim_i2, elim_i1, elim_i0);
+			elim_i2, elim_i1, local_elim_i0);
     if (midnotes)
       distribute_notes (midnotes, NULL, i3, newi2pat ? i2 : NULL,
 			elim_i2, elim_i1, elim_i0);
