@@ -1122,6 +1122,8 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
   res_var = lhs;
   dst_var = lhs;
 
+  vec = null_pointer_node;
+
   gfc_init_se (&argse, NULL);
   if (array_expr->rank == 0)
     {
@@ -1164,10 +1166,12 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
       /* Using gfc_conv_expr_descriptor, we only get the descriptor, but that
          has the wrong type if component references are done.  */
       gfc_add_modify (&argse.pre, gfc_conv_descriptor_dtype (argse.expr),
-                      gfc_get_dtype_rank_type (array_expr->rank, type));
+                      gfc_get_dtype_rank_type (has_vector ? ar2.dimen
+							  : array_expr->rank,
+					       type));
       if (has_vector)
 	{
-	  vec = conv_caf_vector_subscript (&argse.pre, argse.expr, ar);
+	  vec = conv_caf_vector_subscript (&argse.pre, argse.expr, &ar2);
 	  *ar = ar2;
 	}
 
@@ -1194,8 +1198,6 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
   kind = build_int_cst (integer_type_node, expr->ts.kind);
   if (lhs_kind == NULL_TREE)
     lhs_kind = kind;
-
-  vec = null_pointer_node;
 
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
@@ -1278,10 +1280,12 @@ conv_caf_send (gfc_code *code) {
       lhs_type = gfc_typenode_for_spec (&lhs_expr->ts);
       tmp = build_fold_indirect_ref_loc (input_location, lhs_se.expr);
       gfc_add_modify (&lhs_se.pre, gfc_conv_descriptor_dtype (tmp),
-                      gfc_get_dtype_rank_type (lhs_expr->rank, lhs_type));
+                      gfc_get_dtype_rank_type (has_vector ? ar2.dimen
+							  : lhs_expr->rank,
+		      lhs_type));
       if (has_vector)
 	{
-	  vec = conv_caf_vector_subscript (&block, lhs_se.expr, ar);
+	  vec = conv_caf_vector_subscript (&block, lhs_se.expr, &ar2);
 	  *ar = ar2;
 	}
     }
@@ -1350,10 +1354,12 @@ conv_caf_send (gfc_code *code) {
       tmp = build_fold_indirect_ref_loc (input_location, rhs_se.expr);
       tmp2 = gfc_typenode_for_spec (&rhs_expr->ts);
       gfc_add_modify (&rhs_se.pre, gfc_conv_descriptor_dtype (tmp),
-                      gfc_get_dtype_rank_type (rhs_expr->rank, tmp2));
+                      gfc_get_dtype_rank_type (has_vector ? ar2.dimen
+							  : rhs_expr->rank,
+		      tmp2));
       if (has_vector)
 	{
-	  rhs_vec = conv_caf_vector_subscript (&block, rhs_se.expr, ar);
+	  rhs_vec = conv_caf_vector_subscript (&block, rhs_se.expr, &ar2);
 	  *ar = ar2;
 	}
     }
