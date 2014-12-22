@@ -1,3 +1,11 @@
+2014-12-22  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.h (symbol_table::allocate_cgraph_symbol): Summary UID
+	is filled up.
+	* symbol-summary.h: New file.
+	* gengtype.c (open_base_files): Add symbol-summary.h.
+	* toplev.c (general_init): Call constructor of symbol_table.
+
 2014-12-17  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/55212
