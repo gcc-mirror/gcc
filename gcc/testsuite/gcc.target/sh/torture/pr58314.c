@@ -1,13 +1,15 @@
+/* { dg-additional-options "-std=gnu99" }  */
 /* { dg-do compile }  */
-/* { dg-options "-Os" } */
 
 typedef unsigned short __u16;
 typedef unsigned int __u32;
-
 typedef signed short s16;
 
 
-static inline __attribute__((always_inline)) __attribute__((__const__)) __u16 __arch_swab16(__u16 x)
+static inline 
+__attribute__((always_inline))
+__attribute__((__const__))
+__u16 __arch_swab16(__u16 x)
 {
  __asm__(
   "swap.b		%1, %0"
