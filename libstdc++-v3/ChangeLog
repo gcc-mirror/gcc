@@ -1,3 +1,8 @@
+2014-12-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* doc/html/manual/status.html: Regenerate.
+
 2014-12-22  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
 
 	PR libstdc++/54354
