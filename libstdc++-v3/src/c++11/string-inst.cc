@@ -113,3 +113,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
+
+// TODO does not belong here!
+#include <locale>
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
+  template istreambuf_iterator<C> time_get<C, istreambuf_iterator<C> >::get(iter_type, iter_type, ios_base&, ios_base::iostate&, tm*, char, char) const;
+  template istreambuf_iterator<C> time_get<C, istreambuf_iterator<C> >::do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, tm*, char, char) const;
+  template istreambuf_iterator<C> time_get<C, istreambuf_iterator<C> >::get(iter_type, iter_type, ios_base&, ios_base::iostate&, tm*, const char_type*, const char_type*) const;
+_GLIBCXX_END_NAMESPACE_CXX11
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

@@ -1,3 +1,19 @@
+2014-12-22  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60396
+	* config/abi/pre/gnu.ver: Add new exports.
+	* include/bits/locale_facets_nonio.h (time_get::get): New overloads.
+	(time_get::do_get):  New virtual function.
+	* include/bits/locale_facets_nonio.tcc (time_get::get): Define.
+	(time_get::do_get): Define.
+	* src/c++11/string-inst.cc (time_get::get, time_get::do_get): Add
+	C++11-only instantiations.
+	* testsuite/22_locale/time_get/get/char/1.cc: New.
+	* testsuite/22_locale/time_get/get/char/2.cc: New.
+	* testsuite/22_locale/time_get/get/wchar_t/1.cc: New.
+	* testsuite/22_locale/time_get/get/wchar_t/2.cc: New.
+
 2014-12-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64367
