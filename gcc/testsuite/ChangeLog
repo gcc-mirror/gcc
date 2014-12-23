@@ -1,3 +1,9 @@
+2014-12-23  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/64244
+	* gfortran.dg/typebound_call_26.f90: New.
+
 2014-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60955
