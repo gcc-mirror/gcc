@@ -36,4 +36,4 @@
 # define C char
 # define C_is_char
 #endif
-# include "../c++98/locale-inst.cc"
+# include "locale-inst.cc"

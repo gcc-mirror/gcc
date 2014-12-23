@@ -96,10 +96,12 @@ inst_sources = \
 	ios-inst.cc \
 	iostream-inst.cc \
 	istream-inst.cc \
+	locale-inst.cc \
 	ostream-inst.cc \
 	sstream-inst.cc \
 	streambuf-inst.cc \
 	string-inst.cc \
+	wlocale-inst.cc \
 	wstring-inst.cc
 else
 # XTEMPLATE_FLAGS =
