@@ -6048,7 +6048,7 @@ success:
 /* Resolve a call to a type-bound subroutine.  */
 
 static gfc_try
-resolve_typebound_call (gfc_code* c, const char **name)
+resolve_typebound_call (gfc_code* c, const char **name, bool *overridable)
 {
   gfc_actual_arglist* newactual;
   gfc_symtree* target;
@@ -6071,6 +6071,10 @@ resolve_typebound_call (gfc_code* c, const char **name)
 
   if (resolve_typebound_generic_call (c->expr1, name) == FAILURE)
     return FAILURE;
+
+  /* Pass along the NON_OVERRIDABLE attribute of the specific TBP. */
+  if (overridable)
+    *overridable = !c->expr1->value.compcall.tbp->non_overridable;
 
   /* Transform into an ordinary EXEC_CALL for now.  */
 
@@ -6324,7 +6328,7 @@ resolve_typebound_subroutine (gfc_code *code)
       if (c->ts.u.derived == NULL)
 	c->ts.u.derived = gfc_find_derived_vtab (declared);
 
-      if (resolve_typebound_call (code, &name) == FAILURE)
+      if (resolve_typebound_call (code, &name, NULL) == FAILURE)
 	return FAILURE;
 
       /* Use the generic name if it is there.  */
@@ -6356,7 +6360,7 @@ resolve_typebound_subroutine (gfc_code *code)
     }
 
   if (st == NULL)
-    return resolve_typebound_call (code, NULL);
+    return resolve_typebound_call (code, NULL, NULL);
 
   if (resolve_ref (code->expr1) == FAILURE)
     return FAILURE;
@@ -6369,10 +6373,10 @@ resolve_typebound_subroutine (gfc_code *code)
 	 || (!class_ref && st->n.sym->ts.type != BT_CLASS))
     {
       gfc_free_ref_list (new_ref);
-      return resolve_typebound_call (code, NULL);
+      return resolve_typebound_call (code, NULL, NULL);
     }
 
-  if (resolve_typebound_call (code, &name) == FAILURE)
+  if (resolve_typebound_call (code, &name, &overridable) == FAILURE)
     {
       gfc_free_ref_list (new_ref);
       return FAILURE;

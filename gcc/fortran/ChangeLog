@@ -1,3 +1,12 @@
+2014-12-23  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/64244
+	* resolve.c (resolve_typebound_call): New argument to pass out the
+	non-overridable attribute of the specific procedure.
+	(resolve_typebound_subroutine): Get overridable flag from
+	resolve_typebound_call.
+
 2014-12-19  Release Manager
 
 	* GCC 4.8.4 released.
