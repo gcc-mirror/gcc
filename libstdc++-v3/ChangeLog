@@ -1,3 +1,17 @@
+2014-12-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64389
+	* src/c++11/Makefile.am: Add locale-inst.cc and wlocale-inst.cc.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/locale-inst.cc: Move from src/c++98/.
+	* src/c++11/wlocale-inst.cc: Likewise.
+	* src/c++11/cxx11-locale-inst.cc: Adjust path to locale-inst.cc.
+	* src/c++11/string-inst.cc: Remove time_get instantiations.
+	* src/c++98/Makefile.am: Remove locale-inst.cc and wlocale-inst.cc.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/locale-inst.cc: Move to src/c++11/.
+	* src/c++98/wlocale-inst.cc: Likewise.
+
 2014-12-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/basic_string.h: Fix _S_local_capacity for
