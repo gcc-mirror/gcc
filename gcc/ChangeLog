@@ -1,3 +1,12 @@
+2014-12-23  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63851
+	PR ipa/63852
+	* ipa-icf.c (sem_function::merge): Ignore merge operation
+	for a thunk created from static chain.
+	* ipa-icf-gimple.c (func_checker::compatible_types_p): Verify that
+	types have same restrict flag.
+
 2014-12-22  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/55023
