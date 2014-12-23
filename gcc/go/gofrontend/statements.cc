@@ -5558,8 +5558,9 @@ For_range_statement::lower_range_array(Gogo* gogo,
 
   // The loop we generate:
   //   len_temp := len(range)
+  //   range_temp := range
   //   for index_temp = 0; index_temp < len_temp; index_temp++ {
-  //           value_temp = range[index_temp]
+  //           value_temp = range_temp[index_temp]
   //           index = index_temp
   //           value = value_temp
   //           original body
@@ -5573,9 +5574,11 @@ For_range_statement::lower_range_array(Gogo* gogo,
   Block* init = new Block(enclosing, loc);
 
   Expression* ref = this->make_range_ref(range_object, range_temp, loc);
+  range_temp = Statement::make_temporary(NULL, ref, loc);
   Expression* len_call = this->call_builtin(gogo, "len", ref, loc);
   Temporary_statement* len_temp = Statement::make_temporary(index_temp->type(),
 							    len_call, loc);
+  init->add_statement(range_temp);
   init->add_statement(len_temp);
 
   Expression* zexpr = Expression::make_integer_ul(0, NULL, loc);
@@ -5605,7 +5608,7 @@ For_range_statement::lower_range_array(Gogo* gogo,
     {
       iter_init = new Block(body_block, loc);
 
-      ref = this->make_range_ref(range_object, range_temp, loc);
+      ref = Expression::make_temporary_reference(range_temp, loc);
       Expression* ref2 = Expression::make_temporary_reference(index_temp, loc);
       Expression* index = Expression::make_index(ref, ref2, NULL, NULL, loc);
 
