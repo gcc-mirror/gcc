@@ -18,7 +18,6 @@
 #include "arch.h"
 #include "defs.h"
 #include "malloc.h"
-#include "race.h"
 #include "go-type.h"
 #include "go-defer.h"
 
@@ -462,9 +461,6 @@ runtime_schedinit(void)
 
 	// Can not enable GC until all roots are registered.
 	// mstats.enablegc = 1;
-
-	// if(raceenabled)
-	//	g->racectx = runtime_raceinit();
 }
 
 extern void main_init(void) __asm__ (GOSYM_PREFIX "__go_init_main");
@@ -528,8 +524,6 @@ runtime_main(void* dummy __attribute__((unused)))
 	mstats.enablegc = 1;
 
 	main_main();
-	if(raceenabled)
-		runtime_racefini();
 
 	// Make racy client program work: if panicking on
 	// another goroutine at the same time as main returns,
@@ -1848,8 +1842,6 @@ runtime_goexit(void)
 {
 	if(g->status != Grunning)
 		runtime_throw("bad g status");
-	if(raceenabled)
-		runtime_racegoend();
 	runtime_mcall(goexit0);
 }
 
