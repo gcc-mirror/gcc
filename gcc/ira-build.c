@@ -3252,7 +3252,6 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 		continue;
 
 	      aclass = ALLOCNO_CLASS (a);
-	      sparseset_set_bit (objects_live, OBJECT_CONFLICT_ID (obj));
 	      EXECUTE_IF_SET_IN_SPARSESET (objects_live, n)
 		{
 		  ira_object_t live_obj = ira_object_id_map[n];
@@ -3264,6 +3263,7 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 		      && live_a != a)
 		    ira_add_conflict (obj, live_obj);
 		}
+	      sparseset_set_bit (objects_live, OBJECT_CONFLICT_ID (obj));
 	    }
 
 	  for (r = ira_finish_point_ranges[i]; r != NULL; r = r->finish_next)
