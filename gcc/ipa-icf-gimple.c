@@ -185,6 +185,9 @@ bool func_checker::compatible_types_p (tree t1, tree t2,
   if (TREE_CODE (t1) != TREE_CODE (t2))
     return return_false_with_msg ("different tree types");
 
+  if (TYPE_RESTRICT (t1) != TYPE_RESTRICT (t2))
+    return return_false_with_msg ("restrict flags are different");
+
   if (!types_compatible_p (t1, t2))
     return return_false_with_msg ("types are not compatible");
 
