@@ -45,3 +45,5 @@ along with GCC; see the file COPYING3.  If not see
 #undef PTRDIFF_TYPE
 #undef WCHAR_TYPE
 #undef WCHAR_TYPE_SIZE
+
+#define TARGET_MOXIEBOX
