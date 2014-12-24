@@ -1,3 +1,9 @@
+2014-12-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR testsuite/64032
+	* gcc.dg/undefined-loop-2.c: Don't allow GCC to optimize away the
+	loop exits too early.
+
 2014-12-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63985
