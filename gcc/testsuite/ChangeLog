@@ -1,3 +1,8 @@
+2014-12-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63985
+	* g++.dg/cpp0x/range-for29.C: New.
+
 2014-12-22  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/pr55023.c: New file.

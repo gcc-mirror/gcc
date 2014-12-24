@@ -2124,7 +2124,8 @@ static tree cp_parser_decltype
 /* Declarators [gram.dcl.decl] */
 
 static tree cp_parser_init_declarator
-  (cp_parser *, cp_decl_specifier_seq *, vec<deferred_access_check, va_gc> *, bool, bool, int, bool *, tree *);
+  (cp_parser *, cp_decl_specifier_seq *, vec<deferred_access_check, va_gc> *,
+   bool, bool, int, bool *, tree *, location_t *);
 static cp_declarator *cp_parser_declarator
   (cp_parser *, cp_parser_declarator_kind, int *, bool *, bool, bool);
 static cp_declarator *cp_parser_direct_declarator
@@ -11454,6 +11455,8 @@ cp_parser_simple_declaration (cp_parser* parser,
   cp_decl_specifier_seq decl_specifiers;
   int declares_class_or_enum;
   bool saw_declarator;
+  location_t comma_loc = UNKNOWN_LOCATION;
+  location_t init_loc = UNKNOWN_LOCATION;
 
   if (maybe_range_for_decl)
     *maybe_range_for_decl = NULL_TREE;
@@ -11528,12 +11531,16 @@ cp_parser_simple_declaration (cp_parser* parser,
 
       if (saw_declarator)
 	{
-	  /* If we are processing next declarator, coma is expected */
+	  /* If we are processing next declarator, comma is expected */
 	  token = cp_lexer_peek_token (parser->lexer);
 	  gcc_assert (token->type == CPP_COMMA);
 	  cp_lexer_consume_token (parser->lexer);
 	  if (maybe_range_for_decl)
-	    *maybe_range_for_decl = error_mark_node;
+	    {
+	      *maybe_range_for_decl = error_mark_node;
+	      if (comma_loc == UNKNOWN_LOCATION)
+		comma_loc = token->location;
+	    }
 	}
       else
 	saw_declarator = true;
@@ -11545,7 +11552,8 @@ cp_parser_simple_declaration (cp_parser* parser,
 					/*member_p=*/false,
 					declares_class_or_enum,
 					&function_definition_p,
-					maybe_range_for_decl);
+					maybe_range_for_decl,
+					&init_loc);
       /* If an error occurred while parsing tentatively, exit quickly.
 	 (That usually happens when in the body of a function; each
 	 statement is treated as a declaration-statement until proven
@@ -11631,7 +11639,15 @@ cp_parser_simple_declaration (cp_parser* parser,
 
   /* Consume the `;'.  */
   if (!maybe_range_for_decl)
-      cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+    cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+  else if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+    {
+      if (init_loc != UNKNOWN_LOCATION)
+	error_at (init_loc, "initializer in range-based %<for%> loop");
+      if (comma_loc != UNKNOWN_LOCATION)
+	error_at (comma_loc,
+		  "multiple declarations in range-based %<for%> loop");
+    }
 
  done:
   pop_deferring_access_checks ();
@@ -16842,7 +16858,12 @@ cp_parser_asm_definition (cp_parser* parser)
    parsed declaration if it is an uninitialized single declarator not followed
    by a `;', or to error_mark_node otherwise. Either way, the trailing `;',
    if present, will not be consumed.  If returned, this declarator will be
-   created with SD_INITIALIZED but will not call cp_finish_decl.  */
+   created with SD_INITIALIZED but will not call cp_finish_decl.
+
+   If INIT_LOC is not NULL, and *INIT_LOC is equal to UNKNOWN_LOCATION,
+   and there is an initializer, the pointed location_t is set to the
+   location of the '=' or `(', or '{' in C++11 token introducing the
+   initializer.  */
 
 static tree
 cp_parser_init_declarator (cp_parser* parser,
@@ -16852,7 +16873,8 @@ cp_parser_init_declarator (cp_parser* parser,
 			   bool member_p,
 			   int declares_class_or_enum,
 			   bool* function_definition_p,
-			   tree* maybe_range_for_decl)
+			   tree* maybe_range_for_decl,
+			   location_t* init_loc)
 {
   cp_token *token = NULL, *asm_spec_start_token = NULL,
            *attributes_start_token = NULL;
@@ -16875,6 +16897,7 @@ cp_parser_init_declarator (cp_parser* parser,
   tree pushed_scope = NULL_TREE;
   bool range_for_decl_p = false;
   bool saved_default_arg_ok_p = parser->default_arg_ok_p;
+  location_t tmp_init_loc = UNKNOWN_LOCATION;
 
   /* Gather the attributes that were provided with the
      decl-specifiers.  */
@@ -17041,6 +17064,9 @@ cp_parser_init_declarator (cp_parser* parser,
       initialization_kind = token->type;
       if (maybe_range_for_decl)
 	*maybe_range_for_decl = error_mark_node;
+      tmp_init_loc = token->location;
+      if (init_loc && *init_loc == UNKNOWN_LOCATION)
+	*init_loc = tmp_init_loc;
 
       if (token->type == CPP_EQ
 	  && function_declarator_p (declarator))
@@ -17063,7 +17089,8 @@ cp_parser_init_declarator (cp_parser* parser,
 	    range_for_decl_p = true;
 	  else
 	    {
-	      cp_parser_error (parser, "expected initializer");
+	      if (!maybe_range_for_decl)
+		cp_parser_error (parser, "expected initializer");
 	      return error_mark_node;
 	    }
 	}
@@ -17135,7 +17162,6 @@ cp_parser_init_declarator (cp_parser* parser,
     {
       if (function_declarator_p (declarator))
 	{
-	  cp_token *initializer_start_token = cp_lexer_peek_token (parser->lexer);
 	   if (initialization_kind == CPP_EQ)
 	     initializer = cp_parser_pure_specifier (parser);
 	   else
@@ -17144,8 +17170,7 @@ cp_parser_init_declarator (cp_parser* parser,
 		  know what the user intended, so just silently
 		  consume the initializer.  */
 	       if (decl != error_mark_node)
-		 error_at (initializer_start_token->location,
-			   "initializer provided for function");
+		 error_at (tmp_init_loc, "initializer provided for function");
 	       cp_parser_skip_to_closing_parenthesis (parser,
 						      /*recovering=*/true,
 						      /*or_comma=*/false,
@@ -23726,7 +23751,7 @@ cp_parser_single_declaration (cp_parser* parser,
 				        member_p,
 				        declares_class_or_enum,
 				        &function_definition_p,
-					NULL);
+					NULL, NULL);
 
     /* 7.1.1-1 [dcl.stc]
 
