@@ -249,13 +249,16 @@ moxie_init_machine_status (void)
 }
 
 
-/* The TARGET_OPTION_OVERRIDE worker.
-   All this curently does is set init_machine_status.  */
+/* The TARGET_OPTION_OVERRIDE worker.  */
 static void
 moxie_option_override (void)
 {
   /* Set the per-function-data initializer.  */
   init_machine_status = moxie_init_machine_status;
+
+#ifdef TARGET_MOXIEBOX  
+  target_flags &= ~MASK_HAS_MULX;
+#endif
 }
 
 /* Compute the size of the local area and the size to be adjusted by the

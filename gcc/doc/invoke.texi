@@ -843,7 +843,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-crt0  -mrelax -mliw -msetlb}
 
 @emph{Moxie Options}
-@gccoptlist{-meb -mel -mno-crt0}
+@gccoptlist{-meb -mel -mmul.x -mno-crt0}
 
 @emph{MSP430 Options}
 @gccoptlist{-msim -masm-hex -mmcu= -mcpu= -mlarge -msmall -mrelax @gol
@@ -18853,6 +18853,11 @@ configurations.
 @item -mel
 @opindex mel
 Generate little-endian code.
+
+@item -mmul.x
+@opindex mmul.x
+Generate mul.x and umul.x instructions.  This is the default for
+@samp{moxiebox-*-*} configurations.
 
 @item -mno-crt0
 @opindex mno-crt0
