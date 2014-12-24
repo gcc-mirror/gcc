@@ -1,3 +1,9 @@
+2014-12-24  Nick Clifton  <nickc@redhat.com>
+
+	PR target/64160
+	* config/msp430/msp430.md (addsi splitter): Do not split when the
+	destination partially overlaps the source.
+
 2014-12-22  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
 
 	* ira-build.c (ira_flattening): Add the current
