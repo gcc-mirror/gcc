@@ -1,3 +1,11 @@
+2014-12-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63985
+	* parser.c (cp_parser_init_declarator): Add location_t* parameter.
+	(cp_parser_simple_declaration): Provide proper diagnostic for
+	multiple declarations and initializers in range-based for loops.
+	(cp_parser_single_declaration): Adjust call.
+
 2014-12-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/64359
