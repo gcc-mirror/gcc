@@ -12,8 +12,10 @@ typedef __SIZE_TYPE__ size_t;
 
 size_t strlen(const char *);
 
+char s[100] __attribute__ ((aligned (8)));
+
 size_t
-strlen8(const long long *s)
+strlen8(void)
 {
-  return strlen((const char *)s);
+  return strlen(s);
 }

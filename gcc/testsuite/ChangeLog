@@ -1,3 +1,8 @@
+2014-12-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/405-dlmzb-strlen-1.c: Explicitly align arg.
+	* gcc.target/powerpc/440-dlmzb-strlen-1.c: Ditto.
+
 2014-12-24  Andrew Stubbs  <ams@codesourcery.com>
 
 	PR testsuite/64032
