@@ -119,23 +119,6 @@ error_at_line (const struct fileloc *pos, const char *msg, ...)
 
   va_end (ap);
 }
-
-/* asprintf, but produces fatal message on out-of-memory.  */
-char *
-xasprintf (const char *format, ...)
-{
-  int n;
-  char *result;
-  va_list ap;
-
-  va_start (ap, format);
-  n = vasprintf (&result, format, ap);
-  if (result == NULL || n < 0)
-    fatal ("out of memory");
-  va_end (ap);
-
-  return result;
-}
 
 /* Locate the ultimate base class of struct S.  */
 

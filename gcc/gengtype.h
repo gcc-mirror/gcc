@@ -418,9 +418,6 @@ void write_state (const char* path);
 extern void error_at_line
 (const struct fileloc *pos, const char *msg, ...) ATTRIBUTE_PRINTF_2;
 
-/* Like asprintf, but calls fatal() on out of memory.  */
-extern char *xasprintf (const char *, ...) ATTRIBUTE_PRINTF_1;
-
 /* Constructor routines for types.  */
 extern void do_typedef (const char *s, type_p t, struct fileloc *pos);
 extern void do_scalar_typedef (const char *s, struct fileloc *pos);

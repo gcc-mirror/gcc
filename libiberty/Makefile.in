@@ -158,8 +158,8 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	vasprintf.c vfork.c vfprintf.c vprintf.c vprintf-support.c	\
 	 vsnprintf.c vsprintf.c						\
 	waitpid.c							\
-	xatexit.c xexit.c xmalloc.c xmemdup.c xstrdup.c xstrerror.c	\
-	 xstrndup.c xvasprintf.c
+	xasprintf.c xatexit.c xexit.c xmalloc.c xmemdup.c xstrdup.c	\
+	 xstrerror.c xstrndup.c xvasprintf.c
 
 # These are always included in the library.  The first four are listed
 # first and by compile time to optimize parallel builds.
@@ -190,9 +190,10 @@ REQUIRED_OFILES =							\
 	./splay-tree.$(objext) ./stack-limit.$(objext)			\
 	./strerror.$(objext) ./strsignal.$(objext)			\
 	./timeval-utils.$(objext) ./unlink-if-ordinary.$(objext)	\
-	./xatexit.$(objext) ./xexit.$(objext) ./xmalloc.$(objext)	\
-	./xmemdup.$(objext) ./xstrdup.$(objext) ./xstrerror.$(objext)	\
-	./xstrndup.$(objext) ./xvasprintf.$(objext)
+	./xasprintf.$(objext) ./xatexit.$(objext) ./xexit.$(objext)	\
+	./xmalloc.$(objext) ./xmemdup.$(objext) ./xstrdup.$(objext)	\
+	./xstrerror.$(objext) ./xstrndup.$(objext)			\
+	./xvasprintf.$(objext)
 
 # These are all the objects that configure may add to the library via
 # $funcs or EXTRA_OFILES.  This list exists here only for "make
@@ -1617,6 +1618,16 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/waitpid.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/waitpid.c $(OUTPUT_OPTION)
+
+./xasprintf.$(objext): $(srcdir)/xasprintf.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/libiberty.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/xasprintf.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/xasprintf.c -o noasan/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/xasprintf.c $(OUTPUT_OPTION)
 
 ./xatexit.$(objext): $(srcdir)/xatexit.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h
