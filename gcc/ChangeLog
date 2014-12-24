@@ -1,3 +1,8 @@
+2014-12-24  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.md (*mov_t_msb_neg): Convert split into insn_and_split.
+
 2014-12-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gengtype.h (xasprintf): Remove declaration.
