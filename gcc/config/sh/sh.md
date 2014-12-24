@@ -11601,8 +11601,8 @@ label:
    (set (match_dup 0) (xor:SI (match_dup 0) (const_int 1)))])
 
 ;; Use negc to store the T bit in a MSB of a reg in the following way:
-;;	T = 1: 0x80000000 -> reg
-;;	T = 0: 0x7FFFFFFF -> reg
+;;	T = 0: 0x80000000 -> reg
+;;	T = 1: 0x7FFFFFFF -> reg
 ;; This works because 0 - 0x80000000 = 0x80000000.
 ;;
 ;; This insn must not match again after it has been split into the constant
@@ -11635,27 +11635,27 @@ label:
   "negc	%1,%0"
   [(set_attr "type" "arith")])
 
-;; These are essentially the same as above, but with the inverted T bit.
-;; Combine recognizes the split patterns, but does not take them sometimes
-;; if the T_REG clobber is specified.  Instead it tries to split out the
-;; T bit negation.  Since these splits are supposed to be taken only by
-;; combine, it will see the T_REG clobber of the *mov_t_msb_neg insn, so this
-;; should be fine.
-(define_split
+(define_insn_and_split "*mov_t_msb_neg"
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(plus:SI (match_operand 1 "negt_reg_operand")
-		 (const_int 2147483647)))]  ;; 0x7fffffff
-  "TARGET_SH1 && can_create_pseudo_p ()"
+		 (const_int 2147483647)))  ;; 0x7fffffff
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+   "#"
+   "&& can_create_pseudo_p ()"
   [(parallel [(set (match_dup 0)
 		   (minus:SI (const_int -2147483648) (reg:SI T_REG)))
 	      (clobber (reg:SI T_REG))])])
 
-(define_split
+(define_insn_and_split "*mov_t_msb_neg"
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(if_then_else:SI (match_operand 1 "t_reg_operand")
 			 (const_int 2147483647)  ;; 0x7fffffff
-			 (const_int -2147483648)))]  ;; 0x80000000
-  "TARGET_SH1 && can_create_pseudo_p ()"
+			 (const_int -2147483648)))  ;; 0x80000000
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
   [(parallel [(set (match_dup 0)
 		   (minus:SI (const_int -2147483648) (reg:SI T_REG)))
 	      (clobber (reg:SI T_REG))])])
