@@ -733,7 +733,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
       break;
 
     case 'R':
-      gcc_assert (GET_MODE_SIZE (GET_MODE (op)) < 4);
+      gcc_assert (GET_MODE_SIZE (GET_MODE (op)) <= 4);
       unsigned_load = true;
       /* Fall through.  */
     case 'Q':

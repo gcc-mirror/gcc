@@ -8,6 +8,11 @@
 	(LABEL_ALIGN): Likewise.
 	(LOOP_ALIGN): Likewise.
 
+	2014-03-25  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.c (rx_print_operand): Allow R operator to accept
+	SImode values.
+
 2014-12-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	Backport from mainline
