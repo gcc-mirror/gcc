@@ -7,4 +7,4 @@ template<typename> struct B
     template<int(> struct C;    // { dg-error "token" }
 };
 
-A<char> a;                      // { dg-error "type/value mismatch|constant|declaration" }
+A<char> a;

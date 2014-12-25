@@ -1,5 +1,9 @@
 2014-12-25  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (check_default_tmpl_args): Uses the parameter source
+	location in the diagnostic.
+	(convert_template_argument): Just return if parm is error_mark_node.
+
 	PR c++/63522
 	* parser.c (cp_parser_type_parameter): Call
 	check_for_bare_parameter_packs on default argument.
