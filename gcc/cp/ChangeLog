@@ -1,3 +1,9 @@
+2014-12-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63522
+	* parser.c (cp_parser_type_parameter): Call
+	check_for_bare_parameter_packs on default argument.
+
 2014-12-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63985
