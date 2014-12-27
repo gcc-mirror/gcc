@@ -27,7 +27,7 @@ main()
    However devirtualization is also possible for offline copy of A::barbar. Invoking
    B's barbar makes it clear the type is at least B and B is an anonymous
    namespace type and therefore we know it has no derivations.  */
-/* { dg-final { scan-ipa-dump-times "First type is base of second" 3 "inline"  } } */
+/* { dg-final { scan-ipa-dump "First type is base of second" "inline"  } } */
 /* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 2 "inline"  } } */
 
 /* Verify that speculation is optimized by late optimizers.  */
