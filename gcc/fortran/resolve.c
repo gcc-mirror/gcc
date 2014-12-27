@@ -414,6 +414,15 @@ resolve_formal_arglist (gfc_symbol *proc)
 			       &sym->declared_at);
 		}
 	    }
+
+	  /* F08:C1278a.  */
+	  if (sym->ts.type == BT_CLASS && sym->attr.intent == INTENT_OUT)
+	    {
+	      gfc_error ("INTENT(OUT) argument '%s' of pure procedure %qs at %L"
+			 " may not be polymorphic", sym->name, proc->name,
+			 &sym->declared_at);
+	      continue;
+	    }
 	}
 
       if (proc->attr.implicit_pure)
