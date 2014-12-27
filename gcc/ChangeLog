@@ -1,3 +1,10 @@
+2014-12-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*vec_extractv2sf_1): Do not emit unpckhps.
+	Emit movshdup for SSE3 and shufps otherwise.
+	(*vec_extractv2si_1): Do not emit punpckhdq and unpckhps.
+	Emit pshufd for SSE2 and shufps otherwise.
+
 2014-12-24  Nick Clifton  <nickc@redhat.com>
 
 	Backport from mainline:
