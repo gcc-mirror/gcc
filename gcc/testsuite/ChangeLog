@@ -1,3 +1,8 @@
+2014-12-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* lib/ubsan-dg.exp (check_effective_target_fsanitize_undefined):
+	Check if testcases run without errors, not just if they compile.
+
 2014-12-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/64409
