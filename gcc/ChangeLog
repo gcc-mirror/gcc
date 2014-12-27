@@ -1,5 +1,17 @@
 2014-12-27  Jan hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline.c (max_count_real, max_relbenefit_real,
+	half_int_min_real): Remove.
+	(cgraph_freq_base_rec, percent_rec): New.
+	(compute_uninlined_call_time, compute_inlined_call_time,
+	big_speedup_p, relative_time_benefit, edge_badness): Use sreals.
+	(update_edge_key): Update dumping.
+	(inline_small_functions): Speedup maintainance of the heap.
+	(ipa_inline): Initialize cgraph_freq_base_rec and
+	percent_rec.
+
+2014-12-27  Jan hubicka  <hubicka@ucw.cz>
+
 	* sreal.h (sreal::shift): Fix sanity check.
 
 2014-12-27  Uros Bizjak  <ubizjak@gmail.com>

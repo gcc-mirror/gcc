@@ -146,8 +146,10 @@ typedef fibonacci_node <sreal, cgraph_edge> edge_heap_node_t;
 /* Statistics we collect about inlining algorithm.  */
 static int overall_size;
 static gcov_type max_count;
-static sreal max_count_real, max_relbenefit_real, half_int_min_real;
 static gcov_type spec_rem;
+
+/* Pre-computed constants 1/CGRAPH_FREQ_BASE and 1/100. */
+static sreal cgraph_freq_base_rec, percent_rec;
 
 /* Return false when inlining edge E would lead to violating
    limits on function unit growth or stack usage growth.  
@@ -518,37 +520,34 @@ want_early_inline_function_p (struct cgraph_edge *e)
 /* Compute time of the edge->caller + edge->callee execution when inlining
    does not happen.  */
 
-inline gcov_type
+inline sreal
 compute_uninlined_call_time (struct inline_summary *callee_info,
 			     struct cgraph_edge *edge)
 {
-  gcov_type uninlined_call_time =
-    RDIV ((gcov_type)callee_info->time * MAX (edge->frequency, 1),
-	  CGRAPH_FREQ_BASE);
-  gcov_type caller_time = inline_summaries->get (edge->caller->global.inlined_to
-				          ? edge->caller->global.inlined_to
-				          : edge->caller)->time;
+  sreal uninlined_call_time = (sreal)callee_info->time
+			      * MAX (edge->frequency, 1)
+			      * cgraph_freq_base_rec;
+  int caller_time = inline_summaries->get (edge->caller->global.inlined_to
+				           ? edge->caller->global.inlined_to
+				           : edge->caller)->time;
   return uninlined_call_time + caller_time;
 }
 
 /* Same as compute_uinlined_call_time but compute time when inlining
    does happen.  */
 
-inline gcov_type
+inline sreal
 compute_inlined_call_time (struct cgraph_edge *edge,
 			   int edge_time)
 {
-  gcov_type caller_time = inline_summaries->get (edge->caller->global.inlined_to
-					  ? edge->caller->global.inlined_to
-					  : edge->caller)->time;
-  gcov_type time = (caller_time
-		    + RDIV (((gcov_type) edge_time
-			     - inline_edge_summary (edge)->call_stmt_time)
-		    * MAX (edge->frequency, 1), CGRAPH_FREQ_BASE));
-  /* Possible one roundoff error, but watch for overflows.  */
-  gcc_checking_assert (time >= INT_MIN / 2);
-  if (time < 0)
-    time = 0;
+  int caller_time = inline_summaries->get (edge->caller->global.inlined_to
+				           ? edge->caller->global.inlined_to
+				           : edge->caller)->time;
+  sreal time = (sreal)caller_time
+	       + ((sreal) (edge_time - inline_edge_summary (edge)->call_stmt_time)
+	          * MAX (edge->frequency, 1)
+	          * cgraph_freq_base_rec);
+  gcc_checking_assert (time >= 0);
   return time;
 }
 
@@ -558,12 +557,11 @@ compute_inlined_call_time (struct cgraph_edge *edge,
 static bool
 big_speedup_p (struct cgraph_edge *e)
 {
-  gcov_type time = compute_uninlined_call_time (inline_summaries->get (e->callee),
-					  	e);
-  gcov_type inlined_time = compute_inlined_call_time (e,
-					              estimate_edge_time (e));
+  sreal time = compute_uninlined_call_time (inline_summaries->get (e->callee), e);
+  sreal inlined_time = compute_inlined_call_time (e, estimate_edge_time (e));
   if (time - inlined_time
-      > RDIV (time * PARAM_VALUE (PARAM_INLINE_MIN_SPEEDUP), 100))
+      > (sreal) time * PARAM_VALUE (PARAM_INLINE_MIN_SPEEDUP)
+	 * percent_rec)
     return true;
   return false;
 }
@@ -861,42 +859,45 @@ want_inline_function_to_all_callers_p (struct cgraph_node *node, bool cold)
 #define RELATIVE_TIME_BENEFIT_RANGE (INT_MAX / 64)
 
 /* Return relative time improvement for inlining EDGE in range
-   1...RELATIVE_TIME_BENEFIT_RANGE  */
+   as value NUMERATOR/DENOMINATOR.  */
 
-static inline int
+static inline void
 relative_time_benefit (struct inline_summary *callee_info,
 		       struct cgraph_edge *edge,
-		       int edge_time)
+		       int edge_time,
+		       sreal *numerator,
+		       sreal *denominator)
 {
-  gcov_type relbenefit;
-  gcov_type uninlined_call_time = compute_uninlined_call_time (callee_info, edge);
-  gcov_type inlined_call_time = compute_inlined_call_time (edge, edge_time);
-
   /* Inlining into extern inline function is not a win.  */
   if (DECL_EXTERNAL (edge->caller->global.inlined_to
 		     ? edge->caller->global.inlined_to->decl
 		     : edge->caller->decl))
-    return 1;
+    {
+      *numerator = (sreal) 1;
+      *denominator = (sreal) 1024;
+      return;
+    }
 
-  /* Watch overflows.  */
-  gcc_checking_assert (uninlined_call_time >= 0);
-  gcc_checking_assert (inlined_call_time >= 0);
-  gcc_checking_assert (uninlined_call_time >= inlined_call_time);
+  sreal uninlined_call_time = compute_uninlined_call_time (callee_info, edge);
+  sreal inlined_call_time = compute_inlined_call_time (edge, edge_time);
 
   /* Compute relative time benefit, i.e. how much the call becomes faster.
      ??? perhaps computing how much the caller+calle together become faster
      would lead to more realistic results.  */
-  if (!uninlined_call_time)
+  if (uninlined_call_time == (sreal) 0)
     uninlined_call_time = 1;
-  relbenefit =
-    RDIV (((gcov_type)uninlined_call_time - inlined_call_time) * RELATIVE_TIME_BENEFIT_RANGE,
-	  uninlined_call_time);
-  relbenefit = MIN (relbenefit, RELATIVE_TIME_BENEFIT_RANGE);
-  gcc_checking_assert (relbenefit >= 0);
-  relbenefit = MAX (relbenefit, 1);
-  return relbenefit;
-}
 
+  /* Avoid zeros, these are not useful later in calculations.  */
+  if (uninlined_call_time == inlined_call_time)
+    *numerator = ((sreal) 1)>>8;
+  else
+    *numerator = uninlined_call_time - inlined_call_time;
+  *denominator = uninlined_call_time;
+#ifdef ENABLE_CHECKING
+  gcc_checking_assert (*numerator >= 0);
+  gcc_checking_assert (*denominator >= 0);
+#endif
+}
 
 /* A cost model driving the inlining heuristics in a way so the edges with
    smallest badness are inlined first.  After each inlining is performed
@@ -914,7 +915,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   inline_hints hints;
 
   if (DECL_DISREGARD_INLINE_LIMITS (callee->decl))
-    return INT_MIN;
+    return sreal::min ();
 
   growth = estimate_edge_growth (edge);
   edge_time = estimate_edge_time (edge);
@@ -942,56 +943,43 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   /* Always prefer inlining saving code size.  */
   if (growth <= 0)
     {
-      badness = INT_MIN / 2 + growth;
+      badness = (sreal) (-SREAL_MIN_SIG + growth) << (SREAL_MAX_EXP / 256);
       if (dump)
-	fprintf (dump_file, "      %"PRId64": Growth %d <= 0\n", badness.to_int (),
+	fprintf (dump_file, "      %f: Growth %d <= 0\n", badness.to_double (),
 		 growth);
     }
 
   /* When profiling is available, compute badness as:
 
-	        relative_edge_count * relative_time_benefit
+	        edge_count * relative_time_benefit
      goodness = -------------------------------------------
-		growth_f_caller
-     badness = -goodness  
+		growth_of_caller
+     badness = - goodness 
 
     The fraction is upside down, because on edge counts and time beneits
     the bounds are known. Edge growth is essentially unlimited.  */
 
   else if (max_count)
     {
-      int relbenefit = relative_time_benefit (callee_info, edge, edge_time);
-      /* Capping edge->count to max_count. edge->count can be larger than
-	 max_count if an inline adds new edges which increase max_count
-	 after max_count is computed.  */
-      gcov_type edge_count = edge->count > max_count ? max_count : edge->count;
+      sreal numerator, denominator;
+      relative_time_benefit (callee_info, edge, edge_time, &numerator,
+			     &denominator);
 
-      sreal relbenefit_real (relbenefit, 0);
-      sreal growth_real (growth, 0);
+      if (edge->count)
+        numerator *= edge->count;
+      denominator *= growth;
 
-      /* relative_edge_count.  */
-      sreal tmp (edge_count, 0);
-      tmp /= max_count_real;
-
-      /* relative_time_benefit.  */
-      tmp *= relbenefit_real;
-      tmp /= max_relbenefit_real;
-
-      /* growth_f_caller.  */
-      tmp *= half_int_min_real;
-      tmp /=  growth_real;
-
-      badness = -1 * tmp.to_int ();
+      badness = - numerator / denominator;
  
       if (dump)
 	{
+	  sreal num,den;
+          relative_time_benefit (callee_info, edge, edge_time, &num, &den);
 	  fprintf (dump_file,
-		   "      %"PRId64" (relative %f): profile info. Relative count %f%s"
-		   " * Relative benefit %f\n",
-		   badness.to_int (), (double) badness.to_int () / INT_MIN,
-		   (double) edge_count / max_count,
-		   edge->count > max_count ? " (capped to max_count)" : "",
-		   relbenefit * 100.0 / RELATIVE_TIME_BENEFIT_RANGE);
+		   "      %f: profile info. count %"PRId64
+		   " * Relative benefit %f / growth %i\n",
+		   badness.to_double (), (int64_t)edge->count,
+		   (num / den * 100).to_double (), growth);
 	}
     }
 
@@ -1009,36 +997,27 @@ edge_badness (struct cgraph_edge *edge, bool dump)
      and some not.  */
   else if (flag_guess_branch_prob)
     {
-      badness = (relative_time_benefit (callee_info, edge, edge_time)
-		 * (INT_MIN / 16 / RELATIVE_TIME_BENEFIT_RANGE));
-      badness /= (MIN (65536/2, growth) * MIN (65536/2, MAX (1, callee_info->growth)));
-      gcc_checking_assert (badness <=0 && badness >= INT_MIN / 16);
-      if ((hints & (INLINE_HINT_indirect_call
-		    | INLINE_HINT_loop_iterations
-	            | INLINE_HINT_array_index
-		    | INLINE_HINT_loop_stride))
-	  || callee_info->growth <= 0)
-	badness *= 8;
-      if (hints & (INLINE_HINT_same_scc))
-	badness /= 16;
-      else if (hints & (INLINE_HINT_in_scc))
-	badness /= 8;
-      else if (hints & (INLINE_HINT_cross_module))
-	badness /= 2;
-      gcc_checking_assert (badness <= 0 && badness >= INT_MIN / 2);
-      if ((hints & INLINE_HINT_declared_inline) && badness >= INT_MIN / 32)
-	badness *= 16;
+      sreal numerator, denominator;
+      relative_time_benefit (callee_info, edge, edge_time, &numerator,
+			     &denominator);
+      denominator *= growth;
+      if (callee_info->growth > 0)
+	denominator *= callee_info->growth;
+
+      badness = - numerator / denominator;
+
       if (dump)
 	{
+	  sreal num,den;
+          relative_time_benefit (callee_info, edge, edge_time, &num, &den);
 	  fprintf (dump_file,
-		   "      %"PRId64": guessed profile. frequency %f,"
-		   " benefit %f%%, time w/o inlining %i, time w inlining %i"
+		   "      %f: guessed profile. frequency %f,"
+		   " benefit %f%%, time w/o inlining %f, time w inlining %f"
 		   " overall growth %i (current) %i (original)\n",
-		   badness.to_int (), (double)edge->frequency / CGRAPH_FREQ_BASE,
-		   relative_time_benefit (callee_info, edge, edge_time) * 100.0
-		   / RELATIVE_TIME_BENEFIT_RANGE, 
-		   (int)compute_uninlined_call_time (callee_info, edge),
-		   (int)compute_inlined_call_time (edge, edge_time),
+		   badness.to_double (), (double)edge->frequency / CGRAPH_FREQ_BASE,
+		   (num/den).to_double () * 100, 
+		   compute_uninlined_call_time (callee_info, edge).to_double (),
+		   compute_inlined_call_time (edge, edge_time).to_double (),
 		   estimate_growth (callee),
 		   callee_info->growth);
 	}
@@ -1050,28 +1029,38 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   else
     {
       int nest = MIN (inline_edge_summary (edge)->loop_depth, 8);
-      badness = growth * 256;
+      badness = growth;
 
       /* Decrease badness if call is nested.  */
       if (badness > 0)
 	badness = badness >> nest;
       else
-	{
-	  badness = badness << nest;
-	}
+	badness = badness << nest;
       if (dump)
-	fprintf (dump_file, "      %"PRId64": no profile. nest %i\n", badness.to_int (),
+	fprintf (dump_file, "      %f: no profile. nest %i\n", badness.to_double (),
 		 nest);
     }
+  gcc_checking_assert (badness != 0);
 
-  /* Ensure that we did not overflow in all the fixed point math above.  */
-  gcc_assert (badness >= INT_MIN);
-  gcc_assert (badness <= INT_MAX - 1);
-  /* Make recursive inlining happen always after other inlining is done.  */
   if (edge->recursive_p ())
-    return badness + 1;
-  else
-    return badness;
+    badness = badness.shift (badness > 0 ? 4 : -4);
+  if ((hints & (INLINE_HINT_indirect_call
+		| INLINE_HINT_loop_iterations
+		| INLINE_HINT_array_index
+		| INLINE_HINT_loop_stride))
+      || callee_info->growth <= 0)
+    badness = badness.shift (badness > 0 ? -2 : 2);
+  if (hints & (INLINE_HINT_same_scc))
+    badness = badness.shift (badness > 0 ? 3 : -3);
+  else if (hints & (INLINE_HINT_in_scc))
+    badness = badness.shift (badness > 0 ? 2 : -2);
+  else if (hints & (INLINE_HINT_cross_module))
+    badness = badness.shift (badness > 0 ? 1 : -1);
+  if ((hints & INLINE_HINT_declared_inline))
+    badness = badness.shift (badness > 0 ? -3 : 3);
+  if (dump)
+    fprintf (dump_file, "      Adjusted by hints %f\n", badness.to_double ());
+  return badness;
 }
 
 /* Recompute badness of EDGE and update its key in HEAP if needed.  */
@@ -1084,26 +1073,26 @@ update_edge_key (edge_heap_t *heap, struct cgraph_edge *edge)
       edge_heap_node_t *n = (edge_heap_node_t *) edge->aux;
       gcc_checking_assert (n->get_data () == edge);
 
-      /* fibonacci_heap::replace_key only decrease the keys.
-	 When we increase the key we do not update heap
-	 and instead re-insert the element once it becomes
-	 a minimum of heap.  */
+      /* fibonacci_heap::replace_key does busy updating of the
+	 heap that is unnecesarily expensive.
+	 We do lazy increases: after extracting minimum if the key
+	 turns out to be out of date, it is re-inserted into heap
+	 with correct value.  */
       if (badness < n->get_key ())
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file,
-		       "  decreasing badness %s/%i -> %s/%i, %"PRId64
-		       " to %"PRId64"\n",
+		       "  decreasing badness %s/%i -> %s/%i, %f"
+		       " to %f\n",
 		       xstrdup_for_dump (edge->caller->name ()),
 		       edge->caller->order,
 		       xstrdup_for_dump (edge->callee->name ()),
 		       edge->callee->order,
-		       n->get_key ().to_int (),
-		       badness.to_int ());
+		       n->get_key ().to_double (),
+		       badness.to_double ());
 	    }
 	  heap->decrease_key (n, badness);
-	  gcc_checking_assert (n->get_key () == badness);
 	}
     }
   else
@@ -1111,12 +1100,12 @@ update_edge_key (edge_heap_t *heap, struct cgraph_edge *edge)
        if (dump_file && (dump_flags & TDF_DETAILS))
 	 {
 	   fprintf (dump_file,
-		    "  enqueuing call %s/%i -> %s/%i, badness %"PRId64"\n",
+		    "  enqueuing call %s/%i -> %s/%i, badness %f\n",
 		    xstrdup_for_dump (edge->caller->name ()),
 		    edge->caller->order,
 		    xstrdup_for_dump (edge->callee->name ()),
 		    edge->callee->order,
-		    badness.to_int ());
+		    badness.to_double ());
 	 }
       edge->aux = heap->insert (badness, edge);
     }
@@ -1619,9 +1608,6 @@ inline_small_functions (void)
 	  if (max_count < edge->count)
 	    max_count = edge->count;
       }
-  max_count_real = sreal (max_count, 0);
-  max_relbenefit_real = sreal (RELATIVE_TIME_BENEFIT_RANGE, 0);
-  half_int_min_real = sreal (INT_MAX / 2, 0);
   ipa_free_postorder_info ();
   initialize_growth_caches ();
 
@@ -1686,7 +1672,6 @@ inline_small_functions (void)
       struct cgraph_node *where, *callee;
       sreal badness = edge_heap.min_key ();
       sreal current_badness;
-      sreal cached_badness;
       int growth;
 
       edge = edge_heap.extract_min ();
@@ -1695,10 +1680,9 @@ inline_small_functions (void)
       if (!edge->inline_failed || !edge->callee->analyzed)
 	continue;
 
-      /* Be sure that caches are maintained consistent.  
-         We can not make this ENABLE_CHECKING only because it cause different
-         updates of the fibheap queue.  */
-      cached_badness = edge_badness (edge, false);
+#ifdef ENABLE_CHECKING
+      /* Be sure that caches are maintained consistent.  */
+      sreal cached_badness = edge_badness (edge, false);
       reset_edge_growth_cache (edge);
       reset_node_growth_cache (edge->callee);
 
@@ -1708,10 +1692,18 @@ inline_small_functions (void)
       current_badness = edge_badness (edge, false);
       gcc_assert (cached_badness == current_badness);
       gcc_assert (current_badness >= badness);
+#else
+      current_badness = edge_badness (edge, false);
+#endif
       if (current_badness != badness)
 	{
-	  edge->aux = edge_heap.insert (current_badness, edge);
-	  continue;
+	  if (edge_heap.min () && badness > edge_heap.min_key ())
+	    {
+	      edge->aux = edge_heap.insert (current_badness, edge);
+	      continue;
+	    }
+	  else
+	    badness = current_badness;
 	}
 
       if (!can_inline_edge_p (edge, true))
@@ -1730,13 +1722,13 @@ inline_small_functions (void)
 		   inline_summaries->get (callee)->size);
 	  fprintf (dump_file,
 		   " to be inlined into %s/%i in %s:%i\n"
-		   " Estimated badness is %"PRId64", frequency %.2f.\n",
+		   " Estimated badness is %f, frequency %.2f.\n",
 		   edge->caller->name (), edge->caller->order,
 		   edge->call_stmt ? "unknown"
 		   : gimple_filename ((const_gimple) edge->call_stmt),
 		   edge->call_stmt ? -1
 		   : gimple_lineno ((const_gimple) edge->call_stmt),
-		   badness.to_int (),
+		   badness.to_double (),
 		   edge->frequency / (double)CGRAPH_FREQ_BASE);
 	  if (edge->count)
 	    fprintf (dump_file," Called %"PRId64"x\n",
@@ -2147,6 +2139,9 @@ ipa_inline (void)
 
   if (!optimize)
     return 0;
+
+  cgraph_freq_base_rec = (sreal) 1 / (sreal) CGRAPH_FREQ_BASE;
+  percent_rec = (sreal) 1 / (sreal) 100;
 
   order = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
 
