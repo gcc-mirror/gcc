@@ -38,7 +38,7 @@ module m1
     integer :: j = 7
   end type
 contains
-  elemental subroutine assign1(lhs,rhs)
+  impure elemental subroutine assign1(lhs,rhs)
     class(component1), intent(out) :: lhs
     class(component1), intent(in) :: rhs
     lhs%i = 30

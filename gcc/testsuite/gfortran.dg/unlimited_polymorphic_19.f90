@@ -12,7 +12,7 @@ MODULE m
     PROCEDURE :: copy
   END TYPE t
   INTERFACE 
-    PURE SUBROUTINE copy_proc_intr(a,b)
+    SUBROUTINE copy_proc_intr(a,b)
       CLASS(*), INTENT(IN) :: a
       CLASS(*), INTENT(OUT) :: b
     END SUBROUTINE copy_proc_intr
@@ -40,7 +40,7 @@ PROGRAM main
   CALL test%copy(copy_int,copy_x)
 !   PRINT '(*(I0,:2X))', copy_x
 CONTAINS
-  PURE SUBROUTINE copy_int(a,b)
+  SUBROUTINE copy_int(a,b)
     CLASS(*), INTENT(IN) :: a
     CLASS(*), INTENT(OUT) :: b
     SELECT TYPE(a); TYPE IS(integer) 

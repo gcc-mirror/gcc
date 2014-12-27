@@ -27,7 +27,7 @@ MODULE rational_numbers
       r = REAL(this%n)/this%d
     END FUNCTION
 
-    ELEMENTAL SUBROUTINE rat_asgn_i(a,b)
+    impure ELEMENTAL SUBROUTINE rat_asgn_i(a,b)
       CLASS(rational),INTENT(OUT) :: a
       INTEGER,INTENT(IN) :: b
       a%n = b

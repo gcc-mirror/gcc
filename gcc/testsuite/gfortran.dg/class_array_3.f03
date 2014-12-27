@@ -29,7 +29,7 @@ module m_qsort
    end function lt_cmp
  end interface
  interface
-   elemental subroutine assign(a,b)
+   impure elemental subroutine assign(a,b)
      import
      class(sort_t), intent(out) :: a
      class(sort_t), intent(in) :: b
@@ -100,7 +100,7 @@ contains
      class(sort_int_t), intent(in) :: a
      disp_int = a%i
  end function disp_int
- elemental subroutine assign_int (a, b)
+ impure elemental subroutine assign_int (a, b)
    class(sort_int_t), intent(out) :: a
    class(sort_t), intent(in) :: b         ! TODO: gfortran does not throw 'class(sort_int_t)'
    select type (b)

@@ -17,7 +17,7 @@ module m0
     integer :: j
   end type
 contains
-  elemental subroutine assign0(lhs,rhs)
+  impure elemental subroutine assign0(lhs,rhs)
     class(component), intent(out) :: lhs
     class(component), intent(in) :: rhs
     lhs%i = 20
