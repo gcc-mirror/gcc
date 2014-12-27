@@ -1,3 +1,8 @@
+2014-12-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/64409
+	* gcc.target/i386/pr64409.c: New test.
+
 2014-12-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/405-dlmzb-strlen-1.c: Explicitly align arg.
