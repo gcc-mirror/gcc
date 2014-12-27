@@ -87,8 +87,8 @@ public:
     /* Zero needs no shifting.  */
     if (!m_sig)
       return *this;
-    gcc_checking_assert (s <= SREAL_BITS);
-    gcc_checking_assert (s >= -SREAL_BITS);
+    gcc_checking_assert (s <= SREAL_MAX_EXP);
+    gcc_checking_assert (s >= -SREAL_MAX_EXP);
 
     /* Overflows/drop to 0 could be handled gracefully, but hopefully we do not
        need to do so.  */

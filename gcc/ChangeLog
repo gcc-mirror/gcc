@@ -1,3 +1,7 @@
+2014-12-27  Jan hubicka  <hubicka@ucw.cz>
+
+	* sreal.h (sreal::shift): Fix sanity check.
+
 2014-12-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (*vec_extractv2sf_1): Do not emit unpckhps.
