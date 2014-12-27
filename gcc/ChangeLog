@@ -1,3 +1,12 @@
+2014-12-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2014-12-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/64409
+	* config/i386/i386.c (ix86_function_type_abi): Issue an error
+	when ms_abi attribute is used with x32.
+
 2014-12-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (*vec_extractv2sf_1): Do not emit unpckhps.
