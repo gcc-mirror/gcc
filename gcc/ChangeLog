@@ -1,3 +1,19 @@
+2014-12-27  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie-protos.h (moxie_offset_address_p): Define.
+	* config/moxie/constraints.md (B): Replace inline test with call
+	to moxie_offset_address_p.
+	* config/moxie/moxie.h (GO_IF_LEGITIMATE_ADDRESS): Limit offset
+	addressing to 16-bit offsets.
+	* config/moxie/moxie.c (moxie_asm_trampoline_template): Remove
+	nop, which is no longer needed for aligned write to trampoline.
+	(moxie_trampoline_init): Adjust for smaller trampoline.
+	(moxie_offset_address_p): New function.
+	* config/moxie/moxie.md (*movsi, *movhi, *movqi): Adjust length
+	attr for shorter ldo/sto instructions.
+	* config/moxie/predicates.md: Only allow REG+CONST_INT for offset
+	load/stores.
+
 2014-12-27  Jan hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.c (max_count_real, max_relbenefit_real,

@@ -266,7 +266,7 @@
    lda.l  %0, %1
    sto.l  %0, %1
    ldo.l  %0, %1"
-  [(set_attr "length"	"2,2,6,2,6,2,6,6,6")])
+  [(set_attr "length"	"2,2,6,2,6,2,6,4,4")])
 
 (define_insn_and_split "zero_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
@@ -344,7 +344,7 @@
    lda.b  %0, %1
    sto.b  %0, %1
    ldo.b  %0, %1"
-  [(set_attr "length"	"2,2,6,2,6,2,6,6,6")])
+  [(set_attr "length"	"2,2,6,2,6,2,6,4,4")])
 
 (define_expand "movhi"
   [(set (match_operand:HI 0 "general_operand" "")
@@ -372,7 +372,7 @@
    lda.s  %0, %1
    sto.s  %0, %1
    ldo.s  %0, %1"
-  [(set_attr "length"	"2,2,6,2,6,2,6,6,6")])
+  [(set_attr "length"	"2,2,6,2,6,2,6,4,4")])
 
 ;; -------------------------------------------------------------------------
 ;; Compare instructions
