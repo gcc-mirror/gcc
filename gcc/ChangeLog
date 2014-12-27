@@ -37,6 +37,19 @@
 	* config/msp430/msp430.md (addsi splitter): Do not split when the
 	destination partially overlaps the source.
 
+2014-12-24  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.opt (mul.x): New option.
+	* doc/invoke.texi (Moxie Options): Document -mmul.x.
+	* config/moxie/moxie.md (addsi3, mulsi3, subsi3, divsi3, udivs3):
+	Remove trailing ".l" from add, mul, sub, div and udiv
+	instructions.
+	(<mul>si3_highpart, <mul>sidi3): Add mul.x & umul.x instruction
+	support (high 32-bit result of multiply).
+	* config/moxie/moxie.c (moxie_option_override): Force availability
+	of mul.x instructions for moxiebox target.
+	* config/moxie/moxiebox.h (TARGET_MOXIEBOX): Define.
+
 2014-12-22  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
 
 	* ira-build.c (ira_flattening): Add the current
