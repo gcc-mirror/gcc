@@ -1,5 +1,5 @@
 /* PR target/60516 */
-/* { dg-do compile } */
+/* { dg-do compile { target { ! x32 } } } */
 /* { dg-options "-O2" } */
 
 struct S { char c[65536]; };

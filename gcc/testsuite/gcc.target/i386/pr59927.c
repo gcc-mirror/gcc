@@ -1,5 +1,5 @@
 /* PR target/59927 */
-/* { dg-do compile } */
+/* { dg-do compile { target { ! x32 } } } */
 /* { dg-options "-O2 -g" } */
 
 extern void baz (int) __attribute__ ((__ms_abi__));
