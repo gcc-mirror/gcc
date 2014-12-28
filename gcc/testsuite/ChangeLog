@@ -1,3 +1,11 @@
+2014-12-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2014-12-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr57003.c: Skip on x32.
+	* gcc.target/i386/pr60516.c: Likewise.
+
 2014-12-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:

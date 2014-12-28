@@ -1,5 +1,5 @@
 /* PR rtl-optimization/57003 */
-/* { dg-do run } */
+/* { dg-do run { target { ! x32 } } } */
 /* { dg-options "-O2 -maccumulate-outgoing-args" } */
 
 #define N 2001
