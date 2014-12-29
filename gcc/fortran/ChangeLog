@@ -1,3 +1,12 @@
+2014-12-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60357
+	* array.c (check_constructor): Ignore empty expressions.
+	* expr.c (check_alloc_comp_init): Check if constructor expression
+	exists.
+	* primary.c (build_actual_constructor): Warn for absent alloc-comp
+	initializers in pre-2008 standards.
+
 2014-12-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/56867
