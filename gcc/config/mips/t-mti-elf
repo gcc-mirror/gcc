@@ -41,5 +41,8 @@ MULTILIB_EXCEPTIONS += *mips32/mmicromips*
 MULTILIB_EXCEPTIONS += *mips64*/mmicromips*
 MULTILIB_EXCEPTIONS += *mmicromips/mabi=64*
 
-# We do not want nan2008 libraries for soft-float.
+# We do not want nan2008 libraries for soft-float,
+# mips32[r1], or mips64[r1].
 MULTILIB_EXCEPTIONS += *msoft-float*/*mnan=2008*
+MULTILIB_EXCEPTIONS += *mips32/*mnan=2008*
+MULTILIB_EXCEPTIONS += *mips64/*mnan=2008*

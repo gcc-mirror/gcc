@@ -1,3 +1,9 @@
+2014-12-29  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/t-mti-linux (MULTILIB_EXCEPTIONS): Add exceptions
+	for mips32[r1] and mips64[r1] with -mnan=2008.
+	* config/mips/t-mti-elf (MULTILIB_EXCEPTIONS): Ditto.
+
 2014-12-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/64409
