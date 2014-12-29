@@ -1,3 +1,8 @@
+2014-12-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60357
+	* gfortran.dg/alloc_comp_constructor_7.f90: New.
+
 2014-12-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/lto/pr59626_0.c (ASMNAME, ASMNAME2, STRING): Define.

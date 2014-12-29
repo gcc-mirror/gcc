@@ -2201,7 +2201,7 @@ check_alloc_comp_init (gfc_expr *e)
        ctor = gfc_constructor_first (e->value.constructor);
        comp; comp = comp->next, ctor = gfc_constructor_next (ctor))
     {
-      if (comp->attr.allocatable
+      if (comp->attr.allocatable && ctor->expr
           && ctor->expr->expr_type != EXPR_NULL)
         {
 	  gfc_error ("Invalid initialization expression for ALLOCATABLE "
