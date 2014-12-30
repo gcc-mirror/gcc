@@ -14362,9 +14362,7 @@ ix86_legitimize_address (rtx x, rtx, machine_mode mode)
       /* Put multiply first if it isn't already.  */
       if (GET_CODE (XEXP (x, 1)) == MULT)
 	{
-	  rtx tmp = XEXP (x, 0);
-	  XEXP (x, 0) = XEXP (x, 1);
-	  XEXP (x, 1) = tmp;
+	  std::swap (XEXP (x, 0), XEXP (x, 1));
 	  changed = 1;
 	}
 
@@ -20497,10 +20495,8 @@ ix86_split_fp_branch (enum rtx_code code, rtx op1, rtx op2,
 
   if (target2 != pc_rtx)
     {
-      rtx tmp = target2;
+      std::swap (target1, target2);
       code = reverse_condition_maybe_unordered (code);
-      target2 = target1;
-      target1 = tmp;
     }
 
   condition = ix86_expand_fp_compare (code, op1, op2,
@@ -20615,7 +20611,7 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
 	}
       else
 	{
-	  std::swap (op1, op0);
+	  std::swap (op0, op1);
 	  code = (code == GTU ? LTU : GEU);
 	}
       break;
@@ -20720,9 +20716,7 @@ ix86_expand_int_movcc (rtx operands[])
 	      /* To simplify rest of code, restrict to the GEU case.  */
 	      if (compare_code == LTU)
 		{
-		  HOST_WIDE_INT tmp = ct;
-		  ct = cf;
-		  cf = tmp;
+		  std::swap (ct, cf);
 		  compare_code = reverse_condition (compare_code);
 		  code = reverse_condition (code);
 		}
@@ -20754,9 +20748,7 @@ ix86_expand_int_movcc (rtx operands[])
 		code = reverse_condition (code);
 	      else
 		{
-		  HOST_WIDE_INT tmp = ct;
-		  ct = cf;
-		  cf = tmp;
+		  std::swap (ct, cf);
 		  diff = ct - cf;
 		}
 	      tmp = emit_store_flag (tmp, code, op0, op1, VOIDmode, 0, -1);
@@ -21041,7 +21033,7 @@ ix86_expand_int_movcc (rtx operands[])
 		  compare_code = LT;
 		}
 	      else
-		std::swap (cf, ct);
+		std::swap (ct, cf);
 
 	      out = emit_store_flag (out, code, op0, op1, VOIDmode, 0, -1);
 	    }
@@ -36036,12 +36028,7 @@ ix86_expand_sse_compare (const struct builtin_description *d,
   /* Swap operands if we have a comparison that isn't available in
      hardware.  */
   if (swap)
-    {
-      rtx tmp = gen_reg_rtx (mode1);
-      emit_move_insn (tmp, op1);
-      op1 = op0;
-      op0 = tmp;
-    }
+    std::swap (op0, op1);
 
   if (optimize || !target
       || GET_MODE (target) != tmode
@@ -36086,7 +36073,7 @@ ix86_expand_sse_comi (const struct builtin_description *d, tree exp,
   /* Swap operands if we have a comparison that isn't available in
      hardware.  */
   if (d->flag & BUILTIN_DESC_SWAP_OPERANDS)
-    std::swap (op1, op0);
+    std::swap (op0, op1);
 
   target = gen_reg_rtx (SImode);
   emit_move_insn (target, const0_rtx);

@@ -1,3 +1,10 @@
+2014-12-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_legitimize_address): Use std::swap.
+	(ix86_split_fp_branch): Ditto.
+	(ix86_expand_int_movcc): Ditto.
+	(ix86_expand_sse_compare): Ditto.
+
 2014-12-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-analysis.c (edge_set_predicate): Reset size/time when
