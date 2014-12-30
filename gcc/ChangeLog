@@ -1,3 +1,8 @@
+2014-12-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Do not
+	free node params when called late with early=true.
+
 2014-12-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_legitimize_address): Use std::swap.

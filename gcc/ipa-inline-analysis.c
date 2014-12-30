@@ -2851,7 +2851,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
     {
       if (!early)
         loop_optimizer_finalize ();
-      else
+      else if (!ipa_edge_args_vector)
 	ipa_free_all_node_params ();
       free_dominance_info (CDI_DOMINATORS);
     }
