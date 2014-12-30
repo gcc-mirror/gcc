@@ -9009,7 +9009,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 		  rtx slot = XVECEXP (container, 0, i);
 		  if (REGNO (XEXP (slot, 0)) != FIRST_SSE_REG + (unsigned int) i
 		      || INTVAL (XEXP (slot, 1)) != i * 16)
-		    need_temp = 1;
+		    need_temp = true;
 		}
 	    }
 	  else
@@ -9021,7 +9021,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 		  rtx slot = XVECEXP (container, 0, i);
 		  if (REGNO (XEXP (slot, 0)) != (unsigned int) i
 		      || INTVAL (XEXP (slot, 1)) != i * 8)
-		    need_temp = 1;
+		    need_temp = true;
 		}
 	    }
 	}
@@ -14291,7 +14291,7 @@ legitimize_pe_coff_symbol (rtx addr, bool inreg)
 static rtx
 ix86_legitimize_address (rtx x, rtx, machine_mode mode)
 {
-  int changed = 0;
+  bool changed = false;
   unsigned log;
 
   log = GET_CODE (x) == SYMBOL_REF ? SYMBOL_REF_TLS_MODEL (x) : 0;
@@ -14327,7 +14327,7 @@ ix86_legitimize_address (rtx x, rtx, machine_mode mode)
       && CONST_INT_P (XEXP (x, 1))
       && (unsigned HOST_WIDE_INT) INTVAL (XEXP (x, 1)) < 4)
     {
-      changed = 1;
+      changed = true;
       log = INTVAL (XEXP (x, 1));
       x = gen_rtx_MULT (Pmode, force_reg (Pmode, XEXP (x, 0)),
 			GEN_INT (1 << log));
@@ -14341,7 +14341,7 @@ ix86_legitimize_address (rtx x, rtx, machine_mode mode)
 	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
 	  && (unsigned HOST_WIDE_INT) INTVAL (XEXP (XEXP (x, 0), 1)) < 4)
 	{
-	  changed = 1;
+	  changed = true;
 	  log = INTVAL (XEXP (XEXP (x, 0), 1));
 	  XEXP (x, 0) = gen_rtx_MULT (Pmode,
 				      force_reg (Pmode, XEXP (XEXP (x, 0), 0)),
@@ -14352,7 +14352,7 @@ ix86_legitimize_address (rtx x, rtx, machine_mode mode)
 	  && CONST_INT_P (XEXP (XEXP (x, 1), 1))
 	  && (unsigned HOST_WIDE_INT) INTVAL (XEXP (XEXP (x, 1), 1)) < 4)
 	{
-	  changed = 1;
+	  changed = true;
 	  log = INTVAL (XEXP (XEXP (x, 1), 1));
 	  XEXP (x, 1) = gen_rtx_MULT (Pmode,
 				      force_reg (Pmode, XEXP (XEXP (x, 1), 0)),
@@ -14363,7 +14363,7 @@ ix86_legitimize_address (rtx x, rtx, machine_mode mode)
       if (GET_CODE (XEXP (x, 1)) == MULT)
 	{
 	  std::swap (XEXP (x, 0), XEXP (x, 1));
-	  changed = 1;
+	  changed = true;
 	}
 
       /* Canonicalize (plus (mult (reg) (const)) (plus (reg) (const)))
@@ -14372,7 +14372,7 @@ ix86_legitimize_address (rtx x, rtx, machine_mode mode)
 	 similar optimizations.  */
       if (GET_CODE (XEXP (x, 0)) == MULT && GET_CODE (XEXP (x, 1)) == PLUS)
 	{
-	  changed = 1;
+	  changed = true;
 	  x = gen_rtx_PLUS (Pmode,
 			    gen_rtx_PLUS (Pmode, XEXP (x, 0),
 					  XEXP (XEXP (x, 1), 0)),
@@ -14405,7 +14405,7 @@ ix86_legitimize_address (rtx x, rtx, machine_mode mode)
 
 	  if (constant)
 	    {
-	      changed = 1;
+	      changed = true;
 	      x = gen_rtx_PLUS (Pmode,
 				gen_rtx_PLUS (Pmode, XEXP (XEXP (x, 0), 0),
 					      XEXP (XEXP (XEXP (x, 0), 1), 0)),
@@ -14419,13 +14419,13 @@ ix86_legitimize_address (rtx x, rtx, machine_mode mode)
 
       if (GET_CODE (XEXP (x, 0)) == MULT)
 	{
-	  changed = 1;
+	  changed = true;
 	  XEXP (x, 0) = copy_addr_to_reg (XEXP (x, 0));
 	}
 
       if (GET_CODE (XEXP (x, 1)) == MULT)
 	{
-	  changed = 1;
+	  changed = true;
 	  XEXP (x, 1) = copy_addr_to_reg (XEXP (x, 1));
 	}
 
@@ -14436,7 +14436,7 @@ ix86_legitimize_address (rtx x, rtx, machine_mode mode)
 
       if (flag_pic && SYMBOLIC_CONST (XEXP (x, 1)))
 	{
-	  changed = 1;
+	  changed = true;
 	  x = legitimize_pic_address (x, 0);
 	}
 
@@ -18068,7 +18068,7 @@ void
 ix86_expand_unary_operator (enum rtx_code code, machine_mode mode,
 			    rtx operands[])
 {
-  int matching_memory;
+  bool matching_memory = false;
   rtx src, dst, op, clob;
 
   dst = operands[0];
@@ -18076,11 +18076,10 @@ ix86_expand_unary_operator (enum rtx_code code, machine_mode mode,
 
   /* If the destination is memory, and we do not have matching source
      operands, do things in registers.  */
-  matching_memory = 0;
   if (MEM_P (dst))
     {
       if (rtx_equal_p (dst, src))
-	matching_memory = 1;
+	matching_memory = true;
       else
 	dst = gen_reg_rtx (mode);
     }
@@ -43084,7 +43083,7 @@ ix86_avoid_jump_mispredicts (void)
 {
   rtx_insn *insn, *start = get_insns ();
   int nbytes = 0, njumps = 0;
-  int isjump = 0;
+  bool isjump = false;
 
   /* Look for all minimal intervals of instructions containing 4 jumps.
      The intervals are bounded by START and INSN.  NBYTES is the total
@@ -43127,9 +43126,9 @@ ix86_avoid_jump_mispredicts (void)
 		  start = NEXT_INSN (start);
 		  if ((JUMP_P (start) && asm_noperands (PATTERN (start)) < 0)
 		      || CALL_P (start))
-		    njumps--, isjump = 1;
+		    njumps--, isjump = true;
 		  else
-		    isjump = 0;
+		    isjump = false;
 		  nbytes -= min_insn_size (start);
 		}
 	    }
@@ -43152,9 +43151,9 @@ ix86_avoid_jump_mispredicts (void)
 	  start = NEXT_INSN (start);
 	  if ((JUMP_P (start) && asm_noperands (PATTERN (start)) < 0)
 	      || CALL_P (start))
-	    njumps--, isjump = 1;
+	    njumps--, isjump = true;
 	  else
-	    isjump = 0;
+	    isjump = false;
 	  nbytes -= min_insn_size (start);
 	}
       gcc_assert (njumps >= 0);
@@ -51014,8 +51013,6 @@ has_dispatch (rtx_insn *insn, int action)
 static int
 ix86_reassociation_width (unsigned int, machine_mode mode)
 {
-  int res = 1;
-
   /* Vector part.  */
   if (VECTOR_MODE_P (mode))
     {
@@ -51027,11 +51024,11 @@ ix86_reassociation_width (unsigned int, machine_mode mode)
 
   /* Scalar part.  */
   if (INTEGRAL_MODE_P (mode) && TARGET_REASSOC_INT_TO_PARALLEL)
-    res = 2;
+    return 2;
   else if (FLOAT_MODE_P (mode) && TARGET_REASSOC_FP_TO_PARALLEL)
-    res = 2;
-
-  return res;
+    return 2;
+  else
+    return 1;
 }
 
 /* ??? No autovectorization into MMX or 3DNOW until we can reliably

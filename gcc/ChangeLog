@@ -1,3 +1,15 @@
+2014-12-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_legitimize_address): Declare
+	"changed" as bool.
+	(ix86_expand_unary_operator): Declare "matching_memory" as bool.
+	(ix86_avoid_jump_mispredicts): Declare "isjump" as bool.
+
+2014-12-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_reassociation_width): Remove unneeded
+	variable "res".
+
 2014-12-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-analysis.c (estimate_function_body_sizes): Do not
