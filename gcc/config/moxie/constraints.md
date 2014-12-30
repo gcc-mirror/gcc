@@ -32,7 +32,7 @@
 (define_constraint "B"
   "An offset address."
   (and (match_code "mem")
-       (match_test "GET_CODE (XEXP (op, 0)) == PLUS")))
+       (match_test "moxie_offset_address_p (op)")))
 
 (define_constraint "W"
   "A register indirect memory operand."

@@ -50,7 +50,7 @@
   "@
   inc    %0, %2
   dec	 %0, -%2
-  add.l  %0, %2")
+  add    %0, %2")
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -60,7 +60,7 @@
   ""
   "@
   dec    %0, %2
-  sub.l  %0, %2")
+  sub    %0, %2")
 
 (define_insn "mulsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -68,7 +68,36 @@
 	   (match_operand:SI 1 "register_operand" "0")
 	   (match_operand:SI 2 "register_operand" "r")))]
   ""
-  "mul.l  %0, %2")
+  "mul    %0, %2")
+
+(define_code_iterator EXTEND [sign_extend zero_extend])
+(define_code_attr mul [(sign_extend "mul") (zero_extend "umul")])
+
+(define_insn "<mul>si3_highpart"
+  [(set (match_operand:SI 0 "register_operand"                       "=r")
+        (truncate:SI
+         (lshiftrt:DI
+          (mult:DI (EXTEND:DI (match_operand:SI 1 "register_operand"  "0"))
+                   (EXTEND:DI (match_operand:SI 2 "register_operand"  "r")))
+          (const_int 32))))]
+  "TARGET_HAS_MULX"
+  "<mul>.x\\t%0, %2")
+
+(define_expand "<mul>sidi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(mult:DI (EXTEND:DI (match_operand:SI 1 "register_operand" "0"))
+		 (EXTEND:DI (match_operand:SI 2 "register_operand" "r"))))]
+  "TARGET_HAS_MULX"
+{
+  rtx hi = gen_reg_rtx (SImode);
+  rtx lo = gen_reg_rtx (SImode);
+
+  emit_insn (gen_<mul>si3_highpart (hi, operands[1], operands[2]));
+  emit_insn (gen_mulsi3 (lo, operands[1], operands[2]));
+  emit_move_insn (gen_lowpart (SImode, operands[0]), lo);
+  emit_move_insn (gen_highpart (SImode, operands[0]), hi);
+  DONE;
+})
 
 (define_insn "divsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -76,7 +105,7 @@
 	   (match_operand:SI 1 "register_operand" "0")
 	   (match_operand:SI 2 "register_operand" "r")))]
   ""
-  "div.l  %0, %2")
+  "div    %0, %2")
 
 (define_insn "udivsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -84,7 +113,7 @@
 	   (match_operand:SI 1 "register_operand" "0")
 	   (match_operand:SI 2 "register_operand" "r")))]
   ""
-  "udiv.l %0, %2")
+  "udiv   %0, %2")
 
 (define_insn "modsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -92,7 +121,7 @@
 	   (match_operand:SI 1 "register_operand" "0")
 	   (match_operand:SI 2 "register_operand" "r")))]
   ""
-  "mod.l  %0, %2")
+  "mod    %0, %2")
 
 (define_insn "umodsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -100,7 +129,7 @@
 	   (match_operand:SI 1 "register_operand" "0")
 	   (match_operand:SI 2 "register_operand" "r")))]
   ""
-  "umod.l %0, %2")
+  "umod   %0, %2")
 
 ;; -------------------------------------------------------------------------
 ;; Unary arithmetic instructions
@@ -237,7 +266,7 @@
    lda.l  %0, %1
    sto.l  %0, %1
    ldo.l  %0, %1"
-  [(set_attr "length"	"2,2,6,2,6,2,6,6,6")])
+  [(set_attr "length"	"2,2,6,2,6,2,6,4,4")])
 
 (define_insn_and_split "zero_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
@@ -315,7 +344,7 @@
    lda.b  %0, %1
    sto.b  %0, %1
    ldo.b  %0, %1"
-  [(set_attr "length"	"2,2,6,2,6,2,6,6,6")])
+  [(set_attr "length"	"2,2,6,2,6,2,6,4,4")])
 
 (define_expand "movhi"
   [(set (match_operand:HI 0 "general_operand" "")
@@ -343,7 +372,7 @@
    lda.s  %0, %1
    sto.s  %0, %1
    ldo.s  %0, %1"
-  [(set_attr "length"	"2,2,6,2,6,2,6,6,6")])
+  [(set_attr "length"	"2,2,6,2,6,2,6,4,4")])
 
 ;; -------------------------------------------------------------------------
 ;; Compare instructions

@@ -11,7 +11,7 @@ module m1
   procedure, pass(x) :: source
  end type c_stv
 contains
- pure subroutine source(y,x)
+ subroutine source(y,x)
   class(c_stv), intent(in)               :: x
   class(c_stv), allocatable, intent(out) :: y
  end subroutine source

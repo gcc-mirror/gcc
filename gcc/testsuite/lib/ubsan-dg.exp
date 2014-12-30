@@ -18,7 +18,7 @@
 # code, 0 otherwise.
 
 proc check_effective_target_fsanitize_undefined {} {
-    return [check_no_compiler_messages fsanitize_undefined executable {
+    return [check_runtime fsanitize_undefined {
 	int main (void) { return 0; }
     } "-fsanitize=undefined"]
 }
@@ -47,6 +47,7 @@ proc ubsan_link_flags { paths } {
 	  append flags " -B${gccpath}/libsanitizer/ubsan/ "
 	  append flags " -L${gccpath}/libsanitizer/ubsan/.libs"
 	  append ld_library_path ":${gccpath}/libsanitizer/ubsan/.libs"
+	  append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
       }
     } else {
       global tool_root_dir

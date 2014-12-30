@@ -108,9 +108,7 @@ inst_sources = \
 	allocator-inst.cc \
 	concept-inst.cc \
 	ext-inst.cc \
-	locale-inst.cc \
-	misc-inst.cc \
-	wlocale-inst.cc
+	misc-inst.cc
 else
 # XTEMPLATE_FLAGS =
 inst_sources =

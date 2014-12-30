@@ -19,7 +19,7 @@ module realloc
 
 contains
 
-  elemental subroutine assign (a, b)
+  impure elemental subroutine assign (a, b)
     class(base_type), intent(out) :: a
     type(base_type), intent(in) :: b
     a%i = b%i

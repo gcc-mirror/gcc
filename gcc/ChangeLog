@@ -1,3 +1,104 @@
+2014-12-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/64409
+	* config/i386/i386.c (ix86_function_type_abi): Issue an error
+	when ms_abi attribute is used with x32.
+
+2014-12-27  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie-protos.h (moxie_offset_address_p): Define.
+	* config/moxie/constraints.md (B): Replace inline test with call
+	to moxie_offset_address_p.
+	* config/moxie/moxie.h (GO_IF_LEGITIMATE_ADDRESS): Limit offset
+	addressing to 16-bit offsets.
+	* config/moxie/moxie.c (moxie_asm_trampoline_template): Remove
+	nop, which is no longer needed for aligned write to trampoline.
+	(moxie_trampoline_init): Adjust for smaller trampoline.
+	(moxie_offset_address_p): New function.
+	* config/moxie/moxie.md (*movsi, *movhi, *movqi): Adjust length
+	attr for shorter ldo/sto instructions.
+	* config/moxie/predicates.md: Only allow REG+CONST_INT for offset
+	load/stores.
+
+2014-12-27  Jan hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (max_count_real, max_relbenefit_real,
+	half_int_min_real): Remove.
+	(cgraph_freq_base_rec, percent_rec): New.
+	(compute_uninlined_call_time, compute_inlined_call_time,
+	big_speedup_p, relative_time_benefit, edge_badness): Use sreals.
+	(update_edge_key): Update dumping.
+	(inline_small_functions): Speedup maintainance of the heap.
+	(ipa_inline): Initialize cgraph_freq_base_rec and
+	percent_rec.
+
+2014-12-27  Jan hubicka  <hubicka@ucw.cz>
+
+	* sreal.h (sreal::shift): Fix sanity check.
+
+2014-12-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*vec_extractv2sf_1): Do not emit unpckhps.
+	Emit movshdup for SSE3 and shufps otherwise.
+	(*vec_extractv2si_1): Do not emit punpckhdq and unpckhps.
+	Emit pshufd for SSE2 and shufps otherwise.
+
+2014-12-24  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.md (*mov_t_msb_neg): Convert split into insn_and_split.
+
+2014-12-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gengtype.h (xasprintf): Remove declaration.
+	* gengtype.c (xasprintf): Remove.
+
+2014-12-24  Nick Clifton  <nickc@redhat.com>
+
+	PR target/64160
+	* config/msp430/msp430.md (addsi splitter): Do not split when the
+	destination partially overlaps the source.
+
+2014-12-24  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.opt (mul.x): New option.
+	* doc/invoke.texi (Moxie Options): Document -mmul.x.
+	* config/moxie/moxie.md (addsi3, mulsi3, subsi3, divsi3, udivs3):
+	Remove trailing ".l" from add, mul, sub, div and udiv
+	instructions.
+	(<mul>si3_highpart, <mul>sidi3): Add mul.x & umul.x instruction
+	support (high 32-bit result of multiply).
+	* config/moxie/moxie.c (moxie_option_override): Force availability
+	of mul.x instructions for moxiebox target.
+	* config/moxie/moxiebox.h (TARGET_MOXIEBOX): Define.
+
+2014-12-22  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+
+	* ira-build.c (ira_flattening): Add the current
+	object to OBJECTS_LIVE after traversing OBJECTS_LIVE.
+
+2014-12-23  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63851
+	PR ipa/63852
+	* ipa-icf.c (sem_function::merge): Ignore merge operation
+	for a thunk created from static chain.
+	* ipa-icf-gimple.c (func_checker::compatible_types_p): Verify that
+	types have same restrict flag.
+
+2014-12-22  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/55023
+	* dse.c (scan_insn): Treat sibling call as though it does a wild read.
+
+2014-12-22  Bin Cheng  <bin.cheng@arm.com>
+
+	PR rtl-optimization/62151
+	* combine.c (try_combine): New local variables local_elim_i1
+	and local_elim_i0.  Set elim_i1 and elim_i0 using the local
+	version variables.  Distribute notes from i0notes or i1notes
+	using the local variables.
+
 2014-12-22  Martin Liska  <mliska@suse.cz>
 
 	* cgraphunit.c (symbol_table::process_new_functions): New inline_summaries

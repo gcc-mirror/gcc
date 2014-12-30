@@ -1,3 +1,114 @@
+2014-12-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
+	Add *-*-aix* to dg-xfail-if, dg-excess-errors.
+
+2014-12-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64389
+	* src/c++11/Makefile.am: Add locale-inst.cc and wlocale-inst.cc.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/locale-inst.cc: Move from src/c++98/.
+	* src/c++11/wlocale-inst.cc: Likewise.
+	* src/c++11/cxx11-locale-inst.cc: Adjust path to locale-inst.cc.
+	* src/c++11/string-inst.cc: Remove time_get instantiations.
+	* src/c++98/Makefile.am: Remove locale-inst.cc and wlocale-inst.cc.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/locale-inst.cc: Move to src/c++11/.
+	* src/c++98/wlocale-inst.cc: Likewise.
+
+2014-12-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/basic_string.h: Fix _S_local_capacity for
+	large sizeof(_CharT).
+
+2014-12-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/37522
+	* include/bits/basic_string.h (stod, stof, stoi, stol, stold, stoll,
+	stoul, stoull, to_string): Only use _GLIBCXX_HAVE_BROKEN_VSWPRINTF
+	to guard definition of to_wstring.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/dr1261.cc:
+	Do not use dg-require-string-conversions.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stod.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stof.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoi.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stol.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stold.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoll.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoul.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/
+	stoull.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/
+	to_string.cc: Likewise.
+
+2014-12-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/60271
+	C++14 constexpr min, max, minmax, min_element, max_element
+	and minmax_element. Also constexpr for 20.9.5-20.9.9,
+	aka various library functors.
+	* include/bits/c++config: Add _GLIBCXX14_CONSTEXPR.
+	* include/bits/algorithmfwd.h (min, max, minmax, min_element,
+	max_element): Use it.
+	* include/bits/predefined_ops.h (_Iter_less_iter, __iter_less_iter,
+	_Iter_comp_iter, __iter_comp_iter): Likewise.
+	* include/bits/stl_algo.h (minmax, __minmax_element, minmax_element,
+	min, max, __min_element, min_element, __max_element, max_element)
+	Likewise.
+	* include/bits/stl_algobase.h (min, max): Likewise.
+	* include/bits/stl_function.h (plus, minus, multiplies, divides,
+	modulus, negate, equal_to, not_equal_to, greater, less, greater_equal,
+	less_equal, logical_and, logical_or, logical_not, bit_and, bit_or,
+	bit_xor, bit_not, unary_negate, not1, binary_negate, not2): Likewise.
+	* testsuite/20_util/function_objects/constexpr.cc: New.
+	* testsuite/25_algorithms/max/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/max_element/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/min/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/min_element/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/minmax/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/minmax_element/constexpr.cc: Likewise.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error.
+
+2014-12-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* doc/html/manual/status.html: Regenerate.
+
+2014-12-22  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
+
+	PR libstdc++/54354
+	* include/std/iomanip (_Get_time): New struct.
+	(get_time): New manipulator.
+	(operator<<): New overloaded function.
+	* testsuite/27_io/manipulators/extended/get_time/char/1.cc: New.
+	* testsuite/27_io/manipulators/extended/get_time/char/2.cc: New.
+	* testsuite/27_io/manipulators/extended/get_time/wchar_t/1.cc: New.
+	* testsuite/27_io/manipulators/extended/get_time/wchar_t/2.cc: New.
+
+2014-12-22  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60396
+	* config/abi/pre/gnu.ver: Add new exports.
+	* include/bits/locale_facets_nonio.h (time_get::get): New overloads.
+	(time_get::do_get):  New virtual function.
+	* include/bits/locale_facets_nonio.tcc (time_get::get): Define.
+	(time_get::do_get): Define.
+	* src/c++11/string-inst.cc (time_get::get, time_get::do_get): Add
+	C++11-only instantiations.
+	* testsuite/22_locale/time_get/get/char/1.cc: New.
+	* testsuite/22_locale/time_get/get/char/2.cc: New.
+	* testsuite/22_locale/time_get/get/wchar_t/1.cc: New.
+	* testsuite/22_locale/time_get/get/wchar_t/2.cc: New.
+
 2014-12-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64367

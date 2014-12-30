@@ -352,10 +352,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     make_heap(_RAIter, _RAIter, _Compare);
 
   template<typename _Tp> 
+    _GLIBCXX14_CONSTEXPR
     const _Tp& 
     max(const _Tp&, const _Tp&);
 
   template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     const _Tp& 
     max(const _Tp&, const _Tp&, _Compare);
 
@@ -363,10 +365,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // merge
 
   template<typename _Tp> 
+    _GLIBCXX14_CONSTEXPR
     const _Tp& 
     min(const _Tp&, const _Tp&);
 
   template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     const _Tp& 
     min(const _Tp&, const _Tp&, _Compare);
 
@@ -374,42 +378,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
   template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
     pair<const _Tp&, const _Tp&> 
     minmax(const _Tp&, const _Tp&);
 
   template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     pair<const _Tp&, const _Tp&>
     minmax(const _Tp&, const _Tp&, _Compare);
 
   template<typename _FIter>
+    _GLIBCXX14_CONSTEXPR
     pair<_FIter, _FIter>
     minmax_element(_FIter, _FIter);
 
   template<typename _FIter, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     pair<_FIter, _FIter>
     minmax_element(_FIter, _FIter, _Compare);
 
   template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
     _Tp
     min(initializer_list<_Tp>);
 
   template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     _Tp
     min(initializer_list<_Tp>, _Compare);
 
   template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
     _Tp
     max(initializer_list<_Tp>);
 
   template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     _Tp
     max(initializer_list<_Tp>, _Compare);
 
   template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
     pair<_Tp, _Tp>
     minmax(initializer_list<_Tp>);
 
   template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     pair<_Tp, _Tp>
     minmax(initializer_list<_Tp>, _Compare);
 #endif
@@ -655,10 +669,12 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     lexicographical_compare(_IIter1, _IIter1, _IIter2, _IIter2, _Compare);
 
   template<typename _FIter>
+    _GLIBCXX14_CONSTEXPR
     _FIter 
     max_element(_FIter, _FIter);
 
   template<typename _FIter, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     _FIter 
     max_element(_FIter, _FIter, _Compare);
 
@@ -672,10 +688,12 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);
 
   template<typename _FIter>
+    _GLIBCXX14_CONSTEXPR
     _FIter 
     min_element(_FIter, _FIter);
 
   template<typename _FIter, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     _FIter 
     min_element(_FIter, _FIter, _Compare);
 

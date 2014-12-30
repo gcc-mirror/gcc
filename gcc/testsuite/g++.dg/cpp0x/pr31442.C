@@ -6,4 +6,4 @@ struct B
   template <template <typename...> class C> B(C<int>);
 };
 
-B b = A<int>(); // { dg-error "mismatch|expected" }
+B b = A<int>();

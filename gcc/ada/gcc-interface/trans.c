@@ -2268,9 +2268,56 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	tree gnu_rhs = gnat_to_gnu (Next (First (Expressions (gnat_node))));
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
-	gnu_result = build_binary_op (attribute == Attr_Min
-				      ? MIN_EXPR : MAX_EXPR,
-				      gnu_result_type, gnu_lhs, gnu_rhs);
+
+	/* The result of {MIN,MAX}_EXPR is unspecified if either operand is
+	   a NaN so we implement the semantics of C99 f{min,max} to make it
+	   predictable in this case: if either operand is a NaN, the other
+	   is returned; if both operands are NaN's, a NaN is returned.  */
+	if (SCALAR_FLOAT_TYPE_P (gnu_result_type))
+	  {
+	    const bool lhs_side_effects_p = TREE_SIDE_EFFECTS (gnu_lhs);
+	    const bool rhs_side_effects_p = TREE_SIDE_EFFECTS (gnu_rhs);
+	    tree t = builtin_decl_explicit (BUILT_IN_ISNAN);
+	    tree lhs_is_nan, rhs_is_nan;
+
+	    /* If the operands have side-effects, they need to be evaluated
+	       only once in spite of the multiple references in the result.  */
+	    if (lhs_side_effects_p)
+	      gnu_lhs = gnat_protect_expr (gnu_lhs);
+	    if (rhs_side_effects_p)
+	      gnu_rhs = gnat_protect_expr (gnu_rhs);
+
+	    lhs_is_nan = fold_build2 (NE_EXPR, boolean_type_node,
+				      build_call_expr (t, 1, gnu_lhs),
+				      integer_zero_node);
+
+	    rhs_is_nan = fold_build2 (NE_EXPR, boolean_type_node,
+				      build_call_expr (t, 1, gnu_rhs),
+				      integer_zero_node);
+
+	    gnu_result = build_binary_op (attribute == Attr_Min
+					  ? MIN_EXPR : MAX_EXPR,
+					  gnu_result_type, gnu_lhs, gnu_rhs);
+	    gnu_result = fold_build3 (COND_EXPR, gnu_result_type,
+				      rhs_is_nan, gnu_lhs, gnu_result);
+	    gnu_result = fold_build3 (COND_EXPR, gnu_result_type,
+				      lhs_is_nan, gnu_rhs, gnu_result);
+
+	    /* If the operands have side-effects, they need to be evaluated
+	       before doing the tests above since the place they otherwise
+	       would end up being evaluated at run time could be wrong.  */
+	    if (lhs_side_effects_p)
+	      gnu_result
+		= build2 (COMPOUND_EXPR, gnu_result_type, gnu_lhs, gnu_result);
+
+	    if (rhs_side_effects_p)
+	      gnu_result
+		= build2 (COMPOUND_EXPR, gnu_result_type, gnu_rhs, gnu_result);
+	  }
+	else
+	  gnu_result = build_binary_op (attribute == Attr_Min
+					? MIN_EXPR : MAX_EXPR,
+					gnu_result_type, gnu_lhs, gnu_rhs);
       }
       break;
 
@@ -6458,7 +6505,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	      tree size
 	        = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (type), to);
 	      tree to_ptr = build_fold_addr_expr (to);
-	      tree t = builtin_decl_implicit (BUILT_IN_MEMSET);
+	      tree t = builtin_decl_explicit (BUILT_IN_MEMSET);
 	      if (TREE_CODE (value) == INTEGER_CST)
 		{
 		  tree mask
@@ -6488,7 +6535,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	        = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (type), from);
 	      tree to_ptr = build_fold_addr_expr (to);
 	      tree from_ptr = build_fold_addr_expr (from);
-	      tree t = builtin_decl_implicit (BUILT_IN_MEMMOVE);
+	      tree t = builtin_decl_explicit (BUILT_IN_MEMMOVE);
 	      gnu_result = build_call_expr (t, 3, to_ptr, from_ptr, size);
 	   }
 	}

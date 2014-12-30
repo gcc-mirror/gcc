@@ -629,6 +629,11 @@ extern int pwait (int, int *, int);
 extern int asprintf (char **, const char *, ...) ATTRIBUTE_PRINTF_2;
 #endif
 
+/* Like asprintf but allocates memory without fail. This works like
+   xmalloc.  */
+
+extern char *xasprintf (const char *, ...) ATTRIBUTE_MALLOC ATTRIBUTE_PRINTF_1;
+
 #if !HAVE_DECL_VASPRINTF
 /* Like vsprintf but provides a pointer to malloc'd storage, which
    must be freed by the caller.  */

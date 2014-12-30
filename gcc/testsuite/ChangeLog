@@ -1,3 +1,102 @@
+2014-12-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/lto/pr59626_0.c (ASMNAME, ASMNAME2, STRING): Define.
+	(__atoi): Use ASMNAME.
+
+2014-12-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr57003.c: Skip on x32.
+	* gcc.target/i386/pr59927.c: Likewise.
+	* gcc.target/i386/pr60516.c: Likewise.
+
+2014-12-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56867
+	* gfortran.dg/dependency_45.f90:  New test.
+
+2014-12-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54756
+	* gfortran.dg/class_array_3.f03: Fixed invalid test case.
+	* gfortran.dg/class_array_7.f03: Ditto.
+	* gfortran.dg/class_dummy_4.f03: Ditto.
+	* gfortran.dg/defined_assignment_3.f90: Ditto.
+	* gfortran.dg/defined_assignment_5.f90: Ditto.
+	* gfortran.dg/elemental_subroutine_10.f90: Ditto.
+	* gfortran.dg/typebound_operator_4.f03: Ditto.
+	* gfortran.dg/typebound_proc_16.f03: Ditto.
+	* gfortran.dg/unlimited_polymorphic_19.f90: Ditto.
+	* gfortran.dg/class_dummy_5.f90: New test.
+
+2014-12-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* lib/ubsan-dg.exp (check_effective_target_fsanitize_undefined):
+	Check if testcases run without errors, not just if they compile.
+
+2014-12-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/64409
+	* gcc.target/i386/pr64409.c: New test.
+
+2014-12-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/405-dlmzb-strlen-1.c: Explicitly align arg.
+	* gcc.target/powerpc/440-dlmzb-strlen-1.c: Ditto.
+
+2014-12-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR testsuite/64032
+	* gcc.dg/undefined-loop-2.c: Don't allow GCC to optimize away the
+	loop exits too early.
+
+2014-12-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63985
+	* g++.dg/cpp0x/range-for29.C: New.
+
+2014-12-22  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pr55023.c: New file.
+
+2014-12-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* lib/ubsan-dg.exp: Add library path for libstdc++.
+
+2014-12-22  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/58314
+	* gcc.target/sh/torture/pr58314-2.c: New.
+	* gcc.target/sh/torture/pr58314.c: Don't set -Os option.
+
+2014-12-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/63363
+	* gfortran.dg/kind_1.f90: New.
+
+2014-12-22  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52933
+	* gcc.target/sh/sh/pr52933-3.c: New.
+
+2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/nan_max.adb: New test.
+
+2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/volatile1.ads: New test.
+	* gnat.dg/specs/clause_on_volatile.ads: Adjust.
+	* gnat.dg/specs/size_clause3.ads: Likewise.
+
+2014-12-22  Bin Cheng  <bin.cheng@arm.com>
+
+	PR rtl-optimization/62151
+	* gcc.c-torture/execute/pr62151.c: New test.
+
+2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/atomic2.ads: New test.
+
 2014-12-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/17280
@@ -6522,7 +6621,6 @@
 	* gcc.dg/attr-isr.c: Move SH specific test to ...
 	* gcc.target/sh/attr-isr.c: ... here.
 
->>>>>>> .r217525
 2014-10-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c/63567

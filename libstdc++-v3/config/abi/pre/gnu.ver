@@ -1748,6 +1748,10 @@ GLIBCXX_3.4.21 {
 
     _ZNKSt3tr14hashINSt7__cxx1112basic_string*;
 
+    # std::time_get::get
+    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE3getES3_S3_RSt8ios_baseRSt12_Ios_IostateP2tmPK[cw]SC_;
+    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE6do_getES3_S3_RSt8ios_baseRSt12_Ios_IostateP2tmcc;
+
 } GLIBCXX_3.4.20;
 
 

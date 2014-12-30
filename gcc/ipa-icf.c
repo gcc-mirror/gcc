@@ -694,6 +694,14 @@ sem_function::merge (sem_item *alias_item)
 	  return 0;
 	}
 
+      if (DECL_STATIC_CHAIN (alias->decl))
+        {
+         if (dump_file)
+           fprintf (dump_file, "Thunk creation is risky for static-chain functions.\n\n");
+
+         return 0;
+        }
+
       alias->icf_merged = true;
       ipa_merge_profiles (local_original, alias);
       alias->create_wrapper (local_original);

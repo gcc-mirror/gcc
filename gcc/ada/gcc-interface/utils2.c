@@ -255,8 +255,8 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
   bool a2_side_effects_p = TREE_SIDE_EFFECTS (a2);
   bool length_zero_p = false;
 
-  /* If either operand has side-effects, they have to be evaluated only once
-     in spite of the multiple references to the operand in the comparison.  */
+  /* If the operands have side-effects, they need to be evaluated only once
+     in spite of the multiple references in the comparison.  */
   if (a1_side_effects_p)
     a1 = gnat_protect_expr (a1);
 
@@ -419,9 +419,9 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 					     a1_is_null, a2_is_null),
 			    result);
 
-  /* If either operand has side-effects, they have to be evaluated before
-     starting the comparison above since the place they would be otherwise
-     evaluated could be wrong.  */
+  /* If the operands have side-effects, they need to be evaluated before
+     doing the tests above since the place they otherwise would end up
+     being evaluated at run time could be wrong.  */
   if (a1_side_effects_p)
     result = build2 (COMPOUND_EXPR, result_type, a1, result);
 

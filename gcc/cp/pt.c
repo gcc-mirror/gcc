@@ -4578,13 +4578,8 @@ check_default_tmpl_args (tree decl, tree parms, bool is_primary,
 		     parameter pack, at the end of the template
 		     parameter list.  */
 
-		  if (TREE_CODE (TREE_VALUE (parm)) == PARM_DECL)
-		    error ("parameter pack %qE must be at the end of the"
-			   " template parameter list", TREE_VALUE (parm));
-		  else
-		    error ("parameter pack %qT must be at the end of the"
-			   " template parameter list", 
-			   TREE_TYPE (TREE_VALUE (parm)));
+		  error ("parameter pack %q+D must be at the end of the"
+			 " template parameter list", TREE_VALUE (parm));
 
 		  TREE_VALUE (TREE_VEC_ELT (inner_parms, i)) 
 		    = error_mark_node;
@@ -6523,6 +6518,9 @@ convert_template_argument (tree parm,
   tree orig_arg;
   tree val;
   int is_type, requires_type, is_tmpl_type, requires_tmpl_type;
+
+  if (parm == error_mark_node)
+    return error_mark_node;
 
   if (TREE_CODE (arg) == TREE_LIST
       && TREE_CODE (TREE_VALUE (arg)) == OFFSET_REF)
