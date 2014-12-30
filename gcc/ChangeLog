@@ -1,3 +1,9 @@
+2014-12-30  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.md (zero_extendqisi2, zero_extendhisi2):
+	Switch from define_insn_and_split to define_insn.  Fix instruction
+	length.
+
 2014-12-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_legitimize_address): Declare
