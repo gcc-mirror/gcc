@@ -1,6 +1,12 @@
 2014-12-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/49263
+	* gcc.target/sh/sh.exp (check_effective_target_sh2a): New.
+	* gcc.target/sh/pr49263-3.c: New.
+
+2014-12-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/49263
 	* gcc.target/sh/pr49263-1.c: New.
 	* gcc.target/sh/pr49263-2.c: New.
 

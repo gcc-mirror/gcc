@@ -24,6 +24,15 @@ if ![istarget sh*-*-*] then {
 # Load support procs.
 load_lib gcc-dg.exp
 
+# Return 1 if target is SH2A
+proc check_effective_target_sh2a { } {
+    return [check_no_compiler_messages sh2a object {
+	     #ifndef __SH2A__
+	     #error ""
+	     #endif
+    } ""]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
