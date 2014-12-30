@@ -770,6 +770,8 @@ edge_set_predicate (struct cgraph_edge *e, struct predicate *predicate)
       e->redirect_callee (cgraph_node::get_create
 			    (builtin_decl_implicit (BUILT_IN_UNREACHABLE)));
       e->inline_failed = CIF_UNREACHABLE;
+      es->call_stmt_size = 0;
+      es->call_stmt_time = 0;
       if (callee)
 	callee->remove_symbol_and_inline_clones ();
     }
@@ -940,6 +942,14 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	{
 	  struct ipa_jump_func *jf = ipa_get_ith_jump_func (args, i);
 	  tree cst = ipa_value_from_jfunc (parms_info, jf);
+
+	  if (!cst && e->call_stmt
+	      && i < (int)gimple_call_num_args (e->call_stmt))
+	    {
+	      cst = gimple_call_arg (e->call_stmt, i);
+	      if (!is_gimple_min_invariant (cst))
+		cst = NULL;
+	    }
 	  if (cst)
 	    {
 	      gcc_checking_assert (TREE_CODE (cst) != TREE_BINFO);
@@ -956,6 +966,22 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	     functions, use its knowledge of the caller too, just like the
 	     scalar case above.  */
 	  known_aggs[i] = &jf->agg;
+	}
+    }
+  else if (e->call_stmt && !e->call_stmt_cannot_inline_p
+	   && ((clause_ptr && info->conds) || known_vals_ptr))
+    {
+      int i, count = (int)gimple_call_num_args (e->call_stmt);
+
+      if (count && (info->conds || known_vals_ptr))
+	known_vals.safe_grow_cleared (count);
+      for (i = 0; i < count; i++)
+	{
+	  tree cst = gimple_call_arg (e->call_stmt, i);
+	  if (!is_gimple_min_invariant (cst))
+	    cst = NULL;
+	  if (cst)
+	    known_vals[i] = cst;
 	}
     }
 
@@ -2464,10 +2490,22 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   info->conds = NULL;
   info->entry = NULL;
 
-  if (opt_for_fn (node->decl, optimize) && !early)
+  /* When optimizing and analyzing for IPA inliner, initialize loop optimizer
+     so we can produce proper inline hints.
+
+     When optimizing and analyzing for early inliner, initialize node params
+     so we can produce correct BB predicates.  */
+     
+  if (opt_for_fn (node->decl, optimize))
     {
       calculate_dominance_info (CDI_DOMINATORS);
-      loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+      if (!early)
+        loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+      else
+	{
+	  ipa_check_create_node_params ();
+	  ipa_initialize_node_params (node);
+	}
 
       if (ipa_node_params_sum)
 	{
@@ -2704,7 +2742,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
     time = MAX_TIME;
   free (order);
 
-  if (!early && nonconstant_names.exists ())
+  if (nonconstant_names.exists () && !early)
     {
       struct loop *loop;
       predicate loop_iterations = true_predicate ();
@@ -2809,9 +2847,12 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   inline_summaries->get (node)->self_time = time;
   inline_summaries->get (node)->self_size = size;
   nonconstant_names.release ();
-  if (opt_for_fn (node->decl, optimize) && !early)
+  if (opt_for_fn (node->decl, optimize))
     {
-      loop_optimizer_finalize ();
+      if (!early)
+        loop_optimizer_finalize ();
+      else
+	ipa_free_all_node_params ();
       free_dominance_info (CDI_DOMINATORS);
     }
   if (dump_file)
@@ -3062,6 +3103,13 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
   for (e = node->callees; e; e = e->next_callee)
     {
       struct inline_edge_summary *es = inline_edge_summary (e);
+
+      /* Do not care about zero sized builtins.  */
+      if (e->inline_failed && !es->call_stmt_size)
+	{
+	  gcc_checking_assert (!es->call_stmt_time);
+	  continue;
+	}
       if (!es->predicate
 	  || evaluate_predicate (es->predicate, possible_truths))
 	{
@@ -3522,13 +3570,14 @@ inline_merge_summary (struct cgraph_edge *edge)
   else
     toplev_predicate = true_predicate ();
 
+  if (callee_info->conds)
+    evaluate_properties_for_edge (edge, true, &clause, NULL, NULL, NULL);
   if (ipa_node_params_sum && callee_info->conds)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (edge);
       int count = ipa_get_cs_argument_count (args);
       int i;
 
-      evaluate_properties_for_edge (edge, true, &clause, NULL, NULL, NULL);
       if (count)
 	{
 	  operand_map.safe_grow_cleared (count);

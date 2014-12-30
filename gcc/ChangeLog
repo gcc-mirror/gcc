@@ -1,3 +1,13 @@
+2014-12-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (edge_set_predicate): Reset size/time when
+	target is UNREACHABLE.
+	(evaluate_properties_for_edge): If call statemet is available, use it
+	to determine compile time constants.
+	(estimate_function_body_sizes): Enable predicates for early inliner.
+	(estimate_calls_size_and_time): Speedup.
+	(inline_merge_summary): Evaluate properties for early inliner, too.
+
 2014-12-29  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/t-mti-linux (MULTILIB_EXCEPTIONS): Add exceptions
