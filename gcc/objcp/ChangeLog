@@ -1,3 +1,7 @@
+2014-12-31  Iain Sandoe  <iain@codesourcery.com>
+
+	* config-lang.in (gtfiles): Update list.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* objcp-decl.h: Adjust.
