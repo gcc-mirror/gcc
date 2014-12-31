@@ -96,7 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       if (__ret)
 	{
-	  for (auto __it : __res)
+	  for (auto& __it : __res)
 	    if (!__it.matched)
 	      __it.first = __it.second = __e;
 	  auto& __pre = __res[__res.size()-2];
