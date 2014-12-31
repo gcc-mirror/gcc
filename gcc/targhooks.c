@@ -1639,12 +1639,8 @@ default_get_pch_validity (size_t *sz)
 static const char *
 pch_option_mismatch (const char *option)
 {
-  char *r;
-
-  asprintf (&r, _("created and used with differing settings of '%s'"), option);
-  if (r == NULL)
-    return _("out of memory");
-  return r;
+  return xasprintf (_("created and used with differing settings of '%s'"),
+		    option);
 }
 
 /* Default version of pch_valid_p.  */

@@ -5457,7 +5457,7 @@ create_function_info_for (tree decl, const char *name)
       const char *newname;
       char *tempname;
 
-      asprintf (&tempname, "%s.clobber", name);
+      tempname = xasprintf ("%s.clobber", name);
       newname = ggc_strdup (tempname);
       free (tempname);
 
@@ -5471,7 +5471,7 @@ create_function_info_for (tree decl, const char *name)
       prev_vi->next = clobbervi->id;
       prev_vi = clobbervi;
 
-      asprintf (&tempname, "%s.use", name);
+      tempname = xasprintf ("%s.use", name);
       newname = ggc_strdup (tempname);
       free (tempname);
 
@@ -5493,7 +5493,7 @@ create_function_info_for (tree decl, const char *name)
       const char *newname;
       char *tempname;
 
-      asprintf (&tempname, "%s.chain", name);
+      tempname = xasprintf ("%s.chain", name);
       newname = ggc_strdup (tempname);
       free (tempname);
 
@@ -5521,7 +5521,7 @@ create_function_info_for (tree decl, const char *name)
       if (DECL_RESULT (decl))
 	resultdecl = DECL_RESULT (decl);
 
-      asprintf (&tempname, "%s.result", name);
+      tempname = xasprintf ("%s.result", name);
       newname = ggc_strdup (tempname);
       free (tempname);
 
@@ -5551,7 +5551,7 @@ create_function_info_for (tree decl, const char *name)
       if (arg)
 	argdecl = arg;
 
-      asprintf (&tempname, "%s.arg%d", name, i);
+      tempname = xasprintf ("%s.arg%d", name, i);
       newname = ggc_strdup (tempname);
       free (tempname);
 
@@ -5580,7 +5580,7 @@ create_function_info_for (tree decl, const char *name)
       char *tempname;
       tree decl;
 
-      asprintf (&tempname, "%s.varargs", name);
+      tempname = xasprintf ("%s.varargs", name);
       newname = ggc_strdup (tempname);
       free (tempname);
 
@@ -5717,8 +5717,10 @@ create_variable_info_for_1 (tree decl, const char *name)
 
       if (dump_file)
 	{
-	  asprintf (&tempname, "%s." HOST_WIDE_INT_PRINT_DEC
-		    "+" HOST_WIDE_INT_PRINT_DEC, name, fo->offset, fo->size);
+	  tempname
+	    = xasprintf ("%s." HOST_WIDE_INT_PRINT_DEC
+			 "+" HOST_WIDE_INT_PRINT_DEC, name,
+			 fo->offset, fo->size);
 	  newname = ggc_strdup (tempname);
 	  free (tempname);
 	}
