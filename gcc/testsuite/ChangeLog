@@ -1,3 +1,9 @@
+2014-12-31  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/error_stop_3.f90: New.
+	* gfortran.dg/error_stop_4.f90: New.
+	* gfortran.dg/coarray_3.f90: Remove a dg-error.
+
 2014-12-31  Iain Sandoe  <iain@codesourcery.com>
 
 	* obj-c++.dg/lambda-0.mm New.

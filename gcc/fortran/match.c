@@ -2557,7 +2557,8 @@ gfc_match_cycle (void)
 }
 
 
-/* Match a number or character constant after an (ALL) STOP or PAUSE statement.  */
+/* Match a number or character constant after an (ERROR) STOP or PAUSE
+   statement.  */
 
 static match
 gfc_match_stopcode (gfc_statement st)
@@ -2581,9 +2582,18 @@ gfc_match_stopcode (gfc_statement st)
 
   if (gfc_pure (NULL))
     {
-      gfc_error ("%s statement not allowed in PURE procedure at %C",
-		 gfc_ascii_statement (st));
-      goto cleanup;
+      if (st == ST_ERROR_STOP)
+	{
+	  if (!gfc_notify_std (GFC_STD_F2015, "%s statement at %C in PURE "
+			       "procedure", gfc_ascii_statement (st)))
+	    goto cleanup;
+	}
+      else
+	{
+	  gfc_error ("%s statement not allowed in PURE procedure at %C",
+		     gfc_ascii_statement (st));
+	  goto cleanup;
+	}
     }
 
   gfc_unset_implicit_pure (NULL);
