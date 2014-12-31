@@ -1,3 +1,12 @@
+2014-12-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* diagnostic.c (build_message_string): Use xvasprintf.
+	* final.c (output_operand_lossage): Use xvasprintf and xasprintf.
+	* lto-wrapper.c (merge_and_complain): Use xasprintf.
+	* targhooks.c (pch_option_mismatch): Ditto.
+	* tree-ssa-structalias.c (create_function_info_for): Ditto.
+	(create_variable_info_for_1): Ditto.
+
 2014-12-30  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.md (zero_extendqisi2, zero_extendhisi2):
@@ -147,8 +156,8 @@
 
 2014-12-22  Martin Liska  <mliska@suse.cz>
 
-	* cgraphunit.c (symbol_table::process_new_functions): New inline_summaries
-	is used.
+	* cgraphunit.c (symbol_table::process_new_functions): New
+	inline_summaries is used.
 	* ipa-cp.c (ipcp_cloning_candidate_p): Likewise.
 	(devirtualization_time_bonus): Likewise.
 	(estimate_local_effects): Likewise.
@@ -223,8 +232,8 @@
 	is used.
 	* ipa-polymorphic-call.c: Include of symbol-summary.h is added.
 	* ipa-profile.c: Include of symbol-summary.h is added.
-	* ipa-prop.c (ipa_propagate_indirect_call_infos): New ipa_node_params_sum
-	data structure is used.
+	* ipa-prop.c (ipa_propagate_indirect_call_infos): New
+	ipa_node_params_sum data structure is used.
 	(ipa_node_params::~ipa_node_params): New function.
 	(ipa_free_all_node_params): Destruction is simplified.
 	(ipa_node_removal_hook): Removed.
@@ -777,8 +786,7 @@
 	(parser::parse_pattern): Properly allocate capture_ids before
 	using them.  Set capture_ids to zero when its lifetime is
 	supposed to finish.
-	(parser::parse_simplify): Allocate capture_ids only if
-	required.
+	(parser::parse_simplify): Allocate capture_ids only if required.
 
 2014-12-16  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
 
