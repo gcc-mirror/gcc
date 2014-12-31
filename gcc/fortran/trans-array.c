@@ -2799,11 +2799,11 @@ trans_array_bound_check (gfc_se * se, gfc_ss *ss, tree index, int n,
       tmp_up = gfc_conv_array_ubound (descriptor, n);
 
       if (name)
-	asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-		  "outside of expected range (%%ld:%%ld)", n+1, name);
+	msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
+			 "outside of expected range (%%ld:%%ld)", n+1, name);
       else
-	asprintf (&msg, "Index '%%ld' of dimension %d "
-		  "outside of expected range (%%ld:%%ld)", n+1);
+	msg = xasprintf ("Index '%%ld' of dimension %d "
+			 "outside of expected range (%%ld:%%ld)", n+1);
 
       fault = fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
 			       index, tmp_lo);
@@ -2824,11 +2824,11 @@ trans_array_bound_check (gfc_se * se, gfc_ss *ss, tree index, int n,
       tmp_lo = gfc_conv_array_lbound (descriptor, n);
 
       if (name)
-	asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-		  "below lower bound of %%ld", n+1, name);
+	msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
+			 "below lower bound of %%ld", n+1, name);
       else
-	asprintf (&msg, "Index '%%ld' of dimension %d "
-		  "below lower bound of %%ld", n+1);
+	msg = xasprintf ("Index '%%ld' of dimension %d "
+			 "below lower bound of %%ld", n+1);
 
       fault = fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
 			       index, tmp_lo);
@@ -3259,8 +3259,8 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 
 	  cond = fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
 				  indexse.expr, tmp);
-	  asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-		    "below lower bound of %%ld", n+1, var_name);
+	  msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
+			   "below lower bound of %%ld", n+1, var_name);
 	  gfc_trans_runtime_check (true, false, cond, &se->pre, where, msg,
 				   fold_convert (long_integer_type_node,
 						 indexse.expr),
@@ -3283,8 +3283,8 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 
 	      cond = fold_build2_loc (input_location, GT_EXPR,
 				      boolean_type_node, indexse.expr, tmp);
-	      asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-			"above upper bound of %%ld", n+1, var_name);
+	      msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
+			       "above upper bound of %%ld", n+1, var_name);
 	      gfc_trans_runtime_check (true, false, cond, &se->pre, where, msg,
 				   fold_convert (long_integer_type_node,
 						 indexse.expr),
@@ -3981,8 +3981,8 @@ done:
 	      /* Zero stride is not allowed.  */
 	      tmp = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
 				     info->stride[dim], gfc_index_zero_node);
-	      asprintf (&msg, "Zero stride is not allowed, for dimension %d "
-			"of array '%s'", dim + 1, expr_name);
+	      msg = xasprintf ("Zero stride is not allowed, for dimension %d "
+			       "of array '%s'", dim + 1, expr_name);
 	      gfc_trans_runtime_check (true, false, tmp, &inner,
 				       expr_loc, msg);
 	      free (msg);
@@ -4039,9 +4039,9 @@ done:
 		  tmp2 = fold_build2_loc (input_location, TRUTH_AND_EXPR,
 					  boolean_type_node,
 					  non_zerosized, tmp2);
-		  asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-			    "outside of expected range (%%ld:%%ld)",
-			    dim + 1, expr_name);
+		  msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
+				   "outside of expected range (%%ld:%%ld)",
+				   dim + 1, expr_name);
 		  gfc_trans_runtime_check (true, false, tmp, &inner,
 					   expr_loc, msg,
 		     fold_convert (long_integer_type_node, info->start[dim]),
@@ -4061,9 +4061,9 @@ done:
 					 info->start[dim], lbound);
 		  tmp = fold_build2_loc (input_location, TRUTH_AND_EXPR,
 					 boolean_type_node, non_zerosized, tmp);
-		  asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-			    "below lower bound of %%ld",
-			    dim + 1, expr_name);
+		  msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
+				   "below lower bound of %%ld",
+				   dim + 1, expr_name);
 		  gfc_trans_runtime_check (true, false, tmp, &inner,
 					   expr_loc, msg,
 		     fold_convert (long_integer_type_node, info->start[dim]),
@@ -4093,9 +4093,9 @@ done:
 					  boolean_type_node, tmp, ubound);
 		  tmp3 = fold_build2_loc (input_location, TRUTH_AND_EXPR,
 					  boolean_type_node, non_zerosized, tmp3);
-		  asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-			    "outside of expected range (%%ld:%%ld)",
-			    dim + 1, expr_name);
+		  msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
+				   "outside of expected range (%%ld:%%ld)",
+				   dim + 1, expr_name);
 		  gfc_trans_runtime_check (true, false, tmp2, &inner,
 					   expr_loc, msg,
 		     fold_convert (long_integer_type_node, tmp),
@@ -4110,9 +4110,9 @@ done:
 		}
 	      else
 		{
-		  asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-			    "below lower bound of %%ld",
-			    dim + 1, expr_name);
+		  msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
+				   "below lower bound of %%ld",
+				   dim + 1, expr_name);
 		  gfc_trans_runtime_check (true, false, tmp2, &inner,
 					   expr_loc, msg,
 		     fold_convert (long_integer_type_node, tmp),
@@ -4139,9 +4139,9 @@ done:
 		{
 		  tmp3 = fold_build2_loc (input_location, NE_EXPR,
 					  boolean_type_node, tmp, size[n]);
-		  asprintf (&msg, "Array bound mismatch for dimension %d "
-			    "of array '%s' (%%ld/%%ld)",
-			    dim + 1, expr_name);
+		  msg = xasprintf ("Array bound mismatch for dimension %d "
+				   "of array '%s' (%%ld/%%ld)",
+				   dim + 1, expr_name);
 
 		  gfc_trans_runtime_check (true, false, tmp3, &inner,
 					   expr_loc, msg,
@@ -6013,8 +6013,8 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
 					 gfc_index_one_node, stride2);
 	      tmp = fold_build2_loc (input_location, NE_EXPR,
 				     gfc_array_index_type, temp, stride2);
-	      asprintf (&msg, "Dimension %d of array '%s' has extent "
-			"%%ld instead of %%ld", n+1, sym->name);
+	      msg = xasprintf ("Dimension %d of array '%s' has extent "
+			       "%%ld instead of %%ld", n+1, sym->name);
 
 	      gfc_trans_runtime_check (true, false, tmp, &init, &loc, msg,
 			fold_convert (long_integer_type_node, temp),
@@ -7292,10 +7292,10 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	  char * msg;
 
 	  if (fsym && proc_name)
-	    asprintf (&msg, "An array temporary was created for argument "
-		      "'%s' of procedure '%s'", fsym->name, proc_name);
+	    msg = xasprintf ("An array temporary was created for argument "
+			     "'%s' of procedure '%s'", fsym->name, proc_name);
 	  else
-	    asprintf (&msg, "An array temporary was created");
+	    msg = xasprintf ("An array temporary was created");
 
 	  tmp = build_fold_indirect_ref_loc (input_location,
 					 desc);

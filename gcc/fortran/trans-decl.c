@@ -5723,8 +5723,8 @@ gfc_generate_function_code (gfc_namespace * ns)
     {
       char * msg;
 
-      asprintf (&msg, "Recursive call to nonrecursive procedure '%s'",
-		sym->name);
+      msg = xasprintf ("Recursive call to nonrecursive procedure '%s'",
+		       sym->name);
       recurcheckvar = gfc_create_var (boolean_type_node, "is_recursive");
       TREE_STATIC (recurcheckvar) = 1;
       DECL_INITIAL (recurcheckvar) = boolean_false_node;
