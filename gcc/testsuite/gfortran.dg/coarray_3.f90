@@ -79,7 +79,7 @@ pure subroutine pureSub()
   critical ! { dg-error "Image control statement CRITICAL" }
   end critical ! { dg-error "Expecting END SUBROUTINE statement" }
   sync all ! { dg-error "Image control statement SYNC" }
-  error stop ! { dg-error "not allowed in PURE procedure" }
+  error stop
 end subroutine pureSub
 
 

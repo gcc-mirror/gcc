@@ -1,3 +1,8 @@
+2014-12-31  Tobias Burnus  <burnus@net-b.de>
+
+	* match.c (gfc_match_stopcode): Permit error stop in pure
+	procedures with F2015.
+
 2014-12-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* trans-array.c (trans_array_bound_check): Use xasprintf instead
