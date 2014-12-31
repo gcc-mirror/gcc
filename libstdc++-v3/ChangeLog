@@ -1,3 +1,9 @@
+2014-12-31  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/64441
+	* include/bits/regex.tcc (__regex_algo_impl): s/auto/auto&/.
+	* include/bits/regex_executor.tcc (_Executor<>::_M_dfs): Likewise.
+
 2014-12-28  David Edelsohn  <dje.gcc@gmail.com>
 
 	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:

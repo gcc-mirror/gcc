@@ -310,7 +310,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (!__submatch.matched)
 	      break;
 	    auto __last = _M_current;
-	    for (auto __tmp = __submatch.first;
+	    for (auto& __tmp = __submatch.first;
 		 __last != _M_end && __tmp != __submatch.second;
 		 ++__tmp)
 	      ++__last;
