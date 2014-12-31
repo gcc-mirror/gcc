@@ -4442,10 +4442,17 @@ cp_parser_primary_expression (cp_parser *parser,
       }
 
     case CPP_OPEN_SQUARE:
-      if (c_dialect_objc ())
-        /* We have an Objective-C++ message. */
-        return cp_parser_objc_expression (parser);
       {
+	if (c_dialect_objc ())
+	  {
+	    /* We might have an Objective-C++ message. */
+	    cp_parser_parse_tentatively (parser);
+	    tree msg = cp_parser_objc_message_expression (parser);
+	    /* If that works out, we're done ... */
+	    if (cp_parser_parse_definitely (parser))
+	      return msg;
+	    /* ... else, fall though to see if it's a lambda.  */
+	  }
 	tree lam = cp_parser_lambda_expression (parser);
 	/* Don't warn about a failed tentative parse.  */
 	if (cp_parser_error_occurred (parser))
@@ -25657,14 +25664,20 @@ cp_parser_objc_message_receiver (cp_parser* parser)
   cp_parser_parse_tentatively (parser);
   rcv = cp_parser_expression (parser);
 
+  /* If that worked out, fine.  */
   if (cp_parser_parse_definitely (parser))
     return rcv;
 
+  cp_parser_parse_tentatively (parser);
   rcv = cp_parser_simple_type_specifier (parser,
 					 /*decl_specs=*/NULL,
 					 CP_PARSER_FLAGS_NONE);
 
-  return objc_get_class_reference (rcv);
+  if (cp_parser_parse_definitely (parser))
+    return objc_get_class_reference (rcv);
+  
+  cp_parser_error (parser, "objective-c++ message receiver expected");
+  return error_mark_node;
 }
 
 /* Parse the arguments and selectors comprising an Objective-C message.
