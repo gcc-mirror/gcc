@@ -6,6 +6,7 @@
 	* targhooks.c (pch_option_mismatch): Ditto.
 	* tree-ssa-structalias.c (create_function_info_for): Ditto.
 	(create_variable_info_for_1): Ditto.
+	* tree-vect-data-refs.c (vect_create_destination_var): Ditto.
 
 2014-12-30  Anthony Green  <green@moxielogic.com>
 
