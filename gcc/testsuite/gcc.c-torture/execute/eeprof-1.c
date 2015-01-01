@@ -1,6 +1,6 @@
 /* { dg-require-effective-target return_address } */
 /* { dg-options "-finstrument-functions" } */
-/* { dg-xfail-if "" { powerpc-ibm-aix* } "*" "" } */
+/* { dg-xfail-run-if "" { powerpc-ibm-aix* } "*" "" } */
 
 extern void abort (void);
 

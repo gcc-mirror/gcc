@@ -1,3 +1,15 @@
+2014-12-31  David Edelsohn  <dje.gcc@gmail.com>
+
+	* lib/target-supports.exp (add_options_for_tls): Prepend pthread
+	link flags.
+	* gcc.c-torture/execute/eeprof-1.c: Change AIX XFAIL to run-if.
+	* g++.old-deja/g++.mike/p755a.C: XFAIL on AIX.
+	* g++.dg/gomp/tls-5.C: Same.
+	* g++.dg/template/linkage1.C: Same.
+	* g++.dg/tls/thread_local1.C: Same.
+	* g++.dg/tls/thread_local7.C: Same.
+	* g++.dg/tls/thread_local7g.C: Same.
+
 2014-12-31  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/error_stop_3.f90: New.
@@ -913,7 +925,7 @@
 	predicate value.
 
 2014-12-04  Jack Howarth  <howarth@bromo.med.uc.edu>
-	
+
 	PR testsuite/64145
 	* gcc.dg/graphite/isl-codegen-loop-dumping.c: Restore
 	-fgraphite-identity.
