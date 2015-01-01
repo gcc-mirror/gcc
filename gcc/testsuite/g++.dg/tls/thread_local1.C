@@ -7,7 +7,7 @@
 // simultaneous execution.
 // { dg-final { scan-assembler-not "cxa_guard" } }
 // The guard should be TLS, not local common.
-// { dg-final { scan-assembler-not "\.comm" } }
+// { dg-final { scan-assembler-not "\.comm" { xfail powerpc-*-aix* } } }
 
 struct A
 {
