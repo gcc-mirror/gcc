@@ -34,7 +34,8 @@
   if (MEM_P (op)
       && GET_CODE (XEXP (op, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (op, 0), 0)) == REG
-      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
+      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
+      && IN_RANGE (INTVAL (XEXP (XEXP (op, 0), 1)), -32768, 32767))
     return 1;
 
   return general_operand (op, mode);
