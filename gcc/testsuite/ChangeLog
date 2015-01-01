@@ -1,3 +1,7 @@
+2014-12-31  James Bowman  <james.bowman@ftdichip.com>
+
+	* gcc.c-torture/execute/pr20621-1.c: Pass if stack < 64K.
+
 2014-12-31  David Edelsohn  <dje.gcc@gmail.com>
 
 	* lib/target-supports.exp (add_options_for_tls): Prepend pthread
