@@ -1,3 +1,14 @@
+2015-01-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR libstdc++/64422
+	* src/c++98/misc-inst.cc (string::erase): Add missing overloads.
+	(string::insert): Likewise.
+	(string::replace): Likewise.
+	(wstring::erase): Likewise.
+	(wstring::insert): Likewise.
+	(wstring::replace): Likewise.
+	* testsuite/21_strings/basic_string/modifiers/64422.cc: New testcase.
+
 2015-01-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64468
