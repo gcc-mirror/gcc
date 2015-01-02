@@ -1,3 +1,8 @@
+2015-01-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/modifiers/64422.cc: Fix copyright
+	date.
+
 2015-01-02  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/64475
