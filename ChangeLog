@@ -1,3 +1,8 @@
+2015-01-02  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config.sub: Update from upstream, to 2015-01-01 version.
+	* config.guess: Ditto.
+
 2014-12-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* MAINTAINERS (RTEMS Ports): Add myself.
