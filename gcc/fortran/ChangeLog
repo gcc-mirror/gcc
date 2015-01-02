@@ -1,3 +1,8 @@
+2015-01-02  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-decl.c (gfc_build_qualified_array): Fix coarray tokens
+	for module coarrays with -fcoarray=lib.
+
 2015-01-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60507
@@ -5,7 +10,7 @@
 	expression is a procedure-pointer result.
 	(compare_actual_formal): Use it.
 
-Copyright (C) 2014 Free Software Foundation, Inc.
+Copyright (C) 2015 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
