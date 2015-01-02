@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tsan.h"
 #include "asan.h"
+#include "builtins.h"
 
 /* Number of instrumented memory accesses in the current function.  */
 
@@ -121,13 +122,12 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
   gimple stmt, g;
   gimple_seq seq;
   location_t loc;
+  unsigned int align;
 
   size = int_size_in_bytes (TREE_TYPE (expr));
-  if (size == -1)
+  if (size <= 0)
     return false;
 
-  /* For now just avoid instrumenting bit field acceses.
-     TODO: handle bit-fields as if touching the whole field.  */
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
   machine_mode mode;
@@ -155,17 +155,71 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
 	  && DECL_HARD_REGISTER (base)))
     return false;
 
-  if (size == 0
-      || bitpos % (size * BITS_PER_UNIT)
-      || bitsize != size * BITS_PER_UNIT)
-    return false;
-
   stmt = gsi_stmt (gsi);
   loc = gimple_location (stmt);
   rhs = is_vptr_store (stmt, expr, is_write);
-  gcc_checking_assert (rhs != NULL || is_gimple_addressable (expr));
-  expr_ptr = build_fold_addr_expr (unshare_expr (expr));
   seq = NULL;
+
+  if ((TREE_CODE (expr) == COMPONENT_REF
+       && DECL_BIT_FIELD_TYPE (TREE_OPERAND (expr, 1)))
+      || TREE_CODE (expr) == BIT_FIELD_REF)
+    {
+      base = TREE_OPERAND (expr, 0);
+      if (TREE_CODE (expr) == COMPONENT_REF)
+	{
+	  expr = TREE_OPERAND (expr, 1);
+	  if (is_write && DECL_BIT_FIELD_REPRESENTATIVE (expr))
+	    expr = DECL_BIT_FIELD_REPRESENTATIVE (expr);
+	  if (!tree_fits_uhwi_p (DECL_FIELD_OFFSET (expr))
+	      || !tree_fits_uhwi_p (DECL_FIELD_BIT_OFFSET (expr))
+	      || !tree_fits_uhwi_p (DECL_SIZE (expr)))
+	    return false;
+	  bitpos = tree_to_uhwi (DECL_FIELD_OFFSET (expr)) * BITS_PER_UNIT
+		   + tree_to_uhwi (DECL_FIELD_BIT_OFFSET (expr));
+	  bitsize = tree_to_uhwi (DECL_SIZE (expr));
+	}
+      else
+	{
+	  if (!tree_fits_uhwi_p (TREE_OPERAND (expr, 2))
+	      || !tree_fits_uhwi_p (TREE_OPERAND (expr, 1)))
+	    return false;
+	  bitpos = tree_to_uhwi (TREE_OPERAND (expr, 2));
+	  bitsize = tree_to_uhwi (TREE_OPERAND (expr, 1));
+	}
+      if (bitpos < 0 || bitsize <= 0)
+	return false;
+      size = (bitpos % BITS_PER_UNIT + bitsize + BITS_PER_UNIT - 1)
+	     / BITS_PER_UNIT;
+      align = get_object_alignment (base);
+      if (align < BITS_PER_UNIT)
+	return false;
+      bitpos = bitpos & ~(BITS_PER_UNIT - 1);
+      if ((align - 1) & bitpos)
+	{
+	  align = (align - 1) & bitpos;
+	  align = align & -align;
+	}
+      gcc_checking_assert (is_gimple_addressable (base));
+      expr = build_fold_addr_expr (unshare_expr (base));
+      if (!is_gimple_mem_ref_addr (expr))
+	{
+	  g = gimple_build_assign (make_ssa_name (TREE_TYPE (expr)), expr);
+	  expr = gimple_assign_lhs (g);
+	  gimple_set_location (g, loc);
+	  gimple_seq_add_stmt_without_update (&seq, g);
+	}
+      expr = build2 (MEM_REF, char_type_node, expr,
+		     build_int_cst (TREE_TYPE (expr), bitpos / BITS_PER_UNIT));
+      expr_ptr = build_fold_addr_expr (expr);
+    }
+  else
+    {
+      align = get_object_alignment (expr);
+      if (align < BITS_PER_UNIT)
+	return false;
+      gcc_checking_assert (is_gimple_addressable (expr));
+      expr_ptr = build_fold_addr_expr (unshare_expr (expr));
+    }
   if (!is_gimple_val (expr_ptr))
     {
       g = gimple_build_assign (make_ssa_name (TREE_TYPE (expr_ptr)), expr_ptr);
@@ -173,7 +227,15 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
       gimple_set_location (g, loc);
       gimple_seq_add_stmt_without_update (&seq, g);
     }
-  if (rhs == NULL)
+  if ((size & (size - 1)) == 0 || size > 16
+      || align < MIN (size, 8) * BITS_PER_UNIT)
+    {
+      builtin_decl = builtin_decl_implicit (is_write
+					    ? BUILT_IN_TSAN_WRITE_RANGE
+					    : BUILT_IN_TSAN_READ_RANGE);
+      g = gimple_build_call (builtin_decl, 2, expr_ptr, size_int (size));
+    }
+  else if (rhs == NULL)
     g = gimple_build_call (get_memory_access_decl (is_write, size),
 			   1, expr_ptr);
   else

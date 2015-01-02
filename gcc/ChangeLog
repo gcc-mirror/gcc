@@ -1,3 +1,12 @@
+2015-01-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Instrument bit field and unaligned accesses for TSAN.
+	* sanitizer.def (BUILT_IN_TSAN_READ_RANGE): New built-in function.
+	(BUILT_IN_TSAN_WRITE_RANGE): New built-in function.
+	* tsan.c (instrument_expr): Handle COMPONENT_REF and BIT_FIELD_REF.
+	Use BUILT_IN_TSAN_READ_RANGE and BUILT_IN_TSAN_WRITE_RANGE for
+	unaligned memory regions.
+
 2015-01-01  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/predicates.md (moxie_general_movsrc_operand):
