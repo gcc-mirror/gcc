@@ -1,5 +1,9 @@
 2015-01-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	* tsan.c (instrument_expr): corrected previous checkin.
+
+2015-01-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
 	Instrument bit field and unaligned accesses for TSAN.
 	* sanitizer.def (BUILT_IN_TSAN_READ_RANGE): New built-in function.
 	(BUILT_IN_TSAN_WRITE_RANGE): New built-in function.

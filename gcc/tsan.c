@@ -227,7 +227,7 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
       gimple_set_location (g, loc);
       gimple_seq_add_stmt_without_update (&seq, g);
     }
-  if ((size & (size - 1)) == 0 || size > 16
+  if ((size & (size - 1)) != 0 || size > 16
       || align < MIN (size, 8) * BITS_PER_UNIT)
     {
       builtin_decl = builtin_decl_implicit (is_write
