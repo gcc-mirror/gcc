@@ -1,3 +1,4 @@
+/* { dg-shouldfail "tsan" } */
 #include <pthread.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -11,8 +12,9 @@ void *Thread1(void *x) {
 
 void *Thread2(void *x) {
   char *p1 = reinterpret_cast<char *>(&Global[0]);
-  uint64_t *p4 = reinterpret_cast<uint64_t *>(p1 + 1);
-  (*p4)++;
+  struct __attribute__((packed, aligned(1))) u_uint64_t { uint64_t val; };
+  u_uint64_t *p4 = reinterpret_cast<u_uint64_t *>(p1 + 1);
+  (*p4).val++;
   return NULL;
 }
 
@@ -23,7 +25,7 @@ int main() {
   pthread_join(t[0], NULL);
   pthread_join(t[1], NULL);
   printf("Pass\n");
-  /* { dg-prune-output "ThreadSanitizer: data race.*(\n|\r\n|\r)" } */
+  /* { dg-output "WARNING: ThreadSanitizer: data race.*(\n|\r\n|\r)" } */
   /* { dg-output "Pass.*" } */
   return 0;
 }
