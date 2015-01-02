@@ -1,3 +1,8 @@
+2015-01-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57562
+	* expr.c (find_component_ref): Deal with extended types.
+
 2015-01-02  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-decl.c (gfc_build_qualified_array): Fix coarray tokens
