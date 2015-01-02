@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++11" }
+// { dg-require-string-conversions "" }
 
 // 2009-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
