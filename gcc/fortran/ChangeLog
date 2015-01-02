@@ -14,7 +14,7 @@
 	* interface.c (is_procptr_result): New function to check if an
 	expression is a procedure-pointer result.
 	(compare_actual_formal): Use it.
-
+^L
 Copyright (C) 2015 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
