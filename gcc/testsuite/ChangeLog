@@ -1,9 +1,16 @@
+2015-01-02  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray/codimension_2.f90: New.
+	* gfortran.dg/coarray/codimension_2a.f90: New.
+	* gfortran.dg/coarray_35.f90: New.
+	* gfortran.dg/coarray_35a.f90: New.
+
 2015-01-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60507
 	* gfortran.dg/dummy_procedure_11: New.
 
-Copyright (C) 2014 Free Software Foundation, Inc.
+Copyright (C) 2015 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
