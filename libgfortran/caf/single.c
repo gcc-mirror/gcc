@@ -254,6 +254,21 @@ _gfortran_caf_co_max (gfc_descriptor_t *a __attribute__ ((unused)),
 }
 
 
+void
+_gfortran_caf_co_reduce (gfc_descriptor_t *a __attribute__ ((unused)),
+                        void * (*opr) (void *, void *)
+                               __attribute__ ((unused)),
+                        int opr_flags __attribute__ ((unused)),
+                        int result_image __attribute__ ((unused)),
+                        int *stat, char *errmsg __attribute__ ((unused)),
+                        int a_len __attribute__ ((unused)),
+                        int errmsg_len __attribute__ ((unused)))
+ {
+   if (stat)
+     *stat = 0;
+ }
+
+
 static void
 assign_char4_from_char1 (size_t dst_size, size_t src_size, uint32_t *dst,
 			 unsigned char *src)
