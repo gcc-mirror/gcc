@@ -1,3 +1,8 @@
+2015-01-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57562
+	* gfortran.dg/extends_16.f90: New.
+
 2015-01-02  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray/caf.exp (dg-compile-aux-modules): Add.
@@ -12,7 +17,7 @@
 2015-01-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60507
-	* gfortran.dg/dummy_procedure_11: New.
+	* gfortran.dg/dummy_procedure_11.f90: New.
 
 Copyright (C) 2015 Free Software Foundation, Inc.
 
