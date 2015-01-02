@@ -43,6 +43,21 @@ global DG_TORTURE_OPTIONS torture_with_loops
 torture-init
 set-torture-options $DG_TORTURE_OPTIONS
 
+global gfortran_test_path
+global gfortran_aux_module_flags
+set gfortran_test_path $srcdir/$subdir
+set gfortran_aux_module_flags $DEFAULT_FFLAGS
+proc dg-compile-aux-modules { args } {
+    global gfortran_test_path
+    global gfortran_aux_module_flags
+    if { [llength $args] != 2 } {
+	error "dg-set-target-env-var: needs one argument"
+	return
+    }
+    dg-test $gfortran_test_path/[lindex $args 1] "" $gfortran_aux_module_flags
+    # cleanup-modules isn't intentionally invoked here.
+}
+
 # Main loop.
 foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] {
     # If we're only testing specific files and this isn't one of them, skip it.
@@ -65,12 +80,14 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] 
 
     foreach flags $option_list {
 	verbose "Testing $nshort (single), $flags" 1
+        set gfortran_aux_module_flags "-fcoarray=single $flags"
 	dg-test $test "-fcoarray=single $flags" "" 
 	cleanup-modules ""
     }
 
     foreach flags $option_list {
 	verbose "Testing $nshort (libcaf_single), $flags" 1
+        set gfortran_aux_module_flags "-fcoarray=lib $flags -lcaf_single"
 	dg-test $test "-fcoarray=lib $flags -lcaf_single" ""
 	cleanup-modules ""
     }

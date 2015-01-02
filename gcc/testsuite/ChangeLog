@@ -1,5 +1,9 @@
 2015-01-02  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/coarray/caf.exp (dg-compile-aux-modules): Add.
+
+2015-01-02  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/coarray/codimension_2.f90: New.
 	* gfortran.dg/coarray/codimension_2a.f90: New.
 	* gfortran.dg/coarray_35.f90: New.
