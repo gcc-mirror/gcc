@@ -6772,52 +6772,37 @@ Enable all the available tree dumps with the flags provided in this option.
 @opindex fopt-info
 Controls optimization dumps from various optimization passes. If the
 @samp{-@var{options}} form is used, @var{options} is a list of
-@samp{-} separated options to select the dump details and
-optimizations.  If @var{options} is not specified, it defaults to
-@option{optimized} for details and @option{optall} for optimization
-groups. If the @var{filename} is not specified, it defaults to
-@file{stderr}. Note that the output @var{filename} will be overwritten
-in case of multiple translation units. If a combined output from
-multiple translation units is desired, @file{stderr} should be used
-instead.
+@samp{-} separated option keywords to select the dump details and
+optimizations.  
 
-The options can be divided into two groups, 1) options describing the
-verbosity of the dump, and 2) options describing which optimizations
+The @var{options} can be divided into two groups: options describing the
+verbosity of the dump, and options describing which optimizations
 should be included. The options from both the groups can be freely
 mixed as they are non-overlapping. However, in case of any conflicts,
-the latter options override the earlier options on the command
-line. Though multiple -fopt-info options are accepted, only one of
-them can have @option{=filename}. If other filenames are provided then
-all but the first one are ignored.
+the later options override the earlier options on the command
+line. 
 
-The dump verbosity has the following options
+The following options control the dump verbosity:
 
 @table @samp
 @item optimized
 Print information when an optimization is successfully applied. It is
 up to a pass to decide which information is relevant. For example, the
-vectorizer passes print the source location of loops which got
+vectorizer passes print the source location of loops which are
 successfully vectorized.
 @item missed
 Print information about missed optimizations. Individual passes
-control which information to include in the output. For example,
-
-@smallexample
-gcc -O2 -ftree-vectorize -fopt-info-vec-missed
-@end smallexample
-
-will print information about missed optimization opportunities from
-vectorization passes on stderr.
+control which information to include in the output. 
 @item note
 Print verbose information about optimizations, such as certain
 transformations, more detailed messages about decisions etc.
 @item all
 Print detailed optimization information. This includes
-@var{optimized}, @var{missed}, and @var{note}.
+@samp{optimized}, @samp{missed}, and @samp{note}.
 @end table
 
-The second set of options describes a group of optimizations and may
-include one or more of the following.
+One or more of the following option keywords can be used to describe a
+group of optimizations:
 
 @table @samp
 @item ipa
@@ -6833,47 +6818,69 @@ Enable dumps from all optimizations. This is a superset of
 the optimization groups listed above.
 @end table
 
-For example,
+If @var{options} is
+omitted, it defaults to @samp{optimized-optall}, which means to dump all
+info about successful optimizations from all the passes.  
+
+If the @var{filename} is provided, then the dumps from all the
+applicable optimizations are concatenated into the @var{filename}.
+Otherwise the dump is output onto @file{stderr}. Though multiple
+@option{-fopt-info} options are accepted, only one of them can include
+a @var{filename}. If other filenames are provided then all but the
+first such option are ignored.
+
+Note that the output @var{filename} is overwritten
+in case of multiple translation units. If a combined output from
+multiple translation units is desired, @file{stderr} should be used
+instead.
+
+In the following example, the optimization info is output to
+@file{stderr}:
+
+@smallexample
+gcc -O3 -fopt-info
+@end smallexample
+
+This example:
 @smallexample
 gcc -O3 -fopt-info-missed=missed.all
 @end smallexample
 
+@noindent
 outputs missed optimization report from all the passes into
-@file{missed.all}.
+@file{missed.all}, and this one:
+
+@smallexample
+gcc -O2 -ftree-vectorize -fopt-info-vec-missed
+@end smallexample
+
+@noindent
+prints information about missed optimization opportunities from
+vectorization passes on @file{stderr}.  
+Note that @option{-fopt-info-vec-missed} is equivalent to 
+@option{-fopt-info-missed-vec}.
 
 As another example,
 @smallexample
 gcc -O3 -fopt-info-inline-optimized-missed=inline.txt
 @end smallexample
 
-will output information about missed optimizations as well as
+@noindent
+outputs information about missed optimizations as well as
 optimized locations from all the inlining passes into
 @file{inline.txt}.
 
-If the @var{filename} is provided, then the dumps from all the
-applicable optimizations are concatenated into the @file{filename}.
-Otherwise the dump is output onto @file{stderr}. If @var{options} is
-omitted, it defaults to @option{all-optall}, which means dump all
-available optimization info from all the passes. In the following
-example, all optimization info is output on to @file{stderr}.
-
-@smallexample
-gcc -O3 -fopt-info
-@end smallexample
-
-Note that @option{-fopt-info-vec-missed} behaves the same as
-@option{-fopt-info-missed-vec}.
-
-As another example, consider
+Finally, consider:
 
 @smallexample
 gcc -fopt-info-vec-missed=vec.miss -fopt-info-loop-optimized=loop.opt
 @end smallexample
 
+@noindent
 Here the two output filenames @file{vec.miss} and @file{loop.opt} are
 in conflict since only one output file is allowed. In this case, only
 the first option takes effect and the subsequent options are
-ignored. Thus only the @file{vec.miss} is produced which contains
+ignored. Thus only @file{vec.miss} is produced which contains
 dumps from the vectorizer about missed opportunities.
 
 @item -frandom-seed=@var{number}
