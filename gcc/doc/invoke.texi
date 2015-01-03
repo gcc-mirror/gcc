@@ -8070,19 +8070,21 @@ This option has no effect unless @option{-fsel-sched-pipelining} is turned on.
 
 @item -fsemantic-interposition
 @opindex fsemantic-interposition
-Some object formats, like ELF, allow interposing of symbols by dynamic linker.
-This means that for symbols exported from the DSO compiler can not perform
-inter-procedural propagation, inlining and other optimizations in anticipation
+Some object formats, like ELF, allow interposing of symbols by the 
+dynamic linker.
+This means that for symbols exported from the DSO, the compiler cannot perform
+interprocedural propagation, inlining and other optimizations in anticipation
 that the function or variable in question may change. While this feature is
 useful, for example, to rewrite memory allocation functions by a debugging
 implementation, it is expensive in the terms of code quality.
-With @option{-fno-semantic-inteposition} compiler assumest that if interposition
-happens for functions the overwritting function will have
-precisely same semantics (and side effects). Similarly if interposition happens
+With @option{-fno-semantic-interposition} the compiler assumes that 
+if interposition happens for functions the overwriting function will have 
+precisely the same semantics (and side effects). 
+Similarly if interposition happens
 for variables, the constructor of the variable will be the same. The flag
-has no effect for functions explicitly declared inline, where
-interposition changing semantic is never allowed and for symbols explicitly
-declared weak.
+has no effect for functions explicitly declared inline 
+(where it is never allowed for interposition to change semantics) 
+and for symbols explicitly declared weak.
 
 @item -fshrink-wrap
 @opindex fshrink-wrap

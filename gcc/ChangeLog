@@ -1,5 +1,10 @@
 2015-01-03  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/invoke.texi ([-fsemantic-interposition]): Fix typos and
+	tidy grammar.
+
+2015-01-03  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/invoke.texi ([-fplan9-extensions]): Add/fix @opindex.
 	([-fvtv-debug]): Likewise.
 	([-Wc++-compat]): Likewise.
