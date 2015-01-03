@@ -574,6 +574,7 @@ STRIP_FOR_TARGET
 READELF_FOR_TARGET
 RANLIB_FOR_TARGET
 OBJDUMP_FOR_TARGET
+OBJCOPY_FOR_TARGET
 NM_FOR_TARGET
 LIPO_FOR_TARGET
 LD_FOR_TARGET
@@ -833,6 +834,7 @@ DLLTOOL_FOR_TARGET
 LD_FOR_TARGET
 LIPO_FOR_TARGET
 NM_FOR_TARGET
+OBJCOPY_FOR_TARGET
 OBJDUMP_FOR_TARGET
 RANLIB_FOR_TARGET
 READELF_FOR_TARGET
@@ -1611,6 +1613,8 @@ Some influential environment variables:
               LIPO for the target
   NM_FOR_TARGET
               NM for the target
+  OBJCOPY_FOR_TARGET
+              OBJCOPY for the target
   OBJDUMP_FOR_TARGET
               OBJDUMP for the target
   RANLIB_FOR_TARGET
@@ -12177,6 +12181,236 @@ fi
 
 
 
+if test -z "$ac_cv_path_OBJCOPY_FOR_TARGET" ; then
+  if test -n "$with_build_time_tools"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for objcopy in $with_build_time_tools" >&5
+$as_echo_n "checking for objcopy in $with_build_time_tools... " >&6; }
+    if test -x $with_build_time_tools/objcopy; then
+      OBJCOPY_FOR_TARGET=`cd $with_build_time_tools && pwd`/objcopy
+      ac_cv_path_OBJCOPY_FOR_TARGET=$OBJCOPY_FOR_TARGET
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_OBJCOPY_FOR_TARGET" >&5
+$as_echo "$ac_cv_path_OBJCOPY_FOR_TARGET" >&6; }
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    fi
+  elif test $build != $host && test $have_gcc_for_target = yes; then
+    OBJCOPY_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=objcopy`
+    test $OBJCOPY_FOR_TARGET = objcopy && OBJCOPY_FOR_TARGET=
+    test -n "$OBJCOPY_FOR_TARGET" && ac_cv_path_OBJCOPY_FOR_TARGET=$OBJCOPY_FOR_TARGET
+  fi
+fi
+if test -z "$ac_cv_path_OBJCOPY_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
+  # Extract the first word of "objcopy", so it can be a program name with args.
+set dummy objcopy; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_OBJCOPY_FOR_TARGET+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $OBJCOPY_FOR_TARGET in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_OBJCOPY_FOR_TARGET="$OBJCOPY_FOR_TARGET" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $gcc_cv_tool_dirs
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_OBJCOPY_FOR_TARGET="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+OBJCOPY_FOR_TARGET=$ac_cv_path_OBJCOPY_FOR_TARGET
+if test -n "$OBJCOPY_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OBJCOPY_FOR_TARGET" >&5
+$as_echo "$OBJCOPY_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_OBJCOPY_FOR_TARGET" ; then
+
+
+if test -n "$OBJCOPY_FOR_TARGET"; then
+  ac_cv_prog_OBJCOPY_FOR_TARGET=$OBJCOPY_FOR_TARGET
+elif test -n "$ac_cv_prog_OBJCOPY_FOR_TARGET"; then
+  OBJCOPY_FOR_TARGET=$ac_cv_prog_OBJCOPY_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_OBJCOPY_FOR_TARGET"; then
+  for ncn_progname in objcopy; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_OBJCOPY_FOR_TARGET+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$OBJCOPY_FOR_TARGET"; then
+  ac_cv_prog_OBJCOPY_FOR_TARGET="$OBJCOPY_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_OBJCOPY_FOR_TARGET="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+OBJCOPY_FOR_TARGET=$ac_cv_prog_OBJCOPY_FOR_TARGET
+if test -n "$OBJCOPY_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OBJCOPY_FOR_TARGET" >&5
+$as_echo "$OBJCOPY_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  done
+fi
+
+if test -z "$ac_cv_prog_OBJCOPY_FOR_TARGET" && test -n "$with_build_time_tools"; then
+  for ncn_progname in objcopy; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${ncn_progname} in $with_build_time_tools" >&5
+$as_echo_n "checking for ${ncn_progname} in $with_build_time_tools... " >&6; }
+    if test -x $with_build_time_tools/${ncn_progname}; then
+      ac_cv_prog_OBJCOPY_FOR_TARGET=$with_build_time_tools/${ncn_progname}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      break
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    fi
+  done
+fi
+
+if test -z "$ac_cv_prog_OBJCOPY_FOR_TARGET"; then
+  for ncn_progname in objcopy; do
+    if test -n "$ncn_target_tool_prefix"; then
+      # Extract the first word of "${ncn_target_tool_prefix}${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_target_tool_prefix}${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_OBJCOPY_FOR_TARGET+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$OBJCOPY_FOR_TARGET"; then
+  ac_cv_prog_OBJCOPY_FOR_TARGET="$OBJCOPY_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_OBJCOPY_FOR_TARGET="${ncn_target_tool_prefix}${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+OBJCOPY_FOR_TARGET=$ac_cv_prog_OBJCOPY_FOR_TARGET
+if test -n "$OBJCOPY_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OBJCOPY_FOR_TARGET" >&5
+$as_echo "$OBJCOPY_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    fi
+    if test -z "$ac_cv_prog_OBJCOPY_FOR_TARGET" && test $build = $target ; then
+      # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_OBJCOPY_FOR_TARGET+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$OBJCOPY_FOR_TARGET"; then
+  ac_cv_prog_OBJCOPY_FOR_TARGET="$OBJCOPY_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_OBJCOPY_FOR_TARGET="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+OBJCOPY_FOR_TARGET=$ac_cv_prog_OBJCOPY_FOR_TARGET
+if test -n "$OBJCOPY_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OBJCOPY_FOR_TARGET" >&5
+$as_echo "$OBJCOPY_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    fi
+    test -n "$ac_cv_prog_OBJCOPY_FOR_TARGET" && break
+  done
+fi
+
+if test -z "$ac_cv_prog_OBJCOPY_FOR_TARGET" ; then
+  set dummy objcopy
+  if test $build = $target ; then
+    OBJCOPY_FOR_TARGET="$2"
+  else
+    OBJCOPY_FOR_TARGET="${ncn_target_tool_prefix}$2"
+  fi
+else
+  OBJCOPY_FOR_TARGET="$ac_cv_prog_OBJCOPY_FOR_TARGET"
+fi
+
+else
+  OBJCOPY_FOR_TARGET=$ac_cv_path_OBJCOPY_FOR_TARGET
+fi
+
+
+
+
 if test -z "$ac_cv_path_OBJDUMP_FOR_TARGET" ; then
   if test -n "$with_build_time_tools"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for objdump in $with_build_time_tools" >&5
@@ -14098,6 +14332,48 @@ $as_echo "pre-installed in $ac_dir" >&6; }
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     NM_FOR_TARGET='$(NM)'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
+$as_echo "host tool" >&6; }
+  else
+    # We need a cross tool
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target objcopy" >&5
+$as_echo_n "checking where to find the target objcopy... " >&6; }
+if test "x${build}" != "x${host}" ; then
+  if expr "x$OBJCOPY_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $OBJCOPY_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  else
+    # Canadian cross, just use what we found
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+else
+  ok=yes
+  case " ${configdirs} " in
+    *" binutils "*) ;;
+    *) ok=no ;;
+  esac
+
+  if test $ok = yes; then
+    # An in-tree tool is available and we can use it
+    OBJCOPY_FOR_TARGET='$$r/$(HOST_SUBDIR)/binutils/objcopy'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: just compiled" >&5
+$as_echo "just compiled" >&6; }
+  elif expr "x$OBJCOPY_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $OBJCOPY_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  elif test "x$target" = "x$host"; then
+    # We can use an host tool
+    OBJCOPY_FOR_TARGET='$(OBJDUMP)'
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
 $as_echo "host tool" >&6; }
   else
