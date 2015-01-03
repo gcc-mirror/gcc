@@ -1,5 +1,17 @@
 2015-01-02  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/invoke.texi (Option Summary): Fix spelling of
+	-fdevirtualize-at-ltrans.
+	([-fdevirtualize]): Fix markup.
+	([-fdevirtualize-speculatively]): Fix typo.
+	([-fdevirtualize-at-ltrans]): Likewise.  Make description less
+	implementor-speaky.
+	* common.opt (fdevirtualize-at-ltrans): Likewise.
+	* ipa-devirt.c: Fix typos in comments throughout the file.
+	(ipa_devirt): Fix typos in format strings for dump output.
+
+2015-01-02  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/invoke.texi ([-fopt-info]): Fix markup, consolidate
 	discussion of defaults, light copy-editing.
 
