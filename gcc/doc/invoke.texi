@@ -1942,7 +1942,9 @@ fields within structs/unions}, for details.
 
 Note that this option is off for all targets but i?86 and x86_64
 targets using ms-abi.
+
 @item -fplan9-extensions
+@opindex fplan9-extensions
 Accept some non-standard constructs used in Plan 9 code.
 
 This enables @option{-fms-extensions}, permits passing pointers to
@@ -2453,7 +2455,7 @@ values specified, 'none' will take highest priority over both 'std' and
 'preinit'; 'preinit' will take priority over 'std'.
 
 @item -fvtv-debug
-@opindex (fvtv-debug)
+@opindex fvtv-debug
 Causes debug versions of the runtime functions for the vtable verification 
 feature to be called.  This assumes the @option{-fvtable-verify=std} or
 @option{-fvtable-verify=preinit} has been used.  This flag will also cause the
@@ -4622,17 +4624,20 @@ and so on.  This option is independent of the standards mode.  Warnings are
 disabled in the expression that follows @code{__extension__}.
 
 @item -Wc++-compat @r{(C and Objective-C only)}
+@opindex Wc++-compat
 Warn about ISO C constructs that are outside of the common subset of
 ISO C and ISO C++, e.g.@: request for implicit conversion from
 @code{void *} to a pointer to non-@code{void} type.
 
 @item -Wc++11-compat @r{(C++ and Objective-C++ only)}
+@opindex Wc++11-compat
 Warn about C++ constructs whose meaning differs between ISO C++ 1998
 and ISO C++ 2011, e.g., identifiers in ISO C++ 1998 that are keywords
 in ISO C++ 2011.  This warning turns on @option{-Wnarrowing} and is
 enabled by @option{-Wall}.
 
 @item -Wc++14-compat @r{(C++ and Objective-C++ only)}
+@opindex Wc++14-compat
 Warn about C++ constructs whose meaning differs between ISO C++ 2011
 and ISO C++ 2014.  This warning is enabled by @option{-Wall}.
 
@@ -4797,7 +4802,7 @@ real to lower precision real values.  This option is also enabled by
 
 @item -Wsized-deallocation @r{(C++ and Objective-C++ only)}
 @opindex Wsized-deallocation
-@opindex -Wno-sized-deallocation
+@opindex Wno-sized-deallocation
 Warn about a definition of an unsized deallocation function
 @smallexample
 void operator delete (void *) noexcept;
@@ -5411,6 +5416,7 @@ Produce debugging information in stabs format (if that is supported),
 for only symbols that are actually used.
 
 @item -femit-class-debug-always
+@opindex femit-class-debug-always
 Instead of emitting debugging information for a C++ class in only one
 object file, emit it in all object files using the class.  This option
 should be used only with debuggers that are unable to handle the way GCC
@@ -5827,6 +5833,7 @@ See @option{-femit-struct-debug-detailed} for more detailed control.
 This option works only with DWARF 2.
 
 @item -femit-struct-debug-detailed@r{[}=@var{spec-list}@r{]}
+@opindex femit-struct-debug-detailed
 Specify the struct-like types
 for which the compiler generates debug information.
 The intent is to reduce duplicate struct debug information
@@ -7489,7 +7496,7 @@ of assembly instructions and as such its exact meaning might change from one
 release to an another.
 
 @item -fno-keep-inline-dllexport
-@opindex -fno-keep-inline-dllexport
+@opindex fno-keep-inline-dllexport
 This is a more fine-grained version of @option{-fkeep-inline-functions},
 which applies only to functions that are declared using the @code{dllexport}
 attribute or declspec (@xref{Function Attributes,,Declaring Attributes of
@@ -7815,6 +7822,7 @@ shrinkage.  This is helpful for fast processors with small or moderate
 size register sets.
 
 @item -fira-algorithm=@var{algorithm}
+@opindex fira-algorithm
 Use the specified coloring algorithm for the integrated register
 allocator.  The @var{algorithm} argument can be @samp{priority}, which
 specifies Chow's priority coloring, or @samp{CB}, which specifies
@@ -7823,6 +7831,7 @@ for all architectures, but for those targets that do support it, it is
 the default because it generates better code.
 
 @item -fira-region=@var{region}
+@opindex fira-region
 Use specified regions for the integrated register allocator.  The
 @var{region} argument should be one of the following:
 
@@ -7884,7 +7893,7 @@ The default value is 5.  If the value @var{n} is greater or equal to 10,
 the dump output is sent to stderr using the same format as @var{n} minus 10.
 
 @item -flra-remat
-@opindex fcaller-saves
+@opindex flra-remat
 Enable CFG-sensitive rematerialization in LRA.  Instead of loading
 values of spilled pseudos, LRA tries to rematerialize (recalculate)
 values if it is profitable.
@@ -8101,6 +8110,7 @@ and then tries to find ways to combine them.
 Enabled by default at @option{-O1} and higher.
 
 @item -fipa-ra
+@opindex fipa-ra
 Use caller save registers for allocation if those registers are not used by
 any called function.  In that case it is not necessary to save and restore
 them around calls.  This is only possible if called functions are part of
@@ -8149,7 +8159,7 @@ Perform hoisting of loads from conditional pointers on trees.  This
 pass is enabled by default at @option{-O} and higher.
 
 @item -fhoist-adjacent-loads
-@opindex hoist-adjacent-loads
+@opindex fhoist-adjacent-loads
 Speculatively hoist loads from both branches of an if-then-else if the
 loads are from adjacent locations in the same structure and the target
 architecture has a conditional move instruction.  This flag is enabled
@@ -8221,11 +8231,13 @@ equivalences that are found only by GCC and equivalences found only by Gold.
 This flag is enabled by default at @option{-O2} and @option{-Os}.
 
 @item -fisolate-erroneous-paths-dereference
+@opindex fisolate-erroneous-paths-dereference
 Detect paths which trigger erroneous or undefined behaviour due to
 dereferencing a NULL pointer.  Isolate those paths from the main control
 flow and turn the statement with erroneous or undefined behaviour into a trap.
 
 @item -fisolate-erroneous-paths-attribute
+@opindex fisolate-erroneous-paths-attribute
 Detect paths which trigger erroneous or undefined behaviour due a NULL value
 being used in a way which is forbidden by a @code{returns_nonnull} or @code{nonnull}
 attribute.  Isolate those paths from the main control flow and turn the
@@ -8256,11 +8268,13 @@ Perform pattern matching on SSA PHI nodes to optimize conditional
 code.  This pass is enabled by default at @option{-O} and higher.
 
 @item -ftree-switch-conversion
+@opindex ftree-switch-conversion
 Perform conversion of simple initializations in a switch to
 initializations from a scalar array.  This flag is enabled by default
 at @option{-O2} and higher.
 
 @item -ftree-tail-merge
+@opindex ftree-tail-merge
 Look for identical code sequences.  When found, replace one with a jump to the
 other.  This optimization is known as tail merging or cross jumping.  This flag
 is enabled by default at @option{-O2} and higher.  The compilation time
@@ -8438,6 +8452,7 @@ Compare the results of several data dependence analyzers.  This option
 is used for debugging the data dependence analyzers.
 
 @item -ftree-loop-if-convert
+@opindex ftree-loop-if-convert
 Attempt to transform conditional jumps in the innermost loops to
 branch-less equivalents.  The intent is to remove control-flow from
 the innermost loops in order to improve the ability of the
@@ -8445,6 +8460,7 @@ vectorization pass to handle these loops.  This is enabled by default
 if vectorization is enabled.
 
 @item -ftree-loop-if-convert-stores
+@opindex ftree-loop-if-convert-stores
 Attempt to also if-convert conditional jumps containing memory writes.
 This transformation can be unsafe for multi-threaded programs as it
 transforms conditional memory writes into unconditional memory writes.
@@ -8462,6 +8478,7 @@ for (i = 0; i < N; i++)
 potentially producing data races.
 
 @item -ftree-loop-distribution
+@opindex ftree-loop-distribution
 Perform loop distribution.  This flag can improve cache performance on
 big loop bodies and allow further loop optimizations, like
 parallelization or vectorization, to take place.  For example, the loop
@@ -8482,6 +8499,7 @@ ENDDO
 @end smallexample
 
 @item -ftree-loop-distribute-patterns
+@opindex ftree-loop-distribute-patterns
 Perform loop distribution of patterns that can be code generated with
 calls to a library.  This flag is enabled by default at @option{-O3}.
 
@@ -9189,6 +9207,7 @@ at linktime.  This increases size of LTO object files, but enable
 diagnostics about One Definition Rule violations.
 
 @item -flto-compression-level=@var{n}
+@opindex flto-compression-level
 This option specifies the level of compression used for intermediate
 language written to LTO object files, and is only meaningful in
 conjunction with LTO mode (@option{-flto}).  Valid
@@ -9197,6 +9216,7 @@ outside this range are clamped to either 0 or 9.  If the option is not
 given, a default balanced compression setting is used.
 
 @item -flto-report
+@opindex flto-report
 Prints a report with internal details on the workings of the link-time
 optimizer.  The contents of this report vary from version to version.
 It is meant to be useful to GCC developers when processing object
@@ -9205,10 +9225,12 @@ files in LTO mode (via @option{-flto}).
 Disabled by default.
 
 @item -flto-report-wpa
+@opindex flto-report-wpa
 Like @option{-flto-report}, but only print for the WPA phase of Link
 Time Optimization.
 
 @item -fuse-linker-plugin
+@opindex fuse-linker-plugin
 Enables the use of a linker plugin during link-time optimization.  This
 option relies on plugin support in the linker, which is available in gold
 or in GNU ld 2.21 or newer.
@@ -11983,8 +12005,8 @@ of TLS variables.
 
 @item -mfix-cortex-a53-835769
 @itemx -mno-fix-cortex-a53-835769
-@opindex -mfix-cortex-a53-835769
-@opindex -mno-fix-cortex-a53-835769
+@opindex mfix-cortex-a53-835769
+@opindex mno-fix-cortex-a53-835769
 Enable or disable the workaround for the ARM Cortex-A53 erratum number 835769.
 This will involve inserting a NOP instruction between memory instructions and
 64-bit integer multiply-accumulate instructions.
@@ -15852,99 +15874,124 @@ increases code size.  Code that is sensitive to stack space usage, such
 as embedded systems and operating system kernels, may want to reduce the
 preferred alignment to @option{-mpreferred-stack-boundary=2}.
 
+@need 200
 @item -mmmx
-@itemx -mno-mmx
-@itemx -msse
-@itemx -mno-sse
-@itemx -msse2
-@itemx -mno-sse2
-@itemx -msse3
-@itemx -mno-sse3
-@itemx -mssse3
-@itemx -mno-ssse3
-@itemx -msse4.1
-@need 800
-@itemx -mno-sse4.1
-@itemx -msse4.2
-@itemx -mno-sse4.2
-@itemx -msse4
-@itemx -mno-sse4
-@itemx -mavx
-@itemx -mno-avx
-@itemx -mavx2
-@itemx -mno-avx2
-@itemx -mavx512f
-@itemx -mno-avx512f
-@need 800
-@itemx -mavx512pf
-@itemx -mno-avx512pf
-@itemx -mavx512er
-@itemx -mno-avx512er
-@itemx -mavx512cd
-@itemx -mno-avx512cd
-@itemx -msha
-@itemx -mno-sha
-@itemx -maes
-@itemx -mno-aes
-@itemx -mpclmul
-@itemx -mno-pclmul
-@itemx -mclfushopt
-@itemx -mno-clflsuhopt
-@need 800
-@itemx -mfsgsbase
-@itemx -mno-fsgsbase
-@itemx -mrdrnd
-@itemx -mno-rdrnd
-@itemx -mf16c
-@itemx -mno-f16c
-@itemx -mfma
-@itemx -mno-fma
-@itemx -mprefetchwt1
-@itemx -mno-prefetchwt1
-@itemx -msse4a
-@itemx -mno-sse4a
-@itemx -mfma4
-@itemx -mno-fma4
-@need 800
-@itemx -mxop
-@itemx -mno-xop
-@itemx -mlwp
-@itemx -mno-lwp
-@itemx -m3dnow
-@itemx -mno-3dnow
-@itemx -mpopcnt
-@itemx -mno-popcnt
-@itemx -mabm
-@itemx -mno-abm
-@itemx -mbmi
-@itemx -mbmi2
-@itemx -mno-bmi
-@itemx -mno-bmi2
-@itemx -mlzcnt
-@itemx -mno-lzcnt
-@itemx -mfxsr
-@itemx -mxsave
-@itemx -mxsaveopt
-@itemx -mrtm
-@itemx -mtbm
-@itemx -mno-tbm
-@itemx -mxsavec
-@itemx -mno-xsavec
-@itemx -mxsaves
-@itemx -mno-xsaves
-@itemx -mmpx
-@itemx -mno-mpx
 @opindex mmmx
-@opindex mno-mmx
+@need 200
+@itemx -msse
 @opindex msse
-@opindex mno-sse
+@need 200
+@itemx -msse2
+@need 200
+@itemx -msse3
+@need 200
+@itemx -mssse3
+@need 200
+@itemx -msse4
+@need 200
+@itemx -msse4a
+@need 200
+@itemx -msse4.1
+@need 200
+@itemx -msse4.2
+@need 200
+@itemx -mavx
+@opindex mavx
+@need 200
+@itemx -mavx2
+@need 200
+@itemx -mavx512f
+@need 200
+@itemx -mavx512pf
+@need 200
+@itemx -mavx512er
+@need 200
+@itemx -mavx512cd
+@need 200
+@itemx -msha
+@opindex msha
+@need 200
+@itemx -maes
+@opindex maes
+@need 200
+@itemx -mpclmul
+@opindex mpclmul
+@need 200
+@itemx -mclfushopt
+@opindex mclfushopt
+@need 200
+@itemx -mfsgsbase
+@opindex mfsgsbase
+@need 200
+@itemx -mrdrnd
+@opindex mrdrnd
+@need 200
+@itemx -mf16c
+@opindex mf16c
+@need 200
+@itemx -mfma
+@opindex mfma
+@need 200
+@itemx -mfma4
+@need 200
+@itemx -mno-fma4
+@need 200
+@itemx -mprefetchwt1
+@opindex mprefetchwt1
+@need 200
+@itemx -mxop
+@opindex mxop
+@need 200
+@itemx -mlwp
+@opindex mlwp
+@need 200
+@itemx -m3dnow
 @opindex m3dnow
-@opindex mno-3dnow
-These switches enable or disable the use of instructions in the MMX, SSE,
+@need 200
+@itemx -mpopcnt
+@opindex mpopcnt
+@need 200
+@itemx -mabm
+@opindex mabm
+@need 200
+@itemx -mbmi
+@opindex mbmi
+@need 200
+@itemx -mbmi2
+@need 200
+@itemx -mlzcnt
+@opindex mlzcnt
+@need 200
+@itemx -mfxsr
+@opindex mfxsr
+@need 200
+@itemx -mxsave
+@opindex mxsave
+@need 200
+@itemx -mxsaveopt
+@opindex mxsaveopt
+@need 200
+@itemx -mxsavec
+@opindex mxsavec
+@need 200
+@itemx -mxsaves
+@opindex mxsaves
+@need 200
+@itemx -mrtm
+@opindex mrtm
+@need 200
+@itemx -mtbm
+@opindex mtbm
+@need 200
+@itemx -mmpx
+@opindex mmpx
+These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 SHA, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
 BMI, BMI2, FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MPX or 3DNow!@:
-extended instruction sets.
+extended instruction sets.  Each has a corresponding @option{-mno-} option
+to disable use of these instructions.
+
 These extensions are also available as built-in functions: see
 @ref{X86 Built-in Functions}, for details of the functions enabled and
 disabled by these switches.
@@ -16288,7 +16335,7 @@ those issues, regardless the RAX register value.
 
 @item -m8bit-idiv
 @itemx -mno-8bit-idiv
-@opindex 8bit-idiv
+@opindex m8bit-idiv
 On some processors, like Intel Atom, 8-bit unsigned integer divide is
 much faster than 32-bit/64-bit integer divide.  This option generates a
 run-time check.  If both dividend and divisor are within range of 0
@@ -16297,8 +16344,8 @@ to 255, 8-bit unsigned integer divide is used instead of
 
 @item -mavx256-split-unaligned-load
 @itemx -mavx256-split-unaligned-store
-@opindex avx256-split-unaligned-load
-@opindex avx256-split-unaligned-store
+@opindex mavx256-split-unaligned-load
+@opindex mavx256-split-unaligned-store
 Split 32-byte AVX unaligned load and store.
 
 @item -mstack-protector-guard=@var{guard}
@@ -18910,7 +18957,7 @@ cause the linker to search for a script called @file{xxx.ld}.
 This option is also passed on to the assembler.
 
 @item -mcpu=
-@opindex -mcpu=
+@opindex mcpu=
 Specifies the ISA to use.  Accepted values are @code{msp430},
 @code{msp430x} and @code{msp430xv2}.  This option is deprecated.  The
 @option{-mmcu=} option should be used to select the ISA.
@@ -20684,7 +20731,7 @@ values, however, so the FPU hardware is not used for doubles if the
 This is because the RX FPU instructions are themselves unsafe.
 
 @item -mcpu=@var{name}
-@opindex -mcpu
+@opindex mcpu
 Selects the type of RX CPU to be targeted.  Currently three types are
 supported, the generic @var{RX600} and @var{RX200} series hardware and
 the specific @var{RX610} CPU.  The default is @var{RX600}.
@@ -22566,7 +22613,7 @@ routine for the debugger.
 Default to 64-bit memory allocation routines.
 
 @item -mpointer-size=@var{size}
-@opindex -mpointer-size=@var{size}
+@opindex mpointer-size=@var{size}
 Set the default size of pointers. Possible options for @var{size} are
 @samp{32} or @samp{short} for 32 bit pointers, @samp{64} or @samp{long}
 for 64 bit pointers, and @samp{no} for supporting only 32 bit pointers.
