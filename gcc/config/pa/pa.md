@@ -8935,14 +8935,14 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 ;; strength reduction is used.  It is actually created when the instruction
 ;; combination phase combines the special loop test.  Since this insn
 ;; is both a jump insn and has an output, it must deal with its own
-;; reloads, hence the `m' constraints.  The `!' constraints direct reload
+;; reloads, hence the `Q' constraints.  The `!' constraints direct reload
 ;; to not choose the register alternatives in the event a reload is needed.
 (define_insn "decrement_and_branch_until_zero"
   [(set (pc)
 	(if_then_else
 	  (match_operator 2 "comparison_operator"
 	   [(plus:SI
-	      (match_operand:SI 0 "reg_before_reload_operand" "+!r,!*f,*m")
+	      (match_operand:SI 0 "reg_before_reload_operand" "+!r,!*f,*Q")
 	      (match_operand:SI 1 "int5_operand" "L,L,L"))
 	    (const_int 0)])
 	  (label_ref (match_operand 3 "" ""))
@@ -9031,7 +9031,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	   [(match_operand:SI 1 "register_operand" "r,r,r,r") (const_int 0)])
 	  (label_ref (match_operand 3 "" ""))
 	  (pc)))
-   (set (match_operand:SI 0 "reg_before_reload_operand" "=!r,!*f,*m,!*q")
+   (set (match_operand:SI 0 "reg_before_reload_operand" "=!r,!*f,*Q,!*q")
 	(match_dup 1))]
   ""
 "* return pa_output_movb (operands, insn, which_alternative, 0); "
@@ -9103,7 +9103,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	   [(match_operand:SI 1 "register_operand" "r,r,r,r") (const_int 0)])
 	  (pc)
 	  (label_ref (match_operand 3 "" ""))))
-   (set (match_operand:SI 0 "reg_before_reload_operand" "=!r,!*f,*m,!*q")
+   (set (match_operand:SI 0 "reg_before_reload_operand" "=!r,!*f,*Q,!*q")
 	(match_dup 1))]
   ""
 "* return pa_output_movb (operands, insn, which_alternative, 1); "
