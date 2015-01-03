@@ -1,3 +1,46 @@
+2015-01-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi ([-fplan9-extensions]): Add/fix @opindex.
+	([-fvtv-debug]): Likewise.
+	([-Wc++-compat]): Likewise.
+	([-Wc++11-compat]): Likewise.
+	([-Wc++14-compat]): Likewise.
+	([-Wno-sized-deallocation]): Likewise.
+	([-femit-class-debug-always]): Likewise.
+	([-femit-struct-debug-detailed]): Likewise.
+	([-fno-keep-inline-dllexport]): Likewise.
+	([-fira-algorithm]): Likewise.
+	([-fira-region]): Likewise.
+	([-flra-remat]): Likewise.
+	([-fipa-ra]): Likewise.
+	([-fhoist-adjacent-loads]): Likewise.
+	([-fisolate-erroneous-paths-dereference]): Likewise.
+	([-fisolate-erroneous-paths-attribute]): Likewise.
+	([-ftree-switch-conversion]): Likewise.
+	([-ftree-tail-merge]): Likewise.
+	([-ftree-loop-if-convert]): Likewise.
+	([-ftree-loop-if-convert-stores]): Likewise.
+	([-ftree-loop-distribution]): Likewise.
+	([-ftree-loop-distribute-patterns]): Likewise.
+	([-flto-compression-level]): Likewise.
+	([-flto-report]): Likewise.
+	([-flto-report-wpa]): Likewise.
+	([-fuse-linker-plugin]): Likewise.
+	([-mfix-cortex-a53-835769]): Likewise.
+	([-mno-fix-cortex-a53-835769]): Likewise.
+	([-mmmx]...[-mno-3dnow]): Remove the -mno- forms from the
+	explicit listing; add a note to the discussion indicating they
+	exist.  Reorder table to group similar options.  Add missing
+	@opindex entries.  Add @need commands throughout the table to
+	allow it to be split across multiple pages.
+	([-m8bit-idiv]): Fix @opindex.
+	([-mavx256-split-unaligned-load]): Likewise.
+	([-mavx256-split-unaligned-store]): Likewise.
+	([-mstack-protector-guard]): Likewise.
+	([-mcpu=]): Likewise.
+	([-mcpu]): Likewise.
+	([-mpointer-size=]): Likewise.
+
 2015-01-03  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (decrement_and_branch_until_zero): Use `Q' constraint
