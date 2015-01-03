@@ -1,3 +1,7 @@
+2015-01-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pr63914.c: Add -fno-common option on hppa*-*-hpux*.
+
 2015-01-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-c++-common/tsan/bitfield_race.c: New testcase.
