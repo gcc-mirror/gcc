@@ -378,7 +378,7 @@ Objective-C and Objective-C++ Dialects}.
 -fcx-limited-range @gol
 -fdata-sections -fdce -fdelayed-branch @gol
 -fdelete-null-pointer-checks -fdevirtualize -fdevirtualize-speculatively @gol
--devirtualize-at-ltrans -fdse @gol
+-fdevirtualize-at-ltrans -fdse @gol
 -fearly-inlining -fipa-sra -fexpensive-optimizations -ffat-lto-objects @gol
 -ffast-math -ffinite-math-only -ffloat-store -fexcess-precision=@var{style} @gol
 -fforward-propagate -ffp-contract=@var{style} -ffunction-sections @gol
@@ -7772,7 +7772,7 @@ are enabled independently at different optimization levels.
 @opindex fdevirtualize
 Attempt to convert calls to virtual functions to direct calls.  This
 is done both within a procedure and interprocedurally as part of
-indirect inlining (@code{-findirect-inlining}) and interprocedural constant
+indirect inlining (@option{-findirect-inlining}) and interprocedural constant
 propagation (@option{-fipa-cp}).
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
@@ -7781,14 +7781,15 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 Attempt to convert calls to virtual functions to speculative direct calls.
 Based on the analysis of the type inheritance graph, determine for a given call
 the set of likely targets. If the set is small, preferably of size 1, change
-the call into an conditional deciding on direct and indirect call.  The
+the call into a conditional deciding between direct and indirect calls.  The
 speculative calls enable more optimizations, such as inlining.  When they seem
 useless after further optimization, they are converted back into original form.
 
 @item -fdevirtualize-at-ltrans
 @opindex fdevirtualize-at-ltrans
-Perform extra streaming needed for agressive devirtualization during LTO local
-transformation stage. This option enables more devirtualization but
+Stream extra information needed for aggressive devirtualization when running
+the link-time optimizer in local transformation mode.  
+This option enables more devirtualization but
 significantly increases the size of streamed data. For this reason it is
 disabled by default.
 

@@ -1064,7 +1064,7 @@ Delete useless null pointer checks
 
 fdevirtualize-at-ltrans
 Common Report Var(flag_ltrans_devirtualize)
-Perofrm extra streaming to support more agressive devirtualization at LTO ltrans stage.
+Stream extra data to support more aggressive devirtualization in LTO local transformation mode
 
 fdevirtualize-speculatively
 Common Report Var(flag_devirtualize_speculatively) Optimization
