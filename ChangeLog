@@ -1,3 +1,15 @@
+2015-01-03  Andrew Pinski  <apinski@cavium.com>
+
+	* Makefile.def (flags_to_pass): Pass OBJCOPY_FOR_TARGET also.
+	* Makefile.tpl (HOST_EXPORTS): Add OBJCOPY_FOR_TARGET.
+	(BASE_TARGET_EXPORTS): Add OBJCOPY.
+	(OBJCOPY_FOR_TARGET): New variable.
+	(EXTRA_TARGET_FLAGS): Add OBJCOPY.
+	* Makefile.in: Regenerate.
+	* configure.ac: Check for already installed target objcopy.
+	Also GCC_TARGET_TOOL on objcopy.
+	* configure: Regenerate.
+
 2015-01-02  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config.sub: Update from upstream, to 2015-01-01 version.
