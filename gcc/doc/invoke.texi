@@ -8234,17 +8234,18 @@ This flag is enabled by default at @option{-O2} and @option{-Os}.
 
 @item -fisolate-erroneous-paths-dereference
 @opindex fisolate-erroneous-paths-dereference
-Detect paths which trigger erroneous or undefined behaviour due to
-dereferencing a NULL pointer.  Isolate those paths from the main control
-flow and turn the statement with erroneous or undefined behaviour into a trap.
+Detect paths that trigger erroneous or undefined behavior due to
+dereferencing a null pointer.  Isolate those paths from the main control
+flow and turn the statement with erroneous or undefined behavior into a trap.
+This flag is enabled by default at @option{-O2} and higher.
 
 @item -fisolate-erroneous-paths-attribute
 @opindex fisolate-erroneous-paths-attribute
-Detect paths which trigger erroneous or undefined behaviour due a NULL value
-being used in a way which is forbidden by a @code{returns_nonnull} or @code{nonnull}
+Detect paths that trigger erroneous or undefined behavior due a null value
+being used in a way forbidden by a @code{returns_nonnull} or @code{nonnull}
 attribute.  Isolate those paths from the main control flow and turn the
-statement with erroneous or undefined behaviour into a trap.  This is not
-currently enabled, but may be enabled by @code{-O2} in the future.
+statement with erroneous or undefined behavior into a trap.  This is not
+currently enabled, but may be enabled by @option{-O2} in the future.
 
 @item -ftree-sink
 @opindex ftree-sink
