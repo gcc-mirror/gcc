@@ -102,6 +102,13 @@ proc gfortran_link_flags { paths } {
       if [file exists "${gccpath}/libgfortran/libgforbegin.a"] {
           append flags "-L${gccpath}/libgfortran "
       }
+      if [file exists "${gccpath}/libatomic/.libs/libatomic.${shlib_ext}"] {
+	  append flags "-L${gccpath}/libatomic/.libs "
+	  append ld_library_path ":${gccpath}/libatomic/.libs"
+      }
+      if [file exists "${gccpath}/libatomic/libatomic.a"] {
+          append flags "-L${gccpath}/libatomic "
+      }
       if [file exists "${gccpath}/libquadmath/.libs/libquadmath.a"] {
           # Some targets use libquadmath.a%s in their specs, so they need a -B option
           # for uninstalled testing.

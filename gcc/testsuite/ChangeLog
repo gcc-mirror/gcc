@@ -1,5 +1,10 @@
 2015-01-03  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR testsuite/62250
+	* lib/gfortran.exp: Add libatomic library search path.
+	* gfortran.dg/coarray/caf.exp: Add -latomic to test options.
+	* gfortran.dg/coarray_lib_comm_1.f90: Likewise.
+
 	* gcc.dg/pr63914.c: Add -fno-common option on hppa*-*-hpux*.
 
 2015-01-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
