@@ -9325,7 +9325,7 @@ profile useful for later recompilation with profile feedback based
 optimization.  You must use @option{-fprofile-generate} both when
 compiling and when linking your program.
 
-The following options are enabled: @code{-fprofile-arcs}, @code{-fprofile-values}, @code{-fvpt}.
+The following options are enabled: @option{-fprofile-arcs}, @option{-fprofile-values}, @option{-fvpt}.
 
 If @var{path} is specified, GCC looks at the @var{path} to find
 the profile feedback data files. See @option{-fprofile-dir}.
@@ -9333,12 +9333,12 @@ the profile feedback data files. See @option{-fprofile-dir}.
 @item -fprofile-use
 @itemx -fprofile-use=@var{path}
 @opindex fprofile-use
-Enable profile feedback directed optimizations, and optimizations
-generally profitable only with profile feedback available.
-
-The following options are enabled: @code{-fbranch-probabilities}, @code{-fvpt},
-@code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer}, @code{-ftree-vectorize},
-@code{ftree-loop-distribute-patterns}
+Enable profile feedback-directed optimizations, 
+and the following optimizations
+which are generally profitable only with profile feedback available:
+@option{-fbranch-probabilities}, @option{-fvpt},
+@option{-funroll-loops}, @option{-fpeel-loops}, @option{-ftracer}, 
+@option{-ftree-vectorize}, and @option{ftree-loop-distribute-patterns}.
 
 By default, GCC emits an error message if the feedback profiles do not
 match the source code.  This error can be turned into a warning by using
@@ -9351,37 +9351,39 @@ the profile feedback data files. See @option{-fprofile-dir}.
 @item -fauto-profile
 @itemx -fauto-profile=@var{path}
 @opindex fauto-profile
-Enable sampling based feedback directed optimizations, and optimizations
-generally profitable only with profile feedback available.
+Enable sampling-based feedback-directed optimizations, 
+and the following optimizations
+which are generally profitable only with profile feedback available:
+@option{-fbranch-probabilities}, @option{-fvpt},
+@option{-funroll-loops}, @option{-fpeel-loops}, @option{-ftracer}, 
+@option{-ftree-vectorize},
+@option{-finline-functions}, @option{-fipa-cp}, @option{-fipa-cp-clone},
+@option{-fpredictive-commoning}, @option{-funswitch-loops},
+@option{-fgcse-after-reload}, and @option{-ftree-loop-distribute-patterns}.
 
-The following options are enabled: @code{-fbranch-probabilities}, @code{-fvpt},
-@code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer}, @code{-ftree-vectorize},
-@code{-finline-functions}, @code{-fipa-cp}, @code{-fipa-cp-clone},
-@code{-fpredictive-commoning}, @code{-funswitch-loops},
-@code{-fgcse-after-reload}, @code{-ftree-loop-distribute-patterns},
+@var{path} is the name of a file containing AutoFDO profile information.
+If omitted, it defaults to @file{fbdata.afdo} in the current directory.
 
-If @var{path} is specified, GCC looks at the @var{path} to find
-the profile feedback data files.
-
-In order to collect AutoFDO profile, you need to have:
-
-1. A linux system with linux perf support
-2. (optional) An Intel processor with last branch record (LBR) support. This is
-   to guarantee accurate instruction level profile, which is important for
-   AutoFDO performance.
-
-To collect the profile, first use linux perf to collect raw profile
-(see @uref{https://perf.wiki.kernel.org/}).
+Producing an AutoFDO profile data file requires running your program
+with the @command{perf} utility on a supported GNU/Linux target system.
+For more information, see @uref{https://perf.wiki.kernel.org/}.
 
 E.g.
-@code{perf record -e br_inst_retired:near_taken -b -o perf.data -- your_program}
+@smallexample
+perf record -e br_inst_retired:near_taken -b -o perf.data \
+    -- your_program
+@end smallexample
 
-Then use create_gcov tool, which takes raw profile and unstripped binary to
-generate AutoFDO profile that can be used by GCC.
-(see @uref{https://github.com/google/autofdo}).
+Then use the @command{create_gcov} tool to convert the raw profile data
+to a format that can be used by GCC.@  You must also supply the 
+unstripped binary for your program to this tool.  
+See @uref{https://github.com/google/autofdo}.
 
 E.g.
-@code{create_gcov --binary=your_program.unstripped --profile=perf.data --gcov=profile.afdo}
+@smallexample
+create_gcov --binary=your_program.unstripped --profile=perf.data \
+    --gcov=profile.afdo
+@end smallexample
 @end table
 
 The following options control compiler behavior regarding floating-point 

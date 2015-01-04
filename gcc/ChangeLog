@@ -1,5 +1,12 @@
 2015-01-03  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/invoke.texi ([-fprofile-generate], [-fprofile-use]):
+	Fix markup, light copy-editing.
+	([-fauto-profile]): Rewrite to fix formatting and content
+	problems.
+
+2015-01-03  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/invoke.texi ([-fisolate-erroneous-paths-dereference]):
 	Copy-edit description.
 	([-fisolate-erroneous-paths-attribute]): Likewise.
