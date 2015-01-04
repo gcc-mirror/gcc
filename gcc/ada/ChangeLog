@@ -1,3 +1,8 @@
+2015-01-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc-interface/misc.c (internal_error_function): Use xasprintf instead
+	of unchecked asprintf.
+
 2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_{Min,Max}>: If the
