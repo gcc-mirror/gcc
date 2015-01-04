@@ -1,3 +1,47 @@
+2015-01-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi ([-fsized-deallocation]): Copy-edit to fix
+	verb tense, etc.
+	([-fvtable-verify], [-fvtv-debug]): Likewise.
+	([-Wabi]): Likewise.
+	([-fmessage-length]): Likewise.
+	([-Wsuggest-final-types], [-Wsuggest-final-methods]): Likewise.
+	([-Wno-discarded-qualifiers]): Likewise.
+	([-Wnodiscarded-array-qualifiers]): Likewise.
+	([-Wno-virtual-move-assign]): Likewise.
+	([-fsanitize=address], [-fsanitize=thread]): Likewise.
+	([-fsanitize=leak], [-fsanitize=undefined]): Likewise.
+	([-fsanitize=unreachable], [-fsanitize-recover]): Likewise.
+	([-fsanitize-undefined-trap-on-error]): Likewise.
+	([-floop-interchange]): Likewise.
+	([-ftree-coalesce-inlined-vars]): Likewise.
+	([-fvect-cost-model]): Likewise.
+	([-flto]): Likewise.
+	([--param]): Likewise.
+	(Spec Files): Likewise.
+	([-mstrict-align]): Likewise.
+	([-mfix-cortex-a53-835769]): Likewise.
+	([-march], [-mtune]): Likewise.
+	([-mpic-register]): Likewise.
+	([-munaligned-access]): Likewise.
+	([-msp8]): Likewise.
+	(EIND and Devices with more than 128 Ki Bytes of Flash): Likewise.
+	(AVR Built-in Macros): Likewise.
+	([-mpreferred-stack-boundary]): Likewise.
+	([-mtune-crtl]): Likewise.
+	([-mashf]): Likewise.
+	([-mmcu=]): Likewise.
+	([-minrt]): Likewise.
+	([-maltivec], [-maltivec=be], [-maltivec=le]): Likewise.
+	([-mupper-regs]): Likewise.
+	([-matomic-model]): Likewise.
+	([-mdiv]): Likewise.
+	([-mzdcbranch]): Likewise.
+	([-mdisable-callt]): Likewise.
+	([-msoft-float]): Likewise.
+	([-m8byte-align]): Likewise.
+	([-fstack-reuse]): Likewise.
+
 2015-01-03  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi ([-fprofile-generate], [-fprofile-use]):
