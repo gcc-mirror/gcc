@@ -14373,7 +14373,7 @@ $as_echo "just compiled" >&6; }
 $as_echo "pre-installed in $ac_dir" >&6; }
   elif test "x$target" = "x$host"; then
     # We can use an host tool
-    OBJCOPY_FOR_TARGET='$(OBJDUMP)'
+    OBJCOPY_FOR_TARGET='$(OBJCOPY)'
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
 $as_echo "host tool" >&6; }
   else
