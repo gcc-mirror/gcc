@@ -81,14 +81,14 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] 
     foreach flags $option_list {
 	verbose "Testing $nshort (single), $flags" 1
         set gfortran_aux_module_flags "-fcoarray=single $flags"
-	dg-test $test "-fcoarray=single $flags" "" 
+	dg-test $test "-fcoarray=single $flags -latomic" "" 
 	cleanup-modules ""
     }
 
     foreach flags $option_list {
 	verbose "Testing $nshort (libcaf_single), $flags" 1
         set gfortran_aux_module_flags "-fcoarray=lib $flags -lcaf_single"
-	dg-test $test "-fcoarray=lib $flags -lcaf_single" ""
+	dg-test $test "-fcoarray=lib $flags -lcaf_single -latomic" ""
 	cleanup-modules ""
     }
 }

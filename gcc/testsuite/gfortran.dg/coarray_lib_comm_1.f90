@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fdump-tree-original -fcoarray=lib -lcaf_single" }
+! { dg-options "-fdump-tree-original -fcoarray=lib -lcaf_single -latomic" }
 !
 ! Some dependency-analysis check for coarray communication
 !
