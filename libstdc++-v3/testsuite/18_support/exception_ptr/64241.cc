@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++11 -fno-exceptions -O0" }
+// { dg-require-atomic-builtins "" }
 
 #include <exception>
 #include <testsuite_hooks.h>

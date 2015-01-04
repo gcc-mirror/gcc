@@ -1,3 +1,9 @@
+2015-01-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64483
+	* testsuite/18_support/exception_ptr/64241.cc: Use
+	dg-require-atomic-builtins.
+
 2015-01-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/21_strings/basic_string/modifiers/64422.cc: Fix copyright
