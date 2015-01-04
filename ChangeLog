@@ -1,3 +1,8 @@
+2015-01-04  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* configure.ac: Use OBJCOPY for OBJCOPY_FOR_TARGET.
+	* configure: Regenerate.
+
 2015-01-03  Andrew Pinski  <apinski@cavium.com>
 
 	* Makefile.def (flags_to_pass): Pass OBJCOPY_FOR_TARGET also.
