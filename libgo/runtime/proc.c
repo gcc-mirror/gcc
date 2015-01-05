@@ -50,7 +50,7 @@ extern void __splitstack_block_signals_context (void *context[10], int *,
 #if defined(USING_SPLIT_STACK) && defined(LINKER_SUPPORTS_SPLIT_STACK)
 # define StackMin PTHREAD_STACK_MIN
 #else
-# define StackMin 2 * 1024 * 1024
+# define StackMin ((sizeof(char *) < 8) ? 2 * 1024 * 1024 : 4 * 1024 * 1024)
 #endif
 
 uintptr runtime_stacks_sys;
