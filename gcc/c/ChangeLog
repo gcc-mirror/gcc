@@ -1,3 +1,9 @@
+2015-01-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64423
+	* c-typeck.c (build_array_ref): Pass loc down to
+	warn_array_subscript_with_type_char.
+
 2014-12-20  Martin Uecker <uecker@eecs.berkeley.edu>
 
 	* c-typeck.c: New behavious for pointers to arrays with qualifiers

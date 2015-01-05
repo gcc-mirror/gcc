@@ -11238,11 +11238,12 @@ check_missing_format_attribute (tree ltype, tree rtype)
    warning only for non-constant value of type char.  */
 
 void
-warn_array_subscript_with_type_char (tree index)
+warn_array_subscript_with_type_char (location_t loc, tree index)
 {
   if (TYPE_MAIN_VARIANT (TREE_TYPE (index)) == char_type_node
       && TREE_CODE (index) != INTEGER_CST)
-    warning (OPT_Wchar_subscripts, "array subscript has type %<char%>");
+    warning_at (loc, OPT_Wchar_subscripts,
+		"array subscript has type %<char%>");
 }
 
 /* Implement -Wparentheses for the unexpected C precedence rules, to

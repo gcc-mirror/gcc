@@ -1,3 +1,9 @@
+2015-01-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64423
+	* typeck.c (cp_build_array_ref): Pass loc down to
+	warn_array_subscript_with_type_char.
+
 2014-12-31  Iain Sandoe  <iain@codesourcery.com>
 
 	* parser.c (cp_parser_primary_expression): If parsing an
