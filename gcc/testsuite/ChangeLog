@@ -1,3 +1,7 @@
+2015-01-05  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/pr42629.c: Only pass scheduling options on scheduling targets.
+
 2015-01-03  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR testsuite/62250
