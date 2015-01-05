@@ -1,5 +1,7 @@
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
- 
+
+	Update copyright years.
+
 	* jcf-dump.c (version): Update copyright notice dates.
 
 2014-11-24  Richard Biener  <rguenther@suse.de>

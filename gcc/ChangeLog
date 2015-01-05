@@ -1,5 +1,7 @@
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	Update copyright years.
+
 	* gcc.c (process_command): Update copyright notice dates.
 	* gcov-dump.c: Ditto.
 	* gcov.c: Ditto.
