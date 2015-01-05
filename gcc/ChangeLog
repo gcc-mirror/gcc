@@ -1,3 +1,7 @@
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* auto-profile.c, auto-profile.h: Fix up Copyright line.
+
 2015-01-04  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi ([-fsized-deallocation]): Copy-edit to fix
