@@ -1,3 +1,8 @@
+2015-01-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi: Fix incorrect uses of @code, @option, @samp,
+	etc markup throughout the file.
+
 2015-01-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	Enable experimental TSAN support for Ada.
