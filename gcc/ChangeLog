@@ -1,5 +1,16 @@
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.c (process_command): Update copyright notice dates.
+	* gcov-dump.c: Ditto.
+	* gcov.c: Ditto.
+	* doc/cpp.texi: Bump @copying's copyright year.
+	* doc/cppinternals.texi: Ditto.
+	* doc/gcc.texi: Ditto.
+	* doc/gccint.texi: Ditto.
+	* doc/gcov.texi: Ditto.
+	* doc/install.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
 	* auto-profile.c, auto-profile.h: Fix up Copyright line.
 
 2015-01-04  Sandra Loosemore  <sandra@codesourcery.com>
