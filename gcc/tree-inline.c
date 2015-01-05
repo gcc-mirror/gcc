@@ -2582,13 +2582,19 @@ void
 redirect_all_calls (copy_body_data * id, basic_block bb)
 {
   gimple_stmt_iterator si;
+  gimple last = last_stmt (bb);
   for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
     {
-      if (is_gimple_call (gsi_stmt (si)))
+      gimple stmt = gsi_stmt (si);
+      if (is_gimple_call (stmt))
 	{
-	  struct cgraph_edge *edge = id->dst_node->get_edge (gsi_stmt (si));
+	  struct cgraph_edge *edge = id->dst_node->get_edge (stmt);
 	  if (edge)
-	    edge->redirect_call_stmt_to_callee ();
+	    {
+	      edge->redirect_call_stmt_to_callee ();
+	      if (stmt == last && id->call_stmt && maybe_clean_eh_stmt (stmt))
+		gimple_purge_dead_eh_edges (bb);
+	    }
 	}
     }
 }

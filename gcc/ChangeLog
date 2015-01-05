@@ -1,3 +1,10 @@
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64465
+	* tree-inline.c (redirect_all_calls): During inlining
+	clean up EH stmts and EH edges if redirect_call_stmt_to_callee
+	changed the stmt to a non-throwing call.
+
 2015-01-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi: Fix incorrect uses of @code, @option, @samp,
