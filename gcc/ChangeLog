@@ -1,3 +1,8 @@
+2015-01-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Enable experimental TSAN support for Ada.
+	* tsan.c (instrument_expr): Handle VIEW_CONVERT_EXPR.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/64494
