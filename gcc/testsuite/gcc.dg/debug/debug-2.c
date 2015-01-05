@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-dA" } */
 /* See the comment in debug-1.c.  */
-/* { dg-options "-dA -fno-if-conversion" { target mips*-*-* } } */
+/* { dg-options "-dA -fno-if-conversion" { target mips*-*-* mmix-knuth-mmixware } } */
 /* { dg-final { scan-assembler "xyzzy" } } */
 
 long p;
