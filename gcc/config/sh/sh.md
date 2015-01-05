@@ -7253,8 +7253,7 @@ label:
       gcc_unreachable ();
     }
 
-  if (regno == -1
-      || ! refers_to_regno_p (regno, regno + 1, operands[1], 0))
+  if (regno == -1 || ! refers_to_regno_p (regno, operands[1]))
     {
       operands[2] = operand_subword (operands[0], 0, 0, DImode);
       operands[3] = operand_subword (operands[1], 0, 0, DImode);
@@ -7787,8 +7786,7 @@ label:
 	  alter_subreg (&word0, true);
 	  word1 = gen_rtx_SUBREG (SImode, regop, 4);
 	  alter_subreg (&word1, true);
-	  if (store_p || ! refers_to_regno_p (REGNO (word0),
-					      REGNO (word0) + 1, addr, 0))
+	  if (store_p || ! refers_to_regno_p (REGNO (word0), addr))
 	    {
 	      emit_insn (store_p
 			 ? gen_movsi_ie (mem, word0)
@@ -8067,8 +8065,7 @@ label:
       gcc_unreachable ();
     }
 
-  if (regno == -1
-      || ! refers_to_regno_p (regno, regno + 1, operands[1], 0))
+  if (regno == -1 || ! refers_to_regno_p (regno, operands[1]))
     {
       operands[2] = operand_subword (operands[0], 0, 0, DFmode);
       operands[3] = operand_subword (operands[1], 0, 0, DFmode);

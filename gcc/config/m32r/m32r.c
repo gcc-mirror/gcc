@@ -1096,8 +1096,7 @@ gen_split_move_double (rtx operands[])
 	{
 	  /* If the high-address word is used in the address, we must load it
 	     last.  Otherwise, load it first.  */
-	  int reverse
-	    = (refers_to_regno_p (dregno, dregno + 1, XEXP (src, 0), 0) != 0);
+	  int reverse = refers_to_regno_p (dregno, XEXP (src, 0));
 
 	  /* We used to optimize loads from single registers as
 

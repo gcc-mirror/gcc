@@ -3174,7 +3174,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 		{
 		  rtx other = XEXP (list, 0);
 		  if (INSN_CACHED_COND (other) != const_true_rtx
-		      && refers_to_regno_p (i, i + 1, INSN_CACHED_COND (other), NULL))
+		      && refers_to_regno_p (i, INSN_CACHED_COND (other)))
 		    INSN_CACHED_COND (other) = const_true_rtx;
 		}
 	    }

@@ -13842,7 +13842,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		  unsigned int i;
 
 		  for (i = regno; i < endregno; i++)
-		    if ((! refers_to_regno_p (i, i + 1, PATTERN (place), 0)
+		    if ((! refers_to_regno_p (i, PATTERN (place))
 			 && ! find_regno_fusage (place, USE, i))
 			|| dead_or_set_regno_p (place, i))
 		      {
@@ -13872,8 +13872,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 						NULL, NULL_RTX, NULL_RTX,
 						NULL_RTX);
 			    }
-			  else if (! refers_to_regno_p (i, i + 1,
-							PATTERN (place), 0)
+			  else if (! refers_to_regno_p (i, PATTERN (place))
 				   && ! find_regno_fusage (place, USE, i))
 			    for (tem_insn = PREV_INSN (place); ;
 				 tem_insn = PREV_INSN (tem_insn))

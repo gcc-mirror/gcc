@@ -2936,8 +2936,7 @@ cris_split_movdx (rtx *operands)
 	  /* If the high-address word is used in the address, we must load it
 	     last.  Otherwise, load it first.  */
 	  rtx addr = XEXP (src, 0);
-	  int reverse
-	    = (refers_to_regno_p (dregno, dregno + 1, addr, NULL) != 0);
+	  int reverse = (refers_to_regno_p (dregno, addr) != 0);
 
 	  /* The original code implies that we can't do
 	     move.x [rN+],rM  move.x [rN],rM+1
