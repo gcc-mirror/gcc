@@ -1252,10 +1252,11 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
 }
 
 /* Instrument float point-to-integer conversion.  TYPE is an integer type of
-   destination, EXPR is floating-point expression.  */
+   destination, EXPR is floating-point expression.  ARG is what to pass
+   the libubsan call as value, often EXPR itself.  */
 
 tree
-ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
+ubsan_instrument_float_cast (location_t loc, tree type, tree expr, tree arg)
 {
   tree expr_type = TREE_TYPE (expr);
   tree t, tt, fn, min, max;
@@ -1348,6 +1349,12 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
   else
     return NULL_TREE;
 
+  t = fold_build2 (UNLE_EXPR, boolean_type_node, expr, min);
+  tt = fold_build2 (UNGE_EXPR, boolean_type_node, expr, max);
+  t = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, t, tt);
+  if (integer_zerop (t))
+    return NULL_TREE;
+
   if (flag_sanitize_undefined_trap_on_error)
     fn = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
@@ -1364,14 +1371,10 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
       fn = builtin_decl_explicit (bcode);
       fn = build_call_expr_loc (loc, fn, 2,
 				build_fold_addr_expr_loc (loc, data),
-				ubsan_encode_value (expr, false));
+				ubsan_encode_value (arg, false));
     }
 
-  t = fold_build2 (UNLE_EXPR, boolean_type_node, expr, min);
-  tt = fold_build2 (UNGE_EXPR, boolean_type_node, expr, max);
-  return fold_build3 (COND_EXPR, void_type_node,
-		      fold_build2 (TRUTH_OR_EXPR, boolean_type_node, t, tt),
-		      fn, integer_zero_node);
+  return fold_build3 (COND_EXPR, void_type_node, t, fn, integer_zero_node);
 }
 
 /* Instrument values passed to function arguments with nonnull attribute.  */

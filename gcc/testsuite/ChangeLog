@@ -1,5 +1,9 @@
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/64344
+	* c-c++-common/ubsan/pr64344-1.c: New test.
+	* c-c++-common/ubsan/pr64344-2.c: New test.
+
 	PR tree-optimization/64465
 	* gcc.dg/pr64465.c: New test.
 

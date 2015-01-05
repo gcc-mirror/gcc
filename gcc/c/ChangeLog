@@ -1,5 +1,14 @@
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/64344
+	* c-typeck.c (convert_for_assignment, c_finish_return): For
+	-fsanitize=float-cast-overflow casts from REAL_TYPE to integer/enum
+	types also set in_late_binary_op around convert call.
+	* c-convert.c (convert): For -fsanitize=float-cast-overflow REAL_TYPE
+	to integral type casts, if not in_late_binary_op, pass c_fully_fold
+	result on expr as last argument to ubsan_instrument_float_cast,
+	if in_late_binary_op, don't use c_save_expr but save_expr.
+
 	Update copyright years.
 
 2015-01-05  Marek Polacek  <polacek@redhat.com>

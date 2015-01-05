@@ -117,8 +117,18 @@ convert (tree type, tree expr)
 	  && !lookup_attribute ("no_sanitize_undefined",
 				DECL_ATTRIBUTES (current_function_decl)))
 	{
-	  expr = c_save_expr (expr);
-	  tree check = ubsan_instrument_float_cast (loc, type, expr);
+	  tree arg;
+	  if (in_late_binary_op)
+	    {
+	      expr = save_expr (expr);
+	      arg = expr;
+	    }
+	  else
+	    {
+	      expr = c_save_expr (expr);
+	      arg = c_fully_fold (expr, false, NULL);
+	    }
+	  tree check = ubsan_instrument_float_cast (loc, type, expr, arg);
 	  expr = fold_build1 (FIX_TRUNC_EXPR, type, expr);
 	  if (check == NULL)
 	    return expr;

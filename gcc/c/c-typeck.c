@@ -5885,12 +5885,14 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     {
       tree ret;
       bool save = in_late_binary_op;
-      if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE)
+      if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE
+	  || (coder == REAL_TYPE
+	      && (codel == INTEGER_TYPE || codel == ENUMERAL_TYPE)
+	      && (flag_sanitize & SANITIZE_FLOAT_CAST)))
 	in_late_binary_op = true;
       ret = convert_and_check (expr_loc != UNKNOWN_LOCATION
 			       ? expr_loc : location, type, orig_rhs);
-      if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE)
-	in_late_binary_op = save;
+      in_late_binary_op = save;
       return ret;
     }
 
@@ -9369,7 +9371,11 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 
       save = in_late_binary_op;
       if (TREE_CODE (TREE_TYPE (res)) == BOOLEAN_TYPE
-          || TREE_CODE (TREE_TYPE (res)) == COMPLEX_TYPE)
+	  || TREE_CODE (TREE_TYPE (res)) == COMPLEX_TYPE
+	  || (TREE_CODE (TREE_TYPE (t)) == REAL_TYPE
+	      && (TREE_CODE (TREE_TYPE (res)) == INTEGER_TYPE
+		  || TREE_CODE (TREE_TYPE (res)) == ENUMERAL_TYPE)
+	      && (flag_sanitize & SANITIZE_FLOAT_CAST)))
         in_late_binary_op = true;
       inner = t = convert (TREE_TYPE (res), t);
       in_late_binary_op = save;

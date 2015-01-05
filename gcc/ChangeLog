@@ -1,5 +1,12 @@
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/64344
+	* ubsan.h (ubsan_instrument_float_cast): Add ARG argument.
+	* ubsan.c (ubsan_instrument_float_cast): Add ARG argument, pass
+	it to libubsan handler instead of EXPR.  Fold comparisons earlier,
+	if the result is integer_zerop, return NULL_TREE.
+	* convert.c (convert_to_integer): Pass expr as ARG.
+
 	PR tree-optimization/64465
 	* tree-inline.c (redirect_all_calls): During inlining
 	clean up EH stmts and EH edges if redirect_call_stmt_to_callee
