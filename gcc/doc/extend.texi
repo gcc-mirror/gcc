@@ -1544,7 +1544,7 @@ struct bar @{ struct foo z; @};
 struct foo a = @{ 1, @{ 2, 3, 4 @} @};        // @r{Valid.}
 struct bar b = @{ @{ 1, @{ 2, 3, 4 @} @} @};    // @r{Invalid.}
 struct bar c = @{ @{ 1, @{ @} @} @};            // @r{Valid.}
-struct foo d[1] = @{ @{ 1 @{ 2, 3, 4 @} @} @};  // @r{Invalid.}
+struct foo d[1] = @{ @{ 1, @{ 2, 3, 4 @} @} @};  // @r{Invalid.}
 @end smallexample
 
 @node Empty Structures

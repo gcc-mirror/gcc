@@ -1,3 +1,7 @@
+2015-01-05  Marek Polacek  <polacek@redhat.com>
+
+	* doc/extend.texi (Arrays of Length Zero): Add missing comma.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
