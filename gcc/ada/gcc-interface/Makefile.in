@@ -2510,9 +2510,16 @@ GCC_LINK=$(CXX) $(GCC_LINK_FLAGS) $(ADA_INCLUDES) $(LDFLAGS)
 # Build directory for the tools. Let's copy the target-dependent
 # sources using the same mechanism as for gnatlib. The other sources are
 # accessed using the vpath directive below
-# Note: dummy target, stamp-tools is mainly handled by gnattools.
 
 ../stamp-tools:
+	-$(RM) tools/*
+	-$(RMDIR) tools
+	-$(MKDIR) tools
+	-(cd tools; $(LN_S) ../sdefault.adb ../snames.ads ../snames.adb .)
+	-$(foreach PAIR,$(TOOLS_TARGET_PAIRS), \
+	          $(RM) tools/$(word 1,$(subst <, ,$(PAIR)));\
+	          $(LN_S) $(fsrcpfx)ada/$(word 2,$(subst <, ,$(PAIR))) \
+	                tools/$(word 1,$(subst <, ,$(PAIR)));)
 	touch ../stamp-tools
 
 # when compiling the tools, the runtime has to be first on the path so that

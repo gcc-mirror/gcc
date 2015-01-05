@@ -1,3 +1,8 @@
+2015-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/64492
+	* gcc-interface/Makefile.in (../stamp-tools): Reinstate dropped code.
+
 2014-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (push_range_check_info): Replace early test
