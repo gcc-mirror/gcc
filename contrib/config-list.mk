@@ -97,8 +97,7 @@ $(LIST): make-log-dir
 	-mkdir $@
 	(											\
 		cd $@ &&									\
-		echo $@ &&									\
-		TGT=`echo $@ | sed -e 's/^\(.*\)OPT.*$$/\1/'` &&				\
+		TGT=`echo $@ | awk 'BEGIN { FS = "OPT" }; { print $$1 }'` &&			\
 		TGT=`../../gcc/config.sub $$TGT` &&						\
 		case $$TGT in									\
 			*-*-darwin* | *-*-cygwin* | *-*-mingw* | *-*-aix*)			\
