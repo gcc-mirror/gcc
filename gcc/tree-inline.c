@@ -1907,7 +1907,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	      gsi_replace (&copy_gsi, new_call, false);
 	      stmt = new_call;
 	    }
-	  else if (is_gimple_call (stmt)
+	  else if (call_stmt
 		   && id->call_stmt
 		   && (decl = gimple_call_fndecl (stmt))
 		   && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
@@ -1933,6 +1933,15 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	      new_stmt = gimple_build_assign (gimple_call_lhs (stmt), count);
 	      gsi_replace (&copy_gsi, new_stmt, false);
 	      stmt = new_stmt;
+	    }
+	  else if (call_stmt
+		   && id->call_stmt
+		   && gimple_call_internal_p (stmt)
+		   && gimple_call_internal_fn (stmt) == IFN_TSAN_FUNC_EXIT)
+	    {
+	      /* Drop TSAN_FUNC_EXIT () internal calls during inlining.  */
+	      gsi_remove (&copy_gsi, false);
+	      continue;
 	    }
 
 	  /* Statements produced by inlining can be unfolded, especially

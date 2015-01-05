@@ -208,6 +208,14 @@ expand_ASAN_CHECK (gcall *stmt ATTRIBUTE_UNUSED)
   gcc_unreachable ();
 }
 
+/* This should get expanded in the tsan pass.  */
+
+static void
+expand_TSAN_FUNC_EXIT (gcall *)
+{
+  gcc_unreachable ();
+}
+
 /* Helper function for expand_addsub_overflow.  Return 1
    if ARG interpreted as signed in its precision is known to be always
    positive or 2 if ARG is known to be always negative, or 3 if ARG may

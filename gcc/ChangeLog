@@ -1,5 +1,19 @@
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/64265
+	* gimplify.c (gimplify_function_tree): Add TSAN_FUNC_EXIT internal
+	call as cleanup of the whole body.
+	* internal-fn.def (TSAN_FUNC_EXIT): New internal call.
+	* tsan.c (replace_func_exit): New function.
+	(instrument_func_exit): Moved earlier.
+	(instrument_memory_accesses): Adjust TSAN_FUNC_EXIT internal calls.
+	Call instrument_func_exit if no TSAN_FUNC_EXIT internal calls have
+	been found.
+	(tsan_pass): Don't call instrument_func_exit.
+	* internal-fn.c (expand_TSAN_FUNC_EXIT): New function.
+	* tree-inline.c (copy_bb): Drop TSAN_FUNC_EXIT internal calls during
+	inlining.
+
 	PR sanitizer/64344
 	* ubsan.h (ubsan_instrument_float_cast): Add ARG argument.
 	* ubsan.c (ubsan_instrument_float_cast): Add ARG argument, pass
