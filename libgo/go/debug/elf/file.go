@@ -681,7 +681,7 @@ func (f *File) DWARF() (*dwarf.Data, error) {
 	// If there's a relocation table for .debug_info, we have to process it
 	// now otherwise the data in .debug_info is invalid for x86-64 objects.
 	rela := f.Section(".rela.debug_info")
-	if rela != nil && rela.Type == SHT_RELA && (f.Machine == EM_X86_64 || f.Machine == EM_AARCH64) {
+	if rela != nil && rela.Type == SHT_RELA && (f.Machine == EM_X86_64 || f.Machine == EM_AARCH64 || f.Machine == EM_PPC64) {
 		data, err := rela.Data()
 		if err != nil {
 			return nil, err

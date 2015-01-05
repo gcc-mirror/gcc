@@ -1,3 +1,11 @@
+2015-01-05  Ian Lance Taylor  <iant@google.com>
+
+	Backport from mainline:
+	2014-11-21  Lynn Boger  <laboger@linux.vnet.ibm.com>
+
+	* go.test/go-test.exp (go-set-goarch): Add case for ppc64le goarch
+	value for go testing.
+
 2014-12-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
