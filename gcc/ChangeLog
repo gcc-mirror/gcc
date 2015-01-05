@@ -1,3 +1,9 @@
+2014-12-30  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (hwloop_optimize, hwloop_fail,
+	hwloop_pattern_reg, xtensa_doloop_hooks, xtensa_reorg_loops):
+	put under #if TARGET_LOOPS guard.
+
 2015-01-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (output_387_binary_op): Use std::swap.

@@ -3766,6 +3766,8 @@ xtensa_invalid_within_doloop (const rtx_insn *insn)
 
 /* Optimize LOOP.  */
 
+#if TARGET_LOOPS
+
 static bool
 hwloop_optimize (hwloop_info loop)
 {
@@ -3951,6 +3953,12 @@ xtensa_reorg_loops (void)
 {
   reorg_loops (false, &xtensa_doloop_hooks);
 }
+#else
+static inline void
+xtensa_reorg_loops (void)
+{
+}
+#endif
 
 /* Implement the TARGET_MACHINE_DEPENDENT_REORG pass.  */
 
