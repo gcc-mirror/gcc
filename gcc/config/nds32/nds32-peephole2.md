@@ -19,7 +19,6 @@
 ;; <http://www.gnu.org/licenses/>.
 
 
-;; Use define_peephole and define_peephole2 to handle possible
-;; target-specific optimization in this file.
+;; Use define_peephole2 to handle possible target-specific optimization.
 
 ;; ------------------------------------------------------------------------

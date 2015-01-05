@@ -1,4 +1,8 @@
-2014-12-30  Max Filippov  <jcmvbkbc@gmail.com>
+2015-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/nds32/nds32-peephole2.md: Do not mention define_peephole.
+
+2015-01-05  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.c (hwloop_optimize, hwloop_fail,
 	hwloop_pattern_reg, xtensa_doloop_hooks, xtensa_reorg_loops):
