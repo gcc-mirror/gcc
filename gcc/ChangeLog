@@ -1,3 +1,7 @@
+2015-01-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (output_387_binary_op): Use std::swap.
+
 2015-01-05  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* rtlanal.c (refers_to_regno_p): Change return value from int to bool.
@@ -201,7 +205,7 @@
 	* config/pa/predicates.md (reg_before_reload_operand): Tighten
 	predicate to reject register index and LO_SUM DLT memory forms
 	after reload.
-	
+
 2015-01-02  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Option Summary): Fix spelling of

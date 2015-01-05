@@ -16414,11 +16414,7 @@ output_387_binary_op (rtx insn, rtx *operands)
     case MULT:
     case PLUS:
       if (REG_P (operands[2]) && REGNO (operands[0]) == REGNO (operands[2]))
-	{
-	  rtx temp = operands[2];
-	  operands[2] = operands[1];
-	  operands[1] = temp;
-	}
+	std::swap (operands[1], operands[2]);
 
       /* know operands[0] == operands[1].  */
 
