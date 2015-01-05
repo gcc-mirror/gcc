@@ -1,3 +1,9 @@
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64494
+	* tree-ssa-loop-im.c (move_computations_dom_walker::before_dom): Also
+	clear SSA_NAME_ANTI_RANGE_P flag.
+
 2015-01-05  Marek Polacek  <polacek@redhat.com>
 
 	* doc/extend.texi (Arrays of Length Zero): Add missing comma.
