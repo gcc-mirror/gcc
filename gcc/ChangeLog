@@ -1,3 +1,9 @@
+2015-01-05  Radovan Obradovic  <radovan.obradovic@imgtec.com>
+
+	PR rtl-optimization/64287
+	* toplev.c (HAVE_epilogue, HAVE_prologue): Provide default.
+	(process_options): Disable flag_ipa_ra if profiling.
+
 2015-01-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/nds32/nds32-peephole2.md: Do not mention define_peephole.
