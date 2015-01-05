@@ -1,3 +1,8 @@
+2015-01-05  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config-list.mk: Use shortest match for OPT to find the actual
+	target name.
+
 2014-12-17  Sergio Durigan Junior  <sergiodj@redhat.com>
 
 	* dg-extract-results.sh: Use --text with grep to avoid issues with
