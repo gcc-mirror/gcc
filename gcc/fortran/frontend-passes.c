@@ -42,6 +42,8 @@ static bool is_empty_string (gfc_expr *e);
 static void doloop_warn (gfc_namespace *);
 static void optimize_reduction (gfc_namespace *);
 static int callback_reduction (gfc_expr **, int *, void *);
+static void realloc_strings (gfc_namespace *);
+static gfc_expr *create_var (gfc_expr *);
 
 /* How deep we are inside an argument list.  */
 
@@ -113,6 +115,51 @@ gfc_run_passes (gfc_namespace *ns)
 
       expr_array.release ();
     }
+
+  if (flag_realloc_lhs)
+    realloc_strings (ns);
+}
+
+/* Callback for each gfc_code node invoked from check_realloc_strings.
+   For an allocatable LHS string which also appears as a variable on
+   the RHS, replace 
+
+   a = a(x:y)
+
+   with
+
+   tmp = a(x:y)
+   a = tmp
+ */
+
+static int
+realloc_string_callback (gfc_code **c, int *walk_subtrees,
+			 void *data ATTRIBUTE_UNUSED)
+{
+  gfc_expr *expr1, *expr2;
+  gfc_code *co = *c;
+  gfc_expr *n;
+
+  *walk_subtrees = 0;
+  if (co->op != EXEC_ASSIGN)
+    return 0;
+
+  expr1 = co->expr1;
+  if (expr1->ts.type != BT_CHARACTER || expr1->rank != 0
+      || !expr1->symtree->n.sym->attr.allocatable)
+    return 0;
+
+  expr2 = gfc_discard_nops (co->expr2);
+  if (expr2->expr_type != EXPR_VARIABLE)
+    return 0;
+
+  if (!gfc_check_dependency (expr1, expr2, true))
+    return 0;
+  
+  current_code = c;
+  n = create_var (expr2);
+  co->expr2 = n;
+  return 0;
 }
 
 /* Callback for each gfc_code node invoked through gfc_code_walker
@@ -430,6 +477,52 @@ is_fe_temp (gfc_expr *e)
   return e->symtree->n.sym->attr.fe_temp;
 }
 
+/* Determine the length of a string, if it can be evaluated as a constant
+   expression.  Return a newly allocated gfc_expr or NULL on failure.
+   If the user specified a substring which is potentially longer than
+   the string itself, the string will be padded with spaces, which
+   is harmless.  */
+
+static gfc_expr *
+constant_string_length (gfc_expr *e)
+{
+
+  gfc_expr *length;
+  gfc_ref *ref;
+  gfc_expr *res;
+  mpz_t value;
+
+  if (e->ts.u.cl)
+    {
+      length = e->ts.u.cl->length;
+      if (length && length->expr_type == EXPR_CONSTANT)
+	return gfc_copy_expr(length);
+    }
+
+  /* Return length of substring, if constant. */
+  for (ref = e->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_SUBSTRING
+	  && gfc_dep_difference (ref->u.ss.end, ref->u.ss.start, &value))
+	{
+	  res = gfc_get_constant_expr (BT_INTEGER, gfc_charlen_int_kind,
+				       &e->where);
+	  
+	  mpz_add_ui (res->value.integer, value, 1);
+	  mpz_clear (value);
+	  return res;
+	}
+    }
+
+  /* Return length of char symbol, if constant.  */
+
+  if (e->symtree->n.sym->ts.u.cl && e->symtree->n.sym->ts.u.cl->length
+      && e->symtree->n.sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+    return gfc_copy_expr (e->symtree->n.sym->ts.u.cl->length);
+
+  return NULL;
+
+}
 
 /* Returns a new expression (a variable) to be used in place of the old one,
    with an assignment statement before the current statement to set
@@ -523,6 +616,20 @@ create_var (gfc_expr * e)
 	      symbol->as->upper[i] = q;
 	    }
 	}
+    }
+
+  if (e->ts.type == BT_CHARACTER && e->rank == 0)
+    {
+      gfc_expr *length;
+
+      length = constant_string_length (e);
+      if (length)
+	{
+	  symbol->ts.u.cl = gfc_new_charlen (ns, NULL);
+	  symbol->ts.u.cl->length = length;
+	}
+      else
+	symbol->attr.allocatable = 1;
     }
 
   symbol->attr.flavor = FL_VARIABLE;
@@ -847,6 +954,26 @@ optimize_namespace (gfc_namespace *ns)
       if (ns->code == NULL || ns->code->op != EXEC_BLOCK)
 	optimize_namespace (ns);
     }
+}
+
+/* Handle dependencies for allocatable strings which potentially redefine
+   themselves in an assignment.  */
+
+static void
+realloc_strings (gfc_namespace *ns)
+{
+  current_ns = ns;
+  gfc_code_walker (&ns->code, realloc_string_callback, dummy_expr_callback, NULL);
+
+  for (ns = ns->contained; ns; ns = ns->sibling)
+    {
+      if (ns->code == NULL || ns->code->op != EXEC_BLOCK)
+	{
+	  // current_ns = ns;
+	  realloc_strings (ns);
+	}
+    }
+
 }
 
 static void
@@ -1565,6 +1692,11 @@ optimize_trim (gfc_expr *e)
   a = e->value.function.actual->expr;
 
   if (a->expr_type != EXPR_VARIABLE)
+    return false;
+
+  /* This would pessimize the idiom a = trim(a) for reallocatable strings.  */
+
+  if (a->symtree->n.sym->attr.allocatable)
     return false;
 
   /* Follow all references to find the correct place to put the newly

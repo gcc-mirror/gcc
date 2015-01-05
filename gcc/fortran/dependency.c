@@ -243,8 +243,8 @@ gfc_dep_compare_functions (gfc_expr *e1, gfc_expr *e2, bool impure_ok)
 /* Helper function to look through parens, unary plus and widening
    integer conversions.  */
 
-static gfc_expr*
-discard_nops (gfc_expr *e)
+gfc_expr *
+gfc_discard_nops (gfc_expr *e)
 {
   gfc_actual_arglist *arglist;
 
@@ -297,8 +297,8 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
   if (e1 == NULL && e2 == NULL)
     return 0;
 
-  e1 = discard_nops (e1);
-  e2 = discard_nops (e2);
+  e1 = gfc_discard_nops (e1);
+  e2 = gfc_discard_nops (e2);
 
   if (e1->expr_type == EXPR_OP && e1->value.op.op == INTRINSIC_PLUS)
     {
@@ -515,8 +515,8 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
   if (e1->ts.type != BT_INTEGER || e2->ts.type != BT_INTEGER)
     return false;
 
-  e1 = discard_nops (e1);
-  e2 = discard_nops (e2);
+  e1 = gfc_discard_nops (e1);
+  e2 = gfc_discard_nops (e2);
 
   /* Inizialize tentatively, clear if we don't return anything.  */
   mpz_init (*result);
@@ -531,8 +531,8 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
 
   if (e1->expr_type == EXPR_OP && e1->value.op.op == INTRINSIC_PLUS)
     {
-      e1_op1 = discard_nops (e1->value.op.op1);
-      e1_op2 = discard_nops (e1->value.op.op2);
+      e1_op1 = gfc_discard_nops (e1->value.op.op1);
+      e1_op2 = gfc_discard_nops (e1->value.op.op2);
 
       /* Case 2: (X + c1) - X = c1.  */
       if (e1_op2->expr_type == EXPR_CONSTANT
@@ -552,8 +552,8 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
 
       if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_PLUS)
 	{
-	  e2_op1 = discard_nops (e2->value.op.op1);
-	  e2_op2 = discard_nops (e2->value.op.op2);
+	  e2_op1 = gfc_discard_nops (e2->value.op.op1);
+	  e2_op2 = gfc_discard_nops (e2->value.op.op2);
 
 	  if (e1_op2->expr_type == EXPR_CONSTANT)
 	    {
@@ -597,8 +597,8 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
 
       if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_MINUS)
 	{
-	  e2_op1 = discard_nops (e2->value.op.op1);
-	  e2_op2 = discard_nops (e2->value.op.op2);
+	  e2_op1 = gfc_discard_nops (e2->value.op.op1);
+	  e2_op2 = gfc_discard_nops (e2->value.op.op2);
 
 	  if (e1_op2->expr_type == EXPR_CONSTANT)
 	    {
@@ -627,8 +627,8 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
 
   if (e1->expr_type == EXPR_OP && e1->value.op.op == INTRINSIC_MINUS)
     {
-      e1_op1 = discard_nops (e1->value.op.op1);
-      e1_op2 = discard_nops (e1->value.op.op2);
+      e1_op1 = gfc_discard_nops (e1->value.op.op1);
+      e1_op2 = gfc_discard_nops (e1->value.op.op2);
 
       if (e1_op2->expr_type == EXPR_CONSTANT)
 	{
@@ -642,8 +642,8 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
 
 	  if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_PLUS)
 	    {
-	      e2_op1 = discard_nops (e2->value.op.op1);
-	      e2_op2 = discard_nops (e2->value.op.op2);
+	      e2_op1 = gfc_discard_nops (e2->value.op.op1);
+	      e2_op2 = gfc_discard_nops (e2->value.op.op2);
 
 	      /* Case 11: (X - c1) - (X + c2) = -( c1 + c2).  */
 	      if (e2_op2->expr_type == EXPR_CONSTANT
@@ -668,8 +668,8 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
 
 	  if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_MINUS)
 	    {
-	      e2_op1 = discard_nops (e2->value.op.op1);
-	      e2_op2 = discard_nops (e2->value.op.op2);
+	      e2_op1 = gfc_discard_nops (e2->value.op.op1);
+	      e2_op2 = gfc_discard_nops (e2->value.op.op2);
 
 	      /* Case 13: (X - c1) - (X - c2) = c2 - c1.  */
 	      if (e2_op2->expr_type == EXPR_CONSTANT
@@ -685,8 +685,8 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
 	{
 	  if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_MINUS)
 	    {
-	      e2_op1 = discard_nops (e2->value.op.op1);
-	      e2_op2 = discard_nops (e2->value.op.op2);
+	      e2_op1 = gfc_discard_nops (e2->value.op.op1);
+	      e2_op2 = gfc_discard_nops (e2->value.op.op2);
 
 	      /* Case 14: (c1 - X) - (c2 - X) == c1 - c2.  */
 	      if (gfc_dep_compare_expr (e1_op2, e2_op2) == 0)
@@ -702,8 +702,8 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
 
   if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_PLUS)
     {
-      e2_op1 = discard_nops (e2->value.op.op1);
-      e2_op2 = discard_nops (e2->value.op.op2);
+      e2_op1 = gfc_discard_nops (e2->value.op.op1);
+      e2_op2 = gfc_discard_nops (e2->value.op.op2);
 
       /* Case 15: X - (X + c2) = -c2.  */
       if (e2_op2->expr_type == EXPR_CONSTANT
@@ -723,8 +723,8 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
 
   if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_MINUS)
     {
-      e2_op1 = discard_nops (e2->value.op.op1);
-      e2_op2 = discard_nops (e2->value.op.op2);
+      e2_op1 = gfc_discard_nops (e2->value.op.op1);
+      e2_op2 = gfc_discard_nops (e2->value.op.op2);
 
       /* Case 17: X - (X - c2) = c2.  */
       if (e2_op2->expr_type == EXPR_CONSTANT

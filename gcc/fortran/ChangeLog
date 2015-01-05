@@ -1,3 +1,20 @@
+2015-01-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/47674
+	* dependency.c:  Update copyright years.
+	(gfc_discard_nops):  Add prototype.
+	* dependency.c (discard_nops):  Rename to gfc_discard_nops,
+	make non-static.
+	(gfc_discard_nops):  Use gfc_discard_nops.
+	(gfc_dep_difference):  Likewise.
+	* frontend-passes.c  Update copyright years.
+	(realloc_strings):  New function.  Add prototype.
+	(gfc_run_passes):  Call realloc_strings.
+	(realloc_string_callback):  New function.
+	(create_var):  Add prototype.  Handle case of a
+	scalar character variable.
+	(optimize_trim):  Do not handle allocatable variables.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
