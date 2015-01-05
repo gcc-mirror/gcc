@@ -212,6 +212,17 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
 		     build_int_cst (TREE_TYPE (expr), bitpos / BITS_PER_UNIT));
       expr_ptr = build_fold_addr_expr (expr);
     }
+  /* We can't call build_fold_addr_expr on a VIEW_CONVERT_EXPR.
+     This can occur in Ada.  */
+  else if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
+    {
+      align = get_object_alignment (expr);
+      if (align < BITS_PER_UNIT)
+	return false;
+      expr = TREE_OPERAND (expr, 0);
+      gcc_checking_assert (is_gimple_addressable (expr));
+      expr_ptr = build_fold_addr_expr (unshare_expr (expr));
+    }
   else
     {
       align = get_object_alignment (expr);
