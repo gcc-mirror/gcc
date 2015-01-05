@@ -70,7 +70,7 @@ build_message_string (const char *msg, ...)
   va_list ap;
 
   va_start (ap, msg);
-  vasprintf (&str, msg, ap);
+  str = xvasprintf (msg, ap);
   va_end (ap);
 
   return str;

@@ -2503,6 +2503,18 @@ gfc_has_vector_subscript (gfc_expr *e)
 }
 
 
+static bool
+is_procptr_result (gfc_expr *expr)
+{
+  gfc_component *c = gfc_get_proc_ptr_comp (expr);
+  if (c)
+    return (c->ts.interface && (c->ts.interface->attr.proc_pointer == 1));
+  else
+    return ((expr->symtree->n.sym->result != expr->symtree->n.sym)
+	    && (expr->symtree->n.sym->result->attr.proc_pointer == 1));
+}
+
+
 /* Given formal and actual argument lists, see if they are compatible.
    If they are compatible, the actual argument list is sorted to
    correspond with the formal list, and elements for missing optional
@@ -2724,10 +2736,10 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
          argument is provided for a procedure pointer formal argument.  */
       if (f->sym->attr.proc_pointer
 	  && !((a->expr->expr_type == EXPR_VARIABLE
-		&& a->expr->symtree->n.sym->attr.proc_pointer)
+		&& (a->expr->symtree->n.sym->attr.proc_pointer
+		    || gfc_is_proc_ptr_comp (a->expr)))
 	       || (a->expr->expr_type == EXPR_FUNCTION
-		   && a->expr->symtree->n.sym->result->attr.proc_pointer)
-	       || gfc_is_proc_ptr_comp (a->expr)))
+		   && is_procptr_result (a->expr))))
 	{
 	  if (where)
 	    gfc_error ("Expected a procedure pointer for argument %qs at %L",
@@ -2738,7 +2750,12 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
       /* Satisfy F03:12.4.1.3 by ensuring that a procedure actual argument is
 	 provided for a procedure formal argument.  */
       if (f->sym->attr.flavor == FL_PROCEDURE
-	  && gfc_expr_attr (a->expr).flavor != FL_PROCEDURE)
+	  && !((a->expr->expr_type == EXPR_VARIABLE
+		&& (a->expr->symtree->n.sym->attr.flavor == FL_PROCEDURE
+		    || a->expr->symtree->n.sym->attr.proc_pointer
+		    || gfc_is_proc_ptr_comp (a->expr)))
+	       || (a->expr->expr_type == EXPR_FUNCTION
+		   && is_procptr_result (a->expr))))
 	{
 	  if (where)
 	    gfc_error ("Expected a procedure for argument %qs at %L",

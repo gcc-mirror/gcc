@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ffast-math" } */
 /* { dg-prune-output "non-standard ABI extension" } */
+/* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 typedef float __m128 __attribute__ ((__vector_size__ (16)));
 __m128 a, d, e;

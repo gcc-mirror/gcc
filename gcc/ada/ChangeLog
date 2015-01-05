@@ -1,3 +1,8 @@
+2015-01-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc-interface/misc.c (internal_error_function): Use xasprintf instead
+	of unchecked asprintf.
+
 2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_{Min,Max}>: If the
@@ -13,7 +18,7 @@
 	For a field that needs strict alignment, issue the error for the
 	position first and, for the size, issue an error if it is too large
 	only for the atomic and aliased cases.  Issue a specific error if
-	the size is not a multiple of a byte in the volatile and the stric
+	the size is not a multiple of a byte in the volatile and the strict
 	alignment cases.
 
 2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>

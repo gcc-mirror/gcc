@@ -1,3 +1,10 @@
+2014-12-31  Iain Sandoe  <iain@codesourcery.com>
+
+	* parser.c (cp_parser_primary_expression): If parsing an
+	objective-c++ message expression fails, see if a lambda is present.
+	(cp_parser_objc_message_receiver): Don't assume that, if a message
+	receiver expression fails, it is a hard error.
+
 2014-12-25  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (check_default_tmpl_args): Uses the parameter source

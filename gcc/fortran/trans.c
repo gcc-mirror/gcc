@@ -418,18 +418,18 @@ trans_runtime_error_vararg (bool error, locus* where, const char* msgid,
   if (where)
     {
       line = LOCATION_LINE (where->lb->location);
-      asprintf (&message, "At line %d of file %s",  line,
-		where->lb->file->filename);
+      message = xasprintf ("At line %d of file %s",  line,
+			   where->lb->file->filename);
     }
   else
-    asprintf (&message, "In file '%s', around line %d",
-	      gfc_source_file, LOCATION_LINE (input_location) + 1);
+    message = xasprintf ("In file '%s', around line %d",
+			 gfc_source_file, LOCATION_LINE (input_location) + 1);
 
   arg = gfc_build_addr_expr (pchar_type_node,
 			     gfc_build_localized_cstring_const (message));
   free (message);
 
-  asprintf (&message, "%s", _(msgid));
+  message = xasprintf ("%s", _(msgid));
   arg2 = gfc_build_addr_expr (pchar_type_node,
 			      gfc_build_localized_cstring_const (message));
   free (message);

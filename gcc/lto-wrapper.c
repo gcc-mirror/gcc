@@ -371,7 +371,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 		}
 	      (*decoded_options)[j].opt_index = OPT_O;
 	      char *tem;
-	      asprintf (&tem, "-O%d", level);
+	      tem = xasprintf ("-O%d", level);
 	      (*decoded_options)[j].arg = &tem[2];
 	      (*decoded_options)[j].canonical_option[0] = tem;
 	      (*decoded_options)[j].value = 1;

@@ -596,7 +596,7 @@ proc add_options_for_tls { flags } {
 	     int f (void) { return i; }
 	     void g (int j) { i = j; }
 	 }] } {
-	return "$flags -pthread"
+	return "-pthread [g++_link_flags [get_multilibs "-pthread"] ] $flags "
     }
     return $flags
 }

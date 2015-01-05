@@ -258,7 +258,7 @@ gfc_trans_io_runtime_check (bool has_iostat, tree cond, tree var,
 
   arg2 = build_int_cst (integer_type_node, error_code),
 
-  asprintf (&message, "%s", _(msgid));
+  message = xasprintf ("%s", _(msgid));
   arg3 = gfc_build_addr_expr (pchar_type_node,
 			      gfc_build_localized_cstring_const (message));
   free (message);
@@ -715,8 +715,8 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
       cond = fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
 			      tmp, build_int_cst (TREE_TYPE (tmp), 0));
 
-      asprintf(&msg, "Label assigned to variable '%s' (%%ld) is not a format "
-	       "label", e->symtree->name);
+      msg = xasprintf ("Label assigned to variable '%s' (%%ld) is not a format "
+		       "label", e->symtree->name);
       gfc_trans_runtime_check (true, false, cond, &se.pre, &e->where, msg,
 			       fold_convert (long_integer_type_node, tmp));
       free (msg);

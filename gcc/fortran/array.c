@@ -1309,6 +1309,9 @@ check_constructor (gfc_constructor_base ctor, bool (*check_function) (gfc_expr *
     {
       e = c->expr;
 
+      if (!e)
+	continue;
+
       if (e->expr_type != EXPR_ARRAY)
 	{
 	  if (!(*check_function)(e))

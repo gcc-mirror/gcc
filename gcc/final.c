@@ -3420,8 +3420,8 @@ output_operand_lossage (const char *cmsgid, ...)
   va_start (ap, cmsgid);
 
   pfx_str = this_is_asm_operands ? _("invalid 'asm': ") : "output_operand: ";
-  asprintf (&fmt_string, "%s%s", pfx_str, _(cmsgid));
-  vasprintf (&new_message, fmt_string, ap);
+  fmt_string = xasprintf ("%s%s", pfx_str, _(cmsgid));
+  new_message = xvasprintf (fmt_string, ap);
 
   if (this_is_asm_operands)
     error_for_asm (this_is_asm_operands, "%s", new_message);

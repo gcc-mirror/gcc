@@ -268,7 +268,7 @@
    ldo.l  %0, %1"
   [(set_attr "length"	"2,2,6,2,6,2,6,4,4")])
 
-(define_insn_and_split "zero_extendqisi2"
+(define_insn "zero_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
 	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,W,A,B")))]
   ""
@@ -277,15 +277,9 @@
    ld.b   %0, %1
    lda.b  %0, %1
    ldo.b  %0, %1"
-  "reload_completed"
-  [(set (match_dup 2) (match_dup 1))
-   (set (match_dup 0) (zero_extend:SI (match_dup 2)))]
-{
-  operands[2] = gen_lowpart (QImode, operands[0]);
-}
-  [(set_attr "length" "2,2,6,6")])
+  [(set_attr "length" "2,2,6,4")])
 
-(define_insn_and_split "zero_extendhisi2"
+(define_insn "zero_extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
 	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,W,A,B")))]
   ""
@@ -294,13 +288,7 @@
    ld.s   %0, %1
    lda.s  %0, %1
    ldo.s  %0, %1"
-  "reload_completed"
-  [(set (match_dup 2) (match_dup 1))
-   (set (match_dup 0) (zero_extend:SI (match_dup 2)))]
-{
-  operands[2] = gen_lowpart (HImode, operands[0]);
-}
-  [(set_attr "length" "2,2,6,6")])
+  [(set_attr "length" "2,2,6,4")])
 
 (define_insn "extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r")

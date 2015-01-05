@@ -4397,9 +4397,9 @@ vect_create_destination_var (tree scalar_dest, tree vectype)
 
   name = get_name (scalar_dest);
   if (name)
-    asprintf (&new_name, "%s_%u", name, SSA_NAME_VERSION (scalar_dest));
+    new_name = xasprintf ("%s_%u", name, SSA_NAME_VERSION (scalar_dest));
   else
-    asprintf (&new_name, "_%u", SSA_NAME_VERSION (scalar_dest));
+    new_name = xasprintf ("_%u", SSA_NAME_VERSION (scalar_dest));
   vec_dest = vect_get_new_vect_var (type, kind, new_name);
   free (new_name);
 
