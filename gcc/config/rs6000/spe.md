@@ -2421,8 +2421,7 @@
 	it last.  Otherwise, load it first.  Note that we cannot have
 	auto-increment in that case since the address register is
 	known to be dead.  */
-      if (refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
-			     operands[1], 0))
+      if (refers_to_regno_p (REGNO (operands[0]), operands[1]))
 	{
 	  if (WORDS_BIG_ENDIAN)
 	    return \"lwz %L0,%L1\;lwz %0,%1\";
@@ -2465,8 +2464,7 @@
 	  else
 	    return \"evldd%X1 %Y0,%y1\;evmergehi %Z0,%Y0,%Y0\";
 	}
-      if (refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
-			     operands[1], 0))
+      if (refers_to_regno_p (REGNO (operands[0]), operands[1]))
 	{
 	  if (WORDS_BIG_ENDIAN)
 	    return \"lwz %Z0,%L1\;lwz %Y0,%1\";

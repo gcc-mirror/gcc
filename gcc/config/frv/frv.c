@@ -5035,7 +5035,7 @@ frv_split_double_load (rtx dest, rtx source)
      of the registers could affect the value of ADDRESS, so we must
      be careful which order we do them in.  */
   if (GET_CODE (address) == PRE_MODIFY
-      || ! refers_to_regno_p (regno, regno + 1, address, NULL))
+      || ! refers_to_regno_p (regno, address))
     {
       /* It is safe to load the lower-numbered register first.  */
       emit_move_insn (dest1, change_address (source, SImode, NULL));

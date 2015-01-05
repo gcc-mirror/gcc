@@ -2649,8 +2649,7 @@ pa_output_move_double (rtx *operands)
      Handle mem -> register case first.  */
   if (optype0 == REGOP
       && (optype1 == MEMOP || optype1 == OFFSOP)
-      && refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
-			    operands[1], 0))
+      && refers_to_regno_p (REGNO (operands[0]), operands[1]))
     {
       /* Do the late half first.  */
       if (addreg1)

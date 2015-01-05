@@ -1,3 +1,25 @@
+2015-01-05  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* rtlanal.c (refers_to_regno_p): Change return value from int to bool.
+	* rtl.h (refers_to_regno_p): Add overload.
+	* cse.c: Use it.
+	* bt-load.c: Likewise.
+	* combine.c: Likewise.
+	* df-scan.c: Likewise.
+	* sched-deps.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/m32r/m32r.c: Likewise.
+	* config/rs6000/spe.md: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/cris/cris.c: Likewise.
+	* config/arc/arc.md: Likewise.
+	* config/arc/arc.c: Likewise.
+	* config/sh/sh.md: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/frv/frv.c: Likewise.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/64265

@@ -1773,7 +1773,7 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	 reload will fail to find a spill register for rX, since r0 is already
 	 being used for the source.  */
       else if (TARGET_SH1
-	       && refers_to_regno_p (R0_REG, R0_REG + 1, operands[1], (rtx *)0)
+	       && refers_to_regno_p (R0_REG, operands[1])
 	       && MEM_P (operands[0])
 	       && GET_CODE (XEXP (operands[0], 0)) == PLUS
 	       && REG_P (XEXP (XEXP (operands[0], 0), 1)))
@@ -7808,8 +7808,7 @@ sh_expand_prologue (void)
 		{
 		  offset_in_r0 = -1;
 		  sp_in_r0 = 0;
-		  gcc_assert (!refers_to_regno_p
-			      (R0_REG, R0_REG+1, mem_rtx, (rtx *) 0));
+		  gcc_assert (!refers_to_regno_p (R0_REG, mem_rtx));
 		}
 
 	      if (*++tmp_pnt <= 0)

@@ -1982,8 +1982,7 @@ remove_invalid_refs (unsigned int regno)
     for (p = table[i]; p; p = next)
       {
 	next = p->next_same_hash;
-	if (!REG_P (p->exp)
-	    && refers_to_regno_p (regno, regno + 1, p->exp, (rtx *) 0))
+	if (!REG_P (p->exp) && refers_to_regno_p (regno, p->exp))
 	  remove_from_table (p, i);
       }
 }
@@ -2011,7 +2010,7 @@ remove_invalid_subreg_refs (unsigned int regno, unsigned int offset,
 		|| (((SUBREG_BYTE (exp)
 		      + (GET_MODE_SIZE (GET_MODE (exp)) - 1)) >= offset)
 		    && SUBREG_BYTE (exp) <= end))
-	    && refers_to_regno_p (regno, regno + 1, p->exp, (rtx *) 0))
+	    && refers_to_regno_p (regno, p->exp))
 	  remove_from_table (p, i);
       }
 }
