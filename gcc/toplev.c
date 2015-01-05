@@ -113,6 +113,13 @@ along with GCC; see the file COPYING3.  If not see
 				   declarations for e.g. AIX 4.x.  */
 #endif
 
+#ifndef HAVE_epilogue
+#define HAVE_epilogue 0
+#endif
+#ifndef HAVE_prologue
+#define HAVE_prologue 0
+#endif
+
 #include <new>
 
 static void general_init (const char *);
@@ -1634,6 +1641,11 @@ process_options (void)
   /* Save the current optimization options.  */
   optimization_default_node = build_optimization_node (&global_options);
   optimization_current_node = optimization_default_node;
+
+ /* Disable use caller save optimization if profiler is active or port
+    does not emit prologue and epilogue as RTL.  */
+  if (profile_flag || !HAVE_prologue || !HAVE_epilogue)
+    flag_ipa_ra = 0;
 }
 
 /* This function can be called multiple times to reinitialize the compiler

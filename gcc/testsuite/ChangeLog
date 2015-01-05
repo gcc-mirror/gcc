@@ -1,3 +1,8 @@
+2015-01-05  Radovan Obradovic <radovan.obradovic@imgtec.com>
+
+	PR rtl-optimization/64287
+	* gcc.dg/aru-2.c: New test.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/64344
