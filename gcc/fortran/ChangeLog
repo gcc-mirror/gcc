@@ -1,6 +1,11 @@
 2015-01-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/47674
+	* dependency.h:  Actually commit changes.
+
+2015-01-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/47674
 	* dependency.c:  Update copyright years.
 	(gfc_discard_nops):  Add prototype.
 	* dependency.c (discard_nops):  Rename to gfc_discard_nops,
