@@ -3081,7 +3081,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
     {
       tree rval, type;
 
-      warn_array_subscript_with_type_char (idx);
+      warn_array_subscript_with_type_char (loc, idx);
 
       if (!INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (idx)))
 	{
@@ -3191,7 +3191,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 	return error_mark_node;
       }
 
-    warn_array_subscript_with_type_char (idx);
+    warn_array_subscript_with_type_char (loc, idx);
 
     ret = cp_build_indirect_ref (cp_build_binary_op (input_location,
 						     PLUS_EXPR, ar, ind,

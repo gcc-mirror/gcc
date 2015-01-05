@@ -1,3 +1,11 @@
+2015-01-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64423
+	* c-common.c (warn_array_subscript_with_type_char): Add location_t
+	parameter.  Use it.
+	* c-common.h (warn_array_subscript_with_type_char): Update
+	declaration.
+
 2014-12-20  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* c-cppbuiltin.c (__cpp_sized_deallocation): Uncomment and move macro.

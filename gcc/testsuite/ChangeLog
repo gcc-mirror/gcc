@@ -1,3 +1,8 @@
+2015-01-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64423
+	* gcc.dg/pr64423.c: New test.
+
 2015-01-05  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/debug/debug-1.c: Pass -fno-if-conversion for

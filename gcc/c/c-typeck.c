@@ -2501,7 +2501,7 @@ build_array_ref (location_t loc, tree array, tree index)
   /* ??? Existing practice has been to warn only when the char
      index is syntactically the index, not for char[array].  */
   if (!swapped)
-     warn_array_subscript_with_type_char (index);
+     warn_array_subscript_with_type_char (loc, index);
 
   /* Apply default promotions *after* noticing character types.  */
   index = default_conversion (index);
