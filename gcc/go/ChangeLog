@@ -1,3 +1,7 @@
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gccgo.texi: Bump @copyrights-go year.
+
 2014-12-19  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc (array_constructor_expression): Don't construct arrays
@@ -955,7 +959,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2014 Free Software Foundation, Inc.
+Copyright (C) 2010-2015 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

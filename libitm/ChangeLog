@@ -1,3 +1,7 @@
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* libitm.texi: Bump @copying's copyright year.
+
 2014-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* testsuite/lib/libitm.exp: Load target-utils.exp.
