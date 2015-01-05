@@ -18,7 +18,7 @@
 	For a field that needs strict alignment, issue the error for the
 	position first and, for the size, issue an error if it is too large
 	only for the atomic and aliased cases.  Issue a specific error if
-	the size is not a multiple of a byte in the volatile and the stric
+	the size is not a multiple of a byte in the volatile and the strict
 	alignment cases.
 
 2014-12-22  Eric Botcazou  <ebotcazou@adacore.com>
