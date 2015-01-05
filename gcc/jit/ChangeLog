@@ -1,3 +1,7 @@
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2014-12-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit-playback.c (gcc::jit::playback::context::build_cast): In
@@ -532,7 +536,7 @@
 
 	* Initial creation
 
-Copyright (C) 2013-2014 Free Software Foundation, Inc.
+Copyright (C) 2013-2015 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
