@@ -1,5 +1,9 @@
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	Update copyright years.
+
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
 	* libitm.texi: Bump @copying's copyright year.
 
 2014-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>

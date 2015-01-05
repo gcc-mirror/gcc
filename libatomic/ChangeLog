@@ -1,3 +1,7 @@
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2014-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* testsuite/lib/libatomic.exp: Load target-utils.exp

@@ -1,3 +1,7 @@
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config.host: Support mipsisa32r6 and mipsisa64r6.
