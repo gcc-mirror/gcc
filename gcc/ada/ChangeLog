@@ -1,3 +1,8 @@
+2015-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/64492
+	* gcc-interface/Makefile.in (../stamp-tools): Reinstate dropped code.
+
 2015-01-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc-interface/misc.c (internal_error_function): Use xasprintf instead
