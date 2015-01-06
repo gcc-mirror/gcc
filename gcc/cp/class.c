@@ -2811,6 +2811,10 @@ check_for_override (tree decl, tree ctype)
     {
       DECL_VINDEX (decl) = decl;
       overrides_found = true;
+      if (warn_override && !DECL_OVERRIDE_P (decl)
+	  && !DECL_DESTRUCTOR_P (decl))
+	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wsuggest_override,
+		    "%q+D can be marked override", decl);
     }
 
   if (DECL_VIRTUAL_P (decl))

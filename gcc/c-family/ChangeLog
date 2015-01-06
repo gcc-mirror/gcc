@@ -1,3 +1,8 @@
+2015-01-05  Trevor Saunders  <tsaunders@mozilla.com>
+
+	PR c++/31397
+	* c.opt (Wsuggest-override): New option.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

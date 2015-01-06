@@ -1,3 +1,8 @@
+2015-01-05  Trevor Saunders  <tsaunders@mozilla.com>
+
+	PR c++/31397
+	* doc/invoke.texi: Document -Wsuggest-override.
+
 2015-01-05  Radovan Obradovic  <radovan.obradovic@imgtec.com>
 
 	PR rtl-optimization/64287

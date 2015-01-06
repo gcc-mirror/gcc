@@ -578,6 +578,11 @@ Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
 Warn about functions which might be candidates for format attributes
 
+Wsuggest-override
+C++ ObjC++ Var(warn_override) Warning
+Suggest that the override keyword be used when the declaration of a virtual
+function overrides another.
+
 Wswitch
 C ObjC C++ ObjC++ Var(warn_switch) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about enumerated switches, with no default, missing a case
