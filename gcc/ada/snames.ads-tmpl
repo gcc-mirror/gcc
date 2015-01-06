@@ -962,6 +962,7 @@ package Snames is
    Name_Adjacent                       : constant Name_Id := N + $;
    Name_Ceiling                        : constant Name_Id := N + $;
    Name_Copy_Sign                      : constant Name_Id := N + $;
+   Name_Enum_Image                     : constant Name_Id := N + $;
    Name_Floor                          : constant Name_Id := N + $;
    Name_Fraction                       : constant Name_Id := N + $;
    Name_From_Any                       : constant Name_Id := N + $; -- GNAT
@@ -1589,6 +1590,7 @@ package Snames is
       Attribute_Adjacent,
       Attribute_Ceiling,
       Attribute_Copy_Sign,
+      Attribute_Enum_Image,
       Attribute_Floor,
       Attribute_Fraction,
       Attribute_From_Any,

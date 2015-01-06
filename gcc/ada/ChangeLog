@@ -1,5 +1,12 @@
 2015-01-06  Robert Dewar  <dewar@adacore.com>
 
+	* exp_attr.adb (Expand_N_Attribute_Reference): Add dummy entry
+	for Enum_Image.
+	* sem_attr.adb: Implement Enum_Image attribute.
+	* snames.ads-tmpl: Add entries for Enum_Image attribute.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
 	* namet.ads: Document use of Boolean2 for No_Use_Of_Entity.
 	* restrict.ads (No_Use_Of_Entity): New table.
 	* sem_prag.adb (Process_Restrictions_Or_Restriction_Warnings):
