@@ -339,10 +339,10 @@ begin
 
      and then not Fatal_Error (Main_Unit)
    then
-      --  Pragmas that require some semantic activity, such as
-      --  Interrupt_State, cannot be processed until the main unit
-      --  is installed, because they require a compilation unit on
-      --  which to attach with_clauses, etc. So analyze them now.
+      --  Pragmas that require some semantic activity, such as Interrupt_State,
+      --  cannot be processed until the main unit is installed, because they
+      --  require a compilation unit on which to attach with_clauses, etc. So
+      --  analyze them now.
 
       declare
          Prag : Node_Id;
@@ -350,7 +350,14 @@ begin
       begin
          Prag := First (Config_Pragmas);
          while Present (Prag) loop
-            if Delay_Config_Pragma_Analyze (Prag) then
+
+            --  Guard against the case where a configuration pragma may be
+            --  split into multiple pragmas and the original rewritten as a
+            --  null statement.
+
+            if Nkind (Prag) = N_Pragma
+              and then Delay_Config_Pragma_Analyze (Prag)
+            then
                Analyze_Pragma (Prag);
             end if;
 

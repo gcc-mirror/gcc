@@ -1,3 +1,44 @@
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-taskin.ads, s-traces.ads: Minor reformatting.
+	* exp_util.adb: Minor typo fix.
+
+2015-01-06  Vincent Celier  <celier@adacore.com>
+
+	* gnatls.adb (Search_RTS): Invoke Initialize_Default_Project_Path
+	with the runtime name.
+	* prj-env.adb (Initialize_Default_Project_Path): When both
+	Target_Name and Runtime_Name are not empty string, add to the
+	project path the two directories .../lib/gnat and .../share/gpr
+	related to the runtime.
+	* prj-env.ads (Initialize_Default_Project_Path): New String
+	parameter Runtime_Name, defaulted to the empty string.
+
+2015-01-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* frontend.adb: Guard against the case where a configuration
+	pragma may be split into multiple pragmas and the original
+	rewritten as a null statement.
+	* sem_prag.adb (Analyze_Pragma): Insert a brand new Check_Policy
+	pragma using Insert_Before rather than Insert_Action. This
+	takes care of the configuration pragma case where Insert_Action
+	would fail.
+
+2015-01-06  Bob Duff  <duff@adacore.com>
+
+	* a-coboho.ads (Element_Access): Add "pragma
+	No_Strict_Aliasing (Element_Access);". This is needed because
+	we are unchecked-converting from Address to Element_Access.
+	* a-cofove.ads, a-cofove.adb (Elems,Elemsc): Fix bounds of the
+	result to be 1.
+
+2015-01-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Remove the
+	restriction which prohibits volatile actual parameters with
+	enabled external propery Async_Writers to act appear in procedure
+	calls where the corresponding formal is of mode OUT.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnat_ugn.texi: Bump @copying's copyright year.

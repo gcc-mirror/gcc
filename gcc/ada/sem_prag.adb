@@ -11017,10 +11017,10 @@ package body Sem_Prag is
          --  processing is required here.
 
          when Pragma_Assertion_Policy => Assertion_Policy : declare
-            LocP   : Source_Ptr;
-            Policy : Node_Id;
             Arg    : Node_Id;
             Kind   : Name_Id;
+            LocP   : Source_Ptr;
+            Policy : Node_Id;
 
          begin
             Ada_2005_Pragma;
@@ -11102,12 +11102,17 @@ package body Sem_Prag is
                   Check_Arg_Is_One_Of
                     (Arg, Name_Check, Name_Disable, Name_Ignore);
 
-                  --  We rewrite the Assertion_Policy pragma as a series of
-                  --  Check_Policy pragmas:
+                  --  Rewrite the Assertion_Policy pragma as a series of
+                  --  Check_Policy pragmas of the form:
 
                   --    Check_Policy (Kind, Policy);
 
-                  Insert_Action (N,
+                  --  Note: the insertion of the pragmas cannot be done with
+                  --  Insert_Action because in the configuration case, there
+                  --  are no scopes on the scope stack and the mechanism will
+                  --  fail.
+
+                  Insert_Before_And_Analyze (N,
                     Make_Pragma (LocP,
                       Chars                        => Name_Check_Policy,
                       Pragma_Argument_Associations => New_List (

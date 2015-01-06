@@ -171,14 +171,16 @@ package Prj.Env is
    No_Project_Search_Path : constant Project_Search_Path;
 
    procedure Initialize_Default_Project_Path
-     (Self        : in out Project_Search_Path;
-      Target_Name : String);
-   --  Initialize Self. It will then contain the default project path on the
-   --  given target (including directories specified by the environment
-   --  variables GPR_PROJECT_PATH_FILE, GPR_PROJECT_PATH and ADA_PROJECT_PATH).
-   --  If one of the directory or Target_Name is "-", then the path contains
-   --  only those directories specified by the environment variables (except
-   --  "-"). This does nothing if Self has already been initialized.
+     (Self         : in out Project_Search_Path;
+      Target_Name  : String;
+      Runtime_Name : String := "");
+   --  Initialize Self. It will then contain the default project path on
+   --  the given target and runtime (including directories specified by the
+   --  environment variables GPR_PROJECT_PATH_FILE, GPR_PROJECT_PATH and
+   --  ADA_PROJECT_PATH). If one of the directory or Target_Name is "-", then
+   --  the path contains only those directories specified by the environment
+   --  variables (except "-"). This does nothing if Self has already been
+   --  initialized.
 
    procedure Copy (From : Project_Search_Path; To : out Project_Search_Path);
    --  Copy From into To

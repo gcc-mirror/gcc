@@ -99,4 +99,9 @@ private
    --  the 'Address of an array points to the first element, thus losing the
    --  bounds.
 
+   pragma No_Strict_Aliasing (Element_Access);
+   --  Needed because we are unchecked-converting from Address to
+   --  Element_Access (see package body), which is a violation of the
+   --  normal aliasing rules enforced by gcc.
+
 end Ada.Containers.Bounded_Holders;

@@ -670,7 +670,7 @@ package System.Tasking is
       --  System-specific attributes of the task as specified by the
       --  Task_Info pragma.
 
-      Analyzer  : System.Stack_Usage.Stack_Analyzer;
+      Analyzer : System.Stack_Usage.Stack_Analyzer;
       --  For storing information used to measure the stack usage
 
       Global_Task_Lock_Nesting : Natural;
