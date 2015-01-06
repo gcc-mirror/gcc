@@ -1,3 +1,9 @@
+2015-01-05  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* class.c (warn_hidden): Use auto_vec<tree> instead of tree_list to
+	hold base_fndecls.
+	(get_basefndecls): Adjust.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
