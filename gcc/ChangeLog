@@ -1,5 +1,10 @@
 2015-01-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* simplify-rtx.c (simplify_binary_operation_1): Handle more cases
+	for the "(and X (ior (not X) Y) -> (and X Y)" transform.
+
+2015-01-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* combine.c (combine_validate_cost): Do not count the cost of a
 	split I2 twice.  Do not display it twice in the dump, either.
 

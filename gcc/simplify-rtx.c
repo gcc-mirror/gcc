@@ -2933,14 +2933,26 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       /* (and X (ior (not X) Y) -> (and X Y) */
       if (GET_CODE (op1) == IOR
 	  && GET_CODE (XEXP (op1, 0)) == NOT
-	  && op0 == XEXP (XEXP (op1, 0), 0))
+	  && rtx_equal_p (op0, XEXP (XEXP (op1, 0), 0)))
        return simplify_gen_binary (AND, mode, op0, XEXP (op1, 1));
 
       /* (and (ior (not X) Y) X) -> (and X Y) */
       if (GET_CODE (op0) == IOR
 	  && GET_CODE (XEXP (op0, 0)) == NOT
-	  && op1 == XEXP (XEXP (op0, 0), 0))
+	  && rtx_equal_p (op1, XEXP (XEXP (op0, 0), 0)))
 	return simplify_gen_binary (AND, mode, op1, XEXP (op0, 1));
+
+      /* (and X (ior Y (not X)) -> (and X Y) */
+      if (GET_CODE (op1) == IOR
+	  && GET_CODE (XEXP (op1, 1)) == NOT
+	  && rtx_equal_p (op0, XEXP (XEXP (op1, 1), 0)))
+       return simplify_gen_binary (AND, mode, op0, XEXP (op1, 0));
+
+      /* (and (ior Y (not X)) X) -> (and X Y) */
+      if (GET_CODE (op0) == IOR
+	  && GET_CODE (XEXP (op0, 1)) == NOT
+	  && rtx_equal_p (op1, XEXP (XEXP (op0, 1), 0)))
+	return simplify_gen_binary (AND, mode, op1, XEXP (op0, 0));
 
       tem = simplify_byte_swapping_operation (code, mode, op0, op1);
       if (tem)
