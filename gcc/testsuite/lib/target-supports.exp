@@ -538,6 +538,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget powerpc-*-elf]
 	     || [istarget rx-*-*]	
 	     || [istarget tic6x-*-elf]
+	     || [istarget visium-*-*]
 	     || [istarget xstormy16-*]
 	     || [istarget xtensa*-*-elf]
 	     || [istarget *-*-rtems*]
@@ -707,9 +708,9 @@ proc check_effective_target_tls_emulated {} {
 # Return 1 if TLS executables can run correctly, 0 otherwise.
 
 proc check_effective_target_tls_runtime {} {
-    # MSP430 runtime does not have TLS support, but just
+    # The runtime does not have TLS support, but just
     # running the test below is insufficient to show this.
-    if { [istarget msp430-*-*] } {
+    if { [istarget msp430-*-*] || [istarget visium-*-*] } {
 	return 0
     }
     return [check_runtime tls_runtime {
@@ -6085,6 +6086,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget s390*-*-*]
 	 || [istarget powerpc*-*-*]
 	 || [istarget nios2*-*-*]
+	 || [istarget visium-*-*]
 	 || [check_effective_target_arm_cortex_m] } {
 	return 1
     }

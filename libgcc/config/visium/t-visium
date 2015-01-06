@@ -1,0 +1,29 @@
+# Copyright (C) 2003-2015 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+LIB2FUNCS_EXCLUDE += _divdi3 _moddi3 _udivdi3 _umoddi3 _udivmoddi4
+
+LIB2ADD += \
+  $(srcdir)/config/visium/divdi3.c \
+  $(srcdir)/config/visium/moddi3.c \
+  $(srcdir)/config/visium/udivdi3.c \
+  $(srcdir)/config/visium/umoddi3.c \
+  $(srcdir)/config/visium/udivmoddi4.c \
+  $(srcdir)/config/visium/memcpy.c \
+  $(srcdir)/config/visium/memset.c \
+  $(srcdir)/config/visium/set_trampoline_parity.c

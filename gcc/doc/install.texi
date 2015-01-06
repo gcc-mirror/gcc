@@ -3349,6 +3349,8 @@ information have to.
 @item
 @uref{#tilepro-x-linux,,tilepro-*-linux*}
 @item
+@uref{#visium-x-elf, visium-*-elf}
+@item
 @uref{#x-x-vxworks,,*-*-vxworks*}
 @item
 @uref{#x86-64-x-x,,x86_64-*-*, amd64-*-*}
@@ -4646,6 +4648,14 @@ port requires binutils-2.23 or newer.
 @heading tilepro-*-linux*
 The TILEPro processor running GNU/Linux.  This port requires
 binutils-2.22 or newer.
+
+@html
+<hr />
+@end html
+@anchor{visium-x-elf}
+@heading visium-*-elf
+CDS VISIUMcore processor.
+This configuration is intended for embedded systems.
 
 @html
 <hr />

@@ -3972,6 +3972,56 @@ A 2-element vector constant with identical elements.
 
 @end table
 
+@item Visium---@file{config/visium/constraints.md}
+@table @code
+@item b
+EAM register @code{mdb}
+
+@item c
+EAM register @code{mdc}
+
+@item f
+Floating point register
+
+@ifset INTERNALS
+@item k
+Register for sibcall optimization
+@end ifset
+
+@item l
+General register, but not @code{r29}, @code{r30} and @code{r31}
+
+@item t
+Register @code{r1}
+
+@item u
+Register @code{r2}
+
+@item v
+Register @code{r3}
+
+@item G
+Floating-point constant 0.0
+
+@item J
+Integer constant in the range 0 .. 65535 (16-bit immediate)
+
+@item K
+Integer constant in the range 1 .. 31 (5-bit immediate)
+
+@item L
+Integer constant in the range @minus{}65535 .. @minus{}1 (16-bit negative immediate)
+
+@item M
+Integer constant @minus{}1
+
+@item O
+Integer constant 0
+
+@item P
+Integer constant 32
+@end table
+
 @item Xtensa---@file{config/xtensa/constraints.md}
 @table @code
 @item a

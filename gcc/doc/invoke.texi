@@ -1064,6 +1064,10 @@ See RS/6000 and PowerPC Options.
 @emph{VAX Options}
 @gccoptlist{-mg  -mgnu  -munix}
 
+@emph{Visium Options}
+@gccoptlist{-mdebug -msim -mfpu -mno-fpu -mhard-float -msoft-float @gol
+-mcpu=@var{cpu-type} -mtune=@var{cpu-type} -msv-mode -muser-mode}
+
 @emph{VMS Options}
 @gccoptlist{-mvms-return-codes -mdebug-main=@var{prefix} -mmalloc64 @gol
 -mpointer-size=@var{size}}
@@ -11936,6 +11940,7 @@ platform.
 * TILEPro Options::
 * V850 Options::
 * VAX Options::
+* Visium Options::
 * VMS Options::
 * VxWorks Options::
 * x86-64 Options::
@@ -22604,6 +22609,77 @@ GNU assembler is being used.
 @item -mg
 @opindex mg
 Output code for G-format floating-point numbers instead of D-format.
+@end table
+
+@node Visium Options
+@subsection Visium Options
+@cindex Visium options
+
+@table @gcctabopt
+
+@item -mdebug
+@opindex mdebug
+A program which performs file I/O and is destined to run on an MCM target
+should be linked with this option.  It causes the libraries libc.a and
+libdebug.a to be linked.  The program should be run on the target under
+the control of the GDB remote debugging stub.
+
+@item -msim
+@opindex msim
+A program which performs file I/O and is destined to run on the simulator
+should be linked with option.  This causes libraries libc.a and libsim.a to
+be linked.
+
+@item -mfpu
+@itemx -mhard-float
+@opindex mfpu
+@opindex mhard-float
+Generate code containing floating-point instructions.  This is the
+default.
+
+@item -mno-fpu
+@itemx -msoft-float
+@opindex mno-fpu
+@opindex msoft-float
+Generate code containing library calls for floating-point.
+
+@option{-msoft-float} changes the calling convention in the output file;
+therefore, it is only useful if you compile @emph{all} of a program with
+this option.  In particular, you need to compile @file{libgcc.a}, the
+library that comes with GCC, with @option{-msoft-float} in order for
+this to work.
+
+@item -mcpu=@var{cpu_type}
+@opindex mcpu
+Set the instruction set, register set, and instruction scheduling parameters
+for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
+@samp{mcm}, @samp{gr5} and @samp{gr6}.
+
+@samp{mcm} is a synonym of @samp{gr5} present for backward compatibility.
+
+By default (unless configured otherwise), GCC generates code for the GR5
+variant of the Visium architecture.  
+
+With @option{-mcpu=gr6}, GCC generates code for the GR6 variant of the Visium
+architecture.  The only difference from GR5 code is that the compiler will
+generate block move instructions.
+
+@item -mtune=@var{cpu_type}
+@opindex mtune
+Set the instruction scheduling parameters for machine type @var{cpu_type},
+but do not set the instruction set or register set that the option
+@option{-mcpu=@var{cpu_type}} would.
+
+@item -msv-mode
+@opindex msv-mode
+Generate code for the supervisor mode, where there are no restrictions on
+the access to general registers.  This is the default.
+
+@item -muser-mode
+@opindex muser-mode
+Generate code for the user mode, where the access to some general registers
+is forbidden: on the GR5, registers r24 to r31 cannot be accessed in this
+mode; on the GR6, only registers r29 to r31 are affected.
 @end table
 
 @node VMS Options

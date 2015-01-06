@@ -2935,12 +2935,11 @@ least version 2.20.1), and GNU C library (at least version 2.11.1).
 @item interrupt
 @cindex interrupt handler functions
 Use this attribute on the ARC, ARM, AVR, CR16, Epiphany, M32C, M32R/D,
-m68k, MeP, MIPS, MSP430, RL78, RX and Xstormy16 ports to indicate that
-the specified function is an
-interrupt handler.  The compiler generates function entry and exit
-sequences suitable for use in an interrupt handler when this attribute
-is present.  With Epiphany targets it may also generate a special section with
-code to initialize the interrupt vector table.
+m68k, MeP, MIPS, MSP430, RL78, RX, Visium and Xstormy16 ports to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.  With Epiphany targets it may also generate
+a special section with code to initialize the interrupt vector table.
 
 Note, interrupt handlers for the Blackfin, H8/300, H8/300H, H8S, MicroBlaze,
 and SH processors can be specified via the @code{interrupt_handler} attribute.

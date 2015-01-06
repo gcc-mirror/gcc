@@ -80,6 +80,8 @@ extern void abort (void);
 /* No pic register.  */
 #elif defined(__vax__)
 /* No pic register.  */
+#elif defined(__VISIUM__)
+/* No pic register.  */
 #elif defined(__xstormy16__)
 /* No pic register.  */
 #elif defined(__XTENSA__)
