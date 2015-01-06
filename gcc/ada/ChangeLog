@@ -1,3 +1,66 @@
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-valllu.adb, a-tiinau.adb, a-timoau.adb, a-ztinau.adb, a-ztmoau.adb,
+	s-valuns.adb, s-valrea.adb, a-wtflau.adb, a-tiflau.adb, a-ztflau.adb,
+	a-wtinau.adb, a-wtmoau.adb: Document recognition of : in place of #.
+
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): For aspects
+	that specify stream subprograms, if the prefix is a class-wide
+	type then the generated attribute definition clause must apply
+	to the same class-wide type.
+	(Default_Iterator): An iterator defined by an aspect of some
+	container type T must have a first parameter of type T, T'class,
+	or an access to such (from code reading RM 5.5.1 (2/3)).
+
+2015-01-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb: Minor: complete previous change.
+
+2015-01-06  Olivier Hainque  <hainque@adacore.com>
+
+	* set_targ.ads (C_Type_For): New function. Return the name of
+	a C type supported by the back-end and suitable as a basis to
+	construct the standard Ada floating point type identified by
+	the T parameter. This is used as a common ground to feed both
+	ttypes values and the GNAT tree nodes for the standard floating
+	point types.
+	* set_targ.adb (Long_Double_Index): The index at which "long
+	double" gets registered in the FPT_Mode_Table. This is useful to
+	know whether we have a "long double" available at all and get at
+	it's characteristics without having to search the FPT_Mode_Table
+	when we need to decide which C type should be used as the
+	basis for Long_Long_Float in Ada.
+	(Register_Float_Type): Fill Long_Double_Index.
+	(FPT_Mode_Index_For): New function. Return the index in
+	FPT_Mode_Table that designates the entry corresponding to the
+	provided C type name.
+	(FPT_Mode_Index_For): New function. Return the index in
+	FPT_Mode_Table that designates the entry for a back-end type
+	suitable as a basis to construct the standard Ada floating point
+	type identified by the input T parameter.
+	(elaboration code): Register_Back_End_Types unconditionally,
+	so C_Type_For can operate regardless of -gnateT. Do it
+	early so we can query it for the floating point sizes, via
+	FPT_Mode_Index_For. Initialize Float_Size, Double_Size and
+	Long_Double_Size from the FPT_Mode_Table, as cstand will do.
+	* cstand.adb (Create_Float_Types): Use C_Type_For to determine
+	which C type should be used as the basis for the construction
+	of the Standard Ada floating point types.
+	* get_targ.ads (Get_Float_Size, Get_Double_Size,
+	Get_Long_Double_Size): Remove.
+	* get_targ.adb: Likewise.
+
+2015-01-06  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_cat.adb (In_RCI_Declaration): Remove unnecessary
+	parameter and rename to...
+	(In_RCI_Visible_Declarations): Fix handling of private part of nested
+	package.
+	(Validate_RCI_Subprogram_Declaration): Reject illegal function
+	returning anonymous access in RCI unit.
+
 2015-01-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (New_Overloaded_Entity): In GNATprove mode, a

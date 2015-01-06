@@ -37,6 +37,7 @@
 --  size of wchar_t, since this corresponds to expected Ada usage.
 
 with Einfo; use Einfo;
+with Stand; use Stand;
 with Types; use Types;
 
 package Set_Targ is
@@ -106,6 +107,15 @@ package Set_Targ is
    -----------------
    -- Subprograms --
    -----------------
+
+   subtype S_Float_Types is
+     Standard_Entity_Type range S_Short_Float .. S_Long_Long_Float;
+
+   function C_Type_For (T : S_Float_Types) return String;
+   --  Return the name of a C type supported by the back-end and suitable as
+   --  a basis to construct the standard Ada floating point type identified by
+   --  T. This is used as a common ground to feed both ttypes values and the
+   --  GNAT tree nodes for the standard floating point types.
 
    procedure Write_Target_Dependent_Values;
    --  This routine writes the file target.atp in the current directory with

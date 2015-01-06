@@ -159,8 +159,64 @@ package body Set_Targ is
    --  floating-point type, and Precision, Size and Alignment are the precision
    --  size and alignment in bits.
    --
-   --  So to summarize, the only types that are actually registered have Digs
-   --  non-zero, Complex zero (false), and Count zero (not a vector).
+   --  The only types that are actually registered have Digs non-zero, Complex
+   --  zero (false), and Count zero (not a vector). The Long_Double_Index
+   --  variable below is updated to indicate the index at which a "long double"
+   --  type can be found if it gets registered at all.
+
+   Long_Double_Index : Integer := -1;
+   --  Once all the back-end types have been registered, the index in
+   --  FPT_Mode_Table at which "long double" can be found, if anywhere. A
+   --  negative value means that no "long double" has been registered. This
+   --  is useful to know whether we have a "long double" available at all and
+   --  get at it's characteristics without having to search the FPT_Mode_Table
+   --  when we need to decide which C type should be used as the basis for
+   --  Long_Long_Float in Ada.
+
+   function FPT_Mode_Index_For (Name : String) return Natural;
+   --  Return the index in FPT_Mode_Table that designates the entry
+   --  corresponding to the C type named Name. Raise Program_Error if
+   --  there is no such entry.
+
+   function FPT_Mode_Index_For (T : S_Float_Types) return Natural;
+   --  Return the index in FPT_Mode_Table that designates the entry for
+   --  a back-end type suitable as a basis to construct the standard Ada
+   --  floating point type identified by T.
+
+   ----------------
+   -- C_Type_For --
+   ----------------
+
+   function C_Type_For (T : S_Float_Types) return String is
+
+      --  ??? For now, we don't have a good way to tell the widest float
+      --  type with hardware support. Basically, GCC knows the size of that
+      --  type, but on x86-64 there often are two or three 128-bit types,
+      --  one double extended that has 18 decimal digits, a 128-bit quad
+      --  precision type with 33 digits and possibly a 128-bit decimal float
+      --  type with 34 digits. As a workaround, we define Long_Long_Float as
+      --  C's "long double" if that type exists and has at most 18 digits,
+      --  or otherwise the same as Long_Float.
+
+      Max_HW_Digs : constant := 18;
+      --  Maximum hardware digits supported
+
+   begin
+      case T is
+         when S_Short_Float | S_Float =>
+            return "float";
+         when S_Long_Float =>
+            return "double";
+         when S_Long_Long_Float =>
+            if Long_Double_Index >= 0
+              and then FPT_Mode_Table (Long_Double_Index).DIGS <= Max_HW_Digs
+            then
+               return "long double";
+            else
+               return "double";
+            end if;
+      end case;
+   end C_Type_For;
 
    ----------
    -- Fail --
@@ -169,11 +225,32 @@ package body Set_Targ is
    procedure Fail (E : String) is
       E_Fatal : constant := 4;
       --  Code for fatal error
+
    begin
       Write_Str (E);
       Write_Eol;
       OS_Exit (E_Fatal);
    end Fail;
+
+   ------------------------
+   -- FPT_Mode_Index_For --
+   ------------------------
+
+   function FPT_Mode_Index_For (Name : String) return Natural is
+   begin
+      for J in FPT_Mode_Table'First .. Num_FPT_Modes loop
+         if FPT_Mode_Table (J).NAME.all = Name then
+            return J;
+         end if;
+      end loop;
+
+      raise Program_Error;
+   end FPT_Mode_Index_For;
+
+   function FPT_Mode_Index_For (T : S_Float_Types) return Natural is
+   begin
+      return FPT_Mode_Index_For (C_Type_For (T));
+   end FPT_Mode_Index_For;
 
    -------------------------
    -- Register_Float_Type --
@@ -281,14 +358,23 @@ package body Set_Targ is
       --  Acquire entry if non-vector non-complex fpt type (digits non-zero)
 
       if Digs > 0 and then not Complex and then Count = 0 then
-         Num_FPT_Modes := Num_FPT_Modes + 1;
-         FPT_Mode_Table (Num_FPT_Modes) :=
-           (NAME      => new String'(T (1 .. Last)),
-            DIGS      => Digs,
-            FLOAT_REP => Float_Rep,
-            PRECISION => Precision,
-            SIZE      => Size,
-            ALIGNMENT => Alignment);
+
+         declare
+            This_Name : constant String := T (1 .. Last);
+         begin
+            Num_FPT_Modes := Num_FPT_Modes + 1;
+            FPT_Mode_Table (Num_FPT_Modes) :=
+              (NAME      => new String'(This_Name),
+               DIGS      => Digs,
+               FLOAT_REP => Float_Rep,
+               PRECISION => Precision,
+               SIZE      => Size,
+               ALIGNMENT => Alignment);
+
+            if Long_Double_Index < 0 and then This_Name = "long double" then
+               Long_Double_Index := Num_FPT_Modes;
+            end if;
+         end;
       end if;
    end Register_Float_Type;
 
@@ -801,6 +887,13 @@ begin
       end loop;
    end;
 
+   --  Register floating-point types from the back end. We do this
+   --  unconditionally so C_Type_For may be called regardless of -gnateT, for
+   --  which cstand has a use, and early so we can use FPT_Mode_Table below to
+   --  compute some FP attributes.
+
+   Register_Back_End_Types (Register_Float_Type'Access);
+
    --  Case of reading the target dependent values from file
 
    --  This is bit more complex than might be expected, because it has to be
@@ -832,11 +925,8 @@ begin
             Char_Size                  := Get_Char_Size;
             Double_Float_Alignment     := Get_Double_Float_Alignment;
             Double_Scalar_Alignment    := Get_Double_Scalar_Alignment;
-            Double_Size                := Get_Double_Size;
-            Float_Size                 := Get_Float_Size;
             Float_Words_BE             := Get_Float_Words_BE;
             Int_Size                   := Get_Int_Size;
-            Long_Double_Size           := Get_Long_Double_Size;
             Long_Long_Size             := Get_Long_Long_Size;
             Long_Size                  := Get_Long_Size;
             Maximum_Alignment          := Get_Maximum_Alignment;
@@ -849,9 +939,29 @@ begin
             Wchar_T_Size               := Get_Wchar_T_Size;
             Words_BE                   := Get_Words_BE;
 
-            --  Register floating-point types from the back end
+            --  Compute the sizes of floating point types
 
-            Register_Back_End_Types (Register_Float_Type'Access);
+            declare
+               T : FPT_Mode_Entry renames
+                 FPT_Mode_Table (FPT_Mode_Index_For (S_Float));
+            begin
+               Float_Size := Int (T.SIZE);
+            end;
+
+            declare
+               T : FPT_Mode_Entry renames
+                 FPT_Mode_Table (FPT_Mode_Index_For (S_Long_Float));
+            begin
+               Double_Size := Int (T.SIZE);
+            end;
+
+            declare
+               T : FPT_Mode_Entry renames
+                 FPT_Mode_Table (FPT_Mode_Index_For (S_Long_Long_Float));
+            begin
+               Long_Double_Size := Int (T.SIZE);
+            end;
+
          end if;
       end;
    end if;

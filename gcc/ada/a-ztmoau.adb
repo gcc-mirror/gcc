@@ -173,6 +173,10 @@ package body Ada.Wide_Wide_Text_IO.Modular_Aux is
       Load_Digits (File, Buf, Ptr, Loaded);
 
       if Loaded then
+
+         --  Deal with based case. We recognize either the standard '#' or the
+         --  allowed alternative replacement ':' (see RM J.2(3)).
+
          Load (File, Buf, Ptr, '#', ':', Loaded);
 
          if Loaded then
