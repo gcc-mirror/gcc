@@ -1,3 +1,8 @@
+2015-01-08  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/64507
+	* gcc.target/sh/pr64507.c: New test.
+
 2015-01-05  Ian Lance Taylor  <iant@google.com>
 
 	Backport from mainline:

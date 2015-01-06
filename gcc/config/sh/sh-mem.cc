@@ -1,5 +1,5 @@
 /* Helper routines for memory move and comparison insns.
-   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -226,7 +226,7 @@ sh_expand_cmpstr (rtx *operands)
   emit_move_insn (tmp3, addr2);
   emit_move_insn (s2_addr, plus_constant (Pmode, s2_addr, 4));
 
-  /*start long loop.  */
+  /* start long loop.  */
   emit_label (L_loop_long);
 
   emit_move_insn (tmp2, tmp3);
@@ -335,7 +335,7 @@ sh_expand_cmpnstr (rtx *operands)
   rtx len = force_reg (SImode, operands[3]);
   int constp = CONST_INT_P (operands[3]);
 
-  /* Loop on a register count. */
+  /* Loop on a register count.  */
   if (constp)
     {
       rtx tmp0 = gen_reg_rtx (SImode);
@@ -364,7 +364,7 @@ sh_expand_cmpnstr (rtx *operands)
               add_int_reg_note (jump, REG_BR_PROB, prob_likely);
             }
 
-          /* word count. Do we have iterations ? */
+          /* word count. Do we have iterations ?  */
           emit_insn (gen_lshrsi3 (lenw, len, GEN_INT (2)));
 
           /*start long loop.  */
@@ -407,6 +407,7 @@ sh_expand_cmpnstr (rtx *operands)
           /* end loop.  Reached max iterations.  */
           if (! sbytes)
             {
+              emit_insn (gen_subsi3 (operands[0], tmp1, tmp2));
               jump = emit_jump_insn (gen_jump_compact (L_return));
               emit_barrier_after (jump);
             }
@@ -482,6 +483,13 @@ sh_expand_cmpnstr (rtx *operands)
       jump = emit_jump_insn (gen_jump_compact( L_end_loop_byte));
       emit_barrier_after (jump);
     }
+  else
+    {
+      emit_insn (gen_cmpeqsi_t (len, const0_rtx));
+      emit_move_insn (operands[0], const0_rtx);
+      jump = emit_jump_insn (gen_branch_true (L_return));
+      add_int_reg_note (jump, REG_BR_PROB, prob_unlikely);
+    }
 
   addr1 = adjust_automodify_address (addr1, QImode, s1_addr, 0);
   addr2 = adjust_automodify_address (addr2, QImode, s2_addr, 0);
@@ -522,14 +530,14 @@ sh_expand_cmpnstr (rtx *operands)
     emit_insn (gen_zero_extendqisi2 (tmp2, gen_lowpart (QImode, tmp2)));
   emit_insn (gen_zero_extendqisi2 (tmp1, gen_lowpart (QImode, tmp1)));
 
-  emit_label (L_return);
-
   emit_insn (gen_subsi3 (operands[0], tmp1, tmp2));
+
+  emit_label (L_return);
 
   return true;
 }
 
-/* Emit code to perform a strlen
+/* Emit code to perform a strlen.
 
    OPERANDS[0] is the destination.
    OPERANDS[1] is the string.
@@ -568,7 +576,7 @@ sh_expand_strlen (rtx *operands)
 
   addr1 = adjust_automodify_address (addr1, SImode, current_addr, 0);
 
-  /*start long loop.  */
+  /* start long loop.  */
   emit_label (L_loop_long);
 
   /* tmp1 is aligned, OK to load.  */
