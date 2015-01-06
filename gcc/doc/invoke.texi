@@ -2628,8 +2628,7 @@ by @option{-Wall}.
 Warn when a string or character literal is followed by a ud-suffix which does
 not begin with an underscore.  As a conforming extension, GCC treats such
 suffixes as separate preprocessing tokens in order to maintain backwards
-compatibility with code that uses formatting macros from
-the standard header file @file{inttypes.h}.
+compatibility with code that uses formatting macros from @code{<inttypes.h>}.
 For example:
 
 @smallexample
@@ -4421,8 +4420,7 @@ The unary plus operator.
 The @samp{U} integer constant suffix, or the @samp{F} or @samp{L} floating-point
 constant suffixes.  (Traditional C does support the @samp{L} suffix on integer
 constants.)  Note, these suffixes appear in macros defined in the system
-headers of most modern systems, e.g.@: the @samp{_MIN}/@samp{_MAX} macros in 
-@file{limits.h}.
+headers of most modern systems, e.g.@: the @samp{_MIN}/@samp{_MAX} macros in @code{<limits.h>}.
 Use of these macros in user code might normally lead to spurious
 warnings, however GCC's integrated preprocessor has enough context to
 avoid warning in these cases.
