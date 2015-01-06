@@ -3141,8 +3141,12 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
     while (context != containing_function
 	   && LAMBDA_FUNCTION_P (containing_function))
       {
-	lambda_expr = CLASSTYPE_LAMBDA_EXPR
-	  (DECL_CONTEXT (containing_function));
+	tree closure = DECL_CONTEXT (containing_function);
+	lambda_expr = CLASSTYPE_LAMBDA_EXPR (closure);
+
+	if (TYPE_CLASS_SCOPE_P (closure))
+	  /* A lambda in an NSDMI (c++/64496).  */
+	  break;
 
 	if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr)
 	    == CPLD_NONE)
@@ -3172,7 +3176,19 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
   else if (lambda_expr)
     {
       if (complain & tf_error)
-	error ("%qD is not captured", decl);
+	{
+	  error ("%qD is not captured", decl);
+	  tree closure = LAMBDA_EXPR_CLOSURE (lambda_expr);
+	  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr)
+	      == CPLD_NONE)
+	    inform (location_of (closure),
+		    "the lambda has no capture-default");
+	  else if (TYPE_CLASS_SCOPE_P (closure))
+	    inform (0, "lambda in local class %q+T cannot "
+		    "capture variables from the enclosing context",
+		    TYPE_CONTEXT (closure));
+	  inform (input_location, "%q+#D declared here", decl);
+	}
       return error_mark_node;
     }
   else
