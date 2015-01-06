@@ -2117,7 +2117,6 @@ package body Einfo is
 
    function Is_Independent (Id : E) return B is
    begin
-      pragma Assert (Ekind (Id) = E_Component);
       return Flag268 (Id);
    end Is_Independent;
 
@@ -4967,7 +4966,6 @@ package body Einfo is
 
    procedure Set_Is_Independent (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Void));
       Set_Flag268 (Id, V);
    end Set_Is_Independent;
 

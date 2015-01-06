@@ -2483,9 +2483,13 @@ package Einfo is
 --       Applies to all entities, true for incomplete types and subtypes
 
 --    Is_Independent (Flag268)
---       Defined in record components. Set if a valid pragma or aspect
---       Independent applies to the component, or if a valid pragma or aspect
---       Independent_Components applies to the enclosing record type.
+--       Defined in all type entities, and also in constants, components and
+--       variables. Set if a valid pragma or aspect Independent applies to the
+--       entity, or if a valid pragma or aspect Independent_Components applies
+--       to the enclosing record type for a component. Also set if a pragma
+--       Shared or pragma Atomic applies to the entity. In the case of private
+--       and incomplete types, this flag is set in both the partial view and
+--       the full view.
 
 --    Is_Inlined (Flag11)
 --       Defined in all entities. Set for functions and procedures which are
