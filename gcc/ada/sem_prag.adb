@@ -3114,10 +3114,10 @@ package body Sem_Prag is
       pragma No_Return (Pragma_Misplaced);
       --  Issue fatal error message for misplaced pragma
 
-      procedure Process_Atomic_Shared_Volatile;
-      --  Common processing for pragmas Atomic, Shared, Volatile. Note that
-      --  Shared is an obsolete Ada 83 pragma, treated as being identical
-      --  in effect to pragma Atomic.
+      procedure Process_Atomic_Independent_Shared_Volatile;
+      --  Common processing for pragmas Atomic, Independent, Shared, Volatile.
+      --  Note that Shared is an obsolete Ada 83 pragma and treated as being
+      --  identical in effect to pragma Atomic.
 
       procedure Process_Compile_Time_Warning_Or_Error;
       --  Common processing for Compile_Time_Error and Compile_Time_Warning
@@ -6152,11 +6152,11 @@ package body Sem_Prag is
          Error_Pragma ("incorrect placement of pragma%");
       end Pragma_Misplaced;
 
-      ------------------------------------
-      -- Process_Atomic_Shared_Volatile --
-      ------------------------------------
+      ------------------------------------------------
+      -- Process_Atomic_Independent_Shared_Volatile --
+      ------------------------------------------------
 
-      procedure Process_Atomic_Shared_Volatile is
+      procedure Process_Atomic_Independent_Shared_Volatile is
          E_Id : Node_Id;
          E    : Entity_Id;
          D    : Node_Id;
@@ -6182,7 +6182,7 @@ package body Sem_Prag is
             end if;
          end Set_Atomic;
 
-      --  Start of processing for Process_Atomic_Shared_Volatile
+      --  Start of processing for Process_Atomic_Independent_Shared_Volatile
 
       begin
          Check_Ada_83_Warning;
@@ -6215,20 +6215,34 @@ package body Sem_Prag is
                Check_First_Subtype (Arg1);
             end if;
 
-            if Prag_Id /= Pragma_Volatile then
+            if Prag_Id = Pragma_Atomic or else Prag_Id = Pragma_Shared then
                Set_Atomic (E);
                Set_Atomic (Underlying_Type (E));
                Set_Atomic (Base_Type (E));
             end if;
 
+            --  Atomic/Shared imply both Independent and Volatile
+
+            if Prag_Id /= Pragma_Volatile then
+               Set_Is_Independent (E);
+               Set_Is_Independent (Underlying_Type (E));
+               Set_Is_Independent (Base_Type (E));
+
+               if Prag_Id = Pragma_Independent then
+                  Independence_Checks.Append ((N, Base_Type (E)));
+               end if;
+            end if;
+
             --  Attribute belongs on the base type. If the view of the type is
             --  currently private, it also belongs on the underlying type.
 
-            Set_Is_Volatile (Base_Type (E));
-            Set_Is_Volatile (Underlying_Type (E));
+            if Prag_Id /= Pragma_Independent then
+               Set_Is_Volatile (Base_Type (E));
+               Set_Is_Volatile (Underlying_Type (E));
 
-            Set_Treat_As_Volatile (E);
-            Set_Treat_As_Volatile (Underlying_Type (E));
+               Set_Treat_As_Volatile (E);
+               Set_Treat_As_Volatile (Underlying_Type (E));
+            end if;
 
          elsif K = N_Object_Declaration
            or else (K = N_Component_Declaration
@@ -6238,7 +6252,7 @@ package body Sem_Prag is
                return;
             end if;
 
-            if Prag_Id /= Pragma_Volatile then
+            if Prag_Id = Pragma_Atomic or else Prag_Id = Pragma_Shared then
                Set_Is_Atomic (E);
 
                --  If the object declaration has an explicit initialization, a
@@ -6284,8 +6298,20 @@ package body Sem_Prag is
                end if;
             end if;
 
-            Set_Is_Volatile (E);
-            Set_Treat_As_Volatile (E);
+            --  Atomic/Shared imply both Independent and Volatile
+
+            if Prag_Id /= Pragma_Volatile then
+               Set_Is_Independent (E);
+
+               if Prag_Id = Pragma_Independent then
+                  Independence_Checks.Append ((N, E));
+               end if;
+            end if;
+
+            if Prag_Id /= Pragma_Independent then
+               Set_Is_Volatile (E);
+               Set_Treat_As_Volatile (E);
+            end if;
 
          else
             Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
@@ -6305,7 +6331,7 @@ package body Sem_Prag is
               ("argument of pragma % must denote a full type or object "
                & "declaration", Arg1);
          end if;
-      end Process_Atomic_Shared_Volatile;
+      end Process_Atomic_Independent_Shared_Volatile;
 
       -------------------------------------------
       -- Process_Compile_Time_Warning_Or_Error --
@@ -11408,7 +11434,7 @@ package body Sem_Prag is
          --  pragma Atomic (LOCAL_NAME);
 
          when Pragma_Atomic =>
-            Process_Atomic_Shared_Volatile;
+            Process_Atomic_Independent_Shared_Volatile;
 
          -----------------------
          -- Atomic_Components --
@@ -14903,61 +14929,16 @@ package body Sem_Prag is
          -- Independent --
          -----------------
 
-         --  pragma Independent (record_component_LOCAL_NAME);
+         --  pragma Independent (LOCAL_NAME);
 
-         when Pragma_Independent => Independent : declare
-            E_Id : Node_Id;
-            E    : Entity_Id;
-
-         begin
-            Check_Ada_83_Warning;
-            Ada_2012_Pragma;
-            Check_No_Identifiers;
-            Check_Arg_Count (1);
-            Check_Arg_Is_Local_Name (Arg1);
-            E_Id := Get_Pragma_Arg (Arg1);
-
-            if Etype (E_Id) = Any_Type then
-               return;
-            end if;
-
-            E := Entity (E_Id);
-
-            --  Check we have a record component. We have not yet setup
-            --  components fully, so identify by syntactic structure.
-
-            if Nkind (Declaration_Node (E)) /= N_Component_Declaration then
-               Error_Pragma_Arg
-                 ("argument for pragma% must be record component", Arg1);
-            end if;
-
-            --  Check duplicate before we chain ourselves
-
-            Check_Duplicate_Pragma (E);
-
-            --  Chain pragma
-
-            if Rep_Item_Too_Early (E, N)
-                 or else
-               Rep_Item_Too_Late (E, N)
-            then
-               return;
-            end if;
-
-            --  Set flag in component
-
-            Set_Is_Independent (E);
-
-            Independence_Checks.Append ((N, E));
-         end Independent;
+         when Pragma_Independent =>
+            Process_Atomic_Independent_Shared_Volatile;
 
          ----------------------------
          -- Independent_Components --
          ----------------------------
 
-         --  pragma Atomic_Components (array_LOCAL_NAME);
-
-         --  This processing is shared by Volatile_Components
+         --  pragma Independent_Components (array_or_record_LOCAL_NAME);
 
          when Pragma_Independent_Components => Independent_Components : declare
             E_Id : Node_Id;
@@ -19358,7 +19339,7 @@ package body Sem_Prag is
 
          when Pragma_Shared =>
             GNAT_Pragma;
-            Process_Atomic_Shared_Volatile;
+            Process_Atomic_Independent_Shared_Volatile;
 
          --------------------
          -- Shared_Passive --
@@ -21239,7 +21220,7 @@ package body Sem_Prag is
          --  pragma Volatile (LOCAL_NAME);
 
          when Pragma_Volatile =>
-            Process_Atomic_Shared_Volatile;
+            Process_Atomic_Independent_Shared_Volatile;
 
          -------------------------
          -- Volatile_Components --
