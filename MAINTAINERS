@@ -115,6 +115,7 @@ tilegx port		Walter Lee		<walt@tilera.com>
 tilepro port		Walter Lee		<walt@tilera.com>
 v850 port		Nick Clifton		<nickc@redhat.com>
 vax port		Matt Thomas		<matt@3am-software.com>
+visium port		Eric Botcazou		<ebotcazou@libertysurf.fr>
 x86-64 port		Jan Hubicka		<hubicka@ucw.cz>
 xstormy16 port		Nick Clifton		<nickc@redhat.com>
 xtensa port		Sterling Augustine	<augustine.sterling@gmail.com>

@@ -1,5 +1,9 @@
 2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* MAINTAINERS (CPU Port Maintainers): Add myself for Visium port.
+
+2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* configure.ac: Add Visium support.
 	* configure: Regenerate.
 
