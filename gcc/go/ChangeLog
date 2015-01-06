@@ -1,3 +1,8 @@
+2015-01-06  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (constructor_expression): Don't initialize zero-sized
+	fields, just evaluate the values for side effects.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
