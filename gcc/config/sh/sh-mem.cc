@@ -421,6 +421,7 @@ sh_expand_cmpnstr (rtx *operands)
 	  /* end loop.  Reached max iterations.  */
 	  if (sbytes == 0)
 	    {
+	      emit_insn (gen_subsi3 (operands[0], tmp1, tmp2));
 	      jump = emit_jump_insn (gen_jump_compact (L_return));
 	      emit_barrier_after (jump);
 	    }
@@ -496,6 +497,13 @@ sh_expand_cmpnstr (rtx *operands)
       jump = emit_jump_insn (gen_jump_compact( L_end_loop_byte));
       emit_barrier_after (jump);
     }
+  else
+    {
+      emit_insn (gen_cmpeqsi_t (len, const0_rtx));
+      emit_move_insn (operands[0], const0_rtx);
+      jump = emit_jump_insn (gen_branch_true (L_return));
+      add_int_reg_note (jump, REG_BR_PROB, prob_unlikely);
+    }
 
   addr1 = adjust_automodify_address (addr1, QImode, s1_addr, 0);
   addr2 = adjust_automodify_address (addr2, QImode, s2_addr, 0);
@@ -536,9 +544,9 @@ sh_expand_cmpnstr (rtx *operands)
     emit_insn (gen_zero_extendqisi2 (tmp2, gen_lowpart (QImode, tmp2)));
   emit_insn (gen_zero_extendqisi2 (tmp1, gen_lowpart (QImode, tmp1)));
 
-  emit_label (L_return);
-
   emit_insn (gen_subsi3 (operands[0], tmp1, tmp2));
+
+  emit_label (L_return);
 
   return true;
 }
