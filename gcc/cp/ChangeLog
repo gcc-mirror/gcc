@@ -1,5 +1,9 @@
 2015-01-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64455
+	* pt.c (type_dependent_expression_p): Handle variable templates.
+	* constexpr.c (potential_constant_expression_1): Use it.
+
 	PR c++/64487
 	* semantics.c (finish_offsetof): Handle templates here.
 	* parser.c (cp_parser_builtin_offsetof): Not here.
