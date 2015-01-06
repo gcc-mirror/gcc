@@ -1,3 +1,13 @@
+2015-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* opts.c (common_handle_option): Add support for
+	-fno-sanitize=all and -f{,no-}sanitize-recover=all.
+	* doc/invoke.texi: Document -fno-sanitize=all,
+	-f{,no-}sanitize-recover=all.  Document that
+	-fsanitize=float-cast-overflow is not enabled
+	by -fsanitize=undefined.  Fix up documentation
+	of -f{,no-}sanitize-recover.
+
 2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config.gcc: Add Visium support.

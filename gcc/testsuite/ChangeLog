@@ -1,3 +1,11 @@
+2015-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/asan/sanitize-all-1.c: New test.
+	* c-c++-common/ubsan/sanitize-all-1.c: New test.
+	* c-c++-common/ubsan/sanitize-all-2.c: New test.
+	* c-c++-common/ubsan/sanitize-all-3.c: New test.
+	* c-c++-common/ubsan/sanitize-all-4.c: New test.
+
 2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lib/target-supports.exp (check_profiling_available): Return 0 for

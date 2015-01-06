@@ -5689,6 +5689,8 @@ be a legitimate way of obtaining infinities and NaNs.
 @opindex fsanitize=float-cast-overflow
 This option enables floating-point type to integer conversion checking.
 We check that the result of the conversion does not overflow.
+Unlike other similar options, @option{-fsanitize=float-cast-overflow} is
+not enabled by @option{-fsanitize=undefined}.
 This option does not work well with @code{FE_INVALID} exceptions enabled.
 
 @item -fsanitize=nonnull-attribute
@@ -5724,6 +5726,13 @@ While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
 This currently works only for the C family of languages.
 
+@item -fno-sanitize=all
+@opindex fno-sanitize=all
+
+This option disables all previously enabled sanitizers.
+@option{-fsanitize=all} is not allowed, as some sanitizers cannot be used
+together.
+
 @item -fasan-shadow-offset=@var{number}
 @opindex fasan-shadow-offset
 This option forces GCC to use custom shadow offset in AddressSanitizer checks.
@@ -5747,11 +5756,14 @@ Currently this feature only works for @option{-fsanitize=undefined} (and its sub
 except for @option{-fsanitize=unreachable} and @option{-fsanitize=return}),
 @option{-fsanitize=float-cast-overflow}, @option{-fsanitize=float-divide-by-zero} and
 @option{-fsanitize=kernel-address}.  For these sanitizers error recovery is turned on by default.
+@option{-fsanitize-recover=all} and @option{-fno-sanitize-recover=all} is also
+accepted, the former enables recovery for all sanitizers that support it,
+the latter disables recovery for all sanitizers that support it.
 
 Syntax without explicit @var{opts} parameter is deprecated.  It is equivalent to
-@option{-fsanitize-recover=undefined,float-cast-overflow,float-divide-by-zero,kernel-address}.
+@option{-fsanitize-recover=undefined,float-cast-overflow,float-divide-by-zero}.
 Similarly @option{-fno-sanitize-recover} is equivalent to
-@option{-fno-sanitize-recover=undefined,float-cast-overflow,float-divide-by-zero,kernel-address}.
+@option{-fno-sanitize-recover=undefined,float-cast-overflow,float-divide-by-zero}.
 
 @item -fsanitize-undefined-trap-on-error
 @opindex fsanitize-undefined-trap-on-error
