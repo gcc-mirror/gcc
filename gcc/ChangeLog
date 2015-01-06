@@ -1,3 +1,10 @@
+2015-01-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Revert parts of r219199.
+	* doc/invoke.texi ([-Wliteral-suffix]): Restore markup on
+	<inttypes.h>.
+	([-Wtraditional]): Restore markup on <limits.h>.
+
 2015-01-05  Trevor Saunders  <tsaunders@mozilla.com>
 
 	PR c++/31397
