@@ -1,5 +1,22 @@
 2015-01-06  Robert Dewar  <dewar@adacore.com>
 
+	* snames.ads-tmpl: Remove entries for attribute Enum_Image.
+	* exp_attr.adb: Remove reference to Attribute_Enum_Image.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-vallli.adb (Value_Long_Long_Integer): Handle case of Str'Last
+	= Positive'Last.
+	* s-valllu.adb (Value_Long_Long_Unsigned): Handle case of
+	Str'Last = Positive'Last.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Process_Inline): Remove redundant construct
+	warning (-gnatw.r) for an ineffective pragma Inline.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
 	* s-valint.adb: Fix typo in last checkin.
 	* s-valuns.adb (Value_Unsigned): More efficient fix for
 	Positive'Last case.
