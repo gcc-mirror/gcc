@@ -650,7 +650,8 @@ package body Exp_Strm is
 
          --  Now convert to the base type if we do not have a biased type. Note
          --  that we did not do this in some older versions, and the result was
-         --  losing some required range checking for the 'Read case.
+         --  losing a required range check in the case where 'Input is being
+         --  called from 'Read.
 
          if not Has_Biased_Representation (P_Type) then
             return Unchecked_Convert_To (Base_Type (P_Type), Res);
@@ -683,7 +684,6 @@ package body Exp_Strm is
       Libent  : Entity_Id;
 
    begin
-
       --  Compute the size of the stream element. This is either the size of
       --  the first subtype or if given the size of the Stream_Size attribute.
 

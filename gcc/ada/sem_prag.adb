@@ -1382,8 +1382,7 @@ package body Sem_Prag is
 
                --    (Output =>+ null)
 
-               --  Remove the null input and replace it with a copy of the
-               --  output:
+               --  Remove null input and replace it with a copy of the output:
 
                --    (Output => Output)
 
@@ -1459,8 +1458,8 @@ package body Sem_Prag is
                Propagate_Output (Output, Inputs);
 
                --  A list with multiple outputs is slowly trimmed until only
-               --  one element remains. When this happens, replace the
-               --  aggregate with the element itself.
+               --  one element remains. When this happens, replace aggregate
+               --  with the element itself.
 
                if Multiple then
                   Remove  (Output);
