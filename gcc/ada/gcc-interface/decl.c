@@ -1415,6 +1415,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		gnu_size = NULL_TREE;
 		used_by_ref = true;
+		inner_const_flag = TREE_READONLY (gnu_unc_var);
 		const_flag = true;
 	      }
 
