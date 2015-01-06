@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@ package Par_SCO is
    procedure Initialize;
    --  Initialize internal tables for a new compilation
 
-   procedure SCO_Record (U : Unit_Number_Type);
+   procedure SCO_Record_Raw (U : Unit_Number_Type);
    --  This procedure scans the tree for the unit identified by U, populating
    --  internal tables recording the SCO information. Note that this is done
    --  before any semantic analysis/expansion happens.
@@ -48,6 +48,9 @@ package Par_SCO is
    --  which has been identified as always True or always False, as indicated
    --  by Val. The condition is identified by the First_Sloc value in the
    --  original tree associated with Cond.
+
+   procedure Set_SCO_Logical_Operator (Op : Node_Id);
+   --  Mark some putative logical operator as a short circuit one
 
    procedure Set_SCO_Pragma_Enabled (Loc : Source_Ptr);
    --  This procedure is called from Sem_Prag when a pragma is enabled (i.e.
@@ -60,14 +63,19 @@ package Par_SCO is
    function SCO_Pragma_Disabled (Loc : Source_Ptr) return Boolean;
    --  True if Loc is the source location of a disabled pragma
 
+   procedure SCO_Record_Filtered;
+   --  This procedure filters remaining putative AND/OR short-circuit operators
+   --  from the internal SCO raw table after the semantic analysis and fills
+   --  the filtered SCO table.
+
    procedure SCO_Output;
    --  Outputs SCO lines for all units, with appropriate section headers, as
    --  recorded by previous calls to SCO_Record, possibly modified by calls to
    --  Set_SCO_Condition.
 
    procedure dsco;
-   --  Debug routine to dump internal SCO table. This is a raw format dump
-   --  showing exactly what the table contains.
+   --  Debug routine to dump internal SCO tables. This is a raw format dump
+   --  showing exactly what the tables contain.
 
    procedure pscos;
    --  Debugging procedure to output contents of SCO binary tables in the

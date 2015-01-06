@@ -1279,6 +1279,13 @@ begin
          Write_ALI (Object => True);
       end if;
 
+      --  Some back ends (for instance Gigi) are known to rely on SCOs for code
+      --  generation. Make sure they are available.
+
+      if Generate_SCO then
+         Par_SCO.SCO_Record_Filtered;
+      end if;
+
       --  Back end needs to explicitly unlock tables it needs to touch
 
       Atree.Lock;
