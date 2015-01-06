@@ -7748,6 +7748,8 @@ package body Freeze is
    --------------------------
 
    procedure Set_SSO_From_Default (T : Entity_Id) is
+      Reversed : Boolean;
+
    begin
       --  Set default SSO for an array or record base type, except in case of
       --  a type extension (which always inherits the SSO of its parent type).
@@ -7758,31 +7760,35 @@ package body Freeze is
                              and then not (Is_Tagged_Type (T)
                                             and then Is_Derived_Type (T))))
       then
-         if ((Bytes_Big_Endian      and then SSO_Set_Low_By_Default  (T))
-                or else
-            ((not Bytes_Big_Endian) and then SSO_Set_High_By_Default (T)))
+         Reversed :=
+            (Bytes_Big_Endian     and then SSO_Set_Low_By_Default (T))
+              or else
+            (not Bytes_Big_Endian and then SSO_Set_High_By_Default (T));
 
-           --  For a record type, if native bit order is specified explicitly,
-           --  then never set reverse SSO from default.
+         if (SSO_Set_Low_By_Default (T) or else SSO_Set_High_By_Default (T))
+
+           --  For a record type, if bit order is specified explicitly, then
+           --  do not set SSO from default if not consistent.
 
            and then not
              (Is_Record_Type (T)
                and then Has_Rep_Item (T, Name_Bit_Order)
-               and then not Reverse_Bit_Order (T))
+               and then Reverse_Bit_Order (T) /= Reversed)
          then
             --  If flags cause reverse storage order, then set the result. Note
             --  that we would have ignored the pragma setting the non default
             --  storage order in any case, hence the assertion at this point.
 
-            pragma Assert (Support_Nondefault_SSO_On_Target);
-            Set_Reverse_Storage_Order (T);
+            pragma Assert
+              (not Reversed or else Support_Nondefault_SSO_On_Target);
 
-            --  For a record type, also set reversed bit order. Note that if
-            --  a bit order has been specified explicitly, then this is a
-            --  no-op, as per the guard above.
+            Set_Reverse_Storage_Order (T, Reversed);
+
+            --  For a record type, also set reversed bit order. Note: if a bit
+            --  order has been specified explicitly, then this is a no-op.
 
             if Is_Record_Type (T) then
-               Set_Reverse_Bit_Order (T);
+               Set_Reverse_Bit_Order (T, Reversed);
             end if;
          end if;
       end if;
