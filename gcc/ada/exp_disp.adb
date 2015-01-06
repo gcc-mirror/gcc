@@ -1138,25 +1138,6 @@ package body Exp_Disp is
          Operand_Typ := Base_Type (Corresponding_Record_Type (Operand_Typ));
       end if;
 
-      --  No displacement of the pointer to the object needed when the type of
-      --  the operand is not an interface type and the interface is one of
-      --  its parent types (since they share the primary dispatch table).
-
-      declare
-         Opnd : Entity_Id := Operand_Typ;
-
-      begin
-         if Is_Access_Type (Opnd) then
-            Opnd := Designated_Type (Opnd);
-         end if;
-
-         if not Is_Interface (Opnd)
-           and then Is_Ancestor (Iface_Typ, Opnd, Use_Full_View => True)
-         then
-            return;
-         end if;
-      end;
-
       --  Evaluate if we can statically displace the pointer to the object
 
       declare
@@ -1196,6 +1177,11 @@ package body Exp_Disp is
                        Prefix         => New_Occurrence_Of (Iface_Typ, Loc),
                        Attribute_Name => Name_Tag))));
             end if;
+
+            --  Just do a conversion ???
+
+            Rewrite (N, Unchecked_Convert_To (Etype (N), N));
+            Analyze (N);
          end if;
 
          return;
