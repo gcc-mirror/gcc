@@ -2450,27 +2450,18 @@ package body Freeze is
                           Get_Attribute_Definition_Clause
                             (FS, Attribute_Component_Size);
 
-                        if Known_Static_Esize (Ctyp) then
-                           Error_Msg_N
-                             ("incorrect component size for "
-                              & T & " components", Clause);
-                           Error_Msg_Uint_1 := Esize (Ctyp);
-                           Error_Msg_N
-                             ("\only allowed value is^", Clause);
-
-                        else
-                           Error_Msg_N
-                             ("component size cannot be given for "
-                              & T & " components", Clause);
-                        end if;
+                        Error_Msg_N
+                          ("incorrect component size for "
+                           & T & " components", Clause);
+                        Error_Msg_Uint_1 := Esize (Ctyp);
+                        Error_Msg_N
+                          ("\only allowed value is^", Clause);
 
                      else
                         Error_Msg_N
                           ("cannot pack " & T & " components",
                            Get_Rep_Pragma (FS, Name_Pack));
                      end if;
-
-                     return;
                   end Complain_CS;
 
                   --  Start of processing for Alias_Atomic_Check
