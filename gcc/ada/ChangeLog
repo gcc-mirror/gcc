@@ -1,3 +1,26 @@
+2015-01-06  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (ProcListEvt): Set to NULL.
+	* rtinit.c: New file.
+	(__gnat_rt_init_count): New reference counter set to 0.
+	(__gnat_runtime_initialize): Move code here from __gnat_initialize when
+	this code is actually needed for the runtime initialization. This
+	routine returns immediately if the initialization has already been done.
+	* final.c: Revert previous change.
+	* rtfinal.c: New file.
+	(__gnat_runtime_finalize)[Win32]: Add finalization of the critical
+	section and event. The default version of this routine is empty (except
+	for the reference counting code). This routine returns immediately if
+	some others libraries are referencing the runtime.
+	* bindgen.adb (Gen_Adainit): Generate call to Runtime_Initialize
+	remove circuitry to initialize the signal handler as this is
+	now done by the runtime initialization routine.
+	(Gen_Adafinal): Generate call to Runtime_Finalize.
+	* gnat_ugn.texi: Update documentation about concurrency and
+	initialization/finalization of the run-time.
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Add
+	references to rtfinal.o and rtinit.o
+
 2015-01-06  Robert Dewar  <dewar@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference): Add dummy entry

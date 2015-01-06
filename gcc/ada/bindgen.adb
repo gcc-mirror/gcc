@@ -390,6 +390,11 @@ package body Bindgen is
          Write_Statement_Buffer;
       end if;
 
+      WBI ("");
+      WBI ("      procedure Runtime_Finalize;");
+      WBI ("      pragma Import (C, Runtime_Finalize, " &
+             """__gnat_runtime_finalize"");");
+      WBI ("");
       WBI ("   begin");
 
       if not CodePeer_Mode then
@@ -398,6 +403,8 @@ package body Bindgen is
          WBI ("      end if;");
          WBI ("      Is_Elaborated := False;");
       end if;
+
+      WBI ("      Runtime_Finalize;");
 
       --  On non-virtual machine targets, finalization is done differently
       --  depending on whether this is the main program or a library.
@@ -599,13 +606,9 @@ package body Bindgen is
          --  installation, and indication of if it's been called previously.
 
          WBI ("");
-         WBI ("      procedure Install_Handler;");
-         WBI ("      pragma Import (C, Install_Handler, " &
-              """__gnat_install_handler"");");
-         WBI ("");
-         WBI ("      Handler_Installed : Integer;");
-         WBI ("      pragma Import (C, Handler_Installed, " &
-              """__gnat_handler_installed"");");
+         WBI ("      procedure Runtime_Initialize;");
+         WBI ("      pragma Import (C, Runtime_Initialize, " &
+              """__gnat_runtime_initialize"");");
 
          --  Import handlers attach procedure for sequential elaboration policy
 
@@ -835,13 +838,9 @@ package body Bindgen is
          --  In .NET, when binding with -z, we don't install the signal handler
          --  to let the caller handle the last exception handler.
 
-         if VM_Target /= CLI_Target
-           or else Bind_Main_Program
-         then
+         if Bind_Main_Program then
             WBI ("");
-            WBI ("      if Handler_Installed = 0 then");
-            WBI ("         Install_Handler;");
-            WBI ("      end if;");
+            WBI ("      Runtime_Initialize;");
          end if;
       end if;
 
