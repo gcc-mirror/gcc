@@ -1605,11 +1605,16 @@ package Einfo is
 --       Implicit_Dereference. Set also on the discriminant named in the aspect
 --       clause, to simplify type resolution.
 
---    Has_Independent_Components (Flag34) [base type only]
---       Defined in types. Set if the aspect Independent_Components applies
---       (in the base type only), if corresponding pragma or aspect applies.
---       In the case of an object of anonymous array type, the flag is set on
---       the created array type.
+--    Has_Independent_Components (Flag34) [implementation base type only]
+--       Defined in all types and objects. Set only for a record type or an
+--       array type or array object if a valid pragma Independent_Components
+--       applies to the type or object. Note that in the case of an object,
+--       this flag is only set on the object if there was an explicit pragma
+--       for the object. In other words, the proper test for whether an object
+--       has independent components is to see if either the object or its base
+--       type has this flag set. Note that in the case of a type, the pragma
+--       will be chained to the rep item chain of the first subtype in the
+--       usual manner.
 
 --    Has_Inheritable_Invariants (Flag248)
 --       Defined in all type entities. Set in private types from which one
@@ -5525,6 +5530,7 @@ package Einfo is
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
    --    Has_Completion                      (Flag26)   (constants only)
+   --    Has_Independent_Components          (Flag34)
    --    Has_Thunks                          (Flag228)  (constants only)
    --    Has_Size_Clause                     (Flag29)
    --    Has_Up_Level_Access                 (Flag215)
@@ -6236,6 +6242,7 @@ package Einfo is
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
+   --    Has_Independent_Components          (Flag34)
    --    Has_Initial_Value                   (Flag219)
    --    Has_Size_Clause                     (Flag29)
    --    Has_Up_Level_Access                 (Flag215)

@@ -412,6 +412,26 @@ package body Freeze is
          Set_Body_To_Inline (Decl, Old_S);
       end if;
 
+      --  Check whether the return type is a limited view. If the subprogram
+      --  is already frozen the generated body may have a non-limited view
+      --  of the type, that must be used, because it is the one in the spec
+      --  of the renaming declaration.
+
+      if Ekind (Old_S) = E_Function
+        and then Is_Entity_Name (Result_Definition (Spec))
+      then
+         declare
+            Ret_Type : constant Entity_Id := Etype (Result_Definition (Spec));
+         begin
+            if Ekind (Ret_Type) = E_Incomplete_Type
+              and then Present (Non_Limited_View (Ret_Type))
+            then
+               Set_Result_Definition (Spec,
+                  New_Occurrence_Of (Non_Limited_View (Ret_Type), Loc));
+            end if;
+         end;
+      end if;
+
       --  The body generated for this renaming is an internal artifact, and
       --  does not  constitute a freeze point for the called entity.
 

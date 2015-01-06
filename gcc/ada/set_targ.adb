@@ -165,7 +165,7 @@ package body Set_Targ is
    --  type can be found if it gets registered at all.
 
    Long_Double_Index : Integer := -1;
-   --  Once all the back-end types have been registered, the index in
+   --  Once all the floating point types have been registered, the index in
    --  FPT_Mode_Table at which "long double" can be found, if anywhere. A
    --  negative value means that no "long double" has been registered. This
    --  is useful to know whether we have a "long double" available at all and
@@ -769,6 +769,10 @@ package body Set_Targ is
          begin
             E.NAME := new String'(Nam_Buf (1 .. Nam_Len));
 
+            if Long_Double_Index < 0 and then E.NAME.all = "long double" then
+               Long_Double_Index := Num_FPT_Modes;
+            end if;
+
             E.DIGS := Get_Nat;
             Check_Spaces;
 
@@ -887,13 +891,6 @@ begin
       end loop;
    end;
 
-   --  Register floating-point types from the back end. We do this
-   --  unconditionally so C_Type_For may be called regardless of -gnateT, for
-   --  which cstand has a use, and early so we can use FPT_Mode_Table below to
-   --  compute some FP attributes.
-
-   Register_Back_End_Types (Register_Float_Type'Access);
-
    --  Case of reading the target dependent values from file
 
    --  This is bit more complex than might be expected, because it has to be
@@ -939,7 +936,11 @@ begin
             Wchar_T_Size               := Get_Wchar_T_Size;
             Words_BE                   := Get_Words_BE;
 
-            --  Compute the sizes of floating point types
+            --  Let the back-end register its floating point types and compute
+            --  the sizes of our standard types from there:
+
+            Num_FPT_Modes := 0;
+            Register_Back_End_Types (Register_Float_Type'Access);
 
             declare
                T : FPT_Mode_Entry renames

@@ -16354,14 +16354,12 @@ package body Sem_Ch3 is
                Set_Ekind (Id, Ekind (Prev));         --  will be reset later
                Set_Class_Wide_Type (Id, Class_Wide_Type (Prev));
 
-               --  If the incomplete type is completed by a private declaration
-               --  the class-wide type remains associated with the incomplete
-               --  type, to prevent order-of-elaboration issues in gigi, else
-               --  we associate the class-wide type with the known full view.
+               --  The type of the classwide type is the current Id. Previously
+               --  this was not done for private declarations because of order-
+               --  of elaboration issues in the back-end, but gigi now handles
+               --  this properly.
 
-               if Nkind (N) /= N_Private_Type_Declaration then
-                  Set_Etype (Class_Wide_Type (Id), Id);
-               end if;
+               Set_Etype (Class_Wide_Type (Id), Id);
             end if;
 
          --  Case of full declaration of private type

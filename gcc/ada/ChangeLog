@@ -1,5 +1,52 @@
 2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* einfo.ads (Has_Independent_Components): Document extended
+	usage.
+	* einfo.adb (Has_Independent_Components): Remove obsolete assertion.
+	(Set_Has_Independent_Components): Adjust assertion.
+	* sem_prag.adb (Analyze_Pragma): Also set Has_Independent_Components
+	for pragma Atomic_Components.  Set Has_Independent_Components
+	on the object instead of the type for an object declaration with
+	pragma Independent_Components.
+
+2015-01-06  Olivier Hainque  <hainque@adacore.com>
+
+	* set_targ.adb (Read_Target_Dependent_Values): Set
+	Long_Double_Index when "long double" is read.
+	(elaboration code): Register_Back_End_Types only when not reading from
+	config files. Doing otherwise is pointless and error prone.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-valrea.adb (Value_Real): Check for Str'Last = Positive'Last
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* a-wtgeau.adb, a-ztgeau.adb, a-tigeau.adb (String_Skip): Raise PE if
+	Str'Last = Positive'Last.
+
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Matches_Limited_View): Handle properly the case
+	where the non-limited type is a generic actual and appears as
+	a subtype of the non-limited view of the other.
+	* freeze.adb (Build_Renamed_Body): If the return type of the
+	declaration that is being completed is a limited view and the
+	non-limited view is available, use it in the specification of
+	the generated body.
+
+2015-01-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb: Reapplying reversed patch.
+
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Name): If there is a previous tagged
+	incomplete view, the type of the classwide type common to both
+	views is the type being declared.
+
+2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* einfo.ads (Is_Independent): Further document extended usage.
 
 2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
