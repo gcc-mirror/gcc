@@ -3195,6 +3195,18 @@ package body Sem_Ch4 is
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
+               --  For an Ada 2012 predicate or invariant, a call may mention
+               --  an incomplete type, while resolution of the corresponding
+               --  predicate function may see the full view, as a consequence
+               --  of the delayed resolution of the corresponding expressions.
+
+               elsif Ekind (Etype (Formal)) = E_Incomplete_Type
+                 and then Full_View (Etype (Formal)) = Etype (Actual)
+               then
+                  Set_Etype (Formal, Etype (Actual));
+                  Next_Actual (Actual);
+                  Next_Formal (Formal);
+
                else
                   if Debug_Flag_E then
                      Write_Str (" type checking fails in call ");

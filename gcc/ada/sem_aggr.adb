@@ -3227,17 +3227,36 @@ package body Sem_Aggr is
                         if Present (Others_Etype)
                           and then Base_Type (Others_Etype) /= Base_Type (Typ)
                         then
-                           Error_Msg_N
-                             ("components in OTHERS choice must "
-                              & "have same type", Selector_Name);
+                           --  If the components are of an anonymous access
+                           --  type they are distinct, but this is legal in
+                           --  Ada 2012 as long as designated types match.
+
+                           if (Ekind (Typ) = E_Anonymous_Access_Type
+                                or else Ekind (Typ) =
+                                            E_Anonymous_Access_Subprogram_Type)
+                             and then Designated_Type (Typ) =
+                                            Designated_Type (Others_Etype)
+                           then
+                              null;
+                           else
+                              Error_Msg_N
+                                ("components in OTHERS choice must "
+                                 & "have same type", Selector_Name);
+                           end if;
                         end if;
 
                         Others_Etype := Typ;
 
-                        if Expander_Active then
+                        --  Copy expression so that it is resolved
+                        --  independently for each component, This is needed
+                        --  for accessibility checks on compoents of anonymous
+                        --  access types, even in compile_only mode.
+
+                        if not Inside_A_Generic then
                            return
                              New_Copy_Tree_And_Copy_Dimensions
                                (Expression (Assoc));
+
                         else
                            return Expression (Assoc);
                         end if;
