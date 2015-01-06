@@ -84,7 +84,8 @@ is
      Global => null;
 
    function Capacity (Container : Vector) return Capacity_Range with
-     Global => null;
+     Global => null,
+     Post => Capacity'Result >= Container.Capacity;
 
    procedure Reserve_Capacity
      (Container : in out Vector;
