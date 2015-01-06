@@ -1899,7 +1899,7 @@ package body Prj.Env is
       Runtime : String_Ptr;
 
       procedure Add_Target;
-      --  Comment ALWAYS required for nested subprogram spec ???
+      --  Add :<prefix>/<target> to the project path
 
       ----------------
       -- Add_Target --

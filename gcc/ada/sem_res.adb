@@ -99,10 +99,10 @@ package body Sem_Res is
    --  a component of a discriminated type (record or concurrent type).
 
    procedure Check_For_Visible_Operator (N : Node_Id; T : Entity_Id);
-   --  Given a node for an operator associated with type T, check that
-   --  the operator is visible. Operators all of whose operands are
-   --  universal must be checked for visibility during resolution
-   --  because their type is not determinable based on their operands.
+   --  Given a node for an operator associated with type T, check that the
+   --  operator is visible. Operators all of whose operands are universal must
+   --  be checked for visibility during resolution because their type is not
+   --  determinable based on their operands.
 
    procedure Check_Fully_Declared_Prefix
      (Typ  : Entity_Id;
@@ -258,8 +258,8 @@ package body Sem_Res is
 
    procedure Set_String_Literal_Subtype (N : Node_Id; Typ : Entity_Id);
    --  The String_Literal_Subtype is built for all strings that are not
-   --  operands of a static concatenation operation. If the argument is
-   --  not a N_String_Literal node, then the call has no effect.
+   --  operands of a static concatenation operation. If the argument is not
+   --  a N_String_Literal node, then the call has no effect.
 
    procedure Set_Slice_Subtype (N : Node_Id);
    --  Build subtype of array type, with the range specified by the slice
@@ -429,11 +429,12 @@ package body Sem_Res is
          elsif Nkind (P) = N_Index_Or_Discriminant_Constraint then
 
             --  The following check catches the unusual case where a
-            --  discriminant appears within an index constraint that is part of
-            --  a larger expression within a constraint on a component, e.g. "C
-            --  : Int range 1 .. F (new A(1 .. D))". For now we only check case
-            --  of record components, and note that a similar check should also
-            --  apply in the case of discriminant constraints below. ???
+            --  discriminant appears within an index constraint that is part
+            --  of a larger expression within a constraint on a component,
+            --  e.g. "C : Int range 1 .. F (new A(1 .. D))". For now we only
+            --  check case of record components, and note that a similar check
+            --  should also apply in the case of discriminant constraints
+            --  below. ???
 
             --  Note that the check for N_Subtype_Declaration below is to
             --  detect the valid use of discriminants in the constraints of a
@@ -12093,8 +12094,9 @@ package body Sem_Res is
       --  Ada 2005 (AI-251): Anonymous access types where target references an
       --  interface type.
 
-      elsif Ekind_In (Target_Type, E_General_Access_Type,
-                                   E_Anonymous_Access_Type)
+      elsif Is_Access_Type (Opnd_Type)
+        and then Ekind_In (Target_Type, E_General_Access_Type,
+                                        E_Anonymous_Access_Type)
         and then Is_Interface (Directly_Designated_Type (Target_Type))
       then
          --  Check the static accessibility rule of 4.6(17). Note that the
