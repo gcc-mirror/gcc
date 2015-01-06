@@ -118,7 +118,7 @@ GLIBCXX_3.4 {
 #     std::locale::name();
       std::locale::none*;
       std::locale::numeric*;
-      std::locale::[A-Zn-z]*;
+      std::locale::[A-Zo-z]*;
       std::locale::_[A-Ha-z]*;
       std::locale::_Impl::[A-Za-z]*;
 #     std::locale::_Impl::_M_[A-Za-z]*;

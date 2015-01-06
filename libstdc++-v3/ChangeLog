@@ -1,3 +1,7 @@
+2015-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Fix version conflict for std::locale::name().
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
