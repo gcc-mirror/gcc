@@ -21369,6 +21369,14 @@ type_dependent_expression_p (tree expression)
       && DECL_INITIAL (expression))
    return true;
 
+  /* A variable template specialization is type-dependent if it has any
+     dependent template arguments.  */
+  if (VAR_P (expression)
+      && DECL_LANG_SPECIFIC (expression)
+      && DECL_TEMPLATE_INFO (expression)
+      && variable_template_p (DECL_TI_TEMPLATE (expression)))
+    return any_dependent_template_arguments_p (DECL_TI_ARGS (expression));
+
   if (TREE_TYPE (expression) == unknown_type_node)
     {
       if (TREE_CODE (expression) == ADDR_EXPR)

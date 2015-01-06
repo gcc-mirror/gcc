@@ -3882,7 +3882,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	      || !CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (t))
 	      || !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (t))
 	  && !var_in_constexpr_fn (t)
-	  && !dependent_type_p (TREE_TYPE (t)))
+	  && !type_dependent_expression_p (t))
         {
           if (flags & tf_error)
             non_const_var_error (t);
