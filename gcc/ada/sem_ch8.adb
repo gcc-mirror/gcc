@@ -3465,8 +3465,13 @@ package body Sem_Ch8 is
          if Ekind (Old_S) = E_Function then
             Rewrite (N, Build_Function_Wrapper (New_S, Old_S));
             Analyze (N);
+
+         --  For wrappers of operators, the types are obtained from (the
+         --  instances of) the types of the formal subprogram, not from the
+         --  actual subprogram, that carries predefined types.
+
          elsif Ekind (Old_S) = E_Operator then
-            Rewrite (N, Build_Operator_Wrapper (New_S, Old_S));
+            Rewrite (N, Build_Operator_Wrapper (Formal_Spec, Old_S));
             Analyze (N);
          end if;
       end if;

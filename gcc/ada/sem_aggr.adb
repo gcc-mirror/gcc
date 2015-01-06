@@ -3253,6 +3253,18 @@ package body Sem_Aggr is
                         --  access types, even in compile_only mode.
 
                         if not Inside_A_Generic then
+
+                           --  In ASIS mode, preanalyze the expression in an
+                           --  others association before making copies for
+                           --  separate resolution and accessibility checks.
+                           --  This ensures that the type of the expression is
+                           --  available to ASIS in all cases, in particular if
+                           --  the expression is itself an aggregate.
+
+                           if ASIS_Mode then
+                              Preanalyze_And_Resolve (Expression (Assoc), Typ);
+                           end if;
+
                            return
                              New_Copy_Tree_And_Copy_Dimensions
                                (Expression (Assoc));
