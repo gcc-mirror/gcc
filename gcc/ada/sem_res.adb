@@ -4250,14 +4250,25 @@ package body Sem_Res is
                end if;
 
                --  In Ada 83 we cannot pass an OUT parameter as an IN or IN OUT
-               --  actual to a nested call, since this is case of reading an
-               --  out parameter, which is not allowed.
+               --  actual to a nested call, since this constitutes a reading of
+               --  the parameter, which is not allowed.
 
-               if Ada_Version = Ada_83
-                 and then Is_Entity_Name (A)
+               if Is_Entity_Name (A)
                  and then Ekind (Entity (A)) = E_Out_Parameter
                then
-                  Error_Msg_N ("(Ada 83) illegal reading of out parameter", A);
+                  if Ada_Version = Ada_83 then
+                     Error_Msg_N
+                       ("(Ada 83) illegal reading of out parameter", A);
+
+                  --  An effectively volatile OUT parameter cannot act as IN or
+                  --  IN OUT actual in a call (SPARK RM 7.1.3(11)).
+
+                  elsif SPARK_Mode = On
+                    and then Is_Effectively_Volatile (Entity (A))
+                  then
+                     Error_Msg_N
+                       ("illegal reading of volatile OUT parameter", A);
+                  end if;
                end if;
             end if;
 
@@ -5444,8 +5455,8 @@ package body Sem_Res is
                                          N_Unchecked_Type_Conversion)
                then
                   Error_Msg_N
-                    ("(Ada 83) fixed-point operation "
-                     & "needs explicit conversion", N);
+                    ("(Ada 83) fixed-point operation needs explicit "
+                     & "conversion", N);
                end if;
 
                --  The expected type is "any real type" in contexts like
@@ -6886,12 +6897,60 @@ package body Sem_Res is
    --  Used to resolve identifiers and expanded names
 
    procedure Resolve_Entity_Name (N : Node_Id; Typ : Entity_Id) is
+      function Is_Assignment_Or_Object_Expression
+        (Context : Node_Id;
+         Expr    : Node_Id) return Boolean;
+      --  Determine whether node Context denotes an assignment statement or an
+      --  object declaration whose expression is node Expr.
+
       function Is_OK_Volatile_Context
         (Context : Node_Id;
          Obj_Ref : Node_Id) return Boolean;
       --  Determine whether node Context denotes a "non-interfering context"
       --  (as defined in SPARK RM 7.1.3(13)) where volatile reference Obj_Ref
       --  can safely reside.
+
+      ----------------------------------------
+      -- Is_Assignment_Or_Object_Expression --
+      ----------------------------------------
+
+      function Is_Assignment_Or_Object_Expression
+        (Context : Node_Id;
+         Expr    : Node_Id) return Boolean
+      is
+      begin
+         if Nkind_In (Context, N_Assignment_Statement,
+                               N_Object_Declaration)
+           and then Expression (Context) = Expr
+         then
+            return True;
+
+         --  Check whether a construct that yields a name is the expression of
+         --  an assignment statement or an object declaration.
+
+         elsif (Nkind_In (Context, N_Attribute_Reference,
+                                   N_Explicit_Dereference,
+                                   N_Indexed_Component,
+                                   N_Selected_Component,
+                                   N_Slice)
+                  and then Prefix (Context) = Expr)
+           or else
+               (Nkind_In (Context, N_Type_Conversion,
+                                   N_Unchecked_Type_Conversion)
+                  and then Expression (Context) = Expr)
+         then
+            return
+              Is_Assignment_Or_Object_Expression
+                (Context => Parent (Context),
+                 Expr    => Context);
+
+         --  Otherwise the context is not an assignment statement or an object
+         --  declaration.
+
+         else
+            return False;
+         end if;
+      end Is_Assignment_Or_Object_Expression;
 
       ----------------------------
       -- Is_OK_Volatile_Context --
@@ -6992,6 +7051,7 @@ package body Sem_Res is
          --  in a non-interfering context.
 
          elsif Nkind_In (Context, N_Attribute_Reference,
+                                  N_Explicit_Dereference,
                                   N_Indexed_Component,
                                   N_Selected_Component,
                                   N_Slice)
@@ -7107,14 +7167,26 @@ package body Sem_Res is
       elsif Ekind (E) = E_Generic_Function then
          Error_Msg_N ("illegal use of generic function", N);
 
+      --  In Ada 83 an OUT parameter cannot be read
+
       elsif Ekind (E) = E_Out_Parameter
-        and then Ada_Version = Ada_83
         and then (Nkind (Parent (N)) in N_Op
-                   or else (Nkind (Parent (N)) = N_Assignment_Statement
-                             and then N = Expression (Parent (N)))
-                   or else Nkind (Parent (N)) = N_Explicit_Dereference)
+                   or else Nkind (Parent (N)) = N_Explicit_Dereference
+                   or else Is_Assignment_Or_Object_Expression
+                             (Context => Parent (N),
+                              Expr    => N))
       then
-         Error_Msg_N ("(Ada 83) illegal reading of out parameter", N);
+         if Ada_Version = Ada_83 then
+            Error_Msg_N ("(Ada 83) illegal reading of out parameter", N);
+
+         --  An effectively volatile OUT parameter cannot be read
+         --  (SPARK RM 7.1.3(11)).
+
+         elsif SPARK_Mode = On
+           and then Is_Effectively_Volatile (E)
+         then
+            Error_Msg_N ("illegal reading of volatile OUT parameter", N);
+         end if;
 
       --  In all other cases, just do the possible static evaluation
 

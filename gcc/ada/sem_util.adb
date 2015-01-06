@@ -2133,6 +2133,12 @@ package body Sem_Util is
                   begin
                      Id := Get_Function_Id (Call);
 
+                     --  In case of previous error, no check is posible.
+
+                     if No (Id) then
+                        return Abandon;
+                     end if;
+
                      Formal := First_Formal (Id);
                      Actual := First_Actual (Call);
                      while Present (Actual) and then Present (Formal) loop
@@ -11621,6 +11627,18 @@ package body Sem_Util is
       elsif Is_Variable (AV) then
          return True;
 
+      --  Generalized indexing operations are rewritten as explicit
+      --  dereferences, and it is only during resolution that we can
+      --  check whether the context requires an access_to_variable type.
+
+      elsif Nkind (AV) = N_Explicit_Dereference
+        and then Ada_Version >= Ada_2012
+        and then Nkind (Original_Node (AV)) = N_Indexed_Component
+        and then Present (Etype (Original_Node (AV)))
+        and then Has_Implicit_Dereference (Etype (Original_Node (AV)))
+      then
+         return not Is_Access_Constant (Etype (Prefix (AV)));
+
       --  Unchecked conversions are allowed only if they come from the
       --  generated code, which sometimes uses unchecked conversions for out
       --  parameters in cases where code generation is unaffected. We tell
@@ -12857,9 +12875,8 @@ package body Sem_Util is
         and then Present (Etype (Orig_Node))
         and then Ada_Version >= Ada_2012
         and then Has_Implicit_Dereference (Etype (Orig_Node))
-        and then not Is_Access_Constant (Etype (Prefix (N)))
       then
-         return True;
+         return not Is_Access_Constant (Etype (Prefix (N)));
 
       --  A function call is never a variable
 

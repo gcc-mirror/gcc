@@ -182,6 +182,11 @@ procedure Gnat1drv is
 
       if CodePeer_Mode then
 
+         --  Turn off gnatprove mode (if set via e.g. -gnatd.F), not compatible
+         --  with CodePeer mode.
+
+         GNATprove_Mode := False;
+
          --  Turn off inlining, confuses CodePeer output and gains nothing
 
          Front_End_Inlining := False;

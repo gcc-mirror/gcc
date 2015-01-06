@@ -741,7 +741,7 @@ package body Ch13 is
             if Attr_Name = Name_Address
               and then Nkind (Prefix_Node) = N_Identifier
             then
-               Set_Name_Table_Boolean (Chars (Prefix_Node), True);
+               Set_Name_Table_Boolean1 (Chars (Prefix_Node), True);
             end if;
          end loop;
 
@@ -771,7 +771,7 @@ package body Ch13 is
             --  Mark occurrence of address clause (used to optimize performance
             --  of Exp_Util.Following_Address_Clause).
 
-            Set_Name_Table_Boolean (Chars (Identifier_Node), True);
+            Set_Name_Table_Boolean1 (Chars (Identifier_Node), True);
 
          --  RECORD follows USE (Record Representation Clause)
 

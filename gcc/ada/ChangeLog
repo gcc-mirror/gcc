@@ -1,5 +1,73 @@
 2015-01-06  Robert Dewar  <dewar@adacore.com>
 
+	* exp_util.adb: Change name Name_Table_Boolean to
+	Name_Table_Boolean1.
+	* namet.adb: Change name Name_Table_Boolean to Name_Table_Boolean1
+	Introduce Name_Table_Boolean2/3.
+	* namet.ads: Change name Name_Table_Boolean to Name_Table_Boolean1
+	Introduce Name_Table_Boolean2/3.
+	* par-ch13.adb: Change name Name_Table_Boolean to
+	Name_Table_Boolean1.
+
+2015-01-06  Bob Duff  <duff@adacore.com>
+
+	* gnat_rm.texi: Improve documentation regarding No_Task_Termination.
+
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregte, Get_Value): For an
+	others choice that covers multiple components, analyze each
+	copy with the type of the component even in compile-only mode,
+	to detect potential accessibility errors.
+
+2015-01-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Is_Assignment_Or_Object_Expression): New routine.
+	(Resolve_Actuals): An effectively volatile out
+	parameter cannot act as an in or in out actual in a call.
+	(Resolve_Entity_Name): An effectively volatile out parameter
+	cannot be read.
+
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): If the body is
+	the expansion of an expression function it may be pre-analyzed
+	if a 'access attribute is applied to the function, in which case
+	last_entity may have been assigned already.
+
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_One_Call): If formal has an incomplete
+	type and actual has the corresponding full view, there is no
+	error, but a case of use of incomplete type in a predicate or
+	invariant expression.
+
+2015-01-06  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Insert_No_Roots): Make sure that the same source
+	in two different project tree is checked in both trees, if they
+	are sources of two different projects, extended or not.
+
+2015-01-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb: Minor code clean up.
+	(Adjust_Global_Switches): Ignore gnatprove_mode in codepeer_mode.
+
+2015-01-06  Bob Duff  <duff@adacore.com>
+
+	* osint.adb (Read_Source_File): Don't print out
+	file name unless T = Source.
+
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Variable, Is_OK_Variable_For_Out_Formal):
+	recognize improper uses of constant_reference types as actuals
+	for in-out parameters.
+	(Check_Function_Call): Do not collect identifiers if function
+	name is missing because of previous error.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
 	* ali-util.adb, sem_prag.adb, rtsfind.adb, sem_util.adb, sem_res.adb,
 	ali.adb, binde.adb, namet.adb, namet.ads, gnatls.adb, bcheck.adb:
 	Minor change of name Name_Table_Info => Name_Table_Int.

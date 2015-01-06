@@ -3950,8 +3950,17 @@ package body Sem_Ch6 is
          --  Case where there are no spec entities, in this case there can be
          --  no body entities either, so just move everything.
 
+         --  If the body is generated for an expression function, it may have
+         --  been preanalyzed already, if 'access was applied to it.
+
          else
-            pragma Assert (No (Last_Entity (Body_Id)));
+            if Nkind (Original_Node (Unit_Declaration_Node (Spec_Id))) /=
+                                                       N_Expression_Function
+            then
+               pragma Assert (No (Last_Entity (Body_Id)));
+               null;
+            end if;
+
             Set_First_Entity (Body_Id, First_Entity (Spec_Id));
             Set_Last_Entity  (Body_Id, Last_Entity (Spec_Id));
             Set_First_Entity (Spec_Id, Empty);
