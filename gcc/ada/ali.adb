@@ -72,11 +72,11 @@ package body ALI is
       --  These two loops are empty and harmless the first time in.
 
       for J in ALIs.First .. ALIs.Last loop
-         Set_Name_Table_Info (ALIs.Table (J).Afile, 0);
+         Set_Name_Table_Int (ALIs.Table (J).Afile, 0);
       end loop;
 
       for J in Units.First .. Units.Last loop
-         Set_Name_Table_Info (Units.Table (J).Uname, 0);
+         Set_Name_Table_Int (Units.Table (J).Uname, 0);
       end loop;
 
       --  Free argument table strings
@@ -867,7 +867,7 @@ package body ALI is
 
       ALIs.Increment_Last;
       Id := ALIs.Last;
-      Set_Name_Table_Info (F, Int (Id));
+      Set_Name_Table_Int (F, Int (Id));
 
       ALIs.Table (Id) := (
         Afile                        => F,
@@ -1737,7 +1737,7 @@ package body ALI is
          --  Check for duplicated unit in different files
 
          declare
-            Info : constant Int := Get_Name_Table_Info
+            Info : constant Int := Get_Name_Table_Int
                                      (Units.Table (Units.Last).Uname);
          begin
             if Info /= 0
@@ -1785,7 +1785,7 @@ package body ALI is
             end if;
          end;
 
-         Set_Name_Table_Info
+         Set_Name_Table_Int
            (Units.Table (Units.Last).Uname, Int (Units.Last));
 
          --  Scan out possible version and other parameters

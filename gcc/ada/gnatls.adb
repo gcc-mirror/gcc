@@ -1816,7 +1816,7 @@ begin
       else
          Ali_File := Strip_Directory (Ali_File);
 
-         if Get_Name_Table_Info (Ali_File) = 0 then
+         if Get_Name_Table_Int (Ali_File) = 0 then
             Text := Read_Library_Info (Ali_File, True);
 
             declare

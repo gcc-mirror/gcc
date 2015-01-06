@@ -726,14 +726,14 @@ package body Namet is
    end Get_Name_Table_Byte;
 
    -------------------------
-   -- Get_Name_Table_Info --
+   -- Get_Name_Table_Int --
    -------------------------
 
-   function Get_Name_Table_Info (Id : Name_Id) return Int is
+   function Get_Name_Table_Int (Id : Name_Id) return Int is
    begin
       pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
       return Name_Entries.Table (Id).Int_Info;
-   end Get_Name_Table_Info;
+   end Get_Name_Table_Int;
 
    -----------------------------------------
    -- Get_Unqualified_Decoded_Name_String --
@@ -1321,14 +1321,14 @@ package body Namet is
    end Set_Name_Table_Byte;
 
    -------------------------
-   -- Set_Name_Table_Info --
+   -- Set_Name_Table_Int --
    -------------------------
 
-   procedure Set_Name_Table_Info (Id : Name_Id; Val : Int) is
+   procedure Set_Name_Table_Int (Id : Name_Id; Val : Int) is
    begin
       pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
       Name_Entries.Table (Id).Int_Info := Val;
-   end Set_Name_Table_Info;
+   end Set_Name_Table_Int;
 
    -----------------------------
    -- Store_Encoded_Character --

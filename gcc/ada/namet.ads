@@ -363,8 +363,8 @@ package Namet is
    pragma Inline (Get_Name_Table_Byte);
    --  Fetches the Byte value associated with the given name
 
-   function Get_Name_Table_Info (Id : Name_Id) return Int;
-   pragma Inline (Get_Name_Table_Info);
+   function Get_Name_Table_Int (Id : Name_Id) return Int;
+   pragma Inline (Get_Name_Table_Int);
    --  Fetches the Int value associated with the given name
 
    function Get_Name_Table_Boolean (Id : Name_Id) return Boolean;
@@ -409,7 +409,7 @@ package Namet is
    --  in Name_Len (i.e. the characters of the name are in subscript positions
    --  1 to Name_Len in Name_Buffer). It searches the names table to see if the
    --  string has already been stored. If so the Id of the existing entry is
-   --  returned. Otherwise a new entry is created with its Name_Table_Info
+   --  returned. Otherwise a new entry is created with its Name_Table_Int
    --  fields set to zero/false. The contents of Name_Buffer and Name_Len are
    --  not modified by this call. Note that it is permissible for Name_Len to
    --  be set to zero to lookup the null name string.
@@ -496,8 +496,8 @@ package Namet is
    --  for the given character code. On return Name_Buffer and Name_Len are
    --  set to reflect the stored name.
 
-   procedure Set_Name_Table_Info (Id : Name_Id; Val : Int);
-   pragma Inline (Set_Name_Table_Info);
+   procedure Set_Name_Table_Int (Id : Name_Id; Val : Int);
+   pragma Inline (Set_Name_Table_Int);
    --  Sets the Int value associated with the given name
 
    procedure Set_Name_Table_Byte (Id : Name_Id; Val : Byte);
