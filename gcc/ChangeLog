@@ -1,3 +1,9 @@
+2015-01-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/63259
+	* tree-ssa-math-opts.c (pass_optimize_bswap::execute): Stop checking
+	if optab exists for 16bit byteswap.
+
 2015-01-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* opts.c (common_handle_option): Add support for
