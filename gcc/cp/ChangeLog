@@ -1,5 +1,9 @@
 2015-01-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64487
+	* semantics.c (finish_offsetof): Handle templates here.
+	* parser.c (cp_parser_builtin_offsetof): Not here.
+
 	PR c++/64496
 	* semantics.c (process_outer_var_ref): Diagnose lambda in local
 	class NSDMI.
