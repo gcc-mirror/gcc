@@ -1,4 +1,5 @@
 -- { dg-do compile }
+-- { dg-options "-gnatws" }
 
 package Delta_Small is
    type T is delta 0.1 range -0.8 .. 0.8;
