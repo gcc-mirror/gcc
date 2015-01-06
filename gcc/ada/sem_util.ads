@@ -504,7 +504,7 @@ package Sem_Util is
    function Designate_Same_Unit
      (Name1 : Node_Id;
       Name2 : Node_Id) return  Boolean;
-   --  Return true if Name1 and Name2 designate the same unit name; each of
+   --  Returns True if Name1 and Name2 designate the same unit name; each of
    --  these names is supposed to be a selected component name, an expanded
    --  name, a defining program unit name or an identifier.
 

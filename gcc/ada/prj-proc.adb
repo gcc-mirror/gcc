@@ -819,11 +819,23 @@ package body Prj.Proc is
 
                      end if;
 
-                     pragma Assert (The_Variable_Id /= No_Variable,
-                                      "variable or attribute not found");
+                     if From_Project_Node_Tree.Incomplete_With then
+                        if The_Variable_Id = No_Variable then
+                           The_Variable := Nil_Variable_Value;
+                        else
+                           The_Variable :=
+                             Shared.Variable_Elements.Table
+                               (The_Variable_Id).Value;
+                        end if;
 
-                     The_Variable :=
-                       Shared.Variable_Elements.Table (The_Variable_Id).Value;
+                     else
+                        pragma Assert (The_Variable_Id /= No_Variable,
+                                       "variable or attribute not found");
+
+                        The_Variable :=
+                          Shared.Variable_Elements.Table
+                            (The_Variable_Id).Value;
+                     end if;
 
                   else
 

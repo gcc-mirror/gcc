@@ -941,7 +941,7 @@ package body Bindgen is
          WBI ("      System.Elaboration_Allocators.Mark_End_Of_Elaboration;");
       end if;
 
-      --  From this point, no new dispatching domain can be created.
+      --  From this point, no new dispatching domain can be created
 
       if Dispatching_Domains_Used then
          WBI ("      Freeze_Dispatching_Domains;");

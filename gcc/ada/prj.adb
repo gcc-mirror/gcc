@@ -1934,7 +1934,8 @@ package body Prj is
          Require_Obj_Dirs           => Require_Obj_Dirs,
          Allow_Invalid_External     => Allow_Invalid_External,
          Missing_Source_Files       => Missing_Source_Files,
-         Ignore_Missing_With        => Ignore_Missing_With);
+         Ignore_Missing_With        => Ignore_Missing_With,
+         Incomplete_Withs           => False);
    end Create_Flags;
 
    ------------

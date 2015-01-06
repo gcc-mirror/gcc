@@ -19247,6 +19247,13 @@ status if at least one test fails or crashes. @var{val} can be either
 Suppresses comment line containing file name and line number of corresponding
 subprograms in test skeletons.
 
+@item --no-command-line
+@cindex @option{--no-command-line} (@command{gnattest})
+Don't add command line support to test driver. Note that regardless of this
+switch, @command{gnattest} will automatically refrain from adding command
+line support if it detects that the selected run-time doesn't provide
+this capability.
+
 
 @item --separates
 @cindex @option{--separates} (@command{gnattest})

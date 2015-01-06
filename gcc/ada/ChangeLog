@@ -1,3 +1,30 @@
+2015-01-06  Pascal Obry  <obry@adacore.com>
+
+	* bindgen.adb: Minor style fix.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.ads, sem_util.adb: Minor reformatting.
+
+2015-01-06  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Parse_Project_And_Apply_Config): Reset incomplete
+	with flags before parsing the projects.
+	* prj-err.adb (Error_Msg): Do nothing if there are incomplete withs.
+	* prj-part.adb (Post_Parse_Context_Clause): Set Incomplete_Withs
+	to True in the flags, when Ignore_Missing_With is True and an
+	imported project cannot be found.
+	* prj-proc.adb (Expression): When there are incomplete withs and
+	a variable or attribute is not found, set the variable/attribute
+	to unknown.
+	* prj.ads (Processing_Flags): New flag Incomplete_Withs,
+	defaulted to False.
+
+2015-01-06  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* prj-proc.adb, prj-part.adb, prj.adb, prj.ads, prj-conf.adb,
+	prj-err.adb: Add new switch --no-command-line.
+
 2015-01-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb: Sloc of wrapper is that of instantiation.
