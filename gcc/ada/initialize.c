@@ -62,8 +62,6 @@ extern "C" {
 /* __gnat_initialize (NT-mingw32 Version) */
 /******************************************/
 
-extern void __gnat_install_handler(void);
-
 #if defined (__MINGW32__)
 
 extern void __gnat_install_SEH_handler (void *);

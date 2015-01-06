@@ -5112,7 +5112,7 @@ package body Sem_Ch12 is
      (Formal_Subp : Entity_Id;
       Actual_Subp : Entity_Id) return Node_Id
    is
-      Loc       : constant Source_Ptr := Sloc (Formal_Subp);
+      Loc       : constant Source_Ptr := Sloc (Current_Scope);
       Ret_Type  : constant Entity_Id  := Get_Instance_Of (Etype (Formal_Subp));
       Actuals   : List_Id;
       Decl      : Node_Id;
@@ -5187,11 +5187,12 @@ package body Sem_Ch12 is
      (Formal_Subp : Entity_Id;
       Actual_Subp : Entity_Id) return Node_Id
    is
-      Loc       : constant Source_Ptr := Sloc (Formal_Subp);
-      Ret_Type  : constant Entity_Id := Get_Instance_Of (Etype (Formal_Subp));
-      Op_Type   : constant Entity_Id := Get_Instance_Of
-                                          (Etype (First_Formal (Formal_Subp)));
-      Is_Binary : constant Boolean :=
+      Loc       : constant Source_Ptr := Sloc (Current_Scope);
+      Ret_Type  : constant Entity_Id  :=
+                    Get_Instance_Of (Etype (Formal_Subp));
+      Op_Type   : constant Entity_Id  :=
+                    Get_Instance_Of (Etype (First_Formal (Formal_Subp)));
+      Is_Binary : constant Boolean    :=
                     Present (Next_Formal (First_Formal (Formal_Subp)));
 
       Decl    : Node_Id;
