@@ -1,3 +1,19 @@
+2015-01-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-reatim.adb ("/"): Add explicit pragma Unsuppress (Division_Check).
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Process_Suppress_Unsuppress): Add extra warning
+	for ignoring pragma Suppress (Elaboration_Check) in SPARK mode.
+
+2015-01-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Interface_Conversion): No displacement
+	of the pointer to the object needed when the type of the operand
+	is not an interface type and the interface is one of its parent
+	types (since they share the primary dispatch table).
+
 2015-01-06  Vincent Celier  <celier@adacore.com>
 
 	* prj-env.adb: Minor comment update.
