@@ -2133,7 +2133,7 @@ package body Sem_Util is
                   begin
                      Id := Get_Function_Id (Call);
 
-                     --  In case of previous error, no check is posible.
+                     --  In case of previous error, no check is possible
 
                      if No (Id) then
                         return Abandon;
