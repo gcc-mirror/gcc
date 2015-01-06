@@ -1895,23 +1895,29 @@ package body Prj.Env is
       --  The path name(s) of directories where project files may reside.
       --  May be empty.
 
-      Prefix : String_Ptr;
+      Prefix  : String_Ptr;
       Runtime : String_Ptr;
 
       procedure Add_Target;
+      --  Comment ALWAYS required for nested subprogram spec ???
+
+      ----------------
+      -- Add_Target --
+      ----------------
 
       procedure Add_Target is
       begin
          Add_Str_To_Name_Buffer
            (Path_Separator & Prefix.all & Target_Name);
 
-         --  Note: Target_Name has a trailing / when it comes from
-         --  Sdefault.
+         --  Note: Target_Name has a trailing / when it comes from Sdefault
 
          if Name_Buffer (Name_Len) /= '/' then
             Add_Char_To_Name_Buffer (Directory_Separator);
          end if;
       end Add_Target;
+
+   --  Start of processing for Initialize_Default_Project_Path
 
    begin
       if Is_Initialized (Self) then
