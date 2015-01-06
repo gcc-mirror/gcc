@@ -1,5 +1,13 @@
 2015-01-06  Robert Dewar  <dewar@adacore.com>
 
+	* s-valint.adb: Fix typo in last checkin.
+	* s-valuns.adb (Value_Unsigned): More efficient fix for
+	Positive'Last case.
+	* sem_attr.adb (Analyze_Attribute): Minor reformatting
+	(Eval_Attribute): Static ervaluation of 'Img for enumeration types.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
 	* s-valint.adb, s-valuns.adb (Value_Integer): Deal with case where
 	Str'Last = Positive'Last
 

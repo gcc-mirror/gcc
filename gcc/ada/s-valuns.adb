@@ -289,17 +289,30 @@ package body System.Val_Uns is
    --------------------
 
    function Value_Unsigned (Str : String) return Unsigned is
-      subtype NT is String (1 .. Str'Length);
-      --  We use this subtype to convert Str for the calls below to deal with
-      --  the obscure case where Str'Last is Positive'Last. Without these
-      --  conversions, such a case would raise Constraint_Error.
-
-      V : Unsigned;
-      P : aliased Integer := 1;
    begin
-      V := Scan_Unsigned (NT (Str), P'Access, Str'Length);
-      Scan_Trailing_Blanks (NT (Str), P);
-      return V;
+      --  We have to special case Str'Last = Positive'Last because the normal
+      --  circuit ends up setting P to Str'Last + 1 which is out of bounds. We
+      --  deal with this by converting to a subtype which fixes the bounds.
+
+      if Str'Last = Positive'Last then
+         declare
+            subtype NT is String (1 .. Str'Length);
+         begin
+            return Value_Unsigned (NT (Str));
+         end;
+
+      --  Normal case where Str'Last < Positive'Last
+
+      else
+         declare
+            V : Unsigned;
+            P : aliased Integer := Str'First;
+         begin
+            V := Scan_Unsigned (Str, P'Access, Str'Last);
+            Scan_Trailing_Blanks (Str, P);
+            return V;
+         end;
+      end if;
    end Value_Unsigned;
 
 end System.Val_Uns;
