@@ -504,45 +504,26 @@ package body CStand is
 
          Copy_Float_Type
            (Standard_Short_Float,
-            Find_Back_End_Float_Type ("float"));
+            Find_Back_End_Float_Type (C_Type_For (S_Short_Float)));
          Set_Is_Implementation_Defined (Standard_Short_Float);
 
          Copy_Float_Type (Standard_Float, Standard_Short_Float);
 
-         Copy_Float_Type (Standard_Long_Float,
-           Find_Back_End_Float_Type ("double"));
+         Copy_Float_Type
+           (Standard_Long_Float,
+            Find_Back_End_Float_Type (C_Type_For (S_Long_Float)));
+
+         Copy_Float_Type
+           (Standard_Long_Long_Float,
+            Find_Back_End_Float_Type (C_Type_For (S_Long_Long_Float)));
+         Set_Is_Implementation_Defined (Standard_Long_Long_Float);
 
          Predefined_Float_Types := New_Elmt_List;
+
          Append_Elmt (Standard_Short_Float, Predefined_Float_Types);
          Append_Elmt (Standard_Float, Predefined_Float_Types);
          Append_Elmt (Standard_Long_Float, Predefined_Float_Types);
-
-         --  ??? For now, we don't have a good way to tell the widest float
-         --  type with hardware support. Basically, GCC knows the size of that
-         --  type, but on x86-64 there often are two or three 128-bit types,
-         --  one double extended that has 18 decimal digits, a 128-bit quad
-         --  precision type with 33 digits and possibly a 128-bit decimal float
-         --  type with 34 digits. As a workaround, we define Long_Long_Float as
-         --  C's "long double" if that type exists and has at most 18 digits,
-         --  or otherwise the same as Long_Float.
-
-         declare
-            Max_HW_Digs : constant := 18;
-            --  Maximum hardware digits supported
-
-            LLF : Entity_Id := Find_Back_End_Float_Type ("long double");
-            --  Entity for long double type
-
-         begin
-            if No (LLF) or else Digits_Value (LLF) > Max_HW_Digs then
-               LLF := Standard_Long_Float;
-            end if;
-
-            Set_Is_Implementation_Defined (Standard_Long_Long_Float);
-            Copy_Float_Type (Standard_Long_Long_Float, LLF);
-
-            Append_Elmt (Standard_Long_Long_Float, Predefined_Float_Types);
-         end;
+         Append_Elmt (Standard_Long_Long_Float, Predefined_Float_Types);
 
          --  Any other back end types are appended at the end of the list of
          --  predefined float types, and will only be selected if the none of

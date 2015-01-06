@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,9 +119,10 @@ package body System.Val_Uns is
 
       Ptr.all := P;
 
-      --  Deal with based case
+      --  Deal with based case. We recognize either the standard '#' or the
+      --  allowed alternative replacement ':' (see RM J.2(3)).
 
-      if P < Max and then (Str (P) = ':' or else Str (P) = '#') then
+      if P < Max and then (Str (P) = '#' or else Str (P) = ':') then
          Base_Char := Str (P);
          P := P + 1;
          Base := Uval;
