@@ -7178,7 +7178,6 @@ package body Exp_Attr is
            Attribute_Digits                       |
            Attribute_Emax                         |
            Attribute_Enabled                      |
-           Attribute_Enum_Image                   |
            Attribute_Epsilon                      |
            Attribute_Fast_Math                    |
            Attribute_First_Valid                  |

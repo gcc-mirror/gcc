@@ -8087,10 +8087,6 @@ package body Sem_Prag is
          Subp      : Entity_Id;
          Applies   : Boolean;
 
-         Effective : Boolean := False;
-         --  Set True if inline has some effect, i.e. if there is at least one
-         --  subprogram set as inlined as a result of the use of the pragma.
-
          procedure Make_Inline (Subp : Entity_Id);
          --  Subp is the defining unit name of the subprogram declaration. Set
          --  the flag, as well as the flag in the corresponding body, if there
@@ -8348,7 +8344,6 @@ package body Sem_Prag is
 
                if not Has_Pragma_Inline (Subp) then
                   Set_Has_Pragma_Inline (Subp);
-                  Effective := True;
                end if;
             end if;
 
@@ -8392,7 +8387,6 @@ package body Sem_Prag is
 
                   Check_Error_Detected;
                   Applies   := True;
-                  Effective := True;
 
                else
                   Make_Inline (Subp);
@@ -8416,20 +8410,6 @@ package body Sem_Prag is
             if not Applies then
                Error_Pragma_Arg
                  ("inappropriate argument for pragma%", Assoc);
-
-            elsif not Effective
-              and then Warn_On_Redundant_Constructs
-              and then not (Status = Suppressed or else Suppress_All_Inlining)
-            then
-               if Inlining_Not_Possible (Subp) then
-                  Error_Msg_NE
-                    ("pragma Inline for& is ignored?r?",
-                     N, Entity (Subp_Id));
-               else
-                  Error_Msg_NE
-                    ("pragma Inline for& is redundant?r?",
-                     N, Entity (Subp_Id));
-               end if;
             end if;
 
             Next (Assoc);

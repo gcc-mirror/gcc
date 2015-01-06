@@ -294,12 +294,30 @@ package body System.Val_LLU is
    function Value_Long_Long_Unsigned
      (Str : String) return Long_Long_Unsigned
    is
-      V : Long_Long_Unsigned;
-      P : aliased Integer := Str'First;
    begin
-      V := Scan_Long_Long_Unsigned (Str, P'Access, Str'Last);
-      Scan_Trailing_Blanks (Str, P);
-      return V;
+      --  We have to special case Str'Last = Positive'Last because the normal
+      --  circuit ends up setting P to Str'Last + 1 which is out of bounds. We
+      --  deal with this by converting to a subtype which fixes the bounds.
+
+      if Str'Last = Positive'Last then
+         declare
+            subtype NT is String (1 .. Str'Length);
+         begin
+            return Value_Long_Long_Unsigned (NT (Str));
+         end;
+
+      --  Normal case where Str'Last < Positive'Last
+
+      else
+         declare
+            V : Long_Long_Unsigned;
+            P : aliased Integer := Str'First;
+         begin
+            V := Scan_Long_Long_Unsigned (Str, P'Access, Str'Last);
+            Scan_Trailing_Blanks (Str, P);
+            return V;
+         end;
+      end if;
    end Value_Long_Long_Unsigned;
 
 end System.Val_LLU;
