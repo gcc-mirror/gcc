@@ -1804,12 +1804,13 @@ package body Sem_Ch12 is
                               (Defining_Entity (Analyzed_Formal)))
                        and then Ekind (Defining_Entity (Analyzed_Formal)) =
                                                                     E_Function
+                       and then Expander_Active
                      then
                         --  If actual is an entity (function or operator),
                         --  and expander is active, build wrapper for it.
                         --  Note that wrappers play no role within a generic.
 
-                        if Present (Match) and then Expander_Active then
+                        if Present (Match) then
                            if Nkind (Match) = N_Operator_Symbol then
 
                               --  If the name is a default, find its visible
@@ -1837,7 +1838,6 @@ package body Sem_Ch12 is
                         elsif Box_Present (Formal)
                            and then Nkind (Defining_Entity (Analyzed_Formal)) =
                                                     N_Defining_Operator_Symbol
-                           and then Expander_Active
                         then
                            Append_To (Assoc,
                              Build_Operator_Wrapper

@@ -1,3 +1,17 @@
+2015-01-06  Bob Duff  <duff@adacore.com>
+
+	* a-cfinve.adb (Copy): Set the discriminant to the Length when
+	Capacity = 0.
+	* a-cofove.ads (Capacity): Add a postcondition.
+	* a-cfinve.ads (Capacity): Add a postcondition.
+	(Reserve_Capacity): Correct the postcondition in the case where
+	Capacity = 0; that means "Capacity => Length (Container)".
+	* a-cofove.adb (Elems[c]): Add a comment
+	explaining the dangers and how to avoid them.
+
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Code clean up.
 2015-01-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnatvsn.ads: Bump copyright year.

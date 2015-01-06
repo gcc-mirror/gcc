@@ -59,6 +59,9 @@ is
    --  possible bounds. This means that the pointer is a thin pointer. This is
    --  necessary because 'Unrestricted_Access doesn't work when it produces
    --  access-to-unconstrained and is returned from a function.
+   --
+   --  Note that this is dangerous: make sure calls to this use an indexed
+   --  component or slice that is within the bounds 1 .. Length (Container).
 
    function Get_Element
      (Container : Vector;
