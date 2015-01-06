@@ -4200,9 +4200,11 @@ package body Freeze is
             --  generates the right visibility, and that is exactly what the
             --  calls to Copy_Separate_Tree give us.
 
-            --  Acquire copy of Inline pragma
+            --  Acquire copy of Inline pragma, and indicate that it does not
+            --  come from an aspect, as it applies to an internal entity.
 
             Iprag := Copy_Separate_Tree (Import_Pragma (E));
+            Set_From_Aspect_Specification (Iprag, False);
 
             --  Fix up spec to be not imported any more
 

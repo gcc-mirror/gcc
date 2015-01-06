@@ -1095,6 +1095,16 @@ installed. Default is @b{include}.
 
 Subdirectory of @b{Prefix} where the generated project file is to be
 installed. Default is @b{share/gpr}.
+
+@item @b{Mode}
+
+The installation mode, it is either @b{dev} (default) or @b{usage}.
+See @b{gprbuild} user's guide for details.
+
+@item @b{Install_Name}
+
+Specify the name to use for recording the installation. The default is
+the project name without the extension.
 @end table
 
 @c ---------------------------------------------
@@ -4817,6 +4827,15 @@ Value is the project directory or subdirectory of Prefix.
 Indicates that the project is to be installed or not. Case-insensitive value
 "false" means that the project is not to be installed, all other values mean
 that the project is to be installed.
+
+@item @b{Mode}: single
+
+Value is the installation mode, it is either @b{dev} (default) or @b{usage}.
+
+@item @b{Install_Name}: single
+
+Specify the name to use for recording the installation. The default is
+the project name without the extension.
 
 @end itemize
 
