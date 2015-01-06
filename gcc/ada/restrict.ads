@@ -51,8 +51,8 @@ package Restrict is
    --  set from package Standard by the processing in Targparm.
 
    Restriction_Profile_Name : array (All_Restrictions) of Profile_Name;
-   --  Entries in this array are valid only if the corresponding restriction
-   --  in Restrictions set. The value is the corresponding profile name if the
+   --  Entries in this array are valid only if the corresponding restriction in
+   --  Restrictions is set. The value is the corresponding profile name if the
    --  restriction was set by a Profile or Profile_Warnings pragma. The value
    --  is No_Profile in all other cases.
 
@@ -148,6 +148,10 @@ package Restrict is
       SPARK_05                           => True,
       others                             => False);
 
+   --------------------------
+   -- No_Dependences Table --
+   --------------------------
+
    --  The following table records entries made by Restrictions pragmas
    --  that specify a parameter for No_Dependence. Each such pragma makes
    --  an entry in this table.
@@ -178,6 +182,43 @@ package Restrict is
      Table_Initial        => 200,
      Table_Increment      => 200,
      Table_Name           => "Name_No_Dependences");
+
+   ----------------------------
+   -- No_Use_Of_Entity Table --
+   ----------------------------
+
+   --  The following table records entries made by Restrictions pragmas
+   --  that specify a parameter for No_Use_Of_Entity. Each such pragma makes
+   --  an entry in this table.
+
+   --  Note: we have chosen to implement this restriction in the "syntactic"
+   --  form, where we allow arbitrary fully qualified names to be specified.
+
+   type NE_Entry is record
+      Entity : Node_Id;
+      --  The entity parameter from the No_Use_Of_Entity pragma. This is in
+      --  the form of a selected component, since that is the way the parser
+      --  processes it, and we don't further analyze it.
+
+      Warn : Boolean;
+      --  True if from Restriction_Warnings, False if from Restrictions
+
+      Profile : Profile_Name;
+      --  Set to name of profile from which No_Use_Of_Entity entry came, or to
+      --  No_Profile if a pragma Restriction set the No_Use_Of_Entity entry.
+   end record;
+
+   package No_Use_Of_Entity is new Table.Table (
+     Table_Component_Type => NE_Entry,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => 200,
+     Table_Increment      => 200,
+     Table_Name           => "Name_No_Use_Of_Entity");
+
+   --  Note that in addition to making an entry in this table, we also set the
+   --  Boolean2 flag of the Name_Table entry for the simple name of the entity.
+   --  This is used to avoid most useless searches of this table.
 
    -----------------
    -- Subprograms --

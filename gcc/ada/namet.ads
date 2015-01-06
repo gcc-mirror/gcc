@@ -131,7 +131,11 @@ package Namet is
 --      The Boolean1 field is used to mark address clauses to optimize the
 --      performance of the Exp_Util.Following_Address_Clause function.
 
---      The Boolean2/Boolean3 fields are not used
+--      The Boolean2 field is used to mark simple names that appear in
+--      Restriction[_Warning]s pragmas for No_Use_Of_Entity. This avoids most
+--      unnecessary searches of the No_Use_Of_Entity table.
+
+--      The Boolean3 field is not used
 
 --    In the binder, we have the following uses:
 

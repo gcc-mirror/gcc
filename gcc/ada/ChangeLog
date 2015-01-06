@@ -1,3 +1,17 @@
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* namet.ads: Document use of Boolean2 for No_Use_Of_Entity.
+	* restrict.ads (No_Use_Of_Entity): New table.
+	* sem_prag.adb (Process_Restrictions_Or_Restriction_Warnings):
+	Ignore No_Use_Of_Entity (will be processed in parser).
+	* snames.ads-tmpl: Add entry for Name_No_Use_Of_Entity.
+
+2015-01-06  Vincent Celier  <celier@adacore.com>
+
+	* prj-tree.adb (Imported_Or_Extended_Project_Of): Do not try
+	to check for an extended project, if a project does not have
+	yet a project declaration.
+
 2015-01-06  Pierre-Marie Derodat  <derodat@adacore.com>
 
 	* scos.ads: Update documentation about the SCO table build
