@@ -30,7 +30,6 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Expander; use Expander;
 with Exp_Disp; use Exp_Disp;
-with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Freeze;   use Freeze;
@@ -954,24 +953,6 @@ package body Sem_Ch12 is
       --  In Ada 2005, indicates partial parameterization of a formal
       --  package. As usual an other association must be last in the list.
 
-      function Build_Function_Wrapper
-        (Formal : Entity_Id;
-         Actual : Entity_Id := Empty) return Node_Id;
-      --  In GNATprove mode, create a wrapper function for actuals that are
-      --  functions with any number of formal parameters, in order to propagate
-      --  their contract to the renaming declarations generated for them.
-      --  If the actual is absent, the formal has a default, and the name of
-      --  the function is that of the formal.
-
-      function Build_Operator_Wrapper
-        (Formal : Entity_Id;
-         Actual : Entity_Id := Empty) return Node_Id;
-      --  In GNATprove mode, create a wrapper function for actuals that are
-      --  operators, in order to propagate their contract to the renaming
-      --  declarations generated for them. If the actual is absent, this is
-      --  a formal with a default, and the name of the operator is that of the
-      --  formal.
-
       procedure Check_Overloaded_Formal_Subprogram (Formal : Entity_Id);
       --  Apply RM 12.3 (9): if a formal subprogram is overloaded, the instance
       --  cannot have a named association for it. AI05-0025 extends this rule
@@ -1018,257 +999,6 @@ package body Sem_Ch12 is
       --  correspondence between the two lists is not one-one. In addition to
       --  anonymous types, the presence a formal equality will introduce an
       --  implicit declaration for the corresponding inequality.
-
-      ----------------------------
-      -- Build_Function_Wrapper --
-      ----------------------------
-
-      function Build_Function_Wrapper
-        (Formal : Entity_Id;
-         Actual : Entity_Id := Empty) return Node_Id
-      is
-         Loc       : constant Source_Ptr := Sloc (I_Node);
-         Actuals   : List_Id;
-         Decl      : Node_Id;
-         Func_Name : Node_Id;
-         Func      : Entity_Id;
-         Parm_Type : Node_Id;
-         Profile   : List_Id := New_List;
-         Spec      : Node_Id;
-         Act_F     : Entity_Id;
-         Form_F    : Entity_Id;
-         New_F     : Entity_Id;
-
-      begin
-         --  If there is no actual, the formal has a default and is retrieved
-         --  by name. Otherwise the wrapper encloses a call to the actual.
-
-         if No (Actual) then
-            Func_Name := Make_Identifier (Loc, Chars (Formal));
-         else
-            Func_Name := New_Occurrence_Of (Entity (Actual), Loc);
-         end if;
-
-         Func := Make_Defining_Identifier (Loc, Chars (Formal));
-         Set_Ekind (Func, E_Function);
-         Set_Is_Generic_Actual_Subprogram (Func);
-
-         Actuals := New_List;
-         Profile := New_List;
-
-         if Present (Actual) then
-            Act_F := First_Formal (Entity (Actual));
-         else
-            Act_F := Empty;
-         end if;
-
-         Form_F := First_Formal (Formal);
-         while Present (Form_F) loop
-
-            --  Create new formal for profile of wrapper, and add a reference
-            --  to it in the list of actuals for the enclosing call. The name
-            --  must be that of the formal in the formal subprogram, because
-            --  calls to it in the generic body may use named associations.
-
-            New_F := Make_Defining_Identifier (Loc, Chars (Form_F));
-
-            if No (Actual) then
-
-               --  If formal has a class-wide type rewrite as the corresponding
-               --  attribute, because the class-wide type is not retrievable by
-               --  visbility.
-
-               if Is_Class_Wide_Type (Etype (Form_F)) then
-                  Parm_Type :=
-                    Make_Attribute_Reference (Loc,
-                      Attribute_Name => Name_Class,
-                      Prefix         =>
-                        Make_Identifier (Loc, Chars (Etype (Etype (Form_F)))));
-
-               else
-                  Parm_Type :=
-                    Make_Identifier (Loc,
-                      Chars => Chars (First_Subtype (Etype (Form_F))));
-               end if;
-
-            --  If actual is present, use the type of its own formal
-
-            else
-               Parm_Type := New_Occurrence_Of (Etype (Act_F), Loc);
-            end if;
-
-            Append_To (Profile,
-              Make_Parameter_Specification (Loc,
-                Defining_Identifier => New_F,
-                Parameter_Type      => Parm_Type));
-
-            Append_To (Actuals, New_Occurrence_Of (New_F, Loc));
-            Next_Formal (Form_F);
-
-            if Present (Act_F) then
-               Next_Formal (Act_F);
-            end if;
-         end loop;
-
-         Spec :=
-           Make_Function_Specification (Loc,
-             Defining_Unit_Name       => Func,
-             Parameter_Specifications => Profile,
-             Result_Definition        =>
-               Make_Identifier (Loc, Chars (Etype (Formal))));
-
-         Decl :=
-           Make_Expression_Function (Loc,
-             Specification => Spec,
-             Expression    =>
-               Make_Function_Call (Loc,
-                 Name                   => Func_Name,
-                 Parameter_Associations => Actuals));
-
-         return Decl;
-      end Build_Function_Wrapper;
-
-      ----------------------------
-      -- Build_Operator_Wrapper --
-      ----------------------------
-
-      function Build_Operator_Wrapper
-        (Formal : Entity_Id;
-         Actual : Entity_Id := Empty) return Node_Id
-      is
-         Loc       : constant Source_Ptr := Sloc (I_Node);
-         Typ       : constant Entity_Id := Etype (Formal);
-         Is_Binary : constant Boolean :=
-                       Present (Next_Formal (First_Formal (Formal)));
-
-         Decl    : Node_Id;
-         Expr    : Node_Id;
-         F1, F2  : Entity_Id;
-         Func    : Entity_Id;
-         Op_Name : Name_Id;
-         Spec    : Node_Id;
-         L, R    : Node_Id;
-
-      begin
-         if No (Actual) then
-            Op_Name := Chars (Formal);
-         else
-            Op_Name := Chars (Actual);
-         end if;
-
-         --  Create entities for wrapper function and its formals
-
-         F1 := Make_Temporary (Loc, 'A');
-         F2 := Make_Temporary (Loc, 'B');
-         L  := New_Occurrence_Of (F1, Loc);
-         R  := New_Occurrence_Of (F2, Loc);
-
-         Func := Make_Defining_Identifier (Loc, Chars (Formal));
-         Set_Ekind (Func, E_Function);
-         Set_Is_Generic_Actual_Subprogram (Func);
-
-         Spec :=
-           Make_Function_Specification (Loc,
-             Defining_Unit_Name       => Func,
-             Parameter_Specifications => New_List (
-               Make_Parameter_Specification (Loc,
-                  Defining_Identifier => F1,
-                  Parameter_Type      =>
-                    Make_Identifier (Loc,
-                      Chars => Chars (Etype (First_Formal (Formal)))))),
-             Result_Definition        => Make_Identifier (Loc, Chars (Typ)));
-
-         if Is_Binary then
-            Append_To (Parameter_Specifications (Spec),
-               Make_Parameter_Specification (Loc,
-                 Defining_Identifier => F2,
-                 Parameter_Type =>
-                   Make_Identifier (Loc,
-                     Chars (Etype (Next_Formal (First_Formal (Formal)))))));
-         end if;
-
-         --  Build expression as a function call, or as an operator node
-         --  that corresponds to the name of the actual, starting with binary
-         --  operators.
-
-         if Present (Actual) and then Op_Name not in Any_Operator_Name then
-            Expr :=
-              Make_Function_Call (Loc,
-                Name                   =>
-                  New_Occurrence_Of (Entity (Actual), Loc),
-                Parameter_Associations => New_List (L));
-
-            if Is_Binary then
-               Append_To (Parameter_Associations (Expr), R);
-            end if;
-
-         --  Binary operators
-
-         elsif Is_Binary then
-            if Op_Name = Name_Op_And then
-               Expr := Make_Op_And      (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Or then
-               Expr := Make_Op_Or       (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Xor then
-               Expr := Make_Op_Xor      (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Eq then
-               Expr := Make_Op_Eq       (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Ne then
-               Expr := Make_Op_Ne       (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Le then
-               Expr := Make_Op_Le       (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Gt then
-               Expr := Make_Op_Gt       (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Ge then
-               Expr := Make_Op_Ge       (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Lt then
-               Expr := Make_Op_Lt       (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Add then
-               Expr := Make_Op_Add      (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Subtract then
-               Expr := Make_Op_Subtract (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Concat then
-               Expr := Make_Op_Concat   (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Multiply then
-               Expr := Make_Op_Multiply (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Divide then
-               Expr := Make_Op_Divide   (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Mod then
-               Expr := Make_Op_Mod      (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Rem then
-               Expr := Make_Op_Rem      (Loc, Left_Opnd => L, Right_Opnd => R);
-            elsif Op_Name = Name_Op_Expon then
-               Expr := Make_Op_Expon    (Loc, Left_Opnd => L, Right_Opnd => R);
-            end if;
-
-         --  Unary operators
-
-         else
-            if Op_Name = Name_Op_Add then
-               Expr := Make_Op_Plus  (Loc, Right_Opnd => L);
-            elsif Op_Name = Name_Op_Subtract then
-               Expr := Make_Op_Minus (Loc, Right_Opnd => L);
-            elsif Op_Name = Name_Op_Abs then
-               Expr := Make_Op_Abs   (Loc, Right_Opnd => L);
-            elsif Op_Name = Name_Op_Not then
-               Expr := Make_Op_Not   (Loc, Right_Opnd => L);
-            end if;
-         end if;
-
-         --  Propagate visible entity to operator node, either from a
-         --  given actual or from a default.
-
-         if Is_Entity_Name (Actual) and then Nkind (Expr) in N_Op then
-            Set_Entity (Expr, Entity (Actual));
-         end if;
-
-         Decl :=
-           Make_Expression_Function (Loc,
-             Specification => Spec,
-             Expression    => Expr);
-
-         return Decl;
-      end Build_Operator_Wrapper;
 
       ----------------------------------------
       -- Check_Overloaded_Formal_Subprogram --
@@ -1798,64 +1528,9 @@ package body Sem_Ch12 is
                      end if;
 
                   else
-                     if GNATprove_Mode
-                        and then Present
-                           (Containing_Package_With_Ext_Axioms
-                              (Defining_Entity (Analyzed_Formal)))
-                       and then Ekind (Defining_Entity (Analyzed_Formal)) =
-                                                                    E_Function
-                       and then Expander_Active
-                     then
-                        --  If actual is an entity (function or operator),
-                        --  and expander is active, build wrapper for it.
-                        --  Note that wrappers play no role within a generic.
-
-                        if Present (Match) then
-                           if Nkind (Match) = N_Operator_Symbol then
-
-                              --  If the name is a default, find its visible
-                              --  entity at the point of instantiation.
-
-                              if Is_Entity_Name (Match)
-                                and then No (Entity (Match))
-                              then
-                                 Find_Direct_Name (Match);
-                              end if;
-
-                              Append_To
-                                (Assoc,
-                                 Build_Operator_Wrapper
-                                   (Defining_Entity (Analyzed_Formal), Match));
-
-                           else
-                              Append_To (Assoc,
-                                 Build_Function_Wrapper
-                                   (Defining_Entity (Analyzed_Formal), Match));
-                           end if;
-
-                        --  Ditto if formal is an operator with a default.
-
-                        elsif Box_Present (Formal)
-                           and then Nkind (Defining_Entity (Analyzed_Formal)) =
-                                                    N_Defining_Operator_Symbol
-                        then
-                           Append_To (Assoc,
-                             Build_Operator_Wrapper
-                               (Defining_Entity (Analyzed_Formal)));
-
-                        --  Otherwise create renaming declaration.
-
-                        else
-                           Append_To (Assoc,
-                             Build_Function_Wrapper
-                               (Defining_Entity (Analyzed_Formal)));
-                        end if;
-
-                     else
-                        Append_To (Assoc,
-                          Instantiate_Formal_Subprogram
-                            (Formal, Match, Analyzed_Formal));
-                     end if;
+                     Append_To (Assoc,
+                       Instantiate_Formal_Subprogram
+                         (Formal, Match, Analyzed_Formal));
 
                      --  An instantiation is a freeze point for the actuals,
                      --  unless this is a rewritten formal package.
@@ -5444,6 +5119,223 @@ package body Sem_Ch12 is
          return Assoc;
       end if;
    end Get_Associated_Node;
+
+   ----------------------------
+   -- Build_Function_Wrapper --
+   ----------------------------
+
+   function Build_Function_Wrapper
+     (Formal : Entity_Id;
+      Actual : Entity_Id) return Node_Id
+   is
+      Loc       : constant Source_Ptr := Sloc (Formal);
+      Actuals   : List_Id;
+      Decl      : Node_Id;
+      Func_Name : Node_Id;
+      Func      : Entity_Id;
+      Parm_Type : Node_Id;
+      Profile   : List_Id := New_List;
+      Spec      : Node_Id;
+      Act_F     : Entity_Id;
+      Form_F    : Entity_Id;
+      New_F     : Entity_Id;
+
+   begin
+      Func_Name := New_Occurrence_Of (Actual, Loc);
+
+      Func := Make_Defining_Identifier (Loc, Chars (Formal));
+      Set_Ekind (Func, E_Function);
+      Set_Is_Generic_Actual_Subprogram (Func);
+
+      Actuals := New_List;
+      Profile := New_List;
+
+      if Present (Actual) then
+         Act_F := First_Formal (Actual);
+      else
+         Act_F := Empty;
+      end if;
+
+      Form_F := First_Formal (Formal);
+      while Present (Form_F) loop
+
+         --  Create new formal for profile of wrapper, and add a reference
+         --  to it in the list of actuals for the enclosing call. The name
+         --  must be that of the formal in the formal subprogram, because
+         --  calls to it in the generic body may use named associations.
+
+         New_F := Make_Defining_Identifier (Loc, Chars (Form_F));
+
+         Parm_Type := New_Occurrence_Of (Etype (Act_F), Loc);
+
+         Append_To (Profile,
+           Make_Parameter_Specification (Loc,
+             Defining_Identifier => New_F,
+             Parameter_Type      => Parm_Type));
+
+         Append_To (Actuals, New_Occurrence_Of (New_F, Loc));
+         Next_Formal (Form_F);
+
+         if Present (Act_F) then
+            Next_Formal (Act_F);
+         end if;
+      end loop;
+
+      Spec :=
+        Make_Function_Specification (Loc,
+          Defining_Unit_Name       => Func,
+          Parameter_Specifications => Profile,
+          Result_Definition        =>
+            Make_Identifier (Loc, Chars (Etype (Formal))));
+
+      Decl :=
+        Make_Expression_Function (Loc,
+          Specification => Spec,
+          Expression    =>
+            Make_Function_Call (Loc,
+              Name                   => Func_Name,
+              Parameter_Associations => Actuals));
+
+      return Decl;
+   end Build_Function_Wrapper;
+
+   ----------------------------
+   -- Build_Operator_Wrapper --
+   ----------------------------
+
+   function Build_Operator_Wrapper
+     (Formal : Entity_Id;
+      Actual : Entity_Id) return Node_Id
+   is
+      Loc       : constant Source_Ptr := Sloc (Formal);
+      Typ       : constant Entity_Id := Etype (Formal);
+      Is_Binary : constant Boolean :=
+                    Present (Next_Formal (First_Formal (Formal)));
+
+      Decl    : Node_Id;
+      Expr    : Node_Id;
+      F1, F2  : Entity_Id;
+      Func    : Entity_Id;
+      Op_Name : Name_Id;
+      Spec    : Node_Id;
+      L, R    : Node_Id;
+
+   begin
+      Op_Name := Chars (Actual);
+
+      --  Create entities for wrapper function and its formals
+
+      F1 := Make_Temporary (Loc, 'A');
+      F2 := Make_Temporary (Loc, 'B');
+      L  := New_Occurrence_Of (F1, Loc);
+      R  := New_Occurrence_Of (F2, Loc);
+
+      Func := Make_Defining_Identifier (Loc, Chars (Formal));
+      Set_Ekind (Func, E_Function);
+      Set_Is_Generic_Actual_Subprogram (Func);
+
+      Spec :=
+        Make_Function_Specification (Loc,
+          Defining_Unit_Name       => Func,
+          Parameter_Specifications => New_List (
+            Make_Parameter_Specification (Loc,
+               Defining_Identifier => F1,
+               Parameter_Type      =>
+                 Make_Identifier (Loc,
+                   Chars => Chars (Etype (First_Formal (Formal)))))),
+          Result_Definition        => Make_Identifier (Loc, Chars (Typ)));
+
+      if Is_Binary then
+         Append_To (Parameter_Specifications (Spec),
+            Make_Parameter_Specification (Loc,
+              Defining_Identifier => F2,
+              Parameter_Type      =>
+                Make_Identifier (Loc,
+                  Chars (Etype (Next_Formal (First_Formal (Formal)))))));
+      end if;
+
+      --  Build expression as a function call, or as an operator node
+      --  that corresponds to the name of the actual, starting with
+      --  binary operators.
+
+      if Present (Actual) and then Op_Name not in Any_Operator_Name then
+         Expr :=
+           Make_Function_Call (Loc,
+             Name                   =>
+               New_Occurrence_Of (Entity (Actual), Loc),
+             Parameter_Associations => New_List (L));
+
+         if Is_Binary then
+            Append_To (Parameter_Associations (Expr), R);
+         end if;
+
+      --  Binary operators
+
+      elsif Is_Binary then
+         if Op_Name = Name_Op_And then
+            Expr := Make_Op_And      (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Or then
+            Expr := Make_Op_Or       (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Xor then
+            Expr := Make_Op_Xor      (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Eq then
+            Expr := Make_Op_Eq       (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Ne then
+            Expr := Make_Op_Ne       (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Le then
+            Expr := Make_Op_Le       (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Gt then
+            Expr := Make_Op_Gt       (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Ge then
+            Expr := Make_Op_Ge       (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Lt then
+            Expr := Make_Op_Lt       (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Add then
+            Expr := Make_Op_Add      (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Subtract then
+            Expr := Make_Op_Subtract (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Concat then
+            Expr := Make_Op_Concat   (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Multiply then
+            Expr := Make_Op_Multiply (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Divide then
+            Expr := Make_Op_Divide   (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Mod then
+            Expr := Make_Op_Mod      (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Rem then
+            Expr := Make_Op_Rem      (Loc, Left_Opnd => L, Right_Opnd => R);
+         elsif Op_Name = Name_Op_Expon then
+            Expr := Make_Op_Expon    (Loc, Left_Opnd => L, Right_Opnd => R);
+         end if;
+
+      --  Unary operators
+
+      else
+         if Op_Name = Name_Op_Add then
+            Expr := Make_Op_Plus  (Loc, Right_Opnd => L);
+         elsif Op_Name = Name_Op_Subtract then
+            Expr := Make_Op_Minus (Loc, Right_Opnd => L);
+         elsif Op_Name = Name_Op_Abs then
+            Expr := Make_Op_Abs   (Loc, Right_Opnd => L);
+         elsif Op_Name = Name_Op_Not then
+            Expr := Make_Op_Not   (Loc, Right_Opnd => L);
+         end if;
+      end if;
+
+      --  Propagate visible entity to operator node, either from a
+      --  given actual or from a default.
+
+      if Is_Entity_Name (Actual) and then Nkind (Expr) in N_Op then
+         Set_Entity (Expr, Entity (Actual));
+      end if;
+
+      Decl :=
+        Make_Expression_Function (Loc,
+          Specification => Spec,
+          Expression    => Expr);
+
+      return Decl;
+   end Build_Operator_Wrapper;
 
    -------------------------------------------
    -- Build_Instance_Compilation_Unit_Nodes --

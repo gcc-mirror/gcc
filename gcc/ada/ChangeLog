@@ -1,3 +1,21 @@
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (New_Overloaded_Entity): In GNATprove mode, a
+	function wrapper may be a homonym of another local declaration.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): In GNATprove mode,
+	build function and operator wrappers after the actual subprogram
+	has been resolved, and replace the standard renaming declaration
+	with the declaration of wrapper.
+	* sem_ch12.ads (Build_Function_Wrapper, Build_Operator_Wraooer):
+	make public for use elsewhere.
+	* sem_ch12.adb (Build_Function_Wrapper, Build_Operator_Wraooer):
+	rewrite, now that actual is fully resolved when wrapper is
+	constructed.
+
+2015-01-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb: Revert previous change.
+
 2015-01-06  Robert Dewar  <dewar@adacore.com>
 
 	* exp_util.adb: Change name Name_Table_Boolean to
