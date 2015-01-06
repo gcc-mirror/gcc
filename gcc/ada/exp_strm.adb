@@ -642,12 +642,27 @@ package body Exp_Strm is
          return Res;
 
       else
-         return
-           Unchecked_Convert_To (P_Type,
-             Make_Function_Call (Loc,
-               Name => New_Occurrence_Of (RTE (Lib_RE), Loc),
-               Parameter_Associations => New_List (
-                 Relocate_Node (Strm))));
+         Res :=
+           Make_Function_Call (Loc,
+             Name => New_Occurrence_Of (RTE (Lib_RE), Loc),
+             Parameter_Associations => New_List (
+               Relocate_Node (Strm)));
+
+         --  Now convert to the base type if we do not have a biased type. Note
+         --  that we did not do this in some older versions, and the result was
+         --  losing some required range checking for the 'Read case.
+
+         if not Has_Biased_Representation (P_Type) then
+            return Unchecked_Convert_To (Base_Type (P_Type), Res);
+
+         --  For the biased case, the conversion to the base type loses the
+         --  biasing, so just convert to Ptype. This is not quite right, and
+         --  for example may lose a corner case CE test, but it is such a
+         --  rare case that for now we ignore it ???
+
+         else
+            return Unchecked_Convert_To (P_Type, Res);
+         end if;
       end if;
    end Build_Elementary_Input_Call;
 

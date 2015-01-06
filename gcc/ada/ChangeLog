@@ -1,3 +1,37 @@
+2015-01-06  Vincent Celier  <celier@adacore.com>
+
+	* a-strsup.adb (Times (Natural;String;Positive)): Raise
+	Length_Error, not Index_Error, when the result is too long.
+
+2015-01-06  Thomas Quinot  <quinot@adacore.com>
+
+	* a-direct.adb (Create_Path): Minor error handling and
+	performance improvement.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* checks.ads, sem_ch12.adb: Minor reformatting.
+	* exp_ch4.adb (Expand_N_Op_Divide): Generate explicit divide by
+	zero check for fixed-point case if Backend_Divide_Checks_On_Target
+	is False.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case No_Elaboration_Code_All):
+	Do not set restriction No_Elaboration_Code unless the pragma
+	appears in the main unit).
+
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Is_Regular_With_Clause): Add guard to verify
+	that with clause has already been analyzed before checking kind
+	of with_clause.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_strm.adb (Build_Elementary_Input_Call): Return base type
+	(as required by RM).
+
 2015-01-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* a-reatim.adb ("/"): Add explicit pragma Unsuppress (Division_Check).

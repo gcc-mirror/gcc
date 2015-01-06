@@ -10237,7 +10237,7 @@ package body Sem_Ch12 is
                --  the enclosing instance is analyzed.
 
                if Present (Etype (Actual))
-                  and then Is_Constr_Subt_For_U_Nominal (Etype (Actual))
+                 and then Is_Constr_Subt_For_U_Nominal (Etype (Actual))
                then
                   Freeze_Before (Instantiation_Node, Etype (Actual));
                else

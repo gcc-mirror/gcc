@@ -16783,9 +16783,11 @@ package body Sem_Prag is
 
             Set_No_Elab_Code_All (Current_Sem_Unit);
 
-            --  Set restriction No_Elaboration_Code
+            --  Set restriction No_Elaboration_Code if this is the main unit
 
-            Set_Restriction (No_Elaboration_Code, N);
+            if Current_Sem_Unit = Main_Unit then
+               Set_Restriction (No_Elaboration_Code, N);
+            end if;
 
             --  If we are in the main unit or in an extended main source unit,
             --  then we also add it to the configuration restrictions so that
