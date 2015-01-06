@@ -246,7 +246,8 @@ private
    pragma Inline (Replace_Element);
    pragma Inline (Contains);
 
-   type Elements_Array is array (Capacity_Range range <>) of Element_Type;
+   subtype Array_Index is Capacity_Range range 1 .. Capacity_Range'Last;
+   type Elements_Array is array (Array_Index range <>) of Element_Type;
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
    type Elements_Array_Ptr is access all Elements_Array;

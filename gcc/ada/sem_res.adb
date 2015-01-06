@@ -4630,31 +4630,19 @@ package body Sem_Res is
                --  first place.
 
                if Ekind (Nam) = E_Procedure
+                 and then Ekind (F) = E_In_Parameter
                  and then Is_Entity_Name (A)
                  and then Present (Entity (A))
                  and then Ekind (Entity (A)) = E_Variable
                then
                   A_Id := Entity (A);
 
-                  if Ekind (F) = E_In_Parameter then
-                     if Async_Readers_Enabled (A_Id) then
-                        Property_Error (A, A_Id, Name_Async_Readers);
-                     elsif Effective_Reads_Enabled (A_Id) then
-                        Property_Error (A, A_Id, Name_Effective_Reads);
-                     elsif Effective_Writes_Enabled (A_Id) then
-                        Property_Error (A, A_Id, Name_Effective_Writes);
-                     end if;
-
-                  elsif Ekind (F) = E_Out_Parameter
-                    and then Async_Writers_Enabled (A_Id)
-                  then
-                     Error_Msg_Name_1 := Name_Async_Writers;
-                     Error_Msg_NE
-                       ("external variable & with enabled property % cannot "
-                        & "appear as actual in procedure call "
-                        & "(SPARK RM 7.1.3(11))", A, A_Id);
-                     Error_Msg_N
-                       ("\\corresponding formal parameter has mode Out", A);
+                  if Async_Readers_Enabled (A_Id) then
+                     Property_Error (A, A_Id, Name_Async_Readers);
+                  elsif Effective_Reads_Enabled (A_Id) then
+                     Property_Error (A, A_Id, Name_Effective_Reads);
+                  elsif Effective_Writes_Enabled (A_Id) then
+                     Property_Error (A, A_Id, Name_Effective_Writes);
                   end if;
                end if;
             end if;

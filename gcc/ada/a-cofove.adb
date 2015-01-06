@@ -45,10 +45,9 @@ is
    procedure Free is
       new Ada.Unchecked_Deallocation (Elements_Array, Elements_Array_Ptr);
 
-   type Maximal_Array_Ptr is access all Elements_Array (Capacity_Range)
+   type Maximal_Array_Ptr is access all Elements_Array (Array_Index)
      with Storage_Size => 0;
-   type Maximal_Array_Ptr_Const is access constant
-     Elements_Array (Capacity_Range)
+   type Maximal_Array_Ptr_Const is access constant Elements_Array (Array_Index)
        with Storage_Size => 0;
 
    function Elems (Container : in out Vector) return Maximal_Array_Ptr;
@@ -111,7 +110,7 @@ is
          Reserve_Capacity
            (Container,
             Capacity_Range'Max (Capacity (Container) * Growth_Factor,
-                            Capacity_Range (New_Length)));
+                                Capacity_Range (New_Length)));
       end if;
 
       if Container.Last = Index_Type'Last then
@@ -381,7 +380,7 @@ is
       is
          procedure Sort is
            new Generic_Array_Sort
-             (Index_Type   => Capacity_Range,
+             (Index_Type   => Array_Index,
               Element_Type => Element_Type,
               Array_Type   => Elements_Array,
               "<"          => "<");
