@@ -288,13 +288,13 @@ package body Sem_Attr is
       --  Check that two attribute arguments are present
 
       procedure Check_Enum_Image;
-      --  If the prefix type is an enumeration type, set all its literals
-      --  as referenced, since the image function could possibly end up
-      --  referencing any of the literals indirectly. Same for Enum_Val.
+      --  If the prefix type of 'Image is an enumeration type, set all its
+      --  literals as referenced, since the image function could possibly end
+      --  up referencing any of the literals indirectly. Same for Enum_Val.
       --  Set the flag only if the reference is in the main code unit. Same
       --  restriction when resolving 'Value; otherwise an improperly set
-      --  reference when analyzing an inlined body will lose a proper warning
-      --  on a useless with_clause.
+      --  reference when analyzing an inlined body will lose a proper
+      --  warning on a useless with_clause.
 
       procedure Check_First_Last_Valid;
       --  Perform all checks for First_Valid and Last_Valid attributes
@@ -2455,7 +2455,7 @@ package body Sem_Attr is
                      then
                         Error_Msg_N
                           ("in a constraint the current instance can only"
-                             & " be used with an access attribute", N);
+                           & " be used with an access attribute", N);
                      end if;
                   end if;
                end;
@@ -3377,6 +3377,31 @@ package body Sem_Attr is
          end if;
 
          Set_Etype (N, Standard_Boolean);
+
+      ----------------
+      -- Enum_Image --
+      ----------------
+
+      when Attribute_Enum_Image => Enum_Image :
+      begin
+         Check_SPARK_05_Restriction_On_Attribute;
+         Check_Scalar_Type;
+         Set_Etype (N, Standard_String);
+
+         if not Is_Enumeration_Type (P_Type) then
+            Error_Msg_Name_1 := Aname;
+            Error_Msg_N
+              ("% attribute only allowed for enumerated types", N);
+         end if;
+
+         Check_E1;
+         Resolve (E1, P_Base_Type);
+
+         if not Is_OK_Static_Expression (E1) then
+            Error_Msg_Name_1 := Aname;
+            Error_Msg_N ("% attribute requires static argument", E1);
+         end if;
+      end Enum_Image;
 
       --------------
       -- Enum_Rep --
@@ -7714,21 +7739,21 @@ package body Sem_Attr is
 
       case Id is
 
-         --  Attributes related to Ada 2012 iterators (placeholder ???)
+      --  Attributes related to Ada 2012 iterators (placeholder ???)
 
-         when Attribute_Constant_Indexing    |
-              Attribute_Default_Iterator     |
-              Attribute_Implicit_Dereference |
-              Attribute_Iterator_Element     |
-              Attribute_Iterable             |
-              Attribute_Variable_Indexing    => null;
+      when Attribute_Constant_Indexing    |
+           Attribute_Default_Iterator     |
+           Attribute_Implicit_Dereference |
+           Attribute_Iterator_Element     |
+           Attribute_Iterable             |
+           Attribute_Variable_Indexing    => null;
 
-         --  Internal attributes used to deal with Ada 2012 delayed aspects.
-         --  These were already rejected by the parser. Thus they shouldn't
-         --  appear here.
+      --  Internal attributes used to deal with Ada 2012 delayed aspects.
+      --  These were already rejected by the parser. Thus they shouldn't
+      --  appear here.
 
-         when Internal_Attribute_Id =>
-            raise Program_Error;
+      when Internal_Attribute_Id =>
+         raise Program_Error;
 
       --------------
       -- Adjacent --
@@ -7909,6 +7934,27 @@ package body Sem_Attr is
          --    T'Emax = 4 * T'Mantissa
 
          Fold_Uint (N, 4 * Mantissa, Static);
+
+      ----------------
+      -- Enum_Image --
+      ----------------
+
+      --  Enum_Image is always static and always has a string literal result
+
+      when Attribute_Enum_Image =>
+         declare
+            Lit : constant Entity_Id := Entity (E1);
+            Str : String_Id;
+         begin
+            Start_String;
+            Get_Unqualified_Decoded_Name_String (Chars (Lit));
+            Set_Casing (All_Upper_Case);
+            Store_String_Chars (Name_Buffer (1 .. Name_Len));
+            Str := End_String;
+            Rewrite (N, Make_String_Literal (Loc, Strval => Str));
+            Analyze_And_Resolve (N, Standard_String);
+            Set_Is_Static_Expression (N, True);
+         end;
 
       --------------
       -- Enum_Rep --

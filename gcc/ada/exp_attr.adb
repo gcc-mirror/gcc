@@ -3497,9 +3497,9 @@ package body Exp_Attr is
       begin
          Rewrite (N,
            Make_Attribute_Reference (Loc,
-             Prefix => New_Occurrence_Of (Ptyp, Loc),
+             Prefix         => New_Occurrence_Of (Ptyp, Loc),
              Attribute_Name => Name_Image,
-             Expressions => New_List (Relocate_Node (Pref))));
+             Expressions    => New_List (Relocate_Node (Pref))));
 
          Analyze_And_Resolve (N, Standard_String);
       end Img;
@@ -7178,6 +7178,7 @@ package body Exp_Attr is
            Attribute_Digits                       |
            Attribute_Emax                         |
            Attribute_Enabled                      |
+           Attribute_Enum_Image                   |
            Attribute_Epsilon                      |
            Attribute_Fast_Math                    |
            Attribute_First_Valid                  |
