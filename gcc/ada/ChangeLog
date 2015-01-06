@@ -1,5 +1,9 @@
 2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* einfo.ads (Is_Independent): Further document extended usage.
+
+2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* einfo.ads (Is_Independent): Document extended usage.
 	* einfo.adb (Is_Independent): Remove obsolete assertion.
 	(Set_Is_Independent): Likewise.
