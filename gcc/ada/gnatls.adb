@@ -1227,7 +1227,7 @@ procedure Gnatls is
          Add_Search_Dirs (Lib_Path, Objects);
          Initialize_Default_Project_Path
            (Prj_Path,
-            Target_Name => Sdefault.Target_Name.all,
+            Target_Name  => Sdefault.Target_Name.all,
             Runtime_Name => Name);
          return;
       end if;
@@ -1242,7 +1242,7 @@ procedure Gnatls is
 
       Initialize_Default_Project_Path
         (Prj_Path,
-         Target_Name => Sdefault.Target_Name.all,
+         Target_Name  => Sdefault.Target_Name.all,
          Runtime_Name => Name);
 
       Rts_Full_Path := Get_Runtime_Path (Prj_Path, Name);
