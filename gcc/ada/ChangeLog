@@ -1,3 +1,13 @@
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-valint.adb, s-valuns.adb (Value_Integer): Deal with case where
+	Str'Last = Positive'Last
+
+2015-01-06  Thomas Quinot  <quinot@adacore.com>
+
+	* xoscons.adb: Display exception information and return non-zero
+	exit status in top level exception handler.
+
 2015-01-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb: Code clean up.
