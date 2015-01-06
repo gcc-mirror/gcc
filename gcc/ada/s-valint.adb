@@ -108,7 +108,7 @@ package body System.Val_Int is
             V : Integer;
             P : aliased Integer := Str'First;
          begin
-            V := Scan_Integer (Str, P'Access, Str'Length);
+            V := Scan_Integer (Str, P'Access, Str'Last);
             Scan_Trailing_Blanks (Str, P);
             return V;
          end;

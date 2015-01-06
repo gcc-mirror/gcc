@@ -2454,8 +2454,8 @@ package body Sem_Attr is
                        and then Attr_Id /= Attribute_Unrestricted_Access
                      then
                         Error_Msg_N
-                          ("in a constraint the current instance can only"
-                           & " be used with an access attribute", N);
+                          ("in a constraint the current instance can only "
+                           & "be used with an access attribute", N);
                      end if;
                   end if;
                end;
@@ -3377,31 +3377,6 @@ package body Sem_Attr is
          end if;
 
          Set_Etype (N, Standard_Boolean);
-
-      ----------------
-      -- Enum_Image --
-      ----------------
-
-      when Attribute_Enum_Image => Enum_Image :
-      begin
-         Check_SPARK_05_Restriction_On_Attribute;
-         Check_Scalar_Type;
-         Set_Etype (N, Standard_String);
-
-         if not Is_Enumeration_Type (P_Type) then
-            Error_Msg_Name_1 := Aname;
-            Error_Msg_N
-              ("% attribute only allowed for enumerated types", N);
-         end if;
-
-         Check_E1;
-         Resolve (E1, P_Base_Type);
-
-         if not Is_OK_Static_Expression (E1) then
-            Error_Msg_Name_1 := Aname;
-            Error_Msg_N ("% attribute requires static argument", E1);
-         end if;
-      end Enum_Image;
 
       --------------
       -- Enum_Rep --
@@ -7231,6 +7206,34 @@ package body Sem_Attr is
          return;
       end if;
 
+      --  Attribute 'Img applied to a static enumeration value is static, and
+      --  we will do the folding right here (things get confused if we let this
+      --  case go through the normal circuitry).
+
+      if Attribute_Name (N) = Name_Img
+        and then Is_Entity_Name (P)
+        and then Is_Enumeration_Type (Etype (Entity (P)))
+        and then Is_OK_Static_Expression (P)
+      then
+         declare
+            Lit : constant Entity_Id := Expr_Value_E (P);
+            Str : String_Id;
+
+         begin
+            Start_String;
+            Get_Unqualified_Decoded_Name_String (Chars (Lit));
+            Set_Casing (All_Upper_Case);
+            Store_String_Chars (Name_Buffer (1 .. Name_Len));
+            Str := End_String;
+
+            Rewrite (N, Make_String_Literal (Loc, Strval => Str));
+            Analyze_And_Resolve (N, Standard_String);
+            Set_Is_Static_Expression (N, True);
+         end;
+
+         return;
+      end if;
+
       --  Special processing for cases where the prefix is an object. For
       --  this purpose, a string literal counts as an object (attributes
       --  of string literals can only appear in generated code).
@@ -7394,9 +7397,7 @@ package body Sem_Attr is
 
       --  Second foldable possibility is an array object (RM 4.9(8))
 
-      elsif (Ekind (P_Entity) = E_Variable
-               or else
-             Ekind (P_Entity) = E_Constant)
+      elsif Ekind_In (P_Entity, E_Variable, E_Constant)
         and then Is_Array_Type (Etype (P_Entity))
         and then (not Is_Generic_Type (Etype (P_Entity)))
       then
@@ -7935,27 +7936,6 @@ package body Sem_Attr is
 
          Fold_Uint (N, 4 * Mantissa, Static);
 
-      ----------------
-      -- Enum_Image --
-      ----------------
-
-      --  Enum_Image is always static and always has a string literal result
-
-      when Attribute_Enum_Image =>
-         declare
-            Lit : constant Entity_Id := Entity (E1);
-            Str : String_Id;
-         begin
-            Start_String;
-            Get_Unqualified_Decoded_Name_String (Chars (Lit));
-            Set_Casing (All_Upper_Case);
-            Store_String_Chars (Name_Buffer (1 .. Name_Len));
-            Str := End_String;
-            Rewrite (N, Make_String_Literal (Loc, Strval => Str));
-            Analyze_And_Resolve (N, Standard_String);
-            Set_Is_Static_Expression (N, True);
-         end;
-
       --------------
       -- Enum_Rep --
       --------------
@@ -8180,16 +8160,6 @@ package body Sem_Attr is
                Set_Is_Static_Expression (N, False);
             end;
          end if;
-
-      ---------
-      -- Img --
-      ---------
-
-      --  Img is a scalar attribute, but is never static, because it is
-      --  not a static function (having a non-scalar argument (RM 4.9(22))
-
-      when Attribute_Img =>
-         null;
 
       -------------------
       -- Integer_Value --
@@ -9646,7 +9616,8 @@ package body Sem_Attr is
       --  The following attributes can never be folded, and furthermore we
       --  should not even have entered the case statement for any of these.
       --  Note that in some cases, the values have already been folded as
-      --  a result of the processing in Analyze_Attribute.
+      --  a result of the processing in Analyze_Attribute or earlier in
+      --  this procedure.
 
       when Attribute_Abort_Signal                 |
            Attribute_Access                       |
@@ -9673,6 +9644,7 @@ package body Sem_Attr is
            Attribute_External_Tag                 |
            Attribute_Fast_Math                    |
            Attribute_First_Bit                    |
+           Attribute_Img                          |
            Attribute_Input                        |
            Attribute_Last_Bit                     |
            Attribute_Library_Level                |
