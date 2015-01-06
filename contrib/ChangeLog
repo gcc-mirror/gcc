@@ -1,3 +1,7 @@
+2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config-list.mk (LIST): Add visium-elf.
+
 2015-01-05  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config-list.mk: Use shortest match for OPT to find the actual
