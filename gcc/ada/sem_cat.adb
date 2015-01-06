@@ -86,14 +86,13 @@ package body Sem_Cat is
    --  Return True if the entity or one of its subcomponents does not support
    --  external streaming.
 
-   function In_RCI_Visible_Declarations return Boolean;
-   --  Determines if the visible part of a remote call interface library unit
-   --  is being compiled, for semantic checking purposes (returns False within
-   --  an instance and within the package body).
-
+   function In_RCI_Declaration return Boolean;
    function In_RT_Declaration return Boolean;
-   --  Determines if current scope is within the declaration of a Remote Types
-   --  unit, for semantic checking purposes.
+   --  Determine if current scope is within the declaration of a Remote Call
+   --  Interface or Remote Types unit, for semantic checking purposes.
+
+   function In_Package_Declaration return Boolean;
+   --  Shared supporting routine for In_RCI_Declaration and In_RT_Declaration
 
    function In_Shared_Passive_Unit return Boolean;
    --  Determines if current scope is within a Shared Passive compilation unit
@@ -498,6 +497,23 @@ package body Sem_Cat is
                    or else not Is_Hidden (Entity (Rep_Item)));
    end Has_Stream_Attribute_Definition;
 
+   ----------------------------
+   -- In_Package_Declaration --
+   ----------------------------
+
+   function In_Package_Declaration return Boolean is
+      Unit_Kind   : constant Node_Kind :=
+                      Nkind (Unit (Cunit (Current_Sem_Unit)));
+
+   begin
+      --  There are no restrictions on the body of an RCI or RT unit
+
+      return Is_Package_Or_Generic_Package (Current_Scope)
+        and then Unit_Kind /= N_Package_Body
+        and then not In_Package_Body (Current_Scope)
+        and then not In_Instance;
+   end In_Package_Declaration;
+
    ---------------------------
    -- In_Preelaborated_Unit --
    ---------------------------
@@ -544,57 +560,23 @@ package body Sem_Cat is
       return Is_Pure (Current_Scope);
    end In_Pure_Unit;
 
-   ---------------------------------
-   -- In_RCI_Visible_Declarations --
-   ---------------------------------
+   ------------------------
+   -- In_RCI_Declaration --
+   ------------------------
 
-   function In_RCI_Visible_Declarations return Boolean is
-      Unit_Entity : Entity_Id := Current_Scope;
-      Unit_Kind   : constant Node_Kind :=
-                      Nkind (Unit (Cunit (Current_Sem_Unit)));
-
+   function In_RCI_Declaration return Boolean is
    begin
-      --  There are no restrictions on the private part or body of an RCI unit
-
-      if not (Is_Remote_Call_Interface (Unit_Entity)
-        and then Is_Package_Or_Generic_Package (Unit_Entity)
-        and then Unit_Kind /= N_Package_Body
-        and then not In_Instance)
-      then
-         return False;
-      end if;
-
-      while Unit_Entity /= Standard_Standard loop
-         if In_Private_Part (Unit_Entity) then
-            return False;
-         end if;
-
-         Unit_Entity := Scope (Unit_Entity);
-      end loop;
-
-      --  Here if in RCI declaration, and not in private part of any open
-      --  scope.
-
-      return True;
-   end In_RCI_Visible_Declarations;
+      return Is_Remote_Call_Interface (Current_Scope)
+        and then In_Package_Declaration;
+   end In_RCI_Declaration;
 
    -----------------------
    -- In_RT_Declaration --
    -----------------------
 
    function In_RT_Declaration return Boolean is
-      Unit_Entity : constant Entity_Id := Current_Scope;
-      Unit_Kind   : constant Node_Kind :=
-                      Nkind (Unit (Cunit (Current_Sem_Unit)));
-
    begin
-      --  There are no restrictions on the body of a Remote Types unit
-
-      return Is_Remote_Types (Unit_Entity)
-        and then Is_Package_Or_Generic_Package (Unit_Entity)
-        and then Unit_Kind /= N_Package_Body
-        and then not In_Package_Body (Unit_Entity)
-        and then not In_Instance;
+      return Is_Remote_Types (Current_Scope) and then In_Package_Declaration;
    end In_RT_Declaration;
 
    ----------------------------
@@ -1377,20 +1359,22 @@ package body Sem_Cat is
       if In_Pure_Unit and then not In_Subprogram_Task_Protected_Unit then
          Error_Msg_N ("declaration of variable not allowed in pure unit", N);
 
-      --  The visible part of an RCI library unit must not contain the
-      --  declaration of a variable (RM E.1.3(9))
+      elsif not In_Private_Part (Id) then
 
-      elsif In_RCI_Visible_Declarations then
-         Error_Msg_N ("visible variable not allowed in 'R'C'I unit", N);
+         --  The visible part of an RCI library unit must not contain the
+         --  declaration of a variable (RM E.1.3(9)).
 
-      --  The visible part of a Shared Passive library unit must not contain
-      --  the declaration of a variable (RM E.2.2(7))
+         if In_RCI_Declaration then
+            Error_Msg_N ("visible variable not allowed in 'R'C'I unit", N);
 
-      elsif In_RT_Declaration and then not In_Private_Part (Id) then
-         Error_Msg_N
-           ("visible variable not allowed in remote types unit", N);
+         --  The visible part of a Shared Passive library unit must not contain
+         --  the declaration of a variable (RM E.2.2(7)).
+
+         elsif In_RT_Declaration then
+            Error_Msg_N
+              ("visible variable not allowed in remote types unit", N);
+         end if;
       end if;
-
    end Validate_Object_Declaration;
 
    -----------------------------
@@ -1605,7 +1589,7 @@ package body Sem_Cat is
    procedure Validate_RCI_Subprogram_Declaration (N : Node_Id) is
       K               : constant Node_Kind := Nkind (N);
       Profile         : List_Id;
-      Id              : Node_Id;
+      Id              : constant Entity_Id := Defining_Entity (N);
       Param_Spec      : Node_Id;
       Param_Type      : Entity_Id;
       Error_Node      : Node_Id := N;
@@ -1618,21 +1602,22 @@ package body Sem_Cat is
       --    1. from Analyze_Subprogram_Declaration.
       --    2. from Validate_Object_Declaration (access to subprogram).
 
-      if not (Comes_From_Source (N) and then In_RCI_Visible_Declarations) then
+      if not (Comes_From_Source (N)
+                and then In_RCI_Declaration
+                and then not In_Private_Part (Scope (Id)))
+      then
          return;
       end if;
 
       if K = N_Subprogram_Declaration then
-         Id := Defining_Unit_Name (Specification (N));
          Profile := Parameter_Specifications (Specification (N));
 
-      else pragma Assert (K = N_Object_Declaration);
+      else
+         pragma Assert (K = N_Object_Declaration);
 
          --  The above assertion is dubious, the visible declarations of an
          --  RCI unit never contain an object declaration, this should be an
          --  ACCESS-to-object declaration???
-
-         Id := Defining_Identifier (N);
 
          if Nkind (Id) = N_Defining_Identifier
            and then Nkind (Parent (Etype (Id))) = N_Full_Type_Declaration
@@ -1712,17 +1697,18 @@ package body Sem_Cat is
       --  the given node is N_Access_To_Object_Definition.
 
       if not Comes_From_Source (T)
-        or else (not In_RCI_Visible_Declarations
-                   and then not In_RT_Declaration)
+        or else (not In_RCI_Declaration and then not In_RT_Declaration)
       then
          return;
       end if;
 
-      --  An access definition in the private part of a Remote Types package
-      --  may be legal if it has user-defined Read and Write attributes. This
-      --  will be checked at the end of the package spec processing.
+      --  An access definition in the private part of a package is not a
+      --  remote access type. Restrictions related to external streaming
+      --  support for non-remote access types are enforced elsewhere. Note
+      --  that In_Private_Part is never set on type entities: check flag
+      --  on enclosing scope.
 
-      if In_RT_Declaration and then In_Private_Part (Scope (T)) then
+      if In_Private_Part (Scope (T)) then
          return;
       end if;
 
@@ -1735,7 +1721,7 @@ package body Sem_Cat is
       if Ekind (T) /= E_General_Access_Type
         or else not Is_Class_Wide_Type (Designated_Type (T))
       then
-         if In_RCI_Visible_Declarations then
+         if In_RCI_Declaration then
             Error_Msg_N
               ("error in access type in Remote_Call_Interface unit", T);
          else
