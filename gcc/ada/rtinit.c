@@ -76,7 +76,6 @@ int __gnat_rt_init_count = 0;
 #include <windows.h>
 
 extern void __gnat_init_float (void);
-extern void __gnat_install_SEH_handler (void *);
 
 extern int gnat_argc;
 extern char **gnat_argv;
@@ -138,7 +137,7 @@ append_arg (int *index, LPWSTR dir, LPWSTR value,
 #endif
 
 void
-__gnat_runtime_initialize(void)
+__gnat_runtime_initialize(int install_handler)
 {
   /*  increment the reference counter */
 
@@ -302,7 +301,8 @@ __gnat_runtime_initialize(void)
    }
 #endif
 
-   __gnat_install_handler();
+  if (install_handler)
+    __gnat_install_handler();
 }
 
 /**************************************************/
@@ -315,7 +315,7 @@ __gnat_runtime_initialize(void)
 extern void __gnat_init_float (void);
 
 void
-__gnat_runtime_initialize(void)
+__gnat_runtime_initialize(int install_handler)
 {
   /*  increment the reference counter */
 
@@ -327,7 +327,8 @@ __gnat_runtime_initialize(void)
 
    __gnat_init_float ();
 
-   __gnat_install_handler();
+  if (install_handler)
+    __gnat_install_handler();
 }
 
 /***********************************************/
@@ -339,7 +340,7 @@ __gnat_runtime_initialize(void)
 extern void __gnat_init_float (void);
 
 void
-__gnat_runtime_initialize(void)
+__gnat_runtime_initialize(int install_handler)
 {
   /*  increment the reference counter */
 
@@ -351,7 +352,8 @@ __gnat_runtime_initialize(void)
 
   __gnat_init_float ();
 
-  __gnat_install_handler();
+  if (install_handler)
+    __gnat_install_handler();
 }
 
 #else
@@ -361,7 +363,7 @@ __gnat_runtime_initialize(void)
 /***********************************************/
 
 void
-__gnat_runtime_initialize(void)
+__gnat_runtime_initialize(int install_handler)
 {
   /*  increment the reference counter */
 
@@ -371,7 +373,8 @@ __gnat_runtime_initialize(void)
   if (__gnat_rt_init_count > 1)
     return;
 
-  __gnat_install_handler();
+  if (install_handler)
+    __gnat_install_handler();
 }
 
 #endif

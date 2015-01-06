@@ -1,3 +1,26 @@
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Sloc of wrapper is that of instantiation.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch11.adb: Minor reformatting.
+
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Get_Assoc_Expr): New routine internal to
+	Build_Array_Aggr_Code, used to initialized components covered
+	by a box association. If the component type is scalar and has
+	a default aspect, use it to initialize such components.
+
+2015-01-06  Pascal Obry  <obry@adacore.com>
+
+	* rtinit.c (__gnat_runtime_initialize): Add a parameter to
+	control the setup of the exception handler.
+	* initialize.c: Remove unused declaration.
+	* bindgen.adb: Always call __gnat_runtime_initialize and pass
+	whether the exeception handler must be set or not.
+
 2015-01-06  Thomas Quinot  <quinot@adacore.com>
 
 	* freeze.adb (Set_SSO_From_Defaults): When setting scalar storage

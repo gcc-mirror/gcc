@@ -606,7 +606,8 @@ package body Bindgen is
          --  installation, and indication of if it's been called previously.
 
          WBI ("");
-         WBI ("      procedure Runtime_Initialize;");
+         WBI ("      procedure Runtime_Initialize " &
+              "(Install_Handler : Integer);");
          WBI ("      pragma Import (C, Runtime_Initialize, " &
               """__gnat_runtime_initialize"");");
 
@@ -838,9 +839,14 @@ package body Bindgen is
          --  In .NET, when binding with -z, we don't install the signal handler
          --  to let the caller handle the last exception handler.
 
-         if Bind_Main_Program then
-            WBI ("");
-            WBI ("      Runtime_Initialize;");
+         WBI ("");
+
+         if VM_Target /= CLI_Target
+           or else Bind_Main_Program
+         then
+            WBI ("      Runtime_Initialize (1);");
+         else
+            WBI ("      Runtime_Initialize (0);");
          end if;
       end if;
 
