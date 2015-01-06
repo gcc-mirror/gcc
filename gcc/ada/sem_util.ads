@@ -469,7 +469,7 @@ package Sem_Util is
    --
    --  Iterator loops also have a defining entity, which holds the list of
    --  local entities declared during loop expansion. These entities need
-   --  debugging information, generated through QUalify_Entity_Names, and
+   --  debugging information, generated through Qualify_Entity_Names, and
    --  the loop declaration must be placed in the table Name_Qualify_Units.
 
    function Denotes_Discriminant

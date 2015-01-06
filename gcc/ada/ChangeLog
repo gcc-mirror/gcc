@@ -1,11 +1,15 @@
+2015-01-06  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.ads: Minor reformatting.
+	* sem_cat.adb (In_RCI_Visible_Declarations): Change back to...
+	(In_RCI_Declaration) Return to old name, as proper checking of
+	entity being in the visible part depends on entity kind and must
+	be done by the caller.
+
 2015-01-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb, sem_ch12.ads, sem_ch8.adb: Ongoing work for wrappers
 	for operators in SPARK.
-
-2015-01-06  Javier Miranda  <miranda@adacore.com>
-
-	* exp_disp.adb: Revert previous patch again.
 
 2015-01-06  Ed Schonberg  <schonberg@adacore.com>
 
@@ -51,10 +55,6 @@
 	declaration that is being completed is a limited view and the
 	non-limited view is available, use it in the specification of
 	the generated body.
-
-2015-01-06  Javier Miranda  <miranda@adacore.com>
-
-	* exp_disp.adb: Reapplying reversed patch.
 
 2015-01-06  Ed Schonberg  <schonberg@adacore.com>
 
