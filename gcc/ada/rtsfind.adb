@@ -1309,7 +1309,7 @@ package body Rtsfind is
            RE_Str (RE_Str'First + 3 .. RE_Str'Last);
 
          Nam := Name_Find;
-         Ent := Entity_Id (Get_Name_Table_Info (Nam));
+         Ent := Entity_Id (Get_Name_Table_Int (Nam));
 
          Name_Len := Save_Nam'Length;
          Name_Buffer (1 .. Name_Len) := Save_Nam;

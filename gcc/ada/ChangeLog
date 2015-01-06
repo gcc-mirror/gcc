@@ -1,5 +1,11 @@
 2015-01-06  Robert Dewar  <dewar@adacore.com>
 
+	* ali-util.adb, sem_prag.adb, rtsfind.adb, sem_util.adb, sem_res.adb,
+	ali.adb, binde.adb, namet.adb, namet.ads, gnatls.adb, bcheck.adb:
+	Minor change of name Name_Table_Info => Name_Table_Int.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
 	* exp_strm.adb (Build_Elementary_Input_Call): Clarify comments
 	in previous checkin.
 	* freeze.adb (Freeze_Fixed_Point_Type): Add warning for shaving

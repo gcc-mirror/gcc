@@ -901,7 +901,7 @@ package body Binde is
          then
             declare
                Info : constant Int :=
-                 Get_Name_Table_Info (Withs.Table (W).Uname);
+                 Get_Name_Table_Int (Withs.Table (W).Uname);
 
             begin
                --  If the unit is unknown, for some unknown reason, fail
@@ -1225,7 +1225,7 @@ package body Binde is
                   --  when we have a subprogram body with no spec, and some
                   --  obsolete unit with's a previous (now disappeared) spec.
 
-                  if Get_Name_Table_Info (Withs.Table (W).Uname) = 0 then
+                  if Get_Name_Table_Int (Withs.Table (W).Uname) = 0 then
                      Error_Msg_File_1 := Units.Table (U).Sfile;
                      Error_Msg_Unit_1 := Withs.Table (W).Uname;
                      Error_Msg ("{ depends on $ which no longer exists");
@@ -1602,7 +1602,7 @@ package body Binde is
    ----------------
 
    function Unit_Id_Of (Uname : Unit_Name_Type) return Unit_Id is
-      Info : constant Int := Get_Name_Table_Info (Uname);
+      Info : constant Int := Get_Name_Table_Int (Uname);
    begin
       pragma Assert (Info /= 0 and then Unit_Id (Info) /= No_Unit_Id);
       return Unit_Id (Info);

@@ -7247,7 +7247,7 @@ package body Sem_Util is
 
    function Get_Name_Entity_Id (Id : Name_Id) return Entity_Id is
    begin
-      return Entity_Id (Get_Name_Table_Info (Id));
+      return Entity_Id (Get_Name_Table_Int (Id));
    end Get_Name_Entity_Id;
 
    ------------------------------
@@ -17271,7 +17271,7 @@ package body Sem_Util is
 
    procedure Set_Name_Entity_Id (Id : Name_Id; Val : Entity_Id) is
    begin
-      Set_Name_Table_Info (Id, Int (Val));
+      Set_Name_Table_Int (Id, Int (Val));
    end Set_Name_Entity_Id;
 
    ---------------------

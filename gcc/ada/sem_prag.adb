@@ -8563,7 +8563,7 @@ package body Sem_Prag is
                if Prag_Id = Pragma_Import then
                   String_To_Name_Buffer (Strval (Expr_Value_S (Ext_Nam)));
                   Nam := Name_Find;
-                  E   := Entity_Id (Get_Name_Table_Info (Nam));
+                  E   := Entity_Id (Get_Name_Table_Int (Nam));
 
                   if Nam /= Chars (Subprogram_Def)
                     and then Present (E)
