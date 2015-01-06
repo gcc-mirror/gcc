@@ -17544,6 +17544,13 @@ finalization of all Ada libraries must be performed at the end of the program.
 No call to these libraries or to the Ada run-time library should be made
 after the finalization phase.
 
+@noindent
+Note also that special care must be taken with multi-tasks
+applications. The initialization and finalization routines are not
+protected against concurrent access. If such requirement is needed it
+must be ensured at the application level using a specific operating
+system services like a mutex or a critical-section.
+
 @node Restrictions in Stand-alone Libraries
 @subsection Restrictions in Stand-alone Libraries
 
@@ -22308,11 +22315,10 @@ Comments have been added for clarification purposes.
 --  as a unit name in the partition, in which case some other unique
 --  name is used.
 
+@b{pragma} Ada_95;
 @b{with} System;
 @b{package} ada_main @b{is}
-
-   Elab_Final_Code : Integer;
-   @b{pragma} Import (C, Elab_Final_Code, "__gnat_inside_elab_final_code");
+   @b{pragma} Warnings (Off);
 
    --  The main program saves the parameters (argument count,
    --  argument values, environment pointer) in global variables
@@ -22337,16 +22343,11 @@ Comments have been added for clarification purposes.
    @b{pragma} Import (C, gnat_exit_status);
 
    GNAT_Version : @b{constant} String :=
-                    "GNAT Version: 6.0.0w (20061115)";
+                    "GNAT Version: Pro 7.4.0w (20141119-49)" & ASCII.NUL;
    @b{pragma} Export (C, GNAT_Version, "__gnat_version");
 
-   --  This is the generated adafinal routine that performs
-   --  finalization at the end of execution. In the case where
-   --  Ada is the main program, this main program makes a call
-   --  to adafinal at program termination.
-
-   @b{procedure} adafinal;
-   @b{pragma} Export (C, adafinal, "adafinal");
+   Ada_Main_Program_Name : constant String := "_ada_hello" & ASCII.NUL;
+   @b{pragma} Export (C, Ada_Main_Program_Name, "__gnat_ada_main_program_name");
 
    --  This is the generated adainit routine that performs
    --  initialization at the start of execution. In the case
@@ -22356,12 +22357,17 @@ Comments have been added for clarification purposes.
    @b{procedure} adainit;
    @b{pragma} Export (C, adainit, "adainit");
 
+   --  This is the generated adafinal routine that performs
+   --  finalization at the end of execution. In the case where
+   --  Ada is the main program, this main program makes a call
+   --  to adafinal at program termination.
+
+   @b{procedure} adafinal;
+   @b{pragma} Export (C, adafinal, "adafinal");
+
    --  This routine is called at the start of execution. It is
    --  a dummy routine that is used by the debugger to breakpoint
    --  at the start of execution.
-
-   @b{procedure} Break_Start;
-   @b{pragma} Import (C, Break_Start, "__gnat_break_start");
 
    --  This is the actual generated main program (it would be
    --  suppressed if the no main program switch were used). As
@@ -22382,191 +22388,300 @@ Comments have been added for clarification purposes.
    --  string that would be returned by use of the
    --  Body_Version or Version attributes.
 
-   @b{type} Version_32 @b{is} @b{mod} 2 ** 32;
-   u00001 : @b{constant} Version_32 := 16#7880BEB3#;
-   u00002 : @b{constant} Version_32 := 16#0D24CBD0#;
-   u00003 : @b{constant} Version_32 := 16#3283DBEB#;
-   u00004 : @b{constant} Version_32 := 16#2359F9ED#;
-   u00005 : @b{constant} Version_32 := 16#664FB847#;
-   u00006 : @b{constant} Version_32 := 16#68E803DF#;
-   u00007 : @b{constant} Version_32 := 16#5572E604#;
-   u00008 : @b{constant} Version_32 := 16#46B173D8#;
-   u00009 : @b{constant} Version_32 := 16#156A40CF#;
-   u00010 : @b{constant} Version_32 := 16#033DABE0#;
-   u00011 : @b{constant} Version_32 := 16#6AB38FEA#;
-   u00012 : @b{constant} Version_32 := 16#22B6217D#;
-   u00013 : @b{constant} Version_32 := 16#68A22947#;
-   u00014 : @b{constant} Version_32 := 16#18CC4A56#;
-   u00015 : @b{constant} Version_32 := 16#08258E1B#;
-   u00016 : @b{constant} Version_32 := 16#367D5222#;
-   u00017 : @b{constant} Version_32 := 16#20C9ECA4#;
-   u00018 : @b{constant} Version_32 := 16#50D32CB6#;
-   u00019 : @b{constant} Version_32 := 16#39A8BB77#;
-   u00020 : @b{constant} Version_32 := 16#5CF8FA2B#;
-   u00021 : @b{constant} Version_32 := 16#2F1EB794#;
-   u00022 : @b{constant} Version_32 := 16#31AB6444#;
-   u00023 : @b{constant} Version_32 := 16#1574B6E9#;
-   u00024 : @b{constant} Version_32 := 16#5109C189#;
-   u00025 : @b{constant} Version_32 := 16#56D770CD#;
-   u00026 : @b{constant} Version_32 := 16#02F9DE3D#;
-   u00027 : @b{constant} Version_32 := 16#08AB6B2C#;
-   u00028 : @b{constant} Version_32 := 16#3FA37670#;
-   u00029 : @b{constant} Version_32 := 16#476457A0#;
-   u00030 : @b{constant} Version_32 := 16#731E1B6E#;
-   u00031 : @b{constant} Version_32 := 16#23C2E789#;
-   u00032 : @b{constant} Version_32 := 16#0F1BD6A1#;
-   u00033 : @b{constant} Version_32 := 16#7C25DE96#;
-   u00034 : @b{constant} Version_32 := 16#39ADFFA2#;
-   u00035 : @b{constant} Version_32 := 16#571DE3E7#;
-   u00036 : @b{constant} Version_32 := 16#5EB646AB#;
-   u00037 : @b{constant} Version_32 := 16#4249379B#;
-   u00038 : @b{constant} Version_32 := 16#0357E00A#;
-   u00039 : @b{constant} Version_32 := 16#3784FB72#;
-   u00040 : @b{constant} Version_32 := 16#2E723019#;
-   u00041 : @b{constant} Version_32 := 16#623358EA#;
-   u00042 : @b{constant} Version_32 := 16#107F9465#;
-   u00043 : @b{constant} Version_32 := 16#6843F68A#;
-   u00044 : @b{constant} Version_32 := 16#63305874#;
-   u00045 : @b{constant} Version_32 := 16#31E56CE1#;
-   u00046 : @b{constant} Version_32 := 16#02917970#;
-   u00047 : @b{constant} Version_32 := 16#6CCBA70E#;
-   u00048 : @b{constant} Version_32 := 16#41CD4204#;
-   u00049 : @b{constant} Version_32 := 16#572E3F58#;
-   u00050 : @b{constant} Version_32 := 16#20729FF5#;
-   u00051 : @b{constant} Version_32 := 16#1D4F93E8#;
-   u00052 : @b{constant} Version_32 := 16#30B2EC3D#;
-   u00053 : @b{constant} Version_32 := 16#34054F96#;
-   u00054 : @b{constant} Version_32 := 16#5A199860#;
-   u00055 : @b{constant} Version_32 := 16#0E7F912B#;
-   u00056 : @b{constant} Version_32 := 16#5760634A#;
-   u00057 : @b{constant} Version_32 := 16#5D851835#;
-
    --  The following Export pragmas export the version numbers
    --  with symbolic names ending in B (for body) or S
    --  (for spec) so that they can be located in a link. The
    --  information provided here is sufficient to track down
    --  the exact versions of units used in a given build.
 
-   @b{pragma} Export (C, u00001, "helloB");
-   @b{pragma} Export (C, u00002, "system__standard_libraryB");
-   @b{pragma} Export (C, u00003, "system__standard_libraryS");
-   @b{pragma} Export (C, u00004, "adaS");
-   @b{pragma} Export (C, u00005, "ada__text_ioB");
-   @b{pragma} Export (C, u00006, "ada__text_ioS");
-   @b{pragma} Export (C, u00007, "ada__exceptionsB");
-   @b{pragma} Export (C, u00008, "ada__exceptionsS");
-   @b{pragma} Export (C, u00009, "gnatS");
-   @b{pragma} Export (C, u00010, "gnat__heap_sort_aB");
-   @b{pragma} Export (C, u00011, "gnat__heap_sort_aS");
-   @b{pragma} Export (C, u00012, "systemS");
-   @b{pragma} Export (C, u00013, "system__exception_tableB");
-   @b{pragma} Export (C, u00014, "system__exception_tableS");
-   @b{pragma} Export (C, u00015, "gnat__htableB");
-   @b{pragma} Export (C, u00016, "gnat__htableS");
-   @b{pragma} Export (C, u00017, "system__exceptionsS");
-   @b{pragma} Export (C, u00018, "system__machine_state_operationsB");
-   @b{pragma} Export (C, u00019, "system__machine_state_operationsS");
-   @b{pragma} Export (C, u00020, "system__machine_codeS");
-   @b{pragma} Export (C, u00021, "system__storage_elementsB");
-   @b{pragma} Export (C, u00022, "system__storage_elementsS");
-   @b{pragma} Export (C, u00023, "system__secondary_stackB");
-   @b{pragma} Export (C, u00024, "system__secondary_stackS");
-   @b{pragma} Export (C, u00025, "system__parametersB");
-   @b{pragma} Export (C, u00026, "system__parametersS");
-   @b{pragma} Export (C, u00027, "system__soft_linksB");
-   @b{pragma} Export (C, u00028, "system__soft_linksS");
-   @b{pragma} Export (C, u00029, "system__stack_checkingB");
-   @b{pragma} Export (C, u00030, "system__stack_checkingS");
-   @b{pragma} Export (C, u00031, "system__tracebackB");
-   @b{pragma} Export (C, u00032, "system__tracebackS");
-   @b{pragma} Export (C, u00033, "ada__streamsS");
-   @b{pragma} Export (C, u00034, "ada__tagsB");
-   @b{pragma} Export (C, u00035, "ada__tagsS");
-   @b{pragma} Export (C, u00036, "system__string_opsB");
-   @b{pragma} Export (C, u00037, "system__string_opsS");
-   @b{pragma} Export (C, u00038, "interfacesS");
-   @b{pragma} Export (C, u00039, "interfaces__c_streamsB");
-   @b{pragma} Export (C, u00040, "interfaces__c_streamsS");
-   @b{pragma} Export (C, u00041, "system__file_ioB");
-   @b{pragma} Export (C, u00042, "system__file_ioS");
-   @b{pragma} Export (C, u00043, "ada__finalizationB");
-   @b{pragma} Export (C, u00044, "ada__finalizationS");
-   @b{pragma} Export (C, u00045, "system__finalization_rootB");
-   @b{pragma} Export (C, u00046, "system__finalization_rootS");
-   @b{pragma} Export (C, u00047, "system__finalization_implementationB");
-   @b{pragma} Export (C, u00048, "system__finalization_implementationS");
-   @b{pragma} Export (C, u00049, "system__string_ops_concat_3B");
-   @b{pragma} Export (C, u00050, "system__string_ops_concat_3S");
-   @b{pragma} Export (C, u00051, "system__stream_attributesB");
-   @b{pragma} Export (C, u00052, "system__stream_attributesS");
-   @b{pragma} Export (C, u00053, "ada__io_exceptionsS");
-   @b{pragma} Export (C, u00054, "system__unsigned_typesS");
-   @b{pragma} Export (C, u00055, "system__file_control_blockS");
-   @b{pragma} Export (C, u00056, "ada__finalization__list_controllerB");
-   @b{pragma} Export (C, u00057, "ada__finalization__list_controllerS");
 
-   -- BEGIN ELABORATION ORDER
-   -- ada (spec)
-   -- gnat (spec)
-   -- gnat.heap_sort_a (spec)
-   -- gnat.heap_sort_a (body)
-   -- gnat.htable (spec)
-   -- gnat.htable (body)
-   -- interfaces (spec)
-   -- system (spec)
-   -- system.machine_code (spec)
-   -- system.parameters (spec)
-   -- system.parameters (body)
-   -- interfaces.c_streams (spec)
-   -- interfaces.c_streams (body)
-   -- system.standard_library (spec)
-   -- ada.exceptions (spec)
-   -- system.exception_table (spec)
-   -- system.exception_table (body)
-   -- ada.io_exceptions (spec)
-   -- system.exceptions (spec)
-   -- system.storage_elements (spec)
-   -- system.storage_elements (body)
-   -- system.machine_state_operations (spec)
-   -- system.machine_state_operations (body)
-   -- system.secondary_stack (spec)
-   -- system.stack_checking (spec)
-   -- system.soft_links (spec)
-   -- system.soft_links (body)
-   -- system.stack_checking (body)
-   -- system.secondary_stack (body)
-   -- system.standard_library (body)
-   -- system.string_ops (spec)
-   -- system.string_ops (body)
-   -- ada.tags (spec)
-   -- ada.tags (body)
-   -- ada.streams (spec)
-   -- system.finalization_root (spec)
-   -- system.finalization_root (body)
-   -- system.string_ops_concat_3 (spec)
-   -- system.string_ops_concat_3 (body)
-   -- system.traceback (spec)
-   -- system.traceback (body)
-   -- ada.exceptions (body)
-   -- system.unsigned_types (spec)
-   -- system.stream_attributes (spec)
-   -- system.stream_attributes (body)
-   -- system.finalization_implementation (spec)
-   -- system.finalization_implementation (body)
-   -- ada.finalization (spec)
-   -- ada.finalization (body)
-   -- ada.finalization.list_controller (spec)
-   -- ada.finalization.list_controller (body)
-   -- system.file_control_block (spec)
-   -- system.file_io (spec)
-   -- system.file_io (body)
-   -- ada.text_io (spec)
-   -- ada.text_io (body)
-   -- hello (body)
-   -- END ELABORATION ORDER
+   @b{type} Version_32 @b{is} @b{mod} 2 ** 32;
+   u00001 : @b{constant} Version_32 := 16#8ad6e54a#;
+   @b{pragma} Export (C, u00001, "helloB");
+   u00002 : @b{constant} Version_32 := 16#fbff4c67#;
+   @b{pragma} Export (C, u00002, "system__standard_libraryB");
+   u00003 : @b{constant} Version_32 := 16#1ec6fd90#;
+   @b{pragma} Export (C, u00003, "system__standard_libraryS");
+   u00004 : @b{constant} Version_32 := 16#3ffc8e18#;
+   @b{pragma} Export (C, u00004, "adaS");
+   u00005 : @b{constant} Version_32 := 16#28f088c2#;
+   @b{pragma} Export (C, u00005, "ada__text_ioB");
+   u00006 : @b{constant} Version_32 := 16#f372c8ac#;
+   @b{pragma} Export (C, u00006, "ada__text_ioS");
+   u00007 : @b{constant} Version_32 := 16#2c143749#;
+   @b{pragma} Export (C, u00007, "ada__exceptionsB");
+   u00008 : @b{constant} Version_32 := 16#f4f0cce8#;
+   @b{pragma} Export (C, u00008, "ada__exceptionsS");
+   u00009 : @b{constant} Version_32 := 16#a46739c0#;
+   @b{pragma} Export (C, u00009, "ada__exceptions__last_chance_handlerB");
+   u00010 : @b{constant} Version_32 := 16#3aac8c92#;
+   @b{pragma} Export (C, u00010, "ada__exceptions__last_chance_handlerS");
+   u00011 : @b{constant} Version_32 := 16#1d274481#;
+   @b{pragma} Export (C, u00011, "systemS");
+   u00012 : @b{constant} Version_32 := 16#a207fefe#;
+   @b{pragma} Export (C, u00012, "system__soft_linksB");
+   u00013 : @b{constant} Version_32 := 16#467d9556#;
+   @b{pragma} Export (C, u00013, "system__soft_linksS");
+   u00014 : @b{constant} Version_32 := 16#b01dad17#;
+   @b{pragma} Export (C, u00014, "system__parametersB");
+   u00015 : @b{constant} Version_32 := 16#630d49fe#;
+   @b{pragma} Export (C, u00015, "system__parametersS");
+   u00016 : @b{constant} Version_32 := 16#b19b6653#;
+   @b{pragma} Export (C, u00016, "system__secondary_stackB");
+   u00017 : @b{constant} Version_32 := 16#b6468be8#;
+   @b{pragma} Export (C, u00017, "system__secondary_stackS");
+   u00018 : @b{constant} Version_32 := 16#39a03df9#;
+   @b{pragma} Export (C, u00018, "system__storage_elementsB");
+   u00019 : @b{constant} Version_32 := 16#30e40e85#;
+   @b{pragma} Export (C, u00019, "system__storage_elementsS");
+   u00020 : @b{constant} Version_32 := 16#41837d1e#;
+   @b{pragma} Export (C, u00020, "system__stack_checkingB");
+   u00021 : @b{constant} Version_32 := 16#93982f69#;
+   @b{pragma} Export (C, u00021, "system__stack_checkingS");
+   u00022 : @b{constant} Version_32 := 16#393398c1#;
+   @b{pragma} Export (C, u00022, "system__exception_tableB");
+   u00023 : @b{constant} Version_32 := 16#b33e2294#;
+   @b{pragma} Export (C, u00023, "system__exception_tableS");
+   u00024 : @b{constant} Version_32 := 16#ce4af020#;
+   @b{pragma} Export (C, u00024, "system__exceptionsB");
+   u00025 : @b{constant} Version_32 := 16#75442977#;
+   @b{pragma} Export (C, u00025, "system__exceptionsS");
+   u00026 : @b{constant} Version_32 := 16#37d758f1#;
+   @b{pragma} Export (C, u00026, "system__exceptions__machineS");
+   u00027 : @b{constant} Version_32 := 16#b895431d#;
+   @b{pragma} Export (C, u00027, "system__exceptions_debugB");
+   u00028 : @b{constant} Version_32 := 16#aec55d3f#;
+   @b{pragma} Export (C, u00028, "system__exceptions_debugS");
+   u00029 : @b{constant} Version_32 := 16#570325c8#;
+   @b{pragma} Export (C, u00029, "system__img_intB");
+   u00030 : @b{constant} Version_32 := 16#1ffca443#;
+   @b{pragma} Export (C, u00030, "system__img_intS");
+   u00031 : @b{constant} Version_32 := 16#b98c3e16#;
+   @b{pragma} Export (C, u00031, "system__tracebackB");
+   u00032 : @b{constant} Version_32 := 16#831a9d5a#;
+   @b{pragma} Export (C, u00032, "system__tracebackS");
+   u00033 : @b{constant} Version_32 := 16#9ed49525#;
+   @b{pragma} Export (C, u00033, "system__traceback_entriesB");
+   u00034 : @b{constant} Version_32 := 16#1d7cb2f1#;
+   @b{pragma} Export (C, u00034, "system__traceback_entriesS");
+   u00035 : @b{constant} Version_32 := 16#8c33a517#;
+   @b{pragma} Export (C, u00035, "system__wch_conB");
+   u00036 : @b{constant} Version_32 := 16#065a6653#;
+   @b{pragma} Export (C, u00036, "system__wch_conS");
+   u00037 : @b{constant} Version_32 := 16#9721e840#;
+   @b{pragma} Export (C, u00037, "system__wch_stwB");
+   u00038 : @b{constant} Version_32 := 16#2b4b4a52#;
+   @b{pragma} Export (C, u00038, "system__wch_stwS");
+   u00039 : @b{constant} Version_32 := 16#92b797cb#;
+   @b{pragma} Export (C, u00039, "system__wch_cnvB");
+   u00040 : @b{constant} Version_32 := 16#09eddca0#;
+   @b{pragma} Export (C, u00040, "system__wch_cnvS");
+   u00041 : @b{constant} Version_32 := 16#6033a23f#;
+   @b{pragma} Export (C, u00041, "interfacesS");
+   u00042 : @b{constant} Version_32 := 16#ece6fdb6#;
+   @b{pragma} Export (C, u00042, "system__wch_jisB");
+   u00043 : @b{constant} Version_32 := 16#899dc581#;
+   @b{pragma} Export (C, u00043, "system__wch_jisS");
+   u00044 : @b{constant} Version_32 := 16#10558b11#;
+   @b{pragma} Export (C, u00044, "ada__streamsB");
+   u00045 : @b{constant} Version_32 := 16#2e6701ab#;
+   @b{pragma} Export (C, u00045, "ada__streamsS");
+   u00046 : @b{constant} Version_32 := 16#db5c917c#;
+   @b{pragma} Export (C, u00046, "ada__io_exceptionsS");
+   u00047 : @b{constant} Version_32 := 16#12c8cd7d#;
+   @b{pragma} Export (C, u00047, "ada__tagsB");
+   u00048 : @b{constant} Version_32 := 16#ce72c228#;
+   @b{pragma} Export (C, u00048, "ada__tagsS");
+   u00049 : @b{constant} Version_32 := 16#c3335bfd#;
+   @b{pragma} Export (C, u00049, "system__htableB");
+   u00050 : @b{constant} Version_32 := 16#99e5f76b#;
+   @b{pragma} Export (C, u00050, "system__htableS");
+   u00051 : @b{constant} Version_32 := 16#089f5cd0#;
+   @b{pragma} Export (C, u00051, "system__string_hashB");
+   u00052 : @b{constant} Version_32 := 16#3bbb9c15#;
+   @b{pragma} Export (C, u00052, "system__string_hashS");
+   u00053 : @b{constant} Version_32 := 16#807fe041#;
+   @b{pragma} Export (C, u00053, "system__unsigned_typesS");
+   u00054 : @b{constant} Version_32 := 16#d27be59e#;
+   @b{pragma} Export (C, u00054, "system__val_lluB");
+   u00055 : @b{constant} Version_32 := 16#fa8db733#;
+   @b{pragma} Export (C, u00055, "system__val_lluS");
+   u00056 : @b{constant} Version_32 := 16#27b600b2#;
+   @b{pragma} Export (C, u00056, "system__val_utilB");
+   u00057 : @b{constant} Version_32 := 16#b187f27f#;
+   @b{pragma} Export (C, u00057, "system__val_utilS");
+   u00058 : @b{constant} Version_32 := 16#d1060688#;
+   @b{pragma} Export (C, u00058, "system__case_utilB");
+   u00059 : @b{constant} Version_32 := 16#392e2d56#;
+   @b{pragma} Export (C, u00059, "system__case_utilS");
+   u00060 : @b{constant} Version_32 := 16#84a27f0d#;
+   @b{pragma} Export (C, u00060, "interfaces__c_streamsB");
+   u00061 : @b{constant} Version_32 := 16#8bb5f2c0#;
+   @b{pragma} Export (C, u00061, "interfaces__c_streamsS");
+   u00062 : @b{constant} Version_32 := 16#6db6928f#;
+   @b{pragma} Export (C, u00062, "system__crtlS");
+   u00063 : @b{constant} Version_32 := 16#4e6a342b#;
+   @b{pragma} Export (C, u00063, "system__file_ioB");
+   u00064 : @b{constant} Version_32 := 16#ba56a5e4#;
+   @b{pragma} Export (C, u00064, "system__file_ioS");
+   u00065 : @b{constant} Version_32 := 16#b7ab275c#;
+   @b{pragma} Export (C, u00065, "ada__finalizationB");
+   u00066 : @b{constant} Version_32 := 16#19f764ca#;
+   @b{pragma} Export (C, u00066, "ada__finalizationS");
+   u00067 : @b{constant} Version_32 := 16#95817ed8#;
+   @b{pragma} Export (C, u00067, "system__finalization_rootB");
+   u00068 : @b{constant} Version_32 := 16#52d53711#;
+   @b{pragma} Export (C, u00068, "system__finalization_rootS");
+   u00069 : @b{constant} Version_32 := 16#769e25e6#;
+   @b{pragma} Export (C, u00069, "interfaces__cB");
+   u00070 : @b{constant} Version_32 := 16#4a38bedb#;
+   @b{pragma} Export (C, u00070, "interfaces__cS");
+   u00071 : @b{constant} Version_32 := 16#07e6ee66#;
+   @b{pragma} Export (C, u00071, "system__os_libB");
+   u00072 : @b{constant} Version_32 := 16#d7b69782#;
+   @b{pragma} Export (C, u00072, "system__os_libS");
+   u00073 : @b{constant} Version_32 := 16#1a817b8e#;
+   @b{pragma} Export (C, u00073, "system__stringsB");
+   u00074 : @b{constant} Version_32 := 16#639855e7#;
+   @b{pragma} Export (C, u00074, "system__stringsS");
+   u00075 : @b{constant} Version_32 := 16#e0b8de29#;
+   @b{pragma} Export (C, u00075, "system__file_control_blockS");
+   u00076 : @b{constant} Version_32 := 16#b5b2aca1#;
+   @b{pragma} Export (C, u00076, "system__finalization_mastersB");
+   u00077 : @b{constant} Version_32 := 16#69316dc1#;
+   @b{pragma} Export (C, u00077, "system__finalization_mastersS");
+   u00078 : @b{constant} Version_32 := 16#57a37a42#;
+   @b{pragma} Export (C, u00078, "system__address_imageB");
+   u00079 : @b{constant} Version_32 := 16#bccbd9bb#;
+   @b{pragma} Export (C, u00079, "system__address_imageS");
+   u00080 : @b{constant} Version_32 := 16#7268f812#;
+   @b{pragma} Export (C, u00080, "system__img_boolB");
+   u00081 : @b{constant} Version_32 := 16#e8fe356a#;
+   @b{pragma} Export (C, u00081, "system__img_boolS");
+   u00082 : @b{constant} Version_32 := 16#d7aac20c#;
+   @b{pragma} Export (C, u00082, "system__ioB");
+   u00083 : @b{constant} Version_32 := 16#8365b3ce#;
+   @b{pragma} Export (C, u00083, "system__ioS");
+   u00084 : @b{constant} Version_32 := 16#6d4d969a#;
+   @b{pragma} Export (C, u00084, "system__storage_poolsB");
+   u00085 : @b{constant} Version_32 := 16#e87cc305#;
+   @b{pragma} Export (C, u00085, "system__storage_poolsS");
+   u00086 : @b{constant} Version_32 := 16#e34550ca#;
+   @b{pragma} Export (C, u00086, "system__pool_globalB");
+   u00087 : @b{constant} Version_32 := 16#c88d2d16#;
+   @b{pragma} Export (C, u00087, "system__pool_globalS");
+   u00088 : @b{constant} Version_32 := 16#9d39c675#;
+   @b{pragma} Export (C, u00088, "system__memoryB");
+   u00089 : @b{constant} Version_32 := 16#445a22b5#;
+   @b{pragma} Export (C, u00089, "system__memoryS");
+   u00090 : @b{constant} Version_32 := 16#6a859064#;
+   @b{pragma} Export (C, u00090, "system__storage_pools__subpoolsB");
+   u00091 : @b{constant} Version_32 := 16#e3b008dc#;
+   @b{pragma} Export (C, u00091, "system__storage_pools__subpoolsS");
+   u00092 : @b{constant} Version_32 := 16#63f11652#;
+   @b{pragma} Export (C, u00092, "system__storage_pools__subpools__finalizationB");
+   u00093 : @b{constant} Version_32 := 16#fe2f4b3a#;
+   @b{pragma} Export (C, u00093, "system__storage_pools__subpools__finalizationS");
+
+   --  BEGIN ELABORATION ORDER
+   --  ada%s
+   --  interfaces%s
+   --  system%s
+   --  system.case_util%s
+   --  system.case_util%b
+   --  system.htable%s
+   --  system.img_bool%s
+   --  system.img_bool%b
+   --  system.img_int%s
+   --  system.img_int%b
+   --  system.io%s
+   --  system.io%b
+   --  system.parameters%s
+   --  system.parameters%b
+   --  system.crtl%s
+   --  interfaces.c_streams%s
+   --  interfaces.c_streams%b
+   --  system.standard_library%s
+   --  system.exceptions_debug%s
+   --  system.exceptions_debug%b
+   --  system.storage_elements%s
+   --  system.storage_elements%b
+   --  system.stack_checking%s
+   --  system.stack_checking%b
+   --  system.string_hash%s
+   --  system.string_hash%b
+   --  system.htable%b
+   --  system.strings%s
+   --  system.strings%b
+   --  system.os_lib%s
+   --  system.traceback_entries%s
+   --  system.traceback_entries%b
+   --  ada.exceptions%s
+   --  system.soft_links%s
+   --  system.unsigned_types%s
+   --  system.val_llu%s
+   --  system.val_util%s
+   --  system.val_util%b
+   --  system.val_llu%b
+   --  system.wch_con%s
+   --  system.wch_con%b
+   --  system.wch_cnv%s
+   --  system.wch_jis%s
+   --  system.wch_jis%b
+   --  system.wch_cnv%b
+   --  system.wch_stw%s
+   --  system.wch_stw%b
+   --  ada.exceptions.last_chance_handler%s
+   --  ada.exceptions.last_chance_handler%b
+   --  system.address_image%s
+   --  system.exception_table%s
+   --  system.exception_table%b
+   --  ada.io_exceptions%s
+   --  ada.tags%s
+   --  ada.streams%s
+   --  ada.streams%b
+   --  interfaces.c%s
+   --  system.exceptions%s
+   --  system.exceptions%b
+   --  system.exceptions.machine%s
+   --  system.finalization_root%s
+   --  system.finalization_root%b
+   --  ada.finalization%s
+   --  ada.finalization%b
+   --  system.storage_pools%s
+   --  system.storage_pools%b
+   --  system.finalization_masters%s
+   --  system.storage_pools.subpools%s
+   --  system.storage_pools.subpools.finalization%s
+   --  system.storage_pools.subpools.finalization%b
+   --  system.memory%s
+   --  system.memory%b
+   --  system.standard_library%b
+   --  system.pool_global%s
+   --  system.pool_global%b
+   --  system.file_control_block%s
+   --  system.file_io%s
+   --  system.secondary_stack%s
+   --  system.file_io%b
+   --  system.storage_pools.subpools%b
+   --  system.finalization_masters%b
+   --  interfaces.c%b
+   --  ada.tags%b
+   --  system.soft_links%b
+   --  system.os_lib%b
+   --  system.secondary_stack%b
+   --  system.address_image%b
+   --  system.traceback%s
+   --  ada.exceptions%b
+   --  system.traceback%b
+   --  ada.text_io%s
+   --  ada.text_io%b
+   --  hello%b
+   --  END ELABORATION ORDER
 
 @b{end} ada_main;
 
+@b{pragma} Ada_95;
 --  The following source file name pragmas allow the generated file
 --  names to be unique for different main programs. They are needed
 --  since the package name will always be Ada_Main.
@@ -22574,15 +22689,94 @@ Comments have been added for clarification purposes.
 @b{pragma} Source_File_Name (ada_main, Spec_File_Name => "b~hello.ads");
 @b{pragma} Source_File_Name (ada_main, Body_File_Name => "b~hello.adb");
 
+@b{pragma} Suppress (Overflow_Check);
+@b{with} Ada.Exceptions;
+
 --  Generated package body for Ada_Main starts here
 
 @b{package} @b{body} ada_main @b{is}
+   @b{pragma} Warnings (Off);
 
-   --  The actual finalization is performed by calling the
-   --  library routine in System.Standard_Library.Adafinal
+   --  These values are reference counter associated to units which have
+   --  been elaborated. It is also used to avoid elaborating the
+   --  same unit twice.
 
-   @b{procedure} Do_Finalize;
-   @b{pragma} Import (C, Do_Finalize, "system__standard_library__adafinal");
+   E72 : Short_Integer; @b{pragma} Import (Ada, E72, "system__os_lib_E");
+   E13 : Short_Integer; @b{pragma} Import (Ada, E13, "system__soft_links_E");
+   E23 : Short_Integer; @b{pragma} Import (Ada, E23, "system__exception_table_E");
+   E46 : Short_Integer; @b{pragma} Import (Ada, E46, "ada__io_exceptions_E");
+   E48 : Short_Integer; @b{pragma} Import (Ada, E48, "ada__tags_E");
+   E45 : Short_Integer; @b{pragma} Import (Ada, E45, "ada__streams_E");
+   E70 : Short_Integer; @b{pragma} Import (Ada, E70, "interfaces__c_E");
+   E25 : Short_Integer; @b{pragma} Import (Ada, E25, "system__exceptions_E");
+   E68 : Short_Integer; @b{pragma} Import (Ada, E68, "system__finalization_root_E");
+   E66 : Short_Integer; @b{pragma} Import (Ada, E66, "ada__finalization_E");
+   E85 : Short_Integer; @b{pragma} Import (Ada, E85, "system__storage_pools_E");
+   E77 : Short_Integer; @b{pragma} Import (Ada, E77, "system__finalization_masters_E");
+   E91 : Short_Integer; @b{pragma} Import (Ada, E91, "system__storage_pools__subpools_E");
+   E87 : Short_Integer; @b{pragma} Import (Ada, E87, "system__pool_global_E");
+   E75 : Short_Integer; @b{pragma} Import (Ada, E75, "system__file_control_block_E");
+   E64 : Short_Integer; @b{pragma} Import (Ada, E64, "system__file_io_E");
+   E17 : Short_Integer; @b{pragma} Import (Ada, E17, "system__secondary_stack_E");
+   E06 : Short_Integer; @b{pragma} Import (Ada, E06, "ada__text_io_E");
+
+   Local_Priority_Specific_Dispatching : @b{constant} String := "";
+   Local_Interrupt_States : @b{constant} String := "";
+
+   Is_Elaborated : Boolean := False;
+
+@findex finalize_library
+   @b{procedure} finalize_library @b{is}
+   @b{begin}
+      E06 := E06 - 1;
+      @b{declare}
+         @b{procedure} F1;
+         @b{pragma} Import (Ada, F1, "ada__text_io__finalize_spec");
+      @b{begin}
+         F1;
+      @b{end};
+      E77 := E77 - 1;
+      E91 := E91 - 1;
+      @b{declare}
+         @b{procedure} F2;
+         @b{pragma} Import (Ada, F2, "system__file_io__finalize_body");
+      @b{begin}
+         E64 := E64 - 1;
+         F2;
+      @b{end};
+      @b{declare}
+         @b{procedure} F3;
+         @b{pragma} Import (Ada, F3, "system__file_control_block__finalize_spec");
+      @b{begin}
+         E75 := E75 - 1;
+         F3;
+      @b{end};
+      E87 := E87 - 1;
+      @b{declare}
+         @b{procedure} F4;
+         @b{pragma} Import (Ada, F4, "system__pool_global__finalize_spec");
+      @b{begin}
+         F4;
+      @b{end};
+      @b{declare}
+         @b{procedure} F5;
+         @b{pragma} Import (Ada, F5, "system__storage_pools__subpools__finalize_spec");
+      @b{begin}
+         F5;
+      @b{end};
+      @b{declare}
+         @b{procedure} F6;
+         @b{pragma} Import (Ada, F6, "system__finalization_masters__finalize_spec");
+      @b{begin}
+         F6;
+      @b{end};
+      @b{declare}
+         @b{procedure} Reraise_Library_Exception_If_Any;
+         @b{pragma} Import (Ada, Reraise_Library_Exception_If_Any, "__gnat_reraise_library_exception_if_any");
+      @b{begin}
+         Reraise_Library_Exception_If_Any;
+      @b{end};
+   @b{end} finalize_library;
 
    -------------
    -- adainit --
@@ -22591,290 +22785,122 @@ Comments have been added for clarification purposes.
 @findex adainit
    @b{procedure} adainit @b{is}
 
-      --  These booleans are set to True once the associated unit has
-      --  been elaborated. It is also used to avoid elaborating the
-      --  same unit twice.
+      Main_Priority : Integer;
+      @b{pragma} Import (C, Main_Priority, "__gl_main_priority");
+      Time_Slice_Value : Integer;
+      @b{pragma} Import (C, Time_Slice_Value, "__gl_time_slice_val");
+      WC_Encoding : Character;
+      @b{pragma} Import (C, WC_Encoding, "__gl_wc_encoding");
+      Locking_Policy : Character;
+      pragma Import (C, Locking_Policy, "__gl_locking_policy");
+      Queuing_Policy : Character;
+      @b{pragma} Import (C, Queuing_Policy, "__gl_queuing_policy");
+      Task_Dispatching_Policy : Character;
+      @b{pragma} Import (C, Task_Dispatching_Policy, "__gl_task_dispatching_policy");
+      Priority_Specific_Dispatching : System.Address;
+      @b{pragma} Import (C, Priority_Specific_Dispatching, "__gl_priority_specific_dispatching");
+      Num_Specific_Dispatching : Integer;
+      @b{pragma} Import (C, Num_Specific_Dispatching, "__gl_num_specific_dispatching");
+      Main_CPU : Integer;
+      @b{pragma} Import (C, Main_CPU, "__gl_main_cpu");
+      Interrupt_States : System.Address;
+      @b{pragma} Import (C, Interrupt_States, "__gl_interrupt_states");
+      Num_Interrupt_States : Integer;
+      @b{pragma} Import (C, Num_Interrupt_States, "__gl_num_interrupt_states");
+      Unreserve_All_Interrupts : Integer;
+      @b{pragma} Import (C, Unreserve_All_Interrupts, "__gl_unreserve_all_interrupts");
+      Detect_Blocking : Integer;
+      @b{pragma} Import (C, Detect_Blocking, "__gl_detect_blocking");
+      Default_Stack_Size : Integer;
+      @b{pragma} Import (C, Default_Stack_Size, "__gl_default_stack_size");
+      Leap_Seconds_Support : Integer;
+      @b{pragma} Import (C, Leap_Seconds_Support, "__gl_leap_seconds_support");
 
-      E040 : Boolean;
-      @b{pragma} Import (Ada, E040, "interfaces__c_streams_E");
+      procedure Runtime_Initialize;
+      @b{pragma} Import (C, Runtime_Initialize, "__gnat_runtime_initialize");
 
-      E008 : Boolean;
-      @b{pragma} Import (Ada, E008, "ada__exceptions_E");
-
-      E014 : Boolean;
-      @b{pragma} Import (Ada, E014, "system__exception_table_E");
-
-      E053 : Boolean;
-      @b{pragma} Import (Ada, E053, "ada__io_exceptions_E");
-
-      E017 : Boolean;
-      @b{pragma} Import (Ada, E017, "system__exceptions_E");
-
-      E024 : Boolean;
-      @b{pragma} Import (Ada, E024, "system__secondary_stack_E");
-
-      E030 : Boolean;
-      @b{pragma} Import (Ada, E030, "system__stack_checking_E");
-
-      E028 : Boolean;
-      @b{pragma} Import (Ada, E028, "system__soft_links_E");
-
-      E035 : Boolean;
-      @b{pragma} Import (Ada, E035, "ada__tags_E");
-
-      E033 : Boolean;
-      @b{pragma} Import (Ada, E033, "ada__streams_E");
-
-      E046 : Boolean;
-      @b{pragma} Import (Ada, E046, "system__finalization_root_E");
-
-      E048 : Boolean;
-      @b{pragma} Import (Ada, E048, "system__finalization_implementation_E");
-
-      E044 : Boolean;
-      @b{pragma} Import (Ada, E044, "ada__finalization_E");
-
-      E057 : Boolean;
-      @b{pragma} Import (Ada, E057, "ada__finalization__list_controller_E");
-
-      E055 : Boolean;
-      @b{pragma} Import (Ada, E055, "system__file_control_block_E");
-
-      E042 : Boolean;
-      @b{pragma} Import (Ada, E042, "system__file_io_E");
-
-      E006 : Boolean;
-      @b{pragma} Import (Ada, E006, "ada__text_io_E");
-
-      --  Set_Globals is a library routine that stores away the
-      --  value of the indicated set of global values in global
-      --  variables within the library.
-
-      @b{procedure} Set_Globals
-        (Main_Priority            : Integer;
-         Time_Slice_Value         : Integer;
-         WC_Encoding              : Character;
-         Locking_Policy           : Character;
-         Queuing_Policy           : Character;
-         Task_Dispatching_Policy  : Character;
-         Adafinal                 : System.Address;
-         Unreserve_All_Interrupts : Integer;
-         Exception_Tracebacks     : Integer);
-@findex __gnat_set_globals
-      @b{pragma} Import (C, Set_Globals, "__gnat_set_globals");
-
-      --  SDP_Table_Build is a library routine used to build the
-      --  exception tables. See unit Ada.Exceptions in files
-      --  a-except.ads/adb for full details of how zero cost
-      --  exception handling works. This procedure, the call to
-      --  it, and the two following tables are all omitted if the
-      --  build is in longjmp/setjmp exception mode.
-
-@findex SDP_Table_Build
-@findex Zero Cost Exceptions
-      @b{procedure} SDP_Table_Build
-        (SDP_Addresses   : System.Address;
-         SDP_Count       : Natural;
-         Elab_Addresses  : System.Address;
-         Elab_Addr_Count : Natural);
-      @b{pragma} Import (C, SDP_Table_Build, "__gnat_SDP_Table_Build");
-
-      --  Table of Unit_Exception_Table addresses. Used for zero
-      --  cost exception handling to build the top level table.
-
-      ST : @b{aliased} @b{constant} @b{array} (1 .. 23) @b{of} System.Address := (
-        Hello'UET_Address,
-        Ada.Text_Io'UET_Address,
-        Ada.Exceptions'UET_Address,
-        Gnat.Heap_Sort_A'UET_Address,
-        System.Exception_Table'UET_Address,
-        System.Machine_State_Operations'UET_Address,
-        System.Secondary_Stack'UET_Address,
-        System.Parameters'UET_Address,
-        System.Soft_Links'UET_Address,
-        System.Stack_Checking'UET_Address,
-        System.Traceback'UET_Address,
-        Ada.Streams'UET_Address,
-        Ada.Tags'UET_Address,
-        System.String_Ops'UET_Address,
-        Interfaces.C_Streams'UET_Address,
-        System.File_Io'UET_Address,
-        Ada.Finalization'UET_Address,
-        System.Finalization_Root'UET_Address,
-        System.Finalization_Implementation'UET_Address,
-        System.String_Ops_Concat_3'UET_Address,
-        System.Stream_Attributes'UET_Address,
-        System.File_Control_Block'UET_Address,
-        Ada.Finalization.List_Controller'UET_Address);
-
-      --  Table of addresses of elaboration routines. Used for
-      --  zero cost exception handling to make sure these
-      --  addresses are included in the top level procedure
-      --  address table.
-
-      EA : @b{aliased} @b{constant} @b{array} (1 .. 23) @b{of} System.Address := (
-        adainit'Code_Address,
-        Do_Finalize'Code_Address,
-        Ada.Exceptions'Elab_Spec'Address,
-        System.Exceptions'Elab_Spec'Address,
-        Interfaces.C_Streams'Elab_Spec'Address,
-        System.Exception_Table'Elab_Body'Address,
-        Ada.Io_Exceptions'Elab_Spec'Address,
-        System.Stack_Checking'Elab_Spec'Address,
-        System.Soft_Links'Elab_Body'Address,
-        System.Secondary_Stack'Elab_Body'Address,
-        Ada.Tags'Elab_Spec'Address,
-        Ada.Tags'Elab_Body'Address,
-        Ada.Streams'Elab_Spec'Address,
-        System.Finalization_Root'Elab_Spec'Address,
-        Ada.Exceptions'Elab_Body'Address,
-        System.Finalization_Implementation'Elab_Spec'Address,
-        System.Finalization_Implementation'Elab_Body'Address,
-        Ada.Finalization'Elab_Spec'Address,
-        Ada.Finalization.List_Controller'Elab_Spec'Address,
-        System.File_Control_Block'Elab_Spec'Address,
-        System.File_Io'Elab_Body'Address,
-        Ada.Text_Io'Elab_Spec'Address,
-        Ada.Text_Io'Elab_Body'Address);
+      Finalize_Library_Objects : No_Param_Proc;
+      @b{pragma} Import (C, Finalize_Library_Objects, "__gnat_finalize_library_objects");
 
    --  Start of processing for adainit
 
    @b{begin}
 
-      --  Call SDP_Table_Build to build the top level procedure
-      --  table for zero cost exception handling (omitted in
-      --  longjmp/setjmp mode).
+      --  Record various information for this partition.  The values
+      --  are derived by the binder from information stored in the ali
+      --  files by the compiler.
 
-      SDP_Table_Build (ST'Address, 23, EA'Address, 23);
+      @b{if} Is_Elaborated @b{then}
+         @b{return};
+      @b{end if};
+      Is_Elaborated := True;
+      Main_Priority := -1;
+      Time_Slice_Value := -1;
+      WC_Encoding := 'b';
+      Locking_Policy := ' ';
+      Queuing_Policy := ' ';
+      Task_Dispatching_Policy := ' ';
+      Priority_Specific_Dispatching :=
+        Local_Priority_Specific_Dispatching'Address;
+      Num_Specific_Dispatching := 0;
+      Main_CPU := -1;
+      Interrupt_States := Local_Interrupt_States'Address;
+      Num_Interrupt_States := 0;
+      Unreserve_All_Interrupts := 0;
+      Detect_Blocking := 0;
+      Default_Stack_Size := -1;
+      Leap_Seconds_Support := 0;
 
-      --  Call Set_Globals to record various information for
-      --  this partition.  The values are derived by the binder
-      --  from information stored in the ali files by the compiler.
+      Runtime_Initialize;
 
-@findex __gnat_set_globals
-      Set_Globals
-        (Main_Priority            => -1,
-         --  Priority of main program, -1 if no pragma Priority used
-
-         Time_Slice_Value         => -1,
-         --  Time slice from Time_Slice pragma, -1 if none used
-
-         WC_Encoding              => 'b',
-         --  Wide_Character encoding used, default is brackets
-
-         Locking_Policy           => ' ',
-         --  Locking_Policy used, default of space means not
-         --  specified, otherwise it is the first character of
-         --  the policy name.
-
-         Queuing_Policy           => ' ',
-         --  Queuing_Policy used, default of space means not
-         --  specified, otherwise it is the first character of
-         --  the policy name.
-
-         Task_Dispatching_Policy  => ' ',
-         --  Task_Dispatching_Policy used, default of space means
-         --  not specified, otherwise first character of the
-         --  policy name.
-
-         Adafinal                 => System.Null_Address,
-         --  Address of Adafinal routine, not used anymore
-
-         Unreserve_All_Interrupts => 0,
-         --  Set true if pragma Unreserve_All_Interrupts was used
-
-         Exception_Tracebacks     => 0);
-         --  Indicates if exception tracebacks are enabled
-
-      Elab_Final_Code := 1;
+      Finalize_Library_Objects := finalize_library'access;
 
       --  Now we have the elaboration calls for all units in the partition.
       --  The Elab_Spec and Elab_Body attributes generate references to the
       --  implicit elaboration procedures generated by the compiler for
-      --  each unit that requires elaboration.
+      --  each unit that requires elaboration. Increment a counter of
+      --  reference for each unit.
 
-      @b{if} @b{not} E040 @b{then}
-         Interfaces.C_Streams'Elab_Spec;
-      @b{end} @b{if};
-      E040 := True;
-      @b{if} @b{not} E008 @b{then}
-         Ada.Exceptions'Elab_Spec;
-      @b{end} @b{if};
-      @b{if} @b{not} E014 @b{then}
-         System.Exception_Table'Elab_Body;
-         E014 := True;
-      @b{end} @b{if};
-      @b{if} @b{not} E053 @b{then}
-         Ada.Io_Exceptions'Elab_Spec;
-         E053 := True;
-      @b{end} @b{if};
-      @b{if} @b{not} E017 @b{then}
-         System.Exceptions'Elab_Spec;
-         E017 := True;
-      @b{end} @b{if};
-      @b{if} @b{not} E030 @b{then}
-         System.Stack_Checking'Elab_Spec;
-      @b{end} @b{if};
-      @b{if} @b{not} E028 @b{then}
-         System.Soft_Links'Elab_Body;
-         E028 := True;
-      @b{end} @b{if};
-      E030 := True;
-      @b{if} @b{not} E024 @b{then}
-         System.Secondary_Stack'Elab_Body;
-         E024 := True;
-      @b{end} @b{if};
-      @b{if} @b{not} E035 @b{then}
-         Ada.Tags'Elab_Spec;
-      @b{end} @b{if};
-      @b{if} @b{not} E035 @b{then}
-         Ada.Tags'Elab_Body;
-         E035 := True;
-      @b{end} @b{if};
-      @b{if} @b{not} E033 @b{then}
-         Ada.Streams'Elab_Spec;
-         E033 := True;
-      @b{end} @b{if};
-      @b{if} @b{not} E046 @b{then}
-         System.Finalization_Root'Elab_Spec;
-      @b{end} @b{if};
-      E046 := True;
-      @b{if} @b{not} E008 @b{then}
-         Ada.Exceptions'Elab_Body;
-         E008 := True;
-      @b{end} @b{if};
-      @b{if} @b{not} E048 @b{then}
-         System.Finalization_Implementation'Elab_Spec;
-      @b{end} @b{if};
-      @b{if} @b{not} E048 @b{then}
-         System.Finalization_Implementation'Elab_Body;
-         E048 := True;
-      @b{end} @b{if};
-      @b{if} @b{not} E044 @b{then}
-         Ada.Finalization'Elab_Spec;
-      @b{end} @b{if};
-      E044 := True;
-      @b{if} @b{not} E057 @b{then}
-         Ada.Finalization.List_Controller'Elab_Spec;
-      @b{end} @b{if};
-      E057 := True;
-      @b{if} @b{not} E055 @b{then}
-         System.File_Control_Block'Elab_Spec;
-         E055 := True;
-      @b{end} @b{if};
-      @b{if} @b{not} E042 @b{then}
-         System.File_Io'Elab_Body;
-         E042 := True;
-      @b{end} @b{if};
-      @b{if} @b{not} E006 @b{then}
-         Ada.Text_Io'Elab_Spec;
-      @b{end} @b{if};
-      @b{if} @b{not} E006 @b{then}
-         Ada.Text_Io'Elab_Body;
-         E006 := True;
-      @b{end} @b{if};
-
-      Elab_Final_Code := 0;
+      System.Soft_Links'Elab_Spec;
+      System.Exception_Table'Elab_Body;
+      E23 := E23 + 1;
+      Ada.Io_Exceptions'Elab_Spec;
+      E46 := E46 + 1;
+      Ada.Tags'Elab_Spec;
+      Ada.Streams'Elab_Spec;
+      E45 := E45 + 1;
+      Interfaces.C'Elab_Spec;
+      System.Exceptions'Elab_Spec;
+      E25 := E25 + 1;
+      System.Finalization_Root'Elab_Spec;
+      E68 := E68 + 1;
+      Ada.Finalization'Elab_Spec;
+      E66 := E66 + 1;
+      System.Storage_Pools'Elab_Spec;
+      E85 := E85 + 1;
+      System.Finalization_Masters'Elab_Spec;
+      System.Storage_Pools.Subpools'Elab_Spec;
+      System.Pool_Global'Elab_Spec;
+      E87 := E87 + 1;
+      System.File_Control_Block'Elab_Spec;
+      E75 := E75 + 1;
+      System.File_Io'Elab_Body;
+      E64 := E64 + 1;
+      E91 := E91 + 1;
+      System.Finalization_Masters'Elab_Body;
+      E77 := E77 + 1;
+      E70 := E70 + 1;
+      Ada.Tags'Elab_Body;
+      E48 := E48 + 1;
+      System.Soft_Links'Elab_Body;
+      E13 := E13 + 1;
+      System.Os_Lib'Elab_Body;
+      E72 := E72 + 1;
+      System.Secondary_Stack'Elab_Body;
+      E17 := E17 + 1;
+      Ada.Text_Io'Elab_Spec;
+      Ada.Text_Io'Elab_Body;
+      E06 := E06 + 1;
    @b{end} adainit;
 
    --------------
@@ -22883,9 +22909,30 @@ Comments have been added for clarification purposes.
 
 @findex adafinal
    @b{procedure} adafinal @b{is}
+      @b{procedure} s_stalib_adafinal;
+      @b{pragma} Import (C, s_stalib_adafinal, "system__standard_library__adafinal");
+
+      @b{procedure} Runtime_Finalize;
+      @b{pragma} Import (C, Runtime_Finalize, "__gnat_runtime_finalize");
+
    @b{begin}
-      Do_Finalize;
+      @b{if not} Is_Elaborated @b{then}
+         @b{return};
+      @b{end if};
+      Is_Elaborated := False;
+      Runtime_Finalize;
+      s_stalib_adafinal;
    @b{end} adafinal;
+
+   --  We get to the main program of the partition by using
+   --  pragma Import because if we try to with the unit and
+   --  call it Ada style, then not only do we waste time
+   --  recompiling it, but also, we don't really know the right
+   --  switches (e.g.@: identifier character set) to be used
+   --  to compile it.
+
+   @b{procedure} Ada_Main_Program;
+   @b{pragma} Import (Ada, Ada_Main_Program, "_ada_hello");
 
    ----------
    -- main --
@@ -22923,15 +22970,12 @@ Comments have been added for clarification purposes.
       @b{procedure} finalize;
       @b{pragma} Import (C, finalize, "__gnat_finalize");
 
-      --  We get to the main program of the partition by using
-      --  pragma Import because if we try to with the unit and
-      --  call it Ada style, then not only do we waste time
-      --  recompiling it, but also, we don't really know the right
-      --  switches (e.g.@: identifier character set) to be used
-      --  to compile it.
+      --  The following is to initialize the SEH exceptions
 
-      @b{procedure} Ada_Main_Program;
-      @b{pragma} Import (Ada, Ada_Main_Program, "_ada_hello");
+      SEH : @b{aliased array} (1 .. 2) of Integer;
+
+      Ensure_Reference : aliased System.Address := Ada_Main_Program_Name'Address;
+      @b{pragma} Volatile (Ensure_Reference);
 
    --  Start of processing for main
 
@@ -22944,16 +22988,11 @@ Comments have been added for clarification purposes.
 
       --  Call low level system initialization
 
-      Initialize;
+      Initialize (SEH'Address);
 
       --  Call our generated Ada initialization routine
 
       adainit;
-
-      --  This is the point at which we want the debugger to get
-      --  control
-
-      Break_Start;
 
       --  Now we call the main program of the partition
 

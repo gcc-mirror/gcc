@@ -2400,7 +2400,7 @@ endif
 # thread.c is special as put into GNATRTL_TASKING_OBJS by Makefile.rtl
 LIBGNAT_OBJS = adadecode.o adaint.o argv.o aux-io.o 			\
   cal.o cio.o cstreams.o ctrl_c.o					\
-  env.o errno.o exit.o expect.o final.o 				\
+  env.o errno.o exit.o expect.o final.o rtfinal.o rtinit.o		\
   init.o initialize.o locales.o mkdir.o					\
   raise.o seh_init.o socket.o sysdep.o					\
   targext.o terminals.o tracebak.o 					\
@@ -3046,6 +3046,8 @@ errno.o   : errno.c
 exit.o    : adaint.h exit.c
 expect.o  : expect.c
 final.o   : final.c
+rtfinal.o : rtfinal.c
+rtinit.o  : rtinit.c
 locales.o : locales.c
 mkdir.o   : mkdir.c
 socket.o  : socket.c gsocket.h

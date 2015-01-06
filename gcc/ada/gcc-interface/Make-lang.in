@@ -223,8 +223,8 @@ GCC_LLINK=$(LLINKER) $(GCC_LINKERFLAGS) $(LDFLAGS)
 # Object files for gnat1 from C sources.
 GNAT1_C_OBJS = ada/adadecode.o ada/adaint.o ada/argv.o ada/cio.o \
  ada/cstreams.o ada/env.o ada/init.o ada/initialize.o ada/raise.o \
- ada/seh_init.o ada/targext.o ada/cuintp.o ada/decl.o \
- ada/misc.o ada/utils.o ada/utils2.o ada/trans.o ada/targtyps.o
+ ada/seh_init.o ada/targext.o ada/cuintp.o ada/decl.o ada/rtfinal.o \
+ ada/rtinit.o ada/misc.o ada/utils.o ada/utils2.o ada/trans.o ada/targtyps.o
 
 # Object files from Ada sources that are used by gnat1
 GNAT_ADA_OBJS =	\
@@ -513,6 +513,8 @@ GNATBIND_OBJS = \
  ada/raise.o      \
  ada/restrict.o   \
  ada/rident.o     \
+ ada/rtfinal.o    \
+ ada/rtinit.o     \
  ada/s-addope.o   \
  ada/s-assert.o   \
  ada/s-carun8.o   \
