@@ -1,3 +1,37 @@
+2015-01-06  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Check_Target): Improve error message when
+	there are mismatched targets between the on in the configuration
+	project file and the specified one, either in the main project
+	file or in the --target= switch.
+
+2015-01-06  Pascal Obry  <obry@adacore.com>
+
+	* prj-attr.adb, projects.texi, snames.ads-tmpl: Add Mode and
+	Install_Name attribute definitions.
+
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Wrap_Imported_Subprogram): Indicate that the
+	generated Import pragma for the internal imported procedure does
+	not come from an aspect, so that Is_Imported can be properly
+	set for it.
+
+2015-01-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch12.adb (Might_Inline_Subp): Record whether
+	any subprograms in the generic package are marked with
+	pragma Inline_Always (setting flag Has_Inline_Always).
+	(Analyze_Package_Instantiation): Add test of Has_Inline_Always
+	alongside existing test of Front_End_Inlining as alternative
+	conditions for setting Inline_Now. Also add test of
+	Has_Inline_Always along with Front_End_Inlining test as an
+	alternative condition for setting Needs_Body to False.
+
+2015-01-06  Tristan Gingold  <gingold@adacore.com>
+
+	* i-cpoint.adb (Copy_Array): Handle overlap.
+
 2015-01-06  Pascal Obry  <obry@adacore.com>
 
 	* bindgen.adb: Minor style fix.

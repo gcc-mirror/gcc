@@ -633,8 +633,9 @@ package body Prj.Conf is
          else
             if Tgt_Name /= No_Name then
                Raise_Invalid_Config
-                 ("invalid target name """
-                  & Get_Name_String (Tgt_Name) & """ in configuration");
+                 ("mismatched targets: """
+                  & Get_Name_String (Tgt_Name) & """ in configuration, """
+                  & Target & """ specified");
             else
                Raise_Invalid_Config
                  ("no target specified in configuration file");

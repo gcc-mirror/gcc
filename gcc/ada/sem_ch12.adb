@@ -3318,12 +3318,13 @@ package body Sem_Ch12 is
       Is_Actual_Pack : constant Boolean :=
                          Is_Internal (Defining_Entity (N));
 
-      Env_Installed    : Boolean := False;
-      Parent_Installed : Boolean := False;
-      Renaming_List    : List_Id;
-      Unit_Renaming    : Node_Id;
-      Needs_Body       : Boolean;
-      Inline_Now       : Boolean := False;
+      Env_Installed     : Boolean := False;
+      Parent_Installed  : Boolean := False;
+      Renaming_List     : List_Id;
+      Unit_Renaming     : Node_Id;
+      Needs_Body        : Boolean;
+      Inline_Now        : Boolean := False;
+      Has_Inline_Always : Boolean := False;
 
       Save_IPSM : constant Boolean := Ignore_Pragma_SPARK_Mode;
       --  Save flag Ignore_Pragma_SPARK_Mode for restore on exit
@@ -3371,6 +3372,12 @@ package body Sem_Ch12 is
             E := First_Entity (Gen_Unit);
             while Present (E) loop
                if Is_Subprogram (E) and then Is_Inlined (E) then
+                  --  Remember if there are any subprograms with Inline_Always
+
+                  if Has_Pragma_Inline_Always (E) then
+                     Has_Inline_Always := True;
+                  end if;
+
                   return True;
                end if;
 
@@ -3706,8 +3713,9 @@ package body Sem_Ch12 is
                end loop;
             end if;
 
-            --  If front-end inlining is enabled, and this is a unit for which
-            --  code will be generated, we instantiate the body at once.
+            --  If front-end inlining is enabled or there are any subprograms
+            --  marked with Inline_Always, and this is a unit for which code
+            --  will be generated, we instantiate the body at once.
 
             --  This is done if the instance is not the main unit, and if the
             --  generic is not a child unit of another generic, to avoid scope
@@ -3720,7 +3728,7 @@ package body Sem_Ch12 is
               and then not Is_Actual_Pack
             then
                if not Back_End_Inlining
-                 and then Front_End_Inlining
+                 and then (Front_End_Inlining or else Has_Inline_Always)
                  and then (Is_In_Main_Unit (N)
                             or else In_Main_Context (Current_Scope))
                  and then Nkind (Parent (N)) /= N_Compilation_Unit
@@ -3775,10 +3783,12 @@ package body Sem_Ch12 is
                           or else (Operating_Mode = Check_Semantics
                                     and then (ASIS_Mode or GNATprove_Mode)));
 
-            --  If front_end_inlining is enabled, do not instantiate body if
-            --  within a generic context.
+            --  If front-end inlining is enabled or there are any subprograms
+            --  marked with Inline_Always, do not instantiate body when within
+            --  a generic context.
 
-            if (Front_End_Inlining and then not Expander_Active)
+            if ((Front_End_Inlining or else Has_Inline_Always)
+                  and then not Expander_Active)
               or else Is_Generic_Unit (Cunit_Entity (Main_Unit))
             then
                Needs_Body := False;

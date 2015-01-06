@@ -1286,6 +1286,7 @@ package Snames is
    Name_Include_Path_File                  : constant Name_Id := N + $;
    Name_Inherit_Source_Path                : constant Name_Id := N + $;
    Name_Install                            : constant Name_Id := N + $;
+   Name_Install_Name                       : constant Name_Id := N + $;
    Name_Languages                          : constant Name_Id := N + $;
    Name_Language_Kind                      : constant Name_Id := N + $;
    Name_Leading_Library_Options            : constant Name_Id := N + $;

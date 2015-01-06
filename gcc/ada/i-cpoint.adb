@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,18 +102,33 @@ package body Interfaces.C.Pointers is
       Target  : Pointer;
       Length  : ptrdiff_t)
    is
-      T : Pointer := Target;
-      S : Pointer := Source;
+      T : Pointer;
+      S : Pointer;
 
    begin
-      if S = null or else T = null then
+      if Source = null or else Target = null then
          raise Dereference_Error;
 
-      else
+      elsif To_Addr (Target) <= To_Addr (Source) then
+         --  Forward copy
+         T := Target;
+         S := Source;
+
          for J in 1 .. Length loop
             T.all := S.all;
             Increment (T);
             Increment (S);
+         end loop;
+
+      else
+         --  Backward copy
+         T := Target + Length;
+         S := Source + Length;
+
+         for J in 1 .. Length loop
+            Decrement (T);
+            Decrement (S);
+            T.all := S.all;
          end loop;
       end if;
    end Copy_Array;
