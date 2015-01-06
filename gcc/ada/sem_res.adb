@@ -46,6 +46,7 @@ with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Output;   use Output;
+with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
@@ -8188,11 +8189,11 @@ package body Sem_Res is
    procedure Resolve_Generalized_Indexing (N : Node_Id; Typ : Entity_Id) is
       Indexing : constant Node_Id := Generalized_Indexing (N);
       Call     : Node_Id;
-      Indices  : List_Id;
+      Indexes  : List_Id;
       Pref     : Node_Id;
 
    begin
-      --  In ASIS mode, propagate the information about the indices back to
+      --  In ASIS mode, propagate the information about the indexes back to
       --  to the original indexing node. The generalized indexing is either
       --  a function call, or a dereference of one. The actuals include the
       --  prefix of the original node, which is the container expression.
@@ -8209,9 +8210,9 @@ package body Sem_Res is
          end loop;
 
          if Nkind (Call) = N_Function_Call then
-            Indices := Parameter_Associations (Call);
-            Pref := Remove_Head (Indices);
-            Set_Expressions (N, Indices);
+            Indexes := Parameter_Associations (Call);
+            Pref := Remove_Head (Indexes);
+            Set_Expressions (N, Indexes);
             Set_Prefix (N, Pref);
          end if;
 
@@ -8658,6 +8659,13 @@ package body Sem_Res is
         and then B_Typ = Standard_Boolean
         and then Nkind_In (N, N_Op_And, N_Op_Or)
       then
+         --  Mark the corresponding putative SCO operator as truly a logical
+         --  (and short-circuit) operator.
+
+         if Generate_SCO and then Comes_From_Source (N) then
+            Set_SCO_Logical_Operator (N);
+         end if;
+
          if Nkind (N) = N_Op_And then
             Rewrite (N,
               Make_And_Then (Sloc (N),

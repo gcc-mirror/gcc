@@ -1,3 +1,67 @@
+2015-01-06  Pierre-Marie Derodat  <derodat@adacore.com>
+
+	* scos.ads: Update documentation about the SCO table build
+	process and about table records format.
+	* par_sco.ads (SCO_Record): Rename to SCO_Record_Raw.
+	(SCO_Record_Filtered): New procedure.
+	(Set_SCO_Logical_Operator): New procedure.
+	(dsco): Update documentation.
+	* par_sco.adb: Update library-level comments.
+	(SCO_Generation_State_Type): New type.
+	(SCO_Generation_State): New variable.
+	(SCO_Raw_Table): New package instanciation.
+	(Condition_Pragma_Hash_Table): Rename to SCO_Raw_Hash_Table.
+	("<"): New.
+	(Tristate): New type.
+	(Is_Logical_Operator): Return Tristate and update documentation.
+	(Has_Decision): Update call to Is_Logical_Operator and complete
+	documentation.
+	(Set_Table_Entry): Rename to Set_Raw_Table_Entry, update
+	comment, add an assertion for state checking and change
+	references to SCO_Table into SCO_Raw_Table.
+	(dsco): Refactor to dump the raw and the filtered tables.
+	(Process_Decisions.Output_Decision_Operand): Handle putative
+	short-circuit operators.
+	(Process_Decisions.Output_Element): Update references
+	to Set_Table_Entry and to Condition_Pragma_Hash_Table.
+	(Process_Decisions.Process_Decision_Operand): Update call
+	to Is_Logical_Operator.
+	(Process_Decisions.Process_Node): Handle putative short-circuit
+	operators and change references to
+	SCO_Table into SCO_Raw_Table.
+	(SCO_Output): Add an assertion
+	for state checking and remove code that used to stamp out SCO entries.
+	(SCO_Pragma_Disabled): Change reference to SCO_Table
+	into SCO_Raw_Table.
+	(SCO_Record): Rename to SCO_Record_Raw,
+	add an assertion for state checking and change references
+	to SCO_Table into SCO_Raw_Table.
+	(Set_SCO_Condition): Add an assertion for state checking, update
+	references to Condition_Pragma_Hash_Table and change references to
+	SCO_Table into SCO_Raw_Table.
+	(Set_SCO_Pragma_Enabled): Add an assertion for state checking and
+	change references to SCO_Table into SCO_Raw_Table.
+	(Set_SCO_Logical_Operator): New procedure.
+	(Traverse_Declarations_Or_Statements.Set_Statement_Entry): Update
+	references to Set_Table_Entry and to Condition_Pragma_Hash_Table.
+	(SCO_Record_Fildered): New procedure.
+	* gnat1drv.adb (Gnat1drv): Invoke the SCO filtering pass.
+	* lib-writ.adb (Write_ALI): Invoke the SCO filtering pass and
+	output SCOs.
+	* par-load.adb (Load): Update reference to SCO_Record.
+	* par.adb (Par): Update reference to SCO_Record.
+	* put_scos.adb (Put_SCOs): Add an assertion to check that no
+	putative SCO condition reaches this end.
+	* sem_ch10.adb (Analyze_Proper_Body): Update reference to SCO_Record.
+	* sem_res.adb (Resolve_Logical_Op): Validate putative SCOs
+	when corresponding to an "and"/"or" operator affected by the
+	Short_Circuit_And_Or pragma.
+
+2015-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb (Analyze_Use_Package): Give more specific error
+	msg for attempted USE of generic subprogram or subprogram.
+
 2015-01-06  Robert Dewar  <dewar@adacore.com>
 
 	* s-valllu.adb, a-tiinau.adb, a-timoau.adb, a-ztinau.adb, a-ztmoau.adb,

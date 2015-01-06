@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -285,7 +285,7 @@ begin
             Main_Unit_Entity := Cunit_Entity (Unum);
 
             if Generate_SCO then
-               SCO_Record (Unum);
+               SCO_Record_Raw (Unum);
             end if;
          end if;
 
