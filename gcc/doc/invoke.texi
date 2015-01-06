@@ -277,7 +277,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
 -Wstrict-aliasing=n @gol -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
--Wsuggest-final-types @gol -Wsuggest-final-methods @gol
+-Wsuggest-final-types @gol -Wsuggest-final-methods @gol -Wsuggest-override @gol
 -Wmissing-format-attribute @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum -Wswitch-bool -Wsync-nand @gol
 -Wsystem-headers  -Wtrampolines  -Wtrigraphs  -Wtype-limits  -Wundef @gol
@@ -4281,6 +4281,10 @@ more effective with link time optimization, where the information about the
 class hierarchy graph is more complete. It is recommended to first consider
 suggestions of @option{-Wsuggest-final-types} and then rebuild with new
 annotations.
+
+@item -Wsuggest-override
+Warn about overriding virtual functions that are not marked with the override
+keyword.
 
 @item -Warray-bounds
 @opindex Wno-array-bounds

@@ -1,5 +1,11 @@
 2015-01-05  Trevor Saunders  <tsaunders@mozilla.com>
 
+	PR c++/31397
+	* class.c (check_for_override): Warn when a virtual function is an
+	override not marked override.
+
+2015-01-05  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* class.c (warn_hidden): Use auto_vec<tree> instead of tree_list to
 	hold base_fndecls.
 	(get_basefndecls): Adjust.
