@@ -6600,13 +6600,22 @@ package body Sem_Ch6 is
       begin
          --  In some cases a type imported through a limited_with clause, and
          --  its nonlimited view are both visible, for example in an anonymous
-         --  access-to-class-wide type in a formal. Both entities designate the
-         --  same type.
+         --  access-to-class-wide type in a formal, or when building the body
+         --  for a subprogram renaming after the subprogram has been frozen.
+         --  In these cases Both entities designate the same type. In addition,
+         --  if one of them is an actual in an instance, it may be a subtype of
+         --  the non-limited view of the other.
 
-         if From_Limited_With (T1) and then T2 = Available_View (T1) then
+         if From_Limited_With (T1)
+           and then (T2 = Available_View (T1)
+                      or else Is_Subtype_Of (T2, Available_View (T1)))
+         then
             return True;
 
-         elsif From_Limited_With (T2) and then T1 = Available_View (T2) then
+         elsif From_Limited_With (T2)
+           and then (T1 = Available_View (T2)
+                      or else Is_Subtype_Of (T1, Available_View (T2)))
+         then
             return True;
 
          elsif From_Limited_With (T1)

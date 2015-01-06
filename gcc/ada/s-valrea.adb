@@ -377,12 +377,30 @@ package body System.Val_Real is
    ----------------
 
    function Value_Real (Str : String) return Long_Long_Float is
-      V : Long_Long_Float;
-      P : aliased Integer := Str'First;
    begin
-      V := Scan_Real (Str, P'Access, Str'Last);
-      Scan_Trailing_Blanks (Str, P);
-      return V;
+      --  We have to special case Str'Last = Positive'Last because the normal
+      --  circuit ends up setting P to Str'Last + 1 which is out of bounds. We
+      --  deal with this by converting to a subtype which fixes the bounds.
+
+      if Str'Last = Positive'Last then
+         declare
+            subtype NT is String (1 .. Str'Length);
+         begin
+            return Value_Real (NT (Str));
+         end;
+
+      --  Normal case where Str'Last < Positive'Last
+
+      else
+         declare
+            V : Long_Long_Float;
+            P : aliased Integer := Str'First;
+         begin
+            V := Scan_Real (Str, P'Access, Str'Last);
+            Scan_Trailing_Blanks (Str, P);
+            return V;
+         end;
+      end if;
    end Value_Real;
 
 end System.Val_Real;

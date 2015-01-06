@@ -11491,11 +11491,14 @@ package body Sem_Prag is
                   E := Base_Type (E);
                end if;
 
-               Set_Has_Volatile_Components (E);
+               --  Atomic implies both Independent and Volatile
 
                if Prag_Id = Pragma_Atomic_Components then
                   Set_Has_Atomic_Components (E);
+                  Set_Has_Independent_Components (E);
                end if;
+
+               Set_Has_Volatile_Components (E);
 
             else
                Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
@@ -14977,11 +14980,13 @@ package body Sem_Prag is
             D := Declaration_Node (E);
             K := Nkind (D);
 
+            --  The flag is set on the base type, or on the object
+
             if K = N_Full_Type_Declaration
               and then (Is_Array_Type (E) or else Is_Record_Type (E))
             then
-               Independence_Checks.Append ((N, Base_Type (E)));
                Set_Has_Independent_Components (Base_Type (E));
+               Independence_Checks.Append ((N, Base_Type (E)));
 
                --  For record type, set all components independent
 
@@ -14998,8 +15003,8 @@ package body Sem_Prag is
               and then Nkind (Object_Definition (D)) =
                                            N_Constrained_Array_Definition
             then
-               Independence_Checks.Append ((N, Base_Type (Etype (E))));
-               Set_Has_Independent_Components (Base_Type (Etype (E)));
+               Set_Has_Independent_Components (E);
+               Independence_Checks.Append ((N, E));
 
             else
                Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
