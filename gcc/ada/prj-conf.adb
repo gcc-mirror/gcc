@@ -1652,6 +1652,8 @@ package body Prj.Conf is
 
       --  Parse the user project tree
 
+      Project_Node_Tree.Incomplete_With := False;
+      Env.Flags.Incomplete_Withs := False;
       Prj.Initialize (Project_Tree);
 
       Main_Project := No_Project;

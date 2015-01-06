@@ -5065,23 +5065,22 @@ package body Sem_Util is
          end if;
       end Select_Node;
 
-   --  Start of processing for Designate_Next_Unit
+   --  Start of processing for Designate_Same_Unit
 
    begin
-      if (K1 = N_Identifier or else K1 = N_Defining_Identifier)
+      if Nkind_In (K1, N_Identifier, N_Defining_Identifier)
            and then
-         (K2 = N_Identifier or else K2 = N_Defining_Identifier)
+         Nkind_In (K2, N_Identifier, N_Defining_Identifier)
       then
          return Chars (Name1) = Chars (Name2);
 
-      elsif
-         (K1 = N_Expanded_Name      or else
-          K1 = N_Selected_Component or else
-          K1 = N_Defining_Program_Unit_Name)
-        and then
-         (K2 = N_Expanded_Name      or else
-          K2 = N_Selected_Component or else
-          K2 = N_Defining_Program_Unit_Name)
+      elsif Nkind_In (K1, N_Expanded_Name,
+                          N_Selected_Component,
+                          N_Defining_Program_Unit_Name)
+              and then
+            Nkind_In (K2, N_Expanded_Name,
+                          N_Selected_Component,
+                          N_Defining_Program_Unit_Name)
       then
          return
            (Chars (Select_Node (Name1)) = Chars (Select_Node (Name2)))
