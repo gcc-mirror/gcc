@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -114,12 +114,14 @@ package body Ada.Real_Time is
 
    function "/" (Left, Right : Time_Span) return Integer is
       pragma Unsuppress (Overflow_Check);
+      pragma Unsuppress (Division_Check);
    begin
       return Integer (Duration (Left) / Duration (Right));
    end "/";
 
    function "/" (Left : Time_Span; Right : Integer) return Time_Span is
       pragma Unsuppress (Overflow_Check);
+      pragma Unsuppress (Division_Check);
    begin
       return Time_Span (Duration (Left) / Right);
    end "/";

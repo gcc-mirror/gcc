@@ -9050,7 +9050,9 @@ package body Sem_Prag is
 
          if C = Elaboration_Check and then SPARK_Mode = On then
             Error_Pragma_Arg
-              ("Suppress of Elaboration_Check ignored in SPARK??", Arg1);
+              ("Suppress of Elaboration_Check ignored in SPARK??",
+               "\elaboration checking rules are statically enforced "
+               & "(SPARK RM 7.7)", Arg1);
          end if;
 
          --  One-argument case
