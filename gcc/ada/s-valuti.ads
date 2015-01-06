@@ -71,6 +71,9 @@ package System.Val_Util is
    --  special case of an all-blank string, and Ptr is unchanged, and hence
    --  is greater than Max as required in this case. Constraint_Error is also
    --  raised in this case.
+   --
+   --  This routine must not be called with Str'Last = Positive'Last. There is
+   --  no check for this case, the caller must ensure this condition is met.
 
    procedure Scan_Plus_Sign
      (Str   : String;
@@ -95,6 +98,9 @@ package System.Val_Util is
    --  returning a suitable large value. If the base is zero, then any value
    --  is allowed, and otherwise the large value will either cause underflow
    --  or overflow during the scaling process which is fine.
+   --
+   --  This routine must not be called with Str'Last = Positive'Last. There is
+   --  no check for this case, the caller must ensure this condition is met.
 
    procedure Scan_Trailing_Blanks (Str : String; P : Positive);
    --  Checks that the remainder of the field Str (P .. Str'Last) is all
@@ -113,5 +119,8 @@ package System.Val_Util is
    --  where the underscore is invalid, Constraint_Error is raised with Ptr
    --  set appropriately, otherwise control returns with P incremented past
    --  the underscore.
+   --
+   --  This routine must not be called with Str'Last = Positive'Last. There is
+   --  no check for this case, the caller must ensure this condition is met.
 
 end System.Val_Util;

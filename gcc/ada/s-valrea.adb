@@ -152,6 +152,13 @@ package body System.Val_Real is
    --  Start of processing for System.Scan_Real
 
    begin
+      --  We do not tolerate strings with Str'Last = Positive'Last
+
+      if Str'Last = Positive'Last then
+         raise Program_Error with
+           "string upper bound is Positive'Last, not supported";
+      end if;
+
       --  We call the floating-point processor reset routine so that we can
       --  be sure the floating-point processor is properly set for conversion
       --  calls. This is notably need on Windows, where calls to the operating

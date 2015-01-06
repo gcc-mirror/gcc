@@ -3457,18 +3457,17 @@ package body Sem_Ch8 is
       --  points of call within an instance. Wrappers are generated if formal
       --  subprogram is subject to axiomatization.
 
+      --  The types in the wrapper profiles are obtained from (instances of)
+      --  the types of the formal subprogram.
+
       if Is_Actual
         and then GNATprove_Mode
         and then Present (Containing_Package_With_Ext_Axioms (Formal_Spec))
         and then not Inside_A_Generic
       then
          if Ekind (Old_S) = E_Function then
-            Rewrite (N, Build_Function_Wrapper (New_S, Old_S));
+            Rewrite (N, Build_Function_Wrapper (Formal_Spec, Old_S));
             Analyze (N);
-
-         --  For wrappers of operators, the types are obtained from (the
-         --  instances of) the types of the formal subprogram, not from the
-         --  actual subprogram, that carries predefined types.
 
          elsif Ekind (Old_S) = E_Operator then
             Rewrite (N, Build_Operator_Wrapper (Formal_Spec, Old_S));

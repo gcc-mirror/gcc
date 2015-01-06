@@ -65,6 +65,13 @@ package body System.Val_Uns is
       --  Digit value
 
    begin
+      --  We do not tolerate strings with Str'Last = Positive'Last
+
+      if Str'Last = Positive'Last then
+         raise Program_Error with
+           "string upper bound is Positive'Last, not supported";
+      end if;
+
       P := Ptr.all;
       Uval := Character'Pos (Str (P)) - Character'Pos ('0');
       P := P + 1;
