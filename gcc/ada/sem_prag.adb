@@ -8857,7 +8857,7 @@ package body Sem_Prag is
                   raise Pragma_Exit;
                end if;
 
-            --  Case of No_Specification_Of_Aspect => Identifier.
+            --  Case of No_Specification_Of_Aspect => aspect-identifier
 
             elsif Id = Name_No_Specification_Of_Aspect then
                declare
@@ -8877,6 +8877,8 @@ package body Sem_Prag is
                   end if;
                end;
 
+            --  Case of No_Use_Of_Attribute => attribute-identifier
+
             elsif Id = Name_No_Use_Of_Attribute then
                if Nkind (Expr) /= N_Identifier
                  or else not Is_Attribute_Name (Chars (Expr))
@@ -8886,6 +8888,15 @@ package body Sem_Prag is
                else
                   Set_Restriction_No_Use_Of_Attribute (Expr, Warn);
                end if;
+
+            --  Case of No_Use_Of_Entity => fully-qualified-name. Note that the
+            --  parser already processed this case commpletely, including error
+            --  checking and making an entry in the No_Use_Of_Entity table.
+
+            elsif Id = Name_No_Use_Of_Entity then
+               null;
+
+            --  Case of No_Use_Of_Pragma => pragma-identifier
 
             elsif Id = Name_No_Use_Of_Pragma then
                if Nkind (Expr) /= N_Identifier

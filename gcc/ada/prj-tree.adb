@@ -1151,6 +1151,7 @@ package body Prj.Tree is
    is
       With_Clause : Project_Node_Id;
       Result      : Project_Node_Id := Empty_Node;
+      Decl        : Project_Node_Id;
 
    begin
       --  First check all the imported projects
@@ -1167,9 +1168,14 @@ package body Prj.Tree is
                return Result;
             end if;
 
-            Result :=
-              Extended_Project_Of
-                (Project_Declaration_Of (Result, In_Tree), In_Tree);
+            Decl := Project_Declaration_Of (Result, In_Tree);
+
+            --  Do not try to check for an extended project, if the project
+            --  does not have yet a project declaration.
+
+            exit when Decl = Empty_Node;
+
+            Result := Extended_Project_Of (Decl, In_Tree);
          end loop;
 
          With_Clause := Next_With_Clause_Of (With_Clause, In_Tree);
