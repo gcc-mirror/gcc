@@ -18,7 +18,7 @@
 # code, 0 otherwise.
 
 proc check_effective_target_fsanitize_thread {} {
-    return [check_no_compiler_messages fsanitize_thread executable {
+    return [check_runtime fsanitize_thread {
 	int main (void) { return 0; }
     } "-fsanitize=thread"]
 }
