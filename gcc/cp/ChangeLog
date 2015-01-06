@@ -1,5 +1,8 @@
 2015-01-06  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_nested_name_specifier_opt): Diagnose invalid
+	template-ids.
+
 	PR c++/64455
 	* pt.c (type_dependent_expression_p): Handle variable templates.
 	* constexpr.c (potential_constant_expression_1): Use it.
