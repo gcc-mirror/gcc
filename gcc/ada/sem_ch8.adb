@@ -3454,11 +3454,12 @@ package body Sem_Ch8 is
 
       --  In GNATprove mode, the renamings of actual subprograms are replaced
       --  with wrapper functions that make it easier to propagate axioms to the
-      --  points of call within an instance.
+      --  points of call within an instance. Wrappers are generated if formal
+      --  subprogram is subject to axiomatization.
 
       if Is_Actual
         and then GNATprove_Mode
-        and then Present (Containing_Package_With_Ext_Axioms (Old_S))
+        and then Present (Containing_Package_With_Ext_Axioms (Formal_Spec))
         and then not Inside_A_Generic
       then
          if Ekind (Old_S) = E_Function then

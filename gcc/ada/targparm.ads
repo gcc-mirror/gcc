@@ -349,8 +349,6 @@ package Targparm is
    --    The calls to __gnat_initialize and __gnat_finalize are omitted
    --
    --    All finalization and initialization (controlled types) is omitted
-   --
-   --    The routine __gnat_handler_installed is not imported
 
    Preallocated_Stacks_On_Target : Boolean := False;
    --  If this flag is True, then the expander preallocates all task stacks

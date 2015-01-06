@@ -1,3 +1,11 @@
+2015-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb: Code clean up.
+
+2015-01-06  Tristan Gingold  <gingold@adacore.com>
+
+	* targparm.ads: Remove obsolete comment.
+
 2015-01-06  Olivier Hainque  <hainque@adacore.com>
 
         * gcc-interface/decl.c (gnat_to_gnu_entity, case E_Variable): When
