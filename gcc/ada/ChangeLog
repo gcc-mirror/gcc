@@ -1,3 +1,14 @@
+2015-01-06  Olivier Hainque  <hainque@adacore.com>
+
+        * gcc-interface/decl.c (gnat_to_gnu_entity, case E_Variable): When
+        constructing a ref to variable, update inner_const_flag from the
+        variable TREE_READONLY attribute.
+        * gcc-interface/targtyps.c (WIDEST_HARDWARE_FP_SIZE): Remove default
+        definition.
+        (get_target_float_size): Remove.
+        (get_target_double_size): Remove.
+        (get_target_long_double_size): Remove.
+
 2015-01-06  Pascal Obry  <obry@adacore.com>
 
 	* adaint.c (ProcListEvt): Set to NULL.
