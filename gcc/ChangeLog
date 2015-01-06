@@ -1,3 +1,8 @@
+2015-01-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine.c (combine_validate_cost): Do not count the cost of a
+	split I2 twice.  Do not display it twice in the dump, either.
+
 2015-01-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Revert parts of r219199.

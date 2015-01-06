@@ -885,6 +885,12 @@ combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
       i1_cost = i0_cost = 0;
     }
 
+  /* If we have split a PARALLEL I2 to I1,I2, we have counted its cost twice;
+     correct that.  */
+  if (old_cost && i1 && INSN_UID (i1) == INSN_UID (i2))
+    old_cost -= i1_cost;
+
+
   /* Calculate the replacement insn_rtx_costs.  */
   new_i3_cost = insn_rtx_cost (newpat, optimize_this_for_speed_p);
   if (newi2pat)
@@ -924,14 +930,14 @@ combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
 	       reject ? "rejecting" : "allowing");
       if (i0)
 	fprintf (dump_file, "%d, ", INSN_UID (i0));
-      if (i1)
+      if (i1 && INSN_UID (i1) != INSN_UID (i2))
 	fprintf (dump_file, "%d, ", INSN_UID (i1));
       fprintf (dump_file, "%d and %d\n", INSN_UID (i2), INSN_UID (i3));
 
       fprintf (dump_file, "original costs ");
       if (i0)
 	fprintf (dump_file, "%d + ", i0_cost);
-      if (i1)
+      if (i1 && INSN_UID (i1) != INSN_UID (i2))
 	fprintf (dump_file, "%d + ", i1_cost);
       fprintf (dump_file, "%d + %d = %d\n", i2_cost, i3_cost, old_cost);
 
