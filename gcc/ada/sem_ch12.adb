@@ -5125,10 +5125,10 @@ package body Sem_Ch12 is
    ----------------------------
 
    function Build_Function_Wrapper
-     (Formal : Entity_Id;
-      Actual : Entity_Id) return Node_Id
+     (Formal_Subp : Entity_Id;
+      Actual_Subp : Entity_Id) return Node_Id
    is
-      Loc       : constant Source_Ptr := Sloc (Formal);
+      Loc       : constant Source_Ptr := Sloc (Formal_Subp);
       Actuals   : List_Id;
       Decl      : Node_Id;
       Func_Name : Node_Id;
@@ -5141,22 +5141,22 @@ package body Sem_Ch12 is
       New_F     : Entity_Id;
 
    begin
-      Func_Name := New_Occurrence_Of (Actual, Loc);
+      Func_Name := New_Occurrence_Of (Actual_Subp, Loc);
 
-      Func := Make_Defining_Identifier (Loc, Chars (Formal));
+      Func := Make_Defining_Identifier (Loc, Chars (Formal_Subp));
       Set_Ekind (Func, E_Function);
       Set_Is_Generic_Actual_Subprogram (Func);
 
       Actuals := New_List;
       Profile := New_List;
 
-      if Present (Actual) then
-         Act_F := First_Formal (Actual);
+      if Present (Actual_Subp) then
+         Act_F := First_Formal (Actual_Subp);
       else
          Act_F := Empty;
       end if;
 
-      Form_F := First_Formal (Formal);
+      Form_F := First_Formal (Formal_Subp);
       while Present (Form_F) loop
 
          --  Create new formal for profile of wrapper, and add a reference
@@ -5186,7 +5186,7 @@ package body Sem_Ch12 is
           Defining_Unit_Name       => Func,
           Parameter_Specifications => Profile,
           Result_Definition        =>
-            Make_Identifier (Loc, Chars (Etype (Formal))));
+            Make_Identifier (Loc, Chars (Etype (Formal_Subp))));
 
       Decl :=
         Make_Expression_Function (Loc,
@@ -5204,13 +5204,15 @@ package body Sem_Ch12 is
    ----------------------------
 
    function Build_Operator_Wrapper
-     (Formal : Entity_Id;
-      Actual : Entity_Id) return Node_Id
+     (Formal_Subp : Entity_Id;
+      Actual_Subp : Entity_Id) return Node_Id
    is
-      Loc       : constant Source_Ptr := Sloc (Formal);
-      Typ       : constant Entity_Id := Etype (Formal);
+      Loc       : constant Source_Ptr := Sloc (Formal_Subp);
+      Ret_Type  : constant Entity_Id := Get_Instance_Of (Etype (Formal_Subp));
+      Op_Type   : constant Entity_Id := Get_Instance_Of
+                                          (Etype (First_Formal (Formal_Subp)));
       Is_Binary : constant Boolean :=
-                    Present (Next_Formal (First_Formal (Formal)));
+                    Present (Next_Formal (First_Formal (Formal_Subp)));
 
       Decl    : Node_Id;
       Expr    : Node_Id;
@@ -5221,7 +5223,7 @@ package body Sem_Ch12 is
       L, R    : Node_Id;
 
    begin
-      Op_Name := Chars (Actual);
+      Op_Name := Chars (Actual_Subp);
 
       --  Create entities for wrapper function and its formals
 
@@ -5230,7 +5232,7 @@ package body Sem_Ch12 is
       L  := New_Occurrence_Of (F1, Loc);
       R  := New_Occurrence_Of (F2, Loc);
 
-      Func := Make_Defining_Identifier (Loc, Chars (Formal));
+      Func := Make_Defining_Identifier (Loc, Chars (Formal_Subp));
       Set_Ekind (Func, E_Function);
       Set_Is_Generic_Actual_Subprogram (Func);
 
@@ -5240,29 +5242,25 @@ package body Sem_Ch12 is
           Parameter_Specifications => New_List (
             Make_Parameter_Specification (Loc,
                Defining_Identifier => F1,
-               Parameter_Type      =>
-                 Make_Identifier (Loc,
-                   Chars => Chars (Etype (First_Formal (Formal)))))),
-          Result_Definition        => Make_Identifier (Loc, Chars (Typ)));
+               Parameter_Type      => New_Occurrence_Of (Op_Type, Loc))),
+          Result_Definition        =>  New_Occurrence_Of (Ret_Type, Loc));
 
       if Is_Binary then
          Append_To (Parameter_Specifications (Spec),
             Make_Parameter_Specification (Loc,
               Defining_Identifier => F2,
-              Parameter_Type      =>
-                Make_Identifier (Loc,
-                  Chars (Etype (Next_Formal (First_Formal (Formal)))))));
+              Parameter_Type      => New_Occurrence_Of (Op_Type, Loc)));
       end if;
 
       --  Build expression as a function call, or as an operator node
       --  that corresponds to the name of the actual, starting with
       --  binary operators.
 
-      if Present (Actual) and then Op_Name not in Any_Operator_Name then
+      if Op_Name not in Any_Operator_Name then
          Expr :=
            Make_Function_Call (Loc,
              Name                   =>
-               New_Occurrence_Of (Entity (Actual), Loc),
+               New_Occurrence_Of (Actual_Subp, Loc),
              Parameter_Associations => New_List (L));
 
          if Is_Binary then
@@ -5320,13 +5318,6 @@ package body Sem_Ch12 is
          elsif Op_Name = Name_Op_Not then
             Expr := Make_Op_Not   (Loc, Right_Opnd => L);
          end if;
-      end if;
-
-      --  Propagate visible entity to operator node, either from a
-      --  given actual or from a default.
-
-      if Is_Entity_Name (Actual) and then Nkind (Expr) in N_Op then
-         Set_Entity (Expr, Entity (Actual));
       end if;
 
       Decl :=
