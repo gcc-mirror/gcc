@@ -2888,6 +2888,10 @@ vax-*-openbsd*)
 	extra_options="${extra_options} openbsd.opt"
 	use_collect2=yes
 	;;
+visium-*-elf*)
+	tm_file="dbxelf.h elfos.h ${tm_file} visium/elf.h newlib-stdint.h"
+	tmake_file="visium/t-visium visium/t-crtstuff"
+	;;
 xstormy16-*-elf)
 	# For historical reasons, the target files omit the 'x'.
 	tm_file="dbxelf.h elfos.h newlib-stdint.h stormy16/stormy16.h"

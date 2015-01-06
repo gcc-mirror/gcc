@@ -1,3 +1,15 @@
+2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.gcc: Add Visium support.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+	* doc/extend.texi (interrupt attribute): Add Visium.
+	* doc/invoke.texi: Document Visium options.
+	* doc/install.texi: Document Visium target.
+	* doc/md.texi: Document Visium constraints.
+	* common/config/visium: New directory.
+	* config/visium: Likewise.
+
 2015-01-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Handle more cases

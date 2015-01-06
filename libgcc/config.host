@@ -1235,6 +1235,10 @@ vax-*-netbsdelf*)
 	;;
 vax-*-openbsd*)
 	;;
+visium-*-elf*)
+        extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o"
+        tmake_file="visium/t-visium t-fdpbit"
+        ;;
 xstormy16-*-elf)
 	tmake_file="stormy16/t-stormy16 t-fdpbit"
 	;;

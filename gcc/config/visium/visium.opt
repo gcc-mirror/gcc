@@ -1,0 +1,82 @@
+; Options for Visium.
+; Copyright (C) 2005-2015 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it
+; under the terms of the GNU General Public License as published
+; by the Free Software Foundation; either version 3, or (at your
+; option) any later version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT
+; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+; License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.  */
+
+HeaderInclude
+config/visium/visium-opts.h
+
+mdebug
+Target RejectNegative
+Link with libc.a and libdebug.a
+
+msim
+Target RejectNegative
+Link with libc.a and libsim.a
+
+mfpu
+Target Report Mask(FPU)
+Use hardware FP (default)
+
+mhard-float
+Target RejectNegative Mask(FPU) MaskExists
+Use hardware FP
+
+msoft-float
+Target RejectNegative InverseMask(FPU)
+Do not use hardware FP
+
+mcpu=
+Target RejectNegative Joined Var(visium_cpu_and_features) Enum(visium_processor_type) Init(PROCESSOR_GR5)
+Use features of and schedule code for given CPU
+
+mtune=
+Target RejectNegative Joined Var(visium_cpu) Enum(visium_processor_type) Init(PROCESSOR_GR5)
+Schedule code for given CPU
+
+Enum
+Name(visium_processor_type) Type(enum processor_type)
+
+EnumValue
+Enum(visium_processor_type) String(mcm) Value(PROCESSOR_GR5)
+
+EnumValue
+Enum(visium_processor_type) String(gr5) Value(PROCESSOR_GR5)
+
+EnumValue
+Enum(visium_processor_type) String(gr6) Value(PROCESSOR_GR6)
+
+msv-mode
+Target Mask(SV_MODE)
+Generate code for the supervisor mode (default)
+
+muser-mode
+Target InverseMask(SV_MODE)
+Generate code for the user mode
+
+menable-trampolines
+Target RejectNegative
+Only retained for backward compatibility.
+
+Mask(MCM)
+; Generate code for the MCM
+
+Mask(BMI)
+; Generate the Block Move Instructions
+
+Mask(FPU_IEEE)
+; Generate code for an IEEE-compliant FPU
