@@ -2657,12 +2657,6 @@ package body Sem_Ch3 is
                   Add_RACW_Features (Def_Id);
                end if;
 
-               --  Set no strict aliasing flag if config pragma seen
-
-               if Opt.No_Strict_Aliasing then
-                  Set_No_Strict_Aliasing (Base_Type (Def_Id));
-               end if;
-
             when N_Array_Type_Definition =>
                Array_Type_Declaration (T, Def);
 

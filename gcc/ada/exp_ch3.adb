@@ -2391,11 +2391,43 @@ package body Exp_Ch3 is
                   --  such case the initialization of the _parent field was not
                   --  generated.
 
-                  if not Is_Interface (Etype (Rec_Ent))
-                    and then Nkind (First (Stmts)) = N_Procedure_Call_Statement
-                    and then Is_Init_Proc (Name (First (Stmts)))
-                  then
-                     Prepend_To (Body_Stmts, Remove_Head (Stmts));
+                  if not Is_Interface (Etype (Rec_Ent)) then
+                     declare
+                        Parent_IP : constant Name_Id :=
+                                      Make_Init_Proc_Name (Etype (Rec_Ent));
+                        Stmt      : Node_Id := First (Stmts);
+                        IP_Call   : Node_Id := Empty;
+                        IP_Stmts  : List_Id;
+
+                     begin
+                        --  Look for a call to the parent IP at the beginning
+                        --  of Stmts associated with the record extension
+
+                        while Present (Stmt) loop
+                           if Nkind (Stmt) = N_Procedure_Call_Statement
+                             and then Chars (Name (Stmt)) = Parent_IP
+                           then
+                              IP_Call := Stmt;
+                              exit;
+                           end if;
+
+                           Next (Stmt);
+                        end loop;
+
+                        --  If found then move it to the beginning of the
+                        --  statements of this IP routine
+
+                        if Present (IP_Call) then
+                           IP_Stmts := New_List;
+                           loop
+                              Stmt := Remove_Head (Stmts);
+                              Append_To (IP_Stmts, Stmt);
+                              exit when Stmt = IP_Call;
+                           end loop;
+
+                           Prepend_List_To (Body_Stmts, IP_Stmts);
+                        end if;
+                     end;
                   end if;
 
                   Append_List_To (Body_Stmts, Stmts);
