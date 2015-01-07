@@ -31,7 +31,7 @@ the JIT library like this:
   cd build
   ../src/configure \
      --enable-host-shared \
-     --enable-languages=jit \
+     --enable-languages=jit,c++ \
      --disable-bootstrap \
      --enable-checking=release \
      --prefix=$PREFIX
@@ -54,10 +54,19 @@ Here's what those configuration options mean:
   position-independent code, which incurs a slight performance hit,
   but it necessary for a shared library.
 
-.. option:: --enable-languages=jit
+.. option:: --enable-languages=jit,c++
 
   This specifies which frontends to build.  The JIT library looks like
   a frontend to the rest of the code.
+
+  The C++ portion of the JIT test suite requires the C++ frontend to be
+  enabled at configure-time, or you may see errors like this when
+  running the test suite:
+
+  .. code-block:: console
+
+    xgcc: error: /home/david/jit/src/gcc/testsuite/jit.dg/test-quadratic.cc: C++ compiler not installed on this system
+    c++: error trying to exec 'cc1plus': execvp: No such file or directory
 
 .. option:: --disable-bootstrap
 

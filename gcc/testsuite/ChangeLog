@@ -1,5 +1,19 @@
 2015-01-07  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit.dg/jit.exp: Load wrapper.exp with %{tool} set to "g++"
+	rather than "jit".  Load g++.exp, and call g++_init.
+	Run test-*.cc files within the testsuite and *.cc files within
+	docs/examples.
+	(jit-dg-test): Drop the addition of -fgnu89-inline to
+	DEFAULT_CFLAGS in favor of adding it to additional_flags, only
+	doing it when compiling C testcases (since g++ does not handle
+	it).  Reset "orig_environment_saved" so that LD_LIBRARY_PATH
+	is restored to the value after g++_init ran, rather than the
+	value before g++_init ran.  Return a list of
+	$comp_output $output_file, as dg-test assumes.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit.dg/harness.h (CHECK_NON_NULL): Add __func__ to output, to
 	make it easier to figure out the origin of each test result when
 	running test-combination.c and test-threads.c.
