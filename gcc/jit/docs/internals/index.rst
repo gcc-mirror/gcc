@@ -116,7 +116,7 @@ and once a test has been compiled, you can debug it directly:
            LD_LIBRARY_PATH=. \
            LIBRARY_PATH=. \
              gdb --args \
-               testsuite/jit/test-factorial.exe
+               testsuite/jit/test-factorial.c.exe
 
 Running under valgrind
 **********************
@@ -152,11 +152,11 @@ For example, the following invocation verbosely runs the testcase
 
   $ less testsuite/jit/jit.sum
   (...other results...)
-  XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.exe.valgrind.txt: definitely lost: 8 bytes in 1 blocks
-  XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.exe.valgrind.txt: unsuppressed errors: 1
+  XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.c.exe.valgrind.txt: definitely lost: 8 bytes in 1 blocks
+  XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.c.exe.valgrind.txt: unsuppressed errors: 1
   (...other results...)
 
-  $ less testsuite/jit/test-sum-of-squares.exe.valgrind.txt
+  $ less testsuite/jit/test-sum-of-squares.c.exe.valgrind.txt
   (...shows full valgrind report for this test case...)
 
 When running under valgrind, it's best to have configured gcc with
