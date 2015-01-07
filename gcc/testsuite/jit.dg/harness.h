@@ -39,11 +39,13 @@ static char test[1024];
   do {                                       \
     if ((PTR) != NULL)                       \
       {                                      \
-	pass ("%s: %s is non-null", test, #PTR); \
+	pass ("%s: %s: %s is non-null",	     \
+	      test, __func__, #PTR);	     \
       }                                      \
     else                                     \
       {                                      \
-	fail ("%s: %s is NULL", test, #PTR); \
+	fail ("%s: %s: %s is NULL",	     \
+	      test, __func__, #PTR);	     \
 	abort ();                            \
     }                                        \
   } while (0)
@@ -52,11 +54,13 @@ static char test[1024];
   do {                                       \
     if ((ACTUAL) == (EXPECTED))              \
       {                                      \
-	pass ("%s: actual: %s == expected: %s", test, #ACTUAL, #EXPECTED); \
+	pass ("%s: %s: actual: %s == expected: %s", \
+	      test, __func__, #ACTUAL, #EXPECTED);  \
       }                                      \
     else                                     \
       {                                        \
-	fail ("%s: actual: %s != expected: %s", test, #ACTUAL, #EXPECTED); \
+	fail ("%s: %s: actual: %s != expected: %s", \
+	      test, __func__, #ACTUAL, #EXPECTED);  \
 	fprintf (stderr, "incorrect value\n"); \
 	abort ();                              \
     }                                        \
@@ -68,34 +72,36 @@ static char test[1024];
     double actual = (ACTUAL);		     \
     if (abs (actual - expected) < 0.00001)   \
       {                                      \
-	pass ("%s: actual: %s == expected: %s", test, #ACTUAL, #EXPECTED); \
+	pass ("%s: %s: actual: %s == expected: %s", \
+	      __func__, test, #ACTUAL, #EXPECTED);  \
       }                                      \
     else                                     \
       {                                      \
-	fail ("%s: actual: %s != expected: %s", test, #ACTUAL, #EXPECTED); \
+	fail ("%s: %s: actual: %s != expected: %s", \
+	      __func__, test, #ACTUAL, #EXPECTED);	   \
 	fprintf (stderr, "incorrect value: %f\n", actual); \
 	abort ();                            \
     }                                        \
   } while (0)
 
 #define CHECK_STRING_VALUE(ACTUAL, EXPECTED) \
-  check_string_value ((ACTUAL), (EXPECTED));
+  check_string_value (__func__, (ACTUAL), (EXPECTED));
 
 #define CHECK_STRING_STARTS_WITH(ACTUAL, EXPECTED_PREFIX) \
-  check_string_starts_with ((ACTUAL), (EXPECTED_PREFIX));
+  check_string_starts_with (__func__, (ACTUAL), (EXPECTED_PREFIX));
 
 #define CHECK_STRING_CONTAINS(ACTUAL, EXPECTED_SUBSTRING) \
-  check_string_contains (#ACTUAL, (ACTUAL), (EXPECTED_SUBSTRING));
+  check_string_contains (__func__, #ACTUAL, (ACTUAL), (EXPECTED_SUBSTRING));
 
 #define CHECK(COND) \
   do {					\
     if (COND)				\
       {				\
-	pass ("%s: %s", test, #COND);	\
+	pass ("%s: %s: %s", test, __func__, #COND);	\
       }				\
     else				\
       {				\
-	fail ("%s: %s", test, #COND);	\
+	fail ("%s: %s: %s", test, __func__, #COND);	\
 	abort ();			\
       }				\
   } while (0)
@@ -107,14 +113,17 @@ create_code (gcc_jit_context *ctxt, void * user_data);
 extern void
 verify_code (gcc_jit_context *ctxt, gcc_jit_result *result);
 
-extern void check_string_value (const char *actual, const char *expected);
+extern void check_string_value (const char *funcname,
+				const char *actual, const char *expected);
 
 extern void
-check_string_starts_with (const char *actual,
+check_string_starts_with (const char *funcname,
+			  const char *actual,
 			  const char *expected_prefix);
 
 extern void
-check_string_contains (const char *name,
+check_string_contains (const char *funcname,
+		       const char *name,
 		       const char *actual,
 		       const char *expected_substring);
 
@@ -124,17 +133,20 @@ check_string_contains (const char *name,
    temporarily turning off this part of harness.h.  */
 #ifndef COMBINED_TEST
 
-void check_string_value (const char *actual, const char *expected)
+void check_string_value (const char *funcname,
+			 const char *actual, const char *expected)
 {
   if (actual && !expected)
     {
-      fail ("%s: actual: \"%s\" != expected: NULL", test, actual);
+      fail ("%s: %s: actual: \"%s\" != expected: NULL",
+	    funcname, test, actual);
 	fprintf (stderr, "incorrect value\n");
 	abort ();
     }
     if (expected && !actual)
       {
-	fail ("%s: actual: NULL != expected: \"%s\"", test, expected);
+	fail ("%s: %s: actual: NULL != expected: \"%s\"",
+	      funcname, test, expected);
 	fprintf (stderr, "incorrect value\n");
 	abort ();
       }
@@ -142,32 +154,35 @@ void check_string_value (const char *actual, const char *expected)
       {
 	if (strcmp (actual, expected))
 	  {
-	    fail ("%s: actual: \"%s\" != expected: \"%s\"", test, actual, expected);
+	    fail ("%s: %s: actual: \"%s\" != expected: \"%s\"",
+		  test, funcname, actual, expected);
 	    fprintf (stderr, "incorrect valuen");
 	    abort ();
 	  }
-	pass ("%s: actual: \"%s\" == expected: \"%s\"", test, actual, expected);
+	pass ("%s: %s: actual: \"%s\" == expected: \"%s\"",
+	      test, funcname, actual, expected);
       }
     else
       pass ("%s: actual: NULL == expected: NULL");
 }
 
 void
-check_string_starts_with (const char *actual,
+check_string_starts_with (const char *funcname,
+			  const char *actual,
 			  const char *expected_prefix)
 {
   if (!actual)
     {
-      fail ("%s: actual: NULL != expected prefix: \"%s\"",
-	    test, expected_prefix);
+      fail ("%s: %s: actual: NULL != expected prefix: \"%s\"",
+	    test, funcname, expected_prefix);
       fprintf (stderr, "incorrect value\n");
       abort ();
     }
 
   if (strncmp (actual, expected_prefix, strlen (expected_prefix)))
     {
-      fail ("%s: actual: \"%s\" did not begin with expected prefix: \"%s\"",
-	    test, actual, expected_prefix);
+      fail ("%s: %s: actual: \"%s\" did not begin with expected prefix: \"%s\"",
+	    test, funcname, actual, expected_prefix);
       fprintf (stderr, "incorrect value\n");
       abort ();
     }
@@ -177,28 +192,29 @@ check_string_starts_with (const char *actual,
 }
 
 void
-check_string_contains (const char *name,
+check_string_contains (const char *funcname,
+		       const char *name,
 		       const char *actual,
 		       const char *expected_substring)
 {
   if (!actual)
     {
-      fail ("%s: %s: actual: NULL does not contain expected substring: \"%s\"",
-	    test, name, expected_substring);
+      fail ("%s: %s, %s: actual: NULL does not contain expected substring: \"%s\"",
+	    test, funcname, name, expected_substring);
       fprintf (stderr, "incorrect value\n");
       abort ();
     }
 
   if (!strstr (actual, expected_substring))
     {
-      fail ("%s: %s: actual: \"%s\" did not contain expected substring: \"%s\"",
-	    test, name, actual, expected_substring);
+      fail ("%s: %s: %s: actual: \"%s\" did not contain expected substring: \"%s\"",
+	    test, funcname, name, actual, expected_substring);
       fprintf (stderr, "incorrect value\n");
       abort ();
     }
 
-  pass ("%s: %s: found substring: \"%s\"",
-	test, name, expected_substring);
+  pass ("%s: %s: %s: found substring: \"%s\"",
+	test, funcname, name, expected_substring);
 }
 
 static void set_options (gcc_jit_context *ctxt, const char *argv0)
