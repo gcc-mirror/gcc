@@ -2431,12 +2431,12 @@ package body Freeze is
                end if;
             end;
 
-            --  Check for Atomic_Components or Aliased with unsuitable packing
-            --  or explicit component size clause given.
+            --  Check for Aliased or Atomic_Components/Atomic with unsuitable
+            --  packing or explicit component size clause given.
 
-            if (Has_Atomic_Components  (Arr)
+            if (Has_Aliased_Components (Arr)
                   or else
-                Has_Aliased_Components (Arr))
+                Has_Atomic_Components (Arr) or else Is_Atomic (Ctyp))
               and then
                 (Has_Component_Size_Clause (Arr) or else Is_Packed (Arr))
             then
@@ -2503,13 +2503,10 @@ package body Freeze is
                   then
                      null;
 
-                  elsif Has_Aliased_Components (Arr)
-                    or else Is_Aliased (Ctyp)
-                  then
+                  elsif Has_Aliased_Components (Arr) then
                      Complain_CS ("aliased");
 
-                  elsif Has_Atomic_Components (Arr)
-                    or else Is_Atomic (Ctyp)
+                  elsif Has_Atomic_Components (Arr) or else Is_Atomic (Ctyp)
                   then
                      Complain_CS ("atomic");
                   end if;
