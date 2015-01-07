@@ -36,6 +36,8 @@
 --  PLEASE DO NOT add any with-clauses to this package or remove the pragma
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package
 
+with Interfaces.C;
+
 package System.Linux is
    pragma Preelaborate;
 
@@ -43,7 +45,8 @@ package System.Linux is
    -- Time --
    ----------
 
-   type time_t is new Long_Long_Integer;
+   type time_t       is new Long_Long_Integer;
+   subtype clockid_t is Interfaces.C.int;
 
    type timespec is record
       tv_sec  : time_t;

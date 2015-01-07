@@ -6490,8 +6490,8 @@ package body Make is
 
       if Project_File_Name /= null then
          Write_Line
-           ("warning: gnatmake -P is obsolete and will not be available " &
-            "in the next release. Use gprbuild instead.");
+           ("warning: gnatmake -P is obsolete and will not be available "
+            & "in the next release; use gprbuild instead");
       end if;
 
       --  If --subdirs= is specified, but not -P, this is equivalent to -D,

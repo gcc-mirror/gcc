@@ -2395,14 +2395,16 @@ package body Exp_Ch3 is
                      declare
                         Parent_IP : constant Name_Id :=
                                       Make_Init_Proc_Name (Etype (Rec_Ent));
-                        Stmt      : Node_Id := First (Stmts);
-                        IP_Call   : Node_Id := Empty;
+                        Stmt      : Node_Id;
+                        IP_Call   : Node_Id;
                         IP_Stmts  : List_Id;
 
                      begin
                         --  Look for a call to the parent IP at the beginning
                         --  of Stmts associated with the record extension
 
+                        Stmt := First (Stmts);
+                        IP_Call := Empty;
                         while Present (Stmt) loop
                            if Nkind (Stmt) = N_Procedure_Call_Statement
                              and then Chars (Name (Stmt)) = Parent_IP
