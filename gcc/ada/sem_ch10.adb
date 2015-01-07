@@ -2521,6 +2521,18 @@ package body Sem_Ch10 is
          return;
       end if;
 
+      --  If we are compiling under "don't quit" mode (-gnatq) and we have
+      --  already detected serious errors then we mark the with-clause nodes as
+      --  analyzed before the corresponding compilation unit is analyzed. This
+      --  is done here to protect the frontend against never ending recursion
+      --  caused by circularities in the sources (because the previous errors
+      --  may break the regular machine of the compiler implemented in
+      --  Load_Unit to detect circularities).
+
+      if Serious_Errors_Detected > 0 and then Try_Semantics then
+         Set_Analyzed (N);
+      end if;
+
       --  If the library unit is a predefined unit, and we are in high
       --  integrity mode, then temporarily reset Configurable_Run_Time_Mode
       --  for the analysis of the with'ed unit. This mode does not prevent

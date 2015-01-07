@@ -1388,7 +1388,7 @@ package body Clean is
          if Project_File_Name /= null then
             Put_Line
               ("warning: gnatclean -P is obsolete and will not be available " &
-               "in the next release. Use gprclean instead.");
+               "in the next release; use gprclean instead.");
          end if;
 
          --  A project file was specified by a -P switch
