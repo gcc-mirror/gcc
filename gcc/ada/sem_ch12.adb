@@ -9884,6 +9884,8 @@ package body Sem_Ch12 is
       Subt_Mark   : Node_Id             := Empty;
 
    begin
+      --  Formal may be an anonymous access
+
       if Present (Subtype_Mark (Formal)) then
          Subt_Mark := Subtype_Mark (Formal);
       else
@@ -10140,9 +10142,14 @@ package body Sem_Ch12 is
             --  Use default to construct declaration
 
             if Present (Subt_Mark) then
-               Def := Subt_Mark;
+               Def := New_Copy (Subt_Mark);
+
             else pragma Assert (Present (Acc_Def));
-               Def := Acc_Def;
+
+               --  If formal is an anonymous access, copy access definition of
+               --  formal for object declaration.
+
+               Def := New_Copy_Tree (Acc_Def);
             end if;
 
             Decl_Node :=
@@ -10150,7 +10157,7 @@ package body Sem_Ch12 is
                 Defining_Identifier    => New_Copy (Gen_Obj),
                 Constant_Present       => True,
                 Null_Exclusion_Present => Null_Exclusion_Present (Formal),
-                Object_Definition      => New_Copy (Def),
+                Object_Definition      => Def,
                 Expression             => New_Copy_Tree
                                             (Default_Expression (Formal)));
 
@@ -10158,11 +10165,9 @@ package body Sem_Ch12 is
             Set_Analyzed (Expression (Decl_Node), False);
 
          else
-            Error_Msg_NE
-              ("missing actual&",
-                Instantiation_Node, Gen_Obj);
+            Error_Msg_NE ("missing actual&", Instantiation_Node, Gen_Obj);
             Error_Msg_NE ("\in instantiation of & declared#",
-              Instantiation_Node, Scope (A_Gen_Obj));
+                          Instantiation_Node, Scope (A_Gen_Obj));
 
             if Is_Scalar_Type (Etype (A_Gen_Obj)) then
 

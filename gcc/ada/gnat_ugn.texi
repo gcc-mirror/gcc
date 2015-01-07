@@ -5048,6 +5048,23 @@ combination @option{-gnatwu} followed by @option{-gnatwF} has the
 effect of warning on unreferenced entities other than subprogram
 formals.
 
+@item -gnatw.f
+@emph{Activate warnings on suspicious subprogram 'Access.}
+@cindex @option{-gnatw.f} (@command{gcc})
+This switch causes a warning to be generated if @code{P'Access} occurs
+in the same package where subprogram P is declared, and the
+@code{P'Access} is evaluated at elaboration time, and occurs before
+the body of P has been elaborated. For example, if we have
+@code{X : T := P'Access;}, then if X.all is subsequently called before
+the body of P is elaborated, it could cause
+access-before-elaboration. The default is that these warnings are not
+generated.
+
+@item -gnatw.F
+@emph{Suppress warnings on suspicious subprogram 'Access.}
+@cindex @option{-gnatw.F} (@command{gcc})
+This switch suppresses warnings for suspicious subprogram 'Access.
+
 @item -gnatwg
 @emph{Activate warnings on unrecognized pragmas.}
 @cindex @option{-gnatwg} (@command{gcc})
