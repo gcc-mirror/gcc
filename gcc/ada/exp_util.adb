@@ -7830,13 +7830,19 @@ package body Exp_Util is
          if Nkind (Decl) = N_Full_Type_Declaration then
             Typ := Defining_Identifier (Decl);
 
-            if Is_Tagged_Type (Typ)
+            --  Ignored Ghost types do not need any cleanup actions because
+            --  they will not appear in the final tree.
+
+            if Is_Ignored_Ghost_Entity (Typ) then
+               null;
+
+            elsif Is_Tagged_Type (Typ)
               and then Is_Library_Level_Entity (Typ)
               and then Convention (Typ) = Convention_Ada
               and then Present (Access_Disp_Table (Typ))
               and then RTE_Available (RE_Unregister_Tag)
-              and then not No_Run_Time_Mode
               and then not Is_Abstract_Type (Typ)
+              and then not No_Run_Time_Mode
             then
                return True;
             end if;
@@ -7860,6 +7866,12 @@ package body Exp_Util is
             --  Objects.
 
             elsif Is_Processed_Transient (Obj_Id) then
+               null;
+
+            --  Ignored Ghost objects do not need any cleanup actions because
+            --  they will not appear in the final tree.
+
+            elsif Is_Ignored_Ghost_Entity (Obj_Id) then
                null;
 
             --  The object is of the form:
@@ -7940,6 +7952,12 @@ package body Exp_Util is
             if Lib_Level and then Finalize_Storage_Only (Obj_Typ) then
                null;
 
+            --  Ignored Ghost object renamings do not need any cleanup actions
+            --  because they will not appear in the final tree.
+
+            elsif Is_Ignored_Ghost_Entity (Obj_Id) then
+               null;
+
             --  Return object of a build-in-place function. This case is
             --  recognized and marked by the expansion of an extended return
             --  statement (see Expand_N_Extended_Return_Statement).
@@ -7981,11 +7999,17 @@ package body Exp_Util is
          then
             Typ := Entity (Decl);
 
-            if ((Is_Access_Type (Typ)
-                  and then not Is_Access_Subprogram_Type (Typ)
-                  and then Needs_Finalization
-                             (Available_View (Designated_Type (Typ))))
-                or else (Is_Type (Typ) and then Needs_Finalization (Typ)))
+            --  Freeze nodes for ignored Ghost types do not need cleanup
+            --  actions because they will never appear in the final tree.
+
+            if Is_Ignored_Ghost_Entity (Typ) then
+               null;
+
+            elsif ((Is_Access_Type (Typ)
+                      and then not Is_Access_Subprogram_Type (Typ)
+                      and then Needs_Finalization
+                                 (Available_View (Designated_Type (Typ))))
+                    or else (Is_Type (Typ) and then Needs_Finalization (Typ)))
               and then Requires_Cleanup_Actions
                          (Actions (Decl), Lib_Level, Nested_Constructs)
             then
@@ -7997,15 +8021,17 @@ package body Exp_Util is
          elsif Nested_Constructs
            and then Nkind (Decl) = N_Package_Declaration
          then
-            Pack_Id := Defining_Unit_Name (Specification (Decl));
+            Pack_Id := Defining_Entity (Decl);
 
-            if Nkind (Pack_Id) = N_Defining_Program_Unit_Name then
-               Pack_Id := Defining_Identifier (Pack_Id);
-            end if;
+            --  Do not inspect an ignored Ghost package because all code found
+            --  within will not appear in the final tree.
 
-            if Ekind (Pack_Id) /= E_Generic_Package
-              and then
-                Requires_Cleanup_Actions (Specification (Decl), Lib_Level)
+            if Is_Ignored_Ghost_Entity (Pack_Id) then
+               null;
+
+            elsif Ekind (Pack_Id) /= E_Generic_Package
+              and then Requires_Cleanup_Actions
+                         (Specification (Decl), Lib_Level)
             then
                return True;
             end if;
@@ -8013,11 +8039,37 @@ package body Exp_Util is
          --  Nested package bodies
 
          elsif Nested_Constructs and then Nkind (Decl) = N_Package_Body then
-            Pack_Id := Corresponding_Spec (Decl);
 
-            if Ekind (Pack_Id) /= E_Generic_Package
+            --  Do not inspect an ignored Ghost package body because all code
+            --  found within will not appear in the final tree.
+
+            if Is_Ignored_Ghost_Entity (Defining_Entity (Decl)) then
+               null;
+
+            elsif Ekind (Corresponding_Spec (Decl)) /= E_Generic_Package
               and then Requires_Cleanup_Actions (Decl, Lib_Level)
             then
+               return True;
+            end if;
+
+         elsif Nkind (Decl) = N_Block_Statement
+           and then
+
+           --  Handle a rare case caused by a controlled transient variable
+           --  created as part of a record init proc. The variable is wrapped
+           --  in a block, but the block is not associated with a transient
+           --  scope.
+
+           (Inside_Init_Proc
+
+           --  Handle the case where the original context has been wrapped in
+           --  a block to avoid interference between exception handlers and
+           --  At_End handlers. Treat the block as transparent and process its
+           --  contents.
+
+             or else Is_Finalization_Wrapper (Decl))
+         then
+            if Requires_Cleanup_Actions (Decl, Lib_Level) then
                return True;
             end if;
          end if;

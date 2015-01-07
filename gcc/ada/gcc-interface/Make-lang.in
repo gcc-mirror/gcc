@@ -297,6 +297,7 @@ GNAT_ADA_OBJS =	\
  ada/g-u3spch.o	\
  ada/get_spark_xrefs.o	\
  ada/get_targ.o	\
+ ada/ghost.o	\
  ada/gnat.o	\
  ada/gnatvsn.o	\
  ada/hostparm.o	\

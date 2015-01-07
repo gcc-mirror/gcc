@@ -605,14 +605,8 @@ package Atree is
    --  The following functions return the contents of the indicated field of
    --  the node referenced by the argument, which is a Node_Id.
 
-   function Nkind             (N : Node_Id) return Node_Kind;
-   pragma Inline (Nkind);
-
    function Analyzed          (N : Node_Id) return Boolean;
    pragma Inline (Analyzed);
-
-   function Has_Aspects       (N : Node_Id) return Boolean;
-   pragma Inline (Has_Aspects);
 
    function Comes_From_Source (N : Node_Id) return Boolean;
    pragma Inline (Comes_From_Source);
@@ -620,26 +614,36 @@ package Atree is
    function Error_Posted      (N : Node_Id) return Boolean;
    pragma Inline (Error_Posted);
 
-   function Sloc              (N : Node_Id) return Source_Ptr;
-   pragma Inline (Sloc);
+   function Has_Aspects       (N : Node_Id) return Boolean;
+   pragma Inline (Has_Aspects);
 
-   function Paren_Count       (N : Node_Id) return Nat;
-   pragma Inline (Paren_Count);
+   function Is_Ignored_Ghost_Node
+                              (N : Node_Id) return Boolean;
+   pragma Inline (Is_Ignored_Ghost_Node);
 
-   function Parent            (N : Node_Id) return Node_Id;
-   pragma Inline (Parent);
-   --  Returns the parent of a node if the node is not a list member, or else
-   --  the parent of the list containing the node if the node is a list member.
+   function Nkind             (N : Node_Id) return Node_Kind;
+   pragma Inline (Nkind);
 
    function No                (N : Node_Id) return Boolean;
    pragma Inline (No);
    --  Tests given Id for equality with the Empty node. This allows notations
    --  like "if No (Variant_Part)" as opposed to "if Variant_Part = Empty".
 
+   function Parent            (N : Node_Id) return Node_Id;
+   pragma Inline (Parent);
+   --  Returns the parent of a node if the node is not a list member, or else
+   --  the parent of the list containing the node if the node is a list member.
+
+   function Paren_Count       (N : Node_Id) return Nat;
+   pragma Inline (Paren_Count);
+
    function Present           (N : Node_Id) return Boolean;
    pragma Inline (Present);
    --  Tests given Id for inequality with the Empty node. This allows notations
    --  like "if Present (Statement)" as opposed to "if Statement /= Empty".
+
+   function Sloc              (N : Node_Id) return Source_Ptr;
+   pragma Inline (Sloc);
 
    ---------------------
    -- Node_Kind Tests --
@@ -785,6 +789,18 @@ package Atree is
       V8 : Entity_Kind) return Boolean;
 
    function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind;
+      V6 : Entity_Kind;
+      V7 : Entity_Kind;
+      V8 : Entity_Kind;
+      V9 : Entity_Kind) return Boolean;
+
+   function Ekind_In
      (T  : Entity_Kind;
       V1 : Entity_Kind;
       V2 : Entity_Kind) return Boolean;
@@ -840,6 +856,18 @@ package Atree is
       V7 : Entity_Kind;
       V8 : Entity_Kind) return Boolean;
 
+   function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind;
+      V6 : Entity_Kind;
+      V7 : Entity_Kind;
+      V8 : Entity_Kind;
+      V9 : Entity_Kind) return Boolean;
+
    pragma Inline (Ekind_In);
    --  Inline all above functions
 
@@ -865,38 +893,41 @@ package Atree is
    --  to be set in the specified field. Note that Set_Nkind is in the next
    --  section, since its use is restricted.
 
-   procedure Set_Sloc         (N : Node_Id; Val : Source_Ptr);
-   pragma Inline (Set_Sloc);
-
-   procedure Set_Paren_Count  (N : Node_Id; Val : Nat);
-   pragma Inline (Set_Paren_Count);
-
-   procedure Set_Parent       (N : Node_Id; Val : Node_Id);
-   pragma Inline (Set_Parent);
-
-   procedure Set_Analyzed     (N : Node_Id; Val : Boolean := True);
+   procedure Set_Analyzed (N : Node_Id; Val : Boolean := True);
    pragma Inline (Set_Analyzed);
+
+   procedure Set_Comes_From_Source (N : Node_Id; Val : Boolean);
+   pragma Inline (Set_Comes_From_Source);
+   --  Note that this routine is very rarely used, since usually the default
+   --  mechanism provided sets the right value, but in some unusual cases, the
+   --  value needs to be reset (e.g. when a source node is copied, and the copy
+   --  must not have Comes_From_Source set).
 
    procedure Set_Error_Posted (N : Node_Id; Val : Boolean := True);
    pragma Inline (Set_Error_Posted);
 
-   procedure Set_Comes_From_Source (N : Node_Id; Val : Boolean);
-   pragma Inline (Set_Comes_From_Source);
-   --  Note that this routine is very rarely used, since usually the
-   --  default mechanism provided sets the right value, but in some
-   --  unusual cases, the value needs to be reset (e.g. when a source
-   --  node is copied, and the copy must not have Comes_From_Source set).
-
    procedure Set_Has_Aspects (N : Node_Id; Val : Boolean := True);
    pragma Inline (Set_Has_Aspects);
+
+   procedure Set_Is_Ignored_Ghost_Node (N : Node_Id; Val : Boolean := True);
+   pragma Inline (Set_Is_Ignored_Ghost_Node);
 
    procedure Set_Original_Node (N : Node_Id; Val : Node_Id);
    pragma Inline (Set_Original_Node);
    --  Note that this routine is used only in very peculiar cases. In normal
    --  cases, the Original_Node link is set by calls to Rewrite. We currently
-   --  use it in ASIS mode to manually set the link from pragma expressions
-   --  to their aspect original source expressions, so that the original source
+   --  use it in ASIS mode to manually set the link from pragma expressions to
+   --  their aspect original source expressions, so that the original source
    --  expressions accessed by ASIS are also semantically analyzed.
+
+   procedure Set_Parent (N : Node_Id; Val : Node_Id);
+   pragma Inline (Set_Parent);
+
+   procedure Set_Paren_Count (N : Node_Id; Val : Nat);
+   pragma Inline (Set_Paren_Count);
+
+   procedure Set_Sloc (N : Node_Id; Val : Source_Ptr);
+   pragma Inline (Set_Sloc);
 
    ------------------------------
    -- Entity Update Procedures --
@@ -4007,7 +4038,12 @@ package Atree is
          Flag1  : Boolean;
          Flag2  : Boolean;
          Flag3  : Boolean;
-         Spare0 : Boolean;
+
+         Is_Ignored_Ghost_Node : Boolean;
+         --  Flag denothing whether the node is subject to pragma Ghost with
+         --  policy Ignore. The name of the flag should be Flag4, however this
+         --  requires changing the names of all remaining 300+ flags.
+
          Spare1 : Boolean;
          Spare2 : Boolean;
          Spare3 : Boolean;

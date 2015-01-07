@@ -41,6 +41,7 @@ with Errout;   use Errout;
 with Exp_Dist; use Exp_Dist;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Lib.Writ; use Lib.Writ;
 with Lib.Xref; use Lib.Xref;
@@ -8412,7 +8413,7 @@ package body Sem_Prag is
                   --  If previous error, avoid cascaded errors
 
                   Check_Error_Detected;
-                  Applies   := True;
+                  Applies := True;
 
                else
                   Make_Inline (Subp);
@@ -8434,8 +8435,7 @@ package body Sem_Prag is
             end if;
 
             if not Applies then
-               Error_Pragma_Arg
-                 ("inappropriate argument for pragma%", Assoc);
+               Error_Pragma_Arg ("inappropriate argument for pragma%", Assoc);
             end if;
 
             Next (Assoc);
@@ -10212,10 +10212,10 @@ package body Sem_Prag is
                   Set_Refinement_Constituents (State_Id, New_Elmt_List);
                   Set_Part_Of_Constituents    (State_Id, New_Elmt_List);
 
-                  --  An abstract state declared within a Ghost scope becomes
+                  --  An abstract state declared within a Ghost region becomes
                   --  Ghost (SPARK RM 6.9(2)).
 
-                  if Within_Ghost_Scope then
+                  if Ghost_Mode > None then
                      Set_Is_Ghost_Entity (State_Id);
                   end if;
 
@@ -11907,7 +11907,7 @@ package body Sem_Prag is
                   --  Pragma Check_Policy specifying a Ghost policy cannot
                   --  occur within a ghost subprogram or package.
 
-                  if Within_Ghost_Scope then
+                  if Ghost_Mode > None then
                      Error_Pragma
                        ("pragma % cannot appear within ghost subprogram or "
                         & "package");
@@ -14377,7 +14377,7 @@ package body Sem_Prag is
                   --  region (SPARK RM 6.9(7)).
 
                   if Is_False (Expr_Value (Expr))
-                    and then Within_Ghost_Scope
+                    and then Ghost_Mode > None
                   then
                      Error_Pragma
                        ("pragma % with value False cannot appear in enabled "
@@ -14941,7 +14941,7 @@ package body Sem_Prag is
          -- Independent_Components --
          ----------------------------
 
-         --  pragma Independent_Components (array_or_record_LOCAL_NAME);
+         --  pragma Atomic_Components (array_or_record_LOCAL_NAME);
 
          when Pragma_Independent_Components => Independent_Components : declare
             E_Id : Node_Id;

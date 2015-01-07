@@ -43,6 +43,7 @@ with Exp_Strm; use Exp_Strm;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -7427,11 +7428,37 @@ package body Exp_Ch3 is
    --  node using Append_Freeze_Actions.
 
    function Freeze_Type (N : Node_Id) return Boolean is
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the current Ghost mode in effect in case the type being frozen
+      --  sets a different mode.
+
+      procedure Restore_Globals;
+      --  Restore the values of all saved global variables
+
+      ---------------------
+      -- Restore_Globals --
+      ---------------------
+
+      procedure Restore_Globals is
+      begin
+         Ghost_Mode := GM;
+      end Restore_Globals;
+
+      --  Local variables
+
       Def_Id    : constant Entity_Id := Entity (N);
       RACW_Seen : Boolean := False;
       Result    : Boolean := False;
 
+   --  Start of processing for Freeze_Type
+
    begin
+      --  The type being frozen may be subject to pragma Ghost with policy
+      --  Ignore. Set the mode now to ensure that any nodes generated during
+      --  freezing are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode_For_Freeze (Def_Id, N);
+
       --  Process associated access types needing special processing
 
       if Present (Access_Types_To_Process (N)) then
@@ -7750,10 +7777,13 @@ package body Exp_Ch3 is
       end if;
 
       Freeze_Stream_Operations (N, Def_Id);
+
+      Restore_Globals;
       return Result;
 
    exception
       when RE_Not_Available =>
+         Restore_Globals;
          return False;
    end Freeze_Type;
 

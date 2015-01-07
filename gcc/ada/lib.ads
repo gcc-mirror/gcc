@@ -440,24 +440,70 @@ package Lib is
    --  do not have an entry for each possible field, since some of the fields
    --  can only be set by specialized interfaces (defined below).
 
-   function Version_Get (U : Unit_Number_Type) return Word_Hex_String;
-   --  Returns the version as a string with 8 hex digits (upper case letters)
+   function Compilation_Switches_Last return Nat;
+   --  Return the count of stored compilation switches
 
-   function Last_Unit return Unit_Number_Type;
-   --  Unit number of last allocated unit
+   procedure Disable_Switch_Storing;
+   --  Disable registration of switches by Store_Compilation_Switch. Used to
+   --  avoid registering switches added automatically by the gcc driver at the
+   --  end of the command line.
 
-   function Num_Units return Nat;
-   --  Number of units currently in unit table
+   function Earlier_In_Extended_Unit (S1, S2 : Source_Ptr) return Boolean;
+   --  Given two Sloc values for which In_Same_Extended_Unit is true, determine
+   --  if S1 appears before S2. Returns True if S1 appears before S2, and False
+   --  otherwise. The result is undefined if S1 and S2 are not in the same
+   --  extended unit. Note: this routine will not give reliable results if
+   --  called after Sprint has been called with -gnatD set.
 
-   procedure Remove_Unit (U : Unit_Number_Type);
-   --  Remove unit U from unit table. Currently this is effective only
-   --  if U is the last unit currently stored in the unit table.
+   procedure Enable_Switch_Storing;
+   --  Enable registration of switches by Store_Compilation_Switch. Used to
+   --  avoid registering switches added automatically by the gcc driver at the
+   --  beginning of the command line.
 
    function Entity_Is_In_Main_Unit (E : Entity_Id) return Boolean;
    --  Returns True if the entity E is declared in the main unit, or, in
    --  its corresponding spec, or one of its subunits. Entities declared
    --  within generic instantiations return True if the instantiation is
    --  itself "in the main unit" by this definition. Otherwise False.
+
+   function Exact_Source_Name (Loc : Source_Ptr) return String;
+   --  Return name of entity at location Loc exactly as written in the source.
+   --  this includes copying the wide character encodings exactly as they were
+   --  used in the source, so the caller must be aware of the possibility of
+   --  such encodings.
+
+   function Get_Compilation_Switch (N : Pos) return String_Ptr;
+   --  Return the Nth stored compilation switch, or null if less than N
+   --  switches have been stored. Used by ASIS and back ends written in Ada.
+
+   function Generic_May_Lack_ALI (Sfile : File_Name_Type) return Boolean;
+   --  Generic units must be separately compiled. Since we always use
+   --  macro substitution for generics, the resulting object file is a dummy
+   --  one with no code, but the ALI file has the normal form, and we need
+   --  this ALI file so that the binder can work out a correct order of
+   --  elaboration.
+   --
+   --  However, ancient versions of GNAT used to not generate code or ALI
+   --  files for generic units, and this would yield complex order of
+   --  elaboration issues. These were fixed in GNAT 3.10. The support for not
+   --  compiling language-defined library generics was retained nonetheless
+   --  to facilitate bootstrap. Specifically, it is convenient to have
+   --  the same list of files to be compiled for all stages. So, if the
+   --  bootstrap compiler does not generate code for a given file, then
+   --  the stage1 compiler (and binder) also must deal with the case of
+   --  that file not being compiled. The predicate Generic_May_Lack_ALI is
+   --  True for those generic units for which missing ALI files are allowed.
+
+   function Get_Cunit_Unit_Number (N : Node_Id) return Unit_Number_Type;
+   --  Return unit number of the unit whose N_Compilation_Unit node is the
+   --  one passed as an argument. This must always succeed since the node
+   --  could not have been built without making a unit table entry.
+
+   function Get_Cunit_Entity_Unit_Number
+     (E : Entity_Id) return Unit_Number_Type;
+   --  Return unit number of the unit whose compilation unit spec entity is
+   --  the one passed as an argument. This must always succeed since the
+   --  entity could not have been built without making a unit table entry.
 
    function Get_Source_Unit (N : Node_Or_Entity_Id) return Unit_Number_Type;
    pragma Inline (Get_Source_Unit);
@@ -477,34 +523,6 @@ package Lib is
    --  it uses the location of the top level instantiation, rather than the
    --  template, so it returns the unit number containing the code that
    --  corresponds to the node N, or the source location S.
-
-   function In_Same_Source_Unit (N1, N2 : Node_Or_Entity_Id) return Boolean;
-   pragma Inline (In_Same_Source_Unit);
-   --  Determines if the two nodes or entities N1 and N2 are in the same
-   --  source unit, the criterion being that Get_Source_Unit yields the
-   --  same value for each argument.
-
-   function In_Same_Code_Unit (N1, N2 : Node_Or_Entity_Id) return Boolean;
-   pragma Inline (In_Same_Code_Unit);
-   --  Determines if the two nodes or entities N1 and N2 are in the same
-   --  code unit, the criterion being that Get_Code_Unit yields the same
-   --  value for each argument.
-
-   function In_Same_Extended_Unit (N1, N2 : Node_Or_Entity_Id) return Boolean;
-   pragma Inline (In_Same_Extended_Unit);
-   --  Determines if two nodes or entities N1 and N2 are in the same
-   --  extended unit, where an extended unit is defined as a unit and all
-   --  its subunits (considered recursively, i.e. subunits of subunits are
-   --  included). Returns true if S1 and S2 are in the same extended unit
-   --  and False otherwise.
-
-   function In_Same_Extended_Unit (S1, S2 : Source_Ptr) return Boolean;
-   pragma Inline (In_Same_Extended_Unit);
-   --  Determines if the two source locations S1 and S2 are in the same
-   --  extended unit, where an extended unit is defined as a unit and all
-   --  its subunits (considered recursively, i.e. subunits of subunits are
-   --  included). Returns true if S1 and S2 are in the same extended unit
-   --  and False otherwise.
 
    function In_Extended_Main_Code_Unit
      (N : Node_Or_Entity_Id) return Boolean;
@@ -550,48 +568,67 @@ package Lib is
    function In_Predefined_Unit (S : Source_Ptr) return Boolean;
    --  Same function as above but argument is a source pointer
 
-   function Earlier_In_Extended_Unit (S1, S2 : Source_Ptr) return Boolean;
-   --  Given two Sloc values for which In_Same_Extended_Unit is true, determine
-   --  if S1 appears before S2. Returns True if S1 appears before S2, and False
-   --  otherwise. The result is undefined if S1 and S2 are not in the same
-   --  extended unit. Note: this routine will not give reliable results if
-   --  called after Sprint has been called with -gnatD set.
+   function In_Same_Code_Unit (N1, N2 : Node_Or_Entity_Id) return Boolean;
+   pragma Inline (In_Same_Code_Unit);
+   --  Determines if the two nodes or entities N1 and N2 are in the same
+   --  code unit, the criterion being that Get_Code_Unit yields the same
+   --  value for each argument.
 
-   function Exact_Source_Name (Loc : Source_Ptr) return String;
-   --  Return name of entity at location Loc exactly as written in the source.
-   --  this includes copying the wide character encodings exactly as they were
-   --  used in the source, so the caller must be aware of the possibility of
-   --  such encodings.
+   function In_Same_Extended_Unit (N1, N2 : Node_Or_Entity_Id) return Boolean;
+   pragma Inline (In_Same_Extended_Unit);
+   --  Determines if two nodes or entities N1 and N2 are in the same
+   --  extended unit, where an extended unit is defined as a unit and all
+   --  its subunits (considered recursively, i.e. subunits of subunits are
+   --  included). Returns true if S1 and S2 are in the same extended unit
+   --  and False otherwise.
 
-   function Compilation_Switches_Last return Nat;
-   --  Return the count of stored compilation switches
+   function In_Same_Extended_Unit (S1, S2 : Source_Ptr) return Boolean;
+   pragma Inline (In_Same_Extended_Unit);
+   --  Determines if the two source locations S1 and S2 are in the same
+   --  extended unit, where an extended unit is defined as a unit and all
+   --  its subunits (considered recursively, i.e. subunits of subunits are
+   --  included). Returns true if S1 and S2 are in the same extended unit
+   --  and False otherwise.
 
-   function Get_Compilation_Switch (N : Pos) return String_Ptr;
-   --  Return the Nth stored compilation switch, or null if less than N
-   --  switches have been stored. Used by ASIS and back ends written in Ada.
-
-   function Get_Cunit_Unit_Number (N : Node_Id) return Unit_Number_Type;
-   --  Return unit number of the unit whose N_Compilation_Unit node is the
-   --  one passed as an argument. This must always succeed since the node
-   --  could not have been built without making a unit table entry.
-
-   function Get_Cunit_Entity_Unit_Number
-     (E : Entity_Id) return Unit_Number_Type;
-   --  Return unit number of the unit whose compilation unit spec entity is
-   --  the one passed as an argument. This must always succeed since the
-   --  entity could not have been built without making a unit table entry.
+   function In_Same_Source_Unit (N1, N2 : Node_Or_Entity_Id) return Boolean;
+   pragma Inline (In_Same_Source_Unit);
+   --  Determines if the two nodes or entities N1 and N2 are in the same
+   --  source unit, the criterion being that Get_Source_Unit yields the
+   --  same value for each argument.
 
    function Increment_Serial_Number return Nat;
    --  Increment Serial_Number field for current unit, and return the
    --  incremented value.
 
-   procedure Synchronize_Serial_Number;
-   --  This function increments the Serial_Number field for the current unit
-   --  but does not return the incremented value. This is used when there
-   --  is a situation where one path of control increments a serial number
-   --  (using Increment_Serial_Number), and the other path does not and it is
-   --  important to keep the serial numbers synchronized in the two cases (e.g.
-   --  when the references in a package and a client must be kept consistent).
+   procedure Initialize;
+   --  Initialize internal tables
+
+   function Is_Loaded (Uname : Unit_Name_Type) return Boolean;
+   --  Determines if unit with given name is already loaded, i.e. there is
+   --  already an entry in the file table with this unit name for which the
+   --  corresponding file was found and parsed. Note that the Fatal_Error flag
+   --  of this entry must be checked before proceeding with further processing.
+
+   function Last_Unit return Unit_Number_Type;
+   --  Unit number of last allocated unit
+
+   procedure List (File_Names_Only : Boolean := False);
+   --  Lists units in active library (i.e. generates output consisting of a
+   --  sorted listing of the units represented in File table, except for the
+   --  main unit). If File_Names_Only is set to True, then the list includes
+   --  only file names, and no other information. Otherwise the unit name and
+   --  time stamp are also output. File_Names_Only also restricts the list to
+   --  exclude any predefined files.
+
+   procedure Lock;
+   --  Lock internal tables before calling back end
+
+   function Num_Units return Nat;
+   --  Number of units currently in unit table
+
+   procedure Remove_Unit (U : Unit_Number_Type);
+   --  Remove unit U from unit table. Currently this is effective only if U is
+   --  the last unit currently stored in the unit table.
 
    procedure Replace_Linker_Option_String
      (S            : String_Id;
@@ -604,16 +641,6 @@ package Lib is
    --  which may influence the generated output file(s). Switch is the text of
    --  the switch to store (except that -fRTS gets changed back to --RTS).
 
-   procedure Enable_Switch_Storing;
-   --  Enable registration of switches by Store_Compilation_Switch. Used to
-   --  avoid registering switches added automatically by the gcc driver at the
-   --  beginning of the command line.
-
-   procedure Disable_Switch_Storing;
-   --  Disable registration of switches by Store_Compilation_Switch. Used to
-   --  avoid registering switches added automatically by the gcc driver at the
-   --  end of the command line.
-
    procedure Store_Linker_Option_String (S : String_Id);
    --  This procedure is called to register the string from a pragma
    --  Linker_Option. The argument is the Id of the string to register.
@@ -622,14 +649,13 @@ package Lib is
    --  This procedure is called to register a pragma N for which a notes
    --  entry is required.
 
-   procedure Initialize;
-   --  Initialize internal tables
-
-   procedure Lock;
-   --  Lock internal tables before calling back end
-
-   procedure Unlock;
-   --  Unlock internal tables, in cases where the back end needs to modify them
+   procedure Synchronize_Serial_Number;
+   --  This function increments the Serial_Number field for the current unit
+   --  but does not return the incremented value. This is used when there
+   --  is a situation where one path of control increments a serial number
+   --  (using Increment_Serial_Number), and the other path does not and it is
+   --  important to keep the serial numbers synchronized in the two cases (e.g.
+   --  when the references in a package and a client must be kept consistent).
 
    procedure Tree_Read;
    --  Initializes internal tables from current tree file using the relevant
@@ -639,42 +665,16 @@ package Lib is
    --  Writes out internal tables to current tree file using the relevant
    --  Table.Tree_Write routines.
 
-   function Is_Loaded (Uname : Unit_Name_Type) return Boolean;
-   --  Determines if unit with given name is already loaded, i.e. there is
-   --  already an entry in the file table with this unit name for which the
-   --  corresponding file was found and parsed. Note that the Fatal_Error flag
-   --  of this entry must be checked before proceeding with further processing.
+   procedure Unlock;
+   --  Unlock internal tables, in cases where the back end needs to modify them
+
+   function Version_Get (U : Unit_Number_Type) return Word_Hex_String;
+   --  Returns the version as a string with 8 hex digits (upper case letters)
 
    procedure Version_Referenced (S : String_Id);
    --  This routine is called from Exp_Attr to register the use of a Version
    --  or Body_Version attribute. The argument is the external name used to
    --  access the version string.
-
-   procedure List (File_Names_Only : Boolean := False);
-   --  Lists units in active library (i.e. generates output consisting of a
-   --  sorted listing of the units represented in File table, except for the
-   --  main unit). If File_Names_Only is set to True, then the list includes
-   --  only file names, and no other information. Otherwise the unit name and
-   --  time stamp are also output. File_Names_Only also restricts the list to
-   --  exclude any predefined files.
-
-   function Generic_May_Lack_ALI (Sfile : File_Name_Type) return Boolean;
-   --  Generic units must be separately compiled. Since we always use
-   --  macro substitution for generics, the resulting object file is a dummy
-   --  one with no code, but the ALI file has the normal form, and we need
-   --  this ALI file so that the binder can work out a correct order of
-   --  elaboration.
-   --
-   --  However, ancient versions of GNAT used to not generate code or ALI
-   --  files for generic units, and this would yield complex order of
-   --  elaboration issues. These were fixed in GNAT 3.10. The support for not
-   --  compiling language-defined library generics was retained nonetheless
-   --  to facilitate bootstrap. Specifically, it is convenient to have
-   --  the same list of files to be compiled for all stages. So, if the
-   --  bootstrap compiler does not generate code for a given file, then
-   --  the stage1 compiler (and binder) also must deal with the case of
-   --  that file not being compiled. The predicate Generic_May_Lack_ALI is
-   --  True for those generic units for which missing ALI files are allowed.
 
    procedure Write_Unit_Info
      (Unit_Num : Unit_Number_Type;

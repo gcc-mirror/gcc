@@ -33,6 +33,7 @@ with Elists;
 with Exp_Dbug;
 with Fmap;
 with Fname.UF;
+with Ghost;    use Ghost;
 with Inline;   use Inline;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
@@ -421,14 +422,19 @@ begin
                Analyze_Inlined_Bodies;
             end if;
 
-            --  Remove entities from program that do not have any
-            --  execution time references.
+            --  Remove entities from program that do not have any execution
+            --  time references.
 
             if Debug_Flag_UU then
                Collect_Garbage_Entities;
             end if;
 
             Check_Elab_Calls;
+
+            --  Remove any ignored Ghost code as it must not appear in the
+            --  executable.
+
+            Remove_Ignored_Ghost_Code;
          end if;
 
          --  List library units if requested

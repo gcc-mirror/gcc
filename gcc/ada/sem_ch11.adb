@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
+with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
@@ -56,7 +57,14 @@ package body Sem_Ch11 is
    procedure Analyze_Exception_Declaration (N : Node_Id) is
       Id : constant Entity_Id := Defining_Identifier (N);
       PF : constant Boolean   := Is_Pure (Current_Scope);
+
    begin
+      --  The exception declaration may be subject to pragma Ghost with policy
+      --  Ignore. Set the mode now to ensure that any nodes generated during
+      --  analysis and expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
       Generate_Definition         (Id);
       Enter_Name                  (Id);
       Set_Ekind                   (Id, E_Exception);
@@ -64,10 +72,10 @@ package body Sem_Ch11 is
       Set_Is_Statically_Allocated (Id);
       Set_Is_Pure                 (Id, PF);
 
-      --  An exception declared within a Ghost scope is automatically Ghost
+      --  An exception declared within a Ghost region is automatically Ghost
       --  (SPARK RM 6.9(2)).
 
-      if Within_Ghost_Scope then
+      if Ghost_Mode > None then
          Set_Is_Ghost_Entity (Id);
       end if;
 

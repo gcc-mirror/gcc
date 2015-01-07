@@ -923,6 +923,12 @@ package body Rtsfind is
          end loop;
       end Save_Private_Visibility;
 
+      --  Local variables
+
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the current Ghost mode in effect to ensure a clean environment
+      --  when analyzing the unit.
+
    --  Start of processing for Load_RTU
 
    begin
@@ -931,6 +937,10 @@ package body Rtsfind is
       if Present (U.Entity) then
          return;
       end if;
+
+      --  Provide a clean environment for the unit
+
+      Ghost_Mode := None;
 
       --  Note if secondary stack is used
 
@@ -1032,6 +1042,10 @@ package body Rtsfind is
       if Use_Setting then
          Set_Is_Potentially_Use_Visible (U.Entity, True);
       end if;
+
+      --  Restore the original Ghost mode now that analysis has taken place
+
+      Ghost_Mode := GM;
    end Load_RTU;
 
    --------------------
