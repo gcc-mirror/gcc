@@ -61,7 +61,17 @@ package System.Val_LLU is
    --  Constraint_Error is raised.
    --
    --  Note: these rules correspond to the requirements for leaving the pointer
-   --  positioned in Text_IO.Get
+   --  positioned in Text_IO.Get. Note that the rules as stated in the RM would
+   --  seem to imply that for a case like
+   --
+   --    8#12345670009#
+
+   --  the pointer should be left at the first # having scanned out the longest
+   --  valid integer literal (8), but in fact in this case the pointer points
+   --  to the invalid based digit (9 in this case). Not only would the strict
+   --  reading of the RM require unlimited backup, which is unreasonable, but
+   --  in addition, the intepretation as given here is the one expected and
+   --  enforced by the ACATS tests.
    --
    --  Note: if Str is empty, i.e. if Max is less than Ptr, then this is a
    --  special case of an all-blank string, and Ptr is unchanged, and hence

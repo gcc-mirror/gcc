@@ -3706,9 +3706,7 @@ package body Sem_Ch12 is
               and then not Is_Child_Unit (Gen_Unit)
             then
                Scop := Scope (Gen_Unit);
-               while Present (Scop)
-                 and then Scop /= Standard_Standard
-               loop
+               while Present (Scop) and then Scop /= Standard_Standard loop
                   if Unit_Requires_Body (Scop) then
                      Enclosing_Body_Present := True;
                      exit;
@@ -7678,7 +7676,6 @@ package body Sem_Ch12 is
          while Present (T) loop
             if In_Open_Scopes (Scope (T)) then
                return T;
-
             elsif Is_Generic_Actual_Type (T) then
                return T;
             end if;
@@ -9546,8 +9543,7 @@ package body Sem_Ch12 is
                    Name                 =>
                      New_Occurrence_Of
                        (Get_Instance_Of (Gen_Parent), Sloc (Actual)),
-                   Generic_Associations =>
-                     Generic_Associations (Formal)));
+                   Generic_Associations => Generic_Associations (Formal)));
             end;
          end if;
 
@@ -10057,12 +10053,15 @@ package body Sem_Ch12 is
       else
          --  The instantiation of a generic formal in-parameter is constant
          --  declaration. The actual is the expression for that declaration.
+         --  Its type is a full copy of the type of the formal. This may be
+         --  an access to subprogram, for which we need to generate entities
+         --  for the formals in the new signature.
 
          if Present (Actual) then
             if Present (Subt_Mark) then
-               Def := Subt_Mark;
+               Def := New_Copy_Tree (Subt_Mark);
             else pragma Assert (Present (Acc_Def));
-               Def := Acc_Def;
+               Def := Copy_Separate_Tree (Acc_Def);
             end if;
 
             Decl_Node :=
@@ -10070,7 +10069,7 @@ package body Sem_Ch12 is
                 Defining_Identifier    => New_Copy (Gen_Obj),
                 Constant_Present       => True,
                 Null_Exclusion_Present => Null_Exclusion_Present (Formal),
-                Object_Definition      => New_Copy_Tree (Def),
+                Object_Definition      => Def,
                 Expression             => Actual);
 
             Set_Corresponding_Generic_Association (Decl_Node, Act_Assoc);
@@ -10148,8 +10147,10 @@ package body Sem_Ch12 is
 
                --  If formal is an anonymous access, copy access definition of
                --  formal for object declaration.
+               --  In the case of an access to subprogram we need to
+               --  generate new formals for the signature of the default.
 
-               Def := New_Copy_Tree (Acc_Def);
+               Def := Copy_Separate_Tree (Acc_Def);
             end if;
 
             Decl_Node :=

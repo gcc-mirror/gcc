@@ -88,13 +88,12 @@ package System.Fat_Gen is
    function Unbiased_Rounding (X : T)                       return T;
 
    function Valid (X : not null access T) return Boolean;
-   --  This function checks if the object of type T referenced by X
-   --  is valid, and returns True/False accordingly. The parameter is
-   --  passed by reference (access) here, as the object of type T may
-   --  be an abnormal value that cannot be passed in a floating-point
-   --  register, and the whole point of 'Valid is to prevent exceptions.
-   --  Note that the object of type T must have the natural alignment
-   --  for type T.
+   --  This function checks if the object of type T referenced by X is valid,
+   --  and returns True/False accordingly. The parameter is passed by reference
+   --  (access) here, as the object of type T may be an abnormal value that
+   --  cannot be passed in a floating-point register, and the whole point of
+   --  'Valid is to prevent exceptions. Note that the object of type T must
+   --  have the natural alignment for type T.
 
    type S is new String (1 .. T'Size / Character'Size);
    type P is access all S with Storage_Size => 0;

@@ -898,7 +898,7 @@ package body Sem_Warn is
 
       procedure Output_Reference_Error (M : String) is
       begin
-         --  Never issue messages for internal names, nor for renamings
+         --  Never issue messages for internal names or renamings
 
          if Is_Internal_Name (Chars (E1))
            or else Nkind (Parent (E1)) = N_Object_Renaming_Declaration
