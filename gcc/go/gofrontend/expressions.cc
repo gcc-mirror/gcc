@@ -2450,7 +2450,7 @@ Complex_expression::export_complex(String_dump* exp, const mpc_t val)
   if (!mpfr_zero_p(mpc_realref(val)))
     {
       Float_expression::export_float(exp, mpc_realref(val));
-      if (mpfr_sgn(mpc_imagref(val)) > 0)
+      if (mpfr_sgn(mpc_imagref(val)) >= 0)
 	exp->write_c_string("+");
     }
   Float_expression::export_float(exp, mpc_imagref(val));
