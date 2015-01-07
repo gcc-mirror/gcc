@@ -1,3 +1,25 @@
+2015-01-07  Bob Duff  <duff@adacore.com>
+
+	* usage.adb (Usage): Document -gnatw.f switch.
+
+2015-01-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Code clean up and minor reformatting.
+
+2015-01-07  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Add guard for
+	Raise_Accessibility_Error call.
+	* s-valllu.ads (Scan_Raw_Long_Long_Unsigned): Add documentation
+	on handling of invalid digits in based constants.
+	* s-fatgen.ads: Minor reformatting.
+	* sem_attr.adb (Analyze_Attribute, case Unrestricted_Access):
+	Avoid noting bogus modification for Valid test.
+	* snames.ads-tmpl (Name_Attr_Long_Float): New Name.
+	* einfo.ads: Minor reformatting.
+	* sem_warn.adb: Minor comment clarification.
+	* sem_ch12.adb: Minor reformatting.
+
 2015-01-07  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch5.adb (Expand_Predicated_Loop): Handle properly loops

@@ -676,11 +676,12 @@ package Snames is
    Name_DLL                            : constant Name_Id := N + $;
    Name_Win32                          : constant Name_Id := N + $;
 
-   --  Other special names used in processing pragmas
+   --  Other special names used in processing attributes and pragmas
 
    Name_Allow                          : constant Name_Id := N + $;
    Name_Amount                         : constant Name_Id := N + $;
    Name_As_Is                          : constant Name_Id := N + $;
+   Name_Attr_Long_Float                : constant Name_Id := N + $;
    Name_Assertion                      : constant Name_Id := N + $;
    Name_Assertions                     : constant Name_Id := N + $;
    Name_Attribute_Name                 : constant Name_Id := N + $;

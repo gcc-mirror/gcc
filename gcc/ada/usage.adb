@@ -501,6 +501,8 @@ begin
                                                   "(no exceptions)");
    Write_Line ("        f+   turn on warnings for unreferenced formal");
    Write_Line ("        F*   turn off warnings for unreferenced formal");
+   Write_Line ("        .f   turn on warnings for suspicious Subp'Access");
+   Write_Line ("        .F   turn off warnings for suspicious Subp'Access");
    Write_Line ("        g*+  turn on warnings for unrecognized pragma");
    Write_Line ("        G    turn off warnings for unrecognized pragma");
    Write_Line ("        .g   turn on GNAT warnings");

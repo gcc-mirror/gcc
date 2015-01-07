@@ -9982,7 +9982,9 @@ package body Exp_Ch4 is
       procedure Raise_Accessibility_Error;
       --  Called when we know that an accessibility check will fail. Rewrites
       --  node N to an appropriate raise statement and outputs warning msgs.
-      --  The Etype of the raise node is set to Target_Type.
+      --  The Etype of the raise node is set to Target_Type. Note that in this
+      --  case the rest of the processing should be skipped (i.e. the call to
+      --  this procedure will be followed by "goto Done").
 
       procedure Real_Range_Check;
       --  Handles generation of range check for real target value
@@ -10518,6 +10520,7 @@ package body Exp_Ch4 is
              Type_Access_Level (Operand_Type) > Type_Access_Level (Target_Type)
          then
             Raise_Accessibility_Error;
+            goto Done;
 
          --  When the operand is a selected access discriminant the check needs
          --  to be made against the level of the object denoted by the prefix

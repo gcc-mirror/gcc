@@ -9853,8 +9853,38 @@ package body Sem_Attr is
 
          Access_Attribute :
          begin
+            --  Note possible modification if we have a variable
+
             if Is_Variable (P) then
-               Note_Possible_Modification (P, Sure => False);
+               declare
+                  PN : constant Node_Id := Parent (N);
+                  Nm : Node_Id;
+
+                  Note : Boolean := True;
+                  --  Skip this for the case of Unrestricted_Access occuring in
+                  --  the context of a Valid check, since this otherwise leads
+                  --  to a missed warning (the Valid check does not really
+                  --  modify!) If this case, Note will be reset to False.
+
+               begin
+                  if Attr_Id = Attribute_Unrestricted_Access
+                    and then Nkind (PN) = N_Function_Call
+                  then
+                     Nm := Name (PN);
+
+                     if Nkind (Nm) = N_Expanded_Name
+                       and then Chars (Nm) = Name_Valid
+                       and then Nkind (Prefix (Nm)) = N_Identifier
+                       and then Chars (Prefix (Nm)) = Name_Attr_Long_Float
+                     then
+                        Note := False;
+                     end if;
+                  end if;
+
+                  if Note then
+                     Note_Possible_Modification (P, Sure => False);
+                  end if;
+               end;
             end if;
 
             --  The following comes from a query concerning improper use of
