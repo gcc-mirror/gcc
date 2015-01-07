@@ -1,7 +1,14 @@
+2015-01-07  Chris Manghane  <cmang@google.com>
+
+	PR go/61204
+	* go-gcc.cc (Gcc_backend::temporary_variable): Don't initialize
+	zero-sized variable.
+
 2015-01-06  Chris Manghane  <cmang@google.com>
 
-	* go-gcc.cc (constructor_expression): Don't initialize zero-sized
-	fields, just evaluate the values for side effects.
+	* go-gcc.cc (Gcc_backend::constructor_expression): Don't
+	initialize zero-sized fields, just evaluate the values for side
+	effects.
 
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
@@ -11,8 +18,8 @@
 
 2014-12-19  Chris Manghane  <cmang@google.com>
 
-	* go-gcc.cc (array_constructor_expression): Don't construct arrays
-	of zero-sized values.
+	* go-gcc.cc (Gcc_backend::array_constructor_expression): Don't
+	construct arrays of zero-sized values.
 
 2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 

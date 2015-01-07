@@ -2536,7 +2536,7 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
       BIND_EXPR_VARS(bind_tree) = BLOCK_VARS(block_tree);
     }
 
-  if (init_tree != NULL_TREE)
+  if (this->type_size(btype) != 0 && init_tree != NULL_TREE)
     DECL_INITIAL(var) = fold_convert_loc(location.gcc_location(), type_tree,
                                          init_tree);
 
@@ -2546,6 +2546,13 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
   *pstatement = this->make_statement(build1_loc(location.gcc_location(),
                                                 DECL_EXPR,
 						void_type_node, var));
+
+  // Don't initialize VAR with BINIT, but still evaluate BINIT for
+  // its side effects.
+  if (this->type_size(btype) == 0 && init_tree != NULL_TREE)
+    *pstatement = this->compound_statement(this->expression_statement(binit),
+					   *pstatement);
+
   return new Bvariable(var);
 }
 
