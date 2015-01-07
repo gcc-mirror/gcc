@@ -7128,13 +7128,22 @@ gnat_to_gnu (Node_Id gnat_node)
     /****************/
 
     case N_Expression_With_Actions:
-      /* This construct doesn't define a scope so we don't push a binding level
-	 around the statement list; but we wrap it in a SAVE_EXPR to protect it
-	 from unsharing.  */
-      gnu_result = build_stmt_group (Actions (gnat_node), false);
+      /* This construct doesn't define a scope so we don't push a binding
+	 level around the statement list, but we wrap it in a SAVE_EXPR to
+	 protect it from unsharing.  Elaborate the expression as part of the
+	 same statement group as the actions so that the type declaration
+	 gets inserted there as well.  This ensures that the type elaboration
+	 code is issued past the actions computing values on which it might
+	 depend.  */
+
+      start_stmt_group ();
+      add_stmt_list (Actions (gnat_node));
+      gnu_expr = gnat_to_gnu (Expression (gnat_node));
+      gnu_result = end_stmt_group ();
+
       gnu_result = build1 (SAVE_EXPR, void_type_node, gnu_result);
       TREE_SIDE_EFFECTS (gnu_result) = 1;
-      gnu_expr = gnat_to_gnu (Expression (gnat_node));
+
       gnu_result
 	= build_compound_expr (TREE_TYPE (gnu_expr), gnu_result, gnu_expr);
       gnu_result_type = get_unpadded_type (Etype (gnat_node));

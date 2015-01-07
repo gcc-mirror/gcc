@@ -1,3 +1,8 @@
+2015-01-07  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu, <N_Expression_With_Action>):
+	Elaborate the expression as part of the same stmt group as the actions.
+
 2015-01-07  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb: Minor error message change.
