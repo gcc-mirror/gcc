@@ -1,3 +1,8 @@
+2015-01-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/Makefile.am: Compile del_ops.cc as C++14.
+	* libsupc++/Makefile.in: Regenerate.
+
 2015-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver: Fix version conflict for std::locale::name().

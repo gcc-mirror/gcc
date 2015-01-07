@@ -177,6 +177,12 @@ new_opnt.lo: new_opnt.cc
 new_opnt.o: new_opnt.cc
 	$(CXXCOMPILE) -std=gnu++11 -c $<
 
+# Use special rules for the C++14 sources so that the proper flags are passed.
+del_ops.lo: del_ops.cc
+	$(LTCXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
+del_ops.o: del_ops.cc
+	$(CXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
+
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after
