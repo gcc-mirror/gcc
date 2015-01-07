@@ -1364,6 +1364,17 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 				 ? G_("left shift count >= width of type")
 				 : G_("right shift count >= width of type")));
 	}
+      if ((code == TRUNC_DIV_EXPR
+	   || code == CEIL_DIV_EXPR
+	   || code == FLOOR_DIV_EXPR
+	   || code == EXACT_DIV_EXPR
+	   || code == TRUNC_MOD_EXPR)
+	  && TREE_CODE (orig_op1) != INTEGER_CST
+	  && TREE_CODE (op1) == INTEGER_CST
+	  && (TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
+	      || TREE_CODE (TREE_TYPE (orig_op0)) == FIXED_POINT_TYPE)
+	  && TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE)
+	warn_for_div_by_zero (loc, op1);
       goto out;
 
     case INDIRECT_REF:

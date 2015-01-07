@@ -12,7 +12,7 @@ int
 f2 (void)
 {
   const int x = sizeof (char) - 1;
-  return 1 / x;				/* { dg-warning "division by zero" "" { target c++ } } */
+  return 1 / x;				/* { dg-warning "division by zero" } */
 }
 
 int
@@ -25,5 +25,5 @@ int
 f4 (void)
 {
   const int x = sizeof (int) / 3 - 1;
-  return 1 / x;				/* { dg-warning "division by zero" "" { target c++ } } */
+  return 1 / x;				/* { dg-warning "division by zero" } */
 }
