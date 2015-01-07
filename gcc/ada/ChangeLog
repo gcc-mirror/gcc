@@ -1,3 +1,34 @@
+2015-01-07  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Gnatclean): Warn that 'gnatclean -P' is obsolete.
+	* make.adb (Initialize): Warn that 'gnatmake -P' is obsolete.
+
+2015-01-07  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Parse_Project_And_Apply_Config): Always finalize
+	errors/warnings in the first parsing of the project files,
+	to display the warnings when there is no errors.
+
+2015-01-07  Tristan Gingold  <gingold@adacore.com>
+
+	* i-cpoint.adb (Copy_Terminated_Array): Nicely handle null target.
+
+2015-01-07  Doug Rupp  <rupp@adacore.com>
+
+	* s-taprop-vxworks.adb (Stop_All_Tasks): Pass return
+	value from Int_Lock as parameter to Int_Unlock.
+	* s-osinte-vxworks.ads (Int_Unlock): Add parameter.
+	* s-vxwext.ads (Int_Unlock): Likewise.
+	* s-vxwext-kernel.adb (intUnlock, Int_Unlock): Likewise.
+	* s-vxwext-kernel.ads (Int_Unlock): Likewise.
+	* s-vxwext-rtp.adb (Int_Unlock): Likewise.
+	* s-vxwext-rtp.ads (Int_Unlock): Likewise.
+
+2015-01-07  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* exp_pakd.adb: Add a comment in exp_pakd.adb to explain why we
+	keep ___XP suffixes
+
 2015-01-07  Tristan Gingold  <gingold@adacore.com>
 
 	* i-cpoint.adb (Copy_Terminated_Array): Use Copy_Array to
