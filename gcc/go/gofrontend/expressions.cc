@@ -12937,7 +12937,8 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 	       pf != st->fields()->end();
 	       ++pf)
 	    {
-	      if (Gogo::is_hidden_name(pf->field_name()))
+	      if (Gogo::is_hidden_name(pf->field_name())
+		  || pf->is_embedded_builtin(gogo))
 		error_at(this->location(),
 			 "assignment of unexported field %qs in %qs literal",
 			 Gogo::message_name(pf->field_name()).c_str(),
@@ -13114,7 +13115,8 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 
       if (type->named_type() != NULL
 	  && type->named_type()->named_object()->package() != NULL
-	  && Gogo::is_hidden_name(sf->field_name()))
+	  && (Gogo::is_hidden_name(sf->field_name())
+	      || sf->is_embedded_builtin(gogo)))
 	error_at(name_expr->location(),
 		 "assignment of unexported field %qs in %qs literal",
 		 Gogo::message_name(sf->field_name()).c_str(),
