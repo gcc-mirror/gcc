@@ -1,3 +1,10 @@
+2015-01-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/56867
+	* trans-array.c (gfc_conv_resolve_dependencies):  Also check
+	dependencies when there may be substrings of character arrays.
+
 2014-12-23  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from mainline
