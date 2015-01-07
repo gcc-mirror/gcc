@@ -1,5 +1,8 @@
 2015-01-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64352
+	* pt.c (tsubst_copy_and_build): Pass complain to mark_used.
+
 	PR c++/64251
 	* decl2.c (mark_used): Don't mark if in_template_function.
 

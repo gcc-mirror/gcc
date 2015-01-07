@@ -14818,7 +14818,7 @@ tsubst_copy_and_build (tree t,
 
 	/* Remember that there was a reference to this entity.  */
 	if (DECL_P (function))
-	  mark_used (function);
+	  mark_used (function, complain);
 
 	/* Put back tf_decltype for the actual call.  */
 	complain |= decltype_flag;
