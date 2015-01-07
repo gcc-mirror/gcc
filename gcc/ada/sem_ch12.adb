@@ -4690,7 +4690,10 @@ package body Sem_Ch12 is
          Set_Parent            (Act_Decl_Id, Parent (Anon_Id));
          Set_Chars             (Act_Decl_Id, Chars (Defining_Entity (N)));
          Set_Sloc              (Act_Decl_Id, Sloc (Defining_Entity (N)));
-         Set_Comes_From_Source (Act_Decl_Id, True);
+
+         --  Subprogram instance comes from source only if generic does
+
+         Set_Comes_From_Source (Act_Decl_Id, Comes_From_Source (Gen_Unit));
 
          --  The signature may involve types that are not frozen yet, but the
          --  subprogram will be frozen at the point the wrapper package is
@@ -9879,6 +9882,43 @@ package body Sem_Ch12 is
       Subt_Decl   : Node_Id             := Empty;
       Subt_Mark   : Node_Id             := Empty;
 
+      function Copy_Access_Def return Node_Id;
+      --  If formal is an anonymous access, copy access definition of formal
+      --  for generated object declaration.
+
+      ---------------------
+      -- Copy_Access_Def --
+      ---------------------
+
+      function Copy_Access_Def return Node_Id is
+      begin
+         Def := New_Copy_Tree (Acc_Def);
+
+         --  In addition, if formal is an access to subprogram we need to
+         --  generate new formals for the signature of the default, so that
+         --  the tree is properly formatted for ASIS use.
+
+         if Present (Access_To_Subprogram_Definition (Acc_Def)) then
+            declare
+               Par_Spec : Node_Id;
+            begin
+               Par_Spec :=
+                 First (Parameter_Specifications
+                          (Access_To_Subprogram_Definition (Def)));
+               while Present (Par_Spec) loop
+                  Set_Defining_Identifier (Par_Spec,
+                    Make_Defining_Identifier (Sloc (Acc_Def),
+                      Chars => Chars (Defining_Identifier (Par_Spec))));
+                  Next (Par_Spec);
+               end loop;
+            end;
+         end if;
+
+         return Def;
+      end Copy_Access_Def;
+
+   --  Start of processing for Instantiate_Object
+
    begin
       --  Formal may be an anonymous access
 
@@ -10061,7 +10101,7 @@ package body Sem_Ch12 is
             if Present (Subt_Mark) then
                Def := New_Copy_Tree (Subt_Mark);
             else pragma Assert (Present (Acc_Def));
-               Def := Copy_Separate_Tree (Acc_Def);
+               Def := Copy_Access_Def;
             end if;
 
             Decl_Node :=
@@ -10142,15 +10182,8 @@ package body Sem_Ch12 is
 
             if Present (Subt_Mark) then
                Def := New_Copy (Subt_Mark);
-
             else pragma Assert (Present (Acc_Def));
-
-               --  If formal is an anonymous access, copy access definition of
-               --  formal for object declaration.
-               --  In the case of an access to subprogram we need to
-               --  generate new formals for the signature of the default.
-
-               Def := Copy_Separate_Tree (Acc_Def);
+               Def := Copy_Access_Def;
             end if;
 
             Decl_Node :=

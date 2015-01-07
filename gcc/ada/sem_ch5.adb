@@ -764,6 +764,18 @@ package body Sem_Ch5 is
          Set_Referenced_Modified (Lhs, Out_Param => False);
       end if;
 
+      --  RM 7.3.2 (12/3)  An assignment to a view conversion (from a type
+      --  to one of its ancestors) requires an invariant check. Apply check
+      --  only if expression comes from source, otherwise it will be applied
+      --  when value is assigned to source entity.
+
+      if Nkind (Lhs) = N_Type_Conversion
+        and then Has_Invariants (Etype (Expression (Lhs)))
+        and then Comes_From_Source (Expression (Lhs))
+      then
+         Insert_After (N, Make_Invariant_Call (Expression (Lhs)));
+      end if;
+
       --  Final step. If left side is an entity, then we may be able to reset
       --  the current tracked values to new safe values. We only have something
       --  to do if the left side is an entity name, and expansion has not

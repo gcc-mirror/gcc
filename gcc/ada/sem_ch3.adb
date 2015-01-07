@@ -13887,19 +13887,22 @@ package body Sem_Ch3 is
       then
          Collect_Fixed_Components (Typ);
 
-         Gather_Components (
-           Typ,
-           Component_List (Type_Definition (Parent (Parent_Type))),
-           Governed_By   => Assoc_List,
-           Into          => Comp_List,
-           Report_Errors => Errors);
-         pragma Assert (not Errors);
+         Gather_Components
+           (Typ,
+            Component_List (Type_Definition (Parent (Parent_Type))),
+            Governed_By   => Assoc_List,
+            Into          => Comp_List,
+            Report_Errors => Errors);
+
+         --  Note: previously there was a check at this point that no errors
+         --  were detected. As a consequence of AI05-220 there may be an error
+         --  if an inherited discriminant that controls a variant has a non-
+         --  static constraint.
 
          --  If the tagged derivation has a type extension, collect all the
          --  new components therein.
 
-         if Present
-              (Record_Extension_Part (Type_Definition (Parent (Typ))))
+         if Present (Record_Extension_Part (Type_Definition (Parent (Typ))))
          then
             Old_C := First_Component (Typ);
             while Present (Old_C) loop

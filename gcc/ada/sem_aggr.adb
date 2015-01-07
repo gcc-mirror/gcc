@@ -3984,6 +3984,13 @@ package body Sem_Aggr is
                      Governed_By   => New_Assoc_List,
                      Into          => Components,
                      Report_Errors => Errors_Found);
+
+                  if Errors_Found then
+                     Error_Msg_N
+                       ("discriminant controlling variant part is not static",
+                        N);
+                     return;
+                  end if;
                end if;
             end if;
 
