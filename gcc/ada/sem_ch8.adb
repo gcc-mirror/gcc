@@ -2710,7 +2710,17 @@ package body Sem_Ch8 is
          --  Check whether the renaming is for a defaulted actual subprogram
          --  with a class-wide actual.
 
-         if CW_Actual and then Box_Present (Inst_Node) then
+         --  The class-wide wrapper is not needed when we are in
+         --  GNATprove_Mode and there is an external axiomatization on the
+         --  package.
+
+         if CW_Actual
+            and then Box_Present (Inst_Node)
+            and then not (GNATprove_Mode
+                          and then
+                          Present (Containing_Package_With_Ext_Axioms
+                                     (Formal_Spec)))
+         then
             Build_Class_Wide_Wrapper (New_S, Old_S);
 
          elsif Is_Entity_Name (Nam)

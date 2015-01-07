@@ -1,3 +1,34 @@
+2015-01-07  Tristan Gingold  <gingold@adacore.com>
+
+	* i-cpoint.adb (Copy_Terminated_Array): Use Copy_Array to
+	handle overlap.
+
+2015-01-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Do not
+	automatically set No_Strict_Aliasing on access types.
+	* fe.h (No_Strict_Aliasing_CP): Declare.
+	* gcc-interface/trans.c (gigi): Force flag_strict_aliasing to 0 if
+	No_Strict_Aliasing_CP is set.
+
+2015-01-07  Johannes Kanig  <kanig@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming) do
+	not build function wrapper in gnatprove mode when the package
+	is externally axiomatized.
+
+2015-01-07  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-reatim.adb (Time_Of): Reduce the number of spurious overflows in
+	intermediate computations when the parameters have different signs.
+
+2015-01-07  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Build_Init_Procedure): For derived types,
+	improve the code which takes care of identifying and moving to
+	the beginning of the init-proc the call to the init-proc of the
+	parent type.
+
 2015-01-07  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/trans.c (gnat_to_gnu, <N_Expression_With_Action>):

@@ -667,6 +667,10 @@ gigi (Node_Id gnat_root,
   /* Initialize the GCC support for FP operations.  */
   gnat_init_gcc_fp ();
 
+  /* Force -fno-strict-aliasing if the configuration pragma was seen.  */
+  if (No_Strict_Aliasing_CP)
+    flag_strict_aliasing = 0;
+
   /* Now translate the compilation unit proper.  */
   Compilation_Unit_to_gnu (gnat_root);
 
