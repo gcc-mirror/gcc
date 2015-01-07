@@ -213,10 +213,11 @@ package body System.File_IO is
    -----------
 
    procedure Close (File_Ptr : access AFCB_Ptr) is
-      Close_Status : int := 0;
+      Close_Status : int     := 0;
       Dup_Strm     : Boolean := False;
-      File         : AFCB_Ptr renames File_Ptr.all;
       Errno        : Integer := 0;
+
+      File : AFCB_Ptr renames File_Ptr.all;
 
    begin
       --  Take a task lock, to protect the global data value Open_Files

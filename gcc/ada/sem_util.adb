@@ -5999,6 +5999,14 @@ package body Sem_Util is
         and then Is_Overloadable (Entity (Name (Call)))
         and then not Is_Overloaded (Name (Call))
       then
+         --  If node is name in call it is not an actual
+
+         if N = Name (Call) then
+            Call := Empty;
+            Formal := Empty;
+            return;
+         end if;
+
          --  Fall here if we are definitely a parameter
 
          Actual := First_Actual (Call);
@@ -6626,10 +6634,22 @@ package body Sem_Util is
       Discrim_Value := Expression (Assoc);
 
       if not Is_OK_Static_Expression (Discrim_Value) then
-         Error_Msg_FE
-           ("value for discriminant & must be static!",
-            Discrim_Value, Discrim);
-         Why_Not_Static (Discrim_Value);
+
+         --  If the variant part is governed by a discriminant of the type
+         --  this is an error. If the variant part and the discriminant are
+         --  inherited from an ancestor this is legal (AI05-120) unless the
+         --  components are being gathered for an aggregate, in which case
+         --  the caller must check Report_Errors.
+
+         if Scope (Original_Record_Component
+                     ((Entity (First (Choices (Assoc)))))) = Typ
+         then
+            Error_Msg_FE
+              ("value for discriminant & must be static!",
+               Discrim_Value, Discrim);
+            Why_Not_Static (Discrim_Value);
+         end if;
+
          Report_Errors := True;
          return;
       end if;

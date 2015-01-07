@@ -1,3 +1,42 @@
+2015-01-07  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Check_One_Unit): Don't give unused entities
+	warning for a package which is used as a generic parameter.
+
+2015-01-07  Bob Duff  <duff@adacore.com>
+
+	* usage.adb (Usage): Correct documentation of
+	-gnatw.f switches.
+
+2015-01-07  Robert Dewar  <dewar@adacore.com>
+
+	* s-fileio.adb: Minor reformatting.
+
+2015-01-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Object): If formal is an anonymous
+	access to subprogram, replace its formals with new entities when
+	building the object declaration, both if actual is present and
+	when it is defaulted.
+
+2015-01-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): If left-hand side is a view
+	conversion and type of expression has invariant, apply invariant
+	check on expression.
+
+2015-01-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Create_Constrained_Components): A call to
+	Gather_Components may detect an error if an inherited discriminant
+	that controls a variant is non-static.
+	* sem_aggr.adb (Resolve_Record_Aggregate, Step 5): The call to
+	Gather_Components may report an error if an inherited discriminant
+	in a variant in non-static.
+	* sem_util.adb (Gather_Components): If a non-static discriminant
+	is inherited do not report error here, but let caller handle it.
+	(Find_Actual): Small optimization.
+
 2015-01-07  Bob Duff  <duff@adacore.com>
 
 	* usage.adb (Usage): Document -gnatw.f switch.
