@@ -211,6 +211,11 @@ package System.OS_Interface is
      (clock_id : clockid_t;
       tp       : access timespec) return int;
 
+   function clock_getres
+     (clock_id : clockid_t;
+      res      : access timespec) return int;
+   pragma Import (C, clock_getres, "clock_getres");
+
    function To_Duration (TS : timespec) return Duration;
    pragma Inline (To_Duration);
 

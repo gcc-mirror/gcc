@@ -2094,6 +2094,14 @@ package body Sem_Ch6 is
                   elsif Is_Tagged_Type (Typ) then
                      null;
 
+                  --  Use is legal in a thunk generated for an operation
+                  --  inherited from a progenitor.
+
+                  elsif Is_Thunk (Designator)
+                    and then Present (Non_Limited_View (Typ))
+                  then
+                     null;
+
                   elsif Nkind (Parent (N)) = N_Subprogram_Body
                     or else Nkind_In (Parent (Parent (N)), N_Accept_Statement,
                                                            N_Entry_Body)

@@ -129,6 +129,36 @@ package body System.OS_Interface is
       return Result;
    end clock_gettime;
 
+   ------------------
+   -- clock_getres --
+   ------------------
+
+   function clock_getres
+     (clock_id : clockid_t;
+      res      : access timespec) return int
+   is
+      pragma Unreferenced (clock_id);
+
+      --  Darwin Threads don't have clock_getres.
+
+      Nano   : constant := 10**9;
+      nsec   : int := 0;
+      Result : int := -1;
+
+      function clock_get_res return int;
+      pragma Import (C, clock_get_res, "__gnat_clock_get_res");
+
+   begin
+      nsec := clock_get_res;
+      res.all := To_Timespec (Duration (0.0) + Duration (nsec) / Nano);
+
+      if nsec > 0 then
+         Result := 0;
+      end if;
+
+      return Result;
+   end clock_getres;
+
    -----------------
    -- sched_yield --
    -----------------

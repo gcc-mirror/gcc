@@ -897,9 +897,9 @@ package body Clean is
                      --  object directory.
 
                      if (Unit.File_Names (Impl) /= null
-                         and then
-                           In_Extension_Chain
-                             (Unit.File_Names (Impl).Project, Project))
+                          and then
+                            In_Extension_Chain
+                              (Unit.File_Names (Impl).Project, Project))
                        or else
                          (Unit.File_Names (Spec) /= null
                            and then
@@ -1387,8 +1387,8 @@ package body Clean is
 
          if Project_File_Name /= null then
             Put_Line
-              ("warning: gnatclean -P is obsolete and will not be available " &
-               "in the next release; use gprclean instead.");
+              ("warning: gnatclean -P is obsolete and will not be available "
+               & "in the next release; use gprclean instead.");
          end if;
 
          --  A project file was specified by a -P switch
@@ -1655,8 +1655,9 @@ package body Clean is
 
                   case Arg (2) is
                      when '-' =>
-                        if Arg'Length > Subdirs_Option'Length and then
-                          Arg (1 .. Subdirs_Option'Length) = Subdirs_Option
+                        if Arg'Length > Subdirs_Option'Length
+                          and then
+                            Arg (1 .. Subdirs_Option'Length) = Subdirs_Option
                         then
                            Subdirs :=
                              new String'
@@ -1790,7 +1791,8 @@ package body Clean is
                            declare
                               Prj : constant String := Arg (3 .. Arg'Last);
                            begin
-                              if Prj'Length > 1 and then Prj (Prj'First) = '='
+                              if Prj'Length > 1
+                                 and then Prj (Prj'First) = '='
                               then
                                  Project_File_Name :=
                                    new String'

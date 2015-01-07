@@ -5914,6 +5914,14 @@ package body Exp_Ch6 is
       elsif Is_Thunk (Current_Scope) and then Is_Interface (Exptyp) then
          null;
 
+      --  If the call is within a thunk and the type is a limited view, the
+      --  backend will eventually see the non-limited view of the type.
+
+      elsif Is_Thunk (Current_Scope)
+         and then Is_Incomplete_Type (Exptyp)
+      then
+         return;
+
       elsif not Requires_Transient_Scope (R_Type) then
 
          --  Mutable records with no variable length components are not
