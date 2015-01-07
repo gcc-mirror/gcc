@@ -1,3 +1,8 @@
+2015-01-07  Johannes Kanig  <kanig@adacore.com>
+
+	* lib-xref-spark_specific.adb (Collect_SPARK_Xrefs): Skip unneeded
+	cross ref files.
+
 2015-01-07  Robert Dewar  <dewar@adacore.com>
 
 	* s-taprop-linux.adb, clean.adb: Minor reformatting.
