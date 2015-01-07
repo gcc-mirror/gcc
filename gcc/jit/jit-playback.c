@@ -615,6 +615,10 @@ new_unary_op (location *loc,
       if (loc)
 	set_tree_location (inner_result, loc);
       return new rvalue (this, inner_result);
+
+    case GCC_JIT_UNARY_OP_ABS:
+      inner_op = ABS_EXPR;
+      break;
     }
 
   inner_result = build1 (inner_op,

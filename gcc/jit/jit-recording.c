@@ -2797,6 +2797,7 @@ static const char * const unary_op_strings[] = {
   "-", /* GCC_JIT_UNARY_OP_MINUS */
   "~", /* GCC_JIT_UNARY_OP_BITWISE_NEGATE */
   "!", /* GCC_JIT_UNARY_OP_LOGICAL_NEGATE */
+  "abs ", /* GCC_JIT_UNARY_OP_ABS */
 };
 
 recording::string *

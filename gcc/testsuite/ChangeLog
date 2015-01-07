@@ -1,5 +1,11 @@
 2015-01-07  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit.dg/test-expressions.c (make_tests_of_unary_ops): Add test of
+	GCC_JIT_UNARY_OP_ABS.
+	(verify_unary_ops): Likewise.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit.dg/test-arith-overflow.c: New test case.
 	* jit.dg/all-non-failing-tests.h: Add test-arith-overflow.c.
 	* jit.dg/test-combination.c (create_code): Likewise.
