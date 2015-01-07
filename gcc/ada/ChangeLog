@@ -1,3 +1,29 @@
+2015-01-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Predicated_Loop): Handle properly loops
+	over static predicates when the loop parameter specification
+	carries a Reverse indicator.
+
+2015-01-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Object): If formal has a default,
+	actual is missing and formal has an anonymous access type, copy
+	access definition in full so that tree for instance is properly
+	formatted for ASIS use.
+
+2015-01-07  Bob Duff  <duff@adacore.com>
+
+	* sem_elab.adb (Check_Internal_Call_Continue): Give a warning
+	for P'Access, where P is a subprogram in the same package as
+	the P'Access, and the P'Access is evaluated at elaboration
+	time, and occurs before the body of P. For example, "X : T :=
+	P'Access;" would allow a subsequent call to X.all to be an
+	access-before-elaboration error; hence the warning. This warning
+	is enabled by the -gnatw.f switch.
+	* opt.ads (Warn_On_Elab_Access): New flag for warning switch.
+	* warnsw.adb (Set_Dot_Warning_Switch): Set Warn_On_Elab_Access.
+	* gnat_ugn.texi: Document the new warning.
+
 2015-01-07  Johannes Kanig  <kanig@adacore.com>
 
 	* lib-xref-spark_specific.adb (Collect_SPARK_Xrefs): Skip unneeded

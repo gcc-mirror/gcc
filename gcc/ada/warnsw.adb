@@ -326,6 +326,12 @@ package body Warnsw is
          when 'e' =>
             All_Warnings (True);
 
+         when 'f' =>
+            Warn_On_Elab_Access                 := True;
+
+         when 'F' =>
+            Warn_On_Elab_Access                 := False;
+
          when 'g' =>
             Set_GNAT_Mode_Warnings;
 
