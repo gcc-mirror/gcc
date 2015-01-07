@@ -4791,10 +4791,25 @@ grok_reference_init (tree decl, tree type, tree init, int flags)
     init = build_x_compound_expr_from_list (init, ELK_INIT,
 					    tf_warning_or_error);
 
-  if (TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE
+  tree ttype = TREE_TYPE (type);
+  if (TREE_CODE (ttype) != ARRAY_TYPE
       && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE)
     /* Note: default conversion is only called in very special cases.  */
     init = decay_conversion (init, tf_warning_or_error);
+
+  /* check_initializer handles this for non-reference variables, but for
+     references we need to do it here or the initializer will get the
+     incomplete array type and confuse later calls to
+     cp_complete_array_type.  */
+  if (TREE_CODE (ttype) == ARRAY_TYPE
+      && TYPE_DOMAIN (ttype) == NULL_TREE
+      && (BRACE_ENCLOSED_INITIALIZER_P (init)
+	  || TREE_CODE (init) == STRING_CST))
+    {
+      cp_complete_array_type (&ttype, init, false);
+      if (ttype != TREE_TYPE (type))
+	type = cp_build_reference_type (ttype, TYPE_REF_IS_RVALUE (type));
+    }
 
   /* Convert INIT to the reference type TYPE.  This may involve the
      creation of a temporary, whose lifetime must be the same as that

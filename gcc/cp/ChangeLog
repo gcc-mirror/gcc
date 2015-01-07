@@ -1,5 +1,8 @@
 2015-01-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64029
+	* decl.c (grok_reference_init): Complete array type.
+
 	PR c++/63657
 	PR c++/38958
 	* call.c (set_up_extended_ref_temp): Set TREE_USED on the reference
