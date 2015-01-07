@@ -1,5 +1,9 @@
 2015-01-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64487
+	* semantics.c (finish_offsetof): Handle templates here.
+	* parser.c (cp_parser_builtin_offsetof): Not here.
+
 	PR c++/64352
 	* pt.c (tsubst_copy_and_build): Pass complain to mark_used.
 

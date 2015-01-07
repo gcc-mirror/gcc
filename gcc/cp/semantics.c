@@ -3803,6 +3803,14 @@ finish_bases (tree type, bool direct)
 tree
 finish_offsetof (tree expr)
 {
+  /* If we're processing a template, we can't finish the semantics yet.
+     Otherwise we can fold the entire expression now.  */
+  if (processing_template_decl)
+    {
+      expr = build1 (OFFSETOF_EXPR, size_type_node, expr);
+      return expr;
+    }
+
   if (TREE_CODE (expr) == PSEUDO_DTOR_EXPR)
     {
       error ("cannot apply %<offsetof%> to destructor %<~%T%>",
