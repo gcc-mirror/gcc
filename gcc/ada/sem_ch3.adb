@@ -15860,11 +15860,12 @@ package body Sem_Ch3 is
 
       Taggd := Is_Tagged_Type (Parent_Type);
 
-      --  Perhaps the parent type should be changed to the class-wide type's
-      --  specific type in this case to prevent cascading errors ???
+      --  Set the parent type to the class-wide type's specific type
+      --  in this case to prevent cascading errors
 
       if Present (Extension) and then Is_Class_Wide_Type (Parent_Type) then
          Error_Msg_N ("parent type must not be a class-wide type", Indic);
+         Set_Etype (T, Etype (Parent_Type));
          return;
       end if;
 

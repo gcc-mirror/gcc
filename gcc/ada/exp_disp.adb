@@ -1422,6 +1422,11 @@ package body Exp_Disp is
 
             if Is_Access_Type (Etype (Expression (N))) then
 
+               Apply_Accessibility_Check
+                 (N   => Expression (N),
+                  Typ => Etype (N),
+                  Insert_Node => N);
+
                --  Generate: Func (Address!(Expression))
 
                Rewrite (N,
