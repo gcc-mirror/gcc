@@ -1,3 +1,8 @@
+2015-01-06  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Tidy formatting
+	of -mrecip= documentation.
+
 2015-01-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/64505

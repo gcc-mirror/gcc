@@ -20630,15 +20630,39 @@ roots.
 This option controls which reciprocal estimate instructions
 may be used.  @var{opt} is a comma-separated list of options, which may
 be preceded by a @code{!} to invert the option:
-@code{all}: enable all estimate instructions,
-@code{default}: enable the default instructions, equivalent to @option{-mrecip},
-@code{none}: disable all estimate instructions, equivalent to @option{-mno-recip};
-@code{div}: enable the reciprocal approximation instructions for both single and double precision;
-@code{divf}: enable the single-precision reciprocal approximation instructions;
-@code{divd}: enable the double-precision reciprocal approximation instructions;
-@code{rsqrt}: enable the reciprocal square root approximation instructions for both single and double precision;
-@code{rsqrtf}: enable the single-precision reciprocal square root approximation instructions;
-@code{rsqrtd}: enable the double-precision reciprocal square root approximation instructions;
+
+@table @samp
+
+@item all
+Enable all estimate instructions.
+
+@item default 
+Enable the default instructions, equivalent to @option{-mrecip}.
+
+@item none 
+Disable all estimate instructions, equivalent to @option{-mno-recip}.
+
+@item div 
+Enable the reciprocal approximation instructions for both 
+single and double precision.
+
+@item divf 
+Enable the single-precision reciprocal approximation instructions.
+
+@item divd 
+Enable the double-precision reciprocal approximation instructions.
+
+@item rsqrt 
+Enable the reciprocal square root approximation instructions for both
+single and double precision.
+
+@item rsqrtf 
+Enable the single-precision reciprocal square root approximation instructions.
+
+@item rsqrtd 
+Enable the double-precision reciprocal square root approximation instructions.
+
+@end table
 
 So, for example, @option{-mrecip=all,!rsqrtd} enables
 all of the reciprocal estimate instructions, except for the
