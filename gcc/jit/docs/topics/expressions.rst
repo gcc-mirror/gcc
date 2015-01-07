@@ -137,6 +137,7 @@ Unary Operation                             C equivalent
 :c:macro:`GCC_JIT_UNARY_OP_MINUS`           `-(EXPR)`
 :c:macro:`GCC_JIT_UNARY_OP_BITWISE_NEGATE`  `~(EXPR)`
 :c:macro:`GCC_JIT_UNARY_OP_LOGICAL_NEGATE`  `!(EXPR)`
+:c:macro:`GCC_JIT_UNARY_OP_ABS`             `abs (EXPR)`
 ==========================================  ============
 
 .. c:macro:: GCC_JIT_UNARY_OP_MINUS
@@ -167,6 +168,16 @@ Unary Operation                             C equivalent
     .. code-block:: c
 
        !(EXPR)
+
+    in C.
+
+.. c:macro:: GCC_JIT_UNARY_OP_ABS
+
+    Absolute value of an arithmetic expression; analogous to:
+
+    .. code-block:: c
+
+        abs (EXPR)
 
     in C.
 

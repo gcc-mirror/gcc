@@ -649,7 +649,13 @@ enum gcc_jit_unary_op
   /* Logical negation of an arithmetic or pointer value; analogous to:
        !(EXPR)
      in C.  */
-  GCC_JIT_UNARY_OP_LOGICAL_NEGATE
+  GCC_JIT_UNARY_OP_LOGICAL_NEGATE,
+
+  /* Absolute value of an arithmetic expression; analogous to:
+       abs (EXPR)
+     in C.  */
+  GCC_JIT_UNARY_OP_ABS
+
 };
 
 extern gcc_jit_rvalue *

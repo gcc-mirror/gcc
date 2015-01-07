@@ -1,5 +1,17 @@
 2015-01-07  David Malcolm  <dmalcolm@redhat.com>
 
+	* docs/topics/expressions.rst (Unary Operations): Add
+	GCC_JIT_UNARY_OP_ABS.
+	* jit-playback.c (gcc::jit::playback::context::new_unary_op):
+	Likewise.
+	* jit-recording.c (unary_op_strings): Likewise.
+	* libgccjit.c (gcc_jit_context_new_unary_op): Update checking
+	of "op" to reflect addition of GCC_JIT_UNARY_OP_ABS.
+	* libgccjit.h (enum gcc_jit_unary_op): Add GCC_JIT_UNARY_OP_ABS.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit-recording.h (gcc::jit::recording::memento_of_get_type): Fix
 	typo in comment.
 

@@ -1180,7 +1180,7 @@ gcc_jit_context_new_unary_op (gcc_jit_context *ctxt,
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL_PRINTF1 (
     (op >= GCC_JIT_UNARY_OP_MINUS
-     && op <= GCC_JIT_UNARY_OP_LOGICAL_NEGATE),
+     && op <= GCC_JIT_UNARY_OP_ABS),
     ctxt, loc,
     "unrecognized value for enum gcc_jit_unary_op: %i",
     op);

@@ -73,6 +73,12 @@ make_tests_of_unary_ops (gcc_jit_context *ctxt)
 			   GCC_JIT_UNARY_OP_LOGICAL_NEGATE,
 			   "test_UNARY_OP_LOGICAL_NEGATE_on_int"),
     "!(a)");
+  CHECK_STRING_VALUE (
+    make_test_of_unary_op (ctxt,
+			   int_type,
+			   GCC_JIT_UNARY_OP_ABS,
+			   "test_UNARY_OP_ABS_on_int"),
+    "abs (a)");
 }
 
 static void
@@ -104,6 +110,13 @@ verify_unary_ops (gcc_jit_result *result)
   CHECK_VALUE (test_UNARY_OP_LOGICAL_NEGATE_on_int (42), 0);
   CHECK_VALUE (test_UNARY_OP_LOGICAL_NEGATE_on_int (-5), 0);
 
+  test_fn test_UNARY_OP_ABS_on_int =
+    (test_fn)gcc_jit_result_get_code (result,
+				      "test_UNARY_OP_ABS_on_int");
+  CHECK_NON_NULL (test_UNARY_OP_ABS_on_int);
+  CHECK_VALUE (test_UNARY_OP_ABS_on_int (0), 0);
+  CHECK_VALUE (test_UNARY_OP_ABS_on_int (42), 42);
+  CHECK_VALUE (test_UNARY_OP_ABS_on_int (-5), 5);
 }
 
 /**********************************************************************
