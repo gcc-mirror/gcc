@@ -22,6 +22,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-arith-overflow.c */
+#define create_code create_code_arith_overflow
+#define verify_code verify_code_arith_overflow
+#include "test-arith-overflow.c"
+#undef create_code
+#undef verify_code
+
 /* test-array-as-pointer.c */
 #define create_code create_code_array_as_pointer
 #define verify_code verify_code_array_as_pointer

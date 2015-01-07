@@ -17,6 +17,7 @@ create_code (gcc_jit_context *ctxt, void * user_data)
 {
   create_code_accessing_struct (ctxt, user_data);
   create_code_accessing_union (ctxt, user_data);
+  create_code_arith_overflow (ctxt, user_data);
   create_code_array_as_pointer (ctxt, user_data);
   create_code_arrays (ctxt, user_data);
   create_code_calling_external_function (ctxt, user_data);
@@ -44,6 +45,7 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
 {
   verify_code_accessing_struct (ctxt, result);
   verify_code_accessing_union (ctxt, result);
+  verify_code_arith_overflow (ctxt, result);
   verify_code_array_as_pointer (ctxt, result);
   verify_code_arrays (ctxt, result);
   verify_code_calling_external_function (ctxt, result);

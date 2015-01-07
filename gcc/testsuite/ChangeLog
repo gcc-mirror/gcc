@@ -1,5 +1,13 @@
 2015-01-07  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit.dg/test-arith-overflow.c: New test case.
+	* jit.dg/all-non-failing-tests.h: Add test-arith-overflow.c.
+	* jit.dg/test-combination.c (create_code): Likewise.
+	(verify_code): Likewise.
+	* jit.dg/test-threads.c (testcases): Likewise.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit.dg/jit.exp: Load wrapper.exp with %{tool} set to "g++"
 	rather than "jit".  Load g++.exp, and call g++_init.
 	Run test-*.cc files within the testsuite and *.cc files within
