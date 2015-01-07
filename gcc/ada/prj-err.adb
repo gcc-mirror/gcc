@@ -72,6 +72,8 @@ package body Prj.Err is
       Real_Location : Source_Ptr := Location;
 
    begin
+      --  Don't post message if incompleted with's (avoid junk cascaded errors)
+
       if Flags.Incomplete_Withs then
          return;
       end if;

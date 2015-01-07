@@ -273,16 +273,6 @@ package Restrict is
    --  Wrapper on Check_Restriction with Msg_Issued, with the out-parameter
    --  being ignored here.
 
-   procedure Check_Restriction_No_Use_Of_Attribute (N : Node_Id);
-   --  N is the node of an attribute definition clause. An error message
-   --  (warning) will be issued if a restriction (warning) was previously set
-   --  for this attribute using Set_No_Use_Of_Attribute.
-
-   procedure Check_Restriction_No_Use_Of_Pragma (N : Node_Id);
-   --  N is the node of a pragma. An error message (warning) will be issued
-   --  if a restriction (warning) was previously set for this pragma using
-   --  Set_No_Use_Of_Pragma.
-
    procedure Check_Restriction_No_Dependence (U : Node_Id; Err : Node_Id);
    --  Called when a dependence on a unit is created (either implicitly, or by
    --  an explicit WITH clause). U is a node for the unit involved, and Err is
@@ -292,6 +282,21 @@ package Restrict is
    --  N is the node id for an N_Aspect_Specification. An error message
    --  (warning) will be issued if a restriction (warning) was previous set
    --  for this aspect using Set_No_Specification_Of_Aspect.
+
+   procedure Check_Restriction_No_Use_Of_Attribute (N : Node_Id);
+   --  N is the node of an attribute definition clause. An error message
+   --  (warning) will be issued if a restriction (warning) was previously set
+   --  for this attribute using Set_No_Use_Of_Attribute.
+
+   procedure Check_Restriction_No_Use_Of_Entity (N : Node_Id);
+   --  N is the node id for an entity reference. An error message (warning)
+   --  will be issued if a restriction (warning) was previous set for this
+   --  entity name using Set_No_Use_Of_Entity.
+
+   procedure Check_Restriction_No_Use_Of_Pragma (N : Node_Id);
+   --  N is the node of a pragma. An error message (warning) will be issued
+   --  if a restriction (warning) was previously set for this pragma using
+   --  Set_No_Use_Of_Pragma.
 
    procedure Check_Elaboration_Code_Allowed (N : Node_Id);
    --  Tests to see if elaboration code is allowed by the current restrictions
@@ -355,6 +360,11 @@ package Restrict is
    --  Used in checking No_Dependence argument of pragma Restrictions or
    --  pragma Restrictions_Warning, or attribute Restriction_Set. Returns
    --  True if N has the proper form for a unit name, False otherwise.
+
+   function OK_No_Use_Of_Entity_Name (N : Node_Id) return Boolean;
+   --  Used in checking No_Use_Of_Entity argument of pragma Restrictions or
+   --  pragma Restrictions_Warning, or attribute Restriction_Set. Returns
+   --  True if N has the proper form for an entity name, False otherwise.
 
    function Is_In_Hidden_Part_In_SPARK (Loc : Source_Ptr) return Boolean;
    --  Determine if given location is covered by a hidden region range in the
@@ -459,6 +469,18 @@ package Restrict is
    --  N is the node id for the identifier in a pragma Restrictions for
    --  No_Use_Of_Attribute. Caller has verified that this is a valid attribute
    --  designator.
+
+   procedure Set_Restriction_No_Use_Of_Entity
+     (Entity  : Node_Id;
+      Warn    : Boolean;
+      Profile : Profile_Name := No_Profile);
+   --  Sets given No_Use_Of_Entity restriction in table if not there already.
+   --  Warn is True if from Restriction_Warnings, or for Restrictions if the
+   --  flag Treat_Restrictions_As_Warnings is set. False if from Restrictions
+   --  and this flag is not set. Profile is set to a non-default value if the
+   --  No_Dependence restriction comes from a Profile pragma. This procedure
+   --  also takes care of setting the Boolean2 flag of the simple name for
+   --  the entity  (to optimize table searches).
 
    procedure Set_Restriction_No_Use_Of_Pragma
      (N       : Node_Id;

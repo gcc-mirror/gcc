@@ -82,7 +82,7 @@ package body Ghost is
       for Index in reverse Ignored_Ghost_Units.First ..
                            Ignored_Ghost_Units.Last
       loop
-         --  The unit is already present in the table, do not add it again
+         --  If the unit is already present in the table, do not add it again
 
          if Unit = Ignored_Ghost_Units.Table (Index) then
             return;
@@ -260,11 +260,10 @@ package body Ghost is
                Ref : Node_Id;
 
             begin
-               Ref := N;
-
                --  When the reference extracts a subcomponent, recover the
                --  related object (SPARK RM 6.9(1)).
 
+               Ref := N;
                while Nkind_In (Ref, N_Explicit_Dereference,
                                     N_Indexed_Component,
                                     N_Selected_Component,
@@ -884,11 +883,10 @@ package body Ghost is
       elsif Nkind_In (N, N_Assignment_Statement,
                          N_Procedure_Call_Statement)
       then
-         Nam := Name (N);
-
          --  When the reference extracts a subcomponent, recover the related
          --  object (SPARK RM 6.9(1)).
 
+         Nam := Name (N);
          while Nkind_In (Nam, N_Explicit_Dereference,
                               N_Indexed_Component,
                               N_Selected_Component,
@@ -922,10 +920,8 @@ package body Ghost is
    begin
       if Is_Checked_Ghost_Entity (Id) then
          Ghost_Mode := Check;
-
       elsif Is_Ignored_Ghost_Entity (Id) then
          Ghost_Mode := Ignore;
-
          Propagate_Ignored_Ghost_Code (N);
       end if;
    end Set_Ghost_Mode_For_Freeze;
@@ -936,11 +932,9 @@ package body Ghost is
 
    procedure Set_Is_Ghost_Entity (Id : Entity_Id) is
       Policy : constant Name_Id := Policy_In_Effect (Name_Ghost);
-
    begin
       if Policy = Name_Check then
          Set_Is_Checked_Ghost_Entity (Id);
-
       elsif Policy = Name_Ignore then
          Set_Is_Ignored_Ghost_Entity (Id);
       end if;

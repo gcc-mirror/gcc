@@ -2052,7 +2052,7 @@ private
       Missing_Source_Files       : Error_Warning;
       Ignore_Missing_With        : Boolean;
 
-      Incomplete_Withs           : Boolean := False;
+      Incomplete_Withs : Boolean := False;
       --  This flag is set to True when the projects are parsed while ignoring
       --  missing withed project and some withed projects are not found.
 

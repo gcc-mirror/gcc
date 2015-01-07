@@ -8895,12 +8895,25 @@ package body Sem_Prag is
                   Set_Restriction_No_Use_Of_Attribute (Expr, Warn);
                end if;
 
-            --  Case of No_Use_Of_Entity => fully-qualified-name. Note that the
-            --  parser already processed this case commpletely, including error
-            --  checking and making an entry in the No_Use_Of_Entity table.
+            --  Case of No_Use_Of_Entity => fully-qualified-name
 
             elsif Id = Name_No_Use_Of_Entity then
-               null;
+
+               --  Restriction is only recognized within a configuration
+               --  pragma file, or within a unit of the main extended
+               --  program. Note: the test for Main_Unit is needed to
+               --  properly include the case of configuration pragma files.
+
+               if Current_Sem_Unit = Main_Unit
+                 or else In_Extended_Main_Source_Unit (N)
+               then
+                  if not OK_No_Dependence_Unit_Name (Expr) then
+                     Error_Msg_N ("wrong form for entity name", Expr);
+                  else
+                     Set_Restriction_No_Use_Of_Entity
+                       (Expr, Warn, No_Profile);
+                  end if;
+               end if;
 
             --  Case of No_Use_Of_Pragma => pragma-identifier
 
@@ -8909,7 +8922,6 @@ package body Sem_Prag is
                  or else not Is_Pragma_Name (Chars (Expr))
                then
                   Error_Msg_N ("unknown pragma name??", Expr);
-
                else
                   Set_Restriction_No_Use_Of_Pragma (Expr, Warn);
                end if;
@@ -14941,7 +14953,7 @@ package body Sem_Prag is
          -- Independent_Components --
          ----------------------------
 
-         --  pragma Atomic_Components (array_or_record_LOCAL_NAME);
+         --  pragma Independent_Components (array_or_record_LOCAL_NAME);
 
          when Pragma_Independent_Components => Independent_Components : declare
             E_Id : Node_Id;
