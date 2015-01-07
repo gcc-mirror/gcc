@@ -763,6 +763,12 @@ package body Exp_Pakd is
       --  a subtype that is equivalent to use Packed_Bytes{1,2,4} as needed.
 
       elsif not Is_Constrained (Typ) then
+
+         --  When generating standard DWARF, the ___XP suffix will be stripped
+         --  by the back-end, but generate it anyway to ease compiler
+         --  debugging: this will help to distinguish implementation types from
+         --  original packed arrays.
+
          PAT :=
            Make_Defining_Identifier (Loc,
              Chars => Make_Packed_Array_Impl_Type_Name (Typ, Csize));

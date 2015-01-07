@@ -1604,6 +1604,8 @@ package body Prj.Conf is
       Target_Try_Again : Boolean := True;
       Config_Try_Again : Boolean;
 
+      Finalization : Prj.Part.Errout_Mode := Prj.Part.Always_Finalize;
+
       S : State := No_State;
 
       Conf_File_Name : String_Access := new String'(Config_File_Name);
@@ -1663,12 +1665,14 @@ package body Prj.Conf is
         (In_Tree           => Project_Node_Tree,
          Project           => User_Project_Node,
          Project_File_Name => Project_File_Name,
-         Errout_Handling   => Prj.Part.Finalize_If_Error,
+         Errout_Handling   => Finalization,
          Packages_To_Check => Packages_To_Check,
          Current_Directory => Current_Directory,
          Is_Config_File    => False,
          Env               => Env,
          Implicit_Project  => Implicit_Project);
+
+      Finalization := Prj.Part.Finalize_If_Error;
 
       if User_Project_Node = Empty_Node then
          return;

@@ -227,9 +227,11 @@ package System.OS_Interface is
    --  If we are in the kernel space, lock interrupts. It typically maps to
    --  intLock.
 
-   function Int_Unlock return int renames System.VxWorks.Ext.Int_Unlock;
+   function Int_Unlock (Old : int) return int
+     renames System.VxWorks.Ext.Int_Unlock;
    --  If we are in the kernel space, unlock interrupts. It typically maps to
-   --  intUnlock.
+   --  intUnlock. The parameter Old is only used on PowerPC where it contains
+   --  the returned value from Int_Lock (the old MPSR).
 
    ----------
    -- Time --

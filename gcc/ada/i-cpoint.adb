@@ -146,7 +146,7 @@ package body Interfaces.C.Pointers is
       L : ptrdiff_t;
       S : Pointer := Source;
    begin
-      if Source = null then
+      if Source = null or Target = null then
          raise Dereference_Error;
       end if;
 

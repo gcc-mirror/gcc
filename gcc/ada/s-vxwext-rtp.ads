@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---            Copyright (C) 2008-2011, Free Software Foundation, Inc.       --
+--            Copyright (C) 2008-2014, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software;  you can redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,7 +53,7 @@ package System.VxWorks.Ext is
    function Int_Lock return int;
    pragma Inline (Int_Lock);
 
-   function Int_Unlock return int;
+   function Int_Unlock (Old : int) return int;
    pragma Inline (Int_Unlock);
 
    function Interrupt_Connect
