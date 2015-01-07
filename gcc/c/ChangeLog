@@ -1,3 +1,10 @@
+2015-01-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64417
+	* c-typeck.c (process_init_element): Disallow initialization of
+	a flexible array member with a string constant if the structure
+	is in an array.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/64344
