@@ -1662,6 +1662,15 @@ package body Lib.Xref is
          J := 1;
          while J <= Xrefs.Last loop
             Ent := Xrefs.Table (J).Key.Ent;
+
+            --  Do not generate reference information for an ignored Ghost
+            --  entity because neither the entity nor its references will
+            --  appear in the final tree.
+
+            if Is_Ignored_Ghost_Entity (Ent) then
+               goto Orphan_Continue;
+            end if;
+
             Get_Type_Reference (Ent, Tref, L, R);
 
             if Present (Tref)
@@ -1744,6 +1753,7 @@ package body Lib.Xref is
                end;
             end if;
 
+            <<Orphan_Continue>>
             J := J + 1;
          end loop;
       end Handle_Orphan_Type_References;
@@ -1752,7 +1762,6 @@ package body Lib.Xref is
       --  references, so we can sort them, and output them.
 
       Output_Refs : declare
-
          Nrefs : constant Nat := Xrefs.Last;
          --  Number of references in table
 
@@ -2114,6 +2123,15 @@ package body Lib.Xref is
 
             begin
                Ent := XE.Key.Ent;
+
+               --  Do not generate reference information for an ignored Ghost
+               --  entity because neither the entity nor its references will
+               --  appear in the final tree.
+
+               if Is_Ignored_Ghost_Entity (Ent) then
+                  goto Continue;
+               end if;
+
                Ctyp := Xref_Entity_Letters (Ekind (Ent));
 
                --  Skip reference if it is the only reference to an entity,

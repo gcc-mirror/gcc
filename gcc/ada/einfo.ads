@@ -661,6 +661,11 @@ package Einfo is
 --    Component_Type (Node20) [implementation base type only]
 --       Defined in array types and string types. References component type.
 
+--    Contains_Ignored_Ghost_Code (Flag279)
+--       Defined in blocks, packages and their bodies, subprograms and their
+--       bodies. Set if the entity contains any ignored Ghost code in the form
+--       of declaration, procedure call, assignment statement or pragma.
+
 --    Corresponding_Concurrent_Type (Node18)
 --       Defined in record types that are constructed by the expander to
 --       represent task and protected types (Is_Concurrent_Record_Type flag
@@ -5458,6 +5463,7 @@ package Einfo is
    --    Last_Entity                         (Node20)
    --    Scope_Depth_Value                   (Uint22)
    --    Entry_Cancel_Parameter              (Node23)
+   --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Cleanups                      (Flag114)
    --    Discard_Names                       (Flag88)
    --    Has_Master_Entity                   (Flag21)
@@ -5531,8 +5537,8 @@ package Einfo is
    --    Has_Biased_Representation           (Flag139)
    --    Has_Completion                      (Flag26)   (constants only)
    --    Has_Independent_Components          (Flag34)
-   --    Has_Thunks                          (Flag228)  (constants only)
    --    Has_Size_Clause                     (Flag29)
+   --    Has_Thunks                          (Flag228)  (constants only)
    --    Has_Up_Level_Access                 (Flag215)
    --    Has_Volatile_Components             (Flag87)
    --    Is_Atomic                           (Flag85)
@@ -5709,11 +5715,12 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Body_Needed_For_SAL                 (Flag40)
-   --    Elaboration_Entity_Required         (Flag174)
+   --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Default_Expressions_Processed       (Flag108)
    --    Delay_Cleanups                      (Flag114)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Discard_Names                       (Flag88)
+   --    Elaboration_Entity_Required         (Flag174)
    --    Has_Anonymous_Master                (Flag253)
    --    Has_Completion                      (Flag26)
    --    Has_Controlling_Result              (Flag98)
@@ -5921,6 +5928,7 @@ package Einfo is
    --    Contract                            (Node34)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Body_Needed_For_SAL                 (Flag40)
+   --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Discard_Names                       (Flag88)
    --    Elaboration_Entity_Required         (Flag174)
    --    Elaborate_Body_Desirable            (Flag210)  (non-generic case only)
@@ -5955,6 +5963,7 @@ package Einfo is
    --    SPARK_Aux_Pragma                    (Node33)
    --    SPARK_Pragma                        (Node32)
    --    Contract                            (Node34)
+   --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Has_Anonymous_Master                (Flag253)
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
@@ -6005,6 +6014,7 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Body_Needed_For_SAL                 (Flag40)
+   --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Cleanups                      (Flag114)
    --    Discard_Names                       (Flag88)
    --    Elaboration_Entity_Required         (Flag174)
@@ -6174,8 +6184,9 @@ package Einfo is
    --    Scope_Depth_Value                   (Uint22)
    --    Extra_Formals                       (Node28)
    --    SPARK_Pragma                        (Node32)
-   --    SPARK_Pragma_Inherited              (Flag265)
    --    Contract                            (Node34)
+   --    Contains_Ignored_Ghost_Code         (Flag279)
+   --    SPARK_Pragma_Inherited              (Flag265)
    --    Scope_Depth                         (synth)
 
    --  E_Subprogram_Type
@@ -6527,6 +6538,7 @@ package Einfo is
    function Component_Clause                    (Id : E) return N;
    function Component_Size                      (Id : E) return U;
    function Component_Type                      (Id : E) return E;
+   function Contains_Ignored_Ghost_Code         (Id : E) return B;
    function Contract                            (Id : E) return N;
    function Corresponding_Concurrent_Type       (Id : E) return E;
    function Corresponding_Discriminant          (Id : E) return E;
@@ -7168,6 +7180,7 @@ package Einfo is
    procedure Set_Component_Clause                (Id : E; V : N);
    procedure Set_Component_Size                  (Id : E; V : U);
    procedure Set_Component_Type                  (Id : E; V : E);
+   procedure Set_Contains_Ignored_Ghost_Code     (Id : E; V : B := True);
    procedure Set_Contract                        (Id : E; V : N);
    procedure Set_Corresponding_Concurrent_Type   (Id : E; V : E);
    procedure Set_Corresponding_Discriminant      (Id : E; V : E);
@@ -7924,6 +7937,7 @@ package Einfo is
    pragma Inline (Component_Clause);
    pragma Inline (Component_Size);
    pragma Inline (Component_Type);
+   pragma Inline (Contains_Ignored_Ghost_Code);
    pragma Inline (Contract);
    pragma Inline (Corresponding_Concurrent_Type);
    pragma Inline (Corresponding_Discriminant);
@@ -8413,6 +8427,7 @@ package Einfo is
    pragma Inline (Set_Component_Clause);
    pragma Inline (Set_Component_Size);
    pragma Inline (Set_Component_Type);
+   pragma Inline (Set_Contains_Ignored_Ghost_Code);
    pragma Inline (Set_Contract);
    pragma Inline (Set_Corresponding_Concurrent_Type);
    pragma Inline (Set_Corresponding_Discriminant);

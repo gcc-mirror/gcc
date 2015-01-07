@@ -39,6 +39,7 @@ pragma Style_Checks (All_Checks);
 with Aspects; use Aspects;
 with Debug;   use Debug;
 with Nlists;  use Nlists;
+with Opt;     use Opt;
 with Output;  use Output;
 with Sinput;  use Sinput;
 with Tree_IO; use Tree_IO;
@@ -569,10 +570,10 @@ package body Atree is
       then
          New_Id := Src;
 
-      else
-         --  We are allocating a new node, or extending a node
-         --  other than Nodes.Last.
+      --  We are allocating a new node, or extending a node other than
+      --  Nodes.Last.
 
+      else
          if Present (Src) then
             Nodes.Append (Nodes.Table (Src));
             Flags.Append (Flags.Table (Src));
@@ -584,6 +585,13 @@ package body Atree is
          New_Id := Nodes.Last;
          Orig_Nodes.Append (New_Id);
          Node_Count := Node_Count + 1;
+      end if;
+
+      --  Mark the node as ignored Ghost if it is created in an ignored Ghost
+      --  region.
+
+      if Ghost_Mode = Ignore then
+         Set_Is_Ignored_Ghost_Node (New_Id);
       end if;
 
       --  Specifically copy Paren_Count to deal with creating new table entry
@@ -1080,6 +1088,30 @@ package body Atree is
    end Ekind_In;
 
    function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind;
+      V6 : Entity_Kind;
+      V7 : Entity_Kind;
+      V8 : Entity_Kind;
+      V9 : Entity_Kind) return Boolean
+   is
+   begin
+      return T = V1 or else
+             T = V2 or else
+             T = V3 or else
+             T = V4 or else
+             T = V5 or else
+             T = V6 or else
+             T = V7 or else
+             T = V8 or else
+             T = V9;
+   end Ekind_In;
+
+   function Ekind_In
      (E  : Entity_Id;
       V1 : Entity_Kind;
       V2 : Entity_Kind) return Boolean
@@ -1161,6 +1193,22 @@ package body Atree is
    is
    begin
       return Ekind_In (Ekind (E), V1, V2, V3, V4, V5, V6, V7, V8);
+   end Ekind_In;
+
+   function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind;
+      V6 : Entity_Kind;
+      V7 : Entity_Kind;
+      V8 : Entity_Kind;
+      V9 : Entity_Kind) return Boolean
+   is
+   begin
+      return Ekind_In (Ekind (E), V1, V2, V3, V4, V5, V6, V7, V8, V9);
    end Ekind_In;
 
    ------------------------
@@ -1381,6 +1429,15 @@ package body Atree is
       Set_Name1 (Error, Error_Name);
       Set_Error_Posted (Error, True);
    end Initialize;
+
+   ---------------------------
+   -- Is_Ignored_Ghost_Node --
+   ---------------------------
+
+   function Is_Ignored_Ghost_Node (N : Node_Id) return Boolean is
+   begin
+      return Flags.Table (N).Is_Ignored_Ghost_Node;
+   end Is_Ignored_Ghost_Node;
 
    --------------------------
    -- Is_Rewrite_Insertion --
@@ -2030,6 +2087,15 @@ package body Atree is
       pragma Assert (N <= Nodes.Last);
       Nodes.Table (N).Has_Aspects := Val;
    end Set_Has_Aspects;
+
+   -------------------------------
+   -- Set_Is_Ignored_Ghost_Node --
+   -------------------------------
+
+   procedure Set_Is_Ignored_Ghost_Node (N : Node_Id; Val : Boolean := True) is
+   begin
+      Flags.Table (N).Is_Ignored_Ghost_Node := Val;
+   end Set_Is_Ignored_Ghost_Node;
 
    -----------------------
    -- Set_Original_Node --

@@ -32,6 +32,7 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Impunit;  use Impunit;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
@@ -552,6 +553,12 @@ package body Sem_Ch8 is
       Nam : constant Node_Id := Name (N);
 
    begin
+      --  The exception renaming declaration may be subject to pragma Ghost
+      --  with policy Ignore. Set the mode now to ensure that any nodes
+      --  generated during analysis and expansion are properly flagged as
+      --  ignored Ghost.
+
+      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("exception renaming is not allowed", N);
 
       Enter_Name (Id);
@@ -575,7 +582,7 @@ package body Sem_Ch8 is
          --  An exception renaming is Ghost if the renamed entity is Ghost or
          --  the construct appears within a Ghost scope.
 
-         if Is_Ghost_Entity (Entity (Nam)) or else Within_Ghost_Scope then
+         if Is_Ghost_Entity (Entity (Nam)) or else Ghost_Mode > None then
             Set_Is_Ghost_Entity (Id);
          end if;
       end if;
@@ -665,6 +672,11 @@ package body Sem_Ch8 is
          return;
       end if;
 
+      --  The generic renaming declaration may be subject to pragma Ghost with
+      --  policy Ignore. Set the mode now to ensure that any nodes generated
+      --  during analysis and expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("generic renaming is not allowed", N);
 
       Generate_Definition (New_P);
@@ -711,7 +723,7 @@ package body Sem_Ch8 is
          --  An generic renaming is Ghost if the renamed entity is Ghost or the
          --  construct appears within a Ghost scope.
 
-         if Is_Ghost_Entity (Old_P) or else Within_Ghost_Scope then
+         if Is_Ghost_Entity (Old_P) or else Ghost_Mode > None then
             Set_Is_Ghost_Entity (New_P);
          end if;
 
@@ -850,6 +862,11 @@ package body Sem_Ch8 is
          return;
       end if;
 
+      --  The object renaming declaration may be subject to pragma Ghost with
+      --  policy Ignore. Set the mode now to ensure that any nodes generated
+      --  during analysis and expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("object renaming is not allowed", N);
 
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
@@ -1315,7 +1332,7 @@ package body Sem_Ch8 is
 
       if (Is_Entity_Name (Nam)
            and then Is_Ghost_Entity (Entity (Nam)))
-        or else Within_Ghost_Scope
+        or else Ghost_Mode > None
       then
          Set_Is_Ghost_Entity (Id);
       end if;
@@ -1370,6 +1387,12 @@ package body Sem_Ch8 is
       if Name (N) = Error then
          return;
       end if;
+
+      --  The package renaming declaration may be subject to pragma Ghost with
+      --  policy Ignore. Set the mode now to ensure that any nodes generated
+      --  during analysis and expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
 
       --  Check for Text_IO special unit (we may be renaming a Text_IO child)
 
@@ -1437,7 +1460,7 @@ package body Sem_Ch8 is
          --  A package renaming is Ghost if the renamed entity is Ghost or
          --  the construct appears within a Ghost scope.
 
-         if Is_Ghost_Entity (Old_P) or else Within_Ghost_Scope then
+         if Is_Ghost_Entity (Old_P) or else Ghost_Mode > None then
             Set_Is_Ghost_Entity (New_P);
          end if;
 
@@ -2559,6 +2582,13 @@ package body Sem_Ch8 is
    --  Start of processing for Analyze_Subprogram_Renaming
 
    begin
+      --  The subprogram renaming declaration may be subject to pragma Ghost
+      --  with policy Ignore. Set the mode now to ensure that any nodes
+      --  generated during analysis and expansion are properly flagged as
+      --  ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
       --  We must test for the attribute renaming case before the Analyze
       --  call because otherwise Sem_Attr will complain that the attribute
       --  is missing an argument when it is analyzed.
@@ -3027,7 +3057,7 @@ package body Sem_Ch8 is
          --  A subprogram renaming is Ghost if the renamed entity is Ghost or
          --  the construct appears within a Ghost scope.
 
-         if Is_Ghost_Entity (Entity (Nam)) or else Within_Ghost_Scope then
+         if Is_Ghost_Entity (Entity (Nam)) or else Ghost_Mode > None then
             Set_Is_Ghost_Entity (New_S);
          end if;
 
@@ -7183,6 +7213,12 @@ package body Sem_Ch8 is
             Check_Restriction (No_Fixed_Point, N);
          elsif Is_Floating_Point_Type (Etype (N)) then
             Check_Restriction (No_Floating_Point, N);
+         end if;
+
+         --  A Ghost type must appear in a specific context
+
+         if Is_Ghost_Entity (Etype (N)) then
+            Check_Ghost_Context (Etype (N), N);
          end if;
       end if;
    end Find_Type;

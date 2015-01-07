@@ -36,6 +36,7 @@ with Exp_Dbug; use Exp_Dbug;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Itypes;   use Itypes;
 with Layout;   use Layout;
 with Nlists;   use Nlists;
@@ -3663,6 +3664,10 @@ package body Exp_Disp is
    --     end;
 
    function Make_DT (Typ : Entity_Id; N : Node_Id := Empty) return List_Id is
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the current Ghost mode in effect in case the tagged type sets a
+      --  different mode.
+
       Loc : constant Source_Ptr := Sloc (Typ);
 
       Max_Predef_Prims : constant Int :=
@@ -3724,6 +3729,9 @@ package body Exp_Disp is
       --  value of Suffix_Index must match the Suffix_Index value assigned to
       --  this secondary dispatch table by Make_Tags when its unique external
       --  name was generated.
+
+      procedure Restore_Globals;
+      --  Restore the values of all saved global variables
 
       ------------------------------
       -- Check_Premature_Freezing --
@@ -4409,6 +4417,15 @@ package body Exp_Disp is
          Append_Elmt (Iface_DT, DT_Decl);
       end Make_Secondary_DT;
 
+      ---------------------
+      -- Restore_Globals --
+      ---------------------
+
+      procedure Restore_Globals is
+      begin
+         Ghost_Mode := GM;
+      end Restore_Globals;
+
       --  Local variables
 
       Elab_Code          : constant List_Id := New_List;
@@ -4479,6 +4496,13 @@ package body Exp_Disp is
    begin
       pragma Assert (Is_Frozen (Typ));
 
+      --  The tagged type for which the dispatch table is being build may be
+      --  subject to pragma Ghost with policy Ignore. Set the mode now to
+      --  ensure that any nodes generated during freezing are properly flagged
+      --  as ignored Ghost.
+
+      Set_Ghost_Mode_For_Freeze (Typ, Typ);
+
       --  Handle cases in which there is no need to build the dispatch table
 
       if Has_Dispatch_Table (Typ)
@@ -4487,10 +4511,12 @@ package body Exp_Disp is
         or else Convention (Typ) = Convention_CIL
         or else Convention (Typ) = Convention_Java
       then
+         Restore_Globals;
          return Result;
 
       elsif No_Run_Time_Mode then
          Error_Msg_CRT ("tagged types", Typ);
+         Restore_Globals;
          return Result;
 
       elsif not RTE_Available (RE_Tag) then
@@ -4506,6 +4532,7 @@ package body Exp_Disp is
 
          Analyze_List (Result, Suppress => All_Checks);
          Error_Msg_CRT ("tagged types", Typ);
+         Restore_Globals;
          return Result;
       end if;
 
@@ -4516,12 +4543,14 @@ package body Exp_Disp is
       if RTE_Available (RE_Interface_Data) then
          if Max_Predef_Prims /= 15 then
             Error_Msg_N ("run-time library configuration error", Typ);
+            Restore_Globals;
             return Result;
          end if;
       else
          if Max_Predef_Prims /= 9 then
             Error_Msg_N ("run-time library configuration error", Typ);
             Error_Msg_CRT ("tagged types", Typ);
+            Restore_Globals;
             return Result;
          end if;
       end if;
@@ -6242,6 +6271,7 @@ package body Exp_Disp is
 
       Register_CG_Node (Typ);
 
+      Restore_Globals;
       return Result;
    end Make_DT;
 

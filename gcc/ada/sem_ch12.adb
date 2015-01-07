@@ -33,6 +33,7 @@ with Exp_Disp; use Exp_Disp;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
@@ -2991,6 +2992,11 @@ package body Sem_Ch12 is
       Decl        : Node_Id;
 
    begin
+      --  The generic package declaration may be subject to pragma Ghost with
+      --  policy Ignore. Set the mode now to ensure that any nodes generated
+      --  during analysis and expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("generic is not allowed", N);
 
       --  We introduce a renaming of the enclosing package, to have a usable
@@ -3050,10 +3056,10 @@ package body Sem_Ch12 is
       Set_Etype    (Id, Standard_Void_Type);
       Set_Contract (Id, Make_Contract (Sloc (Id)));
 
-      --  A generic package declared within a Ghost scope is rendered Ghost
+      --  A generic package declared within a Ghost region is rendered Ghost
       --  (SPARK RM 6.9(2)).
 
-      if Within_Ghost_Scope then
+      if Ghost_Mode > None then
          Set_Is_Ghost_Entity (Id);
       end if;
 
@@ -3152,6 +3158,12 @@ package body Sem_Ch12 is
       Typ         : Entity_Id;
 
    begin
+      --  The generic subprogram declaration may be subject to pragma Ghost
+      --  with policy Ignore. Set the mode now to ensure that any nodes
+      --  generated during analysis and expansion are properly flagged as
+      --  ignored Ghost.
+
+      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("generic is not allowed", N);
 
       --  Create copy of generic unit, and save for instantiation. If the unit
@@ -3259,10 +3271,10 @@ package body Sem_Ch12 is
          Set_Etype (Id, Standard_Void_Type);
       end if;
 
-      --  A generic subprogram declared within a Ghost scope is rendered Ghost
+      --  A generic subprogram declared within a Ghost region is rendered Ghost
       --  (SPARK RM 6.9(2)).
 
-      if Within_Ghost_Scope then
+      if Ghost_Mode > None then
          Set_Is_Ghost_Entity (Id);
       end if;
 

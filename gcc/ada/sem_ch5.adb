@@ -32,6 +32,7 @@ with Expander; use Expander;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
@@ -278,6 +279,13 @@ package body Sem_Ch5 is
       --  proper use of a Ghost entity need to know the enclosing context.
 
       Analyze (Lhs);
+
+      --  The left hand side of an assignment may reference an entity subject
+      --  to pragma Ghost with policy Ignore. Set the mode now to ensure that
+      --  any nodes generated during analysis and expansion are properly
+      --  flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
       Analyze (Rhs);
 
       --  Ensure that we never do an assignment on a variable marked as

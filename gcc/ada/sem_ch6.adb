@@ -40,6 +40,7 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Inline;   use Inline;
 with Itypes;   use Itypes;
 with Lib.Xref; use Lib.Xref;
@@ -213,6 +214,12 @@ package body Sem_Ch6 is
       Scop       : constant Entity_Id := Current_Scope;
 
    begin
+      --  The abstract subprogram declaration may be subject to pragma Ghost
+      --  with policy Ignore. Set the mode now to ensure that any nodes
+      --  generated during analysis and expansion are properly flagged as
+      --  ignored Ghost.
+
+      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("abstract subprogram is not allowed", N);
 
       Generate_Definition (Designator);
@@ -223,10 +230,10 @@ package body Sem_Ch6 is
 
       Set_Categorization_From_Scope (Designator, Scop);
 
-      --  An abstract subprogram declared within a Ghost scope is automatically
+      --  An abstract subprogram declared within a Ghost region is rendered
       --  Ghost (SPARK RM 6.9(2)).
 
-      if Comes_From_Source (Designator) and then Within_Ghost_Scope then
+      if Comes_From_Source (Designator) and then Ghost_Mode > None then
          Set_Is_Ghost_Entity (Designator);
       end if;
 
@@ -1257,7 +1264,7 @@ package body Sem_Ch6 is
          --  property is not directly inherited as the body may be subject
          --  to a different Ghost assertion policy.
 
-         if Is_Ghost_Entity (Gen_Id) or else Within_Ghost_Scope then
+         if Is_Ghost_Entity (Gen_Id) or else Ghost_Mode > None then
             Set_Is_Ghost_Entity (Body_Id);
 
             --  The Ghost policy in effect at the point of declaration and at
@@ -1605,6 +1612,13 @@ package body Sem_Ch6 is
          Set_Etype (N, Any_Type);
          return;
       end if;
+
+      --  The name of the procedure call may reference an entity subject to
+      --  pragma Ghost with policy Ignore. Set the mode now to ensure that any
+      --  nodes generated during analysis and expansion are properly flagged as
+      --  ignored Ghost.
+
+      Set_Ghost_Mode (N);
 
       --  Otherwise analyze the parameters
 
@@ -3113,6 +3127,13 @@ package body Sem_Ch6 is
       then
          if Is_Generic_Subprogram (Prev_Id) then
             Spec_Id := Prev_Id;
+
+            --  The corresponding spec may be subject to pragma Ghost with
+            --  policy Ignore. Set the mode now to ensure that any nodes
+            --  generated during analysis and expansion are properly flagged
+            --  as ignored Ghost.
+
+            Set_Ghost_Mode          (N, Spec_Id);
             Set_Is_Compilation_Unit (Body_Id, Is_Compilation_Unit (Spec_Id));
             Set_Is_Child_Unit       (Body_Id, Is_Child_Unit       (Spec_Id));
 
@@ -3150,8 +3171,23 @@ package body Sem_Ch6 is
          then
             if Is_Private_Concurrent_Primitive (Body_Id) then
                Spec_Id := Disambiguate_Spec;
+
+               --  The corresponding spec may be subject to pragma Ghost with
+               --  policy Ignore. Set the mode now to ensure that any nodes
+               --  generated during analysis and expansion are properly flagged
+               --  as ignored Ghost.
+
+               Set_Ghost_Mode (N, Spec_Id);
+
             else
                Spec_Id := Find_Corresponding_Spec (N);
+
+               --  The corresponding spec may be subject to pragma Ghost with
+               --  policy Ignore. Set the mode now to ensure that any nodes
+               --  generated during analysis and expansion are properly flagged
+               --  as ignored Ghost.
+
+               Set_Ghost_Mode (N, Spec_Id);
 
                --  In GNATprove mode, if the body has no previous spec, create
                --  one so that the inlining machinery can operate properly.
@@ -3294,6 +3330,13 @@ package body Sem_Ch6 is
 
          else
             Spec_Id := Corresponding_Spec (N);
+
+            --  The corresponding spec may be subject to pragma Ghost with
+            --  policy Ignore. Set the mode now to ensure that any nodes
+            --  generated during analysis and expansion are properly flagged
+            --  as ignored Ghost.
+
+            Set_Ghost_Mode (N, Spec_Id);
          end if;
       end if;
 
@@ -3387,7 +3430,7 @@ package body Sem_Ch6 is
             --  property is not directly inherited as the body may be subject
             --  to a different Ghost assertion policy.
 
-            if Is_Ghost_Entity (Spec_Id) or else Within_Ghost_Scope then
+            if Is_Ghost_Entity (Spec_Id) or else Ghost_Mode > None then
                Set_Is_Ghost_Entity (Body_Id);
 
                --  The Ghost policy in effect at the point of declaration and
@@ -4261,6 +4304,12 @@ package body Sem_Ch6 is
       --  Indicates whether a null procedure declaration is a completion
 
    begin
+      --  The subprogram declaration may be subject to pragma Ghost with policy
+      --  Ignore. Set the mode now to ensure that any nodes generated during
+      --  analysis and expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
       --  Null procedures are not allowed in SPARK
 
       if Nkind (Specification (N)) = N_Procedure_Specification
@@ -4294,12 +4343,12 @@ package body Sem_Ch6 is
       --  explicit pragma).
 
       Set_SPARK_Pragma (Designator, SPARK_Mode_Pragma);
-      Set_SPARK_Pragma_Inherited (Designator, True);
+      Set_SPARK_Pragma_Inherited (Designator);
 
-      --  A subprogram declared within a Ghost scope is automatically Ghost
+      --  A subprogram declared within a Ghost region is automatically Ghost
       --  (SPARK RM 6.9(2)).
 
-      if Comes_From_Source (Designator) and then Within_Ghost_Scope then
+      if Comes_From_Source (Designator) and then Ghost_Mode > None then
          Set_Is_Ghost_Entity (Designator);
       end if;
 

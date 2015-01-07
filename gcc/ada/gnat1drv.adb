@@ -36,6 +36,7 @@ with Fmap;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Frontend;
+with Ghost;
 with Gnatvsn;  use Gnatvsn;
 with Inline;
 with Lib;      use Lib;
@@ -863,7 +864,6 @@ begin
       Lib.Xref.Initialize;
       Scan_Compiler_Arguments;
       Osint.Add_Default_Search_Dirs;
-
       Atree.Initialize;
       Nlists.Initialize;
       Sinput.Initialize;
@@ -876,6 +876,7 @@ begin
       SCOs.Initialize;
       Snames.Initialize;
       Stringt.Initialize;
+      Ghost.Initialize;
       Inline.Initialize;
       Par_SCO.Initialize;
       Sem_Ch8.Initialize;
@@ -1291,12 +1292,13 @@ begin
       Atree.Lock;
       Elists.Lock;
       Fname.UF.Lock;
+      Ghost.Lock;
       Inline.Lock;
       Lib.Lock;
+      Namet.Lock;
       Nlists.Lock;
       Sem.Lock;
       Sinput.Lock;
-      Namet.Lock;
       Stringt.Lock;
 
       --  Here we call the back end to generate the output code

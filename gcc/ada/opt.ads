@@ -724,6 +724,14 @@ package Opt is
    --  True if the frontend finished its work and has called the backend to
    --  process the tree and generate the object file.
 
+   type Ghost_Mode_Type is (None, Check, Ignore);
+   --  Possible legal modes that can be set by aspect/pragma Ghost as well as
+   --  value None, which indicates that no such aspect/pragma applies.
+
+   Ghost_Mode : Ghost_Mode_Type := None;
+   --  GNAT
+   --  Current Ghost mode setting
+
    Global_Discard_Names : Boolean := False;
    --  GNAT, GNATBIND
    --  True if a pragma Discard_Names appeared as a configuration pragma for

@@ -1,3 +1,138 @@
+2015-01-07  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* alloc.ads Alphabetize several declarations. Add constants
+	Ignored_Ghost_Units_Initial and Ignored_Ghost_Units_Increment.
+	* atree.adb Add with and use clauses for Opt.
+	(Allocate_Initialize_Node): Mark a node as ignored Ghost
+	if it is created in an ignored Ghost region.
+	(Ekind_In): New variant.
+	(Is_Ignored_Ghost_Node): New routine.
+	(Set_Is_Ignored_Ghost_Node): New routine.
+	* atree.adb Aplhabetize several subprograms declarations. Flag
+	Spare0 is now known as Is_Ignored_Ghost_Node.
+	(Ekind_In): New variant.
+	(Is_Ignored_Ghost_Node): New routine.
+	(Set_Is_Ignored_Ghost_Node): New routine.
+	* einfo.adb: Flag 279 is now known as Contains_Ignored_Ghost_Code.
+	(Contains_Ignored_Ghost_Code): New routine.
+	(Set_Contains_Ignored_Ghost_Code): New routine.
+	(Set_Is_Checked_Ghost_Entity, Set_Is_Ignored_Ghost_Entity):
+	It is now possible to set this property on an unanalyzed entity.
+	(Write_Entity_Flags): Output the status of flag
+	Contains_Ignored_Ghost_Code.
+	* einfo.ads New attribute Contains_Ignored_Ghost_Code along with
+	usage in nodes.
+	(Contains_Ignored_Ghost_Code): New routine
+	along with pragma Inline.
+	(Set_Contains_Ignored_Ghost_Code): New routine along with pragma Inline.
+	* exp_ch3.adb Add with and use clauses for Ghost.
+	(Freeze_Type): Capture/restore the value of Ghost_Mode on entry/exit.
+	Set the Ghost_Mode in effect.
+	(Restore_Globals): New routine.
+	* exp_ch7.adb (Process_Declarations): Do not process a context
+	that invoves an ignored Ghost entity.
+	* exp_dbug.adb (Qualify_All_Entity_Names): Skip an ignored Ghost
+	construct that has been rewritten as a null statement.
+	* exp_disp.adb Add with and use clauses for Ghost.
+	(Make_DT): Capture/restore the value of Ghost_Mode on entry/exit. Set
+	the Ghost_Mode in effect.
+	(Restore_Globals): New routine.
+	* exp_util.adb (Requires_Cleanup_Actions): An ignored Ghost entity
+	does not require any clean up. Add two missing cases that deal
+	with block statements.
+	* freeze.adb Add with and use clauses for Ghost.
+	(Freeze_Entity): Capture/restore the value of Ghost_Mode on entry/exit.
+	Set the Ghost_Mode in effect.
+	(Restore_Globals): New routine.
+	* frontend.adb Add with and use clauses for Ghost. Remove any
+	ignored Ghost code from all units that qualify.
+	* ghost.adb New unit.
+	* ghost.ads New unit.
+	* gnat1drv.adb Add with clause for Ghost. Initialize and lock
+	the table in package Ghost.
+	* lib.ads: Alphabetize several subprogram declarations.
+	* lib-xref.adb (Output_References): Do not generate reference
+	information for ignored Ghost entities.
+	* opt.ads Add new type Ghost_Mode_Type and new global variable
+	Ghost_Mode.
+	* rtsfind.adb (Load_RTU): Provide a clean environment when
+	loading a runtime unit.
+	* sem.adb (Analyze): Capture/restore the value of Ghost_Mode on
+	entry/exit as the node may set a different mode.
+	(Do_Analyze):
+	Capture/restore the value of Ghost_Mode on entry/exit as the
+	unit may be withed from a unit with a different Ghost mode.
+	* sem_ch3.adb Add with and use clauses for Ghost.
+	(Analyze_Full_Type_Declaration, Analyze_Incomplete_Type_Decl,
+	Analyze_Number_Declaration, Analyze_Private_Extension_Declaration,
+	Analyze_Subtype_Declaration): Set the Ghost_Mode in effect. Mark
+	the entity as Ghost when there is a Ghost_Mode in effect.
+	(Array_Type_Declaration): The implicit base type inherits the
+	"ghostness" from the array type.
+	(Derive_Subprogram): The
+	alias inherits the "ghostness" from the parent subprogram.
+	(Make_Implicit_Base): The implicit base type inherits the
+	"ghostness" from the parent type.
+	* sem_ch5.adb Add with and use clauses for Ghost.
+	(Analyze_Assignment): Set the Ghost_Mode in effect.
+	* sem_ch6.adb Add with and use clauses for Ghost.
+	(Analyze_Abstract_Subprogram_Declaration, Analyze_Procedure_Call,
+	Analyze_Subprogram_Body_Helper, Analyze_Subprogram_Declaration):
+	Set the Ghost_Mode in effect. Mark the entity as Ghost when
+	there is a Ghost_Mode in effect.
+	* sem_ch7.adb Add with and use clauses for Ghost.
+	(Analyze_Package_Body_Helper, Analyze_Package_Declaration,
+	Analyze_Private_Type_Declaration): Set the Ghost_Mode in
+	effect. Mark the entity as Ghost when there is a Ghost_Mode
+	in effect.
+	* sem_ch8.adb Add with and use clauses for Ghost.
+	(Analyze_Exception_Renaming, Analyze_Generic_Renaming,
+	Analyze_Object_Renaming, Analyze_Package_Renaming,
+	Analyze_Subprogram_Renaming): Set the Ghost_Mode in effect. Mark
+	the entity as Ghost when there is a Ghost_Mode in effect.
+	(Find_Type): Check the Ghost context of a type.
+	* sem_ch11.adb Add with and use clauses for Ghost.
+	(Analyze_Exception_Declaration): Set the Ghost_Mode in
+	effect. Mark the entity as Ghost when there is a Ghost_Mode
+	in effect.
+	* sem_ch12.adb Add with and use clauses for Ghost.
+	(Analyze_Generic_Package_Declaration,
+	Analyze_Generic_Subprogram_Declaration): Set the Ghost_Mode in effect.
+	Mark the entity as Ghost when there is a Ghost_Mode in effect.
+	* sem_prag.adb Add with and use clauses for Ghost.
+	(Analyze_Pragma): Ghost-related checks are triggered when there
+	is a Ghost mode in effect.
+	(Create_Abstract_State): Mark the
+	entity as Ghost when there is a Ghost_Mode in effect.
+	* sem_res.adb Add with and use clauses for Ghost.
+	(Check_Ghost_Context): Removed.
+	* sem_util.adb (Check_Ghost_Completion): Removed.
+	(Check_Ghost_Derivation): Removed.
+	(Incomplete_Or_Partial_View):
+	Add a guard in case the entity has not been analyzed yet
+	and does carry a scope.
+	(Is_Declaration): New routine.
+	(Is_Ghost_Entity): Removed.
+	(Is_Ghost_Statement_Or_Pragma):
+	Removed.
+	(Is_Subject_To_Ghost): Removed.
+	(Set_Is_Ghost_Entity):
+	Removed.
+	(Within_Ghost_Scope): Removed.
+	* sem_util.adb (Check_Ghost_Completion): Removed.
+	(Check_Ghost_Derivation): Removed.
+	(Is_Declaration): New routine.
+	(Is_Ghost_Entity): Removed.
+	(Is_Ghost_Statement_Or_Pragma): Removed.
+	(Is_Subject_To_Ghost): Removed.
+	(Set_Is_Ghost_Entity): Removed.
+	(Within_Ghost_Scope): Removed.
+	* sinfo.ads Add a section on Ghost mode.
+	* treepr.adb (Print_Header_Flag): New routine.
+	(Print_Node_Header): Factor out code. Output flag
+	Is_Ignored_Ghost_Node.
+	* gcc-interface/Make-lang.in: Add dependency for unit Ghost.
+
 2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* freeze.adb (Freeze_Array_Type) <Complain_CS>: Remove always
