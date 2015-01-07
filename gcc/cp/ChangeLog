@@ -1,3 +1,11 @@
+2015-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63658
+	* pt.c (convert_nontype_argument): Call convert_from_reference.
+	(check_instantiated_arg): Don't be confused by reference refs.
+	(unify): Look through reference refs on the arg, too.
+	* mangle.c (write_template_arg): Look through reference refs.
+
 2014-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60955

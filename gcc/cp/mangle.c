@@ -3111,6 +3111,8 @@ write_template_arg (tree node)
 	}
     }
 
+  if (REFERENCE_REF_P (node))
+    node = TREE_OPERAND (node, 0);
   if (TREE_CODE (node) == NOP_EXPR
       && TREE_CODE (TREE_TYPE (node)) == REFERENCE_TYPE)
     {
