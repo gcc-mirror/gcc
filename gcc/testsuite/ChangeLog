@@ -1,5 +1,11 @@
 2015-01-07  Marek Polacek  <polacek@redhat.com>
 
+	PR c/64440
+	* gcc.dg/pr64440.c: New test.
+	* c-c++-common/pr56607.c: Don't limit dg-warnings to C++.
+
+2015-01-07  Marek Polacek  <polacek@redhat.com>
+
 	PR c/64417
 	* gcc.c-torture/compile/pr28865.c: Add dg-errors.
 	* gcc.dg/pr64417.c: New test.

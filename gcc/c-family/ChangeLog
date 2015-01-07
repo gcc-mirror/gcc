@@ -1,3 +1,9 @@
+2015-01-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64440
+	* c-common.c (c_fully_fold_internal): Warn for division and modulo
+	if orig_op1 isn't INTEGER_CST, op1 is INTEGER_CST and is zero.
+
 2015-01-05  Trevor Saunders  <tsaunders@mozilla.com>
 
 	PR c++/31397
