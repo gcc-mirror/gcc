@@ -302,7 +302,19 @@ proc jit-dg-test { prog do_what extra_tool_flags } {
     }
 
     # Determine what to name the built executable.
-    set output_file "[file rootname [file tail $prog]].exe"
+    #
+    # We simply append .exe to the filename, e.g.
+    #  "test-foo.c.exe"
+    # since some testcases exist in both
+    #  "test-foo.c" and
+    #  "test-foo.cc"
+    # variants, and we don't want them to clobber each other's
+    # executables.
+    #
+    # This also ensures that the source name makes it into the
+    # pass/fail output, so that we can distinguish e.g. which test-foo
+    # is failing.
+    set output_file "[file tail $prog].exe"
     verbose "output_file: $output_file"
 
     # Create the test executable:

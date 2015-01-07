@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-libgccjit 5.0.0 (experimental 20141211), December 11, 2014
+libgccjit 5.0.0 (experimental 20150107), January 07, 2015
 
 David Malcolm
 
@@ -1185,7 +1185,7 @@ Here's what the final control flow graph will look like:
 
 @float Figure
 
-@image{sum-of-squares,,,image of a control flow graph,png}
+@image{sum-of-squares1,,,image of a control flow graph,png}
 
 @end float
 
@@ -1570,7 +1570,7 @@ install it with @cite{yum install python-xdot}):
 
 @float Figure
 
-@image{sum-of-squares,,,image of a control flow graph,png}
+@image{sum-of-squares1,,,image of a control flow graph,png}
 
 @end float
 
@@ -2834,7 +2834,7 @@ errors in our compiler.
 
 @float Figure
 
-@image{factorial,,,image of a control flow graph,png}
+@image{factorial1,,,image of a control flow graph,png}
 
 @end float
 
@@ -7436,7 +7436,7 @@ Here's what the final control flow graph will look like:
 
 @float Figure
 
-@image{sum-of-squares1,,,image of a control flow graph,png}
+@image{sum-of-squares,,,image of a control flow graph,png}
 
 @end float
 
@@ -7852,7 +7852,7 @@ install it with @cite{yum install python-xdot}):
 
 @float Figure
 
-@image{sum-of-squares1,,,image of a control flow graph,png}
+@image{sum-of-squares,,,image of a control flow graph,png}
 
 @end float
 
@@ -9021,7 +9021,7 @@ errors in our compiler.
 
 @float Figure
 
-@image{factorial1,,,image of a control flow graph,png}
+@image{factorial,,,image of a control flow graph,png}
 
 @end float
 
@@ -12050,7 +12050,7 @@ and once a test has been compiled, you can debug it directly:
         LD_LIBRARY_PATH=. \
         LIBRARY_PATH=. \
           gdb --args \
-            testsuite/jit/test-factorial.exe
+            testsuite/jit/test-factorial.c.exe
 @end example
 
 @noindent
@@ -12094,11 +12094,11 @@ $ RUN_UNDER_VALGRIND= \
 
 $ less testsuite/jit/jit.sum
 (...other results...)
-XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.exe.valgrind.txt: definitely lost: 8 bytes in 1 blocks
-XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.exe.valgrind.txt: unsuppressed errors: 1
+XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.c.exe.valgrind.txt: definitely lost: 8 bytes in 1 blocks
+XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.c.exe.valgrind.txt: unsuppressed errors: 1
 (...other results...)
 
-$ less testsuite/jit/test-sum-of-squares.exe.valgrind.txt
+$ less testsuite/jit/test-sum-of-squares.c.exe.valgrind.txt
 (...shows full valgrind report for this test case...)
 @end example
 

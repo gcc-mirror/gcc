@@ -1,3 +1,8 @@
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/jit.exp (jit-dg-test): Remove "rootname" call when
+	generating name of built executable.
+
 2015-01-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64440
