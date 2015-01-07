@@ -465,7 +465,7 @@ private:
   type *m_pointer_to_this_type;
 };
 
-/* Result of "gcc_jit_type_get_type".  */
+/* Result of "gcc_jit_context_get_type".  */
 class memento_of_get_type : public type
 {
 public:
