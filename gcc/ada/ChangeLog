@@ -1,3 +1,12 @@
+2015-01-07  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor error message change.
+
+2015-01-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Preelaborable_Initialization):
+	Following AI05-028, the pragam applies legally to any composite type.
+
 2015-01-07  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-osinte-vxworks.adb, s-osinte-vxworks.ads

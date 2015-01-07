@@ -18981,9 +18981,8 @@ package body Sem_Ch3 is
 
                elsif Present (Expression (Discr)) then
                   Error_Msg_N
-                    ("(Ada 2005) access discriminants of nonlimited types",
-                     Expression (Discr));
-                  Error_Msg_N ("\cannot have defaults", Expression (Discr));
+                    ("(Ada 2005) access discriminants of nonlimited types "
+                     & "cannot have defaults", Expression (Discr));
                end if;
             end if;
          end if;

@@ -17839,17 +17839,25 @@ package body Sem_Prag is
             then
                null;
 
+            --  Check appropriate type argument
+
             elsif Is_Private_Type (Ent)
               or else Is_Protected_Type (Ent)
               or else (Is_Generic_Type (Ent) and then Is_Derived_Type (Ent))
+
+              --  AI05-0028: The pragma applies to all composite types. Note
+              --  that we apply this binding intepretation to previous verions
+              --  of Ada so there is no Ada 2012 guard. Seems a reasonable
+              --  choice since there are other compilers that do the same.
+
+              or else Is_Composite_Type (Ent)
             then
                null;
 
             else
                Error_Pragma_Arg
-                 ("pragma % can only be applied to private, formal derived or "
-                  & "protected type",
-                  Arg1);
+                 ("pragma % can only be applied to private, formal derived, "
+                  & "protected, or composite type", Arg1);
             end if;
 
             --  Give an error if the pragma is applied to a protected type that
