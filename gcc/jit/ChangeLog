@@ -1,5 +1,10 @@
 2015-01-07  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit-recording.h (gcc::jit::recording::memento_of_get_type): Fix
+	typo in comment.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
 	* TODO.rst (Test suite): Remove item about running C++ testcases.
 	* docs/internals/index.rst (Working on the JIT library): Add
 	"c++" to the enabled languages in the suggested "configure"
