@@ -145,12 +145,14 @@ package body Interfaces.C.Pointers is
    is
       L : ptrdiff_t;
       S : Pointer := Source;
+
    begin
       if Source = null or Target = null then
          raise Dereference_Error;
       end if;
 
       --  Compute array length (including the terminator)
+
       L := 1;
       while S.all /= Terminator and then L < Limit loop
          L := L + 1;

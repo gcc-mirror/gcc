@@ -44,6 +44,7 @@ with Interfaces.C.Extensions;
 with System.Task_Info;
 with System.Tasking.Debug;
 with System.Interrupt_Management;
+with System.OS_Constants;
 with System.OS_Primitives;
 with System.Stack_Checking.Operations;
 with System.Multiprocessors;
@@ -56,6 +57,7 @@ with System.Soft_Links;
 
 package body System.Task_Primitives.Operations is
 
+   package OSC renames System.OS_Constants;
    package SSL renames System.Soft_Links;
    package SC renames System.Stack_Checking.Operations;
 
@@ -658,8 +660,13 @@ package body System.Task_Primitives.Operations is
    -------------------
 
    function RT_Resolution return Duration is
+      TS     : aliased timespec;
+      Result : int;
    begin
-      return 10#1.0#E-6;
+      Result := clock_getres (OSC.CLOCK_REALTIME, TS'Unchecked_Access);
+      pragma Assert (Result = 0);
+
+      return To_Duration (TS);
    end RT_Resolution;
 
    ------------

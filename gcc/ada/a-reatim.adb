@@ -222,8 +222,8 @@ package body Ada.Real_Time is
       --  the intermediate result Time (SC) we take advantage of the different
       --  signs in SC and TS (when that is the case).
 
-      --  If signs of SC and TS are different then we avoid converting SC to
-      --  Time (as we do in the else part). The reason for that is that SC
+      --  If the signs of SC and TS are different then we avoid converting SC
+      --  to Time (as we do in the else part). The reason for that is that SC
       --  converted to Time may overflow the range of Time, while the addition
       --  of SC plus TS does not overflow (because of their different signs).
       --  The approach is to add and remove the greatest value of time
@@ -231,9 +231,7 @@ package body Ada.Real_Time is
       --  signs, so we add the positive constant to the negative value, and the
       --  negative constant to the positive value, to prevent overflows.
 
-      if (SC > 0 and then TS < 0.0)
-        or else (SC < 0 and then TS > 0.0)
-      then
+      if (SC > 0 and then TS < 0.0) or else (SC < 0 and then TS > 0.0) then
          declare
             Closest_Boundary : constant Seconds_Count :=
               (if TS >= 0.0 then

@@ -765,9 +765,9 @@ package body Exp_Pakd is
       elsif not Is_Constrained (Typ) then
 
          --  When generating standard DWARF, the ___XP suffix will be stripped
-         --  by the back-end, but generate it anyway to ease compiler
-         --  debugging: this will help to distinguish implementation types from
-         --  original packed arrays.
+         --  by the back-end but generate it anyway to ease compiler debugging.
+         --  This will help to distinguish implementation types from original
+         --  packed arrays.
 
          PAT :=
            Make_Defining_Identifier (Loc,

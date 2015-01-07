@@ -2350,6 +2350,13 @@ package body Sem_Warn is
             if Nkind (Item) = N_With_Clause
               and then not Implicit_With (Item)
               and then In_Extended_Main_Source_Unit (Item)
+
+              --  Guard for no entity present. Not clear under what conditions
+              --  this happens, but it does occur, and since this is only a
+              --  warning, we just suppress the warning in this case.
+
+              and then Nkind (Name (Item)) in N_Has_Entity
+              and then Present (Entity (Name (Item)))
             then
                Lunit := Entity (Name (Item));
 

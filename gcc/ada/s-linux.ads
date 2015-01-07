@@ -47,6 +47,7 @@ package System.Linux is
    subtype long        is Interfaces.C.long;
    subtype suseconds_t is Interfaces.C.long;
    subtype time_t      is Interfaces.C.long;
+   subtype clockid_t   is Interfaces.C.int;
 
    type timespec is record
       tv_sec  : time_t;
