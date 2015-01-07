@@ -109,22 +109,22 @@ package body Interfaces.C.Pointers is
       if Source = null or else Target = null then
          raise Dereference_Error;
 
+      --  Forward copy
+
       elsif To_Addr (Target) <= To_Addr (Source) then
-         --  Forward copy
          T := Target;
          S := Source;
-
          for J in 1 .. Length loop
             T.all := S.all;
             Increment (T);
             Increment (S);
          end loop;
 
+      --  Backward copy
+
       else
-         --  Backward copy
          T := Target + Length;
          S := Source + Length;
-
          for J in 1 .. Length loop
             Decrement (T);
             Decrement (S);

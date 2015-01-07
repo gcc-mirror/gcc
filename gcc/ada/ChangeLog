@@ -1,3 +1,23 @@
+2015-01-07  Robert Dewar  <dewar@adacore.com>
+
+	* prj.ads, i-cpoint.adb, freeze.adb, ghost.adb, prj-err.adb: Minor
+	reformatting.
+
+2015-01-07  Robert Dewar  <dewar@adacore.com>
+
+	* restrict.adb (Check_Restriction_No_Use_Of_Attribute):
+	New procedure.
+	(OK_No_Use_Of_Entity_Name): New function.
+	(Set_Restriction_No_Use_Of_Entity): New procedure.
+	* restrict.ads (Check_Restriction_No_Use_Of_Attribute):
+	New procedure.
+	(OK_No_Use_Of_Entity_Name): New function.
+	(Set_Restriction_No_Use_Of_Entity): New procedure.
+	* sem_ch8.adb (Find_Direct_Name): Add check for violation of
+	No_Use_Of_Entity.
+	* sem_prag.adb (Process_Restrictions_Or_Restriction_Warnings):
+	Add processing for new restriction No_Use_Of_Entity.
+
 2015-01-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* freeze.adb (Freeze_Array_Type): Apply same handling to Is_Atomic
