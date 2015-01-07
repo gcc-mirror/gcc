@@ -1,5 +1,20 @@
 2015-01-07  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit.dg/harness.h (CHECK_NON_NULL): Add __func__ to output, to
+	make it easier to figure out the origin of each test result when
+	running test-combination.c and test-threads.c.
+	(CHECK_VALUE): Likewise.
+	(CHECK_DOUBLE_VALUE): Likewise.
+	(CHECK_STRING_VALUE): Likewise.
+	(CHECK_STRING_STARTS_WITH): Likewise.
+	(CHECK_STRING_CONTAINS): Likewise.
+	(CHECK): Likewise.
+	(check_string_value): Likewise, add "funcname" param.
+	(check_string_starts_with): Likewise.
+	(check_string_contains): Likewise.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit.dg/jit.exp (jit-dg-test): Remove "rootname" call when
 	generating name of built executable.
 
