@@ -1,3 +1,14 @@
+2015-01-07  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Interface_Conversion): Adding missing
+	generation of accessibility check.
+
+2015-01-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Derived_Type_Declaration): In the case of an
+	illegal completion from a class- wide type, set etype of the
+	derived type properly to prevent cascaded errors.
+
 2015-01-07  Robert Dewar  <dewar@adacore.com>
 
 	* prj.ads, i-cpoint.adb, freeze.adb, ghost.adb, prj-err.adb: Minor
