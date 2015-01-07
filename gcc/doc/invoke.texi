@@ -41,7 +41,7 @@ gcc [@option{-c}|@option{-S}|@option{-E}] [@option{-std=}@var{standard}]
     [@option{-o} @var{outfile}] [@@@var{file}] @var{infile}@dots{}
 
 Only the most useful options are listed here; see below for the
-remainder.  @samp{g++} accepts mostly the same options as @samp{gcc}.
+remainder.  @command{g++} accepts mostly the same options as @command{gcc}.
 @c man end
 @c man begin SEEALSO
 gpl(7), gfdl(7), fsf-funding(7),
@@ -2112,7 +2112,7 @@ Check that the pointer returned by @code{operator new} is non-null
 before attempting to modify the storage allocated.  This check is
 normally unnecessary because the C++ standard specifies that
 @code{operator new} only returns @code{0} if it is declared
-@samp{throw()}, in which case the compiler always checks the
+@code{throw()}, in which case the compiler always checks the
 return value even without this option.  In all other cases, when
 @code{operator new} has a non-empty exception specification, memory
 exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
@@ -2173,7 +2173,7 @@ call the copy constructor in all cases.
 Don't generate code to check for violation of exception specifications
 at run time.  This option violates the C++ standard, but may be useful
 for reducing code size in production builds, much like defining
-@samp{NDEBUG}.  This does not give user code permission to throw
+@code{NDEBUG}.  This does not give user code permission to throw
 exceptions in violation of the exception specifications; the compiler
 still optimizes based on the specifications, so throwing an
 unexpected exception results in undefined behavior at run time.
@@ -2182,8 +2182,8 @@ unexpected exception results in undefined behavior at run time.
 @itemx -fno-extern-tls-init
 @opindex fextern-tls-init
 @opindex fno-extern-tls-init
-The C++11 and OpenMP standards allow @samp{thread_local} and
-@samp{threadprivate} variables to have dynamic (runtime)
+The C++11 and OpenMP standards allow @code{thread_local} and
+@code{threadprivate} variables to have dynamic (runtime)
 initialization.  To support this, any use of such a variable goes
 through a wrapper function that performs any necessary initialization.
 When the use and definition of the variable are in the same
@@ -2206,7 +2206,7 @@ aliases, the default is @option{-fno-extern-tls-init}.
 @opindex ffor-scope
 @opindex fno-for-scope
 If @option{-ffor-scope} is specified, the scope of variables declared in
-a @i{for-init-statement} is limited to the @samp{for} loop itself,
+a @i{for-init-statement} is limited to the @code{for} loop itself,
 as specified by the C++ standard.
 If @option{-fno-for-scope} is specified, the scope of variables declared in
 a @i{for-init-statement} extends to the end of the enclosing scope,
@@ -2238,7 +2238,7 @@ without optimization need the same set of explicit instantiations.
 @item -fno-implement-inlines
 @opindex fno-implement-inlines
 To save space, do not emit out-of-line copies of inline functions
-controlled by @samp{#pragma implementation}.  This causes linker
+controlled by @code{#pragma implementation}.  This causes linker
 errors if these functions are not inlined everywhere they are called.
 
 @item -fms-extensions
@@ -2305,10 +2305,10 @@ Instantiation}, for more information.
 @opindex fno-rtti
 Disable generation of information about every class with virtual
 functions for use by the C++ run-time type identification features
-(@samp{dynamic_cast} and @samp{typeid}).  If you don't use those parts
+(@code{dynamic_cast} and @code{typeid}).  If you don't use those parts
 of the language, you can save some space by using this flag.  Note that
 exception handling uses the same information, but G++ generates it as
-needed. The @samp{dynamic_cast} operator can still be used for casts that
+needed. The @code{dynamic_cast} operator can still be used for casts that
 do not require run-time type information, i.e.@: casts to @code{void *} or to
 unambiguous base classes.
 
@@ -2563,9 +2563,9 @@ These mangling issues were fixed in @option{-fabi-version=5}.
 
 @item
 Scoped enumerators passed as arguments to a variadic function are
-promoted like unscoped enumerators, causing @samp{va_arg} to complain.
+promoted like unscoped enumerators, causing @code{va_arg} to complain.
 On most targets this does not actually affect the parameter passing
-ABI, as there is no way to pass an argument smaller than @samp{int}.
+ABI, as there is no way to pass an argument smaller than @code{int}.
 
 Also, the ABI changed the mangling of template argument packs,
 @code{const_cast}, @code{static_cast}, prefix increment/decrement, and
@@ -2620,7 +2620,7 @@ a constructor or destructor.
 @item -Wdelete-non-virtual-dtor @r{(C++ and Objective-C++ only)}
 @opindex Wdelete-non-virtual-dtor
 @opindex Wno-delete-non-virtual-dtor
-Warn when @samp{delete} is used to destroy an instance of a class that
+Warn when @code{delete} is used to destroy an instance of a class that
 has virtual functions and non-virtual destructor. It is unsafe to delete
 an instance of a derived class through a pointer to a base class if the
 base class does not have a virtual destructor.  This warning is enabled
@@ -2672,7 +2672,7 @@ are still considered ill-formed in SFINAE context.
 @opindex Wno-noexcept
 Warn when a noexcept-expression evaluates to false because of a call
 to a function that does not have a non-throwing exception
-specification (i.e. @samp{throw()} or @samp{noexcept}) but is known by
+specification (i.e. @code{throw()} or @code{noexcept}) but is known by
 the compiler to never throw an exception.
 
 @item -Wnon-virtual-dtor @r{(C++ and Objective-C++ only)}
@@ -2701,8 +2701,8 @@ struct A @{
 @end smallexample
 
 @noindent
-The compiler rearranges the member initializers for @samp{i}
-and @samp{j} to match the declaration order of the members, emitting
+The compiler rearranges the member initializers for @code{i}
+and @code{j} to match the declaration order of the members, emitting
 a warning to that effect.  This warning is enabled by @option{-Wall}.
 
 @item -fext-numeric-literals @r{(C++ and Objective-C++ only)}
@@ -2790,8 +2790,8 @@ but disables the helpful warning.
 @opindex Wold-style-cast
 @opindex Wno-old-style-cast
 Warn if an old-style (C-style) cast to a non-void type is used within
-a C++ program.  The new-style casts (@samp{dynamic_cast},
-@samp{static_cast}, @samp{reinterpret_cast}, and @samp{const_cast}) are
+a C++ program.  The new-style casts (@code{dynamic_cast},
+@code{static_cast}, @code{reinterpret_cast}, and @code{const_cast}) are
 less vulnerable to unintended effects and much easier to search for.
 
 @item -Woverloaded-virtual @r{(C++ and Objective-C++ only)}
@@ -3444,8 +3444,8 @@ following cases:
 @itemize @bullet
 
 @item
-A pointer is compared against integer zero with @samp{<}, @samp{<=},
-@samp{>}, or @samp{>=}.
+A pointer is compared against integer zero with @code{<}, @code{<=},
+@code{>}, or @code{>=}.
 
 @item
 (C++ only) An enumerator and a non-enumerator both appear in a
@@ -3455,11 +3455,11 @@ conditional expression.
 (C++ only) Ambiguous virtual bases.
 
 @item
-(C++ only) Subscripting an array that has been declared @samp{register}.
+(C++ only) Subscripting an array that has been declared @code{register}.
 
 @item
 (C++ only) Taking the address of a variable that has been declared
-@samp{register}.
+@code{register}.
 
 @item
 (C++ only) A base class is not initialized in a derived class's copy
@@ -3703,7 +3703,7 @@ This warning is also enabled by @option{-Wextra}.
 @item -Wmain
 @opindex Wmain
 @opindex Wno-main
-Warn if the type of @samp{main} is suspicious.  @samp{main} should be
+Warn if the type of @code{main} is suspicious.  @code{main} should be
 a function with external linkage, returning int, taking either zero
 arguments, two, or three arguments of appropriate types.  This warning
 is enabled by default in C++ and is enabled by either @option{-Wall}
@@ -3713,8 +3713,8 @@ or @option{-Wpedantic}.
 @opindex Wmissing-braces
 @opindex Wno-missing-braces
 Warn if an aggregate or union initializer is not fully bracketed.  In
-the following example, the initializer for @samp{a} is not fully
-bracketed, but that for @samp{b} is fully bracketed.  This warning is
+the following example, the initializer for @code{a} is not fully
+bracketed, but that for @code{b} is fully bracketed.  This warning is
 enabled by @option{-Wall} in C.
 
 @smallexample
@@ -3737,8 +3737,8 @@ as when there is an assignment in a context where a truth value
 is expected, or when operators are nested whose precedence people
 often get confused about.
 
-Also warn if a comparison like @samp{x<=y<=z} appears; this is
-equivalent to @samp{(x<=y ? 1 : 0) <= z}, which is a different
+Also warn if a comparison like @code{x<=y<=z} appears; this is
+equivalent to @code{(x<=y ? 1 : 0) <= z}, which is a different
 interpretation from that of ordinary mathematical notation.
 
 Also warn about constructions where there may be confusion to which
@@ -3853,7 +3853,7 @@ expression in a function whose return type is @code{void}.
 
 For C++, a function without return type always produces a diagnostic
 message, even when @option{-Wno-return-type} is specified.  The only
-exceptions are @samp{main} and functions defined in system headers.
+exceptions are @code{main} and functions defined in system headers.
 
 This warning is enabled by @option{-Wall}.
 
@@ -3930,7 +3930,7 @@ This warning is enabled by @option{-Wall}.
 Warn whenever a function parameter is assigned to, but otherwise unused
 (aside from its declaration).
 
-To suppress this warning use the @samp{unused} attribute
+To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
 
 This warning is also enabled by @option{-Wunused} together with
@@ -3943,7 +3943,7 @@ Warn whenever a local variable is assigned to, but otherwise unused
 (aside from its declaration).
 This warning is enabled by @option{-Wall}.
 
-To suppress this warning use the @samp{unused} attribute
+To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
 
 This warning is also enabled by @option{-Wunused}, which is enabled
@@ -3962,7 +3962,7 @@ This warning is enabled by @option{-Wall}.
 Warn whenever a label is declared but not used.
 This warning is enabled by @option{-Wall}.
 
-To suppress this warning use the @samp{unused} attribute
+To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
 
 @item -Wunused-local-typedefs @r{(C, Objective-C, C++ and Objective-C++ only)}
@@ -3975,7 +3975,7 @@ This warning is enabled by @option{-Wall}.
 @opindex Wno-unused-parameter
 Warn whenever a function parameter is unused aside from its declaration.
 
-To suppress this warning use the @samp{unused} attribute
+To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
 
 @item -Wno-unused-result
@@ -3992,7 +3992,7 @@ Warn whenever a local variable or non-constant static variable is unused
 aside from its declaration.
 This warning is enabled by @option{-Wall}.
 
-To suppress this warning use the @samp{unused} attribute
+To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
 
 @item -Wunused-value
@@ -4000,10 +4000,10 @@ To suppress this warning use the @samp{unused} attribute
 @opindex Wno-unused-value
 Warn whenever a statement computes a result that is explicitly not
 used. To suppress this warning cast the unused expression to
-@samp{void}. This includes an expression-statement or the left-hand
+@code{void}. This includes an expression-statement or the left-hand
 side of a comma expression that contains no side effects. For example,
-an expression such as @samp{x[i,j]} causes a warning, while
-@samp{x[(void)i,j]} does not.
+an expression such as @code{x[i,j]} causes a warning, while
+@code{x[(void)i,j]} does not.
 
 This warning is enabled by @option{-Wall}.
 
@@ -4410,8 +4410,8 @@ if the @samp{#} appeared in column 1 on the line.  Therefore
 @option{-Wtraditional} warns about directives that traditional C
 understands but ignores because the @samp{#} does not appear as the
 first character on the line.  It also suggests you hide directives like
-@samp{#pragma} not understood by traditional C by indenting them.  Some
-traditional implementations do not recognize @samp{#elif}, so this option
+@code{#pragma} not understood by traditional C by indenting them.  Some
+traditional implementations do not recognize @code{#elif}, so this option
 suggests avoiding it altogether.
 
 @item
@@ -4499,12 +4499,12 @@ GCC versions before GCC 3.0.  @xref{Mixed Declarations}.
 @item -Wundef
 @opindex Wundef
 @opindex Wno-undef
-Warn if an undefined identifier is evaluated in an @samp{#if} directive.
+Warn if an undefined identifier is evaluated in an @code{#if} directive.
 
 @item -Wno-endif-labels
 @opindex Wno-endif-labels
 @opindex Wendif-labels
-Do not warn whenever an @samp{#else} or an @samp{#endif} are followed by text.
+Do not warn whenever an @code{#else} or an @code{#endif} are followed by text.
 
 @item -Wshadow
 @opindex Wshadow
@@ -4606,7 +4606,7 @@ to functions.  In C++, warn also when an arithmetic operation involves
 Warn if a comparison is always true or always false due to the limited
 range of the data type, but do not warn for constant expressions.  For
 example, warn if an unsigned variable is compared against zero with
-@samp{<} or @samp{>=}.  This warning is also enabled by
+@code{<} or @code{>=}.  This warning is also enabled by
 @option{-Wextra}.
 
 @item -Wbad-function-cast @r{(C and Objective-C only)}
@@ -4699,8 +4699,8 @@ programs.
 @item -Wclobbered
 @opindex Wclobbered
 @opindex Wno-clobbered
-Warn for variables that might be changed by @samp{longjmp} or
-@samp{vfork}.  This warning is also enabled by @option{-Wextra}.
+Warn for variables that might be changed by @code{longjmp} or
+@code{vfork}.  This warning is also enabled by @option{-Wextra}.
 
 @item -Wconditionally-supported @r{(C++ and Objective-C++ only)}
 @opindex Wconditionally-supported
@@ -4760,7 +4760,7 @@ Warn when an expression is casted to its own type.
 @item -Wempty-body
 @opindex Wempty-body
 @opindex Wno-empty-body
-Warn if an empty body occurs in an @samp{if}, @samp{else} or @samp{do
+Warn if an empty body occurs in an @code{if}, @code{else} or @code{do
 while} statement.  This warning is also enabled by @option{-Wextra}.
 
 @item -Wenum-compare
@@ -5204,15 +5204,15 @@ warnings produced by @option{-Winline} to appear or disappear.
 @item -Wno-invalid-offsetof @r{(C++ and Objective-C++ only)}
 @opindex Wno-invalid-offsetof
 @opindex Winvalid-offsetof
-Suppress warnings from applying the @samp{offsetof} macro to a non-POD
-type.  According to the 2014 ISO C++ standard, applying @samp{offsetof}
+Suppress warnings from applying the @code{offsetof} macro to a non-POD
+type.  According to the 2014 ISO C++ standard, applying @code{offsetof}
 to a non-standard-layout type is undefined.  In existing C++ implementations,
-however, @samp{offsetof} typically gives meaningful results.
+however, @code{offsetof} typically gives meaningful results.
 This flag is for users who are aware that they are
 writing nonportable code and who have deliberately chosen to ignore the
 warning about it.
 
-The restrictions on @samp{offsetof} may be relaxed in a future version
+The restrictions on @code{offsetof} may be relaxed in a future version
 of the C++ standard.
 
 @item -Wno-int-to-pointer-cast
@@ -5238,7 +5238,7 @@ the search path but can't be used.
 @item -Wlong-long
 @opindex Wlong-long
 @opindex Wno-long-long
-Warn if @samp{long long} type is used.  This is enabled by either
+Warn if @code{long long} type is used.  This is enabled by either
 @option{-Wpedantic} or @option{-Wtraditional} in ISO C90 and C++98
 modes.  To inhibit the warning messages, use @option{-Wno-long-long}.
 
@@ -5254,7 +5254,7 @@ messages, use @option{-Wno-variadic-macros}.
 @opindex Wvarargs
 @opindex Wno-varargs
 Warn upon questionable usage of the macros used to handle variable
-arguments like @samp{va_start}.  This is default.  To inhibit the
+arguments like @code{va_start}.  This is default.  To inhibit the
 warning messages, use @option{-Wno-varargs}.
 
 @item -Wvector-operation-performance
@@ -7087,7 +7087,7 @@ relative to some @file{lib} subdirectory.
 
 @item -print-prog-name=@var{program}
 @opindex print-prog-name
-Like @option{-print-file-name}, but searches for a program such as @samp{cpp}.
+Like @option{-print-file-name}, but searches for a program such as @command{cpp}.
 
 @item -print-libgcc-file-name
 @opindex print-libgcc-file-name
@@ -7134,7 +7134,7 @@ Print the compiler's target machine (for example,
 
 @item -dumpversion
 @opindex dumpversion
-Print the compiler version (for example, @samp{3.0})---and don't do
+Print the compiler version (for example, @code{3.0})---and don't do
 anything else.
 
 @item -dumpspecs
@@ -8766,12 +8766,12 @@ Do not guess branch probabilities using heuristics.
 GCC uses heuristics to guess branch probabilities if they are
 not provided by profiling feedback (@option{-fprofile-arcs}).  These
 heuristics are based on the control flow graph.  If some branch probabilities
-are specified by @samp{__builtin_expect}, then the heuristics are
+are specified by @code{__builtin_expect}, then the heuristics are
 used to guess branch probabilities for the rest of the control flow graph,
-taking the @samp{__builtin_expect} info into account.  The interactions
-between the heuristics and @samp{__builtin_expect} can be complex, and in
+taking the @code{__builtin_expect} info into account.  The interactions
+between the heuristics and @code{__builtin_expect} can be complex, and in
 some cases, it may be useful to disable the heuristics so that the effects
-of @samp{__builtin_expect} are easier to understand.
+of @code{__builtin_expect} are easier to understand.
 
 The default is @option{-fguess-branch-probability} at levels
 @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
@@ -10946,7 +10946,7 @@ other standard libraries.  In other words, when you specify @option{-nostdlib}
 or @option{-nodefaultlibs} you should usually specify @option{-lgcc} as well.
 This ensures that you have no unresolved references to internal GCC
 library subroutines.
-(An example of such an internal subroutine is @samp{__main}, used to ensure C++
+(An example of such an internal subroutine is @code{__main}, used to ensure C++
 constructors are called; @pxref{Collect2,,@code{collect2}, gccint,
 GNU Compiler Collection (GCC) Internals}.)
 
@@ -11173,8 +11173,8 @@ to be used by the user, but only passed by the driver.
 @item -iquote@var{dir}
 @opindex iquote
 Add the directory @var{dir} to the head of the list of directories to
-be searched for header files only for the case of @samp{#include
-"@var{file}"}; they are not searched for @samp{#include <@var{file}>},
+be searched for header files only for the case of @code{#include
+"@var{file}"}; they are not searched for @code{#include <@var{file}>},
 otherwise just like @option{-I}.
 
 @item -L@var{dir}
@@ -11264,17 +11264,17 @@ such a suffix.
 This option has been deprecated.  Please use @option{-iquote} instead for
 @option{-I} directories before the @option{-I-} and remove the @option{-I-}.
 Any directories you specify with @option{-I} options before the @option{-I-}
-option are searched only for the case of @samp{#include "@var{file}"};
-they are not searched for @samp{#include <@var{file}>}.
+option are searched only for the case of @code{#include "@var{file}"};
+they are not searched for @code{#include <@var{file}>}.
 
 If additional directories are specified with @option{-I} options after
-the @option{-I-}, these directories are searched for all @samp{#include}
+the @option{-I-}, these directories are searched for all @code{#include}
 directives.  (Ordinarily @emph{all} @option{-I} directories are used
 this way.)
 
 In addition, the @option{-I-} option inhibits the use of the current
 directory (where the current input file came from) as the first search
-directory for @samp{#include "@var{file}"}.  There is no way to
+directory for @code{#include "@var{file}"}.  There is no way to
 override this effect of @option{-I-}.  With @option{-I.} you can specify
 searching the directory that is current when the compiler is
 invoked.  That is not exactly the same as what the preprocessor does
@@ -12810,7 +12810,7 @@ This is a synonym for @option{-mapcs-frame}.
 Generate code to check the amount of stack space available upon entry to
 every function (that actually uses some stack space).  If there is
 insufficient space available then either the function
-@samp{__rt_stkovf_split_small} or @samp{__rt_stkovf_split_big} is
+@code{__rt_stkovf_split_small} or @code{__rt_stkovf_split_big} is
 called, depending upon the amount of stack space required.  The runtime
 system is required to provide these functions.  The default is
 @option{-mno-apcs-stack-check}, since this produces smaller code.
@@ -13040,18 +13040,18 @@ version of subroutine call instruction.
 
 Even if this switch is enabled, not all function calls are turned
 into long calls.  The heuristic is that static functions, functions
-that have the @samp{short-call} attribute, functions that are inside
-the scope of a @samp{#pragma no_long_calls} directive, and functions whose
+that have the @code{short_call} attribute, functions that are inside
+the scope of a @code{#pragma no_long_calls} directive, and functions whose
 definitions have already been compiled within the current compilation
 unit are not turned into long calls.  The exceptions to this rule are
-that weak function definitions, functions with the @samp{long-call}
-attribute or the @samp{section} attribute, and functions that are within
-the scope of a @samp{#pragma long_calls} directive are always
+that weak function definitions, functions with the @code{long_call}
+attribute or the @code{section} attribute, and functions that are within
+the scope of a @code{#pragma long_calls} directive are always
 turned into long calls.
 
 This feature is not enabled by default.  Specifying
 @option{-mno-long-calls} restores the default behavior, as does
-placing the function calls within the scope of a @samp{#pragma
+placing the function calls within the scope of a @code{#pragma
 long_calls_off} directive.  Note these switches have no effect on how
 the compiler generates code to handle function calls via function
 pointers.
@@ -13882,12 +13882,12 @@ Choose startup files and linker script suitable for the simulator.
 
 @item -msdata=default
 @opindex msdata=default
-Put small global and static data in the @samp{.neardata} section,
+Put small global and static data in the @code{.neardata} section,
 which is pointed to by register @code{B14}.  Put small uninitialized
-global and static data in the @samp{.bss} section, which is adjacent
-to the @samp{.neardata} section.  Put small read-only data into the
-@samp{.rodata} section.  The corresponding sections used for large
-pieces of data are @samp{.fardata}, @samp{.far} and @samp{.const}.
+global and static data in the @code{.bss} section, which is adjacent
+to the @code{.neardata} section.  Put small read-only data into the
+@code{.rodata} section.  The corresponding sections used for large
+pieces of data are @code{.fardata}, @code{.far} and @code{.const}.
 
 @item -msdata=all
 @opindex msdata=all
@@ -13899,8 +13899,8 @@ access them.
 @opindex msdata=none
 Make no use of the sections reserved for small data, and use absolute
 addresses to access all data.  Put all initialized global and static
-data in the @samp{.fardata} section, and all uninitialized data in the
-@samp{.far} section.  Put all constant data into the @samp{.const}
+data in the @code{.fardata} section, and all uninitialized data in the
+@code{.far} section.  Put all constant data into the @code{.const}
 section.
 @end table
 
@@ -14171,9 +14171,9 @@ applicable.  This mode also sets @option{-mno-altivec},
 
 @item -mone-byte-bool
 @opindex mone-byte-bool
-Override the defaults for @samp{bool} so that @samp{sizeof(bool)==1}.
-By default @samp{sizeof(bool)} is @samp{4} when compiling for
-Darwin/PowerPC and @samp{1} when compiling for Darwin/x86, so this
+Override the defaults for @code{bool} so that @code{sizeof(bool)==1}.
+By default @code{sizeof(bool)} is @code{4} when compiling for
+Darwin/PowerPC and @code{1} when compiling for Darwin/x86, so this
 option has no effect on x86.
 
 @strong{Warning:} The @option{-mone-byte-bool} switch causes GCC
@@ -15775,9 +15775,9 @@ instruction in the caller since there is no need to pop the arguments
 there.
 
 You can specify that an individual function is called with this calling
-sequence with the function attribute @samp{stdcall}.  You can also
+sequence with the function attribute @code{stdcall}.  You can also
 override the @option{-mrtd} option by using the function attribute
-@samp{cdecl}.  @xref{Function Attributes}.
+@code{cdecl}.  @xref{Function Attributes}.
 
 @strong{Warning:} this calling convention is incompatible with the one
 normally used on Unix, so you cannot use it if you need to call
@@ -15797,7 +15797,7 @@ harmlessly ignored.)
 Control how many registers are used to pass integer arguments.  By
 default, no registers are used to pass arguments, and at most 3
 registers can be used.  You can control this behavior for a specific
-function by using the function attribute @samp{regparm}.
+function by using the function attribute @code{regparm}.
 @xref{Function Attributes}.
 
 @strong{Warning:} if you use this switch, and
@@ -15809,7 +15809,7 @@ startup modules.
 @opindex msseregparm
 Use SSE register passing conventions for float and double arguments
 and return values.  You can control this behavior for a specific
-function by using the function attribute @samp{sseregparm}.
+function by using the function attribute @code{sseregparm}.
 @xref{Function Attributes}.
 
 @strong{Warning:} if you use this switch then you must build all
@@ -16209,8 +16209,8 @@ Generate code for the specified calling convention.  Permissible values
 are @samp{sysv} for the ABI used on GNU/Linux and other systems, and
 @samp{ms} for the Microsoft ABI.  The default is to use the Microsoft
 ABI when targeting Microsoft Windows and the SysV ABI on all other systems.
-You can control this behavior for a specific function by
-using the function attribute @samp{ms_abi}/@samp{sysv_abi}.
+You can control this behavior for specific functions by
+using the function attributes @code{ms_abi} and @code{sysv_abi}.
 @xref{Function Attributes}.
 
 @item -mtls-dialect=@var{type}
@@ -16935,11 +16935,11 @@ instruction sequence).
 @item -msdata=none
 @opindex msdata=none
 Disable use of the small data area.  Variables are put into
-one of @samp{.data}, @samp{.bss}, or @samp{.rodata} (unless the
+one of @code{.data}, @code{.bss}, or @code{.rodata} (unless the
 @code{section} attribute has been specified).
 This is the default.
 
-The small data area consists of sections @samp{.sdata} and @samp{.sbss}.
+The small data area consists of sections @code{.sdata} and @code{.sbss}.
 Objects may be explicitly put in the small data area with the
 @code{section} attribute using one of these sections.
 
@@ -17031,7 +17031,7 @@ architectures are selected according to Freescale's ISA classification
 and the permissible values are: @samp{isaa}, @samp{isaaplus},
 @samp{isab} and @samp{isac}.
 
-GCC defines a macro @samp{__mcf@var{arch}__} whenever it is generating
+GCC defines a macro @code{__mcf@var{arch}__} whenever it is generating
 code for a ColdFire target.  The @var{arch} in this macro is one of the
 @option{-march} arguments given above.
 
@@ -20493,21 +20493,21 @@ configured GCC using one of the @samp{powerpc*-*-eabi*} options.
 @item -msdata=eabi
 @opindex msdata=eabi
 On System V.4 and embedded PowerPC systems, put small initialized
-@code{const} global and static data in the @samp{.sdata2} section, which
+@code{const} global and static data in the @code{.sdata2} section, which
 is pointed to by register @code{r2}.  Put small initialized
-non-@code{const} global and static data in the @samp{.sdata} section,
+non-@code{const} global and static data in the @code{.sdata} section,
 which is pointed to by register @code{r13}.  Put small uninitialized
-global and static data in the @samp{.sbss} section, which is adjacent to
-the @samp{.sdata} section.  The @option{-msdata=eabi} option is
+global and static data in the @code{.sbss} section, which is adjacent to
+the @code{.sdata} section.  The @option{-msdata=eabi} option is
 incompatible with the @option{-mrelocatable} option.  The
 @option{-msdata=eabi} option also sets the @option{-memb} option.
 
 @item -msdata=sysv
 @opindex msdata=sysv
 On System V.4 and embedded PowerPC systems, put small global and static
-data in the @samp{.sdata} section, which is pointed to by register
+data in the @code{.sdata} section, which is pointed to by register
 @code{r13}.  Put small uninitialized global and static data in the
-@samp{.sbss} section, which is adjacent to the @samp{.sdata} section.
+@code{.sbss} section, which is adjacent to the @code{.sdata} section.
 The @option{-msdata=sysv} option is incompatible with the
 @option{-mrelocatable} option.
 
@@ -20522,8 +20522,8 @@ same as @option{-msdata=sysv}.
 @item -msdata=data
 @opindex msdata=data
 On System V.4 and embedded PowerPC systems, put small global
-data in the @samp{.sdata} section.  Put small uninitialized global
-data in the @samp{.sbss} section.  Do not use register @code{r13}
+data in the @code{.sdata} section.  Put small uninitialized global
+data in the @code{.sbss} section.  Do not use register @code{r13}
 to address small data however.  This is the default behavior unless
 other @option{-msdata} options are used.
 
@@ -20532,8 +20532,8 @@ other @option{-msdata} options are used.
 @opindex msdata=none
 @opindex mno-sdata
 On embedded PowerPC systems, put all initialized global and static data
-in the @samp{.data} section, and all uninitialized data in the
-@samp{.bss} section.
+in the @code{.data} section, and all uninitialized data in the
+@code{.bss} section.
 
 @item -mblock-move-inline-limit=@var{num}
 @opindex mblock-move-inline-limit
@@ -22454,7 +22454,7 @@ Specify that the target processor is the V850.
 @item -mv850e3v5
 @opindex mv850e3v5
 Specify that the target processor is the V850E3V5.  The preprocessor
-constant @samp{__v850e3v5__} is defined if this option is used.
+constant @code{__v850e3v5__} is defined if this option is used.
 
 @item -mv850e2v4
 @opindex mv850e2v4
@@ -22464,17 +22464,17 @@ the @option{-mv850e3v5} option.
 @item -mv850e2v3
 @opindex mv850e2v3
 Specify that the target processor is the V850E2V3.  The preprocessor
-constant @samp{__v850e2v3__} is defined if this option is used.
+constant @code{__v850e2v3__} is defined if this option is used.
 
 @item -mv850e2
 @opindex mv850e2
 Specify that the target processor is the V850E2.  The preprocessor
-constant @samp{__v850e2__} is defined if this option is used.
+constant @code{__v850e2__} is defined if this option is used.
 
 @item -mv850e1
 @opindex mv850e1
 Specify that the target processor is the V850E1.  The preprocessor
-constants @samp{__v850e1__} and @samp{__v850e__} are defined if
+constants @code{__v850e1__} and @code{__v850e__} are defined if
 this option is used.
 
 @item -mv850es
@@ -22485,14 +22485,14 @@ the @option{-mv850e1} option.
 @item -mv850e
 @opindex mv850e
 Specify that the target processor is the V850E@.  The preprocessor
-constant @samp{__v850e__} is defined if this option is used.
+constant @code{__v850e__} is defined if this option is used.
 
 If neither @option{-mv850} nor @option{-mv850e} nor @option{-mv850e1}
 nor @option{-mv850e2} nor @option{-mv850e2v3} nor @option{-mv850e3v5}
 are defined then a default target processor is chosen and the
 relevant @samp{__v850*__} preprocessor constant is defined.
 
-The preprocessor constants @samp{__v850} and @samp{__v851__} are always
+The preprocessor constants @code{__v850} and @code{__v851__} are always
 defined, regardless of which processor variant is the target.
 
 @item -mdisable-callt
@@ -23137,7 +23137,7 @@ Use it to conform to a non-default application binary interface.
 
 @item -fshort-wchar
 @opindex fshort-wchar
-Override the underlying type for @samp{wchar_t} to be @samp{short
+Override the underlying type for @code{wchar_t} to be @code{short
 unsigned int} instead of the default for the target.  This option is
 useful for building programs to run under WINE@.
 
@@ -23169,7 +23169,7 @@ variable declarations this way.
 
 @item -fno-ident
 @opindex fno-ident
-Ignore the @samp{#ident} directive.
+Ignore the @code{#ident} directive.
 
 @item -finhibit-size-directive
 @opindex finhibit-size-directive
@@ -23343,7 +23343,7 @@ functions.  The profiling calls indicate where, conceptually, the
 inline function is entered and exited.  This means that addressable
 versions of such functions must be available.  If all your uses of a
 function are expanded inline, this may mean an additional expansion of
-code size.  If you use @samp{extern inline} in your C code, an
+code size.  If you use @code{extern inline} in your C code, an
 addressable version of such functions must be provided.  (This is
 normally the case anyway, but if you get lucky and the optimizer always
 expands the functions inline, you might have gotten away without
@@ -23524,10 +23524,10 @@ identical syntax.  This is a great boon to those working with
 cross-platform projects.
 
 For those adding visibility support to existing code, you may find
-@samp{#pragma GCC visibility} of use.  This works by you enclosing
+@code{#pragma GCC visibility} of use.  This works by you enclosing
 the declarations you wish to set visibility for with (for example)
-@samp{#pragma GCC visibility push(hidden)} and
-@samp{#pragma GCC visibility pop}.
+@code{#pragma GCC visibility push(hidden)} and
+@code{#pragma GCC visibility pop}.
 Bear in mind that symbol visibility should be viewed @strong{as
 part of the API interface contract} and thus all new code should
 always specify visibility when it is not the default; i.e., declarations
@@ -23540,10 +23540,10 @@ Note that due to ISO C++ specification requirements, @code{operator new} and
 Be aware that headers from outside your project, in particular system
 headers and headers from any other library you use, may not be
 expecting to be compiled with visibility other than the default.  You
-may need to explicitly say @samp{#pragma GCC visibility push(default)}
+may need to explicitly say @code{#pragma GCC visibility push(default)}
 before including any such headers.
 
-@samp{extern} declarations are not affected by @option{-fvisibility}, so
+@code{extern} declarations are not affected by @option{-fvisibility}, so
 a lot of code can be recompiled with @option{-fvisibility=hidden} with
 no modifications.  However, this means that calls to @code{extern}
 functions with no explicit visibility use the PLT, so it is more
