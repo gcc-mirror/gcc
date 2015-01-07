@@ -1,3 +1,9 @@
+2015-01-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Array_Type): Apply same handling to Is_Atomic
+	component type as to Has_Atomic_Components type.  Remove useless
+	test on Is_Aliased component type.
+
 2015-01-07  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* alloc.ads Alphabetize several declarations. Add constants
