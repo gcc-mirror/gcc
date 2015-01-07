@@ -192,9 +192,6 @@ package System.OS_Interface is
    function c_signal (sig : Signal; handler : isr_address) return isr_address;
    pragma Import (C, c_signal, "signal");
 
-   function sigwait (set : access sigset_t; sig : access Signal) return int;
-   pragma Inline (sigwait);
-
    function pthread_sigmask
      (how  : int;
       set  : access sigset_t;

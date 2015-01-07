@@ -15860,8 +15860,8 @@ package body Sem_Ch3 is
 
       Taggd := Is_Tagged_Type (Parent_Type);
 
-      --  Set the parent type to the class-wide type's specific type
-      --  in this case to prevent cascading errors
+      --  Set the parent type to the class-wide type's specific type in this
+      --  case to prevent cascading errors
 
       if Present (Extension) and then Is_Class_Wide_Type (Parent_Type) then
          Error_Msg_N ("parent type must not be a class-wide type", Indic);
@@ -15913,7 +15913,7 @@ package body Sem_Ch3 is
          begin
             if Nkind (Decl) = N_Formal_Type_Declaration
               and then Nkind (Formal_Type_Definition (Decl)) =
-                         N_Formal_Derived_Type_Definition
+                                          N_Formal_Derived_Type_Definition
               and then Synchronized_Present (Formal_Type_Definition (Decl))
               and then No (Extension)
 
@@ -15988,9 +15988,7 @@ package body Sem_Ch3 is
 
    procedure Diagnose_Interface (N : Node_Id;  E : Entity_Id) is
    begin
-      if not Is_Interface (E)
-        and then  E /= Any_Type
-      then
+      if not Is_Interface (E) and then  E /= Any_Type then
          Error_Msg_NE ("(Ada 2005) & must be an interface", N, E);
       end if;
    end Diagnose_Interface;
@@ -16234,8 +16232,7 @@ package body Sem_Ch3 is
             while Present (F_Spec) loop
                P_Spec := First (Prev_Aspects);
                while Present (P_Spec) loop
-                  if
-                    Chars (Identifier (P_Spec)) = Chars (Identifier (F_Spec))
+                  if Chars (Identifier (P_Spec)) = Chars (Identifier (F_Spec))
                   then
                      Error_Msg_N
                        ("aspect already specified in private declaration",
@@ -16547,9 +16544,7 @@ package body Sem_Ch3 is
             elsif Nkind_In (N, N_Task_Type_Declaration,
                                N_Protected_Type_Declaration)
             then
-               if No (Interface_List (N))
-                 and then not Error_Posted (N)
-               then
+               if No (Interface_List (N)) and then not Error_Posted (N) then
                   Tag_Mismatch;
                end if;
 
@@ -16856,6 +16851,7 @@ package body Sem_Ch3 is
       --  Check that requested number of digits is not too high.
 
       if Digs_Val > Max_Digs_Val then
+
          --  The check for Max_Base_Digits may be somewhat expensive, as it
          --  requires reading System, so only do it when necessary.
 
@@ -17105,16 +17101,16 @@ package body Sem_Ch3 is
             Result_Entity := Entity (Result);
          end if;
 
-         --  See if this level of derivation actually has discriminants
-         --  because tagged derivations can add them, hence the lower
-         --  levels need not have any.
+         --  See if this level of derivation actually has discriminants because
+         --  tagged derivations can add them, hence the lower levels need not
+         --  have any.
 
          if not Has_Discriminants (Ti) then
             return Result;
          end if;
 
-         --  Scan Ti's discriminants for Result_Entity,
-         --  and return its corresponding value, if any.
+         --  Scan Ti's discriminants for Result_Entity, and return its
+         --  corresponding value, if any.
 
          Result_Entity := Original_Record_Component (Result_Entity);
 
@@ -17143,7 +17139,7 @@ package body Sem_Ch3 is
          end loop;
 
          --  Could not find it
-         --
+
          return Result;
       end Search_Derivation_Levels;
 
@@ -17471,8 +17467,8 @@ package body Sem_Ch3 is
         and then not Is_Tagged
         and then
           (not Inherit_Discr
-             or else First_Discriminant (Parent_Base) /=
-                     First_Stored_Discriminant (Parent_Base))
+            or else First_Discriminant (Parent_Base) /=
+                    First_Stored_Discriminant (Parent_Base))
       then
          Stored_Discrim := First_Stored_Discriminant (Parent_Base);
          while Present (Stored_Discrim) loop
@@ -17650,6 +17646,7 @@ package body Sem_Ch3 is
          end loop;
 
          return True;
+
       else
          return True;
       end if;
@@ -18265,9 +18262,7 @@ package body Sem_Ch3 is
             Init_Esize (T, System_Max_Binary_Modulus_Power);
          end if;
 
-         if not Non_Binary_Modulus (T)
-           and then Esize (T) = RM_Size (T)
-         then
+         if not Non_Binary_Modulus (T) and then Esize (T) = RM_Size (T) then
             Set_Is_Known_Valid (T);
          end if;
       end Set_Modular_Size;
@@ -18979,9 +18974,9 @@ package body Sem_Ch3 is
                      null;
 
                   else
-                     Error_Msg_N ("access discriminants of nonlimited types",
-                         Expression (Discr));
-                     Error_Msg_N ("\cannot have defaults", Expression (Discr));
+                     Error_Msg_N
+                       ("access discriminants of nonlimited types cannot "
+                        & "have defaults", Expression (Discr));
                   end if;
 
                elsif Present (Expression (Discr)) then

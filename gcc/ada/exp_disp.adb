@@ -1423,15 +1423,15 @@ package body Exp_Disp is
             if Is_Access_Type (Etype (Expression (N))) then
 
                Apply_Accessibility_Check
-                 (N   => Expression (N),
-                  Typ => Etype (N),
+                 (N           => Expression (N),
+                  Typ         => Etype (N),
                   Insert_Node => N);
 
                --  Generate: Func (Address!(Expression))
 
                Rewrite (N,
                  Make_Function_Call (Loc,
-                   Name => New_Occurrence_Of (Fent, Loc),
+                   Name                   => New_Occurrence_Of (Fent, Loc),
                    Parameter_Associations => New_List (
                      Unchecked_Convert_To (RTE (RE_Address),
                        Relocate_Node (Expression (N))))));
@@ -1441,7 +1441,7 @@ package body Exp_Disp is
 
                Rewrite (N,
                  Make_Function_Call (Loc,
-                   Name => New_Occurrence_Of (Fent, Loc),
+                   Name                   => New_Occurrence_Of (Fent, Loc),
                    Parameter_Associations => New_List (
                      Make_Attribute_Reference (Loc,
                        Prefix  => Unchecked_Convert_To (Operand_Typ,

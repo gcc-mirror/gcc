@@ -7800,17 +7800,17 @@ package body Freeze is
 
          if (SSO_Set_Low_By_Default (T) or else SSO_Set_High_By_Default (T))
 
-           --  For a record type, if bit order is specified explicitly, then
-           --  do not set SSO from default if not consistent. Note that we
-           --  do not want to look at a Bit_Order attribute definition for
-           --  a parent: if we were to inherit Bit_Order, then both
+           --  For a record type, if bit order is specified explicitly,
+           --  then do not set SSO from default if not consistent. Note that
+           --  we do not want to look at a Bit_Order attribute definition
+           --  for a parent: if we were to inherit Bit_Order, then both
            --  SSO_Set_*_By_Default flags would have been cleared already
            --  (by Inherit_Aspects_At_Freeze_Point).
 
            and then not
              (Is_Record_Type (T)
-               and then Has_Rep_Item (T,
-                          Name_Bit_Order, Check_Parents => False)
+               and then
+                 Has_Rep_Item (T, Name_Bit_Order, Check_Parents => False)
                and then Reverse_Bit_Order (T) /= Reversed)
          then
             --  If flags cause reverse storage order, then set the result. Note
