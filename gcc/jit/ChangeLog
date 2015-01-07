@@ -1,5 +1,13 @@
 2015-01-07  David Malcolm  <dmalcolm@redhat.com>
 
+	* TODO.rst (Test suite): Remove item about running C++ testcases.
+	* docs/internals/index.rst (Working on the JIT library): Add
+	"c++" to the enabled languages in the suggested "configure"
+	invocation, and add a description of why this is necessary.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
 	* docs/internals/index.rst: Update to reflect that built
 	testcases are now test-foo.c.exe, rather than test-foo.exe.
 	* docs/_build/texinfo/libgccjit.texi: Regenerate.
