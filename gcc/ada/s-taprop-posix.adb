@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -743,8 +743,13 @@ package body System.Task_Primitives.Operations is
    -------------------
 
    function RT_Resolution return Duration is
+      TS     : aliased timespec;
+      Result : Interfaces.C.int;
    begin
-      return 10#1.0#E-6;
+      Result := clock_getres (OSC.CLOCK_REALTIME, TS'Unchecked_Access);
+      pragma Assert (Result = 0);
+
+      return To_Duration (TS);
    end RT_Resolution;
 
    ------------

@@ -1,3 +1,51 @@
+2015-01-07  Robert Dewar  <dewar@adacore.com>
+
+	* s-taprop-linux.adb, clean.adb: Minor reformatting.
+
+2015-01-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tassta.adb: Relax some overzealous assertions.
+
+2015-01-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Return_Type): An call that returns a limited
+	view of a type is legal when context is a thunk generated for
+	operation inherited from an interface.
+	* exp_ch6.adb (Expand_Simple_Function_Return): If context is
+	a thunk and return type is an incomplete type do not continue
+	expansion; thunk will be fully elaborated when generating code.
+
+2015-01-07  Doug Rupp  <rupp@adacore.com>
+
+	* s-osinte-mingw.ads (LARGE_INTEGR): New subtype.
+	(QueryPerformanceFrequency): New imported procedure.
+	* s-taprop-mingw.adb (RT_Resolution): Call above and return
+	resolution vice a hardcoded value.
+	* s-taprop-solaris.adb (RT_Resolution): Call clock_getres and return
+	resolution vice a hardcoded value.
+	* s-linux-android.ads (clockid_t): New subtype.
+	* s-osinte-aix.ads (clock_getres): New imported subprogram.
+	* s-osinte-android.ads (clock_getres): Likewise.
+	* s-osinte-freebsd.ads (clock_getres): Likewise.
+	* s-osinte-solaris-posix.ads (clock_getres): Likewise.
+	* s-osinte-darwin.ads (clock_getres): New subprogram.
+	* s-osinte-darwin.adb (clock_getres): New subprogram.
+	* thread.c (__gnat_clock_get_res) [__APPLE__]: New function.
+	* s-taprop-posix.adb (RT_Resolution): Call clock_getres to
+	calculate resolution vice hard coded value.
+
+2015-01-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Make_CW_Equivalent_Type): If root type is a
+	limited view, use non-limited view when available to create
+	equivalent record type.
+
+2015-01-07  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: Remove command Sync and any data and processing
+	related to this command. Remove project processing for gnatstack.
+	* prj-attr.adb: Remove package Synchonize and its attributes.
+
 2015-01-07  Vincent Celier  <celier@adacore.com>
 
 	* clean.adb: Minor error message change.

@@ -326,12 +326,6 @@ package body Prj.Attr is
    "Ladefault_switches#" &
    "LbOswitches#" &
 
-   --  package Synchronize
-
-   "Psynchronize#" &
-   "Ladefault_switches#" &
-   "LbOswitches#" &
-
    --  package Eliminate
 
    "Peliminate#" &

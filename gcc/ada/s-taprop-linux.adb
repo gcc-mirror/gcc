@@ -662,6 +662,7 @@ package body System.Task_Primitives.Operations is
    function RT_Resolution return Duration is
       TS     : aliased timespec;
       Result : int;
+
    begin
       Result := clock_getres (OSC.CLOCK_REALTIME, TS'Unchecked_Access);
       pragma Assert (Result = 0);
