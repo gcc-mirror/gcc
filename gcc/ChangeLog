@@ -1,3 +1,11 @@
+2015-01-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/i386/intelmic-mkoffload.c (compile_for_target): Always
+	add "-m32" or "-m64" to argv_obstack.
+	(generate_host_descr_file): Likewise, when invoking host_compiler.
+	(main): Always add "-m elf_i386" or "-m elf_x86_64" when invoking
+	ld.
+
 2015-01-08  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh-mem.cc: Use constant as second operand when emitting

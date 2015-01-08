@@ -191,6 +191,8 @@ compile_for_target (struct obstack *argv_obstack)
 {
   if (target_ilp32)
     obstack_ptr_grow (argv_obstack, "-m32");
+  else
+    obstack_ptr_grow (argv_obstack, "-m64");
   obstack_ptr_grow (argv_obstack, NULL);
   char **argv = XOBFINISH (argv_obstack, char **);
 
@@ -355,6 +357,8 @@ generate_host_descr_file (const char *host_compiler)
   new_argv[new_argc++] = "-shared";
   if (target_ilp32)
     new_argv[new_argc++] = "-m32";
+  else
+    new_argv[new_argc++] = "-m64";
   new_argv[new_argc++] = src_filename;
   new_argv[new_argc++] = "-o";
   new_argv[new_argc++] = obj_filename;
@@ -511,11 +515,11 @@ main (int argc, char **argv)
   unsigned new_argc = 0;
   const char *new_argv[9];
   new_argv[new_argc++] = "ld";
+  new_argv[new_argc++] = "-m";
   if (target_ilp32)
-    {
-      new_argv[new_argc++] = "-m";
-      new_argv[new_argc++] = "elf_i386";
-    }
+    new_argv[new_argc++] = "elf_i386";
+  else
+    new_argv[new_argc++] = "elf_x86_64";
   new_argv[new_argc++] = "--relocatable";
   new_argv[new_argc++] = host_descr_filename;
   new_argv[new_argc++] = target_so_filename;
