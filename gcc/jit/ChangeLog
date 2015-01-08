@@ -1,5 +1,10 @@
 2015-01-08  David Malcolm  <dmalcolm@redhat.com>
 
+	* libgccjit.h (struct gcc_jit_context): Rewrite the descriptive
+	comment.
+
+2015-01-08  David Malcolm  <dmalcolm@redhat.com>
+
 	* docs/topics/contexts.rst (Error-handling): Document new
 	entrypoint gcc_jit_context_get_last_error.
 	* docs/_build/texinfo/libgccjit.texi: Regenerate.

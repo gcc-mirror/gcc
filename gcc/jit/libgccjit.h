@@ -31,16 +31,19 @@ extern "C" {
  **********************************************************************/
 /* All structs within the API are opaque. */
 
-/* A gcc_jit_context encapsulates the state of a compilation.  It goes
-   through two states:
+/* A gcc_jit_context encapsulates the state of a compilation.
+   You can set up options on it, and add types, functions and code, using
+   the API below.
 
-   (1) "initial", during which you can set up options on it, and add
-       types, functions and code, using the API below.
-       Invoking gcc_jit_context_compile on it transitions it to the
-       "after compilation" state.
+   Invoking gcc_jit_context_compile on it gives you a gcc_jit_result *
+   (or NULL).
 
-   (2) "after compilation", when you can call gcc_jit_context_release to
-       clean up.  */
+   You can call gcc_jit_context_compile repeatedly on one context, giving
+   multiple independent results.
+
+   Eventually you can call gcc_jit_context_release to clean up the
+   context; any results created from it are still usable, and should be
+   cleaned up via gcc_jit_result_release.  */
 typedef struct gcc_jit_context gcc_jit_context;
 
 /* A gcc_jit_result encapsulates the result of a compilation.  */
