@@ -4631,26 +4631,15 @@ start_decl (const cp_declarator *declarator,
   if (context != global_namespace)
     *pushed_scope_p = push_scope (context);
 
-  if (initialized)
-    /* Is it valid for this decl to have an initializer at all?
-       If not, set INITIALIZED to zero, which will indirectly
-       tell `cp_finish_decl' to ignore the initializer once it is parsed.  */
-    switch (TREE_CODE (decl))
-      {
-      case TYPE_DECL:
-	error ("typedef %qD is initialized (use decltype instead)", decl);
-	return error_mark_node;
-
-      case FUNCTION_DECL:
-	if (initialized == SD_DELETED)
-	  /* We'll handle the rest of the semantics later, but we need to
-	     set this now so it's visible to duplicate_decls.  */
-	  DECL_DELETED_FN (decl) = 1;
-	break;
-
-      default:
-	break;
-      }
+  /* Is it valid for this decl to have an initializer at all?
+     If not, set INITIALIZED to zero, which will indirectly
+     tell `cp_finish_decl' to ignore the initializer once it is parsed.  */
+  if (initialized
+      && TREE_CODE (decl) == TYPE_DECL)
+    {
+      error ("typedef %qD is initialized (use decltype instead)", decl);
+      return error_mark_node;
+    }
 
   if (initialized)
     {
@@ -7630,6 +7619,7 @@ grokfndecl (tree ctype,
 	    int friendp,
 	    int publicp,
 	    int inlinep,
+	    bool deletedp,
 	    special_function_kind sfk,
 	    bool funcdef_flag,
 	    int template_count,
@@ -7767,6 +7757,9 @@ grokfndecl (tree ctype,
       DECL_STATIC_FUNCTION_P (decl) = 1;
       DECL_CONTEXT (decl) = ctype;
     }
+
+  if (deletedp)
+    DECL_DELETED_FN (decl) = 1;
 
   if (ctype)
     {
@@ -10756,7 +10749,7 @@ grokdeclarator (const cp_declarator *declarator,
 			       virtualp, flags, memfn_quals, rqual, raises,
 			       friendp ? -1 : 0, friendp, publicp,
                                inlinep | (2 * constexpr_p),
-			       sfk,
+			       initialized == SD_DELETED, sfk,
 			       funcdef_flag, template_count, in_namespace,
 			       attrlist, declarator->id_loc);
             decl = set_virt_specifiers (decl, virt_specifiers);
@@ -10978,7 +10971,8 @@ grokdeclarator (const cp_declarator *declarator,
 	decl = grokfndecl (ctype, type, original_name, parms, unqualified_id,
 			   virtualp, flags, memfn_quals, rqual, raises,
 			   1, friendp,
-			   publicp, inlinep | (2 * constexpr_p), sfk,
+			   publicp, inlinep | (2 * constexpr_p),
+			   initialized == SD_DELETED, sfk,
                            funcdef_flag,
 			   template_count, in_namespace, attrlist,
 			   declarator->id_loc);
