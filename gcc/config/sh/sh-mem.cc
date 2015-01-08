@@ -228,7 +228,7 @@ sh_expand_cmpstr (rtx *operands)
   if (align < 4)
     {
       emit_insn (gen_iorsi3 (tmp1, s1_addr, s2_addr));
-      emit_insn (gen_tstsi_t (GEN_INT (3), tmp1));
+      emit_insn (gen_tstsi_t (tmp1, GEN_INT (3)));
       jump = emit_jump_insn (gen_branch_false (L_loop_byte));
       add_int_reg_note (jump, REG_BR_PROB, prob_likely);
     }
@@ -373,7 +373,7 @@ sh_expand_cmpnstr (rtx *operands)
 	  if (align < 4)
 	    {
 	      emit_insn (gen_iorsi3 (tmp1, s1_addr, s2_addr));
-	      emit_insn (gen_tstsi_t (GEN_INT (3), tmp1));
+	      emit_insn (gen_tstsi_t (tmp1, GEN_INT (3)));
 	      jump = emit_jump_insn (gen_branch_false (L_loop_byte));
 	      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
 	    }
@@ -581,7 +581,7 @@ sh_expand_strlen (rtx *operands)
 
   if (align < 4)
     {
-      emit_insn (gen_tstsi_t (GEN_INT (3), current_addr));
+      emit_insn (gen_tstsi_t (current_addr, GEN_INT (3)));
       jump = emit_jump_insn (gen_branch_false (L_loop_byte));
       add_int_reg_note (jump, REG_BR_PROB, prob_likely);
     }
@@ -673,7 +673,7 @@ sh_expand_setmem (rtx *operands)
 
       if (align < 4)
 	{
-	  emit_insn (gen_tstsi_t (GEN_INT (3), dest_addr));
+	  emit_insn (gen_tstsi_t (dest_addr, GEN_INT (3)));
 	  jump = emit_jump_insn (gen_branch_false (L_loop_byte));
 	  add_int_reg_note (jump, REG_BR_PROB, prob_likely);
 	}
