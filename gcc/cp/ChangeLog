@@ -1,3 +1,10 @@
+2015-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60753
+	* decl.c (grokfndecl): Add bool parameter.
+	(grokdeclarator): Adjust calls.
+	(start_decl): Don't set DECL_DELETED_FN here.
+
 2015-01-06  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_nested_name_specifier_opt): Diagnose invalid

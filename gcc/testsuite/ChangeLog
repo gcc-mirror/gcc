@@ -1,3 +1,8 @@
+2015-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60753
+	* g++.dg/cpp0x/deleted10.C: New.
+
 2015-01-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/test-error-dereferencing-void-ptr.c: New test case.
