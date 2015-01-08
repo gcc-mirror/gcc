@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=gnu++11 -Wno-deprecated" }
 // { dg-do compile }
 
 // 2010-06-08  Paolo Carlini  <paolo.carlini@oracle.com>

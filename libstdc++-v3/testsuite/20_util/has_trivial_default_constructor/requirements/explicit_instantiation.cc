@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=gnu++11 -Wno-deprecated" }
 // { dg-do compile }
 // 2007-04-30 Benjamin Kosnik <bkoz@redhat.com>
 

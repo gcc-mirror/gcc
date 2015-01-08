@@ -545,7 +545,7 @@ namespace __gnu_test
 	{
 	  void __constraint()
 	  {
-	    typedef std::has_trivial_default_constructor<_Tp> ctor_p;
+	    typedef std::is_trivially_default_constructible<_Tp> ctor_p;
 	    static_assert(ctor_p::value, "default constructor not trivial");
 
 	    typedef std::is_trivially_destructible<_Tp> dtor_p;

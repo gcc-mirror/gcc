@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=gnu++11 -Wno-deprecated" }
 // { dg-do compile }
 
 // 2004-12-26  Paolo Carlini  <pcarlini@suse.de>
