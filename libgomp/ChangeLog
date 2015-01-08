@@ -1,5 +1,9 @@
 2015-01-08  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* configure.ac [tgt_dir] (offload_additional_lib_paths): Also add
+	"$tgt_dir/lib32".
+	* configure: Regenerate.
+
 	* testsuite/lib/libgomp.exp (libgomp_init): Correctly match
 	"intelmic" in $offload_targets.
 
