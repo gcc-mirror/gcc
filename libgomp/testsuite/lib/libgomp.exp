@@ -115,8 +115,7 @@ proc libgomp_init { args } {
 
     # Add liboffloadmic build directory in LD_LIBRARY_PATH to support
     # non-fallback testing for Intel MIC targets
-    if { [string match "*-intelmic-*" $offload_targets]
-	|| [string match "*-intelmicemul-*" $offload_targets] } {
+    if { [string match "*,intelmic,*" ",$offload_targets,"] } {
 	append always_ld_library_path ":${blddir}/../liboffloadmic/.libs"
 	append always_ld_library_path ":${blddir}/../liboffloadmic/plugin/.libs"
 	# libstdc++ is required by liboffloadmic
