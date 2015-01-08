@@ -1,3 +1,8 @@
+2015-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/64338
+	* g++.dg/opt/pr64338.C: New test.
+
 2015-01-08  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray/codimension_2b.f90: New file.

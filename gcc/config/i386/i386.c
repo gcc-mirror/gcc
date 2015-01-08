@@ -20830,9 +20830,7 @@ ix86_expand_int_movcc (rtx operands[])
       if (diff < 0)
 	{
 	  machine_mode cmp_mode = GET_MODE (op0);
-
-	  std::swap (ct, cf);
-	  diff = -diff;
+	  enum rtx_code new_code;
 
 	  if (SCALAR_FLOAT_MODE_P (cmp_mode))
 	    {
@@ -20842,13 +20840,15 @@ ix86_expand_int_movcc (rtx operands[])
 		 is not valid in general (we may convert non-trapping condition
 		 to trapping one), however on i386 we currently emit all
 		 comparisons unordered.  */
-	      compare_code = reverse_condition_maybe_unordered (compare_code);
-	      code = reverse_condition_maybe_unordered (code);
+	      new_code = reverse_condition_maybe_unordered (code);
 	    }
 	  else
+	    new_code = ix86_reverse_condition (code, cmp_mode);
+	  if (new_code != UNKNOWN)
 	    {
-	      compare_code = reverse_condition (compare_code);
-	      code = reverse_condition (code);
+	      std::swap (ct, cf);
+	      diff = -diff;
+	      code = new_code;
 	    }
 	}
 
@@ -20986,9 +20986,7 @@ ix86_expand_int_movcc (rtx operands[])
 	  if (cf == 0)
 	    {
 	      machine_mode cmp_mode = GET_MODE (op0);
-
-	      cf = ct;
-	      ct = 0;
+	      enum rtx_code new_code;
 
 	      if (SCALAR_FLOAT_MODE_P (cmp_mode))
 		{
@@ -20998,13 +20996,20 @@ ix86_expand_int_movcc (rtx operands[])
 		     that is not valid in general (we may convert non-trapping
 		     condition to trapping one), however on i386 we currently
 		     emit all comparisons unordered.  */
-		  code = reverse_condition_maybe_unordered (code);
+		  new_code = reverse_condition_maybe_unordered (code);
 		}
 	      else
 		{
-		  code = reverse_condition (code);
-		  if (compare_code != UNKNOWN)
+		  new_code = ix86_reverse_condition (code, cmp_mode);
+		  if (compare_code != UNKNOWN && new_code != UNKNOWN)
 		    compare_code = reverse_condition (compare_code);
+		}
+
+	      if (new_code != UNKNOWN)
+		{
+		  cf = ct;
+		  ct = 0;
+		  code = new_code;
 		}
 	    }
 

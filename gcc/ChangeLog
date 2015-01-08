@@ -1,3 +1,12 @@
+2015-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/64338
+	* config/i386/i386.c (ix86_expand_int_movcc): Don't reverse
+	compare_code when it is unconditionally overwritten afterwards.
+	Use ix86_reverse_condition instead of reverse_condition.  Don't
+	change code if *reverse_condition* returned UNKNOWN and don't
+	swap ct/cf and negate diff in that case.
+
 2015-01-08  Mike Stump  <mikestump@comcast.net>
 
 	* tsan.c (pass_tsan::gate): Add no_sanitize_thread support.
