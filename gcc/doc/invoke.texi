@@ -193,7 +193,7 @@ in the following sections.
 -fno-threadsafe-statics  -fuse-cxa-atexit @gol
 -fno-weak  -nostdinc++ @gol
 -fvisibility-inlines-hidden @gol
--fvtable-verify=@var{std|preinit|none} @gol
+-fvtable-verify=@r{[}std@r{|}preinit@r{|}none@r{]} @gol
 -fvtv-counts -fvtv-debug @gol
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
@@ -219,7 +219,7 @@ Objective-C and Objective-C++ Dialects}.
 -fobjc-nilcheck @gol
 -fobjc-std=objc1 @gol
 -fno-local-ivars @gol
--fivar-visibility=@var{public|protected|private|package} @gol
+-fivar-visibility=@r{[}public@r{|}protected@r{|}private@r{|}package@r{]} @gol
 -freplace-objc-classes @gol
 -fzero-link @gol
 -gen-decls @gol
@@ -1116,7 +1116,8 @@ See S/390 and zSeries Options.
 -fleading-underscore  -ftls-model=@var{model} @gol
 -fstack-reuse=@var{reuse_level} @gol
 -ftrapv  -fwrapv  -fbounds-check @gol
--fvisibility -fstrict-volatile-bitfields -fsync-libcalls}
+-fvisibility=@r{[}default@r{|}internal@r{|}hidden@r{|}protected@r{]} @gol
+-fstrict-volatile-bitfields -fsync-libcalls}
 @end table
 
 
@@ -2436,7 +2437,7 @@ and that pointers to function members defined in different shared
 objects may not compare equal.  When this flag is given, it is a
 violation of the ODR to define types with the same name differently.
 
-@item -fvtable-verify=@var{std|preinit|none}
+@item -fvtable-verify=@r{[}std@r{|}preinit@r{|}none@r{]}
 @opindex fvtable-verify
 Turn on (or off, if using @option{-fvtable-verify=none}) the security
 feature that verifies at runtime, for every virtual call that is made, that
@@ -3013,7 +3014,7 @@ and other variables declared either locally inside a class method or
 globally with the same name.  Specifying the @option{-fno-local-ivars}
 flag disables this behavior thus avoiding variable shadowing issues.
 
-@item -fivar-visibility=@var{public|protected|private|package}
+@item -fivar-visibility=@r{[}public@r{|}protected@r{|}private@r{|}package@r{]}
 @opindex fivar-visibility
 Set the default instance variable visibility to the specified option
 so that instance variables declared outside the scope of any access
@@ -23492,7 +23493,7 @@ unit, or if @option{-fpic} is not given on the command line.
 The default without @option{-fpic} is @samp{initial-exec}; with
 @option{-fpic} the default is @samp{global-dynamic}.
 
-@item -fvisibility=@var{default|internal|hidden|protected}
+@item -fvisibility=@r{[}default@r{|}internal@r{|}hidden@r{|}protected@r{]}
 @opindex fvisibility
 Set the default ELF image symbol visibility to the specified option---all
 symbols are marked with this unless overridden within the code.
