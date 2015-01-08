@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=gnu++11 -Wno-deprecated" }
 // 2004-12-30  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2004-2015 Free Software Foundation, Inc.

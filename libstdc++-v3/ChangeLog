@@ -1,5 +1,32 @@
 2015-01-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/60132
+	* include/std/type_traits (has_trivial_default_constructor,
+	has_trivial_copy_constructor, has_trivial_copy_assign): Add deprecated
+	attribute.
+	* testsuite/20_util/has_trivial_copy_assign/requirements/
+	explicit_instantiation.cc: Use -Wno-deprecated.
+	* testsuite/20_util/has_trivial_copy_assign/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/has_trivial_copy_assign/value.cc: Likewise.
+	* testsuite/20_util/has_trivial_copy_constructor/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/has_trivial_copy_constructor/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/has_trivial_copy_constructor/value.cc: Likewise.
+	* testsuite/20_util/has_trivial_default_constructor/requirements/
+	explicit_instantiation.c: Likewise.
+	* testsuite/20_util/has_trivial_default_constructor/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/has_trivial_default_constructor/value.cc:
+	Likewise.
+	* testsuite/20_util/pair/requirements/dr801.cc: Replace deprecated
+	trait.
+	* testsuite/20_util/tuple/requirements/dr801.cc: Likewise.
+	* testsuite/util/testsuite_common_types.h: Likewise.
+
+2015-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/bits/hashtable_policy.h: Use __bool_constant.
 
 2015-01-07  Jonathan Wakely  <jwakely@redhat.com>
