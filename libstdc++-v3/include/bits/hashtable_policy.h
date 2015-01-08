@@ -81,7 +81,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Helper type used to detect whether the hash functor is noexcept.
   template <typename _Key, typename _Hash>
-    struct __is_noexcept_hash : std::integral_constant<bool,
+    struct __is_noexcept_hash : std::__bool_constant<
 	noexcept(declval<const _Hash&>()(declval<const _Key&>()))>
     { };
 
@@ -211,9 +211,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<bool _Cache_hash_code, bool _Constant_iterators, bool _Unique_keys>
     struct _Hashtable_traits
     {
-      template<bool _Cond>
-	using __bool_constant = integral_constant<bool, _Cond>;
-
       using __hash_cached = __bool_constant<_Cache_hash_code>;
       using __constant_iterators = __bool_constant<_Constant_iterators>;
       using __unique_keys = __bool_constant<_Unique_keys>;

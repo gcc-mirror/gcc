@@ -1,3 +1,7 @@
+2015-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h: Use __bool_constant.
+
 2015-01-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/Makefile.am: Compile del_ops.cc as C++14.
