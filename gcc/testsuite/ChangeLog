@@ -1,3 +1,9 @@
+2015-01-08  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray/codimension_2b.f90: New file.
+	* gfortran.dg/coarray/codimension_2.f90: Add it to dg-extra-sources.
+	* gfortran.dg/coarray/codimension_2.f90: Call its subroutine.
+
 2015-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59004
