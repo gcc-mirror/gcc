@@ -1,3 +1,11 @@
+2015-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64336
+	* tree.c (build2_stat): Fix up initialization of TREE_READONLY
+	and TREE_THIS_VOLATILE for MEM_REFs.
+	(build5_stat): Fix up initialization of TREE_READONLY and
+	TREE_THIS_VOLATILE for TARGET_MEM_REFs.
+
 2015-01-08  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/64533
