@@ -26,10 +26,10 @@ namespace gcc {
 namespace jit {
 
 /* The result of JIT-compilation.  */
-class result
+class result : public log_user
 {
 public:
-  result(void *dso_handle);
+  result(logger *logger, void *dso_handle);
 
   virtual ~result();
 

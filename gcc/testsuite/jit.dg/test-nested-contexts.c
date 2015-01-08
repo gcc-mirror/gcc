@@ -532,6 +532,10 @@ main (int argc, char **argv)
   /* We do the whole thing multiple times to shake out state-management
      issues in the underlying code.  */
 
+  FILE *logfile = fopen ("test-nested-contexts.c.exe.log.txt", "w");
+  if (!logfile)
+    fail ("error opening logfile");
+
   for (i = 1; i <= NUM_TOP_ITERATIONS; i++)
     {
       /* Create the top-level context.  */
@@ -544,6 +548,9 @@ main (int argc, char **argv)
       memset (&top_level, 0, sizeof (top_level));
 
       top_level.ctxt = gcc_jit_context_acquire ();
+      gcc_jit_context_set_logfile (top_level.ctxt,
+				   logfile,
+				   0, 0);
       set_options (top_level.ctxt, argv[0]);
 
       make_types (&top_level);
@@ -634,6 +641,9 @@ main (int argc, char **argv)
 
       gcc_jit_context_release (top_level.ctxt);
    }
+
+  if (logfile)
+    fclose (logfile);
 
   totals ();
 

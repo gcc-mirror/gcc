@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 
 #include "jit-common.h"
+#include "jit-logging.h"
 #include "jit-playback.h"
 #include "jit-result.h"
 #include "jit-builtins.h"
@@ -86,11 +87,13 @@ namespace jit {
 /* The constructor for gcc::jit::playback::context.  */
 
 playback::context::context (recording::context *ctxt)
-  : m_recording_ctxt (ctxt),
+  : log_user (ctxt->get_logger ()),
+    m_recording_ctxt (ctxt),
     m_tempdir (NULL),
     m_char_array_type_node (NULL),
     m_const_char_ptr (NULL)
 {
+  JIT_LOG_SCOPE (get_logger ());
   m_functions.create (0);
   m_source_files.create (0);
   m_cached_locations.create (0);
@@ -100,6 +103,7 @@ playback::context::context (recording::context *ctxt)
 
 playback::context::~context ()
 {
+  JIT_LOG_SCOPE (get_logger ());
   if (m_tempdir)
     delete m_tempdir;
   m_functions.release ();
@@ -1219,6 +1223,8 @@ build_stmt_list ()
   int i;
   block *b;
 
+  JIT_LOG_SCOPE (m_ctxt->get_logger ());
+
   FOR_EACH_VEC_ELT (m_blocks, i, b)
     {
       int j;
@@ -1244,6 +1250,8 @@ void
 playback::function::
 postprocess ()
 {
+  JIT_LOG_SCOPE (m_ctxt->get_logger ());
+
   if (m_ctxt->get_bool_option (GCC_JIT_BOOL_OPTION_DUMP_INITIAL_TREE))
     debug_tree (m_stmt_list);
 
@@ -1538,6 +1546,8 @@ result *
 playback::context::
 compile ()
 {
+  JIT_LOG_SCOPE (get_logger ());
+
   const char *ctxt_progname;
   result *result_obj = NULL;
 
@@ -1572,8 +1582,13 @@ compile ()
 
   /* This runs the compiler.  */
   toplev toplev (false);
+  enter_scope ("toplev::main");
+  if (get_logger ())
+    for (unsigned i = 0; i < fake_args.length (); i++)
+      get_logger ()->log ("argv[%i]: %s", i, fake_args[i]);
   toplev.main (fake_args.length (),
 	       const_cast <char **> (fake_args.address ()));
+  exit_scope ("toplev::main");
 
   /* Extracting dumps makes use of the gcc::dump_manager, hence we
      need to do it between toplev::main (which creates the dump manager)
@@ -1581,7 +1596,9 @@ compile ()
   extract_any_requested_dumps (&requested_dumps);
 
   /* Clean up the compiler.  */
+  enter_scope ("toplev::finalize");
   toplev.finalize ();
+  exit_scope ("toplev::finalize");
 
   /* Ideally we would release the jit mutex here, but we can't yet since
      followup activities use timevars, which are global state.  */
@@ -1622,6 +1639,7 @@ void
 playback::context::acquire_mutex ()
 {
   /* Acquire the big GCC mutex. */
+  JIT_LOG_SCOPE (get_logger ());
   pthread_mutex_lock (&jit_mutex);
   gcc_assert (NULL == active_playback_ctxt);
   active_playback_ctxt = this;
@@ -1633,6 +1651,7 @@ void
 playback::context::release_mutex ()
 {
   /* Release the big GCC mutex. */
+  JIT_LOG_SCOPE (get_logger ());
   gcc_assert (active_playback_ctxt == this);
   active_playback_ctxt = NULL;
   pthread_mutex_unlock (&jit_mutex);
@@ -1647,6 +1666,8 @@ make_fake_args (vec <char *> *argvec,
 		const char *ctxt_progname,
 		vec <recording::requested_dump> *requested_dumps)
 {
+  JIT_LOG_SCOPE (get_logger ());
+
 #define ADD_ARG(arg) argvec->safe_push (xstrdup (arg))
 #define ADD_ARG_TAKE_OWNERSHIP(arg) argvec->safe_push (arg)
 
@@ -1734,6 +1755,8 @@ void
 playback::context::
 extract_any_requested_dumps (vec <recording::requested_dump> *requested_dumps)
 {
+  JIT_LOG_SCOPE (get_logger ());
+
   int i;
   recording::requested_dump *d;
   FOR_EACH_VEC_ELT (*requested_dumps, i, d)
@@ -1819,6 +1842,7 @@ void
 playback::context::
 convert_to_dso (const char *ctxt_progname)
 {
+  JIT_LOG_SCOPE (get_logger ());
   /* Currently this lumps together both assembling and linking into
      TV_ASSEMBLE.  */
   auto_timevar assemble_timevar (TV_ASSEMBLE);
@@ -1851,6 +1875,10 @@ convert_to_dso (const char *ctxt_progname)
 
   /* pex_one's error-handling requires pname to be non-NULL.  */
   gcc_assert (ctxt_progname);
+
+  if (get_logger ())
+    for (unsigned i = 0; i < argvec.length (); i++)
+      get_logger ()->log ("argv[%i]: %s", i, argvec[i]);
 
   errmsg = pex_one (PEX_SEARCH, /* int flags, */
 		    gcc_driver_name,
@@ -1892,6 +1920,7 @@ result *
 playback::context::
 dlopen_built_dso ()
 {
+  JIT_LOG_SCOPE (get_logger ());
   auto_timevar load_timevar (TV_LOAD);
   void *handle = NULL;
   const char *error = NULL;
@@ -1906,7 +1935,7 @@ dlopen_built_dso ()
     add_error (NULL, "%s", error);
   }
   if (handle)
-    result_obj = new result (handle);
+    result_obj = new result (get_logger (), handle);
   else
     result_obj = NULL;
 
@@ -1923,6 +1952,7 @@ void
 playback::context::
 replay ()
 {
+  JIT_LOG_SCOPE (get_logger ());
   /* Adapted from c-common.c:c_common_nodes_and_builtins.  */
   tree array_domain_type = build_index_type (size_int (200));
   m_char_array_type_node
@@ -1984,6 +2014,7 @@ void
 playback::context::
 dump_generated_code ()
 {
+  JIT_LOG_SCOPE (get_logger ());
   char buf[4096];
   size_t sz;
   FILE *f_in = fopen (get_path_s_file (), "r");
@@ -2069,6 +2100,7 @@ handle_locations ()
      imposed by the linemap API.
 
      line_table is a global.  */
+  JIT_LOG_SCOPE (get_logger ());
   int i;
   source_file *file;
 

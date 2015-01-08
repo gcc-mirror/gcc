@@ -35,7 +35,7 @@ namespace jit {
 
 namespace playback {
 
-class context
+class context : public log_user
 {
 public:
   context (::gcc::jit::recording::context *ctxt);

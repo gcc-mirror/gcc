@@ -1,3 +1,12 @@
+2015-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (set_up_logging): New function.
+	(test_jit): Fail if gcc_jit_context_acquire fails.  Call
+	set_up_logging on the context, so that every testcase is
+	logged to a particular file.
+	* jit.dg/test-nested-contexts.c (main): Open a logfile,
+	and call gcc_jit_context_set_logfile on the top-level context.
+
 2015-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/64338

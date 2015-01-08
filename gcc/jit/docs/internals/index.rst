@@ -268,3 +268,12 @@ Here is a high-level summary from ``jit-common.h``:
 .. include:: ../../jit-common.h
   :start-after: This comment is included by the docs.
   :end-before: End of comment for inclusion in the docs.  */
+
+.. _example-of-log-file:
+
+Another way to understand the structure of the code is to enable logging,
+via :c:func:`gcc_jit_context_set_logfile`.  Here is an example of a log
+generated via this call:
+
+.. literalinclude:: test-hello-world.exe.log.txt
+    :lines: 1-

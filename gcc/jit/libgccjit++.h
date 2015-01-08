@@ -102,6 +102,10 @@ namespace gccjit
     void dump_to_file (const std::string &path,
 		       bool update_locations);
 
+    void set_logfile (FILE *logfile,
+		      int flags,
+		      int verbosity);
+
     void set_str_option (enum gcc_jit_str_option opt,
 			 const char *value);
 
@@ -538,6 +542,17 @@ context::dump_to_file (const std::string &path,
   gcc_jit_context_dump_to_file (m_inner_ctxt,
 				path.c_str (),
 				update_locations);
+}
+
+inline void
+context::set_logfile (FILE *logfile,
+		      int flags,
+		      int verbosity)
+{
+  gcc_jit_context_set_logfile (m_inner_ctxt,
+			       logfile,
+			       flags,
+			       verbosity);
 }
 
 inline void

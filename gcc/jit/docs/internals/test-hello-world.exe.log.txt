@@ -1,0 +1,126 @@
+JIT: entering: gcc_jit_context_set_str_option
+JIT: exiting: gcc_jit_context_set_str_option
+JIT: entering: gcc_jit_context_set_int_option
+JIT: exiting: gcc_jit_context_set_int_option
+JIT: entering: gcc_jit_context_set_bool_option
+JIT: exiting: gcc_jit_context_set_bool_option
+JIT: entering: gcc_jit_context_set_bool_option
+JIT: exiting: gcc_jit_context_set_bool_option
+JIT: entering: gcc_jit_context_set_bool_option
+JIT: exiting: gcc_jit_context_set_bool_option
+JIT: entering: gcc_jit_context_set_bool_option
+JIT: exiting: gcc_jit_context_set_bool_option
+JIT: entering: gcc_jit_context_set_bool_option
+JIT: exiting: gcc_jit_context_set_bool_option
+JIT: entering: gcc_jit_context_get_type
+JIT: exiting: gcc_jit_context_get_type
+JIT: entering: gcc_jit_context_get_type
+JIT: exiting: gcc_jit_context_get_type
+JIT: entering: gcc_jit_context_new_param
+JIT: exiting: gcc_jit_context_new_param
+JIT: entering: gcc_jit_context_new_function
+JIT: exiting: gcc_jit_context_new_function
+JIT: entering: gcc_jit_context_new_param
+JIT: exiting: gcc_jit_context_new_param
+JIT: entering: gcc_jit_context_get_type
+JIT: exiting: gcc_jit_context_get_type
+JIT: entering: gcc_jit_context_new_function
+JIT: exiting: gcc_jit_context_new_function
+JIT: entering: gcc_jit_context_new_string_literal
+JIT: exiting: gcc_jit_context_new_string_literal
+JIT: entering: gcc_jit_function_new_block
+JIT: exiting: gcc_jit_function_new_block
+JIT: entering: gcc_jit_block_add_comment
+JIT: exiting: gcc_jit_block_add_comment
+JIT: entering: gcc_jit_context_new_call
+JIT: exiting: gcc_jit_context_new_call
+JIT: entering: gcc_jit_block_add_eval
+JIT: exiting: gcc_jit_block_add_eval
+JIT: entering: gcc_jit_block_end_with_void_return
+JIT: exiting: gcc_jit_block_end_with_void_return
+JIT: entering: gcc_jit_context_compile
+JIT:  compiling ctxt: 0x1283e20
+JIT:  entering: gcc::jit::result* gcc::jit::recording::context::compile()
+JIT:   entering: void gcc::jit::recording::context::validate()
+JIT:   exiting: void gcc::jit::recording::context::validate()
+JIT:   entering: gcc::jit::playback::context::context(gcc::jit::recording::context*)
+JIT:   exiting: gcc::jit::playback::context::context(gcc::jit::recording::context*)
+JIT:   entering: gcc::jit::result* gcc::jit::playback::context::compile()
+JIT:    entering: void gcc::jit::playback::context::make_fake_args(vec<char*>*, const char*, vec<gcc::jit::recording::requested_dump>*)
+JIT:    exiting: void gcc::jit::playback::context::make_fake_args(vec<char*>*, const char*, vec<gcc::jit::recording::requested_dump>*)
+JIT:    entering: void gcc::jit::playback::context::acquire_mutex()
+JIT:    exiting: void gcc::jit::playback::context::acquire_mutex()
+JIT:    entering: toplev::main
+JIT:     argv[0]: ./test-hello-world.c.exe
+JIT:     argv[1]: /tmp/libgccjit-CKq1M9/fake.c
+JIT:     argv[2]: -fPIC
+JIT:     argv[3]: -O3
+JIT:     argv[4]: -g
+JIT:     argv[5]: -quiet
+JIT:     argv[6]: --param
+JIT:     argv[7]: ggc-min-expand=0
+JIT:     argv[8]: --param
+JIT:     argv[9]: ggc-min-heapsize=0
+JIT:     entering: bool jit_langhook_init()
+JIT:     exiting: bool jit_langhook_init()
+JIT:     entering: void gcc::jit::playback::context::replay()
+JIT:      entering: void gcc::jit::recording::context::replay_into(gcc::jit::replayer*)
+JIT:      exiting: void gcc::jit::recording::context::replay_into(gcc::jit::replayer*)
+JIT:      entering: void gcc::jit::recording::context::disassociate_from_playback()
+JIT:      exiting: void gcc::jit::recording::context::disassociate_from_playback()
+JIT:      entering: void gcc::jit::playback::context::handle_locations()
+JIT:      exiting: void gcc::jit::playback::context::handle_locations()
+JIT:      entering: void gcc::jit::playback::function::build_stmt_list()
+JIT:      exiting: void gcc::jit::playback::function::build_stmt_list()
+JIT:      entering: void gcc::jit::playback::function::build_stmt_list()
+JIT:      exiting: void gcc::jit::playback::function::build_stmt_list()
+JIT:      entering: void gcc::jit::playback::function::postprocess()
+JIT:      exiting: void gcc::jit::playback::function::postprocess()
+JIT:      entering: void gcc::jit::playback::function::postprocess()
+JIT:      exiting: void gcc::jit::playback::function::postprocess()
+JIT:     exiting: void gcc::jit::playback::context::replay()
+JIT:     entering: void jit_langhook_write_globals()
+JIT:     exiting: void jit_langhook_write_globals()
+JIT:    exiting: toplev::main
+JIT:    entering: void gcc::jit::playback::context::extract_any_requested_dumps(vec<gcc::jit::recording::requested_dump>*)
+JIT:    exiting: void gcc::jit::playback::context::extract_any_requested_dumps(vec<gcc::jit::recording::requested_dump>*)
+JIT:    entering: toplev::finalize
+JIT:    exiting: toplev::finalize
+JIT:    entering: void gcc::jit::playback::context::convert_to_dso(const char*)
+JIT:     argv[0]: x86_64-unknown-linux-gnu-gcc-5.0.0
+JIT:     argv[1]: -shared
+JIT:     argv[2]: /tmp/libgccjit-CKq1M9/fake.s
+JIT:     argv[3]: -o
+JIT:     argv[4]: /tmp/libgccjit-CKq1M9/fake.so
+JIT:     argv[5]: -fno-use-linker-plugin
+JIT:     argv[6]: (null)
+JIT:    exiting: void gcc::jit::playback::context::convert_to_dso(const char*)
+JIT:    entering: gcc::jit::result* gcc::jit::playback::context::dlopen_built_dso()
+JIT:     entering: gcc::jit::result::result(gcc::jit::logger*, void*)
+JIT:     exiting: gcc::jit::result::result(gcc::jit::logger*, void*)
+JIT:    exiting: gcc::jit::result* gcc::jit::playback::context::dlopen_built_dso()
+JIT:    entering: void gcc::jit::playback::context::release_mutex()
+JIT:    exiting: void gcc::jit::playback::context::release_mutex()
+JIT:   exiting: gcc::jit::result* gcc::jit::playback::context::compile()
+JIT:   entering: gcc::jit::playback::context::~context()
+JIT:   exiting: gcc::jit::playback::context::~context()
+JIT:  exiting: gcc::jit::result* gcc::jit::recording::context::compile()
+JIT:  gcc_jit_context_compile: returning (gcc_jit_result *)0x12f75d0
+JIT: exiting: gcc_jit_context_compile
+JIT: entering: gcc_jit_result_get_code
+JIT:  locating fnname: hello_world
+JIT:  entering: void* gcc::jit::result::get_code(const char*)
+JIT:  exiting: void* gcc::jit::result::get_code(const char*)
+JIT:  gcc_jit_result_get_code: returning (void *)0x7ff6b8cd87f0
+JIT: exiting: gcc_jit_result_get_code
+JIT: entering: gcc_jit_context_release
+JIT:  deleting ctxt: 0x1283e20
+JIT:  entering: gcc::jit::recording::context::~context()
+JIT:  exiting: gcc::jit::recording::context::~context()
+JIT: exiting: gcc_jit_context_release
+JIT: entering: gcc_jit_result_release
+JIT:  deleting result: 0x12f75d0
+JIT:  entering: virtual gcc::jit::result::~result()
+JIT:  exiting: virtual gcc::jit::result::~result()
+JIT: exiting: gcc_jit_result_release
+JIT: gcc::jit::logger::~logger()
