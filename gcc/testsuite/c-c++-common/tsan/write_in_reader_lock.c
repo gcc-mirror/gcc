@@ -1,8 +1,10 @@
 /* { dg-shouldfail "tsan" } */
+/* { dg-additional-options "-ldl" } */
 
 #include <pthread.h>
-#include <unistd.h>
+#include "tsan_barrier.h"
 
+static pthread_barrier_t barrier;
 pthread_rwlock_t rwlock;
 int GLOB;
 
@@ -10,13 +12,14 @@ void *Thread1(void *p) {
  (void)p;
   pthread_rwlock_rdlock(&rwlock);
   // Write under reader lock.
-  sleep(1);
+  barrier_wait(&barrier);
   GLOB++;
   pthread_rwlock_unlock(&rwlock);
   return 0;
 }
 
 int main(int argc, char *argv[]) {
+  barrier_init(&barrier, 2);
   pthread_rwlock_init(&rwlock, NULL);
   pthread_rwlock_rdlock(&rwlock);
   pthread_t t;
@@ -24,6 +27,7 @@ int main(int argc, char *argv[]) {
   volatile int x = GLOB;
  (void)x;
   pthread_rwlock_unlock(&rwlock);
+  barrier_wait(&barrier);
   pthread_join(t, 0);
   pthread_rwlock_destroy(&rwlock);
   return 0;
