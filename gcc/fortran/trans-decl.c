@@ -87,6 +87,8 @@ static gfc_namespace *module_namespace;
 /* The currently processed procedure symbol.  */
 static gfc_symbol* current_procedure_symbol = NULL;
 
+/* The currently processed module.  */
+static struct module_htab_entry *cur_module;
 
 /* With -fcoarray=lib: For generating the registering call
    of static coarrays.  */
@@ -830,15 +832,33 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 			IDENTIFIER_POINTER (gfc_sym_mangled_identifier (sym))));
 	  token = build_decl (DECL_SOURCE_LOCATION (decl), VAR_DECL, token_name,
 			      token_type);
-	  TREE_PUBLIC (token) = 1;
+	  if (sym->attr.use_assoc)
+	    DECL_EXTERNAL (token) = 1;
+	  else
+	    TREE_STATIC (token) = 1;
+
+	  if (sym->attr.use_assoc || sym->attr.access != ACCESS_PRIVATE ||
+	      sym->attr.public_used)
+	    TREE_PUBLIC (token) = 1;
 	}
       else
-	token = gfc_create_var_np (token_type, "caf_token");
+	{
+	  token = gfc_create_var_np (token_type, "caf_token");
+	  TREE_STATIC (token) = 1;
+	}
 
       GFC_TYPE_ARRAY_CAF_TOKEN (type) = token;
       DECL_ARTIFICIAL (token) = 1;
-      TREE_STATIC (token) = 1;
-      gfc_add_decl_to_function (token);
+      DECL_NONALIASED (token) = 1;
+
+      if (sym->module && !sym->attr.use_assoc)
+	{
+	  pushdecl (token);
+	  DECL_CONTEXT (token) = sym->ns->proc_name->backend_decl;
+	  gfc_module_add_decl (cur_module, token);
+	}
+      else
+	gfc_add_decl_to_function (token);
     }
 
   for (dim = 0; dim < GFC_TYPE_ARRAY_RANK (type); dim++)
@@ -1664,7 +1684,9 @@ get_proc_pointer_decl (gfc_symbol *sym)
   else if (sym->module && sym->ns->proc_name->attr.flavor == FL_MODULE)
     {
       /* This is the declaration of a module variable.  */
-      TREE_PUBLIC (decl) = 1;
+      if (sym->ns->proc_name->attr.flavor == FL_MODULE
+	  && (sym->attr.access != ACCESS_PRIVATE || sym->attr.public_used))
+	TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
     }
 
@@ -4325,8 +4347,6 @@ gfc_module_add_decl (struct module_htab_entry *entry, tree decl)
   if (*slot == NULL)
     *slot = decl;
 }
-
-static struct module_htab_entry *cur_module;
 
 
 /* Generate debugging symbols for namelists. This function must come after

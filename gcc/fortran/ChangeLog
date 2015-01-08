@@ -1,3 +1,10 @@
+2015-01-08  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-decl.c (gfc_build_qualified_array): Fix coarray tokens
+	for module coarrays with -fcoarray=lib.
+	(get_proc_pointer_decl): As module variable, make only public
+	when not marked as private.
+
 2015-01-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/47674
