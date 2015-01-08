@@ -175,6 +175,8 @@ recording::context::context (context *parent_ctxt)
     m_error_count (0),
     m_first_error_str (NULL),
     m_owns_first_error_str (false),
+    m_last_error_str (NULL),
+    m_owns_last_error_str (false),
     m_mementos (),
     m_compound_types (),
     m_functions (),
@@ -230,6 +232,10 @@ recording::context::~context ()
 
   if (m_owns_first_error_str)
     free (m_first_error_str);
+
+  if (m_owns_last_error_str)
+    if (m_last_error_str != m_first_error_str)
+      free (m_last_error_str);
 }
 
 /* Add the given mememto to the list of those tracked by this
@@ -984,9 +990,12 @@ recording::context::add_error_va (location *loc, const char *fmt, va_list ap)
       m_first_error_str = const_cast <char *> (errmsg);
       m_owns_first_error_str = has_ownership;
     }
-  else
-    if (has_ownership)
-      free (malloced_msg);
+
+  if (m_owns_last_error_str)
+    if (m_last_error_str != m_first_error_str)
+      free (m_last_error_str);
+  m_last_error_str = const_cast <char *> (errmsg);
+  m_owns_last_error_str = has_ownership;
 
   m_error_count++;
 }
@@ -1001,6 +1010,18 @@ const char *
 recording::context::get_first_error () const
 {
   return m_first_error_str;
+}
+
+/* Get the message for the last error that occurred on this context, or
+   NULL if no errors have occurred on it.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_get_last_error.  */
+
+const char *
+recording::context::get_last_error () const
+{
+  return m_last_error_str;
 }
 
 /* Lazily generate and record a recording::type representing an opaque

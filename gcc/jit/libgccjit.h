@@ -279,6 +279,16 @@ gcc_jit_context_set_logfile (gcc_jit_context *ctxt,
 extern const char *
 gcc_jit_context_get_first_error (gcc_jit_context *ctxt);
 
+/* To be called after a compile, this gives the last error message
+   that occurred on the context.
+
+   The returned string is valid for the rest of the lifetime of the
+   context.
+
+   If no errors occurred, this will be NULL.  */
+extern const char *
+gcc_jit_context_get_last_error (gcc_jit_context *ctxt);
+
 /* Locate a given function within the built machine code.
    This will need to be cast to a function pointer of the
    correct type before it can be called. */

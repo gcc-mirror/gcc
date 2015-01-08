@@ -36,6 +36,7 @@
     gcc_jit_context_enable_dump;
     gcc_jit_context_get_builtin_function;
     gcc_jit_context_get_first_error;
+    gcc_jit_context_get_last_error;
     gcc_jit_context_get_type;
     gcc_jit_context_get_int_type;
     gcc_jit_context_new_array_access;

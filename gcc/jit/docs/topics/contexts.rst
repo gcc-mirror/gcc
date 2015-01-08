@@ -123,12 +123,28 @@ In general, if an error occurs when using an API entrypoint, the
 entrypoint returns NULL.  You don't have to check everywhere for NULL
 results, since the API handles a NULL being passed in for any
 argument by issuing another error.  This typically leads to a cascade of
-followup error messages, but is safe (albeit verbose).
+followup error messages, but is safe (albeit verbose).  The first error
+message is usually the one to pay attention to, since it is likely to
+be responsible for all of the rest:
 
 .. function:: const char *\
               gcc_jit_context_get_first_error (gcc_jit_context *ctxt)
 
    Returns the first error message that occurred on the context.
+
+   The returned string is valid for the rest of the lifetime of the
+   context.
+
+   If no errors occurred, this will be NULL.
+
+If you are wrapping the C API for a higher-level language that supports
+exception-handling, you may instead by interested in the last error that
+occurred on the context, so that you can embed this in an exception:
+
+.. function:: const char *\
+              gcc_jit_context_get_last_error (gcc_jit_context *ctxt)
+
+   Returns the last error message that occurred on the context.
 
    The returned string is valid for the rest of the lifetime of the
    context.

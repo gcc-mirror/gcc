@@ -1,3 +1,9 @@
+2015-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-block-in-wrong-function.c (verify_code):
+	Verify the result of gcc_jit_context_get_last_error.
+	* jit.dg/test-error-null-passed-to-api.c (verify_code): Likewise.
+
 2015-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/63989
