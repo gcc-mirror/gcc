@@ -1664,6 +1664,13 @@ gcc_jit_rvalue_dereference (gcc_jit_rvalue *rvalue,
     rvalue->get_debug_string (),
     rvalue->get_type ()->get_debug_string ());
 
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    !underlying_type->is_void (),
+    rvalue->m_ctxt, loc,
+    "dereference of void pointer %s (type: %s)",
+    rvalue->get_debug_string (),
+    rvalue->get_type ()->get_debug_string ());
+
   return (gcc_jit_lvalue *)rvalue->dereference (loc);
 }
 

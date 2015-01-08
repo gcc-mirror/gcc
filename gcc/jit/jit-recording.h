@@ -443,6 +443,7 @@ public:
   virtual bool is_bool () const = 0;
   virtual type *is_pointer () = 0;
   virtual type *is_array () = 0;
+  virtual bool is_void () const { return false; }
 
   bool is_numeric () const
   {
@@ -494,6 +495,7 @@ public:
   bool is_bool () const;
   type *is_pointer () { return dereference (); }
   type *is_array () { return NULL; }
+  bool is_void () const { return m_kind == GCC_JIT_TYPE_VOID; }
 
 public:
   void replay_into (replayer *r);
