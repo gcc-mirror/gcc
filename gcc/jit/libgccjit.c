@@ -2164,6 +2164,20 @@ gcc_jit_context_get_first_error (gcc_jit_context *ctxt)
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::context::get_last_error method in
+   jit-recording.c.  */
+
+const char *
+gcc_jit_context_get_last_error (gcc_jit_context *ctxt)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+
+  return ctxt->get_last_error ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::result::get_code method in jit-result.c.  */
 
 void *

@@ -235,6 +235,9 @@ public:
   const char *
   get_first_error () const;
 
+  const char *
+  get_last_error () const;
+
   bool errors_occurred () const
   {
     if (m_parent_ctxt)
@@ -260,6 +263,9 @@ private:
 
   char *m_first_error_str;
   bool m_owns_first_error_str;
+
+  char *m_last_error_str;
+  bool m_owns_last_error_str;
 
   char *m_str_options[GCC_JIT_NUM_STR_OPTIONS];
   int m_int_options[GCC_JIT_NUM_INT_OPTIONS];

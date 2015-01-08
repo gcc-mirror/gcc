@@ -1,5 +1,27 @@
 2015-01-08  David Malcolm  <dmalcolm@redhat.com>
 
+	* docs/topics/contexts.rst (Error-handling): Document new
+	entrypoint gcc_jit_context_get_last_error.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-recording.c (gcc::jit::recording::context::context):
+	Initialize new fields "m_last_error_str" and
+	"m_owns_last_error_str".
+	(gcc::jit::recording::context::~context): Clean up
+	m_last_error_str, if needed.
+	(gcc::jit::recording::context::add_error_va): Update
+	m_last_error_str and m_owns_last_error_str, freeing the old
+	value if appropriate.
+	(gcc::jit::recording::context::get_last_error): New function.
+	* jit-recording.h (gcc::jit::recording::context::get_last_error):
+	New function.
+	(gcc::jit::recording::context): New fields m_last_error_str and
+	m_owns_last_error_str.
+	* libgccjit.c (gcc_jit_context_get_last_error): New function.
+	* libgccjit.h (gcc_jit_context_get_last_error): New declaration.
+	* libgccjit.map (gcc_jit_context_get_last_error): New function.
+
+2015-01-08  David Malcolm  <dmalcolm@redhat.com>
+
 	* Make-lang.in (jit_OBJS): Add jit/jit-logging.o.
 	* docs/internals/index.rst (Overview of code structure): Mention
 	gcc_jit_context_set_logfile, and embed the example logfile.
