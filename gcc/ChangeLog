@@ -1,5 +1,15 @@
 2015-01-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/63989
+	* params.def (PARAM_MAX_TRACKED_STRLENS): Increment default
+	from 1000 to 10000.
+	* tree-ssa-strlen.c (get_strinfo): Moved earlier.
+	(get_stridx): If we don't have a record for certain SSA_NAME,
+	but it is POINTER_PLUS_EXPR of some SSA_NAME we do with
+	constant offset, call get_stridx_plus_constant.
+	(get_stridx_plus_constant): New function.
+	(zero_length_string): Don't use get_stridx here.
+
 	PR target/55023
 	PR middle-end/64388
 	* dse.c (struct insn_info): Mention frame_read set also
