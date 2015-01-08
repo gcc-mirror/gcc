@@ -5629,9 +5629,7 @@ call into a diagnostics message call instead.  When reaching the
 @item -fsanitize=vla-bound
 @opindex fsanitize=vla-bound
 This option instructs the compiler to check that the size of a variable
-length array is positive.  This option does not have any effect in
-@option{-std=c++14} mode, as the standard requires the exception be thrown
-instead.
+length array is positive.
 
 @item -fsanitize=null
 @opindex fsanitize=null

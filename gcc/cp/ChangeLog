@@ -1,3 +1,10 @@
+2015-01-08  Jason Merrill  <jason@redhat.com>
+
+	* init.c (build_vec_init): Call ubsan_instrument_bounds to check
+	whether an initializer-list is too big for a VLA.
+	(throw_bad_array_length): Remove.
+	* cp-tree.h: Remove prototype.
+
 2015-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60753

@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "gimplify.h"
 #include "wide-int.h"
+#include "c-family/c-ubsan.h"
 
 static bool begin_init_stmts (tree *, tree *);
 static tree finish_init_stmts (bool, tree, tree);
@@ -2241,20 +2242,6 @@ throw_bad_array_new_length (void)
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
 }
 
-/* Call __cxa_bad_array_length to indicate that there were too many
-   initializers.  */
-
-tree
-throw_bad_array_length (void)
-{
-  tree fn = get_identifier ("__cxa_throw_bad_array_length");
-  if (!get_global_value_if_present (fn, &fn))
-    fn = push_throw_library_fn (fn, build_function_type_list (void_type_node,
-							      NULL_TREE));
-
-  return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
-}
-
 /* Generate code for a new-expression, including calling the "operator
    new" function, initializing the object, and, if an exception occurs
    during construction, cleaning up.  The arguments are as for
@@ -3419,7 +3406,6 @@ build_vec_init (tree base, tree maxindex, tree init,
   tree obase = base;
   bool xvalue = false;
   bool errors = false;
-  tree length_check = NULL_TREE;
 
   if (TREE_CODE (atype) == ARRAY_TYPE && TYPE_DOMAIN (atype))
     maxindex = array_type_nelts (atype);
@@ -3440,12 +3426,9 @@ build_vec_init (tree base, tree maxindex, tree init,
 
   /* If we have a braced-init-list, make sure that the array
      is big enough for all the initializers.  */
-  if (init && TREE_CODE (init) == CONSTRUCTOR
-      && CONSTRUCTOR_NELTS (init) > 0
-      && !TREE_CONSTANT (maxindex)
-      && flag_exceptions)
-    length_check = fold_build2 (LT_EXPR, boolean_type_node, maxindex,
-				size_int (CONSTRUCTOR_NELTS (init) - 1));
+  bool length_check = (init && TREE_CODE (init) == CONSTRUCTOR
+		       && CONSTRUCTOR_NELTS (init) > 0
+		       && !TREE_CONSTANT (maxindex));
 
   if (init
       && TREE_CODE (atype) == ARRAY_TYPE
@@ -3468,10 +3451,6 @@ build_vec_init (tree base, tree maxindex, tree init,
       if (BRACE_ENCLOSED_INITIALIZER_P (init))
 	init = digest_init (atype, init, complain);
       stmt_expr = build2 (INIT_EXPR, atype, base, init);
-      if (length_check)
-	stmt_expr = build3 (COND_EXPR, atype, length_check,
-			    throw_bad_array_length (),
-			    stmt_expr);
       return stmt_expr;
     }
 
@@ -3582,11 +3561,30 @@ build_vec_init (tree base, tree maxindex, tree init,
 
       if (length_check)
 	{
-	  tree throw_call;
-	  throw_call = throw_bad_array_new_length ();
-	  length_check = build3 (COND_EXPR, void_type_node, length_check,
-				 throw_call, void_node);
-	  finish_expr_stmt (length_check);
+	  tree nelts = size_int (CONSTRUCTOR_NELTS (init) - 1);
+	  if (TREE_CODE (atype) != ARRAY_TYPE)
+	    {
+	      if (flag_exceptions)
+		{
+		  tree c = fold_build2 (LT_EXPR, boolean_type_node, iterator,
+					nelts);
+		  c = build3 (COND_EXPR, void_type_node, c,
+			      throw_bad_array_new_length (), void_node);
+		  finish_expr_stmt (c);
+		}
+	      /* Don't check an array new when -fno-exceptions.  */
+	    }
+	  else if (flag_sanitize & SANITIZE_BOUNDS
+		   && current_function_decl
+		   && !lookup_attribute ("no_sanitize_undefined",
+					 DECL_ATTRIBUTES
+					 (current_function_decl)))
+	    {
+	      /* Make sure the last element of the initializer is in bounds. */
+	      finish_expr_stmt
+		(ubsan_instrument_bounds
+		 (input_location, obase, &nelts, /*ignore_off_by_one*/false));
+	    }
 	}
 
       if (try_const)
