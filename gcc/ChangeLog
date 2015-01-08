@@ -1,3 +1,9 @@
+2015-01-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/64533
+	* config/sh/sh.md (*addsi3_compact): Use u constraint instead
+	of r for the second alternative of the destination operand.
+
 2015-01-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/36557
