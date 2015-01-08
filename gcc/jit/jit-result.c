@@ -21,6 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+
+#include "jit-common.h"
+#include "jit-logging.h"
 #include "jit-result.h"
 
 namespace gcc {
@@ -29,9 +32,11 @@ namespace jit {
 /* Constructor for gcc::jit::result.  */
 
 result::
-result(void *dso_handle)
-  : m_dso_handle(dso_handle)
+result(logger *logger, void *dso_handle) :
+  log_user (logger),
+  m_dso_handle (dso_handle)
 {
+  JIT_LOG_SCOPE (get_logger ());
 }
 
 /* gcc::jit::result's destructor.
@@ -40,6 +45,8 @@ result(void *dso_handle)
 
 result::~result()
 {
+  JIT_LOG_SCOPE (get_logger ());
+
   dlclose (m_dso_handle);
 }
 
@@ -53,6 +60,8 @@ void *
 result::
 get_code (const char *funcname)
 {
+  JIT_LOG_SCOPE (get_logger ());
+
   void *code;
   const char *error;
 

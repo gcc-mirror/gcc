@@ -97,6 +97,7 @@ namespace jit {
 
 class result;
 class dump;
+class logger;
 class builtins_manager; // declared within jit-builtins.h
 class tempdir;
 

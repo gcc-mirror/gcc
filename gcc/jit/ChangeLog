@@ -1,3 +1,143 @@
+2015-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (jit_OBJS): Add jit/jit-logging.o.
+	* docs/internals/index.rst (Overview of code structure): Mention
+	gcc_jit_context_set_logfile, and embed the example logfile.
+	* docs/internals/test-hello-world.exe.log.txt: New file: example
+	of a logfile.
+	* docs/topics/contexts.rst (Debugging): Add documentation
+	for gcc_jit_context_set_logfile.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* dummy-frontend.c: Include "jit-logging.h".
+	(jit_langhook_init): Assert that there is an active playback
+	context.  If it has a logger, log entry/exit to this function.
+	(jit_langhook_write_globals): Likewise.
+	* jit-common.h (gcc::jit::logger): New forward declaration.
+	* jit-logging.c: New file.
+	* jit-logging.h: New file.
+	* jit-playback.c: Include "jit-logging.h".
+	(gcc::jit::playback::context::context): Initialize the log_user
+	base class from the recording context's logger (if any).  Use
+	JIT_LOG_SCOPE to log entry/exit from the function body.
+	(gcc::jit::playback::context::~context): Use JIT_LOG_SCOPE to
+	log entry/exit from the function body.
+	(gcc::jit::playback::build_stmt_list): Likewise.
+	(gcc::jit::playback::function::postprocess): Likewise.
+	(gcc::jit::playback::context::compile): Likewise.  Log the
+	entry/exit to toplev::main and toplev::finalize.  Log the
+	fake argv passed to toplev::main.
+	(gcc::jit::playback::context::acquire_mutex): Use JIT_LOG_SCOPE to
+	log entry/exit from the function body.
+	(gcc::jit::playback::context::release_mutex): Likewise.
+	(gcc::jit::playback::context::make_fake_args): Likewise.
+	(gcc::jit::playback::context::extract_any_requested_dumps):
+	Likewise.
+	(gcc::jit::playback::context::convert_to_dso): Likewise. Also,
+	log the arguments that the driver is invoked with.
+	(gcc::jit::playback::context::dlopen_built_dso): Likewise.  Pass
+	the logger to the result object.
+	(gcc::jit::playback::context::replay): Use JIT_LOG_SCOPE to
+	log entry/exit from the function body.
+	(gcc::jit::playback::context::dump_generated_code): Likewise.
+	(gcc::jit::playback::context::handle_locations): Likewise.
+	* jit-playback.h (gcc::jit::playback::context): Make this be
+	a subclass of gcc::jit::log_user.
+	* jit-recording.c: Include "jit-logging.h".
+	(gcc::jit::recording::context::context: Initialize the logger to
+	NULL for root contexts, or to the parent's logger for child
+	contexts.
+	(gcc::jit::recording::context::~context): Use JIT_LOG_SCOPE to
+	log entry/exit from the function body.
+	(gcc::jit::recording::context::replay_into): Likewise.
+	(gcc::jit::recording::context::disassociate_from_playback):
+	Likewise.
+	(gcc::jit::recording::context::compile): Likewise.
+	(recording::context::add_error_va): Likewise.  Also, log the
+	error.
+	(gcc::jit::recording::context::validate): Use JIT_LOG_SCOPE to
+	log entry/exit from the function body.
+	* jit-recording.h: Include "jit-logging.h".
+	(gcc::jit::recording::context): Make this be a subclass of
+	gcc::jit::log_user.
+	* jit-result.c: Include "jit-common.h" and "jit-logging.h".
+	(gcc::jit::result::result): Add logger param, recording it.
+	Use JIT_LOG_SCOPE to log entry/exit from the function body.
+	(gcc::jit::result::~result(): Use JIT_LOG_SCOPE to
+	log entry/exit from the function body.
+	(gcc::jit::result::get_code): Likewise.
+	* jit-result.h (gcc::jit::result): Make this be a subclass of
+	gcc::jit::log_user.
+	(gcc::jit::result::result): Add logger parameter.
+	* libgccjit++.h (gccjit::context::set_logfile): New function.
+	* libgccjit.c: Include "jit-logging.h".
+	(gcc_jit_context_acquire): Log the context.
+	(gcc_jit_context_release): Use JIT_LOG_FUNC to
+	log entry/exit from the function body, and log the context.
+	(gcc_jit_context_new_child_context): Likewise, logging both
+	contexts.
+	(gcc_jit_context_new_location): Use JIT_LOG_FUNC to
+	log entry/exit from the function body.
+	(gcc_jit_context_get_type): Likewise.
+	(gcc_jit_context_get_int_type): Likewise.
+	(gcc_jit_context_new_array_type): Likewise.
+	(gcc_jit_context_new_field): Likewise.
+	(gcc_jit_context_new_struct_type): Likewise.
+	(gcc_jit_context_new_opaque_struct): Likewise.
+	(gcc_jit_struct_set_fields): Likewise.
+	(gcc_jit_context_new_union_type): Likewise.
+	(gcc_jit_context_new_function_ptr_type): Likewise.
+	(gcc_jit_context_new_param): Likewise.
+	(gcc_jit_context_new_function): Likewise.
+	(gcc_jit_context_get_builtin_function): Likewise.
+	(gcc_jit_function_get_param): Likewise.
+	(gcc_jit_function_dump_to_dot): Likewise.
+	(gcc_jit_function_new_block): Likewise.
+	(gcc_jit_context_new_global): Likewise.
+	(gcc_jit_context_new_rvalue_from_int): Likewise.
+	(gcc_jit_context_zero): Likewise.
+	(gcc_jit_context_one): Likewise.
+	(gcc_jit_context_new_rvalue_from_double): Likewise.
+	(gcc_jit_context_new_rvalue_from_ptr): Likewise.
+	(gcc_jit_context_null): Likewise.
+	(gcc_jit_context_new_string_literal): Likewise.
+	(gcc_jit_context_new_unary_op): Likewise.
+	(gcc_jit_context_new_binary_op): Likewise.
+	(gcc_jit_context_new_comparison): Likewise.
+	(gcc_jit_context_new_call): Likewise.
+	(gcc_jit_context_new_call_through_ptr): Likewise.
+	(gcc_jit_context_new_cast): Likewise.
+	(gcc_jit_context_new_array_access): Likewise.
+	(gcc_jit_lvalue_access_field): Likewise.
+	(gcc_jit_rvalue_access_field): Likewise.
+	(gcc_jit_rvalue_dereference_field): Likewise.
+	(gcc_jit_rvalue_dereference): Likewise.
+	(gcc_jit_lvalue_get_address): Likewise.
+	(gcc_jit_function_new_local): Likewise.
+	(gcc_jit_block_add_eval): Likewise.
+	(gcc_jit_block_add_assignment): Likewise.
+	(gcc_jit_block_add_assignment_op): Likewise.
+	(gcc_jit_block_end_with_conditional): Likewise.
+	(gcc_jit_block_add_comment): Likewise.
+	(gcc_jit_block_end_with_jump): Likewise.
+	(gcc_jit_block_end_with_return): Likewise.
+	(gcc_jit_block_end_with_void_return): Likewise.
+	(gcc_jit_context_set_str_option): Likewise.
+	(gcc_jit_context_set_int_option): Likewise.
+	(gcc_jit_context_set_bool_option): Likewise.
+	(gcc_jit_context_enable_dump): Likewise.
+	(gcc_jit_context_compile): Likewise.  Also log the context,
+	and the result.
+	(gcc_jit_context_dump_to_file): Likewise.
+	(gcc_jit_context_set_logfile): New function.
+	(gcc_jit_context_get_first_error): Use JIT_LOG_FUNC to
+	log entry/exit from the function body.
+	(gcc_jit_result_get_code): Likewise.  Also log the fnname)
+	and the ptr to be returned.
+	(gcc_jit_result_release): Likewise.  Also log the result.
+	* libgccjit.h: Include <stdio.h>, since we need FILE *.
+	(gcc_jit_context_set_logfile): New declaration.
+	* libgccjit.map (gcc_jit_context_set_logfile): New.
+
 2015-01-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit-recording.h (gcc::jit::recording::type::is_void): New

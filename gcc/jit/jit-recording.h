@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define JIT_RECORDING_H
 
 #include "jit-common.h"
+#include "jit-logging.h"
 
 namespace gcc {
 
@@ -53,7 +54,7 @@ struct requested_dump
 };
 
 /* A JIT-compilation context.  */
-class context
+class context : public log_user
 {
 public:
   context (context *parent_ctxt);

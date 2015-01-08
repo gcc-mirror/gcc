@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "libgccjit.h"
 #include "jit-common.h"
+#include "jit-logging.h"
 #include "jit-recording.h"
 #include "jit-result.h"
 
@@ -323,7 +324,9 @@ compatible_types (gcc::jit::recording::type *ltype,
 gcc_jit_context *
 gcc_jit_context_acquire (void)
 {
-  return new gcc_jit_context (NULL);
+  gcc_jit_context *ctxt = new gcc_jit_context (NULL);
+  ctxt->log ("new top-level ctxt: %p", (void *)ctxt);
+  return ctxt;
 }
 
 /* Public entrypoint for releasing a gcc_jit_context.
@@ -333,6 +336,9 @@ gcc_jit_context_acquire (void)
 void
 gcc_jit_context_release (gcc_jit_context *ctxt)
 {
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL ctxt");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  ctxt->log ("deleting ctxt: %p", (void *)ctxt);
   delete ctxt;
 }
 
@@ -345,7 +351,12 @@ gcc_jit_context_release (gcc_jit_context *ctxt)
 gcc_jit_context *
 gcc_jit_context_new_child_context (gcc_jit_context *parent_ctxt)
 {
-  return new gcc_jit_context (parent_ctxt);
+  RETURN_NULL_IF_FAIL (parent_ctxt, NULL, NULL, "NULL parent ctxt");
+  JIT_LOG_FUNC (parent_ctxt->get_logger ());
+  parent_ctxt->log ("parent_ctxt: %p", (void *)parent_ctxt);
+  gcc_jit_context *child_ctxt = new gcc_jit_context (parent_ctxt);
+  child_ctxt->log ("new child_ctxt: %p", (void *)child_ctxt);
+  return child_ctxt;
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -361,7 +372,7 @@ gcc_jit_context_new_location (gcc_jit_context *ctxt,
 			      int column)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
-
+  JIT_LOG_FUNC (ctxt->get_logger ());
   return (gcc_jit_location *)ctxt->new_location (filename, line, column);
 }
 
@@ -404,6 +415,7 @@ gcc_jit_context_get_type (gcc_jit_context *ctxt,
 			  enum gcc_jit_types type)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL_PRINTF1 (
     (type >= GCC_JIT_TYPE_VOID
      && type <= GCC_JIT_TYPE_FILE_PTR),
@@ -425,6 +437,7 @@ gcc_jit_context_get_int_type (gcc_jit_context *ctxt,
 			      int num_bytes, int is_signed)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL (num_bytes >= 0, ctxt, NULL, "negative size");
 
   return (gcc_jit_type *)ctxt->get_int_type (num_bytes, is_signed);
@@ -485,6 +498,7 @@ gcc_jit_context_new_array_type (gcc_jit_context *ctxt,
 				int num_elements)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (element_type, ctxt, loc, "NULL type");
   RETURN_NULL_IF_FAIL (num_elements >= 0, ctxt, NULL, "negative size");
@@ -507,6 +521,7 @@ gcc_jit_context_new_field (gcc_jit_context *ctxt,
 			   const char *name)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
   RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
@@ -543,6 +558,7 @@ gcc_jit_context_new_struct_type (gcc_jit_context *ctxt,
 				 gcc_jit_field **fields)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
   if (num_fields)
@@ -578,6 +594,7 @@ gcc_jit_context_new_opaque_struct (gcc_jit_context *ctxt,
 				   const char *name)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
 
@@ -611,8 +628,9 @@ gcc_jit_struct_set_fields (gcc_jit_struct *struct_type,
 			   gcc_jit_field **fields)
 {
   RETURN_IF_FAIL (struct_type, NULL, loc, "NULL struct_type");
-  /* LOC can be NULL.  */
   gcc::jit::recording::context *ctxt = struct_type->m_ctxt;
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
   RETURN_IF_FAIL_PRINTF1 (
     NULL == struct_type->get_fields (), ctxt, loc,
     "%s already has had fields set",
@@ -649,6 +667,7 @@ gcc_jit_context_new_union_type (gcc_jit_context *ctxt,
 				gcc_jit_field **fields)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
   if (num_fields)
@@ -687,6 +706,7 @@ gcc_jit_context_new_function_ptr_type (gcc_jit_context *ctxt,
 				       int is_variadic)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (return_type, ctxt, loc, "NULL return_type");
   RETURN_NULL_IF_FAIL (
@@ -720,6 +740,7 @@ gcc_jit_context_new_param (gcc_jit_context *ctxt,
 			   const char *name)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
   RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
@@ -785,6 +806,7 @@ gcc_jit_context_new_function (gcc_jit_context *ctxt,
 			      int is_variadic)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL_PRINTF1 (
     ((kind >= GCC_JIT_FUNCTION_EXPORTED)
@@ -846,6 +868,7 @@ gcc_jit_context_get_builtin_function (gcc_jit_context *ctxt,
 				      const char *name)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL (name, ctxt, NULL, "NULL name");
 
   return static_cast <gcc_jit_function *> (ctxt->get_builtin_function (name));
@@ -876,6 +899,7 @@ gcc_jit_function_get_param (gcc_jit_function *func, int index)
 {
   RETURN_NULL_IF_FAIL (func, NULL, NULL, "NULL function");
   gcc::jit::recording::context *ctxt = func->m_ctxt;
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL (index >= 0, ctxt, NULL, "negative index");
   int num_params = func->get_params ().length ();
   RETURN_NULL_IF_FAIL_PRINTF3 (index < num_params,
@@ -900,6 +924,7 @@ gcc_jit_function_dump_to_dot (gcc_jit_function *func,
 {
   RETURN_IF_FAIL (func, NULL, NULL, "NULL function");
   gcc::jit::recording::context *ctxt = func->m_ctxt;
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_IF_FAIL (path, ctxt, NULL, "NULL path");
 
   func->dump_to_dot (path);
@@ -916,6 +941,7 @@ gcc_jit_function_new_block (gcc_jit_function *func,
 			    const char *name)
 {
   RETURN_NULL_IF_FAIL (func, NULL, NULL, "NULL function");
+  JIT_LOG_FUNC (func->get_context ()->get_logger ());
   RETURN_NULL_IF_FAIL (func->get_kind () != GCC_JIT_FUNCTION_IMPORTED,
 		       func->get_context (), NULL,
 		       "cannot add block to an imported function");
@@ -965,6 +991,7 @@ gcc_jit_context_new_global (gcc_jit_context *ctxt,
 			    const char *name)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
   RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
@@ -1050,6 +1077,7 @@ gcc_jit_context_new_rvalue_from_int (gcc_jit_context *ctxt,
 				     int value)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL_NONNULL_NUMERIC_TYPE (ctxt, numeric_type);
 
   return (gcc_jit_rvalue *)ctxt->new_rvalue_from_int (numeric_type, value);
@@ -1066,6 +1094,7 @@ gcc_jit_context_zero (gcc_jit_context *ctxt,
 		      gcc_jit_type *numeric_type)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL_NONNULL_NUMERIC_TYPE (ctxt, numeric_type);
 
   return gcc_jit_context_new_rvalue_from_int (ctxt, numeric_type, 0);
@@ -1082,6 +1111,7 @@ gcc_jit_context_one (gcc_jit_context *ctxt,
 		     gcc_jit_type *numeric_type)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL_NONNULL_NUMERIC_TYPE (ctxt, numeric_type);
 
   return gcc_jit_context_new_rvalue_from_int (ctxt, numeric_type, 1);
@@ -1099,6 +1129,7 @@ gcc_jit_context_new_rvalue_from_double (gcc_jit_context *ctxt,
 					double value)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL_NONNULL_NUMERIC_TYPE (ctxt, numeric_type);
 
   return (gcc_jit_rvalue *)ctxt->new_rvalue_from_double (numeric_type, value);
@@ -1116,6 +1147,7 @@ gcc_jit_context_new_rvalue_from_ptr (gcc_jit_context *ctxt,
 				     void *value)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL (pointer_type, ctxt, NULL, "NULL type");
   RETURN_NULL_IF_FAIL_PRINTF1 (
     pointer_type->is_pointer (),
@@ -1137,6 +1169,7 @@ gcc_jit_context_null (gcc_jit_context *ctxt,
 		      gcc_jit_type *pointer_type)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL (pointer_type, ctxt, NULL, "NULL type");
   RETURN_NULL_IF_FAIL_PRINTF1 (
     pointer_type->is_pointer (),
@@ -1158,6 +1191,7 @@ gcc_jit_context_new_string_literal (gcc_jit_context *ctxt,
 				    const char *value)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL (value, ctxt, NULL, "NULL value");
 
   return (gcc_jit_rvalue *)ctxt->new_string_literal (value);
@@ -1177,6 +1211,7 @@ gcc_jit_context_new_unary_op (gcc_jit_context *ctxt,
 			      gcc_jit_rvalue *rvalue)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL_PRINTF1 (
     (op >= GCC_JIT_UNARY_OP_MINUS
@@ -1215,6 +1250,7 @@ gcc_jit_context_new_binary_op (gcc_jit_context *ctxt,
 			       gcc_jit_rvalue *a, gcc_jit_rvalue *b)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL_PRINTF1 (
     valid_binary_op_p (op),
@@ -1250,6 +1286,7 @@ gcc_jit_context_new_comparison (gcc_jit_context *ctxt,
 				gcc_jit_rvalue *a, gcc_jit_rvalue *b)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL_PRINTF1 (
     (op >= GCC_JIT_COMPARISON_EQ
@@ -1285,6 +1322,7 @@ gcc_jit_context_new_call (gcc_jit_context *ctxt,
 			  int numargs , gcc_jit_rvalue **args)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (func, ctxt, loc, "NULL function");
   if (numargs)
@@ -1357,6 +1395,7 @@ gcc_jit_context_new_call_through_ptr (gcc_jit_context *ctxt,
 				      int numargs, gcc_jit_rvalue **args)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (fn_ptr, ctxt, loc, "NULL fn_ptr");
   if (numargs)
@@ -1486,6 +1525,7 @@ gcc_jit_context_new_cast (gcc_jit_context *ctxt,
 			  gcc_jit_type *type)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (rvalue, ctxt, loc, "NULL rvalue");
   RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
@@ -1513,6 +1553,7 @@ gcc_jit_context_new_array_access (gcc_jit_context *ctxt,
 				  gcc_jit_rvalue *index)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (ptr, ctxt, loc, "NULL ptr");
   RETURN_NULL_IF_FAIL (index, ctxt, loc, "NULL index");
@@ -1572,8 +1613,9 @@ gcc_jit_lvalue_access_field (gcc_jit_lvalue *struct_,
 			     gcc_jit_field *field)
 {
   RETURN_NULL_IF_FAIL (struct_, NULL, loc, "NULL struct");
-  /* LOC can be NULL.  */
   gcc::jit::recording::context *ctxt = struct_->m_ctxt;
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (field, ctxt, loc, "NULL field");
   RETURN_NULL_IF_FAIL_PRINTF1 (field->get_container (), field->m_ctxt, loc,
 			       "field %s has not been placed in a struct",
@@ -1594,8 +1636,9 @@ gcc_jit_rvalue_access_field (gcc_jit_rvalue *struct_,
 			     gcc_jit_field *field)
 {
   RETURN_NULL_IF_FAIL (struct_, NULL, loc, "NULL struct");
-  /* LOC can be NULL.  */
   gcc::jit::recording::context *ctxt = struct_->m_ctxt;
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (field, ctxt, loc, "NULL field");
   RETURN_NULL_IF_FAIL_PRINTF1 (field->get_container (), field->m_ctxt, loc,
 			       "field %s has not been placed in a struct",
@@ -1616,6 +1659,7 @@ gcc_jit_rvalue_dereference_field (gcc_jit_rvalue *ptr,
 				  gcc_jit_field *field)
 {
   RETURN_NULL_IF_FAIL (ptr, NULL, loc, "NULL ptr");
+  JIT_LOG_FUNC (ptr->get_context ()->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (field, NULL, loc, "NULL field");
   gcc::jit::recording::type *underlying_type =
@@ -1652,6 +1696,7 @@ gcc_jit_rvalue_dereference (gcc_jit_rvalue *rvalue,
 			    gcc_jit_location *loc)
 {
   RETURN_NULL_IF_FAIL (rvalue, NULL, loc, "NULL rvalue");
+  JIT_LOG_FUNC (rvalue->get_context ()->get_logger ());
   /* LOC can be NULL.  */
 
   gcc::jit::recording::type *underlying_type =
@@ -1684,6 +1729,7 @@ gcc_jit_lvalue_get_address (gcc_jit_lvalue *lvalue,
 			    gcc_jit_location *loc)
 {
   RETURN_NULL_IF_FAIL (lvalue, NULL, loc, "NULL lvalue");
+  JIT_LOG_FUNC (lvalue->get_context ()->get_logger ());
   /* LOC can be NULL.  */
 
   return (gcc_jit_rvalue *)lvalue->get_address (loc);
@@ -1701,8 +1747,9 @@ gcc_jit_function_new_local (gcc_jit_function *func,
 			    const char *name)
 {
   RETURN_NULL_IF_FAIL (func, NULL, loc, "NULL function");
-  /* LOC can be NULL.  */
   gcc::jit::recording::context *ctxt = func->m_ctxt;
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (func->get_kind () != GCC_JIT_FUNCTION_IMPORTED,
 		       ctxt, loc,
 		       "Cannot add locals to an imported function");
@@ -1723,8 +1770,9 @@ gcc_jit_block_add_eval (gcc_jit_block *block,
 			gcc_jit_rvalue *rvalue)
 {
   RETURN_IF_NOT_VALID_BLOCK (block, loc);
-  /* LOC can be NULL.  */
   gcc::jit::recording::context *ctxt = block->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
   RETURN_IF_FAIL (rvalue, ctxt, loc, "NULL rvalue");
 
   return block->add_eval (loc, rvalue);
@@ -1743,8 +1791,9 @@ gcc_jit_block_add_assignment (gcc_jit_block *block,
 			      gcc_jit_rvalue *rvalue)
 {
   RETURN_IF_NOT_VALID_BLOCK (block, loc);
-  /* LOC can be NULL.  */
   gcc::jit::recording::context *ctxt = block->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
   RETURN_IF_FAIL (lvalue, ctxt, loc, "NULL lvalue");
   RETURN_IF_FAIL (rvalue, ctxt, loc, "NULL rvalue");
   RETURN_IF_FAIL_PRINTF4 (
@@ -1775,8 +1824,9 @@ gcc_jit_block_add_assignment_op (gcc_jit_block *block,
 				 gcc_jit_rvalue *rvalue)
 {
   RETURN_IF_NOT_VALID_BLOCK (block, loc);
-  /* LOC can be NULL.  */
   gcc::jit::recording::context *ctxt = block->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
   RETURN_IF_FAIL (lvalue, ctxt, loc, "NULL lvalue");
   RETURN_IF_FAIL_PRINTF1 (
     valid_binary_op_p (op),
@@ -1814,8 +1864,9 @@ gcc_jit_block_end_with_conditional (gcc_jit_block *block,
 				    gcc_jit_block *on_false)
 {
   RETURN_IF_NOT_VALID_BLOCK (block, loc);
-  /* LOC can be NULL.  */
   gcc::jit::recording::context *ctxt = block->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
   RETURN_IF_FAIL (boolval, ctxt, loc, "NULL boolval");
   RETURN_IF_FAIL_PRINTF2 (
    is_bool (boolval), ctxt, loc,
@@ -1860,8 +1911,9 @@ gcc_jit_block_add_comment (gcc_jit_block *block,
 			   const char *text)
 {
   RETURN_IF_NOT_VALID_BLOCK (block, loc);
-  /* LOC can be NULL.  */
   gcc::jit::recording::context *ctxt = block->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
   RETURN_IF_FAIL (text, ctxt, loc, "NULL text");
 
   block->add_comment (loc, text);
@@ -1879,8 +1931,9 @@ gcc_jit_block_end_with_jump (gcc_jit_block *block,
 			     gcc_jit_block *target)
 {
   RETURN_IF_NOT_VALID_BLOCK (block, loc);
-  /* LOC can be NULL.  */
   gcc::jit::recording::context *ctxt = block->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
   RETURN_IF_FAIL (target, ctxt, loc, "NULL target");
   RETURN_IF_FAIL_PRINTF4 (
     block->get_function () == target->get_function (),
@@ -1908,8 +1961,9 @@ gcc_jit_block_end_with_return (gcc_jit_block *block,
 			       gcc_jit_rvalue *rvalue)
 {
   RETURN_IF_NOT_VALID_BLOCK (block, loc);
-  /* LOC can be NULL.  */
   gcc::jit::recording::context *ctxt = block->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
   gcc::jit::recording::function *func = block->get_function ();
   RETURN_IF_FAIL (rvalue, ctxt, loc, "NULL rvalue");
   RETURN_IF_FAIL_PRINTF4 (
@@ -1938,8 +1992,9 @@ gcc_jit_block_end_with_void_return (gcc_jit_block *block,
 				    gcc_jit_location *loc)
 {
   RETURN_IF_NOT_VALID_BLOCK (block, loc);
-  /* LOC can be NULL.  */
   gcc::jit::recording::context *ctxt = block->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
   gcc::jit::recording::function *func = block->get_function ();
   RETURN_IF_FAIL_PRINTF2 (
     func->get_return_type () == ctxt->get_type (GCC_JIT_TYPE_VOID),
@@ -1968,6 +2023,7 @@ gcc_jit_context_set_str_option (gcc_jit_context *ctxt,
 				const char *value)
 {
   RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* opt is checked by the inner function.
      value can be NULL.  */
 
@@ -1986,6 +2042,7 @@ gcc_jit_context_set_int_option (gcc_jit_context *ctxt,
 				int value)
 {
   RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* opt is checked by the inner function.  */
 
   ctxt->set_int_option (opt, value);
@@ -2003,6 +2060,7 @@ gcc_jit_context_set_bool_option (gcc_jit_context *ctxt,
 				 int value)
 {
   RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   /* opt is checked by the inner function.  */
 
   ctxt->set_bool_option (opt, value);
@@ -2020,6 +2078,7 @@ gcc_jit_context_enable_dump (gcc_jit_context *ctxt,
 			     char **out_ptr)
 {
   RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_IF_FAIL (dumpname, ctxt, NULL, "NULL dumpname");
   RETURN_IF_FAIL (out_ptr, ctxt, NULL, "NULL out_ptr");
 
@@ -2037,7 +2096,16 @@ gcc_jit_context_compile (gcc_jit_context *ctxt)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
 
-  return (gcc_jit_result *)ctxt->compile ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+
+  ctxt->log ("compiling ctxt: %p", (void *)ctxt);
+
+  gcc_jit_result *result = (gcc_jit_result *)ctxt->compile ();
+
+  ctxt->log ("%s: returning (gcc_jit_result *)%p",
+	     __func__, (void *)result);
+
+  return result;
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -2052,8 +2120,30 @@ gcc_jit_context_dump_to_file (gcc_jit_context *ctxt,
 			      int update_locations)
 {
   RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_IF_FAIL (path, ctxt, NULL, "NULL path");
   ctxt->dump_to_file (path, update_locations);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.  */
+
+void
+gcc_jit_context_set_logfile (gcc_jit_context *ctxt,
+			     FILE *logfile,
+			     int flags,
+			     int verbosity)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_IF_FAIL ((flags == 0), ctxt, NULL, "flags must be 0 for now");
+  RETURN_IF_FAIL ((verbosity == 0), ctxt, NULL, "verbosity must be 0 for now");
+
+  gcc::jit::logger *logger;
+  if (logfile)
+    logger = new gcc::jit::logger (logfile, flags, verbosity);
+  else
+    logger = NULL;
+  ctxt->set_logger (logger);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -2066,6 +2156,7 @@ const char *
 gcc_jit_context_get_first_error (gcc_jit_context *ctxt)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
 
   return ctxt->get_first_error ();
 }
@@ -2080,9 +2171,14 @@ gcc_jit_result_get_code (gcc_jit_result *result,
 			 const char *fnname)
 {
   RETURN_NULL_IF_FAIL (result, NULL, NULL, "NULL result");
+  JIT_LOG_FUNC (result->get_logger ());
   RETURN_NULL_IF_FAIL (fnname, NULL, NULL, "NULL fnname");
 
-  return result->get_code (fnname);
+  result->log ("locating fnname: %s", fnname);
+  void *code = result->get_code (fnname);
+  result->log ("%s: returning (void *)%p", __func__, code);
+
+  return code;
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -2094,6 +2190,7 @@ void
 gcc_jit_result_release (gcc_jit_result *result)
 {
   RETURN_IF_FAIL (result, NULL, NULL, "NULL result");
-
+  JIT_LOG_FUNC (result->get_logger ());
+  result->log ("deleting result: %p", (void *)result);
   delete result;
 }

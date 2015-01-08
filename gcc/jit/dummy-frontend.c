@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 
 #include "jit-common.h"
+#include "jit-logging.h"
 #include "jit-playback.h"
 
 #include <mpfr.h>
@@ -113,6 +114,9 @@ struct ggc_root_tab jit_root_tab[] =
 static bool
 jit_langhook_init (void)
 {
+  gcc_assert (gcc::jit::active_playback_ctxt);
+  JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
+
   static bool registered_root_tab = false;
   if (!registered_root_tab)
     {
@@ -212,6 +216,9 @@ jit_langhook_getdecls (void)
 static void
 jit_langhook_write_globals (void)
 {
+  gcc_assert (gcc::jit::active_playback_ctxt);
+  JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
+
   /* This is the hook that runs the middle and backends: */
   symtab->finalize_compilation_unit ();
 }

@@ -153,6 +153,56 @@ Debugging
    code in a debugger.
 
 .. function:: void\
+              gcc_jit_context_set_logfile (gcc_jit_context *ctxt,\
+                                           FILE *logfile,\
+                                           int flags,\
+                                           int verbosity)
+
+   To help with debugging; enable ongoing logging of the context's
+   activity to the given file.
+
+   For example, the following will enable logging to stderr.
+
+   .. code-block:: c
+
+      gcc_jit_context_set_logfile (ctxt, stderr, 0, 0);
+
+   Examples of information logged include:
+
+   * API calls
+
+   * the various steps involved within compilation
+
+   * activity on any :c:type:`gcc_jit_result` instances created by
+     the context
+
+   * activity within any child contexts
+
+   An example of a log can be seen :ref:`here <example-of-log-file>`,
+   though the precise format and kinds of information logged is subject
+   to change.
+
+   The caller remains responsible for closing `logfile`, and it must not
+   be closed until all users are released.  In particular, note that
+   child contexts and :c:type:`gcc_jit_result` instances created by
+   the context will use the logfile.
+
+   There may a performance cost for logging.
+
+   You can turn off logging on `ctxt` by passing `NULL` for `logfile`.
+   Doing so only affects the context; it does not affect child contexts
+   or :c:type:`gcc_jit_result` instances already created by
+   the context.
+
+   The parameters "flags" and "verbosity" are reserved for future
+   expansion, and must be zero for now.
+
+To contrast the above: :c:func:`gcc_jit_context_dump_to_file` dumps the
+current state of a context to the given path, whereas
+:c:func:`gcc_jit_context_set_logfile` enables on-going logging of
+future activies on a context to the given `FILE *`.
+
+.. function:: void\
               gcc_jit_context_enable_dump (gcc_jit_context *ctxt,\
                                            const char *dumpname, \
                                            char **out_ptr)

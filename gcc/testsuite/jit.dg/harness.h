@@ -251,15 +251,64 @@ static void set_options (gcc_jit_context *ctxt, const char *argv0)
 }
 
 #ifndef TEST_ESCHEWS_TEST_JIT
+/* Set up logging to a logfile of the form "test-FOO.exe.log.txt".
+
+   For example,
+     SRCDIR/gcc/testsuite/jit.dg/test-hello-world.c
+   is built as:
+     BUILDDIR/gcc/testsuite/jit/test-hello-world.c.exe
+   and is logged to
+     BUILDDIR/gcc/testsuite/jit/test-hello-world.c.exe.log.txt
+
+   The logfile must be closed by the caller.
+
+   Note that not every testcase enables logging.  */
+static FILE *
+set_up_logging (gcc_jit_context *ctxt, const char *argv0)
+{
+  const char *logfile_name_suffix = ".log.txt";
+  char *logfile_name = NULL;
+  FILE *logfile = NULL;
+
+  /* Build a logfile name of the form "test-FOO.exe.log.txt".  */
+  logfile_name = (char *)malloc (strlen (argv0)
+				 + strlen (logfile_name_suffix)
+				 + 1);
+  if (!logfile_name)
+    {
+      fail ("malloc failure");
+      return NULL;
+    }
+  strcpy (logfile_name, argv0);
+  strcpy (logfile_name + strlen (argv0), logfile_name_suffix);
+  logfile_name[strlen (argv0) + strlen (logfile_name_suffix)] = '\0';
+
+  logfile = fopen (logfile_name, "w");
+  CHECK_NON_NULL (logfile);
+  free (logfile_name);
+
+  if (logfile)
+    gcc_jit_context_set_logfile (ctxt, logfile, 0, 0);
+
+  return logfile;
+}
+
 /* Run one iteration of the test.  */
 static void
 test_jit (const char *argv0, void *user_data)
 {
   gcc_jit_context *ctxt;
+  FILE *logfile;
   gcc_jit_result *result;
 
   ctxt = gcc_jit_context_acquire ();
-     /* FIXME: error-handling */
+  if (!ctxt)
+    {
+      fail ("gcc_jit_context_acquire failed");
+      return;
+    }
+
+  logfile = set_up_logging (ctxt, argv0);
 
   set_options (ctxt, argv0);
 
@@ -275,6 +324,9 @@ test_jit (const char *argv0, void *user_data)
 
   /* Once we're done with the code, this unloads the built .so file: */
   gcc_jit_result_release (result);
+
+  if (logfile)
+    fclose (logfile);
 }
 #endif /* #ifndef TEST_ESCHEWS_TEST_JIT */
 

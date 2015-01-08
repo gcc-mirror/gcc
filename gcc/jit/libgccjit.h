@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef LIBGCCJIT_H
 #define LIBGCCJIT_H
 
+#include <stdio.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -253,6 +255,19 @@ extern void
 gcc_jit_context_dump_to_file (gcc_jit_context *ctxt,
 			      const char *path,
 			      int update_locations);
+
+/* To help with debugging; enable ongoing logging of the context's
+   activity to the given FILE *.
+
+   The caller remains responsible for closing "logfile".
+
+   Params "flags" and "verbosity" are reserved for future use, and
+   must both be 0 for now.  */
+extern void
+gcc_jit_context_set_logfile (gcc_jit_context *ctxt,
+			     FILE *logfile,
+			     int flags,
+			     int verbosity);
 
 /* To be called after a compile, this gives the first error message
    that occurred on the context.

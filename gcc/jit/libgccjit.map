@@ -65,6 +65,7 @@
     gcc_jit_context_release;
     gcc_jit_context_set_bool_option;
     gcc_jit_context_set_int_option;
+    gcc_jit_context_set_logfile;
     gcc_jit_context_set_str_option;
     gcc_jit_context_zero;
     gcc_jit_field_as_object;

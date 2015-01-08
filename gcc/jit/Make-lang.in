@@ -62,6 +62,7 @@ jit: $(LIBGCCJIT_FILENAME) \
 jit_OBJS = attribs.o \
 	jit/dummy-frontend.o \
 	jit/libgccjit.o \
+	jit/jit-logging.o \
 	jit/jit-recording.o \
 	jit/jit-playback.o \
 	jit/jit-result.o \
