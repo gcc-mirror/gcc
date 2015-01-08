@@ -2061,9 +2061,10 @@
 ;; The problem is that LRA expects something like
 ;;    (set rA (plus rB (const_int N)))
 ;; to work.  We can do that, but we have to split out an additional reg-reg
-;; copy before the actual add insn.
+;; copy before the actual add insn.  Use u constraint for that case to avoid
+;; the invalid value in the stack pointer.
 (define_insn_and_split "*addsi3_compact"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r,&r")
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,&u")
 	(plus:SI (match_operand:SI 1 "arith_operand" "%0,r")
 		 (match_operand:SI 2 "arith_or_int_operand" "rI08,rn")))]
   "TARGET_SH1
