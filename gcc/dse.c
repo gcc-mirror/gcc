@@ -371,9 +371,11 @@ struct insn_info
 	either stack pointer or hard frame pointer based.  This means
 	that we have no other choice than also killing all the frame
 	pointer based stores upon encountering a const function call.
-     This field is set after reload for const function calls.  Having
-     this set is less severe than a wild read, it just means that all
-     the frame related stores are killed rather than all the stores.  */
+     This field is set after reload for const function calls and before
+     reload for const tail function calls on targets where arg pointer
+     is the frame pointer.  Having this set is less severe than a wild
+     read, it just means that all the frame related stores are killed
+     rather than all the stores.  */
   bool frame_read;
 
   /* This field is only used for the processing of const functions.
@@ -2483,17 +2485,6 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn)
 
       insn_info->cannot_delete = true;
 
-      /* Arguments for a sibling call that are pushed to memory are passed
-	 using the incoming argument pointer of the current function.  These
-	 may or may not be frame related depending on the target.  Since
-	 argument pointer related stores are not currently tracked, we treat
-	 a sibling call as though it does a wild read.  */
-      if (SIBLING_CALL_P (insn))
-	{
-	  add_wild_read (bb_info);
-	  return;
-	}
-
       /* Const functions cannot do anything bad i.e. read memory,
 	 however, they can read their parameters which may have
 	 been pushed onto the stack.
@@ -2527,7 +2518,13 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn)
 		     const_call ? "const" : "memset", INSN_UID (insn));
 
 	  /* See the head comment of the frame_read field.  */
-	  if (reload_completed)
+	  if (reload_completed
+	      /* Tail calls are storing their arguments using
+		 arg pointer.  If it is a frame pointer on the target,
+		 even before reload we need to kill frame pointer based
+		 stores.  */
+	      || (SIBLING_CALL_P (insn)
+		  && HARD_FRAME_POINTER_IS_ARG_POINTER))
 	    insn_info->frame_read = true;
 
 	  /* Loop over the active stores and remove those which are
@@ -2601,7 +2598,11 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn)
 		}
 	    }
 	}
-
+      else if (SIBLING_CALL_P (insn) && reload_completed)
+	/* Arguments for a sibling call that are pushed to memory are passed
+	   using the incoming argument pointer of the current function.  After
+	   reload that might be (and likely is) frame pointer based.  */
+	add_wild_read (bb_info);
       else
 	/* Every other call, including pure functions, may read any memory
            that is not relative to the frame.  */

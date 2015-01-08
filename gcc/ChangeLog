@@ -1,3 +1,15 @@
+2015-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55023
+	PR middle-end/64388
+	* dse.c (struct insn_info): Mention frame_read set also
+	before reload for tail calls on some targets.
+	(scan_insn): Revert 2014-12-22 change.  Set frame_read
+	also before reload for tail calls if
+	HARD_FRAME_POINTER_IS_ARG_POINTER.  Call add_wild_read
+	instead of add_non_frame_wild_read for non-const/memset
+	tail calls after reload.
+
 2015-01-08  Jason Merrill  <jason@redhat.com>
 
 	* ubsan.c (do_ubsan_in_current_function): New.
