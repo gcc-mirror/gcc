@@ -390,7 +390,6 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, target_compiler);
   obstack_ptr_grow (&argv_obstack, "-xlto");
-  obstack_ptr_grow (&argv_obstack, "-fopenmp");
   obstack_ptr_grow (&argv_obstack, "-shared");
   obstack_ptr_grow (&argv_obstack, "-fPIC");
   obstack_ptr_grow (&argv_obstack, opt1);

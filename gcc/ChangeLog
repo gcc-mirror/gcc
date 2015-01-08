@@ -1,5 +1,11 @@
 2015-01-08  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* builtins.def (DEF_GOMP_BUILTIN): Also consider flag_offload_abi
+	for registering builtins.
+	* config/i386/intelmic-mkoffload.c (prepare_target_image): Don't
+	add -fopenmp to the argv_obstack used when invoking
+	compile_for_target.
+
 	* config/i386/intelmic-mkoffload.c (compile_for_target): Always
 	add "-m32" or "-m64" to argv_obstack.
 	(generate_host_descr_file): Likewise, when invoking host_compiler.

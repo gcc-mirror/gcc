@@ -148,11 +148,14 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Builtin used by the implementation of GNU OpenMP.  None of these are
    actually implemented in the compiler; they're all in libgomp.  */
+/* These builtins also need to be enabled in offloading compilers invoked from
+   mkoffload; for that purpose, we're checking the -foffload-abi flag here.  */
 #undef DEF_GOMP_BUILTIN
 #define DEF_GOMP_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
                false, true, true, ATTRS, false, \
-	       (flag_openmp || flag_tree_parallelize_loops))
+	       (flag_openmp || flag_tree_parallelize_loops \
+		|| flag_offload_abi != OFFLOAD_ABI_UNSET))
 
 /* Builtin used by implementation of Cilk Plus.  Most of these are decomposed
    by the compiler but a few are implemented in libcilkrts.  */ 
