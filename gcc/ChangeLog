@@ -1,3 +1,10 @@
+2015-01-08  Mike Stump  <mikestump@comcast.net>
+
+	* tsan.c (pass_tsan::gate): Add no_sanitize_thread support.
+	(pass_tsan_O0::gate): Likewise.
+	* extend.texi (Function Attributes): Add no_sanitize_thread
+	documentation.
+
 2015-01-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* builtins.def (DEF_GOMP_BUILTIN): Also consider flag_offload_abi
