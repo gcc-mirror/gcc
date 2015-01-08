@@ -1,5 +1,9 @@
 2015-01-07  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit.dg/test-error-dereferencing-void-ptr.c: New test case.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit.dg/test-expressions.c (make_tests_of_unary_ops): Add test of
 	GCC_JIT_UNARY_OP_ABS.
 	(verify_unary_ops): Likewise.
