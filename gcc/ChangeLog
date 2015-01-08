@@ -1,3 +1,8 @@
+2015-01-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/36557
+	* config/rs6000/rs6000.md (*eqsi3_ext<mode>, *nesi3_ext<mode>): New.
+
 2015-01-07  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi ([-fvtable-verify]): Fix markup on option
