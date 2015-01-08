@@ -1078,7 +1078,7 @@ DEFPARAM (PARAM_MAX_TRACKED_STRLENS,
 	  "max-tracked-strlens",
 	  "Maximum number of strings for which strlen optimization pass will "
 	  "track string lengths",
-	  1000, 0, 0)
+	  10000, 0, 0)
 
 /* Keep this in sync with the sched_pressure_algorithm enum.  */
 DEFPARAM (PARAM_SCHED_PRESSURE_ALGORITHM,

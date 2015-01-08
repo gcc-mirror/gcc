@@ -1,3 +1,8 @@
+2015-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63989
+	* gcc.dg/strlenopt-27.c: New test.
+
 2015-01-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/harness.h (set_up_logging): New function.
