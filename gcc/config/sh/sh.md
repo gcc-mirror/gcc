@@ -2061,8 +2061,9 @@
 ;; The problem is that LRA expects something like
 ;;    (set rA (plus rB (const_int N)))
 ;; to work.  We can do that, but we have to split out an additional reg-reg
-;; copy before the actual add insn.  Use u constraint for that case to avoid
-;; the invalid value in the stack pointer.
+;; copy or constant load before the actual add insn.
+;; Use u constraint for that case to avoid the invalid value in the stack
+;; pointer.
 (define_insn_and_split "*addsi3_compact"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,&u")
 	(plus:SI (match_operand:SI 1 "arith_operand" "%0,r")
@@ -2078,7 +2079,11 @@
    && ! reg_overlap_mentioned_p (operands[0], operands[1])"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 1)))]
-  ""
+{
+  /* Prefer 'mov r0,r1; add #imm8,r1' over 'mov #imm8,r1; add r0,r1'  */
+  if (satisfies_constraint_I08 (operands[2]))
+    std::swap (operands[1], operands[2]);
+}
   [(set_attr "type" "arith")])
 
 ;; -------------------------------------------------------------------------
