@@ -1,5 +1,10 @@
 2015-01-08  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh-mem.cc: Use constant as second operand when emitting
+	tstsi_t insns.
+
+2015-01-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/55212
 	* config/sh/sh.md (*addsi3_compact): Emit reg-reg copy instead of
 	constant load if constant operand fits into I08.
