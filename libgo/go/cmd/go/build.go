@@ -131,7 +131,7 @@ var buildLdflags []string    // -ldflags flag
 var buildGccgoflags []string // -gccgoflags flag
 var buildRace bool           // -race flag
 
-var reqPkgSrc bool           // req src for Imports
+var reqPkgSrc bool // req src for Imports
 var buildContext = build.Default
 var buildToolchain toolchain = noToolchain{}
 
@@ -1783,17 +1783,18 @@ func (gcToolchain) cc(b *builder, p *Package, objdir, ofile, cfile string) error
 // The Gccgo toolchain.
 type gccgoToolchain struct{}
 
-var gccgoBin, _ = exec.LookPath("gccgo")
-
 func (gccgoToolchain) compiler() string {
-	return gccgoBin
+	if v := os.Getenv("GOC"); v != "" {
+		return v
+	}
+	return defaultGOC
 }
 
-func (gccgoToolchain) linker() string {
-	return gccgoBin
+func (tools gccgoToolchain) linker() string {
+	return tools.compiler()
 }
 
-func (gccgoToolchain) gc(b *builder, p *Package, archive, obj string, importArgs []string, gofiles []string) (ofile string, output []byte, err error) {
+func (tools gccgoToolchain) gc(b *builder, p *Package, archive, obj string, importArgs []string, gofiles []string) (ofile string, output []byte, err error) {
 	out := p.Name + ".o"
 	ofile = obj + out
 	gcargs := []string{"-g"}
@@ -1804,7 +1805,7 @@ func (gccgoToolchain) gc(b *builder, p *Package, archive, obj string, importArgs
 	if p.localPrefix != "" {
 		gcargs = append(gcargs, "-fgo-relative-import-path="+p.localPrefix)
 	}
-	args := stringList("gccgo", importArgs, "-c", gcargs, "-o", ofile, buildGccgoflags)
+	args := stringList(tools.compiler(), importArgs, "-c", gcargs, "-o", ofile, buildGccgoflags)
 	for _, f := range gofiles {
 		args = append(args, mkAbs(p.Dir, f))
 	}
@@ -1813,14 +1814,14 @@ func (gccgoToolchain) gc(b *builder, p *Package, archive, obj string, importArgs
 	return ofile, output, err
 }
 
-func (gccgoToolchain) asm(b *builder, p *Package, obj, ofile, sfile string) error {
+func (tools gccgoToolchain) asm(b *builder, p *Package, obj, ofile, sfile string) error {
 	sfile = mkAbs(p.Dir, sfile)
 	defs := []string{"-D", "GOOS_" + goos, "-D", "GOARCH_" + goarch}
 	if pkgpath := gccgoCleanPkgpath(p); pkgpath != "" {
 		defs = append(defs, `-D`, `GOPKGPATH="`+pkgpath+`"`)
 	}
 	defs = append(defs, b.gccArchArgs()...)
-	return b.run(p.Dir, p.ImportPath, nil, "gccgo", "-I", obj, "-o", ofile, defs, sfile)
+	return b.run(p.Dir, p.ImportPath, nil, tools.compiler(), "-c", "-I", obj, "-o", ofile, defs, sfile)
 }
 
 func (gccgoToolchain) pkgpath(basedir string, p *Package) string {
@@ -1897,7 +1898,7 @@ func (tools gccgoToolchain) ld(b *builder, p *Package, out string, allactions []
 	if objc {
 		ldflags = append(ldflags, "-lobjc")
 	}
-	return b.run(".", p.ImportPath, nil, "gccgo", "-o", out, ofiles, "-Wl,-(", ldflags, "-Wl,-)", buildGccgoflags)
+	return b.run(".", p.ImportPath, nil, tools.linker(), "-o", out, ofiles, "-Wl,-(", ldflags, "-Wl,-)", buildGccgoflags)
 }
 
 func (gccgoToolchain) cc(b *builder, p *Package, objdir, ofile, cfile string) error {
