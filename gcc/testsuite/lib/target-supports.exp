@@ -1128,6 +1128,13 @@ proc check_libcilkrts_available { } {
 	} "-fcilkplus -lcilkrts" ]
 }
 
+# Return true if the atomic library is supported on the target.
+proc check_effective_target_libatomic_available { } {
+    return [check_no_compiler_messages libatomic_available executable {
+	int main (void) { return 0; }
+    } "-latomic"]
+}
+
 # Return 1 if an ASCII locale is supported on this host, 0 otherwise.
 
 proc check_ascii_locale_available { } {
