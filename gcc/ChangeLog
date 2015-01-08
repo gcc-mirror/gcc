@@ -1,3 +1,10 @@
+2015-01-08  Jason Merrill  <jason@redhat.com>
+
+	* ubsan.c (do_ubsan_in_current_function): New.
+	(pass_ubsan::gate): Use it.
+	* ubsan.h: Declare it.
+	* convert.c (convert_to_integer): Use it.
+
 2015-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/64338

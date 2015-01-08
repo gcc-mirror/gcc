@@ -1648,6 +1648,16 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
 }
 
+/* True if we want to play UBSan games in the current function.  */
+
+bool
+do_ubsan_in_current_function ()
+{
+  return (current_function_decl != NULL_TREE
+	  && !lookup_attribute ("no_sanitize_undefined",
+				DECL_ATTRIBUTES (current_function_decl)));
+}
+
 namespace {
 
 const pass_data pass_data_ubsan =
@@ -1679,9 +1689,7 @@ public:
 			      | SANITIZE_NONNULL_ATTRIBUTE
 			      | SANITIZE_RETURNS_NONNULL_ATTRIBUTE
 			      | SANITIZE_OBJECT_SIZE)
-	     && current_function_decl != NULL_TREE
-	     && !lookup_attribute ("no_sanitize_undefined",
-				   DECL_ATTRIBUTES (current_function_decl));
+	&& do_ubsan_in_current_function ();
     }
 
   virtual unsigned int execute (function *);

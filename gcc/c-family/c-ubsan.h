@@ -31,4 +31,7 @@ extern void ubsan_maybe_instrument_array_ref (tree *, bool);
 extern void ubsan_maybe_instrument_reference (tree);
 extern void ubsan_maybe_instrument_member_call (tree, bool);
 
+/* Declare this here as well as in ubsan.h. */
+extern bool do_ubsan_in_current_function (void);
+
 #endif  /* GCC_C_UBSAN_H  */

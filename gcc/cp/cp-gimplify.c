@@ -1350,9 +1350,7 @@ cp_genericize (tree fndecl)
   cp_genericize_tree (&DECL_SAVED_TREE (fndecl));
 
   if (flag_sanitize & SANITIZE_RETURN
-      && current_function_decl != NULL_TREE
-      && !lookup_attribute ("no_sanitize_undefined",
-			    DECL_ATTRIBUTES (current_function_decl)))
+      && do_ubsan_in_current_function ())
     cp_ubsan_maybe_instrument_return (fndecl);
 
   /* Do everything else.  */

@@ -8595,10 +8595,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	  stabilize_vla_size (itype);
 
 	  if (flag_sanitize & SANITIZE_VLA
-	      && current_function_decl != NULL_TREE
-	      && !lookup_attribute ("no_sanitize_undefined",
-				    DECL_ATTRIBUTES
-				    (current_function_decl)))
+	      && do_ubsan_in_current_function ())
 	    {
 	      /* We have to add 1 -- in the ubsan routine we generate
 		 LE_EXPR rather than LT_EXPR.  */

@@ -1,3 +1,10 @@
+2015-01-08  Jason Merrill  <jason@redhat.com>
+
+	* c-ubsan.c (ubsan_maybe_instrument_array_ref): Use
+	do_ubsan_in_current_function.
+	(ubsan_maybe_instrument_reference_or_call): Likewise.
+	* c-ubsan.h: Declare it.
+
 2015-01-08  Mike Stump  <mikestump@comcast.net>
 
 	* c-common.c (c_common_attribute_table): Add no_sanitize_thread.
