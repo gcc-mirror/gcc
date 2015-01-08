@@ -1,5 +1,12 @@
 2015-01-08  Jason Merrill  <jason@redhat.com>
 
+	* cp-gimplify.c (cp_genericize): Use do_ubsan_in_current_function.
+	* decl.c (compute_array_index_type): Likewise.
+	* init.c (build_vec_init): Likewise.
+	* typeck.c (cp_build_binary_op): Likewise.
+
+2015-01-08  Jason Merrill  <jason@redhat.com>
+
 	* init.c (build_vec_init): Call ubsan_instrument_bounds to check
 	whether an initializer-list is too big for a VLA.
 	(throw_bad_array_length): Remove.

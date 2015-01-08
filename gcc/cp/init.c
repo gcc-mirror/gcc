@@ -3575,10 +3575,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 	      /* Don't check an array new when -fno-exceptions.  */
 	    }
 	  else if (flag_sanitize & SANITIZE_BOUNDS
-		   && current_function_decl
-		   && !lookup_attribute ("no_sanitize_undefined",
-					 DECL_ATTRIBUTES
-					 (current_function_decl)))
+		   && do_ubsan_in_current_function ())
 	    {
 	      /* Make sure the last element of the initializer is in bounds. */
 	      finish_expr_stmt

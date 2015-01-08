@@ -885,9 +885,7 @@ convert_to_integer (tree type, tree expr)
 
     case REAL_TYPE:
       if (flag_sanitize & SANITIZE_FLOAT_CAST
-	  && current_function_decl != NULL_TREE
-	  && !lookup_attribute ("no_sanitize_undefined",
-				DECL_ATTRIBUTES (current_function_decl)))
+	  && do_ubsan_in_current_function ())
 	{
 	  expr = save_expr (expr);
 	  tree check = ubsan_instrument_float_cast (loc, type, expr, expr);

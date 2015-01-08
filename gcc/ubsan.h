@@ -38,6 +38,7 @@ enum ubsan_print_style {
   UBSAN_PRINT_ARRAY
 };
 
+extern bool do_ubsan_in_current_function (void);
 extern bool ubsan_expand_bounds_ifn (gimple_stmt_iterator *);
 extern bool ubsan_expand_null_ifn (gimple_stmt_iterator *);
 extern bool ubsan_expand_objsize_ifn (gimple_stmt_iterator *);

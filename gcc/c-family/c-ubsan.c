@@ -364,9 +364,7 @@ void
 ubsan_maybe_instrument_array_ref (tree *expr_p, bool ignore_off_by_one)
 {
   if (!ubsan_array_ref_instrumented_p (*expr_p)
-      && current_function_decl != NULL_TREE
-      && !lookup_attribute ("no_sanitize_undefined",
-			    DECL_ATTRIBUTES (current_function_decl)))
+      && do_ubsan_in_current_function ())
     {
       tree op0 = TREE_OPERAND (*expr_p, 0);
       tree op1 = TREE_OPERAND (*expr_p, 1);
@@ -386,9 +384,7 @@ static tree
 ubsan_maybe_instrument_reference_or_call (location_t loc, tree op, tree ptype,
 					  enum ubsan_null_ckind ckind)
 {
-  if (current_function_decl == NULL_TREE
-      || lookup_attribute ("no_sanitize_undefined",
-			   DECL_ATTRIBUTES (current_function_decl)))
+  if (!do_ubsan_in_current_function ())
     return NULL_TREE;
 
   tree type = TREE_TYPE (ptype);
