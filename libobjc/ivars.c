@@ -179,7 +179,7 @@ struct objc_ivar ** class_copyIvarList (Class class_, unsigned int *numberOfRetu
   struct objc_ivar **returnValue = NULL;
   struct objc_ivar_list* ivar_list;
 
-  if (class_ == Nil  ||  CLS_IS_IN_CONSTRUCTION (class_))
+  if (class_ == Nil  ||  CLS_IS_IN_CONSTRUCTION (class_) || !class_->ivars)
     {
       if (numberOfReturnedIvars)
 	*numberOfReturnedIvars = 0;

@@ -1,3 +1,8 @@
+2015-01-09  Dimitris Papavasiliou  <dpapavas@gmail.com>
+
+	* ivars.c: Add a check for classes without instance
+	variables, which have a NULL ivar list pointer.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
