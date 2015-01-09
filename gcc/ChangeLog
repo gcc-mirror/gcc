@@ -1,3 +1,11 @@
+2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backport from mainline:
+	2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/t-rtems: Use MULTILIB_REQUIRED instead of
+	MULTILIB_EXCEPTIONS.
+
 2015-01-09  Renlin Li  <renlin.li@arm.com>
 
 	Backport from mainline:
