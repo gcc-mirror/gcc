@@ -46,6 +46,12 @@ JIT:   exiting: void gcc::jit::recording::context::validate()
 JIT:   entering: gcc::jit::playback::context::context(gcc::jit::recording::context*)
 JIT:   exiting: gcc::jit::playback::context::context(gcc::jit::recording::context*)
 JIT:   entering: gcc::jit::result* gcc::jit::playback::context::compile()
+JIT:    entering: gcc::jit::tempdir::tempdir(gcc::jit::logger*, int)
+JIT:    exiting: gcc::jit::tempdir::tempdir(gcc::jit::logger*, int)
+JIT:    entering: bool gcc::jit::tempdir::create()
+JIT:     m_path_template: /tmp/libgccjit-XXXXXX
+JIT:     m_path_tempdir: /tmp/libgccjit-CKq1M9
+JIT:    exiting: bool gcc::jit::tempdir::create()
 JIT:    entering: void gcc::jit::playback::context::make_fake_args(vec<char*>*, const char*, vec<gcc::jit::recording::requested_dump>*)
 JIT:    exiting: void gcc::jit::playback::context::make_fake_args(vec<char*>*, const char*, vec<gcc::jit::recording::requested_dump>*)
 JIT:    entering: void gcc::jit::playback::context::acquire_mutex()
@@ -96,8 +102,9 @@ JIT:     argv[5]: -fno-use-linker-plugin
 JIT:     argv[6]: (null)
 JIT:    exiting: void gcc::jit::playback::context::convert_to_dso(const char*)
 JIT:    entering: gcc::jit::result* gcc::jit::playback::context::dlopen_built_dso()
-JIT:     entering: gcc::jit::result::result(gcc::jit::logger*, void*)
-JIT:     exiting: gcc::jit::result::result(gcc::jit::logger*, void*)
+JIT:     GCC_JIT_BOOL_OPTION_DEBUGINFO was set: handing over tempdir to jit::result
+JIT:     entering: gcc::jit::result::result(gcc::jit::logger*, void*, gcc::jit::tempdir*)
+JIT:     exiting: gcc::jit::result::result(gcc::jit::logger*, void*, gcc::jit::tempdir*)
 JIT:    exiting: gcc::jit::result* gcc::jit::playback::context::dlopen_built_dso()
 JIT:    entering: void gcc::jit::playback::context::release_mutex()
 JIT:    exiting: void gcc::jit::playback::context::release_mutex()
@@ -121,6 +128,11 @@ JIT: exiting: gcc_jit_context_release
 JIT: entering: gcc_jit_result_release
 JIT:  deleting result: 0x12f75d0
 JIT:  entering: virtual gcc::jit::result::~result()
+JIT:   entering: gcc::jit::tempdir::~tempdir()
+JIT:    unlinking .s file: /tmp/libgccjit-CKq1M9/fake.s
+JIT:    unlinking .so file: /tmp/libgccjit-CKq1M9/fake.so
+JIT:    removing tempdir: /tmp/libgccjit-CKq1M9
+JIT:   exiting: gcc::jit::tempdir::~tempdir()
 JIT:  exiting: virtual gcc::jit::result::~result()
 JIT: exiting: gcc_jit_result_release
 JIT: gcc::jit::logger::~logger()

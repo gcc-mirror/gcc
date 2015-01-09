@@ -112,6 +112,8 @@ log_scope::~log_scope ()
 
       - class gcc::jit::playback::context
 
+      - class gcc::jit::tempdir
+
       - class gcc::jit::result
 
    The log_user class keeps the reference-count of a logger up-to-date.  */

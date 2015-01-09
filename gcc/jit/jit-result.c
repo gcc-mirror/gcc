@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "jit-common.h"
 #include "jit-logging.h"
 #include "jit-result.h"
+#include "jit-tempdir.h"
 
 namespace gcc {
 namespace jit {
@@ -32,9 +33,10 @@ namespace jit {
 /* Constructor for gcc::jit::result.  */
 
 result::
-result(logger *logger, void *dso_handle) :
+result(logger *logger, void *dso_handle, tempdir *tempdir_) :
   log_user (logger),
-  m_dso_handle (dso_handle)
+  m_dso_handle (dso_handle),
+  m_tempdir (tempdir_)
 {
   JIT_LOG_SCOPE (get_logger ());
 }
@@ -48,6 +50,13 @@ result::~result()
   JIT_LOG_SCOPE (get_logger ());
 
   dlclose (m_dso_handle);
+
+  /* Responsibility for cleaning up the tempdir (including "fake.so" within
+     the filesystem) might have been handed to us by the playback::context,
+     so that the cleanup can be delayed (see PR jit/64206).
+
+     If so, clean it up now.  */
+  delete m_tempdir;
 }
 
 /* Attempt to locate the given function by name within the
