@@ -1,5 +1,9 @@
 2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
 
+	 * ginclude/unwind-arm-common.h: Revert previous commit.
+
+2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
 	* config.gcc (arm*-*-freebsd*): New configuration.
 	* config/arm/freebsd.h: New file.
 	* config.host: Add extra components for arm*-*-freebsd*.
