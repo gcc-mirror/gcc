@@ -2385,40 +2385,40 @@ cgraphunit_c_finalize (void)
 void
 cgraph_node::create_wrapper (cgraph_node *target)
 {
-    /* Preserve DECL_RESULT so we get right by reference flag.  */
-    tree decl_result = DECL_RESULT (decl);
+  /* Preserve DECL_RESULT so we get right by reference flag.  */
+  tree decl_result = DECL_RESULT (decl);
 
-    /* Remove the function's body but keep arguments to be reused
-       for thunk.  */
-    release_body (true);
-    reset ();
+  /* Remove the function's body but keep arguments to be reused
+     for thunk.  */
+  release_body (true);
+  reset ();
 
-    DECL_RESULT (decl) = decl_result;
-    DECL_INITIAL (decl) = NULL;
-    allocate_struct_function (decl, false);
-    set_cfun (NULL);
+  DECL_RESULT (decl) = decl_result;
+  DECL_INITIAL (decl) = NULL;
+  allocate_struct_function (decl, false);
+  set_cfun (NULL);
 
-    /* Turn alias into thunk and expand it into GIMPLE representation.  */
-    definition = true;
-    thunk.thunk_p = true;
-    thunk.this_adjusting = false;
+  /* Turn alias into thunk and expand it into GIMPLE representation.  */
+  definition = true;
+  thunk.thunk_p = true;
+  thunk.this_adjusting = false;
 
-    cgraph_edge *e = create_edge (target, NULL, 0, CGRAPH_FREQ_BASE);
+  cgraph_edge *e = create_edge (target, NULL, 0, CGRAPH_FREQ_BASE);
 
-    tree arguments = DECL_ARGUMENTS (decl);
+  tree arguments = DECL_ARGUMENTS (decl);
 
-    while (arguments)
-      {
-	TREE_ADDRESSABLE (arguments) = false;
-	arguments = TREE_CHAIN (arguments);
-      }
+  while (arguments)
+    {
+      TREE_ADDRESSABLE (arguments) = false;
+      arguments = TREE_CHAIN (arguments);
+    }
 
-    expand_thunk (false, true);
-    e->call_stmt_cannot_inline_p = true;
+  expand_thunk (false, true);
+  e->call_stmt_cannot_inline_p = true;
 
-    /* Inline summary set-up.  */
-    analyze ();
-    inline_analyze_function (this);
+  /* Inline summary set-up.  */
+  analyze ();
+  inline_analyze_function (this);
 }
 
 #include "gt-cgraphunit.h"

@@ -1,3 +1,11 @@
+2015-01-09  Martin Liska  <mliska@suse.cz>
+
+	* cgraphunit.c (cgraph_node::create_wrapper): Fix level of indentation.
+	* ipa-icf.c (sem_function::equals_private): Add support for target and
+	(sem_item_optimizer::merge_classes): Remove redundant function
+	optimization flags comparison.
+	* tree.h (target_opts_for_fn): New function.
+
 2015-01-09  Tom de Vries  <tom@codesourcery.com>
 
 	* omp-low.c (expand_omp_for_static_chunk): Fix assert.
