@@ -67,6 +67,8 @@ static bitmap_obstack lto_obstack;
 static bool lto_obstack_initialized;
 
 const char *section_name_prefix = LTO_SECTION_NAME_PREFIX;
+/* Set when streaming LTO for offloading compiler.  */
+bool lto_stream_offload_p;
 
 /* Return a string representing LTO tag TAG.  */
 

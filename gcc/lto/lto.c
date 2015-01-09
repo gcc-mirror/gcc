@@ -2909,7 +2909,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   timevar_push (TV_IPA_LTO_DECL_IN);
 
 #ifdef ACCEL_COMPILER
-    section_name_prefix = OFFLOAD_SECTION_NAME_PREFIX;
+  section_name_prefix = OFFLOAD_SECTION_NAME_PREFIX;
+  lto_stream_offload_p = true;
 #endif
 
   real_file_decl_data

@@ -1,3 +1,10 @@
+2015-01-09  Bernd Schmidt  <bernds@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/64412
+	* lto.c (read_cgraph_and_symbols): Set lto_stream_offload_p
+	if ACCEL_COMPILER.
+
 2015-01-09  Michael Collison  <michael.collison@linaro.org>
 
 	* lto.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
