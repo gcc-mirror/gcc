@@ -6789,7 +6789,7 @@ expand_omp_for_static_chunk (struct omp_region *region,
 	  locus = redirect_edge_var_map_location (vm);
 	  add_phi_arg (nphi, redirect_edge_var_map_def (vm), re, locus);
 	}
-      gcc_assert (!gsi_end_p (psi) && i == head->length ());
+      gcc_assert (gsi_end_p (psi) && i == head->length ());
       redirect_edge_var_map_clear (re);
       while (1)
 	{
