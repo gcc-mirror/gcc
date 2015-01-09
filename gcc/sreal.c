@@ -58,7 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 void
 sreal::dump (FILE *file) const
 {
-  fprintf (file, "(%" PRIu64 " * 2^%d)", m_sig, m_exp);
+  fprintf (file, "(%" PRIi64 " * 2^%d)", m_sig, m_exp);
 }
 
 DEBUG_FUNCTION void
@@ -122,7 +122,7 @@ sreal::to_double () const
 {
   double val = m_sig;
   if (m_exp)
-    val *= exp2 (m_exp);
+    val = scalbln (val, m_exp);
   return val;
 }
 

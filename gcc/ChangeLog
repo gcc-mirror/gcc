@@ -1,5 +1,12 @@
 2015-01-09  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/64503
+	* sreal.c (sreal::dump): Change unsigned format to signed for
+	m_exp value.
+	(sreal::to_double): Replace exp2 with scalbln.
+
+2015-01-09  Martin Liska  <mliska@suse.cz>
+
 	* cgraphunit.c (cgraph_node::create_wrapper): Fix level of indentation.
 	* ipa-icf.c (sem_function::equals_private): Add support for target and
 	(sem_item_optimizer::merge_classes): Remove redundant function
