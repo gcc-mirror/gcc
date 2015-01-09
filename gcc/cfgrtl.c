@@ -1761,6 +1761,22 @@ rtl_tidy_fallthru_edge (edge e)
       && (any_uncondjump_p (q)
 	  || single_succ_p (b)))
     {
+      rtx label, table;
+
+      if (tablejump_p (q, &label, &table))
+	{
+	  /* The label is likely mentioned in some instruction before
+	     the tablejump and might not be DCEd, so turn it into
+	     a note instead and move before the tablejump that is going to
+	     be deleted.  */
+	  const char *name = LABEL_NAME (label);
+	  PUT_CODE (label, NOTE);
+	  NOTE_KIND (label) = NOTE_INSN_DELETED_LABEL;
+	  NOTE_DELETED_LABEL_NAME (label) = name;
+	  reorder_insns (label, label, PREV_INSN (q));
+	  delete_insn (table);
+	}
+
 #ifdef HAVE_cc0
       /* If this was a conditional jump, we need to also delete
 	 the insn that set cc0.  */

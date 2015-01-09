@@ -1,3 +1,9 @@
+2015-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/64536
+	* cfgrtl.c (rtl_tidy_fallthru_edge): Handle removal of degenerate
+	tablejumps.
+
 2015-01-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline:
