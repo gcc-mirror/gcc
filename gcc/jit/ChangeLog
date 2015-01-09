@@ -1,3 +1,36 @@
+2015-01-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64206
+	* docs/internals/test-hello-world.exe.log.txt: Update, the log now
+	shows tempdir creation/cleanup.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-logging.h (class gcc::jit::log_user): Add gcc::jit::tempdir
+	to the list of subclasses in the comment.
+	* jit-playback.c (gcc::jit::playback::context::context): Add a
+	comment clarifying when the tempdir gets cleaned up.
+	(gcc::jit::playback::context::compile): Pass the context's logger,
+	if any, to the tempdir.
+	(gcc::jit::playback::context::dlopen_built_dso): When creating the
+	gcc::jit::result, if GCC_JIT_BOOL_OPTION_DEBUGINFO is set, hand
+	over ownership of the tempdir to it.
+	* jit-result.c: Include "jit-tempdir.h".
+	(gcc::jit::result::result): Add tempdir param, saving it as
+	m_tempdir.
+	(gcc::jit::result::~result): Delete m_tempdir.
+	* jit-result.h (gcc::jit::result::result): Add tempdir param.
+	(gcc::jit::result::m_tempdir): New field.
+	* jit-tempdir.c (gcc::jit::tempdir::tempdir): Add logger param;
+	add JIT_LOG_SCOPE.
+	(gcc::jit::tempdir::create): Add JIT_LOG_SCOPE to log entry/exit,
+	and log m_path_template and m_path_tempdir.
+	(gcc::jit::tempdir::~tempdir): Add JIT_LOG_SCOPE to log
+	entry/exit, and log the unlink and rmdir calls.
+	* jit-tempdir.h: Include "jit-logging.h".
+	(class gcc::jit::tempdir): Make this be a subclass of log_user.
+	(gcc::jit::tempdir::tempdir): Add logger param.
+	* notes.txt: Update to show the two possible places where the
+	tempdir can be cleaned up.
+
 2015-01-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* libgccjit.h (struct gcc_jit_context): Rewrite the descriptive

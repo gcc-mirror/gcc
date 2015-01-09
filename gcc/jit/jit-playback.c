@@ -104,8 +104,18 @@ playback::context::context (recording::context *ctxt)
 playback::context::~context ()
 {
   JIT_LOG_SCOPE (get_logger ());
-  if (m_tempdir)
-    delete m_tempdir;
+
+  /* Normally the playback::context is responsible for cleaning up the
+     tempdir (including "fake.so" within the filesystem).
+
+     In the normal case, clean it up now.
+
+     However m_tempdir can be NULL if the context has handed over
+     responsibility for the tempdir cleanup to the jit::result object, so
+     that the cleanup can be delayed (see PR jit/64206).  If that's the
+     case this "delete NULL;" is a no-op. */
+  delete m_tempdir;
+
   m_functions.release ();
 }
 
@@ -1554,7 +1564,7 @@ compile ()
   int keep_intermediates =
     get_bool_option (GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES);
 
-  m_tempdir = new tempdir (keep_intermediates);
+  m_tempdir = new tempdir (get_logger (), keep_intermediates);
   if (!m_tempdir->create ())
     return NULL;
 
@@ -1935,7 +1945,37 @@ dlopen_built_dso ()
     add_error (NULL, "%s", error);
   }
   if (handle)
-    result_obj = new result (get_logger (), handle);
+    {
+      /* We've successfully dlopened the result; create a
+	 jit::result object to wrap it.
+
+	 We're done with the tempdir for now, but if the user
+	 has requested debugging, the user's debugger might not
+	 be capable of dealing with the .so file being unlinked
+	 immediately, so keep it around until after the result
+	 is released.  We do this by handing over ownership of
+	 the jit::tempdir to the result.  See PR jit/64206.  */
+      tempdir *handover_tempdir;
+      if (get_bool_option (GCC_JIT_BOOL_OPTION_DEBUGINFO))
+	{
+	  handover_tempdir = m_tempdir;
+	  m_tempdir = NULL;
+	  /* The tempdir will eventually be cleaned up in the
+	     jit::result's dtor. */
+	  log ("GCC_JIT_BOOL_OPTION_DEBUGINFO was set:"
+	       " handing over tempdir to jit::result");
+	}
+      else
+	{
+	  handover_tempdir = NULL;
+	  /* ... and retain ownership of m_tempdir so we clean it
+	     up it the playback::context's dtor. */
+	  log ("GCC_JIT_BOOL_OPTION_DEBUGINFO was not set:"
+	       " retaining ownership of tempdir");
+	}
+
+      result_obj = new result (get_logger (), handle, handover_tempdir);
+    }
   else
     result_obj = NULL;
 

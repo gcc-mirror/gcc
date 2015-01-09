@@ -84,9 +84,12 @@ Client Code   . Generated .            libgccjit.so
               .           .    │     .               .
               .           .    │ playback::context dtor
               .           .     ──>  .               .
-              .           .       │ Cleanup tempdir  .
+              .           .       │ Normally we cleanup the tempdir here:
               .           .       │   ("fake.so" is unlinked from the
               .           .       │    filesystem at this point)
+              .           .       │ If the client code requested debuginfo, the
+              .           .       │ cleanup happens later (in gcc_jit_result_release)
+              .           .       │ to make it easier on the debugger (see PR jit/64206)
               .           .    <──   .               .
               .           .    │     .               .
               .           .    │ end of recording::context::compile ()
@@ -110,5 +113,9 @@ etc│          .           .          .               .
     ──────────────────────────>      .               .
               .           .    │ dlclose () the loaded DSO
               .           .    │    (code becomes uncallable)
+              .           .    │     .               .
+              .           .    │ If the client code requested debuginfo, then
+              .           .    │ cleanup of the tempdir was delayed.
+              .           .    │ If that was the case, clean it up now.
    <───────────────────────────      .               .
    │          .           .          .               .

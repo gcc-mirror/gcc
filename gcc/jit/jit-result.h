@@ -29,7 +29,7 @@ namespace jit {
 class result : public log_user
 {
 public:
-  result(logger *logger, void *dso_handle);
+  result(logger *logger, void *dso_handle, tempdir *tempdir_);
 
   virtual ~result();
 
@@ -38,6 +38,7 @@ public:
 
 private:
   void *m_dso_handle;
+  tempdir *m_tempdir;
 };
 
 } // namespace gcc::jit

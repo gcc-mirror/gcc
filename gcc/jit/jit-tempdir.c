@@ -66,14 +66,16 @@ make_tempdir_path_template ()
 /* The constructor for the jit::tempdir object.
    The real work is done by the jit::tempdir::create method.  */
 
-gcc::jit::tempdir::tempdir (int keep_intermediates)
-  : m_keep_intermediates (keep_intermediates),
+gcc::jit::tempdir::tempdir (logger *logger, int keep_intermediates)
+  : log_user (logger),
+    m_keep_intermediates (keep_intermediates),
     m_path_template (NULL),
     m_path_tempdir (NULL),
     m_path_c_file (NULL),
     m_path_s_file (NULL),
     m_path_so_file (NULL)
 {
+  JIT_LOG_SCOPE (get_logger ());
 }
 
 /* Do the real work of creating the on-disk tempdir.
@@ -83,9 +85,13 @@ gcc::jit::tempdir::tempdir (int keep_intermediates)
 bool
 gcc::jit::tempdir::create ()
 {
+  JIT_LOG_SCOPE (get_logger ());
+
   m_path_template = make_tempdir_path_template ();
   if (!m_path_template)
     return false;
+
+  log ("m_path_template: %s", m_path_template);
 
   /* Create tempdir using mkdtemp.  This is created with 0700 perms and
      is unique.  Hence no other (non-root) users should have access to
@@ -93,6 +99,8 @@ gcc::jit::tempdir::create ()
   m_path_tempdir = mkdtemp (m_path_template);
   if (!m_path_tempdir)
     return false;
+  log ("m_path_tempdir: %s", m_path_tempdir);
+
   m_path_c_file = concat (m_path_tempdir, "/fake.c", NULL);
   m_path_s_file = concat (m_path_tempdir, "/fake.s", NULL);
   m_path_so_file = concat (m_path_tempdir, "/fake.so", NULL);
@@ -107,17 +115,28 @@ gcc::jit::tempdir::create ()
 
 gcc::jit::tempdir::~tempdir ()
 {
+  JIT_LOG_SCOPE (get_logger ());
+
   if (m_keep_intermediates)
     fprintf (stderr, "intermediate files written to %s\n", m_path_tempdir);
   else
     {
       /* Clean up .s/.so and tempdir. */
       if (m_path_s_file)
-        unlink (m_path_s_file);
+	{
+	  log ("unlinking .s file: %s", m_path_s_file);
+	  unlink (m_path_s_file);
+	}
       if (m_path_so_file)
-        unlink (m_path_so_file);
+	{
+	  log ("unlinking .so file: %s", m_path_so_file);
+	  unlink (m_path_so_file);
+	}
       if (m_path_tempdir)
-        rmdir (m_path_tempdir);
+	{
+	  log ("removing tempdir: %s", m_path_tempdir);
+	  rmdir (m_path_tempdir);
+	}
     }
 
   free (m_path_template);
