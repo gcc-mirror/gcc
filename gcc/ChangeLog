@@ -1,3 +1,10 @@
+2015-01-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/64539
+	* regcprop.c (kill_clobbered_values): Factor out of ...
+	(copyprop_hardreg_forward_1): ... here.  Use kill_clobbered_values
+	instead of note_stores with kill_clobbered_value.
+
 2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	 * ginclude/unwind-arm-common.h: Revert previous commit.
