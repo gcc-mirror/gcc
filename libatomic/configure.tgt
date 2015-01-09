@@ -37,10 +37,15 @@ case "${target_cpu}" in
 
   arm*)
 	ARCH=arm
-	# ??? Detect when -march=armv7 is already enabled.
-	try_ifunc=yes
-	;;
-
+	case "${target}" in
+            arm*-*-freebsd*)
+                ;;
+            *)
+                # ??? Detect when -march=armv7 is already enabled.
+                try_ifunc=yes
+                ;;
+        esac
+        ;;
   sparc)
 	case " ${CC} ${CFLAGS} " in
 	  *" -m64 "*)

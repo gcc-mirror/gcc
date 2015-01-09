@@ -259,7 +259,6 @@ case ${target} in
    arm*-wince-pe*			\
  | arm*-*-ecos-elf			\
  | arm*-*-elf				\
- | arm*-*-freebsd*			\
  | arm*-*-linux*			\
  | arm*-*-uclinux*			\
  | i[34567]86-go32-*			\
@@ -1009,6 +1008,27 @@ arm-wrs-vxworks)
 	tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
 	extra_options="${extra_options} arm/vxworks.opt"
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
+	;;
+arm*-*-freebsd*)                # ARM FreeBSD EABI
+	tm_file="dbxelf.h elfos.h ${fbsd_tm_file} arm/elf.h"
+	case $target in
+	arm*b-*-freebsd*)
+	    tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
+	    ;;
+	esac
+	tmake_file="${tmake_file} arm/t-arm arm/t-bpabi"
+	tm_file="${tm_file} arm/bpabi.h arm/freebsd.h arm/aout.h arm/arm.h"
+	case $target in
+	armv6*-*-freebsd*)
+	    tm_defines="${tm_defines} TARGET_FREEBSD_ARMv6=1"
+	    ;;
+	esac
+	case $target in
+	arm*hf-*-freebsd*)
+	    tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
+	    ;;
+	esac
+	with_tls=${with_tls:-gnu}
 	;;
 arm*-*-netbsdelf*)
 	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h ${tm_file} arm/netbsd-elf.h"

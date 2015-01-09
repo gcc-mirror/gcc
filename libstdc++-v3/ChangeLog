@@ -1,3 +1,7 @@
+2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* configure.host: Add arm*-*-freebsd* port_specific_symbol_files.
+
 2015-01-09  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/64239
