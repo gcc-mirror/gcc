@@ -1,5 +1,9 @@
 2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
 
+	* libsupc++/unwind-cxx.h: Revert previous commit.
+
+2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
 	* configure.host: Add arm*-*-freebsd* port_specific_symbol_files.
 
 2015-01-09  Tim Shen  <timshen@google.com>
