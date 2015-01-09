@@ -1783,15 +1783,22 @@ func (gcToolchain) cc(b *builder, p *Package, objdir, ofile, cfile string) error
 // The Gccgo toolchain.
 type gccgoToolchain struct{}
 
-func (gccgoToolchain) compiler() string {
-	if v := os.Getenv("GOC"); v != "" {
-		return v
+var gccgoName, gccgoBin string
+
+func init() {
+	gccgoName = os.Getenv("GCCGO")
+	if gccgoName == "" {
+		gccgoName = defaultGCCGO
 	}
-	return defaultGOC
+	gccgoBin, _ = exec.LookPath(gccgoName)
 }
 
-func (tools gccgoToolchain) linker() string {
-	return tools.compiler()
+func (gccgoToolchain) compiler() string {
+	return gccgoBin
+}
+
+func (gccgoToolchain) linker() string {
+	return gccgoBin
 }
 
 func (tools gccgoToolchain) gc(b *builder, p *Package, archive, obj string, importArgs []string, gofiles []string) (ofile string, output []byte, err error) {
