@@ -1,3 +1,16 @@
+2015-01-09  Michael Collison  <michael.collison@linaro.org>
+
+	* objc-act.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* objc-encoding.c: Ditto.
+	* objc-gnu-runtime-abi-01.c: Ditto.
+	* objc-lang.c: Ditto.
+	* objc-map.c: Ditto.
+	* objc-next-runtime-abi-01.c: Ditto.
+	* objc-next-runtime-abi-02.c: Ditto.
+	* objc-runtime-shared-support.c: Ditto.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

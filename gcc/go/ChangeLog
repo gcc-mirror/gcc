@@ -1,3 +1,11 @@
+2015-01-09  Michael Collison  <michael.collison@linaro.org>
+
+	* go-gcc.cc: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* go-lang.c: Ditto.
+	* go-backend.c: Ditto.
+
 2015-01-07  Chris Manghane  <cmang@google.com>
 
 	PR go/61204

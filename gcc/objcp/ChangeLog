@@ -1,3 +1,10 @@
+2015-01-09  Michael Collison  <michael.collison@linaro.org>
+
+	* objcp-decl.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* objcp-lang.c: Ditto.
+
 2014-12-31  Iain Sandoe  <iain@codesourcery.com>
 
 	* config-lang.in (gtfiles): Update list.

@@ -1,3 +1,39 @@
+2015-01-09  Michael Collison  <michael.collison@linaro.org>
+
+	* call.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* class.c: Ditto.
+	* constexpr.c: Ditto.
+	* cp-array-notation.c: Ditto.
+	* cp-gimplify.c: Ditto.
+	* cp-lang.c: Ditto.
+	* cp-objcp-common.c: Ditto.
+	* cvt.c: Ditto.
+	* decl2.c: Ditto.
+	* decl.c: Ditto.
+	* dump.c: Ditto.
+	* error.c: Ditto.
+	* except.c: Ditto.
+	* expr.c: Ditto.
+	* friend.c: Ditto.
+	* init.c: Ditto.
+	* lambda.c: Ditto.
+	* lex.c: Ditto.
+	* mangle.c: Ditto.
+	* name-lookup.c: Ditto.
+	* optimize.c: Ditto.
+	* parser.c: Ditto.
+	* pt.c: Ditto.
+	* ptree.c: Ditto.
+	* repo.c: Ditto.
+	* rtti.c: Ditto.
+	* search.c: Ditto.
+	* semantics.c: Ditto.
+	* tree.c: Ditto.
+	* typeck2.c: Ditto.
+	* typeck.c: Ditto.
+
 2015-01-08  Jason Merrill  <jason@redhat.com>
 
 	* cp-gimplify.c (cp_genericize): Use do_ubsan_in_current_function.
