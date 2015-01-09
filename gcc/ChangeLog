@@ -1,3 +1,7 @@
+2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/arm/arm.h (MAX_SYNC_LIBFUNC_SIZE): Delete semicolon.
+
 2015-01-09  Bernd Schmidt  <bernds@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
