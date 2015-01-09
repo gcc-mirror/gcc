@@ -1,5 +1,10 @@
 2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
+	* config/arm/t-rtems: Use MULTILIB_REQUIRED instead of
+	MULTILIB_EXCEPTIONS.
+
+2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
 	* config/arm/t-rtems-eabi: Rename to...
 	* config/arm/t-rtems: ...this.
 	* config/arm/rtems-eabi.h: Rename to...
