@@ -3,6 +3,15 @@
 	Backport from mainline:
 	2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
+	* config/rs6000/rtems.h (CPP_OS_RTEMS_SPEC): Define __PPC_CPU_E6500__
+	for -mcpu=e6500.
+	* config/rs6000/t-rtems: Add e6500 multilibs.
+
+2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backport from mainline:
+	2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
 	* config/rs6000/t-rtems: Add -mno-spe to soft-float multilib for
 	MPC8540.
 
