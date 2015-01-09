@@ -1057,8 +1057,8 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	  use_gcc_stdint=wrap
 	  ;;
 	arm*-*-rtems*)
-	  tm_file="${tm_file} rtems.h arm/rtems-eabi.h newlib-stdint.h"
-	  tmake_file="${tmake_file} arm/t-bpabi arm/t-rtems-eabi"
+	  tm_file="${tm_file} rtems.h arm/rtems.h newlib-stdint.h"
+	  tmake_file="${tmake_file} arm/t-bpabi arm/t-rtems"
 	  ;;
 	arm*-*-symbianelf*)
 	  tm_file="${tm_file} arm/symbian.h"
