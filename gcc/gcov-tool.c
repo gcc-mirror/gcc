@@ -289,7 +289,11 @@ do_rewrite (int argc, char **argv)
   int opt;
   int ret;
   const char *output_dir = 0;
+#ifdef HAVE_LONG_LONG
   long long normalize_val = 0;
+#else
+  int64_t normalize_val = 0;
+#endif
   float scale = 0.0;
   int numerator = 1;
   int denominator = 1;
@@ -309,7 +313,13 @@ do_rewrite (int argc, char **argv)
           break;
         case 'n':
           if (!do_scaling)
-            normalize_val = atoll (optarg);
+#if defined(HAVE_LONG_LONG)
+	    normalize_val = strtoll (optarg, (char **)NULL, 10);
+#elif defined(INT64_T_IS_LONG)
+	    normalize_val = strtol (optarg, (char **)NULL, 10);
+#else
+	    sscanf (optarg, "%" SCNd64, &normalize_val);
+#endif
           else
             fnotice (stderr, "scaling cannot co-exist with normalization,"
                 " skipping\n");
