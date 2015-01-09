@@ -1,3 +1,9 @@
+2015-01-09  Kito Cheng  <kito@0xlab.org>
+
+	PR rtl-optimization/64348
+	* lra-constraints.c (split_reg): Fix caller-save store/restore
+	instruction generation.
+
 2015-01-08  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR gcov-profile/61790
