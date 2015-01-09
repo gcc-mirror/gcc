@@ -1,3 +1,9 @@
+2015-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60966
+	* include/std/future (packaged_task::operator()): Increment the
+	reference count on the shared state until the function returns.
+
 2015-01-09  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/64239
