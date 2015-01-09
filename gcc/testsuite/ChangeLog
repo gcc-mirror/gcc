@@ -1,5 +1,6 @@
 2015-01-09  Dimitris Papavasiliou  <dpapavas@gmail.com>
 
+	PR libobjc/51891
 	* objc.dg/gnu-api-2-class.m: Add a test case
 	for the above change.
 

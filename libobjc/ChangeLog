@@ -1,5 +1,6 @@
 2015-01-09  Dimitris Papavasiliou  <dpapavas@gmail.com>
 
+	PR libobjc/51891
 	* ivars.c: Add a check for classes without instance
 	variables, which have a NULL ivar list pointer.
 
