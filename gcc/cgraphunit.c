@@ -2114,11 +2114,14 @@ ipa_passes (void)
       if (g->have_offload)
 	{
 	  section_name_prefix = OFFLOAD_SECTION_NAME_PREFIX;
+	  lto_stream_offload_p = true;
 	  ipa_write_summaries (true);
+	  lto_stream_offload_p = false;
 	}
       if (flag_lto)
 	{
 	  section_name_prefix = LTO_SECTION_NAME_PREFIX;
+	  lto_stream_offload_p = false;
 	  ipa_write_summaries (false);
 	}
     }

@@ -1,3 +1,24 @@
+2015-01-09  Bernd Schmidt  <bernds@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/64412
+	* lto-streamer.h (lto_stream_offload_p): New declaration.
+	* lto-streamer.c (lto_stream_offload_p): New variable.
+	* cgraphunit.c (ipa_passes): Set lto_stream_offload_p
+	at the same time as section_name_prefix.
+	* lto-streamer-out.c (hash_tree): Don't hash TREE_TARGET_OPTION
+	if lto_stream_offload_p.
+	* tree-streamer-out.c (streamer_pack_tree_bitfields): Don't
+	stream TREE_TARGET_OPTION if lto_stream_offload_p.
+	(write_ts_function_decl_tree_pointers): Don't
+	stream DECL_FUNCTION_SPECIFIC_TARGET if lto_stream_offload_p.
+	* tree-streamer-in.c (unpack_value_fields): Don't stream
+	TREE_TARGET_OPTION in if ACCEL_COMPILER.
+	(lto_input_ts_function_decl_tree_pointers): Don't stream
+	DECL_FUNCTION_SPECIFIC_TARGET in if ACCEL_COMPILER.
+	* lto-opts.c (lto_write_options): Use lto_stream_offload_p
+	instead of section_name_prefix string comparisons.
+
 2015-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/64536

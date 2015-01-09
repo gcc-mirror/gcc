@@ -529,8 +529,10 @@ unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
 	vec_safe_grow (CONSTRUCTOR_ELTS (expr), length);
     }
 
+#ifndef ACCEL_COMPILER
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
     cl_target_option_stream_in (data_in, bp, TREE_TARGET_OPTION (expr));
+#endif
 
   if (code == OMP_CLAUSE)
     unpack_ts_omp_clause_value_fields (data_in, bp, expr);
@@ -794,7 +796,9 @@ lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
   DECL_VINDEX (expr) = stream_read_tree (ib, data_in);
   /* DECL_STRUCT_FUNCTION is loaded on demand by cgraph_get_body.  */
   DECL_FUNCTION_PERSONALITY (expr) = stream_read_tree (ib, data_in);
+#ifndef ACCEL_COMPILER
   DECL_FUNCTION_SPECIFIC_TARGET (expr) = stream_read_tree (ib, data_in);
+#endif
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = stream_read_tree (ib, data_in);
 
   /* If the file contains a function with an EH personality set,

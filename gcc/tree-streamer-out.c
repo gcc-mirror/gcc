@@ -480,7 +480,9 @@ streamer_pack_tree_bitfields (struct output_block *ob,
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     bp_pack_var_len_unsigned (bp, CONSTRUCTOR_NELTS (expr));
 
-  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
+  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION)
+      /* Don't stream these when passing things to a different target.  */
+      && !lto_stream_offload_p)
     cl_target_option_stream_out (ob, bp, TREE_TARGET_OPTION (expr));
 
   if (code == OMP_CLAUSE)
@@ -695,7 +697,9 @@ write_ts_function_decl_tree_pointers (struct output_block *ob, tree expr,
   stream_write_tree (ob, DECL_VINDEX (expr), ref_p);
   /* DECL_STRUCT_FUNCTION is handled by lto_output_function.  */
   stream_write_tree (ob, DECL_FUNCTION_PERSONALITY (expr), ref_p);
-  stream_write_tree (ob, DECL_FUNCTION_SPECIFIC_TARGET (expr), ref_p);
+  /* Don't stream these when passing things to a different target.  */
+  if (!lto_stream_offload_p)
+    stream_write_tree (ob, DECL_FUNCTION_SPECIFIC_TARGET (expr), ref_p);
   stream_write_tree (ob, DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr), ref_p);
 }
 
