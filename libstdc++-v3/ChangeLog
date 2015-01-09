@@ -1,3 +1,12 @@
+2015-01-09  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/64239
+	* include/bits/regex.h (match_results<>::swap): Use std::swap
+	instead of swap.
+	* include/bits/regex_compiler.tcc (_Compiler<>::_M_quantifier):
+	Likewise.
+	* testsuite/28_regex/match_results/swap.cc: New testcase.
+
 2015-01-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60132
