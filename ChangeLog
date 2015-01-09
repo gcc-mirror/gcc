@@ -1,3 +1,8 @@
+2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* configure.ac: Don't add ${libgcj} for arm*-*-freebsd*.
+	* configure: Regenerate.
+
 2015-01-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* Makefile.def (dependencies) <all-target-liboffloadmic>: Depend on

@@ -1,3 +1,11 @@
+2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.gcc (arm*-*-freebsd*): New configuration.
+	* config/arm/freebsd.h: New file.
+	* config.host: Add extra components for arm*-*-freebsd*.
+	* config/arm/arm.h: Introduce MAX_SYNC_LIBFUNC_SIZE.
+	* config/arm/arm.c (arm_init_libfuncs): Use MAX_SYNC_LIBFUNC_SIZE.
+
 2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/rs6000/rtems.h (CPP_OS_RTEMS_SPEC): Define __PPC_CPU_E6500__

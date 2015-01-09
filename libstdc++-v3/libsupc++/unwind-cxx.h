@@ -235,7 +235,7 @@ __get_dependent_exception_from_ue (_Unwind_Exception *exc)
   return reinterpret_cast<__cxa_dependent_exception *>(exc + 1) - 1;
 }
 
-#ifdef __ARM_EABI_UNWINDER__
+#if defined (__ARM_EABI_UNWINDER__) && !defined (__FreeBSD__)
 static inline bool
 __is_gxx_exception_class(_Unwind_Exception_Class c)
 {
@@ -309,13 +309,7 @@ __GXX_INIT_FORCED_UNWIND_CLASS(_Unwind_Exception_Class c)
   c[6] = 'R';
   c[7] = '\0';
 }
-
-static inline void*
-__gxx_caught_object(_Unwind_Exception* eo)
-{
-  return (void*)eo->barrier_cache.bitpattern[0];
-}
-#else // !__ARM_EABI_UNWINDER__
+#else // !__ARM_EABI_UNWINDER__ || __FreeBSD__
 // This is the primary exception class we report -- "GNUCC++\0".
 const _Unwind_Exception_Class __gxx_primary_exception_class
 = ((((((((_Unwind_Exception_Class) 'G' 
@@ -339,11 +333,27 @@ const _Unwind_Exception_Class __gxx_dependent_exception_class
     << 8 | (_Unwind_Exception_Class) '+')
    << 8 | (_Unwind_Exception_Class) '\x01');
 
+const _Unwind_Exception_Class __gxx_forced_unwind_class
+= ((((((((_Unwind_Exception_Class) 'G'
+        << 8 | (_Unwind_Exception_Class) 'N')
+       << 8 | (_Unwind_Exception_Class) 'U')
+      << 8 | (_Unwind_Exception_Class) 'C')
+     << 8 | (_Unwind_Exception_Class) 'F')
+    << 8 | (_Unwind_Exception_Class) 'O')
+   << 8 | (_Unwind_Exception_Class) 'R')
+  << 8 | (_Unwind_Exception_Class) '\0');
+
 static inline bool
 __is_gxx_exception_class(_Unwind_Exception_Class c)
 {
   return c == __gxx_primary_exception_class
       || c == __gxx_dependent_exception_class;
+}
+
+static inline bool
+__is_gxx_forced_unwind_class(_Unwind_Exception_Class c)
+{
+  return c ==  __gxx_forced_unwind_class;
 }
 
 // Only checks for primary or dependent, but not that it is a C++ exception at
@@ -357,6 +367,17 @@ __is_dependent_exception(_Unwind_Exception_Class c)
 #define __GXX_INIT_PRIMARY_EXCEPTION_CLASS(c) c = __gxx_primary_exception_class
 #define __GXX_INIT_DEPENDENT_EXCEPTION_CLASS(c) \
   c = __gxx_dependent_exception_class
+#define __GXX_INIT_FORCED_UNWIND_CLASS(c) c = __gxx_forced_unwind_class
+#endif // __ARM_EABI_UNWINDER__ && !__FreeBSD__
+
+#ifdef __ARM_EABI_UNWINDER__
+static inline void*
+__gxx_caught_object(_Unwind_Exception* eo)
+{
+    return (void*)eo->barrier_cache.bitpattern[0];
+}
+
+#else // !__ARM_EABI_UNWINDER__
 
 // GNU C++ personality routine, Version 0.
 extern "C" _Unwind_Reason_Code __gxx_personality_v0

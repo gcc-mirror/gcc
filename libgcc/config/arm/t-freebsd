@@ -1,0 +1,9 @@
+# Just for these, we omit the frame pointer since it makes such a big
+# difference.  It is then pointless adding debugging.
+HOST_LIBGCC2_CFLAGS += -fomit-frame-pointer
+
+LIB2ADD_ST += $(srcdir)/config/arm/freebsd-atomic.c
+
+# Use a version of div0 which raises SIGFPE.
+LIB1ASMFUNCS := $(filter-out _dvmd_tls,$(LIB1ASMFUNCS)) _dvmd_lnx
+

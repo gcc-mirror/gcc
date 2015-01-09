@@ -783,6 +783,9 @@ case "${target}" in
   alpha*-*-*vms*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
+  arm*-*-freebsd*)
+    noconfigdirs="$noconfigdirs ${libgcj}"
+    ;;
   arm-wince-pe)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
