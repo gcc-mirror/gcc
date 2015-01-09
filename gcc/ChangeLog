@@ -1,3 +1,12 @@
+2015-01-09  Renlin Li  <renlin.li@arm.com>
+
+	Backport from mainline:
+	2014-08-12 Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>
+
+	PR target/61413
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Fix definition
+	of __ARM_SIZEOF_WCHAR_T.
+
 2015-01-08  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/64507
