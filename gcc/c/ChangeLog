@@ -1,3 +1,20 @@
+2015-01-09  Michael Collison  <michael.collison@linaro.org>
+
+	* c-array-notation.c: Include hash-set.h, machmode.h,
+	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
+	fold-const.h, wide-int.h, and inchash.h due to flattening of tree.h.
+	* c-aux-info.c: Ditto.
+	* c-convert.c: Ditto.
+	* c-decl.c: Ditto.
+	* c-errors.c: Ditto.
+	* c-lang.c: Dittoxs.
+	* c-objc-common.c: Ditto.
+	* c-parser.c: Ditto.
+	* c-typeck.c: Include hash-set.h, machmode.h,
+	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
+	fold-const.h, wide-int.h, inchash.h, real.h and
+	fixed-value.h due to flattening of tree.h.
+
 2015-01-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64417

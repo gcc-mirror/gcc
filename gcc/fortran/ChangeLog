@@ -1,3 +1,52 @@
+2015-01-09  Michael Collison  <michael.collison@linaro.org>
+
+	* convert.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* cpp.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* decl.c: Ditto.
+	* f95.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* iresolve.c: Ditto.
+	* match.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* module.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* options.c: Ditto.
+	* target-memory.c: Include hash-set.h, vec.h,
+	double-int.h, input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* trans-array.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* trans.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* trans-common.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* trans-const.c: Ditto.
+	* trans-decl.c: Ditto.
+	* trans-expr.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* trans-intrinsic.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, inchash.h and real.h due to flattening of tree.h.
+	* trans-io.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* trans-openmp.c: Ditto.
+	* trans-stmt.c: Ditto.
+	* trans-types.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, inchash.h and real.h due to flattening of tree.h.
+
 2015-01-08  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-decl.c (gfc_build_qualified_array): Fix coarray tokens

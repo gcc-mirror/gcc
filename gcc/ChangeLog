@@ -1,5 +1,11 @@
+2015-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/64536
+	* cfgrtl.c (rtl_tidy_fallthru_edge): Handle removal of degenerate
+	tablejumps.
+
 2015-01-09  Michael Collison  <michael.collison@linaro.org>
-	
+
 	* genattrtab.c (write_header): Include hash-set.h, machmode.h,
 	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
 	fold-const.h, wide-int.h, and inchash.h when generating
@@ -38,200 +44,131 @@
 	options-save.c.
 	* opth-gen.awk: Change include guard from GCC_C_COMMON_H to GCC_C_COMMON_C
 	when generating options.h.
-	* ada/gcc-interface/cuintp.c: Include hash-set.h, machmode.h,
-	vec.h, double-int.h, input.h, alias.h, symtab.h,
-	fold-const.h, wide-int.h, and inchash.h due to
-	flattening of tree.h.
-	* ada/gcc-interface/decl.c: ditto.
-	* ada/gcc-interface/misc.c: ditto.
-	* ada/gcc-interface/targtyps.c: Include hash-set.h, machmode.h,
-	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h,
-	fold-const.h, wide-int.h, and inchash.h due to
-	flattening of tree.h.
-	* ada/gcc-interface/trans.c: Include hash-set.h, machmode.h,
-	vec.h, double-int.h, input.h, alias.h, symtab.h, real.h,
-	fold-const.h, wide-int.h, inchash.h due to
-	flattening of tree.h.
-	* ada/gcc-interface/utils.c: Include hash-set.h, machmode.h,
-	vec.h, double-int.h, input.h, alias.h, symtab.h,
-	fold-const.h, wide-int.h, and inchash.h due to
-	flattening of tree.h.
-	* ada/gcc-interface/utils2.c: ditto.
 	* alias.c: Include hash-set.h, machmode.h,
 	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
 	fold-const.h, wide-int.h, and inchash.h due to
 	flattening of tree.h.
-	* asan.c: ditto.
-	* attribs.c: ditto.
-	* auto-inc-dec.c: ditto.
-	* auto-profile.c: ditto
-	* bb-reorder.c: ditto.
+	* asan.c: Ditto.
+	* attribs.c: Ditto.
+	* auto-inc-dec.c: Ditto.
+	* auto-profile.c: Ditto
+	* bb-reorder.c: Ditto.
 	* bt-load.c: Include symtab.h due to flattening of tree.h.
 	* builtins.c: Include hash-set.h, machmode.h,
 	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
 	fold-const.h, wide-int.h, and inchash.h due to
 	flattening of tree.h.
-	* c/c-array-notation.c: ditto.
-	* c/c-aux-info.c: ditto.
-	* c/c-convert.c: ditto.
-	* c/c-decl.c: ditto.
-	* c/c-errors.c: ditto.
-	* c/c-lang.c: dittoxs.
-	* c/c-objc-common.c: ditto.
-	* c/c-parser.c: ditto.
-	* c/c-typeck.c: Include hash-set.h, machmode.h,
-	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
-	fold-const.h, wide-int.h, inchash.h, real.h and
-	fixed-value.h due to flattening of tree.h.
 	* calls.c: Include hash-set.h, machmode.h,
 	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
 	fold-const.h, wide-int.h, and inchash.h due to
 	flattening of tree.h.
-	* ccmp.c: ditto.
-	* c-family/array-notation-common.c: ditto.
-	* c-family/c-ada-spec.c: ditto.
-	* c-family/c-cilkplus.c: ditto.
-	* c-family/c-common.c: Include input.h due to flattening of tree.h.
-	Define macro GCC_C_COMMON_C.
-	* c-family/c-common.h: Flatten tree.h header files into c-common.h.
-	Remove include of tree-core.h.
-	* c-family/c-cppbuiltin.c: Include hash-set.h, machmode.h,
+	* ccmp.c: Ditto.
+	* cfgbuild.c: Include hash-set.h, machmode.h,
 	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
-	fold-const.h, wide-int.h, and inchash.h due to
-	flattening of tree.h.
-	* c-family/c-dump.c: ditto.
-	* c-family/c-format.c: Flatten tree.h header files into c-common.h.
-	* c-family/c-cppbuiltin.c: Include hash-set.h, machmode.h,
-	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
-	fold-const.h, wide-int.h, and inchash.h due to
-	flattening of tree.h.
-	* c-family/c-dump.c: Include hash-set.h, machmode.h,
-	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
-	fold-const.h, wide-int.h, and inchash.h due to
-	flattening of tree.h.
-	* c-family/c-format.c: Include hash-set.h, machmode.h,
-	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
-	fold-const.h, wide-int.h, inchash.h and real.h due to
-	flattening of tree.h.
-	* c-family/c-gimplify.c: Include hash-set.h, machmode.h,
-	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
-	fold-const.h, wide-int.h, and inchash.h due to
-	flattening of tree.h.
-	* c-family/cilk.c: ditto.
-	* c-family/c-lex.c: ditto.
-	* c-family/c-omp.c: ditto.
-	* c-family/c-opts.c: ditto.
-	* c-family/c-pch.c: ditto.
-	* c-family/c-ppoutput.c: ditto.
-	* c-family/c-pragma.c: ditto.
-	* c-family/c-pretty-print.c: ditto.
-	* c-family/c-semantics.c: ditto.
-	* c-family/c-ubsan.c: ditto.
-	* c-family/stub-objc.c: ditto.
-	* cfgbuild.c: ditto.
-	* cfg.c: ditto.
-	* cfgcleanup.c: ditto.
-	* cfgexpand.c: ditto.
-	* cfghooks.c: ditto.
+	fold-const.h, wide-int.h, and inchash.h due to flattening of tree.h.
+	* cfg.c: Ditto.
+	* cfgcleanup.c: Ditto.
+	* cfgexpand.c: Ditto.
+	* cfghooks.c: Ditto.
 	* cfgloop.c: Include symtab.h, fold-const.h, and
 	inchash.h due to flattening of tree.h.
-	* cfgloopmanip.c: ditto.
-	* cfgrtl.c:  Include hash-set.h, machmode.h,
+	* cfgloopmanip.c: Ditto.
+	* cfgrtl.c: Include hash-set.h, machmode.h,
 	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
 	fold-const.h, wide-int.h, and inchash.h due to
 	flattening of tree.h.
-	* cgraphbuild.c: ditto.
-	* cgraph.c: ditto.
-	* cgraphclones.c: ditto.
-	* cgraphunit.c: ditto.
-	* cilk-common.c: ditto.
-	* combine.c: ditto.
+	* cgraphbuild.c: Ditto.
+	* cgraph.c: Ditto.
+	* cgraphclones.c: Ditto.
+	* cgraphunit.c: Ditto.
+	* cilk-common.c: Ditto.
+	* combine.c: Ditto.
 	* combine-stack-adj.c: Include symbol.h due to flattening of tree.h.
-	* config/aarch64/aarch64-builtins.c:  Include hash-set.h, machmode.h,
+	* config/aarch64/aarch64-builtins.c: Include hash-set.h, machmode.h,
 	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
 	fold-const.h, wide-int.h, and inchash.h due to
 	flattening of tree.h.
-	* config/aarch64/aarch64.c: ditto.
-	* config/alpha/alpha.c: ditto.
-	* config/arc/arc.c: ditto.
-	* config/arm/aarch-common.c: ditto.
-	* config/arm/arm-builtins.c: ditto.
-	* config/arm/arm.c: ditto.
-	* config/arm/arm-c.c: ditto.
-	* config/avr/avr.c: ditto.
-	* config/avr/avr-c.c: ditto.
-	* config/avr/avr-log.c: ditto.
-	* config/bfin/bfin.c: ditto.
-	* config/c6x/c6x.c: ditto.
-	* config/cr16/cr16.c: ditto.
-	* config/cris/cris.c: ditto.
-	* config/darwin.c: ditto.
-	* config/darwin-c.c: ditto.
-	* config/default-c.c: ditto.
-	* config/epiphany/epiphany.c: ditto.
-	* config/fr30/fr30.c: ditto.
-	* config/frv/frv.c: ditto.
-	* config/glibc-c.c: ditto.
-	* config/h8300/h8300.c: ditto.
-	* config/i386/i386.c: ditto.
-	* config/i386/i386-c.c: ditto.
-	* config/i386/msformat.c: ditto.
-	* config/i386/winnt.c: ditto.
-	* config/i386/winnt-cxx.c: ditto.
-	* config/i386/winnt-stubs.c: ditto.
-	* config/ia64/ia64.c: ditto.
-	* config/ia64/ia64-c.c: ditto.
-	* config/iq2000/iq2000.c: ditto.
+	* config/aarch64/aarch64.c: Ditto.
+	* config/alpha/alpha.c: Ditto.
+	* config/arc/arc.c: Ditto.
+	* config/arm/aarch-common.c: Ditto.
+	* config/arm/arm-builtins.c: Ditto.
+	* config/arm/arm.c: Ditto.
+	* config/arm/arm-c.c: Ditto.
+	* config/avr/avr.c: Ditto.
+	* config/avr/avr-c.c: Ditto.
+	* config/avr/avr-log.c: Ditto.
+	* config/bfin/bfin.c: Ditto.
+	* config/c6x/c6x.c: Ditto.
+	* config/cr16/cr16.c: Ditto.
+	* config/cris/cris.c: Ditto.
+	* config/darwin.c: Ditto.
+	* config/darwin-c.c: Ditto.
+	* config/default-c.c: Ditto.
+	* config/epiphany/epiphany.c: Ditto.
+	* config/fr30/fr30.c: Ditto.
+	* config/frv/frv.c: Ditto.
+	* config/glibc-c.c: Ditto.
+	* config/h8300/h8300.c: Ditto.
+	* config/i386/i386.c: Ditto.
+	* config/i386/i386-c.c: Ditto.
+	* config/i386/msformat.c: Ditto.
+	* config/i386/winnt.c: Ditto.
+	* config/i386/winnt-cxx.c: Ditto.
+	* config/i386/winnt-stubs.c: Ditto.
+	* config/ia64/ia64.c: Ditto.
+	* config/ia64/ia64-c.c: Ditto.
+	* config/iq2000/iq2000.c: Ditto.
 	* config/lm32/lm32.c: Include symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
 	* config/m32c/m32c.c: Include hash-set.h, machmode.h,
 	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
 	fold-const.h, wide-int.h, and inchash.h due to
 	flattening of tree.h.
-	* config/m32c/m32c-pragma.c: ditto.
-	* config/m32c/m32cr.c: ditto.
-	* config/m68/m68k.c: ditto.
-	* config/mcore/mcore.c: ditto.
-	* config/mep/mep.c: ditto.
-	* config/mep/mep-pragma.c: ditto.
-	* config/microblaze/microblaze.c: ditto.
-	* config/microblaze/microblaze-c.c: ditto.
-	* config/mips/mips.c: ditto.
+	* config/m32c/m32c-pragma.c: Ditto.
+	* config/m32c/m32cr.c: Ditto.
+	* config/m68/m68k.c: Ditto.
+	* config/mcore/mcore.c: Ditto.
+	* config/mep/mep.c: Ditto.
+	* config/mep/mep-pragma.c: Ditto.
+	* config/microblaze/microblaze.c: Ditto.
+	* config/microblaze/microblaze-c.c: Ditto.
+	* config/mips/mips.c: Ditto.
 	* config/mmix/mmix.c: Include symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
 	* config/mn10300/mn10300.c: Include hash-set.h, machmode.h,
 	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
 	fold-const.h, wide-int.h, and inchash.h due to
 	flattening of tree.h.
-	* config/moxie/moxie.c: ditto.
-	* config/msp430/msp430.c: ditto.
-	* config/msp430/msp430-c.c: ditto.
-	* config/nds32/nds32.c: ditto.
-	* config/nds32/nds32-cost.c: ditto.
-	* config/nds32/nds32-fp-as-gp.c: ditto.
-	* config/nds32/nds32-intrinsic.c: ditto.
-	* config/nds32/nds32-isr.c: ditto.
-	* config/nds32/nds32-md-auxillary.c: ditto.
-	* config/nds32/nds32-memory-manipulationx.c: ditto.
-	* config/nds32/nds32-pipelines-auxillary.c: ditto.
-	* config/nds32/nds32-predicates.c: ditto.
-	* config/nios2/nios2.c: ditto.
-	* config/nvptx/nvptx.c: ditto.
-	* config/pa/pa.c: ditto.
+	* config/moxie/moxie.c: Ditto.
+	* config/msp430/msp430.c: Ditto.
+	* config/msp430/msp430-c.c: Ditto.
+	* config/nds32/nds32.c: Ditto.
+	* config/nds32/nds32-cost.c: Ditto.
+	* config/nds32/nds32-fp-as-gp.c: Ditto.
+	* config/nds32/nds32-intrinsic.c: Ditto.
+	* config/nds32/nds32-isr.c: Ditto.
+	* config/nds32/nds32-md-auxillary.c: Ditto.
+	* config/nds32/nds32-memory-manipulationx.c: Ditto.
+	* config/nds32/nds32-pipelines-auxillary.c: Ditto.
+	* config/nds32/nds32-predicates.c: Ditto.
+	* config/nios2/nios2.c: Ditto.
+	* config/nvptx/nvptx.c: Ditto.
+	* config/pa/pa.c: Ditto.
 	* config/pdp11/pdp11x.c: Include symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
 	* config/rl78/rl78.c: Include hash-set.h, machmode.h,
 	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
 	fold-const.h, wide-int.h, and inchash.h due to
 	flattening of tree.h.
-	* config/rl78/rl78-cx.c: ditto.
-	* config/rs6000/rs6000.c: ditto.
-	* config/rs6000/rs6000-c.c: ditto.
-	* config/rx/rx.c: ditto.
-	* config/s390/s390.c: ditto.
-	* config/sh/sh.c: ditto.
-	* config/sh/sc.c: ditto.
-	* config/sh/sh-mem.cc: ditto.
+	* config/rl78/rl78-cx.c: Ditto.
+	* config/rs6000/rs6000.c: Ditto.
+	* config/rs6000/rs6000-c.c: Ditto.
+	* config/rx/rx.c: Ditto.
+	* config/s390/s390.c: Ditto.
+	* config/sh/sh.c: Ditto.
+	* config/sh/sc.c: Ditto.
+	* config/sh/sh-mem.cc: Ditto.
 	* config/sh/sh_treg_combine.cc: Include symtab.h, inchash.h and tree.h
 	due to flattening of tree.h.
 	Remove include of tree-core.h.
@@ -239,14 +176,14 @@
 	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
 	fold-const.h, wide-int.h, and inchash.h due to
 	flattening of tree.h.
-	* config/sol2-c.c: ditto.
-	* config/sol2-cxx.c: ditto.
-	* config/sol2-stubs.c: ditto.
-	* config/sparc/sparc.c: ditto.
-	* config/sparc/sparc-cx.c: ditto.
-	* config/spu/spu.c: ditto.
-	* config/spu/spu-c.c: ditto
-	* config/storym16/stormy16.c: ditto.
+	* config/sol2-c.c: Ditto.
+	* config/sol2-cxx.c: Ditto.
+	* config/sol2-stubs.c: Ditto.
+	* config/sparc/sparc.c: Ditto.
+	* config/sparc/sparc-cx.c: Ditto.
+	* config/spu/spu.c: Ditto.
+	* config/spu/spu-c.c: Ditto
+	* config/storym16/stormy16.c: Ditto.
 	* config/tilegx/tilegx.c: Include symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
 	* config/tilepro/gen-mul-tables.cc: Include symtab.h in generated file.
@@ -260,86 +197,55 @@
 	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
 	fold-const.h, wide-int.h, and inchash.h due to
 	flattening of tree.h.
-	* config/v850/v850.c: ditto.
-	* config/v850/v850-c.c: ditto.
-	* config/vax/vax.c: ditto.
-	* config/vms/vms.c: ditto.
-	* config/vms/vms-c.c: ditto.
-	* config/vxworks.c: ditto.
-	* config/winnt-c.c: ditto.
+	* config/v850/v850.c: Ditto.
+	* config/v850/v850-c.c: Ditto.
+	* config/vax/vax.c: Ditto.
+	* config/vms/vms.c: Ditto.
+	* config/vms/vms-c.c: Ditto.
+	* config/vxworks.c: Ditto.
+	* config/winnt-c.c: Ditto.
 	* config/xtensa/xtensa.c: Include symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
 	* convert.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* coverage.c: ditto.
-	* cp/call.c: ditto.
-	* cp/class.c: ditto.
-	* cp/constexpr.c: ditto.
-	* cp/cp-array-notation.c: ditto.
-	* cp/cp-gimplify.c: ditto.
-	* cp/cp-lang.c: ditto.
-	* cp/cp-objcp-common.c: ditto.
-	* cp/cvt.c: ditto.
-	* cp/decl2.c: ditto.
-	* cp/decl.c: ditto.
-	* cp/dump.c: ditto.
-	* cp/error.c: ditto.
-	* cp/except.c: ditto.
-	* cp/expr.c: ditto.
-	* cp/friend.c: ditto.
-	* cp/init.c: ditto.
-	* cp/lambda.c: ditto.
-	* cp/lex.c: ditto.
-	* cp/mangle.c: ditto.
-	* cp/name-lookup.c: ditto.
-	* cp/optimize.c: ditto.
-	* cp/parser.c: ditto.
-	* cp/pt.c: ditto.
-	* cp/ptree.c: ditto.
-	* cp/repo.c: ditto.
-	* cp/rtti.c: ditto.
-	* cp/search.c: ditto.
-	* cp/semantics.c: ditto.
-	* cp/tree.c: ditto.
-	* cp/typeck2.c: ditto.
-	* cp/typeck.c: ditto.
-	* cppbuiltin.c: ditto.
-	* cprop.c: ditto.
+	* coverage.c: Ditto.
+	* cppbuiltin.c: Ditto.
+	* cprop.c: Ditto.
 	* cse.c: Add include of symtab.h due to flattening of tree.h.
 	* cselib.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* data-streamer.c: ditto.
-	* data-streamer-in.c: ditto.
-	* data-streamer-out.c: ditto.
-	* dbxout.c: ditto.
-	* dce.c: ditto.
+	* data-streamer.c: Ditto.
+	* data-streamer-in.c: Ditto.
+	* data-streamer-out.c: Ditto.
+	* dbxout.c: Ditto.
+	* dce.c: Ditto.
 	* ddg.c: Add include of symtab.h due to flattening of tree.h.
 	* debug.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* dfp.c: ditto.
-	* df-scan.c: ditto.
+	* dfp.c: Ditto.
+	* df-scan.c: Ditto.
 	* dojump.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h,
 	wide-int.h, inchash.h and real.h due to flattening of tree.h.
-	* double-int.c: ditto.
-	* dse.c: ditto.
-	* dumpfile.c: ditto.
+	* double-int.c: Ditto.
+	* dse.c: Ditto.
+	* dumpfile.c: Ditto.
 	* dwarf2asm.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, inchash.h and real.h due to flattening of tree.h.
-	* dwarf2cfi.c: ditto.
-	* dwarf2out.c: ditto.
-	* emit-rtl.c: ditto.
-	* except.c: ditto.
-	* explow.c: ditto.
+	* dwarf2cfi.c: Ditto.
+	* dwarf2out.c: Ditto.
+	* emit-rtl.c: Ditto.
+	* except.c: Ditto.
+	* explow.c: Ditto.
 	* expmed.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* expr.c: ditto.
-	* final.c: ditto.
+	* expr.c: Ditto.
+	* final.c: Ditto.
 	* fixed-value.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, inchash.h and fixed-value.h due to flattening of tree.h.
@@ -355,127 +261,78 @@
 	Add prototype for convert_to_ptrofftype_loc relocated from tree.h.
 	Add prototype for fold_build_pointer_plus_loc relocated from tree.h.
 	Add prototype for fold_build_pointer_plus_hwi_loc relocated from tree.h.
-	* fortran/convert.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* fortran/cpp.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* fortran/decl.c: ditto.
-	* fortran/f95.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* fortran/iresolve.c: ditto.
-	* fortran/match.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* fortran/module.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* fortran/options.c: ditto.
-	* fortran/target-memory.c: Include hash-set.h, vec.h,
-	double-int.h, input.h, alias.h, symtab.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* fortran/trans-array.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* fortran/trans.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* fortran/trans-common.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* fortran/trans-const.c: ditto.
-	* fortran/trans-decl.c: ditto.
-	* fortran/trans-expr.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* fortran/trans-intrinsic.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, fold-const.h,
-	wide-int.h, inchash.h and real.h due to flattening of tree.h.
-	* fortran/trans-io.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* fortran/trans-openmp.c: ditto.
-	* fortran/trans-stmt.c: ditto.
-	* fortran/trans-types.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, fold-const.h,
-	wide-int.h, inchash.h and real.h due to flattening of tree.h.
 	* function.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
 	* gcc-plugin.h: Include statistics.h, double-int.h, real.h, fixed-value.h,
 	alias.h, flags.h, and symtab.h due to flattening of tree.h
-	* gcse.c: ditto.
+	* gcse.c: Ditto.
 	* generic-match-head.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* ggc-page.c:  Include hash-set.h, machmode.h, vec.h, double-int.h,
+	* ggc-page.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* gimple-builder.c: ditto.
-	* gimple.c: ditto.
-	* gimple-expr.c: ditto.
-	* gimple-fold.c: ditto.
-	* gimple-iterator.c: ditto.
-	* gimple-low.c: ditto.
-	* gimple-match-head.c: ditto.
-	* gimple-pretty-print.c: ditto.
+	* gimple-builder.c: Ditto.
+	* gimple.c: Ditto.
+	* gimple-expr.c: Ditto.
+	* gimple-fold.c: Ditto.
+	* gimple-iterator.c: Ditto.
+	* gimple-low.c: Ditto.
+	* gimple-match-head.c: Ditto.
+	* gimple-pretty-print.c: Ditto.
 	* generic-ssa-isolate-paths.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* gimple-ssa-strength-reduction.c: ditto.
-	* gimple-streamer-in.c: ditto.
-	* gimple-streamer-out.c: ditto.
-	* gimple-walk.c:  Include hash-set.h, machmode.h, vec.h, double-int.h,
+	* gimple-ssa-strength-reduction.c: Ditto.
+	* gimple-streamer-in.c: Ditto.
+	* gimple-streamer-out.c: Ditto.
+	* gimple-walk.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* gimplify.c:  Include hash-set.h, machmode.h, vec.h, double-int.h,
+	* gimplify.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* gimplify-me.c: ditto.
-	* go/go-gcc.cc: ditto.
-	* go/go-lang.c: ditto.
-	* go/gdump.c: ditto.
-	* graphite-blocking.c: ditto.
-	* graphite.c: ditto.
-	* graphite-dependencies.c: ditto.
-	* graphite-interchange.c: ditto.
-	* graphite-isl-ast-to-gimple.c: ditto.
-	* graphite-optimize-isl.c: ditto.
-	* graphite-poly.c: ditto.
-	* graphite-scop-detection.c: ditto.
-	* graphite-sese-to-poly.c: ditto.
+	* gimplify-me.c: Ditto.
+	* graphite-blocking.c: Ditto.
+	* graphite.c: Ditto.
+	* graphite-dependencies.c: Ditto.
+	* graphite-interchange.c: Ditto.
+	* graphite-isl-ast-to-gimple.c: Ditto.
+	* graphite-optimize-isl.c: Ditto.
+	* graphite-poly.c: Ditto.
+	* graphite-scop-detection.c: Ditto.
+	* graphite-sese-to-poly.c: Ditto.
 	* hw-doloop.c: Include symtab.h due to flattening of tree.h.
-	* ifcvt.c: ditto.
-	* init-regs.c:  Include hash-set.h, machmode.h, vec.h, double-int.h,
+	* ifcvt.c: Ditto.
+	* init-regs.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
 	* internal-fc.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h,options.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* ipa.c: ditto.
-	* ipa-chkp.c: ditto.
-	* ipa-comdats.c:  Include hash-set.h, machmode.h, vec.h, double-int.h,
+	* ipa.c: Ditto.
+	* ipa-chkp.c: Ditto.
+	* ipa-comdats.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
 	* ipa-cp.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h,options.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* ipa-devirt.c:  Include hash-set.h, machmode.h, vec.h, double-int.h,
+	* ipa-devirt.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
 	* ipa-icf.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h,options.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* ipa-icf-gimple.c: ditto.
+	* ipa-icf-gimple.c: Ditto.
 	* ipa-inline-analysis.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* ipa-inline.c: ditto.
-	* ipa-inline-transform.c: ditto.
-	* ipa-polymorhpic-call.c: ditto.
-	* ipa-profile.c: ditto.
+	* ipa-inline.c: Ditto.
+	* ipa-inline-transform.c: Ditto.
+	* ipa-polymorhpic-call.c: Ditto.
+	* ipa-profile.c: Ditto.
 	* ipa-prop.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
@@ -485,49 +342,16 @@
 	* ipa-ref.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* ipa-reference.c: ditto.
-	* ipa-split.c: ditto.
-	* ipa-utils.c: ditto.
+	* ipa-reference.c: Ditto.
+	* ipa-split.c: Ditto.
+	* ipa-utils.c: Ditto.
 	* ipa-visbility.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* ira.c: ditto.
+	* ira.c: Ditto.
 	* ira-color.c: Include hash-set.h due to flattening of tree.h.
-	* ira-costs.c: ditto.
-	* ira-emit.c: ditto.
-	* java/boehm.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* java/builtins.c: ditto.
-	* java/class.c: ditto.
-	* java/constants.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* java/decl.c: ditto.
-	* java/except.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* java/expr.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, fold-const.h,
-	wide-int.h,inchash.h and real.h due to flattening of tree.h.
-	* java/gimplify.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* java/jcf-dump.c: ditto.
-	* java/jcf-io.c: ditto.
-	* java/jcf-parse.c: ditto.
-	* java/jvgenmain.c: ditto.
-	* java/lang.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* java/mangle.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* java/mangle_name.c: ditto.
-	* java/resource.c: ditto.
-	* java/typeck.c: ditto.
-	* java/verify-glue.c: ditto.
-	* java/verify-impl.c: ditto.
+	* ira-costs.c: Ditto.
+	* ira-emit.c: Ditto.
 	* jump.c: Include symtab.h due to flattening of tree.h.
 	* langhooks.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
@@ -537,67 +361,46 @@
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
 	* loop-invariant.c: Include symtab.h due to flattening of tree.h.
-	* loop-iv.c: ditto.
+	* loop-iv.c: Ditto.
 	* loop-unroll.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* lower-subreg.c: ditto.
+	* lower-subreg.c: Ditto.
 	* lra-assigns.c: Include symtab.h due to flattening of tree.h.
 	* lra.c: Include symtab.h, fold-const.h, wide-int.h and inchash.h
 	due to flattening of tree.h.
 	* lra-coalesce.c: Include symtab.h due to flattening of tree.h.
-	* lra-constraints.c: ditto.
-	* lra-eliminations.c: ditto.
-	* lra-livesc: ditto.
-	* lra-remat.c: ditto.
-	* lra-spills.c: ditto.
-	* lto/lto.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* lto/lto-lang.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* lto/lto-object.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options, fold-const.h,
-	wide-int.h, and inchash.h due to flattening of tree.h.
-	* lto/lto-partition.c: ditto.
-	* lto/lto-symtab.c: ditto.
+	* lra-constraints.c: Ditto.
+	* lra-eliminations.c: Ditto.
+	* lra-livesc: Ditto.
+	* lra-remat.c: Ditto.
+	* lra-spills.c: Ditto.
 	* lto-cgraph.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
 	* lto-compress.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* lto-opts.c: ditto.
+	* lto-opts.c: Ditto.
 	* lto-section-in.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* lto-section-out.c: ditto.
-	* lto-streamer.c: ditto.
-	* lto-streamer-in.c: ditto.
-	* lto-streamer-out.c: ditto.
+	* lto-section-out.c: Ditto.
+	* lto-streamer.c: Ditto.
+	* lto-streamer-in.c: Ditto.
+	* lto-streamer-out.c: Ditto.
 	* modulo-sched.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
-	* objc/objc-act.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	* omega.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options, fold-const.h,
 	wide-int.h, and inchash.h due to flattening of tree.h.
-	* objc/objc-encoding.c: ditto.
-	* objc/objc-gnu-runtime-abi-01.c: ditto.
-	* objc/objc-lang.c: ditto.
-	* objc/objc-map.c: ditto.
-	* objc/objc-next-runtime-abi-01.c: ditto.
-	* objc/objc-next-runtime-abi-02.c: ditto.
-	* objc/objc-runtime-shared-support.c: ditto.
-	* objcp/objcp-decl.c: ditto.
-	* objcp/objcp-lang.c: ditto.
-	* omega.c: ditto.
 	* omega-low.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
-	* optabs.c: ditto.
-	* opts-global.c: ditto.
-	* passes.c: ditto.
+	* optabs.c: Ditto.
+	* opts-global.c: Ditto.
+	* passes.c: Ditto.
 	* plugin.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
@@ -605,9 +408,9 @@
 	* postreload-gcse.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
-	* predict.c: ditto.
-	* print-rtl.c: ditto.
-	* print-tree.c: ditto.
+	* predict.c: Ditto.
+	* print-rtl.c: Ditto.
+	* print-tree.c: Ditto.
 	* profile.c: Include symtab.h, fold-const.h
 	and inchash.h due to flattening of tree.h.
 	* real.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
@@ -619,13 +422,13 @@
 	* recog.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
-	* ree.c: ditto.
-	* reginfo.c: ditto.
-	* reg-stack.c: ditto.
+	* ree.c: Ditto.
+	* reginfo.c: Ditto.
+	* reg-stack.c: Ditto.
 	* reload1.c: Include symtab.h, fold-const.h, wide-int.h
 	and inchash.h due to flattening of tree.h.
 	* reload.c: Include symtab.h due to flattening of tree.h.
-	* reorg.c: ditto.
+	* reorg.c: Ditto.
 	* rtlanal.c: Include symtab.h, fold-const.h, wide-int.h
 	and inchash.h due to flattening of tree.h.
 	* rtl-chkp.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
@@ -638,11 +441,11 @@
 	* sched-deps.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
-	* sched-vis.c: ditto.
-	* sdbout.c: ditto.
+	* sched-vis.c: Ditto.
+	* sdbout.c: Ditto.
 	* sel-sched.c: Include symtab.h, fold-const.h, wide-int.h
 	and inchash.h due to flattening of tree.h.
-	* sel-sched-ir.c: ditto.
+	* sel-sched-ir.c: Ditto.
 	* sese.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
@@ -652,21 +455,21 @@
 	* simplify-rtx.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
-	* stack-ptr-mod.c: ditto.
-	* stmt.c: ditto.
-	* store-motion.c: ditto.
-	* store-layout.c: ditto.
-	* stringpool.c: ditto.
-	* symtab.c: ditto.
-	* target-globals.c: ditto.
-	* targhooks.c: ditto.
-	* toplev.c: ditto.
-	* tracer.c: ditto.
+	* stack-ptr-mod.c: Ditto.
+	* stmt.c: Ditto.
+	* store-motion.c: Ditto.
+	* store-layout.c: Ditto.
+	* stringpool.c: Ditto.
+	* symtab.c: Ditto.
+	* target-globals.c: Ditto.
+	* targhooks.c: Ditto.
+	* toplev.c: Ditto.
+	* tracer.c: Ditto.
 	* trans-mem.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
-	* tree-affine.c: ditto.
-	* tree-browser.c: ditto.
+	* tree-affine.c: Ditto.
+	* tree-browser.c: Ditto.
 	* tree.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
@@ -676,12 +479,12 @@
 	* tree-cfg.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
-	* tree-cfgcleanup.c: ditto.
+	* tree-cfgcleanup.c: Ditto.
 	* tree-chkp.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
-	* tree-chkp-opt.c: ditto.
-	* tree-chrec.c: ditto.
+	* tree-chkp-opt.c: Ditto.
+	* tree-chrec.c: Ditto.
 	* tree-chkp-opt.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h, inchash.h and
 	real.h due to flattening of tree.h.
@@ -692,11 +495,11 @@
 	* tree-dfa.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h, inchash.h and
 	real.h due to flattening of tree.h.
-	* tree-diagnostic.c: ditto.
+	* tree-diagnostic.c: Ditto.
 	* tree-dump.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h, inchash.h, real.h and
 	fixed-value.h due to flattening of tree.h.
-	* tree-dfa.c: ditto.
+	* tree-dfa.c: Ditto.
 	* tree-eh.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h, inchash.h and
 	real.h due to flattening of tree.h.
@@ -713,26 +516,26 @@
 	* tree-if-conv.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h, inchash.h, real.h and
 	fixed-value.h due to flattening of tree.h.
-	* tree-inline.c: ditto.
-	* tree-into-ssa.c: ditto.
+	* tree-inline.c: Ditto.
+	* tree-into-ssa.c: Ditto.
 	* tree-iterator.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
-	* tree-loop-distribution.c: ditto.
+	* tree-loop-distribution.c: Ditto.
 	* tree-nested.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h and inchash.h
 	due to flattening of tree.h.
-	* tree-nrv.c: ditto.
-	* tree-object-size.c: ditto.
-	* tree-outof-ssa.c: ditto.
+	* tree-nrv.c: Ditto.
+	* tree-object-size.c: Ditto.
+	* tree-outof-ssa.c: Ditto.
 	* tree-parloops.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h, wide-int.h, and
 	inchash.h due to flattening of tree.h.
-	* tree-phinodes.c: ditto.
+	* tree-phinodes.c: Ditto.
 	* tree-predcom.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h and inchash.h
 	due to flattening of tree.h.
-	* tree-pretty-print.c: ditto.
+	* tree-pretty-print.c: Ditto.
 	* tree-profile.c: double-int.h, input.h, alias.h, symtab.h,
 	fold-const.h, wide-int.h and inchash.h due to flattening of tree.h.
 	* tree-scalar-evolution.c: Include hash-set.h, machmode.h, vec.h,
@@ -744,44 +547,44 @@
 	* tree-ssa-alias.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h and inchash.h
 	due to flattening of tree.h.
-	* tree-ssa.c: ditto.
+	* tree-ssa.c: Ditto.
 	* tree-ssa-ccp.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h, inchash.h
 	and real.h due to flattening of tree.h.
 	* tree-ssa-coalesce.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h and inchash.h
 	due to flattening of tree.h.
-	* tree-ssa-copy.c: ditto.
-	* tree-ssa-copyrename.c: ditto.
-	* tree-ssa-dce.c: ditto.
+	* tree-ssa-copy.c: Ditto.
+	* tree-ssa-copyrename.c: Ditto.
+	* tree-ssa-dce.c: Ditto.
 	* tree-ssa-dom.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h, inchash.h
 	and real.h due to flattening of tree.h.
 	* tree-ssa-dse.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h and inchash.h
 	due to flattening of tree.h.
-	* tree-ssa-forwprop.c: ditto.
-	* tree-ssa-ifcombine.c: ditto.
-	* tree-ssa-live.c: ditto.
-	* tree-ssa-loop.c: ditto.
-	* tree-ssa-loop-ch.c: ditto.
-	* tree-ssa-loop-im.c: ditto.
-	* tree-ssa-loop-ivcanon.c: ditto.
-	* tree-ssa-loop-ivopts.c: ditto.
-	* tree-ssa-loop-manip.c: ditto.
-	* tree-ssa-loop-niter.c: ditto.
-	* tree-ssa-loop-prefetch.c: ditto.
-	* tree-ssa-loop-unswitch.c: ditto.
-	* tree-ssa-loop-math-opts.c: ditto.
-	* tree-ssanames.c: ditto.
-	* tree-ssa-operands.c: ditto.
-	* tree-ssa-phiopt.c: ditto.
-	* tree-ssa-phiprop.c: ditto.
-	* tree-ssa-pre.c: ditto.
-	* tree-ssa-propagate.c: ditto.
-	* tree-ssa-reassoc.c: ditto.
-	* tree-ssa-sccvn.c: ditto.
-	* tree-ssa-sink.c: ditto.
+	* tree-ssa-forwprop.c: Ditto.
+	* tree-ssa-ifcombine.c: Ditto.
+	* tree-ssa-live.c: Ditto.
+	* tree-ssa-loop.c: Ditto.
+	* tree-ssa-loop-ch.c: Ditto.
+	* tree-ssa-loop-im.c: Ditto.
+	* tree-ssa-loop-ivcanon.c: Ditto.
+	* tree-ssa-loop-ivopts.c: Ditto.
+	* tree-ssa-loop-manip.c: Ditto.
+	* tree-ssa-loop-niter.c: Ditto.
+	* tree-ssa-loop-prefetch.c: Ditto.
+	* tree-ssa-loop-unswitch.c: Ditto.
+	* tree-ssa-loop-math-opts.c: Ditto.
+	* tree-ssanames.c: Ditto.
+	* tree-ssa-operands.c: Ditto.
+	* tree-ssa-phiopt.c: Ditto.
+	* tree-ssa-phiprop.c: Ditto.
+	* tree-ssa-pre.c: Ditto.
+	* tree-ssa-propagate.c: Ditto.
+	* tree-ssa-reassoc.c: Ditto.
+	* tree-ssa-sccvn.c: Ditto.
+	* tree-ssa-sink.c: Ditto.
 	* tree-ssa-strlen.c: Include hash-set.h, machmode.h, vec.h,
 	double-int.h, input.h, alias.h, symtab.h, options.h, fold-const.h,
 	wide-int.h and inchash.h due to flattening of tree.h.
@@ -790,15 +593,15 @@
 	* tree-ssa-tail-merge.c: Include hash-set.h, machmode.h, vec.h,
 	double-int.h, input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h and inchash.h due to flattening of tree.h.
-	* tree-ssa-ter.c: ditto.
-	* tree-ssa-threadedge.c: ditto.
+	* tree-ssa-ter.c: Ditto.
+	* tree-ssa-threadedge.c: Ditto.
 	* tree-ssa-threadupdate.c: Include hash-set.h, machmode.h, vec.h,
 	double-int.h, input.h, alias.h, symtab.h, options.h, fold-const.h,
 	wide-int.h and inchash.h due to flattening of tree.h.
 	* tree-ssa-uncprop.c: Include hash-set.h, machmode.h, vec.h,
 	double-int.h, input.h, alias.h, symtab.h, fold-const.h,
 	wide-int.h and inchash.h due to flattening of tree.h.
-	* tree-ssa-uninit.c: ditto.
+	* tree-ssa-uninit.c: Ditto.
 	* tree-stdarg.c: Include vec.h, double-int.h, input.h, alias.h,
 	symtab.h, fold-const.h, wide-int.h and inchash.h due to flattening
 	of tree.h.
@@ -809,45 +612,42 @@
 	double-int.h, input.h, alias.h, symtab.h, options.h, fold-const.h,
 	wide-int.h, inchash.h, real.h and fixed-value.h due to flattening
 	of tree.h.
-	* tree-streamer-out.c: dittoo.
+	* tree-streamer-out.c: Dittoo.
 	* tree-switch-conversion.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h and inchash.h
 	due to flattening of tree.h.
-	* tree-tailcall.c: ditto.
-	* tree-vect-data-refs.c: ditto.
+	* tree-tailcall.c: Ditto.
+	* tree-vect-data-refs.c: Ditto.
 	* tree-vect-generic.c: Include hash-set.h, machmode.h, vec.h, double-int.h, input.h,
 	alias.h, symtab.h, options.h, fold-const.h, wide-int.h and inchash.h
 	due to flattening of tree.h.
 	* tree-vect-loop.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h and inchash.h
 	due to flattening of tree.h.
-	* tree-vect-loop-manip.c: ditto.
-	* tree-vectorizer.c: ditto.
-	* tree-vect-patterns.c: ditto.
-	* tree-vect-slp.c: ditto.
-	* tree-vect-stmts.c: ditto.
-	* tree-vrp.c: ditto.
+	* tree-vect-loop-manip.c: Ditto.
+	* tree-vectorizer.c: Ditto.
+	* tree-vect-patterns.c: Ditto.
+	* tree-vect-slp.c: Ditto.
+	* tree-vect-stmts.c: Ditto.
+	* tree-vrp.c: Ditto.
 	* tsan.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h, wide-int.h and inchash.h
 	due to flattening of tree.h.
-	* ubsan.c: ditto.
+	* ubsan.c: Ditto.
 	* value-prof.c.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h and inchash.h
 	due to flattening of tree.h.
-	* varasm.c: ditto.
-	* varpool.c: ditto.
-	* var-tracking.c: ditto.
-	* vmsdbgout.c: ditto.
+	* varasm.c: Ditto.
+	* varpool.c: Ditto.
+	* var-tracking.c: Ditto.
+	* vmsdbgout.c: Ditto.
 	* vtable-verify.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, options.h, fold-const.h, wide-int.h and inchash.h
 	due to flattening of tree.h.
 	* wide-int.cc: Include hash-set.h, machmode.h, vec.h, double-int.h,
 	input.h, alias.h, symtab.h, fold-const.h, wide-int.h and inchash.h
 	due to flattening of tree.h.
-	* xcoffout.c: ditto.
-	* libcc1/plugin.cc: Include hash-set.h, machmode.h, vec.h, double-int.h,
-	input.h, alias.h, symtab.h, options.h, fold-const.h, wide-int.h and inchash.h
-	due to flattening of tree.h.
+	* xcoffout.c: Ditto.
 
 2015-01-09  Tom de Vries  <tom@codesourcery.com>
 
