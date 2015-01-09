@@ -22,6 +22,7 @@ create_code (gcc_jit_context *ctxt, void * user_data)
   create_code_arrays (ctxt, user_data);
   create_code_calling_external_function (ctxt, user_data);
   create_code_calling_function_ptr (ctxt, user_data);
+  create_code_constants (ctxt, user_data);
   create_code_dot_product (ctxt, user_data);
   create_code_expressions (ctxt, user_data);
   create_code_factorial (ctxt, user_data);
@@ -50,6 +51,7 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
   verify_code_arrays (ctxt, result);
   verify_code_calling_external_function (ctxt, result);
   verify_code_calling_function_ptr (ctxt, result);
+  verify_code_constants (ctxt, result);
   verify_code_dot_product (ctxt, result);
   verify_code_expressions (ctxt, result);
   verify_code_factorial (ctxt, result);

@@ -486,12 +486,25 @@ new_global (location *loc,
   return new lvalue (this, inner);
 }
 
-/* Construct a playback::rvalue instance (wrapping a tree).  */
+/* Implementation of the various
+      gcc::jit::playback::context::new_rvalue_from_const <HOST_TYPE>
+   methods.
+   Each of these constructs a playback::rvalue instance (wrapping a tree).
 
-playback::rvalue *
-playback::context::
-new_rvalue_from_int (type *type,
-		     int value)
+   These specializations are required to be in the same namespace
+   as the template, hence we now have to enter the gcc::jit::playback
+   namespace.  */
+
+namespace playback
+{
+
+/* Specialization of making an rvalue from a const, for host <int>.  */
+
+template <>
+rvalue *
+context::
+new_rvalue_from_const <int> (type *type,
+			     int value)
 {
   // FIXME: type-checking, or coercion?
   tree inner_type = type->as_tree ();
@@ -509,12 +522,37 @@ new_rvalue_from_int (type *type,
     }
 }
 
-/* Construct a playback::rvalue instance (wrapping a tree).  */
+/* Specialization of making an rvalue from a const, for host <long>.  */
 
-playback::rvalue *
-playback::context::
-new_rvalue_from_double (type *type,
-			double value)
+template <>
+rvalue *
+context::
+new_rvalue_from_const <long> (type *type,
+			      long value)
+{
+  // FIXME: type-checking, or coercion?
+  tree inner_type = type->as_tree ();
+  if (INTEGRAL_TYPE_P (inner_type))
+    {
+      tree inner = build_int_cst (inner_type, value);
+      return new rvalue (this, inner);
+    }
+  else
+    {
+      REAL_VALUE_TYPE real_value;
+      real_from_integer (&real_value, VOIDmode, value, SIGNED);
+      tree inner = build_real (inner_type, real_value);
+      return new rvalue (this, inner);
+    }
+}
+
+/* Specialization of making an rvalue from a const, for host <double>.  */
+
+template <>
+rvalue *
+context::
+new_rvalue_from_const <double> (type *type,
+				double value)
 {
   // FIXME: type-checking, or coercion?
   tree inner_type = type->as_tree ();
@@ -539,18 +577,25 @@ new_rvalue_from_double (type *type,
   return new rvalue (this, inner);
 }
 
-/* Construct a playback::rvalue instance (wrapping a tree).  */
+/* Specialization of making an rvalue from a const, for host <void *>.  */
 
-playback::rvalue *
-playback::context::
-new_rvalue_from_ptr (type *type,
-		     void *value)
+template <>
+rvalue *
+context::
+new_rvalue_from_const <void *> (type *type,
+				void *value)
 {
   tree inner_type = type->as_tree ();
   /* FIXME: how to ensure we have a wide enough type?  */
   tree inner = build_int_cstu (inner_type, (unsigned HOST_WIDE_INT)value);
   return new rvalue (this, inner);
 }
+
+/* We're done implementing the specializations of
+      gcc::jit::playback::context::new_rvalue_from_const <T>
+   so we can exit the gcc::jit::playback namespace.  */
+
+} // namespace playback
 
 /* Construct a playback::rvalue instance (wrapping a tree).  */
 

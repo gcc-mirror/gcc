@@ -1,3 +1,11 @@
+2015-01-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/all-non-failing-tests.h: Add test-constants.c.
+	* jit.dg/test-combination.c (create_code): Likewise.
+	(verify_code): Likewise.
+	* jit.dg/test-constants.c: New test case.
+	* jit.dg/test-threads.c: Add test-constants.c.
+
 2015-01-09  Dimitris Papavasiliou  <dpapavas@gmail.com>
 
 	PR libobjc/51891

@@ -1,5 +1,88 @@
 2015-01-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* docs/cp/topics/expressions.rst (Simple expressions): Use
+	":c:type:" for C types.  Document new overload of
+	gcc::jit::context::new_rvalue.
+	* docs/topics/expressions.rst (Simple expressions): Use
+	":c:type:" for C types.  Document new entrypoint
+	gcc_jit_context_new_rvalue_from_long.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c: Within namespace gcc::jit::playback...
+	(context::new_rvalue_from_int): Eliminate in favor of...
+	(context::new_rvalue_from_const <int>): ...this.
+	(context::new_rvalue_from_double): Eliminate in favor of...
+	(context::new_rvalue_from_const <double>): ...this.
+	(context::new_rvalue_from_const <long>): New.
+	(context::new_rvalue_from_ptr): Eliminate in favor of...
+	(context::new_rvalue_from_const <void *>): ...this.
+	* jit-playback.h: Within namespace gcc::jit::playback...
+	(context::new_rvalue_from_int): Eliminate in favor of...
+	(context::new_rvalue_from_const <HOST_TYPE>): ...this.
+	(context::new_rvalue_from_double): Likewise.
+	(context::new_rvalue_from_ptr): Likewise.
+	* jit-recording.c: Within namespace gcc::jit::recording...
+	(context::new_rvalue_from_int): Eliminate.
+	(context::new_rvalue_from_double): Likewise.
+	(context::new_rvalue_from_ptr): Likewise.
+	(class memento_of_new_rvalue_from_const <int>):
+	Add explicit specialization.
+	(class memento_of_new_rvalue_from_const <long>):
+	Likewise.
+	(class memento_of_new_rvalue_from_const <double>):
+	Likewise.
+	(class memento_of_new_rvalue_from_const <void *>):
+	Likewise.
+	(memento_of_new_rvalue_from_int::replay_into):
+	Generalize into...
+	(memento_of_new_rvalue_from_const <HOST_TYPE>::replay_into):
+	...this...
+	(memento_of_new_rvalue_from_double::replay_into):
+	...allowing this...
+	(memento_of_new_rvalue_from_ptr::replay_into):
+	...and this to be deleted.
+	(memento_of_new_rvalue_from_int::make_debug_string):
+	Convert to...
+	(memento_of_new_rvalue_from_const <int>::make_debug_string):
+	...this.
+	(memento_of_new_rvalue_from_double::make_debug_string):
+	Convert to...
+	(memento_of_new_rvalue_from_const <double>::make_debug_string):
+	...this.
+	(memento_of_new_rvalue_from_ptr::make_debug_string)
+	Convert to...
+	(memento_of_new_rvalue_from_const <void *>::make_debug_string):
+	...this.
+	(memento_of_new_rvalue_from_const <long>::make_debug_string):
+	New function.
+	* jit-recording.h: Within namespace gcc::jit::recording...
+	(context::new_rvalue_from_int): Eliminate.
+	(context::new_rvalue_from_double): Likewise.
+	(context::new_rvalue_from_ptr): Likewise, all in favor of...
+	(context::new_rvalue_from_const <HOST_TYPE>): New family of
+	methods.
+	(class memento_of_new_rvalue_from_int): Eliminate.
+	(class memento_of_new_rvalue_from_double): Likewise.
+	(class memento_of_new_rvalue_from_ptr): Likewise.
+	(class memento_of_new_rvalue_from_const <HOST_TYPE>): New family
+	of rvalue subclasses.
+	* libgccjit++.h (gccjit::context::new_rvalue): New overload, for
+	"long".
+	* libgccjit.c (gcc_jit_context_new_rvalue_from_int): Update for
+	rewriting of recording::context::new_rvalue_from_int to
+	recording::context::new_rvalue_from_const <int>.
+	(gcc_jit_context_new_rvalue_from_long): New API entrypoint.
+	(gcc_jit_context_new_rvalue_from_double): Update for
+	rewriting of recording::context::new_rvalue_from_double to
+	recording::context::new_rvalue_from_const <double>.
+	(gcc_jit_context_new_rvalue_from_ptr): Update for
+	rewriting of recording::context::new_rvalue_from_ptr to
+	recording::context::new_rvalue_from_const <void *>.
+	* libgccjit.h (gcc_jit_context_new_rvalue_from_long): New API
+	entrypoint.
+	* libgccjit.map (gcc_jit_context_new_rvalue_from_long): Likewise.
+
+2015-01-09  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/64206
 	* docs/internals/test-hello-world.exe.log.txt: Update, the log now
 	shows tempdir creation/cleanup.

@@ -1080,7 +1080,23 @@ gcc_jit_context_new_rvalue_from_int (gcc_jit_context *ctxt,
   JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL_NONNULL_NUMERIC_TYPE (ctxt, numeric_type);
 
-  return (gcc_jit_rvalue *)ctxt->new_rvalue_from_int (numeric_type, value);
+  return ((gcc_jit_rvalue *)ctxt
+	  ->new_rvalue_from_const <int> (numeric_type, value));
+}
+
+/* FIXME. */
+
+gcc_jit_rvalue *
+gcc_jit_context_new_rvalue_from_long (gcc_jit_context *ctxt,
+				      gcc_jit_type *numeric_type,
+				      long value)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_NULL_IF_FAIL_NONNULL_NUMERIC_TYPE (ctxt, numeric_type);
+
+  return ((gcc_jit_rvalue *)ctxt
+	  ->new_rvalue_from_const <long> (numeric_type, value));
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -1132,7 +1148,8 @@ gcc_jit_context_new_rvalue_from_double (gcc_jit_context *ctxt,
   JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL_NONNULL_NUMERIC_TYPE (ctxt, numeric_type);
 
-  return (gcc_jit_rvalue *)ctxt->new_rvalue_from_double (numeric_type, value);
+  return ((gcc_jit_rvalue *)ctxt
+	  ->new_rvalue_from_const <double> (numeric_type, value));
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -1155,7 +1172,8 @@ gcc_jit_context_new_rvalue_from_ptr (gcc_jit_context *ctxt,
     "not a pointer type (type: %s)",
     pointer_type->get_debug_string ());
 
-  return (gcc_jit_rvalue *)ctxt->new_rvalue_from_ptr (pointer_type, value);
+  return ((gcc_jit_rvalue *)ctxt
+	  ->new_rvalue_from_const <void *> (pointer_type, value));
 }
 
 /* Public entrypoint.  See description in libgccjit.h.

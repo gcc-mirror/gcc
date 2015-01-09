@@ -57,6 +57,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-constants.c */
+#define create_code create_code_constants
+#define verify_code verify_code_constants
+#include "test-constants.c"
+#undef create_code
+#undef verify_code
+
 /* test-dot-product.c */
 #define create_code create_code_dot_product
 #define verify_code verify_code_dot_product
