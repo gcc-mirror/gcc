@@ -1,3 +1,7 @@
+2015-01-09  Ian Lance Taylor  <iant@google.com>
+
+	* config-lang.in (lang_dirs): Define.
+
 2015-01-09  Michael Collison  <michael.collison@linaro.org>
 
 	* go-gcc.cc: Include hash-set.h, machmode.h, vec.h, double-int.h,

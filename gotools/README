@@ -1,0 +1,13 @@
+This directory builds tools used by people working in the Go language.
+The source code for these tools lives in libgo/go/cmd, where it is
+copied from the master gofrontend repository.  This directory contains
+only the configure/Makefile instructions required to build the tools.
+
+This directory builds two programs for general use: go and gofmt.  It
+also builds one program for internal use by the go tool: cgo.  For
+more information on these tools see the doc.go files in the relevant
+source code, which can also be seen hosted at golang.org:
+
+http://golang.org/cmd/go
+http://golang.org/cmd/gofmt
+http://golang.org/cmd/cgo
