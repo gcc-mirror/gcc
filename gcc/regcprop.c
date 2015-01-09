@@ -734,6 +734,26 @@ cprop_find_used_regs (rtx *loc, void *data)
     }
 }
 
+/* Apply clobbers of INSN in PATTERN and C_I_F_U to value_data VD.  */
+
+static void
+kill_clobbered_values (rtx_insn *insn, struct value_data *vd)
+{
+  note_stores (PATTERN (insn), kill_clobbered_value, vd);
+
+  if (CALL_P (insn))
+    {
+      rtx exp;
+
+      for (exp = CALL_INSN_FUNCTION_USAGE (insn); exp; exp = XEXP (exp, 1))
+	{
+	  rtx x = XEXP (exp, 0);
+	  if (GET_CODE (x) == CLOBBER)
+	    kill_value (SET_DEST (x), vd);
+	}
+    }
+}
+
 /* Perform the forward copy propagation on basic block BB.  */
 
 static bool
@@ -800,7 +820,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       /* Within asms, a clobber cannot overlap inputs or outputs.
 	 I wouldn't think this were true for regular insns, but
 	 scan_rtx treats them like that...  */
-      note_stores (PATTERN (insn), kill_clobbered_value, vd);
+      kill_clobbered_values (insn, vd);
 
       /* Kill all auto-incremented values.  */
       /* ??? REG_INC is useless, since stack pushes aren't done that way.  */
@@ -1035,17 +1055,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	     but instead among CLOBBERs on the CALL_INSN, we could wrongly
 	     assume the value in it is still live.  */
 	  if (ksvd.ignore_set_reg)
-	    {
-	      note_stores (PATTERN (insn), kill_clobbered_value, vd);
-	      for (exp = CALL_INSN_FUNCTION_USAGE (insn);
-		   exp;
-		   exp = XEXP (exp, 1))
-		{
-		  rtx x = XEXP (exp, 0);
-		  if (GET_CODE (x) == CLOBBER)
-		    kill_value (SET_DEST (x), vd);
-		}
-	    }
+	    kill_clobbered_values (insn, vd);
 	}
 
       bool copy_p = (set
