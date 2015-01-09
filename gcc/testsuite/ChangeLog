@@ -1,3 +1,16 @@
+2015-01-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-threads.c (struct testcase): Move declaration
+	to jit.dg/all-non-failing-tests.h.
+	(testcases): Likewise.
+	* jit.dg/all-non-failing-tests.h (struct testcase): Move
+	declaration here from jit.dg/all-non-failing-tests.h.
+	(testcases): Likewise.
+	* jit.dg/test-combination.c (create_code): Eliminate spelling
+	out all of the testcases in favor of looping through the
+	"testcases" metadata.
+	(verify_code): Likewise.
+
 2015-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/64536
