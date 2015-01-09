@@ -93,17 +93,10 @@ public:
 	      type *type,
 	      const char *name);
 
+  template <typename HOST_TYPE>
   rvalue *
-  new_rvalue_from_int (type *type,
-		       int value);
-
-  rvalue *
-  new_rvalue_from_double (type *type,
-			  double value);
-
-  rvalue *
-  new_rvalue_from_ptr (type *type,
-		       void *value);
+  new_rvalue_from_const (type *type,
+			 HOST_TYPE value);
 
   rvalue *
   new_string_literal (const char *value);

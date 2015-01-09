@@ -161,6 +161,8 @@ namespace gccjit
 
     rvalue new_rvalue (type numeric_type,
 		       int value) const;
+    rvalue new_rvalue (type numeric_type,
+		       long value) const;
     rvalue zero (type numeric_type) const;
     rvalue one (type numeric_type) const;
     rvalue new_rvalue (type numeric_type,
@@ -723,6 +725,16 @@ context::new_rvalue (type numeric_type,
     gcc_jit_context_new_rvalue_from_int (m_inner_ctxt,
 					 numeric_type.get_inner_type (),
 					 value));
+}
+
+inline rvalue
+context::new_rvalue (type numeric_type,
+		     long value) const
+{
+  return rvalue (
+    gcc_jit_context_new_rvalue_from_long (m_inner_ctxt,
+					  numeric_type.get_inner_type (),
+					  value));
 }
 
 inline rvalue

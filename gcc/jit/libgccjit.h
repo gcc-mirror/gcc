@@ -633,6 +633,11 @@ gcc_jit_context_new_rvalue_from_int (gcc_jit_context *ctxt,
 				     int value);
 
 extern gcc_jit_rvalue *
+gcc_jit_context_new_rvalue_from_long (gcc_jit_context *ctxt,
+				      gcc_jit_type *numeric_type,
+				      long value);
+
+extern gcc_jit_rvalue *
 gcc_jit_context_zero (gcc_jit_context *ctxt,
 		      gcc_jit_type *numeric_type);
 

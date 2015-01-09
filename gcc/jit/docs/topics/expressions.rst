@@ -60,7 +60,15 @@ Simple expressions
                                                    int value)
 
    Given a numeric type (integer or floating point), build an rvalue for
-   the given constant value.
+   the given constant :c:type:`int` value.
+
+.. function:: gcc_jit_rvalue *\
+              gcc_jit_context_new_rvalue_from_long (gcc_jit_context *ctxt, \
+                                                    gcc_jit_type *numeric_type, \
+                                                    long value)
+
+   Given a numeric type (integer or floating point), build an rvalue for
+   the given constant :c:type:`long` value.
 
 .. function::  gcc_jit_rvalue *gcc_jit_context_zero (gcc_jit_context *ctxt, \
                                                      gcc_jit_type *numeric_type)
@@ -88,7 +96,7 @@ Simple expressions
                                                        double value)
 
    Given a numeric type (integer or floating point), build an rvalue for
-   the given constant value.
+   the given constant :c:type:`double` value.
 
 .. function:: gcc_jit_rvalue *\
               gcc_jit_context_new_rvalue_from_ptr (gcc_jit_context *ctxt, \

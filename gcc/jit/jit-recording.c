@@ -647,54 +647,6 @@ recording::context::new_global (recording::location *loc,
   return result;
 }
 
-/* Create a recording::memento_of_new_rvalue_from_int instance and add
-   it to this context's list of mementos.
-
-   Implements the post-error-checking part of
-   gcc_jit_context_new_rvalue_from_int.  */
-
-recording::rvalue *
-recording::context::new_rvalue_from_int (recording::type *type,
-					 int value)
-{
-  recording::rvalue *result =
-    new memento_of_new_rvalue_from_int (this, NULL, type, value);
-  record (result);
-  return result;
-}
-
-/* Create a recording::memento_of_new_rvalue_from_double instance and
-   add it to this context's list of mementos.
-
-   Implements the post-error-checking part of
-   gcc_jit_context_new_rvalue_from_double.  */
-
-recording::rvalue *
-recording::context::new_rvalue_from_double (recording::type *type,
-					    double value)
-{
-  recording::rvalue *result =
-    new memento_of_new_rvalue_from_double (this, NULL, type, value);
-  record (result);
-  return result;
-}
-
-/* Create a recording::memento_of_new_rvalue_from_ptr instance and add
-   it to this context's list of mementos.
-
-   Implements the post-error-checking part of
-   gcc_jit_context_new_rvalue_from_ptr.  */
-
-recording::rvalue *
-recording::context::new_rvalue_from_ptr (recording::type *type,
-					 void *value)
-{
-  recording::rvalue *result =
-    new memento_of_new_rvalue_from_ptr (this, NULL, type, value);
-  record (result);
-  return result;
-}
-
 /* Create a recording::memento_of_new_string_literal instance and add it
    to this context's list of mementos.
 
@@ -2702,26 +2654,51 @@ recording::global::replay_into (replayer *r)
 				   playback_string (m_name)));
 }
 
-/* The implementation of class gcc::jit::recording::memento_of_new_rvalue_from_int.  */
+/* The implementation of the various const-handling classes:
+   gcc::jit::recording::memento_of_new_rvalue_from_const <HOST_TYPE>.  */
 
-/* Implementation of pure virtual hook recording::memento::replay_into
-   for recording::memento_of_new_rvalue_from_int.  */
+/* Explicit specialization of the various mementos we're interested in.  */
+template class recording::memento_of_new_rvalue_from_const <int>;
+template class recording::memento_of_new_rvalue_from_const <long>;
+template class recording::memento_of_new_rvalue_from_const <double>;
+template class recording::memento_of_new_rvalue_from_const <void *>;
 
+/* Implementation of the pure virtual hook recording::memento::replay_into
+   for recording::memento_of_new_rvalue_from_const <HOST_TYPE>.  */
+
+template <typename HOST_TYPE>
 void
-recording::memento_of_new_rvalue_from_int::replay_into (replayer *r)
+recording::
+memento_of_new_rvalue_from_const <HOST_TYPE>::replay_into (replayer *r)
 {
-  set_playback_obj (r->new_rvalue_from_int (m_type->playback_type (),
-					    m_value));
+    set_playback_obj
+      (r->new_rvalue_from_const <HOST_TYPE> (m_type->playback_type (),
+					     m_value));
 }
 
-/* Implementation of recording::memento::make_debug_string for
-   rvalue_from_int, rendering it as
-     (TYPE)LITERAL
+/* The make_debug_string method varies between the various
+   memento_of_new_rvalue_from_const <HOST_TYPE> classes, so we explicitly
+   write specializations of it.
+
+   I (dmalcolm) find the code to be clearer if the "recording" vs "playback"
+   namespaces are written out explicitly, which is why most of this file
+   doesn't abbreviate things by entering the "recording" namespace.
+
+   However, these specializations are required to be in the same namespace
+   as the template, hence we now have to enter the gcc::jit::recording
+   namespace.  */
+
+namespace recording
+{
+
+/* The make_debug_string specialization for <int>, which renders it as
+     (TARGET_TYPE)LITERAL
    e.g.
      "(int)42".  */
 
-recording::string *
-recording::memento_of_new_rvalue_from_int::make_debug_string ()
+template <>
+string *
+memento_of_new_rvalue_from_const <int>::make_debug_string ()
 {
   return string::from_printf (m_ctxt,
 			      "(%s)%i",
@@ -2729,26 +2706,29 @@ recording::memento_of_new_rvalue_from_int::make_debug_string ()
 			      m_value);
 }
 
-/* The implementation of class gcc::jit::recording::memento_of_new_rvalue_from_double.  */
+/* The make_debug_string specialization for <long>, rendering it as
+     (TARGET_TYPE)LITERAL
+   e.g.
+     "(long)42".  */
 
-/* Implementation of pure virtual hook recording::memento::replay_into
-   for recording::memento_of_new_rvalue_from_double.  */
-
-void
-recording::memento_of_new_rvalue_from_double::replay_into (replayer *r)
+template <>
+string *
+memento_of_new_rvalue_from_const <long>::make_debug_string ()
 {
-  set_playback_obj (r->new_rvalue_from_double (m_type->playback_type (),
-					       m_value));
+  return string::from_printf (m_ctxt,
+			      "(%s)%li",
+			      m_type->get_debug_string (),
+			      m_value);
 }
 
-/* Implementation of recording::memento::make_debug_string for
-   rvalue_from_double, rendering it as
-     (TYPE)LITERAL
+/* The make_debug_string specialization for <double>, rendering it as
+     (TARGET_TYPE)LITERAL
    e.g.
      "(float)42.0".  */
 
-recording::string *
-recording::memento_of_new_rvalue_from_double::make_debug_string ()
+template <>
+string *
+memento_of_new_rvalue_from_const <double>::make_debug_string ()
 {
   return string::from_printf (m_ctxt,
 			      "(%s)%f",
@@ -2756,29 +2736,17 @@ recording::memento_of_new_rvalue_from_double::make_debug_string ()
 			      m_value);
 }
 
-/* The implementation of class gcc::jit::recording::memento_of_new_rvalue_from_ptr.  */
-
-/* Implementation of pure virtual hook recording::memento::replay_into
-   for recording::memento_of_new_rvalue_from_ptr.  */
-
-void
-recording::memento_of_new_rvalue_from_ptr::replay_into (replayer *r)
-{
-  set_playback_obj (r->new_rvalue_from_ptr (m_type->playback_type (),
-					    m_value));
-}
-
-/* Implementation of recording::memento::make_debug_string for
-   rvalue_from_ptr, rendering it as
-     (TYPE)HEX
+/* The make_debug_string specialization for <void *>, rendering it as
+     (TARGET_TYPE)HEX
    e.g.
      "(int *)0xdeadbeef"
 
    Zero is rendered as NULL e.g.
      "(int *)NULL".  */
 
-recording::string *
-recording::memento_of_new_rvalue_from_ptr::make_debug_string ()
+template <>
+string *
+memento_of_new_rvalue_from_const <void *>::make_debug_string ()
 {
   if (m_value != NULL)
     return string::from_printf (m_ctxt,
@@ -2789,6 +2757,11 @@ recording::memento_of_new_rvalue_from_ptr::make_debug_string ()
 				"(%s)NULL",
 				m_type->get_debug_string ());
 }
+
+/* We're done specializing make_debug_string, so we can exit the
+   gcc::jit::recording namespace.  */
+
+} // namespace recording
 
 /* The implementation of class gcc::jit::recording::memento_of_new_string_literal.  */
 
