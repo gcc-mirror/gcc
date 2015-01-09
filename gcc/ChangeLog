@@ -1,3 +1,9 @@
+2015-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi ([-fvtable-verify]): Copy-edit and fix markup.
+	([-fvtv-debug], [-fvtv-counts]): Likewise.  Correct location
+	of log files.
+
 2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/arm/arm.h (MAX_SYNC_LIBFUNC_SIZE): Delete semicolon.

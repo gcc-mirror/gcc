@@ -2440,35 +2440,38 @@ violation of the ODR to define types with the same name differently.
 @item -fvtable-verify=@r{[}std@r{|}preinit@r{|}none@r{]}
 @opindex fvtable-verify
 Turn on (or off, if using @option{-fvtable-verify=none}) the security
-feature that verifies at runtime, for every virtual call that is made, that
+feature that verifies at run time, for every virtual call, that
 the vtable pointer through which the call is made is valid for the type of
 the object, and has not been corrupted or overwritten.  If an invalid vtable
-pointer is detected (at runtime), an error is reported and execution of the
+pointer is detected at run time, an error is reported and execution of the
 program is immediately halted.
 
-This option causes runtime data structures to be built, at program start up,
-for verifying the vtable pointers.  The options @code{std} and @code{preinit}
+This option causes run-time data structures to be built at program startup,
+which are used for verifying the vtable pointers.  
+The options @samp{std} and @samp{preinit}
 control the timing of when these data structures are built.  In both cases the
-data structures are built before execution reaches 'main'.  The
-@option{-fvtable-verify=std} causes these data structure to be built after the
+data structures are built before execution reaches @code{main}.  Using
+@option{-fvtable-verify=std} causes the data structures to be built after
 shared libraries have been loaded and initialized.
-@option{-fvtable-verify=preinit} causes them to be built before the shared
+@option{-fvtable-verify=preinit} causes them to be built before shared
 libraries have been loaded and initialized.
 
-If this option appears multiple times in the compiler line, with different
-values specified, 'none' takes highest priority over both 'std' and
-'preinit'; 'preinit' takes priority over 'std'.
+If this option appears multiple times in the command line with different
+values specified, @samp{none} takes highest priority over both @samp{std} and
+@samp{preinit}; @samp{preinit} takes priority over @samp{std}.
 
 @item -fvtv-debug
 @opindex fvtv-debug
-Causes debug versions of the runtime functions for the vtable verification 
-feature to be called.  This assumes the @option{-fvtable-verify=std} or
-@option{-fvtable-verify=preinit} has been used.  This flag also causes the
-compiler to keep track of which vtable pointers it found for each class, and
-record that information in the file ``vtv_set_ptr_data.log'', in the dump
-file directory on the user's machine.
+When used in conjunction with @option{-fvtable-verify=std} or 
+@option{-fvtable-verify=preinit}, causes debug versions of the 
+runtime functions for the vtable verification feature to be called.  
+This flag also causes the compiler to log information about which 
+vtable pointers it finds for each class.
+This information is written to a file named @file{vtv_set_ptr_data.log} 
+in the directory named by the environment variable @env{VTV_LOGS_DIR} 
+if that is defined or the current working directory otherwise.
 
-Note:  This feature APPENDS data to the log file. If you want a fresh log
+Note:  This feature @emph{appends} data to the log file. If you want a fresh log
 file, be sure to delete any existing one.
 
 @item -fvtv-counts
@@ -2476,15 +2479,17 @@ file, be sure to delete any existing one.
 This is a debugging flag.  When used in conjunction with
 @option{-fvtable-verify=std} or @option{-fvtable-verify=preinit}, this
 causes the compiler to keep track of the total number of virtual calls
-it encountered and the number of verifications it inserted.  It also
-counts the number of calls to certain runtime library functions
-that it inserts.  This information, for each compilation unit, is written
-to a file named ``vtv_count_data.log'', in the dump_file directory on
-the user's machine.   It also counts the size of the vtable pointer sets
-for each class, and writes this information to ``vtv_class_set_sizes.log''
+it encounters and the number of verifications it inserts.  It also
+counts the number of calls to certain run-time library functions
+that it inserts and logs this information for each compilation unit.
+The compiler writes this information to a file named
+@file{vtv_count_data.log} in the directory named by the environment
+variable @env{VTV_LOGS_DIR} if that is defined or the current working
+directory otherwise.  It also counts the size of the vtable pointer sets
+for each class, and writes this information to @file{vtv_class_set_sizes.log}
 in the same directory.
 
-Note:  This feature APPENDS data to the log files.  To get a fresh log
+Note:  This feature @emph{appends} data to the log files.  To get fresh log
 files, be sure to delete any existing ones.
 
 @item -fno-weak
