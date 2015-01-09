@@ -427,6 +427,49 @@ sem_function::equals_private (sem_item *item,
   if (!equals_wpa (item, ignored_nodes))
     return false;
 
+  /* Checking function TARGET and OPTIMIZATION flags.  */
+  cl_target_option *tar1 = target_opts_for_fn (decl);
+  cl_target_option *tar2 = target_opts_for_fn (m_compared_func->decl);
+
+  if (tar1 != NULL || tar2 != NULL)
+    {
+      if (!cl_target_option_eq (tar1, tar2))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Source target flags\n");
+	      cl_target_option_print (dump_file, 2, tar1);
+	      fprintf (dump_file, "Target target flags\n");
+	      cl_target_option_print (dump_file, 2, tar2);
+	    }
+
+	  return return_false_with_msg ("Target flags are different");
+	}
+    }
+  else if (tar1 != NULL || tar2 != NULL)
+    return return_false_with_msg ("Target flags are different");
+
+  cl_optimization *opt1 = opts_for_fn (decl);
+  cl_optimization *opt2 = opts_for_fn (m_compared_func->decl);
+
+  if (opt1 != NULL && opt2 != NULL)
+    {
+      if (memcmp (opt1, opt2, sizeof(cl_optimization)))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Source optimization flags\n");
+	      cl_optimization_print (dump_file, 2, opt1);
+	      fprintf (dump_file, "Target optimization flags\n");
+	      cl_optimization_print (dump_file, 2, opt2);
+	    }
+
+	  return return_false_with_msg ("optimization flags are different");
+	}
+    }
+  else if (opt1 != NULL || opt2 != NULL)
+    return return_false_with_msg ("optimization flags are different");
+
   /* Checking function arguments.  */
   tree decl1 = DECL_ATTRIBUTES (decl);
   tree decl2 = DECL_ATTRIBUTES (m_compared_func->decl);
@@ -2302,7 +2345,6 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 	for (unsigned int j = 1; j < c->members.length (); j++)
 	  {
 	    sem_item *alias = c->members[j];
-	    source->equals (alias, m_symtab_node_map);
 
 	    if (dump_file)
 	      {

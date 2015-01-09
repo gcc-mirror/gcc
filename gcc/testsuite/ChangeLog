@@ -1,3 +1,7 @@
+2015-01-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/ipa-icf-32.c: New test.
+
 2015-01-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-c++-common/tsan/tsan_barrier.h: New.
