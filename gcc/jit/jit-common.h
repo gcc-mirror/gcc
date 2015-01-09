@@ -23,6 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "libgccjit.h"
 
+#include "hash-set.h"
+#include "input.h"
+#include "vec.h"
+#include "double-int.h"
+#include "alias.h"
+#include "flags.h"
+#include "symtab.h"
+#include "inchash.h"
 #include "tree.h"
 #include "tree-iterator.h"
 
