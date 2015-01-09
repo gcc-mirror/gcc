@@ -1,5 +1,22 @@
 2015-01-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* dummy-frontend.c: Include "fixed-value.h", "alias.h", "flags.h",
+	"symtab.h", "inchash.h".  Move include of "hash-set.h" much
+	earlier.
+	* jit-builtins.c: Remove redundant includes of "opts.h" and
+	"tree.h".
+	* jit-common.h: Include "hash-set.h", "input.h", "vec.h",
+	"double-int.h", "alias.h", "flags.h", "symtab.h", "inchash.h".
+	* jit-playback.c: Include "hashtab.h", "machmode.h", "input.h",
+	"statistics.h", "vec.h", "double-int.h", "real.h",
+	"fixed-value.h", "alias.h", "flags.h", "symtab.h", "tree-core.h",
+	"inchash.h", "fold-const.h".  Move include of "hash-set.h" to
+	earlier.
+	* jit-recording.c: Remove redundant includes of "opts.h" and
+	"tree.h".
+
+2015-01-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* docs/cp/topics/expressions.rst (Simple expressions): Use
 	":c:type:" for C types.  Document new overload of
 	gcc::jit::context::new_rvalue.
