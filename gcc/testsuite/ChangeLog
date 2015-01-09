@@ -1,3 +1,7 @@
+2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc.dg/typeof-2.c: Add checks for non-atomic types.
+
 2015-01-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64410
