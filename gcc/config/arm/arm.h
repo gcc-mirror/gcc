@@ -768,7 +768,7 @@ extern int arm_arch_crc;
 
 /* The maximum size of the sync library functions supported.  */
 #ifndef MAX_SYNC_LIBFUNC_SIZE
-#define MAX_SYNC_LIBFUNC_SIZE (2 * UNITS_PER_WORD);
+#define MAX_SYNC_LIBFUNC_SIZE (2 * UNITS_PER_WORD)
 #endif
 
 
