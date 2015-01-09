@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "insn-config.h"
 #include "recog.h"
+#include "symtab.h"
 #include "expr.h"
 #include "diagnostic-core.h"
 #include "toplev.h"

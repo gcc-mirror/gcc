@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "df.h"
 #include "reload.h"
+#include "symtab.h"
 #include "expr.h"
 #include "diagnostic-core.h"
 #include "tm_p.h"

@@ -20,19 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_CORE_H
 #define GCC_TREE_CORE_H
 
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "input.h"
-#include "statistics.h"
-#include "vec.h"
-#include "double-int.h"
-#include "real.h"
-#include "fixed-value.h"
-#include "alias.h"
-#include "flags.h"
-#include "symtab.h"
-
 /* This file contains all the data structures that define the 'tree' type.
    There are no accessor macros nor functions in this file. Only the
    basic data structures, extern declarations and type definitions.  */

@@ -21,6 +21,16 @@
 #include "coretypes.h"
 #include "cpplib.h"
 #include "../libcpp/internal.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "c-common.h"		/* For flags.  */
 #include "c-pragma.h"		/* For parse_in.  */

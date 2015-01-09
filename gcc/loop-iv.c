@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfg.h"
 #include "basic-block.h"
 #include "cfgloop.h"
+#include "symtab.h"
 #include "expr.h"
 #include "intl.h"
 #include "diagnostic-core.h"

@@ -15,6 +15,16 @@ details.  */
 #include "system.h"
 #include "coretypes.h"
 
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "verify.h"
 
 /* Hack to work around namespace pollution from java-tree.h.  */

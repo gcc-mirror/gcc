@@ -42,6 +42,7 @@
 #include "cfganal.h"
 #include "cfgcleanup.h"
 #include "basic-block.h"
+#include "symtab.h"
 #include "expr.h"
 #include "output.h"
 #include "insn-codes.h"

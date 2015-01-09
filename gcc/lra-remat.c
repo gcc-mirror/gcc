@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "machmode.h"
 #include "input.h"
 #include "function.h"
+#include "symtab.h"
 #include "expr.h"
 #include "predict.h"
 #include "dominance.h"

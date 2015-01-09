@@ -1255,6 +1255,7 @@ main ()
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
   printf ("#include \"coretypes.h\"\n");
+  printf ("#include \"symtab.h\"\n");
   printf ("#include \"expr.h\"\n");
   printf ("#include \"insn-codes.h\"\n");
   printf ("#include \"optabs.h\"\n");

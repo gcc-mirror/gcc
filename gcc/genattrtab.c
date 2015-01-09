@@ -5108,6 +5108,16 @@ write_header (FILE *outf)
   fprintf (outf, "#include \"system.h\"\n");
   fprintf (outf, "#include \"coretypes.h\"\n");
   fprintf (outf, "#include \"tm.h\"\n");
+  fprintf (outf, "#include \"hash-set.h\"\n");
+  fprintf (outf, "#include \"machmode.h\"\n");
+  fprintf (outf, "#include \"vec.h\"\n");
+  fprintf (outf, "#include \"double-int.h\"\n");
+  fprintf (outf, "#include \"input.h\"\n");
+  fprintf (outf, "#include \"alias.h\"\n");
+  fprintf (outf, "#include \"symtab.h\"\n");
+  fprintf (outf, "#include \"options.h\"\n");
+  fprintf (outf, "#include \"wide-int.h\"\n");
+  fprintf (outf, "#include \"inchash.h\"\n");
   fprintf (outf, "#include \"tree.h\"\n");
   fprintf (outf, "#include \"varasm.h\"\n");
   fprintf (outf, "#include \"stor-layout.h\"\n");

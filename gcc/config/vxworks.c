@@ -25,7 +25,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "output.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stringpool.h"
 
 /* Like default_named_section_asm_out_constructor, except that even
