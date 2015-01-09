@@ -1,3 +1,12 @@
+2015-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64410
+	* tree-ssa.c (non_rewritable_lvalue_p): Allow REALPART/IMAGPART_EXPR
+	on the LHS.
+	(execute_update_addresses_taken): Deal with that.
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Use component-wise
+	loads/stores for complex variables.
+
 2015-01-09  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf-gimple.c (func_checker::compare_ssa_name): Enhance SSA

@@ -1330,6 +1330,13 @@ non_rewritable_lvalue_p (tree lhs)
   if (DECL_P (lhs))
     return false;
 
+  /* We can re-write REALPART_EXPR and IMAGPART_EXPR sets in
+     a reasonably efficient manner... */
+  if ((TREE_CODE (lhs) == REALPART_EXPR
+       || TREE_CODE (lhs) == IMAGPART_EXPR)
+      && DECL_P (TREE_OPERAND (lhs, 0)))
+    return false;
+
   /* A decl that is wrapped inside a MEM-REF that covers
      it full is also rewritable.
      ???  The following could be relaxed allowing component
@@ -1533,6 +1540,35 @@ execute_update_addresses_taken (void)
 		tree lhs = gimple_assign_lhs (stmt);
 		tree rhs, *rhsp = gimple_assign_rhs1_ptr (stmt);
 		tree sym;
+
+		/* Rewrite LHS IMAG/REALPART_EXPR similar to
+		   gimplify_modify_expr_complex_part.  */
+		if ((TREE_CODE (lhs) == IMAGPART_EXPR
+		     || TREE_CODE (lhs) == REALPART_EXPR)
+		    && DECL_P (TREE_OPERAND (lhs, 0))
+		    && bitmap_bit_p (suitable_for_renaming,
+				     DECL_UID (TREE_OPERAND (lhs, 0))))
+		  {
+		    tree other = make_ssa_name (TREE_TYPE (lhs));
+		    tree lrhs = build1 (TREE_CODE (lhs) == IMAGPART_EXPR
+					? REALPART_EXPR : IMAGPART_EXPR,
+					TREE_TYPE (other),
+					TREE_OPERAND (lhs, 0));
+		    gimple load = gimple_build_assign (other, lrhs);
+		    gimple_set_vuse (load, gimple_vuse (stmt));
+		    gsi_insert_before (&gsi, load, GSI_SAME_STMT);
+		    gimple_assign_set_lhs (stmt, TREE_OPERAND (lhs, 0));
+		    gimple_assign_set_rhs_with_ops
+		      (&gsi, COMPLEX_EXPR,
+		       TREE_CODE (lhs) == IMAGPART_EXPR
+		       ? other : gimple_assign_rhs1 (stmt),
+		       TREE_CODE (lhs) == IMAGPART_EXPR
+		       ? gimple_assign_rhs1 (stmt) : other, NULL_TREE);
+		    stmt = gsi_stmt (gsi);
+		    unlink_stmt_vdef (stmt);
+		    update_stmt (stmt);
+		    continue;
+		  }
 
 		/* We shouldn't have any fancy wrapping of
 		   component-refs on the LHS, but look through
