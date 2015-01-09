@@ -3,6 +3,14 @@
 	Backport from mainline:
 	2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
+	* config/rs6000/t-rtems: Add -mno-spe to soft-float multilib for
+	MPC8540.
+
+2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backport from mainline:
+	2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
 	* config/rs6000/t-rtems: Use MULTILIB_REQUIRED instead of
 	MULTILIB_EXCEPTIONS.
 
