@@ -1,3 +1,11 @@
+2015-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64476
+	* include/bits/stl_uninitialized.h (uninitialized_copy): Fix
+	is_assignable arguments.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/64476.cc:
+	New.
+
 2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* libsupc++/unwind-cxx.h: Revert previous commit.
