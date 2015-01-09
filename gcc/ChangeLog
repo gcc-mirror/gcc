@@ -1,3 +1,10 @@
+2015-01-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR gcov-profile/61790
+	* gcov-tool.c (do_rewrite): Use strtoll instead of atoll if host has
+	long long.  Fallback to int64_t if host doesn't have long long and
+	use strtol if int64_t is long.  Otherwise, use sscanf for conversion.
+
 2015-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/63989
