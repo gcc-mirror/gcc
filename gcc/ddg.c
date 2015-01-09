@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cfgloop.h"
 #include "sbitmap.h"
+#include "symtab.h"
 #include "expr.h"
 #include "bitmap.h"
 #include "df.h"

@@ -172,4 +172,21 @@ extern tree exact_inverse (tree, tree);
 extern tree const_unop (enum tree_code, tree, tree);
 extern tree const_binop (enum tree_code, tree, tree, tree);
 
+/* Return OFF converted to a pointer offset type suitable as offset for
+   POINTER_PLUS_EXPR.  Use location LOC for this conversion.  */
+extern tree convert_to_ptrofftype_loc (location_t loc, tree off);
+
+#define convert_to_ptrofftype(t) convert_to_ptrofftype_loc (UNKNOWN_LOCATION, t)
+
+/* Build and fold a POINTER_PLUS_EXPR at LOC offsetting PTR by OFF.  */
+extern tree fold_build_pointer_plus_loc (location_t loc, tree ptr, tree off);
+
+#define fold_build_pointer_plus(p,o) \
+	fold_build_pointer_plus_loc (UNKNOWN_LOCATION, p, o)
+
+/* Build and fold a POINTER_PLUS_EXPR at LOC offsetting PTR by OFF.  */
+extern tree fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE_INT off);
+
+#define fold_build_pointer_plus_hwi(p,o) \
+	fold_build_pointer_plus_hwi_loc (UNKNOWN_LOCATION, p, o)
 #endif // GCC_FOLD_CONST_H

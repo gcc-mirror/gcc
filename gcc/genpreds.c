@@ -1417,6 +1417,15 @@ write_insn_preds_c (void)
 #include \"coretypes.h\"\n\
 #include \"tm.h\"\n\
 #include \"rtl.h\"\n\
+#include \"hash-set.h\"\n\
+#include \"machmode.h\"\n\
+#include \"vec.h\"\n\
+#include \"double-int.h\"\n\
+#include \"input.h\"\n\
+#include \"alias.h\"\n\
+#include \"symtab.h\"\n\
+#include \"wide-int.h\"\n\
+#include \"inchash.h\"\n\
 #include \"tree.h\"\n\
 #include \"varasm.h\"\n\
 #include \"stor-layout.h\"\n\

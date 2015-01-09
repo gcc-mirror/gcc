@@ -24,7 +24,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "gfortran.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "real.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "realmpfr.h"
 #include "diagnostic-core.h"	/* For fatal_error.  */
@@ -33,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-const.h"
 #include "trans-types.h"
 #include "target-memory.h"
-#include "wide-int.h"
 
 tree gfc_rank_cst[GFC_MAX_DIMENSIONS + 1];
 

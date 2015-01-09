@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgrtl.h"
 #include "basic-block.h"
 #include "cfgloop.h"
+#include "symtab.h"
 #include "expr.h"
 #include "recog.h"
 #include "target.h"

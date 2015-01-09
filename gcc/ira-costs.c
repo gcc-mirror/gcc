@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "hard-reg-set.h"
 #include "rtl.h"
+#include "symtab.h"
 #include "expr.h"
 #include "tm_p.h"
 #include "flags.h"

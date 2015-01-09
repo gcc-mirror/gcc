@@ -95,6 +95,7 @@ a register with any other reload.  */
 #include "rtl-error.h"
 #include "tm_p.h"
 #include "insn-config.h"
+#include "symtab.h"
 #include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"

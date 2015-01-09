@@ -21,6 +21,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"			/* For BITS_PER_UNIT and *_BIG_ENDIAN.  */
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "real.h"
 #include "tree.h"
 
 static int add_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,

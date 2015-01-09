@@ -21,6 +21,16 @@
 #include "system.h"
 #include "coretypes.h"
 #include "realmpfr.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"	/* For TYPE_MODE in real_from_mpfr.  */
 #include "stor-layout.h"
 

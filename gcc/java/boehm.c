@@ -28,11 +28,19 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "coretypes.h"
 #include "double-int.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "java-tree.h"
 #include "parse.h"
 #include "diagnostic-core.h"
-#include "wide-int.h"
 
 static void mark_reference_fields (tree, wide_int *, unsigned int,
 				   int *, int *, int *, HOST_WIDE_INT *);

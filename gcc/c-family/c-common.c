@@ -17,9 +17,12 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define GCC_C_COMMON_C
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "input.h"
 #include "c-common.h"
 #include "tm.h"
 #include "intl.h"

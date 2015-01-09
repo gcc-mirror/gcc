@@ -21,6 +21,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "c-family/c-target.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "options.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "c-family/c-target-def.h"
 
 static bool

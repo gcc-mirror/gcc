@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dominance.h"
 #include "cfg.h"
 #include "basic-block.h"
+#include "symtab.h"
 #include "expr.h"
 #include "diagnostic-core.h"
 #include "reload.h"
