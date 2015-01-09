@@ -1,3 +1,11 @@
+2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/t-rtems-eabi: Rename to...
+	* config/arm/t-rtems: ...this.
+	* config/arm/rtems-eabi.h: Rename to...
+	* config/arm/rtems.h: ...this.
+	* config.gcc (arm*-*-rtems*): Reflect changes above.
+
 2015-01-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64410
