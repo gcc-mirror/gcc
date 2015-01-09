@@ -271,7 +271,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		{
 		  auto& __tmp = _M_nfa[__stack.top()];
 		  __stack.pop();
-		  swap(__tmp._M_next, __tmp._M_alt);
+		  std::swap(__tmp._M_next, __tmp._M_alt);
 		}
 	    }
 	  _M_stack.push(__e);

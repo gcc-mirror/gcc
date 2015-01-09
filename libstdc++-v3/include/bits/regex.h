@@ -1865,6 +1865,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       swap(match_results& __that)
       {
+	using std::swap;
 	_Base_type::swap(__that);
 	swap(_M_begin, __that._M_begin);
       }
