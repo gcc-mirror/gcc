@@ -1,5 +1,13 @@
 2015-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/64476
+	* include/bits/stl_uninitialized.h (uninitialized_copy): Fix
+	is_assignable arguments.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/64476.cc:
+	New.
+
+2015-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/60966
 	* include/std/future (packaged_task::operator()): Increment the
 	reference count on the shared state until the function returns.
