@@ -1,3 +1,9 @@
+2015-01-09  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac (host_tools): Add gotools.
+	* Makefile.def (host_modules): Add gotools.
+	(dependencies): Add dependency of all-gotools on all-target-libgo.
+
 2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* configure.ac: Don't add ${libgcj} for arm*-*-freebsd*.
