@@ -1,5 +1,18 @@
 2015-01-09  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf-gimple.c (func_checker::compare_ssa_name): Enhance SSA
+	name comparison.
+	(func_checker::compare_memory_operand): New function.
+	(func_checker::compare_operand): Split case to newly
+	added functions.
+	(func_checker::compare_cst_or_decl): New function.
+	(func_checker::compare_gimple_call): Identify
+	memory operands.
+	(func_checker::compare_gimple_assign): Likewise.
+	* ipa-icf-gimple.h: New function.
+
+2015-01-09  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/64503
 	* sreal.c (sreal::dump): Change unsigned format to signed for
 	m_exp value.
