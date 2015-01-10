@@ -1,3 +1,8 @@
+2015-01-10  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.c (moxie_option_override): Fix forcing of
+	mul.x availability for moxiebox configuration.
+
 2015-01-09  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.md: Tabify assembly output.
