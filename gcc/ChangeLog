@@ -1,5 +1,9 @@
 2015-01-09  Anthony Green  <green@moxielogic.com>
 
+	* config/moxie/moxie.md: Tabify assembly output.
+
+2015-01-09  Anthony Green  <green@moxielogic.com>
+
 	* config/moxie/moxie.md (CC_REG): Correct register definition.
 
 2015-01-09  Sandra Loosemore  <sandra@codesourcery.com>
