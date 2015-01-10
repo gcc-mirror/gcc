@@ -790,7 +790,9 @@ Warn when a character assignment will truncate the assigned string.
 @opindex @code{Wline-truncation}
 @cindex warnings, line truncation
 Warn when a source code line will be truncated.  This option is
-implied by @option{-Wall}.
+implied by @option{-Wall}.  For free-form source code, the default is
+@option{-Werror=line-truncation} such that truncations are reported as
+error.
 
 @item -Wconversion
 @opindex @code{Wconversion}

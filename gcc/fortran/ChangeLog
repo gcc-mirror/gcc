@@ -1,3 +1,12 @@
+2015-01-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/64522
+	* invoke.texi (Wline-truncation): Document new behaviour.
+	* lang.opt (Wline-truncation): Add Init(-1).
+	* options.c (gfc_post_options): If -Wline-truncation is unset,
+	enable it for free-form source files; for the latter, also use
+	-Werror=line-truncation, unless -Wno-error has been specified.
+
 2015-01-09  Michael Collison  <michael.collison@linaro.org>
 
 	* convert.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
