@@ -53,9 +53,10 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 subdir = .
-DIST_COMMON = README $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/../mkinstalldirs $(srcdir)/../depcomp
+DIST_COMMON = README ChangeLog $(srcdir)/Makefile.in \
+	$(srcdir)/Makefile.am $(top_srcdir)/configure \
+	$(am__configure_deps) $(srcdir)/../mkinstalldirs \
+	$(srcdir)/../depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
@@ -199,9 +200,13 @@ PWD_COMMAND = $${PWDCMD-pwd}
 STAMP = echo timestamp >
 libgodir = ../$(target_noncanonical)/libgo
 LIBGODEP = $(libgodir)/libgo.la
-GOCOMPILE = $(GOC) $(GOCFLAGS)
+@NATIVE_FALSE@GOCOMPILER = $(GOC)
+
+# Use the compiler we just built.
+@NATIVE_TRUE@GOCOMPILER = $(GOC_FOR_TARGET)
+GOCOMPILE = $(GOCOMPILER) $(GOCFLAGS)
 AM_LDFLAGS = -L $(libgodir) -L $(libgodir)/.libs -static-libgo
-GOLINK = $(GOC) $(AM_GOCFLAGS) $(LDFLAGS) $(AM_LDFLAGS) -o $@
+GOLINK = $(GOCOMPILER) $(AM_GOCFLAGS) $(LDFLAGS) $(AM_LDFLAGS) -o $@
 cmdsrcdir = $(srcdir)/../libgo/go/cmd
 go_cmd_go_files = \
 	$(cmdsrcdir)/go/build.go \
@@ -246,6 +251,7 @@ go_cmd_cgo_files = \
 GCCGO_INSTALL_NAME := $(shell echo gccgo|sed '$(program_transform_name)')
 GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
 GXX_INSTALL_NAME := $(shell echo g++|sed '$(program_transform_name)')
+MOSTLYCLEANFILES = zdefaultcc.go s-zdefaultcc
 
 # For a native build we build the programs using the newly built libgo
 # and install them as regular programs.
@@ -470,6 +476,7 @@ install-strip:
 	  `test -z '$(STRIP)' || \
 	    echo "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'"` install
 mostlyclean-generic:
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
 

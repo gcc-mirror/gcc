@@ -28,11 +28,18 @@ STAMP = echo timestamp >
 libgodir = ../$(target_noncanonical)/libgo
 LIBGODEP = $(libgodir)/libgo.la
 
+if NATIVE
+# Use the compiler we just built.
+GOCOMPILER = $(GOC_FOR_TARGET)
+else
+GOCOMPILER = $(GOC)
+endif
+
 GOCFLAGS = $(CFLAGS_FOR_TARGET)
-GOCOMPILE = $(GOC) $(GOCFLAGS)
+GOCOMPILE = $(GOCOMPILER) $(GOCFLAGS)
 
 AM_LDFLAGS = -L $(libgodir) -L $(libgodir)/.libs -static-libgo
-GOLINK = $(GOC) $(AM_GOCFLAGS) $(LDFLAGS) $(AM_LDFLAGS) -o $@
+GOLINK = $(GOCOMPILER) $(AM_GOCFLAGS) $(LDFLAGS) $(AM_LDFLAGS) -o $@
 
 cmdsrcdir = $(srcdir)/../libgo/go/cmd
 
@@ -88,6 +95,8 @@ s-zdefaultcc: Makefile
 	echo 'const defaultCXX = "$(bindir)/$(GXX_INSTALL_NAME)"' >> zdefaultcc.go.tmp
 	$(SHELL) $(srcdir)/../move-if-change zdefaultcc.go.tmp zdefaultcc.go
 	$(STAMP) $@ 
+
+MOSTLYCLEANFILES = zdefaultcc.go s-zdefaultcc
 
 if NATIVE
 
