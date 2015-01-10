@@ -314,7 +314,20 @@ gfc_post_options (const char **pfilename)
 			   "in free form");
       else if (gfc_option.flag_d_lines == 1)
 	gfc_warning_now ("%<-fd-lines-as-code%> has no effect in free form");
+
+      if (warn_line_truncation == -1)
+	  warn_line_truncation = 1;
+
+      /* Enable -Werror=line-truncation when -Werror and -Wno-error have
+	 not been set.  */
+      if (warn_line_truncation && !global_options_set.x_warnings_are_errors
+	  && (global_dc->classify_diagnostic[OPT_Wline_truncation] ==
+	      DK_UNSPECIFIED))
+	diagnostic_classify_diagnostic (global_dc, OPT_Wline_truncation,
+					DK_ERROR, UNKNOWN_LOCATION);
     }
+  else if (warn_line_truncation == -1)
+    warn_line_truncation = 0;
 
   /* If -pedantic, warn about the use of GNU extensions.  */
   if (pedantic && (gfc_option.allow_std & GFC_STD_GNU) != 0)

@@ -1,3 +1,15 @@
+2015-01-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/64522
+	* gfortran.dg/line_length_5.f90: Change dg-warning to dg-error
+	and add dg-excess-errors.
+	* gfortran.dg/line_length_6.f90: New.
+	* gfortran.dg/line_length_7.f90: New.
+	* gfortran.dg/line_length_8.f90: New.
+	* gfortran.dg/line_length_9.f90: New.
+	* gfortran.dg/line_length_10.f90: New.
+	* gfortran.dg/line_length_11.f90: New.
+
 2015-01-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/test-threads.c (struct testcase): Move declaration
