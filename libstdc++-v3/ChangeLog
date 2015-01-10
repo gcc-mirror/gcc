@@ -1,3 +1,9 @@
+2015-01-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/xml/manual/parallel_mode.xml: Update for libgomp being
+	renamed from "GNU OpenMP Runtime Library" to "GNU Offloading and
+	Multi Processing Runtime Library".
+
 2015-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64476

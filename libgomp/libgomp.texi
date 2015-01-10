@@ -31,10 +31,11 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 @ifinfo
 @dircategory GNU Libraries
 @direntry
-* libgomp: (libgomp).                    GNU OpenMP runtime library
+* libgomp: (libgomp).          GNU Offloading and Multi Processing Runtime Library.
 @end direntry
 
-This manual documents the GNU implementation of the OpenMP API for 
+This manual documents libgomp, the GNU Offloading and Multi Processing
+Runtime library.  This is the GNU implementation of the OpenMP API for
 multi-platform shared-memory parallel programming in C/C++ and Fortran.
 
 Published by the Free Software Foundation
@@ -48,7 +49,8 @@ Boston, MA 02110-1301 USA
 @setchapternewpage odd
 
 @titlepage
-@title The GNU OpenMP Implementation
+@title GNU Offloading and Multi Processing Runtime Library
+@subtitle The GNU OpenMP Implementation
 @page
 @vskip 0pt plus 1filll
 @comment For the @value{version-GCC} Version*
@@ -69,9 +71,12 @@ Boston, MA 02110-1301, USA@*
 @top Introduction
 @cindex Introduction
 
-This manual documents the usage of libgomp, the GNU implementation of the 
+This manual documents the usage of libgomp, the GNU Offloading and
+Multi Processing Runtime Library.  This is the GNU implementation of the
 @uref{http://www.openmp.org, OpenMP} Application Programming Interface (API)
 for multi-platform shared-memory parallel programming in C/C++ and Fortran.
+
+Originally, libgomp was known as the GNU OpenMP Runtime Library.
 
 
 
@@ -87,7 +92,8 @@ for multi-platform shared-memory parallel programming in C/C++ and Fortran.
 * Environment Variables::      Influencing runtime behavior with environment 
                                variables.
 * The libgomp ABI::            Notes on the external ABI presented by libgomp.
-* Reporting Bugs::             How to report bugs in GNU OpenMP.
+* Reporting Bugs::             How to report bugs in the GNU Offloading and
+                               Multi Processing Runtime Library.
 * Copying::                    GNU general public license says
                                how you can copy and share libgomp.
 * GNU Free Documentation License::
@@ -1607,7 +1613,7 @@ CPU 2, the fifth to CPU 4, the sixth through tenth to CPUs 6, 8, 10, 12,
 and 14 respectively and then start assigning back from the beginning of
 the list.  @code{GOMP_CPU_AFFINITY=0} binds all threads to CPU 0.
 
-There is no GNU OpenMP library routine to determine whether a CPU affinity 
+There is no libgomp library routine to determine whether a CPU affinity
 specification is in effect.  As a workaround, language-specific library 
 functions, e.g., @code{getenv} in C or @code{GET_ENVIRONMENT_VARIABLE} in 
 Fortran, may be used to query the setting of the @code{GOMP_CPU_AFFINITY} 
@@ -2066,14 +2072,14 @@ becomes
 
 
 @c ---------------------------------------------------------------------
-@c 
+@c Reporting Bugs
 @c ---------------------------------------------------------------------
 
 @node Reporting Bugs
 @chapter Reporting Bugs
 
-Bugs in the GNU OpenMP implementation should be reported via 
-@uref{http://gcc.gnu.org/bugzilla/, Bugzilla}.  For all cases, please add 
+Bugs in the GNU Offloading and Multi Processing Runtime Library should
+be reported via @uref{http://gcc.gnu.org/bugzilla/, Bugzilla}.  Please add
 "openmp" to the keywords field in the bug report.
 
 

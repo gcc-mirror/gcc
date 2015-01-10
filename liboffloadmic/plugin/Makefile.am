@@ -5,7 +5,8 @@
 # Contributed by Ilya Verbin <ilya.verbin@intel.com> and
 # Andrey Turetskiy <andrey.turetskiy@intel.com>.
 #
-# This file is part of the GNU OpenMP Library (libgomp).
+# This file is part of the GNU Offloading and Multi Processing Library
+# (libgomp).
 #
 # Libgomp is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by

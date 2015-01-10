@@ -14030,7 +14030,8 @@ The OpenMP Fortran runtime library routines are provided both in
 a form of two Fortran 90 modules, named @code{OMP_LIB} and 
 @code{OMP_LIB_KINDS}, and in a form of a Fortran @code{include} file named
 @file{omp_lib.h}. The procedures provided by @code{OMP_LIB} can be found
-in the @ref{Top,,Introduction,libgomp,GNU OpenMP runtime library} manual,
+in the @ref{Top,,Introduction,libgomp,GNU Offloading and Multi
+Processing Runtime Library} manual,
 the named constants defined in the modules are listed
 below.
 
