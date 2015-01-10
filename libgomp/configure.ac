@@ -2,7 +2,7 @@
 # aclocal -I ../config && autoconf && autoheader && automake
 
 AC_PREREQ(2.64)
-AC_INIT([GNU OpenMP Runtime Library], 1.0,,[libgomp])
+AC_INIT([GNU Offloading and Multi Processing Runtime Library], 1.0,,[libgomp])
 AC_CONFIG_HEADER(config.h)
 
 # -------

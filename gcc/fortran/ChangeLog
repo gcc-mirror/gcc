@@ -1,3 +1,10 @@
+2015-01-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.texi: Update for libgomp being renamed from "GNU OpenMP
+	Runtime Library" to "GNU Offloading and Multi Processing Runtime
+	Library".
+	* intrinsic.texi: Likewise.
+
 2015-01-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/64522

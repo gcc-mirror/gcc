@@ -1,3 +1,13 @@
+2015-01-10  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	* configure.ac: Rename libgomp from "GNU OpenMP Runtime Library"
+	to "GNU Offloading and Multi Processing Runtime Library".  Change
+	all users.
+	* configure: Regenerate.
+	* libgomp.texi: Update.
+
 2015-01-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure.ac [tgt_dir] (offload_additional_lib_paths): Also add

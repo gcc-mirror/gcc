@@ -1594,7 +1594,8 @@ Specify that the Fortran front end and @code{libgfortran} do not add
 support for @code{libquadmath} on systems supporting it.
 
 @item --disable-libgomp
-Specify that the run-time libraries used by GOMP should not be built.
+Specify that the GNU Offloading and Multi Processing Runtime Library
+should not be built.
 
 @item --disable-libvtv
 Specify that the run-time libraries used by vtable verification

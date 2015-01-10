@@ -1910,8 +1910,9 @@ directives in fixed form; the @code{!$} conditional compilation sentinels
 in free form; and the @code{c$}, @code{*$} and @code{!$} sentinels
 in fixed form, @command{gfortran} needs to be invoked with the
 @option{-fopenmp}.  This also arranges for automatic linking of the
-GNU OpenMP runtime library @ref{Top,,libgomp,libgomp,GNU OpenMP
-runtime library}.
+GNU Offloading and Multi Processing Runtime Library
+@ref{Top,,libgomp,libgomp,GNU Offloading and Multi Processing Runtime
+Library}.
 
 The OpenMP Fortran runtime library routines are provided both in a
 form of a Fortran 90 module named @code{omp_lib} and in a form of
