@@ -1,3 +1,9 @@
 2015-01-09  Ian Lance Taylor  <iant@google.com>
 
+	* Makefile.am (GOCOMPILER): Set to GOC or GOC_FOR_TARGET depending
+	on whether this is a native build or not.
+	(GOCOMPILE, GOLINK): Use $(GOCOMPILER) instead of $(GOC).
+	(MOSTLYCLEANFILES): Define.
+	* Makefile.in: Rebuild.
+
 	* Initial implementation.
