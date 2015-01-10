@@ -1895,6 +1895,7 @@ func (tools gccgoToolchain) ld(b *builder, p *Package, out string, allactions []
 	}
 	ldflags = append(ldflags, afiles...)
 	ldflags = append(ldflags, cgoldflags...)
+	ldflags = append(ldflags, envList("CGO_LDFLAGS", "")...)
 	ldflags = append(ldflags, p.CgoLDFLAGS...)
 	if usesCgo && goos == "linux" {
 		ldflags = append(ldflags, "-Wl,-E")
