@@ -48,9 +48,9 @@
 	   (match_operand:SI 2 "moxie_add_operand" "I,N,r")))]
   ""
   "@
-  inc    %0, %2
-  dec	 %0, -%2
-  add    %0, %2")
+  inc\\t%0, %2
+  dec\\t%0, -%2
+  add\\t%0, %2")
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -59,8 +59,8 @@
 	   (match_operand:SI 2 "moxie_sub_operand" "I,r")))]
   ""
   "@
-  dec    %0, %2
-  sub    %0, %2")
+  dec\\t%0, %2
+  sub\\t%0, %2")
 
 (define_insn "mulsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -68,7 +68,7 @@
 	   (match_operand:SI 1 "register_operand" "0")
 	   (match_operand:SI 2 "register_operand" "r")))]
   ""
-  "mul    %0, %2")
+  "mul\\t%0, %2")
 
 (define_code_iterator EXTEND [sign_extend zero_extend])
 (define_code_attr mul [(sign_extend "mul") (zero_extend "umul")])
@@ -105,7 +105,7 @@
 	   (match_operand:SI 1 "register_operand" "0")
 	   (match_operand:SI 2 "register_operand" "r")))]
   ""
-  "div    %0, %2")
+  "div\\t%0, %2")
 
 (define_insn "udivsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -113,7 +113,7 @@
 	   (match_operand:SI 1 "register_operand" "0")
 	   (match_operand:SI 2 "register_operand" "r")))]
   ""
-  "udiv   %0, %2")
+  "udiv\\t%0, %2")
 
 (define_insn "modsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -121,7 +121,7 @@
 	   (match_operand:SI 1 "register_operand" "0")
 	   (match_operand:SI 2 "register_operand" "r")))]
   ""
-  "mod    %0, %2")
+  "mod\\t%0, %2")
 
 (define_insn "umodsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -129,7 +129,7 @@
 	   (match_operand:SI 1 "register_operand" "0")
 	   (match_operand:SI 2 "register_operand" "r")))]
   ""
-  "umod   %0, %2")
+  "umod\\t%0, %2")
 
 ;; -------------------------------------------------------------------------
 ;; Unary arithmetic instructions
@@ -139,13 +139,13 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	  (neg:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "neg    %0, %1")
+  "neg\\t%0, %1")
 
 (define_insn "one_cmplsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(not:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "not    %0, %1")
+  "not\\t%0, %1")
 
 ;; -------------------------------------------------------------------------
 ;; Logical operators
@@ -157,7 +157,7 @@
 		(match_operand:SI 2 "register_operand" "r")))]
   ""
 {
-  return "and    %0, %2";
+  return "and\\t%0, %2";
 })
 
 (define_insn "xorsi3"
@@ -166,7 +166,7 @@
 		(match_operand:SI 2 "register_operand" "r")))]
   ""
 {
-  return "xor    %0, %2";
+  return "xor\\t%0, %2";
 })
 
 (define_insn "iorsi3"
@@ -175,7 +175,7 @@
 		(match_operand:SI 2 "register_operand" "r")))]
   ""
 {
-  return "or     %0, %2";
+  return "or\\t%0, %2";
 })
 
 ;; -------------------------------------------------------------------------
@@ -188,7 +188,7 @@
 		   (match_operand:SI 2 "register_operand" "r")))]
   ""
 {
-  return "ashl   %0, %2";
+  return "ashl\\t%0, %2";
 })
 
 (define_insn "ashrsi3"
@@ -197,7 +197,7 @@
 		     (match_operand:SI 2 "register_operand" "r")))]
   ""
 {
-  return "ashr   %0, %2";
+  return "ashr\\t%0, %2";
 })
 
 (define_insn "lshrsi3"
@@ -206,7 +206,7 @@
 		     (match_operand:SI 2 "register_operand" "r")))]
   ""
 {
-  return "lshr   %0, %2";
+  return "lshr\\t%0, %2";
 })
 
 ;; -------------------------------------------------------------------------
@@ -220,14 +220,14 @@
   [(set (mem:SI (pre_dec:SI (reg:SI 1)))
   	(match_operand:SI 0 "register_operand" "r"))]
   ""
-  "push   $sp, %0")
+  "push\\t$sp, %0")
 
 ;; Pop a register from the stack
 (define_insn "movsi_pop"
   [(set (match_operand:SI 1 "register_operand" "=r")
   	(mem:SI (post_inc:SI (match_operand:SI 0 "register_operand" "r"))))]
   ""
-  "pop    %0, %1")
+  "pop\\t%0, %1")
 
 (define_expand "movsi"
    [(set (match_operand:SI 0 "general_operand" "")
@@ -257,15 +257,15 @@
   "register_operand (operands[0], SImode)
    || register_operand (operands[1], SImode)"
   "@
-   xor    %0, %0
-   mov    %0, %1
-   ldi.l  %0, %1
-   st.l   %0, %1
-   sta.l  %0, %1
-   ld.l   %0, %1
-   lda.l  %0, %1
-   sto.l  %0, %1
-   ldo.l  %0, %1"
+   xor\\t%0, %0
+   mov\\t%0, %1
+   ldi.l\\t%0, %1
+   st.l\\t%0, %1
+   sta.l\\t%0, %1
+   ld.l\\t%0, %1
+   lda.l\\t%0, %1
+   sto.l\\t%0, %1
+   ldo.l\\t%0, %1"
   [(set_attr "length"	"2,2,6,2,6,2,6,4,4")])
 
 (define_insn "zero_extendqisi2"
@@ -273,10 +273,10 @@
 	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,W,A,B")))]
   ""
   "@
-   zex.b  %0, %1
-   ld.b   %0, %1
-   lda.b  %0, %1
-   ldo.b  %0, %1"
+   zex.b\\t%0, %1
+   ld.b\\t%0, %1
+   lda.b\\t%0, %1
+   ldo.b\\t%0, %1"
   [(set_attr "length" "2,2,6,4")])
 
 (define_insn "zero_extendhisi2"
@@ -284,10 +284,10 @@
 	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,W,A,B")))]
   ""
   "@
-   zex.s  %0, %1
-   ld.s   %0, %1
-   lda.s  %0, %1
-   ldo.s  %0, %1"
+   zex.s\\t%0, %1
+   ld.s\\t%0, %1
+   lda.s\\t%0, %1
+   ldo.s\\t%0, %1"
   [(set_attr "length" "2,2,6,4")])
 
 (define_insn "extendqisi2"
@@ -295,7 +295,7 @@
 	(sign_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r")))]
   ""
   "@
-   sex.b  %0, %1"
+   sex.b\\t%0, %1"
   [(set_attr "length" "2")])
 
 (define_insn "extendhisi2"
@@ -303,7 +303,7 @@
 	(sign_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r")))]
   ""
   "@
-   sex.s  %0, %1"
+   sex.s\\t%0, %1"
   [(set_attr "length" "2")])
 
 (define_expand "movqi"
@@ -323,15 +323,15 @@
   "register_operand (operands[0], QImode)
    || register_operand (operands[1], QImode)"
   "@
-   xor    %0, %0
-   mov    %0, %1
-   ldi.b  %0, %1
-   st.b   %0, %1
-   sta.b  %0, %1
-   ld.b   %0, %1
-   lda.b  %0, %1
-   sto.b  %0, %1
-   ldo.b  %0, %1"
+   xor\\t%0, %0
+   mov\\t%0, %1
+   ldi.b\\t%0, %1
+   st.b\\t%0, %1
+   sta.b\\t%0, %1
+   ld.b\\t%0, %1
+   lda.b\\t%0, %1
+   sto.b\\t%0, %1
+   ldo.b\\t%0, %1"
   [(set_attr "length"	"2,2,6,2,6,2,6,4,4")])
 
 (define_expand "movhi"
@@ -351,15 +351,15 @@
   "(register_operand (operands[0], HImode)
     || register_operand (operands[1], HImode))"
   "@
-   xor    %0, %0
-   mov    %0, %1
-   ldi.s  %0, %1
-   st.s   %0, %1
-   sta.s  %0, %1
-   ld.s   %0, %1
-   lda.s  %0, %1
-   sto.s  %0, %1
-   ldo.s  %0, %1"
+   xor\\t%0, %0
+   mov\\t%0, %1
+   ldi.s\\t%0, %1
+   st.s\\t%0, %1
+   sta.s\\t%0, %1
+   ld.s\\t%0, %1
+   lda.s\\t%0, %1
+   sto.s\\t%0, %1
+   ldo.s\\t%0, %1"
   [(set_attr "length"	"2,2,6,2,6,2,6,4,4")])
 
 ;; -------------------------------------------------------------------------
@@ -394,7 +394,7 @@
 	 (match_operand:SI 0 "register_operand" "r")
 	 (match_operand:SI 1 "register_operand"	"r")))]
   ""
-  "cmp    %0, %1")
+  "cmp\\t%0, %1")
 
 
 ;; -------------------------------------------------------------------------
@@ -418,9 +418,9 @@
   ""
 {
   if (get_attr_length (insn) == 2)
-    return "b<CC>   %l0";
+    return "b<CC>\\t%l0";
   else
-    return "b<rCC>   .+6\n\tjmpa   %l0";
+    return "b<rCC>\\t.+6\n\tjmpa   %l0";
 }
   [(set (attr "length")
         (if_then_else (lt (abs (minus (pc) (match_dup 0))) (const_int 1022))
@@ -444,8 +444,8 @@
 	 (match_operand 1 "" ""))]
   ""
   "@
-   jsra   %0
-   jsr    %0"
+   jsra\\t%0
+   jsr\\t%0"
   [(set_attr "length"	"6,2")])
 
 (define_expand "call_value"
@@ -463,7 +463,7 @@
 		       1 "immediate_operand" "i"))
 	      (match_operand 2 "" "")))]
   ""
-  "jsra   %1"
+  "jsra\\t%1"
   [(set_attr "length"	"6")])
 
 (define_insn "*call_value_indirect"
@@ -472,18 +472,18 @@
 		       1 "register_operand" "r"))
 	      (match_operand 2 "" "")))]
   ""
-  "jsr    %1")
+  "jsr\\t%1")
 
 (define_insn "indirect_jump"
   [(set (pc) (match_operand:SI 0 "nonimmediate_operand" "r"))]
   ""
-  "jmp    %0")
+  "jmp\\t%0")
 
 (define_insn "jump"
   [(set (pc)
 	(label_ref (match_operand 0 "" "")))]
   ""
-  "jmpa   %l0"
+  "jmpa\\t%l0"
   [(set_attr "length"	"6")])
 
 
