@@ -262,7 +262,7 @@ moxie_option_override (void)
   init_machine_status = moxie_init_machine_status;
 
 #ifdef TARGET_MOXIEBOX  
-  target_flags &= ~MASK_HAS_MULX;
+  target_flags |= MASK_HAS_MULX;
 #endif
 }
 
