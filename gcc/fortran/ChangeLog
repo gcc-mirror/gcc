@@ -1,5 +1,11 @@
 2015-01-11  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/58023
+	* resolve.c (resolve_fl_derived0): Set error flag if problems with the
+	interface of a procedure-pointer component were detected.
+
+2015-01-11  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/64508
 	* interface.c (compare_parameter): Interface check for
 	procedure-pointer component as actual argument.
