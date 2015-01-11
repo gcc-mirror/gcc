@@ -1,3 +1,9 @@
+2015-01-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64508
+	* interface.c (compare_parameter): Interface check for
+	procedure-pointer component as actual argument.
+
 2015-01-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gfortran.texi: Update for libgomp being renamed from "GNU OpenMP
