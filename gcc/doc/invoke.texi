@@ -287,7 +287,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-unused-result -Wunused-value @gol -Wunused-variable @gol
 -Wunused-but-set-parameter -Wunused-but-set-variable @gol
 -Wuseless-cast -Wvariadic-macros -Wvector-operation-performance @gol
--Wvla -Wvolatile-register-var  -Wwrite-strings -Wzero-as-null-pointer-constant}
+-Wvla -Wvolatile-register-var  -Wwrite-strings @gol
+-Wzero-as-null-pointer-constant}
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
@@ -393,7 +394,8 @@ Objective-C and Objective-C++ Dialects}.
 -fira-loop-pressure -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute @gol
--fivopts -fkeep-inline-functions -fkeep-static-consts -flive-range-shrinkage @gol
+-fivopts -fkeep-inline-functions -fkeep-static-consts @gol
+-flive-range-shrinkage @gol
 -floop-block -floop-interchange -floop-strip-mine @gol  
 -floop-unroll-and-jam -floop-nest-optimize @gol
 -floop-parallelize-all -flra-remat -flto -flto-compression-level @gol
@@ -409,8 +411,9 @@ Objective-C and Objective-C++ Dialects}.
 -fprefetch-loop-arrays -fprofile-report @gol
 -fprofile-correction -fprofile-dir=@var{path} -fprofile-generate @gol
 -fprofile-generate=@var{path} @gol
--fprofile-use -fprofile-use=@var{path} -fprofile-values -fprofile-reorder-functions @gol
--freciprocal-math -free -frename-registers -fschedule-fusion -freorder-blocks @gol
+-fprofile-use -fprofile-use=@var{path} -fprofile-values @gol
+-fprofile-reorder-functions @gol
+-freciprocal-math -free -frename-registers -freorder-blocks @gol
 -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop -freschedule-modulo-scheduled-loops @gol
 -frounding-math -fsched2-use-superblocks -fsched-pressure @gol
@@ -419,6 +422,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsched-group-heuristic -fsched-critical-path-heuristic @gol
 -fsched-spec-insn-heuristic -fsched-rank-heuristic @gol
 -fsched-last-insn-heuristic -fsched-dep-count-heuristic @gol
+-fschedule-fusion @gol
 -fschedule-insns -fschedule-insns2 -fsection-anchors @gol
 -fselective-scheduling -fselective-scheduling2 @gol
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
@@ -691,7 +695,7 @@ Objective-C and Objective-C++ Dialects}.
 -mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mmpx -mthreads @gol
 -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
--mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy}
+-mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy} @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double -mlong-double-64 -mlong-double-80 -mlong-double-128 @gol
 -mregparm=@var{num}  -msseregparm @gol
@@ -752,7 +756,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mcpu=@var{cpu} -msim -memregs=@var{number}}
 
 @emph{M680x0 Options}
-@gccoptlist{-march=@var{arch}  -mcpu=@var{cpu}  -mtune=@var{tune}
+@gccoptlist{-march=@var{arch}  -mcpu=@var{cpu}  -mtune=@var{tune} @gol
 -m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040 @gol
 -m68060  -mcpu32  -m5200  -m5206e  -m528x  -m5307  -m5407 @gol
 -mcfv4e  -mbitfield  -mno-bitfield  -mc68000  -mc68020 @gol
@@ -3168,7 +3172,10 @@ and @samp{48;5;0} to @samp{48;5;255}
 for 88-color and 256-color modes background colors.
 
 The default @env{GCC_COLORS} is
-@samp{error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01}
+@smallexample
+error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01
+@end smallexample
+@noindent
 where @samp{01;31} is bold red, @samp{01;35} is bold magenta,
 @samp{01;36} is bold cyan, @samp{01;32} is bold green and
 @samp{01} is bold. Setting @env{GCC_COLORS} to the empty
@@ -5765,9 +5772,14 @@ accepted, the former enables recovery for all sanitizers that support it,
 the latter disables recovery for all sanitizers that support it.
 
 Syntax without explicit @var{opts} parameter is deprecated.  It is equivalent to
-@option{-fsanitize-recover=undefined,float-cast-overflow,float-divide-by-zero}.
+@smallexample
+-fsanitize-recover=undefined,float-cast-overflow,float-divide-by-zero
+@end smallexample
+@noindent
 Similarly @option{-fno-sanitize-recover} is equivalent to
-@option{-fno-sanitize-recover=undefined,float-cast-overflow,float-divide-by-zero}.
+@smallexample
+-fno-sanitize-recover=undefined,float-cast-overflow,float-divide-by-zero
+@end smallexample
 
 @item -fsanitize-undefined-trap-on-error
 @opindex fsanitize-undefined-trap-on-error
@@ -6399,9 +6411,7 @@ Dump after sibling call optimizations.
 @opindex fdump-rtl-split3
 @opindex fdump-rtl-split4
 @opindex fdump-rtl-split5
-@option{-fdump-rtl-split1}, @option{-fdump-rtl-split2},
-@option{-fdump-rtl-split3}, @option{-fdump-rtl-split4} and
-@option{-fdump-rtl-split5} enable dumping after five rounds of
+These options enable dumping after five rounds of
 instruction splitting.
 
 @item -fdump-rtl-sms
@@ -9465,7 +9475,7 @@ is unpredictable.
 
 @item -ffast-math
 @opindex ffast-math
-Sets @option{-fno-math-errno}, @option{-funsafe-math-optimizations},
+Sets the options @option{-fno-math-errno}, @option{-funsafe-math-optimizations},
 @option{-ffinite-math-only}, @option{-fno-rounding-math},
 @option{-fno-signaling-nans} and @option{-fcx-limited-range}.
 
@@ -10008,20 +10018,21 @@ Specifies the maximum number of instructions an out-of-line copy of a
 self-recursive inline
 function can grow into by performing recursive inlining.
 
-For functions declared inline, @option{--param max-inline-insns-recursive} is
-taken into account.  For functions not declared inline, recursive inlining
+@option{--param max-inline-insns-recursive} applies to functions
+declared inline.
+For functions not declared inline, recursive inlining
 happens only when @option{-finline-functions} (included in @option{-O3}) is
-enabled and @option{--param max-inline-insns-recursive-auto} is used.  The
+enabled; @option{--param max-inline-insns-recursive-auto} applies instead.  The
 default value is 450.
 
 @item max-inline-recursive-depth
 @itemx max-inline-recursive-depth-auto
 Specifies the maximum recursion depth used for recursive inlining.
 
-For functions declared inline, @option{--param max-inline-recursive-depth} is
-taken into account.  For functions not declared inline, recursive inlining
+@option{--param max-inline-recursive-depth} applies to functions
+declared inline.  For functions not declared inline, recursive inlining
 happens only when @option{-finline-functions} (included in @option{-O3}) is
-enabled and @option{--param max-inline-recursive-depth-auto} is used.  The
+enabled; @option{--param max-inline-recursive-depth-auto} applies instead.  The
 default value is 8.
 
 @item min-inline-recursive-probability
@@ -22862,7 +22873,7 @@ kernel code.
 @itemx -mno-text-section-literals
 @opindex mtext-section-literals
 @opindex mno-text-section-literals
-Control the treatment of literal pools.  The default is
+These options control the treatment of literal pools.  The default is
 @option{-mno-text-section-literals}, which places literals in a separate
 section in the output file.  This allows the literal pool to be placed
 in a data RAM/ROM, and it also allows the linker to combine literal
