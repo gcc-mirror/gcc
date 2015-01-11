@@ -1,3 +1,9 @@
+2015-01-11  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* doc/md.texi (Instruction Patterns): Rewrite text for
+	clarity.
+	(Example): Likewise.
+
 2015-01-10  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Option Summary): Break long lines.

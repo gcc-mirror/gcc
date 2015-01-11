@@ -105,10 +105,11 @@ acts like it's unnamed, since the names are ignored.
 @cindex instruction patterns
 
 @findex define_insn
-Each instruction pattern contains an incomplete RTL expression, with pieces
-to be filled in later, operand constraints that restrict how the pieces can
-be filled in, and an output pattern or C code to generate the assembler
-output, all wrapped up in a @code{define_insn} expression.
+A @code{define_insn} expression is used to define instruction patterns
+to which insns may be matched.  A @code{define_insn} expression contains
+an incomplete RTL expression, with pieces to be filled in later, operand
+constraints that restrict how the pieces can be filled in, and an output
+template or C code to generate the assembler output.
 
 A @code{define_insn} is an RTL expression containing four or five operands:
 
@@ -130,60 +131,63 @@ effect; they are equivalent to no name at all.
 
 For the purpose of debugging the compiler, you may also specify a
 name beginning with the @samp{*} character.  Such a name is used only
-for identifying the instruction in RTL dumps; it is entirely equivalent
-to having a nameless pattern for all other purposes.
+for identifying the instruction in RTL dumps; it is equivalent to having
+a nameless pattern for all other purposes.  Names beginning with the
+@samp{*} character are not required to be unique.
 
 @item
-The @dfn{RTL template} (@pxref{RTL Template}) is a vector of incomplete
-RTL expressions which show what the instruction should look like.  It is
-incomplete because it may contain @code{match_operand},
+The @dfn{RTL template}: This is a vector of incomplete RTL expressions
+which describe the semantics of the instruction (@pxref{RTL Template}).
+It is incomplete because it may contain @code{match_operand},
 @code{match_operator}, and @code{match_dup} expressions that stand for
 operands of the instruction.
 
-If the vector has only one element, that element is the template for the
-instruction pattern.  If the vector has multiple elements, then the
-instruction pattern is a @code{parallel} expression containing the
-elements described.
+If the vector has multiple elements, the RTL template is treated as a
+@code{parallel} expression.
 
 @item
 @cindex pattern conditions
 @cindex conditions, in patterns
-A condition.  This is a string which contains a C expression that is
-the final test to decide whether an insn body matches this pattern.
+The condition: This is a string which contains a C expression.  When the
+compiler attempts to match RTL against a pattern, the condition is
+evaluated.  If the condition evaluates to @code{true}, the match is
+permitted.  The condition may be an empty string, which is treated
+as always @code{true}.
 
 @cindex named patterns and conditions
-For a named pattern, the condition (if present) may not depend on
-the data in the insn being matched, but only the target-machine-type
-flags.  The compiler needs to test these conditions during
-initialization in order to learn exactly which named instructions are
-available in a particular run.
+For a named pattern, the condition may not depend on the data in the
+insn being matched, but only the target-machine-type flags.  The compiler
+needs to test these conditions during initialization in order to learn
+exactly which named instructions are available in a particular run.
 
 @findex operands
 For nameless patterns, the condition is applied only when matching an
 individual insn, and only after the insn has matched the pattern's
 recognition template.  The insn's operands may be found in the vector
-@code{operands}.  For an insn where the condition has once matched, it
-can't be used to control register allocation, for example by excluding
-certain hard registers or hard register combinations.
+@code{operands}.
+
+For an insn where the condition has once matched, it
+cannot later be used to control register allocation by excluding
+certain register or value combinations.
 
 @item
-The @dfn{output template}: a string that says how to output matching
-insns as assembler code.  @samp{%} in this string specifies where
-to substitute the value of an operand.  @xref{Output Template}.
+The @dfn{output template} or @dfn{output statement}: This is either
+a string, or a fragment of C code which returns a string.
 
 When simple substitution isn't general enough, you can specify a piece
 of C code to compute the output.  @xref{Output Statement}.
 
 @item
-Optionally, a vector containing the values of attributes for insns matching
-this pattern.  @xref{Insn Attributes}.
+The @dfn{insn attributes}: This is an optional vector containing the values of
+attributes for insns matching this pattern (@pxref{Insn Attributes}).
 @end enumerate
 
 @node Example
 @section Example of @code{define_insn}
 @cindex @code{define_insn} example
 
-Here is an actual example of an instruction pattern, for the 68000/68020.
+Here is an example of an instruction pattern, taken from the machine
+description for the 68000/68020.
 
 @smallexample
 (define_insn "tstsi"
@@ -213,12 +217,12 @@ This can also be written using braced strings:
 @})
 @end smallexample
 
-This is an instruction that sets the condition codes based on the value of
-a general operand.  It has no condition, so any insn whose RTL description
-has the form shown may be handled according to this pattern.  The name
-@samp{tstsi} means ``test a @code{SImode} value'' and tells the RTL generation
-pass that, when it is necessary to test such a value, an insn to do so
-can be constructed using this pattern.
+This describes an instruction which sets the condition codes based on the
+value of a general operand.  It has no condition, so any insn with an RTL
+description of the form shown may be matched to this pattern.  The name
+@samp{tstsi} means ``test a @code{SImode} value'' and tells the RTL
+generation pass that, when it is necessary to test such a value, an insn
+to do so can be constructed using this pattern.
 
 The output control string is a piece of C code which chooses which
 output template to return based on the kind of operand and the specific
