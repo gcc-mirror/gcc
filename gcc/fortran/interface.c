@@ -1922,6 +1922,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 {
   gfc_ref *ref;
   bool rank_check, is_pointer;
+  char err[200];
+  gfc_component *ppc;
 
   /* If the formal arg has type BT_VOID, it's to one of the iso_c_binding
      procs c_f_pointer or c_f_procpointer, and we need to accept most
@@ -1942,7 +1944,6 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   if (actual->ts.type == BT_PROCEDURE)
     {
-      char err[200];
       gfc_symbol *act_sym = actual->symtree->n.sym;
 
       if (formal->attr.flavor != FL_PROCEDURE)
@@ -1974,6 +1975,19 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 			    &act_sym->declared_at);
 
       return 1;
+    }
+
+  ppc = gfc_get_proc_ptr_comp (actual);
+  if (ppc)
+    {
+      if (!gfc_compare_interfaces (formal, ppc->ts.interface, ppc->name, 0, 1,
+				   err, sizeof(err), NULL, NULL))
+	{
+	  if (where)
+	    gfc_error ("Interface mismatch in dummy procedure %qs at %L: %s",
+		       formal->name, &actual->where, err);
+	  return 0;
+	}
     }
 
   /* F2008, C1241.  */
