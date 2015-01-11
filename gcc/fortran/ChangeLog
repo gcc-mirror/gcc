@@ -1,5 +1,11 @@
 2015-01-11  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/63733
+	* interface.c (gfc_extend_expr): Look for type-bound operators before
+	non-typebound ones.
+
+2015-01-11  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/58023
 	* resolve.c (resolve_fl_derived0): Set error flag if problems with the
 	interface of a procedure-pointer component were detected.
