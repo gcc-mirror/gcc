@@ -1,3 +1,7 @@
+2015-01-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/recip-test.h (_ARCH_PPC64): Use __LP64__ instead.
+
 2015-01-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/64522
