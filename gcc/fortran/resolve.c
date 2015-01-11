@@ -12424,9 +12424,11 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	{
 	  gfc_symbol *ifc = c->ts.interface;
 
-	  if (!sym->attr.vtype
-	      && !check_proc_interface (ifc, &c->loc))
-	    return false;
+	  if (!sym->attr.vtype && !check_proc_interface (ifc, &c->loc))
+	    {
+	      c->tb->error = 1;
+	      return false;
+	    }
 
 	  if (ifc->attr.if_source || ifc->attr.intrinsic)
 	    {
