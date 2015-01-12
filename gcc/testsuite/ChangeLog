@@ -1,5 +1,8 @@
 2015-01-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/64513
+	* gcc.target/i386/pr64513.c: New test.
+
 	PR tree-optimization/64454
 	* gcc.dg/pr64454.c: New test.
 
