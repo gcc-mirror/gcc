@@ -63,14 +63,14 @@ section entitled ``GNU General Public License''.
 @node Introduction
 @chapter What is libffi?
 
-Compilers for high-level languages generate code that follow certain
+Compilers for high level languages generate code that follow certain
 conventions.  These conventions are necessary, in part, for separate
 compilation to work.  One such convention is the @dfn{calling
 convention}.  The calling convention is a set of assumptions made by
 the compiler about where function arguments will be found on entry to
 a function.  A calling convention also specifies where the return
-value for a function is found.  The calling convention is part of
-what is called the @dfn{ABI} or @dfn{Application Binary Interface}.
+value for a function is found.  The calling convention is also
+sometimes called the @dfn{ABI} or @dfn{Application Binary Interface}.
 @cindex calling convention
 @cindex ABI
 @cindex Application Binary Interface
@@ -247,6 +247,8 @@ int main()
 * Primitive Types::             Built-in types.
 * Structures::                  Structure types.
 * Type Example::                Structure type example.
+* Complex::                     Complex types.
+* Complex Type Example::        Complex type example.
 @end menu
 
 @node Primitive Types
@@ -345,6 +347,20 @@ On other platforms, it is not.
 @tindex ffi_type_pointer
 A generic @code{void *} pointer.  You should use this for all
 pointers, regardless of their real type.
+
+@item ffi_type_complex_float
+@tindex ffi_type_complex_float
+The C @code{_Complex float} type.
+
+@item ffi_type_complex_double
+@tindex ffi_type_complex_double
+The C @code{_Complex double} type.
+
+@item ffi_type_complex_longdouble
+@tindex ffi_type_complex_longdouble
+The C @code{_Complex long double} type.
+On platforms that have a C @code{long double} type, this is defined.
+On other platforms, it is not.
 @end table
 
 Each of these is of type @code{ffi_type}, so you must take the address
@@ -429,6 +445,135 @@ Here is the corresponding code to describe this struct to
     @}
 @end example
 
+@node Complex
+@subsection Complex Types
+
+@samp{libffi} supports the complex types defined by the C99
+standard (@code{_Complex float}, @code{_Complex double} and
+@code{_Complex long double} with the built-in type descriptors
+@code{ffi_type_complex_float}, @code{ffi_type_complex_double} and
+@code{ffi_type_complex_longdouble}.
+
+Custom complex types like @code{_Complex int} can also be used.
+An @code{ffi_type} object has to be defined to describe the
+complex type to @samp{libffi}.
+
+@tindex ffi_type
+@deftp {Data type} ffi_type
+@table @code
+@item size_t size
+This must be manually set to the size of the complex type.
+
+@item unsigned short alignment
+This must be manually set to the alignment of the complex type.
+
+@item unsigned short type
+For a complex type, this must be set to @code{FFI_TYPE_COMPLEX}.
+
+@item ffi_type **elements
+
+This is a @samp{NULL}-terminated array of pointers to
+@code{ffi_type} objects.  The first element is set to the
+@code{ffi_type} of the complex's base type.  The second element
+must be set to @code{NULL}.
+@end table
+@end deftp
+
+The section @ref{Complex Type Example} shows a way to determine
+the @code{size} and @code{alignment} members in a platform
+independent way.
+
+For platforms that have no complex support in @code{libffi} yet,
+the functions @code{ffi_prep_cif} and @code{ffi_prep_args} abort
+the program if they encounter a complex type.
+
+@node Complex Type Example
+@subsection Complex Type Example
+
+This example demonstrates how to use complex types:
+
+@example
+#include <stdio.h>
+#include <ffi.h>
+#include <complex.h>
+
+void complex_fn(_Complex float cf,
+                _Complex double cd,
+                _Complex long double cld)
+@{
+  printf("cf=%f+%fi\ncd=%f+%fi\ncld=%f+%fi\n",
+         (float)creal (cf), (float)cimag (cf),
+         (float)creal (cd), (float)cimag (cd),
+         (float)creal (cld), (float)cimag (cld));
+@}
+
+int main()
+@{
+  ffi_cif cif;
+  ffi_type *args[3];
+  void *values[3];
+  _Complex float cf;
+  _Complex double cd;
+  _Complex long double cld;
+
+  /* Initialize the argument info vectors */
+  args[0] = &ffi_type_complex_float;
+  args[1] = &ffi_type_complex_double;
+  args[2] = &ffi_type_complex_longdouble;
+  values[0] = &cf;
+  values[1] = &cd;
+  values[2] = &cld;
+
+  /* Initialize the cif */
+  if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 3,
+                   &ffi_type_void, args) == FFI_OK)
+    @{
+      cf = 1.0 + 20.0 * I;
+      cd = 300.0 + 4000.0 * I;
+      cld = 50000.0 + 600000.0 * I;
+      /* Call the function */
+      ffi_call(&cif, (void (*)(void))complex_fn, 0, values);
+    @}
+
+  return 0;
+@}
+@end example
+
+This is an example for defining a custom complex type descriptor
+for compilers that support them:
+
+@example
+/*
+ * This macro can be used to define new complex type descriptors
+ * in a platform independent way.
+ *
+ * name: Name of the new descriptor is ffi_type_complex_<name>.
+ * type: The C base type of the complex type.
+ */
+#define FFI_COMPLEX_TYPEDEF(name, type, ffitype)             \
+  static ffi_type *ffi_elements_complex_##name [2] = @{      \
+    (ffi_type *)(&ffitype), NULL                             \
+  @};                                                        \
+  struct struct_align_complex_##name @{                      \
+    char c;                                                  \
+    _Complex type x;                                         \
+  @};                                                        \
+  ffi_type ffi_type_complex_##name = @{                      \
+    sizeof(_Complex type),                                   \
+    offsetof(struct struct_align_complex_##name, x),         \
+    FFI_TYPE_COMPLEX,                                        \
+    (ffi_type **)ffi_elements_complex_##name                 \
+  @}
+
+/* Define new complex type descriptors using the macro: */
+/* ffi_type_complex_sint */
+FFI_COMPLEX_TYPEDEF(sint, int, ffi_type_sint);
+/* ffi_type_complex_uchar */
+FFI_COMPLEX_TYPEDEF(uchar, unsigned char, ffi_type_uint8);
+@end example
+
+The new type descriptors can then be used like one of the built-in
+type descriptors in the previous example.
 
 @node Multiple ABIs
 @section Multiple ABIs
@@ -534,7 +679,7 @@ writable and executable addresses.
 @section Closure Example
 
 A trivial example that creates a new @code{puts} by binding 
-@code{fputs} with @code{stdin}.
+@code{fputs} with @code{stdout}.
 
 @example
 #include <stdio.h>
