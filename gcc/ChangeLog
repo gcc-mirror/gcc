@@ -1,5 +1,11 @@
 2015-01-12  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/64530
+	* tree-loop-distribution.c (pg_add_dependence_edges): Shuffle
+	back dr1.
+
+2015-01-12  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/64357
 	* tree-cfg.c (gimple_can_merge_blocks_p): Protect simple
 	latches properly.
