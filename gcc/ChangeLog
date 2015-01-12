@@ -1,3 +1,14 @@
+2014-01-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_load_tp): Use R0_REGNUM instead of constant 0
+	in gen_rtx_REG.
+	(arm_tls_descseq_addr): Likewise.
+	(arm_gen_movmemqi): Likewise.
+	(arm_expand_epilogue_apcs_frame): Likewise.
+	(arm_expand_epilogue): Likewise.
+	(arm_expand_prologue): Likewise.  Use R1_REGNUM instead of constant 1
+	in gen_rtx_REG.
+
 2015-01-12  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/64550
