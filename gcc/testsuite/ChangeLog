@@ -1,3 +1,8 @@
+2015-01-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/nop-mcount.c: Properly place {} in target
+	selector.
+
 2015-01-12  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	* gcc.dg/plugin/ggcplug.c: Include gcc-plugin.h after coretypes.h.
 
