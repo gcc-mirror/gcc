@@ -438,7 +438,7 @@ sem_function::equals_private (sem_item *item,
   cl_target_option *tar1 = target_opts_for_fn (decl);
   cl_target_option *tar2 = target_opts_for_fn (m_compared_func->decl);
 
-  if (tar1 != NULL || tar2 != NULL)
+  if (tar1 != NULL && tar2 != NULL)
     {
       if (!cl_target_option_eq (tar1, tar2))
 	{
