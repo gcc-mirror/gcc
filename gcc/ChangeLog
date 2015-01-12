@@ -1,3 +1,10 @@
+2015-01-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/64561
+	* configure.ac (HAVE_LD_PIE_COPYRELOC): Update Linux/x86-64 linker
+	test for PIE with copy reloc.
+	* configure: Regenerated.
+
 2014-01-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_load_tp): Use R0_REGNUM instead of constant 0

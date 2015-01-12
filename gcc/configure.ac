@@ -4719,6 +4719,11 @@ EOF
 main:
 	movl	%eax, a_glob(%rip)
 	.size	main, .-main
+	.globl	ptr
+	.section	.data.rel,"aw",@progbits
+	.type	ptr, @object
+ptr:
+	.quad	a_glob
 EOF
       if $gcc_cv_as --64 -o conftest1.o conftest1.s > /dev/null 2>&1 \
          && $gcc_cv_ld -shared -melf_x86_64 -o conftest1.so conftest1.o > /dev/null 2>&1 \
