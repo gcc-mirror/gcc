@@ -1,5 +1,15 @@
 2015-01-12  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/invoke.texi ([-Wsuggest-attribute=]): Don't use parentheses
+	after a funtion name just to indicate it is a function.
+	([-fsanitize-undefined-trap-on-error]): Likewise.
+	([-fdbg-cnt=]): Likewise.
+	([-mmemcpy]): Likewise.
+	([-mflush-func]): Likewise.
+	([-msynci]): Likewise.
+
+2015-01-12  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/invoke.texi ([-Wbad-function-cast]): Rewrite to avoid confusing
 	example.
 	
