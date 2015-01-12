@@ -1,5 +1,21 @@
 2015-01-12  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/63967
+	PR ipa/64425
+	* ipa-inline.c (compute_uninlined_call_time,
+	compute_inlined_call_time): Use counts for extra precision when
+	needed possible.
+	(big_speedup_p): Fix formating.
+	(RELATIVE_TIME_BENEFIT_RANGE): Remove.
+	(relative_time_benefit): Remove.
+	(edge_badness): Turn DECL_DISREGARD_INLINE_LIMITS into hint;
+	merge guessed and read profile paths.
+	(inline_small_functions): Count only !optimize_size functions into
+	initial size; be more lax about sanity check when profile is used;
+	be sure to update inlined function profile when profile is read.
+
+2015-01-12  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/63470
 	* ipa-inline-analysis.c (inline_edge_duplication_hook): Adjust
 	cost when edge becomes direct.

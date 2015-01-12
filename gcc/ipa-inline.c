@@ -530,12 +530,19 @@ inline sreal
 compute_uninlined_call_time (struct inline_summary *callee_info,
 			     struct cgraph_edge *edge)
 {
-  sreal uninlined_call_time = (sreal)callee_info->time
-			      * MAX (edge->frequency, 1)
-			      * cgraph_freq_base_rec;
-  int caller_time = inline_summaries->get (edge->caller->global.inlined_to
-				           ? edge->caller->global.inlined_to
-				           : edge->caller)->time;
+  sreal uninlined_call_time = (sreal)callee_info->time;
+  cgraph_node *caller = (edge->caller->global.inlined_to 
+			 ? edge->caller->global.inlined_to
+			 : edge->caller);
+
+  if (edge->count && caller->count)
+    uninlined_call_time *= (sreal)edge->count / caller->count;
+  if (edge->frequency)
+    uninlined_call_time *= cgraph_freq_base_rec * edge->frequency;
+  else
+    uninlined_call_time = uninlined_call_time >> 11;
+
+  int caller_time = inline_summaries->get (caller)->time;
   return uninlined_call_time + caller_time;
 }
 
@@ -546,13 +553,28 @@ inline sreal
 compute_inlined_call_time (struct cgraph_edge *edge,
 			   int edge_time)
 {
-  int caller_time = inline_summaries->get (edge->caller->global.inlined_to
-				           ? edge->caller->global.inlined_to
-				           : edge->caller)->time;
-  sreal time = (sreal)caller_time
-	       + ((sreal) (edge_time - inline_edge_summary (edge)->call_stmt_time)
-	          * MAX (edge->frequency, 1)
-	          * cgraph_freq_base_rec);
+  cgraph_node *caller = (edge->caller->global.inlined_to 
+			 ? edge->caller->global.inlined_to
+			 : edge->caller);
+  int caller_time = inline_summaries->get (caller)->time;
+  sreal time = edge_time;
+
+  if (edge->count && caller->count)
+    time *= (sreal)edge->count / caller->count;
+  if (edge->frequency)
+    time *= cgraph_freq_base_rec * edge->frequency;
+  else
+    time = time >> 11;
+
+  /* This calculation should match one in ipa-inline-analysis.
+     FIXME: Once ipa-inline-analysis is converted to sreal this can be
+     simplified.  */
+  time -= (sreal) ((gcov_type) edge->frequency
+		   * inline_edge_summary (edge)->call_stmt_time
+	           * (INLINE_TIME_SCALE / CGRAPH_FREQ_BASE)) / INLINE_TIME_SCALE;
+  time += caller_time;
+  if (time <= 0)
+    time = ((sreal) 1) >> 8;
   gcc_checking_assert (time >= 0);
   return time;
 }
@@ -563,8 +585,10 @@ compute_inlined_call_time (struct cgraph_edge *edge,
 static bool
 big_speedup_p (struct cgraph_edge *e)
 {
-  sreal time = compute_uninlined_call_time (inline_summaries->get (e->callee), e);
+  sreal time = compute_uninlined_call_time (inline_summaries->get (e->callee),
+					    e);
   sreal inlined_time = compute_inlined_call_time (e, estimate_edge_time (e));
+
   if (time - inlined_time
       > (sreal) time * PARAM_VALUE (PARAM_INLINE_MIN_SPEEDUP)
 	 * percent_rec)
@@ -862,49 +886,6 @@ want_inline_function_to_all_callers_p (struct cgraph_node *node, bool cold)
   return true;
 }
 
-#define RELATIVE_TIME_BENEFIT_RANGE (INT_MAX / 64)
-
-/* Return relative time improvement for inlining EDGE in range
-   as value NUMERATOR/DENOMINATOR.  */
-
-static inline void
-relative_time_benefit (struct inline_summary *callee_info,
-		       struct cgraph_edge *edge,
-		       int edge_time,
-		       sreal *numerator,
-		       sreal *denominator)
-{
-  /* Inlining into extern inline function is not a win.  */
-  if (DECL_EXTERNAL (edge->caller->global.inlined_to
-		     ? edge->caller->global.inlined_to->decl
-		     : edge->caller->decl))
-    {
-      *numerator = (sreal) 1;
-      *denominator = (sreal) 1024;
-      return;
-    }
-
-  sreal uninlined_call_time = compute_uninlined_call_time (callee_info, edge);
-  sreal inlined_call_time = compute_inlined_call_time (edge, edge_time);
-
-  /* Compute relative time benefit, i.e. how much the call becomes faster.
-     ??? perhaps computing how much the caller+calle together become faster
-     would lead to more realistic results.  */
-  if (uninlined_call_time == (sreal) 0)
-    uninlined_call_time = 1;
-
-  /* Avoid zeros, these are not useful later in calculations.  */
-  if (uninlined_call_time == inlined_call_time)
-    *numerator = ((sreal) 1)>>8;
-  else
-    *numerator = uninlined_call_time - inlined_call_time;
-  *denominator = uninlined_call_time;
-#ifdef ENABLE_CHECKING
-  gcc_checking_assert (*numerator >= 0);
-  gcc_checking_assert (*denominator >= 0);
-#endif
-}
-
 /* A cost model driving the inlining heuristics in a way so the edges with
    smallest badness are inlined first.  After each inlining is performed
    the costs of all caller edges of nodes affected are recomputed so the
@@ -919,9 +900,9 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
   struct inline_summary *callee_info = inline_summaries->get (callee);
   inline_hints hints;
-
-  if (DECL_DISREGARD_INLINE_LIMITS (callee->decl))
-    return sreal::min ();
+  cgraph_node *caller = (edge->caller->global.inlined_to 
+			 ? edge->caller->global.inlined_to
+			 : edge->caller);
 
   growth = estimate_edge_growth (edge);
   edge_time = estimate_edge_time (edge);
@@ -954,59 +935,38 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	fprintf (dump_file, "      %f: Growth %d <= 0\n", badness.to_double (),
 		 growth);
     }
-
-  /* When profiling is available, compute badness as:
-
-	        edge_count * relative_time_benefit
-     goodness = -------------------------------------------
-		growth_of_caller
-     badness = - goodness 
-
-    The fraction is upside down, because on edge counts and time beneits
-    the bounds are known. Edge growth is essentially unlimited.  */
-
-  else if (max_count)
+   /* Inlining into EXTERNAL functions is not going to change anything unless
+      they are themselves inlined.  */
+   else if (DECL_EXTERNAL (caller->decl))
     {
-      sreal numerator, denominator;
-      relative_time_benefit (callee_info, edge, edge_time, &numerator,
-			     &denominator);
-
-      if (edge->count)
-        numerator *= edge->count;
-      denominator *= growth;
-
-      badness = - numerator / denominator;
- 
       if (dump)
-	{
-	  sreal num,den;
-          relative_time_benefit (callee_info, edge, edge_time, &num, &den);
-	  fprintf (dump_file,
-		   "      %f: profile info. count %"PRId64
-		   " * Relative benefit %f / growth %i\n",
-		   badness.to_double (), (int64_t)edge->count,
-		   (num / den * 100).to_double (), growth);
-	}
+	fprintf (dump_file, "      max: function is external\n");
+      return sreal::max ();
     }
-
-  /* When function local profile is available. Compute badness as:
+  /* When profile is available. Compute badness as:
      
-                 relative_time_benefit
+                 time_saved * caller_count
      goodness =  ---------------------------------
 	         growth_of_caller * overall_growth
 
      badness = - goodness
 
-     compensated by the inline hints.
+     Again use negative value to make calls with profile appear hotter
+     then calls without.
   */
-  /* TODO: We ought suport mixing units where some functions are profiled
-     and some not.  */
-  else if (flag_guess_branch_prob)
+  else if (opt_for_fn (caller->decl, flag_guess_branch_prob) || caller->count)
     {
       sreal numerator, denominator;
-      relative_time_benefit (callee_info, edge, edge_time, &numerator,
-			     &denominator);
-      denominator *= growth;
+
+      numerator = (compute_uninlined_call_time (callee_info, edge)
+		   - compute_inlined_call_time (edge, edge_time));
+      if (numerator == 0)
+	numerator = ((sreal) 1 >> 8);
+      if (caller->count)
+	numerator *= caller->count;
+      else if (opt_for_fn (caller->decl, flag_branch_probabilities))
+	numerator = numerator >> 11;
+      denominator = growth;
       if (callee_info->growth > 0)
 	denominator *= callee_info->growth;
 
@@ -1014,14 +974,13 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 
       if (dump)
 	{
-	  sreal num,den;
-          relative_time_benefit (callee_info, edge, edge_time, &num, &den);
 	  fprintf (dump_file,
-		   "      %f: guessed profile. frequency %f,"
-		   " benefit %f%%, time w/o inlining %f, time w inlining %f"
+		   "      %f: guessed profile. frequency %f, count %"PRId64
+		   " caller count %"PRId64
+		   " time w/o inlining %f, time w inlining %f"
 		   " overall growth %i (current) %i (original)\n",
 		   badness.to_double (), (double)edge->frequency / CGRAPH_FREQ_BASE,
-		   (num/den).to_double () * 100, 
+		   edge->count, caller->count,
 		   compute_uninlined_call_time (callee_info, edge).to_double (),
 		   compute_inlined_call_time (edge, edge_time).to_double (),
 		   estimate_growth (callee),
@@ -1062,7 +1021,9 @@ edge_badness (struct cgraph_edge *edge, bool dump)
     badness = badness.shift (badness > 0 ? 2 : -2);
   else if (hints & (INLINE_HINT_cross_module))
     badness = badness.shift (badness > 0 ? 1 : -1);
-  if ((hints & INLINE_HINT_declared_inline))
+  if (DECL_DISREGARD_INLINE_LIMITS (callee->decl))
+    badness = badness.shift (badness > 0 ? -4 : 4);
+  else if ((hints & INLINE_HINT_declared_inline))
     badness = badness.shift (badness > 0 ? -3 : 3);
   if (dump)
     fprintf (dump_file, "      Adjusted by hints %f\n", badness.to_double ());
@@ -1592,6 +1553,7 @@ inline_small_functions (void)
 	    /* Do not account external functions, they will be optimized out
 	       if not inlined.  Also only count the non-cold portion of program.  */
 	    if (!DECL_EXTERNAL (node->decl)
+		&& !opt_for_fn (node->decl, optimize_size)
 		&& node->frequency != NODE_FREQUENCY_UNLIKELY_EXECUTED)
 	      initial_size += info->size;
 	    info->growth = estimate_growth (node);
@@ -1696,8 +1658,10 @@ inline_small_functions (void)
 	 Increases of badness are handled lazilly; when we see key with out
 	 of date value on it, we re-insert it now.  */
       current_badness = edge_badness (edge, false);
-      gcc_assert (cached_badness == current_badness);
-      gcc_assert (current_badness >= badness);
+      /* Disable checking for profile because roundoff errors may cause slight
+         deviations in the order.  */
+      gcc_assert (max_count || cached_badness == current_badness);
+      gcc_assert (max_count || current_badness >= badness);
 #else
       current_badness = edge_badness (edge, false);
 #endif
@@ -1835,6 +1799,14 @@ inline_small_functions (void)
 	 called by function we inlined (since number of it inlinable callers
 	 might change).  */
       update_caller_keys (&edge_heap, where, updated_nodes, NULL);
+      /* Offline copy count has possibly changed, recompute if profile is
+	 available.  */
+      if (max_count)
+        {
+	  struct cgraph_node *n = cgraph_node::get (edge->callee->decl);
+	  if (n != edge->callee && n->analyzed)
+	    update_callee_keys (&edge_heap, n, updated_nodes);
+        }
       bitmap_clear (updated_nodes);
 
       if (dump_file)
