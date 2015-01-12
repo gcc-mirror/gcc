@@ -1,6 +1,5 @@
 2015-01-12  Chen Gang  <gang.chen.5i5j@gmail.com>
 
-	PR ipa/64550
 	PR ipa/64551
 	PR ipa/64552
 	* ipa-icf.c (sem_function::equals_private): Use '&&' instead of
