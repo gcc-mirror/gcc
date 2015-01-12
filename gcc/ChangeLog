@@ -1,3 +1,8 @@
+2015-01-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-utils.c (estimate_function_body_sizes): Do not
+	free node params when called late with early=true.
+
 2015-01-11  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* doc/md.texi (Instruction Patterns): Rewrite text for

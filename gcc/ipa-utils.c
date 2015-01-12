@@ -474,8 +474,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
       gcc_assert (!*slot);
       *slot = state;
     }
-  src->get_body ();
-  dst->get_body ();
+  src->get_untransformed_body ();
+  dst->get_untransformed_body ();
   srccfun = DECL_STRUCT_FUNCTION (src->decl);
   dstcfun = DECL_STRUCT_FUNCTION (dst->decl);
   if (n_basic_blocks_for_fn (srccfun)
