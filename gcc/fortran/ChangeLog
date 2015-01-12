@@ -1,3 +1,10 @@
+2015-01-12  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/63733
+	* interface.c (gfc_extend_expr): Look for type-bound operators before
+	non-typebound ones.
+
 2014-12-23  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from mainline
