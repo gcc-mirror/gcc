@@ -7445,7 +7445,7 @@ arm_load_tp (rtx target)
 
       emit_insn (gen_load_tp_soft ());
 
-      tmp = gen_rtx_REG (SImode, 0);
+      tmp = gen_rtx_REG (SImode, R0_REGNUM);
       emit_move_insn (target, tmp);
     }
   return target;
@@ -7509,13 +7509,13 @@ arm_tls_descseq_addr (rtx x, rtx reg)
 				       gen_rtx_CONST (VOIDmode, label),
 				       GEN_INT (!TARGET_ARM)),
 			    UNSPEC_TLS);
-  rtx reg0 = load_tls_operand (sum, gen_rtx_REG (SImode, 0));
+  rtx reg0 = load_tls_operand (sum, gen_rtx_REG (SImode, R0_REGNUM));
 
   emit_insn (gen_tlscall (x, labelno));
   if (!reg)
     reg = gen_reg_rtx (SImode);
   else
-    gcc_assert (REGNO (reg) != 0);
+    gcc_assert (REGNO (reg) != R0_REGNUM);
 
   emit_move_insn (reg, reg0);
 
@@ -14673,7 +14673,7 @@ arm_gen_movmemqi (rtx *operands)
 	  else
 	    {
 	      mem = adjust_automodify_address (dstbase, SImode, dst, dstoffset);
-	      emit_move_insn (mem, gen_rtx_REG (SImode, 0));
+	      emit_move_insn (mem, gen_rtx_REG (SImode, R0_REGNUM));
 	      if (last_bytes != 0)
 		{
 		  emit_insn (gen_addsi3 (dst, dst, GEN_INT (4)));
@@ -21106,8 +21106,8 @@ arm_expand_prologue (void)
 	 Just tell it we saved SP in r0.  */
       gcc_assert (TARGET_THUMB2 && !arm_arch_notm && args_to_push == 0);
 
-      r0 = gen_rtx_REG (SImode, 0);
-      r1 = gen_rtx_REG (SImode, 1);
+      r0 = gen_rtx_REG (SImode, R0_REGNUM);
+      r1 = gen_rtx_REG (SImode, R1_REGNUM);
 
       insn = emit_insn (gen_movsi (r0, stack_pointer_rtx));
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -24880,7 +24880,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
     /* Restore the original stack pointer.  Before prologue, the stack was
        realigned and the original stack pointer saved in r0.  For details,
        see comment in arm_expand_prologue.  */
-    emit_insn (gen_movsi (stack_pointer_rtx, gen_rtx_REG (SImode, 0)));
+    emit_insn (gen_movsi (stack_pointer_rtx, gen_rtx_REG (SImode, R0_REGNUM)));
 
   emit_jump_insn (simple_return_rtx);
 }
@@ -25162,7 +25162,7 @@ arm_expand_epilogue (bool really_return)
     /* Restore the original stack pointer.  Before prologue, the stack was
        realigned and the original stack pointer saved in r0.  For details,
        see comment in arm_expand_prologue.  */
-    emit_insn (gen_movsi (stack_pointer_rtx, gen_rtx_REG (SImode, 0)));
+    emit_insn (gen_movsi (stack_pointer_rtx, gen_rtx_REG (SImode, R0_REGNUM)));
 
   emit_jump_insn (simple_return_rtx);
 }
