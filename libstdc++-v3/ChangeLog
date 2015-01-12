@@ -1,3 +1,9 @@
+2015-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64560
+	* src/c++11/cxx11-shim_facets.cc (locale::facet::_M_sso_shim): Check
+	for RTTI support.
+
 2015-01-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* doc/xml/manual/parallel_mode.xml: Update for libgomp being
