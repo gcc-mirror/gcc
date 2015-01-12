@@ -800,6 +800,18 @@ private:
   fields *m_fields;
 };
 
+/* An abstract base class for operations that visit all rvalues within an
+   expression tree.
+   Currently the only implementation is class rvalue_usage_validator within
+   jit-recording.c.  */
+
+class rvalue_visitor
+{
+ public:
+  virtual ~rvalue_visitor () {}
+  virtual void visit (rvalue *rvalue) = 0;
+};
+
 class rvalue : public memento
 {
 public:
@@ -808,10 +820,13 @@ public:
 	  type *type_)
   : memento (ctxt),
     m_loc (loc),
-    m_type (type_)
+    m_type (type_),
+    m_scope (NULL)
   {
     gcc_assert (type_);
   }
+
+  location * get_loc () const { return m_loc; }
 
   /* Get the recording::type of this rvalue.
 
@@ -835,9 +850,23 @@ public:
   lvalue *
   dereference (location *loc);
 
+  void
+  verify_valid_within_stmt (const char *api_funcname, statement *s);
+
+  virtual void visit_children (rvalue_visitor *v) = 0;
+
+  void set_scope (function *scope);
+  function *get_scope () const { return m_scope; }
+
+  /* Dynamic cast.  */
+  virtual param *dyn_cast_param () { return NULL; }
+
 protected:
   location *m_loc;
   type *m_type;
+
+ private:
+  function *m_scope; /* NULL for globals, non-NULL for locals/params */
 };
 
 class lvalue : public rvalue
@@ -881,11 +910,15 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *) {}
+
   playback::param *
   playback_param () const
   {
     return static_cast <playback::param *> (m_playback_obj);
   }
+
+  param *dyn_cast_param () { return this; }
 
 private:
   string * make_debug_string () { return m_name; }
@@ -925,6 +958,7 @@ public:
   block*
   new_block (const char *name);
 
+  location *get_loc () const { return m_loc; }
   type *get_return_type () const { return m_return_type; }
   string * get_name () const { return m_name; }
   const vec<param *> &get_params () const { return m_params; }
@@ -979,36 +1013,36 @@ public:
   bool has_been_terminated () { return m_has_been_terminated; }
   bool is_reachable () { return m_is_reachable; }
 
-  void
+  statement *
   add_eval (location *loc,
 	    rvalue *rvalue);
 
-  void
+  statement *
   add_assignment (location *loc,
 		  lvalue *lvalue,
 		  rvalue *rvalue);
 
-  void
+  statement *
   add_assignment_op (location *loc,
 		     lvalue *lvalue,
 		     enum gcc_jit_binary_op op,
 		     rvalue *rvalue);
 
-  void
+  statement *
   add_comment (location *loc,
 	       const char *text);
 
-  void
+  statement *
   end_with_conditional (location *loc,
 			rvalue *boolval,
 			block *on_true,
 			block *on_false);
 
-  void
+  statement *
   end_with_jump (location *loc,
 		 block *target);
 
-  void
+  statement *
   end_with_return (location *loc,
 		   rvalue *rvalue);
 
@@ -1063,6 +1097,8 @@ public:
 
   void replay_into (replayer *);
 
+  void visit_children (rvalue_visitor *) {}
+
   void write_to_dump (dump &d);
 
 private:
@@ -1086,6 +1122,8 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *) {}
+
 private:
   string * make_debug_string ();
 
@@ -1103,6 +1141,8 @@ public:
     m_value (value) {}
 
   void replay_into (replayer *r);
+
+  void visit_children (rvalue_visitor *) {}
 
 private:
   string * make_debug_string ();
@@ -1126,6 +1166,8 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
 
@@ -1148,6 +1190,8 @@ public:
     m_b (b) {}
 
   void replay_into (replayer *r);
+
+  void visit_children (rvalue_visitor *v);
 
 private:
   string * make_debug_string ();
@@ -1173,6 +1217,8 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
 
@@ -1195,6 +1241,8 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
 
@@ -1212,6 +1260,8 @@ public:
 	rvalue **args);
 
   void replay_into (replayer *r);
+
+  void visit_children (rvalue_visitor *v);
 
 private:
   string * make_debug_string ();
@@ -1231,6 +1281,8 @@ public:
 		    rvalue **args);
 
   void replay_into (replayer *r);
+
+  void visit_children (rvalue_visitor *v);
 
 private:
   string * make_debug_string ();
@@ -1254,6 +1306,8 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
 
@@ -1275,6 +1329,8 @@ public:
   {}
 
   void replay_into (replayer *r);
+
+  void visit_children (rvalue_visitor *v);
 
 private:
   string * make_debug_string ();
@@ -1298,6 +1354,8 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
 
@@ -1320,6 +1378,8 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
 
@@ -1338,6 +1398,8 @@ public:
     m_rvalue (val) {}
 
   void replay_into (replayer *r);
+
+  void visit_children (rvalue_visitor *v);
 
 private:
   string * make_debug_string ();
@@ -1358,6 +1420,8 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
 
@@ -1371,9 +1435,14 @@ public:
   local (function *func, location *loc, type *type_, string *name)
     : lvalue (func->m_ctxt, loc, type_),
     m_func (func),
-    m_name (name) {}
+    m_name (name)
+  {
+    set_scope (func);
+  }
 
   void replay_into (replayer *r);
+
+  void visit_children (rvalue_visitor *) {}
 
   void write_to_dump (dump &d);
 
@@ -1393,6 +1462,7 @@ public:
 
   void write_to_dump (dump &d);
 
+  block *get_block () const { return m_block; }
   location *get_loc () const { return m_loc; }
 
 protected:
@@ -1400,8 +1470,6 @@ protected:
   : memento (b->m_ctxt),
     m_block (b),
     m_loc (loc) {}
-
-  block *get_block () const { return m_block; }
 
   playback::location *
   playback_location (replayer *r) const

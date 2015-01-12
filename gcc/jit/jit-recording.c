@@ -2034,6 +2034,115 @@ recording::rvalue::dereference (recording::location *loc)
   return result;
 }
 
+/* An rvalue visitor, for validating that every rvalue within an expression
+   trees within "STMT" has the correct scope (e.g. no access to locals
+   of a different function).  */
+
+class rvalue_usage_validator : public recording::rvalue_visitor
+{
+ public:
+  rvalue_usage_validator (const char *api_funcname,
+			  recording::context *ctxt,
+			  recording::statement *stmt);
+
+  void
+  visit (recording::rvalue *rvalue);
+
+ private:
+  const char *m_api_funcname;
+  recording::context *m_ctxt;
+  recording::statement *m_stmt;
+};
+
+/* The trivial constructor for rvalue_usage_validator.  */
+
+rvalue_usage_validator::rvalue_usage_validator (const char *api_funcname,
+						recording::context *ctxt,
+						recording::statement *stmt)
+  : m_api_funcname (api_funcname),
+    m_ctxt (ctxt),
+    m_stmt (stmt)
+{
+}
+
+/* Verify that the given rvalue is in the correct scope.  */
+
+void
+rvalue_usage_validator::visit (recording::rvalue *rvalue)
+{
+  gcc_assert (m_stmt->get_block ());
+  recording::function *stmt_scope = m_stmt->get_block ()->get_function ();
+
+  /* Most rvalues don't have a scope (only locals and params).  */
+  if (rvalue->get_scope ())
+    {
+      if (rvalue->get_scope () != stmt_scope)
+	m_ctxt->add_error
+	  (rvalue->get_loc (),
+	   "%s:"
+	   " rvalue %s (type: %s)"
+	   " has scope limited to function %s"
+	   " but was used within function %s"
+	   " (in statement: %s)",
+	   m_api_funcname,
+	   rvalue->get_debug_string (),
+	   rvalue->get_type ()->get_debug_string (),
+	   rvalue->get_scope ()->get_debug_string (),
+	   stmt_scope->get_debug_string (),
+	   m_stmt->get_debug_string ());
+    }
+  else
+    {
+      if (rvalue->dyn_cast_param ())
+	m_ctxt->add_error
+	  (rvalue->get_loc (),
+	   "%s:"
+	   " param %s (type: %s)"
+	   " was used within function %s"
+	   " (in statement: %s)"
+	   " but is not associated with any function",
+	   m_api_funcname,
+	   rvalue->get_debug_string (),
+	   rvalue->get_type ()->get_debug_string (),
+	   stmt_scope->get_debug_string (),
+	   m_stmt->get_debug_string ());
+    }
+}
+
+/* Verify that it's valid to use this rvalue (and all expressions
+   in the tree below it) within the given statement.
+
+   For example, we must reject attempts to use a local from one
+   function within a different function here, or we'll get
+   an ICE deep inside toplev::main.  */
+
+void
+recording::rvalue::verify_valid_within_stmt (const char *api_funcname, statement *s)
+{
+  rvalue_usage_validator v (api_funcname,
+			    s->get_context (),
+			    s);
+
+  /* Verify that it's OK to use this rvalue within s.  */
+  v.visit (this);
+
+  /* Traverse the expression tree below "this", verifying all rvalues
+     within it.  */
+  visit_children (&v);
+}
+
+/* Set the scope of this rvalue to be the given function.  This can only
+   be done once on a given rvalue.  */
+
+void
+recording::rvalue::set_scope (function *scope)
+{
+  gcc_assert (scope);
+  gcc_assert (NULL == m_scope);
+  m_scope = scope;
+}
+
+
 /* The implementation of class gcc::jit::recording::lvalue.  */
 
 /* Create a recording::new_access_field_of_lvalue instance and add it to
@@ -2106,7 +2215,40 @@ recording::function::function (context *ctxt,
   m_blocks ()
 {
   for (int i = 0; i< num_params; i++)
-    m_params.safe_push (params[i]);
+    {
+      param *param = params[i];
+      gcc_assert (param);
+
+      /* Associate each param with this function.
+
+	 Verify that the param doesn't already have a function.  */
+      if (param->get_scope ())
+	{
+	  /* We've already rejected attempts to reuse a param between
+	     different functions (within gcc_jit_context_new_function), so
+	     if the param *does* already have a function, it must be being
+	     reused within the params array for this function.  We must
+	     produce an error for this reuse (blocking the compile), since
+	     otherwise we'd have an ICE later on.  */
+	  gcc_assert (this == param->get_scope ());
+	  ctxt->add_error
+	    (loc,
+	     "gcc_jit_context_new_function:"
+	     " parameter %s (type: %s)"
+	     " is used more than once when creating function %s",
+	     param->get_debug_string (),
+	     param->get_type ()->get_debug_string (),
+	     name->c_str ());
+	}
+      else
+	{
+	  /* The normal, non-error case: associate this function with the
+	     param.  */
+	  param->set_scope (this);
+	}
+
+      m_params.safe_push (param);
+    }
 }
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -2366,26 +2508,25 @@ recording::function::make_debug_string ()
    the block's context's list of mementos, and to the block's
    list of statements.
 
-   Implements the post-error-checking part of
-   gcc_jit_block_add_eval.  */
+   Implements the heart of gcc_jit_block_add_eval.  */
 
-void
+recording::statement *
 recording::block::add_eval (recording::location *loc,
 			    recording::rvalue *rvalue)
 {
   statement *result = new eval (this, loc, rvalue);
   m_ctxt->record (result);
   m_statements.safe_push (result);
+  return result;
 }
 
 /* Create a recording::assignment instance and add it to
    the block's context's list of mementos, and to the block's
    list of statements.
 
-   Implements the post-error-checking part of
-   gcc_jit_block_add_assignment.  */
+   Implements the heart of gcc_jit_block_add_assignment.  */
 
-void
+recording::statement *
 recording::block::add_assignment (recording::location *loc,
 				  recording::lvalue *lvalue,
 				  recording::rvalue *rvalue)
@@ -2393,16 +2534,16 @@ recording::block::add_assignment (recording::location *loc,
   statement *result = new assignment (this, loc, lvalue, rvalue);
   m_ctxt->record (result);
   m_statements.safe_push (result);
+  return result;
 }
 
 /* Create a recording::assignment_op instance and add it to
    the block's context's list of mementos, and to the block's
    list of statements.
 
-   Implements the post-error-checking part of
-   gcc_jit_block_add_assignment_op.  */
+   Implements the heart of gcc_jit_block_add_assignment_op.  */
 
-void
+recording::statement *
 recording::block::add_assignment_op (recording::location *loc,
 				     recording::lvalue *lvalue,
 				     enum gcc_jit_binary_op op,
@@ -2411,32 +2552,32 @@ recording::block::add_assignment_op (recording::location *loc,
   statement *result = new assignment_op (this, loc, lvalue, op, rvalue);
   m_ctxt->record (result);
   m_statements.safe_push (result);
+  return result;
 }
 
 /* Create a recording::comment instance and add it to
    the block's context's list of mementos, and to the block's
    list of statements.
 
-   Implements the post-error-checking part of
-   gcc_jit_block_add_comment.  */
+   Implements the heart of gcc_jit_block_add_comment.  */
 
-void
+recording::statement *
 recording::block::add_comment (recording::location *loc,
 			       const char *text)
 {
   statement *result = new comment (this, loc, new_string (text));
   m_ctxt->record (result);
   m_statements.safe_push (result);
+  return result;
 }
 
 /* Create a recording::end_with_conditional instance and add it to
    the block's context's list of mementos, and to the block's
    list of statements.
 
-   Implements the post-error-checking part of
-   gcc_jit_block_end_with_conditional.  */
+   Implements the heart of gcc_jit_block_end_with_conditional.  */
 
-void
+recording::statement *
 recording::block::end_with_conditional (recording::location *loc,
 					recording::rvalue *boolval,
 					recording::block *on_true,
@@ -2446,16 +2587,16 @@ recording::block::end_with_conditional (recording::location *loc,
   m_ctxt->record (result);
   m_statements.safe_push (result);
   m_has_been_terminated = true;
+  return result;
 }
 
 /* Create a recording::end_with_jump instance and add it to
    the block's context's list of mementos, and to the block's
    list of statements.
 
-   Implements the post-error-checking part of
-   gcc_jit_block_end_with_jump.  */
+   Implements the heart of gcc_jit_block_end_with_jump.  */
 
-void
+recording::statement *
 recording::block::end_with_jump (recording::location *loc,
 				 recording::block *target)
 {
@@ -2463,6 +2604,7 @@ recording::block::end_with_jump (recording::location *loc,
   m_ctxt->record (result);
   m_statements.safe_push (result);
   m_has_been_terminated = true;
+  return result;
 }
 
 /* Create a recording::end_with_return instance and add it to
@@ -2473,7 +2615,7 @@ recording::block::end_with_jump (recording::location *loc,
    gcc_jit_block_end_with_return and
    gcc_jit_block_end_with_void_return.  */
 
-void
+recording::statement *
 recording::block::end_with_return (recording::location *loc,
 				   recording::rvalue *rvalue)
 {
@@ -2484,6 +2626,7 @@ recording::block::end_with_return (recording::location *loc,
   m_ctxt->record (result);
   m_statements.safe_push (result);
   m_has_been_terminated = true;
+  return result;
 }
 
 /* Override the default implementation of
@@ -2513,6 +2656,7 @@ recording::block::write_to_dump (dump &d)
 bool
 recording::block::validate ()
 {
+  /* Check for termination.  */
   if (!has_been_terminated ())
     {
       statement *stmt = get_last_statement ();
@@ -2856,6 +3000,14 @@ recording::unary_op::replay_into (replayer *r)
 				     m_a->playback_rvalue ()));
 }
 
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::unary_op.  */
+void
+recording::unary_op::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_a);
+}
+
 /* Implementation of recording::memento::make_debug_string for
    unary ops.  */
 
@@ -2888,6 +3040,15 @@ recording::binary_op::replay_into (replayer *r)
 				      get_type ()->playback_type (),
 				      m_a->playback_rvalue (),
 				      m_b->playback_rvalue ()));
+}
+
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::binary_op.  */
+void
+recording::binary_op::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_a);
+  v->visit (m_b);
 }
 
 /* Implementation of recording::memento::make_debug_string for
@@ -2955,6 +3116,16 @@ recording::comparison::replay_into (replayer *r)
 				       m_b->playback_rvalue ()));
 }
 
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::comparison.  */
+
+void
+recording::comparison::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_a);
+  v->visit (m_b);
+}
+
 /* Implementation of pure virtual hook recording::memento::replay_into
    for recording::cast.  */
 
@@ -2964,6 +3135,14 @@ recording::cast::replay_into (replayer *r)
   set_playback_obj (r->new_cast (playback_location (r, m_loc),
 				 m_rvalue->playback_rvalue (),
 				 get_type ()->playback_type ()));
+}
+
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::cast.  */
+void
+recording::cast::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_rvalue);
 }
 
 /* Implementation of recording::memento::make_debug_string for
@@ -3009,6 +3188,16 @@ recording::call::replay_into (replayer *r)
   set_playback_obj (r->new_call (playback_location (r, m_loc),
 				 m_func->playback_function (),
 				 &playback_args));
+}
+
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::call.  */
+
+void
+recording::call::visit_children (rvalue_visitor *v)
+{
+  for (unsigned i = 0; i< m_args.length (); i++)
+    v->visit (m_args[i]);
 }
 
 /* Implementation of recording::memento::make_debug_string for
@@ -3088,6 +3277,17 @@ recording::call_through_ptr::replay_into (replayer *r)
 					     &playback_args));
 }
 
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::call_through_ptr.  */
+
+void
+recording::call_through_ptr::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_fn_ptr);
+  for (unsigned i = 0; i< m_args.length (); i++)
+    v->visit (m_args[i]);
+}
+
 /* Implementation of recording::memento::make_debug_string for
    calls through function ptrs.  */
 
@@ -3144,6 +3344,16 @@ recording::array_access::replay_into (replayer *r)
 			 m_index->playback_rvalue ()));
 }
 
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::array_access.  */
+
+void
+recording::array_access::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_ptr);
+  v->visit (m_index);
+}
+
 /* Implementation of recording::memento::make_debug_string for
    array accesses.  */
 
@@ -3171,6 +3381,15 @@ recording::access_field_of_lvalue::replay_into (replayer *r)
 
 }
 
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::access_field_of_lvalue.  */
+
+void
+recording::access_field_of_lvalue::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_lvalue);
+}
+
 /* Implementation of recording::memento::make_debug_string for
    accessing a field of an lvalue.  */
 
@@ -3195,6 +3414,15 @@ recording::access_field_rvalue::replay_into (replayer *r)
     m_rvalue->playback_rvalue ()
       ->access_field (playback_location (r, m_loc),
 		      m_field->playback_field ()));
+}
+
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::access_field_rvalue.  */
+
+void
+recording::access_field_rvalue::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_rvalue);
 }
 
 /* Implementation of recording::memento::make_debug_string for
@@ -3224,6 +3452,15 @@ recording::dereference_field_rvalue::replay_into (replayer *r)
 			 m_field->playback_field ()));
 }
 
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::dereference_field_rvalue.  */
+
+void
+recording::dereference_field_rvalue::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_rvalue);
+}
+
 /* Implementation of recording::memento::make_debug_string for
    dereferencing a field of an rvalue.  */
 
@@ -3249,6 +3486,15 @@ recording::dereference_rvalue::replay_into (replayer *r)
       dereference (playback_location (r, m_loc)));
 }
 
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::dereference_rvalue.  */
+
+void
+recording::dereference_rvalue::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_rvalue);
+}
+
 /* Implementation of recording::memento::make_debug_string for
    dereferencing an rvalue.  */
 
@@ -3271,6 +3517,15 @@ recording::get_address_of_lvalue::replay_into (replayer *r)
   set_playback_obj (
     m_lvalue->playback_lvalue ()->
       get_address (playback_location (r, m_loc)));
+}
+
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::get_address_of_lvalue.  */
+
+void
+recording::get_address_of_lvalue::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_lvalue);
 }
 
 /* Implementation of recording::memento::make_debug_string for

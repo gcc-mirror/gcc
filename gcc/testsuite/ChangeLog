@@ -1,3 +1,14 @@
+2015-01-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-local-used-from-other-function.c: New test
+	case.
+	* jit.dg/test-error-param-reuse.c: New test case.
+	* jit.dg/test-error-param-sharing.c: New test case.
+	* jit.dg/test-error-param-used-from-other-function.c: New test
+	case.
+	* jit.dg/test-error-param-used-without-a-function.c: New test
+	case.
+
 2015-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/64563

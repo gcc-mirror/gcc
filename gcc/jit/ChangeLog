@@ -1,5 +1,98 @@
 2015-01-12  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit-recording.c (class gcc::jit::rvalue_usage_validator): New.
+	(gcc::jit::rvalue_usage_validator::rvalue_usage_validator): New
+	ctor.
+	(gcc::jit::rvalue_usage_validator::visit): New function.
+	(gcc::jit::recording::rvalue::verify_valid_within_stmt): New
+	function.
+	(gcc::jit::recording::rvalue::set_scope): New function.
+	(gcc::jit::recording::function::function): Call set_scope on each
+	param, issuing errors for any params that already have a function.
+	(gcc::jit::recording::block::add_eval): Return the new statement;
+	update the comment given that some error-checking now happens after
+	this returns.
+	(gcc::jit::recording::block::add_assignment): Likewise.
+	(gcc::jit::recording::block::add_assignment_op): Likewise.
+	(gcc::jit::recording::block::add_comment): Likewise.
+	(gcc::jit::recording::block::end_with_conditional): Likewise.
+	(gcc::jit::recording::block::end_with_jump): Likewise.
+	(gcc::jit::recording::block::end_with_return): Likewise.
+	(gcc::jit::recording::block::validate): Add a comment.
+	(gcc::jit::recording::unary_op::visit_children): New function.
+	(gcc::jit::recording::binary_op::visit_children): New function.
+	(gcc::jit::recording::comparison::visit_children): New function.
+	(gcc::jit::recording::cast::visit_children): New function.
+	(gcc::jit::recording::call::visit_children): New function.
+	(gcc::jit::recording::call_through_ptr::visit_children): New function.
+	(gcc::jit::recording::array_access::visit_children): New function.
+	(gcc::jit::recording::access_field_of_lvalue::visit_children): New
+	function.
+	(gcc::jit::recording::access_field_rvalue::visit_children): New
+	function.
+	(gcc::jit::recording::dereference_field_rvalue::visit_children):
+	New function.
+	(gcc::jit::recording::dereference_rvalue::visit_children): New
+	function.
+	(gcc::jit::recording::get_address_of_lvalue::visit_children): New
+	function.
+	* jit-recording.h: Within namespace gcc::jit::recording...
+	(class rvalue_visitor): New.
+	(rvalue::rvalue): Initialize m_scope.
+	(rvalue::get_loc): New accessor.
+	(rvalue::verify_valid_within_stmt): New function.
+	(rvalue::visit_children): New pure virtual function.
+	(rvalue::set_scope): New function.
+	(rvalue::get_scope): New function.
+	(rvalue::dyn_cast_param): New function.
+	(rvalue::m_scope): New field.
+	(param::visit_children): New empty function.
+	(param::dyn_cast_param): New function.
+	(function::get_loc): New function.
+	(block::add_eval): Return the new statement.
+	(block::add_assignment): Likewise.
+	(block::add_assignment_op): Likewise.
+	(block::add_comment): Likewise.
+	(block::end_with_conditional): Likewise.
+	(block::end_with_jump): Likewise.
+	(block::end_with_return): Likewise.
+	(global::visit_children): New function.
+	(memento_of_new_rvalue_from_const<HOST_TYPE>::visit_children):
+	New function.
+	(memento_of_new_string_literal::visit_children): New function.
+	(unary_op::visit_children): New function.
+	(binary_op::visit_children): New function.
+	(comparison::visit_children): New function.
+	(cast::visit_children): New function.
+	(call::visit_children): New function.
+	(call_through_ptr::visit_children): New function.
+	(array_access::visit_children): New function.
+	(access_field_of_lvalue::visit_children): New function.
+	(access_field_rvalue::visit_children): New function.
+	(dereference_field_rvalue::visit_children): New function.
+	(dereference_rvalue::visit_children): New function.
+	(get_address_of_lvalue::visit_children): New function.
+	(local::local): Call set_scope.
+	(local::visit_children): New function.
+	(statement::get_block): Make public.
+	* libgccjit.c (RETURN_VAL_IF_FAIL_PRINTF5): New macro.
+	(RETURN_NULL_IF_FAIL_PRINTF5): New macro.
+	(gcc_jit_context_new_function): Verify that each param has
+	not yet been used for creating another function.
+	(gcc_jit_block_add_eval): After creating the stmt, verify
+	that the rvalue expression tree is valid to use within it.
+	(gcc_jit_block_add_assignment): Likewise for the lvalue and
+	rvalue expression trees.
+	(gcc_jit_block_add_assignment_op): Likewise.
+	(gcc_jit_block_end_with_conditional): Likewise for the boolval
+	expression tree.
+	(gcc_jit_block_end_with_return): Likewise for the rvalue
+	expression tree.
+	(gcc_jit_block_end_with_void_return): Remove return of "void",
+	now that block::end_with_return is now non-void.
+
+2015-01-12  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit-playback.c (gcc::jit::playback::context::read_dump_file):
 	Add missing fclose on error-handling path.
 
