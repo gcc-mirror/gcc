@@ -1312,6 +1312,13 @@ inline_edge_duplication_hook (struct cgraph_edge *src,
   info->predicate = NULL;
   edge_set_predicate (dst, srcinfo->predicate);
   info->param = srcinfo->param.copy ();
+  if (!dst->indirect_unknown_callee && src->indirect_unknown_callee)
+    {
+      info->call_stmt_size -= (eni_size_weights.indirect_call_cost
+			       - eni_size_weights.call_cost);
+      info->call_stmt_time -= (eni_time_weights.indirect_call_cost
+			       - eni_time_weights.call_cost);
+    }
 }
 
 
