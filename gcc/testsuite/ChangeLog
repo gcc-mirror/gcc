@@ -1,3 +1,8 @@
+2015-01-12  Jeff Law  <law@redhat.com>
+
+	PR target/64461
+	* gcc.target/m68k/pr64461.c: New test.
+
 2015-01-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/test-array-as-pointer.c (create_code): Update call
