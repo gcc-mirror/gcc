@@ -768,9 +768,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     using namespace __facet_shims;
 
+#if __cpp_rtti
     // If this is already a shim just use its underlying facet.
     if (auto* p = dynamic_cast<const __shim*>(this))
       return p->_M_get();
+#endif
 
     if (which == &numpunct<char>::id)
       return new numpunct_shim<char>{this};
