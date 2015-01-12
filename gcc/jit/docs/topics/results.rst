@@ -23,8 +23,8 @@ Compilation results
 .. type:: gcc_jit_result
 
   A `gcc_jit_result` encapsulates the result of compiling a context,
-  and the lifetimes of any machine code functions that are
-  returned.
+  and the lifetimes of any machine code functions or globals that are
+  within it.
 
 .. function:: gcc_jit_result *\
               gcc_jit_context_compile (gcc_jit_context *ctxt)
@@ -32,6 +32,9 @@ Compilation results
    This calls into GCC and builds the code, returning a
    `gcc_jit_result *`.
 
+   If this is non-NULL, the caller becomes responsible for
+   calling :func:`gcc_jit_result_release` on it once they're done
+   with it.
 
 .. function:: void *\
               gcc_jit_result_get_code (gcc_jit_result *result,\
@@ -66,14 +69,59 @@ Compilation results
 
    Note that the resulting machine code becomes invalid after
    :func:`gcc_jit_result_release` is called on the
-   `gcc_jit_result *`; attempting to call it after that may lead
+   :type:`gcc_jit_result *`; attempting to call it after that may lead
    to a segmentation fault.
 
+.. function:: void *\
+              gcc_jit_result_get_global (gcc_jit_result *result,\
+                                         const char *name)
+
+   Locate a given global within the built machine code.
+
+   Globals are looked up by name.  For this to succeed, a global
+   with a name matching `name` must have been created on
+   `result`'s context (or a parent context) via a call to
+   :func:`gcc_jit_context_new_global` with `kind`
+   :macro:`GCC_JIT_GLOBAL_EXPORTED`.
+
+   If the global is found, the result will need to be cast to a
+   pointer of the correct type before it can be called.
+
+   This is a *pointer* to the global, so e.g. for an :c:type:`int` this is
+   an :c:type:`int *`.
+
+   For example, given an ``int foo;`` created this way:
+
+   .. code-block:: c
+
+     gcc_jit_lvalue *exported_global =
+       gcc_jit_context_new_global (ctxt,
+       any_location, /* or NULL */
+       GCC_JIT_GLOBAL_EXPORTED,
+       int_type,
+       "foo");
+
+   we can access it like this:
+
+   .. code-block:: c
+
+      int *ptr_to_foo =
+        (int *)gcc_jit_result_get_global (result, "foo");
+
+   If such a global is not found (or `result` or `name` are
+   ``NULL``), an error message will be emitted on stderr and
+   ``NULL`` will be returned.
+
+   Note that the resulting address becomes invalid after
+   :func:`gcc_jit_result_release` is called on the
+   :type:`gcc_jit_result *`; attempting to use it after that may lead
+   to a segmentation fault.
 
 .. function:: void\
               gcc_jit_result_release (gcc_jit_result *result)
 
    Once we're done with the code, this unloads the built .so file.
    This cleans up the result; after calling this, it's no longer
-   valid to use the result, or any code that was obtained by calling
-   :func:`gcc_jit_result_get_code` on it.
+   valid to use the result, or any code or globals that were obtained
+   by calling :func:`gcc_jit_result_get_code` or
+   :func:`gcc_jit_result_get_global` on it.

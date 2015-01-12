@@ -90,6 +90,7 @@ public:
 
   lvalue *
   new_global (location *loc,
+	      enum gcc_jit_global_kind kind,
 	      type *type,
 	      const char *name);
 
@@ -206,6 +207,10 @@ public:
     return m_recording_ctxt->errors_occurred ();
   }
 
+  /* For use by jit_langhook_write_globals.  */
+  void write_global_decls_1 ();
+  void write_global_decls_2 ();
+
 private:
   void dump_generated_code ();
 
@@ -259,6 +264,7 @@ private:
   tempdir *m_tempdir;
 
   auto_vec<function *> m_functions;
+  auto_vec<tree> m_globals;
   tree m_char_array_type_node;
   tree m_const_char_ptr;
 

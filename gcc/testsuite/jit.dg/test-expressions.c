@@ -884,6 +884,7 @@ make_test_of_get_address (gcc_jit_context *ctxt)
     gcc_jit_context_new_global (
       ctxt,
       NULL,
+      GCC_JIT_GLOBAL_IMPORTED,
       int_type,
       "test_global");
 

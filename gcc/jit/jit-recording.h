@@ -132,6 +132,7 @@ public:
 
   lvalue *
   new_global (location *loc,
+	      enum gcc_jit_global_kind kind,
 	      type *type,
 	      const char *name);
 
@@ -272,6 +273,7 @@ private:
 
   /* Specific recordings, for use by dump_to_file.  */
   auto_vec<compound_type *> m_compound_types;
+  auto_vec<global *> m_globals;
   auto_vec<function *> m_functions;
 
   type *m_basic_types[NUM_GCC_JIT_TYPES];
@@ -1051,18 +1053,23 @@ class global : public lvalue
 public:
   global (context *ctxt,
 	  location *loc,
+	  enum gcc_jit_global_kind kind,
 	  type *type,
 	  string *name)
   : lvalue (ctxt, loc, type),
+    m_kind (kind),
     m_name (name)
   {}
 
   void replay_into (replayer *);
 
+  void write_to_dump (dump &d);
+
 private:
   string * make_debug_string () { return m_name; }
 
 private:
+  enum gcc_jit_global_kind m_kind;
   string *m_name;
 };
 

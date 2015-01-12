@@ -177,6 +177,7 @@ recording::context::context (context *parent_ctxt)
     m_owns_last_error_str (false),
     m_mementos (),
     m_compound_types (),
+    m_globals (),
     m_functions (),
     m_FILE_type (NULL),
     m_builtins_manager(NULL)
@@ -636,12 +637,15 @@ recording::context::get_builtin_function (const char *name)
 
 recording::lvalue *
 recording::context::new_global (recording::location *loc,
+				enum gcc_jit_global_kind kind,
 				recording::type *type,
 				const char *name)
 {
-  recording::lvalue *result =
-    new recording::global (this, loc, type, new_string (name));
+  recording::global *result =
+    new recording::global (this, loc, kind, type, new_string (name));
   record (result);
+  m_globals.safe_push (result);
+
   return result;
 }
 
@@ -1015,6 +1019,15 @@ recording::context::dump_to_file (const char *path, bool update_locations)
 	st->get_fields ()->write_to_dump (d);
 	d.write ("\n");
       }
+
+  /* Globals.  */
+  global *g;
+  FOR_EACH_VEC_ELT (m_globals, i, g)
+    {
+      g->write_to_dump (d);
+    }
+  if (!m_globals.is_empty ())
+    d.write ("\n");
 
   function *fn;
   FOR_EACH_VEC_ELT (m_functions, i, fn)
@@ -2648,8 +2661,55 @@ void
 recording::global::replay_into (replayer *r)
 {
   set_playback_obj (r->new_global (playback_location (r, m_loc),
+				   m_kind,
 				   m_type->playback_type (),
 				   playback_string (m_name)));
+}
+
+/* Override the default implementation of
+   recording::memento::write_to_dump for globals.
+   This will be of the form:
+
+   GCC_JIT_GLOBAL_EXPORTED:
+      "TYPE NAME;"
+      e.g. "int foo;"
+
+   GCC_JIT_GLOBAL_INTERNAL:
+      "static TYPE NAME;"
+      e.g. "static int foo;"
+
+   GCC_JIT_GLOBAL_IMPORTED:
+      "extern TYPE NAME;"
+      e.g. "extern int foo;"
+
+   These are written to the top of the dump by
+   recording::context::dump_to_file.  */
+
+void
+recording::global::write_to_dump (dump &d)
+{
+  if (d.update_locations ())
+    m_loc = d.make_location ();
+
+  switch (m_kind)
+    {
+    default:
+      gcc_unreachable ();
+
+    case GCC_JIT_GLOBAL_EXPORTED:
+      break;
+
+    case GCC_JIT_GLOBAL_INTERNAL:
+      d.write ("static ");
+      break;
+
+    case GCC_JIT_GLOBAL_IMPORTED:
+      d.write ("extern ");
+      break;
+    }
+  d.write ("%s %s;\n",
+	   m_type->get_debug_string (),
+	   get_debug_string ());
 }
 
 /* The implementation of the various const-handling classes:

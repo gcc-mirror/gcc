@@ -86,6 +86,33 @@ get_code (const char *funcname)
   return code;
 }
 
+/* Attempt to locate the given global by name within the
+   playback::result, using dlsym.
+
+   Implements the post-error-checking part of
+   gcc_jit_result_get_global.  */
+
+void *
+result::
+get_global (const char *name)
+{
+  JIT_LOG_SCOPE (get_logger ());
+
+  void *global;
+  const char *error;
+
+  /* Clear any existing error.  */
+  dlerror ();
+
+  global = dlsym (m_dso_handle, name);
+
+  if ((error = dlerror()) != NULL)  {
+    fprintf(stderr, "%s\n", error);
+  }
+
+  return global;
+}
+
 } // namespace gcc::jit
 
 } // namespace gcc

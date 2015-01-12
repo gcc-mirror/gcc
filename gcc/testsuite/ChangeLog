@@ -1,3 +1,17 @@
+2015-01-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-array-as-pointer.c (create_code): Update call
+	to gcc_jit_context_new_global by setting "kind" to
+	GCC_JIT_GLOBAL_IMPORTED.
+	* jit.dg/test-error-array-as-pointer.c: Likewise.
+	* jit.dg/test-expressions.c (make_test_of_get_address): Likewise.
+	* jit.dg/test-fuzzer.c (make_random_global): Likewise, but
+	setting kind to GCC_JIT_GLOBAL_EXPORTED.
+	* jit.dg/test-using-global.c (the_global): Rename to...
+	(imported_global): ...this.
+	(create_code): Update to test the three kinds of global.
+	(verify_code): Likewise.
+
 2015-01-12  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR testsuite/64427
