@@ -1,5 +1,8 @@
 2015-01-12  Jeff Law  <law@redhat.com>
 
+	* config/m68k/m68k.md (truncsiqi2): Disable for TARGET_COLDFIRE.
+	(trunchiqi2, truncsihi2): Similarly.
+
 	* config/h8300/h8300.c (Fpa): Use RTX_FRAME_RELATED_P directly
 	rather than calling F.
 
