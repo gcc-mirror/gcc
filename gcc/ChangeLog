@@ -1,5 +1,6 @@
 2015-01-12  Jeff Law  <law@redhat.com>
 
+	PR target/64461
 	* config/m68k/m68k.md (truncsiqi2): Disable for TARGET_COLDFIRE.
 	(trunchiqi2, truncsihi2): Similarly.
 
