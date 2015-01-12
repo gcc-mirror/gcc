@@ -4625,8 +4625,9 @@ example, warn if an unsigned variable is compared against zero with
 @item -Wbad-function-cast @r{(C and Objective-C only)}
 @opindex Wbad-function-cast
 @opindex Wno-bad-function-cast
-Warn whenever a function call is cast to a non-matching type.
-For example, warn if @code{int malloc()} is cast to @code{anything *}.
+Warn when a function call is cast to a non-matching type.
+For example, warn if a call to a function returning an integer type 
+is cast to a pointer type.
 
 @item -Wc90-c99-compat @r{(C and Objective-C only)}
 @opindex Wc90-c99-compat

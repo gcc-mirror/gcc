@@ -1,3 +1,8 @@
+2015-01-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi ([-Wbad-function-cast]): Rewrite to avoid confusing
+	example.
+	
 2015-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/64563
