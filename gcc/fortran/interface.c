@@ -3675,6 +3675,8 @@ gfc_extend_expr (gfc_expr *e)
   gfc_user_op *uop;
   gfc_intrinsic_op i;
   const char *gname;
+  gfc_typebound_proc* tbo;
+  gfc_expr* tb_base;
 
   sym = NULL;
 
@@ -3691,6 +3693,48 @@ gfc_extend_expr (gfc_expr *e)
 
   i = fold_unary_intrinsic (e->value.op.op);
 
+  /* See if we find a matching type-bound operator.  */
+  if (i == INTRINSIC_USER)
+    tbo = matching_typebound_op (&tb_base, actual,
+				  i, e->value.op.uop->name, &gname);
+  else
+    switch (i)
+      {
+#define CHECK_OS_COMPARISON(comp) \
+  case INTRINSIC_##comp: \
+  case INTRINSIC_##comp##_OS: \
+    tbo = matching_typebound_op (&tb_base, actual, \
+				 INTRINSIC_##comp, NULL, &gname); \
+    if (!tbo) \
+      tbo = matching_typebound_op (&tb_base, actual, \
+				   INTRINSIC_##comp##_OS, NULL, &gname); \
+    break;
+	CHECK_OS_COMPARISON(EQ)
+	CHECK_OS_COMPARISON(NE)
+	CHECK_OS_COMPARISON(GT)
+	CHECK_OS_COMPARISON(GE)
+	CHECK_OS_COMPARISON(LT)
+	CHECK_OS_COMPARISON(LE)
+#undef CHECK_OS_COMPARISON
+
+	default:
+	  tbo = matching_typebound_op (&tb_base, actual, i, NULL, &gname);
+	  break;
+      }
+
+  /* If there is a matching typebound-operator, replace the expression with
+      a call to it and succeed.  */
+  if (tbo)
+    {
+      gcc_assert (tb_base);
+      build_compcall_for_operator (e, actual, tb_base, tbo, gname);
+
+      if (!gfc_resolve_expr (e))
+	return MATCH_ERROR;
+      else
+	return MATCH_YES;
+    }
+ 
   if (i == INTRINSIC_USER)
     {
       for (ns = gfc_current_ns; ns; ns = ns->parent)
@@ -3741,58 +3785,9 @@ gfc_extend_expr (gfc_expr *e)
 
   if (sym == NULL)
     {
-      gfc_typebound_proc* tbo;
-      gfc_expr* tb_base;
-
-      /* See if we find a matching type-bound operator.  */
-      if (i == INTRINSIC_USER)
-	tbo = matching_typebound_op (&tb_base, actual,
-				     i, e->value.op.uop->name, &gname);
-      else
-	switch (i)
-	  {
-#define CHECK_OS_COMPARISON(comp) \
-  case INTRINSIC_##comp: \
-  case INTRINSIC_##comp##_OS: \
-    tbo = matching_typebound_op (&tb_base, actual, \
-				 INTRINSIC_##comp, NULL, &gname); \
-    if (!tbo) \
-      tbo = matching_typebound_op (&tb_base, actual, \
-				   INTRINSIC_##comp##_OS, NULL, &gname); \
-    break;
-	    CHECK_OS_COMPARISON(EQ)
-	    CHECK_OS_COMPARISON(NE)
-	    CHECK_OS_COMPARISON(GT)
-	    CHECK_OS_COMPARISON(GE)
-	    CHECK_OS_COMPARISON(LT)
-	    CHECK_OS_COMPARISON(LE)
-#undef CHECK_OS_COMPARISON
-
-	    default:
-	      tbo = matching_typebound_op (&tb_base, actual, i, NULL, &gname);
-	      break;
-	  }
-
-      /* If there is a matching typebound-operator, replace the expression with
-	 a call to it and succeed.  */
-      if (tbo)
-	{
-	  bool result;
-
-	  gcc_assert (tb_base);
-	  build_compcall_for_operator (e, actual, tb_base, tbo, gname);
-
-	  result = gfc_resolve_expr (e);
-	  if (!result)
-	    return MATCH_ERROR;
-
-	  return MATCH_YES;
-	}
-
       /* Don't use gfc_free_actual_arglist().  */
       free (actual->next);
       free (actual);
-
       return MATCH_NO;
     }
 
