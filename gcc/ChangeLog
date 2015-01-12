@@ -1,3 +1,11 @@
+2015-01-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_atomic_assign_expand_fenv): New function.
+	(TARGET_ATOMIC_ASSIGN_EXPAND_FENV): Define.
+	(sh_builtin_get_fpscr, sh_builtin_set_fpscr): New variables.
+	(sh_init_builtins): Record decls for __builtin_sh_get_fpscr and
+	__builtin_sh_set_fpscr.
+
 2015-01-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi ([-Wsuggest-attribute=]): Don't use parentheses
