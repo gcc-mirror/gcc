@@ -1,5 +1,10 @@
 2015-01-12  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit-playback.c (gcc::jit::playback::context::read_dump_file):
+	Add missing fclose on error-handling path.
+
+2015-01-12  David Malcolm  <dmalcolm@redhat.com>
+
 	* docs/cp/topics/expressions.rst (Global variables): Add
 	enum gcc_jit_global_kind param to gccjit::context::new_global.
 	* docs/topics/expressions.rst (Global variables): Likewise.
