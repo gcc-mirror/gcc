@@ -987,16 +987,23 @@ gcc_jit_block_get_function (gcc_jit_block *block)
 gcc_jit_lvalue *
 gcc_jit_context_new_global (gcc_jit_context *ctxt,
 			    gcc_jit_location *loc,
+			    enum gcc_jit_global_kind kind,
 			    gcc_jit_type *type,
 			    const char *name)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
   JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
+  RETURN_NULL_IF_FAIL_PRINTF1 (
+    ((kind >= GCC_JIT_GLOBAL_EXPORTED)
+     && (kind <= GCC_JIT_GLOBAL_IMPORTED)),
+    ctxt, loc,
+    "unrecognized value for enum gcc_jit_global_kind: %i",
+    kind);
   RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
   RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
 
-  return (gcc_jit_lvalue *)ctxt->new_global (loc, type, name);
+  return (gcc_jit_lvalue *)ctxt->new_global (loc, kind, type, name);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -2211,6 +2218,25 @@ gcc_jit_result_get_code (gcc_jit_result *result,
   result->log ("%s: returning (void *)%p", __func__, code);
 
   return code;
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::result::get_global method in jit-result.c.  */
+
+void *
+gcc_jit_result_get_global (gcc_jit_result *result,
+			   const char *name)
+{
+  RETURN_NULL_IF_FAIL (result, NULL, NULL, "NULL result");
+  JIT_LOG_FUNC (result->get_logger ());
+  RETURN_NULL_IF_FAIL (name, NULL, NULL, "NULL name");
+
+  void *global = result->get_global (name);
+  result->log ("%s: returning (void *)%p", __func__, global);
+
+  return global;
 }
 
 /* Public entrypoint.  See description in libgccjit.h.

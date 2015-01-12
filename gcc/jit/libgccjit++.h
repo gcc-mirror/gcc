@@ -155,7 +155,8 @@ namespace gccjit
 
     function get_builtin_function (const std::string &name);
 
-    lvalue new_global (type type_,
+    lvalue new_global (enum gcc_jit_global_kind kind,
+		       type type_,
 		       const std::string &name,
 		       location loc = location ());
 
@@ -707,12 +708,14 @@ context::get_builtin_function (const std::string &name)
 }
 
 inline lvalue
-context::new_global (type type_,
+context::new_global (enum gcc_jit_global_kind kind,
+		     type type_,
 		     const std::string &name,
 		     location loc)
 {
   return lvalue (gcc_jit_context_new_global (m_inner_ctxt,
 					     loc.get_inner_location (),
+					     kind,
 					     type_.get_inner_type (),
 					     name.c_str ()));
 }

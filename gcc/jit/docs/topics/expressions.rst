@@ -460,11 +460,36 @@ Global variables
 .. function:: gcc_jit_lvalue *\
               gcc_jit_context_new_global (gcc_jit_context *ctxt,\
                                           gcc_jit_location *loc,\
+                                          enum gcc_jit_global_kind kind,\
                                           gcc_jit_type *type,\
                                           const char *name)
 
    Add a new global variable of the given type and name to the context.
 
+   The "kind" parameter determines the visibility of the "global" outside
+   of the :c:type:`gcc_jit_result`:
+
+   .. type:: enum gcc_jit_global_kind
+
+   .. c:macro:: GCC_JIT_GLOBAL_EXPORTED
+
+      Global is defined by the client code and is visible
+      by name outside of this JIT context via
+      :c:func:`gcc_jit_result_get_global` (and this value is required for
+      the global to be accessible via that entrypoint).
+
+   .. c:macro:: GCC_JIT_GLOBAL_INTERNAL
+
+      Global is defined by the client code, but is invisible
+      outside of it.  Analogous to a "static" global within a .c file.
+      Specifically, the variable will only be visible within this
+      context and within child contexts.
+
+   .. c:macro:: GCC_JIT_GLOBAL_IMPORTED
+
+      Global is not defined by the client code; we're merely
+      referring to it.  Analogous to using an "extern" global from a
+      header file.
 
 Working with pointers, structs and unions
 -----------------------------------------

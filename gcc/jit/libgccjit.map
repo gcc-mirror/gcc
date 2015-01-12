@@ -87,6 +87,7 @@
     gcc_jit_param_as_object;
     gcc_jit_param_as_rvalue;
     gcc_jit_result_get_code;
+    gcc_jit_result_get_global;
     gcc_jit_result_release;
     gcc_jit_rvalue_access_field;
     gcc_jit_rvalue_as_object;

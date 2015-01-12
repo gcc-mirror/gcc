@@ -504,12 +504,15 @@ Global variables
 ****************
 
 .. function:: gccjit::lvalue \
-              gccjit::context::new_global (gccjit::type type, \
+              gccjit::context::new_global (enum gcc_jit_global_kind,\
+                                           gccjit::type type, \
                                            const char *name, \
                                            gccjit::location loc)
 
    Add a new global variable of the given type and name to the context.
 
+   This is a thin wrapper around :c:func:`gcc_jit_context_new_global` from
+   the C API; the "kind" parameter has the same meaning as there.
 
 Working with pointers, structs and unions
 -----------------------------------------

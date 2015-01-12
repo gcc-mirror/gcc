@@ -299,6 +299,13 @@ extern void *
 gcc_jit_result_get_code (gcc_jit_result *result,
 			 const char *funcname);
 
+/* Locate a given global within the built machine code.
+   It must have been created using GCC_JIT_GLOBAL_EXPORTED.
+   This is a ptr to the global, so e.g. for an int this is an int *.  */
+extern void *
+gcc_jit_result_get_global (gcc_jit_result *result,
+			   const char *name);
+
 /* Once we're done with the code, this unloads the built .so file.
    This cleans up the result; after calling this, it's no longer
    valid to use the result.  */
@@ -606,10 +613,26 @@ gcc_jit_block_get_function (gcc_jit_block *block);
 /**********************************************************************
  lvalues, rvalues and expressions.
  **********************************************************************/
+enum gcc_jit_global_kind
+{
+  /* Global is defined by the client code and visible
+     by name outside of this JIT context via gcc_jit_result_get_global.  */
+  GCC_JIT_GLOBAL_EXPORTED,
+
+  /* Global is defined by the client code, but is invisible
+     outside of this JIT context.  Analogous to a "static" global.  */
+  GCC_JIT_GLOBAL_INTERNAL,
+
+  /* Global is not defined by the client code; we're merely
+     referring to it.  Analogous to using an "extern" global from a
+     header file.  */
+  GCC_JIT_GLOBAL_IMPORTED
+};
 
 extern gcc_jit_lvalue *
 gcc_jit_context_new_global (gcc_jit_context *ctxt,
 			    gcc_jit_location *loc,
+			    enum gcc_jit_global_kind kind,
 			    gcc_jit_type *type,
 			    const char *name);
 

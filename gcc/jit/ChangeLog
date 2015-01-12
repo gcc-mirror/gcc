@@ -1,3 +1,51 @@
+2015-01-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/expressions.rst (Global variables): Add
+	enum gcc_jit_global_kind param to gccjit::context::new_global.
+	* docs/topics/expressions.rst (Global variables): Likewise.
+	Document the new enum.
+	* docs/topics/results.rst (Compilation results): Document
+	globals-handling.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* dummy-frontend.c (jit_langhook_write_globals): Call into the
+	playback context's write_global_decls_1 and write_global_decls_2
+	before and after calling symtab->finalize_compilation_unit ().
+	* jit-playback.c: Include "debug.h".
+	(gcc::jit::playback::context::new_global): Add "kind" param and
+	use it to set TREE_PUBLIC, TREE_STATIC and DECL_EXTERNAL on the
+	underlying VAR_DECL.  Call varpool_node::get_create on the
+	VAR_DECL, and add it to m_globals.
+	(gcc::jit::playback::context::write_global_decls_1): New function.
+	(gcc::jit::playback::context::write_global_decls_2): New function.
+	* jit-playback.h (gcc::jit::playback::context::context): Call
+	create on m_globals.
+	(gcc::jit::playback::context::new_global): Add "kind" param.
+	(gcc::jit::playback::context::write_global_decls_1): New function.
+	(gcc::jit::playback::context::write_global_decls_2): New function.
+	(gcc::jit::playback::context::m_globals): New field.
+	* jit-recording.c (gcc::jit::recording::context::context):
+	Initialize m_globals.
+	(gcc::jit::recording::context::new_global): Add param "kind".
+	Add the new global to m_globals.
+	(gcc::jit::recording::context::dump_to_file): Dump the globals.
+	(gcc::jit::recording::global::replay_into): Add field m_kind.
+	(gcc::jit::recording::global::write_to_dump): New override.
+	* jit-recording.h (gcc::jit::recording::context::new_global): Add
+	param "kind".
+	(gcc::jit::recording::context::m_globals): New field.
+	(gcc::jit::recording::global::global): Add param kind.
+	(gcc::jit::recording::global::write_to_dump): New override.
+	(gcc::jit::recording::global::m_kind): New field.
+	* jit-result.c (gcc::jit::result::get_global): New function.
+	* jit-result.h (gcc::jit::result::get_global): New function.
+	* libgccjit++.h (gccjit::context::new_global): Add "kind" param.
+	* libgccjit.c (gcc_jit_context_new_global): Likewise.
+	(gcc_jit_result_get_global): New API entrypoint.
+	* libgccjit.h (gcc_jit_result_get_global): New API entrypoint.
+	(enum gcc_jit_global_kind): New enum.
+	(gcc_jit_context_new_global): API change: add "kind" param.
+	* libgccjit.map (gcc_jit_result_get_global): New symbol.
+
 2015-01-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* dummy-frontend.c: Include "fixed-value.h", "alias.h", "flags.h",

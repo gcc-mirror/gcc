@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "context.h"
 #include "fold-const.h"
+#include "debug.h"
 
 #include "jit-common.h"
 #include "jit-logging.h"
@@ -109,6 +110,7 @@ playback::context::context (recording::context *ctxt)
 {
   JIT_LOG_SCOPE (get_logger ());
   m_functions.create (0);
+  m_globals.create (0);
   m_source_files.create (0);
   m_cached_locations.create (0);
 }
@@ -482,6 +484,7 @@ new_function (location *loc,
 playback::lvalue *
 playback::context::
 new_global (location *loc,
+	    enum gcc_jit_global_kind kind,
 	    type *type,
 	    const char *name)
 {
@@ -490,12 +493,32 @@ new_global (location *loc,
   tree inner = build_decl (UNKNOWN_LOCATION, VAR_DECL,
 			   get_identifier (name),
 			   type->as_tree ());
-  TREE_PUBLIC (inner) = 1;
+  TREE_PUBLIC (inner) = (kind != GCC_JIT_GLOBAL_INTERNAL);
   DECL_COMMON (inner) = 1;
-  DECL_EXTERNAL (inner) = 1;
+  switch (kind)
+    {
+    default:
+      gcc_unreachable ();
+
+    case GCC_JIT_GLOBAL_EXPORTED:
+      TREE_STATIC (inner) = 1;
+      break;
+
+    case GCC_JIT_GLOBAL_INTERNAL:
+      TREE_STATIC (inner) = 1;
+      break;
+
+    case GCC_JIT_GLOBAL_IMPORTED:
+      DECL_EXTERNAL (inner) = 1;
+      break;
+    }
 
   if (loc)
     set_tree_location (inner, loc);
+
+  varpool_node::get_create (inner);
+
+  m_globals.safe_push (inner);
 
   return new lvalue (this, inner);
 }
@@ -648,6 +671,45 @@ as_truth_value (tree expr, location *loc)
 
   return expr;
 }
+
+/* For use by jit_langhook_write_globals.
+   Calls varpool_node::finalize_decl on each global.  */
+
+void
+playback::context::
+write_global_decls_1 ()
+{
+  /* Compare with e.g. the C frontend's c_write_global_declarations.  */
+  JIT_LOG_SCOPE (get_logger ());
+
+  int i;
+  tree decl;
+  FOR_EACH_VEC_ELT (m_globals, i, decl)
+    {
+      gcc_assert (TREE_CODE (decl) == VAR_DECL);
+      varpool_node::finalize_decl (decl);
+    }
+}
+
+/* For use by jit_langhook_write_globals.
+   Calls debug_hooks->global_decl on each global.  */
+
+void
+playback::context::
+write_global_decls_2 ()
+{
+  /* Compare with e.g. the C frontend's c_write_global_declarations_2. */
+  JIT_LOG_SCOPE (get_logger ());
+
+  int i;
+  tree decl;
+  FOR_EACH_VEC_ELT (m_globals, i, decl)
+    {
+      gcc_assert (TREE_CODE (decl) == VAR_DECL);
+      debug_hooks->global_decl (decl);
+    }
+}
+
 
 /* Construct a playback::rvalue instance (wrapping a tree) for a
    unary op.  */

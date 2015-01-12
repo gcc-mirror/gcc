@@ -36,6 +36,9 @@ public:
   void *
   get_code (const char *funcname);
 
+  void *
+  get_global (const char *name);
+
 private:
   void *m_dso_handle;
   tempdir *m_tempdir;

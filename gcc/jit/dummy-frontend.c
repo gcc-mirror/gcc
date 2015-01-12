@@ -221,11 +221,16 @@ jit_langhook_getdecls (void)
 static void
 jit_langhook_write_globals (void)
 {
-  gcc_assert (gcc::jit::active_playback_ctxt);
-  JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
+  gcc::jit::playback::context *ctxt = gcc::jit::active_playback_ctxt;
+  gcc_assert (ctxt);
+  JIT_LOG_SCOPE (ctxt->get_logger ());
+
+  ctxt->write_global_decls_1 ();
 
   /* This is the hook that runs the middle and backends: */
   symtab->finalize_compilation_unit ();
+
+  ctxt->write_global_decls_2 ();
 }
 
 #undef LANG_HOOKS_NAME
