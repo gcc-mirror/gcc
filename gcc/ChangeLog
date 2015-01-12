@@ -1,3 +1,24 @@
+2015-01-12  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_edge::remove_callee): Move function to header
+	file for being inlined.
+	(cgraph_set_edge_callee): Delete.
+	(cgraph_edge::redirect_callee): Move function to header file
+	for being inlined.
+	(cgraph_edge::make_direct): Use new function.
+	(cgraph_edge::dump_edge_flags): New function created from
+	static dump_edge_flags function.
+	(cgraph_node::dump): Use new function.
+	(cgraph_edge::verify_count_and_frequency): New function created
+	from verify_edge_count_and_frequency.
+	(cgraph_edge::verify_corresponds_to_fndecl): New function created
+	from verify_edge_corresponds_to_fndecl.
+	(verify_edge_corresponds_to_fndecl): Delete.
+	(cgraph_node::verify_node): Use new function.
+	* cgraph.h (cgraph_edge::set_callee): New function.
+	(cgraph_edge::dump_edge_flags): Likewise.
+	(cgraph_edge::verify_corresponds_to_fndecl): Likewise.
+
 2015-01-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.c (estimate_function_body_sizes): Do not
