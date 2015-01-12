@@ -527,7 +527,7 @@ Fpa (rtx par)
   int i;
 
   for (i = 0; i < len; i++)
-    F (as_a <rtx_insn *> (XVECEXP (par, 0, i)), true);
+    RTX_FRAME_RELATED_P (XVECEXP (par, 0, i)) = 1;
 
   return par;
 }
