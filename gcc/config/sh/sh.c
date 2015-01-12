@@ -318,6 +318,7 @@ static void sh_setup_incoming_varargs (cumulative_args_t, machine_mode,
 				       tree, int *, int);
 static bool sh_strict_argument_naming (cumulative_args_t);
 static bool sh_pretend_outgoing_varargs_named (cumulative_args_t);
+static void sh_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static tree sh_build_builtin_va_list (void);
 static void sh_va_start (tree, rtx);
 static tree sh_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
@@ -576,6 +577,9 @@ static const struct attribute_spec sh_attribute_table[] =
 #define TARGET_FUNCTION_ARG sh_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE sh_function_arg_advance
+
+#undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
+#define TARGET_ATOMIC_ASSIGN_EXPAND_FENV sh_atomic_assign_expand_fenv
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST sh_build_builtin_va_list
@@ -11897,6 +11901,9 @@ static struct builtin_description bdesc[] =
     CODE_FOR_set_fpscr, "__builtin_sh_set_fpscr", SH_BLTIN_VU, 0 },
 };
 
+static tree sh_builtin_get_fpscr;
+static tree sh_builtin_set_fpscr;
+
 static void
 sh_init_builtins (void)
 {
@@ -11955,7 +11962,82 @@ sh_init_builtins (void)
       d->fndecl =
 	add_builtin_function (d->name, type, d - bdesc, BUILT_IN_MD,
 			      NULL, NULL_TREE);
+      /* Recode {sts,set}_fpscr decls for sh_atomic_assign_expand_fenv.  */
+      if (d->icode == CODE_FOR_sts_fpscr)
+	sh_builtin_get_fpscr = d->fndecl;
+      else if (d->icode == CODE_FOR_set_fpscr)
+	sh_builtin_set_fpscr = d->fndecl;
     }
+}
+
+/* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV.  */
+
+static void
+sh_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
+{
+  const unsigned SH_FE_INVALID = 64;
+  const unsigned SH_FE_DIVBYZERO = 32;
+  const unsigned SH_FE_OVERFLOW = 16;
+  const unsigned SH_FE_UNDERFLOW = 8;
+  const unsigned SH_FE_INEXACT = 4;
+  const unsigned HOST_WIDE_INT SH_FE_ALL_EXCEPT = (SH_FE_INVALID
+						   | SH_FE_DIVBYZERO
+						   | SH_FE_OVERFLOW
+						   | SH_FE_UNDERFLOW
+						   | SH_FE_INEXACT);
+  const unsigned HOST_WIDE_INT SH_FE_EXCEPT_SHIFT = 5;
+  tree fenv_var, mask, ld_fenv, masked_fenv;
+  tree new_fenv_var, reload_fenv, restore_fnenv;
+  tree update_call, atomic_feraiseexcept, hold_fnclex;
+
+  if (! TARGET_FPU_ANY)
+    return;
+
+  /* Generate the equivalent of :
+       unsigned int fenv_var;
+       fenv_var = __builtin_sh_get_fpscr ();
+
+       unsigned int masked_fenv;
+       masked_fenv = fenv_var & mask;
+
+       __builtin_sh_set_fpscr (masked_fenv);  */
+
+  fenv_var = create_tmp_var (unsigned_type_node);
+  mask = build_int_cst (unsigned_type_node,
+			~((SH_FE_ALL_EXCEPT << SH_FE_EXCEPT_SHIFT)
+			  | SH_FE_ALL_EXCEPT));
+  ld_fenv = build2 (MODIFY_EXPR, unsigned_type_node,
+		    fenv_var, build_call_expr (sh_builtin_get_fpscr, 0));
+  masked_fenv = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var, mask);
+  hold_fnclex = build_call_expr (sh_builtin_set_fpscr, 1, masked_fenv);
+  *hold = build2 (COMPOUND_EXPR, void_type_node,
+		  build2 (COMPOUND_EXPR, void_type_node, masked_fenv, ld_fenv),
+		  hold_fnclex);
+
+  /* Store the value of masked_fenv to clear the exceptions:
+     __builtin_sh_set_fpscr (masked_fenv);  */
+
+  *clear = build_call_expr (sh_builtin_set_fpscr, 1, masked_fenv);
+
+  /* Generate the equivalent of :
+       unsigned int new_fenv_var;
+       new_fenv_var = __builtin_sh_get_fpscr ();
+
+       __builtin_sh_set_fpscr (fenv_var);
+
+       __atomic_feraiseexcept (new_fenv_var);  */
+
+  new_fenv_var = create_tmp_var (unsigned_type_node);
+  reload_fenv = build2 (MODIFY_EXPR, unsigned_type_node, new_fenv_var,
+			build_call_expr (sh_builtin_get_fpscr, 0));
+  restore_fnenv = build_call_expr (sh_builtin_set_fpscr, 1, fenv_var);
+  atomic_feraiseexcept = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
+  update_call = build_call_expr (atomic_feraiseexcept, 1,
+				 fold_convert (integer_type_node,
+					       new_fenv_var));
+  *update = build2 (COMPOUND_EXPR, void_type_node,
+		    build2 (COMPOUND_EXPR, void_type_node,
+			    reload_fenv, restore_fnenv), update_call);
 }
 
 /* Implements target hook vector_mode_supported_p.  */
