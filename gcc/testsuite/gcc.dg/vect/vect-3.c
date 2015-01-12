@@ -1,5 +1,6 @@
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target vect_float } */
+/* { dg-add-options bind_pic_locally } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
