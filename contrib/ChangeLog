@@ -1,3 +1,9 @@
+2015-01-12  Yury Gribov  <y.gribov@samsung.com>
+
+	* check_GNU_style.sh: Support patches coming from stdin.
+	Check that spaces are converted to tabs.
+	Make double-space-after-dot check more precice.
+
 2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config-list.mk (LIST): Add visium-elf.
