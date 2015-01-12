@@ -267,7 +267,7 @@ func_checker::compare_memory_operand (tree t1, tree t2)
   /* Compare alias sets for memory operands.  */
   if (source_is_memop && target_is_memop)
     {
-      if (TREE_THIS_VOLATILE (b1) != TREE_THIS_VOLATILE (b2))
+      if (TREE_THIS_VOLATILE (t1) != TREE_THIS_VOLATILE (t2))
 	return return_false_with_msg ("different operand volatility");
 
       if (ao_ref_alias_set (&r1) != ao_ref_alias_set (&r2)

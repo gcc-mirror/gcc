@@ -1,5 +1,17 @@
 2015-01-12  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/64550
+	* ipa-icf-gimple.c (func_checker::compare_memory_operand): Compare
+	volatility for correct operands.
+
+2015-01-12  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sem_function::equals_wpa): Add indirect_calls as indication
+	that a function is not leaf.
+	(sem_function::compare_polymorphic_p): Likewise.
+
+2015-01-12  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf.c (sem_function::equals_wpa): Add indirect_calls as indication
 	that a function is not leaf.
 	(sem_function::compare_polymorphic_p): Likewise.
