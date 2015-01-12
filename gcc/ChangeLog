@@ -1,3 +1,19 @@
+2015-01-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-protos.h (tune_params): Add fuseable_ops field.
+	* config/arm/arm.c (arm_macro_fusion_p): New function.
+	(arm_macro_fusion_pair_p): Likewise.
+	(TARGET_SCHED_MACRO_FUSION_P): Define.
+	(TARGET_SCHED_MACRO_FUSION_PAIR_P): Likewise.
+	(ARM_FUSE_NOTHING): Likewise.
+	(ARM_FUSE_MOVW_MOVT): Likewise.
+	(arm_slowmul_tune, arm_fastmul_tune, arm_strongarm_tune,
+	arm_xscale_tune, arm_9e_tune, arm_v6t2_tune, arm_cortex_tune,
+	arm_cortex_a8_tune, arm_cortex_a7_tune, arm_cortex_a15_tune,
+	arm_cortex_a53_tune, arm_cortex_a57_tune, arm_cortex_a9_tune,
+	arm_cortex_a12_tune, arm_v7m_tune, arm_v6m_tune, arm_fa726te_tune
+	arm_cortex_a5_tune): Specify fuseable_ops value.
+
 2015-01-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/64561

@@ -289,6 +289,8 @@ struct tune_params
   bool string_ops_prefer_neon;
   /* Maximum number of instructions to inline calls to memset.  */
   int max_insns_inline_memset;
+  /* Bitfield encoding the fuseable pairs of instructions.  */
+  unsigned int fuseable_ops;
 };
 
 extern const struct tune_params *current_tune;
