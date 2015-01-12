@@ -1,3 +1,8 @@
+2015-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64357
+	* gcc.dg/torture/pr64357.c: New testcase.
+
 2015-01-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/nop-mcount.c: Properly place {} in target
