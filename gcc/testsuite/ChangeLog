@@ -1,8 +1,3 @@
-2015-01-11  Markus Trippelsdorf  <markus@trippelsdorf.de>
-
-	PR ipa/63470
-	* ipa/pr63470.C: New testcase.
-
 2015-01-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/63733
