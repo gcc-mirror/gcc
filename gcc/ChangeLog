@@ -1,5 +1,9 @@
 2015-01-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/64513
+	* config/i386/i386.c (ix86_expand_prologue): Add
+	REG_FRAME_RELATED_EXPR to %rax and %r10 pushes.
+
 	PR tree-optimization/64454
 	* tree-vrp.c (simplify_div_or_mod_using_ranges): Optimize
 	op0 % op1 into op0 if op0 is in range [-op1 + 1, op1 - 1]
