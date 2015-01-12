@@ -4242,7 +4242,7 @@ Warn about functions that might be candidates for attributes
 functions visible in other compilation units or (in the case of @code{pure} and
 @code{const}) if it cannot prove that the function returns normally. A function
 returns normally if it doesn't contain an infinite loop or return abnormally
-by throwing, calling @code{abort()} or trapping.  This analysis requires option
+by throwing, calling @code{abort} or trapping.  This analysis requires option
 @option{-fipa-pure-const}, which is enabled by default at @option{-O} and
 higher.  Higher optimization levels improve the accuracy of the analysis.
 
@@ -5785,7 +5785,7 @@ Similarly @option{-fno-sanitize-recover} is equivalent to
 @item -fsanitize-undefined-trap-on-error
 @opindex fsanitize-undefined-trap-on-error
 The @option{-fsanitize-undefined-trap-on-error} instructs the compiler to
-report undefined behavior using @code{__builtin_trap ()} rather than
+report undefined behavior using @code{__builtin_trap} rather than
 a @code{libubsan} library routine.  The advantage of this is that the
 @code{libubsan} library is not needed and is not linked in, so this
 is usable even in freestanding environments.
@@ -6109,7 +6109,7 @@ Set the internal debug counter upper bound.  @var{counter-value-list}
 is a comma-separated list of @var{name}:@var{value} pairs
 which sets the upper bound of each debug counter @var{name} to @var{value}.
 All debug counters have the initial upper bound of @code{UINT_MAX};
-thus @code{dbg_cnt()} returns true always unless the upper bound
+thus @code{dbg_cnt} returns true always unless the upper bound
 is set by this option.
 For example, with @option{-fdbg-cnt=dce:10,tail_call:0},
 @code{dbg_cnt(dce)} returns true only for first 10 invocations.
@@ -18454,7 +18454,7 @@ Divide-by-zero checks can be completely disabled using
 @itemx -mno-memcpy
 @opindex mmemcpy
 @opindex mno-memcpy
-Force (do not force) the use of @code{memcpy()} for non-trivial block
+Force (do not force) the use of @code{memcpy} for non-trivial block
 moves.  The default is @option{-mno-memcpy}, which allows GCC to inline
 most constant-sized copies.
 
@@ -18667,7 +18667,7 @@ Disable the insertion of cache barriers.  This is the default setting.
 @opindex mflush-func
 Specifies the function to call to flush the I and D caches, or to not
 call any such function.  If called, the function must take the same
-arguments as the common @code{_flush_func()}, that is, the address of the
+arguments as the common @code{_flush_func}, that is, the address of the
 memory range for which the cache is being flushed, the size of the
 memory range, and the number 3 (to flush both caches).  The default
 depends on the target GCC was configured for, but commonly is either
@@ -18721,7 +18721,7 @@ It is enabled by default at optimization level @option{-O3}.
 @opindex msynci
 Enable (disable) generation of @code{synci} instructions on
 architectures that support it.  The @code{synci} instructions (if
-enabled) are generated when @code{__builtin___clear_cache()} is
+enabled) are generated when @code{__builtin___clear_cache} is
 compiled.
 
 This option defaults to @option{-mno-synci}, but the default can be
