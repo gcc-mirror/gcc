@@ -21,7 +21,7 @@
 	test for PIE with copy reloc.
 	* configure: Regenerated.
 
-2014-01-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+2015-01-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_load_tp): Use R0_REGNUM instead of constant 0
 	in gen_rtx_REG.
