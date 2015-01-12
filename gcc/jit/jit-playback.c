@@ -1947,6 +1947,7 @@ playback::context::read_dump_file (const char *path)
     {
       add_error (NULL, "error reading from %s", path);
       free (result);
+      fclose (f_in);
       return NULL;
     }
 
