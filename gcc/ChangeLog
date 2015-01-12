@@ -1,3 +1,11 @@
+2015-01-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/63470
+	* ipa-inline-analysis.c (inline_edge_duplication_hook): Adjust
+	cost when edge becomes direct.
+	* ipa-prop.c (make_edge_direct): Do not adjust when speculation
+	is resolved or when introducing new speculation.
+
 2015-01-12  Chen Gang  <gang.chen.5i5j@gmail.com>
 
 	PR ipa/64551
