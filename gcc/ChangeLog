@@ -1,3 +1,9 @@
+2015-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64357
+	* tree-cfg.c (gimple_can_merge_blocks_p): Protect simple
+	latches properly.
+
 2015-01-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_cortex_a12_tune): Update entries to match

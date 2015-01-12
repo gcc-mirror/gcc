@@ -1723,11 +1723,13 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
     }
 
   /* Protect simple loop latches.  We only want to avoid merging
-     the latch with the loop header in this case.  */
+     the latch with the loop header or with a block in another
+     loop in this case.  */
   if (current_loops
       && b->loop_father->latch == b
       && loops_state_satisfies_p (LOOPS_HAVE_SIMPLE_LATCHES)
-      && b->loop_father->header == a)
+      && (b->loop_father->header == a
+	  || b->loop_father != a->loop_father))
     return false;
 
   /* It must be possible to eliminate all phi nodes in B.  If ssa form
