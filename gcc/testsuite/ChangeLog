@@ -1,3 +1,47 @@
+2015-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/64028
+	* gcc.dg/vect/no-section-anchors-vect-31.c: Add dg-add-options
+	bind_pic_locally.
+	* gcc.dg/vect/no-section-anchors-vect-34.c: Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-36.c: Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-64.c: Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-65.c: Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-68.c: Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-69.c: Likewise.
+	* gcc.dg/vect/slp-25.c: Likewise.
+	* gcc.dg/vect/vect-109.c: Likewise.
+	* gcc.dg/vect/vect-13.c: Likewise.
+	* gcc.dg/vect/vect-17.c: Likewise.
+	* gcc.dg/vect/vect-18.c: Likewise.
+	* gcc.dg/vect/vect-19.c: Likewise.
+	* gcc.dg/vect/vect-20.c: Likewise.
+	* gcc.dg/vect/vect-21.c: Likewise.
+	* gcc.dg/vect/vect-22.c: Likewise.
+	* gcc.dg/vect/vect-27.c: Likewise.
+	* gcc.dg/vect/vect-29.c: Likewise.
+	* gcc.dg/vect/vect-2-big-array.c: Likewise.
+	* gcc.dg/vect/vect-2.c: Likewise.
+	* gcc.dg/vect/vect-3.c: Likewise.
+	* gcc.dg/vect/vect-4.c: Likewise.
+	* gcc.dg/vect/vect-5.c: Likewise.
+	* gcc.dg/vect/vect-72.c: Likewise.
+	* gcc.dg/vect/vect-73-big-array.c: Likewise.
+	* gcc.dg/vect/vect-73.c: Likewise.
+	* gcc.dg/vect/vect-77-global.c: Likewise.
+	* gcc.dg/vect/vect-78-global.c: Likewise.
+	* gcc.dg/vect/vect-7.c: Likewise.
+	* gcc.dg/vect/vect-86.c: Likewise.
+	* gcc.dg/vect/vect-align-1.c: Likewise.
+	* gcc.dg/vect/vect-align-3.c: Likewise.
+	* gcc.dg/vect/vect-all-big-array.c: Likewise.
+	* gcc.dg/vect/vect-all.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-1.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-4.c: Likewise.
+	* gcc.dg/vect/vect-peel-3.c: Likewise.
+	* gcc.dg/vect/vect-peel-4.c: Likewise.
+	* gcc.dg/vect/wrapv-vect-7.c: Likewise.
+
 2015-01-12  Jeff Law  <law@redhat.com>
 
 	PR target/64461
