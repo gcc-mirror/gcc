@@ -122,7 +122,7 @@ sreal::to_double () const
 {
   double val = m_sig;
   if (m_exp)
-    val = scalbln (val, m_exp);
+    val = ldexp (val, m_exp);
   return val;
 }
 
