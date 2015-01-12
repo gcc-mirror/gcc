@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
+#include "gimplify-me.h"
 #include "gimple-ssa.h"
 #include "hash-map.h"
 #include "plugin-api.h"
@@ -67,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "diagnostic.h"
 #include "tree-ssa-propagate.h"
+#include "tree-ssa-loop-ivopts.h"
 #include "tsan.h"
 #include "asan.h"
 #include "builtins.h"
@@ -144,16 +146,15 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
 
   /* No need to instrument accesses to decls that don't escape,
      they can't escape to other threads then.  */
-  if (DECL_P (base))
+  if (DECL_P (base) && !is_global_var (base))
     {
       struct pt_solution pt;
       memset (&pt, 0, sizeof (pt));
       pt.escaped = 1;
       pt.ipa_escaped = flag_ipa_pta != 0;
-      pt.nonlocal = 1;
       if (!pt_solution_includes (&pt, base))
 	return false;
-      if (!is_global_var (base) && !may_be_aliased (base))
+      if (!may_be_aliased (base))
 	return false;
     }
 
@@ -165,7 +166,6 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
   stmt = gsi_stmt (gsi);
   loc = gimple_location (stmt);
   rhs = is_vptr_store (stmt, expr, is_write);
-  seq = NULL;
 
   if ((TREE_CODE (expr) == COMPONENT_REF
        && DECL_BIT_FIELD_TYPE (TREE_OPERAND (expr, 1)))
@@ -197,6 +197,8 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
 	return false;
       size = (bitpos % BITS_PER_UNIT + bitsize + BITS_PER_UNIT - 1)
 	     / BITS_PER_UNIT;
+      if (may_be_nonaddressable_p (base))
+	return false;
       align = get_object_alignment (base);
       if (align < BITS_PER_UNIT)
 	return false;
@@ -206,45 +208,21 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
 	  align = (align - 1) & bitpos;
 	  align = align & -align;
 	}
-      gcc_checking_assert (is_gimple_addressable (base));
       expr = build_fold_addr_expr (unshare_expr (base));
-      if (!is_gimple_mem_ref_addr (expr))
-	{
-	  g = gimple_build_assign (make_ssa_name (TREE_TYPE (expr)), expr);
-	  expr = gimple_assign_lhs (g);
-	  gimple_set_location (g, loc);
-	  gimple_seq_add_stmt_without_update (&seq, g);
-	}
       expr = build2 (MEM_REF, char_type_node, expr,
 		     build_int_cst (TREE_TYPE (expr), bitpos / BITS_PER_UNIT));
       expr_ptr = build_fold_addr_expr (expr);
     }
-  /* We can't call build_fold_addr_expr on a VIEW_CONVERT_EXPR.
-     This can occur in Ada.  */
-  else if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
-    {
-      align = get_object_alignment (expr);
-      if (align < BITS_PER_UNIT)
-	return false;
-      expr = TREE_OPERAND (expr, 0);
-      gcc_checking_assert (is_gimple_addressable (expr));
-      expr_ptr = build_fold_addr_expr (unshare_expr (expr));
-    }
   else
     {
+      if (may_be_nonaddressable_p (expr))
+	return false;
       align = get_object_alignment (expr);
       if (align < BITS_PER_UNIT)
 	return false;
-      gcc_checking_assert (is_gimple_addressable (expr));
       expr_ptr = build_fold_addr_expr (unshare_expr (expr));
     }
-  if (!is_gimple_val (expr_ptr))
-    {
-      g = gimple_build_assign (make_ssa_name (TREE_TYPE (expr_ptr)), expr_ptr);
-      expr_ptr = gimple_assign_lhs (g);
-      gimple_set_location (g, loc);
-      gimple_seq_add_stmt_without_update (&seq, g);
-    }
+  expr_ptr = force_gimple_operand (expr_ptr, &seq, true, NULL_TREE);
   if ((size & (size - 1)) != 0 || size > 16
       || align < MIN (size, 8) * BITS_PER_UNIT)
     {

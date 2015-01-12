@@ -1,3 +1,8 @@
+2015-01-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* tsan.c (instrument_expr): Use force_gimple_operand.
+	Use may_be_nonaddressable_p instead of is_gimple_addressable.
+
 2015-01-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64530
