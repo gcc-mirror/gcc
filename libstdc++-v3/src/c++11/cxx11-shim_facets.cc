@@ -87,13 +87,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       union {
 	const void* _M_p;
 	char* _M_pc;
+#ifdef _GLIBCXX_USE_WCHAR_T
 	wchar_t* _M_pwc;
+#endif
       };
       size_t _M_len;
       char _M_unused[16];
 
       operator const char*() const { return _M_pc; }
+#ifdef _GLIBCXX_USE_WCHAR_T
       operator const wchar_t*() const { return _M_pwc; }
+#endif
     };
     union {
       __str_rep _M_str;
@@ -251,9 +255,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	size_t _M_grouping_size;
       };
 
-    template class numpunct_shim<char>;
-    template class numpunct_shim<wchar_t>;
-
     template<typename _CharT>
       struct collate_shim : std::collate<_CharT>, facet::__shim
       {
@@ -278,9 +279,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return st;
 	}
       };
-
-    template class collate_shim<char>;
-    template class collate_shim<wchar_t>;
 
     template<typename _CharT>
       struct time_get_shim : std::time_get<_CharT>, facet::__shim
@@ -363,11 +361,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__cache_type* _M_cache;
       };
 
-    template class moneypunct_shim<char, true>;
-    template class moneypunct_shim<char, false>;
-    template class moneypunct_shim<wchar_t, true>;
-    template class moneypunct_shim<wchar_t, false>;
-
     template<typename _CharT>
       struct money_get_shim : std::money_get<_CharT>, facet::__shim
       {
@@ -409,9 +402,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       };
 
-    template class money_get_shim<char>;
-    template class money_get_shim<wchar_t>;
-
     template<typename _CharT>
       struct money_put_shim : std::money_put<_CharT>, facet::__shim
       {
@@ -440,10 +430,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			     &st);
 	}
       };
-
-    template class money_put_shim<char>;
-    template class money_put_shim<wchar_t>;
-
 
     template<typename _CharT>
       struct messages_shim : std::messages<_CharT>, facet::__shim
@@ -477,8 +463,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       };
 
+    template class numpunct_shim<char>;
+    template class collate_shim<char>;
+    template class moneypunct_shim<char, true>;
+    template class moneypunct_shim<char, false>;
+    template class money_get_shim<char>;
+    template class money_put_shim<char>;
     template class messages_shim<char>;
+#ifdef _GLIBCXX_USE_WCHAR_T
+    template class numpunct_shim<wchar_t>;
+    template class collate_shim<wchar_t>;
+    template class moneypunct_shim<wchar_t, true>;
+    template class moneypunct_shim<wchar_t, false>;
+    template class money_get_shim<wchar_t>;
+    template class money_put_shim<wchar_t>;
     template class messages_shim<wchar_t>;
+#endif
 
     template<typename C>
       inline size_t
@@ -524,9 +524,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __numpunct_fill_cache(current_abi, const facet*, __numpunct_cache<char>*,
 			const char*&, size_t&);
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template void
   __numpunct_fill_cache(current_abi, const facet*, __numpunct_cache<wchar_t>*,
 			const char*&, size_t&);
+#endif
 
   template<typename C>
     int
@@ -540,9 +542,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __collate_compare(current_abi, const facet*, const char*, const char*,
 		    const char*, const char*);
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template int
   __collate_compare(current_abi, const facet*, const wchar_t*, const wchar_t*,
 		    const wchar_t*, const wchar_t*);
+#endif
 
   template<typename C>
     void
@@ -557,9 +561,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __collate_transform(current_abi, const facet*, __any_string&,
 		      const char*, const char*);
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template void
   __collate_transform(current_abi, const facet*, __any_string&,
 		      const wchar_t*, const wchar_t*);
+#endif
 
   template<typename C, bool Intl>
     void
@@ -599,6 +605,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __moneypunct_fill_cache(current_abi, const facet*,
 			  __moneypunct_cache<char, false>*);
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template void
   __moneypunct_fill_cache(current_abi, const facet*,
 			  __moneypunct_cache<wchar_t, true>*);
@@ -606,6 +613,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template void
   __moneypunct_fill_cache(current_abi, const facet*,
 			  __moneypunct_cache<wchar_t, false>*);
+#endif
 
   template<typename C>
     messages_base::catalog
@@ -621,9 +629,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __messages_open<char>(current_abi, const facet*, const char*, size_t,
 			const locale&);
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template messages_base::catalog
   __messages_open<wchar_t>(current_abi, const facet*, const char*, size_t,
 			   const locale&);
+#endif
 
   template<typename C>
     void
@@ -639,9 +649,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __messages_get(current_abi, const facet*, __any_string&,
 		 messages_base::catalog, int, int, const char*, size_t);
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template void
   __messages_get(current_abi, const facet*, __any_string&,
 		 messages_base::catalog, int, int, const wchar_t*, size_t);
+#endif
 
   template<typename C>
     void
@@ -653,9 +665,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template void
   __messages_close<char>(current_abi, const facet*, messages_base::catalog c);
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template void
   __messages_close<wchar_t>(current_abi, const facet*,
 			    messages_base::catalog c);
+#endif
 
   template<typename C>
     time_base::dateorder
@@ -665,8 +679,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template time_base::dateorder
   __time_get_dateorder<char>(current_abi, const facet*);
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template time_base::dateorder
   __time_get_dateorder<wchar_t>(current_abi, const facet*);
+#endif
 
   template<typename C>
     istreambuf_iterator<C>
@@ -697,10 +713,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     istreambuf_iterator<char>, istreambuf_iterator<char>,
 	     ios_base&, ios_base::iostate&, tm*, char);
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template istreambuf_iterator<wchar_t>
   __time_get(current_abi, const facet*,
 	     istreambuf_iterator<wchar_t>, istreambuf_iterator<wchar_t>,
 	     ios_base&, ios_base::iostate&, tm*, char);
+#endif
 
   template<typename C>
     istreambuf_iterator<C>
@@ -725,11 +743,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      bool, ios_base&, ios_base::iostate&,
 	      long double*, __any_string*);
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template istreambuf_iterator<wchar_t>
   __money_get(current_abi, const facet*,
 	      istreambuf_iterator<wchar_t>, istreambuf_iterator<wchar_t>,
 	      bool, ios_base&, ios_base::iostate&,
 	      long double*, __any_string*);
+#endif
 
   template<typename C>
     ostreambuf_iterator<C>
@@ -748,9 +768,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __money_put(current_abi, const facet*, ostreambuf_iterator<char>,
 		bool, ios_base&, char, long double, const __any_string*);
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template ostreambuf_iterator<wchar_t>
   __money_put(current_abi, const facet*, ostreambuf_iterator<wchar_t>,
 		bool, ios_base&, wchar_t, long double, const __any_string*);
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __facet_shims
