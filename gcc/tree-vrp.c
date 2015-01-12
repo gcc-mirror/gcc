@@ -8998,7 +8998,11 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
 
 /* Simplify a division or modulo operator to a right shift or
    bitwise and if the first operand is unsigned or is greater
-   than zero and the second operand is an exact power of two.  */
+   than zero and the second operand is an exact power of two.
+   For TRUNC_MOD_EXPR op0 % op1 with constant op1, optimize it
+   into just op0 if op0's range is known to be a subset of
+   [-op1 + 1, op1 - 1] for signed and [0, op1 - 1] for unsigned
+   modulo.  */
 
 static bool
 simplify_div_or_mod_using_ranges (gimple stmt)
@@ -9007,7 +9011,30 @@ simplify_div_or_mod_using_ranges (gimple stmt)
   tree val = NULL;
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
-  value_range_t *vr = get_value_range (gimple_assign_rhs1 (stmt));
+  value_range_t *vr = get_value_range (op0);
+
+  if (rhs_code == TRUNC_MOD_EXPR
+      && TREE_CODE (op1) == INTEGER_CST
+      && tree_int_cst_sgn (op1) == 1
+      && range_int_cst_p (vr)
+      && tree_int_cst_lt (vr->max, op1))
+    {
+      if (TYPE_UNSIGNED (TREE_TYPE (op0))
+	  || tree_int_cst_sgn (vr->min) >= 0
+	  || tree_int_cst_lt (fold_unary (NEGATE_EXPR, TREE_TYPE (op1), op1),
+			      vr->min))
+	{
+	  /* If op0 already has the range op0 % op1 has,
+	     then TRUNC_MOD_EXPR won't change anything.  */
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  gimple_assign_set_rhs_from_tree (&gsi, op0);
+	  update_stmt (stmt);
+	  return true;
+	}
+    }
+
+  if (!integer_pow2p (op1))
+    return false;
 
   if (TYPE_UNSIGNED (TREE_TYPE (op0)))
     {
@@ -9880,11 +9907,14 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 
       /* Transform TRUNC_DIV_EXPR and TRUNC_MOD_EXPR into RSHIFT_EXPR
 	 and BIT_AND_EXPR respectively if the first operand is greater
-	 than zero and the second operand is an exact power of two.  */
+	 than zero and the second operand is an exact power of two.
+	 Also optimize TRUNC_MOD_EXPR away if the second operand is
+	 constant and the first operand already has the right value
+	 range.  */
 	case TRUNC_DIV_EXPR:
 	case TRUNC_MOD_EXPR:
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
-	      && integer_pow2p (gimple_assign_rhs2 (stmt)))
+	  if (TREE_CODE (rhs1) == SSA_NAME
+	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
 	    return simplify_div_or_mod_using_ranges (stmt);
 	  break;
 

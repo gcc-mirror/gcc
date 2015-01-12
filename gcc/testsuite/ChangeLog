@@ -1,5 +1,8 @@
 2015-01-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/64454
+	* gcc.dg/pr64454.c: New test.
+
 	PR testsuite/64028
 	* gcc.dg/vect/no-section-anchors-vect-31.c: Add dg-add-options
 	bind_pic_locally.

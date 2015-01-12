@@ -1,5 +1,12 @@
 2015-01-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/64454
+	* tree-vrp.c (simplify_div_or_mod_using_ranges): Optimize
+	op0 % op1 into op0 if op0 is in range [-op1 + 1, op1 - 1]
+	for signed or [0, op1 - 1] for unsigned modulo.
+	(simplify_stmt_using_ranges): Call simplify_div_or_mod_using_ranges
+	even if op1 does not satisfy integer_pow2p.
+
 	PR other/64370
 	* sreal.c (sreal::to_double): Use ldexp instead of scalbnl.
 
