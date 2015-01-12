@@ -1,5 +1,11 @@
 2015-01-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.c (arm_cortex_a12_tune): Update entries to match
+	Cortex-A17 tuning parameters.
+	* config/arm/arm-cores.def (cortex-a12): Schedule for cortex-a17.
+
+2015-01-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm-protos.h (tune_params): Add fuseable_ops field.
 	* config/arm/arm.c (arm_macro_fusion_p): New function.
 	(arm_macro_fusion_pair_p): Likewise.
