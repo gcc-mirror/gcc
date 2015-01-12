@@ -4640,7 +4640,7 @@ target_opts_for_fn (const_tree fndecl)
   tree fn_opts = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
   if (fn_opts == NULL_TREE)
     fn_opts = target_option_default_node;
-  return TREE_TARGET_OPTION (fn_opts);
+  return fn_opts == NULL_TREE ? NULL : TREE_TARGET_OPTION (fn_opts);
 }
 
 /* opt flag for function FNDECL, e.g. opts_for_fn (fndecl, optimize) is
