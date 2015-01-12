@@ -1,3 +1,10 @@
+2015-01-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR testsuite/64427
+	* gcc.target/i386/pr64291-1.c: Limit to lp64 tarrget.  Avoid
+	undefined behavior.
+	* gcc.target/i386/pr64291-2.c: Updated.
+
 2015-01-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64530
