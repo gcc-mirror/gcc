@@ -1950,17 +1950,17 @@ const struct tune_params arm_cortex_a12_tune =
 {
   arm_9e_rtx_costs,
   &cortexa12_extra_costs,
-  NULL,
+  NULL,						/* Sched adj cost.  */
   1,						/* Constant limit.  */
-  5,						/* Max cond insns.  */
-  ARM_PREFETCH_BENEFICIAL(4,32,32),
+  2,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
   arm_default_branch_cost,
   true,						/* Prefer LDRD/STRD.  */
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
+  true, true,                                   /* Prefer 32-bit encodings.  */
   true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_MOVW_MOVT				/* Fuseable pairs of instructions.  */
