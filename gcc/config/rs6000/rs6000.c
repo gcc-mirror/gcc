@@ -32628,6 +32628,14 @@ rs6000_split_logical_inner (rtx dest,
   if (complement_op2_p)
     op2 = gen_rtx_NOT (mode, op2);
 
+  /* For canonical RTL, if only one arm is inverted it is the first.  */
+  if (!complement_op1_p && complement_op2_p)
+    {
+      rtx temp = op1;
+      op1 = op2;
+      op2 = temp;
+    }
+
   bool_rtx = ((code == NOT)
 	      ? gen_rtx_NOT (mode, op1)
 	      : gen_rtx_fmt_ee (code, mode, op1, op2));
