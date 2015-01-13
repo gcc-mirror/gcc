@@ -779,7 +779,7 @@ install_data_local_split = 50
 install-data-local:
 	$(PRE_INSTALL)
 ## Install the .pc file.
-	@pc_version=`echo $(GCJVERSION) | sed -e 's/[.][^.]*$$//'`; \
+	@pc_version=`echo $(GCJVERSION) | sed -e 's/[.][^.]*[.][^.]*$$//'`; \
 	file="libgcj-$${pc_version}.pc"; \
 	$(mkinstalldirs) $(DESTDIR)$(pkgconfigdir); \
 	echo "  $(INSTALL_DATA) libgcj.pc $(DESTDIR)$(pkgconfigdir)/$$file"; \

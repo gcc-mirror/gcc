@@ -1,3 +1,10 @@
+2015-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcj/64219
+	* Makefile.am (install-data-local): Use just the major version
+	from GCJVERSION instead of major.minor.
+	* Makefile.in: Regenerated.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* classpath/gnu/java/rmi/registry/RegistryImpl.java (version): Update
