@@ -2150,9 +2150,9 @@ extern int making_const_table;
    : reverse_condition (code))
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE))
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE))
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
 
 #define CC_STATUS_INIT \
   do { cfun->machine->thumb1_cc_insn = NULL_RTX; } while (0)
