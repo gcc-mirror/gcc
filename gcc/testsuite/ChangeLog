@@ -1,3 +1,11 @@
+2015-01-13  Renlin Li  <renlin.li@arm.com>
+
+	Backported from mainline
+	2014-11-19 Renlin Li <renlin.li@arm.com>
+
+	PR target/63424
+	* gcc.target/aarch64/pr63424.c: New Test.
+
 2015-01-12  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from mainline
