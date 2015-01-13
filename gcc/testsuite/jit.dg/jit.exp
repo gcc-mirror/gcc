@@ -301,6 +301,21 @@ set tests [lsort $tests]
 
 verbose "tests: $tests"
 
+# Is testcase NAME meant to generate a reproducer?
+proc is_testcase_meant_to_generate_a_reproducer {name} {
+    # We expect most testcases to generate a reproducer.
+    # The exceptions are the tutorials (which don't have a "test-"
+    # prefix), and test-threads.c (which is unique).
+    verbose "is_testcase_meant_to_generate_a_reproducer: $name"
+    if { [string match "*test-*" $name] } {
+	if { [string match "*test-threads.c" $name] } {
+	    return 0
+	}
+	return 1
+    }
+    return 0
+}
+
 # libgloss has found the driver (as "xgcc" or "gcc) and stored
 # its full path as GCC_UNDER_TEST.
 proc get_path_of_driver {} {
@@ -364,6 +379,14 @@ proc jit-dg-test { prog do_what extra_tool_flags } {
 	    $output_file $comp_output] then {
       return
     }
+
+    # Most of the test cases use gcc_jit_context_dump_reproducer_to_file
+    # as they run to write out a .c file that reproduces their behavior,
+    # exercising that API.
+    set generated_reproducer "${output_file}.reproducer.c"
+
+    # Delete any such generated .c file from a previous run.
+    catch "exec rm -f $generated_reproducer"
 
     # Run the test executable, capturing the PASS/FAIL textual output
     # from the C API, converting it into the Tcl API.
@@ -455,6 +478,54 @@ proc jit-dg-test { prog do_what extra_tool_flags } {
     }
 
     restore_ld_library_path_env_vars
+
+    # Most of the test cases use gcc_jit_context_dump_reproducer_to_file
+    # as they run to write out a .c file that reproduces their behavior,
+    # exercising that API.
+
+    if { [is_testcase_meant_to_generate_a_reproducer $name] } {
+	verbose "$name is meant to generate a reproducer"
+	# Verify that a reproducer was generated
+	if { [file exists $generated_reproducer] == 1} {
+	    pass "found generated reproducer: $generated_reproducer"
+	    set output_file "${generated_reproducer}.exe"
+	    # (this overwrites output_file)
+
+	    # Try to compile the generated reproducer
+	    verbose "compilation_function=$compilation_function"
+
+	    # The .c file written by gcc_jit_context_dump_reproducer_to_file
+	    # assigns the result of each API call to a unique variable, and not
+	    # all are necessarily used, so we need -Wno-unused-variable.
+	    set options \
+		"{additional_flags=$extra_tool_flags -Wno-unused-variable}"
+	    verbose "options=$options"
+
+	    set comp_output2 [$compilation_function $generated_reproducer \
+				  $output_file "executable" $options]
+	    if ![jit_check_compile "generated reproducer from $name" "initial compilation" \
+		     $output_file $comp_output2] then {
+			 return
+		     }
+
+	    # The caller, dg-test, will verify comp_output, which contains
+	    # the output from compiling the testcase and will issue a fail
+	    # if it's non-empty (e.g. containing warnings, the
+	    # "test for excess errors").
+	    #
+	    # Append the output from compiling the reproducer, so that this is also
+	    # verified:
+	    append comp_output $comp_output2
+
+	    # TODO: we should try to run the built executable
+	    # It's not quite a quine, since it embeds ptrs which could change
+	    # from run to run.
+	} else {
+	    fail "did not find a generated reproducer: $generated_reproducer"
+	}
+    } else {
+	verbose "$name is not meant to generate a reproducer"
+    }
 
     return [list $comp_output $output_file]
 }

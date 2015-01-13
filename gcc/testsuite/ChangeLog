@@ -1,3 +1,18 @@
+2015-01-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (set_up_logging): Move string concatenation
+	into...
+	(concat_strings): New function.
+	(dump_reproducer): New function.
+	(test_jit): Call dump_reproducer.
+	* jit.dg/jit.exp (is_testcase_meant_to_generate_a_reproducer): New
+	function.
+	(jit-dg-test): Delete any generated reproducer from previous runs.
+	Verify that a generated reproducer was created, and verify that it
+	compiles.
+	* jit.dg/test-nested-contexts.c (main): Call
+	gcc_jit_context_dump_reproducer_to_file.
+
 2015-01-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/aru-2.c: Add dg-require-profiling.

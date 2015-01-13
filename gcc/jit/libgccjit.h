@@ -1051,6 +1051,24 @@ gcc_jit_context_new_child_context (gcc_jit_context *parent_ctxt);
  Implementation support.
  **********************************************************************/
 
+/* Write C source code into "path" that can be compiled into a
+   self-contained executable (i.e. with libgccjit as the only dependency).
+   The generated code will attempt to replay the API calls that have been
+   made into the given context.
+
+   This may be useful when debugging the library or client code, for
+   reducing a complicated recipe for reproducing a bug into a simpler
+   form.
+
+   Typically you need to supply the option "-Wno-unused-variable" when
+   compiling the generated file (since the result of each API call is
+   assigned to a unique variable within the generated C source, and not
+   all are necessarily then used).  */
+
+extern void
+gcc_jit_context_dump_reproducer_to_file (gcc_jit_context *ctxt,
+					 const char *path);
+
 /* Enable the dumping of a specific set of internal state from the
    compilation, capturing the result in-memory as a buffer.
 

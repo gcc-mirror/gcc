@@ -168,6 +168,8 @@ public:
 	bool update_locations);
   ~dump ();
 
+  recording::context &get_context () { return m_ctxt; }
+
   void write (const char *fmt, ...)
     GNU_PRINTF(2, 3);
 

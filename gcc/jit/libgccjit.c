@@ -386,7 +386,7 @@ gcc_jit_context_new_location (gcc_jit_context *ctxt,
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
   JIT_LOG_FUNC (ctxt->get_logger ());
-  return (gcc_jit_location *)ctxt->new_location (filename, line, column);
+  return (gcc_jit_location *)ctxt->new_location (filename, line, column, true);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -2232,6 +2232,22 @@ gcc_jit_context_set_logfile (gcc_jit_context *ctxt,
   else
     logger = NULL;
   ctxt->set_logger (logger);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::dump_reproducer_to_file method in
+   jit-recording.c.  */
+
+void
+gcc_jit_context_dump_reproducer_to_file (gcc_jit_context *ctxt,
+					 const char *path)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_IF_FAIL (path, ctxt, NULL, "NULL path");
+  ctxt->dump_reproducer_to_file (path);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.

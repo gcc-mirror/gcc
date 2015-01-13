@@ -30,6 +30,7 @@ namespace jit {
 
 class result;
 class dump;
+class reproducer;
 
 /**********************************************************************
  Recording.
@@ -73,7 +74,8 @@ public:
   location *
   new_location (const char *filename,
 		int line,
-		int column);
+		int column,
+		bool created_by_user);
 
   type *
   get_type (enum gcc_jit_types type);
@@ -244,6 +246,8 @@ public:
 
   void dump_to_file (const char *path, bool update_locations);
 
+  void dump_reproducer_to_file (const char *path);
+
   void
   get_all_requested_dumps (vec <recording::requested_dump> *out);
 
@@ -252,6 +256,10 @@ private:
 
 private:
   context *m_parent_ctxt;
+
+  /* The ultimate ancestor of the contexts within a family tree of
+     contexts.  This has itself as its own m_toplevel_ctxt.  */
+  context *m_toplevel_ctxt;
 
   int m_error_count;
 
@@ -314,6 +322,8 @@ public:
   get_debug_string ();
 
   virtual void write_to_dump (dump &d);
+  virtual void write_reproducer (reproducer &r) = 0;
+  virtual location *dyn_cast_location () { return NULL; }
 
 protected:
   memento (context *ctxt)
@@ -355,6 +365,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   size_t m_len;
@@ -364,11 +375,13 @@ private:
 class location : public memento
 {
 public:
-  location (context *ctxt, string *filename, int line, int column)
+  location (context *ctxt, string *filename, int line, int column,
+	    bool created_by_user)
   : memento (ctxt),
     m_filename (filename),
     m_line (line),
-    m_column (column)
+    m_column (column),
+    m_created_by_user (created_by_user)
  {}
 
   void replay_into (replayer *r);
@@ -400,13 +413,18 @@ public:
     return static_cast <playback::location *> (m_playback_obj);
   }
 
+  location *dyn_cast_location () { return this; }
+  bool created_by_user () const { return m_created_by_user; }
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   string *m_filename;
   int m_line;
   int m_column;
+  bool m_created_by_user;
 };
 
 class type : public memento
@@ -458,6 +476,8 @@ public:
     return static_cast <playback::type *> (m_playback_obj);
   }
 
+  virtual const char *access_as_type (reproducer &r);
+
 protected:
   type (context *ctxt)
     : memento (ctxt),
@@ -504,6 +524,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   enum gcc_jit_types m_kind;
@@ -531,6 +552,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   type *m_other_type;
@@ -565,6 +587,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   type *m_other_type;
@@ -593,6 +616,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   type *m_other_type;
@@ -623,6 +647,7 @@ class array_type : public type
 
  private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
  private:
   location *m_loc;
@@ -657,9 +682,14 @@ public:
 
   string * make_debug_string_with_ptr ();
 
+  void
+  write_deferred_reproducer (reproducer &r,
+			     memento *ptr_type);
+
  private:
   string * make_debug_string ();
   string * make_debug_string_with (const char *);
+  void write_reproducer (reproducer &r);
 
 private:
   type *m_return_type;
@@ -698,6 +728,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   location *m_loc;
@@ -757,9 +788,11 @@ public:
 
   void replay_into (replayer *r);
 
+  const char *access_as_type (reproducer &r);
+
 private:
   string * make_debug_string ();
-
+  void write_reproducer (reproducer &r);
 };
 
 // memento of struct_::set_fields
@@ -774,8 +807,12 @@ public:
 
   void write_to_dump (dump &d);
 
+  int length () const { return m_fields.length (); }
+  field *get_field (int i) const { return m_fields[i]; }
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   compound_type *m_struct_or_union;
@@ -793,11 +830,11 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   location *m_loc;
   string *m_name;
-  fields *m_fields;
 };
 
 /* An abstract base class for operations that visit all rvalues within an
@@ -861,6 +898,8 @@ public:
   /* Dynamic cast.  */
   virtual param *dyn_cast_param () { return NULL; }
 
+  virtual const char *access_as_rvalue (reproducer &r);
+
 protected:
   location *m_loc;
   type *m_type;
@@ -893,6 +932,9 @@ public:
 
   rvalue *
   as_rvalue () { return this; }
+
+  const char *access_as_rvalue (reproducer &r);
+  virtual const char *access_as_lvalue (reproducer &r);
 };
 
 class param : public lvalue
@@ -920,8 +962,12 @@ public:
 
   param *dyn_cast_param () { return this; }
 
+  const char *access_as_rvalue (reproducer &r);
+  const char *access_as_lvalue (reproducer &r);
+
 private:
   string * make_debug_string () { return m_name; }
+  void write_reproducer (reproducer &r);
 
 private:
   string *m_name;
@@ -978,6 +1024,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   location *m_loc;
@@ -1065,6 +1112,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
   void replay_into (replayer *r);
 
@@ -1103,6 +1151,7 @@ public:
 
 private:
   string * make_debug_string () { return m_name; }
+  void write_reproducer (reproducer &r);
 
 private:
   enum gcc_jit_global_kind m_kind;
@@ -1126,6 +1175,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   HOST_TYPE m_value;
@@ -1146,6 +1196,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   string *m_value;
@@ -1170,6 +1221,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   enum gcc_jit_unary_op m_op;
@@ -1195,6 +1247,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   enum gcc_jit_binary_op m_op;
@@ -1221,6 +1274,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   enum gcc_jit_comparison m_op;
@@ -1245,6 +1299,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_rvalue;
@@ -1265,6 +1320,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   function *m_func;
@@ -1286,6 +1342,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_fn_ptr;
@@ -1310,6 +1367,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_ptr;
@@ -1334,6 +1392,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   lvalue *m_lvalue;
@@ -1358,6 +1417,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_rvalue;
@@ -1382,6 +1442,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_rvalue;
@@ -1403,6 +1464,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_rvalue;
@@ -1424,6 +1486,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   lvalue *m_lvalue;
@@ -1448,6 +1511,7 @@ public:
 
 private:
   string * make_debug_string () { return m_name; }
+  void write_reproducer (reproducer &r);
 
 private:
   function *m_func;
@@ -1495,6 +1559,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_rvalue;
@@ -1515,6 +1580,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   lvalue *m_lvalue;
@@ -1538,6 +1604,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   lvalue *m_lvalue;
@@ -1558,6 +1625,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   string *m_text;
@@ -1583,6 +1651,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_boolval;
@@ -1606,6 +1675,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   block *m_target;
@@ -1627,6 +1697,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_rvalue;

@@ -106,6 +106,8 @@ namespace gccjit
 		      int flags,
 		      int verbosity);
 
+    void dump_reproducer_to_file (const char *path);
+
     void set_str_option (enum gcc_jit_str_option opt,
 			 const char *value);
 
@@ -556,6 +558,13 @@ context::set_logfile (FILE *logfile,
 			       logfile,
 			       flags,
 			       verbosity);
+}
+
+inline void
+context::dump_reproducer_to_file (const char *path)
+{
+  gcc_jit_context_dump_reproducer_to_file (m_inner_ctxt,
+					   path);
 }
 
 inline void

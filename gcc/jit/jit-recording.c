@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "pretty-print.h"
+#include "hash-map.h"
 
 #include <pthread.h>
 
@@ -98,6 +99,9 @@ dump::write (const char *fmt, ...)
     m_ctxt.add_error (NULL, "error writing to dump file %s",
 		      m_filename);
 
+  /* Flush after each line, to ease debugging crashes.  */
+  fflush (m_file);
+
   /* Update line/column: */
   for (const char *ptr = buf; *ptr; ptr++)
     {
@@ -119,7 +123,291 @@ dump::write (const char *fmt, ...)
 recording::location *
 dump::make_location () const
 {
-  return m_ctxt.new_location (m_filename, m_line, m_column);
+  return m_ctxt.new_location (m_filename, m_line, m_column,
+			      /* We need to flag such locations as *not*
+				 created by the user, so that
+				 reproducer::get_identifier can cope with
+				 them appearing *after* the memento that
+				 refers to them.  */
+			      false);
+}
+
+/* A collection of allocations, all of which can be released together, to
+   avoid needing to track and release them individually.  */
+
+class allocator
+{
+ public:
+  ~allocator ();
+
+  char *
+  xstrdup_printf (const char *, ...)
+    ATTRIBUTE_RETURNS_NONNULL
+    GNU_PRINTF(2, 3);
+
+  char *
+  xstrdup_printf_va (const char *, va_list ap)
+    ATTRIBUTE_RETURNS_NONNULL
+    GNU_PRINTF(2, 0);
+
+ private:
+  auto_vec <void *> m_buffers;
+};
+
+/* allocator's destructor.  Call "free" on all of the allocations.  */
+
+allocator::~allocator ()
+{
+  unsigned i;
+  void *buffer;
+  FOR_EACH_VEC_ELT (m_buffers, i, buffer)
+    free (buffer);
+}
+
+/* Formatted printing, allocating to a buffer (or exiting the process if
+   the allocation fails).
+
+   The buffer exists until the allocator is cleaned up, and is freed at
+   that point, so the caller doesn't need to track the result.  */
+
+char *
+allocator::xstrdup_printf (const char *fmt, ...)
+{
+  char *result;
+  va_list ap;
+  va_start (ap, fmt);
+  result = xstrdup_printf_va (fmt, ap);
+  va_end (ap);
+  return result;
+}
+
+/* Formatted printing, allocating to a buffer (or exiting the process if
+   the allocation fails).
+
+   The buffer exists until the allocator is cleaned up, and is freed at
+   that point, so the caller doesn't need to track the result.  */
+
+char *
+allocator::xstrdup_printf_va (const char *fmt, va_list ap)
+{
+  char *result = xvasprintf (fmt, ap);
+  m_buffers.safe_push (result);
+  return result;
+}
+
+/* gcc::jit::reproducer is a subclass of gcc::jit::dump, used for
+   implementing gcc_jit_context_dump_reproducer_to_file.  */
+
+class reproducer : public dump
+{
+ public:
+  reproducer (recording::context &ctxt,
+	      const char *filename);
+
+  void
+  write_params (const vec <recording::context *> &contexts);
+
+  void
+  write_args (const vec <recording::context *> &contexts);
+
+  const char *
+  make_identifier (recording::memento *m, const char *prefix);
+
+  const char *
+  make_tmp_identifier (const char *prefix, recording::memento *m);
+
+  const char *
+  get_identifier (recording::context *ctxt);
+
+  const char *
+  get_identifier (recording::memento *m);
+
+  const char *
+  get_identifier_as_rvalue (recording::rvalue *m);
+
+  const char *
+  get_identifier_as_lvalue (recording::lvalue *m);
+
+  const char *
+  get_identifier_as_type (recording::type *m);
+
+  char *
+  xstrdup_printf (const char *, ...)
+    ATTRIBUTE_RETURNS_NONNULL
+    GNU_PRINTF(2, 3);
+
+ private:
+  hash_map<recording::memento *, const char *> m_identifiers;
+  allocator m_allocator;
+};
+
+/* gcc::jit::reproducer's constructor.  */
+
+reproducer::reproducer (recording::context &ctxt,
+			const char *filename) :
+  dump (ctxt, filename, 0),
+  m_identifiers (),
+  m_allocator ()
+{
+}
+
+/* Write out a list of contexts as a set of parameters within a
+   C function declaration.  */
+
+void
+reproducer::write_params (const vec <recording::context *> &contexts)
+{
+  unsigned i;
+  recording::context *ctxt;
+  FOR_EACH_VEC_ELT (contexts, i, ctxt)
+    {
+      write ("gcc_jit_context *%s",
+	     get_identifier (ctxt));
+      if (i < contexts.length () - 1)
+	write (",\n"
+	       "             ");
+    }
+}
+
+/* Write out a list of contexts as a set of arguments within a call
+   to a C function.  */
+
+void
+reproducer::write_args (const vec <recording::context *> &contexts)
+{
+  unsigned i;
+  recording::context *ctxt;
+  FOR_EACH_VEC_ELT (contexts, i, ctxt)
+    {
+      write ("%s",
+	     get_identifier (ctxt));
+      if (i < contexts.length () - 1)
+	write (",\n"
+	       "               ");
+    }
+}
+
+/* Generate a C identifier for the given memento, associating the generated
+   buffer with the memento (for future calls to get_identifier et al).
+
+   The reproducer will eventually clean up the buffer in its dtor.  */
+const char *
+reproducer::make_identifier (recording::memento *m, const char *prefix)
+{
+  char *result;
+  if (strlen (m->get_debug_string ()) < 100)
+    {
+      result = m_allocator.xstrdup_printf ("%s_%s_%p",
+					   prefix,
+					   m->get_debug_string (),
+					   (void *) m);
+      for (char *p = result; *p; p++)
+	if (!ISALNUM (*p))
+	  *p = '_';
+    }
+  else
+    result = m_allocator.xstrdup_printf ("%s_%p",
+					 prefix, (void *) m);
+  m_identifiers.put (m, result);
+  return result;
+}
+
+/* Generate a C identifier for a temporary variable.
+   The reproducer will eventually clean up the buffer in its dtor.  */
+
+const char *
+reproducer::make_tmp_identifier (const char *prefix, recording::memento *m)
+{
+  return m_allocator.xstrdup_printf ("%s_%s",
+				     prefix, get_identifier (m));
+}
+
+/* Generate a C identifier for the given context.
+   The reproducer will eventually clean up the buffer in its dtor.  */
+
+const char *
+reproducer::get_identifier (recording::context *ctxt)
+{
+  return m_allocator.xstrdup_printf ("ctxt_%p",
+				     (void *)ctxt);
+}
+
+/* Locate the C identifier for the given memento, which is assumed to
+   have already been created via make_identifier.  */
+
+const char *
+reproducer::get_identifier (recording::memento *m)
+{
+  if (!m)
+    return "NULL";
+
+  /* gcc_jit_context_dump_to_file (, , 1) generates and writes locations,
+     and hence these locations appear in the context's memento list
+     out-of-order: they appear in the context's memento list *after*
+     the memento that refers to them.  For this case, it's simplest to
+     pretend that they're NULL when writing out the code to recreate the
+     memento that uses them.  */
+  if (recording::location *loc = m->dyn_cast_location ())
+    if (!loc->created_by_user ())
+      return "NULL";
+
+  const char **slot = m_identifiers.get (m);
+  if (!slot)
+    {
+      get_context ().add_error (NULL,
+				"unable to find identifier for %p: %s",
+				(void *)m,
+				m->get_debug_string ());
+      gcc_unreachable ();
+    }
+  return *slot;
+}
+
+/* Locate the C identifier for the given rvalue, wrapping it within
+   a gcc_*_as_rvalue upcast if necessary.  */
+
+const char *
+reproducer::get_identifier_as_rvalue (recording::rvalue *m)
+{
+  return m->access_as_rvalue (*this);
+}
+
+/* Locate the C identifier for the given lvalue, wrapping it within
+   a gcc_*_as_lvalue upcast if necessary.  */
+
+const char *
+reproducer::get_identifier_as_lvalue (recording::lvalue *m)
+{
+  return m->access_as_lvalue (*this);
+}
+
+/* Locate the C identifier for the given type, wrapping it within
+   a gcc_*_as_type upcast if necessary.  */
+
+const char *
+reproducer::get_identifier_as_type (recording::type *m)
+{
+  return m->access_as_type (*this);
+}
+
+/* Formatted printing, allocating to a buffer (or exiting the process if
+   the allocation fails).
+
+   The buffer exists until the allocator is cleaned up, and is freed at
+   that point, so the caller doesn't need to track the result.
+
+   Note that we can't use ggc_printf since we're not within the compiler
+   proper (when within gcc_jit_context_dump_reproducer_to_file).  */
+
+char *
+reproducer::xstrdup_printf (const char *fmt, ...)
+{
+  char *result;
+  va_list ap;
+  va_start (ap, fmt);
+  result = m_allocator.xstrdup_printf_va (fmt, ap);
+  va_end (ap);
+  return result;
 }
 
 /**********************************************************************
@@ -170,6 +458,7 @@ recording::playback_block (recording::block *b)
 recording::context::context (context *parent_ctxt)
   : log_user (NULL),
     m_parent_ctxt (parent_ctxt),
+    m_toplevel_ctxt (m_parent_ctxt ? m_parent_ctxt->m_toplevel_ctxt : this),
     m_error_count (0),
     m_first_error_str (NULL),
     m_owns_first_error_str (false),
@@ -349,13 +638,15 @@ recording::context::new_string (const char *text)
 
 recording::location *
 recording::context::new_location (const char *filename,
-				 int line,
-				 int column)
+				  int line,
+				  int column,
+				  bool created_by_user)
 {
   recording::location *result =
     new recording::location (this,
-			    new_string (filename),
-			    line, column);
+			     new_string (filename),
+			     line, column,
+			     created_by_user);
   record (result);
   return result;
 }
@@ -1036,6 +1327,196 @@ recording::context::dump_to_file (const char *path, bool update_locations)
     }
 }
 
+static const char * const
+ str_option_reproducer_strings[GCC_JIT_NUM_STR_OPTIONS] = {
+  "GCC_JIT_STR_OPTION_PROGNAME"
+};
+
+static const char * const
+ int_option_reproducer_strings[GCC_JIT_NUM_INT_OPTIONS] = {
+  "GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL"
+};
+
+static const char * const
+ bool_option_reproducer_strings[GCC_JIT_NUM_BOOL_OPTIONS] = {
+  "GCC_JIT_BOOL_OPTION_DEBUGINFO",
+  "GCC_JIT_BOOL_OPTION_DUMP_INITIAL_TREE",
+  "GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE",
+  "GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE",
+  "GCC_JIT_BOOL_OPTION_DUMP_SUMMARY",
+  "GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING",
+  "GCC_JIT_BOOL_OPTION_SELFCHECK_GC",
+  "GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES"
+};
+
+/* Write C source code to PATH that attempts to replay the API
+   calls made to this context (and its parents), for use in
+   minimizing test cases for libgccjit.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_dump_reproducer_to_file.  */
+
+void
+recording::context::dump_reproducer_to_file (const char *path)
+{
+  JIT_LOG_SCOPE (get_logger ());
+  reproducer r (*this, path);
+
+  /* Generate the "ancestry" of this context, as a list.  */
+  auto_vec <context *> ascending_contexts;
+  for (context *ctxt = this; ctxt; ctxt = ctxt->m_parent_ctxt)
+    ascending_contexts.safe_push (ctxt);
+
+  /* Reverse the list, giving a list of contexts from
+     top-most parent context down through to youngest child context.
+     We will use this list as the parameters of the functions in
+     our generated file.  */
+  unsigned num_ctxts = ascending_contexts.length ();
+  auto_vec <context *> contexts (num_ctxts);
+  for (unsigned i = 0; i < num_ctxts; i++)
+    contexts.safe_push (ascending_contexts[num_ctxts - (i + 1)]);
+
+  /* contexts[0] should be the top-level context.  */
+  gcc_assert (contexts[0]);
+  gcc_assert (contexts[0]->m_toplevel_ctxt == contexts[0]);
+
+  /* The final element in contexts should be "this".  */
+  gcc_assert (contexts[contexts.length () - 1] == this);
+  gcc_assert (contexts[contexts.length () - 1]->m_toplevel_ctxt
+	      == contexts[0]);
+
+  r.write ("/* This code was autogenerated by"
+	   " gcc_jit_context_dump_reproducer_to_file.  */\n\n");
+  r.write ("#include <libgccjit.h>\n\n");
+  r.write ("static void\nset_options (");
+  r.write_params (contexts);
+  r.write (");\n\n");
+  r.write ("static void\ncreate_code (");
+  r.write_params (contexts);
+  r.write (");\n\n");
+  r.write ("int\nmain (int argc, const char **argv)\n");
+  r.write ("{\n");
+  for (unsigned i = 0; i < num_ctxts; i++)
+    r.write ("  gcc_jit_context *%s;\n",
+	     r.get_identifier (contexts[i]));
+  r.write ("  gcc_jit_result *result;\n"
+	   "\n");
+
+  /* Create the contexts.
+     The top-level context is acquired from a clean slate, the others as
+     children of the prior context.  */
+  r.write ("  %s = gcc_jit_context_acquire ();\n",
+	   r.get_identifier (contexts[0]));
+  for (unsigned i = 1; i < num_ctxts; i++)
+    r.write ("  %s = gcc_jit_context_new_child_context (%s);\n",
+	     r.get_identifier (contexts[i]),
+	     r.get_identifier (contexts[i - 1]));
+  r.write ("  set_options (");
+  r.write_args (contexts);
+  r.write (");\n");
+  r.write ("  create_code (");
+  r.write_args (contexts);
+  r.write (");\n");
+
+  r.write ("  result = gcc_jit_context_compile (%s);\n",
+	   r.get_identifier (this));
+
+  for (unsigned i = num_ctxts; i > 0; i--)
+    r.write ("  gcc_jit_context_release (%s);\n",
+	     r.get_identifier (contexts[i - 1]));
+
+  r.write ("  gcc_jit_result_release (result);\n"
+	   "  return 0;\n"
+	   "}\n\n");
+
+  /* Define (char *) variables for use in calls to
+     gcc_jit_context_enable_dump.  */
+  for (unsigned ctxt_idx = 0; ctxt_idx < num_ctxts; ctxt_idx++)
+    {
+      if (m_requested_dumps.length ())
+	{
+	  r.write ("/* Requested dumps for %s.  */\n",
+		   r.get_identifier (contexts[ctxt_idx]));
+	  for (unsigned i = 0; i < m_requested_dumps.length (); i++)
+	    r.write ("static char *dump_%p;\n",
+		     (void *)&m_requested_dumps[i]);
+	  r.write ("\n");
+	}
+    }
+
+  /* Write out values of options.  */
+  r.write ("static void\nset_options (");
+  r.write_params (contexts);
+  r.write (")\n{\n");
+  for (unsigned ctxt_idx = 0; ctxt_idx < num_ctxts; ctxt_idx++)
+    {
+      if (ctxt_idx > 0)
+	r.write ("\n");
+
+      r.write ("  /* Set options for %s.  */\n",
+	       r.get_identifier (contexts[ctxt_idx]));
+
+      r.write ("  /* String options.  */\n");
+      for (int opt_idx = 0; opt_idx < GCC_JIT_NUM_STR_OPTIONS; opt_idx++)
+	r.write ("  gcc_jit_context_set_str_option (%s,\n"
+		 "                                  %s,\n"
+		 "                                  \"%s\");\n",
+		 r.get_identifier (contexts[ctxt_idx]),
+		 str_option_reproducer_strings[opt_idx],
+		 m_str_options[opt_idx] ? m_str_options[opt_idx] : "NULL");
+      r.write ("  /* Int options.  */\n");
+      for (int opt_idx = 0; opt_idx < GCC_JIT_NUM_INT_OPTIONS; opt_idx++)
+	r.write ("  gcc_jit_context_set_int_option (%s,\n"
+		 "                                  %s,\n"
+		 "                                  %i);\n",
+		 r.get_identifier (contexts[ctxt_idx]),
+		 int_option_reproducer_strings[opt_idx],
+		 m_int_options[opt_idx]);
+      r.write ("  /* Boolean options.  */\n");
+      for (int opt_idx = 0; opt_idx < GCC_JIT_NUM_BOOL_OPTIONS; opt_idx++)
+	r.write ("  gcc_jit_context_set_bool_option (%s,\n"
+		 "                                  %s,\n"
+		 "                                  %i);\n",
+		 r.get_identifier (contexts[ctxt_idx]),
+		 bool_option_reproducer_strings[opt_idx],
+		 m_bool_options[opt_idx]);
+
+      if (m_requested_dumps.length ())
+	{
+	  r.write ("  /* Requested dumps.  */\n");
+	  /* Dumpfiles that were requested via gcc_jit_context_enable_dump.  */
+	  for (unsigned i = 0; i < m_requested_dumps.length (); i++)
+	    {
+	      r.write ("  gcc_jit_context_enable_dump (%s,\n"
+		       "                               \"%s\",\n"
+		       "                               &dump_%p);\n",
+		       r.get_identifier (contexts[ctxt_idx]),
+		       m_requested_dumps[i].m_dumpname,
+		       (void *)&m_requested_dumps[i]);
+	    }
+	}
+    }
+  r.write ("}\n\n");
+
+  r.write ("static void\ncreate_code (");
+  r.write_params (contexts);
+  r.write (")\n"
+	   "{\n");
+  for (unsigned ctxt_idx = 0; ctxt_idx < num_ctxts; ctxt_idx++)
+    {
+      memento *m;
+      int i;
+      if (ctxt_idx > 0)
+	r.write ("\n\n");
+
+      r.write ("  /* Replay of API calls for %s.  */\n",
+	       r.get_identifier (contexts[ctxt_idx]));
+      FOR_EACH_VEC_ELT (contexts[ctxt_idx]->m_mementos, i, m)
+	m->write_reproducer (r);
+    }
+  r.write ("}\n");
+}
+
 /* Copy the requested dumps within this context and all ancestors into
    OUT. */
 
@@ -1182,6 +1663,14 @@ recording::string::make_debug_string ()
   return result;
 }
 
+/* Implementation of recording::memento::write_reproducer for strings. */
+
+void
+recording::string::write_reproducer (reproducer &)
+{
+  /* Empty.  */
+}
+
 /* The implementation of class gcc::jit::recording::location.  */
 
 /* Implementation of recording::memento::replay_into for locations.
@@ -1209,6 +1698,23 @@ recording::location::make_debug_string ()
   return string::from_printf (m_ctxt,
 			      "%s:%i:%i",
 			      m_filename->c_str (), m_line, m_column);
+}
+
+/* Implementation of recording::memento::write_reproducer for locations. */
+
+void
+recording::location::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "loc");
+  r.write ("  gcc_jit_location *%s =\n"
+	   "    gcc_jit_context_new_location (%s, /* gcc_jit_context *ctxt */\n"
+	   "    %s, /* const char *filename */\n"
+	   "    %i, /* int line */\n"
+	   "    %i);/* int column */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   m_filename->get_debug_string (),
+	   m_line, m_column);
 }
 
 /* The implementation of class gcc::jit::recording::type.  */
@@ -1258,6 +1764,12 @@ recording::type::get_volatile ()
   recording::type *result = new memento_of_get_volatile (this);
   m_ctxt->record (result);
   return result;
+}
+
+const char *
+recording::type::access_as_type (reproducer &r)
+{
+  return r.get_identifier (this);
 }
 
 /* Implementation of pure virtual hook recording::type::dereference for
@@ -1529,6 +2041,42 @@ recording::memento_of_get_type::make_debug_string ()
   return m_ctxt->new_string (get_type_strings[m_kind]);
 }
 
+static const char * const get_type_enum_strings[] = {
+  "GCC_JIT_TYPE_VOID",
+  "GCC_JIT_TYPE_VOID_PTR",
+  "GCC_JIT_TYPE_BOOL",
+  "GCC_JIT_TYPE_CHAR",
+  "GCC_JIT_TYPE_SIGNED_CHAR",
+  "GCC_JIT_TYPE_UNSIGNED_CHAR",
+  "GCC_JIT_TYPE_SHORT",
+  "GCC_JIT_TYPE_UNSIGNED_SHORT",
+  "GCC_JIT_TYPE_INT",
+  "GCC_JIT_TYPE_UNSIGNED_INT",
+  "GCC_JIT_TYPE_LONG",
+  "GCC_JIT_TYPE_UNSIGNED_LONG",
+  "GCC_JIT_TYPE_LONG_LONG",
+  "GCC_JIT_TYPE_UNSIGNED_LONG_LONG",
+  "GCC_JIT_TYPE_FLOAT",
+  "GCC_JIT_TYPE_DOUBLE",
+  "GCC_JIT_TYPE_LONG_DOUBLE",
+  "GCC_JIT_TYPE_CONST_CHAR_PTR",
+  "GCC_JIT_TYPE_SIZE_T",
+  "GCC_JIT_TYPE_FILE_PTR",
+  "GCC_JIT_TYPE_COMPLEX_FLOAT",
+  "GCC_JIT_TYPE_COMPLEX_DOUBLE",
+  "GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE"
+};
+
+void
+recording::memento_of_get_type::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "type");
+  r.write ("  gcc_jit_type *%s = gcc_jit_context_get_type (%s, %s);\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   get_type_enum_strings[m_kind]);
+}
+
 /* The implementation of class gcc::jit::recording::memento_of_get_pointer.  */
 
 /* Override of default implementation of
@@ -1576,6 +2124,26 @@ recording::memento_of_get_pointer::make_debug_string ()
 			      "%s *", m_other_type->get_debug_string ());
 }
 
+/* Implementation of recording::memento::write_reproducer for get_pointer.  */
+
+void
+recording::memento_of_get_pointer::write_reproducer (reproducer &r)
+{
+  /* We need to special-case function pointer types; see the notes in
+     recording::function_type::write_deferred_reproducer.  */
+  if (function_type *fn_type = m_other_type->dyn_cast_function_type ())
+    {
+      fn_type->write_deferred_reproducer (r, this);
+      return;
+    }
+
+  const char *id = r.make_identifier (this, "type");
+  r.write ("  gcc_jit_type *%s =\n"
+	   "    gcc_jit_type_get_pointer (%s);\n",
+	   id,
+	   r.get_identifier_as_type (m_other_type));
+}
+
 /* The implementation of class gcc::jit::recording::memento_of_get_const.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -1597,6 +2165,18 @@ recording::memento_of_get_const::make_debug_string ()
 			      "const %s", m_other_type->get_debug_string ());
 }
 
+/* Implementation of recording::memento::write_reproducer for const types. */
+
+void
+recording::memento_of_get_const::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "type");
+  r.write ("  gcc_jit_type *%s =\n"
+	   "    gcc_jit_type_get_const (%s);\n",
+	   id,
+	   r.get_identifier_as_type (m_other_type));
+}
+
 /* The implementation of class gcc::jit::recording::memento_of_get_volatile.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -1616,6 +2196,19 @@ recording::memento_of_get_volatile::make_debug_string ()
 {
   return string::from_printf (m_ctxt,
 			      "volatile %s", m_other_type->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for volatile
+   types. */
+
+void
+recording::memento_of_get_volatile::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "type");
+  r.write ("  gcc_jit_type *%s =\n"
+	   "    gcc_jit_type_get_volatile (%s);\n",
+	   id,
+	   r.get_identifier_as_type (m_other_type));
 }
 
 /* The implementation of class gcc::jit::recording::array_type */
@@ -1650,6 +2243,25 @@ recording::array_type::make_debug_string ()
 			      "%s[%d]",
 			      m_element_type->get_debug_string (),
 			      m_num_elements);
+}
+
+/* Implementation of recording::memento::write_reproducer for array
+   types. */
+
+void
+recording::array_type::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "array_type");
+  r.write ("  gcc_jit_type *%s =\n"
+	   "    gcc_jit_context_new_array_type (%s,\n"
+	   "                                    %s, /* gcc_jit_location *loc */\n"
+	   "                                    %s, /* gcc_jit_type *element_type */\n"
+	   "                                    %i); /* int num_elements */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_type (m_element_type),
+	   m_num_elements);
 }
 
 /* The implementation of class gcc::jit::recording::function_type */
@@ -1775,6 +2387,55 @@ recording::function_type::make_debug_string_with (const char *insert)
   return result;
 }
 
+/* Implementation of recording::memento::write_reproducer for function
+   types.  */
+
+void
+recording::function_type::write_reproducer (reproducer &)
+{
+  /* see notes below.  */
+}
+
+/* There's a get_pointer within context::new_function_ptr_type:
+   the type received by client code isn't the memento for the
+   function_type, but instead the result of get_pointer on it.
+
+   Hence we can't directly write a reproducer that gives function_type.
+   Instead we special-case things within get_pointer, detecting this
+   case, calling the following function.  */
+
+void
+recording::function_type::write_deferred_reproducer (reproducer &r,
+						     memento *ptr_type)
+{
+  gcc_assert (ptr_type);
+  r.make_identifier (this, "function_type");
+  const char *ptr_id = r.make_identifier (ptr_type, "ptr_to");
+  const char *param_types_id = r.make_tmp_identifier ("params_for", this);
+  r.write ("  gcc_jit_type *%s[%i] = {\n",
+	   param_types_id,
+	   m_param_types.length ());
+  int i;
+  type *param_type;
+  FOR_EACH_VEC_ELT (m_param_types, i, param_type)
+    r.write ("    %s,\n", r.get_identifier_as_type (param_type));
+  r.write ("  };\n");
+  r.write ("  gcc_jit_type *%s =\n"
+	   "    gcc_jit_context_new_function_ptr_type (%s, /* gcc_jit_context *ctxt */\n"
+	   "                                           %s, /* gcc_jit_location *loc */\n"
+	   "                                           %s, /* gcc_jit_type *return_type */\n"
+	   "                                           %i, /* int num_params */\n"
+	   "                                           %s, /* gcc_jit_type **param_types */\n"
+	   "                                           %i); /* int is_variadic */\n",
+	   ptr_id,
+	   r.get_identifier (get_context ()),
+	   "NULL", /* location is not stored */
+	   r.get_identifier_as_type (m_return_type),
+	   m_param_types.length (),
+	   param_types_id,
+	   m_is_variadic);
+}
+
 /* The implementation of class gcc::jit::recording::field.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -1809,6 +2470,24 @@ recording::string *
 recording::field::make_debug_string ()
 {
   return m_name;
+}
+
+/* Implementation of recording::memento::write_reproducer for fields.  */
+
+void
+recording::field::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "field");
+  r.write("  gcc_jit_field *%s =\n"
+	  "    gcc_jit_context_new_field (%s,\n"
+	  "                               %s, /* gcc_jit_location *loc */\n"
+	  "                               %s, /* gcc_jit_type *type, */\n"
+	  "                               %s); /* const char *name */\n",
+	  id,
+	  r.get_identifier (get_context ()),
+	  r.get_identifier (m_loc),
+	  r.get_identifier_as_type (m_type),
+	  m_name->get_debug_string ());
 }
 
 /* The implementation of class gcc::jit::recording::compound_type */
@@ -1875,6 +2554,13 @@ recording::struct_::replay_into (replayer *r)
 			  true /* is_struct */));
 }
 
+const char *
+recording::struct_::access_as_type (reproducer &r)
+{
+  return r.xstrdup_printf ("gcc_jit_struct_as_type (%s)",
+			   r.get_identifier (this));
+}
+
 /* Implementation of recording::memento::make_debug_string for
    structs.  */
 
@@ -1883,6 +2569,20 @@ recording::struct_::make_debug_string ()
 {
   return string::from_printf (m_ctxt,
 			      "struct %s", get_name ()->c_str ());
+}
+
+void
+recording::struct_::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "struct");
+  r.write ("  gcc_jit_struct *%s =\n"
+	   "    gcc_jit_context_new_opaque_struct (%s,\n"
+	   "                                       %s, /* gcc_jit_location *loc */\n"
+	   "                                       %s); /* const char *name */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (get_loc ()),
+	   get_name ()->get_debug_string ());
 }
 
 /* The implementation of class gcc::jit::recording::union_.  */
@@ -1916,6 +2616,35 @@ recording::union_::make_debug_string ()
 {
   return string::from_printf (m_ctxt,
 			      "union %s", get_name ()->c_str ());
+}
+
+/* Implementation of recording::memento::write_reproducer for unions.  */
+
+void
+recording::union_::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "union");
+
+  const char *fields_id = r.make_tmp_identifier ("fields_for", this);
+  r.write ("  gcc_jit_field *%s[%i] = {\n",
+	   fields_id,
+	   get_fields ()->length ());
+  for (int i = 0; i < get_fields ()->length (); i++)
+    r.write ("    %s,\n", r.get_identifier (get_fields ()->get_field (i)));
+  r.write ("  };\n");
+
+  r.write ("  gcc_jit_type *%s =\n"
+	   "    gcc_jit_context_new_union_type (%s,\n"
+	   "                                    %s, /* gcc_jit_location *loc */\n"
+	   "                                    %s, /* const char *name */\n"
+	   "                                    %i, /* int num_fields */\n"
+	   "                                    %s); /* gcc_jit_field **fields */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (get_loc ()),
+	   get_name ()->get_debug_string (),
+	   get_fields ()->length (),
+	   fields_id);
 }
 
 /* The implementation of class gcc::jit::recording::fields.  */
@@ -1973,6 +2702,38 @@ recording::fields::write_to_dump (dump &d)
   FOR_EACH_VEC_ELT (m_fields, i, f)
     f->write_to_dump (d);
   d.write ("};\n");
+}
+
+/* Implementation of recording::memento::write_reproducer for the fields
+   subclass.  */
+
+void
+recording::fields::write_reproducer (reproducer &r)
+{
+  if (m_struct_or_union)
+    if (NULL == m_struct_or_union->dyn_cast_struct ())
+      /* We have a union; the fields have already been written by
+	 union::write_reproducer.  */
+      return;
+
+  const char *fields_id = r.make_identifier (this, "fields");
+  r.write ("  gcc_jit_field *%s[%i] = {\n",
+	   fields_id,
+	   m_fields.length ());
+  int i;
+  field *field;
+  FOR_EACH_VEC_ELT (m_fields, i, field)
+    r.write ("    %s,\n", r.get_identifier (field));
+  r.write ("  };\n");
+
+  r.write ("  gcc_jit_struct_set_fields (%s, /* gcc_jit_struct *struct_type */\n"
+	   "                             %s, /* gcc_jit_location *loc */\n"
+	   "                             %i, /* int num_fields */\n"
+	   "                             %s); /* gcc_jit_field **fields */\n",
+	   r.get_identifier (m_struct_or_union),
+	   r.get_identifier ((memento *)NULL),
+	   m_fields.length (),
+	   fields_id);
 }
 
 /* Implementation of recording::memento::make_debug_string for
@@ -2143,6 +2904,17 @@ recording::rvalue::set_scope (function *scope)
 }
 
 
+/* Implementation of recording::rvalue::access_as_rvalue for rvalues
+   themselves.
+   Instances of rvalue don't need an upcast call.  */
+
+const char *
+recording::rvalue::access_as_rvalue (reproducer &r)
+{
+  return r.get_identifier (this);
+}
+
+
 /* The implementation of class gcc::jit::recording::lvalue.  */
 
 /* Create a recording::new_access_field_of_lvalue instance and add it to
@@ -2159,6 +2931,26 @@ recording::lvalue::access_field (recording::location *loc,
     new access_field_of_lvalue (m_ctxt, loc, this, field);
   m_ctxt->record (result);
   return result;
+}
+
+/* Implementation of recording::rvalue::access_as_rvalue for lvalues.
+   Instances of lvalue need to be wrapped in a gcc_jit_lvalue_as_rvalue
+   upcast call.  */
+
+const char *
+recording::lvalue::access_as_rvalue (reproducer &r)
+{
+  return r.xstrdup_printf ("gcc_jit_lvalue_as_rvalue (%s)",
+			   r.get_identifier (this));
+}
+
+/* Implementation of recording::lvalue::access_as_lvalue for lvalues.
+   Instances of lvalue don't need to be upcast.  */
+
+const char *
+recording::lvalue::access_as_lvalue (reproducer &r)
+{
+  return r.get_identifier (this);
 }
 
 /* Create a recording::get_address_of_lvalue instance and add it to
@@ -2189,6 +2981,45 @@ recording::param::replay_into (replayer *r)
 				  m_name->c_str ()));
 }
 
+/* Implementation of recording::rvalue::access_as_rvalue for params.
+   Instances of param need to be wrapped in a gcc_jit_param_as_rvalue
+   upcast call.  */
+
+const char *
+recording::param::access_as_rvalue (reproducer &r)
+{
+  return r.xstrdup_printf ("gcc_jit_param_as_rvalue (%s)",
+			   r.get_identifier (this));
+}
+
+/* Implementation of recording::lvalue::access_as_lvalue for params.
+   Instances of param need to be wrapped in a gcc_jit_param_as_lvalue
+   upcast call.  */
+
+const char *
+recording::param::access_as_lvalue (reproducer &r)
+{
+  return r.xstrdup_printf ("gcc_jit_param_as_lvalue (%s)",
+			   r.get_identifier (this));
+}
+
+/* Implementation of recording::memento::write_reproducer for params. */
+
+void
+recording::param::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "param");
+  r.write ("  gcc_jit_param *%s =\n"
+	   "    gcc_jit_context_new_param (%s,\n"
+	   "                               %s, /* gcc_jit_location *loc */\n"
+	   "                               %s, /*gcc_jit_type *type */\n"
+	   "                               %s); /* const char *name */\n",
+	   id,
+    r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_type (m_type),
+	   m_name->get_debug_string ());
+}
 
 /* The implementation of class gcc::jit::recording::function.  */
 
@@ -2502,6 +3333,63 @@ recording::function::make_debug_string ()
   return m_name;
 }
 
+/* A table of enum gcc_jit_function_kind values expressed in string
+   form.  */
+
+static const char * const names_of_function_kinds[] = {
+  "GCC_JIT_FUNCTION_EXPORTED",
+  "GCC_JIT_FUNCTION_INTERNAL",
+  "GCC_JIT_FUNCTION_IMPORTED",
+  "GCC_JIT_FUNCTION_ALWAYS_INLINE"
+};
+
+/* Implementation of recording::memento::write_reproducer for functions. */
+
+void
+recording::function::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "func");
+
+  if (m_builtin_id)
+    {
+      r.write ("  gcc_jit_function *%s =\n"
+	       "    gcc_jit_context_get_builtin_function (%s,\n"
+	       "                                          %s);\n",
+	       id,
+	       r.get_identifier (get_context ()),
+	       m_name->get_debug_string ());
+      return;
+    }
+  const char *params_id = r.make_tmp_identifier ("params_for", this);
+  r.write ("  gcc_jit_param *%s[%i] = {\n",
+	   params_id,
+	   m_params.length ());
+  int i;
+  param *param;
+  FOR_EACH_VEC_ELT (m_params, i, param)
+    r.write ("    %s,\n", r.get_identifier (param));
+  r.write ("  };\n");
+  r.write ("  gcc_jit_function *%s =\n"
+	   "    gcc_jit_context_new_function (%s, /* gcc_jit_context *ctxt */\n"
+	   "                                  %s, /* gcc_jit_location *loc */\n"
+	   "                                  %s, /* enum gcc_jit_function_kind kind */\n"
+	   "                                  %s, /* gcc_jit_type *return_type */\n"
+	   "                                  %s, /* const char *name */\n"
+	   "                                  %i, /* int num_params */\n"
+	   "                                  %s, /* gcc_jit_param **params */\n"
+	   "                                  %i); /* int is_variadic */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   names_of_function_kinds[m_kind],
+	   r.get_identifier_as_type (m_return_type),
+	   m_name->get_debug_string (),
+	   m_params.length (),
+	   params_id,
+	   m_is_variadic);
+}
+
+
 /* The implementation of class gcc::jit::recording::block.  */
 
 /* Create a recording::eval instance and add it to
@@ -2750,6 +3638,19 @@ recording::block::make_debug_string ()
 				(void *)this);
 }
 
+/* Implementation of recording::memento::write_reproducer for blocks. */
+
+void
+recording::block::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "block");
+  r.write ("  gcc_jit_block *%s =\n"
+	   "    gcc_jit_function_new_block (%s, %s);\n",
+	   id,
+	   r.get_identifier (m_func),
+	   m_name ? m_name->get_debug_string () : "NULL");
+}
+
 /* Dump a block in graphviz form into PP, capturing the block name (if
    any) and the statements.  */
 
@@ -2856,6 +3757,35 @@ recording::global::write_to_dump (dump &d)
 	   get_debug_string ());
 }
 
+/* A table of enum gcc_jit_global_kind values expressed in string
+   form.  */
+
+static const char * const global_kind_reproducer_strings[] = {
+  "GCC_JIT_GLOBAL_EXPORTED",
+  "GCC_JIT_GLOBAL_INTERNAL",
+  "GCC_JIT_GLOBAL_IMPORTED"
+};
+
+/* Implementation of recording::memento::write_reproducer for globals. */
+
+void
+recording::global::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "block");
+  r.write ("  gcc_jit_lvalue *%s =\n"
+    "    gcc_jit_context_new_global (%s, /* gcc_jit_context *ctxt */\n"
+    "                                %s, /* gcc_jit_location *loc */\n"
+    "                                %s, /* enum gcc_jit_global_kind kind */\n"
+    "                                %s, /* gcc_jit_type *type */\n"
+    "                                %s); /* const char *name */\n",
+    id,
+    r.get_identifier (get_context ()),
+    r.get_identifier (m_loc),
+    global_kind_reproducer_strings[m_kind],
+    r.get_identifier_as_type (get_type ()),
+    m_name->get_debug_string ());
+}
+
 /* The implementation of the various const-handling classes:
    gcc::jit::recording::memento_of_new_rvalue_from_const <HOST_TYPE>.  */
 
@@ -2878,9 +3808,10 @@ memento_of_new_rvalue_from_const <HOST_TYPE>::replay_into (replayer *r)
 					     m_value));
 }
 
-/* The make_debug_string method varies between the various
-   memento_of_new_rvalue_from_const <HOST_TYPE> classes, so we explicitly
-   write specializations of it.
+/* The make_debug_string and write_reproducer methods vary between the
+   various
+     memento_of_new_rvalue_from_const <HOST_TYPE>
+   classes, so we explicitly write specializations of them.
 
    I (dmalcolm) find the code to be clearer if the "recording" vs "playback"
    namespaces are written out explicitly, which is why most of this file
@@ -2908,6 +3839,23 @@ memento_of_new_rvalue_from_const <int>::make_debug_string ()
 			      m_value);
 }
 
+/* The write_reproducer specialization for <int>.  */
+
+template <>
+void
+memento_of_new_rvalue_from_const <int>::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+    "    gcc_jit_context_new_rvalue_from_int (%s, /* gcc_jit_context *ctxt */\n"
+    "                                         %s, /* gcc_jit_type *numeric_type */\n"
+    "                                         %i); /* int value */\n",
+    id,
+    r.get_identifier (get_context ()),
+    r.get_identifier_as_type (m_type),
+    m_value);
+}
+
 /* The make_debug_string specialization for <long>, rendering it as
      (TARGET_TYPE)LITERAL
    e.g.
@@ -2923,6 +3871,44 @@ memento_of_new_rvalue_from_const <long>::make_debug_string ()
 			      m_value);
 }
 
+/* The write_reproducer specialization for <long>.  */
+
+template <>
+void
+recording::memento_of_new_rvalue_from_const <long>::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+
+  /* We have to special-case LONG_MIN, since e.g.
+       -9223372036854775808L
+     is parsed as
+       -(9223372036854775808L)
+     and hence we'd get:
+	error: integer constant is so large that it is unsigned [-Werror]
+	Workaround this by writing (LONG_MIN + 1) - 1.  */
+  if (m_value == LONG_MIN)
+    {
+      r.write ("  gcc_jit_rvalue *%s =\n"
+	       "    gcc_jit_context_new_rvalue_from_long (%s, /* gcc_jit_context *ctxt */\n"
+	       "                                          %s, /* gcc_jit_type *numeric_type */\n"
+	       "                                          %ldL - 1); /* long value */\n",
+	       id,
+	       r.get_identifier (get_context ()),
+	       r.get_identifier_as_type (m_type),
+	       m_value + 1);;
+      return;
+    }
+
+  r.write ("  gcc_jit_rvalue *%s =\n"
+	   "    gcc_jit_context_new_rvalue_from_long (%s, /* gcc_jit_context *ctxt */\n"
+	   "                                          %s, /* gcc_jit_type *numeric_type */\n"
+	   "                                          %ldL); /* long value */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier_as_type (m_type),
+	   m_value);
+	   }
+
 /* The make_debug_string specialization for <double>, rendering it as
      (TARGET_TYPE)LITERAL
    e.g.
@@ -2936,6 +3922,23 @@ memento_of_new_rvalue_from_const <double>::make_debug_string ()
 			      "(%s)%f",
 			      m_type->get_debug_string (),
 			      m_value);
+}
+
+/* The write_reproducer specialization for <double>.  */
+
+template <>
+void
+recording::memento_of_new_rvalue_from_const <double>::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+    "    gcc_jit_context_new_rvalue_from_double (%s, /* gcc_jit_context *ctxt */\n"
+    "                                            %s, /* gcc_jit_type *numeric_type */\n"
+    "                                            %f); /* double value */\n",
+    id,
+    r.get_identifier (get_context ()),
+    r.get_identifier_as_type (m_type),
+    m_value);
 }
 
 /* The make_debug_string specialization for <void *>, rendering it as
@@ -2960,8 +3963,34 @@ memento_of_new_rvalue_from_const <void *>::make_debug_string ()
 				m_type->get_debug_string ());
 }
 
-/* We're done specializing make_debug_string, so we can exit the
-   gcc::jit::recording namespace.  */
+/* Implementation of recording::memento::write_reproducer for <void *>
+   values. */
+
+template <>
+void
+memento_of_new_rvalue_from_const <void *>::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+  if (m_value)
+    r.write ("  gcc_jit_rvalue *%s =\n"
+	     "    gcc_jit_context_new_rvalue_from_ptr (%s, /* gcc_jit_context *ctxt */\n"
+	     "                                         %s, /* gcc_jit_type *pointer_type */\n"
+	     "                                         (void *)%p); /* void *value */\n",
+	     id,
+	     r.get_identifier (get_context ()),
+	     r.get_identifier_as_type (m_type),
+	     m_value);
+  else
+    r.write ("  gcc_jit_rvalue *%s =\n"
+	     "    gcc_jit_context_null (%s, /* gcc_jit_context *ctxt */\n"
+	     "                          %s); /* gcc_jit_type *pointer_type */\n",
+	     id,
+	     r.get_identifier (get_context ()),
+	     r.get_identifier_as_type (m_type));
+}
+
+/* We're done specializing make_debug_string and write_reproducer, so we
+   can exit the gcc::jit::recording namespace.  */
 
 } // namespace recording
 
@@ -2984,6 +4013,21 @@ recording::memento_of_new_string_literal::make_debug_string ()
 {
   return string::from_printf (m_ctxt,
 			      m_value->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for string literal
+   values. */
+
+void
+recording::memento_of_new_string_literal::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+    "    gcc_jit_context_new_string_literal (%s, /* gcc_jit_context *ctxt */\n"
+    "                                        %s); /* const char *value */\n",
+    id,
+    r.get_identifier (get_context ()),
+    m_value->get_debug_string ());
 }
 
 /* The implementation of class gcc::jit::recording::unary_op.  */
@@ -3025,6 +4069,33 @@ recording::unary_op::make_debug_string ()
 			      "%s(%s)",
 			      unary_op_strings[m_op],
 			      m_a->get_debug_string ());
+}
+
+static const char * const unary_op_reproducer_strings[] = {
+  "GCC_JIT_UNARY_OP_MINUS",
+  "GCC_JIT_UNARY_OP_BITWISE_NEGATE",
+  "GCC_JIT_UNARY_OP_LOGICAL_NEGATE",
+  "GCC_JIT_UNARY_OP_ABS"
+};
+
+/* Implementation of recording::memento::write_reproducer for unary ops.  */
+
+void
+recording::unary_op::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+	   "    gcc_jit_context_new_unary_op (%s,\n"
+	   "                                  %s, /* gcc_jit_location *loc */\n"
+	   "                                  %s, /* enum gcc_jit_unary_op op */\n"
+	   "                                  %s, /* gcc_jit_type *result_type */\n"
+	   "                                  %s); /* gcc_jit_rvalue *a */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   unary_op_reproducer_strings[m_op],
+	   r.get_identifier_as_type (get_type ()),
+	   r.get_identifier_as_rvalue (m_a));
 }
 
 /* The implementation of class gcc::jit::recording::binary_op.  */
@@ -3079,6 +4150,43 @@ recording::binary_op::make_debug_string ()
 			      m_b->get_debug_string ());
 }
 
+static const char * const binary_op_reproducer_strings[] = {
+  "GCC_JIT_BINARY_OP_PLUS",
+  "GCC_JIT_BINARY_OP_MINUS",
+  "GCC_JIT_BINARY_OP_MULT",
+  "GCC_JIT_BINARY_OP_DIVIDE",
+  "GCC_JIT_BINARY_OP_MODULO",
+  "GCC_JIT_BINARY_OP_BITWISE_AND",
+  "GCC_JIT_BINARY_OP_BITWISE_XOR",
+  "GCC_JIT_BINARY_OP_BITWISE_OR",
+  "GCC_JIT_BINARY_OP_LOGICAL_AND",
+  "GCC_JIT_BINARY_OP_LOGICAL_OR",
+  "GCC_JIT_BINARY_OP_LSHIFT",
+  "GCC_JIT_BINARY_OP_RSHIFT"
+};
+
+/* Implementation of recording::memento::write_reproducer for binary ops.  */
+
+void
+recording::binary_op::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+	   "    gcc_jit_context_new_binary_op (%s,\n"
+	   "                                   %s, /* gcc_jit_location *loc */\n"
+	   "                                   %s, /* enum gcc_jit_binary_op op */\n"
+	   "                                   %s, /* gcc_jit_type *result_type */\n"
+	   "                                   %s, /* gcc_jit_rvalue *a */\n"
+	   "                                   %s); /* gcc_jit_rvalue *b */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   binary_op_reproducer_strings[m_op],
+	   r.get_identifier_as_type (get_type ()),
+	   r.get_identifier_as_rvalue (m_a),
+	   r.get_identifier_as_rvalue (m_b));
+}
+
 /* The implementation of class gcc::jit::recording::comparison.  */
 
 /* Implementation of recording::memento::make_debug_string for
@@ -3102,6 +4210,39 @@ recording::comparison::make_debug_string ()
 			      m_a->get_debug_string (),
 			      comparison_strings[m_op],
 			      m_b->get_debug_string ());
+}
+
+/* A table of enum gcc_jit_comparison values expressed in string
+   form.  */
+
+static const char * const comparison_reproducer_strings[] =
+{
+  "GCC_JIT_COMPARISON_EQ",
+  "GCC_JIT_COMPARISON_NE",
+  "GCC_JIT_COMPARISON_LT",
+  "GCC_JIT_COMPARISON_LE",
+  "GCC_JIT_COMPARISON_GT",
+  "GCC_JIT_COMPARISON_GE"
+};
+
+/* Implementation of recording::memento::write_reproducer for comparisons.  */
+
+void
+recording::comparison::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+	   "    gcc_jit_context_new_comparison (%s,\n"
+	   "                                    %s, /* gcc_jit_location *loc */\n"
+	   "                                    %s, /* enum gcc_jit_comparison op */\n"
+	   "                                    %s, /* gcc_jit_rvalue *a */\n"
+	   "                                    %s); /* gcc_jit_rvalue *b */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   comparison_reproducer_strings[m_op],
+	   r.get_identifier_as_rvalue (m_a),
+	   r.get_identifier_as_rvalue (m_b));
 }
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -3155,6 +4296,24 @@ recording::cast::make_debug_string ()
 			      "(%s)%s",
 			      get_type ()->get_debug_string (),
 			      m_rvalue->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for casts.  */
+
+void
+recording::cast::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+	   "    gcc_jit_context_new_cast (%s,\n"
+	   "                              %s, /* gcc_jit_location *loc */\n"
+	   "                              %s, /* gcc_jit_rvalue *rvalue */\n"
+	   "                              %s); /* gcc_jit_type *type */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_rvalue (m_rvalue),
+	   r.get_identifier_as_type (get_type ()));
 }
 
 /* The implementation of class gcc::jit::recording::call.  */
@@ -3240,6 +4399,31 @@ recording::call::make_debug_string ()
   delete[] argbuf;
 
   return result;
+}
+
+void
+recording::call::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "call");
+  const char *args_id = r.make_tmp_identifier ("args_for_", this);
+  r.write ("  gcc_jit_rvalue *%s[%i] = {\n",
+	   args_id,
+	   m_args.length ());
+  for (unsigned i = 0; i< m_args.length (); i++)
+    r.write ("    %s,\n", r.get_identifier_as_rvalue (m_args[i]));
+  r.write ("  };\n");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+	   "    gcc_jit_context_new_call (%s, /* gcc_jit_context *ctxt */\n"
+	   "                              %s, /* gcc_jit_location *loc */\n"
+	   "                              %s, /* gcc_jit_function *func */\n"
+	   "                              %i, /* int numargs  */ \n"
+	   "                              %s); /* gcc_jit_rvalue **args*/\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier (m_func),
+	   m_args.length (),
+	   args_id);
 }
 
 /* The implementation of class gcc::jit::recording::call_through_ptr.  */
@@ -3330,6 +4514,34 @@ recording::call_through_ptr::make_debug_string ()
   return result;
 }
 
+/* Implementation of recording::memento::write_reproducer for
+   call_through_ptr.  */
+
+void
+recording::call_through_ptr::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "call");
+  const char *args_id = r.make_tmp_identifier ("args_for_", this);
+  r.write ("  gcc_jit_rvalue *%s[%i] = {\n",
+	     args_id,
+	     m_args.length ());
+  for (unsigned i = 0; i< m_args.length (); i++)
+    r.write ("    %s,\n", r.get_identifier_as_rvalue (m_args[i]));
+  r.write ("  };\n");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+	   "    gcc_jit_context_new_call_through_ptr (%s, /* gcc_jit_context *ctxt */\n"
+	   "                              %s, /* gcc_jit_location *loc */\n"
+	   "                              %s, /* gcc_jit_rvalue *fn_ptr */\n"
+	   "                              %i, /* int numargs  */ \n"
+	   "                              %s); /* gcc_jit_rvalue **args*/\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_rvalue (m_fn_ptr),
+	   m_args.length (),
+	   args_id);
+}
+
 /* The implementation of class gcc::jit::recording::array_access.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -3364,6 +4576,25 @@ recording::array_access::make_debug_string ()
 			      "%s[%s]",
 			      m_ptr->get_debug_string (),
 			      m_index->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   array_access.  */
+
+void
+recording::array_access::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "lvalue");
+  r.write ("  gcc_jit_lvalue *%s = \n"
+	   "    gcc_jit_context_new_array_access (%s, /* gcc_jit_context *ctxt */\n"
+	   "                                      %s, /*gcc_jit_location *loc */\n"
+	   "                                      %s, /* gcc_jit_rvalue *ptr */\n"
+	   "                                      %s); /* gcc_jit_rvalue *index */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_rvalue (m_ptr),
+	   r.get_identifier_as_rvalue (m_index));
 }
 
 /* The implementation of class gcc::jit::recording::access_field_of_lvalue.  */
@@ -3402,6 +4633,23 @@ recording::access_field_of_lvalue::make_debug_string ()
 			      m_field->get_debug_string ());
 }
 
+/* Implementation of recording::memento::write_reproducer for
+   access_field_of_lvalue.  */
+
+void
+recording::access_field_of_lvalue::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "lvalue");
+  r.write ("  gcc_jit_lvalue *%s = \n"
+	   "    gcc_jit_lvalue_access_field (%s, /*gcc_jit_lvalue *struct_or_union */\n"
+	   "                                 %s, /*gcc_jit_location *loc */\n"
+	   "                                 %s);\n",
+	   id,
+	   r.get_identifier_as_lvalue (m_lvalue),
+	   r.get_identifier (m_loc),
+	   r.get_identifier (m_field));
+}
+
 /* The implementation of class gcc::jit::recording::access_field_rvalue.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -3435,6 +4683,23 @@ recording::access_field_rvalue::make_debug_string ()
 			      "%s.%s",
 			      m_rvalue->get_debug_string (),
 			      m_field->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   access_field_rvalue.  */
+
+void
+recording::access_field_rvalue::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+  r.write ("  gcc_jit_rvalue *%s = \n"
+	   "    gcc_jit_rvalue_access_field (%s, /*gcc_jit_rvalue *struct_or_union */\n"
+	   "                                 %s, /*gcc_jit_location *loc */\n"
+	   "                                 %s);\n",
+	   id,
+	   r.get_identifier_as_rvalue (m_rvalue),
+	   r.get_identifier (m_loc),
+	   r.get_identifier (m_field));
 }
 
 /* The implementation of class
@@ -3473,6 +4738,23 @@ recording::dereference_field_rvalue::make_debug_string ()
 			      m_field->get_debug_string ());
 }
 
+/* Implementation of recording::memento::write_reproducer for
+   dereference_field_rvalue.  */
+
+void
+recording::dereference_field_rvalue::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "lvalue");
+  r.write ("  gcc_jit_lvalue *%s=\n"
+	   "    gcc_jit_rvalue_dereference_field (%s, /* gcc_jit_rvalue *ptr */\n"
+	   "                                      %s, /* gcc_jit_location *loc */\n"
+	   "                                      %s); /* gcc_jit_field *field */\n",
+	   id,
+	   r.get_identifier_as_rvalue (m_rvalue),
+	   r.get_identifier (m_loc),
+	   r.get_identifier (m_field));
+}
+
 /* The implementation of class gcc::jit::recording::dereference_rvalue.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -3504,6 +4786,21 @@ recording::dereference_rvalue::make_debug_string ()
   return string::from_printf (m_ctxt,
 			      "*%s",
 			      m_rvalue->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   dereference_rvalue.  */
+
+void
+recording::dereference_rvalue::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "dereference");
+  r.write ("  gcc_jit_lvalue *%s =\n"
+	   "    gcc_jit_rvalue_dereference (%s, /* gcc_jit_rvalue *rvalue */\n"
+	   "                                %s); /* gcc_jit_location *loc */\n",
+	   id,
+	   r.get_identifier_as_rvalue (m_rvalue),
+	   r.get_identifier (m_loc));
 }
 
 /* The implementation of class gcc::jit::recording::get_address_of_lvalue.  */
@@ -3539,6 +4836,21 @@ recording::get_address_of_lvalue::make_debug_string ()
 			      m_lvalue->get_debug_string ());
 }
 
+/* Implementation of recording::memento::write_reproducer for
+   get_address_of_lvalue.  */
+
+void
+recording::get_address_of_lvalue::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "address_of");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+	   "    gcc_jit_lvalue_get_address (%s, /* gcc_jit_lvalue *lvalue */\n"
+	   "                                %s); /* gcc_jit_location *loc */\n",
+	   id,
+	   r.get_identifier_as_lvalue (m_lvalue),
+	   r.get_identifier (m_loc));
+}
+
 /* The implementation of class gcc::jit::recording::local.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -3568,6 +4880,22 @@ recording::local::write_to_dump (dump &d)
   d.write("  %s %s;\n",
 	  m_type->get_debug_string (),
 	  get_debug_string ());
+}
+
+void
+recording::local::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "local");
+  r.write ("  gcc_jit_lvalue *%s =\n"
+	   "    gcc_jit_function_new_local (%s, /* gcc_jit_function *func */\n"
+	   "                                %s, /* gcc_jit_location *loc */\n"
+	   "                                %s, /* gcc_jit_type *type */\n"
+	   "                                %s); /* const char *name */\n",
+	   id,
+	   r.get_identifier (m_func),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_type (m_type),
+	   m_name->get_debug_string ());
 }
 
 /* The implementation of class gcc::jit::recording::statement.  */
@@ -3624,6 +4952,20 @@ recording::eval::make_debug_string ()
 			      m_rvalue->get_debug_string ());
 }
 
+/* Implementation of recording::memento::write_reproducer for
+   eval statements.  */
+
+void
+recording::eval::write_reproducer (reproducer &r)
+{
+  r.write ("  gcc_jit_block_add_eval (%s, /*gcc_jit_block *block */\n"
+	   "                          %s, /* gcc_jit_location *loc */\n"
+	   "                          %s); /* gcc_jit_rvalue *rvalue */\n",
+	   r.get_identifier (get_block ()),
+	   r.get_identifier (get_loc ()),
+	   r.get_identifier_as_rvalue (m_rvalue));
+}
+
 /* The implementation of class gcc::jit::recording::assignment.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -3648,6 +4990,22 @@ recording::assignment::make_debug_string ()
 			      "%s = %s;",
 			      m_lvalue->get_debug_string (),
 			      m_rvalue->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   assignment statements.  */
+
+void
+recording::assignment::write_reproducer (reproducer &r)
+{
+  r.write ("  gcc_jit_block_add_assignment (%s, /*gcc_jit_block *block */\n"
+	   "                                %s, /* gcc_jit_location *loc */\n"
+	   "                                %s, /* gcc_jit_lvalue *lvalue */\n"
+	   "                                %s); /* gcc_jit_rvalue *rvalue */\n",
+	   r.get_identifier (get_block ()),
+	   r.get_identifier (get_loc ()),
+	   r.get_identifier_as_lvalue (m_lvalue),
+	   r.get_identifier_as_rvalue (m_rvalue));
 }
 
 /* The implementation of class gcc::jit::recording::assignment_op.  */
@@ -3687,6 +5045,24 @@ recording::assignment_op::make_debug_string ()
 			      m_rvalue->get_debug_string ());
 }
 
+/* Implementation of recording::memento::write_reproducer for
+   assignment_op statements.  */
+
+void
+recording::assignment_op::write_reproducer (reproducer &r)
+{
+  r.write ("  gcc_jit_block_add_assignment_op (%s, /*gcc_jit_block *block */\n"
+	   "                                   %s, /* gcc_jit_location *loc */\n"
+	   "                                   %s, /* gcc_jit_lvalue *lvalue */\n"
+	   "                                   %s, /* enum gcc_jit_binary_op op */\n"
+	   "                                   %s); /* gcc_jit_rvalue *rvalue */\n",
+	   r.get_identifier (get_block ()),
+	   r.get_identifier (get_loc ()),
+	   r.get_identifier_as_lvalue (m_lvalue),
+	   binary_op_reproducer_strings[m_op],
+	   r.get_identifier_as_rvalue (m_rvalue));
+}
+
 /* The implementation of class gcc::jit::recording::comment.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -3709,6 +5085,20 @@ recording::comment::make_debug_string ()
   return string::from_printf (m_ctxt,
 			      "/* %s */",
 			      m_text->c_str ());
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   comments.  */
+
+void
+recording::comment::write_reproducer (reproducer &r)
+{
+  r.write ("  gcc_jit_block_add_comment (%s, /*gcc_jit_block *block */\n"
+	   "                             %s, /* gcc_jit_location *loc */\n"
+	   "                             %s); /* const char *text */\n",
+	   r.get_identifier (get_block ()),
+	   r.get_identifier (get_loc ()),
+	   m_text->get_debug_string ());
 }
 
 /* The implementation of class gcc::jit::recording::conditional.  */
@@ -3759,6 +5149,24 @@ recording::conditional::make_debug_string ()
 				m_on_true->get_debug_string ());
 }
 
+/* Implementation of recording::memento::write_reproducer for
+   conditional statements.  */
+
+void
+recording::conditional::write_reproducer (reproducer &r)
+{
+  r.write ("  gcc_jit_block_end_with_conditional (%s, /*gcc_jit_block *block */\n"
+	   "                                      %s, /* gcc_jit_location *loc */\n"
+	   "                                      %s, /* gcc_jit_rvalue *boolval */\n"
+	   "                                      %s, /* gcc_jit_block *on_true */\n"
+	   "                                      %s); /* gcc_jit_block *on_false */\n",
+	   r.get_identifier (get_block ()),
+	   r.get_identifier (get_loc ()),
+	   r.get_identifier_as_rvalue (m_boolval),
+	   r.get_identifier (m_on_true),
+	   r.get_identifier (m_on_false));
+}
+
 /* The implementation of class gcc::jit::recording::jump.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -3794,6 +5202,20 @@ recording::jump::make_debug_string ()
   return string::from_printf (m_ctxt,
 			      "goto %s;",
 			      m_target->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   jump statements.  */
+
+void
+recording::jump::write_reproducer (reproducer &r)
+{
+  r.write ("  gcc_jit_block_end_with_jump (%s, /*gcc_jit_block *block */\n"
+	   "                               %s, /* gcc_jit_location *loc */\n"
+	   "                               %s); /* gcc_jit_block *target */\n",
+	   r.get_identifier (get_block ()),
+	   r.get_identifier (get_loc ()),
+	   r.get_identifier (m_target));
 }
 
 /* The implementation of class gcc::jit::recording::return_.  */
@@ -3834,6 +5256,26 @@ recording::return_::make_debug_string ()
   else
     return string::from_printf (m_ctxt,
 				"return;");
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   return statements.  */
+
+void
+recording::return_::write_reproducer (reproducer &r)
+{
+  if (m_rvalue)
+    r.write ("  gcc_jit_block_end_with_return (%s, /*gcc_jit_block *block */\n"
+	     "                                 %s, /* gcc_jit_location *loc */\n"
+	     "                                 %s); /* gcc_jit_rvalue *rvalue */\n",
+	     r.get_identifier (get_block ()),
+	     r.get_identifier (get_loc ()),
+	     r.get_identifier_as_rvalue (m_rvalue));
+  else
+    r.write ("  gcc_jit_block_end_with_void_return (%s, /*gcc_jit_block *block */\n"
+	     "                                      %s); /* gcc_jit_location *loc */\n",
+	     r.get_identifier (get_block ()),
+	     r.get_identifier (get_loc ()));
 }
 
 } // namespace gcc::jit

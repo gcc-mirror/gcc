@@ -1,3 +1,171 @@
+2015-01-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/contexts.rst (Debugging): Add
+	gccjit::context::dump_reproducer_to_file.
+	* docs/internals/index.rst (Design notes): New section,
+	discussing input validation and
+	gcc_jit_context_dump_reproducer_to_file.
+	* docs/topics/contexts.rst (Debugging): Add
+	gcc_jit_context_dump_reproducer_to_file.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-common.h (gcc::jit::dump::get_context): New accessor.
+	* jit-recording.c: Include "hash-map.h".
+	Within namespace ::gcc::jit...
+	(dump::write): Flush each line.
+	(dump::make_location): Pass false for new param "created_by_user".
+	(class allocator): New class.
+	(allocator::~allocator): New function.
+	(allocator::xstrdup_printf): New function.
+	(allocator::xstrdup_printf_va): New function.
+	(class reproducer): New subclass of dump.
+	(reproducer::reproducer): New function.
+	(reproducer::write_params): New function.
+	(reproducer::write_args): New function.
+	(reproducer::make_identifier): New function.
+	(reproducer::make_tmp_identifier): New function.
+	(reproducer::get_identifier): New pair of functions.
+	(reproducer::get_identifier_as_rvalue): New function.
+	(reproducer::get_identifier_as_lvalue): New function.
+	(reproducer::get_identifier_as_type): New function.
+	(reproducer::xstrdup_printf): New function.
+	(recording::context::context): Initialize m_toplevel_ctxt.
+	(recording::context::new_location): Add param created_by_user.
+	(str_option_reproducer_strings): New table of strings.
+	(int_option_reproducer_strings): Likewise.
+	(bool_option_reproducer_strings): Likewise.
+	(get_type_enum_strings): Likewise.
+	(names_of_function_kinds): Likewise.
+	(global_kind_reproducer_strings): Likewise.
+	(unary_op_reproducer_strings): Likewise.
+	(binary_op_reproducer_strings): Likewise.
+	(comparison_reproducer_strings): Likewise.
+	Within namespace ::gcc::jit::recording::...
+	(context::dump_reproducer_to_file): New function.
+	(string::write_reproducer): Likewise.
+	(location::write_reproducer): Likewise.
+	(type::access_as_type): Likewise.
+	(memento_of_get_type::write_reproducer): Likewise.
+	(memento_of_get_pointer::write_reproducer): Likewise.
+	(memento_of_get_const::write_reproducer): Likewise.
+	(memento_of_get_volatile::write_reproducer): Likewise.
+	(array_type::write_reproducer): Likewise.
+	(function_type::write_reproducer): Likewise.
+	(function_type::write_deferred_reproducer): Likewise.
+	(field::write_reproducer): Likewise.
+	(struct_::access_as_type): Likewise.
+	(struct_::write_reproducer): Likewise.
+	(union_::write_reproducer): Likewise.
+	(fields::write_reproducer): Likewise.
+	(rvalue::access_as_rvalue): Likewise.
+	(lvalue::access_as_rvalue): Likewise.
+	(lvalue::access_as_lvalue): Likewise.
+	(param::access_as_rvalue): Likewise.
+	(param::access_as_lvalue): Likewise.
+	(param::write_reproducer): Likewise.
+	(function::write_reproducer): Likewise.
+	(block::write_reproducer): Likewise.
+	(global::write_reproducer): Likewise.
+	(memento_of_new_rvalue_from_const <int>::write_reproducer):
+	Likewise.
+	(memento_of_new_rvalue_from_const <long>::write_reproducer):
+	Likewise.
+	(memento_of_new_rvalue_from_const <double>::write_reproducer):
+	Likewise.
+	(memento_of_new_rvalue_from_const <void *>::write_reproducer):
+	Likewise.
+	(memento_of_new_string_literal::write_reproducer): Likewise.
+	(unary_op::write_reproducer): Likewise.
+	(binary_op::write_reproducer): Likewise.
+	(comparison::write_reproducer): Likewise.
+	(cast::write_reproducer): Likewise.
+	(call::write_reproducer): Likewise.
+	(call_through_ptr::write_reproducer): Likewise.
+	(array_access::write_reproducer): Likewise.
+	(access_field_of_lvalue::write_reproducer): Likewise.
+	(access_field_rvalue::write_reproducer): Likewise.
+	(dereference_field_rvalue::write_reproducer): Likewise.
+	(dereference_rvalue::write_reproducer): Likewise.
+	(get_address_of_lvalue::write_reproducer): Likewise.
+	(local::write_reproducer): Likewise.
+	(eval::write_reproducer): Likewise.
+	(assignment::write_reproducer): Likewise.
+	(assignment_op::write_reproducer): Likewise.
+	(comment::write_reproducer): Likewise.
+	(conditional::write_reproducer): Likewise.
+	(jump::write_reproducer): Likewise.
+	(return_::write_reproducer): Likewise.
+	* jit-recording.h (gcc::jit::reproducer): New forward declararion.
+	Within namespace ::gcc::jit::recording::...
+	(context::new_location): Add "created_by_user" param.
+	(context::dump_reproducer_to_file): New method.
+	(context::m_toplevel_ctxt): New field.
+	(memento::write_reproducer): New pure virtual function.
+	(memento::dyn_cast_location): New virtual function.
+	(string::write_reproducer):
+	(location::location): Add "created_by_user" param.
+	(location::dyn_cast_location): New function.
+	(location::created_by_user): New accessor.
+	(location::write_reproducer): New function.
+	(location::m_created_by_user): New field.
+	(type::access_as_type): New virtual function.
+	(location::write_reproducer): Likewise.
+	(type::access_as_type): Likewise.
+	(memento_of_get_type::write_reproducer): Likewise.
+	(memento_of_get_pointer::write_reproducer): Likewise.
+	(memento_of_get_const::write_reproducer): Likewise.
+	(memento_of_get_volatile::write_reproducer): Likewise.
+	(array_type::write_reproducer): Likewise.
+	(function_type::write_reproducer): Likewise.
+	(function_type::write_deferred_reproducer): Likewise.
+	(field::write_reproducer): Likewise.
+	(struct_::access_as_type): Likewise.
+	(struct_::write_reproducer): Likewise.
+	(union_::write_reproducer): Likewise.
+	(union_::m_fields): Remove stray unused field.
+	(fields::length): New accessor.
+	(fields::get_field): New accessor.
+	(fields::write_reproducer): New function.
+	(rvalue::access_as_rvalue): Likewise.
+	(lvalue::access_as_rvalue): Likewise.
+	(lvalue::access_as_lvalue): Likewise.
+	(param::access_as_rvalue): Likewise.
+	(param::access_as_lvalue): Likewise.
+	(param::write_reproducer): Likewise.
+	(function::write_reproducer): Likewise.
+	(block::write_reproducer): Likewise.
+	(global::write_reproducer): Likewise.
+	(memento_of_new_rvalue_from_const <HOST_TYPE>::write_reproducer):
+	Likewise.
+	(memento_of_new_string_literal::write_reproducer): Likewise.
+	(unary_op::write_reproducer): Likewise.
+	(binary_op::write_reproducer): Likewise.
+	(comparison::write_reproducer): Likewise.
+	(cast::write_reproducer): Likewise.
+	(call::write_reproducer): Likewise.
+	(call_through_ptr::write_reproducer): Likewise.
+	(array_access::write_reproducer): Likewise.
+	(access_field_of_lvalue::write_reproducer): Likewise.
+	(access_field_rvalue::write_reproducer): Likewise.
+	(dereference_field_rvalue::write_reproducer): Likewise.
+	(dereference_rvalue::write_reproducer): Likewise.
+	(get_address_of_lvalue::write_reproducer): Likewise.
+	(local::write_reproducer): Likewise.
+	(eval::write_reproducer): Likewise.
+	(assignment::write_reproducer): Likewise.
+	(assignment_op::write_reproducer): Likewise.
+	(comment::write_reproducer): Likewise.
+	(conditional::write_reproducer): Likewise.
+	(jump::write_reproducer): Likewise.
+	(return_::write_reproducer): Likewise.
+	* libgccjit++.h (gccjit::context::dump_reproducer_to_file): New.
+	* libgccjit.c (gcc_jit_context_new_location): Pass "true" as
+	param "created_by_user".
+	(gcc_jit_context_dump_reproducer_to_file): New API entrypoint.
+	* libgccjit.h (gcc_jit_context_dump_reproducer_to_file): New API
+	entrypoint.
+	* libgccjit.map (gcc_jit_context_dump_reproducer_to_file): New API
+	entrypoint.
+
 2015-01-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit-recording.c (class gcc::jit::rvalue_usage_validator): New.

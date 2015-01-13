@@ -626,6 +626,14 @@ main (int argc, char **argv)
 					    "dump-of-test-nested-contexts-bottom.c",
 					    1);
 
+	      /* Dump a reproducer for the bottom context.
+		 The generated reproducer needs to also regenerate the
+		 parent contexts, so this gives us test coverage for
+		 that case.  */
+	      gcc_jit_context_dump_reproducer_to_file (
+		bottom_level.ctxt,
+		"test-nested-contexts.c.exe.reproducer.c");
+
 	      gcc_jit_result *bottom_result =
 		gcc_jit_context_compile (bottom_level.ctxt);
 	      verify_bottom_code (bottom_level.ctxt, bottom_result);
