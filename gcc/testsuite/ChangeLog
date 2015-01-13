@@ -1,3 +1,7 @@
+2015-01-13  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.target/aarch64/store-pair-1.c: New testcase.
+
 2015-01-13  Richard Biener  <rguenther@suse.de>
 
 	PR lto/64373
