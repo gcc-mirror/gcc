@@ -1822,6 +1822,123 @@ find_bswap_or_nop_load (gimple stmt, tree ref, struct symbolic_number *n)
   return true;
 }
 
+/* Compute the symbolic number N representing the result of a bitwise OR on 2
+   symbolic number N1 and N2 whose source statements are respectively
+   SOURCE_STMT1 and SOURCE_STMT2.  */
+
+static gimple
+perform_symbolic_merge (gimple source_stmt1, struct symbolic_number *n1,
+			gimple source_stmt2, struct symbolic_number *n2,
+			struct symbolic_number *n)
+{
+  int i, size;
+  uint64_t mask;
+  gimple source_stmt;
+  struct symbolic_number *n_start;
+
+  /* Sources are different, cancel bswap if they are not memory location with
+     the same base (array, structure, ...).  */
+  if (gimple_assign_rhs1 (source_stmt1) != gimple_assign_rhs1 (source_stmt2))
+    {
+      int64_t inc;
+      HOST_WIDE_INT start_sub, end_sub, end1, end2, end;
+      struct symbolic_number *toinc_n_ptr, *n_end;
+
+      if (!n1->base_addr || !n2->base_addr
+	  || !operand_equal_p (n1->base_addr, n2->base_addr, 0))
+	return NULL;
+
+      if (!n1->offset != !n2->offset ||
+          (n1->offset && !operand_equal_p (n1->offset, n2->offset, 0)))
+	return NULL;
+
+      if (n1->bytepos < n2->bytepos)
+	{
+	  n_start = n1;
+	  start_sub = n2->bytepos - n1->bytepos;
+	  source_stmt = source_stmt1;
+	}
+      else
+	{
+	  n_start = n2;
+	  start_sub = n1->bytepos - n2->bytepos;
+	  source_stmt = source_stmt2;
+	}
+
+      /* Find the highest address at which a load is performed and
+	 compute related info.  */
+      end1 = n1->bytepos + (n1->range - 1);
+      end2 = n2->bytepos + (n2->range - 1);
+      if (end1 < end2)
+	{
+	  end = end2;
+	  end_sub = end2 - end1;
+	}
+      else
+	{
+	  end = end1;
+	  end_sub = end1 - end2;
+	}
+      n_end = (end2 > end1) ? n2 : n1;
+
+      /* Find symbolic number whose lsb is the most significant.  */
+      if (BYTES_BIG_ENDIAN)
+	toinc_n_ptr = (n_end == n1) ? n2 : n1;
+      else
+	toinc_n_ptr = (n_start == n1) ? n2 : n1;
+
+      n->range = end - n_start->bytepos + 1;
+
+      /* Check that the range of memory covered can be represented by
+	 a symbolic number.  */
+      if (n->range > 64 / BITS_PER_MARKER)
+	return NULL;
+
+      /* Reinterpret byte marks in symbolic number holding the value of
+	 bigger weight according to target endianness.  */
+      inc = BYTES_BIG_ENDIAN ? end_sub : start_sub;
+      size = TYPE_PRECISION (n1->type) / BITS_PER_UNIT;
+      for (i = 0; i < size; i++, inc <<= BITS_PER_MARKER)
+	{
+	  unsigned marker =
+	    (toinc_n_ptr->n >> (i * BITS_PER_MARKER)) & MARKER_MASK;
+	  if (marker && marker != MARKER_BYTE_UNKNOWN)
+	    toinc_n_ptr->n += inc;
+	}
+    }
+  else
+    {
+      n->range = n1->range;
+      n_start = n1;
+      source_stmt = source_stmt1;
+    }
+
+  if (!n1->alias_set
+      || alias_ptr_types_compatible_p (n1->alias_set, n2->alias_set))
+    n->alias_set = n1->alias_set;
+  else
+    n->alias_set = ptr_type_node;
+  n->vuse = n_start->vuse;
+  n->base_addr = n_start->base_addr;
+  n->offset = n_start->offset;
+  n->bytepos = n_start->bytepos;
+  n->type = n_start->type;
+  size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
+
+  for (i = 0, mask = MARKER_MASK; i < size; i++, mask <<= BITS_PER_MARKER)
+    {
+      uint64_t masked1, masked2;
+
+      masked1 = n1->n & mask;
+      masked2 = n2->n & mask;
+      if (masked1 && masked2 && masked1 != masked2)
+	return NULL;
+    }
+  n->n = n1->n | n2->n;
+
+  return source_stmt;
+}
+
 /* find_bswap_or_nop_1 invokes itself recursively with N and tries to perform
    the operation given by the rhs of STMT on the result.  If the operation
    could successfully be executed the function returns a gimple stmt whose
@@ -1948,10 +2065,8 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 
   if (rhs_class == GIMPLE_BINARY_RHS)
     {
-      int i, size;
       struct symbolic_number n1, n2;
-      uint64_t mask;
-      gimple source_stmt2;
+      gimple source_stmt, source_stmt2;
 
       if (code != BIT_IOR_EXPR)
 	return NULL;
@@ -1981,80 +2096,11 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  (n1.vuse && !operand_equal_p (n1.vuse, n2.vuse, 0)))
 	    return NULL;
 
-	  if (gimple_assign_rhs1 (source_stmt1)
-	      != gimple_assign_rhs1 (source_stmt2))
-	    {
-	      int64_t inc;
-	      HOST_WIDE_INT off_sub;
-	      struct symbolic_number *n_ptr;
+	  source_stmt =
+	    perform_symbolic_merge (source_stmt1, &n1, source_stmt2, &n2, n);
 
-	      if (!n1.base_addr || !n2.base_addr
-		  || !operand_equal_p (n1.base_addr, n2.base_addr, 0))
-		return NULL;
-	      if (!n1.offset != !n2.offset ||
-	          (n1.offset && !operand_equal_p (n1.offset, n2.offset, 0)))
-		return NULL;
-
-	      /* We swap n1 with n2 to have n1 < n2.  */
-	      if (n2.bytepos < n1.bytepos)
-		{
-		  struct symbolic_number tmpn;
-
-		  tmpn = n2;
-		  n2 = n1;
-		  n1 = tmpn;
-		  source_stmt1 = source_stmt2;
-		}
-
-	      off_sub = n2.bytepos - n1.bytepos;
-
-	      /* Check that the range of memory covered can be represented by
-		 a symbolic number.  */
-	      if (off_sub + n2.range > 64 / BITS_PER_MARKER)
-		return NULL;
-	      n->range = n2.range + off_sub;
-
-	      /* Reinterpret byte marks in symbolic number holding the value of
-		 bigger weight according to target endianness.  */
-	      inc = BYTES_BIG_ENDIAN ? off_sub + n2.range - n1.range : off_sub;
-	      size = TYPE_PRECISION (n1.type) / BITS_PER_UNIT;
-	      if (BYTES_BIG_ENDIAN)
-		n_ptr = &n1;
-	      else
-		n_ptr = &n2;
-	      for (i = 0; i < size; i++, inc <<= BITS_PER_MARKER)
-		{
-		  unsigned marker =
-		    (n_ptr->n >> (i * BITS_PER_MARKER)) & MARKER_MASK;
-		  if (marker && marker != MARKER_BYTE_UNKNOWN)
-		    n_ptr->n += inc;
-		}
-	    }
-	  else
-	    n->range = n1.range;
-
-	  if (!n1.alias_set
-	      || alias_ptr_types_compatible_p (n1.alias_set, n2.alias_set))
-	    n->alias_set = n1.alias_set;
-	  else
-	    n->alias_set = ptr_type_node;
-	  n->vuse = n1.vuse;
-	  n->base_addr = n1.base_addr;
-	  n->offset = n1.offset;
-	  n->bytepos = n1.bytepos;
-	  n->type = n1.type;
-	  size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
-	  for (i = 0, mask = MARKER_MASK; i < size;
-	       i++, mask <<= BITS_PER_MARKER)
-	    {
-	      uint64_t masked1, masked2;
-
-	      masked1 = n1.n & mask;
-	      masked2 = n2.n & mask;
-	      if (masked1 && masked2 && masked1 != masked2)
-		return NULL;
-	    }
-	  n->n = n1.n | n2.n;
+	  if (!source_stmt)
+	    return NULL;
 
 	  if (!verify_symbolic_number_p (n, stmt))
 	    return NULL;
@@ -2063,7 +2109,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	default:
 	  return NULL;
 	}
-      return source_stmt1;
+      return source_stmt;
     }
   return NULL;
 }
