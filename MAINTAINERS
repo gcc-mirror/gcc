@@ -270,6 +270,7 @@ check in changes outside of the parts of the compiler they maintain.
 
 			Reviewers
 
+C front end		Marek Polacek		<polacek@redhat.com>
 dataflow		Paolo Bonzini		<bonzini@gnu.org>
 dataflow		Seongbae Park		<seongbae.park@gmail.com>
 dataflow		Kenneth Zadeck		<zadeck@naturalbridge.com>
