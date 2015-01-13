@@ -1,3 +1,9 @@
+2014-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64568
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Properly
+	release defs of removed stmts, avoid splitting TARGET_MEM_REFs.
+
 2015-01-13  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (nds32_legitimate_address_p): Consider
