@@ -1,3 +1,9 @@
+2015-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64404
+	* tree-vect-stmts.c (vectorizable_load): Reject conflicting
+	SLP types for CSEd loads.
+
 2015-01-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/64436
