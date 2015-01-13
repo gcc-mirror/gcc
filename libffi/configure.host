@@ -100,7 +100,13 @@ case "${host}" in
 	      TARGET=X86_64
 	      ;;
 	    *)
-	      TARGET=X86
+	      echo 'int foo (void) { return __x86_64__; }' > conftest.c
+	      if $CC $CFLAGS -Werror -S conftest.c -o conftest.s > /dev/null 2>&1; then
+		TARGET=X86_64;
+	      else
+		TARGET=X86;
+	      fi
+	      rm -f conftest.*
 	      ;;
           esac
 	else
