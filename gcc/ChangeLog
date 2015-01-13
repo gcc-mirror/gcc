@@ -1,3 +1,11 @@
+2015-01-13  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sem_function::equals_private): Call new functions
+	cl_target_option_print_diff and cl_optimization_print_diff.
+	* optc-save-gen.awk (cl_target_option_print_diff): New function.
+	(cl_optimization_print_diff): Likewise.
+	* opth-gen.awk: Likewise.
+
 2015-01-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.md (subsi3, *subsi3_uxtw, subdi3)

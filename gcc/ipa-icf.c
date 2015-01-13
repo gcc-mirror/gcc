@@ -445,10 +445,8 @@ sem_function::equals_private (sem_item *item,
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      fprintf (dump_file, "Source target flags\n");
-	      cl_target_option_print (dump_file, 2, tar1);
-	      fprintf (dump_file, "Target target flags\n");
-	      cl_target_option_print (dump_file, 2, tar2);
+	      fprintf (dump_file, "target flags difference");
+	      cl_target_option_print_diff (dump_file, 2, tar1, tar2);
 	    }
 
 	  return return_false_with_msg ("Target flags are different");
@@ -466,10 +464,8 @@ sem_function::equals_private (sem_item *item,
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      fprintf (dump_file, "Source optimization flags\n");
-	      cl_optimization_print (dump_file, 2, opt1);
-	      fprintf (dump_file, "Target optimization flags\n");
-	      cl_optimization_print (dump_file, 2, opt2);
+	      fprintf (dump_file, "optimization flags difference");
+	      cl_optimization_print_diff (dump_file, 2, opt1, opt2);
 	    }
 
 	  return return_false_with_msg ("optimization flags are different");
