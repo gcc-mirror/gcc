@@ -1,5 +1,11 @@
 2015-01-12  Richard Henderson  <rth@redhat.com>
 
+	PR libffi/64572
+	* src/x86/ffitarget.h (FFI_GO_CLOSURES): Do not define for darwin.
+	(FFI_TARGET_HAS_COMPLEX_TYPE): Likewise.
+
+2015-01-12  Richard Henderson  <rth@redhat.com>
+
 	* src/x86/ffi.c (ffi_raw_call): Fill in frame.
 
 2015-01-12  Richard Henderson  <rth@redhat.com>

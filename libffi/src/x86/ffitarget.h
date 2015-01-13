@@ -50,7 +50,8 @@
 #endif
 
 #define FFI_TARGET_SPECIFIC_STACK_SPACE_ALLOCATION
-#ifndef _MSC_VER
+
+#if !defined(_MSC_VER) && !defined(X86_DARWIN) && !defined(X86_64_DARWIN)
 #define FFI_TARGET_HAS_COMPLEX_TYPE
 #endif
 
@@ -84,7 +85,7 @@ typedef enum ffi_abi {
   FFI_LAST_ABI,
   FFI_DEFAULT_ABI = FFI_WIN64
 
-#elif defined(X86_64) || (defined (__x86_64__) && defined (X86_DARWIN))
+#elif defined(X86_64) || defined(X86_64_DARWIN)
   FFI_FIRST_ABI = 1,
   FFI_UNIX64,
   FFI_LAST_ABI,
@@ -119,15 +120,17 @@ typedef enum ffi_abi {
 /* ---- Definitions for closures ----------------------------------------- */
 
 #define FFI_CLOSURES 1
+
+#if !defined(X86_DARWIN) && !defined(X86_64_DARWIN)
 #define FFI_GO_CLOSURES 1
+#endif
 
 #define FFI_TYPE_SMALL_STRUCT_1B (FFI_TYPE_LAST + 1)
 #define FFI_TYPE_SMALL_STRUCT_2B (FFI_TYPE_LAST + 2)
 #define FFI_TYPE_SMALL_STRUCT_4B (FFI_TYPE_LAST + 3)
 #define FFI_TYPE_MS_STRUCT       (FFI_TYPE_LAST + 4)
 
-#if defined (X86_64) || defined(X86_WIN64) \
-    || (defined (__x86_64__) && defined (X86_DARWIN))
+#if defined (X86_64) || defined(X86_WIN64) || defined(X86_64_DARWIN)
 # define FFI_TRAMPOLINE_SIZE 24
 # define FFI_NATIVE_RAW_API 0
 #else
