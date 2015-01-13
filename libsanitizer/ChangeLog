@@ -1,3 +1,10 @@
+2015-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer_common/sanitizer_deadlock_detector.h: Cherry pick
+	upstream r224518 and r224519.
+	* tsan/tsan_rtl_thread.cc: Cherry pick upstream r224702 and
+	r224834.
+
 2014-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* sanitizer_common/sanitizer_symbolizer_libbacktrace.cc,
