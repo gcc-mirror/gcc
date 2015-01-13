@@ -1080,6 +1080,16 @@ proc check_effective_target_nonpic { } {
     }]
 }
 
+# Return 1 if the current multilib generates PIE by default.
+
+proc check_effective_target_pie { } {
+    return [check_no_compiler_messages pie assembly {
+	#ifndef __PIE__
+	#error unsupported
+	#endif
+    }]
+}
+
 # Return 1 if the target does not use a status wrapper.
 
 proc check_effective_target_unwrapped { } {
