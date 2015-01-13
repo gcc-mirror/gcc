@@ -200,7 +200,7 @@ case "${host}" in
 	SOURCES="ffi.c sysv.S"
 	;;
 
-  sh-*-* | sh[[34]]*-*-*)
+  sh-*-* | sh[34]*-*-*)
 	TARGET=SH; TARGETDIR=sh
 	SOURCES="ffi.c sysv.S"
 	;;
