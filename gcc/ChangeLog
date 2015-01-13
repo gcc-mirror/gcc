@@ -1,3 +1,11 @@
+2015-01-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/64436
+	* tree-ssa-math-opts.c (find_bswap_or_nop_1): Move code performing the
+	merge of two symbolic numbers for a bitwise OR to ...
+	(perform_symbolic_merge): This. Also fix computation of the range and
+	end of the symbolic number corresponding to the result of a bitwise OR.
+
 2014-01-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64568
