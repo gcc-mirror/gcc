@@ -1,5 +1,9 @@
 2015-01-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64514
+	* pt.c (coerce_template_parameter_pack): Return NULL for a
+	zero-length fixed parameter pack with a pack expansion arg.
+
 	PR c++/64520
 	* pt.c (unify): Don't try to deduce to std::initializer_list<T...>.
 
