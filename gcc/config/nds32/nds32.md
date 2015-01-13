@@ -1902,7 +1902,8 @@ create_template:
 (define_expand "call"
   [(parallel [(call (match_operand 0 "memory_operand" "")
 		    (match_operand 1))
-	      (clobber (reg:SI LP_REGNUM))])]
+	      (clobber (reg:SI LP_REGNUM))
+	      (clobber (reg:SI TA_REGNUM))])]
   ""
   ""
 )
@@ -1910,7 +1911,8 @@ create_template:
 (define_insn "*call_register"
   [(parallel [(call (mem (match_operand:SI 0 "register_operand" "r, r"))
 		    (match_operand 1))
-	      (clobber (reg:SI LP_REGNUM))])]
+	      (clobber (reg:SI LP_REGNUM))
+	      (clobber (reg:SI TA_REGNUM))])]
   ""
   "@
   jral5\t%0
@@ -1921,11 +1923,20 @@ create_template:
 (define_insn "*call_immediate"
   [(parallel [(call (mem (match_operand:SI 0 "immediate_operand" "i"))
 		    (match_operand 1))
-	      (clobber (reg:SI LP_REGNUM))])]
+	      (clobber (reg:SI LP_REGNUM))
+	      (clobber (reg:SI TA_REGNUM))])]
   ""
-  "jal\t%0"
+{
+  if (TARGET_CMODEL_LARGE)
+    return "bal\t%0";
+  else
+    return "jal\t%0";
+}
   [(set_attr "type"   "branch")
-   (set_attr "length"      "4")])
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_CMODEL_LARGE")
+		      (const_int 12)
+		      (const_int 4)))])
 
 
 ;; Subroutine call instruction returning a value.
@@ -1938,7 +1949,8 @@ create_template:
   [(parallel [(set (match_operand 0)
 		   (call (match_operand 1 "memory_operand" "")
 		         (match_operand 2)))
-	      (clobber (reg:SI LP_REGNUM))])]
+	      (clobber (reg:SI LP_REGNUM))
+	      (clobber (reg:SI TA_REGNUM))])]
   ""
   ""
 )
@@ -1947,7 +1959,8 @@ create_template:
   [(parallel [(set (match_operand 0)
 		   (call (mem (match_operand:SI 1 "register_operand" "r, r"))
 		         (match_operand 2)))
-	      (clobber (reg:SI LP_REGNUM))])]
+	      (clobber (reg:SI LP_REGNUM))
+	      (clobber (reg:SI TA_REGNUM))])]
   ""
   "@
   jral5\t%1
@@ -1959,11 +1972,20 @@ create_template:
   [(parallel [(set (match_operand 0)
 		   (call (mem (match_operand:SI 1 "immediate_operand" "i"))
 			 (match_operand 2)))
-	      (clobber (reg:SI LP_REGNUM))])]
+	      (clobber (reg:SI LP_REGNUM))
+	      (clobber (reg:SI TA_REGNUM))])]
   ""
-  "jal\t%1"
+{
+  if (TARGET_CMODEL_LARGE)
+    return "bal\t%1";
+  else
+    return "jal\t%1";
+}
   [(set_attr "type"   "branch")
-   (set_attr "length"      "4")])
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_CMODEL_LARGE")
+		      (const_int 12)
+		      (const_int 4)))])
 
 
 ;; prologue and epilogue.
