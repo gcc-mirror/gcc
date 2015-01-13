@@ -1,3 +1,9 @@
+2015-01-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54442
+	* tree.c (build_qualified_type): Use a canonical type for
+	TYPE_CANONICAL.
+
 2015-01-13  Pat Haugen  <pthaugen@us.ibm.com>
 
 	Backport from mainline

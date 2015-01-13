@@ -1,3 +1,8 @@
+2015-01-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54442
+	* g++.dg/pr54442.C: New file.
+
 2015-01-13  Renlin Li  <renlin.li@arm.com>
 
 	Backported from mainline
