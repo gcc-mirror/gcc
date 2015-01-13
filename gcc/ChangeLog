@@ -1,5 +1,11 @@
 2015-01-13  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/64406
+	* tree-loop-distibution.c (pass_loop_distribution::execute):
+	Reset the SCEV hashtable if we distributed anything.
+
+2015-01-13  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/64404
 	* tree-vect-stmts.c (vectorizable_load): Reject conflicting
 	SLP types for CSEd loads.
