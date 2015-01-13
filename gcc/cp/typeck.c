@@ -8639,6 +8639,12 @@ apply_memfn_quals (tree type, cp_cv_quals memfn_quals, cp_ref_qualifier rqual)
   /* This should really have a different TYPE_MAIN_VARIANT, but that gets
      complex.  */
   tree result = build_qualified_type (type, memfn_quals);
+  if (tree canon = TYPE_CANONICAL (result))
+    if (canon != result)
+      /* check_qualified_type doesn't check the ref-qualifier, so make sure
+	 TYPE_CANONICAL is correct.  */
+      TYPE_CANONICAL (result)
+	= build_ref_qualified_type (canon, type_memfn_rqual (result));
   result = build_exception_variant (result, TYPE_RAISES_EXCEPTIONS (type));
   return build_ref_qualified_type (result, rqual);
 }
