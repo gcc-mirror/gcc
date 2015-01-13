@@ -1,5 +1,9 @@
 2015-01-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64487
+	* semantics.c (finish_offsetof): Handle templates here.
+	* parser.c (cp_parser_builtin_offsetof): Not here.
+
 	PR c++/64251
 	* decl2.c (mark_used): Don't mark if in_template_function.
 

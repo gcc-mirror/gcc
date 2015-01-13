@@ -8024,12 +8024,7 @@ cp_parser_builtin_offsetof (cp_parser *parser)
     }
 
  success:
-  /* If we're processing a template, we can't finish the semantics yet.
-     Otherwise we can fold the entire expression now.  */
-  if (processing_template_decl)
-    expr = build1 (OFFSETOF_EXPR, size_type_node, expr);
-  else
-    expr = finish_offsetof (expr);
+  expr = finish_offsetof (expr);
 
  failure:
   parser->integral_constant_expression_p = save_ice_p;
