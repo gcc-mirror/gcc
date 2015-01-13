@@ -675,6 +675,10 @@ ffi_raw_call(ffi_cif *cif, void (*fn)(void), void *rvalue, ffi_raw *avalue)
   if (rsize)
     rvalue = frame + 1;
 
+  frame->fn = fn;
+  frame->flags = flags;
+  frame->rvalue = rvalue;
+
   narg_reg = 0;
   switch (flags)
     {

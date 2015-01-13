@@ -1,5 +1,9 @@
 2015-01-12  Richard Henderson  <rth@redhat.com>
 
+	* src/x86/ffi.c (ffi_raw_call): Fill in frame.
+
+2015-01-12  Richard Henderson  <rth@redhat.com>
+
 	Merge to upstream commit c82cc159426d8d4402375fa1ae3f045b9cf82e16.
 
 2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
