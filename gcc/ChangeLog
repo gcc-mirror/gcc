@@ -1,3 +1,12 @@
+2015-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (subsi3, *subsi3_uxtw, subdi3)
+	(*sub_<optab><ALLX:mode>_<GPI:mode>, *sub_<optab><SHORT:mode>_si_uxtw)
+	(*sub_<optab><ALLX:mode>_shft_<GPI:mode>)
+	(*sub_<optab><SHORT:mode>_shft_si_uxtw, *sub_<optab><mode>_multp2)
+	(*sub_<optab>si_multp2_uxtw, *sub_uxt<mode>_multp2)
+	(*sub_uxtsi_multp2_uxtw): Add stack pointer sources.
+
 2015-01-13  Andrew Pinski   <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (fusion_load_store): Check dest mode
