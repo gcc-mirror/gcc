@@ -10520,8 +10520,8 @@ fusion_load_store (rtx_insn *insn, rtx *base, rtx *offset)
   src = SET_SRC (x);
   dest = SET_DEST (x);
 
-  if (GET_MODE (src) != SImode && GET_MODE (src) != DImode
-      && GET_MODE (src) != SFmode && GET_MODE (src) != DFmode)
+  if (GET_MODE (dest) != SImode && GET_MODE (dest) != DImode
+      && GET_MODE (dest) != SFmode && GET_MODE (dest) != DFmode)
     return SCHED_FUSION_NONE;
 
   if (GET_CODE (src) == SIGN_EXTEND)
