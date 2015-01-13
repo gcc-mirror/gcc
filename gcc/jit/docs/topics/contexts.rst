@@ -218,6 +218,30 @@ current state of a context to the given path, whereas
 :c:func:`gcc_jit_context_set_logfile` enables on-going logging of
 future activies on a context to the given `FILE *`.
 
+
+.. function:: void\
+              gcc_jit_context_dump_reproducer_to_file (gcc_jit_context *ctxt,\
+                                                       const char *path)
+
+   Write C source code into `path` that can be compiled into a
+   self-contained executable (i.e. with libgccjit as the only dependency).
+   The generated code will attempt to replay the API calls that have been
+   made into the given context.
+
+   This may be useful when debugging the library or client code, for
+   reducing a complicated recipe for reproducing a bug into a simpler
+   form.  For example, consider client code that parses some source file
+   into some internal representation, and then walks this IR, calling into
+   libgccjit.  If this encounters a bug, a call to
+   `gcc_jit_context_dump_reproducer_to_file` will write out C code for
+   a much simpler executable that performs the equivalent calls into
+   libgccjit, without needing the client code and its data.
+
+   Typically you need to supply :option:`-Wno-unused-variable` when
+   compiling the generated file (since the result of each API call is
+   assigned to a unique variable within the generated C source, and not
+   all are necessarily then used).
+
 .. function:: void\
               gcc_jit_context_enable_dump (gcc_jit_context *ctxt,\
                                            const char *dumpname, \

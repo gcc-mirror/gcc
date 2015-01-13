@@ -277,3 +277,13 @@ generated via this call:
 
 .. literalinclude:: test-hello-world.exe.log.txt
     :lines: 1-
+
+Design notes
+------------
+It should not be possible for client code to cause an internal compiler
+error.  If this *does* happen, the root cause should be isolated (perhaps
+using :c:func:`gcc_jit_context_dump_reproducer_to_file`) and the cause
+should be rejected via additional checking.  The checking ideally should
+be within the libgccjit API entrypoints in libgccjit.c, since this is as
+close as possible to the error; failing that, a good place is within
+``recording::context::validate ()`` in jit-recording.c.

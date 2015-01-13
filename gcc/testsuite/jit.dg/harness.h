@@ -250,6 +250,23 @@ static void set_options (gcc_jit_context *ctxt, const char *argv0)
     0);
 }
 
+/* Concatenate two strings.  The result must be released using "free".  */
+
+char *
+concat_strings (const char *prefix, const char *suffix)
+{
+  char *result = (char *)malloc (strlen (prefix) + strlen (suffix) + 1);
+  if (!result)
+    {
+      fail ("malloc failure");
+      return NULL;
+    }
+  strcpy (result, prefix);
+  strcpy (result + strlen (prefix), suffix);
+  result[strlen (prefix) + strlen (suffix)] = '\0';
+  return result;
+}
+
 #ifndef TEST_ESCHEWS_TEST_JIT
 /* Set up logging to a logfile of the form "test-FOO.exe.log.txt".
 
@@ -271,18 +288,9 @@ set_up_logging (gcc_jit_context *ctxt, const char *argv0)
   FILE *logfile = NULL;
 
   /* Build a logfile name of the form "test-FOO.exe.log.txt".  */
-  logfile_name = (char *)malloc (strlen (argv0)
-				 + strlen (logfile_name_suffix)
-				 + 1);
+  logfile_name = concat_strings (argv0, logfile_name_suffix);
   if (!logfile_name)
-    {
-      fail ("malloc failure");
-      return NULL;
-    }
-  strcpy (logfile_name, argv0);
-  strcpy (logfile_name + strlen (argv0), logfile_name_suffix);
-  logfile_name[strlen (argv0) + strlen (logfile_name_suffix)] = '\0';
-
+    return NULL;
   logfile = fopen (logfile_name, "w");
   CHECK_NON_NULL (logfile);
   free (logfile_name);
@@ -291,6 +299,21 @@ set_up_logging (gcc_jit_context *ctxt, const char *argv0)
     gcc_jit_context_set_logfile (ctxt, logfile, 0, 0);
 
   return logfile;
+}
+
+/* Exercise the API entrypoint:
+     gcc_jit_context_dump_reproducer_to_file
+   by calling it on the context, using the path expected by jit.exp.  */
+static void
+dump_reproducer (gcc_jit_context *ctxt, const char *argv0)
+{
+  char *reproducer_name;
+  reproducer_name = concat_strings (argv0, ".reproducer.c");
+  if (!reproducer_name)
+    return;
+  note ("%s: writing reproducer to %s", test, reproducer_name);
+  gcc_jit_context_dump_reproducer_to_file (ctxt, reproducer_name);
+  free (reproducer_name);
 }
 
 /* Run one iteration of the test.  */
@@ -313,6 +336,8 @@ test_jit (const char *argv0, void *user_data)
   set_options (ctxt, argv0);
 
   create_code (ctxt, user_data);
+
+  dump_reproducer (ctxt, argv0);
 
   /* This actually calls into GCC and runs the build, all
      in a mutex for now.  */
