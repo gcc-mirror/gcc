@@ -1,3 +1,8 @@
+2015-01-13  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/64391
+	* gcc.dg/tm/pr64391.c: New test.
+
 2015-01-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/tree-ssa/ssa-store-ccp-3.c: Exclude pie when nonpic is
