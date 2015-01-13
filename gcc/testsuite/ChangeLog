@@ -1,5 +1,10 @@
 2015-01-13  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/64406
+	* gcc.dg/pr64406.c: New testcase.
+
+2015-01-13  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/64404
 	* gcc.dg/vect/pr64404.c: New testcase.
 
