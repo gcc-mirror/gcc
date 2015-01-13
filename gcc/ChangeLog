@@ -1,3 +1,10 @@
+2015-01-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/64565
+	* ipa-inline.c (inline_small_functions): Update callee keys after
+	resolving speculation
+	(inline_small_functions): Always check monotonicity of the queue.
+
 2015-01-13  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/64391

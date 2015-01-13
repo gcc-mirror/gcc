@@ -1626,6 +1626,8 @@ inline_small_functions (void)
 	  reset_edge_caches (where);
           update_caller_keys (&edge_heap, where,
 			      updated_nodes, NULL);
+          update_callee_keys (&edge_heap, where,
+			      updated_nodes);
           bitmap_clear (updated_nodes);
 	}
     }
@@ -1661,7 +1663,7 @@ inline_small_functions (void)
       /* Disable checking for profile because roundoff errors may cause slight
          deviations in the order.  */
       gcc_assert (max_count || cached_badness == current_badness);
-      gcc_assert (max_count || current_badness >= badness);
+      gcc_assert (current_badness >= badness);
 #else
       current_badness = edge_badness (edge, false);
 #endif
