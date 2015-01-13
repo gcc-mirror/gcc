@@ -1,3 +1,9 @@
+2015-01-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pie.c: New test.
+
+	* lib/target-supports.exp (check_effective_target_pie): New.
+
 2015-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/64286
