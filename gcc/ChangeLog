@@ -1,5 +1,15 @@
 2015-01-13  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* common/config/nds32/nds32-common.c (TARGET_DEFAULT_TARGET_FLAGS):
+	Remove MASK_GP_DIRECT flag.
+	* config/nds32/nds32.h (MULTILIB_DEFAULTS): Have -mcmodel=medium as
+	one of the multilib default options.
+	* config/nds32/nds32.opt (mgp-direct): Remove.
+	* config/nds32/t-mlibs (MULTILIB_OPTIONS): Use -mcmodel instead of
+	-mgp-direct.  We also remove unnecessary -mlittle-endian/-mbig-endian.
+
+2015-01-13  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.opt (mcmodel): Add new option.
 	* config/nds32/nds32-opts.h (nds32_cmodel_type): Add new enum type
 	to describe code model.

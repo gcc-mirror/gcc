@@ -391,16 +391,21 @@ enum nds32_builtins
 #define ENDFILE_SPEC \
   " %{!mno-ctor-dtor:crtend1.o%s}"
 
-/* The TARGET_BIG_ENDIAN_DEFAULT is defined if we configure gcc
-   with --target=nds32be-* setting.
-   Check gcc/config.gcc for more information.
-   In addition, currently we only have elf toolchain,
-   where mgp-direct is always the default.  */
+/* The TARGET_BIG_ENDIAN_DEFAULT is defined if we
+   configure gcc with --target=nds32be-* setting.
+   Check gcc/config.gcc for more information.  */
 #ifdef TARGET_BIG_ENDIAN_DEFAULT
-#define MULTILIB_DEFAULTS { "mbig-endian", "mgp-direct" }
+#  define NDS32_ENDIAN_DEFAULT "mbig-endian"
 #else
-#define MULTILIB_DEFAULTS { "mlittle-endian", "mgp-direct" }
+#  define NDS32_ENDIAN_DEFAULT "mlittle-endian"
 #endif
+
+/* Currently we only have elf toolchain,
+   where -mcmodel=medium is always the default.  */
+#define NDS32_CMODEL_DEFAULT "mcmodel=medium"
+
+#define MULTILIB_DEFAULTS \
+  { NDS32_ENDIAN_DEFAULT, NDS32_CMODEL_DEFAULT }
 
 
 /* Run-time Target Specification.  */
