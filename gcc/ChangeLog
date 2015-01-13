@@ -1,3 +1,9 @@
+2015-01-13  Andrew Pinski   <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (aarch64_operands_ok_for_ldpstp): Reject
+	volatile mems.
+	(aarch64_operands_adjust_ok_for_ldpstp): Likewise.
+
 2015-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/63974
