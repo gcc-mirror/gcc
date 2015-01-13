@@ -1616,10 +1616,15 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
   tree lhs, rhs;
   lhs = cxx_eval_constant_expression (ctx, orig_lhs, /*lval*/false,
 				      non_constant_p, overflow_p);
-  VERIFY_CONSTANT (lhs);
+  /* Don't VERIFY_CONSTANT if this might be dealing with a pointer to
+     a local array in a constexpr function.  */
+  bool ptr = POINTER_TYPE_P (TREE_TYPE (lhs));
+  if (!ptr)
+    VERIFY_CONSTANT (lhs);
   rhs = cxx_eval_constant_expression (ctx, orig_rhs, /*lval*/false,
 				      non_constant_p, overflow_p);
-  VERIFY_CONSTANT (rhs);
+  if (!ptr)
+    VERIFY_CONSTANT (lhs);
 
   location_t loc = EXPR_LOCATION (t);
   enum tree_code code = TREE_CODE (t);
@@ -1634,7 +1639,8 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
     }
   else if (cxx_eval_check_shift_p (loc, ctx, code, type, lhs, rhs))
     *non_constant_p = true;
-  VERIFY_CONSTANT (r);
+  if (!ptr)
+    VERIFY_CONSTANT (lhs);
   return r;
 }
 
@@ -2704,7 +2710,11 @@ cxx_eval_increment_expression (const constexpr_ctx *ctx, tree t,
   tree val = rvalue (op);
   val = cxx_eval_constant_expression (ctx, val, false,
 				      non_constant_p, overflow_p);
-  VERIFY_CONSTANT (val);
+  /* Don't VERIFY_CONSTANT if this might be dealing with a pointer to
+     a local array in a constexpr function.  */
+  bool ptr = POINTER_TYPE_P (TREE_TYPE (val));
+  if (!ptr)
+    VERIFY_CONSTANT (val);
 
   /* The modified value.  */
   bool inc = (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR);
@@ -2719,7 +2729,8 @@ cxx_eval_increment_expression (const constexpr_ctx *ctx, tree t,
     }
   else
     mod = fold_build2 (inc ? PLUS_EXPR : MINUS_EXPR, type, val, offset);
-  VERIFY_CONSTANT (mod);
+  if (!ptr)
+    VERIFY_CONSTANT (mod);
 
   /* Storing the modified value.  */
   tree store = build2 (MODIFY_EXPR, type, op, mod);
