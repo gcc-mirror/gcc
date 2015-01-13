@@ -244,6 +244,69 @@ for (i = 0; i < n_opt_char; i++) {
 print "}";
 
 print "";
+print "/* Print different optimization variables from structures provided as arguments.  */";
+print "void";
+print "cl_optimization_print_diff (FILE *file,";
+print "                            int indent_to,";
+print "                            struct cl_optimization *ptr1,";
+print "                            struct cl_optimization *ptr2)";
+print "{";
+
+print "  fputs (\"\\n\", file);";
+for (i = 0; i < n_opt_other; i++) {
+	print "  if (ptr1->x_" var_opt_other[i] " != ptr2->x_" var_opt_other[i] ")";
+	print "    fprintf (file, \"%*s%s (%#lx/%#lx)\\n\",";
+	print "             indent_to, \"\",";
+	print "             \"" var_opt_other[i] "\",";
+	print "             (unsigned long)ptr1->x_" var_opt_other[i] ",";
+	print "             (unsigned long)ptr2->x_" var_opt_other[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_opt_int; i++) {
+	print "  if (ptr1->x_" var_opt_int[i] " != ptr2->x_" var_opt_int[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent_to, \"\",";
+	print "             \"" var_opt_int[i] "\",";
+	print "             ptr1->x_" var_opt_int[i] ",";
+	print "             ptr2->x_" var_opt_int[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_opt_enum; i++) {
+	print "  if (ptr1->x_" var_opt_enum[i] " != ptr2->x_" var_opt_enum[i] ")";
+	print "  fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "           indent_to, \"\",";
+	print "           \"" var_opt_enum[i] "\",";
+	print "           (int) ptr1->x_" var_opt_enum[i] ",";
+	print "           (int) ptr2->x_" var_opt_enum[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_opt_short; i++) {
+	print "  if (ptr1->x_" var_opt_short[i] " != ptr2->x_" var_opt_short[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent_to, \"\",";
+	print "             \"" var_opt_short[i] "\",";
+	print "             ptr1->x_" var_opt_short[i] ",";
+	print "             ptr2->x_" var_opt_short[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_opt_char; i++) {
+	print "  if (ptr1->x_" var_opt_char[i] " != ptr2->x_" var_opt_char[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent_to, \"\",";
+	print "             \"" var_opt_char[i] "\",";
+	print "             ptr1->x_" var_opt_char[i] ",";
+	print "             ptr2->x_" var_opt_char[i] ");";
+	print "";
+}
+
+print "}";
+
+
+print "";
 print "/* Save selected option variables into a structure.  */"
 print "void";
 print "cl_target_option_save (struct cl_target_option *ptr, struct gcc_options *opts)";
@@ -436,6 +499,76 @@ for (i = 0; i < n_target_char; i++) {
 print "";
 print "  if (targetm.target_option.print)";
 print "    targetm.target_option.print (file, indent, ptr);";
+print "}";
+
+print "";
+print "/* Print different target option variables from structures provided as arguments.  */";
+print "void";
+print "cl_target_option_print_diff (FILE *file,";
+print "                             int indent,";
+print "                             struct cl_target_option *ptr1,";
+print "                             struct cl_target_option *ptr2)";
+print "{";
+
+print "  fputs (\"\\n\", file);";
+for (i = 0; i < n_target_other; i++) {
+	print "  if (ptr1->x_" var_target_other[i] " != ptr2->x_" var_target_other[i] ")";
+	if (host_wide_int[var_target_other[i]] == "yes")
+		print "    fprintf (file, \"%*s%s (%#\" HOST_WIDE_INT_PRINT \"x/%#\" HOST_WIDE_INT_PRINT \"x)\\n\",";
+	else
+		print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" var_target_other[i] "\",";
+	if (host_wide_int[var_target_other[i]] == "yes") {
+		print "             ptr1->x_" var_target_other[i] ",";
+		print "             ptr2->x_" var_target_other[i] ");";
+	}
+	else {
+		print "             (unsigned long)ptr1->x_" var_target_other[i] ",";
+		print "             (unsigned long)ptr2->x_" var_target_other[i] ");";
+	}
+	print "";
+}
+
+for (i = 0; i < n_target_enum; i++) {
+	print "  if (ptr1->x_" var_target_enum[i] " != ptr2->x_" var_target_enum[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" var_target_enum[i] "\",";
+	print "             ptr1->x_" var_target_enum[i] ",";
+	print "             ptr2->x_" var_target_enum[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_target_int; i++) {
+	print "  if (ptr1->x_" var_target_int[i] " != ptr2->x_" var_target_int[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" var_target_int[i] "\",";
+	print "             ptr1->x_" var_target_int[i] ",";
+	print "             ptr2->x_" var_target_int[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_target_short; i++) {
+	print "  if (ptr1->x_" var_target_short[i] " != ptr2->x_" var_target_short[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" var_target_short[i] "\",";
+	print "             ptr1->x_" var_target_short[i] ",";
+	print "             ptr2->x_" var_target_short[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_target_char; i++) {
+	print "  if (ptr1->x_" var_target_char[i] " != ptr2->x_" var_target_char[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" var_target_char[i] "\",";
+	print "             ptr1->x_" var_target_char[i] ",";
+	print "             ptr2->x_" var_target_char[i] ");";
+	print "";
+}
 
 print "}";
 
