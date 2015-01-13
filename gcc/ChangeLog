@@ -1,5 +1,15 @@
 2015-01-13  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.md (call): Use pseudo instruction bal which
+	clobbers TA_REGNUM if large code model is specified.
+	(call_register): Likewise.
+	(call_immediate): Likewise.
+	(call_value): Likewise.
+	(call_value_register): Likewise.
+	(call_value_immediate): Likewise.
+
+2015-01-13  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.h (TARGET_CMODEL_SMALL): New macro.
 	(TARGET_CMODEL_MEDIUM): New macro.
 	(TARGET_CMODEL_LARGE): New macro.
