@@ -1,3 +1,7 @@
+2015-01-13  Marek Polacek  <polacek@redhat.com>
+
+	* MAINTAINERS (Reviewers): Add self as C front end reviewer.
+
 2015-01-12  Jeff Law  <law@redhat.com>
 
 	* MAINTAINERS: Remove Stan Shebs as he has been inactive for
