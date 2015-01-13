@@ -1,3 +1,9 @@
+2015-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/63974
+	* cfgexpand.c (expand_computed_goto): Don't call
+	convert_memory_address here.
+
 2015-01-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64406
