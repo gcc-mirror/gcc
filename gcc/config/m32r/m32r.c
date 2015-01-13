@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Renesas M32R cpu.
-   Copyright (C) 1996-2014 Free Software Foundation, Inc.
+   Copyright (C) 1996-2015 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -21,6 +21,15 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "stor-layout.h"
 #include "varasm.h"
@@ -36,10 +45,6 @@
 #include "insn-attr.h"
 #include "flags.h"
 #include "expr.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "recog.h"
@@ -1096,8 +1101,7 @@ gen_split_move_double (rtx operands[])
 	{
 	  /* If the high-address word is used in the address, we must load it
 	     last.  Otherwise, load it first.  */
-	  int reverse
-	    = (refers_to_regno_p (dregno, dregno + 1, XEXP (src, 0), 0) != 0);
+	  int reverse = refers_to_regno_p (dregno, XEXP (src, 0));
 
 	  /* We used to optimize loads from single registers as
 

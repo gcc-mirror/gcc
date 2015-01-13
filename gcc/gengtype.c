@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1608,7 +1608,7 @@ static outf_p
 create_file (const char *name, const char *oname)
 {
   static const char *const hdr[] = {
-    "   Copyright (C) 2004-2014 Free Software Foundation, Inc.\n",
+    "   Copyright (C) 2004-2015 Free Software Foundation, Inc.\n",
     "\n",
     "This file is part of GCC.\n",
     "\n",
@@ -1709,12 +1709,15 @@ open_base_files (void)
     static const char *const ifiles[] = {
       "config.h", "system.h", "coretypes.h", "tm.h", "insn-codes.h",
       "hashtab.h", "splay-tree.h", "obstack.h", "bitmap.h", "input.h",
-      "tree.h", "rtl.h", "wide-int.h", "hashtab.h", "hash-set.h", "vec.h",
+      "hash-set.h", "machmode.h", "vec.h", "double-int.h", "input.h",
+      "alias.h", "symtab.h", "options.h", 
+      "wide-int.h", "inchash.h",
+      "tree.h", "fold-const.h", "rtl.h",
       "machmode.h", "tm.h", "hard-reg-set.h", "input.h", "predict.h",
       "function.h", "insn-config.h", "expr.h", "alloc-pool.h",
       "hard-reg-set.h", "basic-block.h", "cselib.h", "insn-addr.h",
       "optabs.h", "libfuncs.h", "debug.h", "ggc.h", 
-      "hash-table.h", "vec.h", "ggc.h", "dominance.h", "cfg.h", "basic-block.h",
+      "ggc.h", "dominance.h", "cfg.h", "basic-block.h",
       "tree-ssa-alias.h", "internal-fn.h", "gimple-fold.h", "tree-eh.h",
       "gimple-expr.h", "is-a.h",
       "gimple.h", "gimple-iterator.h", "gimple-ssa.h", "tree-cfg.h",

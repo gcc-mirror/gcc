@@ -115,7 +115,7 @@ package Namet is
 --  character lower case letters in the range a-z, and these names are created
 --  and initialized by the Initialize procedure.
 
---  Three values, one of type Int, one of type Byte, and one of type Boolean,
+--  Five values, one of type Int, one of type Byte, and three of type Boolean,
 --  are stored with each names table entry and subprograms are provided for
 --  setting and retrieving these associated values. The usage of these values
 --  is up to the client:
@@ -128,8 +128,14 @@ package Namet is
 --      The Byte field is used to hold the Token_Type value for reserved words
 --      (see Sem for details).
 
---      The Boolean field is used to mark address clauses to optimize the
+--      The Boolean1 field is used to mark address clauses to optimize the
 --      performance of the Exp_Util.Following_Address_Clause function.
+
+--      The Boolean2 field is used to mark simple names that appear in
+--      Restriction[_Warning]s pragmas for No_Use_Of_Entity. This avoids most
+--      unnecessary searches of the No_Use_Of_Entity table.
+
+--      The Boolean3 field is not used
 
 --    In the binder, we have the following uses:
 
@@ -363,12 +369,14 @@ package Namet is
    pragma Inline (Get_Name_Table_Byte);
    --  Fetches the Byte value associated with the given name
 
-   function Get_Name_Table_Info (Id : Name_Id) return Int;
-   pragma Inline (Get_Name_Table_Info);
+   function Get_Name_Table_Int (Id : Name_Id) return Int;
+   pragma Inline (Get_Name_Table_Int);
    --  Fetches the Int value associated with the given name
 
-   function Get_Name_Table_Boolean (Id : Name_Id) return Boolean;
-   --  Fetches the Boolean value associated with the given name
+   function Get_Name_Table_Boolean1 (Id : Name_Id) return Boolean;
+   function Get_Name_Table_Boolean2 (Id : Name_Id) return Boolean;
+   function Get_Name_Table_Boolean3 (Id : Name_Id) return Boolean;
+   --  Fetches the Boolean values associated with the given name
 
    function Is_Operator_Name (Id : Name_Id) return Boolean;
    --  Returns True if name given is of the form of an operator (that
@@ -409,7 +417,7 @@ package Namet is
    --  in Name_Len (i.e. the characters of the name are in subscript positions
    --  1 to Name_Len in Name_Buffer). It searches the names table to see if the
    --  string has already been stored. If so the Id of the existing entry is
-   --  returned. Otherwise a new entry is created with its Name_Table_Info
+   --  returned. Otherwise a new entry is created with its Name_Table_Int
    --  fields set to zero/false. The contents of Name_Buffer and Name_Len are
    --  not modified by this call. Note that it is permissible for Name_Len to
    --  be set to zero to lookup the null name string.
@@ -496,15 +504,17 @@ package Namet is
    --  for the given character code. On return Name_Buffer and Name_Len are
    --  set to reflect the stored name.
 
-   procedure Set_Name_Table_Info (Id : Name_Id; Val : Int);
-   pragma Inline (Set_Name_Table_Info);
+   procedure Set_Name_Table_Int (Id : Name_Id; Val : Int);
+   pragma Inline (Set_Name_Table_Int);
    --  Sets the Int value associated with the given name
 
    procedure Set_Name_Table_Byte (Id : Name_Id; Val : Byte);
    pragma Inline (Set_Name_Table_Byte);
    --  Sets the Byte value associated with the given name
 
-   procedure Set_Name_Table_Boolean (Id : Name_Id; Val : Boolean);
+   procedure Set_Name_Table_Boolean1 (Id : Name_Id; Val : Boolean);
+   procedure Set_Name_Table_Boolean2 (Id : Name_Id; Val : Boolean);
+   procedure Set_Name_Table_Boolean3 (Id : Name_Id; Val : Boolean);
    --  Sets the Boolean value associated with the given name
 
    procedure Store_Encoded_Character (C : Char_Code);
@@ -644,8 +654,10 @@ private
       Byte_Info : Byte;
       --  Byte value associated with this name
 
-      Boolean_Info : Boolean;
-      --  Boolean value associated with the name
+      Boolean1_Info : Boolean;
+      Boolean2_Info : Boolean;
+      Boolean3_Info : Boolean;
+      --  Boolean values associated with the name
 
       Name_Has_No_Encodings : Boolean;
       --  This flag is set True if the name entry is known not to contain any
@@ -665,8 +677,10 @@ private
       Name_Chars_Index      at  0 range 0 .. 31;
       Name_Len              at  4 range 0 .. 15;
       Byte_Info             at  6 range 0 .. 7;
-      Boolean_Info          at  7 range 0 .. 0;
-      Name_Has_No_Encodings at  7 range 1 .. 7;
+      Boolean1_Info         at  7 range 0 .. 0;
+      Boolean2_Info         at  7 range 1 .. 1;
+      Boolean3_Info         at  7 range 2 .. 2;
+      Name_Has_No_Encodings at  7 range 3 .. 7;
       Hash_Link             at  8 range 0 .. 31;
       Int_Info              at 12 range 0 .. 31;
    end record;

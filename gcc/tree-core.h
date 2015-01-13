@@ -1,5 +1,5 @@
 /* Core data structures for the 'tree' type.
-   Copyright (C) 1989-2014 Free Software Foundation, Inc.
+   Copyright (C) 1989-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,19 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_TREE_CORE_H
 #define GCC_TREE_CORE_H
-
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "input.h"
-#include "statistics.h"
-#include "vec.h"
-#include "double-int.h"
-#include "real.h"
-#include "fixed-value.h"
-#include "alias.h"
-#include "flags.h"
-#include "symtab.h"
 
 /* This file contains all the data structures that define the 'tree' type.
    There are no accessor macros nor functions in this file. Only the

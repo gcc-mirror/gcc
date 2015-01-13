@@ -1855,7 +1855,7 @@ package body Sem_Ch10 is
                       In_Extended_Main_Source_Unit
                         (Cunit_Entity (Current_Sem_Unit))
                   then
-                     SCO_Record (Unum);
+                     SCO_Record_Raw (Unum);
                   end if;
 
                   --  Analyze the unit if semantics active
@@ -2519,6 +2519,18 @@ package body Sem_Ch10 is
          end if;
 
          return;
+      end if;
+
+      --  If we are compiling under "don't quit" mode (-gnatq) and we have
+      --  already detected serious errors then we mark the with-clause nodes as
+      --  analyzed before the corresponding compilation unit is analyzed. This
+      --  is done here to protect the frontend against never ending recursion
+      --  caused by circularities in the sources (because the previous errors
+      --  may break the regular machine of the compiler implemented in
+      --  Load_Unit to detect circularities).
+
+      if Serious_Errors_Detected > 0 and then Try_Semantics then
+         Set_Analyzed (N);
       end if;
 
       --  If the library unit is a predefined unit, and we are in high
@@ -6494,6 +6506,11 @@ package body Sem_Ch10 is
          Item := First (Context_Items (Comp_Unit));
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause
+
+              --  The following guard is needed to ensure that the name has
+              --  been properly analyzed before we go fetching its entity.
+
+              and then Is_Entity_Name (Name (Item))
               and then Entity (Name (Item)) = E
               and then not Private_Present (Item)
             then

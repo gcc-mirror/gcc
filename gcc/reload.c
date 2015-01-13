@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright (C) 1987-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -95,6 +95,7 @@ a register with any other reload.  */
 #include "rtl-error.h"
 #include "tm_p.h"
 #include "insn-config.h"
+#include "symtab.h"
 #include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"

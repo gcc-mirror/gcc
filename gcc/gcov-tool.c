@@ -1,5 +1,5 @@
 /* Gcc offline profile processing tool support. */
-/* Copyright (C) 2014 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2015 Free Software Foundation, Inc.
    Contributed by Rong Xu <xur@google.com>.
 
 This file is part of GCC.
@@ -289,7 +289,11 @@ do_rewrite (int argc, char **argv)
   int opt;
   int ret;
   const char *output_dir = 0;
+#ifdef HAVE_LONG_LONG
   long long normalize_val = 0;
+#else
+  int64_t normalize_val = 0;
+#endif
   float scale = 0.0;
   int numerator = 1;
   int denominator = 1;
@@ -309,7 +313,13 @@ do_rewrite (int argc, char **argv)
           break;
         case 'n':
           if (!do_scaling)
-            normalize_val = atoll (optarg);
+#if defined(HAVE_LONG_LONG)
+	    normalize_val = strtoll (optarg, (char **)NULL, 10);
+#elif defined(INT64_T_IS_LONG)
+	    normalize_val = strtol (optarg, (char **)NULL, 10);
+#else
+	    sscanf (optarg, "%" SCNd64, &normalize_val);
+#endif
           else
             fnotice (stderr, "scaling cannot co-exist with normalization,"
                 " skipping\n");
@@ -511,7 +521,7 @@ static void
 print_version (void)
 {
   fnotice (stdout, "%s %s%s\n", progname, pkgversion_string, version_string);
-  fnotice (stdout, "Copyright %s 2014 Free Software Foundation, Inc.\n",
+  fnotice (stdout, "Copyright %s 2014-2015 Free Software Foundation, Inc.\n",
            _("(C)"));
   fnotice (stdout,
            _("This is free software; see the source for copying conditions.\n"

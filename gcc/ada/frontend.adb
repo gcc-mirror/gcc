@@ -33,6 +33,7 @@ with Elists;
 with Exp_Dbug;
 with Fmap;
 with Fname.UF;
+with Ghost;    use Ghost;
 with Inline;   use Inline;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
@@ -339,10 +340,10 @@ begin
 
      and then not Fatal_Error (Main_Unit)
    then
-      --  Pragmas that require some semantic activity, such as
-      --  Interrupt_State, cannot be processed until the main unit
-      --  is installed, because they require a compilation unit on
-      --  which to attach with_clauses, etc. So analyze them now.
+      --  Pragmas that require some semantic activity, such as Interrupt_State,
+      --  cannot be processed until the main unit is installed, because they
+      --  require a compilation unit on which to attach with_clauses, etc. So
+      --  analyze them now.
 
       declare
          Prag : Node_Id;
@@ -350,7 +351,14 @@ begin
       begin
          Prag := First (Config_Pragmas);
          while Present (Prag) loop
-            if Delay_Config_Pragma_Analyze (Prag) then
+
+            --  Guard against the case where a configuration pragma may be
+            --  split into multiple pragmas and the original rewritten as a
+            --  null statement.
+
+            if Nkind (Prag) = N_Pragma
+              and then Delay_Config_Pragma_Analyze (Prag)
+            then
                Analyze_Pragma (Prag);
             end if;
 
@@ -414,14 +422,19 @@ begin
                Analyze_Inlined_Bodies;
             end if;
 
-            --  Remove entities from program that do not have any
-            --  execution time references.
+            --  Remove entities from program that do not have any execution
+            --  time references.
 
             if Debug_Flag_UU then
                Collect_Garbage_Entities;
             end if;
 
             Check_Elab_Calls;
+
+            --  Remove any ignored Ghost code as it must not appear in the
+            --  executable.
+
+            Remove_Ignored_Ghost_Code;
          end if;
 
          --  List library units if requested

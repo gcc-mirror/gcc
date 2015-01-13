@@ -1,5 +1,5 @@
 ; Options for the Fortran 95 front end.
-; Copyright (C) 2003-2014 Free Software Foundation, Inc.
+; Copyright (C) 2003-2015 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -250,7 +250,7 @@ Fortran Warning Var(warn_implicit_procedure)
 Warn about called procedures not explicitly declared
 
 Wline-truncation
-Fortran Warning Var(warn_line_truncation) LangEnabledBy(Fortran,Wall)
+Fortran Warning Var(warn_line_truncation) LangEnabledBy(Fortran,Wall) Init(-1)
 Warn about truncated source lines
 
 Wintrinsics-std

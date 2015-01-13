@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM.
-   Copyright (C) 1991-2014 Free Software Foundation, Inc.
+   Copyright (C) 1991-2015 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -26,7 +26,17 @@
 #include "hash-table.h"
 #include "tm.h"
 #include "rtl.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "calls.h"
@@ -40,10 +50,6 @@
 #include "insn-attr.h"
 #include "flags.h"
 #include "reload.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "expr.h"
@@ -2160,7 +2166,7 @@ arm_init_libfuncs (void)
 {
   /* For Linux, we have access to kernel support for atomic operations.  */
   if (arm_abi == ARM_ABI_AAPCS_LINUX)
-    init_sync_libfuncs (2 * UNITS_PER_WORD);
+    init_sync_libfuncs (MAX_SYNC_LIBFUNC_SIZE);
 
   /* There are no special library functions unless we are using the
      ARM BPABI.  */

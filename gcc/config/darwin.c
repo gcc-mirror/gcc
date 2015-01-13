@@ -1,5 +1,5 @@
 /* Functions for generic Darwin as target machine for GNU C compiler.
-   Copyright (C) 1989-2014 Free Software Foundation, Inc.
+   Copyright (C) 1989-2015 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -31,16 +31,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "insn-attr.h"
 #include "flags.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stringpool.h"
 #include "varasm.h"
 #include "stor-layout.h"
 #include "expr.h"
 #include "reload.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "ggc.h"

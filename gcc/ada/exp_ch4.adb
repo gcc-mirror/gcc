@@ -6701,6 +6701,26 @@ package body Exp_Ch4 is
 
       if Is_Fixed_Point_Type (Typ) then
 
+         --  Deal with divide-by-zero check if back end cannot handle them
+         --  and the flag is set indicating that we need such a check. Note
+         --  that we don't need to bother here with the case of mixed-mode
+         --  (Right operand an integer type), since these will be rewritten
+         --  with conversions to a divide with a fixed-point right operand.
+
+         if Do_Division_Check (N)
+           and then not Backend_Divide_Checks_On_Target
+           and then not Is_Integer_Type (Rtyp)
+         then
+            Set_Do_Division_Check (N, False);
+            Insert_Action (N,
+              Make_Raise_Constraint_Error (Loc,
+                Condition =>
+                  Make_Op_Eq (Loc,
+                    Left_Opnd  => Duplicate_Subexpr_Move_Checks (Ropnd),
+                    Right_Opnd => Make_Real_Literal (Loc, Ureal_0)),
+                  Reason  => CE_Divide_By_Zero));
+         end if;
+
          --  No special processing if Treat_Fixed_As_Integer is set, since
          --  from a semantic point of view such operations are simply integer
          --  operations and will be treated that way.
@@ -9962,7 +9982,9 @@ package body Exp_Ch4 is
       procedure Raise_Accessibility_Error;
       --  Called when we know that an accessibility check will fail. Rewrites
       --  node N to an appropriate raise statement and outputs warning msgs.
-      --  The Etype of the raise node is set to Target_Type.
+      --  The Etype of the raise node is set to Target_Type. Note that in this
+      --  case the rest of the processing should be skipped (i.e. the call to
+      --  this procedure will be followed by "goto Done").
 
       procedure Real_Range_Check;
       --  Handles generation of range check for real target value
@@ -10498,6 +10520,7 @@ package body Exp_Ch4 is
              Type_Access_Level (Operand_Type) > Type_Access_Level (Target_Type)
          then
             Raise_Accessibility_Error;
+            goto Done;
 
          --  When the operand is a selected access discriminant the check needs
          --  to be made against the level of the object denoted by the prefix

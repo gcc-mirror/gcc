@@ -242,7 +242,7 @@ package Checks is
    --  flags Do_Division_Check or Do_Overflow_Check is set, then this routine
    --  ensures that the appropriate checks are made. Note that overflow can
    --  occur in the signed case for the case of the largest negative number
-   --  divided by minus one.
+   --  divided by minus one. This procedure only applies to Integer types.
 
    procedure Apply_Parameter_Aliasing_Checks
      (Call : Node_Id;

@@ -1,5 +1,5 @@
 /* Global, SSA-based optimizations using mathematical identities.
-   Copyright (C) 2005-2014 Free Software Foundation, Inc.
+   Copyright (C) 2005-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -89,12 +89,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "flags.h"
-#include "tree.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
 #include "hash-set.h"
 #include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "fold-const.h"
+#include "predict.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -2350,15 +2356,13 @@ unsigned int
 pass_optimize_bswap::execute (function *fun)
 {
   basic_block bb;
-  bool bswap16_p, bswap32_p, bswap64_p;
+  bool bswap32_p, bswap64_p;
   bool changed = false;
-  tree bswap16_type = NULL_TREE, bswap32_type = NULL_TREE, bswap64_type = NULL_TREE;
+  tree bswap32_type = NULL_TREE, bswap64_type = NULL_TREE;
 
   if (BITS_PER_UNIT != 8)
     return 0;
 
-  bswap16_p = (builtin_decl_explicit_p (BUILT_IN_BSWAP16)
-	       && optab_handler (bswap_optab, HImode) != CODE_FOR_nothing);
   bswap32_p = (builtin_decl_explicit_p (BUILT_IN_BSWAP32)
 	       && optab_handler (bswap_optab, SImode) != CODE_FOR_nothing);
   bswap64_p = (builtin_decl_explicit_p (BUILT_IN_BSWAP64)
@@ -2367,12 +2371,6 @@ pass_optimize_bswap::execute (function *fun)
 
   /* Determine the argument type of the builtins.  The code later on
      assumes that the return and argument type are the same.  */
-  if (bswap16_p)
-    {
-      tree fndecl = builtin_decl_explicit (BUILT_IN_BSWAP16);
-      bswap16_type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
-    }
-
   if (bswap32_p)
     {
       tree fndecl = builtin_decl_explicit (BUILT_IN_BSWAP32);
@@ -2443,11 +2441,6 @@ pass_optimize_bswap::execute (function *fun)
 	      if (code == LROTATE_EXPR || code == RROTATE_EXPR)
 		continue;
 	      load_type = uint16_type_node;
-	      if (bswap16_p)
-		{
-		  fndecl = builtin_decl_explicit (BUILT_IN_BSWAP16);
-		  bswap_type = bswap16_type;
-		}
 	      break;
 	    case 32:
 	      load_type = uint32_type_node;
@@ -2469,7 +2462,7 @@ pass_optimize_bswap::execute (function *fun)
 	      continue;
 	    }
 
-	  if (bswap && !fndecl)
+	  if (bswap && !fndecl && n.range != 16)
 	    continue;
 
 	  if (bswap_replace (cur_stmt, src_stmt, fndecl, bswap_type, load_type,

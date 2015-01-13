@@ -43,6 +43,7 @@ with Exp_Strm; use Exp_Strm;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -2390,11 +2391,45 @@ package body Exp_Ch3 is
                   --  such case the initialization of the _parent field was not
                   --  generated.
 
-                  if not Is_Interface (Etype (Rec_Ent))
-                    and then Nkind (First (Stmts)) = N_Procedure_Call_Statement
-                    and then Is_Init_Proc (Name (First (Stmts)))
-                  then
-                     Prepend_To (Body_Stmts, Remove_Head (Stmts));
+                  if not Is_Interface (Etype (Rec_Ent)) then
+                     declare
+                        Parent_IP : constant Name_Id :=
+                                      Make_Init_Proc_Name (Etype (Rec_Ent));
+                        Stmt      : Node_Id;
+                        IP_Call   : Node_Id;
+                        IP_Stmts  : List_Id;
+
+                     begin
+                        --  Look for a call to the parent IP at the beginning
+                        --  of Stmts associated with the record extension
+
+                        Stmt := First (Stmts);
+                        IP_Call := Empty;
+                        while Present (Stmt) loop
+                           if Nkind (Stmt) = N_Procedure_Call_Statement
+                             and then Chars (Name (Stmt)) = Parent_IP
+                           then
+                              IP_Call := Stmt;
+                              exit;
+                           end if;
+
+                           Next (Stmt);
+                        end loop;
+
+                        --  If found then move it to the beginning of the
+                        --  statements of this IP routine
+
+                        if Present (IP_Call) then
+                           IP_Stmts := New_List;
+                           loop
+                              Stmt := Remove_Head (Stmts);
+                              Append_To (IP_Stmts, Stmt);
+                              exit when Stmt = IP_Call;
+                           end loop;
+
+                           Prepend_List_To (Body_Stmts, IP_Stmts);
+                        end if;
+                     end;
                   end if;
 
                   Append_List_To (Body_Stmts, Stmts);
@@ -7427,11 +7462,37 @@ package body Exp_Ch3 is
    --  node using Append_Freeze_Actions.
 
    function Freeze_Type (N : Node_Id) return Boolean is
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the current Ghost mode in effect in case the type being frozen
+      --  sets a different mode.
+
+      procedure Restore_Globals;
+      --  Restore the values of all saved global variables
+
+      ---------------------
+      -- Restore_Globals --
+      ---------------------
+
+      procedure Restore_Globals is
+      begin
+         Ghost_Mode := GM;
+      end Restore_Globals;
+
+      --  Local variables
+
       Def_Id    : constant Entity_Id := Entity (N);
       RACW_Seen : Boolean := False;
       Result    : Boolean := False;
 
+   --  Start of processing for Freeze_Type
+
    begin
+      --  The type being frozen may be subject to pragma Ghost with policy
+      --  Ignore. Set the mode now to ensure that any nodes generated during
+      --  freezing are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode_For_Freeze (Def_Id, N);
+
       --  Process associated access types needing special processing
 
       if Present (Access_Types_To_Process (N)) then
@@ -7750,10 +7811,13 @@ package body Exp_Ch3 is
       end if;
 
       Freeze_Stream_Operations (N, Def_Id);
+
+      Restore_Globals;
       return Result;
 
    exception
       when RE_Not_Available =>
+         Restore_Globals;
          return False;
    end Freeze_Type;
 

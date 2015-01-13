@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992-2014 Free Software Foundation, Inc.
+   Copyright (C) 1992-2015 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GCC.
@@ -29,7 +29,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "conditions.h"
 #include "insn-attr.h"
 #include "flags.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "varasm.h"
@@ -41,10 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-codes.h"
 #include "optabs.h"
 #include "reload.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "diagnostic-core.h"
@@ -2649,8 +2655,7 @@ pa_output_move_double (rtx *operands)
      Handle mem -> register case first.  */
   if (optype0 == REGOP
       && (optype1 == MEMOP || optype1 == OFFSOP)
-      && refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
-			    operands[1], 0))
+      && refers_to_regno_p (REGNO (operands[0]), operands[1]))
     {
       /* Do the late half first.  */
       if (addreg1)

@@ -1,5 +1,5 @@
 /* Save and restore call-clobbered registers which are live across a call.
-   Copyright (C) 1989-2014 Free Software Foundation, Inc.
+   Copyright (C) 1989-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "df.h"
 #include "reload.h"
+#include "symtab.h"
 #include "expr.h"
 #include "diagnostic-core.h"
 #include "tm_p.h"

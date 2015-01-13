@@ -32,6 +32,7 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Impunit;  use Impunit;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
@@ -552,6 +553,12 @@ package body Sem_Ch8 is
       Nam : constant Node_Id := Name (N);
 
    begin
+      --  The exception renaming declaration may be subject to pragma Ghost
+      --  with policy Ignore. Set the mode now to ensure that any nodes
+      --  generated during analysis and expansion are properly flagged as
+      --  ignored Ghost.
+
+      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("exception renaming is not allowed", N);
 
       Enter_Name (Id);
@@ -575,7 +582,7 @@ package body Sem_Ch8 is
          --  An exception renaming is Ghost if the renamed entity is Ghost or
          --  the construct appears within a Ghost scope.
 
-         if Is_Ghost_Entity (Entity (Nam)) or else Within_Ghost_Scope then
+         if Is_Ghost_Entity (Entity (Nam)) or else Ghost_Mode > None then
             Set_Is_Ghost_Entity (Id);
          end if;
       end if;
@@ -665,6 +672,11 @@ package body Sem_Ch8 is
          return;
       end if;
 
+      --  The generic renaming declaration may be subject to pragma Ghost with
+      --  policy Ignore. Set the mode now to ensure that any nodes generated
+      --  during analysis and expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("generic renaming is not allowed", N);
 
       Generate_Definition (New_P);
@@ -711,7 +723,7 @@ package body Sem_Ch8 is
          --  An generic renaming is Ghost if the renamed entity is Ghost or the
          --  construct appears within a Ghost scope.
 
-         if Is_Ghost_Entity (Old_P) or else Within_Ghost_Scope then
+         if Is_Ghost_Entity (Old_P) or else Ghost_Mode > None then
             Set_Is_Ghost_Entity (New_P);
          end if;
 
@@ -850,6 +862,11 @@ package body Sem_Ch8 is
          return;
       end if;
 
+      --  The object renaming declaration may be subject to pragma Ghost with
+      --  policy Ignore. Set the mode now to ensure that any nodes generated
+      --  during analysis and expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("object renaming is not allowed", N);
 
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
@@ -1315,7 +1332,7 @@ package body Sem_Ch8 is
 
       if (Is_Entity_Name (Nam)
            and then Is_Ghost_Entity (Entity (Nam)))
-        or else Within_Ghost_Scope
+        or else Ghost_Mode > None
       then
          Set_Is_Ghost_Entity (Id);
       end if;
@@ -1370,6 +1387,12 @@ package body Sem_Ch8 is
       if Name (N) = Error then
          return;
       end if;
+
+      --  The package renaming declaration may be subject to pragma Ghost with
+      --  policy Ignore. Set the mode now to ensure that any nodes generated
+      --  during analysis and expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
 
       --  Check for Text_IO special unit (we may be renaming a Text_IO child)
 
@@ -1437,7 +1460,7 @@ package body Sem_Ch8 is
          --  A package renaming is Ghost if the renamed entity is Ghost or
          --  the construct appears within a Ghost scope.
 
-         if Is_Ghost_Entity (Old_P) or else Within_Ghost_Scope then
+         if Is_Ghost_Entity (Old_P) or else Ghost_Mode > None then
             Set_Is_Ghost_Entity (New_P);
          end if;
 
@@ -2559,6 +2582,13 @@ package body Sem_Ch8 is
    --  Start of processing for Analyze_Subprogram_Renaming
 
    begin
+      --  The subprogram renaming declaration may be subject to pragma Ghost
+      --  with policy Ignore. Set the mode now to ensure that any nodes
+      --  generated during analysis and expansion are properly flagged as
+      --  ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
       --  We must test for the attribute renaming case before the Analyze
       --  call because otherwise Sem_Attr will complain that the attribute
       --  is missing an argument when it is analyzed.
@@ -2680,7 +2710,16 @@ package body Sem_Ch8 is
          --  Check whether the renaming is for a defaulted actual subprogram
          --  with a class-wide actual.
 
-         if CW_Actual and then Box_Present (Inst_Node) then
+         --  The class-wide wrapper is not needed in GNATprove_Mode and there
+         --  is an external axiomatization on the package.
+
+         if CW_Actual
+            and then Box_Present (Inst_Node)
+            and then not
+             (GNATprove_Mode
+               and then
+                 Present (Containing_Package_With_Ext_Axioms (Formal_Spec)))
+         then
             Build_Class_Wide_Wrapper (New_S, Old_S);
 
          elsif Is_Entity_Name (Nam)
@@ -3027,7 +3066,7 @@ package body Sem_Ch8 is
          --  A subprogram renaming is Ghost if the renamed entity is Ghost or
          --  the construct appears within a Ghost scope.
 
-         if Is_Ghost_Entity (Entity (Nam)) or else Within_Ghost_Scope then
+         if Is_Ghost_Entity (Entity (Nam)) or else Ghost_Mode > None then
             Set_Is_Ghost_Entity (New_S);
          end if;
 
@@ -3451,6 +3490,29 @@ package body Sem_Ch8 is
       Ada_Version := Save_AV;
       Ada_Version_Pragma := Save_AVP;
       Ada_Version_Explicit := Save_AV_Exp;
+
+      --  In GNATprove mode, the renamings of actual subprograms are replaced
+      --  with wrapper functions that make it easier to propagate axioms to the
+      --  points of call within an instance. Wrappers are generated if formal
+      --  subprogram is subject to axiomatization.
+
+      --  The types in the wrapper profiles are obtained from (instances of)
+      --  the types of the formal subprogram.
+
+      if Is_Actual
+        and then GNATprove_Mode
+        and then Present (Containing_Package_With_Ext_Axioms (Formal_Spec))
+        and then not Inside_A_Generic
+      then
+         if Ekind (Old_S) = E_Function then
+            Rewrite (N, Build_Function_Wrapper (Formal_Spec, Old_S));
+            Analyze (N);
+
+         elsif Ekind (Old_S) = E_Operator then
+            Rewrite (N, Build_Operator_Wrapper (Formal_Spec, Old_S));
+            Analyze (N);
+         end if;
+      end if;
    end Analyze_Subprogram_Renaming;
 
    -------------------------
@@ -3533,10 +3595,22 @@ package body Sem_Ch8 is
             if Ekind (Pack) /= E_Package and then Etype (Pack) /= Any_Type then
                if Ekind (Pack) = E_Generic_Package then
                   Error_Msg_N  -- CODEFIX
-                   ("a generic package is not allowed in a use clause",
-                      Pack_Name);
+                    ("a generic package is not allowed in a use clause",
+                     Pack_Name);
+
+               elsif Ekind_In (Pack, E_Generic_Function, E_Generic_Package)
+               then
+                  Error_Msg_N  -- CODEFIX
+                    ("a generic subprogram is not allowed in a use clause",
+                     Pack_Name);
+
+               elsif Ekind_In (Pack, E_Function, E_Procedure, E_Operator) then
+                  Error_Msg_N  -- CODEFIX
+                    ("a subprogram is not allowed in a use clause",
+                     Pack_Name);
+
                else
-                  Error_Msg_N ("& is not a usable package", Pack_Name);
+                  Error_Msg_N ("& is not allowed in a use clause", Pack_Name);
                end if;
 
             else
@@ -5170,7 +5244,7 @@ package body Sem_Ch8 is
          Nvis_Messages;
       end if;
 
-      return;
+      goto Done;
 
       --  Processing for a potentially use visible entry found. We must search
       --  the rest of the homonym chain for two reasons. First, if there is a
@@ -5280,7 +5354,7 @@ package body Sem_Ch8 is
                end loop;
 
                Nvis_Messages;
-               return;
+               goto Done;
 
             elsif
               Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
@@ -5307,7 +5381,7 @@ package body Sem_Ch8 is
 
             else
                Nvis_Messages;
-               return;
+               goto Done;
             end if;
          end if;
       end;
@@ -5412,9 +5486,8 @@ package body Sem_Ch8 is
            and then Expander_Active
            and then Get_PCS_Name /= Name_No_DSA
          then
-            Rewrite (N,
-              New_Occurrence_Of (Equivalent_Type (E), Sloc (N)));
-            return;
+            Rewrite (N, New_Occurrence_Of (Equivalent_Type (E), Sloc (N)));
+            goto Done;
          end if;
 
          --  Set the entity. Note that the reason we call Set_Entity for the
@@ -5569,6 +5642,11 @@ package body Sem_Ch8 is
             end if;
          end if;
       end;
+
+   --  Come here with entity set
+
+   <<Done>>
+      Check_Restriction_No_Use_Of_Entity (N);
    end Find_Direct_Name;
 
    ------------------------
@@ -7148,6 +7226,12 @@ package body Sem_Ch8 is
             Check_Restriction (No_Fixed_Point, N);
          elsif Is_Floating_Point_Type (Etype (N)) then
             Check_Restriction (No_Floating_Point, N);
+         end if;
+
+         --  A Ghost type must appear in a specific context
+
+         if Is_Ghost_Entity (Etype (N)) then
+            Check_Ghost_Context (Etype (N), N);
          end if;
       end if;
    end Find_Type;

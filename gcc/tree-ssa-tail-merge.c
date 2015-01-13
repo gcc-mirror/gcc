@@ -1,5 +1,5 @@
 /* Tail merging for gimple.
-   Copyright (C) 2011-2014 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
    Contributed by Tom de Vries (tom@codesourcery.com)
 
 This file is part of GCC.
@@ -189,16 +189,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "real.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "trans-mem.h"
 #include "inchash.h"
 #include "tm_p.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -231,7 +238,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Describes a group of bbs with the same successors.  The successor bbs are
    cached in succs, and the successor edge flags are cached in succ_flags.
-   If a bb has the EDGE_TRUE/VALSE_VALUE flags swapped compared to succ_flags,
+   If a bb has the EDGE_TRUE/FALSE_VALUE flags swapped compared to succ_flags,
    it's marked in inverse.
    Additionally, the hash value for the struct is cached in hashval, and
    in_worklist indicates whether it's currently part of worklist.  */

@@ -1,5 +1,5 @@
 /* Parse and display command line options.
-   Copyright (C) 2000-2014 Free Software Foundation, Inc.
+   Copyright (C) 2000-2015 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -21,12 +21,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "flags.h"
 #include "intl.h"
 #include "opts.h"
 #include "toplev.h"  /* For save_decoded_options.  */
-#include "options.h"
 #include "params.h"
 #include "tree-inline.h"
 #include "gfortran.h"
@@ -305,7 +314,20 @@ gfc_post_options (const char **pfilename)
 			   "in free form");
       else if (gfc_option.flag_d_lines == 1)
 	gfc_warning_now ("%<-fd-lines-as-code%> has no effect in free form");
+
+      if (warn_line_truncation == -1)
+	  warn_line_truncation = 1;
+
+      /* Enable -Werror=line-truncation when -Werror and -Wno-error have
+	 not been set.  */
+      if (warn_line_truncation && !global_options_set.x_warnings_are_errors
+	  && (global_dc->classify_diagnostic[OPT_Wline_truncation] ==
+	      DK_UNSPECIFIED))
+	diagnostic_classify_diagnostic (global_dc, OPT_Wline_truncation,
+					DK_ERROR, UNKNOWN_LOCATION);
     }
+  else if (warn_line_truncation == -1)
+    warn_line_truncation = 0;
 
   /* If -pedantic, warn about the use of GNU extensions.  */
   if (pedantic && (gfc_option.allow_std & GFC_STD_GNU) != 0)

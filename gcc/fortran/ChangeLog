@@ -1,3 +1,126 @@
+2015-01-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/63733
+	* interface.c (gfc_extend_expr): Look for type-bound operators before
+	non-typebound ones.
+
+2015-01-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58023
+	* resolve.c (resolve_fl_derived0): Set error flag if problems with the
+	interface of a procedure-pointer component were detected.
+
+2015-01-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64508
+	* interface.c (compare_parameter): Interface check for
+	procedure-pointer component as actual argument.
+
+2015-01-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.texi: Update for libgomp being renamed from "GNU OpenMP
+	Runtime Library" to "GNU Offloading and Multi Processing Runtime
+	Library".
+	* intrinsic.texi: Likewise.
+
+2015-01-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/64522
+	* invoke.texi (Wline-truncation): Document new behaviour.
+	* lang.opt (Wline-truncation): Add Init(-1).
+	* options.c (gfc_post_options): If -Wline-truncation is unset,
+	enable it for free-form source files; for the latter, also use
+	-Werror=line-truncation, unless -Wno-error has been specified.
+
+2015-01-09  Michael Collison  <michael.collison@linaro.org>
+
+	* convert.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* cpp.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* decl.c: Ditto.
+	* f95.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* iresolve.c: Ditto.
+	* match.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* module.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* options.c: Ditto.
+	* target-memory.c: Include hash-set.h, vec.h,
+	double-int.h, input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* trans-array.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* trans.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* trans-common.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* trans-const.c: Ditto.
+	* trans-decl.c: Ditto.
+	* trans-expr.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* trans-intrinsic.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, inchash.h and real.h due to flattening of tree.h.
+	* trans-io.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* trans-openmp.c: Ditto.
+	* trans-stmt.c: Ditto.
+	* trans-types.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, inchash.h and real.h due to flattening of tree.h.
+
+2015-01-08  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-decl.c (gfc_build_qualified_array): Fix coarray tokens
+	for module coarrays with -fcoarray=lib.
+	(get_proc_pointer_decl): As module variable, make only public
+	when not marked as private.
+
+2015-01-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/47674
+	* dependency.h:  Actually commit changes.
+
+2015-01-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/47674
+	* dependency.c:  Update copyright years.
+	(gfc_discard_nops):  Add prototype.
+	* dependency.c (discard_nops):  Rename to gfc_discard_nops,
+	make non-static.
+	(gfc_discard_nops):  Use gfc_discard_nops.
+	(gfc_dep_difference):  Likewise.
+	* frontend-passes.c  Update copyright years.
+	(realloc_strings):  New function.  Add prototype.
+	(gfc_run_passes):  Call realloc_strings.
+	(realloc_string_callback):  New function.
+	(create_var):  Add prototype.  Handle case of a
+	scalar character variable.
+	(optimize_trim):  Do not handle allocatable variables.
+
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* gfortranspec.c (lang_specific_driver): Update copyright notice
+	dates.
+	* gfc-internals.texi: Bump @copying's copyright year.
+	* gfortran.texi: Ditto.
+	* intrinsic.texi: Ditto.
+	* invoke.texi: Ditto.
+
 2015-01-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/57562

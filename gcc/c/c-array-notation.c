@@ -1,7 +1,7 @@
 /* This file is part of the Intel(R) Cilk(TM) Plus support
    This file contains routines to handle Array Notation expression
    handling routines in the C Compiler.
-   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
    Contributed by Balaji V. Iyer <balaji.v.iyer@intel.com>,
                   Intel Corporation.
 
@@ -68,6 +68,15 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "symtab.h"
+#include "input.h"
+#include "alias.h"
+#include "double-int.h"
+#include "machmode.h"
+#include "flags.h"
+#include "inchash.h"
 #include "tree.h"
 #include "c-tree.h"
 #include "gimple-expr.h"

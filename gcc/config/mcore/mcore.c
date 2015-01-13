@@ -1,5 +1,5 @@
 /* Output routines for Motorola MCore processor
-   Copyright (C) 1993-2014 Free Software Foundation, Inc.
+   Copyright (C) 1993-2015 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -22,7 +22,17 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "stringpool.h"
@@ -40,10 +50,6 @@
 #include "expr.h"
 #include "reload.h"
 #include "recog.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "ggc.h"

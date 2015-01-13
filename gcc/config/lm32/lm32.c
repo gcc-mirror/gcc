@@ -1,7 +1,7 @@
 /* Subroutines used for code generation on the Lattice Mico32 architecture.
    Contributed by Jon Beniston <jon@beniston.com>
 
-   Copyright (C) 2009-2014 Free Software Foundation, Inc.
+   Copyright (C) 2009-2015 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -48,7 +48,11 @@
 #include "insn-codes.h"
 #include "recog.h"
 #include "output.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "calls.h"
 #include "expr.h"
 #include "flags.h"

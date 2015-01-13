@@ -32,6 +32,7 @@ with Expander; use Expander;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
@@ -278,6 +279,13 @@ package body Sem_Ch5 is
       --  proper use of a Ghost entity need to know the enclosing context.
 
       Analyze (Lhs);
+
+      --  The left hand side of an assignment may reference an entity subject
+      --  to pragma Ghost with policy Ignore. Set the mode now to ensure that
+      --  any nodes generated during analysis and expansion are properly
+      --  flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
       Analyze (Rhs);
 
       --  Ensure that we never do an assignment on a variable marked as
@@ -754,6 +762,18 @@ package body Sem_Ch5 is
         and then In_Extended_Main_Source_Unit (Lhs)
       then
          Set_Referenced_Modified (Lhs, Out_Param => False);
+      end if;
+
+      --  RM 7.3.2 (12/3)  An assignment to a view conversion (from a type
+      --  to one of its ancestors) requires an invariant check. Apply check
+      --  only if expression comes from source, otherwise it will be applied
+      --  when value is assigned to source entity.
+
+      if Nkind (Lhs) = N_Type_Conversion
+        and then Has_Invariants (Etype (Expression (Lhs)))
+        and then Comes_From_Source (Expression (Lhs))
+      then
+         Insert_After (N, Make_Invariant_Call (Expression (Lhs)));
       end if;
 
       --  Final step. If left side is an entity, then we may be able to reset

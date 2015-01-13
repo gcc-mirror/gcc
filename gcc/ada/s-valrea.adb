@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -152,6 +152,13 @@ package body System.Val_Real is
    --  Start of processing for System.Scan_Real
 
    begin
+      --  We do not tolerate strings with Str'Last = Positive'Last
+
+      if Str'Last = Positive'Last then
+         raise Program_Error with
+           "string upper bound is Positive'Last, not supported";
+      end if;
+
       --  We call the floating-point processor reset routine so that we can
       --  be sure the floating-point processor is properly set for conversion
       --  calls. This is notably need on Windows, where calls to the operating
@@ -183,9 +190,10 @@ package body System.Val_Real is
          Bad_Value (Str);
       end if;
 
-      --  Deal with based case
+      --  Deal with based case. We reognize either the standard '#' or the
+      --  allowed alternative replacement ':' (see RM J.2(3)).
 
-      if P < Max and then (Str (P) = ':' or else Str (P) = '#') then
+      if P < Max and then (Str (P) = '#' or else Str (P) = ':') then
          declare
             Base_Char : constant Character := Str (P);
             Digit     : Natural;
@@ -376,12 +384,30 @@ package body System.Val_Real is
    ----------------
 
    function Value_Real (Str : String) return Long_Long_Float is
-      V : Long_Long_Float;
-      P : aliased Integer := Str'First;
    begin
-      V := Scan_Real (Str, P'Access, Str'Last);
-      Scan_Trailing_Blanks (Str, P);
-      return V;
+      --  We have to special case Str'Last = Positive'Last because the normal
+      --  circuit ends up setting P to Str'Last + 1 which is out of bounds. We
+      --  deal with this by converting to a subtype which fixes the bounds.
+
+      if Str'Last = Positive'Last then
+         declare
+            subtype NT is String (1 .. Str'Length);
+         begin
+            return Value_Real (NT (Str));
+         end;
+
+      --  Normal case where Str'Last < Positive'Last
+
+      else
+         declare
+            V : Long_Long_Float;
+            P : aliased Integer := Str'First;
+         begin
+            V := Scan_Real (Str, P'Access, Str'Last);
+            Scan_Trailing_Blanks (Str, P);
+            return V;
+         end;
+      end if;
    end Value_Real;
 
 end System.Val_Real;

@@ -1,3 +1,28 @@
+2015-01-09  Bernd Schmidt  <bernds@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/64412
+	* lto.c (read_cgraph_and_symbols): Set lto_stream_offload_p
+	if ACCEL_COMPILER.
+
+2015-01-09  Michael Collison  <michael.collison@linaro.org>
+
+	* lto.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* lto-lang.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* lto-object.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* lto-partition.c: Ditto.
+	* lto-symtab.c: Ditto.
+
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2014-12-22  Martin Liska  <mliska@suse.cz>
 
 	* lto-partition.c (add_symbol_to_partition_1): New inline_summaries

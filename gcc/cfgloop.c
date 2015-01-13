@@ -1,5 +1,5 @@
 /* Natural loop discovery code for GNU compiler.
-   Copyright (C) 2000-2014 Free Software Foundation, Inc.
+   Copyright (C) 2000-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "hash-set.h"
 #include "vec.h"
+#include "symtab.h"
+#include "inchash.h"
 #include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
@@ -38,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "flags.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"

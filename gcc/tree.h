@@ -1,5 +1,5 @@
 /* Definitions for the ubiquitous 'tree' type for GNU compilers.
-   Copyright (C) 1989-2014 Free Software Foundation, Inc.
+   Copyright (C) 1989-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,15 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_H
 
 #include "tree-core.h"
-#include "hash-set.h"
-#include "wide-int.h"
-#include "inchash.h"
-
-/* These includes are required here because they provide declarations
-   used by inline functions in this file.
-
-   FIXME - Move these users elsewhere? */
-#include "fold-const.h"
 
 /* Macros for initializing `tree_contains_struct'.  */
 #define MARK_TS_BASE(C)					\
@@ -4409,35 +4400,6 @@ ptrofftype_p (tree type)
 	  && TYPE_UNSIGNED (type) == TYPE_UNSIGNED (sizetype));
 }
 
-/* Return OFF converted to a pointer offset type suitable as offset for
-   POINTER_PLUS_EXPR.  Use location LOC for this conversion.  */
-static inline tree
-convert_to_ptrofftype_loc (location_t loc, tree off)
-{
-  return fold_convert_loc (loc, sizetype, off);
-}
-#define convert_to_ptrofftype(t) convert_to_ptrofftype_loc (UNKNOWN_LOCATION, t)
-
-/* Build and fold a POINTER_PLUS_EXPR at LOC offsetting PTR by OFF.  */
-static inline tree
-fold_build_pointer_plus_loc (location_t loc, tree ptr, tree off)
-{
-  return fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (ptr),
-			  ptr, convert_to_ptrofftype_loc (loc, off));
-}
-#define fold_build_pointer_plus(p,o) \
-	fold_build_pointer_plus_loc (UNKNOWN_LOCATION, p, o)
-
-/* Build and fold a POINTER_PLUS_EXPR at LOC offsetting PTR by OFF.  */
-static inline tree
-fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE_INT off)
-{
-  return fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (ptr),
-			  ptr, size_int (off));
-}
-#define fold_build_pointer_plus_hwi(p,o) \
-	fold_build_pointer_plus_hwi_loc (UNKNOWN_LOCATION, p, o)
-
 extern tree strip_float_extensions (tree);
 extern int really_constant_p (const_tree);
 extern bool decl_address_invariant_p (const_tree);
@@ -4750,6 +4712,16 @@ opts_for_fn (const_tree fndecl)
   if (fn_opts == NULL_TREE)
     fn_opts = optimization_default_node;
   return TREE_OPTIMIZATION (fn_opts);
+}
+
+/* Return pointer to target flags of FNDECL.  */
+static inline cl_target_option *
+target_opts_for_fn (const_tree fndecl)
+{
+  tree fn_opts = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
+  if (fn_opts == NULL_TREE)
+    fn_opts = target_option_default_node;
+  return fn_opts == NULL_TREE ? NULL : TREE_TARGET_OPTION (fn_opts);
 }
 
 /* opt flag for function FNDECL, e.g. opts_for_fn (fndecl, optimize) is

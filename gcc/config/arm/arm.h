@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2014 Free Software Foundation, Inc.
+   Copyright (C) 1991-2015 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -764,6 +764,11 @@ extern int arm_arch_crc;
 /* AAPCS requires that structure alignment is affected by bitfields.  */
 #ifndef PCC_BITFIELD_TYPE_MATTERS
 #define PCC_BITFIELD_TYPE_MATTERS TARGET_AAPCS_BASED
+#endif
+
+/* The maximum size of the sync library functions supported.  */
+#ifndef MAX_SYNC_LIBFUNC_SIZE
+#define MAX_SYNC_LIBFUNC_SIZE (2 * UNITS_PER_WORD)
 #endif
 
 

@@ -41,6 +41,7 @@ with Errout;   use Errout;
 with Exp_Dist; use Exp_Dist;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Lib.Writ; use Lib.Writ;
 with Lib.Xref; use Lib.Xref;
@@ -1382,8 +1383,7 @@ package body Sem_Prag is
 
                --    (Output =>+ null)
 
-               --  Remove the null input and replace it with a copy of the
-               --  output:
+               --  Remove null input and replace it with a copy of the output:
 
                --    (Output => Output)
 
@@ -1459,8 +1459,8 @@ package body Sem_Prag is
                Propagate_Output (Output, Inputs);
 
                --  A list with multiple outputs is slowly trimmed until only
-               --  one element remains. When this happens, replace the
-               --  aggregate with the element itself.
+               --  one element remains. When this happens, replace aggregate
+               --  with the element itself.
 
                if Multiple then
                   Remove  (Output);
@@ -3115,10 +3115,10 @@ package body Sem_Prag is
       pragma No_Return (Pragma_Misplaced);
       --  Issue fatal error message for misplaced pragma
 
-      procedure Process_Atomic_Shared_Volatile;
-      --  Common processing for pragmas Atomic, Shared, Volatile. Note that
-      --  Shared is an obsolete Ada 83 pragma, treated as being identical
-      --  in effect to pragma Atomic.
+      procedure Process_Atomic_Independent_Shared_Volatile;
+      --  Common processing for pragmas Atomic, Independent, Shared, Volatile.
+      --  Note that Shared is an obsolete Ada 83 pragma and treated as being
+      --  identical in effect to pragma Atomic.
 
       procedure Process_Compile_Time_Warning_Or_Error;
       --  Common processing for Compile_Time_Error and Compile_Time_Warning
@@ -6153,11 +6153,11 @@ package body Sem_Prag is
          Error_Pragma ("incorrect placement of pragma%");
       end Pragma_Misplaced;
 
-      ------------------------------------
-      -- Process_Atomic_Shared_Volatile --
-      ------------------------------------
+      ------------------------------------------------
+      -- Process_Atomic_Independent_Shared_Volatile --
+      ------------------------------------------------
 
-      procedure Process_Atomic_Shared_Volatile is
+      procedure Process_Atomic_Independent_Shared_Volatile is
          E_Id : Node_Id;
          E    : Entity_Id;
          D    : Node_Id;
@@ -6183,7 +6183,7 @@ package body Sem_Prag is
             end if;
          end Set_Atomic;
 
-      --  Start of processing for Process_Atomic_Shared_Volatile
+      --  Start of processing for Process_Atomic_Independent_Shared_Volatile
 
       begin
          Check_Ada_83_Warning;
@@ -6216,20 +6216,34 @@ package body Sem_Prag is
                Check_First_Subtype (Arg1);
             end if;
 
-            if Prag_Id /= Pragma_Volatile then
+            if Prag_Id = Pragma_Atomic or else Prag_Id = Pragma_Shared then
                Set_Atomic (E);
                Set_Atomic (Underlying_Type (E));
                Set_Atomic (Base_Type (E));
             end if;
 
+            --  Atomic/Shared imply both Independent and Volatile
+
+            if Prag_Id /= Pragma_Volatile then
+               Set_Is_Independent (E);
+               Set_Is_Independent (Underlying_Type (E));
+               Set_Is_Independent (Base_Type (E));
+
+               if Prag_Id = Pragma_Independent then
+                  Independence_Checks.Append ((N, Base_Type (E)));
+               end if;
+            end if;
+
             --  Attribute belongs on the base type. If the view of the type is
             --  currently private, it also belongs on the underlying type.
 
-            Set_Is_Volatile (Base_Type (E));
-            Set_Is_Volatile (Underlying_Type (E));
+            if Prag_Id /= Pragma_Independent then
+               Set_Is_Volatile (Base_Type (E));
+               Set_Is_Volatile (Underlying_Type (E));
 
-            Set_Treat_As_Volatile (E);
-            Set_Treat_As_Volatile (Underlying_Type (E));
+               Set_Treat_As_Volatile (E);
+               Set_Treat_As_Volatile (Underlying_Type (E));
+            end if;
 
          elsif K = N_Object_Declaration
            or else (K = N_Component_Declaration
@@ -6239,7 +6253,7 @@ package body Sem_Prag is
                return;
             end if;
 
-            if Prag_Id /= Pragma_Volatile then
+            if Prag_Id = Pragma_Atomic or else Prag_Id = Pragma_Shared then
                Set_Is_Atomic (E);
 
                --  If the object declaration has an explicit initialization, a
@@ -6285,8 +6299,20 @@ package body Sem_Prag is
                end if;
             end if;
 
-            Set_Is_Volatile (E);
-            Set_Treat_As_Volatile (E);
+            --  Atomic/Shared imply both Independent and Volatile
+
+            if Prag_Id /= Pragma_Volatile then
+               Set_Is_Independent (E);
+
+               if Prag_Id = Pragma_Independent then
+                  Independence_Checks.Append ((N, E));
+               end if;
+            end if;
+
+            if Prag_Id /= Pragma_Independent then
+               Set_Is_Volatile (E);
+               Set_Treat_As_Volatile (E);
+            end if;
 
          else
             Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
@@ -6306,7 +6332,7 @@ package body Sem_Prag is
               ("argument of pragma % must denote a full type or object "
                & "declaration", Arg1);
          end if;
-      end Process_Atomic_Shared_Volatile;
+      end Process_Atomic_Independent_Shared_Volatile;
 
       -------------------------------------------
       -- Process_Compile_Time_Warning_Or_Error --
@@ -8088,10 +8114,6 @@ package body Sem_Prag is
          Subp      : Entity_Id;
          Applies   : Boolean;
 
-         Effective : Boolean := False;
-         --  Set True if inline has some effect, i.e. if there is at least one
-         --  subprogram set as inlined as a result of the use of the pragma.
-
          procedure Make_Inline (Subp : Entity_Id);
          --  Subp is the defining unit name of the subprogram declaration. Set
          --  the flag, as well as the flag in the corresponding body, if there
@@ -8349,7 +8371,6 @@ package body Sem_Prag is
 
                if not Has_Pragma_Inline (Subp) then
                   Set_Has_Pragma_Inline (Subp);
-                  Effective := True;
                end if;
             end if;
 
@@ -8392,8 +8413,7 @@ package body Sem_Prag is
                   --  If previous error, avoid cascaded errors
 
                   Check_Error_Detected;
-                  Applies   := True;
-                  Effective := True;
+                  Applies := True;
 
                else
                   Make_Inline (Subp);
@@ -8415,22 +8435,7 @@ package body Sem_Prag is
             end if;
 
             if not Applies then
-               Error_Pragma_Arg
-                 ("inappropriate argument for pragma%", Assoc);
-
-            elsif not Effective
-              and then Warn_On_Redundant_Constructs
-              and then not (Status = Suppressed or else Suppress_All_Inlining)
-            then
-               if Inlining_Not_Possible (Subp) then
-                  Error_Msg_NE
-                    ("pragma Inline for& is ignored?r?",
-                     N, Entity (Subp_Id));
-               else
-                  Error_Msg_NE
-                    ("pragma Inline for& is redundant?r?",
-                     N, Entity (Subp_Id));
-               end if;
+               Error_Pragma_Arg ("inappropriate argument for pragma%", Assoc);
             end if;
 
             Next (Assoc);
@@ -8564,7 +8569,7 @@ package body Sem_Prag is
                if Prag_Id = Pragma_Import then
                   String_To_Name_Buffer (Strval (Expr_Value_S (Ext_Nam)));
                   Nam := Name_Find;
-                  E   := Entity_Id (Get_Name_Table_Info (Nam));
+                  E   := Entity_Id (Get_Name_Table_Int (Nam));
 
                   if Nam /= Chars (Subprogram_Def)
                     and then Present (E)
@@ -8858,7 +8863,7 @@ package body Sem_Prag is
                   raise Pragma_Exit;
                end if;
 
-            --  Case of No_Specification_Of_Aspect => Identifier.
+            --  Case of No_Specification_Of_Aspect => aspect-identifier
 
             elsif Id = Name_No_Specification_Of_Aspect then
                declare
@@ -8878,6 +8883,8 @@ package body Sem_Prag is
                   end if;
                end;
 
+            --  Case of No_Use_Of_Attribute => attribute-identifier
+
             elsif Id = Name_No_Use_Of_Attribute then
                if Nkind (Expr) /= N_Identifier
                  or else not Is_Attribute_Name (Chars (Expr))
@@ -8888,12 +8895,33 @@ package body Sem_Prag is
                   Set_Restriction_No_Use_Of_Attribute (Expr, Warn);
                end if;
 
+            --  Case of No_Use_Of_Entity => fully-qualified-name
+
+            elsif Id = Name_No_Use_Of_Entity then
+
+               --  Restriction is only recognized within a configuration
+               --  pragma file, or within a unit of the main extended
+               --  program. Note: the test for Main_Unit is needed to
+               --  properly include the case of configuration pragma files.
+
+               if Current_Sem_Unit = Main_Unit
+                 or else In_Extended_Main_Source_Unit (N)
+               then
+                  if not OK_No_Dependence_Unit_Name (Expr) then
+                     Error_Msg_N ("wrong form for entity name", Expr);
+                  else
+                     Set_Restriction_No_Use_Of_Entity
+                       (Expr, Warn, No_Profile);
+                  end if;
+               end if;
+
+            --  Case of No_Use_Of_Pragma => pragma-identifier
+
             elsif Id = Name_No_Use_Of_Pragma then
                if Nkind (Expr) /= N_Identifier
                  or else not Is_Pragma_Name (Chars (Expr))
                then
                   Error_Msg_N ("unknown pragma name??", Expr);
-
                else
                   Set_Restriction_No_Use_Of_Pragma (Expr, Warn);
                end if;
@@ -9050,7 +9078,9 @@ package body Sem_Prag is
 
          if C = Elaboration_Check and then SPARK_Mode = On then
             Error_Pragma_Arg
-              ("Suppress of Elaboration_Check ignored in SPARK??", Arg1);
+              ("Suppress of Elaboration_Check ignored in SPARK??",
+               "\elaboration checking rules are statically enforced "
+               & "(SPARK RM 7.7)", Arg1);
          end if;
 
          --  One-argument case
@@ -10194,10 +10224,10 @@ package body Sem_Prag is
                   Set_Refinement_Constituents (State_Id, New_Elmt_List);
                   Set_Part_Of_Constituents    (State_Id, New_Elmt_List);
 
-                  --  An abstract state declared within a Ghost scope becomes
+                  --  An abstract state declared within a Ghost region becomes
                   --  Ghost (SPARK RM 6.9(2)).
 
-                  if Within_Ghost_Scope then
+                  if Ghost_Mode > None then
                      Set_Is_Ghost_Entity (State_Id);
                   end if;
 
@@ -11017,10 +11047,10 @@ package body Sem_Prag is
          --  processing is required here.
 
          when Pragma_Assertion_Policy => Assertion_Policy : declare
-            LocP   : Source_Ptr;
-            Policy : Node_Id;
             Arg    : Node_Id;
             Kind   : Name_Id;
+            LocP   : Source_Ptr;
+            Policy : Node_Id;
 
          begin
             Ada_2005_Pragma;
@@ -11102,12 +11132,17 @@ package body Sem_Prag is
                   Check_Arg_Is_One_Of
                     (Arg, Name_Check, Name_Disable, Name_Ignore);
 
-                  --  We rewrite the Assertion_Policy pragma as a series of
-                  --  Check_Policy pragmas:
+                  --  Rewrite the Assertion_Policy pragma as a series of
+                  --  Check_Policy pragmas of the form:
 
                   --    Check_Policy (Kind, Policy);
 
-                  Insert_Action (N,
+                  --  Note: the insertion of the pragmas cannot be done with
+                  --  Insert_Action because in the configuration case, there
+                  --  are no scopes on the scope stack and the mechanism will
+                  --  fail.
+
+                  Insert_Before_And_Analyze (N,
                     Make_Pragma (LocP,
                       Chars                        => Name_Check_Policy,
                       Pragma_Argument_Associations => New_List (
@@ -11411,7 +11446,7 @@ package body Sem_Prag is
          --  pragma Atomic (LOCAL_NAME);
 
          when Pragma_Atomic =>
-            Process_Atomic_Shared_Volatile;
+            Process_Atomic_Independent_Shared_Volatile;
 
          -----------------------
          -- Atomic_Components --
@@ -11468,11 +11503,14 @@ package body Sem_Prag is
                   E := Base_Type (E);
                end if;
 
-               Set_Has_Volatile_Components (E);
+               --  Atomic implies both Independent and Volatile
 
                if Prag_Id = Pragma_Atomic_Components then
                   Set_Has_Atomic_Components (E);
+                  Set_Has_Independent_Components (E);
                end if;
+
+               Set_Has_Volatile_Components (E);
 
             else
                Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
@@ -11881,7 +11919,7 @@ package body Sem_Prag is
                   --  Pragma Check_Policy specifying a Ghost policy cannot
                   --  occur within a ghost subprogram or package.
 
-                  if Within_Ghost_Scope then
+                  if Ghost_Mode > None then
                      Error_Pragma
                        ("pragma % cannot appear within ghost subprogram or "
                         & "package");
@@ -14351,7 +14389,7 @@ package body Sem_Prag is
                   --  region (SPARK RM 6.9(7)).
 
                   if Is_False (Expr_Value (Expr))
-                    and then Within_Ghost_Scope
+                    and then Ghost_Mode > None
                   then
                      Error_Pragma
                        ("pragma % with value False cannot appear in enabled "
@@ -14906,61 +14944,16 @@ package body Sem_Prag is
          -- Independent --
          -----------------
 
-         --  pragma Independent (record_component_LOCAL_NAME);
+         --  pragma Independent (LOCAL_NAME);
 
-         when Pragma_Independent => Independent : declare
-            E_Id : Node_Id;
-            E    : Entity_Id;
-
-         begin
-            Check_Ada_83_Warning;
-            Ada_2012_Pragma;
-            Check_No_Identifiers;
-            Check_Arg_Count (1);
-            Check_Arg_Is_Local_Name (Arg1);
-            E_Id := Get_Pragma_Arg (Arg1);
-
-            if Etype (E_Id) = Any_Type then
-               return;
-            end if;
-
-            E := Entity (E_Id);
-
-            --  Check we have a record component. We have not yet setup
-            --  components fully, so identify by syntactic structure.
-
-            if Nkind (Declaration_Node (E)) /= N_Component_Declaration then
-               Error_Pragma_Arg
-                 ("argument for pragma% must be record component", Arg1);
-            end if;
-
-            --  Check duplicate before we chain ourselves
-
-            Check_Duplicate_Pragma (E);
-
-            --  Chain pragma
-
-            if Rep_Item_Too_Early (E, N)
-                 or else
-               Rep_Item_Too_Late (E, N)
-            then
-               return;
-            end if;
-
-            --  Set flag in component
-
-            Set_Is_Independent (E);
-
-            Independence_Checks.Append ((N, E));
-         end Independent;
+         when Pragma_Independent =>
+            Process_Atomic_Independent_Shared_Volatile;
 
          ----------------------------
          -- Independent_Components --
          ----------------------------
 
-         --  pragma Atomic_Components (array_LOCAL_NAME);
-
-         --  This processing is shared by Volatile_Components
+         --  pragma Independent_Components (array_or_record_LOCAL_NAME);
 
          when Pragma_Independent_Components => Independent_Components : declare
             E_Id : Node_Id;
@@ -14999,11 +14992,13 @@ package body Sem_Prag is
             D := Declaration_Node (E);
             K := Nkind (D);
 
+            --  The flag is set on the base type, or on the object
+
             if K = N_Full_Type_Declaration
               and then (Is_Array_Type (E) or else Is_Record_Type (E))
             then
-               Independence_Checks.Append ((N, Base_Type (E)));
                Set_Has_Independent_Components (Base_Type (E));
+               Independence_Checks.Append ((N, Base_Type (E)));
 
                --  For record type, set all components independent
 
@@ -15020,8 +15015,8 @@ package body Sem_Prag is
               and then Nkind (Object_Definition (D)) =
                                            N_Constrained_Array_Definition
             then
-               Independence_Checks.Append ((N, Base_Type (Etype (E))));
-               Set_Has_Independent_Components (Base_Type (Etype (E)));
+               Set_Has_Independent_Components (E);
+               Independence_Checks.Append ((N, E));
 
             else
                Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
@@ -16776,9 +16771,11 @@ package body Sem_Prag is
 
             Set_No_Elab_Code_All (Current_Sem_Unit);
 
-            --  Set restriction No_Elaboration_Code
+            --  Set restriction No_Elaboration_Code if this is the main unit
 
-            Set_Restriction (No_Elaboration_Code, N);
+            if Current_Sem_Unit = Main_Unit then
+               Set_Restriction (No_Elaboration_Code, N);
+            end if;
 
             --  If we are in the main unit or in an extended main source unit,
             --  then we also add it to the configuration restrictions so that
@@ -17842,17 +17839,25 @@ package body Sem_Prag is
             then
                null;
 
+            --  Check appropriate type argument
+
             elsif Is_Private_Type (Ent)
               or else Is_Protected_Type (Ent)
               or else (Is_Generic_Type (Ent) and then Is_Derived_Type (Ent))
+
+              --  AI05-0028: The pragma applies to all composite types. Note
+              --  that we apply this binding intepretation to previous verions
+              --  of Ada so there is no Ada 2012 guard. Seems a reasonable
+              --  choice since there are other compilers that do the same.
+
+              or else Is_Composite_Type (Ent)
             then
                null;
 
             else
                Error_Pragma_Arg
-                 ("pragma % can only be applied to private, formal derived or "
-                  & "protected type",
-                  Arg1);
+                 ("pragma % can only be applied to private, formal derived, "
+                  & "protected, or composite type", Arg1);
             end if;
 
             --  Give an error if the pragma is applied to a protected type that
@@ -19359,7 +19364,7 @@ package body Sem_Prag is
 
          when Pragma_Shared =>
             GNAT_Pragma;
-            Process_Atomic_Shared_Volatile;
+            Process_Atomic_Independent_Shared_Volatile;
 
          --------------------
          -- Shared_Passive --
@@ -21240,7 +21245,7 @@ package body Sem_Prag is
          --  pragma Volatile (LOCAL_NAME);
 
          when Pragma_Volatile =>
-            Process_Atomic_Shared_Volatile;
+            Process_Atomic_Independent_Shared_Volatile;
 
          -------------------------
          -- Volatile_Components --

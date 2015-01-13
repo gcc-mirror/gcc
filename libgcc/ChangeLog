@@ -1,3 +1,21 @@
+2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.host (arm*-*-freebsd*): Add new configuration for
+	arm*-*-freebsd*.
+	* config/arm/freebsd-atomic.c: New file.
+	* config/arm/t-freebsd: Likewise.
+	* config/arm/unwind-arm.h: Add __FreeBSD__ to the list of
+	'PC-relative indirect' OS's.
+
+2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.host: Add Visium support.
+	* config/visium: New directory.
+
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2014-12-19  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config.host: Support mipsisa32r6 and mipsisa64r6.

@@ -239,6 +239,19 @@ int main(int argc, void **args)
       abort ();
   }
 
+  printf ("Testing class_copyIvarList () on class with no instance variables...\n");
+  {
+    unsigned int count;
+    Ivar * list = class_copyIvarList (objc_getClass ("MyOtherSubClass"),
+                                      &count);
+
+    if (count != 0)
+      abort ();
+    
+    if (list != NULL)
+      abort ();
+  }
+
   printf ("Testing class_copyMethodList ()...\n");
   {
     unsigned int count;

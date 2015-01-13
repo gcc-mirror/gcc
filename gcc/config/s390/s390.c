@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999-2014 Free Software Foundation, Inc.
+   Copyright (C) 1999-2015 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com) and
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
@@ -25,7 +25,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "print-tree.h"
 #include "stringpool.h"
 #include "stor-layout.h"
@@ -40,10 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "flags.h"
 #include "except.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "recog.h"
@@ -5736,15 +5742,13 @@ reg_used_in_mem_p (int regno, rtx x)
 
   if (code == MEM)
     {
-      if (refers_to_regno_p (regno, regno+1,
-			     XEXP (x, 0), 0))
+      if (refers_to_regno_p (regno, XEXP (x, 0)))
 	return true;
     }
   else if (code == SET
 	   && GET_CODE (SET_DEST (x)) == PC)
     {
-      if (refers_to_regno_p (regno, regno+1,
-			     SET_SRC (x), 0))
+      if (refers_to_regno_p (regno, SET_SRC (x)))
 	return true;
     }
 
@@ -5795,7 +5799,7 @@ addr_generation_dependency_p (rtx dep_rtx, rtx_insn *insn)
 		  pat = XVECEXP (pat, 0, 0);
 		}
 	      gcc_assert (GET_CODE (pat) == SET);
-	      return refers_to_regno_p (regno, regno+1, SET_SRC (pat), 0);
+	      return refers_to_regno_p (regno, SET_SRC (pat));
 	    }
 	  else if (get_attr_atype (insn) == ATYPE_AGEN)
 	    return reg_used_in_mem_p (regno, PATTERN (insn));

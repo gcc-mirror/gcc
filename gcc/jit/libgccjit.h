@@ -1,5 +1,5 @@
 /* A pure C API to enable client code to embed GCC as a JIT-compiler.
-   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef LIBGCCJIT_H
 #define LIBGCCJIT_H
 
+#include <stdio.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -29,16 +31,19 @@ extern "C" {
  **********************************************************************/
 /* All structs within the API are opaque. */
 
-/* A gcc_jit_context encapsulates the state of a compilation.  It goes
-   through two states:
+/* A gcc_jit_context encapsulates the state of a compilation.
+   You can set up options on it, and add types, functions and code, using
+   the API below.
 
-   (1) "initial", during which you can set up options on it, and add
-       types, functions and code, using the API below.
-       Invoking gcc_jit_context_compile on it transitions it to the
-       "after compilation" state.
+   Invoking gcc_jit_context_compile on it gives you a gcc_jit_result *
+   (or NULL).
 
-   (2) "after compilation", when you can call gcc_jit_context_release to
-       clean up.  */
+   You can call gcc_jit_context_compile repeatedly on one context, giving
+   multiple independent results.
+
+   Eventually you can call gcc_jit_context_release to clean up the
+   context; any results created from it are still usable, and should be
+   cleaned up via gcc_jit_result_release.  */
 typedef struct gcc_jit_context gcc_jit_context;
 
 /* A gcc_jit_result encapsulates the result of a compilation.  */
@@ -254,6 +259,19 @@ gcc_jit_context_dump_to_file (gcc_jit_context *ctxt,
 			      const char *path,
 			      int update_locations);
 
+/* To help with debugging; enable ongoing logging of the context's
+   activity to the given FILE *.
+
+   The caller remains responsible for closing "logfile".
+
+   Params "flags" and "verbosity" are reserved for future use, and
+   must both be 0 for now.  */
+extern void
+gcc_jit_context_set_logfile (gcc_jit_context *ctxt,
+			     FILE *logfile,
+			     int flags,
+			     int verbosity);
+
 /* To be called after a compile, this gives the first error message
    that occurred on the context.
 
@@ -263,6 +281,16 @@ gcc_jit_context_dump_to_file (gcc_jit_context *ctxt,
    If no errors occurred, this will be NULL.  */
 extern const char *
 gcc_jit_context_get_first_error (gcc_jit_context *ctxt);
+
+/* To be called after a compile, this gives the last error message
+   that occurred on the context.
+
+   The returned string is valid for the rest of the lifetime of the
+   context.
+
+   If no errors occurred, this will be NULL.  */
+extern const char *
+gcc_jit_context_get_last_error (gcc_jit_context *ctxt);
 
 /* Locate a given function within the built machine code.
    This will need to be cast to a function pointer of the
@@ -605,6 +633,11 @@ gcc_jit_context_new_rvalue_from_int (gcc_jit_context *ctxt,
 				     int value);
 
 extern gcc_jit_rvalue *
+gcc_jit_context_new_rvalue_from_long (gcc_jit_context *ctxt,
+				      gcc_jit_type *numeric_type,
+				      long value);
+
+extern gcc_jit_rvalue *
 gcc_jit_context_zero (gcc_jit_context *ctxt,
 		      gcc_jit_type *numeric_type);
 
@@ -649,7 +682,13 @@ enum gcc_jit_unary_op
   /* Logical negation of an arithmetic or pointer value; analogous to:
        !(EXPR)
      in C.  */
-  GCC_JIT_UNARY_OP_LOGICAL_NEGATE
+  GCC_JIT_UNARY_OP_LOGICAL_NEGATE,
+
+  /* Absolute value of an arithmetic expression; analogous to:
+       abs (EXPR)
+     in C.  */
+  GCC_JIT_UNARY_OP_ABS
+
 };
 
 extern gcc_jit_rvalue *

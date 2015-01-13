@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,6 +60,10 @@ package System.Val_Real is
    --  Note: if Str is null, i.e. if Max is less than Ptr, then this is a
    --  special case of an all-blank string, and Ptr is unchanged, and hence
    --  is greater than Max as required in this case.
+   --
+   --  Note: this routine should not be called with Str'Last = Positive'Last.
+   --  If this occurs Program_Error is raised with a message noting that this
+   --  case is not supported. Most such cases are eliminated by the caller.
 
    function Value_Real (Str : String) return Long_Long_Float;
    --  Used in computing X'Value (Str) where X is a floating-point type or an

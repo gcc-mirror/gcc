@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IA-32.
-   Copyright (C) 1988-2014 Free Software Foundation, Inc.
+   Copyright (C) 1988-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,7 +22,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stringpool.h"
 #include "attribs.h"
 #include "calls.h"
@@ -38,10 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "flags.h"
 #include "except.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "recog.h"
@@ -16429,11 +16435,7 @@ output_387_binary_op (rtx insn, rtx *operands)
     case MULT:
     case PLUS:
       if (REG_P (operands[2]) && REGNO (operands[0]) == REGNO (operands[2]))
-	{
-	  rtx temp = operands[2];
-	  operands[2] = operands[1];
-	  operands[1] = temp;
-	}
+	std::swap (operands[1], operands[2]);
 
       /* know operands[0] == operands[1].  */
 
@@ -20849,9 +20851,7 @@ ix86_expand_int_movcc (rtx operands[])
       if (diff < 0)
 	{
 	  machine_mode cmp_mode = GET_MODE (op0);
-
-	  std::swap (ct, cf);
-	  diff = -diff;
+	  enum rtx_code new_code;
 
 	  if (SCALAR_FLOAT_MODE_P (cmp_mode))
 	    {
@@ -20861,13 +20861,15 @@ ix86_expand_int_movcc (rtx operands[])
 		 is not valid in general (we may convert non-trapping condition
 		 to trapping one), however on i386 we currently emit all
 		 comparisons unordered.  */
-	      compare_code = reverse_condition_maybe_unordered (compare_code);
-	      code = reverse_condition_maybe_unordered (code);
+	      new_code = reverse_condition_maybe_unordered (code);
 	    }
 	  else
+	    new_code = ix86_reverse_condition (code, cmp_mode);
+	  if (new_code != UNKNOWN)
 	    {
-	      compare_code = reverse_condition (compare_code);
-	      code = reverse_condition (code);
+	      std::swap (ct, cf);
+	      diff = -diff;
+	      code = new_code;
 	    }
 	}
 
@@ -21005,9 +21007,7 @@ ix86_expand_int_movcc (rtx operands[])
 	  if (cf == 0)
 	    {
 	      machine_mode cmp_mode = GET_MODE (op0);
-
-	      cf = ct;
-	      ct = 0;
+	      enum rtx_code new_code;
 
 	      if (SCALAR_FLOAT_MODE_P (cmp_mode))
 		{
@@ -21017,13 +21017,20 @@ ix86_expand_int_movcc (rtx operands[])
 		     that is not valid in general (we may convert non-trapping
 		     condition to trapping one), however on i386 we currently
 		     emit all comparisons unordered.  */
-		  code = reverse_condition_maybe_unordered (code);
+		  new_code = reverse_condition_maybe_unordered (code);
 		}
 	      else
 		{
-		  code = reverse_condition (code);
-		  if (compare_code != UNKNOWN)
+		  new_code = ix86_reverse_condition (code, cmp_mode);
+		  if (compare_code != UNKNOWN && new_code != UNKNOWN)
 		    compare_code = reverse_condition (compare_code);
+		}
+
+	      if (new_code != UNKNOWN)
+		{
+		  cf = ct;
+		  ct = 0;
+		  code = new_code;
 		}
 	    }
 

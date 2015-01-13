@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Tilera TILEPro.
-   Copyright (C) 2011-2014 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
    Contributed by Walter Lee (walt@tilera.com)
 
    This file is part of GCC.
@@ -56,7 +56,11 @@
 #include "function.h"
 #include "dwarf2.h"
 #include "timevar.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "hash-table.h"
 #include "ggc.h"
 #include "tree-ssa-alias.h"

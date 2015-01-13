@@ -47,6 +47,8 @@ package System.OS_Interface is
    pragma Preelaborate;
 
    pragma Linker_Options ("-lpthread");
+   pragma Linker_Options ("-lrt");
+   --  Needed for clock_getres with glibc versions prior to 2.17
 
    subtype int            is Interfaces.C.int;
    subtype char           is Interfaces.C.char;
@@ -217,9 +219,15 @@ package System.OS_Interface is
    -- Time --
    ----------
 
-   subtype time_t   is System.Linux.time_t;
-   subtype timespec is System.Linux.timespec;
-   subtype timeval  is System.Linux.timeval;
+   subtype time_t    is System.Linux.time_t;
+   subtype timespec  is System.Linux.timespec;
+   subtype timeval   is System.Linux.timeval;
+   subtype clockid_t is System.Linux.clockid_t;
+
+   function clock_getres
+     (clock_id : clockid_t;
+      res      : access timespec) return int;
+   pragma Import (C, clock_getres, "clock_getres");
 
    function To_Duration (TS : timespec) return Duration;
    pragma Inline (To_Duration);

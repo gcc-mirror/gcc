@@ -1,5 +1,5 @@
 /* Optimize jump instructions, for GNU compiler.
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright (C) 1987-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfg.h"
 #include "cfgrtl.h"
 #include "basic-block.h"
+#include "symtab.h"
 #include "expr.h"
 #include "except.h"
 #include "diagnostic-core.h"

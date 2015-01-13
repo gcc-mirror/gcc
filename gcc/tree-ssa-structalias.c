@@ -1,5 +1,5 @@
 /* Tree based points-to analysis
-   Copyright (C) 2005-2014 Free Software Foundation, Inc.
+   Copyright (C) 2005-2015 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -37,7 +37,13 @@
 #include "dominance.h"
 #include "cfg.h"
 #include "basic-block.h"
+#include "double-int.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "stmt.h"
 #include "hash-table.h"

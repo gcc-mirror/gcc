@@ -1,7 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997-2014 Free Software Foundation, Inc.
+# Copyright (C) 1997-2015 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -4573,7 +4573,7 @@ esac
 case "$cpu_type" in
   aarch64 | alpha | arm | avr | bfin | cris | i386 | m32c | m68k | microblaze \
   | mips | nios2 | pa | rs6000 | score | sparc | spu | tilegx | tilepro \
-  | xstormy16 | xtensa)
+  | visium | xstormy16 | xtensa)
     insn="nop"
     ;;
   ia64 | s390)

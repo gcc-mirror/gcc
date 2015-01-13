@@ -1,5 +1,5 @@
 /* LRA (local register allocator) driver and LRA utilities.
-   Copyright (C) 2010-2014 Free Software Foundation, Inc.
+   Copyright (C) 2010-2015 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -120,7 +120,10 @@ along with GCC; see the file COPYING3.	If not see
 #include "machmode.h"
 #include "input.h"
 #include "function.h"
-#include "tree-core.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
 #include "optabs.h"
 #include "expr.h"
 #include "predict.h"

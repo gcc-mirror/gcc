@@ -1,5 +1,5 @@
 ! { dg-do link }
-! { dg-additional-sources codimension_2a.f90 }
+! { dg-additional-sources "codimension_2a.f90 codimension_2b.f90" }
 !
 ! To be used with codimension_2a.f90
 ! Check that the coarray declared in the module is accessible

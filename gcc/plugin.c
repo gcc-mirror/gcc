@@ -1,5 +1,5 @@
 /* Support for GCC plugin mechanism.
-   Copyright (C) 2009-2014 Free Software Foundation, Inc.
+   Copyright (C) 2009-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "hash-table.h"
 #include "diagnostic-core.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "flags.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "tree-pass.h"
 #include "intl.h"

@@ -1,5 +1,5 @@
 /* A C++ API for libgccjit, purely as inline wrapper functions.
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -102,6 +102,10 @@ namespace gccjit
     void dump_to_file (const std::string &path,
 		       bool update_locations);
 
+    void set_logfile (FILE *logfile,
+		      int flags,
+		      int verbosity);
+
     void set_str_option (enum gcc_jit_str_option opt,
 			 const char *value);
 
@@ -157,6 +161,8 @@ namespace gccjit
 
     rvalue new_rvalue (type numeric_type,
 		       int value) const;
+    rvalue new_rvalue (type numeric_type,
+		       long value) const;
     rvalue zero (type numeric_type) const;
     rvalue one (type numeric_type) const;
     rvalue new_rvalue (type numeric_type,
@@ -541,6 +547,17 @@ context::dump_to_file (const std::string &path,
 }
 
 inline void
+context::set_logfile (FILE *logfile,
+		      int flags,
+		      int verbosity)
+{
+  gcc_jit_context_set_logfile (m_inner_ctxt,
+			       logfile,
+			       flags,
+			       verbosity);
+}
+
+inline void
 context::set_str_option (enum gcc_jit_str_option opt,
 			 const char *value)
 {
@@ -708,6 +725,16 @@ context::new_rvalue (type numeric_type,
     gcc_jit_context_new_rvalue_from_int (m_inner_ctxt,
 					 numeric_type.get_inner_type (),
 					 value));
+}
+
+inline rvalue
+context::new_rvalue (type numeric_type,
+		     long value) const
+{
+  return rvalue (
+    gcc_jit_context_new_rvalue_from_long (m_inner_ctxt,
+					  numeric_type.get_inner_type (),
+					  value));
 }
 
 inline rvalue

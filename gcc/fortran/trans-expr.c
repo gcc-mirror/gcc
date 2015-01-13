@@ -1,5 +1,5 @@
 /* Expression translation
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -25,7 +25,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "gfortran.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stringpool.h"
 #include "diagnostic-core.h"	/* For fatal_error.  */
 #include "langhooks.h"
@@ -40,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-stmt.h"
 #include "dependency.h"
 #include "gimplify.h"
-#include "wide-int.h"
 
 /* Convert a scalar to an array descriptor. To be used for assumed-rank
    arrays.  */

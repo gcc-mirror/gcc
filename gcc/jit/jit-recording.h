@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for recording calls made to the JIT API.
-   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define JIT_RECORDING_H
 
 #include "jit-common.h"
+#include "jit-logging.h"
 
 namespace gcc {
 
@@ -53,7 +54,7 @@ struct requested_dump
 };
 
 /* A JIT-compilation context.  */
-class context
+class context : public log_user
 {
 public:
   context (context *parent_ctxt);
@@ -134,17 +135,10 @@ public:
 	      type *type,
 	      const char *name);
 
+  template <typename HOST_TYPE>
   rvalue *
-  new_rvalue_from_int (type *numeric_type,
-		       int value);
-
-  rvalue *
-  new_rvalue_from_double (type *numeric_type,
-			  double value);
-
-  rvalue *
-  new_rvalue_from_ptr (type *pointer_type,
-		       void *value);
+  new_rvalue_from_const (type *type,
+			 HOST_TYPE value);
 
   rvalue *
   new_string_literal (const char *value);
@@ -234,6 +228,9 @@ public:
   const char *
   get_first_error () const;
 
+  const char *
+  get_last_error () const;
+
   bool errors_occurred () const
   {
     if (m_parent_ctxt)
@@ -259,6 +256,9 @@ private:
 
   char *m_first_error_str;
   bool m_owns_first_error_str;
+
+  char *m_last_error_str;
+  bool m_owns_last_error_str;
 
   char *m_str_options[GCC_JIT_NUM_STR_OPTIONS];
   int m_int_options[GCC_JIT_NUM_INT_OPTIONS];
@@ -443,6 +443,7 @@ public:
   virtual bool is_bool () const = 0;
   virtual type *is_pointer () = 0;
   virtual type *is_array () = 0;
+  virtual bool is_void () const { return false; }
 
   bool is_numeric () const
   {
@@ -465,7 +466,7 @@ private:
   type *m_pointer_to_this_type;
 };
 
-/* Result of "gcc_jit_type_get_type".  */
+/* Result of "gcc_jit_context_get_type".  */
 class memento_of_get_type : public type
 {
 public:
@@ -494,6 +495,7 @@ public:
   bool is_bool () const;
   type *is_pointer () { return dereference (); }
   type *is_array () { return NULL; }
+  bool is_void () const { return m_kind == GCC_JIT_TYPE_VOID; }
 
 public:
   void replay_into (replayer *r);
@@ -1064,14 +1066,15 @@ private:
   string *m_name;
 };
 
-class memento_of_new_rvalue_from_int : public rvalue
+template <typename HOST_TYPE>
+class memento_of_new_rvalue_from_const : public rvalue
 {
 public:
-  memento_of_new_rvalue_from_int (context *ctxt,
-				  location *loc,
-				  type *numeric_type,
-				  int value)
-  : rvalue (ctxt, loc, numeric_type),
+  memento_of_new_rvalue_from_const (context *ctxt,
+				    location *loc,
+				    type *type,
+				    HOST_TYPE value)
+  : rvalue (ctxt, loc, type),
     m_value (value) {}
 
   void replay_into (replayer *r);
@@ -1080,47 +1083,7 @@ private:
   string * make_debug_string ();
 
 private:
-  int m_value;
-};
-
-class memento_of_new_rvalue_from_double : public rvalue
-{
-public:
-  memento_of_new_rvalue_from_double (context *ctxt,
-				     location *loc,
-				     type *numeric_type,
-				     double value)
-  : rvalue (ctxt, loc, numeric_type),
-    m_value (value)
-  {}
-
-  void replay_into (replayer *);
-
-private:
-  string * make_debug_string ();
-
-private:
-  double m_value;
-};
-
-class memento_of_new_rvalue_from_ptr : public rvalue
-{
-public:
-  memento_of_new_rvalue_from_ptr (context *ctxt,
-				  location *loc,
-				  type *pointer_type,
-				  void *value)
-  : rvalue (ctxt, loc, pointer_type),
-    m_value (value)
-  {}
-
-  void replay_into (replayer *);
-
-private:
-  string * make_debug_string ();
-
-private:
-  void *m_value;
+  HOST_TYPE m_value;
 };
 
 class memento_of_new_string_literal : public rvalue
@@ -1595,6 +1558,23 @@ private:
 };
 
 } // namespace gcc::jit::recording
+
+/* Create a recording::memento_of_new_rvalue_from_const instance and add
+   it to this context's list of mementos.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_new_rvalue_from_{int|long|double|ptr}.  */
+
+template <typename HOST_TYPE>
+recording::rvalue *
+recording::context::new_rvalue_from_const (recording::type *type,
+					   HOST_TYPE value)
+{
+  recording::rvalue *result =
+    new memento_of_new_rvalue_from_const <HOST_TYPE> (this, NULL, type, value);
+  record (result);
+  return result;
+}
 
 } // namespace gcc::jit
 

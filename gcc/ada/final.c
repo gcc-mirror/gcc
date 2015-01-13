@@ -40,28 +40,10 @@ extern void __gnat_finalize (void);
    at all, the intention is that this be replaced by system specific code
    where finalization is required.  */
 
-#if defined (__MINGW32__)
-#include "mingw32.h"
-#include <windows.h>
-
-extern CRITICAL_SECTION ProcListCS;
-extern HANDLE ProcListEvt;
-
-void
-__gnat_finalize (void)
-{
-  /* delete critical section and event handle used for the
-     processes chain list */
-  DeleteCriticalSection(&ProcListCS);
-  CloseHandle (ProcListEvt);
-}
-
-#else
 void
 __gnat_finalize (void)
 {
 }
-#endif
 
 #ifdef __cplusplus
 }

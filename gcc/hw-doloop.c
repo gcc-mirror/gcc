@@ -1,6 +1,6 @@
 /* Code to analyze doloop loops in order for targets to perform late
    optimizations converting doloops to other forms of hardware loops.
-   Copyright (C) 2011-2014 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "flags.h"
+#include "symtab.h"
 #include "expr.h"
 #include "hard-reg-set.h"
 #include "regs.h"

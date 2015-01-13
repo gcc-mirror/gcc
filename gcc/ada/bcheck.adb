@@ -170,7 +170,7 @@ package body Bcheck is
                goto Continue;
             end if;
 
-            Src := Source_Id (Get_Name_Table_Info (Sdep.Table (D).Sfile));
+            Src := Source_Id (Get_Name_Table_Int (Sdep.Table (D).Sfile));
 
             --  If the time stamps match, or all checksums match, then we
             --  are OK, otherwise we have a definite error.
@@ -468,12 +468,12 @@ package body Bcheck is
                         WR : With_Record renames Withs.Table (W);
 
                      begin
-                        if Get_Name_Table_Info (WR.Uname) /= 0 then
+                        if Get_Name_Table_Int (WR.Uname) /= 0 then
                            declare
                               WU : Unit_Record renames
                                      Units.Table
                                        (Unit_Id
-                                         (Get_Name_Table_Info (WR.Uname)));
+                                         (Get_Name_Table_Int (WR.Uname)));
 
                            begin
                               --  Case 1. Elaborate_All for with'ed unit
@@ -1048,7 +1048,7 @@ package body Bcheck is
                      if AFN /= No_File then
                         declare
                            WAI : constant ALI_Id :=
-                             ALI_Id (Get_Name_Table_Info (AFN));
+                             ALI_Id (Get_Name_Table_Int (AFN));
                            WTE : ALIs_Record renames ALIs.Table (WAI);
 
                         begin
@@ -1199,7 +1199,7 @@ package body Bcheck is
 
                declare
                   Unit : constant Unit_Name_Type := Name_Find;
-                  Info : constant Int := Get_Name_Table_Info (Unit);
+                  Info : constant Int := Get_Name_Table_Int (Unit);
 
                begin
                   if Info /= 0 then

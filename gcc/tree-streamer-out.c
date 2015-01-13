@@ -1,6 +1,6 @@
 /* Routines for emitting trees to a file stream.
 
-   Copyright (C) 2011-2014 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -24,13 +24,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "diagnostic.h"
-#include "tree.h"
-#include "stor-layout.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
 #include "hash-set.h"
 #include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "tree.h"
+#include "fold-const.h"
+#include "stor-layout.h"
+#include "predict.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -472,7 +480,9 @@ streamer_pack_tree_bitfields (struct output_block *ob,
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     bp_pack_var_len_unsigned (bp, CONSTRUCTOR_NELTS (expr));
 
-  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
+  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION)
+      /* Don't stream these when passing things to a different target.  */
+      && !lto_stream_offload_p)
     cl_target_option_stream_out (ob, bp, TREE_TARGET_OPTION (expr));
 
   if (code == OMP_CLAUSE)
@@ -687,7 +697,9 @@ write_ts_function_decl_tree_pointers (struct output_block *ob, tree expr,
   stream_write_tree (ob, DECL_VINDEX (expr), ref_p);
   /* DECL_STRUCT_FUNCTION is handled by lto_output_function.  */
   stream_write_tree (ob, DECL_FUNCTION_PERSONALITY (expr), ref_p);
-  stream_write_tree (ob, DECL_FUNCTION_SPECIFIC_TARGET (expr), ref_p);
+  /* Don't stream these when passing things to a different target.  */
+  if (!lto_stream_offload_p)
+    stream_write_tree (ob, DECL_FUNCTION_SPECIFIC_TARGET (expr), ref_p);
   stream_write_tree (ob, DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr), ref_p);
 }
 

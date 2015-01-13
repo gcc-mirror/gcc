@@ -1,5 +1,5 @@
 /* objc-map.c -- Implementation of map data structures for ObjC compiler
-   Copyright (C) 2011-2014 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
    Written by Nicola Pero <nicola.pero@meta-innovation.com>
 
 This program is free software; you can redistribute it and/or modify it
@@ -20,6 +20,16 @@ Boston, MA 02110-1301, USA.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "ggc.h"
 #include "objc-map.h"

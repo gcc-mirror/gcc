@@ -1,3 +1,82 @@
+2015-01-09  Michael Collison  <michael.collison@linaro.org>
+
+	* array-notation-common.c: Include hash-set.h, machmode.h,
+	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
+	fold-const.h, wide-int.h, and inchash.h due to flattening of tree.h.
+	* c-ada-spec.c: Ditto.
+	* c-cilkplus.c: Ditto.
+	* c-common.c: Include input.h due to flattening of tree.h.
+	Define macro GCC_C_COMMON_C.
+	* c-common.h: Flatten tree.h header files into c-common.h.
+	Remove include of tree-core.h.
+	* c-cppbuiltin.c: Include hash-set.h, machmode.h,
+	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
+	fold-const.h, wide-int.h, and inchash.h due to
+	flattening of tree.h.
+	* c-dump.c: Ditto.
+	* c-format.c: Flatten tree.h header files into c-common.h.
+	* c-cppbuiltin.c: Include hash-set.h, machmode.h,
+	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
+	fold-const.h, wide-int.h, and inchash.h due to
+	flattening of tree.h.
+	* c-dump.c: Include hash-set.h, machmode.h,
+	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
+	fold-const.h, wide-int.h, and inchash.h due to
+	flattening of tree.h.
+	* c-format.c: Include hash-set.h, machmode.h,
+	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
+	fold-const.h, wide-int.h, inchash.h and real.h due to
+	flattening of tree.h.
+	* c-gimplify.c: Include hash-set.h, machmode.h,
+	vec.h, double-int.h, input.h, alias.h, symtab.h, options.h
+	fold-const.h, wide-int.h, and inchash.h due to
+	flattening of tree.h.
+	* cilk.c: Ditto.
+	* c-lex.c: Ditto.
+	* c-omp.c: Ditto.
+	* c-opts.c: Ditto.
+	* c-pch.c: Ditto.
+	* c-ppoutput.c: Ditto.
+	* c-pragma.c: Ditto.
+	* c-pretty-print.c: Ditto.
+	* c-semantics.c: Ditto.
+	* c-ubsan.c: Ditto.
+	* stub-objc.c: Ditto.
+
+2015-01-08  Jason Merrill  <jason@redhat.com>
+
+	* c-ubsan.c (ubsan_maybe_instrument_array_ref): Use
+	do_ubsan_in_current_function.
+	(ubsan_maybe_instrument_reference_or_call): Likewise.
+	* c-ubsan.h: Declare it.
+
+2015-01-08  Mike Stump  <mikestump@comcast.net>
+
+	* c-common.c (c_common_attribute_table): Add no_sanitize_thread.
+
+2015-01-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64440
+	* c-common.c (c_fully_fold_internal): Warn for division and modulo
+	if orig_op1 isn't INTEGER_CST, op1 is INTEGER_CST and is zero.
+
+2015-01-05  Trevor Saunders  <tsaunders@mozilla.com>
+
+	PR c++/31397
+	* c.opt (Wsuggest-override): New option.
+
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2015-01-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64423
+	* c-common.c (warn_array_subscript_with_type_char): Add location_t
+	parameter.  Use it.
+	* c-common.h (warn_array_subscript_with_type_char): Update
+	declaration.
+
 2014-12-20  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* c-cppbuiltin.c (__cpp_sized_deallocation): Uncomment and move macro.
@@ -172,11 +251,11 @@
 
 2014-10-28  Andrew MacLeod  <amacleod@redhat.com>
 
-	* c-family/c-common.c: Adjust include files.
-	* c-family/c-gimplify.c: Ditto.
-	* c-family/cilk.c: Ditto.
-	* c-family/c-pragma.c: Ditto.
-	* c-family/c-ubsan.c: Ditto.
+	* c-common.c: Adjust include files.
+	* c-gimplify.c: Ditto.
+	* cilk.c: Ditto.
+	* c-pragma.c: Ditto.
+	* c-ubsan.c: Ditto.
 
 2014-10-27  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -277,7 +356,7 @@
 
 2014-10-06  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
-	* c-family/c-cppbuiltin.c: Move __cpp_attribute_deprecated to the
+	* c-cppbuiltin.c: Move __cpp_attribute_deprecated to the
 	C++11 section.
 
 2014-10-03  Marc Glisse  <marc.glisse@inria.fr>
@@ -734,7 +813,7 @@
 
 2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
 
-	* c-family/c-common.c (handle_section_attribute): Update handling for
+	* c-common.c (handle_section_attribute): Update handling for
 	section names that are no longer trees.
 
 2014-06-10  Jakub Jelinek  <jakub@redhat.com>
@@ -1554,8 +1633,8 @@
 
 2013-10-26  Jeff Law  <law@redhat.com>
 
-	* c-family/c-common.c (c_define_builtins): Remove mudflap support.
-	* c-family/c.opt: Ignore and warn for mudflap options.
+	* c-common.c (c_define_builtins): Remove mudflap support.
+	* c.opt: Ignore and warn for mudflap options.
 
 2013-10-24  Tobias Burnus  <burnus@net-b.de>
 
@@ -1956,7 +2035,7 @@
 
 2013-07-08  Graham Stott  <graham.stott@btinternet.com>
 
-	* c-family/array-notation-common.c (length_mismatch_in_expr_p): Delete
+	* array-notation-common.c (length_mismatch_in_expr_p): Delete
 	unused variables l_length and l_node.
 
 2013-07-04  Joern Rennecke  <joern.rennecke@embecosm.com>
@@ -3489,7 +3568,7 @@
 
 2011-03-25  Jeff Law  <law@redhat.com>
 
-	* c-family/c-common.c (def_fn_type): Add missing va_end.
+	* c-common.c (def_fn_type): Add missing va_end.
 
 2011-03-25  Jason Merrill  <jason@redhat.com>
 
@@ -4340,7 +4419,7 @@
 
 2010-07-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
-	* c-family/c-common.c (IN_GCC_FRONTEND): Do not undef.
+	* c-common.c (IN_GCC_FRONTEND): Do not undef.
 	Do not include expr.h
 	(vector_mode_valid_p): Move here.
 
@@ -4521,7 +4600,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2014 Free Software Foundation, Inc.
+Copyright (C) 2010-2015 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1299,9 +1299,10 @@ package body System.Task_Primitives.Operations is
       C           : Task_Id;
 
       Dummy : int;
+      Old   : int;
 
    begin
-      Dummy := Int_Lock;
+      Old := Int_Lock;
 
       C := All_Tasks_List;
       while C /= null loop
@@ -1314,7 +1315,7 @@ package body System.Task_Primitives.Operations is
          C := C.Common.All_Tasks_Link;
       end loop;
 
-      Dummy := Int_Unlock;
+      Dummy := Int_Unlock (Old);
    end Stop_All_Tasks;
 
    ---------------

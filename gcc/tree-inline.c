@@ -1,5 +1,5 @@
 /* Tree inlining.
-   Copyright (C) 2001-2014 Free Software Foundation, Inc.
+   Copyright (C) 2001-2015 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -23,7 +23,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "diagnostic-core.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "calls.h"
 #include "tree-inline.h"
@@ -1907,7 +1917,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	      gsi_replace (&copy_gsi, new_call, false);
 	      stmt = new_call;
 	    }
-	  else if (is_gimple_call (stmt)
+	  else if (call_stmt
 		   && id->call_stmt
 		   && (decl = gimple_call_fndecl (stmt))
 		   && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
@@ -1933,6 +1943,15 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	      new_stmt = gimple_build_assign (gimple_call_lhs (stmt), count);
 	      gsi_replace (&copy_gsi, new_stmt, false);
 	      stmt = new_stmt;
+	    }
+	  else if (call_stmt
+		   && id->call_stmt
+		   && gimple_call_internal_p (stmt)
+		   && gimple_call_internal_fn (stmt) == IFN_TSAN_FUNC_EXIT)
+	    {
+	      /* Drop TSAN_FUNC_EXIT () internal calls during inlining.  */
+	      gsi_remove (&copy_gsi, false);
+	      continue;
 	    }
 
 	  /* Statements produced by inlining can be unfolded, especially
@@ -2582,13 +2601,19 @@ void
 redirect_all_calls (copy_body_data * id, basic_block bb)
 {
   gimple_stmt_iterator si;
+  gimple last = last_stmt (bb);
   for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
     {
-      if (is_gimple_call (gsi_stmt (si)))
+      gimple stmt = gsi_stmt (si);
+      if (is_gimple_call (stmt))
 	{
-	  struct cgraph_edge *edge = id->dst_node->get_edge (gsi_stmt (si));
+	  struct cgraph_edge *edge = id->dst_node->get_edge (stmt);
 	  if (edge)
-	    edge->redirect_call_stmt_to_callee ();
+	    {
+	      edge->redirect_call_stmt_to_callee ();
+	      if (stmt == last && id->call_stmt && maybe_clean_eh_stmt (stmt))
+		gimple_purge_dead_eh_edges (bb);
+	    }
 	}
     }
 }

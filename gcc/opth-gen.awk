@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2014 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2015 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -488,7 +488,7 @@ print "  OPT_SPECIAL_program_name,"
 print "  OPT_SPECIAL_input_file"
 print "};"
 print ""
-print "#ifdef GCC_C_COMMON_H"
+print "#ifdef GCC_C_COMMON_C"
 print "/* Mapping from cpp message reasons to the options that enable them.  */"
 print "#include <cpplib.h>"
 print "struct cpp_reason_option_codes_t"

@@ -1,5 +1,5 @@
 /* Generate code from to output assembler insns as recognized from rtl.
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright (C) 1987-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -229,6 +229,15 @@ output_prologue (void)
   printf ("#include \"tm.h\"\n");
   printf ("#include \"flags.h\"\n");
   printf ("#include \"ggc.h\"\n");
+  printf ("#include \"hash-set.h\"\n");
+  printf ("#include \"machmode.h\"\n");
+  printf ("#include \"vec.h\"\n");
+  printf ("#include \"double-int.h\"\n");
+  printf ("#include \"input.h\"\n");
+  printf ("#include \"alias.h\"\n");
+  printf ("#include \"symtab.h\"\n");
+  printf ("#include \"wide-int.h\"\n");
+  printf ("#include \"inchash.h\"\n");
   printf ("#include \"tree.h\"\n");
   printf ("#include \"varasm.h\"\n");
   printf ("#include \"stor-layout.h\"\n");

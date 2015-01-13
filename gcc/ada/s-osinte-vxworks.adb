@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---         Copyright (C) 1997-2011, Free Software Foundation, Inc.          --
+--         Copyright (C) 1997-2014, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,32 +44,6 @@ package body System.OS_Interface is
 
    Low_Priority : constant := 255;
    --  VxWorks native (default) lowest scheduling priority
-
-   -------------
-   -- sigwait --
-   -------------
-
-   function sigwait
-     (set : access sigset_t;
-      sig : access Signal) return int
-   is
-      Result : int;
-
-      function sigwaitinfo
-        (set : access sigset_t; sigvalue : System.Address) return int;
-      pragma Import (C, sigwaitinfo, "sigwaitinfo");
-
-   begin
-      Result := sigwaitinfo (set, System.Null_Address);
-
-      if Result /= -1 then
-         sig.all := Signal (Result);
-         return OK;
-      else
-         sig.all := 0;
-         return errno;
-      end if;
-   end sigwait;
 
    -----------------
    -- To_Duration --

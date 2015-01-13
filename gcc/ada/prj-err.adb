@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -72,6 +72,12 @@ package body Prj.Err is
       Real_Location : Source_Ptr := Location;
 
    begin
+      --  Don't post message if incompleted with's (avoid junk cascaded errors)
+
+      if Flags.Incomplete_Withs then
+         return;
+      end if;
+
       --  Display the error message in the traces so that it appears in the
       --  correct location in the traces (otherwise error messages are only
       --  displayed at the end and it is difficult to see when they were

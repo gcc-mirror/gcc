@@ -1,5 +1,5 @@
 /* Loop invariant motion.
-   Copyright (C) 2003-2014 Free Software Foundation, Inc.
+   Copyright (C) 2003-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,13 +21,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "tree.h"
-#include "tm_p.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
 #include "hash-set.h"
 #include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "fold-const.h"
+#include "tm_p.h"
+#include "predict.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -1236,7 +1242,11 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
 	  && (!ALWAYS_EXECUTED_IN (bb)
 	      || (ALWAYS_EXECUTED_IN (bb) != level
 		  && !flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))
-	SSA_NAME_RANGE_INFO (gimple_assign_lhs (new_stmt)) = NULL;
+	{
+	  tree lhs = gimple_assign_lhs (new_stmt);
+	  SSA_NAME_RANGE_INFO (lhs) = NULL;
+	  SSA_NAME_ANTI_RANGE_P (lhs) = 0;
+	}
       gsi_insert_on_edge (loop_preheader_edge (level), new_stmt);
       remove_phi_node (&bsi, false);
     }
@@ -1302,7 +1312,11 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
 	  && (!ALWAYS_EXECUTED_IN (bb)
 	      || !(ALWAYS_EXECUTED_IN (bb) == level
 		   || flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))
-	SSA_NAME_RANGE_INFO (gimple_get_lhs (stmt)) = NULL;
+	{
+	  tree lhs = gimple_get_lhs (stmt);
+	  SSA_NAME_RANGE_INFO (lhs) = NULL;
+	  SSA_NAME_ANTI_RANGE_P (lhs) = 0;
+	}
       /* In case this is a stmt that is not unconditionally executed
          when the target loop header is executed and the stmt may
 	 invoke undefined integer or pointer overflow rewrite it to

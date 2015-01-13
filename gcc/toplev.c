@@ -1,5 +1,5 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright (C) 1987-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,7 +28,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "line-map.h"
 #include "input.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "varasm.h"
 #include "tree-inline.h"
 #include "realmpfr.h"	/* For GMP/MPFR/MPC versions, in print_version.  */
@@ -43,10 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "output.h"
 #include "except.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
 #include "function.h"
 #include "toplev.h"
 #include "expr.h"
@@ -111,6 +117,13 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
 				   declarations for e.g. AIX 4.x.  */
+#endif
+
+#ifndef HAVE_epilogue
+#define HAVE_epilogue 0
+#endif
+#ifndef HAVE_prologue
+#define HAVE_prologue 0
 #endif
 
 #include <new>
@@ -1634,6 +1647,11 @@ process_options (void)
   /* Save the current optimization options.  */
   optimization_default_node = build_optimization_node (&global_options);
   optimization_current_node = optimization_default_node;
+
+ /* Disable use caller save optimization if profiler is active or port
+    does not emit prologue and epilogue as RTL.  */
+  if (profile_flag || !HAVE_prologue || !HAVE_epilogue)
+    flag_ipa_ra = 0;
 }
 
 /* This function can be called multiple times to reinitialize the compiler

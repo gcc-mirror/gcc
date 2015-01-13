@@ -1,5 +1,5 @@
 ;;- Machine description for Renesas / SuperH SH.
-;;  Copyright (C) 1993-2014 Free Software Foundation, Inc.
+;;  Copyright (C) 1993-2015 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -2061,9 +2061,11 @@
 ;; The problem is that LRA expects something like
 ;;    (set rA (plus rB (const_int N)))
 ;; to work.  We can do that, but we have to split out an additional reg-reg
-;; copy before the actual add insn.
+;; copy or constant load before the actual add insn.
+;; Use u constraint for that case to avoid the invalid value in the stack
+;; pointer.
 (define_insn_and_split "*addsi3_compact"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r,&r")
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,&u")
 	(plus:SI (match_operand:SI 1 "arith_operand" "%0,r")
 		 (match_operand:SI 2 "arith_or_int_operand" "rI08,rn")))]
   "TARGET_SH1
@@ -2077,7 +2079,11 @@
    && ! reg_overlap_mentioned_p (operands[0], operands[1])"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 1)))]
-  ""
+{
+  /* Prefer 'mov r0,r1; add #imm8,r1' over 'mov #imm8,r1; add r0,r1'  */
+  if (satisfies_constraint_I08 (operands[2]))
+    std::swap (operands[1], operands[2]);
+}
   [(set_attr "type" "arith")])
 
 ;; -------------------------------------------------------------------------
@@ -7253,8 +7259,7 @@ label:
       gcc_unreachable ();
     }
 
-  if (regno == -1
-      || ! refers_to_regno_p (regno, regno + 1, operands[1], 0))
+  if (regno == -1 || ! refers_to_regno_p (regno, operands[1]))
     {
       operands[2] = operand_subword (operands[0], 0, 0, DImode);
       operands[3] = operand_subword (operands[1], 0, 0, DImode);
@@ -7787,8 +7792,7 @@ label:
 	  alter_subreg (&word0, true);
 	  word1 = gen_rtx_SUBREG (SImode, regop, 4);
 	  alter_subreg (&word1, true);
-	  if (store_p || ! refers_to_regno_p (REGNO (word0),
-					      REGNO (word0) + 1, addr, 0))
+	  if (store_p || ! refers_to_regno_p (REGNO (word0), addr))
 	    {
 	      emit_insn (store_p
 			 ? gen_movsi_ie (mem, word0)
@@ -8067,8 +8071,7 @@ label:
       gcc_unreachable ();
     }
 
-  if (regno == -1
-      || ! refers_to_regno_p (regno, regno + 1, operands[1], 0))
+  if (regno == -1 || ! refers_to_regno_p (regno, operands[1]))
     {
       operands[2] = operand_subword (operands[0], 0, 0, DFmode);
       operands[3] = operand_subword (operands[1], 0, 0, DFmode);

@@ -1,5 +1,5 @@
 /* DDG - Data Dependence Graph implementation.
-   Copyright (C) 2004-2014 Free Software Foundation, Inc.
+   Copyright (C) 2004-2015 Free Software Foundation, Inc.
    Contributed by Ayal Zaks and Mustafa Hagog <zaks,mustafa@il.ibm.com>
 
 This file is part of GCC.
@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cfgloop.h"
 #include "sbitmap.h"
+#include "symtab.h"
 #include "expr.h"
 #include "bitmap.h"
 #include "df.h"

@@ -1,5 +1,5 @@
 /* Internals of libgccjit: implementation of gcc_jit_result
-   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -26,10 +26,10 @@ namespace gcc {
 namespace jit {
 
 /* The result of JIT-compilation.  */
-class result
+class result : public log_user
 {
 public:
-  result(void *dso_handle);
+  result(logger *logger, void *dso_handle, tempdir *tempdir_);
 
   virtual ~result();
 
@@ -38,6 +38,7 @@ public:
 
 private:
   void *m_dso_handle;
+  tempdir *m_tempdir;
 };
 
 } // namespace gcc::jit

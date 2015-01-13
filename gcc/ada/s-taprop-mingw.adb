@@ -1076,8 +1076,10 @@ package body System.Task_Primitives.Operations is
    -------------------
 
    function RT_Resolution return Duration is
+      Ticks_Per_Second : aliased LARGE_INTEGER;
    begin
-      return 0.000_001; --  1 micro-second
+      QueryPerformanceFrequency (Ticks_Per_Second'Access);
+      return Duration (1.0 / Ticks_Per_Second);
    end RT_Resolution;
 
    ----------------

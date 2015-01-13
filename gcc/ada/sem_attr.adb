@@ -288,13 +288,13 @@ package body Sem_Attr is
       --  Check that two attribute arguments are present
 
       procedure Check_Enum_Image;
-      --  If the prefix type is an enumeration type, set all its literals
-      --  as referenced, since the image function could possibly end up
-      --  referencing any of the literals indirectly. Same for Enum_Val.
+      --  If the prefix type of 'Image is an enumeration type, set all its
+      --  literals as referenced, since the image function could possibly end
+      --  up referencing any of the literals indirectly. Same for Enum_Val.
       --  Set the flag only if the reference is in the main code unit. Same
       --  restriction when resolving 'Value; otherwise an improperly set
-      --  reference when analyzing an inlined body will lose a proper warning
-      --  on a useless with_clause.
+      --  reference when analyzing an inlined body will lose a proper
+      --  warning on a useless with_clause.
 
       procedure Check_First_Last_Valid;
       --  Perform all checks for First_Valid and Last_Valid attributes
@@ -2454,8 +2454,8 @@ package body Sem_Attr is
                        and then Attr_Id /= Attribute_Unrestricted_Access
                      then
                         Error_Msg_N
-                          ("in a constraint the current instance can only"
-                             & " be used with an access attribute", N);
+                          ("in a constraint the current instance can only "
+                           & "be used with an access attribute", N);
                      end if;
                   end if;
                end;
@@ -7206,6 +7206,34 @@ package body Sem_Attr is
          return;
       end if;
 
+      --  Attribute 'Img applied to a static enumeration value is static, and
+      --  we will do the folding right here (things get confused if we let this
+      --  case go through the normal circuitry).
+
+      if Attribute_Name (N) = Name_Img
+        and then Is_Entity_Name (P)
+        and then Is_Enumeration_Type (Etype (Entity (P)))
+        and then Is_OK_Static_Expression (P)
+      then
+         declare
+            Lit : constant Entity_Id := Expr_Value_E (P);
+            Str : String_Id;
+
+         begin
+            Start_String;
+            Get_Unqualified_Decoded_Name_String (Chars (Lit));
+            Set_Casing (All_Upper_Case);
+            Store_String_Chars (Name_Buffer (1 .. Name_Len));
+            Str := End_String;
+
+            Rewrite (N, Make_String_Literal (Loc, Strval => Str));
+            Analyze_And_Resolve (N, Standard_String);
+            Set_Is_Static_Expression (N, True);
+         end;
+
+         return;
+      end if;
+
       --  Special processing for cases where the prefix is an object. For
       --  this purpose, a string literal counts as an object (attributes
       --  of string literals can only appear in generated code).
@@ -7369,9 +7397,7 @@ package body Sem_Attr is
 
       --  Second foldable possibility is an array object (RM 4.9(8))
 
-      elsif (Ekind (P_Entity) = E_Variable
-               or else
-             Ekind (P_Entity) = E_Constant)
+      elsif Ekind_In (P_Entity, E_Variable, E_Constant)
         and then Is_Array_Type (Etype (P_Entity))
         and then (not Is_Generic_Type (Etype (P_Entity)))
       then
@@ -7714,21 +7740,21 @@ package body Sem_Attr is
 
       case Id is
 
-         --  Attributes related to Ada 2012 iterators (placeholder ???)
+      --  Attributes related to Ada 2012 iterators (placeholder ???)
 
-         when Attribute_Constant_Indexing    |
-              Attribute_Default_Iterator     |
-              Attribute_Implicit_Dereference |
-              Attribute_Iterator_Element     |
-              Attribute_Iterable             |
-              Attribute_Variable_Indexing    => null;
+      when Attribute_Constant_Indexing    |
+           Attribute_Default_Iterator     |
+           Attribute_Implicit_Dereference |
+           Attribute_Iterator_Element     |
+           Attribute_Iterable             |
+           Attribute_Variable_Indexing    => null;
 
-         --  Internal attributes used to deal with Ada 2012 delayed aspects.
-         --  These were already rejected by the parser. Thus they shouldn't
-         --  appear here.
+      --  Internal attributes used to deal with Ada 2012 delayed aspects.
+      --  These were already rejected by the parser. Thus they shouldn't
+      --  appear here.
 
-         when Internal_Attribute_Id =>
-            raise Program_Error;
+      when Internal_Attribute_Id =>
+         raise Program_Error;
 
       --------------
       -- Adjacent --
@@ -8134,16 +8160,6 @@ package body Sem_Attr is
                Set_Is_Static_Expression (N, False);
             end;
          end if;
-
-      ---------
-      -- Img --
-      ---------
-
-      --  Img is a scalar attribute, but is never static, because it is
-      --  not a static function (having a non-scalar argument (RM 4.9(22))
-
-      when Attribute_Img =>
-         null;
 
       -------------------
       -- Integer_Value --
@@ -9600,7 +9616,8 @@ package body Sem_Attr is
       --  The following attributes can never be folded, and furthermore we
       --  should not even have entered the case statement for any of these.
       --  Note that in some cases, the values have already been folded as
-      --  a result of the processing in Analyze_Attribute.
+      --  a result of the processing in Analyze_Attribute or earlier in
+      --  this procedure.
 
       when Attribute_Abort_Signal                 |
            Attribute_Access                       |
@@ -9627,6 +9644,7 @@ package body Sem_Attr is
            Attribute_External_Tag                 |
            Attribute_Fast_Math                    |
            Attribute_First_Bit                    |
+           Attribute_Img                          |
            Attribute_Input                        |
            Attribute_Last_Bit                     |
            Attribute_Library_Level                |
@@ -9835,8 +9853,38 @@ package body Sem_Attr is
 
          Access_Attribute :
          begin
+            --  Note possible modification if we have a variable
+
             if Is_Variable (P) then
-               Note_Possible_Modification (P, Sure => False);
+               declare
+                  PN : constant Node_Id := Parent (N);
+                  Nm : Node_Id;
+
+                  Note : Boolean := True;
+                  --  Skip this for the case of Unrestricted_Access occuring in
+                  --  the context of a Valid check, since this otherwise leads
+                  --  to a missed warning (the Valid check does not really
+                  --  modify!) If this case, Note will be reset to False.
+
+               begin
+                  if Attr_Id = Attribute_Unrestricted_Access
+                    and then Nkind (PN) = N_Function_Call
+                  then
+                     Nm := Name (PN);
+
+                     if Nkind (Nm) = N_Expanded_Name
+                       and then Chars (Nm) = Name_Valid
+                       and then Nkind (Prefix (Nm)) = N_Identifier
+                       and then Chars (Prefix (Nm)) = Name_Attr_Long_Float
+                     then
+                        Note := False;
+                     end if;
+                  end if;
+
+                  if Note then
+                     Note_Possible_Modification (P, Sure => False);
+                  end if;
+               end;
             end if;
 
             --  The following comes from a query concerning improper use of

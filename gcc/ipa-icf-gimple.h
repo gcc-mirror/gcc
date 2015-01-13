@@ -1,5 +1,5 @@
 /* Interprocedural semantic function equality pass
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014-2015 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -203,7 +203,14 @@ public:
   /* Verifies that tree labels T1 and T2 correspond.  */
   bool compare_tree_ssa_label (tree t1, tree t2);
 
-  /* Function responsible for comparison of handled components T1 and T2.
+  /* Function compare for equality given memory operands T1 and T2.  */
+  bool compare_memory_operand (tree t1, tree t2);
+
+  /* Function compare for equality given trees T1 and T2 which
+     can be either a constant or a declaration type.  */
+  bool compare_cst_or_decl (tree t1, tree t2);
+
+  /* Function responsible for comparison of various operands T1 and T2.
      If these components, from functions FUNC1 and FUNC2, are equal, true
      is returned.  */
   bool compare_operand (tree t1, tree t2);

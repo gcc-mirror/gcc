@@ -1,6 +1,6 @@
 /* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
 
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
 This file is part of GCC.
@@ -23,16 +23,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "stor-layout.h"
 #include "cp-tree.h"
 #include "c-family/c-common.h"
 #include "tree-iterator.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -1350,9 +1355,7 @@ cp_genericize (tree fndecl)
   cp_genericize_tree (&DECL_SAVED_TREE (fndecl));
 
   if (flag_sanitize & SANITIZE_RETURN
-      && current_function_decl != NULL_TREE
-      && !lookup_attribute ("no_sanitize_undefined",
-			    DECL_ATTRIBUTES (current_function_decl)))
+      && do_ubsan_in_current_function ())
     cp_ubsan_maybe_instrument_return (fndecl);
 
   /* Do everything else.  */

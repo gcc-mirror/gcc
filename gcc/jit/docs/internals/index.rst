@@ -31,7 +31,7 @@ the JIT library like this:
   cd build
   ../src/configure \
      --enable-host-shared \
-     --enable-languages=jit \
+     --enable-languages=jit,c++ \
      --disable-bootstrap \
      --enable-checking=release \
      --prefix=$PREFIX
@@ -54,10 +54,19 @@ Here's what those configuration options mean:
   position-independent code, which incurs a slight performance hit,
   but it necessary for a shared library.
 
-.. option:: --enable-languages=jit
+.. option:: --enable-languages=jit,c++
 
   This specifies which frontends to build.  The JIT library looks like
   a frontend to the rest of the code.
+
+  The C++ portion of the JIT test suite requires the C++ frontend to be
+  enabled at configure-time, or you may see errors like this when
+  running the test suite:
+
+  .. code-block:: console
+
+    xgcc: error: /home/david/jit/src/gcc/testsuite/jit.dg/test-quadratic.cc: C++ compiler not installed on this system
+    c++: error trying to exec 'cc1plus': execvp: No such file or directory
 
 .. option:: --disable-bootstrap
 
@@ -116,7 +125,7 @@ and once a test has been compiled, you can debug it directly:
            LD_LIBRARY_PATH=. \
            LIBRARY_PATH=. \
              gdb --args \
-               testsuite/jit/test-factorial.exe
+               testsuite/jit/test-factorial.c.exe
 
 Running under valgrind
 **********************
@@ -152,11 +161,11 @@ For example, the following invocation verbosely runs the testcase
 
   $ less testsuite/jit/jit.sum
   (...other results...)
-  XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.exe.valgrind.txt: definitely lost: 8 bytes in 1 blocks
-  XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.exe.valgrind.txt: unsuppressed errors: 1
+  XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.c.exe.valgrind.txt: definitely lost: 8 bytes in 1 blocks
+  XFAIL: jit.dg/test-sum-of-squares.c: test-sum-of-squares.c.exe.valgrind.txt: unsuppressed errors: 1
   (...other results...)
 
-  $ less testsuite/jit/test-sum-of-squares.exe.valgrind.txt
+  $ less testsuite/jit/test-sum-of-squares.c.exe.valgrind.txt
   (...shows full valgrind report for this test case...)
 
 When running under valgrind, it's best to have configured gcc with
@@ -259,3 +268,12 @@ Here is a high-level summary from ``jit-common.h``:
 .. include:: ../../jit-common.h
   :start-after: This comment is included by the docs.
   :end-before: End of comment for inclusion in the docs.  */
+
+.. _example-of-log-file:
+
+Another way to understand the structure of the code is to enable logging,
+via :c:func:`gcc_jit_context_set_logfile`.  Here is an example of a log
+generated via this call:
+
+.. literalinclude:: test-hello-world.exe.log.txt
+    :lines: 1-

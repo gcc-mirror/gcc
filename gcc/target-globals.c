@@ -1,5 +1,5 @@
 /* Target-dependent globals.
-   Copyright (C) 2010-2014 Free Software Foundation, Inc.
+   Copyright (C) 2010-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,6 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "insn-config.h"
 #include "machmode.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "ggc.h"
 #include "toplev.h"

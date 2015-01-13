@@ -1,5 +1,5 @@
 /* UndefinedBehaviorSanitizer, undefined behavior detector.
-   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -21,6 +21,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "alloc-pool.h"
 #include "hash-map.h"
@@ -364,9 +374,7 @@ void
 ubsan_maybe_instrument_array_ref (tree *expr_p, bool ignore_off_by_one)
 {
   if (!ubsan_array_ref_instrumented_p (*expr_p)
-      && current_function_decl != NULL_TREE
-      && !lookup_attribute ("no_sanitize_undefined",
-			    DECL_ATTRIBUTES (current_function_decl)))
+      && do_ubsan_in_current_function ())
     {
       tree op0 = TREE_OPERAND (*expr_p, 0);
       tree op1 = TREE_OPERAND (*expr_p, 1);
@@ -386,9 +394,7 @@ static tree
 ubsan_maybe_instrument_reference_or_call (location_t loc, tree op, tree ptype,
 					  enum ubsan_null_ckind ckind)
 {
-  if (current_function_decl == NULL_TREE
-      || lookup_attribute ("no_sanitize_undefined",
-			   DECL_ATTRIBUTES (current_function_decl)))
+  if (!do_ubsan_in_current_function ())
     return NULL_TREE;
 
   tree type = TREE_TYPE (ptype);

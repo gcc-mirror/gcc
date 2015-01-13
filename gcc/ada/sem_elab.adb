@@ -1990,10 +1990,21 @@ package body Sem_Elab is
       Inst_Case : constant Boolean := Nkind (N) in N_Generic_Instantiation;
 
    begin
-      --  If not function or procedure call or instantiation, then ignore
-      --  call (this happens in some error cases and rewriting cases).
+      --  For P'Access, we want to warn if the -gnatw.f switch is set, and the
+      --  node comes from source.
 
-      if not Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
+      if Nkind (N) = N_Attribute_Reference and then
+        (not Warn_On_Elab_Access or else not Comes_From_Source (N))
+      then
+         return;
+
+      --  If not function or procedure call, instantiation, or 'Access, then
+      --  ignore call (this happens in some error cases and rewriting cases).
+
+      elsif not Nkind_In
+               (N, N_Function_Call,
+                   N_Procedure_Call_Statement,
+                   N_Attribute_Reference)
         and then not Inst_Case
       then
          return;
@@ -2001,7 +2012,7 @@ package body Sem_Elab is
       --  Nothing to do if this is a call or instantiation that has already
       --  been found to be a sure ABE.
 
-      elsif ABE_Is_Certain (N) then
+      elsif Nkind (N) /= N_Attribute_Reference and then ABE_Is_Certain (N) then
          return;
 
       --  Nothing to do if errors already detected (avoid cascaded errors)
@@ -2323,7 +2334,7 @@ package body Sem_Elab is
       --  Not that special case, warning and dynamic check is required
 
       --  If we have nothing in the call stack, then this is at the outer
-      --  level, and the ABE is bound to occur.
+      --  level, and the ABE is bound to occur, unless it's a 'Access.
 
       if Elab_Call.Last = 0 then
          Error_Msg_Warn := SPARK_Mode /= On;
@@ -2331,13 +2342,19 @@ package body Sem_Elab is
          if Inst_Case then
             Error_Msg_NE
               ("cannot instantiate& before body seen<<", N, Orig_Ent);
-         else
+         elsif Nkind (N) /= N_Attribute_Reference then
             Error_Msg_NE
               ("cannot call& before body seen<<", N, Orig_Ent);
+         else
+            Error_Msg_NE
+              ("Access attribute of & before body seen<<", N, Orig_Ent);
+            Error_Msg_N ("\possible Program_Error on later references<", N);
          end if;
 
-         Error_Msg_N ("\Program_Error [<<", N);
-         Insert_Elab_Check (N);
+         if Nkind (N) /= N_Attribute_Reference then
+            Error_Msg_N ("\Program_Error [<<", N);
+            Insert_Elab_Check (N);
+         end if;
 
       --  Call is not at outer level
 

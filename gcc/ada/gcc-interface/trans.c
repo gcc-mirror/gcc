@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -27,7 +27,18 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "real.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "stmt.h"
@@ -36,16 +47,12 @@
 #include "output.h"
 #include "libfuncs.h"	/* For set_stack_check_libfunc.  */
 #include "tree-iterator.h"
-#include "hash-set.h"
 #include "gimple-expr.h"
 #include "gimplify.h"
 #include "bitmap.h"
 #include "hash-map.h"
 #include "is-a.h"
 #include "plugin-api.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -666,6 +673,10 @@ gigi (Node_Id gnat_root,
 
   /* Initialize the GCC support for FP operations.  */
   gnat_init_gcc_fp ();
+
+  /* Force -fno-strict-aliasing if the configuration pragma was seen.  */
+  if (No_Strict_Aliasing_CP)
+    flag_strict_aliasing = 0;
 
   /* Now translate the compilation unit proper.  */
   Compilation_Unit_to_gnu (gnat_root);
@@ -7128,13 +7139,22 @@ gnat_to_gnu (Node_Id gnat_node)
     /****************/
 
     case N_Expression_With_Actions:
-      /* This construct doesn't define a scope so we don't push a binding level
-	 around the statement list; but we wrap it in a SAVE_EXPR to protect it
-	 from unsharing.  */
-      gnu_result = build_stmt_group (Actions (gnat_node), false);
+      /* This construct doesn't define a scope so we don't push a binding
+	 level around the statement list, but we wrap it in a SAVE_EXPR to
+	 protect it from unsharing.  Elaborate the expression as part of the
+	 same statement group as the actions so that the type declaration
+	 gets inserted there as well.  This ensures that the type elaboration
+	 code is issued past the actions computing values on which it might
+	 depend.  */
+
+      start_stmt_group ();
+      add_stmt_list (Actions (gnat_node));
+      gnu_expr = gnat_to_gnu (Expression (gnat_node));
+      gnu_result = end_stmt_group ();
+
       gnu_result = build1 (SAVE_EXPR, void_type_node, gnu_result);
       TREE_SIDE_EFFECTS (gnu_result) = 1;
-      gnu_expr = gnat_to_gnu (Expression (gnat_node));
+
       gnu_result
 	= build_compound_expr (TREE_TYPE (gnu_expr), gnu_result, gnu_expr);
       gnu_result_type = get_unpadded_type (Etype (gnat_node));

@@ -1,6 +1,6 @@
 /* Offload image generation tool for Intel MIC devices.
 
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014-2015 Free Software Foundation, Inc.
 
    Contributed by Ilya Verbin <ilya.verbin@intel.com>.
 
@@ -191,6 +191,8 @@ compile_for_target (struct obstack *argv_obstack)
 {
   if (target_ilp32)
     obstack_ptr_grow (argv_obstack, "-m32");
+  else
+    obstack_ptr_grow (argv_obstack, "-m64");
   obstack_ptr_grow (argv_obstack, NULL);
   char **argv = XOBFINISH (argv_obstack, char **);
 
@@ -355,6 +357,8 @@ generate_host_descr_file (const char *host_compiler)
   new_argv[new_argc++] = "-shared";
   if (target_ilp32)
     new_argv[new_argc++] = "-m32";
+  else
+    new_argv[new_argc++] = "-m64";
   new_argv[new_argc++] = src_filename;
   new_argv[new_argc++] = "-o";
   new_argv[new_argc++] = obj_filename;
@@ -386,7 +390,6 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, target_compiler);
   obstack_ptr_grow (&argv_obstack, "-xlto");
-  obstack_ptr_grow (&argv_obstack, "-fopenmp");
   obstack_ptr_grow (&argv_obstack, "-shared");
   obstack_ptr_grow (&argv_obstack, "-fPIC");
   obstack_ptr_grow (&argv_obstack, opt1);
@@ -511,11 +514,11 @@ main (int argc, char **argv)
   unsigned new_argc = 0;
   const char *new_argv[9];
   new_argv[new_argc++] = "ld";
+  new_argv[new_argc++] = "-m";
   if (target_ilp32)
-    {
-      new_argv[new_argc++] = "-m";
-      new_argv[new_argc++] = "elf_i386";
-    }
+    new_argv[new_argc++] = "elf_i386";
+  else
+    new_argv[new_argc++] = "elf_x86_64";
   new_argv[new_argc++] = "--relocatable";
   new_argv[new_argc++] = host_descr_filename;
   new_argv[new_argc++] = target_so_filename;

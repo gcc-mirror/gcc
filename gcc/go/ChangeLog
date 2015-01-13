@@ -1,7 +1,37 @@
+2015-01-09  Ian Lance Taylor  <iant@google.com>
+
+	* config-lang.in (lang_dirs): Define.
+
+2015-01-09  Michael Collison  <michael.collison@linaro.org>
+
+	* go-gcc.cc: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* go-lang.c: Ditto.
+	* go-backend.c: Ditto.
+
+2015-01-07  Chris Manghane  <cmang@google.com>
+
+	PR go/61204
+	* go-gcc.cc (Gcc_backend::temporary_variable): Don't initialize
+	zero-sized variable.
+
+2015-01-06  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::constructor_expression): Don't
+	initialize zero-sized fields, just evaluate the values for side
+	effects.
+
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* gccgo.texi: Bump @copyrights-go year.
+
 2014-12-19  Chris Manghane  <cmang@google.com>
 
-	* go-gcc.cc (array_constructor_expression): Don't construct arrays
-	of zero-sized values.
+	* go-gcc.cc (Gcc_backend::array_constructor_expression): Don't
+	construct arrays of zero-sized values.
 
 2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
@@ -955,7 +985,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2014 Free Software Foundation, Inc.
+Copyright (C) 2010-2015 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

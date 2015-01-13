@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Windows NT.
    Contributed by Douglas Rupp (drupp@cs.washington.edu)
-   Copyright (C) 1995-2014 Free Software Foundation, Inc.
+   Copyright (C) 1995-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,7 +26,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "output.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stringpool.h"
 #include "varasm.h"
 #include "flags.h"
@@ -40,9 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "vec.h"
 #include "predict.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "dominance.h"

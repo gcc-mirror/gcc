@@ -1658,7 +1658,7 @@ begin
       --  Here we make the SCO table entries for the main unit
 
       if Generate_SCO then
-         SCO_Record (Main_Unit);
+         SCO_Record_Raw (Main_Unit);
       end if;
 
       --  Remaining steps are to create implicit label declarations and to load

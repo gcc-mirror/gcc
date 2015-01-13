@@ -140,7 +140,7 @@ host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktr
 # binutils, gas and ld appear in that order because it makes sense to run
 # "make check" in that particular order.
 # If --enable-gold is used, "gold" may replace "ld".
-host_tools="texinfo flex bison binutils gas ld fixincludes gcc cgen sid sim gdb gprof etc expect dejagnu m4 utils guile fastjar gnattools libcc1"
+host_tools="texinfo flex bison binutils gas ld fixincludes gcc cgen sid sim gdb gprof etc expect dejagnu m4 utils guile fastjar gnattools libcc1 gotools"
 
 # libgcj represents the runtime libraries only used by gcj.
 libgcj="target-libffi \
@@ -677,6 +677,10 @@ case "${target}" in
     # for explicit misaligned loads.
     noconfigdirs="$noconfigdirs target-libssp"
     ;;
+  visium-*-*)
+    # No hosted I/O support.
+    noconfigdirs="$noconfigdirs target-libssp"
+    ;;
 esac
 
 # Disable libstdc++-v3 for some systems.
@@ -787,6 +791,9 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   alpha*-*-*vms*)
+    noconfigdirs="$noconfigdirs ${libgcj}"
+    ;;
+  arm*-*-freebsd*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   arm-wince-pe)

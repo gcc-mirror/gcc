@@ -1,5 +1,5 @@
 /* Output routines for GCC for Renesas / SuperH SH.
-   Copyright (C) 1993-2014 Free Software Foundation, Inc.
+   Copyright (C) 1993-2015 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -28,7 +28,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "insn-config.h"
 #include "rtl.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "calls.h"
@@ -38,10 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-codes.h"
 #include "optabs.h"
 #include "reload.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -1773,7 +1779,7 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	 reload will fail to find a spill register for rX, since r0 is already
 	 being used for the source.  */
       else if (TARGET_SH1
-	       && refers_to_regno_p (R0_REG, R0_REG + 1, operands[1], (rtx *)0)
+	       && refers_to_regno_p (R0_REG, operands[1])
 	       && MEM_P (operands[0])
 	       && GET_CODE (XEXP (operands[0], 0)) == PLUS
 	       && REG_P (XEXP (XEXP (operands[0], 0), 1)))
@@ -7808,8 +7814,7 @@ sh_expand_prologue (void)
 		{
 		  offset_in_r0 = -1;
 		  sp_in_r0 = 0;
-		  gcc_assert (!refers_to_regno_p
-			      (R0_REG, R0_REG+1, mem_rtx, (rtx *) 0));
+		  gcc_assert (!refers_to_regno_p (R0_REG, mem_rtx));
 		}
 
 	      if (*++tmp_pnt <= 0)

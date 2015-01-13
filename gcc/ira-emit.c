@@ -1,5 +1,5 @@
 /* Integrated Register Allocator.  Changing code and generating moves.
-   Copyright (C) 2006-2014 Free Software Foundation, Inc.
+   Copyright (C) 2006-2015 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -89,6 +89,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgrtl.h"
 #include "cfgbuild.h"
 #include "basic-block.h"
+#include "symtab.h"
 #include "expr.h"
 #include "recog.h"
 #include "params.h"

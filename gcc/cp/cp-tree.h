@@ -1,5 +1,5 @@
 /* Definitions for C++ parsing and type checking.
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright (C) 1987-2015 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -5574,7 +5574,6 @@ extern tree get_nsdmi				(tree, bool);
 extern tree build_offset_ref			(tree, tree, bool,
 						 tsubst_flags_t);
 extern tree throw_bad_array_new_length		(void);
-extern tree throw_bad_array_length		(void);
 extern tree build_new				(vec<tree, va_gc> **, tree, tree,
 						 vec<tree, va_gc> **, int,
                                                  tsubst_flags_t);

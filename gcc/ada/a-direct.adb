@@ -490,18 +490,33 @@ package body Ada.Directories is
 
                --  No need to create the directory if it already exists
 
-               if Is_Directory (New_Dir (1 .. Last)) then
-                  null;
+               if not Is_Directory (New_Dir (1 .. Last)) then
+                  begin
+                     Create_Directory
+                       (New_Directory => New_Dir (1 .. Last), Form => Form);
 
-               --  It is an error if a file with such a name already exists
+                  exception
+                     when Use_Error =>
+                        if File_Exists (New_Dir (1 .. Last)) then
 
-               elsif Is_Regular_File (New_Dir (1 .. Last)) then
-                  raise Use_Error with
-                    "file """ & New_Dir (1 .. Last) & """ already exists";
+                           --  A file with such a name already exists. If it is
+                           --  a directory, then it was apparently just created
+                           --  by another process or thread, and all is well.
+                           --  If it is of some other kind, report an error.
 
-               else
-                  Create_Directory
-                    (New_Directory => New_Dir (1 .. Last), Form => Form);
+                           if not Is_Directory (New_Dir (1 .. Last)) then
+                              raise Use_Error with
+                                "file """ & New_Dir (1 .. Last) &
+                                  """ already exists and is not a directory";
+                           end if;
+
+                        else
+                           --  Create_Directory failed for some other reason:
+                           --  propagate the exception.
+
+                           raise;
+                        end if;
+                  end;
                end if;
             end if;
          end loop;

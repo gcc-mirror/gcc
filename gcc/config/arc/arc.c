@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2014 Free Software Foundation, Inc.
+   Copyright (C) 1994-2015 Free Software Foundation, Inc.
 
    Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
    behalf of Synopsys Inc.
@@ -32,7 +32,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "varasm.h"
 #include "stor-layout.h"
 #include "stringpool.h"
@@ -9059,7 +9069,7 @@ arc_regno_use_in (unsigned int regno, rtx x)
   int i, j;
   rtx tem;
 
-  if (REG_P (x) && refers_to_regno_p (regno, regno+1, x, (rtx *) 0))
+  if (REG_P (x) && refers_to_regno_p (regno, x))
     return x;
 
   fmt = GET_RTX_FORMAT (GET_CODE (x));

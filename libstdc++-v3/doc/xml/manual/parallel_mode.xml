@@ -106,7 +106,9 @@ It might work with other compilers, though.</para>
   not difficult: just compile your application with the compiler
   flag <literal>-fopenmp</literal>. This will link
   in <code>libgomp</code>, the
-  OpenMP <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libgomp/">GNU implementation</link>,
+  <link xmlns:xlink="http://www.w3.org/1999/xlink"
+    xlink:href="http://gcc.gnu.org/onlinedocs/libgomp/">GNU Offloading and
+    Multi Processing Runtime Library</link>,
   whose presence is mandatory.
 </para>
 

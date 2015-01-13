@@ -1,6 +1,6 @@
 /* LTO IL options.
 
-   Copyright (C) 2009-2014 Free Software Foundation, Inc.
+   Copyright (C) 2009-2015 Free Software Foundation, Inc.
    Contributed by Simon Baldwin <simonb@google.com>
 
 This file is part of GCC.
@@ -22,12 +22,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tree.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
 #include "hash-set.h"
 #include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "fold-const.h"
+#include "predict.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "input.h"
@@ -160,7 +167,7 @@ lto_write_options (void)
 			       "-fno-strict-overflow");
 
   /* Append options from target hook and store them to offload_lto section.  */
-  if (strcmp (section_name_prefix, OFFLOAD_SECTION_NAME_PREFIX) == 0)
+  if (lto_stream_offload_p)
     {
       char *offload_opts = targetm.offload_options ();
       char *offload_ptr = offload_opts;
@@ -201,7 +208,7 @@ lto_write_options (void)
 
       /* Do not store target-specific options in offload_lto section.  */
       if ((cl_options[option->opt_index].flags & CL_TARGET)
-	 && strcmp (section_name_prefix, OFFLOAD_SECTION_NAME_PREFIX) == 0)
+	  && lto_stream_offload_p)
        continue;
 
       /* Drop options created from the gcc driver that will be rejected
@@ -214,8 +221,7 @@ lto_write_options (void)
 	 We do not need those.  The only exception is -foffload option, if we
 	 write it in offload_lto section.  Also drop all diagnostic options.  */
       if ((cl_options[option->opt_index].flags & (CL_DRIVER|CL_WARNING))
-	  && (strcmp (section_name_prefix, OFFLOAD_SECTION_NAME_PREFIX) != 0
-	      || option->opt_index != OPT_foffload_))
+	  && (!lto_stream_offload_p || option->opt_index != OPT_foffload_))
 	continue;
 
       for (j = 0; j < option->canonical_option_num_elements; ++j)

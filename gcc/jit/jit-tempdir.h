@@ -1,5 +1,5 @@
 /* Managing temporary directories and their content within libgccjit.so
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014-2015 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef JIT_TEMPDIR_H
 #define JIT_TEMPDIR_H
+
+#include "jit-logging.h"
 
 namespace gcc {
 
@@ -43,10 +45,10 @@ namespace jit {
   It is normally deleted from the filesystem in the playback::context's
   dtor, unless GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES was set.  */
 
-class tempdir
+class tempdir : public log_user
 {
  public:
-  tempdir (int keep_intermediates);
+  tempdir (logger *logger, int keep_intermediates);
   ~tempdir ();
 
   bool create ();

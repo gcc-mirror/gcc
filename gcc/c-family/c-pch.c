@@ -1,5 +1,5 @@
 /* Precompiled header implementation for the C languages.
-   Copyright (C) 2000-2014 Free Software Foundation, Inc.
+   Copyright (C) 2000-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,6 +22,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "version.h"
 #include "cpplib.h"
+#include "options.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "flags.h"
 #include "c-common.h"

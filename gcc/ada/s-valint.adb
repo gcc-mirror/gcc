@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,12 +89,30 @@ package body System.Val_Int is
    -------------------
 
    function Value_Integer (Str : String) return Integer is
-      V : Integer;
-      P : aliased Integer := Str'First;
    begin
-      V := Scan_Integer (Str, P'Access, Str'Last);
-      Scan_Trailing_Blanks (Str, P);
-      return V;
+      --  We have to special case Str'Last = Positive'Last because the normal
+      --  circuit ends up setting P to Str'Last + 1 which is out of bounds. We
+      --  deal with this by converting to a subtype which fixes the bounds.
+
+      if Str'Last = Positive'Last then
+         declare
+            subtype NT is String (1 .. Str'Length);
+         begin
+            return Value_Integer (NT (Str));
+         end;
+
+      --  Normal case where Str'Last < Positive'Last
+
+      else
+         declare
+            V : Integer;
+            P : aliased Integer := Str'First;
+         begin
+            V := Scan_Integer (Str, P'Access, Str'Last);
+            Scan_Trailing_Blanks (Str, P);
+            return V;
+         end;
+      end if;
    end Value_Integer;
 
 end System.Val_Int;

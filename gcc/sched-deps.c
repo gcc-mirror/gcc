@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.  This file computes dependencies between
    instructions.
-   Copyright (C) 1992-2014 Free Software Foundation, Inc.
+   Copyright (C) 1992-2015 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -26,14 +26,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "diagnostic-core.h"
 #include "rtl.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"		/* FIXME: Used by call_may_noreturn_p.  */
 #include "tm_p.h"
 #include "hard-reg-set.h"
 #include "regs.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "flags.h"
@@ -3174,7 +3179,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 		{
 		  rtx other = XEXP (list, 0);
 		  if (INSN_CACHED_COND (other) != const_true_rtx
-		      && refers_to_regno_p (i, i + 1, INSN_CACHED_COND (other), NULL))
+		      && refers_to_regno_p (i, INSN_CACHED_COND (other)))
 		    INSN_CACHED_COND (other) = const_true_rtx;
 		}
 	    }

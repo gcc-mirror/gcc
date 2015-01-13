@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2014 Free Software Foundation, Inc.
+   Copyright (C) 2001-2015 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -12424,9 +12424,11 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	{
 	  gfc_symbol *ifc = c->ts.interface;
 
-	  if (!sym->attr.vtype
-	      && !check_proc_interface (ifc, &c->loc))
-	    return false;
+	  if (!sym->attr.vtype && !check_proc_interface (ifc, &c->loc))
+	    {
+	      c->tb->error = 1;
+	      return false;
+	    }
 
 	  if (ifc->attr.if_source || ifc->attr.intrinsic)
 	    {

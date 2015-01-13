@@ -1,5 +1,5 @@
 /* Decompose multiword subregs.
-   Copyright (C) 2007-2014 Free Software Foundation, Inc.
+   Copyright (C) 2007-2015 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
 		  Ian Lance Taylor <iant@google.com>
 
@@ -24,6 +24,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "machmode.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "rtl.h"
 #include "tm_p.h"
@@ -31,9 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "obstack.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"

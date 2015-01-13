@@ -40,6 +40,7 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Inline;   use Inline;
 with Itypes;   use Itypes;
 with Lib.Xref; use Lib.Xref;
@@ -213,6 +214,12 @@ package body Sem_Ch6 is
       Scop       : constant Entity_Id := Current_Scope;
 
    begin
+      --  The abstract subprogram declaration may be subject to pragma Ghost
+      --  with policy Ignore. Set the mode now to ensure that any nodes
+      --  generated during analysis and expansion are properly flagged as
+      --  ignored Ghost.
+
+      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("abstract subprogram is not allowed", N);
 
       Generate_Definition (Designator);
@@ -223,10 +230,10 @@ package body Sem_Ch6 is
 
       Set_Categorization_From_Scope (Designator, Scop);
 
-      --  An abstract subprogram declared within a Ghost scope is automatically
+      --  An abstract subprogram declared within a Ghost region is rendered
       --  Ghost (SPARK RM 6.9(2)).
 
-      if Comes_From_Source (Designator) and then Within_Ghost_Scope then
+      if Comes_From_Source (Designator) and then Ghost_Mode > None then
          Set_Is_Ghost_Entity (Designator);
       end if;
 
@@ -321,7 +328,8 @@ package body Sem_Ch6 is
       --  check whether any of them is completed by the expression function.
       --  In a generic context a formal subprogram has no completion.
 
-      if Present (Prev) and then Is_Overloadable (Prev)
+      if Present (Prev)
+        and then Is_Overloadable (Prev)
         and then not Is_Formal_Subprogram (Prev)
       then
          Def_Id := Analyze_Subprogram_Specification (Spec);
@@ -380,7 +388,8 @@ package body Sem_Ch6 is
       --  scope. The entity itself may be internally created if within a body
       --  to be inlined.
 
-      elsif Present (Prev) and then Comes_From_Source (Parent (Prev))
+      elsif Present (Prev)
+        and then Comes_From_Source (Parent (Prev))
         and then not Is_Formal_Subprogram (Prev)
       then
          Set_Has_Completion (Prev, False);
@@ -1255,7 +1264,7 @@ package body Sem_Ch6 is
          --  property is not directly inherited as the body may be subject
          --  to a different Ghost assertion policy.
 
-         if Is_Ghost_Entity (Gen_Id) or else Within_Ghost_Scope then
+         if Is_Ghost_Entity (Gen_Id) or else Ghost_Mode > None then
             Set_Is_Ghost_Entity (Body_Id);
 
             --  The Ghost policy in effect at the point of declaration and at
@@ -1603,6 +1612,13 @@ package body Sem_Ch6 is
          Set_Etype (N, Any_Type);
          return;
       end if;
+
+      --  The name of the procedure call may reference an entity subject to
+      --  pragma Ghost with policy Ignore. Set the mode now to ensure that any
+      --  nodes generated during analysis and expansion are properly flagged as
+      --  ignored Ghost.
+
+      Set_Ghost_Mode (N);
 
       --  Otherwise analyze the parameters
 
@@ -2043,7 +2059,7 @@ package body Sem_Ch6 is
 
             elsif Ekind (Typ) = E_Incomplete_Type
               or else (Is_Class_Wide_Type (Typ)
-                         and then Ekind (Root_Type (Typ)) = E_Incomplete_Type)
+                        and then Ekind (Root_Type (Typ)) = E_Incomplete_Type)
             then
                --  AI05-0151: Tagged incomplete types are allowed in all formal
                --  parts. Untagged incomplete types are not allowed in bodies.
@@ -2076,6 +2092,14 @@ package body Sem_Ch6 is
                         Result_Definition (N));
 
                   elsif Is_Tagged_Type (Typ) then
+                     null;
+
+                  --  Use is legal in a thunk generated for an operation
+                  --  inherited from a progenitor.
+
+                  elsif Is_Thunk (Designator)
+                    and then Present (Non_Limited_View (Typ))
+                  then
                      null;
 
                   elsif Nkind (Parent (N)) = N_Subprogram_Body
@@ -2556,13 +2580,13 @@ package body Sem_Ch6 is
             --  a null access (see Expand_Interface_Conversion)
 
            and then not (Is_Interface (Designated_Type (Etype (Scop)))
-                           and then not Comes_From_Source (Parent (Scop)))
+                          and then not Comes_From_Source (Parent (Scop)))
 
            and then (Has_Task (Designated_Type (Etype (Scop)))
                       or else
-                       (Is_Class_Wide_Type (Designated_Type (Etype (Scop)))
-                          and then
-                        Is_Limited_Record (Designated_Type (Etype (Scop)))))
+                        (Is_Class_Wide_Type (Designated_Type (Etype (Scop)))
+                           and then
+                         Is_Limited_Record (Designated_Type (Etype (Scop)))))
            and then Expander_Active
 
            --  Avoid cases with no tasking support
@@ -2633,9 +2657,8 @@ package body Sem_Ch6 is
               Nkind (N) = N_Pragma
                 and then
                   (Pragma_Name (N) = Name_Inline_Always
-                    or else
-                      (Front_End_Inlining
-                        and then Pragma_Name (N) = Name_Inline))
+                    or else (Front_End_Inlining
+                              and then Pragma_Name (N) = Name_Inline))
                 and then
                   Chars
                     (Expression (First (Pragma_Argument_Associations (N)))) =
@@ -2822,8 +2845,9 @@ package body Sem_Ch6 is
                if To_Corresponding then
                   if Is_Concurrent_Type (Formal_Typ)
                     and then Present (Corresponding_Record_Type (Formal_Typ))
-                    and then Present (Interfaces (
-                               Corresponding_Record_Type (Formal_Typ)))
+                    and then
+                      Present (Interfaces
+                                 (Corresponding_Record_Type (Formal_Typ)))
                   then
                      Set_Etype (Formal,
                        Corresponding_Record_Type (Formal_Typ));
@@ -3018,7 +3042,7 @@ package body Sem_Ch6 is
       begin
          if Must_Override (Body_Spec) then
             if Nkind (Spec_Id) = N_Defining_Operator_Symbol
-              and then  Operator_Matches_Spec (Spec_Id, Spec_Id)
+              and then Operator_Matches_Spec (Spec_Id, Spec_Id)
             then
                null;
 
@@ -3044,7 +3068,7 @@ package body Sem_Ch6 is
                   Body_Spec, Spec_Id);
 
             elsif Nkind (Spec_Id) = N_Defining_Operator_Symbol
-              and then  Operator_Matches_Spec (Spec_Id, Spec_Id)
+              and then Operator_Matches_Spec (Spec_Id, Spec_Id)
             then
                Error_Msg_NE
                  ("subprogram& overrides predefined operator ",
@@ -3111,6 +3135,13 @@ package body Sem_Ch6 is
       then
          if Is_Generic_Subprogram (Prev_Id) then
             Spec_Id := Prev_Id;
+
+            --  The corresponding spec may be subject to pragma Ghost with
+            --  policy Ignore. Set the mode now to ensure that any nodes
+            --  generated during analysis and expansion are properly flagged
+            --  as ignored Ghost.
+
+            Set_Ghost_Mode          (N, Spec_Id);
             Set_Is_Compilation_Unit (Body_Id, Is_Compilation_Unit (Spec_Id));
             Set_Is_Child_Unit       (Body_Id, Is_Child_Unit       (Spec_Id));
 
@@ -3148,8 +3179,23 @@ package body Sem_Ch6 is
          then
             if Is_Private_Concurrent_Primitive (Body_Id) then
                Spec_Id := Disambiguate_Spec;
+
+               --  The corresponding spec may be subject to pragma Ghost with
+               --  policy Ignore. Set the mode now to ensure that any nodes
+               --  generated during analysis and expansion are properly flagged
+               --  as ignored Ghost.
+
+               Set_Ghost_Mode (N, Spec_Id);
+
             else
                Spec_Id := Find_Corresponding_Spec (N);
+
+               --  The corresponding spec may be subject to pragma Ghost with
+               --  policy Ignore. Set the mode now to ensure that any nodes
+               --  generated during analysis and expansion are properly flagged
+               --  as ignored Ghost.
+
+               Set_Ghost_Mode (N, Spec_Id);
 
                --  In GNATprove mode, if the body has no previous spec, create
                --  one so that the inlining machinery can operate properly.
@@ -3292,6 +3338,13 @@ package body Sem_Ch6 is
 
          else
             Spec_Id := Corresponding_Spec (N);
+
+            --  The corresponding spec may be subject to pragma Ghost with
+            --  policy Ignore. Set the mode now to ensure that any nodes
+            --  generated during analysis and expansion are properly flagged
+            --  as ignored Ghost.
+
+            Set_Ghost_Mode (N, Spec_Id);
          end if;
       end if;
 
@@ -3385,7 +3438,7 @@ package body Sem_Ch6 is
             --  property is not directly inherited as the body may be subject
             --  to a different Ghost assertion policy.
 
-            if Is_Ghost_Entity (Spec_Id) or else Within_Ghost_Scope then
+            if Is_Ghost_Entity (Spec_Id) or else Ghost_Mode > None then
                Set_Is_Ghost_Entity (Body_Id);
 
                --  The Ghost policy in effect at the point of declaration and
@@ -3407,7 +3460,7 @@ package body Sem_Ch6 is
               and then not Comes_From_Source (N)
               and then
                 (Nkind (Original_Node (Spec_Decl)) =
-                                        N_Subprogram_Renaming_Declaration
+                                          N_Subprogram_Renaming_Declaration
                   or else (Present (Corresponding_Body (Spec_Decl))
                             and then
                               Nkind (Unit_Declaration_Node
@@ -3948,8 +4001,17 @@ package body Sem_Ch6 is
          --  Case where there are no spec entities, in this case there can be
          --  no body entities either, so just move everything.
 
+         --  If the body is generated for an expression function, it may have
+         --  been preanalyzed already, if 'access was applied to it.
+
          else
-            pragma Assert (No (Last_Entity (Body_Id)));
+            if Nkind (Original_Node (Unit_Declaration_Node (Spec_Id))) /=
+                                                       N_Expression_Function
+            then
+               pragma Assert (No (Last_Entity (Body_Id)));
+               null;
+            end if;
+
             Set_First_Entity (Body_Id, First_Entity (Spec_Id));
             Set_Last_Entity  (Body_Id, Last_Entity (Spec_Id));
             Set_First_Entity (Spec_Id, Empty);
@@ -4250,6 +4312,12 @@ package body Sem_Ch6 is
       --  Indicates whether a null procedure declaration is a completion
 
    begin
+      --  The subprogram declaration may be subject to pragma Ghost with policy
+      --  Ignore. Set the mode now to ensure that any nodes generated during
+      --  analysis and expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
       --  Null procedures are not allowed in SPARK
 
       if Nkind (Specification (N)) = N_Procedure_Specification
@@ -4283,12 +4351,12 @@ package body Sem_Ch6 is
       --  explicit pragma).
 
       Set_SPARK_Pragma (Designator, SPARK_Mode_Pragma);
-      Set_SPARK_Pragma_Inherited (Designator, True);
+      Set_SPARK_Pragma_Inherited (Designator);
 
-      --  A subprogram declared within a Ghost scope is automatically Ghost
+      --  A subprogram declared within a Ghost region is automatically Ghost
       --  (SPARK RM 6.9(2)).
 
-      if Comes_From_Source (Designator) and then Within_Ghost_Scope then
+      if Comes_From_Source (Designator) and then Ghost_Mode > None then
          Set_Is_Ghost_Entity (Designator);
       end if;
 
@@ -4962,19 +5030,19 @@ package body Sem_Ch6 is
            --  F_Ptr. We catch this case in the code below.
 
            and then (Ekind (Old_Formal_Base) = Ekind (New_Formal_Base)
-                  or else
-                    (Is_Generic_Type (Old_Formal_Base)
-                       and then Is_Generic_Type (New_Formal_Base)
-                       and then Is_Internal (New_Formal_Base)
-                       and then Etype (Etype (New_Formal_Base)) =
-                                  Old_Formal_Base))
-           and then Directly_Designated_Type (Old_Formal_Base) =
-                    Directly_Designated_Type (New_Formal_Base)
+                      or else
+                        (Is_Generic_Type (Old_Formal_Base)
+                          and then Is_Generic_Type (New_Formal_Base)
+                          and then Is_Internal (New_Formal_Base)
+                          and then Etype (Etype (New_Formal_Base)) =
+                                                          Old_Formal_Base))
+               and then Directly_Designated_Type (Old_Formal_Base) =
+                                    Directly_Designated_Type (New_Formal_Base)
            and then ((Is_Itype (Old_Formal_Base)
                        and then Can_Never_Be_Null (Old_Formal_Base))
-                    or else
-                     (Is_Itype (New_Formal_Base)
-                       and then Can_Never_Be_Null (New_Formal_Base)));
+                     or else
+                      (Is_Itype (New_Formal_Base)
+                        and then Can_Never_Be_Null (New_Formal_Base)));
 
          --  Types must always match. In the visible part of an instance,
          --  usual overloading rules for dispatching operations apply, and
@@ -6589,13 +6657,22 @@ package body Sem_Ch6 is
       begin
          --  In some cases a type imported through a limited_with clause, and
          --  its nonlimited view are both visible, for example in an anonymous
-         --  access-to-class-wide type in a formal. Both entities designate the
-         --  same type.
+         --  access-to-class-wide type in a formal, or when building the body
+         --  for a subprogram renaming after the subprogram has been frozen.
+         --  In these cases Both entities designate the same type. In addition,
+         --  if one of them is an actual in an instance, it may be a subtype of
+         --  the non-limited view of the other.
 
-         if From_Limited_With (T1) and then T2 = Available_View (T1) then
+         if From_Limited_With (T1)
+           and then (T2 = Available_View (T1)
+                      or else Is_Subtype_Of (T2, Available_View (T1)))
+         then
             return True;
 
-         elsif From_Limited_With (T2) and then T1 = Available_View (T2) then
+         elsif From_Limited_With (T2)
+           and then (T1 = Available_View (T2)
+                      or else Is_Subtype_Of (T1, Available_View (T2)))
+         then
             return True;
 
          elsif From_Limited_With (T1)
@@ -9630,11 +9707,26 @@ package body Sem_Ch6 is
                      --  in the formal part, because in a generic body the
                      --  entity chain starts with the formals.
 
-                     pragma Assert
-                       (Present (Prev) or else Chars (E) = Name_Op_Concat);
+                     --  In GNATprove mode, a wrapper for an operation with
+                     --  axiomatization may be a homonym of another declaration
+                     --  for an actual subprogram (needs refinement ???).
+
+                     if No (Prev) then
+                        if In_Instance
+                          and then GNATprove_Mode
+                          and then
+                            Nkind (Original_Node (Unit_Declaration_Node (S))) =
+                                             N_Subprogram_Renaming_Declaration
+                        then
+                           return;
+                        else
+                           pragma Assert (Chars (E) = Name_Op_Concat);
+                           null;
+                        end if;
+                     end if;
 
                      --  E must be removed both from the entity_list of the
-                     --  current scope, and from the visibility chain
+                     --  current scope, and from the visibility chain.
 
                      if Debug_Flag_E then
                         Write_Str ("Override implicit operation ");

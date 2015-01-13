@@ -1,5 +1,5 @@
 /* Loop manipulation code for GNU compiler.
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,6 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "hashtab.h"
 #include "hash-set.h"
+#include "symtab.h"
+#include "inchash.h"
 #include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
@@ -36,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"

@@ -1,7 +1,7 @@
 /* Data structures and declarations used for reading and writing
    GIMPLE to a file stream.
 
-   Copyright (C) 2009-2014 Free Software Foundation, Inc.
+   Copyright (C) 2009-2015 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -744,6 +744,10 @@ extern void lto_append_block (struct lto_output_stream *);
 
 
 /* In lto-streamer.c.  */
+
+/* Set when streaming LTO for offloading compiler.  */
+extern bool lto_stream_offload_p;
+
 extern const char *lto_tag_name (enum LTO_tags);
 extern bitmap lto_bitmap_alloc (void);
 extern void lto_bitmap_free (bitmap);

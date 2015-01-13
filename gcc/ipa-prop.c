@@ -1,5 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005-2014 Free Software Foundation, Inc.
+   Copyright (C) 2005-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,12 +20,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tree.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
 #include "hash-set.h"
 #include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "fold-const.h"
+#include "predict.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "input.h"
@@ -2730,7 +2737,20 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 		       ie->caller->name (), callee->name ());
     }
   if (!speculative)
-    ie = ie->make_direct (callee);
+    {
+      struct cgraph_edge *orig = ie;
+      ie = ie->make_direct (callee);
+      /* If we resolved speculative edge the cost is already up to date
+	 for direct call (adjusted by inline_edge_duplication_hook).  */
+      if (ie == orig)
+	{
+	  es = inline_edge_summary (ie);
+	  es->call_stmt_size -= (eni_size_weights.indirect_call_cost
+				 - eni_size_weights.call_cost);
+	  es->call_stmt_time -= (eni_time_weights.indirect_call_cost
+				 - eni_time_weights.call_cost);
+	}
+    }
   else
     {
       if (!callee->can_be_discarded_p ())
@@ -2740,14 +2760,10 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 	  if (alias)
 	    callee = alias;
 	}
+      /* make_speculative will update ie's cost to direct call cost. */
       ie = ie->make_speculative
 	     (callee, ie->count * 8 / 10, ie->frequency * 8 / 10);
     }
-  es = inline_edge_summary (ie);
-  es->call_stmt_size -= (eni_size_weights.indirect_call_cost
-			 - eni_size_weights.call_cost);
-  es->call_stmt_time -= (eni_time_weights.indirect_call_cost
-			 - eni_time_weights.call_cost);
 
   return ie;
 }

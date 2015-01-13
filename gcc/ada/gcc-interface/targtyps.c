@@ -6,7 +6,7 @@
  *                                                                          *
  *                                  Body                                    *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -28,6 +28,16 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "options.h"
 #include "tree.h"
 #include "tm.h"
 #include "tm_p.h"
@@ -52,15 +62,6 @@
    of C.  */
 #ifndef ADA_LONG_TYPE_SIZE
 #define ADA_LONG_TYPE_SIZE LONG_TYPE_SIZE
-#endif
-
-/* If we don't have a target definition of WIDEST_HARDWARE_FP_SIZE, assume
-   DOUBLE_TYPE_SIZE.  We used to default to LONG_DOUBLE_TYPE_SIZE, which now
-   most often maps 128 bits implemented with very inefficient software
-   emulations so is incorrect as a hardware size estimate.  */
-
-#ifndef WIDEST_HARDWARE_FP_SIZE
-#define WIDEST_HARDWARE_FP_SIZE DOUBLE_TYPE_SIZE
 #endif
 
 /* The following provide a functional interface for the front end Ada code
@@ -113,24 +114,6 @@ Pos
 get_target_long_long_size (void)
 {
   return LONG_LONG_TYPE_SIZE;
-}
-
-Pos
-get_target_float_size (void)
-{
-  return fp_prec_to_size (FLOAT_TYPE_SIZE);
-}
-
-Pos
-get_target_double_size (void)
-{
-  return fp_prec_to_size (DOUBLE_TYPE_SIZE);
-}
-
-Pos
-get_target_long_double_size (void)
-{
-  return fp_prec_to_size (WIDEST_HARDWARE_FP_SIZE);
 }
 
 Pos

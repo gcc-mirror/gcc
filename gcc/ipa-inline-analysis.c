@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2014 Free Software Foundation, Inc.
+   Copyright (C) 2003-2015 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -68,7 +68,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "real.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "print-tree.h"
@@ -81,10 +92,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "coverage.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -1305,6 +1312,13 @@ inline_edge_duplication_hook (struct cgraph_edge *src,
   info->predicate = NULL;
   edge_set_predicate (dst, srcinfo->predicate);
   info->param = srcinfo->param.copy ();
+  if (!dst->indirect_unknown_callee && src->indirect_unknown_callee)
+    {
+      info->call_stmt_size -= (eni_size_weights.indirect_call_cost
+			       - eni_size_weights.call_cost);
+      info->call_stmt_time -= (eni_time_weights.indirect_call_cost
+			       - eni_time_weights.call_cost);
+    }
 }
 
 

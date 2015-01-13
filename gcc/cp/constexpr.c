@@ -2,7 +2,7 @@
    constexpr functions.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2014 Free Software Foundation, Inc.
+   Copyright (C) 1998-2015 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -23,6 +23,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "varasm.h"
 #include "cp-tree.h"
@@ -3882,7 +3892,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	      || !CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (t))
 	      || !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (t))
 	  && !var_in_constexpr_fn (t)
-	  && !dependent_type_p (TREE_TYPE (t)))
+	  && !type_dependent_expression_p (t))
         {
           if (flags & tf_error)
             non_const_var_error (t);

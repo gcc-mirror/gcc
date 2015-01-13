@@ -1,5 +1,5 @@
 /* UndefinedBehaviorSanitizer, undefined behavior detector.
-   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -21,7 +21,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "predict.h"
@@ -32,10 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-map.h"
 #include "is-a.h"
 #include "plugin-api.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "input.h"
@@ -1252,10 +1259,11 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
 }
 
 /* Instrument float point-to-integer conversion.  TYPE is an integer type of
-   destination, EXPR is floating-point expression.  */
+   destination, EXPR is floating-point expression.  ARG is what to pass
+   the libubsan call as value, often EXPR itself.  */
 
 tree
-ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
+ubsan_instrument_float_cast (location_t loc, tree type, tree expr, tree arg)
 {
   tree expr_type = TREE_TYPE (expr);
   tree t, tt, fn, min, max;
@@ -1348,6 +1356,12 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
   else
     return NULL_TREE;
 
+  t = fold_build2 (UNLE_EXPR, boolean_type_node, expr, min);
+  tt = fold_build2 (UNGE_EXPR, boolean_type_node, expr, max);
+  t = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, t, tt);
+  if (integer_zerop (t))
+    return NULL_TREE;
+
   if (flag_sanitize_undefined_trap_on_error)
     fn = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
@@ -1364,14 +1378,10 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
       fn = builtin_decl_explicit (bcode);
       fn = build_call_expr_loc (loc, fn, 2,
 				build_fold_addr_expr_loc (loc, data),
-				ubsan_encode_value (expr, false));
+				ubsan_encode_value (arg, false));
     }
 
-  t = fold_build2 (UNLE_EXPR, boolean_type_node, expr, min);
-  tt = fold_build2 (UNGE_EXPR, boolean_type_node, expr, max);
-  return fold_build3 (COND_EXPR, void_type_node,
-		      fold_build2 (TRUTH_OR_EXPR, boolean_type_node, t, tt),
-		      fn, integer_zero_node);
+  return fold_build3 (COND_EXPR, void_type_node, t, fn, integer_zero_node);
 }
 
 /* Instrument values passed to function arguments with nonnull attribute.  */
@@ -1645,6 +1655,16 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
 }
 
+/* True if we want to play UBSan games in the current function.  */
+
+bool
+do_ubsan_in_current_function ()
+{
+  return (current_function_decl != NULL_TREE
+	  && !lookup_attribute ("no_sanitize_undefined",
+				DECL_ATTRIBUTES (current_function_decl)));
+}
+
 namespace {
 
 const pass_data pass_data_ubsan =
@@ -1676,9 +1696,7 @@ public:
 			      | SANITIZE_NONNULL_ATTRIBUTE
 			      | SANITIZE_RETURNS_NONNULL_ATTRIBUTE
 			      | SANITIZE_OBJECT_SIZE)
-	     && current_function_decl != NULL_TREE
-	     && !lookup_attribute ("no_sanitize_undefined",
-				   DECL_ATTRIBUTES (current_function_decl));
+	&& do_ubsan_in_current_function ();
     }
 
   virtual unsigned int execute (function *);

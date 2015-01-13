@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright (C) 1987-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -80,6 +80,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "stor-layout.h"
 #include "tm_p.h"
@@ -87,10 +96,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "dominance.h"
@@ -885,6 +890,12 @@ combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
       i1_cost = i0_cost = 0;
     }
 
+  /* If we have split a PARALLEL I2 to I1,I2, we have counted its cost twice;
+     correct that.  */
+  if (old_cost && i1 && INSN_UID (i1) == INSN_UID (i2))
+    old_cost -= i1_cost;
+
+
   /* Calculate the replacement insn_rtx_costs.  */
   new_i3_cost = insn_rtx_cost (newpat, optimize_this_for_speed_p);
   if (newi2pat)
@@ -924,14 +935,14 @@ combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
 	       reject ? "rejecting" : "allowing");
       if (i0)
 	fprintf (dump_file, "%d, ", INSN_UID (i0));
-      if (i1)
+      if (i1 && INSN_UID (i1) != INSN_UID (i2))
 	fprintf (dump_file, "%d, ", INSN_UID (i1));
       fprintf (dump_file, "%d and %d\n", INSN_UID (i2), INSN_UID (i3));
 
       fprintf (dump_file, "original costs ");
       if (i0)
 	fprintf (dump_file, "%d + ", i0_cost);
-      if (i1)
+      if (i1 && INSN_UID (i1) != INSN_UID (i2))
 	fprintf (dump_file, "%d + ", i1_cost);
       fprintf (dump_file, "%d + %d = %d\n", i2_cost, i3_cost, old_cost);
 
@@ -13842,7 +13853,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		  unsigned int i;
 
 		  for (i = regno; i < endregno; i++)
-		    if ((! refers_to_regno_p (i, i + 1, PATTERN (place), 0)
+		    if ((! refers_to_regno_p (i, PATTERN (place))
 			 && ! find_regno_fusage (place, USE, i))
 			|| dead_or_set_regno_p (place, i))
 		      {
@@ -13872,8 +13883,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 						NULL, NULL_RTX, NULL_RTX,
 						NULL_RTX);
 			    }
-			  else if (! refers_to_regno_p (i, i + 1,
-							PATTERN (place), 0)
+			  else if (! refers_to_regno_p (i, PATTERN (place))
 				   && ! find_regno_fusage (place, USE, i))
 			    for (tem_insn = PREV_INSN (place); ;
 				 tem_insn = PREV_INSN (tem_insn))

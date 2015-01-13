@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,11 +61,25 @@ package System.Val_LLU is
    --  Constraint_Error is raised.
    --
    --  Note: these rules correspond to the requirements for leaving the pointer
-   --  positioned in Text_IO.Get
+   --  positioned in Text_IO.Get. Note that the rules as stated in the RM would
+   --  seem to imply that for a case like
+   --
+   --    8#12345670009#
+
+   --  the pointer should be left at the first # having scanned out the longest
+   --  valid integer literal (8), but in fact in this case the pointer points
+   --  to the invalid based digit (9 in this case). Not only would the strict
+   --  reading of the RM require unlimited backup, which is unreasonable, but
+   --  in addition, the intepretation as given here is the one expected and
+   --  enforced by the ACATS tests.
    --
    --  Note: if Str is empty, i.e. if Max is less than Ptr, then this is a
    --  special case of an all-blank string, and Ptr is unchanged, and hence
    --  is greater than Max as required in this case.
+   --
+   --  Note: this routine should not be called with Str'Last = Positive'Last.
+   --  If this occurs Program_Error is raised with a message noting that this
+   --  case is not supported. Most such cases are eliminated by the caller.
 
    function Scan_Long_Long_Unsigned
      (Str : String;
@@ -73,6 +87,7 @@ package System.Val_LLU is
       Max : Integer) return System.Unsigned_Types.Long_Long_Unsigned;
    --  Same as Scan_Raw_Long_Long_Unsigned, except scans optional leading
    --  blanks, and an optional leading plus sign.
+   --
    --  Note: if a minus sign is present, Constraint_Error will be raised.
    --  Note: trailing blanks are not scanned.
 

@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C.
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright (C) 1987-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,6 +27,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "symtab.h"
+#include "input.h"
+#include "alias.h"
+#include "double-int.h"
+#include "machmode.h"
+#include "inchash.h"
 #include "tree.h"
 #include "tree-upc.h"
 #include "flags.h"
@@ -125,8 +133,18 @@ convert (tree type, tree expr)
 	  && !lookup_attribute ("no_sanitize_undefined",
 				DECL_ATTRIBUTES (current_function_decl)))
 	{
-	  expr = c_save_expr (expr);
-	  tree check = ubsan_instrument_float_cast (loc, type, expr);
+	  tree arg;
+	  if (in_late_binary_op)
+	    {
+	      expr = save_expr (expr);
+	      arg = expr;
+	    }
+	  else
+	    {
+	      expr = c_save_expr (expr);
+	      arg = c_fully_fold (expr, false, NULL);
+	    }
+	  tree check = ubsan_instrument_float_cast (loc, type, expr, arg);
 	  expr = fold_build1 (FIX_TRUNC_EXPR, type, expr);
 	  if (check == NULL)
 	    return expr;

@@ -1,7 +1,7 @@
 /* Miscellaneous utilities for GIMPLE streaming.  Things that are used
    in both input and output are here.
 
-   Copyright (C) 2009-2014 Free Software Foundation, Inc.
+   Copyright (C) 2009-2015 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -26,12 +26,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "toplev.h"
 #include "flags.h"
-#include "tree.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
 #include "hash-set.h"
 #include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "fold-const.h"
+#include "predict.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -61,6 +67,8 @@ static bitmap_obstack lto_obstack;
 static bool lto_obstack_initialized;
 
 const char *section_name_prefix = LTO_SECTION_NAME_PREFIX;
+/* Set when streaming LTO for offloading compiler.  */
+bool lto_stream_offload_p;
 
 /* Return a string representing LTO tag TAG.  */
 

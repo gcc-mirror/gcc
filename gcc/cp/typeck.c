@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright (C) 1987-2015 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -28,7 +28,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "cp-tree.h"
@@ -3081,7 +3091,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
     {
       tree rval, type;
 
-      warn_array_subscript_with_type_char (idx);
+      warn_array_subscript_with_type_char (loc, idx);
 
       if (!INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (idx)))
 	{
@@ -3191,7 +3201,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 	return error_mark_node;
       }
 
-    warn_array_subscript_with_type_char (idx);
+    warn_array_subscript_with_type_char (loc, idx);
 
     ret = cp_build_indirect_ref (cp_build_binary_op (input_location,
 						     PLUS_EXPR, ar, ind,
@@ -4973,9 +4983,7 @@ cp_build_binary_op (location_t location,
   if ((flag_sanitize & (SANITIZE_SHIFT | SANITIZE_DIVIDE
 			| SANITIZE_FLOAT_DIVIDE))
       && !processing_template_decl
-      && current_function_decl != 0
-      && !lookup_attribute ("no_sanitize_undefined",
-			    DECL_ATTRIBUTES (current_function_decl))
+      && do_ubsan_in_current_function ()
       && (doing_div_or_mod || doing_shift))
     {
       /* OP0 and/or OP1 might have side-effects.  */

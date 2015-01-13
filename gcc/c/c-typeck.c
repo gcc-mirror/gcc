@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright (C) 1987-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,8 +27,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "symtab.h"
+#include "input.h"
+#include "alias.h"
+#include "double-int.h"
+#include "machmode.h"
+#include "inchash.h"
+#include "real.h"
+#include "fixed-value.h"
 #include "tree.h"
 #include "tree-upc.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "trans-mem.h"
 #include "varasm.h"
@@ -2560,7 +2571,7 @@ build_array_ref (location_t loc, tree array, tree index)
   /* ??? Existing practice has been to warn only when the char
      index is syntactically the index, not for char[array].  */
   if (!swapped)
-     warn_array_subscript_with_type_char (index);
+     warn_array_subscript_with_type_char (loc, index);
 
   /* Apply default promotions *after* noticing character types.  */
   index = default_conversion (index);
@@ -6077,12 +6088,14 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     {
       tree ret;
       bool save = in_late_binary_op;
-      if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE)
+      if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE
+	  || (coder == REAL_TYPE
+	      && (codel == INTEGER_TYPE || codel == ENUMERAL_TYPE)
+	      && (flag_sanitize & SANITIZE_FLOAT_CAST)))
 	in_late_binary_op = true;
       ret = convert_and_check (expr_loc != UNKNOWN_LOCATION
 			       ? expr_loc : location, type, orig_rhs);
-      if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE)
-	in_late_binary_op = save;
+      in_late_binary_op = save;
       return ret;
     }
 
@@ -9064,6 +9077,33 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      break;
 	    }
 
+	  /* Error for initialization of a flexible array member with
+	     a string constant if the structure is in an array.  E.g.:
+	     struct S { int x; char y[]; };
+	     struct S s[] = { { 1, "foo" } };
+	     is invalid.  */
+	  if (string_flag
+	      && fieldcode == ARRAY_TYPE
+	      && constructor_depth > 1
+	      && TYPE_SIZE (fieldtype) == NULL_TREE
+	      && DECL_CHAIN (constructor_fields) == NULL_TREE)
+	    {
+	      bool in_array_p = false;
+	      for (struct constructor_stack *p = constructor_stack;
+		   p && p->type; p = p->next)
+		if (TREE_CODE (p->type) == ARRAY_TYPE)
+		  {
+		    in_array_p = true;
+		    break;
+		  }
+	      if (in_array_p)
+		{
+		  error_init (loc, "initialization of flexible array "
+			      "member in a nested context");
+		  break;
+		}
+	    }
+
 	  /* Accept a string constant to initialize a subarray.  */
 	  if (value.value != 0
 	      && fieldcode == ARRAY_TYPE
@@ -9626,7 +9666,11 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 
       save = in_late_binary_op;
       if (TREE_CODE (TREE_TYPE (res)) == BOOLEAN_TYPE
-          || TREE_CODE (TREE_TYPE (res)) == COMPLEX_TYPE)
+	  || TREE_CODE (TREE_TYPE (res)) == COMPLEX_TYPE
+	  || (TREE_CODE (TREE_TYPE (t)) == REAL_TYPE
+	      && (TREE_CODE (TREE_TYPE (res)) == INTEGER_TYPE
+		  || TREE_CODE (TREE_TYPE (res)) == ENUMERAL_TYPE)
+	      && (flag_sanitize & SANITIZE_FLOAT_CAST)))
         in_late_binary_op = true;
       inner = t = convert (TREE_TYPE (res), t);
       in_late_binary_op = save;

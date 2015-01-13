@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2014 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2015 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -21,6 +21,15 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tm_p.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "c-family/c-common.h"
 

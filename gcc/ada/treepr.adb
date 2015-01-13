@@ -1282,7 +1282,30 @@ package body Treepr is
    -----------------------
 
    procedure Print_Node_Header (N : Node_Id) is
-      Notes : Boolean := False;
+      Enumerate : Boolean := False;
+      --  Flag set when enumerating multiple header flags
+
+      procedure Print_Header_Flag (Flag : String);
+      --  Output one of the flags that appears in a node header. The routine
+      --  automatically handles enumeration of multiple flags.
+
+      -----------------------
+      -- Print_Header_Flag --
+      -----------------------
+
+      procedure Print_Header_Flag (Flag : String) is
+      begin
+         if Enumerate then
+            Print_Char (',');
+         else
+            Enumerate := True;
+            Print_Char ('(');
+         end if;
+
+         Print_Str (Flag);
+      end Print_Header_Flag;
+
+   --  Start of processing for Print_Node_Header
 
    begin
       Print_Node_Ref (N);
@@ -1293,34 +1316,25 @@ package body Treepr is
          return;
       end if;
 
+      Print_Char (' ');
+
       if Comes_From_Source (N) then
-         Notes := True;
-         Print_Str (" (source");
+         Print_Header_Flag ("source");
       end if;
 
       if Analyzed (N) then
-         if not Notes then
-            Notes := True;
-            Print_Str (" (");
-         else
-            Print_Str (",");
-         end if;
-
-         Print_Str ("analyzed");
+         Print_Header_Flag ("analyzed");
       end if;
 
       if Error_Posted (N) then
-         if not Notes then
-            Notes := True;
-            Print_Str (" (");
-         else
-            Print_Str (",");
-         end if;
-
-         Print_Str ("posted");
+         Print_Header_Flag ("posted");
       end if;
 
-      if Notes then
+      if Is_Ignored_Ghost_Node (N) then
+         Print_Header_Flag ("ignored ghost");
+      end if;
+
+      if Enumerate then
          Print_Char (')');
       end if;
 

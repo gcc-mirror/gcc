@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -484,6 +484,19 @@ package body Ada.Wide_Text_IO.Generic_Aux is
 
    procedure String_Skip (Str : String; Ptr : out Integer) is
    begin
+      --  Routines calling String_Skip malfunction if Str'Last = Positive'Last.
+      --  It's too much trouble to make this silly case work, so we just raise
+      --  Program_Error with an appropriate message. We raise Program_Error
+      --  rather than Constraint_Error because we don't want this case to be
+      --  converted to Data_Error.
+
+      if Str'Last = Positive'Last then
+         raise Program_Error with
+           "string upper bound is Positive'Last, not supported";
+      end if;
+
+      --  Normal case where Str'Last < Positive'Last
+
       Ptr := Str'First;
 
       loop

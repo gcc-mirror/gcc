@@ -1,5 +1,5 @@
 /* Store motion via Lazy Code Motion on the reverse CFG.
-   Copyright (C) 1997-2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 
 #include "rtl.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "tm_p.h"
 #include "regs.h"
@@ -33,10 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "dominance.h"

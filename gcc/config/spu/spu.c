@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2014 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2015 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -27,7 +27,17 @@
 #include "flags.h"
 #include "recog.h"
 #include "obstack.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "calls.h"
@@ -36,10 +46,6 @@
 #include "insn-codes.h"
 #include "optabs.h"
 #include "except.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "output.h"

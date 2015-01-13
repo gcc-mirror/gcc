@@ -95,6 +95,10 @@ package body Sem is
    -------------
 
    procedure Analyze (N : Node_Id) is
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the current Ghost mode in effect in case the construct sets a
+      --  different mode.
+
    begin
       Debug_A_Entry ("analyzing  ", N);
 
@@ -108,7 +112,6 @@ package body Sem is
       --  Otherwise processing depends on the node kind
 
       case Nkind (N) is
-
          when N_Abort_Statement =>
             Analyze_Abort_Statement (N);
 
@@ -622,10 +625,9 @@ package body Sem is
          --  the call to analyze them is generated when the full list is
          --  analyzed.
 
-         when
-           N_SCIL_Dispatch_Table_Tag_Init |
-           N_SCIL_Dispatching_Call        |
-           N_SCIL_Membership_Test         =>
+         when N_SCIL_Dispatch_Table_Tag_Init |
+              N_SCIL_Dispatching_Call        |
+              N_SCIL_Membership_Test         =>
             null;
 
          --  For the remaining node types, we generate compiler abort, because
@@ -635,65 +637,63 @@ package body Sem is
          --  node appears only in the context of a type declaration, and is
          --  processed by the analyze routine for type declarations.
 
-         when
-           N_Abortable_Part                         |
-           N_Access_Definition                      |
-           N_Access_Function_Definition             |
-           N_Access_Procedure_Definition            |
-           N_Access_To_Object_Definition            |
-           N_Aspect_Specification                   |
-           N_Case_Expression_Alternative            |
-           N_Case_Statement_Alternative             |
-           N_Compilation_Unit_Aux                   |
-           N_Component_Association                  |
-           N_Component_Clause                       |
-           N_Component_Definition                   |
-           N_Component_List                         |
-           N_Constrained_Array_Definition           |
-           N_Contract                               |
-           N_Decimal_Fixed_Point_Definition         |
-           N_Defining_Character_Literal             |
-           N_Defining_Identifier                    |
-           N_Defining_Operator_Symbol               |
-           N_Defining_Program_Unit_Name             |
-           N_Delta_Constraint                       |
-           N_Derived_Type_Definition                |
-           N_Designator                             |
-           N_Digits_Constraint                      |
-           N_Discriminant_Association               |
-           N_Discriminant_Specification             |
-           N_Elsif_Part                             |
-           N_Entry_Call_Statement                   |
-           N_Enumeration_Type_Definition            |
-           N_Exception_Handler                      |
-           N_Floating_Point_Definition              |
-           N_Formal_Decimal_Fixed_Point_Definition  |
-           N_Formal_Derived_Type_Definition         |
-           N_Formal_Discrete_Type_Definition        |
-           N_Formal_Floating_Point_Definition       |
-           N_Formal_Modular_Type_Definition         |
-           N_Formal_Ordinary_Fixed_Point_Definition |
-           N_Formal_Private_Type_Definition         |
-           N_Formal_Incomplete_Type_Definition      |
-           N_Formal_Signed_Integer_Type_Definition  |
-           N_Function_Specification                 |
-           N_Generic_Association                    |
-           N_Index_Or_Discriminant_Constraint       |
-           N_Iteration_Scheme                       |
-           N_Mod_Clause                             |
-           N_Modular_Type_Definition                |
-           N_Ordinary_Fixed_Point_Definition        |
-           N_Parameter_Specification                |
-           N_Pragma_Argument_Association            |
-           N_Procedure_Specification                |
-           N_Real_Range_Specification               |
-           N_Record_Definition                      |
-           N_Signed_Integer_Type_Definition         |
-           N_Unconstrained_Array_Definition         |
-           N_Unused_At_Start                        |
-           N_Unused_At_End                          |
-           N_Variant                                =>
-
+         when N_Abortable_Part                         |
+              N_Access_Definition                      |
+              N_Access_Function_Definition             |
+              N_Access_Procedure_Definition            |
+              N_Access_To_Object_Definition            |
+              N_Aspect_Specification                   |
+              N_Case_Expression_Alternative            |
+              N_Case_Statement_Alternative             |
+              N_Compilation_Unit_Aux                   |
+              N_Component_Association                  |
+              N_Component_Clause                       |
+              N_Component_Definition                   |
+              N_Component_List                         |
+              N_Constrained_Array_Definition           |
+              N_Contract                               |
+              N_Decimal_Fixed_Point_Definition         |
+              N_Defining_Character_Literal             |
+              N_Defining_Identifier                    |
+              N_Defining_Operator_Symbol               |
+              N_Defining_Program_Unit_Name             |
+              N_Delta_Constraint                       |
+              N_Derived_Type_Definition                |
+              N_Designator                             |
+              N_Digits_Constraint                      |
+              N_Discriminant_Association               |
+              N_Discriminant_Specification             |
+              N_Elsif_Part                             |
+              N_Entry_Call_Statement                   |
+              N_Enumeration_Type_Definition            |
+              N_Exception_Handler                      |
+              N_Floating_Point_Definition              |
+              N_Formal_Decimal_Fixed_Point_Definition  |
+              N_Formal_Derived_Type_Definition         |
+              N_Formal_Discrete_Type_Definition        |
+              N_Formal_Floating_Point_Definition       |
+              N_Formal_Modular_Type_Definition         |
+              N_Formal_Ordinary_Fixed_Point_Definition |
+              N_Formal_Private_Type_Definition         |
+              N_Formal_Incomplete_Type_Definition      |
+              N_Formal_Signed_Integer_Type_Definition  |
+              N_Function_Specification                 |
+              N_Generic_Association                    |
+              N_Index_Or_Discriminant_Constraint       |
+              N_Iteration_Scheme                       |
+              N_Mod_Clause                             |
+              N_Modular_Type_Definition                |
+              N_Ordinary_Fixed_Point_Definition        |
+              N_Parameter_Specification                |
+              N_Pragma_Argument_Association            |
+              N_Procedure_Specification                |
+              N_Real_Range_Specification               |
+              N_Record_Definition                      |
+              N_Signed_Integer_Type_Definition         |
+              N_Unconstrained_Array_Definition         |
+              N_Unused_At_Start                        |
+              N_Unused_At_End                          |
+              N_Variant                                =>
             raise Program_Error;
       end case;
 
@@ -719,6 +719,11 @@ package body Sem is
       then
          Expand (N);
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Analyze;
 
    --  Version with check(s) suppressed
@@ -1297,6 +1302,51 @@ package body Sem is
    ---------------
 
    procedure Semantics (Comp_Unit : Node_Id) is
+      procedure Do_Analyze;
+      --  Perform the analysis of the compilation unit
+
+      ----------------
+      -- Do_Analyze --
+      ----------------
+
+      procedure Do_Analyze is
+         GM : constant Ghost_Mode_Type := Ghost_Mode;
+         --  Save the current Ghost mode in effect in case the compilation unit
+         --  is withed from a unit with a different Ghost mode.
+
+         List : Elist_Id;
+
+      begin
+         List := Save_Scope_Stack;
+         Push_Scope (Standard_Standard);
+
+         --  Set up a clean environment before analyzing
+
+         Ghost_Mode          := None;
+         Outer_Generic_Scope := Empty;
+         Scope_Suppress      := Suppress_Options;
+         Scope_Stack.Table
+           (Scope_Stack.Last).Component_Alignment_Default := Calign_Default;
+         Scope_Stack.Table
+           (Scope_Stack.Last).Is_Active_Stack_Base := True;
+
+         --  Now analyze the top level compilation unit node
+
+         Analyze (Comp_Unit);
+
+         --  Check for scope mismatch on exit from compilation
+
+         pragma Assert (Current_Scope = Standard_Standard
+                          or else Comp_Unit = Cunit (Main_Unit));
+
+         --  Then pop entry for Standard, and pop implicit types
+
+         Pop_Scope;
+         Restore_Scope_Stack (List);
+         Ghost_Mode := GM;
+      end Do_Analyze;
+
+      --  Local variables
 
       --  The following locations save the corresponding global flags and
       --  variables so that they can be restored on completion. This is needed
@@ -1314,6 +1364,8 @@ package body Sem is
       S_Inside_A_Generic  : constant Boolean          := Inside_A_Generic;
       S_Outer_Gen_Scope   : constant Entity_Id        := Outer_Generic_Scope;
       S_Style_Check       : constant Boolean          := Style_Check;
+
+      Already_Analyzed : constant Boolean := Analyzed (Comp_Unit);
 
       Curunit : constant Unit_Number_Type := Get_Cunit_Unit_Number (Comp_Unit);
       --  New value of Current_Sem_Unit
@@ -1343,43 +1395,6 @@ package body Sem is
       --  Used to save non-partition wide restrictions before processing new
       --  unit. All with'ed units are analyzed with config restrictions reset
       --  and we need to restore these saved values at the end.
-
-      procedure Do_Analyze;
-      --  Procedure to analyze the compilation unit
-
-      ----------------
-      -- Do_Analyze --
-      ----------------
-
-      procedure Do_Analyze is
-         List : Elist_Id;
-
-      begin
-         List := Save_Scope_Stack;
-         Push_Scope (Standard_Standard);
-         Scope_Suppress := Suppress_Options;
-         Scope_Stack.Table
-           (Scope_Stack.Last).Component_Alignment_Default := Calign_Default;
-         Scope_Stack.Table
-           (Scope_Stack.Last).Is_Active_Stack_Base := True;
-         Outer_Generic_Scope := Empty;
-
-         --  Now analyze the top level compilation unit node
-
-         Analyze (Comp_Unit);
-
-         --  Check for scope mismatch on exit from compilation
-
-         pragma Assert (Current_Scope = Standard_Standard
-                          or else Comp_Unit = Cunit (Main_Unit));
-
-         --  Then pop entry for Standard, and pop implicit types
-
-         Pop_Scope;
-         Restore_Scope_Stack (List);
-      end Do_Analyze;
-
-      Already_Analyzed : constant Boolean := Analyzed (Comp_Unit);
 
    --  Start of processing for Semantics
 

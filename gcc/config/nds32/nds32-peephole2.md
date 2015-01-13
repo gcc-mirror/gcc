@@ -1,5 +1,5 @@
 ;; define_peephole2 optimization patterns of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2014 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2015 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -19,7 +19,6 @@
 ;; <http://www.gnu.org/licenses/>.
 
 
-;; Use define_peephole and define_peephole2 to handle possible
-;; target-specific optimization in this file.
+;; Use define_peephole2 to handle possible target-specific optimization.
 
 ;; ------------------------------------------------------------------------

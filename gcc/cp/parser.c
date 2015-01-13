@@ -1,5 +1,5 @@
 /* -*- C++ -*- Parser.
-   Copyright (C) 2000-2014 Free Software Foundation, Inc.
+   Copyright (C) 2000-2015 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
    This file is part of GCC.
@@ -24,6 +24,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "timevar.h"
 #include "cpplib.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "print-tree.h"
 #include "stringpool.h"
@@ -39,10 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-map.h"
 #include "is-a.h"
 #include "plugin-api.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -5435,6 +5440,46 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	      cp_lexer_consume_token (parser->lexer);
 	    }
 
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_TEMPLATE_ID)
+	      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_SCOPE))
+	    {
+	      /* If we have a non-type template-id followed by ::, it can't
+		 possibly be valid.  */
+	      token = cp_lexer_peek_token (parser->lexer);
+	      tree tid = token->u.tree_check_value->value;
+	      if (TREE_CODE (tid) == TEMPLATE_ID_EXPR
+		  && TREE_CODE (TREE_OPERAND (tid, 0)) != IDENTIFIER_NODE)
+		{
+		  tree tmpl = NULL_TREE;
+		  if (is_overloaded_fn (tid))
+		    {
+		      tree fns = get_fns (tid);
+		      if (!OVL_CHAIN (fns))
+			tmpl = OVL_CURRENT (fns);
+		      error_at (token->location, "function template-id %qD "
+				"in nested-name-specifier", tid);
+		    }
+		  else
+		    {
+		      /* Variable template.  */
+		      tmpl = TREE_OPERAND (tid, 0);
+		      gcc_assert (variable_template_p (tmpl));
+		      error_at (token->location, "variable template-id %qD "
+				"in nested-name-specifier", tid);
+		    }
+		  if (tmpl)
+		    inform (DECL_SOURCE_LOCATION (tmpl),
+			    "%qD declared here", tmpl);
+
+		  parser->scope = error_mark_node;
+		  error_p = true;
+		  /* As below.  */
+		  success = true;
+		  cp_lexer_consume_token (parser->lexer);
+		  cp_lexer_consume_token (parser->lexer);
+		}
+	    }
+
 	  if (cp_parser_uncommitted_to_tentative_parse_p (parser))
 	    break;
 	  /* If the next token is an identifier, and the one after
@@ -8729,15 +8774,7 @@ cp_parser_builtin_offsetof (cp_parser *parser)
     }
 
  success:
-  /* If we're processing a template, we can't finish the semantics yet.
-     Otherwise we can fold the entire expression now.  */
-  if (processing_template_decl)
-    {
-      expr = build1 (OFFSETOF_EXPR, size_type_node, expr);
-      SET_EXPR_LOCATION (expr, loc);
-    }
-  else
-    expr = finish_offsetof (expr, loc);
+  expr = finish_offsetof (expr, loc);
 
  failure:
   parser->integral_constant_expression_p = save_ice_p;

@@ -1741,13 +1741,19 @@ package body Exp_Ch7 is
             if Nkind (Decl) = N_Full_Type_Declaration then
                Typ := Defining_Identifier (Decl);
 
-               if Is_Tagged_Type (Typ)
+               --  Ignored Ghost types do not need any cleanup actions because
+               --  they will not appear in the final tree.
+
+               if Is_Ignored_Ghost_Entity (Typ) then
+                  null;
+
+               elsif Is_Tagged_Type (Typ)
                  and then Is_Library_Level_Entity (Typ)
                  and then Convention (Typ) = Convention_Ada
                  and then Present (Access_Disp_Table (Typ))
                  and then RTE_Available (RE_Register_Tag)
-                 and then not No_Run_Time_Mode
                  and then not Is_Abstract_Type (Typ)
+                 and then not No_Run_Time_Mode
                then
                   Processing_Actions;
                end if;
@@ -1771,6 +1777,12 @@ package body Exp_Ch7 is
                --  Process_Transient_Objects.
 
                elsif Is_Processed_Transient (Obj_Id) then
+                  null;
+
+               --  Ignored Ghost objects do not need any cleanup actions
+               --  because they will not appear in the final tree.
+
+               elsif Is_Ignored_Ghost_Entity (Obj_Id) then
                   null;
 
                --  The object is of the form:
@@ -1880,6 +1892,12 @@ package body Exp_Ch7 is
                if For_Package and then Finalize_Storage_Only (Obj_Typ) then
                   null;
 
+               --  Ignored Ghost object renamings do not need any cleanup
+               --  actions because they will not appear in the final tree.
+
+               elsif Is_Ignored_Ghost_Entity (Obj_Id) then
+                  null;
+
                --  Return object of a build-in-place function. This case is
                --  recognized and marked by the expansion of an extended return
                --  statement (see Expand_N_Extended_Return_Statement).
@@ -1921,11 +1939,17 @@ package body Exp_Ch7 is
             then
                Typ := Entity (Decl);
 
-               if (Is_Access_Type (Typ)
-                    and then not Is_Access_Subprogram_Type (Typ)
-                    and then Needs_Finalization
-                               (Available_View (Designated_Type (Typ))))
-                 or else (Is_Type (Typ) and then Needs_Finalization (Typ))
+               --  Freeze nodes for ignored Ghost types do not need cleanup
+               --  actions because they will never appear in the final tree.
+
+               if Is_Ignored_Ghost_Entity (Typ) then
+                  null;
+
+               elsif (Is_Access_Type (Typ)
+                        and then not Is_Access_Subprogram_Type (Typ)
+                        and then Needs_Finalization
+                                   (Available_View (Designated_Type (Typ))))
+                      or else (Is_Type (Typ) and then Needs_Finalization (Typ))
                then
                   Old_Counter_Val := Counter_Val;
 
@@ -1950,14 +1974,16 @@ package body Exp_Ch7 is
             --  Nested package declarations, avoid generics
 
             elsif Nkind (Decl) = N_Package_Declaration then
-               Spec    := Specification (Decl);
-               Pack_Id := Defining_Unit_Name (Spec);
+               Pack_Id := Defining_Entity (Decl);
+               Spec    := Specification   (Decl);
 
-               if Nkind (Pack_Id) = N_Defining_Program_Unit_Name then
-                  Pack_Id := Defining_Identifier (Pack_Id);
-               end if;
+               --  Do not inspect an ignored Ghost package because all code
+               --  found within will not appear in the final tree.
 
-               if Ekind (Pack_Id) /= E_Generic_Package then
+               if Is_Ignored_Ghost_Entity (Pack_Id) then
+                  null;
+
+               elsif Ekind (Pack_Id) /= E_Generic_Package then
                   Old_Counter_Val := Counter_Val;
                   Process_Declarations
                     (Private_Declarations (Spec), Preprocess);
@@ -1980,9 +2006,16 @@ package body Exp_Ch7 is
             --  Nested package bodies, avoid generics
 
             elsif Nkind (Decl) = N_Package_Body then
-               Spec := Corresponding_Spec (Decl);
 
-               if Ekind (Spec) /= E_Generic_Package then
+               --  Do not inspect an ignored Ghost package body because all
+               --  code found within will not appear in the final tree.
+
+               if Is_Ignored_Ghost_Entity (Defining_Entity (Decl)) then
+                  null;
+
+               elsif Ekind (Corresponding_Spec (Decl)) /=
+                       E_Generic_Package
+               then
                   Old_Counter_Val := Counter_Val;
                   Process_Declarations (Declarations (Decl), Preprocess);
 

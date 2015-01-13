@@ -1,3 +1,296 @@
+2015-01-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/63470
+	* testsuite/g++.dg/ipa/pr63470.C: New testcase.
+
+2015-01-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/63733
+	* gfortran.dg/typebound_operator_20.f90: New.
+
+2015-01-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58023
+	* gfortran.dg/proc_ptr_comp_42.f90: New.
+
+2015-01-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/64508
+	* gfortran.dg/proc_ptr_comp_41.f90: New.
+
+2015-01-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/recip-test.h (_ARCH_PPC64): Use __LP64__ instead.
+
+2015-01-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/64522
+	* gfortran.dg/line_length_5.f90: Change dg-warning to dg-error
+	and add dg-excess-errors.
+	* gfortran.dg/line_length_6.f90: New.
+	* gfortran.dg/line_length_7.f90: New.
+	* gfortran.dg/line_length_8.f90: New.
+	* gfortran.dg/line_length_9.f90: New.
+	* gfortran.dg/line_length_10.f90: New.
+	* gfortran.dg/line_length_11.f90: New.
+
+2015-01-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-threads.c (struct testcase): Move declaration
+	to jit.dg/all-non-failing-tests.h.
+	(testcases): Likewise.
+	* jit.dg/all-non-failing-tests.h (struct testcase): Move
+	declaration here from jit.dg/all-non-failing-tests.h.
+	(testcases): Likewise.
+	* jit.dg/test-combination.c (create_code): Eliminate spelling
+	out all of the testcases in favor of looping through the
+	"testcases" metadata.
+	(verify_code): Likewise.
+
+2015-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/64536
+	* gcc.dg/pr64536.c: New test.
+
+2015-01-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/all-non-failing-tests.h: Add test-constants.c.
+	* jit.dg/test-combination.c (create_code): Likewise.
+	(verify_code): Likewise.
+	* jit.dg/test-constants.c: New test case.
+	* jit.dg/test-threads.c: Add test-constants.c.
+
+2015-01-09  Dimitris Papavasiliou  <dpapavas@gmail.com>
+
+	PR libobjc/51891
+	* objc.dg/gnu-api-2-class.m: Add a test case
+	for the above change.
+
+2015-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc.dg/typeof-2.c: Add checks for non-atomic types.
+
+2015-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64410
+	* g++.dg/vect/pr64410.cc: New testcase.
+
+2015-01-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/ipa-icf-32.c: New test.
+
+2015-01-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-c++-common/tsan/tsan_barrier.h: New.
+	* c-c++-common/tsan/atomic_stack.c: Reworked to not depend on sleep.
+	* c-c++-common/tsan/bitfield_race.c: Likewise.
+	* c-c++-common/tsan/fd_pipe_race.c: Likewise.
+	* c-c++-common/tsan/mutexset1.c: Likewise.
+	* c-c++-common/tsan/race_on_barrier.c: Likewise.
+	* c-c++-common/tsan/race_on_mutex.c: Likewise.
+	* c-c++-common/tsan/race_on_mutex2.c: Likewise.
+	* c-c++-common/tsan/simple_race.c: Likewise.
+	* c-c++-common/tsan/simple_stack.c: Likewise.
+	* c-c++-common/tsan/sleep_sync.c: Likewise.
+	* c-c++-common/tsan/tiny_race.c: Likewise.
+	* c-c++-common/tsan/tls_race.c: Likewise.
+	* c-c++-common/tsan/write_in_reader_lock.c: Likewise.
+	* g++.dg/tsan/aligned_vs_unaligned_race.C: Likewise.
+	* g++.dg/tsan/atomic_free.C: Likewise.
+	* g++.dg/tsan/atomic_free2.C: Likewise.
+	* g++.dg/tsan/cond_race.C: Likewise.
+	* g++.dg/tsan/tsan_barrier.h: Copied from c-c++-common/tsan. 
+
+2015-01-08  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/62250
+	* lib/target-supports.exp (check_effective_target_libatomic_available):
+	New.
+	* gfortran.dg/coarray/caf.exp: Only add -latomic for
+	targets that match effective-target libatomic_available.
+	* gfortran.dg/coarray_lib_comm_1.f90: Similar.
+
+2015-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-block-in-wrong-function.c (verify_code):
+	Verify the result of gcc_jit_context_get_last_error.
+	* jit.dg/test-error-null-passed-to-api.c (verify_code): Likewise.
+
+2015-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/63989
+	* gcc.dg/strlenopt-27.c: New test.
+
+2015-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (set_up_logging): New function.
+	(test_jit): Fail if gcc_jit_context_acquire fails.  Call
+	set_up_logging on the context, so that every testcase is
+	logged to a particular file.
+	* jit.dg/test-nested-contexts.c (main): Open a logfile,
+	and call gcc_jit_context_set_logfile on the top-level context.
+
+2015-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/64338
+	* g++.dg/opt/pr64338.C: New test.
+
+2015-01-08  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray/codimension_2b.f90: New file.
+	* gfortran.dg/coarray/codimension_2.f90: Add it to dg-extra-sources.
+	* gfortran.dg/coarray/codimension_2.f90: Call its subroutine.
+
+2015-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59004
+	* g++.dg/ext/fnname4.C: New.
+
+2015-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64462
+	* g++.dg/cpp0x/constexpr-64462.C: New.
+
+2015-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60753
+	* g++.dg/cpp0x/deleted10.C: New.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-dereferencing-void-ptr.c: New test case.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-expressions.c (make_tests_of_unary_ops): Add test of
+	GCC_JIT_UNARY_OP_ABS.
+	(verify_unary_ops): Likewise.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-arith-overflow.c: New test case.
+	* jit.dg/all-non-failing-tests.h: Add test-arith-overflow.c.
+	* jit.dg/test-combination.c (create_code): Likewise.
+	(verify_code): Likewise.
+	* jit.dg/test-threads.c (testcases): Likewise.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/jit.exp: Load wrapper.exp with %{tool} set to "g++"
+	rather than "jit".  Load g++.exp, and call g++_init.
+	Run test-*.cc files within the testsuite and *.cc files within
+	docs/examples.
+	(jit-dg-test): Drop the addition of -fgnu89-inline to
+	DEFAULT_CFLAGS in favor of adding it to additional_flags, only
+	doing it when compiling C testcases (since g++ does not handle
+	it).  Reset "orig_environment_saved" so that LD_LIBRARY_PATH
+	is restored to the value after g++_init ran, rather than the
+	value before g++_init ran.  Return a list of
+	$comp_output $output_file, as dg-test assumes.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (CHECK_NON_NULL): Add __func__ to output, to
+	make it easier to figure out the origin of each test result when
+	running test-combination.c and test-threads.c.
+	(CHECK_VALUE): Likewise.
+	(CHECK_DOUBLE_VALUE): Likewise.
+	(CHECK_STRING_VALUE): Likewise.
+	(CHECK_STRING_STARTS_WITH): Likewise.
+	(CHECK_STRING_CONTAINS): Likewise.
+	(CHECK): Likewise.
+	(check_string_value): Likewise, add "funcname" param.
+	(check_string_starts_with): Likewise.
+	(check_string_contains): Likewise.
+
+2015-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/jit.exp (jit-dg-test): Remove "rootname" call when
+	generating name of built executable.
+
+2015-01-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64440
+	* gcc.dg/pr64440.c: New test.
+	* c-c++-common/pr56607.c: Don't limit dg-warnings to C++.
+
+2015-01-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64417
+	* gcc.c-torture/compile/pr28865.c: Add dg-errors.
+	* gcc.dg/pr64417.c: New test.
+
+2015-01-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/64505
+	* gcc.target/powerpc/pr64505.c: New file to test -m32 -mpowerpc64
+	fix is correct.
+
+2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lib/tsan-dg.exp (check_effective_target_fsanitize_thread):
+	Check if testcases run without errors, not just if they compile.
+
+2015-01-06  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/64507
+	* gcc.target/sh/pr64507.c: New test.
+
+2015-01-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.db/fixce.adb, gnat.db/specs/delta_small.ads: Kill warnings.
+
+2015-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/asan/sanitize-all-1.c: New test.
+	* c-c++-common/ubsan/sanitize-all-1.c: New test.
+	* c-c++-common/ubsan/sanitize-all-2.c: New test.
+	* c-c++-common/ubsan/sanitize-all-3.c: New test.
+	* c-c++-common/ubsan/sanitize-all-4.c: New test.
+
+2015-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lib/target-supports.exp (check_profiling_available): Return 0 for
+	Visium.
+	(check_effective_target_tls_runtime): Likewise.
+	(check_effective_target_logical_op_short_circuit): Return 1 for Visium.
+	* gcc.dg/20020312-2.c: Adjust for Visium.
+	* gcc.dg/tls/thr-cse-1.c: Likewise
+	* gcc.dg/tree-ssa/20040204-1.c: Likewise
+	* gcc.dg/tree-ssa/loop-1.c: Likewise.
+	* gcc.dg/weak/typeof-2.c: Likewise.
+
+2015-01-05  Radovan Obradovic <radovan.obradovic@imgtec.com>
+
+	PR rtl-optimization/64287
+	* gcc.dg/aru-2.c: New test.
+
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64344
+	* c-c++-common/ubsan/pr64344-1.c: New test.
+	* c-c++-common/ubsan/pr64344-2.c: New test.
+
+	PR tree-optimization/64465
+	* gcc.dg/pr64465.c: New test.
+
+	PR tree-optimization/64494
+	* gcc.c-torture/compile/pr64494.c: New test.
+
+2015-01-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/47674
+	* gfortran.dg/realloc_on_assign_25.f90:  New test.
+
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2015-01-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64423
+	* gcc.dg/pr64423.c: New test.
+
 2015-01-05  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/debug/debug-1.c: Pass -fno-if-conversion for

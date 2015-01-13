@@ -1,6 +1,6 @@
 /* Write the GIMPLE representation to a file stream.
 
-   Copyright (C) 2009-2014 Free Software Foundation, Inc.
+   Copyright (C) 2009-2015 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
    Re-implemented by Diego Novillo <dnovillo@google.com>
 
@@ -24,18 +24,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "expr.h"
 #include "flags.h"
 #include "params.h"
 #include "input.h"
-#include "hashtab.h"
-#include "hash-set.h"
 #include "predict.h"
-#include "vec.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "function.h"
 #include "dominance.h"
@@ -51,7 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "tree-pass.h"
 #include "diagnostic-core.h"
-#include "inchash.h"
 #include "except.h"
 #include "lto-symtab.h"
 #include "hash-map.h"
@@ -944,7 +949,9 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
     hstate.add (TRANSLATION_UNIT_LANGUAGE (t),
 			strlen (TRANSLATION_UNIT_LANGUAGE (t)));
 
-  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
+  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION)
+      /* We don't stream these when passing things to a different target.  */
+      && !lto_stream_offload_p)
     hstate.add_wide_int (cl_target_option_hash (TREE_TARGET_OPTION (t)));
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))

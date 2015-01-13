@@ -1,5 +1,5 @@
 # GCC target-specific configuration file.
-# Copyright (C) 1997-2014 Free Software Foundation, Inc.
+# Copyright (C) 1997-2015 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -259,7 +259,6 @@ case ${target} in
    arm*-wince-pe*			\
  | arm*-*-ecos-elf			\
  | arm*-*-elf				\
- | arm*-*-freebsd*			\
  | arm*-*-linux*			\
  | arm*-*-uclinux*			\
  | i[34567]86-go32-*			\
@@ -1010,6 +1009,27 @@ arm-wrs-vxworks)
 	extra_options="${extra_options} arm/vxworks.opt"
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
 	;;
+arm*-*-freebsd*)                # ARM FreeBSD EABI
+	tm_file="dbxelf.h elfos.h ${fbsd_tm_file} arm/elf.h"
+	case $target in
+	arm*b-*-freebsd*)
+	    tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
+	    ;;
+	esac
+	tmake_file="${tmake_file} arm/t-arm arm/t-bpabi"
+	tm_file="${tm_file} arm/bpabi.h arm/freebsd.h arm/aout.h arm/arm.h"
+	case $target in
+	armv6*-*-freebsd*)
+	    tm_defines="${tm_defines} TARGET_FREEBSD_ARMv6=1"
+	    ;;
+	esac
+	case $target in
+	arm*hf-*-freebsd*)
+	    tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
+	    ;;
+	esac
+	with_tls=${with_tls:-gnu}
+	;;
 arm*-*-netbsdelf*)
 	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h ${tm_file} arm/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
@@ -1057,8 +1077,8 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	  use_gcc_stdint=wrap
 	  ;;
 	arm*-*-rtems*)
-	  tm_file="${tm_file} rtems.h arm/rtems-eabi.h newlib-stdint.h"
-	  tmake_file="${tmake_file} arm/t-bpabi arm/t-rtems-eabi"
+	  tm_file="${tm_file} rtems.h arm/rtems.h newlib-stdint.h"
+	  tmake_file="${tmake_file} arm/t-bpabi arm/t-rtems"
 	  ;;
 	arm*-*-symbianelf*)
 	  tm_file="${tm_file} arm/symbian.h"
@@ -2887,6 +2907,10 @@ vax-*-openbsd*)
 	tm_file="vax/vax.h vax/openbsd1.h openbsd.h openbsd-stdint.h openbsd-pthread.h vax/openbsd.h"
 	extra_options="${extra_options} openbsd.opt"
 	use_collect2=yes
+	;;
+visium-*-elf*)
+	tm_file="dbxelf.h elfos.h ${tm_file} visium/elf.h newlib-stdint.h"
+	tmake_file="visium/t-visium visium/t-crtstuff"
 	;;
 xstormy16-*-elf)
 	# For historical reasons, the target files omit the 'x'.

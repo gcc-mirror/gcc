@@ -189,6 +189,11 @@ package System.OS_Interface is
 
    type clockid_t is new int;
 
+   function clock_getres
+     (clock_id : clockid_t;
+      res      : access timespec) return int;
+   pragma Import (C, clock_getres, "clock_getres");
+
    function clock_gettime
      (clock_id : clockid_t;
       tp       : access timespec) return int;

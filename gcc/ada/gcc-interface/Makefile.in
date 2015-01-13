@@ -2400,7 +2400,7 @@ endif
 # thread.c is special as put into GNATRTL_TASKING_OBJS by Makefile.rtl
 LIBGNAT_OBJS = adadecode.o adaint.o argv.o aux-io.o 			\
   cal.o cio.o cstreams.o ctrl_c.o					\
-  env.o errno.o exit.o expect.o final.o 				\
+  env.o errno.o exit.o expect.o final.o rtfinal.o rtinit.o		\
   init.o initialize.o locales.o mkdir.o					\
   raise.o seh_init.o socket.o sysdep.o					\
   targext.o terminals.o tracebak.o 					\
@@ -2481,9 +2481,16 @@ GCC_LINK=$(CXX) $(GCC_LINK_FLAGS) $(ADA_INCLUDES) $(LDFLAGS)
 # Build directory for the tools. Let's copy the target-dependent
 # sources using the same mechanism as for gnatlib. The other sources are
 # accessed using the vpath directive below
-# Note: dummy target, stamp-tools is mainly handled by gnattools.
 
 ../stamp-tools:
+	-$(RM) tools/*
+	-$(RMDIR) tools
+	-$(MKDIR) tools
+	-(cd tools; $(LN_S) ../sdefault.adb ../snames.ads ../snames.adb .)
+	-$(foreach PAIR,$(TOOLS_TARGET_PAIRS), \
+	          $(RM) tools/$(word 1,$(subst <, ,$(PAIR)));\
+	          $(LN_S) $(fsrcpfx)ada/$(word 2,$(subst <, ,$(PAIR))) \
+	                tools/$(word 1,$(subst <, ,$(PAIR)));)
 	touch ../stamp-tools
 
 # when compiling the tools, the runtime has to be first on the path so that
@@ -3039,6 +3046,8 @@ errno.o   : errno.c
 exit.o    : adaint.h exit.c
 expect.o  : expect.c
 final.o   : final.c
+rtfinal.o : rtfinal.c
+rtinit.o  : rtinit.c
 locales.o : locales.c
 mkdir.o   : mkdir.c
 socket.o  : socket.c gsocket.h

@@ -1,6 +1,6 @@
 /* Tree lowering pass.  This pass converts the GENERIC functions-as-trees
    tree representation into the GIMPLE form.
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
    Major work done by Sebastian Pop <s.pop@laposte.net>,
    Diego Novillo <dnovillo@redhat.com> and Jason Merrill <jason@redhat.com>.
 
@@ -23,14 +23,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tree.h"
-#include "expr.h"
 #include "hash-set.h"
-#include "hash-table.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
 #include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "fold-const.h"
+#include "expr.h"
+#include "predict.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "input.h"
@@ -9046,6 +9052,22 @@ gimplify_function_tree (tree fndecl)
 
       /* Replace the current function body with the body
          wrapped in the try/finally TF.  */
+      seq = NULL;
+      gimple_seq_add_stmt (&seq, new_bind);
+      gimple_set_body (fndecl, seq);
+      bind = new_bind;
+    }
+
+  if (flag_sanitize & SANITIZE_THREAD)
+    {
+      gcall *call = gimple_build_call_internal (IFN_TSAN_FUNC_EXIT, 0);
+      gimple tf = gimple_build_try (seq, call, GIMPLE_TRY_FINALLY);
+      gbind *new_bind = gimple_build_bind (NULL, tf, gimple_bind_block (bind));
+      /* Clear the block for BIND, since it is no longer directly inside
+	 the function, but within a try block.  */
+      gimple_bind_set_block (bind, NULL);
+      /* Replace the current function body with the body
+	 wrapped in the try/finally TF.  */
       seq = NULL;
       gimple_seq_add_stmt (&seq, new_bind);
       gimple_set_body (fndecl, seq);

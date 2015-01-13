@@ -895,6 +895,7 @@ package body Prj.Part is
             if Imported_Path_Name_Id = No_Path then
                if Env.Flags.Ignore_Missing_With then
                   In_Tree.Incomplete_With := True;
+                  Env.Flags.Incomplete_Withs := True;
 
                else
                   --  The project file cannot be found
