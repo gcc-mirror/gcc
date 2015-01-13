@@ -1,5 +1,14 @@
 2015-01-13  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.h (NDS32_SYMBOL_FLAG_RODATA): Define our own
+	target-specific symbol_ref flag.
+	(NDS32_SYMBOL_REF_RODATA_P): Define it to check if the symbol_ref
+	resides in rodata section.
+	* config/nds32/nds32.c (TARGET_ENCODE_SECTION_INFO): Define.
+	(nds32_encode_section_info): New function.
+
+2015-01-13  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.md (call): Use pseudo instruction bal which
 	clobbers TA_REGNUM if large code model is specified.
 	(call_register): Likewise.

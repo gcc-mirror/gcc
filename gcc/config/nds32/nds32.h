@@ -24,6 +24,14 @@
 /* The following are auxiliary macros or structure declarations
    that are used all over the nds32.c and nds32.h.  */
 
+/* Use SYMBOL_FLAG_MACH_DEP to define our own symbol_ref flag.
+   It is used in nds32_encode_section_info() to store flag in symbol_ref
+   in case the symbol should be placed in .rodata section.
+   So that we can check it in nds32_legitimate_address_p().  */
+#define NDS32_SYMBOL_FLAG_RODATA \
+  (SYMBOL_FLAG_MACH_DEP << 0)
+#define NDS32_SYMBOL_REF_RODATA_P(x) \
+  ((SYMBOL_REF_FLAGS (x) & NDS32_SYMBOL_FLAG_RODATA) != 0)
 
 /* Computing the Length of an Insn.  */
 #define ADJUST_INSN_LENGTH(INSN, LENGTH) \
