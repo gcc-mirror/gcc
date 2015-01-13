@@ -1,3 +1,9 @@
+2015-01-13  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.opt (mcmodel): Add new option.
+	* config/nds32/nds32-opts.h (nds32_cmodel_type): Add new enum type
+	to describe code model.
+
 2015-01-13  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/64479
