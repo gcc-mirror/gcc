@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-profiling "-pg" } */
 /* { dg-options "-O2 -pg" } */
 
 static int __attribute__((noinline))
