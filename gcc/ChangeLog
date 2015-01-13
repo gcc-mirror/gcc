@@ -1,3 +1,12 @@
+2015-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/64286
+	* ree.c (combine_reaching_defs): Move part of comment earlier,
+	remove !SCALAR_INT_MODE_P check.
+	(add_removable_extension): Don't add vector mode
+	extensions if all uses of the source register aren't the same
+	vector extensions.
+
 2015-01-13  Renlin Li  <renlin.li@arm.com>
 
 	* config/arm/arm.h (CLZ_DEFINED_VALUE_AT_ZERO): Return 2.
