@@ -1648,6 +1648,13 @@ GLIBCXX_3.4.21 {
     _ZStlsI[cw]St11char_traitsI[cw]ESaI[cw]EERSt13basic_ostreamIT_T0_ES7_RKNSt7__cxx1112basic_string*;
     _ZStrsI[cw]St11char_traitsI[cw]ESaI[cw]EERSt13basic_istreamIT_T0_ES7_RNSt7__cxx1112basic_string*;
 
+    # fstream functions taking ABI-tagged std::string
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4openERKNSt7__cxx1112basic_string*;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EEC1ERKNSt7__cxx1112basic_string*;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EE4openERKNSt7__cxx1112basic_string*;
+    _ZNSt14basic_[io]fstreamI[cw]St11char_traitsI[cw]EEC1ERKNSt7__cxx1112basic_string*;
+    _ZNSt14basic_[io]fstreamI[cw]St11char_traitsI[cw]EE4openERKNSt7__cxx1112basic_string*;
+
     # std::locale::name() returning new std::string
     _ZNKSt6locale4nameB5cxx11Ev;
 
