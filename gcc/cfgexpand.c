@@ -3060,8 +3060,6 @@ expand_computed_goto (tree exp)
 {
   rtx x = expand_normal (exp);
 
-  x = convert_memory_address (Pmode, x);
-
   do_pending_stack_adjust ();
   emit_indirect_jump (x);
 }
