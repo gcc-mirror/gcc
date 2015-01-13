@@ -126,7 +126,6 @@ aix			David Edelsohn		<dje.gcc@gmail.com>
 Android sub-port	Maxim Kuvyrkov		<maxim.kuvyrkov@linaro.org>
 darwin port		Mike Stump		<mikestump@comcast.net>
 darwin port		Eric Christopher	<echristo@gmail.com>
-darwin port		Stan Shebs		<stanshebs@earthlink.net>
 DJGPP			DJ Delorie		<dj@delorie.com>
 freebsd			Loren J. Rittle		<ljrittle@acm.org>
 GNU/Hurd		Thomas Schwinge		<thomas@schwinge.name>
@@ -161,7 +160,6 @@ java			Per Bothner		<per@bothner.com>
 java			Andrew Haley		<aph@redhat.com>
 java			Tom Tromey		<tromey@redhat.com>
 objective-c/c++		Mike Stump		<mikestump@comcast.net>
-objective-c/c++		Stan Shebs		<stanshebs@earthlink.net>
 
 			Various Maintainers
 

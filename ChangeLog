@@ -1,3 +1,8 @@
+2015-01-12  Jeff Law  <law@redhat.com>
+
+	* MAINTAINERS: Remove Stan Shebs as he has been inactive for
+	a very long time.
+
 2015-01-09  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac (host_tools): Add gotools.
