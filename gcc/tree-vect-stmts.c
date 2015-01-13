@@ -5791,6 +5791,20 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 			     "group loads with negative dependence distance\n");
 	  return false;
 	}
+
+      /* Similarly when the stmt is a load that is both part of a SLP
+         instance and a loop vectorized stmt via the same-dr mechanism
+	 we have to give up.  */
+      if (STMT_VINFO_GROUP_SAME_DR_STMT (stmt_info)
+	  && (STMT_SLP_TYPE (stmt_info)
+	      != STMT_SLP_TYPE (vinfo_for_stmt
+				 (STMT_VINFO_GROUP_SAME_DR_STMT (stmt_info)))))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "conflicting SLP types for CSEd load\n");
+	  return false;
+	}
     }
 
 
