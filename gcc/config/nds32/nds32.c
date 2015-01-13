@@ -2157,6 +2157,13 @@ nds32_asm_file_start (void)
   if (TARGET_ISA_V3M)
     fprintf (asm_out_file, "\t! ISA family\t\t: %s\n", "V3M");
 
+  if (TARGET_CMODEL_SMALL)
+    fprintf (asm_out_file, "\t! Code model\t\t: %s\n", "SMALL");
+  if (TARGET_CMODEL_MEDIUM)
+    fprintf (asm_out_file, "\t! Code model\t\t: %s\n", "MEDIUM");
+  if (TARGET_CMODEL_LARGE)
+    fprintf (asm_out_file, "\t! Code model\t\t: %s\n", "LARGE");
+
   fprintf (asm_out_file, "\t! Endian setting\t: %s\n",
 			 ((TARGET_BIG_ENDIAN) ? "big-endian"
 					      : "little-endian"));
@@ -2178,9 +2185,6 @@ nds32_asm_file_start (void)
   fprintf (asm_out_file, "\t! 16-bit instructions\t: %s\n",
 			 ((TARGET_16_BIT) ? "Yes"
 					  : "No"));
-  fprintf (asm_out_file, "\t! GP base access\t: %s\n",
-			 ((TARGET_GP_DIRECT) ? "Yes"
-					     : "No"));
   fprintf (asm_out_file, "\t! Reduced registers set\t: %s\n",
 			 ((TARGET_REDUCED_REGS) ? "Yes"
 						: "No"));

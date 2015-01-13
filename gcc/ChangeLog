@@ -1,5 +1,13 @@
 2015-01-13  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.h (TARGET_CMODEL_SMALL): New macro.
+	(TARGET_CMODEL_MEDIUM): New macro.
+	(TARGET_CMODEL_LARGE): New macro.
+	* config/nds32/nds32.c (nds32_asm_file_start): Display corresponding
+	code model setting in assembly code.
+
+2015-01-13  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* common/config/nds32/nds32-common.c (TARGET_DEFAULT_TARGET_FLAGS):
 	Remove MASK_GP_DIRECT flag.
 	* config/nds32/nds32.h (MULTILIB_DEFAULTS): Have -mcmodel=medium as
