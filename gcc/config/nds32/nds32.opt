@@ -53,10 +53,6 @@ m16-bit
 Target Report Mask(16_BIT)
 Generate 16-bit instructions.
 
-mgp-direct
-Target Report Mask(GP_DIRECT)
-Generate GP base instructions directly.
-
 misr-vector-size=
 Target RejectNegative Joined UInteger Var(nds32_isr_vector_size) Init(NDS32_DEFAULT_ISR_VECTOR_SIZE)
 Specify the size of each interrupt vector, which must be 4 or 16.
