@@ -1,3 +1,8 @@
+2015-01-13  Iain Sandoe  <iain@codesourcery.com>
+
+	* MAINTAINERS (Language Front Ends Maintainers): Add myself as an
+	objective-c/c++ front end maintainer.
+
 2015-01-13  Marek Polacek  <polacek@redhat.com>
 
 	* MAINTAINERS (Reviewers): Add self as C front end reviewer.
