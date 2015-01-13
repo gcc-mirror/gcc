@@ -549,7 +549,16 @@ proc check_profiling_available { test_what } {
 	}
     }
 
-    return $profiling_available_saved
+    # -pg link test result can't be cached since it may change between
+    # runs.
+    set profiling_working $profiling_available_saved
+    if { $profiling_available_saved == 1
+         && ![check_no_compiler_messages_nocache profiling executable {
+	      int main() { return 0; } } "-pg"] } {
+	set profiling_working 0
+    }
+
+    return $profiling_working
 }
 
 # Check to see if a target is "freestanding". This is as per the definition

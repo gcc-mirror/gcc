@@ -1,3 +1,8 @@
+2015-01-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* lib/target-supports.exp (check_profiling_available): Check if
+	-pg links.
+
 2015-01-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/64565
