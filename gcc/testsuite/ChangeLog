@@ -1,5 +1,9 @@
 2015-01-13  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* gcc.dg/aru-2.c: Add dg-require-profiling.
+
+2015-01-13  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* lib/target-supports.exp (check_profiling_available): Check if
 	-pg links.
 
