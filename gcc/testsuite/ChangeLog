@@ -1,3 +1,8 @@
+2015-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR lto/64373
+	* gcc.dg/lto/pr64373_0.c: New testcase.
+
 2015-01-13  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.target/aarch64/volatileloadpair-1.c: New testcase.
