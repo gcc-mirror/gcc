@@ -1,3 +1,11 @@
+2015-01-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport form mainline
+	2015-01-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64479
+	* rtlanal.c (set_reg_p): Handle SEQUENCE constructs.
+
 2015-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/64536
