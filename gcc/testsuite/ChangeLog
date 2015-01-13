@@ -1,3 +1,8 @@
+2015-01-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57626
+	* g++.dg/cpp0x/vt-57626.C: New.
+
 2015-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/64528
