@@ -1,3 +1,8 @@
+2015-01-13  Renlin Li  <renlin.li@arm.com>
+
+	* config/arm/arm.h (CLZ_DEFINED_VALUE_AT_ZERO): Return 2.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Ditto.
+
 2015-01-13  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.c (sem_function::equals_private): Call new functions
