@@ -4606,7 +4606,7 @@ mark_used (tree decl)
       --function_depth;
     }
 
-  if (processing_template_decl)
+  if (processing_template_decl || in_template_function ())
     return true;
 
   /* Check this too in case we're within fold_non_dependent_expr.  */

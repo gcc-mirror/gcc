@@ -1,5 +1,8 @@
 2015-01-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64251
+	* decl2.c (mark_used): Don't mark if in_template_function.
+
 	PR c++/64297
 	* typeck.c (apply_memfn_quals): Correct wrong TYPE_CANONICAL.
 
