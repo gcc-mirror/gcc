@@ -344,6 +344,19 @@ enum nds32_builtins
 #define TARGET_ISA_V3   (nds32_arch_option == ARCH_V3)
 #define TARGET_ISA_V3M  (nds32_arch_option == ARCH_V3M)
 
+#define TARGET_CMODEL_SMALL \
+   (nds32_cmodel_option == CMODEL_SMALL)
+#define TARGET_CMODEL_MEDIUM \
+   (nds32_cmodel_option == CMODEL_MEDIUM)
+#define TARGET_CMODEL_LARGE \
+   (nds32_cmodel_option == CMODEL_LARGE)
+
+/* When -mcmodel=small or -mcmodel=medium,
+   compiler may generate gp-base instruction directly.  */
+#define TARGET_GP_DIRECT \
+   (nds32_cmodel_option == CMODEL_SMALL\
+    || nds32_cmodel_option == CMODEL_MEDIUM)
+
 #define TARGET_SOFT_FLOAT 1
 #define TARGET_HARD_FLOAT 0
 
