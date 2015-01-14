@@ -1,3 +1,9 @@
+2015-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/fentry-override.c: Properly place {} in target
+	selector.  Remove nonpic.
+	* gcc.target/i386/fentry.c: Likewise.
+
 2015-01-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/atomic-invalid.c: Check for invalid memory model
