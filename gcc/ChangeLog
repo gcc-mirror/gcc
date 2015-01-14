@@ -127,17 +127,17 @@
 
 2015-01-14  Matthew Fortune  <matthew.fortune@imgtec.com>
 
-    	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC): Only infer an ISA
-    	level from an ARCH; do not inject the default.
-    	(MIPS_DEFAULT_ISA_LEVEL_SPEC): New macro split out from
-    	MIPS_ISA_LEVEL_SPEC.
-    	(MIPS_ISA_NAN2008_SPEC): Update comment.
-    	(BASE_DRIVER_SELF_SPECS): Likewise.
-    	* config/mips/elfoabi.h (DRIVER_SELF_SPECS): Add
-    	MIPS_DEFAULT_ISA_LEVEL_SPEC.
-    	* config/mips/mti-elf.h (DRIVER_SELF_SPECS): Likewise.
-    	* config/mips/mti-linux.h (DRIVER_SELF_SPECS): Likewise.
-    	* config/mips/sde.h (DRIVER_SELF_SPECS): Likewise.
+	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC): Only infer an ISA
+	level from an ARCH; do not inject the default.
+	(MIPS_DEFAULT_ISA_LEVEL_SPEC): New macro split out from
+	MIPS_ISA_LEVEL_SPEC.
+	(MIPS_ISA_NAN2008_SPEC): Update comment.
+	(BASE_DRIVER_SELF_SPECS): Likewise.
+	* config/mips/elfoabi.h (DRIVER_SELF_SPECS): Add
+	MIPS_DEFAULT_ISA_LEVEL_SPEC.
+	* config/mips/mti-elf.h (DRIVER_SELF_SPECS): Likewise.
+	* config/mips/mti-linux.h (DRIVER_SELF_SPECS): Likewise.
+	* config/mips/sde.h (DRIVER_SELF_SPECS): Likewise.
 
 2015-01-14  Richard Biener  <rguenther@suse.de>
 
