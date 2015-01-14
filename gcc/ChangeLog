@@ -1,3 +1,8 @@
+2015-01-14  Hale Wang  <hale.wang@arm.com>
+
+	* config/arm/arm.c: Tune the max_cond_insns/branch_cost for
+	Cortex-M7.
+
 2015-01-14  Richard Biener  <rguenther@suse.de>
 
 	PR lto/64415
