@@ -1,3 +1,7 @@
+2015-01-14  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* gcc.target/mips/octeon3-pipe-1.c: New test.
+
 2015-01-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/harness.h (set_up_logging): Move string concatenation
