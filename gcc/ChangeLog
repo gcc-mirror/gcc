@@ -1,3 +1,26 @@
+2015-01-14  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/constraints.md (ZC): Add support for R6 LL/SC
+	offsets.
+	(ZD): Update to use ISA_HAS_9BIT_DISPLACEMENT.
+	* config/mips/mips.h (ISA_HAS_PREFETCH_9BIT): Rename to...
+	(ISA_HAS_9BIT_DISPLACEMENT): ... this. New macro.
+	* config/mips/sync.md (sync_compare_and_swap<mode>): Use ZC
+	instead of ZR for the memory operand of LL/SC.
+	(compare_and_swap_12, sync_add<mode>): Likewise.
+	(sync_<optab>_12, sync_old_<optab>_12): Likewise.
+	(sync_new_<optab>_12, sync_nand_12): Likewise.
+	(sync_old_nand_12, sync_new_nand_12): Likewise.
+	(sync_sub<mode>, sync_old_add<mode>): Likewise.
+	(sync_old_sub<mode>, sync_new_add<mode>): Likewise.
+	(sync_new_sub<mode>, sync_<optab><mode>): Likewise.
+	(sync_old_<optab><mode>, sync_new_<optab><mode>"): Likewise.
+	(sync_nand<mode>, sync_old_nand<mode>): Likewise.
+	(sync_new_nand<mode>, sync_lock_test_and_set<mode>): Likewise.
+	(test_and_set_12, atomic_compare_and_swap<mode>): Likewise.
+	(atomic_exchange<mode>_llsc, atomic_fetch_add<mode>_llsc): Likewise.
+	* doc/md.texi (ZC): Update description.
+
 2015-01-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	* builtins.c (expand_builtin_atomic_exchange): Remove error when
