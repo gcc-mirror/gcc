@@ -1,3 +1,8 @@
+2015-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59354
+	* gcc.dg/vect/pr59354.c: New testcase.
+
 2015-01-14  Andrew Stubbs  <ams@codesourcery.com>
 
 	* lib/target-supports.exp
