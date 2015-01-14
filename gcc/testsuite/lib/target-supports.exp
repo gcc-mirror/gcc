@@ -5760,11 +5760,12 @@ proc check_effective_target_gld { } {
 # (LTO) support.
 
 proc check_effective_target_lto { } {
-    global ENABLE_LTO
     if { [istarget nvptx-*-*] } {
 	return 0;
     }
-    return [info exists ENABLE_LTO]
+    return [check_no_compiler_messages lto object {
+	void foo (void) { }
+    } "-flto"]
 }
 
 # Return 1 if -mx32 -maddress-mode=short can compile, 0 otherwise.

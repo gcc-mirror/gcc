@@ -1,3 +1,8 @@
+2015-01-14  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* lib/target-supports.exp (check_effective_target_lto): Check for -flto
+	option support instead of ENABLE_LTO from Makefile.
+
 2015-01-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59354
