@@ -704,8 +704,7 @@ struct mips_cpu_info {
 #define MIPS_ARCH_OPTION_SPEC \
   MIPS_ISA_LEVEL_OPTION_SPEC "|march=*"
 
-/* A spec that infers a -mips argument from an -march argument,
-   or injects the default if no architecture is specified.  */
+/* A spec that infers a -mips argument from an -march argument.  */
 
 #define MIPS_ISA_LEVEL_SPEC \
   "%{" MIPS_ISA_LEVEL_OPTION_SPEC ":;: \
@@ -725,7 +724,13 @@ struct mips_cpu_info {
      %{march=mips64r2|march=loongson3a|march=octeon|march=xlp: -mips64r2} \
      %{march=mips64r3: -mips64r3} \
      %{march=mips64r5: -mips64r5} \
-     %{march=mips64r6: -mips64r6} \
+     %{march=mips64r6: -mips64r6}}"
+
+/* A spec that injects the default multilib ISA if no architecture is
+   specified.  */
+
+#define MIPS_DEFAULT_ISA_LEVEL_SPEC \
+  "%{" MIPS_ISA_LEVEL_OPTION_SPEC ":;: \
      %{!march=*: -" MULTILIB_ISA_DEFAULT "}}"
 
 /* A spec that infers a -mhard-float or -msoft-float setting from an
@@ -757,6 +762,7 @@ struct mips_cpu_info {
   "%{msynci|mno-synci:;:%{mips32r2|mips32r3|mips32r5|mips32r6|mips64r2 \
 			  |mips64r3|mips64r5|mips64r6:-msynci;:-mno-synci}}"
 
+/* Infer a -mnan=2008 setting from a -mips argument.  */
 #define MIPS_ISA_NAN2008_SPEC \
   "%{mnan*:;mips32r6|mips64r6:-mnan=2008}"
 
@@ -806,7 +812,9 @@ struct mips_cpu_info {
   {"mips-plt", "%{!mplt:%{!mno-plt:-m%(VALUE)}}" }, \
   {"synci", "%{!msynci:%{!mno-synci:-m%(VALUE)}}" }
 
-/* A spec that infers the -mdsp setting from an -march argument.  */
+/* A spec that infers the:
+   -mnan=2008 setting from a -mips argument,
+   -mdsp setting from a -march argument.  */
 #define BASE_DRIVER_SELF_SPECS \
   MIPS_ISA_NAN2008_SPEC,       \
   "%{!mno-dsp: \
