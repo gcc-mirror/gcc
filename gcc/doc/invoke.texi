@@ -12828,10 +12828,11 @@ Standard for all functions, even if this is not strictly necessary for
 correct execution of the code.  Specifying @option{-fomit-frame-pointer}
 with this option causes the stack frames not to be generated for
 leaf functions.  The default is @option{-mno-apcs-frame}.
+This option is deprecated.
 
 @item -mapcs
 @opindex mapcs
-This is a synonym for @option{-mapcs-frame}.
+This is a synonym for @option{-mapcs-frame} and is deprecated.
 
 @ignore
 @c not currently implemented
