@@ -729,8 +729,11 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 		 ???  We should enhance this to only disallow gaps
 		 inside vectors.  */
               if ((unrolling_factor > 1
-		   && GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) == stmt
-		   && GROUP_GAP (vinfo_for_stmt (stmt)) != 0)
+		   && ((GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) == stmt
+			&& GROUP_GAP (vinfo_for_stmt (stmt)) != 0)
+		       /* If the group is split up then GROUP_GAP
+			  isn't correct here, nor is GROUP_FIRST_ELEMENT.  */
+		       || GROUP_SIZE (vinfo_for_stmt (stmt)) > group_size))
 		  || (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) != stmt
 		      && GROUP_GAP (vinfo_for_stmt (stmt)) != 1))
                 {
