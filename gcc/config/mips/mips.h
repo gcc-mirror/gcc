@@ -1089,8 +1089,8 @@ struct mips_cpu_info {
 				  || mips_isa_rev >= 1)			\
 				 && !TARGET_MIPS16)
 
-/* ISA has data prefetch with limited 9-bit displacement.  */
-#define ISA_HAS_PREFETCH_9BIT	(mips_isa_rev >= 6)
+/* ISA has data prefetch, LL and SC with limited 9-bit displacement.  */
+#define ISA_HAS_9BIT_DISPLACEMENT	(mips_isa_rev >= 6)
 
 /* ISA has data indexed prefetch instructions.  This controls use of
    'prefx', along with TARGET_HARD_FLOAT and TARGET_DOUBLE_FLOAT.
