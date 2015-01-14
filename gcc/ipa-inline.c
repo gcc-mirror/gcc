@@ -1697,10 +1697,12 @@ inline_small_functions (void)
 		   " to be inlined into %s/%i in %s:%i\n"
 		   " Estimated badness is %f, frequency %.2f.\n",
 		   edge->caller->name (), edge->caller->order,
-		   edge->call_stmt ? "unknown"
-		   : gimple_filename ((const_gimple) edge->call_stmt),
-		   edge->call_stmt ? -1
-		   : gimple_lineno ((const_gimple) edge->call_stmt),
+		   edge->call_stmt
+		   ? gimple_filename ((const_gimple) edge->call_stmt)
+		   : "unknown",
+		   edge->call_stmt
+		   ? gimple_lineno ((const_gimple) edge->call_stmt)
+		   : -1,
 		   badness.to_double (),
 		   edge->frequency / (double)CGRAPH_FREQ_BASE);
 	  if (edge->count)

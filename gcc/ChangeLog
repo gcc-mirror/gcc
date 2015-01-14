@@ -1,3 +1,8 @@
+2015-01-15  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* ipa-inline.c (inline_small_functions): Swap the operands in
+	enum.
+
 2015-01-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/64481
