@@ -3094,8 +3094,11 @@ var_defined_without_dynamic_init (tree var)
      counts as dynamic initialization.  */
   if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (var)))
     return false;
-  /* If it's in this TU, its initializer has been processed.  */
-  gcc_assert (DECL_INITIALIZED_P (var));
+  /* If it's in this TU, its initializer has been processed, unless
+     it's a case of self-initialization, then DECL_INITIALIZED_P is
+     false while the initializer is handled by finish_id_expression.  */
+  if (!DECL_INITIALIZED_P (var))
+    return false;
   /* If it has no initializer or a constant one, it's not dynamic.  */
   return (!DECL_NONTRIVIALLY_INITIALIZED_P (var)
 	  || DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (var));

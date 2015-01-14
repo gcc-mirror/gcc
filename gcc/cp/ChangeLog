@@ -1,3 +1,9 @@
+2015-01-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58671
+	* decl2.c (var_defined_without_dynamic_init): Handle gracefully
+	self-initialization.
+
 2015-01-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/64356
