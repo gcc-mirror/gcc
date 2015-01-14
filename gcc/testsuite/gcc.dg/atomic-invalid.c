@@ -17,8 +17,6 @@ main ()
   __atomic_compare_exchange_n (&i, &e, 1, 0, __ATOMIC_SEQ_CST, __ATOMIC_RELEASE); /* { dg-error "invalid failure memory" } */
   __atomic_compare_exchange_n (&i, &e, 1, 1, __ATOMIC_SEQ_CST, __ATOMIC_ACQ_REL); /* { dg-error "invalid failure memory" } */
 
-  __atomic_exchange_n (&i, 1, __ATOMIC_CONSUME); /* { dg-error "invalid memory model" } */
-
   __atomic_load_n (&i, __ATOMIC_RELEASE); /* { dg-error "invalid memory model" } */
   __atomic_load_n (&i, __ATOMIC_ACQ_REL); /* { dg-error "invalid memory model" } */
 
