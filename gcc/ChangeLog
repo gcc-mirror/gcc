@@ -1,5 +1,24 @@
 2015-01-13  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/64481
+	* ipa-inline-analysis.c (node_growth_cache): Remove.
+	(initialize_growth_caches): Do not initialize it.
+	(free_growth_caches): Do not free it.
+	(do_estimate_growth): Rename to ...
+	(estimate_growth): ... this one; drop growth cache code.
+	(growth_likely_positive): Always go the heuristics way.
+	* ipa-inline.c (can_inline_edge_p): Walk through aliases.
+	(reset_edge_caches): Do not reset node growth.
+	(heap_edge_removal_hook): Do not maintain cache.
+	(inline_small_functions): Likewise; strenghten sanity check.
+	(ipa_inline): Do not maintain caches.
+	* ipa-inline.h (node_growth_cache): Remove.
+	(do_estimate_growth): Remove to ...
+	(estimate_growth): this one; remove inline version.
+	(reset_node_growth_cache): Remove.
+
+2015-01-13  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/64565
 	* ipa-inline.c (inline_small_functions): Update callee keys after
 	resolving speculation

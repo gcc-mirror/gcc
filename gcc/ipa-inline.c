@@ -388,11 +388,11 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
   else if (caller_tree != callee_tree)
     {
       if (((opt_for_fn (e->caller->decl, optimize)
-	    > opt_for_fn (e->callee->decl, optimize))
+	    > opt_for_fn (callee->decl, optimize))
 	    || (opt_for_fn (e->caller->decl, optimize_size)
-		!= opt_for_fn (e->callee->decl, optimize_size)))
+		!= opt_for_fn (callee->decl, optimize_size)))
 	  /* gcc.dg/pr43564.c.  Look at forced inline even in -O0.  */
-	  && !DECL_DISREGARD_INLINE_LIMITS (e->callee->decl))
+	  && !DECL_DISREGARD_INLINE_LIMITS (callee->decl))
 	{
 	  e->inline_failed = CIF_OPTIMIZATION_MISMATCH;
 	  inlinable = false;
@@ -1095,9 +1095,6 @@ reset_edge_caches (struct cgraph_node *node)
   if (where->global.inlined_to)
     where = where->global.inlined_to;
 
-  /* WHERE body size has changed, the cached growth is invalid.  */
-  reset_node_growth_cache (where);
-
   for (edge = where->callers; edge; edge = edge->next_caller)
     if (edge->inline_failed)
       reset_edge_growth_cache (edge);
@@ -1428,8 +1425,6 @@ add_new_edges_to_heap (edge_heap_t *heap, vec<cgraph_edge *> new_edges)
 static void
 heap_edge_removal_hook (struct cgraph_edge *e, void *data)
 {
-  if (e->callee)
-    reset_node_growth_cache (e->callee);
   if (e->aux)
     {
       ((edge_heap_t *)data)->delete_node ((edge_heap_node_t *)e->aux);
@@ -1622,7 +1617,6 @@ inline_small_functions (void)
 	  struct cgraph_node *where = node->global.inlined_to
 				      ? node->global.inlined_to : node;
 	  inline_update_overall_summary (where);
-          reset_node_growth_cache (where);
 	  reset_edge_caches (where);
           update_caller_keys (&edge_heap, where,
 			      updated_nodes, NULL);
@@ -1653,8 +1647,15 @@ inline_small_functions (void)
 #ifdef ENABLE_CHECKING
       /* Be sure that caches are maintained consistent.  */
       sreal cached_badness = edge_badness (edge, false);
+ 
+      int old_size_est = estimate_edge_size (edge);
+      int old_time_est = estimate_edge_time (edge);
+      int old_hints_est = estimate_edge_hints (edge);
+
       reset_edge_growth_cache (edge);
-      reset_node_growth_cache (edge->callee);
+      gcc_assert (old_size_est == estimate_edge_size (edge));
+      gcc_assert (old_time_est == estimate_edge_time (edge));
+      gcc_assert (old_hints_est == estimate_edge_hints (edge));
 
       /* When updating the edge costs, we only decrease badness in the keys.
 	 Increases of badness are handled lazilly; when we see key with out
@@ -1785,8 +1786,7 @@ inline_small_functions (void)
 	  inline_call (edge, true, &new_indirect_edges, &overall_size, true);
 	  add_new_edges_to_heap (&edge_heap, new_indirect_edges);
 
-	  reset_edge_caches (edge->callee);
-          reset_node_growth_cache (callee);
+	  reset_edge_caches (edge->callee->function_symbol ());
 
 	  update_callee_keys (&edge_heap, where, updated_nodes);
 	}
@@ -2218,7 +2218,6 @@ ipa_inline (void)
 	    {
 	      struct cgraph_node *where = node->global.inlined_to
 					  ? node->global.inlined_to : node;
-              reset_node_growth_cache (where);
 	      reset_edge_caches (where);
 	      inline_update_overall_summary (where);
 	    }
