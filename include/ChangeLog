@@ -1,3 +1,7 @@
+2015-12-14  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* libiberty.h: Merge Copyright year update from Binutils.
+
 2014-12-24  Uros Bizjak  <ubizjak@gmail.com>
 	    Ben Elliston  <bje@au.ibm.com>
 	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
