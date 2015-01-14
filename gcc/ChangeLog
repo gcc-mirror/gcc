@@ -1,3 +1,12 @@
+2015-01-14  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* cgraphunit.c (ipa_passes): Remove argument from ipa_write_summaries.
+	* lto-cgraph.c (select_what_to_stream): Remove argument, use
+	lto_stream_offload_p instead.
+	* lto-streamer.h (select_what_to_stream): Remove argument.
+	* passes.c (ipa_write_summaries): Likewise.
+	* tree-pass.h (ipa_write_summaries): Likewise.
+
 2015-01-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59354

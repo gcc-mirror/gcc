@@ -1,3 +1,8 @@
+2015-01-14  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* lto-partition.c (lto_promote_cross_file_statics): Remove argument
+	from select_what_to_stream.
+
 2015-01-09  Bernd Schmidt  <bernds@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -842,11 +842,11 @@ create_references (lto_symtab_encoder_t encoder, symtab_node *node)
 /* Select what needs to be streamed out.  In regular lto mode stream everything.
    In offload lto mode stream only nodes marked as offloadable.  */
 void
-select_what_to_stream (bool offload_lto_mode)
+select_what_to_stream (void)
 {
   struct symtab_node *snode;
   FOR_EACH_SYMBOL (snode)
-    snode->need_lto_streaming = !offload_lto_mode || snode->offloadable;
+    snode->need_lto_streaming = !lto_stream_offload_p || snode->offloadable;
 }
 
 /* Find all symbols we want to stream into given partition and insert them
