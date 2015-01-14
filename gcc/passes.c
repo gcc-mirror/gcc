@@ -2464,7 +2464,7 @@ ipa_write_summaries_1 (lto_symtab_encoder_t encoder)
 /* Write out summaries for all the nodes in the callgraph.  */
 
 void
-ipa_write_summaries (bool offload_lto_mode)
+ipa_write_summaries (void)
 {
   lto_symtab_encoder_t encoder;
   int i, order_pos;
@@ -2475,7 +2475,7 @@ ipa_write_summaries (bool offload_lto_mode)
   if ((!flag_generate_lto && !flag_generate_offload) || seen_error ())
     return;
 
-  select_what_to_stream (offload_lto_mode);
+  select_what_to_stream ();
 
   encoder = lto_symtab_encoder_new (false);
 

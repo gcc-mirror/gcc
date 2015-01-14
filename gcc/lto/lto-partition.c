@@ -973,7 +973,8 @@ lto_promote_cross_file_statics (void)
 
   gcc_assert (flag_wpa);
 
-  select_what_to_stream (false);
+  lto_stream_offload_p = false;
+  select_what_to_stream ();
 
   /* First compute boundaries.  */
   n_sets = ltrans_partitions.length ();
