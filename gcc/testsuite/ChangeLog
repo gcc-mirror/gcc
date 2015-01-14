@@ -1,6 +1,11 @@
 2015-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2015-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/64513
+	* gcc.target/i386/pr64513.c: New test.
+
 	2015-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/64286

@@ -1,6 +1,12 @@
 2015-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2015-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/64513
+	* config/i386/i386.c (ix86_expand_prologue): Add
+	REG_FRAME_RELATED_EXPR to %rax and %r10 pushes.
+
 	2015-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/64286
