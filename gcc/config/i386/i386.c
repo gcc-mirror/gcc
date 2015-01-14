@@ -21318,6 +21318,14 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
 
       switch (cmp_ops_mode)
 	{
+	case V64QImode:
+	  gcc_assert (TARGET_AVX512BW);
+	  gen = code == GT ? gen_avx512bw_gtv64qi3 : gen_avx512bw_eqv64qi3_1;
+	  break;
+	case V32HImode:
+	  gcc_assert (TARGET_AVX512BW);
+	  gen = code == GT ? gen_avx512bw_gtv32hi3 : gen_avx512bw_eqv32hi3_1;
+	  break;
 	case V16SImode:
 	  gen = code == GT ? gen_avx512f_gtv16si3 : gen_avx512f_eqv16si3_1;
 	  break;
