@@ -1,3 +1,7 @@
+2015-01-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/arm_neon-nosimd-error.c: New test.
+
 2015-01-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/64453

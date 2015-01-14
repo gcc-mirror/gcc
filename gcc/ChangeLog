@@ -1,5 +1,10 @@
 2015-01-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/arm_neon.h: Error out if AdvancedSIMD
+	is not available.
+
+2015-01-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* doc/invoke.texi (mapcs): Mention deprecation.
 	(mapcs-frame): Likewise.
 
