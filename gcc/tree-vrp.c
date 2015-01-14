@@ -6498,7 +6498,8 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
   /* Accesses to trailing arrays via pointers may access storage
      beyond the types array bounds.  */
   base = get_base_address (ref);
-  if (base && TREE_CODE (base) == MEM_REF)
+  if ((warn_array_bounds < 2)
+      && base && TREE_CODE (base) == MEM_REF)
     {
       tree cref, next = NULL_TREE;
 

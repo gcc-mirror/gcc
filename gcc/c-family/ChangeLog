@@ -1,3 +1,7 @@
+2015-01-13  Martin Uecker <uecker@eecs.berkeley.edu>
+
+	* c.opt: New option -Warray-bounds=.
+
 2015-01-09  Michael Collison  <michael.collison@linaro.org>
 
 	* array-notation-common.c: Include hash-set.h, machmode.h,

@@ -1,3 +1,7 @@
+2015-01-13  Martin Uecker <uecker@eecs.berkeley.edu>
+
+	* gcc.dg/Warray-bounds-11.c: New test-case.
+
 2015-01-14  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* gcc.target/mips/octeon3-pipe-1.c: New test.
