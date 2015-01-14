@@ -1,3 +1,9 @@
+2015-01-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/atomic-invalid.c: Check for invalid memory model
+	warnings instead of errors.
+
+
 2015-01-14  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* lib/target-supports.exp (check_effective_target_lto): Check for -flto
