@@ -1,3 +1,13 @@
+2015-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR lto/64415
+	* tree-inline.c (insert_debug_decl_map): Check destination
+	function MAY_HAVE_DEBUG_STMTS.
+	(insert_init_debug_bind): Likewise.
+	(insert_init_stmt): Remove redundant check.
+	(remap_gimple_stmt): Drop debug stmts if the destination
+	function has var-tracking assignments disabled.
+
 2015-01-14  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf-gimple.c (func_checker::compare_operand): Add support for
