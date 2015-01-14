@@ -3,6 +3,9 @@
 	Backported from mainline
 	2015-01-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/64286
+	* gcc.target/i386/avx2-pr64286.c: New test.
+
 	PR fortran/64528
 	* gfortran.dg/pr64528.f90: New test.
 
