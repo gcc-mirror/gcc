@@ -1,3 +1,8 @@
+2015-01-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* lto-cgraph: Update function comments for
+	lto_symtab_encoder_encode_*.
+
 2015-01-14  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* Makefile.in (site.exp): Do not set ENABLE_LTO.
