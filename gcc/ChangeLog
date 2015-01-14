@@ -1,3 +1,10 @@
+2015-01-14  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Option Summary): Reclassify -fuse-ld as a linker
+	option.
+	(Optimization Options): Move -fuse-ld documentation to...
+	(Link Options): ...here.
+
 2015-01-14  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config/mips/constraints.md (ZC): Add support for R6 LL/SC
