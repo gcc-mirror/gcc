@@ -19191,6 +19191,7 @@ arm_compute_save_reg_mask (void)
       || (save_reg_mask
 	  && optimize_size
 	  && ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL
+	  && !crtl->tail_call_emit
 	  && !crtl->calls_eh_return))
     save_reg_mask |= 1 << LR_REGNUM;
 
