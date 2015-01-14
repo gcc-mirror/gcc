@@ -1,3 +1,9 @@
+2015-01-14  Joey Ye  <joey.ye@arm.com>
+
+	* config/arm/arm.c (arm_compute_save_reg_mask):
+	Do not save lr in case of tail call.
+	* config/arm/thumb2.md (*thumb2_pop_single): New pattern.
+
 2015-01-13  Martin Uecker <uecker@eecs.berkeley.edu>
 
 	* tree-vrp.c (check_array_ref): Emit more warnings
@@ -26,7 +32,7 @@
 	(gimple_init_edge_profiler): Likewise.
 	(gimple_gen_ic_func_profiler): Likewise.
 
-2015-01-15  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2015-01-13  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* ipa-inline.c (inline_small_functions): Swap the operands in
 	enum.

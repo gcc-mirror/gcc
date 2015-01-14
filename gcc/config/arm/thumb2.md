@@ -267,6 +267,17 @@
    (set_attr "type" "multiple")]
 )
 
+;; Pop a single register as its size is preferred over a post-incremental load
+(define_insn "*thumb2_pop_single"
+  [(set (match_operand:SI 0 "low_register_operand" "=r")
+        (mem:SI (post_inc:SI (reg:SI SP_REGNUM))))]
+  "TARGET_THUMB2 && (reload_in_progress || reload_completed)"
+  "pop\t{%0}"
+  [(set_attr "type" "load1")
+   (set_attr "length" "2")
+   (set_attr "predicable" "yes")]
+)
+
 ;; We have two alternatives here for memory loads (and similarly for stores)
 ;; to reflect the fact that the permissible constant pool ranges differ
 ;; between ldr instructions taking low regs and ldr instructions taking high
