@@ -1,3 +1,11 @@
+2015-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64563
+	* gcc.dg/pr64563.c: New test.
+
 2015-01-14  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
