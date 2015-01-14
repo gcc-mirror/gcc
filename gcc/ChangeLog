@@ -1,3 +1,11 @@
+2015-01-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-profile.c (init_ic_make_global_vars): Drop workaround
+	for bintuils bug 14342.
+	(init_ic_make_global_vars): Likewise.
+	(gimple_init_edge_profiler): Likewise.
+	(gimple_gen_ic_func_profiler): Likewise.
+
 2015-01-15  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* ipa-inline.c (inline_small_functions): Swap the operands in
