@@ -1,5 +1,9 @@
 2015-01-14  Ilya Verbin  <ilya.verbin@intel.com>
 
+	* Makefile.in (site.exp): Do not set ENABLE_LTO.
+
+2015-01-14  Ilya Verbin  <ilya.verbin@intel.com>
+
 	* cgraphunit.c (ipa_passes): Remove argument from ipa_write_summaries.
 	* lto-cgraph.c (select_what_to_stream): Remove argument, use
 	lto_stream_offload_p instead.
