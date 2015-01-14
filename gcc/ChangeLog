@@ -1,3 +1,17 @@
+2015-01-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53988
+	* config/sh/sh-protos.h (sh_find_set_of_reg): Add option to ignore
+	reg-reg copies.
+	(sh_extending_set_of_reg): New struct.
+	(sh_find_extending_set_of_reg, sh_split_tst_subregs,
+	sh_remove_reg_dead_or_unused_notes): New Declarations.
+	* config/sh/sh.c (sh_remove_reg_dead_or_unused_notes,
+	sh_find_extending_set_of_reg, sh_split_tst_subregs,
+	sh_extending_set_of_reg::use_as_extended_reg): New functions.
+	* config/sh/sh.md (*tst<mode>_t_zero): Rename to *tst<mode>_t_subregs,
+	convert to insn_and_split and use new function sh_split_tst_subregs.
+
 2015-01-14  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Option Summary): Reclassify -fuse-ld as a linker
