@@ -193,7 +193,7 @@ lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
 }
 
 
-/* Return TRUE if we should encode initializer of NODE (if any).  */
+/* Return TRUE if we should encode the body of NODE (if any).  */
 
 bool
 lto_symtab_encoder_encode_body_p (lto_symtab_encoder_t encoder,
@@ -203,7 +203,7 @@ lto_symtab_encoder_encode_body_p (lto_symtab_encoder_t encoder,
   return encoder->nodes[index].body;
 }
 
-/* Return TRUE if we should encode body of NODE (if any).  */
+/* Specify that we encode the body of NODE in this partition.  */
 
 static void
 lto_set_symtab_encoder_encode_body (lto_symtab_encoder_t encoder,
@@ -226,7 +226,7 @@ lto_symtab_encoder_encode_initializer_p (lto_symtab_encoder_t encoder,
   return encoder->nodes[index].initializer;
 }
 
-/* Return TRUE if we should encode initializer of NODE (if any).  */
+/* Specify that we should encode initializer of NODE (if any).  */
 
 static void
 lto_set_symtab_encoder_encode_initializer (lto_symtab_encoder_t encoder,
@@ -236,7 +236,7 @@ lto_set_symtab_encoder_encode_initializer (lto_symtab_encoder_t encoder,
   encoder->nodes[index].initializer = true;
 }
 
-/* Return TRUE if we should encode initializer of NODE (if any).  */
+/* Return TRUE if NODE is in this partition.  */
 
 bool
 lto_symtab_encoder_in_partition_p (lto_symtab_encoder_t encoder,
@@ -248,7 +248,7 @@ lto_symtab_encoder_in_partition_p (lto_symtab_encoder_t encoder,
   return encoder->nodes[index].in_partition;
 }
 
-/* Return TRUE if we should encode body of NODE (if any).  */
+/* Specify that NODE is in this partition.  */
 
 void
 lto_set_symtab_encoder_in_partition (lto_symtab_encoder_t encoder,
