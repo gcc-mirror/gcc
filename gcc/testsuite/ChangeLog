@@ -1,3 +1,8 @@
+2015-01-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53988
+	* gcc.target/sh/pr53988-1.c: New.
+
 2015-01-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58671
