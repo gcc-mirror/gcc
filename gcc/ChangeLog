@@ -1,3 +1,8 @@
+2015-01-14  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf-gimple.c (func_checker::compare_operand): Add support for
+	IMAGPART_EXPR and REALPART_EXPR and fix BIT_FIELD_REF comparison.
+
 2015-01-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/64460
