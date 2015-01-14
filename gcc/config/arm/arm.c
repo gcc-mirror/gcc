@@ -294,6 +294,7 @@ static unsigned int arm_autovectorize_vector_sizes (void);
 static int arm_default_branch_cost (bool, bool);
 static int arm_cortex_a5_branch_cost (bool, bool);
 static int arm_cortex_m_branch_cost (bool, bool);
+static int arm_cortex_m7_branch_cost (bool, bool);
 
 static bool arm_vectorize_vec_perm_const_ok (machine_mode vmode,
 					     const unsigned char *sel);
@@ -2001,10 +2002,10 @@ const struct tune_params arm_cortex_m7_tune =
   &v7m_extra_costs,
   NULL,						/* Sched adj cost.  */
   0,						/* Constant limit.  */
-  0,						/* Max cond insns.  */
+  1,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
-  arm_cortex_m_branch_cost,
+  arm_cortex_m7_branch_cost,
   false,					/* Prefer LDRD/STRD.  */
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
@@ -12050,6 +12051,12 @@ arm_cortex_m_branch_cost (bool speed_p, bool predictable_p)
 {
   return (TARGET_32BIT && speed_p) ? 1
          : arm_default_branch_cost (speed_p, predictable_p);
+}
+
+static int
+arm_cortex_m7_branch_cost (bool speed_p, bool predictable_p)
+{
+  return speed_p ? 0 : arm_default_branch_cost (speed_p, predictable_p);
 }
 
 static bool fp_consts_inited = false;
