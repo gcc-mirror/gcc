@@ -1,3 +1,8 @@
+2015-01-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/invoke.texi (mapcs): Mention deprecation.
+	(mapcs-frame): Likewise.
+
 2015-01-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/64453
