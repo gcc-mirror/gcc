@@ -164,6 +164,9 @@ static void *expand_regions (struct tm_region *,
 static tree
 get_attrs_for (const_tree x)
 {
+  if (x == NULL_TREE)
+    return NULL_TREE;
+
   switch (TREE_CODE (x))
     {
     case FUNCTION_DECL:
@@ -172,16 +175,16 @@ get_attrs_for (const_tree x)
 
     default:
       if (TYPE_P (x))
-	return NULL;
+	return NULL_TREE;
       x = TREE_TYPE (x);
       if (TREE_CODE (x) != POINTER_TYPE)
-	return NULL;
+	return NULL_TREE;
       /* FALLTHRU */
 
     case POINTER_TYPE:
       x = TREE_TYPE (x);
       if (TREE_CODE (x) != FUNCTION_TYPE && TREE_CODE (x) != METHOD_TYPE)
-	return NULL;
+	return NULL_TREE;
       /* FALLTHRU */
 
     case FUNCTION_TYPE:

@@ -1,3 +1,11 @@
+2015-01-14  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2015-01-13  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/64391
+	* trans-mem.c (get_attrs_for): Return NULL_TREE if X is NULL_TREE.
+
 2015-01-13  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54442
