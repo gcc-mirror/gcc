@@ -10,7 +10,7 @@ movi_msl8 (int *__restrict a)
 {
   int i;
 
-  /* { dg-final { scan-assembler "movi\\tv\[0-9\]+\.4s, 0xab, msl 8" } } */
+  /* { dg-final { scan-assembler "movi\\tv\[0-9\]+\.\[42\]s, 0xab, msl 8" } } */
   for (i = 0; i < N; i++)
     a[i] = 0xabff;
 }
@@ -20,7 +20,7 @@ movi_msl16 (int *__restrict a)
 {
   int i;
 
-  /* { dg-final { scan-assembler "movi\\tv\[0-9\]+\.4s, 0xab, msl 16" } } */
+  /* { dg-final { scan-assembler "movi\\tv\[0-9\]+\.\[42\]s, 0xab, msl 16" } } */
   for (i = 0; i < N; i++)
     a[i] = 0xabffff;
 }
@@ -30,7 +30,7 @@ mvni_msl8 (int *__restrict a)
 {
   int i;
 
-  /* { dg-final { scan-assembler "mvni\\tv\[0-9\]+\.4s, 0xab, msl 8" } } */
+  /* { dg-final { scan-assembler "mvni\\tv\[0-9\]+\.\[42\]s, 0xab, msl 8" } } */
   for (i = 0; i < N; i++)
     a[i] = 0xffff5400;
 }
@@ -40,7 +40,7 @@ mvni_msl16 (int *__restrict a)
 {
   int i;
 
-  /* { dg-final { scan-assembler "mvni\\tv\[0-9\]+\.4s, 0xab, msl 16" } } */
+  /* { dg-final { scan-assembler "mvni\\tv\[0-9\]+\.\[42\]s, 0xab, msl 16" } } */
   for (i = 0; i < N; i++)
     a[i] = 0xff540000;
 }
