@@ -1,3 +1,7 @@
+2015-01-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/store-pair-1.c: Fix typo.
+
 2015-01-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/arm_neon-nosimd-error.c: New test.
