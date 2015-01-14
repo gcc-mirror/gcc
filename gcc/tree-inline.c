@@ -192,7 +192,7 @@ insert_debug_decl_map (copy_body_data *id, tree key, tree value)
   if (!gimple_in_ssa_p (id->src_cfun))
     return;
 
-  if (!MAY_HAVE_DEBUG_STMTS)
+  if (!opt_for_fn (id->dst_fn, flag_var_tracking_assignments))
     return;
 
   if (!target_for_debug_bind (key))
@@ -1347,6 +1347,10 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
   struct walk_stmt_info wi;
   bool skip_first = false;
   gimple_seq stmts = NULL;
+
+  if (is_gimple_debug (stmt)
+      && !opt_for_fn (id->dst_fn, flag_var_tracking_assignments))
+    return stmts;
 
   /* Begin by recognizing trees that we'll completely rewrite for the
      inlining context.  Our output for these trees is completely
@@ -3007,7 +3011,7 @@ insert_init_debug_bind (copy_body_data *id,
   if (!gimple_in_ssa_p (id->src_cfun))
     return NULL;
 
-  if (!MAY_HAVE_DEBUG_STMTS)
+  if (!opt_for_fn (id->dst_fn, flag_var_tracking_assignments))
     return NULL;
 
   tracked_var = target_for_debug_bind (var);
@@ -3063,7 +3067,7 @@ insert_init_stmt (copy_body_data *id, basic_block bb, gimple init_stmt)
       gsi_insert_after (&si, init_stmt, GSI_NEW_STMT);
       gimple_regimplify_operands (init_stmt, &si);
 
-      if (!is_gimple_debug (init_stmt) && MAY_HAVE_DEBUG_STMTS)
+      if (!is_gimple_debug (init_stmt))
 	{
 	  tree def = gimple_assign_lhs (init_stmt);
 	  insert_init_debug_bind (id, bb, def, def, init_stmt);
