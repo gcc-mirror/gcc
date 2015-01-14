@@ -381,13 +381,10 @@ enum nds32_builtins
 #define ASM_SPEC \
   " %{mbig-endian:-EB} %{mlittle-endian:-EL}"
 
-/* If user issues -mrelax, -mforce-fp-as-gp, or -mex9,
-   we need to pass '--relax' to linker.
-   Besides, for -mex9, we need to further pass '--mex9'.  */
+/* If user issues -mrelax, we need to pass '--relax' to linker.  */
 #define LINK_SPEC \
   " %{mbig-endian:-EB} %{mlittle-endian:-EL}" \
-  " %{mrelax|mforce-fp-as-gp|mex9:--relax}" \
-  " %{mex9:--mex9}"
+  " %{mrelax:--relax}"
 
 #define LIB_SPEC \
   " -lc -lgloss"

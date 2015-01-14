@@ -2191,26 +2191,6 @@ nds32_asm_file_start (void)
 			 "for checking inconsistency on interrupt handler\n");
   fprintf (asm_out_file, "\t.vec_size\t%d\n", nds32_isr_vector_size);
 
-  /* If user enables '-mforce-fp-as-gp' or compiles programs with -Os,
-     the compiler may produce 'la $fp,_FP_BASE_' instruction
-     at prologue for fp-as-gp optimization.
-     We should emit weak reference of _FP_BASE_ to avoid undefined reference
-     in case user does not pass '--relax' option to linker.  */
-  if (TARGET_FORCE_FP_AS_GP || optimize_size)
-    {
-      fprintf (asm_out_file, "\t! This weak reference is required to do "
-			     "fp-as-gp link time optimization\n");
-      fprintf (asm_out_file, "\t.weak\t_FP_BASE_\n");
-    }
-  /* If user enables '-mex9', we should emit relaxation directive
-     to tell linker that this file is allowed to do ex9 optimization.  */
-  if (TARGET_EX9)
-    {
-      fprintf (asm_out_file, "\t! This relaxation directive is required "
-			     "to do ex9 link time optimization\n");
-      fprintf (asm_out_file, "\t.relax\tex9\n");
-    }
-
   fprintf (asm_out_file, "\t! ------------------------------------\n");
 
   if (TARGET_ISA_V2)
@@ -2743,12 +2723,6 @@ nds32_option_override (void)
       for (r = 16; r <= 27; r++)
 	fixed_regs[r] = call_used_regs[r] = 1;
     }
-
-  /* See if user explicitly would like to use fp-as-gp optimization.
-     If so, we must prevent $fp from being allocated
-     during register allocation.  */
-  if (TARGET_FORCE_FP_AS_GP)
-    fixed_regs[FP_REGNUM] = call_used_regs[FP_REGNUM] = 1;
 
   if (!TARGET_16_BIT)
     {

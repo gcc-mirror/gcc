@@ -1,3 +1,16 @@
+2015-01-14  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.opt (mforce-fp-as-gp): Remove.
+	(mforbid-fp-as-gp): Remove.
+	(mex9): Remove.
+	* config/nds32/nds32-fp-as-gp.c (nds32_have_prologue_p): Remove.
+	(nds32_symbol_load_store_p): Remove.
+	(nds32_fp_as_gp_check_available): Clean up implementation.
+	* config/nds32/nds32.h (LINK_SPEC): Remove -mforce-as-gp and -mex9
+	cases.
+	* config/nds32/nds32.c (nds32_asm_file_start): No need to consider
+	fp-as-gp and ex9 cases.
+
 2015-01-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-profile.c (init_ic_make_global_vars): Drop workaround
