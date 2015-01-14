@@ -1,3 +1,9 @@
+2015-01-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/64460
+	* config/arm/arm.md (*<arith_shift_insn>_multsi): Set 'shift' to 2.
+	(*<arith_shift_insn>_shiftsi): Set 'shift' attr to 3.
+
 2015-01-14  Matthew Fortune  <matthew.fortune@imgtec.com>
 
     	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC): Only infer an ISA
