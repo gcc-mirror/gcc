@@ -5365,6 +5365,11 @@ get_memmodel (tree exp)
       return MEMMODEL_SEQ_CST;
     }
 
+  /* Workaround for Bugzilla 59448. GCC doesn't track consume properly, so
+     be conservative and promote consume to acquire.  */
+  if (val == MEMMODEL_CONSUME)
+    val = MEMMODEL_ACQUIRE;
+
   return (enum memmodel) val;
 }
 
