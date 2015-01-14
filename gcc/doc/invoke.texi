@@ -240,7 +240,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
--Waggressive-loop-optimizations -Warray-bounds @gol
+-Waggressive-loop-optimizations -Warray-bounds -Warray-bounds=@var{n} @gol
 -Wbool-compare @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
 -Wc90-c99-compat -Wc99-c11-compat @gol
@@ -3389,7 +3389,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 @option{-Wall} turns on the following warning flags:
 
 @gccoptlist{-Waddress   @gol
--Warray-bounds @r{(only with} @option{-O2}@r{)}  @gol
+-Warray-bounds=1 @r{(only with} @option{-O2}@r{)}  @gol
 -Wc++11-compat  -Wc++14-compat@gol
 -Wchar-subscripts  @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
@@ -4303,11 +4303,25 @@ Warn about overriding virtual functions that are not marked with the override
 keyword.
 
 @item -Warray-bounds
+@itemx -Warray-bounds=@var{n}
 @opindex Wno-array-bounds
 @opindex Warray-bounds
 This option is only active when @option{-ftree-vrp} is active
 (default for @option{-O2} and above). It warns about subscripts to arrays
 that are always out of bounds. This warning is enabled by @option{-Wall}.
+
+@table @gcctabopt
+@item -Warray-bounds=1
+This is the warning level of @option{-Warray-bounds} and is enabled
+by @option{-Wall}; higher levels are not, and must be explicitly requested.
+
+@item -Warray-bounds=2
+This warning level also warns about out of bounds access for
+arrays at the end of a struct and for arrays accessed through
+pointers. This warning level may give a larger number of
+false positives and is deactivated by default.
+@end table
+
 
 @item -Wbool-compare
 @opindex Wno-bool-compare

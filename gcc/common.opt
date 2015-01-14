@@ -529,6 +529,10 @@ Warray-bounds
 Common Var(warn_array_bounds) Warning
 Warn if an array is accessed out of bounds
 
+Warray-bounds=
+Common Joined RejectNegative UInteger Var(warn_array_bounds) Warning
+Warn if an array is accessed out of bounds
+
 Wattributes
 Common Var(warn_attributes) Init(1) Warning
 Warn about inappropriate attribute usage

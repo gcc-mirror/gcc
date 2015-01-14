@@ -279,6 +279,10 @@ Warray-bounds
 LangEnabledBy(C ObjC C++ ObjC++,Wall)
 ; in common.opt
 
+Warray-bounds=
+LangEnabledBy(C ObjC C++ ObjC++,Wall,1,0)
+; in common.opt
+
 Wassign-intercept
 ObjC ObjC++ Var(warn_assign_intercept) Warning
 Warn whenever an Objective-C assignment is being intercepted by the garbage collector
