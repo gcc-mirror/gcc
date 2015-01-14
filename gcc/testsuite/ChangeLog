@@ -1,3 +1,9 @@
+2015-01-14  Andrew Stubbs  <ams@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_ok_nocache): Don't try to test Neon
+	on ARM architures before v7.
+
 2015-01-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR middle-end/59448
