@@ -448,6 +448,8 @@ func_checker::compare_operand (tree t1, tree t2)
 
 	return return_with_debug (ret);
       }
+    case IMAGPART_EXPR:
+    case REALPART_EXPR:
     case ADDR_EXPR:
       {
 	x1 = TREE_OPERAND (t1, 0);
@@ -458,7 +460,17 @@ func_checker::compare_operand (tree t1, tree t2)
       }
     case BIT_FIELD_REF:
       {
-	ret = compare_decl (t1, t2);
+	x1 = TREE_OPERAND (t1, 0);
+	x2 = TREE_OPERAND (t2, 0);
+	y1 = TREE_OPERAND (t1, 1);
+	y2 = TREE_OPERAND (t2, 1);
+	z1 = TREE_OPERAND (t1, 2);
+	z2 = TREE_OPERAND (t2, 2);
+
+	ret = compare_operand (x1, x2)
+	      && compare_cst_or_decl (y1, y2)
+	      && compare_cst_or_decl (z1, z2);
+
 	return return_with_debug (ret);
       }
     case SSA_NAME:
