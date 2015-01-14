@@ -5385,11 +5385,6 @@ expand_builtin_atomic_exchange (machine_mode mode, tree exp, rtx target)
   enum memmodel model;
 
   model = get_memmodel (CALL_EXPR_ARG (exp, 2));
-  if ((model & MEMMODEL_MASK) == MEMMODEL_CONSUME)
-    {
-      error ("invalid memory model for %<__atomic_exchange%>");
-      return NULL_RTX;
-    }
 
   if (!flag_inline_atomics)
     return NULL_RTX;
@@ -5422,20 +5417,25 @@ expand_builtin_atomic_compare_exchange (machine_mode mode, tree exp,
   success = get_memmodel (CALL_EXPR_ARG (exp, 4));
   failure = get_memmodel (CALL_EXPR_ARG (exp, 5));
 
+  if (failure > success)
+    {
+      warning (OPT_Winvalid_memory_model,
+	       "failure memory model cannot be stronger than success memory "
+	       "model for %<__atomic_compare_exchange%>");
+      success = MEMMODEL_SEQ_CST;
+    }
+ 
   if ((failure & MEMMODEL_MASK) == MEMMODEL_RELEASE
       || (failure & MEMMODEL_MASK) == MEMMODEL_ACQ_REL)
     {
-      error ("invalid failure memory model for %<__atomic_compare_exchange%>");
-      return NULL_RTX;
+      warning (OPT_Winvalid_memory_model,
+	       "invalid failure memory model for "
+	       "%<__atomic_compare_exchange%>");
+      failure = MEMMODEL_SEQ_CST;
+      success = MEMMODEL_SEQ_CST;
     }
 
-  if (failure > success)
-    {
-      error ("failure memory model cannot be stronger than success "
-	     "memory model for %<__atomic_compare_exchange%>");
-      return NULL_RTX;
-    }
-  
+ 
   if (!flag_inline_atomics)
     return NULL_RTX;
 
@@ -5491,8 +5491,9 @@ expand_builtin_atomic_load (machine_mode mode, tree exp, rtx target)
   if ((model & MEMMODEL_MASK) == MEMMODEL_RELEASE
       || (model & MEMMODEL_MASK) == MEMMODEL_ACQ_REL)
     {
-      error ("invalid memory model for %<__atomic_load%>");
-      return NULL_RTX;
+      warning (OPT_Winvalid_memory_model,
+	       "invalid memory model for %<__atomic_load%>");
+      model = MEMMODEL_SEQ_CST;
     }
 
   if (!flag_inline_atomics)
@@ -5521,8 +5522,9 @@ expand_builtin_atomic_store (machine_mode mode, tree exp)
       && (model & MEMMODEL_MASK) != MEMMODEL_SEQ_CST
       && (model & MEMMODEL_MASK) != MEMMODEL_RELEASE)
     {
-      error ("invalid memory model for %<__atomic_store%>");
-      return NULL_RTX;
+      warning (OPT_Winvalid_memory_model,
+	       "invalid memory model for %<__atomic_store%>");
+      model = MEMMODEL_SEQ_CST;
     }
 
   if (!flag_inline_atomics)
@@ -5625,11 +5627,13 @@ expand_builtin_atomic_clear (tree exp)
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
   model = get_memmodel (CALL_EXPR_ARG (exp, 1));
 
-  if ((model & MEMMODEL_MASK) == MEMMODEL_ACQUIRE
+  if ((model & MEMMODEL_MASK) == MEMMODEL_CONSUME
+      || (model & MEMMODEL_MASK) == MEMMODEL_ACQUIRE
       || (model & MEMMODEL_MASK) == MEMMODEL_ACQ_REL)
     {
-      error ("invalid memory model for %<__atomic_store%>");
-      return const0_rtx;
+      warning (OPT_Winvalid_memory_model,
+	       "invalid memory model for %<__atomic_store%>");
+      model = MEMMODEL_SEQ_CST;
     }
 
   if (HAVE_atomic_clear)

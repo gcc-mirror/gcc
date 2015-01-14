@@ -1,3 +1,13 @@
+2015-01-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* builtins.c (expand_builtin_atomic_exchange): Remove error when
+	memory model is CONSUME.
+	(expand_builtin_atomic_compare_exchange, expand_builtin_atomic_load,
+	expand_builtin_atomic_store): Change invalid memory model errors to
+	warnings.
+	(expand_builtin_atomic_clear): Change invalid model errors to warnings
+	and issue warning for CONSUME.
+
 2015-01-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	* lto-cgraph: Update function comments for
