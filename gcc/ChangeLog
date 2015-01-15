@@ -1,3 +1,12 @@
+2015-01-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2014-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63704
+	* alias.c (mems_in_disjoint_alias_sets_p): Remove assert
+	and instead return false when !fstrict-aliasing.
+
 2015-01-14  Renlin Li  <renlin.li@arm.com>
 
 	Backport form mainline
