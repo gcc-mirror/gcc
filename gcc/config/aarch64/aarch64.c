@@ -243,6 +243,27 @@ static const struct cpu_addrcost_table cortexa57_addrcost_table =
 #if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
 __extension__
 #endif
+static const struct cpu_addrcost_table xgene1_addrcost_table =
+{
+#if HAVE_DESIGNATED_INITIALIZERS
+  .addr_scale_costs =
+#endif
+    {
+      NAMED_PARAM (hi, 1),
+      NAMED_PARAM (si, 0),
+      NAMED_PARAM (di, 0),
+      NAMED_PARAM (ti, 1),
+    },
+  NAMED_PARAM (pre_modify, 1),
+  NAMED_PARAM (post_modify, 0),
+  NAMED_PARAM (register_offset, 0),
+  NAMED_PARAM (register_extend, 1),
+  NAMED_PARAM (imm_offset, 0),
+};
+
+#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
+__extension__
+#endif
 static const struct cpu_regmove_cost generic_regmove_cost =
 {
   NAMED_PARAM (GP2GP, 1),
@@ -279,6 +300,16 @@ static const struct cpu_regmove_cost thunderx_regmove_cost =
   NAMED_PARAM (GP2FP, 2),
   NAMED_PARAM (FP2GP, 6),
   NAMED_PARAM (FP2FP, 4)
+};
+
+static const struct cpu_regmove_cost xgene1_regmove_cost =
+{
+  NAMED_PARAM (GP2GP, 1),
+  /* Avoid the use of slow int<->fp moves for spilling by setting
+     their cost higher than memmov_cost.  */
+  NAMED_PARAM (GP2FP, 8),
+  NAMED_PARAM (FP2GP, 8),
+  NAMED_PARAM (FP2FP, 2)
 };
 
 /* Generic costs for vector insn classes.  */
@@ -318,6 +349,26 @@ static const struct cpu_vector_cost cortexa57_vector_cost =
   NAMED_PARAM (vec_unalign_store_cost, 1),
   NAMED_PARAM (vec_store_cost, 1),
   NAMED_PARAM (cond_taken_branch_cost, 1),
+  NAMED_PARAM (cond_not_taken_branch_cost, 1)
+};
+
+/* Generic costs for vector insn classes.  */
+#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
+__extension__
+#endif
+static const struct cpu_vector_cost xgene1_vector_cost =
+{
+  NAMED_PARAM (scalar_stmt_cost, 1),
+  NAMED_PARAM (scalar_load_cost, 5),
+  NAMED_PARAM (scalar_store_cost, 1),
+  NAMED_PARAM (vec_stmt_cost, 2),
+  NAMED_PARAM (vec_to_scalar_cost, 4),
+  NAMED_PARAM (scalar_to_vec_cost, 4),
+  NAMED_PARAM (vec_align_load_cost, 10),
+  NAMED_PARAM (vec_unalign_load_cost, 10),
+  NAMED_PARAM (vec_unalign_store_cost, 2),
+  NAMED_PARAM (vec_store_cost, 2),
+  NAMED_PARAM (cond_taken_branch_cost, 2),
   NAMED_PARAM (cond_not_taken_branch_cost, 1)
 };
 
@@ -395,6 +446,23 @@ static const struct tune_params thunderx_tunings =
   8,	/* function_align.  */
   8,	/* jump_align.  */
   8,	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  1	/* vec_reassoc_width.  */
+};
+
+static const struct tune_params xgene1_tunings =
+{
+  &xgene1_extra_costs,
+  &xgene1_addrcost_table,
+  &xgene1_regmove_cost,
+  &xgene1_vector_cost,
+  NAMED_PARAM (memmov_cost, 6),
+  NAMED_PARAM (issue_rate, 4),
+  NAMED_PARAM (fuseable_ops, AARCH64_FUSE_NOTHING),
+  16,	/* function_align.  */
+  8,	/* jump_align.  */
+  16,	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1	/* vec_reassoc_width.  */
