@@ -1,3 +1,9 @@
+2015-01-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lib/c-torture.exp: Compute LTO_TORTURE_OPTIONS after the environment
+	is set up.
+	* lib/gcc-dg.exp: Likewise.
+
 2015-01-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/64110
