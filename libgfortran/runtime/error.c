@@ -488,6 +488,10 @@ translate_error (int code)
       p = "Unformatted file structure has been corrupted";
       break;
 
+    case LIBERROR_INQUIRE_INTERNAL_UNIT:
+      p = "Inquire statement identifies an internal file";
+      break;
+
     default:
       p = "Unknown error code";
       break;
