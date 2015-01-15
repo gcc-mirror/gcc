@@ -1,3 +1,7 @@
+2015-01-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt47.adb: New test.
+
 2015-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

@@ -1,3 +1,8 @@
+2015-01-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1) <normal_inner_ref>: Use the expression to
+	set the memory attributes in all cases but clear MEM_EXPR if need be.
+
 2015-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
