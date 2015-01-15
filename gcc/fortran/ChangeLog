@@ -1,3 +1,9 @@
+2015-01-15  Tobias Burnus  <burnus@net-b.de>
+
+	* openmp.c (check_symbol_not_pointer, resolve_oacc_data_clauses,
+	resolve_oacc_deviceptr_clause, resolve_omp_clauses,
+	gfc_resolve_oacc_declare): Replace '%s' by %qs.
+
 2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>

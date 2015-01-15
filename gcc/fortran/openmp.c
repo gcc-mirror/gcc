@@ -1457,7 +1457,7 @@ gfc_match_oacc_routine (void)
   if (!sym->attr.external && !sym->attr.function && !sym->attr.subroutine)
     {
       gfc_error ("Syntax error in !$ACC ROUTINE ( NAME ) at %C, invalid"
-		 " function name '%s'", sym->name);
+		 " function name %qs", sym->name);
       gfc_current_locus = old_loc;
       return MATCH_ERROR;
     }
@@ -2649,29 +2649,29 @@ static void
 check_symbol_not_pointer (gfc_symbol *sym, locus loc, const char *name)
 {
   if (sym->ts.type == BT_DERIVED && sym->attr.pointer)
-    gfc_error ("POINTER object '%s' of derived type in %s clause at %L",
+    gfc_error ("POINTER object %qs of derived type in %s clause at %L",
 	       sym->name, name, &loc);
   if (sym->ts.type == BT_DERIVED && sym->attr.cray_pointer)
-    gfc_error ("Cray pointer object of derived type '%s' in %s clause at %L",
+    gfc_error ("Cray pointer object of derived type %qs in %s clause at %L",
 	       sym->name, name, &loc);
   if (sym->ts.type == BT_DERIVED && sym->attr.cray_pointee)
-    gfc_error ("Cray pointee object of derived type '%s' in %s clause at %L",
+    gfc_error ("Cray pointee object of derived type %qs in %s clause at %L",
 	       sym->name, name, &loc);
 
   if ((sym->ts.type == BT_ASSUMED && sym->attr.pointer)
       || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
 	  && CLASS_DATA (sym)->attr.pointer))
-    gfc_error ("POINTER object '%s' of polymorphic type in %s clause at %L",
+    gfc_error ("POINTER object %qs of polymorphic type in %s clause at %L",
 	       sym->name, name, &loc);
   if ((sym->ts.type == BT_ASSUMED && sym->attr.cray_pointer)
       || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
 	  && CLASS_DATA (sym)->attr.cray_pointer))
-    gfc_error ("Cray pointer object of polymorphic type '%s' in %s clause at %L",
+    gfc_error ("Cray pointer object of polymorphic type %qs in %s clause at %L",
 	       sym->name, name, &loc);
   if ((sym->ts.type == BT_ASSUMED && sym->attr.cray_pointee)
       || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
 	  && CLASS_DATA (sym)->attr.cray_pointee))
-    gfc_error ("Cray pointee object of polymorphic type '%s' in %s clause at %L",
+    gfc_error ("Cray pointee object of polymorphic type %qs in %s clause at %L",
 	       sym->name, name, &loc);
 }
 
@@ -2681,14 +2681,14 @@ static void
 check_array_not_assumed (gfc_symbol *sym, locus loc, const char *name)
 {
   if (sym->as && sym->as->type == AS_ASSUMED_SIZE)
-    gfc_error ("Assumed size array '%s' in %s clause at %L",
+    gfc_error ("Assumed size array %qs in %s clause at %L",
 	       sym->name, name, &loc);
   if (sym->as && sym->as->type == AS_ASSUMED_RANK)
-    gfc_error ("Assumed rank array '%s' in %s clause at %L",
+    gfc_error ("Assumed rank array %qs in %s clause at %L",
 	       sym->name, name, &loc);
   if (sym->as && sym->as->type == AS_DEFERRED && sym->attr.pointer
       && !sym->attr.contiguous)
-    gfc_error ("Noncontiguous deferred shape array '%s' in %s clause at %L",
+    gfc_error ("Noncontiguous deferred shape array %qs in %s clause at %L",
 	       sym->name, name, &loc);
 }
 
@@ -2696,12 +2696,12 @@ static void
 resolve_oacc_data_clauses (gfc_symbol *sym, locus loc, const char *name)
 {
   if (sym->ts.type == BT_DERIVED && sym->attr.allocatable)
-    gfc_error ("ALLOCATABLE object '%s' of derived type in %s clause at %L",
+    gfc_error ("ALLOCATABLE object %qs of derived type in %s clause at %L",
 	       sym->name, name, &loc);
   if ((sym->ts.type == BT_ASSUMED && sym->attr.allocatable)
       || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
 	  && CLASS_DATA (sym)->attr.allocatable))
-    gfc_error ("ALLOCATABLE object '%s' of polymorphic type "
+    gfc_error ("ALLOCATABLE object %qs of polymorphic type "
 	       "in %s clause at %L", sym->name, name, &loc);
   check_symbol_not_pointer (sym, loc, name);
   check_array_not_assumed (sym, loc, name);
@@ -2713,25 +2713,25 @@ resolve_oacc_deviceptr_clause (gfc_symbol *sym, locus loc, const char *name)
   if (sym->attr.pointer
       || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
 	  && CLASS_DATA (sym)->attr.class_pointer))
-    gfc_error ("POINTER object '%s' in %s clause at %L",
+    gfc_error ("POINTER object %qs in %s clause at %L",
 	       sym->name, name, &loc);
   if (sym->attr.cray_pointer
       || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
 	  && CLASS_DATA (sym)->attr.cray_pointer))
-    gfc_error ("Cray pointer object '%s' in %s clause at %L",
+    gfc_error ("Cray pointer object %qs in %s clause at %L",
 	       sym->name, name, &loc);
   if (sym->attr.cray_pointee
       || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
 	  && CLASS_DATA (sym)->attr.cray_pointee))
-    gfc_error ("Cray pointee object '%s' in %s clause at %L",
+    gfc_error ("Cray pointee object %qs in %s clause at %L",
 	       sym->name, name, &loc);
   if (sym->attr.allocatable
       || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
 	  && CLASS_DATA (sym)->attr.allocatable))
-    gfc_error ("ALLOCATABLE object '%s' in %s clause at %L",
+    gfc_error ("ALLOCATABLE object %qs in %s clause at %L",
 	       sym->name, name, &loc);
   if (sym->attr.value)
-    gfc_error ("VALUE object '%s' in %s clause at %L",
+    gfc_error ("VALUE object %qs in %s clause at %L",
 	       sym->name, name, &loc);
   check_array_not_assumed (sym, loc, name);
 }
@@ -3367,18 +3367,18 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 		      if (n->sym->attr.allocatable
 			  || (n->sym->ts.type == BT_CLASS && CLASS_DATA (n->sym)
 			      && CLASS_DATA (n->sym)->attr.allocatable))
-			gfc_error ("ALLOCATABLE object '%s' in %s clause at %L",
+			gfc_error ("ALLOCATABLE object %qs in %s clause at %L",
 				   n->sym->name, name, where);
 		      if (n->sym->attr.pointer
 			  || (n->sym->ts.type == BT_CLASS && CLASS_DATA (n->sym)
 			      && CLASS_DATA (n->sym)->attr.class_pointer))
-			gfc_error ("POINTER object '%s' in %s clause at %L",
+			gfc_error ("POINTER object %qs in %s clause at %L",
 				   n->sym->name, name, where);
 		      if (n->sym->attr.cray_pointer)
-			gfc_error ("Cray pointer object '%s' in %s clause at %L",
+			gfc_error ("Cray pointer object %qs in %s clause at %L",
 				   n->sym->name, name, where);
 		      if (n->sym->attr.cray_pointee)
-			gfc_error ("Cray pointee object '%s' in %s clause at %L",
+			gfc_error ("Cray pointee object %qs in %s clause at %L",
 				   n->sym->name, name, where);
 		      /* FALLTHRU */
 		  case OMP_LIST_DEVICE_RESIDENT:
@@ -4624,7 +4624,7 @@ gfc_resolve_oacc_declare (gfc_namespace *ns)
       {
 	n->sym->mark = 0;
 	if (n->sym->attr.flavor == FL_PARAMETER)
-	  gfc_error ("PARAMETER object '%s' is not allowed at %L", n->sym->name, &loc);
+	  gfc_error ("PARAMETER object %qs is not allowed at %L", n->sym->name, &loc);
       }
 
   for (list = OMP_LIST_DEVICE_RESIDENT;
@@ -4632,7 +4632,7 @@ gfc_resolve_oacc_declare (gfc_namespace *ns)
     for (n = ns->oacc_declare_clauses->lists[list]; n; n = n->next)
       {
 	if (n->sym->mark)
-	  gfc_error ("Symbol '%s' present on multiple clauses at %L",
+	  gfc_error ("Symbol %qs present on multiple clauses at %L",
 		     n->sym->name, &loc);
 	else
 	  n->sym->mark = 1;
