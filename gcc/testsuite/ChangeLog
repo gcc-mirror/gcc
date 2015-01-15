@@ -1,3 +1,8 @@
+2015-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.dg/other/anon5.C: Ignore additional messages on Linux/x86
+	with PIE.
+
 2015-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61743
