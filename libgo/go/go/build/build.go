@@ -265,6 +265,7 @@ var cgoEnabled = map[string]bool{
 	"freebsd/amd64":   true,
 	"freebsd/arm":     true,
 	"linux/386":       true,
+	"linux/alpha":     true,
 	"linux/amd64":     true,
 	"linux/arm":       true,
 	"linux/ppc64":     true,
