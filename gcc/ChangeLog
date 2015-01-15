@@ -1,3 +1,8 @@
+2015-01-15  Philipp Tomsich  <ptomsich@theobroma-systems.com>
+
+	* config/aarch64/aarch64.md: Include xgene1.md.
+	* config/aarch64/xgene1.md: New file.
+
 2015-01-15  Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
 
 	* config/aarch64/aarch64-cores.def (xgene1): Update/add the
