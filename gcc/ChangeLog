@@ -1,3 +1,13 @@
+2015-01-15  Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
+
+	* config/arm/arm.md (generic_sched): Specify xgene1 in 'no' list.
+	Include xgene1.md.
+	* config/arm/arm.c (arm_issue_rate): Specify 4 for xgene1.
+	* config/arm/arm-cores.def (xgene1): New entry.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Specify mcpu=xgene1.
+
 2015-01-15  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* tree-if-conv.c: Include hash-map.h.
