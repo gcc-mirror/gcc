@@ -1,3 +1,8 @@
+2015-01-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* explow.h: Remove duplicate contents.
+	* dojump.h: Likewise.
+
 2015-01-15  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_xgene_tune): Add default initializer for instruction
