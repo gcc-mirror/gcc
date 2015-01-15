@@ -580,6 +580,7 @@ print "                     struct cl_target_option const *ptr2 ATTRIBUTE_UNUSED
 print "{";
 n_target_val = 0;
 n_target_str = 0;
+n_target_array = 0;
 
 for (i = 0; i < n_target_save; i++) {
 	var = target_save_decl[i];
@@ -591,8 +592,20 @@ for (i = 0; i < n_target_save; i++) {
 	if (target_save_decl[i] ~ "^const char \\*+[_" alnum "]+$")
 		var_target_str[n_target_str++] = name;
 	else {
-		var_target_val_type[n_target_val] = type;
-		var_target_val[n_target_val++] = name;
+		if (target_save_decl[i] ~ " .*\\[.+\\]+$") {
+			size = name;
+			sub("[^\\[]+\\[", "", size);
+			sub("\\]$", "", size);
+			sub("\\[.+", "", name)
+			sub(" [^ ]+$", "", type)
+			var_target_array[n_target_array] = name
+			var_target_array_type[n_target_array] = type
+			var_target_array_size[n_target_array++] = size
+		}
+		else {
+			var_target_val_type[n_target_val] = type;
+			var_target_val[n_target_val++] = name;
+		}
 	}
 }
 if (have_save) {
@@ -627,6 +640,14 @@ for (i = 0; i < n_target_str; i++) {
 	print "          || strcmp (ptr1->" name", ptr2->" name ")))";
 	print "    return false;";
 }
+for (i = 0; i < n_target_array; i++) {
+	name = var_target_array[i]
+	size = var_target_array_size[i]
+	type = var_target_array_type[i]
+	print "  if (ptr1->" name" != ptr2->" name "";
+	print "      || memcmp (ptr1->" name ", ptr2->" name ", " size " * sizeof(" type ")))"
+	print "    return false;";
+}
 for (i = 0; i < n_target_val; i++) {
 	name = var_target_val[i]
 	print "  if (ptr1->" name" != ptr2->" name ")";
@@ -650,6 +671,13 @@ for (i = 0; i < n_target_str; i++) {
 	print "  else";
 	print "    hstate.add_int (0);";
 }
+for (i = 0; i < n_target_array; i++) {
+	name= var_target_array[i]
+	size = var_target_array_size[i]
+	type = var_target_array_type[i]
+	print "  hstate.add_int (" size ");";
+	print "  hstate.add (ptr->" name ", sizeof (" type ") * " size ");";
+}
 for (i = 0; i < n_target_val; i++) {
 	name = var_target_val[i]
 	print "  hstate.add_wide_int (ptr->" name");";
@@ -667,6 +695,12 @@ print "{";
 for (i = 0; i < n_target_str; i++) {
 	name = var_target_str[i]
 	print "  bp_pack_string (ob, bp, ptr->" name", true);";
+}
+for (i = 0; i < n_target_array; i++) {
+	name = var_target_array[i]
+	size = var_target_array_size[i]
+	print "  for (unsigned i = 0; i < " size "; i++)"
+	print "    bp_pack_value (bp, ptr->" name "[i], 64);";
 }
 for (i = 0; i < n_target_val; i++) {
 	name = var_target_val[i]
@@ -686,6 +720,12 @@ for (i = 0; i < n_target_str; i++) {
 	print "  ptr->" name" = bp_unpack_string (data_in, bp);";
 	print "  if (ptr->" name")";
 	print "    ptr->" name" = xstrdup (ptr->" name");";
+}
+for (i = 0; i < n_target_array; i++) {
+	name = var_target_array[i]
+	size = var_target_array_size[i]
+	print "  for (int i = " size " - 1; i >= 0; i--)"
+	print "    ptr->" name "[i] = (" var_target_array_type[i] ") bp_unpack_value (bp, 64);";
 }
 for (i = 0; i < n_target_val; i++) {
 	name = var_target_val[i]
