@@ -1,5 +1,8 @@
 2015-01-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64356
+	* constexpr.c (cxx_eval_binary_expression): Fix pasto.
+
 	PR c++/63283
 	* constexpr.c (potential_constant_expression_1): Handle reference
 	args in templates.
