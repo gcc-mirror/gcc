@@ -1,3 +1,8 @@
+2015-01-15  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ipa/pr64068.C: New test.
+	* gcc.dg/ipa/PR64559.c: New test.
+
 2015-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* g++.dg/other/anon5.C: Ignore additional messages on Linux/x86
