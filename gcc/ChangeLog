@@ -1,3 +1,16 @@
+2015-01-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/64110
+	* stmt.c (parse_output_constraint): Process '^' and '$'.
+	(parse_input_constraint): Ditto.
+	* lra-constraints.c (process_alt_operands): Process the new
+	constraints.
+	* ira-costs.c (record_reg_classes): Process the new constraint
+	'^'.
+	* genoutput.c (indep_constraints): Add '^' and '$'.
+	* config/i386/sse.md (*vec_dup<mode>): Use '$' instead of '!'.
+	* doc/md.texi: Add description of the new constraints.
+
 2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
 	    Bernd Schmidt  <bernds@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>

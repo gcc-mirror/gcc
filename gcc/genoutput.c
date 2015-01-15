@@ -209,7 +209,7 @@ struct constraint_data
 
 /* All machine-independent constraint characters (except digits) that
    are handled outside the define*_constraint mechanism.  */
-static const char indep_constraints[] = ",=+%*?!#&g";
+static const char indep_constraints[] = ",=+%*?!^$#&g";
 
 static struct constraint_data *
 constraints_by_letter_table[1 << CHAR_BIT];

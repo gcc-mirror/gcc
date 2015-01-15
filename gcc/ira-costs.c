@@ -778,6 +778,10 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  c = *++p;
 		  break;
 
+		case '^':
+		  alt_cost += 2;
+		  break;
+
 		case '?':
 		  alt_cost += 2;
 		  break;

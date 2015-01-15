@@ -1507,6 +1507,18 @@ in it.
 Disparage severely the alternative that the @samp{!} appears in.
 This alternative can still be used if it fits without reloading,
 but if reloading is needed, some other alternative will be used.
+
+@cindex @samp{^} in constraint
+@cindex caret
+@item ^
+This constraint is analogous to @samp{?} but it disparages slightly
+the alternative only if the operand with the @samp{?} needs a reload.
+
+@cindex @samp{$} in constraint
+@cindex dollar sign
+@item $
+This constraint is analogous to @samp{!} but it disparages severely
+the alternative only if the operand with the @samp{$} needs a reload.
 @end table
 
 @ifset INTERNALS
