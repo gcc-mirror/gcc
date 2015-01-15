@@ -1,3 +1,8 @@
+2015-01-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-mismatching-types-in-assignment-op.c: New
+	test case.
+
 2015-01-15  Mike Stump  <mikestump@comcast.net>
 
 	* gcc.dg/inline_1.c: Rename gcc.dg/inline_[1-4].c to inline-3[6-9].c.
