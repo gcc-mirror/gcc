@@ -1,3 +1,9 @@
+2015-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR lto/64415
+	* gcc.dg/lto/pr64415_0.c: Re-enable for darwin with
+	-Wl,-undefined,dynamic_lookup.
+
 2015-01-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt47.adb: New test.
