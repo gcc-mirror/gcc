@@ -955,6 +955,7 @@ proc mips-dg-options { args } {
     mips_option_dependency options "-mips16" "-mno-micromips"
     mips_option_dependency options "-mmicromips" "-mno-mips16"
     mips_option_dependency options "-mips3d" "-mpaired-single"
+    mips_option_dependency options "-mips3d" "-mno-micromips"
     mips_option_dependency options "-mpaired-single" "-mfp64"
     mips_option_dependency options "-mfp64" "-mhard-float"
     mips_option_dependency options "-mfp32" "-mhard-float"
@@ -1298,6 +1299,7 @@ proc mips-dg-options { args } {
 	    }
 	    mips_make_test_option options "-mno-dsp"
 	    mips_make_test_option options "-mno-synci"
+	    mips_make_test_option options "-mno-micromips"
 	}
         if { $isa_rev > 5 } {
 	    mips_make_test_option options "-mno-dsp"
@@ -1310,6 +1312,10 @@ proc mips-dg-options { args } {
 	    mips_make_test_option options "-mnan=2008"
 	    mips_make_test_option options "-mabs=2008"
 	}
+	if { [regexp {^-march=(octeon|loongson)} $arch] } {
+	    mips_make_test_option options "-mno-micromips"
+	}
+
 	unset arch
 	unset isa
 	unset isa_rev

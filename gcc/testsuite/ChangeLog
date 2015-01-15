@@ -1,3 +1,9 @@
+2015-01-15  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/mips.exp (mips-dg-options): -mips3d requires
+	-mno-micromips.  MIPS32R1 and below require -mno-micromips.
+	-march=loongson* and -march=octeon* require -mno-micromips.
+
 2015-01-15  Andrew Bennett  <andrew.bennett@imgtec.com>
 	    Matthew Fortune  <matthew.fortune@imgtec.com>
 
