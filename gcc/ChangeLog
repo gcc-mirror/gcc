@@ -1,3 +1,9 @@
+2015-01-15  Steve Ellcey  <sellcey@mips.com>
+
+	* Makefile.in (PLUGIN_HEADERS): Add dominance.h, cfg.h, cfgrtl.h,
+	cfganal.h, cfgbuild.h, cfgcleanup.h, lcm.h, cfgloopmanip.h,
+	builtins.def, chkp-builtins.def, and pass-instances.def.
+
 2014-01-15  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/default64.h (TARGET_DEFAULT) [LITTLE_ENDIAN]: Use
