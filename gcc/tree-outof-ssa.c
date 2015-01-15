@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "predict.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "dominance.h"
 #include "cfg.h"
@@ -68,6 +67,20 @@ along with GCC; see the file COPYING3.  If not see
 
 /* FIXME: A lot of code here deals with expanding to RTL.  All that code
    should be in cfgexpand.c.  */
+#include "hashtab.h"
+#include "rtl.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 
 /* Return TRUE if expression STMT is suitable for replacement.  */

@@ -44,13 +44,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "varasm.h"
 #include "flags.h"
+#include "hashtab.h"
+#include "hard-reg-set.h"
+#include "function.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "emit-rtl.h"
+#include "stmt.h"
 #include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"
 #include "reload.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
 #include "regs.h"
 #include "output.h"
 #include "insn-attr.h"
@@ -10056,7 +10064,6 @@ reg_unused_after (rtx reg, rtx_insn *insn)
   return true;
 }
 
-#include "ggc.h"
 
 static GTY(()) rtx t_reg_rtx;
 rtx

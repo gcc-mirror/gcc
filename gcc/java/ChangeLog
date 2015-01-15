@@ -1,3 +1,9 @@
+2015-10-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	
+	* builtins.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h function.h hard-reg-set.h hashtab.h insn-config.h
+	real.h statistics.h stmt.h varasm.h.
+
 2015-01-09  Michael Collison  <michael.collison@linaro.org>
 
 	* boehm.c: Include hash-set.h, machmode.h, vec.h, double-int.h,

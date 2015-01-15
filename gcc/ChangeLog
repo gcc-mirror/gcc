@@ -1,3 +1,368 @@
+2015-10-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* dojump.h: New header file.
+	* explow.h: Likewise.
+	* expr.h: Remove includes.
+	Move expmed.c prototypes to expmed.h.
+	Move dojump.c prototypes to dojump.h.
+	Move alias.c prototypes to alias.h.
+	Move explow.c prototypes to explow.h.
+	Move calls.c prototypes to calls.h.
+	Move emit-rtl.c prototypes to emit-rtl.h.
+	Move varasm.c prototypes to varasm.h.
+	Move stmt.c prototypes to stmt.h.
+	(saved_pending_stack_adjust): Move to dojump.h.
+	(adjust_address): Move to explow.h.
+	(adjust_address_nv): Move to emit-rtl.h.
+	(adjust_bitfield_address): Likewise.
+	(adjust_bitfield_address_size): Likewise.
+	(adjust_bitfield_address_nv): Likewise.
+	(adjust_automodify_address_nv): Likewise.
+	* explow.c (expr_size): Move to expr.c.
+	(int_expr_size): Likewise.
+	(tree_expr_size): Likewise.
+	Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h statistics.h stmt.h varasm.h.
+	* genemit.c (main): Generate includes statistics.h, real.h, fixed-value.h,
+	insn-config.h, expmed.h, dojump.h, explow.h, emit-rtl.h, stmt.h.
+	* genopinit.c (main): Generate includes hashtab.h, hard-reg-set.h, function.h,
+	statistics.h, real.h, fixed-value.h, expmed.h, dojump.h, explow.h, emit-rtl.h,
+	stmt.h.
+	* genoutput.c (main): Generate includes hashtab.h, statistics.h, real.h,
+	fixed-value.h, expmed.h, dojump.h, explow.h, emit-rtl.h, stmt.h.
+	* genemit.c (open_base_files): Generate includes flags.h, statistics.h, real.h,
+	fixed-value.h, tree.h, expmed.h, dojump.h, explow.h, calls.h, emit-rtl.h, varasm.h,
+	stmt.h.
+	* config/tilepro/gen-mul-tables.cc: Generate includes hashtab.h, hash-set.h, vec.h,
+	machmode.h, tm.h, hard-reg-set.h, input.h, function.h, rtl.h, flags.h, statistics.h,
+	double-int.h, real.h, fixed-value.h, alias.h, wide-int.h, inchash.h, tree.h,
+	insn-config.h, expmed.h, dojump.h, explow.h, calls.h, emit-rtl.h, varasm.h, stmt.h.
+	* config/tilegx/mul-tables.c: Include alias.h calls.h dojump.h
+	double-int.h emit-rtl.h explow.h expmed.h fixed-value.h flags.h
+	function.h hard-reg-set.h hash-set.h hashtab.h inchash.h input.h
+	insn-config.h machmode.h real.h rtl.h statistics.h stmt.h symtab.h
+	tm.h tree.h varasm.h vec.h wide-int.h.
+	* rtlhooks.c: Include alias.h calls.h dojump.h double-int.h emit-rtl.h
+	explow.h expmed.h fixed-value.h flags.h function.h hard-reg-set.h
+	hash-set.h hashtab.h inchash.h input.h insn-config.h machmode.h
+	real.h statistics.h stmt.h tree.h varasm.h vec.h wide-int.h.
+	* cfgloopanal.c: Include alias.h calls.h dojump.h double-int.h emit-rtl.h
+	explow.h expmed.h fixed-value.h flags.h inchash.h insn-config.h
+	real.h statistics.h stmt.h tree.h varasm.h wide-int.h.
+	* loop-iv.c: Likewise.
+	* lra-assigns.c: Include alias.h calls.h dojump.h double-int.h emit-rtl.h
+	explow.h expmed.h fixed-value.h flags.h inchash.h real.h
+	statistics.h stmt.h tree.h varasm.h wide-int.h.
+	* lra-constraints.c: Likewise.
+	* lra-eliminations.c: Likewise.
+	* lra-lives.c: Likewise.
+	* lra-remat.c: Likewise.
+	* bt-load.c: Include alias.h calls.h dojump.h double-int.h emit-rtl.h
+	explow.h expmed.h fixed-value.h inchash.h insn-config.h real.h
+	statistics.h stmt.h tree.h varasm.h wide-int.h.
+	* hw-doloop.c: Likewise.
+	* ira-color.c: Likewise.
+	* ira-emit.c: Likewise.
+	* loop-doloop.c: Likewise.
+	* loop-invariant.c: Likewise.
+	* reload.c: Include alias.h calls.h dojump.h double-int.h emit-rtl.h
+	explow.h expmed.h fixed-value.h inchash.h real.h rtl.h
+	statistics.h stmt.h tree.h varasm.h wide-int.h.
+	* caller-save.c: Include alias.h calls.h dojump.h double-int.h emit-rtl.h
+	explow.h expmed.h fixed-value.h inchash.h real.h statistics.h
+	stmt.h tree.h varasm.h wide-int.h.
+	* combine-stack-adj.c: Likewise.
+	* cse.c: Likewise.
+	* ddg.c: Likewise.
+	* ifcvt.c: Likewise.
+	* ira-costs.c: Likewise.
+	* jump.c: Likewise.
+	* lra-coalesce.c: Likewise.
+	* lra-spills.c: Likewise.
+	* profile.c: Include alias.h calls.h dojump.h double-int.h emit-rtl.h
+	explow.h expmed.h fixed-value.h insn-config.h real.h statistics.h
+	stmt.h varasm.h wide-int.h.
+	* lra.c: Include alias.h calls.h dojump.h double-int.h emit-rtl.h
+	explow.h expmed.h fixed-value.h real.h statistics.h stmt.h
+	varasm.h.
+	* config/sh/sh_treg_combine.cc: Include alias.h calls.h dojump.h
+	double-int.h explow.h expmed.h fixed-value.h flags.h real.h
+	statistics.h stmt.h varasm.h wide-int.h.
+	* reorg.c: Include alias.h calls.h dojump.h double-int.h explow.h
+	expmed.h fixed-value.h inchash.h real.h statistics.h stmt.h tree.h
+	varasm.h wide-int.h.
+	* reload1.c: Include alias.h calls.h dojump.h double-int.h explow.h
+	expmed.h fixed-value.h real.h rtl.h statistics.h stmt.h varasm.h.
+	* config/tilegx/tilegx.c: Include alias.h dojump.h double-int.h
+	emit-rtl.h explow.h expmed.h fixed-value.h flags.h real.h
+	statistics.h stmt.h.
+	* config/tilepro/tilepro.c: Likewise.
+	* config/mmix/mmix.c: Include alias.h dojump.h double-int.h emit-rtl.h
+	explow.h expmed.h fixed-value.h real.h statistics.h stmt.h.
+	* config/pdp11/pdp11.c: Likewise.
+	* config/xtensa/xtensa.c: Likewise.
+	* config/lm32/lm32.c: Include alias.h dojump.h double-int.h emit-rtl.h
+	explow.h expmed.h fixed-value.h real.h statistics.h stmt.h
+	varasm.h.
+	* tree-chkp.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h flags.h function.h hard-reg-set.h hashtab.h
+	insn-config.h real.h rtl.h statistics.h stmt.h tm.h.
+	* cilk-common.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h flags.h function.h hard-reg-set.h hashtab.h
+	insn-config.h real.h rtl.h statistics.h stmt.h tm.h varasm.h.
+	* rtl-chkp.c: Likewise.
+	* tree-chkp-opt.c: Likewise.
+	* config/arm/arm-builtins.c: Include calls.h dojump.h emit-rtl.h explow.h
+	expmed.h fixed-value.h flags.h function.h hard-reg-set.h hashtab.h
+	insn-config.h real.h statistics.h stmt.h varasm.h.
+	* ipa-icf.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h flags.h hashtab.h insn-config.h real.h rtl.h
+	statistics.h stmt.h.
+	* tree-vect-data-refs.c: Likewise.
+	* graphite-sese-to-poly.c: Include calls.h dojump.h emit-rtl.h explow.h
+	expmed.h fixed-value.h flags.h hashtab.h insn-config.h real.h
+	rtl.h statistics.h stmt.h varasm.h.
+	* internal-fn.c: Likewise.
+	* ipa-icf-gimple.c: Likewise.
+	* lto-section-out.c: Likewise.
+	* tree-data-ref.c: Likewise.
+	* tree-nested.c: Likewise.
+	* tree-outof-ssa.c: Likewise.
+	* tree-predcom.c: Likewise.
+	* tree-pretty-print.c: Likewise.
+	* tree-scalar-evolution.c: Likewise.
+	* tree-ssa-strlen.c: Likewise.
+	* tree-vect-loop.c: Likewise.
+	* tree-vect-patterns.c: Likewise.
+	* tree-vect-slp.c: Likewise.
+	* tree-vect-stmts.c: Likewise.
+	* tsan.c: Likewise.
+	* targhooks.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h flags.h hashtab.h insn-config.h real.h statistics.h
+	stmt.h.
+	* config/sh/sh-mem.cc: Include calls.h dojump.h emit-rtl.h explow.h
+	expmed.h fixed-value.h flags.h hashtab.h insn-config.h real.h
+	statistics.h stmt.h varasm.h.
+	* loop-unroll.c: Likewise.
+	* ubsan.c: Likewise.
+	* tree-ssa-loop-prefetch.c: Include calls.h dojump.h emit-rtl.h explow.h
+	expmed.h fixed-value.h flags.h hashtab.h real.h rtl.h statistics.h
+	stmt.h varasm.h.
+	* dse.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h function.h hashtab.h statistics.h stmt.h varasm.h.
+	* tree-switch-conversion.c: Include calls.h dojump.h emit-rtl.h explow.h
+	expmed.h fixed-value.h hashtab.h insn-config.h real.h rtl.h
+	statistics.h stmt.h.
+	* generic-match-head.c: Include calls.h dojump.h emit-rtl.h explow.h
+	expmed.h fixed-value.h hashtab.h insn-config.h real.h rtl.h
+	statistics.h stmt.h varasm.h.
+	* gimple-match-head.c: Likewise.
+	* lto-cgraph.c: Likewise.
+	* lto-section-in.c: Likewise.
+	* lto-streamer-in.c: Likewise.
+	* lto-streamer-out.c: Likewise.
+	* tree-affine.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-cfgcleanup.c: Likewise.
+	* tree-if-conv.c: Likewise.
+	* tree-into-ssa.c: Likewise.
+	* tree-ssa-alias.c: Likewise.
+	* tree-ssa-copyrename.c: Likewise.
+	* tree-ssa-dse.c: Likewise.
+	* tree-ssa-forwprop.c: Likewise.
+	* tree-ssa-live.c: Likewise.
+	* tree-ssa-math-opts.c: Likewise.
+	* tree-ssa-pre.c: Likewise.
+	* tree-ssa-sccvn.c: Likewise.
+	* tree-tailcall.c: Likewise.
+	* tree-vect-generic.c: Likewise.
+	* tree-sra.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h insn-config.h real.h rtl.h stmt.h varasm.h.
+	* stor-layout.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h insn-config.h real.h statistics.h stmt.h.
+	* varasm.c: Likewise.
+	* coverage.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h insn-config.h real.h statistics.h stmt.h
+	varasm.h.
+	* init-regs.c: Likewise.
+	* ira.c: Likewise.
+	* omp-low.c: Likewise.
+	* stack-ptr-mod.c: Likewise.
+	* tree-ssa-reassoc.c: Likewise.
+	* tree-complex.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h insn-config.h rtl.h statistics.h stmt.h
+	varasm.h.
+	* dwarf2cfi.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h insn-config.h statistics.h stmt.h varasm.h.
+	* shrink-wrap.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h real.h rtl.h statistics.h stmt.h.
+	* recog.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h real.h rtl.h statistics.h stmt.h varasm.h.
+	* tree-ssa-phiopt.c: Likewise.
+	* config/darwin.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h real.h statistics.h stmt.h.
+	* config/fr30/fr30.c: Likewise.
+	* config/frv/frv.c: Likewise.
+	* expr.c: Likewise.
+	* final.c: Likewise.
+	* optabs.c: Likewise.
+	* passes.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* stmt.c: Likewise.
+	* toplev.c: Likewise.
+	* var-tracking.c: Likewise.
+	* gcse.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h real.h statistics.h stmt.h varasm.h.
+	* lower-subreg.c: Likewise.
+	* postreload-gcse.c: Likewise.
+	* ree.c: Likewise.
+	* reginfo.c: Likewise.
+	* store-motion.c: Likewise.
+	* combine.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h real.h stmt.h varasm.h.
+	* emit-rtl.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h statistics.h stmt.h.
+	* dojump.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h statistics.h stmt.h varasm.h.
+	* except.c: Likewise.
+	* explow.c: Likewise.
+	* tree-dfa.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h insn-config.h real.h rtl.h statistics.h stmt.h
+	varasm.h.
+	* gimple-fold.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h insn-config.h real.h rtl.h statistics.h varasm.h.
+	* tree-ssa-structalias.c: Likewise.
+	* cfgexpand.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h insn-config.h real.h statistics.h.
+	* calls.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h insn-config.h real.h statistics.h stmt.h.
+	* bb-reorder.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h insn-config.h real.h statistics.h stmt.h varasm.h.
+	* cfgbuild.c: Likewise.
+	* function.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h real.h rtl.h statistics.h stmt.h.
+	* cfgrtl.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h real.h rtl.h statistics.h stmt.h varasm.h.
+	* dbxout.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h real.h statistics.h stmt.h.
+	* auto-inc-dec.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h real.h statistics.h stmt.h varasm.h.
+	* cprop.c: Likewise.
+	* modulo-sched.c: Likewise.
+	* postreload.c: Likewise.
+	* ccmp.c: Include calls.h dojump.h emit-rtl.h explow.h fixed-value.h
+	flags.h function.h hard-reg-set.h hashtab.h insn-config.h real.h
+	statistics.h stmt.h varasm.h.
+	* gimple-ssa-strength-reduction.c: Include calls.h dojump.h emit-rtl.h
+	explow.h fixed-value.h flags.h hashtab.h insn-config.h real.h
+	rtl.h statistics.h stmt.h varasm.h.
+	* tree-ssa-loop-ivopts.c: Include calls.h dojump.h emit-rtl.h explow.h
+	fixed-value.h flags.h hashtab.h real.h rtl.h statistics.h stmt.h
+	varasm.h.
+	* expmed.c: Include calls.h dojump.h emit-rtl.h explow.h fixed-value.h
+	function.h hard-reg-set.h hashtab.h real.h statistics.h stmt.h
+	varasm.h.
+	* target-globals.c: Include calls.h dojump.h emit-rtl.h explow.h
+	fixed-value.h function.h hashtab.h real.h statistics.h stmt.h
+	varasm.h.
+	* tree-ssa-address.c: Include calls.h dojump.h emit-rtl.h explow.h
+	fixed-value.h hashtab.h real.h statistics.h stmt.h varasm.h.
+	* cfgcleanup.c: Include calls.h dojump.h explow.h expmed.h fixed-value.h
+	function.h real.h statistics.h stmt.h varasm.h.
+	* alias.c: Include calls.h dojump.h explow.h expmed.h fixed-value.h
+	insn-config.h real.h statistics.h stmt.h.
+	* dwarf2out.c: Include calls.h dojump.h explow.h expmed.h fixed-value.h
+	statistics.h stmt.h.
+	* config/nvptx/nvptx.c: Include dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h flags.h hard-reg-set.h insn-config.h real.h
+	statistics.h stmt.h varasm.h.
+	* gimplify.c: Include dojump.h emit-rtl.h explow.h expmed.h fixed-value.h
+	flags.h hashtab.h insn-config.h real.h rtl.h statistics.h.
+	* asan.c: Include dojump.h emit-rtl.h explow.h expmed.h fixed-value.h
+	flags.h hashtab.h insn-config.h real.h rtl.h statistics.h stmt.h.
+	* ipa-devirt.c: Include dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h flags.h hashtab.h insn-config.h real.h rtl.h
+	statistics.h stmt.h varasm.h.
+	* ipa-polymorphic-call.c: Likewise.
+	* config/aarch64/aarch64.c: Include dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h flags.h hashtab.h insn-config.h real.h statistics.h
+	stmt.h.
+	* config/c6x/c6x.c: Likewise.
+	* config/aarch64/aarch64-builtins.c: Include dojump.h emit-rtl.h explow.h
+	expmed.h fixed-value.h flags.h hashtab.h insn-config.h real.h
+	statistics.h stmt.h varasm.h.
+	* ipa-prop.c: Include dojump.h emit-rtl.h explow.h expmed.h fixed-value.h
+	hashtab.h insn-config.h real.h rtl.h statistics.h stmt.h varasm.h.
+	* ipa-split.c: Likewise.
+	* tree-eh.c: Likewise.
+	* tree-ssa-dce.c: Likewise.
+	* tree-ssa-loop-niter.c: Likewise.
+	* tree-vrp.c: Likewise.
+	* config/nds32/nds32-cost.c: Include dojump.h emit-rtl.h explow.h
+	expmed.h fixed-value.h hashtab.h insn-config.h real.h statistics.h
+	stmt.h.
+	* config/nds32/nds32-fp-as-gp.c: Likewise.
+	* config/nds32/nds32-intrinsic.c: Likewise.
+	* config/nds32/nds32-isr.c: Likewise.
+	* config/nds32/nds32-md-auxiliary.c: Likewise.
+	* config/nds32/nds32-memory-manipulation.c: Likewise.
+	* config/nds32/nds32-pipelines-auxiliary.c: Likewise.
+	* config/nds32/nds32-predicates.c: Likewise.
+	* config/nds32/nds32.c: Likewise.
+	* config/cris/cris.c: Include dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h real.h statistics.h.
+	* config/alpha/alpha.c: Include dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h real.h statistics.h stmt.h.
+	* config/arm/arm.c: Likewise.
+	* config/avr/avr.c: Likewise.
+	* config/bfin/bfin.c: Likewise.
+	* config/h8300/h8300.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/iq2000/iq2000.c: Likewise.
+	* config/m32c/m32c.c: Likewise.
+	* config/m32r/m32r.c: Likewise.
+	* config/m68k/m68k.c: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/mep/mep.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/mn10300/mn10300.c: Likewise.
+	* config/moxie/moxie.c: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/rl78/rl78.c: Likewise.
+	* config/rx/rx.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/spu/spu.c: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/v850/v850.c: Likewise.
+	* config/vax/vax.c: Likewise.
+	* config/cr16/cr16.c: Include dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h hashtab.h real.h statistics.h stmt.h varasm.h.
+	* config/msp430/msp430.c: Likewise.
+	* predict.c: Likewise.
+	* value-prof.c: Likewise.
+	* config/epiphany/epiphany.c: Include dojump.h emit-rtl.h explow.h
+	expmed.h fixed-value.h hashtab.h statistics.h stmt.h.
+	* config/microblaze/microblaze.c: Likewise.
+	* config/nios2/nios2.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* tree.c: Include dojump.h emit-rtl.h explow.h expmed.h fixed-value.h
+	insn-config.h real.h rtl.h statistics.h stmt.h.
+	* cgraph.c: Include dojump.h emit-rtl.h explow.h expmed.h fixed-value.h
+	insn-config.h real.h statistics.h stmt.h.
+	* fold-const.c: Include dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h insn-config.h real.h statistics.h stmt.h varasm.h.
+	* tree-inline.c: Include dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h real.h rtl.h statistics.h stmt.h varasm.h.
+	* builtins.c: Include dojump.h emit-rtl.h explow.h expmed.h fixed-value.h
+	real.h statistics.h stmt.h.
+	* config/arc/arc.c: Include dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h statistics.h stmt.h.
+	* config/visium/visium.c: Include dojump.h emit-rtl.h explow.h expmed.h
+	stmt.h.
+
 2015-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gengtype.c (create_user_defined_type): Workaround
