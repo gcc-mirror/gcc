@@ -1,3 +1,7 @@
+2015-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Update copyright years in docs/.
+
 2015-01-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* libgccjit.c (gcc_jit_block_add_assignment_op): Check that the
