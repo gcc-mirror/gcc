@@ -27,7 +27,7 @@ fi
 config_path="posix"
 
 # Check for futex enabled all at once.
-if test $enable_linux_futex = yes; then
+if test x$enable_linux_futex = xyes; then
   case "${target}" in
 
     aarch64*-*-linux*)

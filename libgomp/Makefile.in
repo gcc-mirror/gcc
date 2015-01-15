@@ -15,6 +15,34 @@
 
 @SET_MAKE@
 
+# Plugins for offload execution, Makefile.am fragment.
+#
+# Copyright (C) 2014-2015 Free Software Foundation, Inc.
+#
+# Contributed by Mentor Embedded.
+#
+# This file is part of the GNU Offloading and Multi Processing Library
+# (libgomp).
+#
+# Libgomp is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# Libgomp is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# Under Section 7 of GPL version 3, you are granted additional
+# permissions described in the GCC Runtime Library Exception, version
+# 3.1, as published by the Free Software Foundation.
+#
+# You should have received a copy of the GNU General Public License and
+# a copy of the GCC Runtime Library Exception along with this program;
+# see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+# <http://www.gnu.org/licenses/>.
+
 
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
@@ -36,13 +64,16 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-subdir = .
-DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
+DIST_COMMON = $(top_srcdir)/plugin/Makefrag.am ChangeLog \
+	$(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(srcdir)/config.h.in $(srcdir)/../mkinstalldirs \
 	$(srcdir)/omp.h.in $(srcdir)/omp_lib.h.in \
 	$(srcdir)/omp_lib.f90.in $(srcdir)/libgomp_f.h.in \
 	$(srcdir)/libgomp.spec.in $(srcdir)/../depcomp
+@PLUGIN_NVPTX_TRUE@am__append_1 = libgomp-plugin-nvptx.la
+@USE_FORTRAN_TRUE@am__append_2 = openacc.f90
+subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
@@ -56,7 +87,8 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/../ltoptions.m4 \
 	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
 	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../libtool.m4 $(top_srcdir)/plugin/configfrag.ac \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -91,12 +123,38 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" \
 	"$(DESTDIR)$(fincludedir)" "$(DESTDIR)$(libsubincludedir)" \
 	"$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
+libgomp_plugin_host_nonshm_la_DEPENDENCIES = libgomp.la
+am_libgomp_plugin_host_nonshm_la_OBJECTS =  \
+	libgomp_plugin_host_nonshm_la-plugin-host.lo
+libgomp_plugin_host_nonshm_la_OBJECTS =  \
+	$(am_libgomp_plugin_host_nonshm_la_OBJECTS)
+libgomp_plugin_host_nonshm_la_LINK = $(LIBTOOL) --tag=CC \
+	$(libgomp_plugin_host_nonshm_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgomp_plugin_host_nonshm_la_LDFLAGS) $(LDFLAGS) -o $@
+am__DEPENDENCIES_1 =
+@PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_DEPENDENCIES = libgomp.la \
+@PLUGIN_NVPTX_TRUE@	$(am__DEPENDENCIES_1)
+@PLUGIN_NVPTX_TRUE@am_libgomp_plugin_nvptx_la_OBJECTS =  \
+@PLUGIN_NVPTX_TRUE@	libgomp_plugin_nvptx_la-plugin-nvptx.lo
+libgomp_plugin_nvptx_la_OBJECTS =  \
+	$(am_libgomp_plugin_nvptx_la_OBJECTS)
+libgomp_plugin_nvptx_la_LINK = $(LIBTOOL) --tag=CC \
+	$(libgomp_plugin_nvptx_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgomp_plugin_nvptx_la_LDFLAGS) $(LDFLAGS) -o $@
+@PLUGIN_NVPTX_TRUE@am_libgomp_plugin_nvptx_la_rpath = -rpath \
+@PLUGIN_NVPTX_TRUE@	$(toolexeclibdir)
 libgomp_la_LIBADD =
+@USE_FORTRAN_TRUE@am__objects_1 = openacc.lo
 am_libgomp_la_OBJECTS = alloc.lo barrier.lo critical.lo env.lo \
 	error.lo iter.lo iter_ull.lo loop.lo loop_ull.lo ordered.lo \
 	parallel.lo sections.lo single.lo task.lo team.lo work.lo \
 	lock.lo mutex.lo proc.lo sem.lo bar.lo ptrlock.lo time.lo \
-	fortran.lo affinity.lo target.lo
+	fortran.lo affinity.lo target.lo splay-tree.lo \
+	libgomp-plugin.lo oacc-parallel.lo oacc-host.lo oacc-init.lo \
+	oacc-mem.lo oacc-async.lo oacc-plugin.lo oacc-cuda.lo \
+	$(am__objects_1)
 libgomp_la_OBJECTS = $(am_libgomp_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
@@ -108,7 +166,15 @@ LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
-SOURCES = $(libgomp_la_SOURCES)
+FCCOMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
+LTFCCOMPILE = $(LIBTOOL) --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS)
+FCLD = $(FC)
+FCLINK = $(LIBTOOL) --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(FCLD) $(AM_FCFLAGS) $(FCFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+SOURCES = $(libgomp_plugin_host_nonshm_la_SOURCES) \
+	$(libgomp_plugin_nvptx_la_SOURCES) $(libgomp_la_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -155,6 +221,8 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CUDA_DRIVER_INCLUDE = @CUDA_DRIVER_INCLUDE@
+CUDA_DRIVER_LIB = @CUDA_DRIVER_LIB@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
@@ -213,6 +281,10 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
+PLUGIN_NVPTX = @PLUGIN_NVPTX@
+PLUGIN_NVPTX_CPPFLAGS = @PLUGIN_NVPTX_CPPFLAGS@
+PLUGIN_NVPTX_LDFLAGS = @PLUGIN_NVPTX_LDFLAGS@
+PLUGIN_NVPTX_LIBS = @PLUGIN_NVPTX_LIBS@
 RANLIB = @RANLIB@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
 SED = @SED@
@@ -293,13 +365,16 @@ top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 SUBDIRS = testsuite
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
-search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) $(top_srcdir)
+search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) $(top_srcdir) \
+	      $(top_srcdir)/../include
+
 fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/finclude
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 AM_CPPFLAGS = $(addprefix -I, $(search_path))
 AM_CFLAGS = $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
-toolexeclib_LTLIBRARIES = libgomp.la
+toolexeclib_LTLIBRARIES = libgomp.la $(am__append_1) \
+	libgomp-plugin-host_nonshm.la
 nodist_toolexeclib_HEADERS = libgomp.spec
 
 # -Wc is only a libtool option.
@@ -318,13 +393,35 @@ libgomp_la_LDFLAGS = $(libgomp_version_info) $(libgomp_version_script) \
 libgomp_la_DEPENDENCIES = $(libgomp_version_dep)
 libgomp_la_LINK = $(LINK) $(libgomp_la_LDFLAGS)
 libgomp_la_SOURCES = alloc.c barrier.c critical.c env.c error.c iter.c \
-	iter_ull.c loop.c loop_ull.c ordered.c parallel.c sections.c single.c \
-	task.c team.c work.c lock.c mutex.c proc.c sem.c bar.c ptrlock.c \
-	time.c fortran.c affinity.c target.c
+	iter_ull.c loop.c loop_ull.c ordered.c parallel.c sections.c \
+	single.c task.c team.c work.c lock.c mutex.c proc.c sem.c \
+	bar.c ptrlock.c time.c fortran.c affinity.c target.c \
+	splay-tree.c libgomp-plugin.c oacc-parallel.c oacc-host.c \
+	oacc-init.c oacc-mem.c oacc-async.c oacc-plugin.c oacc-cuda.c \
+	$(am__append_2)
 
+# Nvidia PTX OpenACC plugin.
+@PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_version_info = -version-info $(libtool_VERSION)
+@PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_SOURCES = plugin/plugin-nvptx.c
+@PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_CPPFLAGS = $(AM_CPPFLAGS) $(PLUGIN_NVPTX_CPPFLAGS)
+@PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_LDFLAGS =  \
+@PLUGIN_NVPTX_TRUE@	$(libgomp_plugin_nvptx_version_info) \
+@PLUGIN_NVPTX_TRUE@	$(lt_host_flags) $(PLUGIN_NVPTX_LDFLAGS)
+@PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_LIBADD = libgomp.la $(PLUGIN_NVPTX_LIBS)
+@PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_LIBTOOLFLAGS = --tag=disable-static
+libgomp_plugin_host_nonshm_version_info = -version-info $(libtool_VERSION)
+libgomp_plugin_host_nonshm_la_SOURCES = plugin/plugin-host.c
+libgomp_plugin_host_nonshm_la_CPPFLAGS = $(AM_CPPFLAGS) -DHOST_NONSHM_PLUGIN
+libgomp_plugin_host_nonshm_la_LDFLAGS = \
+	$(libgomp_plugin_host_nonshm_version_info) $(lt_host_flags)
+
+libgomp_plugin_host_nonshm_la_LIBADD = libgomp.la
+libgomp_plugin_host_nonshm_la_LIBTOOLFLAGS = --tag=disable-static
 nodist_noinst_HEADERS = libgomp_f.h
-nodist_libsubinclude_HEADERS = omp.h
-@USE_FORTRAN_TRUE@nodist_finclude_HEADERS = omp_lib.h omp_lib.f90 omp_lib.mod omp_lib_kinds.mod
+nodist_libsubinclude_HEADERS = omp.h openacc.h
+@USE_FORTRAN_TRUE@nodist_finclude_HEADERS = omp_lib.h omp_lib.f90 omp_lib.mod omp_lib_kinds.mod \
+@USE_FORTRAN_TRUE@	openacc_lib.h openacc.f90 openacc.mod openacc_kinds.mod
+
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 LINK = $(LIBTOOL) --tag CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
@@ -354,10 +451,10 @@ all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .c .dvi .lo .o .obj .ps
+.SUFFIXES: .c .dvi .f90 .lo .o .obj .ps
 am--refresh:
 	@:
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/plugin/Makefrag.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -447,6 +544,10 @@ clean-toolexeclibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+libgomp-plugin-host_nonshm.la: $(libgomp_plugin_host_nonshm_la_OBJECTS) $(libgomp_plugin_host_nonshm_la_DEPENDENCIES) 
+	$(libgomp_plugin_host_nonshm_la_LINK) -rpath $(toolexeclibdir) $(libgomp_plugin_host_nonshm_la_OBJECTS) $(libgomp_plugin_host_nonshm_la_LIBADD) $(LIBS)
+libgomp-plugin-nvptx.la: $(libgomp_plugin_nvptx_la_OBJECTS) $(libgomp_plugin_nvptx_la_DEPENDENCIES) 
+	$(libgomp_plugin_nvptx_la_LINK) $(am_libgomp_plugin_nvptx_la_rpath) $(libgomp_plugin_nvptx_la_OBJECTS) $(libgomp_plugin_nvptx_la_LIBADD) $(LIBS)
 libgomp.la: $(libgomp_la_OBJECTS) $(libgomp_la_DEPENDENCIES) 
 	$(libgomp_la_LINK) -rpath $(toolexeclibdir) $(libgomp_la_OBJECTS) $(libgomp_la_LIBADD) $(LIBS)
 
@@ -466,10 +567,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fortran.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iter_ull.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgomp-plugin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgomp_plugin_host_nonshm_la-plugin-host.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgomp_plugin_nvptx_la-plugin-nvptx.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/loop.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/loop_ull.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mutex.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-async.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-cuda.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-host.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-init.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-mem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-parallel.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-plugin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ordered.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parallel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proc.Plo@am__quote@
@@ -477,6 +588,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sections.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/single.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/splay-tree.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/target.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/task.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/team.Plo@am__quote@
@@ -503,6 +615,29 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+libgomp_plugin_host_nonshm_la-plugin-host.lo: plugin/plugin-host.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libgomp_plugin_host_nonshm_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgomp_plugin_host_nonshm_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgomp_plugin_host_nonshm_la-plugin-host.lo -MD -MP -MF $(DEPDIR)/libgomp_plugin_host_nonshm_la-plugin-host.Tpo -c -o libgomp_plugin_host_nonshm_la-plugin-host.lo `test -f 'plugin/plugin-host.c' || echo '$(srcdir)/'`plugin/plugin-host.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libgomp_plugin_host_nonshm_la-plugin-host.Tpo $(DEPDIR)/libgomp_plugin_host_nonshm_la-plugin-host.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='plugin/plugin-host.c' object='libgomp_plugin_host_nonshm_la-plugin-host.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libgomp_plugin_host_nonshm_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgomp_plugin_host_nonshm_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgomp_plugin_host_nonshm_la-plugin-host.lo `test -f 'plugin/plugin-host.c' || echo '$(srcdir)/'`plugin/plugin-host.c
+
+libgomp_plugin_nvptx_la-plugin-nvptx.lo: plugin/plugin-nvptx.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libgomp_plugin_nvptx_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgomp_plugin_nvptx_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgomp_plugin_nvptx_la-plugin-nvptx.lo -MD -MP -MF $(DEPDIR)/libgomp_plugin_nvptx_la-plugin-nvptx.Tpo -c -o libgomp_plugin_nvptx_la-plugin-nvptx.lo `test -f 'plugin/plugin-nvptx.c' || echo '$(srcdir)/'`plugin/plugin-nvptx.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libgomp_plugin_nvptx_la-plugin-nvptx.Tpo $(DEPDIR)/libgomp_plugin_nvptx_la-plugin-nvptx.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='plugin/plugin-nvptx.c' object='libgomp_plugin_nvptx_la-plugin-nvptx.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libgomp_plugin_nvptx_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgomp_plugin_nvptx_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgomp_plugin_nvptx_la-plugin-nvptx.lo `test -f 'plugin/plugin-nvptx.c' || echo '$(srcdir)/'`plugin/plugin-nvptx.c
+
+.f90.o:
+	$(FCCOMPILE) -c -o $@ $<
+
+.f90.obj:
+	$(FCCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+.f90.lo:
+	$(LTFCCOMPILE) -c -o $@ $<
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1088,7 +1223,11 @@ vpath % $(strip $(search_path))
 
 omp_lib_kinds.mod: omp_lib.mod
 	:
-omp_lib.mod: omp_lib.f90
+openacc_kinds.mod: openacc.mod
+	:
+openacc.mod: openacc.lo
+	:
+%.mod: %.f90
 	$(FC) $(FCFLAGS) -fsyntax-only $<
 fortran.lo: libgomp_f.h
 fortran.o: libgomp_f.h

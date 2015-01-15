@@ -1828,9 +1828,8 @@ Set @code{NAME} to be the name associated with @code{OMP} critical statement @co
 tree clauses, tree index, tree initial, tree final, tree incr, @
 gimple_seq pre_body, enum tree_code omp_for_cond)
 Build a @code{GIMPLE_OMP_FOR} statement. @code{BODY} is sequence of statements
-inside the for loop.  @code{CLAUSES}, are any of the @code{OMP} loop
-construct's clauses: private, firstprivate,  lastprivate,
-reductions, ordered, schedule, and nowait.  @code{PRE_BODY} is the
+inside the for loop.  @code{CLAUSES}, are any of the loop
+construct's clauses.  @code{PRE_BODY} is the
 sequence of statements that are loop invariant.  @code{INDEX} is the
 index variable.  @code{INITIAL} is the initial value of @code{INDEX}.  @code{FINAL} is
 final value of @code{INDEX}.  OMP_FOR_COND is the predicate used to

@@ -208,19 +208,19 @@ enum omp_clause_code {
      (c_parser_omp_variable_list).  */
   OMP_CLAUSE_ERROR = 0,
 
-  /* OpenMP clause: private (variable_list).  */
+  /* OpenACC/OpenMP clause: private (variable_list).  */
   OMP_CLAUSE_PRIVATE,
 
   /* OpenMP clause: shared (variable_list).  */
   OMP_CLAUSE_SHARED,
 
-  /* OpenMP clause: firstprivate (variable_list).  */
+  /* OpenACC/OpenMP clause: firstprivate (variable_list).  */
   OMP_CLAUSE_FIRSTPRIVATE,
 
   /* OpenMP clause: lastprivate (variable_list).  */
   OMP_CLAUSE_LASTPRIVATE,
 
-  /* OpenMP clause: reduction (operator:variable_list).
+  /* OpenACC/OpenMP clause: reduction (operator:variable_list).
      OMP_CLAUSE_REDUCTION_CODE: The tree_code of the operator.
      Operand 1: OMP_CLAUSE_REDUCTION_INIT: Stmt-list to initialize the var.
      Operand 2: OMP_CLAUSE_REDUCTION_MERGE: Stmt-list to merge private var
@@ -253,13 +253,48 @@ enum omp_clause_code {
   /* OpenMP clause: to (variable-list).  */
   OMP_CLAUSE_TO,
 
-  /* OpenMP clause: map ({alloc:,to:,from:,tofrom:,}variable-list).  */
+  /* OpenACC clauses: {copy, copyin, copyout, create, delete, deviceptr,
+     device, host (self), present, present_or_copy (pcopy), present_or_copyin
+     (pcopyin), present_or_copyout (pcopyout), present_or_create (pcreate)}
+     (variable-list).
+
+     OpenMP clause: map ({alloc:,to:,from:,tofrom:,}variable-list).  */
   OMP_CLAUSE_MAP,
+
+  /* Internal structure to hold OpenACC cache directive's variable-list.
+     #pragma acc cache (variable-list).  */
+  OMP_CLAUSE__CACHE_,
+
+  /* OpenACC clause: device_resident (variable_list).  */
+  OMP_CLAUSE_DEVICE_RESIDENT,
+
+  /* OpenACC clause: use_device (variable_list).  */
+  OMP_CLAUSE_USE_DEVICE,
+
+  /* OpenACC clause: gang [(gang-argument-list)].
+     Where
+      gang-argument-list: [gang-argument-list, ] gang-argument
+      gang-argument: [num:] integer-expression
+                   | static: size-expression
+      size-expression: * | integer-expression.  */
+  OMP_CLAUSE_GANG,
+
+  /* OpenACC clause: async [(integer-expression)].  */
+  OMP_CLAUSE_ASYNC,
+
+  /* OpenACC clause: wait [(integer-expression-list)].  */
+  OMP_CLAUSE_WAIT,
+
+  /* OpenACC clause: auto.  */
+  OMP_CLAUSE_AUTO,
+
+  /* OpenACC clause: seq.  */
+  OMP_CLAUSE_SEQ,
 
   /* Internal clause: temporary for combined loops expansion.  */
   OMP_CLAUSE__LOOPTEMP_,
 
-  /* OpenMP clause: if (scalar-expression).  */
+  /* OpenACC/OpenMP clause: if (scalar-expression).  */
   OMP_CLAUSE_IF,
 
   /* OpenMP clause: num_threads (integer-expression).  */
@@ -277,7 +312,7 @@ enum omp_clause_code {
   /* OpenMP clause: default.  */
   OMP_CLAUSE_DEFAULT,
 
-  /* OpenMP clause: collapse (constant-integer-expression).  */
+  /* OpenACC/OpenMP clause: collapse (constant-integer-expression).  */
   OMP_CLAUSE_COLLAPSE,
 
   /* OpenMP clause: untied.  */
@@ -333,7 +368,25 @@ enum omp_clause_code {
 
   /* Internally used only clause, holding _Cilk_for # of iterations
      on OMP_PARALLEL.  */
-  OMP_CLAUSE__CILK_FOR_COUNT_
+  OMP_CLAUSE__CILK_FOR_COUNT_,
+
+  /* OpenACC clause: independent.  */
+  OMP_CLAUSE_INDEPENDENT,
+
+  /* OpenACC clause: worker [( [num:] integer-expression)].  */
+  OMP_CLAUSE_WORKER,
+
+  /* OpenACC clause: vector [( [length:] integer-expression)].  */
+  OMP_CLAUSE_VECTOR,
+
+  /* OpenACC clause: num_gangs (integer-expression).  */
+  OMP_CLAUSE_NUM_GANGS,
+
+  /* OpenACC clause: num_workers (integer-expression).  */
+  OMP_CLAUSE_NUM_WORKERS,
+
+  /* OpenACC clause: vector_length (integer-expression).  */
+  OMP_CLAUSE_VECTOR_LENGTH
 };
 
 #undef DEFTREESTRUCT
@@ -1172,24 +1225,6 @@ enum omp_clause_depend_kind
   OMP_CLAUSE_DEPEND_LAST
 };
 
-enum omp_clause_map_kind
-{
-  OMP_CLAUSE_MAP_ALLOC,
-  OMP_CLAUSE_MAP_TO,
-  OMP_CLAUSE_MAP_FROM,
-  OMP_CLAUSE_MAP_TOFROM,
-  /* The following kind is an internal only map kind, used for pointer based
-     array sections.  OMP_CLAUSE_SIZE for these is not the pointer size,
-     which is implicitly POINTER_SIZE_UNITS, but the bias.  */
-  OMP_CLAUSE_MAP_POINTER,
-  /* Also internal, behaves like OMP_CLAUS_MAP_TO, but additionally any
-     OMP_CLAUSE_MAP_POINTER records consecutive after it which have addresses
-     falling into that range will not be ignored if OMP_CLAUSE_MAP_TO_PSET
-     wasn't mapped already.  */
-  OMP_CLAUSE_MAP_TO_PSET,
-  OMP_CLAUSE_MAP_LAST
-};
-
 enum omp_clause_proc_bind_kind
 {
   /* Numbers should match omp_proc_bind_t enum in omp.h.  */
@@ -1261,7 +1296,8 @@ struct GTY(()) tree_omp_clause {
     enum omp_clause_default_kind   default_kind;
     enum omp_clause_schedule_kind  schedule_kind;
     enum omp_clause_depend_kind    depend_kind;
-    enum omp_clause_map_kind       map_kind;
+    /* See include/gomp-constants.h for enum gomp_map_kind's values.  */
+    unsigned char		   map_kind;
     enum omp_clause_proc_bind_kind proc_bind_kind;
     enum tree_code                 reduction_code;
   } GTY ((skip)) subcode;

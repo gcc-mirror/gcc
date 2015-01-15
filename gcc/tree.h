@@ -1195,12 +1195,47 @@ extern void protected_set_expr_location (tree, location_t);
 #define TRANSACTION_EXPR_RELAXED(NODE) \
   (TRANSACTION_EXPR_CHECK (NODE)->base.public_flag)
 
-/* OpenMP directive and clause accessors.  */
+/* OpenMP and OpenACC directive and clause accessors.  */
 
 #define OMP_BODY(NODE) \
-  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OMP_PARALLEL, OMP_CRITICAL), 0)
+  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_CRITICAL), 0)
 #define OMP_CLAUSES(NODE) \
-  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OMP_PARALLEL, OMP_SINGLE), 1)
+  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_SINGLE), 1)
+
+#define OACC_PARALLEL_BODY(NODE) \
+  TREE_OPERAND (OACC_PARALLEL_CHECK (NODE), 0)
+#define OACC_PARALLEL_CLAUSES(NODE) \
+  TREE_OPERAND (OACC_PARALLEL_CHECK (NODE), 1)
+
+#define OACC_KERNELS_BODY(NODE) \
+  TREE_OPERAND (OACC_KERNELS_CHECK(NODE), 0)
+#define OACC_KERNELS_CLAUSES(NODE) \
+  TREE_OPERAND (OACC_KERNELS_CHECK(NODE), 1)
+
+#define OACC_DATA_BODY(NODE) \
+  TREE_OPERAND (OACC_DATA_CHECK (NODE), 0)
+#define OACC_DATA_CLAUSES(NODE) \
+  TREE_OPERAND (OACC_DATA_CHECK (NODE), 1)
+
+#define OACC_HOST_DATA_BODY(NODE) \
+  TREE_OPERAND (OACC_HOST_DATA_CHECK (NODE), 0)
+#define OACC_HOST_DATA_CLAUSES(NODE) \
+  TREE_OPERAND (OACC_HOST_DATA_CHECK (NODE), 1)
+
+#define OACC_CACHE_CLAUSES(NODE) \
+  TREE_OPERAND (OACC_CACHE_CHECK (NODE), 0)
+
+#define OACC_DECLARE_CLAUSES(NODE) \
+  TREE_OPERAND (OACC_DECLARE_CHECK (NODE), 0)
+
+#define OACC_ENTER_DATA_CLAUSES(NODE) \
+  TREE_OPERAND (OACC_ENTER_DATA_CHECK (NODE), 0)
+
+#define OACC_EXIT_DATA_CLAUSES(NODE) \
+  TREE_OPERAND (OACC_EXIT_DATA_CHECK (NODE), 0)
+
+#define OACC_UPDATE_CLAUSES(NODE) \
+  TREE_OPERAND (OACC_UPDATE_CHECK (NODE), 0)
 
 #define OMP_PARALLEL_BODY(NODE)    TREE_OPERAND (OMP_PARALLEL_CHECK (NODE), 0)
 #define OMP_PARALLEL_CLAUSES(NODE) TREE_OPERAND (OMP_PARALLEL_CHECK (NODE), 1)
@@ -1212,7 +1247,7 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_TASKREG_BODY(NODE)    TREE_OPERAND (OMP_TASKREG_CHECK (NODE), 0)
 #define OMP_TASKREG_CLAUSES(NODE) TREE_OPERAND (OMP_TASKREG_CHECK (NODE), 1)
 
-#define OMP_LOOP_CHECK(NODE) TREE_RANGE_CHECK (NODE, OMP_FOR, OMP_DISTRIBUTE)
+#define OMP_LOOP_CHECK(NODE) TREE_RANGE_CHECK (NODE, OMP_FOR, OACC_LOOP)
 #define OMP_FOR_BODY(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 0)
 #define OMP_FOR_CLAUSES(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 1)
 #define OMP_FOR_INIT(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 2)
@@ -1254,7 +1289,7 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_SIZE(NODE)						\
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
 					      OMP_CLAUSE_FROM,		\
-					      OMP_CLAUSE_MAP), 1)
+					      OMP_CLAUSE__CACHE_), 1)
 
 #define OMP_CLAUSE_CHAIN(NODE)     TREE_CHAIN (OMP_CLAUSE_CHECK (NODE))
 #define OMP_CLAUSE_DECL(NODE)      					\
@@ -1270,6 +1305,15 @@ extern void protected_set_expr_location (tree, location_t);
    This status is meaningful in the implementation of lastprivate.  */
 #define OMP_SECTION_LAST(NODE) \
   (OMP_SECTION_CHECK (NODE)->base.private_flag)
+
+/* True on an OACC_KERNELS statement if is represents combined kernels loop
+   directive.  */
+#define OACC_KERNELS_COMBINED(NODE) \
+  (OACC_KERNELS_CHECK (NODE)->base.private_flag)
+
+/* Like OACC_KERNELS_COMBINED, but for parallel loop directive.  */
+#define OACC_PARALLEL_COMBINED(NODE) \
+  (OACC_PARALLEL_CHECK (NODE)->base.private_flag)
 
 /* True on an OMP_PARALLEL statement if it represents an explicit
    combined parallel work-sharing constructs.  */
@@ -1313,15 +1357,47 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_SCHEDULE_CHUNK_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SCHEDULE), 0)
 
+/* OpenACC clause expressions  */
+#define OMP_CLAUSE_GANG_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND ( \
+    OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_GANG), 0)
+#define OMP_CLAUSE_GANG_STATIC_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND ( \
+    OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_GANG), 1)
+#define OMP_CLAUSE_ASYNC_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND ( \
+    OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ASYNC), 0)
+#define OMP_CLAUSE_WAIT_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND ( \
+    OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_WAIT), 0)
+#define OMP_CLAUSE_VECTOR_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND ( \
+    OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_VECTOR), 0)
+#define OMP_CLAUSE_WORKER_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND ( \
+    OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_WORKER), 0)
+#define OMP_CLAUSE_NUM_GANGS_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND ( \
+    OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NUM_GANGS), 0)
+#define OMP_CLAUSE_NUM_WORKERS_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND ( \
+    OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NUM_WORKERS), 0)
+#define OMP_CLAUSE_VECTOR_LENGTH_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND ( \
+    OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_VECTOR_LENGTH), 0)
+
 #define OMP_CLAUSE_DEPEND_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEPEND)->omp_clause.subcode.depend_kind)
 
 #define OMP_CLAUSE_MAP_KIND(NODE) \
-  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->omp_clause.subcode.map_kind)
+  ((enum gomp_map_kind) OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->omp_clause.subcode.map_kind)
+#define OMP_CLAUSE_SET_MAP_KIND(NODE, MAP_KIND) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->omp_clause.subcode.map_kind \
+   = (unsigned char) (MAP_KIND))
 
 /* Nonzero if this map clause is for array (rather than pointer) based array
-   section with zero bias.  Both the non-decl OMP_CLAUSE_MAP and
-   correspoidng OMP_CLAUSE_MAP_POINTER clause are marked with this flag.  */
+   section with zero bias.  Both the non-decl OMP_CLAUSE_MAP and corresponding
+   OMP_CLAUSE_MAP with GOMP_MAP_POINTER are marked with this flag.  */
 #define OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->base.public_flag)
 

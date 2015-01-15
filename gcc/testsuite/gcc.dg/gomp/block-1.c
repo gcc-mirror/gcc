@@ -4,9 +4,9 @@ void foo()
 {
   bad1:
   #pragma omp parallel
-    goto bad1;			// { dg-error "invalid branch" }
+    goto bad1; // { dg-error "invalid branch to/from OpenMP structured block" }
 
-  goto bad2;			// { dg-error "invalid entry" }
+  goto bad2; // { dg-error "invalid entry to OpenMP structured block" }
   #pragma omp parallel
     {
       bad2: ;

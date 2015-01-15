@@ -1,3 +1,354 @@
+2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* Makefile.am (search_path): Add $(top_srcdir)/../include.
+	(libgomp_la_SOURCES): Add splay-tree.c, libgomp-plugin.c,
+	oacc-parallel.c, oacc-host.c, oacc-init.c, oacc-mem.c,
+	oacc-async.c, oacc-plugin.c, oacc-cuda.c.
+	[USE_FORTRAN] (libgomp_la_SOURCES): Add openacc.f90.
+	Include $(top_srcdir)/plugin/Makefrag.am.
+	(nodist_libsubinclude_HEADERS): Add openacc.h.
+	[USE_FORTRAN] (nodist_finclude_HEADERS): Add openacc_lib.h,
+	openacc.f90, openacc.mod, openacc_kinds.mod.
+	(omp_lib.mod): Generalize into...
+	(%.mod): ... this new rule.
+	(openacc_kinds.mod, openacc.mod): New rules.
+	* plugin/configfrag.ac: New file.
+	* configure.ac: Move plugin/offloading support into it.  Include
+	it.  Instantiate testsuite/libgomp-test-support.pt.exp.
+	* plugin/Makefrag.am: New file.
+	* testsuite/Makefile.am (OFFLOAD_TARGETS)
+	(OFFLOAD_ADDITIONAL_OPTIONS, OFFLOAD_ADDITIONAL_LIB_PATHS): Don't
+	export.
+	(libgomp-test-support.exp): New rule.
+	(all-local): Depend on it.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* configure.tgt: Harden shell syntax.
+	* env.c: Include "oacc-int.h".
+	(parse_acc_device_type): New function.
+	(gomp_debug_var, goacc_device_type, goacc_device_num): New
+	variables.
+	(initialize_env): Initialize those.  Call
+	goacc_runtime_initialize.
+	* error.c (gomp_vdebug, gomp_debug, gomp_vfatal): New functions.
+	(gomp_fatal): Call gomp_vfatal.
+	* libgomp.h: Include "libgomp-plugin.h" and <stdarg.h>.
+	(gomp_debug_var, goacc_device_type, goacc_device_num, gomp_vdebug)
+	(gomp_debug, gomp_verror, gomp_vfatal, gomp_init_targets_once)
+	(splay_tree_node, splay_tree, splay_tree_key)
+	(struct target_mem_desc, struct splay_tree_key_s)
+	(struct gomp_memory_mapping, struct acc_dispatch_t)
+	(struct gomp_device_descr, gomp_acc_insert_pointer)
+	(gomp_acc_remove_pointer, target_mem_desc, gomp_copy_from_async)
+	(gomp_unmap_vars, gomp_init_device, gomp_init_tables)
+	(gomp_free_memmap, gomp_fini_device): New declarations.
+	(gomp_vdebug, gomp_debug): New macros.
+	Include "splay-tree.h".
+	* libgomp.map (OACC_2.0): New symbol version.  Use for
+	acc_get_num_devices, acc_get_num_devices_h_, acc_set_device_type,
+	acc_set_device_type_h_, acc_get_device_type,
+	acc_get_device_type_h_, acc_set_device_num, acc_set_device_num_h_,
+	acc_get_device_num, acc_get_device_num_h_, acc_async_test,
+	acc_async_test_h_, acc_async_test_all, acc_async_test_all_h_,
+	acc_wait, acc_wait_h_, acc_wait_async, acc_wait_async_h_,
+	acc_wait_all, acc_wait_all_h_, acc_wait_all_async,
+	acc_wait_all_async_h_, acc_init, acc_init_h_, acc_shutdown,
+	acc_shutdown_h_, acc_on_device, acc_on_device_h_, acc_malloc,
+	acc_free, acc_copyin, acc_copyin_32_h_, acc_copyin_64_h_,
+	acc_copyin_array_h_, acc_present_or_copyin,
+	acc_present_or_copyin_32_h_, acc_present_or_copyin_64_h_,
+	acc_present_or_copyin_array_h_, acc_create, acc_create_32_h_,
+	acc_create_64_h_, acc_create_array_h_, acc_present_or_create,
+	acc_present_or_create_32_h_, acc_present_or_create_64_h_,
+	acc_present_or_create_array_h_, acc_copyout, acc_copyout_32_h_,
+	acc_copyout_64_h_, acc_copyout_array_h_, acc_delete,
+	acc_delete_32_h_, acc_delete_64_h_, acc_delete_array_h_,
+	acc_update_device, acc_update_device_32_h_,
+	acc_update_device_64_h_, acc_update_device_array_h_,
+	acc_update_self, acc_update_self_32_h_, acc_update_self_64_h_,
+	acc_update_self_array_h_, acc_map_data, acc_unmap_data,
+	acc_deviceptr, acc_hostptr, acc_is_present, acc_is_present_32_h_,
+	acc_is_present_64_h_, acc_is_present_array_h_,
+	acc_memcpy_to_device, acc_memcpy_from_device,
+	acc_get_current_cuda_device, acc_get_current_cuda_context,
+	acc_get_cuda_stream, acc_set_cuda_stream.
+	(GOACC_2.0): New symbol version.  Use for GOACC_data_end,
+	GOACC_data_start, GOACC_enter_exit_data, GOACC_parallel,
+	GOACC_update, GOACC_wait, GOACC_get_thread_num,
+	GOACC_get_num_threads.
+	(GOMP_PLUGIN_1.0): New symbol version.  Use for
+	GOMP_PLUGIN_malloc, GOMP_PLUGIN_malloc_cleared,
+	GOMP_PLUGIN_realloc, GOMP_PLUGIN_debug, GOMP_PLUGIN_error,
+	GOMP_PLUGIN_fatal, GOMP_PLUGIN_async_unmap_vars,
+	GOMP_PLUGIN_acc_thread.
+	* libgomp.texi: Update for OpenACC changes, and GOMP_DEBUG
+	environment variable.
+	* libgomp_g.h (GOACC_data_start, GOACC_data_end)
+	(GOACC_enter_exit_data, GOACC_parallel, GOACC_update, GOACC_wait)
+	(GOACC_get_num_threads, GOACC_get_thread_num): New declarations.
+	* splay-tree.h (splay_tree_lookup, splay_tree_insert)
+	(splay_tree_remove): New declarations.
+	(rotate_left, rotate_right, splay_tree_splay, splay_tree_insert)
+	(splay_tree_remove, splay_tree_lookup): Move into...
+	* splay-tree.c: ... this new file.
+	* target.c: Include "oacc-plugin.h", "oacc-int.h", <assert.h>.
+	(splay_tree_node, splay_tree, splay_tree_key)
+	(struct target_mem_desc, struct splay_tree_key_s)
+	(struct gomp_device_descr): Don't declare.
+	(num_devices_openmp): New variable.
+	(gomp_get_num_devices ): Use it.
+	(gomp_init_targets_once): New function.
+	(gomp_get_num_devices ): Use it.
+	(get_kind, gomp_copy_from_async, gomp_free_memmap)
+	(gomp_fini_device, gomp_register_image_for_device): New functions.
+	(gomp_map_vars): Add devaddrs parameter.
+	(gomp_update): Add mm parameter.
+	(gomp_init_device): Move most of it into...
+	(gomp_init_tables): ... this new function.
+	(gomp_register_images_for_device): Remove function.
+	(splay_compare, gomp_map_vars, gomp_unmap_vars, gomp_init_device):
+	Make them hidden instead of static.
+	(gomp_map_vars_existing, gomp_map_vars, gomp_unmap_vars)
+	(gomp_update, gomp_init_device, GOMP_target, GOMP_target_data)
+	(GOMP_target_end_data, GOMP_target_update)
+	(gomp_load_plugin_for_device, gomp_target_init): Update for
+	OpenACC changes.
+	* oacc-async.c: New file.
+	* oacc-cuda.c: Likewise.
+	* oacc-host.c: Likewise.
+	* oacc-init.c: Likewise.
+	* oacc-int.h: Likewise.
+	* oacc-mem.c: Likewise.
+	* oacc-parallel.c: Likewise.
+	* oacc-plugin.c: Likewise.
+	* oacc-plugin.h: Likewise.
+	* oacc-ptx.h: Likewise.
+	* openacc.f90: Likewise.
+	* openacc.h: Likewise.
+	* openacc_lib.h: Likewise.
+	* plugin/plugin-host.c: Likewise.
+	* plugin/plugin-nvptx.c: Likewise.
+	* libgomp-plugin.c: Likewise.
+	* libgomp-plugin.h: Likewise.
+	* libgomp_target.h: Remove file after merging content into the
+	former file.  Update all users.
+	* testsuite/lib/libgomp.exp: Load libgomp-test-support.exp.
+	(offload_targets_s, offload_targets_s_openacc): New variables.
+	(check_effective_target_openacc_nvidia_accel_present)
+	(check_effective_target_openacc_nvidia_accel_selected): New
+	procedures.
+	(libgomp_init): Update for OpenACC changes.
+	* testsuite/libgomp-test-support.exp.in: New file.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/abort-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/abort-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/abort-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/abort-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_on_device-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/cache-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/clauses-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/clauses-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/collapse-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/collapse-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/collapse-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/collapse-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/context-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/context-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/context-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/context-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-6.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-7.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-8.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/deviceptr-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/if-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-empty.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-10.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-11.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-12.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-13.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-14.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-15.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-16.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-17.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-18.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-19.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-20.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-21.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-22.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-23.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-24.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-25.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-26.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-27.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-28.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-29.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-30.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-31.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-32.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-33.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-34.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-35.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-36.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-37.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-38.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-39.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-40.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-41.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-42.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-43.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-44.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-45.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-46.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-47.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-48.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-49.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-50.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-51.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-52.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-53.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-54.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-55.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-56.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-57.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-58.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-59.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-6.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-60.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-61.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-62.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-63.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-64.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-65.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-66.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-67.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-68.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-69.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-7.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-70.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-71.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-72.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-73.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-74.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-75.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-76.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-77.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-78.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-79.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-80.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-81.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-82.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-83.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-84.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-85.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-86.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-87.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-88.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-89.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-9.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-90.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-91.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-92.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/nested-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/nested-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/offset-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-empty.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pointer-align-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/present-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/present-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-initial-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/subr.h: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/subr.ptx: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/timer.h: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/update-1-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/update-1.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/abort-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/abort-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-6.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-7.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-8.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-4-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-4.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-5.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-6.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-7.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-8.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-10.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-6.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-7.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-8.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/map-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/openacc_version-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/openacc_version-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pointer-align-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pset-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-6.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/subarrays-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/subarrays-2.f90: Likewise.
+
 2015-01-10  Thomas Schwinge  <thomas@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 	    David Malcolm  <dmalcolm@redhat.com>

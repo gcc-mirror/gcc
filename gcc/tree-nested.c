@@ -73,6 +73,7 @@
 #include "expr.h"	/* FIXME: For STACK_SAVEAREA_MODE and SAVE_NONLOCAL.  */
 #include "langhooks.h"
 #include "gimple-low.h"
+#include "gomp-constants.h"
 
 
 /* The object of this pass is to lower the representation of a set of nested
@@ -850,7 +851,7 @@ static void note_nonlocal_vla_type (struct nesting_info *info, tree type);
 /* A subroutine of convert_nonlocal_reference_op.  Create a local variable
    in the nested function with DECL_VALUE_EXPR set to reference the true
    variable in the parent function.  This is used both for debug info
-   and in OpenMP lowering.  */
+   and in OMP lowering.  */
 
 static tree
 get_nonlocal_debug_decl (struct nesting_info *info, tree decl)
@@ -1399,7 +1400,7 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       break;
 
     case GIMPLE_OMP_TARGET:
-      if (gimple_omp_target_kind (stmt) != GF_OMP_TARGET_KIND_REGION)
+      if (!is_gimple_omp_offloaded (stmt))
 	{
 	  save_suppress = info->suppress_expansion;
 	  convert_nonlocal_omp_clauses (gimple_omp_target_clauses_ptr (stmt),
@@ -1418,7 +1419,7 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	  decl = get_chain_decl (info);
 	  c = build_omp_clause (gimple_location (stmt), OMP_CLAUSE_MAP);
 	  OMP_CLAUSE_DECL (c) = decl;
-	  OMP_CLAUSE_MAP_KIND (c) = OMP_CLAUSE_MAP_TO;
+	  OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_TO);
 	  OMP_CLAUSE_SIZE (c) = DECL_SIZE_UNIT (decl);
 	  OMP_CLAUSE_CHAIN (c) = gimple_omp_target_clauses (stmt);
 	  gimple_omp_target_set_clauses (as_a <gomp_target *> (stmt), c);
@@ -1503,7 +1504,7 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 
 /* A subroutine of convert_local_reference.  Create a local variable
    in the parent function with DECL_VALUE_EXPR set to reference the
-   field in FRAME.  This is used both for debug info and in OpenMP
+   field in FRAME.  This is used both for debug info and in OMP
    lowering.  */
 
 static tree
@@ -1968,7 +1969,7 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       break;
 
     case GIMPLE_OMP_TARGET:
-      if (gimple_omp_target_kind (stmt) != GF_OMP_TARGET_KIND_REGION)
+      if (!is_gimple_omp_offloaded (stmt))
 	{
 	  save_suppress = info->suppress_expansion;
 	  convert_local_omp_clauses (gimple_omp_target_clauses_ptr (stmt), wi);
@@ -1984,7 +1985,7 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	  (void) get_frame_type (info);
 	  c = build_omp_clause (gimple_location (stmt), OMP_CLAUSE_MAP);
 	  OMP_CLAUSE_DECL (c) = info->frame_decl;
-	  OMP_CLAUSE_MAP_KIND (c) = OMP_CLAUSE_MAP_TOFROM;
+	  OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_TOFROM);
 	  OMP_CLAUSE_SIZE (c) = DECL_SIZE_UNIT (info->frame_decl);
 	  OMP_CLAUSE_CHAIN (c) = gimple_omp_target_clauses (stmt);
 	  gimple_omp_target_set_clauses (as_a <gomp_target *> (stmt), c);
@@ -2301,7 +2302,7 @@ convert_tramp_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       }
 
     case GIMPLE_OMP_TARGET:
-      if (gimple_omp_target_kind (stmt) != GF_OMP_TARGET_KIND_REGION)
+      if (!is_gimple_omp_offloaded (stmt))
 	{
 	  *handled_ops_p = false;
 	  return NULL_TREE;
@@ -2400,7 +2401,7 @@ convert_gimple_call (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       break;
 
     case GIMPLE_OMP_TARGET:
-      if (gimple_omp_target_kind (stmt) != GF_OMP_TARGET_KIND_REGION)
+      if (!is_gimple_omp_offloaded (stmt))
 	{
 	  walk_body (convert_gimple_call, NULL, info, gimple_omp_body_ptr (stmt));
 	  break;
@@ -2425,8 +2426,7 @@ convert_gimple_call (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	    {
 	      c = build_omp_clause (gimple_location (stmt), OMP_CLAUSE_MAP);
 	      OMP_CLAUSE_DECL (c) = decl;
-	      OMP_CLAUSE_MAP_KIND (c)
-		= i ? OMP_CLAUSE_MAP_TO : OMP_CLAUSE_MAP_TOFROM;
+	      OMP_CLAUSE_SET_MAP_KIND (c, i ? GOMP_MAP_TO : GOMP_MAP_TOFROM);
 	      OMP_CLAUSE_SIZE (c) = DECL_SIZE_UNIT (decl);
 	      OMP_CLAUSE_CHAIN (c) = gimple_omp_target_clauses (stmt);
 	      gimple_omp_target_set_clauses (as_a <gomp_target *> (stmt),

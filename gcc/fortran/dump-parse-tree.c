@@ -1072,7 +1072,265 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
     }
 }
 
-/* Show a single OpenMP directive node and everything underneath it
+
+/* Show OpenMP or OpenACC clauses.  */
+
+static void
+show_omp_clauses (gfc_omp_clauses *omp_clauses)
+{
+  int list_type;
+
+  switch (omp_clauses->cancel)
+    {
+    case OMP_CANCEL_UNKNOWN:
+      break;
+    case OMP_CANCEL_PARALLEL:
+      fputs (" PARALLEL", dumpfile);
+      break;
+    case OMP_CANCEL_SECTIONS:
+      fputs (" SECTIONS", dumpfile);
+      break;
+    case OMP_CANCEL_DO:
+      fputs (" DO", dumpfile);
+      break;
+    case OMP_CANCEL_TASKGROUP:
+      fputs (" TASKGROUP", dumpfile);
+      break;
+    }
+  if (omp_clauses->if_expr)
+    {
+      fputs (" IF(", dumpfile);
+      show_expr (omp_clauses->if_expr);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->final_expr)
+    {
+      fputs (" FINAL(", dumpfile);
+      show_expr (omp_clauses->final_expr);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->num_threads)
+    {
+      fputs (" NUM_THREADS(", dumpfile);
+      show_expr (omp_clauses->num_threads);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->async)
+    {
+      fputs (" ASYNC", dumpfile);
+      if (omp_clauses->async_expr)
+	{
+	  fputc ('(', dumpfile);
+	  show_expr (omp_clauses->async_expr);
+	  fputc (')', dumpfile);
+	}
+    }
+  if (omp_clauses->num_gangs_expr)
+    {
+      fputs (" NUM_GANGS(", dumpfile);
+      show_expr (omp_clauses->num_gangs_expr);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->num_workers_expr)
+    {
+      fputs (" NUM_WORKERS(", dumpfile);
+      show_expr (omp_clauses->num_workers_expr);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->vector_length_expr)
+    {
+      fputs (" VECTOR_LENGTH(", dumpfile);
+      show_expr (omp_clauses->vector_length_expr);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->gang)
+    {
+      fputs (" GANG", dumpfile);
+      if (omp_clauses->gang_expr)
+	{
+	  fputc ('(', dumpfile);
+	  show_expr (omp_clauses->gang_expr);
+	  fputc (')', dumpfile);
+	}
+    }
+  if (omp_clauses->worker)
+    {
+      fputs (" WORKER", dumpfile);
+      if (omp_clauses->worker_expr)
+	{
+	  fputc ('(', dumpfile);
+	  show_expr (omp_clauses->worker_expr);
+	  fputc (')', dumpfile);
+	}
+    }
+  if (omp_clauses->vector)
+    {
+      fputs (" VECTOR", dumpfile);
+      if (omp_clauses->vector_expr)
+	{
+	  fputc ('(', dumpfile);
+	  show_expr (omp_clauses->vector_expr);
+	  fputc (')', dumpfile);
+	}
+    }
+  if (omp_clauses->sched_kind != OMP_SCHED_NONE)
+    {
+      const char *type;
+      switch (omp_clauses->sched_kind)
+	{
+	case OMP_SCHED_STATIC: type = "STATIC"; break;
+	case OMP_SCHED_DYNAMIC: type = "DYNAMIC"; break;
+	case OMP_SCHED_GUIDED: type = "GUIDED"; break;
+	case OMP_SCHED_RUNTIME: type = "RUNTIME"; break;
+	case OMP_SCHED_AUTO: type = "AUTO"; break;
+	default:
+	  gcc_unreachable ();
+	}
+      fprintf (dumpfile, " SCHEDULE (%s", type);
+      if (omp_clauses->chunk_size)
+	{
+	  fputc (',', dumpfile);
+	  show_expr (omp_clauses->chunk_size);
+	}
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->default_sharing != OMP_DEFAULT_UNKNOWN)
+    {
+      const char *type;
+      switch (omp_clauses->default_sharing)
+	{
+	case OMP_DEFAULT_NONE: type = "NONE"; break;
+	case OMP_DEFAULT_PRIVATE: type = "PRIVATE"; break;
+	case OMP_DEFAULT_SHARED: type = "SHARED"; break;
+	case OMP_DEFAULT_FIRSTPRIVATE: type = "FIRSTPRIVATE"; break;
+	default:
+	  gcc_unreachable ();
+	}
+      fprintf (dumpfile, " DEFAULT(%s)", type);
+    }
+  if (omp_clauses->tile_list)
+    {
+      gfc_expr_list *list;
+      fputs (" TILE(", dumpfile);
+      for (list = omp_clauses->tile_list; list; list = list->next)
+	{
+	  show_expr (list->expr);
+	  if (list->next) 
+	    fputs (", ", dumpfile);
+	}
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->wait_list)
+    {
+      gfc_expr_list *list;
+      fputs (" WAIT(", dumpfile);
+      for (list = omp_clauses->wait_list; list; list = list->next)
+	{
+	  show_expr (list->expr);
+	  if (list->next) 
+	    fputs (", ", dumpfile);
+	}
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->seq)
+    fputs (" SEQ", dumpfile);
+  if (omp_clauses->independent)
+    fputs (" INDEPENDENT", dumpfile);
+  if (omp_clauses->ordered)
+    fputs (" ORDERED", dumpfile);
+  if (omp_clauses->untied)
+    fputs (" UNTIED", dumpfile);
+  if (omp_clauses->mergeable)
+    fputs (" MERGEABLE", dumpfile);
+  if (omp_clauses->collapse)
+    fprintf (dumpfile, " COLLAPSE(%d)", omp_clauses->collapse);
+  for (list_type = 0; list_type < OMP_LIST_NUM; list_type++)
+    if (omp_clauses->lists[list_type] != NULL
+	&& list_type != OMP_LIST_COPYPRIVATE)
+      {
+	const char *type = NULL;
+	switch (list_type)
+	  {
+	  case OMP_LIST_USE_DEVICE: type = "USE_DEVICE"; break;
+	  case OMP_LIST_DEVICE_RESIDENT: type = "USE_DEVICE"; break;
+	  case OMP_LIST_CACHE: type = ""; break;
+	  case OMP_LIST_PRIVATE: type = "PRIVATE"; break;
+	  case OMP_LIST_FIRSTPRIVATE: type = "FIRSTPRIVATE"; break;
+	  case OMP_LIST_LASTPRIVATE: type = "LASTPRIVATE"; break;
+	  case OMP_LIST_SHARED: type = "SHARED"; break;
+	  case OMP_LIST_COPYIN: type = "COPYIN"; break;
+	  case OMP_LIST_UNIFORM: type = "UNIFORM"; break;
+	  case OMP_LIST_ALIGNED: type = "ALIGNED"; break;
+	  case OMP_LIST_LINEAR: type = "LINEAR"; break;
+	  case OMP_LIST_REDUCTION: type = "REDUCTION"; break;
+	  case OMP_LIST_DEPEND: type = "DEPEND"; break;
+	  default:
+	    gcc_unreachable ();
+	  }
+	fprintf (dumpfile, " %s(", type);
+	show_omp_namelist (list_type, omp_clauses->lists[list_type]);
+	fputc (')', dumpfile);
+      }
+  if (omp_clauses->safelen_expr)
+    {
+      fputs (" SAFELEN(", dumpfile);
+      show_expr (omp_clauses->safelen_expr);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->simdlen_expr)
+    {
+      fputs (" SIMDLEN(", dumpfile);
+      show_expr (omp_clauses->simdlen_expr);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->inbranch)
+    fputs (" INBRANCH", dumpfile);
+  if (omp_clauses->notinbranch)
+    fputs (" NOTINBRANCH", dumpfile);
+  if (omp_clauses->proc_bind != OMP_PROC_BIND_UNKNOWN)
+    {
+      const char *type;
+      switch (omp_clauses->proc_bind)
+	{
+	case OMP_PROC_BIND_MASTER: type = "MASTER"; break;
+	case OMP_PROC_BIND_SPREAD: type = "SPREAD"; break;
+	case OMP_PROC_BIND_CLOSE: type = "CLOSE"; break;
+	default:
+	  gcc_unreachable ();
+	}
+      fprintf (dumpfile, " PROC_BIND(%s)", type);
+    }
+  if (omp_clauses->num_teams)
+    {
+      fputs (" NUM_TEAMS(", dumpfile);
+      show_expr (omp_clauses->num_teams);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->device)
+    {
+      fputs (" DEVICE(", dumpfile);
+      show_expr (omp_clauses->device);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->thread_limit)
+    {
+      fputs (" THREAD_LIMIT(", dumpfile);
+      show_expr (omp_clauses->thread_limit);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->dist_sched_kind != OMP_SCHED_NONE)
+    {
+      fprintf (dumpfile, " DIST_SCHEDULE (static");
+      if (omp_clauses->dist_chunk_size)
+	{
+	  fputc (',', dumpfile);
+	  show_expr (omp_clauses->dist_chunk_size);
+	}
+      fputc (')', dumpfile);
+    }
+}
+
+/* Show a single OpenMP or OpenACC directive node and everything underneath it
    if necessary.  */
 
 static void
@@ -1080,9 +1338,22 @@ show_omp_node (int level, gfc_code *c)
 {
   gfc_omp_clauses *omp_clauses = NULL;
   const char *name = NULL;
+  bool is_oacc = false;
 
   switch (c->op)
     {
+    case EXEC_OACC_PARALLEL_LOOP: name = "PARALLEL LOOP"; is_oacc = true; break;
+    case EXEC_OACC_PARALLEL: name = "PARALLEL"; is_oacc = true; break;
+    case EXEC_OACC_KERNELS_LOOP: name = "KERNELS LOOP"; is_oacc = true; break;
+    case EXEC_OACC_KERNELS: name = "KERNELS"; is_oacc = true; break;
+    case EXEC_OACC_DATA: name = "DATA"; is_oacc = true; break;
+    case EXEC_OACC_HOST_DATA: name = "HOST_DATA"; is_oacc = true; break;
+    case EXEC_OACC_LOOP: name = "LOOP"; is_oacc = true; break;
+    case EXEC_OACC_UPDATE: name = "UPDATE"; is_oacc = true; break;
+    case EXEC_OACC_WAIT: name = "WAIT"; is_oacc = true; break;
+    case EXEC_OACC_CACHE: name = "CACHE"; is_oacc = true; break;
+    case EXEC_OACC_ENTER_DATA: name = "ENTER DATA"; is_oacc = true; break;
+    case EXEC_OACC_EXIT_DATA: name = "EXIT DATA"; is_oacc = true; break;
     case EXEC_OMP_ATOMIC: name = "ATOMIC"; break;
     case EXEC_OMP_BARRIER: name = "BARRIER"; break;
     case EXEC_OMP_CANCEL: name = "CANCEL"; break;
@@ -1109,9 +1380,21 @@ show_omp_node (int level, gfc_code *c)
     default:
       gcc_unreachable ();
     }
-  fprintf (dumpfile, "!$OMP %s", name);
+  fprintf (dumpfile, "!$%s %s", is_oacc ? "ACC" : "OMP", name);
   switch (c->op)
     {
+    case EXEC_OACC_PARALLEL_LOOP:
+    case EXEC_OACC_PARALLEL:
+    case EXEC_OACC_KERNELS_LOOP:
+    case EXEC_OACC_KERNELS:
+    case EXEC_OACC_DATA:
+    case EXEC_OACC_HOST_DATA:
+    case EXEC_OACC_LOOP:
+    case EXEC_OACC_UPDATE:
+    case EXEC_OACC_WAIT:
+    case EXEC_OACC_CACHE:
+    case EXEC_OACC_ENTER_DATA:
+    case EXEC_OACC_EXIT_DATA:
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_CANCELLATION_POINT:
     case EXEC_OMP_DO:
@@ -1148,170 +1431,13 @@ show_omp_node (int level, gfc_code *c)
       break;
     }
   if (omp_clauses)
-    {
-      int list_type;
-
-      switch (omp_clauses->cancel)
-	{
-	case OMP_CANCEL_UNKNOWN:
-	  break;
-	case OMP_CANCEL_PARALLEL:
-	  fputs (" PARALLEL", dumpfile);
-	  break;
-	case OMP_CANCEL_SECTIONS:
-	  fputs (" SECTIONS", dumpfile);
-	  break;
-	case OMP_CANCEL_DO:
-	  fputs (" DO", dumpfile);
-	  break;
-	case OMP_CANCEL_TASKGROUP:
-	  fputs (" TASKGROUP", dumpfile);
-	  break;
-	}
-      if (omp_clauses->if_expr)
-	{
-	  fputs (" IF(", dumpfile);
-	  show_expr (omp_clauses->if_expr);
-	  fputc (')', dumpfile);
-	}
-      if (omp_clauses->final_expr)
-	{
-	  fputs (" FINAL(", dumpfile);
-	  show_expr (omp_clauses->final_expr);
-	  fputc (')', dumpfile);
-	}
-      if (omp_clauses->num_threads)
-	{
-	  fputs (" NUM_THREADS(", dumpfile);
-	  show_expr (omp_clauses->num_threads);
-	  fputc (')', dumpfile);
-	}
-      if (omp_clauses->sched_kind != OMP_SCHED_NONE)
-	{
-	  const char *type;
-	  switch (omp_clauses->sched_kind)
-	    {
-	    case OMP_SCHED_STATIC: type = "STATIC"; break;
-	    case OMP_SCHED_DYNAMIC: type = "DYNAMIC"; break;
-	    case OMP_SCHED_GUIDED: type = "GUIDED"; break;
-	    case OMP_SCHED_RUNTIME: type = "RUNTIME"; break;
-	    case OMP_SCHED_AUTO: type = "AUTO"; break;
-	    default:
-	      gcc_unreachable ();
-	    }
-	  fprintf (dumpfile, " SCHEDULE (%s", type);
-	  if (omp_clauses->chunk_size)
-	    {
-	      fputc (',', dumpfile);
-	      show_expr (omp_clauses->chunk_size);
-	    }
-	  fputc (')', dumpfile);
-	}
-      if (omp_clauses->default_sharing != OMP_DEFAULT_UNKNOWN)
-	{
-	  const char *type;
-	  switch (omp_clauses->default_sharing)
-	    {
-	    case OMP_DEFAULT_NONE: type = "NONE"; break;
-	    case OMP_DEFAULT_PRIVATE: type = "PRIVATE"; break;
-	    case OMP_DEFAULT_SHARED: type = "SHARED"; break;
-	    case OMP_DEFAULT_FIRSTPRIVATE: type = "FIRSTPRIVATE"; break;
-	    default:
-	      gcc_unreachable ();
-	    }
-	  fprintf (dumpfile, " DEFAULT(%s)", type);
-	}
-      if (omp_clauses->ordered)
-	fputs (" ORDERED", dumpfile);
-      if (omp_clauses->untied)
-	fputs (" UNTIED", dumpfile);
-      if (omp_clauses->mergeable)
-	fputs (" MERGEABLE", dumpfile);
-      if (omp_clauses->collapse)
-	fprintf (dumpfile, " COLLAPSE(%d)", omp_clauses->collapse);
-      for (list_type = 0; list_type < OMP_LIST_NUM; list_type++)
-	if (omp_clauses->lists[list_type] != NULL
-	    && list_type != OMP_LIST_COPYPRIVATE)
-	  {
-	    const char *type = NULL;
-	    switch (list_type)
-	      {
-	      case OMP_LIST_PRIVATE: type = "PRIVATE"; break;
-	      case OMP_LIST_FIRSTPRIVATE: type = "FIRSTPRIVATE"; break;
-	      case OMP_LIST_LASTPRIVATE: type = "LASTPRIVATE"; break;
-	      case OMP_LIST_SHARED: type = "SHARED"; break;
-	      case OMP_LIST_COPYIN: type = "COPYIN"; break;
-	      case OMP_LIST_UNIFORM: type = "UNIFORM"; break;
-	      case OMP_LIST_ALIGNED: type = "ALIGNED"; break;
-	      case OMP_LIST_LINEAR: type = "LINEAR"; break;
-	      case OMP_LIST_REDUCTION: type = "REDUCTION"; break;
-	      case OMP_LIST_DEPEND: type = "DEPEND"; break;
-	      default:
-		gcc_unreachable ();
-	      }
-	    fprintf (dumpfile, " %s(", type);
-	    show_omp_namelist (list_type, omp_clauses->lists[list_type]);
-	    fputc (')', dumpfile);
-	  }
-      if (omp_clauses->safelen_expr)
-	{
-	  fputs (" SAFELEN(", dumpfile);
-	  show_expr (omp_clauses->safelen_expr);
-	  fputc (')', dumpfile);
-	}
-      if (omp_clauses->simdlen_expr)
-	{
-	  fputs (" SIMDLEN(", dumpfile);
-	  show_expr (omp_clauses->simdlen_expr);
-	  fputc (')', dumpfile);
-	}
-      if (omp_clauses->inbranch)
-	fputs (" INBRANCH", dumpfile);
-      if (omp_clauses->notinbranch)
-	fputs (" NOTINBRANCH", dumpfile);
-      if (omp_clauses->proc_bind != OMP_PROC_BIND_UNKNOWN)
-	{
-	  const char *type;
-	  switch (omp_clauses->proc_bind)
-	    {
-	    case OMP_PROC_BIND_MASTER: type = "MASTER"; break;
-	    case OMP_PROC_BIND_SPREAD: type = "SPREAD"; break;
-	    case OMP_PROC_BIND_CLOSE: type = "CLOSE"; break;
-	    default:
-	      gcc_unreachable ();
-	    }
-	  fprintf (dumpfile, " PROC_BIND(%s)", type);
-	}
-      if (omp_clauses->num_teams)
-	{
-	  fputs (" NUM_TEAMS(", dumpfile);
-	  show_expr (omp_clauses->num_teams);
-	  fputc (')', dumpfile);
-	}
-      if (omp_clauses->device)
-	{
-	  fputs (" DEVICE(", dumpfile);
-	  show_expr (omp_clauses->device);
-	  fputc (')', dumpfile);
-	}
-      if (omp_clauses->thread_limit)
-	{
-	  fputs (" THREAD_LIMIT(", dumpfile);
-	  show_expr (omp_clauses->thread_limit);
-	  fputc (')', dumpfile);
-	}
-      if (omp_clauses->dist_sched_kind != OMP_SCHED_NONE)
-	{
-	  fprintf (dumpfile, " DIST_SCHEDULE (static");
-	  if (omp_clauses->dist_chunk_size)
-	    {
-	      fputc (',', dumpfile);
-	      show_expr (omp_clauses->dist_chunk_size);
-	    }
-	  fputc (')', dumpfile);
-	}
-    }
+    show_omp_clauses (omp_clauses);
   fputc ('\n', dumpfile);
+
+  /* OpenACC executable directives don't have associated blocks.  */
+  if (c->op == EXEC_OACC_CACHE || c->op == EXEC_OACC_UPDATE
+      || c->op == EXEC_OACC_ENTER_DATA || c->op == EXEC_OACC_EXIT_DATA)
+    return;
   if (c->op == EXEC_OMP_SECTIONS || c->op == EXEC_OMP_PARALLEL_SECTIONS)
     {
       gfc_code *d = c->block;
@@ -1331,7 +1457,7 @@ show_omp_node (int level, gfc_code *c)
     return;
   fputc ('\n', dumpfile);
   code_indent (level, 0);
-  fprintf (dumpfile, "!$OMP END %s", name);
+  fprintf (dumpfile, "!$%s END %s", is_oacc ? "ACC" : "OMP", name);
   if (omp_clauses != NULL)
     {
       if (omp_clauses->lists[OMP_LIST_COPYPRIVATE])
@@ -2311,6 +2437,18 @@ show_code_node (int level, gfc_code *c)
 	fprintf (dumpfile, " EOR=%d", dt->eor->value);
       break;
 
+    case EXEC_OACC_PARALLEL_LOOP:
+    case EXEC_OACC_PARALLEL:
+    case EXEC_OACC_KERNELS_LOOP:
+    case EXEC_OACC_KERNELS:
+    case EXEC_OACC_DATA:
+    case EXEC_OACC_HOST_DATA:
+    case EXEC_OACC_LOOP:
+    case EXEC_OACC_UPDATE:
+    case EXEC_OACC_WAIT:
+    case EXEC_OACC_CACHE:
+    case EXEC_OACC_ENTER_DATA:
+    case EXEC_OACC_EXIT_DATA:
     case EXEC_OMP_ATOMIC:
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_CANCELLATION_POINT:
@@ -2431,6 +2569,14 @@ show_namespace (gfc_namespace *ns)
   
   for (eq = ns->equiv; eq; eq = eq->next)
     show_equiv (eq);
+
+  if (ns->oacc_declare_clauses)
+    {
+      /* Dump !$ACC DECLARE clauses.  */
+      show_indent ();
+      fprintf (dumpfile, "!$ACC DECLARE");
+      show_omp_clauses (ns->oacc_declare_clauses);
+    }
 
   fputc ('\n', dumpfile);
   show_indent ();

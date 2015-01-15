@@ -9126,6 +9126,18 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_WAIT:
 	  break;
 
+	case EXEC_OACC_PARALLEL_LOOP:
+	case EXEC_OACC_PARALLEL:
+	case EXEC_OACC_KERNELS_LOOP:
+	case EXEC_OACC_KERNELS:
+	case EXEC_OACC_DATA:
+	case EXEC_OACC_HOST_DATA:
+	case EXEC_OACC_LOOP:
+	case EXEC_OACC_UPDATE:
+	case EXEC_OACC_WAIT:
+	case EXEC_OACC_CACHE:
+	case EXEC_OACC_ENTER_DATA:
+	case EXEC_OACC_EXIT_DATA:
 	case EXEC_OMP_ATOMIC:
 	case EXEC_OMP_CRITICAL:
 	case EXEC_OMP_DISTRIBUTE:
@@ -9941,6 +9953,15 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	  omp_workshare_save = -1;
 	  switch (code->op)
 	    {
+	    case EXEC_OACC_PARALLEL_LOOP:
+	    case EXEC_OACC_PARALLEL:
+	    case EXEC_OACC_KERNELS_LOOP:
+	    case EXEC_OACC_KERNELS:
+	    case EXEC_OACC_DATA:
+	    case EXEC_OACC_HOST_DATA:
+	    case EXEC_OACC_LOOP:
+	      gfc_resolve_oacc_blocks (code, ns);
+	      break;
 	    case EXEC_OMP_PARALLEL_WORKSHARE:
 	      omp_workshare_save = omp_workshare_flag;
 	      omp_workshare_flag = 1;
@@ -10291,6 +10312,21 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	      && (code->expr1->ts.type != BT_LOGICAL || code->expr1->rank))
 	    gfc_error ("FORALL mask clause at %L requires a scalar LOGICAL "
 		       "expression", &code->expr1->where);
+	  break;
+
+	case EXEC_OACC_PARALLEL_LOOP:
+	case EXEC_OACC_PARALLEL:
+	case EXEC_OACC_KERNELS_LOOP:
+	case EXEC_OACC_KERNELS:
+	case EXEC_OACC_DATA:
+	case EXEC_OACC_HOST_DATA:
+	case EXEC_OACC_LOOP:
+	case EXEC_OACC_UPDATE:
+	case EXEC_OACC_WAIT:
+	case EXEC_OACC_CACHE:
+	case EXEC_OACC_ENTER_DATA:
+	case EXEC_OACC_EXIT_DATA:
+	  gfc_resolve_oacc_directive (code, ns);
 	  break;
 
 	case EXEC_OMP_ATOMIC:
@@ -14931,6 +14967,7 @@ resolve_codes (gfc_namespace *ns)
   old_obstack = labels_obstack;
   bitmap_obstack_initialize (&labels_obstack);
 
+  gfc_resolve_oacc_declare (ns);
   gfc_resolve_code (ns->code, ns);
 
   bitmap_obstack_release (&labels_obstack);

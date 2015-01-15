@@ -1,4 +1,8 @@
-/* Copyright (C) 2014-2015 Free Software Foundation, Inc.
+/* OpenACC Runtime Library Definitions.
+
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
+
+   Contributed by Mentor Embedded.
 
    This file is part of the GNU Offloading and Multi Processing Library
    (libgomp).
@@ -22,24 +26,52 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef LIBGOMP_TARGET_H
-#define LIBGOMP_TARGET_H 1
 
-/* Type of offload target device.  */
-enum offload_target_type
+#include "openacc.h"
+#include "libgomp.h"
+#include "oacc-int.h"
+
+int
+acc_async_test (int async)
 {
-  OFFLOAD_TARGET_TYPE_HOST,
-  OFFLOAD_TARGET_TYPE_INTEL_MIC
-};
+  if (async < acc_async_sync)
+    gomp_fatal ("invalid async argument: %d", async);
 
-/* Auxiliary struct, used for transferring a host-target address range mapping
-   from plugin to libgomp.  */
-struct mapping_table
+  return base_dev->openacc.async_test_func (async);
+}
+
+int
+acc_async_test_all (void)
 {
-  uintptr_t host_start;
-  uintptr_t host_end;
-  uintptr_t tgt_start;
-  uintptr_t tgt_end;
-};
+  return base_dev->openacc.async_test_all_func ();
+}
 
-#endif /* LIBGOMP_TARGET_H */
+void
+acc_wait (int async)
+{
+  if (async < acc_async_sync)
+    gomp_fatal ("invalid async argument: %d", async);
+
+  base_dev->openacc.async_wait_func (async);
+}
+
+void
+acc_wait_async (int async1, int async2)
+{
+  base_dev->openacc.async_wait_async_func (async1, async2);
+}
+
+void
+acc_wait_all (void)
+{
+  base_dev->openacc.async_wait_all_func ();
+}
+
+void
+acc_wait_all_async (int async)
+{
+  if (async < acc_async_sync)
+    gomp_fatal ("invalid async argument: %d", async);
+
+  base_dev->openacc.async_wait_all_async_func (async);
+}

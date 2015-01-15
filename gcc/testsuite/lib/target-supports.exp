@@ -788,6 +788,15 @@ proc check_effective_target_fgraphite {} {
     } "-O1 -fgraphite"]
 }
 
+# Return 1 if compilation with -fopenacc is error-free for trivial
+# code, 0 otherwise.
+
+proc check_effective_target_fopenacc {} {
+    return [check_no_compiler_messages fopenacc object {
+	void foo (void) { }
+    } "-fopenacc"]
+}
+
 # Return 1 if compilation with -fopenmp is error-free for trivial
 # code, 0 otherwise.
 

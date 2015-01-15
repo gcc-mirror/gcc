@@ -35,8 +35,9 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 @end direntry
 
 This manual documents libgomp, the GNU Offloading and Multi Processing
-Runtime library.  This is the GNU implementation of the OpenMP API for
-multi-platform shared-memory parallel programming in C/C++ and Fortran.
+Runtime library.  This is the GNU implementation of the OpenMP and
+OpenACC APIs for parallel and accelerator programming in C/C++ and
+Fortran.
 
 Published by the Free Software Foundation
 51 Franklin Street, Fifth Floor
@@ -50,7 +51,7 @@ Boston, MA 02110-1301 USA
 
 @titlepage
 @title GNU Offloading and Multi Processing Runtime Library
-@subtitle The GNU OpenMP Implementation
+@subtitle The GNU OpenMP and OpenACC Implementation
 @page
 @vskip 0pt plus 1filll
 @comment For the @value{version-GCC} Version*
@@ -72,11 +73,18 @@ Boston, MA 02110-1301, USA@*
 @cindex Introduction
 
 This manual documents the usage of libgomp, the GNU Offloading and
-Multi Processing Runtime Library.  This is the GNU implementation of the
-@uref{http://www.openmp.org, OpenMP} Application Programming Interface (API)
-for multi-platform shared-memory parallel programming in C/C++ and Fortran.
+Multi Processing Runtime Library.  This includes the GNU
+implementation of the @uref{http://www.openmp.org, OpenMP} Application
+Programming Interface (API) for multi-platform shared-memory parallel
+programming in C/C++ and Fortran, and the GNU implementation of the
+@uref{http://www.openacc.org/, OpenACC} Application Programming
+Interface (API) for offloading of code to accelerator devices in C/C++
+and Fortran.
 
-Originally, libgomp was known as the GNU OpenMP Runtime Library.
+Originally, libgomp implemented the GNU OpenMP Runtime Library.  Based
+on this, support for OpenACC and offloading (both OpenACC and OpenMP
+4's target construct) has been added later on, and the library's name
+changed to GNU Offloading and Multi Processing Runtime Library.
 
 
 
@@ -1312,6 +1320,7 @@ beginning with @env{GOMP_} are GNU extensions.
 * OMP_THREAD_LIMIT::      Set the maximum number of threads
 * OMP_WAIT_POLICY::       How waiting threads are handled
 * GOMP_CPU_AFFINITY::     Bind threads to specific CPUs
+* GOMP_DEBUG::            Enable debugging output
 * GOMP_STACKSIZE::        Set default thread stack size
 * GOMP_SPINCOUNT::        Set the busy-wait spin count
 @end menu
@@ -1627,6 +1636,20 @@ If both @env{GOMP_CPU_AFFINITY} and @env{OMP_PROC_BIND} are set,
 
 @item @emph{See also}:
 @ref{OMP_PLACES}, @ref{OMP_PROC_BIND}
+@end table
+
+
+
+@node GOMP_DEBUG
+@section @env{GOMP_DEBUG} -- Enable debugging output
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}:
+Enable debugging output.  The variable should be set to @code{0}
+(disabled, also the default if not set), or @code{1} (enabled).
+
+If enabled, some debugging output will be printed during execution.
+This is currently not specified in more detail, and subject to change.
 @end table
 
 
@@ -2080,7 +2103,8 @@ becomes
 
 Bugs in the GNU Offloading and Multi Processing Runtime Library should
 be reported via @uref{http://gcc.gnu.org/bugzilla/, Bugzilla}.  Please add
-"openmp" to the keywords field in the bug report.
+"openacc", or "openmp", or both to the keywords field in the bug
+report, as appropriate.
 
 
 

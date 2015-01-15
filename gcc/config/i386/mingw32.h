@@ -199,7 +199,7 @@ do {						         \
 
 /* mingw32 uses the  -mthreads option to enable thread support.  */
 #undef GOMP_SELF_SPECS
-#define GOMP_SELF_SPECS "%{fopenmp|ftree-parallelize-loops=*: " \
+#define GOMP_SELF_SPECS "%{fopenacc|fopenmp|ftree-parallelize-loops=*: " \
 			"-mthreads -pthread}"
 #undef GTM_SELF_SPECS
 #define GTM_SELF_SPECS "%{fgnu-tm:-mthreads -pthread}"

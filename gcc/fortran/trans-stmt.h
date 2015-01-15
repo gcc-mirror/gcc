@@ -65,6 +65,10 @@ tree gfc_trans_deallocate_array (tree);
 tree gfc_trans_omp_directive (gfc_code *);
 void gfc_trans_omp_declare_simd (gfc_namespace *);
 
+/* trans-openacc.c */
+tree gfc_trans_oacc_directive (gfc_code *);
+tree gfc_trans_oacc_declare (stmtblock_t *block, gfc_namespace *);
+
 /* trans-io.c */
 tree gfc_trans_open (gfc_code *);
 tree gfc_trans_close (gfc_code *);

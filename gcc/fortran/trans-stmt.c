@@ -1378,6 +1378,14 @@ gfc_trans_block_construct (gfc_code* code)
   gfc_init_block (&body);
   exit_label = gfc_build_label_decl (NULL_TREE);
   code->exit_label = exit_label;
+
+  /* Generate !$ACC DECLARE directive. */
+  if (ns->oacc_declare_clauses)
+    {
+      tree tmp = gfc_trans_oacc_declare (&body, ns);
+      gfc_add_expr_to_block (&body, tmp);
+    }
+
   gfc_add_expr_to_block (&body, gfc_trans_code (ns->code));
   gfc_add_expr_to_block (&body, build1_v (LABEL_EXPR, exit_label));
 

@@ -179,6 +179,9 @@ cpp_define_builtins (cpp_reader *pfile)
   cpp_define (pfile, "__GFORTRAN__=1");
   cpp_define (pfile, "_LANGUAGE_FORTRAN=1");
 
+  if (flag_openacc)
+    cpp_define (pfile, "_OPENACC=201306");
+
   if (flag_openmp)
     cpp_define (pfile, "_OPENMP=201307");
 

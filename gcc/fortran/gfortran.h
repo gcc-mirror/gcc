@@ -216,6 +216,12 @@ typedef enum
   ST_WRITE, ST_ASSIGNMENT, ST_POINTER_ASSIGNMENT, ST_SELECT_CASE, ST_SEQUENCE,
   ST_SIMPLE_IF, ST_STATEMENT_FUNCTION, ST_DERIVED_DECL, ST_LABEL_ASSIGNMENT,
   ST_ENUM, ST_ENUMERATOR, ST_END_ENUM, ST_SELECT_TYPE, ST_TYPE_IS, ST_CLASS_IS,
+  ST_OACC_PARALLEL_LOOP, ST_OACC_END_PARALLEL_LOOP, ST_OACC_PARALLEL,
+  ST_OACC_END_PARALLEL, ST_OACC_KERNELS, ST_OACC_END_KERNELS, ST_OACC_DATA,
+  ST_OACC_END_DATA, ST_OACC_HOST_DATA, ST_OACC_END_HOST_DATA, ST_OACC_LOOP,
+  ST_OACC_END_LOOP, ST_OACC_DECLARE, ST_OACC_UPDATE, ST_OACC_WAIT,
+  ST_OACC_CACHE, ST_OACC_KERNELS_LOOP, ST_OACC_END_KERNELS_LOOP,
+  ST_OACC_ENTER_DATA, ST_OACC_EXIT_DATA, ST_OACC_ROUTINE,
   ST_OMP_ATOMIC, ST_OMP_BARRIER, ST_OMP_CRITICAL, ST_OMP_END_ATOMIC,
   ST_OMP_END_CRITICAL, ST_OMP_END_DO, ST_OMP_END_MASTER, ST_OMP_END_ORDERED,
   ST_OMP_END_PARALLEL, ST_OMP_END_PARALLEL_DO, ST_OMP_END_PARALLEL_SECTIONS,
@@ -1067,6 +1073,16 @@ gfc_namelist;
 
 #define gfc_get_namelist() XCNEW (gfc_namelist)
 
+/* Likewise to gfc_namelist, but contains expressions.  */
+typedef struct gfc_expr_list
+{
+  struct gfc_expr *expr;
+  struct gfc_expr_list *next;
+}
+gfc_expr_list;
+
+#define gfc_get_expr_list() XCNEW (gfc_expr_list)
+
 typedef enum
 {
   OMP_REDUCTION_NONE = -1,
@@ -1099,7 +1115,14 @@ typedef enum
   OMP_MAP_ALLOC,
   OMP_MAP_TO,
   OMP_MAP_FROM,
-  OMP_MAP_TOFROM
+  OMP_MAP_TOFROM,
+  OMP_MAP_FORCE_ALLOC,
+  OMP_MAP_FORCE_DEALLOC,
+  OMP_MAP_FORCE_TO,
+  OMP_MAP_FORCE_FROM,
+  OMP_MAP_FORCE_TOFROM,
+  OMP_MAP_FORCE_PRESENT,
+  OMP_MAP_FORCE_DEVICEPTR
 }
 gfc_omp_map_op;
 
@@ -1125,7 +1148,8 @@ gfc_omp_namelist;
 
 enum
 {
-  OMP_LIST_PRIVATE,
+  OMP_LIST_FIRST,
+  OMP_LIST_PRIVATE = OMP_LIST_FIRST,
   OMP_LIST_FIRSTPRIVATE,
   OMP_LIST_LASTPRIVATE,
   OMP_LIST_COPYPRIVATE,
@@ -1139,6 +1163,9 @@ enum
   OMP_LIST_TO,
   OMP_LIST_FROM,
   OMP_LIST_REDUCTION,
+  OMP_LIST_DEVICE_RESIDENT,
+  OMP_LIST_USE_DEVICE,
+  OMP_LIST_CACHE,
   OMP_LIST_NUM
 };
 
@@ -1202,6 +1229,21 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *thread_limit;
   enum gfc_omp_sched_kind dist_sched_kind;
   struct gfc_expr *dist_chunk_size;
+
+  /* OpenACC. */
+  struct gfc_expr *async_expr;
+  struct gfc_expr *gang_expr;
+  struct gfc_expr *worker_expr;
+  struct gfc_expr *vector_expr;
+  struct gfc_expr *num_gangs_expr;
+  struct gfc_expr *num_workers_expr;
+  struct gfc_expr *vector_length_expr;
+  gfc_expr_list *wait_list;
+  gfc_expr_list *tile_list;
+  unsigned async:1, gang:1, worker:1, vector:1, seq:1, independent:1;
+  unsigned wait:1, par_auto:1, gang_static:1;
+  locus loc;
+
 }
 gfc_omp_clauses;
 
@@ -1608,6 +1650,9 @@ typedef struct gfc_namespace
   /* This list holds information about all the data initializers in
      this namespace.  */
   struct gfc_data *data, *old_data;
+
+  /* !$ACC DECLARE clauses.  */
+  gfc_omp_clauses *oacc_declare_clauses;
 
   gfc_charlen *cl_list, *old_cl_list;
 
@@ -2276,6 +2321,10 @@ typedef enum
   EXEC_READ, EXEC_WRITE, EXEC_IOLENGTH, EXEC_TRANSFER, EXEC_DT_END,
   EXEC_BACKSPACE, EXEC_ENDFILE, EXEC_INQUIRE, EXEC_REWIND, EXEC_FLUSH,
   EXEC_LOCK, EXEC_UNLOCK,
+  EXEC_OACC_KERNELS_LOOP, EXEC_OACC_PARALLEL_LOOP,
+  EXEC_OACC_PARALLEL, EXEC_OACC_KERNELS, EXEC_OACC_DATA, EXEC_OACC_HOST_DATA,
+  EXEC_OACC_LOOP, EXEC_OACC_UPDATE, EXEC_OACC_WAIT, EXEC_OACC_CACHE,
+  EXEC_OACC_ENTER_DATA, EXEC_OACC_EXIT_DATA,
   EXEC_OMP_CRITICAL, EXEC_OMP_DO, EXEC_OMP_FLUSH, EXEC_OMP_MASTER,
   EXEC_OMP_ORDERED, EXEC_OMP_PARALLEL, EXEC_OMP_PARALLEL_DO,
   EXEC_OMP_PARALLEL_SECTIONS, EXEC_OMP_PARALLEL_WORKSHARE,
@@ -2877,6 +2926,11 @@ void gfc_resolve_omp_declare_simd (gfc_namespace *);
 void gfc_resolve_omp_udrs (gfc_symtree *);
 void gfc_omp_save_and_clear_state (struct gfc_omp_saved_state *);
 void gfc_omp_restore_state (struct gfc_omp_saved_state *);
+void gfc_free_expr_list (gfc_expr_list *);
+void gfc_resolve_oacc_directive (gfc_code *, gfc_namespace *);
+void gfc_resolve_oacc_declare (gfc_namespace *);
+void gfc_resolve_oacc_parallel_loop_blocks (gfc_code *, gfc_namespace *);
+void gfc_resolve_oacc_blocks (gfc_code *, gfc_namespace *);
 
 /* expr.c */
 void gfc_free_actual_arglist (gfc_actual_arglist *);
