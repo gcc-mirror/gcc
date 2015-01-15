@@ -1,3 +1,8 @@
+2015-01-15  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* gcc.dg/vect/vect-aggressive-1.c: New.
+	* gcc.target/i386/avx2-vect-aggressive.c: New.
+
 2015-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr54445-2.c: Adjust scan string for PIE.

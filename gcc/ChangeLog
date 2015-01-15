@@ -1,3 +1,49 @@
+2015-01-15  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* tree-if-conv.c: Include hash-map.h.
+	(aggressive_if_conv): New variable.
+	(fold_build_cond_expr): Add simplification of non-zero condition.
+	(add_to_dst_predicate_list): Invoke add_to_predicate_list if edge
+	destination block is not always executed.
+	(if_convertible_phi_p): Fix commentary, allow phi nodes have more
+	than two predecessors if AGGRESSIVE_IF_CONV is true.
+	(if_convertible_stmt_p): Fix commentary.
+	(all_preds_critical_p): New function.
+	(has_pred_critical_p): New function.
+	(if_convertible_bb_p): Fix commentary, if AGGRESSIVE_IF_CONV is true
+	BB can have more than two predecessors and all incoming edges can be
+	critical.
+	(predicate_bbs): Skip predication for loop exit block, use build2_loc
+	to compute predicate for true edge.
+	(find_phi_replacement_condition): Delete this function.
+	(is_cond_scalar_reduction): Add arguments ARG_0, ARG_1 and EXTENDED.
+	Allow interchange PHI arguments if EXTENDED is false.
+	Change check that block containing reduction statement candidate
+	is predecessor of phi-block since phi may have more than two arguments.
+	(phi_args_hash_traits): New helper structure.
+	(struct phi_args_hash_traits): New type.
+	(phi_args_hash_traits::hash): New function.
+	(phi_args_hash_traits::equal_keys): New function.
+	(gen_phi_arg_condition): New function.
+	(predicate_scalar_phi): Add handling of phi nodes with more than two
+	arguments, delete COND and TRUE_BB arguments, insert body of
+	find_phi_replacement_condition to predicate ordinary phi nodes.
+	(predicate_all_scalar_phis): Skip blocks with the only predecessor,
+	delete call of find_phi_replacement_condition and invoke
+	predicate_scalar_phi with two arguments.
+	(insert_gimplified_predicates): Add assert that non-predicated block
+	don't have statements to insert.
+	(ifcvt_split_critical_edges): New function.
+	(ifcvt_split_def_stmt): Likewise.
+	(ifcvt_walk_pattern_tree): Likewise.
+	(stmt_is_root_of_bool_pattern): Likewise.
+	(ifcvt_repair_bool_pattern): Likewise.
+	(ifcvt_local_dce): Likewise.
+	(tree_if_conversion): Add initialization of AGGRESSIVE_IF_CONV which
+	is copy of inner or outer loop force_vectorize field, invoke
+	ifcvt_split_critical_edges, ifcvt_local_dce and
+	ifcvt_repair_bool_pattern for aggressive if-conversion.
+
 2015-01-15  Philipp Tomsich  <ptomsich@theobroma-systems.com>
 
 	* config/aarch64/aarch64.md: Include xgene1.md.
