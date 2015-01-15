@@ -327,6 +327,7 @@ static tree handle_no_address_safety_analysis_attribute (tree *, tree, tree,
 							 int, bool *);
 static tree handle_no_sanitize_undefined_attribute (tree *, tree, tree, int,
 						    bool *);
+static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
@@ -657,6 +658,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_noreturn_attribute, false },
   { "volatile",               0, 0, true,  false, false,
 			      handle_noreturn_attribute, false },
+  { "stack_protect",          0, 0, true,  false, false,
+			      handle_stack_protect_attribute, false },
   { "noinline",               0, 0, true,  false, false,
 			      handle_noinline_attribute, false },
   { "noclone",                0, 0, true,  false, false,
@@ -6765,6 +6768,25 @@ handle_no_sanitize_undefined_attribute (tree *node, tree name, tree, int,
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
+
+  return NULL_TREE;
+}
+
+/* Handle a "stack_protect" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+handle_stack_protect_attribute (tree *node, tree name, tree, int,
+				bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+  else
+    DECL_ATTRIBUTES (*node) 
+      = tree_cons (get_identifier ("stack_protect"),
+		   NULL_TREE, DECL_ATTRIBUTES (*node));
 
   return NULL_TREE;
 }

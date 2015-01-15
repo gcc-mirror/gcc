@@ -1,3 +1,14 @@
+2015-01-14  Marcos Diaz <marcos.diaz@tallertechnologies.com>
+
+	* common.opt: New option -fstack-protector-explicit.
+	* cfgexpand.c (SPCT_FLAG_EXPLICIT): New enum.
+	(stack_protect_decl_phase): Handle stack_protect attribute for
+	explicit stack protection requests.
+	(expand_used_vars): Similarly.
+	* doc/cpp.texi (__SSP_EXPLICIT__): Document predefined macro.
+	* doc/extend.texi: Add documentation for "stack_protect" attribute.
+	* doc/invoke.texi: Add documentation for -fstack-protector-explicit.
+
 2015-01-14  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53988

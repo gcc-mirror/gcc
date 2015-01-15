@@ -1,3 +1,10 @@
+2015-01-14  Marcos Diaz <marcos.diaz@tallertechnologies.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): New cpp define __SSP_EXPLICIT__
+	for the new option fstack-protector_explicit.
+	* c-common.c (c_common_attribute_table): Add stack_protect attribute.
+	(handle_stack_protect_attribute): New function.
+
 2015-01-13  Martin Uecker <uecker@eecs.berkeley.edu>
 
 	* c.opt: New option -Warray-bounds=.
