@@ -1,3 +1,8 @@
+2015-01-15  Martin Liska  <mliska@suse.cz>
+
+	PR target/64377
+	* optc-save-gen.awk: Add support for array types.
+
 2015-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64365
