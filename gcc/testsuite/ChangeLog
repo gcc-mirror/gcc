@@ -1,3 +1,7 @@
+2015-01-15  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* g++.dg/torture/20141013.c: Set -fno-short-enums.
+
 2015-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64365
