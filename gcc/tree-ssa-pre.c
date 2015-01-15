@@ -3184,6 +3184,33 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
   bitmap_insert_into_set (NEW_SETS (block),
 			  newphi);
 
+  /* If we insert a PHI node for a conversion of another PHI node
+     in the same basic-block try to preserve range information.
+     This is important so that followup loop passes receive optimal
+     number of iteration analysis results.  See PR61743.  */
+  if (expr->kind == NARY
+      && CONVERT_EXPR_CODE_P (expr->u.nary->opcode)
+      && TREE_CODE (expr->u.nary->op[0]) == SSA_NAME
+      && gimple_bb (SSA_NAME_DEF_STMT (expr->u.nary->op[0])) == block
+      && INTEGRAL_TYPE_P (type)
+      && INTEGRAL_TYPE_P (TREE_TYPE (expr->u.nary->op[0]))
+      && (TYPE_PRECISION (type)
+	  >= TYPE_PRECISION (TREE_TYPE (expr->u.nary->op[0])))
+      && SSA_NAME_RANGE_INFO (expr->u.nary->op[0]))
+    {
+      wide_int min, max;
+      if (get_range_info (expr->u.nary->op[0], &min, &max) == VR_RANGE
+	  && !wi::neg_p (min, SIGNED)
+	  && !wi::neg_p (max, SIGNED))
+	/* Just handle extension and sign-changes of all-positive ranges.  */
+	set_range_info (temp,
+			SSA_NAME_RANGE_TYPE (expr->u.nary->op[0]),
+			wide_int_storage::from (min, TYPE_PRECISION (type),
+						TYPE_SIGN (type)),
+			wide_int_storage::from (max, TYPE_PRECISION (type),
+						TYPE_SIGN (type)));
+    }
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Created phi ");
