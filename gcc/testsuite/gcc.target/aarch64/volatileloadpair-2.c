@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-do options "-O2" } */
+/* { dg-options "-O2" } */
 /* volatile references should not produce load pair. */
 /* { dg-final { scan-assembler-not "ldp\t" } } */
 
