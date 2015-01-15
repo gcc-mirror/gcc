@@ -1,3 +1,16 @@
+2015-01-14  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/lsa.c: New file.
+	* gcc.target/mips/mips64-lsa.c: Likewise.
+	* gcc.target/mips/mulsize-2.c: Require !HAS_LSA.
+	* gcc.target/mips/mulsize-4.c: Likewise.
+	* gcc.target/mips/mulsize-5.c: New file.
+	* gcc.target/mips/mulsize-6.c: Likewise.
+	* gcc.target/mips/mips.exp (mips_option_groups): Support HAS_LSA
+	and !HAS_LSA as ghost options.
+	(mips-dg-options): Require rev 6 for HAS_LSA. Downgrade to rev 5
+	for !HAS_LSA.
+
 2015-01-15  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* g++.dg/torture/20141013.c: Set -fno-short-enums.

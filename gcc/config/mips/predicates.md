@@ -33,6 +33,10 @@
   (ior (match_operand 0 "const_arith_operand")
        (match_operand 0 "register_operand")))
 
+(define_predicate "const_immlsa_operand"
+  (and (match_code "const_int")
+         (match_test "IN_RANGE (exact_log2 (INTVAL (op)), 1, 4)")))
+
 (define_predicate "const_uimm6_operand"
   (and (match_code "const_int")
        (match_test "UIMM6_OPERAND (INTVAL (op))")))

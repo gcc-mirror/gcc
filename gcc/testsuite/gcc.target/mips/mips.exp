@@ -253,6 +253,7 @@ set mips_option_groups {
     movn "HAS_MOVN"
     madd "HAS_MADD"
     maddps "HAS_MADDPS"
+    lsa "(|!)HAS_LSA"
 }
 
 for { set option 0 } { $option < 32 } { incr option } {
@@ -1061,11 +1062,21 @@ proc mips-dg-options { args } {
     # Handle dependencies between the pre-arch options and the arch option.
     # This should mirror the arch and post-arch code below.
     if { !$arch_test_option_p } {
+	# We need a revision 6 or better ISA for:
+	#
+	#   - When the LSA instruction is required
+	if { $isa_rev < 6
+	     && ([mips_have_test_option_p options "HAS_LSA"]) } {
+	    if { $gp_size == 32 } {
+		mips_make_test_option options "-mips32r6"
+	    } else {
+		mips_make_test_option options "-mips64r6"
+	    }
 	# We need a revision 2 or better ISA for:
 	#
 	#   - the combination of -mgp32 -mfp64
 	#   - the DSP ASE
-	if { $isa_rev < 2
+	} elseif { $isa_rev < 2
 	     && (($gp_size == 32 && [mips_have_test_option_p options "-mfp64"])
 		 || [mips_have_test_option_p options "-msynci"]
 		 || [mips_have_test_option_p options "-mdsp"]
@@ -1142,7 +1153,8 @@ proc mips-dg-options { args } {
 		       || [mips_have_test_option_p options "HAS_MADD"]
 		       || [mips_have_test_option_p options "-mpaired-single"]
 		       || [mips_have_test_option_p options "-mnan=legacy"]
-		       || [mips_have_test_option_p options "-mabs=legacy"]) } {
+		       || [mips_have_test_option_p options "-mabs=legacy"]
+		       || [mips_have_test_option_p options "!HAS_LSA"]) } {
 	    if { $gp_size == 32 } {
 		mips_make_test_option options "-mips32r5"
 	    } else {
