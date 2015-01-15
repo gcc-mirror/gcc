@@ -1928,7 +1928,8 @@ const struct tune_params arm_xgene1_tune =
   false,                                       /* Prefer Neon for 64-bits bitops.  */
   true, true,                                  /* Prefer 32-bit encodings.  */
   false,				       /* Prefer Neon for stringops.  */
-  32					       /* Maximum insns to inline memset.  */
+  32,					       /* Maximum insns to inline memset.  */
+  ARM_FUSE_NOTHING				/* Fuseable pairs of instructions.  */
 };
 
 /* Branches can be dual-issued on Cortex-A5, so conditional execution is
