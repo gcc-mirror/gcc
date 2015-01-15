@@ -1,3 +1,8 @@
+2015-01-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58023
+	* gfortran.dg/proc_ptr_comp_43.f90: New.
+
 2015-01-15  Mike Stump  <mikestump@comcast.net>
 
 	* gcc.dg/unroll_1.c: Rename gcc.dg/unroll_[1-5].c to unroll-[2-6].
