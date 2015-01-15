@@ -1900,6 +1900,16 @@ gcc_jit_block_add_assignment_op (gcc_jit_block *block,
     "unrecognized value for enum gcc_jit_binary_op: %i",
     op);
   RETURN_IF_FAIL (rvalue, ctxt, loc, "NULL rvalue");
+  RETURN_IF_FAIL_PRINTF4 (
+    compatible_types (lvalue->get_type (),
+		      rvalue->get_type ()),
+    ctxt, loc,
+    "mismatching types:"
+    " assignment to %s (type: %s) involving %s (type: %s)",
+    lvalue->get_debug_string (),
+    lvalue->get_type ()->get_debug_string (),
+    rvalue->get_debug_string (),
+    rvalue->get_type ()->get_debug_string ());
 
   gcc::jit::recording::statement *stmt = block->add_assignment_op (loc, lvalue, op, rvalue);
 

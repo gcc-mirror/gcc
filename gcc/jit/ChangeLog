@@ -1,3 +1,8 @@
+2015-01-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c (gcc_jit_block_add_assignment_op): Check that the
+	lvalue and the rvalue are of compatible type.
+
 2015-01-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/topics/contexts.rst (Debugging): Add
