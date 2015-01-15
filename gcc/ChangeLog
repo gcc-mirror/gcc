@@ -1,3 +1,10 @@
+2015-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64365
+	* tree-data-ref.c (dr_analyze_indices): Make sure that accesses
+	for MEM_REF access functions with the same base can never partially
+	overlap.
+
 2015-01-14  Marcos Diaz <marcos.diaz@tallertechnologies.com>
 
 	* common.opt: New option -fstack-protector-explicit.
