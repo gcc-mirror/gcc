@@ -1,3 +1,10 @@
+2015-01-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/64612
+	* ipa-inline-transform.c (can_remove_node_now_p): Fix handling
+	of comdat locals.
+	(inline_call): Fix removal of aliases.
+
 2015-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* flag-types.h (enum sanitize_code): Add SANITIZE_VPTR,
