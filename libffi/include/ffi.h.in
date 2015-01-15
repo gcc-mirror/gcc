@@ -494,7 +494,13 @@ void ffi_call(ffi_cif *cif,
 #define FFI_TYPE_COMPLEX    15
 
 /* This should always refer to the last type code (for sanity checks) */
-#define FFI_TYPE_LAST       FFI_TYPE_COMPLEX
+/* ??? Ideally, anyway.  There are assembly files that still depend
+   on this not including COMPLEX.  */
+#ifdef FFI_TARGET_HAS_COMPLEX_TYPE
+# define FFI_TYPE_LAST      FFI_TYPE_COMPLEX
+#else
+# define FFI_TYPE_LAST      FFI_TYPE_POINTER
+#endif
 
 #ifdef __cplusplus
 }

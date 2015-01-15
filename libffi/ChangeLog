@@ -1,3 +1,9 @@
+2015-01-15  Richard Henderson  <rth@redhat.com>
+
+	PR libffi/64572
+	* include/ffi.h.in (FFI_TYPE_LAST): Set to COMPLEX only if complex
+	numbers are supported by the backend.
+
 2015-01-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* configure.host: Remove extra brackets for sh.
