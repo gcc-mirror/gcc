@@ -1657,6 +1657,7 @@ process_alt_operands (int only_alternative)
      then REJECT is ignored, but otherwise it gets this much counted
      against it in addition to the reloading needed.  */
   int reject;
+  int op_reject;
   /* The number of elements in the following array.  */
   int early_clobbered_regs_num;
   /* Numbers of operands which are early clobber registers.  */
@@ -1806,6 +1807,7 @@ process_alt_operands (int only_alternative)
 	     track.  */
 	  lra_assert (*p != 0 && *p != ',');
 
+	  op_reject = 0;
 	  /* Scan this alternative's specs for this operand; set WIN
 	     if the operand fits any letter in this alternative.
 	     Otherwise, clear BADOP if this operand could fit some
@@ -1826,6 +1828,13 @@ process_alt_operands (int only_alternative)
 
 		case '&':
 		  early_clobber_p = true;
+		  break;
+
+		case '$':
+		  op_reject += LRA_MAX_REJECT;
+		  break;
+		case '^':
+		  op_reject += LRA_LOSER_COST_FACTOR;
 		  break;
 
 		case '#':
@@ -2114,6 +2123,7 @@ process_alt_operands (int only_alternative)
 	      int const_to_mem = 0;
 	      bool no_regs_p;
 
+	      reject += op_reject;
 	      /* Never do output reload of stack pointer.  It makes
 		 impossible to do elimination when SP is changed in
 		 RTL.  */
