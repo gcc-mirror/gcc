@@ -1,3 +1,11 @@
+2015-01-15  Mike Stump  <mikestump@comcast.net>
+
+	* gcc.dg/unroll_1.c: Rename gcc.dg/unroll_[1-5].c to unroll-[2-6].
+	* gcc.dg/unroll_2.c: Likewise.
+	* gcc.dg/unroll_3.c: Likewise.
+	* gcc.dg/unroll_4.c: Likewise.
+	* gcc.dg/unroll_5.c: Likewise.
+
 2015-01-15  Tejas Belagod  <tejas.belagod@arm.com>
 
 	PR target/63971
