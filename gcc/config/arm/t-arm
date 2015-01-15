@@ -40,6 +40,7 @@ MD_INCLUDES=	$(srcdir)/config/arm/arm1020e.md \
 		$(srcdir)/config/arm/cortex-a9.md \
 		$(srcdir)/config/arm/cortex-a9-neon.md \
 		$(srcdir)/config/arm/cortex-a53.md \
+		$(srcdir)/config/arm/xgene1.md \
 		$(srcdir)/config/arm/cortex-m4-fpu.md \
 		$(srcdir)/config/arm/cortex-m4.md \
 		$(srcdir)/config/arm/cortex-r4f.md \

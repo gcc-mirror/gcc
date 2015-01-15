@@ -1912,6 +1912,25 @@ const struct tune_params arm_cortex_a57_tune =
   ARM_FUSE_MOVW_MOVT				/* Fuseable pairs of instructions.  */
 };
 
+const struct tune_params arm_xgene1_tune =
+{
+  arm_9e_rtx_costs,
+  &xgene1_extra_costs,
+  NULL,                                        /* Scheduler cost adjustment.  */
+  1,                                           /* Constant limit.  */
+  2,                                           /* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  false,                                       /* Prefer constant pool.  */
+  arm_default_branch_cost,
+  true,                                        /* Prefer LDRD/STRD.  */
+  {true, true},                                /* Prefer non short circuit.  */
+  &arm_default_vec_cost,                       /* Vectorizer costs.  */
+  false,                                       /* Prefer Neon for 64-bits bitops.  */
+  true, true,                                  /* Prefer 32-bit encodings.  */
+  false,				       /* Prefer Neon for stringops.  */
+  32					       /* Maximum insns to inline memset.  */
+};
+
 /* Branches can be dual-issued on Cortex-A5, so conditional execution is
    less appealing.  Set max_insns_skipped to a low value.  */
 
@@ -27090,6 +27109,9 @@ arm_issue_rate (void)
 {
   switch (arm_tune)
     {
+    case xgene1:
+      return 4;
+
     case cortexa15:
     case cortexa57:
       return 3;
