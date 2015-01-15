@@ -1,3 +1,13 @@
+2015-01-14  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips.c (mips_rtx_costs): Set costs for LSA/DLSA.
+	(mips_print_operand): Support 'y' to print exact log2 in decimal
+	of a const_int.
+	* config/mips/mips.h (ISA_HAS_LSA): New define.
+	(ISA_HAS_DLSA): Likewise.
+	* config/mips/mips.md (<GPR:d>lsa): New define_insn.
+	* config/mips/predicates.md (const_immlsa_operand): New predicate.
+
 2015-01-15  Martin Liska  <mliska@suse.cz>
 
 	PR target/64377

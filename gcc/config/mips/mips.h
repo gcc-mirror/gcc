@@ -181,6 +181,12 @@ struct mips_cpu_info {
 #define ISA_HAS_DSP_MULT ISA_HAS_DSPR2
 #endif
 
+/* ISA has LSA available.  */
+#define ISA_HAS_LSA		(mips_isa_rev >= 6)
+
+/* ISA has DLSA available.  */
+#define ISA_HAS_DLSA		(TARGET_64BIT && mips_isa_rev >= 6)
+
 /* The ISA compression flags that are currently in effect.  */
 #define TARGET_COMPRESSION (target_flags & (MASK_MIPS16 | MASK_MICROMIPS))
 
