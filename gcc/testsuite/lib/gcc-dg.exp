@@ -72,7 +72,14 @@ if [info exists ADDITIONAL_TORTURE_OPTIONS] {
 	[concat $DG_TORTURE_OPTIONS $ADDITIONAL_TORTURE_OPTIONS]
 }
 
-set LTO_TORTURE_OPTIONS ""
+global orig_environment_saved
+
+# This file may be sourced, so don't override environment settings
+# that have been previously setup.
+if { $orig_environment_saved == 0 } {
+    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+    set_ld_library_path_env_vars
+}
 
 # Some torture-options cause intermediate code output, unusable for
 # testing using e.g. scan-assembler.  In this variable are the options
@@ -80,6 +87,7 @@ set LTO_TORTURE_OPTIONS ""
 global gcc_force_conventional_output
 set gcc_force_conventional_output ""
 
+set LTO_TORTURE_OPTIONS ""
 if [check_effective_target_lto] {
     # When having plugin test both slim and fat LTO and plugin/nonplugin
     # path.
@@ -95,15 +103,6 @@ if [check_effective_target_lto] {
 	  { -O2 -flto }
       ]
     }
-}
-
-global orig_environment_saved
-
-# This file may be sourced, so don't override environment settings
-# that have been previously setup.
-if { $orig_environment_saved == 0 } {
-    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
-    set_ld_library_path_env_vars
 }
 
 # Define gcc callbacks for dg.exp.
