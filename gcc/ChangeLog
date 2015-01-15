@@ -1,3 +1,33 @@
+2015-01-15  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/micromips.md (*swp): Remove explicit parallel.
+	(jraddiusp, *movep<MOVEP1:mode><MOVEP2:mode>): Likewise.
+	* config/mips/mips-dsp.md (add<DSPV:mode>3): Likewise.
+	(mips_add<DSP:dspfmt1>_s_<DSP:dspfmt2>, sub<DSPV:mode>3): Likewise.
+	(mips_sub<DSP:dspfmt1>_s_<DSP:dspfmt2>, mips_addsc): Likewise.
+	(mips_addwc, mips_absq_s_<DSPQ:dspfmt2>): Likewise.
+	(mips_precrq_rs_ph_w, mips_precrqu_s_qb_ph): Likewise.
+	(mips_shll_<DSPV:dspfmt2>, mips_shll_s_<DSPQ:dspfmt2>): Likewise.
+	(mips_muleu_s_ph_qbl, mips_muleu_s_ph_qbr): Likewise.
+	(mips_mulq_rs_ph, mips_muleq_s_w_phl, mips_muleq_s_w_phr): Likewise.
+	(mips_dpaq_s_w_ph, mips_dpsq_s_w_ph, mips_mulsaq_s_w_ph): Likewise.
+	(mips_dpaq_sa_l_w, mips_dpsq_sa_l_w, mips_maq_s_w_phl): Likewise.
+	(mips_maq_s_w_phr, mips_maq_sa_w_phl, mips_maq_sa_w_phr): Likewise.
+	(mips_extr_w, mips_extr_r_w, mips_extr_rs_w): Likewise.
+	(mips_extr_s_h, mips_extp, mips_extpdp, mips_mthlip): Likewise.
+	(mips_wrdsp): Likewise.
+	* config/mips/mips-dspr2.md (mips_absq_s_qb): Remove explicit
+	parallel.
+	(mips_addu_ph, mips_addu_s_ph, mips_cmpgdu_eq_qb): Likewise.
+	(mips_cmpgdu_lt_qb, mips_cmpgdu_le_qb, mulv2hi3): Likewise.
+	(mips_mul_s_ph, mips_mulq_rs_w, mips_mulq_s_ph): Likewise.
+	(mips_mulq_s_w, mips_subu_ph, mips_subu_s_ph): Likewise.
+	(mips_dpaqx_s_w_ph, mips_dpaqx_sa_w_ph): Likewise.
+	(mips_dpsqx_s_w_ph, mips_dpsqx_sa_w_ph): Likewise.
+	* config/mips/mips-fixed.md (usadd<mode>3): Remove explicit parallel.
+	(ssadd<mode>3, ussub<mode>3, sssub<mode>3, ssmul<mode>3): Likewise.
+	(ssmaddsqdq4, ssmsubsqdq4): Likewise.
+
 2015-01-14  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config/mips/mips.c (mips_rtx_costs): Set costs for LSA/DLSA.
