@@ -1,10 +1,10 @@
-int __attribute__((noinline)) test2(int x[1000])
+static int __attribute__((noinline)) test2(int x[1000])
 {
   int i;
   return x[12];
 }
 
-int __attribute__((noinline)) test1()
+static int __attribute__((noinline)) test1()
 {
   int x[1000], i;
 
