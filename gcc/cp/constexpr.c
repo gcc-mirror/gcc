@@ -1624,7 +1624,7 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
   rhs = cxx_eval_constant_expression (ctx, orig_rhs, /*lval*/false,
 				      non_constant_p, overflow_p);
   if (!ptr)
-    VERIFY_CONSTANT (lhs);
+    VERIFY_CONSTANT (rhs);
 
   location_t loc = EXPR_LOCATION (t);
   enum tree_code code = TREE_CODE (t);
@@ -1640,7 +1640,7 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
   else if (cxx_eval_check_shift_p (loc, ctx, code, type, lhs, rhs))
     *non_constant_p = true;
   if (!ptr)
-    VERIFY_CONSTANT (lhs);
+    VERIFY_CONSTANT (r);
   return r;
 }
 
