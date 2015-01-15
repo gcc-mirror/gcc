@@ -1,3 +1,10 @@
+2015-01-15  Mike Stump  <mikestump@comcast.net>
+
+	* gcc.dg/inline_1.c: Rename gcc.dg/inline_[1-4].c to inline-3[6-9].c.
+	* gcc.dg/inline_2.c: Likewise.
+	* gcc.dg/inline_3.c: Likewise.
+	* gcc.dg/inline_4.c: Likewise.
+
 2015-01-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58023
