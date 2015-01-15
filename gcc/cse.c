@@ -3093,8 +3093,10 @@ fold_rtx (rtx x, rtx_insn *insn)
   int changed = 0;
 
   /* Operands of X.  */
-  rtx folded_arg0;
-  rtx folded_arg1;
+  /* Workaround -Wmaybe-uninitialized false positive during
+     profiledbootstrap by initializing them.  */
+  rtx folded_arg0 = NULL_RTX;
+  rtx folded_arg1 = NULL_RTX;
 
   /* Constant equivalents of first three operands of X;
      0 when no such equivalent is known.  */
