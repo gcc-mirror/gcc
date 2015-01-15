@@ -48,6 +48,37 @@ AC_PROG_GO
 
 AM_CONDITIONAL(NATIVE, test "$cross_compiling" = no)
 
+dnl Test for -lsocket and -lnsl.  Copied from libjava/configure.ac.
+AC_CACHE_CHECK([for socket libraries], gotools_cv_lib_sockets,
+  [gotools_cv_lib_sockets=
+   gotools_check_both=no
+   AC_CHECK_FUNC(connect, gotools_check_socket=no, gotools_check_socket=yes)
+   if test "$gotools_check_socket" = "yes"; then
+     unset ac_cv_func_connect
+     AC_CHECK_LIB(socket, main, gotools_cv_lib_sockets="-lsocket",
+     		  gotools_check_both=yes)
+   fi
+   if test "$gotools_check_both" = "yes"; then
+     gotools_old_libs=$LIBS
+     LIBS="$LIBS -lsocket -lnsl"
+     unset ac_cv_func_accept
+     AC_CHECK_FUNC(accept,
+		   [gotools_check_nsl=no
+		    gotools_cv_lib_sockets="-lsocket -lnsl"])
+     unset ac_cv_func_accept
+     LIBS=$gotools_old_libs
+   fi
+   unset ac_cv_func_gethostbyname
+   gotools_old_libs="$LIBS"
+   AC_CHECK_FUNC(gethostbyname, ,
+		 [AC_CHECK_LIB(nsl, main,
+		 	[gotools_cv_lib_sockets="$gotools_cv_lib_sockets -lnsl"])])
+   unset ac_cv_func_gethostbyname
+   LIBS=$gotools_old_libs
+])
+NET_LIBS="$gotools_cv_lib_sockets"
+AC_SUBST(NET_LIBS)
+
 AC_CONFIG_FILES(Makefile)
 
 AC_OUTPUT

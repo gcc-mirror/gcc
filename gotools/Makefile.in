@@ -122,6 +122,7 @@ LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
+NET_LIBS = @NET_LIBS@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -589,11 +590,11 @@ s-zdefaultcc: Makefile
 	$(STAMP) $@ 
 
 @NATIVE_TRUE@go$(EXEEXT): $(go_cmd_go_files) zdefaultcc.go $(LIBGODEP)
-@NATIVE_TRUE@	$(GOLINK) $(go_cmd_go_files) zdefaultcc.go
+@NATIVE_TRUE@	$(GOLINK) $(go_cmd_go_files) zdefaultcc.go $(NET_LIBS)
 @NATIVE_TRUE@gofmt$(EXEEXT): $(go_cmd_gofmt_files) $(LIBGODEP)
-@NATIVE_TRUE@	$(GOLINK) $(go_cmd_gofmt_files)
+@NATIVE_TRUE@	$(GOLINK) $(go_cmd_gofmt_files) $(NET_LIBS)
 @NATIVE_TRUE@cgo$(EXEEXT): $(go_cmd_cgo_files) zdefaultcc.go $(LIBGODEP)
-@NATIVE_TRUE@	$(GOLINK) $(go_cmd_cgo_files) zdefaultcc.go
+@NATIVE_TRUE@	$(GOLINK) $(go_cmd_cgo_files) zdefaultcc.go $(NET_LIBS)
 
 # For a non-native build we have to build the programs using a
 # previously built host (or build -> host) Go compiler.  We should

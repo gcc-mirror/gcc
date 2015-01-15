@@ -1,3 +1,10 @@
+2015-01-15  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Check for networking libraries; see NET_LIBS.
+	* Makefile.am (go$(EXEEXT)): Link against NET_LIBS.
+	(gofmt$(EXEEXT), cgo$(EXEEXT)): Likewise.
+	* configure, Makefile.in: Rebuild.
+
 2015-01-14  Ian Lance Taylor  <iant@google.com>
 
 	* Makefile.am (go_cmd_go_files): Sort entries.  Add generate.go.
