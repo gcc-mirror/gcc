@@ -1,3 +1,9 @@
+2015-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61743
+	* tree-ssa-pre.c (insert_into_preds_of_block): Preserve range
+	information on PHIs for some simple cases.
+
 2015-01-15  Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
 
 	* config/arm/arm.md (generic_sched): Specify xgene1 in 'no' list.
