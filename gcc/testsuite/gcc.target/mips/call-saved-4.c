@@ -3,7 +3,7 @@
 
 void bar (void);
 
-void
+NOCOMPRESSION void
 foo (int x)
 {
   __builtin_unwind_init ();
