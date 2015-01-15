@@ -1,3 +1,10 @@
+2015-01-15  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/64434
+	* cfgexpand.c (reorder_operands): New function.
+	(expand_gimple_basic_block): Insert call of reorder_operands if
+	optimized is true.
+
 2015-01-15  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config/mips/micromips.md (*swp): Remove explicit parallel.
