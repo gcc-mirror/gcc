@@ -320,7 +320,7 @@ argloop:
 		switch v.Kind() {
 		case Ptr, UnsafePointer, Chan, Func, Map:
 			w = uintptr(v.pointer())
-		} else {
+		default:
 			memmove(unsafe.Pointer(&w), v.ptr, v.typ.size)
 			if ret_off_reg != 0 {
 				w = s390xReloadForRegister(
