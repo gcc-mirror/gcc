@@ -2207,7 +2207,7 @@ attributes are currently defined for functions on all targets:
 @code{no_sanitize_address}, @code{no_address_safety_analysis},
 @code{no_sanitize_thread},
 @code{no_sanitize_undefined}, @code{no_reorder}, @code{bnd_legacy},
-@code{bnd_instrument},
+@code{bnd_instrument}, @code{stack_protect},
 @code{error} and @code{warning}.
 Several other attributes are defined for functions on particular
 target systems.  Other attributes, including @code{section} are
@@ -3443,6 +3443,12 @@ If @option{-fsplit-stack} is given, functions have a small
 prologue which decides whether to split the stack.  Functions with the
 @code{no_split_stack} attribute do not have that prologue, and thus
 may run with only a small amount of stack space available.
+
+@item stack_protect
+@cindex @code{stack_protect} function attribute
+This function attribute make a stack protection of the function if 
+flags @option{fstack-protector} or @option{fstack-protector-strong}
+or @option{fstack-protector-explicit} are set.
 
 @item noinline
 @cindex @code{noinline} function attribute
