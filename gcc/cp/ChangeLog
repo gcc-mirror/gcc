@@ -1,3 +1,11 @@
+2015-01-15  Momchil Velikov  <momchil.velikov@gmail.com>
+
+	PR c++/59366
+	* name-lookup.c (pushdecl_maybe_friend_1): Hide friend functions
+	and function templates, declared only in the class.
+	* decl.c (duplicate_decls): Reveal hidden friend functions or
+	function templates, if they are redeclared outside the class.
+
 2015-01-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/64356
