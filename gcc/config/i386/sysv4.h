@@ -52,13 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Used by crtstuff.c to initialize the base of data-relative relocations.
    These are GOT relative on x86, so return the pic register.  */
-#ifdef __PIC__
-#define CRT_GET_RFIB_DATA(BASE)			\
-  {						\
-    register void *ebx_ __asm__("ebx");		\
-    BASE = ebx_;				\
-  }
-#else
 #define CRT_GET_RFIB_DATA(BASE)						\
   __asm__ ("call\t.LPR%=\n"						\
 	   ".LPR%=:\n\t"						\
@@ -69,4 +62,3 @@ along with GCC; see the file COPYING3.  If not see
 	   "add{l}\t{$_GLOBAL_OFFSET_TABLE_+[.-.LPR%=],%0"		\
 		   "|%0,_GLOBAL_OFFSET_TABLE_+(.-.LPR%=)}"		\
 	   : "=d"(BASE))
-#endif
