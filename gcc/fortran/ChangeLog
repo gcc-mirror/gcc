@@ -1,3 +1,11 @@
+2015-01-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/61933
+	* io.c (gfc_match_inquire): Generate error if unit number in
+	inquire statement is a constant -1.  All other values allowed.
+	* trans-io.c (gfc_trans_inquire): Delete dummy iostat variable.
+	(create_dummy_iostat): Delete function no longer used.
+
 2015-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/64528
