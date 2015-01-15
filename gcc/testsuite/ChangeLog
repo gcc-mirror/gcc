@@ -1,3 +1,8 @@
+2015-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64365
+	* gcc.dg/torture/pr64365.c: New testcase.
+
 2015-01-14  Marcos Diaz <marcos.diaz@tallertechnologies.com>
 
 	* gcc.dg/stackprotectexplicit1.c: New test.
