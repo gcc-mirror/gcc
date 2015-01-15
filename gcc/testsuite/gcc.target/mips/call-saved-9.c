@@ -1,22 +1,15 @@
 /* Check that we save the correct call-saved GPRs and FPRs.  */
-/* { dg-options "-mabi=32 -mfpxx" } */
+/* { dg-options "-mmicromips -mabi=32 -mfp64" } */
 
 void bar (void);
 
-NOCOMPRESSION void
+void
 foo (int x)
 {
   __builtin_unwind_init ();
   __builtin_eh_return (x, bar);
 }
-/* { dg-final { scan-assembler "\\\$16" } } */
-/* { dg-final { scan-assembler "\\\$17" } } */
-/* { dg-final { scan-assembler "\\\$18" } } */
-/* { dg-final { scan-assembler "\\\$19" } } */
-/* { dg-final { scan-assembler "\\\$20" } } */
-/* { dg-final { scan-assembler "\\\$21" } } */
-/* { dg-final { scan-assembler "\\\$22" } } */
-/* { dg-final { scan-assembler "\\\$23" } } */
+/* { dg-final { scan-assembler "\\\$16-\\\$23" } } */
 /* { dg-final { scan-assembler "\\\$(30|fp)" } } */
 /* { dg-final { scan-assembler "\\\$f20" } } */
 /* { dg-final { scan-assembler "\\\$f22" } } */

@@ -1,3 +1,13 @@
+2015-01-15  Andrew Bennett  <andrew.bennett@imgtec.com>
+	    Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/call-saved-4.c (foo): Add NOCOMPRESSION.
+	* gcc.target/mips/call-saved-5.c (foo): Likewise.
+	* gcc.target/mips/call-saved-6.c (foo): Likewise.
+	* gcc.target/mips/call-saved-7.c: New file.
+	* gcc.target/mips/call-saved-8.c: New file.
+	* gcc.target/mips/call-saved-9.c: New file.
+
 2015-01-14  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* gcc.target/mips/lsa.c: New file.
