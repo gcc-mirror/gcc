@@ -1,3 +1,8 @@
+2014-01-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/default64.h (TARGET_DEFAULT) [LITTLE_ENDIAN]: Use
+	ISA 2.7 (POWER8).
+
 2015-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61743
