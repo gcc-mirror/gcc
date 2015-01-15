@@ -12377,6 +12377,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
   c = (sym->attr.is_class) ? sym->components->ts.u.derived->components
 			   : sym->components;
 
+  bool success = true;
+
   for ( ; c != NULL; c = c->next)
     {
       if (c->attr.artificial)
@@ -12389,7 +12391,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	{
 	  gfc_error ("Coarray component %qs at %L must be allocatable with "
 		     "deferred shape", c->name, &c->loc);
-	  return false;
+	  success = false;
+	  continue;
 	}
 
       /* F2008, C443.  */
@@ -12398,7 +12401,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	{
 	  gfc_error ("Component %qs at %L of TYPE(C_PTR) or TYPE(C_FUNPTR) "
 		     "shall not be a coarray", c->name, &c->loc);
-	  return false;
+	  success = false;
+	  continue;
 	}
 
       /* F2008, C444.  */
@@ -12409,7 +12413,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	  gfc_error ("Component %qs at %L with coarray component "
 		     "shall be a nonpointer, nonallocatable scalar",
 		     c->name, &c->loc);
-	  return false;
+	  success = false;
+	  continue;
 	}
 
       /* F2008, C448.  */
@@ -12417,7 +12422,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	{
 	  gfc_error ("Component %qs at %L has the CONTIGUOUS attribute but "
 		     "is not an array pointer", c->name, &c->loc);
-	  return false;
+	  success = false;
+	  continue;
 	}
 
       if (c->attr.proc_pointer && c->ts.interface)
@@ -12427,7 +12433,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	  if (!sym->attr.vtype && !check_proc_interface (ifc, &c->loc))
 	    {
 	      c->tb->error = 1;
-	      return false;
+	      success = false;
+	      continue;
 	    }
 
 	  if (ifc->attr.if_source || ifc->attr.intrinsic)
@@ -12471,7 +12478,11 @@ resolve_fl_derived0 (gfc_symbol *sym)
 		  gfc_charlen *cl = gfc_new_charlen (sym->ns, ifc->ts.u.cl);
 		  if (cl->length && !cl->resolved
 		      && !gfc_resolve_expr (cl->length))
-		    return false;
+		    {
+		      c->tb->error = 1;
+		      success = false;
+		      continue;
+		    }
 		  c->ts.u.cl = cl;
 		}
 	    }
@@ -12514,7 +12525,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 			     "at %L has no argument %qs", c->name,
 			     c->tb->pass_arg, &c->loc, c->tb->pass_arg);
 		  c->tb->error = 1;
-		  return false;
+		  success = false;
+		  continue;
 		}
 	    }
 	  else
@@ -12528,7 +12540,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 			     "must have at least one argument",
 			     c->name, &c->loc);
 		  c->tb->error = 1;
-		  return false;
+		  success = false;
+		  continue;
 		}
 	      me_arg = c->ts.interface->formal->sym;
 	    }
@@ -12544,7 +12557,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 			 " the derived type %qs", me_arg->name, c->name,
 			 me_arg->name, &c->loc, sym->name);
 	      c->tb->error = 1;
-	      return false;
+	      success = false;
+	      continue;
 	    }
 
 	  /* Check for C453.  */
@@ -12554,7 +12568,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 			 "must be scalar", me_arg->name, c->name, me_arg->name,
 			 &c->loc);
 	      c->tb->error = 1;
-	      return false;
+	      success = false;
+	      continue;
 	    }
 
 	  if (me_arg->attr.pointer)
@@ -12563,7 +12578,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 			 "may not have the POINTER attribute", me_arg->name,
 			 c->name, me_arg->name, &c->loc);
 	      c->tb->error = 1;
-	      return false;
+	      success = false;
+	      continue;
 	    }
 
 	  if (me_arg->attr.allocatable)
@@ -12572,12 +12588,17 @@ resolve_fl_derived0 (gfc_symbol *sym)
 			 "may not be ALLOCATABLE", me_arg->name, c->name,
 			 me_arg->name, &c->loc);
 	      c->tb->error = 1;
-	      return false;
+	      success = false;
+	      continue;
 	    }
 
 	  if (gfc_type_is_extensible (sym) && me_arg->ts.type != BT_CLASS)
-	    gfc_error ("Non-polymorphic passed-object dummy argument of %qs"
-		       " at %L", c->name, &c->loc);
+	    {
+	      gfc_error ("Non-polymorphic passed-object dummy argument of %qs"
+			 " at %L", c->name, &c->loc);
+	      success = false;
+	      continue;
+	    }
 
 	}
 
@@ -12745,6 +12766,9 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	  && !gfc_check_assign_symbol (sym, c, c->initializer))
 	return false;
     }
+
+  if (!success)
+    return false;
 
   check_defined_assignments (sym);
 
