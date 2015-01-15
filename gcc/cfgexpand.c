@@ -4983,6 +4983,84 @@ expand_debug_locations (void)
   flag_strict_aliasing = save_strict_alias;
 }
 
+/* Performs swapping operands of commutative operations to expand
+   the expensive one first.  */
+
+static void
+reorder_operands (basic_block bb)
+{
+  unsigned int *lattice;  /* Hold cost of each statement.  */
+  unsigned int i = 0, n = 0;
+  gimple_stmt_iterator gsi;
+  gimple_seq stmts;
+  gimple stmt;
+  bool swap;
+  tree op0, op1;
+  ssa_op_iter iter;
+  use_operand_p use_p;
+  gimple def0, def1;
+
+  /* Compute cost of each statement using estimate_num_insns.  */
+  stmts = bb_seq (bb);
+  for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      stmt = gsi_stmt (gsi);
+      gimple_set_uid (stmt, n++);
+    }
+  lattice = XNEWVEC (unsigned int, n);
+  for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      unsigned cost;
+      stmt = gsi_stmt (gsi);
+      cost = estimate_num_insns (stmt, &eni_size_weights);
+      lattice[i] = cost;
+      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+	{
+	  tree use = USE_FROM_PTR (use_p);
+	  gimple def_stmt;
+	  if (TREE_CODE (use) != SSA_NAME)
+	    continue;
+	  def_stmt = get_gimple_for_ssa_name (use);
+	  if (!def_stmt)
+	    continue;
+	  lattice[i] += lattice[gimple_uid (def_stmt)];
+	}
+      i++;
+      if (!is_gimple_assign (stmt)
+	  || !commutative_tree_code (gimple_assign_rhs_code (stmt)))
+	continue;
+      op0 = gimple_op (stmt, 1);
+      op1 = gimple_op (stmt, 2);
+      if (TREE_CODE (op0) != SSA_NAME
+	  || TREE_CODE (op1) != SSA_NAME)
+	continue;
+      /* Swap operands if the second one is more expensive.  */
+      def0 = get_gimple_for_ssa_name (op0);
+      if (!def0)
+	continue;
+      def1 = get_gimple_for_ssa_name (op1);
+      if (!def1)
+	continue;
+      swap = false;
+      if (lattice[gimple_uid (def1)] > lattice[gimple_uid (def0)])
+	swap = true;
+      if (swap)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Swap operands in stmt:\n");
+	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	      fprintf (dump_file, "Cost left opnd=%d, right opnd=%d\n",
+		       lattice[gimple_uid (def0)],
+		       lattice[gimple_uid (def1)]);
+	    }
+	  swap_ssa_operands (stmt, gimple_assign_rhs1_ptr (stmt),
+			     gimple_assign_rhs2_ptr (stmt));
+	}
+    }
+  XDELETE (lattice);
+}
+
 /* Expand basic block BB from GIMPLE trees to RTL.  */
 
 static basic_block
@@ -5004,6 +5082,8 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
      cannot use the gsi_*_bb() routines because they expect the basic
      block to be in GIMPLE, instead of RTL.  Therefore, we need to
      access the BB sequence directly.  */
+  if (optimize)
+    reorder_operands (bb);
   stmts = bb_seq (bb);
   bb->il.gimple.seq = NULL;
   bb->il.gimple.phi_nodes = NULL;

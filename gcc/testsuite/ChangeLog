@@ -1,3 +1,8 @@
+2015-01-15  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/64434
+	* gcc.dg/torture/pr64434.c: New test.
+
 2015-01-15  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* gcc.target/mips/mips.exp (mips-dg-options): -mips3d requires
