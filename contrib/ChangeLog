@@ -1,3 +1,10 @@
+2015-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* update-copyright.py (Copyright.__init__): Add a regexp for
+	"copyright = u'".
+	(Copyright.update_copyright): Don't add a space before the year
+	in that case.
+
 2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc_update (files_and_dependencies): Update rules for new
