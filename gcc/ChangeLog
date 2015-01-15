@@ -1,3 +1,10 @@
+2015-01-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/64068
+	PR ipa/64559
+	* ipa.c (symbol_table::remove_unreachable_nodes):
+	Do not put abstract origins into boundary.
+
 2015-01-15  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* config/i386/gnu-user.h (CRT_GET_RFIB_DATA): Remove EBX register usage.
