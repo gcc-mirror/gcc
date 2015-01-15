@@ -40,13 +40,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "except.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
+#include "hashtab.h"
+#include "statistics.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"
 #include "libfuncs.h"
-#include "insn-config.h"
 #include "ggc.h"
 #include "recog.h"
 #include "langhooks.h"
@@ -230,58 +239,6 @@ eliminate_constant_term (rtx x, rtx *constptr)
   return x;
 }
 
-/* Returns a tree for the size of EXP in bytes.  */
-
-static tree
-tree_expr_size (const_tree exp)
-{
-  if (DECL_P (exp)
-      && DECL_SIZE_UNIT (exp) != 0)
-    return DECL_SIZE_UNIT (exp);
-  else
-    return size_in_bytes (TREE_TYPE (exp));
-}
-
-/* Return an rtx for the size in bytes of the value of EXP.  */
-
-rtx
-expr_size (tree exp)
-{
-  tree size;
-
-  if (TREE_CODE (exp) == WITH_SIZE_EXPR)
-    size = TREE_OPERAND (exp, 1);
-  else
-    {
-      size = tree_expr_size (exp);
-      gcc_assert (size);
-      gcc_assert (size == SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, exp));
-    }
-
-  return expand_expr (size, NULL_RTX, TYPE_MODE (sizetype), EXPAND_NORMAL);
-}
-
-/* Return a wide integer for the size in bytes of the value of EXP, or -1
-   if the size can vary or is larger than an integer.  */
-
-HOST_WIDE_INT
-int_expr_size (tree exp)
-{
-  tree size;
-
-  if (TREE_CODE (exp) == WITH_SIZE_EXPR)
-    size = TREE_OPERAND (exp, 1);
-  else
-    {
-      size = tree_expr_size (exp);
-      gcc_assert (size);
-    }
-
-  if (size == 0 || !tree_fits_shwi_p (size))
-    return -1;
-
-  return tree_to_shwi (size);
-}
 
 /* Return a copy of X in which all memory references
    and all constants that involve symbol refs
@@ -432,6 +389,7 @@ convert_memory_address_addr_space (machine_mode to_mode, rtx x, addr_space_t as)
   return convert_memory_address_addr_space_1 (to_mode, x, as, false);
 }
 
+
 /* Return something equivalent to X but valid as a memory address for something
    of mode MODE in the named address space AS.  When X is not itself valid,
    this works by copying X or subexpressions of it into registers.  */

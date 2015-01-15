@@ -671,4 +671,36 @@ extern rtx emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
 			enum machine_mode mode, enum machine_mode compare_mode,
 			int unsignedp, rtx x, rtx y, int normalizep,
 			enum machine_mode target_mode);
+
+/* Arguments MODE, RTX: return an rtx for the negation of that value.
+   May emit insns.  */
+extern rtx negate_rtx (machine_mode, rtx);
+
+/* Expand a logical AND operation.  */
+extern rtx expand_and (machine_mode, rtx, rtx, rtx);
+
+/* Emit a store-flag operation.  */
+extern rtx emit_store_flag (rtx, enum rtx_code, rtx, rtx, machine_mode,
+			    int, int);
+
+/* Like emit_store_flag, but always succeeds.  */
+extern rtx emit_store_flag_force (rtx, enum rtx_code, rtx, rtx,
+				  machine_mode, int, int);
+
+/* Choose a minimal N + 1 bit approximation to 1/D that can be used to
+   replace division by D, and put the least significant N bits of the result
+   in *MULTIPLIER_PTR and return the most significant bit.  */
+extern unsigned HOST_WIDE_INT choose_multiplier (unsigned HOST_WIDE_INT, int,
+						 int, unsigned HOST_WIDE_INT *,
+						 int *, int *);
+
+#ifdef TREE_CODE
+extern rtx expand_variable_shift (enum tree_code, machine_mode,
+				  rtx, tree, rtx, int);
+extern rtx expand_shift (enum tree_code, machine_mode, rtx, int, rtx,
+			     int);
+extern rtx expand_divmod (int, enum tree_code, machine_mode, rtx, rtx,
+			  rtx, int);
 #endif
+
+#endif  // EXPMED_H

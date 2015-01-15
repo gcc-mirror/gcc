@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "cfgbuild.h"
 #include "dwarf2.h"
@@ -51,6 +50,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 
 #include "except.h"		/* expand_builtin_dwarf_sp_column */
+#include "hashtab.h"
+#include "statistics.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"		/* init_return_column_size */
 #include "regs.h"		/* expand_builtin_init_dwarf_reg_sizes */
 #include "output.h"		/* asm_out_file */

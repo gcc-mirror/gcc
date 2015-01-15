@@ -31,4 +31,18 @@ extern tree resolve_asm_operand_names (tree, tree, tree, tree);
 extern tree tree_overlaps_hard_reg_set (tree, HARD_REG_SET *);
 #endif
 
+/* Return the CODE_LABEL rtx for a LABEL_DECL, creating it if necessary.  */
+extern rtx label_rtx (tree);
+
+/* As label_rtx, but additionally the label is placed on the forced label
+   list of its containing function (i.e. it is treated as reachable even
+   if how is not obvious).  */
+extern rtx force_label_rtx (tree);
+
+/* Expand a GIMPLE_SWITCH statement.  */
+extern void expand_case (gswitch *);
+
+/* Like expand_case but special-case for SJLJ exception dispatching.  */
+extern void expand_sjlj_dispatch_table (rtx, vec<tree> );
+
 #endif  // GCC_STMT_H

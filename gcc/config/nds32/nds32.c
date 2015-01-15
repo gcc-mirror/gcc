@@ -47,8 +47,17 @@
 #include "insn-codes.h"		/* For CODE_FOR_xxx.  */
 #include "reload.h"		/* For push_reload().  */
 #include "flags.h"
-#include "input.h"
 #include "function.h"
+#include "hashtab.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "emit-rtl.h"
+#include "stmt.h"
 #include "expr.h"
 #include "recog.h"
 #include "diagnostic-core.h"

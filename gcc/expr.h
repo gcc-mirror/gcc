@@ -20,25 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_EXPR_H
 #define GCC_EXPR_H
 
-/* For inhibit_defer_pop */
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-/* For XEXP, GEN_INT, rtx_code */
-#include "rtl.h"
-/* For optimize_size */
-#include "flags.h"
-/* For tree_fits_[su]hwi_p, tree_to_[su]hwi, fold_convert, size_binop,
-   ssize_int, TREE_CODE, TYPE_SIZE, int_size_in_bytes,    */
-#include "tree-core.h"
-/* For GET_MODE_BITSIZE, word_mode */
-#include "insn-config.h"
-
 /* This is the 4th arg to `expand_expr'.
    EXPAND_STACK_PARM means we are possibly expanding a call param onto
    the stack.
@@ -73,32 +54,6 @@ typedef struct separate_ops
   tree op0, op1, op2;
 } *sepops;
 
-/* Functions from expmed.c:  */
-
-/* Arguments MODE, RTX: return an rtx for the negation of that value.
-   May emit insns.  */
-extern rtx negate_rtx (machine_mode, rtx);
-
-/* Expand a logical AND operation.  */
-extern rtx expand_and (machine_mode, rtx, rtx, rtx);
-
-/* Emit a store-flag operation.  */
-extern rtx emit_store_flag (rtx, enum rtx_code, rtx, rtx, machine_mode,
-			    int, int);
-
-/* Like emit_store_flag, but always succeeds.  */
-extern rtx emit_store_flag_force (rtx, enum rtx_code, rtx, rtx,
-				  machine_mode, int, int);
-
-/* Choose a minimal N + 1 bit approximation to 1/D that can be used to
-   replace division by D, and put the least significant N bits of the result
-   in *MULTIPLIER_PTR and return the most significant bit.  */
-extern unsigned HOST_WIDE_INT choose_multiplier (unsigned HOST_WIDE_INT, int,
-						 int, unsigned HOST_WIDE_INT *,
-						 int *, int *);
-
-/* Functions from expr.c:  */
-
 /* This is run during target initialization to set up which modes can be
    used directly in memory and to initialize the block move optab.  */
 extern void init_expr_target (void);
@@ -305,300 +260,19 @@ expand_normal (tree exp)
   return expand_expr_real (exp, NULL_RTX, VOIDmode, EXPAND_NORMAL, NULL, false);
 }
 
-/* At the start of a function, record that we have no previously-pushed
-   arguments waiting to be popped.  */
-extern void init_pending_stack_adjust (void);
-
-/* Discard any pending stack adjustment.  */
-extern void discard_pending_stack_adjust (void);
-
-/* When exiting from function, if safe, clear out any pending stack adjust
-   so the adjustment won't get done.  */
-extern void clear_pending_stack_adjust (void);
-
-/* Pop any previously-pushed arguments that have not been popped yet.  */
-extern void do_pending_stack_adjust (void);
-
-/* Struct for saving/restoring of pending_stack_adjust/stack_pointer_delta
-   values.  */
-
-struct saved_pending_stack_adjust
-{
-  /* Saved value of pending_stack_adjust.  */
-  int x_pending_stack_adjust;
-
-  /* Saved value of stack_pointer_delta.  */
-  int x_stack_pointer_delta;
-};
-
-/* Remember pending_stack_adjust/stack_pointer_delta.
-   To be used around code that may call do_pending_stack_adjust (),
-   but the generated code could be discarded e.g. using delete_insns_since.  */
-
-extern void save_pending_stack_adjust (saved_pending_stack_adjust *);
-
-/* Restore the saved pending_stack_adjust/stack_pointer_delta.  */
-
-extern void restore_pending_stack_adjust (saved_pending_stack_adjust *);
 
 /* Return the tree node and offset if a given argument corresponds to
    a string constant.  */
 extern tree string_constant (tree, tree *);
 
-/* Generate code to evaluate EXP and jump to LABEL if the value is zero.  */
-extern void jumpifnot (tree, rtx, int);
-extern void jumpifnot_1 (enum tree_code, tree, tree, rtx, int);
-
-/* Generate code to evaluate EXP and jump to LABEL if the value is nonzero.  */
-extern void jumpif (tree, rtx, int);
-extern void jumpif_1 (enum tree_code, tree, tree, rtx, int);
-
-/* Generate code to evaluate EXP and jump to IF_FALSE_LABEL if
-   the result is zero, or IF_TRUE_LABEL if the result is one.  */
-extern void do_jump (tree, rtx, rtx, int);
-extern void do_jump_1 (enum tree_code, tree, tree, rtx, rtx, int);
-
-extern void do_compare_rtx_and_jump (rtx, rtx, enum rtx_code, int,
-				     machine_mode, rtx, rtx, rtx, int);
-
 /* Two different ways of generating switch statements.  */
 extern int try_casesi (tree, tree, tree, tree, rtx, rtx, rtx, int);
 extern int try_tablejump (tree, tree, tree, tree, rtx, rtx, int);
 
-/* Functions from alias.c */
-#include "alias.h"
-
-
-/* rtl.h and tree.h were included.  */
-/* Return an rtx for the size in bytes of the value of an expr.  */
-extern rtx expr_size (tree);
-
-/* Return a wide integer for the size in bytes of the value of EXP, or -1
-   if the size can vary or is larger than an integer.  */
-extern HOST_WIDE_INT int_expr_size (tree);
-
-/* Return an rtx that refers to the value returned by a function
-   in its original home.  This becomes invalid if any more code is emitted.  */
-extern rtx hard_function_value (const_tree, const_tree, const_tree, int);
-
-extern rtx prepare_call_address (tree, rtx, rtx, rtx *, int, int);
-
-extern bool shift_return_value (machine_mode, bool, rtx);
-
-extern rtx expand_call (tree, rtx, int);
-
-extern void fixup_tail_calls (void);
-
-#ifdef TREE_CODE
-extern rtx expand_variable_shift (enum tree_code, machine_mode,
-				  rtx, tree, rtx, int);
-extern rtx expand_shift (enum tree_code, machine_mode, rtx, int, rtx,
-			     int);
-extern rtx expand_divmod (int, enum tree_code, machine_mode, rtx, rtx,
-			  rtx, int);
-#endif
-
-/* Return the CODE_LABEL rtx for a LABEL_DECL, creating it if necessary.  */
-extern rtx label_rtx (tree);
-
-/* As label_rtx, but additionally the label is placed on the forced label
-   list of its containing function (i.e. it is treated as reachable even
-   if how is not obvious).  */
-extern rtx force_label_rtx (tree);
-
-/* Return an rtx like arg but sans any constant terms.
-   Returns the original rtx if it has no constant terms.
-   The constant terms are added and stored via a second arg.  */
-extern rtx eliminate_constant_term (rtx, rtx *);
-
-/* Convert arg to a valid memory address for specified machine mode that points
-   to a specific named address space, by emitting insns to perform arithmetic
-   if necessary.  */
-extern rtx memory_address_addr_space (machine_mode, rtx, addr_space_t);
-
-/* Like memory_address_addr_space, except assume the memory address points to
-   the generic named address space.  */
-#define memory_address(MODE,RTX) \
-	memory_address_addr_space ((MODE), (RTX), ADDR_SPACE_GENERIC)
-
-/* Return a memory reference like MEMREF, but with its mode changed
-   to MODE and its address changed to ADDR.
-   (VOIDmode means don't change the mode.
-   NULL for ADDR means don't change the address.)  */
-extern rtx change_address (rtx, machine_mode, rtx);
-
-/* Return a memory reference like MEMREF, but with its mode changed
-   to MODE and its address offset by OFFSET bytes.  */
-#define adjust_address(MEMREF, MODE, OFFSET) \
-  adjust_address_1 (MEMREF, MODE, OFFSET, 1, 1, 0, 0)
-
-/* Likewise, but the reference is not required to be valid.  */
-#define adjust_address_nv(MEMREF, MODE, OFFSET) \
-  adjust_address_1 (MEMREF, MODE, OFFSET, 0, 1, 0, 0)
-
-/* Return a memory reference like MEMREF, but with its mode changed
-   to MODE and its address offset by OFFSET bytes.  Assume that it's
-   for a bitfield and conservatively drop the underlying object if we
-   cannot be sure to stay within its bounds.  */
-#define adjust_bitfield_address(MEMREF, MODE, OFFSET) \
-  adjust_address_1 (MEMREF, MODE, OFFSET, 1, 1, 1, 0)
-
-/* As for adjust_bitfield_address, but specify that the width of
-   BLKmode accesses is SIZE bytes.  */
-#define adjust_bitfield_address_size(MEMREF, MODE, OFFSET, SIZE) \
-  adjust_address_1 (MEMREF, MODE, OFFSET, 1, 1, 1, SIZE)
-
-/* Likewise, but the reference is not required to be valid.  */
-#define adjust_bitfield_address_nv(MEMREF, MODE, OFFSET) \
-  adjust_address_1 (MEMREF, MODE, OFFSET, 0, 1, 1, 0)
-
-/* Return a memory reference like MEMREF, but with its mode changed
-   to MODE and its address changed to ADDR, which is assumed to be
-   increased by OFFSET bytes from MEMREF.  */
-#define adjust_automodify_address(MEMREF, MODE, ADDR, OFFSET) \
-  adjust_automodify_address_1 (MEMREF, MODE, ADDR, OFFSET, 1)
-
-/* Likewise, but the reference is not required to be valid.  */
-#define adjust_automodify_address_nv(MEMREF, MODE, ADDR, OFFSET) \
-  adjust_automodify_address_1 (MEMREF, MODE, ADDR, OFFSET, 0)
-
-extern rtx adjust_address_1 (rtx, machine_mode, HOST_WIDE_INT, int, int,
-			     int, HOST_WIDE_INT);
-extern rtx adjust_automodify_address_1 (rtx, machine_mode, rtx,
-					HOST_WIDE_INT, int);
-
-/* Return a memory reference like MEMREF, but whose address is changed by
-   adding OFFSET, an RTX, to it.  POW2 is the highest power of two factor
-   known to be in OFFSET (possibly 1).  */
-extern rtx offset_address (rtx, rtx, unsigned HOST_WIDE_INT);
-
-/* Definitions from emit-rtl.c */
-#include "emit-rtl.h"
-
-/* Return a memory reference like MEMREF, but with its mode widened to
-   MODE and adjusted by OFFSET.  */
-extern rtx widen_memory_access (rtx, machine_mode, HOST_WIDE_INT);
-
-/* Return a memory reference like MEMREF, but which is known to have a
-   valid address.  */
-extern rtx validize_mem (rtx);
-
-extern rtx use_anchored_address (rtx);
-
-/* Given REF, a MEM, and T, either the type of X or the expression
-   corresponding to REF, set the memory attributes.  OBJECTP is nonzero
-   if we are making a new object of this type.  */
-extern void set_mem_attributes (rtx, tree, int);
-
-/* Similar, except that BITPOS has not yet been applied to REF, so if
-   we alter MEM_OFFSET according to T then we should subtract BITPOS
-   expecting that it'll be added back in later.  */
-extern void set_mem_attributes_minus_bitpos (rtx, tree, int, HOST_WIDE_INT);
-
-/* Return OFFSET if XEXP (MEM, 0) - OFFSET is known to be ALIGN
-   bits aligned for 0 <= OFFSET < ALIGN / BITS_PER_UNIT, or
-   -1 if not known.  */
-extern int get_mem_align_offset (rtx, unsigned int);
-
-/* Assemble the static constant template for function entry trampolines.  */
-extern rtx assemble_trampoline_template (void);
-
-/* Copy given rtx to a new temp reg and return that.  */
-extern rtx copy_to_reg (rtx);
-
-/* Like copy_to_reg but always make the reg Pmode.  */
-extern rtx copy_addr_to_reg (rtx);
-
-/* Like copy_to_reg but always make the reg the specified mode MODE.  */
-extern rtx copy_to_mode_reg (machine_mode, rtx);
-
-/* Copy given rtx to given temp reg and return that.  */
-extern rtx copy_to_suggested_reg (rtx, rtx, machine_mode);
-
-/* Copy a value to a register if it isn't already a register.
-   Args are mode (in case value is a constant) and the value.  */
-extern rtx force_reg (machine_mode, rtx);
-
-/* Return given rtx, copied into a new temp reg if it was in memory.  */
-extern rtx force_not_mem (rtx);
-
-/* Return mode and signedness to use when an argument or result in the
-   given mode is promoted.  */
-extern machine_mode promote_function_mode (const_tree, machine_mode, int *,
-					        const_tree, int);
-
-/* Return mode and signedness to use when an object in the given mode
-   is promoted.  */
-extern machine_mode promote_mode (const_tree, machine_mode, int *);
-
-/* Return mode and signedness to use when object is promoted.  */
-machine_mode promote_decl_mode (const_tree, int *);
-
-/* Remove some bytes from the stack.  An rtx says how many.  */
-extern void adjust_stack (rtx);
-
-/* Add some bytes to the stack.  An rtx says how many.  */
-extern void anti_adjust_stack (rtx);
-
-/* Add some bytes to the stack while probing it.  An rtx says how many. */
-extern void anti_adjust_stack_and_probe (rtx, bool);
-
-/* This enum is used for the following two functions.  */
-enum save_level {SAVE_BLOCK, SAVE_FUNCTION, SAVE_NONLOCAL};
-
-/* Save the stack pointer at the specified level.  */
-extern void emit_stack_save (enum save_level, rtx *);
-
-/* Restore the stack pointer from a save area of the specified level.  */
-extern void emit_stack_restore (enum save_level, rtx);
-
-/* Invoke emit_stack_save for the nonlocal_goto_save_area.  */
-extern void update_nonlocal_goto_save_area (void);
-
-/* Allocate some space on the stack dynamically and return its address.  */
-extern rtx allocate_dynamic_stack_space (rtx, unsigned, unsigned, bool);
-
-/* Emit one stack probe at ADDRESS, an address within the stack.  */
-extern void emit_stack_probe (rtx);
-
-/* Probe a range of stack addresses from FIRST to FIRST+SIZE, inclusive.
-   FIRST is a constant and size is a Pmode RTX.  These are offsets from
-   the current stack pointer.  STACK_GROWS_DOWNWARD says whether to add
-   or subtract them from the stack pointer.  */
-extern void probe_stack_range (HOST_WIDE_INT, rtx);
-
-/* Return an rtx that refers to the value returned by a library call
-   in its original home.  This becomes invalid if any more code is emitted.  */
-extern rtx hard_libcall_value (machine_mode, rtx);
-
-extern void store_bit_field (rtx, unsigned HOST_WIDE_INT,
-			     unsigned HOST_WIDE_INT,
-			     unsigned HOST_WIDE_INT,
-			     unsigned HOST_WIDE_INT,
-			     machine_mode, rtx);
-extern rtx extract_bit_field (rtx, unsigned HOST_WIDE_INT,
-			      unsigned HOST_WIDE_INT, int, rtx,
-			      machine_mode, machine_mode);
-extern rtx extract_low_bits (machine_mode, machine_mode, rtx);
-extern rtx expand_mult (machine_mode, rtx, rtx, rtx, int);
-extern rtx expand_mult_highpart_adjust (machine_mode, rtx, rtx, rtx, rtx, int);
-
-extern rtx assemble_static_space (unsigned HOST_WIDE_INT);
 extern int safe_from_p (const_rtx, tree, int);
-extern bool split_comparison (enum rtx_code, machine_mode,
-			      enum rtx_code *, enum rtx_code *);
 
 /* Get the personality libfunc for a function decl.  */
 rtx get_personality_function (tree);
-
-
-/* In stmt.c */
-
-/* Expand a GIMPLE_SWITCH statement.  */
-extern void expand_case (gswitch *);
-
-/* Like expand_case but special-case for SJLJ exception dispatching.  */
-extern void expand_sjlj_dispatch_table (rtx, vec<tree> );
 
 /* Determine whether the LEN bytes can be moved by using several move
    instructions.  Return nonzero if a call to move_by_pieces should
@@ -621,4 +295,9 @@ extern tree component_ref_field_offset (tree);
 
 extern void expand_operands (tree, tree, rtx, rtx*, rtx*,
 			     enum expand_modifier);
+
+/* rtl.h and tree.h were included.  */
+/* Return an rtx for the size in bytes of the value of an expr.  */
+extern rtx expr_size (tree);
+
 #endif /* GCC_EXPR_H */
