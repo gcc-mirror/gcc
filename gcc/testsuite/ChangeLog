@@ -1,3 +1,7 @@
+2015-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr54445-2.c: Adjust scan string for PIE.
+
 2015-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR lto/64415
