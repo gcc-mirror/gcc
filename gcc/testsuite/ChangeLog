@@ -1,3 +1,15 @@
+2015-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ubsan/vptr-1.C: New test.
+	* g++.dg/ubsan/vptr-2.C: New test.
+	* g++.dg/ubsan/vptr-3.C: New test.
+	* g++.dg/ubsan/vptr-4.C: New test.
+	* g++.dg/ubsan/vptr-5.C: New test.
+	* g++.dg/ubsan/vptr-6.C: New test.
+	* g++.dg/ubsan/vptr-7.C: New test.
+	* g++.dg/ubsan/vptr-8.C: New test.
+	* g++.dg/ubsan/vptr-9.C: New test.
+
 2015-01-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lib/c-torture.exp: Compute LTO_TORTURE_OPTIONS after the environment

@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "wide-int.h"
+#include "internal-fn.h"
 
 /* The various kinds of conversion.  */
 
@@ -338,13 +339,16 @@ build_call_n (tree function, int n, ...)
 void
 set_flags_from_callee (tree call)
 {
-  int nothrow;
+  bool nothrow;
   tree decl = get_callee_fndecl (call);
 
   /* We check both the decl and the type; a function may be known not to
      throw without being declared throw().  */
-  nothrow = ((decl && TREE_NOTHROW (decl))
-	     || TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (call)))));
+  nothrow = decl && TREE_NOTHROW (decl);
+  if (CALL_EXPR_FN (call))
+    nothrow |= TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (call))));
+  else if (internal_fn_flags (CALL_EXPR_IFN (call)) & ECF_NOTHROW)
+    nothrow = true;
 
   if (!nothrow && at_function_scope_p () && cfun && cp_function_chain)
     cp_function_chain->can_throw = 1;

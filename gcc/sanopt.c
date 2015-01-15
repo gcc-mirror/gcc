@@ -108,7 +108,7 @@ maybe_get_single_definition (tree t)
 
 /* Traits class for tree hash maps below.  */
 
-struct tree_map_traits : default_hashmap_traits
+struct sanopt_tree_map_traits : default_hashmap_traits
 {
   static inline hashval_t hash (const_tree ref)
   {
@@ -121,6 +121,63 @@ struct tree_map_traits : default_hashmap_traits
   }
 }; 
 
+/* Tree triplet for vptr_check_map.  */
+struct sanopt_tree_triplet
+{
+  tree t1, t2, t3;
+};
+
+/* Traits class for tree triplet hash maps below.  */
+
+struct sanopt_tree_triplet_map_traits : default_hashmap_traits
+{
+  static inline hashval_t
+  hash (const sanopt_tree_triplet &ref)
+  {
+    inchash::hash hstate (0);
+    inchash::add_expr (ref.t1, hstate);
+    inchash::add_expr (ref.t2, hstate);
+    inchash::add_expr (ref.t3, hstate);
+    return hstate.end ();
+  }
+
+  static inline bool
+  equal_keys (const sanopt_tree_triplet &ref1, const sanopt_tree_triplet &ref2)
+  {
+    return operand_equal_p (ref1.t1, ref2.t1, 0)
+	   && operand_equal_p (ref1.t2, ref2.t2, 0)
+	   && operand_equal_p (ref1.t3, ref2.t3, 0);
+  }
+
+  template<typename T>
+  static inline void
+  mark_deleted (T &e)
+  {
+    e.m_key.t1 = reinterpret_cast<T *> (1);
+  }
+
+  template<typename T>
+  static inline void
+  mark_empty (T &e)
+  {
+    e.m_key.t1 = NULL;
+  }
+
+  template<typename T>
+  static inline bool
+  is_deleted (T &e)
+  {
+    return e.m_key.t1 == (void *) 1;
+  }
+
+  template<typename T>
+  static inline bool
+  is_empty (T &e)
+  {
+    return e.m_key.t1 == NULL;
+  }
+};
+
 /* This is used to carry various hash maps and variables used
    in sanopt_optimize_walker.  */
 
@@ -132,7 +189,13 @@ struct sanopt_ctx
 
   /* This map maps a pointer (the second argument of ASAN_CHECK) to
      a vector of ASAN_CHECK call statements that check the access.  */
-  hash_map<tree, auto_vec<gimple>, tree_map_traits> asan_check_map;
+  hash_map<tree, auto_vec<gimple>, sanopt_tree_map_traits> asan_check_map;
+
+  /* This map maps a tree triplet (the first, second and fourth argument
+     of UBSAN_VPTR) to a vector of UBSAN_VPTR call statements that check
+     that virtual table pointer.  */
+  hash_map<sanopt_tree_triplet, auto_vec<gimple>,
+	   sanopt_tree_triplet_map_traits> vptr_check_map;
 
   /* Number of IFN_ASAN_CHECK statements.  */
   int asan_num_accesses;
@@ -304,6 +367,32 @@ maybe_optimize_ubsan_null_ifn (struct sanopt_ctx *ctx, gimple stmt)
   if (!remove)
     v.safe_push (stmt);
   return remove;
+}
+
+/* Optimize away redundant UBSAN_VPTR calls.  The second argument
+   is the value loaded from the virtual table, so rely on FRE to find out
+   when we can actually optimize.  */
+
+static bool
+maybe_optimize_ubsan_vptr_ifn (struct sanopt_ctx *ctx, gimple stmt)
+{
+  gcc_assert (gimple_call_num_args (stmt) == 5);
+  sanopt_tree_triplet triplet;
+  triplet.t1 = gimple_call_arg (stmt, 0);
+  triplet.t2 = gimple_call_arg (stmt, 1);
+  triplet.t3 = gimple_call_arg (stmt, 3);
+
+  auto_vec<gimple> &v = ctx->vptr_check_map.get_or_insert (triplet);
+  gimple g = maybe_get_dominating_check (v);
+  if (!g)
+    {
+      /* For this PTR we don't have any UBSAN_VPTR stmts recorded, so there's
+	 nothing to optimize yet.  */
+      v.safe_push (stmt);
+      return false;
+    }
+
+  return true;
 }
 
 /* Returns TRUE if ASan check of length LEN in block BB can be removed
@@ -497,6 +586,9 @@ sanopt_optimize_walker (basic_block bb, struct sanopt_ctx *ctx)
 	  case IFN_UBSAN_NULL:
 	    remove = maybe_optimize_ubsan_null_ifn (ctx, stmt);
 	    break;
+	  case IFN_UBSAN_VPTR:
+	    remove = maybe_optimize_ubsan_vptr_ifn (ctx, stmt);
+	    break;
 	  case IFN_ASAN_CHECK:
 	    if (asan_check_optimize)
 	      remove = maybe_optimize_asan_check_ifn (ctx, stmt);
@@ -601,7 +693,8 @@ pass_sanopt::execute (function *fun)
   /* Try to remove redundant checks.  */
   if (optimize
       && (flag_sanitize
-	  & (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_ADDRESS)))
+	  & (SANITIZE_NULL | SANITIZE_ALIGNMENT
+	     | SANITIZE_ADDRESS | SANITIZE_VPTR)))
     asan_num_accesses = sanopt_optimize (fun);
   else if (flag_sanitize & SANITIZE_ADDRESS)
     {
@@ -646,6 +739,9 @@ pass_sanopt::execute (function *fun)
 		  break;
 		case IFN_UBSAN_OBJECT_SIZE:
 		  no_next = ubsan_expand_objsize_ifn (&gsi);
+		  break;
+		case IFN_UBSAN_VPTR:
+		  no_next = ubsan_expand_vptr_ifn (&gsi);
 		  break;
 		case IFN_ASAN_CHECK:
 		  no_next = asan_expand_check_ifn (&gsi, use_calls);
