@@ -28,7 +28,11 @@ enum ubsan_null_ckind {
   UBSAN_REF_BINDING,
   UBSAN_MEMBER_ACCESS,
   UBSAN_MEMBER_CALL,
-  UBSAN_CTOR_CALL
+  UBSAN_CTOR_CALL,
+  UBSAN_DOWNCAST_POINTER,
+  UBSAN_DOWNCAST_REFERENCE,
+  UBSAN_UPCAST,
+  UBSAN_CAST_TO_VBASE
 };
 
 /* This controls how ubsan prints types.  Used in ubsan_type_descriptor.  */
@@ -42,6 +46,7 @@ extern bool do_ubsan_in_current_function (void);
 extern bool ubsan_expand_bounds_ifn (gimple_stmt_iterator *);
 extern bool ubsan_expand_null_ifn (gimple_stmt_iterator *);
 extern bool ubsan_expand_objsize_ifn (gimple_stmt_iterator *);
+extern bool ubsan_expand_vptr_ifn (gimple_stmt_iterator *);
 extern bool ubsan_instrument_unreachable (gimple_stmt_iterator *);
 extern tree ubsan_create_data (const char *, int, const location_t *, ...);
 extern tree ubsan_type_descriptor (tree, enum ubsan_print_style = UBSAN_PRINT_NORMAL);

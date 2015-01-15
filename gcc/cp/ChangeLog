@@ -1,3 +1,27 @@
+2015-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_genericize_r): Call
+	cp_ubsan_maybe_instrument_member_call for member calls.
+	(cp_ubsan_check_member_access_r): New function.
+	(cp_genericize_tree): Call cp_ubsan_instrument_member_accesses.
+	* cp-tree.h (cp_ubsan_maybe_instrument_member_call,
+	cp_ubsan_instrument_member_accesses,
+	cp_ubsan_maybe_instrument_downcast,
+	cp_ubsan_maybe_instrument_cast_to_vbase): New prototypes.
+	* cp-ubsan.c: New file.
+	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Add cp/cp-ubsan.o.
+	* constexpr.c (cxx_eval_call_expression): Return void_node
+	for IFN_UBSAN_VPTR.
+	(potential_constant_expression_1): Return true for
+	UBSAN_NULL, UBSAN_BOUNDS and UBSAN_VPTR internal calls.
+	* typeck.c (build_class_member_access_expr): Provide locus
+	for COMPONENT_REFs.
+	(build_static_cast_1): Instrument downcasts.
+	* class.c (build_base_path): For -fsanitize=vptr and !fixed_type_p
+	add ubsan instrumentation for virtual_access.
+	* call.c: Include internal-fn.h.
+	(set_flags_from_callee): Handle internal calls.
+
 2015-01-15  Momchil Velikov  <momchil.velikov@gmail.com>
 
 	PR c++/59366

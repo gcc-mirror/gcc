@@ -1,3 +1,37 @@
+2015-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* flag-types.h (enum sanitize_code): Add SANITIZE_VPTR,
+	include SANITIZE_VPTR in SANITIZE_UNDEFINED.
+	* opts.c (common_handle_option): Add -fsanitize=vptr.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_DYNAMIC_TYPE_CACHE_MISS,
+	BUILT_IN_UBSAN_HANDLE_DYNAMIC_TYPE_CACHE_MISS_ABORT): New.
+	* ubsan.h (enum ubsan_null_ckind): Add UBSAN_DOWNCAST_POINTER,
+	UBSAN_DOWNCAST_REFERENCE, UBSAN_UPCAST and UBSAN_CAST_TO_VBASE.
+	(ubsan_expand_vptr_ifn): New prototype.
+	* internal-fn.c (expand_ANNOTATE, expand_GOMP_SIMD_LANE,
+	expand_GOMP_SIMD_VF, expand_GOMP_SIMD_LAST_LANE, expand_UBSAN_NULL,
+	expand_UBSAN_BOUNDS, expand_UBSAN_OBJECT_SIZE, expand_ASAN_CHECK,
+	expand_LOOP_VECTORIZED): Make argument nameless, remove
+	ATTRIBUTE_UNUSED.
+	(expand_UBSAN_VPTR): New function.
+	* internal-fn.def (UBSAN_NULL, ASAN_CHECK): Use R instead of W
+	in fn spec.
+	(UBSAN_VPTR): New internal function.
+	* sanopt.c (tree_map_traits): Renamed to ...
+	(sanopt_tree_map_traits): ... this.
+	(sanopt_tree_triplet, sanopt_tree_triplet_map_traits): New classes.
+	(sanopt_ctx): Adjust asan_check_map type for tree_map_traits
+	to sanopt_tree_map_traits renaming.  Add vptr_check_map field.
+	(maybe_optimize_ubsan_vptr_ifn): New function.
+	(sanopt_optimize_walker): Handle IFN_UBSAN_VPTR.
+	(pass_sanopt::execute): Likewise.  Call sanopt_optimize even for
+	-fsanitize=vptr.
+	* tree-ssa-alias.c (call_may_clobber_ref_p_1): Handle certain
+	internal calls like pure functions for aliasing, even when they
+	have other side-effects that prevent making them ECF_PURE.
+	* ubsan.c (ubsan_vptr_type_cache_decl): New variable.
+	(ubsan_expand_vptr_ifn): New function.
+
 2015-01-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/64110

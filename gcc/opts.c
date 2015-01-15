@@ -1588,6 +1588,7 @@ common_handle_option (struct gcc_options *opts,
 		sizeof "returns-nonnull-attribute" - 1 },
 	      { "object-size", SANITIZE_OBJECT_SIZE,
 		sizeof "object-size" - 1 },
+	      { "vptr", SANITIZE_VPTR, sizeof "vptr" - 1 },
 	      { "all", ~0, sizeof "all" - 1 },
 	      { NULL, 0, 0 }
 	    };

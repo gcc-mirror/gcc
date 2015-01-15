@@ -6412,6 +6412,12 @@ extern vec<tree> cx_error_context               (void);
 /* In c-family/cilk.c */
 extern bool cilk_valid_spawn                    (tree);
 
+/* In cp-ubsan.c */
+extern void cp_ubsan_maybe_instrument_member_call (tree);
+extern void cp_ubsan_instrument_member_accesses (tree *);
+extern tree cp_ubsan_maybe_instrument_downcast	(location_t, tree, tree);
+extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
+
 /* -- end of C++ */
 
 #endif /* ! GCC_CP_TREE_H */

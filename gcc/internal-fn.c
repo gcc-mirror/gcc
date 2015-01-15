@@ -166,7 +166,7 @@ expand_STORE_LANES (gcall *stmt)
 }
 
 static void
-expand_ANNOTATE (gcall *stmt ATTRIBUTE_UNUSED)
+expand_ANNOTATE (gcall *)
 {
   gcc_unreachable ();
 }
@@ -174,7 +174,7 @@ expand_ANNOTATE (gcall *stmt ATTRIBUTE_UNUSED)
 /* This should get expanded in adjust_simduid_builtins.  */
 
 static void
-expand_GOMP_SIMD_LANE (gcall *stmt ATTRIBUTE_UNUSED)
+expand_GOMP_SIMD_LANE (gcall *)
 {
   gcc_unreachable ();
 }
@@ -182,7 +182,7 @@ expand_GOMP_SIMD_LANE (gcall *stmt ATTRIBUTE_UNUSED)
 /* This should get expanded in adjust_simduid_builtins.  */
 
 static void
-expand_GOMP_SIMD_VF (gcall *stmt ATTRIBUTE_UNUSED)
+expand_GOMP_SIMD_VF (gcall *)
 {
   gcc_unreachable ();
 }
@@ -190,7 +190,7 @@ expand_GOMP_SIMD_VF (gcall *stmt ATTRIBUTE_UNUSED)
 /* This should get expanded in adjust_simduid_builtins.  */
 
 static void
-expand_GOMP_SIMD_LAST_LANE (gcall *stmt ATTRIBUTE_UNUSED)
+expand_GOMP_SIMD_LAST_LANE (gcall *)
 {
   gcc_unreachable ();
 }
@@ -198,7 +198,7 @@ expand_GOMP_SIMD_LAST_LANE (gcall *stmt ATTRIBUTE_UNUSED)
 /* This should get expanded in the sanopt pass.  */
 
 static void
-expand_UBSAN_NULL (gcall *stmt ATTRIBUTE_UNUSED)
+expand_UBSAN_NULL (gcall *)
 {
   gcc_unreachable ();
 }
@@ -206,7 +206,7 @@ expand_UBSAN_NULL (gcall *stmt ATTRIBUTE_UNUSED)
 /* This should get expanded in the sanopt pass.  */
 
 static void
-expand_UBSAN_BOUNDS (gcall *stmt ATTRIBUTE_UNUSED)
+expand_UBSAN_BOUNDS (gcall *)
 {
   gcc_unreachable ();
 }
@@ -214,7 +214,7 @@ expand_UBSAN_BOUNDS (gcall *stmt ATTRIBUTE_UNUSED)
 /* This should get expanded in the sanopt pass.  */
 
 static void
-expand_UBSAN_OBJECT_SIZE (gcall *stmt ATTRIBUTE_UNUSED)
+expand_UBSAN_VPTR (gcall *)
 {
   gcc_unreachable ();
 }
@@ -222,7 +222,15 @@ expand_UBSAN_OBJECT_SIZE (gcall *stmt ATTRIBUTE_UNUSED)
 /* This should get expanded in the sanopt pass.  */
 
 static void
-expand_ASAN_CHECK (gcall *stmt ATTRIBUTE_UNUSED)
+expand_UBSAN_OBJECT_SIZE (gcall *)
+{
+  gcc_unreachable ();
+}
+
+/* This should get expanded in the sanopt pass.  */
+
+static void
+expand_ASAN_CHECK (gcall *)
 {
   gcc_unreachable ();
 }
@@ -1889,7 +1897,7 @@ expand_MUL_OVERFLOW (gcall *stmt)
 /* This should get folded in tree-vectorizer.c.  */
 
 static void
-expand_LOOP_VECTORIZED (gcall *stmt ATTRIBUTE_UNUSED)
+expand_LOOP_VECTORIZED (gcall *)
 {
   gcc_unreachable ();
 }

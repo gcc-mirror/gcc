@@ -1176,6 +1176,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       {
       case IFN_UBSAN_NULL:
       case IFN_UBSAN_BOUNDS:
+      case IFN_UBSAN_VPTR:
 	return void_node;
       default:
 	if (!ctx->quiet)
@@ -3820,6 +3821,19 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 
 	if (fun == NULL_TREE)
 	  {
+	    if (TREE_CODE (t) == CALL_EXPR
+		&& CALL_EXPR_FN (t) == NULL_TREE)
+	      switch (CALL_EXPR_IFN (t))
+		{
+		/* These should be ignored, they are optimized away from
+		   constexpr functions.  */
+		case IFN_UBSAN_NULL:
+		case IFN_UBSAN_BOUNDS:
+		case IFN_UBSAN_VPTR:
+		  return true;
+		default:
+		  break;
+		}
 	    /* fold_call_expr can't do anything with IFN calls.  */
 	    if (flags & tf_error)
 	      error_at (EXPR_LOC_OR_LOC (t, input_location),

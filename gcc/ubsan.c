@@ -981,6 +981,167 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
   return gsi_end_p (*gsi);
 }
 
+/* Cached __ubsan_vptr_type_cache decl.  */
+static GTY(()) tree ubsan_vptr_type_cache_decl;
+
+/* Expand UBSAN_VPTR internal call.  The type is kept on the ckind
+   argument which is a constant, because the middle-end treats pointer
+   conversions as useless and therefore the type of the first argument
+   could be changed to any other pointer type.  */
+
+bool
+ubsan_expand_vptr_ifn (gimple_stmt_iterator *gsip)
+{
+  gimple_stmt_iterator gsi = *gsip;
+  gimple stmt = gsi_stmt (gsi);
+  location_t loc = gimple_location (stmt);
+  gcc_assert (gimple_call_num_args (stmt) == 5);
+  tree op = gimple_call_arg (stmt, 0);
+  tree vptr = gimple_call_arg (stmt, 1);
+  tree str_hash = gimple_call_arg (stmt, 2);
+  tree ti_decl_addr = gimple_call_arg (stmt, 3);
+  tree ckind_tree = gimple_call_arg (stmt, 4);
+  ubsan_null_ckind ckind = (ubsan_null_ckind) tree_to_uhwi (ckind_tree);
+  tree type = TREE_TYPE (TREE_TYPE (ckind_tree));
+  gimple g;
+  basic_block fallthru_bb = NULL;
+
+  if (ckind == UBSAN_DOWNCAST_POINTER)
+    {
+      /* Guard everything with if (op != NULL) { ... }.  */
+      basic_block then_bb;
+      gimple_stmt_iterator cond_insert_point
+	= create_cond_insert_point (gsip, false, false, true,
+				    &then_bb, &fallthru_bb);
+      g = gimple_build_cond (NE_EXPR, op, build_zero_cst (TREE_TYPE (op)),
+			     NULL_TREE, NULL_TREE);
+      gimple_set_location (g, loc);
+      gsi_insert_after (&cond_insert_point, g, GSI_NEW_STMT);
+      *gsip = gsi_after_labels (then_bb);
+      gsi_remove (&gsi, false);
+      gsi_insert_before (gsip, stmt, GSI_NEW_STMT);
+      gsi = *gsip;
+    }
+
+  tree htype = TREE_TYPE (str_hash);
+  tree cst = wide_int_to_tree (htype,
+			       wi::uhwi (((uint64_t) 0x9ddfea08 << 32)
+			       | 0xeb382d69, 64));
+  g = gimple_build_assign (make_ssa_name (htype), BIT_XOR_EXPR,
+			   vptr, str_hash);
+  gimple_set_location (g, loc);
+  gsi_insert_before (gsip, g, GSI_SAME_STMT);
+  g = gimple_build_assign (make_ssa_name (htype), MULT_EXPR,
+			   gimple_assign_lhs (g), cst);
+  gimple_set_location (g, loc);
+  gsi_insert_before (gsip, g, GSI_SAME_STMT);
+  tree t1 = gimple_assign_lhs (g);
+  g = gimple_build_assign (make_ssa_name (htype), LSHIFT_EXPR,
+			   t1, build_int_cst (integer_type_node, 47));
+  gimple_set_location (g, loc);
+  tree t2 = gimple_assign_lhs (g);
+  gsi_insert_before (gsip, g, GSI_SAME_STMT);
+  g = gimple_build_assign (make_ssa_name (htype), BIT_XOR_EXPR,
+			   vptr, t1);
+  gimple_set_location (g, loc);
+  gsi_insert_before (gsip, g, GSI_SAME_STMT);
+  g = gimple_build_assign (make_ssa_name (htype), BIT_XOR_EXPR,
+			   t2, gimple_assign_lhs (g));
+  gimple_set_location (g, loc);
+  gsi_insert_before (gsip, g, GSI_SAME_STMT);
+  g = gimple_build_assign (make_ssa_name (htype), MULT_EXPR,
+			   gimple_assign_lhs (g), cst);
+  gimple_set_location (g, loc);
+  gsi_insert_before (gsip, g, GSI_SAME_STMT);
+  tree t3 = gimple_assign_lhs (g);
+  g = gimple_build_assign (make_ssa_name (htype), LSHIFT_EXPR,
+			   t3, build_int_cst (integer_type_node, 47));
+  gimple_set_location (g, loc);
+  gsi_insert_before (gsip, g, GSI_SAME_STMT);
+  g = gimple_build_assign (make_ssa_name (htype), BIT_XOR_EXPR,
+			   t3, gimple_assign_lhs (g));
+  gimple_set_location (g, loc);
+  gsi_insert_before (gsip, g, GSI_SAME_STMT);
+  g = gimple_build_assign (make_ssa_name (htype), MULT_EXPR,
+			   gimple_assign_lhs (g), cst);
+  gimple_set_location (g, loc);
+  gsi_insert_before (gsip, g, GSI_SAME_STMT);
+  if (!useless_type_conversion_p (pointer_sized_int_node, htype))
+    {
+      g = gimple_build_assign (make_ssa_name (pointer_sized_int_node),
+			       NOP_EXPR, gimple_assign_lhs (g));
+      gimple_set_location (g, loc);
+      gsi_insert_before (gsip, g, GSI_SAME_STMT);
+    }
+  tree hash = gimple_assign_lhs (g);
+
+  if (ubsan_vptr_type_cache_decl == NULL_TREE)
+    {
+      tree atype = build_array_type_nelts (pointer_sized_int_node, 128);
+      tree array = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+			       get_identifier ("__ubsan_vptr_type_cache"),
+			       atype);
+      DECL_ARTIFICIAL (array) = 1;
+      DECL_IGNORED_P (array) = 1;
+      TREE_PUBLIC (array) = 1;
+      TREE_STATIC (array) = 1;
+      DECL_EXTERNAL (array) = 1;
+      DECL_VISIBILITY (array) = VISIBILITY_DEFAULT;
+      DECL_VISIBILITY_SPECIFIED (array) = 1;
+      varpool_node::finalize_decl (array);
+      ubsan_vptr_type_cache_decl = array;
+   }
+
+  g = gimple_build_assign (make_ssa_name (pointer_sized_int_node),
+			   BIT_AND_EXPR, hash,
+			   build_int_cst (pointer_sized_int_node, 127));
+  gimple_set_location (g, loc);
+  gsi_insert_before (gsip, g, GSI_SAME_STMT);
+
+  tree c = build4_loc (loc, ARRAY_REF, pointer_sized_int_node,
+		       ubsan_vptr_type_cache_decl, gimple_assign_lhs (g),
+		       NULL_TREE, NULL_TREE);
+  g = gimple_build_assign (make_ssa_name (pointer_sized_int_node),
+			   ARRAY_REF, c);
+  gimple_set_location (g, loc);
+  gsi_insert_before (gsip, g, GSI_SAME_STMT);
+
+  basic_block then_bb, fallthru2_bb;
+  gimple_stmt_iterator cond_insert_point
+    = create_cond_insert_point (gsip, false, false, true,
+				&then_bb, &fallthru2_bb);
+  g = gimple_build_cond (NE_EXPR, gimple_assign_lhs (g), hash,
+			 NULL_TREE, NULL_TREE);
+  gimple_set_location (g, loc);
+  gsi_insert_after (&cond_insert_point, g, GSI_NEW_STMT);
+  *gsip = gsi_after_labels (then_bb);
+  if (fallthru_bb == NULL)
+    fallthru_bb = fallthru2_bb;
+
+  tree data
+    = ubsan_create_data ("__ubsan_vptr_data", 1, &loc,
+			 ubsan_type_descriptor (type), NULL_TREE, ti_decl_addr,
+			 build_int_cst (unsigned_char_type_node, ckind),
+			 NULL_TREE);
+  data = build_fold_addr_expr_loc (loc, data);
+  enum built_in_function bcode
+    = (flag_sanitize_recover & SANITIZE_VPTR)
+      ? BUILT_IN_UBSAN_HANDLE_DYNAMIC_TYPE_CACHE_MISS
+      : BUILT_IN_UBSAN_HANDLE_DYNAMIC_TYPE_CACHE_MISS_ABORT;
+
+  g = gimple_build_call (builtin_decl_explicit (bcode), 3, data, op, hash);
+  gimple_set_location (g, loc);
+  gsi_insert_before (gsip, g, GSI_SAME_STMT);
+
+  /* Point GSI to next logical statement.  */
+  *gsip = gsi_start_bb (fallthru_bb);
+
+  /* Get rid of the UBSAN_VPTR call from the IR.  */
+  unlink_stmt_vdef (stmt);
+  gsi_remove (&gsi, true);
+  return gsi_end_p (*gsip);
+}
+
 /* Instrument a memory reference.  BASE is the base of MEM, IS_LHS says
    whether the pointer is on the left hand side of the assignment.  */
 
