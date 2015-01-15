@@ -211,27 +211,28 @@ cmdsrcdir = $(srcdir)/../libgo/go/cmd
 go_cmd_go_files = \
 	$(cmdsrcdir)/go/build.go \
 	$(cmdsrcdir)/go/clean.go \
-	$(cmdsrcdir)/go/main.go \
-	$(cmdsrcdir)/go/signal.go \
-	$(cmdsrcdir)/go/version.go \
-	$(cmdsrcdir)/go/env.go \
-	$(cmdsrcdir)/go/help.go \
-	$(cmdsrcdir)/go/run.go \
-	$(cmdsrcdir)/go/tool.go \
-	$(cmdsrcdir)/go/vet.go \
 	$(cmdsrcdir)/go/context.go \
-	$(cmdsrcdir)/go/fix.go \
-	$(cmdsrcdir)/go/get.go \
-	$(cmdsrcdir)/go/http.go \
-	$(cmdsrcdir)/go/signal_unix.go \
-	$(cmdsrcdir)/go/vcs.go \
 	$(cmdsrcdir)/go/discovery.go \
+	$(cmdsrcdir)/go/env.go \
+	$(cmdsrcdir)/go/fix.go \
 	$(cmdsrcdir)/go/fmt.go \
+	$(cmdsrcdir)/go/generate.go \
+	$(cmdsrcdir)/go/get.go \
 	$(cmdsrcdir)/go/go11.go \
+	$(cmdsrcdir)/go/help.go \
+	$(cmdsrcdir)/go/http.go \
 	$(cmdsrcdir)/go/list.go \
+	$(cmdsrcdir)/go/main.go \
 	$(cmdsrcdir)/go/pkg.go \
+	$(cmdsrcdir)/go/run.go \
+	$(cmdsrcdir)/go/signal.go \
+	$(cmdsrcdir)/go/signal_unix.go \
 	$(cmdsrcdir)/go/test.go \
-	$(cmdsrcdir)/go/testflag.go
+	$(cmdsrcdir)/go/testflag.go \
+	$(cmdsrcdir)/go/tool.go \
+	$(cmdsrcdir)/go/vcs.go \
+	$(cmdsrcdir)/go/version.go \
+	$(cmdsrcdir)/go/vet.go
 
 go_cmd_gofmt_files = \
 	$(cmdsrcdir)/gofmt/doc.go \

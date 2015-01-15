@@ -1,3 +1,8 @@
+2015-01-14  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.am (go_cmd_go_files): Sort entries.  Add generate.go.
+	* Makefile.in: Rebuild.
+
 2015-01-09  Ian Lance Taylor  <iant@google.com>
 
 	* Makefile.am (GOCOMPILER): Set to GOC or GOC_FOR_TARGET depending

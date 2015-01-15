@@ -15559,7 +15559,7 @@ bool
 Numeric_constant::set_type(Type* type, bool issue_error, Location loc)
 {
   bool ret;
-  if (type == NULL)
+  if (type == NULL || type->is_error())
     ret = true;
   else if (type->integer_type() != NULL)
     ret = this->check_int_type(type->integer_type(), issue_error, loc);

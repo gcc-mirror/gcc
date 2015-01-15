@@ -1966,6 +1966,8 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
 
   if (!this->has_pointer())
     runtime_type_kind |= RUNTIME_TYPE_KIND_NO_POINTERS;
+  if (this->points_to() != NULL)
+    runtime_type_kind |= RUNTIME_TYPE_KIND_DIRECT_IFACE;
   Struct_field_list::const_iterator p = fields->begin();
   go_assert(p->is_field_name("kind"));
   vals->push_back(Expression::make_integer_ul(runtime_type_kind, p->type(),
