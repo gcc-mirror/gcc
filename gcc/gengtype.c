@@ -611,7 +611,9 @@ create_user_defined_type (const char *type_name, struct fileloc *pos)
 	 comma-separated list of strings, implicitly assumed to
 	 be type names, potentially with "*" characters.  */
       char *arg = open_bracket + 1;
-      char *next;
+      /* Workaround -Wmaybe-uninitialized false positive during
+	 profiledbootstrap by initializing it.  */
+      char *next = NULL;
       char *type_id = strtoken (arg, ",>", &next);
       pair_p fields = 0;
       while (type_id)
