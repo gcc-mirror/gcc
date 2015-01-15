@@ -1,3 +1,11 @@
+2015-01-15  Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
+
+	* config/aarch64/aarch64-cores.def (xgene1): Update/add the
+	xgene1 (APM XGene-1) core definition.
+	* gcc/config/aarch64/aarch64.c: Add cost tables for APM XGene-1
+	* config/arm/aarch-cost-tables.h: Add cost tables for APM XGene-1
+	* doc/invoke.texi: Document -mcpu=xgene1.
+
 2015-10-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* dojump.h: New header file.
