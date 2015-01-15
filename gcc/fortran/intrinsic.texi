@@ -13774,6 +13774,7 @@ Fortran 95 elemental function: @ref{IEOR}
 * ISO_C_BINDING::
 * IEEE modules::
 * OpenMP Modules OMP_LIB and OMP_LIB_KINDS::
+* OpenACC Module OPENACC::
 @end menu
 
 @node ISO_FORTRAN_ENV
@@ -14018,6 +14019,7 @@ with the following options: @code{-fno-unsafe-math-optimizations
 -frounding-math -fsignaling-nans}.
 
 
+
 @node OpenMP Modules OMP_LIB and OMP_LIB_KINDS
 @section OpenMP Modules @code{OMP_LIB} and @code{OMP_LIB_KINDS}
 @table @asis
@@ -14074,3 +14076,30 @@ kind @code{omp_proc_bind_kind}:
 @item @code{omp_proc_bind_close}
 @item @code{omp_proc_bind_spread}
 @end table
+
+
+
+@node OpenACC Module OPENACC
+@section OpenACC Module @code{OPENACC}
+@table @asis
+@item @emph{Standard}:
+OpenACC Application Programming Interface v2.0
+@end table
+
+
+The OpenACC Fortran runtime library routines are provided both in a
+form of a Fortran 90 module, named @code{OPENACC}, and in form of a
+Fortran @code{include} file named @file{openacc_lib.h}.  The
+procedures provided by @code{OPENACC} can be found in the
+@ref{Top,,Introduction,libgomp,GNU Offloading and Multi Processing
+Runtime Library} manual, the named constants defined in the modules
+are listed below.
+
+For details refer to the actual
+@uref{http://www.openacc.org/,
+OpenACC Application Programming Interface v2.0}.
+
+@code{OPENACC} provides the scalar default-integer
+named constant @code{openacc_version} with a value of the form
+@var{yyyymm}, where @code{yyyy} is the year and @var{mm} the month
+of the OpenACC version; for OpenACC v2.0 the value is @code{201306}.

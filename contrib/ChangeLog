@@ -1,3 +1,8 @@
+2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc_update (files_and_dependencies): Update rules for new
+	libgomp/plugin/Makefrag.am and libgomp/plugin/configfrag.ac files.
+
 2015-01-12  Yury Gribov  <y.gribov@samsung.com>
 
 	* check_GNU_style.sh: Support patches coming from stdin.

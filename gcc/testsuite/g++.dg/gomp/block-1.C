@@ -22,5 +22,5 @@ void foo()
     }
 }
 
-// { dg-message "error: invalid branch to/from an OpenMP structured block" "" { target *-*-* } 7 }
+// { dg-message "error: invalid branch to/from OpenMP structured block" "" { target *-*-* } 7 }
 // { dg-message "error: invalid entry to OpenMP structured block" "" { target *-*-* } 9 }

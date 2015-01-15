@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-low.h"
 #include "gimple-low.h"
 #include "cilk.h"
+#include "gomp-constants.h"
 
 #include "langhooks-def.h"	/* FIXME: for lhd_set_decl_assembler_name */
 #include "tree-pass.h"		/* FIXME: only for PROP_gimple_any */
@@ -106,7 +107,10 @@ enum gimplify_omp_var_data
   GOVD_PRIVATE_OUTER_REF = 1024,
   GOVD_LINEAR = 2048,
   GOVD_ALIGNED = 4096,
+
+  /* Flag for GOVD_MAP: don't copy back.  */
   GOVD_MAP_TO_ONLY = 8192,
+
   GOVD_DATA_SHARE_CLASS = (GOVD_SHARED | GOVD_PRIVATE | GOVD_FIRSTPRIVATE
 			   | GOVD_LASTPRIVATE | GOVD_REDUCTION | GOVD_LINEAR
 			   | GOVD_LOCAL)
@@ -122,7 +126,9 @@ enum omp_region_type
   ORT_TASK = 4,
   ORT_UNTIED_TASK = 5,
   ORT_TEAMS = 8,
+  /* Data region.  */
   ORT_TARGET_DATA = 16,
+  /* Data region with offloading.  */
   ORT_TARGET = 32
 };
 
@@ -1560,9 +1566,10 @@ gimplify_case_label_expr (tree *expr_p, gimple_seq *pre_p)
   struct gimplify_ctx *ctxp;
   glabel *label_stmt;
 
-  /* Invalid OpenMP programs can play Duff's Device type games with
+  /* Invalid programs can play Duff's Device type games with, for example,
      #pragma omp parallel.  At least in the C front end, we don't
-     detect such invalid branches until after gimplification.  */
+     detect such invalid branches until after gimplification, in the
+     diagnose_omp_blocks pass.  */
   for (ctxp = gimplify_ctxp; ; ctxp = ctxp->prev_context)
     if (ctxp->case_labels.exists ())
       break;
@@ -1791,7 +1798,7 @@ gimplify_var_or_parm_decl (tree *expr_p)
       return GS_ERROR;
     }
 
-  /* When within an OpenMP context, notice uses of variables.  */
+  /* When within an OMP context, notice uses of variables.  */
   if (gimplify_omp_ctxp && omp_notice_variable (gimplify_omp_ctxp, decl, true))
     return GS_ALL_DONE;
 
@@ -2260,7 +2267,7 @@ gimplify_arg (tree *arg_p, gimple_seq *pre_p, location_t call_location)
   return gimplify_expr (arg_p, pre_p, NULL, test, fb);
 }
 
-/* Don't fold STMT inside ORT_TARGET, because it can break code by adding decl
+/* Don't fold inside offloading regions: it can break code by adding decl
    references that weren't in the source.  We'll do it during omplower pass
    instead.  */
 
@@ -4451,11 +4458,21 @@ is_gimple_stmt (tree t)
     case CATCH_EXPR:
     case ASM_EXPR:
     case STATEMENT_LIST:
+    case OACC_PARALLEL:
+    case OACC_KERNELS:
+    case OACC_DATA:
+    case OACC_HOST_DATA:
+    case OACC_DECLARE:
+    case OACC_UPDATE:
+    case OACC_ENTER_DATA:
+    case OACC_EXIT_DATA:
+    case OACC_CACHE:
     case OMP_PARALLEL:
     case OMP_FOR:
     case OMP_SIMD:
     case CILK_SIMD:
     case OMP_DISTRIBUTE:
+    case OACC_LOOP:
     case OMP_SECTIONS:
     case OMP_SECTION:
     case OMP_SINGLE:
@@ -5582,7 +5599,7 @@ omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *ctx, tree type)
   lang_hooks.types.omp_firstprivatize_type_sizes (ctx, type);
 }
 
-/* Add an entry for DECL in the OpenMP context CTX with FLAGS.  */
+/* Add an entry for DECL in the OMP context CTX with FLAGS.  */
 
 static void
 omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
@@ -5627,9 +5644,12 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
 	 copy into or out of the context.  */
       if (!(flags & GOVD_LOCAL))
 	{
-	  nflags = flags & GOVD_MAP
-		   ? GOVD_MAP | GOVD_MAP_TO_ONLY | GOVD_EXPLICIT
-		   : flags & GOVD_PRIVATE ? GOVD_PRIVATE : GOVD_FIRSTPRIVATE;
+	  if (flags & GOVD_MAP)
+	    nflags = GOVD_MAP | GOVD_MAP_TO_ONLY | GOVD_EXPLICIT;
+	  else if (flags & GOVD_PRIVATE)
+	    nflags = GOVD_PRIVATE;
+	  else
+	    nflags = GOVD_FIRSTPRIVATE;
 	  nflags |= flags & GOVD_SEEN;
 	  t = DECL_VALUE_EXPR (decl);
 	  gcc_assert (TREE_CODE (t) == INDIRECT_REF);
@@ -5683,7 +5703,7 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
     splay_tree_insert (ctx->variables, (splay_tree_key)decl, flags);
 }
 
-/* Notice a threadprivate variable DECL used in OpenMP context CTX.
+/* Notice a threadprivate variable DECL used in OMP context CTX.
    This just prints out diagnostics about threadprivate variable uses
    in untied tasks.  If DECL2 is non-NULL, prevent this warning
    on that variable.  */
@@ -5725,7 +5745,7 @@ omp_notice_threadprivate_variable (struct gimplify_omp_ctx *ctx, tree decl,
   return false;
 }
 
-/* Record the fact that DECL was used within the OpenMP context CTX.
+/* Record the fact that DECL was used within the OMP context CTX.
    IN_CODE is true when real code uses DECL, and false when we should
    merely emit default(none) errors.  Return true if DECL is going to
    be remapped and thus DECL shouldn't be gimplified into its
@@ -6006,7 +6026,7 @@ omp_check_private (struct gimplify_omp_ctx *ctx, tree decl, bool copyprivate)
   return false;
 }
 
-/* Scan the OpenMP clauses in *LIST_P, installing mappings into a new
+/* Scan the OMP clauses in *LIST_P, installing mappings into a new
    and previous omp contexts.  */
 
 static void
@@ -6117,6 +6137,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_FROM:
+	case OMP_CLAUSE__CACHE_:
 	  decl = OMP_CLAUSE_DECL (c);
 	  if (error_operand_p (decl))
 	    {
@@ -6282,15 +6303,35 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_DIST_SCHEDULE:
 	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE__CILK_FOR_COUNT_:
+	case OMP_CLAUSE_ASYNC:
+	case OMP_CLAUSE_WAIT:
+	case OMP_CLAUSE_NUM_GANGS:
+	case OMP_CLAUSE_NUM_WORKERS:
+	case OMP_CLAUSE_VECTOR_LENGTH:
+	case OMP_CLAUSE_GANG:
+	case OMP_CLAUSE_WORKER:
+	case OMP_CLAUSE_VECTOR:
 	  if (gimplify_expr (&OMP_CLAUSE_OPERAND (c, 0), pre_p, NULL,
 			     is_gimple_val, fb_rvalue) == GS_ERROR)
 	    remove = true;
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_GANG
+	      && gimplify_expr (&OMP_CLAUSE_OPERAND (c, 1), pre_p, NULL,
+				is_gimple_val, fb_rvalue) == GS_ERROR)
+	    remove = true;
+	  break;
+
+	case OMP_CLAUSE_DEVICE_RESIDENT:
+	case OMP_CLAUSE_USE_DEVICE:
+	case OMP_CLAUSE_INDEPENDENT:
+	  remove = true;
 	  break;
 
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
+	case OMP_CLAUSE_AUTO:
+	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_PROC_BIND:
 	case OMP_CLAUSE_SAFELEN:
@@ -6411,9 +6452,10 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
     OMP_CLAUSE_PRIVATE_OUTER_REF (clause) = 1;
   else if (code == OMP_CLAUSE_MAP)
     {
-      OMP_CLAUSE_MAP_KIND (clause) = flags & GOVD_MAP_TO_ONLY
-				     ? OMP_CLAUSE_MAP_TO
-				     : OMP_CLAUSE_MAP_TOFROM;
+      OMP_CLAUSE_SET_MAP_KIND (clause,
+			       flags & GOVD_MAP_TO_ONLY
+			       ? GOMP_MAP_TO
+			       : GOMP_MAP_TOFROM);
       if (DECL_SIZE (decl)
 	  && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
 	{
@@ -6434,7 +6476,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 				      OMP_CLAUSE_MAP);
 	  OMP_CLAUSE_DECL (nc) = decl;
 	  OMP_CLAUSE_SIZE (nc) = size_zero_node;
-	  OMP_CLAUSE_MAP_KIND (nc) = OMP_CLAUSE_MAP_POINTER;
+	  OMP_CLAUSE_SET_MAP_KIND (nc, GOMP_MAP_POINTER);
 	  OMP_CLAUSE_CHAIN (nc) = OMP_CLAUSE_CHAIN (clause);
 	  OMP_CLAUSE_CHAIN (clause) = nc;
 	}
@@ -6584,8 +6626,13 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, tree *list_p)
 	    remove = true;
 	  else if (DECL_SIZE (decl)
 		   && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST
-		   && OMP_CLAUSE_MAP_KIND (c) != OMP_CLAUSE_MAP_POINTER)
+		   && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_POINTER)
 	    {
+	      /* For GOMP_MAP_FORCE_DEVICEPTR, we'll never enter here, because
+		 for these, TREE_CODE (DECL_SIZE (decl)) will always be
+		 INTEGER_CST.  */
+	      gcc_assert (OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FORCE_DEVICEPTR);
+
 	      tree decl2 = DECL_VALUE_EXPR (decl);
 	      gcc_assert (TREE_CODE (decl2) == INDIRECT_REF);
 	      decl2 = TREE_OPERAND (decl2, 0);
@@ -6603,7 +6650,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, tree *list_p)
 					  OMP_CLAUSE_MAP);
 	      OMP_CLAUSE_DECL (nc) = decl;
 	      OMP_CLAUSE_SIZE (nc) = size_zero_node;
-	      OMP_CLAUSE_MAP_KIND (nc) = OMP_CLAUSE_MAP_POINTER;
+	      OMP_CLAUSE_SET_MAP_KIND (nc, GOMP_MAP_POINTER);
 	      OMP_CLAUSE_CHAIN (nc) = OMP_CLAUSE_CHAIN (c);
 	      OMP_CLAUSE_CHAIN (c) = nc;
 	      c = nc;
@@ -6614,6 +6661,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, tree *list_p)
 
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_FROM:
+	case OMP_CLAUSE__CACHE_:
 	  decl = OMP_CLAUSE_DECL (c);
 	  if (!DECL_P (decl))
 	    break;
@@ -6659,6 +6707,19 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, tree *list_p)
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_DEPEND:
 	case OMP_CLAUSE__CILK_FOR_COUNT_:
+	case OMP_CLAUSE_ASYNC:
+	case OMP_CLAUSE_WAIT:
+	case OMP_CLAUSE_DEVICE_RESIDENT:
+	case OMP_CLAUSE_USE_DEVICE:
+	case OMP_CLAUSE_INDEPENDENT:
+	case OMP_CLAUSE_NUM_GANGS:
+	case OMP_CLAUSE_NUM_WORKERS:
+	case OMP_CLAUSE_VECTOR_LENGTH:
+	case OMP_CLAUSE_GANG:
+	case OMP_CLAUSE_WORKER:
+	case OMP_CLAUSE_VECTOR:
+	case OMP_CLAUSE_AUTO:
+	case OMP_CLAUSE_SEQ:
 	  break;
 
 	default:
@@ -6679,6 +6740,21 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, tree *list_p)
 
   gimplify_omp_ctxp = ctx->outer_context;
   delete_omp_context (ctx);
+}
+
+/* Gimplify OACC_CACHE.  */
+
+static void
+gimplify_oacc_cache (tree *expr_p, gimple_seq *pre_p)
+{
+  tree expr = *expr_p;
+
+  gimplify_scan_omp_clauses (&OACC_CACHE_CLAUSES (expr), pre_p, ORT_WORKSHARE);
+  gimplify_adjust_omp_clauses (pre_p, &OACC_CACHE_CLAUSES (expr));
+
+  /* TODO: Do something sensible with this information.  */
+
+  *expr_p = NULL_TREE;
 }
 
 /* Gimplify the contents of an OMP_PARALLEL statement.  This involves
@@ -6795,8 +6871,22 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
   orig_for_stmt = for_stmt = *expr_p;
 
-  simd = (TREE_CODE (for_stmt) == OMP_SIMD
-	  || TREE_CODE (for_stmt) == CILK_SIMD);
+  switch (TREE_CODE (for_stmt))
+    {
+    case OMP_FOR:
+    case CILK_FOR:
+    case OMP_DISTRIBUTE:
+    case OACC_LOOP:
+      simd = false;
+      break;
+    case OMP_SIMD:
+    case CILK_SIMD:
+      simd = true;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
   gimplify_scan_omp_clauses (&OMP_FOR_CLAUSES (for_stmt), pre_p,
 			     simd ? ORT_SIMD : ORT_WORKSHARE);
   if (TREE_CODE (for_stmt) == OMP_DISTRIBUTE)
@@ -6832,6 +6922,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
   if (OMP_FOR_INIT (for_stmt) == NULL_TREE)
     {
+      gcc_assert (TREE_CODE (for_stmt) != OACC_LOOP);
       for_stmt = walk_tree (&OMP_FOR_BODY (for_stmt), find_combined_omp_for,
 			    NULL, NULL);
       gcc_assert (for_stmt != NULL_TREE);
@@ -7133,6 +7224,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     case CILK_SIMD: kind = GF_OMP_FOR_KIND_CILKSIMD; break;
     case CILK_FOR: kind = GF_OMP_FOR_KIND_CILKFOR; break;
     case OMP_DISTRIBUTE: kind = GF_OMP_FOR_KIND_DISTRIBUTE; break;
+    case OACC_LOOP: kind = GF_OMP_FOR_KIND_OACC_LOOP; break;
     default:
       gcc_unreachable ();
     }
@@ -7173,9 +7265,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   return GS_ALL_DONE;
 }
 
-/* Gimplify the gross structure of other OpenMP constructs.
-   In particular, OMP_SECTIONS, OMP_SINGLE, OMP_TARGET, OMP_TARGET_DATA
-   and OMP_TEAMS.  */
+/* Gimplify the gross structure of several OMP constructs.  */
 
 static void
 gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
@@ -7183,16 +7273,20 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
   tree expr = *expr_p;
   gimple stmt;
   gimple_seq body = NULL;
-  enum omp_region_type ort = ORT_WORKSHARE;
+  enum omp_region_type ort;
 
   switch (TREE_CODE (expr))
     {
     case OMP_SECTIONS:
     case OMP_SINGLE:
+      ort = ORT_WORKSHARE;
       break;
+    case OACC_KERNELS:
+    case OACC_PARALLEL:
     case OMP_TARGET:
       ort = ORT_TARGET;
       break;
+    case OACC_DATA:
     case OMP_TARGET_DATA:
       ort = ORT_TARGET_DATA;
       break;
@@ -7213,9 +7307,21 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
 	pop_gimplify_context (NULL);
       if (ort == ORT_TARGET_DATA)
 	{
-	  gimple_seq cleanup = NULL;
-	  tree fn = builtin_decl_explicit (BUILT_IN_GOMP_TARGET_END_DATA);
+	  enum built_in_function end_ix;
+	  switch (TREE_CODE (expr))
+	    {
+	    case OACC_DATA:
+	      end_ix = BUILT_IN_GOACC_DATA_END;
+	      break;
+	    case OMP_TARGET_DATA:
+	      end_ix = BUILT_IN_GOMP_TARGET_END_DATA;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  tree fn = builtin_decl_explicit (end_ix);
 	  g = gimple_build_call (fn, 0);
+	  gimple_seq cleanup = NULL;
 	  gimple_seq_add_stmt (&cleanup, g);
 	  g = gimple_build_try (body, cleanup, GIMPLE_TRY_FINALLY);
 	  body = NULL;
@@ -7228,6 +7334,18 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
 
   switch (TREE_CODE (expr))
     {
+    case OACC_DATA:
+      stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_OACC_DATA,
+				      OMP_CLAUSES (expr));
+      break;
+    case OACC_KERNELS:
+      stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_OACC_KERNELS,
+				      OMP_CLAUSES (expr));
+      break;
+    case OACC_PARALLEL:
+      stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_OACC_PARALLEL,
+				      OMP_CLAUSES (expr));
+      break;
     case OMP_SECTIONS:
       stmt = gimple_build_omp_sections (body, OMP_CLAUSES (expr));
       break;
@@ -7253,19 +7371,40 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
   *expr_p = NULL_TREE;
 }
 
-/* Gimplify the gross structure of OpenMP target update construct.  */
+/* Gimplify the gross structure of OpenACC enter/exit data, update, and OpenMP
+   target update constructs.  */
 
 static void
 gimplify_omp_target_update (tree *expr_p, gimple_seq *pre_p)
 {
-  tree expr = *expr_p;
+  tree expr = *expr_p, clauses;
+  int kind;
   gomp_target *stmt;
 
-  gimplify_scan_omp_clauses (&OMP_TARGET_UPDATE_CLAUSES (expr), pre_p,
-			     ORT_WORKSHARE);
-  gimplify_adjust_omp_clauses (pre_p, &OMP_TARGET_UPDATE_CLAUSES (expr));
-  stmt = gimple_build_omp_target (NULL, GF_OMP_TARGET_KIND_UPDATE,
-				  OMP_TARGET_UPDATE_CLAUSES (expr));
+  switch (TREE_CODE (expr))
+    {
+    case OACC_ENTER_DATA:
+      clauses = OACC_ENTER_DATA_CLAUSES (expr);
+      kind = GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA;
+      break;
+    case OACC_EXIT_DATA:
+      clauses = OACC_EXIT_DATA_CLAUSES (expr);
+      kind = GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA;
+      break;
+    case OACC_UPDATE:
+      clauses = OACC_UPDATE_CLAUSES (expr);
+      kind = GF_OMP_TARGET_KIND_OACC_UPDATE;
+      break;
+    case OMP_TARGET_UPDATE:
+      clauses = OMP_TARGET_UPDATE_CLAUSES (expr);
+      kind = GF_OMP_TARGET_KIND_UPDATE;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  gimplify_scan_omp_clauses (&clauses, pre_p, ORT_WORKSHARE);
+  gimplify_adjust_omp_clauses (pre_p, &clauses);
+  stmt = gimple_build_omp_target (NULL, kind, clauses);
 
   gimplify_seq_add_stmt (pre_p, stmt);
   *expr_p = NULL_TREE;
@@ -7445,7 +7584,7 @@ gimplify_transaction (tree *expr_p, gimple_seq *pre_p)
   int subcode = 0;
 
   /* Wrap the transaction body in a BIND_EXPR so we have a context
-     where to put decls for OpenMP.  */
+     where to put decls for OMP.  */
   if (TREE_CODE (tbody) != BIND_EXPR)
     {
       tree bind = build3 (BIND_EXPR, void_type_node, NULL, tbody, NULL);
@@ -8182,7 +8321,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  break;
 
 	case RESULT_DECL:
-	  /* When within an OpenMP context, notice uses of variables.  */
+	  /* When within an OMP context, notice uses of variables.  */
 	  if (gimplify_omp_ctxp)
 	    omp_notice_variable (gimplify_omp_ctxp, *expr_p, true);
 	  ret = GS_ALL_DONE;
@@ -8208,9 +8347,38 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case CILK_SIMD:
 	case CILK_FOR:
 	case OMP_DISTRIBUTE:
+	case OACC_LOOP:
 	  ret = gimplify_omp_for (expr_p, pre_p);
 	  break;
 
+	case OACC_CACHE:
+	  gimplify_oacc_cache (expr_p, pre_p);
+	  ret = GS_ALL_DONE;
+	  break;
+
+	case OACC_HOST_DATA:
+	case OACC_DECLARE:
+	  sorry ("directive not yet implemented");
+	  ret = GS_ALL_DONE;
+	  break;
+
+	case OACC_KERNELS:
+	  if (OACC_KERNELS_COMBINED (*expr_p))
+	    sorry ("directive not yet implemented");
+	  else
+	    gimplify_omp_workshare (expr_p, pre_p);
+	  ret = GS_ALL_DONE;
+	  break;
+
+	case OACC_PARALLEL:
+	  if (OACC_PARALLEL_COMBINED (*expr_p))
+	    sorry ("directive not yet implemented");
+	  else
+	    gimplify_omp_workshare (expr_p, pre_p);
+	  ret = GS_ALL_DONE;
+	  break;
+
+	case OACC_DATA:
 	case OMP_SECTIONS:
 	case OMP_SINGLE:
 	case OMP_TARGET:
@@ -8220,6 +8388,9 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  ret = GS_ALL_DONE;
 	  break;
 
+	case OACC_ENTER_DATA:
+	case OACC_EXIT_DATA:
+	case OACC_UPDATE:
 	case OMP_TARGET_UPDATE:
 	  gimplify_omp_target_update (expr_p, pre_p);
 	  ret = GS_ALL_DONE;
@@ -8601,8 +8772,18 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  && code != LOOP_EXPR
 		  && code != SWITCH_EXPR
 		  && code != TRY_FINALLY_EXPR
+		  && code != OACC_PARALLEL
+		  && code != OACC_KERNELS
+		  && code != OACC_DATA
+		  && code != OACC_HOST_DATA
+		  && code != OACC_DECLARE
+		  && code != OACC_UPDATE
+		  && code != OACC_ENTER_DATA
+		  && code != OACC_EXIT_DATA
+		  && code != OACC_CACHE
 		  && code != OMP_CRITICAL
 		  && code != OMP_FOR
+		  && code != OACC_LOOP
 		  && code != OMP_MASTER
 		  && code != OMP_TASKGROUP
 		  && code != OMP_ORDERED
@@ -8829,7 +9010,7 @@ gimplify_body (tree fndecl, bool do_parms)
   gcc_assert (gimplify_ctxp == NULL);
   push_gimplify_context ();
 
-  if (flag_openmp)
+  if (flag_openacc || flag_openmp)
     {
       gcc_assert (gimplify_omp_ctxp == NULL);
       if (lookup_attribute ("omp declare target", DECL_ATTRIBUTES (fndecl)))
@@ -8913,7 +9094,8 @@ gimplify_body (tree fndecl, bool do_parms)
       nonlocal_vlas = NULL;
     }
 
-  if ((flag_openmp || flag_openmp_simd) && gimplify_omp_ctxp)
+  if ((flag_openacc || flag_openmp || flag_openmp_simd)
+      && gimplify_omp_ctxp)
     {
       delete_omp_context (gimplify_omp_ctxp);
       gimplify_omp_ctxp = NULL;

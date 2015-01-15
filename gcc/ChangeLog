@@ -1,3 +1,183 @@
+2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+	    Ilmir Usmanov  <i.usmanov@samsung.com>
+	    Dmitry Bocharnikov  <dmitry.b@samsung.com>
+	    Evgeny Gavrin  <e.gavrin@samsung.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* builtin-types.def (BT_FN_VOID_INT_INT_VAR)
+	(BT_FN_VOID_INT_PTR_SIZE_PTR_PTR_PTR_INT_INT_VAR)
+	(BT_FN_VOID_INT_OMPFN_PTR_SIZE_PTR_PTR_PTR_INT_INT_INT_INT_INT_VAR):
+	New function types.
+	* builtins.c: Include "gomp-constants.h".
+	(expand_builtin_acc_on_device): New function.
+	(expand_builtin, is_inexpensive_builtin): Handle
+	BUILT_IN_ACC_ON_DEVICE.
+	* builtins.def (DEF_GOACC_BUILTIN, DEF_GOACC_BUILTIN_COMPILER):
+	New macros.
+	* cgraph.c (cgraph_node::create): Consider flag_openacc next to
+	flag_openmp.
+	* config.gcc <nvptx-*> (tm_file): Add nvptx/offload.h.
+	<*-intelmic-* | *-intelmicemul-*> (tm_file): Add
+	i386/intelmic-offload.h.
+	* gcc.c (LINK_COMMAND_SPEC, GOMP_SELF_SPECS): For -fopenacc, link
+	to libgomp and its dependencies.
+	* config/arc/arc.h (LINK_COMMAND_SPEC): Likewise.
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Likewise.
+	* config/i386/mingw32.h (GOMP_SELF_SPECS): Likewise.
+	* config/ia64/hpux.h (LIB_SPEC): Likewise.
+	* config/pa/pa-hpux11.h (LIB_SPEC): Likewise.
+	* config/pa/pa64-hpux.h (LIB_SPEC): Likewise.
+	* doc/generic.texi: Update for OpenACC changes.
+	* doc/gimple.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+	* gimple-pretty-print.c (dump_gimple_omp_for): Handle
+	GF_OMP_FOR_KIND_OACC_LOOP.
+	(dump_gimple_omp_target): Handle GF_OMP_TARGET_KIND_OACC_KERNELS,
+	GF_OMP_TARGET_KIND_OACC_PARALLEL, GF_OMP_TARGET_KIND_OACC_DATA,
+	GF_OMP_TARGET_KIND_OACC_UPDATE,
+	GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA.
+	Dump more data.
+	* gimple.c: Update comments for OpenACC changes.
+	* gimple.def: Likewise.
+	* gimple.h: Likewise.
+	(enum gf_mask): Add GF_OMP_FOR_KIND_OACC_LOOP,
+	GF_OMP_TARGET_KIND_OACC_PARALLEL, GF_OMP_TARGET_KIND_OACC_KERNELS,
+	GF_OMP_TARGET_KIND_OACC_DATA, GF_OMP_TARGET_KIND_OACC_UPDATE,
+	GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA.
+	(gimple_omp_for_cond, gimple_omp_for_set_cond): Sort in the
+	appropriate place.
+	(is_gimple_omp_oacc, is_gimple_omp_offloaded): New functions.
+	* gimplify.c: Include "gomp-constants.h".
+	Update comments for OpenACC changes.
+	(is_gimple_stmt): Handle OACC_PARALLEL, OACC_KERNELS, OACC_DATA,
+	OACC_HOST_DATA, OACC_DECLARE, OACC_UPDATE, OACC_ENTER_DATA,
+	OACC_EXIT_DATA, OACC_CACHE, OACC_LOOP.
+	(gimplify_scan_omp_clauses, gimplify_adjust_omp_clauses): Handle
+	OMP_CLAUSE__CACHE_, OMP_CLAUSE_ASYNC, OMP_CLAUSE_WAIT,
+	OMP_CLAUSE_NUM_GANGS, OMP_CLAUSE_NUM_WORKERS,
+	OMP_CLAUSE_VECTOR_LENGTH, OMP_CLAUSE_GANG, OMP_CLAUSE_WORKER,
+	OMP_CLAUSE_VECTOR, OMP_CLAUSE_DEVICE_RESIDENT,
+	OMP_CLAUSE_USE_DEVICE, OMP_CLAUSE_INDEPENDENT, OMP_CLAUSE_AUTO,
+	OMP_CLAUSE_SEQ.
+	(gimplify_adjust_omp_clauses_1, gimplify_adjust_omp_clauses): Use
+	GOMP_MAP_* instead of OMP_CLAUSE_MAP_*.  Use
+	OMP_CLAUSE_SET_MAP_KIND.
+	(gimplify_oacc_cache): New function.
+	(gimplify_omp_for): Handle OACC_LOOP.
+	(gimplify_omp_workshare): Handle OACC_KERNELS, OACC_PARALLEL,
+	OACC_DATA.
+	(gimplify_omp_target_update): Handle OACC_ENTER_DATA,
+	OACC_EXIT_DATA, OACC_UPDATE.
+	(gimplify_expr): Handle OACC_LOOP, OACC_CACHE, OACC_HOST_DATA,
+	OACC_DECLARE, OACC_KERNELS, OACC_PARALLEL, OACC_DATA,
+	OACC_ENTER_DATA, OACC_EXIT_DATA, OACC_UPDATE.
+	(gimplify_body): Consider flag_openacc next to flag_openmp.
+	* lto-streamer-out.c: Include "gomp-constants.h".
+	* omp-builtins.def (BUILT_IN_ACC_GET_DEVICE_TYPE)
+	(BUILT_IN_GOACC_DATA_START, BUILT_IN_GOACC_DATA_END)
+	(BUILT_IN_GOACC_ENTER_EXIT_DATA, BUILT_IN_GOACC_PARALLEL)
+	(BUILT_IN_GOACC_UPDATE, BUILT_IN_GOACC_WAIT)
+	(BUILT_IN_GOACC_GET_THREAD_NUM, BUILT_IN_GOACC_GET_NUM_THREADS)
+	(BUILT_IN_ACC_ON_DEVICE): New builtins.
+	* omp-low.c: Include "gomp-constants.h".
+	Update comments for OpenACC changes.
+	(struct omp_context): Add reduction_map, gwv_below, gwv_this
+	members.
+	(extract_omp_for_data, use_pointer_for_field, install_var_field)
+	(new_omp_context, delete_omp_context, scan_sharing_clauses)
+	(create_omp_child_function, scan_omp_for, scan_omp_target)
+	(check_omp_nesting_restrictions, lower_reduction_clauses)
+	(build_omp_regions_1, diagnose_sb_0, make_gimple_omp_edges):
+	Update for OpenACC changes.
+	(scan_sharing_clauses): Handle OMP_CLAUSE_NUM_GANGS:
+	OMP_CLAUSE_NUM_WORKERS: OMP_CLAUSE_VECTOR_LENGTH,
+	OMP_CLAUSE_ASYNC, OMP_CLAUSE_WAIT, OMP_CLAUSE_GANG,
+	OMP_CLAUSE_WORKER, OMP_CLAUSE_VECTOR, OMP_CLAUSE_DEVICE_RESIDENT,
+	OMP_CLAUSE_USE_DEVICE, OMP_CLAUSE__CACHE_, OMP_CLAUSE_INDEPENDENT,
+	OMP_CLAUSE_AUTO, OMP_CLAUSE_SEQ.  Use GOMP_MAP_* instead of
+	OMP_CLAUSE_MAP_*.
+	(expand_omp_for_static_nochunk, expand_omp_for_static_chunk):
+	Handle GF_OMP_FOR_KIND_OACC_LOOP.
+	(expand_omp_target, lower_omp_target): Handle
+	GF_OMP_TARGET_KIND_OACC_PARALLEL, GF_OMP_TARGET_KIND_OACC_KERNELS,
+	GF_OMP_TARGET_KIND_OACC_UPDATE,
+	GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA,
+	GF_OMP_TARGET_KIND_OACC_DATA.
+	(pass_expand_omp::execute, execute_lower_omp)
+	(pass_diagnose_omp_blocks::gate): Consider flag_openacc next to
+	flag_openmp.
+	(offload_symbol_decl): New variable.
+	(oacc_get_reduction_array_id, oacc_max_threads)
+	(get_offload_symbol_decl, get_base_type, lookup_oacc_reduction)
+	(maybe_lookup_oacc_reduction, enclosing_target_ctx)
+	(oacc_loop_or_target_p, oacc_lower_reduction_var_helper)
+	(oacc_gimple_assign, oacc_initialize_reduction_data)
+	(oacc_finalize_reduction_data, oacc_process_reduction_data): New
+	functions.
+	(is_targetreg_ctx): Remove function.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE__CACHE_,
+	OMP_CLAUSE_DEVICE_RESIDENT, OMP_CLAUSE_USE_DEVICE,
+	OMP_CLAUSE_GANG, OMP_CLAUSE_ASYNC, OMP_CLAUSE_WAIT,
+	OMP_CLAUSE_AUTO, OMP_CLAUSE_SEQ, OMP_CLAUSE_INDEPENDENT,
+	OMP_CLAUSE_WORKER, OMP_CLAUSE_VECTOR, OMP_CLAUSE_NUM_GANGS,
+	OMP_CLAUSE_NUM_WORKERS, OMP_CLAUSE_VECTOR_LENGTH.
+	* tree.c (omp_clause_code_name, walk_tree_1): Update accordingly.
+	* tree.h (OMP_CLAUSE_GANG_EXPR, OMP_CLAUSE_GANG_STATIC_EXPR)
+	(OMP_CLAUSE_ASYNC_EXPR, OMP_CLAUSE_WAIT_EXPR)
+	(OMP_CLAUSE_VECTOR_EXPR, OMP_CLAUSE_WORKER_EXPR)
+	(OMP_CLAUSE_NUM_GANGS_EXPR, OMP_CLAUSE_NUM_WORKERS_EXPR)
+	(OMP_CLAUSE_VECTOR_LENGTH_EXPR): New macros.
+	* tree-core.h: Update comments for OpenACC changes.
+	(enum omp_clause_map_kind): Remove.
+	(struct tree_omp_clause): Change type of map_kind member from enum
+	omp_clause_map_kind to unsigned char.
+	* tree-inline.c: Update comments for OpenACC changes.
+	* tree-nested.c: Likewise.  Include "gomp-constants.h".
+	(convert_nonlocal_reference_stmt, convert_local_reference_stmt)
+	(convert_tramp_reference_stmt, convert_gimple_call): Update for
+	OpenACC changes.  Use GOMP_MAP_* instead of OMP_CLAUSE_MAP_*.  Use
+	OMP_CLAUSE_SET_MAP_KIND.
+	* tree-pretty-print.c: Include "gomp-constants.h".
+	(dump_omp_clause): Handle OMP_CLAUSE_DEVICE_RESIDENT,
+	OMP_CLAUSE_USE_DEVICE, OMP_CLAUSE__CACHE_, OMP_CLAUSE_GANG,
+	OMP_CLAUSE_ASYNC, OMP_CLAUSE_AUTO, OMP_CLAUSE_SEQ,
+	OMP_CLAUSE_WAIT, OMP_CLAUSE_WORKER, OMP_CLAUSE_VECTOR,
+	OMP_CLAUSE_NUM_GANGS, OMP_CLAUSE_NUM_WORKERS,
+	OMP_CLAUSE_VECTOR_LENGTH, OMP_CLAUSE_INDEPENDENT.  Use GOMP_MAP_*
+	instead of OMP_CLAUSE_MAP_*.
+	(dump_generic_node): Handle OACC_PARALLEL, OACC_KERNELS,
+	OACC_DATA, OACC_HOST_DATA, OACC_DECLARE, OACC_UPDATE,
+	OACC_ENTER_DATA, OACC_EXIT_DATA, OACC_CACHE, OACC_LOOP.
+	* tree-streamer-in.c: Include "gomp-constants.h".
+	(unpack_ts_omp_clause_value_fields) Use GOMP_MAP_* instead of
+	OMP_CLAUSE_MAP_*.  Use OMP_CLAUSE_SET_MAP_KIND.
+	* tree-streamer-out.c: Include "gomp-constants.h".
+	(pack_ts_omp_clause_value_fields): Use GOMP_MAP_* instead of
+	OMP_CLAUSE_MAP_*.
+	* tree.def (OACC_PARALLEL, OACC_KERNELS, OACC_DATA)
+	(OACC_HOST_DATA, OACC_LOOP, OACC_CACHE, OACC_DECLARE)
+	(OACC_ENTER_DATA, OACC_EXIT_DATA, OACC_UPDATE): New tree codes.
+	* tree.c (omp_clause_num_ops): Update accordingly.
+	* tree.h (OMP_BODY, OMP_CLAUSES, OMP_LOOP_CHECK, OMP_CLAUSE_SIZE):
+	Likewise.
+	(OACC_PARALLEL_BODY, OACC_PARALLEL_CLAUSES, OACC_KERNELS_BODY)
+	(OACC_KERNELS_CLAUSES, OACC_DATA_BODY, OACC_DATA_CLAUSES)
+	(OACC_HOST_DATA_BODY, OACC_HOST_DATA_CLAUSES, OACC_CACHE_CLAUSES)
+	(OACC_DECLARE_CLAUSES, OACC_ENTER_DATA_CLAUSES)
+	(OACC_EXIT_DATA_CLAUSES, OACC_UPDATE_CLAUSES)
+	(OACC_KERNELS_COMBINED, OACC_PARALLEL_COMBINED): New macros.
+	* tree.h (OMP_CLAUSE_MAP_KIND): Cast it to enum gomp_map_kind.
+	(OMP_CLAUSE_SET_MAP_KIND): New macro.
+	* varpool.c (varpool_node::get_create): Consider flag_openacc next
+	to flag_openmp.
+	* config/i386/intelmic-offload.h: New file.
+	* config/nvptx/offload.h: Likewise.
+
 2015-01-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* explow.h: Remove duplicate contents.

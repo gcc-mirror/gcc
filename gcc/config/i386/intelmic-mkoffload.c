@@ -22,13 +22,13 @@
 
 #include "config.h"
 #include <libgen.h>
+#include "libgomp-plugin.h"
 #include "system.h"
 #include "coretypes.h"
 #include "obstack.h"
 #include "intl.h"
 #include "diagnostic.h"
 #include "collect-utils.h"
-#include <libgomp_target.h>
 
 const char tool_name[] = "intelmic mkoffload";
 

@@ -3,7 +3,7 @@
 void foo(int i)
 {
   int j;
-  switch (i)			// { dg-error "invalid entry" }
+  switch (i) // { dg-error "invalid entry to OpenMP structured block" }
   {
   #pragma omp parallel
     { case 0:; }

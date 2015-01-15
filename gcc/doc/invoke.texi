@@ -168,8 +168,8 @@ in the following sections.
 @gccoptlist{-ansi  -std=@var{standard}  -fgnu89-inline @gol
 -aux-info @var{filename} -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function} @gol
--fhosted  -ffreestanding -fopenmp -fopenmp-simd -fms-extensions @gol
--fplan9-extensions -trigraphs  -traditional  -traditional-cpp @gol
+-fhosted  -ffreestanding -fopenacc -fopenmp -fopenmp-simd @gol
+-fms-extensions -fplan9-extensions -trigraphs -traditional -traditional-cpp @gol
 -fallow-single-precision  -fcond-mismatch -flax-vector-conversions @gol
 -fsigned-bitfields  -fsigned-char @gol
 -funsigned-bitfields  -funsigned-char}
@@ -1884,6 +1884,20 @@ This is equivalent to @option{-fno-hosted}.
 
 @xref{Standards,,Language Standards Supported by GCC}, for details of
 freestanding and hosted environments.
+
+@item -fopenacc
+@opindex fopenacc
+@cindex OpenACC accelerator programming
+Enable handling of OpenACC directives @code{#pragma acc} in C/C++ and
+@code{!$acc} in Fortran.  When @option{-fopenacc} is specified, the
+compiler generates accelerated code according to the OpenACC Application
+Programming Interface v2.0 @w{@uref{http://www.openacc.org/}}.  This option
+implies @option{-pthread}, and thus is only supported on targets that
+have support for @option{-pthread}.
+
+Note that this is an experimental feature, incomplete, and subject to
+change in future versions of GCC.  See
+@w{@uref{https://gcc.gnu.org/wiki/OpenACC}} for more information.
 
 @item -fopenmp
 @opindex fopenmp

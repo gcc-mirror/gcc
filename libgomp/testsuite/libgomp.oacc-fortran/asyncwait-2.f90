@@ -1,0 +1,40 @@
+! { dg-do run }
+
+program parallel_wait
+  integer, parameter :: N = 64
+  real, allocatable :: a(:), b(:), c(:)
+  integer i
+
+  allocate (a(N))
+  allocate (b(N))
+  allocate (c(N))
+
+  !$acc parallel async (0)
+  !$acc loop
+  do i = 1, N
+    a(i) = 1
+  end do
+  !$acc end parallel
+
+  !$acc parallel async (1)
+  !$acc loop
+  do i = 1, N
+    b(i) = 1
+  end do
+  !$acc end parallel
+
+  !$acc parallel wait (0, 1)
+  !$acc loop
+  do i = 1, N
+    c(i) = a(i) + b(i)
+  end do
+  !$acc end parallel
+
+  do i = 1, N
+    if (c(i) .ne. 2.0) call abort
+  end do
+  
+  deallocate (a)
+  deallocate (b)
+  deallocate (c)
+end program parallel_wait

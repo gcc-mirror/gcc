@@ -89,20 +89,26 @@ enum gf_mask {
     GF_CALL_CTRL_ALTERING       = 1 << 7,
     GF_CALL_WITH_BOUNDS 	= 1 << 8,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
-    GF_OMP_FOR_KIND_MASK	= 7 << 0,
+    GF_OMP_FOR_KIND_MASK	= (1 << 3) - 1,
     GF_OMP_FOR_KIND_FOR		= 0,
     GF_OMP_FOR_KIND_DISTRIBUTE	= 1,
     GF_OMP_FOR_KIND_CILKFOR     = 2,
+    GF_OMP_FOR_KIND_OACC_LOOP	= 3,
     /* Flag for SIMD variants of OMP_FOR kinds.  */
     GF_OMP_FOR_SIMD		= 1 << 2,
     GF_OMP_FOR_KIND_SIMD	= GF_OMP_FOR_SIMD | 0,
     GF_OMP_FOR_KIND_CILKSIMD	= GF_OMP_FOR_SIMD | 1,
     GF_OMP_FOR_COMBINED		= 1 << 3,
     GF_OMP_FOR_COMBINED_INTO	= 1 << 4,
-    GF_OMP_TARGET_KIND_MASK	= (1 << 2) - 1,
+    GF_OMP_TARGET_KIND_MASK	= (1 << 3) - 1,
     GF_OMP_TARGET_KIND_REGION	= 0,
     GF_OMP_TARGET_KIND_DATA	= 1,
     GF_OMP_TARGET_KIND_UPDATE	= 2,
+    GF_OMP_TARGET_KIND_OACC_PARALLEL = 3,
+    GF_OMP_TARGET_KIND_OACC_KERNELS = 4,
+    GF_OMP_TARGET_KIND_OACC_DATA = 5,
+    GF_OMP_TARGET_KIND_OACC_UPDATE = 6,
+    GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA = 7,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
        a thread synchronization via some sort of barrier.  The exact barrier
@@ -291,7 +297,7 @@ struct GTY((tag("GSS_CALL")))
 };
 
 
-/* OpenMP statements (#pragma omp).  */
+/* OMP statements.  */
 
 struct GTY((tag("GSS_OMP")))
   gimple_statement_omp : public gimple_statement_base
@@ -552,7 +558,8 @@ struct GTY((tag("GSS_OMP_FOR")))
 };
 
 
-/* GIMPLE_OMP_PARALLEL, GIMPLE_OMP_TARGET */
+/* GIMPLE_OMP_PARALLEL, GIMPLE_OMP_TARGET, GIMPLE_OMP_TASK */
+
 struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
   gimple_statement_omp_parallel_layout : public gimple_statement_omp
 {
@@ -580,7 +587,6 @@ struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
 	 || stmt->code == GIMPLE_OMP_TASK.  */
 };
 
-
 /* GIMPLE_OMP_PARALLEL */
 struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
   gomp_parallel : public gimple_statement_omp_taskreg
@@ -589,6 +595,7 @@ struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
          stmt->code == GIMPLE_OMP_PARALLEL.  */
 };
 
+/* GIMPLE_OMP_TARGET */
 struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
   gomp_target : public gimple_statement_omp_parallel_layout
 {
@@ -4409,7 +4416,7 @@ gimple_omp_critical_set_name (gomp_critical *crit_stmt, tree name)
 }
 
 
-/* Return the kind of OMP for statemement.  */
+/* Return the kind of the OMP_FOR statemement G.  */
 
 static inline int
 gimple_omp_for_kind (const_gimple g)
@@ -4419,7 +4426,7 @@ gimple_omp_for_kind (const_gimple g)
 }
 
 
-/* Set the OMP for kind.  */
+/* Set the kind of the OMP_FOR statement G.  */
 
 static inline void
 gimple_omp_for_set_kind (gomp_for *g, int kind)
@@ -4429,7 +4436,7 @@ gimple_omp_for_set_kind (gomp_for *g, int kind)
 }
 
 
-/* Return true if OMP for statement G has the
+/* Return true if OMP_FOR statement G has the
    GF_OMP_FOR_COMBINED flag set.  */
 
 static inline bool
@@ -4440,8 +4447,8 @@ gimple_omp_for_combined_p (const_gimple g)
 }
 
 
-/* Set the GF_OMP_FOR_COMBINED field in G depending on the boolean
-   value of COMBINED_P.  */
+/* Set the GF_OMP_FOR_COMBINED field in the OMP_FOR statement G depending on
+   the boolean value of COMBINED_P.  */
 
 static inline void
 gimple_omp_for_set_combined_p (gomp_for *g, bool combined_p)
@@ -4453,7 +4460,7 @@ gimple_omp_for_set_combined_p (gomp_for *g, bool combined_p)
 }
 
 
-/* Return true if OMP for statement G has the
+/* Return true if the OMP_FOR statement G has the
    GF_OMP_FOR_COMBINED_INTO flag set.  */
 
 static inline bool
@@ -4464,8 +4471,8 @@ gimple_omp_for_combined_into_p (const_gimple g)
 }
 
 
-/* Set the GF_OMP_FOR_COMBINED_INTO field in G depending on the boolean
-   value of COMBINED_P.  */
+/* Set the GF_OMP_FOR_COMBINED_INTO field in the OMP_FOR statement G depending
+   on the boolean value of COMBINED_P.  */
 
 static inline void
 gimple_omp_for_set_combined_into_p (gomp_for *g, bool combined_p)
@@ -4477,7 +4484,7 @@ gimple_omp_for_set_combined_into_p (gomp_for *g, bool combined_p)
 }
 
 
-/* Return the clauses associated with OMP_FOR GS.  */
+/* Return the clauses associated with the OMP_FOR statement GS.  */
 
 static inline tree
 gimple_omp_for_clauses (const_gimple gs)
@@ -4487,7 +4494,8 @@ gimple_omp_for_clauses (const_gimple gs)
 }
 
 
-/* Return a pointer to the OMP_FOR GS.  */
+/* Return a pointer to the clauses associated with the OMP_FOR statement
+   GS.  */
 
 static inline tree *
 gimple_omp_for_clauses_ptr (gimple gs)
@@ -4497,7 +4505,8 @@ gimple_omp_for_clauses_ptr (gimple gs)
 }
 
 
-/* Set CLAUSES to be the list of clauses associated with OMP_FOR GS.  */
+/* Set CLAUSES to be the list of clauses associated with the OMP_FOR statement
+   GS.  */
 
 static inline void
 gimple_omp_for_set_clauses (gimple gs, tree clauses)
@@ -4507,7 +4516,7 @@ gimple_omp_for_set_clauses (gimple gs, tree clauses)
 }
 
 
-/* Get the collapse count of OMP_FOR GS.  */
+/* Get the collapse count of the OMP_FOR statement GS.  */
 
 static inline size_t
 gimple_omp_for_collapse (gimple gs)
@@ -4517,7 +4526,30 @@ gimple_omp_for_collapse (gimple gs)
 }
 
 
-/* Return the index variable for OMP_FOR GS.  */
+/* Return the condition code associated with the OMP_FOR statement GS.  */
+
+static inline enum tree_code
+gimple_omp_for_cond (const_gimple gs, size_t i)
+{
+  const gomp_for *omp_for_stmt = as_a <const gomp_for *> (gs);
+  gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
+  return omp_for_stmt->iter[i].cond;
+}
+
+
+/* Set COND to be the condition code for the OMP_FOR statement GS.  */
+
+static inline void
+gimple_omp_for_set_cond (gimple gs, size_t i, enum tree_code cond)
+{
+  gomp_for *omp_for_stmt = as_a <gomp_for *> (gs);
+  gcc_gimple_checking_assert (TREE_CODE_CLASS (cond) == tcc_comparison
+			      && i < omp_for_stmt->collapse);
+  omp_for_stmt->iter[i].cond = cond;
+}
+
+
+/* Return the index variable for the OMP_FOR statement GS.  */
 
 static inline tree
 gimple_omp_for_index (const_gimple gs, size_t i)
@@ -4528,7 +4560,7 @@ gimple_omp_for_index (const_gimple gs, size_t i)
 }
 
 
-/* Return a pointer to the index variable for OMP_FOR GS.  */
+/* Return a pointer to the index variable for the OMP_FOR statement GS.  */
 
 static inline tree *
 gimple_omp_for_index_ptr (gimple gs, size_t i)
@@ -4539,7 +4571,7 @@ gimple_omp_for_index_ptr (gimple gs, size_t i)
 }
 
 
-/* Set INDEX to be the index variable for OMP_FOR GS.  */
+/* Set INDEX to be the index variable for the OMP_FOR statement GS.  */
 
 static inline void
 gimple_omp_for_set_index (gimple gs, size_t i, tree index)
@@ -4550,7 +4582,7 @@ gimple_omp_for_set_index (gimple gs, size_t i, tree index)
 }
 
 
-/* Return the initial value for OMP_FOR GS.  */
+/* Return the initial value for the OMP_FOR statement GS.  */
 
 static inline tree
 gimple_omp_for_initial (const_gimple gs, size_t i)
@@ -4561,7 +4593,7 @@ gimple_omp_for_initial (const_gimple gs, size_t i)
 }
 
 
-/* Return a pointer to the initial value for OMP_FOR GS.  */
+/* Return a pointer to the initial value for the OMP_FOR statement GS.  */
 
 static inline tree *
 gimple_omp_for_initial_ptr (gimple gs, size_t i)
@@ -4572,7 +4604,7 @@ gimple_omp_for_initial_ptr (gimple gs, size_t i)
 }
 
 
-/* Set INITIAL to be the initial value for OMP_FOR GS.  */
+/* Set INITIAL to be the initial value for the OMP_FOR statement GS.  */
 
 static inline void
 gimple_omp_for_set_initial (gimple gs, size_t i, tree initial)
@@ -4583,7 +4615,7 @@ gimple_omp_for_set_initial (gimple gs, size_t i, tree initial)
 }
 
 
-/* Return the final value for OMP_FOR GS.  */
+/* Return the final value for the OMP_FOR statement GS.  */
 
 static inline tree
 gimple_omp_for_final (const_gimple gs, size_t i)
@@ -4594,7 +4626,7 @@ gimple_omp_for_final (const_gimple gs, size_t i)
 }
 
 
-/* Return a pointer to the final value for OMP_FOR GS.  */
+/* Return a pointer to the final value for the OMP_FOR statement GS.  */
 
 static inline tree *
 gimple_omp_for_final_ptr (gimple gs, size_t i)
@@ -4605,7 +4637,7 @@ gimple_omp_for_final_ptr (gimple gs, size_t i)
 }
 
 
-/* Set FINAL to be the final value for OMP_FOR GS.  */
+/* Set FINAL to be the final value for the OMP_FOR statement GS.  */
 
 static inline void
 gimple_omp_for_set_final (gimple gs, size_t i, tree final)
@@ -4616,7 +4648,7 @@ gimple_omp_for_set_final (gimple gs, size_t i, tree final)
 }
 
 
-/* Return the increment value for OMP_FOR GS.  */
+/* Return the increment value for the OMP_FOR statement GS.  */
 
 static inline tree
 gimple_omp_for_incr (const_gimple gs, size_t i)
@@ -4627,7 +4659,7 @@ gimple_omp_for_incr (const_gimple gs, size_t i)
 }
 
 
-/* Return a pointer to the increment value for OMP_FOR GS.  */
+/* Return a pointer to the increment value for the OMP_FOR statement GS.  */
 
 static inline tree *
 gimple_omp_for_incr_ptr (gimple gs, size_t i)
@@ -4638,7 +4670,7 @@ gimple_omp_for_incr_ptr (gimple gs, size_t i)
 }
 
 
-/* Set INCR to be the increment value for OMP_FOR GS.  */
+/* Set INCR to be the increment value for the OMP_FOR statement GS.  */
 
 static inline void
 gimple_omp_for_set_incr (gimple gs, size_t i, tree incr)
@@ -5109,7 +5141,7 @@ gimple_omp_target_set_clauses (gomp_target *omp_target_stmt,
 }
 
 
-/* Return the kind of OMP target statemement.  */
+/* Return the kind of the OMP_TARGET G.  */
 
 static inline int
 gimple_omp_target_kind (const_gimple g)
@@ -5119,7 +5151,7 @@ gimple_omp_target_kind (const_gimple g)
 }
 
 
-/* Set the OMP target kind.  */
+/* Set the kind of the OMP_TARGET G.  */
 
 static inline void
 gimple_omp_target_set_kind (gomp_target *g, int kind)
@@ -5276,29 +5308,6 @@ gimple_omp_sections_set_control (gimple gs, tree control)
 {
   gomp_sections *omp_sections_stmt = as_a <gomp_sections *> (gs);
   omp_sections_stmt->control = control;
-}
-
-
-/* Set COND to be the condition code for OMP_FOR GS.  */
-
-static inline void
-gimple_omp_for_set_cond (gimple gs, size_t i, enum tree_code cond)
-{
-  gomp_for *omp_for_stmt = as_a <gomp_for *> (gs);
-  gcc_gimple_checking_assert (TREE_CODE_CLASS (cond) == tcc_comparison
-			      && i < omp_for_stmt->collapse);
-  omp_for_stmt->iter[i].cond = cond;
-}
-
-
-/* Return the condition code associated with OMP_FOR GS.  */
-
-static inline enum tree_code
-gimple_omp_for_cond (const_gimple gs, size_t i)
-{
-  const gomp_for *omp_for_stmt = as_a <const gomp_for *> (gs);
-  gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
-  return omp_for_stmt->iter[i].cond;
 }
 
 
@@ -5547,7 +5556,7 @@ gimple_return_set_retbnd (gimple gs, tree retval)
 }
 
 
-/* Returns true when the gimple statement STMT is any of the OpenMP types.  */
+/* Returns true when the gimple statement STMT is any of the OMP types.  */
 
 #define CASE_GIMPLE_OMP				\
     case GIMPLE_OMP_PARALLEL:			\
@@ -5575,6 +5584,64 @@ is_gimple_omp (const_gimple stmt)
     {
     CASE_GIMPLE_OMP:
       return true;
+    default:
+      return false;
+    }
+}
+
+/* Return true if the OMP gimple statement STMT is any of the OpenACC types
+   specifically.  */
+
+static inline bool
+is_gimple_omp_oacc (const_gimple stmt)
+{
+  gcc_assert (is_gimple_omp (stmt));
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_OMP_FOR:
+      switch (gimple_omp_for_kind (stmt))
+	{
+	case GF_OMP_FOR_KIND_OACC_LOOP:
+	  return true;
+	default:
+	  return false;
+	}
+    case GIMPLE_OMP_TARGET:
+      switch (gimple_omp_target_kind (stmt))
+	{
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL:
+	case GF_OMP_TARGET_KIND_OACC_KERNELS:
+	case GF_OMP_TARGET_KIND_OACC_DATA:
+	case GF_OMP_TARGET_KIND_OACC_UPDATE:
+	case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
+	  return true;
+	default:
+	  return false;
+	}
+    default:
+      return false;
+    }
+}
+
+
+/* Return true if the OMP gimple statement STMT is offloaded.  */
+
+static inline bool
+is_gimple_omp_offloaded (const_gimple stmt)
+{
+  gcc_assert (is_gimple_omp (stmt));
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_OMP_TARGET:
+      switch (gimple_omp_target_kind (stmt))
+	{
+	case GF_OMP_TARGET_KIND_REGION:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL:
+	case GF_OMP_TARGET_KIND_OACC_KERNELS:
+	  return true;
+	default:
+	  return false;
+	}
     default:
       return false;
     }

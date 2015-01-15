@@ -32,6 +32,29 @@ load_gcc_lib timeout-dg.exp
 load_gcc_lib torture-options.exp
 load_gcc_lib fortran-modules.exp
 
+# Try to load a test support file, built during libgomp configuration.
+load_file libgomp-test-support.exp
+
+# Populate offload_targets_s (offloading targets separated by a space), and
+# offload_targets_s_openacc (the same, but with OpenACC names; OpenACC spells
+# some of them a little differently).
+set offload_targets_s [split $offload_targets ","]
+set offload_targets_s_openacc {}
+foreach offload_target_openacc $offload_targets_s {
+    switch $offload_target_openacc {
+	intelmic {
+	    # Skip; will all FAIL because of missing
+	    # GOMP_OFFLOAD_CAP_OPENACC_200.
+	    continue
+	}
+	nvptx {
+	    set offload_target_openacc "nvidia"
+	}
+    }
+    lappend offload_targets_s_openacc "$offload_target_openacc"
+}
+lappend offload_targets_s_openacc "host"
+
 set dg-do-what-default run
 
 #
@@ -108,13 +131,9 @@ proc libgomp_init { args } {
     # Compute what needs to be put into LD_LIBRARY_PATH
     set always_ld_library_path ".:${blddir}/.libs"
 
-    # Get offload-related variables from environment (exported by Makefile)
-    set offload_targets [getenv OFFLOAD_TARGETS]
-    set offload_additional_options [getenv OFFLOAD_ADDITIONAL_OPTIONS]
-    set offload_additional_lib_paths [getenv OFFLOAD_ADDITIONAL_LIB_PATHS]
-
     # Add liboffloadmic build directory in LD_LIBRARY_PATH to support
     # non-fallback testing for Intel MIC targets
+    global offload_targets
     if { [string match "*,intelmic,*" ",$offload_targets,"] } {
 	append always_ld_library_path ":${blddir}/../liboffloadmic/.libs"
 	append always_ld_library_path ":${blddir}/../liboffloadmic/plugin/.libs"
@@ -122,6 +141,7 @@ proc libgomp_init { args } {
 	append always_ld_library_path ":${blddir}/../libstdc++-v3/src/.libs"
     }
 
+    global offload_additional_lib_paths
     if { $offload_additional_lib_paths != "" } {
 	append always_ld_library_path "${offload_additional_lib_paths}"
     }
@@ -158,8 +178,28 @@ proc libgomp_init { args } {
         lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/.libs"
         lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
         lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
+	# The top-level include directory, for gomp-constants.h.
+	lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/../../include"
     }
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/.."
+
+    # For build-tree testing, also consider the CUDA paths used for builing.
+    # For installed testing, we assume all that to be provided in the sysroot.
+    if { $blddir != "" } {
+	global cuda_driver_include
+	global cuda_driver_lib
+	if { $cuda_driver_include != "" } {
+	    # Stop gfortran from freaking out:
+	    # Warning: Nonexistent include directory "[...]"
+	    if {[file exists $cuda_driver_include]} {
+		lappend ALWAYS_CFLAGS "additional_flags=-I$cuda_driver_include"
+	    }
+	}
+	if { $cuda_driver_lib != "" } {
+	    lappend ALWAYS_CFLAGS "additional_flags=-L$cuda_driver_lib"
+	    append always_ld_library_path ":$cuda_driver_lib"
+	}
+    }
 
     # We use atomic operations in the testcases to validate results.
     if { ([istarget i?86-*-*] || [istarget x86_64-*-*])
@@ -191,6 +231,7 @@ proc libgomp_init { args } {
 
     # Used for support non-fallback offloading.
     # Help GCC to find target mkoffload.
+    global offload_additional_options
     if { $offload_additional_options != "" } {
 	lappend ALWAYS_CFLAGS "additional_flags=${offload_additional_options}"
     }
@@ -277,4 +318,30 @@ proc check_effective_target_offload_device { } {
 	  return a;
 	}
     } ]
+}
+
+# Return 1 if at least one nvidia board is present.
+
+proc check_effective_target_openacc_nvidia_accel_present { } {
+    return [check_runtime openacc_nvidia_accel_present {
+	#include <openacc.h>
+	int main () {
+	return !(acc_get_num_devices (acc_device_nvidia) > 0);
+	}
+    } "" ]
+}
+
+# Return 1 if at least one nvidia board is present, and the nvidia device type
+# is selected by default by means of setting the environment variable
+# ACC_DEVICE_TYPE.
+
+proc check_effective_target_openacc_nvidia_accel_selected { } {
+    if { ![check_effective_target_openacc_nvidia_accel_present] } {
+	return 0;
+    }
+    global offload_target_openacc
+    if { $offload_target_openacc == "nvidia" } {
+        return 1;
+    }
+    return 0;
 }

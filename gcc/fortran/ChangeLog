@@ -1,3 +1,199 @@
+2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Ilmir Usmanov  <i.usmanov@samsung.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* lang.opt (fopenacc): New option.
+	* cpp.c (cpp_define_builtins): Conditionally define _OPENACC.
+	* dump-parse-tree.c (show_omp_node): Split part of it into...
+	(show_omp_clauses): ... this new function.
+	(show_omp_node, show_code_node): Handle EXEC_OACC_PARALLEL_LOOP,
+	EXEC_OACC_PARALLEL, EXEC_OACC_KERNELS_LOOP, EXEC_OACC_KERNELS,
+	EXEC_OACC_DATA, EXEC_OACC_HOST_DATA, EXEC_OACC_LOOP,
+	EXEC_OACC_UPDATE, EXEC_OACC_WAIT, EXEC_OACC_CACHE,
+	EXEC_OACC_ENTER_DATA, EXEC_OACC_EXIT_DATA.
+	(show_namespace): Update for OpenACC.
+	* f95-lang.c (DEF_FUNCTION_TYPE_VAR_2, DEF_FUNCTION_TYPE_VAR_8)
+	(DEF_FUNCTION_TYPE_VAR_12, DEF_GOACC_BUILTIN)
+	(DEF_GOACC_BUILTIN_COMPILER): New macros.
+	* types.def (BT_FN_VOID_INT_INT_VAR)
+	(BT_FN_VOID_INT_PTR_SIZE_PTR_PTR_PTR_INT_INT_VAR)
+	(BT_FN_VOID_INT_OMPFN_PTR_SIZE_PTR_PTR_PTR_INT_INT_INT_INT_INT_VAR):
+	New function types.
+	* gfortran.h (gfc_statement): Add ST_OACC_PARALLEL_LOOP,
+	ST_OACC_END_PARALLEL_LOOP, ST_OACC_PARALLEL, ST_OACC_END_PARALLEL,
+	ST_OACC_KERNELS, ST_OACC_END_KERNELS, ST_OACC_DATA,
+	ST_OACC_END_DATA, ST_OACC_HOST_DATA, ST_OACC_END_HOST_DATA,
+	ST_OACC_LOOP, ST_OACC_END_LOOP, ST_OACC_DECLARE, ST_OACC_UPDATE,
+	ST_OACC_WAIT, ST_OACC_CACHE, ST_OACC_KERNELS_LOOP,
+	ST_OACC_END_KERNELS_LOOP, ST_OACC_ENTER_DATA, ST_OACC_EXIT_DATA,
+	ST_OACC_ROUTINE.
+	(struct gfc_expr_list): New data type.
+	(gfc_get_expr_list): New macro.
+	(gfc_omp_map_op): Add OMP_MAP_FORCE_ALLOC, OMP_MAP_FORCE_DEALLOC,
+	OMP_MAP_FORCE_TO, OMP_MAP_FORCE_FROM, OMP_MAP_FORCE_TOFROM,
+	OMP_MAP_FORCE_PRESENT, OMP_MAP_FORCE_DEVICEPTR.
+	(OMP_LIST_FIRST, OMP_LIST_DEVICE_RESIDENT, OMP_LIST_USE_DEVICE)
+	(OMP_LIST_CACHE): New enumerators.
+	(struct gfc_omp_clauses): Add async_expr, gang_expr, worker_expr,
+	vector_expr, num_gangs_expr, num_workers_expr, vector_length_expr,
+	wait_list, tile_list, async, gang, worker, vector, seq,
+	independent, wait, par_auto, gang_static, and loc members.
+	(struct gfc_namespace): Add oacc_declare_clauses member.
+	(gfc_exec_op): Add EXEC_OACC_KERNELS_LOOP,
+	EXEC_OACC_PARALLEL_LOOP, EXEC_OACC_PARALLEL, EXEC_OACC_KERNELS,
+	EXEC_OACC_DATA, EXEC_OACC_HOST_DATA, EXEC_OACC_LOOP,
+	EXEC_OACC_UPDATE, EXEC_OACC_WAIT, EXEC_OACC_CACHE,
+	EXEC_OACC_ENTER_DATA, EXEC_OACC_EXIT_DATA.
+	(gfc_free_expr_list, gfc_resolve_oacc_directive)
+	(gfc_resolve_oacc_declare, gfc_resolve_oacc_parallel_loop_blocks)
+	(gfc_resolve_oacc_blocks): New prototypes.
+	* match.c (match_exit_cycle): Handle EXEC_OACC_LOOP and
+	EXEC_OACC_PARALLEL_LOOP.
+	* match.h (gfc_match_oacc_cache, gfc_match_oacc_wait)
+	(gfc_match_oacc_update, gfc_match_oacc_declare)
+	(gfc_match_oacc_loop, gfc_match_oacc_host_data)
+	(gfc_match_oacc_data, gfc_match_oacc_kernels)
+	(gfc_match_oacc_kernels_loop, gfc_match_oacc_parallel)
+	(gfc_match_oacc_parallel_loop, gfc_match_oacc_enter_data)
+	(gfc_match_oacc_exit_data, gfc_match_oacc_routine): New
+	prototypes.
+	* openmp.c: Include "diagnostic.h" and "gomp-constants.h".
+	(gfc_free_omp_clauses): Update for members added to struct
+	gfc_omp_clauses.
+	(gfc_match_omp_clauses): Change mask paramter to uint64_t.  Add
+	openacc parameter.
+	(resolve_omp_clauses): Add openacc parameter.  Update for OpenACC.
+	(struct fortran_omp_context): Add is_openmp member.
+	(gfc_resolve_omp_parallel_blocks): Initialize it.
+	(gfc_resolve_do_iterator): Update for OpenACC.
+	(gfc_resolve_omp_directive): Call
+	resolve_omp_directive_inside_oacc_region.
+	(OMP_CLAUSE_PRIVATE, OMP_CLAUSE_FIRSTPRIVATE)
+	(OMP_CLAUSE_LASTPRIVATE, OMP_CLAUSE_COPYPRIVATE)
+	(OMP_CLAUSE_SHARED, OMP_CLAUSE_COPYIN, OMP_CLAUSE_REDUCTION)
+	(OMP_CLAUSE_IF, OMP_CLAUSE_NUM_THREADS, OMP_CLAUSE_SCHEDULE)
+	(OMP_CLAUSE_DEFAULT, OMP_CLAUSE_ORDERED, OMP_CLAUSE_COLLAPSE)
+	(OMP_CLAUSE_UNTIED, OMP_CLAUSE_FINAL, OMP_CLAUSE_MERGEABLE)
+	(OMP_CLAUSE_ALIGNED, OMP_CLAUSE_DEPEND, OMP_CLAUSE_INBRANCH)
+	(OMP_CLAUSE_LINEAR, OMP_CLAUSE_NOTINBRANCH, OMP_CLAUSE_PROC_BIND)
+	(OMP_CLAUSE_SAFELEN, OMP_CLAUSE_SIMDLEN, OMP_CLAUSE_UNIFORM)
+	(OMP_CLAUSE_DEVICE, OMP_CLAUSE_MAP, OMP_CLAUSE_TO)
+	(OMP_CLAUSE_FROM, OMP_CLAUSE_NUM_TEAMS, OMP_CLAUSE_THREAD_LIMIT)
+	(OMP_CLAUSE_DIST_SCHEDULE): Use uint64_t.
+	(OMP_CLAUSE_ASYNC, OMP_CLAUSE_NUM_GANGS, OMP_CLAUSE_NUM_WORKERS)
+	(OMP_CLAUSE_VECTOR_LENGTH, OMP_CLAUSE_COPY, OMP_CLAUSE_COPYOUT)
+	(OMP_CLAUSE_CREATE, OMP_CLAUSE_PRESENT)
+	(OMP_CLAUSE_PRESENT_OR_COPY, OMP_CLAUSE_PRESENT_OR_COPYIN)
+	(OMP_CLAUSE_PRESENT_OR_COPYOUT, OMP_CLAUSE_PRESENT_OR_CREATE)
+	(OMP_CLAUSE_DEVICEPTR, OMP_CLAUSE_GANG, OMP_CLAUSE_WORKER)
+	(OMP_CLAUSE_VECTOR, OMP_CLAUSE_SEQ, OMP_CLAUSE_INDEPENDENT)
+	(OMP_CLAUSE_USE_DEVICE, OMP_CLAUSE_DEVICE_RESIDENT)
+	(OMP_CLAUSE_HOST_SELF, OMP_CLAUSE_OACC_DEVICE, OMP_CLAUSE_WAIT)
+	(OMP_CLAUSE_DELETE, OMP_CLAUSE_AUTO, OMP_CLAUSE_TILE): New macros.
+	(gfc_match_omp_clauses): Handle those.
+	(OACC_PARALLEL_CLAUSES, OACC_KERNELS_CLAUSES, OACC_DATA_CLAUSES)
+	(OACC_LOOP_CLAUSES, OACC_PARALLEL_LOOP_CLAUSES)
+	(OACC_KERNELS_LOOP_CLAUSES, OACC_HOST_DATA_CLAUSES)
+	(OACC_DECLARE_CLAUSES, OACC_UPDATE_CLAUSES)
+	(OACC_ENTER_DATA_CLAUSES, OACC_EXIT_DATA_CLAUSES)
+	(OACC_WAIT_CLAUSES): New macros.
+	(gfc_free_expr_list, match_oacc_expr_list, match_oacc_clause_gang)
+	(gfc_match_omp_map_clause, gfc_match_oacc_parallel_loop)
+	(gfc_match_oacc_parallel, gfc_match_oacc_kernels_loop)
+	(gfc_match_oacc_kernels, gfc_match_oacc_data)
+	(gfc_match_oacc_host_data, gfc_match_oacc_loop)
+	(gfc_match_oacc_declare, gfc_match_oacc_update)
+	(gfc_match_oacc_enter_data, gfc_match_oacc_exit_data)
+	(gfc_match_oacc_wait, gfc_match_oacc_cache)
+	(gfc_match_oacc_routine, oacc_is_loop)
+	(resolve_oacc_scalar_int_expr, resolve_oacc_positive_int_expr)
+	(check_symbol_not_pointer, check_array_not_assumed)
+	(resolve_oacc_data_clauses, resolve_oacc_deviceptr_clause)
+	(oacc_compatible_clauses, oacc_is_parallel, oacc_is_kernels)
+	(omp_code_to_statement, oacc_code_to_statement)
+	(resolve_oacc_directive_inside_omp_region)
+	(resolve_omp_directive_inside_oacc_region)
+	(resolve_oacc_nested_loops, resolve_oacc_params_in_parallel)
+	(resolve_oacc_loop_blocks, gfc_resolve_oacc_blocks)
+	(resolve_oacc_loop, resolve_oacc_cache, gfc_resolve_oacc_declare)
+	(gfc_resolve_oacc_directive): New functions.
+	* parse.c (next_free): Update for OpenACC.  Move some code into...
+	(verify_token_free): ... this new function.
+	(next_fixed): Update for OpenACC.  Move some code into...
+	(verify_token_fixed): ... this new function.
+	(case_executable): Add ST_OACC_UPDATE, ST_OACC_WAIT,
+	ST_OACC_CACHE, ST_OACC_ENTER_DATA, and ST_OACC_EXIT_DATA.
+	(case_exec_markers): Add ST_OACC_PARALLEL_LOOP, ST_OACC_PARALLEL,
+	ST_OACC_KERNELS, ST_OACC_DATA, ST_OACC_HOST_DATA, ST_OACC_LOOP,
+	ST_OACC_KERNELS_LOOP.
+	(case_decl): Add ST_OACC_ROUTINE.
+	(push_state, parse_critical_block, parse_progunit): Update for
+	OpenACC.
+	(gfc_ascii_statement): Handle ST_OACC_PARALLEL_LOOP,
+	ST_OACC_END_PARALLEL_LOOP, ST_OACC_PARALLEL, ST_OACC_END_PARALLEL,
+	ST_OACC_KERNELS, ST_OACC_END_KERNELS, ST_OACC_KERNELS_LOOP,
+	ST_OACC_END_KERNELS_LOOP, ST_OACC_DATA, ST_OACC_END_DATA,
+	ST_OACC_HOST_DATA, ST_OACC_END_HOST_DATA, ST_OACC_LOOP,
+	ST_OACC_END_LOOP, ST_OACC_DECLARE, ST_OACC_UPDATE, ST_OACC_WAIT,
+	ST_OACC_CACHE, ST_OACC_ENTER_DATA, ST_OACC_EXIT_DATA,
+	ST_OACC_ROUTINE.
+	(verify_st_order, parse_spec): Handle ST_OACC_DECLARE.
+	(parse_executable): Handle ST_OACC_PARALLEL_LOOP,
+	ST_OACC_KERNELS_LOOP, ST_OACC_LOOP, ST_OACC_PARALLEL,
+	ST_OACC_KERNELS, ST_OACC_DATA, ST_OACC_HOST_DATA.
+	(decode_oacc_directive, parse_oacc_structured_block)
+	(parse_oacc_loop, is_oacc): New functions.
+	* parse.h (struct gfc_state_data): Add oacc_declare_clauses
+	member.
+	(is_oacc): New prototype.
+	* resolve.c (gfc_resolve_blocks, gfc_resolve_code): Handle
+	EXEC_OACC_PARALLEL_LOOP, EXEC_OACC_PARALLEL,
+	EXEC_OACC_KERNELS_LOOP, EXEC_OACC_KERNELS, EXEC_OACC_DATA,
+	EXEC_OACC_HOST_DATA, EXEC_OACC_LOOP, EXEC_OACC_UPDATE,
+	EXEC_OACC_WAIT, EXEC_OACC_CACHE, EXEC_OACC_ENTER_DATA,
+	EXEC_OACC_EXIT_DATA.
+	(resolve_codes): Call gfc_resolve_oacc_declare.
+	* scanner.c (openacc_flag, openacc_locus): New variables.
+	(skip_free_comments): Update for OpenACC.  Move some code into...
+	(skip_omp_attribute): ... this new function.
+	(skip_oacc_attribute): New function.
+	(skip_fixed_comments, gfc_next_char_literal): Update for OpenACC.
+	* st.c (gfc_free_statement): Handle EXEC_OACC_PARALLEL_LOOP,
+	EXEC_OACC_PARALLEL, EXEC_OACC_KERNELS_LOOP, EXEC_OACC_KERNELS,
+	EXEC_OACC_DATA, EXEC_OACC_HOST_DATA, EXEC_OACC_LOOP,
+	EXEC_OACC_UPDATE, EXEC_OACC_WAIT, EXEC_OACC_CACHE,
+	EXEC_OACC_ENTER_DATA, EXEC_OACC_EXIT_DATA.
+	* trans-decl.c (gfc_generate_function_code): Update for OpenACC.
+	* trans-openmp.c: Include "gomp-constants.h".
+	(gfc_omp_finish_clause, gfc_trans_omp_clauses): Use GOMP_MAP_*
+	instead of OMP_CLAUSE_MAP_*.  Use OMP_CLAUSE_SET_MAP_KIND.
+	(gfc_trans_omp_clauses): Handle OMP_LIST_USE_DEVICE,
+	OMP_LIST_DEVICE_RESIDENT, OMP_LIST_CACHE, and OMP_MAP_FORCE_ALLOC,
+	OMP_MAP_FORCE_DEALLOC, OMP_MAP_FORCE_TO, OMP_MAP_FORCE_FROM,
+	OMP_MAP_FORCE_TOFROM, OMP_MAP_FORCE_PRESENT,
+	OMP_MAP_FORCE_DEVICEPTR, and gfc_omp_clauses' async, seq,
+	independent, wait_list, num_gangs_expr, num_workers_expr,
+	vector_length_expr, vector, vector_expr, worker, worker_expr,
+	gang, gang_expr members.
+	(gfc_trans_omp_do): Handle EXEC_OACC_LOOP.
+	(gfc_convert_expr_to_tree, gfc_trans_oacc_construct)
+	(gfc_trans_oacc_executable_directive)
+	(gfc_trans_oacc_wait_directive, gfc_trans_oacc_combined_directive)
+	(gfc_trans_oacc_declare, gfc_trans_oacc_directive): New functions.
+	* trans-stmt.c (gfc_trans_block_construct): Update for OpenACC.
+	* trans-stmt.h (gfc_trans_oacc_directive, gfc_trans_oacc_declare):
+	New prototypes.
+	* trans.c (tranc_code): Handle EXEC_OACC_CACHE, EXEC_OACC_WAIT,
+	EXEC_OACC_UPDATE, EXEC_OACC_LOOP, EXEC_OACC_HOST_DATA,
+	EXEC_OACC_DATA, EXEC_OACC_KERNELS, EXEC_OACC_KERNELS_LOOP,
+	EXEC_OACC_PARALLEL, EXEC_OACC_PARALLEL_LOOP, EXEC_OACC_ENTER_DATA,
+	EXEC_OACC_EXIT_DATA.
+	* gfortran.texi: Update for OpenACC.
+	* intrinsic.texi: Likewise.
+	* invoke.texi: Likewise.
+
 2015-01-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58023

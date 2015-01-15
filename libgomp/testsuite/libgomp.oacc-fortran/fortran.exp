@@ -1,0 +1,98 @@
+# This whole file adapted from libgomp.fortran/fortran.exp.
+
+load_lib libgomp-dg.exp
+load_gcc_lib gcc-dg.exp
+load_gcc_lib gfortran-dg.exp
+
+global shlib_ext
+global ALWAYS_CFLAGS
+
+set shlib_ext [get_shlib_extension]
+set lang_library_path	"../libgfortran/.libs"
+set lang_link_flags	"-lgfortran"
+if [info exists lang_include_flags] then {
+    unset lang_include_flags
+}
+set lang_test_file_found 0
+set quadmath_library_path "../libquadmath/.libs"
+
+
+# Initialize dg.
+dg-init
+
+# Turn on OpenACC.
+lappend ALWAYS_CFLAGS "additional_flags=-fopenacc"
+
+if { $blddir != "" } {
+    set lang_source_re {^.*\.[fF](|90|95|03|08)$}
+    set lang_include_flags "-fintrinsic-modules-path=${blddir}"
+    # Look for a static libgfortran first.
+    if [file exists "${blddir}/${lang_library_path}/libgfortran.a"] {
+        set lang_test_file "${lang_library_path}/libgfortran.a"
+        set lang_test_file_found 1
+	# We may have a shared only build, so look for a shared libgfortran.
+    } elseif [file exists "${blddir}/${lang_library_path}/libgfortran.${shlib_ext}"] {
+        set lang_test_file "${lang_library_path}/libgfortran.${shlib_ext}"
+        set lang_test_file_found 1
+    } else {
+        puts "No libgfortran library found, will not execute fortran tests"
+    }
+} elseif [info exists GFORTRAN_UNDER_TEST] {
+    set lang_test_file_found 1
+    # Needs to exist for libgomp.exp.
+    set lang_test_file ""
+} else {
+    puts "GFORTRAN_UNDER_TEST not defined, will not execute fortran tests"
+}
+
+if { $lang_test_file_found } {
+    # Gather a list of all tests.
+    set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95,03,08}]]
+
+    if { $blddir != "" } {
+	if { [file exists "${blddir}/${quadmath_library_path}/libquadmath.a"]
+	     || [file exists "${blddir}/${quadmath_library_path}/libquadmath.${shlib_ext}"] } {
+	    lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/${quadmath_library_path}/"
+	    # Allow for spec subsitution.
+	    lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/${quadmath_library_path}/"
+	    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}:${blddir}/${quadmath_library_path}"
+	} else {
+	    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
+	}
+    } else {
+        set ld_library_path "$always_ld_library_path"
+    }
+    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+    set_ld_library_path_env_vars
+
+    # Test OpenACC with available accelerators.
+    foreach offload_target_openacc $offload_targets_s_openacc {
+	set tagopt "-DACC_DEVICE_TYPE_$offload_target_openacc=1"
+
+	switch $offload_target_openacc {
+	    host {
+		set acc_mem_shared 1
+	    }
+	    host_nonshm {
+		set acc_mem_shared 0
+	    }
+	    nvidia {
+		set acc_mem_shared 0
+	    }
+	    default {
+		set acc_mem_shared 0
+	    }
+	}
+	set tagopt "$tagopt -DACC_MEM_SHARED=$acc_mem_shared"
+
+	setenv ACC_DEVICE_TYPE $offload_target_openacc
+
+	# For Fortran we're doing torture testing, as Fortran has far more tests
+	# with arrays etc. that testing just -O0 or -O2 is insufficient, that is
+	# typically not the case for C/C++.
+	gfortran-dg-runtest $tests "$tagopt" ""
+    }
+}
+
+# All done.
+dg-finish

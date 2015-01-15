@@ -59,6 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "builtins.h"
 #include "ipa-chkp.h"
+#include "gomp-constants.h"
+
 
 /* Read a STRING_CST from the string table in DATA_IN using input
    block IB.  */
@@ -435,8 +437,8 @@ unpack_ts_omp_clause_value_fields (struct data_in *data_in,
 	= bp_unpack_enum (bp, omp_clause_depend_kind, OMP_CLAUSE_DEPEND_LAST);
       break;
     case OMP_CLAUSE_MAP:
-      OMP_CLAUSE_MAP_KIND (expr)
-	= bp_unpack_enum (bp, omp_clause_map_kind, OMP_CLAUSE_MAP_LAST);
+      OMP_CLAUSE_SET_MAP_KIND (expr, bp_unpack_enum (bp, gomp_map_kind,
+						     GOMP_MAP_LAST));
       break;
     case OMP_CLAUSE_PROC_BIND:
       OMP_CLAUSE_PROC_BIND_KIND (expr)

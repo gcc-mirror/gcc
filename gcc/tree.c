@@ -329,6 +329,14 @@ unsigned const char omp_clause_num_ops[] =
   2, /* OMP_CLAUSE_FROM  */
   2, /* OMP_CLAUSE_TO  */
   2, /* OMP_CLAUSE_MAP  */
+  2, /* OMP_CLAUSE__CACHE_  */
+  1, /* OMP_CLAUSE_DEVICE_RESIDENT  */
+  1, /* OMP_CLAUSE_USE_DEVICE  */
+  2, /* OMP_CLAUSE_GANG  */
+  1, /* OMP_CLAUSE_ASYNC  */
+  1, /* OMP_CLAUSE_WAIT  */
+  0, /* OMP_CLAUSE_AUTO  */
+  0, /* OMP_CLAUSE_SEQ  */
   1, /* OMP_CLAUSE__LOOPTEMP_  */
   1, /* OMP_CLAUSE_IF  */
   1, /* OMP_CLAUSE_NUM_THREADS  */
@@ -355,6 +363,12 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_TASKGROUP  */
   1, /* OMP_CLAUSE__SIMDUID_  */
   1, /* OMP_CLAUSE__CILK_FOR_COUNT_  */
+  0, /* OMP_CLAUSE_INDEPENDENT  */
+  1, /* OMP_CLAUSE_WORKER  */
+  1, /* OMP_CLAUSE_VECTOR  */
+  1, /* OMP_CLAUSE_NUM_GANGS  */
+  1, /* OMP_CLAUSE_NUM_WORKERS  */
+  1, /* OMP_CLAUSE_VECTOR_LENGTH  */
 };
 
 const char * const omp_clause_code_name[] =
@@ -374,6 +388,14 @@ const char * const omp_clause_code_name[] =
   "from",
   "to",
   "map",
+  "_cache_",
+  "device_resident",
+  "use_device",
+  "gang",
+  "async",
+  "wait",
+  "auto",
+  "seq",
   "_looptemp_",
   "if",
   "num_threads",
@@ -399,7 +421,13 @@ const char * const omp_clause_code_name[] =
   "sections",
   "taskgroup",
   "_simduid_",
-  "_Cilk_for_count_"
+  "_Cilk_for_count_",
+  "independent",
+  "worker",
+  "vector",
+  "num_gangs",
+  "num_workers",
+  "vector_length"
 };
 
 
@@ -11167,6 +11195,19 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
     case OMP_CLAUSE:
       switch (OMP_CLAUSE_CODE (*tp))
 	{
+	case OMP_CLAUSE_GANG:
+	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 1));
+	  /* FALLTHRU */
+
+	case OMP_CLAUSE_DEVICE_RESIDENT:
+	case OMP_CLAUSE_USE_DEVICE:
+	case OMP_CLAUSE_ASYNC:
+	case OMP_CLAUSE_WAIT:
+	case OMP_CLAUSE_WORKER:
+	case OMP_CLAUSE_VECTOR:
+	case OMP_CLAUSE_NUM_GANGS:
+	case OMP_CLAUSE_NUM_WORKERS:
+	case OMP_CLAUSE_VECTOR_LENGTH:
 	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_SHARED:
 	case OMP_CLAUSE_FIRSTPRIVATE:
@@ -11190,6 +11231,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 0));
 	  /* FALLTHRU */
 
+	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_DEFAULT:
@@ -11202,6 +11244,8 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_PARALLEL:
 	case OMP_CLAUSE_SECTIONS:
 	case OMP_CLAUSE_TASKGROUP:
+	case OMP_CLAUSE_AUTO:
+	case OMP_CLAUSE_SEQ:
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 
 	case OMP_CLAUSE_LASTPRIVATE:
@@ -11227,6 +11271,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_FROM:
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_MAP:
+	case OMP_CLAUSE__CACHE_:
 	  WALK_SUBTREE (OMP_CLAUSE_DECL (*tp));
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 1));
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));

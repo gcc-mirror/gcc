@@ -64,7 +64,7 @@ bar (int x)
   }
 }
 
-// { dg-error "invalid branch to/from an OpenMP structured block" "" { target *-*-* } 8 }
+// { dg-error "invalid branch to/from OpenMP structured block" "" { target *-*-* } 8 }
 // { dg-error "invalid entry to OpenMP structured block" "" { target *-*-* } 10 }
-// { dg-error "invalid branch to/from an OpenMP structured block" "" { target *-*-* } 39 }
+// { dg-error "invalid branch to/from OpenMP structured block" "" { target *-*-* } 39 }
 // { dg-error "invalid entry to OpenMP structured block" "" { target *-*-* } 41 }

@@ -512,7 +512,7 @@ cgraph_node::create (tree decl)
 
   node->decl = decl;
 
-  if (flag_openmp
+  if ((flag_openacc || flag_openmp)
       && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
     {
       node->offloadable = 1;

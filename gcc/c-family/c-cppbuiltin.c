@@ -1221,6 +1221,9 @@ c_cpp_builtins (cpp_reader *pfile)
   else if (flag_stack_protect == 1)
     cpp_define (pfile, "__SSP__=1");
 
+  if (flag_openacc)
+    cpp_define (pfile, "_OPENACC=201306");
+
   if (flag_openmp)
     cpp_define (pfile, "_OPENMP=201307");
 

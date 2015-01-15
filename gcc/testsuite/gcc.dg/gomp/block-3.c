@@ -9,7 +9,7 @@ void foo()
     {
       #pragma omp sections
       {
-	continue;		// { dg-error "invalid branch" }
+	continue; // { dg-error "invalid branch to/from OpenMP structured block" }
       }
     }
 
@@ -18,16 +18,16 @@ void foo()
     #pragma omp section
       { bad1: ; }
     #pragma omp section
-      goto bad1;		// { dg-error "invalid branch" }
+      goto bad1; // { dg-error "invalid branch to/from OpenMP structured block" }
     }
 
   #pragma omp sections
     {
-      goto bad2;		// { dg-error "invalid branch" }
+      goto bad2; // { dg-error "invalid branch to/from OpenMP structured block" }
     }
   bad2:;
 
-  goto bad3;			// { dg-error "invalid entry" }
+  goto bad3; // { dg-error "invalid entry to OpenMP structured block" }
   #pragma omp sections
     {
       bad3: ;

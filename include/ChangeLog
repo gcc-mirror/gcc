@@ -1,3 +1,9 @@
+2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* gomp-constants.h: New file.
+
 2015-12-14  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* libiberty.h: Merge Copyright year update from Binutils.

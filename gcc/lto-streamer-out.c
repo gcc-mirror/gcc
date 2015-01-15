@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "streamer-hooks.h"
 #include "cfgloop.h"
 #include "builtins.h"
+#include "gomp-constants.h"
 
 
 static void lto_write_tree (struct output_block*, tree, bool);

@@ -1,3 +1,48 @@
+2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Ilmir Usmanov  <i.usmanov@samsung.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c: Include "gomp-constants.h".
+	(cp_parser_omp_clause_map): Use enum gomp_map_kind instead of enum
+	omp_clause_map_kind.  Use GOMP_MAP_* instead of OMP_CLAUSE_MAP_*.
+	Use OMP_CLAUSE_SET_MAP_KIND.
+	(cp_parser_omp_construct, cp_parser_pragma): Handle
+	PRAGMA_OACC_CACHE, PRAGMA_OACC_DATA, PRAGMA_OACC_ENTER_DATA,
+	PRAGMA_OACC_EXIT_DATA, PRAGMA_OACC_KERNELS, PRAGMA_OACC_PARALLEL,
+	PRAGMA_OACC_LOOP, PRAGMA_OACC_UPDATE, PRAGMA_OACC_WAIT.
+	(cp_parser_omp_clause_name): Handle "async", "copy", "copyout",
+	"create", "delete", "deviceptr", "host", "num_gangs",
+	"num_workers", "present", "present_or_copy", "pcopy",
+	"present_or_copyin", "pcopyin", "present_or_copyout", "pcopyout",
+	"present_or_create", "pcreate", "vector_length", "wait".
+	(OACC_DATA_CLAUSE_MASK, OACC_ENTER_DATA_CLAUSE_MASK)
+	(OACC_EXIT_DATA_CLAUSE_MASK, OACC_KERNELS_CLAUSE_MASK)
+	(OACC_LOOP_CLAUSE_MASK, OACC_PARALLEL_CLAUSE_MASK)
+	(OACC_UPDATE_CLAUSE_MASK, OACC_WAIT_CLAUSE_MASK): New macros.
+	(cp_parser_omp_var_list_no_open): Handle OMP_CLAUSE__CACHE_.
+	(cp_parser_oacc_data_clause, cp_parser_oacc_data_clause_deviceptr)
+	(cp_parser_oacc_clause_vector_length, cp_parser_oacc_wait_list)
+	(cp_parser_oacc_clause_wait, cp_parser_omp_clause_num_gangs)
+	(cp_parser_omp_clause_num_workers, cp_parser_oacc_clause_async)
+	(cp_parser_oacc_all_clauses, cp_parser_oacc_cache)
+	(cp_parser_oacc_data, cp_parser_oacc_enter_exit_data)
+	(cp_parser_oacc_kernels, cp_parser_oacc_loop)
+	(cp_parser_oacc_parallel, cp_parser_oacc_update)
+	(cp_parser_oacc_wait): New functions.
+	* cp-tree.h (finish_oacc_data, finish_oacc_kernels)
+	(finish_oacc_parallel): New prototypes.
+	* semantics.c: Include "gomp-constants.h".
+	(handle_omp_array_sections): Handle GOMP_MAP_FORCE_DEVICEPTR.  Use
+	GOMP_MAP_* instead of OMP_CLAUSE_MAP_*.  Use
+	OMP_CLAUSE_SET_MAP_KIND.
+	(finish_omp_clauses): Handle OMP_CLAUSE_ASYNC,
+	OMP_CLAUSE_VECTOR_LENGTH, OMP_CLAUSE_WAIT, OMP_CLAUSE__CACHE_.
+	Use GOMP_MAP_* instead of OMP_CLAUSE_MAP_*.
+	(finish_oacc_data, finish_oacc_kernels, finish_oacc_parallel): New
+	functions.
+
 2015-01-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58671

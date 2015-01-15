@@ -1,3 +1,41 @@
+2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Ilmir Usmanov  <i.usmanov@samsung.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (fopenacc): New option.
+	* c-cppbuiltin.c (c_cpp_builtins): Conditionally define _OPENACC.
+	* c-common.c (DEF_FUNCTION_TYPE_VAR_8, DEF_FUNCTION_TYPE_VAR_12):
+	New macros.
+	* c-common.h (c_finish_oacc_wait): New prototype.
+	* c-omp.c: Include "omp-low.h" and "gomp-constants.h".
+	(c_finish_oacc_wait): New function.
+	* c-pragma.c (oacc_pragmas): New variable.
+	(c_pp_lookup_pragma, init_pragma): Handle it.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OACC_CACHE,
+	PRAGMA_OACC_DATA, PRAGMA_OACC_ENTER_DATA, PRAGMA_OACC_EXIT_DATA,
+	PRAGMA_OACC_KERNELS, PRAGMA_OACC_LOOP, PRAGMA_OACC_PARALLEL,
+	PRAGMA_OACC_UPDATE, PRAGMA_OACC_WAIT.
+	(enum pragma_omp_clause): Add PRAGMA_OACC_CLAUSE_ASYNC,
+	PRAGMA_OACC_CLAUSE_AUTO, PRAGMA_OACC_CLAUSE_COLLAPSE,
+	PRAGMA_OACC_CLAUSE_COPY, PRAGMA_OACC_CLAUSE_COPYIN,
+	PRAGMA_OACC_CLAUSE_COPYOUT, PRAGMA_OACC_CLAUSE_CREATE,
+	PRAGMA_OACC_CLAUSE_DELETE, PRAGMA_OACC_CLAUSE_DEVICE,
+	PRAGMA_OACC_CLAUSE_DEVICEPTR, PRAGMA_OACC_CLAUSE_FIRSTPRIVATE,
+	PRAGMA_OACC_CLAUSE_GANG, PRAGMA_OACC_CLAUSE_HOST,
+	PRAGMA_OACC_CLAUSE_IF, PRAGMA_OACC_CLAUSE_NUM_GANGS,
+	PRAGMA_OACC_CLAUSE_NUM_WORKERS, PRAGMA_OACC_CLAUSE_PRESENT,
+	PRAGMA_OACC_CLAUSE_PRESENT_OR_COPY,
+	PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYIN,
+	PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYOUT,
+	PRAGMA_OACC_CLAUSE_PRESENT_OR_CREATE, PRAGMA_OACC_CLAUSE_PRIVATE,
+	PRAGMA_OACC_CLAUSE_REDUCTION, PRAGMA_OACC_CLAUSE_SELF,
+	PRAGMA_OACC_CLAUSE_SEQ, PRAGMA_OACC_CLAUSE_VECTOR,
+	PRAGMA_OACC_CLAUSE_VECTOR_LENGTH, PRAGMA_OACC_CLAUSE_WAIT,
+	PRAGMA_OACC_CLAUSE_WORKER.
+
 2015-01-14  Marcos Diaz <marcos.diaz@tallertechnologies.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): New cpp define __SSP_EXPLICIT__

@@ -566,6 +566,10 @@ fmodule-private
 Fortran Var(flag_module_private)
 Set default accessibility of module entities to PRIVATE.
 
+fopenacc
+Fortran
+; Documented in C
+
 fopenmp
 Fortran
 ; Documented in C

@@ -2501,7 +2501,9 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 
   if (o != NULL)
     {
-      gfc_error ("%s statement at %C leaving OpenMP structured block",
+      gfc_error (is_oacc (p)
+		 ? "%s statement at %C leaving OpenACC structured block"
+		 : "%s statement at %C leaving OpenMP structured block",
 		 gfc_ascii_statement (st));
       return MATCH_ERROR;
     }
@@ -2511,6 +2513,33 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
   if (cnt > 0
       && o != NULL
       && o->state == COMP_OMP_STRUCTURED_BLOCK
+      && (o->head->op == EXEC_OACC_LOOP
+	  || o->head->op == EXEC_OACC_PARALLEL_LOOP))
+    {
+      int collapse = 1;
+      gcc_assert (o->head->next != NULL
+		  && (o->head->next->op == EXEC_DO
+		      || o->head->next->op == EXEC_DO_WHILE)
+		  && o->previous != NULL
+		  && o->previous->tail->op == o->head->op);
+      if (o->previous->tail->ext.omp_clauses != NULL
+	  && o->previous->tail->ext.omp_clauses->collapse > 1)
+	collapse = o->previous->tail->ext.omp_clauses->collapse;
+      if (st == ST_EXIT && cnt <= collapse)
+	{
+	  gfc_error ("EXIT statement at %C terminating !$ACC LOOP loop");
+	  return MATCH_ERROR;
+	}
+      if (st == ST_CYCLE && cnt < collapse)
+	{
+	  gfc_error ("CYCLE statement at %C to non-innermost collapsed"
+		     " !$ACC LOOP loop");
+	  return MATCH_ERROR;
+	}
+    }
+  if (cnt > 0
+      && o != NULL
+      && (o->state == COMP_OMP_STRUCTURED_BLOCK)
       && (o->head->op == EXEC_OMP_DO
 	  || o->head->op == EXEC_OMP_PARALLEL_DO
 	  || o->head->op == EXEC_OMP_SIMD

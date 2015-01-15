@@ -1,3 +1,10 @@
+2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* lto-lang.c (DEF_FUNCTION_TYPE_VAR_8, DEF_FUNCTION_TYPE_VAR_12):
+	New macros.
+	* lto.c: Include "gomp-constants.h".
+
 2015-01-14  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* lto-partition.c (lto_promote_cross_file_statics): Remove argument
