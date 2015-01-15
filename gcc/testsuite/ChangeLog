@@ -1,7 +1,6 @@
 2015-01-15  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* expr.c (expand_expr_real_1) <normal_inner_ref>: Use the expression to
-	set the memory attributes in all cases but clear MEM_EXPR if need be.
+	* gnat.dg/opt47.adb: New test.
 
 2015-01-15  Richard Biener  <rguenther@suse.de>
 
