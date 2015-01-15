@@ -3881,7 +3881,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
         for (; i < nargs; ++i)
           {
             tree x = get_nth_callarg (t, i);
-	    if (!RECUR (x, rval))
+	    /* In a template, reference arguments haven't been converted to
+	       REFERENCE_TYPE and we might not even know if the parameter
+	       is a reference, so accept lvalue constants too.  */
+	    bool rv = processing_template_decl ? any : rval;
+	    if (!RECUR (x, rv))
 	      return false;
           }
         return true;

@@ -1,3 +1,9 @@
+2015-01-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63283
+	* constexpr.c (potential_constant_expression_1): Handle reference
+	args in templates.
+
 2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
