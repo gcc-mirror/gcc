@@ -23,6 +23,11 @@ proc load_gcc_lib { filename } {
 }
 
 load_lib dg.exp
+
+# Required to use gcc-dg.exp - however, the latter should NOT be
+# loaded until ${tool}_target_compile is defined since it uses that
+# to determine default LTO options.
+
 load_gcc_lib file-format.exp
 load_gcc_lib target-supports.exp
 load_gcc_lib target-utils.exp
@@ -40,7 +45,6 @@ load_gcc_lib torture-options.exp
 load_gcc_lib timeout.exp
 load_gcc_lib timeout-dg.exp
 load_gcc_lib fortran-modules.exp
-load_gcc_lib gcc-dg.exp
 
 set dg-do-what-default run
 
