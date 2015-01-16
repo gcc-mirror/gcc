@@ -34,7 +34,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
-#include <alloca.h>
 
 static int
 find_pset (int pos, size_t mapnum, unsigned short *kinds)
@@ -151,7 +150,7 @@ GOACC_parallel (int device, void (*fn) (void *), const void *offload_table,
   tgt = gomp_map_vars (acc_dev, mapnum, hostaddrs, NULL, sizes, kinds, true,
 		       false);
 
-  devaddrs = alloca (sizeof (void *) * mapnum);
+  devaddrs = gomp_alloca (sizeof (void *) * mapnum);
   for (i = 0; i < mapnum; i++)
     devaddrs[i] = (void *) (tgt->list[i]->tgt->tgt_start
 			    + tgt->list[i]->tgt_offset);
