@@ -20,3 +20,4 @@ int fn1 () {
   u = v;
   r = b | a[4];
   return e;
+}
