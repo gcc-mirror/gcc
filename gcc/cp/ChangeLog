@@ -1,3 +1,9 @@
+2015-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58614
+	* pt.c (unify): When BRACE_ENCLOSED_INITIALIZER_P (arg), handle
+	TREE_TYPE (elt) == error_mark_node.
+
 2015-01-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-optimization/62053
