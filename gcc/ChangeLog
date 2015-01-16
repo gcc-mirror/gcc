@@ -1,3 +1,9 @@
+2015-01-15  Jiong Wang  <jiong.wang@arm.com>
+
+	PR rtl-optimization/64011
+	* expmed.c (store_bit_field_using_insv): Warn and truncate bitsize when
+	there is partial overflow.
+
 2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32-protos.h (nds32_expand_epilogue): Change

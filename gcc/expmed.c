@@ -557,6 +557,21 @@ store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
       copy_back = true;
     }
 
+  /* There are similar overflow check at the start of store_bit_field_1,
+     but that only check the situation where the field lies completely
+     outside the register, while there do have situation where the field
+     lies partialy in the register, we need to adjust bitsize for this
+     partial overflow situation.  Without this fix, pr48335-2.c on big-endian
+     will broken on those arch support bit insert instruction, like arm, aarch64
+     etc.  */
+  if (bitsize + bitnum > unit && bitnum < unit)
+    {
+      warning (OPT_Wextra, "write of "HOST_WIDE_INT_PRINT_UNSIGNED"bit data "
+	       "outside the bound of destination object, data truncated into "
+	       HOST_WIDE_INT_PRINT_UNSIGNED"bit", bitsize, unit - bitnum);
+      bitsize = unit - bitnum;
+    }
+
   /* If BITS_BIG_ENDIAN is zero on a BYTES_BIG_ENDIAN machine, we count
      "backwards" from the size of the unit we are inserting into.
      Otherwise, we count bits from the most significant on a
