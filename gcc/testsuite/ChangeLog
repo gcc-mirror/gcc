@@ -1,3 +1,15 @@
+2015-01-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+        * gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
+        (Set_Neon_Cumulative_Sat): Add parameter.
+        (__set_neon_cumulative_sat): Support new parameter.
+        * gcc.target/aarch64/advsimd-intrinsics/binary_sat_op.inc
+        (TEST_BINARY_SAT_OP1): Call Set_Neon_Cumulative_Sat with new
+        argument.
+        * gcc.target/aarch64/advsimd-intrinsics/unary_sat_op.inc
+        (TEST_UNARY_SAT_OP1): Call Set_Neon_Cumulative_Sat with new
+        argument.
+
 2015-01-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* g++.dg/tsan/vptr_benign_race.C: New testcase.
