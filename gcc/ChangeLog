@@ -1,3 +1,11 @@
+2015-01-16  Matthew Wahab  <matthew.wahab@arm.com>
+
+	PR target/64149
+	* config/aarch64/aarch64.opt: Remove lra option and aarch64_lra_flag
+	variable.
+	* config/aarch64/aarch64.c (TARGET_LRA_P): Set to hook_bool_void_true.
+	(aarch64_lra_p): Remove.
+
 2015-01-16  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/64363
