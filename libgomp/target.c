@@ -63,8 +63,10 @@ static int num_offload_images;
 /* Array of descriptors for all available devices.  */
 static struct gomp_device_descr *devices;
 
+#ifdef PLUGIN_SUPPORT
 /* Total number of available devices.  */
 static int num_devices;
+#endif
 
 /* Number of GOMP_OFFLOAD_CAP_OPENMP_400 devices.  */
 static int num_devices_openmp;

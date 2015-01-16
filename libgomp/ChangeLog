@@ -1,3 +1,7 @@
+2015-01-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* target.c (num_devices): Guard with PLUGIN_SUPPORT.
+
 2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
