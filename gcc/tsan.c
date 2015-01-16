@@ -249,7 +249,7 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
   else
     {
       builtin_decl = builtin_decl_implicit (BUILT_IN_TSAN_VPTR_UPDATE);
-      g = gimple_build_call (builtin_decl, 1, expr_ptr);
+      g = gimple_build_call (builtin_decl, 2, expr_ptr, unshare_expr (rhs));
     }
   gimple_set_location (g, loc);
   gimple_seq_add_stmt_without_update (&seq, g);

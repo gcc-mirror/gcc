@@ -1,3 +1,8 @@
+2015-01-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* sanititer.def (BUILT_IN_TSAN_VPTR_UPDATE): Fixed parameters.
+	* tsan.c (instrument_expr): Fixed parameters of __tsan_vptr_update.
+
 2015-01-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md: Move comment about splitting Thumb1 patterns to...
