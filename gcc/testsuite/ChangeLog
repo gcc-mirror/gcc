@@ -1,5 +1,12 @@
 2015-01-16  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h (CHECK):
+	Add trace.
+        (CHECK_FP): Likewise.
+        (CHECK_CUMULATIVE_SAT): Likewise.
+
+2015-01-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
         * gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
         (Set_Neon_Cumulative_Sat): Add parameter.
         (__set_neon_cumulative_sat): Support new parameter.
