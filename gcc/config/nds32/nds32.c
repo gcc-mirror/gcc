@@ -3044,7 +3044,7 @@ nds32_expand_prologue (void)
 
 /* Function for normal multiple pop epilogue.  */
 void
-nds32_expand_epilogue (void)
+nds32_expand_epilogue (bool sibcall_p)
 {
   int sp_adjust;
   int en4_const;
@@ -3089,7 +3089,8 @@ nds32_expand_epilogue (void)
 
       /* Generate return instruction by using 'return_internal' pattern.
          Make sure this instruction is after gen_blockage().  */
-      emit_jump_insn (gen_return_internal ());
+      if (!sibcall_p)
+	emit_jump_insn (gen_return_internal ());
       return;
     }
 
@@ -3194,7 +3195,8 @@ nds32_expand_epilogue (void)
     }
 
   /* Generate return instruction.  */
-  emit_jump_insn (gen_return_internal ());
+  if (!sibcall_p)
+    emit_jump_insn (gen_return_internal ());
 }
 
 /* Function for v3push prologue.  */
@@ -3327,7 +3329,7 @@ nds32_expand_prologue_v3push (void)
 
 /* Function for v3pop epilogue.  */
 void
-nds32_expand_epilogue_v3pop (void)
+nds32_expand_epilogue_v3pop (bool sibcall_p)
 {
   int sp_adjust;
 
@@ -3348,7 +3350,8 @@ nds32_expand_epilogue_v3pop (void)
     {
       /* Generate return instruction by using 'return_internal' pattern.
          Make sure this instruction is after gen_blockage().  */
-      emit_jump_insn (gen_return_internal ());
+      if (!sibcall_p)
+	emit_jump_insn (gen_return_internal ());
       return;
     }
 

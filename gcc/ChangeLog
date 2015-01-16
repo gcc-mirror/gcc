@@ -1,5 +1,22 @@
 2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32-protos.h (nds32_expand_epilogue): Change
+	prototype.
+	(nds32_expand_epilogue_v3pop): Likewise.
+	* config/nds32/nds32.md (sibcall): Define this for sibling call
+	optimization.
+	(sibcall_register): Likewise.
+	(sibcall_immediate): Likewise.
+	(sibcall_value): Likewise.
+	(sibcall_value_register): Likewise.
+	(sibcall_value_immediate): Likewise.
+	(sibcall_epilogue): Likewise.
+	(epilogue): Pass false to indicate this is not a sibcall epilogue.
+	* config/nds32/nds32.c (nds32_expand_epilogue): Consider sibcall case.
+	(nds32_expand_epilogue_v3pop): Likewise.
+
+2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32-protos.h (nds32_can_use_return_insn): New.
 	* config/nds32/nds32.md (unspec_volatile_func_return): Remove.
 	(return_internal): New.
