@@ -1,5 +1,15 @@
 2015-01-16  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/64614
+	* tree-ssa-uninit.c: Include tree-cfg.h.
+	(MAX_SWITCH_CASES): New define.
+	(convert_control_dep_chain_into_preds): Handle switch statements.
+	(is_pred_expr_subset_of): Handle x == CST vs. (x & CST) != 0.
+	(normalize_one_pred_1): Do not split bit-manipulations.
+	Record (x & CST).
+
+2015-01-16  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/64568
 	* tree-ssa-forwprop.c (pass_forwprop::execute): Guard
 	complex load rewriting for TARGET_MEM_REFs.
