@@ -1,3 +1,7 @@
+2015-01-16  Renlin Li  <renlin.li@arm.com>
+
+	* g++.dg/builtin-apply2.c: Remove aarch64 target from skip list.
+
 2015-01-16  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* gcc.target/i386/sse-14.c: Test new intrinsic.
