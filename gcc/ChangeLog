@@ -1,3 +1,19 @@
+2015-01-16  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	PR target/64015
+	* ccmp.c (expand_ccmp_next): New function.
+	(expand_ccmp_expr_1, expand_ccmp_expr): Handle operand insn sequence
+	and compare insn sequence.
+	* config/aarch64/aarch64.c (aarch64_code_to_ccmode,
+	aarch64_gen_ccmp_first, aarch64_gen_ccmp_next): New functions.
+	(TARGET_GEN_CCMP_FIRST, TARGET_GEN_CCMP_NEXT): New MICRO.
+	* config/aarch64/aarch64.md (*ccmp_and): Changed to ccmp_and<mode>.
+	(*ccmp_ior): Changed to ccmp_ior<mode>.
+	(cmp<mode>): New pattern.
+	* doc/tm.texi (TARGET_GEN_CCMP_FIRST, TARGET_GEN_CCMP_NEXT): Update
+	parameters.
+	* target.def (gen_ccmp_first, gen_ccmp_next): Update parameters.
+
 2015-01-16  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/avx2intrin.h (_mm256_bslli_epi128,
