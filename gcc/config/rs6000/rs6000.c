@@ -1511,10 +1511,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_MEMBER_TYPE_FORCES_BLK
 #define TARGET_MEMBER_TYPE_FORCES_BLK rs6000_member_type_forces_blk
 
-/* On rs6000, function arguments are promoted, as are function return
-   values.  */
 #undef TARGET_PROMOTE_FUNCTION_MODE
-#define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
+#define TARGET_PROMOTE_FUNCTION_MODE rs6000_promote_function_mode
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY rs6000_return_in_memory
@@ -9308,6 +9306,20 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
     }
 }
 
+/* On rs6000, function arguments are promoted, as are function return
+   values.  */
+
+static machine_mode
+rs6000_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
+			      machine_mode mode,
+			      int *punsignedp ATTRIBUTE_UNUSED,
+			      const_tree, int)
+{
+  PROMOTE_MODE (mode, *punsignedp, type);
+
+  return mode;
+}
+
 /* Return true if TYPE must be passed on the stack and not in registers.  */
 
 static bool
