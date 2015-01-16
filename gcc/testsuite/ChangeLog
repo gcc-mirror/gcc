@@ -1,3 +1,8 @@
+2015-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62134
+	* g++.dg/cpp0x/alias-decl-46.C: New.
+
 2015-01-16  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h (CHECK):
