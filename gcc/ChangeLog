@@ -1,5 +1,11 @@
 2015-01-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (TARGET_PROMOTE_FUNCTION_MODE): Implement
+	as rs6000_promote_function_mode.  Move comment to there.
+	(rs6000_promote_function_mode): New function.
+
+2015-01-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.h (PROMOTE_MODE): Correct test for when -m32
 	-mpowerpc64 is active.
 
