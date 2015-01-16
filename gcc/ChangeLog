@@ -1,3 +1,18 @@
+2015-01-16  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/64363
+	* ipa-chkp.h (chkp_instrumentable_p): New.
+	* ipa-chkp.c: Include tree-inline.h.
+	(chkp_instrumentable_p): New.
+	(chkp_maybe_create_clone): Use chkp_instrumentable_p.
+	Fix processing of not instrumentable functions.
+	(chkp_versioning): Use chkp_instrumentable_p. Warn about
+	not instrumentable functions.
+	* tree-chkp.c (chkp_add_bounds_to_call_stmt): Use
+	chkp_instrumentable_p.
+	* tree-inline.h (copy_forbidden): New.
+	* tree-inline.c (copy_forbidden): Not static anymore.
+
 2015-01-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* optc-save-gen.awk (cl_target_option_print_diff): Mark indent,
