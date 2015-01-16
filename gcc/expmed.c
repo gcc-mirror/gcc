@@ -566,9 +566,9 @@ store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
      etc.  */
   if (bitsize + bitnum > unit && bitnum < unit)
     {
-      warning (OPT_Wextra, "write of "HOST_WIDE_INT_PRINT_UNSIGNED"bit data "
-	       "outside the bound of destination object, data truncated into "
-	       HOST_WIDE_INT_PRINT_UNSIGNED"bit", bitsize, unit - bitnum);
+      warning (OPT_Wextra, "write of %wu-bit data outside the bound of "
+	       "destination object, data truncated into %wu-bit",
+	       bitsize, unit - bitnum);
       bitsize = unit - bitnum;
     }
 
