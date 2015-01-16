@@ -11239,7 +11239,7 @@ rs6000_va_start (tree valist, rtx nextarg)
   /* Find the overflow area.  */
   t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
   if (words != 0)
-    t = fold_build_pointer_plus_hwi (t, words * UNITS_PER_WORD);
+    t = fold_build_pointer_plus_hwi (t, words * MIN_UNITS_PER_WORD);
   t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
