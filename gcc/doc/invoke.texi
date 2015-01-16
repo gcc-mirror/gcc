@@ -10077,7 +10077,7 @@ The default value is 10.
 @item early-inlining-insns
 Specify growth that the early inliner can make.  In effect it increases
 the amount of inlining for code having a large abstraction penalty.
-The default value is 10.
+The default value is 14.
 
 @item max-early-inliner-iterations
 Limit of iterations of the early inliner.  This basically bounds
