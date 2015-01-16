@@ -1,3 +1,8 @@
+2014-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62276
+	* g++.dg/cpp0x/vt-62276.C: New.
+
 2015-01-16  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR middle-end/64353
