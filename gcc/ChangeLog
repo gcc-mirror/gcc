@@ -1,5 +1,10 @@
 2015-01-16  Robert Suchanek  <robert.suchanek@imgtec.com>
 
+	* lra-constraints.c (curr_insn_transform): Change a reload pseudo of
+	type OP_OUT to OP_INOUT.
+
+2015-01-16  Robert Suchanek  <robert.suchanek@imgtec.com>
+
 	* simplify-rtx.c (simplify_replace_fn_rtx): Simplify (lo_sum
 	(high x) y) to y if x and y have the same base.
 
