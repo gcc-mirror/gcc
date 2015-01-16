@@ -1,3 +1,7 @@
+2015-01-16  Zhenqiang Chen <zhenqiang.chen@arm.com>
+
+	* gcc.dg/pr64015.c: New test.
+
 2015-01-16  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR ipa/64163
