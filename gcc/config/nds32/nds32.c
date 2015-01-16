@@ -3087,12 +3087,9 @@ nds32_expand_epilogue (void)
 	  RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
 	}
 
-      /* Generate return instruction by using
-         unspec_volatile_func_return pattern.
-         Make sure this instruction is after gen_blockage().
-         NOTE that $lp will become 'live'
-         after this instruction has been emitted.  */
-      emit_insn (gen_unspec_volatile_func_return ());
+      /* Generate return instruction by using 'return_internal' pattern.
+         Make sure this instruction is after gen_blockage().  */
+      emit_jump_insn (gen_return_internal ());
       return;
     }
 
@@ -3196,9 +3193,8 @@ nds32_expand_epilogue (void)
       RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
     }
 
-  /* Generate return instruction by using
-     unspec_volatile_func_return pattern.  */
-  emit_insn (gen_unspec_volatile_func_return ());
+  /* Generate return instruction.  */
+  emit_jump_insn (gen_return_internal ());
 }
 
 /* Function for v3push prologue.  */
@@ -3350,12 +3346,9 @@ nds32_expand_epilogue_v3pop (void)
      epilogue code fragment BUT 'ret' instruction.  */
   if (cfun->machine->naked_p)
     {
-      /* Generate return instruction by using
-         unspec_volatile_func_return pattern.
-         Make sure this instruction is after gen_blockage().
-         NOTE that $lp will become 'live'
-         after this instruction has been emitted.  */
-      emit_insn (gen_unspec_volatile_func_return ());
+      /* Generate return instruction by using 'return_internal' pattern.
+         Make sure this instruction is after gen_blockage().  */
+      emit_jump_insn (gen_return_internal ());
       return;
     }
 
@@ -3452,6 +3445,25 @@ nds32_expand_epilogue_v3pop (void)
 
   /* Generate return instruction.  */
   emit_jump_insn (gen_pop25return ());
+}
+
+/* Return nonzero if this function is known to have a null epilogue.
+   This allows the optimizer to omit jumps to jumps if no stack
+   was created.  */
+int
+nds32_can_use_return_insn (void)
+{
+  /* Prior to reloading, we can't tell how many registers must be saved.
+     Thus we can not determine whether this function has null epilogue.  */
+  if (!reload_completed)
+    return 0;
+
+  /* If no stack was created, two conditions must be satisfied:
+     1. This is a naked function.
+        So there is no callee-saved, local size, or outgoing size.
+     2. This is NOT a variadic function.
+        So there is no pushing arguement registers into the stack.  */
+  return (cfun->machine->naked_p && (cfun->machine->va_args_size == 0));
 }
 
 /* ------------------------------------------------------------------------ */

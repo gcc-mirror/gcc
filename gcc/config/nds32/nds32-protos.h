@@ -120,6 +120,10 @@ extern const char *nds32_output_32bit_load_s (rtx *, int);
 extern const char *nds32_output_stack_push (rtx);
 extern const char *nds32_output_stack_pop (rtx);
 
+/* Auxiliary functions to check using return with null epilogue.  */
+
+extern int nds32_can_use_return_insn (void);
+
 /* Auxiliary functions to decide output alignment or not.  */
 
 extern int nds32_target_alignment (rtx);
