@@ -1,5 +1,5 @@
 /* Primary expression subroutines
-   Copyright (C) 2000-2014 Free Software Foundation, Inc.
+   Copyright (C) 2000-2015 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2366,6 +2366,13 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 				   "with missing optional arguments at %C"))
 		return false;
 	      value = gfc_copy_expr (comp->initializer);
+	    }
+	  else if (comp->attr.allocatable)
+	    {
+	      if (!gfc_notify_std (GFC_STD_F2008, "No initializer for "
+		  "allocatable component '%s' given in the structure "
+		  "constructor at %C", comp->name))
+		return false;
 	    }
 	  else if (!comp->attr.deferred_parameter)
 	    {

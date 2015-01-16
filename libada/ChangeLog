@@ -1,4 +1,8 @@
-2014-08-12  Joel Sherrill <joel.sherrill@oarcorp.com>
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2014-08-12  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* Makefile.in: Add CFLAGS_FOR_TARGET to GNATLIBCFLAGS_FOR_C.
 
@@ -336,7 +340,7 @@
 
 	* New directory, new ChangeLog.
 
-Copyright (C) 2003-2014 Free Software Foundation, Inc.
+Copyright (C) 2003-2015 Free Software Foundation, Inc.
 
 This ChangeLog is free software; the Free Software Foundation gives
 unlimited permission to copy, distribute, and modify it.

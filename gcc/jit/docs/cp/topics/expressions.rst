@@ -1,4 +1,4 @@
-.. Copyright (C) 2014 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2015 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -57,7 +57,14 @@ Simple expressions
                                            int value) const
 
    Given a numeric type (integer or floating point), build an rvalue for
-   the given constant ``int`` value.
+   the given constant :c:type:`int` value.
+
+.. function:: gccjit::rvalue \
+              gccjit::context::new_rvalue (gccjit::type numeric_type, \
+                                           long value) const
+
+   Given a numeric type (integer or floating point), build an rvalue for
+   the given constant :c:type:`long` value.
 
 .. function::  gccjit::rvalue \
                gccjit::context::zero (gccjit::type numeric_type) const
@@ -84,7 +91,7 @@ Simple expressions
                                             double value) const
 
    Given a numeric type (integer or floating point), build an rvalue for
-   the given constant value.
+   the given constant :c:type:`double` value.
 
 .. function:: gccjit::rvalue \
               gccjit::context::new_rvalue (gccjit::type pointer_type, \
@@ -497,12 +504,15 @@ Global variables
 ****************
 
 .. function:: gccjit::lvalue \
-              gccjit::context::new_global (gccjit::type type, \
+              gccjit::context::new_global (enum gcc_jit_global_kind,\
+                                           gccjit::type type, \
                                            const char *name, \
                                            gccjit::location loc)
 
    Add a new global variable of the given type and name to the context.
 
+   This is a thin wrapper around :c:func:`gcc_jit_context_new_global` from
+   the C API; the "kind" parameter has the same meaning as there.
 
 Working with pointers, structs and unions
 -----------------------------------------

@@ -2,8 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                          A D A . C O N T A I N E R S
---           . F O R M A L _ I N D E F I N I T E _ V E C T O R S            --
+--                 ADA.CONTAINERS.FORMAL_INDEFINITE_VECTORS                 --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -41,7 +40,7 @@ generic
    type Index_Type is range <>;
    type Element_Type (<>) is private;
    Max_Size_In_Storage_Elements : Natural :=
-     Element_Type'Max_Size_In_Storage_Elements;
+                                    Element_Type'Max_Size_In_Storage_Elements;
    --  This has the same meaning as in Ada.Containers.Bounded_Holders, with the
    --  same restrictions.
 
@@ -81,7 +80,8 @@ is
      Global => null;
 
    function Capacity (Container : Vector) return Capacity_Range with
-     Global => null;
+     Global => null,
+     Post   => Capacity'Result >= Container.Capacity;
 
    procedure Reserve_Capacity
      (Container : in out Vector;
@@ -111,7 +111,7 @@ is
       Capacity : Capacity_Range := 0) return Vector
    with
      Global => null,
-     Pre    => (if Bounded then Length (Source) <= Capacity);
+     Pre    => (if Bounded then (Capacity = 0 or Length (Source) <= Capacity));
 
    function Element
      (Container : Vector;
@@ -133,16 +133,17 @@ is
       New_Item  : Vector)
    with
      Global => null,
-     Pre    => (if Bounded then
-                 Length (Container) + Length (New_Item) <= Container.Capacity);
+     Pre    => (if Bounded
+                then Length (Container) + Length (New_Item) <=
+                                                       Container.Capacity);
 
    procedure Append
      (Container : in out Vector;
       New_Item  : Element_Type)
    with
      Global => null,
-     Pre    => (if Bounded then
-                  Length (Container) < Container.Capacity);
+     Pre    => (if Bounded
+                then Length (Container) < Container.Capacity);
 
    procedure Delete_Last
      (Container : in out Vector)
@@ -243,7 +244,7 @@ private
    package Def is new Formal_Vectors (Index_Type, Holder, "=", Bounded);
    use Def;
 
-   --  ????Assert that Def subtypes have the same range.
+   --  ????Assert that Def subtypes have the same range
 
    type Vector (Capacity : Capacity_Range) is limited record
       V : Def.Vector (Capacity);

@@ -1,5 +1,5 @@
 /* Interprocedural Identical Code Folding pass
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014-2015 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -54,15 +54,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tree.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
 #include "hash-set.h"
 #include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "fold-const.h"
+#include "predict.h"
 #include "tm.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "dominance.h"
 #include "cfg.h"
@@ -72,6 +78,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "is-a.h"
 #include "gimple.h"
+#include "hashtab.h"
+#include "rtl.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
@@ -87,6 +107,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "cfgloop.h"
@@ -101,7 +122,6 @@ along with GCC; see the file COPYING3.  If not see
 #include <list>
 #include "ipa-icf-gimple.h"
 #include "ipa-icf.h"
-#include "varasm.h"
 
 using namespace ipa_icf_gimple;
 
@@ -332,7 +352,8 @@ sem_function::equals_wpa (sem_item *item,
 	return return_false_with_msg ("NULL argument type");
 
       /* Polymorphic comparison is executed just for non-leaf functions.  */
-      bool is_not_leaf = get_node ()->callees != NULL;
+      bool is_not_leaf = get_node ()->callees != NULL
+			 || get_node ()->indirect_calls != NULL;
 
       if (!func_checker::compatible_types_p (arg_types[i],
 					     m_compared_func->arg_types[i],
@@ -425,6 +446,45 @@ sem_function::equals_private (sem_item *item,
 
   if (!equals_wpa (item, ignored_nodes))
     return false;
+
+  /* Checking function TARGET and OPTIMIZATION flags.  */
+  cl_target_option *tar1 = target_opts_for_fn (decl);
+  cl_target_option *tar2 = target_opts_for_fn (m_compared_func->decl);
+
+  if (tar1 != NULL && tar2 != NULL)
+    {
+      if (!cl_target_option_eq (tar1, tar2))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "target flags difference");
+	      cl_target_option_print_diff (dump_file, 2, tar1, tar2);
+	    }
+
+	  return return_false_with_msg ("Target flags are different");
+	}
+    }
+  else if (tar1 != NULL || tar2 != NULL)
+    return return_false_with_msg ("Target flags are different");
+
+  cl_optimization *opt1 = opts_for_fn (decl);
+  cl_optimization *opt2 = opts_for_fn (m_compared_func->decl);
+
+  if (opt1 != NULL && opt2 != NULL)
+    {
+      if (memcmp (opt1, opt2, sizeof(cl_optimization)))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "optimization flags difference");
+	      cl_optimization_print_diff (dump_file, 2, opt1, opt2);
+	    }
+
+	  return return_false_with_msg ("optimization flags are different");
+	}
+    }
+  else if (opt1 != NULL || opt2 != NULL)
+    return return_false_with_msg ("optimization flags are different");
 
   /* Checking function arguments.  */
   tree decl1 = DECL_ATTRIBUTES (decl);
@@ -693,6 +753,14 @@ sem_function::merge (sem_item *alias_item)
 	  return 0;
 	}
 
+      if (DECL_STATIC_CHAIN (alias->decl))
+        {
+         if (dump_file)
+           fprintf (dump_file, "Thunk creation is risky for static-chain functions.\n\n");
+
+         return 0;
+        }
+
       alias->icf_merged = true;
       ipa_merge_profiles (local_original, alias);
       alias->create_wrapper (local_original);
@@ -825,7 +893,9 @@ bool
 sem_function::compare_polymorphic_p (void)
 {
   return get_node ()->callees != NULL
-	 || m_compared_func->get_node ()->callees != NULL;
+	 || get_node ()->indirect_calls != NULL
+	 || m_compared_func->get_node ()->callees != NULL
+	 || m_compared_func->get_node ()->indirect_calls != NULL;
 }
 
 /* For a given call graph NODE, the function constructs new
@@ -2293,7 +2363,6 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 	for (unsigned int j = 1; j < c->members.length (); j++)
 	  {
 	    sem_item *alias = c->members[j];
-	    source->equals (alias, m_symtab_node_map);
 
 	    if (dump_file)
 	      {

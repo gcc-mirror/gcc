@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -165,6 +165,10 @@ package body Ada.Wide_Text_IO.Integer_Aux is
       Load_Digits (File, Buf, Ptr, Loaded);
 
       if Loaded then
+
+         --  Deal with based case. We recognize either the standard '#' or the
+         --  allowed alternative replacement ':' (see RM J.2(3)).
+
          Load (File, Buf, Ptr, '#', ':', Loaded);
 
          if Loaded then

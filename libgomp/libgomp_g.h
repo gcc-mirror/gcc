@@ -1,7 +1,8 @@
-/* Copyright (C) 2005-2014 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2015 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
-   This file is part of the GNU OpenMP Library (libgomp).
+   This file is part of the GNU Offloading and Multi Processing Library
+   (libgomp).
 
    Libgomp is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -213,5 +214,21 @@ extern void GOMP_target_end_data (void);
 extern void GOMP_target_update (int, const void *,
 				size_t, void **, size_t *, unsigned char *);
 extern void GOMP_teams (unsigned int, unsigned int);
+
+/* oacc-parallel.c */
+
+extern void GOACC_data_start (int, const void *,
+			      size_t, void **, size_t *, unsigned short *);
+extern void GOACC_data_end (void);
+extern void GOACC_enter_exit_data (int, const void *, size_t, void **,
+				   size_t *, unsigned short *, int, int, ...);
+extern void GOACC_parallel (int, void (*) (void *), const void *, size_t,
+			    void **, size_t *, unsigned short *, int, int, int,
+			    int, int, ...);
+extern void GOACC_update (int, const void *, size_t, void **, size_t *,
+			  unsigned short *, int, int, ...);
+extern void GOACC_wait (int, int, ...);
+extern int GOACC_get_num_threads (void);
+extern int GOACC_get_thread_num (void);
 
 #endif /* LIBGOMP_G_H */

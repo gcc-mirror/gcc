@@ -1,5 +1,5 @@
 # GCC host-specific configuration file.
-# Copyright (C) 1997-2014 Free Software Foundation, Inc.
+# Copyright (C) 1997-2015 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -99,7 +99,7 @@ case ${host} in
 esac
 
 case ${host} in
-  arm*-*-linux*)
+  arm*-*-freebsd* | arm*-*-linux*)
     case ${target} in
       arm*-*-*)
 	host_extra_gcc_objs="driver-arm.o"

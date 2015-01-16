@@ -1,5 +1,5 @@
 /* Passes for transactional memory support.
-   Copyright (C) 2008-2014 Free Software Foundation, Inc.
+   Copyright (C) 2008-2015 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -21,12 +21,19 @@
 #include "system.h"
 #include "coretypes.h"
 #include "hash-table.h"
-#include "tree.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
 #include "hash-set.h"
 #include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "fold-const.h"
+#include "predict.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "input.h"
@@ -176,6 +183,9 @@ static void *expand_regions (struct tm_region *,
 static tree
 get_attrs_for (const_tree x)
 {
+  if (x == NULL_TREE)
+    return NULL_TREE;
+
   switch (TREE_CODE (x))
     {
     case FUNCTION_DECL:
@@ -184,16 +194,16 @@ get_attrs_for (const_tree x)
 
     default:
       if (TYPE_P (x))
-	return NULL;
+	return NULL_TREE;
       x = TREE_TYPE (x);
       if (TREE_CODE (x) != POINTER_TYPE)
-	return NULL;
+	return NULL_TREE;
       /* FALLTHRU */
 
     case POINTER_TYPE:
       x = TREE_TYPE (x);
       if (TREE_CODE (x) != FUNCTION_TYPE && TREE_CODE (x) != METHOD_TYPE)
-	return NULL;
+	return NULL_TREE;
       /* FALLTHRU */
 
     case FUNCTION_TYPE:

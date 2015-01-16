@@ -1,5 +1,5 @@
 /* UndefinedBehaviorSanitizer, undefined behavior detector.
-   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -28,7 +28,11 @@ enum ubsan_null_ckind {
   UBSAN_REF_BINDING,
   UBSAN_MEMBER_ACCESS,
   UBSAN_MEMBER_CALL,
-  UBSAN_CTOR_CALL
+  UBSAN_CTOR_CALL,
+  UBSAN_DOWNCAST_POINTER,
+  UBSAN_DOWNCAST_REFERENCE,
+  UBSAN_UPCAST,
+  UBSAN_CAST_TO_VBASE
 };
 
 /* This controls how ubsan prints types.  Used in ubsan_type_descriptor.  */
@@ -38,16 +42,18 @@ enum ubsan_print_style {
   UBSAN_PRINT_ARRAY
 };
 
+extern bool do_ubsan_in_current_function (void);
 extern bool ubsan_expand_bounds_ifn (gimple_stmt_iterator *);
 extern bool ubsan_expand_null_ifn (gimple_stmt_iterator *);
 extern bool ubsan_expand_objsize_ifn (gimple_stmt_iterator *);
+extern bool ubsan_expand_vptr_ifn (gimple_stmt_iterator *);
 extern bool ubsan_instrument_unreachable (gimple_stmt_iterator *);
 extern tree ubsan_create_data (const char *, int, const location_t *, ...);
 extern tree ubsan_type_descriptor (tree, enum ubsan_print_style = UBSAN_PRINT_NORMAL);
 extern tree ubsan_encode_value (tree, bool = false);
 extern bool is_ubsan_builtin_p (tree);
 extern tree ubsan_build_overflow_builtin (tree_code, location_t, tree, tree, tree);
-extern tree ubsan_instrument_float_cast (location_t, tree, tree);
+extern tree ubsan_instrument_float_cast (location_t, tree, tree, tree);
 extern tree ubsan_get_source_location_type (void);
 
 #endif  /* GCC_UBSAN_H  */

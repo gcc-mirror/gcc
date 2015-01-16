@@ -532,6 +532,10 @@ main (int argc, char **argv)
   /* We do the whole thing multiple times to shake out state-management
      issues in the underlying code.  */
 
+  FILE *logfile = fopen ("test-nested-contexts.c.exe.log.txt", "w");
+  if (!logfile)
+    fail ("error opening logfile");
+
   for (i = 1; i <= NUM_TOP_ITERATIONS; i++)
     {
       /* Create the top-level context.  */
@@ -544,6 +548,9 @@ main (int argc, char **argv)
       memset (&top_level, 0, sizeof (top_level));
 
       top_level.ctxt = gcc_jit_context_acquire ();
+      gcc_jit_context_set_logfile (top_level.ctxt,
+				   logfile,
+				   0, 0);
       set_options (top_level.ctxt, argv[0]);
 
       make_types (&top_level);
@@ -619,6 +626,14 @@ main (int argc, char **argv)
 					    "dump-of-test-nested-contexts-bottom.c",
 					    1);
 
+	      /* Dump a reproducer for the bottom context.
+		 The generated reproducer needs to also regenerate the
+		 parent contexts, so this gives us test coverage for
+		 that case.  */
+	      gcc_jit_context_dump_reproducer_to_file (
+		bottom_level.ctxt,
+		"test-nested-contexts.c.exe.reproducer.c");
+
 	      gcc_jit_result *bottom_result =
 		gcc_jit_context_compile (bottom_level.ctxt);
 	      verify_bottom_code (bottom_level.ctxt, bottom_result);
@@ -634,6 +649,9 @@ main (int argc, char **argv)
 
       gcc_jit_context_release (top_level.ctxt);
    }
+
+  if (logfile)
+    fclose (logfile);
 
   totals ();
 

@@ -1,5 +1,5 @@
 /* Array things
-   Copyright (C) 2000-2014 Free Software Foundation, Inc.
+   Copyright (C) 2000-2015 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1308,6 +1308,9 @@ check_constructor (gfc_constructor_base ctor, bool (*check_function) (gfc_expr *
   for (c = gfc_constructor_first (ctor); c; c = gfc_constructor_next (c))
     {
       e = c->expr;
+
+      if (!e)
+	continue;
 
       if (e->expr_type != EXPR_ARRAY)
 	{

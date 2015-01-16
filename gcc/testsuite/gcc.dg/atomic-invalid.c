@@ -13,25 +13,24 @@ bool x;
 int
 main ()
 {
-  __atomic_compare_exchange_n (&i, &e, 1, 0, __ATOMIC_RELAXED, __ATOMIC_SEQ_CST); /* { dg-error "failure memory model cannot be stronger" } */
-  __atomic_compare_exchange_n (&i, &e, 1, 0, __ATOMIC_SEQ_CST, __ATOMIC_RELEASE); /* { dg-error "invalid failure memory" } */
-  __atomic_compare_exchange_n (&i, &e, 1, 1, __ATOMIC_SEQ_CST, __ATOMIC_ACQ_REL); /* { dg-error "invalid failure memory" } */
+  __atomic_compare_exchange_n (&i, &e, 1, 0, __ATOMIC_RELAXED, __ATOMIC_SEQ_CST); /* { dg-warning "failure memory model cannot be stronger" } */
+  __atomic_compare_exchange_n (&i, &e, 1, 0, __ATOMIC_SEQ_CST, __ATOMIC_RELEASE); /* { dg-warning "invalid failure memory" } */
+  __atomic_compare_exchange_n (&i, &e, 1, 1, __ATOMIC_SEQ_CST, __ATOMIC_ACQ_REL); /* { dg-warning "invalid failure memory" } */
 
-  __atomic_exchange_n (&i, 1, __ATOMIC_CONSUME); /* { dg-error "invalid memory model" } */
+  __atomic_load_n (&i, __ATOMIC_RELEASE); /* { dg-warning "invalid memory model" } */
+  __atomic_load_n (&i, __ATOMIC_ACQ_REL); /* { dg-warning "invalid memory model" } */
 
-  __atomic_load_n (&i, __ATOMIC_RELEASE); /* { dg-error "invalid memory model" } */
-  __atomic_load_n (&i, __ATOMIC_ACQ_REL); /* { dg-error "invalid memory model" } */
-
-  __atomic_store_n (&i, 1, __ATOMIC_ACQUIRE); /* { dg-error "invalid memory model" } */
-  __atomic_store_n (&i, 1, __ATOMIC_CONSUME); /* { dg-error "invalid memory model" } */
-  __atomic_store_n (&i, 1, __ATOMIC_ACQ_REL); /* { dg-error "invalid memory model" } */
+  __atomic_store_n (&i, 1, __ATOMIC_ACQUIRE); /* { dg-warning "invalid memory model" } */
+  __atomic_store_n (&i, 1, __ATOMIC_CONSUME); /* { dg-warning "invalid memory model" } */
+  __atomic_store_n (&i, 1, __ATOMIC_ACQ_REL); /* { dg-warning "invalid memory model" } */
 
   i = __atomic_always_lock_free (s, NULL); /* { dg-error "non-constant argument" } */
 
   __atomic_load_n (&i, 44); /* { dg-warning "invalid memory model" } */
 
-  __atomic_clear (&x, __ATOMIC_ACQUIRE); /* { dg-error "invalid memory model" } */
+  __atomic_clear (&x, __ATOMIC_CONSUME); /* { dg-warning "invalid memory model" } */
+  __atomic_clear (&x, __ATOMIC_ACQUIRE); /* { dg-warning "invalid memory model" } */
 
-  __atomic_clear (&x, __ATOMIC_ACQ_REL); /* { dg-error "invalid memory model" } */
+  __atomic_clear (&x, __ATOMIC_ACQ_REL); /* { dg-warning "invalid memory model" } */
 
 }

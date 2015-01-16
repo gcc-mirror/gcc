@@ -1,5 +1,5 @@
 /* Definitions for the moxiebox.
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014-2015 Free Software Foundation, Inc.
    Contributed by Anthony Green (green@moxielogic.com)
 
 This file is part of GCC.
@@ -45,3 +45,5 @@ along with GCC; see the file COPYING3.  If not see
 #undef PTRDIFF_TYPE
 #undef WCHAR_TYPE
 #undef WCHAR_TYPE_SIZE
+
+#define TARGET_MOXIEBOX

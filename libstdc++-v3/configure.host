@@ -366,6 +366,9 @@ case "${host}" in
 	;;
     esac
     ;;
+  arm*-*-freebsd*)
+     port_specific_symbol_files="\$(srcdir)/../config/os/gnu-linux/arm-eabi-extra.ver"
+     ;;
   powerpc*-*-darwin*)
     port_specific_symbol_files="\$(srcdir)/../config/os/bsd/darwin/ppc-extra.ver"
     ;;

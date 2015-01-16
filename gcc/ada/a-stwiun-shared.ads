@@ -415,7 +415,7 @@ private
       Last : Natural := 0;
       Data : Wide_String (1 .. Max_Length);
       --  Last is the index of last significant element of the Data. All
-      --  elements with larger indices are just an extra room.
+      --  elements with larger indexes are just extra room for expansion.
    end record;
 
    type Shared_Wide_String_Access is access all Shared_Wide_String;

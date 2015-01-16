@@ -1,5 +1,5 @@
 ;;- Machine description for Renesas / SuperH SH.
-;;  Copyright (C) 1993-2014 Free Software Foundation, Inc.
+;;  Copyright (C) 1993-2015 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -666,30 +666,40 @@
   [(set_attr "type" "mt_group")])
 
 ;; This pattern might be risky because it also tests the upper bits and not
-;; only the subreg.  However, it seems that combine will get to this only
-;; when testing sign/zero extended values.  In this case the extended upper
-;; bits do not matter.
-(define_insn "*tst<mode>_t_zero"
+;; only the subreg.  We have to check whether the operands have been sign
+;; or zero extended.  In the worst case, a zero extension has to be inserted
+;; to mask out the unwanted bits.
+(define_insn_and_split "*tst<mode>_t_subregs"
   [(set (reg:SI T_REG)
 	(eq:SI
 	  (subreg:QIHI
-	    (and:SI (match_operand:SI 0 "arith_reg_operand" "%r")
-		    (match_operand:SI 1 "arith_reg_operand" "r")) <lowpart_le>)
+	    (and:SI (match_operand:SI 0 "arith_reg_operand")
+		    (match_operand:SI 1 "arith_reg_operand")) <lowpart_le>)
 	  (const_int 0)))]
-  "TARGET_SH1 && TARGET_LITTLE_ENDIAN"
-  "tst	%0,%1"
-  [(set_attr "type" "mt_group")])
+  "TARGET_SH1 && TARGET_LITTLE_ENDIAN && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  sh_split_tst_subregs (curr_insn, <MODE>mode, <lowpart_le>, operands);
+  DONE;
+})
 
-(define_insn "*tst<mode>_t_zero"
+(define_insn_and_split "*tst<mode>_t_subregs"
   [(set (reg:SI T_REG)
 	(eq:SI
 	  (subreg:QIHI
-	    (and:SI (match_operand:SI 0 "arith_reg_operand" "%r")
-		    (match_operand:SI 1 "arith_reg_operand" "r")) <lowpart_be>)
+	    (and:SI (match_operand:SI 0 "arith_reg_operand")
+		    (match_operand:SI 1 "arith_reg_operand")) <lowpart_be>)
 	  (const_int 0)))]
-  "TARGET_SH1 && TARGET_BIG_ENDIAN"
-  "tst	%0,%1"
-  [(set_attr "type" "mt_group")])
+  "TARGET_SH1 && TARGET_BIG_ENDIAN && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  sh_split_tst_subregs (curr_insn, <MODE>mode, <lowpart_be>, operands);
+  DONE;
+})
 
 ;; Extract LSB, negate and store in T bit.
 (define_insn "tstsi_t_and_not"
@@ -2056,14 +2066,22 @@
   [(set_attr "type" "arith_media")
    (set_attr "highpart" "ignore")])
 
+;; The *addsi3_compact is made an insn_and_split and accepts actually
+;; impossible constraints to make LRA's register elimination work well on SH.
+;; The problem is that LRA expects something like
+;;    (set rA (plus rB (const_int N)))
+;; to work.  We can do that, but we have to split out an additional reg-reg
+;; copy or constant load before the actual add insn.
+;; Use u constraint for that case to avoid the invalid value in the stack
+;; pointer.
 (define_insn_and_split "*addsi3_compact"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r,&r")
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,&u")
 	(plus:SI (match_operand:SI 1 "arith_operand" "%0,r")
 		 (match_operand:SI 2 "arith_or_int_operand" "rI08,rn")))]
   "TARGET_SH1
-   && (rtx_equal_p (operands[0], operands[1])
-       && arith_operand (operands[2], SImode))
-      || ! reg_overlap_mentioned_p (operands[0], operands[1])"
+   && ((rtx_equal_p (operands[0], operands[1])
+        && arith_operand (operands[2], SImode))
+       || ! reg_overlap_mentioned_p (operands[0], operands[1]))"
   "@
 	add	%2,%0
 	#"
@@ -2071,7 +2089,11 @@
    && ! reg_overlap_mentioned_p (operands[0], operands[1])"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 1)))]
-  ""
+{
+  /* Prefer 'mov r0,r1; add #imm8,r1' over 'mov #imm8,r1; add r0,r1'  */
+  if (satisfies_constraint_I08 (operands[2]))
+    std::swap (operands[1], operands[2]);
+}
   [(set_attr "type" "arith")])
 
 ;; -------------------------------------------------------------------------
@@ -7247,8 +7269,7 @@ label:
       gcc_unreachable ();
     }
 
-  if (regno == -1
-      || ! refers_to_regno_p (regno, regno + 1, operands[1], 0))
+  if (regno == -1 || ! refers_to_regno_p (regno, operands[1]))
     {
       operands[2] = operand_subword (operands[0], 0, 0, DImode);
       operands[3] = operand_subword (operands[1], 0, 0, DImode);
@@ -7781,8 +7802,7 @@ label:
 	  alter_subreg (&word0, true);
 	  word1 = gen_rtx_SUBREG (SImode, regop, 4);
 	  alter_subreg (&word1, true);
-	  if (store_p || ! refers_to_regno_p (REGNO (word0),
-					      REGNO (word0) + 1, addr, 0))
+	  if (store_p || ! refers_to_regno_p (REGNO (word0), addr))
 	    {
 	      emit_insn (store_p
 			 ? gen_movsi_ie (mem, word0)
@@ -8061,8 +8081,7 @@ label:
       gcc_unreachable ();
     }
 
-  if (regno == -1
-      || ! refers_to_regno_p (regno, regno + 1, operands[1], 0))
+  if (regno == -1 || ! refers_to_regno_p (regno, operands[1]))
     {
       operands[2] = operand_subword (operands[0], 0, 0, DFmode);
       operands[3] = operand_subword (operands[1], 0, 0, DFmode);
@@ -11595,8 +11614,8 @@ label:
    (set (match_dup 0) (xor:SI (match_dup 0) (const_int 1)))])
 
 ;; Use negc to store the T bit in a MSB of a reg in the following way:
-;;	T = 1: 0x80000000 -> reg
-;;	T = 0: 0x7FFFFFFF -> reg
+;;	T = 0: 0x80000000 -> reg
+;;	T = 1: 0x7FFFFFFF -> reg
 ;; This works because 0 - 0x80000000 = 0x80000000.
 ;;
 ;; This insn must not match again after it has been split into the constant
@@ -11629,27 +11648,27 @@ label:
   "negc	%1,%0"
   [(set_attr "type" "arith")])
 
-;; These are essentially the same as above, but with the inverted T bit.
-;; Combine recognizes the split patterns, but does not take them sometimes
-;; if the T_REG clobber is specified.  Instead it tries to split out the
-;; T bit negation.  Since these splits are supposed to be taken only by
-;; combine, it will see the T_REG clobber of the *mov_t_msb_neg insn, so this
-;; should be fine.
-(define_split
+(define_insn_and_split "*mov_t_msb_neg"
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(plus:SI (match_operand 1 "negt_reg_operand")
-		 (const_int 2147483647)))]  ;; 0x7fffffff
-  "TARGET_SH1 && can_create_pseudo_p ()"
+		 (const_int 2147483647)))  ;; 0x7fffffff
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+   "#"
+   "&& can_create_pseudo_p ()"
   [(parallel [(set (match_dup 0)
 		   (minus:SI (const_int -2147483648) (reg:SI T_REG)))
 	      (clobber (reg:SI T_REG))])])
 
-(define_split
+(define_insn_and_split "*mov_t_msb_neg"
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(if_then_else:SI (match_operand 1 "t_reg_operand")
 			 (const_int 2147483647)  ;; 0x7fffffff
-			 (const_int -2147483648)))]  ;; 0x80000000
-  "TARGET_SH1 && can_create_pseudo_p ()"
+			 (const_int -2147483648)))  ;; 0x80000000
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
   [(parallel [(set (match_dup 0)
 		   (minus:SI (const_int -2147483648) (reg:SI T_REG)))
 	      (clobber (reg:SI T_REG))])])

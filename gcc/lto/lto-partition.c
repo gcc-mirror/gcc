@@ -1,5 +1,5 @@
 /* LTO partitioning logic routines.
-   Copyright (C) 2009-2014 Free Software Foundation, Inc.
+   Copyright (C) 2009-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,12 +21,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "toplev.h"
-#include "tree.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
 #include "hash-set.h"
 #include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "fold-const.h"
+#include "predict.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "input.h"
@@ -45,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "params.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "ipa-utils.h"
@@ -164,7 +172,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
     {
       struct cgraph_edge *e;
       if (!node->alias)
-        part->insns += inline_summary (cnode)->self_size;
+        part->insns += inline_summaries->get (cnode)->self_size;
 
       /* Add all inline clones and callees that are duplicated.  */
       for (e = cnode->callees; e; e = e->next_callee)
@@ -273,7 +281,7 @@ undo_partition (ltrans_partition partition, unsigned int n_nodes)
       partition->initializers_visited = NULL;
 
       if (!node->alias && (cnode = dyn_cast <cgraph_node *> (node)))
-        partition->insns -= inline_summary (cnode)->self_size;
+        partition->insns -= inline_summaries->get (cnode)->self_size;
       lto_symtab_encoder_delete_node (partition->encoder, node);
       node->aux = (void *)((size_t)node->aux - 1);
     }
@@ -476,7 +484,7 @@ lto_balanced_map (int n_lto_partitions)
 	else
 	  order[n_nodes++] = node;
 	if (!node->alias)
-	  total_size += inline_summary (node)->size;
+	  total_size += inline_summaries->get (node)->size;
       }
 
   /* Streaming works best when the source units do not cross partition
@@ -533,14 +541,14 @@ lto_balanced_map (int n_lto_partitions)
 	     && noreorder[noreorder_pos]->order < current_order)
 	{
 	  if (!noreorder[noreorder_pos]->alias)
-	    total_size -= inline_summary (noreorder[noreorder_pos])->size;
+	    total_size -= inline_summaries->get (noreorder[noreorder_pos])->size;
 	  next_nodes.safe_push (noreorder[noreorder_pos++]);
 	}
       add_sorted_nodes (next_nodes, partition);
 
       add_symbol_to_partition (partition, order[i]);
       if (!order[i]->alias)
-        total_size -= inline_summary (order[i])->size;
+        total_size -= inline_summaries->get (order[i])->size;
 	  
 
       /* Once we added a new node to the partition, we also want to add
@@ -965,7 +973,8 @@ lto_promote_cross_file_statics (void)
 
   gcc_assert (flag_wpa);
 
-  select_what_to_stream (false);
+  lto_stream_offload_p = false;
+  select_what_to_stream ();
 
   /* First compute boundaries.  */
   n_sets = ltrans_partitions.length ();

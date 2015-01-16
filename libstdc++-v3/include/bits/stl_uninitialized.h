@@ -1,6 +1,6 @@
 // Raw memory manipulators -*- C++ -*-
 
-// Copyright (C) 2001-2014 Free Software Foundation, Inc.
+// Copyright (C) 2001-2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -115,8 +115,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const bool __assignable = true;
 #else
       // trivial types can have deleted assignment
-      typedef typename iterator_traits<_InputIterator>::reference _RefType;
-      const bool __assignable = is_assignable<_ValueType1, _RefType>::value;
+      typedef typename iterator_traits<_InputIterator>::reference _RefType1;
+      typedef typename iterator_traits<_ForwardIterator>::reference _RefType2;
+      const bool __assignable = is_assignable<_RefType2, _RefType1>::value;
 #endif
 
       return std::__uninitialized_copy<__is_trivial(_ValueType1)

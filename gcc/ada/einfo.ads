@@ -320,7 +320,7 @@ package Einfo is
 --  Other attributes are noted as applying to the [implementation base type
 --  only].  These are representation attributes which must always apply to a
 --  full non-private type, and where the attributes are always on the full
---  type.  The attribute can be referenced on a subtype (and automatically
+--  type. The attribute can be referenced on a subtype (and automatically
 --  retries the value from the implementation base type). However, it is an
 --  error to try to set the attribute on other than the implementation base
 --  type, and if assertions are enabled, an attempt to set the attribute on a
@@ -660,6 +660,11 @@ package Einfo is
 
 --    Component_Type (Node20) [implementation base type only]
 --       Defined in array types and string types. References component type.
+
+--    Contains_Ignored_Ghost_Code (Flag279)
+--       Defined in blocks, packages and their bodies, subprograms and their
+--       bodies. Set if the entity contains any ignored Ghost code in the form
+--       of declaration, procedure call, assignment statement or pragma.
 
 --    Corresponding_Concurrent_Type (Node18)
 --       Defined in record types that are constructed by the expander to
@@ -1605,11 +1610,16 @@ package Einfo is
 --       Implicit_Dereference. Set also on the discriminant named in the aspect
 --       clause, to simplify type resolution.
 
---    Has_Independent_Components (Flag34) [base type only]
---       Defined in types. Set if the aspect Independent_Components applies
---       (in the base type only), if corresponding pragma or aspect applies.
---       In the case of an object of anonymous array type, the flag is set on
---       the created array type.
+--    Has_Independent_Components (Flag34) [implementation base type only]
+--       Defined in all types and objects. Set only for a record type or an
+--       array type or array object if a valid pragma Independent_Components
+--       applies to the type or object. Note that in the case of an object,
+--       this flag is only set on the object if there was an explicit pragma
+--       for the object. In other words, the proper test for whether an object
+--       has independent components is to see if either the object or its base
+--       type has this flag set. Note that in the case of a type, the pragma
+--       will be chained to the rep item chain of the first subtype in the
+--       usual manner.
 
 --    Has_Inheritable_Invariants (Flag248)
 --       Defined in all type entities. Set in private types from which one
@@ -2483,9 +2493,13 @@ package Einfo is
 --       Applies to all entities, true for incomplete types and subtypes
 
 --    Is_Independent (Flag268)
---       Defined in record components. Set if a valid pragma or aspect
---       Independent applies to the component, or if a valid pragma or aspect
---       Independent_Components applies to the enclosing record type.
+--       Defined in all type entities, and also in constants, components and
+--       variables. Set if a valid pragma or aspect Independent applies to the
+--       entity, or if a valid pragma or aspect Independent_Components applies
+--       to the enclosing record type for a component. Also set if a pragma
+--       Shared or pragma Atomic applies to the entity. In the case of private
+--       and incomplete types, this flag is set in both the partial view and
+--       the full view.
 
 --    Is_Inlined (Flag11)
 --       Defined in all entities. Set for functions and procedures which are
@@ -5321,6 +5335,7 @@ package Einfo is
    --    Is_Eliminated                       (Flag124)
    --    Is_Frozen                           (Flag4)
    --    Is_Generic_Actual_Type              (Flag94)
+   --    Is_Independent                      (Flag268)
    --    Is_RACW_Stub_Type                   (Flag244)
    --    Is_Non_Static_Subtype               (Flag109)
    --    Is_Packed                           (Flag51)   (base type only)
@@ -5448,6 +5463,7 @@ package Einfo is
    --    Last_Entity                         (Node20)
    --    Scope_Depth_Value                   (Uint22)
    --    Entry_Cancel_Parameter              (Node23)
+   --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Cleanups                      (Flag114)
    --    Discard_Names                       (Flag88)
    --    Has_Master_Entity                   (Flag21)
@@ -5520,12 +5536,14 @@ package Einfo is
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
    --    Has_Completion                      (Flag26)   (constants only)
-   --    Has_Thunks                          (Flag228)  (constants only)
+   --    Has_Independent_Components          (Flag34)
    --    Has_Size_Clause                     (Flag29)
+   --    Has_Thunks                          (Flag228)  (constants only)
    --    Has_Up_Level_Access                 (Flag215)
    --    Has_Volatile_Components             (Flag87)
    --    Is_Atomic                           (Flag85)
    --    Is_Eliminated                       (Flag124)
+   --    Is_Independent                      (Flag268)
    --    Is_Processed_Transient              (Flag252)  (constants only)
    --    Is_Return_Object                    (Flag209)
    --    Is_True_Constant                    (Flag163)
@@ -5697,11 +5715,12 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Body_Needed_For_SAL                 (Flag40)
-   --    Elaboration_Entity_Required         (Flag174)
+   --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Default_Expressions_Processed       (Flag108)
    --    Delay_Cleanups                      (Flag114)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Discard_Names                       (Flag88)
+   --    Elaboration_Entity_Required         (Flag174)
    --    Has_Anonymous_Master                (Flag253)
    --    Has_Completion                      (Flag26)
    --    Has_Controlling_Result              (Flag98)
@@ -5909,6 +5928,7 @@ package Einfo is
    --    Contract                            (Node34)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Body_Needed_For_SAL                 (Flag40)
+   --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Discard_Names                       (Flag88)
    --    Elaboration_Entity_Required         (Flag174)
    --    Elaborate_Body_Desirable            (Flag210)  (non-generic case only)
@@ -5943,6 +5963,7 @@ package Einfo is
    --    SPARK_Aux_Pragma                    (Node33)
    --    SPARK_Pragma                        (Node32)
    --    Contract                            (Node34)
+   --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Has_Anonymous_Master                (Flag253)
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
@@ -5993,6 +6014,7 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Body_Needed_For_SAL                 (Flag40)
+   --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Cleanups                      (Flag114)
    --    Discard_Names                       (Flag88)
    --    Elaboration_Entity_Required         (Flag174)
@@ -6162,8 +6184,9 @@ package Einfo is
    --    Scope_Depth_Value                   (Uint22)
    --    Extra_Formals                       (Node28)
    --    SPARK_Pragma                        (Node32)
-   --    SPARK_Pragma_Inherited              (Flag265)
    --    Contract                            (Node34)
+   --    Contains_Ignored_Ghost_Code         (Flag279)
+   --    SPARK_Pragma_Inherited              (Flag265)
    --    Scope_Depth                         (synth)
 
    --  E_Subprogram_Type
@@ -6230,12 +6253,14 @@ package Einfo is
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
+   --    Has_Independent_Components          (Flag34)
    --    Has_Initial_Value                   (Flag219)
    --    Has_Size_Clause                     (Flag29)
    --    Has_Up_Level_Access                 (Flag215)
    --    Has_Volatile_Components             (Flag87)
    --    Is_Atomic                           (Flag85)
    --    Is_Eliminated                       (Flag124)
+   --    Is_Independent                      (Flag268)
    --    Is_Processed_Transient              (Flag252)
    --    Is_Safe_To_Reevaluate               (Flag249)
    --    Is_Shared_Passive                   (Flag60)
@@ -6513,6 +6538,7 @@ package Einfo is
    function Component_Clause                    (Id : E) return N;
    function Component_Size                      (Id : E) return U;
    function Component_Type                      (Id : E) return E;
+   function Contains_Ignored_Ghost_Code         (Id : E) return B;
    function Contract                            (Id : E) return N;
    function Corresponding_Concurrent_Type       (Id : E) return E;
    function Corresponding_Discriminant          (Id : E) return E;
@@ -7154,6 +7180,7 @@ package Einfo is
    procedure Set_Component_Clause                (Id : E; V : N);
    procedure Set_Component_Size                  (Id : E; V : U);
    procedure Set_Component_Type                  (Id : E; V : E);
+   procedure Set_Contains_Ignored_Ghost_Code     (Id : E; V : B := True);
    procedure Set_Contract                        (Id : E; V : N);
    procedure Set_Corresponding_Concurrent_Type   (Id : E; V : E);
    procedure Set_Corresponding_Discriminant      (Id : E; V : E);
@@ -7910,6 +7937,7 @@ package Einfo is
    pragma Inline (Component_Clause);
    pragma Inline (Component_Size);
    pragma Inline (Component_Type);
+   pragma Inline (Contains_Ignored_Ghost_Code);
    pragma Inline (Contract);
    pragma Inline (Corresponding_Concurrent_Type);
    pragma Inline (Corresponding_Discriminant);
@@ -8399,6 +8427,7 @@ package Einfo is
    pragma Inline (Set_Component_Clause);
    pragma Inline (Set_Component_Size);
    pragma Inline (Set_Component_Type);
+   pragma Inline (Set_Contains_Ignored_Ghost_Code);
    pragma Inline (Set_Contract);
    pragma Inline (Set_Corresponding_Concurrent_Type);
    pragma Inline (Set_Corresponding_Discriminant);

@@ -1,4 +1,4 @@
-// Copyright (C) 2014 Free Software Foundation, Inc.
+// Copyright (C) 2014-2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,4 +36,4 @@
 # define C char
 # define C_is_char
 #endif
-# include "../c++98/locale-inst.cc"
+# include "locale-inst.cc"

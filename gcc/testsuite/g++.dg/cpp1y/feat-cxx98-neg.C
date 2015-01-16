@@ -109,10 +109,9 @@
 #  error "__cpp_digit_separators" // { dg-error "error" }
 #endif
 
-//  Sized deallocation not in yet.
-//#ifdef __cpp_sized_deallocation
-//#  error "__cpp_sized_deallocation"
-//#endif
+#ifndef __cpp_sized_deallocation
+#  error "__cpp_sized_deallocation" // { dg-error "error" }
+#endif
 
 //  C++11 attributes:
 

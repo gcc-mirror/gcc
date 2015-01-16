@@ -1296,6 +1296,14 @@ Type::type_descriptor_var_name(Gogo* gogo, Named_type* nt)
       ret.append(1, '.');
       if (in_function != NULL)
 	{
+	  const Typed_identifier* rcvr =
+	    in_function->func_value()->type()->receiver();
+	  if (rcvr != NULL)
+	    {
+	      Named_type* rcvr_type = rcvr->type()->deref()->named_type();
+	      ret.append(Gogo::unpack_hidden_name(rcvr_type->name()));
+	      ret.append(1, '.');
+	    }
 	  ret.append(Gogo::unpack_hidden_name(in_function->name()));
 	  ret.append(1, '.');
 	  if (index > 0)
@@ -1958,6 +1966,8 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
 
   if (!this->has_pointer())
     runtime_type_kind |= RUNTIME_TYPE_KIND_NO_POINTERS;
+  if (this->points_to() != NULL)
+    runtime_type_kind |= RUNTIME_TYPE_KIND_DIRECT_IFACE;
   Struct_field_list::const_iterator p = fields->begin();
   go_assert(p->is_field_name("kind"));
   vals->push_back(Expression::make_integer_ul(runtime_type_kind, p->type(),
@@ -9170,6 +9180,14 @@ Named_type::do_mangled_name(Gogo* gogo, std::string* ret) const
       name.append(1, '.');
       if (this->in_function_ != NULL)
 	{
+	  const Typed_identifier* rcvr =
+	    this->in_function_->func_value()->type()->receiver();
+	  if (rcvr != NULL)
+	    {
+	      Named_type* rcvr_type = rcvr->type()->deref()->named_type();
+	      name.append(Gogo::unpack_hidden_name(rcvr_type->name()));
+	      name.append(1, '.');
+	    }
 	  name.append(Gogo::unpack_hidden_name(this->in_function_->name()));
 	  name.append(1, '$');
 	  if (this->in_function_index_ > 0)

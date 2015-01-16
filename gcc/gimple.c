@@ -1,6 +1,6 @@
 /* Gimple IR support functions.
 
-   Copyright (C) 2007-2014 Free Software Foundation, Inc.
+   Copyright (C) 2007-2015 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -24,16 +24,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "target.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "calls.h"
 #include "stmt.h"
 #include "stor-layout.h"
 #include "hard-reg-set.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "dominance.h"
@@ -866,8 +872,7 @@ gimple_build_omp_critical (gimple_seq body, tree name)
 
    BODY is sequence of statements inside the for loop.
    KIND is the `for' variant.
-   CLAUSES, are any of the OMP loop construct's clauses: private, firstprivate,
-   lastprivate, reductions, ordered, schedule, and nowait.
+   CLAUSES, are any of the construct's clauses.
    COLLAPSE is the collapse count.
    PRE_BODY is the sequence of statements that are loop invariant.  */
 
@@ -1082,7 +1087,8 @@ gimple_build_omp_single (gimple_seq body, tree clauses)
 /* Build a GIMPLE_OMP_TARGET statement.
 
    BODY is the sequence of statements that will be executed.
-   CLAUSES are any of the OMP target construct's clauses.  */
+   KIND is the kind of the region.
+   CLAUSES are any of the construct's clauses.  */
 
 gomp_target *
 gimple_build_omp_target (gimple_seq body, int kind, tree clauses)

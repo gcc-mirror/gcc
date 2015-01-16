@@ -10972,7 +10972,7 @@ directly on the environment task of the partition.
 @node No_Task_Termination
 @unnumberedsubsec No_Task_Termination
 @findex No_Task_Termination
-[RM D.7] Tasks which terminate are erroneous.
+[RM D.7] Tasks that terminate are erroneous.
 
 @node No_Tasking
 @unnumberedsubsec No_Tasking
@@ -14314,6 +14314,16 @@ allocation.  See D.7(8).
 @noindent
 The only operation that implicitly requires heap storage allocation is
 task creation.
+
+@sp 1
+@item
+@cartouche
+@noindent
+What happens when a task terminates in the presence of
+pragma @code{No_Task_Termination}. See D.7(15).
+@end cartouche
+@noindent
+Execution is erroneous in that case.
 
 @sp 1
 @item

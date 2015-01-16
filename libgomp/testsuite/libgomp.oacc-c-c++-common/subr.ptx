@@ -1,0 +1,148 @@
+// BEGIN PREAMBLE
+	.version	3.1
+	.target	sm_30
+	.address_size 64
+// END PREAMBLE
+
+// BEGIN FUNCTION DEF: clock
+.func (.param.u32 %out_retval)clock
+{
+.reg.u32 %retval;
+	.reg.u64 %hr10;
+	.reg.u32 %r22;
+	.reg.u32 %r23;
+	.reg.u32 %r24;
+	.local.align 8 .b8 %frame[8];
+	// #APP 
+// 7 "subr.c" 1
+	mov.u32 %r24, %clock;
+// 0 "" 2
+	// #NO_APP 
+		st.local.u32	[%frame], %r24;
+		ld.local.u32	%r22, [%frame];
+		mov.u32	%r23, %r22;
+		mov.u32	%retval, %r23;
+	st.param.u32	[%out_retval], %retval;
+	ret;
+	}
+// END FUNCTION DEF
+// BEGIN GLOBAL FUNCTION DEF: delay
+.visible .entry delay(.param.u64 %in_ar1, .param.u64 %in_ar2)
+{
+	.reg.u64 %ar1;
+	.reg.u64 %ar2;
+	.reg.u64 %hr10;
+	.reg.u64 %r22;
+	.reg.u32 %r23;
+	.reg.u64 %r24;
+	.reg.u64 %r25;
+	.reg.u32 %r26;
+	.reg.u32 %r27;
+	.reg.u32 %r28;
+	.reg.u32 %r29;
+	.reg.u32 %r30;
+	.reg.u64 %r31;
+	.reg.pred %r32;
+	.local.align 8 .b8 %frame[24];
+	ld.param.u64 %ar1, [%in_ar1];
+	ld.param.u64 %ar2, [%in_ar2];
+		mov.u64	%r24, %ar1;
+		st.u64	[%frame+8], %r24;
+		mov.u64	%r25, %ar2;
+		st.local.u64	[%frame+16], %r25;
+	{
+		.param.u32 %retval_in;
+	{
+		call (%retval_in), clock;
+	}
+		ld.param.u32	%r26, [%retval_in];
+}
+		st.local.u32	[%frame+4], %r26;
+		mov.u32	%r27, 0;
+		st.local.u32	[%frame], %r27;
+		bra	$L4;
+$L5:
+	{
+		.param.u32 %retval_in;
+	{
+		call (%retval_in), clock;
+	}
+		ld.param.u32	%r28, [%retval_in];
+}
+		mov.u32	%r23, %r28;
+		ld.local.u32	%r30, [%frame+4];
+		sub.u32	%r29, %r23, %r30;
+		st.local.u32	[%frame], %r29;
+$L4:
+		ld.local.s32	%r22, [%frame];
+		ld.local.u64	%r31, [%frame+16];
+		setp.lo.u64 %r32,%r22,%r31;
+	@%r32	bra	$L5;
+	ret;
+	}
+// END FUNCTION DEF
+// BEGIN GLOBAL FUNCTION DEF: delay2
+.visible .entry delay2(.param.u64 %in_ar1, .param.u64 %in_ar2, .param.u64 %in_ar3)
+{
+	.reg.u64 %ar1;
+	.reg.u64 %ar2;
+	.reg.u64 %ar3;
+	.reg.u64 %hr10;
+	.reg.u64 %r22;
+	.reg.u32 %r23;
+	.reg.u64 %r24;
+	.reg.u64 %r25;
+	.reg.u64 %r26;
+	.reg.u32 %r27;
+	.reg.u32 %r28;
+	.reg.u32 %r29;
+	.reg.u32 %r30;
+	.reg.u32 %r31;
+	.reg.u64 %r32;
+	.reg.pred %r33;
+	.reg.u64 %r34;
+	.reg.u64 %r35;
+	.local.align 8 .b8 %frame[32];
+	ld.param.u64 %ar1, [%in_ar1];
+	ld.param.u64 %ar2, [%in_ar2];
+	ld.param.u64 %ar3, [%in_ar3];
+		mov.u64	%r24, %ar1;
+		st.local.u64	[%frame+8], %r24;
+		mov.u64	%r25, %ar2;
+		st.local.u64	[%frame+16], %r25;
+		mov.u64	%r26, %ar3;
+		st.local.u64	[%frame+24], %r26;
+	{
+		.param.u32 %retval_in;
+	{
+		call (%retval_in), clock;
+	}
+		ld.param.u32	%r27, [%retval_in];
+}
+		st.local.u32	[%frame+4], %r27;
+		mov.u32	%r28, 0;
+		st.local.u32	[%frame], %r28;
+		bra	$L8;
+$L9:
+	{
+		.param.u32 %retval_in;
+	{
+		call (%retval_in), clock;
+	}
+		ld.param.u32	%r29, [%retval_in];
+}
+		mov.u32	%r23, %r29;
+		ld.local.u32	%r31, [%frame+4];
+		sub.u32	%r30, %r23, %r31;
+		st.local.u32	[%frame], %r30;
+$L8:
+		ld.local.s32	%r22, [%frame];
+		ld.local.u64	%r32, [%frame+16];
+		setp.lo.u64 %r33,%r22,%r32;
+	@%r33	bra	$L9;
+		ld.local.u64	%r34, [%frame+8];
+		ld.local.u64	%r35, [%frame+24];
+		st.u64	[%r34], %r35;
+	ret;
+	}
+// END FUNCTION DEF

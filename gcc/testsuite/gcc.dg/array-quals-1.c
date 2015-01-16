@@ -3,6 +3,7 @@
    all should end up in a read-only section.  PR c/12165.  */
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
+/* { dg-options "-Wno-discarded-array-qualifiers" } */
 /* The MMIX port always switches to the .data section at the end of a file.  */
 /* { dg-final { scan-assembler-not "\\.data(?!\\.rel\\.ro)" { xfail powerpc*-*-aix* mmix-*-* x86_64-*-mingw* } } } */
 static const int a[2] = { 1, 2 };

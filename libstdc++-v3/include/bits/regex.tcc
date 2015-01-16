@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2014 Free Software Foundation, Inc.
+// Copyright (C) 2013-2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -96,7 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       if (__ret)
 	{
-	  for (auto __it : __res)
+	  for (auto& __it : __res)
 	    if (!__it.matched)
 	      __it.first = __it.second = __e;
 	  auto& __pre = __res[__res.size()-2];

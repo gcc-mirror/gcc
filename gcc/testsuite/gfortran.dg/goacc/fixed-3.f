@@ -1,0 +1,13 @@
+      IMPLICIT NONE
+
+      INTEGER DEV
+
+!$ACC PARALLEL
+      DEV = 0
+!$ACC END PARALLEL
+
+!$ACC PARALLEL
+      DEV = 0
+!$ACC END PARALLEL
+
+      END

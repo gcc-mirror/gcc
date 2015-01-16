@@ -1,5 +1,5 @@
 /* Expression translation
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -25,7 +25,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "gfortran.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stringpool.h"
 #include "diagnostic-core.h"	/* For fatal_error.  */
 #include "langhooks.h"
@@ -40,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-stmt.h"
 #include "dependency.h"
 #include "gimplify.h"
-#include "wide-int.h"
 
 /* Convert a scalar to an array descriptor. To be used for assumed-rank
    arrays.  */
@@ -1799,11 +1809,11 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       fault = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
 			       boolean_type_node, nonempty, fault);
       if (name)
-	asprintf (&msg, "Substring out of bounds: lower bound (%%ld) of '%s' "
-		  "is less than one", name);
+	msg = xasprintf ("Substring out of bounds: lower bound (%%ld) of '%s' "
+			 "is less than one", name);
       else
-	asprintf (&msg, "Substring out of bounds: lower bound (%%ld)"
-		  "is less than one");
+	msg = xasprintf ("Substring out of bounds: lower bound (%%ld)"
+			 "is less than one");
       gfc_trans_runtime_check (true, false, fault, &se->pre, where, msg,
 			       fold_convert (long_integer_type_node,
 					     start.expr));
@@ -1815,11 +1825,11 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       fault = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
 			       boolean_type_node, nonempty, fault);
       if (name)
-	asprintf (&msg, "Substring out of bounds: upper bound (%%ld) of '%s' "
-		  "exceeds string length (%%ld)", name);
+	msg = xasprintf ("Substring out of bounds: upper bound (%%ld) of '%s' "
+			 "exceeds string length (%%ld)", name);
       else
-	asprintf (&msg, "Substring out of bounds: upper bound (%%ld) "
-		  "exceeds string length (%%ld)");
+	msg = xasprintf ("Substring out of bounds: upper bound (%%ld) "
+			 "exceeds string length (%%ld)");
       gfc_trans_runtime_check (true, false, fault, &se->pre, where, msg,
 			       fold_convert (long_integer_type_node, end.expr),
 			       fold_convert (long_integer_type_node,
@@ -4930,18 +4940,19 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	      if (attr.allocatable
 		  && (fsym == NULL || !fsym->attr.allocatable))
-		asprintf (&msg, "Allocatable actual argument '%s' is not "
-			  "allocated or not present", e->symtree->n.sym->name);
+		msg = xasprintf ("Allocatable actual argument '%s' is not "
+				 "allocated or not present",
+				 e->symtree->n.sym->name);
 	      else if (attr.pointer
 		       && (fsym == NULL || !fsym->attr.pointer))
-		asprintf (&msg, "Pointer actual argument '%s' is not "
-			  "associated or not present",
-			  e->symtree->n.sym->name);
+		msg = xasprintf ("Pointer actual argument '%s' is not "
+				 "associated or not present",
+				 e->symtree->n.sym->name);
 	      else if (attr.proc_pointer
 		       && (fsym == NULL || !fsym->attr.proc_pointer))
-		asprintf (&msg, "Proc-pointer actual argument '%s' is not "
-			  "associated or not present",
-			  e->symtree->n.sym->name);
+		msg = xasprintf ("Proc-pointer actual argument '%s' is not "
+				 "associated or not present",
+				 e->symtree->n.sym->name);
 	      else
 		goto end_pointer_check;
 
@@ -4963,16 +4974,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    {
 	      if (attr.allocatable
 		  && (fsym == NULL || !fsym->attr.allocatable))
-		asprintf (&msg, "Allocatable actual argument '%s' is not "
-		      "allocated", e->symtree->n.sym->name);
+		msg = xasprintf ("Allocatable actual argument '%s' is not "
+				 "allocated", e->symtree->n.sym->name);
 	      else if (attr.pointer
 		       && (fsym == NULL || !fsym->attr.pointer))
-		asprintf (&msg, "Pointer actual argument '%s' is not "
-		      "associated", e->symtree->n.sym->name);
+		msg = xasprintf ("Pointer actual argument '%s' is not "
+				 "associated", e->symtree->n.sym->name);
 	      else if (attr.proc_pointer
 		       && (fsym == NULL || !fsym->attr.proc_pointer))
-		asprintf (&msg, "Proc-pointer actual argument '%s' is not "
-		      "associated", e->symtree->n.sym->name);
+		msg = xasprintf ("Proc-pointer actual argument '%s' is not "
+				 "associated", e->symtree->n.sym->name);
 	      else
 		goto end_pointer_check;
 

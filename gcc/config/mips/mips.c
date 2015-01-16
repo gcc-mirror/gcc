@@ -1,5 +1,5 @@
 /* Subroutines used for MIPS code generation.
-   Copyright (C) 1989-2014 Free Software Foundation, Inc.
+   Copyright (C) 1989-2015 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64-bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -33,22 +33,36 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "recog.h"
 #include "output.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "varasm.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "calls.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "input.h"
 #include "function.h"
+#include "hashtab.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "emit-rtl.h"
+#include "stmt.h"
 #include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"
 #include "libfuncs.h"
-#include "flags.h"
 #include "reload.h"
 #include "tm_p.h"
 #include "ggc.h"
@@ -4106,6 +4120,22 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	  else
 	    *total = mips_cost->fp_add;
 	  return false;
+	}
+
+      /* If it's an add + mult (which is equivalent to shift left) and
+         it's immediate operand satisfies const_immlsa_operand predicate.  */
+      if (((ISA_HAS_LSA && mode == SImode)
+	   || (ISA_HAS_DLSA && mode == DImode))
+	  && GET_CODE (XEXP (x, 0)) == MULT)
+	{
+	  rtx op2 = XEXP (XEXP (x, 0), 1);
+	  if (const_immlsa_operand (op2, mode))
+	    {
+	      *total = (COSTS_N_INSNS (1)
+			+ set_src_cost (XEXP (XEXP (x, 0), 0), speed)
+			+ set_src_cost (XEXP (x, 1), speed));
+	      return true;
+	    }
 	}
 
       /* Double-word operations require three single-word operations and
@@ -8413,6 +8443,7 @@ mips_print_operand_punct_valid_p (unsigned char code)
    'x'	Print the low 16 bits of CONST_INT OP in hexadecimal format.
    'd'	Print CONST_INT OP in decimal.
    'm'	Print one less than CONST_INT OP in decimal.
+   'y'	Print exact log2 of CONST_INT OP in decimal.
    'h'	Print the high-part relocation associated with OP, after stripping
 	  any outermost HIGH.
    'R'	Print the low-part relocation associated with OP.
@@ -8472,6 +8503,19 @@ mips_print_operand (FILE *file, rtx op, int letter)
     case 'm':
       if (CONST_INT_P (op))
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (op) - 1);
+      else
+	output_operand_lossage ("invalid use of '%%%c'", letter);
+      break;
+
+    case 'y':
+      if (CONST_INT_P (op))
+	{
+	  int val = exact_log2 (INTVAL (op));
+	  if (val != -1)
+	    fprintf (file, "%d", val);
+	  else
+	    output_operand_lossage ("invalid use of '%%%c'", letter);
+	}
       else
 	output_operand_lossage ("invalid use of '%%%c'", letter);
       break;

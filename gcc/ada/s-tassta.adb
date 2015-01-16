@@ -989,7 +989,7 @@ package body System.Tasking.Stages is
          return;
       end if;
 
-      Initialization.Defer_Abort (Self_ID);
+      Initialization.Defer_Abort_Nestable (Self_ID);
 
       --  Loop through the From chain, changing their Master_of_Task fields,
       --  and to find the end of the chain.
@@ -1009,7 +1009,7 @@ package body System.Tasking.Stages is
 
       From.all.T_ID := null;
 
-      Initialization.Undefer_Abort (Self_ID);
+      Initialization.Undefer_Abort_Nestable (Self_ID);
    end Move_Activation_Chain;
 
    ------------------
@@ -2011,9 +2011,9 @@ package body System.Tasking.Stages is
         (Self_ID.Deferral_Level > 0
           or else not System.Restrictions.Abort_Allowed);
       pragma Assert (Self_ID = Self);
-      pragma Assert (Self_ID.Master_Within = Self_ID.Master_of_Task + 1
-                       or else
-                     Self_ID.Master_Within = Self_ID.Master_of_Task + 2);
+      pragma Assert
+        (Self_ID.Master_Within in
+           Self_ID.Master_of_Task + 1 ..  Self_ID.Master_of_Task + 3);
       pragma Assert (Self_ID.Common.Wait_Count = 0);
       pragma Assert (Self_ID.Open_Accepts = null);
       pragma Assert (Self_ID.ATC_Nesting_Level = 1);

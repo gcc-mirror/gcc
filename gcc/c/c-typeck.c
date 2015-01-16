@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright (C) 1987-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,7 +27,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "symtab.h"
+#include "input.h"
+#include "alias.h"
+#include "double-int.h"
+#include "machmode.h"
+#include "inchash.h"
+#include "real.h"
+#include "fixed-value.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "trans-mem.h"
 #include "varasm.h"
@@ -57,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-ubsan.h"
 #include "cilk.h"
 #include "wide-int.h"
+#include "gomp-constants.h"
 
 /* Possible cases of implicit bad conversions.  Used to select
    diagnostic messages in convert_for_assignment.  */
@@ -673,12 +685,13 @@ common_pointer_type (tree t1, tree t2)
     mv2 = TYPE_MAIN_VARIANT (pointed_to_2);
   target = composite_type (mv1, mv2);
 
+  /* Strip array types to get correct qualifier for pointers to arrays */
+  quals1 = TYPE_QUALS_NO_ADDR_SPACE (strip_array_types (pointed_to_1));
+  quals2 = TYPE_QUALS_NO_ADDR_SPACE (strip_array_types (pointed_to_2));
+
   /* For function types do not merge const qualifiers, but drop them
      if used inconsistently.  The middle-end uses these to mark const
      and noreturn functions.  */
-  quals1 = TYPE_QUALS_NO_ADDR_SPACE (pointed_to_1);
-  quals2 = TYPE_QUALS_NO_ADDR_SPACE (pointed_to_2);
-
   if (TREE_CODE (pointed_to_1) == FUNCTION_TYPE)
     target_quals = (quals1 & quals2);
   else
@@ -1224,6 +1237,7 @@ static int
 comp_target_types (location_t location, tree ttl, tree ttr)
 {
   int val;
+  int val_ped;
   tree mvl = TREE_TYPE (ttl);
   tree mvr = TREE_TYPE (ttr);
   addr_space_t asl = TYPE_ADDR_SPACE (mvl);
@@ -1235,18 +1249,31 @@ comp_target_types (location_t location, tree ttl, tree ttr)
   if (!addr_space_superset (asl, asr, &as_common))
     return 0;
 
-  /* Do not lose qualifiers on element types of array types that are
-     pointer targets by taking their TYPE_MAIN_VARIANT.  */
-  if (TREE_CODE (mvl) != ARRAY_TYPE)
-    mvl = (TYPE_ATOMIC (mvl)
-	   ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvl), TYPE_QUAL_ATOMIC)
-	   : TYPE_MAIN_VARIANT (mvl));
-  if (TREE_CODE (mvr) != ARRAY_TYPE)
-    mvr = (TYPE_ATOMIC (mvr)
-	   ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvr), TYPE_QUAL_ATOMIC)
-	   : TYPE_MAIN_VARIANT (mvr));
+  /* For pedantic record result of comptypes on arrays before losing
+     qualifiers on the element type below. */
+  val_ped = 1;
+
+  if (TREE_CODE (mvl) == ARRAY_TYPE
+      && TREE_CODE (mvr) == ARRAY_TYPE)
+    val_ped = comptypes (mvl, mvr);
+
+  /* Qualifiers on element types of array types that are
+     pointer targets are lost by taking their TYPE_MAIN_VARIANT.  */
+
+  mvl = (TYPE_ATOMIC (strip_array_types (mvl))
+	 ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvl), TYPE_QUAL_ATOMIC)
+	 : TYPE_MAIN_VARIANT (mvl));
+
+  mvr = (TYPE_ATOMIC (strip_array_types (mvr))
+	 ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvr), TYPE_QUAL_ATOMIC)
+	 : TYPE_MAIN_VARIANT (mvr));
+
   enum_and_int_p = false;
   val = comptypes_check_enum_int (mvl, mvr, &enum_and_int_p);
+
+  if (val == 1 && val_ped != 1)
+    pedwarn (location, OPT_Wpedantic, "pointers to arrays with different qualifiers "
+                                      "are incompatible in ISO C");
 
   if (val == 2)
     pedwarn (location, OPT_Wpedantic, "types are not quite compatible");
@@ -2486,7 +2513,7 @@ build_array_ref (location_t loc, tree array, tree index)
   /* ??? Existing practice has been to warn only when the char
      index is syntactically the index, not for char[array].  */
   if (!swapped)
-     warn_array_subscript_with_type_char (index);
+     warn_array_subscript_with_type_char (loc, index);
 
   /* Apply default promotions *after* noticing character types.  */
   index = default_conversion (index);
@@ -4609,6 +4636,13 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       else if (VOID_TYPE_P (TREE_TYPE (type1))
 	       && !TYPE_ATOMIC (TREE_TYPE (type1)))
 	{
+	  if ((TREE_CODE (TREE_TYPE (type2)) == ARRAY_TYPE)
+	      && (TYPE_QUALS (strip_array_types (TREE_TYPE (type2)))
+		  & ~TYPE_QUALS (TREE_TYPE (type1))))
+	    warning_at (colon_loc, OPT_Wdiscarded_array_qualifiers,
+			"pointer to array loses qualifier "
+			"in conditional expression");
+
 	  if (TREE_CODE (TREE_TYPE (type2)) == FUNCTION_TYPE)
 	    pedwarn (colon_loc, OPT_Wpedantic,
 		     "ISO C forbids conditional expr between "
@@ -4619,6 +4653,13 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       else if (VOID_TYPE_P (TREE_TYPE (type2))
 	       && !TYPE_ATOMIC (TREE_TYPE (type2)))
 	{
+	  if ((TREE_CODE (TREE_TYPE (type1)) == ARRAY_TYPE)
+	      && (TYPE_QUALS (strip_array_types (TREE_TYPE (type1)))
+		  & ~TYPE_QUALS (TREE_TYPE (type2))))
+	    warning_at (colon_loc, OPT_Wdiscarded_array_qualifiers,
+			"pointer to array loses qualifier "
+			"in conditional expression");
+
 	  if (TREE_CODE (TREE_TYPE (type1)) == FUNCTION_TYPE)
 	    pedwarn (colon_loc, OPT_Wpedantic,
 		     "ISO C forbids conditional expr between "
@@ -5661,7 +5702,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   /* This macro is used to emit diagnostics to ensure that all format
      strings are complete sentences, visible to gettext and checked at
      compile time.  */
-#define WARN_FOR_ASSIGNMENT(LOCATION, PLOC, OPT, AR, AS, IN, RE)	 \
+#define PEDWARN_FOR_ASSIGNMENT(LOCATION, PLOC, OPT, AR, AS, IN, RE)	 \
   do {                                                                   \
     switch (errtype)                                                     \
       {                                                                  \
@@ -5688,10 +5729,9 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
   /* This macro is used to emit diagnostics to ensure that all format
      strings are complete sentences, visible to gettext and checked at
-     compile time.  It is the same as WARN_FOR_ASSIGNMENT but with an
+     compile time.  It is the same as PEDWARN_FOR_ASSIGNMENT but with an
      extra parameter to enumerate qualifiers.  */
-
-#define WARN_FOR_QUALIFIERS(LOCATION, PLOC, OPT, AR, AS, IN, RE, QUALS)  \
+#define PEDWARN_FOR_QUALIFIERS(LOCATION, PLOC, OPT, AR, AS, IN, RE, QUALS) \
   do {                                                                   \
     switch (errtype)                                                     \
       {                                                                  \
@@ -5710,6 +5750,35 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
         break;                                                           \
       case ic_return:                                                    \
         pedwarn (LOCATION, OPT, RE, QUALS);				 \
+        break;                                                           \
+      default:                                                           \
+        gcc_unreachable ();                                              \
+      }                                                                  \
+  } while (0)
+
+  /* This macro is used to emit diagnostics to ensure that all format
+     strings are complete sentences, visible to gettext and checked at
+     compile time.  It is the same as PEDWARN_FOR_QUALIFIERS but uses
+     warning_at instead of pedwarn.  */
+#define WARNING_FOR_QUALIFIERS(LOCATION, PLOC, OPT, AR, AS, IN, RE, QUALS) \
+  do {                                                                   \
+    switch (errtype)                                                     \
+      {                                                                  \
+      case ic_argpass:                                                   \
+        if (warning_at (PLOC, OPT, AR, parmnum, rname, QUALS))           \
+          inform ((fundecl && !DECL_IS_BUILTIN (fundecl))                \
+                  ? DECL_SOURCE_LOCATION (fundecl) : PLOC,               \
+                  "expected %qT but argument is of type %qT",            \
+                  type, rhstype);                                        \
+        break;                                                           \
+      case ic_assign:                                                    \
+        warning_at (LOCATION, OPT, AS, QUALS);                           \
+        break;                                                           \
+      case ic_init:                                                      \
+        warning_at (LOCATION, OPT, IN, QUALS);                           \
+        break;                                                           \
+      case ic_return:                                                    \
+        warning_at (LOCATION, OPT, RE, QUALS);                           \
         break;                                                           \
       default:                                                           \
         gcc_unreachable ();                                              \
@@ -5758,15 +5827,15 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  && TREE_CODE (type) == ENUMERAL_TYPE
 	  && TYPE_MAIN_VARIANT (checktype) != TYPE_MAIN_VARIANT (type))
 	{
-	  WARN_FOR_ASSIGNMENT (location, expr_loc, OPT_Wc___compat,
-			       G_("enum conversion when passing argument "
-				  "%d of %qE is invalid in C++"),
-			       G_("enum conversion in assignment is "
-				  "invalid in C++"),
-			       G_("enum conversion in initialization is "
-				  "invalid in C++"),
-			       G_("enum conversion in return is "
-				  "invalid in C++"));
+	  PEDWARN_FOR_ASSIGNMENT (location, expr_loc, OPT_Wc___compat,
+			          G_("enum conversion when passing argument "
+				     "%d of %qE is invalid in C++"),
+			          G_("enum conversion in assignment is "
+				     "invalid in C++"),
+			          G_("enum conversion in initialization is "
+				     "invalid in C++"),
+			          G_("enum conversion in return is "
+				     "invalid in C++"));
 	}
     }
 
@@ -5828,12 +5897,14 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     {
       tree ret;
       bool save = in_late_binary_op;
-      if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE)
+      if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE
+	  || (coder == REAL_TYPE
+	      && (codel == INTEGER_TYPE || codel == ENUMERAL_TYPE)
+	      && (flag_sanitize & SANITIZE_FLOAT_CAST)))
 	in_late_binary_op = true;
       ret = convert_and_check (expr_loc != UNKNOWN_LOCATION
 			       ? expr_loc : location, type, orig_rhs);
-      if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE)
-	in_late_binary_op = save;
+      in_late_binary_op = save;
       return ret;
     }
 
@@ -5921,34 +5992,34 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		     vice-versa.  */
 		  if (TYPE_QUALS_NO_ADDR_SPACE (ttl)
 		      & ~TYPE_QUALS_NO_ADDR_SPACE (ttr))
-		    WARN_FOR_QUALIFIERS (location, expr_loc,
-					 OPT_Wdiscarded_qualifiers,
-					 G_("passing argument %d of %qE "
-					    "makes %q#v qualified function "
-					    "pointer from unqualified"),
-					 G_("assignment makes %q#v qualified "
-					    "function pointer from "
-					    "unqualified"),
-					 G_("initialization makes %q#v qualified "
-					    "function pointer from "
-					    "unqualified"),
-					 G_("return makes %q#v qualified function "
-					    "pointer from unqualified"),
-					 TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr));
+		    PEDWARN_FOR_QUALIFIERS (location, expr_loc,
+					    OPT_Wdiscarded_qualifiers,
+					    G_("passing argument %d of %qE "
+					       "makes %q#v qualified function "
+					       "pointer from unqualified"),
+					    G_("assignment makes %q#v qualified "
+					       "function pointer from "
+					       "unqualified"),
+					    G_("initialization makes %q#v qualified "
+					       "function pointer from "
+					       "unqualified"),
+					    G_("return makes %q#v qualified function "
+					       "pointer from unqualified"),
+					    TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr));
 		}
 	      else if (TYPE_QUALS_NO_ADDR_SPACE (ttr)
 		       & ~TYPE_QUALS_NO_ADDR_SPACE (ttl))
-		WARN_FOR_QUALIFIERS (location, expr_loc,
-				     OPT_Wdiscarded_qualifiers,
-				     G_("passing argument %d of %qE discards "
-					"%qv qualifier from pointer target type"),
-				     G_("assignment discards %qv qualifier "
-					"from pointer target type"),
-				     G_("initialization discards %qv qualifier "
-					"from pointer target type"),
-				     G_("return discards %qv qualifier from "
-					"pointer target type"),
-				     TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
+		PEDWARN_FOR_QUALIFIERS (location, expr_loc,
+				        OPT_Wdiscarded_qualifiers,
+				        G_("passing argument %d of %qE discards "
+					   "%qv qualifier from pointer target type"),
+				        G_("assignment discards %qv qualifier "
+					   "from pointer target type"),
+				        G_("initialization discards %qv qualifier "
+					   "from pointer target type"),
+				        G_("return discards %qv qualifier from "
+					   "pointer target type"),
+				        TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
 
 	      memb = marginal_memb;
 	    }
@@ -6096,42 +6167,69 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		  == c_common_signed_type (mvr))
 	      && TYPE_ATOMIC (mvl) == TYPE_ATOMIC (mvr)))
 	{
-	  if (pedantic
+	  /* Warn about loss of qualifers from pointers to arrays with
+	     qualifiers on the element type. */
+	  if (TREE_CODE (ttr) == ARRAY_TYPE)
+	    {
+	      ttr = strip_array_types (ttr);
+	      ttl = strip_array_types (ttl);
+
+	      if (TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttr)
+		  & ~TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttl))
+		WARNING_FOR_QUALIFIERS (location, expr_loc,
+				        OPT_Wdiscarded_array_qualifiers,
+				        G_("passing argument %d of %qE discards "
+					   "%qv qualifier from pointer target type"),
+				        G_("assignment discards %qv qualifier "
+					   "from pointer target type"),
+				        G_("initialization discards %qv qualifier "
+					   "from pointer target type"),
+				        G_("return discards %qv qualifier from "
+					   "pointer target type"),
+                                        TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
+            }
+          else if (pedantic
 	      && ((VOID_TYPE_P (ttl) && TREE_CODE (ttr) == FUNCTION_TYPE)
 		  ||
 		  (VOID_TYPE_P (ttr)
 		   && !null_pointer_constant
 		   && TREE_CODE (ttl) == FUNCTION_TYPE)))
-	    WARN_FOR_ASSIGNMENT (location, expr_loc, OPT_Wpedantic,
-				 G_("ISO C forbids passing argument %d of "
-				    "%qE between function pointer "
-				    "and %<void *%>"),
-				 G_("ISO C forbids assignment between "
-				    "function pointer and %<void *%>"),
-				 G_("ISO C forbids initialization between "
-				    "function pointer and %<void *%>"),
-				 G_("ISO C forbids return between function "
-				    "pointer and %<void *%>"));
+	    PEDWARN_FOR_ASSIGNMENT (location, expr_loc, OPT_Wpedantic,
+				    G_("ISO C forbids passing argument %d of "
+				       "%qE between function pointer "
+				       "and %<void *%>"),
+				    G_("ISO C forbids assignment between "
+				       "function pointer and %<void *%>"),
+				    G_("ISO C forbids initialization between "
+				       "function pointer and %<void *%>"),
+				    G_("ISO C forbids return between function "
+				       "pointer and %<void *%>"));
 	  /* Const and volatile mean something different for function types,
 	     so the usual warnings are not appropriate.  */
 	  else if (TREE_CODE (ttr) != FUNCTION_TYPE
 		   && TREE_CODE (ttl) != FUNCTION_TYPE)
 	    {
+	      /* Don't warn about loss of qualifier for conversions from
+		 qualified void* to pointers to arrays with corresponding
+		 qualifier on the element type. */
+	      if (!pedantic)
+	        ttl = strip_array_types (ttl);
+
 	      /* Assignments between atomic and non-atomic objects are OK.  */
 	      if (TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttr)
 		  & ~TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttl))
 		{
-		  WARN_FOR_QUALIFIERS (location, expr_loc,
-				       OPT_Wdiscarded_qualifiers,
-				       G_("passing argument %d of %qE discards "
-					  "%qv qualifier from pointer target type"),
-				       G_("assignment discards %qv qualifier "
-					  "from pointer target type"),
-				       G_("initialization discards %qv qualifier "
-					  "from pointer target type"),
-				       G_("return discards %qv qualifier from "
-					  "pointer target type"),
-				       TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
+		  PEDWARN_FOR_QUALIFIERS (location, expr_loc,
+				          OPT_Wdiscarded_qualifiers,
+				          G_("passing argument %d of %qE discards "
+					     "%qv qualifier from pointer target type"),
+				          G_("assignment discards %qv qualifier "
+					     "from pointer target type"),
+				          G_("initialization discards %qv qualifier "
+					     "from pointer target type"),
+				          G_("return discards %qv qualifier from "
+					     "pointer target type"),
+				          TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
 		}
 	      /* If this is not a case of ignoring a mismatch in signedness,
 		 no warning.  */
@@ -6140,15 +6238,15 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		;
 	      /* If there is a mismatch, do warn.  */
 	      else if (warn_pointer_sign)
-		WARN_FOR_ASSIGNMENT (location, expr_loc, OPT_Wpointer_sign,
-				     G_("pointer targets in passing argument "
-					"%d of %qE differ in signedness"),
-				     G_("pointer targets in assignment "
-					"differ in signedness"),
-				     G_("pointer targets in initialization "
-					"differ in signedness"),
-				     G_("pointer targets in return differ "
-					"in signedness"));
+		 PEDWARN_FOR_ASSIGNMENT (location, expr_loc, OPT_Wpointer_sign,
+				         G_("pointer targets in passing argument "
+					    "%d of %qE differ in signedness"),
+				         G_("pointer targets in assignment "
+					    "differ in signedness"),
+				         G_("pointer targets in initialization "
+					    "differ in signedness"),
+				         G_("pointer targets in return differ "
+					    "in signedness"));
 	    }
 	  else if (TREE_CODE (ttl) == FUNCTION_TYPE
 		   && TREE_CODE (ttr) == FUNCTION_TYPE)
@@ -6159,31 +6257,31 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		 where an ordinary one is wanted, but not vice-versa.  */
 	      if (TYPE_QUALS_NO_ADDR_SPACE (ttl)
 		  & ~TYPE_QUALS_NO_ADDR_SPACE (ttr))
-		WARN_FOR_QUALIFIERS (location, expr_loc,
-				     OPT_Wdiscarded_qualifiers,
-				     G_("passing argument %d of %qE makes "
-					"%q#v qualified function pointer "
-					"from unqualified"),
-				     G_("assignment makes %q#v qualified function "
-					"pointer from unqualified"),
-				     G_("initialization makes %q#v qualified "
-					"function pointer from unqualified"),
-				     G_("return makes %q#v qualified function "
-					"pointer from unqualified"),
-				     TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr));
+		PEDWARN_FOR_QUALIFIERS (location, expr_loc,
+				        OPT_Wdiscarded_qualifiers,
+				        G_("passing argument %d of %qE makes "
+					   "%q#v qualified function pointer "
+					   "from unqualified"),
+				        G_("assignment makes %q#v qualified function "
+					   "pointer from unqualified"),
+				        G_("initialization makes %q#v qualified "
+					   "function pointer from unqualified"),
+				        G_("return makes %q#v qualified function "
+					   "pointer from unqualified"),
+				        TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr));
 	    }
 	}
       else
 	/* Avoid warning about the volatile ObjC EH puts on decls.  */
 	if (!objc_ok)
-	  WARN_FOR_ASSIGNMENT (location, expr_loc,
-			       OPT_Wincompatible_pointer_types,
-			       G_("passing argument %d of %qE from "
-				  "incompatible pointer type"),
-			       G_("assignment from incompatible pointer type"),
-			       G_("initialization from incompatible "
-				  "pointer type"),
-			       G_("return from incompatible pointer type"));
+	  PEDWARN_FOR_ASSIGNMENT (location, expr_loc,
+			          OPT_Wincompatible_pointer_types,
+			          G_("passing argument %d of %qE from "
+				     "incompatible pointer type"),
+			          G_("assignment from incompatible pointer type"),
+			          G_("initialization from incompatible "
+				     "pointer type"),
+			          G_("return from incompatible pointer type"));
 
       return convert (type, rhs);
     }
@@ -6200,31 +6298,31 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	 or one that results from arithmetic, even including
 	 a cast to integer type.  */
       if (!null_pointer_constant)
-	WARN_FOR_ASSIGNMENT (location, expr_loc,
-			     OPT_Wint_conversion,
-			     G_("passing argument %d of %qE makes "
-				"pointer from integer without a cast"),
-			     G_("assignment makes pointer from integer "
-				"without a cast"),
-			     G_("initialization makes pointer from "
-				"integer without a cast"),
-			     G_("return makes pointer from integer "
-				"without a cast"));
+	PEDWARN_FOR_ASSIGNMENT (location, expr_loc,
+			        OPT_Wint_conversion,
+			        G_("passing argument %d of %qE makes "
+				   "pointer from integer without a cast"),
+			        G_("assignment makes pointer from integer "
+				   "without a cast"),
+			        G_("initialization makes pointer from "
+				   "integer without a cast"),
+			        G_("return makes pointer from integer "
+				   "without a cast"));
 
       return convert (type, rhs);
     }
   else if (codel == INTEGER_TYPE && coder == POINTER_TYPE)
     {
-      WARN_FOR_ASSIGNMENT (location, expr_loc,
-			   OPT_Wint_conversion,
-			   G_("passing argument %d of %qE makes integer "
-			      "from pointer without a cast"),
-			   G_("assignment makes integer from pointer "
-			      "without a cast"),
-			   G_("initialization makes integer from pointer "
-			      "without a cast"),
-			   G_("return makes integer from pointer "
-			      "without a cast"));
+      PEDWARN_FOR_ASSIGNMENT (location, expr_loc,
+			      OPT_Wint_conversion,
+			      G_("passing argument %d of %qE makes integer "
+			         "from pointer without a cast"),
+			      G_("assignment makes integer from pointer "
+			         "without a cast"),
+			      G_("initialization makes integer from pointer "
+			         "without a cast"),
+			      G_("return makes integer from pointer "
+			         "without a cast"));
       return convert (type, rhs);
     }
   else if (codel == BOOLEAN_TYPE && coder == POINTER_TYPE)
@@ -8723,6 +8821,33 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      break;
 	    }
 
+	  /* Error for initialization of a flexible array member with
+	     a string constant if the structure is in an array.  E.g.:
+	     struct S { int x; char y[]; };
+	     struct S s[] = { { 1, "foo" } };
+	     is invalid.  */
+	  if (string_flag
+	      && fieldcode == ARRAY_TYPE
+	      && constructor_depth > 1
+	      && TYPE_SIZE (fieldtype) == NULL_TREE
+	      && DECL_CHAIN (constructor_fields) == NULL_TREE)
+	    {
+	      bool in_array_p = false;
+	      for (struct constructor_stack *p = constructor_stack;
+		   p && p->type; p = p->next)
+		if (TREE_CODE (p->type) == ARRAY_TYPE)
+		  {
+		    in_array_p = true;
+		    break;
+		  }
+	      if (in_array_p)
+		{
+		  error_init (loc, "initialization of flexible array "
+			      "member in a nested context");
+		  break;
+		}
+	    }
+
 	  /* Accept a string constant to initialize a subarray.  */
 	  if (value.value != 0
 	      && fieldcode == ARRAY_TYPE
@@ -9285,7 +9410,11 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 
       save = in_late_binary_op;
       if (TREE_CODE (TREE_TYPE (res)) == BOOLEAN_TYPE
-          || TREE_CODE (TREE_TYPE (res)) == COMPLEX_TYPE)
+	  || TREE_CODE (TREE_TYPE (res)) == COMPLEX_TYPE
+	  || (TREE_CODE (TREE_TYPE (t)) == REAL_TYPE
+	      && (TREE_CODE (TREE_TYPE (res)) == INTEGER_TYPE
+		  || TREE_CODE (TREE_TYPE (res)) == ENUMERAL_TYPE)
+	      && (flag_sanitize & SANITIZE_FLOAT_CAST)))
         in_late_binary_op = true;
       inner = t = convert (TREE_TYPE (res), t);
       in_late_binary_op = save;
@@ -11224,6 +11353,63 @@ c_expr_to_decl (tree expr, bool *tc ATTRIBUTE_UNUSED, bool *se)
     return expr;
 }
 
+/* Generate OACC_PARALLEL, with CLAUSES and BLOCK as its compound
+   statement.  LOC is the location of the OACC_PARALLEL.  */
+
+tree
+c_finish_oacc_parallel (location_t loc, tree clauses, tree block)
+{
+  tree stmt;
+
+  block = c_end_compound_stmt (loc, block, true);
+
+  stmt = make_node (OACC_PARALLEL);
+  TREE_TYPE (stmt) = void_type_node;
+  OACC_PARALLEL_CLAUSES (stmt) = clauses;
+  OACC_PARALLEL_BODY (stmt) = block;
+  SET_EXPR_LOCATION (stmt, loc);
+
+  return add_stmt (stmt);
+}
+
+/* Generate OACC_KERNELS, with CLAUSES and BLOCK as its compound
+   statement.  LOC is the location of the OACC_KERNELS.  */
+
+tree
+c_finish_oacc_kernels (location_t loc, tree clauses, tree block)
+{
+  tree stmt;
+
+  block = c_end_compound_stmt (loc, block, true);
+
+  stmt = make_node (OACC_KERNELS);
+  TREE_TYPE (stmt) = void_type_node;
+  OACC_KERNELS_CLAUSES (stmt) = clauses;
+  OACC_KERNELS_BODY (stmt) = block;
+  SET_EXPR_LOCATION (stmt, loc);
+
+  return add_stmt (stmt);
+}
+
+/* Generate OACC_DATA, with CLAUSES and BLOCK as its compound
+   statement.  LOC is the location of the OACC_DATA.  */
+
+tree
+c_finish_oacc_data (location_t loc, tree clauses, tree block)
+{
+  tree stmt;
+
+  block = c_end_compound_stmt (loc, block, true);
+
+  stmt = make_node (OACC_DATA);
+  TREE_TYPE (stmt) = void_type_node;
+  OACC_DATA_CLAUSES (stmt) = clauses;
+  OACC_DATA_BODY (stmt) = block;
+  SET_EXPR_LOCATION (stmt, loc);
+
+  return add_stmt (stmt);
+}
+
 /* Like c_begin_compound_stmt, except force the retention of the BLOCK.  */
 
 tree
@@ -11755,8 +11941,9 @@ handle_omp_array_sections (tree c)
       OMP_CLAUSE_SIZE (c) = size;
       if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
 	return false;
+      gcc_assert (OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FORCE_DEVICEPTR);
       tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
-      OMP_CLAUSE_MAP_KIND (c2) = OMP_CLAUSE_MAP_POINTER;
+      OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_POINTER);
       if (!c_mark_addressable (t))
 	return false;
       OMP_CLAUSE_DECL (c2) = t;
@@ -11818,7 +12005,7 @@ c_find_omp_placeholder_r (tree *tp, int *, void *data)
   return NULL_TREE;
 }
 
-/* For all elements of CLAUSES, validate them vs OpenMP constraints.
+/* For all elements of CLAUSES, validate them against their constraints.
    Remove any elements from the list that are invalid.  */
 
 tree
@@ -12140,6 +12327,7 @@ c_finish_omp_clauses (tree clauses)
 	case OMP_CLAUSE_MAP:
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_FROM:
+	case OMP_CLAUSE__CACHE_:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == TREE_LIST)
 	    {
@@ -12178,7 +12366,9 @@ c_finish_omp_clauses (tree clauses)
 	  else if (!c_mark_addressable (t))
 	    remove = true;
 	  else if (!(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
-		     && OMP_CLAUSE_MAP_KIND (c) == OMP_CLAUSE_MAP_POINTER)
+		     && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
+			 || (OMP_CLAUSE_MAP_KIND (c)
+			     == GOMP_MAP_FORCE_DEVICEPTR)))
 		   && !lang_hooks.types.omp_mappable_type (TREE_TYPE (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
@@ -12247,6 +12437,16 @@ c_finish_omp_clauses (tree clauses)
 	case OMP_CLAUSE_TASKGROUP:
 	case OMP_CLAUSE_PROC_BIND:
 	case OMP_CLAUSE__CILK_FOR_COUNT_:
+	case OMP_CLAUSE_NUM_GANGS:
+	case OMP_CLAUSE_NUM_WORKERS:
+	case OMP_CLAUSE_VECTOR_LENGTH:
+	case OMP_CLAUSE_ASYNC:
+	case OMP_CLAUSE_WAIT:
+	case OMP_CLAUSE_AUTO:
+	case OMP_CLAUSE_SEQ:
+	case OMP_CLAUSE_GANG:
+	case OMP_CLAUSE_WORKER:
+	case OMP_CLAUSE_VECTOR:
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 

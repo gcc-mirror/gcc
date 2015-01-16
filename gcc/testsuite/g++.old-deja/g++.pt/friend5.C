@@ -14,5 +14,5 @@ class C
 
 int main()
 {
-  f(7);
+  f(C());
 }

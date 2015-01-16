@@ -1,5 +1,5 @@
 ;; Predicate definitions for MIPS.
-;; Copyright (C) 2004-2014 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2015 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -32,6 +32,10 @@
 (define_predicate "arith_operand"
   (ior (match_operand 0 "const_arith_operand")
        (match_operand 0 "register_operand")))
+
+(define_predicate "const_immlsa_operand"
+  (and (match_code "const_int")
+         (match_test "IN_RANGE (exact_log2 (INTVAL (op)), 1, 4)")))
 
 (define_predicate "const_uimm6_operand"
   (and (match_code "const_int")

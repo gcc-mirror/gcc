@@ -270,11 +270,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>19.2</entry>
       <entry>Exception classes</entry>
-      <entry>Partial</entry>
-      <entry>Missing <code>const char*</code> constructors.</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>19.3</entry>
@@ -319,11 +318,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>19.5.5</entry>
       <entry>Class <code>system_error</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing <code>const char*</code> constructors.</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>
@@ -664,10 +662,9 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.7.2.5</entry>
       <entry><code>shared_ptr</code> atomic access</entry>
-      <entry>Partial</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
@@ -1104,11 +1101,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>21.4</entry>
       <entry>Class template <code>basic_string</code></entry>
-      <entry>Partial</entry>
-      <entry>Non-conforming Copy-On-Write implementation</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>21.5</entry>
@@ -1258,18 +1254,16 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>22.4.5.1</entry>
       <entry>Class template <code>time_get</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing <code>get</code> and <code>do_get</code></entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>22.4.5.2</entry>
       <entry>Class template <code>time_get_byname</code></entry>
-      <entry>Partial</entry>
-      <entry>Likewise</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>22.4.5.3</entry>
@@ -2116,14 +2110,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>27.5</entry>
       <entry>Iostreams base classes</entry>
-      <entry>Partial</entry>
-      <entry>
-        Missing <code>io_errc</code> and <code>iostream_category</code>.
-        <code>ios_base::failure</code> is not derived from <code>system_error</code>.
-      </entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>27.6</entry>
@@ -2132,13 +2122,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>27.7</entry>
       <entry>Formatting and manipulators</entry>
-      <entry>Partial</entry>
-      <entry>
-        Missing <code>get_time</code> manipulator.
-      </entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>27.8</entry>

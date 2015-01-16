@@ -1,6 +1,6 @@
 /* { dg-options "-O2" } */
 /* { dg-additional-sources pr64291-2.c } */
-/* { dg-do run } */
+/* { dg-do run { target lp64 } } */
 void f(void*,...);
 void g(void*,long,long);
 int nnn=0;
@@ -12,6 +12,7 @@ typedef struct
   unsigned long *_mp_d;
 } __mpz_struct;
 typedef __mpz_struct mpz_t[1];
+void h(mpz_t);
 
 int main ()
 {
@@ -21,7 +22,7 @@ int main ()
   long alloc, itch;
 
   f (n);
-  f (d);
+  h (d);
   qp = (unsigned long*)__builtin_alloca(4099*8) + 1;
   dnp = (unsigned long*)__builtin_alloca (2049*8);
   alloc = 1;

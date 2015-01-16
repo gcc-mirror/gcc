@@ -1,6 +1,6 @@
 // 2001-04-06 gdr
 
-// Copyright (C) 2001-2014 Free Software Foundation, Inc.
+// Copyright (C) 2001-2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,8 +20,8 @@
 // { dg-do compile }
 // { dg-add-options no_pch }
 
-// { dg-xfail-if "" { { *-*-linux* *-*-gnu* *-*-darwin* *-*-solaris2.1[0-9]* hppa*-*-hpux* *-*-mingw* } || { uclibc || newlib } } { "*" } { "" } }
-// { dg-excess-errors "" { target { { *-*-linux* *-*-gnu* *-*-darwin* *-*-solaris2.1[0-9]* hppa*-*-hpux* *-*-mingw* } || { uclibc || newlib } } } }
+// { dg-xfail-if "" { { *-*-linux* *-*-gnu* *-*-darwin* *-*-solaris2.1[0-9]* hppa*-*-hpux* *-*-mingw* *-*-aix* } || { uclibc || newlib } } { "*" } { "" } }
+// { dg-excess-errors "" { target { { *-*-linux* *-*-gnu* *-*-darwin* *-*-solaris2.1[0-9]* hppa*-*-hpux* *-*-mingw* *-*-aix* } || { uclibc || newlib } } } }
 
 #include <math.h>
 

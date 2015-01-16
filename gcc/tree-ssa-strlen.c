@@ -1,5 +1,5 @@
 /* String length optimization
-   Copyright (C) 2011-2014 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -21,19 +21,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "hash-table.h"
 #include "hash-map.h"
 #include "bitmap.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "tm.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "dominance.h"
 #include "cfg.h"
@@ -53,6 +59,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
+#include "hashtab.h"
+#include "rtl.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "tree-dfa.h"
 #include "tree-pass.h"
@@ -61,7 +81,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "gimple-pretty-print.h"
 #include "params.h"
-#include "expr.h"
 #include "plugin-api.h"
 #include "ipa-ref.h"
 #include "cgraph.h"
@@ -181,6 +200,18 @@ struct laststmt_struct
   int stridx;
 } laststmt;
 
+static int get_stridx_plus_constant (strinfo, HOST_WIDE_INT, tree);
+
+/* Return strinfo vector entry IDX.  */
+
+static inline strinfo
+get_strinfo (int idx)
+{
+  if (vec_safe_length (stridx_to_strinfo) <= (unsigned int) idx)
+    return NULL;
+  return (*stridx_to_strinfo)[idx];
+}
+
 /* Helper function for get_stridx.  */
 
 static int
@@ -219,7 +250,43 @@ get_stridx (tree exp)
   tree s, o;
 
   if (TREE_CODE (exp) == SSA_NAME)
-    return ssa_ver_to_stridx[SSA_NAME_VERSION (exp)];
+    {
+      if (ssa_ver_to_stridx[SSA_NAME_VERSION (exp)])
+	return ssa_ver_to_stridx[SSA_NAME_VERSION (exp)];
+      int i;
+      tree e = exp;
+      HOST_WIDE_INT off = 0;
+      for (i = 0; i < 5; i++)
+	{
+	  gimple def_stmt = SSA_NAME_DEF_STMT (e);
+	  if (!is_gimple_assign (def_stmt)
+	      || gimple_assign_rhs_code (def_stmt) != POINTER_PLUS_EXPR)
+	    return 0;
+	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	  tree rhs2 = gimple_assign_rhs2 (def_stmt);
+	  if (TREE_CODE (rhs1) != SSA_NAME
+	      || !tree_fits_shwi_p (rhs2))
+	    return 0;
+	  HOST_WIDE_INT this_off = tree_to_shwi (rhs2);
+	  if (this_off < 0)
+	    return 0;
+	  off = (unsigned HOST_WIDE_INT) off + this_off;
+	  if (off < 0)
+	    return 0;
+	  if (ssa_ver_to_stridx[SSA_NAME_VERSION (rhs1)])
+	    {
+	      strinfo si
+		= get_strinfo (ssa_ver_to_stridx[SSA_NAME_VERSION (rhs1)]);
+	      if (si
+		  && si->length
+		  && TREE_CODE (si->length) == INTEGER_CST
+		  && compare_tree_int (si->length, off) != -1)
+		return get_stridx_plus_constant (si, off, exp);
+	    }
+	  e = rhs1;
+	}
+      return 0;
+    }
 
   if (TREE_CODE (exp) == ADDR_EXPR)
     {
@@ -388,16 +455,6 @@ free_strinfo (strinfo si)
     pool_free (strinfo_pool, si);
 }
 
-/* Return strinfo vector entry IDX.  */
-
-static inline strinfo
-get_strinfo (int idx)
-{
-  if (vec_safe_length (stridx_to_strinfo) <= (unsigned int) idx)
-    return NULL;
-  return (*stridx_to_strinfo)[idx];
-}
-
 /* Set strinfo in the vector entry IDX to SI.  */
 
 static inline void
@@ -555,7 +612,7 @@ maybe_invalidate (gimple stmt)
   return nonempty;
 }
 
-/* Unshare strinfo record SI, if it has recount > 1 or
+/* Unshare strinfo record SI, if it has refcount > 1 or
    if stridx_to_strinfo vector is shared with some other
    bbs.  */
 
@@ -605,6 +662,82 @@ verify_related_strinfos (strinfo origsi)
   return si;
 }
 
+/* Attempt to create a new strinfo for BASESI + OFF, or find existing
+   strinfo if there is any.  Return it's idx, or 0 if no strinfo has
+   been created.  */
+
+static int
+get_stridx_plus_constant (strinfo basesi, HOST_WIDE_INT off, tree ptr)
+{
+  gcc_checking_assert (TREE_CODE (ptr) == SSA_NAME);
+
+  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ptr))
+    return 0;
+
+  if (basesi->length == NULL_TREE
+      || TREE_CODE (basesi->length) != INTEGER_CST
+      || compare_tree_int (basesi->length, off) == -1
+      || !tree_fits_shwi_p (basesi->length))
+    return 0;
+
+  HOST_WIDE_INT len = tree_to_shwi (basesi->length) - off;
+  strinfo si = basesi, chainsi;
+  if (si->first || si->prev || si->next)
+    si = verify_related_strinfos (basesi);
+  if (si == NULL
+      || si->length == NULL_TREE
+      || TREE_CODE (si->length) != INTEGER_CST)
+    return 0;
+
+  if (ssa_ver_to_stridx.length () <= SSA_NAME_VERSION (ptr))
+    ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
+
+  gcc_checking_assert (compare_tree_int (si->length, off) != -1);
+  for (chainsi = si; chainsi->next; chainsi = si)
+    {
+      si = get_strinfo (chainsi->next);
+      if (si == NULL
+	  || si->first != chainsi->first
+	  || si->prev != chainsi->idx
+	  || si->length == NULL_TREE
+	  || TREE_CODE (si->length) != INTEGER_CST)
+	break;
+      int r = compare_tree_int (si->length, len);
+      if (r != 1)
+	{
+	  if (r == 0)
+	    {
+	      ssa_ver_to_stridx[SSA_NAME_VERSION (ptr)] = si->idx;
+	      return si->idx;
+	    }
+	  break;
+	}
+    }
+
+  int idx = new_stridx (ptr);
+  if (idx == 0)
+    return 0;
+  si = new_strinfo (ptr, idx, build_int_cst (size_type_node, len));
+  set_strinfo (idx, si);
+  if (chainsi->next)
+    {
+      strinfo nextsi = unshare_strinfo (get_strinfo (chainsi->next));
+      si->next = nextsi->idx;
+      nextsi->prev = idx;
+    }
+  chainsi = unshare_strinfo (chainsi);
+  if (chainsi->first == 0)
+    chainsi->first = chainsi->idx;
+  chainsi->next = idx;
+  if (chainsi->endptr == NULL_TREE && len == 0)
+    chainsi->endptr = ptr;
+  si->endptr = chainsi->endptr;
+  si->prev = chainsi->idx;
+  si->first = chainsi->first;
+  si->writable = chainsi->writable;
+  return si->idx;
+}
+
 /* Note that PTR, a pointer SSA_NAME initialized in the current stmt, points
    to a zero-length string and if possible chain it to a related strinfo
    chain whose part is or might be CHAINSI.  */
@@ -614,8 +747,10 @@ zero_length_string (tree ptr, strinfo chainsi)
 {
   strinfo si;
   int idx;
+  if (ssa_ver_to_stridx.length () <= SSA_NAME_VERSION (ptr))
+    ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
   gcc_checking_assert (TREE_CODE (ptr) == SSA_NAME
-		       && get_stridx (ptr) == 0);
+		       && ssa_ver_to_stridx[SSA_NAME_VERSION (ptr)] == 0);
 
   if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ptr))
     return NULL;

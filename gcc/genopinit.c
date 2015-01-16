@@ -1,5 +1,5 @@
 /* Generate code to initialize optabs from machine description.
-   Copyright (C) 1993-2014 Free Software Foundation, Inc.
+   Copyright (C) 1993-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -465,6 +465,15 @@ main (int argc, char **argv)
 	   "#include \"system.h\"\n"
 	   "#include \"coretypes.h\"\n"
 	   "#include \"tm.h\"\n"
+	   "#include \"hash-set.h\"\n"
+	   "#include \"machmode.h\"\n"
+	   "#include \"vec.h\"\n"
+	   "#include \"double-int.h\"\n"
+	   "#include \"input.h\"\n"
+	   "#include \"alias.h\"\n"
+	   "#include \"symtab.h\"\n"
+	   "#include \"wide-int.h\"\n"
+	   "#include \"inchash.h\"\n"
 	   "#include \"tree.h\"\n"
 	   "#include \"varasm.h\"\n"
 	   "#include \"stor-layout.h\"\n"
@@ -474,6 +483,17 @@ main (int argc, char **argv)
 	   "#include \"tm_p.h\"\n"
 	   "#include \"flags.h\"\n"
 	   "#include \"insn-config.h\"\n"
+	   "#include \"hashtab.h\"\n"
+	   "#include \"hard-reg-set.h\"\n"
+	   "#include \"function.h\"\n"
+	   "#include \"statistics.h\"\n"
+	   "#include \"real.h\"\n"
+	   "#include \"fixed-value.h\"\n"
+	   "#include \"expmed.h\"\n"
+	   "#include \"dojump.h\"\n"
+	   "#include \"explow.h\"\n"
+	   "#include \"emit-rtl.h\"\n"
+	   "#include \"stmt.h\"\n"
 	   "#include \"expr.h\"\n"
 	   "#include \"insn-codes.h\"\n"
 	   "#include \"optabs.h\"\n"

@@ -1,5 +1,5 @@
 /* RTL simplification functions for GNU compiler.
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright (C) 1987-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,7 +23,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "varasm.h"
 #include "tm_p.h"
 #include "regs.h"
@@ -31,14 +41,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "insn-config.h"
 #include "recog.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "input.h"
 #include "function.h"
 #include "insn-codes.h"
 #include "optabs.h"
+#include "hashtab.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "stmt.h"
 #include "expr.h"
 #include "diagnostic-core.h"
 #include "ggc.h"
@@ -2933,14 +2948,26 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       /* (and X (ior (not X) Y) -> (and X Y) */
       if (GET_CODE (op1) == IOR
 	  && GET_CODE (XEXP (op1, 0)) == NOT
-	  && op0 == XEXP (XEXP (op1, 0), 0))
+	  && rtx_equal_p (op0, XEXP (XEXP (op1, 0), 0)))
        return simplify_gen_binary (AND, mode, op0, XEXP (op1, 1));
 
       /* (and (ior (not X) Y) X) -> (and X Y) */
       if (GET_CODE (op0) == IOR
 	  && GET_CODE (XEXP (op0, 0)) == NOT
-	  && op1 == XEXP (XEXP (op0, 0), 0))
+	  && rtx_equal_p (op1, XEXP (XEXP (op0, 0), 0)))
 	return simplify_gen_binary (AND, mode, op1, XEXP (op0, 1));
+
+      /* (and X (ior Y (not X)) -> (and X Y) */
+      if (GET_CODE (op1) == IOR
+	  && GET_CODE (XEXP (op1, 1)) == NOT
+	  && rtx_equal_p (op0, XEXP (XEXP (op1, 1), 0)))
+       return simplify_gen_binary (AND, mode, op0, XEXP (op1, 0));
+
+      /* (and (ior Y (not X)) X) -> (and X Y) */
+      if (GET_CODE (op0) == IOR
+	  && GET_CODE (XEXP (op0, 1)) == NOT
+	  && rtx_equal_p (op1, XEXP (XEXP (op0, 1), 0)))
+	return simplify_gen_binary (AND, mode, op1, XEXP (op0, 0));
 
       tem = simplify_byte_swapping_operation (code, mode, op0, op1);
       if (tem)

@@ -1,5 +1,5 @@
 /* SLP - Basic Block Vectorization
-   Copyright (C) 2007-2014 Free Software Foundation, Inc.
+   Copyright (C) 2007-2015 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -24,16 +24,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "dumpfile.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "target.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
@@ -50,6 +55,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "tree-pass.h"
 #include "cfgloop.h"
+#include "hashtab.h"
+#include "rtl.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "recog.h"		/* FIXME: for insn_data */
 #include "insn-codes.h"
@@ -723,8 +742,11 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 		 ???  We should enhance this to only disallow gaps
 		 inside vectors.  */
               if ((unrolling_factor > 1
-		   && GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) == stmt
-		   && GROUP_GAP (vinfo_for_stmt (stmt)) != 0)
+		   && ((GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) == stmt
+			&& GROUP_GAP (vinfo_for_stmt (stmt)) != 0)
+		       /* If the group is split up then GROUP_GAP
+			  isn't correct here, nor is GROUP_FIRST_ELEMENT.  */
+		       || GROUP_SIZE (vinfo_for_stmt (stmt)) > group_size))
 		  || (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) != stmt
 		      && GROUP_GAP (vinfo_for_stmt (stmt)) != 1))
                 {

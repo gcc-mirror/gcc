@@ -1,5 +1,5 @@
 /* Deal with I/O statements & related stuff.
-   Copyright (C) 2000-2014 Free Software Foundation, Inc.
+   Copyright (C) 2000-2015 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -3995,6 +3995,14 @@ gfc_match_inquire (void)
     {
       gfc_error ("INQUIRE statement at %L requires either FILE or "
 		 "UNIT specifier", &loc);
+      goto cleanup;
+    }
+
+  if (inquire->unit != NULL && inquire->unit->expr_type == EXPR_CONSTANT
+      && inquire->unit->ts.type == BT_INTEGER
+      && mpz_get_si (inquire->unit->value.integer) == -1)
+    {
+      gfc_error ("UNIT number in INQUIRE statement at %L can not be -1", &loc);
       goto cleanup;
     }
 

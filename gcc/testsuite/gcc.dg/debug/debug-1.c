@@ -17,8 +17,10 @@
    these two instructions, removing the last use of P and xyzzy.
 
    Everything is behaving as expected in this scenario, so we avoid
-   using conditional moves for this test.  */
-/* { dg-options "-dA -fno-if-conversion" { target mips*-*-* } } */
+   using conditional moves for this test.
+
+   Similar for MMIX, with the payload insns being "LDO $0,p; ZSNZ $0,$0,2".  */
+/* { dg-options "-dA -fno-if-conversion" { target mips*-*-* mmix-knuth-mmixware } } */
 /* { dg-final { scan-assembler "xyzzy" } } */
 
 long p;

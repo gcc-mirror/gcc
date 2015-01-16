@@ -1,5 +1,5 @@
 /* Parser header
-   Copyright (C) 2003-2014 Free Software Foundation, Inc.
+   Copyright (C) 2003-2015 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -49,6 +49,7 @@ typedef struct gfc_state_data
   union
   {
     gfc_st_label *end_do_label;
+    gfc_omp_clauses *oacc_declare_clauses;
   }
   ext;
 }
@@ -68,4 +69,5 @@ match gfc_match_enumerator_def (void);
 void gfc_free_enum_history (void);
 extern bool gfc_matching_function;
 match gfc_match_prefix (gfc_typespec *);
+bool is_oacc (gfc_state_data *);
 #endif  /* GFC_PARSE_H  */

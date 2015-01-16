@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2014 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2015 Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -46,6 +46,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Escaped Newlines::    Slightly looser rules for escaped newlines.
 * Subscripting::        Any array can be subscripted, even if not an lvalue.
 * Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
+* Pointers to Arrays::  Pointers to arrays with qualifiers work as expected.
 * Initializers::        Non-constant initializers.
 * Compound Literals::   Compound literals give structures, unions
                         or arrays as values.
@@ -1543,7 +1544,7 @@ struct bar @{ struct foo z; @};
 struct foo a = @{ 1, @{ 2, 3, 4 @} @};        // @r{Valid.}
 struct bar b = @{ @{ 1, @{ 2, 3, 4 @} @} @};    // @r{Invalid.}
 struct bar c = @{ @{ 1, @{ @} @} @};            // @r{Valid.}
-struct foo d[1] = @{ @{ 1 @{ 2, 3, 4 @} @} @};  // @r{Invalid.}
+struct foo d[1] = @{ @{ 1, @{ 2, 3, 4 @} @} @};  // @r{Invalid.}
 @end smallexample
 
 @node Empty Structures
@@ -1783,6 +1784,27 @@ and on function types, and returns 1.
 @opindex Wpointer-arith
 The option @option{-Wpointer-arith} requests a warning if these extensions
 are used.
+
+@node Pointers to Arrays
+@section Pointers to arrays with qualifiers work as expected
+@cindex pointers to arrays
+@cindex const qualifier
+
+In GNU C, pointers to arrays with qualifiers work similar to pointers
+to other qualified types. For example, a value of type @code{int (*)[5]}
+can be used to initialize a variable of type @code{const int (*)[5]}.
+These types are incompatible in ISO C because the @code{const} qualifier
+is formally attached to the element type of the array and not the
+array itself.
+
+@smallexample
+extern void
+transpose (int N, int M, double out[M][N], const double in[N][M]);
+double x[3][2];
+double y[2][3];
+@r{@dots{}}
+transpose(3, 2, y, x);
+@end smallexample
 
 @node Initializers
 @section Non-Constant Initializers
@@ -2183,8 +2205,9 @@ attributes are currently defined for functions on all targets:
 @code{returns_nonnull}, @code{gnu_inline},
 @code{externally_visible}, @code{hot}, @code{cold}, @code{artificial},
 @code{no_sanitize_address}, @code{no_address_safety_analysis},
+@code{no_sanitize_thread},
 @code{no_sanitize_undefined}, @code{no_reorder}, @code{bnd_legacy},
-@code{bnd_instrument},
+@code{bnd_instrument}, @code{stack_protect},
 @code{error} and @code{warning}.
 Several other attributes are defined for functions on particular
 target systems.  Other attributes, including @code{section} are
@@ -2913,12 +2936,11 @@ least version 2.20.1), and GNU C library (at least version 2.11.1).
 @item interrupt
 @cindex interrupt handler functions
 Use this attribute on the ARC, ARM, AVR, CR16, Epiphany, M32C, M32R/D,
-m68k, MeP, MIPS, MSP430, RL78, RX and Xstormy16 ports to indicate that
-the specified function is an
-interrupt handler.  The compiler generates function entry and exit
-sequences suitable for use in an interrupt handler when this attribute
-is present.  With Epiphany targets it may also generate a special section with
-code to initialize the interrupt vector table.
+m68k, MeP, MIPS, MSP430, RL78, RX, Visium and Xstormy16 ports to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.  With Epiphany targets it may also generate
+a special section with code to initialize the interrupt vector table.
 
 Note, interrupt handlers for the Blackfin, H8/300, H8/300H, H8S, MicroBlaze,
 and SH processors can be specified via the @code{interrupt_handler} attribute.
@@ -3422,6 +3444,12 @@ prologue which decides whether to split the stack.  Functions with the
 @code{no_split_stack} attribute do not have that prologue, and thus
 may run with only a small amount of stack space available.
 
+@item stack_protect
+@cindex @code{stack_protect} function attribute
+This function attribute make a stack protection of the function if 
+flags @option{fstack-protector} or @option{fstack-protector-strong}
+or @option{fstack-protector-explicit} are set.
+
 @item noinline
 @cindex @code{noinline} function attribute
 This function attribute prevents a function from being considered for
@@ -3699,6 +3727,12 @@ in the function when compiling with the @option{-fsanitize=address} option.
 The @code{no_address_safety_analysis} is a deprecated alias of the
 @code{no_sanitize_address} attribute, new code should use
 @code{no_sanitize_address}.
+
+@item no_sanitize_thread
+@cindex @code{no_sanitize_thread} function attribute
+The @code{no_sanitize_thread} attribute on functions is used
+to inform the compiler that it should not instrument memory accesses
+in the function when compiling with the @option{-fsanitize=thread} option.
 
 @item no_sanitize_undefined
 @cindex @code{no_sanitize_undefined} function attribute

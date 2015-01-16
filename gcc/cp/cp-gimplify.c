@@ -1,6 +1,6 @@
 /* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
 
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
 This file is part of GCC.
@@ -23,16 +23,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "stor-layout.h"
 #include "cp-tree.h"
 #include "c-family/c-common.h"
 #include "tree-iterator.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -1192,9 +1197,11 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	*stmt_p = size_one_node;
       return NULL;
     }    
-  else if (flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
+  else if (flag_sanitize
+	   & (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_VPTR))
     {
-      if (TREE_CODE (stmt) == NOP_EXPR
+      if ((flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
+	  && TREE_CODE (stmt) == NOP_EXPR
 	  && TREE_CODE (TREE_TYPE (stmt)) == REFERENCE_TYPE)
 	ubsan_maybe_instrument_reference (stmt);
       else if (TREE_CODE (stmt) == CALL_EXPR)
@@ -1209,7 +1216,10 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 		= TREE_CODE (fn) == ADDR_EXPR
 		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
 		  && DECL_CONSTRUCTOR_P (TREE_OPERAND (fn, 0));
-	      ubsan_maybe_instrument_member_call (stmt, is_ctor);
+	      if (flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
+		ubsan_maybe_instrument_member_call (stmt, is_ctor);
+	      if ((flag_sanitize & SANITIZE_VPTR) && !is_ctor)
+		cp_ubsan_maybe_instrument_member_call (stmt);
 	    }
 	}
     }
@@ -1232,6 +1242,8 @@ cp_genericize_tree (tree* t_p)
   cp_walk_tree (t_p, cp_genericize_r, &wtd, NULL);
   delete wtd.p_set;
   wtd.bind_expr_stack.release ();
+  if (flag_sanitize & SANITIZE_VPTR)
+    cp_ubsan_instrument_member_accesses (t_p);
 }
 
 /* If a function that should end with a return in non-void
@@ -1350,9 +1362,7 @@ cp_genericize (tree fndecl)
   cp_genericize_tree (&DECL_SAVED_TREE (fndecl));
 
   if (flag_sanitize & SANITIZE_RETURN
-      && current_function_decl != NULL_TREE
-      && !lookup_attribute ("no_sanitize_undefined",
-			    DECL_ATTRIBUTES (current_function_decl)))
+      && do_ubsan_in_current_function ())
     cp_ubsan_maybe_instrument_return (fndecl);
 
   /* Do everything else.  */

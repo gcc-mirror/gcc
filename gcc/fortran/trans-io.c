@@ -1,5 +1,5 @@
 /* IO Code translation/library interface
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -22,7 +22,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "ggc.h"
@@ -258,7 +269,7 @@ gfc_trans_io_runtime_check (bool has_iostat, tree cond, tree var,
 
   arg2 = build_int_cst (integer_type_node, error_code),
 
-  asprintf (&message, "%s", _(msgid));
+  message = xasprintf ("%s", _(msgid));
   arg3 = gfc_build_addr_expr (pchar_type_node,
 			      gfc_build_localized_cstring_const (message));
   free (message);
@@ -715,8 +726,8 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
       cond = fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
 			      tmp, build_int_cst (TREE_TYPE (tmp), 0));
 
-      asprintf(&msg, "Label assigned to variable '%s' (%%ld) is not a format "
-	       "label", e->symtree->name);
+      msg = xasprintf ("Label assigned to variable '%s' (%%ld) is not a format "
+		       "label", e->symtree->name);
       gfc_trans_runtime_check (true, false, cond, &se.pre, &e->where, msg,
 			       fold_convert (long_integer_type_node, tmp));
       free (msg);
@@ -1175,33 +1186,6 @@ gfc_trans_flush (gfc_code * code)
 }
 
 
-/* Create a dummy iostat variable to catch any error due to bad unit.  */
-
-static gfc_expr *
-create_dummy_iostat (void)
-{
-  gfc_symtree *st;
-  gfc_expr *e;
-
-  gfc_get_ha_sym_tree ("@iostat", &st);
-  st->n.sym->ts.type = BT_INTEGER;
-  st->n.sym->ts.kind = gfc_default_integer_kind;
-  gfc_set_sym_referenced (st->n.sym);
-  gfc_commit_symbol (st->n.sym);
-  st->n.sym->backend_decl
-	= gfc_create_var (gfc_get_int_type (st->n.sym->ts.kind),
-			  st->n.sym->name);
-
-  e = gfc_get_expr ();
-  e->expr_type = EXPR_VARIABLE;
-  e->symtree = st;
-  e->ts.type = BT_INTEGER;
-  e->ts.kind = st->n.sym->ts.kind;
-
-  return e;
-}
-
-
 /* Translate the non-IOLENGTH form of an INQUIRE statement.  */
 
 tree
@@ -1244,13 +1228,6 @@ gfc_trans_inquire (gfc_code * code)
     {
       mask |= set_parameter_ref (&block, &post_block, var, IOPARM_inquire_exist,
 				 p->exist);
-
-      if (p->unit && !p->iostat)
-	{
-	  p->iostat = create_dummy_iostat ();
-	  mask |= set_parameter_ref (&block, &post_block, var,
-				     IOPARM_common_iostat, p->iostat);
-	}
     }
 
   if (p->opened)

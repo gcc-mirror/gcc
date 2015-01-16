@@ -1,5 +1,5 @@
 ;; Machine description of the Synopsys DesignWare ARC cpu for GNU C compiler
-;; Copyright (C) 1994-2014 Free Software Foundation, Inc.
+;; Copyright (C) 1994-2015 Free Software Foundation, Inc.
 
 ;; Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
 ;; behalf of Synopsys Inc.
@@ -952,8 +952,7 @@
 	 last.  Otherwise, load it first.  Note that we cannot have
 	 auto-increment in that case since the address register is known to be
 	 dead.  */
-      if (refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
-			     operands [1], 0))
+      if (refers_to_regno_p (REGNO (operands[0]), operands[1]))
 	return \"ld%V1 %R0,%R1\;ld%V1 %0,%1\";
       else switch (GET_CODE (XEXP(operands[1], 0)))
 	{

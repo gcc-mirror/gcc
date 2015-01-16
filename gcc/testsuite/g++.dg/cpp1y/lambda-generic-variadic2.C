@@ -1,5 +1,6 @@
 // PR c++/64105
-// This test was ICEing on pre-C++14 mode.
+// This test was ICEing in C++11 mode.
+// { dg-do compile { target c++11 } }
 
 #include <functional>
 
@@ -18,5 +19,5 @@ struct X
 
 int main()
 {
-  X::f([](auto... xs){});	// { dg-error "" "" { target { ! cxx14 } } }
-};
+  X::f([](auto... xs){});	// { dg-error "" "" { target { ! c++14 } } }
+}

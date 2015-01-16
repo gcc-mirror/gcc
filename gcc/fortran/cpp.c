@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2014 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,6 +20,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "version.h"
 #include "flags.h"
@@ -169,6 +178,9 @@ cpp_define_builtins (cpp_reader *pfile)
   define_language_independent_builtin_macros (pfile);
   cpp_define (pfile, "__GFORTRAN__=1");
   cpp_define (pfile, "_LANGUAGE_FORTRAN=1");
+
+  if (flag_openacc)
+    cpp_define (pfile, "_OPENACC=201306");
 
   if (flag_openmp)
     cpp_define (pfile, "_OPENMP=201307");

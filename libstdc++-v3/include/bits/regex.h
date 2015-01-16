@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2014 Free Software Foundation, Inc.
+// Copyright (C) 2010-2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1863,6 +1863,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       swap(match_results& __that)
       {
+	using std::swap;
 	_Base_type::swap(__that);
 	swap(_M_begin, __that._M_begin);
       }

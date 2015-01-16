@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,6 +52,8 @@ package System.OS_Interface is
 
    subtype int  is Interfaces.C.int;
    subtype long is Interfaces.C.long;
+
+   subtype LARGE_INTEGER is System.Win32.LARGE_INTEGER;
 
    -------------------
    -- General Types --
@@ -103,6 +105,18 @@ package System.OS_Interface is
 
    procedure kill (sig : Signal);
    pragma Import (C, kill, "raise");
+
+   ------------
+   -- Clock  --
+   ------------
+
+   procedure QueryPerformanceFrequency
+     (lpPerformanceFreq : access LARGE_INTEGER);
+   pragma Import
+     (Stdcall, QueryPerformanceFrequency, "QueryPerformanceFrequency");
+
+   --  According to the spec, on XP and later than function cannot fail,
+   --  so we ignore the return value and import it as a procedure.
 
    -------------
    -- Threads --

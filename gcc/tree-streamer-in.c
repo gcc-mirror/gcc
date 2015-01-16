@@ -1,6 +1,6 @@
 /* Routines for reading trees from a file stream.
 
-   Copyright (C) 2011-2014 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -23,13 +23,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic.h"
-#include "tree.h"
-#include "stringpool.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
 #include "hash-set.h"
 #include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "tree.h"
+#include "fold-const.h"
+#include "stringpool.h"
+#include "predict.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "input.h"
@@ -50,6 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "builtins.h"
 #include "ipa-chkp.h"
+#include "gomp-constants.h"
+
 
 /* Read a STRING_CST from the string table in DATA_IN using input
    block IB.  */
@@ -426,8 +437,8 @@ unpack_ts_omp_clause_value_fields (struct data_in *data_in,
 	= bp_unpack_enum (bp, omp_clause_depend_kind, OMP_CLAUSE_DEPEND_LAST);
       break;
     case OMP_CLAUSE_MAP:
-      OMP_CLAUSE_MAP_KIND (expr)
-	= bp_unpack_enum (bp, omp_clause_map_kind, OMP_CLAUSE_MAP_LAST);
+      OMP_CLAUSE_SET_MAP_KIND (expr, bp_unpack_enum (bp, gomp_map_kind,
+						     GOMP_MAP_LAST));
       break;
     case OMP_CLAUSE_PROC_BIND:
       OMP_CLAUSE_PROC_BIND_KIND (expr)
@@ -520,8 +531,10 @@ unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
 	vec_safe_grow (CONSTRUCTOR_ELTS (expr), length);
     }
 
+#ifndef ACCEL_COMPILER
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
     cl_target_option_stream_in (data_in, bp, TREE_TARGET_OPTION (expr));
+#endif
 
   if (code == OMP_CLAUSE)
     unpack_ts_omp_clause_value_fields (data_in, bp, expr);
@@ -785,7 +798,9 @@ lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
   DECL_VINDEX (expr) = stream_read_tree (ib, data_in);
   /* DECL_STRUCT_FUNCTION is loaded on demand by cgraph_get_body.  */
   DECL_FUNCTION_PERSONALITY (expr) = stream_read_tree (ib, data_in);
+#ifndef ACCEL_COMPILER
   DECL_FUNCTION_SPECIFIC_TARGET (expr) = stream_read_tree (ib, data_in);
+#endif
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = stream_read_tree (ib, data_in);
 
   /* If the file contains a function with an EH personality set,

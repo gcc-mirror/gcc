@@ -1,0 +1,37 @@
+/* Machine description for Visium.
+   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* Add any extra modes needed to represent the condition code.
+
+   On the Visium, we have a "no-overflow" mode which is used when arithmetic
+   instructions set the condition code.  Different branches are used in this
+   case for some operations.
+
+   We also have a "bit-test" mode which is used when the bit-test instruction
+   sets the condition code.
+
+   We also have two modes to indicate that the condition code is set by the
+   the floating-point unit.  One for comparisons which generate an exception
+   if the result is unordered (CCFPEmode) and one for comparisons which never
+   generate such an exception (CCFPmode).  */
+
+CC_MODE (CC_NOOV);
+CC_MODE (CC_BTST);
+CC_MODE (CCFP);
+CC_MODE (CCFPE);

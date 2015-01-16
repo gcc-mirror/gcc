@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,18 +102,33 @@ package body Interfaces.C.Pointers is
       Target  : Pointer;
       Length  : ptrdiff_t)
    is
-      T : Pointer := Target;
-      S : Pointer := Source;
+      T : Pointer;
+      S : Pointer;
 
    begin
-      if S = null or else T = null then
+      if Source = null or else Target = null then
          raise Dereference_Error;
 
-      else
+      --  Forward copy
+
+      elsif To_Addr (Target) <= To_Addr (Source) then
+         T := Target;
+         S := Source;
          for J in 1 .. Length loop
             T.all := S.all;
             Increment (T);
             Increment (S);
+         end loop;
+
+      --  Backward copy
+
+      else
+         T := Target + Length;
+         S := Source + Length;
+         for J in 1 .. Length loop
+            Decrement (T);
+            Decrement (S);
+            T.all := S.all;
          end loop;
       end if;
    end Copy_Array;
@@ -128,23 +143,23 @@ package body Interfaces.C.Pointers is
       Limit      : ptrdiff_t := ptrdiff_t'Last;
       Terminator : Element := Default_Terminator)
    is
-      S : Pointer   := Source;
-      T : Pointer   := Target;
-      L : ptrdiff_t := Limit;
+      L : ptrdiff_t;
+      S : Pointer := Source;
 
    begin
-      if S = null or else T = null then
+      if Source = null or Target = null then
          raise Dereference_Error;
-
-      else
-         while L > 0 loop
-            T.all := S.all;
-            exit when T.all = Terminator;
-            Increment (T);
-            Increment (S);
-            L := L - 1;
-         end loop;
       end if;
+
+      --  Compute array length (including the terminator)
+
+      L := 1;
+      while S.all /= Terminator and then L < Limit loop
+         L := L + 1;
+         Increment (S);
+      end loop;
+
+      Copy_Array (Source, Target, L);
    end Copy_Terminated_Array;
 
    ---------------

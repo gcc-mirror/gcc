@@ -1225,6 +1225,10 @@ procedure Gnatls is
       if Src_Path /= null and then Lib_Path /= null then
          Add_Search_Dirs (Src_Path, Include);
          Add_Search_Dirs (Lib_Path, Objects);
+         Initialize_Default_Project_Path
+           (Prj_Path,
+            Target_Name  => Sdefault.Target_Name.all,
+            Runtime_Name => Name);
          return;
       end if;
 
@@ -1237,7 +1241,9 @@ procedure Gnatls is
       --  Try to find the RTS on the project path. First setup the project path
 
       Initialize_Default_Project_Path
-        (Prj_Path, Target_Name => Sdefault.Target_Name.all);
+        (Prj_Path,
+         Target_Name  => Sdefault.Target_Name.all,
+         Runtime_Name => Name);
 
       Rts_Full_Path := Get_Runtime_Path (Prj_Path, Name);
 
@@ -1810,7 +1816,7 @@ begin
       else
          Ali_File := Strip_Directory (Ali_File);
 
-         if Get_Name_Table_Info (Ali_File) = 0 then
+         if Get_Name_Table_Int (Ali_File) = 0 then
             Text := Read_Library_Info (Ali_File, True);
 
             declare

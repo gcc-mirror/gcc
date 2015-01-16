@@ -4120,11 +4120,14 @@ package body Exp_Ch5 is
       --        end loop;
       --     end;
 
+      --  with min-val replaced by max-val and Succ replaced by Pred if the
+      --  loop parameter specification carries a Reverse indicator.
+
       --  To make this a little clearer, let's take a specific example:
 
       --        type Int is range 1 .. 10;
-      --        subtype L is Int with
-      --          predicate => L in 3 | 10 | 5 .. 7;
+      --        subtype StaticP is Int with
+      --          predicate => StaticP in 3 | 10 | 5 .. 7;
       --          ...
       --        for L in StaticP loop
       --           Put_Line ("static:" & J'Img);
@@ -4210,38 +4213,91 @@ package body Exp_Ch5 is
             --  Loop to create branches of case statement
 
             Alts := New_List;
-            P := First (Stat);
-            while Present (P) loop
-               if No (Next (P)) then
-                  S := Make_Exit_Statement (Loc);
-               else
-                  S :=
-                    Make_Assignment_Statement (Loc,
-                      Name       => New_Occurrence_Of (Loop_Id, Loc),
-                      Expression => Lo_Val (Next (P)));
-                  Set_Suppress_Assignment_Checks (S);
-               end if;
 
-               Append_To (Alts,
-                 Make_Case_Statement_Alternative (Loc,
-                   Statements       => New_List (S),
-                   Discrete_Choices => New_List (Hi_Val (P))));
+            if Reverse_Present (LPS) then
 
-               Next (P);
-            end loop;
+               --  Initial value is largest value in predicate.
+
+               D :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Loop_Id,
+                   Object_Definition   => New_Occurrence_Of (Ltype, Loc),
+                   Expression          => Hi_Val (Last (Stat)));
+
+               P := Last (Stat);
+               while Present (P) loop
+                  if No (Prev (P)) then
+                     S := Make_Exit_Statement (Loc);
+                  else
+                     S :=
+                       Make_Assignment_Statement (Loc,
+                         Name       => New_Occurrence_Of (Loop_Id, Loc),
+                         Expression => Hi_Val (Prev (P)));
+                     Set_Suppress_Assignment_Checks (S);
+                  end if;
+
+                  Append_To (Alts,
+                    Make_Case_Statement_Alternative (Loc,
+                      Statements       => New_List (S),
+                      Discrete_Choices => New_List (Lo_Val (P))));
+
+                  Prev (P);
+               end loop;
+
+            else
+
+               --  Initial value is smallest value in predicate.
+
+               D :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Loop_Id,
+                   Object_Definition   => New_Occurrence_Of (Ltype, Loc),
+                   Expression          => Lo_Val (First (Stat)));
+
+               P := First (Stat);
+               while Present (P) loop
+                  if No (Next (P)) then
+                     S := Make_Exit_Statement (Loc);
+                  else
+                     S :=
+                       Make_Assignment_Statement (Loc,
+                         Name       => New_Occurrence_Of (Loop_Id, Loc),
+                         Expression => Lo_Val (Next (P)));
+                     Set_Suppress_Assignment_Checks (S);
+                  end if;
+
+                  Append_To (Alts,
+                    Make_Case_Statement_Alternative (Loc,
+                      Statements       => New_List (S),
+                      Discrete_Choices => New_List (Hi_Val (P))));
+
+                  Next (P);
+               end loop;
+            end if;
 
             --  Add others choice
 
-            S :=
-               Make_Assignment_Statement (Loc,
-                 Name       => New_Occurrence_Of (Loop_Id, Loc),
-                 Expression =>
-                   Make_Attribute_Reference (Loc,
-                     Prefix => New_Occurrence_Of (Ltype, Loc),
-                     Attribute_Name => Name_Succ,
-                     Expressions    => New_List (
-                       New_Occurrence_Of (Loop_Id, Loc))));
-            Set_Suppress_Assignment_Checks (S);
+            declare
+               Name_Next : Name_Id;
+
+            begin
+               if Reverse_Present (LPS) then
+                  Name_Next := Name_Pred;
+               else
+                  Name_Next := Name_Succ;
+               end if;
+
+               S :=
+                  Make_Assignment_Statement (Loc,
+                    Name       => New_Occurrence_Of (Loop_Id, Loc),
+                    Expression =>
+                      Make_Attribute_Reference (Loc,
+                        Prefix => New_Occurrence_Of (Ltype, Loc),
+                        Attribute_Name => Name_Next,
+                        Expressions    => New_List (
+                          New_Occurrence_Of (Loop_Id, Loc))));
+               Set_Suppress_Assignment_Checks (S);
+            end;
 
             Append_To (Alts,
               Make_Case_Statement_Alternative (Loc,
@@ -4258,11 +4314,6 @@ package body Exp_Ch5 is
 
             --  Rewrite the loop
 
-            D :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Loop_Id,
-                Object_Definition   => New_Occurrence_Of (Ltype, Loc),
-                Expression          => Lo_Val (First (Stat)));
             Set_Suppress_Assignment_Checks (D);
 
             Rewrite (N,

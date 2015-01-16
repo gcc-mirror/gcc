@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2014 Free Software Foundation, Inc.
+   Copyright (C) 2005-2015 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>.
 
 This file is part of GCC.
@@ -23,16 +23,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "flags.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "calls.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "dominance.h"
 #include "cfg.h"
@@ -68,11 +73,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tree-chrec.h"
 #include "tree-ssa-threadupdate.h"
+#include "hashtab.h"
+#include "rtl.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"
 #include "tree-ssa-threadedge.h"
-#include "wide-int.h"
 
 
 
@@ -6492,7 +6508,8 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
   /* Accesses to trailing arrays via pointers may access storage
      beyond the types array bounds.  */
   base = get_base_address (ref);
-  if (base && TREE_CODE (base) == MEM_REF)
+  if ((warn_array_bounds < 2)
+      && base && TREE_CODE (base) == MEM_REF)
     {
       tree cref, next = NULL_TREE;
 
@@ -7539,7 +7556,7 @@ vrp_evaluate_conditional (enum tree_code code, tree op0, tree op1, gimple stmt)
       tree type = TREE_TYPE (op0);
       value_range_t *vr0 = get_value_range (op0);
 
-      if (vr0->type != VR_VARYING
+      if (vr0->type == VR_RANGE
 	  && INTEGRAL_TYPE_P (type)
 	  && vrp_val_is_min (vr0->min)
 	  && vrp_val_is_max (vr0->max)
@@ -8992,7 +9009,11 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
 
 /* Simplify a division or modulo operator to a right shift or
    bitwise and if the first operand is unsigned or is greater
-   than zero and the second operand is an exact power of two.  */
+   than zero and the second operand is an exact power of two.
+   For TRUNC_MOD_EXPR op0 % op1 with constant op1, optimize it
+   into just op0 if op0's range is known to be a subset of
+   [-op1 + 1, op1 - 1] for signed and [0, op1 - 1] for unsigned
+   modulo.  */
 
 static bool
 simplify_div_or_mod_using_ranges (gimple stmt)
@@ -9001,7 +9022,30 @@ simplify_div_or_mod_using_ranges (gimple stmt)
   tree val = NULL;
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
-  value_range_t *vr = get_value_range (gimple_assign_rhs1 (stmt));
+  value_range_t *vr = get_value_range (op0);
+
+  if (rhs_code == TRUNC_MOD_EXPR
+      && TREE_CODE (op1) == INTEGER_CST
+      && tree_int_cst_sgn (op1) == 1
+      && range_int_cst_p (vr)
+      && tree_int_cst_lt (vr->max, op1))
+    {
+      if (TYPE_UNSIGNED (TREE_TYPE (op0))
+	  || tree_int_cst_sgn (vr->min) >= 0
+	  || tree_int_cst_lt (fold_unary (NEGATE_EXPR, TREE_TYPE (op1), op1),
+			      vr->min))
+	{
+	  /* If op0 already has the range op0 % op1 has,
+	     then TRUNC_MOD_EXPR won't change anything.  */
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  gimple_assign_set_rhs_from_tree (&gsi, op0);
+	  update_stmt (stmt);
+	  return true;
+	}
+    }
+
+  if (!integer_pow2p (op1))
+    return false;
 
   if (TYPE_UNSIGNED (TREE_TYPE (op0)))
     {
@@ -9874,11 +9918,14 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 
       /* Transform TRUNC_DIV_EXPR and TRUNC_MOD_EXPR into RSHIFT_EXPR
 	 and BIT_AND_EXPR respectively if the first operand is greater
-	 than zero and the second operand is an exact power of two.  */
+	 than zero and the second operand is an exact power of two.
+	 Also optimize TRUNC_MOD_EXPR away if the second operand is
+	 constant and the first operand already has the right value
+	 range.  */
 	case TRUNC_DIV_EXPR:
 	case TRUNC_MOD_EXPR:
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
-	      && integer_pow2p (gimple_assign_rhs2 (stmt)))
+	  if (TREE_CODE (rhs1) == SSA_NAME
+	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
 	    return simplify_div_or_mod_using_ranges (stmt);
 	  break;
 

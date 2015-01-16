@@ -1,3 +1,14 @@
+2015-01-09  Michael Collison  <michael.collison@linaro.org>
+
+	* objcp-decl.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* objcp-lang.c: Ditto.
+
+2014-12-31  Iain Sandoe  <iain@codesourcery.com>
+
+	* config-lang.in (gtfiles): Update list.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* objcp-decl.h: Adjust.
@@ -463,7 +474,7 @@
 	* objcp-lang.c: Likewise.
 
 
-Copyright (C) 2005-2014 Free Software Foundation, Inc.
+Copyright (C) 2005-2015 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

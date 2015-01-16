@@ -1,5 +1,5 @@
 /* Pipeline hazard description translator.
-   Copyright (C) 2000-2014 Free Software Foundation, Inc.
+   Copyright (C) 2000-2015 Free Software Foundation, Inc.
 
    Written by Vladimir Makarov <vmakarov@redhat.com>
 
@@ -9675,6 +9675,15 @@ main (int argc, char **argv)
 		"#include \"system.h\"\n"
 		"#include \"coretypes.h\"\n"
 		"#include \"tm.h\"\n"
+		"#include \"hash-set.h\"\n"
+		"#include \"machmode.h\"\n"
+		"#include \"vec.h\"\n"
+		"#include \"double-int.h\"\n"
+		"#include \"input.h\"\n"
+		"#include \"alias.h\"\n"
+		"#include \"symtab.h\"\n"
+		"#include \"wide-int.h\"\n"
+		"#include \"inchash.h\"\n"
 		"#include \"tree.h\"\n"
 		"#include \"varasm.h\"\n"
 		"#include \"stor-layout.h\"\n"

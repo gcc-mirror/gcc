@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
+with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
@@ -56,7 +57,14 @@ package body Sem_Ch11 is
    procedure Analyze_Exception_Declaration (N : Node_Id) is
       Id : constant Entity_Id := Defining_Identifier (N);
       PF : constant Boolean   := Is_Pure (Current_Scope);
+
    begin
+      --  The exception declaration may be subject to pragma Ghost with policy
+      --  Ignore. Set the mode now to ensure that any nodes generated during
+      --  analysis and expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
       Generate_Definition         (Id);
       Enter_Name                  (Id);
       Set_Ekind                   (Id, E_Exception);
@@ -64,10 +72,10 @@ package body Sem_Ch11 is
       Set_Is_Statically_Allocated (Id);
       Set_Is_Pure                 (Id, PF);
 
-      --  An exception declared within a Ghost scope is automatically Ghost
+      --  An exception declared within a Ghost region is automatically Ghost
       --  (SPARK RM 6.9(2)).
 
-      if Within_Ghost_Scope then
+      if Ghost_Mode > None then
          Set_Is_Ghost_Entity (Id);
       end if;
 
@@ -121,12 +129,11 @@ package body Sem_Ch11 is
                elsif Nkind (Id1) /= N_Others_Choice
                  and then
                    (Id_Entity = Entity (Id1)
-                      or else (Id_Entity = Renamed_Entity (Entity (Id1))))
+                     or else (Id_Entity = Renamed_Entity (Entity (Id1))))
                then
                   if Handler /= Parent (Id) then
                      Error_Msg_Sloc := Sloc (Id1);
-                     Error_Msg_NE
-                       ("exception choice duplicates &#", Id, Id1);
+                     Error_Msg_NE ("exception choice duplicates &#", Id, Id1);
 
                   else
                      if Ada_Version = Ada_83
@@ -348,7 +355,7 @@ package body Sem_Ch11 is
               and then Nkind (First (Statements (Handler))) = N_Raise_Statement
               and then No (Name (First (Statements (Handler))))
               and then (not Others_Present
-                          or else Nkind (First (Exception_Choices (Handler))) =
+                         or else Nkind (First (Exception_Choices (Handler))) =
                                               N_Others_Choice)
             then
                Error_Msg_N
@@ -534,9 +541,7 @@ package body Sem_Ch11 is
 
             --  See if preceding statement is an assignment
 
-            if Present (P)
-              and then Nkind (P) = N_Assignment_Statement
-            then
+            if Present (P) and then Nkind (P) = N_Assignment_Statement then
                L := Name (P);
 
                --  Give warning for assignment to scalar formal
@@ -549,7 +554,7 @@ package body Sem_Ch11 is
                  --  This avoids some false positives for the nested case.
 
                  and then Nearest_Dynamic_Scope (Current_Scope) =
-                            Scope (Entity (L))
+                                                        Scope (Entity (L))
 
                then
                   --  Don't give warning if we are covered by an exception
@@ -571,11 +576,11 @@ package body Sem_Ch11 is
 
                   if No (Exception_Handlers (Par)) then
                      Error_Msg_N
-                       ("assignment to pass-by-copy formal " &
-                        "may have no effect??", P);
+                       ("assignment to pass-by-copy formal "
+                        & "may have no effect??", P);
                      Error_Msg_N
-                       ("\RAISE statement may result in abnormal return" &
-                        " (RM 6.4.1(17))??", P);
+                       ("\RAISE statement may result in abnormal return "
+                        & "(RM 6.4.1(17))??", P);
                   end if;
                end if;
             end if;

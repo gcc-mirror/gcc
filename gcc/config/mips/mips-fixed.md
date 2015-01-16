@@ -1,4 +1,4 @@
-;; Copyright (C) 2007-2014 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2015 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -52,24 +52,22 @@
    (set_attr "mode" "<IMODE>")])
 
 (define_insn "usadd<mode>3"
-  [(parallel
-    [(set (match_operand:UADDSUB 0 "register_operand" "=d")
-	  (us_plus:UADDSUB (match_operand:UADDSUB 1 "register_operand" "d")
-			   (match_operand:UADDSUB 2 "register_operand" "d")))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDQ_S))])]
+  [(set (match_operand:UADDSUB 0 "register_operand" "=d")
+	(us_plus:UADDSUB (match_operand:UADDSUB 1 "register_operand" "d")
+			 (match_operand:UADDSUB 2 "register_operand" "d")))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDQ_S))]
   ""
   "addu_s.<uaddsubfmt>\t%0,%1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "<IMODE>")])
 
 (define_insn "ssadd<mode>3"
-  [(parallel
-    [(set (match_operand:ADDSUB 0 "register_operand" "=d")
-	  (ss_plus:ADDSUB (match_operand:ADDSUB 1 "register_operand" "d")
-			  (match_operand:ADDSUB 2 "register_operand" "d")))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDQ_S))])]
+  [(set (match_operand:ADDSUB 0 "register_operand" "=d")
+	(ss_plus:ADDSUB (match_operand:ADDSUB 1 "register_operand" "d")
+			(match_operand:ADDSUB 2 "register_operand" "d")))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDQ_S))]
   "ISA_HAS_DSP"
   "addq_s.<addsubfmt>\t%0,%1,%2"
   [(set_attr "type" "arith")
@@ -85,71 +83,66 @@
    (set_attr "mode" "<IMODE>")])
 
 (define_insn "ussub<mode>3"
-  [(parallel
-    [(set (match_operand:UADDSUB 0 "register_operand" "=d")
-	  (us_minus:UADDSUB (match_operand:UADDSUB 1 "register_operand" "d")
-			    (match_operand:UADDSUB 2 "register_operand" "d")))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_SUBQ_S))])]
+  [(set (match_operand:UADDSUB 0 "register_operand" "=d")
+	(us_minus:UADDSUB (match_operand:UADDSUB 1 "register_operand" "d")
+			  (match_operand:UADDSUB 2 "register_operand" "d")))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_SUBQ_S))]
   ""
   "subu_s.<uaddsubfmt>\t%0,%1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "<IMODE>")])
 
 (define_insn "sssub<mode>3"
-  [(parallel
-    [(set (match_operand:ADDSUB 0 "register_operand" "=d")
-	  (ss_minus:ADDSUB (match_operand:ADDSUB 1 "register_operand" "d")
-			   (match_operand:ADDSUB 2 "register_operand" "d")))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_SUBQ_S))])]
+  [(set (match_operand:ADDSUB 0 "register_operand" "=d")
+	(ss_minus:ADDSUB (match_operand:ADDSUB 1 "register_operand" "d")
+			 (match_operand:ADDSUB 2 "register_operand" "d")))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_SUBQ_S))]
   "ISA_HAS_DSP"
   "subq_s.<addsubfmt>\t%0,%1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "<IMODE>")])
 
 (define_insn "ssmul<mode>3"
-  [(parallel
-    [(set (match_operand:MULQ 0 "register_operand" "=d")
-          (ss_mult:MULQ (match_operand:MULQ 1 "register_operand" "d")
-			(match_operand:MULQ 2 "register_operand" "d")))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-          (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_MULQ_RS_PH))
-     (clobber (match_scratch:DI 3 "=x"))])]
+  [(set (match_operand:MULQ 0 "register_operand" "=d")
+	(ss_mult:MULQ (match_operand:MULQ 1 "register_operand" "d")
+		      (match_operand:MULQ 2 "register_operand" "d")))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+        (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_MULQ_RS_PH))
+   (clobber (match_scratch:DI 3 "=x"))]
   ""
   "mulq_rs.<mulqfmt>\t%0,%1,%2"
   [(set_attr "type"     "imul3")
    (set_attr "mode"     "<IMODE>")])
 
 (define_insn "ssmaddsqdq4"
-  [(parallel
-    [(set (match_operand:DQ 0 "register_operand" "=a")
-	  (ss_plus:DQ
-	  (ss_mult:DQ (sat_fract:DQ (match_operand:SQ 1
-				     "register_operand" "d"))
-                      (sat_fract:DQ (match_operand:SQ 2
-				     "register_operand" "d")))
-          (match_operand:DQ 3 "register_operand" "0")))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
-			UNSPEC_DPAQ_SA_L_W))])]
+  [(set (match_operand:DQ 0 "register_operand" "=a")
+	(ss_plus:DQ
+	(ss_mult:DQ (sat_fract:DQ (match_operand:SQ 1
+				   "register_operand" "d"))
+                    (sat_fract:DQ (match_operand:SQ 2
+				   "register_operand" "d")))
+        (match_operand:DQ 3 "register_operand" "0")))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
+		      UNSPEC_DPAQ_SA_L_W))]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpaq_sa.l.w\t%q0,%1,%2"
   [(set_attr "type" "imadd")
    (set_attr "mode" "SI")])
 
 (define_insn "ssmsubsqdq4"
-  [(parallel
-    [(set (match_operand:DQ 0 "register_operand" "=a")
-          (ss_minus:DQ
-	   (match_operand:DQ 3 "register_operand" "0")
-           (ss_mult:DQ (sat_fract:DQ (match_operand:SQ 1
-				      "register_operand" "d"))
-                       (sat_fract:DQ (match_operand:SQ 2
-				      "register_operand" "d")))))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
-			UNSPEC_DPSQ_SA_L_W))])]
+  [(set (match_operand:DQ 0 "register_operand" "=a")
+	(ss_minus:DQ
+	 (match_operand:DQ 3 "register_operand" "0")
+         (ss_mult:DQ (sat_fract:DQ (match_operand:SQ 1
+				    "register_operand" "d"))
+                     (sat_fract:DQ (match_operand:SQ 2
+				    "register_operand" "d")))))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
+		      UNSPEC_DPSQ_SA_L_W))]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpsq_sa.l.w\t%q0,%1,%2"
   [(set_attr "type" "imadd")

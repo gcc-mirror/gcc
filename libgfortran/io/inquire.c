@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2015 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -41,19 +41,11 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
   const char *p;
   GFC_INTEGER_4 cf = iqp->common.flags;
 
-  if ((cf & IOPARM_INQUIRE_HAS_EXIST) != 0)
-    {
-      *iqp->exist = (iqp->common.unit >= 0
-		     && iqp->common.unit <= GFC_INTEGER_4_HUGE);
+  if (iqp->common.unit == -1)
+    generate_error (&iqp->common, LIBERROR_INQUIRE_INTERNAL_UNIT, NULL);
 
-      if ((cf & IOPARM_INQUIRE_HAS_FILE) == 0)
-	{
-	  if (!(*iqp->exist))
-	    *iqp->common.iostat = LIBERROR_BAD_UNIT;
-	  *iqp->exist = *iqp->exist
-			&& (*iqp->common.iostat != LIBERROR_BAD_UNIT);
-	}
-    }
+  if ((cf & IOPARM_INQUIRE_HAS_EXIST) != 0)
+    *iqp->exist = (u != NULL);
 
   if ((cf & IOPARM_INQUIRE_HAS_OPENED) != 0)
     *iqp->opened = (u != NULL);

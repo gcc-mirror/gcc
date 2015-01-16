@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2005, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+#   Copyright (C) 2003, 2005, 2008, 2009, 2010, 2011, 2014 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -103,11 +103,14 @@ proc libffi-init { args } {
     global libffi_link_flags
     global tool_root_dir
     global ld_library_path
+    global compiler_vendor
 
     set blddirffi [lookfor_file [get_multilibs] libffi]
     verbose "libffi $blddirffi"
     set blddircxx [lookfor_file [get_multilibs] libstdc++-v3]
     verbose "libstdc++ $blddircxx"
+
+    set compiler_vendor "gnu"
 
     set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
     if {$gccdir != ""} {
@@ -132,6 +135,7 @@ proc libffi-init { args } {
 	    }
 	}
     }
+
     # add the library path for libffi.
     append ld_library_path ":${blddirffi}/.libs"
     # add the library path for libstdc++ as well.
@@ -148,7 +152,6 @@ proc libffi-init { args } {
     if { $libffi_dir != "" } {
 	set libffi_dir [file dirname ${libffi_dir}]
 	set libffi_link_flags "-L${libffi_dir}/.libs"
-	lappend libffi_link_flags "-L${blddircxx}/src/.libs"
     }
 
     set_ld_library_path_env_vars
@@ -215,8 +218,30 @@ proc libffi_target_compile { source dest type options } {
 	lappend options "libs= -lpthread"
     }
 
+    if { [string match "*.cc" $source] } {
+	lappend options "c++"
+    }
+
     verbose "options: $options"
     return [target_compile $source $dest $type $options]
+}
+
+# TEST should be a preprocessor condition.  Returns true if it holds.
+proc libffi_feature_test { test } {
+    set src "ffitest.c"
+
+    set f [open $src "w"]
+    puts $f "#include <ffi.h>"
+    puts $f $test
+    puts $f "xyzzy"
+    puts $f "#endif"
+    close $f
+
+    set lines [libffi_target_compile $src "" "preprocess" ""]
+    file delete $src
+
+    set last [lindex $lines end]
+    return [regexp -- "xyzzy" $last]
 }
 
 # Utility routines.
@@ -238,7 +263,7 @@ proc search_for { file pattern } {
 
 # Modified dg-runtest that can cycle through a list of optimization options
 # as c-torture does.
-proc libffi-dg-runtest { testcases flags default-extra-flags } {
+proc libffi-dg-runtest { testcases default-extra-flags } {
     global runtests
 
     foreach test $testcases {
@@ -259,13 +284,60 @@ proc libffi-dg-runtest { testcases flags default-extra-flags } {
 
 	set nshort [file tail [file dirname $test]]/[file tail $test]
 
-	foreach flags_t $option_list {
-	    verbose "Testing $nshort, $flags $flags_t" 1
-	    dg-test $test "$flags $flags_t" ${default-extra-flags}
+	foreach flags $option_list {
+	    verbose "Testing $nshort, $flags" 1
+	    dg-test $test $flags ${default-extra-flags}
 	}
     }
 }
 
+proc run-many-tests { testcases extra_flags } {
+    global compiler_vendor
+    switch $compiler_vendor {
+      "clang" {
+	set common "-W -Wall"
+	set optimizations { "-O0" "-O1" "-O2" "-O3" "-Os" }
+      }
+      "gnu" {
+        set common "-W -Wall -Wno-psabi"
+        set optimizations { "-O0" "-O2" "-O3" "-Os" "-O2 -fomit-frame-pointer" }
+      }
+      default {
+        # Assume we are using the vendor compiler.
+        set common ""
+        set optimizations { "" }
+      }
+    }
+
+    set targetabis { "" }
+    if [string match $compiler_vendor "gnu"] {
+        if [istarget "i?86-*-*"] {
+            set targetabis {
+                ""
+                "-DABI_NUM=FFI_STDCALL -DABI_ATTR=__STDCALL__"
+                "-DABI_NUM=FFI_THISCALL -DABI_ATTR=__THISCALL__"
+                "-DABI_NUM=FFI_FASTCALL -DABI_ATTR=__FASTCALL__"
+            }
+        }
+    }
+
+    set common [ concat $common $extra_flags ]
+    foreach test $testcases {
+        set testname [file tail $test]
+        if [search_for $test "ABI_NUM"] {
+            set abis $targetabis
+        } else {
+            set abis { "" }
+        }
+        foreach opt $optimizations {
+            foreach abi $abis {
+                set options [concat $common $opt $abi]
+                verbose "Testing $testname, $options" 1
+                dg-test $test $options ""
+            }
+        }
+    }
+}
 
 # Like check_conditional_xfail, but callable from a dg test.
 

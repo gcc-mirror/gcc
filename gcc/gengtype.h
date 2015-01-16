@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -417,9 +417,6 @@ void write_state (const char* path);
 /* Print an error message.  */
 extern void error_at_line
 (const struct fileloc *pos, const char *msg, ...) ATTRIBUTE_PRINTF_2;
-
-/* Like asprintf, but calls fatal() on out of memory.  */
-extern char *xasprintf (const char *, ...) ATTRIBUTE_PRINTF_1;
 
 /* Constructor routines for types.  */
 extern void do_typedef (const char *s, type_p t, struct fileloc *pos);

@@ -238,6 +238,7 @@ make_random_global (fuzzer *f)
   sprintf (global_name, "g%i", f->num_globals);
   return gcc_jit_context_new_global (f->ctxt,
 				     get_random_location (f),
+				     GCC_JIT_GLOBAL_EXPORTED,
 				     get_random_type (f),
 				     global_name);
 }

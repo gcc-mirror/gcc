@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for playing back recorded API calls.
-   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -22,13 +22,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "opts.h"
+#include "hashtab.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "input.h"
+#include "statistics.h"
+#include "vec.h"
+#include "double-int.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "alias.h"
+#include "flags.h"
+#include "symtab.h"
+#include "tree-core.h"
+#include "inchash.h"
 #include "tree.h"
 #include "hash-map.h"
 #include "is-a.h"
 #include "plugin-api.h"
 #include "vec.h"
 #include "hashtab.h"
-#include "hash-set.h"
 #include "machmode.h"
 #include "tm.h"
 #include "hard-reg-set.h"
@@ -48,8 +61,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-driver-name.h"
 #include "attribs.h"
 #include "context.h"
+#include "fold-const.h"
+#include "debug.h"
 
 #include "jit-common.h"
+#include "jit-logging.h"
 #include "jit-playback.h"
 #include "jit-result.h"
 #include "jit-builtins.h"
@@ -86,12 +102,15 @@ namespace jit {
 /* The constructor for gcc::jit::playback::context.  */
 
 playback::context::context (recording::context *ctxt)
-  : m_recording_ctxt (ctxt),
+  : log_user (ctxt->get_logger ()),
+    m_recording_ctxt (ctxt),
     m_tempdir (NULL),
     m_char_array_type_node (NULL),
     m_const_char_ptr (NULL)
 {
+  JIT_LOG_SCOPE (get_logger ());
   m_functions.create (0);
+  m_globals.create (0);
   m_source_files.create (0);
   m_cached_locations.create (0);
 }
@@ -100,8 +119,19 @@ playback::context::context (recording::context *ctxt)
 
 playback::context::~context ()
 {
-  if (m_tempdir)
-    delete m_tempdir;
+  JIT_LOG_SCOPE (get_logger ());
+
+  /* Normally the playback::context is responsible for cleaning up the
+     tempdir (including "fake.so" within the filesystem).
+
+     In the normal case, clean it up now.
+
+     However m_tempdir can be NULL if the context has handed over
+     responsibility for the tempdir cleanup to the jit::result object, so
+     that the cleanup can be delayed (see PR jit/64206).  If that's the
+     case this "delete NULL;" is a no-op. */
+  delete m_tempdir;
+
   m_functions.release ();
 }
 
@@ -454,6 +484,7 @@ new_function (location *loc,
 playback::lvalue *
 playback::context::
 new_global (location *loc,
+	    enum gcc_jit_global_kind kind,
 	    type *type,
 	    const char *name)
 {
@@ -462,22 +493,55 @@ new_global (location *loc,
   tree inner = build_decl (UNKNOWN_LOCATION, VAR_DECL,
 			   get_identifier (name),
 			   type->as_tree ());
-  TREE_PUBLIC (inner) = 1;
+  TREE_PUBLIC (inner) = (kind != GCC_JIT_GLOBAL_INTERNAL);
   DECL_COMMON (inner) = 1;
-  DECL_EXTERNAL (inner) = 1;
+  switch (kind)
+    {
+    default:
+      gcc_unreachable ();
+
+    case GCC_JIT_GLOBAL_EXPORTED:
+      TREE_STATIC (inner) = 1;
+      break;
+
+    case GCC_JIT_GLOBAL_INTERNAL:
+      TREE_STATIC (inner) = 1;
+      break;
+
+    case GCC_JIT_GLOBAL_IMPORTED:
+      DECL_EXTERNAL (inner) = 1;
+      break;
+    }
 
   if (loc)
     set_tree_location (inner, loc);
 
+  varpool_node::get_create (inner);
+
+  m_globals.safe_push (inner);
+
   return new lvalue (this, inner);
 }
 
-/* Construct a playback::rvalue instance (wrapping a tree).  */
+/* Implementation of the various
+      gcc::jit::playback::context::new_rvalue_from_const <HOST_TYPE>
+   methods.
+   Each of these constructs a playback::rvalue instance (wrapping a tree).
 
-playback::rvalue *
-playback::context::
-new_rvalue_from_int (type *type,
-		     int value)
+   These specializations are required to be in the same namespace
+   as the template, hence we now have to enter the gcc::jit::playback
+   namespace.  */
+
+namespace playback
+{
+
+/* Specialization of making an rvalue from a const, for host <int>.  */
+
+template <>
+rvalue *
+context::
+new_rvalue_from_const <int> (type *type,
+			     int value)
 {
   // FIXME: type-checking, or coercion?
   tree inner_type = type->as_tree ();
@@ -495,12 +559,37 @@ new_rvalue_from_int (type *type,
     }
 }
 
-/* Construct a playback::rvalue instance (wrapping a tree).  */
+/* Specialization of making an rvalue from a const, for host <long>.  */
 
-playback::rvalue *
-playback::context::
-new_rvalue_from_double (type *type,
-			double value)
+template <>
+rvalue *
+context::
+new_rvalue_from_const <long> (type *type,
+			      long value)
+{
+  // FIXME: type-checking, or coercion?
+  tree inner_type = type->as_tree ();
+  if (INTEGRAL_TYPE_P (inner_type))
+    {
+      tree inner = build_int_cst (inner_type, value);
+      return new rvalue (this, inner);
+    }
+  else
+    {
+      REAL_VALUE_TYPE real_value;
+      real_from_integer (&real_value, VOIDmode, value, SIGNED);
+      tree inner = build_real (inner_type, real_value);
+      return new rvalue (this, inner);
+    }
+}
+
+/* Specialization of making an rvalue from a const, for host <double>.  */
+
+template <>
+rvalue *
+context::
+new_rvalue_from_const <double> (type *type,
+				double value)
 {
   // FIXME: type-checking, or coercion?
   tree inner_type = type->as_tree ();
@@ -525,18 +614,25 @@ new_rvalue_from_double (type *type,
   return new rvalue (this, inner);
 }
 
-/* Construct a playback::rvalue instance (wrapping a tree).  */
+/* Specialization of making an rvalue from a const, for host <void *>.  */
 
-playback::rvalue *
-playback::context::
-new_rvalue_from_ptr (type *type,
-		     void *value)
+template <>
+rvalue *
+context::
+new_rvalue_from_const <void *> (type *type,
+				void *value)
 {
   tree inner_type = type->as_tree ();
   /* FIXME: how to ensure we have a wide enough type?  */
   tree inner = build_int_cstu (inner_type, (unsigned HOST_WIDE_INT)value);
   return new rvalue (this, inner);
 }
+
+/* We're done implementing the specializations of
+      gcc::jit::playback::context::new_rvalue_from_const <T>
+   so we can exit the gcc::jit::playback namespace.  */
+
+} // namespace playback
 
 /* Construct a playback::rvalue instance (wrapping a tree).  */
 
@@ -575,6 +671,45 @@ as_truth_value (tree expr, location *loc)
 
   return expr;
 }
+
+/* For use by jit_langhook_write_globals.
+   Calls varpool_node::finalize_decl on each global.  */
+
+void
+playback::context::
+write_global_decls_1 ()
+{
+  /* Compare with e.g. the C frontend's c_write_global_declarations.  */
+  JIT_LOG_SCOPE (get_logger ());
+
+  int i;
+  tree decl;
+  FOR_EACH_VEC_ELT (m_globals, i, decl)
+    {
+      gcc_assert (TREE_CODE (decl) == VAR_DECL);
+      varpool_node::finalize_decl (decl);
+    }
+}
+
+/* For use by jit_langhook_write_globals.
+   Calls debug_hooks->global_decl on each global.  */
+
+void
+playback::context::
+write_global_decls_2 ()
+{
+  /* Compare with e.g. the C frontend's c_write_global_declarations_2. */
+  JIT_LOG_SCOPE (get_logger ());
+
+  int i;
+  tree decl;
+  FOR_EACH_VEC_ELT (m_globals, i, decl)
+    {
+      gcc_assert (TREE_CODE (decl) == VAR_DECL);
+      debug_hooks->global_decl (decl);
+    }
+}
+
 
 /* Construct a playback::rvalue instance (wrapping a tree) for a
    unary op.  */
@@ -615,6 +750,10 @@ new_unary_op (location *loc,
       if (loc)
 	set_tree_location (inner_result, loc);
       return new rvalue (this, inner_result);
+
+    case GCC_JIT_UNARY_OP_ABS:
+      inner_op = ABS_EXPR;
+      break;
     }
 
   inner_result = build1 (inner_op,
@@ -1215,6 +1354,8 @@ build_stmt_list ()
   int i;
   block *b;
 
+  JIT_LOG_SCOPE (m_ctxt->get_logger ());
+
   FOR_EACH_VEC_ELT (m_blocks, i, b)
     {
       int j;
@@ -1240,6 +1381,8 @@ void
 playback::function::
 postprocess ()
 {
+  JIT_LOG_SCOPE (m_ctxt->get_logger ());
+
   if (m_ctxt->get_bool_option (GCC_JIT_BOOL_OPTION_DUMP_INITIAL_TREE))
     debug_tree (m_stmt_list);
 
@@ -1534,13 +1677,15 @@ result *
 playback::context::
 compile ()
 {
+  JIT_LOG_SCOPE (get_logger ());
+
   const char *ctxt_progname;
   result *result_obj = NULL;
 
   int keep_intermediates =
     get_bool_option (GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES);
 
-  m_tempdir = new tempdir (keep_intermediates);
+  m_tempdir = new tempdir (get_logger (), keep_intermediates);
   if (!m_tempdir->create ())
     return NULL;
 
@@ -1568,8 +1713,13 @@ compile ()
 
   /* This runs the compiler.  */
   toplev toplev (false);
+  enter_scope ("toplev::main");
+  if (get_logger ())
+    for (unsigned i = 0; i < fake_args.length (); i++)
+      get_logger ()->log ("argv[%i]: %s", i, fake_args[i]);
   toplev.main (fake_args.length (),
 	       const_cast <char **> (fake_args.address ()));
+  exit_scope ("toplev::main");
 
   /* Extracting dumps makes use of the gcc::dump_manager, hence we
      need to do it between toplev::main (which creates the dump manager)
@@ -1577,7 +1727,9 @@ compile ()
   extract_any_requested_dumps (&requested_dumps);
 
   /* Clean up the compiler.  */
+  enter_scope ("toplev::finalize");
   toplev.finalize ();
+  exit_scope ("toplev::finalize");
 
   /* Ideally we would release the jit mutex here, but we can't yet since
      followup activities use timevars, which are global state.  */
@@ -1618,6 +1770,7 @@ void
 playback::context::acquire_mutex ()
 {
   /* Acquire the big GCC mutex. */
+  JIT_LOG_SCOPE (get_logger ());
   pthread_mutex_lock (&jit_mutex);
   gcc_assert (NULL == active_playback_ctxt);
   active_playback_ctxt = this;
@@ -1629,6 +1782,7 @@ void
 playback::context::release_mutex ()
 {
   /* Release the big GCC mutex. */
+  JIT_LOG_SCOPE (get_logger ());
   gcc_assert (active_playback_ctxt == this);
   active_playback_ctxt = NULL;
   pthread_mutex_unlock (&jit_mutex);
@@ -1643,6 +1797,8 @@ make_fake_args (vec <char *> *argvec,
 		const char *ctxt_progname,
 		vec <recording::requested_dump> *requested_dumps)
 {
+  JIT_LOG_SCOPE (get_logger ());
+
 #define ADD_ARG(arg) argvec->safe_push (xstrdup (arg))
 #define ADD_ARG_TAKE_OWNERSHIP(arg) argvec->safe_push (arg)
 
@@ -1730,6 +1886,8 @@ void
 playback::context::
 extract_any_requested_dumps (vec <recording::requested_dump> *requested_dumps)
 {
+  JIT_LOG_SCOPE (get_logger ());
+
   int i;
   recording::requested_dump *d;
   FOR_EACH_VEC_ELT (*requested_dumps, i, d)
@@ -1789,6 +1947,7 @@ playback::context::read_dump_file (const char *path)
     {
       add_error (NULL, "error reading from %s", path);
       free (result);
+      fclose (f_in);
       return NULL;
     }
 
@@ -1815,6 +1974,7 @@ void
 playback::context::
 convert_to_dso (const char *ctxt_progname)
 {
+  JIT_LOG_SCOPE (get_logger ());
   /* Currently this lumps together both assembling and linking into
      TV_ASSEMBLE.  */
   auto_timevar assemble_timevar (TV_ASSEMBLE);
@@ -1847,6 +2007,10 @@ convert_to_dso (const char *ctxt_progname)
 
   /* pex_one's error-handling requires pname to be non-NULL.  */
   gcc_assert (ctxt_progname);
+
+  if (get_logger ())
+    for (unsigned i = 0; i < argvec.length (); i++)
+      get_logger ()->log ("argv[%i]: %s", i, argvec[i]);
 
   errmsg = pex_one (PEX_SEARCH, /* int flags, */
 		    gcc_driver_name,
@@ -1888,6 +2052,7 @@ result *
 playback::context::
 dlopen_built_dso ()
 {
+  JIT_LOG_SCOPE (get_logger ());
   auto_timevar load_timevar (TV_LOAD);
   void *handle = NULL;
   const char *error = NULL;
@@ -1902,7 +2067,37 @@ dlopen_built_dso ()
     add_error (NULL, "%s", error);
   }
   if (handle)
-    result_obj = new result (handle);
+    {
+      /* We've successfully dlopened the result; create a
+	 jit::result object to wrap it.
+
+	 We're done with the tempdir for now, but if the user
+	 has requested debugging, the user's debugger might not
+	 be capable of dealing with the .so file being unlinked
+	 immediately, so keep it around until after the result
+	 is released.  We do this by handing over ownership of
+	 the jit::tempdir to the result.  See PR jit/64206.  */
+      tempdir *handover_tempdir;
+      if (get_bool_option (GCC_JIT_BOOL_OPTION_DEBUGINFO))
+	{
+	  handover_tempdir = m_tempdir;
+	  m_tempdir = NULL;
+	  /* The tempdir will eventually be cleaned up in the
+	     jit::result's dtor. */
+	  log ("GCC_JIT_BOOL_OPTION_DEBUGINFO was set:"
+	       " handing over tempdir to jit::result");
+	}
+      else
+	{
+	  handover_tempdir = NULL;
+	  /* ... and retain ownership of m_tempdir so we clean it
+	     up it the playback::context's dtor. */
+	  log ("GCC_JIT_BOOL_OPTION_DEBUGINFO was not set:"
+	       " retaining ownership of tempdir");
+	}
+
+      result_obj = new result (get_logger (), handle, handover_tempdir);
+    }
   else
     result_obj = NULL;
 
@@ -1919,6 +2114,7 @@ void
 playback::context::
 replay ()
 {
+  JIT_LOG_SCOPE (get_logger ());
   /* Adapted from c-common.c:c_common_nodes_and_builtins.  */
   tree array_domain_type = build_index_type (size_int (200));
   m_char_array_type_node
@@ -1980,6 +2176,7 @@ void
 playback::context::
 dump_generated_code ()
 {
+  JIT_LOG_SCOPE (get_logger ());
   char buf[4096];
   size_t sz;
   FILE *f_in = fopen (get_path_s_file (), "r");
@@ -2065,6 +2262,7 @@ handle_locations ()
      imposed by the linemap API.
 
      line_table is a global.  */
+  JIT_LOG_SCOPE (get_logger ());
   int i;
   source_file *file;
 

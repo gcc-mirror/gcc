@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -27,7 +27,18 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "real.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "stmt.h"
@@ -36,16 +47,12 @@
 #include "output.h"
 #include "libfuncs.h"	/* For set_stack_check_libfunc.  */
 #include "tree-iterator.h"
-#include "hash-set.h"
 #include "gimple-expr.h"
 #include "gimplify.h"
 #include "bitmap.h"
 #include "hash-map.h"
 #include "is-a.h"
 #include "plugin-api.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -666,6 +673,10 @@ gigi (Node_Id gnat_root,
 
   /* Initialize the GCC support for FP operations.  */
   gnat_init_gcc_fp ();
+
+  /* Force -fno-strict-aliasing if the configuration pragma was seen.  */
+  if (No_Strict_Aliasing_CP)
+    flag_strict_aliasing = 0;
 
   /* Now translate the compilation unit proper.  */
   Compilation_Unit_to_gnu (gnat_root);
@@ -2268,9 +2279,56 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	tree gnu_rhs = gnat_to_gnu (Next (First (Expressions (gnat_node))));
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
-	gnu_result = build_binary_op (attribute == Attr_Min
-				      ? MIN_EXPR : MAX_EXPR,
-				      gnu_result_type, gnu_lhs, gnu_rhs);
+
+	/* The result of {MIN,MAX}_EXPR is unspecified if either operand is
+	   a NaN so we implement the semantics of C99 f{min,max} to make it
+	   predictable in this case: if either operand is a NaN, the other
+	   is returned; if both operands are NaN's, a NaN is returned.  */
+	if (SCALAR_FLOAT_TYPE_P (gnu_result_type))
+	  {
+	    const bool lhs_side_effects_p = TREE_SIDE_EFFECTS (gnu_lhs);
+	    const bool rhs_side_effects_p = TREE_SIDE_EFFECTS (gnu_rhs);
+	    tree t = builtin_decl_explicit (BUILT_IN_ISNAN);
+	    tree lhs_is_nan, rhs_is_nan;
+
+	    /* If the operands have side-effects, they need to be evaluated
+	       only once in spite of the multiple references in the result.  */
+	    if (lhs_side_effects_p)
+	      gnu_lhs = gnat_protect_expr (gnu_lhs);
+	    if (rhs_side_effects_p)
+	      gnu_rhs = gnat_protect_expr (gnu_rhs);
+
+	    lhs_is_nan = fold_build2 (NE_EXPR, boolean_type_node,
+				      build_call_expr (t, 1, gnu_lhs),
+				      integer_zero_node);
+
+	    rhs_is_nan = fold_build2 (NE_EXPR, boolean_type_node,
+				      build_call_expr (t, 1, gnu_rhs),
+				      integer_zero_node);
+
+	    gnu_result = build_binary_op (attribute == Attr_Min
+					  ? MIN_EXPR : MAX_EXPR,
+					  gnu_result_type, gnu_lhs, gnu_rhs);
+	    gnu_result = fold_build3 (COND_EXPR, gnu_result_type,
+				      rhs_is_nan, gnu_lhs, gnu_result);
+	    gnu_result = fold_build3 (COND_EXPR, gnu_result_type,
+				      lhs_is_nan, gnu_rhs, gnu_result);
+
+	    /* If the operands have side-effects, they need to be evaluated
+	       before doing the tests above since the place they otherwise
+	       would end up being evaluated at run time could be wrong.  */
+	    if (lhs_side_effects_p)
+	      gnu_result
+		= build2 (COMPOUND_EXPR, gnu_result_type, gnu_lhs, gnu_result);
+
+	    if (rhs_side_effects_p)
+	      gnu_result
+		= build2 (COMPOUND_EXPR, gnu_result_type, gnu_rhs, gnu_result);
+	  }
+	else
+	  gnu_result = build_binary_op (attribute == Attr_Min
+					? MIN_EXPR : MAX_EXPR,
+					gnu_result_type, gnu_lhs, gnu_rhs);
       }
       break;
 
@@ -6458,7 +6516,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	      tree size
 	        = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (type), to);
 	      tree to_ptr = build_fold_addr_expr (to);
-	      tree t = builtin_decl_implicit (BUILT_IN_MEMSET);
+	      tree t = builtin_decl_explicit (BUILT_IN_MEMSET);
 	      if (TREE_CODE (value) == INTEGER_CST)
 		{
 		  tree mask
@@ -6488,7 +6546,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	        = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (type), from);
 	      tree to_ptr = build_fold_addr_expr (to);
 	      tree from_ptr = build_fold_addr_expr (from);
-	      tree t = builtin_decl_implicit (BUILT_IN_MEMMOVE);
+	      tree t = builtin_decl_explicit (BUILT_IN_MEMMOVE);
 	      gnu_result = build_call_expr (t, 3, to_ptr, from_ptr, size);
 	   }
 	}
@@ -7081,13 +7139,22 @@ gnat_to_gnu (Node_Id gnat_node)
     /****************/
 
     case N_Expression_With_Actions:
-      /* This construct doesn't define a scope so we don't push a binding level
-	 around the statement list; but we wrap it in a SAVE_EXPR to protect it
-	 from unsharing.  */
-      gnu_result = build_stmt_group (Actions (gnat_node), false);
+      /* This construct doesn't define a scope so we don't push a binding
+	 level around the statement list, but we wrap it in a SAVE_EXPR to
+	 protect it from unsharing.  Elaborate the expression as part of the
+	 same statement group as the actions so that the type declaration
+	 gets inserted there as well.  This ensures that the type elaboration
+	 code is issued past the actions computing values on which it might
+	 depend.  */
+
+      start_stmt_group ();
+      add_stmt_list (Actions (gnat_node));
+      gnu_expr = gnat_to_gnu (Expression (gnat_node));
+      gnu_result = end_stmt_group ();
+
       gnu_result = build1 (SAVE_EXPR, void_type_node, gnu_result);
       TREE_SIDE_EFFECTS (gnu_result) = 1;
-      gnu_expr = gnat_to_gnu (Expression (gnat_node));
+
       gnu_result
 	= build_compound_expr (TREE_TYPE (gnu_expr), gnu_result, gnu_expr);
       gnu_result_type = get_unpadded_type (Etype (gnat_node));

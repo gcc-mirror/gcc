@@ -1,3 +1,51 @@
+2015-10-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	
+	* builtins.c: Include calls.h dojump.h emit-rtl.h explow.h expmed.h
+	fixed-value.h function.h hard-reg-set.h hashtab.h insn-config.h
+	real.h statistics.h stmt.h varasm.h.
+
+2015-01-09  Michael Collison  <michael.collison@linaro.org>
+
+	* boehm.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* builtins.c: Ditto.
+	* class.c: Ditto.
+	* constants.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* decl.c: Ditto.
+	* except.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* expr.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h,inchash.h and real.h due to flattening of tree.h.
+	* gimplify.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* jcf-dump.c: Ditto.
+	* jcf-io.c: Ditto.
+	* jcf-parse.c: Ditto.
+	* jvgenmain.c: Ditto.
+	* lang.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* mangle.c: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h, options.h, fold-const.h,
+	wide-int.h, and inchash.h due to flattening of tree.h.
+	* mangle_name.c: Ditto.
+	* resource.c: Ditto.
+	* typeck.c: Ditto.
+	* verify-glue.c: Ditto.
+	* verify-impl.c: Ditto.
+
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* jcf-dump.c (version): Update copyright notice dates.
+
 2014-11-24  Richard Biener  <rguenther@suse.de>
 
 	PR java/64004
@@ -23023,7 +23071,7 @@ Tue Mar  9 11:52:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	New directory.
 
 
-Copyright (C) 1996-2014 Free Software Foundation, Inc.
+Copyright (C) 1996-2015 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2014 Free Software Foundation, Inc.
+; Copyright (C) 2003-2015 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -279,6 +279,10 @@ Warray-bounds
 LangEnabledBy(C ObjC C++ ObjC++,Wall)
 ; in common.opt
 
+Warray-bounds=
+LangEnabledBy(C ObjC C++ ObjC++,Wall,1,0)
+; in common.opt
+
 Wassign-intercept
 ObjC ObjC++ Var(warn_assign_intercept) Warning
 Warn whenever an Objective-C assignment is being intercepted by the garbage collector
@@ -386,6 +390,10 @@ Warn if a deprecated compiler feature, class, method, or field is used
 Wdesignated-init
 C ObjC Var(warn_designated_init) Init(1) Warning
 Warn about positional initialization of structs requiring designated initializers
+
+Wdiscarded-array-qualifiers
+C ObjC Var(warn_discarded_array_qualifiers) Init(1) Warning
+Warn if qualifiers on arrays which are pointer targets are discarded
 
 Wdiscarded-qualifiers
 C ObjC Var(warn_discarded_qualifiers) Init(1) Warning
@@ -573,6 +581,11 @@ Warn when sizeof is applied on a parameter declared as an array
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
 Warn about functions which might be candidates for format attributes
+
+Wsuggest-override
+C++ ObjC++ Var(warn_override) Warning
+Suggest that the override keyword be used when the declaration of a virtual
+function overrides another.
 
 Wswitch
 C ObjC C++ ObjC++ Var(warn_switch) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
@@ -1269,6 +1282,10 @@ Enable Objective-C setjmp exception handling runtime
 fobjc-std=objc1
 ObjC ObjC++ Var(flag_objc1_only)
 Conform to the Objective-C 1.0 language as implemented in GCC 4.0
+
+fopenacc
+C ObjC C++ ObjC++ Var(flag_openacc)
+Enable OpenACC
 
 fopenmp
 C ObjC C++ ObjC++ Var(flag_openmp)

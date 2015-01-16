@@ -1,5 +1,5 @@
 /* Target Code for moxie
-   Copyright (C) 2008-2014 Free Software Foundation, Inc.
+   Copyright (C) 2008-2015 Free Software Foundation, Inc.
    Contributed by Anthony Green.
 
    This file is part of GCC.
@@ -35,20 +35,33 @@
 #include "reload.h"
 #include "diagnostic-core.h"
 #include "obstack.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "calls.h"
+#include "hashtab.h"
+#include "function.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "emit-rtl.h"
+#include "stmt.h"
 #include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"
 #include "except.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "input.h"
-#include "function.h"
 #include "ggc.h"
 #include "target.h"
 #include "target-def.h"
@@ -249,13 +262,16 @@ moxie_init_machine_status (void)
 }
 
 
-/* The TARGET_OPTION_OVERRIDE worker.
-   All this curently does is set init_machine_status.  */
+/* The TARGET_OPTION_OVERRIDE worker.  */
 static void
 moxie_option_override (void)
 {
   /* Set the per-function-data initializer.  */
   init_machine_status = moxie_init_machine_status;
+
+#ifdef TARGET_MOXIEBOX  
+  target_flags |= MASK_HAS_MULX;
+#endif
 }
 
 /* Compute the size of the local area and the size to be adjusted by the
@@ -552,7 +568,6 @@ moxie_asm_trampoline_template (FILE *f)
   fprintf (f, "\tldi.l $r0, 0x0\n");
   fprintf (f, "\tsto.l 0x8($fp), $r0\n");
   fprintf (f, "\tpop   $sp, $r0\n");
-  fprintf (f, "\tnop\n");
   fprintf (f, "\tjmpa  0x0\n");
 }
 
@@ -568,8 +583,26 @@ moxie_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
   mem = adjust_address (m_tramp, SImode, 4);
   emit_move_insn (mem, chain_value);
-  mem = adjust_address (m_tramp, SImode, 20);
+  mem = adjust_address (m_tramp, SImode, 16);
   emit_move_insn (mem, fnaddr);
+}
+
+/* Return true for memory offset addresses between -32768 and 32767.  */
+bool
+moxie_offset_address_p (rtx x)
+{
+  x = XEXP (x, 0);
+
+  if (GET_CODE (x) == PLUS)
+    {
+      x = XEXP (x, 1);
+      if (GET_CODE (x) == CONST_INT)
+	{
+	  unsigned int v = INTVAL (x) & 0xFFFF8000;
+	  return (v == 0xFFFF8000 || v == 0x00000000);
+	}
+    }
+  return 0;
 }
 
 /* The Global `targetm' Variable.  */

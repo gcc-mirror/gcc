@@ -1,3 +1,4 @@
+/* { dg-options "(!HAS_LSA)" } */
 /* { dg-final { scan-assembler "\t.globl\tf9" } } */
 /* { dg-final { scan-assembler "\tsll\t" } } */
 /* { dg-final { scan-assembler "\taddu\t" } } */

@@ -1,5 +1,5 @@
 /* Utility routines for data type conversion for GCC.
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright (C) 1987-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,7 +25,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "real.h"
+#include "fixed-value.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "flags.h"
 #include "convert.h"
@@ -885,12 +897,10 @@ convert_to_integer (tree type, tree expr)
 
     case REAL_TYPE:
       if (flag_sanitize & SANITIZE_FLOAT_CAST
-	  && current_function_decl != NULL_TREE
-	  && !lookup_attribute ("no_sanitize_undefined",
-				DECL_ATTRIBUTES (current_function_decl)))
+	  && do_ubsan_in_current_function ())
 	{
 	  expr = save_expr (expr);
-	  tree check = ubsan_instrument_float_cast (loc, type, expr);
+	  tree check = ubsan_instrument_float_cast (loc, type, expr, expr);
 	  expr = build1 (FIX_TRUNC_EXPR, type, expr);
 	  if (check == NULL)
 	    return expr;

@@ -2,7 +2,7 @@
 ; Generated automatically by genopt.sh from arm-cores.def, arm-arches.def
 ; and arm-fpus.def.
 
-; Copyright (C) 2011-2014 Free Software Foundation, Inc.
+; Copyright (C) 2011-2015 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -308,6 +308,9 @@ Enum(processor_type) String(cortex-a53) Value(cortexa53)
 
 EnumValue
 Enum(processor_type) String(cortex-a57) Value(cortexa57)
+
+EnumValue
+Enum(processor_type) String(xgene1) Value(xgene1)
 
 EnumValue
 Enum(processor_type) String(cortex-a57.cortex-a53) Value(cortexa57cortexa53)

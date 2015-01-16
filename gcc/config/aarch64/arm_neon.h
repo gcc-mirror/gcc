@@ -1,6 +1,6 @@
 /* ARM NEON intrinsics include file.
 
-   Copyright (C) 2011-2014 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -26,6 +26,10 @@
 
 #ifndef _AARCH64_NEON_H_
 #define _AARCH64_NEON_H_
+
+#ifndef __ARM_NEON
+#error You must enable AdvancedSIMD instructions to use arm_neon.h
+#else
 
 #include <stdint.h>
 
@@ -25207,5 +25211,7 @@ __INTERLEAVE_LIST (zip)
 #undef __aarch64_vdupq_laneq_u16
 #undef __aarch64_vdupq_laneq_u32
 #undef __aarch64_vdupq_laneq_u64
+
+#endif
 
 #endif

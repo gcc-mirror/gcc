@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003-2014 Free Software Foundation, Inc.
+; Copyright (C) 2003-2015 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -527,6 +527,10 @@ Warn if a loop with constant number of iterations triggers undefined behavior
 
 Warray-bounds
 Common Var(warn_array_bounds) Warning
+Warn if an array is accessed out of bounds
+
+Warray-bounds=
+Common Joined RejectNegative UInteger Var(warn_array_bounds) Warning
 Warn if an array is accessed out of bounds
 
 Wattributes
@@ -1064,7 +1068,7 @@ Delete useless null pointer checks
 
 fdevirtualize-at-ltrans
 Common Report Var(flag_ltrans_devirtualize)
-Perofrm extra streaming to support more agressive devirtualization at LTO ltrans stage.
+Stream extra data to support more aggressive devirtualization in LTO local transformation mode
 
 fdevirtualize-speculatively
 Common Report Var(flag_devirtualize_speculatively) Optimization
@@ -2089,6 +2093,10 @@ fstack-protector-strong
 Common Report RejectNegative Var(flag_stack_protect, 3)
 Use a smart stack protection method for certain functions
 
+fstack-protector-explicit
+Common Report RejectNegative Var(flag_stack_protect, 4)
+Use stack protection method only for functions with the stack_protect attribute
+
 fstack-usage
 Common RejectNegative Var(flag_stack_usage)
 Output stack usage information on a per-function basis
@@ -2241,16 +2249,16 @@ Enable string length optimizations on trees
 
 fisolate-erroneous-paths-dereference
 Common Report Var(flag_isolate_erroneous_paths_dereference) Optimization
-Detect paths which trigger erroneous or undefined behaviour due to
-dereferencing a NULL pointer.  Isolate those paths from the main control
-flow and turn the statement with erroneous or undefined behaviour into a trap.
+Detect paths that trigger erroneous or undefined behavior due to
+dereferencing a null pointer.  Isolate those paths from the main control
+flow and turn the statement with erroneous or undefined behavior into a trap.
 
 fisolate-erroneous-paths-attribute
 Common Report Var(flag_isolate_erroneous_paths_attribute) Optimization
-Detect paths which trigger erroneous or undefined behaviour due a NULL value
-being used in a way which is forbidden by a returns_nonnull or nonnull
+Detect paths that trigger erroneous or undefined behavior due a null value
+being used in a way forbidden by a returns_nonnull or nonnull
 attribute.  Isolate those paths from the main control flow and turn the
-statement with erroneous or undefined behaviour into a trap. 
+statement with erroneous or undefined behavior into a trap. 
 
 ftree-loop-distribution
 Common Report Var(flag_tree_loop_distribution) Optimization

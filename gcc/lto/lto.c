@@ -1,5 +1,5 @@
 /* Top-level LTO routines.
-   Copyright (C) 2009-2014 Free Software Foundation, Inc.
+   Copyright (C) 2009-2015 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -23,7 +23,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "opts.h"
 #include "toplev.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "real.h"
+#include "fixed-value.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "diagnostic-core.h"
 #include "tm.h"
@@ -32,10 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-map.h"
 #include "is-a.h"
 #include "plugin-api.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -47,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "inchash.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "common.h"
 #include "debug.h"
@@ -67,6 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "params.h"
 #include "ipa-utils.h"
+#include "gomp-constants.h"
 
 
 /* Number of parallel tasks to run, -1 if we want to use GNU Make jobserver.  */
@@ -2899,7 +2910,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   timevar_push (TV_IPA_LTO_DECL_IN);
 
 #ifdef ACCEL_COMPILER
-    section_name_prefix = OFFLOAD_SECTION_NAME_PREFIX;
+  section_name_prefix = OFFLOAD_SECTION_NAME_PREFIX;
+  lto_stream_offload_p = true;
 #endif
 
   real_file_decl_data

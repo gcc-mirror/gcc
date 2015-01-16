@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2014 Free Software Foundation, Inc.
+   Copyright (C) 2003-2015 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -162,10 +162,28 @@ struct GTY(()) inline_summary
   int scc_no;
 };
 
-/* Need a typedef for inline_summary because of inline function
-   'inline_summary' below.  */
-typedef struct inline_summary inline_summary_t;
-extern GTY(()) vec<inline_summary_t, va_gc> *inline_summary_vec;
+class GTY((user)) inline_summary_t: public function_summary <inline_summary *>
+{
+public:
+  inline_summary_t (symbol_table *symtab, bool ggc):
+    function_summary <inline_summary *> (symtab, ggc) {}
+
+  static inline_summary_t *create_ggc (symbol_table *symtab)
+  {
+    struct inline_summary_t *summary = new (ggc_cleared_alloc <inline_summary_t> ())
+      inline_summary_t(symtab, true);
+    summary->disable_insertion_hook ();
+    return summary;
+  }
+
+
+  virtual void insert (cgraph_node *, inline_summary *);
+  virtual void remove (cgraph_node *node, inline_summary *);
+  virtual void duplicate (cgraph_node *src, cgraph_node *dst,
+			  inline_summary *src_data, inline_summary *dst_data);
+};
+
+extern GTY(()) function_summary <inline_summary *> *inline_summaries;
 
 /* Information kept about parameter of call site.  */
 struct inline_param_summary
@@ -206,7 +224,6 @@ struct edge_growth_cache_entry
   inline_hints hints;
 };
 
-extern vec<int> node_growth_cache;
 extern vec<edge_growth_cache_entry> edge_growth_cache;
 
 /* In ipa-inline-analysis.c  */
@@ -227,7 +244,7 @@ void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					vec<ipa_polymorphic_call_context>,
 					vec<ipa_agg_jump_function_p>,
 					int *, int *, inline_hints *);
-int do_estimate_growth (struct cgraph_node *);
+int estimate_growth (struct cgraph_node *);
 bool growth_likely_positive (struct cgraph_node *, int);
 void inline_merge_summary (struct cgraph_edge *edge);
 void inline_update_overall_summary (struct cgraph_node *node);
@@ -250,31 +267,10 @@ void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *,
 extern int ncalls_inlined;
 extern int nfunctions_inlined;
 
-static inline struct inline_summary *
-inline_summary (struct cgraph_node *node)
-{
-  return &(*inline_summary_vec)[node->uid];
-}
-
 static inline struct inline_edge_summary *
 inline_edge_summary (struct cgraph_edge *edge)
 {
   return &inline_edge_summary_vec[edge->uid];
-}
-
-/* Return estimated unit growth after inlning all calls to NODE.
-   Quick accesors to the inline growth caches.  
-   For convenience we keep zero 0 as unknown.  Because growth
-   can be both positive and negative, we simply increase positive
-   growths by 1. */
-static inline int
-estimate_growth (struct cgraph_node *node)
-{
-  int ret;
-  if ((int)node_growth_cache.length () <= node->uid
-      || !(ret = node_growth_cache[node->uid]))
-    return do_estimate_growth (node);
-  return ret - (ret > 0);
 }
 
 
@@ -328,16 +324,6 @@ estimate_edge_hints (struct cgraph_edge *edge)
       || !(ret = edge_growth_cache[edge->uid].hints))
     return do_estimate_edge_hints (edge);
   return ret - 1;
-}
-
-
-/* Reset cached value for NODE.  */
-
-static inline void
-reset_node_growth_cache (struct cgraph_node *node)
-{
-  if ((int)node_growth_cache.length () > node->uid)
-    node_growth_cache[node->uid] = 0;
 }
 
 /* Reset cached value for EDGE.  */

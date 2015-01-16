@@ -37,6 +37,7 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Inline;   use Inline;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
@@ -46,6 +47,7 @@ with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Output;   use Output;
+with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
@@ -86,10 +88,10 @@ package body Sem_Res is
    -----------------------
 
    --  Second pass (top-down) type checking and overload resolution procedures
-   --  Typ is the type required by context. These procedures propagate the type
-   --  information recursively to the descendants of N. If the node is not
+   --  Typ is the type required by context. These procedures propagate the
+   --  type information recursively to the descendants of N. If the node is not
    --  overloaded, its Etype is established in the first pass. If overloaded,
-   --  the Resolve routines set the correct type. For arith. operators, the
+   --  the Resolve routines set the correct type. For arithmetic operators, the
    --  Etype is the base type of the context.
 
    --  Note that Resolve_Attribute is separated off in Sem_Attr
@@ -99,19 +101,15 @@ package body Sem_Res is
    --  a component of a discriminated type (record or concurrent type).
 
    procedure Check_For_Visible_Operator (N : Node_Id; T : Entity_Id);
-   --  Given a node for an operator associated with type T, check that
-   --  the operator is visible. Operators all of whose operands are
-   --  universal must be checked for visibility during resolution
-   --  because their type is not determinable based on their operands.
+   --  Given a node for an operator associated with type T, check that the
+   --  operator is visible. Operators all of whose operands are universal must
+   --  be checked for visibility during resolution because their type is not
+   --  determinable based on their operands.
 
    procedure Check_Fully_Declared_Prefix
      (Typ  : Entity_Id;
       Pref : Node_Id);
    --  Check that the type of the prefix of a dereference is not incomplete
-
-   procedure Check_Ghost_Context (Ghost_Id : Entity_Id; Ghost_Ref : Node_Id);
-   --  Determine whether node Ghost_Ref appears within a Ghost-friendly context
-   --  where Ghost entity Ghost_Id can safely reside.
 
    function Check_Infinite_Recursion (N : Node_Id) return Boolean;
    --  Given a call node, N, which is known to occur immediately within the
@@ -245,9 +243,9 @@ package body Sem_Res is
       Typ   : Entity_Id;
       Op_Id : Entity_Id);
    --  Inverse transformation: if an operator is given in functional notation,
-   --  then after resolving the node, transform into an operator node, so
-   --  that operands are resolved properly. Recall that predefined operators
-   --  do not have a full signature and special resolution rules apply.
+   --  then after resolving the node, transform into an operator node, so that
+   --  operands are resolved properly. Recall that predefined operators do not
+   --  have a full signature and special resolution rules apply.
 
    procedure Rewrite_Renamed_Operator
      (N   : Node_Id;
@@ -258,8 +256,8 @@ package body Sem_Res is
 
    procedure Set_String_Literal_Subtype (N : Node_Id; Typ : Entity_Id);
    --  The String_Literal_Subtype is built for all strings that are not
-   --  operands of a static concatenation operation. If the argument is
-   --  not a N_String_Literal node, then the call has no effect.
+   --  operands of a static concatenation operation. If the argument is not
+   --  a N_String_Literal node, then the call has no effect.
 
    procedure Set_Slice_Subtype (N : Node_Id);
    --  Build subtype of array type, with the range specified by the slice
@@ -429,11 +427,12 @@ package body Sem_Res is
          elsif Nkind (P) = N_Index_Or_Discriminant_Constraint then
 
             --  The following check catches the unusual case where a
-            --  discriminant appears within an index constraint that is part of
-            --  a larger expression within a constraint on a component, e.g. "C
-            --  : Int range 1 .. F (new A(1 .. D))". For now we only check case
-            --  of record components, and note that a similar check should also
-            --  apply in the case of discriminant constraints below. ???
+            --  discriminant appears within an index constraint that is part
+            --  of a larger expression within a constraint on a component,
+            --  e.g. "C : Int range 1 .. F (new A(1 .. D))". For now we only
+            --  check case of record components, and note that a similar check
+            --  should also apply in the case of discriminant constraints
+            --  below. ???
 
             --  Note that the check for N_Subtype_Declaration below is to
             --  detect the valid use of discriminants in the constraints of a
@@ -691,193 +690,6 @@ package body Sem_Res is
          Check_Fully_Declared (Typ, Parent (Pref));
       end if;
    end Check_Fully_Declared_Prefix;
-
-   -------------------------
-   -- Check_Ghost_Context --
-   -------------------------
-
-   procedure Check_Ghost_Context (Ghost_Id : Entity_Id; Ghost_Ref : Node_Id) is
-      procedure Check_Ghost_Policy (Id : Entity_Id; Err_N : Node_Id);
-      --  Verify that the Ghost policy at the point of declaration of entity Id
-      --  matches the policy at the point of reference. If this is not the case
-      --  emit an error at Err_N.
-
-      function Is_OK_Ghost_Context (Context : Node_Id) return Boolean;
-      --  Determine whether node Context denotes a Ghost-friendly context where
-      --  a Ghost entity can safely reside.
-
-      -------------------------
-      -- Is_OK_Ghost_Context --
-      -------------------------
-
-      function Is_OK_Ghost_Context (Context : Node_Id) return Boolean is
-         function Is_Ghost_Declaration (Decl : Node_Id) return Boolean;
-         --  Determine whether node Decl is a Ghost declaration or appears
-         --  within a Ghost declaration.
-
-         --------------------------
-         -- Is_Ghost_Declaration --
-         --------------------------
-
-         function Is_Ghost_Declaration (Decl : Node_Id) return Boolean is
-            Par       : Node_Id;
-            Subp_Decl : Node_Id;
-            Subp_Id   : Entity_Id;
-
-         begin
-            --  Climb the parent chain looking for an object declaration
-
-            Par := Decl;
-            while Present (Par) loop
-               case Nkind (Par) is
-                  when N_Abstract_Subprogram_Declaration        |
-                       N_Exception_Declaration                  |
-                       N_Exception_Renaming_Declaration         |
-                       N_Full_Type_Declaration                  |
-                       N_Generic_Function_Renaming_Declaration  |
-                       N_Generic_Package_Declaration            |
-                       N_Generic_Package_Renaming_Declaration   |
-                       N_Generic_Procedure_Renaming_Declaration |
-                       N_Generic_Subprogram_Declaration         |
-                       N_Number_Declaration                     |
-                       N_Object_Declaration                     |
-                       N_Object_Renaming_Declaration            |
-                       N_Package_Declaration                    |
-                       N_Package_Renaming_Declaration           |
-                       N_Private_Extension_Declaration          |
-                       N_Private_Type_Declaration               |
-                       N_Subprogram_Declaration                 |
-                       N_Subprogram_Renaming_Declaration        |
-                       N_Subtype_Declaration                    =>
-                     return Is_Subject_To_Ghost (Par);
-
-                  when others                                   =>
-                     null;
-               end case;
-
-               --  Special cases
-
-               --  A reference to a Ghost entity may appear as the default
-               --  expression of a formal parameter of a subprogram body. This
-               --  context must be treated as suitable because the relation
-               --  between the spec and the body has not been established and
-               --  the body is not marked as Ghost yet. The real check was
-               --  performed on the spec.
-
-               if Nkind (Par) = N_Parameter_Specification
-                 and then Nkind (Parent (Parent (Par))) = N_Subprogram_Body
-               then
-                  return True;
-
-               --  References to Ghost entities may be relocated in internally
-               --  generated bodies.
-
-               elsif Nkind (Par) = N_Subprogram_Body
-                 and then not Comes_From_Source (Par)
-               then
-                  Subp_Id := Corresponding_Spec (Par);
-
-                  --  The original context is an expression function that has
-                  --  been split into a spec and a body. The context is OK as
-                  --  long as the the initial declaration is Ghost.
-
-                  if Present (Subp_Id) then
-                     Subp_Decl :=
-                       Original_Node (Unit_Declaration_Node (Subp_Id));
-
-                     if Nkind (Subp_Decl) = N_Expression_Function then
-                        return Is_Subject_To_Ghost (Subp_Decl);
-                     end if;
-                  end if;
-
-                  --  Otherwise this is either an internal body or an internal
-                  --  completion. Both are OK because the real check was done
-                  --  before expansion activities.
-
-                  return True;
-               end if;
-
-               --  Prevent the search from going too far
-
-               if Is_Body_Or_Package_Declaration (Par) then
-                  return False;
-               end if;
-
-               Par := Parent (Par);
-            end loop;
-
-            return False;
-         end Is_Ghost_Declaration;
-
-      --  Start of processing for Is_OK_Ghost_Context
-
-      begin
-         --  The Ghost entity appears within an assertion expression
-
-         if In_Assertion_Expr > 0 then
-            return True;
-
-         --  The Ghost entity is part of a declaration or its completion
-
-         elsif Is_Ghost_Declaration (Context) then
-            return True;
-
-         --  The Ghost entity is referenced within a Ghost statement
-
-         elsif Is_Ghost_Statement_Or_Pragma (Context) then
-            return True;
-
-         else
-            return False;
-         end if;
-      end Is_OK_Ghost_Context;
-
-      ------------------------
-      -- Check_Ghost_Policy --
-      ------------------------
-
-      procedure Check_Ghost_Policy (Id : Entity_Id; Err_N : Node_Id) is
-         Policy : constant Name_Id := Policy_In_Effect (Name_Ghost);
-
-      begin
-         --  The Ghost policy in effect a the point of declaration and at the
-         --  point of use must match (SPARK RM 6.9(14)).
-
-         if Is_Checked_Ghost_Entity (Id) and then Policy = Name_Ignore then
-            Error_Msg_Sloc := Sloc (Err_N);
-
-            Error_Msg_N  ("incompatible ghost policies in effect", Err_N);
-            Error_Msg_NE ("\& declared with ghost policy Check", Err_N, Id);
-            Error_Msg_NE ("\& used # with ghost policy Ignore", Err_N, Id);
-
-         elsif Is_Ignored_Ghost_Entity (Id) and then Policy = Name_Check then
-            Error_Msg_Sloc := Sloc (Err_N);
-
-            Error_Msg_N  ("incompatible ghost policies in effect", Err_N);
-            Error_Msg_NE ("\& declared with ghost policy Ignore", Err_N, Id);
-            Error_Msg_NE ("\& used # with ghost policy Check", Err_N, Id);
-         end if;
-      end Check_Ghost_Policy;
-
-   --  Start of processing for Check_Ghost_Context
-
-   begin
-      --  Once it has been established that the reference to the Ghost entity
-      --  is within a suitable context, ensure that the policy at the point of
-      --  declaration and at the point of use match.
-
-      if Is_OK_Ghost_Context (Ghost_Ref) then
-         Check_Ghost_Policy (Ghost_Id, Ghost_Ref);
-
-      --  Otherwise the Ghost entity appears in a non-Ghost context and affects
-      --  its behavior or value.
-
-      else
-         Error_Msg_N
-           ("ghost entity cannot appear in this context (SPARK RM 6.9(12))",
-            Ghost_Ref);
-      end if;
-   end Check_Ghost_Context;
 
    ------------------------------
    -- Check_Infinite_Recursion --
@@ -4249,14 +4061,25 @@ package body Sem_Res is
                end if;
 
                --  In Ada 83 we cannot pass an OUT parameter as an IN or IN OUT
-               --  actual to a nested call, since this is case of reading an
-               --  out parameter, which is not allowed.
+               --  actual to a nested call, since this constitutes a reading of
+               --  the parameter, which is not allowed.
 
-               if Ada_Version = Ada_83
-                 and then Is_Entity_Name (A)
+               if Is_Entity_Name (A)
                  and then Ekind (Entity (A)) = E_Out_Parameter
                then
-                  Error_Msg_N ("(Ada 83) illegal reading of out parameter", A);
+                  if Ada_Version = Ada_83 then
+                     Error_Msg_N
+                       ("(Ada 83) illegal reading of out parameter", A);
+
+                  --  An effectively volatile OUT parameter cannot act as IN or
+                  --  IN OUT actual in a call (SPARK RM 7.1.3(11)).
+
+                  elsif SPARK_Mode = On
+                    and then Is_Effectively_Volatile (Entity (A))
+                  then
+                     Error_Msg_N
+                       ("illegal reading of volatile OUT parameter", A);
+                  end if;
                end if;
             end if;
 
@@ -4630,31 +4453,19 @@ package body Sem_Res is
                --  first place.
 
                if Ekind (Nam) = E_Procedure
+                 and then Ekind (F) = E_In_Parameter
                  and then Is_Entity_Name (A)
                  and then Present (Entity (A))
                  and then Ekind (Entity (A)) = E_Variable
                then
                   A_Id := Entity (A);
 
-                  if Ekind (F) = E_In_Parameter then
-                     if Async_Readers_Enabled (A_Id) then
-                        Property_Error (A, A_Id, Name_Async_Readers);
-                     elsif Effective_Reads_Enabled (A_Id) then
-                        Property_Error (A, A_Id, Name_Effective_Reads);
-                     elsif Effective_Writes_Enabled (A_Id) then
-                        Property_Error (A, A_Id, Name_Effective_Writes);
-                     end if;
-
-                  elsif Ekind (F) = E_Out_Parameter
-                    and then Async_Writers_Enabled (A_Id)
-                  then
-                     Error_Msg_Name_1 := Name_Async_Writers;
-                     Error_Msg_NE
-                       ("external variable & with enabled property % cannot "
-                        & "appear as actual in procedure call "
-                        & "(SPARK RM 7.1.3(11))", A, A_Id);
-                     Error_Msg_N
-                       ("\\corresponding formal parameter has mode Out", A);
+                  if Async_Readers_Enabled (A_Id) then
+                     Property_Error (A, A_Id, Name_Async_Readers);
+                  elsif Effective_Reads_Enabled (A_Id) then
+                     Property_Error (A, A_Id, Name_Effective_Reads);
+                  elsif Effective_Writes_Enabled (A_Id) then
+                     Property_Error (A, A_Id, Name_Effective_Writes);
                   end if;
                end if;
             end if;
@@ -5455,8 +5266,8 @@ package body Sem_Res is
                                          N_Unchecked_Type_Conversion)
                then
                   Error_Msg_N
-                    ("(Ada 83) fixed-point operation "
-                     & "needs explicit conversion", N);
+                    ("(Ada 83) fixed-point operation needs explicit "
+                     & "conversion", N);
                end if;
 
                --  The expected type is "any real type" in contexts like
@@ -6897,12 +6708,60 @@ package body Sem_Res is
    --  Used to resolve identifiers and expanded names
 
    procedure Resolve_Entity_Name (N : Node_Id; Typ : Entity_Id) is
+      function Is_Assignment_Or_Object_Expression
+        (Context : Node_Id;
+         Expr    : Node_Id) return Boolean;
+      --  Determine whether node Context denotes an assignment statement or an
+      --  object declaration whose expression is node Expr.
+
       function Is_OK_Volatile_Context
         (Context : Node_Id;
          Obj_Ref : Node_Id) return Boolean;
       --  Determine whether node Context denotes a "non-interfering context"
       --  (as defined in SPARK RM 7.1.3(13)) where volatile reference Obj_Ref
       --  can safely reside.
+
+      ----------------------------------------
+      -- Is_Assignment_Or_Object_Expression --
+      ----------------------------------------
+
+      function Is_Assignment_Or_Object_Expression
+        (Context : Node_Id;
+         Expr    : Node_Id) return Boolean
+      is
+      begin
+         if Nkind_In (Context, N_Assignment_Statement,
+                               N_Object_Declaration)
+           and then Expression (Context) = Expr
+         then
+            return True;
+
+         --  Check whether a construct that yields a name is the expression of
+         --  an assignment statement or an object declaration.
+
+         elsif (Nkind_In (Context, N_Attribute_Reference,
+                                   N_Explicit_Dereference,
+                                   N_Indexed_Component,
+                                   N_Selected_Component,
+                                   N_Slice)
+                  and then Prefix (Context) = Expr)
+           or else
+               (Nkind_In (Context, N_Type_Conversion,
+                                   N_Unchecked_Type_Conversion)
+                  and then Expression (Context) = Expr)
+         then
+            return
+              Is_Assignment_Or_Object_Expression
+                (Context => Parent (Context),
+                 Expr    => Context);
+
+         --  Otherwise the context is not an assignment statement or an object
+         --  declaration.
+
+         else
+            return False;
+         end if;
+      end Is_Assignment_Or_Object_Expression;
 
       ----------------------------
       -- Is_OK_Volatile_Context --
@@ -7003,6 +6862,7 @@ package body Sem_Res is
          --  in a non-interfering context.
 
          elsif Nkind_In (Context, N_Attribute_Reference,
+                                  N_Explicit_Dereference,
                                   N_Indexed_Component,
                                   N_Selected_Component,
                                   N_Slice)
@@ -7118,14 +6978,26 @@ package body Sem_Res is
       elsif Ekind (E) = E_Generic_Function then
          Error_Msg_N ("illegal use of generic function", N);
 
+      --  In Ada 83 an OUT parameter cannot be read
+
       elsif Ekind (E) = E_Out_Parameter
-        and then Ada_Version = Ada_83
         and then (Nkind (Parent (N)) in N_Op
-                   or else (Nkind (Parent (N)) = N_Assignment_Statement
-                             and then N = Expression (Parent (N)))
-                   or else Nkind (Parent (N)) = N_Explicit_Dereference)
+                   or else Nkind (Parent (N)) = N_Explicit_Dereference
+                   or else Is_Assignment_Or_Object_Expression
+                             (Context => Parent (N),
+                              Expr    => N))
       then
-         Error_Msg_N ("(Ada 83) illegal reading of out parameter", N);
+         if Ada_Version = Ada_83 then
+            Error_Msg_N ("(Ada 83) illegal reading of out parameter", N);
+
+         --  An effectively volatile OUT parameter cannot be read
+         --  (SPARK RM 7.1.3(11)).
+
+         elsif SPARK_Mode = On
+           and then Is_Effectively_Volatile (E)
+         then
+            Error_Msg_N ("illegal reading of volatile OUT parameter", N);
+         end if;
 
       --  In all other cases, just do the possible static evaluation
 
@@ -8127,11 +7999,11 @@ package body Sem_Res is
    procedure Resolve_Generalized_Indexing (N : Node_Id; Typ : Entity_Id) is
       Indexing : constant Node_Id := Generalized_Indexing (N);
       Call     : Node_Id;
-      Indices  : List_Id;
+      Indexes  : List_Id;
       Pref     : Node_Id;
 
    begin
-      --  In ASIS mode, propagate the information about the indices back to
+      --  In ASIS mode, propagate the information about the indexes back to
       --  to the original indexing node. The generalized indexing is either
       --  a function call, or a dereference of one. The actuals include the
       --  prefix of the original node, which is the container expression.
@@ -8148,9 +8020,9 @@ package body Sem_Res is
          end loop;
 
          if Nkind (Call) = N_Function_Call then
-            Indices := Parameter_Associations (Call);
-            Pref := Remove_Head (Indices);
-            Set_Expressions (N, Indices);
+            Indexes := Parameter_Associations (Call);
+            Pref := Remove_Head (Indexes);
+            Set_Expressions (N, Indexes);
             Set_Prefix (N, Pref);
          end if;
 
@@ -8597,6 +8469,13 @@ package body Sem_Res is
         and then B_Typ = Standard_Boolean
         and then Nkind_In (N, N_Op_And, N_Op_Or)
       then
+         --  Mark the corresponding putative SCO operator as truly a logical
+         --  (and short-circuit) operator.
+
+         if Generate_SCO and then Comes_From_Source (N) then
+            Set_SCO_Logical_Operator (N);
+         end if;
+
          if Nkind (N) = N_Op_And then
             Rewrite (N,
               Make_And_Then (Sloc (N),
@@ -12105,8 +11984,9 @@ package body Sem_Res is
       --  Ada 2005 (AI-251): Anonymous access types where target references an
       --  interface type.
 
-      elsif Ekind_In (Target_Type, E_General_Access_Type,
-                                   E_Anonymous_Access_Type)
+      elsif Is_Access_Type (Opnd_Type)
+        and then Ekind_In (Target_Type, E_General_Access_Type,
+                                        E_Anonymous_Access_Type)
         and then Is_Interface (Directly_Designated_Type (Target_Type))
       then
          --  Check the static accessibility rule of 4.6(17). Note that the

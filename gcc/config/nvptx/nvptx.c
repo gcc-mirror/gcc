@@ -1,5 +1,5 @@
 /* Target code for NVPTX.
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014-2015 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -24,11 +24,35 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "insn-flags.h"
 #include "output.h"
 #include "insn-attr.h"
 #include "insn-codes.h"
+#include "hashtab.h"
+#include "hard-reg-set.h"
+#include "function.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "regs.h"
 #include "optabs.h"
@@ -38,7 +62,6 @@
 #include "tm_p.h"
 #include "tm-preds.h"
 #include "tm-constrs.h"
-#include "function.h"
 #include "langhooks.h"
 #include "dbxout.h"
 #include "target.h"
@@ -48,10 +71,8 @@
 #include "basic-block.h"
 #include "cfgrtl.h"
 #include "stor-layout.h"
-#include "calls.h"
 #include "df.h"
 #include "builtins.h"
-#include "hashtab.h"
 
 /* Record the function decls we've written, and the libfuncs and function
    decls corresponding to them.  */

@@ -1,5 +1,5 @@
 /* Public header file for plugins to include.
-   Copyright (C) 2009-2014 Free Software Foundation, Inc.
+   Copyright (C) 2009-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,6 +48,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "plugin-api.h"
 #include "ipa-ref.h"
+#include "statistics.h"
+#include "double-int.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "alias.h"
+#include "flags.h"
+#include "symtab.h"
+#include "tree-core.h"
+#include "hash-set.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "fold-const.h"
+#include "tree-check.h"
 
 /* Event names.  */
 enum plugin_event

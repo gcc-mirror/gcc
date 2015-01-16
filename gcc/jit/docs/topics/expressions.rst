@@ -1,4 +1,4 @@
-.. Copyright (C) 2014 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2015 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -60,7 +60,15 @@ Simple expressions
                                                    int value)
 
    Given a numeric type (integer or floating point), build an rvalue for
-   the given constant value.
+   the given constant :c:type:`int` value.
+
+.. function:: gcc_jit_rvalue *\
+              gcc_jit_context_new_rvalue_from_long (gcc_jit_context *ctxt, \
+                                                    gcc_jit_type *numeric_type, \
+                                                    long value)
+
+   Given a numeric type (integer or floating point), build an rvalue for
+   the given constant :c:type:`long` value.
 
 .. function::  gcc_jit_rvalue *gcc_jit_context_zero (gcc_jit_context *ctxt, \
                                                      gcc_jit_type *numeric_type)
@@ -88,7 +96,7 @@ Simple expressions
                                                        double value)
 
    Given a numeric type (integer or floating point), build an rvalue for
-   the given constant value.
+   the given constant :c:type:`double` value.
 
 .. function:: gcc_jit_rvalue *\
               gcc_jit_context_new_rvalue_from_ptr (gcc_jit_context *ctxt, \
@@ -137,6 +145,7 @@ Unary Operation                             C equivalent
 :c:macro:`GCC_JIT_UNARY_OP_MINUS`           `-(EXPR)`
 :c:macro:`GCC_JIT_UNARY_OP_BITWISE_NEGATE`  `~(EXPR)`
 :c:macro:`GCC_JIT_UNARY_OP_LOGICAL_NEGATE`  `!(EXPR)`
+:c:macro:`GCC_JIT_UNARY_OP_ABS`             `abs (EXPR)`
 ==========================================  ============
 
 .. c:macro:: GCC_JIT_UNARY_OP_MINUS
@@ -167,6 +176,16 @@ Unary Operation                             C equivalent
     .. code-block:: c
 
        !(EXPR)
+
+    in C.
+
+.. c:macro:: GCC_JIT_UNARY_OP_ABS
+
+    Absolute value of an arithmetic expression; analogous to:
+
+    .. code-block:: c
+
+        abs (EXPR)
 
     in C.
 
@@ -441,11 +460,36 @@ Global variables
 .. function:: gcc_jit_lvalue *\
               gcc_jit_context_new_global (gcc_jit_context *ctxt,\
                                           gcc_jit_location *loc,\
+                                          enum gcc_jit_global_kind kind,\
                                           gcc_jit_type *type,\
                                           const char *name)
 
    Add a new global variable of the given type and name to the context.
 
+   The "kind" parameter determines the visibility of the "global" outside
+   of the :c:type:`gcc_jit_result`:
+
+   .. type:: enum gcc_jit_global_kind
+
+   .. c:macro:: GCC_JIT_GLOBAL_EXPORTED
+
+      Global is defined by the client code and is visible
+      by name outside of this JIT context via
+      :c:func:`gcc_jit_result_get_global` (and this value is required for
+      the global to be accessible via that entrypoint).
+
+   .. c:macro:: GCC_JIT_GLOBAL_INTERNAL
+
+      Global is defined by the client code, but is invisible
+      outside of it.  Analogous to a "static" global within a .c file.
+      Specifically, the variable will only be visible within this
+      context and within child contexts.
+
+   .. c:macro:: GCC_JIT_GLOBAL_IMPORTED
+
+      Global is not defined by the client code; we're merely
+      referring to it.  Analogous to using an "extern" global from a
+      header file.
 
 Working with pointers, structs and unions
 -----------------------------------------

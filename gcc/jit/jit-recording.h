@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for recording calls made to the JIT API.
-   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define JIT_RECORDING_H
 
 #include "jit-common.h"
+#include "jit-logging.h"
 
 namespace gcc {
 
@@ -29,6 +30,7 @@ namespace jit {
 
 class result;
 class dump;
+class reproducer;
 
 /**********************************************************************
  Recording.
@@ -53,7 +55,7 @@ struct requested_dump
 };
 
 /* A JIT-compilation context.  */
-class context
+class context : public log_user
 {
 public:
   context (context *parent_ctxt);
@@ -72,7 +74,8 @@ public:
   location *
   new_location (const char *filename,
 		int line,
-		int column);
+		int column,
+		bool created_by_user);
 
   type *
   get_type (enum gcc_jit_types type);
@@ -131,20 +134,14 @@ public:
 
   lvalue *
   new_global (location *loc,
+	      enum gcc_jit_global_kind kind,
 	      type *type,
 	      const char *name);
 
+  template <typename HOST_TYPE>
   rvalue *
-  new_rvalue_from_int (type *numeric_type,
-		       int value);
-
-  rvalue *
-  new_rvalue_from_double (type *numeric_type,
-			  double value);
-
-  rvalue *
-  new_rvalue_from_ptr (type *pointer_type,
-		       void *value);
+  new_rvalue_from_const (type *type,
+			 HOST_TYPE value);
 
   rvalue *
   new_string_literal (const char *value);
@@ -234,6 +231,9 @@ public:
   const char *
   get_first_error () const;
 
+  const char *
+  get_last_error () const;
+
   bool errors_occurred () const
   {
     if (m_parent_ctxt)
@@ -246,6 +246,8 @@ public:
 
   void dump_to_file (const char *path, bool update_locations);
 
+  void dump_reproducer_to_file (const char *path);
+
   void
   get_all_requested_dumps (vec <recording::requested_dump> *out);
 
@@ -255,10 +257,17 @@ private:
 private:
   context *m_parent_ctxt;
 
+  /* The ultimate ancestor of the contexts within a family tree of
+     contexts.  This has itself as its own m_toplevel_ctxt.  */
+  context *m_toplevel_ctxt;
+
   int m_error_count;
 
   char *m_first_error_str;
   bool m_owns_first_error_str;
+
+  char *m_last_error_str;
+  bool m_owns_last_error_str;
 
   char *m_str_options[GCC_JIT_NUM_STR_OPTIONS];
   int m_int_options[GCC_JIT_NUM_INT_OPTIONS];
@@ -272,6 +281,7 @@ private:
 
   /* Specific recordings, for use by dump_to_file.  */
   auto_vec<compound_type *> m_compound_types;
+  auto_vec<global *> m_globals;
   auto_vec<function *> m_functions;
 
   type *m_basic_types[NUM_GCC_JIT_TYPES];
@@ -312,6 +322,8 @@ public:
   get_debug_string ();
 
   virtual void write_to_dump (dump &d);
+  virtual void write_reproducer (reproducer &r) = 0;
+  virtual location *dyn_cast_location () { return NULL; }
 
 protected:
   memento (context *ctxt)
@@ -353,6 +365,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   size_t m_len;
@@ -362,11 +375,13 @@ private:
 class location : public memento
 {
 public:
-  location (context *ctxt, string *filename, int line, int column)
+  location (context *ctxt, string *filename, int line, int column,
+	    bool created_by_user)
   : memento (ctxt),
     m_filename (filename),
     m_line (line),
-    m_column (column)
+    m_column (column),
+    m_created_by_user (created_by_user)
  {}
 
   void replay_into (replayer *r);
@@ -398,13 +413,18 @@ public:
     return static_cast <playback::location *> (m_playback_obj);
   }
 
+  location *dyn_cast_location () { return this; }
+  bool created_by_user () const { return m_created_by_user; }
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   string *m_filename;
   int m_line;
   int m_column;
+  bool m_created_by_user;
 };
 
 class type : public memento
@@ -443,6 +463,7 @@ public:
   virtual bool is_bool () const = 0;
   virtual type *is_pointer () = 0;
   virtual type *is_array () = 0;
+  virtual bool is_void () const { return false; }
 
   bool is_numeric () const
   {
@@ -455,6 +476,8 @@ public:
     return static_cast <playback::type *> (m_playback_obj);
   }
 
+  virtual const char *access_as_type (reproducer &r);
+
 protected:
   type (context *ctxt)
     : memento (ctxt),
@@ -465,7 +488,7 @@ private:
   type *m_pointer_to_this_type;
 };
 
-/* Result of "gcc_jit_type_get_type".  */
+/* Result of "gcc_jit_context_get_type".  */
 class memento_of_get_type : public type
 {
 public:
@@ -494,12 +517,14 @@ public:
   bool is_bool () const;
   type *is_pointer () { return dereference (); }
   type *is_array () { return NULL; }
+  bool is_void () const { return m_kind == GCC_JIT_TYPE_VOID; }
 
 public:
   void replay_into (replayer *r);
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   enum gcc_jit_types m_kind;
@@ -527,6 +552,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   type *m_other_type;
@@ -561,6 +587,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   type *m_other_type;
@@ -589,6 +616,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   type *m_other_type;
@@ -619,6 +647,7 @@ class array_type : public type
 
  private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
  private:
   location *m_loc;
@@ -653,9 +682,14 @@ public:
 
   string * make_debug_string_with_ptr ();
 
+  void
+  write_deferred_reproducer (reproducer &r,
+			     memento *ptr_type);
+
  private:
   string * make_debug_string ();
   string * make_debug_string_with (const char *);
+  void write_reproducer (reproducer &r);
 
 private:
   type *m_return_type;
@@ -694,6 +728,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   location *m_loc;
@@ -753,9 +788,11 @@ public:
 
   void replay_into (replayer *r);
 
+  const char *access_as_type (reproducer &r);
+
 private:
   string * make_debug_string ();
-
+  void write_reproducer (reproducer &r);
 };
 
 // memento of struct_::set_fields
@@ -770,8 +807,12 @@ public:
 
   void write_to_dump (dump &d);
 
+  int length () const { return m_fields.length (); }
+  field *get_field (int i) const { return m_fields[i]; }
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   compound_type *m_struct_or_union;
@@ -789,11 +830,23 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   location *m_loc;
   string *m_name;
-  fields *m_fields;
+};
+
+/* An abstract base class for operations that visit all rvalues within an
+   expression tree.
+   Currently the only implementation is class rvalue_usage_validator within
+   jit-recording.c.  */
+
+class rvalue_visitor
+{
+ public:
+  virtual ~rvalue_visitor () {}
+  virtual void visit (rvalue *rvalue) = 0;
 };
 
 class rvalue : public memento
@@ -804,10 +857,13 @@ public:
 	  type *type_)
   : memento (ctxt),
     m_loc (loc),
-    m_type (type_)
+    m_type (type_),
+    m_scope (NULL)
   {
     gcc_assert (type_);
   }
+
+  location * get_loc () const { return m_loc; }
 
   /* Get the recording::type of this rvalue.
 
@@ -831,9 +887,25 @@ public:
   lvalue *
   dereference (location *loc);
 
+  void
+  verify_valid_within_stmt (const char *api_funcname, statement *s);
+
+  virtual void visit_children (rvalue_visitor *v) = 0;
+
+  void set_scope (function *scope);
+  function *get_scope () const { return m_scope; }
+
+  /* Dynamic cast.  */
+  virtual param *dyn_cast_param () { return NULL; }
+
+  virtual const char *access_as_rvalue (reproducer &r);
+
 protected:
   location *m_loc;
   type *m_type;
+
+ private:
+  function *m_scope; /* NULL for globals, non-NULL for locals/params */
 };
 
 class lvalue : public rvalue
@@ -860,6 +932,9 @@ public:
 
   rvalue *
   as_rvalue () { return this; }
+
+  const char *access_as_rvalue (reproducer &r);
+  virtual const char *access_as_lvalue (reproducer &r);
 };
 
 class param : public lvalue
@@ -877,14 +952,22 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *) {}
+
   playback::param *
   playback_param () const
   {
     return static_cast <playback::param *> (m_playback_obj);
   }
 
+  param *dyn_cast_param () { return this; }
+
+  const char *access_as_rvalue (reproducer &r);
+  const char *access_as_lvalue (reproducer &r);
+
 private:
   string * make_debug_string () { return m_name; }
+  void write_reproducer (reproducer &r);
 
 private:
   string *m_name;
@@ -921,6 +1004,7 @@ public:
   block*
   new_block (const char *name);
 
+  location *get_loc () const { return m_loc; }
   type *get_return_type () const { return m_return_type; }
   string * get_name () const { return m_name; }
   const vec<param *> &get_params () const { return m_params; }
@@ -940,6 +1024,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   location *m_loc;
@@ -975,36 +1060,36 @@ public:
   bool has_been_terminated () { return m_has_been_terminated; }
   bool is_reachable () { return m_is_reachable; }
 
-  void
+  statement *
   add_eval (location *loc,
 	    rvalue *rvalue);
 
-  void
+  statement *
   add_assignment (location *loc,
 		  lvalue *lvalue,
 		  rvalue *rvalue);
 
-  void
+  statement *
   add_assignment_op (location *loc,
 		     lvalue *lvalue,
 		     enum gcc_jit_binary_op op,
 		     rvalue *rvalue);
 
-  void
+  statement *
   add_comment (location *loc,
 	       const char *text);
 
-  void
+  statement *
   end_with_conditional (location *loc,
 			rvalue *boolval,
 			block *on_true,
 			block *on_false);
 
-  void
+  statement *
   end_with_jump (location *loc,
 		 block *target);
 
-  void
+  statement *
   end_with_return (location *loc,
 		   rvalue *rvalue);
 
@@ -1027,6 +1112,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
   void replay_into (replayer *r);
 
@@ -1049,78 +1135,50 @@ class global : public lvalue
 public:
   global (context *ctxt,
 	  location *loc,
+	  enum gcc_jit_global_kind kind,
 	  type *type,
 	  string *name)
   : lvalue (ctxt, loc, type),
+    m_kind (kind),
     m_name (name)
   {}
 
   void replay_into (replayer *);
 
-private:
-  string * make_debug_string () { return m_name; }
+  void visit_children (rvalue_visitor *) {}
+
+  void write_to_dump (dump &d);
 
 private:
+  string * make_debug_string () { return m_name; }
+  void write_reproducer (reproducer &r);
+
+private:
+  enum gcc_jit_global_kind m_kind;
   string *m_name;
 };
 
-class memento_of_new_rvalue_from_int : public rvalue
+template <typename HOST_TYPE>
+class memento_of_new_rvalue_from_const : public rvalue
 {
 public:
-  memento_of_new_rvalue_from_int (context *ctxt,
-				  location *loc,
-				  type *numeric_type,
-				  int value)
-  : rvalue (ctxt, loc, numeric_type),
+  memento_of_new_rvalue_from_const (context *ctxt,
+				    location *loc,
+				    type *type,
+				    HOST_TYPE value)
+  : rvalue (ctxt, loc, type),
     m_value (value) {}
 
   void replay_into (replayer *r);
 
-private:
-  string * make_debug_string ();
-
-private:
-  int m_value;
-};
-
-class memento_of_new_rvalue_from_double : public rvalue
-{
-public:
-  memento_of_new_rvalue_from_double (context *ctxt,
-				     location *loc,
-				     type *numeric_type,
-				     double value)
-  : rvalue (ctxt, loc, numeric_type),
-    m_value (value)
-  {}
-
-  void replay_into (replayer *);
+  void visit_children (rvalue_visitor *) {}
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
-  double m_value;
-};
-
-class memento_of_new_rvalue_from_ptr : public rvalue
-{
-public:
-  memento_of_new_rvalue_from_ptr (context *ctxt,
-				  location *loc,
-				  type *pointer_type,
-				  void *value)
-  : rvalue (ctxt, loc, pointer_type),
-    m_value (value)
-  {}
-
-  void replay_into (replayer *);
-
-private:
-  string * make_debug_string ();
-
-private:
-  void *m_value;
+  HOST_TYPE m_value;
 };
 
 class memento_of_new_string_literal : public rvalue
@@ -1134,8 +1192,11 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *) {}
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   string *m_value;
@@ -1156,8 +1217,11 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   enum gcc_jit_unary_op m_op;
@@ -1179,8 +1243,11 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   enum gcc_jit_binary_op m_op;
@@ -1203,8 +1270,11 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   enum gcc_jit_comparison m_op;
@@ -1225,8 +1295,11 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_rvalue;
@@ -1243,8 +1316,11 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   function *m_func;
@@ -1262,8 +1338,11 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_fn_ptr;
@@ -1284,8 +1363,11 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_ptr;
@@ -1306,8 +1388,11 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   lvalue *m_lvalue;
@@ -1328,8 +1413,11 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_rvalue;
@@ -1350,8 +1438,11 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_rvalue;
@@ -1369,8 +1460,11 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_rvalue;
@@ -1388,8 +1482,11 @@ public:
 
   void replay_into (replayer *r);
 
+  void visit_children (rvalue_visitor *v);
+
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   lvalue *m_lvalue;
@@ -1401,14 +1498,20 @@ public:
   local (function *func, location *loc, type *type_, string *name)
     : lvalue (func->m_ctxt, loc, type_),
     m_func (func),
-    m_name (name) {}
+    m_name (name)
+  {
+    set_scope (func);
+  }
 
   void replay_into (replayer *r);
+
+  void visit_children (rvalue_visitor *) {}
 
   void write_to_dump (dump &d);
 
 private:
   string * make_debug_string () { return m_name; }
+  void write_reproducer (reproducer &r);
 
 private:
   function *m_func;
@@ -1423,6 +1526,7 @@ public:
 
   void write_to_dump (dump &d);
 
+  block *get_block () const { return m_block; }
   location *get_loc () const { return m_loc; }
 
 protected:
@@ -1430,8 +1534,6 @@ protected:
   : memento (b->m_ctxt),
     m_block (b),
     m_loc (loc) {}
-
-  block *get_block () const { return m_block; }
 
   playback::location *
   playback_location (replayer *r) const
@@ -1457,6 +1559,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_rvalue;
@@ -1477,6 +1580,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   lvalue *m_lvalue;
@@ -1500,6 +1604,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   lvalue *m_lvalue;
@@ -1520,6 +1625,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   string *m_text;
@@ -1545,6 +1651,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_boolval;
@@ -1568,6 +1675,7 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   block *m_target;
@@ -1589,12 +1697,30 @@ public:
 
 private:
   string * make_debug_string ();
+  void write_reproducer (reproducer &r);
 
 private:
   rvalue *m_rvalue;
 };
 
 } // namespace gcc::jit::recording
+
+/* Create a recording::memento_of_new_rvalue_from_const instance and add
+   it to this context's list of mementos.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_new_rvalue_from_{int|long|double|ptr}.  */
+
+template <typename HOST_TYPE>
+recording::rvalue *
+recording::context::new_rvalue_from_const (recording::type *type,
+					   HOST_TYPE value)
+{
+  recording::rvalue *result =
+    new memento_of_new_rvalue_from_const <HOST_TYPE> (this, NULL, type, value);
+  record (result);
+  return result;
+}
 
 } // namespace gcc::jit
 

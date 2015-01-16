@@ -1,6 +1,6 @@
 ## Linker script for GNU versioning (GNU ld 2.13.91+ only.)
 ##
-## Copyright (C) 2002-2014 Free Software Foundation, Inc.
+## Copyright (C) 2002-2015 Free Software Foundation, Inc.
 ##
 ## This file is part of the GNU ISO C++ Library.  This library is free
 ## software; you can redistribute it and/or modify it under the
@@ -118,7 +118,7 @@ GLIBCXX_3.4 {
 #     std::locale::name();
       std::locale::none*;
       std::locale::numeric*;
-      std::locale::[A-Zn-z]*;
+      std::locale::[A-Zo-z]*;
       std::locale::_[A-Ha-z]*;
       std::locale::_Impl::[A-Za-z]*;
 #     std::locale::_Impl::_M_[A-Za-z]*;
@@ -1648,6 +1648,13 @@ GLIBCXX_3.4.21 {
     _ZStlsI[cw]St11char_traitsI[cw]ESaI[cw]EERSt13basic_ostreamIT_T0_ES7_RKNSt7__cxx1112basic_string*;
     _ZStrsI[cw]St11char_traitsI[cw]ESaI[cw]EERSt13basic_istreamIT_T0_ES7_RNSt7__cxx1112basic_string*;
 
+    # fstream functions taking ABI-tagged std::string
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4openERKNSt7__cxx1112basic_string*;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EEC1ERKNSt7__cxx1112basic_string*;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EE4openERKNSt7__cxx1112basic_string*;
+    _ZNSt14basic_[io]fstreamI[cw]St11char_traitsI[cw]EEC1ERKNSt7__cxx1112basic_string*;
+    _ZNSt14basic_[io]fstreamI[cw]St11char_traitsI[cw]EE4openERKNSt7__cxx1112basic_string*;
+
     # std::locale::name() returning new std::string
     _ZNKSt6locale4nameB5cxx11Ev;
 
@@ -1747,6 +1754,10 @@ GLIBCXX_3.4.21 {
     _ZNSt13random_device7_M_initERKNSt7__cxx1112basic_string*;
 
     _ZNKSt3tr14hashINSt7__cxx1112basic_string*;
+
+    # std::time_get::get
+    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE3getES3_S3_RSt8ios_baseRSt12_Ios_IostateP2tmPK[cw]SC_;
+    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE6do_getES3_S3_RSt8ios_baseRSt12_Ios_IostateP2tmcc;
 
 } GLIBCXX_3.4.20;
 

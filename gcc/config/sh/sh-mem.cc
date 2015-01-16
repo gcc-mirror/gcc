@@ -1,5 +1,5 @@
 /* Helper routines for memory move and comparison insns.
-   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,16 +23,33 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "machmode.h"
 #include "rtl.h"
+#include "hash-set.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "hashtab.h"
+#include "hard-reg-set.h"
+#include "function.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "tm_p.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
 #include "dominance.h"
 #include "cfg.h"
 #include "cfgrtl.h"
@@ -228,7 +245,7 @@ sh_expand_cmpstr (rtx *operands)
   if (align < 4)
     {
       emit_insn (gen_iorsi3 (tmp1, s1_addr, s2_addr));
-      emit_insn (gen_tstsi_t (GEN_INT (3), tmp1));
+      emit_insn (gen_tstsi_t (tmp1, GEN_INT (3)));
       jump = emit_jump_insn (gen_branch_false (L_loop_byte));
       add_int_reg_note (jump, REG_BR_PROB, prob_likely);
     }
@@ -373,7 +390,7 @@ sh_expand_cmpnstr (rtx *operands)
 	  if (align < 4)
 	    {
 	      emit_insn (gen_iorsi3 (tmp1, s1_addr, s2_addr));
-	      emit_insn (gen_tstsi_t (GEN_INT (3), tmp1));
+	      emit_insn (gen_tstsi_t (tmp1, GEN_INT (3)));
 	      jump = emit_jump_insn (gen_branch_false (L_loop_byte));
 	      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
 	    }
@@ -421,6 +438,7 @@ sh_expand_cmpnstr (rtx *operands)
 	  /* end loop.  Reached max iterations.  */
 	  if (sbytes == 0)
 	    {
+	      emit_insn (gen_subsi3 (operands[0], tmp1, tmp2));
 	      jump = emit_jump_insn (gen_jump_compact (L_return));
 	      emit_barrier_after (jump);
 	    }
@@ -496,6 +514,13 @@ sh_expand_cmpnstr (rtx *operands)
       jump = emit_jump_insn (gen_jump_compact( L_end_loop_byte));
       emit_barrier_after (jump);
     }
+  else
+    {
+      emit_insn (gen_cmpeqsi_t (len, const0_rtx));
+      emit_move_insn (operands[0], const0_rtx);
+      jump = emit_jump_insn (gen_branch_true (L_return));
+      add_int_reg_note (jump, REG_BR_PROB, prob_unlikely);
+    }
 
   addr1 = adjust_automodify_address (addr1, QImode, s1_addr, 0);
   addr2 = adjust_automodify_address (addr2, QImode, s2_addr, 0);
@@ -536,9 +561,9 @@ sh_expand_cmpnstr (rtx *operands)
     emit_insn (gen_zero_extendqisi2 (tmp2, gen_lowpart (QImode, tmp2)));
   emit_insn (gen_zero_extendqisi2 (tmp1, gen_lowpart (QImode, tmp1)));
 
-  emit_label (L_return);
-
   emit_insn (gen_subsi3 (operands[0], tmp1, tmp2));
+
+  emit_label (L_return);
 
   return true;
 }
@@ -573,7 +598,7 @@ sh_expand_strlen (rtx *operands)
 
   if (align < 4)
     {
-      emit_insn (gen_tstsi_t (GEN_INT (3), current_addr));
+      emit_insn (gen_tstsi_t (current_addr, GEN_INT (3)));
       jump = emit_jump_insn (gen_branch_false (L_loop_byte));
       add_int_reg_note (jump, REG_BR_PROB, prob_likely);
     }
@@ -665,7 +690,7 @@ sh_expand_setmem (rtx *operands)
 
       if (align < 4)
 	{
-	  emit_insn (gen_tstsi_t (GEN_INT (3), dest_addr));
+	  emit_insn (gen_tstsi_t (dest_addr, GEN_INT (3)));
 	  jump = emit_jump_insn (gen_branch_false (L_loop_byte));
 	  add_int_reg_note (jump, REG_BR_PROB, prob_likely);
 	}

@@ -1,5 +1,5 @@
 /* Single-image implementation of GNU Fortran Coarray Library
-   Copyright (C) 2011-2014 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
 This file is part of the GNU Fortran Coarray Runtime Library (libcaf).
@@ -252,6 +252,21 @@ _gfortran_caf_co_max (gfc_descriptor_t *a __attribute__ ((unused)),
   if (stat)
     *stat = 0;
 }
+
+
+void
+_gfortran_caf_co_reduce (gfc_descriptor_t *a __attribute__ ((unused)),
+                        void * (*opr) (void *, void *)
+                               __attribute__ ((unused)),
+                        int opr_flags __attribute__ ((unused)),
+                        int result_image __attribute__ ((unused)),
+                        int *stat, char *errmsg __attribute__ ((unused)),
+                        int a_len __attribute__ ((unused)),
+                        int errmsg_len __attribute__ ((unused)))
+ {
+   if (stat)
+     *stat = 0;
+ }
 
 
 static void

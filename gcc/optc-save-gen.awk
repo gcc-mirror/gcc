@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2014 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2015 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -40,7 +40,17 @@ print ""
 print "#include " quote "flags.h" quote
 print "#include " quote "target.h" quote
 print "#include " quote "inchash.h" quote
+print "#include " quote "hash-set.h" quote
+print "#include " quote "machmode.h" quote
+print "#include " quote "vec.h" quote
+print "#include " quote "double-int.h" quote
+print "#include " quote "input.h" quote
+print "#include " quote "alias.h" quote
+print "#include " quote "symtab.h" quote
+print "#include " quote "wide-int.h" quote
+print "#include " quote "inchash.h" quote
 print "#include " quote "tree.h" quote
+print "#include " quote "fold-const.h" quote
 print "#include " quote "tree-ssa-alias.h" quote
 print "#include " quote "is-a.h" quote
 print "#include " quote "predict.h" quote
@@ -232,6 +242,69 @@ for (i = 0; i < n_opt_char; i++) {
 }
 
 print "}";
+
+print "";
+print "/* Print different optimization variables from structures provided as arguments.  */";
+print "void";
+print "cl_optimization_print_diff (FILE *file,";
+print "                            int indent_to,";
+print "                            struct cl_optimization *ptr1,";
+print "                            struct cl_optimization *ptr2)";
+print "{";
+
+print "  fputs (\"\\n\", file);";
+for (i = 0; i < n_opt_other; i++) {
+	print "  if (ptr1->x_" var_opt_other[i] " != ptr2->x_" var_opt_other[i] ")";
+	print "    fprintf (file, \"%*s%s (%#lx/%#lx)\\n\",";
+	print "             indent_to, \"\",";
+	print "             \"" var_opt_other[i] "\",";
+	print "             (unsigned long)ptr1->x_" var_opt_other[i] ",";
+	print "             (unsigned long)ptr2->x_" var_opt_other[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_opt_int; i++) {
+	print "  if (ptr1->x_" var_opt_int[i] " != ptr2->x_" var_opt_int[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent_to, \"\",";
+	print "             \"" var_opt_int[i] "\",";
+	print "             ptr1->x_" var_opt_int[i] ",";
+	print "             ptr2->x_" var_opt_int[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_opt_enum; i++) {
+	print "  if (ptr1->x_" var_opt_enum[i] " != ptr2->x_" var_opt_enum[i] ")";
+	print "  fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "           indent_to, \"\",";
+	print "           \"" var_opt_enum[i] "\",";
+	print "           (int) ptr1->x_" var_opt_enum[i] ",";
+	print "           (int) ptr2->x_" var_opt_enum[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_opt_short; i++) {
+	print "  if (ptr1->x_" var_opt_short[i] " != ptr2->x_" var_opt_short[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent_to, \"\",";
+	print "             \"" var_opt_short[i] "\",";
+	print "             ptr1->x_" var_opt_short[i] ",";
+	print "             ptr2->x_" var_opt_short[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_opt_char; i++) {
+	print "  if (ptr1->x_" var_opt_char[i] " != ptr2->x_" var_opt_char[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent_to, \"\",";
+	print "             \"" var_opt_char[i] "\",";
+	print "             ptr1->x_" var_opt_char[i] ",";
+	print "             ptr2->x_" var_opt_char[i] ");";
+	print "";
+}
+
+print "}";
+
 
 print "";
 print "/* Save selected option variables into a structure.  */"
@@ -426,6 +499,76 @@ for (i = 0; i < n_target_char; i++) {
 print "";
 print "  if (targetm.target_option.print)";
 print "    targetm.target_option.print (file, indent, ptr);";
+print "}";
+
+print "";
+print "/* Print different target option variables from structures provided as arguments.  */";
+print "void";
+print "cl_target_option_print_diff (FILE *file,";
+print "                             int indent,";
+print "                             struct cl_target_option *ptr1,";
+print "                             struct cl_target_option *ptr2)";
+print "{";
+
+print "  fputs (\"\\n\", file);";
+for (i = 0; i < n_target_other; i++) {
+	print "  if (ptr1->x_" var_target_other[i] " != ptr2->x_" var_target_other[i] ")";
+	if (host_wide_int[var_target_other[i]] == "yes")
+		print "    fprintf (file, \"%*s%s (%#\" HOST_WIDE_INT_PRINT \"x/%#\" HOST_WIDE_INT_PRINT \"x)\\n\",";
+	else
+		print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" var_target_other[i] "\",";
+	if (host_wide_int[var_target_other[i]] == "yes") {
+		print "             ptr1->x_" var_target_other[i] ",";
+		print "             ptr2->x_" var_target_other[i] ");";
+	}
+	else {
+		print "             (unsigned long)ptr1->x_" var_target_other[i] ",";
+		print "             (unsigned long)ptr2->x_" var_target_other[i] ");";
+	}
+	print "";
+}
+
+for (i = 0; i < n_target_enum; i++) {
+	print "  if (ptr1->x_" var_target_enum[i] " != ptr2->x_" var_target_enum[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" var_target_enum[i] "\",";
+	print "             ptr1->x_" var_target_enum[i] ",";
+	print "             ptr2->x_" var_target_enum[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_target_int; i++) {
+	print "  if (ptr1->x_" var_target_int[i] " != ptr2->x_" var_target_int[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" var_target_int[i] "\",";
+	print "             ptr1->x_" var_target_int[i] ",";
+	print "             ptr2->x_" var_target_int[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_target_short; i++) {
+	print "  if (ptr1->x_" var_target_short[i] " != ptr2->x_" var_target_short[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" var_target_short[i] "\",";
+	print "             ptr1->x_" var_target_short[i] ",";
+	print "             ptr2->x_" var_target_short[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_target_char; i++) {
+	print "  if (ptr1->x_" var_target_char[i] " != ptr2->x_" var_target_char[i] ")";
+	print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" var_target_char[i] "\",";
+	print "             ptr1->x_" var_target_char[i] ",";
+	print "             ptr2->x_" var_target_char[i] ");";
+	print "";
+}
 
 print "}";
 
@@ -437,6 +580,7 @@ print "                     struct cl_target_option const *ptr2 ATTRIBUTE_UNUSED
 print "{";
 n_target_val = 0;
 n_target_str = 0;
+n_target_array = 0;
 
 for (i = 0; i < n_target_save; i++) {
 	var = target_save_decl[i];
@@ -448,8 +592,20 @@ for (i = 0; i < n_target_save; i++) {
 	if (target_save_decl[i] ~ "^const char \\*+[_" alnum "]+$")
 		var_target_str[n_target_str++] = name;
 	else {
-		var_target_val_type[n_target_val] = type;
-		var_target_val[n_target_val++] = name;
+		if (target_save_decl[i] ~ " .*\\[.+\\]+$") {
+			size = name;
+			sub("[^\\[]+\\[", "", size);
+			sub("\\]$", "", size);
+			sub("\\[.+", "", name)
+			sub(" [^ ]+$", "", type)
+			var_target_array[n_target_array] = name
+			var_target_array_type[n_target_array] = type
+			var_target_array_size[n_target_array++] = size
+		}
+		else {
+			var_target_val_type[n_target_val] = type;
+			var_target_val[n_target_val++] = name;
+		}
 	}
 }
 if (have_save) {
@@ -484,6 +640,14 @@ for (i = 0; i < n_target_str; i++) {
 	print "          || strcmp (ptr1->" name", ptr2->" name ")))";
 	print "    return false;";
 }
+for (i = 0; i < n_target_array; i++) {
+	name = var_target_array[i]
+	size = var_target_array_size[i]
+	type = var_target_array_type[i]
+	print "  if (ptr1->" name" != ptr2->" name "";
+	print "      || memcmp (ptr1->" name ", ptr2->" name ", " size " * sizeof(" type ")))"
+	print "    return false;";
+}
 for (i = 0; i < n_target_val; i++) {
 	name = var_target_val[i]
 	print "  if (ptr1->" name" != ptr2->" name ")";
@@ -507,6 +671,13 @@ for (i = 0; i < n_target_str; i++) {
 	print "  else";
 	print "    hstate.add_int (0);";
 }
+for (i = 0; i < n_target_array; i++) {
+	name= var_target_array[i]
+	size = var_target_array_size[i]
+	type = var_target_array_type[i]
+	print "  hstate.add_int (" size ");";
+	print "  hstate.add (ptr->" name ", sizeof (" type ") * " size ");";
+}
 for (i = 0; i < n_target_val; i++) {
 	name = var_target_val[i]
 	print "  hstate.add_wide_int (ptr->" name");";
@@ -524,6 +695,12 @@ print "{";
 for (i = 0; i < n_target_str; i++) {
 	name = var_target_str[i]
 	print "  bp_pack_string (ob, bp, ptr->" name", true);";
+}
+for (i = 0; i < n_target_array; i++) {
+	name = var_target_array[i]
+	size = var_target_array_size[i]
+	print "  for (unsigned i = 0; i < " size "; i++)"
+	print "    bp_pack_value (bp, ptr->" name "[i], 64);";
 }
 for (i = 0; i < n_target_val; i++) {
 	name = var_target_val[i]
@@ -543,6 +720,12 @@ for (i = 0; i < n_target_str; i++) {
 	print "  ptr->" name" = bp_unpack_string (data_in, bp);";
 	print "  if (ptr->" name")";
 	print "    ptr->" name" = xstrdup (ptr->" name");";
+}
+for (i = 0; i < n_target_array; i++) {
+	name = var_target_array[i]
+	size = var_target_array_size[i]
+	print "  for (int i = " size " - 1; i >= 0; i--)"
+	print "    ptr->" name "[i] = (" var_target_array_type[i] ") bp_unpack_value (bp, 64);";
 }
 for (i = 0; i < n_target_val; i++) {
 	name = var_target_val[i]

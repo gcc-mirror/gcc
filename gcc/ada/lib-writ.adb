@@ -1494,6 +1494,7 @@ package body Lib.Writ is
       --  Output SCO information if present
 
       if Generate_SCO then
+         SCO_Record_Filtered;
          SCO_Output;
       end if;
 

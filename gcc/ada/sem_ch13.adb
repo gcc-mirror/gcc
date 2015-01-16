@@ -1699,15 +1699,26 @@ package body Sem_Ch13 is
                   --  illegal specification of this aspect for a subtype now,
                   --  to prevent malformed rep_item chains.
 
-                  if (A_Id = Aspect_Input  or else
-                      A_Id = Aspect_Output or else
-                      A_Id = Aspect_Read   or else
-                      A_Id = Aspect_Write)
-                    and not Is_First_Subtype (E)
+                  if A_Id = Aspect_Input  or else
+                     A_Id = Aspect_Output or else
+                     A_Id = Aspect_Read   or else
+                     A_Id = Aspect_Write
                   then
-                     Error_Msg_N
-                       ("local name must be a first subtype", Aspect);
-                     goto Continue;
+                     if not Is_First_Subtype (E) then
+                        Error_Msg_N
+                          ("local name must be a first subtype", Aspect);
+                        goto Continue;
+
+                     --  If stream aspect applies to the class-wide type,
+                     --  the generated attribute definition applies to the
+                     --  class-wide type as well.
+
+                     elsif Class_Present (Aspect) then
+                        Ent :=
+                          Make_Attribute_Reference (Loc,
+                            Prefix         => Ent,
+                            Attribute_Name => Name_Class);
+                     end if;
                   end if;
 
                   --  Construct the attribute definition clause
@@ -3556,6 +3567,8 @@ package body Sem_Ch13 is
             if  Base_Type (Typ) = Base_Type (Ent)
               or else (Is_Class_Wide_Type (Typ)
                         and then Typ = Class_Wide_Type (Base_Type (Ent)))
+              or else (Is_Class_Wide_Type (Ent)
+                        and then Ent = Class_Wide_Type (Base_Type (Typ)))
             then
                null;
             else
@@ -4794,6 +4807,7 @@ package body Sem_Ch13 is
 
          when Attribute_Default_Iterator =>  Default_Iterator : declare
             Func : Entity_Id;
+            Typ  : Entity_Id;
 
          begin
             if not Is_Tagged_Type (U_Ent) then
@@ -4813,9 +4827,26 @@ package body Sem_Ch13 is
                Func := Entity (Expr);
             end if;
 
-            if No (First_Formal (Func))
-              or else Etype (First_Formal (Func)) /= U_Ent
+            --  The type of the first parameter must be T, T'class, or a
+            --  corresponding access type (5.5.1 (8/3)
+
+            if No (First_Formal (Func)) then
+               Typ := Empty;
+            else
+               Typ := Etype (First_Formal (Func));
+            end if;
+
+            if Typ = U_Ent
+              or else Typ = Class_Wide_Type (U_Ent)
+              or else (Is_Access_Type (Typ)
+                        and then Designated_Type (Typ) = U_Ent)
+              or else (Is_Access_Type (Typ)
+                        and then Designated_Type (Typ) =
+                                          Class_Wide_Type (U_Ent))
             then
+               null;
+
+            else
                Error_Msg_NE
                  ("Default Iterator must be a primitive of&", Func, U_Ent);
             end if;
@@ -4832,9 +4863,8 @@ package body Sem_Ch13 is
 
             if From_Aspect_Specification (N) then
                if not Is_Task_Type (U_Ent) then
-                  Error_Msg_N ("Dispatching_Domain can only be defined" &
-                               "for task",
-                               Nam);
+                  Error_Msg_N
+                    ("Dispatching_Domain can only be defined for task", Nam);
 
                elsif Duplicate_Clause then
                   null;

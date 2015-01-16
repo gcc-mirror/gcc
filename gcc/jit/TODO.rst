@@ -81,8 +81,6 @@ Bugs
 
 Test suite
 ==========
-* get DejaGnu to build and run C++ testcases
-
 * measure code coverage in testing of libgccjit.so
 
 Future milestones

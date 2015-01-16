@@ -7,7 +7,7 @@
 
 
 @copying
-Copyright @copyright{} 2006-2014 Free Software Foundation, Inc.
+Copyright @copyright{} 2006-2015 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -31,11 +31,13 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 @ifinfo
 @dircategory GNU Libraries
 @direntry
-* libgomp: (libgomp).                    GNU OpenMP runtime library
+* libgomp: (libgomp).          GNU Offloading and Multi Processing Runtime Library.
 @end direntry
 
-This manual documents the GNU implementation of the OpenMP API for 
-multi-platform shared-memory parallel programming in C/C++ and Fortran.
+This manual documents libgomp, the GNU Offloading and Multi Processing
+Runtime library.  This is the GNU implementation of the OpenMP and
+OpenACC APIs for parallel and accelerator programming in C/C++ and
+Fortran.
 
 Published by the Free Software Foundation
 51 Franklin Street, Fifth Floor
@@ -48,7 +50,8 @@ Boston, MA 02110-1301 USA
 @setchapternewpage odd
 
 @titlepage
-@title The GNU OpenMP Implementation
+@title GNU Offloading and Multi Processing Runtime Library
+@subtitle The GNU OpenMP and OpenACC Implementation
 @page
 @vskip 0pt plus 1filll
 @comment For the @value{version-GCC} Version*
@@ -69,9 +72,19 @@ Boston, MA 02110-1301, USA@*
 @top Introduction
 @cindex Introduction
 
-This manual documents the usage of libgomp, the GNU implementation of the 
-@uref{http://www.openmp.org, OpenMP} Application Programming Interface (API)
-for multi-platform shared-memory parallel programming in C/C++ and Fortran.
+This manual documents the usage of libgomp, the GNU Offloading and
+Multi Processing Runtime Library.  This includes the GNU
+implementation of the @uref{http://www.openmp.org, OpenMP} Application
+Programming Interface (API) for multi-platform shared-memory parallel
+programming in C/C++ and Fortran, and the GNU implementation of the
+@uref{http://www.openacc.org/, OpenACC} Application Programming
+Interface (API) for offloading of code to accelerator devices in C/C++
+and Fortran.
+
+Originally, libgomp implemented the GNU OpenMP Runtime Library.  Based
+on this, support for OpenACC and offloading (both OpenACC and OpenMP
+4's target construct) has been added later on, and the library's name
+changed to GNU Offloading and Multi Processing Runtime Library.
 
 
 
@@ -87,7 +100,8 @@ for multi-platform shared-memory parallel programming in C/C++ and Fortran.
 * Environment Variables::      Influencing runtime behavior with environment 
                                variables.
 * The libgomp ABI::            Notes on the external ABI presented by libgomp.
-* Reporting Bugs::             How to report bugs in GNU OpenMP.
+* Reporting Bugs::             How to report bugs in the GNU Offloading and
+                               Multi Processing Runtime Library.
 * Copying::                    GNU general public license says
                                how you can copy and share libgomp.
 * GNU Free Documentation License::
@@ -1306,6 +1320,7 @@ beginning with @env{GOMP_} are GNU extensions.
 * OMP_THREAD_LIMIT::      Set the maximum number of threads
 * OMP_WAIT_POLICY::       How waiting threads are handled
 * GOMP_CPU_AFFINITY::     Bind threads to specific CPUs
+* GOMP_DEBUG::            Enable debugging output
 * GOMP_STACKSIZE::        Set default thread stack size
 * GOMP_SPINCOUNT::        Set the busy-wait spin count
 @end menu
@@ -1607,7 +1622,7 @@ CPU 2, the fifth to CPU 4, the sixth through tenth to CPUs 6, 8, 10, 12,
 and 14 respectively and then start assigning back from the beginning of
 the list.  @code{GOMP_CPU_AFFINITY=0} binds all threads to CPU 0.
 
-There is no GNU OpenMP library routine to determine whether a CPU affinity 
+There is no libgomp library routine to determine whether a CPU affinity
 specification is in effect.  As a workaround, language-specific library 
 functions, e.g., @code{getenv} in C or @code{GET_ENVIRONMENT_VARIABLE} in 
 Fortran, may be used to query the setting of the @code{GOMP_CPU_AFFINITY} 
@@ -1621,6 +1636,20 @@ If both @env{GOMP_CPU_AFFINITY} and @env{OMP_PROC_BIND} are set,
 
 @item @emph{See also}:
 @ref{OMP_PLACES}, @ref{OMP_PROC_BIND}
+@end table
+
+
+
+@node GOMP_DEBUG
+@section @env{GOMP_DEBUG} -- Enable debugging output
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}:
+Enable debugging output.  The variable should be set to @code{0}
+(disabled, also the default if not set), or @code{1} (enabled).
+
+If enabled, some debugging output will be printed during execution.
+This is currently not specified in more detail, and subject to change.
 @end table
 
 
@@ -2066,15 +2095,16 @@ becomes
 
 
 @c ---------------------------------------------------------------------
-@c 
+@c Reporting Bugs
 @c ---------------------------------------------------------------------
 
 @node Reporting Bugs
 @chapter Reporting Bugs
 
-Bugs in the GNU OpenMP implementation should be reported via 
-@uref{http://gcc.gnu.org/bugzilla/, Bugzilla}.  For all cases, please add 
-"openmp" to the keywords field in the bug report.
+Bugs in the GNU Offloading and Multi Processing Runtime Library should
+be reported via @uref{http://gcc.gnu.org/bugzilla/, Bugzilla}.  Please add
+"openacc", or "openmp", or both to the keywords field in the bug
+report, as appropriate.
 
 
 

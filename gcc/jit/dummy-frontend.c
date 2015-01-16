@@ -1,5 +1,5 @@
 /* jit.c -- Dummy "frontend" for use during JIT-compilation.
-   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,8 +22,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "opts.h"
 #include "signop.h"
+#include "hash-set.h"
+#include "fixed-value.h"
+#include "alias.h"
+#include "flags.h"
+#include "symtab.h"
 #include "tree-core.h"
 #include "stor-layout.h"
+#include "inchash.h"
 #include "tree.h"
 #include "debug.h"
 #include "langhooks.h"
@@ -33,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin-api.h"
 #include "vec.h"
 #include "hashtab.h"
-#include "hash-set.h"
 #include "machmode.h"
 #include "tm.h"
 #include "hard-reg-set.h"
@@ -43,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 
 #include "jit-common.h"
+#include "jit-logging.h"
 #include "jit-playback.h"
 
 #include <mpfr.h>
@@ -113,6 +119,9 @@ struct ggc_root_tab jit_root_tab[] =
 static bool
 jit_langhook_init (void)
 {
+  gcc_assert (gcc::jit::active_playback_ctxt);
+  JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
+
   static bool registered_root_tab = false;
   if (!registered_root_tab)
     {
@@ -212,8 +221,16 @@ jit_langhook_getdecls (void)
 static void
 jit_langhook_write_globals (void)
 {
+  gcc::jit::playback::context *ctxt = gcc::jit::active_playback_ctxt;
+  gcc_assert (ctxt);
+  JIT_LOG_SCOPE (ctxt->get_logger ());
+
+  ctxt->write_global_decls_1 ();
+
   /* This is the hook that runs the middle and backends: */
   symtab->finalize_compilation_unit ();
+
+  ctxt->write_global_decls_2 ();
 }
 
 #undef LANG_HOOKS_NAME

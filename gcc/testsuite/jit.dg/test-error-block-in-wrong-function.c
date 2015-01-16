@@ -62,4 +62,7 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
 		      " source block initial is in function test_fn"
 		      " whereas target block block_within_other_fn"
 		      " is in function other_fn");
+  /* Example of a testcase in which the last error != first error.  */
+  CHECK_STRING_VALUE (gcc_jit_context_get_last_error (ctxt),
+		      "unterminated block in other_fn: block_within_other_fn");
 }

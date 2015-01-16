@@ -1,6 +1,6 @@
 ## Makefile for the C++03 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2014 Free Software Foundation, Inc.
+## Copyright (C) 1997-2015 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -108,9 +108,7 @@ inst_sources = \
 	allocator-inst.cc \
 	concept-inst.cc \
 	ext-inst.cc \
-	locale-inst.cc \
-	misc-inst.cc \
-	wlocale-inst.cc
+	misc-inst.cc
 else
 # XTEMPLATE_FLAGS =
 inst_sources =

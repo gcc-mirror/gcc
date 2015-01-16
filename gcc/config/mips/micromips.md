@@ -1,4 +1,4 @@
-;; Copyright (C) 2013-2014 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2015 Free Software Foundation, Inc.
 ;;
 ;; micromips.md   Machine Description for the microMIPS instruction set
 ;; This file is part of GCC.
@@ -80,11 +80,10 @@
 
 ;; The behavior of the SWP insn is undefined if placed in a delay slot.
 (define_insn "*swp"
-  [(parallel [(set (match_operand:SI 0 "non_volatile_mem_operand")
-		   (match_operand:SI 1 "d_operand"))
-	      (set (match_operand:SI 2 "non_volatile_mem_operand")
-		   (match_operand:SI 3 "d_operand"))])]
-
+  [(set (match_operand:SI 0 "non_volatile_mem_operand")
+	(match_operand:SI 1 "d_operand"))
+   (set (match_operand:SI 2 "non_volatile_mem_operand")
+	(match_operand:SI 3 "d_operand"))]
   "TARGET_MICROMIPS
    && umips_load_store_pair_p (false, operands)"
 {
@@ -97,11 +96,11 @@
 
 ;; For JRADDIUSP.
 (define_insn "jraddiusp"
-  [(parallel [(return)
-	      (use (reg:SI 31))
-	      (set (reg:SI 29)
-		   (plus:SI (reg:SI 29)
-			    (match_operand 0 "uw5_operand")))])]
+  [(return)
+   (use (reg:SI 31))
+   (set (reg:SI 29)
+	(plus:SI (reg:SI 29)
+		 (match_operand 0 "uw5_operand")))]
   "TARGET_MICROMIPS"
   "jraddiusp\t%0"
   [(set_attr "type"	"trap")
@@ -121,10 +120,10 @@
 
 ;; The behavior of the MOVEP insn is undefined if placed in a delay slot.
 (define_insn "*movep<MOVEP1:mode><MOVEP2:mode>"
-  [(parallel [(set (match_operand:MOVEP1 0 "register_operand")
-		   (match_operand:MOVEP1 1 "movep_src_operand"))
-	      (set (match_operand:MOVEP2 2 "register_operand")
-		   (match_operand:MOVEP2 3 "movep_src_operand"))])]
+  [(set (match_operand:MOVEP1 0 "register_operand")
+	(match_operand:MOVEP1 1 "movep_src_operand"))
+   (set (match_operand:MOVEP2 2 "register_operand")
+	(match_operand:MOVEP2 3 "movep_src_operand"))]
   "TARGET_MICROMIPS
    && umips_movep_target_p (operands[0], operands[2])"
 {

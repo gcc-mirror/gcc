@@ -14,6 +14,20 @@
 # up into the Tcl world, reporting a summary of all results
 # across all of the executables.
 
+# Kludge alert:
+# We need g++_init so that it can find the stdlib include path.
+#
+# g++_init (in lib/g++.exp) uses g++_maybe_build_wrapper,
+# which normally comes from the definition of
+# ${tool}_maybe_build_wrapper within lib/wrapper.exp.
+#
+# However, for us, ${tool} is "jit".
+# Hence we load wrapper.exp with tool == "g++", so that
+# g++_maybe_build_wrapper is defined.
+set tool g++
+load_lib wrapper.exp
+set tool jit
+
 load_lib dg.exp
 load_lib prune.exp
 load_lib target-supports.exp
@@ -21,6 +35,7 @@ load_lib gcc-defs.exp
 load_lib timeout.exp
 load_lib target-libpath.exp
 load_lib gcc.exp
+load_lib g++.exp
 load_lib dejagnu.exp
 
 # Look for lines of the form:
@@ -264,19 +279,42 @@ if ![info exists GCC_UNDER_TEST] {
     set GCC_UNDER_TEST "[find_gcc]"
 }
 
+g++_init
+
 # Initialize dg.
 dg-init
 
 # Gather a list of all tests.
 
-# Tests within the testsuite: gcc/testsuite/jit.dg/test-*.c
-set tests [lsort [find $srcdir/$subdir test-*.c]]
+# C tests within the testsuite: gcc/testsuite/jit.dg/test-*.c
+set tests [find $srcdir/$subdir test-*.c]
+
+# C++ tests within the testsuite: gcc/testsuite/jit.dg/test-*.cc
+set tests [concat $tests [find $srcdir/$subdir test-*.cc]]
 
 # We also test the examples within the documentation, to ensure that
 # they compile:
-set tests [lsort [concat $tests [find $srcdir/../jit/docs/examples *.c]]]
+set tests [concat $tests [find $srcdir/../jit/docs/examples *.c]]
+set tests [concat $tests [find $srcdir/../jit/docs/examples *.cc]]
+
+set tests [lsort $tests]
 
 verbose "tests: $tests"
+
+# Is testcase NAME meant to generate a reproducer?
+proc is_testcase_meant_to_generate_a_reproducer {name} {
+    # We expect most testcases to generate a reproducer.
+    # The exceptions are the tutorials (which don't have a "test-"
+    # prefix), and test-threads.c (which is unique).
+    verbose "is_testcase_meant_to_generate_a_reproducer: $name"
+    if { [string match "*test-*" $name] } {
+	if { [string match "*test-threads.c" $name] } {
+	    return 0
+	}
+	return 1
+    }
+    return 0
+}
 
 # libgloss has found the driver (as "xgcc" or "gcc) and stored
 # its full path as GCC_UNDER_TEST.
@@ -302,17 +340,53 @@ proc jit-dg-test { prog do_what extra_tool_flags } {
     }
 
     # Determine what to name the built executable.
-    set output_file "[file rootname [file tail $prog]].exe"
+    #
+    # We simply append .exe to the filename, e.g.
+    #  "test-foo.c.exe"
+    # since some testcases exist in both
+    #  "test-foo.c" and
+    #  "test-foo.cc"
+    # variants, and we don't want them to clobber each other's
+    # executables.
+    #
+    # This also ensures that the source name makes it into the
+    # pass/fail output, so that we can distinguish e.g. which test-foo
+    # is failing.
+    set output_file "[file tail $prog].exe"
     verbose "output_file: $output_file"
 
     # Create the test executable:
-    set comp_output [gcc_target_compile $prog $output_file $do_what \
-			"{additional_flags=$extra_tool_flags}"]
+    set extension [file extension $prog]
+    if {$extension == ".cc"} {
+	set compilation_function "g++_target_compile"
+	set options "{additional_flags=$extra_tool_flags}"
+    } else {
+	set compilation_function "gcc_target_compile"
+	# Until recently, <dejagnu.h> assumed -fgnu89-inline
+	# Ideally we should fixincludes it (PR other/63613), but
+	# for now add -fgnu89-inline when compiling C JIT testcases.
+	# See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63613
+	# and http://lists.gnu.org/archive/html/dejagnu/2014-10/msg00011.html
+	set options "{additional_flags=$extra_tool_flags -fgnu89-inline}"
+    }
+    verbose "compilation_function=$compilation_function"
+    verbose "options=$options"
+
+    set comp_output [$compilation_function $prog $output_file \
+			 "executable" $options]
     upvar 1 name name
     if ![jit_check_compile "$name" "initial compilation" \
 	    $output_file $comp_output] then {
       return
     }
+
+    # Most of the test cases use gcc_jit_context_dump_reproducer_to_file
+    # as they run to write out a .c file that reproduces their behavior,
+    # exercising that API.
+    set generated_reproducer "${output_file}.reproducer.c"
+
+    # Delete any such generated .c file from a previous run.
+    catch "exec rm -f $generated_reproducer"
 
     # Run the test executable, capturing the PASS/FAIL textual output
     # from the C API, converting it into the Tcl API.
@@ -320,6 +394,28 @@ proc jit-dg-test { prog do_what extra_tool_flags } {
     # We need to set LD_LIBRARY_PATH so that the test files can find
     # libgccjit.so
     # Do this using set_ld_library_path_env_vars from target-libpath.exp
+    # We will restore the old value later using
+    # restore_ld_library_path_env_vars.
+
+    # Unfortunately this API only supports a single saved value, rather
+    # than a stack, and g++_init has already called into this API,
+    # injecting the appropriate value for LD_LIBRARY_PATH for finding
+    # the built copy of libstdc++.
+    # Hence the call to restore_ld_library_path_env_vars would restore
+    # the *initial* value of LD_LIBRARY_PATH, and attempts to run
+    # a C++ testcase after running any prior testcases would thus look
+    # in the wrong place for libstdc++.  This led to failures at startup
+    # of the form:
+    #   ./tut01-hello-world.cc.exe: /lib64/libstdc++.so.6: version `GLIBCXX_3.4.21' not found (required by ./tut01-hello-world.cc.exe)
+    # when the built libstdc++ is more recent that the system libstdc++.
+    #
+    # As a workaround, reset the variable "orig_environment_saved" within
+    # target-libpath.exp, so that the {set|restore}_ld_library_path_env_vars
+    # API saves/restores the current value of LD_LIBRARY_PATH (as set up
+    # by g++_init).
+    global orig_environment_saved
+    set orig_environment_saved 0
+
     global ld_library_path
     global base_dir
     set ld_library_path "$base_dir/../../"
@@ -382,16 +478,61 @@ proc jit-dg-test { prog do_what extra_tool_flags } {
     }
 
     restore_ld_library_path_env_vars
+
+    # Most of the test cases use gcc_jit_context_dump_reproducer_to_file
+    # as they run to write out a .c file that reproduces their behavior,
+    # exercising that API.
+
+    if { [is_testcase_meant_to_generate_a_reproducer $name] } {
+	verbose "$name is meant to generate a reproducer"
+	# Verify that a reproducer was generated
+	if { [file exists $generated_reproducer] == 1} {
+	    pass "found generated reproducer: $generated_reproducer"
+	    set output_file "${generated_reproducer}.exe"
+	    # (this overwrites output_file)
+
+	    # Try to compile the generated reproducer
+	    verbose "compilation_function=$compilation_function"
+
+	    # The .c file written by gcc_jit_context_dump_reproducer_to_file
+	    # assigns the result of each API call to a unique variable, and not
+	    # all are necessarily used, so we need -Wno-unused-variable.
+	    set options \
+		"{additional_flags=$extra_tool_flags -Wno-unused-variable}"
+	    verbose "options=$options"
+
+	    set comp_output2 [$compilation_function $generated_reproducer \
+				  $output_file "executable" $options]
+	    if ![jit_check_compile "generated reproducer from $name" "initial compilation" \
+		     $output_file $comp_output2] then {
+			 return
+		     }
+
+	    # The caller, dg-test, will verify comp_output, which contains
+	    # the output from compiling the testcase and will issue a fail
+	    # if it's non-empty (e.g. containing warnings, the
+	    # "test for excess errors").
+	    #
+	    # Append the output from compiling the reproducer, so that this is also
+	    # verified:
+	    append comp_output $comp_output2
+
+	    # TODO: we should try to run the built executable
+	    # It's not quite a quine, since it embeds ptrs which could change
+	    # from run to run.
+	} else {
+	    fail "did not find a generated reproducer: $generated_reproducer"
+	}
+    } else {
+	verbose "$name is not meant to generate a reproducer"
+    }
+
+    return [list $comp_output $output_file]
 }
 
 # We need to link with --export-dynamic for test-calling-external-function.c
 # so that the JIT-built code can call into functions from the main program.
 set DEFAULT_CFLAGS "-I$srcdir/../jit -lgccjit -g -Wall -Werror -Wl,--export-dynamic"
-
-# <dejagnu.h> assumes -fgnu89-inline
-# See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63613
-# and http://lists.gnu.org/archive/html/dejagnu/2014-10/msg00011.html
-append DEFAULT_CFLAGS " -fgnu89-inline"
 
 # Main loop.  This will invoke jig-dg-test on each test-*.c file.
 dg-runtest $tests "" $DEFAULT_CFLAGS

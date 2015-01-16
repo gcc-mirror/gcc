@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -118,23 +118,6 @@ error_at_line (const struct fileloc *pos, const char *msg, ...)
   hit_error = true;
 
   va_end (ap);
-}
-
-/* asprintf, but produces fatal message on out-of-memory.  */
-char *
-xasprintf (const char *format, ...)
-{
-  int n;
-  char *result;
-  va_list ap;
-
-  va_start (ap, format);
-  n = vasprintf (&result, format, ap);
-  if (result == NULL || n < 0)
-    fatal ("out of memory");
-  va_end (ap);
-
-  return result;
 }
 
 /* Locate the ultimate base class of struct S.  */
@@ -628,7 +611,9 @@ create_user_defined_type (const char *type_name, struct fileloc *pos)
 	 comma-separated list of strings, implicitly assumed to
 	 be type names, potentially with "*" characters.  */
       char *arg = open_bracket + 1;
-      char *next;
+      /* Workaround -Wmaybe-uninitialized false positive during
+	 profiledbootstrap by initializing it.  */
+      char *next = NULL;
       char *type_id = strtoken (arg, ",>", &next);
       pair_p fields = 0;
       while (type_id)
@@ -1625,7 +1610,7 @@ static outf_p
 create_file (const char *name, const char *oname)
 {
   static const char *const hdr[] = {
-    "   Copyright (C) 2004-2014 Free Software Foundation, Inc.\n",
+    "   Copyright (C) 2004-2015 Free Software Foundation, Inc.\n",
     "\n",
     "This file is part of GCC.\n",
     "\n",
@@ -1726,12 +1711,18 @@ open_base_files (void)
     static const char *const ifiles[] = {
       "config.h", "system.h", "coretypes.h", "tm.h", "insn-codes.h",
       "hashtab.h", "splay-tree.h", "obstack.h", "bitmap.h", "input.h",
-      "tree.h", "rtl.h", "wide-int.h", "hashtab.h", "hash-set.h", "vec.h",
+      "hash-set.h", "machmode.h", "vec.h", "double-int.h", "input.h",
+      "alias.h", "symtab.h", "options.h", 
+      "wide-int.h", "inchash.h",
+      "tree.h", "fold-const.h", "rtl.h",
       "machmode.h", "tm.h", "hard-reg-set.h", "input.h", "predict.h",
-      "function.h", "insn-config.h", "expr.h", "alloc-pool.h",
-      "hard-reg-set.h", "basic-block.h", "cselib.h", "insn-addr.h",
+      "function.h", "insn-config.h", "flags.h", "statistics.h",
+      "real.h", "fixed-value.h", "tree.h", "expmed.h", "dojump.h",
+      "explow.h", "calls.h", "emit-rtl.h", "varasm.h", "stmt.h",
+      "expr.h", "alloc-pool.h",
+      "basic-block.h", "cselib.h", "insn-addr.h",
       "optabs.h", "libfuncs.h", "debug.h", "ggc.h", 
-      "hash-table.h", "vec.h", "ggc.h", "dominance.h", "cfg.h", "basic-block.h",
+      "ggc.h", "dominance.h", "cfg.h", "basic-block.h",
       "tree-ssa-alias.h", "internal-fn.h", "gimple-fold.h", "tree-eh.h",
       "gimple-expr.h", "is-a.h",
       "gimple.h", "gimple-iterator.h", "gimple-ssa.h", "tree-cfg.h",
@@ -1740,8 +1731,8 @@ open_base_files (void)
       "tree-ssa-loop-niter.h", "tree-into-ssa.h", "tree-dfa.h", 
       "tree-ssa.h", "reload.h", "cpp-id-data.h", "tree-chrec.h",
       "except.h", "output.h",  "cfgloop.h", "target.h", "lto-streamer.h",
-      "target-globals.h", "ipa-ref.h", "cgraph.h", "ipa-prop.h", 
-      "ipa-inline.h", "dwarf2out.h", "omp-low.h", NULL
+      "target-globals.h", "ipa-ref.h", "cgraph.h", "symbol-summary.h",
+      "ipa-prop.h", "ipa-inline.h", "dwarf2out.h", "omp-low.h", NULL
     };
     const char *const *ifp;
     outf_p gtype_desc_c;

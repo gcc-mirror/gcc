@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2014 Free Software Foundation, Inc.
+   Copyright (C) 2003-2015 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1255,6 +1255,8 @@ public:
   int count_materialization_scale;
   /* Unique id of the node.  */
   int uid;
+  /* Summary unique id of the node.  */
+  int summary_uid;
   /* ID assigned by the profiling.  */
   unsigned int profile_id;
   /* Time profiler: first run of function.  */
@@ -1522,6 +1524,9 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   cgraph_edge * clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 		       gcov_type count_scale, int freq_scale, bool update_original);
 
+  /* Verify edge count and frequency.  */
+  bool verify_count_and_frequency ();
+
   /* Return true when call of edge can not lead to return from caller
      and thus it is safe to ignore its side effects for IPA analysis
      when computing side effects of the caller.  */
@@ -1604,6 +1609,17 @@ private:
 
   /* Remove the edge from the list of the callees of the caller.  */
   void remove_callee (void);
+
+  /* Set callee N of call graph edge and add it to the corresponding set of
+     callers. */
+  void set_callee (cgraph_node *n);
+
+  /* Output flags of edge to a file F.  */
+  void dump_edge_flags (FILE *f);
+
+  /* Verify that call graph edge corresponds to DECL from the associated
+     statement.  Return true if the verification should fail.  */
+  bool verify_corresponds_to_fndecl (tree decl);
 };
 
 #define CGRAPH_FREQ_BASE 1000
@@ -1837,6 +1853,10 @@ public:
   friend class cgraph_node;
   friend class cgraph_edge;
 
+  symbol_table (): cgraph_max_summary_uid (1)
+  {
+  }
+
   /* Initialize callgraph dump file.  */
   void initialize (void);
 
@@ -2033,6 +2053,7 @@ public:
 
   int cgraph_count;
   int cgraph_max_uid;
+  int cgraph_max_summary_uid;
 
   int edges_count;
   int edges_max_uid;
@@ -2361,6 +2382,7 @@ symbol_table::allocate_cgraph_symbol (void)
       node->uid = cgraph_max_uid++;
     }
 
+  node->summary_uid = cgraph_max_summary_uid++;
   return node;
 }
 
@@ -2711,6 +2733,33 @@ varpool_node::ultimate_alias_target (availability *availability)
   return n;
 }
 
+/* Set callee N of call graph edge and add it to the corresponding set of
+   callers. */
+
+inline void
+cgraph_edge::set_callee (cgraph_node *n)
+{
+  prev_caller = NULL;
+  if (n->callers)
+    n->callers->prev_caller = this;
+  next_caller = n->callers;
+  n->callers = this;
+  callee = n;
+}
+
+/* Redirect callee of the edge to N.  The function does not update underlying
+   call expression.  */
+
+inline void
+cgraph_edge::redirect_callee (cgraph_node *n)
+{
+  /* Remove from callers list of the current callee.  */
+  remove_callee ();
+
+  /* Insert to callers list of the new callee.  */
+  set_callee (n);
+}
+
 /* Return true when the edge represents a direct recursion.  */
 inline bool
 cgraph_edge::recursive_p (void)
@@ -2720,6 +2769,20 @@ cgraph_edge::recursive_p (void)
     return caller->global.inlined_to->decl == c->decl;
   else
     return caller->decl == c->decl;
+}
+
+/* Remove the edge from the list of the callers of the callee.  */
+
+inline void
+cgraph_edge::remove_callee (void)
+{
+  gcc_assert (!indirect_unknown_callee);
+  if (prev_caller)
+    prev_caller->next_caller = next_caller;
+  if (next_caller)
+    next_caller->prev_caller = prev_caller;
+  if (!prev_caller)
+    callee->callers = next_caller;
 }
 
 /* Return true if the TM_CLONE bit is set for a given FNDECL.  */

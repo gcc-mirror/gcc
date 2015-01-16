@@ -1,5 +1,5 @@
 /* Code for RTL transformations to satisfy insn constraints.
-   Copyright (C) 2010-2014 Free Software Foundation, Inc.
+   Copyright (C) 2010-2015 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
    This file is part of GCC.
@@ -126,6 +126,23 @@
 #include "machmode.h"
 #include "input.h"
 #include "function.h"
+#include "symtab.h"
+#include "flags.h"
+#include "statistics.h"
+#include "double-int.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "alias.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "predict.h"
 #include "dominance.h"
@@ -1640,6 +1657,7 @@ process_alt_operands (int only_alternative)
      then REJECT is ignored, but otherwise it gets this much counted
      against it in addition to the reloading needed.  */
   int reject;
+  int op_reject;
   /* The number of elements in the following array.  */
   int early_clobbered_regs_num;
   /* Numbers of operands which are early clobber registers.  */
@@ -1789,6 +1807,7 @@ process_alt_operands (int only_alternative)
 	     track.  */
 	  lra_assert (*p != 0 && *p != ',');
 
+	  op_reject = 0;
 	  /* Scan this alternative's specs for this operand; set WIN
 	     if the operand fits any letter in this alternative.
 	     Otherwise, clear BADOP if this operand could fit some
@@ -1809,6 +1828,13 @@ process_alt_operands (int only_alternative)
 
 		case '&':
 		  early_clobber_p = true;
+		  break;
+
+		case '$':
+		  op_reject += LRA_MAX_REJECT;
+		  break;
+		case '^':
+		  op_reject += LRA_LOSER_COST_FACTOR;
 		  break;
 
 		case '#':
@@ -2097,6 +2123,7 @@ process_alt_operands (int only_alternative)
 	      int const_to_mem = 0;
 	      bool no_regs_p;
 
+	      reject += op_reject;
 	      /* Never do output reload of stack pointer.  It makes
 		 impossible to do elimination when SP is changed in
 		 RTL.  */
@@ -4918,15 +4945,14 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       reg_renumber[REGNO (new_reg)] = hard_regno;
     }
   save = emit_spill_move (true, new_reg, original_reg);
-  if (NEXT_INSN (save) != NULL_RTX)
+  if (NEXT_INSN (save) != NULL_RTX && !call_save_p)
     {
-      lra_assert (! call_save_p);
       if (lra_dump_file != NULL)
 	{
 	  fprintf
 	    (lra_dump_file,
-	     "	  Rejecting split %d->%d resulting in > 2 %s save insns:\n",
-	     original_regno, REGNO (new_reg), call_save_p ? "call" : "");
+	     "	  Rejecting split %d->%d resulting in > 2 save insns:\n",
+	     original_regno, REGNO (new_reg));
 	  dump_rtl_slim (lra_dump_file, save, NULL, -1, 0);
 	  fprintf (lra_dump_file,
 		   "	))))))))))))))))))))))))))))))))))))))))))))))))\n");
@@ -4934,15 +4960,14 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       return false;
     }
   restore = emit_spill_move (false, new_reg, original_reg);
-  if (NEXT_INSN (restore) != NULL_RTX)
+  if (NEXT_INSN (restore) != NULL_RTX && !call_save_p)
     {
-      lra_assert (! call_save_p);
       if (lra_dump_file != NULL)
 	{
 	  fprintf (lra_dump_file,
 		   "	Rejecting split %d->%d "
-		   "resulting in > 2 %s restore insns:\n",
-		   original_regno, REGNO (new_reg), call_save_p ? "call" : "");
+		   "resulting in > 2 restore insns:\n",
+		   original_regno, REGNO (new_reg));
 	  dump_rtl_slim (lra_dump_file, restore, NULL, -1, 0);
 	  fprintf (lra_dump_file,
 		   "	))))))))))))))))))))))))))))))))))))))))))))))))\n");

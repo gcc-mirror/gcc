@@ -1,5 +1,5 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992-2014 Free Software Foundation, Inc.
+   Copyright (C) 1992-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,6 +21,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "attribs.h"
@@ -1180,6 +1190,17 @@ typedef struct
 static vec<pragma_ns_name> registered_pp_pragmas;
 
 struct omp_pragma_def { const char *name; unsigned int id; };
+static const struct omp_pragma_def oacc_pragmas[] = {
+  { "cache", PRAGMA_OACC_CACHE },
+  { "data", PRAGMA_OACC_DATA },
+  { "enter", PRAGMA_OACC_ENTER_DATA },
+  { "exit", PRAGMA_OACC_EXIT_DATA },
+  { "kernels", PRAGMA_OACC_KERNELS },
+  { "loop", PRAGMA_OACC_LOOP },
+  { "parallel", PRAGMA_OACC_PARALLEL },
+  { "update", PRAGMA_OACC_UPDATE },
+  { "wait", PRAGMA_OACC_WAIT }
+};
 static const struct omp_pragma_def omp_pragmas[] = {
   { "atomic", PRAGMA_OMP_ATOMIC },
   { "barrier", PRAGMA_OMP_BARRIER },
@@ -1212,10 +1233,19 @@ static const struct omp_pragma_def omp_pragmas_simd[] = {
 void
 c_pp_lookup_pragma (unsigned int id, const char **space, const char **name)
 {
+  const int n_oacc_pragmas = sizeof (oacc_pragmas) / sizeof (*oacc_pragmas);
   const int n_omp_pragmas = sizeof (omp_pragmas) / sizeof (*omp_pragmas);
   const int n_omp_pragmas_simd = sizeof (omp_pragmas_simd)
 				 / sizeof (*omp_pragmas);
   int i;
+
+  for (i = 0; i < n_oacc_pragmas; ++i)
+    if (oacc_pragmas[i].id == id)
+      {
+	*space = "acc";
+	*name = oacc_pragmas[i].name;
+	return;
+      }
 
   for (i = 0; i < n_omp_pragmas; ++i)
     if (omp_pragmas[i].id == id)
@@ -1383,6 +1413,17 @@ c_invoke_pragma_handler (unsigned int id)
 void
 init_pragma (void)
 {
+  if (flag_openacc)
+    {
+      const int n_oacc_pragmas
+	= sizeof (oacc_pragmas) / sizeof (*oacc_pragmas);
+      int i;
+
+      for (i = 0; i < n_oacc_pragmas; ++i)
+	cpp_register_deferred_pragma (parse_in, "acc", oacc_pragmas[i].name,
+				      oacc_pragmas[i].id, true, true);
+    }
+
   if (flag_openmp)
     {
       const int n_omp_pragmas = sizeof (omp_pragmas) / sizeof (*omp_pragmas);

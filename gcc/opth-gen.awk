@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2014 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2015 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -284,6 +284,9 @@ print "";
 print "/* Print optimization variables from a structure.  */";
 print "extern void cl_optimization_print (FILE *, int, struct cl_optimization *);";
 print "";
+print "/* Print different optimization variables from structures provided as arguments.  */";
+print "extern void cl_optimization_print_diff (FILE *, int, cl_optimization *ptr1, cl_optimization *ptr2);";
+print "";
 print "/* Save selected option variables into a structure.  */"
 print "extern void cl_target_option_save (struct cl_target_option *, struct gcc_options *);";
 print "";
@@ -292,6 +295,9 @@ print "extern void cl_target_option_restore (struct gcc_options *, struct cl_tar
 print "";
 print "/* Print target option variables from a structure.  */";
 print "extern void cl_target_option_print (FILE *, int, struct cl_target_option *);";
+print "";
+print "/* Print different target option variables from structures provided as arguments.  */";
+print "extern void cl_target_option_print_diff (FILE *, int, cl_target_option *ptr1, cl_target_option *ptr2);";
 print "";
 print "/* Compare two target option variables from a structure.  */";
 print "extern bool cl_target_option_eq (const struct cl_target_option *, const struct cl_target_option *);";
@@ -488,7 +494,7 @@ print "  OPT_SPECIAL_program_name,"
 print "  OPT_SPECIAL_input_file"
 print "};"
 print ""
-print "#ifdef GCC_C_COMMON_H"
+print "#ifdef GCC_C_COMMON_C"
 print "/* Mapping from cpp message reasons to the options that enable them.  */"
 print "#include <cpplib.h>"
 print "struct cpp_reason_option_codes_t"

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,6 +66,10 @@ package System.Val_Uns is
    --  Note: if Str is empty, i.e. if Max is less than Ptr, then this is a
    --  special case of an all-blank string, and Ptr is unchanged, and hence
    --  is greater than Max as required in this case.
+   --
+   --  Note: this routine should not be called with Str'Last = Positive'Last.
+   --  If this occurs Program_Error is raised with a message noting that this
+   --  case is not supported. Most such cases are eliminated by the caller.
 
    function Scan_Unsigned
      (Str : String;
@@ -73,6 +77,7 @@ package System.Val_Uns is
       Max : Integer) return System.Unsigned_Types.Unsigned;
    --  Same as Scan_Raw_Unsigned, except scans optional leading
    --  blanks, and an optional leading plus sign.
+   --
    --  Note: if a minus sign is present, Constraint_Error will be raised.
    --  Note: trailing blanks are not scanned.
 

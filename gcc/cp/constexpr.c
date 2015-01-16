@@ -2,7 +2,7 @@
    constexpr functions.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2014 Free Software Foundation, Inc.
+   Copyright (C) 1998-2015 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -23,6 +23,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "varasm.h"
 #include "cp-tree.h"
@@ -1166,6 +1176,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       {
       case IFN_UBSAN_NULL:
       case IFN_UBSAN_BOUNDS:
+      case IFN_UBSAN_VPTR:
 	return void_node;
       default:
 	if (!ctx->quiet)
@@ -1376,6 +1387,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		   value by evaluating *this, but we don't bother; there's
 		   no need to put such a call in the hash table.  */
 		result = lval ? ctx->object : ctx->ctor;
+	      else if (VOID_TYPE_P (TREE_TYPE (res)))
+		result = void_node;
 	      else
 		{
 		  result = *ctx->values->get (slot ? slot : res);
@@ -1604,10 +1617,15 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
   tree lhs, rhs;
   lhs = cxx_eval_constant_expression (ctx, orig_lhs, /*lval*/false,
 				      non_constant_p, overflow_p);
-  VERIFY_CONSTANT (lhs);
+  /* Don't VERIFY_CONSTANT if this might be dealing with a pointer to
+     a local array in a constexpr function.  */
+  bool ptr = POINTER_TYPE_P (TREE_TYPE (lhs));
+  if (!ptr)
+    VERIFY_CONSTANT (lhs);
   rhs = cxx_eval_constant_expression (ctx, orig_rhs, /*lval*/false,
 				      non_constant_p, overflow_p);
-  VERIFY_CONSTANT (rhs);
+  if (!ptr)
+    VERIFY_CONSTANT (rhs);
 
   location_t loc = EXPR_LOCATION (t);
   enum tree_code code = TREE_CODE (t);
@@ -1622,7 +1640,8 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
     }
   else if (cxx_eval_check_shift_p (loc, ctx, code, type, lhs, rhs))
     *non_constant_p = true;
-  VERIFY_CONSTANT (r);
+  if (!ptr)
+    VERIFY_CONSTANT (r);
   return r;
 }
 
@@ -2692,7 +2711,11 @@ cxx_eval_increment_expression (const constexpr_ctx *ctx, tree t,
   tree val = rvalue (op);
   val = cxx_eval_constant_expression (ctx, val, false,
 				      non_constant_p, overflow_p);
-  VERIFY_CONSTANT (val);
+  /* Don't VERIFY_CONSTANT if this might be dealing with a pointer to
+     a local array in a constexpr function.  */
+  bool ptr = POINTER_TYPE_P (TREE_TYPE (val));
+  if (!ptr)
+    VERIFY_CONSTANT (val);
 
   /* The modified value.  */
   bool inc = (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR);
@@ -2707,7 +2730,8 @@ cxx_eval_increment_expression (const constexpr_ctx *ctx, tree t,
     }
   else
     mod = fold_build2 (inc ? PLUS_EXPR : MINUS_EXPR, type, val, offset);
-  VERIFY_CONSTANT (mod);
+  if (!ptr)
+    VERIFY_CONSTANT (mod);
 
   /* Storing the modified value.  */
   tree store = build2 (MODIFY_EXPR, type, op, mod);
@@ -3797,6 +3821,19 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 
 	if (fun == NULL_TREE)
 	  {
+	    if (TREE_CODE (t) == CALL_EXPR
+		&& CALL_EXPR_FN (t) == NULL_TREE)
+	      switch (CALL_EXPR_IFN (t))
+		{
+		/* These should be ignored, they are optimized away from
+		   constexpr functions.  */
+		case IFN_UBSAN_NULL:
+		case IFN_UBSAN_BOUNDS:
+		case IFN_UBSAN_VPTR:
+		  return true;
+		default:
+		  break;
+		}
 	    /* fold_call_expr can't do anything with IFN calls.  */
 	    if (flags & tf_error)
 	      error_at (EXPR_LOC_OR_LOC (t, input_location),
@@ -3858,7 +3895,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
         for (; i < nargs; ++i)
           {
             tree x = get_nth_callarg (t, i);
-	    if (!RECUR (x, rval))
+	    /* In a template, reference arguments haven't been converted to
+	       REFERENCE_TYPE and we might not even know if the parameter
+	       is a reference, so accept lvalue constants too.  */
+	    bool rv = processing_template_decl ? any : rval;
+	    if (!RECUR (x, rv))
 	      return false;
           }
         return true;
@@ -3882,7 +3923,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	      || !CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (t))
 	      || !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (t))
 	  && !var_in_constexpr_fn (t)
-	  && !dependent_type_p (TREE_TYPE (t)))
+	  && !type_dependent_expression_p (t))
         {
           if (flags & tf_error)
             non_const_var_error (t);

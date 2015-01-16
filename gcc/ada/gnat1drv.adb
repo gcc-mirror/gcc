@@ -36,6 +36,7 @@ with Fmap;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Frontend;
+with Ghost;
 with Gnatvsn;  use Gnatvsn;
 with Inline;
 with Lib;      use Lib;
@@ -181,6 +182,12 @@ procedure Gnat1drv is
       --  Tune settings for optimal SCIL generation in CodePeer mode
 
       if CodePeer_Mode then
+
+         --  Turn off gnatprove mode (which can be set via e.g. -gnatd.F), not
+         --  compatible with CodePeer mode.
+
+         GNATprove_Mode := False;
+         Debug_Flag_Dot_FF := False;
 
          --  Turn off inlining, confuses CodePeer output and gains nothing
 
@@ -857,7 +864,6 @@ begin
       Lib.Xref.Initialize;
       Scan_Compiler_Arguments;
       Osint.Add_Default_Search_Dirs;
-
       Atree.Initialize;
       Nlists.Initialize;
       Sinput.Initialize;
@@ -870,6 +876,7 @@ begin
       SCOs.Initialize;
       Snames.Initialize;
       Stringt.Initialize;
+      Ghost.Initialize;
       Inline.Initialize;
       Par_SCO.Initialize;
       Sem_Ch8.Initialize;
@@ -1273,17 +1280,25 @@ begin
          Write_ALI (Object => True);
       end if;
 
+      --  Some back ends (for instance Gigi) are known to rely on SCOs for code
+      --  generation. Make sure they are available.
+
+      if Generate_SCO then
+         Par_SCO.SCO_Record_Filtered;
+      end if;
+
       --  Back end needs to explicitly unlock tables it needs to touch
 
       Atree.Lock;
       Elists.Lock;
       Fname.UF.Lock;
+      Ghost.Lock;
       Inline.Lock;
       Lib.Lock;
+      Namet.Lock;
       Nlists.Lock;
       Sem.Lock;
       Sinput.Lock;
-      Namet.Lock;
       Stringt.Lock;
 
       --  Here we call the back end to generate the output code

@@ -1,6 +1,6 @@
 /* Check reciprocal estimate functions for accuracy.  */
 
-#ifdef _ARCH_PPC64
+#ifdef __LP64__
 typedef unsigned long uns64_t;
 #define UNUM64(x) x ## L
 

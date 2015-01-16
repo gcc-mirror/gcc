@@ -1,5 +1,5 @@
 /* Language-independent diagnostic subroutines for the GNU Compiler Collection
-   Copyright (C) 1999-2014 Free Software Foundation, Inc.
+   Copyright (C) 1999-2015 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -70,7 +70,7 @@ build_message_string (const char *msg, ...)
   va_list ap;
 
   va_start (ap, msg);
-  vasprintf (&str, msg, ap);
+  str = xvasprintf (msg, ap);
   va_end (ap);
 
   return str;

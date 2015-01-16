@@ -44,6 +44,12 @@
 #include <stdlib.h>
 #endif
 
+#if defined (__APPLE__) && !defined (__arm__)
+/* On Darwin, _NSGetEnviron must be used for shared libraries; but it is not
+   available on iOS.  */
+#include <crt_externs.h>
+#endif
+
 #if defined (__vxworks)
   #if defined (__RTP__)
     /* On VxWorks 6 Real-Time process mode, environ is defined in unistd.h.  */
@@ -212,6 +218,8 @@ __gnat_environ (void)
 #elif ! (defined (__vxworks))
   extern char **environ;
   return environ;
+#elif defined (__APPLE__) && !defined (__arm__)
+  return *_NSGetEnviron ();
 #else
   return environ;
 #endif

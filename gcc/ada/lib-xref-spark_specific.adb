@@ -889,10 +889,18 @@ package body SPARK_Specific is
             D2 := D1;
          end if;
 
-         Add_SPARK_File
-           (Ubody => Sdep_Table (D1),
-            Uspec => Sdep_Table (D2),
-            Dspec => D2);
+         --  Some files do not correspond to Ada units, and as such present no
+         --  interest for SPARK cross references. Skip these files, as printing
+         --  their name may require printing the full name with spaces, which
+         --  is not handled in the code doing I/O of SPARK cross references.
+
+         if Present (Cunit_Entity (Sdep_Table (D1))) then
+            Add_SPARK_File
+              (Ubody => Sdep_Table (D1),
+               Uspec => Sdep_Table (D2),
+               Dspec => D2);
+         end if;
+
          D1 := D2 + 1;
       end loop;
 

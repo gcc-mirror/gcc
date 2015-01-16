@@ -44,8 +44,44 @@ with Table;
 
 with GNAT.HTable;      use GNAT.HTable;
 with GNAT.Heap_Sort_G;
+with GNAT.Table;
 
 package body Par_SCO is
+
+   --------------------------
+   -- First-pass SCO table --
+   --------------------------
+
+   --  The Short_Circuit_And_Or pragma enables one to use AND and OR operators
+   --  in source code while the ones used with booleans will be interpreted as
+   --  their short circuit alternatives (AND THEN and OR ELSE). Thus, the true
+   --  meaning of these operators is known only after the semantic analysis.
+
+   --  However, decision SCOs include short circuit operators only. The SCO
+   --  information generation pass must be done before expansion, hence before
+   --  the semantic analysis. Because of this, the SCO information generation
+   --  is done in two passes.
+
+   --  The first one (SCO_Record_Raw, before semantic analysis) completes the
+   --  SCO_Raw_Table assuming all AND/OR operators are short circuit ones.
+   --  Then, the semantic analysis determines which operators are promoted to
+   --  short circuit ones. Finally, the second pass (SCO_Record_Filtered)
+   --  translates the SCO_Raw_Table to SCO_Table, taking care of removing the
+   --  remaining AND/OR operators and of adjusting decisions accordingly
+   --  (splitting decisions, removing empty ones, etc.).
+
+   type SCO_Generation_State_Type is (None, Raw, Filtered);
+   SCO_Generation_State : SCO_Generation_State_Type := None;
+   --  Keep track of the SCO generation state: this will prevent us from
+   --  running some steps multiple times (the second pass has to be started
+   --  from multiple places).
+
+   package SCO_Raw_Table is new GNAT.Table (
+     Table_Component_Type => SCO_Table_Entry,
+     Table_Index_Type     => Nat,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 500,
+     Table_Increment      => 300);
 
    -----------------------
    -- Unit Number Table --
@@ -67,14 +103,15 @@ package body Par_SCO is
      Table_Increment      => 200,
      Table_Name           => "SCO_Unit_Number_Entry");
 
-   ---------------------------------
-   -- Condition/Pragma Hash Table --
-   ---------------------------------
+   ------------------------------------------
+   -- Condition/Operator/Pragma Hash Table --
+   ------------------------------------------
 
    --  We need to be able to get to conditions quickly for handling the calls
    --  to Set_SCO_Condition efficiently, and similarly to get to pragmas to
-   --  handle calls to Set_SCO_Pragma_Enabled. For this purpose we identify the
-   --  conditions and pragmas in the table by their starting sloc, and use this
+   --  handle calls to Set_SCO_Pragma_Enabled (the same holds for operators and
+   --  Set_SCO_Logical_Operator). For this purpose we identify the conditions,
+   --  operators and pragmas in the table by their starting sloc, and use this
    --  hash table to map from these sloc values to SCO_Table indexes.
 
    type Header_Num is new Integer range 0 .. 996;
@@ -86,7 +123,10 @@ package body Par_SCO is
    function Equal (F1, F2 : Source_Ptr) return Boolean;
    --  Function to test two keys for equality
 
-   package Condition_Pragma_Hash_Table is new Simple_HTable
+   function "<" (S1, S2 : Source_Location) return Boolean;
+   --  Function to test for source locations order
+
+   package SCO_Raw_Hash_Table is new Simple_HTable
      (Header_Num, Int, 0, Source_Ptr, Hash, Equal);
    --  The actual hash table
 
@@ -98,12 +138,20 @@ package body Par_SCO is
    --  N is the node for a subexpression. Returns True if the subexpression
    --  contains a nested decision (i.e. either is a logical operator, or
    --  contains a logical operator in its subtree).
+   --
+   --  This must be used in the first pass (SCO_Record_Raw) only: here AND/OR
+   --  operators are considered as short circuit, just in case the
+   --  Short_Circuit_And_Or pragma is used: only real short circuit operations
+   --  will be kept in the secord pass.
 
-   function Is_Logical_Operator (N : Node_Id) return Boolean;
+   type Tristate is (False, True, Unknown);
+
+   function Is_Logical_Operator (N : Node_Id) return Tristate;
    --  N is the node for a subexpression. This procedure determines whether N
-   --  a logical operator (including short circuit conditions, but excluding
-   --  OR and AND) and returns True if so. Note that in cases where True is
-   --  returned, callers assume Nkind (N) in N_Op.
+   --  is a logical operator: True for short circuit conditions, Unknown for OR
+   --  and AND (the Short_Circuit_And_Or pragma may be used) and False
+   --  otherwise. Note that in cases where True is returned, callers assume
+   --  Nkind (N) in N_Op.
 
    function To_Source_Location (S : Source_Ptr) return Source_Location;
    --  Converts Source_Ptr value to Source_Location (line/col) format
@@ -125,7 +173,7 @@ package body Par_SCO is
       Pragma_Sloc : Source_Ptr);
    --  Calls above procedure for each element of the list L
 
-   procedure Set_Table_Entry
+   procedure Set_Raw_Table_Entry
      (C1                 : Character;
       C2                 : Character;
       From               : Source_Ptr;
@@ -133,7 +181,7 @@ package body Par_SCO is
       Last               : Boolean;
       Pragma_Sloc        : Source_Ptr := No_Location;
       Pragma_Aspect_Name : Name_Id    := No_Name);
-   --  Append an entry to SCO_Table with fields set as per arguments
+   --  Append an entry to SCO_Raw_Table with fields set as per arguments
 
    type Dominant_Info is record
       K : Character;
@@ -192,6 +240,56 @@ package body Par_SCO is
    ----------
 
    procedure dsco is
+      procedure Dump_Entry (Index : Nat; T : SCO_Table_Entry);
+      --  Dump a SCO table entry
+
+      ----------------
+      -- Dump_Entry --
+      ----------------
+
+      procedure Dump_Entry (Index : Nat; T : SCO_Table_Entry) is
+      begin
+         Write_Str  ("  ");
+         Write_Int  (Index);
+         Write_Char ('.');
+
+         if T.C1 /= ' ' then
+            Write_Str  ("  C1 = '");
+            Write_Char (T.C1);
+            Write_Char (''');
+         end if;
+
+         if T.C2 /= ' ' then
+            Write_Str  ("  C2 = '");
+            Write_Char (T.C2);
+            Write_Char (''');
+         end if;
+
+         if T.From /= No_Source_Location then
+            Write_Str ("  From = ");
+            Write_Int (Int (T.From.Line));
+            Write_Char (':');
+            Write_Int (Int (T.From.Col));
+         end if;
+
+         if T.To /= No_Source_Location then
+            Write_Str ("  To = ");
+            Write_Int (Int (T.To.Line));
+            Write_Char (':');
+            Write_Int (Int (T.To.Col));
+         end if;
+
+         if T.Last then
+            Write_Str ("  True");
+         else
+            Write_Str ("  False");
+         end if;
+
+         Write_Eol;
+      end Dump_Entry;
+
+   --  Start of processing for dsco
+
    begin
       --  Dump SCO unit table
 
@@ -205,7 +303,7 @@ package body Par_SCO is
          begin
             Write_Str ("  ");
             Write_Int (Int (Index));
-            Write_Str (".  Dep_Num = ");
+            Write_Str ("  Dep_Num = ");
             Write_Int (Int (UTE.Dep_Num));
             Write_Str ("  From = ");
             Write_Int (Int (UTE.From));
@@ -239,55 +337,28 @@ package body Par_SCO is
          end loop;
       end if;
 
+      --  Dump SCO raw-table
+
+      Write_Eol;
+      Write_Line ("SCO Raw Table");
+      Write_Line ("---------");
+
+      if SCO_Generation_State = Filtered then
+         Write_Line ("Empty (free'd after second pass)");
+      else
+         for Index in 1 .. SCO_Raw_Table.Last loop
+            Dump_Entry (Index, SCO_Raw_Table.Table (Index));
+         end loop;
+      end if;
+
       --  Dump SCO table itself
 
       Write_Eol;
-      Write_Line ("SCO Table");
+      Write_Line ("SCO Filtered Table");
       Write_Line ("---------");
 
       for Index in 1 .. SCO_Table.Last loop
-         declare
-            T : SCO_Table_Entry renames SCO_Table.Table (Index);
-
-         begin
-            Write_Str  ("  ");
-            Write_Int  (Index);
-            Write_Char ('.');
-
-            if T.C1 /= ' ' then
-               Write_Str  ("  C1 = '");
-               Write_Char (T.C1);
-               Write_Char (''');
-            end if;
-
-            if T.C2 /= ' ' then
-               Write_Str  ("  C2 = '");
-               Write_Char (T.C2);
-               Write_Char (''');
-            end if;
-
-            if T.From /= No_Source_Location then
-               Write_Str ("  From = ");
-               Write_Int (Int (T.From.Line));
-               Write_Char (':');
-               Write_Int (Int (T.From.Col));
-            end if;
-
-            if T.To /= No_Source_Location then
-               Write_Str ("  To = ");
-               Write_Int (Int (T.To.Line));
-               Write_Char (':');
-               Write_Int (Int (T.To.Col));
-            end if;
-
-            if T.Last then
-               Write_Str ("  True");
-            else
-               Write_Str ("  False");
-            end if;
-
-            Write_Eol;
-         end;
+         Dump_Entry (Index, SCO_Table.Table (Index));
       end loop;
    end dsco;
 
@@ -299,6 +370,16 @@ package body Par_SCO is
    begin
       return F1 = F2;
    end Equal;
+
+   -------
+   -- < --
+   -------
+
+   function "<" (S1, S2 : Source_Location) return Boolean is
+   begin
+      return S1.Line < S2.Line
+        or else (S1.Line = S2.Line and then S1.Col < S2.Col);
+   end "<";
 
    ------------------
    -- Has_Decision --
@@ -317,7 +398,14 @@ package body Par_SCO is
 
       function Check_Node (N : Node_Id) return Traverse_Result is
       begin
-         if Is_Logical_Operator (N) or else Nkind (N) = N_If_Expression then
+         --  If we are not sure this is a logical operator (AND and OR may be
+         --  turned into logical operators with the Short_Circuit_And_Or
+         --  pragma), assume it is. Putative decisions will be discarded if
+         --  needed in the secord pass.
+
+         if Is_Logical_Operator (N) /= False
+            or else Nkind (N) = N_If_Expression
+         then
             return Abandon;
          else
             return OK;
@@ -359,9 +447,15 @@ package body Par_SCO is
    -- Is_Logical_Operator --
    -------------------------
 
-   function Is_Logical_Operator (N : Node_Id) return Boolean is
+   function Is_Logical_Operator (N : Node_Id) return Tristate is
    begin
-      return Nkind_In (N, N_Op_Not, N_And_Then, N_Or_Else);
+      if Nkind_In (N, N_Op_Not, N_And_Then, N_Or_Else) then
+         return True;
+      elsif Nkind_In (N, N_Op_And, N_Op_Or) then
+         return Unknown;
+      else
+         return False;
+      end if;
    end Is_Logical_Operator;
 
    -----------------------
@@ -441,37 +535,53 @@ package body Par_SCO is
       -----------------------------
 
       procedure Output_Decision_Operand (N : Node_Id) is
-         C : Character;
-         L : Node_Id;
+         C1, C2 : Character;
+         --  C1 holds a character that identifies the operation while C2
+         --  indicates whether we are sure (' ') or not ('?') this operation
+         --  belongs to the decision. '?' entries will be filtered out in the
+         --  second (SCO_Record_Filtered) pass.
+
+         L      : Node_Id;
+         T      : Tristate;
 
       begin
          if No (N) then
             return;
+         end if;
+
+         T := Is_Logical_Operator (N);
 
          --  Logical operator
 
-         elsif Is_Logical_Operator (N) then
+         if T /= False then
             if Nkind (N) = N_Op_Not then
-               C := '!';
+               C1 := '!';
                L := Empty;
 
             else
                L := Left_Opnd (N);
 
                if Nkind_In (N, N_Op_Or, N_Or_Else) then
-                  C := '|';
-
+                  C1 := '|';
                else pragma Assert (Nkind_In (N, N_Op_And, N_And_Then));
-                  C := '&';
+                  C1 := '&';
                end if;
             end if;
 
-            Set_Table_Entry
-              (C1   => C,
-               C2   => ' ',
+            if T = True then
+               C2 := ' ';
+            else
+               C2 := '?';
+            end if;
+
+            Set_Raw_Table_Entry
+              (C1   => C1,
+               C2   => C2,
                From => Sloc (N),
                To   => No_Location,
                Last => False);
+
+            SCO_Raw_Hash_Table.Set (Sloc (N), SCO_Raw_Table.Last);
 
             Output_Decision_Operand (L);
             Output_Decision_Operand (Right_Opnd (N));
@@ -492,13 +602,13 @@ package body Par_SCO is
          LSloc : Source_Ptr;
       begin
          Sloc_Range (N, FSloc, LSloc);
-         Set_Table_Entry
+         Set_Raw_Table_Entry
            (C1   => ' ',
             C2   => 'c',
             From => FSloc,
             To   => LSloc,
             Last => False);
-         Condition_Pragma_Hash_Table.Set (FSloc, SCO_Table.Last);
+         SCO_Raw_Hash_Table.Set (FSloc, SCO_Raw_Table.Last);
       end Output_Element;
 
       -------------------
@@ -561,7 +671,7 @@ package body Par_SCO is
                raise Program_Error;
          end case;
 
-         Set_Table_Entry
+         Set_Raw_Table_Entry
            (C1                 => T,
             C2                 => ' ',
             From               => Loc,
@@ -574,7 +684,7 @@ package body Par_SCO is
          --  pragma, enter a hash table entry now.
 
          if T = 'a' then
-            Condition_Pragma_Hash_Table.Set (Loc, SCO_Table.Last);
+            SCO_Raw_Hash_Table.Set (Loc, SCO_Raw_Table.Last);
          end if;
       end Output_Header;
 
@@ -584,7 +694,7 @@ package body Par_SCO is
 
       procedure Process_Decision_Operand (N : Node_Id) is
       begin
-         if Is_Logical_Operator (N) then
+         if Is_Logical_Operator (N) /= False then
             if Nkind (N) /= N_Op_Not then
                Process_Decision_Operand (Left_Opnd (N));
                X_Not_Decision := False;
@@ -608,7 +718,7 @@ package body Par_SCO is
             --  Logical operators, output table entries and then process
             --  operands recursively to deal with nested conditions.
 
-            when N_And_Then | N_Or_Else  | N_Op_Not =>
+            when N_And_Then | N_Or_Else | N_Op_Not | N_Op_And | N_Op_Or =>
                declare
                   T : Character;
 
@@ -625,7 +735,7 @@ package body Par_SCO is
                   --  Output header for sequence
 
                   X_Not_Decision := T = 'X' and then Nkind (N) = N_Op_Not;
-                  Mark := SCO_Table.Last;
+                  Mark := SCO_Raw_Table.Last;
                   Output_Header (T);
 
                   --  Output the decision
@@ -637,12 +747,12 @@ package body Par_SCO is
                   --  it, so delete it.
 
                   if X_Not_Decision then
-                     SCO_Table.Set_Last (Mark);
+                     SCO_Raw_Table.Set_Last (Mark);
 
                   --  Otherwise, set Last in last table entry to mark end
 
                   else
-                     SCO_Table.Table (SCO_Table.Last).Last := True;
+                     SCO_Raw_Table.Table (SCO_Raw_Table.Last).Last := True;
                   end if;
 
                   --  Process any embedded decisions
@@ -696,14 +806,14 @@ package body Par_SCO is
       --  or short circuit form) appearing as the operand of an IF, WHILE,
       --  EXIT WHEN, or special PRAGMA construct.
 
-      if T /= 'X' and then not Is_Logical_Operator (N) then
+      if T /= 'X' and then Is_Logical_Operator (N) = False then
          Output_Header (T);
          Output_Element (N);
 
          --  Change Last in last table entry to True to mark end of
          --  sequence, which is this case is only one element long.
 
-         SCO_Table.Table (SCO_Table.Last).Last := True;
+         SCO_Raw_Table.Table (SCO_Raw_Table.Last).Last := True;
       end if;
 
       Traverse (N);
@@ -767,10 +877,9 @@ package body Par_SCO is
    procedure SCO_Output is
       procedure Populate_SCO_Instance_Table is
         new Sinput.Iterate_On_Instances (Record_Instance);
-
-      SCO_Index : Nat;
-
    begin
+      pragma Assert (SCO_Generation_State = Filtered);
+
       if Debug_Flag_Dot_OO then
          dsco;
       end if;
@@ -835,25 +944,6 @@ package body Par_SCO is
          end;
       end loop;
 
-      --  Stamp out SCO entries for decisions in disabled constructs (pragmas
-      --  or aspects).
-
-      SCO_Index := 1;
-      while SCO_Index <= SCO_Table.Last loop
-         if Is_Decision (SCO_Table.Table (SCO_Index).C1)
-           and then SCO_Pragma_Disabled
-                      (SCO_Table.Table (SCO_Index).Pragma_Sloc)
-         then
-            loop
-               SCO_Table.Table (SCO_Index).C1 := ASCII.NUL;
-               exit when SCO_Table.Table (SCO_Index).Last;
-               SCO_Index := SCO_Index + 1;
-            end loop;
-         end if;
-
-         SCO_Index := SCO_Index + 1;
-      end loop;
-
       --  Now the tables are all setup for output to the ALI file
 
       Write_SCOs_To_ALI_File;
@@ -871,7 +961,7 @@ package body Par_SCO is
          return False;
       end if;
 
-      Index := Condition_Pragma_Hash_Table.Get (Loc);
+      Index := SCO_Raw_Hash_Table.Get (Loc);
 
       --  The test here for zero is to deal with possible previous errors, and
       --  for the case of pragma statement SCOs, for which we always set the
@@ -880,7 +970,8 @@ package body Par_SCO is
 
       if Index /= 0 then
          declare
-            T : SCO_Table_Entry renames SCO_Table.Table (Index);
+            T : SCO_Table_Entry renames SCO_Raw_Table.Table (Index);
+
          begin
             case T.C1 is
                when 'S' =>
@@ -913,11 +1004,11 @@ package body Par_SCO is
       end if;
    end SCO_Pragma_Disabled;
 
-   ----------------
-   -- SCO_Record --
-   ----------------
+   --------------------
+   -- SCO_Record_Raw --
+   --------------------
 
-   procedure SCO_Record (U : Unit_Number_Type) is
+   procedure SCO_Record_Raw (U : Unit_Number_Type) is
       Lu   : Node_Id;
       From : Nat;
 
@@ -942,9 +1033,15 @@ package body Par_SCO is
          pragma Assert (No (Actions (ADN)));
       end Traverse_Aux_Decls;
 
-   --  Start of processing for SCO_Record
+   --  Start of processing for SCO_Record_Raw
 
    begin
+      --  It is legitimate to run this pass multiple times (once per unit) so
+      --  run it even if it was already run before.
+
+      pragma Assert (SCO_Generation_State in None .. Raw);
+      SCO_Generation_State := Raw;
+
       --  Ignore call if not generating code and generating SCO's
 
       if not (Generate_SCO and then Operating_Mode = Generate_Code) then
@@ -961,7 +1058,7 @@ package body Par_SCO is
 
       --  Otherwise record starting entry
 
-      From := SCO_Table.Last + 1;
+      From := SCO_Raw_Table.Last + 1;
 
       --  Get Unit (checking case of subunit)
 
@@ -1004,16 +1101,21 @@ package body Par_SCO is
          File_Name  => null,
          File_Index => Get_Source_File_Index (Sloc (Lu)),
          From       => From,
-         To         => SCO_Table.Last));
+         To         => SCO_Raw_Table.Last));
 
       SCO_Unit_Number_Table.Append (U);
-   end SCO_Record;
+   end SCO_Record_Raw;
 
    -----------------------
    -- Set_SCO_Condition --
    -----------------------
 
    procedure Set_SCO_Condition (Cond : Node_Id; Val : Boolean) is
+
+      --  SCO annotations are not processed after the filtering pass
+
+      pragma Assert (not Generate_SCO or else SCO_Generation_State = Raw);
+
       Orig  : constant Node_Id := Original_Node (Cond);
       Index : Nat;
       Start : Source_Ptr;
@@ -1023,7 +1125,7 @@ package body Par_SCO is
                                   (False => 'f', True => 't');
    begin
       Sloc_Range (Orig, Start, Dummy);
-      Index := Condition_Pragma_Hash_Table.Get (Start);
+      Index := SCO_Raw_Hash_Table.Get (Start);
 
       --  Index can be zero for boolean expressions that do not have SCOs
       --  (simple decisions outside of a control flow structure), or in case
@@ -1033,16 +1135,45 @@ package body Par_SCO is
          return;
 
       else
-         pragma Assert (SCO_Table.Table (Index).C1 = ' ');
-         SCO_Table.Table (Index).C2 := Constant_Condition_Code (Val);
+         pragma Assert (SCO_Raw_Table.Table (Index).C1 = ' ');
+         SCO_Raw_Table.Table (Index).C2 := Constant_Condition_Code (Val);
       end if;
    end Set_SCO_Condition;
+
+   ------------------------------
+   -- Set_SCO_Logical_Operator --
+   ------------------------------
+
+   procedure Set_SCO_Logical_Operator (Op : Node_Id) is
+
+      --  SCO annotations are not processed after the filtering pass
+
+      pragma Assert (not Generate_SCO or else SCO_Generation_State = Raw);
+
+      Orig      : constant Node_Id := Original_Node (Op);
+      Orig_Sloc : constant Source_Ptr := Sloc (Orig);
+      Index     : constant Nat := SCO_Raw_Hash_Table.Get (Orig_Sloc);
+
+   begin
+      --  All (putative) logical operators are supposed to have their own entry
+      --  in the SCOs table. However, the semantic analysis may invoke this
+      --  subprogram with nodes that are out of the SCO generation scope.
+
+      if Index /= 0 then
+         SCO_Raw_Table.Table (Index).C2 := ' ';
+      end if;
+   end Set_SCO_Logical_Operator;
 
    ----------------------------
    -- Set_SCO_Pragma_Enabled --
    ----------------------------
 
    procedure Set_SCO_Pragma_Enabled (Loc : Source_Ptr) is
+
+      --  SCO annotations are not processed after the filtering pass
+
+      pragma Assert (not Generate_SCO or else SCO_Generation_State = Raw);
+
       Index : Nat;
 
    begin
@@ -1060,7 +1191,7 @@ package body Par_SCO is
       --  generic case, the call to this procedure is made on a copy of the
       --  original node, so we can't use the Node_Id value.
 
-      Index := Condition_Pragma_Hash_Table.Get (Loc);
+      Index := SCO_Raw_Hash_Table.Get (Loc);
 
       --  A zero index here indicates that semantic analysis found an
       --  activated pragma at Loc which does not have a corresponding pragma
@@ -1074,7 +1205,7 @@ package body Par_SCO is
 
       else
          declare
-            T : SCO_Table_Entry renames SCO_Table.Table (Index);
+            T : SCO_Table_Entry renames SCO_Raw_Table.Table (Index);
 
          begin
             --  Note: may be called multiple times for the same sloc, so
@@ -1103,11 +1234,11 @@ package body Par_SCO is
       end if;
    end Set_SCO_Pragma_Enabled;
 
-   ---------------------
-   -- Set_Table_Entry --
-   ---------------------
+   -------------------------
+   -- Set_Raw_Table_Entry --
+   -------------------------
 
-   procedure Set_Table_Entry
+   procedure Set_Raw_Table_Entry
      (C1                 : Character;
       C2                 : Character;
       From               : Source_Ptr;
@@ -1116,8 +1247,9 @@ package body Par_SCO is
       Pragma_Sloc        : Source_Ptr := No_Location;
       Pragma_Aspect_Name : Name_Id    := No_Name)
    is
+      pragma Assert (SCO_Generation_State = Raw);
    begin
-      SCO_Table.Append
+      SCO_Raw_Table.Append
         ((C1                 => C1,
           C2                 => C2,
           From               => To_Source_Location (From),
@@ -1125,7 +1257,7 @@ package body Par_SCO is
           Last               => Last,
           Pragma_Sloc        => Pragma_Sloc,
           Pragma_Aspect_Name => Pragma_Aspect_Name));
-   end Set_Table_Entry;
+   end Set_Raw_Table_Entry;
 
    ------------------------
    -- To_Source_Location --
@@ -1286,7 +1418,7 @@ package body Par_SCO is
                      if Current_Dominant.K /= 'E' then
                         To := No_Location;
                      end if;
-                     Set_Table_Entry
+                     Set_Raw_Table_Entry
                        (C1                 => '>',
                         C2                 => Current_Dominant.K,
                         From               => From,
@@ -1310,8 +1442,8 @@ package body Par_SCO is
 
                if SCE.Typ = 'p' then
                   Pragma_Sloc := SCE.From;
-                  Condition_Pragma_Hash_Table.Set
-                    (Pragma_Sloc, SCO_Table.Last + 1);
+                  SCO_Raw_Hash_Table.Set
+                    (Pragma_Sloc, SCO_Raw_Table.Last + 1);
                   Pragma_Aspect_Name := Pragma_Name (SCE.N);
                   pragma Assert (Pragma_Aspect_Name /= No_Name);
 
@@ -1320,7 +1452,7 @@ package body Par_SCO is
                   pragma Assert (Pragma_Aspect_Name /= No_Name);
                end if;
 
-               Set_Table_Entry
+               Set_Raw_Table_Entry
                  (C1                 => 'S',
                   C2                 => SCE.Typ,
                   From               => SCE.From,
@@ -2274,5 +2406,478 @@ package body Par_SCO is
         (N => Handled_Statement_Sequence (N),
          D => Dom_Info);
    end Traverse_Subprogram_Or_Task_Body;
+
+   -------------------------
+   -- SCO_Record_Filtered --
+   -------------------------
+
+   procedure SCO_Record_Filtered is
+      type Decision is record
+         Kind : Character;
+         --  Type of the SCO decision (see comments for SCO_Table_Entry.C1)
+
+         Sloc : Source_Location;
+
+         Top  : Nat;
+         --  Index in the SCO_Raw_Table for the root operator/condition for the
+         --  expression that controls the decision.
+      end record;
+      --  Decision descriptor: used to gather information about a candidate
+      --  SCO decision.
+
+      package Pending_Decisions is new Table.Table
+        (Table_Component_Type => Decision,
+         Table_Index_Type     => Nat,
+         Table_Low_Bound      => 1,
+         Table_Initial        => 1000,
+         Table_Increment      => 200,
+         Table_Name           => "Filter_Pending_Decisions");
+      --  Table used to hold decisions to process during the collection pass
+
+      function Is_Decision (Idx : Nat) return Boolean;
+      --  Return if the expression tree starting at Idx has adjacent nested
+      --  nodes that make a decision.
+
+      procedure Search_Nested_Decisions (Idx : in out Nat);
+      --  Collect decisions to add to the filtered SCO table starting at the
+      --  node at Idx in the SCO raw table. This node must not be part of an
+      --  already-processed decision. Set Idx to the first node index passed
+      --  the whole expression tree.
+
+      procedure Skip_Decision
+        (Idx                      : in out Nat;
+         Process_Nested_Decisions : Boolean);
+      --  Skip all the nodes that belong to the decision starting at Idx. If
+      --  Process_Nested_Decision, call Search_Nested_Decisions on the first
+      --  nested nodes that do not belong to the decision. Set Idx to the first
+      --  node index passed the whole expression tree.
+
+      procedure Collect_Decisions
+        (D    : Decision;
+         Next : out Nat);
+      --  Collect decisions to add to the filtered SCO table starting at the
+      --  D decision (including it and its nested operators/conditions). Set
+      --  Next to the first node index passed the whole decision.
+
+      procedure Compute_Range
+        (Idx  : in out Nat;
+         From : out Source_Location;
+         To   : out Source_Location);
+      --  Compute the source location range for the expression tree starting at
+      --  Idx in the SCO raw table. Store its bounds in From and To.
+
+      procedure Add_Expression_Tree (Idx : in out Nat);
+      --  Add SCO raw table entries for the decision controlling expression
+      --  tree starting at Idx to the filtered SCO table.
+
+      procedure Process_Pending_Decisions
+        (Original_Decision : SCO_Table_Entry);
+      --  Complete the filtered SCO table using collected decisions. Output
+      --  decisions inherit the pragma information from the original decision.
+
+      -----------------
+      -- Is_Decision --
+      -----------------
+
+      function Is_Decision (Idx : Nat) return Boolean is
+         Index : Nat := Idx;
+
+      begin
+         loop
+            declare
+               T : SCO_Table_Entry renames SCO_Raw_Table.Table (Index);
+
+            begin
+               case T.C1 is
+                  when ' ' =>
+                     return False;
+
+                  when '!' =>
+
+                     --  This is a decision iff the only operand of the NOT
+                     --  operator could be a standalone decision.
+
+                     Index := Idx + 1;
+
+                  when others =>
+
+                     --  This node is a logical operator (and thus could be a
+                     --  standalone decision) iff it is a short circuit
+                     --  operator.
+
+                     return T.C2 /= '?';
+
+               end case;
+            end;
+         end loop;
+      end Is_Decision;
+
+      -----------------------------
+      -- Search_Nested_Decisions --
+      -----------------------------
+
+      procedure Search_Nested_Decisions (Idx : in out Nat)
+      is
+      begin
+         loop
+            declare
+               T : SCO_Table_Entry renames SCO_Raw_Table.Table (Idx);
+
+            begin
+               case T.C1 is
+                  when ' ' =>
+                     Idx := Idx + 1;
+                     exit;
+
+                  when '!' =>
+                     Collect_Decisions
+                       ((Kind => 'X',
+                         Sloc => T.From,
+                         Top  => Idx),
+                        Idx);
+                     exit;
+
+                  when others =>
+                     if T.C2 = '?' then
+
+                        --  This in not a logical operator: start looking for
+                        --  nested decisions from here. Recurse over the left
+                        --  child and let the loop take care of the right one.
+
+                        Idx := Idx + 1;
+                        Search_Nested_Decisions (Idx);
+
+                     else
+                        --  We found a nested decision
+
+                        Collect_Decisions
+                          ((Kind => 'X',
+                            Sloc => T.From,
+                            Top  => Idx),
+                            Idx);
+                        exit;
+                     end if;
+               end case;
+            end;
+         end loop;
+      end Search_Nested_Decisions;
+
+      -------------------
+      -- Skip_Decision --
+      -------------------
+
+      procedure Skip_Decision
+        (Idx                      : in out Nat;
+         Process_Nested_Decisions : Boolean)
+      is
+      begin
+         loop
+            declare
+               T : SCO_Table_Entry renames SCO_Raw_Table.Table (Idx);
+
+            begin
+               Idx := Idx + 1;
+
+               case T.C1 is
+                  when ' ' =>
+                     exit;
+
+                  when '!' =>
+
+                     --  This NOT operator belongs to the outside decision:
+                     --  just skip it.
+
+                     null;
+
+                  when others =>
+                     if T.C2 = '?' and then Process_Nested_Decisions then
+
+                        --  This in not a logical operator: start looking for
+                        --  nested decisions from here. Recurse over the left
+                        --  child and let the loop take care of the right one.
+
+                        Search_Nested_Decisions (Idx);
+
+                     else
+                        --  This is a logical operator, so it belongs to the
+                        --  outside decision: skip its left child, then let the
+                        --  loop take care of the right one.
+
+                        Skip_Decision (Idx, Process_Nested_Decisions);
+                     end if;
+               end case;
+            end;
+         end loop;
+      end Skip_Decision;
+
+      -----------------------
+      -- Collect_Decisions --
+      -----------------------
+
+      procedure Collect_Decisions
+        (D    : Decision;
+         Next : out Nat)
+      is
+         Idx : Nat := D.Top;
+      begin
+         if D.Kind /= 'X' or else Is_Decision (D.Top) then
+            Pending_Decisions.Append (D);
+         end if;
+
+         Skip_Decision (Idx, True);
+         Next := Idx;
+      end Collect_Decisions;
+
+      -------------------
+      -- Compute_Range --
+      -------------------
+
+      procedure Compute_Range
+        (Idx  : in out Nat;
+         From : out Source_Location;
+         To   : out Source_Location)
+      is
+         Sloc_F, Sloc_T : Source_Location := No_Source_Location;
+
+         procedure Process_One;
+         --  Process one node of the tree, and recurse over children. Update
+         --  Idx during the traversal.
+
+         -----------------
+         -- Process_One --
+         -----------------
+
+         procedure Process_One is
+         begin
+            if Sloc_F = No_Source_Location
+                 or else
+               SCO_Raw_Table.Table (Idx).From < Sloc_F
+            then
+               Sloc_F := SCO_Raw_Table.Table (Idx).From;
+            end if;
+            if Sloc_T = No_Source_Location
+                 or else
+               Sloc_T < SCO_Raw_Table.Table (Idx).To
+            then
+               Sloc_T := SCO_Raw_Table.Table (Idx).To;
+            end if;
+
+            if SCO_Raw_Table.Table (Idx).C1 = ' ' then
+
+               --  This is a condition: nothing special to do
+
+               Idx := Idx + 1;
+
+            elsif SCO_Raw_Table.Table (Idx).C1 = '!' then
+
+               --  The "not" operator has only one operand
+
+               Idx := Idx + 1;
+               Process_One;
+
+            else
+               --  This is an AND THEN or OR ELSE logical operator: follow the
+               --  left, then the right operands.
+
+               Idx := Idx + 1;
+
+               Process_One;
+               Process_One;
+            end if;
+         end Process_One;
+
+      --  Start of processing for Compute_Range
+
+      begin
+         Process_One;
+         From := Sloc_F;
+         To := Sloc_T;
+      end Compute_Range;
+
+      -------------------------
+      -- Add_Expression_Tree --
+      -------------------------
+
+      procedure Add_Expression_Tree (Idx : in out Nat)
+      is
+         Node_Idx : constant Nat := Idx;
+         T        : SCO_Table_Entry renames SCO_Raw_Table.Table (Node_Idx);
+         From, To : Source_Location;
+
+      begin
+         case T.C1 is
+            when ' ' =>
+
+               --  This is a single condition. Add an entry for it and move on
+
+               SCO_Table.Append (T);
+               Idx := Idx + 1;
+
+            when '!' =>
+
+               --  This is a NOT operator: add an entry for it and browse its
+               --  only child.
+
+               SCO_Table.Append (T);
+               Idx := Idx + 1;
+               Add_Expression_Tree (Idx);
+
+            when others =>
+
+               --  This must be an AND/OR/AND THEN/OR ELSE operator
+
+               if T.C2 = '?' then
+
+                  --  This is not a short circuit operator: consider this one
+                  --  and all its children as a single condition.
+
+                  Compute_Range (Idx, From, To);
+                  SCO_Table.Append
+                    ((From               => From,
+                      To                 => To,
+                      C1                 => ' ',
+                      C2                 => 'c',
+                      Last               => False,
+                      Pragma_Sloc        => No_Location,
+                      Pragma_Aspect_Name => No_Name));
+
+               else
+                  --  This is a real short circuit operator: add an entry for
+                  --  it and browse its children.
+
+                  SCO_Table.Append (T);
+                  Idx := Idx + 1;
+                  Add_Expression_Tree (Idx);
+                  Add_Expression_Tree (Idx);
+               end if;
+         end case;
+      end Add_Expression_Tree;
+
+      -------------------------------
+      -- Process_Pending_Decisions --
+      -------------------------------
+
+      procedure Process_Pending_Decisions
+        (Original_Decision : SCO_Table_Entry)
+      is
+      begin
+         for Index in 1 .. Pending_Decisions.Last loop
+            declare
+               D   : Decision renames Pending_Decisions.Table (Index);
+               Idx : Nat := D.Top;
+
+            begin
+               --  Add a SCO table entry for the decision itself
+
+               pragma Assert (D.Kind /= ' ');
+
+               SCO_Table.Append
+                 ((To                 => No_Source_Location,
+                   From               => D.Sloc,
+                   C1                 => D.Kind,
+                   C2                 => ' ',
+                   Last               => False,
+                   Pragma_Sloc        => Original_Decision.Pragma_Sloc,
+                   Pragma_Aspect_Name =>
+                      Original_Decision.Pragma_Aspect_Name));
+
+               --  Then add ones for its nested operators/operands. Do not
+               --  forget to tag its *last* entry as such.
+
+               Add_Expression_Tree (Idx);
+               SCO_Table.Table (SCO_Table.Last).Last := True;
+            end;
+         end loop;
+
+         --  Clear the pending decisions list
+         Pending_Decisions.Set_Last (0);
+      end Process_Pending_Decisions;
+
+   --  Start of processing for SCO_Record_Filtered
+
+   begin
+      --  Filtering must happen only once: do nothing if it this pass was
+      --  already run.
+
+      if SCO_Generation_State = Filtered then
+         return;
+      else
+         pragma Assert (SCO_Generation_State = Raw);
+         SCO_Generation_State := Filtered;
+      end if;
+
+      --  Loop through all SCO entries under SCO units
+
+      for Unit_Idx in 1 .. SCO_Unit_Table.Last loop
+         declare
+            Unit : SCO_Unit_Table_Entry
+               renames SCO_Unit_Table.Table (Unit_Idx);
+
+            Idx : Nat := Unit.From;
+            --  Index of the current SCO raw table entry
+
+            New_From : constant Nat := SCO_Table.Last + 1;
+            --  After copying SCO enties of interest to the final table, we
+            --  will have to change the From/To indexes this unit targets.
+            --  This constant keeps track of the new From index.
+
+         begin
+            while Idx <= Unit.To loop
+               declare
+                  T : SCO_Table_Entry renames SCO_Raw_Table.Table (Idx);
+
+               begin
+                  case T.C1 is
+
+                     --  Decision (of any kind, including pragmas and aspects)
+
+                     when 'E' | 'G' | 'I' | 'W' | 'X' | 'P' | 'a' | 'A' =>
+                        if SCO_Pragma_Disabled (T.Pragma_Sloc) then
+
+                           --  Skip SCO entries for decisions in disabled
+                           --  constructs (pragmas or aspects).
+
+                           Idx := Idx + 1;
+                           Skip_Decision (Idx, False);
+
+                        else
+                           Collect_Decisions
+                             ((Kind => T.C1,
+                               Sloc => T.From,
+                               Top  => Idx + 1),
+                              Idx);
+                           Process_Pending_Decisions (T);
+                        end if;
+
+                     --  There is no translation/filtering to do for other kind
+                     --  of SCO items (statements, dominance markers, etc.).
+
+                     when '|' | '&' | '!' | ' ' =>
+
+                        --  SCO logical operators and conditions cannot exist
+                        --  on their own: they must be inside a decision (such
+                        --  entries must have been skipped by
+                        --  Collect_Decisions).
+
+                        raise Program_Error;
+
+                     when others =>
+                        SCO_Table.Append (T);
+                        Idx := Idx + 1;
+                  end case;
+               end;
+            end loop;
+
+            --  Now, update the SCO entry indexes in the unit entry
+
+            Unit.From := New_From;
+            Unit.To := SCO_Table.Last;
+         end;
+      end loop;
+
+      --  Then clear the raw table to free bytes
+
+      SCO_Raw_Table.Free;
+   end SCO_Record_Filtered;
 
 end Par_SCO;

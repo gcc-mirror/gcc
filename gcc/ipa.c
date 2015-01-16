@@ -1,5 +1,5 @@
 /* Basic IPA optimizations and utilities.
-   Copyright (C) 2003-2014 Free Software Foundation, Inc.
+   Copyright (C) 2003-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,7 +21,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "calls.h"
 #include "stringpool.h"
 #include "predict.h"
@@ -29,10 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-map.h"
 #include "is-a.h"
 #include "plugin-api.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -46,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "ipa-utils.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "tree-inline.h"
@@ -245,7 +253,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
                                target->order);
 	    }
 	  edge = edge->make_direct (target);
-	  if (inline_summary_vec)
+	  if (inline_summaries)
 	    inline_update_overall_summary (node);
 	  else if (edge->call_stmt)
 	    {
@@ -392,7 +400,6 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 		       n = n->next_sibling_clone)
 		    if (n->decl == DECL_ABSTRACT_ORIGIN (node->decl))
 		      n->used_as_abstract_origin = true;
-	          enqueue_node (origin_node, &first, &reachable);
 		}
 	    }
 	  /* If any symbol in a comdat group is reachable, force

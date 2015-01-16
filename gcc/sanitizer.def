@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    Address Sanitizer and Thread Sanitizer builtins used in the GNU compiler.
-   Copyright (C) 2012-2014 Free Software Foundation, Inc.
+   Copyright (C) 2012-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -188,6 +188,10 @@ DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_WRITE8, "__tsan_write8",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
 DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_WRITE16, "__tsan_write16",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_READ_RANGE, "__tsan_read_range",
+		      BT_FN_VOID_PTR_PTRMODE, ATTR_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_WRITE_RANGE, "__tsan_write_range",
+		      BT_FN_VOID_PTR_PTRMODE, ATTR_NOTHROW_LEAF_LIST)
 
 DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_ATOMIC8_LOAD,
 		      "__tsan_atomic8_load",
@@ -495,3 +499,11 @@ DEF_SANITIZER_BUILTIN(BUILT_IN_UBSAN_HANDLE_NONNULL_RETURN_ABORT,
 		      "__ubsan_handle_nonnull_return_abort",
 		      BT_FN_VOID_PTR,
 		      ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_UBSAN_HANDLE_DYNAMIC_TYPE_CACHE_MISS,
+		      "__ubsan_handle_dynamic_type_cache_miss",
+		      BT_FN_VOID_PTR_PTR_PTR,
+		      ATTR_COLD_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_UBSAN_HANDLE_DYNAMIC_TYPE_CACHE_MISS_ABORT,
+		      "__ubsan_handle_dynamic_type_cache_miss_abort",
+		      BT_FN_VOID_PTR_PTR_PTR,
+		      ATTR_COLD_NOTHROW_LEAF_LIST)

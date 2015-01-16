@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 2011-2013, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2011-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -54,3 +54,35 @@ __gnat_pthread_condattr_setup (void *attr) {
 }
 
 #endif
+
+#if defined (__APPLE__)
+#include <mach/mach.h>
+#include <mach/clock.h>
+#endif
+
+/* Return the clock ticks per nanosecond for Posix systems lacking the
+   Posix extension function clock_getres, or else 0 nsecs on error.  */
+
+int
+__gnat_clock_get_res (void)
+{
+#if defined (__APPLE__)
+  clock_serv_t clock_port;
+  mach_msg_type_number_t count;
+  int nsecs;
+  int result;
+
+  count = 1;
+  result = host_get_clock_service
+    (mach_host_self (), SYSTEM_CLOCK, &clock_port);
+
+  if (result == KERN_SUCCESS)
+    result = clock_get_attributes (clock_port, CLOCK_GET_TIME_RES,
+      (clock_attr_t) &nsecs, &count);
+
+  if (result == KERN_SUCCESS)
+    return nsecs;
+#endif
+
+  return 0;
+}

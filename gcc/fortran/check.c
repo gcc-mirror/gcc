@@ -1,5 +1,5 @@
 /* Check functions
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -2531,11 +2531,18 @@ gfc_check_kill_sub (gfc_expr *pid, gfc_expr *sig, gfc_expr *status)
 bool
 gfc_check_kind (gfc_expr *x)
 {
-  if (x->ts.type == BT_DERIVED)
+  if (x->ts.type == BT_DERIVED || x->ts.type == BT_CLASS)
     {
-      gfc_error ("%qs argument of %qs intrinsic at %L must be a "
-		 "non-derived type", gfc_current_intrinsic_arg[0]->name,
+      gfc_error ("%qs argument of %qs intrinsic at %L must be of "
+		 "intrinsic type", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &x->where);
+      return false;
+    }
+  if (x->ts.type == BT_PROCEDURE)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L must be a data entity",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &x->where);
       return false;
     }
 

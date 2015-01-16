@@ -1,5 +1,5 @@
 /* Loop distribution.
-   Copyright (C) 2006-2014 Free Software Foundation, Inc.
+   Copyright (C) 2006-2015 Free Software Foundation, Inc.
    Contributed by Georges-Andre Silber <Georges-Andre.Silber@ensmp.fr>
    and Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -44,12 +44,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tree.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
 #include "hash-set.h"
 #include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "fold-const.h"
+#include "predict.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "input.h"
@@ -1355,6 +1362,7 @@ pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
   for (int ii = 0; drs1.iterate (ii, &dr1); ++ii)
     for (int jj = 0; drs2.iterate (jj, &dr2); ++jj)
       {
+	data_reference_p saved_dr1 = dr1;
 	int this_dir = 1;
 	ddr_p ddr;
 	/* Re-shuffle data-refs to be in dominator order.  */
@@ -1400,6 +1408,8 @@ pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
 	  dir = this_dir;
 	else if (dir != this_dir)
 	  return 2;
+	/* Shuffle "back" dr1.  */
+	dr1 = saved_dr1;
       }
   return dir;
 }
@@ -1828,6 +1838,9 @@ out:
 
   if (changed)
     {
+      /* Cached scalar evolutions now may refer to wrong or non-existing
+	 loops.  */
+      scev_reset_htab ();
       mark_virtual_operands_for_renaming (fun);
       rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
     }

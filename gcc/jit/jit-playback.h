@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for playing back recorded API calls.
-   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+   Copyright (C) 2013-2015 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -35,7 +35,7 @@ namespace jit {
 
 namespace playback {
 
-class context
+class context : public log_user
 {
 public:
   context (::gcc::jit::recording::context *ctxt);
@@ -90,20 +90,14 @@ public:
 
   lvalue *
   new_global (location *loc,
+	      enum gcc_jit_global_kind kind,
 	      type *type,
 	      const char *name);
 
+  template <typename HOST_TYPE>
   rvalue *
-  new_rvalue_from_int (type *type,
-		       int value);
-
-  rvalue *
-  new_rvalue_from_double (type *type,
-			  double value);
-
-  rvalue *
-  new_rvalue_from_ptr (type *type,
-		       void *value);
+  new_rvalue_from_const (type *type,
+			 HOST_TYPE value);
 
   rvalue *
   new_string_literal (const char *value);
@@ -213,6 +207,10 @@ public:
     return m_recording_ctxt->errors_occurred ();
   }
 
+  /* For use by jit_langhook_write_globals.  */
+  void write_global_decls_1 ();
+  void write_global_decls_2 ();
+
 private:
   void dump_generated_code ();
 
@@ -266,6 +264,7 @@ private:
   tempdir *m_tempdir;
 
   auto_vec<function *> m_functions;
+  auto_vec<tree> m_globals;
   tree m_char_array_type_node;
   tree m_const_char_ptr;
 

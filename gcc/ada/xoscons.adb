@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,7 @@ pragma Warnings (Off);
 with System.Unsigned_Types;   use System.Unsigned_Types;
 pragma Warnings (On);
 
+with GNAT.OS_Lib;
 with GNAT.String_Split; use GNAT.String_Split;
 with GNAT.Table;
 
@@ -700,6 +701,7 @@ begin
    Close (Tmpl_File);
 
 exception
-   when others =>
-      Put_Line ("xoscons <base_name>");
+   when E : others =>
+      Put_Line ("raised " & Ada.Exceptions.Exception_Information (E));
+      GNAT.OS_Lib.OS_Exit (1);
 end XOSCons;

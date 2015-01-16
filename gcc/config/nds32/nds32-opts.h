@@ -1,5 +1,5 @@
 /* Definitions for option handling of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2014 Free Software Foundation, Inc.
+   Copyright (C) 2012-2015 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -30,6 +30,14 @@ enum nds32_arch_type
   ARCH_V2,
   ARCH_V3,
   ARCH_V3M
+};
+
+/* The code model defines the address generation strategy.  */
+enum nds32_cmodel_type
+{
+  CMODEL_SMALL,
+  CMODEL_MEDIUM,
+  CMODEL_LARGE
 };
 
 #endif

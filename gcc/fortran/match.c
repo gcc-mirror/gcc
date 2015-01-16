@@ -1,5 +1,5 @@
 /* Matching subroutines in all sizes, shapes and colors.
-   Copyright (C) 2000-2014 Free Software Foundation, Inc.
+   Copyright (C) 2000-2015 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -25,6 +25,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "match.h"
 #include "parse.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
 #include "stringpool.h"
 
@@ -2492,7 +2501,9 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 
   if (o != NULL)
     {
-      gfc_error ("%s statement at %C leaving OpenMP structured block",
+      gfc_error (is_oacc (p)
+		 ? "%s statement at %C leaving OpenACC structured block"
+		 : "%s statement at %C leaving OpenMP structured block",
 		 gfc_ascii_statement (st));
       return MATCH_ERROR;
     }
@@ -2502,6 +2513,33 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
   if (cnt > 0
       && o != NULL
       && o->state == COMP_OMP_STRUCTURED_BLOCK
+      && (o->head->op == EXEC_OACC_LOOP
+	  || o->head->op == EXEC_OACC_PARALLEL_LOOP))
+    {
+      int collapse = 1;
+      gcc_assert (o->head->next != NULL
+		  && (o->head->next->op == EXEC_DO
+		      || o->head->next->op == EXEC_DO_WHILE)
+		  && o->previous != NULL
+		  && o->previous->tail->op == o->head->op);
+      if (o->previous->tail->ext.omp_clauses != NULL
+	  && o->previous->tail->ext.omp_clauses->collapse > 1)
+	collapse = o->previous->tail->ext.omp_clauses->collapse;
+      if (st == ST_EXIT && cnt <= collapse)
+	{
+	  gfc_error ("EXIT statement at %C terminating !$ACC LOOP loop");
+	  return MATCH_ERROR;
+	}
+      if (st == ST_CYCLE && cnt < collapse)
+	{
+	  gfc_error ("CYCLE statement at %C to non-innermost collapsed"
+		     " !$ACC LOOP loop");
+	  return MATCH_ERROR;
+	}
+    }
+  if (cnt > 0
+      && o != NULL
+      && (o->state == COMP_OMP_STRUCTURED_BLOCK)
       && (o->head->op == EXEC_OMP_DO
 	  || o->head->op == EXEC_OMP_PARALLEL_DO
 	  || o->head->op == EXEC_OMP_SIMD
@@ -2557,7 +2595,8 @@ gfc_match_cycle (void)
 }
 
 
-/* Match a number or character constant after an (ALL) STOP or PAUSE statement.  */
+/* Match a number or character constant after an (ERROR) STOP or PAUSE
+   statement.  */
 
 static match
 gfc_match_stopcode (gfc_statement st)
@@ -2581,9 +2620,18 @@ gfc_match_stopcode (gfc_statement st)
 
   if (gfc_pure (NULL))
     {
-      gfc_error ("%s statement not allowed in PURE procedure at %C",
-		 gfc_ascii_statement (st));
-      goto cleanup;
+      if (st == ST_ERROR_STOP)
+	{
+	  if (!gfc_notify_std (GFC_STD_F2015, "%s statement at %C in PURE "
+			       "procedure", gfc_ascii_statement (st)))
+	    goto cleanup;
+	}
+      else
+	{
+	  gfc_error ("%s statement not allowed in PURE procedure at %C",
+		     gfc_ascii_statement (st));
+	  goto cleanup;
+	}
     }
 
   gfc_unset_implicit_pure (NULL);

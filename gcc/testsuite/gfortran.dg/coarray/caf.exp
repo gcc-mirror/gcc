@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2014 Free Software Foundation, Inc.
+# Copyright (C) 2011-2015 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,6 +43,27 @@ global DG_TORTURE_OPTIONS torture_with_loops
 torture-init
 set-torture-options $DG_TORTURE_OPTIONS
 
+global gfortran_test_path
+global gfortran_aux_module_flags
+set gfortran_test_path $srcdir/$subdir
+set gfortran_aux_module_flags $DEFAULT_FFLAGS
+proc dg-compile-aux-modules { args } {
+    global gfortran_test_path
+    global gfortran_aux_module_flags
+    if { [llength $args] != 2 } {
+	error "dg-set-target-env-var: needs one argument"
+	return
+    }
+    dg-test $gfortran_test_path/[lindex $args 1] "" $gfortran_aux_module_flags
+    # cleanup-modules isn't intentionally invoked here.
+}
+
+# Add -latomic only where supported.  Assume built-in support elsewhere.
+set maybe_atomic_lib ""
+if [check_effective_target_libatomic_available] {
+    set maybe_atomic_lib "-latomic"
+}
+
 # Main loop.
 foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] {
     # If we're only testing specific files and this isn't one of them, skip it.
@@ -65,13 +86,15 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] 
 
     foreach flags $option_list {
 	verbose "Testing $nshort (single), $flags" 1
-	dg-test $test "-fcoarray=single $flags" "" 
+        set gfortran_aux_module_flags "-fcoarray=single $flags"
+	dg-test $test "-fcoarray=single $flags $maybe_atomic_lib" "" 
 	cleanup-modules ""
     }
 
     foreach flags $option_list {
 	verbose "Testing $nshort (libcaf_single), $flags" 1
-	dg-test $test "-fcoarray=lib $flags -lcaf_single" ""
+        set gfortran_aux_module_flags "-fcoarray=lib $flags -lcaf_single"
+	dg-test $test "-fcoarray=lib $flags -lcaf_single $maybe_atomic_lib" ""
 	cleanup-modules ""
     }
 }

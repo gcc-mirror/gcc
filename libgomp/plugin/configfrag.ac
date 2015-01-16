@@ -1,0 +1,148 @@
+# Plugins for offload execution, configure.ac fragment.  -*- mode: autoconf -*-
+#
+# Copyright (C) 2014-2015 Free Software Foundation, Inc.
+#
+# Contributed by Mentor Embedded.
+#
+# This file is part of the GNU Offloading and Multi Processing Library
+# (libgomp).
+#
+# Libgomp is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# Libgomp is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# Under Section 7 of GPL version 3, you are granted additional
+# permissions described in the GCC Runtime Library Exception, version
+# 3.1, as published by the Free Software Foundation.
+#
+# You should have received a copy of the GNU General Public License and
+# a copy of the GCC Runtime Library Exception along with this program;
+# see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+# <http://www.gnu.org/licenses/>.
+
+offload_targets=
+AC_SUBST(offload_targets)
+plugin_support=yes
+AC_CHECK_LIB(dl, dlsym, , [plugin_support=no])
+if test x"$plugin_support" = xyes; then
+  AC_DEFINE(PLUGIN_SUPPORT, 1,
+    [Define if all infrastructure, needed for plugins, is supported.])
+  offload_targets=host_nonshm
+elif test "x${enable_offload_targets-no}" != xno; then
+  AC_MSG_ERROR([Can't support offloading without support for plugins])
+fi
+
+# Look for the CUDA driver package.
+CUDA_DRIVER_INCLUDE=
+CUDA_DRIVER_LIB=
+AC_SUBST(CUDA_DRIVER_INCLUDE)
+AC_SUBST(CUDA_DRIVER_LIB)
+CUDA_DRIVER_CPPFLAGS=
+CUDA_DRIVER_LDFLAGS=
+AC_ARG_WITH(cuda-driver,
+	[AS_HELP_STRING([--with-cuda-driver=PATH],
+		[specify prefix directory for installed CUDA driver package.
+		 Equivalent to --with-cuda-driver-include=PATH/include
+		 plus --with-cuda-driver-lib=PATH/lib])])
+AC_ARG_WITH(cuda-driver-include,
+	[AS_HELP_STRING([--with-cuda-driver-include=PATH],
+		[specify directory for installed CUDA driver include files])])
+AC_ARG_WITH(cuda-driver-lib,
+	[AS_HELP_STRING([--with-cuda-driver-lib=PATH],
+		[specify directory for the installed CUDA driver library])])
+if test "x$with_cuda_driver" != x; then
+  CUDA_DRIVER_INCLUDE=$with_cuda_driver/include
+  CUDA_DRIVER_LIB=$with_cuda_driver/lib
+fi
+if test "x$with_cuda_driver_include" != x; then
+  CUDA_DRIVER_INCLUDE=$with_cuda_driver_include
+fi
+if test "x$with_cuda_driver_lib" != x; then
+  CUDA_DRIVER_LIB=$with_cuda_driver_lib
+fi
+if test "x$CUDA_DRIVER_INCLUDE" != x; then
+  CUDA_DRIVER_CPPFLAGS=-I$CUDA_DRIVER_INCLUDE
+fi
+if test "x$CUDA_DRIVER_LIB" != x; then
+  CUDA_DRIVER_LDFLAGS=-L$CUDA_DRIVER_LIB
+fi
+
+PLUGIN_NVPTX=0
+PLUGIN_NVPTX_CPPFLAGS=
+PLUGIN_NVPTX_LDFLAGS=
+PLUGIN_NVPTX_LIBS=
+AC_SUBST(PLUGIN_NVPTX)
+AC_SUBST(PLUGIN_NVPTX_CPPFLAGS)
+AC_SUBST(PLUGIN_NVPTX_LDFLAGS)
+AC_SUBST(PLUGIN_NVPTX_LIBS)
+
+# Get offload targets and path to install tree of offloading compiler.
+offload_additional_options=
+offload_additional_lib_paths=
+AC_SUBST(offload_additional_options)
+AC_SUBST(offload_additional_lib_paths)
+if test x"$enable_offload_targets" != x; then
+  for tgt in `echo $enable_offload_targets | sed -e 's#,# #g'`; do
+    tgt_dir=`echo $tgt | grep '=' | sed 's/.*=//'`
+    tgt=`echo $tgt | sed 's/=.*//'`
+    case $tgt in
+      *-intelmic-* | *-intelmicemul-*)
+	tgt_name=intelmic
+	;;
+      nvptx*)
+        tgt_name=nvptx
+	PLUGIN_NVPTX=$tgt
+	PLUGIN_NVPTX_CPPFLAGS=$CUDA_DRIVER_CPPFLAGS
+	PLUGIN_NVPTX_LDFLAGS=$CUDA_DRIVER_LDFLAGS
+	PLUGIN_NVPTX_LIBS='-lcuda'
+
+	PLUGIN_NVPTX_save_CPPFLAGS=$CPPFLAGS
+	CPPFLAGS="$PLUGIN_NVPTX_CPPFLAGS $CPPFLAGS"
+	PLUGIN_NVPTX_save_LDFLAGS=$LDFLAGS
+	LDFLAGS="$PLUGIN_NVPTX_LDFLAGS $LDFLAGS"
+	PLUGIN_NVPTX_save_LIBS=$LIBS
+	LIBS="$PLUGIN_NVPTX_LIBS $LIBS"
+	AC_LINK_IFELSE(
+	  [AC_LANG_PROGRAM(
+	    [#include "cuda.h"],
+	      [CUresult r = cuCtxPushCurrent (NULL);])],
+	  [PLUGIN_NVPTX=1])
+	CPPFLAGS=$PLUGIN_NVPTX_save_CPPFLAGS
+	LDFLAGS=$PLUGIN_NVPTX_save_LDFLAGS
+	LIBS=$PLUGIN_NVPTX_save_LIBS
+	case $PLUGIN_NVPTX in
+	  nvptx*)
+	    PLUGIN_NVPTX=0
+	    AC_MSG_ERROR([CUDA driver package required for nvptx support])
+	    ;;
+	esac
+	;;
+      *)
+	AC_MSG_ERROR([unknown offload target specified])
+	;;
+    esac
+    if test x"$offload_targets" = x; then
+      offload_targets=$tgt_name
+    else
+      offload_targets=$offload_targets,$tgt_name
+    fi
+    if test x"$tgt_dir" != x; then
+      offload_additional_options="$offload_additional_options -B$tgt_dir/libexec/gcc/\$(target_alias)/\$(gcc_version) -B$tgt_dir/bin"
+      offload_additional_lib_paths="$offload_additional_lib_paths:$tgt_dir/lib64:$tgt_dir/lib:$tgt_dir/lib32"
+    else
+      offload_additional_options="$offload_additional_options -B\$(libexecdir)/gcc/\$(target_alias)/\$(gcc_version) -B\$(bindir)"
+      offload_additional_lib_paths="$offload_additional_lib_paths:$toolexeclibdir"
+    fi
+  done
+fi
+AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
+  [Define to hold the list of target names suitable for offloading.])
+AM_CONDITIONAL([PLUGIN_NVPTX], [test $PLUGIN_NVPTX = 1])
+AC_DEFINE_UNQUOTED([PLUGIN_NVPTX], [$PLUGIN_NVPTX],
+  [Define to 1 if the NVIDIA plugin is built, 0 if not.])

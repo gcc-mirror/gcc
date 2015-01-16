@@ -1,5 +1,5 @@
 ;;  Mips.md	     Machine Description for MIPS based processors
-;;  Copyright (C) 1989-2014 Free Software Foundation, Inc.
+;;  Copyright (C) 1989-2015 Free Software Foundation, Inc.
 ;;  Contributed by   A. Lichnewsky, lich@inria.inria.fr
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64-bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -5540,6 +5540,16 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")
    (set_attr "extended_mips16" "no,no,yes")])
+
+(define_insn "<GPR:d>lsa"
+ [(set (match_operand:GPR 0 "register_operand" "=d")
+       (plus:GPR (mult:GPR (match_operand:GPR 1 "register_operand" "d")
+			   (match_operand 2 "const_immlsa_operand" ""))
+		(match_operand:GPR 3 "register_operand" "d")))]
+ "ISA_HAS_<GPR:D>LSA"
+ "<GPR:d>lsa\t%0,%1,%3,%y2"
+ [(set_attr "type" "arith")
+  (set_attr "mode" "<GPR:MODE>")])
 
 ;; We need separate DImode MIPS16 patterns because of the irregularity
 ;; of right shifts.

@@ -1,6 +1,6 @@
 // Default predicates for internal use -*- C++ -*-
 
-// Copyright (C) 2013-2014 Free Software Foundation, Inc.
+// Copyright (C) 2013-2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,11 +37,12 @@ namespace __ops
   struct _Iter_less_iter
   {
     template<typename _Iterator1, typename _Iterator2>
+      _GLIBCXX14_CONSTEXPR
       bool
       operator()(_Iterator1 __it1, _Iterator2 __it2) const
       { return *__it1 < *__it2; }
   };
-
+  _GLIBCXX14_CONSTEXPR
   inline _Iter_less_iter
   __iter_less_iter()
   { return _Iter_less_iter(); }
@@ -110,18 +111,20 @@ namespace __ops
     struct _Iter_comp_iter
     {
       _Compare _M_comp;
-
+      _GLIBCXX14_CONSTEXPR
       _Iter_comp_iter(_Compare __comp)
 	: _M_comp(__comp)
       { }
 
       template<typename _Iterator1, typename _Iterator2>
+        _GLIBCXX14_CONSTEXPR
         bool
         operator()(_Iterator1 __it1, _Iterator2 __it2)
         { return bool(_M_comp(*__it1, *__it2)); }
     };
 
   template<typename _Compare>
+    _GLIBCXX14_CONSTEXPR
     inline _Iter_comp_iter<_Compare>
     __iter_comp_iter(_Compare __comp)
     { return _Iter_comp_iter<_Compare>(__comp); }

@@ -326,12 +326,6 @@ package body Prj.Attr is
    "Ladefault_switches#" &
    "LbOswitches#" &
 
-   --  package Synchronize
-
-   "Psynchronize#" &
-   "Ladefault_switches#" &
-   "LbOswitches#" &
-
    --  package Eliminate
 
    "Peliminate#" &
@@ -369,6 +363,8 @@ package body Prj.Attr is
    "SVproject_subdir#" &
    "SVactive#" &
    "LAartifacts#" &
+   "SVmode#" &
+   "SVinstall_name#" &
 
    --  package Remote
 

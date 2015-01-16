@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -27,7 +27,17 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "varasm.h"
@@ -255,8 +265,8 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
   bool a2_side_effects_p = TREE_SIDE_EFFECTS (a2);
   bool length_zero_p = false;
 
-  /* If either operand has side-effects, they have to be evaluated only once
-     in spite of the multiple references to the operand in the comparison.  */
+  /* If the operands have side-effects, they need to be evaluated only once
+     in spite of the multiple references in the comparison.  */
   if (a1_side_effects_p)
     a1 = gnat_protect_expr (a1);
 
@@ -419,9 +429,9 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 					     a1_is_null, a2_is_null),
 			    result);
 
-  /* If either operand has side-effects, they have to be evaluated before
-     starting the comparison above since the place they would be otherwise
-     evaluated could be wrong.  */
+  /* If the operands have side-effects, they need to be evaluated before
+     doing the tests above since the place they otherwise would end up
+     being evaluated at run time could be wrong.  */
   if (a1_side_effects_p)
     result = build2 (COMPOUND_EXPR, result_type, a1, result);
 

@@ -574,8 +574,8 @@ package body Einfo is
    --    No_Dynamic_Predicate_On_Actual  Flag276
    --    Is_Checked_Ghost_Entity         Flag277
    --    Is_Ignored_Ghost_Entity         Flag278
+   --    Contains_Ignored_Ghost_Code     Flag279
 
-   --    (unused)                        Flag279
    --    (unused)                        Flag280
 
    --    (unused)                        Flag281
@@ -1117,6 +1117,21 @@ package body Einfo is
       return Node18 (Id);
    end Entry_Index_Constant;
 
+   function Contains_Ignored_Ghost_Code (Id : E) return B is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Block,
+                       E_Function,
+                       E_Generic_Function,
+                       E_Generic_Package,
+                       E_Generic_Procedure,
+                       E_Package,
+                       E_Package_Body,
+                       E_Procedure,
+                       E_Subprogram_Body));
+      return Flag279 (Id);
+   end Contains_Ignored_Ghost_Code;
+
    function Contract (Id : E) return N is
    begin
       pragma Assert
@@ -1468,8 +1483,7 @@ package body Einfo is
 
    function Has_Independent_Components (Id : E) return B is
    begin
-      pragma Assert (Is_Array_Type (Id) or else Is_Record_Type (Id));
-      return Flag34 (Base_Type (Id));
+      return Flag34 (Implementation_Base_Type (Id));
    end Has_Independent_Components;
 
    function Has_Inheritable_Invariants (Id : E) return B is
@@ -2117,7 +2131,6 @@ package body Einfo is
 
    function Is_Independent (Id : E) return B is
    begin
-      pragma Assert (Ekind (Id) = E_Component);
       return Flag268 (Id);
    end Is_Independent;
 
@@ -3611,6 +3624,21 @@ package body Einfo is
       Set_Node20 (Id, V);
    end Set_Component_Type;
 
+   procedure Set_Contains_Ignored_Ghost_Code (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Block,
+                       E_Function,
+                       E_Generic_Function,
+                       E_Generic_Package,
+                       E_Generic_Procedure,
+                       E_Package,
+                       E_Package_Body,
+                       E_Procedure,
+                       E_Subprogram_Body));
+      Set_Flag279 (Id, V);
+   end Set_Contains_Ignored_Ghost_Code;
+
    procedure Set_Contract (Id : E; V : N) is
    begin
       pragma Assert
@@ -4263,8 +4291,7 @@ package body Einfo is
 
    procedure Set_Has_Independent_Components (Id : E; V : B := True) is
    begin
-      pragma Assert ((Is_Array_Type (Id) or else Is_Record_Type (Id))
-        and then Is_Base_Type (Id));
+      pragma Assert (not Is_Type (Id) or else Is_Base_Type (Id));
       Set_Flag34 (Id, V);
    end Set_Has_Independent_Components;
 
@@ -4750,7 +4777,11 @@ package body Einfo is
         or else Ekind (Id) = E_Discriminant
         or else Ekind (Id) = E_Exception
         or else Ekind (Id) = E_Package_Body
-        or else Ekind (Id) = E_Subprogram_Body);
+        or else Ekind (Id) = E_Subprogram_Body
+
+        --  Allow this attribute to appear on non-analyzed entities
+
+        or else Ekind (Id) = E_Void);
       Set_Flag277 (Id, V);
    end Set_Is_Checked_Ghost_Entity;
 
@@ -4945,7 +4976,11 @@ package body Einfo is
         or else Ekind (Id) = E_Discriminant
         or else Ekind (Id) = E_Exception
         or else Ekind (Id) = E_Package_Body
-        or else Ekind (Id) = E_Subprogram_Body);
+        or else Ekind (Id) = E_Subprogram_Body
+
+        --  Allow this attribute to appear on non-analyzed entities
+
+        or else Ekind (Id) = E_Void);
       Set_Flag278 (Id, V);
    end Set_Is_Ignored_Ghost_Entity;
 
@@ -4967,7 +5002,6 @@ package body Einfo is
 
    procedure Set_Is_Independent (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Void));
       Set_Flag268 (Id, V);
    end Set_Is_Independent;
 
@@ -8375,6 +8409,7 @@ package body Einfo is
       W ("C_Pass_By_Copy",                  Flag125 (Id));
       W ("Can_Never_Be_Null",               Flag38  (Id));
       W ("Checks_May_Be_Suppressed",        Flag31  (Id));
+      W ("Contains_Ignored_Ghost_Code",     Flag279 (Id));
       W ("Debug_Info_Off",                  Flag166 (Id));
       W ("Default_Expressions_Processed",   Flag108 (Id));
       W ("Delay_Cleanups",                  Flag114 (Id));

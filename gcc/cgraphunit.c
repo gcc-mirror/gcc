@@ -1,5 +1,5 @@
 /* Driver of optimization process
-   Copyright (C) 2003-2014 Free Software Foundation, Inc.
+   Copyright (C) 2003-2015 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -161,17 +161,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "varasm.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "output.h"
 #include "rtl.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -203,6 +209,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "tree-iterator.h"
 #include "tree-pass.h"
@@ -340,7 +347,7 @@ symbol_table::process_new_functions (void)
 	  if ((state == IPA_SSA || state == IPA_SSA_AFTER_INLINING)
 	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
 	    g->get_passes ()->execute_early_local_passes ();
-	  else if (inline_summary_vec != NULL)
+	  else if (inline_summaries != NULL)
 	    compute_inline_parameters (node, true);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
@@ -2107,12 +2114,15 @@ ipa_passes (void)
       if (g->have_offload)
 	{
 	  section_name_prefix = OFFLOAD_SECTION_NAME_PREFIX;
-	  ipa_write_summaries (true);
+	  lto_stream_offload_p = true;
+	  ipa_write_summaries ();
+	  lto_stream_offload_p = false;
 	}
       if (flag_lto)
 	{
 	  section_name_prefix = LTO_SECTION_NAME_PREFIX;
-	  ipa_write_summaries (false);
+	  lto_stream_offload_p = false;
+	  ipa_write_summaries ();
 	}
     }
 
@@ -2384,40 +2394,40 @@ cgraphunit_c_finalize (void)
 void
 cgraph_node::create_wrapper (cgraph_node *target)
 {
-    /* Preserve DECL_RESULT so we get right by reference flag.  */
-    tree decl_result = DECL_RESULT (decl);
+  /* Preserve DECL_RESULT so we get right by reference flag.  */
+  tree decl_result = DECL_RESULT (decl);
 
-    /* Remove the function's body but keep arguments to be reused
-       for thunk.  */
-    release_body (true);
-    reset ();
+  /* Remove the function's body but keep arguments to be reused
+     for thunk.  */
+  release_body (true);
+  reset ();
 
-    DECL_RESULT (decl) = decl_result;
-    DECL_INITIAL (decl) = NULL;
-    allocate_struct_function (decl, false);
-    set_cfun (NULL);
+  DECL_RESULT (decl) = decl_result;
+  DECL_INITIAL (decl) = NULL;
+  allocate_struct_function (decl, false);
+  set_cfun (NULL);
 
-    /* Turn alias into thunk and expand it into GIMPLE representation.  */
-    definition = true;
-    thunk.thunk_p = true;
-    thunk.this_adjusting = false;
+  /* Turn alias into thunk and expand it into GIMPLE representation.  */
+  definition = true;
+  thunk.thunk_p = true;
+  thunk.this_adjusting = false;
 
-    cgraph_edge *e = create_edge (target, NULL, 0, CGRAPH_FREQ_BASE);
+  cgraph_edge *e = create_edge (target, NULL, 0, CGRAPH_FREQ_BASE);
 
-    tree arguments = DECL_ARGUMENTS (decl);
+  tree arguments = DECL_ARGUMENTS (decl);
 
-    while (arguments)
-      {
-	TREE_ADDRESSABLE (arguments) = false;
-	arguments = TREE_CHAIN (arguments);
-      }
+  while (arguments)
+    {
+      TREE_ADDRESSABLE (arguments) = false;
+      arguments = TREE_CHAIN (arguments);
+    }
 
-    expand_thunk (false, true);
-    e->call_stmt_cannot_inline_p = true;
+  expand_thunk (false, true);
+  e->call_stmt_cannot_inline_p = true;
 
-    /* Inline summary set-up.  */
-    analyze ();
-    inline_analyze_function (this);
+  /* Inline summary set-up.  */
+  analyze ();
+  inline_analyze_function (this);
 }
 
 #include "gt-cgraphunit.h"

@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -188,6 +188,10 @@ package System.OS_Interface is
    function clock_gettime
      (clock_id : clockid_t;
       tp       : access timespec) return int;
+
+   function clock_getres
+     (clock_id : clockid_t;
+      res      : access timespec) return int;
 
    function To_Duration (TS : timespec) return Duration;
    pragma Inline (To_Duration);

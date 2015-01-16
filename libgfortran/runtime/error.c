@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2015 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -486,6 +486,10 @@ translate_error (int code)
 
     case LIBERROR_CORRUPT_FILE:
       p = "Unformatted file structure has been corrupted";
+      break;
+
+    case LIBERROR_INQUIRE_INTERNAL_UNIT:
+      p = "Inquire statement identifies an internal file";
       break;
 
     default:

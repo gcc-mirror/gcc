@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    MIPS SDE version.
-   Copyright (C) 2003-2014 Free Software Foundation, Inc.
+   Copyright (C) 2003-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,6 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS						\
+  /* Set the ISA for the default multilib.  */				\
+  MIPS_DEFAULT_ISA_LEVEL_SPEC,						\
+									\
   /* Make sure a -mips option is present.  This helps us to pick	\
      the right multilib, and also makes the later specs easier		\
      to write.  */							\

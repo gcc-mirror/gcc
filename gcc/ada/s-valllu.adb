@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,6 +65,13 @@ package body System.Val_LLU is
       --  Digit value
 
    begin
+      --  We do not tolerate strings with Str'Last = Positive'Last
+
+      if Str'Last = Positive'Last then
+         raise Program_Error with
+           "string upper bound is Positive'Last, not supported";
+      end if;
+
       P := Ptr.all;
       Uval := Character'Pos (Str (P)) - Character'Pos ('0');
       P := P + 1;
@@ -119,9 +126,10 @@ package body System.Val_LLU is
 
       Ptr.all := P;
 
-      --  Deal with based case
+      --  Deal with based case. We recognize either the standard '#' or the
+      --  allowed alternative replacement ':' (see RM J.2(3)).
 
-      if P < Max and then (Str (P) = ':' or else Str (P) = '#') then
+      if P < Max and then (Str (P) = '#' or else Str (P) = ':') then
          Base_Char := Str (P);
          P := P + 1;
          Base := Uval;
@@ -293,12 +301,30 @@ package body System.Val_LLU is
    function Value_Long_Long_Unsigned
      (Str : String) return Long_Long_Unsigned
    is
-      V : Long_Long_Unsigned;
-      P : aliased Integer := Str'First;
    begin
-      V := Scan_Long_Long_Unsigned (Str, P'Access, Str'Last);
-      Scan_Trailing_Blanks (Str, P);
-      return V;
+      --  We have to special case Str'Last = Positive'Last because the normal
+      --  circuit ends up setting P to Str'Last + 1 which is out of bounds. We
+      --  deal with this by converting to a subtype which fixes the bounds.
+
+      if Str'Last = Positive'Last then
+         declare
+            subtype NT is String (1 .. Str'Length);
+         begin
+            return Value_Long_Long_Unsigned (NT (Str));
+         end;
+
+      --  Normal case where Str'Last < Positive'Last
+
+      else
+         declare
+            V : Long_Long_Unsigned;
+            P : aliased Integer := Str'First;
+         begin
+            V := Scan_Long_Long_Unsigned (Str, P'Access, Str'Last);
+            Scan_Trailing_Blanks (Str, P);
+            return V;
+         end;
+      end if;
    end Value_Long_Long_Unsigned;
 
 end System.Val_LLU;

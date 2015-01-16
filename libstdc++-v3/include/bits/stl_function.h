@@ -1,6 +1,6 @@
 // Functor implementations -*- C++ -*-
 
-// Copyright (C) 2001-2014 Free Software Foundation, Inc.
+// Copyright (C) 2001-2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -166,6 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct plus : public binary_function<_Tp, _Tp, _Tp>
     {
+      _GLIBCXX14_CONSTEXPR
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x + __y; }
@@ -175,6 +176,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct minus : public binary_function<_Tp, _Tp, _Tp>
     {
+      _GLIBCXX14_CONSTEXPR
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x - __y; }
@@ -184,6 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct multiplies : public binary_function<_Tp, _Tp, _Tp>
     {
+      _GLIBCXX14_CONSTEXPR
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x * __y; }
@@ -193,6 +196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct divides : public binary_function<_Tp, _Tp, _Tp>
     {
+      _GLIBCXX14_CONSTEXPR
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x / __y; }
@@ -202,6 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct modulus : public binary_function<_Tp, _Tp, _Tp>
     {
+      _GLIBCXX14_CONSTEXPR
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x % __y; }
@@ -211,6 +216,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct negate : public unary_function<_Tp, _Tp>
     {
+      _GLIBCXX14_CONSTEXPR
       _Tp
       operator()(const _Tp& __x) const
       { return -__x; }
@@ -225,6 +231,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct plus<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) + std::forward<_Up>(__u)))
@@ -239,6 +246,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct minus<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) - std::forward<_Up>(__u)))
@@ -253,6 +261,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct multiplies<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) * std::forward<_Up>(__u)))
@@ -267,6 +276,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct divides<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) / std::forward<_Up>(__u)))
@@ -281,6 +291,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct modulus<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) % std::forward<_Up>(__u)))
@@ -295,6 +306,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct negate<void>
     {
       template <typename _Tp>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t) const
 	noexcept(noexcept(-std::forward<_Tp>(__t)))
@@ -339,6 +351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct equal_to : public binary_function<_Tp, _Tp, bool>
     {
+      _GLIBCXX14_CONSTEXPR
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x == __y; }
@@ -348,6 +361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct not_equal_to : public binary_function<_Tp, _Tp, bool>
     {
+      _GLIBCXX14_CONSTEXPR
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x != __y; }
@@ -357,6 +371,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct greater : public binary_function<_Tp, _Tp, bool>
     {
+      _GLIBCXX14_CONSTEXPR
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x > __y; }
@@ -366,6 +381,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct less : public binary_function<_Tp, _Tp, bool>
     {
+      _GLIBCXX14_CONSTEXPR
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x < __y; }
@@ -375,6 +391,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct greater_equal : public binary_function<_Tp, _Tp, bool>
     {
+      _GLIBCXX14_CONSTEXPR
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x >= __y; }
@@ -384,6 +401,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct less_equal : public binary_function<_Tp, _Tp, bool>
     {
+      _GLIBCXX14_CONSTEXPR
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x <= __y; }
@@ -395,6 +413,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct equal_to<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) == std::forward<_Up>(__u)))
@@ -409,6 +428,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct not_equal_to<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) != std::forward<_Up>(__u)))
@@ -423,6 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct greater<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) > std::forward<_Up>(__u)))
@@ -437,6 +458,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct less<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) < std::forward<_Up>(__u)))
@@ -451,6 +473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct greater_equal<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) >= std::forward<_Up>(__u)))
@@ -465,6 +488,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct less_equal<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) <= std::forward<_Up>(__u)))
@@ -500,6 +524,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct logical_and : public binary_function<_Tp, _Tp, bool>
     {
+      _GLIBCXX14_CONSTEXPR
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x && __y; }
@@ -509,6 +534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct logical_or : public binary_function<_Tp, _Tp, bool>
     {
+      _GLIBCXX14_CONSTEXPR
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x || __y; }
@@ -518,6 +544,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct logical_not : public unary_function<_Tp, bool>
     {
+      _GLIBCXX14_CONSTEXPR
       bool
       operator()(const _Tp& __x) const
       { return !__x; }
@@ -529,6 +556,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct logical_and<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) && std::forward<_Up>(__u)))
@@ -543,6 +571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct logical_or<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) || std::forward<_Up>(__u)))
@@ -557,6 +586,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct logical_not<void>
     {
       template <typename _Tp>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t) const
 	noexcept(noexcept(!std::forward<_Tp>(__t)))
@@ -587,6 +617,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct bit_and : public binary_function<_Tp, _Tp, _Tp>
     {
+      _GLIBCXX14_CONSTEXPR
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x & __y; }
@@ -595,6 +626,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct bit_or : public binary_function<_Tp, _Tp, _Tp>
     {
+      _GLIBCXX14_CONSTEXPR
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x | __y; }
@@ -603,6 +635,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct bit_xor : public binary_function<_Tp, _Tp, _Tp>
     {
+      _GLIBCXX14_CONSTEXPR
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x ^ __y; }
@@ -611,6 +644,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct bit_not : public unary_function<_Tp, _Tp>
     {
+    _GLIBCXX14_CONSTEXPR
       _Tp
       operator()(const _Tp& __x) const
       { return ~__x; }
@@ -621,6 +655,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct bit_and<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) & std::forward<_Up>(__u)))
@@ -634,6 +669,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct bit_or<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) | std::forward<_Up>(__u)))
@@ -647,6 +683,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct bit_xor<void>
     {
       template <typename _Tp, typename _Up>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t, _Up&& __u) const
 	noexcept(noexcept(std::forward<_Tp>(__t) ^ std::forward<_Up>(__u)))
@@ -660,6 +697,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct bit_not<void>
     {
       template <typename _Tp>
+	_GLIBCXX14_CONSTEXPR
 	auto
 	operator()(_Tp&& __t) const
 	noexcept(noexcept(~std::forward<_Tp>(__t)))
@@ -708,9 +746,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Predicate _M_pred;
 
     public:
+      _GLIBCXX14_CONSTEXPR
       explicit
       unary_negate(const _Predicate& __x) : _M_pred(__x) { }
 
+      _GLIBCXX14_CONSTEXPR
       bool
       operator()(const typename _Predicate::argument_type& __x) const
       { return !_M_pred(__x); }
@@ -718,6 +758,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// One of the @link negators negation functors@endlink.
   template<typename _Predicate>
+    _GLIBCXX14_CONSTEXPR
     inline unary_negate<_Predicate>
     not1(const _Predicate& __pred)
     { return unary_negate<_Predicate>(__pred); }
@@ -732,9 +773,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Predicate _M_pred;
 
     public:
+      _GLIBCXX14_CONSTEXPR
       explicit
       binary_negate(const _Predicate& __x) : _M_pred(__x) { }
 
+      _GLIBCXX14_CONSTEXPR
       bool
       operator()(const typename _Predicate::first_argument_type& __x,
 		 const typename _Predicate::second_argument_type& __y) const
@@ -743,6 +786,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// One of the @link negators negation functors@endlink.
   template<typename _Predicate>
+    _GLIBCXX14_CONSTEXPR
     inline binary_negate<_Predicate>
     not2(const _Predicate& __pred)
     { return binary_negate<_Predicate>(__pred); }

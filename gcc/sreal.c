@@ -1,5 +1,5 @@
 /* Simple data type for real numbers for the GNU compiler.
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -58,7 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 void
 sreal::dump (FILE *file) const
 {
-  fprintf (file, "(%" PRIu64 " * 2^%d)", m_sig, m_exp);
+  fprintf (file, "(%" PRIi64 " * 2^%d)", m_sig, m_exp);
 }
 
 DEBUG_FUNCTION void
@@ -122,7 +122,7 @@ sreal::to_double () const
 {
   double val = m_sig;
   if (m_exp)
-    val *= exp2 (m_exp);
+    val = ldexp (val, m_exp);
   return val;
 }
 

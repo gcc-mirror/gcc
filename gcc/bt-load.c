@@ -1,6 +1,6 @@
 
 /* Perform branch target register load optimizations.
-   Copyright (C) 2001-2014 Free Software Foundation, Inc.
+   Copyright (C) 2001-2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,15 +26,32 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "regs.h"
 #include "target.h"
-#include "expr.h"
-#include "flags.h"
-#include "insn-attr.h"
+#include "symtab.h"
 #include "hashtab.h"
 #include "hash-set.h"
 #include "vec.h"
 #include "machmode.h"
 #include "input.h"
 #include "function.h"
+#include "flags.h"
+#include "statistics.h"
+#include "double-int.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "alias.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
+#include "expr.h"
+#include "insn-attr.h"
 #include "except.h"
 #include "tm_p.h"
 #include "diagnostic-core.h"
@@ -533,8 +550,7 @@ compute_defs_uses_and_gen (btr_heap_t *all_btr_defs, btr_def *def_array,
 			  int reg;
 			  for (reg = first_btr; reg <= last_btr; reg++)
 			    if (TEST_HARD_REG_BIT (all_btrs, reg)
-				&& refers_to_regno_p (reg, reg + 1, user->insn,
-						      NULL))
+				&& refers_to_regno_p (reg, user->insn))
 			      {
 				note_other_use_this_block (reg,
 							   info.users_this_bb);
@@ -597,7 +613,7 @@ compute_defs_uses_and_gen (btr_heap_t *all_btr_defs, btr_def *def_array,
 	  int regno;
 
 	  for (regno = first_btr; regno <= last_btr; regno++)
-	    if (refers_to_regno_p (regno, regno+1, insn, NULL))
+	    if (refers_to_regno_p (regno, insn))
 	      SET_HARD_REG_BIT (btrs_live_at_end[i], regno);
 	}
 
@@ -710,8 +726,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 		      bitmap_clear (reaching_defs_of_reg);
 		      for (reg = first_btr; reg <= last_btr; reg++)
 			if (TEST_HARD_REG_BIT (all_btrs, reg)
-			    && refers_to_regno_p (reg, reg + 1, user->insn,
-						  NULL))
+			    && refers_to_regno_p (reg, user->insn))
 			  bitmap_or_and (reaching_defs_of_reg,
 			    reaching_defs_of_reg,
 			    reaching_defs,

@@ -1,5 +1,5 @@
 /* Code translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -22,7 +22,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "gfortran.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "options.h"
+#include "wide-int.h"
+#include "inchash.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "gimple-expr.h"	/* For create_tmp_var_raw.  */
 #include "stringpool.h"
 #include "tree-iterator.h"
@@ -418,18 +429,18 @@ trans_runtime_error_vararg (bool error, locus* where, const char* msgid,
   if (where)
     {
       line = LOCATION_LINE (where->lb->location);
-      asprintf (&message, "At line %d of file %s",  line,
-		where->lb->file->filename);
+      message = xasprintf ("At line %d of file %s",  line,
+			   where->lb->file->filename);
     }
   else
-    asprintf (&message, "In file '%s', around line %d",
-	      gfc_source_file, LOCATION_LINE (input_location) + 1);
+    message = xasprintf ("In file '%s', around line %d",
+			 gfc_source_file, LOCATION_LINE (input_location) + 1);
 
   arg = gfc_build_addr_expr (pchar_type_node,
 			     gfc_build_localized_cstring_const (message));
   free (message);
 
-  asprintf (&message, "%s", _(msgid));
+  message = xasprintf ("%s", _(msgid));
   arg2 = gfc_build_addr_expr (pchar_type_node,
 			      gfc_build_localized_cstring_const (message));
   free (message);
@@ -1887,6 +1898,21 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
 	case EXEC_OMP_WORKSHARE:
 	  res = gfc_trans_omp_directive (code);
+	  break;
+
+	case EXEC_OACC_CACHE:
+	case EXEC_OACC_WAIT:
+	case EXEC_OACC_UPDATE:
+	case EXEC_OACC_LOOP:
+	case EXEC_OACC_HOST_DATA:
+	case EXEC_OACC_DATA:
+	case EXEC_OACC_KERNELS:
+	case EXEC_OACC_KERNELS_LOOP:
+	case EXEC_OACC_PARALLEL:
+	case EXEC_OACC_PARALLEL_LOOP:
+	case EXEC_OACC_ENTER_DATA:
+	case EXEC_OACC_EXIT_DATA:
+	  res = gfc_trans_oacc_directive (code);
 	  break;
 
 	default:

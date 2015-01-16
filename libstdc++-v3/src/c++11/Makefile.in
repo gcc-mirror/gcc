@@ -85,9 +85,10 @@ am__objects_3 = chrono.lo condition_variable.lo cow-stdexcept.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_5 = $(am__objects_4) \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ext11-inst.lo fstream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ios-inst.lo iostream-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	istream-inst.lo ostream-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.lo streambuf-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.lo wstring-inst.lo
+@ENABLE_EXTERN_TEMPLATE_TRUE@	istream-inst.lo locale-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	ostream-inst.lo sstream-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.lo string-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.lo wstring-inst.lo
 am_libc__11convenience_la_OBJECTS = $(am__objects_3) $(am__objects_5)
 libc__11convenience_la_OBJECTS = $(am_libc__11convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -385,10 +386,12 @@ sources = \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ios-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	iostream-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	istream-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	locale-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ostream-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.cc
 
 libc__11convenience_la_SOURCES = $(sources)  $(inst_sources)

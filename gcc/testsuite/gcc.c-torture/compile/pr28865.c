@@ -5,12 +5,12 @@ struct var_len
 };
 
 /* Note - strictly speaking this array declaration is illegal
-   since each element has a variable length.  GCC allows it
-   (for the moment) because it is used in existing code, such
-   as glibc.  */
+   since each element has a variable length.  We used to allow
+   this because it was used in existing code.
+   Since PR64417 we reject this code.  */
 static const struct var_len var_array[] = 
 {
-  { 1, "Long exposure noise reduction" },
-  { 2, "Shutter/AE lock buttons" },
-  { 3, "Mirror lockup" }
+  { 1, "Long exposure noise reduction" }, /* { dg-error "initialization of flexible array member" } */
+  { 2, "Shutter/AE lock buttons" }, /* { dg-error "initialization of flexible array member" } */
+  { 3, "Mirror lockup" } /* { dg-error "initialization of flexible array member" } */
 };

@@ -77,8 +77,7 @@ am__objects_3 = $(am__objects_2) atomicity.lo codecvt_members.lo \
 	numeric_members.lo time_members.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_4 = allocator-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	concept-inst.lo ext-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	locale-inst.lo misc-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.lo
+@ENABLE_EXTERN_TEMPLATE_TRUE@	misc-inst.lo
 am__objects_5 = parallel_settings.lo
 am__objects_6 = basic_file.lo c++locale.lo $(am__objects_4) \
 	$(am__objects_5)
@@ -367,9 +366,7 @@ host_sources_extra = \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	allocator-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	concept-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ext-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	locale-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	misc-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.cc
+@ENABLE_EXTERN_TEMPLATE_TRUE@	misc-inst.cc
 
 parallel_sources = parallel_settings.cc
 

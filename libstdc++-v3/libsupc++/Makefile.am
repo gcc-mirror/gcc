@@ -1,6 +1,6 @@
 ## Makefile for the GNU C++ Support library.
 ##
-## Copyright (C) 2000-2014 Free Software Foundation, Inc.
+## Copyright (C) 2000-2015 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##
@@ -176,6 +176,12 @@ new_opnt.lo: new_opnt.cc
 	$(LTCXXCOMPILE) -std=gnu++11 -c $<
 new_opnt.o: new_opnt.cc
 	$(CXXCOMPILE) -std=gnu++11 -c $<
+
+# Use special rules for the C++14 sources so that the proper flags are passed.
+del_ops.lo: del_ops.cc
+	$(LTCXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
+del_ops.o: del_ops.cc
+	$(CXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

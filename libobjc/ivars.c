@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime ivar related functions.
-   Copyright (C) 2010-2014 Free Software Foundation, Inc.
+   Copyright (C) 2010-2015 Free Software Foundation, Inc.
    Contributed by Nicola Pero
 
 This file is part of GCC.
@@ -179,7 +179,7 @@ struct objc_ivar ** class_copyIvarList (Class class_, unsigned int *numberOfRetu
   struct objc_ivar **returnValue = NULL;
   struct objc_ivar_list* ivar_list;
 
-  if (class_ == Nil  ||  CLS_IS_IN_CONSTRUCTION (class_))
+  if (class_ == Nil  ||  CLS_IS_IN_CONSTRUCTION (class_) || !class_->ivars)
     {
       if (numberOfReturnedIvars)
 	*numberOfReturnedIvars = 0;

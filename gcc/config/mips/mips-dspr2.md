@@ -1,4 +1,4 @@
-;; Copyright (C) 2007-2014 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2015 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -71,37 +71,34 @@
 ])
 
 (define_insn "mips_absq_s_qb"
-  [(parallel
-    [(set (match_operand:V4QI 0 "register_operand" "=d")
-	  (unspec:V4QI [(match_operand:V4QI 1 "reg_or_0_operand" "dYG")]
-		       UNSPEC_ABSQ_S_QB))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1)] UNSPEC_ABSQ_S_QB))])]
+  [(set (match_operand:V4QI 0 "register_operand" "=d")
+	(unspec:V4QI [(match_operand:V4QI 1 "reg_or_0_operand" "dYG")]
+		     UNSPEC_ABSQ_S_QB))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1)] UNSPEC_ABSQ_S_QB))]
   "ISA_HAS_DSPR2"
   "absq_s.qb\t%0,%z1"
   [(set_attr "type"	"dspalusat")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_addu_ph"
-  [(parallel
-    [(set (match_operand:V2HI 0 "register_operand" "=d")
-	  (plus:V2HI (match_operand:V2HI 1 "reg_or_0_operand" "dYG")
-		     (match_operand:V2HI 2 "reg_or_0_operand" "dYG")))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDU_PH))])]
+  [(set (match_operand:V2HI 0 "register_operand" "=d")
+	(plus:V2HI (match_operand:V2HI 1 "reg_or_0_operand" "dYG")
+		   (match_operand:V2HI 2 "reg_or_0_operand" "dYG")))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDU_PH))]
   "ISA_HAS_DSPR2"
   "addu.ph\t%0,%z1,%z2"
   [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_addu_s_ph"
-  [(parallel
-    [(set (match_operand:V2HI 0 "register_operand" "=d")
-	  (unspec:V2HI [(match_operand:V2HI 1 "reg_or_0_operand" "dYG")
-			(match_operand:V2HI 2 "reg_or_0_operand" "dYG")]
-		       UNSPEC_ADDU_S_PH))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDU_S_PH))])]
+  [(set (match_operand:V2HI 0 "register_operand" "=d")
+	(unspec:V2HI [(match_operand:V2HI 1 "reg_or_0_operand" "dYG")
+		      (match_operand:V2HI 2 "reg_or_0_operand" "dYG")]
+		     UNSPEC_ADDU_S_PH))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDU_S_PH))]
   "ISA_HAS_DSPR2"
   "addu_s.ph\t%0,%z1,%z2"
   [(set_attr "type"	"dspalusat")
@@ -158,45 +155,42 @@
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_cmpgdu_eq_qb"
-  [(parallel
-    [(set (match_operand:SI 0 "register_operand" "=d")
-	  (unspec:SI [(match_operand:V4QI 1 "reg_or_0_operand" "dYG")
-		      (match_operand:V4QI 2 "reg_or_0_operand" "dYG")]
-		     UNSPEC_CMPGDU_EQ_QB))
-     (set (reg:CCDSP CCDSP_CC_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)
-			 (reg:CCDSP CCDSP_CC_REGNUM)]
-			UNSPEC_CMPGDU_EQ_QB))])]
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:V4QI 1 "reg_or_0_operand" "dYG")
+		    (match_operand:V4QI 2 "reg_or_0_operand" "dYG")]
+		   UNSPEC_CMPGDU_EQ_QB))
+   (set (reg:CCDSP CCDSP_CC_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)
+		       (reg:CCDSP CCDSP_CC_REGNUM)]
+		      UNSPEC_CMPGDU_EQ_QB))]
   "ISA_HAS_DSPR2"
   "cmpgdu.eq.qb\t%0,%z1,%z2"
   [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_cmpgdu_lt_qb"
-  [(parallel
-    [(set (match_operand:SI 0 "register_operand" "=d")
-	  (unspec:SI [(match_operand:V4QI 1 "reg_or_0_operand" "dYG")
-		      (match_operand:V4QI 2 "reg_or_0_operand" "dYG")]
-		     UNSPEC_CMPGDU_LT_QB))
-     (set (reg:CCDSP CCDSP_CC_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)
-			 (reg:CCDSP CCDSP_CC_REGNUM)]
-			UNSPEC_CMPGDU_LT_QB))])]
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:V4QI 1 "reg_or_0_operand" "dYG")
+		    (match_operand:V4QI 2 "reg_or_0_operand" "dYG")]
+		   UNSPEC_CMPGDU_LT_QB))
+   (set (reg:CCDSP CCDSP_CC_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)
+		       (reg:CCDSP CCDSP_CC_REGNUM)]
+		      UNSPEC_CMPGDU_LT_QB))]
   "ISA_HAS_DSPR2"
   "cmpgdu.lt.qb\t%0,%z1,%z2"
   [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_cmpgdu_le_qb"
-  [(parallel
-    [(set (match_operand:SI 0 "register_operand" "=d")
-	  (unspec:SI [(match_operand:V4QI 1 "reg_or_0_operand" "dYG")
-		      (match_operand:V4QI 2 "reg_or_0_operand" "dYG")]
-		     UNSPEC_CMPGDU_LE_QB))
-     (set (reg:CCDSP CCDSP_CC_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)
-			 (reg:CCDSP CCDSP_CC_REGNUM)]
-			UNSPEC_CMPGDU_LE_QB))])]
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:V4QI 1 "reg_or_0_operand" "dYG")
+		    (match_operand:V4QI 2 "reg_or_0_operand" "dYG")]
+		   UNSPEC_CMPGDU_LE_QB))
+   (set (reg:CCDSP CCDSP_CC_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)
+		       (reg:CCDSP CCDSP_CC_REGNUM)]
+		      UNSPEC_CMPGDU_LE_QB))]
   "ISA_HAS_DSPR2"
   "cmpgdu.le.qb\t%0,%z1,%z2"
   [(set_attr "type"	"dspalu")
@@ -227,69 +221,64 @@
    (set_attr "mode"	"SI")])
 
 (define_insn "mulv2hi3"
-  [(parallel
-    [(set (match_operand:V2HI 0 "register_operand" "=d")
-	  (mult:V2HI (match_operand:V2HI 1 "register_operand" "d")
-		     (match_operand:V2HI 2 "register_operand" "d")))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_MUL_PH))
-     (clobber (match_scratch:DI 3 "=x"))])]
+  [(set (match_operand:V2HI 0 "register_operand" "=d")
+	(mult:V2HI (match_operand:V2HI 1 "register_operand" "d")
+		   (match_operand:V2HI 2 "register_operand" "d")))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_MUL_PH))
+   (clobber (match_scratch:DI 3 "=x"))]
   "ISA_HAS_DSPR2"
   "mul.ph\t%0,%1,%2"
   [(set_attr "type"	"imul3")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_mul_s_ph"
-  [(parallel
-    [(set (match_operand:V2HI 0 "register_operand" "=d")
-	  (unspec:V2HI [(match_operand:V2HI 1 "reg_or_0_operand" "dYG")
-			(match_operand:V2HI 2 "reg_or_0_operand" "dYG")]
-		       UNSPEC_MUL_S_PH))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_MUL_S_PH))
-     (clobber (match_scratch:DI 3 "=x"))])]
+  [(set (match_operand:V2HI 0 "register_operand" "=d")
+	(unspec:V2HI [(match_operand:V2HI 1 "reg_or_0_operand" "dYG")
+		      (match_operand:V2HI 2 "reg_or_0_operand" "dYG")]
+		     UNSPEC_MUL_S_PH))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_MUL_S_PH))
+   (clobber (match_scratch:DI 3 "=x"))]
   "ISA_HAS_DSPR2"
   "mul_s.ph\t%0,%z1,%z2"
   [(set_attr "type"	"imul3")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_mulq_rs_w"
-  [(parallel
-    [(set (match_operand:SI 0 "register_operand" "=d")
-	  (unspec:SI [(match_operand:SI 1 "reg_or_0_operand" "dJ")
-		      (match_operand:SI 2 "reg_or_0_operand" "dJ")]
-		     UNSPEC_MULQ_RS_W))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_MULQ_RS_W))
-     (clobber (match_scratch:DI 3 "=x"))])]
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:SI 1 "reg_or_0_operand" "dJ")
+		    (match_operand:SI 2 "reg_or_0_operand" "dJ")]
+		   UNSPEC_MULQ_RS_W))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_MULQ_RS_W))
+   (clobber (match_scratch:DI 3 "=x"))]
   "ISA_HAS_DSPR2"
   "mulq_rs.w\t%0,%z1,%z2"
   [(set_attr "type"	"imul3")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_mulq_s_ph"
-  [(parallel
-    [(set (match_operand:V2HI 0 "register_operand" "=d")
-	  (unspec:V2HI [(match_operand:V2HI 1 "reg_or_0_operand" "dYG")
-			(match_operand:V2HI 2 "reg_or_0_operand" "dYG")]
-		       UNSPEC_MULQ_S_PH))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_MULQ_S_PH))
-     (clobber (match_scratch:DI 3 "=x"))])]
+  [(set (match_operand:V2HI 0 "register_operand" "=d")
+	(unspec:V2HI [(match_operand:V2HI 1 "reg_or_0_operand" "dYG")
+		      (match_operand:V2HI 2 "reg_or_0_operand" "dYG")]
+		     UNSPEC_MULQ_S_PH))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_MULQ_S_PH))
+   (clobber (match_scratch:DI 3 "=x"))]
   "ISA_HAS_DSPR2"
   "mulq_s.ph\t%0,%z1,%z2"
   [(set_attr "type"	"imul3")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_mulq_s_w"
-  [(parallel
-    [(set (match_operand:SI 0 "register_operand" "=d")
-	  (unspec:SI [(match_operand:SI 1 "reg_or_0_operand" "dJ")
-		      (match_operand:SI 2 "reg_or_0_operand" "dJ")]
-		     UNSPEC_MULQ_S_W))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_MULQ_S_W))
-     (clobber (match_scratch:DI 3 "=x"))])]
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:SI 1 "reg_or_0_operand" "dJ")
+		    (match_operand:SI 2 "reg_or_0_operand" "dJ")]
+		   UNSPEC_MULQ_S_W))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_MULQ_S_W))
+   (clobber (match_scratch:DI 3 "=x"))]
   "ISA_HAS_DSPR2"
   "mulq_s.w\t%0,%z1,%z2"
   [(set_attr "type"	"imul3")
@@ -418,26 +407,24 @@
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_subu_ph"
-  [(parallel
-    [(set (match_operand:V2HI 0 "register_operand" "=d")
-	  (unspec:V2HI [(match_operand:V2HI 1 "reg_or_0_operand" "dYG")
-			(match_operand:V2HI 2 "reg_or_0_operand" "dYG")]
-		       UNSPEC_SUBU_PH))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_SUBU_PH))])]
+  [(set (match_operand:V2HI 0 "register_operand" "=d")
+	(unspec:V2HI [(match_operand:V2HI 1 "reg_or_0_operand" "dYG")
+		      (match_operand:V2HI 2 "reg_or_0_operand" "dYG")]
+		     UNSPEC_SUBU_PH))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_SUBU_PH))]
   "ISA_HAS_DSPR2"
   "subu.ph\t%0,%z1,%z2"
   [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_subu_s_ph"
-  [(parallel
-    [(set (match_operand:V2HI 0 "register_operand" "=d")
-	  (unspec:V2HI [(match_operand:V2HI 1 "reg_or_0_operand" "dYG")
-			(match_operand:V2HI 2 "reg_or_0_operand" "dYG")]
-		       UNSPEC_SUBU_S_PH))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_SUBU_S_PH))])]
+  [(set (match_operand:V2HI 0 "register_operand" "=d")
+	(unspec:V2HI [(match_operand:V2HI 1 "reg_or_0_operand" "dYG")
+		      (match_operand:V2HI 2 "reg_or_0_operand" "dYG")]
+		     UNSPEC_SUBU_S_PH))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_SUBU_S_PH))]
   "ISA_HAS_DSPR2"
   "subu_s.ph\t%0,%z1,%z2"
   [(set_attr "type"	"dspalusat")
@@ -568,15 +555,14 @@
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_dpaqx_s_w_ph"
-  [(parallel
-    [(set (match_operand:DI 0 "register_operand" "=a")
-	  (unspec:DI [(match_operand:DI 1 "register_operand" "0")
-		      (match_operand:V2HI 2 "reg_or_0_operand" "dYG")
-		      (match_operand:V2HI 3 "reg_or_0_operand" "dYG")]
-		     UNSPEC_DPAQX_S_W_PH))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
-			UNSPEC_DPAQX_S_W_PH))])]
+  [(set (match_operand:DI 0 "register_operand" "=a")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "0")
+		    (match_operand:V2HI 2 "reg_or_0_operand" "dYG")
+		    (match_operand:V2HI 3 "reg_or_0_operand" "dYG")]
+		   UNSPEC_DPAQX_S_W_PH))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
+		      UNSPEC_DPAQX_S_W_PH))]
   "ISA_HAS_DSPR2 && !TARGET_64BIT"
   "dpaqx_s.w.ph\t%q0,%z2,%z3"
   [(set_attr "type"	"dspmac")
@@ -584,15 +570,14 @@
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_dpaqx_sa_w_ph"
-  [(parallel
-    [(set (match_operand:DI 0 "register_operand" "=a")
-	  (unspec:DI [(match_operand:DI 1 "register_operand" "0")
-		      (match_operand:V2HI 2 "reg_or_0_operand" "dYG")
-		      (match_operand:V2HI 3 "reg_or_0_operand" "dYG")]
-		     UNSPEC_DPAQX_SA_W_PH))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
-			UNSPEC_DPAQX_SA_W_PH))])]
+  [(set (match_operand:DI 0 "register_operand" "=a")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "0")
+		    (match_operand:V2HI 2 "reg_or_0_operand" "dYG")
+		    (match_operand:V2HI 3 "reg_or_0_operand" "dYG")]
+		   UNSPEC_DPAQX_SA_W_PH))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
+		      UNSPEC_DPAQX_SA_W_PH))]
   "ISA_HAS_DSPR2 && !TARGET_64BIT"
   "dpaqx_sa.w.ph\t%q0,%z2,%z3"
   [(set_attr "type"	"dspmacsat")
@@ -600,15 +585,14 @@
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_dpsqx_s_w_ph"
-  [(parallel
-    [(set (match_operand:DI 0 "register_operand" "=a")
-	  (unspec:DI [(match_operand:DI 1 "register_operand" "0")
-		      (match_operand:V2HI 2 "reg_or_0_operand" "dYG")
-		      (match_operand:V2HI 3 "reg_or_0_operand" "dYG")]
-		     UNSPEC_DPSQX_S_W_PH))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
-			UNSPEC_DPSQX_S_W_PH))])]
+  [(set (match_operand:DI 0 "register_operand" "=a")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "0")
+		    (match_operand:V2HI 2 "reg_or_0_operand" "dYG")
+		    (match_operand:V2HI 3 "reg_or_0_operand" "dYG")]
+		   UNSPEC_DPSQX_S_W_PH))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
+		      UNSPEC_DPSQX_S_W_PH))]
   "ISA_HAS_DSPR2 && !TARGET_64BIT"
   "dpsqx_s.w.ph\t%q0,%z2,%z3"
   [(set_attr "type"	"dspmac")
@@ -616,15 +600,14 @@
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_dpsqx_sa_w_ph"
-  [(parallel
-    [(set (match_operand:DI 0 "register_operand" "=a")
-	  (unspec:DI [(match_operand:DI 1 "register_operand" "0")
-		      (match_operand:V2HI 2 "reg_or_0_operand" "dYG")
-		      (match_operand:V2HI 3 "reg_or_0_operand" "dYG")]
-		     UNSPEC_DPSQX_SA_W_PH))
-     (set (reg:CCDSP CCDSP_OU_REGNUM)
-	  (unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
-			UNSPEC_DPSQX_SA_W_PH))])]
+  [(set (match_operand:DI 0 "register_operand" "=a")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "0")
+		    (match_operand:V2HI 2 "reg_or_0_operand" "dYG")
+		    (match_operand:V2HI 3 "reg_or_0_operand" "dYG")]
+		   UNSPEC_DPSQX_SA_W_PH))
+   (set (reg:CCDSP CCDSP_OU_REGNUM)
+	(unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
+		      UNSPEC_DPSQX_SA_W_PH))]
   "ISA_HAS_DSPR2 && !TARGET_64BIT"
   "dpsqx_sa.w.ph\t%q0,%z2,%z3"
   [(set_attr "type"	"dspmacsat")

@@ -1,5 +1,5 @@
 /* Perform instruction reorganizations for delay slot filling.
-   Copyright (C) 1992-2014 Free Software Foundation, Inc.
+   Copyright (C) 1992-2015 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
    Hacked by Michael Tiemann (tiemann@cygnus.com).
 
@@ -107,7 +107,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "rtl.h"
 #include "tm_p.h"
-#include "expr.h"
+#include "symtab.h"
 #include "hashtab.h"
 #include "hash-set.h"
 #include "vec.h"
@@ -115,7 +115,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
+#include "flags.h"
+#include "statistics.h"
+#include "double-int.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "alias.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
 #include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
+#include "expr.h"
 #include "conditions.h"
 #include "predict.h"
 #include "dominance.h"
@@ -123,7 +140,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "regs.h"
 #include "recog.h"
-#include "flags.h"
 #include "obstack.h"
 #include "insn-attr.h"
 #include "resource.h"
@@ -131,7 +147,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "target.h"
 #include "tree-pass.h"
-#include "emit-rtl.h"
 
 #ifdef DELAY_SLOTS
 

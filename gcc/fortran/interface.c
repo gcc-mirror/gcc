@@ -1,5 +1,5 @@
 /* Deal with interfaces.
-   Copyright (C) 2000-2014 Free Software Foundation, Inc.
+   Copyright (C) 2000-2015 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1922,6 +1922,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 {
   gfc_ref *ref;
   bool rank_check, is_pointer;
+  char err[200];
+  gfc_component *ppc;
 
   /* If the formal arg has type BT_VOID, it's to one of the iso_c_binding
      procs c_f_pointer or c_f_procpointer, and we need to accept most
@@ -1942,7 +1944,6 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   if (actual->ts.type == BT_PROCEDURE)
     {
-      char err[200];
       gfc_symbol *act_sym = actual->symtree->n.sym;
 
       if (formal->attr.flavor != FL_PROCEDURE)
@@ -1974,6 +1975,19 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 			    &act_sym->declared_at);
 
       return 1;
+    }
+
+  ppc = gfc_get_proc_ptr_comp (actual);
+  if (ppc)
+    {
+      if (!gfc_compare_interfaces (formal, ppc->ts.interface, ppc->name, 0, 1,
+				   err, sizeof(err), NULL, NULL))
+	{
+	  if (where)
+	    gfc_error ("Interface mismatch in dummy procedure %qs at %L: %s",
+		       formal->name, &actual->where, err);
+	  return 0;
+	}
     }
 
   /* F2008, C1241.  */
@@ -2503,6 +2517,18 @@ gfc_has_vector_subscript (gfc_expr *e)
 }
 
 
+static bool
+is_procptr_result (gfc_expr *expr)
+{
+  gfc_component *c = gfc_get_proc_ptr_comp (expr);
+  if (c)
+    return (c->ts.interface && (c->ts.interface->attr.proc_pointer == 1));
+  else
+    return ((expr->symtree->n.sym->result != expr->symtree->n.sym)
+	    && (expr->symtree->n.sym->result->attr.proc_pointer == 1));
+}
+
+
 /* Given formal and actual argument lists, see if they are compatible.
    If they are compatible, the actual argument list is sorted to
    correspond with the formal list, and elements for missing optional
@@ -2724,10 +2750,10 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
          argument is provided for a procedure pointer formal argument.  */
       if (f->sym->attr.proc_pointer
 	  && !((a->expr->expr_type == EXPR_VARIABLE
-		&& a->expr->symtree->n.sym->attr.proc_pointer)
+		&& (a->expr->symtree->n.sym->attr.proc_pointer
+		    || gfc_is_proc_ptr_comp (a->expr)))
 	       || (a->expr->expr_type == EXPR_FUNCTION
-		   && a->expr->symtree->n.sym->result->attr.proc_pointer)
-	       || gfc_is_proc_ptr_comp (a->expr)))
+		   && is_procptr_result (a->expr))))
 	{
 	  if (where)
 	    gfc_error ("Expected a procedure pointer for argument %qs at %L",
@@ -2738,7 +2764,12 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
       /* Satisfy F03:12.4.1.3 by ensuring that a procedure actual argument is
 	 provided for a procedure formal argument.  */
       if (f->sym->attr.flavor == FL_PROCEDURE
-	  && gfc_expr_attr (a->expr).flavor != FL_PROCEDURE)
+	  && !((a->expr->expr_type == EXPR_VARIABLE
+		&& (a->expr->symtree->n.sym->attr.flavor == FL_PROCEDURE
+		    || a->expr->symtree->n.sym->attr.proc_pointer
+		    || gfc_is_proc_ptr_comp (a->expr)))
+	       || (a->expr->expr_type == EXPR_FUNCTION
+		   && is_procptr_result (a->expr))))
 	{
 	  if (where)
 	    gfc_error ("Expected a procedure for argument %qs at %L",
@@ -3689,6 +3720,8 @@ gfc_extend_expr (gfc_expr *e)
   gfc_user_op *uop;
   gfc_intrinsic_op i;
   const char *gname;
+  gfc_typebound_proc* tbo;
+  gfc_expr* tb_base;
 
   sym = NULL;
 
@@ -3705,6 +3738,48 @@ gfc_extend_expr (gfc_expr *e)
 
   i = fold_unary_intrinsic (e->value.op.op);
 
+  /* See if we find a matching type-bound operator.  */
+  if (i == INTRINSIC_USER)
+    tbo = matching_typebound_op (&tb_base, actual,
+				  i, e->value.op.uop->name, &gname);
+  else
+    switch (i)
+      {
+#define CHECK_OS_COMPARISON(comp) \
+  case INTRINSIC_##comp: \
+  case INTRINSIC_##comp##_OS: \
+    tbo = matching_typebound_op (&tb_base, actual, \
+				 INTRINSIC_##comp, NULL, &gname); \
+    if (!tbo) \
+      tbo = matching_typebound_op (&tb_base, actual, \
+				   INTRINSIC_##comp##_OS, NULL, &gname); \
+    break;
+	CHECK_OS_COMPARISON(EQ)
+	CHECK_OS_COMPARISON(NE)
+	CHECK_OS_COMPARISON(GT)
+	CHECK_OS_COMPARISON(GE)
+	CHECK_OS_COMPARISON(LT)
+	CHECK_OS_COMPARISON(LE)
+#undef CHECK_OS_COMPARISON
+
+	default:
+	  tbo = matching_typebound_op (&tb_base, actual, i, NULL, &gname);
+	  break;
+      }
+
+  /* If there is a matching typebound-operator, replace the expression with
+      a call to it and succeed.  */
+  if (tbo)
+    {
+      gcc_assert (tb_base);
+      build_compcall_for_operator (e, actual, tb_base, tbo, gname);
+
+      if (!gfc_resolve_expr (e))
+	return MATCH_ERROR;
+      else
+	return MATCH_YES;
+    }
+ 
   if (i == INTRINSIC_USER)
     {
       for (ns = gfc_current_ns; ns; ns = ns->parent)
@@ -3755,58 +3830,9 @@ gfc_extend_expr (gfc_expr *e)
 
   if (sym == NULL)
     {
-      gfc_typebound_proc* tbo;
-      gfc_expr* tb_base;
-
-      /* See if we find a matching type-bound operator.  */
-      if (i == INTRINSIC_USER)
-	tbo = matching_typebound_op (&tb_base, actual,
-				     i, e->value.op.uop->name, &gname);
-      else
-	switch (i)
-	  {
-#define CHECK_OS_COMPARISON(comp) \
-  case INTRINSIC_##comp: \
-  case INTRINSIC_##comp##_OS: \
-    tbo = matching_typebound_op (&tb_base, actual, \
-				 INTRINSIC_##comp, NULL, &gname); \
-    if (!tbo) \
-      tbo = matching_typebound_op (&tb_base, actual, \
-				   INTRINSIC_##comp##_OS, NULL, &gname); \
-    break;
-	    CHECK_OS_COMPARISON(EQ)
-	    CHECK_OS_COMPARISON(NE)
-	    CHECK_OS_COMPARISON(GT)
-	    CHECK_OS_COMPARISON(GE)
-	    CHECK_OS_COMPARISON(LT)
-	    CHECK_OS_COMPARISON(LE)
-#undef CHECK_OS_COMPARISON
-
-	    default:
-	      tbo = matching_typebound_op (&tb_base, actual, i, NULL, &gname);
-	      break;
-	  }
-
-      /* If there is a matching typebound-operator, replace the expression with
-	 a call to it and succeed.  */
-      if (tbo)
-	{
-	  bool result;
-
-	  gcc_assert (tb_base);
-	  build_compcall_for_operator (e, actual, tb_base, tbo, gname);
-
-	  result = gfc_resolve_expr (e);
-	  if (!result)
-	    return MATCH_ERROR;
-
-	  return MATCH_YES;
-	}
-
       /* Don't use gfc_free_actual_arglist().  */
       free (actual->next);
       free (actual);
-
       return MATCH_NO;
     }
 

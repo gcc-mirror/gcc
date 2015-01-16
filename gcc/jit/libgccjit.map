@@ -1,5 +1,5 @@
 # Linker script for libgccjit.so
-#   Copyright (C) 2013-2014 Free Software Foundation, Inc.
+#   Copyright (C) 2013-2015 Free Software Foundation, Inc.
 #   Contributed by David Malcolm <dmalcolm@redhat.com>.
 #
 # This file is part of GCC.
@@ -33,9 +33,11 @@
     gcc_jit_context_acquire;
     gcc_jit_context_compile;
     gcc_jit_context_dump_to_file;
+    gcc_jit_context_dump_reproducer_to_file;
     gcc_jit_context_enable_dump;
     gcc_jit_context_get_builtin_function;
     gcc_jit_context_get_first_error;
+    gcc_jit_context_get_last_error;
     gcc_jit_context_get_type;
     gcc_jit_context_get_int_type;
     gcc_jit_context_new_array_access;
@@ -55,6 +57,7 @@
     gcc_jit_context_new_param;
     gcc_jit_context_new_rvalue_from_double;
     gcc_jit_context_new_rvalue_from_int;
+    gcc_jit_context_new_rvalue_from_long;
     gcc_jit_context_new_rvalue_from_ptr;
     gcc_jit_context_new_string_literal;
     gcc_jit_context_new_struct_type;
@@ -65,6 +68,7 @@
     gcc_jit_context_release;
     gcc_jit_context_set_bool_option;
     gcc_jit_context_set_int_option;
+    gcc_jit_context_set_logfile;
     gcc_jit_context_set_str_option;
     gcc_jit_context_zero;
     gcc_jit_field_as_object;
@@ -84,6 +88,7 @@
     gcc_jit_param_as_object;
     gcc_jit_param_as_rvalue;
     gcc_jit_result_get_code;
+    gcc_jit_result_get_global;
     gcc_jit_result_release;
     gcc_jit_rvalue_access_field;
     gcc_jit_rvalue_as_object;
