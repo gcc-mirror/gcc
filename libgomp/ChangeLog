@@ -1,3 +1,8 @@
+2015-01-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-parallel.c: Don't include <alloca.h>.
+	(GOACC_parallel): Use gomp_alloca instead of alloca.
+
 2015-01-16  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* target.c (num_devices): Guard with PLUGIN_SUPPORT.
