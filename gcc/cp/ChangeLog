@@ -1,3 +1,8 @@
+2015-01-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/62053
+	* tree.c (build_cplus_array_type): Layout type after variants are set.
+
 2015-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-gimplify.c (cp_genericize_r): Call
