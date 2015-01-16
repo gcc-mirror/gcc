@@ -1,5 +1,10 @@
 2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* doc/invoke.texi (NDS32 Options): Remove -mforce-fp-as-gp,
+	-mforbid-fp-as-gp, and -mex9 options.
+
+2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* doc/invoke.texi (NDS32 Options): Add -mcmodel= option and
 	remove -mgp-direct option.
 
