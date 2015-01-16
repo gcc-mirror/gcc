@@ -58,9 +58,36 @@ mcache-volatile
 Target Report RejectNegative Undocumented InverseMask(BYPASS_CACHE_VOLATILE)
 Volatile memory accesses do not use I/O load/store instructions
 
+mgpopt=
+Target RejectNegative Joined Enum(nios2_gpopt_type) Var(nios2_gpopt_option) Init(gpopt_unspecified)
+Enable/disable GP-relative addressing.
+
+Enum
+Name(nios2_gpopt_type) Type(enum nios2_gpopt_type)
+Valid options for GP-relative addressing (for -mgpopt):
+
+EnumValue
+Enum(nios2_gpopt_type) String(none) Value(gpopt_none)
+
+EnumValue
+Enum(nios2_gpopt_type) String(local) Value(gpopt_local)
+
+EnumValue
+Enum(nios2_gpopt_type) String(global) Value(gpopt_global)
+
+EnumValue
+Enum(nios2_gpopt_type) String(data) Value(gpopt_data)
+
+EnumValue
+Enum(nios2_gpopt_type) String(all) Value(gpopt_all)
+
 mgpopt
-Target Report Var(TARGET_GPOPT) Init(-1)
-Use GP-relative addressing to access small data
+Target Report RejectNegative Var(nios2_gpopt_option, gpopt_local)
+Equivalent to -mgpopt=local.
+
+mno-gpopt
+Target Report RejectNegative Var(nios2_gpopt_option, gpopt_none)
+Equivalent to -mgpopt=none.
 
 meb
 Target Report RejectNegative Mask(BIG_ENDIAN)

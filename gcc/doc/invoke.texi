@@ -869,7 +869,8 @@ Objective-C and Objective-C++ Dialects}.
 -mex9 -mctor-dtor -mrelax}
 
 @emph{Nios II Options}
-@gccoptlist{-G @var{num} -mgpopt -mno-gpopt -mel -meb @gol
+@gccoptlist{-G @var{num} -mgpopt=@var{option} -mgpopt -mno-gpopt @gol
+-mel -meb @gol
 -mno-bypass-cache -mbypass-cache @gol
 -mno-cache-volatile -mcache-volatile @gol
 -mno-fast-sw-div -mfast-sw-div @gol
@@ -19214,15 +19215,54 @@ Put global and static objects less than or equal to @var{num} bytes
 into the small data or BSS sections instead of the normal data or BSS
 sections.  The default value of @var{num} is 8.
 
+@item -mgpopt=@var{option}
 @item -mgpopt
 @itemx -mno-gpopt
 @opindex mgpopt
 @opindex mno-gpopt
-Generate (do not generate) GP-relative accesses for objects in the
-small data or BSS sections.  The default is @option{-mgpopt} except
-when @option{-fpic} or @option{-fPIC} is specified to generate
-position-independent code.  Note that the Nios II ABI does not permit
-GP-relative accesses from shared libraries.
+Generate (do not generate) GP-relative accesses.  The following 
+@var{option} names are recognized:
+
+@table @samp
+
+@item none
+Do not generate GP-relative accesses.
+
+@item local
+Generate GP-relative accesses for small data objects that are not 
+external or weak.  Also use GP-relative addressing for objects that
+have been explicitly placed in a small data section via a @code{section}
+attribute.
+
+@item global
+As for @samp{local}, but also generate GP-relative accesses for
+small data objects that are external or weak.  If you use this option,
+you must ensure that all parts of your program (including libraries) are
+compiled with the same @option{-G} setting.
+
+@item data
+Generate GP-relative accesses for all data objects in the program.  If you
+use this option, the entire data and BSS segments
+of your program must fit in 64K of memory and you must use an appropriate
+linker script to allocate them within the addressible range of the
+global pointer.
+
+@item all
+Generate GP-relative addresses for function pointers as well as data
+pointers.  If you use this option, the entire text, data, and BSS segments
+of your program must fit in 64K of memory and you must use an appropriate
+linker script to allocate them within the addressible range of the
+global pointer.
+
+@end table
+
+@option{-mgpopt} is equivalent to @option{-mgpopt=local}, and
+@option{-mno-gpopt} is equivalent to @option{-mgpopt=none}.
+
+The default is @option{-mgpopt} except when @option{-fpic} or
+@option{-fPIC} is specified to generate position-independent code.
+Note that the Nios II ABI does not permit GP-relative accesses from
+shared libraries.
 
 You may need to specify @option{-mno-gpopt} explicitly when building
 programs that include large amounts of small data, including large

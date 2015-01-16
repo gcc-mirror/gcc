@@ -20,6 +20,18 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef NIOS2_OPTS_H
 #define NIOS2_OPTS_H
 
+/* Enumerate the possible -mgpopt choices.  */
+enum nios2_gpopt_type
+{
+  gpopt_unspecified = -1,
+  gpopt_none,
+  gpopt_local,
+  gpopt_global,
+  gpopt_data,
+  gpopt_all
+};
+
+
 /* Enumeration of all FPU insn codes.  */
 #define N2FPU_ALL_CODES							\
   N2FPU_CODE(fadds) N2FPU_CODE(fsubs) N2FPU_CODE(fmuls) N2FPU_CODE(fdivs) \
