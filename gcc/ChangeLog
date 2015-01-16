@@ -1,5 +1,12 @@
 2015-01-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (TARGET_LIBGCC_CMP_RETURN_MODE,
+	TARGET_LIBGCC_SHIFT_COUNT_MODE, TARGET_UNWIND_WORD_MODE): Implement
+	as ...
+	(rs6000_abi_word_mode): New function.
+
+2015-01-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.c (rs6000_va_start): Use MIN_UNITS_PER_WORD
 	instead of UNITS_PER_WORD to describe the size of stack slots.
 
