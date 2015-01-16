@@ -1,3 +1,11 @@
+2015-01-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+            Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>
+
+	PR target/64263
+	* config/aarch64/aarch64.md (*movsi_aarch64): Don't split if the
+	destination is not a GP reg.
+	(*movdi_aarch64): Likewise.
+
 2015-01-16  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/64623
