@@ -1,5 +1,18 @@
 2015-01-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/locale_conv.h (wstring_convert, wbuffer_convert): New.
+	* include/std/locale: Include new header.
+	* include/Makefile.am: Add it.
+	* include/Makefile.in: Regenerate.
+	* testsuite/22_locale/conversions/buffer/requirements/typedefs.cc: New.
+	* testsuite/22_locale/conversions/string/1.cc: New.
+	* testsuite/22_locale/conversions/string/2.cc: New.
+	* testsuite/22_locale/conversions/string/requirements/typedefs.cc: New.
+	* testsuite/22_locale/conversions/string/requirements/typedefs-2.cc:
+	New.
+
+2015-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
 	* config/abi/pre/gnu.ver: Export new symbols.
 	* include/Makefile.am: Add codecvt.
 	* include/Makefile.in: Regenerate.
