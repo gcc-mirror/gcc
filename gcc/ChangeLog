@@ -1,3 +1,8 @@
+2015-01-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* optc-save-gen.awk (cl_target_option_print_diff): Mark indent,
+	ptr1, ptr2 unused.
+
 2015-01-16  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* lra-constraints.c (curr_insn_transform): Change a reload pseudo of
