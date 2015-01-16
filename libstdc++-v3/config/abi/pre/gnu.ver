@@ -1764,6 +1764,11 @@ GLIBCXX_3.4.21 {
     _ZNSt7codecvtID[is]c11__mbstate_t*;
     _ZT[ISV]St7codecvtID[is]c11__mbstate_tE;
 
+    extern "C++"
+    {
+      std::__atomic_futex_unsigned_base*;
+    };
+
 } GLIBCXX_3.4.20;
 
 

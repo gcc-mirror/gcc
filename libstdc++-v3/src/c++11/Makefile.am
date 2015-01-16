@@ -60,6 +60,7 @@ sources = \
 	debug.cc \
 	functexcept.cc \
 	functional.cc \
+	futex.cc \
 	future.cc \
 	hash_c++0x.cc \
 	hashtable_c++0x.cc \

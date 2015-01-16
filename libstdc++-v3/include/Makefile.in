@@ -351,6 +351,7 @@ bits_headers = \
 	${bits_srcdir}/allocated_ptr.h \
 	${bits_srcdir}/allocator.h \
 	${bits_srcdir}/atomic_base.h \
+	${bits_srcdir}/atomic_futex.h \
 	${bits_srcdir}/basic_ios.h \
 	${bits_srcdir}/basic_ios.tcc \
 	${bits_srcdir}/basic_string.h \
