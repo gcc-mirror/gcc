@@ -1,3 +1,15 @@
+2015-01-16  Torvald Riegel  <triegel@redhat.com>
+
+	* src/c++11/futex.cc: New file.
+	* include/bits/atomic_futex.h: New file.
+	* include/std/future (__future_base::_State_baseV2): Use
+	atomic_futex_unsigned instead of mutex+condvar.
+	* src/c++11/futex.cc: Likewise.
+	* include/Makefile.am: Add atomic_futex.h.
+	* include/Makefile.in: Likewise.
+	* src/c++11/Makefile.am: Add futex.cc.
+	* src/c++11/Makefile.in: Likewise.
+
 2015-01-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4: Fix typo in comment.

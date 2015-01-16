@@ -74,7 +74,7 @@ libc__11convenience_la_LIBADD =
 am__objects_2 = ctype_configure_char.lo ctype_members.lo
 am__objects_3 = chrono.lo codecvt.lo condition_variable.lo \
 	cow-stdexcept.lo ctype.lo debug.lo functexcept.lo \
-	functional.lo future.lo hash_c++0x.lo hashtable_c++0x.lo \
+	functional.lo futex.lo future.lo hash_c++0x.lo hashtable_c++0x.lo \
 	ios.lo limits.lo mutex.lo placeholders.lo random.lo regex.lo \
 	shared_ptr.lo snprintf_lite.lo system_error.lo thread.lo \
 	$(am__objects_1) $(am__objects_2)
@@ -351,6 +351,7 @@ sources = \
 	debug.cc \
 	functexcept.cc \
 	functional.cc \
+	futex.cc \
 	future.cc \
 	hash_c++0x.cc \
 	hashtable_c++0x.cc \
