@@ -1,3 +1,9 @@
+2015-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61743
+	* gcc.dg/tree-ssa/pr61743-1.c: Add -fno-tree-vectorize.
+	* gcc.dg/tree-ssa/pr61743-2.c: Likewise.
+
 2015-01-16  Zhenqiang Chen <zhenqiang.chen@arm.com>
 
 	* gcc.dg/pr64015.c: New test.
