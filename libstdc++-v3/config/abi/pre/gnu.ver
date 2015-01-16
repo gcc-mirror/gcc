@@ -1759,6 +1759,11 @@ GLIBCXX_3.4.21 {
     _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE3getES3_S3_RSt8ios_baseRSt12_Ios_IostateP2tmPK[cw]SC_;
     _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE6do_getES3_S3_RSt8ios_baseRSt12_Ios_IostateP2tmcc;
 
+    # codecvt<char16_t, char, mbstate_t>, codecvt<char32_t, char, mbstate_t>
+    _ZNKSt7codecvtID[is]c11__mbstate_t*;
+    _ZNSt7codecvtID[is]c11__mbstate_t*;
+    _ZT[ISV]St7codecvtID[is]c11__mbstate_tE;
+
 } GLIBCXX_3.4.20;
 
 

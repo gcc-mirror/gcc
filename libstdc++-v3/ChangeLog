@@ -1,3 +1,23 @@
+2015-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4: Fix typo in comment.
+	* configure: Regenerate.
+	* include/bits/codecvt.h (codecvt<char16_t, char, mbstate_t>,
+	codecvt<char16_t, char, mbstate_t>): Declare specializations.
+	* include/bits/locale_facets.h: Reserve space for new specializations.
+	* src/c++11/Makefile.am: Add codecvt.cc.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/codecvt.cc: New.
+	* src/c++98/Makefile.am: Compile locale_init.cc and localename.cc
+	with -std=gnu++11.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/locale_init.cc: Initialize new codecvt specializations.
+	* src/c++98/localename.cc: Likewise.
+	* config/abi/pre/gnu.ver: Exports for new codecvt specializations.
+	* testsuite/22_locale/codecvt/utf8.cc: New.
+	* testsuite/22_locale/locale/cons/unicode.cc: Check that new
+	specializations are installed in locale objects.
+
 2015-01-16  Torvald Riegel  <triegel@redhat.com>
 
 	* include/std/shared_mutex (shared_timed_mutex): Add POSIX-based
