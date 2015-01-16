@@ -1655,7 +1655,18 @@ inline_small_functions (void)
       reset_edge_growth_cache (edge);
       gcc_assert (old_size_est == estimate_edge_size (edge));
       gcc_assert (old_time_est == estimate_edge_time (edge));
-      gcc_assert (old_hints_est == estimate_edge_hints (edge));
+      /* FIXME:
+
+         gcc_assert (old_hints_est == estimate_edge_hints (edge));
+
+	 fails with profile feedback because some hints depends on
+	 maybe_hot_edge_p predicate and because callee gets inlined to other
+	 calls, the edge may become cold.
+	 This ought to be fixed by computing relative probabilities
+	 for given invocation but that will be better done once whole
+	 code is converted to sreals.  Disable for now and revert to "wrong"
+	 value so enable/disable checking paths agree.  */
+      edge_growth_cache[edge->uid].hints = old_hints_est + 1;
 
       /* When updating the edge costs, we only decrease badness in the keys.
 	 Increases of badness are handled lazilly; when we see key with out
