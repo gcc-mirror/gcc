@@ -188,7 +188,7 @@
 
 ;; Scheduling
 (include "../arm/cortex-a53.md")
-(include "../arm/cortex-a15.md")
+(include "../arm/cortex-a57.md")
 (include "thunderx.md")
 (include "../arm/xgene1.md")
 
