@@ -5,6 +5,10 @@
 
 2015-01-16  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vld1_lane.c: New file.
+
+2015-01-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h (CHECK):
 	Add trace.
         (CHECK_FP): Likewise.
