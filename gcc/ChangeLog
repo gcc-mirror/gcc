@@ -1,3 +1,8 @@
+2015-01-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md: Move comment about splitting Thumb1 patterns to...
+	* config/arm/thumb1.md: ... Here.
+
 2015-01-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_scalar_mode_supported_p): Disallow
