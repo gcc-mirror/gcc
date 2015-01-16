@@ -1,3 +1,7 @@
+2015-01-16  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* gcc.c-torture/compile/20150108.c: New test.
+
 2015-01-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/visium: New directory.
