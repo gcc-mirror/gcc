@@ -1,3 +1,8 @@
+2015-01-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (inline_small_functions): Work around hints
+	cache issue.
+
 2015-01-15  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR target/59710
