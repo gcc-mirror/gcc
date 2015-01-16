@@ -1,3 +1,9 @@
+2015-01-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/62066
+	* config/arm/arm-builtins.c (arm_expand_neon_args): Call va_end before
+	early return 0.
+
 2015-01-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* sanitizer.def (BUILT_IN_TSAN_VPTR_UPDATE): Fixed parameters.

@@ -2064,7 +2064,10 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
             case NEON_ARG_MEMORY:
 	      /* Check if expand failed.  */
 	      if (op[argc] == const0_rtx)
+	      {
+		va_end (ap);
 		return 0;
+	      }
 	      gcc_assert (MEM_P (op[argc]));
 	      PUT_MODE (op[argc], mode[argc]);
 	      /* ??? arm_neon.h uses the same built-in functions for signed
