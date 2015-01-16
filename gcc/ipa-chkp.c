@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "cgraph.h"
 #include "tree-chkp.h"
+#include "tree-inline.h"
 #include "ipa-chkp.h"
 
 /*  Pointer Bounds Checker has two IPA passes to support code instrumentation.
@@ -401,6 +402,18 @@ chkp_maybe_clone_builtin_fndecl (tree fndecl)
   return clone;
 }
 
+/* Return 1 if function FNDECL should be instrumented.  */
+
+bool
+chkp_instrumentable_p (tree fndecl)
+{
+  struct function *fn = DECL_STRUCT_FUNCTION (fndecl);
+  return (!lookup_attribute ("bnd_legacy", DECL_ATTRIBUTES (fndecl))
+	  && (!flag_chkp_instrument_marked_only
+	      || lookup_attribute ("bnd_instrument", DECL_ATTRIBUTES (fndecl)))
+	  && (!fn || !copy_forbidden (fn, fndecl)));
+}
+
 /* Return clone created for instrumentation of NODE or NULL.  */
 
 cgraph_node *
@@ -483,10 +496,10 @@ chkp_maybe_create_clone (tree fndecl)
 	{
 	  /* If function will not be instrumented, then it's instrumented
 	     version is a thunk for the original.  */
-	  if (lookup_attribute ("bnd_legacy", DECL_ATTRIBUTES (fndecl))
-	      || (flag_chkp_instrument_marked_only
-		  && !lookup_attribute ("bnd_instrument", DECL_ATTRIBUTES (fndecl))))
+	  if (!chkp_instrumentable_p (fndecl))
 	    {
+	      clone->remove_callees ();
+	      clone->remove_all_references ();
 	      clone->thunk.thunk_p = true;
 	      clone->thunk.add_pointer_bounds_args = true;
 	      clone->create_edge (node, NULL, 0, CGRAPH_FREQ_BASE);
@@ -532,7 +545,8 @@ chkp_maybe_create_clone (tree fndecl)
 
       /* Clone all thunks.  */
       for (e = node->callers; e; e = e->next_caller)
-	if (e->caller->thunk.thunk_p)
+	if (e->caller->thunk.thunk_p
+	    && !e->caller->thunk.add_pointer_bounds_args)
 	  {
 	    struct cgraph_node *thunk
 	      = chkp_maybe_create_clone (e->caller->decl);
@@ -578,6 +592,7 @@ static unsigned int
 chkp_versioning (void)
 {
   struct cgraph_node *node;
+  const char *reason;
 
   bitmap_obstack_initialize (NULL);
 
@@ -587,14 +602,20 @@ chkp_versioning (void)
 	  && !node->instrumented_version
 	  && !node->alias
 	  && !node->thunk.thunk_p
-	  && !lookup_attribute ("bnd_legacy", DECL_ATTRIBUTES (node->decl))
-	  && (!flag_chkp_instrument_marked_only
-	      || lookup_attribute ("bnd_instrument",
-				   DECL_ATTRIBUTES (node->decl)))
 	  && (!DECL_BUILT_IN (node->decl)
 	      || (DECL_BUILT_IN_CLASS (node->decl) == BUILT_IN_NORMAL
 		  && DECL_FUNCTION_CODE (node->decl) < BEGIN_CHKP_BUILTINS)))
-	chkp_maybe_create_clone (node->decl);
+	{
+	  if (chkp_instrumentable_p (node->decl))
+	    chkp_maybe_create_clone (node->decl);
+	  else if ((reason = copy_forbidden (DECL_STRUCT_FUNCTION (node->decl),
+					     node->decl)))
+	    {
+	      if (warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wchkp,
+			      "function cannot be instrumented"))
+		inform (DECL_SOURCE_LOCATION (node->decl), reason, node->decl);
+	    }
+	}
     }
 
   /* Mark all aliases and thunks of functions with no instrumented
