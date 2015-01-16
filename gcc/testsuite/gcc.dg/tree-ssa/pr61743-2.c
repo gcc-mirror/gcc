@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -funroll-loops -fdump-tree-cunroll-details" } */
+/* { dg-options "-O3 -funroll-loops -fno-tree-vectorize -fdump-tree-cunroll-details" } */
 
 #define N 8
 #define M 14
