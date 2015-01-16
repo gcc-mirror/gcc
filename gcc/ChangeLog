@@ -1,5 +1,12 @@
 2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/constants.md (UNSPEC_VOLATILE_POP25_RETURN): New.
+	* config/nds32/nds32.md (pop25return): New.
+	* config/nds32/nds32.c (nds32_expand_epilogue_v3pop): Emit
+	pop25return pattern.
+
+2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* doc/invoke.texi (NDS32 Options): Remove -mforce-fp-as-gp,
 	-mforbid-fp-as-gp, and -mex9 options.
 
