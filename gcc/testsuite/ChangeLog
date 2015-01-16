@@ -1,3 +1,8 @@
+2015-01-16  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/64353
+	* g++.dg/pr64353.C: New.
+
 2015-01-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/64263
