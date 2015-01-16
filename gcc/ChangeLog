@@ -1,5 +1,10 @@
 2015-01-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (rs6000_va_start): Use MIN_UNITS_PER_WORD
+	instead of UNITS_PER_WORD to describe the size of stack slots.
+
+2015-01-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.c (TARGET_PROMOTE_FUNCTION_MODE): Implement
 	as rs6000_promote_function_mode.  Move comment to there.
 	(rs6000_promote_function_mode): New function.
