@@ -57,7 +57,7 @@ _GLIBCXX_LOC_ID(_ZNSt8messagesIwE2idE);
 
 namespace 
 {
-  const int num_facets = _GLIBCXX_NUM_FACETS
+  const int num_facets = _GLIBCXX_NUM_FACETS + _GLIBCXX_NUM_UNICODE_FACETS
     + (_GLIBCXX_USE_DUAL_ABI ? _GLIBCXX_NUM_CXX11_FACETS : 0);
 
   __gnu_cxx::__mutex&
@@ -201,6 +201,16 @@ namespace
   fake_messages_w messages_w;
 #endif
 
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+  typedef char fake_codecvt_c16[sizeof(codecvt<char16_t, char, mbstate_t>)]
+  __attribute__ ((aligned(__alignof__(codecvt<char16_t, char, mbstate_t>))));
+  fake_codecvt_c16 codecvt_c16;
+
+  typedef char fake_codecvt_c32[sizeof(codecvt<char32_t, char, mbstate_t>)]
+  __attribute__ ((aligned(__alignof__(codecvt<char32_t, char, mbstate_t>))));
+  fake_codecvt_c32 codecvt_c32;
+#endif
+
   // Storage for "C" locale caches.
   typedef char fake_num_cache_c[sizeof(std::__numpunct_cache<char>)]
   __attribute__ ((aligned(__alignof__(std::__numpunct_cache<char>))));
@@ -318,6 +328,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_WCHAR_T
     &std::ctype<wchar_t>::id,
     &codecvt<wchar_t, char, mbstate_t>::id,
+#endif
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+    &codecvt<char16_t, char, mbstate_t>::id,
+    &codecvt<char32_t, char, mbstate_t>::id,
 #endif
     0
   };
@@ -520,6 +534,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_init_facet(new (&time_get_w) time_get<wchar_t>(1));
     _M_init_facet(new (&time_put_w) time_put<wchar_t>(1));
     _M_init_facet(new (&messages_w) std::messages<wchar_t>(1));
+#endif
+
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+    _M_init_facet(new (&codecvt_c16) codecvt<char16_t, char, mbstate_t>(1));
+    _M_init_facet(new (&codecvt_c32) codecvt<char32_t, char, mbstate_t>(1));
 #endif
 
 #if _GLIBCXX_USE_DUAL_ABI
