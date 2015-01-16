@@ -1780,8 +1780,8 @@ match_pointer_init (gfc_expr **init, int procptr)
       return MATCH_ERROR;
     }
 
-  if (!procptr)
-    gfc_resolve_expr (*init);
+  if (!procptr && !gfc_resolve_expr (*init))
+    return MATCH_ERROR;
 
   if (!gfc_notify_std (GFC_STD_F2008, "non-NULL pointer "
 		       "initialization at %C"))

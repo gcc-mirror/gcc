@@ -1,3 +1,8 @@
+2015-01-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45290
+	* gfortran.dg/pointer_init_6.f90: Extended.
+
 2015-01-16  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* gcc.c-torture/compile/20150108.c: New test.

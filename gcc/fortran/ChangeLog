@@ -1,3 +1,9 @@
+2015-01-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45290
+	* decl.c (match_pointer_init): Error out if resolution of init expr
+	failed.
+
 2015-01-15  Tobias Burnus  <burnus@net-b.de>
 
 	* openmp.c (check_symbol_not_pointer, resolve_oacc_data_clauses,
