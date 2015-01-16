@@ -1,3 +1,8 @@
+2015-01-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* g++.dg/abi/mangle-abi-crypto.C: Add crypto options, rather
+	than Neon options.
+
 2014-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/62276
