@@ -1,3 +1,12 @@
+2015-01-15  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR target/59710
+	* gcc.target/nios2/gpopt-all.c: New test case.
+	* gcc.target/nios2/gpopt-local.c: New test case.
+	* gcc.target/nios2/gpopt-global.c: New test case.
+	* gcc.target/nios2/gpopt-data.c: New test case.
+	* gcc.target/nios2/gpopt-none.c: New test case.
+
 2015-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/ubsan/vptr-1.C: New test.

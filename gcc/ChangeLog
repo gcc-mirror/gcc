@@ -1,3 +1,19 @@
+2015-01-15  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR target/59710
+	* doc/invoke.texi (Option Summary): Document new Nios II
+	-mgpopt= syntax.
+	(Nios II Options): Likewise.
+	* config/nios2/nios2.opt: Add -mgpopt= option support.
+	Modify existing -mgpopt and -mno-gpopt options to be aliases.
+	* config/nios2/nios2-opts.h (enum nios2_gpopt_type): New.
+	* config/nios2/nios2.c (nios2_option_override): Adjust
+	-mgpopt defaulting.
+	(nios2_in_small_data_p): Return true for explicit small data
+	sections even with -G0.
+	(nios2_symbol_ref_in_small_data_p): Adjust to handle new -mgpopt=
+	option choices.
+
 2015-01-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/64612

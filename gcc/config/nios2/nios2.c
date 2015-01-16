@@ -1038,9 +1038,14 @@ nios2_option_override (void)
     = (global_options_set.x_g_switch_value
        ? g_switch_value : NIOS2_DEFAULT_GVALUE);
 
-  /* Default to -mgpopt unless -fpic or -fPIC.  */
-  if (TARGET_GPOPT == -1 && flag_pic)
-    TARGET_GPOPT = 0;
+  if (nios2_gpopt_option == gpopt_unspecified)
+    {
+      /* Default to -mgpopt unless -fpic or -fPIC.  */
+      if (flag_pic)
+	nios2_gpopt_option = gpopt_none;
+      else
+	nios2_gpopt_option = gpopt_local;
+    }
 
   /* If we don't have mul, we don't have mulx either!  */
   if (!TARGET_HAS_MUL && TARGET_HAS_MULX)
@@ -1657,8 +1662,7 @@ nios2_in_small_data_p (const_tree exp)
       if (DECL_SECTION_NAME (exp))
 	{
 	  const char *section = DECL_SECTION_NAME (exp);
-	  if (nios2_section_threshold > 0
-	      && nios2_small_section_name_p (section))
+	  if (nios2_small_section_name_p (section))
 	    return true;
 	}
       else
@@ -1681,19 +1685,63 @@ nios2_in_small_data_p (const_tree exp)
 bool
 nios2_symbol_ref_in_small_data_p (rtx sym)
 {
-  gcc_assert (GET_CODE (sym) == SYMBOL_REF);
-  return
-    (TARGET_GPOPT
-     /* GP-relative access cannot be used for externally defined symbols,
-	because the compilation unit that defines the symbol may place it
-	in a section that cannot be reached from GP.  */
-     && !SYMBOL_REF_EXTERNAL_P (sym)
-     /* True if a symbol is both small and not weak.  */
-     && SYMBOL_REF_SMALL_P (sym)
-     && !(SYMBOL_REF_DECL (sym) && DECL_WEAK (SYMBOL_REF_DECL (sym)))
-     /* TLS variables are not accessed through the GP.  */
-     && SYMBOL_REF_TLS_MODEL (sym) == 0);
+  tree decl;
 
+  gcc_assert (GET_CODE (sym) == SYMBOL_REF);
+  decl = SYMBOL_REF_DECL (sym);
+
+  /* TLS variables are not accessed through the GP.  */
+  if (SYMBOL_REF_TLS_MODEL (sym) != 0)
+    return false;
+
+  /* If the user has explicitly placed the symbol in a small data section
+     via an attribute, generate gp-relative addressing even if the symbol
+     is external, weak, or larger than we'd automatically put in the
+     small data section.  OTOH, if the symbol is located in some
+     non-small-data section, we can't use gp-relative accesses on it
+     unless the user has requested gpopt_data or gpopt_all.  */
+
+  switch (nios2_gpopt_option)
+    {
+    case gpopt_none:
+      /* Don't generate a gp-relative addressing mode if that's been
+	 disabled.  */
+      return false;
+
+    case gpopt_local:
+      /* Use GP-relative addressing for small data symbols that are
+	 not external or weak, plus any symbols that have explicitly
+	 been placed in a small data section.  */
+      if (decl && DECL_SECTION_NAME (decl))
+	return nios2_small_section_name_p (DECL_SECTION_NAME (decl));
+      return (SYMBOL_REF_SMALL_P (sym)
+	      && !SYMBOL_REF_EXTERNAL_P (sym)
+	      && !(decl && DECL_WEAK (decl)));
+
+    case gpopt_global:
+      /* Use GP-relative addressing for small data symbols, even if
+	 they are external or weak.  Note that SYMBOL_REF_SMALL_P
+         is also true of symbols that have explicitly been placed
+         in a small data section.  */
+      return SYMBOL_REF_SMALL_P (sym);
+
+    case gpopt_data:
+      /* Use GP-relative addressing for all data symbols regardless
+	 of the object size, but not for code symbols.  This option
+	 is equivalent to the user asserting that the entire data
+	 section is accessible from the GP.  */
+      return !SYMBOL_REF_FUNCTION_P (sym);
+
+    case gpopt_all:
+      /* Use GP-relative addressing for everything, including code.
+	 Effectively, the user has asserted that the entire program
+	 fits within the 64K range of the GP offset.  */
+      return true;
+
+    default:
+      /* We shouldn't get here.  */
+      return false;
+    }
 }
 
 /* Implement TARGET_SECTION_TYPE_FLAGS.  */
