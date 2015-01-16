@@ -286,7 +286,7 @@
 	cfganal.h, cfgbuild.h, cfgcleanup.h, lcm.h, cfgloopmanip.h,
 	builtins.def, and chkp-builtins.def.
 
-2014-01-15  David Edelsohn  <dje.gcc@gmail.com>
+2015-01-15  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/default64.h (TARGET_DEFAULT) [LITTLE_ENDIAN]: Use
 	ISA 2.7 (POWER8).
@@ -988,7 +988,7 @@
 	Do not save lr in case of tail call.
 	* config/arm/thumb2.md (*thumb2_pop_single): New pattern.
 
-2015-01-13  Martin Uecker <uecker@eecs.berkeley.edu>
+2015-01-14  Martin Uecker <uecker@eecs.berkeley.edu>
 
 	* tree-vrp.c (check_array_ref): Emit more warnings
 	for warn_array_bounds >= 2.
@@ -1126,7 +1126,7 @@
 	(perform_symbolic_merge): This. Also fix computation of the range and
 	end of the symbolic number corresponding to the result of a bitwise OR.
 
-2014-01-13  Richard Biener  <rguenther@suse.de>
+2015-01-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64568
 	* tree-ssa-forwprop.c (pass_forwprop::execute): Properly
