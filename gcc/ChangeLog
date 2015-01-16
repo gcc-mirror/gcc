@@ -1,3 +1,10 @@
+2015-01-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/cortex-a57.md: New.
+	* config/aarch64/aarch64.md: Include it.
+	* config/aarch64/aarch64-cores.def (cortex-a57): Tune for it.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+
 2015-01-16  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	PR target/64015
