@@ -539,9 +539,15 @@ simplify_replace_fn_rtx (rtx x, const_rtx old_rtx,
 	  op0 = simplify_replace_fn_rtx (XEXP (x, 0), old_rtx, fn, data);
 	  op1 = simplify_replace_fn_rtx (XEXP (x, 1), old_rtx, fn, data);
 
-	  /* (lo_sum (high x) x) -> x  */
-	  if (GET_CODE (op0) == HIGH && rtx_equal_p (XEXP (op0, 0), op1))
-	    return op1;
+	  /* (lo_sum (high x) y) -> y where x and y have the same base.  */
+	  if (GET_CODE (op0) == HIGH)
+	    {
+	      rtx base0, base1, offset0, offset1;
+	      split_const (XEXP (op0, 0), &base0, &offset0);
+	      split_const (op1, &base1, &offset1);
+	      if (rtx_equal_p (base0, base1))
+		return op1;
+	    }
 
 	  if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1))
 	    return x;
