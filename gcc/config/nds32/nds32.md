@@ -2253,3 +2253,15 @@ create_template:
    (set_attr "length" "4")])
 
 ;; ----------------------------------------------------------------------------
+
+;; Pseudo NOPs
+
+(define_insn "pop25return"
+  [(return)
+   (unspec_volatile:SI [(reg:SI LP_REGNUM)] UNSPEC_VOLATILE_POP25_RETURN)]
+  ""
+  "! return for pop 25"
+  [(set_attr "length" "0")]
+)
+
+;; ----------------------------------------------------------------------------

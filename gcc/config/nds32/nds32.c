@@ -3449,6 +3449,9 @@ nds32_expand_epilogue_v3pop (void)
       nds32_emit_stack_v3pop (Rb, Re,
 			      GEN_INT (14), GEN_INT (0));
     }
+
+  /* Generate return instruction.  */
+  emit_jump_insn (gen_pop25return ());
 }
 
 /* ------------------------------------------------------------------------ */
