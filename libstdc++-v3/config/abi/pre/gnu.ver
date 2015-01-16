@@ -1769,6 +1769,17 @@ GLIBCXX_3.4.21 {
       std::__atomic_futex_unsigned_base*;
     };
 
+    # codecvt_utf8 etc.
+    _ZNKSt19__codecvt_utf8_base*;
+    _ZNSt19__codecvt_utf8_base*;
+    _ZT[ISV]St19__codecvt_utf8_base*;
+    _ZNKSt20__codecvt_utf16_base*;
+    _ZNSt20__codecvt_utf16_base*;
+    _ZT[ISV]St20__codecvt_utf16_base*;
+    _ZNKSt25__codecvt_utf8_utf16_base*;
+    _ZNSt25__codecvt_utf8_utf16_base*;
+    _ZT[ISV]St25__codecvt_utf8_utf16_base*;
+
 } GLIBCXX_3.4.20;
 
 

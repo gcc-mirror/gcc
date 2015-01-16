@@ -22,10 +22,9 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#include <bits/locale_classes.h>
-#include <bits/codecvt.h>
-#include <bits/stl_algobase.h>	// std::max
+#include <codecvt>
 #include <cstring>		// std::memcpy, std::memcmp
+#include <bits/stl_algobase.h>	// std::max
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -51,6 +50,88 @@ namespace
       size_t size() const { return end - next; }
     };
 
+  // Multibyte sequences can have "header" consisting of Byte Order Mark
+  const unsigned char utf8_bom[3] = { 0xEF, 0xBB, 0xBF };
+  const unsigned char utf16_bom[4] = { 0xFE, 0xFF };
+  const unsigned char utf16le_bom[4] = { 0xFF, 0xFE };
+
+  template<size_t N>
+    inline bool
+    write_bom(range<char>& to, const unsigned char (&bom)[N])
+    {
+      if (to.size() < N)
+	return false;
+      memcpy(to.next, bom, N);
+      to.next += N;
+      return true;
+    }
+
+  // If generate_header is set in mode write out UTF-8 BOM.
+  bool
+  write_utf8_bom(range<char>& to, codecvt_mode mode)
+  {
+    if (mode & generate_header)
+      return write_bom(to, utf8_bom);
+    return true;
+  }
+
+  // If generate_header is set in mode write out the UTF-16 BOM indicated
+  // by whether little_endian is set in mode.
+  bool
+  write_utf16_bom(range<char16_t>& to, codecvt_mode mode)
+  {
+    if (mode & generate_header)
+    {
+      if (!to.size())
+	return false;
+      auto* bom = (mode & little_endian) ? utf16le_bom : utf16_bom;
+      std::memcpy(to.next, bom, 2);
+      ++to.next;
+    }
+    return true;
+  }
+
+  template<size_t N>
+    inline bool
+    read_bom(range<const char>& from, const unsigned char (&bom)[N])
+    {
+      if (from.size() >= N && !memcmp(from.next, bom, N))
+	{
+	  from.next += N;
+	  return true;
+	}
+      return false;
+    }
+
+  // If consume_header is set in mode update from.next to after any BOM.
+  void
+  read_utf8_bom(range<const char>& from, codecvt_mode mode)
+  {
+    if (mode & consume_header)
+      read_bom(from, utf8_bom);
+  }
+
+  // If consume_header is set in mode update from.next to after any BOM.
+  // Return little_endian iff the UTF-16LE BOM was present.
+  codecvt_mode
+  read_utf16_bom(range<const char16_t>& from, codecvt_mode mode)
+  {
+    if (mode & consume_header && from.size())
+      {
+	if (*from.next == 0xFEFF)
+	  ++from.next;
+	else if (*from.next == 0xFFFE)
+	  {
+	    ++from.next;
+	    return little_endian;
+	  }
+      }
+    return {};
+  }
+
+  // Read a codepoint from a UTF-8 multibyte sequence.
+  // Updates from.next if the codepoint is not greater than maxcode.
+  // Returns -1 if there is an invalid or incomplete multibyte character.
   char32_t
   read_utf8_code_point(range<const char>& from, unsigned long maxcode)
   {
@@ -74,9 +155,8 @@ namespace
       if ((c2 & 0xC0) != 0x80)
 	return -1;
       char32_t c = (c1 << 6) + c2 - 0x3080;
-      if (c > maxcode)
-	return -1;
-      from.next += 2;
+      if (c <= maxcode)
+	from.next += 2;
       return c;
     }
     else if (c1 < 0xF0) // 3-byte sequence
@@ -92,9 +172,8 @@ namespace
       if ((c3 & 0xC0) != 0x80)
 	return -1;
       char32_t c = (c1 << 12) + (c2 << 6) + c3 - 0xE2080;
-      if (c > maxcode)
-	return -1;
-      from.next += 3;
+      if (c <= maxcode)
+	from.next += 3;
       return c;
     }
     else if (c1 < 0xF5) // 4-byte sequence
@@ -115,9 +194,8 @@ namespace
       if ((c4 & 0xC0) != 0x80)
 	return -1;
       char32_t c = (c1 << 18) + (c2 << 12) + (c3 << 6) + c4 - 0x3C82080;
-      if (c > maxcode)
-	return -1;
-      from.next += 4;
+      if (c <= maxcode)
+	from.next += 4;
       return c;
     }
     else // > U+10FFFF
@@ -162,9 +240,48 @@ namespace
     return true;
   }
 
-  bool
-  write_utf16_code_point(range<char16_t>& to, char32_t codepoint)
+  inline char16_t
+  adjust_byte_order(char16_t c, codecvt_mode mode)
   {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+    return (mode & little_endian) ? __builtin_bswap16(c) : c;
+#else
+    return (mode & little_endian) ? c : __builtin_bswap16(c);
+#endif
+  }
+
+  // Read a codepoint from a UTF-16 multibyte sequence.
+  // The sequence's endianness is indicated by (mode & little_endian).
+  // Updates from.next if the codepoint is not greater than maxcode.
+  // Returns -1 if there is an incomplete multibyte character.
+  char32_t
+  read_utf16_code_point(range<const char16_t>& from, unsigned long maxcode,
+			codecvt_mode mode)
+  {
+    int inc = 1;
+    char32_t c = adjust_byte_order(from.next[0], mode);
+    if (c >= 0xD800 && c <= 0xDBFF)
+      {
+	if (from.size() < 2)
+	  return -1;
+	const char16_t c2 = adjust_byte_order(from.next[1], mode);
+	if (c2 >= 0xDC00 && c2 <= 0xDFFF)
+	  {
+	    c = (c << 10) + c2 - 0x35FDC00;
+	    inc = 2;
+	  }
+      }
+    if (c <= maxcode)
+      from.next += inc;
+    return c;
+  }
+
+  template<typename C>
+  bool
+  write_utf16_code_point(range<C>& to, char32_t codepoint, codecvt_mode mode)
+  {
+    static_assert(sizeof(C) >= 2, "a code unit must be at least 16-bit");
+
     if (codepoint < max_single_utf16_unit)
       {
 	if (to.size() > 0)
@@ -183,8 +300,8 @@ namespace
 	char16_t trail = 0xDC00 + (codepoint & 0x3FF);
 	char32_t utf16bytes = (lead << 10) + trail + SURROGATE_OFFSET;
 
-	to.next[0] = utf16bytes >> 16;
-	to.next[1] = utf16bytes & 0xFFFF;
+	to.next[0] = adjust_byte_order(utf16bytes >> 16, mode);
+	to.next[1] = adjust_byte_order(utf16bytes & 0xFFFF, mode);
 	to.next += 2;
 	return true;
       }
@@ -194,12 +311,15 @@ namespace
   // utf8 -> ucs4
   codecvt_base::result
   ucs4_in(range<const char>& from, range<char32_t>& to,
-          unsigned long maxcode = max_code_point)
+          unsigned long maxcode = max_code_point, codecvt_mode mode = {})
   {
+    read_utf8_bom(from, mode);
     while (from.size() && to.size())
       {
 	const char32_t codepoint = read_utf8_code_point(from, maxcode);
-	if (codepoint == char32_t(-1) || codepoint > maxcode)
+	if (codepoint == char32_t(-1))
+	  break;
+	if (codepoint > maxcode)
 	  return codecvt_base::error;
 	*to.next++ = codepoint;
       }
@@ -209,8 +329,10 @@ namespace
   // ucs4 -> utf8
   codecvt_base::result
   ucs4_out(range<const char32_t>& from, range<char>& to,
-           unsigned long maxcode = max_code_point)
+           unsigned long maxcode = max_code_point, codecvt_mode mode = {})
   {
+    if (!write_utf8_bom(to, mode))
+      return codecvt_base::partial;
     while (from.size())
       {
 	const char32_t c = from.next[0];
@@ -223,20 +345,62 @@ namespace
     return codecvt_base::ok;
   }
 
-  // utf8 -> utf16
+  // utf16 -> ucs4
   codecvt_base::result
-  utf16_in(range<const char>& from, range<char16_t>& to,
-           unsigned long maxcode = max_code_point)
+  ucs4_in(range<const char16_t>& from, range<char32_t>& to,
+          unsigned long maxcode = max_code_point, codecvt_mode mode = {})
   {
+    if (read_utf16_bom(from, mode) == little_endian)
+      mode = codecvt_mode(mode & little_endian);
+    while (from.size() && to.size())
+      {
+	const char32_t codepoint = read_utf16_code_point(from, maxcode, mode);
+	if (codepoint == char32_t(-1))
+	  break;
+	if (codepoint > maxcode)
+	  return codecvt_base::error;
+	*to.next++ = codepoint;
+      }
+    return from.size() ? codecvt_base::partial : codecvt_base::ok;
+  }
+
+  // ucs4 -> utf16
+  codecvt_base::result
+  ucs4_out(range<const char32_t>& from, range<char16_t>& to,
+           unsigned long maxcode = max_code_point, codecvt_mode mode = {})
+  {
+    if (!write_utf16_bom(to, mode))
+      return codecvt_base::partial;
+    while (from.size())
+      {
+	const char32_t c = from.next[0];
+	if (c > maxcode)
+	  return codecvt_base::error;
+	if (!write_utf16_code_point(to, c, mode))
+	  return codecvt_base::partial;
+	++from.next;
+      }
+    return codecvt_base::ok;
+  }
+
+  // utf8 -> utf16
+  template<typename C>
+  codecvt_base::result
+  utf16_in(range<const char>& from, range<C>& to,
+           unsigned long maxcode = max_code_point, codecvt_mode mode = {})
+  {
+    read_utf8_bom(from, mode);
     while (from.size() && to.size())
       {
 	const char* first = from.next;
 	if ((unsigned char)*first >= 0xF0 && to.size() < 2)
 	  return codecvt_base::partial;
 	const char32_t codepoint = read_utf8_code_point(from, maxcode);
-	if (codepoint == char32_t(-1) || codepoint > maxcode)
+	if (codepoint == char32_t(-1))
+	  return codecvt_base::partial;
+	if (codepoint > maxcode)
 	  return codecvt_base::error;
-	if (!write_utf16_code_point(to, codepoint))
+	if (!write_utf16_code_point(to, codepoint, {}))
 	  {
 	    from.next = first;
 	    return codecvt_base::partial;
@@ -246,15 +410,18 @@ namespace
   }
 
   // utf16 -> utf8
+  template<typename C>
   codecvt_base::result
-  utf16_out(range<const char16_t>& from, range<char>& to,
-            unsigned long maxcode = max_code_point)
+  utf16_out(range<const C>& from, range<char>& to,
+            unsigned long maxcode = max_code_point, codecvt_mode mode = {})
   {
+    if (!write_utf8_bom(to, mode))
+      return codecvt_base::partial;
     while (from.size())
       {
 	char32_t c = from.next[0];
 	int inc = 1;
-	if (c >= 0xD800 && c < 0xDBFF) // start of surrogate pair
+	if (c >= 0xD800 && c <= 0xDBFF) // start of surrogate pair
 	  {
 	    if (from.size() < 2)
 	      return codecvt_base::ok; // stop converting at this point
@@ -278,11 +445,12 @@ namespace
   }
 
   // return pos such that [begin,pos) is valid UTF-16 string no longer than max
-  int
-  utf16_len(const char* begin, const char* end, size_t max,
-            char32_t maxcode = max_code_point)
+  const char*
+  utf16_span(const char* begin, const char* end, size_t max,
+	     char32_t maxcode = max_code_point, codecvt_mode mode = {})
   {
     range<const char> from{ begin, end };
+    read_utf8_bom(from, mode);
     size_t count = 0;
     while (count+1 < max)
       {
@@ -295,24 +463,117 @@ namespace
       }
     if (count+1 == max) // take one more character if it fits in a single unit
       read_utf8_code_point(from, std::max(max_single_utf16_unit, maxcode));
-    return from.next - begin;
+    return from.next;
+  }
+
+  // utf8 -> ucs2
+  codecvt_base::result
+  ucs2_in(range<const char>& from, range<char16_t>& to,
+	  char32_t maxcode = max_code_point, codecvt_mode mode = {})
+  {
+    return utf16_in(from, to, std::max(max_single_utf16_unit, maxcode), mode);
+  }
+
+  // ucs2 -> utf8
+  codecvt_base::result
+  ucs2_out(range<const char16_t>& from, range<char>& to,
+	   char32_t maxcode = max_code_point, codecvt_mode mode = {})
+  {
+    return utf16_out(from, to, std::max(max_single_utf16_unit, maxcode), mode);
+  }
+
+  // ucs2 -> utf16
+  codecvt_base::result
+  ucs2_out(range<const char16_t>& from, range<char16_t>& to,
+	   char32_t maxcode = max_code_point, codecvt_mode mode = {})
+  {
+    if (!write_utf16_bom(to, mode))
+      return codecvt_base::partial;
+    while (from.size() && to.size())
+      {
+	char16_t c = from.next[0];
+	if (c >= 0xD800 && c <= 0xDBFF) // start of surrogate pair
+	  return codecvt_base::error;
+	if (c > maxcode)
+	  return codecvt_base::error;
+	*to.next++ = adjust_byte_order(c, mode);
+	++from.next;
+      }
+    return from.size() == 0 ? codecvt_base::ok : codecvt_base::partial;
+  }
+
+  // utf16 -> ucs2
+  codecvt_base::result
+  ucs2_in(range<const char16_t>& from, range<char16_t>& to,
+	  char32_t maxcode = max_code_point, codecvt_mode mode = {})
+  {
+    if (read_utf16_bom(from, mode) == little_endian)
+      mode = codecvt_mode(mode & little_endian);
+    maxcode = std::max(max_single_utf16_unit, maxcode);
+    while (from.size() && to.size())
+      {
+	const char32_t c = read_utf16_code_point(from, maxcode, mode);
+	if (c == char32_t(-1))
+	  break;
+	if (c >= maxcode)
+	  return codecvt_base::error;
+	*to.next++ = c;
+      }
+    return from.size() == 0 ? codecvt_base::ok : codecvt_base::partial;
+  }
+
+  const char16_t*
+  ucs2_span(const char16_t* begin, const char16_t* end, size_t max,
+            char32_t maxcode, codecvt_mode mode)
+  {
+    range<const char16_t> from{ begin, end };
+    if (read_utf16_bom(from, mode) == little_endian)
+      mode = codecvt_mode(mode & little_endian);
+    maxcode = std::max(max_single_utf16_unit, maxcode);
+    char32_t c = 0;
+    while (max-- && c <= maxcode)
+      c = read_utf16_code_point(from, maxcode, mode);
+    return from.next;
+  }
+
+  const char*
+  ucs2_span(const char* begin, const char* end, size_t max,
+            char32_t maxcode, codecvt_mode mode)
+  {
+    range<const char> from{ begin, end };
+    read_utf8_bom(from, mode);
+    maxcode = std::max(max_single_utf16_unit, maxcode);
+    char32_t c = 0;
+    while (max-- && c <= maxcode)
+      c = read_utf8_code_point(from, maxcode);
+    return from.next;
   }
 
   // return pos such that [begin,pos) is valid UCS-4 string no longer than max
-  int
-  ucs4_len(const char* begin, const char* end, size_t max,
-            char32_t maxcode = max_code_point)
+  const char*
+  ucs4_span(const char* begin, const char* end, size_t max,
+            char32_t maxcode = max_code_point, codecvt_mode mode = {})
   {
     range<const char> from{ begin, end };
-    size_t count = 0;
-    while (count < max)
-      {
-	char32_t c = read_utf8_code_point(from, maxcode);
-	if (c == char32_t(-1))
-	  break;
-	++count;
-      }
-    return from.next - begin;
+    read_utf8_bom(from, mode);
+    char32_t c = 0;
+    while (max-- && c <= maxcode)
+      c = read_utf8_code_point(from, maxcode);
+    return from.next;
+  }
+
+  // return pos such that [begin,pos) is valid UCS-4 string no longer than max
+  const char16_t*
+  ucs4_span(const char16_t* begin, const char16_t* end, size_t max,
+            char32_t maxcode = max_code_point, codecvt_mode mode = {})
+  {
+    range<const char16_t> from{ begin, end };
+    if (read_utf16_bom(from, mode) == little_endian)
+      mode = codecvt_mode(mode & little_endian);
+    char32_t c = 0;
+    while (max-- && c <= maxcode)
+      c = read_utf16_code_point(from, maxcode, mode);
+    return from.next;
   }
 }
 
@@ -376,7 +637,8 @@ codecvt<char16_t, char, mbstate_t>::
 do_length(state_type&, const extern_type* __from,
 	  const extern_type* __end, size_t __max) const
 {
-  return utf16_len(__from, __end, __max);
+  __end = utf16_span(__from, __end, __max);
+  return __end - __from;
 }
 
 int
@@ -446,12 +708,697 @@ codecvt<char32_t, char, mbstate_t>::
 do_length(state_type&, const extern_type* __from,
 	  const extern_type* __end, size_t __max) const
 {
-  return ucs4_len(__from, __end, __max);
+  __end = ucs4_span(__from, __end, __max);
+  return __end - __from;
 }
 
 int
 codecvt<char32_t, char, mbstate_t>::do_max_length() const throw()
 { return 4; }
+
+// Define members of codecvt_utf8<char16_t> base class implementation.
+// Converts from UTF-8 to UCS-2.
+
+__codecvt_utf8_base<char16_t>::~__codecvt_utf8_base() { }
+
+codecvt_base::result
+__codecvt_utf8_base<char16_t>::
+do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
+       const intern_type*& __from_next,
+       extern_type* __to, extern_type* __to_end,
+       extern_type*& __to_next) const
+{
+  range<const char16_t> from{ __from, __from_end };
+  range<char> to{ __to, __to_end };
+  auto res = ucs2_out(from, to, _M_maxcode, _M_mode);
+  __from_next = from.next;
+  __to_next = to.next;
+  return res;
+}
+
+codecvt_base::result
+__codecvt_utf8_base<char16_t>::
+do_unshift(state_type&, extern_type* __to, extern_type*,
+	   extern_type*& __to_next) const
+{
+  __to_next = __to;
+  return noconv;
+}
+
+codecvt_base::result
+__codecvt_utf8_base<char16_t>::
+do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
+      const extern_type*& __from_next,
+      intern_type* __to, intern_type* __to_end,
+      intern_type*& __to_next) const
+{
+  range<const char> from{ __from, __from_end };
+  range<char16_t> to{ __to, __to_end };
+  auto res = ucs2_in(from, to, _M_maxcode, _M_mode);
+  __from_next = from.next;
+  __to_next = to.next;
+  return res;
+}
+
+int
+__codecvt_utf8_base<char16_t>::do_encoding() const throw()
+{ return 0; }
+
+bool
+__codecvt_utf8_base<char16_t>::do_always_noconv() const throw()
+{ return false; }
+
+int
+__codecvt_utf8_base<char16_t>::
+do_length(state_type&, const extern_type* __from,
+	  const extern_type* __end, size_t __max) const
+{
+  __end = ucs2_span(__from, __end, __max, _M_maxcode, _M_mode);
+  return __end - __from;
+}
+
+int
+__codecvt_utf8_base<char16_t>::do_max_length() const throw()
+{ return 3; }
+
+// Define members of codecvt_utf8<char32_t> base class implementation.
+// Converts from UTF-8 to UTF-32 (aka UCS-4).
+
+__codecvt_utf8_base<char32_t>::~__codecvt_utf8_base() { }
+
+codecvt_base::result
+__codecvt_utf8_base<char32_t>::
+do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
+       const intern_type*& __from_next,
+       extern_type* __to, extern_type* __to_end,
+       extern_type*& __to_next) const
+{
+  range<const char32_t> from{ __from, __from_end };
+  range<char> to{ __to, __to_end };
+  auto res = ucs4_out(from, to, _M_maxcode, _M_mode);
+  __from_next = from.next;
+  __to_next = to.next;
+  return res;
+}
+
+codecvt_base::result
+__codecvt_utf8_base<char32_t>::
+do_unshift(state_type&, extern_type* __to, extern_type*,
+	   extern_type*& __to_next) const
+{
+  __to_next = __to;
+  return noconv;
+}
+
+codecvt_base::result
+__codecvt_utf8_base<char32_t>::
+do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
+      const extern_type*& __from_next,
+      intern_type* __to, intern_type* __to_end,
+      intern_type*& __to_next) const
+{
+  range<const char> from{ __from, __from_end };
+  range<char32_t> to{ __to, __to_end };
+  auto res = ucs4_in(from, to, _M_maxcode, _M_mode);
+  __from_next = from.next;
+  __to_next = to.next;
+  return res;
+}
+
+int
+__codecvt_utf8_base<char32_t>::do_encoding() const throw()
+{ return 0; }
+
+bool
+__codecvt_utf8_base<char32_t>::do_always_noconv() const throw()
+{ return false; }
+
+int
+__codecvt_utf8_base<char32_t>::
+do_length(state_type&, const extern_type* __from,
+	  const extern_type* __end, size_t __max) const
+{
+  __end = ucs4_span(__from, __end, __max, _M_maxcode, _M_mode);
+  return __end - __from;
+}
+
+int
+__codecvt_utf8_base<char32_t>::do_max_length() const throw()
+{ return 4; }
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+// Define members of codecvt_utf8<wchar_t> base class implementation.
+// Converts from UTF-8 to UCS-2 or UCS-4 depending on sizeof(wchar_t).
+
+__codecvt_utf8_base<wchar_t>::~__codecvt_utf8_base() { }
+
+codecvt_base::result
+__codecvt_utf8_base<wchar_t>::
+do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
+       const intern_type*& __from_next,
+       extern_type* __to, extern_type* __to_end,
+       extern_type*& __to_next) const
+{
+  range<char> to{ __to, __to_end };
+#if __SIZEOF_WCHAR_T__ == 2
+  range<const char16_t> from{
+    reinterpret_cast<const char16_t*>(__from),
+    reinterpret_cast<const char16_t*>(__from_end)
+  };
+  auto res = ucs2_out(from, to, _M_maxcode, _M_mode);
+#elif __SIZEOF_WCHAR_T__ == 4
+  range<const char32_t> from{
+    reinterpret_cast<const char32_t*>(__from),
+    reinterpret_cast<const char32_t*>(__from_end)
+  };
+  auto res = ucs4_out(from, to, _M_maxcode, _M_mode);
+#else
+  return codecvt_base::error;
+#endif
+  __from_next = reinterpret_cast<const wchar_t*>(from.next);
+  __to_next = to.next;
+  return res;
+}
+
+codecvt_base::result
+__codecvt_utf8_base<wchar_t>::
+do_unshift(state_type&, extern_type* __to, extern_type*,
+	   extern_type*& __to_next) const
+{
+  __to_next = __to;
+  return noconv;
+}
+
+codecvt_base::result
+__codecvt_utf8_base<wchar_t>::
+do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
+      const extern_type*& __from_next,
+      intern_type* __to, intern_type* __to_end,
+      intern_type*& __to_next) const
+{
+  range<const char> from{ __from, __from_end };
+#if __SIZEOF_WCHAR_T__ == 2
+  range<char16_t> to{
+    reinterpret_cast<char16_t*>(__to),
+    reinterpret_cast<char16_t*>(__to_end)
+  };
+  auto res = ucs2_in(from, to, _M_maxcode, _M_mode);
+#elif __SIZEOF_WCHAR_T__ == 4
+  range<char32_t> to{
+    reinterpret_cast<char32_t*>(__to),
+    reinterpret_cast<char32_t*>(__to_end)
+  };
+  auto res = ucs4_in(from, to, _M_maxcode, _M_mode);
+#else
+  return codecvt_base::error;
+#endif
+  __from_next = from.next;
+  __to_next = reinterpret_cast<wchar_t*>(to.next);
+  return res;
+}
+
+int
+__codecvt_utf8_base<wchar_t>::do_encoding() const throw()
+{ return 0; }
+
+bool
+__codecvt_utf8_base<wchar_t>::do_always_noconv() const throw()
+{ return false; }
+
+int
+__codecvt_utf8_base<wchar_t>::
+do_length(state_type&, const extern_type* __from,
+	  const extern_type* __end, size_t __max) const
+{
+#if __SIZEOF_WCHAR_T__ == 2
+  __end = ucs2_span(__from, __end, __max, _M_maxcode, _M_mode);
+#elif __SIZEOF_WCHAR_T__ == 4
+  __end = ucs4_span(__from, __end, __max, _M_maxcode, _M_mode);
+#else
+  __end = __from;
+#endif
+  return __end - __from;
+}
+
+int
+__codecvt_utf8_base<wchar_t>::do_max_length() const throw()
+{ return 4; }
+#endif
+
+// Define members of codecvt_utf16<char16_t> base class implementation.
+// Converts from UTF-16 to UCS-2.
+
+__codecvt_utf16_base<char16_t>::~__codecvt_utf16_base() { }
+
+codecvt_base::result
+__codecvt_utf16_base<char16_t>::
+do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
+       const intern_type*& __from_next,
+       extern_type* __to, extern_type* __to_end,
+       extern_type*& __to_next) const
+{
+  range<const char16_t> from{ __from, __from_end };
+  range<char16_t> to{
+    reinterpret_cast<char16_t*>(__to),
+    reinterpret_cast<char16_t*>(__to_end)
+  };
+  auto res = ucs2_out(from, to, _M_maxcode, _M_mode);
+  __from_next = from.next;
+  __to_next = reinterpret_cast<char*>(to.next);
+  return res;
+}
+
+codecvt_base::result
+__codecvt_utf16_base<char16_t>::
+do_unshift(state_type&, extern_type* __to, extern_type*,
+	   extern_type*& __to_next) const
+{
+  __to_next = __to;
+  return noconv;
+}
+
+codecvt_base::result
+__codecvt_utf16_base<char16_t>::
+do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
+      const extern_type*& __from_next,
+      intern_type* __to, intern_type* __to_end,
+      intern_type*& __to_next) const
+{
+  range<const char16_t> from{
+    reinterpret_cast<const char16_t*>(__from),
+    reinterpret_cast<const char16_t*>(__from_end)
+  };
+  range<char16_t> to{ __to, __to_end };
+  auto res = ucs2_in(from, to, _M_maxcode, _M_mode);
+  __from_next = reinterpret_cast<const char*>(from.next);
+  __to_next = to.next;
+  return res;
+}
+
+int
+__codecvt_utf16_base<char16_t>::do_encoding() const throw()
+{ return 1; }
+
+bool
+__codecvt_utf16_base<char16_t>::do_always_noconv() const throw()
+{ return false; }
+
+int
+__codecvt_utf16_base<char16_t>::
+do_length(state_type&, const extern_type* __from,
+	  const extern_type* __end, size_t __max) const
+{
+  auto next = reinterpret_cast<const char16_t*>(__from);
+  next = ucs2_span(next, reinterpret_cast<const char16_t*>(__end), __max,
+		   _M_maxcode, _M_mode);
+  return reinterpret_cast<const char*>(next) - __from;
+}
+
+int
+__codecvt_utf16_base<char16_t>::do_max_length() const throw()
+{ return 3; }
+
+// Define members of codecvt_utf16<char32_t> base class implementation.
+// Converts from UTF-16 to UTF-32 (aka UCS-4).
+
+__codecvt_utf16_base<char32_t>::~__codecvt_utf16_base() { }
+
+codecvt_base::result
+__codecvt_utf16_base<char32_t>::
+do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
+       const intern_type*& __from_next,
+       extern_type* __to, extern_type* __to_end,
+       extern_type*& __to_next) const
+{
+  range<const char32_t> from{ __from, __from_end };
+  range<char16_t> to{
+    reinterpret_cast<char16_t*>(__to),
+    reinterpret_cast<char16_t*>(__to_end)
+  };
+  auto res = ucs4_out(from, to, _M_maxcode, _M_mode);
+  __from_next = from.next;
+  __to_next = reinterpret_cast<char*>(to.next);
+  return res;
+}
+
+codecvt_base::result
+__codecvt_utf16_base<char32_t>::
+do_unshift(state_type&, extern_type* __to, extern_type*,
+	   extern_type*& __to_next) const
+{
+  __to_next = __to;
+  return noconv;
+}
+
+codecvt_base::result
+__codecvt_utf16_base<char32_t>::
+do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
+      const extern_type*& __from_next,
+      intern_type* __to, intern_type* __to_end,
+      intern_type*& __to_next) const
+{
+  range<const char16_t> from{
+    reinterpret_cast<const char16_t*>(__from),
+    reinterpret_cast<const char16_t*>(__from_end)
+  };
+  range<char32_t> to{ __to, __to_end };
+  auto res = ucs4_in(from, to, _M_maxcode, _M_mode);
+  __from_next = reinterpret_cast<const char*>(from.next);
+  __to_next = to.next;
+  return res;
+}
+
+int
+__codecvt_utf16_base<char32_t>::do_encoding() const throw()
+{ return 0; }
+
+bool
+__codecvt_utf16_base<char32_t>::do_always_noconv() const throw()
+{ return false; }
+
+int
+__codecvt_utf16_base<char32_t>::
+do_length(state_type&, const extern_type* __from,
+	  const extern_type* __end, size_t __max) const
+{
+  auto next = reinterpret_cast<const char16_t*>(__from);
+  next = ucs4_span(next, reinterpret_cast<const char16_t*>(__end), __max,
+		   _M_maxcode, _M_mode);
+  return reinterpret_cast<const char*>(next) - __from;
+}
+
+int
+__codecvt_utf16_base<char32_t>::do_max_length() const throw()
+{ return 3; }
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+// Define members of codecvt_utf16<wchar_t> base class implementation.
+// Converts from UTF-8 to UCS-2 or UCS-4 depending on sizeof(wchar_t).
+
+__codecvt_utf16_base<wchar_t>::~__codecvt_utf16_base() { }
+
+codecvt_base::result
+__codecvt_utf16_base<wchar_t>::
+do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
+       const intern_type*& __from_next,
+       extern_type* __to, extern_type* __to_end,
+       extern_type*& __to_next) const
+{
+  range<char> to{ __to, __to_end };
+#if __SIZEOF_WCHAR_T__ == 2
+  range<const char16_t> from{
+    reinterpret_cast<const char16_t*>(__from),
+    reinterpret_cast<const char16_t*>(__from_end)
+  };
+  auto res = ucs2_out(from, to, _M_maxcode, _M_mode);
+#elif __SIZEOF_WCHAR_T__ == 4
+  range<const char32_t> from{
+    reinterpret_cast<const char32_t*>(__from),
+    reinterpret_cast<const char32_t*>(__from_end)
+  };
+  auto res = ucs4_out(from, to, _M_maxcode, _M_mode);
+#else
+  return codecvt_base::error;
+#endif
+  __from_next = reinterpret_cast<const wchar_t*>(from.next);
+  __to_next = to.next;
+  return res;
+}
+
+codecvt_base::result
+__codecvt_utf16_base<wchar_t>::
+do_unshift(state_type&, extern_type* __to, extern_type*,
+	   extern_type*& __to_next) const
+{
+  __to_next = __to;
+  return noconv;
+}
+
+codecvt_base::result
+__codecvt_utf16_base<wchar_t>::
+do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
+      const extern_type*& __from_next,
+      intern_type* __to, intern_type* __to_end,
+      intern_type*& __to_next) const
+{
+  range<const char> from{ __from, __from_end };
+#if __SIZEOF_WCHAR_T__ == 2
+  range<char16_t> to{
+    reinterpret_cast<char16_t*>(__to),
+    reinterpret_cast<char16_t*>(__to_end)
+  };
+  auto res = ucs2_in(from, to, _M_maxcode, _M_mode);
+#elif __SIZEOF_WCHAR_T__ == 4
+  range<char32_t> to{
+    reinterpret_cast<char32_t*>(__to),
+    reinterpret_cast<char32_t*>(__to_end)
+  };
+  auto res = ucs4_in(from, to, _M_maxcode, _M_mode);
+#else
+  return codecvt_base::error;
+#endif
+  __from_next = from.next;
+  __to_next = reinterpret_cast<wchar_t*>(to.next);
+  return res;
+}
+
+int
+__codecvt_utf16_base<wchar_t>::do_encoding() const throw()
+{ return 0; }
+
+bool
+__codecvt_utf16_base<wchar_t>::do_always_noconv() const throw()
+{ return false; }
+
+int
+__codecvt_utf16_base<wchar_t>::
+do_length(state_type&, const extern_type* __from,
+	  const extern_type* __end, size_t __max) const
+{
+  auto next = reinterpret_cast<const char16_t*>(__from);
+#if __SIZEOF_WCHAR_T__ == 2
+  next = ucs2_span(next, reinterpret_cast<const char16_t*>(__end), __max,
+		   _M_maxcode, _M_mode);
+#elif __SIZEOF_WCHAR_T__ == 4
+  next = ucs4_span(next, reinterpret_cast<const char16_t*>(__end), __max,
+		   _M_maxcode, _M_mode);
+#endif
+  return reinterpret_cast<const char*>(next) - __from;
+}
+
+int
+__codecvt_utf16_base<wchar_t>::do_max_length() const throw()
+{ return 4; }
+#endif
+
+// Define members of codecvt_utf8_utf16<char16_t> base class implementation.
+// Converts from UTF-8 to UTF-16.
+
+__codecvt_utf8_utf16_base<char16_t>::~__codecvt_utf8_utf16_base() { }
+
+codecvt_base::result
+__codecvt_utf8_utf16_base<char16_t>::
+do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
+       const intern_type*& __from_next,
+       extern_type* __to, extern_type* __to_end,
+       extern_type*& __to_next) const
+{
+  range<const char16_t> from{ __from, __from_end };
+  range<char> to{ __to, __to_end };
+  auto res = utf16_out(from, to, _M_maxcode, _M_mode);
+  __from_next = from.next;
+  __to_next = to.next;
+  return res;
+}
+
+codecvt_base::result
+__codecvt_utf8_utf16_base<char16_t>::
+do_unshift(state_type&, extern_type* __to, extern_type*,
+	   extern_type*& __to_next) const
+{
+  __to_next = __to;
+  return noconv;
+}
+
+codecvt_base::result
+__codecvt_utf8_utf16_base<char16_t>::
+do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
+      const extern_type*& __from_next,
+      intern_type* __to, intern_type* __to_end,
+      intern_type*& __to_next) const
+{
+  range<const char> from{ __from, __from_end };
+  range<char16_t> to{ __to, __to_end };
+  auto res = utf16_in(from, to, _M_maxcode, _M_mode);
+  __from_next = from.next;
+  __to_next = to.next;
+  return res;
+}
+
+int
+__codecvt_utf8_utf16_base<char16_t>::do_encoding() const throw()
+{ return 0; }
+
+bool
+__codecvt_utf8_utf16_base<char16_t>::do_always_noconv() const throw()
+{ return false; }
+
+int
+__codecvt_utf8_utf16_base<char16_t>::
+do_length(state_type&, const extern_type* __from,
+	  const extern_type* __end, size_t __max) const
+{
+  __end = utf16_span(__from, __end, __max, _M_maxcode, _M_mode);
+  return __end - __from;
+}
+
+int
+__codecvt_utf8_utf16_base<char16_t>::do_max_length() const throw()
+{
+  // Any valid UTF-8 sequence of 3 bytes fits in a single 16-bit code unit,
+  // whereas 4 byte sequences require two 16-bit code units.
+  return 3;
+}
+
+// Define members of codecvt_utf8_utf16<char32_t> base class implementation.
+// Converts from UTF-8 to UTF-16.
+
+__codecvt_utf8_utf16_base<char32_t>::~__codecvt_utf8_utf16_base() { }
+
+codecvt_base::result
+__codecvt_utf8_utf16_base<char32_t>::
+do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
+       const intern_type*& __from_next,
+       extern_type* __to, extern_type* __to_end,
+       extern_type*& __to_next) const
+{
+  range<const char32_t> from{ __from, __from_end };
+  range<char> to{ __to, __to_end };
+  auto res = utf16_out(from, to, _M_maxcode, _M_mode);
+  __from_next = from.next;
+  __to_next = to.next;
+  return res;
+}
+
+codecvt_base::result
+__codecvt_utf8_utf16_base<char32_t>::
+do_unshift(state_type&, extern_type* __to, extern_type*,
+	   extern_type*& __to_next) const
+{
+  __to_next = __to;
+  return noconv;
+}
+
+codecvt_base::result
+__codecvt_utf8_utf16_base<char32_t>::
+do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
+      const extern_type*& __from_next,
+      intern_type* __to, intern_type* __to_end,
+      intern_type*& __to_next) const
+{
+  range<const char> from{ __from, __from_end };
+  range<char32_t> to{ __to, __to_end };
+  auto res = utf16_in(from, to, _M_maxcode, _M_mode);
+  __from_next = from.next;
+  __to_next = to.next;
+  return res;
+}
+
+int
+__codecvt_utf8_utf16_base<char32_t>::do_encoding() const throw()
+{ return 0; }
+
+bool
+__codecvt_utf8_utf16_base<char32_t>::do_always_noconv() const throw()
+{ return false; }
+
+int
+__codecvt_utf8_utf16_base<char32_t>::
+do_length(state_type&, const extern_type* __from,
+	  const extern_type* __end, size_t __max) const
+{
+  __end = utf16_span(__from, __end, __max, _M_maxcode, _M_mode);
+  return __end - __from;
+}
+
+int
+__codecvt_utf8_utf16_base<char32_t>::do_max_length() const throw()
+{
+  // Any valid UTF-8 sequence of 3 bytes fits in a single 16-bit code unit,
+  // whereas 4 byte sequences require two 16-bit code units.
+  return 3;
+}
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+// Define members of codecvt_utf8_utf16<wchar_t> base class implementation.
+// Converts from UTF-8 to UTF-16.
+
+__codecvt_utf8_utf16_base<wchar_t>::~__codecvt_utf8_utf16_base() { }
+
+codecvt_base::result
+__codecvt_utf8_utf16_base<wchar_t>::
+do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
+       const intern_type*& __from_next,
+       extern_type* __to, extern_type* __to_end,
+       extern_type*& __to_next) const
+{
+  range<const wchar_t> from{ __from, __from_end };
+  range<char> to{ __to, __to_end };
+  auto res = utf16_out(from, to, _M_maxcode, _M_mode);
+  __from_next = from.next;
+  __to_next = to.next;
+  return res;
+}
+
+codecvt_base::result
+__codecvt_utf8_utf16_base<wchar_t>::
+do_unshift(state_type&, extern_type* __to, extern_type*,
+	   extern_type*& __to_next) const
+{
+  __to_next = __to;
+  return noconv;
+}
+
+codecvt_base::result
+__codecvt_utf8_utf16_base<wchar_t>::
+do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
+      const extern_type*& __from_next,
+      intern_type* __to, intern_type* __to_end,
+      intern_type*& __to_next) const
+{
+  range<const char> from{ __from, __from_end };
+  range<wchar_t> to{ __to, __to_end };
+  auto res = utf16_in(from, to, _M_maxcode, _M_mode);
+  __from_next = from.next;
+  __to_next = to.next;
+  return res;
+}
+
+int
+__codecvt_utf8_utf16_base<wchar_t>::do_encoding() const throw()
+{ return 0; }
+
+bool
+__codecvt_utf8_utf16_base<wchar_t>::do_always_noconv() const throw()
+{ return false; }
+
+int
+__codecvt_utf8_utf16_base<wchar_t>::
+do_length(state_type&, const extern_type* __from,
+	  const extern_type* __end, size_t __max) const
+{
+  __end = utf16_span(__from, __end, __max, _M_maxcode, _M_mode);
+  return __end - __from;
+}
+
+int
+__codecvt_utf8_utf16_base<wchar_t>::do_max_length() const throw()
+{
+  // Any valid UTF-8 sequence of 3 bytes fits in a single 16-bit code unit,
+  // whereas 4 byte sequences require two 16-bit code units.
+  return 3;
+}
+#endif
 
 inline template class __codecvt_abstract_base<char16_t, char, mbstate_t>;
 inline template class __codecvt_abstract_base<char32_t, char, mbstate_t>;
