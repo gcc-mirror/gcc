@@ -1,3 +1,8 @@
+2015-01-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/cortex-a57.md: Remove duplicate of file accidentally
+	introduced in revision 219724.
+
 2015-01-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
             Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>
 
