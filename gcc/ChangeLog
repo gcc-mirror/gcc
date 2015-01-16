@@ -1,5 +1,17 @@
 2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32-protos.h (nds32_can_use_return_insn): New.
+	* config/nds32/nds32.md (unspec_volatile_func_return): Remove.
+	(return_internal): New.
+	(return): Define this named pattern.
+	(simple_return): Define this named pattern.
+	* config/nds32/nds32.c (nds32_expand_epilogue): Emit return_internal
+	pattern instead of unspec_volatile_func_return.
+	(nds32_expand_epilogue_v3pop): Likewise.
+	(nds32_can_use_return_insn): New function.
+
+2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/constants.md (UNSPEC_VOLATILE_POP25_RETURN): New.
 	* config/nds32/nds32.md (pop25return): New.
 	* config/nds32/nds32.c (nds32_expand_epilogue_v3pop): Emit

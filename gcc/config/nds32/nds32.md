@@ -2090,17 +2090,27 @@ create_template:
 
 
 ;; ----------------------------------------------------------------------------
-;; unspec operation patterns
+;; Return operation patterns
 ;; ----------------------------------------------------------------------------
 
-;; In nds32 target, the 'ret5' instuction is actually 'jr5 $lp'.
-;; This pattern is designed to distinguish function return
-;; from general indirect_jump pattern so that we can directly
-;; generate 'ret5' for readability.
+;; Use this pattern to expand a return instruction
+;; with simple_return rtx if no epilogue is required.
+(define_expand "return"
+  [(simple_return)]
+  "nds32_can_use_return_insn ()"
+  ""
+)
 
-(define_insn "unspec_volatile_func_return"
-  [(set (pc)
-	(unspec_volatile:SI [(reg:SI LP_REGNUM)] UNSPEC_VOLATILE_FUNC_RETURN))]
+;; This pattern is expanded only by the shrink-wrapping optimization
+;; on paths where the function prologue has not been executed.
+(define_expand "simple_return"
+  [(simple_return)]
+  ""
+  ""
+)
+
+(define_insn "return_internal"
+  [(simple_return)]
   ""
 {
   if (TARGET_16_BIT)
@@ -2108,7 +2118,7 @@ create_template:
   else
     return "ret";
 }
-  [(set_attr "type" "misc")
+  [(set_attr "type" "branch")
    (set_attr "enabled" "1")
    (set (attr "length")
 	(if_then_else (match_test "TARGET_16_BIT")
