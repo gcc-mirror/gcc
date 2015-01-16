@@ -31967,6 +31967,14 @@ rs6000_eh_return_filter_mode (void)
 static bool
 rs6000_scalar_mode_supported_p (machine_mode mode)
 {
+  /* -m32 does not support TImode.  This is the default, from
+     default_scalar_mode_supported_p.  For -m32 -mpowerpc64 we want the
+     same ABI as for -m32.  But default_scalar_mode_supported_p allows
+     integer modes of precision 2 * BITS_PER_WORD, which matches TImode
+     for -mpowerpc64.  */
+  if (TARGET_32BIT && mode == TImode)
+    return false;
+
   if (DECIMAL_FLOAT_MODE_P (mode))
     return default_decimal_float_supported_p ();
   else
