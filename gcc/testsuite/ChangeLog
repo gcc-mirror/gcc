@@ -1,3 +1,9 @@
+2015-01-16  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/64434
+	* gcc.dg/torture/pr64434.c: Move to...
+	* gcc.dg/pr64434.c: ... here.
+
 2015-01-16  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64614
