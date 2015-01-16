@@ -1,4 +1,9 @@
 2015-01-15  Jan Hubicka  <hubicka@ucw.cz>
+	
+	* doc/invoke.texi (--param early-inlining-insns): Update default value.
+	* params.def (PARAM_EARLY_INLINING_INSNS): Set to 14.
+
+2015-01-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.c (inline_small_functions): Work around hints
 	cache issue.
