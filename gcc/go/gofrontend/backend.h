@@ -375,7 +375,7 @@ class Backend
   // Create an expression for a call to FN with ARGS.
   virtual Bexpression*
   call_expression(Bexpression* fn, const std::vector<Bexpression*>& args,
-                  Location) = 0;
+		  Bexpression* static_chain, Location) = 0;
 
   // Statements.
 
@@ -528,6 +528,11 @@ class Backend
   parameter_variable(Bfunction* function, const std::string& name,
 		     Btype* type, bool is_address_taken,
 		     Location location) = 0;
+
+  // Create a static chain parameter.  This is the closure parameter.
+  virtual Bvariable*
+  static_chain_variable(Bfunction* function, const std::string& name,
+		        Btype* type, Location location) = 0;
 
   // Create a temporary variable.  A temporary variable has no name,
   // just a type.  We pass in FUNCTION and BLOCK in case they are
