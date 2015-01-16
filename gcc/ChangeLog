@@ -1,3 +1,7 @@
+2015-01-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* builtins.c (expand_builtin_acc_on_device): Check target for NULL.
+
 2015-01-16  Matthew Wahab  <matthew.wahab@arm.com>
 
 	PR target/64149

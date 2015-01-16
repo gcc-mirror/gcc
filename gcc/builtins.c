@@ -5930,7 +5930,7 @@ expand_builtin_acc_on_device (tree exp, rtx target)
   v2 = GEN_INT (GOMP_DEVICE_HOST);
 #endif
   machine_mode target_mode = TYPE_MODE (integer_type_node);
-  if (!REG_P (target) || GET_MODE (target) != target_mode)
+  if (!target || !register_operand (target, target_mode))
     target = gen_reg_rtx (target_mode);
   emit_move_insn (target, const1_rtx);
   rtx_code_label *done_label = gen_label_rtx ();
