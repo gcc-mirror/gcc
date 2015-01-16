@@ -1,3 +1,9 @@
+2015-01-16  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/64163
+	PR ipa/64612
+	* g++.dg/ipa/pr64612.C: New test.
+
 2015-01-16  Renlin Li  <renlin.li@arm.com>
 
 	* g++.dg/builtin-apply2.c: Remove aarch64 target from skip list.
