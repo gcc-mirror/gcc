@@ -1,3 +1,12 @@
+2015-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* jit-builtins.h (DEF_FUNCTION_TYPE_VAR_5): Fix spelling of
+	last argument.
+	(DEF_FUNCTION_TYPE_VAR_8, DEF_FUNCTION_TYPE_VAR_12): Define and
+	undef afterwards.
+	* jit-builtins.c (DEF_FUNCTION_TYPE_VAR_8, DEF_FUNCTION_TYPE_VAR_12):
+	Likewise.
+
 2015-01-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Update copyright years in docs/.
