@@ -1,3 +1,9 @@
+2015-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64568
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Guard
+	complex load rewriting for TARGET_MEM_REFs.
+
 2015-01-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* builtins.c (expand_builtin_acc_on_device): Check target for NULL.
