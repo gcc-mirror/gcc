@@ -58,9 +58,9 @@ extern void nds32_init_cumulative_args (CUMULATIVE_ARGS *,
 /* -- Function Entry and Exit.  */
 
 extern void nds32_expand_prologue (void);
-extern void nds32_expand_epilogue (void);
+extern void nds32_expand_epilogue (bool);
 extern void nds32_expand_prologue_v3push (void);
-extern void nds32_expand_epilogue_v3pop (void);
+extern void nds32_expand_epilogue_v3pop (bool);
 
 /* ------------------------------------------------------------------------ */
 
