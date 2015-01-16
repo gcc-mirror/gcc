@@ -861,10 +861,10 @@ Objective-C and Objective-C++ Dialects}.
 -mperf-ext -mno-perf-ext @gol
 -mv3push -mno-v3push @gol
 -m16bit -mno-16bit @gol
--mgp-direct -mno-gp-direct @gol
 -misr-vector-size=@var{num} @gol
 -mcache-block-size=@var{num} @gol
 -march=@var{arch} @gol
+-mcmodel=@var{code-model} @gol
 -mforce-fp-as-gp -mforbid-fp-as-gp @gol
 -mex9 -mctor-dtor -mrelax}
 
@@ -19153,14 +19153,6 @@ Generate 16-bit instructions.
 @opindex mno-16-bit
 Do not generate 16-bit instructions.
 
-@item -mgp-direct
-@opindex mgp-direct
-Generate GP base instructions directly.
-
-@item -mno-gp-direct
-@opindex mno-gp-direct
-Do no generate GP base instructions directly.
-
 @item -misr-vector-size=@var{num}
 @opindex misr-vector-size
 Specify the size of each interrupt vector, which must be 4 or 16.
@@ -19173,6 +19165,21 @@ which must be a power of 2 between 4 and 512.
 @item -march=@var{arch}
 @opindex march
 Specify the name of the target architecture.
+
+@item -mcmodel=@var{code-model}
+@opindex mcmodel
+Set the code model to one of
+@table @asis
+@item @samp{small}
+All the data and read-only data segments must be within 512KB addressing space.
+The text segment must be within 16MB addressing space.
+@item @samp{medium}
+The data segment must be within 512KB while the read-only data segment can be
+within 4GB addressing space.  The text segment should be still within 16MB
+addressing space.
+@item @samp{large}
+All the text and data segments can be within 4GB addressing space.
+@end table
 
 @item -mforce-fp-as-gp
 @opindex mforce-fp-as-gp

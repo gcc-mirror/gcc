@@ -1,3 +1,8 @@
+2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* doc/invoke.texi (NDS32 Options): Add -mcmodel= option and
+	remove -mgp-direct option.
+
 2015-01-15  Jan Hubicka  <hubicka@ucw.cz>
 	
 	* doc/invoke.texi (--param early-inlining-insns): Update default value.
