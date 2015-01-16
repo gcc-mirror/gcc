@@ -1,3 +1,8 @@
+2015-01-16  Torvald Riegel  <triegel@redhat.com>
+
+	* include/std/shared_mutex (shared_timed_mutex): Add POSIX-based
+	implementation.
+
 2015-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64571
