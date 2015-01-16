@@ -53,6 +53,7 @@ endif
 
 sources = \
 	chrono.cc \
+	codecvt.cc \
 	condition_variable.cc \
 	cow-stdexcept.cc \
 	ctype.cc \

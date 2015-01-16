@@ -92,7 +92,16 @@ along with GCC; see the file COPYING3.  If not see
 
      * If the final result is not used in a COND_EXPR (checked by function
        used_in_cond_stmt_p), it calls cstorecc4 pattern to store the CC to a
-       general register.  */
+       general register.
+
+   Since the operands of the later compares might clobber CC reg, we do not
+   emit the insns during expand.  We keep the insn sequences in two seq
+
+     * prep_seq, which includes all the insns to prepare the operands.
+     * gen_seq, which includes all the compare and conditional compares.
+
+   If all checks OK in expand_ccmp_expr, it emits insns in prep_seq, then
+   insns in gen_seq.  */
 
 /* Check whether G is a potential conditional compare candidate.  */
 static bool
@@ -172,6 +181,27 @@ used_in_cond_stmt_p (tree exp)
   return expand_cond;
 }
 
+/* PREV is the CC flag from precvious compares.  The function expands the
+   next compare based on G which ops previous compare with CODE.
+   PREP_SEQ returns all insns to prepare opearands for compare.
+   GEN_SEQ returnss all compare insns.  */
+static rtx
+expand_ccmp_next (gimple g, enum tree_code code, rtx prev,
+		  rtx *prep_seq, rtx *gen_seq)
+{
+  enum rtx_code rcode;
+  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (g)));
+
+  gcc_assert (code == BIT_AND_EXPR || code == BIT_IOR_EXPR);
+
+  rcode = get_rtx_code (gimple_assign_rhs_code (g), unsignedp);
+
+  return targetm.gen_ccmp_next (prep_seq, gen_seq, prev, rcode,
+				gimple_assign_rhs1 (g),
+				gimple_assign_rhs2 (g),
+				get_rtx_code (code, 0));
+}
+
 /* Expand conditional compare gimple G.  A typical CCMP sequence is like:
 
      CC0 = CMP (a, b);
@@ -180,9 +210,11 @@ used_in_cond_stmt_p (tree exp)
      CCn = CCMP (NE (CCn-1, 0), CMP (...));
 
    hook gen_ccmp_first is used to expand the first compare.
-   hook gen_ccmp_next is used to expand the following CCMP.  */
+   hook gen_ccmp_next is used to expand the following CCMP.
+   PREP_SEQ returns all insns to prepare opearand.
+   GEN_SEQ returns all compare insns.  */
 static rtx
-expand_ccmp_expr_1 (gimple g)
+expand_ccmp_expr_1 (gimple g, rtx *prep_seq, rtx *gen_seq)
 {
   tree exp = gimple_assign_rhs_to_tree (g);
   enum tree_code code = TREE_CODE (exp);
@@ -199,52 +231,27 @@ expand_ccmp_expr_1 (gimple g)
     {
       if (TREE_CODE_CLASS (code1) == tcc_comparison)
 	{
-	  int unsignedp0, unsignedp1;
-	  enum rtx_code rcode0, rcode1;
-	  rtx op0, op1, op2, op3, tmp;
+	  int unsignedp0;
+	  enum rtx_code rcode0;
 
 	  unsignedp0 = TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (gs0)));
 	  rcode0 = get_rtx_code (code0, unsignedp0);
-	  unsignedp1 = TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (gs1)));
-	  rcode1 = get_rtx_code (code1, unsignedp1);
 
-	  expand_operands (gimple_assign_rhs1 (gs0),
-			   gimple_assign_rhs2 (gs0),
-			   NULL_RTX, &op0, &op1, EXPAND_NORMAL);
-
-	  /* Since the operands of GS1 might clobber CC reg, we expand the
-	     operands of GS1 before GEN_CCMP_FIRST.  */
-	  expand_operands (gimple_assign_rhs1 (gs1),
-			   gimple_assign_rhs2 (gs1),
-			   NULL_RTX, &op2, &op3, EXPAND_NORMAL);
-	  tmp = targetm.gen_ccmp_first (rcode0, op0, op1);
+	  tmp = targetm.gen_ccmp_first (prep_seq, gen_seq, rcode0,
+					gimple_assign_rhs1 (gs0),
+					gimple_assign_rhs2 (gs0));
 	  if (!tmp)
 	    return NULL_RTX;
 
-	  return targetm.gen_ccmp_next (tmp, rcode1, op2, op3,
-					get_rtx_code (code, 0));
+	  return expand_ccmp_next (gs1, code, tmp, prep_seq, gen_seq);
 	}
       else
 	{
-  	  rtx op0, op1;
-	  enum rtx_code rcode;
-	  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (gs0)));
+	  tmp = expand_ccmp_expr_1 (gs1, prep_seq, gen_seq);
+	  if (!tmp)
+	    return NULL_RTX;
 
-	  rcode = get_rtx_code (gimple_assign_rhs_code (gs0), unsignedp);
-
-	  /* Hoist the preparation operations above the entire
-	     conditional compare sequence.  */
-	  expand_operands (gimple_assign_rhs1 (gs0),
-			   gimple_assign_rhs2 (gs0),
-			   NULL_RTX, &op0, &op1, EXPAND_NORMAL);
-
-	  gcc_assert (code1 == BIT_AND_EXPR || code1 == BIT_IOR_EXPR);
-
-	  /* Note: We swap the order to make the recursive function work.  */
-	  tmp = expand_ccmp_expr_1 (gs1);
-	  if (tmp)
-	    return targetm.gen_ccmp_next (tmp, rcode, op0, op1,
-					  get_rtx_code (code, 0));
+	  return expand_ccmp_next (gs0, code, tmp, prep_seq, gen_seq);
 	}
     }
   else
@@ -254,21 +261,11 @@ expand_ccmp_expr_1 (gimple g)
 
       if (TREE_CODE_CLASS (gimple_assign_rhs_code (gs1)) == tcc_comparison)
 	{
-  	  rtx op0, op1;
-	  enum rtx_code rcode;
-	  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (gs1)));
+	  tmp = expand_ccmp_expr_1 (gs0, prep_seq, gen_seq);
+	  if (!tmp)
+	    return NULL_RTX;
 
-	  rcode = get_rtx_code (gimple_assign_rhs_code (gs1), unsignedp);
-
-	  /* Hoist the preparation operations above the entire
-	     conditional compare sequence.  */
-	  expand_operands (gimple_assign_rhs1 (gs1),
-			   gimple_assign_rhs2 (gs1),
-			   NULL_RTX, &op0, &op1, EXPAND_NORMAL);
-	  tmp = expand_ccmp_expr_1 (gs0);
-	  if (tmp)
-	    return targetm.gen_ccmp_next (tmp, rcode, op0, op1,
-					  get_rtx_code (code, 0));
+	  return expand_ccmp_next (gs1, code, tmp, prep_seq, gen_seq);
 	}
       else
 	{
@@ -288,23 +285,30 @@ expand_ccmp_expr (gimple g)
 {
   rtx_insn *last;
   rtx tmp;
+  rtx prep_seq, gen_seq;
+
+  prep_seq = gen_seq = NULL_RTX;
 
   if (!ccmp_candidate_p (g))
     return NULL_RTX;
 
   last = get_last_insn ();
-  tmp = expand_ccmp_expr_1 (g);
+  tmp = expand_ccmp_expr_1 (g, &prep_seq, &gen_seq);
 
   if (tmp)
     {
       enum insn_code icode;
       enum machine_mode cc_mode = CCmode;
-
       tree lhs = gimple_assign_lhs (g);
+
       /* TMP should be CC.  If it is used in a GIMPLE_COND, just return it.
 	 Note: Target needs to define "cbranchcc4".  */
       if (used_in_cond_stmt_p (lhs))
-	return tmp;
+	{
+	  emit_insn (prep_seq);
+	  emit_insn (gen_seq);
+	  return tmp;
+	}
 
 #ifdef SELECT_CC_MODE
       cc_mode = SELECT_CC_MODE (NE, tmp, const0_rtx);
@@ -314,9 +318,12 @@ expand_ccmp_expr (gimple g)
       icode = optab_handler (cstore_optab, cc_mode);
       if (icode != CODE_FOR_nothing)
 	{
-	  tree lhs = gimple_assign_lhs (g);
 	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
 	  rtx target = gen_reg_rtx (mode);
+
+	  emit_insn (prep_seq);
+	  emit_insn (gen_seq);
+
 	  tmp = emit_cstore (target, icode, NE, cc_mode, cc_mode,
 			     0, tmp, const0_rtx, 1, mode);
 	  if (tmp)

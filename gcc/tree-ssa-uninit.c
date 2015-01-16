@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "diagnostic-core.h"
 #include "params.h"
+#include "tree-cfg.h"
 
 /* This implements the pass that does predicate aware warning on uses of
    possibly uninitialized variables. The pass first collects the set of
@@ -411,6 +412,7 @@ find_control_equiv_block (basic_block bb)
 #define MAX_NUM_CHAINS 8
 #define MAX_CHAIN_LEN 5
 #define MAX_POSTDOM_CHECK 8
+#define MAX_SWITCH_CASES 40
 
 /* Computes the control dependence chains (paths of edges)
    for DEP_BB up to the dominating basic block BB (the head node of a
@@ -592,17 +594,63 @@ convert_control_dep_chain_into_preds (vec<edge> *dep_chains,
               if (skip)
                 continue;
             }
-          if (gimple_code (cond_stmt) != GIMPLE_COND)
+          if (gimple_code (cond_stmt) == GIMPLE_COND)
+	    {
+	      one_pred.pred_lhs = gimple_cond_lhs (cond_stmt);
+	      one_pred.pred_rhs = gimple_cond_rhs (cond_stmt);
+	      one_pred.cond_code = gimple_cond_code (cond_stmt);
+	      one_pred.invert = !!(e->flags & EDGE_FALSE_VALUE);
+	      t_chain.safe_push (one_pred);
+	      has_valid_pred = true;
+	    }
+	  else if (gswitch *gs = dyn_cast <gswitch *> (cond_stmt))
+	    {
+	      /* Avoid quadratic behavior.  */
+	      if (gimple_switch_num_labels (gs) > MAX_SWITCH_CASES)
+		{
+		  has_valid_pred = false;
+		  break;
+		}
+	      /* Find the case label.  */
+	      tree l = NULL_TREE;
+	      unsigned idx;
+	      for (idx = 0; idx < gimple_switch_num_labels (gs); ++idx)
+		{
+		  tree tl = gimple_switch_label (gs, idx);
+		  if (e->dest == label_to_block (CASE_LABEL (tl)))
+		    {
+		      if (!l)
+			l = tl;
+		      else
+			{
+			  l = NULL_TREE;
+			  break;
+			}
+		    }
+		}
+	      /* If more than one label reaches this block or the case
+	         label doesn't have a single value (like the default one)
+		 fail.  */
+	      if (!l
+		  || !CASE_LOW (l)
+		  || (CASE_HIGH (l) && !operand_equal_p (CASE_LOW (l),
+							 CASE_HIGH (l), 0)))
+		{
+		  has_valid_pred = false;
+		  break;
+		}
+	      one_pred.pred_lhs = gimple_switch_index (gs);
+	      one_pred.pred_rhs = CASE_LOW (l);
+	      one_pred.cond_code = EQ_EXPR;
+	      one_pred.invert = false;
+	      t_chain.safe_push (one_pred);
+	      has_valid_pred = true;
+	    }
+	  else
             {
               has_valid_pred = false;
               break;
             }
-          one_pred.pred_lhs = gimple_cond_lhs (cond_stmt);
-          one_pred.pred_rhs = gimple_cond_rhs (cond_stmt);
-          one_pred.cond_code = gimple_cond_code (cond_stmt);
-          one_pred.invert = !!(e->flags & EDGE_FALSE_VALUE);
-          t_chain.safe_push (one_pred);
-	  has_valid_pred = true;
         }
 
       if (!has_valid_pred)
@@ -1329,6 +1377,10 @@ is_pred_expr_subset_of (pred_info expr1, pred_info expr2)
   if (expr2.invert)
     code2 = invert_tree_comparison (code2, false);
 
+  if (code1 == EQ_EXPR && code2 == BIT_AND_EXPR)
+    return wi::eq_p (expr1.pred_rhs,
+		     wi::bit_and (expr1.pred_rhs, expr2.pred_rhs));
+
   if (code1 != code2 && code2 != NE_EXPR)
     return false;
 
@@ -1970,8 +2022,25 @@ normalize_one_pred_1 (pred_chain_union *norm_preds,
     }
   else if (gimple_assign_rhs_code (def_stmt) == and_or_code)
     {
-      push_to_worklist (gimple_assign_rhs1 (def_stmt), work_list, mark_set);
-      push_to_worklist (gimple_assign_rhs2 (def_stmt), work_list, mark_set);
+      /* Avoid splitting up bit manipulations like x & 3 or y | 1.  */
+      if (is_gimple_min_invariant (gimple_assign_rhs2 (def_stmt)))
+	{
+	  /* But treat x & 3 as condition.  */
+	  if (and_or_code == BIT_AND_EXPR)
+	    {
+	      pred_info n_pred;
+	      n_pred.pred_lhs = gimple_assign_rhs1 (def_stmt);
+	      n_pred.pred_rhs = gimple_assign_rhs2 (def_stmt);
+	      n_pred.cond_code = and_or_code;
+	      n_pred.invert = false;
+	      norm_chain->safe_push (n_pred);
+	    }
+	}
+      else
+	{
+	  push_to_worklist (gimple_assign_rhs1 (def_stmt), work_list, mark_set);
+	  push_to_worklist (gimple_assign_rhs2 (def_stmt), work_list, mark_set);
+	}
     }
   else if (TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt))
 	   == tcc_comparison)

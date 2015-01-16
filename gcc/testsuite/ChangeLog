@@ -1,3 +1,77 @@
+2015-01-16  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/64353
+	* g++.dg/pr64353.C: New.
+
+2015-01-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/64263
+	* gcc.target/aarch64/pr64263_1.c: New test.
+
+2015-01-16  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/64434
+	* gcc.dg/torture/pr64434.c: Move to...
+	* gcc.dg/pr64434.c: ... here.
+
+2015-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64614
+	* gcc.dg/uninit-18.c: New testcase.
+
+2015-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64568
+	* g++.dg/torture/pr64568-2.C: New testcase.
+
+2015-01-16  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/64363
+	* gcc.target/i386/chkp-label-address.c: New.
+
+2015-01-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45290
+	* gfortran.dg/pointer_init_6.f90: Extended.
+
+2015-01-16  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* gcc.c-torture/compile/20150108.c: New test.
+
+2015-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/visium: New directory.
+
+2015-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61743
+	* gcc.dg/tree-ssa/pr61743-1.c: Add -fno-tree-vectorize.
+	* gcc.dg/tree-ssa/pr61743-2.c: Likewise.
+
+2015-01-16  Zhenqiang Chen <zhenqiang.chen@arm.com>
+
+	* gcc.dg/pr64015.c: New test.
+
+2015-01-16  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/64163
+	PR ipa/64612
+	* g++.dg/ipa/pr64612.C: New test.
+
+2015-01-16  Renlin Li  <renlin.li@arm.com>
+
+	* g++.dg/builtin-apply2.c: Remove aarch64 target from skip list.
+
+2015-01-16  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/sse-14.c: Test new intrinsic.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2015-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58614
+	* g++.dg/cpp0x/auto44.C: New.
+
 2015-01-15  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR target/59710
@@ -489,7 +563,7 @@
 	PR tree-optimization/64404
 	* gcc.dg/vect/pr64404.c: New testcase.
 
-2014-01-13  Richard Biener  <rguenther@suse.de>
+2015-01-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64568
 	* g++.dg/torture/pr64568.C: New testcase.

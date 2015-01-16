@@ -762,10 +762,14 @@ else
 if LIBGO_IS_DARWIN
 go_net_tcpsockopt_file = go/net/tcpsockopt_darwin.go
 else
+if LIBGO_IS_SOLARIS
+go_net_tcpsockopt_file = go/net/tcpsockopt_solaris.go
+else
 if LIBGO_IS_DRAGONFLY
 go_net_tcpsockopt_file = go/net/tcpsockopt_dragonfly.go
 else
 go_net_tcpsockopt_file = go/net/tcpsockopt_unix.go
+endif
 endif
 endif
 endif

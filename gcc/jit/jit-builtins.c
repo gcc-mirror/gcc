@@ -313,6 +313,15 @@ builtins_manager::make_type (enum jit_builtin_type type_id)
       case ENUM: return make_fn_type (ENUM, RETURN, 1, 4, ARG1, ARG2, ARG3, ARG4);
 #define DEF_FUNCTION_TYPE_VAR_5(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5) \
       case ENUM: return make_fn_type (ENUM, RETURN, 1, 5, ARG1, ARG2, ARG3, ARG4, ARG5);
+#define DEF_FUNCTION_TYPE_VAR_8(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+				ARG6, ARG7, ARG8) \
+      case ENUM: return make_fn_type (ENUM, RETURN, 1, 8, ARG1, ARG2, ARG3, \
+				      ARG4, ARG5, ARG6, ARG7, ARG8);
+#define DEF_FUNCTION_TYPE_VAR_12(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+				 ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) \
+      case ENUM: return make_fn_type (ENUM, RETURN, 1, 12, ARG1, ARG2, ARG3, \
+				      ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, \
+				      ARG10, ARG11, ARG12);
 #define DEF_POINTER_TYPE(ENUM, TYPE) \
       case ENUM: return make_ptr_type (ENUM, TYPE);
 
@@ -334,6 +343,8 @@ builtins_manager::make_type (enum jit_builtin_type type_id)
 #undef DEF_FUNCTION_TYPE_VAR_3
 #undef DEF_FUNCTION_TYPE_VAR_4
 #undef DEF_FUNCTION_TYPE_VAR_5
+#undef DEF_FUNCTION_TYPE_VAR_8
+#undef DEF_FUNCTION_TYPE_VAR_12
 #undef DEF_POINTER_TYPE
 
     default:

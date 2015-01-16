@@ -188,7 +188,7 @@
 
 ;; Scheduling
 (include "../arm/cortex-a53.md")
-(include "../arm/cortex-a15.md")
+(include "../arm/cortex-a57.md")
 (include "thunderx.md")
 (include "../arm/xgene1.md")
 
@@ -248,7 +248,7 @@
   ""
   "")
 
-(define_insn "*ccmp_and"
+(define_insn "ccmp_and<mode>"
   [(set (match_operand 1 "ccmp_cc_register" "")
 	(compare
 	 (and:SI
@@ -267,7 +267,7 @@
   [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
-(define_insn "*ccmp_ior"
+(define_insn "ccmp_ior<mode>"
   [(set (match_operand 1 "ccmp_cc_register" "")
 	(compare
 	 (ior:SI
@@ -284,6 +284,20 @@
    ccmp\\t%<w>2, %<w>3, %K5, %M4
    ccmn\\t%<w>2, #%n3, %K5, %M4"
   [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
+)
+
+(define_expand "cmp<mode>"
+  [(set (match_operand 0 "cc_register" "")
+        (match_operator:CC 1 "aarch64_comparison_operator"
+         [(match_operand:GPI 2 "register_operand" "")
+          (match_operand:GPI 3 "aarch64_plus_operand" "")]))]
+  ""
+  {
+    operands[1] = gen_rtx_fmt_ee (COMPARE,
+				  SELECT_CC_MODE (GET_CODE (operands[1]),
+						  operands[2], operands[3]),
+				  operands[2], operands[3]);
+  }
 )
 
 (define_insn "*condjump"
@@ -845,7 +859,8 @@
    fmov\\t%s0, %w1
    fmov\\t%w0, %s1
    fmov\\t%s0, %s1"
-   "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), SImode)"
+   "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), SImode)
+    && GP_REGNUM_P (REGNO (operands[0]))"
    [(const_int 0)]
    "{
        aarch64_expand_mov_immediate (operands[0], operands[1]);
@@ -877,7 +892,8 @@
    fmov\\t%x0, %d1
    fmov\\t%d0, %d1
    movi\\t%d0, %1"
-   "(CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), DImode))"
+   "(CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), DImode))
+    && GP_REGNUM_P (REGNO (operands[0]))"
    [(const_int 0)]
    "{
        aarch64_expand_mov_immediate (operands[0], operands[1]);

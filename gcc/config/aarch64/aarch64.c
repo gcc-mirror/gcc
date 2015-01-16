@@ -156,7 +156,6 @@ enum aarch64_code_model aarch64_cmodel;
 #define TARGET_HAVE_TLS 1
 #endif
 
-static bool aarch64_lra_p (void);
 static bool aarch64_composite_type_p (const_tree, machine_mode);
 static bool aarch64_vfp_is_call_or_return_candidate (machine_mode,
 						     const_tree,
@@ -7810,13 +7809,6 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
   return -1;
 }
 
-/* Return true if we use LRA instead of reload pass.  */
-static bool
-aarch64_lra_p (void)
-{
-  return aarch64_lra_flag;
-}
-
 /* Return TRUE if the type, as described by TYPE and MODE, is a composite
    type as described in AAPCS64 \S 4.3.  This includes aggregate, union and
    array types.  The C99 floating-point complex types are also considered
@@ -10381,6 +10373,198 @@ aarch64_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
   return default_use_by_pieces_infrastructure_p (size, align, op, speed_p);
 }
 
+static enum machine_mode
+aarch64_code_to_ccmode (enum rtx_code code)
+{
+  switch (code)
+    {
+    case NE:
+      return CC_DNEmode;
+
+    case EQ:
+      return CC_DEQmode;
+
+    case LE:
+      return CC_DLEmode;
+
+    case LT:
+      return CC_DLTmode;
+
+    case GE:
+      return CC_DGEmode;
+
+    case GT:
+      return CC_DGTmode;
+
+    case LEU:
+      return CC_DLEUmode;
+
+    case LTU:
+      return CC_DLTUmode;
+
+    case GEU:
+      return CC_DGEUmode;
+
+    case GTU:
+      return CC_DGTUmode;
+
+    default:
+      return CCmode;
+    }
+}
+
+static rtx
+aarch64_gen_ccmp_first (rtx *prep_seq, rtx *gen_seq,
+			int code, tree treeop0, tree treeop1)
+{
+  enum machine_mode op_mode, cmp_mode, cc_mode;
+  rtx op0, op1, cmp, target;
+  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (treeop0));
+  enum insn_code icode;
+  struct expand_operand ops[4];
+
+  cc_mode = aarch64_code_to_ccmode ((enum rtx_code) code);
+  if (cc_mode == CCmode)
+    return NULL_RTX;
+
+  start_sequence ();
+  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
+
+  op_mode = GET_MODE (op0);
+  if (op_mode == VOIDmode)
+    op_mode = GET_MODE (op1);
+
+  switch (op_mode)
+    {
+    case QImode:
+    case HImode:
+    case SImode:
+      cmp_mode = SImode;
+      icode = CODE_FOR_cmpsi;
+      break;
+
+    case DImode:
+      cmp_mode = DImode;
+      icode = CODE_FOR_cmpdi;
+      break;
+
+    default:
+      end_sequence ();
+      return NULL_RTX;
+    }
+
+  op0 = prepare_operand (icode, op0, 2, op_mode, cmp_mode, unsignedp);
+  op1 = prepare_operand (icode, op1, 3, op_mode, cmp_mode, unsignedp);
+  if (!op0 || !op1)
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+  *prep_seq = get_insns ();
+  end_sequence ();
+
+  cmp = gen_rtx_fmt_ee ((enum rtx_code) code, cmp_mode, op0, op1);
+  target = gen_rtx_REG (CCmode, CC_REGNUM);
+
+  create_output_operand (&ops[0], target, CCmode);
+  create_fixed_operand (&ops[1], cmp);
+  create_fixed_operand (&ops[2], op0);
+  create_fixed_operand (&ops[3], op1);
+
+  start_sequence ();
+  if (!maybe_expand_insn (icode, 4, ops))
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+  *gen_seq = get_insns ();
+  end_sequence ();
+
+  return gen_rtx_REG (cc_mode, CC_REGNUM);
+}
+
+static rtx
+aarch64_gen_ccmp_next (rtx *prep_seq, rtx *gen_seq, rtx prev, int cmp_code,
+		       tree treeop0, tree treeop1, int bit_code)
+{
+  rtx op0, op1, cmp0, cmp1, target;
+  enum machine_mode op_mode, cmp_mode, cc_mode;
+  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (treeop0));
+  enum insn_code icode = CODE_FOR_ccmp_andsi;
+  struct expand_operand ops[6];
+
+  cc_mode = aarch64_code_to_ccmode ((enum rtx_code) cmp_code);
+  if (cc_mode == CCmode)
+    return NULL_RTX;
+
+  push_to_sequence ((rtx_insn*) *prep_seq);
+  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
+
+  op_mode = GET_MODE (op0);
+  if (op_mode == VOIDmode)
+    op_mode = GET_MODE (op1);
+
+  switch (op_mode)
+    {
+    case QImode:
+    case HImode:
+    case SImode:
+      cmp_mode = SImode;
+      icode = (enum rtx_code) bit_code == AND ? CODE_FOR_ccmp_andsi
+						: CODE_FOR_ccmp_iorsi;
+      break;
+
+    case DImode:
+      cmp_mode = DImode;
+      icode = (enum rtx_code) bit_code == AND ? CODE_FOR_ccmp_anddi
+						: CODE_FOR_ccmp_iordi;
+      break;
+
+    default:
+      end_sequence ();
+      return NULL_RTX;
+    }
+
+  op0 = prepare_operand (icode, op0, 2, op_mode, cmp_mode, unsignedp);
+  op1 = prepare_operand (icode, op1, 3, op_mode, cmp_mode, unsignedp);
+  if (!op0 || !op1)
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+  *prep_seq = get_insns ();
+  end_sequence ();
+
+  target = gen_rtx_REG (cc_mode, CC_REGNUM);
+  cmp1 = gen_rtx_fmt_ee ((enum rtx_code) cmp_code, cmp_mode, op0, op1);
+  cmp0 = gen_rtx_fmt_ee (NE, cmp_mode, prev, const0_rtx);
+
+  create_fixed_operand (&ops[0], prev);
+  create_fixed_operand (&ops[1], target);
+  create_fixed_operand (&ops[2], op0);
+  create_fixed_operand (&ops[3], op1);
+  create_fixed_operand (&ops[4], cmp0);
+  create_fixed_operand (&ops[5], cmp1);
+
+  push_to_sequence ((rtx_insn*) *gen_seq);
+  if (!maybe_expand_insn (icode, 6, ops))
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+
+  *gen_seq = get_insns ();
+  end_sequence ();
+
+  return target;
+}
+
+#undef TARGET_GEN_CCMP_FIRST
+#define TARGET_GEN_CCMP_FIRST aarch64_gen_ccmp_first
+
+#undef TARGET_GEN_CCMP_NEXT
+#define TARGET_GEN_CCMP_NEXT aarch64_gen_ccmp_next
+
 /* Implement TARGET_SCHED_MACRO_FUSION_P.  Return true if target supports
    instruction fusion of some sort.  */
 
@@ -11140,7 +11324,7 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 #define TARGET_LIBGCC_CMP_RETURN_MODE aarch64_libgcc_cmp_return_mode
 
 #undef TARGET_LRA_P
-#define TARGET_LRA_P aarch64_lra_p
+#define TARGET_LRA_P hook_bool_void_true
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE aarch64_mangle_type

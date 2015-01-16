@@ -3542,7 +3542,7 @@ has_label_address_in_static_1 (tree *nodep, int *walk_subtrees, void *fnp)
 /* Determine if the function can be copied.  If so return NULL.  If
    not return a string describng the reason for failure.  */
 
-static const char *
+const char *
 copy_forbidden (struct function *fun, tree fndecl)
 {
   const char *reason = fun->cannot_be_copied_reason;

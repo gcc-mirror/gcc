@@ -41,6 +41,7 @@
   UNSPEC_VOLATILE_MTUSR
   UNSPEC_VOLATILE_SETGIE_EN
   UNSPEC_VOLATILE_SETGIE_DIS
+  UNSPEC_VOLATILE_POP25_RETURN
 ])
 
 ;; ------------------------------------------------------------------------

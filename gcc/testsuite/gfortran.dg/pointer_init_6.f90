@@ -16,6 +16,7 @@ module m1
  integer, pointer :: p2 => p1   ! { dg-error "must have the TARGET attribute" }
  integer, pointer :: p3 => x%p  ! { dg-error "must have the TARGET attribute" }
  integer, pointer :: p4 => x%i
+ integer, pointer :: p5 => u    ! { dg-error "has no IMPLICIT type" }
 end module m1
 
 

@@ -58,9 +58,9 @@ extern void nds32_init_cumulative_args (CUMULATIVE_ARGS *,
 /* -- Function Entry and Exit.  */
 
 extern void nds32_expand_prologue (void);
-extern void nds32_expand_epilogue (void);
+extern void nds32_expand_epilogue (bool);
 extern void nds32_expand_prologue_v3push (void);
-extern void nds32_expand_epilogue_v3pop (void);
+extern void nds32_expand_epilogue_v3pop (bool);
 
 /* ------------------------------------------------------------------------ */
 
@@ -119,6 +119,10 @@ extern const char *nds32_output_32bit_load_s (rtx *, int);
 
 extern const char *nds32_output_stack_push (rtx);
 extern const char *nds32_output_stack_pop (rtx);
+
+/* Auxiliary functions to check using return with null epilogue.  */
+
+extern int nds32_can_use_return_insn (void);
 
 /* Auxiliary functions to decide output alignment or not.  */
 

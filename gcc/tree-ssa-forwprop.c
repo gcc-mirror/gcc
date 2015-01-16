@@ -2230,6 +2230,8 @@ pass_forwprop::execute (function *fun)
 	  else if (TREE_CODE (TREE_TYPE (lhs)) == COMPLEX_TYPE
 		   && gimple_assign_load_p (stmt)
 		   && !gimple_has_volatile_ops (stmt)
+		   && (TREE_CODE (gimple_assign_rhs1 (stmt))
+		       != TARGET_MEM_REF)
 		   && !stmt_can_throw_internal (stmt))
 	    {
 	      /* Rewrite loads used only in real/imagpart extractions to

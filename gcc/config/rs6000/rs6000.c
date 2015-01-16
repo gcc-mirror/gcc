@@ -1511,10 +1511,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_MEMBER_TYPE_FORCES_BLK
 #define TARGET_MEMBER_TYPE_FORCES_BLK rs6000_member_type_forces_blk
 
-/* On rs6000, function arguments are promoted, as are function return
-   values.  */
 #undef TARGET_PROMOTE_FUNCTION_MODE
-#define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
+#define TARGET_PROMOTE_FUNCTION_MODE rs6000_promote_function_mode
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY rs6000_return_in_memory
@@ -1678,6 +1676,13 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV rs6000_atomic_assign_expand_fenv
+
+#undef TARGET_LIBGCC_CMP_RETURN_MODE
+#define TARGET_LIBGCC_CMP_RETURN_MODE rs6000_abi_word_mode
+#undef TARGET_LIBGCC_SHIFT_COUNT_MODE
+#define TARGET_LIBGCC_SHIFT_COUNT_MODE rs6000_abi_word_mode
+#undef TARGET_UNWIND_WORD_MODE
+#define TARGET_UNWIND_WORD_MODE rs6000_abi_word_mode
 
 
 /* Processor table.  */
@@ -9308,6 +9313,29 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
     }
 }
 
+/* The mode the ABI uses for a word.  This is not the same as word_mode
+   for -m32 -mpowerpc64.  This is used to implement various target hooks.  */
+
+static machine_mode
+rs6000_abi_word_mode (void)
+{
+  return TARGET_32BIT ? SImode : DImode;
+}
+
+/* On rs6000, function arguments are promoted, as are function return
+   values.  */
+
+static machine_mode
+rs6000_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
+			      machine_mode mode,
+			      int *punsignedp ATTRIBUTE_UNUSED,
+			      const_tree, int)
+{
+  PROMOTE_MODE (mode, *punsignedp, type);
+
+  return mode;
+}
+
 /* Return true if TYPE must be passed on the stack and not in registers.  */
 
 static bool
@@ -11227,7 +11255,7 @@ rs6000_va_start (tree valist, rtx nextarg)
   /* Find the overflow area.  */
   t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
   if (words != 0)
-    t = fold_build_pointer_plus_hwi (t, words * UNITS_PER_WORD);
+    t = fold_build_pointer_plus_hwi (t, words * MIN_UNITS_PER_WORD);
   t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);

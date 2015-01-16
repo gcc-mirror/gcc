@@ -1,3 +1,204 @@
+2015-01-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (TARGET_LIBGCC_CMP_RETURN_MODE,
+	TARGET_LIBGCC_SHIFT_COUNT_MODE, TARGET_UNWIND_WORD_MODE): Implement
+	as ...
+	(rs6000_abi_word_mode): New function.
+
+2015-01-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_va_start): Use MIN_UNITS_PER_WORD
+	instead of UNITS_PER_WORD to describe the size of stack slots.
+
+2015-01-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (TARGET_PROMOTE_FUNCTION_MODE): Implement
+	as rs6000_promote_function_mode.  Move comment to there.
+	(rs6000_promote_function_mode): New function.
+
+2015-01-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.h (PROMOTE_MODE): Correct test for when -m32
+	-mpowerpc64 is active.
+
+2015-01-16  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/64353
+	* tree-cfg.c (pass_data_fixup_cfg): Update SSA for
+	virtuals on start.
+
+2015-01-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/cortex-a57.md: Remove duplicate of file accidentally
+	introduced in revision 219724.
+
+2015-01-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+            Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>
+
+	PR target/64263
+	* config/aarch64/aarch64.md (*movsi_aarch64): Don't split if the
+	destination is not a GP reg.
+	(*movdi_aarch64): Likewise.
+
+2015-01-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/64623
+	* config/rs6000/default64.h: Revert ISA change.
+
+2015-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64614
+	* tree-ssa-uninit.c: Include tree-cfg.h.
+	(MAX_SWITCH_CASES): New define.
+	(convert_control_dep_chain_into_preds): Handle switch statements.
+	(is_pred_expr_subset_of): Handle x == CST vs. (x & CST) != 0.
+	(normalize_one_pred_1): Do not split bit-manipulations.
+	Record (x & CST).
+
+2015-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64568
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Guard
+	complex load rewriting for TARGET_MEM_REFs.
+
+2015-01-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* builtins.c (expand_builtin_acc_on_device): Check target for NULL.
+
+2015-01-16  Matthew Wahab  <matthew.wahab@arm.com>
+
+	PR target/64149
+	* config/aarch64/aarch64.opt: Remove lra option and aarch64_lra_flag
+	variable.
+	* config/aarch64/aarch64.c (TARGET_LRA_P): Set to hook_bool_void_true.
+	(aarch64_lra_p): Remove.
+
+2015-01-16  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/64363
+	* ipa-chkp.h (chkp_instrumentable_p): New.
+	* ipa-chkp.c: Include tree-inline.h.
+	(chkp_instrumentable_p): New.
+	(chkp_maybe_create_clone): Use chkp_instrumentable_p.
+	Fix processing of not instrumentable functions.
+	(chkp_versioning): Use chkp_instrumentable_p. Warn about
+	not instrumentable functions.
+	* tree-chkp.c (chkp_add_bounds_to_call_stmt): Use
+	chkp_instrumentable_p.
+	* tree-inline.h (copy_forbidden): New.
+	* tree-inline.c (copy_forbidden): Not static anymore.
+
+2015-01-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* optc-save-gen.awk (cl_target_option_print_diff): Mark indent,
+	ptr1, ptr2 unused.
+
+2015-01-16  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* lra-constraints.c (curr_insn_transform): Change a reload pseudo of
+	type OP_OUT to OP_INOUT.
+
+2015-01-16  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* simplify-rtx.c (simplify_replace_fn_rtx): Simplify (lo_sum
+	(high x) y) to y if x and y have the same base.
+
+2015-01-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/cortex-a57.md: New.
+	* config/aarch64/aarch64.md: Include it.
+	* config/aarch64/aarch64-cores.def (cortex-a57): Tune for it.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+
+2015-01-16  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	PR target/64015
+	* ccmp.c (expand_ccmp_next): New function.
+	(expand_ccmp_expr_1, expand_ccmp_expr): Handle operand insn sequence
+	and compare insn sequence.
+	* config/aarch64/aarch64.c (aarch64_code_to_ccmode,
+	aarch64_gen_ccmp_first, aarch64_gen_ccmp_next): New functions.
+	(TARGET_GEN_CCMP_FIRST, TARGET_GEN_CCMP_NEXT): New MICRO.
+	* config/aarch64/aarch64.md (*ccmp_and): Changed to ccmp_and<mode>.
+	(*ccmp_ior): Changed to ccmp_ior<mode>.
+	(cmp<mode>): New pattern.
+	* doc/tm.texi (TARGET_GEN_CCMP_FIRST, TARGET_GEN_CCMP_NEXT): Update
+	parameters.
+	* target.def (gen_ccmp_first, gen_ccmp_next): Update parameters.
+
+2015-01-16  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/avx2intrin.h (_mm256_bslli_epi128,
+	_mm256_bsrli_epi128): New.
+	* config/i386/emmintrin.h (_mm_bsrli_si128, _mm_bslli_si128): Ditto.
+
+2015-01-15  Jiong Wang  <jiong.wang@arm.com>
+
+	* expmed.c (store_bit_field_using_insv): Improve warning message.
+	Use %wu instead of HOST_WIDE_INT_PRINT_UNSIGNED.
+
+2015-01-15  Jiong Wang  <jiong.wang@arm.com>
+
+	PR rtl-optimization/64011
+	* expmed.c (store_bit_field_using_insv): Warn and truncate bitsize when
+	there is partial overflow.
+
+2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32-protos.h (nds32_expand_epilogue): Change
+	prototype.
+	(nds32_expand_epilogue_v3pop): Likewise.
+	* config/nds32/nds32.md (sibcall): Define this for sibling call
+	optimization.
+	(sibcall_register): Likewise.
+	(sibcall_immediate): Likewise.
+	(sibcall_value): Likewise.
+	(sibcall_value_register): Likewise.
+	(sibcall_value_immediate): Likewise.
+	(sibcall_epilogue): Likewise.
+	(epilogue): Pass false to indicate this is not a sibcall epilogue.
+	* config/nds32/nds32.c (nds32_expand_epilogue): Consider sibcall case.
+	(nds32_expand_epilogue_v3pop): Likewise.
+
+2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32-protos.h (nds32_can_use_return_insn): New.
+	* config/nds32/nds32.md (unspec_volatile_func_return): Remove.
+	(return_internal): New.
+	(return): Define this named pattern.
+	(simple_return): Define this named pattern.
+	* config/nds32/nds32.c (nds32_expand_epilogue): Emit return_internal
+	pattern instead of unspec_volatile_func_return.
+	(nds32_expand_epilogue_v3pop): Likewise.
+	(nds32_can_use_return_insn): New function.
+
+2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/constants.md (UNSPEC_VOLATILE_POP25_RETURN): New.
+	* config/nds32/nds32.md (pop25return): New.
+	* config/nds32/nds32.c (nds32_expand_epilogue_v3pop): Emit
+	pop25return pattern.
+
+2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* doc/invoke.texi (NDS32 Options): Remove -mforce-fp-as-gp,
+	-mforbid-fp-as-gp, and -mex9 options.
+
+2015-01-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* doc/invoke.texi (NDS32 Options): Add -mcmodel= option and
+	remove -mgp-direct option.
+
+2015-01-15  Jan Hubicka  <hubicka@ucw.cz>
+	
+	* doc/invoke.texi (--param early-inlining-insns): Update default value.
+	* params.def (PARAM_EARLY_INLINING_INSNS): Set to 14.
+
+2015-01-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (inline_small_functions): Work around hints
+	cache issue.
+
 2015-01-15  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR target/59710
@@ -276,7 +477,7 @@
 	cfganal.h, cfgbuild.h, cfgcleanup.h, lcm.h, cfgloopmanip.h,
 	builtins.def, and chkp-builtins.def.
 
-2014-01-15  David Edelsohn  <dje.gcc@gmail.com>
+2015-01-15  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/default64.h (TARGET_DEFAULT) [LITTLE_ENDIAN]: Use
 	ISA 2.7 (POWER8).
@@ -978,7 +1179,7 @@
 	Do not save lr in case of tail call.
 	* config/arm/thumb2.md (*thumb2_pop_single): New pattern.
 
-2015-01-13  Martin Uecker <uecker@eecs.berkeley.edu>
+2015-01-14  Martin Uecker <uecker@eecs.berkeley.edu>
 
 	* tree-vrp.c (check_array_ref): Emit more warnings
 	for warn_array_bounds >= 2.
@@ -1116,7 +1317,7 @@
 	(perform_symbolic_merge): This. Also fix computation of the range and
 	end of the symbolic number corresponding to the result of a bitwise OR.
 
-2014-01-13  Richard Biener  <rguenther@suse.de>
+2015-01-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64568
 	* tree-ssa-forwprop.c (pass_forwprop::execute): Properly

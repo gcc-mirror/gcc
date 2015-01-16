@@ -505,9 +505,9 @@ print "";
 print "/* Print different target option variables from structures provided as arguments.  */";
 print "void";
 print "cl_target_option_print_diff (FILE *file,";
-print "                             int indent,";
-print "                             struct cl_target_option *ptr1,";
-print "                             struct cl_target_option *ptr2)";
+print "                             int indent ATTRIBUTE_UNUSED,";
+print "                             struct cl_target_option *ptr1 ATTRIBUTE_UNUSED,";
+print "                             struct cl_target_option *ptr2 ATTRIBUTE_UNUSED)";
 print "{";
 
 print "  fputs (\"\\n\", file);";

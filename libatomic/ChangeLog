@@ -1,3 +1,9 @@
+2015-01-16  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR testsuite/64605
+	* testsuite/lib/libatomic.exp: Do not load gcc-dg.exp.
+	* testsuite/libatomic.c/c.exp: Load gcc-dg.exp.
+
 2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* configure.tgt: Exclude arm*-*-freebsd* from try_ifunc.
