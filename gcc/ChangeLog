@@ -1,3 +1,9 @@
+2015-01-16  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/64353
+	* tree-cfg.c (pass_data_fixup_cfg): Update SSA for
+	virtuals on start.
+
 2015-01-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/cortex-a57.md: Remove duplicate of file accidentally
