@@ -1,14 +1,15 @@
 /* { dg-shouldfail "tsan" } */
+/* { dg-additional-options "-ldl" } */
 
 #include <pthread.h>
-#include <stdio.h>
-#include <unistd.h>
+#include "tsan_barrier.h"
 
+static pthread_barrier_t barrier;
 int Global;
 pthread_mutex_t mtx;
 
 void *Thread1(void *x) {
-  sleep(1);
+  barrier_wait(&barrier);
   pthread_mutex_lock(&mtx);
   Global++;
   pthread_mutex_unlock(&mtx);
@@ -17,11 +18,13 @@ void *Thread1(void *x) {
 
 void *Thread2(void *x) {
   Global--;
+  barrier_wait(&barrier);
   return NULL;/* { dg-output ".*" } */
 
 }
 
 int main() {
+  barrier_init(&barrier, 2);
   pthread_mutex_init(&mtx, 0);
   pthread_t t[2];
   pthread_create(&t[0], NULL, Thread1, NULL);
