@@ -8727,12 +8727,6 @@ enabled by default at @option{-O2} and higher.  Null pointer check
 elimination is only done if @option{-fdelete-null-pointer-checks} is
 enabled.
 
-@item -ftracer
-@opindex ftracer
-Perform tail duplication to enlarge superblock size.  This transformation
-simplifies the control flow of the function allowing other optimizations to do
-a better job.
-
 @item -funroll-loops
 @opindex funroll-loops
 Unroll loops whose number of iterations can be determined at compile

@@ -1,3 +1,7 @@
+2015-01-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi ([-ftracer]): Remove duplicate option listing.
+
 2015-01-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* reorg.c (fill_simple_delay_slots): If TARGET_FLAGS_REGNUM is valid,
