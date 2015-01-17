@@ -1,5 +1,10 @@
 2015-01-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* gcc.target/powerpc/ppc-fpconv-4.c: Skip for -mpowerpc64.
+	* gcc.target/powerpc/ppc-fpconv-8.c: Ditto.
+
+2015-01-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* gcc.dg/20020919-1.c: Use _ARCH_PPC64 to test for -mpowerpc64.
 
 2015-01-17  Paul Thomas  <pault@gcc.gnu.org>
