@@ -1,3 +1,9 @@
+2015-01-17  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/32790
+	* reginfo.c (reg_scan_mark_refs): Look for ZERO_EXTRACT,
+	not ZERO_EXTEND in SET_DESTs.
+
 2015-01-17  Alan Modra  <amodra@gmail.com>
 
 	* cprop.c (do_local_cprop): Revert last change.

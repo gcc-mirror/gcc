@@ -1132,7 +1132,7 @@ reg_scan_mark_refs (rtx x, rtx_insn *insn)
       /* Count a set of the destination if it is a register.  */
       for (dest = SET_DEST (x);
 	   GET_CODE (dest) == SUBREG || GET_CODE (dest) == STRICT_LOW_PART
-	   || GET_CODE (dest) == ZERO_EXTEND;
+	   || GET_CODE (dest) == ZERO_EXTRACT;
 	   dest = XEXP (dest, 0))
 	;
 
