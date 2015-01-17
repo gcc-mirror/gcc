@@ -1,3 +1,9 @@
+2015-01-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update C++11 status.
+	* doc/html/*: Regenerate.
+
 2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	DR 488
