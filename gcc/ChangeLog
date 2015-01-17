@@ -1,5 +1,38 @@
 2015-01-17  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
+	* config/arm/arm-protos.h (struct tune_params): New field
+	sched_autopref_queue_depth.
+	* config/arm/arm.c (sched-int.h): Include header.
+	(arm_first_cycle_multipass_dfa_lookahead_guard,)
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD): Define hook.
+	(arm_slowmul_tune, arm_fastmul_tune, arm_strongarm_tune,)
+	(arm_xscale_tune, arm_9e_tune, arm_v6t2_tune, arm_cortex_tune,)
+	(arm_cortex_a8_tune, arm_cortex_a7_tune, arm_cortex_a15_tune,)
+	(arm_cortex_a53_tune, arm_cortex_a57_tune, arm_xgene1_tune,)
+	(arm_cortex_a5_tune, arm_cortex_a9_tune, arm_cortex_a12_tune,)
+	(arm_v7m_tune, arm_cortex_m7_tune, arm_v6m_tune, arm_fa726te_tune):
+	Specify sched_autopref_queue_depth value.  Enabled for A15 and A57.
+	* config/arm/t-arm (arm.o): Update.
+	* haifa-sched.c (update_insn_after_change): Update.
+	(rank_for_schedule): Use auto-prefetcher model, if requested.
+	(autopref_multipass_init): New static function.
+	(autopref_rank_for_schedule): New rank_for_schedule heuristic.
+	(autopref_multipass_dfa_lookahead_guard_started_dump_p): New static
+	variable for debug dumps.
+	(autopref_multipass_dfa_lookahead_guard_1): New static helper function.
+	(autopref_multipass_dfa_lookahead_guard): New global function that
+	implements TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD hook.
+	(init_h_i_d): Update.
+	* params.def (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH): New tuning knob.
+	* sched-int.h (enum autopref_multipass_data_status): New const enum.
+	(autopref_multipass_data_): Structure for auto-prefetcher data.
+	(autopref_multipass_data_def, autopref_multipass_data_t): New typedefs.
+	(struct _haifa_insn_data:autopref_multipass_data): New field.
+	(INSN_AUTOPREF_MULTIPASS_DATA): New access macro.
+	(autopref_multipass_dfa_lookahead_guard): Declare.
+
+2015-01-17  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
 	* rtlanal.c (get_base_term): Handle SCRATCH.
 
 2015-01-17  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
