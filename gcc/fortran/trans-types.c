@@ -1112,12 +1112,7 @@ gfc_typenode_for_spec (gfc_typespec * spec)
       break;
 
     case BT_CHARACTER:
-#if 0
-      if (spec->deferred)
-	basetype = gfc_get_character_type (spec->kind, NULL);
-      else
-#endif
-	basetype = gfc_get_character_type (spec->kind, spec->u.cl);
+      basetype = gfc_get_character_type (spec->kind, spec->u.cl);
       break;
 
     case BT_HOLLERITH:
@@ -2163,7 +2158,9 @@ gfc_sym_type (gfc_symbol * sym)
       && ((sym->attr.function && sym->attr.is_bind_c)
 	  || (sym->attr.result
 	      && sym->ns->proc_name
-	      && sym->ns->proc_name->attr.is_bind_c)))
+	      && sym->ns->proc_name->attr.is_bind_c)
+	  || (sym->ts.deferred && (!sym->ts.u.cl
+				   || !sym->ts.u.cl->backend_decl))))
     type = gfc_character1_type_node;
   else
     type = gfc_typenode_for_spec (&sym->ts);

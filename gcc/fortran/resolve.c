@@ -12707,7 +12707,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	      strlen->ts.type = BT_INTEGER;
 	      strlen->ts.kind = gfc_charlen_int_kind;
 	      strlen->attr.access = ACCESS_PRIVATE;
-	      strlen->attr.deferred_parameter = 1;
+	      strlen->attr.artificial = 1;
 	    }
 	}
 
