@@ -1,3 +1,12 @@
+2015-01-17  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/60334
+	* trans-decl.c (gfc_get_symbol_decl):Use a ref on the string
+	length when the symbol is declared to be a result.
+	* trans-expr.c (gfc_conv_procedure_call): Strip deref on the
+	string length when functions are nested and the string length
+	is a reference already.
+
 2015-01-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45290

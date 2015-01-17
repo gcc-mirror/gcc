@@ -5010,10 +5010,18 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	 so that the value can be returned.  */
       if (parmse.string_length && fsym && fsym->ts.deferred)
 	{
-	  tmp = parmse.string_length;
-	  if (TREE_CODE (tmp) != VAR_DECL)
-	    tmp = gfc_evaluate_now (parmse.string_length, &se->pre);
-	  parmse.string_length = gfc_build_addr_expr (NULL_TREE, tmp);
+	  if (INDIRECT_REF_P (parmse.string_length))
+	    /* In chains of functions/procedure calls the string_length already
+	       is a pointer to the variable holding the length.  Therefore
+	       remove the deref on call.  */
+	    parmse.string_length = TREE_OPERAND (parmse.string_length, 0);
+	  else
+	    {
+	      tmp = parmse.string_length;
+	      if (TREE_CODE (tmp) != VAR_DECL)
+		tmp = gfc_evaluate_now (parmse.string_length, &se->pre);
+	      parmse.string_length = gfc_build_addr_expr (NULL_TREE, tmp);
+	    }
 	}
 
       /* Character strings are passed as two parameters, a length and a
