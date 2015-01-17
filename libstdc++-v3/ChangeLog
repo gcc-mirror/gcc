@@ -1,5 +1,12 @@
 2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/56785
+	* include/std/tuple (_Tuple_impl): Remove zero-element specialization
+	and define one-element specialization.
+	* testsuite/20_util/tuple/56785.cc: New.
+
+2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
 	* testsuite/22_locale/codecvt/codecvt_utf8/requirements/1.cc:
 	Remove unused header.
 	* testsuite/22_locale/codecvt/codecvt_utf16/requirements/1.cc:
