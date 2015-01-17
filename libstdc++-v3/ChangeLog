@@ -1,3 +1,12 @@
+2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/22_locale/codecvt/codecvt_utf8/requirements/1.cc:
+	Remove unused header.
+	* testsuite/22_locale/codecvt/codecvt_utf16/requirements/1.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/requirements/1.cc:
+	Likewise.
+
 2015-01-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/locale_conv.h (wstring_convert, wbuffer_convert): New.

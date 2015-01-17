@@ -21,7 +21,6 @@
 
 #include <codecvt>
 #include <type_traits>
-#include <testsuite_hooks.h>
 
 template<typename C>
   using codecvt = std::codecvt<C, char, std::mbstate_t>;
