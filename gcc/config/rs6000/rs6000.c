@@ -11471,7 +11471,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 
       /* _Decimal32 varargs are located in the second word of the 64-bit
 	 FP register for 32-bit binaries.  */
-      if (!TARGET_POWERPC64
+      if (TARGET_32BIT
 	  && TARGET_HARD_FLOAT && TARGET_FPRS
 	  && TYPE_MODE (type) == SDmode)
 	t = fold_build_pointer_plus_hwi (t, size);
