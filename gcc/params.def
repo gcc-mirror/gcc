@@ -668,6 +668,11 @@ DEFPARAM (PARAM_SCHED_MEM_TRUE_DEP_COST,
 	  "Minimal distance between possibly conflicting store and load",
 	  1, 0, 0)
 
+DEFPARAM (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH,
+	  "sched-autopref-queue-depth",
+	  "Hardware autoprefetcher scheduler model control flag.  Number of lookahead cycles the model looks into; at '0' only enable instruction sorting heuristic.  Disabled by default.",
+	  -1, 0, 0)
+
 DEFPARAM(PARAM_MAX_LAST_VALUE_RTL,
 	 "max-last-value-rtl",
 	 "The maximum number of RTL nodes that can be recorded as combiner's last value",
