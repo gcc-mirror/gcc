@@ -1,3 +1,8 @@
+2015-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* reorg.c (fill_simple_delay_slots): If TARGET_FLAGS_REGNUM is valid,
+	implement a more precise life analysis for it during backward scan.
+
 2015-01-17  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	* dwarf2out.c (gen_producer_string): Ignore also OPT_fpreprocessed.
