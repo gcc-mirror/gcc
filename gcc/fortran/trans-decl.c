@@ -1370,12 +1370,30 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	     (sym->ts.u.cl->passed_length == sym->ts.u.cl->backend_decl))
 	    sym->ts.u.cl->backend_decl = NULL_TREE;
 
-	  if (sym->ts.deferred && fun_or_res
-		&& sym->ts.u.cl->passed_length == NULL
-		&& sym->ts.u.cl->backend_decl)
+	  if (sym->ts.deferred && byref)
 	    {
-	      sym->ts.u.cl->passed_length = sym->ts.u.cl->backend_decl;
-	      sym->ts.u.cl->backend_decl = NULL_TREE;
+	      /* The string length of a deferred char array is stored in the
+		 parameter at sym->ts.u.cl->backend_decl as a reference and
+		 marked as a result.  Exempt this variable from generating a
+		 temporary for it.  */
+	      if (sym->attr.result)
+		{
+		  /* We need to insert a indirect ref for param decls.  */
+		  if (sym->ts.u.cl->backend_decl
+		      && TREE_CODE (sym->ts.u.cl->backend_decl) == PARM_DECL)
+		    sym->ts.u.cl->backend_decl =
+			build_fold_indirect_ref (sym->ts.u.cl->backend_decl);
+		}
+	      /* For all other parameters make sure, that they are copied so
+		 that the value and any modifications are local to the routine
+		 by generating a temporary variable.  */
+	      else if (sym->attr.function
+		       && sym->ts.u.cl->passed_length == NULL
+		       && sym->ts.u.cl->backend_decl)
+		{
+		  sym->ts.u.cl->passed_length = sym->ts.u.cl->backend_decl;
+		  sym->ts.u.cl->backend_decl = NULL_TREE;
+		}
 	    }
 
 	  if (sym->ts.u.cl->backend_decl == NULL_TREE)
