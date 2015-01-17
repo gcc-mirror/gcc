@@ -1,3 +1,8 @@
+2015-01-16  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/52773
+	* gcc.c-torture/compile/pr52773.c: New test.
+
 2015-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/62134
