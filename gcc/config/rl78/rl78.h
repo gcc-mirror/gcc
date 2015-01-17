@@ -134,7 +134,8 @@
 
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)   1
 
-#define ADDR_SPACE_FAR	1
+#define ADDR_SPACE_NEAR			1
+#define ADDR_SPACE_FAR			2
 
 #define HAVE_PRE_DECCREMENT		0
 #define HAVE_POST_INCREMENT		0
@@ -241,6 +242,8 @@ enum reg_class
   "ALL_REGS"						\
 }
 
+/* Note that no class may include the second register in $fp, because
+   we treat $fp as a single HImode register.  */
 #define REG_CLASS_CONTENTS				\
 {							\
   { 0x00000000, 0x00000000 },	/* No registers,  */		\
@@ -423,6 +426,16 @@ typedef unsigned int CUMULATIVE_ARGS;
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
   fprintf (FILE, "\t.long .L%d - 1b\n", VALUE)
 
+
+#define ASM_OUTPUT_SYMBOL_REF(FILE, SYM) rl78_output_symbol_ref ((FILE), (SYM))
+
+#define ASM_OUTPUT_LABELREF(FILE, SYM) rl78_output_labelref ((FILE), (SYM))
+
+#define ASM_OUTPUT_ALIGNED_DECL_COMMON(STREAM, DECL, NAME, SIZE, ALIGNMENT) \
+	rl78_output_aligned_common (STREAM, DECL, NAME, SIZE, ALIGNMENT, 1)
+
+#define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGNMENT) \
+	rl78_output_aligned_common (STREAM, DECL, NAME, SIZE, ALIGNMENT, 0)
 
 #define ASM_OUTPUT_ALIGN(STREAM, LOG)		\
   do						\

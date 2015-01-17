@@ -85,10 +85,14 @@
 #include "tm-constrs.h" /* for satisfies_constraint_*().  */
 #include "insn-flags.h" /* for gen_*().  */
 #include "builtins.h"
+#include "stringpool.h"
 
 static inline bool is_interrupt_func (const_tree decl);
 static inline bool is_brk_interrupt_func (const_tree decl);
 static void rl78_reorg (void);
+static const char *rl78_strip_name_encoding (const char *);
+static const char *rl78_strip_nonasm_name_encoding (const char *);
+static section * rl78_select_section (tree, int, unsigned HOST_WIDE_INT);
 
 
 /* Debugging statements are tagged with DEBUG0 only so that they can
@@ -318,6 +322,29 @@ rl78_asm_file_start (void)
   register_pass (& rl78_move_elim_info);
 }
 
+void
+rl78_output_symbol_ref (FILE * file, rtx sym)
+{
+  tree type = SYMBOL_REF_DECL (sym);
+  const char *str = XSTR (sym, 0);
+
+  if (str[0] == '*')
+    {
+      fputs (str + 1, file);
+    }
+  else
+    {
+      str = rl78_strip_nonasm_name_encoding (str);
+      if (type && TREE_CODE (type) == FUNCTION_DECL)
+	{
+	  fprintf (file, "%%code(");
+	  assemble_name (file, str);
+	  fprintf (file, ")");
+	}
+      else
+	assemble_name (file, str);
+    }
+}
 
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE		rl78_option_override
@@ -338,6 +365,13 @@ rl78_option_override (void)
       for (i = 24; i < 32; i++)
 	fixed_regs[i] = 0;
     }
+
+  if (TARGET_ES0
+      && strcmp (lang_hooks.name, "GNU C")
+      /* Compiling with -flto results in a language of GNU GIMPLE being used... */
+      && strcmp (lang_hooks.name, "GNU GIMPLE"))
+    /* Address spaces are currently only supported by C.  */
+    error ("-mes0 can only be used with C");
 }
 
 /* Most registers are 8 bits.  Some are 16 bits because, for example,
@@ -695,6 +729,51 @@ rl78_handle_func_attribute (tree * node,
   return NULL_TREE;
 }
 
+/* Check "naked" attributes.  */
+static tree
+rl78_handle_naked_attribute (tree * node,
+			     tree   name ATTRIBUTE_UNUSED,
+			     tree   args,
+			     int    flags ATTRIBUTE_UNUSED,
+			     bool * no_add_attrs)
+{
+  gcc_assert (DECL_P (* node));
+  gcc_assert (args == NULL_TREE);
+
+  if (TREE_CODE (* node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "naked attribute only applies to functions");
+      * no_add_attrs = true;
+    }
+
+  /* Disable warnings about this function - eg reaching the end without
+     seeing a return statement - because the programmer is doing things
+     that gcc does not know about.  */
+  TREE_NO_WARNING (* node) = 1;
+
+  return NULL_TREE;
+}
+
+/* Check "saddr" attributes.  */
+static tree
+rl78_handle_saddr_attribute (tree * node,
+			     tree   name,
+			     tree   args ATTRIBUTE_UNUSED,
+			     int    flags ATTRIBUTE_UNUSED,
+			     bool * no_add_attrs)
+{
+  gcc_assert (DECL_P (* node));
+
+  if (TREE_CODE (* node) == FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute doesn't apply to functions",
+	       name);
+      * no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE		rl78_attribute_table
 
@@ -707,7 +786,9 @@ const struct attribute_spec rl78_attribute_table[] =
     false },
   { "brk_interrupt",  0, 0, true, false, false, rl78_handle_func_attribute,
     false },
-  { "naked",          0, 0, true, false, false, rl78_handle_func_attribute,
+  { "naked",          0, 0, true, false, false, rl78_handle_naked_attribute,
+    false },
+  { "saddr",          0, 0, true, false, false, rl78_handle_saddr_attribute,
     false },
   { NULL,             0, 0, false, false, false, NULL, false }
 };
@@ -748,6 +829,18 @@ characterize_address (rtx x, rtx *base, rtx *index, rtx *addend)
       *base = XEXP (x, 0);
       x = XEXP (x, 1);
 
+      if (GET_CODE (*base) == SUBREG)
+	{
+	  if (GET_MODE (*base) == HImode
+	      && GET_MODE (XEXP (*base, 0)) == SImode
+	      && GET_CODE (XEXP (*base, 0)) == REG)
+	    {
+	      /* This is a throw-away rtx just to tell everyone
+		 else what effective register we're using.  */
+	      *base = gen_rtx_REG (HImode, REGNO (XEXP (*base, 0)));
+	    }
+	}
+
       if (GET_CODE (*base) != REG
 	  && GET_CODE (x) == REG)
 	{
@@ -780,6 +873,18 @@ characterize_address (rtx x, rtx *base, rtx *index, rtx *addend)
     case MEM:
     case REG:
       return false;
+
+    case SUBREG:
+      switch (GET_CODE (XEXP (x, 0)))
+	{
+	case CONST:
+	case SYMBOL_REF:
+	case CONST_INT:
+	  *addend = x;
+	  return true;
+	default:
+	  return false;
+	}
 
     case CONST:
     case SYMBOL_REF:
@@ -828,6 +933,27 @@ rl78_hl_b_c_addr_p (rtx op)
 
 #define REG_IS(r, regno) (((r) == (regno)) || ((r) >= FIRST_PSEUDO_REGISTER && !(strict)))
 
+/* Return the appropriate mode for a named address address.  */
+
+#undef  TARGET_ADDR_SPACE_ADDRESS_MODE
+#define TARGET_ADDR_SPACE_ADDRESS_MODE rl78_addr_space_address_mode
+
+static enum machine_mode
+rl78_addr_space_address_mode (addr_space_t addrspace)
+{
+  switch (addrspace)
+    {
+    case ADDR_SPACE_GENERIC:
+      return HImode;
+    case ADDR_SPACE_NEAR:
+      return HImode;
+    case ADDR_SPACE_FAR:
+      return SImode;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Used in various constraints and predicates to match operands in the
    "far" address space.  */
 int
@@ -839,7 +965,7 @@ rl78_far_p (rtx x)
   fprintf (stderr, "\033[35mrl78_far_p: "); debug_rtx (x);
   fprintf (stderr, " = %d\033[0m\n", MEM_ADDR_SPACE (x) == ADDR_SPACE_FAR);
 #endif
-  return MEM_ADDR_SPACE (x) == ADDR_SPACE_FAR;
+  return GET_MODE_BITSIZE (rl78_addr_space_address_mode (MEM_ADDR_SPACE (x))) == 32;
 }
 
 /* Return the appropriate mode for a named address pointer.  */
@@ -852,6 +978,8 @@ rl78_addr_space_pointer_mode (addr_space_t addrspace)
   switch (addrspace)
     {
     case ADDR_SPACE_GENERIC:
+      return HImode;
+    case ADDR_SPACE_NEAR:
       return HImode;
     case ADDR_SPACE_FAR:
       return SImode;
@@ -870,23 +998,6 @@ rl78_valid_pointer_mode (machine_mode m)
   return (m == HImode || m == SImode);
 }
 
-/* Return the appropriate mode for a named address address.  */
-#undef  TARGET_ADDR_SPACE_ADDRESS_MODE
-#define TARGET_ADDR_SPACE_ADDRESS_MODE rl78_addr_space_address_mode
-
-static machine_mode
-rl78_addr_space_address_mode (addr_space_t addrspace)
-{
-  switch (addrspace)
-    {
-    case ADDR_SPACE_GENERIC:
-      return HImode;
-    case ADDR_SPACE_FAR:
-      return SImode;
-    default:
-      gcc_unreachable ();
-    }
-}
 
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P		rl78_is_legitimate_constant
@@ -906,6 +1017,9 @@ rl78_as_legitimate_address (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
 {
   rtx base, index, addend;
   bool is_far_addr = false;
+  int as_bits;
+
+  as_bits = GET_MODE_BITSIZE (rl78_addr_space_address_mode (as));
 
   if (GET_CODE (x) == UNSPEC
       && XINT (x, 1) == UNS_ES_ADDR)
@@ -914,8 +1028,7 @@ rl78_as_legitimate_address (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
       is_far_addr = true;
     }
 
-  if (as == ADDR_SPACE_GENERIC
-      && (GET_MODE (x) == SImode || is_far_addr))
+  if (as_bits == 16 && is_far_addr)
     return false;
 
   if (! characterize_address (x, &base, &index, &addend))
@@ -925,7 +1038,7 @@ rl78_as_legitimate_address (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
      involving a register during devirtualization, so make sure all
      such __far addresses do not have addends.  This forces GCC to do
      the sum separately.  */
-  if (addend && base && as == ADDR_SPACE_FAR)
+  if (addend && base && as_bits == 32 && GET_MODE (base) == SImode)
     return false;
 
   if (base && index)
@@ -956,14 +1069,13 @@ rl78_as_legitimate_address (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
 static bool
 rl78_addr_space_subset_p (addr_space_t subset, addr_space_t superset)
 {
-  gcc_assert (subset == ADDR_SPACE_GENERIC || subset == ADDR_SPACE_FAR);
-  gcc_assert (superset == ADDR_SPACE_GENERIC || superset == ADDR_SPACE_FAR);
+  int subset_bits;
+  int superset_bits;
 
-  if (subset == superset)
-    return true;
+  subset_bits = GET_MODE_BITSIZE (rl78_addr_space_address_mode (subset));
+  superset_bits = GET_MODE_BITSIZE (rl78_addr_space_address_mode (superset));
 
-  else
-    return (subset == ADDR_SPACE_GENERIC && superset == ADDR_SPACE_FAR);
+  return (subset_bits <= superset_bits);
 }
 
 #undef  TARGET_ADDR_SPACE_CONVERT
@@ -976,29 +1088,44 @@ rl78_addr_space_convert (rtx op, tree from_type, tree to_type)
   addr_space_t from_as = TYPE_ADDR_SPACE (TREE_TYPE (from_type));
   addr_space_t to_as = TYPE_ADDR_SPACE (TREE_TYPE (to_type));
   rtx result;
+  int to_bits;
+  int from_bits;
 
-  gcc_assert (from_as == ADDR_SPACE_GENERIC || from_as == ADDR_SPACE_FAR);
-  gcc_assert (to_as == ADDR_SPACE_GENERIC || to_as == ADDR_SPACE_FAR);
+  to_bits = GET_MODE_BITSIZE (rl78_addr_space_address_mode (to_as));
+  from_bits = GET_MODE_BITSIZE (rl78_addr_space_address_mode (from_as));
 
-  if (to_as == ADDR_SPACE_GENERIC && from_as == ADDR_SPACE_FAR)
+  if (to_bits < from_bits)
     {
+      rtx tmp;
       /* This is unpredictable, as we're truncating off usable address
 	 bits.  */
 
+      warning (OPT_Waddress, "converting far pointer to near pointer");
       result = gen_reg_rtx (HImode);
-      emit_move_insn (result, simplify_subreg (HImode, op, SImode, 0));
+      if (GET_CODE (op) == SYMBOL_REF
+	  || (GET_CODE (op) == REG && REGNO (op) >= FIRST_PSEUDO_REGISTER))
+	tmp = gen_rtx_raw_SUBREG (HImode, op, 0);
+      else
+	tmp = simplify_subreg (HImode, op, SImode, 0);
+      gcc_assert (tmp != NULL_RTX);
+      emit_move_insn (result, tmp);
       return result;
     }
-  else if (to_as == ADDR_SPACE_FAR && from_as == ADDR_SPACE_GENERIC)
+  else if (to_bits > from_bits)
     {
       /* This always works.  */
       result = gen_reg_rtx (SImode);
       emit_move_insn (rl78_subreg (HImode, result, SImode, 0), op);
-      emit_move_insn (rl78_subreg (HImode, result, SImode, 2), const0_rtx);
+      if (TREE_CODE (from_type) == POINTER_TYPE
+	  && TREE_CODE (TREE_TYPE (from_type)) == FUNCTION_TYPE)
+	emit_move_insn (rl78_subreg (HImode, result, SImode, 2), const0_rtx);
+      else
+	emit_move_insn (rl78_subreg (HImode, result, SImode, 2), GEN_INT (0x0f));
       return result;
     }
   else
-    gcc_unreachable ();
+    return op;
+  gcc_unreachable ();
 }
 
 /* Implements REGNO_MODE_CODE_OK_FOR_BASE_P.  */
@@ -1129,19 +1256,20 @@ rl78_expand_prologue (void)
 	if (TARGET_G10)
 	  {
 	    if (i != 0)
-	      emit_move_insn (gen_rtx_REG (HImode, 0), gen_rtx_REG (HImode, i * 2));
-	    F (emit_insn (gen_push (gen_rtx_REG (HImode, 0))));
+	      emit_move_insn (gen_rtx_REG (HImode, AX_REG), gen_rtx_REG (HImode, i * 2));
+	    F (emit_insn (gen_push (gen_rtx_REG (HImode, AX_REG))));
 	  }
 	else
 	  {
-	    int need_bank = i/4;
+	    int need_bank = i / 4;
 
 	    if (need_bank != rb)
 	      {
 		emit_insn (gen_sel_rb (GEN_INT (need_bank)));
 		rb = need_bank;
 	      }
-	    F (emit_insn (gen_push (gen_rtx_REG (HImode, i*2))));
+	    F (emit_insn (gen_push (gen_rtx_REG (HImode, i * 2))));
+
 	  }
       }
 
@@ -1205,7 +1333,7 @@ rl78_expand_epilogue (void)
   if (is_interrupt_func (cfun->decl) && cfun->machine->uses_es)
     {
       emit_insn (gen_pop (gen_rtx_REG (HImode, AX_REG)));
-      emit_insn (gen_movqi_es (gen_rtx_REG (QImode, A_REG)));
+      emit_insn (gen_movqi_to_es (gen_rtx_REG (QImode, A_REG)));
     }
 
   for (i = 15; i >= 0; i--)
@@ -1215,7 +1343,7 @@ rl78_expand_epilogue (void)
 
 	if (TARGET_G10)
 	  {
-	    rtx ax = gen_rtx_REG (HImode, 0);
+	    rtx ax = gen_rtx_REG (HImode, AX_REG);
 
 	    emit_insn (gen_pop (ax));
 	    if (i != 0)
@@ -1415,7 +1543,8 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
 	  if (rl78_far_p (op))
 	    {
 	      fprintf (file, "es:");
-	      op = gen_rtx_MEM (GET_MODE (op), XVECEXP (XEXP (op, 0), 0, 1));
+	      if (GET_CODE (XEXP (op, 0)) == UNSPEC)
+		op = gen_rtx_MEM (GET_MODE (op), XVECEXP (XEXP (op, 0), 0, 1));
 	    }
 	  if (letter == 'H')
 	    {
@@ -1449,13 +1578,15 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
 	    }
 	  if (CONSTANT_P (XEXP (op, 0)))
 	    {
-	      fprintf (file, "!");
+	      if (!rl78_saddr_p (op))
+		fprintf (file, "!");
 	      rl78_print_operand_1 (file, XEXP (op, 0), letter);
 	    }
 	  else if (GET_CODE (XEXP (op, 0)) == PLUS
 		   && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF)
 	    {
-	      fprintf (file, "!");
+	      if (!rl78_saddr_p (op))
+		fprintf (file, "!");
 	      rl78_print_operand_1 (file, XEXP (op, 0), letter);
 	    }
 	  else if (GET_CODE (XEXP (op, 0)) == PLUS
@@ -1465,6 +1596,8 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
 	      rl78_print_operand_1 (file, XEXP (XEXP (op, 0), 1), 'u');
 	      fprintf (file, "[");
 	      rl78_print_operand_1 (file, XEXP (XEXP (op, 0), 0), 0);
+	      if (letter == 'p' && GET_CODE (XEXP (op, 0)) == REG)
+		fprintf (file, "+0");
 	      fprintf (file, "]");
 	    }
 	  else
@@ -1513,7 +1646,15 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
       else if (letter == 'e')
 	fprintf (file, "%ld", (INTVAL (op) >> 16) & 0xff);
       else if (letter == 'B')
-	fprintf (file, "%d", exact_log2 (INTVAL (op)));
+	{
+	  int ival = INTVAL (op);
+	  if (ival == -128)
+	    ival = 0x80;
+	  if (exact_log2 (ival) >= 0)
+	    fprintf (file, "%d", exact_log2 (ival));
+	  else
+	    fprintf (file, "%d", exact_log2 (~ival & 0xff));
+	}
       else if (letter == 'E')
 	fprintf (file, "%ld", (INTVAL (op) >> 24) & 0xff);
       else if (letter == 'm')
@@ -1597,6 +1738,27 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
 	fprintf (file, ")");
       break;
 
+    case SUBREG:
+      if (GET_MODE (op) == HImode
+	  && SUBREG_BYTE (op) == 0)
+	{
+	  fprintf (file, "%%lo16(");
+	  rl78_print_operand_1 (file, SUBREG_REG (op), 0);
+	  fprintf (file, ")");
+	}
+      else if (GET_MODE (op) == HImode
+	       && SUBREG_BYTE (op) == 2)
+	{
+	  fprintf (file, "%%hi16(");
+	  rl78_print_operand_1 (file, SUBREG_REG (op), 0);
+	  fprintf (file, ")");
+	}
+      else
+	{
+	  fprintf (file, "(%s)", GET_RTX_NAME (GET_CODE (op)));
+	}
+      break;
+
     case SYMBOL_REF:
       need_paren = 0;
       if (letter == 'H')
@@ -1620,7 +1782,14 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
       if (letter == 'q' || letter == 'Q')
 	output_operand_lossage ("q/Q modifiers invalid for symbol references");
 
-      output_addr_const (file, op);
+      if (SYMBOL_REF_DECL (op) && TREE_CODE (SYMBOL_REF_DECL (op)) == FUNCTION_DECL)
+	{
+	  fprintf (file, "%%code(");
+	  assemble_name (file, rl78_strip_nonasm_name_encoding (XSTR (op, 0)));
+	  fprintf (file, ")");
+	}
+      else
+        assemble_name (file, rl78_strip_nonasm_name_encoding (XSTR (op, 0)));
       if (need_paren)
 	fprintf (file, ")");
       break;
@@ -2488,12 +2657,12 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
       rtx new_m;
       rtx seg = rl78_hi8 (XEXP (m, 0));
 
-#if DEBUG_ALLOC
-      fprintf (stderr, "setting ES:\n");
-      debug_rtx(seg);
-#endif
-      emit_insn_before (EM (gen_movqi (A, seg)), before);
-      emit_insn_before (EM (gen_movqi_es (A)), before);
+      if (!TARGET_ES0)
+	{
+          emit_insn_before (EM (gen_movqi (A, seg)), before);
+          emit_insn_before (EM (gen_movqi_to_es (A)), before);
+        }
+
       record_content (A, NULL_RTX);
 
       new_m = gen_rtx_MEM (GET_MODE (m), rl78_lo16 (XEXP (m, 0)));
@@ -2505,10 +2674,6 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
   characterize_address (XEXP (m, 0), & base, & index, & addendr);
   gcc_assert (index == NULL_RTX);
 
-#if DEBUG_ALLOC
-  fprintf (stderr, "\033[33m"); debug_rtx (m); fprintf (stderr, "\033[0m");
-  debug_rtx (base);
-#endif
   if (base == NULL_RTX)
     return m;
 
@@ -2518,9 +2683,11 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
   gcc_assert (REG_P (base));
   gcc_assert (REG_P (newbase));
 
+  int limit = 256 - GET_MODE_SIZE (GET_MODE (m));
+
   if (REGNO (base) == SP_REG)
     {
-      if (addend >= 0 && addend  <= 255)
+      if (addend >= 0 && addend  <= limit)
 	return m;
     }
 
@@ -2529,8 +2696,11 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
      address.  */
 
   if (addend < 0
-      || (addend > 255 && REGNO (newbase) != 2)
-      || (addendr && GET_CODE (addendr) != CONST_INT))
+      || (addend > limit && REGNO (newbase) != BC_REG)
+      || (addendr
+	  && (GET_CODE (addendr) != CONST_INT)
+	  && ((REGNO (newbase) != BC_REG))
+	  ))
     {
       /* mov ax, vreg
 	 add ax, #imm
@@ -2543,6 +2713,7 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
 
       base = newbase;
       addend = 0;
+      addendr = 0;
     }
   else
     {
@@ -2554,11 +2725,12 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
       record_content (base, NULL_RTX);
       base = gen_rtx_PLUS (HImode, base, GEN_INT (addend));
     }
+  else if (addendr)
+    {
+      record_content (base, NULL_RTX);
+      base = gen_rtx_PLUS (HImode, base, addendr);
+    }
 
-#if DEBUG_ALLOC
-  fprintf (stderr, "\033[33m");
-  debug_rtx (m);
-#endif
   if (need_es)
     {
       m = change_address (m, GET_MODE (m), gen_es_addr (base));
@@ -2566,10 +2738,6 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
     }
   else
     m = change_address (m, GET_MODE (m), base);
-#if DEBUG_ALLOC
-  debug_rtx (m);
-  fprintf (stderr, "\033[0m");
-#endif
   return m;
 }
 
@@ -2724,7 +2892,13 @@ rl78_alloc_physical_registers_op1 (rtx_insn * insn)
     {
       /* If necessary, load the operands into BC and HL.
 	 Check to see if we already have OP (0) in HL
-	 and if so, swap the order.  */
+	 and if so, swap the order.
+
+	 It is tempting to perform this optimization when OP(0) does
+	 not hold a MEM, but this leads to bigger code in general.
+	 The problem is that if OP(1) holds a MEM then swapping it
+	 into BC means a BC-relative load is used and these 3 bytes
+	 long vs 1 byte for an HL load.  */
       if (MEM_P (OP (0))
 	  && already_contains (HL, XEXP (OP (0), 0)))
 	{
@@ -3811,6 +3985,311 @@ static bool rl78_rtx_costs (rtx   x,
 }
 
 
+
+
+static GTY(()) section * saddr_section;
+static GTY(()) section * frodata_section;
+
+int
+rl78_saddr_p (rtx x)
+{
+  const char * c;
+
+  if (MEM_P (x))
+    x = XEXP (x, 0);
+  if (GET_CODE (x) == PLUS)
+    x = XEXP (x, 0);
+  if (GET_CODE (x) != SYMBOL_REF)
+    return 0;
+
+  c = XSTR (x, 0);
+  if (memcmp (c, "@s.", 3) == 0)
+    return 1;
+
+  return 0;
+}
+
+int
+rl78_sfr_p (rtx x)
+{
+  if (MEM_P (x))
+    x = XEXP (x, 0);
+  if (GET_CODE (x) != CONST_INT)
+    return 0;
+
+  if ((INTVAL (x) & 0xFF00) != 0xFF00)
+    return 0;
+
+  return 1;
+}
+
+#undef  TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING rl78_strip_name_encoding
+
+static const char *
+rl78_strip_name_encoding (const char * sym)
+{
+  while (1)
+    {
+      if (*sym == '*')
+	sym++;
+      else if (*sym == '@' && sym[2] == '.')
+	sym += 3;
+      else
+	return sym;
+    }
+}
+
+/* Like rl78_strip_name_encoding, but does not strip leading asterisks.  This
+   is important if the stripped name is going to be passed to assemble_name()
+   as that handles asterisk prefixed names in a special manner.  */
+
+static const char *
+rl78_strip_nonasm_name_encoding (const char * sym)
+{
+  while (1)
+    {
+      if (*sym == '@' && sym[2] == '.')
+	sym += 3;
+      else
+	return sym;
+    }
+}
+
+
+static int
+rl78_attrlist_to_encoding (tree list, tree decl ATTRIBUTE_UNUSED)
+{
+  while (list)
+    {
+      if (is_attribute_p ("saddr", TREE_PURPOSE (list)))
+	return 's';
+      list = TREE_CHAIN (list);
+    }
+
+  return 0;
+}
+
+#define RL78_ATTRIBUTES(decl)				\
+  (TYPE_P (decl)) ? TYPE_ATTRIBUTES (decl)		\
+                : DECL_ATTRIBUTES (decl)		\
+                  ? (DECL_ATTRIBUTES (decl))		\
+		  : TYPE_ATTRIBUTES (TREE_TYPE (decl))
+
+#undef  TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO rl78_encode_section_info
+
+static void
+rl78_encode_section_info (tree decl, rtx rtl, int first)
+{
+  rtx rtlname;
+  const char * oldname;
+  char encoding;
+  char * newname;
+  tree idp;
+  tree type;
+  tree rl78_attributes;
+
+  if (!first)
+    return;
+
+  rtlname = XEXP (rtl, 0);
+
+  if (GET_CODE (rtlname) == SYMBOL_REF)
+    oldname = XSTR (rtlname, 0);
+  else if (GET_CODE (rtlname) == MEM
+	   && GET_CODE (XEXP (rtlname, 0)) == SYMBOL_REF)
+    oldname = XSTR (XEXP (rtlname, 0), 0);
+  else
+    gcc_unreachable ();
+
+  type = TREE_TYPE (decl);
+  if (type == error_mark_node)
+    return;
+  if (! DECL_P (decl))
+    return;
+  rl78_attributes = RL78_ATTRIBUTES (decl);
+
+  encoding = rl78_attrlist_to_encoding (rl78_attributes, decl);
+
+  if (encoding)
+    {
+      newname = (char *) alloca (strlen (oldname) + 4);
+      sprintf (newname, "@%c.%s", encoding, oldname);
+      idp = get_identifier (newname);
+      XEXP (rtl, 0) =
+	gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
+      SYMBOL_REF_WEAK (XEXP (rtl, 0)) = DECL_WEAK (decl);
+      SET_SYMBOL_REF_DECL (XEXP (rtl, 0), decl);
+    }
+}
+
+#undef  TARGET_ASM_INIT_SECTIONS
+#define TARGET_ASM_INIT_SECTIONS 	rl78_asm_init_sections
+
+static void
+rl78_asm_init_sections (void)
+{
+  saddr_section
+    = get_unnamed_section (SECTION_WRITE, output_section_asm_op,
+			   "\t.section .saddr,\"aw\",@progbits");
+  frodata_section
+    = get_unnamed_section (SECTION_WRITE, output_section_asm_op,
+			   "\t.section .frodata,\"aw\",@progbits");
+}
+
+#undef  TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION	rl78_select_section
+
+static section *
+rl78_select_section (tree decl,
+		     int reloc ATTRIBUTE_UNUSED,
+		     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
+{
+  int readonly = 1;
+
+  switch (TREE_CODE (decl))
+    {
+    case VAR_DECL:
+      if (!TREE_READONLY (decl)
+	  || TREE_SIDE_EFFECTS (decl)
+	  || !DECL_INITIAL (decl)
+	  || (DECL_INITIAL (decl) != error_mark_node
+	      && !TREE_CONSTANT (DECL_INITIAL (decl))))
+	readonly = 0;
+      break;
+    case CONSTRUCTOR:
+      if (! TREE_CONSTANT (decl))
+	readonly = 0;
+      break;
+
+    default:
+      break;
+    }
+
+  if (TREE_CODE (decl) == VAR_DECL)
+    {
+      const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+
+      if (name[0] == '@' && name[2] == '.')
+	switch (name[1])
+	  {
+	  case 's':
+	    return saddr_section;
+	  }
+
+      if (TYPE_ADDR_SPACE (TREE_TYPE (decl)) == ADDR_SPACE_FAR
+	  && readonly)
+	{
+	  return frodata_section;
+	}
+    }
+
+  if (readonly)
+    return readonly_data_section;
+
+  return data_section;
+}
+
+void
+rl78_output_labelref (FILE *file, const char *str)
+{
+  const char *str2;
+
+  str2 = targetm.strip_name_encoding (str);
+  if (str2[0] != '.')
+    fputs (user_label_prefix, file);
+  fputs (str2, file);
+}
+
+void
+rl78_output_aligned_common (FILE *stream,
+			    tree decl ATTRIBUTE_UNUSED,
+			    const char *name,
+			    int size, int align, int global)
+{
+  /* We intentionally don't use rl78_section_tag() here.  */
+  if (name[0] == '@' && name[2] == '.')
+    {
+      const char *sec = 0;
+      switch (name[1])
+	{
+	case 's':
+	  switch_to_section (saddr_section);
+	  sec = ".saddr";
+	  break;
+	}
+      if (sec)
+	{
+	  const char *name2;
+	  int p2align = 0;
+
+	  while (align > BITS_PER_UNIT)
+	    {
+	      align /= 2;
+	      p2align ++;
+	    }
+	  name2 = targetm.strip_name_encoding (name);
+	  if (global)
+	    fprintf (stream, "\t.global\t_%s\n", name2);
+	  fprintf (stream, "\t.p2align %d\n", p2align);
+	  fprintf (stream, "\t.type\t_%s,@object\n", name2);
+	  fprintf (stream, "\t.size\t_%s,%d\n", name2, size);
+	  fprintf (stream, "_%s:\n\t.zero\t%d\n", name2, size);
+	  return;
+	}
+    }
+
+  if (!global)
+    {
+      fprintf (stream, "\t.local\t");
+      assemble_name (stream, name);
+      fprintf (stream, "\n");
+    }
+  fprintf (stream, "\t.comm\t");
+  assemble_name (stream, name);
+  fprintf (stream, ",%u,%u\n", size, align / BITS_PER_UNIT);
+}
+
+#undef  TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES rl78_insert_attributes
+
+static void
+rl78_insert_attributes (tree decl, tree *attributes ATTRIBUTE_UNUSED)
+{
+  if (TARGET_ES0
+      && TREE_CODE (decl) == VAR_DECL
+      && TREE_READONLY (decl)
+      && TREE_ADDRESSABLE (decl)
+      && TYPE_ADDR_SPACE (TREE_TYPE (decl)) == ADDR_SPACE_GENERIC)
+    {
+      tree type = TREE_TYPE (decl);
+      tree attr = TYPE_ATTRIBUTES (type);
+      int q = TYPE_QUALS_NO_ADDR_SPACE (type) | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_FAR);
+      
+      TREE_TYPE (decl) = build_type_attribute_qual_variant (type, attr, q);
+    }
+}
+
+#undef  TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER rl78_asm_out_integer
+
+static bool
+rl78_asm_out_integer (rtx x, unsigned int size, int aligned_p)
+{
+  if (default_assemble_integer (x, size, aligned_p))
+    return true;
+
+  if (size == 4)
+    {
+      assemble_integer_with_op (".long\t", x);
+      return true;
+    }
+
+  return false;
+}
+ 
+
 #undef  TARGET_UNWIND_WORD_MODE
 #define TARGET_UNWIND_WORD_MODE rl78_unwind_word_mode
 
@@ -3820,7 +4299,111 @@ rl78_unwind_word_mode (void)
   return HImode;
 }
 
-
+#ifndef USE_COLLECT2
+#undef  TARGET_ASM_CONSTRUCTOR
+#define TARGET_ASM_CONSTRUCTOR rl78_asm_constructor
+#undef  TARGET_ASM_DESTRUCTOR
+#define TARGET_ASM_DESTRUCTOR  rl78_asm_destructor
+
+static void
+rl78_asm_ctor_dtor (rtx symbol, int priority, bool is_ctor)
+{
+  section *sec;
+
+  if (priority != DEFAULT_INIT_PRIORITY)
+    {
+      /* This section of the function is based upon code copied
+	 from: gcc/varasm.c:get_cdtor_priority_section().  */
+      char buf[16];
+
+      sprintf (buf, "%s.%.5u", is_ctor ? ".ctors" : ".dtors",
+	       MAX_INIT_PRIORITY - priority);
+      sec = get_section (buf, 0, NULL);
+    }
+  else
+    sec = is_ctor ? ctors_section : dtors_section;
+
+  assemble_addr_to_section (symbol, sec);
+}
+
+static void
+rl78_asm_constructor (rtx symbol, int priority)
+{
+  rl78_asm_ctor_dtor (symbol, priority, true);
+}
+
+static void
+rl78_asm_destructor (rtx symbol, int priority)
+{
+  rl78_asm_ctor_dtor (symbol, priority, false);
+}
+#endif /* ! USE_COLLECT2 */
+
+/* Scan backwards through the insn chain looking to see if the flags
+   have been set for a comparison of OP against OPERAND.  Start with
+   the insn *before* the current insn.  */
+
+bool
+rl78_flags_already_set (rtx op, rtx operand)
+{
+  /* We only track the Z flag.  */
+  if (GET_CODE (op) != EQ && GET_CODE (op) != NE)
+    return false;
+
+  /* This should not happen, but let's be paranoid.  */
+  if (current_output_insn == NULL_RTX)
+    return false;
+
+  rtx_insn *insn;
+  bool res = false;
+
+  for (insn = prev_nonnote_nondebug_insn (current_output_insn);
+       insn != NULL_RTX;
+       insn = prev_nonnote_nondebug_insn (insn))
+    {
+      if (LABEL_P (insn))
+	break;
+      
+      if (! INSN_P (insn))
+	continue;
+
+      /* Make sure that the insn can be recognized.  */
+      if (recog_memoized (insn) == -1)
+	continue;
+
+      enum attr_update_Z updated = get_attr_update_Z (insn);
+
+      rtx set = single_set (insn);
+      bool must_break = (set != NULL_RTX && rtx_equal_p (operand, SET_DEST (set)));
+
+      switch (updated)
+	{
+	case UPDATE_Z_NO:
+	  break;
+	case UPDATE_Z_CLOBBER:
+	  must_break = true;
+	  break;
+	case UPDATE_Z_UPDATE_Z:
+	  res = must_break;
+	  must_break = true;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      if (must_break)
+	break;
+    }
+
+  /* We have to re-recognize the current insn as the call(s) to
+     get_attr_update_Z() above will have overwritten the recog_data cache.  */
+  recog_memoized (current_output_insn);
+  cleanup_subreg_operands (current_output_insn);
+  constrain_operands_cached (current_output_insn, 1);
+
+  return res;
+}
+ 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rl78.h"
