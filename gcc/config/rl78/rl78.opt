@@ -53,3 +53,7 @@ Enable assembler and linker relaxation.  Enabled by default at -Os.
 mg10
 Target Mask(G10) Report
 Target the RL78/G10 series
+
+mes0
+Target Mask(ES0)
+Assume ES is zero throughout program execution, use ES: for read-only data.

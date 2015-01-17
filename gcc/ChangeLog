@@ -1,3 +1,105 @@
+2015-01-16  DJ Delorie  <dj@redhat.com>
+	    Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78-real.md (addqi3_real): Allow volatiles.
+	(addhi3_real): Likewise.  Fix [HL+0] syntax.
+	(subqi3_real): Likewise.
+	(subhi3_real): Likewise.
+	(cbranchqi4_real): Likewise.  Allow saddr,#imm.
+	(cbranchhi4_real): Likewise.
+	(cbranchhi4_real_inverted): Likewise.
+	(cbranchsi4_real_lt): Likewise.
+	(cbranchsi4_real_ge): Likewise.
+	(cbranchsi4_real_ge): Likewise.
+	* config/rl78/rl78-virt.md (add<mode>3_virt): Likewise.
+	(sub<mode>3_virt): Likewise.
+	(cbranchqi4_virt): Likewise.
+	(cbranchhi4_virt): Likewise.
+	* config/rl78/rl78.c (rl78_print_operand_1): 'p' modifier means
+	always use '[reg+imm]' even when imm is zero.
+	* config/rl78/predicates.md (rl78_volatile_memory_operand): New.
+	(rl78_general_operand): New.
+	(rl78_nonimmediate_operand): New.
+	(rl78_nonfar_operand): Use them.
+	(rl78_nonfar_nonimm_operand): Likewise.
+	(rl78_stack_based_mem): Fix.
+	* config/rl78/constraints.md (Ibqi): New.
+	(IBqi): New.
+	(Wsa): New.
+	(Wsf): New.
+	(Cs1): Fix.
+	* config/rl78/rl78-expand.md (andqi3): Accept volatiles.
+	(iorqi3): Likewise.
+	(xorqi3): Likewise.
+	* config/rl78/rl78-protos.h (rl78_sfr_p): New.
+
+        * config/rl78/constrains (Qs8): New constraint.
+        * config/rl78/rl78.c (rl78_flags_already_set): New function.
+        * config/rl78/rl78-protos.h (rl78_flags_already_set): New prototype.
+        * config/rl78/rl78-real.md (update_Z): New attribute.
+        Update patterns to set it.
+        (cbranchqi4_real): Call rl78_flags_already_set() to determine if a
+        shorter compare and branch sequence can be used.
+        (cbranchhi4_real): Likewise.
+        (cbranchhi4_real_inverted): Likewise.
+
+	* config/rl78/predicates.md (uword_operand): Allow symbol_refs.
+	* config/rl78/rl78-c.c (rl78_register_pragmas): Register __near
+	address space.
+	* config/rl78/rl78.c (rl78_get_name_encoding): New.
+	(rl78_option_override): Allow -mes0 only if C.
+	(characterize_address): Support subregs of symbol_refs.
+	(rl78_addr_space_address_mode): Move.  Add __near.
+	(rl78_far_p): Likewise.
+	(rl78_addr_space_pointer_mode): Likewise.
+	(rl78_as_legitimate_address): Likewise.
+	(rl78_addr_space_subset_p): Likewise.
+	(rl78_addr_space_convert): Likewise.
+	(rl78_print_operand_1): Support 16-bit addressing of 32-bit
+	symbols with -mes0.
+	(transcode_memory_rtx): Don't copy ES if -mes0.  Allow symbol[BC]
+	addressing.
+	(rl78_alloc_physical_registers_op1): Change logic to prefer
+	symbol[BC] addressing.
+	(frodata_section): New.
+	(rl78_asm_init_sections): Initialize it.
+	(rl78_select_section): Put __far readonly symbols in .frodata.
+	(rl78_make_type_far): New.
+	(rl78_insert_attributes): Force all readonly symbols to be __far when -mes0.
+	(rl78_asm_out_integer): New.
+	* config/rl78/rl78.h (ADDR_SPACE_NEAR): New.
+	* config/rl78/rl78.opt (-mes0): New.
+
+	* config/rl78/rl78.h (ASM_OUTPUT_LABELREF): New.
+	(ASM_OUTPUT_ALIGNED_DECL_COMMON): New.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): New.
+	* config/rl78/rl78-protos.h (rl78_output_labelref): New.
+	(rl78_saddr_p): New.
+	(rl78_output_aligned_common): New.
+	* config/rl78/rl78.c (rl78_output_symbol_ref): Strip encodings.
+	(rl78_handle_saddr_attribute): New.
+	(rl78_handle_naked_attribute): New.
+	(rl78_attribute_table): Add saddr.
+	(rl78_print_operand_1): Don't print '!' on saddr operands.
+	(rl78_print_operand_1): Strip encodings.
+	(rl78_sfr_p): New.
+	(rl78_strip_name_encoding): New.
+	(rl78_attrlist_to_encoding): New.
+	(rl78_encode_section_info): New.
+	(rl78_asm_init_sections): New.
+	(rl78_select_section): New.
+	(rl78_output_labelref): New.
+	(rl78_output_aligned_common): New.
+	(rl78_asm_out_integer): New.
+	(rl78_asm_ctor_dtor): New.
+	(rl78_asm_constructor): New.
+	(rl78_asm_destructor): New.
+
+	* config/rl78/rl78-real.md (movqi_es): Rename to movqi_to_es.
+	* config/rl78/rl78.c (rl78_expand_epilogue): Update.
+	(transcode_memory_rtx): Update.
+	(rl78_expand_epilogue): Use A_REG instead of 0.
+
 2015-01-17  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	* config/arm/arm-protos.h (struct tune_params): New field

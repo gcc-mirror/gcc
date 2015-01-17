@@ -88,7 +88,7 @@
 (define_insn "*add<mode>3_virt"
   [(set (match_operand:QHI           0 "rl78_nonfar_nonimm_operand" "=vY,S")
 	(plus:QHI (match_operand:QHI 1 "rl78_nonfar_operand" "viY,0")
-		  (match_operand:QHI 2 "general_operand" "vim,i")))
+		  (match_operand:QHI 2 "rl78_general_operand" "vim,i")))
    ]
   "rl78_virt_insns_ok ()"
   "v.add\t%0, %1, %2"
@@ -97,7 +97,7 @@
 (define_insn "*sub<mode>3_virt"
   [(set (match_operand:QHI            0 "rl78_nonfar_nonimm_operand" "=vm,S")
 	(minus:QHI (match_operand:QHI 1 "rl78_nonfar_operand" "vim,0")
-		   (match_operand:QHI 2 "general_operand" "vim,i")))
+		   (match_operand:QHI 2 "rl78_general_operand" "vim,i")))
    ]
   "rl78_virt_insns_ok ()"
   "v.sub\t%0, %1, %2"
@@ -124,7 +124,7 @@
 (define_insn "*andqi3_virt"
   [(set (match_operand:QI         0 "rl78_nonfar_nonimm_operand" "=vm")
 	(and:QI (match_operand:QI 1 "rl78_nonfar_operand" "vim")
-		(match_operand:QI 2 "general_operand" "vim")))
+		(match_operand:QI 2 "rl78_general_operand" "vim")))
    ]
   "rl78_virt_insns_ok ()"
   "v.and\t%0, %1, %2"
@@ -133,16 +133,16 @@
 (define_insn "*iorqi3_virt"
   [(set (match_operand:QI         0 "rl78_nonfar_nonimm_operand" "=vm")
 	(ior:QI (match_operand:QI 1 "rl78_nonfar_operand" "vim")
-		(match_operand:QI 2 "general_operand" "vim")))
+		(match_operand:QI 2 "rl78_general_operand" "vim")))
    ]
   "rl78_virt_insns_ok ()"
   "v.or\t%0, %1, %2"
 )
 
-(define_insn "*xor3_virt"
+(define_insn "*xorqi3_virt"
   [(set (match_operand:QI         0 "rl78_nonfar_nonimm_operand" "=v,vm,m")
 	(xor:QI (match_operand:QI 1 "rl78_nonfar_operand" "%0,vm,vm")
-		(match_operand    2 "general_operand" "i,vm,vim")))
+		(match_operand    2 "rl78_general_operand" "i,vm,vim")))
    ]
   "rl78_virt_insns_ok ()"
   "v.xor\t%0, %1, %2"
@@ -343,8 +343,8 @@
 (define_insn "*cbranchqi4_virt"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_real"
-			      [(match_operand:QI 1 "general_operand" "vim")
-			       (match_operand:QI 2 "general_operand" "vim")])
+			      [(match_operand:QI 1 "rl78_general_operand" "vim")
+			       (match_operand:QI 2 "rl78_general_operand" "vim")])
               (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "rl78_virt_insns_ok ()"
@@ -367,8 +367,8 @@
 (define_insn "*cbranchhi4_virt"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_real"
-			      [(match_operand:HI 1 "general_operand" "vim")
-			       (match_operand:HI 2 "general_operand" "vim")])
+			      [(match_operand:HI 1 "rl78_general_operand" "vim")
+			       (match_operand:HI 2 "rl78_general_operand" "vim")])
               (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "rl78_virt_insns_ok ()"

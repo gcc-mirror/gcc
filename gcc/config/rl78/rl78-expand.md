@@ -150,9 +150,9 @@
 )
 
 (define_expand "andqi3"
-  [(set (match_operand:QI         0 "nonimmediate_operand")
-	(and:QI (match_operand:QI 1 "general_operand")
-		(match_operand:QI 2 "general_operand")))
+  [(set (match_operand:QI         0 "rl78_nonimmediate_operand")
+	(and:QI (match_operand:QI 1 "rl78_general_operand")
+		(match_operand:QI 2 "rl78_general_operand")))
    ]
   ""
   "if (rl78_force_nonfar_3 (operands, gen_andqi3))
@@ -160,9 +160,9 @@
 )
 
 (define_expand "iorqi3"
-  [(set (match_operand:QI         0 "nonimmediate_operand")
-	(ior:QI (match_operand:QI 1 "general_operand")
-		(match_operand:QI 2 "general_operand")))
+  [(set (match_operand:QI         0 "rl78_nonimmediate_operand")
+	(ior:QI (match_operand:QI 1 "rl78_general_operand")
+		(match_operand:QI 2 "rl78_general_operand")))
    ]
   ""
   "if (rl78_force_nonfar_3 (operands, gen_iorqi3))
@@ -170,9 +170,9 @@
 )
 
 (define_expand "xorqi3"
-  [(set (match_operand:QI         0 "nonimmediate_operand")
-	(xor:QI (match_operand:QI 1 "general_operand")
-		(match_operand:QI 2 "general_operand")))
+  [(set (match_operand:QI         0 "rl78_nonimmediate_operand")
+	(xor:QI (match_operand:QI 1 "rl78_general_operand")
+		(match_operand:QI 2 "rl78_general_operand")))
    ]
   ""
   "if (rl78_force_nonfar_3 (operands, gen_xorqi3))
