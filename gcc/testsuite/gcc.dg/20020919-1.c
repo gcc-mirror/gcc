@@ -42,7 +42,7 @@
 	|| defined (__ppc)
 # define REG1 "6"
 # define REG2 "7"
-# if !defined(__powerpc64__) && !defined(__LP64__)
+# if !defined(_ARCH_PPC64)
 #  define REG3 "8"
 #  define REG4 "9"
 # endif
