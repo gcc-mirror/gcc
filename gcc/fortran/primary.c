@@ -2367,14 +2367,16 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 		return false;
 	      value = gfc_copy_expr (comp->initializer);
 	    }
-	  else if (comp->attr.allocatable)
+	  else if (comp->attr.allocatable
+		   || (comp->ts.type == BT_CLASS
+		       && CLASS_DATA (comp)->attr.allocatable))
 	    {
 	      if (!gfc_notify_std (GFC_STD_F2008, "No initializer for "
-		  "allocatable component '%s' given in the structure "
-		  "constructor at %C", comp->name))
+				   "allocatable component '%qs' given in the "
+				   "structure constructor at %C", comp->name))
 		return false;
 	    }
-	  else if (!comp->attr.deferred_parameter)
+	  else if (!comp->attr.artificial)
 	    {
 	      gfc_error ("No initializer for component %qs given in the"
 			 " structure constructor at %C!", comp->name);
@@ -2456,7 +2458,7 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	{
 	  /* Components without name are not allowed after the first named
 	     component initializer!  */
-	  if (!comp || comp->attr.deferred_parameter)
+	  if (!comp || comp->attr.artificial)
 	    {
 	      if (last_name)
 		gfc_error ("Component initializer without name after component"

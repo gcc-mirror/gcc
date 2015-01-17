@@ -1,5 +1,16 @@
 2015-01-17  Andre Vehreschild  <vehre@gmx.de>
 
+	PR fortran/60357
+	* gfortran.dg/alloc_comp_assign_13.f08: New test.
+
+	PR fortran/61275
+	* gfortran.dg/alloc_comp_assign_14.f08: New test.
+
+	PR fortran/55932
+	* gfortran.dg/alloc_comp_initializer_4.f03: New test.
+
+2015-01-17  Andre Vehreschild  <vehre@gmx.de>
+
 	PR fortran/60334
 	* gfortran.dg/deferred_type_param_6.f90: Add tests for this PR.
 
