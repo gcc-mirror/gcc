@@ -1,3 +1,8 @@
+2015-01-17  Alan Modra  <amodra@gmail.com>
+
+	* cprop.c (do_local_cprop): Disallow replacement of fixed
+	hard registers.
+
 2015-01-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/62066

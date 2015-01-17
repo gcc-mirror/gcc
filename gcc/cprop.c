@@ -1189,10 +1189,12 @@ do_local_cprop (rtx x, rtx_insn *insn)
   rtx newreg = NULL, newcnst = NULL;
 
   /* Rule out USE instructions and ASM statements as we don't want to
-     change the hard registers mentioned.  */
+     change the hard registers mentioned, and don't change fixed hard
+     registers.  */
   if (REG_P (x)
       && (REGNO (x) >= FIRST_PSEUDO_REGISTER
           || (GET_CODE (PATTERN (insn)) != USE
+	      && !fixed_regs[REGNO (x)]
 	      && asm_noperands (PATTERN (insn)) < 0)))
     {
       cselib_val *val = cselib_lookup (x, GET_MODE (x), 0, VOIDmode);
