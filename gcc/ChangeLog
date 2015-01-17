@@ -1,5 +1,10 @@
 2015-01-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (probe_stack): Delete.
+	(probe_stack_address): New.
+
+2015-01-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Use TARGET_32BIT
 	to test for 32-bit ABIs, not !TARGET_POWERPC64.
 
