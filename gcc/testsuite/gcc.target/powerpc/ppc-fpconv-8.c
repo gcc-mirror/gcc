@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-skip-if "" { powerpc*-*-* } { "-mpowerpc64" } } */
 /* { dg-require-effective-target powerpc_fprs } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=750" } } */
 /* { dg-options "-O3 -mcpu=750 -ffast-math" } */
