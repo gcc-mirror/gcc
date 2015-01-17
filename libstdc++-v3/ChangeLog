@@ -1,5 +1,15 @@
 2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/60940
+	* include/bits/atomic_base.h: Remove atomic integral typedefs as
+	synonyms for __atomic_base<int> etc.
+	* include/std/atomic: Make atomic_int a synonym for atomic<int> and
+	likewise for all atomic integral types.
+	* testsuite/29_atomics/atomic_integral/cons/copy_list.cc: New.
+	* testsuite/29_atomics/atomic/60695.cc: Adjust dg-error line number.
+
+2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/56785
 	* include/std/tuple (_Tuple_impl): Remove zero-element specialization
 	and define one-element specialization.

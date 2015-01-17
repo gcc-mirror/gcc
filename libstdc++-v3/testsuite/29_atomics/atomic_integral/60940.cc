@@ -1,8 +1,4 @@
-// { dg-require-atomic-builtins "" }
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
-
-// Copyright (C) 2014-2015 Free Software Foundation, Inc.
+// Copyright (C) 2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,12 +15,24 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
+
 #include <atomic>
+#include <testsuite_common_types.h>
 
-// libstdc++/60695
+struct Test
+{
+  template<typename T>
+    void operator()(T&& t)
+    {
+      auto val = atomic_load(&t);
+      atomic_store(&t, val);
+    }
+} test;
 
-struct X {
-  char stuff[0]; // GNU extension, type has zero size
-};
-
-std::atomic<X> a;  // { dg-error "not supported" "" { target *-*-* } 173 }
+int
+main()
+{
+  __gnu_cxx::typelist::apply(test, __gnu_test::atomic_integrals::type());
+}
