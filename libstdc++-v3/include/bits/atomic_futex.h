@@ -48,6 +48,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 #if defined(_GLIBCXX_HAVE_LINUX_FUTEX)
   struct __atomic_futex_unsigned_base
   {
@@ -209,7 +210,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   };
 
-#else
+#else // !_GLIBCXX_HAVE_LINUX_FUTEX
 
   // If futexes are not available, use a mutex and a condvar to wait.
   // Because we access the data only within critical sections, all accesses
@@ -280,7 +281,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   };
 
-#endif
+#endif // _GLIBCXX_HAVE_LINUX_FUTEX
+#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
