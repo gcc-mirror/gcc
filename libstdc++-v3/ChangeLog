@@ -1,5 +1,18 @@
 2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	DR 488
+	PR libstdc++/58357
+	* include/bits/algorithmfwd.h (rotate): Return an iterator.
+	* include/bits/stl_algo.h (rotate, __rotate): Likewise.
+	* testsuite/25_algorithms/rotate/dr488.cc: New.
+	* testsuite/25_algorithms/rotate/check_type.cc: Adjust function type.
+	* testsuite/25_algorithms/rotate/requirements/explicit_instantiation/
+	2.cc: Likewise.
+	* testsuite/25_algorithms/rotate/requirements/explicit_instantiation/
+	pod.cc: Likewise.
+
+2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/60940
 	* include/bits/atomic_base.h: Remove atomic integral typedefs as
 	synonyms for __atomic_base<int> etc.

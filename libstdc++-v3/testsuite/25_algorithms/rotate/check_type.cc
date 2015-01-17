@@ -26,19 +26,19 @@ struct X { };
 
 bool operator<(X,X) { return true;}
 
-void
+__gnu_test::forward_iterator_wrapper<X>
 test1(__gnu_test::forward_iterator_wrapper<X>& begin,
       __gnu_test::forward_iterator_wrapper<X>& middle,
       __gnu_test::forward_iterator_wrapper<X>& end)
 { return std::rotate(begin,middle,end); }
 
-void
+__gnu_test::bidirectional_iterator_wrapper<X>
 test1(__gnu_test::bidirectional_iterator_wrapper<X>& begin,
       __gnu_test::bidirectional_iterator_wrapper<X>& middle,
       __gnu_test::bidirectional_iterator_wrapper<X>& end)
 { return std::rotate(begin,middle,end); }
 
-void
+__gnu_test::random_access_iterator_wrapper<X>
 test1(__gnu_test::random_access_iterator_wrapper<X>& begin,
       __gnu_test::random_access_iterator_wrapper<X>& middle,
       __gnu_test::random_access_iterator_wrapper<X>& end)
