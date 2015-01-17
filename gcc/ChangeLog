@@ -1,3 +1,7 @@
+2015-01-17  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* dwarf2out.c (gen_producer_string): Ignore also OPT_fpreprocessed.
+
 2015-01-17  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/52773
