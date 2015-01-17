@@ -7075,6 +7075,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 		rse.expr = gfc_class_data_get (rse.expr);
 	      else
 		{
+		  gfc_add_block_to_block (&block, &rse.pre);
 		  tmp = gfc_create_var (TREE_TYPE (rse.expr), "ptrtemp");
 		  gfc_add_modify (&lse.pre, tmp, rse.expr);
 
@@ -7146,6 +7147,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	    }
 	  else
 	    {
+	      gfc_add_block_to_block (&block, &rse.pre);
 	      tmp = gfc_create_var (TREE_TYPE (rse.expr), "ptrtemp");
 	      gfc_add_modify (&lse.pre, tmp, rse.expr);
 
