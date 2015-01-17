@@ -1,3 +1,11 @@
+2015-01-17  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/52773
+	* calls.c (emit_library_call_value): When pushing arguments use
+	stack_pointer_rtx rather than virtual_outgoing_args_rtx in
+	CALL_INSN_FUNCTION_USAGE.  Only emit one of use of the magic
+	stack pointer reference into CALL_INSN_FUNCTION_USAGE.
+
 2015-01-17  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/32790

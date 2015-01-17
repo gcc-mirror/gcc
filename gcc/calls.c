@@ -3808,6 +3808,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   int reg_parm_stack_space = 0;
   int needed;
   rtx_insn *before_call;
+  bool have_push_fusage;
   tree tfom;			/* type_for_mode (outmode, 0) */
 
 #ifdef REG_PARM_STACK_SPACE
@@ -4165,6 +4166,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
   /* Push the args that need to be pushed.  */
 
+  have_push_fusage = false;
+
   /* ARGNUM indexes the ARGVEC array in the order in which the arguments
      are to be pushed.  */
   for (count = 0; count < nargs; count++, argnum--)
@@ -4256,14 +4259,19 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  if (argblock)
 	    use = plus_constant (Pmode, argblock,
 				 argvec[argnum].locate.offset.constant);
+	  else if (have_push_fusage)
+	    continue;
 	  else
-	    /* When arguments are pushed, trying to tell alias.c where
-	       exactly this argument is won't work, because the
-	       auto-increment causes confusion.  So we merely indicate
-	       that we access something with a known mode somewhere on
-	       the stack.  */
-	    use = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
-				gen_rtx_SCRATCH (Pmode));
+	    {
+	      /* When arguments are pushed, trying to tell alias.c where
+		 exactly this argument is won't work, because the
+		 auto-increment causes confusion.  So we merely indicate
+		 that we access something with a known mode somewhere on
+		 the stack.  */
+	      use = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				  gen_rtx_SCRATCH (Pmode));
+	      have_push_fusage = true;
+	    }
 	  use = gen_rtx_MEM (argvec[argnum].mode, use);
 	  use = gen_rtx_USE (VOIDmode, use);
 	  call_fusage = gen_rtx_EXPR_LIST (VOIDmode, use, call_fusage);
