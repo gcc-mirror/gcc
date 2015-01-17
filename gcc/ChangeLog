@@ -1,5 +1,9 @@
 2015-01-17  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
+	* rtlanal.c (get_base_term): Handle SCRATCH.
+
+2015-01-17  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
 	* config/aarch64/aarch64.c
 	(aarch64_sched_first_cycle_multipass_dfa_lookahead): Implement hook.
 	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD): Define.
