@@ -1,3 +1,9 @@
+2015-01-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55901
+	* gfortran.dg/associate_1.f03: Allow test for character with
+	automatic length.
+
 2015-01-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/ppc-fpconv-4.c: Skip for -mpowerpc64.
