@@ -1,3 +1,10 @@
+2015-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64646
+	* include/bits/stl_algo.h (__is_permutation): Also test for reaching
+	end of the second range.
+	* testsuite/25_algorithms/is_permutation/64646.cc: New.
+
 2015-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64476

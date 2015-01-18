@@ -3595,7 +3595,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Efficiently compare identical prefixes:  O(N) if sequences
       // have the same elements in the same order.
-      for (; __first1 != __last1; ++__first1, ++__first2)
+      for (; __first1 != __last1 && __first2 != __last2;
+	  ++__first1, ++__first2)
 	if (!__pred(__first1, __first2))
 	  break;
 
