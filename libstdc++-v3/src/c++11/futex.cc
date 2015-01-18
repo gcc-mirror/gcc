@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <bits/c++config.h>
-#if defined(_GLIBCXX_HAVE_LINUX_FUTEX)
+#if defined(_GLIBCXX_HAVE_LINUX_FUTEX) && ATOMIC_INT_LOCK_FREE > 1
 #include <bits/atomic_futex.h>
 #include <chrono>
 #include <climits>
