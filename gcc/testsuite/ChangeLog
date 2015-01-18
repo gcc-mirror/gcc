@@ -1,3 +1,8 @@
+2015-01-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/64378
+	* g++.dg/torture/pr64378.C: New testcase.
+
 2015-01-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/57959

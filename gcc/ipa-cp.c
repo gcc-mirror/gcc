@@ -1975,8 +1975,13 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 	}
     }
   else if (t)
-    context = ipa_polymorphic_call_context (t, ie->indirect_info->otr_type,
-					    anc_offset);
+    {
+      context = ipa_polymorphic_call_context (t, ie->indirect_info->otr_type,
+					      anc_offset);
+      if (ie->indirect_info->vptr_changed)
+	context.possible_dynamic_type_change (ie->in_polymorphic_cdtor,
+					      ie->indirect_info->otr_type);
+    }
   else
     return NULL_TREE;
 
