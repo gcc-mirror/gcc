@@ -1567,8 +1567,8 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_tree_edges (DECL_FUNCTION_PERSONALITY (t1),
 			  DECL_FUNCTION_PERSONALITY (t2));
       compare_tree_edges (DECL_VINDEX (t1), DECL_VINDEX (t2));
-      /* DECL_FUNCTION_SPECIFIC_TARGET is not yet created.  We compare
-         the attribute list instead.  */
+      compare_tree_edges (DECL_FUNCTION_SPECIFIC_TARGET (t1),
+			  DECL_FUNCTION_SPECIFIC_TARGET (t2));
       compare_tree_edges (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (t1),
 			  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (t2));
     }
