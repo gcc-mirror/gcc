@@ -2985,7 +2985,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 		  || !possible_polymorphic_call_target_p
 		       (ie, cgraph_node::get (t)))
 		{
-		  /* Do not speculate builtin_unreachable, it is stpid!  */
+		  /* Do not speculate builtin_unreachable, it is stupid!  */
 		  if (!ie->indirect_info->vptr_changed)
 		    target = ipa_impossible_devirt_target (ie, target);
 		}
@@ -3013,6 +3013,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
      ctx, &final);
   if (final && targets.length () <= 1)
     {
+      speculative = false;
       if (targets.length () == 1)
 	target = targets[0]->decl;
       else
