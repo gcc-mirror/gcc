@@ -35,7 +35,7 @@
 #include <bits/c++config.h>
 #include <atomic>
 #include <chrono>
-#if !defined(_GLIBCXX_HAVE_LINUX_FUTEX)
+#if ! (defined(_GLIBCXX_HAVE_LINUX_FUTEX) && ATOMIC_INT_LOCK_FREE > 1)
 #include <mutex>
 #include <condition_variable>
 #endif
@@ -49,7 +49,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
-#if defined(_GLIBCXX_HAVE_LINUX_FUTEX)
+#if defined(_GLIBCXX_HAVE_LINUX_FUTEX) && ATOMIC_INT_LOCK_FREE > 1
   struct __atomic_futex_unsigned_base
   {
     // Returns false iff a timeout occurred.
@@ -62,16 +62,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   template <unsigned _Waiter_bit = 0x80000000>
-  struct __atomic_futex_unsigned : __atomic_futex_unsigned_base
+  class __atomic_futex_unsigned : __atomic_futex_unsigned_base
   {
     typedef chrono::system_clock __clock_t;
 
-    // XXX We expect this to be lock-free, and having the payload at offset 0.
-#if ATOMIC_INT_LOCK_FREE < 2
-# error We require lock-free atomic operations on int
-#endif
+    // This must be lock-free and at offset 0.
     atomic<unsigned> _M_data;
 
+  public:
+    explicit
     __atomic_futex_unsigned(unsigned __data) : _M_data(__data)
     { }
 
@@ -82,7 +81,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   private:
-
     // If a timeout occurs, returns a current value after the timeout;
     // otherwise, returns the operand's value if equal is true or a different
     // value if equal is false.
@@ -165,26 +163,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // Returns false iff a timeout occurred.
     template<typename _Rep, typename _Period>
-    _GLIBCXX_ALWAYS_INLINE bool
-    _M_load_when_equal_for(unsigned __val, memory_order __mo,
-	const chrono::duration<_Rep, _Period>& __rtime)
-    {
-      return _M_load_when_equal_until(__val, __mo, __clock_t::now() + __rtime);
-    }
+      _GLIBCXX_ALWAYS_INLINE bool
+      _M_load_when_equal_for(unsigned __val, memory_order __mo,
+	  const chrono::duration<_Rep, _Period>& __rtime)
+      {
+	return _M_load_when_equal_until(__val, __mo,
+					__clock_t::now() + __rtime);
+      }
 
     // Returns false iff a timeout occurred.
     template<typename _Clock, typename _Duration>
-    _GLIBCXX_ALWAYS_INLINE bool
-    _M_load_when_equal_until(unsigned __val, memory_order __mo,
-	const chrono::time_point<_Clock, _Duration>& __atime)
-    {
-      // DR 887 - Sync unknown clock to known clock.
-      const typename _Clock::time_point __c_entry = _Clock::now();
-      const __clock_t::time_point __s_entry = __clock_t::now();
-      const auto __delta = __atime - __c_entry;
-      const auto __s_atime = __s_entry + __delta;
-      return _M_load_when_equal_until(__val, __mo, __s_atime);
-    }
+      _GLIBCXX_ALWAYS_INLINE bool
+      _M_load_when_equal_until(unsigned __val, memory_order __mo,
+	  const chrono::time_point<_Clock, _Duration>& __atime)
+      {
+	// DR 887 - Sync unknown clock to known clock.
+	const typename _Clock::time_point __c_entry = _Clock::now();
+	const __clock_t::time_point __s_entry = __clock_t::now();
+	const auto __delta = __atime - __c_entry;
+	const auto __s_atime = __s_entry + __delta;
+	return _M_load_when_equal_until(__val, __mo, __s_atime);
+      }
 
     // Returns false iff a timeout occurred.
     template<typename _Duration>
@@ -207,16 +206,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (_M_data.exchange(__val, __mo) & _Waiter_bit)
 	_M_futex_notify_all(__futex);
     }
-
   };
 
-#else // !_GLIBCXX_HAVE_LINUX_FUTEX
+#else // ! (_GLIBCXX_HAVE_LINUX_FUTEX && ATOMIC_INT_LOCK_FREE > 1)
 
   // If futexes are not available, use a mutex and a condvar to wait.
   // Because we access the data only within critical sections, all accesses
   // are sequentially consistent; thus, we satisfy any provided memory_order.
   template <unsigned _Waiter_bit = 0x80000000>
-  struct __atomic_futex_unsigned
+  class __atomic_futex_unsigned
   {
     typedef chrono::system_clock __clock_t;
 
@@ -224,6 +222,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     mutex _M_mutex;
     condition_variable _M_condvar;
 
+  public:
+    explicit
     __atomic_futex_unsigned(unsigned __data) : _M_data(__data)
     { }
 
@@ -252,24 +252,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     template<typename _Rep, typename _Period>
-    _GLIBCXX_ALWAYS_INLINE bool
-    _M_load_when_equal_for(unsigned __val, memory_order __mo,
-	const chrono::duration<_Rep, _Period>& __rtime)
-    {
-      unique_lock<mutex> __lock(_M_mutex);
-      return _M_condvar.wait_for(__lock, __rtime,
-				 [&] { return _M_data == __val;});
-    }
+      _GLIBCXX_ALWAYS_INLINE bool
+      _M_load_when_equal_for(unsigned __val, memory_order __mo,
+	  const chrono::duration<_Rep, _Period>& __rtime)
+      {
+	unique_lock<mutex> __lock(_M_mutex);
+	return _M_condvar.wait_for(__lock, __rtime,
+				   [&] { return _M_data == __val;});
+      }
 
     template<typename _Clock, typename _Duration>
-    _GLIBCXX_ALWAYS_INLINE bool
-    _M_load_when_equal_until(unsigned __val, memory_order __mo,
-	const chrono::time_point<_Clock, _Duration>& __atime)
-    {
-      unique_lock<mutex> __lock(_M_mutex);
-      return _M_condvar.wait_until(__lock, __atime,
-				   [&] { return _M_data == __val;});
-    }
+      _GLIBCXX_ALWAYS_INLINE bool
+      _M_load_when_equal_until(unsigned __val, memory_order __mo,
+	  const chrono::time_point<_Clock, _Duration>& __atime)
+      {
+	unique_lock<mutex> __lock(_M_mutex);
+	return _M_condvar.wait_until(__lock, __atime,
+				     [&] { return _M_data == __val;});
+      }
 
     _GLIBCXX_ALWAYS_INLINE void
     _M_store_notify_all(unsigned __val, memory_order __mo)
@@ -278,10 +278,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_data = __val;
       _M_condvar.notify_all();
     }
-
   };
 
-#endif // _GLIBCXX_HAVE_LINUX_FUTEX
+#endif // _GLIBCXX_HAVE_LINUX_FUTEX && ATOMIC_INT_LOCK_FREE > 1
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
 
 _GLIBCXX_END_NAMESPACE_VERSION
