@@ -8727,20 +8727,6 @@ enabled by default at @option{-O2} and higher.  Null pointer check
 elimination is only done if @option{-fdelete-null-pointer-checks} is
 enabled.
 
-@item -funroll-loops
-@opindex funroll-loops
-Unroll loops whose number of iterations can be determined at compile
-time or upon entry to the loop.  @option{-funroll-loops} implies
-@option{-frerun-cse-after-loop}.  This option makes code larger,
-and may or may not make it run faster.
-
-@item -funroll-all-loops
-@opindex funroll-all-loops
-Unroll all loops, even if their number of iterations is uncertain when
-the loop is entered.  This usually makes programs run more slowly.
-@option{-funroll-all-loops} implies the same options as
-@option{-funroll-loops},
-
 @item -fsplit-ivs-in-unroller
 @opindex fsplit-ivs-in-unroller
 Enables expression of values of induction variables in later iterations

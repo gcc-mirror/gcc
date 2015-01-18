@@ -1,3 +1,8 @@
+2015-01-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi ([-funroll-loops], [-funroll-all-loops]):
+	Remove duplicate option listings.
+
 2015-01-18  Felix Yang  <felix.yang@huawei.com>
 
 	* auto-profile.c (afdo_find_equiv_class): Remove unnecessary test.
