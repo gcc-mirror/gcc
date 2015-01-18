@@ -2402,8 +2402,8 @@
    (clobber (reg:SI R4_REG))
    (clobber (reg:SI R5_REG))
    (clobber (reg:SI FPSCR_STAT_REG))
-   (use (reg:SI FPSCR_MODES_REG))
-   (use (match_operand:SI 1 "arith_reg_operand" "r"))]
+   (use (match_operand:SI 1 "arith_reg_operand" "r"))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_FPU_DOUBLE && ! TARGET_FPU_SINGLE"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
@@ -2674,8 +2674,8 @@
    (clobber (reg:DF DR0_REG))
    (clobber (reg:DF DR2_REG))
    (clobber (reg:SI FPSCR_STAT_REG))
-   (use (reg:SI FPSCR_MODES_REG))
-   (use (match_operand:SI 1 "arith_reg_operand" "r"))]
+   (use (match_operand:SI 1 "arith_reg_operand" "r"))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_FPU_DOUBLE && ! TARGET_FPU_SINGLE"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")

@@ -1,3 +1,9 @@
+2015-01-18  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64652
+	* config/sh/sh.md (udivsi3_i4, divsi3_i4): Make use of sfunc address
+	reg appear first in the parallel.
+
 2015-01-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-reference.c (set_reference_optimization_summary,
