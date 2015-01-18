@@ -1652,7 +1652,8 @@ sem_item_optimizer::filter_removed_items (void)
     {
       sem_item *item = m_items[i];
 
-      if (!flag_ipa_icf_functions && item->type == FUNC)
+      if (item->type == FUNC
+	  && !opt_for_fn (item->decl, flag_ipa_icf_functions))
 	{
 	  remove_item (item);
 	  continue;
@@ -2499,7 +2500,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
   {
-    return flag_ipa_icf_variables || flag_ipa_icf_functions;
+    return in_lto_p || flag_ipa_icf_variables || flag_ipa_icf_functions;
   }
 
   virtual unsigned int execute (function *)

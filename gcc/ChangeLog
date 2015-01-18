@@ -1,5 +1,35 @@
 2015-01-18  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-reference.c (set_reference_optimization_summary,
+	ipa_reference_get_not_written_global): Do nothing if ipa-reference is disabled.
+	(ignore_module_statics): New static var.
+	(propagate_bits): If ipa-reference is disabled, do not look into local properties.
+	(analyze_function): Disable analysis when ipa_reference is disabled.
+	(generate_summary): Do not dump when reference is disabled;
+	collect vars accessed from functions with ipa-reference disabled.
+	(get_read_write_all_from_node): When ipa-reference is disabled, use the
+	node flags.
+	(gate): Enable for LTO.
+	(ignore_edge_p): New function.
+	(propagate): Skip functions w/o ipa-reference analysis.
+	* optc-save-gen.awk: Handle optimize_debug correctly.
+	* opth-gen.awk: Likewise.
+	* common.opt (fauto-inc-dec, fdelete-dead-exceptions, ffunction-cse,
+	fgraphite, fstrict-volatile-bitfields, fira-algorithm, fira-region,
+	fira-share-save-slots, fira-share-spill-slots,
+	fmodulo-sched-allow-regmoves, fpartial-inlining,
+	sched-stalled-insns, fsched-stalled-insns-dep, fstrict-overflow,
+	ftracer, ftree-parallelize-loops, fassociative-math,
+	freciprocal-math, fvect-cost-model, fsimd-cost-model): Mark as
+	Optimization
+	(fauto-profile, fcommon, fdata-sections, fipa-icf-variables,
+        ftoplevel-reorder, funit-at-a-time, fwhole-program): Do not mark as
+        Optimization.
+	* ipa-icf.c (gate, sem_item_optimizer::filter_removed_items):
+	Fix for IPA.
+
+2015-01-18  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/64378
 	* ipa-prop.c (try_make_edge_direct_virtual_call): Clear speculative
 	flag correctly.

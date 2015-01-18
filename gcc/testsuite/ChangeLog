@@ -1,5 +1,14 @@
 2015-01-18  Jan Hubicka  <hubicka@ucw.cz>
 
+	* gcc.dg/ipa/ipa-icf-32.c: Update template.
+	* c-c++-common/asan/instrument-with-calls-3.c: Likewise.
+	* c-c++-common/asan/instrument-with-calls-2.c: Likewise.
+	* c-c++-common/asan/instrument-with-calls-1.c: Likewise.
+	* c-c++-common/asan/kasan-recover-1.c: Likewise.
+	* c-c++-common/asan/kasan-recover-2.c: Likewise.
+
+2015-01-18  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/64378
 	* g++.dg/torture/pr64378.C: New testcase.
 
