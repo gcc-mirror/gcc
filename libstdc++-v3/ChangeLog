@@ -4,6 +4,8 @@
 	atomic int is not lock-free. Make member variables private.
 	* src/c++11/futex.cc: Likewise.
 
+	* src/c++11/futex.cc: Fix order of includes and preprocessor condition.
+
 2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64638
