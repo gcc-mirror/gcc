@@ -132,13 +132,14 @@ print "/* Structure to save/restore optimization and target specific options.  *
 print "struct GTY(()) cl_optimization";
 print "{";
 
-n_opt_char = 2;
+n_opt_char = 3;
 n_opt_short = 0;
 n_opt_int = 0;
 n_opt_enum = 1;
 n_opt_other = 0;
 var_opt_char[0] = "unsigned char x_optimize";
 var_opt_char[1] = "unsigned char x_optimize_size";
+var_opt_char[2] = "unsigned char x_optimize_debug";
 var_opt_enum[0] = "enum fp_contract_mode x_flag_fp_contract_mode";
 
 for (i = 0; i < n_opts; i++) {
