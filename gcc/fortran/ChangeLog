@@ -1,6 +1,6 @@
 2015-01-18  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/64578
+	PR fortran/57959
 	* trans-expr.c (gfc_trans_subcomponent_assign): Use a deep copy
 	for allocatable components, where the source is a variable.
 
