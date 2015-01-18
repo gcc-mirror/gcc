@@ -1,3 +1,12 @@
+2015-01-18  Felix Yang  <felix.yang@huawei.com>
+
+	* auto-profile.c (afdo_find_equiv_class): Remove unnecessary test.
+	(autofdo_source_profile::get_callsite_total_count,
+	function_instance::get_function_instance_by_decl,
+	string_table::get_index, string_table::get_index_by_decl,
+	afdo_vpt_for_early_inline, afdo_callsite_hot_enough_for_early_inline):
+	Fix comment typos. Reformatting and minor code rearrangement.
+
 2015-01-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (probe_stack): Delete.
