@@ -1857,7 +1857,10 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
      Thus if we have one and parentheses follow, we have to assume that it
      actually is one for now.  The final decision will be made at
      resolution time, of course.  */
-  if (sym->assoc && gfc_peek_ascii_char () == '(')
+  if (sym->assoc && gfc_peek_ascii_char () == '('
+      && !(sym->assoc->dangling && sym->assoc->st
+	   && sym->assoc->st->n.sym
+	   && sym->assoc->st->n.sym->attr.dimension == 0))
     sym->attr.dimension = 1;
 
   if ((equiv_flag && gfc_peek_ascii_char () == '(')
