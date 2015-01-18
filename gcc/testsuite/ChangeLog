@@ -1,5 +1,10 @@
 2015-01-18  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/64578
+	* gfortran.dg/block_13.f08: New test
+
+2015-01-18  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/55901
 	* gfortran.dg/associate_1.f03: Allow test for character with
 	automatic length.

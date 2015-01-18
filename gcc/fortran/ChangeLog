@@ -1,5 +1,11 @@
 2015-01-18  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/64578
+	* trans-expr.c (gfc_trans_subcomponent_assign): Use a deep copy
+	for allocatable components, where the source is a variable.
+
+2015-01-18  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/55901
 	* primary.c (gfc_match_varspec): Exclude dangling associate-
 	names with dimension 0 from being counted as arrays.
