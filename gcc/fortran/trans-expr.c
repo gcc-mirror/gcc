@@ -6474,8 +6474,16 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr,
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_expr (&se, expr);
 	  gfc_add_block_to_block (&block, &se.pre);
-	  gfc_add_modify (&block, dest,
-			       fold_convert (TREE_TYPE (dest), se.expr));
+	  if (cm->ts.u.derived->attr.alloc_comp
+	      && expr->expr_type == EXPR_VARIABLE)
+	    {
+	      tmp = gfc_copy_alloc_comp (cm->ts.u.derived, se.expr,
+					 dest, expr->rank);
+	      gfc_add_expr_to_block (&block, tmp);
+	    }
+	  else
+	    gfc_add_modify (&block, dest,
+			    fold_convert (TREE_TYPE (dest), se.expr));
 	  gfc_add_block_to_block (&block, &se.post);
 	}
       else
