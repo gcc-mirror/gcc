@@ -1,3 +1,8 @@
+2014-12-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (compare_tree_sccs_1): Add comparsion of
+	DECL_FUNCTION_SPECIFIC_TARGET
+
 2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 
