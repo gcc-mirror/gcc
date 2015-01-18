@@ -1,5 +1,10 @@
 2015-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2011.xml: Remove note about offsetof.
+	* doc/html/manual/status.html: Regenerate.
+
+2015-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/bits/atomic_futex.h: Use mutex and condition_variable when
 	atomic int is not lock-free. Make member variables private.
 	* src/c++11/futex.cc: Likewise.

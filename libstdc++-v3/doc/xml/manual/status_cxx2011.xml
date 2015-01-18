@@ -75,11 +75,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>18.2</entry>
       <entry>Types</entry>
-      <entry>Partial</entry>
-      <entry>Missing offsetof</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>18.3</entry>
