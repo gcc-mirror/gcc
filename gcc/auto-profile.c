@@ -107,7 +107,7 @@ along with GCC; see the file COPYING3.  If not see
      standalone symbol, or a clone of a function that is inlined into another
      function.
 
-   Phase 2: Early inline + valur profile transformation.
+   Phase 2: Early inline + value profile transformation.
      Early inline uses autofdo_source_profile to find if a callsite is:
         * inlined in the profiled binary.
         * callee body is hot in the profiling run.
@@ -372,7 +372,7 @@ get_original_name (const char *name)
 
 /* Return the combined location, which is a 32bit integer in which
    higher 16 bits stores the line offset of LOC to the start lineno
-   of DECL, The lower 16 bits stores the discrimnator.  */
+   of DECL, The lower 16 bits stores the discriminator.  */
 
 static unsigned
 get_combined_location (location_t loc, tree decl)
@@ -435,7 +435,7 @@ get_inline_stack (location_t locus, inline_stack *stack)
 
 /* Return STMT's combined location, which is a 32bit integer in which
    higher 16 bits stores the line offset of LOC to the start lineno
-   of DECL, The lower 16 bits stores the discrimnator.  */
+   of DECL, The lower 16 bits stores the discriminator.  */
 
 static unsigned
 get_relative_location_for_stmt (gimple stmt)
@@ -492,8 +492,8 @@ string_table::get_index (const char *name) const
   string_index_map::const_iterator iter = map_.find (name);
   if (iter == map_.end ())
     return -1;
-  else
-    return iter->second;
+
+  return iter->second;
 }
 
 /* Return the index of a given function DECL. Return -1 if DECL is not 
@@ -513,8 +513,8 @@ string_table::get_index_by_decl (tree decl) const
     return ret;
   if (DECL_ABSTRACT_ORIGIN (decl))
     return get_index_by_decl (DECL_ABSTRACT_ORIGIN (decl));
-  else
-    return -1;
+
+  return -1;
 }
 
 /* Return the function name of a given INDEX.  */
@@ -580,8 +580,8 @@ function_instance::get_function_instance_by_decl (unsigned lineno,
     }
   if (DECL_ABSTRACT_ORIGIN (decl))
     return get_function_instance_by_decl (lineno, DECL_ABSTRACT_ORIGIN (decl));
-  else
-    return NULL;
+
+  return NULL;
 }
 
 /* Store the profile info for LOC in INFO. Return TRUE if profile info
@@ -608,7 +608,7 @@ function_instance::mark_annotated (location_t loc)
   iter->second.annotated = true;
 }
 
-/* Read the inlinied indirect call target profile for STMT and store it in
+/* Read the inlined indirect call target profile for STMT and store it in
    MAP, return the total count for all inlined indirect calls.  */
 
 gcov_type
@@ -835,8 +835,8 @@ autofdo_source_profile::get_callsite_total_count (
       || afdo_string_table->get_index (IDENTIFIER_POINTER (
              DECL_ASSEMBLER_NAME (edge->callee->decl))) != s->name ())
     return 0;
-  else
-    return s->total_count ();
+
+  return s->total_count ();
 }
 
 /* Read AutoFDO profile and returns TRUE on success.  */
@@ -967,9 +967,9 @@ read_profile (void)
    histograms for indirect-call optimization.
 
    This function is actually served for 2 purposes:
-     * before annotation, we need to mark histogram, promote and inline
-     * after annotation, we just need to mark, and let follow-up logic to
-       decide if it needs to promote and inline.  */
+     * before annotation, we need to mark histogram, promote and inline
+     * after annotation, we just need to mark, and let follow-up logic to
+       decide if it needs to promote and inline.  */
 
 static void
 afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
@@ -1065,7 +1065,7 @@ set_edge_annotated (edge e, edge_set *annotated)
 }
 
 /* For a given BB, set its execution count. Attach value profile if a stmt
-   is not in PROMOTED, because we only want to promot an indirect call once.
+   is not in PROMOTED, because we only want to promote an indirect call once.
    Return TRUE if BB is annotated.  */
 
 static bool
@@ -1149,7 +1149,7 @@ afdo_find_equiv_class (bb_set *annotated_bb)
         bb1->aux = bb;
         if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
           {
-            bb->count = MAX (bb->count, bb1->count);
+            bb->count = bb1->count;
             set_bb_annotated (bb, annotated_bb);
           }
       }
@@ -1161,7 +1161,7 @@ afdo_find_equiv_class (bb_set *annotated_bb)
         bb1->aux = bb;
         if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
           {
-            bb->count = MAX (bb->count, bb1->count);
+            bb->count = bb1->count;
             set_bb_annotated (bb, annotated_bb);
           }
       }
@@ -1466,13 +1466,14 @@ afdo_vpt_for_early_inline (stmt_set *promoted_stmts)
           }
       }
   }
+
   if (has_vpt)
     {
       optimize_inline_calls (current_function_decl);
       return true;
     }
-  else
-    return false;
+
+  return false;
 }
 
 /* Annotate auto profile to the control flow graph. Do not annotate value
@@ -1667,19 +1668,20 @@ afdo_callsite_hot_enough_for_early_inline (struct cgraph_edge *edge)
 {
   gcov_type count
       = autofdo::afdo_source_profile->get_callsite_total_count (edge);
+
   if (count > 0)
     {
       bool is_hot;
       const struct gcov_ctr_summary *saved_profile_info = profile_info;
-      /* At earling inline stage, profile_info is not set yet. We need to
+      /* At early inline stage, profile_info is not set yet. We need to
          temporarily set it to afdo_profile_info to calculate hotness.  */
       profile_info = autofdo::afdo_profile_info;
       is_hot = maybe_hot_count_p (NULL, count);
       profile_info = saved_profile_info;
       return is_hot;
     }
-  else
-    return false;
+
+  return false;
 }
 
 namespace
