@@ -866,7 +866,8 @@ want_inline_function_to_all_callers_p (struct cgraph_node *node, bool cold)
 {
   bool has_hot_call = false;
 
-  if (node->ultimate_alias_target () != node)
+  /* Aliases gets inlined along with the function they alias.  */
+  if (node->alias)
     return false;
   /* Already inlined?  */
   if (node->global.inlined_to)

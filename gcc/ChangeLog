@@ -1,5 +1,11 @@
 2015-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/64218
+	* ipa-inline.c (want_inline_function_to_all_callers_p): Fix check
+	whether function is an alias.
+
+2015-01-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-devirt.c (ipa_devirt): Drop polymorphic call info in hopeless
 	cases.
 
