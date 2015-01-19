@@ -42,17 +42,18 @@
 #endif
 #define L(Y)	C1(.L, Y)
 
-.macro E index
-	.align	16
-	.org	2b + \index * 16
-.endm
+#if defined(__sun__) && defined(__svr4__)
+# define E(INDEX)	.align 16
+#else
+# define E(INDEX)	.align 16; .org 2b + INDEX * 16
+#endif
 
 #define STACK_BIAS 2047
 
 	.text
         .align 8
 	.globl	C(ffi_call_v9)
-	.type	C(ffi_call_v9),@function
+	.type	C(ffi_call_v9),#function
 	FFI_HIDDEN(C(ffi_call_v9))
 
 C(ffi_call_v9):
@@ -60,6 +61,7 @@ C(ffi_call_v9):
 	save	%sp, %o4, %sp
 	cfi_def_cfa_register(%fp)
 	cfi_window_save
+	cfi_register(%o7, %i7)
 	
 	mov	%i0, %o0			! copy cif
 	add	%sp, STACK_BIAS+128+48, %o1	! load args area
@@ -107,73 +109,73 @@ C(ffi_call_v9):
 
 	.align	16
 2:
-E SPARC_RET_VOID
+E(SPARC_RET_VOID)
 	return	%i7+8
 	 nop
-E SPARC_RET_STRUCT
+E(SPARC_RET_STRUCT)
 	add	%sp, STACK_BIAS-64+128+48, %l2
 	sub	%sp, 64, %sp
 	b	8f
 	 stx	%o0, [%l2]
-E SPARC_RET_UINT8
+E(SPARC_RET_UINT8)
 	and	%o0, 0xff, %i0
 	return	%i7+8
 	  stx	%o0, [%o2]
-E SPARC_RET_SINT8
+E(SPARC_RET_SINT8)
 	sll	%o0, 24, %o0
 	sra	%o0, 24, %i0
 	return	%i7+8
 	 stx	%o0, [%o2]
-E SPARC_RET_UINT16
+E(SPARC_RET_UINT16)
 	sll	%o0, 16, %o0
 	srl	%o0, 16, %i0
 	return	%i7+8
 	 stx	%o0, [%o2]
-E SPARC_RET_SINT16
+E(SPARC_RET_SINT16)
 	sll	%o0, 16, %o0
 	sra	%o0, 16, %i0
 	return	%i7+8
 	 stx	%o0, [%o2]
-E SPARC_RET_UINT32
+E(SPARC_RET_UINT32)
 	srl	%o0, 0, %i0
 	return	%i7+8
 	 stx	%o0, [%o2]
-E SP_V9_RET_SINT32
+E(SP_V9_RET_SINT32)
 	sra	%o0, 0, %i0
 	return	%i7+8
 	 stx	%o0, [%o2]
-E SPARC_RET_INT64
+E(SPARC_RET_INT64)
 	stx	%o0, [%i2]
 	return	%i7+8
 	 nop
-E SPARC_RET_INT128
+E(SPARC_RET_INT128)
 	stx	%o0, [%i2]
 	stx	%o1, [%i2+8]
 	return	%i7+8
 	 nop
-E SPARC_RET_F_8
+E(SPARC_RET_F_8)
 	st	%f7, [%i2+7*4]
 	nop
 	st	%f6, [%i2+6*4]
 	nop
-E SPARC_RET_F_6
+E(SPARC_RET_F_6)
 	st	%f5, [%i2+5*4]
 	nop
 	st	%f4, [%i2+4*4]
 	nop
-E SPARC_RET_F_4
+E(SPARC_RET_F_4)
 	std	%f2, [%i2+2*4]
 	return	%i7+8
 	 std	%f0, [%o2]
-E SPARC_RET_F_2
+E(SPARC_RET_F_2)
 	return	%i7+8
 	 std	%f0, [%o2]
-E SP_V9_RET_F_3
+E(SP_V9_RET_F_3)
 	st	%f2, [%i2+2*4]
 	nop
 	st	%f1, [%i2+1*4]
 	nop
-E SPARC_RET_F_1
+E(SPARC_RET_F_1)
 	return	%i7+8
 	 st	%f0, [%o2]
 
@@ -213,7 +215,7 @@ E SPARC_RET_F_1
 
 	.align 8
 	.globl	C(ffi_go_closure_v9)
-	.type	C(ffi_go_closure_v9),@function
+	.type	C(ffi_go_closure_v9),#function
 	FFI_HIDDEN(C(ffi_go_closure_v9))
 
 C(ffi_go_closure_v9):
@@ -221,6 +223,7 @@ C(ffi_go_closure_v9):
 	save	%sp, -STACKFRAME, %sp
 	cfi_def_cfa_register(%fp)
 	cfi_window_save
+	cfi_register(%o7, %i7)
 
 	ldx	[%g5+8], %o0
 	ldx	[%g5+16], %o1
@@ -232,7 +235,7 @@ C(ffi_go_closure_v9):
 
 	.align 8
 	.globl	C(ffi_closure_v9)
-	.type	C(ffi_closure_v9),@function
+	.type	C(ffi_closure_v9),#function
 	FFI_HIDDEN(C(ffi_closure_v9))
 
 C(ffi_closure_v9):
@@ -240,6 +243,7 @@ C(ffi_closure_v9):
 	save	%sp, -STACKFRAME, %sp
 	cfi_def_cfa_register(%fp)
 	cfi_window_save
+	cfi_register(%o7, %i7)
 
 	ldx	[%g1+FFI_TRAMPOLINE_SIZE], %o0
 	ldx	[%g1+FFI_TRAMPOLINE_SIZE+8], %o1
@@ -289,72 +293,72 @@ C(ffi_closure_v9):
 	! that is deallocated by the return.
 	.align	16
 2:
-E SPARC_RET_VOID
+E(SPARC_RET_VOID)
 	return	%i7+8
 	 nop
-E SPARC_RET_STRUCT
+E(SPARC_RET_STRUCT)
 	ldx	[FP-160], %i0
 	ldd	[FP-160], %f0
 	b	8f
 	 ldx	[FP-152], %i1
-E SPARC_RET_UINT8
+E(SPARC_RET_UINT8)
 	ldub	[FP-160+7], %i0
 	return	%i7+8
 	 nop
-E SPARC_RET_SINT8
+E(SPARC_RET_SINT8)
 	ldsb	[FP-160+7], %i0
 	return	%i7+8
 	 nop
-E SPARC_RET_UINT16
+E(SPARC_RET_UINT16)
 	lduh	[FP-160+6], %i0
 	return	%i7+8
 	 nop
-E SPARC_RET_SINT16
+E(SPARC_RET_SINT16)
 	ldsh	[FP-160+6], %i0
 	return	%i7+8
 	 nop
-E SPARC_RET_UINT32
+E(SPARC_RET_UINT32)
 	lduw	[FP-160+4], %i0
 	return	%i7+8
 	 nop
-E SP_V9_RET_SINT32
+E(SP_V9_RET_SINT32)
 	ldsw	[FP-160+4], %i0
 	return	%i7+8
 	 nop
-E SPARC_RET_INT64
+E(SPARC_RET_INT64)
 	ldx	[FP-160], %i0
 	return	%i7+8
 	 nop
-E SPARC_RET_INT128
+E(SPARC_RET_INT128)
 	ldx	[FP-160], %i0
 	ldx	[FP-160+8], %i1
 	return	%i7+8
 	 nop
-E SPARC_RET_F_8
+E(SPARC_RET_F_8)
 	ld	[FP-160+7*4], %f7
 	nop
 	ld	[FP-160+6*4], %f6
 	nop
-E SPARC_RET_F_6
+E(SPARC_RET_F_6)
 	ld	[FP-160+5*4], %f5
 	nop
 	ld	[FP-160+4*4], %f4
 	nop
-E SPARC_RET_F_4
+E(SPARC_RET_F_4)
 	ldd	[FP-160], %f0
 	ldd	[FP-160+8], %f2
 	return	%i7+8
 	 nop
-E SPARC_RET_F_2
+E(SPARC_RET_F_2)
 	ldd	[FP-160], %f0
 	return	%i7+8
 	 nop
-E SP_V9_RET_F_3
+E(SP_V9_RET_F_3)
 	ld	[FP-160+2*4], %f2
 	nop
 	ld	[FP-160+1*4], %f1
 	nop
-E SPARC_RET_F_1
+E(SPARC_RET_F_1)
 	ld	[FP-160], %f0
 	return	%i7+8
 	 nop
