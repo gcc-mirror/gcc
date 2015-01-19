@@ -1,3 +1,14 @@
+2015-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-arith-overflow.c: Include stdbool.h.
+	(create_overflow_fn): Update comment to clarify that
+	the third param of the created function is a bool *, not
+	an int *.
+	(verify_int_overflow_fn): Convert param "expected_ovf" from
+	int to bool.  Update third param of "overflow_fn_type" from int *
+	to bool *.  Update local "actual_ovf" from int to bool.
+	(verify_uint_overflow_fn): Likewise.
+
 2015-01-19  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/ipa/ipa-icf-33.c: New test.
