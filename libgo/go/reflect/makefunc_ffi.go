@@ -10,7 +10,7 @@ import (
 
 // The makeFuncFFI function, written in C, fills in an FFI closure.
 // It arranges for ffiCall to be invoked directly from FFI.
-func makeFuncFFI(ftyp *funcType, impl *makeFuncImpl)
+func makeFuncFFI(ftyp *funcType, impl unsafe.Pointer)
 
 // FFICallbackGo implements the Go side of the libffi callback.
 // It is exported so that C code can call it.

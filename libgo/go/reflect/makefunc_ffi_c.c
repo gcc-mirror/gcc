@@ -18,7 +18,7 @@
 
 /* Declare C functions with the names used to call from Go.  */
 
-void makeFuncFFI(const struct __go_func_type *ftyp, ffi_go_closure *impl)
+void makeFuncFFI(const struct __go_func_type *ftyp, void *impl)
   __asm__ (GOSYM_PREFIX "reflect.makeFuncFFI");
 
 #ifdef USE_LIBFFI_CLOSURES
@@ -70,7 +70,7 @@ ffi_callback (ffi_cif* cif __attribute__ ((unused)), void *results,
 /* Allocate an FFI closure and arrange to call ffi_callback.  */
 
 void
-makeFuncFFI(const struct __go_func_type *ftyp, ffi_go_closure *impl)
+makeFuncFFI(const struct __go_func_type *ftyp, void *impl)
 {
   ffi_cif *cif;
 
@@ -83,7 +83,7 @@ makeFuncFFI(const struct __go_func_type *ftyp, ffi_go_closure *impl)
 #else /* !defined(USE_LIBFFI_CLOSURES) */
 
 void
-makeFuncFFI(const struct __go_func_type *ftyp, ffi_go_closure *impl)
+makeFuncFFI(const struct __go_func_type *ftyp, void *impl)
 {
   runtime_panicstring ("libgo built without FFI does not support "
 		       "reflect.MakeFunc");
