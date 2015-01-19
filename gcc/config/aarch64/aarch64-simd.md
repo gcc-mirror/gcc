@@ -2008,15 +2008,14 @@
 ;;     bif op0, op1, mask
 
 (define_insn "aarch64_simd_bsl<mode>_internal"
-  [(set (match_operand:VSDQ_I_DI 0 "register_operand"		"=w,w,w")
-	(ior:VSDQ_I_DI
+  [(set (match_operand:VSDQ_I_DI 0 "register_operand" "=w,w,w")
+	(xor:VSDQ_I_DI
 	   (and:VSDQ_I_DI
-	     (not:<V_cmp_result>
-	       (match_operand:<V_cmp_result> 1 "register_operand"	" 0,w,w"))
-	     (match_operand:VSDQ_I_DI 3 "register_operand"	" w,0,w"))
-	   (and:VSDQ_I_DI
-	     (match_dup:<V_cmp_result> 1)
-	     (match_operand:VSDQ_I_DI 2 "register_operand"	" w,w,0"))
+	     (xor:VSDQ_I_DI
+	       (match_operand:<V_cmp_result> 3 "register_operand" "w,0,w")
+	       (match_operand:VSDQ_I_DI 2 "register_operand" "w,w,0"))
+	     (match_operand:VSDQ_I_DI 1 "register_operand" "0,w,w"))
+	  (match_dup:<V_cmp_result> 3)
 	))]
   "TARGET_SIMD"
   "@

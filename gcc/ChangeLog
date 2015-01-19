@@ -1,3 +1,9 @@
+2015-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/64448
+	* config/aarch64/aarch64-simd.md (aarch64_simd_bsl<mode>_internal):
+	Match xor-and-xor RTL pattern.
+
 2015-01-19  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR rtl-optimization/64081
