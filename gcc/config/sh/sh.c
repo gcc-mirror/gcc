@@ -13738,22 +13738,15 @@ sh_find_equiv_gbr_addr (rtx_insn* insn, rtx mem)
 /* Return true if the specified insn contains any UNSPECs or
    UNSPEC_VOLATILEs.  */
 static bool
-sh_unspec_insn_p (rtx_insn* insn)
+sh_unspec_insn_p (rtx x)
 {
-  bool result = false;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (i, array, x, ALL)
+    if (*i != NULL
+	&& (GET_CODE (*i) == UNSPEC || GET_CODE (*i) == UNSPEC_VOLATILE))
+      return true;
 
-  struct note_uses_func
-  {
-    static void
-    func (rtx* x, void* data)
-    {
-      if (GET_CODE (*x) == UNSPEC || GET_CODE (*x) == UNSPEC_VOLATILE)
-	*(static_cast<bool*> (data)) = true;
-    }
-  };
-
-  note_uses (&PATTERN (insn), note_uses_func::func, &result);
-  return result;
+  return false;
 }
 
 /* Return true if the register operands of the specified insn are modified
@@ -13770,7 +13763,8 @@ sh_insn_operands_modified_between_p (rtx_insn* operands_insn,
 
   subrtx_iterator::array_type array;
   FOR_EACH_SUBRTX (i, array, SET_SRC (s), ALL)
-    if ((REG_P (*i) || SUBREG_P (*i)) && reg_set_between_p (*i, from, to))
+    if (*i != NULL &&
+	((REG_P (*i) || SUBREG_P (*i)) && reg_set_between_p (*i, from, to)))
       return true;
 
   return false;
@@ -13927,7 +13921,7 @@ sh_find_extending_set_of_reg (rtx reg, rtx_insn* curr_insn)
 	  || GET_CODE (result.set_src) == ZERO_EXTEND)
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "sh_find_szexnteded_reg: reg %d is "
+	    fprintf (dump_file, "sh_find_extending_set_of_reg: reg %d is "
 				"explicitly sign/zero extended in insn %d\n",
 				REGNO (reg), INSN_UID (result.insn));
 	  result.from_mode = GET_MODE (XEXP (result.set_src, 0));
@@ -13935,7 +13929,8 @@ sh_find_extending_set_of_reg (rtx reg, rtx_insn* curr_insn)
 	}
       else if (MEM_P (result.set_src)
 	       && (GET_MODE (result.set_src) == QImode
-		   || GET_MODE (result.set_src) == HImode))
+		   || GET_MODE (result.set_src) == HImode)
+	       && !sh_unspec_insn_p (result.insn))
 	{
 	  /* On SH QIHImode memory loads always sign extend.  However, in
 	     some cases where it seems that the higher bits are not
