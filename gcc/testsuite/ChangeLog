@@ -1,3 +1,9 @@
+2015-01-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64652
+	* gcc.target/sh/torture/pr64652.c (test): Rename to test_0.
+	(test_1): New.
+
 2015-01-19  Martin Liska  <mliska@suse.cz>
 
 	* objc/compile/pr64668.m: New test.
