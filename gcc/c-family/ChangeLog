@@ -1,3 +1,7 @@
+2015-01-19  Martin Liska  <mliska@suse.cz>
+
+	* c-common.c (handle_noicf_attribute): New function.
+
 2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
 	    Bernd Schmidt  <bernds@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>

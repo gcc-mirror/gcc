@@ -1,3 +1,9 @@
+2015-01-19  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi (no_icf): Add new attribute description.
+	* ipa-icf.c (sem_item_optimizer::merge_classes): Handle cases
+	where the pass attempts to merge a function with no_icf attribute.
+
 2015-01-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/64532
