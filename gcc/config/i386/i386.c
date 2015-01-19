@@ -2578,7 +2578,9 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return TARGET_AVX && !TARGET_AVX512F && TARGET_VZEROUPPER;
+      return TARGET_AVX && !TARGET_AVX512F
+	     && TARGET_VZEROUPPER && flag_expensive_optimizations
+	     && !optimize_size;
     }
 
   virtual unsigned int execute (function *)
@@ -3874,6 +3876,8 @@ ix86_option_override_internal (bool main_args_p,
     }
 
   ix86_tune_cost = processor_target_table[ix86_tune].cost;
+  /* TODO: ix86_cost should be chosen at instruction or function granuality
+     so for cold code we use size_cost even in !optimize_size compilation.  */
   if (opts->x_optimize_size)
     ix86_cost = &ix86_size_cost;
   else
@@ -4113,8 +4117,7 @@ ix86_option_override_internal (bool main_args_p,
       }
 
   if (ix86_tune_features [X86_TUNE_ACCUMULATE_OUTGOING_ARGS]
-      && !(opts_set->x_target_flags & MASK_ACCUMULATE_OUTGOING_ARGS)
-      && !opts->x_optimize_size)
+      && !(opts_set->x_target_flags & MASK_ACCUMULATE_OUTGOING_ARGS))
     opts->x_target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
 
   /* If stack probes are required, the space used for large function
@@ -4244,26 +4247,19 @@ ix86_option_override_internal (bool main_args_p,
 #endif
    }
 
-  /* When not opts->x_optimize for size, enable vzeroupper optimization for
-     TARGET_AVX with -fexpensive-optimizations and split 32-byte
-     AVX unaligned load/store.  */
-  if (!opts->x_optimize_size)
-    {
-      if (flag_expensive_optimizations
-	  && !(opts_set->x_target_flags & MASK_VZEROUPPER))
-	opts->x_target_flags |= MASK_VZEROUPPER;
-      if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL]
-	  && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
-	opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
-      if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL]
-	  && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_STORE))
-	opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
-      /* Enable 128-bit AVX instruction generation
-         for the auto-vectorizer.  */
-      if (TARGET_AVX128_OPTIMAL
-	  && !(opts_set->x_target_flags & MASK_PREFER_AVX128))
-	opts->x_target_flags |= MASK_PREFER_AVX128;
-    }
+  if (!(opts_set->x_target_flags & MASK_VZEROUPPER))
+    opts->x_target_flags |= MASK_VZEROUPPER;
+  if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL]
+      && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
+    opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
+  if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL]
+      && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_STORE))
+    opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
+  /* Enable 128-bit AVX instruction generation
+     for the auto-vectorizer.  */
+  if (TARGET_AVX128_OPTIMAL
+      && !(opts_set->x_target_flags & MASK_PREFER_AVX128))
+    opts->x_target_flags |= MASK_PREFER_AVX128;
 
   if (opts->x_ix86_recip_name)
     {
@@ -17469,7 +17465,8 @@ ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
 
   if (MEM_P (op1))
     {
-      if (TARGET_AVX256_SPLIT_UNALIGNED_LOAD)
+      if (TARGET_AVX256_SPLIT_UNALIGNED_LOAD
+	  && optimize_insn_for_speed_p ())
 	{
 	  rtx r = gen_reg_rtx (mode);
 	  m = adjust_address (op1, mode, 0);
@@ -17489,7 +17486,8 @@ ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
     }
   else if (MEM_P (op0))
     {
-      if (TARGET_AVX256_SPLIT_UNALIGNED_STORE)
+      if (TARGET_AVX256_SPLIT_UNALIGNED_STORE
+	  && optimize_insn_for_speed_p ())
 	{
 	  m = adjust_address (op0, mode, 0);
 	  emit_insn (extract (m, op1, const0_rtx));
