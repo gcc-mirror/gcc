@@ -250,6 +250,16 @@
   BUILTIN_VDQF (BINOP, smax_nan, 3)
   BUILTIN_VDQF (BINOP, smin_nan, 3)
 
+  /* Implemented by aarch64_<maxmin_uns>p<mode>.  */
+  BUILTIN_VDQ_BHSI (BINOP, smaxp, 0)
+  BUILTIN_VDQ_BHSI (BINOP, sminp, 0)
+  BUILTIN_VDQ_BHSI (BINOP, umaxp, 0)
+  BUILTIN_VDQ_BHSI (BINOP, uminp, 0)
+  BUILTIN_VDQF (BINOP, smaxp, 0)
+  BUILTIN_VDQF (BINOP, sminp, 0)
+  BUILTIN_VDQF (BINOP, smax_nanp, 0)
+  BUILTIN_VDQF (BINOP, smin_nanp, 0)
+
   /* Implemented by <frint_pattern><mode>2.  */
   BUILTIN_VDQF (UNOP, btrunc, 2)
   BUILTIN_VDQF (UNOP, ceil, 2)
