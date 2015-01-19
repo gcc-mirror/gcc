@@ -1,3 +1,19 @@
+2015-01-19  Felix Yang  <felix.yang@huawei.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<maxmin_uns>p<mode>): New
+	pattern.
+	* config/aarch64/aarch64-simd-builtins.def (smaxp, sminp, umaxp,
+	uminp, smax_nanp, smin_nanp): New builtins.
+	* config/aarch64/arm_neon.h (vpmax_s8, vpmax_s16, vpmax_s32,
+	vpmax_u8, vpmax_u16, vpmax_u32, vpmaxq_s8, vpmaxq_s16, vpmaxq_s32,
+	vpmaxq_u8, vpmaxq_u16, vpmaxq_u32, vpmax_f32, vpmaxq_f32, vpmaxq_f64,
+	vpmaxqd_f64, vpmaxs_f32, vpmaxnm_f32, vpmaxnmq_f32, vpmaxnmq_f64,
+	vpmaxnmqd_f64, vpmaxnms_f32, vpmin_s8, vpmin_s16, vpmin_s32, vpmin_u8,
+	vpmin_u16, vpmin_u32, vpminq_s8, vpminq_s16, vpminq_s32, vpminq_u8,
+	vpminq_u16, vpminq_u32, vpmin_f32, vpminq_f32, vpminq_f64, vpminqd_f64,
+	vpmins_f32, vpminnm_f32, vpminnmq_f32, vpminnmq_f64, vpminnmqd_f64,
+	vpminnms_f32): Rewrite using builtin functions.
+
 2015-01-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/64625
