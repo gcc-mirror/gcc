@@ -1,5 +1,11 @@
 2015-01-19  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/64664
+	* ipa-icf.c (sem_item_optimizer::filter_removed_items):
+	Handle safe potentially removed nodes during filtering.
+
+2015-01-19  Martin Liska  <mliska@suse.cz>
+
 	* doc/extend.texi (no_icf): Add new attribute description.
 	* ipa-icf.c (sem_item_optimizer::merge_classes): Handle cases
 	where the pass attempts to merge a function with no_icf attribute.
