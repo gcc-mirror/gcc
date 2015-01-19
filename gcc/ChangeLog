@@ -1,3 +1,15 @@
+2015-01-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/default64.h: Include rs6000-cpus.def.
+	(TARGET_DEFAULT) [LITTLE_ENDIAN]: Use ISA 2.7 (POWER8).
+	(TARGET_DEFAULT) [BIG_ENDIAN]: Use POWER4.
+	* config/rs6000/driver-rs6000.c (detect_processor_aix): Add POWER7
+	and POWER8.
+	* config/rs6000/linux64.h (PROCESSOR_DEFAULT64): Always default to
+	POWER8.
+	* config/rs6000/rs6000.c (rs6000_file_start): Emit .machine
+	pseudo-op to specify assembler dialect.
+
 2015-01-19  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/64664

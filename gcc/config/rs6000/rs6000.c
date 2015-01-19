@@ -5077,6 +5077,28 @@ rs6000_file_start (void)
 	putc ('\n', file);
     }
 
+#ifdef USING_ELFOS_H
+  if (rs6000_default_cpu == 0 || rs6000_default_cpu[0] == '\0'
+      || !global_options_set.x_rs6000_cpu_index)
+    {
+      fputs ("\t.machine ", asm_out_file);
+      if ((TARGET_DEFAULT & OPTION_MASK_DIRECT_MOVE) != 0)
+	fputs ("power8\n", asm_out_file);
+      else if ((TARGET_DEFAULT & OPTION_MASK_POPCNTD) != 0)
+	fputs ("power7\n", asm_out_file);
+      else if ((TARGET_DEFAULT & OPTION_MASK_CMPB) != 0)
+	fputs ("power6\n", asm_out_file);
+      else if ((TARGET_DEFAULT & OPTION_MASK_POPCNTB) != 0)
+	fputs ("power5\n", asm_out_file);
+      else if ((TARGET_DEFAULT & OPTION_MASK_MFCRF) != 0)
+	fputs ("power4\n", asm_out_file);
+      else if ((TARGET_DEFAULT & OPTION_MASK_POWERPC64) != 0)
+	fputs ("ppc64\n", asm_out_file);
+      else
+	fputs ("ppc\n", asm_out_file);
+    }
+#endif
+
   if (DEFAULT_ABI == ABI_ELFv2)
     fprintf (file, "\t.abiversion 2\n");
 
