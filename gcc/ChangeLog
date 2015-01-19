@@ -1,3 +1,14 @@
+2015-01-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53988
+	* config/sh/sh-protos.h (sh_find_set_of_reg): Make sure not to return
+	nullptr for insn when reaching the first insn.
+	* config/sh/sh.c (sh_unspec_insn_p): Rewrite using subrtx_iterator.
+	(sh_insn_operands_modified_between_p): Add nullptr check.
+	(sh_find_extending_set_of_reg): Fix log message.  Don't accept
+	sign extending mem load if the insn contains any UNSPEC or
+	UNSPEC_VOLATILE.
+
 2015-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	* params.def (inline-unit-growth): Drop to 15%.
