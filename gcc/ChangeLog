@@ -1,3 +1,7 @@
+2015-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt (fgraphite): Fix a typo.
+
 2015-01-19  Felix Yang  <felix.yang@huawei.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_<maxmin_uns>p<mode>): New
