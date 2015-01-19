@@ -1,3 +1,10 @@
+2015-01-19  Jiong Wang  <jiong.wang@arm.com>
+	    Andrew Pinski  <apinski@cavium.com>
+
+	PR target/64304
+	* config/aarch64/aarch64.md (define_insn "*ashl<mode>3_insn"): Deleted.
+	(ashl<mode>3): Don't expand if operands[2] is not constant.
+
 2015-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/64448
