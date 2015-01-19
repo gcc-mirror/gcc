@@ -5434,7 +5434,7 @@
 {
   rtx tmp0, tmp1;
 
-  if (TARGET_AVX && !TARGET_PREFER_AVX128)
+  if (TARGET_AVX && !TARGET_PREFER_AVX128 && optimize_insn_for_speed_p ())
     {
       tmp0 = gen_reg_rtx (V4DFmode);
       tmp1 = force_reg (V2DFmode, operands[1]);
@@ -5496,7 +5496,7 @@
 {
   rtx tmp0, tmp1, tmp2;
 
-  if (TARGET_AVX && !TARGET_PREFER_AVX128)
+  if (TARGET_AVX && !TARGET_PREFER_AVX128 && optimize_insn_for_speed_p ())
     {
       tmp0 = gen_reg_rtx (V4DFmode);
       tmp1 = force_reg (V2DFmode, operands[1]);
@@ -5593,7 +5593,7 @@
 {
   rtx tmp0, tmp1, tmp2;
 
-  if (TARGET_AVX && !TARGET_PREFER_AVX128)
+  if (TARGET_AVX && !TARGET_PREFER_AVX128 && optimize_insn_for_speed_p ())
     {
       tmp0 = gen_reg_rtx (V4DFmode);
       tmp1 = force_reg (V2DFmode, operands[1]);
@@ -14472,7 +14472,7 @@
   rtx tmp0, tmp1;
 
   if (<MODE>mode == V2DFmode
-      && TARGET_AVX && !TARGET_PREFER_AVX128)
+      && TARGET_AVX && !TARGET_PREFER_AVX128 && optimize_insn_for_speed_p ())
     {
       rtx tmp2 = gen_reg_rtx (V4DFmode);
 
@@ -14579,7 +14579,7 @@
   rtx tmp0, tmp1;
 
   if (<MODE>mode == V2DFmode
-      && TARGET_AVX && !TARGET_PREFER_AVX128)
+      && TARGET_AVX && !TARGET_PREFER_AVX128 && optimize_insn_for_speed_p ())
     {
       rtx tmp2 = gen_reg_rtx (V4DFmode);
 
