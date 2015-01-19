@@ -1,3 +1,9 @@
+2015-01-15  Andrew Pinski  <apinski@cavium.com>
+	    Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* gcc.target/aarch64/aapcs64/abitest.S (LABEL_TEST_FUNC_RETURN): Load
+	testfunc_ptr as 32bit for ILP32 and 64bit for LP64.
+
 2015-01-18  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/60255
