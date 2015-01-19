@@ -4884,7 +4884,7 @@ some_callers_have_mismatched_arguments_p (struct cgraph_node *node,
 {
   struct cgraph_edge *cs;
   for (cs = node->callers; cs; cs = cs->next_caller)
-    if (!callsite_arguments_match_p (cs->call_stmt))
+    if (!cs->call_stmt || !callsite_arguments_match_p (cs->call_stmt))
       return true;
 
   return false;
