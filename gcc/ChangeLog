@@ -1,5 +1,6 @@
 2015-01-19  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/64625
 	* omp-low.c (offload_symbol_decl): Remove variable.
 	(get_offload_symbol_decl): Remove function.
 	(expand_omp_target): For BUILT_IN_GOMP_TARGET,

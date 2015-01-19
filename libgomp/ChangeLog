@@ -1,5 +1,6 @@
 2015-01-19  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/64625
 	* libgomp_g.h (GOACC_data_start, GOACC_enter_exit_data)
 	(GOACC_parallel, GOACC_update): Remove const_void *offload_table
 	formal parameter.  Update all users.
