@@ -4012,6 +4012,7 @@ recording::string *
 recording::memento_of_new_string_literal::make_debug_string ()
 {
   return string::from_printf (m_ctxt,
+			      "%s",
 			      m_value->get_debug_string ());
 }
 
