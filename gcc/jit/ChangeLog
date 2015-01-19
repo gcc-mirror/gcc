@@ -1,3 +1,9 @@
+2015-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c
+	(gcc::jit::recording::memento_of_new_string_literal::make_debug_string):
+	Add missing format string.
+
 2015-01-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* Make-lang.in (lang_checks_parallelized): Add "check-jit".
