@@ -1,3 +1,8 @@
+2015-01-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* params.def (inline-unit-growth): Drop to 15%.
+	* invoke.texi (inline-unit-growth): Document change.
+
 2015-01-19  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/64668
