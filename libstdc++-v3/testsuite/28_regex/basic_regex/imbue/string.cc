@@ -1,8 +1,6 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
-// 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
-//
-// Copyright (C) 2010-2014 Free Software Foundation, Inc.
+// Copyright (C) 2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,44 +17,28 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// [28.8.3] class template basic_regex assign()
+// [28.8.5] class template basic_regex locale
 
 #include <string>
 #include <regex>
 #include <testsuite_hooks.h>
 
-// Tests C++ string assignment of the basic_regex class.  
+// libstdc++/64585
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  typedef std::basic_regex<char> test_type;
 
-  std::string s("a*b");
-  test_type re;
-  re.assign(s);
-}
+  static const char s[] = "a";
+  std::regex re("a");
+  VERIFY(std::regex_search(s, re));
 
-// libstdc++/64584
-void test02()
-{
-  bool test __attribute__((unused)) = true;
-  std::regex re("", std::regex_constants::extended);
-  auto flags = re.flags();
-  try
-    {
-      re.assign("(", std::regex_constants::icase);
-      VERIFY(false);
-    }
-  catch (const std::regex_error& e)
-    {
-      VERIFY(flags == re.flags());
-    }
+  auto loc = re.imbue(re.getloc());
+  VERIFY(!std::regex_search(s, re));
 }
 
 int
 main()
-{ 
+{
   test01();
-  test02();
   return 0;
 }

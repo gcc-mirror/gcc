@@ -476,7 +476,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       basic_regex(const basic_regex& __rhs)
       : _M_flags(__rhs._M_flags), _M_original_str(__rhs._M_original_str)
-      { this->imbue(__rhs.getloc()); }
+      {
+	_M_traits.imbue(__rhs.getloc());
+	this->assign(_M_original_str, _M_flags);
+      }
 
       /**
        * @brief Move-constructs a basic regular expression.
@@ -490,7 +493,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_flags(__rhs._M_flags),
       _M_original_str(std::move(__rhs._M_original_str))
       {
-	this->imbue(__rhs.getloc());
+	_M_traits.imbue(__rhs.getloc());
+	this->assign(_M_original_str, _M_flags);
 	__rhs._M_automaton.reset();
       }
 
@@ -604,7 +608,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	_M_flags = __rhs._M_flags;
 	_M_original_str = __rhs._M_original_str;
-	this->imbue(__rhs.getloc());
+	_M_traits.imbue(__rhs.getloc());
+	this->assign(_M_original_str, _M_flags);
 	return *this;
       }
 
@@ -622,7 +627,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_flags = __rhs._M_flags;
 	_M_original_str = std::move(__rhs._M_original_str);
 	__rhs._M_automaton.reset();
-	this->imbue(__rhs.getloc());
+	_M_traits.imbue(__rhs.getloc());
+	this->assign(_M_original_str, _M_flags);
+	return *this;
       }
 
       /**
@@ -675,12 +682,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	assign(const basic_string<_Ch_type, _Ch_typeraits, _Alloc>& __s,
 	       flag_type __flags = ECMAScript)
 	{
+	  _M_automaton = __detail::__compile_nfa(
+	    __s.data(), __s.data() + __s.size(), _M_traits, __flags);
+	  _M_original_str = __s;
 	  _M_flags = __flags;
-	  _M_original_str.assign(__s.begin(), __s.end());
-	  auto __p = _M_original_str.c_str();
-	  _M_automaton = __detail::__compile_nfa(__p,
-						 __p + _M_original_str.size(),
-						 _M_traits, _M_flags);
 	  return *this;
 	}
 
@@ -725,7 +730,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       unsigned int
       mark_count() const
-      { return _M_automaton->_M_sub_count() - 1; }
+      {
+	if (_M_automaton)
+	  return _M_automaton->_M_sub_count() - 1;
+	return 0;
+      }
 
       /**
        * @brief Gets the flags used to construct the regular expression
@@ -744,9 +753,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       locale_type
       imbue(locale_type __loc)
       {
-	auto __ret = _M_traits.imbue(__loc);
-	this->assign(_M_original_str, _M_flags);
-	return __ret;
+	_M_automaton = nullptr;
+	return _M_traits.imbue(__loc);
       }
 
       /**
@@ -767,8 +775,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       swap(basic_regex& __rhs)
       {
 	std::swap(_M_flags, __rhs._M_flags);
-	std::swap(_M_original_str, __rhs._M_original_str);
-	this->imbue(__rhs.imbue(this->getloc()));
+	std::swap(_M_traits, __rhs._M_traits);
+	auto __tmp = std::move(_M_original_str);
+	this->assign(__rhs._M_original_str, _M_flags);
+	__rhs.assign(__tmp, __rhs._M_flags);
       }
 
 #ifdef _GLIBCXX_DEBUG
@@ -777,7 +787,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { _M_automaton->_M_dot(__ostr); }
 #endif
 
-    protected:
+    private:
       typedef std::shared_ptr<__detail::_NFA<_Rx_traits>> _AutomatonPtr;
 
       template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
