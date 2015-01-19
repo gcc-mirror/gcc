@@ -1,5 +1,16 @@
 2015-01-19  Tim Shen  <timshen@google.com>
 
+	PR libstdc++/64649
+	Backported from mainline
+	2015-01-19  Tim Shen  <timshen@google.com>
+
+	* include/bits/regex.tcc (regex_traits<>::lookup_collatename,
+	regex_traits<>::lookup_classname): Support forward iterators.
+	* testsuite/28_regex/traits/char/lookup_classname.cc: New testcases.
+	* testsuite/28_regex/traits/char/lookup_collatename.cc: New testcase.
+
+2015-01-19  Tim Shen  <timshen@google.com>
+
 	PR libstdc++/64584
 	PR libstdc++/64585
 	* include/bits/regex.h (basic_regex<>::basic_regex,
