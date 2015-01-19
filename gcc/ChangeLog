@@ -1,3 +1,8 @@
+2015-01-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/64532
+	* doc/md.texi (ARM Options): Document register constraints.
+
 2015-01-19  Jiong Wang  <jiong.wang@arm.com>
 	    Andrew Pinski  <apinski@cavium.com>
 
