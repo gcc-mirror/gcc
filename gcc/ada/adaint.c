@@ -106,7 +106,7 @@
 extern "C" {
 #endif
 
-#if defined (__MINGW32__)
+#if defined (__MINGW32__) || defined (__CYGWIN__)
 
 #if defined (RTX)
 #include <windows.h>
