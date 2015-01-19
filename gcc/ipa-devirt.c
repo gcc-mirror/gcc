@@ -2815,6 +2815,7 @@ ipa_devirt (void)
   int npolymorphic = 0, nspeculated = 0, nconverted = 0, ncold = 0;
   int nmultiple = 0, noverwritable = 0, ndevirtualized = 0, nnotdefined = 0;
   int nwrong = 0, nok = 0, nexternal = 0, nartificial = 0;
+  int ndropped = 0;
 
   if (!odr_types_ptr)
     return 0;
@@ -2864,6 +2865,28 @@ ipa_devirt (void)
 		(dump_file, e);
 
 	    npolymorphic++;
+
+	    /* See if the call can be devirtualized by means of ipa-prop's
+	       polymorphic call context propagation.  If not, we can just
+	       forget about this call being polymorphic and avoid some heavy
+	       lifting in remove_unreachable_nodes that will otherwise try to
+	       keep all possible targets alive until inlining and in the inliner
+	       itself.
+
+	       This may need to be revisited once we add further ways to use
+	       the may edges, but it is a resonable thing to do right now.  */
+
+	    if ((e->indirect_info->param_index == -1
+		|| (!opt_for_fn (n->decl, flag_devirtualize_speculatively)
+		    && e->indirect_info->vptr_changed))
+		&& !flag_ltrans_devirtualize)
+	      {
+		e->indirect_info->polymorphic = false;
+		ndropped++;
+	        if (dump_file)
+		  fprintf (dump_file, "Dropping polymorphic call info;"
+			   " it can not be used by ipa-prop\n");
+	      }
 
 	    if (!opt_for_fn (n->decl, flag_devirtualize_speculatively))
 	      continue;
@@ -3094,11 +3117,11 @@ ipa_devirt (void)
 	     " %i speculatively devirtualized, %i cold\n"
 	     "%i have multiple targets, %i overwritable,"
 	     " %i already speculated (%i agree, %i disagree),"
-	     " %i external, %i not defined, %i artificial\n",
+	     " %i external, %i not defined, %i artificial, %i infos dropped\n",
 	     npolymorphic, ndevirtualized, nconverted, ncold,
 	     nmultiple, noverwritable, nspeculated, nok, nwrong,
-	     nexternal, nnotdefined, nartificial);
-  return ndevirtualized ? TODO_remove_functions : 0;
+	     nexternal, nnotdefined, nartificial, ndropped);
+  return ndevirtualized || ndropped ? TODO_remove_functions : 0;
 }
 
 namespace {

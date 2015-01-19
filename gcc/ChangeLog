@@ -1,3 +1,8 @@
+2015-01-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (ipa_devirt): Drop polymorphic call info in hopeless
+	cases.
+
 2015-01-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/64671
