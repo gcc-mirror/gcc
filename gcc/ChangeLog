@@ -1,3 +1,13 @@
+2015-01-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (offload_symbol_decl): Remove variable.
+	(get_offload_symbol_decl): Remove function.
+	(expand_omp_target): For BUILT_IN_GOMP_TARGET,
+	BUILT_IN_GOMP_TARGET_DATA, BUILT_IN_GOMP_TARGET_UPDATE pass NULL
+	instead of &__OFFLOAD_TABLE__, for BUILT_IN_GOACC_DATA_START,
+	BUILT_IN_GOACC_ENTER_EXIT_DATA, BUILT_IN_GOACC_PARALLEL,
+	BUILT_IN_GOACC_UPDATE don't pass it at all.
+
 2015-01-19  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* tree-sra.c (some_callers_have_mismatched_arguments_p): Allow thunk

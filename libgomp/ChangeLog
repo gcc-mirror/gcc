@@ -1,3 +1,11 @@
+2015-01-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp_g.h (GOACC_data_start, GOACC_enter_exit_data)
+	(GOACC_parallel, GOACC_update): Remove const_void *offload_table
+	formal parameter.  Update all users.
+	* target.c (GOMP_target, GOMP_target_data, GOMP_target_update):
+	Document unused formal parameter.
+
 2015-01-16  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* oacc-parallel.c: Don't include <alloca.h>.
