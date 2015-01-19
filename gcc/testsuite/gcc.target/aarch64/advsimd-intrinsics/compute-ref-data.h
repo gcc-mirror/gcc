@@ -142,6 +142,10 @@ VECT_VAR_DECL_INIT(buffer, poly, 16, 8);
 PAD(buffer_pad, poly, 16, 8);
 VECT_VAR_DECL_INIT(buffer, float, 32, 4);
 PAD(buffer_pad, float, 32, 4);
+#ifdef __aarch64__
+VECT_VAR_DECL_INIT(buffer, float, 64, 2);
+PAD(buffer_pad, float, 64, 2);
+#endif
 
 /* The tests for vld1_dup and vdup expect at least 4 entries in the
    input buffer, so force 1- and 2-elements initializers to have 4

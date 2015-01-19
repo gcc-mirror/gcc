@@ -1,8 +1,24 @@
+2015-01-19  Felix Yang  <felix.yang@huawei.com>
+	    Haijian Zhang  <z.zhanghaijian@huawei.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/compute-ref-data.h
+	(buffer_float64x2, buffer_pad_float64x2): New helper variables.
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h (hfloat64_t,
+	result_float64x2, expected_hfloat64x2): New helper type, variable and
+	declaration.
+	(buffer_float64x2, buffer_pad_float64x2): New helper variables.
+	* gcc.target/aarch64/advsimd-intrinsics/vfma.c: Don't run on target
+	without the FMA feature and exclude test for vfmaq_f64 on arm*-*-*.
+	* gcc.target/aarch64/advsimd-intrinsics/vfms.c: Don't run on target
+	without the FMA feature and exclude test for vfmsq_f64 on arm*-*-*.
+	* gcc.target/aarch64/advsimd-intrinsics/vfma_n.c: Don't run on arm*-*-*
+	and target without the FMA feature.
+
 2015-01-19  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/pr64304.c: New testcase.
 
-2014-01-19  Igor Zamyatin  <igor.zamyatin@intel.com>
+2015-01-19  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR rtl-optimization/64081
 	* gcc.dg/pr64081.c: New test.
