@@ -413,6 +413,9 @@ operand_to_remat (rtx_insn *insn)
   struct lra_static_insn_data *static_id = id->insn_static_data;
   struct lra_insn_reg *reg, *found_reg = NULL;
 
+  /* Don't rematerialize insns which can change PC.  */
+  if (JUMP_P (insn) || CALL_P (insn))
+    return -1;
   /* First find a pseudo which can be rematerialized.  */
   for (reg = id->regs; reg != NULL; reg = reg->next)
     /* True FRAME_POINTER_NEEDED might be because we can not follow

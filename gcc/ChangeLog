@@ -1,3 +1,9 @@
+2015-01-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/64671
+	* lra-remat.c (operand_to_remat): Don't consider jump and call
+	insns.
+
 2015-01-19  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/default64.h: Include rs6000-cpus.def.
