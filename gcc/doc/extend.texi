@@ -2195,6 +2195,7 @@ attribute specification inside double parentheses.  The following
 attributes are currently defined for functions on all targets:
 @code{aligned}, @code{alloc_size}, @code{alloc_align}, @code{assume_aligned},
 @code{noreturn}, @code{returns_twice}, @code{noinline}, @code{noclone},
+@code{no_icf},
 @code{always_inline}, @code{flatten}, @code{pure}, @code{const},
 @code{nothrow}, @code{sentinel}, @code{format}, @code{format_arg},
 @code{no_instrument_function}, @code{no_split_stack},
@@ -3474,6 +3475,11 @@ This function attribute prevents a function from being considered for
 cloning---a mechanism that produces specialized copies of functions
 and which is (currently) performed by interprocedural constant
 propagation.
+
+@item no_icf
+@cindex @code{no_icf} function attribute
+This function attribute prevents a functions from being merged with another
+semantically equivalent function.
 
 @item nonnull (@var{arg-index}, @dots{})
 @cindex @code{nonnull} function attribute

@@ -2373,6 +2373,16 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 			 source->asm_name (), alias->asm_name ());
 	      }
 
+	    if (lookup_attribute ("no_icf", DECL_ATTRIBUTES (alias->decl)))
+	      {
+	        if (dump_file)
+		  fprintf (dump_file,
+			   "Merge operation is skipped due to no_icf "
+			   "attribute.\n\n");
+
+		continue;
+	      }
+
 	    if (dump_file && (dump_flags & TDF_DETAILS))
 	      {
 		source->dump_to_file (dump_file);
