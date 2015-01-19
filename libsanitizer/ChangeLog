@@ -1,3 +1,9 @@
+2015-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64435
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Cherry pick
+	upstream r223925.
+
 2015-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* sanitizer_common/sanitizer_deadlock_detector.h: Cherry pick
