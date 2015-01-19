@@ -1,3 +1,7 @@
+2015-01-19  Martin Liska  <mliska@suse.cz>
+
+	* objc/compile/pr64668.m: New test.
+
 2015-01-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/test-arith-overflow.c: Include stdbool.h.
