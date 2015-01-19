@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_free_lang_data);
   NEXT_PASS (pass_ipa_function_and_variable_visibility);
   NEXT_PASS (pass_ipa_chkp_versioning);
+  NEXT_PASS (pass_ipa_chkp_early_produce_thunks);
   NEXT_PASS (pass_build_ssa_passes);
   PUSH_INSERT_PASSES_WITHIN (pass_build_ssa_passes)
       NEXT_PASS (pass_fixup_cfg);
@@ -65,7 +66,6 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_chkp);
       NEXT_PASS (pass_rebuild_cgraph_edges);
   POP_INSERT_PASSES ()
-  NEXT_PASS (pass_ipa_chkp_produce_thunks);
 
   NEXT_PASS (pass_local_optimization_passes);
   PUSH_INSERT_PASSES_WITHIN (pass_local_optimization_passes)
@@ -103,6 +103,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_rebuild_cgraph_edges);
       NEXT_PASS (pass_inline_parameters);
   POP_INSERT_PASSES ()
+  NEXT_PASS (pass_ipa_chkp_produce_thunks);
   NEXT_PASS (pass_ipa_auto_profile);
   NEXT_PASS (pass_ipa_free_inline_summary);
   NEXT_PASS (pass_ipa_tree_profile);

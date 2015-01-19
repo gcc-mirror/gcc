@@ -1,3 +1,7 @@
+2015-01-19  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.target/i386/chkp-always_inline.c: New.
+
 2015-01-15  Andrew Pinski  <apinski@cavium.com>
 	    Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
