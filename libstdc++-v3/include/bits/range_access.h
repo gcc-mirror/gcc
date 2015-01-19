@@ -33,7 +33,7 @@
 #pragma GCC system_header
 
 #if __cplusplus >= 201103L
-
+#include <initializer_list>
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -83,7 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __arr  Array.
    */
   template<class _Tp, size_t _Nm>
-    inline _Tp*
+    inline _GLIBCXX14_CONSTEXPR _Tp*
     begin(_Tp (&__arr)[_Nm])
     { return __arr; }
 
@@ -93,9 +93,134 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __arr  Array.
    */
   template<class _Tp, size_t _Nm>
-    inline _Tp*
+    inline _GLIBCXX14_CONSTEXPR _Tp*
     end(_Tp (&__arr)[_Nm])
     { return __arr + _Nm; }
+
+#if __cplusplus >= 201402L
+  /**
+   *  @brief  Return an iterator pointing to the first element of
+   *          the const container.
+   *  @param  __cont  Container.
+   */
+  template<class _Container>
+    inline constexpr auto
+    cbegin(const _Container& __cont) noexcept(noexcept(std::begin(__cont)))
+      -> decltype(std::begin(__cont))
+    { return std::begin(__cont); }
+
+  /**
+   *  @brief  Return an iterator pointing to one past the last element of
+   *          the const container.
+   *  @param  __cont  Container.
+   */
+  template<class _Container>
+    inline constexpr auto
+    cend(const _Container& __cont) noexcept(noexcept(std::end(__cont)))
+      -> decltype(std::end(__cont))
+    { return std::end(__cont); }
+
+  /**
+   *  @brief  Return a reverse iterator pointing to the last element of
+   *          the container.
+   *  @param  __cont  Container.
+   */
+  template<class _Container>
+    inline auto
+    rbegin(_Container& __cont) -> decltype(__cont.rbegin())
+    { return __cont.rbegin(); }
+
+  /**
+   *  @brief  Return a reverse iterator pointing to the last element of
+   *          the const container.
+   *  @param  __cont  Container.
+   */
+  template<class _Container>
+    inline auto
+    rbegin(const _Container& __cont) -> decltype(__cont.rbegin())
+    { return __cont.rbegin(); }
+
+  /**
+   *  @brief  Return a reverse iterator pointing one past the first element of
+   *          the container.
+   *  @param  __cont  Container.
+   */
+  template<class _Container>
+    inline auto
+    rend(_Container& __cont) -> decltype(__cont.rend())
+    { return __cont.rend(); }
+
+  /**
+   *  @brief  Return a reverse iterator pointing one past the first element of
+   *          the const container.
+   *  @param  __cont  Container.
+   */
+  template<class _Container>
+    inline auto
+    rend(const _Container& __cont) -> decltype(__cont.rend())
+    { return __cont.rend(); }
+
+  /**
+   *  @brief  Return a reverse iterator pointing to the last element of
+   *          the array.
+   *  @param  __arr  Array.
+   */
+  template<class _Tp, size_t _Nm>
+    inline reverse_iterator<_Tp*>
+    rbegin(_Tp (&__arr)[_Nm])
+    { return reverse_iterator<_Tp*>(__arr + _Nm); }
+
+  /**
+   *  @brief  Return a reverse iterator pointing one past the first element of
+   *          the array.
+   *  @param  __arr  Array.
+   */
+  template<class _Tp, size_t _Nm>
+    inline reverse_iterator<_Tp*>
+    rend(_Tp (&__arr)[_Nm])
+    { return reverse_iterator<_Tp*>(__arr); }
+
+  /**
+   *  @brief  Return a reverse iterator pointing to the last element of
+   *          the initializer_list.
+   *  @param  __il  initializer_list.
+   */
+  template<class _Tp>
+    inline reverse_iterator<const _Tp*>
+    rbegin(initializer_list<_Tp> __il)
+    { return reverse_iterator<const _Tp*>(__il.end()); }
+
+  /**
+   *  @brief  Return a reverse iterator pointing one past the first element of
+   *          the initializer_list.
+   *  @param  __il  initializer_list.
+   */
+  template<class _Tp>
+    inline reverse_iterator<const _Tp*>
+    rend(initializer_list<_Tp> __il)
+    { return reverse_iterator<const _Tp*>(__il.begin()); }
+
+  /**
+   *  @brief  Return a reverse iterator pointing to the last element of
+   *          the const container.
+   *  @param  __cont  Container.
+   */
+  template<class _Container>
+    inline auto
+    crbegin(const _Container& __cont) -> decltype(std::rbegin(__cont))
+    { return std::rbegin(__cont); }
+
+  /**
+   *  @brief  Return a reverse iterator pointing one past the first element of
+   *          the const container.
+   *  @param  __cont  Container.
+   */
+  template<class _Container>
+    inline auto
+    crend(const _Container& __cont) -> decltype(std::rend(__cont))
+    { return std::rend(__cont); }
+
+#endif // C++14
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

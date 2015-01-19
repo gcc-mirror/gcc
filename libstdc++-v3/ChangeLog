@@ -1,3 +1,11 @@
+2015-01-19  Ville Voutilainen  <ville.voutilainen@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (begin, end): Use _GLIBCXX14_CONSTEXPR
+	on overloads for arrays.
+	(cbegin, cend, rbegin, rend, crbegin, crend): New.
+	* testsuite/24_iterators/range_access_cpp14.cc: New.
+
 2015-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64646
