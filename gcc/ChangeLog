@@ -1,5 +1,10 @@
 2015-01-19  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* tree-sra.c (some_callers_have_mismatched_arguments_p): Allow thunk
+	callers.
+
+2015-01-19  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* ipa-chkp.c (chkp_produce_thunks): Add early param
 	to split thunks production into two passes.  Keep
 	'always_inline' function bodies after the first pass.
