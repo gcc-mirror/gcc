@@ -340,30 +340,6 @@ oacc_max_threads (omp_context *ctx)
 /* Holds offload tables with decls.  */
 vec<tree, va_gc> *offload_funcs, *offload_vars;
 
-/* Holds a decl for __OFFLOAD_TABLE__.  */
-static GTY(()) tree offload_symbol_decl;
-
-/* Get the __OFFLOAD_TABLE__ symbol.  */
-static tree
-get_offload_symbol_decl (void)
-{
-  if (!offload_symbol_decl)
-    {
-      tree decl = build_decl (UNKNOWN_LOCATION, VAR_DECL,
-			      get_identifier ("__OFFLOAD_TABLE__"),
-			      ptr_type_node);
-      TREE_ADDRESSABLE (decl) = 1;
-      TREE_PUBLIC (decl) = 1;
-      DECL_EXTERNAL (decl) = 1;
-      DECL_WEAK (decl) = 1;
-      DECL_ATTRIBUTES (decl)
-	= tree_cons (get_identifier ("weak"),
-		     NULL_TREE, DECL_ATTRIBUTES (decl));
-      offload_symbol_decl = decl;
-    }
-  return offload_symbol_decl;
-}
-
 /* Convenience function for calling scan_omp_1_op on tree operands.  */
 
 static inline tree
@@ -9119,16 +9095,31 @@ expand_omp_target (struct omp_region *region)
     }
 
   gimple g;
-  tree offload_table = get_offload_symbol_decl ();
   vec<tree> *args;
   /* The maximum number used by any start_ix, without varargs.  */
-  unsigned int argcnt = 12;
+  unsigned int argcnt = 11;
 
   vec_alloc (args, argcnt);
   args->quick_push (device);
   if (offloaded)
     args->quick_push (build_fold_addr_expr (child_fn));
-  args->quick_push (build_fold_addr_expr (offload_table));
+  switch (start_ix)
+    {
+    case BUILT_IN_GOMP_TARGET:
+    case BUILT_IN_GOMP_TARGET_DATA:
+    case BUILT_IN_GOMP_TARGET_UPDATE:
+      /* This const void * is part of the current ABI, but we're not actually
+	 using it.  */
+      args->quick_push (build_zero_cst (ptr_type_node));
+      break;
+    case BUILT_IN_GOACC_DATA_START:
+    case BUILT_IN_GOACC_ENTER_EXIT_DATA:
+    case BUILT_IN_GOACC_PARALLEL:
+    case BUILT_IN_GOACC_UPDATE:
+      break;
+    default:
+      gcc_unreachable ();
+    }
   args->quick_push (t1);
   args->quick_push (t2);
   args->quick_push (t3);
