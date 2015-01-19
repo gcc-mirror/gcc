@@ -1,3 +1,17 @@
+2015-01-19  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* ipa-chkp.c (chkp_produce_thunks): Add early param
+	to split thunks production into two passes.  Keep
+	'always_inline' function bodies after the first pass.
+	(pass_data_ipa_chkp_early_produce_thunks): New.
+	(pass_ipa_chkp_early_produce_thunks): New.
+	(pass_ipa_chkp_produce_thunks::execute): Adjust to new
+	chkp_produce_thunks signature.
+	(make_pass_ipa_chkp_early_produce_thunks): New.
+	* passes.def (pass_ipa_chkp_early_produce_thunks): New.
+	(pass_ipa_chkp_produce_thunks): Move after local optimizations.
+	* tree-pass.h (make_pass_ipa_chkp_early_produce_thunks): New.
+
 2015-01-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_node::dump): Dump profile flags.
