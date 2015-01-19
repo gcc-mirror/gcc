@@ -83,7 +83,8 @@ makeFuncFFI(const struct __go_func_type *ftyp, void *impl)
 #else /* !defined(USE_LIBFFI_CLOSURES) */
 
 void
-makeFuncFFI(const struct __go_func_type *ftyp, void *impl)
+makeFuncFFI(const struct __go_func_type *ftyp __attribute__ ((unused)),
+	    void *impl __attribute__ ((unused)))
 {
   runtime_panicstring ("libgo built without FFI does not support "
 		       "reflect.MakeFunc");
