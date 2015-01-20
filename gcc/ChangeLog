@@ -1,5 +1,10 @@
 2015-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/63576
+	* ipa-utils.c (ipa_merge_profiles): Merge speculative edges.
+
+2015-01-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR lto/45375
 	* ipa-inline.c: Include lto-streamer.h
 	(report_inline_failed_reason): Output source file differences and
