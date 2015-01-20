@@ -1,3 +1,11 @@
+2015-01-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Check if sched_yield and/or nanosleep need -lrt.
+	* configure: Regenerate.
+	* Makefile.am (go$(EXEEXT), gofmt$(EXEEXT), cgo$(EXEEXT)): Link
+	with $(LIBS).
+	* Makefile.in: Regenerate.
+
 2015-01-15  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Check for networking libraries; see NET_LIBS.
