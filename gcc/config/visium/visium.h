@@ -29,10 +29,8 @@
 #define CPP_SPEC "%{mcpu=gr6:-D__gr6__; :-D__gr5__}"
 
 /* Targets of a link */
-#define LIB_SPEC "\
-%{msim   : --start-group -lc -lsim --end-group   ; \
-  mdebug : --start-group -lc -ldebug --end-group ; \
-         : -lc -lnosys }"
+#define LIB_SPEC \
+  "--start-group -lc %{msim:-lsim; mdebug:-ldebug; :-lserial} --end-group"
 
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 #define STARTFILE_SPEC "crti.o%s crtbegin.o%s crt0.o%s"
