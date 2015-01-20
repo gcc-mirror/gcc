@@ -1696,7 +1696,7 @@ const struct tune_params arm_slowmul_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 const struct tune_params arm_fastmul_tune =
@@ -1717,7 +1717,7 @@ const struct tune_params arm_fastmul_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 /* StrongARM has early execution of branches, so a sequence that is worth
@@ -1741,7 +1741,7 @@ const struct tune_params arm_strongarm_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 const struct tune_params arm_xscale_tune =
@@ -1762,7 +1762,7 @@ const struct tune_params arm_xscale_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 const struct tune_params arm_9e_tune =
@@ -1783,7 +1783,7 @@ const struct tune_params arm_9e_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 const struct tune_params arm_v6t2_tune =
@@ -1804,7 +1804,7 @@ const struct tune_params arm_v6t2_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 /* Generic Cortex tuning.  Use more specific tunings if appropriate.  */
@@ -1826,7 +1826,7 @@ const struct tune_params arm_cortex_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 const struct tune_params arm_cortex_a8_tune =
@@ -1847,7 +1847,7 @@ const struct tune_params arm_cortex_a8_tune =
   true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 const struct tune_params arm_cortex_a7_tune =
@@ -1868,7 +1868,7 @@ const struct tune_params arm_cortex_a7_tune =
   true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 const struct tune_params arm_cortex_a15_tune =
@@ -1889,7 +1889,7 @@ const struct tune_params arm_cortex_a15_tune =
   true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  max_insn_queue_index + 1			/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_FULL			/* Sched L2 autopref.  */
 };
 
 const struct tune_params arm_cortex_a53_tune =
@@ -1910,7 +1910,7 @@ const struct tune_params arm_cortex_a53_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_MOVW_MOVT,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 const struct tune_params arm_cortex_a57_tune =
@@ -1931,7 +1931,7 @@ const struct tune_params arm_cortex_a57_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_MOVW_MOVT,				/* Fuseable pairs of instructions.  */
-  max_insn_queue_index + 1			/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_FULL			/* Sched L2 autopref.  */
 };
 
 const struct tune_params arm_xgene1_tune =
@@ -1952,7 +1952,7 @@ const struct tune_params arm_xgene1_tune =
   false,				       /* Prefer Neon for stringops.  */
   32,					       /* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 /* Branches can be dual-issued on Cortex-A5, so conditional execution is
@@ -1976,7 +1976,7 @@ const struct tune_params arm_cortex_a5_tune =
   true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 const struct tune_params arm_cortex_a9_tune =
@@ -1997,7 +1997,7 @@ const struct tune_params arm_cortex_a9_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 const struct tune_params arm_cortex_a12_tune =
@@ -2018,7 +2018,7 @@ const struct tune_params arm_cortex_a12_tune =
   true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_MOVW_MOVT,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 /* armv7m tuning.  On Cortex-M4 cores for example, MOVW/MOVT take a single
@@ -2046,7 +2046,7 @@ const struct tune_params arm_v7m_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 /* Cortex-M7 tuning.  */
@@ -2069,7 +2069,7 @@ const struct tune_params arm_cortex_m7_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 /* The arm_v6m_tune is duplicated from arm_cortex_tune, rather than
@@ -2092,7 +2092,7 @@ const struct tune_params arm_v6m_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 const struct tune_params arm_fa726te_tune =
@@ -2113,7 +2113,7 @@ const struct tune_params arm_fa726te_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  -1						/* Sched L2 autopref depth.  */
+  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
 };
 
 
@@ -3171,8 +3171,17 @@ arm_option_override (void)
 
   /* Look through ready list and all of queue for instructions
      relevant for L2 auto-prefetcher.  */
+  int param_sched_autopref_queue_depth;
+  if (current_tune->sched_autopref == ARM_SCHED_AUTOPREF_OFF)
+    param_sched_autopref_queue_depth = -1;
+  else if (current_tune->sched_autopref == ARM_SCHED_AUTOPREF_RANK)
+    param_sched_autopref_queue_depth = 0;
+  else if (current_tune->sched_autopref == ARM_SCHED_AUTOPREF_FULL)
+    param_sched_autopref_queue_depth = max_insn_queue_index + 1;
+  else
+    gcc_unreachable ();
   maybe_set_param_value (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH,
-			 current_tune->sched_autopref_queue_depth,
+			 param_sched_autopref_queue_depth,
                          global_options.x_param_values,
                          global_options_set.x_param_values);
 
