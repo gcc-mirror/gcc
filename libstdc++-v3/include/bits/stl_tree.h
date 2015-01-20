@@ -1118,6 +1118,137 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       pair<const_iterator, const_iterator>
       equal_range(const key_type& __k) const;
 
+#if __cplusplus > 201103L
+      template<typename _Cmp, typename _Kt, typename = __void_t<>>
+	struct __is_transparent { };
+
+      template<typename _Cmp, typename _Kt>
+	struct
+	__is_transparent<_Cmp, _Kt, __void_t<typename _Cmp::is_transparent>>
+	{ typedef void type; };
+
+      static auto _S_iter(_Link_type __x) { return iterator(__x); }
+
+      static auto _S_iter(_Const_Link_type __x) { return const_iterator(__x); }
+
+      template<typename _Cmp, typename _Link, typename _Kt>
+	static auto
+	_S_lower_bound_tr(_Cmp& __cmp, _Link __x, _Link __y, const _Kt& __k)
+	{
+	  while (__x != 0)
+	    if (!__cmp(_S_key(__x), __k))
+	      __y = __x, __x = _S_left(__x);
+	    else
+	      __x = _S_right(__x);
+	  return _S_iter(__y);
+	}
+
+      template<typename _Cmp, typename _Link, typename _Kt>
+	static auto
+	_S_upper_bound_tr(_Cmp& __cmp, _Link __x, _Link __y, const _Kt& __k)
+	{
+	  while (__x != 0)
+	    if (__cmp(__k, _S_key(__x)))
+	      __y = __x, __x = _S_left(__x);
+	    else
+	      __x = _S_right(__x);
+	  return _S_iter(__y);
+	}
+
+      template<typename _Kt,
+	       typename _Req = typename __is_transparent<_Compare, _Kt>::type>
+	iterator
+	_M_find_tr(const _Kt& __k)
+	{
+	  auto& __cmp = _M_impl._M_key_compare;
+	  auto __j = _S_lower_bound_tr(__cmp, _M_begin(), _M_end(), __k);
+	  return (__j == end() || __cmp(__k, _S_key(__j._M_node)))
+	    ? end() : __j;
+	}
+
+      template<typename _Kt,
+	       typename _Req = typename __is_transparent<_Compare, _Kt>::type>
+	const_iterator
+	_M_find_tr(const _Kt& __k) const
+	{
+	  auto& __cmp = _M_impl._M_key_compare;
+	  auto __j = _S_lower_bound_tr(__cmp, _M_begin(), _M_end(), __k);
+	  return (__j == end() || __cmp(__k, _S_key(__j._M_node)))
+	    ? end() : __j;
+	}
+
+      template<typename _Kt,
+	       typename _Req = typename __is_transparent<_Compare, _Kt>::type>
+	size_type
+	_M_count_tr(const _Kt& __k) const
+	{
+	  auto __p = _M_equal_range_tr(__k);
+	  return std::distance(__p.first, __p.second);
+	}
+
+      template<typename _Kt,
+	       typename _Req = typename __is_transparent<_Compare, _Kt>::type>
+	iterator
+	_M_lower_bound_tr(const _Kt& __k)
+	{
+	  auto& __cmp = _M_impl._M_key_compare;
+	  return _S_lower_bound_tr(__cmp, _M_begin(), _M_end(), __k);
+	}
+
+      template<typename _Kt,
+	       typename _Req = typename __is_transparent<_Compare, _Kt>::type>
+	const_iterator
+	_M_lower_bound_tr(const _Kt& __k) const
+	{
+	  auto& __cmp = _M_impl._M_key_compare;
+	  return _S_lower_bound_tr(__cmp, _M_begin(), _M_end(), __k);
+	}
+
+      template<typename _Kt,
+	       typename _Req = typename __is_transparent<_Compare, _Kt>::type>
+	iterator
+	_M_upper_bound_tr(const _Kt& __k)
+	{
+	  auto& __cmp = _M_impl._M_key_compare;
+	  return _S_upper_bound_tr(__cmp, _M_begin(), _M_end(), __k);
+	}
+
+      template<typename _Kt,
+	       typename _Req = typename __is_transparent<_Compare, _Kt>::type>
+	const_iterator
+	_M_upper_bound_tr(const _Kt& __k) const
+	{
+	  auto& __cmp = _M_impl._M_key_compare;
+	  return _S_upper_bound_tr(__cmp, _M_begin(), _M_end(), __k);
+	}
+
+      template<typename _Kt,
+	       typename _Req = typename __is_transparent<_Compare, _Kt>::type>
+	pair<iterator, iterator>
+	_M_equal_range_tr(const _Kt& __k)
+	{
+	  auto __low = _M_lower_bound_tr(__k);
+	  auto __high = __low;
+	  auto& __cmp = _M_impl._M_key_compare;
+	  while (__high != end() && !__cmp(__k, _S_key(__high._M_node)))
+	    ++__high;
+	  return { __low, __high };
+	}
+
+      template<typename _Kt,
+	       typename _Req = typename __is_transparent<_Compare, _Kt>::type>
+	pair<const_iterator, const_iterator>
+	_M_equal_range_tr(const _Kt& __k) const
+	{
+	  auto __low = _M_lower_bound_tr(__k);
+	  auto __high = __low;
+	  auto& __cmp = _M_impl._M_key_compare;
+	  while (__high != end() && !__cmp(__k, _S_key(__high._M_node)))
+	    ++__high;
+	  return { __low, __high };
+	}
+#endif
+
       // Debugging.
       bool
       __rb_verify() const;
