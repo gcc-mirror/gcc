@@ -1,5 +1,27 @@
 2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_map.h (map::find<>, map::count<>,
+	map::lower_bound<>, map::upper_bound<>, map::equal_range<>): New
+	member function templates to perform heterogeneous lookup.
+	* include/bits/stl_multimap.h (multimap::find<>, multimap::count<>,
+	multimap::lower_bound<>, multimap::upper_bound<>,
+	multimap::equal_range<>): Likewise.
+	* include/bits/stl_multiset.h (multiset::find<>, multiset::count<>,
+	multiset::lower_bound<>, multiset::upper_bound<>,
+	multiset::equal_range<>): Likewise.
+	* include/bits/stl_set.h (set::find<>, set::count<>,
+	set::lower_bound<>, set::upper_bound<>, set::equal_range<>): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree::_S_lower_bound_tr,
+	_Rb_tree::_S_upper_bound_tr, _Rb_tree::_M_find_tr,
+	_Rb_tree::_M_count_tr, _Rb_tree::_M_lower_bound_tr,
+	_Rb_tree::_M_upper_bound_tr, _Rb_tree::_M_equal_range_tr): Likewise.
+	* testsuite/23_containers/map/operations/2.cc: New.
+	* testsuite/23_containers/multimap/operations/2.cc: New.
+	* testsuite/23_containers/multiset/operations/2.cc: New.
+	* testsuite/23_containers/set/operations/2.cc: New.
+
+2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
 	* config/abi/pre/gnu.ver: Export new constructors.
 	* include/bits/codecvt.h (codecvt_byname): Add string constructor.
 	(codecvt_byname<char16_t>, codecvt_byname<char32_t>): Define explicit

@@ -636,6 +636,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // multiset operations:
 
+      //@{
       /**
        *  @brief Finds the number of elements with given key.
        *  @param  __x  Key of elements to be located.
@@ -644,6 +645,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       size_type
       count(const key_type& __x) const
       { return _M_t.count(__x); }
+
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	count(const _Kt& __x) const -> decltype(_M_t._M_count_tr(__x))
+	{ return _M_t._M_count_tr(__x); }
+#endif
+      //@}
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 214.  set::find() missing const overload
@@ -666,6 +675,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_iterator
       find(const key_type& __x) const
       { return _M_t.find(__x); }
+
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	find(const _Kt& __x) -> decltype(_M_t._M_find_tr(__x))
+	{ return _M_t._M_find_tr(__x); }
+
+      template<typename _Kt>
+	auto
+	find(const _Kt& __x) const -> decltype(_M_t._M_find_tr(__x))
+	{ return _M_t._M_find_tr(__x); }
+#endif
       //@}
 
       //@{
@@ -687,6 +708,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_iterator
       lower_bound(const key_type& __x) const
       { return _M_t.lower_bound(__x); }
+
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	lower_bound(const _Kt& __x)
+	-> decltype(_M_t._M_lower_bound_tr(__x))
+	{ return _M_t._M_lower_bound_tr(__x); }
+
+      template<typename _Kt>
+	auto
+	lower_bound(const _Kt& __x) const
+	-> decltype(_M_t._M_lower_bound_tr(__x))
+	{ return _M_t._M_lower_bound_tr(__x); }
+#endif
       //@}
 
       //@{
@@ -703,6 +738,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_iterator
       upper_bound(const key_type& __x) const
       { return _M_t.upper_bound(__x); }
+
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	upper_bound(const _Kt& __x)
+	-> decltype(_M_t._M_upper_bound_tr(__x))
+	{ return _M_t._M_upper_bound_tr(__x); }
+
+      template<typename _Kt>
+	auto
+	upper_bound(const _Kt& __x) const
+	-> decltype(_M_t._M_upper_bound_tr(__x))
+	{ return _M_t._M_upper_bound_tr(__x); }
+#endif
       //@}
 
       //@{
@@ -728,6 +777,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __x) const
       { return _M_t.equal_range(__x); }
+
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	equal_range(const _Kt& __x)
+	-> decltype(_M_t._M_equal_range_tr(__x))
+	{ return _M_t._M_equal_range_tr(__x); }
+
+      template<typename _Kt>
+	auto
+	equal_range(const _Kt& __x) const
+	-> decltype(_M_t._M_equal_range_tr(__x))
+	{ return _M_t._M_equal_range_tr(__x); }
+#endif
       //@}
 
       template<typename _K1, typename _C1, typename _A1>
