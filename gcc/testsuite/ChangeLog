@@ -1,3 +1,11 @@
+2015-01-20  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2014-06-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61553
+	* c-c++-common/pr61553.c: New test.
+
 2015-01-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-c++-common/tsan/tsan_barrier.h: New.

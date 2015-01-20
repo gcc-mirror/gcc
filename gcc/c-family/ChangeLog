@@ -1,3 +1,12 @@
+2015-01-20  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2014-06-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61553
+	* c-common.c (get_atomic_generic_size): Don't segfault if the
+	type doesn't have a size.
+
 2014-10-30  Release Manager
 
 	* GCC 4.9.2 released.
