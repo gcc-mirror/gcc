@@ -145,6 +145,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cilk.h"
 #include "builtins.h"
 #include "fibonacci_heap.h"
+#include "lto-streamer.h"
 
 typedef fibonacci_heap <sreal, cgraph_edge> edge_heap_t;
 typedef fibonacci_node <sreal, cgraph_edge> edge_heap_node_t;
@@ -260,6 +261,23 @@ report_inline_failed_reason (struct cgraph_edge *e)
 	       xstrdup_for_dump (e->caller->name ()), e->caller->order,
 	       xstrdup_for_dump (e->callee->name ()), e->callee->order,
 	       cgraph_inline_failed_string (e->inline_failed));
+      if ((e->inline_failed == CIF_TARGET_OPTION_MISMATCH
+	   || e->inline_failed == CIF_OPTIMIZATION_MISMATCH)
+	  && e->caller->lto_file_data
+	  && e->callee->function_symbol ()->lto_file_data)
+	{
+	  fprintf (dump_file, "  LTO objects: %s, %s\n",
+		   e->caller->lto_file_data->file_name,
+		   e->callee->function_symbol ()->lto_file_data->file_name);
+	}
+      if (e->inline_failed == CIF_TARGET_OPTION_MISMATCH)
+	cl_target_option_print_diff
+	 (dump_file, 2, target_opts_for_fn (e->caller->decl),
+          target_opts_for_fn (e->callee->ultimate_alias_target ()->decl));
+      if (e->inline_failed == CIF_OPTIMIZATION_MISMATCH)
+	cl_optimization_print_diff
+	  (dump_file, 2, opts_for_fn (e->caller->decl),
+	   opts_for_fn (e->callee->ultimate_alias_target ()->decl));
     }
 }
 
@@ -297,10 +315,12 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
   bool inlinable = true;
   enum availability avail;
   cgraph_node *callee = e->callee->ultimate_alias_target (&avail);
-  tree caller_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (e->caller->decl);
+  cgraph_node *caller = e->caller->global.inlined_to
+		        ? e->caller->global.inlined_to : e->caller;
+  tree caller_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (caller->decl);
   tree callee_tree
     = callee ? DECL_FUNCTION_SPECIFIC_OPTIMIZATION (callee->decl) : NULL;
-  struct function *caller_fun = e->caller->get_fun ();
+  struct function *caller_fun = caller->get_fun ();
   struct function *callee_fun = callee ? callee->get_fun () : NULL;
 
   gcc_assert (e->inline_failed);
@@ -333,9 +353,9 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       inlinable = false;
     }
   /* Don't inline if the functions have different EH personalities.  */
-  else if (DECL_FUNCTION_PERSONALITY (e->caller->decl)
+  else if (DECL_FUNCTION_PERSONALITY (caller->decl)
 	   && DECL_FUNCTION_PERSONALITY (callee->decl)
-	   && (DECL_FUNCTION_PERSONALITY (e->caller->decl)
+	   && (DECL_FUNCTION_PERSONALITY (caller->decl)
 	       != DECL_FUNCTION_PERSONALITY (callee->decl)))
     {
       e->inline_failed = CIF_EH_PERSONALITY;
@@ -344,7 +364,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
   /* TM pure functions should not be inlined into non-TM_pure
      functions.  */
   else if (is_tm_pure (callee->decl)
-	   && !is_tm_pure (e->caller->decl))
+	   && !is_tm_pure (caller->decl))
     {
       e->inline_failed = CIF_UNSPECIFIED;
       inlinable = false;
@@ -360,14 +380,14 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       inlinable = false;
     }
   /* Check compatibility of target optimization options.  */
-  else if (!targetm.target_option.can_inline_p (e->caller->decl,
+  else if (!targetm.target_option.can_inline_p (caller->decl,
 						callee->decl))
     {
       e->inline_failed = CIF_TARGET_OPTION_MISMATCH;
       inlinable = false;
     }
   /* Don't inline a function with mismatched sanitization attributes. */
-  else if (!sanitize_attrs_match_for_inline_p (e->caller->decl, callee->decl))
+  else if (!sanitize_attrs_match_for_inline_p (caller->decl, callee->decl))
     {
       e->inline_failed = CIF_ATTRIBUTE_MISMATCH;
       inlinable = false;
@@ -376,10 +396,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
   else if (!DECL_DISREGARD_INLINE_LIMITS (callee->decl)
 	   && !disregard_limits
 	   && !lookup_attribute ("flatten",
-				 DECL_ATTRIBUTES
-				   (e->caller->global.inlined_to
-				    ? e->caller->global.inlined_to->decl
-				    : e->caller->decl))
+				 DECL_ATTRIBUTES (caller->decl))
            && !caller_growth_limits (e))
     inlinable = false;
   /* Don't inline a function with a higher optimization level than the
@@ -387,16 +404,62 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
      optimization attribute.  */
   else if (caller_tree != callee_tree)
     {
-      if (((opt_for_fn (e->caller->decl, optimize)
-	    > opt_for_fn (callee->decl, optimize))
-	    || (opt_for_fn (e->caller->decl, optimize_size)
-		!= opt_for_fn (callee->decl, optimize_size)))
-	  /* gcc.dg/pr43564.c.  Look at forced inline even in -O0.  */
-	  && !DECL_DISREGARD_INLINE_LIMITS (callee->decl))
+      /* gcc.dg/pr43564.c.  Look at forced inline even in -O0.  */
+      if (DECL_DISREGARD_INLINE_LIMITS (callee->decl))
+	;
+      /* When user added an attribute, honnor it.  */
+      else if ((lookup_attribute ("optimize", DECL_ATTRIBUTES (caller->decl))
+		|| lookup_attribute ("optimize",
+				     DECL_ATTRIBUTES (callee->decl)))
+	       && ((opt_for_fn (caller->decl, optimize)
+		   > opt_for_fn (callee->decl, optimize))
+		   || (opt_for_fn (caller->decl, optimize_size)
+		       != opt_for_fn (callee->decl, optimize_size))))
 	{
 	  e->inline_failed = CIF_OPTIMIZATION_MISMATCH;
 	  inlinable = false;
 	}
+      /* If mismatch is caused by merging two LTO units with different
+	 optimizationflags we want to be bit nicer.  However never inline
+	 if one of functions is not optimized at all.  */
+      else if (!opt_for_fn (callee->decl, optimize)
+      	       || !opt_for_fn (caller->decl, optimize))
+	{
+	  e->inline_failed = CIF_OPTIMIZATION_MISMATCH;
+	  inlinable = false;
+	}
+      /* If callee is optimized for size and caller is not, allow inlining if
+	 code shrinks or we are in MAX_INLINE_INSNS_SINGLE limit and callee
+	 is inline (and thus likely an unified comdat).  This will allow caller
+	 to run faster.  */
+      else if (opt_for_fn (callee->decl, optimize_size)
+	       > opt_for_fn (caller->decl, optimize_size))
+	{
+	  int growth = estimate_edge_growth (e);
+	  if (growth > 0
+	      && (!DECL_DECLARED_INLINE_P (callee->decl)
+		  && growth >= MAX (MAX_INLINE_INSNS_SINGLE,
+				    MAX_INLINE_INSNS_AUTO)))
+	    {
+	      e->inline_failed = CIF_OPTIMIZATION_MISMATCH;
+	      inlinable = false;
+	    }
+	}
+      /* If callee is more aggressively optimized for performance than caller,
+	 we generally want to inline only cheap (runtime wise) functions.  */
+      else if (opt_for_fn (callee->decl, optimize_size)
+	       < opt_for_fn (caller->decl, optimize_size)
+	       || (opt_for_fn (callee->decl, optimize)
+		   >= opt_for_fn (caller->decl, optimize)))
+	{
+	  if (estimate_edge_time (e)
+	      >= 20 + inline_edge_summary (e)->call_stmt_time)
+	    {
+	      e->inline_failed = CIF_OPTIMIZATION_MISMATCH;
+	      inlinable = false;
+	    }
+	}
+
     }
 
   if (!inlinable && report)
@@ -1507,6 +1570,18 @@ resolve_noninline_speculation (edge_heap_t *edge_heap, struct cgraph_edge *edge)
     }
 }
 
+/* Return true if NODE should be accounted for overall size estimate.
+   Skip all nodes optimized for size so we can measure the growth of hot
+   part of program no matter of the padding.  */
+
+bool
+inline_account_function_p (struct cgraph_node *node)
+{
+   return (!DECL_EXTERNAL (node->decl)
+	   && !opt_for_fn (node->decl, optimize_size)
+	   && node->frequency != NODE_FREQUENCY_UNLIKELY_EXECUTED);
+}
+
 /* We use greedy algorithm for inlining of small functions:
    All inline candidates are put into prioritized heap ordered in
    increasing badness.
@@ -1540,17 +1615,15 @@ inline_small_functions (void)
   FOR_EACH_DEFINED_FUNCTION (node)
     if (!node->global.inlined_to)
       {
-	if (node->has_gimple_body_p ()
-	    || node->thunk.thunk_p)
+	if (!node->alias && node->analyzed
+	    && (node->has_gimple_body_p () || node->thunk.thunk_p))
 	  {
 	    struct inline_summary *info = inline_summaries->get (node);
 	    struct ipa_dfs_info *dfs = (struct ipa_dfs_info *) node->aux;
 
 	    /* Do not account external functions, they will be optimized out
 	       if not inlined.  Also only count the non-cold portion of program.  */
-	    if (!DECL_EXTERNAL (node->decl)
-		&& !opt_for_fn (node->decl, optimize_size)
-		&& node->frequency != NODE_FREQUENCY_UNLIKELY_EXECUTED)
+	    if (inline_account_function_p (node))
 	      initial_size += info->size;
 	    info->growth = estimate_growth (node);
 	    if (dfs && dfs->next_cycle)

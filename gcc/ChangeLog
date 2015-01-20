@@ -1,3 +1,19 @@
+2015-01-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/45375
+	* ipa-inline.c: Include lto-streamer.h
+	(report_inline_failed_reason): Output source file differences and
+	flags on optimization/target node mismatch.
+	(can_inline_edge_p): Consider caller to be the outer inline function;
+	be less restrictive about matching opimize and optimize_size attributes.
+	(inline_account_function_p): Break out from ...
+	(inline_small_functions): ... here.
+	* ipa-inline-transform.c (clone_inlined_nodes): Use
+	inline_account_function_p.
+	(inline_call): Use optimize attribution; use inline_account_function_p.
+	(inline_transform): Use opt_for_fn.
+	* ipa-inline.h (inline_account_function_p): Declare.
+
 2015-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/64663

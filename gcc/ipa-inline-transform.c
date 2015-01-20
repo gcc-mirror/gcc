@@ -214,8 +214,10 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	     cgraph_remove_unreachable_functions gets rid of them.  */
 	  gcc_assert (!e->callee->global.inlined_to);
 	  e->callee->dissolve_same_comdat_group_list ();
-	  if (e->callee->definition && !DECL_EXTERNAL (e->callee->decl))
+	  if (e->callee->definition
+	      && inline_account_function_p (e->callee))
 	    {
+	      gcc_assert (!e->callee->alias);
 	      if (overall_size)
 	        *overall_size -= inline_summaries->get (e->callee)->size;
 	      nfunctions_inlined++;
@@ -330,7 +332,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
 
   old_size = inline_summaries->get (to)->size;
   inline_merge_summary (e);
-  if (optimize)
+  if (opt_for_fn (e->caller->decl, optimize))
     new_edges_found = ipa_propagate_indirect_call_infos (curr, new_edges);
   if (update_overall_summary)
    inline_update_overall_summary (to);
@@ -361,8 +363,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
 
   /* Account the change of overall unit size; external functions will be
      removed and are thus not accounted.  */
-  if (overall_size
-      && !DECL_EXTERNAL (to->decl))
+  if (overall_size && inline_account_function_p (to))
     *overall_size += new_size - old_size;
   ncalls_inlined++;
 
@@ -509,7 +510,7 @@ inline_transform (struct cgraph_node *node)
   node->remove_all_references ();
 
   timevar_push (TV_INTEGRATION);
-  if (node->callees && (optimize || has_inline))
+  if (node->callees && (opt_for_fn (node->decl, optimize) || has_inline))
     todo = optimize_inline_calls (current_function_decl);
   timevar_pop (TV_INTEGRATION);
 
