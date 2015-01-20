@@ -108,11 +108,11 @@ bin_PROGRAMS = go$(EXEEXT) gofmt$(EXEEXT)
 libexecsub_PROGRAMS = cgo$(EXEEXT)
 
 go$(EXEEXT): $(go_cmd_go_files) zdefaultcc.go $(LIBGODEP)
-	$(GOLINK) $(go_cmd_go_files) zdefaultcc.go $(NET_LIBS)
+	$(GOLINK) $(go_cmd_go_files) zdefaultcc.go $(LIBS) $(NET_LIBS)
 gofmt$(EXEEXT): $(go_cmd_gofmt_files) $(LIBGODEP)
-	$(GOLINK) $(go_cmd_gofmt_files) $(NET_LIBS)
+	$(GOLINK) $(go_cmd_gofmt_files) $(LIBS) $(NET_LIBS)
 cgo$(EXEEXT): $(go_cmd_cgo_files) zdefaultcc.go $(LIBGODEP)
-	$(GOLINK) $(go_cmd_cgo_files) zdefaultcc.go $(NET_LIBS)
+	$(GOLINK) $(go_cmd_cgo_files) zdefaultcc.go $(LIBS) $(NET_LIBS)
 
 else
 
