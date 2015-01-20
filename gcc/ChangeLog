@@ -1,3 +1,18 @@
+2015-01-20  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR bootstrap/64676
+	Revert:
+	2015-01-19  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR rtl-optimization/64081
+	* loop-iv.c (def_pred_latch_p): New function.
+	(latch_dominating_def): Allow specific cases with non-single
+	definitions.
+	(iv_get_reaching_def): Likewise.
+	(check_complex_exit_p): New function.
+	(check_simple_exit): Use check_complex_exit_p to allow certain cases
+	with exits not executing on any iteration.
+
 2015-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/45375
