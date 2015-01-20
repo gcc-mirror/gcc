@@ -64,8 +64,10 @@ GLIBCXX_3.4 {
 #     std::char_traits;
 #     std::c[i-z]*;
       std::c[i-n]*;
+#     std::collate;
+#     std::collate_byname;
 #     std::condition_variable;
-      std::co[^n]*;
+      std::co[^ln]*;
       std::c[p-s]*;
       std::cu[^r]*;
 #     std::current_exception
@@ -527,6 +529,14 @@ GLIBCXX_3.4 {
     # std::use_facet
     _ZSt9use_facetIS*;
 
+    # std::collate
+    _ZNSt7collateI[cw]*;
+    _ZNKSt7collateI[cw]*;
+
+    # std::collate_byname
+    _ZNSt14collate_bynameI[cw]EC[12]EPKc?*;
+    _ZNSt14collate_bynameI[cw]ED*;
+
     # std::ctype
     _ZNKSt5ctypeIcE8*;
     _ZNKSt5ctypeIcE9*;
@@ -538,7 +548,8 @@ GLIBCXX_3.4 {
     _ZNSt10ctype_base[56][ac-z]*;
 
     # std::ctype_byname
-    _ZNSt12ctype_bynameI[cw]*;
+    _ZNSt12ctype_bynameI[cw]EC[12]EPKc?*;
+    _ZNSt12ctype_bynameI[cw]ED*;
 
     # std::num_get
     _ZNKSt7num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[2-9]*;
@@ -573,7 +584,8 @@ GLIBCXX_3.4 {
     _ZNKSt8time_put*;
 
     # std::time_put_byname
-    _ZNSt15time_put_byname*;
+    _ZNSt15time_put_bynameI[cw]*EC[12]EPKc?*;
+    _ZNSt15time_put_bynameI[cw]*ED[012]Ev;
 
     # std::numeric_limits
     _ZNSt21__numeric_limits_base[5-9]*;
@@ -1779,6 +1791,25 @@ GLIBCXX_3.4.21 {
     _ZNKSt25__codecvt_utf8_utf16_base*;
     _ZNSt25__codecvt_utf8_utf16_base*;
     _ZT[ISV]St25__codecvt_utf8_utf16_base*;
+
+    # new string ctors for _byname facets
+    _ZNSt12ctype_bynameI[cw]EC[1-5]ERKSsm;
+    _ZNSt14codecvt_bynameI[cw]c11__mbstate_tEC[1-5]ERKSsm;
+    _ZNSt15messages_bynameI[cw]EC[1-5]ERKSsm;
+    _ZNSt15numpunct_bynameI[cw]EC[1-5]ERKSsm;
+    _ZNSt15time_get_bynameI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEEC[1-5]ERKSsm;
+    _ZNSt15time_put_bynameI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEEC[1-5]ERKSsm;
+    _ZNSt17moneypunct_bynameI[cw]Lb0EEC[1-5]ERKSsm;
+    _ZNSt17moneypunct_bynameI[cw]Lb1EEC[1-5]ERKSsm;
+
+    _ZNSt12ctype_bynameI[cw]EC[1-5]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEm;
+    _ZNSt14codecvt_bynameI[cw]c11__mbstate_tEC[1-5]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEm;
+    _ZNSt15time_put_bynameI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEEC[1-5]ERKNSt7__cxx1112basic_stringIcS2_SaIcEEEm;
+    _ZNSt7__cxx1115messages_bynameI[cw]EC[1-5]ERKNS_12basic_stringIcSt11char_traitsIcESaIcEEEm;
+    _ZNSt7__cxx1115numpunct_bynameI[cw]EC[1-5]ERKNS_12basic_stringIcSt11char_traitsIcESaIcEEEm;
+    _ZNSt7__cxx1115time_get_bynameI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEEC[1-5]ERKNS_12basic_stringIcS3_SaIcEEEm;
+    _ZNSt7__cxx1117moneypunct_bynameI[cw]Lb0EEC[1-5]ERKNS_12basic_stringIcSt11char_traitsIcESaIcEEEm;
+    _ZNSt7__cxx1117moneypunct_bynameI[cw]Lb1EEC[1-5]ERKNS_12basic_stringIcSt11char_traitsIcESaIcEEEm;
 
 } GLIBCXX_3.4.20;
 
