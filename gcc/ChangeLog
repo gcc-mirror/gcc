@@ -1,3 +1,7 @@
+2015-01-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/visium.h (LIB_SPEC): Adjust in default case.
+
 2015-01-20  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* config/tilegx/mul-tables.c: Move symtab.h include after coretypes.h include.
