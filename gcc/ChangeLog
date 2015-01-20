@@ -1,3 +1,11 @@
+2015-01-20  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/tilegx/mul-tables.c: Move symtab.h include after coretypes.h include.
+	* config/tilepro/mul-tables.c: Add includes hashtab.h, hash-set.h, vec.h,
+	machmode.h, tm.h, hard-reg-set.h, input.h, function.h, rtl.h, flags.h, statistics.h,
+	double-int.h, real.h, fixed-value.h, alias.h, wide-int.h, inchash.h, tree.h,
+	insn-config.h, expmed.h, dojump.h, explow.h, calls.h, emit-rtl.h, varasm.h, stmt.h.
+
 2015-01-20  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR bootstrap/64676
