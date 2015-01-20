@@ -1,5 +1,11 @@
 2015-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vmlXl.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlal.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlsl.c: New file.
+
+2015-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vshuffle.inc: New file.
 	* gcc.target/aarch64/advsimd-intrinsics/vtrn.c: New file.
 	* gcc.target/aarch64/advsimd-intrinsics/vuzp.c: Use code from
