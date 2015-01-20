@@ -3919,7 +3919,7 @@ ix86_option_override_internal (bool main_args_p,
 
   /* Provide default for -mbranch-cost= value.  */
   if (!opts_set->x_ix86_branch_cost)
-    opts->x_ix86_branch_cost = ix86_cost->branch_cost;
+    opts->x_ix86_branch_cost = ix86_tune_cost->branch_cost;
 
   if (TARGET_64BIT_P (opts->x_ix86_isa_flags))
     {
