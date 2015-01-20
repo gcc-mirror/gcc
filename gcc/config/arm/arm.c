@@ -112,7 +112,6 @@ struct four_ints
 
 /* Forward function declarations.  */
 static bool arm_const_not_ok_for_debug_p (rtx);
-static bool arm_lra_p (void);
 static bool arm_needs_doubleword_align (machine_mode, const_tree);
 static int arm_compute_static_chain_stack_bytes (void);
 static arm_stack_offsets *arm_get_frame_offsets (void);
@@ -382,7 +381,7 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_LEGITIMIZE_ADDRESS arm_legitimize_address
 
 #undef TARGET_LRA_P
-#define TARGET_LRA_P arm_lra_p
+#define TARGET_LRA_P hook_bool_void_true
 
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE arm_attribute_table
@@ -5997,13 +5996,6 @@ arm_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
       if (! pcum->named_count)
 	pcum->named_count = INT_MAX;
     }
-}
-
-/* Return true if we use LRA instead of reload pass.  */
-static bool
-arm_lra_p (void)
-{
-  return arm_lra_flag;
 }
 
 /* Return true if mode/type need doubleword alignment.  */
