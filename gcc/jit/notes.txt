@@ -74,9 +74,16 @@ Client Code   . Generated .            libgccjit.so
               .           .          .               . │   (purge internal state)
               .           .    <──────────────────────── end of toplev::finalize
               .           .    │     .               .
-              .           .    │ Convert assembler to DSO ("fake.so")
-              .           .    │     .               .
-              .           .    │ Load DSO (dlopen "fake.so")
+              .           .    V─> playback::context::postprocess:
+              .           .      │   .               .
+              .           .      │   (assuming an in-memory compile):
+              .           .      │   .               .
+              .           .      │   . Convert assembler to DSO ("fake.so")
+              .           .      │   .               .
+              .           .      │   . Load DSO (dlopen "fake.so")
+              .           .      │   .               .
+              .           .      │   . Bundle it up in a jit::result
+              .           .    <──   .               .
               .           .    │     .               .
               .           .    │ RELEASE MUTEX       .
               .           .    │     .               .

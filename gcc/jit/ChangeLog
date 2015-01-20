@@ -1,5 +1,77 @@
 2015-01-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* docs/cp/topics/results.rst: Rename to...
+	* docs/cp/topics/compilation.rst: ...this, and add section on
+	ahead-of-time compilation.
+	* docs/cp/topics/index.rst: Update for renaming of results.rst
+	to compilation.rst.
+	* docs/examples/emit-alphabet.bf: New file, a sample "brainf"
+	script.
+	* docs/examples/tut05-bf.c: New file, implementing a compiler
+	for "brainf".
+	* docs/internals/test-hello-world.exe.log.txt: Update to reflect
+	changes to logger output.
+	* docs/intro/index.rst: Add tutorial05.rst
+	* docs/intro/tutorial05.rst: New file.
+	* docs/topics/results.rst: Rename to...
+	* docs/topics/compilation.rst: ...this, and add section on
+	ahead-of-time compilation.
+	* docs/topics/index.rst: Update for renaming of results.rst to
+	compilation.rst.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c (gcc::jit::playback::context::compile): Convert
+	return type from result * to void.  Move the code to convert to
+	dso and dlopen the result to a new pure virtual "postprocess"
+	method.
+	(gcc::jit::playback::compile_to_memory::compile_to_memory): New
+	function.
+	(gcc::jit::playback::compile_to_memory::postprocess): New
+	function, based on playback::context::compile.
+	(gcc::jit::playback::compile_to_file::compile_to_file): New
+	function.
+	(gcc::jit::playback::compile_to_file::postprocess): New function.
+	(gcc::jit::playback::compile_to_file::copy_file): New function.
+	(gcc::jit::playback::context::convert_to_dso): Move internals
+	to...
+	(gcc::jit::playback::context::invoke_driver): New method.  Add
+	"-shared" and "-c" options to driver's argv as needed.
+	* jit-playback.h: Include "timevar.h".
+	(gcc::jit::playback::context::compile): Convert return type from
+	result * to void.
+	(gcc::jit::playback::context::postprocess): New pure virtual
+	function, making this an abstract base class.
+	(gcc::jit::playback::context::get_tempdir): New accessor.
+	(gcc::jit::playback::context::invoke_driver): New function.
+	(class gcc::jit::playback::compile_to_memory): New subclass of
+	playback::context.
+	(class gcc::jit::playback::compile_to_file): Likewise.
+	* jit-recording.c (gcc::jit::recording::context::compile): Use a
+	playback::compile_to_memory, and extract its result.
+	(gcc::jit::recording::context::compile_to_file): New function.
+	* jit-recording.h (gcc::jit::recording::context::compile_to_file):
+	New function.
+	* libgccjit++.h (gccjit::context::compile_to_file): New method.
+	* libgccjit.c (gcc_jit_context_compile): Update log message to
+	clarify that this is an in-memory compile.
+	(gcc_jit_context_compile_to_file): New function.
+	* libgccjit.h (gcc_jit_context): Clarify that you can compile
+	a context more than once, and that you can compile to a file
+	as well as to memory.
+	(gcc_jit_result): Clarify that this is the result of an
+	in-memory compilation.
+	(gcc_jit_context_compile): Clarify that you can compile, and that
+	this is an in-memory compilation.
+	(enum gcc_jit_output_kind): New enum.
+	(gcc_jit_context_compile_to_file): New function.
+	(gcc_jit_context_enable_dump): Clarify comment to cover both forms
+	of compilation.
+	* libgccjit.map (gcc_jit_context_compile_to_file): New API
+	entrypoint.
+	* notes.txt: Update to show the playback::context::postprocess
+	virtual function.
+
+2015-01-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit-recording.c
 	(gcc::jit::recording::memento_of_new_string_literal::make_debug_string):
 	Add missing format string.

@@ -99,6 +99,9 @@ namespace gccjit
 
     gcc_jit_result *compile ();
 
+    void compile_to_file (enum gcc_jit_output_kind output_kind,
+			  const char *output_path);
+
     void dump_to_file (const std::string &path,
 		       bool update_locations);
 
@@ -538,6 +541,15 @@ context::compile ()
   if (!result)
     throw error ();
   return result;
+}
+
+inline void
+context::compile_to_file (enum gcc_jit_output_kind output_kind,
+			  const char *output_path)
+{
+  gcc_jit_context_compile_to_file (m_inner_ctxt,
+				   output_kind,
+				   output_path);
 }
 
 inline void

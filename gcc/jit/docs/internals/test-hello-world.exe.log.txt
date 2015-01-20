@@ -38,14 +38,20 @@ JIT: entering: gcc_jit_block_add_eval
 JIT: exiting: gcc_jit_block_add_eval
 JIT: entering: gcc_jit_block_end_with_void_return
 JIT: exiting: gcc_jit_block_end_with_void_return
+JIT: entering: gcc_jit_context_dump_reproducer_to_file
+JIT:  entering: void gcc::jit::recording::context::dump_reproducer_to_file(const char*)
+JIT:  exiting: void gcc::jit::recording::context::dump_reproducer_to_file(const char*)
+JIT: exiting: gcc_jit_context_dump_reproducer_to_file
 JIT: entering: gcc_jit_context_compile
-JIT:  compiling ctxt: 0x1283e20
+JIT:  in-memory compile of ctxt: 0x1283e20
 JIT:  entering: gcc::jit::result* gcc::jit::recording::context::compile()
 JIT:   entering: void gcc::jit::recording::context::validate()
 JIT:   exiting: void gcc::jit::recording::context::validate()
 JIT:   entering: gcc::jit::playback::context::context(gcc::jit::recording::context*)
 JIT:   exiting: gcc::jit::playback::context::context(gcc::jit::recording::context*)
-JIT:   entering: gcc::jit::result* gcc::jit::playback::context::compile()
+JIT:   entering: gcc::jit::playback::compile_to_memory::compile_to_memory(gcc::jit::recording::context*)
+JIT:   exiting: gcc::jit::playback::compile_to_memory::compile_to_memory(gcc::jit::recording::context*)
+JIT:   entering: void gcc::jit::playback::context::compile()
 JIT:    entering: gcc::jit::tempdir::tempdir(gcc::jit::logger*, int)
 JIT:    exiting: gcc::jit::tempdir::tempdir(gcc::jit::logger*, int)
 JIT:    entering: bool gcc::jit::tempdir::create()
@@ -86,29 +92,37 @@ JIT:      entering: void gcc::jit::playback::function::postprocess()
 JIT:      exiting: void gcc::jit::playback::function::postprocess()
 JIT:     exiting: void gcc::jit::playback::context::replay()
 JIT:     entering: void jit_langhook_write_globals()
+JIT:      entering: void gcc::jit::playback::context::write_global_decls_1()
+JIT:      exiting: void gcc::jit::playback::context::write_global_decls_1()
+JIT:      entering: void gcc::jit::playback::context::write_global_decls_2()
+JIT:      exiting: void gcc::jit::playback::context::write_global_decls_2()
 JIT:     exiting: void jit_langhook_write_globals()
 JIT:    exiting: toplev::main
 JIT:    entering: void gcc::jit::playback::context::extract_any_requested_dumps(vec<gcc::jit::recording::requested_dump>*)
 JIT:    exiting: void gcc::jit::playback::context::extract_any_requested_dumps(vec<gcc::jit::recording::requested_dump>*)
 JIT:    entering: toplev::finalize
 JIT:    exiting: toplev::finalize
-JIT:    entering: void gcc::jit::playback::context::convert_to_dso(const char*)
-JIT:     argv[0]: x86_64-unknown-linux-gnu-gcc-5.0.0
-JIT:     argv[1]: -shared
-JIT:     argv[2]: /tmp/libgccjit-CKq1M9/fake.s
-JIT:     argv[3]: -o
-JIT:     argv[4]: /tmp/libgccjit-CKq1M9/fake.so
-JIT:     argv[5]: -fno-use-linker-plugin
-JIT:     argv[6]: (null)
-JIT:    exiting: void gcc::jit::playback::context::convert_to_dso(const char*)
-JIT:    entering: gcc::jit::result* gcc::jit::playback::context::dlopen_built_dso()
-JIT:     GCC_JIT_BOOL_OPTION_DEBUGINFO was set: handing over tempdir to jit::result
-JIT:     entering: gcc::jit::result::result(gcc::jit::logger*, void*, gcc::jit::tempdir*)
-JIT:     exiting: gcc::jit::result::result(gcc::jit::logger*, void*, gcc::jit::tempdir*)
-JIT:    exiting: gcc::jit::result* gcc::jit::playback::context::dlopen_built_dso()
+JIT:    entering: virtual void gcc::jit::playback::compile_to_memory::postprocess(const char*)
+JIT:     entering: void gcc::jit::playback::context::convert_to_dso(const char*)
+JIT:      entering: void gcc::jit::playback::context::invoke_driver(const char*, const char*, const char*, timevar_id_t, bool, bool)
+JIT:       argv[0]: x86_64-unknown-linux-gnu-gcc-5.0.0
+JIT:       argv[1]: -shared
+JIT:       argv[2]: /tmp/libgccjit-CKq1M9/fake.s
+JIT:       argv[3]: -o
+JIT:       argv[4]: /tmp/libgccjit-CKq1M9/fake.so
+JIT:       argv[5]: -fno-use-linker-plugin
+JIT:       argv[6]: (null)
+JIT:      exiting: void gcc::jit::playback::context::invoke_driver(const char*, const char*, const char*, timevar_id_t, bool, bool)
+JIT:     exiting: void gcc::jit::playback::context::convert_to_dso(const char*)
+JIT:     entering: gcc::jit::result* gcc::jit::playback::context::dlopen_built_dso()
+JIT:      GCC_JIT_BOOL_OPTION_DEBUGINFO was set: handing over tempdir to jit::result
+JIT:      entering: gcc::jit::result::result(gcc::jit::logger*, void*, gcc::jit::tempdir*)
+JIT:      exiting: gcc::jit::result::result(gcc::jit::logger*, void*, gcc::jit::tempdir*)
+JIT:     exiting: gcc::jit::result* gcc::jit::playback::context::dlopen_built_dso()
+JIT:    exiting: virtual void gcc::jit::playback::compile_to_memory::postprocess(const char*)
 JIT:    entering: void gcc::jit::playback::context::release_mutex()
 JIT:    exiting: void gcc::jit::playback::context::release_mutex()
-JIT:   exiting: gcc::jit::result* gcc::jit::playback::context::compile()
+JIT:   exiting: void gcc::jit::playback::context::compile()
 JIT:   entering: gcc::jit::playback::context::~context()
 JIT:   exiting: gcc::jit::playback::context::~context()
 JIT:  exiting: gcc::jit::result* gcc::jit::recording::context::compile()

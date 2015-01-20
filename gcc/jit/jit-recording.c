@@ -1152,8 +1152,8 @@ recording::context::enable_dump (const char *dumpname,
   m_requested_dumps.safe_push (d);
 }
 
-/* Validate this context, and if it passes, compile it within a
-   mutex.
+/* Validate this context, and if it passes, compile it to memory
+   (within a mutex).
 
    Implements the post-error-checking part of
    gcc_jit_context_compile.  */
@@ -1168,13 +1168,41 @@ recording::context::compile ()
   if (errors_occurred ())
     return NULL;
 
-  /* Set up a playback context.  */
-  ::gcc::jit::playback::context replayer (this);
+  /* Set up a compile_to_memory playback context.  */
+  ::gcc::jit::playback::compile_to_memory replayer (this);
 
   /* Use it.  */
-  result *result_obj = replayer.compile ();
+  replayer.compile ();
 
-  return result_obj;
+  /* Get the jit::result (or NULL) from the
+     compile_to_memory playback context.  */
+  return replayer.get_result_obj ();
+}
+
+/* Validate this context, and if it passes, compile it to a file
+   (within a mutex).
+
+   Implements the post-error-checking part of
+   gcc_jit_context_compile_to_file.  */
+
+void
+recording::context::compile_to_file (enum gcc_jit_output_kind output_kind,
+				     const char *output_path)
+{
+  JIT_LOG_SCOPE (get_logger ());
+
+  validate ();
+
+  if (errors_occurred ())
+    return;
+
+  /* Set up a compile_to_file playback context.  */
+  ::gcc::jit::playback::compile_to_file replayer (this,
+						  output_kind,
+						  output_path);
+
+  /* Use it.  */
+  replayer.compile ();
 }
 
 /* Format the given error using printf's conventions, print

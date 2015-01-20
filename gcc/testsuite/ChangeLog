@@ -1,3 +1,28 @@
+2015-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h: Include <unistd.h>.
+	(CHECK_NO_ERRORS): New.
+	(verify_code): Wrap prototype in #ifndef TEST_COMPILING_TO_FILE.
+	(test_jit): Support new macro TEST_COMPILING_TO_FILE for exercising
+	gcc_jit_context_compile_to_file.
+	* jit.dg/jit.exp (fixed_host_execute): Fix the code for passing on
+	args to the spawned executable.
+	(jit-expand-vars): New function.
+	(jit-exe-params): New variable.
+	(dg-jit-set-exe-params): New function.
+	(jit-dg-test): Detect testcases that use
+	jit-verify-compile-to-file and call jit-setup-compile-to-file.
+	Set arguments of spawned process to jit-exe-params.
+	(jit-get-output-filename): New function.
+	(jit-setup-compile-to-file): New function.
+	(jit-verify-compile-to-file): New function.
+	(jit-run-executable): New function.
+	(jit-verify-executable): New function.
+	* jit.dg/test-compile-to-assembler.c: New testcase.
+	* jit.dg/test-compile-to-dynamic-library.c: New testcase.
+	* jit.dg/test-compile-to-executable.c: New testcase.
+	* jit.dg/test-compile-to-object.c: New testcase.
+
 2015-01-19  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/64652
