@@ -1,5 +1,29 @@
 2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/abi/pre/gnu.ver: Export new constructors.
+	* include/bits/codecvt.h (codecvt_byname): Add string constructor.
+	(codecvt_byname<char16_t>, codecvt_byname<char32_t>): Define explicit
+	specializations and declare explicit instantiations.
+	* include/bits/locale_classes.h (locale, collate_byname): Add string
+	constructors.
+	* include/bits/locale_facets.h (ctype_byname, numpunct_byname):
+	Likewise.
+	* include/bits/locale_facets_nonio.h (time_get_byname,
+	time_put_byname, moneypunct_byname, messages_byname): Likewise.
+	* src/c++11/codecvt.cc (codecvt_byname<char16_t>,
+	codecvt_byname<char32_t>): Define explicit instantiations.
+	* src/c++11/locale-inst.cc (time_put_byname, codecvt_byname):
+	Instantiate string constructors.
+	(ctype_byname): Define string constructor.
+	* testsuite/22_locale/codecvt_byname/1.cc: New.
+	* testsuite/22_locale/collate_byname/1.cc: New.
+	* testsuite/22_locale/ctype_byname/2.cc: New.
+	* testsuite/22_locale/messages_byname/1.cc: New.
+	* testsuite/22_locale/moneypunct_byname/1.cc: New.
+	* testsuite/22_locale/numpunct_byname/1.cc: New.
+
+2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/64658
 	* include/std/atomic (atomic_init): Define.
 	* testsuite/29_atomics/atomic/64658.cc: New.
