@@ -1,3 +1,9 @@
+2015-01-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/linux-unwind.h (nios2_fallback_frame_state):
+	Update rt_sigframe format and address for current Nios II
+	Linux conventions.
+
 2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config.host (arm*-*-freebsd*): Add new configuration for
