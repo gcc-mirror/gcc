@@ -2,7 +2,7 @@
 /* { dg-do run } */
 /* { dg-options "-g" } */
 
-static int v;
+static int v __attribute__((used));
 
 static void __attribute__((noinline, noclone))
 f (int *p)
