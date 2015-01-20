@@ -1,3 +1,8 @@
+2015-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64632
+	* ubsan/ubsan_type_hash.cc: Cherry pick upstream r224972.
+
 2015-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/64435
