@@ -1,4 +1,10 @@
+2015-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64410
+	* g++.dg/vect/pr64410.cc: Require vect_double.
+
 2015-01-20  Matthew Wahab  <matthew.wahab@arm.com>
+
 	PR target/64149
 	* gcc.target/arm/thumb1-far-farjump-3.c: Remove.
 
