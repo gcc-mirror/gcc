@@ -2450,7 +2450,7 @@ Parse::operand(bool may_be_sink, bool* is_parenthesized)
 	    && (named_object->is_variable()
 		|| named_object->is_result_variable()))
 	  return this->enclosing_var_reference(in_function, named_object,
-					       location);
+					       may_be_sink, location);
 
 	switch (named_object->classification())
 	  {
@@ -2591,11 +2591,14 @@ Parse::operand(bool may_be_sink, bool* is_parenthesized)
 
 Expression*
 Parse::enclosing_var_reference(Named_object* in_function, Named_object* var,
-			       Location location)
+			       bool may_be_sink, Location location)
 {
   go_assert(var->is_variable() || var->is_result_variable());
 
-  this->mark_var_used(var);
+  // Any left-hand-side can be a sink, so if this can not be
+  // a sink, then it must be a use of the variable.
+  if (!may_be_sink)
+    this->mark_var_used(var);
 
   Named_object* this_function = this->gogo_->current_function();
   Named_object* closure = this_function->func_value()->closure_var();
@@ -2912,7 +2915,7 @@ Parse::create_closure(Named_object* function, Enclosing_vars* enclosing_vars,
 	ref = Expression::make_var_reference(var, location);
       else
 	ref = this->enclosing_var_reference(ev[i].in_function(), var,
-					    location);
+					    true, location);
       Expression* refaddr = Expression::make_unary(OPERATOR_AND, ref,
 						   location);
       initializer->push_back(refaddr);
@@ -3215,7 +3218,7 @@ Parse::id_to_expression(const std::string& name, Location location,
   if (in_function != NULL
       && in_function != this->gogo_->current_function()
       && (named_object->is_variable() || named_object->is_result_variable()))
-    return this->enclosing_var_reference(in_function, named_object,
+    return this->enclosing_var_reference(in_function, named_object, is_lhs,
 					 location);
 
   switch (named_object->classification())
@@ -5722,6 +5725,20 @@ Parse::verify_not_sink(Expression* expr)
   Var_expression* ve = expr->var_expression();
   if (ve != NULL)
     this->mark_var_used(ve->named_object());
+  else if (expr->deref()->field_reference_expression() != NULL
+	   && this->gogo_->current_function() != NULL)
+    {
+      // We could be looking at a variable referenced from a closure.
+      // If so, we need to get the enclosed variable and mark it as used.
+      Function* this_function = this->gogo_->current_function()->func_value();
+      Named_object* closure = this_function->closure_var();
+      if (closure != NULL)
+	{
+	  unsigned int var_index =
+	    expr->deref()->field_reference_expression()->field_index();
+	  this->mark_var_used(this_function->enclosing_var(var_index - 1));
+	}
+    }
 
   return expr;
 }
