@@ -1,6 +1,12 @@
 2015-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/45375
+	* i386.c (ix86_option_override_internal): Use ix86_tune_cost
+	to set branch cost.
+
+2015-01-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/45375
 	* i386.c (gate): Check flag_expensive_optimizations and
 	optimize_size.
 	(ix86_option_override_internal): Drop optimize_size condition
