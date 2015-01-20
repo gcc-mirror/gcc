@@ -1,3 +1,10 @@
+2015-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/64684
+	* ipa-reference.c (add_static_var): Inline ...
+	(analyze_function): ... here after splitting out from ...
+	(is_proper_for_analysis): ... this.
+
 2015-01-20  Matthew Wahab  <matthew.wahab@arm.com>
 
 	PR target/64149
