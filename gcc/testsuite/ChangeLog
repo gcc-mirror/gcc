@@ -1,3 +1,7 @@
+2015-01-20  Matthew Wahab  <matthew.wahab@arm.com>
+	PR target/64149
+	* gcc.target/arm/thumb1-far-farjump-3.c: Remove.
+
 2015-01-20  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR bootstrap/64676

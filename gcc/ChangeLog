@@ -1,3 +1,12 @@
+2015-01-20  Matthew Wahab  <matthew.wahab@arm.com>
+
+	PR target/64149
+	* config/arm/arm.opt: Remove lra option and arm_lra_flag variablesle.
+	* config/arm/arm.h (MODE_BASE_REG_CLASS): Remove use of arm_lra_flagag,
+	replace the conditional with it's true branch.
+	* config/arm/arm.config (TARGET_LRA_P): Set to hook_bool_void_true.
+	(arm_lra_p): Remove.
+
 2015-01-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/visium/visium.h (LIB_SPEC): Adjust in default case.
